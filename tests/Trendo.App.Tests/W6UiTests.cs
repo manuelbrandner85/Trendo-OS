@@ -30,3 +30,19 @@ public class SPEC01_Ui
         Assert.Contains(l.Opened, x => x.EndsWith("grundriss.svg"));
     }
 }
+
+public class SPEC02_Ui
+{
+    [AvaloniaFact(DisplayName = "SPEC-02 UI: Elektronik-Rechner und Stückliste")]
+    public void Electronics()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show(MainWindow.StudioPages["SPEC-02"]);
+        Assert.Contains("4,70 kΩ", W6Ui.Run(w, "el-code"));
+        Assert.Contains("150", W6Ui.Run(w, "el-led"));
+        Assert.Contains("⚠", W6Ui.Run(w, "el-ohm", ("i", "1")));
+        Assert.Contains("Gespeichert", W6Ui.Run(w, "el-bom"));
+        w.Find<Button>("fach-tab-architektur").Press();
+        Assert.Equal("architektur", w.CurrentView);
+    }
+}

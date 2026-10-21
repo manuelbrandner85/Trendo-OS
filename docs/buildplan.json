@@ -854,8 +854,8 @@
   "order": 5,
   "id": "X-10",
   "name": "Legal Clean-Room Software Reconstruction",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -876,8 +876,8 @@
   "order": 2,
   "id": "SPEC-02",
   "name": "Electronics & PCB 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
