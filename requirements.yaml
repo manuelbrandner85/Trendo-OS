@@ -82,36 +82,36 @@ modules:
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/CORE-05.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: CORE-06
   name: Ultimate Game Development Studio 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/CORE-06.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: CORE-07
   name: Ultimate App & Software Development Studio 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/CORE-07.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: CORE-08
   name: Ultimate Creative & Media Studio 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/CORE-08.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: CORE-09
   name: Vision & Robotics Control Studio 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/CORE-09.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: CORE-10
   name: Knowledge Memory & Self Improvement Core 2.0
   approved_expansion_functions: '20'
@@ -230,43 +230,43 @@ modules:
   approved_expansion_functions: '16'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-01.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: SPEC-02
   name: Electronics & PCB 2.0
   approved_expansion_functions: '16'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-02.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: SPEC-03
   name: Engineering & Simulation 2.0
   approved_expansion_functions: '16'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-03.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: SPEC-04
   name: VR/AR/MR 2.0
   approved_expansion_functions: '16'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-04.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: SPEC-05
   name: Science & Research 2.0
   approved_expansion_functions: '16'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-05.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: SPEC-06
   name: Education & Training 2.0
   approved_expansion_functions: '16'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-06.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: SPEC-07
   name: Language & Localization Studio 2.0
   approved_expansion_functions: '16'
@@ -278,29 +278,29 @@ modules:
   approved_expansion_functions: '18'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-08.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: SPEC-09
   name: 3D Scanning & Reconstruction 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-09.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: SPEC-10
   name: Digital Twin 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-10.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: SPEC-11
   name: Business & Finance 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/SPEC-11.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: SPEC-12
   name: Cybersecurity & Forensics 2.0
   approved_expansion_functions: '20'
@@ -313,36 +313,36 @@ modules:
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-13.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: SPEC-14
   name: Manufacturing & CNC 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-14.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: SPEC-15
   name: Broadcast & Streaming 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-15.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: SPEC-16
   name: Transport & Vehicle 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-16.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: X-01
   name: Universal Studio Fusion & Autonomous Production
   approved_expansion_functions: '18'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/X-01.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: X-02
   name: Zero Touch Setup & Self Healing
   approved_expansion_functions: '20'
@@ -355,15 +355,15 @@ modules:
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/X-03.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: X-04
   name: Extension Marketplace & Studio Evolution
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/X-04-KATALOG.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: X-05
   name: Free AI Discovery & Fallback
   approved_expansion_functions: BASE
@@ -376,15 +376,15 @@ modules:
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/X-06.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: X-07
   name: Global Free Asset Discovery
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/X-07.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: X-08
   implementation_status: IN_PROGRESS
   test_status: PC_VERIFIED
@@ -405,22 +405,22 @@ modules:
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/X-10.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: X-11
   name: Universal Creation & Productivity Suite
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/X-11.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: STUDIO-ONLINE-BUSINESS-01
   name: Ultimate Online Business Creation & Innovation Studio GODMODE (both modes)
   approved_expansion_functions: '30'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/STUDIO-ONLINE-BUSINESS-01.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
 - id: STUDIO-LETTER-01
   name: Ultimate Letter Business & Legal Correspondence Studio GODMODE
   approved_expansion_functions: '25'

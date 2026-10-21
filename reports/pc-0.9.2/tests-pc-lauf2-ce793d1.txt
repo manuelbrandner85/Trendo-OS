@@ -1,0 +1,36 @@
+﻿  Wiederherzustellende Projekte werden ermittelt...
+  Alle Projekte sind f├╝r die Wiederherstellung auf dem neuesten Stand.
+  Trendo.Core -> C:\Users\<user>\AppData\Local\Temp\trendo-pc092\repo\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Api -> C:\Users\<user>\AppData\Local\Temp\trendo-pc092\repo\src\Trendo.Api\bin\Release\net10.0\Trendo.Api.dll
+  Trendo.Core.Tests -> C:\Users\<user>\AppData\Local\Temp\trendo-pc092\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf f├╝r "C:\Users\<user>\AppData\Local\Temp\trendo-pc092\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster ├╝berein.
+  Trendo.Api.Tests -> C:\Users\<user>\AppData\Local\Temp\trendo-pc092\repo\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll
+  Trendo.App -> C:\Users\<user>\AppData\Local\Temp\trendo-pc092\repo\src\Trendo.App\bin\Release\net10.0\TrendoOS.dll
+Testlauf f├╝r "C:\Users\<user>\AppData\Local\Temp\trendo-pc092\repo\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster ├╝berein.
+  Trendo.App.Tests -> C:\Users\<user>\AppData\Local\Temp\trendo-pc092\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll
+Testlauf f├╝r "C:\Users\<user>\AppData\Local\Temp\trendo-pc092\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster ├╝berein.
+
+Bestanden!   : Fehler:     0, erfolgreich:    14, ├╝bersprungen:     0, gesamt:    14, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+dotnet : [xUnit.net 00:00:03.54]     W6-Katalog: je Studio genau die genehmigte Anzahl, PROPOSED, ÔÇ×gebautÔÇ£ nur mit 
+vorhandenem Test [FAIL]
+In C:\Users\<user>\AppData\Local\Temp\ps-script-d105e113-f15c-419b-99f8-3f372d1f9f79.ps1:88 Zeichen:22
++ foreach($i in 1..3){ dotnet test -c Release 2>&1 | Out-File "$t\tests ...
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([xUnit.net 00:0...nem Test [FAIL]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Fehler W6-Katalog: je Studio genau die genehmigte Anzahl, PROPOSED, ÔÇ×gebautÔÇ£ nur mit vorhandenem Test [18 ms]
+  Fehlermeldung:
+   SPEC-01: 0 statt 16 Funktionen
+  Stapelverfolgung:
+     at Trendo.Core.Tests.W6_Catalog.Catalogs() in C:\Users\<user>\AppData\Local\Temp\trendo-pc092\repo\tests\Trendo.Core.Tests\W6CatalogTests.cs:line 28
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Fehler!      : Fehler:     1, erfolgreich:   205, ├╝bersprungen:     0, gesamt:   206, Dauer: 9 s - Trendo.Core.Tests.dll (net10.0)
+
+Bestanden!   : Fehler:     0, erfolgreich:    85, ├╝bersprungen:     0, gesamt:    85, Dauer: 41 s - Trendo.App.Tests.dll (net10.0)
+

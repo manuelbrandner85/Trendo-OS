@@ -34,8 +34,8 @@ von Manuel genehmigt: einfache Sprache, Anpassen, Hintergründe, Animationen, Hi
 | Reihenfolge | Modul | Name | Umsetzung | Test |
 |---|---|---|---|---|
 | 1 | W0B-01 | Einfaches, freundliches Deutsch überall + Sprachleitfaden docs/SPRACHE.md | PC_VERIFIED_PARTIAL | NOT_RUN |
-| 2 | W0B-02 | Desktop anpassen: Kacheln/Widgets verschieben, ein-/ausblenden, Dock sortieren, Akzentfarbe (gespeichert) | PC_VERIFIED_PARTIAL | NOT_RUN |
-| 3 | W0B-03 | Hintergrund-Galerie (aus /workspace/trendo-wallpapers) + optional Wechsel nach Tageszeit | PC_VERIFIED_PARTIAL | NOT_RUN |
+| 2 | W0B-02 | Desktop anpassen: Kacheln/Widgets verschieben, ein-/ausblenden, Dock sortieren, Akzentfarbe (gespeichert) | PC_VERIFIED_PARTIAL | PC_VERIFIED |
+| 3 | W0B-03 | Hintergrund-Galerie (aus /workspace/trendo-wallpapers) + optional Wechsel nach Tageszeit | PC_VERIFIED_PARTIAL | PC_VERIFIED |
 | 4 | W0B-04 | Sanfte Animationen, Hover-Glow, ruhiger Startbildschirm + Schalter „Bewegung reduzieren“ | PC_VERIFIED_PARTIAL | NOT_RUN |
 | 5 | W0B-05 | Hilfe in der App: Hinweise beim ersten Öffnen je Studio + „?“-Knopf | PC_VERIFIED_PARTIAL | NOT_RUN |
 | 6 | W0B-06 | Designs: Dunkel Premium (Standard), Hell, Hoher Kontrast | PC_VERIFIED_PARTIAL | NOT_RUN |
@@ -148,14 +148,14 @@ Abnahmekriterien je Modul:
 
 | Reihenfolge | Modul | Name | Umsetzung | Test |
 |---|---|---|---|---|
-| 1 | CORE-07 | Ultimate App & Software Development Studio 2.0 | IMPLEMENTED | TESTED_BOX |
-| 2 | X-06 | GitHub Open-Source Integration | IMPLEMENTED | TESTED_BOX |
-| 3 | CORE-08 | Ultimate Creative & Media Studio 2.0 | IMPLEMENTED | TESTED_BOX |
-| 4 | CORE-05 | Ultimate 3D Creation Studio 2.0 | IMPLEMENTED | TESTED_BOX |
-| 5 | CORE-06 | Ultimate Game Development Studio 2.0 | IMPLEMENTED | TESTED_BOX |
-| 6 | X-07 | Global Free Asset Discovery | IMPLEMENTED | TESTED_BOX |
-| 7 | X-03 | Visual Builder & No-Code | IMPLEMENTED | TESTED_BOX |
-| 8 | X-11 | Universal Creation & Productivity Suite | IMPLEMENTED | TESTED_BOX |
+| 1 | CORE-07 | Ultimate App & Software Development Studio 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 2 | X-06 | GitHub Open-Source Integration | IMPLEMENTED | PC_VERIFIED |
+| 3 | CORE-08 | Ultimate Creative & Media Studio 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 4 | CORE-05 | Ultimate 3D Creation Studio 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 5 | CORE-06 | Ultimate Game Development Studio 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 6 | X-07 | Global Free Asset Discovery | IMPLEMENTED | PC_VERIFIED |
+| 7 | X-03 | Visual Builder & No-Code | IMPLEMENTED | PC_VERIFIED |
+| 8 | X-11 | Universal Creation & Productivity Suite | IMPLEMENTED | PC_VERIFIED |
 
 Abnahmekriterien je Modul:
 - Modul im Studio-Layout erreichbar (max. 2 Navigationsebenen, deutsche Beschriftung)
@@ -170,11 +170,11 @@ Online-Business-Studio, Finanzen, Studio-Fusion, Erweiterungen
 
 | Reihenfolge | Modul | Name | Umsetzung | Test |
 |---|---|---|---|---|
-| 1 | STUDIO-ONLINE-BUSINESS-01 | Ultimate Online Business Creation & Innovation Studio GODMODE (both modes) | IMPLEMENTED | TESTED_BOX |
-| 2 | SPEC-11 | Business & Finance 2.0 | IMPLEMENTED | TESTED_BOX |
-| 3 | X-01 | Universal Studio Fusion & Autonomous Production | IMPLEMENTED | TESTED_BOX |
-| 4 | X-04 | Extension Marketplace & Studio Evolution | IMPLEMENTED | TESTED_BOX |
-| 5 | X-10 | Legal Clean-Room Software Reconstruction | IMPLEMENTED | TESTED_BOX |
+| 1 | STUDIO-ONLINE-BUSINESS-01 | Ultimate Online Business Creation & Innovation Studio GODMODE (both modes) | IMPLEMENTED | PC_VERIFIED |
+| 2 | SPEC-11 | Business & Finance 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 3 | X-01 | Universal Studio Fusion & Autonomous Production | IMPLEMENTED | PC_VERIFIED |
+| 4 | X-04 | Extension Marketplace & Studio Evolution | IMPLEMENTED | PC_VERIFIED |
+| 5 | X-10 | Legal Clean-Room Software Reconstruction | IMPLEMENTED | PC_VERIFIED |
 
 Abnahmekriterien je Modul:
 - Modul im Studio-Layout erreichbar (max. 2 Navigationsebenen, deutsche Beschriftung)
@@ -224,20 +224,20 @@ Spezial-Studios auf Basis der fertigen Kernbausteine
 
 | Reihenfolge | Modul | Name | Umsetzung | Test |
 |---|---|---|---|---|
-| 1 | SPEC-01 | Architecture & Interior 2.0 | IMPLEMENTED | TESTED_BOX |
-| 2 | SPEC-02 | Electronics & PCB 2.0 | IMPLEMENTED | TESTED_BOX |
-| 3 | SPEC-03 | Engineering & Simulation 2.0 | IMPLEMENTED | TESTED_BOX |
-| 4 | SPEC-04 | VR/AR/MR 2.0 | IMPLEMENTED | TESTED_BOX |
-| 5 | SPEC-05 | Science & Research 2.0 | IMPLEMENTED | TESTED_BOX |
-| 6 | SPEC-06 | Education & Training 2.0 | IMPLEMENTED | TESTED_BOX |
-| 7 | SPEC-08 | Fashion & Product 2.0 | IMPLEMENTED | TESTED_BOX |
-| 8 | SPEC-09 | 3D Scanning & Reconstruction 2.0 | IMPLEMENTED | TESTED_BOX |
-| 9 | SPEC-10 | Digital Twin 2.0 | IMPLEMENTED | TESTED_BOX |
-| 10 | SPEC-13 | Maps & Geospatial 2.0 | IMPLEMENTED | TESTED_BOX |
-| 11 | SPEC-14 | Manufacturing & CNC 2.0 | IMPLEMENTED | TESTED_BOX |
-| 12 | SPEC-15 | Broadcast & Streaming 2.0 | IMPLEMENTED | TESTED_BOX |
-| 13 | SPEC-16 | Transport & Vehicle 2.0 | IMPLEMENTED | TESTED_BOX |
-| 14 | CORE-09 | Vision & Robotics Control Studio 2.0 | IMPLEMENTED | TESTED_BOX |
+| 1 | SPEC-01 | Architecture & Interior 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 2 | SPEC-02 | Electronics & PCB 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 3 | SPEC-03 | Engineering & Simulation 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 4 | SPEC-04 | VR/AR/MR 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 5 | SPEC-05 | Science & Research 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 6 | SPEC-06 | Education & Training 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 7 | SPEC-08 | Fashion & Product 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 8 | SPEC-09 | 3D Scanning & Reconstruction 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 9 | SPEC-10 | Digital Twin 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 10 | SPEC-13 | Maps & Geospatial 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 11 | SPEC-14 | Manufacturing & CNC 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 12 | SPEC-15 | Broadcast & Streaming 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 13 | SPEC-16 | Transport & Vehicle 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 14 | CORE-09 | Vision & Robotics Control Studio 2.0 | IMPLEMENTED | PC_VERIFIED |
 
 Abnahmekriterien je Modul:
 - Modul im Studio-Layout erreichbar (max. 2 Navigationsebenen, deutsche Beschriftung)
