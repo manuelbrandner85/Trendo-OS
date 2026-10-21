@@ -59,27 +59,17 @@ public static class TripleMode
 // ---------- CORE-04: Verbund aus PC, Pi und Android ----------
 public enum NodeKind { Pc, Pi, Android }
 public sealed record FusionNode(string Id, string Name, NodeKind Kind, string Address, int Port, List<string> Caps, DateTime PairedAt, DateTime? LastSeen = null, bool Online = false);
-public sealed record PairCode(string Code, DateTime Expires);
 
 public sealed class FusionStore(string dataRoot, AuditLog audit)
 {
     private string Dir => Path.Combine(dataRoot, "verbund");
     private string NodesFile => Path.Combine(Dir, "geraete.json");
-    private string CodeFile => Path.Combine(Dir, "kopplung.json");
     private static readonly JsonSerializerOptions J = new() { WriteIndented = true };
 
     public List<FusionNode> Nodes() { try { return File.Exists(NodesFile) ? JsonSerializer.Deserialize<List<FusionNode>>(File.ReadAllText(NodesFile)) ?? [] : []; } catch (JsonException) { return []; } }
     private void Save(List<FusionNode> n) { Directory.CreateDirectory(Dir); File.WriteAllText(NodesFile, JsonSerializer.Serialize(n, J)); }
 
-    /// <summary>6-stelliger Einmal-Code, 10 Minuten gültig.</summary>
-    public PairCode NewCode(DateTime now)
-    {
-        var c = new PairCode(RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6"), now.AddMinutes(10));
-        Directory.CreateDirectory(Dir); File.WriteAllText(CodeFile, JsonSerializer.Serialize(c));
-        audit.Append("local-owner", "fusion.code", "neuer Kopplungscode");
-        return c;
-    }
-
+    /// <summary>Nach erfolgreicher Kopplung mit dem Begleiter (POST /pair) das Gerät speichern. Token gehört in den Schlüsselspeicher, nie in diese Datei.</summary>
     /// <summary>Nur private Netze (LAN) oder .local-Namen – nie das Internet.</summary>
     public static bool IsLanAddress(string a)
     {
@@ -90,19 +80,20 @@ public sealed class FusionStore(string dataRoot, AuditLog audit)
         return b[0] == 10 || (b[0] == 172 && b[1] is >= 16 and <= 31) || (b[0] == 192 && b[1] == 168) || (b[0] == 169 && b[1] == 254);
     }
 
-    public (FusionNode? Node, string Message) Pair(string code, string name, NodeKind kind, string address, int port, IEnumerable<string> caps, DateTime now)
+    public (FusionNode? Node, string Message) AddPaired(PairResponse r, string address, int port, DateTime now, bool allowLoopback = false)
     {
-        PairCode? c = null; try { if (File.Exists(CodeFile)) c = JsonSerializer.Deserialize<PairCode>(File.ReadAllText(CodeFile)); } catch (JsonException) { }
-        if (c is null || c.Expires < now || !CryptographicOperations.FixedTimeEquals(System.Text.Encoding.ASCII.GetBytes(c.Code), System.Text.Encoding.ASCII.GetBytes(code.Trim())))
-        { audit.Append("local-owner", "fusion.pair.rejected", name); return (null, "Code falsch oder abgelaufen."); }
-        if (!IsLanAddress(address)) return (null, "Nur Adressen im Heimnetz sind erlaubt.");
+        if (!(IsLanAddress(address) || (allowLoopback && address == "127.0.0.1"))) return (null, "Nur Adressen im Heimnetz sind erlaubt.");
         if (port is < 1024 or > 65535) return (null, "Port ungültig.");
-        if (string.IsNullOrWhiteSpace(name) || name.Length > 40) return (null, "Name fehlt.");
-        File.Delete(CodeFile); // Einmal-Code
-        var n = Nodes(); var node = new FusionNode(Guid.NewGuid().ToString("N")[..8], name.Trim(), kind, address, port, caps.Select(x => x.Trim().ToLowerInvariant()).Where(x => x.Length > 0).Distinct().ToList(), now);
-        n.Add(node); Save(n); audit.Append("local-owner", "fusion.paired", $"{node.Kind} {node.Name}");
-        return (node, $"„{node.Name}“ gekoppelt.");
+        var kind = r.Kind switch { "Pi" => NodeKind.Pi, "Android" => NodeKind.Android, _ => NodeKind.Pc };
+        var name = string.IsNullOrWhiteSpace(r.Name) ? "Gerät" : r.Name.Trim()[..Math.Min(40, r.Name.Trim().Length)];
+        var n = Nodes(); n.RemoveAll(x => x.Address == address && x.Port == port);
+        var node = new FusionNode(Guid.NewGuid().ToString("N")[..8], name, kind, address, port, r.Caps.Select(x => x.ToLowerInvariant()).Distinct().ToList(), now, now, true);
+        n.Add(node); Save(n); audit.Append("local-owner", "fusion.paired", $"{node.Kind} {node.Name} v{r.Version}");
+        return (node, $"„{node.Name}“ gekoppelt ({string.Join(", ", node.Caps)}).");
     }
+
+    public static string TokenKey(string nodeId) => "verbund-token-" + nodeId;
+    public static Uri ApiUri(FusionNode n, string path) => new($"http://{n.Address}:{n.Port}/{path.TrimStart('/')}");
 
     public bool Remove(string id) { var n = Nodes(); var ok = n.RemoveAll(x => x.Id == id) > 0; if (ok) { Save(n); audit.Append("local-owner", "fusion.removed", id); } return ok; }
 
@@ -161,4 +152,56 @@ public static class MobileBridge
         "Ohne Kabel: Windows „Smartphone-Link“ oder KDE Connect nutzen (offizielle Apps)",
         "iPhone: nur Fotos/Dateien über die Windows-Apps; Trendo steuert iOS nicht",
     ];
+}
+
+// ---------- X-08: Android-Seite über adb (echte Befehle, mit Zustimmung) ----------
+public sealed record PhoneInfo(string Model, string Android, int? Battery, bool Charging);
+
+public static class AndroidSide
+{
+    static bool SafeSerial(string s) => Regex.IsMatch(s, @"^[A-Za-z0-9.:_-]{3,64}$");
+
+    public static async Task<PhoneInfo?> InfoAsync(IProcessRunner run, string adb, string serial)
+    {
+        if (!SafeSerial(serial)) return null;
+        var (e1, model) = await run.RunAsync(adb, $"-s {serial} shell getprop ro.product.model");
+        var (_, ver) = await run.RunAsync(adb, $"-s {serial} shell getprop ro.build.version.release");
+        var (_, bat) = await run.RunAsync(adb, $"-s {serial} shell dumpsys battery");
+        if (e1 != 0) return null;
+        var (lvl, chg) = ParseBattery(bat);
+        return new(model.Trim(), ver.Trim(), lvl, chg);
+    }
+
+    public static (int? Level, bool Charging) ParseBattery(string dumpsys)
+    {
+        int? lvl = Regex.Match(dumpsys, @"^\s*level:\s*(\d+)", RegexOptions.Multiline) is { Success: true } m ? int.Parse(m.Groups[1].Value) : null;
+        var chg = Regex.IsMatch(dumpsys, @"^\s*(AC|USB|Wireless) powered:\s*true", RegexOptions.Multiline) || Regex.IsMatch(dumpsys, @"^\s*status:\s*2\b", RegexOptions.Multiline);
+        return (lvl, chg);
+    }
+
+    /// <summary>Bildschirmfoto vom Handy in einen Ordner am PC – nur nach Zustimmung, temporäre Datei am Handy wird gelöscht.</summary>
+    public static async Task<(bool Ok, string Message, string? File)> ScreenshotAsync(IProcessRunner run, string adb, string serial, string targetDir, bool consent, DateTime now)
+    {
+        if (!consent) return (false, "Erst zustimmen.", null);
+        if (!SafeSerial(serial)) return (false, "Seriennummer ungültig.", null);
+        Directory.CreateDirectory(targetDir);
+        var dst = Path.Combine(targetDir, $"handy-{now:yyyyMMdd-HHmmss}.png");
+        var (e1, _) = await run.RunAsync(adb, $"-s {serial} shell screencap -p /sdcard/trendo-shot.png");
+        var (e2, _) = e1 == 0 ? await run.RunAsync(adb, $"-s {serial} pull /sdcard/trendo-shot.png \"{dst}\"") : (e1, "");
+        await run.RunAsync(adb, $"-s {serial} shell rm -f /sdcard/trendo-shot.png");
+        return e2 == 0 && File.Exists(dst) ? (true, $"Bildschirmfoto gespeichert: {Path.GetFileName(dst)}", dst) : (false, "Bildschirmfoto fehlgeschlagen (Handy entsperrt?).", null);
+    }
+
+    /// <summary>Neuestes Kamerafoto holen – nur Dateien aus DCIM/Camera, Name wird geprüft.</summary>
+    public static async Task<(bool Ok, string Message, string? File)> LatestPhotoAsync(IProcessRunner run, string adb, string serial, string targetDir, bool consent)
+    {
+        if (!consent) return (false, "Erst zustimmen.", null);
+        if (!SafeSerial(serial)) return (false, "Seriennummer ungültig.", null);
+        var (e, o) = await run.RunAsync(adb, $"-s {serial} shell ls -t /sdcard/DCIM/Camera");
+        var name = e == 0 ? o.Split('\n').Select(l => l.Trim()).FirstOrDefault(l => Regex.IsMatch(l, @"^[\w.-]{1,120}\.(jpg|jpeg|png|heic|mp4)$", RegexOptions.IgnoreCase)) : null;
+        if (name is null) return (false, "Kein Foto in DCIM/Camera gefunden.", null);
+        Directory.CreateDirectory(targetDir); var dst = Path.Combine(targetDir, name);
+        var (e2, _) = await run.RunAsync(adb, $"-s {serial} pull \"/sdcard/DCIM/Camera/{name}\" \"{dst}\"");
+        return e2 == 0 && File.Exists(dst) ? (true, $"Foto geholt: {name}", dst) : (false, "Übertragung fehlgeschlagen.", null);
+    }
 }

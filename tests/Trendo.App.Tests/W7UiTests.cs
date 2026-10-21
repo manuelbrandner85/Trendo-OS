@@ -15,21 +15,25 @@ sealed class AdbRunner(string devices) : IProcessRunner
 
 public class W7_Ui
 {
-    [AvaloniaFact(DisplayName = "CORE-04 UI: Code erzeugen, Pi koppeln, Erreichbarkeit prüfen, Aufgabe zuordnen, entfernen")]
+    [AvaloniaFact(DisplayName = "CORE-04 UI: mit echtem Begleiter koppeln (Code vom Gerät), Details holen, Erreichbarkeit, Aufgabe zuordnen, entfernen")]
     public async Task Verbund()
     {
-        var (w, _, _) = Ui.Open();
+        if (OperatingSystem.IsWindows()) return; // Begleiter-Server läuft nur unter Linux
+        var (w, _, root) = Ui.Open();
+        var port = 20000 + Random.Shared.Next(2000); var stateFile = Path.Combine(root, "begleiter", "zustand.json");
+        using var srv = new Trendo.Companion.CompanionServer(port, stateFile, loopbackOnly: true); srv.Start();
+        var st = CompanionState.Load(stateFile); st.Name = "Pi Wohnzimmer"; var code = st.NewCode(DateTime.Now); st.Save(stateFile);
+        w.AllowLoopbackForTests = true;
         w.Show("verbund"); Assert.NotNull(w.TryFind<Button>("sys-tab-verbund"));
-        w.Find<Button>("fus-newcode").Press();
-        Assert.Contains(w.LastPairCode!.Code, w.Find<TextBlock>("fus-code").Text);
-        w.Find<TextBox>("fus-name").Text = "Pi Wohnzimmer"; w.Find<TextBox>("fus-addr").Text = "192.168.178.40";
-        w.Find<TextBox>("fus-caps").Text = "ki, sensor"; w.Find<TextBox>("fus-pcode").Text = w.LastPairCode.Code;
-        Dispatcher.UIThread.RunJobs(); w.Find<Button>("fus-pair").Press();
+        await w.PairRemoteAsync("127.0.0.1", port, "000000" == code ? "111111" : "000000"); Assert.Contains("lehnt ab", w.W7Msg);
+        await w.PairRemoteAsync("8.8.8.8", port, code); Assert.Contains("Heimnetz", w.W7Msg);
+        await w.PairRemoteAsync("127.0.0.1", port, code);
         Assert.Contains("gekoppelt", w.W7Msg);
         Assert.Contains("Pi Wohnzimmer", w.Find<TextBlock>("fus-node-0").Text);
-        w.HealthOverride = u => Task.FromResult(u.Host == "192.168.178.40");
-        await w.CheckNodesAsync(); Assert.Contains("1 von 1", w.W7Msg); Assert.StartsWith("🟢", w.Find<TextBlock>("fus-node-0").Text);
-        w.Find<TextBox>("fus-task").Text = "sensor"; Dispatcher.UIThread.RunJobs(); w.Find<Button>("fus-route").Press();
+        var node = w.Verbund.Nodes()[0];
+        await w.NodeInfoAsync(node); Assert.Contains("Kerne", w.W7Msg);
+        await w.CheckNodesAsync(); Assert.Contains("1 von 1", w.W7Msg);
+        w.Find<TextBox>("fus-task").Text = "sysinfo"; Dispatcher.UIThread.RunJobs(); w.Find<Button>("fus-route").Press();
         Assert.Contains("Pi Wohnzimmer", w.W7Msg);
         w.Find<Button>("fus-del-0").Press(); Assert.Null(w.TryFind<TextBlock>("fus-node-"));
         w.Close();
@@ -45,6 +49,7 @@ public class W7_Ui
         var f = Path.Combine(root, "brief.pdf"); File.WriteAllText(f, "%PDF");
         await w.PushToPhoneAsync(w.Phones[0], f, false); Assert.Contains("zustimmen", w.W7Msg); Assert.DoesNotContain(r.Calls, c => c.Contains("push"));
         await w.PushToPhoneAsync(w.Phones[0], f, true); Assert.Contains("✓", w.W7Msg); Assert.Contains(r.Calls, c => c.Contains("push"));
+        await w.PhoneShotAsync(w.Phones[0], false); Assert.Contains("zustimmen", w.W7Msg); Assert.DoesNotContain(r.Calls, c => c.Contains("screencap"));
         w.AdbOverride = null; w.Close();
     }
 

@@ -1,0 +1,40 @@
+# trendo-companion linux-arm64 unter qemu-aarch64 version 10.0.13 (Debian 1:10.0.13+ds-0+deb13u1) (qemu-user, Debian-arm64-Bibliotheken)
+# Binärdatei: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV)
+# SHA-256: 2337be7d63deeb9a018d5564e1ac064ca0cda0c7bc854a3ec379e16252854442
+# Pi-Abbild: /proc/device-tree/model = Raspberry Pi 5 (nachgebildet), Temperatur 51,2 °C, GPIO-Ordner vorhanden – KEINE echte Pi-Hardware
+$ trendo-companion pair --name "Pi Wohnzimmer"
+Kopplungscode für „Pi Wohnzimmer“: 794656  (10 Minuten gültig)
+Am PC: Trendo → System → Geräteverbund → Adresse dieses Geräts + Code eingeben.
+$ curl /health
+{"App":"trendo-companion","Version":"0.9.2","Name":"Pi Wohnzimmer","Kind":"Pi"}
+$ curl /info (ohne Token)
+401
+$ POST /pair falscher Code
+{"error":"Code falsch"}
+$ POST /pair richtiger Code
+{"Token":"<64 Hex, geschwärzt>","Name":"Pi Wohnzimmer","Kind":"Pi","Caps":["sysinfo","ocr","sensor","video"],"Version":"0.9.2"}
+$ POST /pair Code erneut (Einmal-Code)
+{"error":"kein g\u00FCltiger Code \u2013 auf dem Ger\u00E4t \u201Etrendo-companion pair\u201C ausf\u00FChren"}
+$ curl /info mit Token
+{"Name":"Pi Wohnzimmer","Kind":"Pi","Model":"Raspberry Pi 5 Model B Rev 1.0","Os":"Debian GNU/Linux 13 (trixie)","Cpus":8,"MemTotalMb":16002,"MemFreeMb":12012,"TempC":51.2,"Uptime":27489.16,"Caps":["sysinfo","ocr","sensor","video"]}
+$ trendo-companion status
+Name: Pi Wohnzimmer
+Modell: Raspberry Pi 5 Model B Rev 1.0
+Gekoppelte PCs: 1
+  – Box-PC seit 21.10.2026 22:47
+$ POST /unpair
+{"ok":true}
+$ curl /info nach Entkoppeln
+401
+--- Server-Log ---
+trendo-companion 0.9.2 läuft auf Port 18787 · Fähigkeiten: sysinfo, ocr, sensor, video
+22:47:24 GET /health von 127.0.0.1
+22:47:25 GET /health von 127.0.0.1
+22:47:25 GET /info von 127.0.0.1
+22:47:25 POST /pair von 127.0.0.1
+22:47:25 POST /pair von 127.0.0.1
+22:47:25 gekoppelt mit Box-PC
+22:47:25 POST /pair von 127.0.0.1
+22:47:25 GET /info von 127.0.0.1
+22:47:27 POST /unpair von 127.0.0.1
+22:47:27 GET /info von 127.0.0.1

@@ -1,0 +1,12 @@
+[Unit]
+Description=Trendo Begleiter (Heimnetz)
+After=network-online.target
+
+[Service]
+ExecStart=%h/.local/share/trendo-companion/trendo-companion serve --port 8787
+Restart=on-failure
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target

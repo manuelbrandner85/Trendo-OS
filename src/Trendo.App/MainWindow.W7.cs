@@ -9,12 +9,51 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     public FusionStore Verbund => new(_core.DataRoot, _core.Audit);
-    public PairCode? LastPairCode { get; private set; }
     public string W7Msg { get; private set; } = "";
     public IReadOnlyList<PhoneDevice> Phones { get; private set; } = [];
     /// <summary>Tests: Pfad zu adb vorgeben (sonst echte Suche).</summary>
     public string? AdbOverride { get; set; }
     public Func<Uri, Task<bool>>? HealthOverride { get; set; }
+    /// <summary>Tests: eigener HTTP-Handler (z. B. echter Begleiter auf 127.0.0.1).</summary>
+    public HttpMessageHandler? VerbundHttp { get; set; }
+    public bool AllowLoopbackForTests { get; set; }
+    private HttpClient VClient() => VerbundHttp is null ? new HttpClient { Timeout = TimeSpan.FromSeconds(5) } : new HttpClient(VerbundHttp, false) { Timeout = TimeSpan.FromSeconds(5) };
+    public string LastNodeInfo { get; private set; } = "";
+
+    /// <summary>Koppeln: Code steht auf dem Pi („trendo-companion pair“), Trendo schickt ihn an das Gerät und bekommt ein Token.</summary>
+    public async Task PairRemoteAsync(string address, int port, string code)
+    {
+        address = address.Trim();
+        if (!(FusionStore.IsLanAddress(address) || (AllowLoopbackForTests && address == "127.0.0.1"))) { W7Say("Nur Adressen im Heimnetz sind erlaubt.", "verbund"); return; }
+        try
+        {
+            using var h = VClient();
+            var r = await h.PostAsync(new Uri($"http://{address}:{port}/pair"), new StringContent(System.Text.Json.JsonSerializer.Serialize(new PairRequest(code.Trim(), Environment.MachineName)), System.Text.Encoding.UTF8, "application/json"));
+            var body = await r.Content.ReadAsStringAsync();
+            if (!r.IsSuccessStatusCode) { W7Say("Gerät lehnt ab: " + (System.Text.Json.JsonDocument.Parse(body).RootElement.TryGetProperty("error", out var e) ? e.GetString() : r.StatusCode.ToString()), "verbund"); return; }
+            var pr = System.Text.Json.JsonSerializer.Deserialize<PairResponse>(body)!;
+            var (n, m) = Verbund.AddPaired(pr, address, port, DateTime.Now, AllowLoopbackForTests);
+            if (n is not null) _core.Secrets.Set(FusionStore.TokenKey(n.Id), pr.Token);
+            W7Say(m, "verbund");
+        }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException) { W7Say("Gerät nicht erreichbar: läuft „trendo-companion serve“?", "verbund"); }
+    }
+
+    public async Task NodeInfoAsync(FusionNode n)
+    {
+        var tok = _core.Secrets.Get(FusionStore.TokenKey(n.Id));
+        if (tok is null) { W7Say("Kein Token gespeichert – bitte neu koppeln.", "verbund"); return; }
+        try
+        {
+            using var h = VClient(); h.DefaultRequestHeaders.Authorization = new("Bearer", tok);
+            var r = await h.GetAsync(FusionStore.ApiUri(n, "info"));
+            if (!r.IsSuccessStatusCode) { W7Say($"„{n.Name}“ antwortet {(int)r.StatusCode} – Kopplung ungültig?", "verbund"); return; }
+            var i = System.Text.Json.JsonSerializer.Deserialize<CompanionInfo>(await r.Content.ReadAsStringAsync())!;
+            LastNodeInfo = $"{i.Model} · {i.Cpus} Kerne · RAM {i.MemFreeMb} von {i.MemTotalMb} MB frei" + (i.TempC is { } t ? $" · {t:0.0} °C" : "") + $" · kann: {string.Join(", ", i.Caps)}";
+            W7Say($"„{n.Name}“: {LastNodeInfo}", "verbund");
+        }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException) { W7Say($"„{n.Name}“ nicht erreichbar.", "verbund"); }
+    }
 
     private void InitW7()
     {
@@ -46,7 +85,7 @@ public partial class MainWindow
         {
             bool ok;
             if (HealthOverride is not null) ok = await HealthOverride(FusionStore.HealthUri(n));
-            else { try { using var h = new HttpClient { Timeout = TimeSpan.FromSeconds(3) }; ok = (await h.GetAsync(FusionStore.HealthUri(n))).IsSuccessStatusCode; } catch (Exception e) when (e is HttpRequestException or TaskCanceledException) { ok = false; } }
+            else { try { using var h = VClient(); ok = (await h.GetAsync(FusionStore.HealthUri(n))).IsSuccessStatusCode; } catch (Exception e) when (e is HttpRequestException or TaskCanceledException) { ok = false; } }
             f.MarkSeen(n.Id, ok, DateTime.Now);
         }
         W7Say($"{f.Nodes().Count(x => x.Online)} von {f.Nodes().Count} Geräten erreichbar.", "verbund");
@@ -58,20 +97,12 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 8, Children = { P("Koppel deinen Raspberry Pi, ein Android-Handy oder einen zweiten PC im Heimnetz. Aufgaben laufen dort, wo das passende Werkzeug ist. Nur Heimnetz-Adressen, nie das Internet.") } };
         W7Msgs(sp);
-        var code = LastPairCode is { } c && c.Expires > DateTime.Now ? $"Kopplungscode: {c.Code} (gültig bis {c.Expires:HH:mm})" : "Kein Kopplungscode aktiv.";
-        sp.Children.Add(WCard(new StackPanel { Spacing = 6, Children = { new TextBlock { Name = "fus-code", Text = code, Foreground = Text, FontSize = 14 },
-            Act("fus-newcode", "Neuen Code erzeugen", () => { LastPairCode = Verbund.NewCode(DateTime.Now); W7Say("Code am anderen Gerät eingeben (10 Minuten gültig).", "verbund"); }, true) } }));
-        var name = new TextBox { Name = "fus-name", PlaceholderText = "Name, z. B. Pi Wohnzimmer", Width = 200 };
-        var addr = new TextBox { Name = "fus-addr", PlaceholderText = "192.168.x.x oder name.local", Width = 180 };
+        var addr = new TextBox { Name = "fus-addr", PlaceholderText = "192.168.x.x oder name.local", Width = 200 };
         var port = new TextBox { Name = "fus-port", Text = "8787", Width = 70 };
-        var kind = new ComboBox { Name = "fus-kind", ItemsSource = new[] { "Raspberry Pi", "Android", "PC" }, SelectedIndex = 0 };
-        var caps = new TextBox { Name = "fus-caps", PlaceholderText = "Fähigkeiten: ki, ocr, video, sensor", Width = 230 };
-        var pcode = new TextBox { Name = "fus-pcode", PlaceholderText = "Code", Width = 80 };
-        sp.Children.Add(WCard(new StackPanel { Spacing = 6, Children = { new TextBlock { Text = "Gerät hinzufügen", Foreground = Text },
-            new WrapPanel { Children = { name, kind, addr, port } }, new WrapPanel { Children = { caps, pcode,
-            Act("fus-pair", "Koppeln", () => {
-                var (n, m) = Verbund.Pair(pcode.Text ?? "", name.Text ?? "", kind.SelectedIndex switch { 1 => NodeKind.Android, 2 => NodeKind.Pc, _ => NodeKind.Pi }, (addr.Text ?? "").Trim(), int.TryParse(port.Text, out var p) ? p : 0, (caps.Text ?? "").Split(',', ' '), DateTime.Now);
-                W7Say(m, "verbund"); }, true) } } } }));
+        var pcode = new TextBox { Name = "fus-pcode", PlaceholderText = "Code vom Gerät", Width = 120 };
+        sp.Children.Add(WCard(new StackPanel { Spacing = 6, Children = { new TextBlock { Text = "Gerät koppeln", Foreground = Text },
+            P("Auf dem Pi/Linux-Gerät: „trendo-companion pair“ ausführen und den 6-stelligen Code hier eingeben.", null, 11),
+            new WrapPanel { Children = { addr, port, pcode, Act("fus-pair", "Koppeln", () => _ = PairRemoteAsync(addr.Text ?? "", int.TryParse(port.Text, out var p) ? p : 0, pcode.Text ?? ""), true) } } } }));
         var nodes = Verbund.Nodes();
         sp.Children.Add(new TextBlock { Text = "Dieser PC: " + string.Join(", ", SelfCaps()), Foreground = Muted, FontSize = 11 });
         if (nodes.Count == 0) sp.Children.Add(P("Noch keine Geräte gekoppelt. Ohne zweites Gerät arbeitet Trendo allein auf diesem PC.", null, 11.5));
@@ -81,7 +112,8 @@ public partial class MainWindow
             var id = n.Id;
             sp.Children.Add(Row2(new StackPanel { Children = { new TextBlock { Name = $"fus-node-{i}", Text = $"{(n.Online ? "🟢" : "⚪")} {n.Name} · {n.Kind} · {n.Address}:{n.Port}", Foreground = Text },
                 P($"Kann: {string.Join(", ", n.Caps)} · zuletzt erreichbar: {(n.LastSeen is { } s ? s.ToString("dd.MM. HH:mm") : "nie")}", null, 11) } },
-                Act($"fus-del-{i}", "Entfernen", () => { Verbund.Remove(id); W7Say("Entfernt.", "verbund"); })));
+                new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { Act($"fus-info-{i}", "Details", () => _ = NodeInfoAsync(n)),
+                Act($"fus-del-{i}", "Entfernen", () => { Verbund.Remove(id); _core.Secrets.Delete(FusionStore.TokenKey(id)); W7Say("Entfernt.", "verbund"); }) } }));
             i++;
         }
         var task = new TextBox { Name = "fus-task", PlaceholderText = "Aufgabe braucht … (ki, ocr, video)", Width = 220 };
@@ -109,6 +141,27 @@ public partial class MainWindow
         W7Say(e == 0 ? m + " ✓" : $"Übertragung fehlgeschlagen (Exit {e}).", "handy");
     }
 
+    private string Adb() => AdbOverride ?? MobileBridge.FindAdb(File.Exists, Environment.GetEnvironmentVariable("LOCALAPPDATA"), Environment.GetEnvironmentVariable("PATH")) ?? "adb";
+    public string PhoneFolder => WorkFolder("Vom Handy");
+
+    public async Task PhoneInfoAsync(PhoneDevice d)
+    {
+        var i = await AndroidSide.InfoAsync(Runner, Adb(), d.Serial);
+        W7Say(i is null ? "Handy antwortet nicht." : $"{i.Model} · Android {i.Android}" + (i.Battery is { } b ? $" · Akku {b} %{(i.Charging ? " (lädt)" : "")}" : ""), "handy");
+    }
+    public async Task PhoneShotAsync(PhoneDevice d, bool consent)
+    {
+        var (ok, m, f) = await AndroidSide.ScreenshotAsync(Runner, Adb(), d.Serial, PhoneFolder, consent, DateTime.Now);
+        if (ok) _core.Audit.Append("local-owner", "phone.screenshot", $"sha={LetterKit.Sha(f!)[..16]}");
+        W7Say(m, "handy");
+    }
+    public async Task PhonePhotoAsync(PhoneDevice d, bool consent)
+    {
+        var (ok, m, f) = await AndroidSide.LatestPhotoAsync(Runner, Adb(), d.Serial, PhoneFolder, consent);
+        if (ok) _core.Audit.Append("local-owner", "phone.photo", $"{Path.GetFileName(f)} sha={LetterKit.Sha(f!)[..16]}");
+        W7Say(m, "handy");
+    }
+
     private Control PhoneView()
     {
         var sp = new StackPanel { Spacing = 8, Children = { P("Dateien aufs Android-Handy schicken und sehen, welches Handy verbunden ist. Trendo steuert das Handy nicht fern und liest keine privaten Daten.") } };
@@ -120,7 +173,10 @@ public partial class MainWindow
             var dev = d; var file = new TextBox { Name = $"phone-file-{i}", PlaceholderText = "Datei, z. B. Brief als PDF", Width = 300 };
             var ok = new CheckBox { Name = $"phone-ok-{i}", Content = "Ich will diese Datei senden" };
             sp.Children.Add(WCard(new StackPanel { Spacing = 4, Children = { new TextBlock { Name = $"phone-dev-{i}", Text = $"📱 {d.Model} – {MobileBridge.StateText(d.State)}", Foreground = Text },
-                new WrapPanel { Children = { file, ok, Act($"phone-push-{i}", "Senden", () => _ = PushToPhoneAsync(dev, file.Text?.Trim('"', ' ') ?? "", ok.IsChecked == true)) } } } }));
+                new WrapPanel { Children = { file, ok, Act($"phone-push-{i}", "Senden", () => _ = PushToPhoneAsync(dev, file.Text?.Trim('"', ' ') ?? "", ok.IsChecked == true)) } },
+                new WrapPanel { Children = { Act($"phone-info-{i}", "Details", () => _ = PhoneInfoAsync(dev)),
+                    Act($"phone-shot-{i}", "Bildschirmfoto holen", () => _ = PhoneShotAsync(dev, ok.IsChecked == true)),
+                    Act($"phone-photo-{i}", "Neuestes Foto holen", () => _ = PhonePhotoAsync(dev, ok.IsChecked == true)) } } } }));
             i++;
         }
         var g = new StackPanel { Spacing = 2 }; foreach (var s in MobileBridge.Guide) g.Children.Add(P("• " + s, null, 11.5));

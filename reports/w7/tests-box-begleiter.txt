@@ -1,0 +1,14 @@
+  Passed CORE-04 Begleiter: echter HTTP-Server – Health offen, alles andere nur mit Token, Kopplung, echte OCR, Entkoppeln [450 ms]
+  Passed CORE-04 Begleiter: Pi-Werte aus /proc und /sys (Abbild eines Raspberry Pi 5) [9 ms]
+  Passed CORE-04: Gekoppeltes Gerät nur mit Heimnetz-Adresse speichern; Token nie in der Gerätedatei; Entfernen [54 ms]
+  Passed SYS-01: Modus aus echten Merkmalen, Fähigkeiten ehrlich (Blockiert statt vorgetäuscht), USB nur Anleitung [10 ms]
+  Passed CORE-04 Begleiter: nur Heimnetz-/Loopback-Absender werden bedient [1 ms]
+  Passed X-08 Android-Seite: Modell/Version/Akku per adb, Bildschirmfoto und neuestes Foto nur mit Zustimmung, Handy-Temp gelöscht [8 ms]
+  Passed CORE-04: Aufgaben laufen lokal zuerst, sonst auf erreichbarem Gerät; nicht erreichbar wird ehrlich gemeldet [2 ms]
+  Passed X-08: adb-Ausgabe lesen, Freigabe-Status verständlich, Senden nur mit Zustimmung und gültiger Datei [2 ms]
+  Passed CORE-04 Begleiter: Einmal-Code, 5 Fehlversuche verbrennen den Code, Token nur als Hash gespeichert [2 ms]
+Total tests: 9
+  Passed SYS-01 UI: Betriebsmodus zeigt aktuellen Modus und Fähigkeiten [762 ms]
+  Passed X-08 UI: Handy suchen (adb), Freigabe-Hinweis, Senden erst nach Zustimmung [112 ms]
+  Passed CORE-04 UI: mit echtem Begleiter koppeln (Code vom Gerät), Details holen, Erreichbarkeit, Aufgabe zuordnen, entfernen [424 ms]
+Total tests: 3
