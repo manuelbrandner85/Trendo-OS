@@ -1,131 +1,125 @@
 # Lückenanalyse Masterprompt MP-1.0 ↔ requirements.yaml ↔ Code
-**Stand:** 2026-10-22 · main bei PR #197 · Kein Status wurde hochgesetzt. Quelle der Ist-Status: `requirements.yaml` (unverändert).
+**Stand:** 2026-10-22 · Volltext (SHA-256 0f1e3e77…348d) · **Kein Status wurde hochgesetzt**; Ist-Status aus `requirements.yaml` (unverändert). Angaben „vorhanden“ beruhen auf Code-/Report-Sichtung, nicht auf neuen Tests.
 
-## 0. Grundsätzliche Einschränkung
-Der Masterprompt liegt nur **gekürzt** vor (ca. 61.000 Zeichen fehlen, siehe `MASTERPROMPT.md`). Modulnamen, Funktionszahlen und Inhalte der Verbesserungen 13–40 **konnten daher nicht wörtlich abgeglichen werden**. Diese Analyse ist für diese Teile **VORLÄUFIG** und wird nach Eingang des Volltexts wiederholt.
+## 1. Module
+Alle 54 Module des Masterprompts (Abschnitte 5–10) sind in `requirements.yaml` und im Code vorhanden. **Alle Funktionszahlen stimmen überein** (898 Erweiterungsfunktionen + BASE-Module + 30 BUS + 25 LETTER). Abweichungen nur im Namen (in `decisions.yaml` als `diff`):
+- CORE-03: requirements „– 12 roles“, MP „ursprünglich zwölf“ (keine feste Zahl).
+- CORE-12: MP verlangt zusätzlich **40 Kategorien** – nicht gesondert erfasst/geprüft.
+- SPEC-07: MP „Language & Localization“ (nur Basis), requirements führt 2.0-Name mit 16 – Status NOT_STARTED, gesperrt.
+- SPEC-08: MP „Fashion & Product **Design** 2.0“.
 
-## 1. Module (54 im Register, 53 genehmigt, SPEC-07 abgelehnt)
-Alle im Auftrag genannten „neuen“ Module **existieren bereits** in `requirements.yaml` und im Code: CORE-10/11/12, SYS-04–09, SPEC-12 stehen auf IMPLEMENTED, aber nur **TESTED_BOX**, also noch nicht am PC geprüft. Namens- oder Zahlenabweichungen zum Masterprompt sind ohne Volltext **nicht prüfbar**.
-
-Summe der genehmigten Erweiterungsfunktionen (Module mit Zahl, ohne SPEC-07): **898** (+ BASE-Module, + 30 BUS, + 25 LETTER).
-
-| ID | Name | Funktionen | Implementierung | Test |
-|---|---|---|---|---|
-| CORE-01 | Intelligent Desktop OS | BASE | IN_PROGRESS | PC_VERIFIED |
-| CORE-02 | Trendo Intelligence Core | BASE | IMPLEMENTED | TESTED_BOX |
-| CORE-03 | AI Agent Command Center – 12 roles | BASE | IMPLEMENTED | TESTED_BOX |
-| CORE-04 | Pi/PC/Android Fusion Engine | BASE | IN_PROGRESS | PC_VERIFIED |
-| CORE-05 | Ultimate 3D Creation Studio 2.0 | 20 | IMPLEMENTED | PC_VERIFIED |
-| CORE-06 | Ultimate Game Development Studio 2.0 | 20 | IMPLEMENTED | PC_VERIFIED |
-| CORE-07 | Ultimate App & Software Development Studio 2.0 | 20 | IMPLEMENTED | PC_VERIFIED |
-| CORE-08 | Ultimate Creative & Media Studio 2.0 | 20 | IMPLEMENTED | PC_VERIFIED |
-| CORE-09 | Vision & Robotics Control Studio 2.0 | 20 | IMPLEMENTED | TESTED_BOX |
-| CORE-10 | Knowledge Memory & Self Improvement Core 2.0 | 20 | IMPLEMENTED | TESTED_BOX |
-| CORE-11 | Security Privacy Recovery Fortress | 16 | IMPLEMENTED | TESTED_BOX |
-| CORE-12 | Ultimate Prompt & Masterprompt Studio 2.0 | 50 | IMPLEMENTED | TESTED_BOX |
-| SYS-01 | Triple Mode OS GODMODE | 20 | IN_PROGRESS | PC_VERIFIED |
-| SYS-02 | Ultimate Desktop Utilities & Media Center | 25 | IMPLEMENTED | PC_VERIFIED |
-| SYS-03 | Ultimate Browser Internet & Download Center | 25 | IMPLEMENTED | PC_VERIFIED |
-| SYS-04 | Ultimate App Installation & System Control Center | 25 | IMPLEMENTED | TESTED_BOX |
-| SYS-05 | Universal Automation & Workflow Engine | 20 | IMPLEMENTED | TESTED_BOX |
-| SYS-06 | Ultimate Network File Sharing & Remote Workspace | 25 | IMPLEMENTED | TESTED_BOX |
-| SYS-07 | Ultimate Hardware & Device Recognition | 20 | IMPLEMENTED | TESTED_BOX |
-| SYS-08 | Deep Web & Dark Web READ-ONLY Research Studio | 20 | IMPLEMENTED | TESTED_BOX |
-| SYS-09 | Communication Mail & Collaboration Center | 25 | IMPLEMENTED | TESTED_BOX |
-| SYS-10 | Office Documents & Productivity Center | 25 | IMPLEMENTED | PC_VERIFIED |
-| SYS-11 | Ready-to-Run & Software Integration | 25 | IMPLEMENTED | PC_VERIFIED |
-| SYS-12 | Adaptive Interface Accessibility & Personalization | 25 | IN_PROGRESS | PC_VERIFIED |
-| SYS-13 | System Architecture Integration & Release Quality | 25 | IMPLEMENTED | PC_VERIFIED |
-| SPEC-01 | Architecture & Interior 2.0 | 16 | IMPLEMENTED | PC_VERIFIED |
-| SPEC-02 | Electronics & PCB 2.0 | 16 | IMPLEMENTED | PC_VERIFIED |
-| SPEC-03 | Engineering & Simulation 2.0 | 16 | IMPLEMENTED | PC_VERIFIED |
-| SPEC-04 | VR/AR/MR 2.0 | 16 | IMPLEMENTED | PC_VERIFIED |
-| SPEC-05 | Science & Research 2.0 | 16 | IMPLEMENTED | PC_VERIFIED |
-| SPEC-06 | Education & Training 2.0 | 16 | IMPLEMENTED | PC_VERIFIED |
-| SPEC-07 | Language & Localization Studio 2.0 | 16 | NOT_STARTED | NOT_RUN |
-| SPEC-08 | Fashion & Product 2.0 | 18 | IMPLEMENTED | TESTED_BOX |
-| SPEC-09 | 3D Scanning & Reconstruction 2.0 | 20 | IMPLEMENTED | TESTED_BOX |
-| SPEC-10 | Digital Twin 2.0 | 20 | IMPLEMENTED | TESTED_BOX |
-| SPEC-11 | Business & Finance 2.0 | 20 | IMPLEMENTED | PC_VERIFIED |
-| SPEC-12 | Cybersecurity & Forensics 2.0 | 20 | IMPLEMENTED | TESTED_BOX |
-| SPEC-13 | Maps & Geospatial 2.0 | 20 | IMPLEMENTED | TESTED_BOX |
-| SPEC-14 | Manufacturing & CNC 2.0 | 20 | IMPLEMENTED | TESTED_BOX |
-| SPEC-15 | Broadcast & Streaming 2.0 | 20 | IMPLEMENTED | TESTED_BOX |
-| SPEC-16 | Transport & Vehicle 2.0 | 20 | IMPLEMENTED | TESTED_BOX |
-| X-01 | Universal Studio Fusion & Autonomous Production | 18 | IMPLEMENTED | PC_VERIFIED |
-| X-02 | Zero Touch Setup & Self Healing | 20 | IMPLEMENTED | TESTED_BOX |
-| X-03 | Visual Builder & No-Code | 20 | IMPLEMENTED | PC_VERIFIED |
-| X-04 | Extension Marketplace & Studio Evolution | 20 | IMPLEMENTED | PC_VERIFIED |
-| X-05 | Free AI Discovery & Fallback | BASE | IMPLEMENTED | TESTED_BOX |
-| X-06 | GitHub Open-Source Integration | BASE | IMPLEMENTED | PC_VERIFIED |
-| X-07 | Global Free Asset Discovery | BASE | IMPLEMENTED | PC_VERIFIED |
-| X-08 | Mobile OS Bridge | BASE | IN_PROGRESS | PC_VERIFIED |
-| X-09 | System Resource & Studio Manager | BASE | IN_PROGRESS | PC_VERIFIED |
-| X-10 | Legal Clean-Room Software Reconstruction | BASE | IMPLEMENTED | PC_VERIFIED |
-| X-11 | Universal Creation & Productivity Suite | BASE | IMPLEMENTED | PC_VERIFIED |
-| STUDIO-ONLINE-BUSINESS-01 | Ultimate Online Business Creation & Innovation Studio GODMODE (both modes) | 30 | IMPLEMENTED | PC_VERIFIED |
-| STUDIO-LETTER-01 | Ultimate Letter Business & Legal Correspondence Studio GODMODE | 25 | IN_PROGRESS | PC_VERIFIED |
-**Lücken Module:**
-- 7 Module noch IN_PROGRESS: CORE-01, CORE-04, SYS-01, SYS-12, X-08, X-09, STUDIO-LETTER-01 (Gegenstelle Pi/Android, Narrator, Multi-Monitor, LTR-QA-018).
-- 22 Module nur TESTED_BOX → PC-Verifikation fehlt (CORE-02/03/09–12, SYS-04–09, SPEC-08–10/12–16, X-02, X-05).
-- Kein Modul hat ACCEPTED (Abnahme durch Manuel fehlt, außer Phase P1 und die Freigabe der Funktionslisten).
-- „Funktion vorhanden“ heißt bei vielen Fach-Studios: Rechen-/Planungslogik + UI. Echte Fremdwerkzeug-Integration (Blender, Unreal, KiCad, FreeCAD, OBS …) ist nur teilweise am PC nachgewiesen.
-
-## 2. Verbesserungen 13–40
-| Nr. | Entscheidung | Status Code | Bemerkung |
+| ID | Funktionen | Implementierung | Test |
 |---|---|---|---|
-| 13 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 14 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 15 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 16 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 17 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 18 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 19 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 20 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 21 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 22 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 23 | REJECTED | – | nicht bauen |
-| 24 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 25 | REJECTED | – | nicht bauen |
-| 26 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 27 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 28 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 29 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 30 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 31 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 32 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 33 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 34 | REJECTED | – | nicht bauen |
-| 35 | UNDECIDED | – | Entscheidung Manuel nötig |
-| 36 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 37 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 38 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 39 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
-| 40 | APPROVED | UNBEKANNT | Inhalt fehlt im gekürzten Text, Abgleich offen |
+| CORE-01 | BASE | IN_PROGRESS | PC_VERIFIED |
+| CORE-02 | BASE | IMPLEMENTED | TESTED_BOX |
+| CORE-03 | BASE | IMPLEMENTED | TESTED_BOX |
+| CORE-04 | BASE | IN_PROGRESS | PC_VERIFIED |
+| CORE-05 | 20 | IMPLEMENTED | PC_VERIFIED |
+| CORE-06 | 20 | IMPLEMENTED | PC_VERIFIED |
+| CORE-07 | 20 | IMPLEMENTED | PC_VERIFIED |
+| CORE-08 | 20 | IMPLEMENTED | PC_VERIFIED |
+| CORE-09 | 20 | IMPLEMENTED | TESTED_BOX |
+| CORE-10 | 20 | IMPLEMENTED | TESTED_BOX |
+| CORE-11 | 16 | IMPLEMENTED | TESTED_BOX |
+| CORE-12 | 50 | IMPLEMENTED | TESTED_BOX |
+| SYS-01 | 20 | IN_PROGRESS | PC_VERIFIED |
+| SYS-02 | 25 | IMPLEMENTED | PC_VERIFIED |
+| SYS-03 | 25 | IMPLEMENTED | PC_VERIFIED |
+| SYS-04 | 25 | IMPLEMENTED | TESTED_BOX |
+| SYS-05 | 20 | IMPLEMENTED | TESTED_BOX |
+| SYS-06 | 25 | IMPLEMENTED | TESTED_BOX |
+| SYS-07 | 20 | IMPLEMENTED | TESTED_BOX |
+| SYS-08 | 20 | IMPLEMENTED | TESTED_BOX |
+| SYS-09 | 25 | IMPLEMENTED | TESTED_BOX |
+| SYS-10 | 25 | IMPLEMENTED | PC_VERIFIED |
+| SYS-11 | 25 | IMPLEMENTED | PC_VERIFIED |
+| SYS-12 | 25 | IN_PROGRESS | PC_VERIFIED |
+| SYS-13 | 25 | IMPLEMENTED | PC_VERIFIED |
+| SPEC-01 | 16 | IMPLEMENTED | PC_VERIFIED |
+| SPEC-02 | 16 | IMPLEMENTED | PC_VERIFIED |
+| SPEC-03 | 16 | IMPLEMENTED | PC_VERIFIED |
+| SPEC-04 | 16 | IMPLEMENTED | PC_VERIFIED |
+| SPEC-05 | 16 | IMPLEMENTED | PC_VERIFIED |
+| SPEC-06 | 16 | IMPLEMENTED | PC_VERIFIED |
+| SPEC-07 | 16 | NOT_STARTED | NOT_RUN |
+| SPEC-08 | 18 | IMPLEMENTED | TESTED_BOX |
+| SPEC-09 | 20 | IMPLEMENTED | TESTED_BOX |
+| SPEC-10 | 20 | IMPLEMENTED | TESTED_BOX |
+| SPEC-11 | 20 | IMPLEMENTED | PC_VERIFIED |
+| SPEC-12 | 20 | IMPLEMENTED | TESTED_BOX |
+| SPEC-13 | 20 | IMPLEMENTED | TESTED_BOX |
+| SPEC-14 | 20 | IMPLEMENTED | TESTED_BOX |
+| SPEC-15 | 20 | IMPLEMENTED | TESTED_BOX |
+| SPEC-16 | 20 | IMPLEMENTED | TESTED_BOX |
+| X-01 | 18 | IMPLEMENTED | PC_VERIFIED |
+| X-02 | 20 | IMPLEMENTED | TESTED_BOX |
+| X-03 | 20 | IMPLEMENTED | PC_VERIFIED |
+| X-04 | 20 | IMPLEMENTED | PC_VERIFIED |
+| X-05 | BASE | IMPLEMENTED | TESTED_BOX |
+| X-06 | BASE | IMPLEMENTED | PC_VERIFIED |
+| X-07 | BASE | IMPLEMENTED | PC_VERIFIED |
+| X-08 | BASE | IN_PROGRESS | PC_VERIFIED |
+| X-09 | BASE | IN_PROGRESS | PC_VERIFIED |
+| X-10 | BASE | IMPLEMENTED | PC_VERIFIED |
+| X-11 | BASE | IMPLEMENTED | PC_VERIFIED |
+| STUDIO-ONLINE-BUSINESS-01 | 30 | IMPLEMENTED | PC_VERIFIED |
+| STUDIO-LETTER-01 | 25 | IN_PROGRESS | PC_VERIFIED |
+
+Lücken: 7 Module IN_PROGRESS (CORE-01/04, SYS-01/12, X-08/09, LETTER), 22 nur TESTED_BOX, **kein Modul ACCEPTED**. Fach-Studios haben Rechen-/Planungslogik; echte Fremdwerkzeug-Steuerung ist großteils nicht nachgewiesen (Blender nur Skript-Ansatz in `Studio3D.cs`, **Unreal ohne Editor-Automation**).
+
+## 2. Verbesserungen 13–40 (340 genehmigte Funktionen, keine davon einzeln im Register)
+Keine Verbesserung ist als eigenes Requirement in `requirements.yaml` erfasst → Status aller: **APPROVED_SPEC / NOT_TRACKED**. Abgelehnt: 23, 25, 34; unentschieden: 35.
+
+| Nr | Titel | Fkt. | Vorhanden (Anhaltspunkte) | Fehlt |
+|---|---|---|---|---|
+| 13 | Reality & Completion Control GODMODE | 8 | Requirement-IDs+Nachweise in requirements.yaml/reports, Tests bei jedem PR, Status-Guard, menschliches Gate (Abnahme P1) | keine automatische Erkennung toter Schaltflächen; Studio-Abnahmetests je Studio; Soll-Ist-Abgleich gegen MP-1.0 nur in dieser Lückenanalyse |
+| 14 | Grok One-Prompt Production Orchestrator GODMODE | 10 | Masterprompt als Spec, BUILD_PLAN/Wellen, kleine PRs, AGENTS.md + Auftragsablauf für Grok Build (#195/#197), Freigabe-Fragen | persistente Aufgabenwarteschlange Bot↔Build mit Wiederaufnahme nachgewiesen; Zusammenführung/Test aller drei Editionen |
+| 15 | Native All-in-One Integration GODMODE | 12 | einheitliche Studio-Registry, Office/PDF (LibreOffice/qpdf), Browser-Center, Medien (FFmpeg), Dev-Studio, gemeinsames Design, Blender/Unreal-Erkennung | vieles über installierte Fremdprogramme statt eingebaut (winget nach Rückfrage) → widerspricht teils 'möglichst keine Zusatzinstallationen'; Pi-/Linux-Optimierung |
+| 16 | Futureproof & Intelligent Update GODMODE | 12 | Velopack-Auto-Update aus GitHub Releases, Rückkehr zu älterer Version (PC geprüft), Release-Sicherheits-Scan | Signatur-/Herkunftsprüfung (Code-Signatur fehlt), Offline-Updates, Stable/Preview/Developer-Kanäle, Updates der mitgelieferten Programme, Datenmigrationstests, Tests nach Update |
+| 17 | Universal Studio Fusion & Project Workspace GODMODE | 12 | Projektregister, Asset-Verwaltung (X-07), Fusion (X-01), Projektversionen teilweise | geteiltes Assetregister mit Rechten, absturzsicheres Speichern nachgewiesen, Erkennung fehlender Dateien, Blender/Unreal-Assetübergabe, geräteübergreifende Projektbrücke |
+| 18 | Autonomous Everything GODMODE | 20 | 12 Agentenrollen, lokale KI, Workflows (SYS-05), Freigabe-Gate, Audit-Log, Backup | echte autonome Multi-Studio-Ausführung, Automatisierungsstufen manuell/assistiert/automatisch, Checkpoints, Eingangspostanalyse über Konten, Auftragswiederaufnahme |
+| 19 | Autonomous Sandbox & Intelligent Approval GODMODE | 12 | Approval-Gate mit RBAC, Audit-Kette, Risikohinweise in Browser/Security | Vorschau geplanter Änderungen, isolierte Sandbox, zeit-/projektgebundene Rechte, Kostenlimits, Anomalie-Erkennung, Not-Stopp (nicht im Code gefunden) |
+| 20 | Teach & Automate GODMODE | 12 | Workflow-Engine mit Zeitplänen/Variablen (SYS-05) | Lernen durch Demonstration, Ablaufrekonstruktion, visueller Fallback, versionierte Automatisierungsbibliothek, Reparatur geänderter Abläufe, geräteübergreifend |
+| 21 | Hybrid Power & Seamless Studio Execution GODMODE | 12 | Geräteerkennung, Kopplung per 6-stelligem Code (Companion), LAN-only | Windows Production Worker, echte Blender/Unreal-Ausführung, verschlüsselte Kommunikation nachgewiesen, Offline-Auftragsqueue, echte Gerätetests |
+| 22 | Native Software Reconstruction & One-Setup GODMODE | 15 | ein Setup.exe (Edition C), Clean-Room-Modul X-10, Office/Browser/Medien, Lizenzliste THIRD_PARTY.md | Offline-Programmpaket, Clean-Install-Test ohne manuelle Zusatzinstallation, One-Setup für A und B |
+| 24 | Universal Distribution & Zero-Touch Installation GODMODE | 15 | Setup.exe Doppelklick, Hardware-Erkennung, lokale KI-Einrichtung (Ollama), Selbsttests, Werkzeugprüfung pro Studio | Offline-Installation, Neuinstallationstests auf Zielhardware (Pi, Linux-PC), sichere Treiberintegration |
+| 26 | Intelligent Desktop & JARVIS Experience GODMODE | 15 | lokale KI-Befehle, Vorlesen (Windows TTS), Spracheingabe-Ansatz in SYS-12, globale Suche, freundliche Fehlerseite | lokale Spracherkennung offline, Bildschirmverständnis, schwebender Assistent, Studio-Copilot, Schutz Mikrofon/Bildschirm, Datenschutztests |
+| 27 | Mobile Command & Remote Production GODMODE | 15 | Companion-Gegenstelle (Pi/Android) mit Kopplungscode, mit nachgebildeten Geräten getestet | mobile Web-App, QR-Kopplung, mobile Freigaben, Produktionsmonitor, Remote-Not-Stopp, echte Smartphone-PC-Tests |
+| 28 | Global Release & Trusted Distribution GODMODE | 15 | release.sh reproduzierbar aus clean main, SHA-256-Summen, THIRD_PARTY.md, GitHub Releases | Code-Signatur (Kauf), SBOM, Downloadportal, Offline-Handbuch, Endnutzertests; öffentliche Freigabe nur mit Manuel |
+| 29 | HyperPerformance & Zero-Bloat GODMODE | 15 | Start < 1 s (PC, v0.9.4), Studios bei Bedarf, Systemmetriken | Pi-Ultra-Light-Modus, Temperaturschutz, Hardwareprofile, Benchmarks/Regressionstests als Suite |
+| 30 | Professional File & Studio Compatibility GODMODE | 15 | PDF/Office-Export via LibreOffice, Medien via FFmpeg, 3D-Formate teilweise | Funktionsmatrix je Format, Export/Reimport-Tests, Format-Versionserkennung, Stapelverarbeitung nachgewiesen |
+| 31 | Independent AI & Offline Intelligence GODMODE | 15 | Ollama + qwen2.5 3B/0.5B, OCR (Tesseract), Wissenssuche, Modellwahl, X-05 Fallback | Modell mitgeliefert offline (statt Download), Offline-Sprachein/-ausgabe, Prompt-Injection-Schutz (nicht gefunden), Temperaturlimits, echter Offline-Test QA-019 |
+| 32 | True Operating System Foundation GODMODE | 15 | Debian-13-live-build-ISO (QEMU BIOS/UEFI), Windows-App, LUKS-Persistenzskript | Pi-ARM64-Bootsystem fehlt ganz; Bootintegrität, Boot-/Dienstmanager, Recovery, echte Hardwaretests |
+| 33 | Plug & Play Hardware GODMODE | 15 | Geräteerkennung (Get-PnpDevice), Drucken, OCR, GPIO-Ansatz im Companion | Kamera-/Audio-/Bluetooth-Verwaltung, Mehrmonitor (QA-017), Controller, Tablets, NAS, echte Gerätetests |
+| 36 | Freedom & Open PC GODMODE | 20 | Kiosk-frei: Windows bleibt unverändert, Terminal/Paketmanager (winget) nutzbar, keine Kontopflicht, KI abschaltbar | Linux: sudo, Container/VM, Gaming, Wine-Modus; Freiheitstests |
+| 37 | Universal Software & Gaming Compatibility GODMODE | 15 | normale Windows-Programme bleiben lauffähig, Programmstart aus Trendo | Wine-Integration, Gaming-Center, Kompatibilitätsprofile/-datenbank, DRM/Anti-Cheat-Hinweise, Tests |
+| 38 | Dual-Boot & Install Anywhere GODMODE | 15 | Live-USB-ISO, Windows-Schutz-udev-Regel, LUKS-Persistenz | Dual-Boot, Installationsvorschau, Partitionierung (nur mit Freigabe), Boot-Recovery, Secure Boot, echte Boot-/Datenerhaltstests |
+| 39 | Remote App Fusion & Desktop Streaming GODMODE | 15 | – | komplett offen: Remote-Programmstart, Desktop-Streaming, Eingabeübertragung, Audio, Sitzungen |
+| 40 | Open Developer & App Ecosystem GODMODE | 15 | Erweiterungskatalog (X-04), Visual Builder (X-03), Dev-Studio, Git (X-06) | Trendo-SDK veröffentlicht, App-Pakete, ARM64-Builds, Plugin-Rechte, Install/Update/Deinstall-Tests eigener Apps |
 
 ## 3. Editionen
-| Edition | Masterprompt-Ziel | Ehrlicher Ist-Stand |
+| Edition | Pflichtausgabe MP | Ehrlicher Ist-Stand |
 |---|---|---|
-| A – Raspberry Pi 4 Image (+ Windows) | bootfähiges, installierbares Image | **NOT_STARTED** als Image. Nur Companion-Gegenstelle (`src/Trendo.Companion`) mit nachgebildetem Pi getestet; kein pi-gen/ARM64-Image, keine echte SD-Karte, keine Hardware. |
-| B – bootfähiges Linux USB/SSD | persistent, verschlüsselt, Essentials | **IN_PROGRESS** (P2). Debian-13-live-build (`linux-image/`), ISO bootet in QEMU BIOS+UEFI (`reports/p2/boot-v6`). Fehlt: echter USB/SSD-Boot, Persistenz+Verschlüsselung auf Hardware, Secure Boot, Installer auf Datenträger. ADR-0007 nur PROPOSED. |
-| C – Windows | Setup.exe, alles enthalten | **am weitesten**: Velopack-Setup.exe v0.9.5, Auto-Update, PC-Tests grün. Fehlt: Code-Signatur (SmartScreen), Narrator/Multi-Monitor (QA-017), echter Offline-Lauf (QA-019), Abnahme. |
+| A – Raspberry Pi 4 (8 GB, ARM64), **eigenständig ohne PC** | `.img.xz` für Raspberry Pi Imager | **NOT_STARTED.** Nur Companion-Gegenstelle (mit nachgebildetem Pi getestet). Kein Image, kein ARM64-Desktop, keine Hardware. |
+| B – Full Studio Linux x86-64 | getestetes USB/SSD-Abbild + Install/Recovery | **IN_PROGRESS.** Debian-13-ISO bootet in QEMU (BIOS+UEFI); LUKS-Persistenzskript vorhanden, nicht auf Hardware getestet; ADR-0007 PROPOSED. Fehlt: Wine, Dual-Boot, Secure Boot, Datenträger-Installer, Recovery. |
+| C – Windows | getesteter Installer + Deinstallation | **am weitesten** (v0.9.5, PC-Tests grün). Fehlt: Code-Signatur, nachgewiesener Deinstallationstest, QA-017, QA-019, Abnahme. |
 
-## 4. Meilenstein Abschnitt 25
-| Punkt | Vorhanden | Nachweis |
-|---|---|---|
-| Trendo-Core-Prozess | ja | `src/Trendo.Core`, QA-001 |
-| Startbare Desktopoberfläche | ja | v0.9.5 PC |
-| Startmenü | ja (neu, Feinschliff läuft) | feat/startmenue |
-| Echte Dateiverwaltung | ja | feat/files-workspace |
-| Projektregister | ja | Core |
-| Studio-Registry | ja | QA-015 |
-| Berechtigungs-/Freigabebroker | ja | ADR-0004, API RBAC |
-| Aufgabenwarteschlange | ja | Core |
-| Lokale KI | ja | Ollama qwen2.5 3B, PC |
-| Build-/Testverfahren | ja | dotnet test, release.sh |
-| Dokumentierte Tests (bestanden/fehlgeschlagen) | ja | `reports/`, `docs/build-log/` |
+## 4. Weitere Pflichtpunkte
+- §13 Eigenständige KI: Modelle werden heruntergeladen, nicht mitgeliefert → offen.
+- §14 Blender/Unreal: nur Erkennung + Blender-Skriptansatz; keine nachweisbaren `.blend`-Projekte/UE5-Builds am PC.
+- §15 Architektur: 18 Ebenen; fehlen weitgehend: Betriebssystemadapter Pi, Remote-Production-Worker, Studio-SDK als eigenständiges Paket.
+- §17 120-h-Regel: Forensik-Modul vorhanden (W3/Forensics.cs, TESTED_BOX); Tests zu Neustart/Stromausfall/Backup-Ausschluss nicht nachgewiesen.
+- §21 Phase 0 (Grok Build): eingerichtet (#195/#197); erste Grok-Build-Aufgabe T-0002 läuft.
 
-→ Der Meilenstein ist für Edition C inhaltlich erfüllt; offen ist die förmliche Abnahme.
+## 5. Meilenstein Abschnitt 25
+Alle 11 Punkte für Edition C vorhanden (Core, Desktop, Startmenü, Dateien, Projektregister, Studio-Registry, Freigabebroker, Warteschlange, lokale KI, Build/Test, Testprotokolle). Förmliche Abnahme offen.
 
-## 5. Grok-Build-Lücke
-Masterprompt verlangt Quellcodeänderungen über Grok Build. Bisher wurde fast alles von Grok-Bot-Agenten auf der Box gebaut. Der Grok-Build-Workflow am PC wird gerade eingerichtet (Integrator), noch kein Grok-Build-PR nachgewiesen.
+## 6. Konflikte mit Bestand/Entscheidungen
+1. **§2.2/§21: Code soll durch Grok Build am PC entstehen** – ~200 PRs entstanden durch Grok-Bot-Agenten in der Cloud-Box.
+2. **§2.5 Projektisolation:** „sensible Quellcodes … in kontrollierten lokalen Arbeitsbereichen, kein unkontrollierter Upload in Grok-Cloudspeicher“ – Repo liegt öffentlich auf GitHub und wird auf der Box bearbeitet (von Manuel so gewollt; Geheimnisse/Forensik nie auf der Box).
+3. **§15 Technologiewahl** nennt Rust/Qt nur als Beispiele → kein Konflikt, ADR-0005 bleibt (ADR-0008).
+4. **§1/§19 One-Setup „keine Zusatzinstallationen“** vs. bisheriges Modell „Studio prüft Werkzeug und installiert nach Rückfrage per winget“ (Manuels frühere Vorgabe) – Mitliefern vs. Nachinstallieren klären.
+5. **§12 „keine Wiedereinführung durch Umbenennung“:** Karte SPEC-07 heißt in der UI „Texte übersetzen – Texte übersetzen und **Programme eindeutschen**“ – Beschreibung geht über Basisfunktionen hinaus; Übersetzer-Agent, Recherche- und Briefübersetzung sind „eng begrenzte Übersetzung in anderen Studios“ – laut MP nur zulässig, wenn **ausdrücklich separat genehmigt**.
+6. **Verbesserung 34 abgelehnt:** Virenscan über Windows Defender (Sys03) ist „normale Sicherheit“ – zulässig, darf nicht zu eigenem AV-Paket ausgebaut werden. **Verbesserung 25 abgelehnt:** `DataLocation.MigrateLegacy` ist interne Datenmigration – zulässig.
+7. **Edition A eigenständig:** bisheriger Plan (P3 „Pi/Windows Bridge“, Companion) sah den Pi als Gegenstelle; MP verlangt vollständigen eigenständigen Pi-Desktop.
+8. **§13 KI mitliefern:** bisher Download von Ollama/Modell beim Setup.

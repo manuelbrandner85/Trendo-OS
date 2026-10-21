@@ -9,7 +9,7 @@ public class DecisionRegisterTests
     private static readonly Dictionary<string, string> Locked = new()
     {
         ["IMP-23"] = "REJECTED", ["IMP-25"] = "REJECTED", ["IMP-34"] = "REJECTED",
-        ["SPEC-07"] = "REJECTED", ["IMP-35"] = "UNDECIDED",
+        ["SPEC-07"] = "REJECTED", ["IMP-35"] = "UNDECIDED", ["LANG-2.0"] = "REJECTED",
     };
 
     private static Dictionary<string, string> Load(string file)
