@@ -1,0 +1,4 @@
+Nachweis SYS-03-KATALOG – Linux-Box (nicht Windows-PC), 21.10.2026 22:31 MESZ, Commit-Basis 4463da1
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 616 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   264, Skipped:     0, Total:   264, Duration: 13 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:    93, Skipped:     0, Total:    93, Duration: 32 s - Trendo.App.Tests.dll (net10.0)
