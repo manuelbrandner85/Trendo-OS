@@ -1,0 +1,2 @@
+# PC-Verifikation 0.9.1
+Setup 0.9.1 (SHA 451c690f…) im Projektordner, installiert, --version 0.9.1 (Stand 3858595). dotnet test auf dem PC an main 7092ce1: Api 14/14, Core 195/195, App 84/84. W7-Seiten auf dem PC: Betriebsmodus erkennt Windows-App, LibreOffice/Tesseract/Ollama/winget gefunden, GPIO BLOCKIERT. Handy: adb nicht installiert → Anleitung (ehrlich). Beobachtet: ein Lauf hatte sporadische audit.jsonl-Sperren unter Windows (3 UI-Tests), Folgelauf grün → offen als Risiko.
