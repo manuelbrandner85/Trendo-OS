@@ -40,3 +40,28 @@ public class CORE02_IntelligenceCore
         Assert.False((await ic.AskAsync(new KiRequest("  "))).Ok);
     }
 }
+
+public class X05_FreeAi
+{
+    [Fact(DisplayName = "X-05: Rückfallkette lässt sich sortieren, abschalten und bleibt gespeichert")]
+    public void Order_persist()
+    {
+        using var f = new Fixture();
+        var s = KiSourceSettings.Load(f.Root);
+        Assert.Equal("ollama", s.Order[0]);
+        s.Move("lmstudio", -1); s.Toggle("jan"); s.Save(f.Root);
+        var t = KiSourceSettings.Load(f.Root);
+        Assert.Equal(["lmstudio", "ollama"], t.Order.Take(2));
+        Assert.DoesNotContain(t.Active(), x => x.Id == "jan");
+        Assert.Equal(KiCatalog.Sources.Count, t.Order.Count);
+    }
+
+    [Fact(DisplayName = "X-05: Nur freie Quellen auf diesem Gerät, Modelle passend zur Hardware")]
+    public void Catalog_free_local()
+    {
+        Assert.All(KiCatalog.Sources, s => Assert.StartsWith("http://127.0.0.1:", s.BaseUrl));
+        const long G = 1024L * 1024 * 1024;
+        Assert.True(KiCatalog.Fits(KiCatalog.Models.First(m => m.Tag == "qwen2.5:3b"), new HardwareInfo(8 * G, null, 0)));
+        Assert.False(KiCatalog.Fits(KiCatalog.Models.First(m => m.Tag == "mistral:7b"), new HardwareInfo(8 * G, null, 0)));
+    }
+}

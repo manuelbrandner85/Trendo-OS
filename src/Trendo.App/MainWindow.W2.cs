@@ -17,13 +17,14 @@ public partial class MainWindow
     public IntelligenceCore Intel => _intel ??= new IntelligenceCore(_core.DataRoot, _core.Audit, () => KiBackendsOverride?.Invoke() ?? DefaultKiBackends(), KnowledgeLookup);
 
     private Func<string, int, IReadOnlyList<(string Title, string Text)>>? KnowledgeLookup => null;
-    private IReadOnlyList<IKiBackend> DefaultKiBackends() => [new OllamaBackend()];
+    private IReadOnlyList<IKiBackend> DefaultKiBackends() => KiSourceSettings.Load(_core.DataRoot).Active().Select(MakeBackend).ToList();
 
     private void InitWave23()
     {
         _showMap["ki-fragen"] = AskView;
         StudioPages["CORE-02"] = "ki-fragen";
         ExtraPages.Add(("KI fragen", "ki-fragen", ["frage", "chat", "assistent", "trendo"]));
+        InitX05();
         InitWave3();
     }
     partial void InitWave3();

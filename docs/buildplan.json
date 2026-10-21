@@ -398,8 +398,8 @@
   "order": 2,
   "id": "X-05",
   "name": "Free AI Discovery & Fallback",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },

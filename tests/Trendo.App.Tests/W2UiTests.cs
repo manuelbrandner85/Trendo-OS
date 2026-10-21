@@ -76,3 +76,30 @@ public class CORE02_Backends
     }
 
 }
+
+public sealed class SrcFake(string name, bool up, params string[] models) : IKiBackend
+{
+    public string Name => name; public string BaseUrl => "http://127.0.0.1:1";
+    public Task<bool> IsUpAsync(CancellationToken ct = default) => Task.FromResult(up);
+    public Task<IReadOnlyList<string>> ModelsAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<string>>(models);
+    public Task<string> ChatAsync(string m, IReadOnlyList<KiMessage> x, CancellationToken ct = default) => Task.FromResult($"{name}:{m}");
+}
+
+public class X05_Ui
+{
+    [AvaloniaFact(DisplayName = "X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette")]
+    public async Task Scan_and_fallback()
+    {
+        var (w, _, _) = Ui.Open();
+        w.KiBackendFactory = s => s.Id == "lmstudio" ? new SrcFake("LM Studio", true, "phi") : new SrcFake(s.Name, false);
+        w.Show("ki-quellen");
+        await w.ScanSourcesAsync(); w.Show("ki-quellen"); W2Ui.Settle();
+        Assert.Contains("1 KI-Quelle", w.Find<TextBlock>("src-msg").Text);
+        Assert.True(w.LastScan["lmstudio"].Up);
+        var a = await w.Intel.AskAsync(new KiRequest("Hallo"));
+        Assert.Equal("LM Studio:phi", a.Text);
+        w.Find<Button>("src-toggle-lmstudio").Press();
+        Assert.False((await w.Intel.AskAsync(new KiRequest("Hallo"))).Ok);
+        w.Find<Button>("ki-tab-ki-quellen");
+    }
+}
