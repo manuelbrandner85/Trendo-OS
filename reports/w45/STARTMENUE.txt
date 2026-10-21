@@ -1,0 +1,4 @@
+Nachweis STARTMENUE – Linux-Box (nicht Windows-PC), 22.10.2026 00:33 MESZ, Commit-Basis 8b9609a
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 670 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   411, Skipped:    10, Total:   421, Duration: 15 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   120, Skipped:     0, Total:   120, Duration: 2 m 43 s - Trendo.App.Tests.dll (net10.0)
