@@ -10,9 +10,6 @@ namespace Trendo.App;
 /// <summary>Welle 2: KI & Automatisierung. Alle Seiten hängen unter „KI“ mit einer Reiterleiste (max. 2 Ebenen).</summary>
 public partial class MainWindow
 {
-    /// <summary>Modul-ID → Seite. OpenStudio springt direkt dorthin, wenn die Seite gebaut ist (Erweiterungspunkt für alle Wellen).</summary>
-    public static readonly Dictionary<string, string> StudioPages = new();
-
     public static readonly List<(string Key, string Label)> KiTabs = [("ki", "Modell"), ("ki-fragen", "Fragen")];
 
     public Func<IReadOnlyList<IKiBackend>>? KiBackendsOverride { get; set; }

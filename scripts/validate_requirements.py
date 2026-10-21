@@ -6,11 +6,7 @@ def ids(p, k="requirement_id"): return [r[k] for r in csv.DictReader(open(p, enc
 try: d = yaml.safe_load(open(R / "requirements.yaml", encoding="utf-8"))
 except Exception as e: print("FAIL: YAML nicht lesbar:", e); sys.exit(1)
 print("OK  requirements.yaml parst")
-<<<<<<< HEAD
 allowed = set(d["status_model"]) | {"REJECTED_UPGRADE_BASE_PRESERVED", "NOT_STARTED", "NOT_RUN", "TESTED_BOX", "PC_VERIFIED"}
-=======
-allowed = set(d["status_model"]) | {"REJECTED_UPGRADE_BASE_PRESERVED", "NOT_STARTED", "NOT_RUN", "TESTED_BOX"}
->>>>>>> 0b29b12 (CORE-02: Trendo Intelligence Core (KI fragen))
 for sec, src, n in [("modules", S/"MODULE_REGISTER.csv", 54), ("business_requirements", S/"studios/BUSINESS_REQUIREMENTS_30.csv", 30),
                     ("letter_requirements", S/"studios/LETTER_REQUIREMENTS_25.csv", 25)]:
     y = [m["id"] for m in d[sec]]; c = ids(src)
@@ -20,15 +16,9 @@ for sec, src, n in [("modules", S/"MODULE_REGISTER.csv", 54), ("business_require
     for m in d[sec]:
         for k in ("approval_status", "implementation_status", "test_status"):
             if m[k] not in allowed: err.append(f"{m['id']}: unbekannter Status {m[k]}")
-<<<<<<< HEAD
         if m["implementation_status"] != "NOT_STARTED" or m["test_status"] != "NOT_RUN":
             ev = m.get("evidence")
             if ev and (R / ev).is_file(): continue  # Fortschritt nur mit Nachweis-Datei im Repo
-=======
-        ev = m.get("evidence")
-        if ev and not (R / ev).is_file(): err.append(f"{m['id']}: Nachweis {ev} fehlt")
-        elif m["test_status"] in ("PASS", "PC_VERIFIED") or (not ev and (m["implementation_status"] != "NOT_STARTED" or m["test_status"] != "NOT_RUN")):
->>>>>>> 0b29b12 (CORE-02: Trendo Intelligence Core (KI fragen))
             err.append(f"{m['id']}: Fortschritt ohne Nachweis ({m['implementation_status']}/{m['test_status']})")
     print(f"OK  {sec}: {len(y)} IDs geprüft" if not any(e.startswith(sec) for e in err) else f"FAIL {sec}")
 rej = [m["id"] for m in d["modules"] if m["approval_status"] != "APPROVED_SPEC"]

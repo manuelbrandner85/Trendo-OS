@@ -120,11 +120,7 @@ public sealed partial class MainWindow : Window
             var key = order[i];
             KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.D1 + i, KeyModifiers.Control), Command = new RelayCommand(() => Show(key)) });
         }
-<<<<<<< HEAD
-        InitWave1(); InitWave45(); _query = opt.Query ?? "";
-=======
-        InitWave1(); InitWave23(); _query = opt.Query ?? "";
->>>>>>> 0b29b12 (CORE-02: Trendo Intelligence Core (KI fragen))
+        InitWave1(); InitWave45(); InitWave23(); _query = opt.Query ?? "";
         InitSetup(opt);
         Show(opt.Page ?? (NeedsSetup(opt) ? "einrichtung" : "start"));
         RefreshStatusBar();
@@ -924,13 +920,8 @@ public sealed partial class MainWindow : Window
     public async Task OpenStudio(string id, string title)
     {
         _studioFilter = id;
-<<<<<<< HEAD
         var page = StudioPages.TryGetValue(id, out var sp) ? sp : "studios";
         if (!StudioTools.Required.TryGetValue(id, out var need)) { Show(page); return; }
-=======
-        if (StudioPages.TryGetValue(id, out var page) && _showMap.ContainsKey(page)) { Show(page); return; }
-        if (!StudioTools.Required.TryGetValue(id, out var need)) { Show("studios"); return; }
->>>>>>> 0b29b12 (CORE-02: Trendo Intelligence Core (KI fragen))
         _depStudio = id; _depStudioTitle = title; _depChecks = [];
         _depLog.Text = $"{title}: prüfe benötigte Programme …"; Show("studio-deps");
         foreach (var t in need) _depChecks.Add(await _deps.CheckAsync(DependencyCatalog.Get(t)));

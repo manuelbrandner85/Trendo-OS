@@ -33,8 +33,6 @@ public sealed class StudioRegistry
             { cap = Capability.Blocked; why = $"Benötigtes Programm nicht gefunden: {tool}"; }
             else if (impl is "IMPLEMENTED" or "TESTED" or "ACCEPTED" or "RELEASED" && test == "PASS")
             { cap = Capability.Ready; why = "Implementiert und getestet"; }
-            else if (impl == "IMPLEMENTED" && test == "TESTED_BOX")
-            { cap = Capability.Ready; why = "Gebaut und automatisch getestet – Prüfung auf dem PC steht noch aus"; }
             else if (RequiredTools.ContainsKey(id)) { cap = Capability.NotConnected; why = "Programm ist da, die Verbindung zu Trendo fehlt noch"; }
             else { cap = Capability.SpecOnly; why = "Geplant – noch nicht gebaut"; }
             return new StudioEntry(id, S("name"), appr, impl, test, cap, why);
