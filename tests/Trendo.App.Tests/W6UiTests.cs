@@ -157,3 +157,20 @@ public class SPEC09_Ui
         Assert.True(File.Exists(Path.Combine(root, "s.bereinigt.ply")));
     }
 }
+
+public class SPEC10_Ui
+{
+    [AvaloniaFact(DisplayName = "SPEC-10 UI: diesen PC live messen, Sensor anlegen, CSV einlesen")]
+    public void Twin()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        w.Show(MainWindow.StudioPages["SPEC-10"]);
+        w.Find<Button>("twin-pc").Press();
+        Assert.Contains("Ok", w.Find<TextBlock>("twin-Dieser_PC-Trendo-Arbeitsspeicher").Text);
+        Assert.True(w.Twin.Model.Readings.Count >= 2);
+        W6Ui.Run(w, "twin-def");
+        var f = Path.Combine(root, "m.csv"); File.WriteAllText(f, "Zeit;Anlage;Sensor;Wert\n21.10.2026 10:00;Heizung;Vorlauf;85\n");
+        Assert.Contains("1 Messwerte", W6Ui.Run(w, "twin-import", ("file", f)));
+        Assert.Contains("Alarm", w.Find<TextBlock>("twin-Heizung-Vorlauf").Text);
+    }
+}

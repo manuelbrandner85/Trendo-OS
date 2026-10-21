@@ -15,7 +15,7 @@ public partial class MainWindow
 
     private void InitWave6()
     {
-        InitSpec01(); InitSpec02(); InitSpec03(); InitSpec04(); InitSpec05(); InitSpec06(); InitSpec08(); InitSpec09();
+        InitSpec01(); InitSpec02(); InitSpec03(); InitSpec04(); InitSpec05(); InitSpec06(); InitSpec08(); InitSpec09(); InitSpec10();
     }
 
     private Control FachPage(string title, Control body) => W45Page(title, FachTabs, "fach", body);
@@ -40,6 +40,7 @@ public partial class MainWindow
             try { res = run(k => boxes.TryGetValue(k, out var b) ? b.Text ?? "" : ""); }
             catch (Exception ex) when (ex is FormatException or ArgumentException or InvalidOperationException or IOException) { res = "⚠ " + ex.Message; }
             _fachOut[id] = res; outp.Text = res;
+            foreach (var o in Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(this).OfType<SelectableTextBlock>().Where(c => c.Name == outp.Name)) o.Text = res;
         };
         wrap.Children.Add(MSp(go));
         return WCard(new StackPanel { Spacing = 4, Children = { H(title, 14), P(hint, null, 11), wrap, outp } });

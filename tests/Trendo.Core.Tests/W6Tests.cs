@@ -189,3 +189,24 @@ public class SPEC09_Scan
 }
 
 static class TestExt { public static string Also(this string p) { File.WriteAllText(p, "solid"); return p; } }
+
+public class SPEC10_Twin
+{
+    [Fact(DisplayName = "SPEC-10: Zwilling mit Sensoren, CSV-Import, Ampel, Trend und Zeit bis Alarm")]
+    public void Twin()
+    {
+        using var f = new Fixture();
+        var h = new TwinHub(f.Root);
+        h.Define("Heizung", "Vorlauf", "°C", 70, 80);
+        var (ok, bad) = h.Import("Zeit;Anlage;Sensor;Wert\n21.10.2026 10:00;Heizung;Vorlauf;60\n21.10.2026 11:00;Heizung;Vorlauf;62\n2026-10-21T12:00;Heizung;Vorlauf;64\nquatsch;Heizung;Vorlauf;1\n21.10.2026 12:00;Pumpe;Druck;1,5");
+        Assert.Equal((4, 1), (ok, bad));
+        var s = new TwinHub(f.Root).States();
+        var v = s.First(x => x.Sensor == "Vorlauf");
+        Assert.Equal(64, v.Last); Assert.Equal(TwinLevel.Ok, v.Level); Assert.Equal(2, v.TrendPerHour!.Value, 6); Assert.Equal(8, v.HoursToAlarm!.Value, 6);
+        Assert.Equal(TwinLevel.Ok, s.First(x => x.Sensor == "Druck").Level);
+        h.Record(new DateTime(2026, 10, 21, 13, 0, 0), "Heizung", "Vorlauf", 81);
+        Assert.Equal(TwinLevel.Alarm, h.States().First(x => x.Sensor == "Vorlauf").Level);
+        Assert.Equal(TwinLevel.Warnung, TwinHub.Level(h.Model.Assets[0].Sensors[0], 72));
+        Assert.Throws<ArgumentException>(() => h.Define("a", "b", "", 80, 70));
+    }
+}
