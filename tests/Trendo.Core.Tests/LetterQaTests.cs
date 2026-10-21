@@ -80,9 +80,9 @@ public class LetterQa : IDisposable
         var odt = await PdfExport.ConvertToAsync(new RealProcessRunner(), soffice, docx, "odt");
         Assert.True(pdf.Ok, pdf.Message); Assert.True(odt.Ok, odt.Message); Assert.Contains("SHA-256", pdf.Message);
         using (var z = ZipFile.OpenRead(odt.Pdf!)) Assert.Contains("Stadtwerke GmbH", new StreamReader(z.GetEntry("content.xml")!.Open()).ReadToEnd());
-        var info = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("pdfinfo", pdf.Pdf!) { RedirectStandardOutput = true })!;
-        var txt = await info.StandardOutput.ReadToEndAsync(); await info.WaitForExitAsync();
-        Assert.Contains("Pages:           1", txt); Assert.Contains("(A4)", txt);
+        var raw = System.Text.Encoding.Latin1.GetString(File.ReadAllBytes(pdf.Pdf!));
+        Assert.Equal(1, System.Text.RegularExpressions.Regex.Matches(raw, @"/Type\s*/Page[^s]").Count);
+        Assert.Matches(@"/MediaBox\s*\[\s*0\s+0\s+595(\.\d+)?\s+841\.\d+|/MediaBox\s*\[\s*0\s+0\s+595(\.\d+)?\s+842", raw);
     }
 
     [Fact(DisplayName = "LTR-QA-005 / LETTER-012: OCR-Unsicherheit wird markiert statt geraten")]
@@ -265,17 +265,17 @@ public class LetterOcrReal
         var audit = new AuditLog(Path.Combine(root, "a.jsonl"));
         var run = new RealProcessRunner();
         string? dir = (await Ocr.LanguagesAsync(run, tess)).Contains("deu") ? null : Ocr.UserTessdata(root);
-        if (dir is not null) Assert.True((await Ocr.DownloadGermanAsync(new HttpClient().GetStreamAsync, root, audit, Principal.LocalOwner)).Ok);
+        if (dir is not null) { var dl = await Ocr.DownloadGermanAsync(new HttpClient().GetStreamAsync, root, audit, Principal.LocalOwner); Assert.True(dl.Ok, dl.Message); }
         var bad = await Ocr.DownloadGermanAsync(new HttpClient().GetStreamAsync, Path.Combine(root, "x"), audit, Principal.LocalOwner, sha: "00");
         Assert.False(bad.Ok); Assert.False(Ocr.HasUserGerman(Path.Combine(root, "x")));
         // Brief → PDF → PNG über LibreOffice (png-Export der 1. Seite)
         var d = new LetterDraft { SenderName = "Erika Muster", SenderStreet = "Hauptstraße 1", SenderCity = "10115 Berlin", Recipient = "Stadtwerke München GmbH\nAm Werk 5\n80331 München", Subject = "Kündigung Stromvertrag 4711", Body = "hiermit kündige ich fristgerecht zum 31.12.2026. Bitte bestätigen Sie die Kündigung." };
         var docx = Path.Combine(root, "brief.docx"); Letters.WriteDocx(d, docx);
         var png = await PdfExport.ConvertToAsync(run, soffice, docx, "pdf");
-        Assert.True(png.Ok);
+        Assert.True(png.Ok, png.Message);
         var img = Path.Combine(root, "brief.png");
         if (File.Exists("/usr/bin/pdftoppm")) { System.Diagnostics.Process.Start("pdftoppm", $"-r 200 -png -singlefile \"{png.Pdf}\" \"{Path.Combine(root, "brief")}\"")!.WaitForExit(); }
-        else { var r2 = await run.RunAsync(soffice, $"--headless --convert-to png --outdir \"{root}\" \"{png.Pdf}\"", null, default); }
+        else { var r2 = await run.RunAsync(soffice, $"\"-env:UserInstallation={new Uri(Path.Combine(root, "lo")).AbsoluteUri}\" --headless --convert-to png --outdir \"{root}\" \"{png.Pdf}\"", null, default); }
         Assert.True(File.Exists(img), "Bild nicht erzeugt");
         var r = await Ocr.RunAsync(run, tess, img, default, dir);
         Assert.True(r.Ok, r.Message);

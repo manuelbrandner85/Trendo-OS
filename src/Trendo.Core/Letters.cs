@@ -182,13 +182,16 @@ public static class PdfExport
         if (format is not ("pdf" or "odt" or "docx")) throw new ArgumentException("Format");
         var outDir = Path.GetDirectoryName(Path.GetFullPath(input))!;
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct); cts.CancelAfter(TimeSpan.FromSeconds(90));
+        // Eigenes LibreOffice-Profil pro Aufruf: parallele Exporte und ein offenes LibreOffice stören sich sonst (Exit 1).
+        var profile = Path.Combine(Path.GetTempPath(), "trendo-lo-" + Guid.NewGuid().ToString("N"));
         try
         {
-            var (exit, output) = await run.RunAsync(soffice, $"--headless --norestore --convert-to {format} --outdir \"{outDir}\" \"{input}\"", null, cts.Token);
+            var (exit, output) = await run.RunAsync(soffice, $"\"-env:UserInstallation={new Uri(profile).AbsoluteUri}\" --headless --norestore --convert-to {format} --outdir \"{outDir}\" \"{input}\"", null, cts.Token);
             var pdf = Path.ChangeExtension(input, "." + format);
             return exit == 0 && File.Exists(pdf) ? (true, $"{format.ToUpperInvariant()} erstellt (SHA-256 {LetterKit.Sha(pdf)[..16]}…)", pdf) : (false, $"LibreOffice meldet Fehler (Exit {exit})", null);
         }
         catch (OperationCanceledException) { return (false, "LibreOffice hat zu lange gebraucht und wurde beendet", null); }
+        finally { try { if (Directory.Exists(profile)) Directory.Delete(profile, true); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
     }
 }
 
