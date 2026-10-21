@@ -13,6 +13,7 @@ class Program
     public static int Main(string[] args)
     {
         // Velopack: verarbeitet Installations-/Deinstallations-Hooks des Setup.exe (muss zuerst laufen)
+        StartupTrace.Mark("main");
         Velopack.VelopackApp.Build().Run();
         // Arbeitsverzeichnis aus dem Programmordner herausnehmen: gestartete Programme (winget, Ollama) würden sonst Updates blockieren
         try { Directory.SetCurrentDirectory(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)); } catch { }
@@ -73,6 +74,8 @@ class Program
             core.Shutdown();
             return rc;
         }
+        StartupTrace.LogPath = Arg("--startup-log");
+        StartupTrace.Mark("avalonia.start");
         return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 

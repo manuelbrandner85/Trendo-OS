@@ -66,6 +66,7 @@ public sealed partial class MainWindow : Window
 
     public MainWindow(TrendoCore core, AppOptions opt, IToolProbe probe)
     {
+        StartupTrace.Mark("window.ctor");
         _opt = opt; _core = core; _probe = probe;
         // Isolated: nichts außerhalb des Datenordners erkennen (Tests sind unabhängig von installierten Programmen/laufendem Ollama)
         Func<string, bool>? exists = opt.Isolated ? p => Path.GetFullPath(p).StartsWith(Path.GetFullPath(core.DataRoot), StringComparison.OrdinalIgnoreCase) && File.Exists(p) : null;
@@ -81,6 +82,7 @@ public sealed partial class MainWindow : Window
 
         var req = TrendoCore.FindRequirements(AppContext.BaseDirectory);
         _studios = req is null ? [] : _core.Studios.Load(req, probe);
+        StartupTrace.Mark("studios.loaded");
 
         // Raster nach Konzept (Designfläche 1536 × 800): Topbar | Seitenleiste 192 · Mitte · rechte Spalte 322, Dock unter der Mitte
         var root = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
@@ -147,6 +149,7 @@ public sealed partial class MainWindow : Window
         Opened += OnOpened;
         Closing += (_, _) => { if (_reopening) return; _api?.DisposeAsync().AsTask().Wait(2000); _core.Shutdown(); };
         InitLook(root, opt);
+        StartupTrace.Mark("window.ready");
     }
 
     private string _apiInfo = "";
@@ -155,6 +158,7 @@ public sealed partial class MainWindow : Window
 
     public void Show(string key)
     {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         CurrentView = key;
         MarkTab(key); MarkSide(key);
         _center.Children.Clear();
@@ -162,6 +166,7 @@ public sealed partial class MainWindow : Window
         AfterShow(key);
         _bellBadge.Text = _core.Approvals.Pending().Count is var n && n > 0 ? n.ToString() : "";
         RefreshProjects();
+        StartupTrace.Took("page." + key, sw.Elapsed.TotalMilliseconds);
     }
 
     private void Tick()
@@ -188,9 +193,14 @@ public sealed partial class MainWindow : Window
 
     private async void OnOpened(object? s, EventArgs e)
     {
-        await EnsureOllamaRunning();
+        StartupTrace.Mark("window.opened");
+        // erstes gezeichnetes Bild = sichtbarer Start
+        RequestAnimationFrame(_ => { StartupTrace.Mark("first.frame"); StartupTrace.Flush(); });
+        // KI-Laufzeit im Hintergrund prüfen/starten – blockiert weder Start noch Bildschirmfoto
+        var ollama = EnsureOllamaRunning();
         if (_opt.KiAsk is { } q)
         {
+            await ollama;
             await RefreshKi();
             if (_kiConnected) await AskKi(q);
         }
