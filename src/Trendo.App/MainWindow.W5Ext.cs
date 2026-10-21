@@ -40,7 +40,7 @@ public partial class MainWindow
         var path = new TextBox { Name = "ext-path", PlaceholderText = "Ordner oder ZIP der Erweiterung", Width = 340 };
         sp.Children.Add(Card(new WrapPanel { Children = { path, Act("ext-install", "Installieren", () => ExtInstall(path.Text?.Trim('"', ' ') ?? ""), true),
             Act("ext-sample", "Beispiel ausprobieren", () => ExtInstall(ExtensionSamples.WriteSample(Path.Combine(_core.DataRoot, "beispiele")))) } }));
-        sp.Children.Add(P("Einen Online-Katalog gibt es noch nicht. Erweiterungen kommen als Ordner oder ZIP.", null, 10.5));
+        sp.Children.Add(ExtCatalogCard());
         var all = Exts.All();
         if (all.Count == 0) sp.Children.Add(P("Noch keine Erweiterungen installiert."));
         var i = 0;
