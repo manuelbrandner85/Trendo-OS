@@ -413,8 +413,8 @@ public sealed partial class MainWindow : Window
     // ---------- Desktop (Startansicht) ----------
     private static readonly (string Id, string Title, string Sub, string Icon, string C1, string C2, string Glow)[] FeaturedStudios =
     [
-        ("STUDIO-ONLINE-BUSINESS-01", "Online Business", "Creation & Innovation", Mdi.RocketLaunch, "#7FD3FF", "#3F6BFF", "#3F8BFF"),
-        ("STUDIO-LETTER-01", "Letter, Business & Legal", "Correspondence", Mdi.FileDocumentEdit, "#FFD39A", "#F08A3C", "#F0A050"),
+        ("STUDIO-ONLINE-BUSINESS-01", "Online Business", "Gründen & Verkaufen", Mdi.RocketLaunch, "#7FD3FF", "#3F6BFF", "#3F8BFF"),
+        ("STUDIO-LETTER-01", "Briefstudio", "Briefe, Ämter & Recht", Mdi.FileDocumentEdit, "#FFD39A", "#F08A3C", "#F0A050"),
         ("CORE-05", "3D Studio", "Blender & Assets", Mdi.CubeOutline, "#8FB8FF", "#3D5BFF", "#4D6BFF"),
         ("CORE-06", "Game Studio", "Unreal Engine 5", Mdi.Unreal, "#FFFFFF", "#C9D6EA", "#9FB8FF"),
         ("SYS-10", "Office Studio", "Dokumente & Tabellen", Mdi.FileDocumentOutline, "#F2F6FF", "#B8C7E6", "#8FB0FF"),
@@ -508,7 +508,7 @@ public sealed partial class MainWindow : Window
         {
             Capability.Ready => ("Bereit", "#4ADE80"), Capability.NotConnected => ("Nicht verbunden", "#FACC15"),
             Capability.Blocked => ("Blockiert", "#F87171"), Capability.Rejected => ("Abgelehnt", "#9CA3AF"),
-            Capability.SpecOnly => ("Noch nicht gebaut", "#93A4C3"), _ => ("Status unbekannt", "#9CA3AF"),
+            Capability.SpecOnly => ("Noch nicht gebaut", "#93A4C3"), Capability.InProgress => ("In Arbeit", "#7FD3FF"), _ => ("Status unbekannt", "#9CA3AF"),
         };
         return new TextBlock { Text = txt, Foreground = Brush.Parse(col), FontSize = 9.5, Opacity = 0.9, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 1, 0, 0) };
     }

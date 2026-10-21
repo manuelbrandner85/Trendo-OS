@@ -7,7 +7,7 @@ namespace Trendo.Core;
 public sealed record ProgressItem(string Id, string Name, string Impl, string Test);
 public sealed record ProgressModule(string Wave, string WaveName, int Order, ProgressItem Module, IReadOnlyList<ProgressItem> Subs)
 {
-    public bool Done => Module.Impl is "IMPLEMENTED" or "TESTED" or "ACCEPTED" or "RELEASED" && Module.Test == "PASS";
+    public bool Done => StatusRules.Done(Module.Impl, Module.Test);
 }
 
 /// <summary>Bau-Fortschritt: Reihenfolge aus docs/buildplan.json, Status IMMER live aus requirements.yaml.</summary>
@@ -39,7 +39,8 @@ public static class Progress
 
     public static string GermanStatus(ProgressItem i) => (i.Impl, i.Test) switch
     {
-        (_, "PASS") when i.Impl is "IMPLEMENTED" or "TESTED" or "ACCEPTED" or "RELEASED" => "Fertig & getestet",
+        (_, "PC_VERIFIED") when StatusRules.Built(i.Impl) => "Fertig & auf dem PC geprüft",
+        (_, _) when StatusRules.Done(i.Impl, i.Test) => "Fertig & getestet",
         ("IMPLEMENTED", _) => "Gebaut, Test offen",
         ("IN_PROGRESS", _) => "In Arbeit",
         ("PLANNED", _) => "Geplant",

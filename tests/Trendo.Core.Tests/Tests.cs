@@ -192,20 +192,39 @@ public class QA015_StudioStatus
     private sealed class Probe(params string[] present) : IToolProbe { public bool IsAvailable(string t) => present.Contains(t); }
     private static string Req => Path.Combine(AppContext.BaseDirectory, "requirements.yaml");
 
-    [Fact(DisplayName = "QA-015: Fehlendes Programm → Blockiert; nichts als Bereit")]
+    private static string Yaml(string mods)
+    {
+        var f = Path.Combine(Path.GetTempPath(), "trendo-req-" + Guid.NewGuid().ToString("N") + ".yaml");
+        File.WriteAllText(f, "modules:\n" + mods); return f;
+    }
+
+    [Fact(DisplayName = "QA-015: Fehlendes Programm → Blockiert, auch wenn gebaut; echte Liste hat 54 Module")]
     public void Missing_tool_blocked()
     {
         var list = new StudioRegistry().Load(Req, new Probe());
         Assert.Equal(54, list.Count);
         Assert.Equal(Capability.Blocked, list.Single(s => s.Id == "CORE-05").Capability);
-        Assert.DoesNotContain(list, s => s.Capability == Capability.Ready);
+        Assert.All(list.Where(s => StudioRegistry.RequiredTools.ContainsKey(s.Id)), s => Assert.NotEqual(Capability.Ready, s.Capability));
     }
 
-    [Fact(DisplayName = "QA-015: Programm vorhanden, Adapter fehlt → Nicht verbunden (nicht Bereit)")]
+    [Fact(DisplayName = "QA-015: Status-Regeln – Bereit nur gebaut+getestet, In Arbeit, Nicht verbunden, Noch nicht gebaut")]
     public void Present_tool_not_connected()
     {
-        var list = new StudioRegistry().Load(Req, new Probe("blender"));
-        Assert.Equal(Capability.NotConnected, list.Single(s => s.Id == "CORE-05").Capability);
+        var y = Yaml("- {id: CORE-05, name: A, approval_status: APPROVED_SPEC, implementation_status: NOT_STARTED, test_status: NOT_RUN}\n" +
+                     "- {id: X-01, name: B, approval_status: APPROVED_SPEC, implementation_status: IMPLEMENTED, test_status: PC_VERIFIED}\n" +
+                     "- {id: X-02, name: C, approval_status: APPROVED_SPEC, implementation_status: IMPLEMENTED, test_status: NOT_RUN}\n" +
+                     "- {id: X-03, name: D, approval_status: APPROVED_SPEC, implementation_status: IN_PROGRESS, test_status: PC_VERIFIED}\n" +
+                     "- {id: X-04, name: E, approval_status: APPROVED_SPEC, implementation_status: NOT_STARTED, test_status: NOT_RUN}\n");
+        var l = new StudioRegistry().Load(y, new Probe("blender"));
+        Assert.Equal(Capability.NotConnected, l.Single(s => s.Id == "CORE-05").Capability);
+        Assert.Equal(Capability.Ready, l.Single(s => s.Id == "X-01").Capability);
+        Assert.Equal(Capability.InProgress, l.Single(s => s.Id == "X-02").Capability);
+        Assert.Equal(Capability.InProgress, l.Single(s => s.Id == "X-03").Capability);
+        Assert.Equal(Capability.SpecOnly, l.Single(s => s.Id == "X-04").Capability);
+        Assert.Equal("In Arbeit", StudioRegistry.GermanLabel(Capability.InProgress));
+        Assert.Equal("Fertig & auf dem PC geprüft", Progress.GermanStatus(new ProgressItem("X", "X", "IMPLEMENTED", "PC_VERIFIED")));
+        Assert.Equal("Fertig & getestet", Progress.GermanStatus(new ProgressItem("X", "X", "IMPLEMENTED", "TESTED_BOX")));
+        File.Delete(y);
     }
 
     [Fact(DisplayName = "QA-015: SPEC-07 abgelehnt, übrige nur Spezifikation")]
@@ -213,7 +232,7 @@ public class QA015_StudioStatus
     {
         var list = new StudioRegistry().Load(Req, new Probe("blender", "unreal", "libreoffice", "browser"));
         Assert.Equal(Capability.Rejected, list.Single(s => s.Id == "SPEC-07").Capability);
-        Assert.Equal(Capability.SpecOnly, list.Single(s => s.Id == "CORE-01").Capability);
+        Assert.Equal(Capability.InProgress, list.Single(s => s.Id == "CORE-01").Capability);
     }
 }
 
