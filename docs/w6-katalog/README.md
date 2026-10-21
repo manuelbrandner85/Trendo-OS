@@ -13,7 +13,7 @@ Status aller Kataloge: **PROPOSED** – abgeleitet aus Modulname und Zweck, von 
 | [SPEC-05](SPEC-05.md) | Science & Research 2.0 | 16 | 16 |
 | [SPEC-06](SPEC-06.md) | Education & Training 2.0 | 16 | 16 |
 | [SPEC-08](SPEC-08.md) | Fashion & Product 2.0 | 18 | 18 |
-| [SPEC-09](SPEC-09.md) | 3D Scanning & Reconstruction 2.0 | 20 | 9 |
+| [SPEC-09](SPEC-09.md) | 3D Scanning & Reconstruction 2.0 | 20 | 20 |
 | [SPEC-10](SPEC-10.md) | Digital Twin 2.0 | 20 | 8 |
 | [SPEC-13](SPEC-13.md) | Maps & Geospatial 2.0 | 20 | 11 |
 | [SPEC-14](SPEC-14.md) | Manufacturing & CNC 2.0 | 20 | 12 |
@@ -21,4 +21,4 @@ Status aller Kataloge: **PROPOSED** – abgeleitet aus Modulname und Zweck, von 
 | [SPEC-16](SPEC-16.md) | Transport & Vehicle 2.0 | 20 | 12 |
 | [CORE-09](CORE-09.md) | Vision & Robotics Control Studio 2.0 | 20 | 10 |
 
-Gesamt: 254 Funktionen, davon 187 gebaut, 67 offen.
+Gesamt: 254 Funktionen, davon 198 gebaut, 56 offen.

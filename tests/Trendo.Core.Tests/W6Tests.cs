@@ -474,3 +474,19 @@ public class SPEC08_Plus
     [Fact(DisplayName = "SPEC-08 F17: Staffelpreise")] public void F17() { var r = FashionPlus.Tier(29.9, 50, [(10, 5), (25, 10), (100, 15)]); Assert.Equal((26.91, 1345.5, 10), (r.Unit, r.Total, r.DiscountPct)); Assert.Equal(0, FashionPlus.Tier(10, 1, [(10, 5)]).DiscountPct); }
     [Fact(DisplayName = "SPEC-08 F18: Produktdatenblatt")] public void F18() { var md = FashionPlus.DataSheet("Shirt", "S-1", "Weich.", "100 % Baumwolle", Fashion.Variants("S-1", ["M"], ["Rot"]), Fashion.Price(5, 5, 0, 50)); Assert.Contains("# Shirt", md); Assert.Contains("| S-1-ROT-M | M | Rot |", md); Assert.Contains("inkl. MwSt.", md); }
 }
+
+public class SPEC09_Plus
+{
+    static PointCloud Grid(int n, double step, double z = 0) { var pc = new PointCloud(); for (var i = 0; i < n; i++) for (var j = 0; j < n; j++) pc.Points.Add(new(i * step, j * step, z)); return pc; }
+    [Fact(DisplayName = "SPEC-09 F10: Skalieren")] public void F10() { Assert.Equal(0.001, ScanPlus.UnitFactor("mm", "m")); var s = ScanPlus.Scale(Grid(2, 1000), ScanPlus.UnitFactor("mm", "m")); Assert.Equal(1, s.Info().SizeX, 9); Assert.Throws<ArgumentException>(() => ScanPlus.UnitFactor("yard", "m")); }
+    [Fact(DisplayName = "SPEC-09 F11: Zentrieren")] public void F11() { var pc = Grid(3, 1, 5); var c = ScanPlus.Center(pc).Info(); Assert.Equal((-1.0, 1.0, 0.0), (c.Min.X, c.Max.X, c.Min.Z)); }
+    [Fact(DisplayName = "SPEC-09 F12: Zuschneiden")] public void F12() { var c = ScanPlus.Crop(Grid(10, 1), new(0, 0, -1), new(2, 2, 1)); Assert.Equal(9, c.Points.Count); }
+    [Fact(DisplayName = "SPEC-09 F13: Boden finden")] public void F13() { var pc = Grid(10, 0.1); pc.Points.Add(new(0.5, 0.5, 1)); pc.Points.Add(new(0.3, 0.2, 0.7)); var pl = ScanPlus.FindFloor(pc, 0.01); Assert.Equal(100, pl.Inliers); Assert.Equal(0, pl.TiltDeg, 3); }
+    [Fact(DisplayName = "SPEC-09 F14: Boden entfernen")] public void F14() { var pc = Grid(10, 0.1); pc.Points.Add(new(0.5, 0.5, 1)); var r = ScanPlus.RemovePlane(pc, ScanPlus.FindFloor(pc, 0.01), 0.01); Assert.Single(r.Points); Assert.Equal(1, r.Points[0].Z); }
+    [Fact(DisplayName = "SPEC-09 F15: Scans vergleichen")] public void F15() { var a = Grid(5, 1, 0.1); var b = Grid(5, 1); a.Points.Add(new(2, 2, 3)); var d = ScanPlus.Compare(a, b); Assert.Equal(3, d.Max, 9); Assert.Equal((25 * 0.1 + 3) / 26, d.Mean, 9); }
+    [Fact(DisplayName = "SPEC-09 F16: Volumen")] public void F16() { var pc = new PointCloud(); for (var i = 0; i < 10; i++) for (var j = 0; j < 10; j++) { pc.Points.Add(new(i * 0.1 + 0.05, j * 0.1 + 0.05, 0)); pc.Points.Add(new(i * 0.1 + 0.05, j * 0.1 + 0.05, 2)); } Assert.Equal(2, ScanPlus.Volume(pc, 0.1), 9); }
+    [Fact(DisplayName = "SPEC-09 F17: XYZ speichern")] public void F17() { var pc = new PointCloud(); pc.Points.Add(new(1.5, -2, 0.25)); Assert.Equal("1.5 -2 0.25\n", ScanPlus.ToXyz(pc)); }
+    [Fact(DisplayName = "SPEC-09 F18: Punktdichte")] public void F18() { Assert.Equal(0.01, ScanPlus.Density(Grid(8, 0.01)), 9); }
+    [Fact(DisplayName = "SPEC-09 F19: Drehen")] public void F19() { var pc = new PointCloud(); pc.Points.Add(new(1, 0, 3)); var r = ScanPlus.RotateZ(pc, 90).Points[0]; Assert.Equal((0.0, 1.0, 3.0), (r.X, r.Y, r.Z)); }
+    [Fact(DisplayName = "SPEC-09 F20: Zusammenführen")] public void F20() { var m = ScanPlus.Merge(Grid(2, 1), Grid(3, 1)); Assert.Equal(13, m.Points.Count); Assert.Null(m.Colors); }
+}

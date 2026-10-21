@@ -231,7 +231,7 @@ Spezial-Studios auf Basis der fertigen Kernbausteine
 | 5 | SPEC-05 | Science & Research 2.0 | IMPLEMENTED | PC_VERIFIED |
 | 6 | SPEC-06 | Education & Training 2.0 | IMPLEMENTED | PC_VERIFIED |
 | 7 | SPEC-08 | Fashion & Product 2.0 | IMPLEMENTED | TESTED_BOX |
-| 8 | SPEC-09 | 3D Scanning & Reconstruction 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 8 | SPEC-09 | 3D Scanning & Reconstruction 2.0 | IMPLEMENTED | TESTED_BOX |
 | 9 | SPEC-10 | Digital Twin 2.0 | IMPLEMENTED | PC_VERIFIED |
 | 10 | SPEC-13 | Maps & Geospatial 2.0 | IMPLEMENTED | PC_VERIFIED |
 | 11 | SPEC-14 | Manufacturing & CNC 2.0 | IMPLEMENTED | PC_VERIFIED |
