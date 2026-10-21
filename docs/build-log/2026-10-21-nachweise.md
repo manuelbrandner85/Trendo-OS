@@ -1,0 +1,1 @@
+- 21:57 Nachweise in requirements.yaml auf die neuen Dateien umgestellt (X-04 → X-04-KATALOG.txt, STUDIO-ONLINE-BUSINESS-01 → STUDIO-ONLINE-BUSINESS-01.txt).
