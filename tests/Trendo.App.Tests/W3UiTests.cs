@@ -91,3 +91,25 @@ public class SYS07_Ui
         Assert.NotNull(w.TryFind<StackPanel>("dev-group-Kamera"));
     }
 }
+
+public class SYS06_Ui
+{
+    [AvaloniaFact(DisplayName = "SYS-06 UI: Ordner teilen, Datei echt per HTTP laden, falsches Token abgelehnt, beenden")]
+    public async Task Share_page()
+    {
+        var (w, _, root) = Ui.Open();
+        var d = Path.Combine(root, "teilen"); Directory.CreateDirectory(d); File.WriteAllText(Path.Combine(d, "hallo.txt"), "Hallo Handy");
+        w.ShareAddressOverride = System.Net.IPAddress.Loopback;
+        w.Show("teilen");
+        await w.StartShareAsync(d, TimeSpan.FromHours(1), System.Net.IPAddress.Loopback); w.Show("teilen");
+        var url = w.Find<SelectableTextBlock>("share-url").Text!;
+        using var http = new HttpClient();
+        Assert.Contains("hallo.txt", await http.GetStringAsync(url));
+        Assert.Equal("Hallo Handy", await http.GetStringAsync(url + "hallo.txt"));
+        Assert.Equal(System.Net.HttpStatusCode.NotFound, (await http.GetAsync(url.Replace(w.ActiveShare!.Share.Token, "0000"))).StatusCode);
+        Assert.Equal(System.Net.HttpStatusCode.MethodNotAllowed, (await http.PostAsync(url + "hallo.txt", new StringContent("x"))).StatusCode);
+        Assert.Equal(1, w.ActiveShare.Share.Downloads);
+        w.Find<Button>("share-stop").Press(); await Task.Delay(100); W2Ui.Settle();
+        Assert.Null(w.ActiveShare);
+    }
+}

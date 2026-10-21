@@ -152,3 +152,34 @@ public class SYS07_Devices
         Assert.NotEmpty(await s.ScanAsync());
     }
 }
+
+public class SYS06_Share
+{
+    [Fact(DisplayName = "SYS-06: Freigabe nur mit Token, nur im Ordner, keine versteckten Dateien, läuft ab")]
+    public void Rules()
+    {
+        using var f = new Fixture();
+        var d = Path.Combine(f.Root, "fotos"); Directory.CreateDirectory(Path.Combine(d, "urlaub")); File.WriteAllText(Path.Combine(d, "urlaub", "a b.jpg"), "x"); File.WriteAllText(Path.Combine(d, ".geheim"), "x");
+        File.WriteAllText(Path.Combine(f.Root, "draussen.txt"), "x");
+        var s = new FolderShare(d, TimeSpan.FromHours(1), f.Time);
+        Assert.Equal(Path.Combine(d, "urlaub", "a b.jpg"), s.Resolve($"/{s.Token}/urlaub/a%20b.jpg"));
+        Assert.Equal(d, s.Resolve($"/{s.Token}/"));
+        Assert.Null(s.Resolve("/falsch/urlaub/a%20b.jpg"));
+        Assert.Null(s.Resolve($"/{s.Token}/../draussen.txt"));
+        Assert.Null(s.Resolve($"/{s.Token}/%2E%2E/draussen.txt"));
+        Assert.Null(s.Resolve($"/{s.Token}/.geheim"));
+        Assert.Contains("urlaub", s.ListingHtml(d)); Assert.DoesNotContain(".geheim", s.ListingHtml(d));
+        f.Time.Advance(TimeSpan.FromHours(2));
+        Assert.False(s.Active); Assert.Null(s.Resolve($"/{s.Token}/"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new FolderShare(d, TimeSpan.FromDays(3)));
+    }
+
+    [Fact(DisplayName = "SYS-06: Nur private Heimnetz-Adressen")]
+    public void Lan()
+    {
+        Assert.True(FolderShare.IsPrivateLan(System.Net.IPAddress.Parse("192.168.1.20")));
+        Assert.True(FolderShare.IsPrivateLan(System.Net.IPAddress.Parse("172.20.0.5")));
+        Assert.False(FolderShare.IsPrivateLan(System.Net.IPAddress.Parse("8.8.8.8")));
+        Assert.False(FolderShare.IsPrivateLan(System.Net.IPAddress.Parse("172.32.0.1")));
+    }
+}
