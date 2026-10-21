@@ -964,8 +964,8 @@
   "order": 10,
   "id": "SPEC-13",
   "name": "Maps & Geospatial 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
