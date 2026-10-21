@@ -42,4 +42,5 @@ Hinweise:
 - Python 3.13.15: installiert pro Benutzer, getestet (siehe reports/p1/deps).
 
 - Material Design Icons (@mdi/js 7.4.47, Apache-2.0): Symbolpfade in `src/Trendo.App/MdiIcons.cs` (im Setup enthalten).
+- Fluent UI System Icons (@fluentui/svg-icons 1.1.344, MIT, © Microsoft Corporation): Studio-Symbole in `src/Trendo.App/StudioIcons.cs` (Pfade eingebettet, im Setup enthalten). https://github.com/microsoft/fluentui-system-icons
 - Hintergrund v2 (`Assets/wallpaper.jpg`): KI-generiert für Trendo OS (Grok Bot, 21.10.2026), keine Fremdfotos.
