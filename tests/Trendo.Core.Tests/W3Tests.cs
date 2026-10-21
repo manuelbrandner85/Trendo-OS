@@ -261,3 +261,37 @@ public class SPEC12_Forensics
         Assert.False(Directory.Exists(Path.Combine(f.Root, "forensik", c.Id))); Assert.Empty(lab.Cases());
     }
 }
+
+public class SYS08_Research
+{
+    [Fact(DisplayName = "SYS-08: .onion nur Tor Browser, andere Schemata und Heimnetz abgelehnt, Webseiten im Lesemodus")]
+    public void Classify()
+    {
+        Assert.Equal(UrlKind.NurTorBrowser, ResearchDesk.Classify("http://abcdefghijklmnop.onion/x").Kind);
+        Assert.Equal(UrlKind.Abgelehnt, ResearchDesk.Classify("file:///etc/passwd").Kind);
+        Assert.Equal(UrlKind.Abgelehnt, ResearchDesk.Classify("javascript:alert(1)").Kind);
+        Assert.Equal(UrlKind.Abgelehnt, ResearchDesk.Classify("http://192.168.1.1/admin").Kind);
+        Assert.Equal(UrlKind.Abgelehnt, ResearchDesk.Classify("http://localhost:11434").Kind);
+        Assert.Equal(UrlKind.Abgelehnt, ResearchDesk.Classify("https://user:pw@example.com").Kind);
+        var ok = ResearchDesk.Classify("de.wikipedia.org/wiki/Tor");
+        Assert.Equal(UrlKind.Lesemodus, ok.Kind); Assert.Equal("https", ok.Uri!.Scheme);
+    }
+
+    [Fact(DisplayName = "SYS-08: Lesetext ohne Skripte und Formulare, Links absolut; Sitzung flüchtig")]
+    public void Reader_and_session()
+    {
+        using var f = new Fixture();
+        var html = "<html><head><title>Test &amp; Co</title><script>evil()</script><style>x{}</style></head><body><h1>Überschrift</h1><p>Hallo&nbsp;Welt</p><form action=/login><input name=pw></form><ul><li>Eins</li></ul><a href=\"/seite2\">Weiter</a><a href=\"javascript:x()\">böse</a></body></html>";
+        var p = ResearchDesk.ToReader(html, new Uri("https://example.com/a/"));
+        Assert.Equal("Test & Co", p.Title);
+        Assert.Contains("## Überschrift", p.Text); Assert.Contains("Hallo Welt", p.Text); Assert.Contains("• Eins", p.Text);
+        Assert.DoesNotContain("evil", p.Text); Assert.DoesNotContain("pw", p.Text);
+        Assert.Equal([("Weiter", "https://example.com/seite2")], p.Links);
+        var d = new ResearchDesk(f.Root, f.Core.Audit);
+        d.Record(new Uri("https://example.com"), p, html); d.SaveNote("merken");
+        Assert.Single(d.SessionSources());
+        var rep = d.ExportReport(Path.Combine(f.Root, "out"));
+        Assert.Contains("merken", File.ReadAllText(rep));
+        d.EndSession(); Assert.Empty(d.SessionSources()); Assert.Equal("", d.Note());
+    }
+}

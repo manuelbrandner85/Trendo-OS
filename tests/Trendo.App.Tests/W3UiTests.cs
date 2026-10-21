@@ -156,3 +156,22 @@ public class SPEC12_Ui
         Assert.NotNull(w.TryFind<TextBlock>("for-ports"));
     }
 }
+
+public class SYS08_Ui
+{
+    [AvaloniaFact(DisplayName = "SYS-08 UI: Seite im Lesemodus lesen, .onion wird nicht abgerufen, Sitzung beenden")]
+    public async Task Research_page()
+    {
+        var (w, _, _) = Ui.Open();
+        var calls = 0;
+        w.ReaderFetchOverride = u => { calls++; return Task.FromResult(("text/html", "<title>Hallo</title><p>Inhalt</p><a href='/b'>B</a>", u)); };
+        w.Show("recherche");
+        await w.ReadUrlAsync("example.org"); w.Show("recherche");
+        Assert.Contains("Inhalt", w.Find<SelectableTextBlock>("rs-text").Text);
+        await w.ReadUrlAsync("http://abcdefghij.onion"); w.Show("recherche");
+        Assert.Equal(1, calls); Assert.NotNull(w.TryFind<Button>("rs-tor"));
+        Assert.Single(w.Desk.SessionSources());
+        w.Find<Button>("rs-end").Press();
+        Assert.Empty(w.Desk.SessionSources());
+    }
+}
