@@ -1,0 +1,15 @@
+== Datum: 2026-10-21T15:29:55.4570365+02:00
+SHA256 Setup: E67B6043D836C46149CBC8FC155FAA1D476F67F076B08763856D7858CA4D1026
+Admin: False
+Install ExitCode: 0
+InstallDir vorhanden: True
+TrendoOS.exe: True
+Update.exe: True
+Startmenue-Verknuepfung: 1 (Trendo OS.lnk)
+Desktop-Verknuepfung: 1
+HKCU-Uninstall: True DisplayName=Trendo OS Version=0.3.0 Publisher=Trendo OS Projekt
+HKLM-Eintrag (soll False): False
+App-Start installiert ExitCode: 0 Screenshot: True
+Uninstall ExitCode: 0
+Nach Deinstallation: App=False Startmenue=0 Desktop=0 HKCU=False
+Rest im InstallDir: 0 Dateien

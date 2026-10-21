@@ -152,3 +152,65 @@ public class QA019_OfflineUi
         w.Close();
     }
 }
+
+/// Design-Ehrlichkeit: neue Oberfläche zeigt nur echte Zustände
+public class DesignHonesty
+{
+    [AvaloniaFact(DisplayName = "Design: 9 Studio-Kacheln mit echtem Status-Badge, keines als Bereit")]
+    public void Tiles_have_real_badges()
+    {
+        var (w, _, _) = Ui.Open();
+        var tiles = w.GetLogicalDescendants().OfType<Button>().Where(b => b.Name?.StartsWith("tile-") == true).ToList();
+        Assert.Equal(9, tiles.Count);
+        foreach (var t in tiles)
+        {
+            var name = Avalonia.Automation.AutomationProperties.GetName(t);
+            Assert.DoesNotContain("Bereit", name);
+            Assert.Matches("Noch nicht gebaut|Nicht verbunden|Blockiert|Status unbekannt", name);
+        }
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert")]
+    public void Ki_not_connected()
+    {
+        var (w, _, _) = Ui.Open();
+        Assert.Equal("Nicht verbunden", w.Find<TextBlock>("ki-status").Text);
+        Assert.False(w.Find<TextBox>("ki-input").IsEnabled);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt")]
+    public void Projects_real()
+    {
+        var (w, _, _) = Ui.Open();
+        Assert.NotNull(w.TryFind<Button>("btn-first-project"));
+        var texts = w.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text ?? "").ToList();
+        Assert.DoesNotContain(texts, t => t.Contains("Online Shop Konzept") || t.Contains("Behördenbrief"));
+        w.Core.Projects.Create("echtes-projekt", "Echtes Projekt");
+        w.Show("start");
+        Assert.Null(w.TryFind<Button>("btn-first-project"));
+        Assert.Contains(w.GetLogicalDescendants().OfType<TextBlock>(), t => t.Text == "Echtes Projekt");
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Design: Systemstatus zeigt Messwert in % oder 'n. v.', nie Mockup-Werte ohne Messung")]
+    public void Metrics_real_or_na()
+    {
+        var (w, _, _) = Ui.Open();
+        foreach (var k in new[] { "cpu", "ram", "ssd", "gpu" })
+            Assert.Matches(@"^(\d{1,3}%|n\. v\.|…)$", w.Find<TextBlock>("metric-" + k).Text!);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Design: Dock-Klick auf Dateien startet direkt (nur Owner) und wird auditiert; Browser offline deaktiviert")]
+    public void Dock_direct_launch()
+    {
+        var (w, l, _) = Ui.Open(offline: true);
+        w.Find<Button>("dock-files").Press();
+        Assert.Single(l.Opened);
+        Assert.Contains(w.Core.Audit.ReadAll(), e => e.Action == "user.direct_launch");
+        Assert.False(w.Find<Button>("dock-browser").IsEnabled);
+        w.Close();
+    }
+}
