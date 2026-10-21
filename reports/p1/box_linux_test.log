@@ -1,0 +1,5 @@
+Test run for /workspace/Trendo-OS/tests/Trendo.Core.Tests/bin/Release/net10.0/Trendo.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+Results File: /tmp/boxtr/box.trx
+
+Passed!  - Failed:     0, Passed:    29, Skipped:     0, Total:    29, Duration: 89 ms - Trendo.Core.Tests.dll (net10.0)
