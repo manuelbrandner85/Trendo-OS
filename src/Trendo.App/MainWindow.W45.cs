@@ -31,6 +31,7 @@ public partial class MainWindow
         InitW5Ext();
         InitW5CleanRoom();
         InitW5Market();
+        InitW5Brand();
     }
 
     private void RegisterTab(List<(string, string, string)> tabs, string key, string label, string module, Func<Control> view, params string[] words)

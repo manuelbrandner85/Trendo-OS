@@ -514,8 +514,9 @@ business_requirements:
   mode: BOTH
   title: Brand Identity & Premium UX Director
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-013.txt
 - id: BUS-014
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -529,8 +530,9 @@ business_requirements:
   mode: BOTH
   title: Customer Journey & Process Architect
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-013.txt
 - id: BUS-016
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -571,15 +573,17 @@ business_requirements:
   mode: BOTH
   title: SEO, Content & Visibility Director
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-013.txt
 - id: BUS-022
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Customer Acquisition & Sales Funnel Studio
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-013.txt
 - id: BUS-023
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
