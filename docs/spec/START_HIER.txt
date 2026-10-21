@@ -1,0 +1,23 @@
+# START HIER: Ein ZIP fuer Grok Bot, inklusive Startprompt
+
+1) Lade DIESES GESAMTE ZIP bei Grok Bot hoch, wenn Datei-Uploads unterstuetzt werden.
+2) Kopiere den vollstaendigen Text aus `GROK_BOT_STARTPROMPT_ZUM_KOPIEREN.txt`
+   als erste Nachricht an Grok Bot. Alternativ die Nachricht aus
+   `TRENDO_OS_GROK_STARTPROMPT_v2.1.txt`, die auch separat bereitliegt.
+3) Falls Grok Bot das ZIP nicht oeffnen kann: auf dem PC entpacken und
+   `SYSTEMBIBEL.md`, `MODULE_REGISTER.csv`, `ROADMAP.md`,
+   `GROK_BOT_PROJEKTLEITER_PROMPT.md` und `GROK_BUILD_MASTERPROMPT.md`
+   uebergeben. Der Bot muss klar sagen, welche Dateien er wirklich lesen konnte.
+4) Grok Bot plant und delegiert; Grok Build muss fuer echte lokale
+   Aenderungen, Tests und Blender-/Unreal-Anbindungen erst eingerichtet
+   und ausdruecklich autorisiert werden.
+
+ENTHALTEN:
+- Originaler vollstaendiger, genehmigter Grok-Produktionsstand v2.0
+- Neuer One-Shot-Startprompt fuer Grok Bot
+- Designbild Trendo OS und Designbrief (nur Konzept, kein fertig gebauter Desktop)
+
+KRITISCH:
+Trendo OS ist nicht als fertig implementiert zu betrachten. Keine
+vorgetaeuschten Tests; Sicherheits- und Freigaberegeln aus Systembibel
+beibehalten. Dieses ZIP allein installiert oder startet keine Software.

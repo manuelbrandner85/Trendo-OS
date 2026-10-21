@@ -1,0 +1,17 @@
+Kandidat,Funktion,Editionen,Bundle-Status,Redistribution-vor-Auslieferung-pruefen,Abhaengigkeiten,Teststatus
+Chromium,Browser,Linux USB/SSD + kompatible Systeme,KANDIDAT,JA,Plattformpakete und Lizenzen,NOT_RUN
+Google Chrome,Optionaler proprietaerer Browser,Windows Host und optional Linux,NUR OFFIZIELLE INSTALLATION/ANBINDUNG,JA,Herstellerlizenz und OS,NOT_RUN
+LibreOffice,Office Dokumente Tabellen Praesentationen,Linux USB/SSD + Windows,NUR KANDIDAT,JA,Plattformspezifische Pakete,NOT_RUN
+mpv oder libVLC,Audio- und Video-Player,Linux USB/SSD + Windows,NUR KANDIDAT,JA,Codecs und Lizenzen,NOT_RUN
+Blender,3D-Produktion,Windows oder kompatibles Linux,NUR KANDIDAT,JA,GPU/Treiber/Version,NOT_RUN
+Krita,Grafikbearbeitung,Windows oder kompatibles Linux,NUR KANDIDAT,JA,GPU/Qt und Lizenzen,NOT_RUN
+Inkscape,Vektorgrafik,Windows oder kompatibles Linux,NUR KANDIDAT,JA,Runtime,NOT_RUN
+Kdenlive,Video,Windows oder kompatibles Linux,NUR KANDIDAT,JA,GPU/FFmpeg/Codecs,NOT_RUN
+Audacity,Audio,Windows oder kompatibles Linux,NUR KANDIDAT,JA,Audio/Plugins,NOT_RUN
+Tesseract OCR,Texterkennung,Windows oder kompatibles Linux,NUR KANDIDAT,JA,Lokale Sprachenpakete,NOT_RUN
+Git,Quellcode-Versionierung,Windows/Linux/Pi kompatible Pakete,NUR KANDIDAT,JA,Edition/Architektur,NOT_RUN
+Python,Runtime und Hilfswerkzeuge,Windows/Linux/Pi kompatible Pakete,NUR KANDIDAT,JA,Runtime/Lizenzen,NOT_RUN
+Grok Build,Lokaler KI-Programmier- und Testagent,Windows Host/geeignete Systeme,OFFIZIELLER ZUGANG ERFORDERLICH,JA,Nutzerkonto/Berechtigung,NOT_RUN
+Unreal Engine,AAA Spieleentwicklung,Windows PC und geeignete Linux-Hosts,NICHT PAUSCHAL BUNDLEBAR,JA,Herstellerbedingungen/GPU/Groesse,NOT_RUN
+Tor Browser,Isolierte legal READ-ONLY .onion Recherche,Windows Host/geeignete Linux Hosts,NUR NACH OFFIZIELLER QUELLE/QA,JA,Tor-Sicherheit/Plattform/Isolation,NOT_RUN
+Grok Bot,Cloud-Projektleitung,Desktop/Mobil/Cloud mit freigegebenem Zugriff,OPTIONALER CLOUDBEREICH NICHT IM OS-BUNDLE,JA,Kontotarif/Cloudprivacy/Taskübergabe,NOT_RUN

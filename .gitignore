@@ -1,0 +1,29 @@
+# Secrets / Zugangsdaten – niemals committen
+.env
+.env.*
+*.pem
+*.key
+*.pfx
+secrets/
+credentials*
+.grok/*.local.toml
+# Forensik-/sensible Arbeitsdaten (120h-Regel, nie ins Repo)
+forensics/
+evidence/
+*.e01
+# Build / Tooling
+node_modules/
+target/
+dist/
+build/
+bin/
+obj/
+.venv*/
+__pycache__/
+*.pyc
+# Lokale Logs grosser Laeufe (Nachweise gezielt unter reports/ ablegen)
+*.tmp
+.DS_Store
+Thumbs.db
+.vs/
+.idea/

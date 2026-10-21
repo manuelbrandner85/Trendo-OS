@@ -1,0 +1,1 @@
+Trendo OS Grok Single-Handoff-Paket v2.1 (2026-10-21): Basispaket v2.0 unveraendert plus Startprompt, Designbrief und Konzeptbild. Kein Build/Test vollzogen.
