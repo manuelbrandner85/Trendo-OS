@@ -628,161 +628,181 @@ letter_requirements:
   module: STUDIO-LETTER-01
   title: Ultimate AI Letter Director
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
+  note: "LTR-QA-018 (Linux-USB/Pi) NOT_RUN – Hardware fehlt"
 - id: LETTER-002
   module: STUDIO-LETTER-01
   title: Universal Letter Category Engine
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
   test_status: TESTED_BOX
-  evidence: reports/w1/STUDIO-LETTER-01.txt
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-003
   module: STUDIO-LETTER-01
   title: DIN-5008-orientierter Letter Designer
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
   test_status: TESTED_BOX
-  evidence: reports/w1/STUDIO-LETTER-01.txt
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-004
   module: STUDIO-LETTER-01
   title: Professional Template Library
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
   test_status: TESTED_BOX
-  evidence: reports/w1/STUDIO-LETTER-01.txt
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-005
   module: STUDIO-LETTER-01
   title: Intelligent Tone & Writing Director
   approval_status: APPROVED_SPEC
-  implementation_status: IN_PROGRESS
+  implementation_status: IMPLEMENTED
   test_status: TESTED_BOX
-  evidence: reports/w1/STUDIO-LETTER-01.txt
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-006
   module: STUDIO-LETTER-01
   title: Government & Authority Letter Center
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-007
   module: STUDIO-LETTER-01
   title: Court Correspondence & Pleading Assistant
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-008
   module: STUDIO-LETTER-01
   title: Lawyer Communication Director
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-009
   module: STUDIO-LETTER-01
   title: Insurance & Claims Correspondence Studio
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-010
   module: STUDIO-LETTER-01
   title: Business Dispute & Contract Letter Center
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-011
   module: STUDIO-LETTER-01
   title: Letter Intake & Fact Questionnaire
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-012
   module: STUDIO-LETTER-01
   title: Document Scan OCR & Incoming Letter Reader
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-013
   module: STUDIO-LETTER-01
   title: Case Timeline Evidence & Attachment Organizer
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-014
   module: STUDIO-LETTER-01
   title: Verified Legal Sources & Deadline Inspector
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-015
   module: STUDIO-LETTER-01
   title: German-First Cross-Border Letter Composer
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-016
   module: STUDIO-LETTER-01
   title: DOCX ODT PDF Print Production Engine
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/w1/pc/README.md
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
+  note: "LTR-QA-018 (Linux-USB/Pi) NOT_RUN – Hardware fehlt"
 - id: LETTER-017
   module: STUDIO-LETTER-01
   title: Personal & Business Letterhead Vault
   approval_status: APPROVED_SPEC
-  implementation_status: IN_PROGRESS
+  implementation_status: IMPLEMENTED
   test_status: TESTED_BOX
-  evidence: reports/w1/STUDIO-LETTER-01.txt
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-018
   module: STUDIO-LETTER-01
   title: Missing Information & Consistency Validator
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
   test_status: TESTED_BOX
-  evidence: reports/w1/STUDIO-LETTER-01.txt
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-019
   module: STUDIO-LETTER-01
   title: Deadline Reply & Follow-Up Planner
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-020
   module: STUDIO-LETTER-01
   title: Document Preview Proofreading & QA Review
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-021
   module: STUDIO-LETTER-01
   title: Incoming Letter Analysis & Reply Builder
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-022
   module: STUDIO-LETTER-01
   title: Correspondence Case Archive & Version History
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
   test_status: TESTED_BOX
-  evidence: reports/w1/STUDIO-LETTER-01.txt
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-023
   module: STUDIO-LETTER-01
   title: Official Delivery Channel Preparation
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-024
   module: STUDIO-LETTER-01
   title: Human Approval Privacy & Legal Review Gate
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
 - id: LETTER-025
   module: STUDIO-LETTER-01
   title: Real Letter Production & Submission QA
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
 tests:
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/tests-full-box.txt
+  note: "LTR-QA-018 (Linux-USB/Pi) NOT_RUN – Hardware fehlt"
 - id: GRK-001
   catalog: GROK_QA_MATRIX.csv
   status: NOT_RUN

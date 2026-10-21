@@ -265,8 +265,8 @@ public class LetterOcrReal
         var audit = new AuditLog(Path.Combine(root, "a.jsonl"));
         var run = new RealProcessRunner();
         string? dir = (await Ocr.LanguagesAsync(run, tess)).Contains("deu") ? null : Ocr.UserTessdata(root);
-        if (dir is not null) Assert.True((await Ocr.DownloadGermanAsync(new HttpClient(), root, audit, Principal.LocalOwner)).Ok);
-        var bad = await Ocr.DownloadGermanAsync(new HttpClient(), Path.Combine(root, "x"), audit, Principal.LocalOwner, sha: "00");
+        if (dir is not null) Assert.True((await Ocr.DownloadGermanAsync(new HttpClient().GetStreamAsync, root, audit, Principal.LocalOwner)).Ok);
+        var bad = await Ocr.DownloadGermanAsync(new HttpClient().GetStreamAsync, Path.Combine(root, "x"), audit, Principal.LocalOwner, sha: "00");
         Assert.False(bad.Ok); Assert.False(Ocr.HasUserGerman(Path.Combine(root, "x")));
         // Brief → PDF → PNG über LibreOffice (png-Export der 1. Seite)
         var d = new LetterDraft { SenderName = "Erika Muster", SenderStreet = "Hauptstraße 1", SenderCity = "10115 Berlin", Recipient = "Stadtwerke München GmbH\nAm Werk 5\n80331 München", Subject = "Kündigung Stromvertrag 4711", Body = "hiermit kündige ich fristgerecht zum 31.12.2026. Bitte bestätigen Sie die Kündigung." };

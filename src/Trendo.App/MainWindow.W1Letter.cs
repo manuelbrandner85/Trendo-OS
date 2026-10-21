@@ -184,7 +184,7 @@ public partial class MainWindow
             else if (!(await Ocr.LanguagesAsync(run, tess)).Contains("deu"))
             {
                 if (_core.Offline) { _caseMsg = "Deutsches OCR-Sprachpaket fehlt, und Trendo ist offline."; return; }
-                var (ok, m) = await Ocr.DownloadGermanAsync(new HttpClient { Timeout = TimeSpan.FromSeconds(60) }, _core.DataRoot, _core.Audit, Principal.LocalOwner);
+                var (ok, m) = await Ocr.DownloadGermanAsync(new HttpClient { Timeout = TimeSpan.FromSeconds(60) }.GetStreamAsync, _core.DataRoot, _core.Audit, Principal.LocalOwner);
                 if (!ok) { _caseMsg = m + " Texterkennung läuft auf Englisch – Umlaute werden schlechter erkannt."; lang = "eng"; } else dir = Ocr.UserTessdata(_core.DataRoot);
             }
             var r = await Ocr.RunAsync(run, tess, path, default, dir, lang);
