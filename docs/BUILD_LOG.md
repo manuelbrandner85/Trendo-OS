@@ -10,6 +10,9 @@
 - 19:3x Welle 0: Assistent, Basispaket (SumatraPDF, mpv, 7-Zip, DIN-5008-Vorlagen), Studio-Pakete, KI nach Hardware, Sicherung und Wiederherstellung, Velopack-Updates über GitHub, Systemcheck mit Reparieren.
 - 19:40 PR #79 gemergt: ISO Build 6 (Autologin PASS), BUILD_PLAN, Fortschritt-Seite, Issues #14–#78.
 
+## Welle 2 & 3 – KI, Automatisierung, System (Builder W2/W3, Linux-Testrechner)
+- 20:56 CORE-02 Intelligence Core: ein Eingang für alle KI-Fragen (nur lokal, Rückfallkette, Wissen einbinden, Verlauf, Protokoll ohne Frage-Inhalt). Seite KI › Fragen, Studio-Kachel springt hin (nach Programm-Check). Tests +5.
+
 ## Welle 1 – Fundament & Alltag
 - 20:42 SYS-13: Releases nur noch von sauberem main (installer/release.sh prüft Branch, Sauberkeit, origin/main, Version, Tests). Absturzprotokoll (logs/, Benutzerpfade geschwärzt, max. 20), Version mit Stand unter System. Tests +2.
 - 20:45 CORE-01: Globale Suche (Seiten, Bereiche, Studios, Projekte, Dateinamen im Projektordner; Umlaute egal; Strg+K). SYS-12: Anzeigegröße Normal/Groß/Sehr groß, F1 = Hilfe, Tastaturhinweise; Versionsanzeige in Einstellungen korrigiert. Tests +5.
