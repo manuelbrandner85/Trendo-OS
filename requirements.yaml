@@ -168,8 +168,9 @@ modules:
   name: Ultimate Network File Sharing & Remote Workspace
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w23/SYS-06.md
 - id: SYS-07
   name: Ultimate Hardware & Device Recognition
   approved_expansion_functions: '20'

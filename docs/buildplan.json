@@ -497,8 +497,8 @@
   "order": 5,
   "id": "SYS-06",
   "name": "Ultimate Network File Sharing & Remote Workspace",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
