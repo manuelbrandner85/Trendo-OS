@@ -93,3 +93,14 @@ P0: PLANNED · P1: PLANNED · P2–P6: APPROVED_SPEC · Grok Build: NOT_CONNECTE
 
 ## Nachtrag 21.10.2026
 P0 von Manuel freigegeben. Spezifikation im Branch `p0/spec-import` importiert, `requirements.yaml` erzeugt und validiert, ADRs 0001–0006 und `tasks/TASK-0001.md` angelegt. P0: IN_PROGRESS.
+
+## Nachtrag 21.10.2026, 14:25 – P0-Inventur (TASK-0001)
+- PR #1 (Spezifikationsimport) gemergt.
+- Inventur durch Grok Bot, nur lesend, ohne Admin: Windows 11 Pro 26H2, Ryzen 7 5700X, 32 GB RAM, RTX 5070, 1 TB NVMe (403 GB frei). Keine externe SSD angeschlossen.
+- Toolchain: .NET 10, VS 2026 + MSVC, Node 24, git, gh, WebView2 vorhanden; Rust, Python, Docker, WSL, pwsh fehlen.
+- Blender 5.2.1 und UE 5.8 vorhanden (nur Präsenz, keine Adapter getestet).
+- **Grok Build: NOT_FOUND** → GRK-001 FAIL, GRK-002 BLOCKED. Lokale Coding-Aufträge an Grok Build sind BLOCKED.
+- ADR-0005: Empfehlung .NET 10 + Avalonia, Status PROPOSED.
+
+### Status
+P0: IN_PROGRESS (offen: ADR-0005-Abnahme, Grok-Build-Einrichtung) · P1: PLANNED/BLOCKED (Grok Build) · Tests: alle NOT_RUN außer GRK-001 FAIL, GRK-002 BLOCKED (Inventurbefund, nicht in requirements.yaml übertragen)
