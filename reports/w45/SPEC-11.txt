@@ -1,0 +1,4 @@
+Nachweis SPEC-11 – Linux-Box (nicht Windows-PC), 21.10.2026 21:18 MESZ, Commit-Basis a2d81ce
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 693 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   126, Skipped:     0, Total:   126, Duration: 12 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:    49, Skipped:     0, Total:    49, Duration: 17 s - Trendo.App.Tests.dll (net10.0)

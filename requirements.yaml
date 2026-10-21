@@ -279,8 +279,9 @@ modules:
   name: Business & Finance 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/SPEC-11.txt
 - id: SPEC-12
   name: Cybersecurity & Forensics 2.0
   approved_expansion_functions: '20'

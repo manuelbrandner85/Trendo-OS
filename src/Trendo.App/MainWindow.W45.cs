@@ -26,6 +26,7 @@ public partial class MainWindow
         InitW4Builder();
         InitW4Suite();
         InitW5Business();
+        InitW5Finance();
     }
 
     private void RegisterTab(List<(string, string, string)> tabs, string key, string label, string module, Func<Control> view, params string[] words)
