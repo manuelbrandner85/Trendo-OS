@@ -98,3 +98,21 @@ public class SPEC04_Xr
         Assert.Equal((13.89, true, 13.6), XrInspector.FrameBudget(72, 12));
     }
 }
+
+public class SPEC05_Science
+{
+    [Fact(DisplayName = "SPEC-05: CSV mit deutschen Zahlen, Kennzahlen, Regression, Welch-t-Test mit p-Wert")]
+    public void Analyse()
+    {
+        var t = DataTable.Parse("Zeit;Temp;B\n1;2,0;5\n2;4,1;6\n3;5,9;5\n4;8,0;7\n5;10,0;\nx;y;6");
+        Assert.Equal(["Zeit", "Temp", "B"], t.Columns);
+        var d = t.Describe(); Assert.Equal(5, d[0].N); Assert.Equal(3, d[0].Mean); Assert.Equal(3, d[0].Median); Assert.Equal(Math.Sqrt(2.5), d[0].StdDev, 9);
+        var r = t.Fit("Zeit", "Temp"); Assert.Equal(1.99, r.Slope, 9); Assert.True(r.R2 > 0.99);
+        // Referenz (R: t.test(c(1,2,3,4,5), c(6,7,8,9,10))): t = -5, df = 8, p = 0,001053
+        var w = Stats.Welch([1, 2, 3, 4, 5], [6, 7, 8, 9, 10]);
+        Assert.Equal(-5, w.T, 9); Assert.Equal(8, w.Df, 9); Assert.Equal(0.001053, w.P, 5); Assert.True(w.Significant);
+        Assert.False(Stats.Welch([1, 2, 3], [1.5, 2.5, 3.2]).Significant);
+        Assert.Contains("| Temp | 5 |", Stats.Report(t));
+        Assert.Throws<ArgumentException>(() => t.Values("Gibts"));
+    }
+}

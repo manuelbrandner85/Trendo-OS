@@ -909,8 +909,8 @@
   "order": 5,
   "id": "SPEC-05",
   "name": "Science & Research 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
