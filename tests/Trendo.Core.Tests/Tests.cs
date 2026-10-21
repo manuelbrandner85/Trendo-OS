@@ -695,10 +695,9 @@ public class LETTER01_Studio
         foreach (var part in new[] { "Erika Muster · Hauptstraße 1 · 10115 Berlin", "80331 München", "Kündigung meines Stromvertrags 4711", "Absatz eins & <Test>.", "Absatz zwei.", "Mit freundlichen Grüßen", "Anlagen", "Vertragskopie", "Berlin, " })
             Xunit.Assert.Contains(part, txt);
         string xml;
-        using (var z = System.IO.Compression.ZipFile.OpenRead(docx)) using (var sr = new StreamReader(z.GetEntry("word/document.xml")!.Open())) xml = sr.ReadToEnd();
+        using (var z = System.IO.Compression.ZipFile.OpenRead(docx)) using (var sr = new StreamReader(z.GetEntry("word/document.xml")!.Open())) { xml = sr.ReadToEnd(); Xunit.Assert.NotNull(z.GetEntry("[Content_Types].xml")); }
         System.Xml.Linq.XDocument.Parse(xml);
         Xunit.Assert.Contains("w:w=\"11906\" w:h=\"16838\"", xml); Xunit.Assert.Contains("w:left=\"1418\"", xml);
-        Xunit.Assert.NotNull(z.GetEntry("[Content_Types].xml"));
         Xunit.Assert.Equal(d.Subject, Trendo.Core.LetterArchive.Load(docx)!.Subject);
         Directory.Delete(root, true);
     }
