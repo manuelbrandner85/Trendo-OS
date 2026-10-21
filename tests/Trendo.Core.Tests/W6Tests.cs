@@ -350,3 +350,17 @@ public class CORE09_Robotics
         Assert.Contains("Zeile 1", Assert.Throws<ArgumentException>(() => RobotArm.Program(c, "500 0 0")).Message);
     }
 }
+
+public class SPEC01_Plus
+{
+    private static readonly Room R = new("Bad", 3, 2, 2.5, 1, 1);
+    [Fact(DisplayName = "SPEC-01 F08: Fliesenbedarf")] public void F08() { var t = Interior.Tiles(6, 30, 60, 3, 10, 1.44); Assert.Equal(37, t.Tiles); Assert.Equal(5, t.Packs); Assert.True(t.GroutKg > 0); Assert.Throws<ArgumentException>(() => Interior.Tiles(0, 30, 30)); }
+    [Fact(DisplayName = "SPEC-01 F09: Tapetenrollen")] public void F09() { var w = Interior.Wallpaper(R); Assert.Equal(3, w.StripsPerRoll); Assert.Equal(17, w.Strips); Assert.Equal(6, w.Rolls); Assert.Equal(2, Interior.Wallpaper(R, repeatCm: 100).StripsPerRoll); }
+    [Fact(DisplayName = "SPEC-01 F10: Möbel-Stellprüfung")] public void F10() { Assert.True(Interior.FurnitureFits(R, 2.8, 0.6).Fits); Assert.False(Interior.FurnitureFits(R, 2.8, 1.5).Fits); Assert.Contains("größer", Interior.FurnitureFits(R, 4, 4).Why); }
+    [Fact(DisplayName = "SPEC-01 F11: Heizlast-Schätzung")] public void F11() { Assert.Equal(540, Interior.HeatLoad(R, "teilsaniert")); Assert.Equal(90, Interior.HeatLoad(R, "passivhaus")); Assert.Throws<ArgumentException>(() => Interior.HeatLoad(R, "iglu")); }
+    [Fact(DisplayName = "SPEC-01 F12: Licht-Bedarf")] public void F12() { var l = Interior.Light(R, "bad"); Assert.Equal(2000, l.Lumen); Assert.Equal(3, l.Bulbs806); }
+    [Fact(DisplayName = "SPEC-01 F13: Kostenschätzung Renovierung")] public void F13() { var c = Interior.Cost(new MaterialNeed(12, 2, 10, 17.1, 20, 60), 45, 25, 3, 2, 30); Assert.Equal((90, 250, 52.5, 60, 452.5), (c.Paint, c.Floor, c.Skirting, c.Tiles, c.Total)); }
+    [Fact(DisplayName = "SPEC-01 F14: Treppe berechnen")] public void F14() { var s = Interior.Stairs(275); Assert.Equal(16, s.Steps); Assert.Equal(17.2, s.RiseCm); Assert.Equal(28.6, s.TreadCm); Assert.Contains("Bequem", s.Verdict); Assert.Contains("unbequem", Interior.Stairs(275, 300).Verdict); }
+    [Fact(DisplayName = "SPEC-01 F15: Wohnfläche nach WoFlV")] public void F15() { Assert.Equal(67, Interior.LivingArea(60, 10, 4, 8)); Assert.Throws<ArgumentException>(() => Interior.LivingArea(-1)); }
+    [Fact(DisplayName = "SPEC-01 F16: Raumliste als CSV")] public void F16() { var c = Interior.RoomsCsv([R]); Assert.Contains("Bad;3,00;2,00;2,50;6,00", c); Assert.StartsWith("Raum;", c); }
+}

@@ -277,3 +277,24 @@ public class CORE09_Ui
         Assert.Contains("Gespeichert", W6Ui.Run(w, "rob-prog"));
     }
 }
+
+public class SPEC01_UiPlus
+{
+    [AvaloniaFact(DisplayName = "SPEC-01 UI Ausbau: Gruppen Material & Planen")]
+    public void Plus()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show("architektur");
+        Assert.Contains("⚠", W6Ui.Run(w, "arch-furn"));
+        W6Ui.Run(w, "arch-add", ("name", "Wohnzimmer"), ("l", "5"), ("w", "4"));
+        Assert.Contains("✓", W6Ui.Run(w, "arch-furn"));
+        Assert.Contains("Fliesen", W6Ui.Run(w, "arch-tile"));
+        Assert.Contains("Rollen", W6Ui.Run(w, "arch-wall"));
+        Assert.Contains("gesamt", W6Ui.Run(w, "arch-cost"));
+        Assert.Contains("Gespeichert", W6Ui.Run(w, "arch-csv"));
+        Assert.Contains("W Heizleistung", W6Ui.Run(w, "arch-heat"));
+        Assert.Contains("lm", W6Ui.Run(w, "arch-light"));
+        Assert.Contains("Steigungen", W6Ui.Run(w, "arch-stair"));
+        Assert.Contains("67,00 m²", W6Ui.Run(w, "arch-wofl"));
+    }
+}
