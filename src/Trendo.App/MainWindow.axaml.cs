@@ -709,12 +709,28 @@ public sealed partial class MainWindow : Window
     }
 
     // ---------- Inhaltsansichten (im Glaspanel) ----------
+    /// <summary>Modul einer Studio-Seite: PageModules (RegisterTab), sonst StudioPages. Brief und Dokumente sind die Einstiege aus PageForStudio.</summary>
+    private string? StudioIdForPage(string key)
+    {
+        if (PageModules.TryGetValue(key, out var fromPage)) return fromPage;
+        foreach (var (id, page) in StudioPages)
+            if (string.Equals(page, key, StringComparison.OrdinalIgnoreCase)) return id;
+        if (key is "brief" or "akten" or "akte" or "ausgabe" or "briefkoepfe") return "STUDIO-LETTER-01";
+        if (string.Equals(key, "office", StringComparison.OrdinalIgnoreCase)) return "SYS-10";
+        return null;
+    }
+
+    private string StudioHeading(string fallback) =>
+        StudioIdForPage(CurrentView) is { } id ? StudioCatalog.NameOf(id, fallback) : fallback;
+
     private Control Page(string title, Control content)
     {
+        title = StudioHeading(title);
         var help = new Button { Name = "btn-help", Content = "?", Width = 28, Height = 28, Padding = new Thickness(0), CornerRadius = new CornerRadius(14), HorizontalContentAlignment = HorizontalAlignment.Center, FontWeight = FontWeight.Bold, Background = Brush.Parse("#33FFFFFF"), Foreground = Text };
         ToolTip.SetTip(help, "Was kann ich hier tun?"); var key = CurrentView;
         help.Click += (_, _) => ShowHelp(key, force: true);
-        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { H(title, 22), Pos(help, 1) } };
+        var heading = H(title, 22); heading.Name = "page-title";
+        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { heading, Pos(help, 1) } };
         var sp = new StackPanel { Spacing = 8, Children = { head, content } };
         Detach(_hintHost); sp.Children.Insert(1, _hintHost);
         return Panel(new ScrollViewer { Content = sp }, 18);
