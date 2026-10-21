@@ -214,20 +214,20 @@ public static class Ocr
     }
 
     /// <summary>Lädt deu.traineddata in den Benutzerordner; falscher Hash → Datei wird verworfen.</summary>
-    public static async Task<(bool Ok, string Message)> DownloadGermanAsync(HttpClient http, string dataRoot, AuditLog audit, Principal by, string url = GermanUrl, string sha = GermanSha256)
+    public static async Task<(bool Ok, string Message)> DownloadGermanAsync(Func<string, Task<Stream>> fetch, string dataRoot, AuditLog audit, Principal by, string url = GermanUrl, string sha = GermanSha256)
     {
         var dir = UserTessdata(dataRoot); Directory.CreateDirectory(dir);
         var tmp = Path.Combine(dir, "deu.traineddata.part");
         try
         {
-            await using (var s = await http.GetStreamAsync(url)) await using (var f = File.Create(tmp)) await s.CopyToAsync(f);
+            await using (var s = await fetch(url)) await using (var f = File.Create(tmp)) await s.CopyToAsync(f);
             var got = LetterKit.Sha(tmp);
             if (got != sha) { File.Delete(tmp); audit.Append(by.Name, "ocr.lang.rejected", got); return (false, "Download verworfen: Prüfsumme stimmt nicht."); }
             File.Move(tmp, Path.Combine(dir, "deu.traineddata"), true);
             audit.Append(by.Name, "ocr.lang.installed", $"deu sha={got[..16]}");
             return (true, "Deutsches Sprachpaket installiert (1,5 MB, Apache-2.0).");
         }
-        catch (HttpRequestException e) { try { File.Delete(tmp); } catch { } return (false, "Download fehlgeschlagen: " + e.Message); }
+        catch (Exception e) when (e is not OutOfMemoryException) { try { File.Delete(tmp); } catch { } return (false, "Download fehlgeschlagen: " + e.Message); }
     }
 
     public static async Task<(bool Ok, string Text, double Confidence, List<string> Unreadable, string Message)> RunAsync(IProcessRunner run, string tesseract, string image, CancellationToken ct = default, string? tessdata = null, string lang = "deu")
