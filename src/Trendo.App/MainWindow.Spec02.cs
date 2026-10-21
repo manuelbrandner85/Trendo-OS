@@ -26,6 +26,36 @@ public partial class MainWindow
         sp.Children.Add(FachTool("el-bom", "Stückliste", "Eine Zeile pro Bauteil: „R1, 10k, 0805, 1, 0,02“. Gleiche Teile werden zusammengefasst; die Liste wird als CSV gespeichert.",
             [("text", "Zeilen (mit | trennen)", "R1, 10k, 0805, 1, 0,02 | R2, 10k, 0805, 1, 0,02 | C1, 100n, 0603, 1, 0,03")],
             v => { var bom = Electronics.ParseBom(v("text").Replace('|', '\n')); var p = Path.Combine(Fach.StoreDir(_core.DataRoot, "elektronik"), "stueckliste.csv"); File.WriteAllText(p, Electronics.BomCsv(bom)); return string.Join("\n", bom.Select(b => $"{b.Qty}× {b.Value} {b.Part} ({b.Ref})")) + $"\nSumme: {Fach.F(bom.Sum(b => b.Qty * b.UnitPrice))} €\nGespeichert: {p}"; }, "Zusammenfassen"));
+        sp.Children.Add(FachGroup("el-calc", "Bauteile & Schaltungen", false,
+            FachTool("el-comb", "Reihe & parallel", "Werte mit Komma oder Leerzeichen trennen, z. B. „4k7 10k 2k2“. Art: r = Widerstände, c = Kondensatoren.",
+                [("vals", "Werte", "1k 1k 2k"), ("mode", "reihe/parallel", "parallel"), ("kind", "r oder c", "r")],
+                v => { var vals = v("vals").Split([' ', ';'], StringSplitOptions.RemoveEmptyEntries).Select(ElectronicsPlus.Si); var cap = v("kind").Trim().StartsWith("c", StringComparison.OrdinalIgnoreCase); var x = ElectronicsPlus.Combine(vals, v("mode").Trim().StartsWith("p", StringComparison.OrdinalIgnoreCase), cap); return "Gesamt: " + ElectronicsPlus.Fmt(x, cap ? "F" : "Ω"); }),
+            FachTool("el-cap", "Kondensator-Aufdruck", "Code wie „104“ oder Wert wie „100n“.",
+                [("c", "Code oder Wert", "104")],
+                v => { var t = v("c").Trim(); return t.Length == 3 && t.All(char.IsDigit) ? $"{t} = {ElectronicsPlus.Fmt(ElectronicsPlus.CapCode(t), "F")}" : $"{ElectronicsPlus.Fmt(ElectronicsPlus.Si(t), "F")} = Code {ElectronicsPlus.ToCapCode(ElectronicsPlus.Si(t))}"; }, "Umrechnen"),
+            FachTool("el-smd", "SMD-Widerstand", "Aufdruck wie 472, 4702, 4R7 oder 01C.",
+                [("c", "Aufdruck", "472")], v => $"{v("c")} = {Electronics.Ohm(ElectronicsPlus.SmdCode(v("c")))}", "Lesen"),
+            FachTool("el-rc", "RC-Glied", "Zeitkonstante und Grenzfrequenz (Tiefpass).",
+                [("r", "R", "10k"), ("c", "C", "100n")],
+                v => { var (t, f, full) = ElectronicsPlus.Rc(ElectronicsPlus.Si(v("r")), ElectronicsPlus.Si(v("c"))); return $"τ = {ElectronicsPlus.Fmt(t, "s")} · Grenzfrequenz {ElectronicsPlus.Fmt(f, "Hz")} · voll geladen nach {ElectronicsPlus.Fmt(full, "s")}"; }),
+            FachTool("el-555", "Blinker mit NE555", "Astabile Schaltung.",
+                [("r1", "R1", "1k"), ("r2", "R2", "10k"), ("c", "C", "10u")],
+                v => { var x = ElectronicsPlus.Timer555(ElectronicsPlus.Si(v("r1")), ElectronicsPlus.Si(v("r2")), ElectronicsPlus.Si(v("c"))); return $"{ElectronicsPlus.Fmt(x.Hz, "Hz")} · an {Fach.F(x.DutyPct, 1)} % ({ElectronicsPlus.Fmt(x.High, "s")} an, {ElectronicsPlus.Fmt(x.Low, "s")} aus)"; })));
+        sp.Children.Add(FachGroup("el-power", "Platine & Stromversorgung", false,
+            FachTool("el-trace", "Leiterbahnbreite", "Nach IPC-2221, Außenlage, 35 µm Kupfer.",
+                [("a", "Strom (A)", "2"), ("dt", "Erwärmung (°C)", "10"), ("cu", "Kupfer (µm)", "35")],
+                v => $"Mindestens {Fach.F(ElectronicsPlus.TraceWidthMm(Fach.Num(v("a")), Fach.Num(v("dt")), Fach.Num(v("cu"))), 2)} mm breit (Außenlage)"),
+            FachTool("el-bat", "Wie lange hält der Akku?", "Wirkungsgrad 85 % eingerechnet.",
+                [("mah", "Kapazität (mAh)", "2000"), ("ma", "Verbrauch (mA)", "50")],
+                v => { var h = ElectronicsPlus.BatteryHours(Fach.Num(v("mah")), Fach.Num(v("ma"))); return $"ca. {Fach.F(h, 1)} Stunden ({Fach.F(h / 24, 1)} Tage)"; }),
+            FachTool("el-cable", "Kabel: Spannungsverlust", "Kupfer, Hin- und Rückleiter.",
+                [("l", "Länge (m)", "5"), ("a", "Strom (A)", "10"), ("q", "Querschnitt (mm²)", "1,5"), ("u", "Spannung (V)", "12")],
+                v => { var d = ElectronicsPlus.CableDrop(Fach.Num(v("l")), Fach.Num(v("a")), Fach.Num(v("q")), Fach.Num(v("u"))); return $"{(d.DropPct > 3 ? "⚠" : "✓")} Verlust {Fach.F(d.DropV, 2)} V ({Fach.F(d.DropPct, 1)} %), {Fach.F(d.LossW, 1)} W Wärme{(d.DropPct > 3 ? " – dickeres Kabel nehmen (Richtwert max. 3 %)." : "")}"; }),
+            FachTool("el-reg", "Spannungsregler (z. B. 7805)", "Wie warm wird er? Ohne Kühlkörper ca. 50 K/W.",
+                [("vin", "Eingang (V)", "12"), ("vout", "Ausgang (V)", "5"), ("a", "Strom (A)", "0,5")],
+                v => { var r = ElectronicsPlus.Regulator(Fach.Num(v("vin")), Fach.Num(v("vout")), Fach.Num(v("a"))); return r.NeedsSink ? $"⚠ {Fach.F(r.Watt, 2)} W Verlust – ohne Kühlkörper {Fach.F(r.TjNoSink, 0)} °C. Kühlkörper mit höchstens {Fach.F(r.SinkKPerW, 1)} K/W nötig, oder Schaltregler nehmen." : $"✓ {Fach.F(r.Watt, 2)} W Verlust, ca. {Fach.F(r.TjNoSink, 0)} °C – kein Kühlkörper nötig."; }),
+            FachTool("el-si", "Einheiten-Präfixe", "Wert mit Präfix (p, n, µ/u, m, k, M, G) lesen.",
+                [("v", "Wert", "4k7")], v => $"{v("v")} = {Fach.F(ElectronicsPlus.Si(v("v")), 12).TrimEnd('0').TrimEnd(',')}", "Lesen")));
         return FachPage("Elektronik", sp);
     }
 }

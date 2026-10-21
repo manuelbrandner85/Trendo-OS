@@ -298,3 +298,22 @@ public class SPEC01_UiPlus
         Assert.Contains("67,00 m²", W6Ui.Run(w, "arch-wofl"));
     }
 }
+
+public class SPEC02_UiPlus
+{
+    [AvaloniaFact(DisplayName = "SPEC-02 UI Ausbau: Bauteile, Platine, Versorgung")]
+    public void Plus()
+    {
+        var (w, _, _) = Ui.Open(); w.Show("elektronik");
+        Assert.Contains("400 Ω", W6Ui.Run(w, "el-comb"));
+        Assert.Contains("100 nF", W6Ui.Run(w, "el-cap"));
+        Assert.Contains("4,70 kΩ", W6Ui.Run(w, "el-smd"));
+        Assert.Contains("Grenzfrequenz", W6Ui.Run(w, "el-rc"));
+        Assert.Contains("Hz", W6Ui.Run(w, "el-555"));
+        Assert.Contains("mm breit", W6Ui.Run(w, "el-trace"));
+        Assert.Contains("34", W6Ui.Run(w, "el-bat"));
+        Assert.Contains("⚠", W6Ui.Run(w, "el-cable"));
+        Assert.Contains("Kühlkörper", W6Ui.Run(w, "el-reg"));
+        Assert.Contains("4.700", W6Ui.Run(w, "el-si"));
+    }
+}
