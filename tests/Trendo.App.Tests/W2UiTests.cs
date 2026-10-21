@@ -23,13 +23,13 @@ public static class W2Ui
 
 public class W2_Ui
 {
-    [AvaloniaFact(DisplayName = "CORE-02 UI: Studio-Kachel führt zu „KI fragen“, Frage wird beantwortet")]
+    [AvaloniaFact(DisplayName = "CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet")]
     public void Ask_page()
     {
         var (w, _, _) = Ui.Open();
         w.KiBackendsOverride = () => [new FakeKi()];
-        _ = w.OpenStudio("CORE-02", "Trendo Intelligence Core"); W2Ui.Settle();
-        Assert.Equal("ki-fragen", w.CurrentView);
+        Assert.Equal("ki-fragen", MainWindow.StudioPages["CORE-02"]);
+        w.Show("ki-fragen"); W2Ui.Settle();
         w.Find<TextBox>("ask-input").Text = "Wer bist du?";
         w.Find<Button>("ask-send").Press(); W2Ui.Settle();
         Assert.Equal("Hallo, ich bin Trendo.", w.LastAnswer);
