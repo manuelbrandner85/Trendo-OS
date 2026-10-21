@@ -3,7 +3,7 @@ using System.Diagnostics;
 namespace Trendo.Core;
 
 /// <summary>Startet Prozesse ausschließlich über einen Launcher. Echte Implementierung nutzt die Windows-Shell (Explorer/Standardbrowser).</summary>
-public interface IProcessLauncher { void Open(string target); }
+public interface IProcessLauncher { void Open(string target); void OpenWith(string exe, string arg) => Open($"{exe} \"{arg}\""); }
 
 public sealed class ShellProcessLauncher : IProcessLauncher
 {
@@ -15,6 +15,11 @@ public sealed class ShellProcessLauncher : IProcessLauncher
             else Process.Start(new ProcessStartInfo(target) { UseShellExecute = true });
         }
         else Process.Start(new ProcessStartInfo("xdg-open", target) { UseShellExecute = false });
+    }
+    public void OpenWith(string exe, string arg)
+    {
+        var psi = new ProcessStartInfo(exe) { UseShellExecute = false, WorkingDirectory = Path.GetTempPath() };
+        psi.ArgumentList.Add(arg); Process.Start(psi);
     }
 }
 
@@ -44,6 +49,14 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
         Rbac.Demand(by, Permission.ApproveAction, audit);
         audit.Append(by.Name, "user.direct_launch", target);
         launcher.Open(target);
+    }
+
+    /// <summary>Startet ein Programm mit genau einer Datei/URL als Argument (kein Shell-Parsing).</summary>
+    public void LaunchDirect(Principal by, string exe, AuditLog audit, string arg)
+    {
+        Rbac.Demand(by, Permission.ApproveAction, audit);
+        audit.Append(by.Name, "user.direct_launch", $"{Path.GetFileName(exe)} {arg}");
+        launcher.OpenWith(exe, arg);
     }
 
     public void Execute(ApprovalRequest r) =>

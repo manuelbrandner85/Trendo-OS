@@ -112,7 +112,7 @@ public sealed partial class MainWindow : Window
         _showMap = new()
         {
             ["start"] = DesktopView, ["studios"] = StudiosView, ["projects"] = ProjectsView,
-            ["approvals"] = ApprovalsView, ["system"] = SystemView, ["apps"] = AppsView, ["ki"] = KiView, ["settings"] = SettingsView, ["components"] = ComponentsView, ["studio-deps"] = StudioDepsView, ["keys"] = KeysView, ["notbuilt"] = NotBuiltView, ["fortschritt"] = ProgressView, ["suche"] = SearchView,
+            ["approvals"] = ApprovalsView, ["system"] = SystemView, ["apps"] = AppsView, ["ki"] = KiView, ["settings"] = SettingsView, ["components"] = ComponentsView, ["studio-deps"] = StudioDepsView, ["keys"] = KeysView, ["notbuilt"] = NotBuiltView, ["fortschritt"] = ProgressView, ["suche"] = SearchView, ["werkzeuge"] = ToolsView, ["medien"] = MediaView, ["ressourcen"] = ResourcesView,
         };
         string[] order = ["start", "studios", "projects", "approvals", "system"];
         for (var i = 0; i < order.Length; i++)
@@ -558,7 +558,8 @@ public sealed partial class MainWindow : Window
         };
         tools.Children.Add(shot);
         tools.Children.Add(ToolButton("tool-aufnahme", Chip(Mdi.Record, "#FF5252", "#C62828", 30, 0.6), "Aufnahme", false));
-        tools.Children.Add(ToolButton("tool-notiz", Chip(Mdi.NoteEdit, "#ECEFF1", "#B0BEC5", 30, 0.6, Brush.Parse("#263238")), "Notiz", false));
+        tools.Children.Add(ToolButton("tool-notiz", Chip(Mdi.NoteEdit, "#ECEFF1", "#B0BEC5", 30, 0.6, Brush.Parse("#263238")), "Notiz", true));
+        ((Button)tools.Children[^1]).Click += (_, _) => Show("werkzeuge");
         tools.Children.Add(ToolButton("tool-uebersetzen", Chip(Mdi.Translate, "#42A5F5", "#1565C0", 30, 0.6), "Übersetzen", false));
         Add(Panel(new StackPanel { Children = { H("Schnell-Tools", 14.5), tools } }, 12));
         return sp;
@@ -785,15 +786,6 @@ public sealed partial class MainWindow : Window
         foreach (var e in _core.Audit.ReadAll().TakeLast(15).Reverse())
             sp.Children.Add(P($"{e.At:HH:mm:ss}  {e.Actor}  {e.Action}  {e.Detail}", null, 11));
         return Page("System & Sicherheit", sp);
-    }
-
-    private Control AppsView()
-    {
-        var sp = new StackPanel { Spacing = 6, Children = { P("Nur tatsächlich gefundene Programme werden als vorhanden angezeigt.") } };
-        foreach (var c in DependencyCatalog.All.Where(c => c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Guided))
-            sp.Children.Add(P($"{c.Name}: {(_deps.IsInstalled(c) ? "vorhanden" : "nicht gefunden")}", Text));
-        sp.Children.Add(Nav2("Zusatzprogramme verwalten", "components"));
-        return Page("Apps", sp);
     }
 
     private static long TotalRam => GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;

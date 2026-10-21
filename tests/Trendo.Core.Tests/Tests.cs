@@ -603,3 +603,49 @@ public class CORE01_Search
         Xunit.Assert.Equal(1.15, Trendo.Core.UserSettings.ClampScale(1.16));
     }
 }
+
+public class SYS02_X09_Utilities
+{
+    [Xunit.Theory(DisplayName = "SYS-02: Rechner rechnet korrekt (Punkt vor Strich, Klammern, Komma, Prozent, Potenz)")]
+    [Xunit.InlineData("2+3*4", "14")] [Xunit.InlineData("(12,5 + 7) × 3", "58,5")] [Xunit.InlineData("19 % × 250", "47,5")]
+    [Xunit.InlineData("2^3^2", "512")] [Xunit.InlineData("-4 + 10 ÷ 4", "-1,5")] [Xunit.InlineData("1000000*3", "3.000.000")]
+    public void Calc_ok(string e, string r) => Xunit.Assert.Equal(r, Trendo.Core.Calc.Format(Trendo.Core.Calc.Eval(e)));
+
+    [Xunit.Theory(DisplayName = "SYS-02: Rechner lehnt Unsinn ab statt zu raten")]
+    [Xunit.InlineData("2+")] [Xunit.InlineData("(1+2")] [Xunit.InlineData("abc")] [Xunit.InlineData("1/0")] [Xunit.InlineData("Process.Start()")]
+    public void Calc_rejects(string e) => Xunit.Assert.ThrowsAny<Exception>(() => Trendo.Core.Calc.Eval(e));
+
+    [Xunit.Fact(DisplayName = "SYS-02: Notizen werden gespeichert, geändert und gelöscht")]
+    public void Notes_roundtrip()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-notes-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(root);
+        var s = new Trendo.Core.NoteStore(root);
+        var a = s.Add(" Milch kaufen "); s.Add("Steuer");
+        Xunit.Assert.Equal(["Steuer", "Milch kaufen"], s.All().Select(n => n.Text));
+        s.Update(a.Id, "Milch und Brot"); s.Delete(s.All()[0].Id);
+        Xunit.Assert.Equal("Milch und Brot", Xunit.Assert.Single(new Trendo.Core.NoteStore(root).All()).Text);
+        Directory.Delete(root, true);
+    }
+
+    [Xunit.Fact(DisplayName = "X-09: Prozesse werden nach Namen gruppiert, nach Speicher sortiert und Studios zugeordnet")]
+    public void Resources_grouped()
+    {
+        var g = Trendo.Core.ResourceMonitor.Group([("chrome", 300L << 20), ("chrome", 200L << 20), ("ollama", 2L << 30), ("notepad", 10L << 20)], top: 2);
+        Xunit.Assert.Equal(2, g.Count);
+        Xunit.Assert.Equal(("ollama", "KI"), (g[0].Name, g[0].Studio));
+        Xunit.Assert.Equal((2, 500L << 20), (g[1].Count, g[1].Bytes));
+        Xunit.Assert.Equal("2,0 GB", Trendo.Core.ResourceMonitor.Size(2L << 30).Replace('.', ','));
+    }
+
+    [Xunit.Fact(DisplayName = "SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien")]
+    public void Shelf_recent()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-shelf-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(Path.Combine(root, "sub"));
+        File.WriteAllText(Path.Combine(root, "alt.docx"), ""); File.SetLastWriteTime(Path.Combine(root, "alt.docx"), DateTime.Now.AddDays(-3));
+        File.WriteAllText(Path.Combine(root, "sub", "neu.pdf"), ""); File.WriteAllText(Path.Combine(root, "~$alt.docx"), ""); File.WriteAllText(Path.Combine(root, "song.mp3"), "");
+        var office = Trendo.Core.FileShelf.Recent([root], Trendo.Core.FileShelf.Office);
+        Xunit.Assert.Equal(["neu.pdf", "alt.docx"], office.Select(f => f.Name));
+        Xunit.Assert.Equal("Musik", Trendo.Core.FileShelf.Kind("x.MP3"));
+        Directory.Delete(root, true);
+    }
+}
