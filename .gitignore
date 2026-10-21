@@ -28,3 +28,5 @@ Thumbs.db
 .vs/
 .idea/
 artifacts/
+linux-image/out/
+linux-image/config/includes.chroot/opt/

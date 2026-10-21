@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Trendo OS
+Comment=Trendo OS Oberfläche
+Exec=/opt/trendo/TrendoOS
+Icon=preferences-desktop
+X-KDE-autostart-phase=2

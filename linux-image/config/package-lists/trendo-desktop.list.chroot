@@ -1,0 +1,40 @@
+# Desktop (KDE Plasma, Qt) – Vorschlag ADR-0007
+kde-plasma-desktop
+sddm
+plasma-nm
+dolphin
+konsole
+xwayland
+# Ready-to-Run Essentials (Kandidaten laut SOFTWARE_BUNDLE_MANIFEST; Lizenzprüfung vor Auslieferung offen)
+chromium
+chromium-l10n
+libreoffice-writer
+libreoffice-calc
+libreoffice-impress
+libreoffice-l10n-de
+mpv
+okular
+git
+python3
+tesseract-ocr
+tesseract-ocr-deu
+# System / Sicherheit / Persistenz
+network-manager
+cryptsetup
+cryptsetup-initramfs
+udisks2
+smartmontools
+pciutils
+usbutils
+lshw
+firmware-linux-free
+# Lokalisierung
+locales
+console-setup
+keyboard-configuration
+# Laufzeit für Trendo (Avalonia/.NET self-contained)
+libicu76
+libfontconfig1
+libx11-6
+libice6
+libsm6
