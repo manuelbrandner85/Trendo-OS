@@ -201,3 +201,78 @@ public class CORE03_Agents
         Assert.Contains("nicht verbunden", f.Core.Projects.ReadFile("p1", job));
     }
 }
+
+public class SYS05_Workflows
+{
+    static (Fixture F, WorkflowEngine E, string Home) Make()
+    {
+        var f = new Fixture(); var home = Path.Combine(f.Root, "home"); Directory.CreateDirectory(Path.Combine(home, "Downloads"));
+        return (f, new WorkflowEngine(f.Root, f.Core.Audit, f.Core.Approvals, [home]), home);
+    }
+
+    [Fact(DisplayName = "SYS-05: Probelauf ändert nichts, Verschieben braucht Freigabe, Änderung verlangt neue Freigabe")]
+    public async Task Dry_and_approval()
+    {
+        var (f, e, home) = Make(); using var _ = f;
+        File.WriteAllText(Path.Combine(home, "Downloads", "a.pdf"), "x");
+        var w = e.Add(WorkflowEngine.Templates.First(t => t.Id == "pdf").Make(home));
+        var dry = await e.RunAsync(w, true);
+        Assert.Contains(dry.Lines, l => l.Contains("a.pdf"));
+        Assert.True(File.Exists(Path.Combine(home, "Downloads", "a.pdf")));
+        Assert.False((await e.RunAsync(w, false)).Ok);
+        var r = e.RequestApproval(w); f.Core.Approvals.Approve(r.Id, Principal.LocalOwner); e.ApplyApproval(w, r.Id);
+        Assert.True((await e.RunAsync(w, false)).Ok);
+        Assert.True(File.Exists(Path.Combine(home, "Documents", "PDF", "a.pdf")));
+        w.Steps[1].Pattern = "*.*"; Assert.False(w.IsApproved);
+        Assert.Single(e.History(w.Id).Where(h => h.Ok));
+    }
+
+    [Fact(DisplayName = "SYS-05: Nur erlaubte Ordner, Textdatei mit {datum}, ZIP, Datum voranstellen")]
+    public async Task Steps_and_sandbox()
+    {
+        var (f, e, home) = Make(); using var _ = f;
+        var bad = e.Add(new Workflow { Name = "böse", Steps = [new() { Kind = StepKind.OrdnerAnlegen, To = Path.Combine(f.Root, "ausserhalb") }] });
+        var br = await e.RunAsync(bad, false);
+        Assert.False(br.Ok); Assert.False(Directory.Exists(Path.Combine(f.Root, "ausserhalb")));
+        var now = new DateTimeOffset(2026, 10, 21, 9, 0, 0, TimeSpan.FromHours(2));
+        var note = e.Add(WorkflowEngine.Templates.First(t => t.Id == "notiz").Make(home));
+        await e.RunAsync(note, false, now: now);
+        Assert.Contains("2026-10-21", File.ReadAllText(Path.Combine(home, "Documents", "Tagesnotizen", "2026-10-21.txt")));
+        var pics = Path.Combine(home, "Pictures"); Directory.CreateDirectory(pics); File.WriteAllText(Path.Combine(pics, "x.jpg"), "1");
+        File.SetLastWriteTime(Path.Combine(pics, "x.jpg"), new DateTime(2025, 5, 1));
+        var fo = e.Add(WorkflowEngine.Templates.First(t => t.Id == "fotos").Make(home));
+        var r = e.RequestApproval(fo); f.Core.Approvals.Approve(r.Id, Principal.LocalOwner); e.ApplyApproval(fo, r.Id);
+        await e.RunAsync(fo, false); await e.RunAsync(fo, false);
+        Assert.Equal(["2025-05-01_x.jpg"], Directory.GetFiles(pics).Select(Path.GetFileName));
+        var z = e.Add(WorkflowEngine.Templates.First(t => t.Id == "archiv").Make(home));
+        Directory.CreateDirectory(Path.Combine(home, "Documents"));
+        Assert.True((await e.RunAsync(z, false, now: now)).Ok);
+        Assert.True(File.Exists(Path.Combine(home, "Documents-Archiv", "dokumente-2026-10-21.zip")));
+    }
+
+    [Fact(DisplayName = "SYS-05: Auslöser täglich, Intervall und neue Datei; KI-Zusammenfassung")]
+    public async Task Triggers()
+    {
+        var (f, e, home) = Make(); using var _ = f;
+        var d = new Workflow { Name = "t", Trigger = TriggerKind.Taeglich, At = "08:00", Steps = [new() { Kind = StepKind.OrdnerAnlegen, To = Path.Combine(home, "x") }] };
+        e.Add(d);
+        var day = new DateTimeOffset(2026, 10, 21, 7, 0, 0, TimeSpan.Zero);
+        Assert.Empty(e.Due(day));
+        Assert.Single(await e.RunDueAsync(day.AddHours(2)));
+        Assert.Empty(e.Due(day.AddHours(3)));
+        Assert.Single(e.Due(day.AddDays(1).AddHours(2)));
+        e.Remove(d.Id);
+        var watch = Path.Combine(home, "Downloads");
+        File.WriteAllText(Path.Combine(watch, "alt.txt"), "alt");
+        var w = e.Add(new Workflow { Name = "neu", Trigger = TriggerKind.NeueDatei, WatchFolder = watch, WatchPattern = "*.txt", Steps = [new() { Kind = StepKind.KiZusammenfassen, From = watch, To = Path.Combine(home, "Sum") }] });
+        e.Summarize = t => Task.FromResult<string?>("KURZ: " + t);
+        Assert.Empty(e.Due(day));
+        File.WriteAllText(Path.Combine(watch, "neu.txt"), "Inhalt");
+        var runs = await e.RunDueAsync(day);
+        Assert.Single(runs); Assert.True(runs[0].Ok);
+        Assert.Equal("KURZ: Inhalt", File.ReadAllText(Path.Combine(home, "Sum", "neu.zusammenfassung.txt")));
+        Assert.False(File.Exists(Path.Combine(home, "Sum", "alt.zusammenfassung.txt")));
+        var iv = e.Add(new Workflow { Name = "iv", Trigger = TriggerKind.Intervall, EveryMinutes = 30, Steps = [] });
+        Assert.Contains(e.Due(day), x => x.W.Id == iv.Id);
+    }
+}
