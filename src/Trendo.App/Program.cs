@@ -26,6 +26,31 @@ class Program
             var core = new TrendoCore(Options.DataRoot ?? TrendoCore.DefaultDataRoot(), offline: Options.Offline);
             return SelfTest.OpenExplorer(core, Arg("--approver") ?? "operator-cli", Console.Out);
         }
+        if (args.Contains("--deps-status") || Arg("--install-deps") is not null)
+        {
+            // Konsolenweg für dieselbe Komponenten-Logik wie in der UI (z. B. für Tests/stille Erstinstallation).
+            var core = new TrendoCore(Options.DataRoot ?? TrendoCore.DefaultDataRoot(), offline: Options.Offline);
+            var dm = new DependencyManager(core.Audit, new RealProcessRunner()) { ConsentFile = Path.Combine(core.DataRoot, "deps-consent.txt") };
+            var rc = 0;
+            if (Arg("--install-deps") is { } ids)
+            {
+                if (!dm.HasConsent)
+                {
+                    if (!args.Contains("--accept-licenses")) { Console.WriteLine("Lizenz-Zustimmung fehlt (--accept-licenses)"); return 3; }
+                    dm.GiveConsent(Principal.LocalOwner);
+                }
+                var list = ids == "auto" ? DependencyCatalog.All.Where(c => c.Mode == DeliveryMode.AutoUser).ToList() : ids.Split(',').Select(DependencyCatalog.Get).ToList();
+                foreach (var c in list)
+                {
+                    var ok = dm.InstallAsync(Principal.LocalOwner, c, l => { if (l.Trim().Length > 0 && !l.Contains('\r') && l.Length < 200) Console.WriteLine($"  {c.Id}: {l.Trim()}"); }).GetAwaiter().GetResult();
+                    Console.WriteLine($"{(ok ? "PASS" : "FAIL")}  Installation {c.Name}"); if (!ok) rc = 1;
+                }
+            }
+            foreach (var c in DependencyCatalog.All)
+                Console.WriteLine($"{c.Id,-12} {c.Mode,-12} {(dm.IsInstalled(c) ? "erkannt" : "fehlt"),-8} {c.License}");
+            core.Shutdown();
+            return rc;
+        }
         if (args.Contains("--api-selftest"))
         {
             var core = new TrendoCore(Options.DataRoot ?? TrendoCore.DefaultDataRoot(), launcher: new NoopLauncher(), offline: Options.Offline);
