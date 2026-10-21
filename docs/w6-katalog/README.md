@@ -6,7 +6,7 @@ Status aller Kataloge: **PROPOSED** – abgeleitet aus Modulname und Zweck, von 
 
 | Studio | Name | Funktionen | gebaut |
 |---|---|---|---|
-| [SPEC-01](SPEC-01.md) | Architecture & Interior 2.0 | 16 | 7 |
+| [SPEC-01](SPEC-01.md) | Architecture & Interior 2.0 | 16 | 16 |
 | [SPEC-02](SPEC-02.md) | Electronics & PCB 2.0 | 16 | 6 |
 | [SPEC-03](SPEC-03.md) | Engineering & Simulation 2.0 | 16 | 7 |
 | [SPEC-04](SPEC-04.md) | VR/AR/MR 2.0 | 16 | 5 |
@@ -21,4 +21,4 @@ Status aller Kataloge: **PROPOSED** – abgeleitet aus Modulname und Zweck, von 
 | [SPEC-16](SPEC-16.md) | Transport & Vehicle 2.0 | 20 | 12 |
 | [CORE-09](CORE-09.md) | Vision & Robotics Control Studio 2.0 | 20 | 10 |
 
-Gesamt: 254 Funktionen, davon 118 gebaut, 136 offen.
+Gesamt: 254 Funktionen, davon 127 gebaut, 127 offen.
