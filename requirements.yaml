@@ -70,11 +70,13 @@ modules:
   test_status: TESTED_BOX
   evidence: reports/w23/CORE-03.md
 - id: CORE-04
+  implementation_status: IN_PROGRESS
+  test_status: TESTED_BOX
+  evidence: reports/w7/tests-box.txt
+  note: "PC-Seite fertig; Gegenstelle auf Pi/Android (Kopplung, /health) noch nicht gebaut"
   name: Pi/PC/Android Fusion Engine
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
 - id: CORE-05
   name: Ultimate 3D Creation Studio 2.0
   approved_expansion_functions: '20'
@@ -131,11 +133,13 @@ modules:
   test_status: TESTED_BOX
   evidence: reports/w23/CORE-12.md
 - id: SYS-01
+  implementation_status: IN_PROGRESS
+  test_status: TESTED_BOX
+  evidence: reports/w7/tests-box.txt
+  note: "PC-Seite fertig; Gegenstelle auf Pi/Android (Kopplung, /health) noch nicht gebaut"
   name: Triple Mode OS GODMODE
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
 - id: SYS-02
   name: Ultimate Desktop Utilities & Media Center
   approved_expansion_functions: '25'
@@ -381,11 +385,13 @@ modules:
   test_status: TESTED_BOX
   evidence: reports/w45/X-07.txt
 - id: X-08
+  implementation_status: IN_PROGRESS
+  test_status: TESTED_BOX
+  evidence: reports/w7/tests-box.txt
+  note: "PC-Seite fertig; Gegenstelle auf Pi/Android (Kopplung, /health) noch nicht gebaut"
   name: Mobile OS Bridge
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
 - id: X-09
   name: System Resource & Studio Manager
   approved_expansion_functions: BASE
