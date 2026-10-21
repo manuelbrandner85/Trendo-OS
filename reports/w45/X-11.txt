@@ -1,0 +1,4 @@
+Nachweis X-11 – Linux-Box (nicht Windows-PC), 21.10.2026 21:11 MESZ, Commit-Basis c1a561b
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 648 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   113, Skipped:     0, Total:   113, Duration: 14 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:    44, Skipped:     0, Total:    44, Duration: 14 s - Trendo.App.Tests.dll (net10.0)

@@ -155,7 +155,7 @@ Abnahmekriterien je Modul:
 | 5 | CORE-06 | Ultimate Game Development Studio 2.0 | IMPLEMENTED | TESTED_BOX |
 | 6 | X-07 | Global Free Asset Discovery | IMPLEMENTED | TESTED_BOX |
 | 7 | X-03 | Visual Builder & No-Code | IMPLEMENTED | TESTED_BOX |
-| 8 | X-11 | Universal Creation & Productivity Suite | NOT_STARTED | NOT_RUN |
+| 8 | X-11 | Universal Creation & Productivity Suite | IMPLEMENTED | TESTED_BOX |
 
 Abnahmekriterien je Modul:
 - Modul im Studio-Layout erreichbar (max. 2 Navigationsebenen, deutsche Beschriftung)
