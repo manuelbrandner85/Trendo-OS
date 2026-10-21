@@ -18,7 +18,7 @@ Status aller Kataloge: **PROPOSED** – abgeleitet aus Modulname und Zweck, von 
 | [SPEC-13](SPEC-13.md) | Maps & Geospatial 2.0 | 20 | 20 |
 | [SPEC-14](SPEC-14.md) | Manufacturing & CNC 2.0 | 20 | 20 |
 | [SPEC-15](SPEC-15.md) | Broadcast & Streaming 2.0 | 20 | 20 |
-| [SPEC-16](SPEC-16.md) | Transport & Vehicle 2.0 | 20 | 12 |
+| [SPEC-16](SPEC-16.md) | Transport & Vehicle 2.0 | 20 | 20 |
 | [CORE-09](CORE-09.md) | Vision & Robotics Control Studio 2.0 | 20 | 10 |
 
-Gesamt: 254 Funktionen, davon 236 gebaut, 18 offen.
+Gesamt: 254 Funktionen, davon 244 gebaut, 10 offen.

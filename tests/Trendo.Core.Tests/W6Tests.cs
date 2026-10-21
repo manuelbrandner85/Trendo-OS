@@ -547,3 +547,15 @@ public class SPEC15_Plus
     [Fact(DisplayName = "SPEC-15 F19: Moderationskarten")] public void F19() { using var f = new Fixture(); var md = BroadcastPlus.CueCards(Desk(f)); Assert.Contains("## 2. Interview", md); Assert.Contains("**20:01:00 – 20:11:00**", md); Assert.Contains("➜ Danach: Outro", md); Assert.Contains("➜ Ende der Sendung", md); }
     [Fact(DisplayName = "SPEC-15 F20: Timecode")] public void F20() { Assert.Equal("01:00:00:12", BroadcastPlus.ToTimecode(90012, 25)); Assert.Equal(90012, BroadcastPlus.FromTimecode("01:00:00:12", 25)); Assert.Throws<FormatException>(() => BroadcastPlus.FromTimecode("00:00:00:25", 25)); }
 }
+
+public class SPEC16_Plus
+{
+    [Fact(DisplayName = "SPEC-16 F05: E-Auto")] public void F05() { using var f = new Fixture(); var b = new VehicleBook(f.Root); b.Add("Zoe", "", true); b.Refuel("Zoe", new DateTime(2026, 1, 1), 1000, 40, 0.4); b.Refuel("Zoe", new DateTime(2026, 1, 9), 1200, 36, 0.4); var e = VehiclePlus.Ev(b.Get("Zoe"), 6, 1.8); Assert.Equal((18.0, 7.2, 10.8, 3.6), e); b.Add("Golf"); Assert.Throws<ArgumentException>(() => VehiclePlus.Ev(b.Get("Golf"), 6, 1.8)); }
+    [Fact(DisplayName = "SPEC-16 F14: Pendlerpauschale")] public void F14() { Assert.Equal(2280, VehiclePlus.Commute(30, 200)); Assert.Equal(1960, VehiclePlus.Commute(30.9, 200, 2025)); Assert.Equal(4500, VehiclePlus.Commute(100, 220, 2026, ownCar: false)); }
+    [Fact(DisplayName = "SPEC-16 F15: 1-%-Regel")] public void F15() { var c = VehiclePlus.CompanyCar(40000, "verbrenner", 20, 8000, 30); Assert.Equal((7680.0, 2400.0, "Fahrtenbuch"), c); Assert.Equal(1920, VehiclePlus.CompanyCar(40000, "elektro", 20, 8000, 30).OnePercent); Assert.Equal(12 * (600 + 180.0), VehiclePlus.CompanyCar(120000, "elektro", 10, 1, 1).OnePercent); }
+    [Fact(DisplayName = "SPEC-16 F16: Kilometergeld")] public void F16() { Assert.Equal(37.5, VehiclePlus.Mileage(125)); Assert.Equal(25, VehiclePlus.Mileage(125, true)); }
+    [Fact(DisplayName = "SPEC-16 F17: Reifen")] public void F17() { var t = VehiclePlus.Tire("DOT XX 2319", 2.5, true, new DateTime(2026, 10, 21)); Assert.Equal(new DateTime(2019, 6, 3), t.Made); Assert.Equal(7.4, t.AgeYears); Assert.Equal(2, t.Advice.Count); Assert.Equal(["In Ordnung."], VehiclePlus.Tire("0124", 6, false, new DateTime(2026, 10, 21)).Advice); Assert.Throws<FormatException>(() => VehiclePlus.Tire("6019", 5, false, DateTime.Today)); }
+    [Fact(DisplayName = "SPEC-16 F18: Fahrtkosten teilen")] public void F18() { Assert.Equal((64.0, 16.0), VehiclePlus.Share(500, 6, 1.8, 4, 10)); }
+    [Fact(DisplayName = "SPEC-16 F19: Ladezeit")] public void F19() { var c = VehiclePlus.ChargeTime(60, 10, 80, 11, 22); Assert.Equal(46.7, c.Kwh); Assert.Equal(46.6667 / 11, c.Time.TotalHours, 3); var f = VehiclePlus.ChargeTime(60, 80, 100, 11, 11); Assert.Equal(13.3333 / 5.5, f.Time.TotalHours, 3); }
+    [Fact(DisplayName = "SPEC-16 F20: Jahreskosten")] public void F20() { Assert.Equal((3260.0, 271.67, 0.217), VehiclePlus.YearCost(15000, 6, 1.8, 600, 140, 900)); }
+}

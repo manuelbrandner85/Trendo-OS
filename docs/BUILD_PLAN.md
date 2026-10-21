@@ -236,7 +236,7 @@ Spezial-Studios auf Basis der fertigen Kernbausteine
 | 10 | SPEC-13 | Maps & Geospatial 2.0 | IMPLEMENTED | TESTED_BOX |
 | 11 | SPEC-14 | Manufacturing & CNC 2.0 | IMPLEMENTED | TESTED_BOX |
 | 12 | SPEC-15 | Broadcast & Streaming 2.0 | IMPLEMENTED | TESTED_BOX |
-| 13 | SPEC-16 | Transport & Vehicle 2.0 | IMPLEMENTED | PC_VERIFIED |
+| 13 | SPEC-16 | Transport & Vehicle 2.0 | IMPLEMENTED | TESTED_BOX |
 | 14 | CORE-09 | Vision & Robotics Control Studio 2.0 | IMPLEMENTED | PC_VERIFIED |
 
 Abnahmekriterien je Modul:
