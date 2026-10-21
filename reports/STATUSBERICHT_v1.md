@@ -104,3 +104,9 @@ P0 von Manuel freigegeben. Spezifikation im Branch `p0/spec-import` importiert, 
 
 ### Status
 P0: IN_PROGRESS (offen: ADR-0005-Abnahme, Grok-Build-Einrichtung) · P1: PLANNED/BLOCKED (Grok Build) · Tests: alle NOT_RUN außer GRK-001 FAIL, GRK-002 BLOCKED (Inventurbefund, nicht in requirements.yaml übertragen)
+
+## Nachtrag 21.10.2026, 14:40 – P1 Windows-Slice
+- ADR-0005 ACCEPTED: .NET 10 + Avalonia (Manuel).
+- P1-Slice implementiert (`src/`, `tests/`), auf Manuels Windows-PC ohne Admin und ohne Installation gebaut und getestet: Build 0 Fehler, **29/29 Tests bestanden**, App startet und beendet sauber (Screenshot vorhanden). Details: `reports/P1_TESTBERICHT.md`.
+- Status P1: IN_PROGRESS (Kernbausteine IMPLEMENTED, QA-001/003/004/015/019 als TESTED im Teilumfang; Installer, Live-Integration, Tastatur offen).
+- Grok Build weiterhin NOT_FOUND – Arbeit erfolgte durch Grok Bot über freigegebene lokale Shell.
