@@ -282,3 +282,42 @@ public class StudioDepsUi
         w.Close();
     }
 }
+
+public sealed class FakeRunner : IProcessRunner
+{
+    public List<string> Calls { get; } = [];
+    public Task<(int Exit, string Output)> RunAsync(string file, string args, Action<string>? line = null, CancellationToken ct = default)
+    { Calls.Add($"{file} {args}"); return Task.FromResult((0, "")); }
+}
+
+/// Welle 0: Ersteinrichtung über die echte Oberfläche
+public class W0_SetupWizard
+{
+    [AvaloniaFact(DisplayName = "W0-01/03/06: Assistent – Name, Ordner, Design, Pakete, Installation über Zustimmung, Vorlagen, Systemcheck")]
+    public async Task Wizard_flow()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-ui-" + Guid.NewGuid().ToString("N"));
+        var core = new TrendoCore(root, new InMemorySecretStore(), new FakeLauncher());
+        var w = new MainWindow(core, new AppOptions(root, null, 0, FirstRun: true), new Probe());
+        var r = new FakeRunner(); w.Deps.Runner = r;
+        w.Show(); Dispatcher.UIThread.RunJobs();
+        Assert.Equal("einrichtung", w.CurrentView);
+        w.Find<TextBox>("wiz-name").Text = "Manuel"; w.Find<Button>("wiz-next").Press();
+        var proj = Path.Combine(root, "Projekte"); w.Find<TextBox>("wiz-folder").Text = proj; w.Find<Button>("wiz-next").Press();
+        w.Find<RadioButton>("wiz-theme-kontrast").IsChecked = true; w.Find<Button>("wiz-next").Press();
+        w.Find<CheckBox>("wiz-pack-office").IsChecked = false; w.Find<CheckBox>("wiz-pack-ki").IsChecked = false;
+        w.Find<CheckBox>("wiz-pack-dev").IsChecked = true;
+        w.Find<Button>("wiz-install").Press();
+        for (var i = 0; i < 100 && w.TryFind<Button>("wiz-done") is null; i++) { await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }
+        Assert.NotNull(w.TryFind<Button>("wiz-done"));
+        Assert.Contains(r.Calls, c => c.Contains("SumatraPDF.SumatraPDF") && c.Contains("--scope user"));
+        Assert.Contains(r.Calls, c => c.Contains("Git.Git"));
+        Assert.DoesNotContain(r.Calls, c => c.Contains("LibreOffice"));
+        Assert.True(File.Exists(Path.Combine(proj, "Vorlagen", "DIN5008-Geschaeftsbrief-FormB.docx")));
+        var s = UserSettings.Load(root);
+        Assert.True(s.SetupDone); Assert.Equal("Manuel", s.Name); Assert.Equal("kontrast", s.Theme); Assert.Equal(proj, s.ProjectsFolder);
+        Assert.NotNull(w.TryFind<Button>("fix-sumatra")); // Systemcheck: fehlt → Reparieren
+        Assert.Single(new Backup(root, Path.Combine(root, "backups"), core.Audit).List());
+        w.Close(); Directory.Delete(root, true);
+    }
+}

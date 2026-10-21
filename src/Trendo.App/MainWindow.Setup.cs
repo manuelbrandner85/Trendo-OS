@@ -26,6 +26,7 @@ public sealed partial class MainWindow
         if (string.IsNullOrEmpty(_settings.ProjectsFolder)) _settings.ProjectsFolder = UserSettings.DefaultProjectsFolder();
         foreach (var p in SetupPacks.Studios.Where(p => p.Default)) _wizPacks.Add(p.Id);
         _showMap["einrichtung"] = SetupWizardView; _showMap["systemcheck"] = SystemCheckView; _showMap["sicherung"] = BackupView;
+        for (var i = 0; i < 5; i++) { var step = i; _showMap[$"einrichtung-{i}"] = () => { _wizStep = step; return SetupWizardView(); }; }
         // Geplante Sicherung beim Start (im Hintergrund, ohne Rückfrage – betrifft nur eigene Daten)
         if (_settings.SetupDone && Backups.Due(DateTime.Now, _settings.BackupEveryHours))
             _ = Task.Run(() => { try { Backups.Create(DateTime.Now); } catch (Exception ex) { _core.Audit.Append("app", "backup.failed", ex.GetType().Name); } });

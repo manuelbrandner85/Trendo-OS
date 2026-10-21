@@ -58,6 +58,7 @@ public sealed partial class MainWindow : Window
 
     public TrendoCore Core => _core;
     public string CurrentView { get; private set; } = "";
+    public DependencyManager Deps => _deps;
 
     public MainWindow() : this(new AppOptions(null, null, 0)) { }
     public MainWindow(AppOptions opt)
