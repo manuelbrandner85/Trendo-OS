@@ -317,3 +317,21 @@ public class SPEC02_UiPlus
         Assert.Contains("4.700", W6Ui.Run(w, "el-si"));
     }
 }
+
+public class SPEC03_UiPlus
+{
+    [AvaloniaFact(DisplayName = "SPEC-03 UI Ausbau: Profile, Maschinenelemente, Wärme")]
+    public void Plus()
+    {
+        var (w, _, _) = Ui.Open(); w.Show("technik");
+        Assert.Contains("Durchbiegung", W6Ui.Run(w, "eng-hollow"));
+        Assert.Contains("Knicklast", W6Ui.Run(w, "eng-buckle"));
+        Assert.Contains("N/mm²", W6Ui.Run(w, "eng-axial"));
+        Assert.Contains("Verdrehung", W6Ui.Run(w, "eng-torsion"));
+        Assert.Contains("25,0 Nm", W6Ui.Run(w, "eng-bolt"));
+        Assert.Contains("Federrate", W6Ui.Run(w, "eng-spring"));
+        Assert.Contains("500 U/min", W6Ui.Run(w, "eng-gear"));
+        Assert.Contains("U-Wert", W6Ui.Run(w, "eng-u"));
+        Assert.Contains("2,70 kg", W6Ui.Run(w, "eng-mass"));
+    }
+}
