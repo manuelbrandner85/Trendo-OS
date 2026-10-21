@@ -33,6 +33,7 @@ public partial class MainWindow
         InitW5Market();
         InitW5Brand();
         InitW5Ops();
+        InitW5Launch();
     }
 
     private void RegisterTab(List<(string, string, string)> tabs, string key, string label, string module, Func<Control> view, params string[] words)

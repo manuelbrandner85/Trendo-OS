@@ -1,0 +1,4 @@
+Nachweis BUS-016 – Linux-Box (nicht Windows-PC), 21.10.2026 21:50 MESZ, Commit-Basis cea7cd3
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 580 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   181, Skipped:     0, Total:   181, Duration: 12 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:    72, Skipped:     0, Total:    72, Duration: 19 s - Trendo.App.Tests.dll (net10.0)
