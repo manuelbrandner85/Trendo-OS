@@ -3,7 +3,7 @@ using Trendo.Core;
 
 namespace Trendo.App;
 
-public sealed record AppOptions(string? DataRoot, string? ScreenshotPath, int AutoExitSeconds, bool Offline = false, int? ApiPort = null);
+public sealed record AppOptions(string? DataRoot, string? ScreenshotPath, int AutoExitSeconds, bool Offline = false, int? ApiPort = null, bool FirstRun = false, string? Page = null);
 
 class Program
 {
@@ -18,7 +18,8 @@ class Program
         Options = new AppOptions(Arg("--data-root"), Arg("--screenshot"),
             int.TryParse(Arg("--auto-exit"), out var s) ? s : (args.Contains("--smoke") ? 5 : 0),
             args.Contains("--offline"),
-            args.Contains("--api") ? (int.TryParse(Arg("--api-port"), out var ap) ? ap : 47800) : null);
+            args.Contains("--api") ? (int.TryParse(Arg("--api-port"), out var ap) ? ap : 47800) : null,
+            FirstRun: !args.Contains("--no-first-run"), Page: Arg("--page"));
 
         if (args.Contains("--selftest-open-explorer"))
         {

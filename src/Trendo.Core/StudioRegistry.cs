@@ -54,18 +54,13 @@ public interface IToolProbe { bool IsAvailable(string tool); }
 /// <summary>Prüft nur Präsenz typischer Programme; startet nichts.</summary>
 public sealed class DefaultToolProbe : IToolProbe
 {
+    private static readonly DependencyManager _dm = new(new AuditLog(Path.Combine(Path.GetTempPath(), "trendo-probe-noop.jsonl")), new RealProcessRunner());
     public bool IsAvailable(string tool)
     {
         if (!OperatingSystem.IsWindows()) return tool == "browser" && OnPath("xdg-open");
-        var pf = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-        return tool switch
-        {
-            "blender" => Directory.Exists(Path.Combine(pf, "Blender Foundation")),
-            "unreal" => Directory.Exists(Path.Combine(pf, "Epic Games")) && Directory.EnumerateDirectories(Path.Combine(pf, "Epic Games"), "UE_*").Any(),
-            "libreoffice" => Directory.Exists(Path.Combine(pf, "LibreOffice")),
-            "browser" => true, // Windows hat immer einen Standardbrowser (Edge)
-            _ => false,
-        };
+        if (tool == "browser") return true; // Windows hat immer einen Standardbrowser (Edge)
+        var c = DependencyCatalog.All.FirstOrDefault(x => x.Tools?.Contains(tool) == true);
+        return c is not null && _dm.IsInstalled(c);
     }
     private static bool OnPath(string exe) => (Environment.GetEnvironmentVariable("PATH") ?? "")
         .Split(Path.PathSeparator).Any(d => File.Exists(Path.Combine(d, exe)));

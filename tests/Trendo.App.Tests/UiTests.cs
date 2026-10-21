@@ -214,3 +214,26 @@ public class DesignHonesty
         w.Close();
     }
 }
+
+public class ComponentsUi
+{
+    [AvaloniaFact(DisplayName = "Komponenten: Lizenzliste, Unreal nur geführt (offizieller Link), Zustimmung wird gespeichert")]
+    public void Components_view()
+    {
+        var (w, l, root) = Ui.Open();
+        w.Runner = new NoRun();
+        w.Show("components");
+        var texts = w.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text ?? "").ToList();
+        Assert.Contains(texts, t => t.Contains("Ollama") && t.Contains("MIT"));
+        Assert.Contains(texts, t => t.Contains("Unreal Engine") && t.Contains("Epic EULA"));
+        Assert.Null(w.TryFind<Button>("btn-install-unreal"));
+        w.Find<Button>("btn-guide-unreal").Press();
+        Assert.Contains(l.Opened, o => o.Contains("unrealengine.com"));
+        w.Find<Button>("btn-deps-consent").Press(); Dispatcher.UIThread.RunJobs();
+        Assert.True(File.Exists(Path.Combine(root, "deps-consent.txt")));
+        Assert.True(File.Exists(Path.Combine(root, "config.json")));
+        w.Close();
+    }
+    sealed class NoRun : IProcessRunner
+    { public Task<(int Exit, string Output)> RunAsync(string f, string a, Action<string>? l = null, CancellationToken c = default) => Task.FromResult((1, "test")); }
+}

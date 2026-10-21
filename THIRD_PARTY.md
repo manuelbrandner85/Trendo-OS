@@ -1,0 +1,37 @@
+# Drittkomponenten (THIRD_PARTY)
+
+Quelle: `src/Trendo.Core/DependencyCatalog` (wird in der App unter „Komponenten“ mit Lizenzen angezeigt; einmalige Zustimmung vor jeder Auto-Installation). Erzeugt aus dem Code; Lizenzen laut Hersteller/winget-Manifest (Stand 21.10.2026).
+
+| Komponente | Lizenz | Auslieferung | winget-ID | Begründung |
+|---|---|---|---|---|
+| .NET 10 Runtime | MIT | Im Setup enthalten | — | Self-contained im Setup enthalten |
+| Avalonia UI + SkiaSharp + HarfBuzzSharp | MIT / BSD-3-Clause | Im Setup enthalten | — | NuGet-Bibliotheken, frei weitergebbar |
+| Schrift Inter | SIL OFL 1.1 | Im Setup enthalten | — | Avalonia.Fonts.Inter, frei weitergebbar |
+| Velopack | MIT | Im Setup enthalten | — | Bestandteil von Setup.exe |
+| YamlDotNet | MIT | Im Setup enthalten | — | NuGet-Bibliothek |
+| Hintergrund + Logo-Konzept | Eigenes Projekt-Asset (KI-generiert) | Im Setup enthalten | — | Für Trendo OS erstellt |
+| Microsoft Edge WebView2 | Microsoft | Nicht erforderlich | — | Trendo OS nutzt keine Web-Ansichten; nicht erforderlich |
+| Ollama (lokale KI-Laufzeit) | MIT | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | Ollama.Ollama | Installer ~1 GB → nicht ins Setup gepackt; pro Benutzer ohne Admin installierbar |
+| KI-Modell Qwen2.5 0.5B (qwen2.5:0.5b) | Apache-2.0 | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | — | Gewichte ~400 MB, über Ollama geladen |
+| Git für Windows | GPL-2.0 | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | Git.Git | Pro Benutzer installierbar |
+| Python 3.13 | PSF-2.0 | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | Python.Python.3.13 | Pro Benutzer installierbar |
+| mpv Player | GPL-2.0-or-later | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | shinchiro.mpv | Pro Benutzer installierbar |
+| LibreOffice | MPL-2.0 | Auto-Installation nach Zustimmung, Windows-UAC nötig (nur systemweiter Herstellerinstaller) | TheDocumentFoundation.LibreOffice | Nur systemweiter MSI-Installer – Windows fragt nach Admin |
+| Blender | GPL-3.0-or-later | Auto-Installation nach Zustimmung, Windows-UAC nötig (nur systemweiter Herstellerinstaller) | BlenderFoundation.Blender | Nur systemweiter Installer – Windows fragt nach Admin |
+| Krita | GPL-3.0 | Auto-Installation nach Zustimmung, Windows-UAC nötig (nur systemweiter Herstellerinstaller) | KDE.Krita | Systemweiter Installer |
+| Inkscape | GPL-2.0 | Auto-Installation nach Zustimmung, Windows-UAC nötig (nur systemweiter Herstellerinstaller) | Inkscape.Inkscape | Systemweiter Installer |
+| Kdenlive | GPL-3.0 | Auto-Installation nach Zustimmung, Windows-UAC nötig (nur systemweiter Herstellerinstaller) | KDE.Kdenlive | Systemweiter Installer |
+| Audacity | GPL-3.0-or-later | Auto-Installation nach Zustimmung, Windows-UAC nötig (nur systemweiter Herstellerinstaller) | Audacity.Audacity | Systemweiter Installer |
+| Tesseract OCR | Apache-2.0 | Auto-Installation nach Zustimmung, Windows-UAC nötig (nur systemweiter Herstellerinstaller) | UB-Mannheim.TesseractOCR | Systemweiter Installer |
+| Unreal Engine | Epic EULA (nicht weitergebbar) | Nur geführt: offizieller Herstellerweg | — | Nur über Epic Games Launcher mit Epic-Konto erlaubt – keine automatische Installation |
+| Google Chrome (optional) | Google-Lizenz (proprietär) | Nur geführt: offizieller Herstellerweg | — | Proprietär – nur offizieller Download |
+| Grok Build | Konto/Berechtigung erforderlich | Nur geführt: offizieller Herstellerweg | — | Kontogebunden – nur offizieller Zugang |
+| Tor Browser | BSD-3-Clause u. a. | Nur geführt: offizieller Herstellerweg | — | Sicherheits-QA ausstehend – nur offizielle Quelle |
+| Chromium | BSD-3-Clause | Nicht erforderlich | — | Windows: Microsoft Edge ist vorhanden; in der Linux-Edition enthalten |
+| Grok Bot | Kontotarif | Nicht erforderlich | — | Optionaler Cloudbereich, nicht Teil des OS-Bundles |
+
+Hinweise:
+- Unreal Engine (Epic EULA), Google Chrome, Grok Build, Tor Browser: keine automatische Installation – rechtlich bzw. aus Sicherheits-/Kontogründen nur offizieller Weg.
+- Systemweite Installer (MSI/NSIS) von LibreOffice, Blender, Krita, Inkscape, Kdenlive, Audacity, Tesseract: automatisch per winget, aber Windows fragt nach Administratorrechten; bereits installierte Programme werden nur erkannt, nie verändert.
+- Studio-Kacheln zeigen „Bereit“ nur, wenn Programm real erkannt UND Studio-Adapter implementiert und getestet ist.
+- Weitergabe der NuGet-Bibliotheken (MIT/BSD/OFL) im Setup ist durch die Lizenzen gedeckt; Lizenztexte siehe jeweilige Projekte.
