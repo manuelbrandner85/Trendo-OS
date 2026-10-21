@@ -92,6 +92,8 @@ public sealed partial class MainWindow
     {
         if (!_settings.ReduceMotion) { _center.Opacity = 0; Dispatcher.UIThread.Post(() => _center.Opacity = 1, DispatcherPriority.Background); }
         ShowHelp(key, force: false);
+        if (_center.Children.Count > 0 && _center.Children[0] is Control c0) ApplyAccessibility(c0);
+        ApplyAccessibility(_hintHost);
     }
 
     /// <summary>Hover-Glow für Kacheln und Dock (aus bei „Bewegung reduzieren“).</summary>
@@ -143,7 +145,7 @@ public sealed partial class MainWindow
         _hintHost.Children.Add(new Border { Name = "hint", Background = Brush.Parse("#332F86F6"), BorderBrush = Accent, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
                 new TextBlock { Text = "💡", FontSize = 16, Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center },
-                Pos(new TextBlock { Text = text, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center }, 1), Pos(ok, 2) } } });
+                Pos(new TextBlock { Text = _settings.EasyLanguage ? Trendo.Core.Sys.A11y.Easy(text) : text, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center }, 1), Pos(ok, 2) } } });
     }
 
     private void SaveSettings() { try { _settings.Save(_core.DataRoot); } catch (Exception ex) { _core.Audit.Append("app", "settings.save_failed", ex.GetType().Name); } }

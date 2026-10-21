@@ -15,6 +15,13 @@ public sealed class UserSettings
     /// <summary>Akzentfarbe folgt dem Hintergrund (Bergsee → Blau, Morgen → Bernstein, Polarlicht → Türkis, Wellen → Violett).</summary>
     public bool AccentFromWallpaper { get; set; }
     public bool ReduceMotion { get; set; }
+    /// <summary>SYS-12: Mindestschriftgröße in pt (0 = wie gestaltet), Leichte Sprache, Farbblind-Symbole, leise Meldungen, einfacher Modus, Fensterplatz.</summary>
+    public int FontMin { get; set; }
+    public bool EasyLanguage { get; set; }
+    public bool ColorBlind { get; set; }
+    public string NotifyStyle { get; set; } = "normal";
+    public bool SimpleMode { get; set; }
+    public int[]? WindowRect { get; set; }
     public List<string> StudioPacks { get; set; } = [];
     public List<string> HiddenTiles { get; set; } = [];
     public List<string> DockOrder { get; set; } = [];

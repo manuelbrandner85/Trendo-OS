@@ -40,7 +40,7 @@ public partial class MainWindow
         if (due.Count == 0) return due;
         _core.Audit.Append("app", "reminder.due", string.Join(", ", due.Select(d => d.Text)));
         _w45Msg = "Erinnerung: " + string.Join(" · ", due.Select(d => d.Text));
-        if (Focus.Until(now) is null) { if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal; Activate(); }
+        if (A11y.MayInterrupt(_settings.NotifyStyle, Focus.Until(now) is not null)) { if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal; Activate(); }
         return due;
     }
 

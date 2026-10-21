@@ -38,12 +38,13 @@ public partial class MainWindow
         InitSys03();
         InitSys10();
         InitSys11();
+        InitSys12();
     }
 
     private void RegisterTab(List<(string, string, string)> tabs, string key, string label, string module, Func<Control> view, params string[] words)
     {
         if (!tabs.Any(t => t.Item1 == key)) tabs.Add((key, label, module));
-        _showMap[key] = view;
+        _showMap[key] = view; TabbedPages.Add(key);
         StudioPages.TryAdd(module, key);
         if (!ExtraPages.Any(p => p.Key == key)) ExtraPages.Add((label, key, words));
     }

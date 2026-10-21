@@ -429,7 +429,7 @@ public sealed partial class MainWindow : Window
         var g = new Grid { ColumnDefinitions = new ColumnDefinitions("500,*"), RowDefinitions = new RowDefinitions("*,Auto") };
         // Studio-Kacheln 3x3
         var tiles = new UniformGrid { Columns = 3, Rows = 3 };
-        foreach (var (id, title, sub, icon, c1, c2, glow) in UserSettings.Ordered(FeaturedStudios, f => f.Item1, _settings.TileOrder).Where(f => !_settings.HiddenTiles.Contains("tile-" + f.Item1)))
+        foreach (var (id, title, sub, icon, c1, c2, glow) in UserSettings.Ordered(FeaturedStudios, f => f.Item1, _settings.TileOrder).Where(f => !_settings.HiddenTiles.Contains("tile-" + f.Item1) && (!_settings.SimpleMode || Trendo.Core.Sys.A11y.SimpleTiles.Contains(f.Item1))))
         {
             var st = _studios.FirstOrDefault(s => s.Id == id);
             var badge = Badge(st);
