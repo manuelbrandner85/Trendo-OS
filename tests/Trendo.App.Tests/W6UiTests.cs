@@ -496,3 +496,21 @@ public class SPEC13_UiPlus
         Assert.Contains("21 → 2 Punkte", W6Ui.Run(w, "geo-simp", ("file", f)));
     }
 }
+
+public class SPEC14_UiPlus
+{
+    [AvaloniaFact(DisplayName = "SPEC-14 UI Ausbau: Programme erzeugen und Werkstatt-Rechner")]
+    public void Plus()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        var f = Path.Combine(root, "p.nc"); File.WriteAllText(f, "G90\nG0 X1 Y1\nG1 Z-1 F100\n");
+        w.Show(MainWindow.StudioPages["SPEC-14"]);
+        Assert.Contains("tasche.nc", W6Ui.Run(w, "cnc-pocket"));
+        Assert.Contains("kontur.nc", W6Ui.Run(w, "cnc-outline"));
+        Assert.Contains("(50,00 | 0,00)", W6Ui.Run(w, "cnc-bolt"));
+        W6Ui.Run(w, "cnc-offset", ("file", f), ("dx", "10")); Assert.Contains("X11 Y1", File.ReadAllText(Path.Combine(root, "p.versetzt.nc")));
+        Assert.Contains("0,30 kW", W6Ui.Run(w, "cnc-mrr"));
+        Assert.Contains("17,50 € je Teil", W6Ui.Run(w, "cnc-cost"));
+        Assert.Contains("Ø 6,75 mm", W6Ui.Run(w, "cnc-tap"));
+    }
+}
