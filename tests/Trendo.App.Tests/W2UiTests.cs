@@ -153,3 +153,27 @@ public class CORE12_Ui
         Assert.Contains(w.Prompts.All(), p => p.Category == "Masterprompts");
     }
 }
+
+public class CORE03_Ui
+{
+    [AvaloniaFact(DisplayName = "CORE-03 UI: Rolle wählen, starten, Team-Ablauf, Speichern über Freigabe")]
+    public async Task Agents_page()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Core.Projects.Create("flyer", "Flyer");
+        w.KiBackendsOverride = () => [new FakeKi("Schritt 1: Text")];
+        w.Show("ki-rollen");
+        w.Find<Button>("role-texter").Press();
+        w.Find<ComboBox>("agent-project").SelectedIndex = 1;
+        w.Find<TextBox>("agent-goal").Text = "Flyer für Flohmarkt";
+        await w.RunAgentAsync("Flyer für Flohmarkt"); w.Show("ki-rollen");
+        Assert.Equal("Fertig.", w.Find<TextBlock>("agent-msg").Text);
+        w.Find<Button>("agent-save-0").Press();
+        var p = w.Core.Approvals.Pending().Single(); w.Core.Approvals.Approve(p.Id, Principal.LocalOwner);
+        w.Find<Button>("agent-exec-0").Press();
+        Assert.Equal("Gespeichert.", w.Find<TextBlock>("agent-msg").Text);
+        await w.RunAgentAsync("Flyer", "text"); w.Show("ki-rollen");
+        Assert.Contains("Team fertig: 3", w.Find<TextBlock>("agent-msg").Text);
+        Assert.Equal(4, w.Agents.Tasks("flyer").Count);
+    }
+}

@@ -150,3 +150,54 @@ public class CORE12_Prompts
         Assert.DoesNotContain("Hintergrund", m);
     }
 }
+
+public class CORE03_Agents
+{
+    [Fact(DisplayName = "CORE-03: 12 Rollen mit eigenem Auftrag, Aufgabe nutzt Rollenanweisung")]
+    public async Task Roles_run()
+    {
+        using var f = new Fixture();
+        Assert.Equal(12, AgentCenter.Roles.Count); Assert.Equal(12, AgentCenter.Roles.Select(r => r.Id).Distinct().Count());
+        var ki = new FakeKi("A");
+        var c = new AgentCenter(f.Root, f.Core.Audit, f.Core.Approvals, f.Core.Projects);
+        var t = await c.RunAsync(c.Create("lektor", "Text prüfen", input: "Hallo welt"), new IntelligenceCore(f.Root, f.Core.Audit, () => [ki]));
+        Assert.Equal(AgentTaskState.Fertig, t.State);
+        Assert.StartsWith("Du bist der Lektor", ki.Calls[0][0].Content);
+        Assert.Contains("Hallo welt", ki.Calls[0][^1].Content);
+        Assert.Single(new AgentCenter(f.Root, f.Core.Audit, f.Core.Approvals, f.Core.Projects).Tasks());
+    }
+
+    [Fact(DisplayName = "CORE-03: Team gibt Ergebnis weiter, Aufgaben sind je Projekt getrennt")]
+    public async Task Team_and_projects()
+    {
+        using var f = new Fixture();
+        f.Core.Projects.Create("p1", "P1"); f.Core.Projects.Create("p2", "P2");
+        var n = 0; var ki = new FakeKi("A", reply: m => $"Ergebnis {++n}");
+        var c = new AgentCenter(f.Root, f.Core.Audit, f.Core.Approvals, f.Core.Projects);
+        var r = await c.RunTeamAsync("text", "Flyer", new IntelligenceCore(f.Root, f.Core.Audit, () => [ki]), "p1");
+        Assert.Equal(3, r.Count); Assert.Contains("Ergebnis 1", ki.Calls[1][^1].Content); Assert.Contains("Ergebnis 2", ki.Calls[2][^1].Content);
+        Assert.Equal(3, c.Tasks("p1").Count); Assert.Empty(c.Tasks("p2"));
+        Assert.Throws<ProjectIsolationException>(() => c.Create("planer", "x", "gibtsnicht"));
+    }
+
+    [Fact(DisplayName = "CORE-03: Speichern nur mit Schreibrecht, nur nach Freigabe, nur im Projekt; Grok-Build-Auftrag ehrlich")]
+    public async Task Save_gated()
+    {
+        using var f = new Fixture();
+        f.Core.Projects.Create("p1", "P1");
+        var c = new AgentCenter(f.Root, f.Core.Audit, f.Core.Approvals, f.Core.Projects);
+        var ic = new IntelligenceCore(f.Root, f.Core.Audit, () => [new FakeKi("A")]);
+        var planer = await c.RunAsync(c.Create("planer", "x", "p1"), ic);
+        Assert.Throws<UnauthorizedAccessException>(() => c.RequestSave(planer, "a.md"));
+        var t = await c.RunAsync(c.Create("texter", "x", "p1"), ic);
+        Assert.Throws<ProjectIsolationException>(() => c.RequestSave(t, "../../boese.md"));
+        var req = c.RequestSave(t, "text.md");
+        Assert.Throws<ApprovalException>(() => c.ExecuteSave(t, "text.md"));
+        var req2 = c.RequestSave(t, "text.md");
+        f.Core.Approvals.Approve(req2.Id, Principal.LocalOwner);
+        c.ExecuteSave(t, "text.md");
+        Assert.Equal("Antwort von A", f.Core.Projects.ReadFile("p1", "text.md"));
+        var job = c.ExportGrokBuildJob(t);
+        Assert.Contains("nicht verbunden", f.Core.Projects.ReadFile("p1", job));
+    }
+}
