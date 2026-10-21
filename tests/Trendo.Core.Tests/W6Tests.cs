@@ -165,7 +165,7 @@ public class SPEC09_Scan
     {
         using var f = new Fixture(); Directory.CreateDirectory(f.Root);
         var xyz = Path.Combine(f.Root, "a.xyz");
-        var lines = new List<string>(); for (var i = 0; i < 10; i++) for (var j = 0; j < 10; j++) lines.Add($"{i * 0.01} {j * 0.01} 0 200 100 50");
+        var lines = new List<string>(); for (var i = 0; i < 10; i++) for (var j = 0; j < 10; j++) lines.Add(FormattableString.Invariant($"{i * 0.01} {j * 0.01} 0 200 100 50"));
         lines.Add("5 5 5 255 0 0"); File.WriteAllLines(xyz, lines);
         var pc = PointCloud.Load(xyz); var info = pc.Info();
         Assert.Equal(101, info.Points); Assert.True(info.HasColor); Assert.Equal(5, info.SizeZ);
