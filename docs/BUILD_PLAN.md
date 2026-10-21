@@ -13,12 +13,12 @@ von Manuel genehmigt: Assistent, Basispaket, Studio-Pakete, KI nach Hardware, Up
 
 | Reihenfolge | Modul | Name | Umsetzung | Test |
 |---|---|---|---|---|
-| 1 | W0-01 | Ersteinrichtungs-Assistent (Name, Sprache, Ordner, Design, ~2 min) | NOT_STARTED | NOT_RUN |
-| 2 | W0-02 | Basispaket (Browser-Integration, PDF-Viewer, mpv, 7-Zip, Schriften, DIN-5008-Briefvorlagen) | NOT_STARTED | NOT_RUN |
-| 3 | W0-03 | Studio-Pakete wählbar (Checkboxen), Abhängigkeiten sofort mit Fortschritt, eine Zustimmung | NOT_STARTED | NOT_RUN |
-| 4 | W0-04 | Lokale KI automatisch nach Hardware (RAM/GPU/VRAM) gewählt und geladen | NOT_STARTED | NOT_RUN |
-| 5 | W0-05 | Auto-Updates (Velopack, GitHub Releases) + geplante Sicherung mit Wiederherstellung | NOT_STARTED | NOT_RUN |
-| 6 | W0-06 | Systemcheck-Bericht nach Setup: bereit / fehlt / Ein-Klick-Reparatur | NOT_STARTED | NOT_RUN |
+| 1 | W0-01 | Ersteinrichtungs-Assistent (Name, Sprache, Ordner, Design, ~2 min) | PC_VERIFIED_PARTIAL | NOT_RUN |
+| 2 | W0-02 | Basispaket (Browser-Integration, PDF-Viewer, mpv, 7-Zip, Schriften, DIN-5008-Briefvorlagen) | PC_VERIFIED_PARTIAL | NOT_RUN |
+| 3 | W0-03 | Studio-Pakete wählbar (Checkboxen), Abhängigkeiten sofort mit Fortschritt, eine Zustimmung | PC_VERIFIED_PARTIAL | NOT_RUN |
+| 4 | W0-04 | Lokale KI automatisch nach Hardware (RAM/GPU/VRAM) gewählt und geladen | PC_VERIFIED_PARTIAL | NOT_RUN |
+| 5 | W0-05 | Auto-Updates (Velopack, GitHub Releases) + geplante Sicherung mit Wiederherstellung | PC_VERIFIED_PARTIAL | NOT_RUN |
+| 6 | W0-06 | Systemcheck-Bericht nach Setup: bereit / fehlt / Ein-Klick-Reparatur | PC_VERIFIED_PARTIAL | NOT_RUN |
 
 Abnahmekriterien je Modul:
 - Modul im Studio-Layout erreichbar (max. 2 Navigationsebenen, deutsche Beschriftung)
@@ -33,12 +33,12 @@ von Manuel genehmigt: einfache Sprache, Anpassen, Hintergründe, Animationen, Hi
 
 | Reihenfolge | Modul | Name | Umsetzung | Test |
 |---|---|---|---|---|
-| 1 | W0B-01 | Einfaches, freundliches Deutsch überall + Sprachleitfaden docs/SPRACHE.md | NOT_STARTED | NOT_RUN |
-| 2 | W0B-02 | Desktop anpassen: Kacheln/Widgets verschieben, ein-/ausblenden, Dock sortieren, Akzentfarbe (gespeichert) | NOT_STARTED | NOT_RUN |
-| 3 | W0B-03 | Hintergrund-Galerie (aus /workspace/trendo-wallpapers) + optional Wechsel nach Tageszeit | NOT_STARTED | NOT_RUN |
-| 4 | W0B-04 | Sanfte Animationen, Hover-Glow, ruhiger Startbildschirm + Schalter „Bewegung reduzieren“ | NOT_STARTED | NOT_RUN |
-| 5 | W0B-05 | Hilfe in der App: Hinweise beim ersten Öffnen je Studio + „?“-Knopf | NOT_STARTED | NOT_RUN |
-| 6 | W0B-06 | Designs: Dunkel Premium (Standard), Hell, Hoher Kontrast | NOT_STARTED | NOT_RUN |
+| 1 | W0B-01 | Einfaches, freundliches Deutsch überall + Sprachleitfaden docs/SPRACHE.md | PC_VERIFIED_PARTIAL | NOT_RUN |
+| 2 | W0B-02 | Desktop anpassen: Kacheln/Widgets verschieben, ein-/ausblenden, Dock sortieren, Akzentfarbe (gespeichert) | PC_VERIFIED_PARTIAL | NOT_RUN |
+| 3 | W0B-03 | Hintergrund-Galerie (aus /workspace/trendo-wallpapers) + optional Wechsel nach Tageszeit | PC_VERIFIED_PARTIAL | NOT_RUN |
+| 4 | W0B-04 | Sanfte Animationen, Hover-Glow, ruhiger Startbildschirm + Schalter „Bewegung reduzieren“ | PC_VERIFIED_PARTIAL | NOT_RUN |
+| 5 | W0B-05 | Hilfe in der App: Hinweise beim ersten Öffnen je Studio + „?“-Knopf | PC_VERIFIED_PARTIAL | NOT_RUN |
+| 6 | W0B-06 | Designs: Dunkel Premium (Standard), Hell, Hoher Kontrast | PC_VERIFIED_PARTIAL | NOT_RUN |
 
 Abnahmekriterien je Modul:
 - Modul im Studio-Layout erreichbar (max. 2 Navigationsebenen, deutsche Beschriftung)
