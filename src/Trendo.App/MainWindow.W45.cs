@@ -54,9 +54,15 @@ public partial class MainWindow
     private Control TabNav(List<(string Key, string Label, string Module)> tabs, string prefix)
     {
         var row = new WrapPanel();
-        foreach (var (k, l, _) in tabs)
+        foreach (var (k, l, m) in tabs)
         {
-            var b = new Button { Name = prefix + "-tab-" + k, Content = l, Margin = new Thickness(0, 0, 6, 6), Background = CurrentView == k ? Accent : null };
+            object content = l;
+            if (StudioIcons.For(m) is { } si)
+            {
+                var chip = Chip(si.Path, si.C1, si.C2, 20, 0.64); chip.Name = prefix + "-tabicon-" + k;
+                content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { chip, new TextBlock { Text = l, VerticalAlignment = VerticalAlignment.Center } } };
+            }
+            var b = new Button { Name = prefix + "-tab-" + k, Content = content, Margin = new Thickness(0, 0, 6, 6), Background = CurrentView == k ? Accent : null };
             b.Click += (_, _) => { _w45Msg = ""; Show(k); }; row.Children.Add(b);
         }
         return row;

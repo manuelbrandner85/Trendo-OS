@@ -255,6 +255,16 @@ public sealed partial class MainWindow : Window
         Child = Ico(data, size * icon, fg ?? Brushes.White), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center,
     };
 
+    /// <summary>Kartenkopf „Alle Studios“: Studio-Symbol (zentrale Karte StudioIcons) + Name.</summary>
+    private Control CardHead(string id, string name)
+    {
+        var t = new TextBlock { Text = name, Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center };
+        if (StudioIcons.For(id) is not { } si) return t;
+        var chip = Chip(si.Path, si.C1, si.C2, 38, 0.6); chip.Name = "studio-icon-" + id; chip.Margin = new Thickness(0, 0, 10, 4);
+        var g = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { chip, t } };
+        Grid.SetColumn(t, 1); return g;
+    }
+
     private static Border Panel(Control c, double pad = 12) => new()
     {
         Background = Glass, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(pad), Child = c, Margin = new Thickness(0, 0, 0, 10),
@@ -381,11 +391,11 @@ public sealed partial class MainWindow : Window
     // ---------- Seitenleiste ----------
     private static readonly (string Label, string Icon, string C1, string C2, string Filter)[] Categories =
     [
-        ("Alle Studios", Mdi.ViewGrid, "#1E88E5", "#1565C0", ""), ("Online Business", Mdi.Storefront, "#43A047", "#1B7F3B", "STUDIO-ONLINE"),
-        ("3D & Games", Mdi.GamepadVariant, "#E53935", "#B71C1C", "CORE-05|CORE-06"), ("Kreativ & Medien", Mdi.Palette, "#EC407A", "#AD1457", "CORE-08|SPEC-15"),
-        ("Office & Dokumente", Mdi.FileDocument, "#5C6BC0", "#3949AB", "SYS-10"), ("Briefstudio", Mdi.EmailEdit, "#FB8C00", "#E65100", "STUDIO-LETTER"),
-        ("Kommunikation", Mdi.Forum, "#29B6F6", "#0277BD", "SYS-09"), ("Tools & Entwickler", Mdi.Tools, "#1E88E5", "#0D47A1", "CORE-07|X-06|X-03"),
-        ("System & Sicherheit", Mdi.ShieldCheck, "#26A69A", "#00695C", "CORE-11|SYS-13|SPEC-12"), ("KI Assistent", Mdi.Robot, "#42A5F5", "#1565C0", "CORE-02|CORE-03|CORE-12"),
+        ("Alle Studios", StudioIcons.Areas["area-all"].Path, StudioIcons.Areas["area-all"].C1, StudioIcons.Areas["area-all"].C2, ""), ("Online Business", StudioIcons.Areas["area-online"].Path, StudioIcons.Areas["area-online"].C1, StudioIcons.Areas["area-online"].C2, "STUDIO-ONLINE"),
+        ("3D & Games", StudioIcons.Areas["area-games"].Path, StudioIcons.Areas["area-games"].C1, StudioIcons.Areas["area-games"].C2, "CORE-05|CORE-06"), ("Kreativ & Medien", StudioIcons.Areas["area-kreativ"].Path, StudioIcons.Areas["area-kreativ"].C1, StudioIcons.Areas["area-kreativ"].C2, "CORE-08|SPEC-15"),
+        ("Office & Dokumente", StudioIcons.Areas["area-office"].Path, StudioIcons.Areas["area-office"].C1, StudioIcons.Areas["area-office"].C2, "SYS-10"), ("Briefstudio", StudioIcons.Areas["area-brief"].Path, StudioIcons.Areas["area-brief"].C1, StudioIcons.Areas["area-brief"].C2, "STUDIO-LETTER"),
+        ("Kommunikation", StudioIcons.Areas["area-komm"].Path, StudioIcons.Areas["area-komm"].C1, StudioIcons.Areas["area-komm"].C2, "SYS-09"), ("Tools & Entwickler", StudioIcons.Areas["area-tools"].Path, StudioIcons.Areas["area-tools"].C1, StudioIcons.Areas["area-tools"].C2, "CORE-07|X-06|X-03"),
+        ("System & Sicherheit", StudioIcons.Areas["area-sicher"].Path, StudioIcons.Areas["area-sicher"].C1, StudioIcons.Areas["area-sicher"].C2, "CORE-11|SYS-13|SPEC-12"), ("KI Assistent", StudioIcons.Areas["area-ki"].Path, StudioIcons.Areas["area-ki"].C1, StudioIcons.Areas["area-ki"].C2, "CORE-02|CORE-03|CORE-12"),
     ];
 
     private Control LeftColumn()
@@ -460,7 +470,7 @@ public sealed partial class MainWindow : Window
                 Background = Grad(C("#B3122648", "#E6FFFFFF"), C("#B30B1A36", "#D9EEF3FA")), BorderBrush = Brush.Parse(C("#4D3F7FD0", "#663F7FD0")), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10),
                 HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center,
                 Content = new StackPanel { Spacing = 3, HorizontalAlignment = HorizontalAlignment.Center, Children = {
-                    new Border { Height = 58, Child = Ico(icon, 48, Grad(c1, c2), glow) },
+                    new Border { Height = 58, Child = StudioIcons.For(id) is { } si ? Ico(si.Path, 46, Grad(si.C1, si.C2), si.C2) : Ico(icon, 48, Grad(c1, c2), glow) },
                     new TextBlock { Text = title, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.Medium, HorizontalAlignment = HorizontalAlignment.Center, TextAlignment = TextAlignment.Center },
                     new TextBlock { Text = sub, Foreground = Brush.Parse(C("#C9D6EA", "#3A4A66")), FontSize = 11.5, HorizontalAlignment = HorizontalAlignment.Center }, badge } }
             };
@@ -718,7 +728,7 @@ public sealed partial class MainWindow : Window
             // Karten sind echte Knöpfe: Klick öffnet das Studio (vorher reine Anzeige – Klick tat nichts)
             var card = new Button { Name = "studio-card-" + st.Id, Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Margin = new Thickness(0, 0, 10, 10), Width = 230,
                 HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch,
-                Content = new StackPanel { Spacing = 2, Children = { new TextBlock { Text = st.Name, Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap }, P($"{st.Id} · {st.ApprovalStatus}"), Badge(st), P(st.Reason, null, 11) } } };
+                Content = new StackPanel { Spacing = 2, Children = { CardHead(st.Id, st.Name), P($"{st.Id} · {st.ApprovalStatus}"), Badge(st), P(st.Reason, null, 11) } } };
             Avalonia.Automation.AutomationProperties.SetName(card, st.Name);
             var sid = st.Id; var sname = st.Name;
             card.Click += async (_, _) => await OpenStudio(sid, sname);
