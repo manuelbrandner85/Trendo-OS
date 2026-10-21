@@ -174,16 +174,60 @@ public sealed class LetterArchive(string projectsFolder)
 /// <summary>SYS-10/LETTER-016: PDF über LibreOffice im Hintergrund (ohne Fenster), mit Zeitlimit.</summary>
 public static class PdfExport
 {
-    public static async Task<(bool Ok, string Message, string? Pdf)> ConvertAsync(IProcessRunner run, string soffice, string input, CancellationToken ct = default)
+    public static Task<(bool Ok, string Message, string? Pdf)> ConvertAsync(IProcessRunner run, string soffice, string input, CancellationToken ct = default) => ConvertToAsync(run, soffice, input, "pdf", ct);
+
+    /// <summary>LETTER-016: pdf oder odt. Ergebnis mit SHA-256 im Protokoll.</summary>
+    public static async Task<(bool Ok, string Message, string? Pdf)> ConvertToAsync(IProcessRunner run, string soffice, string input, string format, CancellationToken ct = default)
     {
+        if (format is not ("pdf" or "odt" or "docx")) throw new ArgumentException("Format");
         var outDir = Path.GetDirectoryName(Path.GetFullPath(input))!;
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct); cts.CancelAfter(TimeSpan.FromSeconds(90));
         try
         {
-            var (exit, output) = await run.RunAsync(soffice, $"--headless --norestore --convert-to pdf --outdir \"{outDir}\" \"{input}\"", null, cts.Token);
-            var pdf = Path.ChangeExtension(input, ".pdf");
-            return exit == 0 && File.Exists(pdf) ? (true, "PDF erstellt", pdf) : (false, $"LibreOffice meldet Fehler (Exit {exit})", null);
+            var (exit, output) = await run.RunAsync(soffice, $"--headless --norestore --convert-to {format} --outdir \"{outDir}\" \"{input}\"", null, cts.Token);
+            var pdf = Path.ChangeExtension(input, "." + format);
+            return exit == 0 && File.Exists(pdf) ? (true, $"{format.ToUpperInvariant()} erstellt (SHA-256 {LetterKit.Sha(pdf)[..16]}…)", pdf) : (false, $"LibreOffice meldet Fehler (Exit {exit})", null);
         }
         catch (OperationCanceledException) { return (false, "LibreOffice hat zu lange gebraucht und wurde beendet", null); }
+    }
+}
+
+/// <summary>LETTER-012: Tesseract (deu) mit TSV-Ausgabe – Unsicherheiten werden markiert.</summary>
+public static class Ocr
+{
+    public static readonly string[] ImageExt = [".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".webp"];
+    public static async Task<(bool Ok, string Text, double Confidence, List<string> Unreadable, string Message)> RunAsync(IProcessRunner run, string tesseract, string image, CancellationToken ct = default)
+    {
+        if (!ImageExt.Contains(Path.GetExtension(image).ToLowerInvariant())) return (false, "", 0, [], "Bitte ein Foto oder einen Scan als Bild (PNG/JPG/TIFF) wählen. PDF-Scans: Seite als Bild speichern.");
+        var outBase = Path.Combine(Path.GetTempPath(), "trendo-ocr-" + Guid.NewGuid().ToString("N"));
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct); cts.CancelAfter(TimeSpan.FromSeconds(120));
+        try
+        {
+            var (exit, output) = await run.RunAsync(tesseract, $"\"{image}\" \"{outBase}\" -l deu tsv", null, cts.Token);
+            if (exit != 0 || !File.Exists(outBase + ".tsv")) return (false, "", 0, [], $"Texterkennung fehlgeschlagen (Exit {exit}). Ist das deutsche Sprachpaket installiert?");
+            var (text, conf, bad) = LetterKit.ParseTesseractTsv(File.ReadAllText(outBase + ".tsv"));
+            return (true, text, conf, bad, $"Erkannt mit durchschnittlich {conf:0} % Sicherheit, {bad.Count} unsichere Wörter markiert.");
+        }
+        catch (OperationCanceledException) { return (false, "", 0, [], "Texterkennung hat zu lange gebraucht."); }
+        finally { foreach (var f in new[] { outBase + ".tsv" }) try { File.Delete(f); } catch { } }
+    }
+}
+
+/// <summary>LETTER-020: Korrekturlesen – sichtbare Prüfhinweise, nichts wird still geändert.</summary>
+public static class Proofread
+{
+    public static IReadOnlyList<string> Check(LetterDraft d)
+    {
+        var l = new List<string>(); var t = d.Body;
+        foreach (Match m in Regex.Matches(t, @"\b(\w+)\s+\1\b", RegexOptions.IgnoreCase)) l.Add($"Doppeltes Wort: „{m.Value}“");
+        if (Regex.IsMatch(t, @"[^\S\n]{2,}")) l.Add("Doppelte Leerzeichen im Text.");
+        foreach (var s in Regex.Split(t, @"(?<=[.!?])\s+")) if (s.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length > 35) l.Add($"Sehr langer Satz ({s.Split(' ').Length} Wörter): „{s[..Math.Min(50, s.Length)]}…“");
+        if (Regex.IsMatch(t, @" [,.;:!?]")) l.Add("Leerzeichen vor Satzzeichen.");
+        if (Regex.IsMatch(t, @"!{2,}|\?{2,}")) l.Add("Mehrfache Ausrufe-/Fragezeichen wirken unsachlich.");
+        if (Regex.IsMatch(t, @"\b[A-ZÄÖÜ]{6,}\b")) l.Add("Wörter in GROSSBUCHSTABEN wirken wie Schreien.");
+        foreach (var (wrong, right) in new[] { ("seid langem", "seit langem"), ("wiederrum", "wiederum"), ("Standart", "Standard"), ("vorraus", "voraus"), ("nähmlich", "nämlich"), ("Addresse", "Adresse"), ("tod langweilig", "todlangweilig"), ("Rechtsanwält ", "Rechtsanwalt "), ("bezüglich Ihres", "bezüglich Ihres") }.Where(x => x.Item1 != x.Item2))
+            if (t.Contains(wrong, StringComparison.OrdinalIgnoreCase)) l.Add($"Rechtschreibung: „{wrong}“ → „{right}“?");
+        if (d.SenderName.Trim().Length == 0) l.Add("Unterschriftsbereich: Name fehlt.");
+        return l;
     }
 }

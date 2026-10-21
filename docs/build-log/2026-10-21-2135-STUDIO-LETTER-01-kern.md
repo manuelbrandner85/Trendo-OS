@@ -1,0 +1,3 @@
+# STUDIO-LETTER-01 – Vorgangsakte (Kern)
+Akte pro Besitzer (Projektordner\Briefe\Akten), Versionen, Anlagen mit SHA-256, Chronik, Fakten (Tatsache/Vermutung/Frage), Fristen nur UNGEPRÜFT bis Bestätigung mit Quelle, Rechtsangaben nur mit amtlicher Quelle, Tonlagen + Faktenwächter, Eingangspost-Analyse (Anweisungen = Daten), Tesseract-OCR mit Markierung unsicherer Wörter, Forensik-TTL 120 h, Briefköpfe privat/firma getrennt, Freigabe an Hash/Empfänger/Anlagen gebunden, Versand immer BLOCKED, „Versendet“ nur mit Nachweis, ODT/PDF über LibreOffice.
+Tests: 16 neue (LTR-QA-001..017, 019, 020; LTR-QA-018 Mehrmodus nicht testbar → NOT_RUN).
