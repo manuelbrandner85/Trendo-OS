@@ -12,3 +12,4 @@
 
 ## Welle 1 – Fundament & Alltag
 - 20:42 SYS-13: Releases nur noch von sauberem main (installer/release.sh prüft Branch, Sauberkeit, origin/main, Version, Tests). Absturzprotokoll (logs/, Benutzerpfade geschwärzt, max. 20), Version mit Stand unter System. Tests +2.
+- 20:45 CORE-01: Globale Suche (Seiten, Bereiche, Studios, Projekte, Dateinamen im Projektordner; Umlaute egal; Strg+K). SYS-12: Anzeigegröße Normal/Groß/Sehr groß, F1 = Hilfe, Tastaturhinweise; Versionsanzeige in Einstellungen korrigiert. Tests +5.

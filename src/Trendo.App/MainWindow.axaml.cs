@@ -98,20 +98,21 @@ public sealed partial class MainWindow : Window
         // Designfläche skaliert proportional (Konzept ist für ~1440 px Breite gestaltet), damit kleine Bildschirme nicht abschneiden
         var scaler = new LayoutTransformControl { Child = root };
         Content = scaler;
-        void Rescale()
+        void DoRescale()
         {
             var cs = ClientSize; if (cs.Width <= 0 || cs.Height <= 0) return;
-            var k = Math.Min(1.0, Math.Min(cs.Width / 1536.0, cs.Height / 800.0));
+            var k = Math.Min(1.0, Math.Min(cs.Width / 1536.0, cs.Height / 800.0)) * UserSettings.ClampScale(_settings.UiScale);
             scaler.LayoutTransform = new ScaleTransform(k, k);
             root.Width = cs.Width / k; root.Height = cs.Height / k;
         }
-        PropertyChanged += (_, e) => { if (e.Property == ClientSizeProperty) Rescale(); };
-        Rescale();
+        Rescale = DoRescale;
+        PropertyChanged += (_, e) => { if (e.Property == ClientSizeProperty) DoRescale(); };
+        DoRescale();
 
         _showMap = new()
         {
             ["start"] = DesktopView, ["studios"] = StudiosView, ["projects"] = ProjectsView,
-            ["approvals"] = ApprovalsView, ["system"] = SystemView, ["apps"] = AppsView, ["ki"] = KiView, ["settings"] = SettingsView, ["components"] = ComponentsView, ["studio-deps"] = StudioDepsView, ["keys"] = KeysView, ["notbuilt"] = NotBuiltView, ["fortschritt"] = ProgressView,
+            ["approvals"] = ApprovalsView, ["system"] = SystemView, ["apps"] = AppsView, ["ki"] = KiView, ["settings"] = SettingsView, ["components"] = ComponentsView, ["studio-deps"] = StudioDepsView, ["keys"] = KeysView, ["notbuilt"] = NotBuiltView, ["fortschritt"] = ProgressView, ["suche"] = SearchView,
         };
         string[] order = ["start", "studios", "projects", "approvals", "system"];
         for (var i = 0; i < order.Length; i++)
@@ -119,6 +120,7 @@ public sealed partial class MainWindow : Window
             var key = order[i];
             KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.D1 + i, KeyModifiers.Control), Command = new RelayCommand(() => Show(key)) });
         }
+        InitWave1(); _query = opt.Query ?? "";
         InitSetup(opt);
         Show(opt.Page ?? (NeedsSetup(opt) ? "einrichtung" : "start"));
         RefreshStatusBar();
@@ -318,7 +320,7 @@ public sealed partial class MainWindow : Window
             tabs.Children.Add(b);
         }
         Grid.SetColumn(tabs, 1); bar.Children.Add(tabs);
-        _search.KeyDown += (_, e) => { if (e.Key == Key.Enter) { _studioFilter = _search.Text; Show("studios"); } };
+        _search.KeyDown += (_, e) => { if (e.Key == Key.Enter) { _query = _search.Text ?? ""; Show("suche"); } };
         var search = new Border { Width = 220, Height = 34, CornerRadius = new CornerRadius(9), Background = Brush.Parse(C("#990A1630", "#CCFFFFFF")), BorderBrush = Brush.Parse(C("#5541618F", "#5541618F")), BorderThickness = new Thickness(1),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { new Border { Margin = new Thickness(10, 0, 0, 0), Child = Ico(Mdi.Magnify, 16, Text) }, Pos(_search, 1) } } };
         _search.Background = Brushes.Transparent; _search.BorderThickness = new Thickness(0); _search.Width = double.NaN; _search.VerticalContentAlignment = VerticalAlignment.Center; _search.FontSize = 13;

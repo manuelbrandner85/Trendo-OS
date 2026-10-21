@@ -382,3 +382,34 @@ public class W0b_Look
         Directory.Delete(root, true);
     }
 }
+
+public class W1_Search_Access
+{
+    [AvaloniaFact(DisplayName = "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+K fokussiert die Suche")]
+    public async Task Search_opens_hit()
+    {
+        var (w, _, _) = Ui.Open();
+        var box = w.Find<TextBox>("txt-search");
+        w.Key(PhysicalKey.K, RawInputModifiers.Control);
+        Assert.True(box.IsFocused);
+        box.Text = "einstell";
+        box.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Enter });
+        Dispatcher.UIThread.RunJobs();
+        Assert.Equal("suche", w.CurrentView);
+        w.Find<Button>("hit-seite-0").Press();
+        await Task.Delay(50); Dispatcher.UIThread.RunJobs();
+        Assert.Equal("settings", w.CurrentView);
+    }
+
+    [AvaloniaFact(DisplayName = "SYS-12: Anzeigegröße „Sehr groß“ wird gespeichert; F1 zeigt die Hilfe")]
+    public void Scale_and_help()
+    {
+        var (w, _, root) = Ui.Open();
+        w.Show("settings");
+        w.Find<Button>("size-130").Press();
+        Assert.Equal(1.3, UserSettings.Load(root).UiScale);
+        w.Show("projects");
+        w.Key(PhysicalKey.F1);
+        Assert.NotNull(w.TryFind<Border>("hint"));
+    }
+}

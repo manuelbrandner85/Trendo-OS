@@ -565,3 +565,41 @@ public class SYS13_ReleaseQuality
         Xunit.Assert.Contains("--target \"$(git rev-parse HEAD)\"", s);
     }
 }
+
+public class CORE01_Search
+{
+    [Xunit.Fact(DisplayName = "CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte")]
+    public void Search_ranks()
+    {
+        var gs = new Trendo.Core.GlobalSearch();
+        gs.Add("Seite", "Einstellungen", "page:settings", "design", "größe");
+        gs.Add("Studio", "Briefstudio", "studio:L", "brief");
+        gs.Add("Datei", "Kündigung-Fitnessstudio.docx", "/x/k.docx", "kuendigung", "fitnessstudio");
+        Xunit.Assert.Equal("page:settings", gs.Find("groesse")[0].Target);
+        Xunit.Assert.Equal("page:settings", gs.Find("Größe")[0].Target);
+        Xunit.Assert.Equal("studio:L", gs.Find("brief")[0].Target);
+        Xunit.Assert.Single(gs.Find("kündigung fitness"));
+        Xunit.Assert.Empty(gs.Find("kündigung brief"));
+        Xunit.Assert.Empty(gs.Find("   "));
+    }
+
+    [Xunit.Fact(DisplayName = "CORE-01: Dateisuche begrenzt Tiefe und Anzahl")]
+    public void Files_bounded()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-gs-" + Guid.NewGuid().ToString("N"));
+        var deep = Path.Combine(root, "a", "b", "c", "d"); Directory.CreateDirectory(deep);
+        File.WriteAllText(Path.Combine(root, "rechnung-2026.pdf"), ""); File.WriteAllText(Path.Combine(deep, "versteckt.txt"), "");
+        var gs = new Trendo.Core.GlobalSearch(); gs.AddFiles(root, maxDepth: 3);
+        Xunit.Assert.Single(gs.Find("rechnung"));
+        Xunit.Assert.Empty(gs.Find("versteckt"));
+        Directory.Delete(root, true);
+    }
+
+    [Xunit.Fact(DisplayName = "SYS-12: Anzeigegröße wird auf erlaubte Stufen begrenzt")]
+    public void Scale_clamped()
+    {
+        Xunit.Assert.Equal(1.3, Trendo.Core.UserSettings.ClampScale(5));
+        Xunit.Assert.Equal(1.0, Trendo.Core.UserSettings.ClampScale(0.2));
+        Xunit.Assert.Equal(1.15, Trendo.Core.UserSettings.ClampScale(1.16));
+    }
+}

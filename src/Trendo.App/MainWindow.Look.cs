@@ -116,6 +116,7 @@ public sealed partial class MainWindow
         ["components"] = "Zusatzprogramme, die Trendo für einige Studios braucht. Trendo installiert sie nach deiner Zustimmung – ohne Admin, wo das geht.",
         ["systemcheck"] = "Grün heißt: funktioniert. Rot heißt: fehlt oder kaputt – ein Klick auf „Reparieren“ behebt das meistens.",
         ["sicherung"] = "Trendo sichert deine Daten regelmäßig. Ging etwas schief, holst du hier einen früheren Stand zurück.",
+        ["suche"] = "Die Suche findet Seiten, Studios, Projekte und Dateien in deinem Projektordner. Mit Strg+K springst du jederzeit ins Suchfeld.",
         ["fortschritt"] = "So weit ist Trendo OS gebaut. Die Angaben kommen direkt aus der Projektliste – nichts ist geschönt.",
         ["keys"] = "Für einige Online-Dienste brauchst du einen Zugangsschlüssel. Er wird sicher in Windows gespeichert, nicht in einer Datei.",
     };
@@ -188,7 +189,16 @@ public sealed partial class MainWindow
         motion.IsCheckedChanged += (_, _) => { _settings.ReduceMotion = motion.IsChecked == true; Reopen("settings"); };
         var upd = new CheckBox { Name = "auto-update", Content = $"Updates automatisch laden ({_updateInfo})", IsChecked = _settings.AutoUpdate, Foreground = Text };
         upd.IsCheckedChanged += (_, _) => { _settings.AutoUpdate = upd.IsChecked == true; SaveSettings(); };
-        sp.Children.Add(Section("Bedienung", new StackPanel { Spacing = 4, Children = { motion, upd } }));
+        var sizes = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        foreach (var (v, label) in new[] { (1.0, "Normal"), (1.15, "Groß"), (1.3, "Sehr groß") })
+        {
+            var on = Math.Abs(_settings.UiScale - v) < 0.01;
+            var b = new Button { Name = "size-" + (int)(v * 100), Content = (on ? "✓ " : "") + label, Background = on ? Accent : null };
+            b.Click += (_, _) => { _settings.UiScale = v; SaveSettings(); Rescale?.Invoke(); Show("settings"); };
+            sizes.Children.Add(b);
+        }
+        sp.Children.Add(Section("Bedienung", new StackPanel { Spacing = 4, Children = { motion, upd, P("Anzeigegröße (Schrift und Bedienelemente):", Text), sizes,
+            P("Tastatur: Strg+K Suche · F1 Hilfe zur Seite · Strg+1 bis 5 Hauptbereiche · Tab/Enter bedienen alles ohne Maus", null, 11) } }));
 
         // Startbildschirm anpassen: ein-/ausblenden und sortieren
         var desk = new StackPanel { Spacing = 4 };
@@ -208,7 +218,7 @@ public sealed partial class MainWindow
         sp.Children.Add(Section("Startbildschirm anpassen", desk));
 
         sp.Children.Add(Section("Mehr", new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Nav2("Zusatzprogramme", "components"), Nav2("Online-Dienste", "keys"), Nav2("Ersteinrichtung", "einrichtung"), Nav2("Systemcheck", "systemcheck") } }));
-        sp.Children.Add(P($"Version {_core.Version} · Logo: Entwurf, noch nicht freigegeben · Hintergründe: KI-erstellt für Trendo OS", null, 11));
+        sp.Children.Add(P($"Version {CrashLog.AppVersion()} · Logo: Entwurf, noch nicht freigegeben · Hintergründe: KI-erstellt für Trendo OS", null, 11));
         return Page("Einstellungen", sp);
     }
 
