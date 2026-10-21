@@ -177,3 +177,33 @@ public class CORE03_Ui
         Assert.Equal(4, w.Agents.Tasks("flyer").Count);
     }
 }
+
+public class SYS05_Ui
+{
+    [AvaloniaFact(DisplayName = "SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf")]
+    public async Task Workflows_page()
+    {
+        var (w, _, root) = Ui.Open();
+        var home = Path.Combine(root, "home"); Directory.CreateDirectory(Path.Combine(home, "Downloads"));
+        File.WriteAllText(Path.Combine(home, "Downloads", "r.pdf"), "x");
+        MainWindow.WorkflowHome = home;
+        w.Show("ablaeufe");
+        w.Find<Button>("wf-tpl-pdf").Press();
+        w.Find<Button>("wf-dry-0").Press(); W2Ui.Settle();
+        Assert.True(w.LastWfRun!.DryRun); Assert.True(File.Exists(Path.Combine(home, "Downloads", "r.pdf")));
+        w.Find<Button>("wf-approve-0").Press(); W2Ui.Settle();
+        w.Find<Button>("wf-run-0").Press(); W2Ui.Settle();
+        await Task.Delay(50); W2Ui.Settle();
+        Assert.True(File.Exists(Path.Combine(home, "Documents", "PDF", "r.pdf")));
+        w.Find<Button>("wf-new").Press();
+        w.Find<TextBox>("wfe-name").Text = "Mein Ordner";
+        w.Find<ComboBox>("wfe-kind").SelectedIndex = 0; w.Find<TextBox>("wfe-to").Text = Path.Combine(home, "Neu");
+        w.Find<Button>("wfe-add").Press();
+        w.Find<TextBox>("wfe-name").Text = "Mein Ordner";
+        w.Find<Button>("wfe-save").Press();
+        Assert.Equal(2, w.Workflows.All().Count);
+        w.Find<Button>("wf-run-1").Press(); W2Ui.Settle();
+        Assert.True(Directory.Exists(Path.Combine(home, "Neu")));
+        MainWindow.WorkflowHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+    }
+}
