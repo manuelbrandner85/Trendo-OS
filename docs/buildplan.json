@@ -508,8 +508,8 @@
   "order": 6,
   "id": "SYS-09",
   "name": "Communication Mail & Collaboration Center",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -832,8 +832,8 @@
   "order": 3,
   "id": "X-01",
   "name": "Universal Studio Fusion & Autonomous Production",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },

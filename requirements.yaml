@@ -188,8 +188,9 @@ modules:
   name: Communication Mail & Collaboration Center
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w23/SYS-09.md
 - id: SYS-10
   name: Office Documents & Productivity Center
   approved_expansion_functions: '25'
