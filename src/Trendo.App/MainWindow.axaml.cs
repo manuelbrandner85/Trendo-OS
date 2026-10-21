@@ -171,8 +171,7 @@ public sealed partial class MainWindow : Window
         var sw = System.Diagnostics.Stopwatch.StartNew();
         CurrentView = key;
         MarkTab(key); MarkSide(key);
-        _center.Children.Clear();
-        _center.Children.Add(SafeView(key));
+        PresentPage(key);
         NoteRecent(key);
         AfterShow(key);
         _bellBadge.Text = _core.Approvals.Pending().Count is var n && n > 0 ? n.ToString() : "";
@@ -701,8 +700,10 @@ public sealed partial class MainWindow : Window
         var trash = new Button { Name = "dock-trash", Width = 46, Height = 46, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Content = Ico(Mdi.Delete, 34, Grad("#ECEFF1", "#90A4AE")) };
         ToolTip.SetTip(trash, "Papierkorb"); trash.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, "shell:RecycleBinFolder", _core.Audit);
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 14, Children = { StartButton(), new Border { Width = 1, Height = 40, Background = Brush.Parse("#553F7FD0") }, bar, new Border { Width = 1, Height = 40, Background = Brush.Parse("#553F7FD0") }, trash } };
-        return new Border { Background = Brush.Parse(C("#B30A1630", "#CCF2F6FC")), BorderBrush = Brush.Parse("#664C8DFF"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(16), Padding = new Thickness(18, 9),
+        var dockBar = new Border { Background = Brush.Parse(C("#B30A1630", "#CCF2F6FC")), BorderBrush = Brush.Parse("#664C8DFF"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(16), Padding = new Thickness(18, 9),
             HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 6, 0, 26), Child = row, BoxShadow = BoxShadows.Parse("0 0 24 0 #442F86F6") };
+        _taskbar.IsVisible = false;
+        return new StackPanel { Children = { _taskbar, dockBar } };
     }
 
     // ---------- Inhaltsansichten (im Glaspanel) ----------

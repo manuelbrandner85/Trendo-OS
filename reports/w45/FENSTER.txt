@@ -1,0 +1,4 @@
+Nachweis FENSTER – Linux-Box (nicht Windows-PC), 22.10.2026 00:52 MESZ, Commit-Basis 73f4c51
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 401 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   412, Skipped:    10, Total:   422, Duration: 14 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   125, Skipped:     0, Total:   125, Duration: 4 m 2 s - Trendo.App.Tests.dll (net10.0)

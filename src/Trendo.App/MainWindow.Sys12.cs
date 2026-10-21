@@ -114,7 +114,7 @@ public partial class MainWindow
     // ---------- Prüfen ----------
     public A11y.PageCheck CheckPage(string key)
     {
-        Show(key); var root = (Control)_center.Children[0];
+        Show(key); var root = ActivePageRoot!;
         var ctrls = root.GetLogicalDescendants().OfType<Control>().Where(c => c is Button or TextBox or CheckBox or ComboBox).ToList();
         var unnamed = ctrls.Where(c => string.IsNullOrWhiteSpace(AutomationProperties.GetName(c))).Select(c => c.Name ?? c.GetType().Name).ToList();
         var labels = root.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text ?? "").Concat(ctrls.Select(c => LabelOf(c) ?? "")).Where(s => s.Length > 0);
