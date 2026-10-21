@@ -1,0 +1,23 @@
+== vorher LOCALAPPDATA ==
+audit
+current
+packages
+projects
+config.json
+Trendo OS.exe
+Update.exe
+== vorher APPDATA existiert: False
+Setup SHA256 3A8DD1BAB95A5471B1698B946ECB4DDC9A90DB4CAE82952C13181A74D82BFBE9
+Setup exit 0
+Version 0.6.0+9373c83fc5c00e298b68de21c6c432ec56446b6b
+== nachher LOCALAPPDATA ==
+current
+packages
+Update.exe
+== nachher APPDATA ==
+audit
+projects
+MIGRATION.txt
+tools.json
+Trendo OS.exe
+Projekte: 0

@@ -810,6 +810,7 @@ public sealed class MainWindow : Window
         _kiInput.IsEnabled = ok; _kiSetup.IsVisible = !ok;
         _kiInput.PlaceholderText = "Deine Nachricht an Trendo …";
         if (ok) _kiText.Text = "Hallo! Wie kann ich dir heute helfen? Du kannst mir eine Aufgabe geben, ein Studio öffnen, ein Projekt starten oder eine Frage stellen. (Lokales Modell, läuft auf diesem PC.)";
+        if (CurrentView == "ki") Show("ki");
     }
 
     private async Task AskKi(string q)

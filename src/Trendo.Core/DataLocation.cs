@@ -18,7 +18,8 @@ public static class DataLocation
         foreach (var e in Directory.EnumerateFileSystemEntries(legacyRoot))
         {
             var name = Path.GetFileName(e);
-            if (InstallerEntries.Any(x => string.Equals(x, name, StringComparison.OrdinalIgnoreCase)) || name.StartsWith("velopack", StringComparison.OrdinalIgnoreCase)) continue;
+            if (InstallerEntries.Any(x => string.Equals(x, name, StringComparison.OrdinalIgnoreCase)) || name.StartsWith("velopack", StringComparison.OrdinalIgnoreCase)
+                || (File.Exists(e) && name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))) continue; // Velopack-Starter (z. B. „Trendo OS.exe“) bleibt
             var dest = Path.Combine(newRoot, name);
             if (File.Exists(dest) || Directory.Exists(dest)) continue;
             if (Directory.Exists(e)) Directory.Move(e, dest); else File.Move(e, dest);

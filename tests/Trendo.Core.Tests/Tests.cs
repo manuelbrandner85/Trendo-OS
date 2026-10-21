@@ -426,12 +426,12 @@ public class DataLocation_And_Model
         try
         {
             Directory.CreateDirectory(Path.Combine(old, "current")); Directory.CreateDirectory(Path.Combine(old, "projects", "p1")); Directory.CreateDirectory(Path.Combine(old, "audit"));
-            File.WriteAllText(Path.Combine(old, "Update.exe"), "x"); File.WriteAllText(Path.Combine(old, "config.json"), "alt"); File.WriteAllText(Path.Combine(old, "audit", "audit.jsonl"), "a");
+            File.WriteAllText(Path.Combine(old, "Update.exe"), "x"); File.WriteAllText(Path.Combine(old, "Trendo OS.exe"), "x"); File.WriteAllText(Path.Combine(old, "config.json"), "alt"); File.WriteAllText(Path.Combine(old, "audit", "audit.jsonl"), "a");
             Directory.CreateDirectory(neu); File.WriteAllText(Path.Combine(neu, "config.json"), "neu");
             Assert.Equal(2, DataLocation.MigrateLegacy(old, neu)); // projects + audit; config existiert schon
             Assert.True(Directory.Exists(Path.Combine(neu, "projects", "p1"))); Assert.True(File.Exists(Path.Combine(neu, "audit", "audit.jsonl")));
             Assert.Equal("neu", File.ReadAllText(Path.Combine(neu, "config.json")));
-            Assert.True(Directory.Exists(Path.Combine(old, "current"))); Assert.True(File.Exists(Path.Combine(old, "Update.exe")));
+            Assert.True(Directory.Exists(Path.Combine(old, "current"))); Assert.True(File.Exists(Path.Combine(old, "Update.exe"))); Assert.True(File.Exists(Path.Combine(old, "Trendo OS.exe")));
             Assert.Equal(0, DataLocation.MigrateLegacy(old, neu));
         }
         finally { Directory.Delete(t, true); }

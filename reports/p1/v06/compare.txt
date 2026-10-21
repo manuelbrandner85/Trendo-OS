@@ -1,0 +1,14 @@
+﻿[qwen2.5:0.5b] (2 s) F: Was ist die Hauptstadt von Deutschland? Antworte in einem Satz.
+A: Die Hauptstadt von Deutschland ist Berlin.
+
+[qwen2.5:0.5b] (0 s) F: Erkläre in zwei Sätzen auf Deutsch, was ein Betriebssystem ist.
+A: In zwei Sätzen:
+
+Ein Betriebssystem ist eine Systeme, die mit einem Computer oder einem Host verknüpft ist, um sich um die Anwendungsfähigkeiten und Funktionen der Computer zu organisieren. Es ist Teil eines Hardware- und Softwarepakets, das sich um die Umgebungs- und System-aktivität kümmert. Ein Beispiel für ein Betriebssystem ist Windows.
+
+[qwen2.5:3b] (5 s) F: Was ist die Hauptstadt von Deutschland? Antworte in einem Satz.
+A: Die Hauptstadt von Deutschland ist Berlin.
+
+[qwen2.5:3b] (0 s) F: Erkläre in zwei Sätzen auf Deutsch, was ein Betriebssystem ist.
+A: Ein Betriebssystem ist eine Software, die den Computer und alle darauf laufenden Anwendungen steuert und regelt, indem es die Ressourcen effizient verteilt und organisiert.
+

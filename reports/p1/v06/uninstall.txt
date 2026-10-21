@@ -1,0 +1,6 @@
+Vor Deinstallation: Daten-Einträge 6, Audit-Zeilen 22
+Update.exe --uninstall exit 0
+Programmordner noch da: False
+Nach Deinstallation: Daten-Einträge 6, Audit-Zeilen 22, ki-model/MIGRATION: True
+Neuinstallation exit 0
+Version 0.6.0+9373c83fc5c00e298b68de21c6c432ec56446b6b; Audit-Zeilen danach 22
