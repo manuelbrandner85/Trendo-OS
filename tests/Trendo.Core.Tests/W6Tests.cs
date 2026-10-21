@@ -364,3 +364,17 @@ public class SPEC01_Plus
     [Fact(DisplayName = "SPEC-01 F15: Wohnfläche nach WoFlV")] public void F15() { Assert.Equal(67, Interior.LivingArea(60, 10, 4, 8)); Assert.Throws<ArgumentException>(() => Interior.LivingArea(-1)); }
     [Fact(DisplayName = "SPEC-01 F16: Raumliste als CSV")] public void F16() { var c = Interior.RoomsCsv([R]); Assert.Contains("Bad;3,00;2,00;2,50;6,00", c); Assert.StartsWith("Raum;", c); }
 }
+
+public class SPEC02_Plus
+{
+    [Fact(DisplayName = "SPEC-02 F07: Reihe & parallel")] public void F07() { Assert.Equal(500, ElectronicsPlus.Combine([1000, 1000], true), 6); Assert.Equal(3000, ElectronicsPlus.Combine([1000, 2000], false)); Assert.Equal(2e-6, ElectronicsPlus.Combine([1e-6, 1e-6], true, cap: true), 12); Assert.Equal(0.5e-6, ElectronicsPlus.Combine([1e-6, 1e-6], false, cap: true), 12); }
+    [Fact(DisplayName = "SPEC-02 F08: Kondensator-Code")] public void F08() { Assert.Equal(100e-9, ElectronicsPlus.CapCode("104"), 15); Assert.Equal("104", ElectronicsPlus.ToCapCode(100e-9)); Assert.Equal("472", ElectronicsPlus.ToCapCode(4.7e-9)); Assert.Throws<FormatException>(() => ElectronicsPlus.CapCode("1a4")); }
+    [Fact(DisplayName = "SPEC-02 F09: RC-Glied")] public void F09() { var r = ElectronicsPlus.Rc(10000, 100e-9); Assert.Equal(1e-3, r.Tau, 9); Assert.Equal(159.15, r.Cutoff, 2); Assert.Equal(5e-3, r.Full, 9); }
+    [Fact(DisplayName = "SPEC-02 F10: 555-Timer")] public void F10() { var t = ElectronicsPlus.Timer555(1000, 10000, 10e-6); Assert.Equal(6.87, t.Hz, 2); Assert.Equal(52.38, t.DutyPct, 2); }
+    [Fact(DisplayName = "SPEC-02 F11: Leiterbahnbreite")] public void F11() { var w = ElectronicsPlus.TraceWidthMm(1, 10, 35); Assert.InRange(w, 0.25, 0.32); Assert.True(ElectronicsPlus.TraceWidthMm(1, 10, 35, outer: false) > w); }
+    [Fact(DisplayName = "SPEC-02 F12: Akku-Laufzeit")] public void F12() { Assert.Equal(34, ElectronicsPlus.BatteryHours(2000, 50)); Assert.Throws<ArgumentException>(() => ElectronicsPlus.BatteryHours(0, 1)); }
+    [Fact(DisplayName = "SPEC-02 F13: Kabel-Spannungsabfall")] public void F13() { var d = ElectronicsPlus.CableDrop(5, 10, 1.5, 12); Assert.Equal(1.187, d.DropV); Assert.Equal(9.89, d.DropPct); }
+    [Fact(DisplayName = "SPEC-02 F14: SMD-Widerstandscode")] public void F14() { Assert.Equal(4700, ElectronicsPlus.SmdCode("472")); Assert.Equal(47000, ElectronicsPlus.SmdCode("4702")); Assert.Equal(4.7, ElectronicsPlus.SmdCode("4R7")); Assert.Equal(10000, ElectronicsPlus.SmdCode("01C")); Assert.Equal(4990, ElectronicsPlus.SmdCode("68B")); }
+    [Fact(DisplayName = "SPEC-02 F15: Linearregler-Verlust")] public void F15() { var r = ElectronicsPlus.Regulator(12, 5, 0.5); Assert.Equal(3.5, r.Watt); Assert.Equal(200, r.TjNoSink); Assert.True(r.NeedsSink); Assert.Equal(23.1, r.SinkKPerW); Assert.False(ElectronicsPlus.Regulator(5, 3.3, 0.1).NeedsSink); }
+    [Fact(DisplayName = "SPEC-02 F16: Einheiten-Präfixe")] public void F16() { Assert.Equal(4700, ElectronicsPlus.Si("4k7")); Assert.Equal(100e-9, ElectronicsPlus.Si("100n"), 15); Assert.Equal(2.2e-6, ElectronicsPlus.Si("2,2µ"), 15); Assert.Equal(3.3, ElectronicsPlus.Si("3R3")); Assert.Equal("4,7 kΩ", ElectronicsPlus.Fmt(4700, "Ω")); }
+}
