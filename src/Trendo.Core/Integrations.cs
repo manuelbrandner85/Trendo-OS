@@ -24,18 +24,18 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
     public const string OpenFolder = "explorer.open_project";
     public const string OpenUrl = "browser.open_url";
 
-    public ApprovalRequest PlanOpenProjectFolder(string projectId)
+    public ApprovalRequest PlanOpenProjectFolder(Principal by, string projectId)
     {
         var dir = projects.ProjectFilesRoot(projectId);
-        return gate.Request(OpenFolder, $"Projektordner '{projectId}' im Explorer öffnen", dir);
+        return gate.Request(by, OpenFolder, $"Projektordner '{projectId}' im Explorer öffnen", dir);
     }
 
-    public ApprovalRequest PlanOpenUrl(string url)
+    public ApprovalRequest PlanOpenUrl(Principal by, string url)
     {
         if (isOffline?.Invoke() == true) throw new OfflineException("Offline-Modus: Browser-/Netzwerkaktionen sind deaktiviert.");
         if (!Uri.TryCreate(url, UriKind.Absolute, out var u) || u.Scheme != Uri.UriSchemeHttps)
             throw new ArgumentException("Nur https-URLs erlaubt.");
-        return gate.Request(OpenUrl, $"URL im Standardbrowser öffnen: {u.Host}", u.AbsoluteUri);
+        return gate.Request(by, OpenUrl, $"URL im Standardbrowser öffnen: {u.Host}", u.AbsoluteUri);
     }
 
     public void Execute(ApprovalRequest r) =>

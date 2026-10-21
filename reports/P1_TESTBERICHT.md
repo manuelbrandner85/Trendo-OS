@@ -82,3 +82,42 @@ Hinweis: Audit-Kopien im Repo sind um Benutzerpfade bereinigt, ihre Hash-Kette i
 3. Lokale API (localhost + Auth) – laut Spezifikation Teil von P1, noch In-Process.
 4. Rollen/RBAC im Core; Code-Signatur des Pakets (kein Zertifikat vorhanden).
 5. Kosmetik: Navigationsbeschriftung „Strg+5“ abgeschnitten.
+
+---
+# Nachtrag: Lokale API + RBAC (21.10.2026, 14:56 Europe/Berlin)
+**Commit getestet:** `217d182` (Branch `p1/api-rbac`) · Windows 11 Pro 26H2, Standardbenutzer, ohne Admin · Nachweise: `reports/p1/api-rbac/` (+ `SHA256SUMS.txt`)
+
+## Neu (IMPLEMENTED)
+- `src/Trendo.Api`: lokale HTTP-API (Kestrel), **nur 127.0.0.1**, Option `--api [--api-port N]` (Standard 47800). Prüft Loopback-Client, Host-Header (DNS-Rebinding → 421), Bearer-Token.
+- Tokens: je Rolle ein 256-Bit-Token, gespeichert nur über `ISecretStore` (Windows: Credential Manager, Ziel `TrendoOS:api-token-<rolle>`), Vergleich in konstanter Zeit, Rotation möglich, nie im Audit-Log.
+- RBAC im Core (`Rbac.cs`): Guest = Studios ansehen; User = + Projekte, Aktionen anfordern; Owner = + Freigeben/Ablehnen, Audit. Durchgesetzt im **Approval-Gate** (Anfordern/Freigeben) und in der API; Verstöße als `rbac.denied` auditiert. Desktop-Bediener = lokaler Owner.
+- Navigation: Kürzel „Strg+N“ als zweite Zeile, Leiste breiter → nichts mehr abgeschnitten (Screenshot).
+- `--api-selftest`: Live-Prüfung über echten Loopback mit echten Tokens.
+
+## Ergebnisse (Windows)
+| Schritt | Ergebnis |
+|---|---|
+| Build | 0 Warnungen, 0 Fehler |
+| Core-Tests | **39/39** |
+| API-Tests (echter Kestrel auf Loopback) | **14/14** |
+| UI-Tests (headless) | **7/7** |
+| Summe | **60/60 bestanden** (Linux-Box ebenfalls 60/60) |
+| API-Live-Selbsttest | **13/13 PASS** (401 ohne/falsches Token, 403 für Guest/User wo verboten, 201/202/200 erlaubt, 421 fremder Host, Token nicht im Log) |
+| App mit `--api` | Listener ausschließlich `127.0.0.1:47800` (Prozess TrendoOS), `/api/studios` ohne Token → 401, health ok, App-Exit 0 |
+| Firewall | 0 Regeln für TrendoOS angelegt (Loopback benötigt keine) |
+
+## QA-Status (Änderungen)
+- QA-004: **TESTED** inkl. RBAC (Core, API, UI) – nur Owner darf freigeben.
+- QA-003: zusätzlich über API (Pfadausbruch → 400).
+- Lokale API mit Auth (P1-Pflichtpunkt): **TESTED** auf Windows.
+
+## Hinweise
+- Der API-Selbsttest hat auf dem PC echte Tokens im Credential Manager angelegt (`TrendoOS:api-token-guest/user/owner`). Sie bleiben als App-Tokens bestehen; Entfernen per Credential Manager oder `ApiTokens.Rotate`.
+- Es gibt noch keine UI zur Token-Anzeige/-Rotation und keine Benutzerverwaltung (Rollen sind tokenbasiert).
+
+## Noch offen für P1-Abnahme
+1. Manuels Abnahme.
+2. QA-017 Rest (Narrator, Kontrast, Multi-Monitor, Reduced Motion).
+3. QA-019 realer Lauf mit getrenntem Netzwerk.
+4. Code-Signatur des Pakets (Zertifikat fehlt).
+5. Optional: Token-Verwaltung in der UI.

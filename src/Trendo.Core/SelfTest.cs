@@ -7,9 +7,9 @@ public static class SelfTest
     {
         const string id = "selftest-explorer";
         if (!core.Projects.List().Any(p => p.Id == id)) core.Projects.Create(id, "Selbsttest Explorer");
-        var r = core.Integrations.PlanOpenProjectFolder(id);
+        var r = core.Integrations.PlanOpenProjectFolder(Principal.LocalOwner, id);
         output.WriteLine($"Freigabe angefordert: {r.Id} {r.Action}");
-        core.Approvals.Approve(r.Id, approver);
+        core.Approvals.Approve(r.Id, new Principal(approver, Role.Owner));
         core.Integrations.Execute(r);
         output.WriteLine("Explorer geöffnet.");
         core.Shutdown();

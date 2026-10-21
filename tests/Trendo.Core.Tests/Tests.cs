@@ -95,7 +95,7 @@ public class QA004_ApprovalGate
     {
         using var f = new Fixture();
         f.Core.Projects.Create("projekt-a", "A");
-        var r = f.Core.Integrations.PlanOpenProjectFolder("projekt-a");
+        var r = f.Core.Integrations.PlanOpenProjectFolder(Principal.LocalOwner, "projekt-a");
         Assert.Throws<ApprovalException>(() => f.Core.Integrations.Execute(r));
         Assert.Empty(f.Launcher.Opened);
     }
@@ -104,8 +104,8 @@ public class QA004_ApprovalGate
     public void Denied_blocks()
     {
         using var f = new Fixture();
-        var r = f.Core.Integrations.PlanOpenUrl("https://example.org");
-        f.Core.Approvals.Deny(r.Id);
+        var r = f.Core.Integrations.PlanOpenUrl(Principal.LocalOwner, "https://example.org");
+        f.Core.Approvals.Deny(r.Id, Principal.LocalOwner);
         Assert.Throws<ApprovalException>(() => f.Core.Integrations.Execute(r));
         Assert.Empty(f.Launcher.Opened);
     }
@@ -114,8 +114,8 @@ public class QA004_ApprovalGate
     public void Approval_single_use()
     {
         using var f = new Fixture();
-        var r = f.Core.Integrations.PlanOpenUrl("https://example.org");
-        f.Core.Approvals.Approve(r.Id);
+        var r = f.Core.Integrations.PlanOpenUrl(Principal.LocalOwner, "https://example.org");
+        f.Core.Approvals.Approve(r.Id, Principal.LocalOwner);
         f.Core.Integrations.Execute(r);
         Assert.Single(f.Launcher.Opened);
         Assert.Throws<ApprovalException>(() => f.Core.Integrations.Execute(r));
@@ -126,8 +126,8 @@ public class QA004_ApprovalGate
     public void Expired_blocks()
     {
         using var f = new Fixture();
-        var r = f.Core.Integrations.PlanOpenUrl("https://example.org");
-        f.Core.Approvals.Approve(r.Id);
+        var r = f.Core.Integrations.PlanOpenUrl(Principal.LocalOwner, "https://example.org");
+        f.Core.Approvals.Approve(r.Id, Principal.LocalOwner);
         f.Time.Advance(TimeSpan.FromMinutes(11));
         Assert.Throws<ApprovalException>(() => f.Core.Integrations.Execute(r));
         Assert.Empty(f.Launcher.Opened);
@@ -137,8 +137,8 @@ public class QA004_ApprovalGate
     public void Target_mismatch_blocks()
     {
         using var f = new Fixture();
-        var r = f.Core.Approvals.Request(Integrations.OpenUrl, "x", "https://example.org/");
-        f.Core.Approvals.Approve(r.Id);
+        var r = f.Core.Approvals.Request(Principal.LocalOwner, Integrations.OpenUrl, "x", "https://example.org/");
+        f.Core.Approvals.Approve(r.Id, Principal.LocalOwner);
         Assert.Throws<ApprovalException>(() => f.Core.Approvals.Execute(r.Id, Integrations.OpenUrl, "https://evil.example/", () => true));
     }
 
@@ -147,7 +147,7 @@ public class QA004_ApprovalGate
     public void Only_https(string url)
     {
         using var f = new Fixture();
-        Assert.Throws<ArgumentException>(() => f.Core.Integrations.PlanOpenUrl(url));
+        Assert.Throws<ArgumentException>(() => f.Core.Integrations.PlanOpenUrl(Principal.LocalOwner, url));
     }
 
     [Fact(DisplayName = "QA-004: Audit-Log ist hash-verkettet; Manipulation wird erkannt")]
@@ -247,9 +247,9 @@ public class QA019_SimulatedNoNetwork
         var core = new TrendoCore(root, new InMemorySecretStore(), l, offline: true);
         core.Projects.Create("off", "Off");
         core.Projects.WriteFile("off", "a.txt", "x");
-        Assert.Throws<OfflineException>(() => core.Integrations.PlanOpenUrl("https://example.org"));
-        var r = core.Integrations.PlanOpenProjectFolder("off");
-        core.Approvals.Approve(r.Id); core.Integrations.Execute(r);
+        Assert.Throws<OfflineException>(() => core.Integrations.PlanOpenUrl(Principal.LocalOwner, "https://example.org"));
+        var r = core.Integrations.PlanOpenProjectFolder(Principal.LocalOwner, "off");
+        core.Approvals.Approve(r.Id, Principal.LocalOwner); core.Integrations.Execute(r);
         Assert.Single(l.Opened);
         Assert.Contains("offline=True", core.Audit.ReadAll()[0].Detail);
     }
@@ -276,4 +276,33 @@ public sealed class BlockedNetworkHandler : HttpMessageHandler
 {
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
         => throw new HttpRequestException("Netzwerk im Offline-Modus blockiert (simuliert).");
+}
+
+public class Rbac_Core
+{
+    [Fact(DisplayName = "RBAC Core: Guest/User dürfen nicht freigeben, Owner schon")]
+    public void Only_owner_approves()
+    {
+        using var f = new Fixture();
+        var r = f.Core.Integrations.PlanOpenUrl(Principal.LocalOwner, "https://example.org");
+        Assert.Throws<UnauthorizedAccessException>(() => f.Core.Approvals.Approve(r.Id, new Principal("u", Role.User)));
+        Assert.Throws<UnauthorizedAccessException>(() => f.Core.Approvals.Deny(r.Id, new Principal("g", Role.Guest)));
+        f.Core.Approvals.Approve(r.Id, new Principal("o", Role.Owner));
+        f.Core.Integrations.Execute(r);
+        Assert.Single(f.Launcher.Opened);
+    }
+
+    [Fact(DisplayName = "RBAC Core: Guest darf keine Aktion anfordern")]
+    public void Guest_cannot_request()
+    {
+        using var f = new Fixture();
+        Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.PlanOpenUrl(new Principal("g", Role.Guest), "https://example.org"));
+        Assert.Contains(f.Core.Audit.ReadAll(), e => e.Action == "rbac.denied");
+    }
+
+    [Theory(DisplayName = "RBAC Core: Rechtematrix")]
+    [InlineData(Role.Guest, Permission.ViewStudios, true)] [InlineData(Role.Guest, Permission.ViewProjects, false)]
+    [InlineData(Role.User, Permission.RequestAction, true)] [InlineData(Role.User, Permission.ApproveAction, false)]
+    [InlineData(Role.User, Permission.ViewAudit, false)] [InlineData(Role.Owner, Permission.ApproveAction, true)]
+    public void Matrix(Role r, Permission p, bool expected) => Assert.Equal(expected, Rbac.Has(new Principal("x", r), p));
 }

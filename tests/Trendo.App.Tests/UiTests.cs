@@ -145,7 +145,7 @@ public class QA019_OfflineUi
         w.Core.Projects.Create("offline-ui", "Offline");
         w.Show("projects");
         Assert.False(w.Find<Button>("btn-open-url").IsEnabled);
-        Assert.Throws<OfflineException>(() => w.Core.Integrations.PlanOpenUrl("https://example.org"));
+        Assert.Throws<OfflineException>(() => w.Core.Integrations.PlanOpenUrl(Principal.LocalOwner, "https://example.org"));
         w.Find<Button>("btn-open-folder-offline-ui").Press();
         w.TryFind<Button>("btn-approve-")!.Press();
         Assert.Single(l.Opened);
