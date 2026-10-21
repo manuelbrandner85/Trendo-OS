@@ -136,3 +136,24 @@ public class SPEC06_Learning
         Assert.Throws<ArgumentException>(() => lb.Add("x", "", "y"));
     }
 }
+
+public class SPEC08_Fashion
+{
+    [Fact(DisplayName = "SPEC-08: Größen aus Maßen, Schuhgrößen, Stoffbedarf, Varianten, Preiskalkulation")]
+    public void Calc()
+    {
+        Assert.Equal(38, Fashion.FromBody(true, 88, 72, 96).Eu);
+        Assert.Equal(40, Fashion.FromBody(true, 90, 72, 96).Eu);
+        Assert.Contains("verschiedenen", Fashion.FromBody(true, 84, 90, 92).Note);
+        Assert.Equal(52, Fashion.FromBody(false, 103, 90).Eu);
+        Assert.Contains("US 6", Fashion.WomenSize(38));
+        var s = Fashion.Shoe(42); Assert.Equal(26.5, s.Cm); Assert.Equal(8, s.Uk);
+        Assert.Equal(42, Fashion.ShoeFromFoot(26.5));
+        var f = Fashion.Fabric([(60, 80, 2)], 140); Assert.Equal(1, f.Rows); Assert.Equal(1.0, f.Meters); // 83 cm * 1,1 = 91,3 → 1,0 m
+        Assert.Equal(2, Fashion.Fabric([(60, 80, 3)], 140).Rows);
+        Assert.Throws<ArgumentException>(() => Fashion.Fabric([(200, 180, 1)], 140));
+        var v = Fashion.Variants("Shirt-01", ["S", "M"], ["Schwarz", "Weiß", "Weiß"]);
+        Assert.Equal(4, v.Count); Assert.Equal("SHIRT-01-SCHW-S", v[0].Sku); Assert.Contains(v, x => x.Sku == "SHIRT-01-WEIS-M");
+        var p = Fashion.Price(8, 12, 20, 40); Assert.Equal(24, p.Cost); Assert.Equal(39.9, p.Gross); Assert.True(p.MarginPct > 25);
+    }
+}

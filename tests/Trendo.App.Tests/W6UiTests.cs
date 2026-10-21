@@ -124,3 +124,20 @@ public class SPEC06_Ui
         Assert.Contains("1 heute fällig", w.Find<TextBlock>("learn-progress").Text);
     }
 }
+
+public class SPEC08_Ui
+{
+    [AvaloniaFact(DisplayName = "SPEC-08 UI: Größe, Schuh, Stoff, Varianten-CSV, Preis")]
+    public void Fashion()
+    {
+        var (w, _, root) = Ui.Open();
+        w.Show(MainWindow.StudioPages["SPEC-08"]);
+        Assert.Contains("EU 40", W6Ui.Run(w, "fa-body"));
+        Assert.Contains("UK 8", W6Ui.Run(w, "fa-shoe"));
+        Assert.Contains("EU 42", W6Ui.Run(w, "fa-shoe", ("eu", "26,5 cm")));
+        Assert.Contains("m Stoff", W6Ui.Run(w, "fa-fabric"));
+        Assert.Contains("8 Varianten", W6Ui.Run(w, "fa-var"));
+        Assert.True(File.Exists(Path.Combine(root, "fach", "mode", "varianten.csv")));
+        Assert.Contains("39,90 €", W6Ui.Run(w, "fa-price"));
+    }
+}
