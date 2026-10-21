@@ -536,3 +536,22 @@ public class SPEC15_UiPlus
         Assert.Contains("00:00:03,000", File.ReadAllText(Path.Combine(root, "u.versetzt.srt")));
     }
 }
+
+public class SPEC16_UiPlus
+{
+    [AvaloniaFact(DisplayName = "SPEC-16 UI Ausbau: Steuer & Erstattung, Rechner")]
+    public void Plus()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Cars.Add("Zoe", "", true); w.Cars.Refuel("Zoe", new DateTime(2026, 1, 1), 1000, 40, 0.4); w.Cars.Refuel("Zoe", new DateTime(2026, 1, 9), 1200, 36, 0.4);
+        w.Show(MainWindow.StudioPages["SPEC-16"]);
+        Assert.Contains("2.508,00 €", W6Ui.Run(w, "car-commute", ("year", "2026")));
+        Assert.Contains("günstiger: Fahrtenbuch", W6Ui.Run(w, "car-company"));
+        Assert.Contains("37,50 €", W6Ui.Run(w, "car-mile"));
+        Assert.Contains("18,0 kWh/100 km", W6Ui.Run(w, "car-ev", ("fp", "1,8")));
+        Assert.Contains("46,7 kWh", W6Ui.Run(w, "car-charge"));
+        Assert.Contains("Jahre alt", W6Ui.Run(w, "car-tire"));
+        Assert.Contains("13,43 € pro Person", W6Ui.Run(w, "car-share"));
+        Assert.Contains("im Monat", W6Ui.Run(w, "car-year"));
+    }
+}

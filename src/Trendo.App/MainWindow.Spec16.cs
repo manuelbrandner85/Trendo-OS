@@ -42,6 +42,26 @@ public partial class MainWindow
                 [("car", "Fahrzeug", first)],
                 v => { var c = Cars.Get(v("car")); var p = Path.Combine(Fach.StoreDir(_core.DataRoot, "fahrzeug"), $"fahrtenbuch-{string.Concat(c.Name.Where(char.IsLetterOrDigit))}.csv"); File.WriteAllText(p, VehicleBook.LogCsv(c)); Launch(p); return "Gespeichert: " + p; }, "Speichern"));
         }
+        sp.Children.Add(FachGroup("car-tax", "Steuer & Erstattung", false,
+            P("Steuerwerte Stand 2026, ohne Gewähr – im Zweifel Finanzamt oder Steuerberatung fragen.", null, 11),
+            FachTool("car-commute", "Pendlerpauschale", "Einfache Strecke Wohnung–Arbeit (volle km) und Arbeitstage im Jahr.", [("km", "Entfernung (km)", "30"), ("days", "Arbeitstage", "220"), ("year", "Steuerjahr", DateTime.Today.Year.ToString())],
+                v => $"Entfernungspauschale {Fach.F(VehiclePlus.Commute(Fach.Num(v("km")), (int)Fach.Num(v("days")), (int)Fach.Num(v("year"))))} € im Jahr", "Berechnen"),
+            FachTool("car-company", "Dienstwagen: 1-%-Regel oder Fahrtenbuch?", "Antrieb: verbrenner, hybrid oder elektro. Gesamtkosten = alle Kosten des Wagens im Jahr.",
+                [("lp", "Bruttolistenpreis (€)", "40000"), ("kind", "Antrieb", "verbrenner"), ("km", "Weg zur Arbeit (km)", "20"), ("cost", "Gesamtkosten im Jahr (€)", "8000"), ("priv", "Privatanteil (%)", "30")],
+                v => { var c = VehiclePlus.CompanyCar(Fach.Num(v("lp")), v("kind"), Fach.Num(v("km")), Fach.Num(v("cost")), Fach.Num(v("priv"))); return $"1-%-Regel: {Fach.F(c.OnePercent)} € · Fahrtenbuch: {Fach.F(c.Logbook)} € geldwerter Vorteil im Jahr\n→ günstiger: {c.Better}"; }, "Vergleichen"),
+            FachTool("car-mile", "Kilometergeld", "Erstattung für Dienstfahrten mit dem eigenen Fahrzeug.", [("km", "Dienstliche km", "125"), ("moto", "Motorrad/Roller? (j/n)", "n")],
+                v => $"{Fach.F(VehiclePlus.Mileage(Fach.Num(v("km")), v("moto").Trim().StartsWith("j", StringComparison.OrdinalIgnoreCase)))} € Erstattung", "Berechnen")));
+        sp.Children.Add(FachGroup("car-calc", "Rechner", false,
+            FachTool("car-ev", "E-Auto: Verbrauch & Ersparnis", "Aus den Ladungen im Tankbuch (kWh). Vergleich mit einem Verbrenner.", [("car", "Fahrzeug", Cars.Garage.Vehicles.FirstOrDefault(x => x.Electric)?.Name ?? ""), ("ice", "Verbrenner l/100 km", "6"), ("fp", "Spritpreis (€/l)", "1,79")],
+                v => { var e = VehiclePlus.Ev(Cars.Get(v("car")), Fach.Num(v("ice")), Fach.Num(v("fp"))); return $"{Fach.F(e.KwhPer100, 1)} kWh/100 km (mit Ladeverlust) · {Fach.F(e.EvCost100)} € je 100 km · Verbrenner {Fach.F(e.IceCost100)} € → {Fach.F(e.Saving100)} € gespart je 100 km"; }, "Berechnen"),
+            FachTool("car-charge", "Ladezeit", "Ab 80 % lädt das Auto langsamer – Trendo rechnet dort mit halber Leistung.", [("cap", "Akku (kWh)", "60"), ("from", "Von (%)", "10"), ("to", "Bis (%)", "80"), ("kw", "Ladesäule/Wallbox (kW)", "11"), ("max", "Auto lädt max. (kW)", "11")],
+                v => { var c = VehiclePlus.ChargeTime(Fach.Num(v("cap")), Fach.Num(v("from")), Fach.Num(v("to")), Fach.Num(v("kw")), Fach.Num(v("max"))); return $"{Fach.F(c.Kwh, 1)} kWh aus dem Netz · ca. {(int)c.Time.TotalHours}:{c.Time.Minutes:00} h"; }, "Berechnen"),
+            FachTool("car-tire", "Reifen prüfen", "DOT-Nummer: die letzten 4 Ziffern an der Reifenflanke (Woche + Jahr). Profiltiefe in mm.", [("dot", "DOT", "2319"), ("mm", "Profil (mm)", "4"), ("w", "Winterreifen? (j/n)", "n")],
+                v => { var t = VehiclePlus.Tire(v("dot"), Fach.Num(v("mm")), v("w").Trim().StartsWith("j", StringComparison.OrdinalIgnoreCase), DateTime.Today); return $"Hergestellt {t.Made:MM/yyyy}, {Fach.F(t.AgeYears, 1)} Jahre alt\n" + string.Join("\n", t.Advice); }, "Prüfen"),
+            FachTool("car-share", "Fahrtkosten teilen", "Sprit oder Strom plus Maut/Parken auf alle Mitfahrenden aufteilen.", [("km", "Strecke (km)", "500"), ("c", "Verbrauch je 100 km", "6"), ("p", "Preis je l/kWh (€)", "1,79"), ("n", "Personen", "4"), ("x", "Maut/Parken (€)", "0")],
+                v => { var s = VehiclePlus.Share(Fach.Num(v("km")), Fach.Num(v("c")), Fach.Num(v("p")), (int)Fach.Num(v("n")), Fach.Num(v("x"))); return $"Gesamt {Fach.F(s.Total)} € → {Fach.F(s.PerPerson)} € pro Person"; }, "Aufteilen"),
+            FachTool("car-year", "Jahreskosten", "Was kostet das Auto wirklich?", [("km", "km im Jahr", "15000"), ("c", "Verbrauch je 100 km", "6"), ("p", "Preis je l/kWh (€)", "1,79"), ("ins", "Versicherung (€/Jahr)", "600"), ("tax", "Kfz-Steuer (€/Jahr)", "140"), ("m", "Wartung & Reifen (€/Jahr)", "900"), ("dep", "Wertverlust (€/Jahr)", "0")],
+                v => { var y = VehiclePlus.YearCost(Fach.Num(v("km")), Fach.Num(v("c")), Fach.Num(v("p")), Fach.Num(v("ins")), Fach.Num(v("tax")), Fach.Num(v("m")), Fach.Num(v("dep"))); return $"{Fach.F(y.Year)} € im Jahr · {Fach.F(y.Month)} € im Monat · {Fach.F(y.PerKm * 100, 1)} ct je km"; }, "Berechnen")));
         return FachPage("Fahrzeug", sp);
     }
 }
