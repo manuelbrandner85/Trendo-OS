@@ -70,3 +70,24 @@ public class SYS04_Ui
         Assert.Equal(["i VideoLAN.VLC", "u Git.Git", "x Git.Git"], pkg.Done);
     }
 }
+
+public class SYS07_Ui
+{
+    static string FakeSys(string root)
+    {
+        var s = Path.Combine(root, "sys");
+        void W(string p, string v) { var f = Path.Combine(s, p); Directory.CreateDirectory(Path.GetDirectoryName(f)!); File.WriteAllText(f, v); }
+        W("bus/usb/devices/1-2/product", "HD Webcam"); W("bus/usb/devices/1-2/bDeviceClass", "0e"); W("class/net/eth0/operstate", "up");
+        return s;
+    }
+    [AvaloniaFact(DisplayName = "SYS-07 UI: Geräte suchen zeigt Gruppen")]
+    public async Task Devices_page()
+    {
+        var (w, _, root) = Ui.Open();
+        w.DeviceSysRootOverride = FakeSys(root);
+        w.Show("geraete");
+        await w.ScanDevicesAsync(); w.Show("geraete");
+        Assert.Contains("Geräte gefunden", w.Find<TextBlock>("dev-msg").Text);
+        Assert.NotNull(w.TryFind<StackPanel>("dev-group-Kamera"));
+    }
+}

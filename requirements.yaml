@@ -174,8 +174,9 @@ modules:
   name: Ultimate Hardware & Device Recognition
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w23/SYS-07.md
 - id: SYS-08
   name: Deep Web & Dark Web READ-ONLY Research Studio
   approved_expansion_functions: '20'

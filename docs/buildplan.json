@@ -486,8 +486,8 @@
   "order": 4,
   "id": "SYS-07",
   "name": "Ultimate Hardware & Device Recognition",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -821,8 +821,8 @@
   "order": 2,
   "id": "SPEC-11",
   "name": "Business & Finance 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
