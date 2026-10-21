@@ -1,0 +1,2 @@
+# SYS-11 – Box-Tests 21.10.2026 20:56 (Linux, headless)
+  Passed SYS-11/X-09: Apps hat genau eine Unterebene; Programme und Speicher-Seite öffnen [109 ms]

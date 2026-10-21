@@ -479,3 +479,22 @@ public class W1_Letter
         var w = new MainWindow(core, new AppOptions(root, null, 0), new Probe("browser")); w.Show(); Dispatcher.UIThread.RunJobs(); return w;
     }
 }
+
+public class W1_Web
+{
+    [AvaloniaFact(DisplayName = "SYS-03: Dock-Browser öffnet Browser & Downloads; Adresse wird geöffnet, javascript: abgelehnt; offline gesperrt")]
+    public void Browser_page()
+    {
+        var (w, l, _) = Ui.Open();
+        w.Show("downloads");
+        w.Find<TextBox>("web-url").Text = "javascript:alert(1)";
+        w.Find<Button>("web-open").Press();
+        Assert.Empty(l.Opened);
+        w.Find<TextBox>("web-url").Text = "trendo.example";
+        w.Find<Button>("web-open").Press();
+        Assert.Equal("https://trendo.example/", Assert.Single(l.Opened));
+        var (o, _, _) = Ui.Open(offline: true);
+        o.Show("downloads");
+        Assert.False(o.Find<Button>("web-open").IsEnabled);
+    }
+}

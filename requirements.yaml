@@ -52,8 +52,9 @@ modules:
   name: Intelligent Desktop OS
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IN_PROGRESS
+  test_status: TESTED_BOX
+  evidence: reports/w1/CORE-01.txt
 - id: CORE-02
   name: Trendo Intelligence Core
   approved_expansion_functions: BASE
@@ -131,14 +132,16 @@ modules:
   name: Ultimate Desktop Utilities & Media Center
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IN_PROGRESS
+  test_status: TESTED_BOX
+  evidence: reports/w1/SYS-02.txt
 - id: SYS-03
   name: Ultimate Browser Internet & Download Center
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IN_PROGRESS
+  test_status: TESTED_BOX
+  evidence: reports/w1/SYS-03.txt
 - id: SYS-04
   name: Ultimate App Installation & System Control Center
   approved_expansion_functions: '25'
@@ -179,26 +182,30 @@ modules:
   name: Office Documents & Productivity Center
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IN_PROGRESS
+  test_status: TESTED_BOX
+  evidence: reports/w1/SYS-10.txt
 - id: SYS-11
   name: Ready-to-Run & Software Integration
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IN_PROGRESS
+  test_status: TESTED_BOX
+  evidence: reports/w1/SYS-11.txt
 - id: SYS-12
   name: Adaptive Interface Accessibility & Personalization
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IN_PROGRESS
+  test_status: TESTED_BOX
+  evidence: reports/w1/SYS-12.txt
 - id: SYS-13
   name: System Architecture Integration & Release Quality
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IN_PROGRESS
+  test_status: TESTED_BOX
+  evidence: reports/w1/SYS-13.txt
 - id: SPEC-01
   name: Architecture & Interior 2.0
   approved_expansion_functions: '16'
@@ -348,8 +355,9 @@ modules:
   name: System Resource & Studio Manager
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IN_PROGRESS
+  test_status: TESTED_BOX
+  evidence: reports/w1/X-09.txt
 - id: X-10
   name: Legal Clean-Room Software Reconstruction
   approved_expansion_functions: BASE
@@ -372,8 +380,9 @@ modules:
   name: Ultimate Letter Business & Legal Correspondence Studio GODMODE
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IN_PROGRESS
+  test_status: TESTED_BOX
+  evidence: reports/w1/STUDIO-LETTER-01.txt
 business_requirements:
 - id: BUS-001
   module: STUDIO-ONLINE-BUSINESS-01
@@ -596,26 +605,30 @@ letter_requirements:
   module: STUDIO-LETTER-01
   title: Universal Letter Category Engine
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/STUDIO-LETTER-01.txt
 - id: LETTER-003
   module: STUDIO-LETTER-01
   title: DIN-5008-orientierter Letter Designer
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/STUDIO-LETTER-01.txt
 - id: LETTER-004
   module: STUDIO-LETTER-01
   title: Professional Template Library
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/STUDIO-LETTER-01.txt
 - id: LETTER-005
   module: STUDIO-LETTER-01
   title: Intelligent Tone & Writing Director
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IN_PROGRESS
+  test_status: TESTED_BOX
+  evidence: reports/w1/STUDIO-LETTER-01.txt
 - id: LETTER-006
   module: STUDIO-LETTER-01
   title: Government & Authority Letter Center
@@ -680,20 +693,23 @@ letter_requirements:
   module: STUDIO-LETTER-01
   title: DOCX ODT PDF Print Production Engine
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/STUDIO-LETTER-01.txt
 - id: LETTER-017
   module: STUDIO-LETTER-01
   title: Personal & Business Letterhead Vault
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IN_PROGRESS
+  test_status: TESTED_BOX
+  evidence: reports/w1/STUDIO-LETTER-01.txt
 - id: LETTER-018
   module: STUDIO-LETTER-01
   title: Missing Information & Consistency Validator
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/STUDIO-LETTER-01.txt
 - id: LETTER-019
   module: STUDIO-LETTER-01
   title: Deadline Reply & Follow-Up Planner
@@ -716,8 +732,9 @@ letter_requirements:
   module: STUDIO-LETTER-01
   title: Correspondence Case Archive & Version History
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w1/STUDIO-LETTER-01.txt
 - id: LETTER-023
   module: STUDIO-LETTER-01
   title: Official Delivery Channel Preparation

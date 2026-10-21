@@ -1,0 +1,3 @@
+# X-09 – Box-Tests 21.10.2026 20:56 (Linux, headless)
+  Passed X-09: Prozesse werden nach Namen gruppiert, nach Speicher sortiert und Studios zugeordnet [23 ms]
+  Passed SYS-11/X-09: Apps hat genau eine Unterebene; Programme und Speicher-Seite öffnen [109 ms]

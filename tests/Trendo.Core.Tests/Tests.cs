@@ -703,3 +703,22 @@ public class LETTER01_Studio
         Directory.Delete(root, true);
     }
 }
+
+public class SYS03_Browser
+{
+    [Xunit.Theory(DisplayName = "SYS-03: Adressen werden sicher normalisiert (nur http/https, sonst Suche oder Ablehnung)")]
+    [Xunit.InlineData("tagesschau.de", "https://tagesschau.de/")]
+    [Xunit.InlineData("http://example.org/x", "http://example.org/x")]
+    [Xunit.InlineData("wetter berlin", "https://duckduckgo.com/?q=wetter%20berlin")]
+    [Xunit.InlineData("javascript:alert(1)", null)] [Xunit.InlineData("file:///C:/Windows", null)] [Xunit.InlineData("ftp://x.org", null)] [Xunit.InlineData("  ", null)]
+    public void Normalize(string input, string? expected) => Xunit.Assert.Equal(expected, Trendo.Core.Browsers.Normalize(input)?.AbsoluteUri);
+
+    [Xunit.Fact(DisplayName = "SYS-03: Browser werden über bekannte Pfade gefunden; riskante und unfertige Downloads erkannt")]
+    public void Find_and_flags()
+    {
+        var found = Trendo.Core.Browsers.Find(p => p.Contains("chrome") || p.Contains("Firefox"), p => p.Replace("%ProgramFiles%", @"C:\PF").Replace("%ProgramFiles(x86)%", @"C:\PF86").Replace("%LOCALAPPDATA%", @"C:\L"));
+        Xunit.Assert.Equal(["chrome", "firefox"], found.Select(b => b.Id));
+        Xunit.Assert.True(Trendo.Core.Browsers.Risky("setup.EXE")); Xunit.Assert.False(Trendo.Core.Browsers.Risky("foto.jpg"));
+        Xunit.Assert.True(Trendo.Core.Browsers.Unfinished("film.mp4.crdownload"));
+    }
+}
