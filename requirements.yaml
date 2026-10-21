@@ -799,11 +799,11 @@ letter_requirements:
   module: STUDIO-LETTER-01
   title: Real Letter Production & Submission QA
   approval_status: APPROVED_SPEC
-tests:
   implementation_status: IMPLEMENTED
   test_status: TESTED_BOX
   evidence: reports/w1/tests-full-box.txt
   note: "LTR-QA-018 (Linux-USB/Pi) NOT_RUN – Hardware fehlt"
+tests:
 - id: GRK-001
   catalog: GROK_QA_MATRIX.csv
   status: NOT_RUN
