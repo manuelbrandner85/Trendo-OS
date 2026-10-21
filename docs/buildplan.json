@@ -1009,7 +1009,7 @@
   "id": "CORE-09",
   "name": "Vision & Robotics Control Studio 2.0",
   "impl": "IMPLEMENTED",
-  "test": "PC_VERIFIED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
