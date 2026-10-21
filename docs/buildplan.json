@@ -552,8 +552,8 @@
   "order": 2,
   "id": "X-06",
   "name": "GitHub Open-Source Integration",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
