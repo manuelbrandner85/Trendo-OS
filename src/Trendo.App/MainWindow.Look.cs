@@ -45,7 +45,7 @@ public sealed partial class MainWindow
                 Glass = Brush.Parse("#B30B1730"); GlassStrong = Brush.Parse("#D90A1428"); TileBg = Brush.Parse("#99142445");
                 Edge = Brush.Parse("#3355A8FF"); Muted = Brush.Parse("#9DB0CF"); Text = Brush.Parse("#EEF3FB"); break;
         }
-        Accent = Brush.Parse(s.Theme == "kontrast" ? "#FFD400" : AccentChoices.Any(a => a.Id == s.Accent) ? s.Accent : "#2F86F6");
+        Accent = Brush.Parse(s.Theme == "kontrast" ? "#FFD400" : AccentChoices.Any(a => a.Id == s.EffectiveAccent(DateTime.Now)) ? s.EffectiveAccent(DateTime.Now) : "#2F86F6");
     }
 
     private static Bitmap? LoadWallpaper(string name)
@@ -66,6 +66,7 @@ public sealed partial class MainWindow
             var w = _settings.CurrentWallpaper(DateTime.Now);
             if (w == _wallName) return;
             _wallName = w; _wallImg.Source = _blurImg.Source = LoadWallpaper(w);
+            if (_settings.AccentFromWallpaper && CurrentView == "settings") Reopen("settings");
         };
         t.Start();
         if (!_settings.ReduceMotion)
@@ -176,12 +177,14 @@ public sealed partial class MainWindow
         foreach (var (id, label) in AccentChoices)
         {
             var b = new Button { Name = "accent-" + label.ToLowerInvariant(), Width = 34, Height = 34, CornerRadius = new CornerRadius(17), Background = Brush.Parse(id),
-                BorderBrush = Brushes.White, BorderThickness = new Thickness(_settings.Accent == id ? 3 : 0) };
+                BorderBrush = Brushes.White, BorderThickness = new Thickness(!_settings.AccentFromWallpaper && _settings.Accent == id ? 3 : 0) };
             ToolTip.SetTip(b, label); Avalonia.Automation.AutomationProperties.SetName(b, "Akzentfarbe " + label);
-            b.Click += (_, _) => { _settings.Accent = id; Reopen("settings"); };
+            b.Click += (_, _) => { _settings.Accent = id; _settings.AccentFromWallpaper = false; Reopen("settings"); };
             colors.Children.Add(b);
         }
-        sp.Children.Add(Section("Akzentfarbe", colors));
+        var auto = new CheckBox { Name = "accent-auto", Content = "Farbe passend zum Hintergrund wählen", IsChecked = _settings.AccentFromWallpaper, Foreground = Text };
+        auto.IsCheckedChanged += (_, _) => { _settings.AccentFromWallpaper = auto.IsChecked == true; Reopen("settings"); };
+        sp.Children.Add(Section("Akzentfarbe", new StackPanel { Spacing = 6, Children = { colors, auto } }));
 
         var walls = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
         foreach (var (id, label) in new[] { ("bergsee-nacht", "Bergsee"), ("polarlicht", "Polarlicht"), ("wellen", "Wellen"), ("morgen", "Morgen") })
@@ -189,7 +192,7 @@ public sealed partial class MainWindow
             var on = !_settings.WallpaperByTime && _settings.Wallpaper == id;
             var b = new Button { Name = "wall-" + id, Padding = new Thickness(3), BorderBrush = on ? Accent : Brushes.Transparent, BorderThickness = new Thickness(2), Background = Brushes.Transparent,
                 Content = new StackPanel { Spacing = 4, Children = { new Image { Source = LoadWallpaper(id), Width = 150, Height = 84, Stretch = Stretch.UniformToFill }, new TextBlock { Text = label, Foreground = Text, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center } } } };
-            b.Click += (_, _) => { _settings.Wallpaper = id; _settings.WallpaperByTime = false; SaveSettings(); _wallName = id; _wallImg.Source = _blurImg.Source = LoadWallpaper(id); Show("settings"); };
+            b.Click += (_, _) => { _settings.Wallpaper = id; _settings.WallpaperByTime = false; SaveSettings(); _wallName = id; _wallImg.Source = _blurImg.Source = LoadWallpaper(id); if (_settings.AccentFromWallpaper) Reopen("settings"); else Show("settings"); };
             walls.Children.Add(b);
         }
         var byTime = new CheckBox { Name = "wall-bytime", Content = "Hintergrund nach Tageszeit wechseln (Morgen · Wellen · Bergsee · Polarlicht)", IsChecked = _settings.WallpaperByTime, Foreground = Text };

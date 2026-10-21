@@ -12,6 +12,8 @@ public sealed class UserSettings
     public string Accent { get; set; } = "#2F86F6";
     public string Wallpaper { get; set; } = "bergsee-nacht";
     public bool WallpaperByTime { get; set; }
+    /// <summary>Akzentfarbe folgt dem Hintergrund (Bergsee → Blau, Morgen → Bernstein, Polarlicht → Türkis, Wellen → Violett).</summary>
+    public bool AccentFromWallpaper { get; set; }
     public bool ReduceMotion { get; set; }
     public List<string> StudioPacks { get; set; } = [];
     public List<string> HiddenTiles { get; set; } = [];
@@ -72,6 +74,14 @@ public sealed class UserSettings
     {
         >= 6 and < 10 => "morgen", >= 10 and < 17 => "wellen", >= 17 and < 21 => "bergsee-nacht", _ => "polarlicht",
     };
+
+    public static string AccentFor(string wallpaper) => wallpaper switch
+    {
+        "morgen" => "#F59E0B", "polarlicht" => "#22C3A6", "wellen" => "#8B5CF6", _ => "#2F86F6",
+    };
+
+    /// <summary>Farbe, die gerade gilt: passend zum Hintergrund oder selbst gewählt.</summary>
+    public string EffectiveAccent(DateTime now) => AccentFromWallpaper ? AccentFor(CurrentWallpaper(now)) : Accent;
 
     public string CurrentWallpaper(DateTime now) => WallpaperByTime ? WallpaperFor(now) : (Wallpapers.Contains(Wallpaper) ? Wallpaper : "bergsee-nacht");
 }
