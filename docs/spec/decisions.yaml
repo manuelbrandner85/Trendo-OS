@@ -1,0 +1,431 @@
+# Entscheidungsregister Masterprompt MP-1.0 (2026-10-22), Quelle docs/spec/MASTERPROMPT.md Abschnitte 5–12.
+# Nur Manuel ändert decision. DecisionRegisterTests sperrt: REJECTED/UNDECIDED dürfen nie APPROVED werden.
+# diff = Abweichung Masterprompt ↔ requirements.yaml (Name/Zahl). requirements.yaml wurde NICHT geändert.
+schema_version: 2
+source: docs/spec/MASTERPROMPT.md
+source_sha256: 0f1e3e7722b4ddf38133347ec9e82036856e7dc3c611e64dc44387984a16348d
+date: 2026-10-22
+items:
+- id: CORE-01
+  kind: module
+  title: "Intelligent Desktop OS"
+  functions: BASE
+  decision: APPROVED
+- id: CORE-02
+  kind: module
+  title: "Trendo Intelligence Core"
+  functions: BASE
+  decision: APPROVED
+- id: CORE-03
+  kind: module
+  title: "AI Agent Command Center"
+  functions: BASE
+  decision: APPROVED
+  diff: "Name MP: AI Agent Command Center / requirements: AI Agent Command Center – 12 roles"
+  note: "Masterprompt: ursprünglich zwölf Agentenrollen, keine Funktionszahl"
+- id: CORE-04
+  kind: module
+  title: "Pi / PC / Android Fusion Engine"
+  functions: BASE
+  decision: APPROVED
+- id: CORE-05
+  kind: module
+  title: "Ultimate 3D Creation Studio 2.0"
+  functions: 20
+  decision: APPROVED
+- id: CORE-06
+  kind: module
+  title: "Ultimate Game Development Studio 2.0"
+  functions: 20
+  decision: APPROVED
+- id: CORE-07
+  kind: module
+  title: "Ultimate App & Software Development Studio 2.0"
+  functions: 20
+  decision: APPROVED
+- id: CORE-08
+  kind: module
+  title: "Ultimate Creative & Media Studio 2.0"
+  functions: 20
+  decision: APPROVED
+- id: CORE-09
+  kind: module
+  title: "Vision & Robotics Control Studio 2.0"
+  functions: 20
+  decision: APPROVED
+- id: CORE-10
+  kind: module
+  title: "Knowledge, Memory & Self-Improvement Core 2.0"
+  functions: 20
+  decision: APPROVED
+- id: CORE-11
+  kind: module
+  title: "Security, Privacy & Recovery Fortress"
+  functions: 16
+  decision: APPROVED
+- id: CORE-12
+  kind: module
+  title: "Ultimate Prompt & Masterprompt Studio 2.0"
+  functions: 50
+  decision: APPROVED
+  note: "Masterprompt: 50 Funktionen UND 40 Kategorien"
+- id: SYS-01
+  kind: module
+  title: "Triple Mode OS GODMODE"
+  functions: 20
+  decision: APPROVED
+- id: SYS-02
+  kind: module
+  title: "Ultimate Desktop Utilities & Media Center"
+  functions: 25
+  decision: APPROVED
+- id: SYS-03
+  kind: module
+  title: "Ultimate Browser, Internet & Download Center"
+  functions: 25
+  decision: APPROVED
+- id: SYS-04
+  kind: module
+  title: "Ultimate App, Installation & System Control Center"
+  functions: 25
+  decision: APPROVED
+- id: SYS-05
+  kind: module
+  title: "Universal Automation & Workflow Engine"
+  functions: 20
+  decision: APPROVED
+- id: SYS-06
+  kind: module
+  title: "Ultimate Network, File Sharing & Remote Workspace"
+  functions: 25
+  decision: APPROVED
+- id: SYS-07
+  kind: module
+  title: "Ultimate Hardware & Device Recognition"
+  functions: 20
+  decision: APPROVED
+- id: SYS-08
+  kind: module
+  title: "Deep Web & Dark Web READ-ONLY Research Studio"
+  functions: 20
+  decision: APPROVED
+- id: SYS-09
+  kind: module
+  title: "Communication, Mail & Collaboration Center"
+  functions: 25
+  decision: APPROVED
+- id: SYS-10
+  kind: module
+  title: "Office, Documents & Productivity Center"
+  functions: 25
+  decision: APPROVED
+- id: SYS-11
+  kind: module
+  title: "Ready-to-Run & Software Integration"
+  functions: 25
+  decision: APPROVED
+- id: SYS-12
+  kind: module
+  title: "Adaptive Interface, Accessibility & Personalization"
+  functions: 25
+  decision: APPROVED
+- id: SYS-13
+  kind: module
+  title: "System Architecture, Integration & Release Quality"
+  functions: 25
+  decision: APPROVED
+- id: SPEC-01
+  kind: module
+  title: "Architecture & Interior 2.0"
+  functions: 16
+  decision: APPROVED
+- id: SPEC-02
+  kind: module
+  title: "Electronics & PCB 2.0"
+  functions: 16
+  decision: APPROVED
+- id: SPEC-03
+  kind: module
+  title: "Engineering & Simulation 2.0"
+  functions: 16
+  decision: APPROVED
+- id: SPEC-04
+  kind: module
+  title: "VR/AR/MR 2.0"
+  functions: 16
+  decision: APPROVED
+- id: SPEC-05
+  kind: module
+  title: "Science & Research 2.0"
+  functions: 16
+  decision: APPROVED
+- id: SPEC-06
+  kind: module
+  title: "Education & Training 2.0"
+  functions: 16
+  decision: APPROVED
+- id: SPEC-07
+  kind: module
+  title: "Language & Localization"
+  functions: BASIS_ONLY
+  decision: REJECTED
+  diff: "Name MP: Language & Localization / requirements: Language & Localization Studio 2.0"
+  note: "Nur Basisfunktionen + eng begrenzte Übersetzung in anderen Studios zulässig; 2.0-Ausbau abgelehnt"
+- id: SPEC-08
+  kind: module
+  title: "Fashion & Product Design 2.0"
+  functions: 18
+  decision: APPROVED
+  diff: "Name MP: Fashion & Product Design 2.0 / requirements: Fashion & Product 2.0"
+- id: SPEC-09
+  kind: module
+  title: "3D Scanning & Reconstruction 2.0"
+  functions: 20
+  decision: APPROVED
+- id: SPEC-10
+  kind: module
+  title: "Digital Twin 2.0"
+  functions: 20
+  decision: APPROVED
+- id: SPEC-11
+  kind: module
+  title: "Business & Finance 2.0"
+  functions: 20
+  decision: APPROVED
+- id: SPEC-12
+  kind: module
+  title: "Cybersecurity & Forensics 2.0"
+  functions: 20
+  decision: APPROVED
+- id: SPEC-13
+  kind: module
+  title: "Maps & Geospatial 2.0"
+  functions: 20
+  decision: APPROVED
+- id: SPEC-14
+  kind: module
+  title: "Manufacturing & CNC 2.0"
+  functions: 20
+  decision: APPROVED
+- id: SPEC-15
+  kind: module
+  title: "Broadcast & Streaming 2.0"
+  functions: 20
+  decision: APPROVED
+- id: SPEC-16
+  kind: module
+  title: "Transport & Vehicle 2.0"
+  functions: 20
+  decision: APPROVED
+- id: X-01
+  kind: module
+  title: "Universal Studio Fusion & Autonomous Production"
+  functions: 18
+  decision: APPROVED
+- id: X-02
+  kind: module
+  title: "Zero-Touch Setup & Self-Healing"
+  functions: 20
+  decision: APPROVED
+- id: X-03
+  kind: module
+  title: "Visual Builder & No-Code"
+  functions: 20
+  decision: APPROVED
+- id: X-04
+  kind: module
+  title: "Extension Marketplace & Studio Evolution"
+  functions: 20
+  decision: APPROVED
+- id: X-05
+  kind: module
+  title: "Free AI Discovery & Fallback"
+  functions: BASE
+  decision: APPROVED
+- id: X-06
+  kind: module
+  title: "GitHub & Open-Source Integration"
+  functions: BASE
+  decision: APPROVED
+- id: X-07
+  kind: module
+  title: "Global Free Asset Discovery"
+  functions: BASE
+  decision: APPROVED
+- id: X-08
+  kind: module
+  title: "Mobile OS Bridge"
+  functions: BASE
+  decision: APPROVED
+- id: X-09
+  kind: module
+  title: "System Resource & Studio Manager"
+  functions: BASE
+  decision: APPROVED
+- id: X-10
+  kind: module
+  title: "Legal Clean-Room Software Reconstruction"
+  functions: BASE
+  decision: APPROVED
+- id: X-11
+  kind: module
+  title: "Universal Creation & Productivity Suite"
+  functions: BASE
+  decision: APPROVED
+- id: STUDIO-ONLINE-BUSINESS-01
+  kind: module
+  title: "Ultimate Online Business Creation & Innovation Studio GODMODE"
+  functions: 30
+  decision: APPROVED
+  diff: "Name MP: Ultimate Online Business Creation & Innovation Studio GODMODE / requirements: Ultimate Online Business Creation & Innovation Studio GODMODE (both modes)"
+- id: STUDIO-LETTER-01
+  kind: module
+  title: "Ultimate Letter, Business & Legal Correspondence Studio GODMODE"
+  functions: 25
+  decision: APPROVED
+- id: IMP-13
+  kind: improvement
+  title: "Reality & Completion Control GODMODE"
+  functions: 8
+  decision: APPROVED
+- id: IMP-14
+  kind: improvement
+  title: "Grok One-Prompt Production Orchestrator GODMODE"
+  functions: 10
+  decision: APPROVED
+- id: IMP-15
+  kind: improvement
+  title: "Native All-in-One Integration GODMODE"
+  functions: 12
+  decision: APPROVED
+- id: IMP-16
+  kind: improvement
+  title: "Futureproof & Intelligent Update GODMODE"
+  functions: 12
+  decision: APPROVED
+- id: IMP-17
+  kind: improvement
+  title: "Universal Studio Fusion & Project Workspace GODMODE"
+  functions: 12
+  decision: APPROVED
+- id: IMP-18
+  kind: improvement
+  title: "Autonomous Everything GODMODE"
+  functions: 20
+  decision: APPROVED
+- id: IMP-19
+  kind: improvement
+  title: "Autonomous Sandbox & Intelligent Approval GODMODE"
+  functions: 12
+  decision: APPROVED
+- id: IMP-20
+  kind: improvement
+  title: "Teach & Automate GODMODE"
+  functions: 12
+  decision: APPROVED
+- id: IMP-21
+  kind: improvement
+  title: "Hybrid Power & Seamless Studio Execution GODMODE"
+  functions: 12
+  decision: APPROVED
+- id: IMP-22
+  kind: improvement
+  title: "Native Software Reconstruction & One-Setup GODMODE"
+  functions: 15
+  decision: APPROVED
+- id: IMP-23
+  kind: improvement
+  title: "Ultimate Multi-User & Secure Identity GODMODE"
+  functions: 12
+  decision: REJECTED
+- id: IMP-24
+  kind: improvement
+  title: "Universal Distribution & Zero-Touch Installation GODMODE"
+  functions: 15
+  decision: APPROVED
+- id: IMP-25
+  kind: improvement
+  title: "Ultimate Smart Migration & Data Freedom GODMODE"
+  functions: 15
+  decision: REJECTED
+- id: IMP-26
+  kind: improvement
+  title: "Intelligent Desktop & JARVIS Experience GODMODE"
+  functions: 15
+  decision: APPROVED
+- id: IMP-27
+  kind: improvement
+  title: "Mobile Command & Remote Production GODMODE"
+  functions: 15
+  decision: APPROVED
+- id: IMP-28
+  kind: improvement
+  title: "Global Release & Trusted Distribution GODMODE"
+  functions: 15
+  decision: APPROVED
+- id: IMP-29
+  kind: improvement
+  title: "HyperPerformance & Zero-Bloat GODMODE"
+  functions: 15
+  decision: APPROVED
+- id: IMP-30
+  kind: improvement
+  title: "Professional File & Studio Compatibility GODMODE"
+  functions: 15
+  decision: APPROVED
+- id: IMP-31
+  kind: improvement
+  title: "Independent AI & Offline Intelligence GODMODE"
+  functions: 15
+  decision: APPROVED
+- id: IMP-32
+  kind: improvement
+  title: "True Operating System Foundation GODMODE"
+  functions: 15
+  decision: APPROVED
+- id: IMP-33
+  kind: improvement
+  title: "Plug & Play Hardware GODMODE"
+  functions: 15
+  decision: APPROVED
+- id: IMP-34
+  kind: improvement
+  title: "Ultimate Native Antivirus & Cyber Protection GODMODE"
+  functions: 15
+  decision: REJECTED
+- id: IMP-35
+  kind: improvement
+  title: "Ultimate Intelligent Bugfix & Continuous Evolution GODMODE"
+  functions: 15
+  decision: UNDECIDED
+- id: IMP-36
+  kind: improvement
+  title: "Freedom & Open PC GODMODE"
+  functions: 20
+  decision: APPROVED
+- id: IMP-37
+  kind: improvement
+  title: "Universal Software & Gaming Compatibility GODMODE"
+  functions: 15
+  decision: APPROVED
+- id: IMP-38
+  kind: improvement
+  title: "Dual-Boot & Install Anywhere GODMODE"
+  functions: 15
+  decision: APPROVED
+- id: IMP-39
+  kind: improvement
+  title: "Remote App Fusion & Desktop Streaming GODMODE"
+  functions: 15
+  decision: APPROVED
+- id: IMP-40
+  kind: improvement
+  title: "Open Developer & App Ecosystem GODMODE"
+  functions: 15
+  decision: APPROVED
+- id: LANG-2.0
+  kind: upgrade
+  title: "Language & Localization Studio 2.0"
+  functions: 0
+  decision: REJECTED
+  note: "Ausbau von SPEC-07, Masterprompt Abschnitt 12"
