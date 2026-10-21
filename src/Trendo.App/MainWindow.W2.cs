@@ -24,7 +24,7 @@ public partial class MainWindow
         _showMap["ki-fragen"] = AskView;
         StudioPages["CORE-02"] = "ki-fragen";
         ExtraPages.Add(("KI fragen", "ki-fragen", ["frage", "chat", "assistent", "trendo"]));
-        InitX05(); InitCore10(); InitCore12();
+        InitX05(); InitCore10(); InitCore12(); InitCore03();
         InitWave3();
     }
     partial void InitWave3();
