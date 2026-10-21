@@ -38,8 +38,9 @@ public class Sys13_Qualitaet_Ui
         w.MeasurePages(keys);
         var m = w.MeasurePages(keys); var med = Quality.Median(m.Select(x => x.Took));
         Assert.True(med < Quality.PageBudget, $"Median {med.TotalMilliseconds} ms");
-        GC.Collect(); GC.WaitForPendingFinalizers(); var before = GC.GetTotalMemory(true);
-        for (var i = 0; i < 100; i++) w.Show(keys[i % keys.Length]);
+        Avalonia.Headless.AvaloniaHeadlessPlatform.ForceRenderTimerTick(); GC.Collect(); GC.WaitForPendingFinalizers(); var before = GC.GetTotalMemory(true);
+        // Wie in der echten App wird nach jedem Wechsel gezeichnet; ohne Zeichentakt sammelt der Headless-Renderer nur Aufträge an (kein Leck der App)
+        for (var i = 0; i < 100; i++) { w.Show(keys[i % keys.Length]); Avalonia.Headless.AvaloniaHeadlessPlatform.ForceRenderTimerTick(); Avalonia.Threading.Dispatcher.UIThread.RunJobs(); }
         GC.Collect(); GC.WaitForPendingFinalizers(); var after = GC.GetTotalMemory(true);
         Assert.False(Quality.Leaks(before, after), $"Zuwachs {(after - before) >> 20} MB");
         w.Show("qual-leistung"); w.Find<Button>("perf-run").Press(); Assert.Contains("Seiten", w.Find<TextBlock>("perf-out").Text);
