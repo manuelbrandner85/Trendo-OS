@@ -71,8 +71,8 @@ modules:
   evidence: reports/w23/CORE-03.md
 - id: CORE-04
   implementation_status: IN_PROGRESS
-  test_status: TESTED_BOX
-  evidence: reports/w7/tests-box.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.1/tests-pc-7092ce1.txt
   note: "PC-Seite fertig; Gegenstelle auf Pi/Android (Kopplung, /health) noch nicht gebaut"
   name: Pi/PC/Android Fusion Engine
   approved_expansion_functions: BASE
@@ -135,8 +135,8 @@ modules:
   evidence: reports/w23/CORE-12.md
 - id: SYS-01
   implementation_status: IN_PROGRESS
-  test_status: TESTED_BOX
-  evidence: reports/w7/tests-box.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.1/tests-pc-7092ce1.txt
   note: "PC-Seite fertig; Gegenstelle auf Pi/Android (Kopplung, /health) noch nicht gebaut"
   name: Triple Mode OS GODMODE
   approved_expansion_functions: '20'
@@ -387,8 +387,8 @@ modules:
   evidence: reports/w45/X-07.txt
 - id: X-08
   implementation_status: IN_PROGRESS
-  test_status: TESTED_BOX
-  evidence: reports/w7/tests-box.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.1/tests-pc-7092ce1.txt
   note: "PC-Seite fertig; Gegenstelle auf Pi/Android (Kopplung, /health) noch nicht gebaut"
   name: Mobile OS Bridge
   approved_expansion_functions: BASE

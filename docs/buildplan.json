@@ -1020,7 +1020,7 @@
   "id": "CORE-04",
   "name": "Pi/PC/Android Fusion Engine",
   "impl": "IN_PROGRESS",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -1031,7 +1031,7 @@
   "id": "X-08",
   "name": "Mobile OS Bridge",
   "impl": "IN_PROGRESS",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -1042,7 +1042,7 @@
   "id": "SYS-01",
   "name": "Triple Mode OS GODMODE",
   "impl": "IN_PROGRESS",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  }

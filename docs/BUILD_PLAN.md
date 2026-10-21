@@ -252,9 +252,9 @@ Pi/PC/Android-Verbund, Mobile Bridge, Triple Mode
 
 | Reihenfolge | Modul | Name | Umsetzung | Test |
 |---|---|---|---|---|
-| 1 | CORE-04 | Pi/PC/Android Fusion Engine | IN_PROGRESS | TESTED_BOX |
-| 2 | X-08 | Mobile OS Bridge | IN_PROGRESS | TESTED_BOX |
-| 3 | SYS-01 | Triple Mode OS GODMODE | IN_PROGRESS | TESTED_BOX |
+| 1 | CORE-04 | Pi/PC/Android Fusion Engine | IN_PROGRESS | PC_VERIFIED |
+| 2 | X-08 | Mobile OS Bridge | IN_PROGRESS | PC_VERIFIED |
+| 3 | SYS-01 | Triple Mode OS GODMODE | IN_PROGRESS | PC_VERIFIED |
 
 Abnahmekriterien je Modul:
 - Modul im Studio-Layout erreichbar (max. 2 Navigationsebenen, deutsche Beschriftung)
