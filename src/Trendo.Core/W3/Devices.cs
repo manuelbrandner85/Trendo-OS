@@ -28,7 +28,7 @@ public sealed class DeviceScanner(IProcessRunner run, string dataRoot, string sy
                 l.Add(new("Speicher", $"Laufwerk {d.Name}{(d.VolumeLabel is { Length: > 0 } v && v != d.Name ? $" ({v})" : "")}", "OK", $"{d.DriveType switch { DriveType.Removable => "Wechseldatenträger", DriveType.Network => "Netzlaufwerk", _ => "fest" }} · {d.TotalFreeSpace / 1_000_000_000} von {d.TotalSize / 1_000_000_000} GB frei · {d.DriveFormat}")); }
             catch (IOException) { } catch (UnauthorizedAccessException) { }
         }
-        if (OperatingSystem.IsWindows())
+        if (OperatingSystem.IsWindows() && sysRoot == "/sys") // eigener sysRoot = bewusst sysfs lesen (Tests, Linux-Abbild)
         {
             var (e, o) = await run.RunAsync("powershell", "-NoProfile -Command \"Get-PnpDevice -PresentOnly | Select-Object Class,FriendlyName,Status | ConvertTo-Csv -NoTypeInformation\"", null, ct);
             if (e == 0) l.AddRange(ParsePnpCsv(o));

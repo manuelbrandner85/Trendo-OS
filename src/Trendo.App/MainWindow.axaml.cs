@@ -67,8 +67,10 @@ public sealed partial class MainWindow : Window
     public MainWindow(TrendoCore core, AppOptions opt, IToolProbe probe)
     {
         _opt = opt; _core = core; _probe = probe;
-        _deps = new DependencyManager(core.Audit, new RealProcessRunner()) { ConsentFile = Path.Combine(core.DataRoot, "deps-consent.txt"), ToolsFile = Path.Combine(core.DataRoot, "tools.json") };
-        _deps.OllamaUp = _ollama.IsUpAsync;
+        // Isolated: nichts außerhalb des Datenordners erkennen (Tests sind unabhängig von installierten Programmen/laufendem Ollama)
+        Func<string, bool>? exists = opt.Isolated ? p => Path.GetFullPath(p).StartsWith(Path.GetFullPath(core.DataRoot), StringComparison.OrdinalIgnoreCase) && File.Exists(p) : null;
+        _deps = new DependencyManager(core.Audit, new RealProcessRunner(), fileExists: exists) { ConsentFile = Path.Combine(core.DataRoot, "deps-consent.txt"), ToolsFile = Path.Combine(core.DataRoot, "tools.json") };
+        _deps.OllamaUp = opt.Isolated ? () => Task.FromResult(false) : _ollama.IsUpAsync;
         _settings = UserSettings.Load(core.DataRoot); ApplyTheme(_settings);
         // Felder wurden vor ApplyTheme erzeugt: Schriftfarben nachziehen
         _clock.Foreground = Text; _kiText.Foreground = Brush.Parse(C("#E6EDF7", "#1B2A44")); _kiStatus.Foreground = Muted; _depLog.Foreground = Muted;
@@ -848,7 +850,7 @@ public sealed partial class MainWindow : Window
 
     private async Task RefreshKi()
     {
-        var ok = await _ollama.HasModelAsync(KiModelName);
+        var ok = !_opt.Isolated && await _ollama.HasModelAsync(KiModelName);
         if (ok == _kiConnected && _kiStatus.Text != "…") return;
         _kiConnected = ok;
         _kiStatus.Text = ok ? "Online (lokal)" : "Nicht verbunden";

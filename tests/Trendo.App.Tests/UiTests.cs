@@ -34,7 +34,7 @@ public static class Ui
         var root = Path.Combine(Path.GetTempPath(), "trendo-ui-" + Guid.NewGuid().ToString("N"));
         var l = new FakeLauncher();
         var core = new TrendoCore(root, new InMemorySecretStore(), l, offline: offline);
-        var w = new MainWindow(core, new AppOptions(root, null, 0, offline), new Probe("browser"));
+        var w = new MainWindow(core, new AppOptions(root, null, 0, offline, Isolated: true), new Probe("browser"));
         w.Show();
         Dispatcher.UIThread.RunJobs();
         return (w, l, root);
@@ -298,7 +298,7 @@ public class W0_SetupWizard
     {
         var root = Path.Combine(Path.GetTempPath(), "trendo-ui-" + Guid.NewGuid().ToString("N"));
         var core = new TrendoCore(root, new InMemorySecretStore(), new FakeLauncher());
-        var w = new MainWindow(core, new AppOptions(root, null, 0, FirstRun: true), new Probe());
+        var w = new MainWindow(core, new AppOptions(root, null, 0, FirstRun: true, Isolated: true), new Probe());
         var r = new FakeRunner(); w.Deps.Runner = r;
         w.Show(); Dispatcher.UIThread.RunJobs();
         Assert.Equal("einrichtung", w.CurrentView);
@@ -343,7 +343,7 @@ public class W0b_Look
         var root = Path.Combine(Path.GetTempPath(), "trendo-ui-" + Guid.NewGuid().ToString("N"));
         var core = new TrendoCore(root, new InMemorySecretStore(), new FakeLauncher());
         (s ?? new UserSettings { SetupDone = true }).Save(root);
-        var w = new MainWindow(core, new AppOptions(root, null, 0, Page: "settings"), new Probe()); w.Show(); Dispatcher.UIThread.RunJobs();
+        var w = new MainWindow(core, new AppOptions(root, null, 0, Page: "settings", Isolated: true), new Probe()); w.Show(); Dispatcher.UIThread.RunJobs();
         return (w, root);
     }
 
@@ -363,7 +363,7 @@ public class W0b_Look
         w.Close();
         // Neu öffnen: Einstellungen wirken
         var core = new TrendoCore(root, new InMemorySecretStore(), new FakeLauncher());
-        var w2 = new MainWindow(core, new AppOptions(root, null, 0), new Probe()); w2.Show(); Dispatcher.UIThread.RunJobs();
+        var w2 = new MainWindow(core, new AppOptions(root, null, 0, Isolated: true), new Probe()); w2.Show(); Dispatcher.UIThread.RunJobs();
         Assert.False(w2.Find<Border>("widget-system").IsVisible);
         var dock = w2.GetLogicalDescendants().OfType<Button>().Where(b => b.Name?.StartsWith("dock-") == true && b.Name != "dock-trash").Select(b => b.Name).ToList();
         Assert.Equal("dock-files", dock[0]);
@@ -476,7 +476,7 @@ public class W1_Letter
     static MainWindow Reopen(string root)
     {
         var core = new TrendoCore(root, new InMemorySecretStore(), new FakeLauncher());
-        var w = new MainWindow(core, new AppOptions(root, null, 0), new Probe("browser")); w.Show(); Dispatcher.UIThread.RunJobs(); return w;
+        var w = new MainWindow(core, new AppOptions(root, null, 0, Isolated: true), new Probe("browser")); w.Show(); Dispatcher.UIThread.RunJobs(); return w;
     }
 }
 
@@ -506,7 +506,7 @@ public class W1_LetterCases
         var root = Path.Combine(Path.GetTempPath(), "trendo-ui-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(root);
         var s = new UserSettings { SetupDone = true, ProjectsFolder = Path.Combine(root, "projekte"), Name = "Erika Muster", SenderStreet = "Hauptstraße 1", SenderCity = "10115 Berlin" }; s.Save(root);
         var l = new FakeLauncher();
-        var w = new MainWindow(new TrendoCore(root, new InMemorySecretStore(), l), new AppOptions(root, null, 0), new Probe("browser")); w.Show(); Dispatcher.UIThread.RunJobs();
+        var w = new MainWindow(new TrendoCore(root, new InMemorySecretStore(), l), new AppOptions(root, null, 0, Isolated: true), new Probe("browser")); w.Show(); Dispatcher.UIThread.RunJobs();
         return (w, root, l);
     }
 

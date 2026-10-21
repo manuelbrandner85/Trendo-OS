@@ -3,7 +3,7 @@ using Trendo.Core;
 
 namespace Trendo.App;
 
-public sealed record AppOptions(string? DataRoot, string? ScreenshotPath, int AutoExitSeconds, bool Offline = false, int? ApiPort = null, bool FirstRun = false, string? Page = null, string? KiAsk = null, string? Query = null);
+public sealed record AppOptions(string? DataRoot, string? ScreenshotPath, int AutoExitSeconds, bool Offline = false, int? ApiPort = null, bool FirstRun = false, string? Page = null, string? KiAsk = null, string? Query = null, bool Isolated = false);
 
 class Program
 {
