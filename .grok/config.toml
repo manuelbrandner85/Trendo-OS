@@ -1,0 +1,13 @@
+# Trendo OS – Grok Build projektbezogene Konfiguration (SICHERE VORLAGE)
+# NICHT durch bloßes Umbenennen nicht existierende MCP-Server erfinden.
+# Nach bestätigter Installation und Sicherheitsprüfung kann ein autorisierter Operator
+# konkret geprüfte MCP-Server in einer lokalen, nicht geheimnistragenden config ergänzen.
+# Beispielsyntax laut https://docs.x.ai/build/features/mcp-servers :
+# [mcp_servers.trendo_blender]
+# command = "C:\\PFAD\\ZU\\GEPRUEFTEM\\BLENDER_ADAPTER.exe"
+# args = ["--project", "C:\\TRENDO\\approved-project"]
+# enabled = true
+# [mcp_servers.trendo_unreal]
+# command = "C:\\PFAD\\ZU\\GEPRUEFTEM\\UE_ADAPTER.exe"
+# enabled = true
+# Absichtlich keine aktiven MCP-Server, keine Tokens, keine Zugangsdaten.

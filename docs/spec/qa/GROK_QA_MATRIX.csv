@@ -1,0 +1,21 @@
+test_id,scenario,target,initial_status,evidence_required
+GRK-001,Grok Build CLI installed and version actually reported,Windows/Linux,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-002,Authorized project cwd/git status verified,Windows,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-003,AGENTS.md and configs loaded by grok inspect,Windows,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-004,Permission mode and explicit approval on edit,Windows,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-005,Grok Bot has no hidden shared-cloud project isolation,Cloud,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-006,No forensic evidence copied to Bot cloud,Cloud/Windows,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-007,Local task handoff rejects unsigned/unapproved scope,Windows,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-008,Duplicate task ID rejected,Windows,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-009,External message/payment/upload blocked without approval,Windows,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-010,Cross-project path/credential access denied,Windows,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-011,MCP tools/list verified for each enabled server,Windows,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-012,Blender installed and actual version verified,Windows/Linux,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-013,Blender test .blend saved and reopened,Windows/Linux,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-014,Blender real render/export validation,Windows/Linux,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-015,UE5 editor installed/version verified,Windows/Linux compatible,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-016,UE5 import and editor tests real logs,Windows/Linux compatible,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-017,Cross-cloud prompt injection from task/data rejected,Cloud/Windows,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-018,"Forensic copy and derived index retention <=120h, 24h warning",All modes,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-019,Pi/PC compute-node pairing requires authenticated scope,Pi+PC,NOT_RUN,real logs/build hash + approvals + timestamp
+GRK-020,"Release claims match real build/test checksums, no fake pass",All modes,NOT_RUN,real logs/build hash + approvals + timestamp

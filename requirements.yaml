@@ -1,0 +1,899 @@
+# AUTOMATISCH ERZEUGT durch scripts/generate_requirements.py – nicht von Hand Status hochsetzen.
+schema_version: 1
+source: Trendo OS Grok Production Package v2.1 (2026-10-21)
+note: APPROVED_SPEC bedeutet genehmigte Spezifikation, NICHT gebaut. Alle Tests NOT_RUN bis echte Logs existieren.
+status_model:
+- PROPOSED
+- APPROVED_SPEC
+- PLANNED
+- IN_PROGRESS
+- IMPLEMENTED
+- TESTED
+- ACCEPTED
+- RELEASED
+- FAILED
+- BLOCKED
+editions:
+- windows-app
+- linux-usb-ssd
+- pi4-plus-windows
+modules:
+- id: CORE-01
+  name: Intelligent Desktop OS
+  approved_expansion_functions: BASE
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: CORE-02
+  name: Trendo Intelligence Core
+  approved_expansion_functions: BASE
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: CORE-03
+  name: AI Agent Command Center – 12 roles
+  approved_expansion_functions: BASE
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: CORE-04
+  name: Pi/PC/Android Fusion Engine
+  approved_expansion_functions: BASE
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: CORE-05
+  name: Ultimate 3D Creation Studio 2.0
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: CORE-06
+  name: Ultimate Game Development Studio 2.0
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: CORE-07
+  name: Ultimate App & Software Development Studio 2.0
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: CORE-08
+  name: Ultimate Creative & Media Studio 2.0
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: CORE-09
+  name: Vision & Robotics Control Studio 2.0
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: CORE-10
+  name: Knowledge Memory & Self Improvement Core 2.0
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: CORE-11
+  name: Security Privacy Recovery Fortress
+  approved_expansion_functions: '16'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: CORE-12
+  name: Ultimate Prompt & Masterprompt Studio 2.0
+  approved_expansion_functions: '50'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SYS-01
+  name: Triple Mode OS GODMODE
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SYS-02
+  name: Ultimate Desktop Utilities & Media Center
+  approved_expansion_functions: '25'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SYS-03
+  name: Ultimate Browser Internet & Download Center
+  approved_expansion_functions: '25'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SYS-04
+  name: Ultimate App Installation & System Control Center
+  approved_expansion_functions: '25'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SYS-05
+  name: Universal Automation & Workflow Engine
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SYS-06
+  name: Ultimate Network File Sharing & Remote Workspace
+  approved_expansion_functions: '25'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SYS-07
+  name: Ultimate Hardware & Device Recognition
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SYS-08
+  name: Deep Web & Dark Web READ-ONLY Research Studio
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SYS-09
+  name: Communication Mail & Collaboration Center
+  approved_expansion_functions: '25'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SYS-10
+  name: Office Documents & Productivity Center
+  approved_expansion_functions: '25'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SYS-11
+  name: Ready-to-Run & Software Integration
+  approved_expansion_functions: '25'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SYS-12
+  name: Adaptive Interface Accessibility & Personalization
+  approved_expansion_functions: '25'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SYS-13
+  name: System Architecture Integration & Release Quality
+  approved_expansion_functions: '25'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SPEC-01
+  name: Architecture & Interior 2.0
+  approved_expansion_functions: '16'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SPEC-02
+  name: Electronics & PCB 2.0
+  approved_expansion_functions: '16'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SPEC-03
+  name: Engineering & Simulation 2.0
+  approved_expansion_functions: '16'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SPEC-04
+  name: VR/AR/MR 2.0
+  approved_expansion_functions: '16'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SPEC-05
+  name: Science & Research 2.0
+  approved_expansion_functions: '16'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SPEC-06
+  name: Education & Training 2.0
+  approved_expansion_functions: '16'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SPEC-07
+  name: Language & Localization Studio 2.0
+  approved_expansion_functions: '16'
+  approval_status: REJECTED_UPGRADE_BASE_PRESERVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SPEC-08
+  name: Fashion & Product 2.0
+  approved_expansion_functions: '18'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SPEC-09
+  name: 3D Scanning & Reconstruction 2.0
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SPEC-10
+  name: Digital Twin 2.0
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SPEC-11
+  name: Business & Finance 2.0
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SPEC-12
+  name: Cybersecurity & Forensics 2.0
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SPEC-13
+  name: Maps & Geospatial 2.0
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SPEC-14
+  name: Manufacturing & CNC 2.0
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SPEC-15
+  name: Broadcast & Streaming 2.0
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: SPEC-16
+  name: Transport & Vehicle 2.0
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: X-01
+  name: Universal Studio Fusion & Autonomous Production
+  approved_expansion_functions: '18'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: X-02
+  name: Zero Touch Setup & Self Healing
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: X-03
+  name: Visual Builder & No-Code
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: X-04
+  name: Extension Marketplace & Studio Evolution
+  approved_expansion_functions: '20'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: X-05
+  name: Free AI Discovery & Fallback
+  approved_expansion_functions: BASE
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: X-06
+  name: GitHub Open-Source Integration
+  approved_expansion_functions: BASE
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: X-07
+  name: Global Free Asset Discovery
+  approved_expansion_functions: BASE
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: X-08
+  name: Mobile OS Bridge
+  approved_expansion_functions: BASE
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: X-09
+  name: System Resource & Studio Manager
+  approved_expansion_functions: BASE
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: X-10
+  name: Legal Clean-Room Software Reconstruction
+  approved_expansion_functions: BASE
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: X-11
+  name: Universal Creation & Productivity Suite
+  approved_expansion_functions: BASE
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: STUDIO-ONLINE-BUSINESS-01
+  name: Ultimate Online Business Creation & Innovation Studio GODMODE (both modes)
+  approved_expansion_functions: '30'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: STUDIO-LETTER-01
+  name: Ultimate Letter Business & Legal Correspondence Studio GODMODE
+  approved_expansion_functions: '25'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+business_requirements:
+- id: BUS-001
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: EXISTING
+  title: Business Discovery Director
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-002
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: EXISTING
+  title: Proven Business Model Library
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-003
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: EXISTING
+  title: Competitor & Market Intelligence
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-004
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: EXISTING
+  title: Customer Problem & Niche Discovery
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-005
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: EXISTING
+  title: Realistic Opportunity & Profitability Score
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-006
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: INNOVATION
+  title: Business Innovation Engine
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-007
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: INNOVATION
+  title: Cross-Industry Business Fusion
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-008
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: INNOVATION
+  title: Originality & Similarity Research
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-009
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: INNOVATION
+  title: Market Validation & Prototype Laboratory
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-010
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: INNOVATION
+  title: Innovation Go / No-Go Decision Brain
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-011
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Business Blueprint Architect
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-012
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Revenue, Pricing & Subscription Designer
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-013
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Brand Identity & Premium UX Director
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-014
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Business Requirements & Legal Feasibility Planner
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-015
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Customer Journey & Process Architect
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-016
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Grok Build Full-Stack Business Builder
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-017
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Accounts, Membership & Multi-Tenant Engine
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-018
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Payments, Billing & Subscription Integration
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-019
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Business Admin, CRM & Operations Center
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-020
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Product Delivery, Supplier & White-Label Engine
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-021
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: SEO, Content & Visibility Director
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-022
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Customer Acquisition & Sales Funnel Studio
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-023
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Customer Support & Service Center
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-024
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Business Analytics & Conversion Intelligence
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-025
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Finance, Cost & Profitability Dashboard
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-026
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Business Compliance, Privacy & Rights Gate
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-027
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Real Security, Payments & Business Process QA
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-028
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Hosting, Domain & Deployment Director
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-029
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Business Monitoring, Backup & Evolution Engine
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: BUS-030
+  module: STUDIO-ONLINE-BUSINESS-01
+  mode: BOTH
+  title: Ready-to-Business Production & Handover Gate
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+letter_requirements:
+- id: LETTER-001
+  module: STUDIO-LETTER-01
+  title: Ultimate AI Letter Director
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-002
+  module: STUDIO-LETTER-01
+  title: Universal Letter Category Engine
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-003
+  module: STUDIO-LETTER-01
+  title: DIN-5008-orientierter Letter Designer
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-004
+  module: STUDIO-LETTER-01
+  title: Professional Template Library
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-005
+  module: STUDIO-LETTER-01
+  title: Intelligent Tone & Writing Director
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-006
+  module: STUDIO-LETTER-01
+  title: Government & Authority Letter Center
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-007
+  module: STUDIO-LETTER-01
+  title: Court Correspondence & Pleading Assistant
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-008
+  module: STUDIO-LETTER-01
+  title: Lawyer Communication Director
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-009
+  module: STUDIO-LETTER-01
+  title: Insurance & Claims Correspondence Studio
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-010
+  module: STUDIO-LETTER-01
+  title: Business Dispute & Contract Letter Center
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-011
+  module: STUDIO-LETTER-01
+  title: Letter Intake & Fact Questionnaire
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-012
+  module: STUDIO-LETTER-01
+  title: Document Scan OCR & Incoming Letter Reader
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-013
+  module: STUDIO-LETTER-01
+  title: Case Timeline Evidence & Attachment Organizer
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-014
+  module: STUDIO-LETTER-01
+  title: Verified Legal Sources & Deadline Inspector
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-015
+  module: STUDIO-LETTER-01
+  title: German-First Cross-Border Letter Composer
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-016
+  module: STUDIO-LETTER-01
+  title: DOCX ODT PDF Print Production Engine
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-017
+  module: STUDIO-LETTER-01
+  title: Personal & Business Letterhead Vault
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-018
+  module: STUDIO-LETTER-01
+  title: Missing Information & Consistency Validator
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-019
+  module: STUDIO-LETTER-01
+  title: Deadline Reply & Follow-Up Planner
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-020
+  module: STUDIO-LETTER-01
+  title: Document Preview Proofreading & QA Review
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-021
+  module: STUDIO-LETTER-01
+  title: Incoming Letter Analysis & Reply Builder
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-022
+  module: STUDIO-LETTER-01
+  title: Correspondence Case Archive & Version History
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-023
+  module: STUDIO-LETTER-01
+  title: Official Delivery Channel Preparation
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-024
+  module: STUDIO-LETTER-01
+  title: Human Approval Privacy & Legal Review Gate
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: LETTER-025
+  module: STUDIO-LETTER-01
+  title: Real Letter Production & Submission QA
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+tests:
+- id: GRK-001
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-002
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-003
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-004
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-005
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-006
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-007
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-008
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-009
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-010
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-011
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-012
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-013
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-014
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-015
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-016
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-017
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-018
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-019
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: GRK-020
+  catalog: GROK_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-001
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-002
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-003
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-004
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-005
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-006
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-007
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-008
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-009
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-010
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-011
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-012
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-013
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-014
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-015
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-016
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-017
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-018
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-019
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-020
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-021
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-022
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-023
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: BQ-024
+  catalog: BUSINESS_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-001
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-002
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-003
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-004
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-005
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-006
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-007
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-008
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-009
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-010
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-011
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-012
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-013
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-014
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-015
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-016
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-017
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-018
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-019
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
+- id: LTR-QA-020
+  catalog: LETTER_QA_MATRIX.csv
+  status: NOT_RUN
