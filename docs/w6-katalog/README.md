@@ -1,6 +1,6 @@
 # Funktionskataloge Fach-Studios (Welle 6)
 
-Status aller Kataloge: **PROPOSED** – abgeleitet aus Modulname und Zweck, von Manuel noch nicht freigegeben. Anzahl je Studio = `approved_expansion_functions` aus `docs/spec/MODULE_REGISTER.csv`.
+Status aller Kataloge: **APPROVED** – freigegeben von Manuel im Chat am 21.10.2026 um 22:57 Uhr (Berlin). Abgeleitet aus Modulname und Zweck. Anzahl je Studio = `approved_expansion_functions` aus `docs/spec/MODULE_REGISTER.csv`.
 
 „gebaut“ heißt: Code vorhanden und automatischer Test grün auf dem Linux-Testrechner. Nicht auf dem Windows-PC geprüft.
 
