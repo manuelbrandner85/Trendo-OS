@@ -73,7 +73,7 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.1/tests-pc-7092ce1.txt
-  note: "PC-Seite fertig; Gegenstelle auf Pi/Android (Kopplung, /health) noch nicht gebaut"
+  note: "PC-Seite PC_VERIFIED; Begleiter (Linux/Pi) und Android-adb-Seite gebaut, Box + QEMU arm64 getestet; echte Pi-/Android-Hardware fehlt"
   name: Pi/PC/Android Fusion Engine
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
@@ -389,7 +389,7 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.1/tests-pc-7092ce1.txt
-  note: "PC-Seite fertig; Gegenstelle auf Pi/Android (Kopplung, /health) noch nicht gebaut"
+  note: "Android über adb gebaut (Infos, Senden, Bildschirmfoto, Foto holen), nur mit simuliertem adb getestet – kein echtes Handy"
   name: Mobile OS Bridge
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC

@@ -13,6 +13,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Trendo.Core\Trendo.Core.csproj" />
+    <ProjectReference Include="..\..\src\Trendo.Companion\Trendo.Companion.csproj" />
+    <None Include="..\fixtures\ocr-pi.png" Link="fixtures/ocr-pi.png" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\requirements.yaml" Link="requirements.yaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

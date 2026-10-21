@@ -30,3 +30,4 @@ Thumbs.db
 artifacts/
 linux-image/out/
 linux-image/config/includes.chroot/opt/
+installer/companion/out/
