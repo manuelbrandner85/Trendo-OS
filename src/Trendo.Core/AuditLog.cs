@@ -10,10 +10,13 @@ public sealed record AuditEntry(long Seq, DateTimeOffset At, string Actor, strin
 public sealed class AuditLog
 {
     private readonly string _path;
-    private readonly object _lock = new();
+    // Eine Sperre pro Datei (nicht pro Instanz): mehrere AuditLog-Objekte auf dieselbe Datei schreiben sonst gleichzeitig.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, object> Locks = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _lock;
     public AuditLog(string path)
     {
         _path = path;
+        _lock = Locks.GetOrAdd(Path.GetFullPath(path), _ => new object());
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
     }
     public string FilePath => _path;
@@ -22,15 +25,16 @@ public sealed class AuditLog
     {
         lock (_lock)
         {
-            var all = ReadAll();
+            // Lesen und Anhängen in EINEM exklusiv geöffneten Strom: auch ein zweiter Prozess kann die Kette nicht spalten.
+            using var fs = Retry(() => new FileStream(_path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read));
+            var all = Parse(ReadText(fs));
             var prev = all.Count == 0 ? "GENESIS" : all[^1].Hash;
             var seq = all.Count == 0 ? 1 : all[^1].Seq + 1;
             var at = DateTimeOffset.Now;
             var hash = ComputeHash(seq, at, actor, action, detail, prev);
             var e = new AuditEntry(seq, at, actor, action, detail, prev, hash);
-            using var fs = new FileStream(_path, FileMode.Append, FileAccess.Write, FileShare.Read);
-            var line = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(e) + "\n");
-            fs.Write(line);
+            fs.Seek(0, SeekOrigin.End);
+            fs.Write(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(e) + "\n"));
             return e;
         }
     }
@@ -38,8 +42,28 @@ public sealed class AuditLog
     public IReadOnlyList<AuditEntry> ReadAll()
     {
         if (!File.Exists(_path)) return [];
-        return File.ReadAllLines(_path).Where(l => l.Length > 0)
-            .Select(l => JsonSerializer.Deserialize<AuditEntry>(l)!).ToList();
+        using var fs = Retry(() => new FileStream(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+        return Parse(ReadText(fs));
+    }
+
+    private static string ReadText(FileStream fs) { fs.Seek(0, SeekOrigin.Begin); using var r = new StreamReader(fs, Encoding.UTF8, true, 4096, leaveOpen: true); return r.ReadToEnd(); }
+
+    // Nur vollständige Zeilen (mit \n) zählen – eine halb geschriebene Zeile eines anderen Prozesses wird ignoriert.
+    private static List<AuditEntry> Parse(string text)
+    {
+        var end = text.LastIndexOf('\n');
+        if (end < 0) return [];
+        return text[..end].Split('\n').Where(l => l.Length > 0).Select(l => JsonSerializer.Deserialize<AuditEntry>(l)!).ToList();
+    }
+
+    /// <summary>Windows sperrt Dateien hart (Virenscanner, zweiter Prozess): kurz warten statt abstürzen.</summary>
+    private static FileStream Retry(Func<FileStream> open)
+    {
+        for (var i = 0; ; i++)
+        {
+            try { return open(); }
+            catch (IOException) when (i < 40) { Thread.Sleep(25 + i * 5); }
+        }
     }
 
     /// <summary>Prüft die Hash-Kette; false bei Manipulation.</summary>

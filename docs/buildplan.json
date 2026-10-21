@@ -83,7 +83,7 @@
   "id": "W0B-02",
   "name": "Desktop anpassen: Kacheln/Widgets verschieben, ein-/ausblenden, Dock sortieren, Akzentfarbe (gespeichert)",
   "impl": "PC_VERIFIED_PARTIAL",
-  "test": "NOT_RUN",
+  "test": "PC_VERIFIED",
   "local": true,
   "subs": []
  },
@@ -94,7 +94,7 @@
   "id": "W0B-03",
   "name": "Hintergrund-Galerie (aus /workspace/trendo-wallpapers) + optional Wechsel nach Tageszeit",
   "impl": "PC_VERIFIED_PARTIAL",
-  "test": "NOT_RUN",
+  "test": "PC_VERIFIED",
   "local": true,
   "subs": []
  },
@@ -542,7 +542,7 @@
   "id": "CORE-07",
   "name": "Ultimate App & Software Development Studio 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -553,7 +553,7 @@
   "id": "X-06",
   "name": "GitHub Open-Source Integration",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -564,7 +564,7 @@
   "id": "CORE-08",
   "name": "Ultimate Creative & Media Studio 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -575,7 +575,7 @@
   "id": "CORE-05",
   "name": "Ultimate 3D Creation Studio 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -586,7 +586,7 @@
   "id": "CORE-06",
   "name": "Ultimate Game Development Studio 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -597,7 +597,7 @@
   "id": "X-07",
   "name": "Global Free Asset Discovery",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -608,7 +608,7 @@
   "id": "X-03",
   "name": "Visual Builder & No-Code",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -619,7 +619,7 @@
   "id": "X-11",
   "name": "Universal Creation & Productivity Suite",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -630,7 +630,7 @@
   "id": "STUDIO-ONLINE-BUSINESS-01",
   "name": "Ultimate Online Business Creation & Innovation Studio GODMODE (both modes)",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": [
    {
@@ -822,7 +822,7 @@
   "id": "SPEC-11",
   "name": "Business & Finance 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -833,7 +833,7 @@
   "id": "X-01",
   "name": "Universal Studio Fusion & Autonomous Production",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -844,7 +844,7 @@
   "id": "X-04",
   "name": "Extension Marketplace & Studio Evolution",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -855,7 +855,7 @@
   "id": "X-10",
   "name": "Legal Clean-Room Software Reconstruction",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -866,7 +866,7 @@
   "id": "SPEC-01",
   "name": "Architecture & Interior 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -877,7 +877,7 @@
   "id": "SPEC-02",
   "name": "Electronics & PCB 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -888,7 +888,7 @@
   "id": "SPEC-03",
   "name": "Engineering & Simulation 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -899,7 +899,7 @@
   "id": "SPEC-04",
   "name": "VR/AR/MR 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -910,7 +910,7 @@
   "id": "SPEC-05",
   "name": "Science & Research 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -921,7 +921,7 @@
   "id": "SPEC-06",
   "name": "Education & Training 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -932,7 +932,7 @@
   "id": "SPEC-08",
   "name": "Fashion & Product 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -943,7 +943,7 @@
   "id": "SPEC-09",
   "name": "3D Scanning & Reconstruction 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -954,7 +954,7 @@
   "id": "SPEC-10",
   "name": "Digital Twin 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -965,7 +965,7 @@
   "id": "SPEC-13",
   "name": "Maps & Geospatial 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -976,7 +976,7 @@
   "id": "SPEC-14",
   "name": "Manufacturing & CNC 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -987,7 +987,7 @@
   "id": "SPEC-15",
   "name": "Broadcast & Streaming 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -998,7 +998,7 @@
   "id": "SPEC-16",
   "name": "Transport & Vehicle 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -1009,7 +1009,7 @@
   "id": "CORE-09",
   "name": "Vision & Robotics Control Studio 2.0",
   "impl": "IMPLEMENTED",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },

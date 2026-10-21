@@ -1,7 +1,7 @@
 # Welle 0b – Look & Bedienung (von Manuel genehmigt 21.10.2026). Status hier ehrlich pflegen.
 - {id: W0B-01, name: "Einfaches, freundliches Deutsch überall + Sprachleitfaden docs/SPRACHE.md", implementation_status: PC_VERIFIED_PARTIAL, test_status: NOT_RUN}
-- {id: W0B-02, name: "Desktop anpassen: Kacheln/Widgets verschieben, ein-/ausblenden, Dock sortieren, Akzentfarbe (gespeichert)", implementation_status: PC_VERIFIED_PARTIAL, test_status: NOT_RUN}
-- {id: W0B-03, name: "Hintergrund-Galerie (aus /workspace/trendo-wallpapers) + optional Wechsel nach Tageszeit", implementation_status: PC_VERIFIED_PARTIAL, test_status: NOT_RUN}
+- {id: W0B-02, name: "Desktop anpassen: Kacheln/Widgets verschieben, ein-/ausblenden, Dock sortieren, Akzentfarbe (gespeichert)", implementation_status: PC_VERIFIED_PARTIAL, test_status: PC_VERIFIED, evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt}
+- {id: W0B-03, name: "Hintergrund-Galerie (aus /workspace/trendo-wallpapers) + optional Wechsel nach Tageszeit", implementation_status: PC_VERIFIED_PARTIAL, test_status: PC_VERIFIED, evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt}
 - {id: W0B-04, name: "Sanfte Animationen, Hover-Glow, ruhiger Startbildschirm + Schalter „Bewegung reduzieren“", implementation_status: PC_VERIFIED_PARTIAL, test_status: NOT_RUN}
 - {id: W0B-05, name: "Hilfe in der App: Hinweise beim ersten Öffnen je Studio + „?“-Knopf", implementation_status: PC_VERIFIED_PARTIAL, test_status: NOT_RUN}
 - {id: W0B-06, name: "Designs: Dunkel Premium (Standard), Hell, Hoher Kontrast", implementation_status: PC_VERIFIED_PARTIAL, test_status: NOT_RUN}
