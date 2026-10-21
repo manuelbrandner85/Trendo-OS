@@ -111,7 +111,7 @@ lokale KI, Agenten, Wissen, Prompts, Workflows
 | 3 | CORE-03 | AI Agent Command Center – 12 roles | IMPLEMENTED | TESTED_BOX |
 | 4 | CORE-10 | Knowledge Memory & Self Improvement Core 2.0 | IMPLEMENTED | TESTED_BOX |
 | 5 | CORE-12 | Ultimate Prompt & Masterprompt Studio 2.0 | IMPLEMENTED | TESTED_BOX |
-| 6 | SYS-05 | Universal Automation & Workflow Engine | NOT_STARTED | NOT_RUN |
+| 6 | SYS-05 | Universal Automation & Workflow Engine | IMPLEMENTED | TESTED_BOX |
 
 Abnahmekriterien je Modul:
 - Modul im Studio-Layout erreichbar (max. 2 Navigationsebenen, deutsche Beschriftung)
