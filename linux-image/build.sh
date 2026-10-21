@@ -13,6 +13,7 @@ sudo rm -rf "$WORK"; mkdir -p "$WORK"; cp -r "$HERE/config" "$WORK/"; cd "$WORK"
 lb config \
   --mode debian --distribution trixie --architectures amd64 \
   --archive-areas "main contrib non-free-firmware" \
+  --mirror-bootstrap http://deb.debian.org/debian/ --mirror-chroot-security http://deb.debian.org/debian-security/ --mirror-binary-security http://deb.debian.org/debian-security/ \
   --binary-images iso-hybrid --bootloaders "grub-efi,syslinux" \
   --debian-installer none --memtest none --apt-recommends false \
   --iso-volume "TRENDO_OS_P2" --iso-application "Trendo OS" --iso-publisher "Trendo OS Projekt" \
