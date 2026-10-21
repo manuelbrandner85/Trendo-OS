@@ -433,15 +433,17 @@ business_requirements:
   mode: EXISTING
   title: Competitor & Market Intelligence
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-003.txt
 - id: BUS-004
   module: STUDIO-ONLINE-BUSINESS-01
   mode: EXISTING
   title: Customer Problem & Niche Discovery
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-003.txt
 - id: BUS-005
   module: STUDIO-ONLINE-BUSINESS-01
   mode: EXISTING
@@ -455,29 +457,33 @@ business_requirements:
   mode: INNOVATION
   title: Business Innovation Engine
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-003.txt
 - id: BUS-007
   module: STUDIO-ONLINE-BUSINESS-01
   mode: INNOVATION
   title: Cross-Industry Business Fusion
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-003.txt
 - id: BUS-008
   module: STUDIO-ONLINE-BUSINESS-01
   mode: INNOVATION
   title: Originality & Similarity Research
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-003.txt
 - id: BUS-009
   module: STUDIO-ONLINE-BUSINESS-01
   mode: INNOVATION
   title: Market Validation & Prototype Laboratory
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-003.txt
 - id: BUS-010
   module: STUDIO-ONLINE-BUSINESS-01
   mode: INNOVATION

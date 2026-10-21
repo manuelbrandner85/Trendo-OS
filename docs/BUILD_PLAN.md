@@ -189,13 +189,13 @@ Abnahmekriterien je Modul:
 |---|---|---|---|
 | BUS-001 | Business Discovery Director | IMPLEMENTED | TESTED_BOX |
 | BUS-002 | Proven Business Model Library | IMPLEMENTED | TESTED_BOX |
-| BUS-003 | Competitor & Market Intelligence | NOT_STARTED | NOT_RUN |
-| BUS-004 | Customer Problem & Niche Discovery | NOT_STARTED | NOT_RUN |
+| BUS-003 | Competitor & Market Intelligence | IMPLEMENTED | TESTED_BOX |
+| BUS-004 | Customer Problem & Niche Discovery | IMPLEMENTED | TESTED_BOX |
 | BUS-005 | Realistic Opportunity & Profitability Score | IMPLEMENTED | TESTED_BOX |
-| BUS-006 | Business Innovation Engine | NOT_STARTED | NOT_RUN |
-| BUS-007 | Cross-Industry Business Fusion | NOT_STARTED | NOT_RUN |
-| BUS-008 | Originality & Similarity Research | NOT_STARTED | NOT_RUN |
-| BUS-009 | Market Validation & Prototype Laboratory | NOT_STARTED | NOT_RUN |
+| BUS-006 | Business Innovation Engine | IMPLEMENTED | TESTED_BOX |
+| BUS-007 | Cross-Industry Business Fusion | IMPLEMENTED | TESTED_BOX |
+| BUS-008 | Originality & Similarity Research | IMPLEMENTED | TESTED_BOX |
+| BUS-009 | Market Validation & Prototype Laboratory | IMPLEMENTED | TESTED_BOX |
 | BUS-010 | Innovation Go / No-Go Decision Brain | IMPLEMENTED | TESTED_BOX |
 | BUS-011 | Business Blueprint Architect | IMPLEMENTED | TESTED_BOX |
 | BUS-012 | Revenue, Pricing & Subscription Designer | IMPLEMENTED | TESTED_BOX |
