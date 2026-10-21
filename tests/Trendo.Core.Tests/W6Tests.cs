@@ -442,3 +442,22 @@ public class SPEC05_Plus
     [Fact(DisplayName = "SPEC-05 F15: Glätten")] public void F15() { Assert.Equal([null, 2, 3, 4, null], StatsPlus.MovingAverage([1, 2, 3, 4, 5], 3)); Assert.Throws<ArgumentException>(() => StatsPlus.MovingAverage([1], 2)); Assert.Contains("x;y;y_g\n1;2;\n2;4;4\n3;6;", StatsPlus.AppendColumn("x;y\n1;2\n2;4\n3;6", "y_g", [null, 4, null], 1)); }
     [Fact(DisplayName = "SPEC-05 F16: Standardisieren")] public void F16() { var z = StatsPlus.ZScores([2, 4, 6]); Assert.Equal([-1, 0, 1], z); }
 }
+
+public class SPEC06_Plus
+{
+    private static (Fixture F, LearnBox L, Func<DateTime> Now, Action<int> Add) Box()
+    {
+        var f = new Fixture(); var now = new DateTime(2026, 10, 1, 9, 0, 0); var l = new LearnBox(f.Root, () => now);
+        l.Import("En", "Hund;dog\nKatze;cat\nHaus;house\nBaum;tree"); return (f, l, () => now, d => now = now.AddDays(d));
+    }
+    [Fact(DisplayName = "SPEC-06 F07: Export")] public void F07() { var (f, l, _, _) = Box(); using var _f = f; var e = l.Export("En"); Assert.Equal(4, new LearnBox(f.Root + "x").Import("En", e)); Assert.Contains("Hund;dog", e); }
+    [Fact(DisplayName = "SPEC-06 F08: Bearbeiten & löschen")] public void F08() { var (f, l, _, _) = Box(); using var _f = f; var c = l.Store.Cards[0]; l.Edit(c.Id, "Hündin", "dog (female)"); Assert.Equal("Hündin", new LearnBox(f.Root).Store.Cards[0].Front); l.Delete(c.Id); Assert.Equal(3, l.Store.Cards.Count); Assert.Throws<ArgumentException>(() => l.Edit("x", "a", "b")); }
+    [Fact(DisplayName = "SPEC-06 F09: Quiz mit Auswahl")] public void F09() { var (f, l, _, _) = Box(); using var _f = f; var q = l.Quiz(seed: 1); Assert.Equal(4, q.Options.Count); Assert.Equal(q.Card.Back, q.Options[q.Correct]); Assert.Equal(4, q.Options.Distinct().Count()); }
+    [Fact(DisplayName = "SPEC-06 F10: Eintippen")] public void F10() { Assert.Equal((true, false), LearnBox.CheckTyped("House", " house ")); Assert.Equal((true, true), LearnBox.CheckTyped("elephant", "elephat")); Assert.False(LearnBox.CheckTyped("dog", "cat").Ok); Assert.Equal(3, LearnBox.Levenshtein("kitten", "sitting")); }
+    [Fact(DisplayName = "SPEC-06 F11: Lernserie")] public void F11() { var (f, l, _, add) = Box(); using var _f = f; var id = l.Store.Cards[0].Id; l.Answer(id, Grade.Gut); add(1); l.Answer(id, Grade.Gut); add(1); Assert.Equal((2, false), l.Streak()); l.Answer(id, Grade.Gut); Assert.Equal((3, true), l.Streak()); add(2); Assert.Equal(0, l.Streak().Streak); }
+    [Fact(DisplayName = "SPEC-06 F12: Vorschau 7 Tage")] public void F12() { var (f, l, _, _) = Box(); using var _f = f; l.Answer(l.Store.Cards[0].Id, Grade.Gut); var fc = l.Forecast(); Assert.Equal(7, fc.Count); Assert.Equal(3, fc[0].Due); Assert.Equal(1, fc[1].Due); }
+    [Fact(DisplayName = "SPEC-06 F13: Stapel umbenennen")] public void F13() { var (f, l, _, _) = Box(); using var _f = f; Assert.Equal(4, l.RenameDeck("en", "Englisch")); Assert.Equal(["Englisch"], l.Decks); Assert.Throws<ArgumentException>(() => l.RenameDeck("xx", "y")); }
+    [Fact(DisplayName = "SPEC-06 F14: Problemkarten")] public void F14() { var (f, l, _, _) = Box(); using var _f = f; var id = l.Store.Cards[1].Id; for (var i = 0; i < 3; i++) l.Answer(id, Grade.Falsch); Assert.Equal(id, Assert.Single(l.Leeches()).Id); }
+    [Fact(DisplayName = "SPEC-06 F15: Umgekehrte Karten")] public void F15() { var (f, l, _, _) = Box(); using var _f = f; Assert.Equal(4, l.AddReversed("En")); Assert.Equal(0, l.AddReversed("En")); Assert.Contains(l.Store.Cards, c => c.Deck == "En (umgekehrt)" && c.Front == "dog" && c.Back == "Hund"); }
+    [Fact(DisplayName = "SPEC-06 F16: Prüfungsplan")] public void F16() { var (f, l, now, _) = Box(); using var _f = f; var p = l.ExamPlan(now().AddDays(5)); Assert.Equal((2, 5, 4), (p.NewPerDay, p.DaysLeft, p.NewCards)); Assert.Throws<ArgumentException>(() => l.ExamPlan(now())); }
+}
