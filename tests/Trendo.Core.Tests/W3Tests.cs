@@ -112,3 +112,43 @@ public class SYS04_AppCenter
         Assert.Contains(f.Core.Audit.ReadAll(), e => e.Action == "app.done");
     }
 }
+
+public class SYS07_Devices
+{
+    public static string FakeSys(string root)
+    {
+        var s = Path.Combine(root, "sys");
+        void W(string p, string v) { var f = Path.Combine(s, p); Directory.CreateDirectory(Path.GetDirectoryName(f)!); File.WriteAllText(f, v); }
+        W("bus/usb/devices/1-2/product", "HD Webcam\n"); W("bus/usb/devices/1-2/manufacturer", "Logitech"); W("bus/usb/devices/1-2/bDeviceClass", "0e");
+        W("bus/usb/devices/usb1/product", "xHCI Host"); W("class/net/eth0/operstate", "up"); W("class/net/wlan0/operstate", "down"); W("class/net/lo/operstate", "unknown");
+        W("class/drm/card0/dev", "1"); W("class/drm/card0-HDMI-A-1/status", "x"); W("class/sound/card0/id", "HDA Intel"); W("class/power_supply/BAT0/capacity", "87");
+        return s;
+    }
+
+    [Fact(DisplayName = "SYS-07: Windows-Geräteliste (PnP) wird gelesen, Probleme erkannt, Systemeinträge ausgeblendet")]
+    public void Pnp()
+    {
+        var csv = "\"Class\",\"FriendlyName\",\"Status\"\r\n\"Camera\",\"Integrated Camera\",\"OK\"\r\n\"Printer\",\"HP LaserJet, Büro\",\"Error\"\r\n\"System\",\"PCI Bus\",\"OK\"\r\n\"Display\",\"NVIDIA GeForce RTX 5070\",\"OK\"\r\n";
+        var d = DeviceScanner.ParsePnpCsv(csv);
+        Assert.Equal(3, d.Count);
+        Assert.Contains(d, x => x is { Category: "Drucker", Name: "HP LaserJet, Büro", Problem: true });
+        Assert.Contains(d, x => x is { Category: "Anzeige", Problem: false });
+    }
+
+    [Fact(DisplayName = "SYS-07: Linux-/sys wird gelesen; Neues und Verschwundenes wird erkannt")]
+    public async Task Sys_and_diff()
+    {
+        using var f = new Fixture();
+        var s = new DeviceScanner(new FakeRunner((_, _) => (1, "")), f.Root, FakeSys(f.Root));
+        var all = s.ScanSys();
+        Assert.Contains(all, x => x is { Category: "Kamera", Name: "HD Webcam (Logitech)" });
+        Assert.Contains(all, x => x.Name == "WLAN wlan0" && x.Detail == "nicht verbunden");
+        Assert.DoesNotContain(all, x => x.Name.Contains("lo") || x.Name.Contains("xHCI") || x.Name.Contains("HDMI"));
+        Assert.Contains(all, x => x is { Category: "Akku", Name: "BAT0 87 %" });
+        Assert.Empty(s.Diff(all).Added);
+        Directory.Delete(Path.Combine(f.Root, "sys", "bus", "usb", "devices", "1-2"), true);
+        var (add, rem) = s.Diff(s.ScanSys());
+        Assert.Empty(add); Assert.Single(rem);
+        Assert.NotEmpty(await s.ScanAsync());
+    }
+}
