@@ -5,6 +5,8 @@ namespace Trendo.Core;
 /// <summary>Persönliche Einstellungen aus der Ersteinrichtung (settings.json im Benutzerdatenordner).</summary>
 public sealed class UserSettings
 {
+    /// <summary>SYS-13-P20: Dateiformat-Version; ältere Dateien werden beim Laden angehoben.</summary>
+    public int FormatVersion { get; set; } = Sys.Quality.SettingsFormat;
     public string Name { get; set; } = "";
     public string Language { get; set; } = "de-DE";
     public string ProjectsFolder { get; set; } = "";
@@ -60,8 +62,8 @@ public sealed class UserSettings
 
     public static UserSettings Load(string dataRoot)
     {
-        try { if (File.Exists(PathIn(dataRoot))) return JsonSerializer.Deserialize<UserSettings>(File.ReadAllText(PathIn(dataRoot))) ?? new(); }
-        catch (JsonException) { /* defekte Datei: Standardwerte, Datei bleibt zur Prüfung liegen */ }
+        try { if (File.Exists(PathIn(dataRoot)) && System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(PathIn(dataRoot))) is System.Text.Json.Nodes.JsonObject o) return Sys.Quality.MigrateSettings(o).Deserialize<UserSettings>() ?? new(); }
+        catch (Exception e) when (e is JsonException or InvalidOperationException or FormatException) { /* defekte Datei: Standardwerte, Datei bleibt zur Prüfung liegen */ }
         return new();
     }
 

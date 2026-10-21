@@ -79,6 +79,18 @@ public sealed class AuditLog
         return true;
     }
 
+    /// <summary>SYS-13-P09: Nummer des ersten veränderten, fehlenden oder vertauschten Eintrags; null = Kette unverändert.</summary>
+    public long? FirstBroken()
+    {
+        var prev = "GENESIS"; long seq = 0;
+        foreach (var e in ReadAll())
+        {
+            if (e.PrevHash != prev || e.Seq != seq + 1 || ComputeHash(e.Seq, e.At, e.Actor, e.Action, e.Detail, e.PrevHash) != e.Hash) return seq + 1;
+            prev = e.Hash; seq = e.Seq;
+        }
+        return null;
+    }
+
     private static string ComputeHash(long seq, DateTimeOffset at, string actor, string action, string detail, string prev)
         => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes($"{seq}|{at:O}|{actor}|{action}|{detail}|{prev}")));
 }
