@@ -514,3 +514,25 @@ public class SPEC14_UiPlus
         Assert.Contains("Ø 6,75 mm", W6Ui.Run(w, "cnc-tap"));
     }
 }
+
+public class SPEC15_UiPlus
+{
+    [AvaloniaFact(DisplayName = "SPEC-15 UI Ausbau: Live, Bild & Ton, Planen")]
+    public void Plus()
+    {
+        var (w, l, root) = Ui.Open(); Directory.CreateDirectory(root);
+        w.Broadcast.Plan.Start = new DateTime(2026, 10, 21, 20, 0, 0); w.Broadcast.Add("Intro", 60); w.Broadcast.Add("Talk", 600);
+        var srt = Path.Combine(root, "u.srt"); File.WriteAllText(srt, "1\n00:00:05,000 --> 00:00:06,000\nHi\n");
+        w.Show(MainWindow.StudioPages["SPEC-15"]);
+        Assert.Contains("▶ 2. Talk – noch 9:00", W6Ui.Run(w, "bc-now", ("at", "21.10.2026 20:02")));
+        W6Ui.Run(w, "bc-cards"); Assert.Contains(l.Opened, x => x.EndsWith("moderationskarten.md"));
+        Assert.Contains("3 Wörter", W6Ui.Run(w, "bc-speak", ("t", "eins zwei drei")));
+        Assert.Contains("+4,0 dB", W6Ui.Run(w, "bc-loud"));
+        Assert.Contains("16:9", W6Ui.Run(w, "bc-aspect"));
+        Assert.Contains("crop=606:1080:657:0", W6Ui.Run(w, "bc-crop"));
+        Assert.Contains("01:00:00:12", W6Ui.Run(w, "bc-tc"));
+        Assert.Contains("4 Termine ohne", W6Ui.Run(w, "bc-week"));
+        Assert.Contains("1 Untertitel", W6Ui.Run(w, "bc-srt", ("file", srt), ("s", "-2")));
+        Assert.Contains("00:00:03,000", File.ReadAllText(Path.Combine(root, "u.versetzt.srt")));
+    }
+}
