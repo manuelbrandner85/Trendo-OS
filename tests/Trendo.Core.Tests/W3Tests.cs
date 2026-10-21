@@ -35,3 +35,40 @@ public class CORE11_Security
         Assert.True(SecurityCenter.IbanOk("DE89370400440532013000")); Assert.True(SecurityCenter.Luhn("4111111111111111"));
     }
 }
+
+public class X02_SelfHealing
+{
+    [Fact(DisplayName = "X-02: Fehlende Ordner, kaputte Dateien, verwaiste Pfade und alte Zwischendateien werden repariert")]
+    public void Repairs()
+    {
+        using var f = new Fixture();
+        File.WriteAllText(Path.Combine(f.Root, "settings.json"), "{kaputt");
+        File.WriteAllText(Path.Combine(f.Root, "tools.json"), "{\"blender\":\"/gibt/es/nicht/blender.exe\"}");
+        Directory.CreateDirectory(Path.Combine(f.Root, "tmp")); var old = Path.Combine(f.Root, "tmp", "alt.bin"); File.WriteAllText(old, "x"); File.SetLastWriteTime(old, DateTime.Now.AddDays(-30));
+        var h = new SelfHealer(f.Root, f.Core.Audit) { FreeSpace = _ => 100L * 1024 * 1024 };
+        var check = h.Run(false, DateTime.Now);
+        Assert.True(File.Exists(Path.Combine(f.Root, "settings.json")));
+        Assert.Equal(HealState.NeedsYou, check.First(r => r.Id == "json").State);
+        var r = h.Run(true, DateTime.Now);
+        Assert.All(new[] { "folders", "json", "tools", "tmp" }, id => Assert.Equal(HealState.Repaired, r.First(x => x.Id == id).State));
+        Assert.Equal(HealState.NeedsYou, r.First(x => x.Id == "disk").State);
+        Assert.False(File.Exists(Path.Combine(f.Root, "settings.json")));
+        Assert.Single(Directory.GetFiles(Path.Combine(f.Root, "quarantaene"), "*", SearchOption.AllDirectories));
+        Assert.Equal("{}", File.ReadAllText(Path.Combine(f.Root, "tools.json")));
+        Assert.False(File.Exists(old));
+        var again = new SelfHealer(f.Root, f.Core.Audit).Run(true, DateTime.Now);
+        Assert.DoesNotContain(again, x => x.State == HealState.Repaired);
+        Assert.NotNull(SelfHealer.Last(f.Root));
+    }
+
+    [Fact(DisplayName = "X-02: Verändertes Protokoll wird gemeldet, aber bewusst nicht „repariert“")]
+    public void Audit_not_touched()
+    {
+        using var f = new Fixture();
+        var lines = File.ReadAllLines(f.Core.Audit.FilePath); lines[0] = lines[0].Replace("core.start", "core.fake!"); File.WriteAllLines(f.Core.Audit.FilePath, lines);
+        var before = File.ReadAllText(f.Core.Audit.FilePath);
+        var r = new SelfHealer(f.Root, f.Core.Audit).Run(true, DateTime.Now);
+        Assert.Equal(HealState.NeedsYou, r.First(x => x.Id == "audit").State);
+        Assert.StartsWith(before, File.ReadAllText(f.Core.Audit.FilePath));
+    }
+}
