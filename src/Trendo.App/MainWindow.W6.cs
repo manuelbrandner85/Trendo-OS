@@ -18,6 +18,15 @@ public partial class MainWindow
         InitSpec01(); InitSpec02(); InitSpec03(); InitSpec04(); InitSpec05(); InitSpec06(); InitSpec08(); InitSpec09(); InitSpec10(); InitSpec13(); InitSpec14(); InitSpec15(); InitSpec16(); InitCore09();
     }
 
+    /// <summary>Aufklappbare Gruppe, damit jedes Studio übersichtlich bleibt.</summary>
+    private Control FachGroup(string name, string title, bool open, params Control[] tools)
+    {
+        var sp = new StackPanel { Spacing = 8 }; foreach (var t in tools) sp.Children.Add(t);
+        var key = "grp-" + name; var ex = new Expander { Name = key, Header = H(title, 14), IsExpanded = _fachIn.TryGetValue(key, out var v) ? v == "1" : open, HorizontalAlignment = HorizontalAlignment.Stretch, Content = sp };
+        ex.Expanded += (_, _) => _fachIn[key] = "1"; ex.Collapsed += (_, _) => _fachIn[key] = "0";
+        return ex;
+    }
+
     private Control FachPage(string title, Control body) => W45Page(title, FachTabs, "fach", body);
 
     /// <summary>Ein Werkzeug: Eingabefelder, ein Knopf, ein Ergebnis. Fehler erscheinen als verständlicher Satz.</summary>
