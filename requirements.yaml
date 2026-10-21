@@ -321,8 +321,9 @@ modules:
   name: Broadcast & Streaming 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w23/SPEC-15.md
 - id: SPEC-16
   name: Transport & Vehicle 2.0
   approved_expansion_functions: '20'
