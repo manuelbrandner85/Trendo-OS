@@ -135,3 +135,24 @@ public class SYS09_Ui
         Assert.Contains(w.LastDraftFile!, l.Opened);
     }
 }
+
+public class SPEC12_Ui
+{
+    [AvaloniaFact(DisplayName = "SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht")]
+    public void Forensics_page()
+    {
+        var (w, _, root) = Ui.Open();
+        var f = Path.Combine(root, "setup.exe"); File.WriteAllText(f, "abc");
+        w.Show("forensik");
+        w.Find<TextBox>("for-file").Text = f; w.Find<TextBox>("for-expected").Text = "BA7816BF8F01CFEA414140DE5DAE2223B00361A396177A9CB410FF61F20015AD";
+        w.Find<Button>("for-hash").Press();
+        for (var i = 0; i < 50 && !w.Find<SelectableTextBlock>("for-hash-out").Text!.Contains("Stimmt"); i++) { Thread.Sleep(20); W2Ui.Settle(); }
+        Assert.Contains("✓ Stimmt überein", w.Find<SelectableTextBlock>("for-hash-out").Text);
+        w.Find<TextBox>("for-case-title").Text = "Fall 1"; w.Find<Button>("for-case-new").Press();
+        w.Find<TextBox>("for-add-file-0").Text = f; w.Find<Button>("for-add-0").Press();
+        Assert.Contains("Gesichert", w.Find<TextBlock>("for-msg").Text);
+        w.Find<Button>("for-verify-0").Press();
+        Assert.Contains("✓ Alles unverändert", w.Find<TextBlock>("for-msg").Text);
+        Assert.NotNull(w.TryFind<TextBlock>("for-ports"));
+    }
+}
