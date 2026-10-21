@@ -84,7 +84,7 @@ public sealed partial class MainWindow : Window
 
         StartupTrace.Mark("ctor.theme");
         var req = TrendoCore.FindRequirements(AppContext.BaseDirectory);
-        _studios = req is null ? [] : _core.Studios.Load(req, probe);
+        _studios = req is null ? [] : StudioCatalog.Friendly(_core.Studios.Load(req, probe));
         StartupTrace.Mark("studios.loaded");
 
         // Raster nach Konzept (Designfläche 1536 × 800): Topbar | Seitenleiste 192 · Mitte · rechte Spalte 322, Dock unter der Mitte
@@ -403,7 +403,7 @@ public sealed partial class MainWindow : Window
         _sideStart = SideItem("side-start", Chip(Mdi.Home, "#64B5F6", "#1E88E5", 26), "Start", () => Show("start"));
         nav.Children.Add(_sideStart);
         foreach (var (label, icon, c1, c2, filter) in Categories)
-            nav.Children.Add(SideItem("side-" + label.ToLowerInvariant().Replace(' ', '-').Replace("&", "und"), Chip(icon, c1, c2), label, () => { if (filter == "STUDIO-LETTER") { Show("brief"); return; } if (filter == "SYS-10") { Show("office"); return; } _studioFilter = filter; Show("studios"); }));
+            nav.Children.Add(SideItem("side-" + label.ToLowerInvariant().Replace(' ', '-').Replace("&", "und"), Chip(icon, c1, c2), StudioCatalog.SideLabels.GetValueOrDefault(label, label), () => { if (filter == "STUDIO-LETTER") { Show("brief"); return; } if (filter == "SYS-10") { Show("office"); return; } _studioFilter = filter; Show("studios"); }));
         nav.Children.Add(SideItem("side-dateien", Chip(Mdi.Folder, "#42A5F5", "#1565C0"), "Dateien", () => Show("projects")));
         nav.Children.Add(SideItem("side-einstellungen", Chip(Mdi.Cog, "#78909C", "#37474F"), "Einstellungen", () => Show("settings")));
         var quick = new StackPanel { Spacing = 1 };
@@ -459,9 +459,10 @@ public sealed partial class MainWindow : Window
         var g = new Grid { ColumnDefinitions = new ColumnDefinitions("500,*"), RowDefinitions = new RowDefinitions("*,Auto") };
         // Studio-Kacheln 3x3
         var tiles = new UniformGrid { Columns = 3, Rows = 3 };
-        foreach (var (id, title, sub, icon, c1, c2, glow) in UserSettings.Ordered(FeaturedStudios, f => f.Item1, _settings.TileOrder).Where(f => !_settings.HiddenTiles.Contains("tile-" + f.Item1) && (!_settings.SimpleMode || Trendo.Core.Sys.A11y.SimpleTiles.Contains(f.Item1))))
+        foreach (var (id, title0, sub, icon, c1, c2, glow) in UserSettings.Ordered(FeaturedStudios, f => f.Item1, _settings.TileOrder).Where(f => !_settings.HiddenTiles.Contains("tile-" + f.Item1) && (!_settings.SimpleMode || Trendo.Core.Sys.A11y.SimpleTiles.Contains(f.Item1))))
         {
             var st = _studios.FirstOrDefault(s => s.Id == id);
+            var title = StudioCatalog.For(id)?.Name ?? title0;
             var badge = Badge(st);
             var t = new Button
             {
@@ -534,13 +535,9 @@ public sealed partial class MainWindow : Window
 
     private static TextBlock Badge(StudioEntry? st)
     {
-        var (txt, col) = st?.Capability switch
-        {
-            Capability.Ready => ("Bereit", "#4ADE80"), Capability.NotConnected => ("Nicht verbunden", "#FACC15"),
-            Capability.Blocked => ("Blockiert", "#F87171"), Capability.Rejected => ("Abgelehnt", "#9CA3AF"),
-            Capability.SpecOnly => ("Noch nicht gebaut", "#93A4C3"), Capability.InProgress => ("In Arbeit", "#7FD3FF"), _ => ("Status unbekannt", "#9CA3AF"),
-        };
-        return new TextBlock { Text = txt, Foreground = Brush.Parse(col), FontSize = 9.5, Opacity = 0.9, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 1, 0, 0) };
+        var txt = st is null ? "" : StudioRegistry.FriendlyLabel(st.Capability) ?? "";
+        var col = st?.Capability switch { Capability.Ready => "#4ADE80", Capability.Blocked => "#FACC15", _ => "#93A4C3" };
+        return new TextBlock { Text = txt, IsVisible = txt.Length > 0, Foreground = Brush.Parse(col), FontSize = 9.5, Opacity = 0.9, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 1, 0, 0) };
     }
 
     // ---------- Rechte Spalte ----------
@@ -720,24 +717,37 @@ public sealed partial class MainWindow : Window
 
     private Control StudiosView()
     {
-        var wrap = new WrapPanel();
         var f = _studioFilter;
         var list = string.IsNullOrWhiteSpace(f) ? _studios
             : _studios.Where(s => f.Split('|').Any(x => s.Id.StartsWith(x, StringComparison.OrdinalIgnoreCase)) || s.Name.Contains(f, StringComparison.OrdinalIgnoreCase)).ToList();
-        foreach (var st in list)
+        var body = new StackPanel { Spacing = 4 };
+        var groups = list.GroupBy(s => StudioCatalog.For(s.Id)?.Area ?? "Weitere")
+            .OrderBy(g => Array.IndexOf(StudioCatalog.Areas, g.Key) is var k && k < 0 ? 99 : k);
+        foreach (var g in groups)
         {
-            // Karten sind echte Knöpfe: Klick öffnet das Studio (vorher reine Anzeige – Klick tat nichts)
-            var card = new Button { Name = "studio-card-" + st.Id, Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Margin = new Thickness(0, 0, 10, 10), Width = 230,
-                HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch,
-                Content = new StackPanel { Spacing = 2, Children = { CardHead(st.Id, st.Name), P($"{st.Id} · {st.ApprovalStatus}"), Badge(st), P(st.Reason, null, 11) } } };
-            Avalonia.Automation.AutomationProperties.SetName(card, st.Name);
-            var sid = st.Id; var sname = st.Name;
-            card.Click += async (_, _) => await OpenStudio(sid, sname);
-            Hover(card); wrap.Children.Add(card);
+            var wrap = new WrapPanel();
+            foreach (var st in g)
+            {
+                var info = StudioCatalog.For(st.Id);
+                var name = info?.Name ?? st.Name;
+                var badge = Badge(st); badge.HorizontalAlignment = HorizontalAlignment.Left;
+                // Karten sind echte Knöpfe: Klick öffnet das Studio
+                var card = new Button { Name = "studio-card-" + st.Id, Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Margin = new Thickness(0, 0, 10, 10), Width = 230,
+                    HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch,
+                    Content = new StackPanel { Spacing = 4, Children = { CardHead(st.Id, name), P(info?.Sentence ?? "", null, 11.5), badge } } };
+                Avalonia.Automation.AutomationProperties.SetName(card, name);
+                // Technische Angaben nur für Entwickler im Tooltip
+                ToolTip.SetTip(card, $"{st.Id} · {st.ApprovalStatus} · {st.Reason}");
+                var sid = st.Id;
+                card.Click += async (_, _) => await OpenStudio(sid, name);
+                Hover(card); wrap.Children.Add(card);
+            }
+            var head = H(g.Key, 16); head.Name = "studio-area-" + g.Key; head.Margin = new Thickness(0, 8, 0, 4);
+            body.Children.Add(head); body.Children.Add(wrap);
         }
-        var info = P(string.IsNullOrWhiteSpace(f) ? $"{list.Count} Studios/Module" : $"Filter „{f}“: {list.Count} Treffer");
-        if (_studios.Count == 0) info = P("requirements.yaml nicht gefunden – Status unbekannt.", Brushes.OrangeRed);
-        return Page("Alle Studios", new StackPanel { Spacing = 8, Children = { info, wrap } });
+        var count = P(string.IsNullOrWhiteSpace(f) ? $"{list.Count} Studios" : $"{list.Count} Studios in diesem Bereich");
+        if (_studios.Count == 0) count = P("Die Studio-Liste wurde nicht gefunden.", Brushes.OrangeRed);
+        return Page("Alle Studios", new StackPanel { Spacing = 8, Children = { count, body } });
     }
 
     private Control ProjectsView()
@@ -1118,7 +1128,7 @@ public sealed partial class MainWindow : Window
     private void ReloadStudios()
     {
         var req = TrendoCore.FindRequirements(AppContext.BaseDirectory);
-        if (req is not null) { _studios = _core.Studios.Load(req, _probe); }
+        if (req is not null) { _studios = StudioCatalog.Friendly(_core.Studios.Load(req, _probe)); }
     }
 
 }

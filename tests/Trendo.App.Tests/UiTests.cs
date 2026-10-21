@@ -168,7 +168,7 @@ public class DesignHonesty
             var id = t.Name!["tile-".Length..];
             var req = Path.Combine(AppContext.BaseDirectory, "requirements.yaml");
             var st = new StudioRegistry().Load(req, new Probe("browser")).Single(x => x.Id == id);
-            Assert.Contains(StudioRegistry.GermanLabel(st.Capability), name);
+            Assert.Contains(StudioRegistry.FriendlyLabel(st.Capability) ?? "", name);
             if (st.Capability == Capability.Ready) Assert.True(StatusRules.Done(st.ImplementationStatus, st.TestStatus));
         }
         w.Close();

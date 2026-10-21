@@ -740,3 +740,16 @@ public class SYS03_Browser
         Xunit.Assert.True(Trendo.Core.Browsers.Unfinished("film.mp4.crdownload"));
     }
 }
+
+public class FriendlyStatusTests
+{
+    [Xunit.Fact(DisplayName = "Freundlicher Status: Bereit / Braucht ein Zusatzprogramm / Noch nicht verfügbar, teilweise gebaut ohne Hinweis")]
+    public void Friendly()
+    {
+        Xunit.Assert.Equal("Bereit", Trendo.Core.StudioRegistry.FriendlyLabel(Trendo.Core.Capability.Ready));
+        Xunit.Assert.Equal("Braucht ein Zusatzprogramm", Trendo.Core.StudioRegistry.FriendlyLabel(Trendo.Core.Capability.Blocked));
+        Xunit.Assert.Equal("Noch nicht verfügbar", Trendo.Core.StudioRegistry.FriendlyLabel(Trendo.Core.Capability.SpecOnly));
+        Xunit.Assert.Equal("Noch nicht verfügbar", Trendo.Core.StudioRegistry.FriendlyLabel(Trendo.Core.Capability.Rejected));
+        Xunit.Assert.Null(Trendo.Core.StudioRegistry.FriendlyLabel(Trendo.Core.Capability.InProgress));
+    }
+}

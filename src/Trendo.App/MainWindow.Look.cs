@@ -110,7 +110,7 @@ public sealed partial class MainWindow
     // ---------- Hilfe: einfache Erklärungen ----------
     public static readonly IReadOnlyDictionary<string, string> HelpTexts = new Dictionary<string, string>
     {
-        ["studios"] = "Hier findest du alle Studios. Jedes Studio ist ein Arbeitsplatz für eine Aufgabe – zum Beispiel Briefe schreiben oder Videos schneiden. Was noch nicht fertig ist, steht als „Noch nicht gebaut“ da.",
+        ["studios"] = "Hier findest du alle Studios. Jedes Studio ist ein Arbeitsplatz für eine Aufgabe – zum Beispiel Briefe schreiben oder Videos schneiden. Was noch nicht fertig ist, steht als „Noch nicht verfügbar“ da.",
         ["projects"] = "Ein Projekt ist ein Ordner für eine Sache, an der du arbeitest. Lege ein Projekt an, und Trendo hält alles dazu beisammen.",
         ["approvals"] = "Manche Aktionen brauchen deine Erlaubnis, zum Beispiel ein Programm installieren. Hier siehst du, was auf deine Entscheidung wartet.",
         ["system"] = "Hier siehst du, ob alles in Ordnung ist: Systemcheck, Sicherungen und was Trendo zuletzt gemacht hat.",

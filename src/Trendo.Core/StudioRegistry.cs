@@ -49,6 +49,15 @@ public sealed class StudioRegistry
         }).ToList();
     }
 
+    /// <summary>Freundlicher Status für die Oberfläche – nur wo er hilft (null = nichts anzeigen, z. B. bei teilweise gebauten Studios).</summary>
+    public static string? FriendlyLabel(Capability c) => c switch
+    {
+        Capability.Ready => "Bereit",
+        Capability.Blocked => "Braucht ein Zusatzprogramm",
+        Capability.InProgress => null,
+        _ => "Noch nicht verfügbar",
+    };
+
     public static string GermanLabel(Capability c) => c switch
     {
         Capability.Ready => "Bereit",
