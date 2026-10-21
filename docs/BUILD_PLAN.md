@@ -174,7 +174,7 @@ Online-Business-Studio, Finanzen, Studio-Fusion, Erweiterungen
 | 2 | SPEC-11 | Business & Finance 2.0 | IMPLEMENTED | TESTED_BOX |
 | 3 | X-01 | Universal Studio Fusion & Autonomous Production | IMPLEMENTED | TESTED_BOX |
 | 4 | X-04 | Extension Marketplace & Studio Evolution | IMPLEMENTED | TESTED_BOX |
-| 5 | X-10 | Legal Clean-Room Software Reconstruction | NOT_STARTED | NOT_RUN |
+| 5 | X-10 | Legal Clean-Room Software Reconstruction | IMPLEMENTED | TESTED_BOX |
 
 Abnahmekriterien je Modul:
 - Modul im Studio-Layout erreichbar (max. 2 Navigationsebenen, deutsche Beschriftung)

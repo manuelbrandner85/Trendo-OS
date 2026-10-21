@@ -384,8 +384,9 @@ modules:
   name: Legal Clean-Room Software Reconstruction
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/X-10.txt
 - id: X-11
   name: Universal Creation & Productivity Suite
   approved_expansion_functions: BASE
