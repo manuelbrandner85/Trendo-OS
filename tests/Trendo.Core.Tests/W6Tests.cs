@@ -43,3 +43,24 @@ public class SPEC02_Electronics
         Assert.Contains("0,06", Electronics.BomCsv(bom));
     }
 }
+
+public class SPEC03_Engineering
+{
+    [Fact(DisplayName = "SPEC-03: Balken (4 Lagerungen), Querschnitte, Wärmedehnung, Einheiten")]
+    public void Calc()
+    {
+        var s = Engineering.Rect(100, 200); Assert.Equal(100.0 * 200 * 200 * 200 / 12, s.I); Assert.Equal(666666.67, s.W, 2);
+        var steel = Engineering.Mat("Baustahl");
+        // F=10 kN, L=4 m: M = 10 kNm; f = F L³/(48 E I)
+        var r = Engineering.Beam(BeamCase.EinfeldMitte, 4, 10, s, steel);
+        Assert.Equal(10, r.MaxMoment_kNm); Assert.Equal(15, r.Stress_MPa); Assert.Equal(Math.Round(10000 * Math.Pow(4000, 3) / (48 * 210000 * s.I), 2), r.Deflection_mm);
+        Assert.True(r.Ok);
+        Assert.Equal(20, Engineering.Beam(BeamCase.EinfeldStrecke, 4, 10, s, steel).MaxMoment_kNm);
+        Assert.Equal(40, Engineering.Beam(BeamCase.KragarmEnde, 4, 10, s, steel).MaxMoment_kNm);
+        Assert.False(Engineering.Beam(BeamCase.KragarmStrecke, 4, 10, Engineering.Rect(40, 40), Engineering.Mat("Fichte")).Ok);
+        var t = Engineering.Tube(50, 5); Assert.True(t.I < Engineering.Tube(50).I);
+        Assert.Equal(2.76, Engineering.ThermalExpansion(Engineering.Mat("Aluminium"), 3, 40));
+        Assert.Equal(6.894757, Engineering.Convert(100, "psi", "bar"), 5);
+        Assert.Throws<ArgumentException>(() => Engineering.Convert(1, "m", "bar"));
+    }
+}
