@@ -21,6 +21,7 @@ public partial class MainWindow
         InitW4Oss();
         InitW4Media();
         InitW4Studio3D();
+        InitW4Game();
     }
 
     private void RegisterTab(List<(string, string, string)> tabs, string key, string label, string module, Func<Control> view, params string[] words)
