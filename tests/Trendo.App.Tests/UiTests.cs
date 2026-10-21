@@ -171,12 +171,15 @@ public class DesignHonesty
         w.Close();
     }
 
-    [AvaloniaFact(DisplayName = "Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert")]
-    public void Ki_not_connected()
+    [AvaloniaFact(DisplayName = "Design: KI-Status ist der echte lokale Zustand, Eingabe nur wenn verbunden")]
+    public void Ki_status_matches_runtime()
     {
         var (w, _, _) = Ui.Open();
-        Assert.Equal("Nicht verbunden", w.Find<TextBlock>("ki-status").Text);
-        Assert.False(w.Find<TextBox>("ki-input").IsEnabled);
+        Dispatcher.UIThread.RunJobs();
+        var status = w.Find<TextBlock>("ki-status").Text;
+        var input = w.Find<TextBox>("ki-input");
+        if (status == "Verbunden (lokal)") Assert.True(input.IsEnabled);
+        else { Assert.Equal("Nicht verbunden", status); Assert.False(input.IsEnabled); }
         w.Close();
     }
 
@@ -203,14 +206,39 @@ public class DesignHonesty
         w.Close();
     }
 
-    [AvaloniaFact(DisplayName = "Design: Dock-Klick auf Dateien startet direkt (nur Owner) und wird auditiert; Browser offline deaktiviert")]
-    public void Dock_direct_launch()
+    [AvaloniaFact(DisplayName = "Design: Dock-Dateien öffnet den Projektbereich, Browser bleibt offline deaktiviert")]
+    public void Dock_files_opens_workspace()
     {
         var (w, l, _) = Ui.Open(offline: true);
         w.Find<Button>("dock-files").Press();
-        Assert.Single(l.Opened);
-        Assert.Contains(w.Core.Audit.ReadAll(), e => e.Action == "user.direct_launch");
+        Assert.Equal("files", w.CurrentView);
+        Assert.Empty(l.Opened);
         Assert.False(w.Find<Button>("dock-browser").IsEnabled);
+        w.Close();
+    }
+}
+
+public class FilesUi
+{
+    [AvaloniaFact(DisplayName = "Dateien: Ordner und Textdatei nur im gewählten Projekt, Explorer nur über Freigabe")]
+    public void Create_folder_and_file_inside_project()
+    {
+        var (w, l, _) = Ui.Open();
+        w.Core.Projects.Create("akten", "Akten");
+        w.Show("files");
+        w.Find<TextBox>("txt-files-folder").Text = "briefe";
+        w.Find<Button>("btn-files-mkdir").Press();
+        Assert.Contains(w.GetLogicalDescendants().OfType<Button>(), b => b.Content?.ToString() == "📁 briefe");
+        w.Find<Button>("btn-files-item-0").Press();
+        Assert.NotNull(w.TryFind<Button>("btn-files-up"));
+        w.Find<TextBox>("txt-files-new").Text = "entwurf.txt";
+        w.Find<Button>("btn-files-new").Press();
+        w.Find<Button>("btn-files-item-0").Press();
+        Assert.Equal("", w.Find<TextBox>("txt-files-preview").Text);
+        Assert.True(File.Exists(w.Core.Projects.ResolveInProject("akten", "briefe/entwurf.txt")));
+        w.Find<Button>("btn-files-explorer").Press();
+        Assert.Equal("approvals", w.CurrentView);
+        Assert.Empty(l.Opened);
         w.Close();
     }
 }

@@ -87,6 +87,53 @@ public class QA003_ProjectIsolation
     }
 }
 
+/// Dateien nur innerhalb der Projektwurzel
+public class FileWorkspace
+{
+    [Fact(DisplayName = "Dateien: Anlegen, Auflisten, Vorschau und Löschen bleiben im Projekt")]
+    public void List_preview_delete_stay_inside()
+    {
+        using var f = new Fixture();
+        f.Core.Projects.Create("projekt-a", "A");
+        f.Core.Projects.CreateFolder("projekt-a", "notizen");
+        f.Core.Projects.WriteFile("projekt-a", "notizen/hallo.txt", "Hallo Trendo");
+        var root = f.Core.Projects.List("projekt-a");
+        Assert.Contains(root, n => n.IsDirectory && n.Name == "notizen" && n.RelativePath == "notizen");
+        var inner = f.Core.Projects.List("projekt-a", "notizen");
+        Assert.Equal("notizen/hallo.txt", Assert.Single(inner).RelativePath);
+        Assert.Equal("Hallo Trendo", f.Core.Projects.ReadPreview("projekt-a", "notizen/hallo.txt"));
+        f.Core.Projects.Delete("projekt-a", "notizen/hallo.txt");
+        Assert.Empty(f.Core.Projects.List("projekt-a", "notizen"));
+        Assert.Contains(f.Core.Audit.ReadAll(), e => e.Action == "file.mkdir");
+        Assert.Contains(f.Core.Audit.ReadAll(), e => e.Action == "file.read");
+        Assert.Contains(f.Core.Audit.ReadAll(), e => e.Action == "file.delete");
+    }
+
+    [Fact(DisplayName = "Dateien: Ausbruch über Liste, Ordner und Löschen wird abgewiesen")]
+    public void Escape_via_workspace_denied()
+    {
+        using var f = new Fixture();
+        f.Core.Projects.Create("projekt-a", "A");
+        f.Core.Projects.Create("projekt-b", "B");
+        f.Core.Projects.WriteFile("projekt-b", "geheim.txt", "B");
+        Assert.Throws<ProjectIsolationException>(() => f.Core.Projects.List("projekt-a", "../"));
+        Assert.Throws<ProjectIsolationException>(() => f.Core.Projects.CreateFolder("projekt-a", "../fremd"));
+        Assert.Throws<ProjectIsolationException>(() => f.Core.Projects.Delete("projekt-a", "../../projekt-b/files/geheim.txt"));
+        Assert.Equal("B", f.Core.Projects.ReadFile("projekt-b", "geheim.txt"));
+    }
+
+    [Fact(DisplayName = "Dateien: Binärinhalt wird nicht als Textvorschau ausgegeben")]
+    public void Binary_preview_refused()
+    {
+        using var f = new Fixture();
+        f.Core.Projects.Create("projekt-a", "A");
+        var path = f.Core.Projects.ResolveInProject("projekt-a", "bild.bin");
+        File.WriteAllBytes(path, [0x00, 0x01, 0x02]);
+        Assert.Contains("Binär", f.Core.Projects.ReadPreview("projekt-a", "bild.bin"));
+        Assert.DoesNotContain(f.Core.Audit.ReadAll(), e => e.Action == "file.read");
+    }
+}
+
 /// QA-004: Berechtigungen / Approval-Gate
 public class QA004_ApprovalGate
 {

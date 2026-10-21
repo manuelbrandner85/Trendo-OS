@@ -1,6 +1,6 @@
 # Trendo OS
 
-**Status: P1 ACCEPTED (21.10.2026, mit offenen Punkten), P2 in Arbeit.** Ein erster Windows-Vertical-Slice (.NET 10 + Avalonia) baut ohne Warnungen und besteht 60 Tests (39 Core, 14 API, 7 UI) auf Windows; lokale API nur auf 127.0.0.1 mit Rollen-Tokens (siehe `reports/P1_TESTBERICHT.md`). Ein Benutzer-Installer ohne Adminrechte existiert (`installer/`); noch kein Release.
+**Status: P1 ACCEPTED (21.10.2026, mit offenen Punkten). Windows-App 0.5.0.** Ein Windows-Vertical-Slice (.NET 10 + Avalonia) mit lokaler API (nur 127.0.0.1), Rollen, Abhängigkeits-Manager und einem Dateibereich, der nur innerhalb des gewählten Projekts liest und schreibt. P2 (bootbares Linux) ist vorbereitet, aber blockiert: keine externe SSD angeschlossen, Distribution und Partition sind noch offen. Nachweise: `reports/P1_TESTBERICHT.md`. Installer ohne Adminrechte: `installer/`. Noch kein Release.
 
 Trendo OS ist ein geplantes, lokal arbeitendes, KI-unterstütztes Arbeits- und Produktionssystem mit dem integrierten Assistenten **Trendo**. Ein Produkt, drei Editionen:
 

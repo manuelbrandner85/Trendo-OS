@@ -10,7 +10,7 @@ public sealed class TrendoCore
     public ISecretStore Secrets { get; }
     public Integrations Integrations { get; }
     public StudioRegistry Studios { get; } = new();
-    public string Version => "0.2.0-p1";
+    public string Version => "0.5.0";
     /// <summary>Offline-Modus: alle netzwerkbezogenen Aktionen werden vom Core abgewiesen.</summary>
     public bool Offline { get; }
 

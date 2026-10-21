@@ -119,3 +119,13 @@ Lokale API (nur 127.0.0.1, Token im Credential Manager) und RBAC Owner/User/Gues
 
 ## 21.10.2026, 14:57 – P1 ACCEPTED
 P1 von Manuel abgenommen (Chat). Offene Punkte: QA-017 Narrator/Kontrast/Multi-Monitor NOT_RUN, QA-019 realer Offline-Lauf NOT_RUN, Code-Signatur fehlt. Phasenstatus in `requirements.yaml` (`phases`). P2 gestartet (IN_PROGRESS).
+
+## Nachtrag 21.10.2026 – Dateibereich 0.5.0 (Branch `feat/files-workspace`)
+P2 (Linux-USB/SSD) ist weiterhin blockiert: keine externe SSD angeschlossen, offene Entscheidungen 3 und 4 (Distribution, Partitionsplan). Es wurde kein Datenträger beschrieben und nichts an Windows-Boot, Registry oder Treibern geändert.
+
+Stattdessen der nächste sichere Schritt der Roadmap (Dateien, nur Projektisolation):
+- `ProjectStore.List` / `CreateFolder` / `Delete` / `ReadPreview` – nur unter `projects/<id>/files`, Ausbruch und Verknüpfungen nach außen abgewiesen, Aktionen im Audit.
+- Oberfläche „Dateien“ (Seitenleiste und Dock). Dock öffnet nicht mehr das Windows-Benutzerprofil.
+- Explorer-Start bleibt hinter der Freigabe.
+- Version der App: 0.5.0. Modulstatus in `requirements.yaml` bleibt `NOT_STARTED` (Generator setzt nichts auf gebaut).
+- Tests Release: Core 48/48, API 14/14, UI 17/17. Screenshot der Ansicht: `reports/files-workspace/screenshot.png` (Demodaten nur im temporären Datenordner, nicht im Repo).

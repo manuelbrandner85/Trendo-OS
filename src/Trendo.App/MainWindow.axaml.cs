@@ -55,6 +55,10 @@ public sealed class MainWindow : Window
     private Trendo.Api.LocalApi? _api;
     private Dictionary<string, Func<Control>> _showMap = new();
     private string? _studioFilter;
+    private string? _filesProject;
+    private string _filesDir = "";
+    private string? _filesPreview;
+    private string _filesMsg = "";
 
     public TrendoCore Core => _core;
     public string CurrentView { get; private set; } = "";
@@ -100,7 +104,7 @@ public sealed class MainWindow : Window
 
         _showMap = new()
         {
-            ["start"] = DesktopView, ["studios"] = StudiosView, ["projects"] = ProjectsView,
+            ["start"] = DesktopView, ["studios"] = StudiosView, ["projects"] = ProjectsView, ["files"] = FilesView,
             ["approvals"] = ApprovalsView, ["system"] = SystemView, ["apps"] = AppsView, ["ki"] = KiView, ["settings"] = SettingsView, ["components"] = ComponentsView, ["studio-deps"] = StudioDepsView, ["keys"] = KeysView,
         };
         string[] order = ["start", "studios", "projects", "approvals", "system"];
@@ -264,7 +268,7 @@ public sealed class MainWindow : Window
         var start = SideItem("side-start", "⌂", "Start", () => Show("start")); nav.Children.Add(start);
         foreach (var (label, glyph, filter) in Categories)
             nav.Children.Add(SideItem("side-" + label.ToLowerInvariant().Replace(' ', '-').Replace("&", "und"), glyph, label, () => { _studioFilter = filter; Show("studios"); }));
-        nav.Children.Add(SideItem("side-dateien", "🗂", "Dateien", () => Show("projects")));
+        nav.Children.Add(SideItem("side-dateien", "🗂", "Dateien", () => Show("files")));
         nav.Children.Add(SideItem("side-einstellungen", "⚙", "Einstellungen", () => Show("settings")));
         var quick = new StackPanel { Spacing = 1, Children = { H("Schnellzugriff", 13) } };
         quick.Children.Add(SideItem("quick-new-project", "＋", "Neues Projekt", () => Show("projects")));
@@ -445,7 +449,7 @@ public sealed class MainWindow : Window
     {
         var apps = new List<DockApp>
         {
-            new("files", "📁", "Dateien", () => Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)),
+            new("files", "📁", "Dateien", () => null),
             new("browser", "🌐", "Browser", () => _core.Offline ? null : "https://github.com/manuelbrandner85/Trendo-OS"),
             new("studios", "▦", "Studios", () => null),
             new("projects", "🗂", "Projekte", () => null),
@@ -462,6 +466,7 @@ public sealed class MainWindow : Window
                 {
                     case "studios": _studioFilter = null; Show("studios"); break;
                     case "projects": Show("projects"); break;
+                    case "files": Show("files"); break;
                     case "settings": Show("settings"); break;
                     default:
                         if (a.Target() is { } t) _core.Integrations.LaunchDirect(Principal.LocalOwner, t, _core.Audit);
@@ -513,14 +518,149 @@ public sealed class MainWindow : Window
         {
             var open = new Button { Name = "btn-open-folder-" + p.Id, Content = "Ordner im Explorer öffnen (Freigabe nötig)" };
             open.Click += (_, _) => { _core.Integrations.PlanOpenProjectFolder(Principal.LocalOwner, p.Id); Show("approvals"); };
+            var filesBtn = new Button { Name = "btn-project-files-" + p.Id, Content = "Dateien" };
+            var pid = p.Id;
+            filesBtn.Click += (_, _) => { _filesProject = pid; _filesDir = ""; _filesPreview = null; _filesMsg = ""; Show("files"); };
             sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12),
-                Child = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = p.Name, Foreground = Text }, P($"Angelegt {p.CreatedAt:dd.MM.yyyy HH:mm}"), open } } });
+                Child = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = p.Name, Foreground = Text }, P($"Angelegt {p.CreatedAt:dd.MM.yyyy HH:mm}"), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { filesBtn, open } } } } });
         }
         var url = new Button { Name = "btn-open-url", Content = "Trendo-Repository im Browser öffnen (Freigabe nötig)", IsEnabled = !_core.Offline };
         if (_core.Offline) ToolTip.SetTip(url, "Offline-Modus: deaktiviert");
         url.Click += (_, _) => { try { _core.Integrations.PlanOpenUrl(Principal.LocalOwner, "https://github.com/manuelbrandner85/Trendo-OS"); Show("approvals"); } catch (OfflineException ex) { msg.Text = ex.Message; } };
         sp.Children.Add(url);
         return Page("Projekte", sp);
+    }
+
+    private Control FilesView()
+    {
+        var sp = new StackPanel { Spacing = 8 };
+        var projects = _core.Projects.List();
+        if (projects.Count == 0)
+        {
+            sp.Children.Add(P("Noch kein Projekt. Dateien liegen nur innerhalb eines Projekts."));
+            var go = new Button { Name = "btn-files-new-project", Content = "Projekt anlegen" };
+            go.Click += (_, _) => Show("projects");
+            sp.Children.Add(go);
+            return Page("Dateien", sp);
+        }
+        if (_filesProject is null || projects.All(p => p.Id != _filesProject))
+            _filesProject = projects[0].Id;
+
+        var pick = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
+        foreach (var p in projects)
+        {
+            var id = p.Id;
+            var b = new Button { Name = "btn-files-project-" + id, Content = p.Name, Background = id == _filesProject ? Accent : Brushes.Transparent };
+            b.Click += (_, _) => { _filesProject = id; _filesDir = ""; _filesPreview = null; _filesMsg = ""; Show("files"); };
+            pick.Children.Add(b);
+        }
+        sp.Children.Add(pick);
+        sp.Children.Add(P(string.IsNullOrEmpty(_filesDir) ? _filesProject! : _filesProject + " / " + _filesDir, Text));
+
+        if (!string.IsNullOrEmpty(_filesDir))
+        {
+            var up = new Button { Name = "btn-files-up", Content = "Eine Ebene höher" };
+            up.Click += (_, _) =>
+            {
+                var t = _filesDir.Replace('\\', '/').Trim('/');
+                var i = t.LastIndexOf('/');
+                _filesDir = i < 0 ? "" : t[..i];
+                _filesPreview = null;
+                Show("files");
+            };
+            sp.Children.Add(up);
+        }
+
+        IReadOnlyList<ProjectStore.ProjectNode> nodes = [];
+        try { nodes = _core.Projects.List(_filesProject!, _filesDir); }
+        catch (Exception ex)
+        {
+            _filesMsg = ex.Message;
+            if (_filesDir.Length > 0) { _filesDir = ""; nodes = _core.Projects.List(_filesProject!, ""); }
+        }
+
+        if (nodes.Count == 0) sp.Children.Add(P("Dieser Ordner ist leer."));
+        for (var i = 0; i < nodes.Count; i++)
+        {
+            var n = nodes[i];
+            var rel = n.RelativePath;
+            var isDir = n.IsDirectory;
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+            var open = new Button { Name = "btn-files-item-" + i, Content = (isDir ? "📁 " : "📄 ") + n.Name };
+            open.Click += (_, _) =>
+            {
+                try
+                {
+                    if (isDir) { _filesDir = rel; _filesPreview = null; }
+                    else _filesPreview = _core.Projects.ReadPreview(_filesProject!, rel);
+                    _filesMsg = "";
+                }
+                catch (Exception ex) { _filesMsg = ex.Message; }
+                Show("files");
+            };
+            var del = new Button { Name = "btn-files-del-" + i, Content = "Löschen" };
+            del.Click += (_, _) =>
+            {
+                try { _core.Projects.Delete(_filesProject!, rel); _filesPreview = null; _filesMsg = ""; }
+                catch (Exception ex) { _filesMsg = ex.Message; }
+                Show("files");
+            };
+            row.Children.Add(open);
+            row.Children.Add(del);
+            if (!isDir) row.Children.Add(P(n.Bytes + " B", null, 11));
+            sp.Children.Add(row);
+        }
+
+        var folderName = new TextBox { Name = "txt-files-folder", PlaceholderText = "neuer-ordner", Width = 200 };
+        var mkdir = new Button { Name = "btn-files-mkdir", Content = "Ordner anlegen" };
+        mkdir.Click += (_, _) =>
+        {
+            try
+            {
+                var name = (folderName.Text ?? "").Trim();
+                if (name.Length == 0 || name.Contains('/') || name.Contains('\\') || name is "." or "..")
+                    _filesMsg = "Ordnername ohne Pfadtrenner angeben.";
+                else
+                {
+                    var rel = string.IsNullOrEmpty(_filesDir) ? name : _filesDir.TrimEnd('/') + "/" + name;
+                    _core.Projects.CreateFolder(_filesProject!, rel);
+                    _filesMsg = "";
+                }
+            }
+            catch (Exception ex) { _filesMsg = ex.Message; }
+            Show("files");
+        };
+        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { folderName, mkdir } });
+
+        var fileName = new TextBox { Name = "txt-files-new", PlaceholderText = "notiz.txt", Width = 200 };
+        var mk = new Button { Name = "btn-files-new", Content = "Textdatei anlegen" };
+        mk.Click += (_, _) =>
+        {
+            try
+            {
+                var name = (fileName.Text ?? "").Trim();
+                if (name.Length == 0 || name.Contains('/') || name.Contains('\\') || name is "." or "..")
+                    _filesMsg = "Dateiname ohne Pfadtrenner angeben.";
+                else
+                {
+                    var rel = string.IsNullOrEmpty(_filesDir) ? name : _filesDir.TrimEnd('/') + "/" + name;
+                    _core.Projects.WriteFile(_filesProject!, rel, "");
+                    _filesMsg = "";
+                }
+            }
+            catch (Exception ex) { _filesMsg = ex.Message; }
+            Show("files");
+        };
+        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { fileName, mk } });
+
+        var exp = new Button { Name = "btn-files-explorer", Content = "Projektordner im Explorer öffnen (Freigabe nötig)" };
+        var current = _filesProject!;
+        exp.Click += (_, _) => { _core.Integrations.PlanOpenProjectFolder(Principal.LocalOwner, current); Show("approvals"); };
+        sp.Children.Add(exp);
+        if (!string.IsNullOrEmpty(_filesMsg)) sp.Children.Add(new TextBlock { Name = "txt-files-msg", Text = _filesMsg, Foreground = Brushes.OrangeRed, TextWrapping = TextWrapping.Wrap });
+        if (_filesPreview is not null)
+            sp.Children.Add(new TextBox { Name = "txt-files-preview", Text = _filesPreview, IsReadOnly = true, AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 80 });
+        return Page("Dateien", sp);
     }
 
     private Control ApprovalsView()
@@ -753,7 +893,7 @@ public sealed class MainWindow : Window
             using var h = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
             using var rq = new HttpRequestMessage(HttpMethod.Get, url);
             rq.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", key);
-            rq.Headers.UserAgent.ParseAdd("TrendoOS/0.4");
+            rq.Headers.UserAgent.ParseAdd("TrendoOS/0.5");
             using var r = await h.SendAsync(rq);
             return r.IsSuccessStatusCode;
         }
