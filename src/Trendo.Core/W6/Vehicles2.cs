@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 namespace Trendo.Core;
 
 /// <summary>SPEC-16 Ausbau: E-Auto, Steuer (Pendlerpauschale, 1-%-Regel), Kilometergeld, Reifen, Kosten.
-/// Steuerwerte: Stand 2026, ohne Gewähr – Auskunft gibt das Finanzamt oder die Steuerberatung.</summary>
+/// Steuerwerte mit Quellen in LegalRates (geprüft 21.10.2026), ohne Gewähr – Auskunft gibt das Finanzamt oder die Steuerberatung.</summary>
 public static partial class VehiclePlus
 {
     /// <summary>F05: Verbrauch eines E-Autos (Ladung inkl. Ladeverlust) und Vergleich mit einem Verbrenner je 100 km.</summary>
@@ -15,29 +15,34 @@ public static partial class VehiclePlus
         var ev = Math.Round(k * price, 2); var ice = Math.Round(icePer100 * fuelPrice, 2); return (k, ev, ice, Math.Round(ice - ev, 2));
     }
 
-    /// <summary>F14: Entfernungspauschale für ein Jahr. Ab 2026: 0,38 € ab dem ersten km; 2022–2025: 0,30 € bis 20 km, 0,38 € ab km 21.
-    /// Höchstbetrag 4.500 € gilt nicht bei eigenem Auto.</summary>
+    /// <summary>F14: Entfernungspauschale für ein Jahr nach § 9 Abs. 1 Satz 3 Nr. 4 EStG – Sätze und Quellen in <see cref="LegalRates.CommuteRates"/>.</summary>
     public static double Commute(double oneWayKm, int days, int year = 2026, bool ownCar = true)
     {
         if (oneWayKm < 0 || days < 0) throw new ArgumentException("Entfernung und Tage dürfen nicht negativ sein.");
-        var km = Math.Floor(oneWayKm);
-        var perDay = year >= 2026 ? km * 0.38 : year >= 2022 ? Math.Min(km, 20) * 0.30 + Math.Max(0, km - 20) * 0.38 : km * 0.30;
-        var total = perDay * days; return Math.Round(ownCar ? total : Math.Min(total, 4500), 2);
+        var km = Math.Floor(oneWayKm); var (r1, r2) = LegalRates.CommuteRates(year);
+        var total = (Math.Min(km, 20) * r1 + Math.Max(0, km - 20) * r2) * days; return Math.Round(ownCar ? total : Math.Min(total, LegalRates.CommuteCap), 2);
     }
 
-    /// <summary>F15: geldwerter Vorteil nach 1-%-Regel (je Jahr) gegen Fahrtenbuch-Methode.
-    /// kind: „verbrenner“ = 1 %, „hybrid“ = 0,5 %, „elektro“ = 0,25 % bis zur Preisgrenze, darüber 0,5 %.</summary>
-    public static (double OnePercent, double Logbook, string Better) CompanyCar(double listPrice, string kind, double commuteKm, double yearCost, double privateSharePct, double evLimit = 100_000)
+    /// <summary>F15: geldwerter Vorteil je Jahr nach 1-%-Regel gegen Fahrtenbuch (§ 6 Abs. 1 Nr. 4 EStG, Quellen in <see cref="LegalRates"/>).
+    /// kind: verbrenner = voller, hybrid = halber (nur wenn die Reichweiten-/CO₂-Bedingungen erfüllt sind), elektro = ¼ bis zur Preisgrenze je Anschaffungsdatum, sonst ½ Listenpreis.
+    /// Vereinfachung: Beim Fahrtenbuch wird der Privatanteil der eingegebenen Gesamtkosten genommen; die Kürzung der AfA bei E-/Hybridautos muss dort schon berücksichtigt sein.</summary>
+    public static (double OnePercent, double Logbook, string Better) CompanyCar(double listPrice, string kind, double commuteKm, double yearCost, double privateSharePct, DateOnly? acquired = null)
     {
-        var f = kind.Trim().ToLowerInvariant() switch { "verbrenner" or "benzin" or "diesel" => 1.0, "hybrid" => 0.5, "elektro" or "e" => listPrice <= evLimit ? 0.25 : 0.5, _ => throw new ArgumentException("Antrieb: verbrenner, hybrid oder elektro.") };
-        var basis = Math.Floor(listPrice * f / 100) * 100; // Listenpreis (anteilig bei E/Hybrid), auf volle 100 € abgerundet
+        var f = kind.Trim().ToLowerInvariant() switch { "verbrenner" or "benzin" or "diesel" => 1.0, "hybrid" => 0.5, "elektro" or "e" => listPrice <= LegalRates.EvPriceLimit(acquired ?? new DateOnly(2026, 1, 1)) ? 0.25 : 0.5, _ => throw new ArgumentException("Antrieb: verbrenner, hybrid oder elektro.") };
+        var basis = Math.Floor(listPrice * f / 100) * 100; // erst Bruchteil, dann auf volle 100 € abrunden (BMF 05.11.2021 Rz. 12)
         var one = Math.Round(12 * (basis * 0.01 + basis * 0.0003 * commuteKm), 2);
         var log = Math.Round(yearCost * privateSharePct / 100, 2);
         return (one, log, one <= log ? "1-%-Regel" : "Fahrtenbuch");
     }
 
-    /// <summary>F16: Kilometergeld (Auto 0,30 €/km, Motorrad/Roller 0,20 €/km).</summary>
-    public static double Mileage(double km, bool motorbike = false, double? rate = null) => Math.Round(km * (rate ?? (motorbike ? 0.20 : 0.30)), 2);
+    /// <summary>F16: Kilometergeld. Steuerfrei erstattbar/absetzbar nach § 9 Abs. 1 Satz 3 Nr. 4a EStG: Auto 0,30 €/km, Motorrad/Roller 0,20 €/km.
+    /// <paramref name="brkg"/> = Bundesreisekostengesetz § 5 (öffentlicher Dienst): 0,20 €/km bis 130 € je Reise, 0,30 €/km bei erheblichem dienstlichen Interesse.</summary>
+    public static double Mileage(double km, bool motorbike = false, double? rate = null, bool brkg = false, bool significantInterest = false)
+    {
+        if (rate is { } r) return Math.Round(km * r, 2);
+        if (brkg) return significantInterest && !motorbike ? Math.Round(km * LegalRates.BrkgLarge, 2) : Math.Round(Math.Min(km * LegalRates.BrkgSmall, LegalRates.BrkgSmallCap), 2);
+        return Math.Round(km * (motorbike ? LegalRates.TravelOtherMotor : LegalRates.TravelCar), 2);
+    }
 
     [GeneratedRegex(@"(\d{2})(\d{2})\s*$")] private static partial Regex Dot();
     /// <summary>F17: Reifenalter aus der DOT-Nummer (letzte 4 Ziffern = Woche, Jahr) und Profiltiefe.</summary>

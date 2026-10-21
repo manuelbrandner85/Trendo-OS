@@ -551,9 +551,9 @@ public class SPEC15_Plus
 public class SPEC16_Plus
 {
     [Fact(DisplayName = "SPEC-16 F05: E-Auto")] public void F05() { using var f = new Fixture(); var b = new VehicleBook(f.Root); b.Add("Zoe", "", true); b.Refuel("Zoe", new DateTime(2026, 1, 1), 1000, 40, 0.4); b.Refuel("Zoe", new DateTime(2026, 1, 9), 1200, 36, 0.4); var e = VehiclePlus.Ev(b.Get("Zoe"), 6, 1.8); Assert.Equal((18.0, 7.2, 10.8, 3.6), e); b.Add("Golf"); Assert.Throws<ArgumentException>(() => VehiclePlus.Ev(b.Get("Golf"), 6, 1.8)); }
-    [Fact(DisplayName = "SPEC-16 F14: Pendlerpauschale")] public void F14() { Assert.Equal(2280, VehiclePlus.Commute(30, 200)); Assert.Equal(1960, VehiclePlus.Commute(30.9, 200, 2025)); Assert.Equal(4500, VehiclePlus.Commute(100, 220, 2026, ownCar: false)); }
-    [Fact(DisplayName = "SPEC-16 F15: 1-%-Regel")] public void F15() { var c = VehiclePlus.CompanyCar(40000, "verbrenner", 20, 8000, 30); Assert.Equal((7680.0, 2400.0, "Fahrtenbuch"), c); Assert.Equal(1920, VehiclePlus.CompanyCar(40000, "elektro", 20, 8000, 30).OnePercent); Assert.Equal(12 * (600 + 180.0), VehiclePlus.CompanyCar(120000, "elektro", 10, 1, 1).OnePercent); }
-    [Fact(DisplayName = "SPEC-16 F16: Kilometergeld")] public void F16() { Assert.Equal(37.5, VehiclePlus.Mileage(125)); Assert.Equal(25, VehiclePlus.Mileage(125, true)); }
+    [Fact(DisplayName = "SPEC-16 F14: Pendlerpauschale")] public void F14() { Assert.Equal(2280, VehiclePlus.Commute(30, 200)); Assert.Equal(1960, VehiclePlus.Commute(30.9, 200, 2025)); Assert.Equal(4500, VehiclePlus.Commute(100, 220, 2026, ownCar: false)); Assert.Equal(1900, VehiclePlus.Commute(30, 200, 2021)); Assert.Equal(1800, VehiclePlus.Commute(30, 200, 2020)); }
+    [Fact(DisplayName = "SPEC-16 F15: 1-%-Regel")] public void F15() { var c = VehiclePlus.CompanyCar(40000, "verbrenner", 20, 8000, 30); Assert.Equal((7680.0, 2400.0, "Fahrtenbuch"), c); Assert.Equal(1920, VehiclePlus.CompanyCar(40000, "elektro", 20, 8000, 30).OnePercent); Assert.Equal(12 * (600 + 180.0), VehiclePlus.CompanyCar(120000, "elektro", 10, 1, 1).OnePercent); Assert.Equal(12 * (400 + 120.0), VehiclePlus.CompanyCar(80000, "elektro", 10, 1, 1, new DateOnly(2025, 6, 30)).OnePercent); Assert.Equal(12 * (200 + 60.0), VehiclePlus.CompanyCar(80000, "elektro", 10, 1, 1, new DateOnly(2025, 7, 1)).OnePercent); Assert.Equal(12 * 88.0, VehiclePlus.CompanyCar(35326, "elektro", 0, 1, 1).OnePercent); }
+    [Fact(DisplayName = "SPEC-16 F16: Kilometergeld")] public void F16() { Assert.Equal(37.5, VehiclePlus.Mileage(125)); Assert.Equal(25, VehiclePlus.Mileage(125, true)); Assert.Equal(130, VehiclePlus.Mileage(800, brkg: true)); Assert.Equal(240, VehiclePlus.Mileage(800, brkg: true, significantInterest: true)); }
     [Fact(DisplayName = "SPEC-16 F17: Reifen")] public void F17() { var t = VehiclePlus.Tire("DOT XX 2319", 2.5, true, new DateTime(2026, 10, 21)); Assert.Equal(new DateTime(2019, 6, 3), t.Made); Assert.Equal(7.4, t.AgeYears); Assert.Equal(2, t.Advice.Count); Assert.Equal(["In Ordnung."], VehiclePlus.Tire("0124", 6, false, new DateTime(2026, 10, 21)).Advice); Assert.Throws<FormatException>(() => VehiclePlus.Tire("6019", 5, false, DateTime.Today)); }
     [Fact(DisplayName = "SPEC-16 F18: Fahrtkosten teilen")] public void F18() { Assert.Equal((64.0, 16.0), VehiclePlus.Share(500, 6, 1.8, 4, 10)); }
     [Fact(DisplayName = "SPEC-16 F19: Ladezeit")] public void F19() { var c = VehiclePlus.ChargeTime(60, 10, 80, 11, 22); Assert.Equal(46.7, c.Kwh); Assert.Equal(46.6667 / 11, c.Time.TotalHours, 3); var f = VehiclePlus.ChargeTime(60, 80, 100, 11, 11); Assert.Equal(13.3333 / 5.5, f.Time.TotalHours, 3); }
@@ -575,4 +575,15 @@ public class CORE09_Plus
     [Fact(DisplayName = "CORE-09 F18: Reichweite")] public void F18() { var r = ArmPlus.Reach(new ArmConfig(), 60, 40); Assert.Contains('#', r.Map); Assert.Equal('O', r.Map.Split('\n')[6][6]); Assert.True(r.MaxRadius <= 240); Assert.True(r.ReachablePct is > 30 and < 80); }
     [Fact(DisplayName = "CORE-09 F19: Servo-Pulse")] public void F19() { Assert.Equal(1500, ArmPlus.ServoPulse(90)); Assert.Equal(1000, ArmPlus.ServoPulse(-45, -90, 90, 500, 2500)); Assert.Throws<ArgumentException>(() => ArmPlus.ServoPulse(200)); }
     [Fact(DisplayName = "CORE-09 F20: Fahrprofil")] public void F20() { var t = ArmPlus.Profile(100, 50, 100); Assert.Equal((0.5, 1.5, 2.5, false), (t.AccelTime, t.CruiseTime, t.Total, t.Triangle)); var d = ArmPlus.Profile(10, 50, 100); Assert.True(d.Triangle); Assert.Equal(Math.Round(2 * Math.Sqrt(0.1), 4), d.Total); }
+}
+
+public class LegalRatesTests
+{
+    [Fact(DisplayName = "Rechtswerte: Kleinunternehmer § 19 UStG und Umsatzsteuersätze")] public void Rates()
+    {
+        Assert.Equal((19m, 7m), (LegalRates.VatStandard, LegalRates.VatReduced));
+        Assert.True(LegalRates.SmallBusiness(25000, 100000).Ok); Assert.False(LegalRates.SmallBusiness(25001, 1000).Ok); Assert.False(LegalRates.SmallBusiness(0, 100001).Ok);
+        Assert.True(LegalRates.SmallBusiness(0, 25000, true).Ok); Assert.False(LegalRates.SmallBusiness(0, 25001, true).Ok);
+        Assert.Equal(70000, LegalRates.EvPriceLimit(new DateOnly(2024, 1, 1))); Assert.Equal(60000, LegalRates.EvPriceLimit(new DateOnly(2023, 12, 31)));
+    }
 }
