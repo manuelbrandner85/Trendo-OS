@@ -1,0 +1,4 @@
+Nachweis X-04 – Linux-Box (nicht Windows-PC), 21.10.2026 21:25 MESZ, Commit-Basis 08eba55
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 705 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   153, Skipped:     0, Total:   153, Duration: 14 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:    57, Skipped:     0, Total:    57, Duration: 18 s - Trendo.App.Tests.dll (net10.0)

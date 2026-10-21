@@ -340,8 +340,9 @@ modules:
   name: Extension Marketplace & Studio Evolution
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/X-04.txt
 - id: X-05
   name: Free AI Discovery & Fallback
   approved_expansion_functions: BASE
