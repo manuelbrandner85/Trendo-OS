@@ -58,8 +58,9 @@ modules:
   name: Trendo Intelligence Core
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w23/CORE-02.md
 - id: CORE-03
   name: AI Agent Command Center – 12 roles
   approved_expansion_functions: BASE

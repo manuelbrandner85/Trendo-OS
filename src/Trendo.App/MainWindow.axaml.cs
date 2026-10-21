@@ -120,7 +120,7 @@ public sealed partial class MainWindow : Window
             var key = order[i];
             KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.D1 + i, KeyModifiers.Control), Command = new RelayCommand(() => Show(key)) });
         }
-        InitWave1(); InitWave45(); _query = opt.Query ?? "";
+        InitWave1(); InitWave45(); InitWave23(); _query = opt.Query ?? "";
         InitSetup(opt);
         Show(opt.Page ?? (NeedsSetup(opt) ? "einrichtung" : "start"));
         RefreshStatusBar();
@@ -811,7 +811,7 @@ public sealed partial class MainWindow : Window
     }
 
     private Control KiView() => Page("KI", new StackPanel { Spacing = 6, Children = {
-        KiModelChooser(),
+        KiNav(), KiModelChooser(),
         P(_kiConnected ? $"Die KI läuft auf diesem PC (Modell {KiModelName}). Nichts geht ins Internet, nichts kostet extra." : "Die KI ist noch nicht eingerichtet. Unter „Zusatzprogramme“ installiert Trendo sie kostenlos mit einem Klick.", Text),
         Nav2("Zusatzprogramme öffnen", "components") } });
 

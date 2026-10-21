@@ -387,8 +387,8 @@
   "order": 1,
   "id": "CORE-02",
   "name": "Trendo Intelligence Core",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -541,8 +541,8 @@
   "order": 1,
   "id": "CORE-07",
   "name": "Ultimate App & Software Development Studio 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
