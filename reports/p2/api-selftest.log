@@ -1,0 +1,3 @@
+PASS  Fremder Host-Header: erwartet 421, erhalten 421
+PASS  Token nicht im Audit-Log
+ERGEBNIS: ALLE BESTANDEN

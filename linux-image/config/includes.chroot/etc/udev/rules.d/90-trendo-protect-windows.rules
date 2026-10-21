@@ -1,0 +1,4 @@
+# Trendo OS: Windows-/BitLocker-Partitionen werden NICHT automatisch eingebunden oder im Dateimanager angeboten.
+# Schutz der internen Windows-Installation (SYSTEMBIBEL §2 Edition 2, QA-018). Manueller Zugriff nur bewusst per root.
+SUBSYSTEM=="block", ENV{ID_FS_TYPE}=="ntfs|ntfs3|BitLocker|exfat_bitlocker", ENV{UDISKS_IGNORE}="1", ENV{UDISKS_AUTO}="0"
+SUBSYSTEM=="block", ENV{ID_PART_ENTRY_TYPE}=="e3c9e316-0b5c-4db8-817d-f92df00215ae|de94bba4-06d1-4d40-a16a-bfd50179d6ac", ENV{UDISKS_IGNORE}="1", ENV{UDISKS_AUTO}="0"

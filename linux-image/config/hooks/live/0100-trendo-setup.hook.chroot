@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+# Deutsche Lokalisierung
+sed -i 's/^# *de_DE.UTF-8/de_DE.UTF-8/' /etc/locale.gen
+locale-gen
+echo 'LANG=de_DE.UTF-8' > /etc/default/locale
+# Trendo-Programm ausführbar machen und Version protokollieren
+chmod 0755 /opt/trendo/TrendoOS
+echo "Trendo OS Linux-Edition (P2-Vorschau) – $(date -u +%Y-%m-%dT%H:%MZ)" > /etc/trendo-release
+# Kein automatisches Einbinden von Windows-Partitionen (siehe udev-Regel)
