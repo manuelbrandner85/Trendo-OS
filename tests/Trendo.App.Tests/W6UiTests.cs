@@ -451,3 +451,29 @@ public class SPEC09_UiPlus
         W6Ui.Run(w, "scan-xyz", ("file", f)); Assert.True(File.Exists(Path.Combine(root, "b.export.xyz")));
     }
 }
+
+public class SPEC10_UiPlus
+{
+    [AvaloniaFact(DisplayName = "SPEC-10 UI Ausbau: Auswerten und Verwalten")]
+    public void Plus()
+    {
+        var (w, _, _) = Ui.Open(); var t = new DateTime(2026, 10, 21, 10, 0, 0);
+        w.Twin.Define("Heizung", "Vorlauf", "°C", 70, 80);
+        foreach (var (h, v) in new[] { (0, 60.0), (1, 72), (2, 69), (3, 60) }) w.Twin.Record(t.AddHours(h), "Heizung", "Vorlauf", v);
+        w.Show(MainWindow.StudioPages["SPEC-10"]);
+        Assert.Equal(2, W6Ui.Run(w, "twin-events").Split('\n').Length);
+        Assert.Contains("max 72,00", W6Ui.Run(w, "twin-span", ("from", "21.10.2026"), ("to", "21.10.2026")));
+        Assert.Contains("3,0 Stunden", W6Ui.Run(w, "twin-hours"));
+        Assert.Contains("etwa", W6Ui.Run(w, "twin-fc"));
+        Assert.Contains("⚠ Heizung", W6Ui.Run(w, "twin-stale"));
+        Assert.Contains("4 Werte", W6Ui.Run(w, "twin-derive"));
+        Assert.True(File.Exists(W6Ui.Run(w, "twin-export").Replace("Gespeichert: ", "")));
+        Assert.Contains("Umbenannt", W6Ui.Run(w, "twin-rename", ("sensor", "Vorlauf °F"), ("new", "VL F")));
+        Assert.Contains("Bestätigung", W6Ui.Run(w, "twin-del", ("sensor", "VL F")));
+        Assert.Contains("4 Werte", W6Ui.Run(w, "twin-del", ("sensor", "VL F"), ("confirm", "vl f")));
+        Assert.Contains("noch 300 h", W6Ui.Run(w, "twin-maint"));
+        Assert.Contains("2 alte Werte", W6Ui.Run(w, "twin-trim", ("max", "2")));
+        w.Twin.Define("Solar", "Leistung", "kW"); w.Twin.Record(t, "Solar", "Leistung", 2); w.Twin.Record(t.AddHours(2), "Solar", "Leistung", 4);
+        Assert.Contains("6,00 kWh", W6Ui.Run(w, "twin-kwh"));
+    }
+}

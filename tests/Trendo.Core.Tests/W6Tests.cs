@@ -490,3 +490,21 @@ public class SPEC09_Plus
     [Fact(DisplayName = "SPEC-09 F19: Drehen")] public void F19() { var pc = new PointCloud(); pc.Points.Add(new(1, 0, 3)); var r = ScanPlus.RotateZ(pc, 90).Points[0]; Assert.Equal((0.0, 1.0, 3.0), (r.X, r.Y, r.Z)); }
     [Fact(DisplayName = "SPEC-09 F20: Zusammenführen")] public void F20() { var m = ScanPlus.Merge(Grid(2, 1), Grid(3, 1)); Assert.Equal(13, m.Points.Count); Assert.Null(m.Colors); }
 }
+
+public class SPEC10_Plus
+{
+    static readonly DateTime T = new(2026, 10, 21, 10, 0, 0);
+    static TwinHub Hub(Fixture f, params double[] v) { var h = new TwinHub(f.Root); h.Define("Heizung", "Vorlauf", "°C", 70, 80); for (var i = 0; i < v.Length; i++) h.Record(T.AddHours(i), "Heizung", "Vorlauf", v[i], false); h.Save(); return h; }
+    [Fact(DisplayName = "SPEC-10 F09: Speichergrenze")] public void F09() { using var f = new Fixture(); var h = Hub(f, 1, 2, 3, 4, 5); Assert.Equal(3, TwinPlus.Trim(h.Model, 2)); Assert.Equal([4.0, 5.0], h.Model.Readings.Select(r => r.Value)); Assert.Equal(0, TwinPlus.Trim(h.Model, 9)); }
+    [Fact(DisplayName = "SPEC-10 F10: Ereignisprotokoll")] public void F10() { using var f = new Fixture(); var e = TwinPlus.Events(Hub(f, 60, 72, 85, 65).Model, "Heizung", "Vorlauf"); Assert.Equal(3, e.Count); Assert.Equal((TwinLevel.Ok, TwinLevel.Warnung), (e[0].From, e[0].To)); Assert.Equal(T.AddHours(2), e[1].Time); Assert.Equal(TwinLevel.Ok, e[2].To); }
+    [Fact(DisplayName = "SPEC-10 F11: Hysterese")] public void F11() { using var f = new Fixture(); var m = Hub(f, 60, 72, 68, 64).Model; Assert.Equal(T.AddHours(2), TwinPlus.Events(m, "Heizung", "Vorlauf")[1].Time); var e = TwinPlus.Events(m, "Heizung", "Vorlauf", 5); Assert.Equal(2, e.Count); Assert.Equal(T.AddHours(3), e[1].Time); }
+    [Fact(DisplayName = "SPEC-10 F12: Zeitraum-Kennzahlen")] public void F12() { using var f = new Fixture(); var s = TwinPlus.Span(Hub(f, 10, 20, 30, 40).Model.Readings, T.AddHours(1), T.AddHours(3)); Assert.Equal((3, 20.0, 40.0, 30.0), (s.Count, s.Min, s.Max, s.Mean)); }
+    [Fact(DisplayName = "SPEC-10 F13: Betriebsstunden")] public void F13() { using var f = new Fixture(); var h = Hub(f, 0, 5, 5, 0, 5); Assert.Equal(2, TwinPlus.HoursAbove(TwinPlus.Series(h.Model, "Heizung", "Vorlauf"), 1)); }
+    [Fact(DisplayName = "SPEC-10 F14: Veraltete Sensoren")] public void F14() { using var f = new Fixture(); var h = Hub(f, 1, 2); h.Define("Pumpe", "Druck", "bar"); var s = TwinPlus.Stale(h.Model, T.AddHours(1.5), 60); Assert.Single(s); Assert.Equal("Pumpe", s[0].Asset); Assert.Equal(2, TwinPlus.Stale(h.Model, T.AddHours(3), 60).Count); }
+    [Fact(DisplayName = "SPEC-10 F15: Abgeleiteter Sensor")] public void F15() { using var f = new Fixture(); var h = Hub(f, 0, 100); Assert.Equal(2, TwinPlus.Derive(h, "Heizung", "Vorlauf", "Vorlauf °F", "°F", 1.8, 32)); Assert.Equal([32.0, 212.0], TwinPlus.Series(new TwinHub(f.Root).Model, "Heizung", "Vorlauf °F").Select(r => r.Value)); }
+    [Fact(DisplayName = "SPEC-10 F16: Export")] public void F16() { using var f = new Fixture(); var c = TwinPlus.ExportCsv(Hub(f, 1.5).Model, "Heizung", "Vorlauf"); Assert.Equal("Zeit;Anlage;Sensor;Wert\n2026-10-21T10:00:00;Heizung;Vorlauf;1,5\n", c); var h2 = new TwinHub(new Fixture().Root); Assert.Equal((1, 0), h2.Import(c)); }
+    [Fact(DisplayName = "SPEC-10 F17: Sensor löschen/umbenennen")] public void F17() { using var f = new Fixture(); var h = Hub(f, 1, 2); TwinPlus.Rename(h, "Heizung", "Vorlauf", "VL"); Assert.Equal(2, TwinPlus.Series(h.Model, "Heizung", "VL").Count); Assert.Equal(2, TwinPlus.Delete(h, "Heizung", "VL")); Assert.Empty(new TwinHub(f.Root).Model.Assets); Assert.Throws<ArgumentException>(() => TwinPlus.Delete(h, "Heizung", "VL")); }
+    [Fact(DisplayName = "SPEC-10 F18: Wartungsplan")] public void F18() { Assert.Equal((1500.0, 300.0, false), TwinPlus.Maintenance(1200, 500, 1000)); Assert.True(TwinPlus.Maintenance(600, 500).Due); }
+    [Fact(DisplayName = "SPEC-10 F19: Was-wäre-wenn")] public void F19() { using var f = new Fixture(); var h = Hub(f, 60, 62, 64); Assert.Equal(112, TwinPlus.Forecast(TwinPlus.Series(h.Model, "Heizung", "Vorlauf"), 24), 6); }
+    [Fact(DisplayName = "SPEC-10 F20: Energie")] public void F20() { using var f = new Fixture(); var h = Hub(f, 2, 4, 4); Assert.Equal(7, TwinPlus.EnergyKwh(TwinPlus.Series(h.Model, "Heizung", "Vorlauf")), 9); }
+}

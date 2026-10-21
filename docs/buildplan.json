@@ -954,7 +954,7 @@
   "id": "SPEC-10",
   "name": "Digital Twin 2.0",
   "impl": "IMPLEMENTED",
-  "test": "PC_VERIFIED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },

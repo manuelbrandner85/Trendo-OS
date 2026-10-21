@@ -14,7 +14,7 @@ public sealed class TwinHub(string dataRoot)
 {
     public const int MaxReadings = 200_000;
     public TwinModel Model { get; } = Fach.Load<TwinModel>(dataRoot, "zwilling", "modell");
-    public void Save() { if (Model.Readings.Count > MaxReadings) Model.Readings.RemoveRange(0, Model.Readings.Count - MaxReadings); Fach.Save(dataRoot, "zwilling", "modell", Model); }
+    public void Save() { TwinPlus.Trim(Model, MaxReadings); Fach.Save(dataRoot, "zwilling", "modell", Model); }
 
     public TwinSensor Define(string asset, string sensor, string unit, double warnAbove = double.NaN, double alarmAbove = double.NaN, double warnBelow = double.NaN, double alarmBelow = double.NaN, string kind = "")
     {
