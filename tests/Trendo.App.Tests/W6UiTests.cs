@@ -189,3 +189,19 @@ public class SPEC13_Ui
         Assert.Contains("504", W6Ui.Run(w, "geo-dist"));
     }
 }
+
+public class SPEC14_Ui
+{
+    [AvaloniaFact(DisplayName = "SPEC-14 UI: G-Code prüfen mit Vorschau, Schnittwerte")]
+    public void Cnc()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        var f = Path.Combine(root, "teil.nc"); File.WriteAllText(f, "G21 G90\nT2 M6\nG0 X0 Y0 Z5\nG1 Z-1 F200\nG1 X50 Y0 F1200\nX50 Y50\nG0 Z5\n");
+        w.Show(MainWindow.StudioPages["SPEC-14"]);
+        var o = W6Ui.Run(w, "cnc-check", ("file", f));
+        Assert.Contains("✓ Keine Auffälligkeiten", o); Assert.Contains("T2", o); Assert.Contains("50,0 × 50,0 mm", o);
+        Assert.True(File.Exists(Path.Combine(root, "teil.vorschau.svg")));
+        Assert.Contains("⚠", W6Ui.Run(w, "cnc-check", ("x", "10")));
+        Assert.Contains("13.263 U/min", W6Ui.Run(w, "cnc-feeds"));
+    }
+}
