@@ -149,7 +149,7 @@ Abnahmekriterien je Modul:
 | Reihenfolge | Modul | Name | Umsetzung | Test |
 |---|---|---|---|---|
 | 1 | CORE-07 | Ultimate App & Software Development Studio 2.0 | IMPLEMENTED | TESTED_BOX |
-| 2 | X-06 | GitHub Open-Source Integration | NOT_STARTED | NOT_RUN |
+| 2 | X-06 | GitHub Open-Source Integration | IMPLEMENTED | TESTED_BOX |
 | 3 | CORE-08 | Ultimate Creative & Media Studio 2.0 | NOT_STARTED | NOT_RUN |
 | 4 | CORE-05 | Ultimate 3D Creation Studio 2.0 | NOT_STARTED | NOT_RUN |
 | 5 | CORE-06 | Ultimate Game Development Studio 2.0 | NOT_STARTED | NOT_RUN |

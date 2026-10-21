@@ -329,8 +329,9 @@ modules:
   name: GitHub Open-Source Integration
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/X-06.txt
 - id: X-07
   name: Global Free Asset Discovery
   approved_expansion_functions: BASE

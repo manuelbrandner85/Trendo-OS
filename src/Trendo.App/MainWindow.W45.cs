@@ -18,6 +18,7 @@ public partial class MainWindow
     private void InitWave45()
     {
         InitW4Dev();
+        InitW4Oss();
     }
 
     private void RegisterTab(List<(string, string, string)> tabs, string key, string label, string module, Func<Control> view, params string[] words)
