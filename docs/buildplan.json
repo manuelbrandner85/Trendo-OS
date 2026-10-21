@@ -732,26 +732,26 @@
    {
     "id": "BUS-017",
     "title": "Accounts, Membership & Multi-Tenant Engine",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-018",
     "title": "Payments, Billing & Subscription Integration",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-019",
     "title": "Business Admin, CRM & Operations Center",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-020",
     "title": "Product Delivery, Supplier & White-Label Engine",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-021",
@@ -768,20 +768,20 @@
    {
     "id": "BUS-023",
     "title": "Customer Support & Service Center",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-024",
     "title": "Business Analytics & Conversion Intelligence",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-025",
     "title": "Finance, Cost & Profitability Dashboard",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-026",
@@ -931,8 +931,8 @@
   "order": 7,
   "id": "SPEC-08",
   "name": "Fashion & Product 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
