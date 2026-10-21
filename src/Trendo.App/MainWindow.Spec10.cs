@@ -42,6 +42,34 @@ public partial class MainWindow
         sp.Children.Add(FachTool("twin-import", "Messwerte einlesen", "CSV mit Kopfzeile „Zeit;Anlage;Sensor;Wert“, z. B. aus einem Datenlogger, Home Assistant oder Excel.",
             [("file", "CSV-Datei", "")],
             v => { var f = v("file").Trim().Trim('"'); if (!File.Exists(f)) throw new IOException("Diese Datei gibt es nicht."); var (ok, bad) = Twin.Import(File.ReadAllText(f)); Show("zwilling"); return $"{ok} Messwerte übernommen{(bad > 0 ? $", {bad} Zeilen übersprungen" : "")}."; }, "Einlesen"));
+        (string, string, string)[] AS = [("asset", "Anlage", "Heizung"), ("sensor", "Sensor", "Vorlauf")];
+        List<Reading> Ser(Func<string, string> v) { var r = TwinPlus.Series(Twin.Model, v("asset").Trim(), v("sensor").Trim()); return r.Count > 0 ? r : throw new InvalidOperationException("Dieser Sensor hat noch keine Werte."); }
+        sp.Children.Add(FachGroup("twin-eval", "Auswerten", false,
+            FachTool("twin-events", "Ereignisse", "Wann hat die Ampel gewechselt? Das Band verhindert Flattern um eine Grenze (0 = aus).", [.. AS, ("band", "Band", "2")],
+                v => { var e = TwinPlus.Events(Twin.Model, v("asset").Trim(), v("sensor").Trim(), Fach.Num(v("band"))); return e.Count == 0 ? "Keine Wechsel." : string.Join("\n", e.TakeLast(20).Select(x => $"{x.Time:dd.MM. HH:mm}: {x.From} → {x.To} ({Fach.F(x.Value, 2)})")); }, "Anzeigen"),
+            FachTool("twin-span", "Kennzahlen", "Zeitraum als „TT.MM.JJJJ“; leer = alles.", [.. AS, ("from", "Von", ""), ("to", "Bis", "")],
+                v => { DateTime? D(string k, bool end) => v(k).Trim() == "" ? null : DateTime.Parse(v(k).Trim(), Fach.De) is var d && end && d.TimeOfDay == TimeSpan.Zero ? d.AddDays(1).AddTicks(-1) : DateTime.Parse(v(k).Trim(), Fach.De); var s = TwinPlus.Span(Ser(v), D("from", false), D("to", true)); return $"{s.Count} Werte · min {Fach.F(s.Min, 2)} · max {Fach.F(s.Max, 2)} · Mittel {Fach.F(s.Mean, 2)}"; }, "Berechnen"),
+            FachTool("twin-hours", "Betriebsstunden", "Wie lange lag der Wert auf oder über der Schwelle (z. B. Leistung > 0 = läuft)?", [.. AS, ("thr", "Schwelle", "1")],
+                v => $"{Fach.F(TwinPlus.HoursAbove(Ser(v), Fach.Num(v("thr"))), 1)} Stunden in Betrieb", "Zählen"),
+            FachTool("twin-fc", "Was-wäre-wenn", "Trend der letzten 24 h fortschreiben.", [.. AS, ("h", "Stunden voraus", "24")],
+                v => $"In {Fach.F(Fach.Num(v("h")), 0)} h etwa {Fach.F(TwinPlus.Forecast(Ser(v), Fach.Num(v("h"))), 2)} – nur eine Schätzung, wenn alles so weiterläuft.", "Schätzen"),
+            FachTool("twin-kwh", "Energie", "Sensor misst Leistung in kW → verbrauchte oder erzeugte kWh.", [("asset", "Anlage", "Solar"), ("sensor", "Sensor", "Leistung")],
+                v => $"{Fach.F(TwinPlus.EnergyKwh(Ser(v)), 2)} kWh im erfassten Zeitraum", "Berechnen")));
+        sp.Children.Add(FachGroup("twin-manage", "Verwalten", false,
+            FachTool("twin-stale", "Stille Sensoren", "Welche Sensoren haben länger nichts geliefert?", [("min", "Minuten", "60")],
+                v => { var s = TwinPlus.Stale(Twin.Model, DateTime.Now, Fach.Num(v("min"))); return s.Count == 0 ? "✓ Alle Sensoren sind aktuell." : string.Join("\n", s.Select(x => $"⚠ {x.Asset} – {x.Sensor}: {(x.Last is { } t ? $"zuletzt {t:dd.MM. HH:mm}" : "noch nie")}")); }, "Prüfen"),
+            FachTool("twin-derive", "Abgeleiteter Sensor", "Neuer Wert = Faktor × Wert + Versatz (z. B. °C → °F: 1,8 und 32).", [.. AS, ("name", "Neuer Name", "Vorlauf °F"), ("unit", "Einheit", "°F"), ("a", "Faktor", "1,8"), ("b", "Versatz", "32")],
+                v => { var n = TwinPlus.Derive(Twin, v("asset").Trim(), v("sensor").Trim(), v("name").Trim(), v("unit"), Fach.Num(v("a")), Fach.Num(v("b"))); Show("zwilling"); return $"{n} Werte berechnet."; }, "Anlegen"),
+            FachTool("twin-export", "Exportieren", "Werte eines Sensors als CSV (lässt sich wieder einlesen).", [.. AS],
+                v => { var p = Path.Combine(Fach.StoreDir(_core.DataRoot, "zwilling"), $"{v("asset").Trim()}-{v("sensor").Trim()}.csv".Replace(' ', '_')); foreach (var c in Path.GetInvalidFileNameChars()) p = Path.Combine(Path.GetDirectoryName(p)!, Path.GetFileName(p).Replace(c, '_')); _ = Ser(v); File.WriteAllText(p, TwinPlus.ExportCsv(Twin.Model, v("asset").Trim(), v("sensor").Trim())); return "Gespeichert: " + p; }, "Exportieren"),
+            FachTool("twin-rename", "Umbenennen", "Neuen Namen eingeben – die Werte bleiben erhalten.", [.. AS, ("new", "Neuer Name", "")],
+                v => { TwinPlus.Rename(Twin, v("asset").Trim(), v("sensor").Trim(), v("new")); Show("zwilling"); return "Umbenannt."; }, "Umbenennen"),
+            FachTool("twin-del", "Löschen", "Entfernt den Sensor mit allen Werten. Zur Sicherheit den Namen noch einmal eintippen.", [.. AS, ("confirm", "Name wiederholen", "")],
+                v => { if (!v("confirm").Trim().Equals(v("sensor").Trim(), StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Bitte den Sensornamen zur Bestätigung wiederholen."); var n = TwinPlus.Delete(Twin, v("asset").Trim(), v("sensor").Trim()); Show("zwilling"); return $"Gelöscht ({n} Werte)."; }, "Löschen"),
+            FachTool("twin-maint", "Wartungsplan", "Wartung alle X Betriebsstunden.", [("run", "Betriebsstunden jetzt", "1200"), ("last", "Letzte Wartung bei", "1000"), ("int", "Intervall (h)", "500")],
+                v => { var m = TwinPlus.Maintenance(Fach.Num(v("run")), Fach.Num(v("int")), Fach.Num(v("last"))); return m.Due ? $"⚠ Wartung fällig (seit {Fach.F(-m.Remaining, 0)} h, geplant bei {Fach.F(m.NextAt, 0)} h)." : $"Nächste Wartung bei {Fach.F(m.NextAt, 0)} h – noch {Fach.F(m.Remaining, 0)} h."; }, "Planen"),
+            FachTool("twin-trim", "Speicher begrenzen", "Nur die neuesten Werte behalten, ältere verwerfen.", [("max", "Höchstens Werte", "100000")],
+                v => { var n = TwinPlus.Trim(Twin.Model, (int)Fach.Num(v("max"))); Twin.Save(); return n == 0 ? "Nichts zu verwerfen." : $"{Fach.F(n, 0)} alte Werte verworfen."; }, "Begrenzen")));
         return FachPage("Digitaler Zwilling", sp);
     }
 }
