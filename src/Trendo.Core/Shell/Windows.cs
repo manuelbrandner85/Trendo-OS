@@ -45,6 +45,21 @@ public sealed class WindowManager
         Clamp(w); _stack.Add(w); _taskOrder.Add(w); return (w, closed);
     }
 
+    /// <summary>Zustand aller Fenster (Taskleisten-Reihenfolge) und Stapel von unten nach oben – zum Wiederherstellen nach dem Neuaufbau.</summary>
+    public sealed record Saved(string Id, string Page, double X, double Y, double W, double H, bool Minimized, bool Maximized, bool Moved);
+    public (List<Saved> Windows, List<string> Stack) Snapshot() =>
+        (_taskOrder.Select(w => new Saved(w.Id, w.Page, w.X, w.Y, w.W, w.H, w.Minimized, w.Maximized, w.Moved)).ToList(), _stack.Select(w => w.Id).ToList());
+
+    /// <summary>Übernimmt Lage, Größe und Zustand; ein bereits geöffnetes Fenster wird angepasst, Stapel wie gespeichert.</summary>
+    public void Apply((List<Saved> Windows, List<string> Stack) s)
+    {
+        foreach (var x in s.Windows) if (Get(x.Id) is { } w) { (w.X, w.Y, w.W, w.H, w.Maximized, w.Moved) = (x.X, x.Y, x.W, x.H, x.Maximized, x.Moved); Clamp(w); }
+        _taskOrder.Sort((a, b) => Index(a.Id).CompareTo(Index(b.Id)));
+        foreach (var id in s.Stack) if (Get(id) is { } w) { _stack.Remove(w); _stack.Add(w); }
+        foreach (var x in s.Windows) if (Get(x.Id) is { } w) w.Minimized = x.Minimized;
+        int Index(string id) { var i = s.Windows.FindIndex(x => x.Id == id); return i < 0 ? int.MaxValue : i; }
+    }
+
     public void Activate(string id) { if (Get(id) is not { } w) return; w.Minimized = false; _stack.Remove(w); _stack.Add(w); }
     public void Minimize(string id) { if (Get(id) is { } w) w.Minimized = true; }
     public void ToggleMaximize(string id) { if (Get(id) is { } w) { w.Maximized = !w.Maximized; Activate(id); } }

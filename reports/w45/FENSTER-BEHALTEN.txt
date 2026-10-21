@@ -1,0 +1,4 @@
+Nachweis FENSTER-BEHALTEN – Linux-Box (nicht Windows-PC), 22.10.2026 01:46 MESZ, Commit-Basis 2908d41
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 590 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   415, Skipped:    10, Total:   425, Duration: 15 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   130, Skipped:     0, Total:   130, Duration: 4 m 8 s - Trendo.App.Tests.dll (net10.0)

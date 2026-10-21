@@ -151,11 +151,19 @@ public sealed partial class MainWindow
     private void SaveSettings() { try { _settings.Save(_core.DataRoot); } catch (Exception ex) { _core.Audit.Append("app", "settings.save_failed", ex.GetType().Name); } }
 
     /// <summary>Baut das Fenster mit neuen Einstellungen neu auf (Design, Farbe, Anordnung).</summary>
+    /// <summary>Für Tests: das neue Hauptfenster nach „Einstellungen übernehmen“.</summary>
+    public MainWindow? ReopenedAs { get; private set; }
+
     private void Reopen(string page)
     {
         SaveSettings();
         var w = new MainWindow(_core, _opt with { Page = page, FirstRun = false, ScreenshotPath = null, AutoExitSeconds = 0 }, _probe) { WindowState = WindowState, Width = Width, Height = Height };
         w._reopening = true;
+        // Offene Fenster bleiben: gleiche Seiten, Lage, Größe und Reihenfolge (aktiv bleibt das, auf dem man war)
+        var snap = Windows.Snapshot(); var active = Windows.Active?.Page;
+        w.Windows.AreaW = Windows.AreaW; w.Windows.AreaH = Windows.AreaH;
+        if (snap.Windows.Count > 0) w.RestoreWindows(snap, active ?? page);
+        ReopenedAs = w;
         if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime d) d.MainWindow = w;
         w.Show(); _reopening = true; Close();
     }

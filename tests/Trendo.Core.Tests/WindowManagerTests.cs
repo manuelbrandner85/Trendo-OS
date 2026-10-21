@@ -42,3 +42,21 @@ public class WindowManager_Groesse
         Assert.Equal("rechts", m.SnapAt("a", 995)); Assert.Equal((500d, 0d, 500d, 600d), m.Rect(w));
     }
 }
+
+public class WindowManager_Behalten
+{
+    [Fact(DisplayName = "Fenster: Zustand sichern und auf neuer Verwaltung wiederherstellen (Lage, Größe, minimiert, Reihenfolge)")]
+    public void Roundtrip()
+    {
+        var a = new WindowManager { AreaW = 1200, AreaH = 700 };
+        a.Open("x", "x", "X"); a.Open("y", "y2", "Y"); a.Open("z", "z", "Z");
+        a.Move("x", 40, 30); a.Minimize("z"); a.ToggleMaximize("y"); a.Activate("x");
+        var s = a.Snapshot();
+        var b = new WindowManager { AreaW = 1200, AreaH = 700 };
+        b.Open("z", "z", "Z"); b.Open("x", "x", "X"); b.Open("y", "y2", "Y");
+        b.Apply(s);
+        Assert.Equal(["x", "y", "z"], b.TaskOrder.Select(w => w.Id)); Assert.Equal(a.Stack.Select(w => w.Id), b.Stack.Select(w => w.Id));
+        Assert.Equal((a.Get("x")!.X, a.Get("x")!.Y), (b.Get("x")!.X, b.Get("x")!.Y));
+        Assert.True(b.Get("y")!.Maximized); Assert.True(b.Get("z")!.Minimized); Assert.Equal("x", b.Active!.Id);
+    }
+}
