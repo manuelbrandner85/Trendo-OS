@@ -378,3 +378,16 @@ public class SPEC02_Plus
     [Fact(DisplayName = "SPEC-02 F15: Linearregler-Verlust")] public void F15() { var r = ElectronicsPlus.Regulator(12, 5, 0.5); Assert.Equal(3.5, r.Watt); Assert.Equal(200, r.TjNoSink); Assert.True(r.NeedsSink); Assert.Equal(23.1, r.SinkKPerW); Assert.False(ElectronicsPlus.Regulator(5, 3.3, 0.1).NeedsSink); }
     [Fact(DisplayName = "SPEC-02 F16: Einheiten-Präfixe")] public void F16() { Assert.Equal(4700, ElectronicsPlus.Si("4k7")); Assert.Equal(100e-9, ElectronicsPlus.Si("100n"), 15); Assert.Equal(2.2e-6, ElectronicsPlus.Si("2,2µ"), 15); Assert.Equal(3.3, ElectronicsPlus.Si("3R3")); Assert.Equal("4,7 kΩ", ElectronicsPlus.Fmt(4700, "Ω")); }
 }
+
+public class SPEC03_Plus
+{
+    [Fact(DisplayName = "SPEC-03 F08: Hohlprofil")] public void F08() { var s = EngineeringPlus.HollowRect(60, 40, 3); Assert.Equal(564, s.A); Assert.Equal((60.0 * 64000 - 54.0 * 34 * 34 * 34) / 12, s.I, 6); Assert.Throws<ArgumentException>(() => EngineeringPlus.HollowRect(10, 10, 5)); }
+    [Fact(DisplayName = "SPEC-03 F09: Knicken (Euler)")] public void F09() { var i = Engineering.Tube(40, 2).I; var f2 = EngineeringPlus.EulerKn(2, 210, i, 2.5); Assert.Equal(Math.Round(Math.PI * Math.PI * 210000 * i / (2500.0 * 2500) / 1000, 2), f2); Assert.Equal(f2 / 4, EngineeringPlus.EulerKn(1, 210, i, 2.5), 1); Assert.Equal(f2 * 4, EngineeringPlus.EulerKn(4, 210, i, 2.5), 1); }
+    [Fact(DisplayName = "SPEC-03 F10: Schrauben")] public void F10() { Assert.Equal((25, 17), EngineeringPlus.Bolt("M8")); Assert.Equal(36.8, EngineeringPlus.Bolt("m8", "10.9").Nm); Assert.Throws<ArgumentException>(() => EngineeringPlus.Bolt("M7")); }
+    [Fact(DisplayName = "SPEC-03 F11: Zug & Druck")] public void F11() { var r = EngineeringPlus.Axial(20, 200, 210, 1); Assert.Equal(100, r.Sigma); Assert.Equal(0.4762, r.StrainPermille); Assert.Equal(0.476, r.DeltaMm); }
+    [Fact(DisplayName = "SPEC-03 F12: Torsion Welle")] public void F12() { var r = EngineeringPlus.Torsion(50, 20, 0.5); Assert.Equal(31.83, r.Tau); Assert.Equal(1.129, r.PhiDeg); }
+    [Fact(DisplayName = "SPEC-03 F13: Druckfeder")] public void F13() { var r = EngineeringPlus.Spring(2, 20, 8, 50); Assert.Equal(2.547, r.RateNmm); Assert.Equal(19.63, r.TravelMm); }
+    [Fact(DisplayName = "SPEC-03 F14: Zahnräder")] public void F14() { var g = EngineeringPlus.Gears(12, 36, 1500, 2); Assert.Equal((3, 500, 5.88), (g.Ratio, g.Rpm2, g.Torque2)); }
+    [Fact(DisplayName = "SPEC-03 F15: Wärmedurchgang Wand")] public void F15() { var r = EngineeringPlus.UValue([(0.24, 0.5)], 10, 30); Assert.Equal(1.538, r.U); Assert.Equal(461.5, r.Watt); Assert.True(EngineeringPlus.UValue([(0.24, 0.5), (0.12, 0.035)], 1, 1).U < 0.28); }
+    [Fact(DisplayName = "SPEC-03 F16: Gewicht")] public void F16() { Assert.Equal(2.7, EngineeringPlus.MassKg(Engineering.Mat("Aluminium"), 1e6)); Assert.Equal(7.85, EngineeringPlus.MassKg(Engineering.Mat("Baustahl"), 1e6)); }
+}
