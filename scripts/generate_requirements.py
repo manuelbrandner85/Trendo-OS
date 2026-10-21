@@ -15,6 +15,13 @@ bus = [{"id": r["requirement_id"], "module": "STUDIO-ONLINE-BUSINESS-01", "mode"
 let = [{"id": r["requirement_id"], "module": "STUDIO-LETTER-01", "title": r["feature_name"],
         "approval_status": r["status"], "implementation_status": r["implementation_status"],
         "test_status": r["test_status"]} for r in rows(S / "studios/LETTER_REQUIREMENTS_25.csv")]
+# Fortschritt mit Nachweis (evidence) aus der bestehenden Datei übernehmen, damit Neugenerieren nichts zurücksetzt
+try:
+    old = yaml.safe_load(open(R / "requirements.yaml", encoding="utf-8")) or {}
+    keep = {m["id"]: m for sec in ("modules", "business_requirements", "letter_requirements") for m in old.get(sec, []) if m.get("evidence")}
+except FileNotFoundError: keep = {}
+for m in mods + bus + let:
+    if m["id"] in keep: m.update({k: keep[m["id"]][k] for k in ("implementation_status", "test_status", "evidence")})
 tests = []
 for f, key in [("QA_MATRIX_GROK", "GROK_QA_MATRIX.csv"), ("BUSINESS", "BUSINESS_QA_MATRIX.csv"), ("LETTER", "LETTER_QA_MATRIX.csv")]:
     for r in rows(S / "qa" / key):
