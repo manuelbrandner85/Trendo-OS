@@ -453,8 +453,8 @@
   "order": 1,
   "id": "CORE-11",
   "name": "Security Privacy Recovery Fortress",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -618,8 +618,8 @@
   "order": 8,
   "id": "X-11",
   "name": "Universal Creation & Productivity Suite",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },

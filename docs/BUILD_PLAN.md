@@ -126,7 +126,7 @@ Schutz, Wiederherstellung, Apps, Geräte, Netzwerk, Mail
 
 | Reihenfolge | Modul | Name | Umsetzung | Test |
 |---|---|---|---|---|
-| 1 | CORE-11 | Security Privacy Recovery Fortress | NOT_STARTED | NOT_RUN |
+| 1 | CORE-11 | Security Privacy Recovery Fortress | IMPLEMENTED | TESTED_BOX |
 | 2 | X-02 | Zero Touch Setup & Self Healing | NOT_STARTED | NOT_RUN |
 | 3 | SYS-04 | Ultimate App Installation & System Control Center | NOT_STARTED | NOT_RUN |
 | 4 | SYS-07 | Ultimate Hardware & Device Recognition | NOT_STARTED | NOT_RUN |
