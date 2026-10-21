@@ -79,9 +79,13 @@ public sealed class MainWindow : Window
         // Raster nach Konzept (Designfläche 1536 × 800): Topbar | Seitenleiste 192 · Mitte · rechte Spalte 322, Dock unter der Mitte
         var root = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
         root.Children.Add(Wallpaper()); Grid.SetRowSpan(root.Children[^1], 2);
-        var top = TopBar(); root.Children.Add(top);
+        var ui = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
+        // Echter Hintergrund-Blur: unscharfe Kopie des Wallpapers, sichtbar nur dort, wo Glas-Panels liegen (Maske = Alpha der Oberfläche)
+        if (BlurredWallpaper(ui) is { } blur) { root.Children.Add(blur); Grid.SetRowSpan(blur, 2); }
+        Grid.SetRowSpan(ui, 2); root.Children.Add(ui);
+        var top = TopBar(); ui.Children.Add(top);
         var body = new Grid { ColumnDefinitions = new ColumnDefinitions("192,*,322"), RowDefinitions = new RowDefinitions("*,Auto"), Margin = new Thickness(8, 10, 8, 4) };
-        Grid.SetRow(body, 1); root.Children.Add(body);
+        Grid.SetRow(body, 1); ui.Children.Add(body);
         var left = LeftColumn(); Grid.SetRowSpan(left, 2); body.Children.Add(left);
         Grid.SetColumn(_center, 1); _center.Margin = new Thickness(12, 0, 12, 0); body.Children.Add(_center);
         var dock = Dock(); Grid.SetColumn(dock, 1); Grid.SetRow(dock, 1); body.Children.Add(dock);
@@ -253,6 +257,18 @@ public sealed class MainWindow : Window
         if (glow) path.Effect = new DropShadowEffect { Color = Color.Parse("#2E8BFF"), BlurRadius = size * 0.45, OffsetX = 0, OffsetY = 0, Opacity = 1 };
         ToolTip.SetTip(path, "Logo-Konzept – nicht freigegeben");
         return path;
+    }
+
+    private static Control? BlurredWallpaper(Visual mask)
+    {
+        try
+        {
+            using var s = AssetLoader.Open(new Uri("avares://TrendoOS/Assets/wallpaper.jpg"));
+            var img = new Image { Source = new Bitmap(s), Stretch = Stretch.UniformToFill, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Effect = new BlurEffect { Radius = 36 } };
+            return new Border { Name = "backdrop-blur", ClipToBounds = true, IsHitTestVisible = false, Child = img,
+                OpacityMask = new VisualBrush { Visual = mask, Stretch = Stretch.None, AlignmentX = AlignmentX.Left, AlignmentY = AlignmentY.Top, TileMode = TileMode.None } };
+        }
+        catch { return null; }
     }
 
     private static Control Wallpaper()
@@ -727,8 +743,31 @@ public sealed class MainWindow : Window
         return Page("Apps", sp);
     }
 
+    private static long TotalRam => GC.GetGCMemoryInfo().TotalAvailableMemoryBytes;
+    private string KiModelName => KiModel.Current(_core.DataRoot, TotalRam, _deps.HasModel);
+
+    private Control KiModelChooser()
+    {
+        var sp = new StackPanel { Spacing = 6 };
+        sp.Children.Add(P($"Modell: {KiModelName}. Arbeitsspeicher: {TotalRam / (1024 * 1024 * 1024.0):0} GB – {(KiModel.RecommendLarge(TotalRam) ? "Qwen2.5 3B empfohlen" : "Qwen2.5 0.5B empfohlen")}.", Text));
+        foreach (var (m, id, label) in new[] { (DependencyCatalog.LocalModel, "model", "Qwen2.5 0.5B (klein, schnell)"), (DependencyCatalog.LargeModel, "model-3b", "Qwen2.5 3B (besseres Deutsch, ~1,9 GB)") })
+        {
+            var have = _deps.HasModel(m);
+            var b = new Button { Name = "btn-model-" + id, Content = have ? (KiModelName == m ? $"✓ {label}" : $"{label} verwenden") : $"{label} herunterladen (Zustimmung)", IsEnabled = !_depBusy, Background = KiModelName == m ? Accent : null };
+            b.Click += async (_, _) =>
+            {
+                if (!_deps.IsInstalled(DependencyCatalog.Get(id))) { _deps.GiveConsent(Principal.LocalOwner); await InstallOne(DependencyCatalog.Get(id), refresh: false); }
+                if (_deps.HasModel(m)) { KiModel.Select(_core.DataRoot, m, _core.Audit); _kiConnected = false; await RefreshKi(); }
+                Show("ki");
+            };
+            sp.Children.Add(b);
+        }
+        return sp;
+    }
+
     private Control KiView() => Page("KI", new StackPanel { Spacing = 6, Children = {
-        P(_kiConnected ? $"Verbunden mit lokaler Ollama-Laufzeit (127.0.0.1:11434), Modell {DependencyCatalog.LocalModel}. Keine Cloud, keine kostenpflichtige API." : "Trendo KI ist nicht verbunden. Lokale Laufzeit und freies Modell lassen sich unter „Komponenten“ automatisch installieren.", Text),
+        KiModelChooser(),
+        P(_kiConnected ? $"Verbunden mit lokaler Ollama-Laufzeit (127.0.0.1:11434), Modell {KiModelName}. Keine Cloud, keine kostenpflichtige API." : "Trendo KI ist nicht verbunden. Lokale Laufzeit und freies Modell lassen sich unter „Komponenten“ automatisch installieren.", Text),
         Nav2("Komponenten öffnen", "components") } });
 
     private Button Nav2(string label, string view) { var b = new Button { Content = label }; b.Click += (_, _) => Show(view); return b; }
@@ -763,7 +802,7 @@ public sealed class MainWindow : Window
 
     private async Task RefreshKi()
     {
-        var ok = await _ollama.HasModelAsync(DependencyCatalog.LocalModel);
+        var ok = await _ollama.HasModelAsync(KiModelName);
         if (ok == _kiConnected && _kiStatus.Text != "…") return;
         _kiConnected = ok;
         _kiStatus.Text = ok ? "Online (lokal)" : "Nicht verbunden";
@@ -777,7 +816,7 @@ public sealed class MainWindow : Window
     {
         _kiInput.Text = ""; _kiInput.IsEnabled = false; _kiText.Text = $"Du: {q}\n\nTrendo KI denkt …";
         _core.Audit.Append(Principal.LocalOwner.Name, "ki.ask", $"{q.Length} Zeichen");
-        var a = await _ollama.ChatAsync(DependencyCatalog.LocalModel, q);
+        var a = await _ollama.ChatAsync(KiModelName, q);
         _kiText.Text = $"Du: {q}\n\nTrendo KI: {a}"; _kiInput.IsEnabled = true;
     }
 

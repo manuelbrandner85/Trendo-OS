@@ -416,3 +416,40 @@ public class ToolCheck_Core
         Assert.Equal(ToolState.Missing, miss.State);
     }
 }
+
+public class DataLocation_And_Model
+{
+    [Fact(DisplayName = "Datenordner: Migration aus Programmordner, Velopack-Dateien bleiben, nichts wird überschrieben")]
+    public void Migrate_legacy()
+    {
+        var t = Path.Combine(Path.GetTempPath(), "trendo-mig-" + Guid.NewGuid().ToString("N")); var old = Path.Combine(t, "local"); var neu = Path.Combine(t, "roaming");
+        try
+        {
+            Directory.CreateDirectory(Path.Combine(old, "current")); Directory.CreateDirectory(Path.Combine(old, "projects", "p1")); Directory.CreateDirectory(Path.Combine(old, "audit"));
+            File.WriteAllText(Path.Combine(old, "Update.exe"), "x"); File.WriteAllText(Path.Combine(old, "config.json"), "alt"); File.WriteAllText(Path.Combine(old, "audit", "audit.jsonl"), "a");
+            Directory.CreateDirectory(neu); File.WriteAllText(Path.Combine(neu, "config.json"), "neu");
+            Assert.Equal(2, DataLocation.MigrateLegacy(old, neu)); // projects + audit; config existiert schon
+            Assert.True(Directory.Exists(Path.Combine(neu, "projects", "p1"))); Assert.True(File.Exists(Path.Combine(neu, "audit", "audit.jsonl")));
+            Assert.Equal("neu", File.ReadAllText(Path.Combine(neu, "config.json")));
+            Assert.True(Directory.Exists(Path.Combine(old, "current"))); Assert.True(File.Exists(Path.Combine(old, "Update.exe")));
+            Assert.Equal(0, DataLocation.MigrateLegacy(old, neu));
+        }
+        finally { Directory.Delete(t, true); }
+    }
+
+    [Fact(DisplayName = "Datenordner liegt nicht im Velopack-Programmordner")]
+    public void Default_separate() => Assert.NotEqual(Path.GetFullPath(DataLocation.Legacy()), Path.GetFullPath(DataLocation.Default()));
+
+    [Fact(DisplayName = "KI-Modell: 3B Standard ab 16 GB RAM wenn vorhanden, sonst 0.5B; Auswahl wird gespeichert")]
+    public void Model_choice()
+    {
+        using var f = new Fixture();
+        const long G = 1024L * 1024 * 1024;
+        Assert.Equal(DependencyCatalog.LargeModel, KiModel.Current(f.Core.DataRoot, 32 * G, _ => true));
+        Assert.Equal(DependencyCatalog.LocalModel, KiModel.Current(f.Core.DataRoot, 8 * G, _ => true));
+        Assert.Equal(DependencyCatalog.LocalModel, KiModel.Current(f.Core.DataRoot, 32 * G, m => m == DependencyCatalog.LocalModel));
+        KiModel.Select(f.Core.DataRoot, DependencyCatalog.LocalModel, f.Core.Audit);
+        Assert.Equal(DependencyCatalog.LocalModel, KiModel.Current(f.Core.DataRoot, 32 * G, _ => true));
+        Assert.Throws<ArgumentException>(() => KiModel.Select(f.Core.DataRoot, "llama", f.Core.Audit));
+    }
+}

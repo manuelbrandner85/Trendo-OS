@@ -18,6 +18,7 @@ Methode: `winget show --id <ID> -e --scope user|machine` auf dem Windows-Test-PC
 | Git | Web & App | Git.Git | ja | ja | GPL-2.0 | Auto pro Benutzer (auf Test-PC bereits vorhanden → integriert) |
 | Python | Web & App | Python.Python.3.13 | ja | ja | PSF-2.0 | Auto pro Benutzer, ohne Admin |
 | Ollama + Qwen2.5 0.5B | KI | Ollama.Ollama + `ollama pull` | ja | nein | MIT / Apache-2.0 | Auto pro Benutzer, ohne Admin (lokale KI, kostenlos) |
+| Qwen2.5 3B (optional) | KI | `ollama pull qwen2.5:3b` | ja | nein | Qwen Research License (nicht-kommerziell) | Auto pro Benutzer nach Zustimmung, in Einstellungen/KI wählbar |
 | Grok Build | Agent | – | – | – | kontogebunden | nur offizieller Zugang |
 | Unreal Engine | Game | – (nur Epic Launcher: EpicGames.EpicGamesLauncher, systemweit) | nein | Launcher ja | Epic EULA | **nur geführt**: Engine-Download nur über Epic-Konto im Launcher erlaubt |
 | Tor Browser | Recherche | TorProject.TorBrowser | ja | nein | BSD-3 u. a. | technisch möglich, aber geführt bis Sicherheits-QA |
