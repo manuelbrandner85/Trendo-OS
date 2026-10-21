@@ -45,7 +45,7 @@ public static class DependencyCatalog
             "Git.Git", 350, "https://git-scm.com", ["git"], [@"%LOCALAPPDATA%\Programs\Git\cmd\git.exe", @"%ProgramFiles%\Git\cmd\git.exe"]),
         new("python", "Python 3.13", "Automatisierung, Hilfswerkzeuge", "PSF-2.0", DeliveryMode.AutoUser, "Pro Benutzer installierbar",
             "Python.Python.3.13", 120, "https://python.org", ["python"], [@"%LOCALAPPDATA%\Programs\Python\Python313\python.exe", @"%ProgramFiles%\Python313\python.exe"]),
-        new("mpv", "mpv Player", "Medien Studio – Wiedergabe", "GPL-2.0-or-later", DeliveryMode.AutoUser, "Pro Benutzer installierbar",
+        new("mpv", "mpv Player", "Medien Studio – Wiedergabe", "GPL-2.0-or-later", DeliveryMode.AutoUser, "winget-Paket ohne Scope-Angabe (Inno, Standard pro Benutzer)",
             "shinchiro.mpv", 60, "https://mpv.io", ["mpv"], [@"%LOCALAPPDATA%\Programs\mpv\mpv.exe", @"%ProgramFiles%\MPV Player\mpv.exe", @"%ProgramFiles%\mpv\mpv.exe"]),
         new("libreoffice", "LibreOffice", "Office Studio", "MPL-2.0", DeliveryMode.AutoElevated, "Nur systemweiter MSI-Installer – Windows fragt nach Admin",
             "TheDocumentFoundation.LibreOffice", 350, "https://libreoffice.org", ["libreoffice"], [@"%ProgramFiles%\LibreOffice\program\soffice.exe"]),
@@ -53,7 +53,7 @@ public static class DependencyCatalog
             "BlenderFoundation.Blender", 400, "https://blender.org", ["blender"], [@"%ProgramFiles%\Blender Foundation\*\blender.exe"]),
         new("krita", "Krita", "Medien Studio – Grafik", "GPL-3.0", DeliveryMode.AutoElevated, "Systemweiter Installer", "KDE.Krita", 200, "https://krita.org", ["krita"], [@"%ProgramFiles%\Krita (x64)\bin\krita.exe"]),
         new("inkscape", "Inkscape", "Medien Studio – Vektor", "GPL-2.0", DeliveryMode.AutoElevated, "Systemweiter Installer", "Inkscape.Inkscape", 200, "https://inkscape.org", ["inkscape"], [@"%ProgramFiles%\Inkscape\bin\inkscape.exe"]),
-        new("kdenlive", "Kdenlive", "Medien Studio – Video", "GPL-3.0", DeliveryMode.AutoElevated, "Systemweiter Installer", "KDE.Kdenlive", 300, "https://kdenlive.org", ["kdenlive"], [@"%ProgramFiles%\kdenlive\bin\kdenlive.exe"]),
+        new("kdenlive", "Kdenlive", "Medien Studio – Video", "GPL-3.0", DeliveryMode.AutoUser, "Pro Benutzer installierbar (winget-Benutzerinstaller vorhanden)", "KDE.Kdenlive", 300, "https://kdenlive.org", ["kdenlive"], [@"%LOCALAPPDATA%\Programs\kdenlive\bin\kdenlive.exe", @"%ProgramFiles%\kdenlive\bin\kdenlive.exe"]),
         new("audacity", "Audacity", "Medien Studio – Audio", "GPL-3.0-or-later", DeliveryMode.AutoElevated, "Systemweiter Installer", "Audacity.Audacity", 100, "https://audacityteam.org", ["audacity"], [@"%ProgramFiles%\Audacity\Audacity.exe"]),
         new("tesseract", "Tesseract OCR", "Letter Studio – Texterkennung", "Apache-2.0", DeliveryMode.AutoElevated, "Systemweiter Installer", "UB-Mannheim.TesseractOCR", 100, "https://github.com/UB-Mannheim/tesseract", ["tesseract"], [@"%ProgramFiles%\Tesseract-OCR\tesseract.exe"]),
         new("unreal", "Unreal Engine", "Game Studio", "Epic EULA (nicht weitergebbar)", DeliveryMode.Guided,
@@ -170,7 +170,7 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
         }
         else
         {
-            var scope = c.Mode == DeliveryMode.AutoUser ? " --scope user" : "";
+            var scope = c.Mode == DeliveryMode.AutoUser && c.Id != "mpv" ? " --scope user" : "";
             r = await Runner.RunAsync("winget", $"install --id {c.WingetId} -e --silent{scope} --accept-package-agreements --accept-source-agreements --disable-interactivity", progress, ct);
         }
         var ok = r.exit == 0 && IsInstalled(c);

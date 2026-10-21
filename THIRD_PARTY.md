@@ -1,6 +1,6 @@
 # Drittkomponenten (THIRD_PARTY)
 
-Quelle: `src/Trendo.Core/DependencyCatalog` (wird in der App unter „Komponenten“ mit Lizenzen angezeigt; einmalige Zustimmung vor jeder Auto-Installation). Erzeugt aus dem Code; Lizenzen laut Hersteller/winget-Manifest (Stand 21.10.2026).
+Quelle: `src/Trendo.Core/DependencyCatalog` (Installation bei Bedarf beim Öffnen eines Studios nach einmaliger Frage; Übersicht in der App unter „Komponenten“ mit Lizenzen angezeigt; einmalige Zustimmung vor jeder Auto-Installation). Erzeugt aus dem Code; Lizenzen laut Hersteller/winget-Manifest (Stand 21.10.2026).
 
 | Komponente | Lizenz | Auslieferung | winget-ID | Begründung |
 |---|---|---|---|---|
@@ -20,7 +20,7 @@ Quelle: `src/Trendo.Core/DependencyCatalog` (wird in der App unter „Komponente
 | Blender | GPL-3.0-or-later | Auto-Installation nach Zustimmung, Windows-UAC nötig (nur systemweiter Herstellerinstaller) | BlenderFoundation.Blender | Nur systemweiter Installer – Windows fragt nach Admin |
 | Krita | GPL-3.0 | Auto-Installation nach Zustimmung, Windows-UAC nötig (nur systemweiter Herstellerinstaller) | KDE.Krita | Systemweiter Installer |
 | Inkscape | GPL-2.0 | Auto-Installation nach Zustimmung, Windows-UAC nötig (nur systemweiter Herstellerinstaller) | Inkscape.Inkscape | Systemweiter Installer |
-| Kdenlive | GPL-3.0 | Auto-Installation nach Zustimmung, Windows-UAC nötig (nur systemweiter Herstellerinstaller) | KDE.Kdenlive | Systemweiter Installer |
+| Kdenlive | GPL-3.0 | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | KDE.Kdenlive | Pro Benutzer installierbar |
 | Audacity | GPL-3.0-or-later | Auto-Installation nach Zustimmung, Windows-UAC nötig (nur systemweiter Herstellerinstaller) | Audacity.Audacity | Systemweiter Installer |
 | Tesseract OCR | Apache-2.0 | Auto-Installation nach Zustimmung, Windows-UAC nötig (nur systemweiter Herstellerinstaller) | UB-Mannheim.TesseractOCR | Systemweiter Installer |
 | Unreal Engine | Epic EULA (nicht weitergebbar) | Nur geführt: offizieller Herstellerweg | — | Nur über Epic Games Launcher mit Epic-Konto erlaubt – keine automatische Installation |
@@ -32,6 +32,6 @@ Quelle: `src/Trendo.Core/DependencyCatalog` (wird in der App unter „Komponente
 
 Hinweise:
 - Unreal Engine (Epic EULA), Google Chrome, Grok Build, Tor Browser: keine automatische Installation – rechtlich bzw. aus Sicherheits-/Kontogründen nur offizieller Weg.
-- Systemweite Installer (MSI/NSIS) von LibreOffice, Blender, Krita, Inkscape, Kdenlive, Audacity, Tesseract: automatisch per winget, aber Windows fragt nach Administratorrechten; bereits installierte Programme werden nur erkannt, nie verändert.
+- Systemweite Installer (MSI/NSIS) von LibreOffice, Blender, Krita, Inkscape, Audacity, Tesseract: automatisch per winget, aber Windows fragt nach Administratorrechten; bereits installierte Programme werden nur erkannt, nie verändert.
 - Studio-Kacheln zeigen „Bereit“ nur, wenn Programm real erkannt UND Studio-Adapter implementiert und getestet ist.
 - Weitergabe der NuGet-Bibliotheken (MIT/BSD/OFL) im Setup ist durch die Lizenzen gedeckt; Lizenztexte siehe jeweilige Projekte.
