@@ -1,0 +1,4 @@
+Nachweis BUS-019 – Linux-Box (nicht Windows-PC), 21.10.2026 21:45 MESZ, Commit-Basis ceb44f1
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 815 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   176, Skipped:     0, Total:   176, Duration: 12 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:    69, Skipped:     0, Total:    69, Duration: 19 s - Trendo.App.Tests.dll (net10.0)

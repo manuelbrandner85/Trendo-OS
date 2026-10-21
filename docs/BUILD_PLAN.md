@@ -203,15 +203,15 @@ Abnahmekriterien je Modul:
 | BUS-014 | Business Requirements & Legal Feasibility Planner | IMPLEMENTED | TESTED_BOX |
 | BUS-015 | Customer Journey & Process Architect | IMPLEMENTED | TESTED_BOX |
 | BUS-016 | Grok Build Full-Stack Business Builder | NOT_STARTED | NOT_RUN |
-| BUS-017 | Accounts, Membership & Multi-Tenant Engine | NOT_STARTED | NOT_RUN |
-| BUS-018 | Payments, Billing & Subscription Integration | NOT_STARTED | NOT_RUN |
-| BUS-019 | Business Admin, CRM & Operations Center | NOT_STARTED | NOT_RUN |
-| BUS-020 | Product Delivery, Supplier & White-Label Engine | NOT_STARTED | NOT_RUN |
+| BUS-017 | Accounts, Membership & Multi-Tenant Engine | IMPLEMENTED | TESTED_BOX |
+| BUS-018 | Payments, Billing & Subscription Integration | IMPLEMENTED | TESTED_BOX |
+| BUS-019 | Business Admin, CRM & Operations Center | IMPLEMENTED | TESTED_BOX |
+| BUS-020 | Product Delivery, Supplier & White-Label Engine | IMPLEMENTED | TESTED_BOX |
 | BUS-021 | SEO, Content & Visibility Director | IMPLEMENTED | TESTED_BOX |
 | BUS-022 | Customer Acquisition & Sales Funnel Studio | IMPLEMENTED | TESTED_BOX |
-| BUS-023 | Customer Support & Service Center | NOT_STARTED | NOT_RUN |
-| BUS-024 | Business Analytics & Conversion Intelligence | NOT_STARTED | NOT_RUN |
-| BUS-025 | Finance, Cost & Profitability Dashboard | NOT_STARTED | NOT_RUN |
+| BUS-023 | Customer Support & Service Center | IMPLEMENTED | TESTED_BOX |
+| BUS-024 | Business Analytics & Conversion Intelligence | IMPLEMENTED | TESTED_BOX |
+| BUS-025 | Finance, Cost & Profitability Dashboard | IMPLEMENTED | TESTED_BOX |
 | BUS-026 | Business Compliance, Privacy & Rights Gate | NOT_STARTED | NOT_RUN |
 | BUS-027 | Real Security, Payments & Business Process QA | NOT_STARTED | NOT_RUN |
 | BUS-028 | Hosting, Domain & Deployment Director | NOT_STARTED | NOT_RUN |

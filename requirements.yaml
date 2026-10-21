@@ -547,29 +547,33 @@ business_requirements:
   mode: BOTH
   title: Accounts, Membership & Multi-Tenant Engine
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-019.txt
 - id: BUS-018
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Payments, Billing & Subscription Integration
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-019.txt
 - id: BUS-019
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Business Admin, CRM & Operations Center
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-019.txt
 - id: BUS-020
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Product Delivery, Supplier & White-Label Engine
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-019.txt
 - id: BUS-021
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -591,22 +595,25 @@ business_requirements:
   mode: BOTH
   title: Customer Support & Service Center
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-019.txt
 - id: BUS-024
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Business Analytics & Conversion Intelligence
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-019.txt
 - id: BUS-025
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Finance, Cost & Profitability Dashboard
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-019.txt
 - id: BUS-026
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
