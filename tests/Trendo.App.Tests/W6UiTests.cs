@@ -205,3 +205,23 @@ public class SPEC14_Ui
         Assert.Contains("13.263 U/min", W6Ui.Run(w, "cnc-feeds"));
     }
 }
+
+public class SPEC15_Ui
+{
+    [AvaloniaFact(DisplayName = "SPEC-15 UI: Ablauf bauen, speichern, Leitung prüfen")]
+    public void Broadcast()
+    {
+        var (w, l, root) = Ui.Open();
+        w.Show(MainWindow.StudioPages["SPEC-15"]);
+        W6Ui.Run(w, "bc-setup", ("start", "21.10.2026 20:00"), ("slot", "5"));
+        W6Ui.Run(w, "bc-add", ("title", "Intro"), ("dur", "1:00"));
+        W6Ui.Run(w, "bc-add", ("title", "Thema"), ("dur", "3:00"));
+        W6Ui.Run(w, "bc-add", ("title", "Ende"), ("dur", "2:00"));
+        Assert.Equal("20:04:00  Ende", w.Find<TextBlock>("bc-row-2").Text);
+        Assert.Contains("zu lang", w.Find<TextBlock>("bc-total").Text);
+        w.Find<Button>("bc-export").Press(); W2Ui.Settle();
+        Assert.True(File.Exists(Path.Combine(root, "fach", "sendung", "kapitel.txt")));
+        Assert.Contains("⚠", W6Ui.Run(w, "bc-rate"));
+        Assert.Contains("✓", W6Ui.Run(w, "bc-rate", ("q", "720p30")));
+    }
+}

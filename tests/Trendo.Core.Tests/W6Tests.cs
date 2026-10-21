@@ -265,3 +265,23 @@ public class SPEC14_Cnc
         var fd = Cnc.Feeds("Aluminium", 6, 2); Assert.Equal(13263, fd.Rpm); Assert.Equal(1061, fd.FeedMmMin); Assert.True(Cnc.Feeds("Holz", 3, 1).Limited);
     }
 }
+
+public class SPEC15_Broadcast
+{
+    [Fact(DisplayName = "SPEC-15: Sendeablauf mit Zeiten, Überziehung, Kapitelmarken, Bitrate, Speicher")]
+    public void Rundown()
+    {
+        using var f = new Fixture();
+        var b = new BroadcastDesk(f.Root); b.Plan.Start = new DateTime(2026, 10, 21, 20, 0, 0); b.Plan.SlotMinutes = 10;
+        b.Add("Intro", BroadcastDesk.ParseDuration("30")); b.Add("Interview", BroadcastDesk.ParseDuration("8:00")); b.Add("Abschied", BroadcastDesk.ParseDuration("2:00"));
+        var r = b.Rows(); Assert.Equal(new DateTime(2026, 10, 21, 20, 8, 30), r[2].Start);
+        Assert.Equal(TimeSpan.FromSeconds(30), b.Over);
+        Assert.Equal("0:00 Intro\n0:30 Interview\n8:30 Abschied", b.Chapters());
+        b.Move(2, -1); Assert.Equal("Abschied", new BroadcastDesk(f.Root).Plan.Segments[1].Title);
+        Assert.Contains("10:30;Gesamt", b.Sheet());
+        Assert.Equal(3720, BroadcastDesk.ParseDuration("1:02:00")); Assert.Throws<FormatException>(() => BroadcastDesk.ParseDuration("abc"));
+        var p = BroadcastDesk.PlanStream("YouTube", "1080p60", 10); Assert.False(p.Fits); Assert.Contains("1080p30", p.Advice);
+        Assert.True(BroadcastDesk.PlanStream("twitch", "720p30", 10).Fits);
+        Assert.Equal(2.77, BroadcastDesk.StorageGb(6160, 60));
+    }
+}
