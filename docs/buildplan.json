@@ -726,8 +726,8 @@
    {
     "id": "BUS-016",
     "title": "Grok Build Full-Stack Business Builder",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-017",
@@ -786,32 +786,32 @@
    {
     "id": "BUS-026",
     "title": "Business Compliance, Privacy & Rights Gate",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-027",
     "title": "Real Security, Payments & Business Process QA",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-028",
     "title": "Hosting, Domain & Deployment Director",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-029",
     "title": "Business Monitoring, Backup & Evolution Engine",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-030",
     "title": "Ready-to-Business Production & Handover Gate",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    }
   ]
  },
@@ -953,8 +953,8 @@
   "order": 9,
   "id": "SPEC-10",
   "name": "Digital Twin 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
