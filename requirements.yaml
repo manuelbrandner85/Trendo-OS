@@ -259,8 +259,9 @@ modules:
   name: Education & Training 2.0
   approved_expansion_functions: '16'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w23/SPEC-06.md
 - id: SPEC-07
   name: Language & Localization Studio 2.0
   approved_expansion_functions: '16'
