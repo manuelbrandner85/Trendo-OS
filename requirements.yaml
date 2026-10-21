@@ -110,8 +110,9 @@ modules:
   name: Knowledge Memory & Self Improvement Core 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w23/CORE-10.md
 - id: CORE-11
   name: Security Privacy Recovery Fortress
   approved_expansion_functions: '16'

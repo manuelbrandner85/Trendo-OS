@@ -16,7 +16,7 @@ public partial class MainWindow
     private IntelligenceCore? _intel;
     public IntelligenceCore Intel => _intel ??= new IntelligenceCore(_core.DataRoot, _core.Audit, () => KiBackendsOverride?.Invoke() ?? DefaultKiBackends(), KnowledgeLookup);
 
-    private Func<string, int, IReadOnlyList<(string Title, string Text)>>? KnowledgeLookup => null;
+    private Func<string, int, IReadOnlyList<(string Title, string Text)>>? KnowledgeLookup => LookupKnowledge;
     private IReadOnlyList<IKiBackend> DefaultKiBackends() => KiSourceSettings.Load(_core.DataRoot).Active().Select(MakeBackend).ToList();
 
     private void InitWave23()
@@ -24,7 +24,7 @@ public partial class MainWindow
         _showMap["ki-fragen"] = AskView;
         StudioPages["CORE-02"] = "ki-fragen";
         ExtraPages.Add(("KI fragen", "ki-fragen", ["frage", "chat", "assistent", "trendo"]));
-        InitX05();
+        InitX05(); InitCore10();
         InitWave3();
     }
     partial void InitWave3();
@@ -75,6 +75,16 @@ public partial class MainWindow
         sp.Children.Add(input);
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { send, clear } });
         sp.Children.Add(state);
+        if (_chat.Count >= 2)
+        {
+            var (lq, la) = (_chat[^2].Content, _chat[^1].Content);
+            var good = new Button { Name = "ask-good", Content = "👍 Gut" };
+            good.Click += (_, _) => { Wissen.Feedback(lq, la, true); _askState = "Danke für deine Rückmeldung."; Show("ki-fragen"); };
+            var fix = new TextBox { Name = "ask-fix", PlaceholderText = "Was ist richtig? Trendo merkt es sich.", Width = 320 };
+            var bad = new Button { Name = "ask-bad", Content = "Verbessern" };
+            bad.Click += (_, _) => { Wissen.Feedback(lq, la, false, fix.Text); _askState = string.IsNullOrWhiteSpace(fix.Text) ? "Danke. Schreib beim nächsten Mal dazu, was richtig ist – dann lernt Trendo daraus." : "Gemerkt. Trendo nutzt die Korrektur bei der nächsten Frage."; Show("ki-fragen"); };
+            sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { good, fix, bad } });
+        }
         var hist = Intel.History(5);
         if (hist.Count > 0)
         {

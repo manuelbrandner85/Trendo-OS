@@ -65,3 +65,48 @@ public class X05_FreeAi
         Assert.False(KiCatalog.Fits(KiCatalog.Models.First(m => m.Tag == "mistral:7b"), new HardwareInfo(8 * G, null, 0)));
     }
 }
+
+public class CORE10_Knowledge
+{
+    [Fact(DisplayName = "CORE-10: Suche findet Wissen trotz Umlauten und Mehrzahl, bleibt nach Neustart erhalten")]
+    public void Search_persist()
+    {
+        using var f = new Fixture();
+        var k = new KnowledgeStore(f.Root, f.Core.Audit);
+        k.Add("Stadtwerke", "Meine Kundennummer bei den Stadtwerken lautet 4711.");
+        k.Add("Garten", "Tomaten brauchen viel Wasser.");
+        var k2 = new KnowledgeStore(f.Root, f.Core.Audit);
+        Assert.Equal("Stadtwerke", k2.Search("kundennummer stadtwerke")[0].Item.Title);
+        Assert.Equal("Garten", k2.Search("Tomate")[0].Item.Title);
+        Assert.Empty(k2.Search("Flugzeug"));
+        Assert.True(k2.Remove(k2.All()[0].Id)); Assert.Single(new KnowledgeStore(f.Root, f.Core.Audit).All());
+    }
+
+    [Fact(DisplayName = "CORE-10: Ordner einlesen nur Textdateien, keine Doppelten")]
+    public void Import_folder()
+    {
+        using var f = new Fixture();
+        var d = Path.Combine(f.Root, "in"); Directory.CreateDirectory(d);
+        File.WriteAllText(Path.Combine(d, "a.md"), "# Rezept\nApfelkuchen mit Zimt");
+        File.WriteAllBytes(Path.Combine(d, "b.png"), [1, 2, 3]);
+        var k = new KnowledgeStore(f.Root, f.Core.Audit);
+        Assert.Equal((1, 1), k.Import(d));
+        Assert.Equal((0, 2), k.Import(d));
+        Assert.NotEmpty(k.Search("zimt"));
+    }
+
+    [Fact(DisplayName = "CORE-10: Korrektur wird Wissen und fließt in die nächste KI-Antwort")]
+    public async Task Learns_from_feedback()
+    {
+        using var f = new Fixture();
+        var k = new KnowledgeStore(f.Root, f.Core.Audit);
+        Assert.Null(k.Feedback("Wie heißt mein Hund?", "Weiß ich nicht", true));
+        k.Feedback("Wie heißt mein Hund?", "Bello", false, "Mein Hund heißt Rex.");
+        Assert.Equal((1, 1), k.FeedbackStats());
+        var ki = new FakeKi("A");
+        var ic = new IntelligenceCore(f.Root, f.Core.Audit, () => [ki], (q, n) => k.Search(q, n).Select(h => (h.Item.Title, h.Item.Text)).ToList());
+        var a = await ic.AskAsync(new KiRequest("Wie heißt mein Hund"));
+        Assert.Contains("Rex", ki.Calls[0][0].Content);
+        Assert.Single(a.Sources);
+    }
+}
