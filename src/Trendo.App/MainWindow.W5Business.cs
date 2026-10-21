@@ -63,6 +63,7 @@ public partial class MainWindow
         foreach (var p in v.Parts) res.Children.Add(P($"{p.Label}: {p.Points}/{p.Max} – {p.Why}", null, 11));
         res.Children.Add(P("Das ist eine Schätzung aus deinen Zahlen, keine Garantie.", null, 10));
         sp.Children.Add(Card(new StackPanel { Children = { H("3. Ergebnis", 14), res } }));
+        sp.Children.Add(SmallBizCheck("biz-ku"));
         return BusinessPage("Business-Studio", sp);
     }
 }
