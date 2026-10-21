@@ -22,7 +22,7 @@ public class W6_Catalog
         string[] ids = ["SPEC-01", "SPEC-02", "SPEC-03", "SPEC-04", "SPEC-05", "SPEC-06", "SPEC-08", "SPEC-09", "SPEC-10", "SPEC-13", "SPEC-14", "SPEC-15", "SPEC-16", "CORE-09"];
         foreach (var id in ids)
         {
-            var md = File.ReadAllText(Path.Combine(root, "docs", "w6-katalog", id + ".md"));
+            var md = File.ReadAllText(Path.Combine(root, "docs", "w6-katalog", id + ".md")).Replace("\r\n", "\n"); // Windows-Checkout: CRLF
             Assert.Contains("**PROPOSED**", md); Assert.DoesNotContain("APPROVED)", md.Replace("(nicht APPROVED)", ""));
             var rows = Regex.Matches(md, @"^\| F(\d\d) \| [^|]+ \|[^|]*\| (gebaut|offen) \| `([^`]+)` \|$", RegexOptions.Multiline).ToList();
             Assert.True(reg[id] == rows.Count, $"{id}: {rows.Count} statt {reg[id]} Funktionen");
