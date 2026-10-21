@@ -1,0 +1,4 @@
+Nachweis FENSTER-GROESSE – Linux-Box (nicht Windows-PC), 22.10.2026 01:31 MESZ, Commit-Basis 99c1a32
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 543 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   414, Skipped:    10, Total:   424, Duration: 14 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   129, Skipped:     0, Total:   129, Duration: 2 m 59 s - Trendo.App.Tests.dll (net10.0)
