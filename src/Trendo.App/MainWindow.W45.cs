@@ -18,8 +18,9 @@ public partial class MainWindow
     private void InitWave45()
     {
         InitW4Dev();
-        InitW4Media();
         InitW4Oss();
+        InitW4Media();
+        InitW4Studio3D();
     }
 
     private void RegisterTab(List<(string, string, string)> tabs, string key, string label, string module, Func<Control> view, params string[] words)
@@ -65,7 +66,7 @@ public partial class MainWindow
 
     private string WorkFolder(string sub)
     {
-        var root = string.IsNullOrEmpty(_settings.ProjectsFolder) ? Path.Combine(_core.DataRoot, "projekte") : _settings.ProjectsFolder;
+        var root = string.IsNullOrEmpty(_settings.ProjectsFolder) || !Path.IsPathRooted(_settings.ProjectsFolder) ? Path.Combine(_core.DataRoot, "projekte") : _settings.ProjectsFolder;
         var d = Path.Combine(root, sub); Directory.CreateDirectory(d); return d;
     }
 
