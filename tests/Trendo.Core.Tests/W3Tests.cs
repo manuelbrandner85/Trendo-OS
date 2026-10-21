@@ -183,3 +183,44 @@ public class SYS06_Share
         Assert.False(FolderShare.IsPrivateLan(System.Net.IPAddress.Parse("172.32.0.1")));
     }
 }
+
+public class SYS09_Mail
+{
+    [Fact(DisplayName = "SYS-09: Kontakte speichern, vCard ein- und ausgeben, ungültige Adresse abgelehnt")]
+    public void Contacts()
+    {
+        using var f = new Fixture();
+        var m = new MailCenter(f.Root, f.Core.Audit);
+        m.AddContact("Anna Müller", "anna@example.de", "0171 1");
+        Assert.Throws<ArgumentException>(() => m.AddContact("X", "kein-mail"));
+        var vcf = m.ExportVcf();
+        var m2 = new MailCenter(Path.Combine(f.Root, "b"), f.Core.Audit);
+        Directory.CreateDirectory(Path.Combine(f.Root, "b"));
+        Assert.Equal(2, m2.ImportVcf(vcf + "BEGIN:VCARD\nVERSION:3.0\nN:Schmidt;Bernd;;;\nEMAIL;TYPE=WORK:bernd@example.com\nEND:VCARD\n"));
+        Assert.Equal(0, m2.ImportVcf(vcf)); // keine Doppelten
+        Assert.Equal(["Anna Müller", "Schmidt Bernd"], m2.Contacts().Select(c => c.Name));
+        Assert.Single(new MailCenter(f.Root, f.Core.Audit).Find("müller"));
+    }
+
+    [Fact(DisplayName = "SYS-09: Entwurf als .eml (Umlaute korrekt, X-Unsent) und mailto; Prüfung findet Fehler")]
+    public void Draft()
+    {
+        var d = new MailDraft("anna@example.de", "Grüße aus Köln", "Hallo Anna,\nanbei das Foto.");
+        var eml = MailCenter.ToEml(d, new DateTimeOffset(2026, 10, 21, 20, 0, 0, TimeSpan.FromHours(2)));
+        Assert.StartsWith("X-Unsent: 1\r\n", eml); Assert.Contains("+0200", eml);
+        var back = MailCenter.ParseEml(eml);
+        Assert.Equal("Grüße aus Köln", back.Subject); Assert.Equal("Hallo Anna,\r\nanbei das Foto.", back.Body);
+        Assert.Contains("subject=Gr%C3%BC%C3%9Fe", MailCenter.MailTo(d));
+        Assert.Contains(MailCenter.Check(d), x => x.Contains("Anhang"));
+        Assert.Equal(2, MailCenter.Check(new MailDraft("x@", "", "")).Count);
+        Assert.Empty(MailCenter.Check(new MailDraft("a@b.de, c@d.org", "Hi", "Text")));
+    }
+
+    [Fact(DisplayName = "SYS-09: Eingegangene E-Mail (multipart, quoted-printable) wird lesbar")]
+    public void Read_eml()
+    {
+        var raw = "From: =?UTF-8?Q?J=C3=BCrgen?= <j@x.de>\r\nTo: me@x.de\r\nSubject: =?UTF-8?B?UmVjaG51bmcgw5xiZXJzaWNodA==?=\r\nContent-Type: multipart/alternative; boundary=\"b1\"\r\n\r\n--b1\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: quoted-printable\r\n\r\nSch=C3=B6ne Gr=C3=BC=C3=9Fe\r\n--b1\r\nContent-Type: text/html\r\n\r\n<b>x</b>\r\n--b1--\r\n";
+        var m = MailCenter.ParseEml(raw);
+        Assert.Equal("Rechnung Übersicht", m.Subject); Assert.StartsWith("Jürgen", m.From); Assert.Equal("Schöne Grüße", m.Body);
+    }
+}
