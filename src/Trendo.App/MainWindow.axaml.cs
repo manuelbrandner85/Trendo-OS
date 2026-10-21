@@ -72,6 +72,7 @@ public sealed partial class MainWindow : Window
         Func<string, bool>? exists = opt.Isolated ? p => Path.GetFullPath(p).StartsWith(Path.GetFullPath(core.DataRoot), StringComparison.OrdinalIgnoreCase) && File.Exists(p) : null;
         _deps = new DependencyManager(core.Audit, new RealProcessRunner(), fileExists: exists) { ConsentFile = Path.Combine(core.DataRoot, "deps-consent.txt"), ToolsFile = Path.Combine(core.DataRoot, "tools.json") };
         _deps.OllamaUp = opt.Isolated ? () => Task.FromResult(false) : _ollama.IsUpAsync;
+        StartupTrace.Mark("ctor.deps");
         _settings = UserSettings.Load(core.DataRoot); ApplyTheme(_settings);
         // Felder wurden vor ApplyTheme erzeugt: Schriftfarben nachziehen
         _clock.Foreground = Text; _kiText.Foreground = Brush.Parse(C("#E6EDF7", "#1B2A44")); _kiStatus.Foreground = Muted; _depLog.Foreground = Muted;
@@ -80,6 +81,7 @@ public sealed partial class MainWindow : Window
         Width = 1440; Height = 900; MinWidth = 960; MinHeight = 600; WindowState = WindowState.Maximized;
         Background = Brush.Parse("#050B18");
 
+        StartupTrace.Mark("ctor.theme");
         var req = TrendoCore.FindRequirements(AppContext.BaseDirectory);
         _studios = req is null ? [] : _core.Studios.Load(req, probe);
         StartupTrace.Mark("studios.loaded");
@@ -91,12 +93,14 @@ public sealed partial class MainWindow : Window
         // Echter Hintergrund-Blur: unscharfe Kopie des Wallpapers, sichtbar nur dort, wo Glas-Panels liegen (Maske = Alpha der Oberfläche)
         if (BlurredWallpaper(ui) is { } blur) { root.Children.Add(blur); Grid.SetRowSpan(blur, 2); }
         Grid.SetRowSpan(ui, 2); root.Children.Add(ui);
+        StartupTrace.Mark("ctor.wallpaper");
         var top = TopBar(); ui.Children.Add(top);
         var body = new Grid { ColumnDefinitions = new ColumnDefinitions("192,*,322"), RowDefinitions = new RowDefinitions("*,Auto"), Margin = new Thickness(8, 10, 8, 4) };
         Grid.SetRow(body, 1); ui.Children.Add(body);
         var left = LeftColumn(); Grid.SetRowSpan(left, 2); body.Children.Add(left);
         Grid.SetColumn(_center, 1); _center.Margin = new Thickness(12, 0, 12, 0); body.Children.Add(_center);
         var dock = Dock(); Grid.SetColumn(dock, 1); Grid.SetRow(dock, 1); body.Children.Add(dock);
+        StartupTrace.Mark("ctor.left+dock");
         var right = RightColumn(); Grid.SetColumn(right, 2); Grid.SetRowSpan(right, 2); body.Children.Add(right);
         _status.IsVisible = false; // Statusinfos stehen unter System/Einstellungen und als Tooltip
         // Designfläche skaliert proportional (Konzept ist für ~1440 px Breite gestaltet), damit kleine Bildschirme nicht abschneiden
@@ -124,14 +128,17 @@ public sealed partial class MainWindow : Window
             var key = order[i];
             KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.D1 + i, KeyModifiers.Control), Command = new RelayCommand(() => Show(key)) });
         }
-        InitWave1(); InitWave45(); InitWave23(); InitW7(); _query = opt.Query ?? "";
+        StartupTrace.Mark("ctor.layout");
+        InitWave1(); InitWave45(); InitWave23(); InitW7(); StartupTrace.Mark("ctor.initwaves"); _query = opt.Query ?? "";
         InitSetup(opt);
         Show(opt.Page ?? (NeedsSetup(opt) ? "einrichtung" : "start"));
+        StartupTrace.Mark("ctor.show");
         RefreshStatusBar();
+        StartupTrace.Mark("ctor.statusbar");
 
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         timer.Tick += (_, _) => Tick();
-        timer.Start(); Tick();
+        timer.Start(); Tick(); StartupTrace.Mark("ctor.tick");
 
         if (opt.ApiPort is { } port)
         {
