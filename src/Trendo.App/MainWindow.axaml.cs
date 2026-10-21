@@ -486,6 +486,7 @@ public sealed partial class MainWindow : Window
             }
         };
         Grid.SetColumn(hero, 1); g.Children.Add(hero);
+        DesktopMenu(g);
         return g;
     }
 
