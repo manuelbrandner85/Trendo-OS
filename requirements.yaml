@@ -231,8 +231,9 @@ modules:
   name: Electronics & PCB 2.0
   approved_expansion_functions: '16'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w23/SPEC-02.md
 - id: SPEC-03
   name: Engineering & Simulation 2.0
   approved_expansion_functions: '16'
