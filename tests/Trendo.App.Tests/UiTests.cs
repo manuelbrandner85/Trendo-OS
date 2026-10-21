@@ -156,7 +156,7 @@ public class QA019_OfflineUi
 /// Design-Ehrlichkeit: neue Oberfläche zeigt nur echte Zustände
 public class DesignHonesty
 {
-    [AvaloniaFact(DisplayName = "Design: 9 Studio-Kacheln mit echtem Status-Badge, keines als Bereit")]
+    [AvaloniaFact(DisplayName = "Design: 9 Studio-Kacheln mit echtem Status-Badge – gleich dem Status aus requirements.yaml")]
     public void Tiles_have_real_badges()
     {
         var (w, _, _) = Ui.Open();
@@ -165,8 +165,11 @@ public class DesignHonesty
         foreach (var t in tiles)
         {
             var name = Avalonia.Automation.AutomationProperties.GetName(t);
-            Assert.DoesNotContain("Bereit", name);
-            Assert.Matches("Noch nicht gebaut|Nicht verbunden|Blockiert|Status unbekannt", name);
+            var id = t.Name!["tile-".Length..];
+            var req = Path.Combine(AppContext.BaseDirectory, "requirements.yaml");
+            var st = new StudioRegistry().Load(req, new Probe("browser")).Single(x => x.Id == id);
+            Assert.Contains(StudioRegistry.GermanLabel(st.Capability), name);
+            if (st.Capability == Capability.Ready) Assert.True(StatusRules.Done(st.ImplementationStatus, st.TestStatus));
         }
         w.Close();
     }

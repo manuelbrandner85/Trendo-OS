@@ -3,7 +3,16 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace Trendo.Core;
 
-public enum Capability { Ready, NotConnected, Blocked, SpecOnly, Rejected }
+public enum Capability { Ready, NotConnected, Blocked, SpecOnly, Rejected, InProgress }
+
+/// <summary>Eine Regel für „fertig“: gebaut UND mit Beleg getestet (alte PASS-Werte zählen weiter).</summary>
+public static class StatusRules
+{
+    public static bool Built(string impl) => impl is "IMPLEMENTED" or "TESTED" or "ACCEPTED" or "RELEASED";
+    public static bool Tested(string test) => test is "PASS" or "TESTED" or "TESTED_BOX" or "PC_VERIFIED";
+    public static bool Done(string impl, string test) => Built(impl) && Tested(test);
+    public static bool Started(string impl) => impl is "IN_PROGRESS" or "PC_VERIFIED_PARTIAL" || Built(impl);
+}
 
 public sealed record StudioEntry(string Id, string Name, string ApprovalStatus, string ImplementationStatus,
     string TestStatus, Capability Capability, string Reason);
@@ -31,8 +40,9 @@ public sealed class StudioRegistry
             if (appr.StartsWith("REJECTED")) { cap = Capability.Rejected; why = "Erweiterung abgelehnt"; }
             else if (RequiredTools.TryGetValue(id, out var tool) && !probe.IsAvailable(tool))
             { cap = Capability.Blocked; why = $"Benötigtes Programm nicht gefunden: {tool}"; }
-            else if (impl is "IMPLEMENTED" or "TESTED" or "ACCEPTED" or "RELEASED" && test == "PASS")
-            { cap = Capability.Ready; why = "Implementiert und getestet"; }
+            else if (StatusRules.Done(impl, test))
+            { cap = Capability.Ready; why = test == "PC_VERIFIED" ? "Gebaut, getestet und auf dem PC geprüft" : "Gebaut und automatisch getestet"; }
+            else if (StatusRules.Started(impl)) { cap = Capability.InProgress; why = "Teilweise gebaut – einige Funktionen fehlen noch"; }
             else if (RequiredTools.ContainsKey(id)) { cap = Capability.NotConnected; why = "Programm ist da, die Verbindung zu Trendo fehlt noch"; }
             else { cap = Capability.SpecOnly; why = "Geplant – noch nicht gebaut"; }
             return new StudioEntry(id, S("name"), appr, impl, test, cap, why);
@@ -45,6 +55,7 @@ public sealed class StudioRegistry
         Capability.NotConnected => "Nicht verbunden",
         Capability.Blocked => "Blockiert",
         Capability.Rejected => "Abgelehnt",
+        Capability.InProgress => "In Arbeit",
         _ => "Noch nicht gebaut",
     };
 }

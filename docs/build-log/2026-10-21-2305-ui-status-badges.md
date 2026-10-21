@@ -1,0 +1,2 @@
+# UI-Review gegen Konzeptbild
+Abweichungen auf dem PC (0.9.2): Studio-Kacheln zeigten „Noch nicht gebaut“, obwohl Module gebaut + PC-geprüft sind (Statusregel kannte nur PASS); Briefstudio-Titel abgeschnitten, englische Untertitel. Fix: gemeinsame StatusRules (PASS/TESTED/TESTED_BOX/PC_VERIFIED), neuer Status „In Arbeit“; Fortschrittsseite gleich. Kachel „Briefstudio – Briefe, Ämter & Recht“, Online Business „Gründen & Verkaufen“. Test prüft Badge = Status aus requirements.yaml. PC-Log c93e984 unter reports/pc-0.9.2b.
