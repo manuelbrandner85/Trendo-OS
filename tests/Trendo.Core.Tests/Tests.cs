@@ -393,3 +393,25 @@ public class Dependencies_Core
         Assert.Equal("pull qwen2.5:0.5b", r.Calls[0].A);
     }
 }
+
+public class ToolCheck_Core
+{
+    sealed class R(int exit) : IProcessRunner
+    { public Task<(int Exit, string Output)> RunAsync(string f, string a, Action<string>? l = null, CancellationToken c = default) => Task.FromResult((exit, "Blender 4.2.0\nmore")); }
+
+    [Fact(DisplayName = "Prüfung: vorhandenes Programm wird gestartet (--version), integriert und nicht neu installiert; kaputt = Broken")]
+    public async Task Check_working_and_broken()
+    {
+        using var f = new Fixture();
+        var files = new HashSet<string> { @"P\Blender Foundation\Blender 4.2\blender.exe" };
+        DependencyManager M(int exit) => new(f.Core.Audit, new R(exit), p => p.Replace("%ProgramFiles%", "P"), x => files.Contains(x) || x.Contains('*') && files.Any(y => y.StartsWith(x.Split('*')[0])))
+        { ToolsFile = Path.Combine(f.Core.DataRoot, "tools.json") };
+        var ok = await M(0).CheckAsync(DependencyCatalog.Get("blender"));
+        Assert.Equal(ToolState.Working, ok.State); Assert.Equal("Blender 4.2.0", ok.Version);
+        Assert.Contains("blender", File.ReadAllText(Path.Combine(f.Core.DataRoot, "tools.json")));
+        var bad = await M(1).CheckAsync(DependencyCatalog.Get("blender"));
+        Assert.Equal(ToolState.Broken, bad.State);
+        var miss = await new DependencyManager(f.Core.Audit, new R(0), p => p, _ => false).CheckAsync(DependencyCatalog.Get("git"));
+        Assert.Equal(ToolState.Missing, miss.State);
+    }
+}

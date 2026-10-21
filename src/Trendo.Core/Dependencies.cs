@@ -93,8 +93,36 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
 {
     private readonly Func<string, string> _expand = expand ?? Environment.ExpandEnvironmentVariables;
     private readonly Func<string, bool> _exists = fileExists ?? FileExistsGlob;
+    private readonly bool _customExists = fileExists is not null;
     public string? ConsentFile { get; init; }
     public IProcessRunner Runner { get; set; } = runner;
+
+    public string? ToolsFile { get; init; }
+    private Dictionary<string, string> LoadTools() => ToolsFile is not null && File.Exists(ToolsFile)
+        ? System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(ToolsFile)) ?? [] : [];
+    /// <summary>Gespeicherter (automatisch konfigurierter) Pfad eines bereits vorhandenen Programms.</summary>
+    public string? Integrated(string id) => LoadTools().GetValueOrDefault(id);
+    public void Integrate(string id, string path)
+    {
+        if (ToolsFile is null) return;
+        var t = LoadTools(); if (t.GetValueOrDefault(id) == path) return;
+        t[id] = path; File.WriteAllText(ToolsFile, System.Text.Json.JsonSerializer.Serialize(t, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+        audit.Append("app", "deps.integrated", $"{id} → {System.IO.Path.GetFileName(path)}");
+    }
+    public bool Exists(string p) => _exists(p);
+    public string? FileVersion(string p) { try { return System.Diagnostics.FileVersionInfo.GetVersionInfo(p).FileVersion; } catch { return null; } }
+
+    /// <summary>PATH und Registry „App Paths“ (HKCU/HKLM) – findet auch Installationen an ungewöhnlichen Orten.</summary>
+    public string? FindOnSystem(Component c)
+    {
+        if (!StudioTools.Verify.TryGetValue(c.Id, out var v)) return null;
+        foreach (var d in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(System.IO.Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+        { var f = System.IO.Path.Combine(d, v.Exe); if (_exists(f)) return f; }
+        if (OperatingSystem.IsWindows())
+            foreach (var hive in new[] { Microsoft.Win32.Registry.CurrentUser, Microsoft.Win32.Registry.LocalMachine })
+                if (hive.OpenSubKey($@"Software\Microsoft\Windows\CurrentVersion\App Paths\{v.Exe}")?.GetValue(null) is string p && _exists(p.Trim('"'))) return p.Trim('"');
+        return null;
+    }
 
     public bool HasConsent => ConsentFile is not null && File.Exists(ConsentFile);
 
@@ -124,7 +152,7 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
         }
     }
 
-    public string? ResolvePath(Component c) => c.DetectPaths?.Select(_expand).Where(_exists).Select(p => p.Contains('*') ? ResolveGlob(p) : p).FirstOrDefault(p => p is not null);
+    public string? ResolvePath(Component c) => c.DetectPaths?.Select(_expand).Where(_exists).Select(p => p.Contains('*') ? ResolveGlob(p) ?? (_customExists ? p : null) : p).FirstOrDefault(p => p is not null);
 
     /// <summary>Installiert automatisch (AutoUser/AutoElevated). Guided/Bundled werfen.</summary>
     public async Task<bool> InstallAsync(Principal by, Component c, Action<string>? progress = null, CancellationToken ct = default)

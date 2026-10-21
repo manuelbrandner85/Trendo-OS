@@ -66,7 +66,7 @@ public sealed class MainWindow : Window
     public MainWindow(TrendoCore core, AppOptions opt, IToolProbe probe)
     {
         _opt = opt; _core = core; _probe = probe;
-        _deps = new DependencyManager(core.Audit, new RealProcessRunner()) { ConsentFile = Path.Combine(core.DataRoot, "deps-consent.txt") };
+        _deps = new DependencyManager(core.Audit, new RealProcessRunner()) { ConsentFile = Path.Combine(core.DataRoot, "deps-consent.txt"), ToolsFile = Path.Combine(core.DataRoot, "tools.json") };
         FirstStartDefaults();
         Title = "Trendo OS";
         Width = 1440; Height = 900; MinWidth = 960; MinHeight = 600; WindowState = WindowState.Maximized;
@@ -101,7 +101,7 @@ public sealed class MainWindow : Window
         _showMap = new()
         {
             ["start"] = DesktopView, ["studios"] = StudiosView, ["projects"] = ProjectsView,
-            ["approvals"] = ApprovalsView, ["system"] = SystemView, ["apps"] = AppsView, ["ki"] = KiView, ["settings"] = SettingsView, ["components"] = ComponentsView,
+            ["approvals"] = ApprovalsView, ["system"] = SystemView, ["apps"] = AppsView, ["ki"] = KiView, ["settings"] = SettingsView, ["components"] = ComponentsView, ["studio-deps"] = StudioDepsView, ["keys"] = KeysView,
         };
         string[] order = ["start", "studios", "projects", "approvals", "system"];
         for (var i = 0; i < order.Length; i++)
@@ -109,7 +109,7 @@ public sealed class MainWindow : Window
             var key = order[i];
             KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.D1 + i, KeyModifiers.Control), Command = new RelayCommand(() => Show(key)) });
         }
-        Show(opt.Page ?? (opt.FirstRun && !_deps.HasConsent ? "components" : "start"));
+        Show(opt.Page ?? "start");
         RefreshStatusBar();
 
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
@@ -314,7 +314,7 @@ public sealed class MainWindow : Window
             };
             Avalonia.Automation.AutomationProperties.SetName(t, $"{title}: {badge.Text}");
             ToolTip.SetTip(t, st?.Reason ?? "Status unbekannt");
-            t.Click += (_, _) => { _studioFilter = id; Show("studios"); };
+            t.Click += async (_, _) => await OpenStudio(id, title);
             tiles.Children.Add(t);
         }
         var all = new Button { Name = "btn-all-studios", Content = "Alle anzeigen", FontSize = 11, Padding = new Thickness(10, 3), HorizontalAlignment = HorizontalAlignment.Right };
@@ -645,6 +645,121 @@ public sealed class MainWindow : Window
         return Page("Komponenten", sp);
     }
 
+    // ---------- Studio-Klick: erkennen → prüfen → einmal fragen → installieren ----------
+    private string _depStudio = "", _depStudioTitle = "";
+    private List<ToolCheck> _depChecks = [];
+    public Func<string, Task<bool>>? KeyValidatorOverride { get; set; }
+
+    public async Task OpenStudio(string id, string title)
+    {
+        _studioFilter = id;
+        if (!StudioTools.Required.TryGetValue(id, out var need)) { Show("studios"); return; }
+        _depStudio = id; _depStudioTitle = title; _depChecks = [];
+        _depLog.Text = $"{title}: prüfe benötigte Programme …"; Show("studio-deps");
+        foreach (var t in need) _depChecks.Add(await _deps.CheckAsync(DependencyCatalog.Get(t)));
+        _core.Audit.Append(Principal.LocalOwner.Name, "deps.check", $"{id}: " + string.Join(", ", _depChecks.Select(c => $"{c.Component.Id}={c.State}")));
+        _depLog.Text = _depChecks.All(c => c.Ok) ? $"{title}: alle benötigten Programme gefunden und funktionsfähig." : "";
+        if (_depChecks.All(c => c.Ok)) { ReloadStudios(); Show("studios"); } else Show("studio-deps");
+    }
+
+    private Control StudioDepsView()
+    {
+        var sp = new StackPanel { Spacing = 8 };
+        (_depProgress.Parent as Panel)?.Children.Remove(_depProgress); (_depLog.Parent as Panel)?.Children.Remove(_depLog);
+        foreach (var c in _depChecks)
+        {
+            var comp = c.Component;
+            var line = c.State switch
+            {
+                ToolState.Working => $"✓ {comp.Name} – {c.Detail}{(c.Version is { } v ? $" ({v})" : "")}",
+                ToolState.Broken => $"⚠ {comp.Name} ist installiert, startet aber nicht: {c.Detail}",
+                _ => $"✗ {comp.Name} fehlt",
+            };
+            sp.Children.Add(P(line, Text, 13));
+            if (c.Ok) continue;
+            var ask = new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12) };
+            var row = new StackPanel { Spacing = 6 };
+            row.Children.Add(new TextBlock { Name = "ask-" + comp.Id, Text = $"{_depStudioTitle} braucht {comp.Name}. Jetzt installieren?", Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
+            row.Children.Add(P($"Lizenz: {comp.License} · {comp.Reason}{(comp.ApproxMb > 0 ? $" · ca. {comp.ApproxMb} MB" : "")}", null, 11));
+            var btns = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+            if (comp.Mode == DeliveryMode.Guided)
+            {
+                var g = new Button { Name = "btn-guide-" + comp.Id, Content = "Offiziellen Installer öffnen", IsEnabled = !_core.Offline };
+                g.Click += (_, _) => { _core.Integrations.LaunchDirect(Principal.LocalOwner, comp.OfficialUrl!, _core.Audit); _depLog.Text = $"{comp.Name}: Herstellerseite geöffnet. Nach der Installation das Studio erneut öffnen – der Pfad wird dann automatisch übernommen."; };
+                btns.Children.Add(g);
+            }
+            else
+            {
+                var y = new Button { Name = "btn-yes-" + comp.Id, Content = comp.Mode == DeliveryMode.AutoElevated ? "Ja, installieren (Windows fragt nach Admin)" : "Ja, installieren", Background = Accent, IsEnabled = !_depBusy && !_core.Offline };
+                y.Click += async (_, _) =>
+                {
+                    // Freigabe protokolliert über das Approval-Gate (einmalig, zielgebunden)
+                    var req = _core.Approvals.Request(Principal.LocalOwner, "deps.install", $"{comp.Name} für {_depStudioTitle} installieren", comp.Id);
+                    _core.Approvals.Approve(req.Id, Principal.LocalOwner);
+                    if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
+                    if (comp.Id == "model" && !_deps.IsInstalled(DependencyCatalog.Get("ollama"))) await InstallOne(DependencyCatalog.Get("ollama"), refresh: false);
+                    await InstallOne(comp, refresh: false);
+                    await OpenStudio(_depStudio, _depStudioTitle);
+                };
+                btns.Children.Add(y);
+            }
+            var later = new Button { Name = "btn-later-" + comp.Id, Content = "Später" };
+            later.Click += (_, _) => { _core.Audit.Append(Principal.LocalOwner.Name, "deps.declined", comp.Id); Show("studios"); };
+            btns.Children.Add(later);
+            row.Children.Add(btns); ask.Child = row; sp.Children.Add(ask);
+        }
+        sp.Children.Add(_depProgress); sp.Children.Add(_depLog);
+        return Page(_depStudioTitle, sp);
+    }
+
+    // ---------- API-Schlüssel (optional, nie Pflicht) ----------
+    private static readonly (string Id, string Name, string KeyUrl, string ValidateUrl, string Note)[] KeyServices =
+    [
+        ("xai", "xAI API (optional, kostenpflichtig)", "https://console.x.ai", "https://api.x.ai/v1/models", "Optional – Trendo KI läuft lokal ohne Schlüssel."),
+        ("github", "GitHub (optional)", "https://github.com/settings/tokens", "https://api.github.com/user", "Für Web & App Studio. GitHub bietet zusätzlich ein offizielles Geräte-Login (OAuth Device Flow) – noch nicht eingebaut."),
+    ];
+
+    private Control KeysView()
+    {
+        var sp = new StackPanel { Spacing = 8, Children = { P("Schlüssel werden nur im Windows-Anmeldeinformationsspeicher abgelegt und vor dem Speichern live geprüft. Konten und Schlüssel kann Trendo OS nicht selbst anlegen (Registrierung, Nutzungsbedingungen, 2FA erfordern dich).", Text) } };
+        foreach (var k in KeyServices)
+        {
+            var has = _core.Secrets.Get("TrendoOS:key-" + k.Id) is not null;
+            var box = new TextBox { Name = "txt-key-" + k.Id, PasswordChar = '•', PlaceholderText = "Schlüssel hier einfügen", Width = 320 };
+            var res = new TextBlock { Name = "key-state-" + k.Id, Text = has ? "gespeichert ✓" : "kein Schlüssel", Foreground = Muted, FontSize = 11 };
+            var get = new Button { Name = "btn-getkey-" + k.Id, Content = "Schlüssel holen", IsEnabled = !_core.Offline };
+            get.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, k.KeyUrl, _core.Audit);
+            var save = new Button { Name = "btn-savekey-" + k.Id, Content = "Prüfen & speichern", IsEnabled = !_core.Offline };
+            save.Click += async (_, _) =>
+            {
+                var key = box.Text?.Trim() ?? ""; if (key.Length == 0) return;
+                res.Text = "prüfe …";
+                var ok = KeyValidatorOverride is { } f ? await f(key) : await ValidateKey(k.ValidateUrl, key);
+                if (ok) { _core.Secrets.Set("TrendoOS:key-" + k.Id, key); box.Text = ""; }
+                _core.Audit.Append(Principal.LocalOwner.Name, ok ? "key.saved" : "key.invalid", k.Id); // Schlüssel selbst nie im Log
+                res.Text = ok ? "gültig und gespeichert ✓" : "ungültig – nicht gespeichert";
+            };
+            sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = new StackPanel { Spacing = 6, Children = {
+                new TextBlock { Text = k.Name, Foreground = Text, FontWeight = FontWeight.SemiBold }, P(k.Note, null, 11),
+                new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { get, box, save } }, res } } });
+        }
+        return Page("Dienste & Schlüssel", sp);
+    }
+
+    private static async Task<bool> ValidateKey(string url, string key)
+    {
+        try
+        {
+            using var h = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+            using var rq = new HttpRequestMessage(HttpMethod.Get, url);
+            rq.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", key);
+            rq.Headers.UserAgent.ParseAdd("TrendoOS/0.4");
+            using var r = await h.SendAsync(rq);
+            return r.IsSuccessStatusCode;
+        }
+        catch { return false; }
+    }
+
     private async Task InstallAll()
     {
         if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
@@ -681,7 +796,7 @@ public sealed class MainWindow : Window
     private Control SettingsView() => Page("Einstellungen", new StackPanel { Spacing = 6, Children = {
         P($"Version {_core.Version}", Text), P(_core.Offline ? "Offline-Modus aktiv" : "Online-Modus", Text),
         P("Logo: Konzeptvariante, nicht freigegeben. Hintergrundbild: KI-generiert für Trendo OS."),
-        P("Dock-Anpassung und Themes: noch nicht gebaut.") } });
+        P("Dock-Anpassung und Themes: noch nicht gebaut."), Nav2("Komponenten", "components"), Nav2("Dienste & Schlüssel", "keys") } });
 }
 
 internal sealed class RelayCommand(Action run) : System.Windows.Input.ICommand
