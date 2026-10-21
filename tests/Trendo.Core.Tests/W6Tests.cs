@@ -116,3 +116,23 @@ public class SPEC05_Science
         Assert.Throws<ArgumentException>(() => t.Values("Gibts"));
     }
 }
+
+public class SPEC06_Learning
+{
+    [Fact(DisplayName = "SPEC-06: Karteikarten mit SM-2-Abständen, Import, Fortschritt, dauerhaft gespeichert")]
+    public void Cards()
+    {
+        using var f = new Fixture(); var now = new DateTime(2026, 10, 1, 9, 0, 0);
+        var lb = new LearnBox(f.Root, () => now);
+        var c = lb.Add("Englisch", "Haus", "house");
+        Assert.Equal(2, lb.Import("Englisch", "Hund;dog\nKatze\tcat\nHaus;house\n# x;y\nkaputt"));
+        Assert.Equal(3, lb.DueCards().Count);
+        Assert.Equal(1, lb.Answer(c.Id, Grade.Gut).IntervalDays);
+        now = now.AddDays(1); Assert.Equal(6, lb.Answer(c.Id, Grade.Gut).IntervalDays);
+        now = now.AddDays(6); var c3 = lb.Answer(c.Id, Grade.Leicht); Assert.Equal(15, c3.IntervalDays); Assert.True(c3.Ease > 2.5);
+        lb.Answer(c.Id, Grade.Falsch); Assert.Equal(1, c.IntervalDays); Assert.Equal(1, c.Lapses); Assert.Equal(0, c.Reps);
+        Assert.DoesNotContain(new LearnBox(f.Root, () => now).DueCards(), x => x.Id == c.Id);
+        Assert.Equal(3, new LearnBox(f.Root, () => now).Progress("Englisch").Total);
+        Assert.Throws<ArgumentException>(() => lb.Add("x", "", "y"));
+    }
+}
