@@ -530,8 +530,8 @@
   "order": 8,
   "id": "SYS-08",
   "name": "Deep Web & Dark Web READ-ONLY Research Studio",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
