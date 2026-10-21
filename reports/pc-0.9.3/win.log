@@ -1,0 +1,29 @@
+[23:09:00] DRUCKEN Drucker (Anzahl / Standard): 1 / Microsoft Print to PDF – nichts gedruckt
+[23:09:01] DRUCKEN als PDF exit=0 pdf=True 15588 B
+[23:09:02] BILDSCHIRME 1: 0,0 1365×720
+[23:09:02] BILDSCHIRME Position auf echtem Schirm übernommen, Position auf fehlendem Schirm → Standardplatz
+[23:09:05] QPDF verwaltete Installation ok=True in 2888 ms → %LOCALAPPDATA%\TrendoOS\werkzeuge\qpdf
+[23:09:06] QPDF qpdf version 12.4.2: zusammengefügt exit=0, Seiten=2
+[23:09:06] QPDF Seite 2 herausgelöst exit=0, Seiten=1
+[23:09:06] AUTOSTART Ordner=1 Einträge, HKCU\Run=3 Einträge (nur gelesen)
+[23:09:06] AUTOSTART Umschalten aus→an im Temp-Ordner OK (echter Autostart unverändert)
+[23:09:06] ZUORDNUNG .pdf → Microsoft Edge
+[23:09:06] ZUORDNUNG .docx → Windows-Standard
+[23:09:06] ZUORDNUNG .xlsx → Windows-Standard
+[23:09:06] ZUORDNUNG .txt → Windows-App
+[23:09:06] ZUORDNUNG .jpg → Windows-App
+[23:09:06] ZUORDNUNG .png → Windows-App
+[23:09:06] ZUORDNUNG .mp3 → Windows-App
+[23:09:06] ZUORDNUNG .mp4 → Windows-App
+[23:09:06] ZUORDNUNG .zip → CompressedFolder
+[23:09:06] ZUORDNUNG .html → Google Chrome
+[23:09:06] ZUORDNUNG .odt → Windows-Standard
+[23:09:06] ZUORDNUNG .blend → Windows-Standard
+[23:09:06] ZUORDNUNG 8/12 mit eigener Benutzerwahl (nur gelesen)
+[23:09:09] WINGET export exit=0, 47 Pakete gelesen
+[23:09:09] WINGET Rundreise eigene Exportdatei → 47 Pakete
+[23:09:09] DEFENDER exit=0 → Keine Bedrohung gefunden.
+[23:09:10] VORLESEN Stimmen: de-DE,en-US; WAV 118636 B (stumm, nichts abgespielt)
+[23:09:10] SPRACHAUSGABE Narrator.exe vorhanden=True – Bedienung mit Narrator nur <user>ll prüfbar (nicht gestartet)
+[23:09:10] RÜCKFALL Sicherung vor Downgrade: 2 Dateien
+[23:09:10] PAPIERKORB 19 Einträge gelesen, Testdatei gefunden=True, Größe=9

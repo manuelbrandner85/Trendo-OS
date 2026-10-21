@@ -20,7 +20,7 @@ public enum DeliveryMode
 public sealed record Component(
     string Id, string Name, string Purpose, string License, DeliveryMode Mode, string Reason,
     string? WingetId = null, int ApproxMb = 0, string? OfficialUrl = null, string[]? Tools = null, string[]? DetectPaths = null,
-    string? PostInstall = null);
+    string? PostInstall = null, string? PortableZip = null, string? PortableSha256 = null);
 
 /// <summary>Katalog aller Abhängigkeiten (Quelle für Zustimmungsbildschirm, THIRD_PARTY und Tests).</summary>
 public static class DependencyCatalog
@@ -64,6 +64,9 @@ public static class DependencyCatalog
         new("inkscape", "Inkscape", "Medien Studio – Vektor", "GPL-2.0", DeliveryMode.AutoElevated, "Systemweiter Installer", "Inkscape.Inkscape", 200, "https://inkscape.org", ["inkscape"], [@"%ProgramFiles%\Inkscape\bin\inkscape.exe"]),
         new("kdenlive", "Kdenlive", "Medien Studio – Video", "GPL-3.0", DeliveryMode.AutoUser, "Pro Benutzer installierbar (winget-Benutzerinstaller vorhanden)", "KDE.Kdenlive", 300, "https://kdenlive.org", ["kdenlive"], [@"%LOCALAPPDATA%\Programs\kdenlive\bin\kdenlive.exe", @"%ProgramFiles%\kdenlive\bin\kdenlive.exe"]),
         new("audacity", "Audacity", "Medien Studio – Audio", "GPL-3.0-or-later", DeliveryMode.AutoElevated, "Systemweiter Installer", "Audacity.Audacity", 100, "https://audacityteam.org", ["audacity"], [@"%ProgramFiles%\Audacity\Audacity.exe"]),
+        new("qpdf", "qpdf", "Office – PDF zusammenfügen/teilen", "Apache-2.0", DeliveryMode.AutoUser, "Offizielles Portable-ZIP (GitHub-Release), Prüfsumme fest – ohne Admin, nur im Benutzerordner", null, 25, "https://github.com/qpdf/qpdf/releases/tag/v12.4.2", ["qpdf"],
+            [@"%LOCALAPPDATA%\TrendoOS\werkzeuge\qpdf\qpdf-*\bin\qpdf.exe", "/usr/bin/qpdf"], null,
+            "https://github.com/qpdf/qpdf/releases/download/v12.4.2/qpdf-12.4.2-msvc64.zip", "db87077e683630c1217e0e8f9a20a9749d952ab676e881c3689187763a5de25d"),
         new("tesseract", "Tesseract OCR", "Letter Studio – Texterkennung", "Apache-2.0", DeliveryMode.AutoElevated, "Systemweiter Installer", "UB-Mannheim.TesseractOCR", 100, "https://github.com/UB-Mannheim/tesseract", ["tesseract"], [@"%ProgramFiles%\Tesseract-OCR\tesseract.exe"]),
         new("unreal", "Unreal Engine", "Game Studio", "Epic EULA (nicht weitergebbar)", DeliveryMode.Guided,
             "Nur über Epic Games Launcher mit Epic-Konto erlaubt – keine automatische Installation", null, 0, "https://www.unrealengine.com/download", ["unreal"], [@"%ProgramFiles%\Epic Games\UE_*\Engine\Binaries\Win64\UnrealEditor.exe"]),
@@ -162,6 +165,9 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
         return _exists(manifest);
     }
 
+    /// <summary>Ziel für Portable-Werkzeuge (Benutzerordner, kein Admin).</summary>
+    public string ToolsRoot { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TrendoOS", "werkzeuge");
+
     public string? ResolvePath(Component c) => c.DetectPaths?.Select(_expand).Where(_exists).Select(p => p.Contains('*') ? ResolveGlob(p) ?? (_customExists ? p : null) : p).FirstOrDefault(p => p is not null);
 
     /// <summary>Installiert automatisch (AutoUser/AutoElevated). Guided/Bundled werfen.</summary>
@@ -184,6 +190,18 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
                 for (var i = 0; i < 30 && !await OllamaUp(); i++) await Task.Delay(500, ct);
             }
             r = await Runner.RunAsync(ollama, cmd["ollama ".Length..], progress, ct);
+        }
+        else if (c.PortableZip is { } url && c.PortableSha256 is { } sha)
+        {
+            // Portable: Download mit Windows-eigenem curl.exe (Core bleibt ohne Netzbibliothek), Prüfsumme fest, Entpacken nur in den Benutzerordner
+            var tmp = Path.Combine(Path.GetTempPath(), $"trendo-dl-{c.Id}-{Guid.NewGuid():N}.zip");
+            try
+            {
+                r = await Runner.RunAsync(OperatingSystem.IsWindows() ? "curl.exe" : "curl", $"-L --fail --silent --show-error -o \"{tmp}\" {url}", progress, ct);
+                if (r.exit == 0) { global::Trendo.Core.Sys.Software.InstallPortable(tmp, sha, ToolsRoot, c.Id, audit); progress?.Invoke($"{c.Name}: Prüfsumme stimmt, entpackt"); }
+            }
+            catch (InvalidOperationException e) { r = (1, e.Message); progress?.Invoke(e.Message); }
+            finally { try { File.Delete(tmp); } catch (IOException) { } }
         }
         else
         {

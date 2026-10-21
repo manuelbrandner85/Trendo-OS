@@ -199,11 +199,11 @@ public static class Pdf
     public static bool IsA4((double W, double H)? b) => b is { } x && Math.Abs(Math.Min(x.W, x.H) - 595.3) < 3 && Math.Abs(Math.Max(x.W, x.H) - 841.9) < 3;
 
     public static (string Exe, List<string> Args) MergeCmd(string? qpdf, string? pdfunite, IList<string> inputs, string output) =>
-        qpdf is not null ? (qpdf, ["--empty", "--pages", .. inputs, "--", output]) : pdfunite is not null ? (pdfunite, [.. inputs, output]) : throw new InvalidOperationException("Zum Zusammenfügen fehlt das kostenlose Programm qpdf (winget install qpdf.qpdf).");
+        qpdf is not null ? (qpdf, ["--empty", "--pages", .. inputs, "--", output]) : pdfunite is not null ? (pdfunite, [.. inputs, output]) : throw new InvalidOperationException("Zum Zusammenfügen fehlt das kostenlose Programm qpdf (Einstellungen → Zusatzprogramme → qpdf, ohne Admin).");
     public static (string Exe, List<string> Args) ExtractCmd(string? qpdf, string? pdfseparate, string input, int from, int to, string output)
     {
         if (from < 1 || to < from) throw new ArgumentException("Seitenbereich bitte wie 2-5.");
-        return qpdf is not null ? (qpdf, [input, "--pages", input, $"{from}-{to}", "--", output]) : pdfseparate is not null ? (pdfseparate, ["-f", from.ToString(), "-l", to.ToString(), input, output.Replace(".pdf", "-%d.pdf")]) : throw new InvalidOperationException("Zum Teilen fehlt das kostenlose Programm qpdf (winget install qpdf.qpdf).");
+        return qpdf is not null ? (qpdf, [input, "--pages", input, $"{from}-{to}", "--", output]) : pdfseparate is not null ? (pdfseparate, ["-f", from.ToString(), "-l", to.ToString(), input, output.Replace(".pdf", "-%d.pdf")]) : throw new InvalidOperationException("Zum Teilen fehlt das kostenlose Programm qpdf (Einstellungen → Zusatzprogramme → qpdf, ohne Admin).");
     }
     public static (int From, int To) ParseRange(string s) { var m = Regex.Match(s.Trim(), @"^(\d+)\s*(?:-\s*(\d+))?$"); if (!m.Success) throw new ArgumentException("Seitenbereich bitte wie 2-5 oder 3."); var a = int.Parse(m.Groups[1].Value); return (a, m.Groups[2].Success ? int.Parse(m.Groups[2].Value) : a); }
 
