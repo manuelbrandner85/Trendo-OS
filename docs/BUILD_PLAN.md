@@ -172,7 +172,7 @@ Online-Business-Studio, Finanzen, Studio-Fusion, Erweiterungen
 |---|---|---|---|---|
 | 1 | STUDIO-ONLINE-BUSINESS-01 | Ultimate Online Business Creation & Innovation Studio GODMODE (both modes) | IN_PROGRESS | TESTED_BOX |
 | 2 | SPEC-11 | Business & Finance 2.0 | IMPLEMENTED | TESTED_BOX |
-| 3 | X-01 | Universal Studio Fusion & Autonomous Production | NOT_STARTED | NOT_RUN |
+| 3 | X-01 | Universal Studio Fusion & Autonomous Production | IMPLEMENTED | TESTED_BOX |
 | 4 | X-04 | Extension Marketplace & Studio Evolution | NOT_STARTED | NOT_RUN |
 | 5 | X-10 | Legal Clean-Room Software Reconstruction | NOT_STARTED | NOT_RUN |
 
