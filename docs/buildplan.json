@@ -1008,8 +1008,8 @@
   "order": 14,
   "id": "CORE-09",
   "name": "Vision & Robotics Control Studio 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },

@@ -237,7 +237,7 @@ Spezial-Studios auf Basis der fertigen Kernbausteine
 | 11 | SPEC-14 | Manufacturing & CNC 2.0 | IMPLEMENTED | TESTED_BOX |
 | 12 | SPEC-15 | Broadcast & Streaming 2.0 | IMPLEMENTED | TESTED_BOX |
 | 13 | SPEC-16 | Transport & Vehicle 2.0 | IMPLEMENTED | TESTED_BOX |
-| 14 | CORE-09 | Vision & Robotics Control Studio 2.0 | NOT_STARTED | NOT_RUN |
+| 14 | CORE-09 | Vision & Robotics Control Studio 2.0 | IMPLEMENTED | TESTED_BOX |
 
 Abnahmekriterien je Modul:
 - Modul im Studio-Layout erreichbar (max. 2 Navigationsebenen, deutsche Beschriftung)

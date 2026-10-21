@@ -244,3 +244,36 @@ public class SPEC16_Ui
         Assert.Contains(l.Opened, x => x.EndsWith("fahrtenbuch-Golf.csv"));
     }
 }
+
+public static class Img
+{
+    /// <summary>Echte PNG-Datei (RGB, Filter 0) mit rotem Rechteck auf grauem Grund.</summary>
+    public static string Png(string dir, int w, int h, (int X0, int Y0, int X1, int Y1) red)
+    {
+        var raw = new MemoryStream();
+        for (var y = 0; y < h; y++) { raw.WriteByte(0); for (var x = 0; x < w; x++) { var r = x >= red.X0 && x <= red.X1 && y >= red.Y0 && y <= red.Y1; raw.Write(r ? [220, 30, 30] : [120, 120, 120]); } }
+        var z = new MemoryStream(); using (var zs = new System.IO.Compression.ZLibStream(z, System.IO.Compression.CompressionLevel.Fastest, true)) raw.WriteTo(zs);
+        var o = new MemoryStream(); o.Write([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+        void Chunk(string t, byte[] d) { var be = BitConverter.GetBytes(d.Length); Array.Reverse(be); o.Write(be); o.Write(System.Text.Encoding.ASCII.GetBytes(t)); o.Write(d); o.Write([0, 0, 0, 0]); }
+        var ih = new byte[13]; var bw = BitConverter.GetBytes(w); Array.Reverse(bw); var bh = BitConverter.GetBytes(h); Array.Reverse(bh); bw.CopyTo(ih, 0); bh.CopyTo(ih, 4); ih[8] = 8; ih[9] = 2;
+        Chunk("IHDR", ih); Chunk("IDAT", z.ToArray()); Chunk("IEND", []);
+        var p = Path.Combine(dir, "bild.png"); File.WriteAllBytes(p, o.ToArray()); return p;
+    }
+}
+
+
+public class CORE09_Ui
+{
+    [AvaloniaFact(DisplayName = "CORE-09 UI: Objekt im Bild finden, Arm rechnen, Programm speichern")]
+    public void Robot()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        w.Show(MainWindow.StudioPages["CORE-09"]);
+        var o = W6Ui.Run(w, "rob-see", ("file", Img.Png(root, 100, 100, (60, 60, 79, 79))));
+        Assert.Contains("x = 278,0 mm", o);
+        Assert.Contains("Kein", W6Ui.Run(w, "rob-see", ("color", "grün")));
+        Assert.Contains("Kontrolle: Greifer landet bei 150,0 / 50,0 / 40,0", W6Ui.Run(w, "rob-ik"));
+        Assert.Contains("⚠", W6Ui.Run(w, "rob-ik", ("x", "900")));
+        Assert.Contains("Gespeichert", W6Ui.Run(w, "rob-prog"));
+    }
+}

@@ -308,3 +308,45 @@ public class SPEC16_Vehicle
         Assert.Contains("dienstlich;Kunde Müller", VehicleBook.LogCsv(v)); Assert.Equal("M-AB 123", new VehicleBook(f.Root).Get("golf").Plate);
     }
 }
+
+public static class Img
+{
+    /// <summary>Echte PNG-Datei (RGB, Filter 0) mit rotem Rechteck auf grauem Grund.</summary>
+    public static string Png(string dir, int w, int h, (int X0, int Y0, int X1, int Y1) red)
+    {
+        var raw = new MemoryStream();
+        for (var y = 0; y < h; y++) { raw.WriteByte(0); for (var x = 0; x < w; x++) { var r = x >= red.X0 && x <= red.X1 && y >= red.Y0 && y <= red.Y1; raw.Write(r ? [220, 30, 30] : [120, 120, 120]); } }
+        var z = new MemoryStream(); using (var zs = new System.IO.Compression.ZLibStream(z, System.IO.Compression.CompressionLevel.Fastest, true)) raw.WriteTo(zs);
+        var o = new MemoryStream(); o.Write([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+        void Chunk(string t, byte[] d) { var be = BitConverter.GetBytes(d.Length); Array.Reverse(be); o.Write(be); o.Write(System.Text.Encoding.ASCII.GetBytes(t)); o.Write(d); o.Write([0, 0, 0, 0]); }
+        var ih = new byte[13]; var bw = BitConverter.GetBytes(w); Array.Reverse(bw); var bh = BitConverter.GetBytes(h); Array.Reverse(bh); bw.CopyTo(ih, 0); bh.CopyTo(ih, 4); ih[8] = 8; ih[9] = 2;
+        Chunk("IHDR", ih); Chunk("IDAT", z.ToArray()); Chunk("IEND", []);
+        var p = Path.Combine(dir, "bild.png"); File.WriteAllBytes(p, o.ToArray()); return p;
+    }
+}
+
+public class CORE09_Robotics
+{
+    [Fact(DisplayName = "CORE-09: PNG/BMP lesen, Farbobjekt finden, Kinematik hin und zurück, Fahrprogramm")]
+    public void Vision_and_arm()
+    {
+        using var f = new Fixture(); Directory.CreateDirectory(f.Root);
+        var img = Vision.Load(Img.Png(f.Root, 80, 60, (10, 20, 29, 39)));
+        Assert.Equal((80, 60), (img.Width, img.Height));
+        var b = Vision.Find(img, "rot")!; Assert.Equal(400, b.Pixels); Assert.Equal(19.5, b.CenterX); Assert.Equal(29.5, b.CenterY); Assert.Equal((10, 39), (b.MinX, b.MaxY));
+        Assert.Null(Vision.Find(img, "blau"));
+        var bmp = Path.Combine(f.Root, "b.bmp");
+        using (var w = new BinaryWriter(File.Create(bmp))) { w.Write((byte)'B'); w.Write((byte)'M'); w.Write(54 + 8 * 2); w.Write(0); w.Write(54); w.Write(40); w.Write(2); w.Write(2); w.Write((short)1); w.Write((short)24); w.Write(0); w.Write(16); w.Write(0); w.Write(0); w.Write(0); w.Write(0);
+            w.Write([255, 0, 0, 0, 255, 0, 0, 0]); w.Write([0, 0, 255, 255, 255, 255, 0, 0]); }
+        var bi = Vision.Load(bmp); Assert.Equal(255, bi.Rgb[0]); Assert.Equal(255, bi.Rgb[3 * 2 + 2]); // oben links rot, unten links blau
+        Assert.Equal((100, 75), Vision.PixelToTable(40, 30, 80, 60, 200, 150));
+        var c = new ArmConfig();
+        var j = RobotArm.Inverse(c, 150, 50, 40); var (x, y, z) = RobotArm.Forward(c, j);
+        Assert.Equal(150, x, 2); Assert.Equal(50, y, 2); Assert.Equal(40, z, 2); Assert.Equal(18.435, j.Base, 2);
+        Assert.Throws<ArgumentException>(() => RobotArm.Inverse(c, 300, 0, 60));
+        var p = RobotArm.Program(c, "150 0 100\n# Kommentar\n0 150 100");
+        Assert.Equal(2, p.Count); Assert.Equal(1, p[1].Seconds, 3); // 90° Drehung bei 90°/s
+        Assert.Contains("Basis_Grad", RobotArm.Csv(p));
+        Assert.Contains("Zeile 1", Assert.Throws<ArgumentException>(() => RobotArm.Program(c, "500 0 0")).Message);
+    }
+}
