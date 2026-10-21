@@ -409,8 +409,8 @@
   "order": 3,
   "id": "CORE-03",
   "name": "AI Agent Command Center – 12 roles",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -585,8 +585,8 @@
   "order": 5,
   "id": "CORE-06",
   "name": "Ultimate Game Development Studio 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },

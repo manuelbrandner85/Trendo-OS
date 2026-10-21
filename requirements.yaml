@@ -66,8 +66,9 @@ modules:
   name: AI Agent Command Center – 12 roles
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w23/CORE-03.md
 - id: CORE-04
   name: Pi/PC/Android Fusion Engine
   approved_expansion_functions: BASE
