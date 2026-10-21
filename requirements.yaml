@@ -272,8 +272,9 @@ modules:
   name: Fashion & Product 2.0
   approved_expansion_functions: '18'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w23/SPEC-08.md
 - id: SPEC-09
   name: 3D Scanning & Reconstruction 2.0
   approved_expansion_functions: '20'
