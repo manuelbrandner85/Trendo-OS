@@ -18,13 +18,13 @@ namespace Trendo.App;
 public sealed partial class MainWindow : Window
 {
     // Farben: dunkles Blau, Glas-Panels, kühle Akzente
-    private static readonly IBrush Glass = new SolidColorBrush(Color.Parse("#B30B1730"));
-    private static readonly IBrush GlassStrong = new SolidColorBrush(Color.Parse("#D90A1428"));
-    private static readonly IBrush TileBg = new SolidColorBrush(Color.Parse("#99142445"));
-    private static readonly IBrush Edge = new SolidColorBrush(Color.Parse("#3355A8FF"));
-    private static readonly IBrush Accent = Brush.Parse("#3BA7FF");
-    private static readonly IBrush Muted = Brush.Parse("#9DB0CF");
-    private static readonly IBrush Text = Brush.Parse("#EEF3FB");
+    private static IBrush Glass = new SolidColorBrush(Color.Parse("#B30B1730"));
+    private static IBrush GlassStrong = new SolidColorBrush(Color.Parse("#D90A1428"));
+    private static IBrush TileBg = new SolidColorBrush(Color.Parse("#99142445"));
+    private static IBrush Edge = new SolidColorBrush(Color.Parse("#3355A8FF"));
+    private static IBrush Accent = Brush.Parse("#3BA7FF");
+    private static IBrush Muted = Brush.Parse("#9DB0CF");
+    private static IBrush Text = Brush.Parse("#EEF3FB");
     private static readonly CultureInfo De = new("de-DE");
 
     private readonly TrendoCore _core;
@@ -36,7 +36,7 @@ public sealed partial class MainWindow : Window
     private readonly TextBlock _kiStatus = new() { Name = "ki-status", Text = "Nicht verbunden", Foreground = Brush.Parse("#93A4C3"), FontSize = 11 };
     private readonly Ellipse _kiDot = new() { Width = 8, Height = 8, Fill = Brushes.Gray };
     private readonly TextBox _kiInput = new() { Name = "ki-input", PlaceholderText = "Deine Nachricht an Trendo …", IsEnabled = false, Margin = new Thickness(0, 8, 0, 0) };
-    private readonly TextBlock _kiText = new() { Text = "Hallo! Ich bin noch nicht verbunden. Mit „KI einrichten“ installierst du die kostenlose lokale KI – danach kannst du mir Aufgaben geben, Studios öffnen oder Fragen stellen.", Foreground = Brush.Parse("#E6EDF7"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
+    private readonly TextBlock _kiText = new() { Text = "Hallo! Ich bin noch nicht verbunden. Mit „KI einrichten“ installierst du die kostenlose lokale KI – danach kannst du mir Aufgaben geben, Studios öffnen oder Fragen stellen.", Foreground = Brush.Parse(C("#E6EDF7", "#1B2A44")), FontSize = 12, TextWrapping = TextWrapping.Wrap };
     private readonly Button _kiSetup = new() { Name = "btn-ki-setup", Content = "KI einrichten", Margin = new Thickness(0, 6, 0, 0) };
     private bool _kiConnected; private int _tick;
     private readonly ProgressBar _depProgress = new() { Name = "deps-progress", IsIndeterminate = false, IsVisible = false, Height = 6, Margin = new Thickness(0, 6) };
@@ -47,7 +47,7 @@ public sealed partial class MainWindow : Window
     private readonly TextBlock _clock = new() { Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Right };
     private readonly TextBlock _date = new() { Foreground = Muted, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Right };
     private readonly TextBlock _status = new() { Foreground = Muted, FontSize = 11 };
-    private readonly TextBlock _bellBadge = new() { Foreground = Brushes.White, FontSize = 10, FontWeight = FontWeight.Bold };
+    private readonly TextBlock _bellBadge = new() { Foreground = _theme == "hell" ? Brush.Parse("#0F1B2E") : Brushes.White, FontSize = 10, FontWeight = FontWeight.Bold };
     private readonly StackPanel _projectsPanel = new() { Spacing = 6 };
     private readonly Dictionary<string, (Arc Arc, TextBlock Value)> _rings = new();
     private readonly TextBox _search = new() { Name = "txt-search", PlaceholderText = "Suchen in Trendo OS …", Width = 220, Height = 30 };
@@ -58,6 +58,7 @@ public sealed partial class MainWindow : Window
 
     public TrendoCore Core => _core;
     public string CurrentView { get; private set; } = "";
+    public DependencyManager Deps => _deps;
 
     public MainWindow() : this(new AppOptions(null, null, 0)) { }
     public MainWindow(AppOptions opt)
@@ -68,6 +69,9 @@ public sealed partial class MainWindow : Window
         _opt = opt; _core = core; _probe = probe;
         _deps = new DependencyManager(core.Audit, new RealProcessRunner()) { ConsentFile = Path.Combine(core.DataRoot, "deps-consent.txt"), ToolsFile = Path.Combine(core.DataRoot, "tools.json") };
         _deps.OllamaUp = _ollama.IsUpAsync;
+        _settings = UserSettings.Load(core.DataRoot); ApplyTheme(_settings);
+        // Felder wurden vor ApplyTheme erzeugt: Schriftfarben nachziehen
+        _clock.Foreground = Text; _kiText.Foreground = Brush.Parse(C("#E6EDF7", "#1B2A44")); _kiStatus.Foreground = Muted; _depLog.Foreground = Muted;
         FirstStartDefaults();
         Title = "Trendo OS";
         Width = 1440; Height = 900; MinWidth = 960; MinHeight = 600; WindowState = WindowState.Maximized;
@@ -137,7 +141,8 @@ public sealed partial class MainWindow : Window
             });
         }
         Opened += OnOpened;
-        Closing += (_, _) => { _api?.DisposeAsync().AsTask().Wait(2000); _core.Shutdown(); };
+        Closing += (_, _) => { if (_reopening) return; _api?.DisposeAsync().AsTask().Wait(2000); _core.Shutdown(); };
+        InitLook(root, opt);
     }
 
     private string _apiInfo = "";
@@ -150,6 +155,7 @@ public sealed partial class MainWindow : Window
         MarkTab(key); MarkSide(key);
         _center.Children.Clear();
         _center.Children.Add(_showMap[key]());
+        AfterShow(key);
         _bellBadge.Text = _core.Approvals.Pending().Count is var n && n > 0 ? n.ToString() : "";
         RefreshProjects();
     }
@@ -260,27 +266,28 @@ public sealed partial class MainWindow : Window
         return path;
     }
 
-    private static Control? BlurredWallpaper(Visual mask)
+    private Control? BlurredWallpaper(Visual mask)
     {
+        if (_settings.Theme == "kontrast") return null;
         try
         {
-            using var s = AssetLoader.Open(new Uri("avares://TrendoOS/Assets/wallpaper.jpg"));
-            var img = new Image { Source = new Bitmap(s), Stretch = Stretch.UniformToFill, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Effect = new BlurEffect { Radius = 36 } };
-            return new Border { Name = "backdrop-blur", ClipToBounds = true, IsHitTestVisible = false, Child = img,
-                OpacityMask = new VisualBrush { Visual = mask, Stretch = Stretch.None, AlignmentX = AlignmentX.Left, AlignmentY = AlignmentY.Top, TileMode = TileMode.None } };
+            var img = _blurImg; img.Source = LoadWallpaper(_wallName); img.Stretch = Stretch.UniformToFill; img.HorizontalAlignment = HorizontalAlignment.Center; img.VerticalAlignment = VerticalAlignment.Center; img.Effect = new BlurEffect { Radius = 36 };
+            var brush = new VisualBrush { Visual = mask, Stretch = Stretch.None, AlignmentX = AlignmentX.Left, AlignmentY = AlignmentY.Top, TileMode = TileMode.None };
+            // Quelle/Ziel absolut auf die Fläche der Oberfläche festlegen – sonst verschiebt überstehender Inhalt (Glow) die Maske
+            void Fit() { var b = mask.Bounds; if (b.Width > 0) brush.SourceRect = brush.DestinationRect = new RelativeRect(0, 0, b.Width, b.Height, RelativeUnit.Absolute); }
+            mask.PropertyChanged += (_, e) => { if (e.Property == BoundsProperty) Fit(); };
+            return new Border { Name = "backdrop-blur", ClipToBounds = true, IsHitTestVisible = false, Child = img, OpacityMask = brush };
         }
         catch { return null; }
     }
 
-    private static Control Wallpaper()
+    private Control Wallpaper()
     {
         var grid = new Grid();
-        try
-        {
-            using var s = AssetLoader.Open(new Uri("avares://TrendoOS/Assets/wallpaper.jpg"));
-            grid.Children.Add(new Image { Source = new Bitmap(s), Stretch = Stretch.UniformToFill, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center });
-        }
-        catch { /* ohne Hintergrundbild weiter */ }
+        _wallImg.Source = LoadWallpaper(_wallName = _settings.CurrentWallpaper(DateTime.Now));
+        _wallImg.Stretch = Stretch.UniformToFill; _wallImg.HorizontalAlignment = HorizontalAlignment.Center; _wallImg.VerticalAlignment = VerticalAlignment.Center;
+        _wallImg.IsVisible = _settings.Theme != "kontrast";
+        grid.Children.Add(_wallImg);
         grid.Children.Add(new Border { Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
             GradientStops = { new GradientStop(Color.Parse("#33040A18"), 0), new GradientStop(Color.Parse("#00040A18"), 0.35), new GradientStop(Color.Parse("#10040A18"), 0.7), new GradientStop(Color.Parse("#66040A18"), 1) } } });
         return grid;
@@ -291,13 +298,13 @@ public sealed partial class MainWindow : Window
     {
         var bar = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto,Auto"), Height = 52,
             Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
-                GradientStops = { new GradientStop(Color.Parse("#F2081226"), 0), new GradientStop(Color.Parse("#E00A1730"), 1) } } };
+                GradientStops = { new GradientStop(Color.Parse(C("#F2081226", "#F2F2F6FC")), 0), new GradientStop(Color.Parse(C("#E00A1730", "#E0E6EDF8")), 1) } } };
         var line = new Border { Height = 1, VerticalAlignment = VerticalAlignment.Bottom, Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative),
             GradientStops = { new GradientStop(Color.Parse("#002F7BFF"), 0), new GradientStop(Color.Parse("#AA3FA0FF"), 0.5), new GradientStop(Color.Parse("#002F7BFF"), 1) } } };
         Grid.SetColumnSpan(line, 4); bar.Children.Add(line);
         var brand = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Margin = new Thickness(16, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center,
             Children = { Logo(34, glow: true), new TextBlock { Text = "Trendo OS", Foreground = Text, FontSize = 20, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center },
-                new TextBlock { Text = "Ultimate", Foreground = Brush.Parse("#C9D6EA"), FontSize = 15, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(-2, 3, 0, 0) } } };
+                new TextBlock { Text = "Ultimate", Foreground = Brush.Parse(C("#C9D6EA", "#3A4A66")), FontSize = 15, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(-2, 3, 0, 0) } } };
         bar.Children.Add(brand);
         var tabs = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(26, 0, 0, 0) };
         foreach (var (key, name, icon, col, label) in new[] {
@@ -312,10 +319,10 @@ public sealed partial class MainWindow : Window
         }
         Grid.SetColumn(tabs, 1); bar.Children.Add(tabs);
         _search.KeyDown += (_, e) => { if (e.Key == Key.Enter) { _studioFilter = _search.Text; Show("studios"); } };
-        var search = new Border { Width = 220, Height = 34, CornerRadius = new CornerRadius(9), Background = Brush.Parse("#990A1630"), BorderBrush = Brush.Parse("#5541618F"), BorderThickness = new Thickness(1),
+        var search = new Border { Width = 220, Height = 34, CornerRadius = new CornerRadius(9), Background = Brush.Parse(C("#990A1630", "#CCFFFFFF")), BorderBrush = Brush.Parse(C("#5541618F", "#5541618F")), BorderThickness = new Thickness(1),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { new Border { Margin = new Thickness(10, 0, 0, 0), Child = Ico(Mdi.Magnify, 16, Text) }, Pos(_search, 1) } } };
         _search.Background = Brushes.Transparent; _search.BorderThickness = new Thickness(0); _search.Width = double.NaN; _search.VerticalContentAlignment = VerticalAlignment.Center; _search.FontSize = 13;
-        Border Circle(Control c) => new() { Width = 34, Height = 34, CornerRadius = new CornerRadius(17), Background = Brush.Parse("#990A1630"), BorderBrush = Brush.Parse("#5541618F"), BorderThickness = new Thickness(1), Child = c };
+        Border Circle(Control c) => new() { Width = 34, Height = 34, CornerRadius = new CornerRadius(17), Background = Brush.Parse(C("#990A1630", "#CCFFFFFF")), BorderBrush = Brush.Parse(C("#5541618F", "#5541618F")), BorderThickness = new Thickness(1), Child = c };
         var bell = Flat("nav-approvals", new Grid { Children = { Circle(Ico(Mdi.Bell, 17, Text)),
             new Border { Background = Brush.Parse("#FF3B4A"), CornerRadius = new CornerRadius(6), MinWidth = 10, Height = 10, Padding = new Thickness(2, 0), HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 4, 6, 0),
                 Child = new Viewbox { Child = _bellBadge } } } }, "Freigaben");
@@ -328,7 +335,7 @@ public sealed partial class MainWindow : Window
         ToolTip.SetTip(user, "Lokaler Besitzer"); user.Click += (_, _) => Show("settings");
         var tools = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 36, 0), Children = { search, bell, cloud, user } };
         Grid.SetColumn(tools, 2); bar.Children.Add(tools);
-        _clock.FontSize = 22; _clock.FontWeight = FontWeight.SemiBold; _date.FontSize = 13; _date.Foreground = Brush.Parse("#C9D6EA");
+        _clock.FontSize = 22; _clock.FontWeight = FontWeight.SemiBold; _date.FontSize = 13; _date.Foreground = Brush.Parse(C("#C9D6EA", "#3A4A66"));
         var clock = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 18, 0), Children = { _clock, _date } };
         Grid.SetColumn(clock, 3); bar.Children.Add(clock);
         return bar;
@@ -418,31 +425,32 @@ public sealed partial class MainWindow : Window
         var g = new Grid { ColumnDefinitions = new ColumnDefinitions("500,*"), RowDefinitions = new RowDefinitions("*,Auto") };
         // Studio-Kacheln 3x3
         var tiles = new UniformGrid { Columns = 3, Rows = 3 };
-        foreach (var (id, title, sub, icon, c1, c2, glow) in FeaturedStudios)
+        foreach (var (id, title, sub, icon, c1, c2, glow) in UserSettings.Ordered(FeaturedStudios, f => f.Item1, _settings.TileOrder).Where(f => !_settings.HiddenTiles.Contains("tile-" + f.Item1)))
         {
             var st = _studios.FirstOrDefault(s => s.Id == id);
             var badge = Badge(st);
             var t = new Button
             {
                 Name = "tile-" + id, Height = 132, Margin = new Thickness(5), Padding = new Thickness(6), HorizontalAlignment = HorizontalAlignment.Stretch,
-                Background = Grad("#B3122648", "#B30B1A36"), BorderBrush = Brush.Parse("#4D3F7FD0"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10),
+                Background = Grad(C("#B3122648", "#E6FFFFFF"), C("#B30B1A36", "#D9EEF3FA")), BorderBrush = Brush.Parse(C("#4D3F7FD0", "#663F7FD0")), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10),
                 HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center,
                 Content = new StackPanel { Spacing = 3, HorizontalAlignment = HorizontalAlignment.Center, Children = {
                     new Border { Height = 58, Child = Ico(icon, 48, Grad(c1, c2), glow) },
                     new TextBlock { Text = title, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.Medium, HorizontalAlignment = HorizontalAlignment.Center, TextAlignment = TextAlignment.Center },
-                    new TextBlock { Text = sub, Foreground = Brush.Parse("#C9D6EA"), FontSize = 11.5, HorizontalAlignment = HorizontalAlignment.Center }, badge } }
+                    new TextBlock { Text = sub, Foreground = Brush.Parse(C("#C9D6EA", "#3A4A66")), FontSize = 11.5, HorizontalAlignment = HorizontalAlignment.Center }, badge } }
             };
             Avalonia.Automation.AutomationProperties.SetName(t, $"{title}: {badge.Text}");
             ToolTip.SetTip(t, $"{badge.Text} – {st?.Reason ?? "Status unbekannt"}");
             t.Click += async (_, _) => await OpenStudio(id, title);
-            tiles.Children.Add(t);
+            Hover(t); tiles.Children.Add(t);
         }
         var all = SmallOutline("btn-all-studios", "Alle anzeigen"); all.HorizontalAlignment = HorizontalAlignment.Right;
         all.Click += (_, _) => { _studioFilter = null; Show("studios"); };
         var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Margin = new Thickness(6, 2, 6, 10),
-            Children = { new TextBlock { Text = "Trendo Studios", Foreground = Brush.Parse("#E8F3FF"), FontSize = 19, FontWeight = FontWeight.SemiBold } } };
+            Children = { new TextBlock { Text = "Trendo Studios", Foreground = Brush.Parse(C("#E8F3FF", "#0F1B2E")), FontSize = 19, FontWeight = FontWeight.SemiBold } } };
         Grid.SetColumn(all, 1); head.Children.Add(all);
         var studiosPanel = Panel(new StackPanel { Children = { head, tiles } }, 14);
+        studiosPanel.Name = "widget-studios"; studiosPanel.IsVisible = !_settings.HiddenTiles.Contains("widget-studios");
         studiosPanel.VerticalAlignment = VerticalAlignment.Top; studiosPanel.Margin = new Thickness(0, 6, 0, 0);
         g.Children.Add(studiosPanel);
 
@@ -451,7 +459,7 @@ public sealed partial class MainWindow : Window
         foreach (var (icon, label, key) in new[] { (Mdi.Pencil, "Erstellen", "projects"), (Mdi.CodeTags, "Entwickeln", "studios"), (Mdi.Magnify, "Gestalten", "studios"), (Mdi.CalendarMonth, "Organisieren", "projects"), (Mdi.Tools, "Automatisieren", "approvals") })
         {
             var b = new Button { Name = "action-" + label.ToLowerInvariant(), Width = 76, Height = 64, Padding = new Thickness(2, 6), CornerRadius = new CornerRadius(10),
-                Background = Brush.Parse("#99101F3D"), BorderBrush = Brush.Parse("#664C8DFF"), BorderThickness = new Thickness(1), HorizontalContentAlignment = HorizontalAlignment.Center,
+                Background = Brush.Parse(C("#99101F3D", "#CCFFFFFF")), BorderBrush = Brush.Parse("#664C8DFF"), BorderThickness = new Thickness(1), HorizontalContentAlignment = HorizontalAlignment.Center,
                 Content = new StackPanel { Spacing = 6, Children = { Ico(icon, 22, Text), new TextBlock { Text = label, Foreground = Text, FontSize = 11.5, HorizontalAlignment = HorizontalAlignment.Center } } } };
             if (label is "Gestalten") b.Click += (_, _) => { _studioFilter = "CORE-08|CORE-05"; Show("studios"); };
             else if (label is "Entwickeln") b.Click += (_, _) => { _studioFilter = "CORE-07|CORE-06"; Show("studios"); };
@@ -468,7 +476,7 @@ public sealed partial class MainWindow : Window
             Children = {
                 new Border { HorizontalAlignment = HorizontalAlignment.Center, Child = Logo(128, glow: true) },
                 word,
-                new TextBlock { Text = "DEIN SYSTEM. DEINE IDEEN. KEINE GRENZEN.", Foreground = Brush.Parse("#DCE9FA"), FontSize = 12.5, LetterSpacing = 1.4, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 0, 0, 0) },
+                new TextBlock { Text = "DEIN SYSTEM. DEINE IDEEN. KEINE GRENZEN.", Foreground = Brush.Parse(C("#DCE9FA", "#1B2A44")), FontSize = 12.5, LetterSpacing = 1.4, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 0, 0, 0) },
                 actions,
                 GlowRing(),
             }
@@ -507,7 +515,8 @@ public sealed partial class MainWindow : Window
     private Control RightColumn()
     {
         var sp = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,*,Auto") };
-        void Add(Control c) { Grid.SetRow(c, sp.Children.Count); sp.Children.Add(c); }
+        string[] keys = ["widget-ki", "widget-system", "widget-projekte", "widget-tools"];
+        void Add(Control c) { var k = keys[sp.Children.Count]; c.Name = k; c.IsVisible = !_settings.HiddenTiles.Contains(k); Grid.SetRow(c, sp.Children.Count); sp.Children.Add(c); }
         // KI-Assistent – echter Zustand
         var avatar = new Border { Width = 34, Height = 34, CornerRadius = new CornerRadius(17), Background = Grad("#2F86F6", "#0B2A6B"), BorderBrush = Brush.Parse("#887FD3FF"), BorderThickness = new Thickness(1), Child = Ico(Mdi.RobotHappy, 20, Brushes.White) };
         var kiHead = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = { avatar, Pos(new TextBlock { Text = "Trendo KI Assistent", Foreground = Text, FontSize = 14.5, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 6, 0), TextTrimming = TextTrimming.CharacterEllipsis }, 1) } };
@@ -519,12 +528,12 @@ public sealed partial class MainWindow : Window
         _kiInput.Background = Brushes.Transparent; _kiInput.BorderThickness = new Thickness(0); _kiInput.Margin = new Thickness(0); _kiInput.VerticalContentAlignment = VerticalAlignment.Center; _kiInput.FontSize = 12.5;
         var send = new Button { Name = "btn-ki-send", Width = 30, Height = 30, Padding = new Thickness(0), Background = Brush.Parse("#33FFFFFF"), CornerRadius = new CornerRadius(6), Content = Ico(Mdi.Send, 15, Text) };
         send.Click += async (_, _) => { if (_kiInput.IsEnabled && !string.IsNullOrWhiteSpace(_kiInput.Text)) await AskKi(_kiInput.Text!); };
-        var inputBox = new Border { Margin = new Thickness(0, 10, 0, 0), Height = 38, CornerRadius = new CornerRadius(8), Background = Brush.Parse("#990A1630"), BorderBrush = Brush.Parse("#5541618F"), BorderThickness = new Thickness(1), Padding = new Thickness(4, 0, 4, 0),
+        var inputBox = new Border { Margin = new Thickness(0, 10, 0, 0), Height = 38, CornerRadius = new CornerRadius(8), Background = Brush.Parse(C("#990A1630", "#CCFFFFFF")), BorderBrush = Brush.Parse(C("#5541618F", "#5541618F")), BorderThickness = new Thickness(1), Padding = new Thickness(4, 0, 4, 0),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), Children = { _kiInput, Pos(_kiSetup, 1), Pos(send, 2) } } };
         _kiSetup.Margin = new Thickness(0, 0, 4, 0); _kiSetup.Padding = new Thickness(8, 2); _kiSetup.FontSize = 11; _kiSetup.VerticalAlignment = VerticalAlignment.Center; _kiSetup.Background = Accent;
         _kiText.FontSize = 13; _kiText.LineHeight = 19;
         Add(Panel(new StackPanel { Children = { kiHead,
-            new Border { Background = Brush.Parse("#80142849"), BorderBrush = Brush.Parse("#333F7FD0"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(12, 10), Margin = new Thickness(0, 12, 0, 0), MaxHeight = 150,
+            new Border { Background = Brush.Parse(C("#80142849", "#B3FFFFFF")), BorderBrush = Brush.Parse("#333F7FD0"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(12, 10), Margin = new Thickness(0, 12, 0, 0), MaxHeight = 150,
                 Child = new ScrollViewer { Content = _kiText } },
             inputBox } }, 14));
         // Systemstatus – echte Messwerte
@@ -558,7 +567,7 @@ public sealed partial class MainWindow : Window
     private static Button ToolButton(string name, Control icon, string label, bool enabled)
     {
         // Nicht gebaute Werkzeuge sehen gleich aus (Design), sind aber nicht bedienbar und so beschriftet (Tooltip/Screenreader).
-        var b = new Button { Name = name, IsEnabled = enabled, Background = Brush.Parse("#80142849"), BorderBrush = Brush.Parse("#333F7FD0"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8),
+        var b = new Button { Name = name, IsEnabled = enabled, Background = Brush.Parse(C("#80142849", "#B3FFFFFF")), BorderBrush = Brush.Parse("#333F7FD0"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8),
             Margin = new Thickness(3), Padding = new Thickness(2, 8), Height = 66, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Center,
             Content = new StackPanel { Spacing = 5, Children = { icon, new TextBlock { Text = label, Foreground = Text, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center } } } };
         ToolTip.SetTip(b, enabled ? label : $"{label}: noch nicht gebaut");
@@ -619,13 +628,13 @@ public sealed partial class MainWindow : Window
             new("settings", Mdi.Cog, "#90A4AE", "#455A64", "Einstellungen", () => null),
             new("blender", Mdi.Blender, "#FFB74D", "#EF6C00", "Blender", () => Tool("blender")),
             new("unreal", Mdi.Unreal, "#FFFFFF", "#CFD8DC", "Unreal Engine", () => Tool("unreal")),
-            new("components", Mdi.Cart, "#4DD0E1", "#00838F", "Komponenten", () => null),
+            new("components", Mdi.Cart, "#4DD0E1", "#00838F", "Zusatzprogramme", () => null),
             new("code", Mdi.CodeTags, "#64B5F6", "#1565C0", "Web & App Studio", () => null),
             new("office", Mdi.FileDocument, "#ECEFF1", "#B0BEC5", "Office Studio", () => null, Brush.Parse("#37474F")),
             new("security", Mdi.ShieldCheck, "#66BB6A", "#1B5E20", "Security Studio", () => null),
         };
         var bar = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, VerticalAlignment = VerticalAlignment.Center };
-        foreach (var a in apps)
+        foreach (var a in UserSettings.Ordered(apps, x => x.Id, _settings.DockOrder).Where(x => !_settings.HiddenTiles.Contains("dock-" + x.Id)))
         {
             var b = new Button { Name = "dock-" + a.Id, Width = 50, Height = 50, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Content = a.Id is "mail" or "media" or "office" ? Chip(a.Icon, a.C1, a.C2, 38, 0.62, a.Fg) : Ico(a.Icon, 36, Grad(a.C1, a.C2), a.C2) };
             ToolTip.SetTip(b, a.Label); Avalonia.Automation.AutomationProperties.SetName(b, a.Label);
@@ -649,19 +658,24 @@ public sealed partial class MainWindow : Window
                 }
             };
             if (a.Id is "browser" or "mail" && _core.Offline) { b.IsEnabled = false; ToolTip.SetTip(b, $"{a.Label} – offline deaktiviert"); }
-            bar.Children.Add(b);
+            Hover(b); bar.Children.Add(b);
         }
         var trash = new Button { Name = "dock-trash", Width = 46, Height = 46, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Content = Ico(Mdi.Delete, 34, Grad("#ECEFF1", "#90A4AE")) };
         ToolTip.SetTip(trash, "Papierkorb"); trash.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, "shell:RecycleBinFolder", _core.Audit);
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 14, Children = { bar, new Border { Width = 1, Height = 40, Background = Brush.Parse("#553F7FD0") }, trash } };
-        return new Border { Background = Brush.Parse("#B30A1630"), BorderBrush = Brush.Parse("#664C8DFF"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(16), Padding = new Thickness(18, 9),
+        return new Border { Background = Brush.Parse(C("#B30A1630", "#CCF2F6FC")), BorderBrush = Brush.Parse("#664C8DFF"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(16), Padding = new Thickness(18, 9),
             HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 6, 0, 26), Child = row, BoxShadow = BoxShadows.Parse("0 0 24 0 #442F86F6") };
     }
 
     // ---------- Inhaltsansichten (im Glaspanel) ----------
     private Control Page(string title, Control content)
     {
-        var sp = new StackPanel { Spacing = 8, Children = { H(title, 22), content } };
+        var help = new Button { Name = "btn-help", Content = "?", Width = 28, Height = 28, Padding = new Thickness(0), CornerRadius = new CornerRadius(14), HorizontalContentAlignment = HorizontalAlignment.Center, FontWeight = FontWeight.Bold, Background = Brush.Parse("#33FFFFFF"), Foreground = Text };
+        ToolTip.SetTip(help, "Was kann ich hier tun?"); var key = CurrentView;
+        help.Click += (_, _) => ShowHelp(key, force: true);
+        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { H(title, 22), Pos(help, 1) } };
+        var sp = new StackPanel { Spacing = 8, Children = { head, content } };
+        Detach(_hintHost); sp.Children.Insert(1, _hintHost);
         return Panel(new ScrollViewer { Content = sp }, 18);
     }
 
@@ -761,8 +775,8 @@ public sealed partial class MainWindow : Window
         var sp = new StackPanel { Spacing = 4 };
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Nav2("Systemcheck", "systemcheck"), Nav2("Sicherung", "sicherung"), Nav2("Bau-Fortschritt", "fortschritt"), Nav2("Einrichtung erneut", "einrichtung") } });
         sp.Children.Add(P($"Benutzerdaten: {_core.DataRoot} (bleiben bei Update und Deinstallation erhalten)"));
-        sp.Children.Add(P($"Secrets-Backend: {_core.Secrets.BackendName}"));
-        sp.Children.Add(P($"Audit-Log: {_core.Audit.ReadAll().Count} Einträge, Hash-Kette {(_core.Audit.Verify() ? "intakt" : "BESCHÄDIGT")}"));
+        sp.Children.Add(P($"Passwörter und Schlüssel: sicher gespeichert ({_core.Secrets.BackendName})"));
+        sp.Children.Add(P($"Protokoll: {_core.Audit.ReadAll().Count} Einträge, {(_core.Audit.Verify() ? "vollständig und unverändert" : "BESCHÄDIGT – bitte prüfen")}"));
         foreach (var e in _core.Audit.ReadAll().TakeLast(15).Reverse())
             sp.Children.Add(P($"{e.At:HH:mm:ss}  {e.Actor}  {e.Action}  {e.Detail}", null, 11));
         return Page("System & Sicherheit", sp);
@@ -773,7 +787,7 @@ public sealed partial class MainWindow : Window
         var sp = new StackPanel { Spacing = 6, Children = { P("Nur tatsächlich gefundene Programme werden als vorhanden angezeigt.") } };
         foreach (var c in DependencyCatalog.All.Where(c => c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Guided))
             sp.Children.Add(P($"{c.Name}: {(_deps.IsInstalled(c) ? "vorhanden" : "nicht gefunden")}", Text));
-        sp.Children.Add(Nav2("Komponenten verwalten", "components"));
+        sp.Children.Add(Nav2("Zusatzprogramme verwalten", "components"));
         return Page("Apps", sp);
     }
 
@@ -801,8 +815,8 @@ public sealed partial class MainWindow : Window
 
     private Control KiView() => Page("KI", new StackPanel { Spacing = 6, Children = {
         KiModelChooser(),
-        P(_kiConnected ? $"Verbunden mit lokaler Ollama-Laufzeit (127.0.0.1:11434), Modell {KiModelName}. Keine Cloud, keine kostenpflichtige API." : "Trendo KI ist nicht verbunden. Lokale Laufzeit und freies Modell lassen sich unter „Komponenten“ automatisch installieren.", Text),
-        Nav2("Komponenten öffnen", "components") } });
+        P(_kiConnected ? $"Die KI läuft auf diesem PC (Modell {KiModelName}). Nichts geht ins Internet, nichts kostet extra." : "Die KI ist noch nicht eingerichtet. Unter „Zusatzprogramme“ installiert Trendo sie kostenlos mit einem Klick.", Text),
+        Nav2("Zusatzprogramme öffnen", "components") } });
 
     private Button Nav2(string label, string view) { var b = new Button { Content = label }; b.Click += (_, _) => Show(view); return b; }
 
@@ -826,7 +840,7 @@ public sealed partial class MainWindow : Window
         if (ch.State != ToolState.Working || ch.Path is null) return;
         try
         {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(ch.Path, "serve") { UseShellExecute = false, CreateNoWindow = true });
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(ch.Path, "serve") { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetDirectoryName(ch.Path)! });
             _core.Audit.Append("app", "ki.runtime_started", "ollama serve (127.0.0.1)");
             for (var i = 0; i < 20 && !await _ollama.IsUpAsync(); i++) await Task.Delay(500);
         }
@@ -860,7 +874,7 @@ public sealed partial class MainWindow : Window
     {
         var sp = new StackPanel { Spacing = 6 };
         sp.Children.Add(P("Alles, was im Setup enthalten ist, ist sofort nutzbar. Weitere freie Programme installiert Trendo OS nach einmaliger Zustimmung automatisch pro Benutzer (ohne Admin). Nicht weitergebbare Software kann nur über den offiziellen Herstellerweg installiert werden.", Text));
-        var consent = new Button { Name = "btn-deps-consent", Content = _deps.HasConsent ? "Fehlende freie Komponenten installieren (ohne Admin)" : "Lizenzen zustimmen & fehlende freie Komponenten installieren (ohne Admin)", IsEnabled = !_depBusy, Background = Accent };
+        var consent = new Button { Name = "btn-deps-consent", Content = _deps.HasConsent ? "Fehlende kostenlose Programme installieren" : "Zustimmen & fehlende kostenlose Programme installieren", IsEnabled = !_depBusy, Background = Accent };
         consent.Click += async (_, _) => await InstallAll();
         (_depProgress.Parent as Panel)?.Children.Remove(_depProgress); (_depLog.Parent as Panel)?.Children.Remove(_depLog);
         sp.Children.Add(consent); sp.Children.Add(_depProgress); sp.Children.Add(_depLog);
@@ -898,7 +912,7 @@ public sealed partial class MainWindow : Window
         }
         var re = new Button { Name = "btn-deps-recheck", Content = "Neu prüfen" }; re.Click += (_, _) => { ReloadStudios(); Show("components"); };
         sp.Children.Add(re);
-        return Page("Komponenten", sp);
+        return Page("Zusatzprogramme", sp);
     }
 
     // ---------- Studio-Klick: erkennen → prüfen → einmal fragen → installieren ----------
@@ -971,7 +985,7 @@ public sealed partial class MainWindow : Window
     // ---------- API-Schlüssel (optional, nie Pflicht) ----------
     private static readonly (string Id, string Name, string KeyUrl, string ValidateUrl, string Note)[] KeyServices =
     [
-        ("xai", "xAI API (optional, kostenpflichtig)", "https://console.x.ai", "https://api.x.ai/v1/models", "Optional – Trendo KI läuft lokal ohne Schlüssel."),
+        ("xai", "xAI / Grok (optional, kostet Geld)", "https://console.x.ai", "https://api.x.ai/v1/models", "Optional – Trendo KI läuft lokal ohne Schlüssel."),
         ("github", "GitHub (optional)", "https://github.com/settings/tokens", "https://api.github.com/user", "Für Web & App Studio. GitHub bietet zusätzlich ein offizielles Geräte-Login (OAuth Device Flow) – noch nicht eingebaut."),
     ];
 
@@ -1034,7 +1048,7 @@ public sealed partial class MainWindow : Window
         {
             ok = await Task.Run(() => _deps.InstallAsync(Principal.LocalOwner, c, line =>
                 Dispatcher.UIThread.Post(() => { if (!string.IsNullOrWhiteSpace(line)) _depLog.Text = $"{c.Name}: {line.Trim()}"; })));
-            _depLog.Text = ok ? $"{c.Name}: installiert und erkannt ✓" : $"{c.Name}: Installation nicht erfolgreich (siehe Audit-Log)";
+            _depLog.Text = ok ? $"{c.Name}: installiert und erkannt ✓" : $"{c.Name}: hat nicht geklappt – im Systemcheck kannst du es erneut versuchen";
         }
         catch (Exception ex) { ok = false; _depLog.Text = $"{c.Name}: {ex.Message}"; }
         _depBusy = false; _depProgress.IsIndeterminate = false; _depProgress.IsVisible = false;
@@ -1049,10 +1063,6 @@ public sealed partial class MainWindow : Window
         if (req is not null) { _studios = _core.Studios.Load(req, _probe); }
     }
 
-    private Control SettingsView() => Page("Einstellungen", new StackPanel { Spacing = 6, Children = {
-        P($"Version {_core.Version}", Text), P(_core.Offline ? "Offline-Modus aktiv" : "Online-Modus", Text),
-        P("Logo: Konzeptvariante, nicht freigegeben. Hintergrundbild: KI-generiert für Trendo OS."),
-        P("Dock-Anpassung und Themes: noch nicht gebaut."), Nav2("Komponenten", "components"), Nav2("Dienste & Schlüssel", "keys") } });
 }
 
 internal sealed class RelayCommand(Action run) : System.Windows.Input.ICommand

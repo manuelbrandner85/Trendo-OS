@@ -22,10 +22,10 @@ public sealed partial class MainWindow
 
     private void InitSetup(AppOptions opt)
     {
-        _settings = UserSettings.Load(_core.DataRoot);
         if (string.IsNullOrEmpty(_settings.ProjectsFolder)) _settings.ProjectsFolder = UserSettings.DefaultProjectsFolder();
         foreach (var p in SetupPacks.Studios.Where(p => p.Default)) _wizPacks.Add(p.Id);
         _showMap["einrichtung"] = SetupWizardView; _showMap["systemcheck"] = SystemCheckView; _showMap["sicherung"] = BackupView;
+        for (var i = 0; i < 5; i++) { var step = i; _showMap[$"einrichtung-{i}"] = () => { _wizStep = step; return SetupWizardView(); }; }
         // Geplante Sicherung beim Start (im Hintergrund, ohne Rückfrage – betrifft nur eigene Daten)
         if (_settings.SetupDone && Backups.Due(DateTime.Now, _settings.BackupEveryHours))
             _ = Task.Run(() => { try { Backups.Create(DateTime.Now); } catch (Exception ex) { _core.Audit.Append("app", "backup.failed", ex.GetType().Name); } });
@@ -146,20 +146,30 @@ public sealed partial class MainWindow
 
     private Control SystemCheckPanel()
     {
+        var host = new StackPanel { Spacing = 6, Name = "syscheck-host", Children = { P("Prüfe …", Text) } };
+        var comps = SetupPacks.ComponentsFor(_settings.StudioPacks.Count > 0 ? _settings.StudioPacks : _wizPacks).ToList();
+        // Prüfen im Hintergrund (startet Programme mit --version) – nie auf dem UI-Thread blockieren
+        _ = Task.Run(async () =>
+        {
+            var checks = (await Task.WhenAll(comps.Select(async c => (C: c, R: await _deps.CheckAsync(c))))).ToList();
+            await Dispatcher.UIThread.InvokeAsync(() => { host.Children.Clear(); host.Children.Add(BuildCheckGrid(checks)); });
+        });
+        return host;
+    }
+
+    private Control BuildCheckGrid(List<(Component C, ToolCheck R)> checks)
+    {
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("230,*,130"), Name = "syscheck" };
         var rows = new List<(string Name, string State, string Detail, Component? Fix)>();
-        foreach (var c in SetupPacks.ComponentsFor(_settings.StudioPacks.Count > 0 ? _settings.StudioPacks : _wizPacks))
-        {
-            var ch = _deps.CheckAsync(c).GetAwaiter().GetResult();
+        foreach (var (c, ch) in checks)
             rows.Add((c.Name, ch.State switch { ToolState.Working => "Bereit", ToolState.Broken => "Defekt", _ => "Fehlt" }, ch.Version ?? ch.Detail ?? "",
                 ch.State == ToolState.Working || c.Mode is not (DeliveryMode.AutoUser or DeliveryMode.AutoElevated) ? null : c));
-        }
         rows.Add(("Benutzerdaten", Directory.Exists(_core.DataRoot) ? "Bereit" : "Fehlt", _core.DataRoot, null));
         rows.Add(("Projektordner", Directory.Exists(_settings.ProjectsFolder) ? "Bereit" : "Fehlt", _settings.ProjectsFolder, null));
         var last = Backups.List().FirstOrDefault();
         rows.Add(("Sicherung", last is null ? "Fehlt" : "Bereit", last is null ? "noch keine" : $"zuletzt {last.LastWriteTime:dd.MM.yyyy HH:mm}", null));
         rows.Add(("Updates", !_settings.AutoUpdate ? "Aus" : _updateInfo.StartsWith("Aktuell") || _updateInfo.StartsWith("Update") ? "Bereit" : "Hinweis", _updateInfo, null));
-        rows.Add(("Audit-Protokoll", _core.Audit.Verify() ? "Bereit" : "Defekt", "Hash-Kette geprüft", null));
+        rows.Add(("Protokoll", _core.Audit.Verify() ? "Bereit" : "Defekt", "unverändert und vollständig", null));
         for (var i = 0; i < rows.Count; i++)
         {
             var r = rows[i]; grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
@@ -192,7 +202,7 @@ public sealed partial class MainWindow
             rb.Click += (_, _) => { Backups.Restore(f.FullName, DateTime.Now); _settings = UserSettings.Load(_core.DataRoot); Show("sicherung"); };
             sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { P($"{f.LastWriteTime:dd.MM.yyyy HH:mm} · {f.Length / 1024} KB", Text), rb } });
         }
-        sp.Children.Add(P("Beim Wiederherstellen wird der aktuelle Stand vorher gesichert. Das Audit-Protokoll wird nie überschrieben.", null, 11));
+        sp.Children.Add(P("Beim Wiederherstellen wird der aktuelle Stand vorher gesichert. Das Protokoll, was Trendo getan hat, bleibt immer erhalten.", null, 11));
         return Page("Sicherung", sp);
     }
 

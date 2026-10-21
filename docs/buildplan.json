@@ -5,7 +5,7 @@
   "order": 1,
   "id": "W0-01",
   "name": "Ersteinrichtungs-Assistent (Name, Sprache, Ordner, Design, ~2 min)",
-  "impl": "NOT_STARTED",
+  "impl": "PC_VERIFIED_PARTIAL",
   "test": "NOT_RUN",
   "local": true,
   "subs": []
@@ -16,7 +16,7 @@
   "order": 2,
   "id": "W0-02",
   "name": "Basispaket (Browser-Integration, PDF-Viewer, mpv, 7-Zip, Schriften, DIN-5008-Briefvorlagen)",
-  "impl": "NOT_STARTED",
+  "impl": "PC_VERIFIED_PARTIAL",
   "test": "NOT_RUN",
   "local": true,
   "subs": []
@@ -27,7 +27,7 @@
   "order": 3,
   "id": "W0-03",
   "name": "Studio-Pakete wählbar (Checkboxen), Abhängigkeiten sofort mit Fortschritt, eine Zustimmung",
-  "impl": "NOT_STARTED",
+  "impl": "PC_VERIFIED_PARTIAL",
   "test": "NOT_RUN",
   "local": true,
   "subs": []
@@ -38,7 +38,7 @@
   "order": 4,
   "id": "W0-04",
   "name": "Lokale KI automatisch nach Hardware (RAM/GPU/VRAM) gewählt und geladen",
-  "impl": "NOT_STARTED",
+  "impl": "PC_VERIFIED_PARTIAL",
   "test": "NOT_RUN",
   "local": true,
   "subs": []
@@ -49,7 +49,7 @@
   "order": 5,
   "id": "W0-05",
   "name": "Auto-Updates (Velopack, GitHub Releases) + geplante Sicherung mit Wiederherstellung",
-  "impl": "NOT_STARTED",
+  "impl": "PC_VERIFIED_PARTIAL",
   "test": "NOT_RUN",
   "local": true,
   "subs": []
@@ -60,7 +60,7 @@
   "order": 6,
   "id": "W0-06",
   "name": "Systemcheck-Bericht nach Setup: bereit / fehlt / Ein-Klick-Reparatur",
-  "impl": "NOT_STARTED",
+  "impl": "PC_VERIFIED_PARTIAL",
   "test": "NOT_RUN",
   "local": true,
   "subs": []
@@ -71,7 +71,7 @@
   "order": 1,
   "id": "W0B-01",
   "name": "Einfaches, freundliches Deutsch überall + Sprachleitfaden docs/SPRACHE.md",
-  "impl": "NOT_STARTED",
+  "impl": "PC_VERIFIED_PARTIAL",
   "test": "NOT_RUN",
   "local": true,
   "subs": []
@@ -82,7 +82,7 @@
   "order": 2,
   "id": "W0B-02",
   "name": "Desktop anpassen: Kacheln/Widgets verschieben, ein-/ausblenden, Dock sortieren, Akzentfarbe (gespeichert)",
-  "impl": "NOT_STARTED",
+  "impl": "PC_VERIFIED_PARTIAL",
   "test": "NOT_RUN",
   "local": true,
   "subs": []
@@ -93,7 +93,7 @@
   "order": 3,
   "id": "W0B-03",
   "name": "Hintergrund-Galerie (aus /workspace/trendo-wallpapers) + optional Wechsel nach Tageszeit",
-  "impl": "NOT_STARTED",
+  "impl": "PC_VERIFIED_PARTIAL",
   "test": "NOT_RUN",
   "local": true,
   "subs": []
@@ -104,7 +104,7 @@
   "order": 4,
   "id": "W0B-04",
   "name": "Sanfte Animationen, Hover-Glow, ruhiger Startbildschirm + Schalter „Bewegung reduzieren“",
-  "impl": "NOT_STARTED",
+  "impl": "PC_VERIFIED_PARTIAL",
   "test": "NOT_RUN",
   "local": true,
   "subs": []
@@ -115,7 +115,7 @@
   "order": 5,
   "id": "W0B-05",
   "name": "Hilfe in der App: Hinweise beim ersten Öffnen je Studio + „?“-Knopf",
-  "impl": "NOT_STARTED",
+  "impl": "PC_VERIFIED_PARTIAL",
   "test": "NOT_RUN",
   "local": true,
   "subs": []
@@ -126,7 +126,7 @@
   "order": 6,
   "id": "W0B-06",
   "name": "Designs: Dunkel Premium (Standard), Hell, Hoher Kontrast",
-  "impl": "NOT_STARTED",
+  "impl": "PC_VERIFIED_PARTIAL",
   "test": "NOT_RUN",
   "local": true,
   "subs": []

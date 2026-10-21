@@ -1,0 +1,37 @@
+Freigabe FDCA00D9 erteilt f�r sumatra
+  sumatra: Gefunden SumatraPDF [SumatraPDF.SumatraPDF] Version 3.6.1
+  sumatra: Diese Anwendung wird von ihrem Besitzer an Sie lizenziert.
+  sumatra: Microsoft ist nicht verantwortlich und erteilt keine Lizenzen für Pakete von Drittanbietern.
+  sumatra: Download läuft https://www.sumatrapdfreader.org/dl/rel/3.6.1/SumatraPDF-3.6.1-64-install.exe
+  sumatra: Der Installer-Hash wurde erfolgreich überprüft
+  sumatra: Paketinstallation wird gestartet...
+  sumatra: Erfolgreich installiert
+PASS  Installation SumatraPDF
+dotnet       Bundled      Bundled                                             MIT
+avalonia     Bundled      Bundled                                             MIT / BSD-3-Clause
+inter        Bundled      Bundled                                             SIL OFL 1.1
+velopack     Bundled      Bundled                                             MIT
+yamldotnet   Bundled      Bundled                                             MIT
+wallpaper    Bundled      Bundled                                             Eigenes Projekt-Asset (KI-generiert)
+webview2     NotNeeded    NotNeeded                                           Microsoft
+ollama       AutoUser     Working    ollama version is 0.40.7                 MIT
+model        AutoUser     Working    qwen2.5:0.5b                             Apache-2.0
+model-3b     AutoUser     Working    qwen2.5:3b                               Qwen Research License (nicht-kommerziell frei)
+git          AutoUser     Working    git version 2.55.0.windows.3             GPL-2.0
+python       AutoUser     Working    Python 3.13.15                           PSF-2.0
+mpv          AutoUser     Working    mpv v0.41.0-244-gaf9c81fa1 Copyright © 2000-2026 mpv/MPlayer/mplayer2 projects GPL-2.0-or-later
+sumatra      AutoUser     Working    3.6.1                                    GPL-3.0
+7zip         AutoElevated Missing                                             LGPL-2.1 + unRAR-Einschr�nkung
+libreoffice  AutoElevated Broken                                              MPL-2.0
+blender      AutoElevated Working    Blender 5.2.1 LTS                        GPL-3.0-or-later
+krita        AutoElevated Working    5.3.4.1 (git bd6e8d0)                    GPL-3.0
+inkscape     AutoElevated Working    Inkscape 1.4.4 (dcaf3e7, 2026-05-05)     GPL-2.0
+kdenlive     AutoUser     Working                                             GPL-3.0
+audacity     AutoElevated Missing                                             GPL-3.0-or-later
+tesseract    AutoElevated Working    tesseract v5.4.0.20240606                Apache-2.0
+unreal       Guided       Working    ++UE5+Release-5.8-CL-58210709            Epic EULA (nicht weitergebbar)
+chrome       Guided       Missing                                             Google-Lizenz (propriet�r)
+grokbuild    Guided       Missing                                             Konto/Berechtigung erforderlich
+tor          Guided       Missing                                             BSD-3-Clause u. a.
+chromium     NotNeeded    NotNeeded                                           BSD-3-Clause
+grokbot      NotNeeded    NotNeeded                                           Kontotarif

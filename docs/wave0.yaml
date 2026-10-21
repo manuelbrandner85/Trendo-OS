@@ -1,7 +1,7 @@
 # Welle 0 – Setup & Ersteinrichtung (von Manuel genehmigt 21.10.2026). Status hier ehrlich pflegen (nicht in requirements.yaml, da diese generiert wird).
-- {id: W0-01, name: "Ersteinrichtungs-Assistent (Name, Sprache, Ordner, Design, ~2 min)", implementation_status: NOT_STARTED, test_status: NOT_RUN}
-- {id: W0-02, name: "Basispaket (Browser-Integration, PDF-Viewer, mpv, 7-Zip, Schriften, DIN-5008-Briefvorlagen)", implementation_status: NOT_STARTED, test_status: NOT_RUN}
-- {id: W0-03, name: "Studio-Pakete wählbar (Checkboxen), Abhängigkeiten sofort mit Fortschritt, eine Zustimmung", implementation_status: NOT_STARTED, test_status: NOT_RUN}
-- {id: W0-04, name: "Lokale KI automatisch nach Hardware (RAM/GPU/VRAM) gewählt und geladen", implementation_status: NOT_STARTED, test_status: NOT_RUN}
-- {id: W0-05, name: "Auto-Updates (Velopack, GitHub Releases) + geplante Sicherung mit Wiederherstellung", implementation_status: NOT_STARTED, test_status: NOT_RUN}
-- {id: W0-06, name: "Systemcheck-Bericht nach Setup: bereit / fehlt / Ein-Klick-Reparatur", implementation_status: NOT_STARTED, test_status: NOT_RUN}
+- {id: W0-01, name: "Ersteinrichtungs-Assistent (Name, Sprache, Ordner, Design, ~2 min)", implementation_status: PC_VERIFIED_PARTIAL, test_status: NOT_RUN}
+- {id: W0-02, name: "Basispaket (Browser-Integration, PDF-Viewer, mpv, 7-Zip, Schriften, DIN-5008-Briefvorlagen)", implementation_status: PC_VERIFIED_PARTIAL, test_status: NOT_RUN}
+- {id: W0-03, name: "Studio-Pakete wählbar (Checkboxen), Abhängigkeiten sofort mit Fortschritt, eine Zustimmung", implementation_status: PC_VERIFIED_PARTIAL, test_status: NOT_RUN}
+- {id: W0-04, name: "Lokale KI automatisch nach Hardware (RAM/GPU/VRAM) gewählt und geladen", implementation_status: PC_VERIFIED_PARTIAL, test_status: NOT_RUN}
+- {id: W0-05, name: "Auto-Updates (Velopack, GitHub Releases) + geplante Sicherung mit Wiederherstellung", implementation_status: PC_VERIFIED_PARTIAL, test_status: NOT_RUN}
+- {id: W0-06, name: "Systemcheck-Bericht nach Setup: bereit / fehlt / Ein-Klick-Reparatur", implementation_status: PC_VERIFIED_PARTIAL, test_status: NOT_RUN}

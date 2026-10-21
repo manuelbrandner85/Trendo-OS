@@ -282,3 +282,103 @@ public class StudioDepsUi
         w.Close();
     }
 }
+
+public sealed class FakeRunner : IProcessRunner
+{
+    public List<string> Calls { get; } = [];
+    public Task<(int Exit, string Output)> RunAsync(string file, string args, Action<string>? line = null, CancellationToken ct = default)
+    { Calls.Add($"{file} {args}"); return Task.FromResult((0, "")); }
+}
+
+/// Welle 0: Ersteinrichtung über die echte Oberfläche
+public class W0_SetupWizard
+{
+    [AvaloniaFact(DisplayName = "W0-01/03/06: Assistent – Name, Ordner, Design, Pakete, Installation über Zustimmung, Vorlagen, Systemcheck")]
+    public async Task Wizard_flow()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-ui-" + Guid.NewGuid().ToString("N"));
+        var core = new TrendoCore(root, new InMemorySecretStore(), new FakeLauncher());
+        var w = new MainWindow(core, new AppOptions(root, null, 0, FirstRun: true), new Probe());
+        var r = new FakeRunner(); w.Deps.Runner = r;
+        w.Show(); Dispatcher.UIThread.RunJobs();
+        Assert.Equal("einrichtung", w.CurrentView);
+        w.Find<TextBox>("wiz-name").Text = "Manuel"; w.Find<Button>("wiz-next").Press();
+        var proj = Path.Combine(root, "Projekte"); w.Find<TextBox>("wiz-folder").Text = proj; w.Find<Button>("wiz-next").Press();
+        w.Find<RadioButton>("wiz-theme-kontrast").IsChecked = true; w.Find<Button>("wiz-next").Press();
+        w.Find<CheckBox>("wiz-pack-office").IsChecked = false; w.Find<CheckBox>("wiz-pack-ki").IsChecked = false;
+        w.Find<CheckBox>("wiz-pack-dev").IsChecked = true;
+        w.Find<Button>("wiz-install").Press();
+        for (var i = 0; i < 100 && w.TryFind<Button>("wiz-done") is null; i++) { await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }
+        Assert.NotNull(w.TryFind<Button>("wiz-done"));
+        Assert.Contains(r.Calls, c => c.Contains("SumatraPDF.SumatraPDF") && c.Contains("--scope user"));
+        Assert.Contains(r.Calls, c => c.Contains("Git.Git"));
+        Assert.DoesNotContain(r.Calls, c => c.Contains("LibreOffice"));
+        Assert.True(File.Exists(Path.Combine(proj, "Vorlagen", "DIN5008-Geschaeftsbrief-FormB.docx")));
+        var s = UserSettings.Load(root);
+        Assert.True(s.SetupDone); Assert.Equal("Manuel", s.Name); Assert.Equal("kontrast", s.Theme); Assert.Equal(proj, s.ProjectsFolder);
+        for (var i = 0; i < 200 && w.TryFind<Button>("fix-sumatra") is null; i++) { await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }
+        Assert.NotNull(w.TryFind<Button>("fix-sumatra")); // Systemcheck (im Hintergrund geprüft): fehlt → Reparieren
+        Assert.Single(new Backup(root, Path.Combine(root, "backups"), core.Audit).List());
+        w.Close(); Directory.Delete(root, true);
+    }
+}
+
+/// Welle 0b: Look & Bedienung
+public class W0b_Look
+{
+    static string Repo([System.Runtime.CompilerServices.CallerFilePath] string f = "") => Path.GetFullPath(Path.Combine(Path.GetDirectoryName(f)!, "..", ".."));
+
+    [Fact(DisplayName = "W0b-01: Keine Fachwörter in Oberflächentexten (docs/SPRACHE.md)")]
+    public void No_jargon()
+    {
+        string[] banned = ["Audit-Log", "Hash-Kette", "Secrets-Backend", "Adapter noch", "Spezifikation", "Komponenten öffnen", "Komponenten verwalten", "Laufzeit"];
+        var hits = Directory.GetFiles(Path.Combine(Repo(), "src", "Trendo.App"), "*.cs")
+            .SelectMany(f => System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(f), "\"(?:[^\"\\\\]|\\\\.)*\"").Select(m => (f, m.Value)))
+            .Where(x => banned.Any(b => x.Value.Contains(b))).Select(x => $"{Path.GetFileName(x.f)}: {x.Value}").ToList();
+        Assert.Empty(hits);
+    }
+
+    static (MainWindow W, string Root) Open(UserSettings? s = null)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-ui-" + Guid.NewGuid().ToString("N"));
+        var core = new TrendoCore(root, new InMemorySecretStore(), new FakeLauncher());
+        (s ?? new UserSettings { SetupDone = true }).Save(root);
+        var w = new MainWindow(core, new AppOptions(root, null, 0, Page: "settings"), new Probe()); w.Show(); Dispatcher.UIThread.RunJobs();
+        return (w, root);
+    }
+
+    [AvaloniaFact(DisplayName = "W0b-02/04/05: Widgets ausblenden, Dock sortieren, Bewegung reduzieren, Hinweis einmalig – alles gespeichert")]
+    public void Customize_persisted()
+    {
+        var (w, root) = Open();
+        Assert.NotNull(w.TryFind<Border>("hint")); // erster Besuch: Hinweis
+        w.Find<Button>("hint-ok").Press();
+        Assert.Contains("settings", UserSettings.Load(root).SeenHints);
+        w.Find<CheckBox>("show-widget-system").IsChecked = false; Dispatcher.UIThread.RunJobs();
+        Assert.Contains("widget-system", UserSettings.Load(root).HiddenTiles);
+        w.Find<Button>("dock-files-vor").Press();
+        Assert.Equal("files", UserSettings.Load(root).DockOrder[0]);
+        w.Find<Button>("wall-polarlicht").Press();
+        Assert.Equal("polarlicht", UserSettings.Load(root).Wallpaper);
+        w.Close();
+        // Neu öffnen: Einstellungen wirken
+        var core = new TrendoCore(root, new InMemorySecretStore(), new FakeLauncher());
+        var w2 = new MainWindow(core, new AppOptions(root, null, 0), new Probe()); w2.Show(); Dispatcher.UIThread.RunJobs();
+        Assert.False(w2.Find<Border>("widget-system").IsVisible);
+        var dock = w2.GetLogicalDescendants().OfType<Button>().Where(b => b.Name?.StartsWith("dock-") == true && b.Name != "dock-trash").Select(b => b.Name).ToList();
+        Assert.Equal("dock-files", dock[0]);
+        w2.Show(); Dispatcher.UIThread.RunJobs();
+        w2.Close(); Directory.Delete(root, true);
+    }
+
+    [AvaloniaFact(DisplayName = "W0b-06: Design wechseln (Hell/Kontrast) baut das Fenster neu auf und speichert")]
+    public void Theme_switch()
+    {
+        var (w, root) = Open();
+        w.Find<Button>("theme-kontrast").Press();
+        Assert.Equal("kontrast", UserSettings.Load(root).Theme);
+        w.Find<Button>("accent-grün").Press(); // altes Fenster noch im Baum? -> neues Fenster liest gespeicherte Werte
+        Assert.Equal("#22C55E", UserSettings.Load(root).Accent);
+        Directory.Delete(root, true);
+    }
+}
