@@ -1,0 +1,4 @@
+Nachweis SYS-02-KATALOG – Linux-Box (nicht Windows-PC), 21.10.2026 22:23 MESZ, Commit-Basis ed5fc88
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 649 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   227, Skipped:     0, Total:   227, Duration: 15 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:    88, Skipped:     0, Total:    88, Duration: 30 s - Trendo.App.Tests.dll (net10.0)
