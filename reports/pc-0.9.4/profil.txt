@@ -1,0 +1,51 @@
+== vorher (ohne R2R = base) vs. R2R, gleicher Stand 9bde2bc ==
+base 1: main=2665 avalonia=2708 ctor=4041 studios=4212 ready=4582 opened=4910 frame=4922 page.start=40
+base 2: main=61 avalonia=88 ctor=725 studios=812 ready=1181 opened=1483 frame=1495 page.start=50
+base 3: main=61 avalonia=88 ctor=731 studios=817 ready=1153 opened=1415 frame=1427 page.start=39
+base 4: main=61 avalonia=87 ctor=734 studios=824 ready=1161 opened=1427 frame=1439 page.start=41
+r2r 1: main=9434 avalonia=9920 ctor=38746 studios=44712 ready=44946 opened=46031 frame=46040 page.start=28
+r2r 2: main=55 avalonia=76 ctor=484 studios=531 ready=734 opened=841 frame=847 page.start=28
+r2r 3: main=55 avalonia=76 ctor=497 studios=550 ready=769 opened=875 frame=882 page.start=30
+r2r 4: main=56 avalonia=79 ctor=500 studios=547 ready=752 opened=858 frame=864 page.start=28
+base 1: main=60 avalonia=86 ctor=732 studios=821 ready=1158 opened=1422 frame=1434 page.start=39
+base 2: main=58 avalonia=85 ctor=735 studios=823 ready=1171 opened=1434 frame=1445 page.start=40
+base 3: main=59 avalonia=86 ctor=720 studios=807 ready=1140 opened=1401 frame=1413 page.start=40
+base 4: main=57 avalonia=83 ctor=716 studios=803 ready=1148 opened=1409 frame=1420 page.start=39
+r2r 1: main=52 avalonia=73 ctor=493 studios=540 ready=745 opened=850 frame=857 page.start=28
+r2r 2: main=57 avalonia=79 ctor=503 studios=553 ready=767 opened=874 frame=880 page.start=27
+r2r 3: main=55 avalonia=78 ctor=495 studios=542 ready=747 opened=853 frame=860 page.start=28
+r2r 4: main=54 avalonia=76 ctor=498 studios=546 ready=751 opened=856 frame=863 page.start=28
+== Feinmessung R2R (fein-2) ==
+main                         62 ms
+avalonia.start               83 ms
+app.init                    369 ms
+app.xaml                    385 ms
+app.framework               400 ms
+window.ctor                 514 ms
+ctor.deps                   514 ms
+ctor.theme                  527 ms
+studios.loaded              562 ms
+ctor.wallpaper              610 ms
+ctor.left+dock              633 ms
+ctor.layout                 667 ms
+ctor.initwaves              676 ms
+page.start                   32 ms
+ctor.show                   710 ms
+ctor.statusbar              715 ms
+ctor.tick                   795 ms
+window.ready                795 ms
+window.opened               918 ms
+first.frame                 926 ms
+== frisch kopierte Dateien (erster Start) ==
+Kopie 1: first.frame 2188 ms
+Kopie 2: first.frame 2085 ms
+Kopie 3: first.frame 2139 ms
+kalt-new  erstes Bild  3501 ms | Fenster bereit 3353 | Seite start 29 ms | ctor.tick 3353
+pub-new   erstes Bild  2071 ms | Fenster bereit 1926 | Seite start 29 ms | ctor.tick 1925
+pub-new   erstes Bild   819 ms | Fenster bereit 706 | Seite start 29 ms | ctor.tick 705
+pub-new   erstes Bild   811 ms | Fenster bereit 697 | Seite start 29 ms | ctor.tick 696
+pub-new   erstes Bild   785 ms | Fenster bereit 676 | Seite start 28 ms | ctor.tick 675
+pub-new   erstes Bild   810 ms | Fenster bereit 688 | Seite start 31 ms | ctor.tick 688
+pub-new   erstes Bild   792 ms | Fenster bereit 678 | Seite start 29 ms | ctor.tick 677
+pub-new   erstes Bild   807 ms | Fenster bereit 697 | Seite start 28 ms | ctor.tick 696
+pub-new   erstes Bild   780 ms | Fenster bereit 671 | Seite start 28 ms | ctor.tick 671

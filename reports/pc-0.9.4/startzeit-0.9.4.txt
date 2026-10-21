@@ -1,0 +1,15 @@
+Version 0.9.4+eb634bfd27866ac1c78a8de374d469ddd6b6896b
+qpdf nach Update noch da: 
+True
+Lauf 1: erstes Bild 1866 ms, Seite start 30 ms
+Lauf 2: erstes Bild 824 ms, Seite start 24 ms
+Lauf 3: erstes Bild 842 ms, Seite start 25 ms
+Lauf 4: erstes Bild 823 ms, Seite start 24 ms
+Lauf 5: erstes Bild 825 ms, Seite start 24 ms
+Lauf 6: erstes Bild 813 ms, Seite start 24 ms
+Lauf 7: erstes Bild 808 ms, Seite start 24 ms
+Lauf 8: erstes Bild 823 ms, Seite start 29 ms
+Seite studios: Aufbau 6 ms, erstes Bild 813 ms
+Seite system: Aufbau 23 ms, erstes Bild 814 ms
+Seite office: Aufbau 15 ms, erstes Bild 828 ms
+Seite einstellungen: Aufbau 70 ms, erstes Bild 867 ms

@@ -230,7 +230,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.3/README.md
-  note: 'Alle 25 Funktionen gebaut; PC 0.9.3: echter Rückfall 0.9.3→0.9.2→0.9.3, Startzeit ~4,1 s / ~290 MB gemessen. Codesignatur bleibt offen (nie als bestanden)'
+  note: 'Alle 25 Funktionen gebaut; PC: Rückfall 0.9.3→0.9.2→0.9.3 echt; Start 0.9.4 bis erstes Bild 0,81–0,84 s (erster Start neuer Dateien ~2 s), Seiten 6–70 ms (reports/pc-0.9.4). Codesignatur bleibt offen'
 - id: SPEC-01
   name: Architecture & Interior 2.0
   approved_expansion_functions: '16'
