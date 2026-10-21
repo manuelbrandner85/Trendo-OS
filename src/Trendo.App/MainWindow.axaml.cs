@@ -55,7 +55,7 @@ public sealed class MainWindow : Window
     {
         _opt = opt; _core = core; _probe = probe;
         Title = "Trendo OS";
-        Width = 1440; Height = 900; MinWidth = 1100; MinHeight = 700;
+        Width = 1440; Height = 900; MinWidth = 960; MinHeight = 600; WindowState = WindowState.Maximized;
         Background = Brush.Parse("#050B18");
 
         var req = TrendoCore.FindRequirements(AppContext.BaseDirectory);
@@ -71,7 +71,18 @@ public sealed class MainWindow : Window
         var right = RightColumn(); Grid.SetColumn(right, 2); body.Children.Add(right);
         var dock = Dock(); Grid.SetRow(dock, 2); root.Children.Add(dock);
         var status = new Border { Background = GlassStrong, Padding = new Thickness(12, 4), Child = _status }; Grid.SetRow(status, 3); root.Children.Add(status);
-        Content = root;
+        // Designfläche skaliert proportional (Konzept ist für ~1440 px Breite gestaltet), damit kleine Bildschirme nicht abschneiden
+        var scaler = new LayoutTransformControl { Child = root };
+        Content = scaler;
+        void Rescale()
+        {
+            var cs = ClientSize; if (cs.Width <= 0 || cs.Height <= 0) return;
+            var k = Math.Min(1.0, Math.Min(cs.Width / 1440.0, cs.Height / 860.0));
+            scaler.LayoutTransform = new ScaleTransform(k, k);
+            root.Width = cs.Width / k; root.Height = cs.Height / k;
+        }
+        PropertyChanged += (_, e) => { if (e.Property == ClientSizeProperty) Rescale(); };
+        Rescale();
 
         _showMap = new()
         {
@@ -150,8 +161,9 @@ public sealed class MainWindow : Window
 
     private void SaveScreenshot(string path)
     {
-        var size = new PixelSize((int)Bounds.Width, (int)Bounds.Height);
-        using var bmp = new RenderTargetBitmap(size);
+        var scale = RenderScaling;
+        var size = new PixelSize((int)(Bounds.Width * scale), (int)(Bounds.Height * scale));
+        using var bmp = new RenderTargetBitmap(size, new Vector(96 * scale, 96 * scale));
         bmp.Render(this);
         bmp.Save(path, new PngBitmapEncoderOptions());
     }
