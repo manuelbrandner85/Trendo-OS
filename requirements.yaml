@@ -356,7 +356,7 @@ modules:
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
   test_status: TESTED_BOX
-  evidence: reports/w45/X-04.txt
+  evidence: reports/w45/X-04-KATALOG.txt
 - id: X-05
   name: Free AI Discovery & Fallback
   approved_expansion_functions: BASE
@@ -411,7 +411,7 @@ modules:
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
   test_status: TESTED_BOX
-  evidence: reports/w45/BUS-001.txt
+  evidence: reports/w45/STUDIO-ONLINE-BUSINESS-01.txt
 - id: STUDIO-LETTER-01
   name: Ultimate Letter Business & Legal Correspondence Studio GODMODE
   approved_expansion_functions: '25'
