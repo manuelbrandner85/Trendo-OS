@@ -170,7 +170,7 @@ Online-Business-Studio, Finanzen, Studio-Fusion, Erweiterungen
 
 | Reihenfolge | Modul | Name | Umsetzung | Test |
 |---|---|---|---|---|
-| 1 | STUDIO-ONLINE-BUSINESS-01 | Ultimate Online Business Creation & Innovation Studio GODMODE (both modes) | IN_PROGRESS | TESTED_BOX |
+| 1 | STUDIO-ONLINE-BUSINESS-01 | Ultimate Online Business Creation & Innovation Studio GODMODE (both modes) | IMPLEMENTED | TESTED_BOX |
 | 2 | SPEC-11 | Business & Finance 2.0 | IMPLEMENTED | TESTED_BOX |
 | 3 | X-01 | Universal Studio Fusion & Autonomous Production | IMPLEMENTED | TESTED_BOX |
 | 4 | X-04 | Extension Marketplace & Studio Evolution | IMPLEMENTED | TESTED_BOX |
@@ -234,7 +234,7 @@ Spezial-Studios auf Basis der fertigen Kernbausteine
 | 8 | SPEC-09 | 3D Scanning & Reconstruction 2.0 | IMPLEMENTED | TESTED_BOX |
 | 9 | SPEC-10 | Digital Twin 2.0 | IMPLEMENTED | TESTED_BOX |
 | 10 | SPEC-13 | Maps & Geospatial 2.0 | IMPLEMENTED | TESTED_BOX |
-| 11 | SPEC-14 | Manufacturing & CNC 2.0 | NOT_STARTED | NOT_RUN |
+| 11 | SPEC-14 | Manufacturing & CNC 2.0 | IMPLEMENTED | TESTED_BOX |
 | 12 | SPEC-15 | Broadcast & Streaming 2.0 | NOT_STARTED | NOT_RUN |
 | 13 | SPEC-16 | Transport & Vehicle 2.0 | NOT_STARTED | NOT_RUN |
 | 14 | CORE-09 | Vision & Robotics Control Studio 2.0 | NOT_STARTED | NOT_RUN |

@@ -629,7 +629,7 @@
   "order": 1,
   "id": "STUDIO-ONLINE-BUSINESS-01",
   "name": "Ultimate Online Business Creation & Innovation Studio GODMODE (both modes)",
-  "impl": "IN_PROGRESS",
+  "impl": "IMPLEMENTED",
   "test": "TESTED_BOX",
   "local": false,
   "subs": [
@@ -975,8 +975,8 @@
   "order": 11,
   "id": "SPEC-14",
   "name": "Manufacturing & CNC 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
