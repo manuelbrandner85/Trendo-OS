@@ -1,0 +1,2 @@
+e67b6043d836c46149cbc8fc155faa1d476f67f076b08763856d7858ca4d1026  TrendoOS-Setup.exe
+1e15b0b955cb88e7a83e39dba19b395a8c44bb1b5ed6cda9e4a1425a14acad47  TrendoOS-win-Portable.zip
