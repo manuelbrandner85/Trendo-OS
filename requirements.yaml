@@ -17,6 +17,36 @@ editions:
 - windows-app
 - linux-usb-ssd
 - pi4-plus-windows
+phases:
+- id: P0
+  name: Repository & Requirements Lock
+  status: ACCEPTED
+  note: 'Spezifikation importiert, ADRs, Inventur (PR #1, #2)'
+- id: P1
+  name: Windows Kern-Vertical-Slice
+  status: ACCEPTED
+  accepted_by: Manuel
+  accepted_at: 2026-10-21T14:57+02:00
+  evidence: reports/P1_TESTBERICHT.md
+  open_items:
+  - QA-017 Narrator/Kontrast/Multi-Monitor NOT_RUN
+  - QA-019 realer Offline-Lauf NOT_RUN
+  - Code-Signatur fehlt
+- id: P2
+  name: Linux USB/SSD Boot & Ready-to-Run Essentials
+  status: IN_PROGRESS
+- id: P3
+  name: Pi/Windows Bridge
+  status: APPROVED_SPEC
+- id: P4
+  name: Funktionsfamilien
+  status: APPROVED_SPEC
+- id: P5
+  name: Security, Integration, Recovery
+  status: APPROVED_SPEC
+- id: P6
+  name: Release Candidates
+  status: APPROVED_SPEC
 modules:
 - id: CORE-01
   name: Intelligent Desktop OS

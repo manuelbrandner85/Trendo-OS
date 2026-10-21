@@ -121,3 +121,11 @@ Hinweis: Audit-Kopien im Repo sind um Benutzerpfade bereinigt, ihre Hash-Kette i
 3. QA-019 realer Lauf mit getrenntem Netzwerk.
 4. Code-Signatur des Pakets (Zertifikat fehlt).
 5. Optional: Token-Verwaltung in der UI.
+
+---
+# P1-Abnahme
+**Status: ACCEPTED** durch Manuel am 21.10.2026, ca. 14:57 (Europe/Berlin), per Chat.
+Abgenommen **mit dokumentierten offenen Punkten** (diese bleiben ausdrücklich NICHT bestanden):
+- QA-017 Narrator / Kontrast / Multi-Monitor / Reduced Motion: NOT_RUN
+- QA-019 realer Offline-Lauf (physisch getrenntes Netz): NOT_RUN
+- Code-Signatur des Windows-Pakets: fehlt

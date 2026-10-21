@@ -25,6 +25,12 @@ else: print("OK  SPEC-07 bleibt REJECTED_UPGRADE_BASE_PRESERVED, alle anderen AP
 bad = [t["id"] for t in d["tests"] if t["status"] != "NOT_RUN"]
 if bad: err.append(f"Tests nicht NOT_RUN: {bad}")
 else: print(f"OK  {len(d['tests'])} Tests stehen auf NOT_RUN")
+ph = {x["id"]: x for x in d.get("phases", [])}
+if ph.get("P1", {}).get("status") == "ACCEPTED":
+    if not ph["P1"].get("accepted_by") or not ph["P1"].get("open_items"): err.append("P1 ACCEPTED ohne accepted_by/open_items")
+    else: print(f"OK  P1 ACCEPTED durch {ph['P1']['accepted_by']}, {len(ph['P1']['open_items'])} offene Punkte dokumentiert")
+for x in ph.values():
+    if x["status"] not in allowed: err.append(f"Phase {x['id']}: unbekannter Status")
 for e in err: print("FAIL", e)
 print("ERGEBNIS:", "FEHLER" if err else "BESTANDEN (nur Spezifikationskonsistenz, kein Software-Test)")
 sys.exit(1 if err else 0)
