@@ -129,7 +129,7 @@ Schutz, Wiederherstellung, Apps, Geräte, Netzwerk, Mail
 | 1 | CORE-11 | Security Privacy Recovery Fortress | IMPLEMENTED | TESTED_BOX |
 | 2 | X-02 | Zero Touch Setup & Self Healing | IMPLEMENTED | TESTED_BOX |
 | 3 | SYS-04 | Ultimate App Installation & System Control Center | IMPLEMENTED | TESTED_BOX |
-| 4 | SYS-07 | Ultimate Hardware & Device Recognition | NOT_STARTED | NOT_RUN |
+| 4 | SYS-07 | Ultimate Hardware & Device Recognition | IMPLEMENTED | TESTED_BOX |
 | 5 | SYS-06 | Ultimate Network File Sharing & Remote Workspace | NOT_STARTED | NOT_RUN |
 | 6 | SYS-09 | Communication Mail & Collaboration Center | NOT_STARTED | NOT_RUN |
 | 7 | SPEC-12 | Cybersecurity & Forensics 2.0 | NOT_STARTED | NOT_RUN |
