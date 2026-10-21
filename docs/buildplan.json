@@ -475,8 +475,8 @@
   "order": 3,
   "id": "SYS-04",
   "name": "Ultimate App Installation & System Control Center",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
