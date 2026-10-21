@@ -221,8 +221,8 @@
    {
     "id": "LETTER-001",
     "title": "Ultimate AI Letter Director",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-002",
@@ -245,79 +245,79 @@
    {
     "id": "LETTER-005",
     "title": "Intelligent Tone & Writing Director",
-    "impl": "IN_PROGRESS",
+    "impl": "IMPLEMENTED",
     "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-006",
     "title": "Government & Authority Letter Center",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-007",
     "title": "Court Correspondence & Pleading Assistant",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-008",
     "title": "Lawyer Communication Director",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-009",
     "title": "Insurance & Claims Correspondence Studio",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-010",
     "title": "Business Dispute & Contract Letter Center",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-011",
     "title": "Letter Intake & Fact Questionnaire",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-012",
     "title": "Document Scan OCR & Incoming Letter Reader",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-013",
     "title": "Case Timeline Evidence & Attachment Organizer",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-014",
     "title": "Verified Legal Sources & Deadline Inspector",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-015",
     "title": "German-First Cross-Border Letter Composer",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-016",
     "title": "DOCX ODT PDF Print Production Engine",
     "impl": "IMPLEMENTED",
-    "test": "PC_VERIFIED"
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-017",
     "title": "Personal & Business Letterhead Vault",
-    "impl": "IN_PROGRESS",
+    "impl": "IMPLEMENTED",
     "test": "TESTED_BOX"
    },
    {
@@ -329,20 +329,20 @@
    {
     "id": "LETTER-019",
     "title": "Deadline Reply & Follow-Up Planner",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-020",
     "title": "Document Preview Proofreading & QA Review",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-021",
     "title": "Incoming Letter Analysis & Reply Builder",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-022",
@@ -353,20 +353,20 @@
    {
     "id": "LETTER-023",
     "title": "Official Delivery Channel Preparation",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-024",
     "title": "Human Approval Privacy & Legal Review Gate",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-025",
     "title": "Real Letter Production & Submission QA",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    }
   ]
  },

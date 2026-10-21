@@ -74,31 +74,31 @@ Abnahmekriterien je Modul:
 
 | ID | Titel | Umsetzung | Test |
 |---|---|---|---|
-| LETTER-001 | Ultimate AI Letter Director | NOT_STARTED | NOT_RUN |
+| LETTER-001 | Ultimate AI Letter Director | IMPLEMENTED | TESTED_BOX |
 | LETTER-002 | Universal Letter Category Engine | IMPLEMENTED | TESTED_BOX |
 | LETTER-003 | DIN-5008-orientierter Letter Designer | IMPLEMENTED | TESTED_BOX |
 | LETTER-004 | Professional Template Library | IMPLEMENTED | TESTED_BOX |
-| LETTER-005 | Intelligent Tone & Writing Director | IN_PROGRESS | TESTED_BOX |
-| LETTER-006 | Government & Authority Letter Center | NOT_STARTED | NOT_RUN |
-| LETTER-007 | Court Correspondence & Pleading Assistant | NOT_STARTED | NOT_RUN |
-| LETTER-008 | Lawyer Communication Director | NOT_STARTED | NOT_RUN |
-| LETTER-009 | Insurance & Claims Correspondence Studio | NOT_STARTED | NOT_RUN |
-| LETTER-010 | Business Dispute & Contract Letter Center | NOT_STARTED | NOT_RUN |
-| LETTER-011 | Letter Intake & Fact Questionnaire | NOT_STARTED | NOT_RUN |
-| LETTER-012 | Document Scan OCR & Incoming Letter Reader | NOT_STARTED | NOT_RUN |
-| LETTER-013 | Case Timeline Evidence & Attachment Organizer | NOT_STARTED | NOT_RUN |
-| LETTER-014 | Verified Legal Sources & Deadline Inspector | NOT_STARTED | NOT_RUN |
-| LETTER-015 | German-First Cross-Border Letter Composer | NOT_STARTED | NOT_RUN |
-| LETTER-016 | DOCX ODT PDF Print Production Engine | IMPLEMENTED | PC_VERIFIED |
-| LETTER-017 | Personal & Business Letterhead Vault | IN_PROGRESS | TESTED_BOX |
+| LETTER-005 | Intelligent Tone & Writing Director | IMPLEMENTED | TESTED_BOX |
+| LETTER-006 | Government & Authority Letter Center | IMPLEMENTED | TESTED_BOX |
+| LETTER-007 | Court Correspondence & Pleading Assistant | IMPLEMENTED | TESTED_BOX |
+| LETTER-008 | Lawyer Communication Director | IMPLEMENTED | TESTED_BOX |
+| LETTER-009 | Insurance & Claims Correspondence Studio | IMPLEMENTED | TESTED_BOX |
+| LETTER-010 | Business Dispute & Contract Letter Center | IMPLEMENTED | TESTED_BOX |
+| LETTER-011 | Letter Intake & Fact Questionnaire | IMPLEMENTED | TESTED_BOX |
+| LETTER-012 | Document Scan OCR & Incoming Letter Reader | IMPLEMENTED | TESTED_BOX |
+| LETTER-013 | Case Timeline Evidence & Attachment Organizer | IMPLEMENTED | TESTED_BOX |
+| LETTER-014 | Verified Legal Sources & Deadline Inspector | IMPLEMENTED | TESTED_BOX |
+| LETTER-015 | German-First Cross-Border Letter Composer | IMPLEMENTED | TESTED_BOX |
+| LETTER-016 | DOCX ODT PDF Print Production Engine | IMPLEMENTED | TESTED_BOX |
+| LETTER-017 | Personal & Business Letterhead Vault | IMPLEMENTED | TESTED_BOX |
 | LETTER-018 | Missing Information & Consistency Validator | IMPLEMENTED | TESTED_BOX |
-| LETTER-019 | Deadline Reply & Follow-Up Planner | NOT_STARTED | NOT_RUN |
-| LETTER-020 | Document Preview Proofreading & QA Review | NOT_STARTED | NOT_RUN |
-| LETTER-021 | Incoming Letter Analysis & Reply Builder | NOT_STARTED | NOT_RUN |
+| LETTER-019 | Deadline Reply & Follow-Up Planner | IMPLEMENTED | TESTED_BOX |
+| LETTER-020 | Document Preview Proofreading & QA Review | IMPLEMENTED | TESTED_BOX |
+| LETTER-021 | Incoming Letter Analysis & Reply Builder | IMPLEMENTED | TESTED_BOX |
 | LETTER-022 | Correspondence Case Archive & Version History | IMPLEMENTED | TESTED_BOX |
-| LETTER-023 | Official Delivery Channel Preparation | NOT_STARTED | NOT_RUN |
-| LETTER-024 | Human Approval Privacy & Legal Review Gate | NOT_STARTED | NOT_RUN |
-| LETTER-025 | Real Letter Production & Submission QA | NOT_STARTED | NOT_RUN |
+| LETTER-023 | Official Delivery Channel Preparation | IMPLEMENTED | TESTED_BOX |
+| LETTER-024 | Human Approval Privacy & Legal Review Gate | IMPLEMENTED | TESTED_BOX |
+| LETTER-025 | Real Letter Production & Submission QA | IMPLEMENTED | TESTED_BOX |
 
 ## W2 – KI & Automatisierung
 
