@@ -1,0 +1,32 @@
+OK   side-start     tile-STUDIO-LETTER-01              Liste verlassen=True | studio.open STUDIO-LETTER-01 ; deps.check STUDIO-LETTER-01: tesseract=Working
+OK   side-start     tile-STUDIO-ONLINE-BUSINESS-01     Liste verlassen=True | studio.open STUDIO-ONLINE-BUSINESS-01
+OK   side-start     tile-CORE-05                       Liste verlassen=True | studio.open CORE-05 ; deps.check CORE-05: blender=Working
+OK   side-start     tile-CORE-06                       Liste verlassen=True | studio.open CORE-06 ; deps.check CORE-06: unreal=Working
+OK   side-start     tile-SYS-10                        Liste verlassen=True | studio.open SYS-10 ; deps.check SYS-10: libreoffice=Working
+OK   side-start     tile-CORE-02                       Liste verlassen=True | studio.open CORE-02 ; deps.check CORE-02: ollama=Working, model=Working
+OK   side-start     tile-CORE-08                       Liste verlassen=True | studio.open CORE-08 ; deps.check CORE-08: mpv=Working, ffmpeg=Working
+OK   side-start     tile-CORE-07                       Liste verlassen=True | studio.open CORE-07 ; deps.check CORE-07: git=Working, python=Working
+OK   side-start     tile-CORE-11                       Liste verlassen=True | studio.open CORE-11
+== side-alle-studios : 54 Karten
+== side-online-business : 1 Karten
+OK   side-online-business studio-card-STUDIO-ONLINE-BUSINESS-01 Liste verlassen=True | studio.open STUDIO-ONLINE-BUSINESS-01
+== side-3d-und-games : 2 Karten
+OK   side-3d-und-games studio-card-CORE-05                Liste verlassen=True | studio.open CORE-05 ; deps.check CORE-05: blender=Working
+OK   side-3d-und-games studio-card-CORE-06                Liste verlassen=True | studio.open CORE-06 ; deps.check CORE-06: unreal=Working
+== side-kreativ-und-medien : 2 Karten
+OK   side-kreativ-und-medien studio-card-CORE-08                Liste verlassen=True | studio.open CORE-08 ; deps.check CORE-08: mpv=Working, ffmpeg=Working
+OK   side-kreativ-und-medien studio-card-SPEC-15                Liste verlassen=True | studio.open SPEC-15
+== side-tools-und-entwickler : 3 Karten
+OK   side-tools-und-entwickler studio-card-CORE-07                Liste verlassen=True | studio.open CORE-07 ; deps.check CORE-07: git=Working, python=Working
+OK   side-tools-und-entwickler studio-card-X-03                   Liste verlassen=True | studio.open X-03
+OK   side-tools-und-entwickler studio-card-X-06                   Liste verlassen=True | studio.open X-06
+== side-system-und-sicherheit : 3 Karten
+OK   side-system-und-sicherheit studio-card-CORE-11                Liste verlassen=True | studio.open CORE-11
+OK   side-system-und-sicherheit studio-card-SYS-13                 Liste verlassen=True | studio.open SYS-13
+OK   side-system-und-sicherheit studio-card-SPEC-12                Liste verlassen=True | studio.open SPEC-12
+== side-ki-assistent : 3 Karten
+OK   side-ki-assistent studio-card-CORE-02                Liste verlassen=True | studio.open CORE-02 ; deps.check CORE-02: ollama=Working, model=Working
+OK   side-ki-assistent studio-card-CORE-03                Liste verlassen=True | studio.open CORE-03
+OK   side-ki-assistent studio-card-CORE-12                Liste verlassen=True | studio.open CORE-12
+== side-kommunikation : 1 Karten
+OK   side-kommunikation studio-card-SYS-09                 Liste verlassen=True | studio.open SYS-09

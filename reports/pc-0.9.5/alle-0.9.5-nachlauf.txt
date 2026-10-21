@@ -1,0 +1,4 @@
+OK   side-alle-studios studio-card-SYS-05                 Liste verlassen=True | studio.open SYS-05
+OK   side-alle-studios studio-card-SYS-06                 Liste verlassen=True | studio.open SYS-06
+OK   side-alle-studios studio-card-SYS-07                 Liste verlassen=True | studio.open SYS-07
+OK   side-alle-studios studio-card-SYS-08                 Liste verlassen=True | studio.open SYS-08
