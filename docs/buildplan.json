@@ -420,8 +420,8 @@
   "order": 4,
   "id": "CORE-10",
   "name": "Knowledge Memory & Self Improvement Core 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -563,8 +563,8 @@
   "order": 3,
   "id": "CORE-08",
   "name": "Ultimate Creative & Media Studio 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
