@@ -1,0 +1,8 @@
+﻿start          Screenshot fertig nach  4158 ms, Prozessende  5361 ms, RAM max 278 MB
+start          Screenshot fertig nach  4102 ms, Prozessende  5309 ms, RAM max 272 MB
+start          Screenshot fertig nach  4081 ms, Prozessende  5239 ms, RAM max 291 MB
+einstellungen  Screenshot fertig nach  4059 ms, Prozessende  5263 ms, RAM max 274 MB
+verbund        Screenshot fertig nach  4102 ms, Prozessende  5258 ms, RAM max 292 MB
+programme      Screenshot fertig nach  4061 ms, Prozessende  5272 ms, RAM max 272 MB
+office         Screenshot fertig nach  4117 ms, Prozessende  5278 ms, RAM max 277 MB
+CPU: AMD Ryzen 7 5700X 8-Core Processor / RAM 32 GB, Version 0.9.3+cd6d34facfae0c8cf5ef06e2c83d541fd2981378
