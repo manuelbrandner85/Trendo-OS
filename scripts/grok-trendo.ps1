@@ -15,7 +15,7 @@ $log = Join-Path $repo 'tasks\logs'; New-Item -ItemType Directory $log -Force | 
 $id = if ($Task) { [IO.Path]::GetFileNameWithoutExtension($Task) } else { 'adhoc' }
 $out = Join-Path $log ("{0}-{1:yyyyMMdd-HHmmss}.jsonl" -f $id, (Get-Date))
 $a = @('--trust', '--cwd', $repo, '--permission-mode', 'dontAsk', '--max-turns', $MaxTurns, '--output-format', 'streaming-json')
-if ($ReadOnly) { $a += @('--disallowed-tools', 'run_terminal_command,search_replace,spawn_subagent,scheduler_create,image_gen,image_edit,image_to_video,reference_to_video') }
+if ($ReadOnly) { $a += @('--disallowed-tools', 'run_terminal_command,monitor,get_command_or_subagent_output,kill_command_or_subagent,search_replace,spawn_subagent,scheduler_create,workflow,use_tool,image_gen,image_edit,image_to_video,reference_to_video') }
 if ($Model) { $a += @('-m', $Model) }
 if ($Task) { $a += @('--prompt-file', (Resolve-Path $Task)) } elseif ($Prompt) { $a += @('-p', $Prompt) } else { throw 'Bitte -Task oder -Prompt angeben.' }
 & $grok @a 2>&1 | Out-File -FilePath $out -Encoding utf8
