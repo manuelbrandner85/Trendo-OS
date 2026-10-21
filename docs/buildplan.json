@@ -986,8 +986,8 @@
   "order": 12,
   "id": "SPEC-15",
   "name": "Broadcast & Streaming 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
