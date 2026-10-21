@@ -45,7 +45,7 @@ public partial class MainWindow
             FachTool("el-trace", "Leiterbahnbreite", "Nach IPC-2221, Außenlage, 35 µm Kupfer.",
                 [("a", "Strom (A)", "2"), ("dt", "Erwärmung (°C)", "10"), ("cu", "Kupfer (µm)", "35")],
                 v => $"Mindestens {Fach.F(ElectronicsPlus.TraceWidthMm(Fach.Num(v("a")), Fach.Num(v("dt")), Fach.Num(v("cu"))), 2)} mm breit (Außenlage)"),
-            FachTool("el-bat", "Akku-Laufzeit", "Wirkungsgrad 85 % eingerechnet.",
+            FachTool("el-bat", "Wie lange hält der Akku?", "Wirkungsgrad 85 % eingerechnet.",
                 [("mah", "Kapazität (mAh)", "2000"), ("ma", "Verbrauch (mA)", "50")],
                 v => { var h = ElectronicsPlus.BatteryHours(Fach.Num(v("mah")), Fach.Num(v("ma"))); return $"ca. {Fach.F(h, 1)} Stunden ({Fach.F(h / 24, 1)} Tage)"; }),
             FachTool("el-cable", "Kabel: Spannungsverlust", "Kupfer, Hin- und Rückleiter.",
