@@ -12,7 +12,7 @@ public class W6_Catalog
         return d?.FullName ?? throw new DirectoryNotFoundException("Repo nicht gefunden");
     }
 
-    [Fact(DisplayName = "W6-Katalog: je Studio genau die genehmigte Anzahl, PROPOSED, „gebaut“ nur mit vorhandenem Test")]
+    [Fact(DisplayName = "W6-Katalog: je Studio genau die genehmigte Anzahl, APPROVED (Freigabe 21.10.2026), „gebaut“ nur mit vorhandenem Test")]
     public void Catalogs()
     {
         var root = Root();
@@ -23,7 +23,7 @@ public class W6_Catalog
         foreach (var id in ids)
         {
             var md = File.ReadAllText(Path.Combine(root, "docs", "w6-katalog", id + ".md")).Replace("\r\n", "\n"); // Windows-Checkout: CRLF
-            Assert.Contains("**PROPOSED**", md); Assert.DoesNotContain("APPROVED)", md.Replace("(nicht APPROVED)", ""));
+            Assert.Contains("**APPROVED** – freigegeben von Manuel im Chat am 21.10.2026 um 22:57 Uhr (Berlin)", md); Assert.DoesNotContain("PROPOSED", md);
             var rows = Regex.Matches(md, @"^\| F(\d\d) \| [^|]+ \|[^|]*\| (gebaut|offen) \| `([^`]+)` \|$", RegexOptions.Multiline).ToList();
             Assert.True(reg[id] == rows.Count, $"{id}: {rows.Count} statt {reg[id]} Funktionen");
             foreach (var r in rows)

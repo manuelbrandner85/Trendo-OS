@@ -1,6 +1,6 @@
 # SPEC-08 Fashion & Product 2.0 – Funktionskatalog
 
-Katalog-Status: **PROPOSED** (nicht APPROVED). Anzahl: 18 (laut Modulregister).
+Katalog-Status: **APPROVED** – freigegeben von Manuel im Chat am 21.10.2026 um 22:57 Uhr (Berlin). Anzahl: 18 (laut Modulregister).
 
 | Nr | Funktion | Beschreibung | Stand | Test |
 |---|---|---|---|---|
