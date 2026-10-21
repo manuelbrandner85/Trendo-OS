@@ -374,7 +374,7 @@ public class Dependencies_Core
         Assert.All(DependencyCatalog.All, c => Assert.False(string.IsNullOrWhiteSpace(c.License)));
         Assert.Equal(DeliveryMode.Guided, DependencyCatalog.Get("unreal").Mode);
         Assert.Null(DependencyCatalog.Get("unreal").WingetId);
-        Assert.All(DependencyCatalog.All.Where(c => c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated), c => Assert.True(c.WingetId is not null || c.PostInstall is not null));
+        Assert.All(DependencyCatalog.All.Where(c => c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated), c => Assert.True(c.WingetId is not null || c.PostInstall is not null || (c.PortableZip is not null && c.PortableSha256 is { Length: 64 })));
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (!File.Exists(Path.Combine(dir!.FullName, "docs", "spec", "SOFTWARE_BUNDLE_MANIFEST.csv"))) dir = dir.Parent;
         var csv = File.ReadAllLines(Path.Combine(dir.FullName, "docs", "spec", "SOFTWARE_BUNDLE_MANIFEST.csv")).Skip(1)

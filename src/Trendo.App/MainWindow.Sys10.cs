@@ -31,7 +31,7 @@ public partial class MainWindow
 
         var mi = new TextBox { Name = "pdf-merge-files", PlaceholderText = "PDF-Dateien, eine pro Zeile (in dieser Reihenfolge)", AcceptsReturn = true, Width = 520, MinHeight = 60 };
         var si = Field("pdf-split-file", "PDF-Datei"); var sr = Field("pdf-split-range", "Seiten, z. B. 2-5", 120);
-        sp.Children.Add(Card(Section("Zusammenfügen und Teilen", qpdf is null && unite is null ? "Dafür fehlt das kostenlose Programm qpdf (winget install qpdf.qpdf). Seitenzahlen kann Trendo trotzdem anzeigen." : "Die Originale bleiben unverändert; das Ergebnis liegt im Projektordner unter „Dokumente“.",
+        sp.Children.Add(Card(Section("Zusammenfügen und Teilen", qpdf is null && unite is null ? "Dafür fehlt das kostenlose Programm qpdf (Einstellungen → Zusatzprogramme → qpdf, ohne Admin). Seitenzahlen kann Trendo trotzdem anzeigen." : "Die Originale bleiben unverändert; das Ergebnis liegt im Projektordner unter „Dokumente“.",
             mi, Line(Act("pdf-merge", "Zusammenfügen", () => Try(V, () =>
             {
                 var files = (mi.Text ?? "").Split('\n').Select(l => l.Trim().Trim('"')).Where(l => l.Length > 0).ToList();
