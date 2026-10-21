@@ -1,0 +1,4 @@
+f9e89c4c1446fbf7e85acacb7cb42975b577aae5e691636af9de1c689b93c4d2  reports/w7/tests-box.txt
+fa41fe5fe446d5a68c30169e4ce51acd2dd9f8f97dedc61fd02b2c3223111a21  reports/w7/render-handy.png
+ed79ccb33908b5c75df07f6115bd55cc73df8ddb836eba5e9130115abd181489  reports/w7/render-modus.png
+a232489eef3f670b171197e0eedb4f5d025744ca950f30da9994c3e9f5c13c79  reports/w7/render-verbund.png

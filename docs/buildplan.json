@@ -1019,8 +1019,8 @@
   "order": 1,
   "id": "CORE-04",
   "name": "Pi/PC/Android Fusion Engine",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IN_PROGRESS",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -1030,8 +1030,8 @@
   "order": 2,
   "id": "X-08",
   "name": "Mobile OS Bridge",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IN_PROGRESS",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -1041,8 +1041,8 @@
   "order": 3,
   "id": "SYS-01",
   "name": "Triple Mode OS GODMODE",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IN_PROGRESS",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  }

@@ -122,7 +122,7 @@ public sealed partial class MainWindow : Window
             var key = order[i];
             KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.D1 + i, KeyModifiers.Control), Command = new RelayCommand(() => Show(key)) });
         }
-        InitWave1(); InitWave45(); InitWave23(); _query = opt.Query ?? "";
+        InitWave1(); InitWave45(); InitWave23(); InitW7(); _query = opt.Query ?? "";
         InitSetup(opt);
         Show(opt.Page ?? (NeedsSetup(opt) ? "einrichtung" : "start"));
         RefreshStatusBar();

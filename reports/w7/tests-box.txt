@@ -1,0 +1,11 @@
+  Passed CORE-04: Kopplung nur mit gültigem Einmal-Code und Heimnetz-Adresse; Entfernen; Audit [71 ms]
+  Passed SYS-01: Modus aus echten Merkmalen, Fähigkeiten ehrlich (Blockiert statt vorgetäuscht), USB nur Anleitung [11 ms]
+  Passed CORE-04: Aufgaben laufen lokal zuerst, sonst auf erreichbarem Gerät; nicht erreichbar wird ehrlich gemeldet [3 ms]
+  Passed X-08: adb-Ausgabe lesen, Freigabe-Status verständlich, Senden nur mit Zustimmung und gültiger Datei [5 ms]
+Total tests: 4
+ Total time: 0.7979 Seconds
+  Passed SYS-01 UI: Betriebsmodus zeigt aktuellen Modus und Fähigkeiten [777 ms]
+  Passed X-08 UI: Handy suchen (adb), Freigabe-Hinweis, Senden erst nach Zustimmung [101 ms]
+  Passed CORE-04 UI: Code erzeugen, Pi koppeln, Erreichbarkeit prüfen, Aufgabe zuordnen, entfernen [518 ms]
+Total tests: 3
+ Total time: 2.6784 Seconds
