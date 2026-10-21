@@ -596,8 +596,8 @@
   "order": 6,
   "id": "X-07",
   "name": "Global Free Asset Discovery",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -607,8 +607,8 @@
   "order": 7,
   "id": "X-03",
   "name": "Visual Builder & No-Code",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
