@@ -227,7 +227,7 @@ Spezial-Studios auf Basis der fertigen Kernbausteine
 | 1 | SPEC-01 | Architecture & Interior 2.0 | IMPLEMENTED | TESTED_BOX |
 | 2 | SPEC-02 | Electronics & PCB 2.0 | IMPLEMENTED | TESTED_BOX |
 | 3 | SPEC-03 | Engineering & Simulation 2.0 | IMPLEMENTED | TESTED_BOX |
-| 4 | SPEC-04 | VR/AR/MR 2.0 | NOT_STARTED | NOT_RUN |
+| 4 | SPEC-04 | VR/AR/MR 2.0 | IMPLEMENTED | TESTED_BOX |
 | 5 | SPEC-05 | Science & Research 2.0 | NOT_STARTED | NOT_RUN |
 | 6 | SPEC-06 | Education & Training 2.0 | NOT_STARTED | NOT_RUN |
 | 7 | SPEC-08 | Fashion & Product 2.0 | NOT_STARTED | NOT_RUN |
