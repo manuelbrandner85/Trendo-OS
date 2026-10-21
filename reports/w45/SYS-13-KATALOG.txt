@@ -1,0 +1,4 @@
+Nachweis SYS-13-KATALOG – Linux-Box (nicht Windows-PC), 21.10.2026 22:58 MESZ, Commit-Basis c93e984
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 317 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   407, Skipped:     0, Total:   407, Duration: 13 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   112, Skipped:     0, Total:   112, Duration: 40 s - Trendo.App.Tests.dll (net10.0)

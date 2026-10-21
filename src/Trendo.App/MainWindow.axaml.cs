@@ -158,7 +158,7 @@ public sealed partial class MainWindow : Window
         CurrentView = key;
         MarkTab(key); MarkSide(key);
         _center.Children.Clear();
-        _center.Children.Add(_showMap[key]());
+        _center.Children.Add(SafeView(key));
         AfterShow(key);
         _bellBadge.Text = _core.Approvals.Pending().Count is var n && n > 0 ? n.ToString() : "";
         RefreshProjects();

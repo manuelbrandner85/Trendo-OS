@@ -11,6 +11,7 @@ if [ -z "${TRENDO_RELEASE_DRY:-}" ]; then
 grep -q "<Version>$VER</Version>" src/Trendo.App/Trendo.App.csproj || { echo "Abbruch: Version $VER steht nicht in Trendo.App.csproj"; exit 2; }
 fi
 dotnet test -c Release --nologo -v q
+scripts/vuln_scan.sh
 installer/build-setup.sh "$VER"
 # Begleiter für Raspberry Pi / Linux (W7) – gleiche Version, Prüfsummen in dieselbe SHA256SUMS.txt
 installer/companion/build.sh "$VER"
