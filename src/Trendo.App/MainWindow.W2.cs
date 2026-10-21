@@ -41,7 +41,7 @@ public partial class MainWindow
 
     private Control KiPage(string title, Control body) => Page(title, new StackPanel { Spacing = 8, Children = { KiNav(), body } });
 
-    private static Border Card(Control child) => new() { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8), Child = child };
+    private static Border WCard(Control child) => new() { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8), Child = child };
 
     // ---------- CORE-02: Fragen an die KI auf diesem PC ----------
     private readonly List<KiMessage> _chat = [];
@@ -53,7 +53,7 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 8, Children = { P("Stell eine Frage. Die Antwort kommt von der KI auf diesem PC – nichts geht ins Internet.") } };
         var log = new StackPanel { Name = "ask-log", Spacing = 6 };
         foreach (var m in _chat)
-            log.Children.Add(Card(new StackPanel { Children = { P(m.Role == "user" ? "Du" : "Trendo", m.Role == "user" ? Accent : null, 10.5), new SelectableTextBlock { Text = m.Content, Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap } } }));
+            log.Children.Add(WCard(new StackPanel { Children = { P(m.Role == "user" ? "Du" : "Trendo", m.Role == "user" ? Accent : null, 10.5), new SelectableTextBlock { Text = m.Content, Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap } } }));
         var input = new TextBox { Name = "ask-input", PlaceholderText = "Was möchtest du wissen?", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 54 };
         var state = new TextBlock { Name = "ask-state", Text = _askState, Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap };
         var send = new Button { Name = "ask-send", Content = "Fragen", Background = Accent };
