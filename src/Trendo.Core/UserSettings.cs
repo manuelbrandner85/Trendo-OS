@@ -16,6 +16,20 @@ public sealed class UserSettings
     public List<string> StudioPacks { get; set; } = [];
     public List<string> HiddenTiles { get; set; } = [];
     public List<string> DockOrder { get; set; } = [];
+    public List<string> TileOrder { get; set; } = [];
+    public List<string> WidgetOrder { get; set; } = [];
+
+    /// <summary>Sortiert nach gespeicherter Reihenfolge; Unbekanntes behält die Standardposition am Ende.</summary>
+    public static List<T> Ordered<T>(IEnumerable<T> items, Func<T, string> id, IList<string> order) =>
+        items.Select((x, i) => (x, i)).OrderBy(t => order.IndexOf(id(t.x)) is var k && k >= 0 ? k : order.Count + t.i).Select(t => t.x).ToList();
+
+    /// <summary>Verschiebt ein Element um eine Position (−1 = nach vorn, +1 = nach hinten) und speichert die vollständige Reihenfolge.</summary>
+    public static List<string> Move(IList<string> current, string item, int delta)
+    {
+        var l = current.ToList(); var i = l.IndexOf(item); var j = i + delta;
+        if (i < 0 || j < 0 || j >= l.Count) return l;
+        (l[i], l[j]) = (l[j], l[i]); return l;
+    }
     public List<string> SeenHints { get; set; } = [];
     public bool AutoUpdate { get; set; } = true;
     public int BackupEveryHours { get; set; } = 24;

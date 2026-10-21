@@ -321,3 +321,63 @@ public class W0_SetupWizard
         w.Close(); Directory.Delete(root, true);
     }
 }
+
+/// Welle 0b: Look & Bedienung
+public class W0b_Look
+{
+    static string Repo([System.Runtime.CompilerServices.CallerFilePath] string f = "") => Path.GetFullPath(Path.Combine(Path.GetDirectoryName(f)!, "..", ".."));
+
+    [Fact(DisplayName = "W0b-01: Keine Fachwörter in Oberflächentexten (docs/SPRACHE.md)")]
+    public void No_jargon()
+    {
+        string[] banned = ["Audit-Log", "Hash-Kette", "Secrets-Backend", "Adapter noch", "Spezifikation", "Komponenten öffnen", "Komponenten verwalten", "Laufzeit"];
+        var hits = Directory.GetFiles(Path.Combine(Repo(), "src", "Trendo.App"), "*.cs")
+            .SelectMany(f => System.Text.RegularExpressions.Regex.Matches(File.ReadAllText(f), "\"(?:[^\"\\\\]|\\\\.)*\"").Select(m => (f, m.Value)))
+            .Where(x => banned.Any(b => x.Value.Contains(b))).Select(x => $"{Path.GetFileName(x.f)}: {x.Value}").ToList();
+        Assert.Empty(hits);
+    }
+
+    static (MainWindow W, string Root) Open(UserSettings? s = null)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-ui-" + Guid.NewGuid().ToString("N"));
+        var core = new TrendoCore(root, new InMemorySecretStore(), new FakeLauncher());
+        (s ?? new UserSettings { SetupDone = true }).Save(root);
+        var w = new MainWindow(core, new AppOptions(root, null, 0, Page: "settings"), new Probe()); w.Show(); Dispatcher.UIThread.RunJobs();
+        return (w, root);
+    }
+
+    [AvaloniaFact(DisplayName = "W0b-02/04/05: Widgets ausblenden, Dock sortieren, Bewegung reduzieren, Hinweis einmalig – alles gespeichert")]
+    public void Customize_persisted()
+    {
+        var (w, root) = Open();
+        Assert.NotNull(w.TryFind<Border>("hint")); // erster Besuch: Hinweis
+        w.Find<Button>("hint-ok").Press();
+        Assert.Contains("settings", UserSettings.Load(root).SeenHints);
+        w.Find<CheckBox>("show-widget-system").IsChecked = false; Dispatcher.UIThread.RunJobs();
+        Assert.Contains("widget-system", UserSettings.Load(root).HiddenTiles);
+        w.Find<Button>("dock-files-vor").Press();
+        Assert.Equal("files", UserSettings.Load(root).DockOrder[0]);
+        w.Find<Button>("wall-polarlicht").Press();
+        Assert.Equal("polarlicht", UserSettings.Load(root).Wallpaper);
+        w.Close();
+        // Neu öffnen: Einstellungen wirken
+        var core = new TrendoCore(root, new InMemorySecretStore(), new FakeLauncher());
+        var w2 = new MainWindow(core, new AppOptions(root, null, 0), new Probe()); w2.Show(); Dispatcher.UIThread.RunJobs();
+        Assert.False(w2.Find<Border>("widget-system").IsVisible);
+        var dock = w2.GetLogicalDescendants().OfType<Button>().Where(b => b.Name?.StartsWith("dock-") == true && b.Name != "dock-trash").Select(b => b.Name).ToList();
+        Assert.Equal("dock-files", dock[0]);
+        w2.Show(); Dispatcher.UIThread.RunJobs();
+        w2.Close(); Directory.Delete(root, true);
+    }
+
+    [AvaloniaFact(DisplayName = "W0b-06: Design wechseln (Hell/Kontrast) baut das Fenster neu auf und speichert")]
+    public void Theme_switch()
+    {
+        var (w, root) = Open();
+        w.Find<Button>("theme-kontrast").Press();
+        Assert.Equal("kontrast", UserSettings.Load(root).Theme);
+        w.Find<Button>("accent-grün").Press(); // altes Fenster noch im Baum? -> neues Fenster liest gespeicherte Werte
+        Assert.Equal("#22C55E", UserSettings.Load(root).Accent);
+        Directory.Delete(root, true);
+    }
+}

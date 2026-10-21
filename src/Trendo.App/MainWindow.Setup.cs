@@ -22,7 +22,6 @@ public sealed partial class MainWindow
 
     private void InitSetup(AppOptions opt)
     {
-        _settings = UserSettings.Load(_core.DataRoot);
         if (string.IsNullOrEmpty(_settings.ProjectsFolder)) _settings.ProjectsFolder = UserSettings.DefaultProjectsFolder();
         foreach (var p in SetupPacks.Studios.Where(p => p.Default)) _wizPacks.Add(p.Id);
         _showMap["einrichtung"] = SetupWizardView; _showMap["systemcheck"] = SystemCheckView; _showMap["sicherung"] = BackupView;
@@ -160,7 +159,7 @@ public sealed partial class MainWindow
         var last = Backups.List().FirstOrDefault();
         rows.Add(("Sicherung", last is null ? "Fehlt" : "Bereit", last is null ? "noch keine" : $"zuletzt {last.LastWriteTime:dd.MM.yyyy HH:mm}", null));
         rows.Add(("Updates", !_settings.AutoUpdate ? "Aus" : _updateInfo.StartsWith("Aktuell") || _updateInfo.StartsWith("Update") ? "Bereit" : "Hinweis", _updateInfo, null));
-        rows.Add(("Audit-Protokoll", _core.Audit.Verify() ? "Bereit" : "Defekt", "Hash-Kette geprüft", null));
+        rows.Add(("Protokoll", _core.Audit.Verify() ? "Bereit" : "Defekt", "unverändert und vollständig", null));
         for (var i = 0; i < rows.Count; i++)
         {
             var r = rows[i]; grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
@@ -193,7 +192,7 @@ public sealed partial class MainWindow
             rb.Click += (_, _) => { Backups.Restore(f.FullName, DateTime.Now); _settings = UserSettings.Load(_core.DataRoot); Show("sicherung"); };
             sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { P($"{f.LastWriteTime:dd.MM.yyyy HH:mm} · {f.Length / 1024} KB", Text), rb } });
         }
-        sp.Children.Add(P("Beim Wiederherstellen wird der aktuelle Stand vorher gesichert. Das Audit-Protokoll wird nie überschrieben.", null, 11));
+        sp.Children.Add(P("Beim Wiederherstellen wird der aktuelle Stand vorher gesichert. Das Protokoll, was Trendo getan hat, bleibt immer erhalten.", null, 11));
         return Page("Sicherung", sp);
     }
 

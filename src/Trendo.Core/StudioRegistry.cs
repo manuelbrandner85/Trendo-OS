@@ -33,8 +33,8 @@ public sealed class StudioRegistry
             { cap = Capability.Blocked; why = $"Benötigtes Programm nicht gefunden: {tool}"; }
             else if (impl is "IMPLEMENTED" or "TESTED" or "ACCEPTED" or "RELEASED" && test == "PASS")
             { cap = Capability.Ready; why = "Implementiert und getestet"; }
-            else if (RequiredTools.ContainsKey(id)) { cap = Capability.NotConnected; why = "Programm vorhanden, Adapter noch nicht gebaut"; }
-            else { cap = Capability.SpecOnly; why = "Nur genehmigte Spezifikation – noch nicht gebaut"; }
+            else if (RequiredTools.ContainsKey(id)) { cap = Capability.NotConnected; why = "Programm ist da, die Verbindung zu Trendo fehlt noch"; }
+            else { cap = Capability.SpecOnly; why = "Geplant – noch nicht gebaut"; }
             return new StudioEntry(id, S("name"), appr, impl, test, cap, why);
         }).ToList();
     }

@@ -85,7 +85,7 @@ public sealed class RealProcessRunner : IProcessRunner
 {
     public async Task<(int, string)> RunAsync(string file, string args, Action<string>? line = null, CancellationToken ct = default)
     {
-        var psi = new ProcessStartInfo(file, args) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
+        var psi = new ProcessStartInfo(file, args) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetTempPath() }; // nie im Programmordner: hält sonst Updates auf
         using var p = Process.Start(psi)!;
         var sb = new System.Text.StringBuilder();
         void On(object _, DataReceivedEventArgs e) { if (e.Data is null) return; lock (sb) sb.AppendLine(e.Data); line?.Invoke(e.Data); }
@@ -176,7 +176,7 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
             // Modell-Download braucht den lokalen Dienst: falls nicht aktiv, „ollama serve“ starten (nur 127.0.0.1)
             if (!await OllamaUp())
             {
-                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(ollama, "serve") { UseShellExecute = false, CreateNoWindow = true }); audit.Append("app", "ki.runtime_started", "ollama serve"); }
+                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(ollama, "serve") { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetDirectoryName(ollama)! }); audit.Append("app", "ki.runtime_started", "ollama serve"); }
                 catch { }
                 for (var i = 0; i < 30 && !await OllamaUp(); i++) await Task.Delay(500, ct);
             }
