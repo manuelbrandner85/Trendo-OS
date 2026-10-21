@@ -1,6 +1,6 @@
 # Trendo OS
 
-**Status: Spezifikationsphase (P0). Es existiert noch keine gebaute, installierbare oder getestete Trendo-OS-Software.**
+**Status: P1 in Arbeit.** Ein erster Windows-Vertical-Slice (.NET 10 + Avalonia) baut und besteht 29 Unit-Tests auf Windows (siehe `reports/P1_TESTBERICHT.md`). Es gibt noch keinen Installer und kein Release.
 
 Trendo OS ist ein geplantes, lokal arbeitendes, KI-unterstütztes Arbeits- und Produktionssystem mit dem integrierten Assistenten **Trendo**. Ein Produkt, drei Editionen:
 
@@ -25,7 +25,15 @@ Trendo OS ist ein geplantes, lokal arbeitendes, KI-unterstütztes Arbeits- und P
 | `requirements.yaml` | Maschinenlesbare Anforderungen, erzeugt aus den CSVs |
 | `tasks/` | Aufträge an Grok Build |
 | `reports/` | Statusberichte und Testnachweise |
+| `src/`, `tests/` | Trendo.Core, Trendo.App (Avalonia), xUnit-Tests |
 | `scripts/` | Generator und Validierung für `requirements.yaml` |
+
+## Bauen und testen
+```bash
+dotnet build Trendo.sln -c Release
+dotnet test Trendo.sln -c Release
+dotnet run --project src/Trendo.App -c Release
+```
 
 ## Validierung
 ```bash

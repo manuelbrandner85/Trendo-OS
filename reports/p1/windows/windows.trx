@@ -1,0 +1,202 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="e8b85423-6863-4d38-9847-b8f176f9b395" name="<USER>@<HOST> 2026-10-21 14:36:57" runUser="<USER>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-21T14:36:57.9627432+02:00" queuing="2026-10-21T14:36:57.9627435+02:00" start="2026-10-21T14:36:54.8758734+02:00" finish="2026-10-21T14:36:58.1223206+02:00" />
+  <TestSettings name="default" id="36c6a077-8153-40c7-9fed-f8913f979004">
+    <Deployment runDeploymentRoot="<USER>_<HOST>_2026-10-21_14_36_57" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="5bf35c8d-c60c-4cbc-9356-e38d9a88f630" testId="353e4f40-bc04-10de-70ae-ea4e4eeac5d7" testName="QA-003: Ungültige Projekt-IDs werden abgewiesen(id: &quot;..&quot;)" computerName="<HOST>" duration="00:00:00.0017124" startTime="2026-10-21T14:36:57.9158459+02:00" endTime="2026-10-21T14:36:57.9158838+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5bf35c8d-c60c-4cbc-9356-e38d9a88f630" />
+    <UnitTestResult executionId="fd4c33e7-7023-4295-b6bb-d60e2be6074d" testId="dc5b7595-ec2e-6cb9-f677-16c35dd71f7a" testName="QA-004: Freigabe ist einmalig (kein Replay)" computerName="<HOST>" duration="00:00:00.0261236" startTime="2026-10-21T14:36:58.0154956+02:00" endTime="2026-10-21T14:36:58.0414876+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fd4c33e7-7023-4295-b6bb-d60e2be6074d" />
+    <UnitTestResult executionId="002c0c58-c6dd-4e7b-b73a-f20b4830e2e2" testId="fed88242-7b37-a276-50ba-cfd42af725c0" testName="QA-004: Audit-Log ist hash-verkettet; Manipulation wird erkannt" computerName="<HOST>" duration="00:00:00.0161996" startTime="2026-10-21T14:36:57.9797624+02:00" endTime="2026-10-21T14:36:57.9959249+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="002c0c58-c6dd-4e7b-b73a-f20b4830e2e2" />
+    <UnitTestResult executionId="05f97550-3da9-4f4e-84ea-b014e5cc49ca" testId="3a762cc8-ee40-e02d-7e5c-efcd164119ce" testName="QA-015: Fehlendes Programm → Blockiert; nichts als Bereit" computerName="<HOST>" duration="00:00:00.2457833" startTime="2026-10-21T14:36:57.7184894+02:00" endTime="2026-10-21T14:36:57.9492178+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="05f97550-3da9-4f4e-84ea-b014e5cc49ca" />
+    <UnitTestResult executionId="2f98915c-0746-4223-9b50-96cb7a3712a0" testId="6e632f06-6c46-6c76-a155-6b81d199474a" testName="QA-003: Pfadausbrüche werden abgewiesen und auditiert(rel: &quot;..\\..\\x.txt&quot;)" computerName="<HOST>" duration="00:00:00.0227907" startTime="2026-10-21T14:36:58.0038351+02:00" endTime="2026-10-21T14:36:58.0265011+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2f98915c-0746-4223-9b50-96cb7a3712a0" />
+    <UnitTestResult executionId="fd47e6e9-2c47-4d32-8e63-5e6e5bc689e3" testId="b9a48a68-6128-9d7f-495c-ea2b505eca8b" testName="QA-004: Ohne Freigabe wird nichts ausgeführt" computerName="<HOST>" duration="00:00:00.0192449" startTime="2026-10-21T14:36:57.9966995+02:00" endTime="2026-10-21T14:36:58.0152695+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fd47e6e9-2c47-4d32-8e63-5e6e5bc689e3" />
+    <UnitTestResult executionId="006e9e96-c7c3-4a85-9539-8eeefcc661b7" testId="ee4ae9c9-f701-f75f-c7dc-fbdd9b09ac08" testName="QA-003: Pfadausbrüche werden abgewiesen und auditiert(rel: &quot;../b/files/secret.txt&quot;)" computerName="<HOST>" duration="00:00:00.0213185" startTime="2026-10-21T14:36:57.9823425+02:00" endTime="2026-10-21T14:36:58.0036448+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="006e9e96-c7c3-4a85-9539-8eeefcc661b7" />
+    <UnitTestResult executionId="0306f5d4-36ce-40f9-a8db-21b612855886" testId="d11d5ad2-8910-32b8-c40c-84cb3caf8e74" testName="QA-004: Abgelaufene Freigabe blockiert" computerName="<HOST>" duration="00:00:00.0204084" startTime="2026-10-21T14:36:57.9297191+02:00" endTime="2026-10-21T14:36:57.9446672+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0306f5d4-36ce-40f9-a8db-21b612855886" />
+    <UnitTestResult executionId="d52520f0-87d8-4d81-b390-0c334b7ea63a" testId="b01f4ae7-9546-7143-0675-e98cb0129237" testName="QA-004: Nur https-URLs dürfen geplant werden(url: &quot;nicht-url&quot;)" computerName="<HOST>" duration="00:00:00.0016639" startTime="2026-10-21T14:36:57.9751094+02:00" endTime="2026-10-21T14:36:57.9767014+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d52520f0-87d8-4d81-b390-0c334b7ea63a" />
+    <UnitTestResult executionId="d7b9e729-e7d5-46ba-ba15-3bae5a09c14f" testId="be4183e8-e7a7-bdb4-5f10-f23ca3087924" testName="QA-003: Ungültige Projekt-IDs werden abgewiesen(id: &quot;A&quot;)" computerName="<HOST>" duration="00:00:00.0015680" startTime="2026-10-21T14:36:57.9157054+02:00" endTime="2026-10-21T14:36:57.9157529+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d7b9e729-e7d5-46ba-ba15-3bae5a09c14f" />
+    <UnitTestResult executionId="ecfc3417-2c34-42bb-a9ae-9f014d1ef84e" testId="805457d0-b807-6fe7-3cbe-50270a4c2821" testName="QA-003: Pfadausbrüche werden abgewiesen und auditiert(rel: &quot;C:\\Windows\\win.ini&quot;)" computerName="<HOST>" duration="00:00:00.0203864" startTime="2026-10-21T14:36:58.0266483+02:00" endTime="2026-10-21T14:36:58.0469445+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ecfc3417-2c34-42bb-a9ae-9f014d1ef84e" />
+    <UnitTestResult executionId="c3597b96-263f-4b5f-af96-5bea4ad0c900" testId="4527981f-6bc5-33e9-bb3d-2188ac928c2b" testName="QA-004: Abgelehnte Freigabe blockiert" computerName="<HOST>" duration="00:00:00.2206920" startTime="2026-10-21T14:36:57.7185421+02:00" endTime="2026-10-21T14:36:57.9241625+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c3597b96-263f-4b5f-af96-5bea4ad0c900" />
+    <UnitTestResult executionId="2c1aad2c-cc9c-4580-8515-adb553586c31" testId="2ab2cd24-e030-b18e-e7fe-3b44c85cbbfd" testName="QA-003: Pfadausbrüche werden abgewiesen und auditiert(rel: &quot;sub/../../../escape.txt&quot;)" computerName="<HOST>" duration="00:00:00.0200732" startTime="2026-10-21T14:36:57.9636577+02:00" endTime="2026-10-21T14:36:57.9822446+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2c1aad2c-cc9c-4580-8515-adb553586c31" />
+    <UnitTestResult executionId="0cdd46a0-cb22-473b-a033-4cd62789caf4" testId="904e6721-d060-119a-e41a-e16f5d0d9d6d" testName="QA-003: Pfadausbrüche werden abgewiesen und auditiert(rel: &quot;&quot;)" computerName="<HOST>" duration="00:00:00.0269941" startTime="2026-10-21T14:36:57.9353092+02:00" endTime="2026-10-21T14:36:57.9621330+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0cdd46a0-cb22-473b-a033-4cd62789caf4" />
+    <UnitTestResult executionId="f055b0f1-7049-4187-acaa-64951e1cac7a" testId="f8c4b24c-676c-e754-43dd-f9495e64d60c" testName="QA-004: Nur https-URLs dürfen geplant werden(url: &quot;javascript:alert(1)&quot;)" computerName="<HOST>" duration="00:00:00.0014334" startTime="2026-10-21T14:36:57.9767928+02:00" endTime="2026-10-21T14:36:57.9781722+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f055b0f1-7049-4187-acaa-64951e1cac7a" />
+    <UnitTestResult executionId="809a9127-5dc0-4982-ad4e-c9050e4b6490" testId="dfd13f74-3088-2189-e984-b75c6afd04eb" testName="QA-004: Nur https-URLs dürfen geplant werden(url: &quot;file:///C:/Windows&quot;)" computerName="<HOST>" duration="00:00:00.0017973" startTime="2026-10-21T14:36:57.9733180+02:00" endTime="2026-10-21T14:36:57.9750109+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="809a9127-5dc0-4982-ad4e-c9050e4b6490" />
+    <UnitTestResult executionId="300d4b0f-5a2f-4a0f-9166-9856c2b78163" testId="c9dfeb5a-2be8-5176-6e66-6bcdb0f47f7e" testName="QA-003: Projekt A kann Dateien von Projekt B nicht lesen" computerName="<HOST>" duration="00:00:00.0208545" startTime="2026-10-21T14:36:58.0553385+02:00" endTime="2026-10-21T14:36:58.0761616+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="300d4b0f-5a2f-4a0f-9166-9856c2b78163" />
+    <UnitTestResult executionId="350e3b19-1f18-4ba1-ba2a-bdc2f066df28" testId="ccc4d981-3f34-9188-cad0-f513ec6d3ebb" testName="QA-004: Nur https-URLs dürfen geplant werden(url: &quot;http://example.org&quot;)" computerName="<HOST>" duration="00:00:00.0014264" startTime="2026-10-21T14:36:57.9782677+02:00" endTime="2026-10-21T14:36:57.9796353+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="350e3b19-1f18-4ba1-ba2a-bdc2f066df28" />
+    <UnitTestResult executionId="39926931-2479-4e0a-b976-a51c1256a305" testId="6eee795a-423b-4106-db99-a2e8c808464b" testName="QA-019: Kernfunktionen laufen ohne Netzwerk (keine Netz-Abhängigkeit im Core)" computerName="<HOST>" duration="00:00:00.2492035" startTime="2026-10-21T14:36:57.7173182+02:00" endTime="2026-10-21T14:36:57.9526509+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="39926931-2479-4e0a-b976-a51c1256a305" />
+    <UnitTestResult executionId="cb778459-15a2-462d-8e2d-cc9364e80374" testId="78d9f43d-7db1-9a7b-d9f7-c06f4b0a3d1f" testName="QA-004: Freigabe gilt nicht für anderes Ziel" computerName="<HOST>" duration="00:00:00.0170100" startTime="2026-10-21T14:36:57.9562043+02:00" endTime="2026-10-21T14:36:57.9731497+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="cb778459-15a2-462d-8e2d-cc9364e80374" />
+    <UnitTestResult executionId="e4cd6d27-5ce7-43e2-93aa-878b9a5a836c" testId="902cd481-ae21-752e-48b7-f85ae7a71626" testName="QA-015: SPEC-07 abgelehnt, übrige nur Spezifikation" computerName="<HOST>" duration="00:00:00.0081204" startTime="2026-10-21T14:36:57.9583379+02:00" endTime="2026-10-21T14:36:57.9663796+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e4cd6d27-5ce7-43e2-93aa-878b9a5a836c" />
+    <UnitTestResult executionId="b0e79429-6226-4677-947b-971a5303a6ee" testId="b5392a50-d543-1df4-9abd-02ea4e9eadb2" testName="QA-003: Symlink im Projekt nach außen wird abgewiesen" computerName="<HOST>" duration="00:00:00.0082190" startTime="2026-10-21T14:36:58.0471004+02:00" endTime="2026-10-21T14:36:58.0552147+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b0e79429-6226-4677-947b-971a5303a6ee" />
+    <UnitTestResult executionId="e69dccfd-f34a-4986-a017-04c1e1bc31e6" testId="36d3acc5-eb9f-0f1b-8256-1bbe9ffcb7e4" testName="Secrets (nur Windows): Credential Manager Roundtrip" computerName="<HOST>" duration="00:00:00.0113496" startTime="2026-10-21T14:36:57.9448705+02:00" endTime="2026-10-21T14:36:57.9560578+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e69dccfd-f34a-4986-a017-04c1e1bc31e6" />
+    <UnitTestResult executionId="0fcaf6bb-3313-40ec-b0f1-0aff198d7aba" testId="e6d344c8-d1a6-446d-166f-59cc52ad54ca" testName="QA-015: Programm vorhanden, Adapter fehlt → Nicht verbunden (nicht Bereit)" computerName="<HOST>" duration="00:00:00.0089238" startTime="2026-10-21T14:36:57.9494051+02:00" endTime="2026-10-21T14:36:57.9581865+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0fcaf6bb-3313-40ec-b0f1-0aff198d7aba" />
+    <UnitTestResult executionId="c9bbda1e-cc96-435f-ab37-ae6c3c981bde" testId="3bcedf08-18ef-c4bb-0b4b-b8af2a88ae51" testName="Secrets: Werte werden gespeichert/gelöscht und nie ins Audit-Log geschrieben" computerName="<HOST>" duration="00:00:00.0111138" startTime="2026-10-21T14:36:58.0416608+02:00" endTime="2026-10-21T14:36:58.0526720+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c9bbda1e-cc96-435f-ab37-ae6c3c981bde" />
+    <UnitTestResult executionId="5988e734-242e-4b84-af05-49ec7a93cd17" testId="85fb8e34-e77b-a8b2-4930-e0dd8b50c015" testName="QA-003: Pfadausbrüche werden abgewiesen und auditiert(rel: &quot;/etc/passwd&quot;)" computerName="<HOST>" duration="00:00:00.0246750" startTime="2026-10-21T14:36:57.9168883+02:00" endTime="2026-10-21T14:36:57.9350949+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5988e734-242e-4b84-af05-49ec7a93cd17" />
+    <UnitTestResult executionId="c027bd9c-3a24-4cec-8754-0cc7e4d0058b" testId="967bb6fd-3a7b-a8ab-84f3-f301b1b68f4a" testName="QA-001: Core startet, legt Datenstruktur an und beendet sauber mit Audit-Eintrag" computerName="<HOST>" duration="00:00:00.2122476" startTime="2026-10-21T14:36:57.7185222+02:00" endTime="2026-10-21T14:36:57.9169326+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c027bd9c-3a24-4cec-8754-0cc7e4d0058b" />
+    <UnitTestResult executionId="90b772e9-e50f-4ba5-8c48-6dade821c9a4" testId="9db16fc6-3019-58a2-0363-6a1b8e858d3a" testName="QA-003: Ungültige Projekt-IDs werden abgewiesen(id: &quot;a/b&quot;)" computerName="<HOST>" duration="00:00:00.0022659" startTime="2026-10-21T14:36:57.9142293+02:00" endTime="2026-10-21T14:36:57.9150363+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="90b772e9-e50f-4ba5-8c48-6dade821c9a4" />
+    <UnitTestResult executionId="1f4f5391-cdd3-45c9-8622-07deff327934" testId="c824e644-8388-cd1c-1bd5-217567a4e21b" testName="QA-003: Ungültige Projekt-IDs werden abgewiesen(id: &quot;x&quot;)" computerName="<HOST>" duration="00:00:00.1979995" startTime="2026-10-21T14:36:57.7185602+02:00" endTime="2026-10-21T14:36:57.9041361+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1f4f5391-cdd3-45c9-8622-07deff327934" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="QA-003: Pfadausbrüche werden abgewiesen und auditiert(rel: &quot;C:\\Windows\\win.ini&quot;)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="805457d0-b807-6fe7-3cbe-50270a4c2821">
+      <Execution id="ecfc3417-2c34-42bb-a9ae-9f014d1ef84e" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA003_ProjectIsolation" name="Escapes_are_denied" />
+    </UnitTest>
+    <UnitTest name="QA-004: Nur https-URLs dürfen geplant werden(url: &quot;http://example.org&quot;)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="ccc4d981-3f34-9188-cad0-f513ec6d3ebb">
+      <Execution id="350e3b19-1f18-4ba1-ba2a-bdc2f066df28" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA004_ApprovalGate" name="Only_https" />
+    </UnitTest>
+    <UnitTest name="Secrets: Werte werden gespeichert/gelöscht und nie ins Audit-Log geschrieben" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="3bcedf08-18ef-c4bb-0b4b-b8af2a88ae51">
+      <Execution id="c9bbda1e-cc96-435f-ab37-ae6c3c981bde" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA004_ApprovalGate" name="Secrets_not_logged" />
+    </UnitTest>
+    <UnitTest name="QA-003: Ungültige Projekt-IDs werden abgewiesen(id: &quot;x&quot;)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="c824e644-8388-cd1c-1bd5-217567a4e21b">
+      <Execution id="1f4f5391-cdd3-45c9-8622-07deff327934" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA003_ProjectIsolation" name="Invalid_ids" />
+    </UnitTest>
+    <UnitTest name="Secrets (nur Windows): Credential Manager Roundtrip" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="36d3acc5-eb9f-0f1b-8256-1bbe9ffcb7e4">
+      <Execution id="e69dccfd-f34a-4986-a017-04c1e1bc31e6" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA004_ApprovalGate" name="Windows_credential_roundtrip" />
+    </UnitTest>
+    <UnitTest name="QA-004: Abgelaufene Freigabe blockiert" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="d11d5ad2-8910-32b8-c40c-84cb3caf8e74">
+      <Execution id="0306f5d4-36ce-40f9-a8db-21b612855886" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA004_ApprovalGate" name="Expired_blocks" />
+    </UnitTest>
+    <UnitTest name="QA-019: Kernfunktionen laufen ohne Netzwerk (keine Netz-Abhängigkeit im Core)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="6eee795a-423b-4106-db99-a2e8c808464b">
+      <Execution id="39926931-2479-4e0a-b976-a51c1256a305" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA019_Offline" name="Core_works_offline" />
+    </UnitTest>
+    <UnitTest name="QA-003: Pfadausbrüche werden abgewiesen und auditiert(rel: &quot;sub/../../../escape.txt&quot;)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="2ab2cd24-e030-b18e-e7fe-3b44c85cbbfd">
+      <Execution id="2c1aad2c-cc9c-4580-8515-adb553586c31" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA003_ProjectIsolation" name="Escapes_are_denied" />
+    </UnitTest>
+    <UnitTest name="QA-003: Ungültige Projekt-IDs werden abgewiesen(id: &quot;..&quot;)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="353e4f40-bc04-10de-70ae-ea4e4eeac5d7">
+      <Execution id="5bf35c8d-c60c-4cbc-9356-e38d9a88f630" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA003_ProjectIsolation" name="Invalid_ids" />
+    </UnitTest>
+    <UnitTest name="QA-004: Nur https-URLs dürfen geplant werden(url: &quot;file:///C:/Windows&quot;)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="dfd13f74-3088-2189-e984-b75c6afd04eb">
+      <Execution id="809a9127-5dc0-4982-ad4e-c9050e4b6490" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA004_ApprovalGate" name="Only_https" />
+    </UnitTest>
+    <UnitTest name="QA-004: Freigabe gilt nicht für anderes Ziel" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="78d9f43d-7db1-9a7b-d9f7-c06f4b0a3d1f">
+      <Execution id="cb778459-15a2-462d-8e2d-cc9364e80374" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA004_ApprovalGate" name="Target_mismatch_blocks" />
+    </UnitTest>
+    <UnitTest name="QA-004: Nur https-URLs dürfen geplant werden(url: &quot;nicht-url&quot;)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="b01f4ae7-9546-7143-0675-e98cb0129237">
+      <Execution id="d52520f0-87d8-4d81-b390-0c334b7ea63a" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA004_ApprovalGate" name="Only_https" />
+    </UnitTest>
+    <UnitTest name="QA-003: Pfadausbrüche werden abgewiesen und auditiert(rel: &quot;..\\..\\x.txt&quot;)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="6e632f06-6c46-6c76-a155-6b81d199474a">
+      <Execution id="2f98915c-0746-4223-9b50-96cb7a3712a0" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA003_ProjectIsolation" name="Escapes_are_denied" />
+    </UnitTest>
+    <UnitTest name="QA-004: Freigabe ist einmalig (kein Replay)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="dc5b7595-ec2e-6cb9-f677-16c35dd71f7a">
+      <Execution id="fd4c33e7-7023-4295-b6bb-d60e2be6074d" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA004_ApprovalGate" name="Approval_single_use" />
+    </UnitTest>
+    <UnitTest name="QA-004: Abgelehnte Freigabe blockiert" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="4527981f-6bc5-33e9-bb3d-2188ac928c2b">
+      <Execution id="c3597b96-263f-4b5f-af96-5bea4ad0c900" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA004_ApprovalGate" name="Denied_blocks" />
+    </UnitTest>
+    <UnitTest name="QA-003: Symlink im Projekt nach außen wird abgewiesen" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="b5392a50-d543-1df4-9abd-02ea4e9eadb2">
+      <Execution id="b0e79429-6226-4677-947b-971a5303a6ee" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA003_ProjectIsolation" name="Symlink_escape_denied" />
+    </UnitTest>
+    <UnitTest name="QA-015: Fehlendes Programm → Blockiert; nichts als Bereit" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="3a762cc8-ee40-e02d-7e5c-efcd164119ce">
+      <Execution id="05f97550-3da9-4f4e-84ea-b014e5cc49ca" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA015_StudioStatus" name="Missing_tool_blocked" />
+    </UnitTest>
+    <UnitTest name="QA-015: SPEC-07 abgelehnt, übrige nur Spezifikation" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="902cd481-ae21-752e-48b7-f85ae7a71626">
+      <Execution id="e4cd6d27-5ce7-43e2-93aa-878b9a5a836c" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA015_StudioStatus" name="Rejected_and_spec_only" />
+    </UnitTest>
+    <UnitTest name="QA-003: Pfadausbrüche werden abgewiesen und auditiert(rel: &quot;../b/files/secret.txt&quot;)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="ee4ae9c9-f701-f75f-c7dc-fbdd9b09ac08">
+      <Execution id="006e9e96-c7c3-4a85-9539-8eeefcc661b7" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA003_ProjectIsolation" name="Escapes_are_denied" />
+    </UnitTest>
+    <UnitTest name="QA-003: Pfadausbrüche werden abgewiesen und auditiert(rel: &quot;&quot;)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="904e6721-d060-119a-e41a-e16f5d0d9d6d">
+      <Execution id="0cdd46a0-cb22-473b-a033-4cd62789caf4" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA003_ProjectIsolation" name="Escapes_are_denied" />
+    </UnitTest>
+    <UnitTest name="QA-004: Nur https-URLs dürfen geplant werden(url: &quot;javascript:alert(1)&quot;)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="f8c4b24c-676c-e754-43dd-f9495e64d60c">
+      <Execution id="f055b0f1-7049-4187-acaa-64951e1cac7a" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA004_ApprovalGate" name="Only_https" />
+    </UnitTest>
+    <UnitTest name="QA-015: Programm vorhanden, Adapter fehlt → Nicht verbunden (nicht Bereit)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="e6d344c8-d1a6-446d-166f-59cc52ad54ca">
+      <Execution id="0fcaf6bb-3313-40ec-b0f1-0aff198d7aba" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA015_StudioStatus" name="Present_tool_not_connected" />
+    </UnitTest>
+    <UnitTest name="QA-003: Projekt A kann Dateien von Projekt B nicht lesen" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="c9dfeb5a-2be8-5176-6e66-6bcdb0f47f7e">
+      <Execution id="300d4b0f-5a2f-4a0f-9166-9856c2b78163" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA003_ProjectIsolation" name="Cross_project_read_denied" />
+    </UnitTest>
+    <UnitTest name="QA-001: Core startet, legt Datenstruktur an und beendet sauber mit Audit-Eintrag" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="967bb6fd-3a7b-a8ab-84f3-f301b1b68f4a">
+      <Execution id="c027bd9c-3a24-4cec-8754-0cc7e4d0058b" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA001_StartStop" name="Core_starts_and_stops_cleanly" />
+    </UnitTest>
+    <UnitTest name="QA-004: Ohne Freigabe wird nichts ausgeführt" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="b9a48a68-6128-9d7f-495c-ea2b505eca8b">
+      <Execution id="fd47e6e9-2c47-4d32-8e63-5e6e5bc689e3" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA004_ApprovalGate" name="No_execution_without_approval" />
+    </UnitTest>
+    <UnitTest name="QA-003: Pfadausbrüche werden abgewiesen und auditiert(rel: &quot;/etc/passwd&quot;)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="85fb8e34-e77b-a8b2-4930-e0dd8b50c015">
+      <Execution id="5988e734-242e-4b84-af05-49ec7a93cd17" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA003_ProjectIsolation" name="Escapes_are_denied" />
+    </UnitTest>
+    <UnitTest name="QA-003: Ungültige Projekt-IDs werden abgewiesen(id: &quot;a/b&quot;)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="9db16fc6-3019-58a2-0363-6a1b8e858d3a">
+      <Execution id="90b772e9-e50f-4ba5-8c48-6dade821c9a4" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA003_ProjectIsolation" name="Invalid_ids" />
+    </UnitTest>
+    <UnitTest name="QA-003: Ungültige Projekt-IDs werden abgewiesen(id: &quot;A&quot;)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="be4183e8-e7a7-bdb4-5f10-f23ca3087924">
+      <Execution id="d7b9e729-e7d5-46ba-ba15-3bae5a09c14f" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA003_ProjectIsolation" name="Invalid_ids" />
+    </UnitTest>
+    <UnitTest name="QA-004: Audit-Log ist hash-verkettet; Manipulation wird erkannt" storage="c:\users\<USER>\desktop\trend os\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="fed88242-7b37-a276-50ba-cfd42af725c0">
+      <Execution id="002c0c58-c6dd-4e7b-b73a-f20b4830e2e2" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.QA004_ApprovalGate" name="Audit_tamper_detected" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="353e4f40-bc04-10de-70ae-ea4e4eeac5d7" executionId="5bf35c8d-c60c-4cbc-9356-e38d9a88f630" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dc5b7595-ec2e-6cb9-f677-16c35dd71f7a" executionId="fd4c33e7-7023-4295-b6bb-d60e2be6074d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fed88242-7b37-a276-50ba-cfd42af725c0" executionId="002c0c58-c6dd-4e7b-b73a-f20b4830e2e2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3a762cc8-ee40-e02d-7e5c-efcd164119ce" executionId="05f97550-3da9-4f4e-84ea-b014e5cc49ca" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6e632f06-6c46-6c76-a155-6b81d199474a" executionId="2f98915c-0746-4223-9b50-96cb7a3712a0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b9a48a68-6128-9d7f-495c-ea2b505eca8b" executionId="fd47e6e9-2c47-4d32-8e63-5e6e5bc689e3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ee4ae9c9-f701-f75f-c7dc-fbdd9b09ac08" executionId="006e9e96-c7c3-4a85-9539-8eeefcc661b7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d11d5ad2-8910-32b8-c40c-84cb3caf8e74" executionId="0306f5d4-36ce-40f9-a8db-21b612855886" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b01f4ae7-9546-7143-0675-e98cb0129237" executionId="d52520f0-87d8-4d81-b390-0c334b7ea63a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="be4183e8-e7a7-bdb4-5f10-f23ca3087924" executionId="d7b9e729-e7d5-46ba-ba15-3bae5a09c14f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="805457d0-b807-6fe7-3cbe-50270a4c2821" executionId="ecfc3417-2c34-42bb-a9ae-9f014d1ef84e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4527981f-6bc5-33e9-bb3d-2188ac928c2b" executionId="c3597b96-263f-4b5f-af96-5bea4ad0c900" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2ab2cd24-e030-b18e-e7fe-3b44c85cbbfd" executionId="2c1aad2c-cc9c-4580-8515-adb553586c31" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="904e6721-d060-119a-e41a-e16f5d0d9d6d" executionId="0cdd46a0-cb22-473b-a033-4cd62789caf4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f8c4b24c-676c-e754-43dd-f9495e64d60c" executionId="f055b0f1-7049-4187-acaa-64951e1cac7a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dfd13f74-3088-2189-e984-b75c6afd04eb" executionId="809a9127-5dc0-4982-ad4e-c9050e4b6490" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c9dfeb5a-2be8-5176-6e66-6bcdb0f47f7e" executionId="300d4b0f-5a2f-4a0f-9166-9856c2b78163" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ccc4d981-3f34-9188-cad0-f513ec6d3ebb" executionId="350e3b19-1f18-4ba1-ba2a-bdc2f066df28" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6eee795a-423b-4106-db99-a2e8c808464b" executionId="39926931-2479-4e0a-b976-a51c1256a305" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="78d9f43d-7db1-9a7b-d9f7-c06f4b0a3d1f" executionId="cb778459-15a2-462d-8e2d-cc9364e80374" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="902cd481-ae21-752e-48b7-f85ae7a71626" executionId="e4cd6d27-5ce7-43e2-93aa-878b9a5a836c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b5392a50-d543-1df4-9abd-02ea4e9eadb2" executionId="b0e79429-6226-4677-947b-971a5303a6ee" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="36d3acc5-eb9f-0f1b-8256-1bbe9ffcb7e4" executionId="e69dccfd-f34a-4986-a017-04c1e1bc31e6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e6d344c8-d1a6-446d-166f-59cc52ad54ca" executionId="0fcaf6bb-3313-40ec-b0f1-0aff198d7aba" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3bcedf08-18ef-c4bb-0b4b-b8af2a88ae51" executionId="c9bbda1e-cc96-435f-ab37-ae6c3c981bde" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="85fb8e34-e77b-a8b2-4930-e0dd8b50c015" executionId="5988e734-242e-4b84-af05-49ec7a93cd17" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="967bb6fd-3a7b-a8ab-84f3-f301b1b68f4a" executionId="c027bd9c-3a24-4cec-8754-0cc7e4d0058b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9db16fc6-3019-58a2-0363-6a1b8e858d3a" executionId="90b772e9-e50f-4ba5-8c48-6dade821c9a4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c824e644-8388-cd1c-1bd5-217567a4e21b" executionId="1f4f5391-cdd3-45c9-8622-07deff327934" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="29" executed="29" passed="29" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:01.52]   Discovering: Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:01.59]   Discovered:  Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:01.62]   Starting:    Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:02.02]   Finished:    Trendo.Core.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

@@ -1,5 +1,5 @@
 # ADR-0005: Tech-Stack für Core und UI (Windows-Slice)
-**Status:** PROPOSED · **Datum:** 2026-10-21
+**Status:** ACCEPTED · **Entscheidung:** 2026-10-21 durch Manuel · **Vorschlag:** 2026-10-21
 
 ## Kontext
 Der Stack muss Windows jetzt und später Linux (SSD-Edition) und ARM (Pi) tragen, offline laufen und ohne kostenpflichtige KI-API auskommen.
@@ -15,7 +15,10 @@ Der Stack muss Windows jetzt und später Linux (SSD-Edition) und ARM (Pi) tragen
 ## Befund TASK-0001 (21.10.2026)
 Am PC vorhanden: .NET 10 SDK, Visual Studio 2026 mit MSVC, Windows SDK, WebView2, Node 24. Nicht vorhanden: Rust, echtes Python. Siehe `reports/P0_INVENTUR.md`.
 
-## Aktualisierte Empfehlung (weiterhin PROPOSED)
+## Entscheidung
+**.NET 10 + Avalonia UI** (Option C), von Manuel am 21.10.2026 angenommen. Erste Umsetzung: P1-Slice unter `src/`.
+
+## Empfehlung vor der Entscheidung
 **Option C – .NET 10 + Avalonia UI** für Core und UI: sofort ohne Installation baubar, plattformübergreifend inkl. Linux und ARM64 (Pi). Option A bleibt Alternative, falls Manuel eine Rust-Installation freigibt. Entscheidung: Nutzerabnahme, idealerweise nach kleinem Prototyp (Start, Speicher, Packaging).
 
 ## Ursprüngliche Empfehlung
