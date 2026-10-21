@@ -18,7 +18,7 @@ public static class LocalOnly
 
 public sealed class OllamaBackend(string baseUrl = "http://127.0.0.1:11434", HttpMessageHandler? handler = null) : IKiBackend
 {
-    private readonly HttpClient _http = new(handler ?? new HttpClientHandler()) { BaseAddress = LocalOnly.Require(baseUrl), Timeout = TimeSpan.FromSeconds(180) };
+    private readonly HttpClient _http = new(handler ?? new HttpClientHandler()) { BaseAddress = LocalOnly.Require(baseUrl), Timeout = TimeSpan.FromMinutes(30) };
     public string Name => "Ollama";
     public string BaseUrl => baseUrl;
 
@@ -37,6 +37,13 @@ public sealed class OllamaBackend(string baseUrl = "http://127.0.0.1:11434", Htt
             return doc.GetProperty("models").EnumerateArray().Select(m => m.GetProperty("name").GetString() ?? "").Where(n => n != "").ToList();
         }
         catch { return []; }
+    }
+
+    /// <summary>X-05: freies Modell über Ollama laden (wartet bis fertig).</summary>
+    public async Task<bool> PullAsync(string model, CancellationToken ct = default)
+    {
+        try { using var r = await _http.PostAsJsonAsync("/api/pull", new { model, stream = false }, ct); return r.IsSuccessStatusCode; }
+        catch { return false; }
     }
 
     public async Task<string> ChatAsync(string model, IReadOnlyList<KiMessage> messages, CancellationToken ct = default)
