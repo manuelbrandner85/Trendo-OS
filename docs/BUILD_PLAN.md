@@ -153,7 +153,7 @@ Abnahmekriterien je Modul:
 | 3 | CORE-08 | Ultimate Creative & Media Studio 2.0 | IMPLEMENTED | TESTED_BOX |
 | 4 | CORE-05 | Ultimate 3D Creation Studio 2.0 | IMPLEMENTED | TESTED_BOX |
 | 5 | CORE-06 | Ultimate Game Development Studio 2.0 | IMPLEMENTED | TESTED_BOX |
-| 6 | X-07 | Global Free Asset Discovery | NOT_STARTED | NOT_RUN |
+| 6 | X-07 | Global Free Asset Discovery | IMPLEMENTED | TESTED_BOX |
 | 7 | X-03 | Visual Builder & No-Code | NOT_STARTED | NOT_RUN |
 | 8 | X-11 | Universal Creation & Productivity Suite | NOT_STARTED | NOT_RUN |
 

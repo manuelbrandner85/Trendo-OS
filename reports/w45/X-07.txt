@@ -1,0 +1,4 @@
+Nachweis X-07 – Linux-Box (nicht Windows-PC), 21.10.2026 21:07 MESZ, Commit-Basis 1b27f36
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 727 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   107, Skipped:     0, Total:   107, Duration: 15 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:    41, Skipped:     0, Total:    41, Duration: 14 s - Trendo.App.Tests.dll (net10.0)
