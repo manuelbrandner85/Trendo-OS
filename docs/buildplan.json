@@ -519,8 +519,8 @@
   "order": 7,
   "id": "SPEC-12",
   "name": "Cybersecurity & Forensics 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -843,8 +843,8 @@
   "order": 4,
   "id": "X-04",
   "name": "Extension Marketplace & Studio Evolution",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },

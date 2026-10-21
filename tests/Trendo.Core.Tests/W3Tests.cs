@@ -224,3 +224,40 @@ public class SYS09_Mail
         Assert.Equal("Rechnung Übersicht", m.Subject); Assert.StartsWith("Jürgen", m.From); Assert.Equal("Schöne Grüße", m.Body);
     }
 }
+
+public class SPEC12_Forensics
+{
+    [Fact(DisplayName = "SPEC-12: Beweis wird unverändert mit SHA-256 und Kette gesichert, Veränderung wird erkannt")]
+    public void Evidence()
+    {
+        using var f = new Fixture();
+        var lab = new ForensicsLab(f.Root, f.Core.Audit, f.Time);
+        var src = Path.Combine(f.Root, "mail.eml"); File.WriteAllText(src, "Betrug");
+        var c = lab.Create("Test");
+        var it = lab.Add(c, src);
+        Assert.Equal(ForensicsLab.Sha256(src), it.Sha256);
+        Assert.True(ForensicsLab.Matches(src, it.Sha256.ToUpperInvariant()));
+        var (ok, items) = lab.Verify(c); Assert.True(ok); Assert.True(items.Single().Ok);
+        var copy = Path.Combine(f.Root, "forensik", c.Id, "beweise", "mail.eml");
+        Assert.True(File.GetAttributes(copy).HasFlag(FileAttributes.ReadOnly));
+        File.SetAttributes(copy, FileAttributes.Normal); File.WriteAllText(copy, "gefälscht");
+        Assert.False(lab.Verify(c).Items.Single().Ok);
+        Assert.Contains("VERÄNDERT", File.ReadAllText(lab.Report(c)));
+    }
+
+    [Fact(DisplayName = "SPEC-12: Höchstens 120 h, Warnung 24 h vorher, danach vollständig gelöscht")]
+    public void Expiry()
+    {
+        using var f = new Fixture();
+        var lab = new ForensicsLab(f.Root, f.Core.Audit, f.Time);
+        Assert.Throws<ArgumentOutOfRangeException>(() => lab.Create("x", TimeSpan.FromHours(121)));
+        var c = lab.Create("x"); var src = Path.Combine(f.Root, "a.txt"); File.WriteAllText(src, "1"); lab.Add(c, src);
+        Assert.Equal(CaseState.Aktiv, lab.State(c));
+        f.Time.Advance(TimeSpan.FromHours(97)); Assert.Equal(CaseState.LaeuftBaldAb, lab.State(c));
+        Assert.Equal(0, lab.PurgeExpired());
+        f.Time.Advance(TimeSpan.FromHours(24)); Assert.Equal(CaseState.Abgelaufen, lab.State(c));
+        Assert.Throws<InvalidOperationException>(() => lab.Add(c, src));
+        Assert.Equal(1, lab.PurgeExpired());
+        Assert.False(Directory.Exists(Path.Combine(f.Root, "forensik", c.Id))); Assert.Empty(lab.Cases());
+    }
+}
