@@ -76,3 +76,20 @@ public class W7Tests
         Assert.Null(MobileBridge.FindAdb(_ => false, "/la", "/x"));
     }
 }
+
+public class AuditRace
+{
+    [Fact(DisplayName = "Audit: viele Instanzen und Threads auf derselben Datei – keine Sperrfehler, Kette lückenlos")]
+    public void Parallel_instances()
+    {
+        var p = Path.Combine(Path.GetTempPath(), "trendo-audit-" + Guid.NewGuid().ToString("N"), "audit.jsonl");
+        System.Threading.Tasks.Parallel.For(0, 400, new ParallelOptions { MaxDegreeOfParallelism = 16 }, i =>
+        {
+            var a = new AuditLog(p); a.Append("t", "x", i.ToString());
+            if (i % 7 == 0) _ = new AuditLog(p).ReadAll();
+        });
+        var log = new AuditLog(p);
+        Assert.Equal(400, log.ReadAll().Count); Assert.True(log.Verify());
+        Directory.Delete(Path.GetDirectoryName(p)!, true);
+    }
+}
