@@ -113,3 +113,6 @@ P0: IN_PROGRESS (offen: ADR-0005-Abnahme, Grok-Build-Einrichtung) · P1: PLANNED
 
 ## Nachtrag 21.10.2026, 14:55 – P1-Abnahmevorbereitung
 Build 0 Warnungen; Tests Windows 31/31 Core + 7/7 UI; Benutzer-Installer (ohne Admin) installiert/startet/deinstalliert erfolgreich; echter Explorer-Start nur über protokollierte Freigabe nachgewiesen; Offline nur simuliert. P1: IN_PROGRESS → bereit zur Teilabnahme; offen: Narrator/Kontrast, echter Offline-Lauf, localhost-API, RBAC, Signatur. Details `reports/P1_TESTBERICHT.md`.
+
+## Nachtrag 21.10.2026, 15:00 – Lokale API + RBAC
+Lokale API (nur 127.0.0.1, Token im Credential Manager) und RBAC Owner/User/Guest implementiert und auf Windows getestet: 60/60 Tests, API-Live-Selbsttest 13/13, Listener nur Loopback, keine Firewall-Regel. P1: IN_PROGRESS, bereit zur Abnahme bis auf Narrator/Kontrast, echten Offline-Lauf und Code-Signatur.

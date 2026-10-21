@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="9cf3afe7-0676-41e4-b28f-9565040dbb99" name="<USER>@<HOST> 2026-10-21 14:56:07" runUser="<USER>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-21T14:56:07.5000813+02:00" queuing="2026-10-21T14:56:07.5000815+02:00" start="2026-10-21T14:55:53.9875537+02:00" finish="2026-10-21T14:56:08.1891851+02:00" />
+  <TestSettings name="default" id="d2f30335-79c5-49b6-ba7e-f09d35281129">
+    <Deployment runDeploymentRoot="<USER>_<HOST>_2026-10-21_14_56_07" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="2fe5095a-8f0f-4902-b016-69887b417803" testId="6a65bf42-4424-c600-4359-0edc43cebd54" testName="QA-004 UI: Browser-Aktion freigegeben → genau einmal geöffnet" computerName="<HOST>" duration="00:00:00.0513872" startTime="2026-10-21T14:56:08.0738811+02:00" endTime="2026-10-21T14:56:08.1253257+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2fe5095a-8f0f-4902-b016-69887b417803" />
+    <UnitTestResult executionId="8b54c7a3-48f5-42d8-8d06-3851f668f180" testId="c8f718aa-e895-b3ae-8dd5-25b5afa92b2b" testName="QA-017: Strg+1..5 schaltet alle Hauptbereiche per Tastatur" computerName="<HOST>" duration="00:00:00.3152901" startTime="2026-10-21T14:56:07.3138052+02:00" endTime="2026-10-21T14:56:07.6291870+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8b54c7a3-48f5-42d8-8d06-3851f668f180" />
+    <UnitTestResult executionId="bfac8254-de08-4b7a-a788-869b76518666" testId="0a7edc98-d8c3-58f9-0c77-da4d02622fd8" testName="QA-004 UI: Explorer-Aktion → Freigabe-Ansicht; Ausführung erst nach Klick auf Freigeben" computerName="<HOST>" duration="00:00:00.0604153" startTime="2026-10-21T14:56:07.6324166+02:00" endTime="2026-10-21T14:56:07.6928937+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bfac8254-de08-4b7a-a788-869b76518666" />
+    <UnitTestResult executionId="ddb602fd-fb9f-4fe6-be65-ef8adcc4e33e" testId="ee4ef3cb-80c2-e8f1-f59d-7a99395b6249" testName="QA-019 (simuliert): Offline-Modus – Browser-Aktion deaktiviert, lokale Funktionen laufen" computerName="<HOST>" duration="00:00:08.7477070" startTime="2026-10-21T14:55:58.5419361+02:00" endTime="2026-10-21T14:56:07.2972078+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ddb602fd-fb9f-4fe6-be65-ef8adcc4e33e" />
+    <UnitTestResult executionId="0a4e6edb-f51d-4367-9f0a-22de112024ad" testId="88a4759d-b468-daa2-842b-d8b1eb646935" testName="QA-004 UI: Browser-Aktion abgelehnt → nichts geöffnet" computerName="<HOST>" duration="00:00:00.0522129" startTime="2026-10-21T14:56:07.7403547+02:00" endTime="2026-10-21T14:56:07.7926285+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0a4e6edb-f51d-4367-9f0a-22de112024ad" />
+    <UnitTestResult executionId="4ef58a50-252c-45a0-81d4-35560aa07e72" testId="8adfefd8-441d-c2a8-ae82-59f0d358d0d8" testName="QA-017: Navigationsschaltflächen haben zugängliche Namen" computerName="<HOST>" duration="00:00:00.0415977" startTime="2026-10-21T14:56:07.6955979+02:00" endTime="2026-10-21T14:56:07.7372470+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4ef58a50-252c-45a0-81d4-35560aa07e72" />
+    <UnitTestResult executionId="9aa50944-640c-4492-a893-72586d4ca8a7" testId="f19f9b9f-b8c3-7913-60bf-1d3f3e348760" testName="QA-017: Tab bewegt Fokus durch die Navigation, Enter aktiviert" computerName="<HOST>" duration="00:00:00.2757567" startTime="2026-10-21T14:56:07.7955854+02:00" endTime="2026-10-21T14:56:08.0714027+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9aa50944-640c-4492-a893-72586d4ca8a7" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="QA-004 UI: Browser-Aktion abgelehnt → nichts geöffnet" storage="c:\users\<USER>\desktop\trend os\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="88a4759d-b468-daa2-842b-d8b1eb646935">
+      <Execution id="0a4e6edb-f51d-4367-9f0a-22de112024ad" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.QA004_UiApproval" name="Browser_denied" />
+    </UnitTest>
+    <UnitTest name="QA-019 (simuliert): Offline-Modus – Browser-Aktion deaktiviert, lokale Funktionen laufen" storage="c:\users\<USER>\desktop\trend os\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="ee4ef3cb-80c2-e8f1-f59d-7a99395b6249">
+      <Execution id="ddb602fd-fb9f-4fe6-be65-ef8adcc4e33e" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.QA019_OfflineUi" name="Offline_mode" />
+    </UnitTest>
+    <UnitTest name="QA-004 UI: Explorer-Aktion → Freigabe-Ansicht; Ausführung erst nach Klick auf Freigeben" storage="c:\users\<USER>\desktop\trend os\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="0a7edc98-d8c3-58f9-0c77-da4d02622fd8">
+      <Execution id="bfac8254-de08-4b7a-a788-869b76518666" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.QA004_UiApproval" name="Explorer_through_gate" />
+    </UnitTest>
+    <UnitTest name="QA-017: Strg+1..5 schaltet alle Hauptbereiche per Tastatur" storage="c:\users\<USER>\desktop\trend os\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="c8f718aa-e895-b3ae-8dd5-25b5afa92b2b">
+      <Execution id="8b54c7a3-48f5-42d8-8d06-3851f668f180" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.QA017_Keyboard" name="Ctrl_shortcuts_switch_views" />
+    </UnitTest>
+    <UnitTest name="QA-017: Navigationsschaltflächen haben zugängliche Namen" storage="c:\users\<USER>\desktop\trend os\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="8adfefd8-441d-c2a8-ae82-59f0d358d0d8">
+      <Execution id="4ef58a50-252c-45a0-81d4-35560aa07e72" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.QA017_Keyboard" name="Accessible_names" />
+    </UnitTest>
+    <UnitTest name="QA-004 UI: Browser-Aktion freigegeben → genau einmal geöffnet" storage="c:\users\<USER>\desktop\trend os\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="6a65bf42-4424-c600-4359-0edc43cebd54">
+      <Execution id="2fe5095a-8f0f-4902-b016-69887b417803" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.QA004_UiApproval" name="Browser_approved_once" />
+    </UnitTest>
+    <UnitTest name="QA-017: Tab bewegt Fokus durch die Navigation, Enter aktiviert" storage="c:\users\<USER>\desktop\trend os\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="f19f9b9f-b8c3-7913-60bf-1d3f3e348760">
+      <Execution id="9aa50944-640c-4492-a893-72586d4ca8a7" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.QA017_Keyboard" name="Tab_and_enter" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="6a65bf42-4424-c600-4359-0edc43cebd54" executionId="2fe5095a-8f0f-4902-b016-69887b417803" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c8f718aa-e895-b3ae-8dd5-25b5afa92b2b" executionId="8b54c7a3-48f5-42d8-8d06-3851f668f180" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0a7edc98-d8c3-58f9-0c77-da4d02622fd8" executionId="bfac8254-de08-4b7a-a788-869b76518666" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ee4ef3cb-80c2-e8f1-f59d-7a99395b6249" executionId="ddb602fd-fb9f-4fe6-be65-ef8adcc4e33e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="88a4759d-b468-daa2-842b-d8b1eb646935" executionId="0a4e6edb-f51d-4367-9f0a-22de112024ad" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8adfefd8-441d-c2a8-ae82-59f0d358d0d8" executionId="4ef58a50-252c-45a0-81d4-35560aa07e72" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f19f9b9f-b8c3-7913-60bf-1d3f3e348760" executionId="9aa50944-640c-4492-a893-72586d4ca8a7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="7" executed="7" passed="7" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:01.79]   Discovering: Trendo.App.Tests&#xD;
+[xUnit.net 00:00:01.98]   Discovered:  Trendo.App.Tests&#xD;
+[xUnit.net 00:00:02.16]   Starting:    Trendo.App.Tests&#xD;
+[xUnit.net 00:00:13.72]   Finished:    Trendo.App.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="dd774670-0a55-492a-bda6-fc706c00d3d5" name="<USER>@<HOST> 2026-10-21 14:56:05" runUser="<USER>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-21T14:56:05.4282153+02:00" queuing="2026-10-21T14:56:05.4282154+02:00" start="2026-10-21T14:55:53.9999756+02:00" finish="2026-10-21T14:56:07.5086112+02:00" />
+  <TestSettings name="default" id="2d31d6aa-698b-4c59-98fc-edf2884f0053">
+    <Deployment runDeploymentRoot="<USER>_<HOST>_2026-10-21_14_56_05" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="8b5f13cd-786d-4ded-8ded-1f25df4a79ab" testId="cf0cfe81-3ac2-5cc9-77d4-e469da9b7bb5" testName="RBAC über API: Rechte je Rolle(method: &quot;GET&quot;, url: &quot;api/audit&quot;, role: Owner, expect: OK)" computerName="<HOST>" duration="00:00:00.0041023" startTime="2026-10-21T14:56:05.4843687+02:00" endTime="2026-10-21T14:56:05.4885602+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8b5f13cd-786d-4ded-8ded-1f25df4a79ab" />
+    <UnitTestResult executionId="f765c175-c2c4-402e-b444-ce627bbadca9" testId="c9cb354d-d865-312f-3314-211519bd99c2" testName="RBAC über API: Rechte je Rolle(method: &quot;GET&quot;, url: &quot;api/audit&quot;, role: User, expect: Forbidden)" computerName="<HOST>" duration="00:00:00.0023615" startTime="2026-10-21T14:56:05.4131555+02:00" endTime="2026-10-21T14:56:05.4132656+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f765c175-c2c4-402e-b444-ce627bbadca9" />
+    <UnitTestResult executionId="8c9b4225-5b23-4fc8-a694-9bad12ff8536" testId="8835ef88-e3aa-6db1-0e11-fcdf4719796d" testName="RBAC über API: Rechte je Rolle(method: &quot;GET&quot;, url: &quot;api/approvals&quot;, role: User, expect: Forbidden)" computerName="<HOST>" duration="00:00:00.0012160" startTime="2026-10-21T14:56:05.3986581+02:00" endTime="2026-10-21T14:56:05.4000404+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8c9b4225-5b23-4fc8-a694-9bad12ff8536" />
+    <UnitTestResult executionId="1b36016c-567a-4d7d-9878-75304a69794c" testId="11912c94-9c34-2183-5734-728da61eaf3f" testName="RBAC über API: Rechte je Rolle(method: &quot;GET&quot;, url: &quot;api/studios&quot;, role: Guest, expect: OK)" computerName="<HOST>" duration="00:00:00.0737032" startTime="2026-10-21T14:56:05.4134486+02:00" endTime="2026-10-21T14:56:05.4842174+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1b36016c-567a-4d7d-9878-75304a69794c" />
+    <UnitTestResult executionId="2df66f04-f820-407d-868d-442778754dc2" testId="b05b887b-019f-ed74-a6ff-e444fa9f57e8" testName="API: fremder Host-Header (DNS-Rebinding) → 421" computerName="<HOST>" duration="00:00:00.0027686" startTime="2026-10-21T14:56:05.3987982+02:00" endTime="2026-10-21T14:56:05.4016623+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2df66f04-f820-407d-868d-442778754dc2" />
+    <UnitTestResult executionId="45e0651f-f621-401c-bf68-040ea1e5d3aa" testId="263f3865-6723-94f9-93c0-fca1751a0590" testName="API: Pfadausbruch über Projekt-ID → 400" computerName="<HOST>" duration="00:00:00.0020975" startTime="2026-10-21T14:56:05.4886930+02:00" endTime="2026-10-21T14:56:05.4909534+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="45e0651f-f621-401c-bf68-040ea1e5d3aa" />
+    <UnitTestResult executionId="f7e0c74b-da4d-4aad-b2d1-0c32d087cf4d" testId="62cc386d-b653-a71a-0048-030072df2aec" testName="API: Tokens nur im Secret-Store, nie im Audit-Log; Rotation macht altes Token ungültig" computerName="<HOST>" duration="00:00:00.0140672" startTime="2026-10-21T14:56:05.3948872+02:00" endTime="2026-10-21T14:56:05.3987005+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f7e0c74b-da4d-4aad-b2d1-0c32d087cf4d" />
+    <UnitTestResult executionId="00ffc117-7c99-458d-95f1-96a241ec0a22" testId="4556ec17-a1ae-3762-a3bf-570afc7cb710" testName="RBAC über API: Rechte je Rolle(method: &quot;GET&quot;, url: &quot;api/projects&quot;, role: Guest, expect: Forbidden)" computerName="<HOST>" duration="00:00:00.0028493" startTime="2026-10-21T14:56:05.3949210+02:00" endTime="2026-10-21T14:56:05.3950533+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="00ffc117-7c99-458d-95f1-96a241ec0a22" />
+    <UnitTestResult executionId="d3f0be6a-b97e-4283-9a46-e435f85cc8b1" testId="9e351c2a-2e27-bc05-2625-87d8fbcefd17" testName="API: ohne/mit falschem Token → 401, health offen" computerName="<HOST>" duration="00:00:00.3506518" startTime="2026-10-21T14:56:05.0415658+02:00" endTime="2026-10-21T14:56:05.3861232+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d3f0be6a-b97e-4283-9a46-e435f85cc8b1" />
+    <UnitTestResult executionId="91d1148e-67da-4198-a03d-fac7b2dd2401" testId="22a77245-5f14-9327-0aaa-2bfd5cfd006d" testName="RBAC über API: Rechte je Rolle(method: &quot;GET&quot;, url: &quot;api/projects&quot;, role: User, expect: OK)" computerName="<HOST>" duration="00:00:00.0057558" startTime="2026-10-21T14:56:05.4001304+02:00" endTime="2026-10-21T14:56:05.4067198+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="91d1148e-67da-4198-a03d-fac7b2dd2401" />
+    <UnitTestResult executionId="470bc799-182e-48d4-a4c6-5e54100c495d" testId="047b671b-8fc7-0e87-bbd6-5b3f89ac52f0" testName="RBAC über API: Rechte je Rolle(method: &quot;GET&quot;, url: &quot;api/approvals&quot;, role: Owner, expect: OK)" computerName="<HOST>" duration="00:00:00.0107759" startTime="2026-10-21T14:56:05.3953304+02:00" endTime="2026-10-21T14:56:05.3985601+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="470bc799-182e-48d4-a4c6-5e54100c495d" />
+    <UnitTestResult executionId="a59a897b-5f84-4d53-8544-12a2233e3fd9" testId="6b538266-293e-59b1-b69f-0fbcd3779cbc" testName="RBAC über API: Guest darf weder Projekt anlegen noch Aktion planen" computerName="<HOST>" duration="00:00:00.3518204" startTime="2026-10-21T14:56:05.0429362+02:00" endTime="2026-10-21T14:56:05.3819643+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a59a897b-5f84-4d53-8544-12a2233e3fd9" />
+    <UnitTestResult executionId="ab4a0054-8a46-4a82-82ac-52455c05e25c" testId="0ee2dc55-27f2-4dc4-a335-1200c403fae3" testName="Approval-Gate über API: User plant, User darf nicht freigeben, Owner gibt frei → genau eine Ausführung" computerName="<HOST>" duration="00:00:00.0363928" startTime="2026-10-21T14:56:05.4910827+02:00" endTime="2026-10-21T14:56:05.5276498+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ab4a0054-8a46-4a82-82ac-52455c05e25c" />
+    <UnitTestResult executionId="0f3da7a7-13a3-4d9e-bc06-fcfd6d14335c" testId="c31f09ee-dea2-e8cd-d984-4fa44d0dce07" testName="API: nur an 127.0.0.1 gebunden (Verbindung über Nicht-Loopback-Adresse scheitert)" computerName="<HOST>" duration="00:00:02.0514347" startTime="2026-10-21T14:56:05.4017820+02:00" endTime="2026-10-21T14:56:07.4534762+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0f3da7a7-13a3-4d9e-bc06-fcfd6d14335c" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="API: ohne/mit falschem Token → 401, health offen" storage="c:\users\<USER>\desktop\trend os\tests\trendo.api.tests\bin\release\net10.0\trendo.api.tests.dll" id="9e351c2a-2e27-bc05-2625-87d8fbcefd17">
+      <Execution id="d3f0be6a-b97e-4283-9a46-e435f85cc8b1" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Api.Tests.Api_Auth_Binding" name="Unauthenticated" />
+    </UnitTest>
+    <UnitTest name="API: Tokens nur im Secret-Store, nie im Audit-Log; Rotation macht altes Token ungültig" storage="c:\users\<USER>\desktop\trend os\tests\trendo.api.tests\bin\release\net10.0\trendo.api.tests.dll" id="62cc386d-b653-a71a-0048-030072df2aec">
+      <Execution id="f7e0c74b-da4d-4aad-b2d1-0c32d087cf4d" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Api.Tests.Api_Auth_Binding" name="Token_storage_rotation" />
+    </UnitTest>
+    <UnitTest name="API: nur an 127.0.0.1 gebunden (Verbindung über Nicht-Loopback-Adresse scheitert)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.api.tests\bin\release\net10.0\trendo.api.tests.dll" id="c31f09ee-dea2-e8cd-d984-4fa44d0dce07">
+      <Execution id="0f3da7a7-13a3-4d9e-bc06-fcfd6d14335c" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Api.Tests.Api_Auth_Binding" name="Bound_to_loopback_only" />
+    </UnitTest>
+    <UnitTest name="API: fremder Host-Header (DNS-Rebinding) → 421" storage="c:\users\<USER>\desktop\trend os\tests\trendo.api.tests\bin\release\net10.0\trendo.api.tests.dll" id="b05b887b-019f-ed74-a6ff-e444fa9f57e8">
+      <Execution id="2df66f04-f820-407d-868d-442778754dc2" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Api.Tests.Api_Auth_Binding" name="Host_header" />
+    </UnitTest>
+    <UnitTest name="RBAC über API: Rechte je Rolle(method: &quot;GET&quot;, url: &quot;api/studios&quot;, role: Guest, expect: OK)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.api.tests\bin\release\net10.0\trendo.api.tests.dll" id="11912c94-9c34-2183-5734-728da61eaf3f">
+      <Execution id="1b36016c-567a-4d7d-9878-75304a69794c" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Api.Tests.Api_Rbac" name="Role_matrix" />
+    </UnitTest>
+    <UnitTest name="RBAC über API: Guest darf weder Projekt anlegen noch Aktion planen" storage="c:\users\<USER>\desktop\trend os\tests\trendo.api.tests\bin\release\net10.0\trendo.api.tests.dll" id="6b538266-293e-59b1-b69f-0fbcd3779cbc">
+      <Execution id="a59a897b-5f84-4d53-8544-12a2233e3fd9" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Api.Tests.Api_Rbac" name="Guest_cannot_write" />
+    </UnitTest>
+    <UnitTest name="API: Pfadausbruch über Projekt-ID → 400" storage="c:\users\<USER>\desktop\trend os\tests\trendo.api.tests\bin\release\net10.0\trendo.api.tests.dll" id="263f3865-6723-94f9-93c0-fca1751a0590">
+      <Execution id="45e0651f-f621-401c-bf68-040ea1e5d3aa" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Api.Tests.Api_Rbac" name="Isolation_via_api" />
+    </UnitTest>
+    <UnitTest name="RBAC über API: Rechte je Rolle(method: &quot;GET&quot;, url: &quot;api/approvals&quot;, role: User, expect: Forbidden)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.api.tests\bin\release\net10.0\trendo.api.tests.dll" id="8835ef88-e3aa-6db1-0e11-fcdf4719796d">
+      <Execution id="8c9b4225-5b23-4fc8-a694-9bad12ff8536" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Api.Tests.Api_Rbac" name="Role_matrix" />
+    </UnitTest>
+    <UnitTest name="RBAC über API: Rechte je Rolle(method: &quot;GET&quot;, url: &quot;api/projects&quot;, role: Guest, expect: Forbidden)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.api.tests\bin\release\net10.0\trendo.api.tests.dll" id="4556ec17-a1ae-3762-a3bf-570afc7cb710">
+      <Execution id="00ffc117-7c99-458d-95f1-96a241ec0a22" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Api.Tests.Api_Rbac" name="Role_matrix" />
+    </UnitTest>
+    <UnitTest name="RBAC über API: Rechte je Rolle(method: &quot;GET&quot;, url: &quot;api/audit&quot;, role: Owner, expect: OK)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.api.tests\bin\release\net10.0\trendo.api.tests.dll" id="cf0cfe81-3ac2-5cc9-77d4-e469da9b7bb5">
+      <Execution id="8b5f13cd-786d-4ded-8ded-1f25df4a79ab" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Api.Tests.Api_Rbac" name="Role_matrix" />
+    </UnitTest>
+    <UnitTest name="RBAC über API: Rechte je Rolle(method: &quot;GET&quot;, url: &quot;api/approvals&quot;, role: Owner, expect: OK)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.api.tests\bin\release\net10.0\trendo.api.tests.dll" id="047b671b-8fc7-0e87-bbd6-5b3f89ac52f0">
+      <Execution id="470bc799-182e-48d4-a4c6-5e54100c495d" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Api.Tests.Api_Rbac" name="Role_matrix" />
+    </UnitTest>
+    <UnitTest name="RBAC über API: Rechte je Rolle(method: &quot;GET&quot;, url: &quot;api/audit&quot;, role: User, expect: Forbidden)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.api.tests\bin\release\net10.0\trendo.api.tests.dll" id="c9cb354d-d865-312f-3314-211519bd99c2">
+      <Execution id="f765c175-c2c4-402e-b444-ce627bbadca9" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Api.Tests.Api_Rbac" name="Role_matrix" />
+    </UnitTest>
+    <UnitTest name="RBAC über API: Rechte je Rolle(method: &quot;GET&quot;, url: &quot;api/projects&quot;, role: User, expect: OK)" storage="c:\users\<USER>\desktop\trend os\tests\trendo.api.tests\bin\release\net10.0\trendo.api.tests.dll" id="22a77245-5f14-9327-0aaa-2bfd5cfd006d">
+      <Execution id="91d1148e-67da-4198-a03d-fac7b2dd2401" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Api.Tests.Api_Rbac" name="Role_matrix" />
+    </UnitTest>
+    <UnitTest name="Approval-Gate über API: User plant, User darf nicht freigeben, Owner gibt frei → genau eine Ausführung" storage="c:\users\<USER>\desktop\trend os\tests\trendo.api.tests\bin\release\net10.0\trendo.api.tests.dll" id="0ee2dc55-27f2-4dc4-a335-1200c403fae3">
+      <Execution id="ab4a0054-8a46-4a82-82ac-52455c05e25c" />
+      <TestMethod codeBase="<PROJEKTORDNER>\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Api.Tests.Api_Rbac" name="Approval_flow" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="cf0cfe81-3ac2-5cc9-77d4-e469da9b7bb5" executionId="8b5f13cd-786d-4ded-8ded-1f25df4a79ab" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c9cb354d-d865-312f-3314-211519bd99c2" executionId="f765c175-c2c4-402e-b444-ce627bbadca9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8835ef88-e3aa-6db1-0e11-fcdf4719796d" executionId="8c9b4225-5b23-4fc8-a694-9bad12ff8536" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="11912c94-9c34-2183-5734-728da61eaf3f" executionId="1b36016c-567a-4d7d-9878-75304a69794c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b05b887b-019f-ed74-a6ff-e444fa9f57e8" executionId="2df66f04-f820-407d-868d-442778754dc2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="263f3865-6723-94f9-93c0-fca1751a0590" executionId="45e0651f-f621-401c-bf68-040ea1e5d3aa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="62cc386d-b653-a71a-0048-030072df2aec" executionId="f7e0c74b-da4d-4aad-b2d1-0c32d087cf4d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4556ec17-a1ae-3762-a3bf-570afc7cb710" executionId="00ffc117-7c99-458d-95f1-96a241ec0a22" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9e351c2a-2e27-bc05-2625-87d8fbcefd17" executionId="d3f0be6a-b97e-4283-9a46-e435f85cc8b1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="22a77245-5f14-9327-0aaa-2bfd5cfd006d" executionId="91d1148e-67da-4198-a03d-fac7b2dd2401" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="047b671b-8fc7-0e87-bbd6-5b3f89ac52f0" executionId="470bc799-182e-48d4-a4c6-5e54100c495d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6b538266-293e-59b1-b69f-0fbcd3779cbc" executionId="a59a897b-5f84-4d53-8544-12a2233e3fd9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0ee2dc55-27f2-4dc4-a335-1200c403fae3" executionId="ab4a0054-8a46-4a82-82ac-52455c05e25c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c31f09ee-dea2-e8cd-d984-4fa44d0dce07" executionId="0f3da7a7-13a3-4d9e-bc06-fcfd6d14335c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="14" executed="14" passed="14" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:09.07]   Discovering: Trendo.Api.Tests&#xD;
+[xUnit.net 00:00:09.12]   Discovered:  Trendo.Api.Tests&#xD;
+[xUnit.net 00:00:09.14]   Starting:    Trendo.Api.Tests&#xD;
+[xUnit.net 00:00:12.35]   Finished:    Trendo.Api.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>
