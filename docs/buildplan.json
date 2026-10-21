@@ -987,7 +987,7 @@
   "id": "SPEC-15",
   "name": "Broadcast & Streaming 2.0",
   "impl": "IMPLEMENTED",
-  "test": "PC_VERIFIED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
