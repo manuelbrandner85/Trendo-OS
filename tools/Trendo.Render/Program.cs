@@ -11,7 +11,7 @@ AppBuilder.Configure<App>().UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOp
 var root = Path.Combine(Path.GetTempPath(), "trendo-render");
 if (Directory.Exists(root)) Directory.Delete(root, true);
 var core = new TrendoCore(root, new InMemorySecretStore(), new NoopL());
-var win = new MainWindow(core, new AppOptions(root, null, 0), new DefaultToolProbe()) { Width = w, Height = h, WindowState = Avalonia.Controls.WindowState.Normal };
+var win = new MainWindow(core, new AppOptions(root, null, 0, Page: args.Length > 3 ? args[3] : null), new DefaultToolProbe()) { Width = w, Height = h, WindowState = Avalonia.Controls.WindowState.Normal };
 win.Show();
 for (var i = 0; i < 30; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(50); }
 var frame = win.CaptureRenderedFrame();

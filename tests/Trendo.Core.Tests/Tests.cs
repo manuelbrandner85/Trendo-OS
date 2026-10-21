@@ -453,3 +453,86 @@ public class DataLocation_And_Model
         Assert.Throws<ArgumentException>(() => KiModel.Select(f.Core.DataRoot, "llama", f.Core.Audit));
     }
 }
+
+public class BuildPlan_Progress
+{
+    static string Repo([System.Runtime.CompilerServices.CallerFilePath] string f = "") => Path.GetFullPath(Path.Combine(Path.GetDirectoryName(f)!, "..", ".."));
+
+    [Fact(DisplayName = "Bauplan: alle 53 genehmigten Module in Wellen, 55 BUS/LETTER-Teilanforderungen, Status live aus requirements.yaml")]
+    public void Plan_complete()
+    {
+        var mods = Progress.Load(Path.Combine(Repo(), "requirements.yaml"), Path.Combine(Repo(), "docs", "buildplan.json"));
+        Assert.Equal(65, mods.Count); Assert.Equal(6, mods.Count(m => m.Wave == "W0b")); Assert.Equal(6, mods.Count(m => m.Wave == "W0")); Assert.Equal(53, mods.Count(m => !m.Wave.StartsWith("W0")));
+        Assert.Equal(55, mods.Sum(m => m.Subs.Count));
+        Assert.DoesNotContain(mods, m => m.Module.Id == "SPEC-07");
+        Assert.Equal("W1", mods.First(m => m.Module.Id == "STUDIO-LETTER-01").Wave);
+        Assert.All(mods.Where(m => !m.Done), m => Assert.NotEqual("Fertig & getestet", Progress.GermanStatus(m.Module)));
+    }
+}
+
+public class Wave0_Setup
+{
+    const long G = 1024L * 1024 * 1024;
+
+    [Fact(DisplayName = "W0-01: Einstellungen werden gespeichert und geladen; unbekanntes Design abgelehnt")]
+    public void Settings_roundtrip()
+    {
+        using var f = new Fixture();
+        var s = new UserSettings { Name = "Manuel", Theme = "hell", StudioPacks = ["ki"], SetupDone = true };
+        s.Save(f.Core.DataRoot);
+        var l = UserSettings.Load(f.Core.DataRoot);
+        Assert.Equal("Manuel", l.Name); Assert.Equal("hell", l.Theme); Assert.True(l.SetupDone); Assert.Equal(["ki"], l.StudioPacks);
+        Assert.Throws<ArgumentException>(() => new UserSettings { Theme = "neon" }.Save(f.Core.DataRoot));
+        File.WriteAllText(UserSettings.PathIn(f.Core.DataRoot), "{kaputt");
+        Assert.False(UserSettings.Load(f.Core.DataRoot).SetupDone);
+    }
+
+    [Fact(DisplayName = "W0-02/03: Basispaket immer enthalten, Studio-Pakete nur wenn gewählt")]
+    public void Packs()
+    {
+        var none = SetupPacks.ComponentsFor([]).Select(c => c.Id).ToList();
+        Assert.Equal(["sumatra", "mpv", "7zip"], none);
+        var ki = SetupPacks.ComponentsFor(["ki", "dev"]).Select(c => c.Id).ToList();
+        Assert.Contains("ollama", ki); Assert.Contains("git", ki); Assert.DoesNotContain("libreoffice", ki);
+        Assert.Equal(DeliveryMode.AutoUser, DependencyCatalog.Get("sumatra").Mode);
+    }
+
+    [Fact(DisplayName = "W0-04: KI-Modell nach Hardware (32 GB + RTX → 3B, 8 GB → 0.5B)")]
+    public void Ki_by_hardware()
+    {
+        Assert.Equal(DependencyCatalog.LargeModel, KiAdvisor.Choose(new HardwareInfo(32 * G, "NVIDIA GeForce RTX 5070", 12 * G)).Model);
+        Assert.Equal(DependencyCatalog.LargeModel, KiAdvisor.Choose(new HardwareInfo(16 * G, "GPU", 6 * G)).Model);
+        Assert.Equal(DependencyCatalog.LocalModel, KiAdvisor.Choose(new HardwareInfo(16 * G, null, 0)).Model);
+        Assert.Equal(DependencyCatalog.LocalModel, KiAdvisor.Choose(new HardwareInfo(8 * G, null, 0)).Model);
+    }
+
+    [Fact(DisplayName = "W0-05: Sicherung + Wiederherstellung (vorher Sicherheitskopie, Audit nie überschrieben, Rotation)")]
+    public void Backup_restore()
+    {
+        using var f = new Fixture(); var root = f.Core.DataRoot;
+        var b = new Backup(root, Path.Combine(root, "backups"), f.Core.Audit);
+        var t = new DateTime(2026, 10, 21, 12, 0, 0);
+        Assert.True(b.Due(t, 24));
+        File.WriteAllText(Path.Combine(root, "notiz.txt"), "v1");
+        var z = b.Create(t);
+        Assert.False(b.Due(t.AddHours(1), 24));
+        File.WriteAllText(Path.Combine(root, "notiz.txt"), "v2");
+        var auditBefore = f.Core.Audit.ReadAll().Count;
+        b.Restore(z, t.AddHours(2));
+        Assert.Equal("v1", File.ReadAllText(Path.Combine(root, "notiz.txt")));
+        Assert.True(f.Core.Audit.Verify()); Assert.True(f.Core.Audit.ReadAll().Count > auditBefore);
+        Assert.Equal(2, b.List().Count);
+        for (var i = 0; i < 12; i++) b.Create(t.AddDays(i + 1));
+        Assert.Equal(10, b.List().Count);
+    }
+
+    [Fact(DisplayName = "W0b-03: Hintergrund nach Tageszeit")]
+    public void Wallpaper_by_time()
+    {
+        Assert.Equal("morgen", UserSettings.WallpaperFor(new DateTime(2026, 1, 1, 7, 0, 0)));
+        Assert.Equal("wellen", UserSettings.WallpaperFor(new DateTime(2026, 1, 1, 12, 0, 0)));
+        Assert.Equal("bergsee-nacht", UserSettings.WallpaperFor(new DateTime(2026, 1, 1, 19, 0, 0)));
+        Assert.Equal("polarlicht", UserSettings.WallpaperFor(new DateTime(2026, 1, 1, 23, 0, 0)));
+        Assert.Equal("bergsee-nacht", new UserSettings().CurrentWallpaper(DateTime.Now));
+    }
+}

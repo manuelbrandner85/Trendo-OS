@@ -1,0 +1,1049 @@
+[
+ {
+  "wave": "W0",
+  "waveName": "Setup & Ersteinrichtung",
+  "order": 1,
+  "id": "W0-01",
+  "name": "Ersteinrichtungs-Assistent (Name, Sprache, Ordner, Design, ~2 min)",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": true,
+  "subs": []
+ },
+ {
+  "wave": "W0",
+  "waveName": "Setup & Ersteinrichtung",
+  "order": 2,
+  "id": "W0-02",
+  "name": "Basispaket (Browser-Integration, PDF-Viewer, mpv, 7-Zip, Schriften, DIN-5008-Briefvorlagen)",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": true,
+  "subs": []
+ },
+ {
+  "wave": "W0",
+  "waveName": "Setup & Ersteinrichtung",
+  "order": 3,
+  "id": "W0-03",
+  "name": "Studio-Pakete wählbar (Checkboxen), Abhängigkeiten sofort mit Fortschritt, eine Zustimmung",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": true,
+  "subs": []
+ },
+ {
+  "wave": "W0",
+  "waveName": "Setup & Ersteinrichtung",
+  "order": 4,
+  "id": "W0-04",
+  "name": "Lokale KI automatisch nach Hardware (RAM/GPU/VRAM) gewählt und geladen",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": true,
+  "subs": []
+ },
+ {
+  "wave": "W0",
+  "waveName": "Setup & Ersteinrichtung",
+  "order": 5,
+  "id": "W0-05",
+  "name": "Auto-Updates (Velopack, GitHub Releases) + geplante Sicherung mit Wiederherstellung",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": true,
+  "subs": []
+ },
+ {
+  "wave": "W0",
+  "waveName": "Setup & Ersteinrichtung",
+  "order": 6,
+  "id": "W0-06",
+  "name": "Systemcheck-Bericht nach Setup: bereit / fehlt / Ein-Klick-Reparatur",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": true,
+  "subs": []
+ },
+ {
+  "wave": "W0b",
+  "waveName": "Look & Bedienung",
+  "order": 1,
+  "id": "W0B-01",
+  "name": "Einfaches, freundliches Deutsch überall + Sprachleitfaden docs/SPRACHE.md",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": true,
+  "subs": []
+ },
+ {
+  "wave": "W0b",
+  "waveName": "Look & Bedienung",
+  "order": 2,
+  "id": "W0B-02",
+  "name": "Desktop anpassen: Kacheln/Widgets verschieben, ein-/ausblenden, Dock sortieren, Akzentfarbe (gespeichert)",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": true,
+  "subs": []
+ },
+ {
+  "wave": "W0b",
+  "waveName": "Look & Bedienung",
+  "order": 3,
+  "id": "W0B-03",
+  "name": "Hintergrund-Galerie (aus /workspace/trendo-wallpapers) + optional Wechsel nach Tageszeit",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": true,
+  "subs": []
+ },
+ {
+  "wave": "W0b",
+  "waveName": "Look & Bedienung",
+  "order": 4,
+  "id": "W0B-04",
+  "name": "Sanfte Animationen, Hover-Glow, ruhiger Startbildschirm + Schalter „Bewegung reduzieren“",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": true,
+  "subs": []
+ },
+ {
+  "wave": "W0b",
+  "waveName": "Look & Bedienung",
+  "order": 5,
+  "id": "W0B-05",
+  "name": "Hilfe in der App: Hinweise beim ersten Öffnen je Studio + „?“-Knopf",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": true,
+  "subs": []
+ },
+ {
+  "wave": "W0b",
+  "waveName": "Look & Bedienung",
+  "order": 6,
+  "id": "W0B-06",
+  "name": "Designs: Dunkel Premium (Standard), Hell, Hoher Kontrast",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": true,
+  "subs": []
+ },
+ {
+  "wave": "W1",
+  "waveName": "Fundament & Alltag",
+  "order": 1,
+  "id": "SYS-13",
+  "name": "System Architecture Integration & Release Quality",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W1",
+  "waveName": "Fundament & Alltag",
+  "order": 2,
+  "id": "CORE-01",
+  "name": "Intelligent Desktop OS",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W1",
+  "waveName": "Fundament & Alltag",
+  "order": 3,
+  "id": "SYS-12",
+  "name": "Adaptive Interface Accessibility & Personalization",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W1",
+  "waveName": "Fundament & Alltag",
+  "order": 4,
+  "id": "X-09",
+  "name": "System Resource & Studio Manager",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W1",
+  "waveName": "Fundament & Alltag",
+  "order": 5,
+  "id": "SYS-11",
+  "name": "Ready-to-Run & Software Integration",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W1",
+  "waveName": "Fundament & Alltag",
+  "order": 6,
+  "id": "SYS-02",
+  "name": "Ultimate Desktop Utilities & Media Center",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W1",
+  "waveName": "Fundament & Alltag",
+  "order": 7,
+  "id": "SYS-10",
+  "name": "Office Documents & Productivity Center",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W1",
+  "waveName": "Fundament & Alltag",
+  "order": 8,
+  "id": "STUDIO-LETTER-01",
+  "name": "Ultimate Letter Business & Legal Correspondence Studio GODMODE",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": [
+   {
+    "id": "LETTER-001",
+    "title": "Ultimate AI Letter Director",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-002",
+    "title": "Universal Letter Category Engine",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-003",
+    "title": "DIN-5008-orientierter Letter Designer",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-004",
+    "title": "Professional Template Library",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-005",
+    "title": "Intelligent Tone & Writing Director",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-006",
+    "title": "Government & Authority Letter Center",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-007",
+    "title": "Court Correspondence & Pleading Assistant",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-008",
+    "title": "Lawyer Communication Director",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-009",
+    "title": "Insurance & Claims Correspondence Studio",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-010",
+    "title": "Business Dispute & Contract Letter Center",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-011",
+    "title": "Letter Intake & Fact Questionnaire",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-012",
+    "title": "Document Scan OCR & Incoming Letter Reader",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-013",
+    "title": "Case Timeline Evidence & Attachment Organizer",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-014",
+    "title": "Verified Legal Sources & Deadline Inspector",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-015",
+    "title": "German-First Cross-Border Letter Composer",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-016",
+    "title": "DOCX ODT PDF Print Production Engine",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-017",
+    "title": "Personal & Business Letterhead Vault",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-018",
+    "title": "Missing Information & Consistency Validator",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-019",
+    "title": "Deadline Reply & Follow-Up Planner",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-020",
+    "title": "Document Preview Proofreading & QA Review",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-021",
+    "title": "Incoming Letter Analysis & Reply Builder",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-022",
+    "title": "Correspondence Case Archive & Version History",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-023",
+    "title": "Official Delivery Channel Preparation",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-024",
+    "title": "Human Approval Privacy & Legal Review Gate",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "LETTER-025",
+    "title": "Real Letter Production & Submission QA",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   }
+  ]
+ },
+ {
+  "wave": "W1",
+  "waveName": "Fundament & Alltag",
+  "order": 9,
+  "id": "SYS-03",
+  "name": "Ultimate Browser Internet & Download Center",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W2",
+  "waveName": "KI & Automatisierung",
+  "order": 1,
+  "id": "CORE-02",
+  "name": "Trendo Intelligence Core",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W2",
+  "waveName": "KI & Automatisierung",
+  "order": 2,
+  "id": "X-05",
+  "name": "Free AI Discovery & Fallback",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W2",
+  "waveName": "KI & Automatisierung",
+  "order": 3,
+  "id": "CORE-03",
+  "name": "AI Agent Command Center – 12 roles",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W2",
+  "waveName": "KI & Automatisierung",
+  "order": 4,
+  "id": "CORE-10",
+  "name": "Knowledge Memory & Self Improvement Core 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W2",
+  "waveName": "KI & Automatisierung",
+  "order": 5,
+  "id": "CORE-12",
+  "name": "Ultimate Prompt & Masterprompt Studio 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W2",
+  "waveName": "KI & Automatisierung",
+  "order": 6,
+  "id": "SYS-05",
+  "name": "Universal Automation & Workflow Engine",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W3",
+  "waveName": "System, Sicherheit & Kommunikation",
+  "order": 1,
+  "id": "CORE-11",
+  "name": "Security Privacy Recovery Fortress",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W3",
+  "waveName": "System, Sicherheit & Kommunikation",
+  "order": 2,
+  "id": "X-02",
+  "name": "Zero Touch Setup & Self Healing",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W3",
+  "waveName": "System, Sicherheit & Kommunikation",
+  "order": 3,
+  "id": "SYS-04",
+  "name": "Ultimate App Installation & System Control Center",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W3",
+  "waveName": "System, Sicherheit & Kommunikation",
+  "order": 4,
+  "id": "SYS-07",
+  "name": "Ultimate Hardware & Device Recognition",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W3",
+  "waveName": "System, Sicherheit & Kommunikation",
+  "order": 5,
+  "id": "SYS-06",
+  "name": "Ultimate Network File Sharing & Remote Workspace",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W3",
+  "waveName": "System, Sicherheit & Kommunikation",
+  "order": 6,
+  "id": "SYS-09",
+  "name": "Communication Mail & Collaboration Center",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W3",
+  "waveName": "System, Sicherheit & Kommunikation",
+  "order": 7,
+  "id": "SPEC-12",
+  "name": "Cybersecurity & Forensics 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W3",
+  "waveName": "System, Sicherheit & Kommunikation",
+  "order": 8,
+  "id": "SYS-08",
+  "name": "Deep Web & Dark Web READ-ONLY Research Studio",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W4",
+  "waveName": "Kreativ & Entwicklung",
+  "order": 1,
+  "id": "CORE-07",
+  "name": "Ultimate App & Software Development Studio 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W4",
+  "waveName": "Kreativ & Entwicklung",
+  "order": 2,
+  "id": "X-06",
+  "name": "GitHub Open-Source Integration",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W4",
+  "waveName": "Kreativ & Entwicklung",
+  "order": 3,
+  "id": "CORE-08",
+  "name": "Ultimate Creative & Media Studio 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W4",
+  "waveName": "Kreativ & Entwicklung",
+  "order": 4,
+  "id": "CORE-05",
+  "name": "Ultimate 3D Creation Studio 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W4",
+  "waveName": "Kreativ & Entwicklung",
+  "order": 5,
+  "id": "CORE-06",
+  "name": "Ultimate Game Development Studio 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W4",
+  "waveName": "Kreativ & Entwicklung",
+  "order": 6,
+  "id": "X-07",
+  "name": "Global Free Asset Discovery",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W4",
+  "waveName": "Kreativ & Entwicklung",
+  "order": 7,
+  "id": "X-03",
+  "name": "Visual Builder & No-Code",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W4",
+  "waveName": "Kreativ & Entwicklung",
+  "order": 8,
+  "id": "X-11",
+  "name": "Universal Creation & Productivity Suite",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W5",
+  "waveName": "Business",
+  "order": 1,
+  "id": "STUDIO-ONLINE-BUSINESS-01",
+  "name": "Ultimate Online Business Creation & Innovation Studio GODMODE (both modes)",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": [
+   {
+    "id": "BUS-001",
+    "title": "Business Discovery Director",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-002",
+    "title": "Proven Business Model Library",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-003",
+    "title": "Competitor & Market Intelligence",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-004",
+    "title": "Customer Problem & Niche Discovery",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-005",
+    "title": "Realistic Opportunity & Profitability Score",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-006",
+    "title": "Business Innovation Engine",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-007",
+    "title": "Cross-Industry Business Fusion",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-008",
+    "title": "Originality & Similarity Research",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-009",
+    "title": "Market Validation & Prototype Laboratory",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-010",
+    "title": "Innovation Go / No-Go Decision Brain",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-011",
+    "title": "Business Blueprint Architect",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-012",
+    "title": "Revenue, Pricing & Subscription Designer",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-013",
+    "title": "Brand Identity & Premium UX Director",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-014",
+    "title": "Business Requirements & Legal Feasibility Planner",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-015",
+    "title": "Customer Journey & Process Architect",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-016",
+    "title": "Grok Build Full-Stack Business Builder",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-017",
+    "title": "Accounts, Membership & Multi-Tenant Engine",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-018",
+    "title": "Payments, Billing & Subscription Integration",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-019",
+    "title": "Business Admin, CRM & Operations Center",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-020",
+    "title": "Product Delivery, Supplier & White-Label Engine",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-021",
+    "title": "SEO, Content & Visibility Director",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-022",
+    "title": "Customer Acquisition & Sales Funnel Studio",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-023",
+    "title": "Customer Support & Service Center",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-024",
+    "title": "Business Analytics & Conversion Intelligence",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-025",
+    "title": "Finance, Cost & Profitability Dashboard",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-026",
+    "title": "Business Compliance, Privacy & Rights Gate",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-027",
+    "title": "Real Security, Payments & Business Process QA",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-028",
+    "title": "Hosting, Domain & Deployment Director",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-029",
+    "title": "Business Monitoring, Backup & Evolution Engine",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   },
+   {
+    "id": "BUS-030",
+    "title": "Ready-to-Business Production & Handover Gate",
+    "impl": "NOT_STARTED",
+    "test": "NOT_RUN"
+   }
+  ]
+ },
+ {
+  "wave": "W5",
+  "waveName": "Business",
+  "order": 2,
+  "id": "SPEC-11",
+  "name": "Business & Finance 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W5",
+  "waveName": "Business",
+  "order": 3,
+  "id": "X-01",
+  "name": "Universal Studio Fusion & Autonomous Production",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W5",
+  "waveName": "Business",
+  "order": 4,
+  "id": "X-04",
+  "name": "Extension Marketplace & Studio Evolution",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W5",
+  "waveName": "Business",
+  "order": 5,
+  "id": "X-10",
+  "name": "Legal Clean-Room Software Reconstruction",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W6",
+  "waveName": "Fach-Studios",
+  "order": 1,
+  "id": "SPEC-01",
+  "name": "Architecture & Interior 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W6",
+  "waveName": "Fach-Studios",
+  "order": 2,
+  "id": "SPEC-02",
+  "name": "Electronics & PCB 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W6",
+  "waveName": "Fach-Studios",
+  "order": 3,
+  "id": "SPEC-03",
+  "name": "Engineering & Simulation 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W6",
+  "waveName": "Fach-Studios",
+  "order": 4,
+  "id": "SPEC-04",
+  "name": "VR/AR/MR 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W6",
+  "waveName": "Fach-Studios",
+  "order": 5,
+  "id": "SPEC-05",
+  "name": "Science & Research 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W6",
+  "waveName": "Fach-Studios",
+  "order": 6,
+  "id": "SPEC-06",
+  "name": "Education & Training 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W6",
+  "waveName": "Fach-Studios",
+  "order": 7,
+  "id": "SPEC-08",
+  "name": "Fashion & Product 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W6",
+  "waveName": "Fach-Studios",
+  "order": 8,
+  "id": "SPEC-09",
+  "name": "3D Scanning & Reconstruction 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W6",
+  "waveName": "Fach-Studios",
+  "order": 9,
+  "id": "SPEC-10",
+  "name": "Digital Twin 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W6",
+  "waveName": "Fach-Studios",
+  "order": 10,
+  "id": "SPEC-13",
+  "name": "Maps & Geospatial 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W6",
+  "waveName": "Fach-Studios",
+  "order": 11,
+  "id": "SPEC-14",
+  "name": "Manufacturing & CNC 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W6",
+  "waveName": "Fach-Studios",
+  "order": 12,
+  "id": "SPEC-15",
+  "name": "Broadcast & Streaming 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W6",
+  "waveName": "Fach-Studios",
+  "order": 13,
+  "id": "SPEC-16",
+  "name": "Transport & Vehicle 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W6",
+  "waveName": "Fach-Studios",
+  "order": 14,
+  "id": "CORE-09",
+  "name": "Vision & Robotics Control Studio 2.0",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W7",
+  "waveName": "Geräte & Betriebsmodi",
+  "order": 1,
+  "id": "CORE-04",
+  "name": "Pi/PC/Android Fusion Engine",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W7",
+  "waveName": "Geräte & Betriebsmodi",
+  "order": 2,
+  "id": "X-08",
+  "name": "Mobile OS Bridge",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ },
+ {
+  "wave": "W7",
+  "waveName": "Geräte & Betriebsmodi",
+  "order": 3,
+  "id": "SYS-01",
+  "name": "Triple Mode OS GODMODE",
+  "impl": "NOT_STARTED",
+  "test": "NOT_RUN",
+  "local": false,
+  "subs": []
+ }
+]

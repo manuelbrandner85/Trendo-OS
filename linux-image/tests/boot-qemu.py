@@ -27,6 +27,11 @@ for t in shots:
     time.sleep(max(0, t - (time.time() - t0)))
     ppm = f"{out}/{mode}-{t}s.ppm"; print(qmp("screendump", filename=ppm), flush=True)
     Image.open(ppm).save(ppm[:-4] + ".png"); os.remove(ppm); print("SHOT", ppm[:-4] + ".png", flush=True)
+if os.environ.get("TRENDO_TYPE") == "1":
+    # Tastatur-Test: KRunner öffnen (Alt+F2), physische Tasten Y, Z, Minus tippen. Bei deutschem Layout erscheint „zyß“, bei US „yz-“.
+    print("KRunner", qmp("send-key", keys=[{"type": "qcode", "data": "alt"}, {"type": "qcode", "data": "f2"}]), flush=True); time.sleep(20)
+    for k in ["y", "z", "minus"]: qmp("send-key", keys=[{"type": "qcode", "data": k}]); time.sleep(1)
+    time.sleep(15); ppm = f"{out}/{mode}-keyboard.ppm"; qmp("screendump", filename=ppm); Image.open(ppm).save(ppm[:-4] + ".png"); os.remove(ppm); print("SHOT", ppm[:-4] + ".png", flush=True)
 qmp("quit"); p.wait(30); os.remove(f"{out}/qmp-{mode}.sock")
 if mode == "uefi": os.remove(vars_)
 print("QEMU-Exit:", p.returncode)

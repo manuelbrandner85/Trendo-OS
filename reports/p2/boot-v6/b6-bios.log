@@ -1,0 +1,15 @@
+CMD: qemu-system-x86_64 -accel tcg -cpu max -m 4096 -smp 2 -cdrom out/trendo-os-p2-amd64.hybrid.iso -boot d -vga std -display none -qmp unix:/tmp/p2/b6bios/qmp-bios.sock,server,wait=off -serial file:/tmp/p2/b6bios/serial-bios.log -nic user,model=virtio-net-pci
+Bootmenü: Enter {'return': {}}
+{'return': {}}
+SHOT /tmp/p2/b6bios/bios-20s.png
+{'return': {}}
+SHOT /tmp/p2/b6bios/bios-300s.png
+{'return': {}}
+SHOT /tmp/p2/b6bios/bios-380s.png
+KRunner {'return': {}}
+SHOT /tmp/p2/b6bios/bios-keyboard.png
+Traceback (most recent call last):
+  File "/workspace/Trendo-OS/linux-image/tests/boot-qemu.py", line 35, in <module>
+    qmp("quit"); p.wait(30); os.remove(f"{out}/qmp-{mode}.sock")
+                             ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/p2/b6bios/qmp-bios.sock'
