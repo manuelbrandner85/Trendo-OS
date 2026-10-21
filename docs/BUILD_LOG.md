@@ -1,5 +1,7 @@
 # Bau-Protokoll (laufend, neueste oben) – Zeiten MESZ
 
+> **Eingefroren am 21.10.2026 21:15 MESZ.** Neue Einträge: eine Datei pro Eintrag unter `docs/build-log/` (siehe docs/build-log/README.md).
+
 ## 21.10.2026
 - 20:10 Branch `w0/setup` (Welle 0 + 0b), Release v0.7.1-preview1 gebaut (Setup SHA ea396d58…). Nächster Schritt: Test auf dem PC.
 - 20:4x PC-Test: Auto-Update von 0.7.1 auf 0.7.2 über GitHub Releases erfolgreich (reports/w0/update-test.txt). Systemcheck: LibreOffice wird nicht mehr per --version gestartet (das hing), Prüfungen laufen parallel, ein hängender Prozess wird bei Zeitüberschreitung beendet. Der „Geister-Ring“ auf dem Startbildschirm gehört zum Hintergrundbild „bergsee-nacht“ und ist kein Fehler. v0.7.3.
