@@ -202,7 +202,7 @@ Abnahmekriterien je Modul:
 | BUS-013 | Brand Identity & Premium UX Director | IMPLEMENTED | TESTED_BOX |
 | BUS-014 | Business Requirements & Legal Feasibility Planner | IMPLEMENTED | TESTED_BOX |
 | BUS-015 | Customer Journey & Process Architect | IMPLEMENTED | TESTED_BOX |
-| BUS-016 | Grok Build Full-Stack Business Builder | NOT_STARTED | NOT_RUN |
+| BUS-016 | Grok Build Full-Stack Business Builder | IMPLEMENTED | TESTED_BOX |
 | BUS-017 | Accounts, Membership & Multi-Tenant Engine | IMPLEMENTED | TESTED_BOX |
 | BUS-018 | Payments, Billing & Subscription Integration | IMPLEMENTED | TESTED_BOX |
 | BUS-019 | Business Admin, CRM & Operations Center | IMPLEMENTED | TESTED_BOX |
@@ -212,11 +212,11 @@ Abnahmekriterien je Modul:
 | BUS-023 | Customer Support & Service Center | IMPLEMENTED | TESTED_BOX |
 | BUS-024 | Business Analytics & Conversion Intelligence | IMPLEMENTED | TESTED_BOX |
 | BUS-025 | Finance, Cost & Profitability Dashboard | IMPLEMENTED | TESTED_BOX |
-| BUS-026 | Business Compliance, Privacy & Rights Gate | NOT_STARTED | NOT_RUN |
-| BUS-027 | Real Security, Payments & Business Process QA | NOT_STARTED | NOT_RUN |
-| BUS-028 | Hosting, Domain & Deployment Director | NOT_STARTED | NOT_RUN |
-| BUS-029 | Business Monitoring, Backup & Evolution Engine | NOT_STARTED | NOT_RUN |
-| BUS-030 | Ready-to-Business Production & Handover Gate | NOT_STARTED | NOT_RUN |
+| BUS-026 | Business Compliance, Privacy & Rights Gate | IMPLEMENTED | TESTED_BOX |
+| BUS-027 | Real Security, Payments & Business Process QA | IMPLEMENTED | TESTED_BOX |
+| BUS-028 | Hosting, Domain & Deployment Director | IMPLEMENTED | TESTED_BOX |
+| BUS-029 | Business Monitoring, Backup & Evolution Engine | IMPLEMENTED | TESTED_BOX |
+| BUS-030 | Ready-to-Business Production & Handover Gate | IMPLEMENTED | TESTED_BOX |
 
 ## W6 – Fach-Studios
 

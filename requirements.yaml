@@ -542,8 +542,9 @@ business_requirements:
   mode: BOTH
   title: Grok Build Full-Stack Business Builder
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-016.txt
 - id: BUS-017
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -621,36 +622,41 @@ business_requirements:
   mode: BOTH
   title: Business Compliance, Privacy & Rights Gate
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-016.txt
 - id: BUS-027
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Real Security, Payments & Business Process QA
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-016.txt
 - id: BUS-028
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Hosting, Domain & Deployment Director
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-016.txt
 - id: BUS-029
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Business Monitoring, Backup & Evolution Engine
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-016.txt
 - id: BUS-030
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Ready-to-Business Production & Handover Gate
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-016.txt
 letter_requirements:
 - id: LETTER-001
   module: STUDIO-LETTER-01
