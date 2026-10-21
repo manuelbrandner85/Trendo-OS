@@ -138,7 +138,9 @@ public sealed partial class MainWindow : Window
 
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         timer.Tick += (_, _) => Tick();
-        timer.Start(); Tick(); StartupTrace.Mark("ctor.tick");
+        // Uhr sofort; erste Messung (CPU/GPU-Zähler, ~65 ms) erst nach dem ersten Bild
+        _clock.Text = DateTime.Now.ToString("HH:mm", De); _date.Text = DateTime.Now.ToString("ddd, d. MMM yyyy", De);
+        timer.Start(); Dispatcher.UIThread.Post(Tick, DispatcherPriority.Background); StartupTrace.Mark("ctor.tick");
 
         if (opt.ApiPort is { } port)
         {
