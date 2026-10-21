@@ -190,9 +190,9 @@ public sealed class MainWindow : Window
 
     private void SaveScreenshot(string path)
     {
-        var scale = RenderScaling;
-        var size = new PixelSize((int)(Bounds.Width * scale), (int)(Bounds.Height * scale));
-        using var bmp = new RenderTargetBitmap(size, new Vector(96 * scale, 96 * scale));
+        // Effekte (Schatten/Glow) werden bei DPI-Skalierung im Offscreen-Render falsch zwischengespeichert → logische Auflösung.
+        var size = new PixelSize((int)Bounds.Width, (int)Bounds.Height);
+        using var bmp = new RenderTargetBitmap(size, new Vector(96, 96));
         bmp.Render(this);
         bmp.Save(path, new PngBitmapEncoderOptions());
     }
