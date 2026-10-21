@@ -9,3 +9,6 @@
 - 19:5x Welle 0b: Designs Dunkel/Hell/Kontrast, Akzentfarbe, Hintergrund-Galerie (4 Bilder, per Lanczos und Schärfen auf 2560×1440 hochskaliert, kein KI-Upscaler verfügbar), Tageszeit-Wechsel, Animationen und „Bewegung reduzieren“, Hilfe „?“ mit Hinweisen beim ersten Öffnen, Startbildschirm anpassen, einfache Sprache (docs/SPRACHE.md und Test).
 - 19:3x Welle 0: Assistent, Basispaket (SumatraPDF, mpv, 7-Zip, DIN-5008-Vorlagen), Studio-Pakete, KI nach Hardware, Sicherung und Wiederherstellung, Velopack-Updates über GitHub, Systemcheck mit Reparieren.
 - 19:40 PR #79 gemergt: ISO Build 6 (Autologin PASS), BUILD_PLAN, Fortschritt-Seite, Issues #14–#78.
+
+## Welle 1 – Fundament & Alltag
+- 20:42 SYS-13: Releases nur noch von sauberem main (installer/release.sh prüft Branch, Sauberkeit, origin/main, Version, Tests). Absturzprotokoll (logs/, Benutzerpfade geschwärzt, max. 20), Version mit Stand unter System. Tests +2.

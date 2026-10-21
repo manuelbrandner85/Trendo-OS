@@ -23,6 +23,11 @@ class Program
             args.Contains("--api") ? (int.TryParse(Arg("--api-port"), out var ap) ? ap : 47800) : null,
             FirstRun: !args.Contains("--no-first-run"), Page: Arg("--page"), KiAsk: Arg("--ki-ask"));
 
+        var crashRoot = Options.DataRoot ?? TrendoCore.DefaultDataRoot();
+        AppDomain.CurrentDomain.UnhandledException += (_, e) => { if (e.ExceptionObject is Exception ex) try { CrashLog.Write(crashRoot, ex, "Programm"); } catch { } };
+        TaskScheduler.UnobservedTaskException += (_, e) => { try { CrashLog.Write(crashRoot, e.Exception, "Hintergrundaufgabe"); } catch { } e.SetObserved(); };
+        if (args.Contains("--selftest-crashlog")) { Console.WriteLine(CrashLog.Write(crashRoot, new InvalidOperationException("Selbsttest Absturzprotokoll"), "Selbsttest")); return 0; }
+        if (args.Contains("--version")) { Console.WriteLine(CrashLog.AppVersion()); return 0; }
         if (args.Contains("--selftest-open-explorer"))
         {
             var core = new TrendoCore(Options.DataRoot ?? TrendoCore.DefaultDataRoot(), offline: Options.Offline);
