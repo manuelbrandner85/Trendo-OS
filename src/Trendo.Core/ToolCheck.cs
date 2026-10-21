@@ -15,14 +15,14 @@ public static class StudioTools
     public static readonly IReadOnlyDictionary<string, string[]> Required = new Dictionary<string, string[]>
     {
         ["CORE-05"] = ["blender"], ["CORE-06"] = ["unreal"], ["SYS-10"] = ["libreoffice"], ["CORE-02"] = ["ollama", "model"],
-        ["CORE-08"] = ["mpv"], ["CORE-07"] = ["git", "python"], ["STUDIO-LETTER-01"] = ["tesseract"],
+        ["CORE-08"] = ["mpv", "ffmpeg"], ["CORE-07"] = ["git", "python"], ["STUDIO-LETTER-01"] = ["tesseract"],
     };
 
     /// <summary>Exe-Name (für PATH/App-Paths-Suche) und Prüfargumente. null = nicht starten, nur Dateiversion lesen (z. B. Unreal-Editor).</summary>
     public static readonly IReadOnlyDictionary<string, (string Exe, string? VerifyArgs)> Verify = new Dictionary<string, (string, string?)>
     {
         ["blender"] = ("blender.exe", "--version"), ["libreoffice"] = ("soffice.exe", null) /* --version öffnet unter Windows teils ein Fenster und hängt */, ["ollama"] = ("ollama.exe", "--version"),
-        ["sumatra"] = ("SumatraPDF.exe", null), ["7zip"] = ("7z.exe", null), ["git"] = ("git.exe", "--version"), ["python"] = ("python.exe", "--version"), ["mpv"] = ("mpv.exe", "--version"),
+        ["sumatra"] = ("SumatraPDF.exe", null), ["7zip"] = ("7z.exe", null), ["git"] = ("git.exe", "--version"), ["python"] = ("python.exe", "--version"), ["mpv"] = ("mpv.exe", "--version"), ["ffmpeg"] = ("ffmpeg.exe", "-version"),
         ["tesseract"] = ("tesseract.exe", "--version"), ["unreal"] = ("UnrealEditor.exe", null), ["krita"] = ("krita.exe", null),
         ["inkscape"] = ("inkscape.exe", "--version"), ["kdenlive"] = ("kdenlive.exe", null), ["audacity"] = ("Audacity.exe", null),
     };

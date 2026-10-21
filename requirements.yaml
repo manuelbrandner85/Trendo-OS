@@ -97,8 +97,9 @@ modules:
   name: Ultimate Creative & Media Studio 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/CORE-08.txt
 - id: CORE-09
   name: Vision & Robotics Control Studio 2.0
   approved_expansion_functions: '20'
