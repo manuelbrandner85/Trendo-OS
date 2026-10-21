@@ -113,3 +113,25 @@ public class SYS06_Ui
         Assert.Null(w.ActiveShare);
     }
 }
+
+public class SYS09_Ui
+{
+    [AvaloniaFact(DisplayName = "SYS-09 UI: Kontakt anlegen, Entwurf prüfen und im Mailprogramm öffnen (nichts wird gesendet)")]
+    public void Mail_page()
+    {
+        var (w, l, root) = Ui.Open();
+        MainWindow.MailDraftFolder = Path.Combine(root, "entwuerfe");
+        w.Show("post");
+        w.Find<TextBox>("contact-name").Text = "Anna"; w.Find<TextBox>("contact-email").Text = "anna@example.de";
+        w.Find<Button>("contact-add").Press();
+        Assert.Single(w.Mail.Contacts());
+        w.Find<Button>("mail-open").Press();
+        Assert.Contains("Empfänger fehlt", w.Find<TextBlock>("mail-msg").Text);
+        w.Find<ComboBox>("mail-pick").SelectedIndex = 0;
+        w.Find<TextBox>("mail-subject").Text = "Treffen"; w.Find<TextBox>("mail-body").Text = "Hallo!";
+        w.Find<Button>("mail-open").Press();
+        Assert.True(File.Exists(w.LastDraftFile));
+        Assert.Contains("To: anna@example.de", File.ReadAllText(w.LastDraftFile!));
+        Assert.Contains(w.LastDraftFile!, l.Opened);
+    }
+}
