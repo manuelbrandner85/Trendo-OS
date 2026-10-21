@@ -90,3 +90,19 @@ public static class Glb
     }
 }
 
+
+public class SPEC05_Ui
+{
+    [AvaloniaFact(DisplayName = "SPEC-05 UI: CSV auswerten, Regression, Gruppenvergleich")]
+    public void Science()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        var f = Path.Combine(root, "mess.csv"); File.WriteAllText(f, "x;y\n1;2,1\n2;3,9\n3;6,2\n4;7,8\n5;10,1\n");
+        w.Show(MainWindow.StudioPages["SPEC-05"]);
+        Assert.Contains("n = 5", W6Ui.Run(w, "sci-desc", ("file", f)));
+        Assert.True(File.Exists(Path.Combine(root, "mess.auswertung.md")));
+        Assert.Contains("starker", W6Ui.Run(w, "sci-fit", ("file", f)));
+        Assert.Contains("signifikant", W6Ui.Run(w, "sci-t", ("file", f)));
+        Assert.Contains("⚠", W6Ui.Run(w, "sci-fit", ("x", "zz")));
+    }
+}
