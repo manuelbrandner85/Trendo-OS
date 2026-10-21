@@ -1,0 +1,4 @@
+Nachweis KI-ENTER – Linux-Box (nicht Windows-PC), 22.10.2026 01:05 MESZ, Commit-Basis 33433e8
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 582 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   412, Skipped:    10, Total:   422, Duration: 13 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   127, Skipped:     0, Total:   127, Duration: 3 m 38 s - Trendo.App.Tests.dll (net10.0)

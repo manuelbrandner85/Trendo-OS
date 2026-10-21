@@ -555,8 +555,13 @@ public sealed partial class MainWindow : Window
         _kiDot.Width = 9; _kiDot.Height = 9; _kiStatus.FontSize = 11.5;
         var kiState = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 7, VerticalAlignment = VerticalAlignment.Center, Children = { _kiDot, _kiStatus } };
         Grid.SetColumn(kiState, 2); kiHead.Children.Add(kiState);
-        _kiSetup.Click += (_, _) => Show("components");
-        _kiInput.KeyDown += async (_, e) => { if (e.Key == Key.Enter && !string.IsNullOrWhiteSpace(_kiInput.Text)) await AskKi(_kiInput.Text!); };
+        if (!_kiWired)
+        {
+            // Nur einmal verdrahten: die Felder leben so lange wie das Fenster, die Spalte kann neu gebaut werden
+            _kiWired = true;
+            _kiSetup.Click += (_, _) => Show("components");
+            _kiInput.KeyDown += async (_, e) => { if (e.Key == Key.Enter && !string.IsNullOrWhiteSpace(_kiInput.Text)) { e.Handled = true; await AskKi(_kiInput.Text!); } };
+        }
         _kiInput.Background = Brushes.Transparent; _kiInput.BorderThickness = new Thickness(0); _kiInput.Margin = new Thickness(0); _kiInput.VerticalContentAlignment = VerticalAlignment.Center; _kiInput.FontSize = 12.5;
         var send = new Button { Name = "btn-ki-send", Width = 30, Height = 30, Padding = new Thickness(0), Background = Brush.Parse("#33FFFFFF"), CornerRadius = new CornerRadius(6), Content = Ico(Mdi.Send, 15, Text) };
         send.Click += async (_, _) => { if (_kiInput.IsEnabled && !string.IsNullOrWhiteSpace(_kiInput.Text)) await AskKi(_kiInput.Text!); };
@@ -912,11 +917,23 @@ public sealed partial class MainWindow : Window
         if (CurrentView == "ki") Show("ki");
     }
 
+    private bool _kiWired, _kiBusy;
+    /// <summary>Für Tests: ersetzt die lokale KI (kein Netz).</summary>
+    public Func<string, Task<string>>? KiChatOverride { get; set; }
+    public int KiAskCount { get; private set; }
+
     private async Task AskKi(string q)
+    {
+        if (_kiBusy) return; // eine Frage nach der anderen – doppelte Auslöser schicken nichts doppelt
+        _kiBusy = true; KiAskCount++;
+        try { await AskKiCore(q); } finally { _kiBusy = false; }
+    }
+
+    private async Task AskKiCore(string q)
     {
         _kiInput.Text = ""; _kiInput.IsEnabled = false; _kiText.Text = $"Du: {q}\n\nTrendo KI denkt …";
         _core.Audit.Append(Principal.LocalOwner.Name, "ki.ask", $"{q.Length} Zeichen");
-        var a = await _ollama.ChatAsync(KiModelName, q);
+        var a = KiChatOverride is { } o ? await o(q) : await _ollama.ChatAsync(KiModelName, q);
         _kiText.Text = $"Du: {q}\n\nTrendo KI: {a}"; _kiInput.IsEnabled = true;
     }
 
