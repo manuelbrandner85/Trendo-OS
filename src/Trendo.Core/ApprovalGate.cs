@@ -22,8 +22,9 @@ public sealed class ApprovalGate(AuditLog audit, TimeProvider? time = null)
     private readonly TimeProvider _time = time ?? TimeProvider.System;
     private readonly object _lock = new();
 
-    public ApprovalRequest Request(string action, string description, string target, TimeSpan? ttl = null)
+    public ApprovalRequest Request(Principal by, string action, string description, string target, TimeSpan? ttl = null)
     {
+        Rbac.Demand(by, Permission.RequestAction, audit);
         var r = new ApprovalRequest
         {
             Id = Convert.ToHexString(RandomNumberGenerator.GetBytes(8)),
@@ -31,7 +32,7 @@ public sealed class ApprovalGate(AuditLog audit, TimeProvider? time = null)
             CreatedAt = _time.GetLocalNow(), ExpiresAt = _time.GetLocalNow() + (ttl ?? TimeSpan.FromMinutes(10))
         };
         lock (_lock) _requests[r.Id] = r;
-        audit.Append("core", "approval.requested", $"{r.Id} {action} {target}");
+        audit.Append(by.Name, "approval.requested", $"{r.Id} {action} {target}");
         return r;
     }
 
@@ -40,11 +41,14 @@ public sealed class ApprovalGate(AuditLog audit, TimeProvider? time = null)
         lock (_lock) return _requests.Values.Where(r => r.State == ApprovalState.Pending).ToList();
     }
 
-    public void Approve(string id, string approver = "user") => Decide(id, ApprovalState.Approved, approver);
-    public void Deny(string id, string approver = "user") => Decide(id, ApprovalState.Denied, approver);
+    /// <summary>Nur die Rolle Owner darf freigeben oder ablehnen.</summary>
+    public void Approve(string id, Principal by) => Decide(id, ApprovalState.Approved, by);
+    public void Deny(string id, Principal by) => Decide(id, ApprovalState.Denied, by);
 
-    private void Decide(string id, ApprovalState s, string who)
+    private void Decide(string id, ApprovalState s, Principal by)
     {
+        Rbac.Demand(by, Permission.ApproveAction, audit);
+        var who = by.Name;
         lock (_lock)
         {
             if (!_requests.TryGetValue(id, out var r) || r.State != ApprovalState.Pending)

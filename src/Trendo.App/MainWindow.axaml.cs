@@ -23,6 +23,7 @@ public sealed class MainWindow : Window
     private readonly ContentControl _main = new();
     private readonly TextBlock _status = new() { Foreground = Muted, FontSize = 12 };
     private IReadOnlyList<StudioEntry> _studios = [];
+    private Trendo.Api.LocalApi? _api;
 
     public MainWindow() : this(new AppOptions(null, null, 0)) { }
 
@@ -50,7 +51,7 @@ public sealed class MainWindow : Window
         for (var i = 0; i < views.Length; i++)
         {
             var (key, label, view) = views[i];
-            var b = new Button { Name = "nav-" + key, Content = $"{label}   (Strg+{i + 1})", HorizontalAlignment = HorizontalAlignment.Stretch, Background = Brushes.Transparent, Foreground = Text, Padding = new Thickness(12, 8), IsTabStop = true };
+            var b = new Button { Name = "nav-" + key, Content = new StackPanel { Children = { new TextBlock { Text = label, Foreground = Text }, new TextBlock { Text = $"Strg+{i + 1}", FontSize = 11, Foreground = Muted } } }, HorizontalAlignment = HorizontalAlignment.Stretch, Background = Brushes.Transparent, Foreground = Text, Padding = new Thickness(12, 8), IsTabStop = true };
             Avalonia.Automation.AutomationProperties.SetName(b, label);
             b.Click += (_, _) => Show(key, view);
             nav.Children.Add(b);
@@ -58,7 +59,7 @@ public sealed class MainWindow : Window
         }
         _showMap = views.ToDictionary(v => v.Key, v => v.View);
         var root = new DockPanel();
-        var left = new Border { Background = Panel, Width = 230, Child = nav };
+        var left = new Border { Background = Panel, Width = 250, Child = nav };
         DockPanel.SetDock(left, Dock.Left);
         var bottom = new Border { Background = Panel, Padding = new Thickness(12, 6), Child = _status };
         DockPanel.SetDock(bottom, Dock.Bottom);
@@ -68,8 +69,21 @@ public sealed class MainWindow : Window
         Show("start", StartView);
         _status.Text = $"Core {_core.Version}{(_core.Offline ? " · OFFLINE" : "")} · Secrets: {_core.Secrets.BackendName} · Audit-Kette: {(_core.Audit.Verify() ? "intakt" : "FEHLER")} · Trendo-KI: Nicht verbunden";
 
+        if (opt.ApiPort is { } port)
+        {
+            var reqPath = req;
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    _api = await Trendo.Api.LocalApi.StartAsync(_core, new Trendo.Api.ApiTokens(_core.Secrets), reqPath ?? "", probe, port);
+                    Dispatcher.UIThread.Post(() => _status.Text += $" · API: 127.0.0.1:{_api.Port}");
+                }
+                catch (Exception ex) { Dispatcher.UIThread.Post(() => _status.Text += $" · API-Fehler: {ex.Message}"); }
+            });
+        }
         Opened += OnOpened;
-        Closing += (_, _) => _core.Shutdown();
+        Closing += (_, _) => { _api?.DisposeAsync().AsTask().Wait(2000); _core.Shutdown(); };
     }
 
     private Dictionary<string, Func<Control>> _showMap = new();
@@ -126,7 +140,7 @@ public sealed class MainWindow : Window
         foreach (var st in _studios)
         {
             var col = st.Capability switch { Capability.Ready => Brushes.LimeGreen, Capability.Blocked => Brushes.OrangeRed, Capability.Rejected => Brushes.Gray, Capability.NotConnected => Brushes.Gold, _ => Muted };
-            wrap.Children.Add(Card(new StackPanel { Width = 230, Children = {
+            wrap.Children.Add(Card(new StackPanel { Width = 250, Children = {
                 new TextBlock { Text = st.Name, Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
                 P($"{st.Id} · {st.ApprovalStatus}"),
                 new TextBlock { Text = StudioRegistry.GermanLabel(st.Capability), Foreground = col, Margin = new Thickness(0, 6, 0, 0) },
@@ -153,12 +167,12 @@ public sealed class MainWindow : Window
         foreach (var p in _core.Projects.List())
         {
             var open = new Button { Name = "btn-open-folder-" + p.Id, Content = "Ordner im Explorer öffnen (Freigabe nötig)" };
-            open.Click += (_, _) => { _core.Integrations.PlanOpenProjectFolder(p.Id); Show("approvals"); };
+            open.Click += (_, _) => { _core.Integrations.PlanOpenProjectFolder(Principal.LocalOwner, p.Id); Show("approvals"); };
             sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { new TextBlock { Text = p.Name, Foreground = Text }, P($"Angelegt {p.CreatedAt:dd.MM.yyyy HH:mm}"), open } }));
         }
         var url = new Button { Name = "btn-open-url", Content = "Trendo-Repository im Browser öffnen (Freigabe nötig)", IsEnabled = !_core.Offline };
         if (_core.Offline) ToolTip.SetTip(url, "Offline-Modus: deaktiviert");
-        url.Click += (_, _) => { try { _core.Integrations.PlanOpenUrl("https://github.com/manuelbrandner85/Trendo-OS"); Show("approvals"); } catch (OfflineException ex) { msg.Text = ex.Message; } };
+        url.Click += (_, _) => { try { _core.Integrations.PlanOpenUrl(Principal.LocalOwner, "https://github.com/manuelbrandner85/Trendo-OS"); Show("approvals"); } catch (OfflineException ex) { msg.Text = ex.Message; } };
         sp.Children.Add(url);
         return sp;
     }
@@ -173,8 +187,8 @@ public sealed class MainWindow : Window
         {
             var yes = new Button { Name = "btn-approve-" + r.Id, Content = "Freigeben und ausführen", Background = Accent };
             var no = new Button { Name = "btn-deny-" + r.Id, Content = "Ablehnen" };
-            yes.Click += (_, _) => { _core.Approvals.Approve(r.Id); _core.Integrations.Execute(r); Show("approvals"); };
-            no.Click += (_, _) => { _core.Approvals.Deny(r.Id); Show("approvals"); };
+            yes.Click += (_, _) => { _core.Approvals.Approve(r.Id, Principal.LocalOwner); _core.Integrations.Execute(r); Show("approvals"); };
+            no.Click += (_, _) => { _core.Approvals.Deny(r.Id, Principal.LocalOwner); Show("approvals"); };
             sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = {
                 new TextBlock { Text = r.Description, Foreground = Text },
                 P($"Aktion {r.Action} · gültig bis {r.ExpiresAt:HH:mm}"),
