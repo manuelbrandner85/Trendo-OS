@@ -777,7 +777,7 @@ public sealed partial class MainWindow : Window
     private Control SystemView()
     {
         var sp = new StackPanel { Spacing = 4 };
-        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Nav2("Systemcheck", "systemcheck"), Nav2("Sicherung", "sicherung"), Nav2("Bau-Fortschritt", "fortschritt"), Nav2("Einrichtung erneut", "einrichtung") } });
+        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Nav2("Schutz & Geräte", "schutz"), Nav2("Systemcheck", "systemcheck"), Nav2("Sicherung", "sicherung"), Nav2("Bau-Fortschritt", "fortschritt"), Nav2("Einrichtung erneut", "einrichtung") } });
         var crashes = CrashLog.List(_core.DataRoot);
         sp.Children.Add(P($"Trendo OS {CrashLog.AppVersion()} · Updates kommen nur aus geprüften Versionen (main) · nicht code-signiert", Text));
         sp.Children.Add(P(crashes.Count == 0 ? "Absturzprotokolle: keine – alles stabil." : $"Absturzprotokolle: {crashes.Count}, zuletzt {File.GetLastWriteTime(crashes[0]):dd.MM.yyyy HH:mm} (Ordner logs, ohne Benutzernamen)", crashes.Count == 0 ? null : Brush.Parse("#FACC15")));
