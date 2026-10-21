@@ -887,8 +887,8 @@
   "order": 3,
   "id": "SPEC-03",
   "name": "Engineering & Simulation 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
