@@ -708,8 +708,8 @@
    {
     "id": "BUS-013",
     "title": "Brand Identity & Premium UX Director",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-014",
@@ -720,8 +720,8 @@
    {
     "id": "BUS-015",
     "title": "Customer Journey & Process Architect",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-016",
@@ -756,14 +756,14 @@
    {
     "id": "BUS-021",
     "title": "SEO, Content & Visibility Director",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-022",
     "title": "Customer Acquisition & Sales Funnel Studio",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-023",
@@ -920,8 +920,8 @@
   "order": 6,
   "id": "SPEC-06",
   "name": "Education & Training 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },

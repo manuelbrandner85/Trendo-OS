@@ -106,3 +106,21 @@ public class SPEC05_Ui
         Assert.Contains("⚠", W6Ui.Run(w, "sci-fit", ("x", "zz")));
     }
 }
+
+public class SPEC06_Ui
+{
+    [AvaloniaFact(DisplayName = "SPEC-06 UI: Karten anlegen, lernen, bewerten")]
+    public void Learn()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show(MainWindow.StudioPages["SPEC-06"]);
+        W6Ui.Run(w, "learn-import", ("text", "Hund;dog|Katze;cat"));
+        Assert.Contains("2 Karten", w.Find<TextBlock>("learn-progress").Text);
+        Assert.Equal("Hund", w.Find<TextBlock>("learn-front").Text);
+        w.Find<Button>("learn-show").Press();
+        Assert.Equal("dog", w.Find<TextBlock>("learn-back").Text);
+        w.Find<Button>("learn-gut").Press();
+        Assert.Equal("Katze", w.Find<TextBlock>("learn-front").Text);
+        Assert.Contains("1 heute fällig", w.Find<TextBlock>("learn-progress").Text);
+    }
+}
