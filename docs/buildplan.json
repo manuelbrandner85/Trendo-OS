@@ -942,8 +942,8 @@
   "order": 8,
   "id": "SPEC-09",
   "name": "3D Scanning & Reconstruction 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
