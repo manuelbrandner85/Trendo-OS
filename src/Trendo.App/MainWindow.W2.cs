@@ -26,6 +26,7 @@ public partial class MainWindow
         ExtraPages.Add(("KI fragen", "ki-fragen", ["frage", "chat", "assistent", "trendo"]));
         InitX05(); InitCore10(); InitCore12(); InitCore03(); InitSys05();
         InitWave3();
+        InitWave6();
     }
     partial void InitWave3();
 
