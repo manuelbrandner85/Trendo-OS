@@ -31,3 +31,6 @@ artifacts/
 linux-image/out/
 linux-image/config/includes.chroot/opt/
 installer/companion/out/
+
+# Grok-Build-Protokolle (lokal)
+tasks/logs/

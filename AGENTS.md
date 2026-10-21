@@ -1,22 +1,33 @@
 # AGENTS.md – Verbindliche Regeln für Grok Build im Trendo-OS-Projekt
 
+Grok Bot ist Dispatcher und Reviewer. **Grok Build (dieser Agent) schreibt den Code** auf dem Windows-PC.
+Aufträge kommen als Datei aus `tasks/` (siehe `tasks/README.md`). Antworte und schreibe UI-Texte auf Deutsch.
+
 ## Projekt
-Trendo OS (Desktop-/Studio-OS) mit KI-Assistent Trendo; Grok Bot Projektleitung, Grok Build lokaler Entwicklungsagent. Derzeit nur bestätigte Spezifikation, kein nachgewiesener Build.
+- Trendo OS: Desktop-/Studio-Oberfläche (.NET 10, Avalonia) mit lokalem KI-Assistenten.
+- Code: `src/` (Trendo.Core, Trendo.App, Trendo.Api, Trendo.Companion), Tests `tests/`, Spezifikation `docs/spec/` (Kataloge `docs/spec/kataloge/`), Status `requirements.yaml`, Belege `reports/`, Build-Log `docs/build-log/<datum>-<modul>.md` (eine Datei pro Eintrag).
+- Bauen/Testen (PowerShell): `dotnet build Trendo.sln -c Release` und `dotnet test tests/Trendo.Core.Tests -c Release` (ebenso `Trendo.App.Tests`, `Trendo.Api.Tests`). Die Testausgabe ist deutsch („Bestanden!/Fehler!“).
 
-## Repository-Layout
-Spezifikation unter `docs/spec/` (Pfade in diesen Regeln beziehen sich dorthin), ADRs in `docs/adr/`, Aufträge in `tasks/`, Berichte/Logs in `reports/`.
-**Öffentliches Repo:** keine Secrets, keine personenbezogenen Daten, keine Pfade mit Benutzernamen in Berichten. Nie direkt auf `main` pushen; jede Arbeit auf eigenem Branch + PR.
-Nach Änderungen an Spezifikations-CSVs: `python scripts/generate_requirements.py && python scripts/validate_requirements.py`.
+## Arbeitsweise (Pflicht)
+1. Nur PowerShell. Pfade immer in Anführungszeichen (der Projektordner enthält ein Leerzeichen).
+2. Nie auf `main` committen oder pushen. Pro Auftrag einen Branch `grok/<task-id>-<kurz>` anlegen, kleine Commits, am Ende `git push -u origin <branch>`. Kein `--force`, kein Rebase bereits gepushter Commits.
+3. Vor dem Push alle drei Testprojekte laufen lassen; nur pushen, wenn alles grün ist. Wenn etwas rot bleibt: nicht pushen, Ursache berichten.
+4. Kleine, gezielte Änderungen; nichts umbauen, was der Auftrag nicht verlangt. Andere Builder arbeiten parallel – nur die im Auftrag genannten Dateien/Bereiche anfassen.
+5. Nach Abschluss einen Bericht nach `tasks/<task-id>.bericht.md` schreiben (siehe unten) und mitcommitten.
 
-## Vor jeder Änderung
-1. `SYSTEMBIBEL.md`, `MODULE_REGISTER.csv`, `GROK_BUILD_MASTERPROMPT.md`, `ROADMAP.md`, `QA_ABNAHME.md`, `GROK_ARCHITEKTUR_AGENTEN_MCP.md` und `OFFENE_ENTSCHEIDUNGEN.md` lesen.
-2. Reales Zielrepository, Git-Status, OS, Buildtool, Sicherheitsfreigaben prüfen. Nie fremde Projekte ändern. Änderungen auf einem reversiblen Branch; signifikante Edits nach Planfreigabe.
-3. Keine hardcodierten Secrets; keine Cloud-Exfiltration und keine forensischen Beweiskopien in Grok Bot Cloud.
-4. Kritische externe Aktionen oder Systemänderungen: eindeutige aufgabenbezogene Nutzerfreigabe und überprüfbarer Auth-Mechanismus. Keine gefährlichen Realwelt-Aktoren.
-5. Forensik-Kopien und Derivate max. 120h, 24h Warnung, KEINE dauerhaften Offline-USB-Kopien; kein Browser- / Tor-READ-ONLY-Bypass.
-6. Technische Arbeit nur mit real vorhandenen Tools; keine erfundenen MCP-Verbindungen/UE5-/Blender-Resultate; sämtliche Testresultate ursprünglich NOT_RUN.
-7. Explizit abgelehnte breite Language & Localization Studio 2.0-Erweiterung nicht implementieren.
-8. Keine zusätzliche kostenpflichtige KI-API-Abhängigkeit IN Trendo OS voraussetzen.
+## Verboten
+- Admin-Rechte, systemweite Installationen, `winget`/`msiexec`/`choco`, Registry-Änderungen, Dienste, Treiber, Firmware, Datenträger, Windows-Einstellungen.
+- Blender, Unreal oder Visual Studio deinstallieren/ändern.
+- Secrets in Dateien/Commits; Benutzernamen, Rechnernamen oder Pfade mit Benutzernamen im öffentlichen Repo (in Logs durch `C:\Users\<user>` / `<pc>` ersetzen).
+- Nachrichten senden, etwas kaufen, Formulare absenden, Releases erstellen (Releases macht nur Grok Bot aus grünem `main` über `installer/release.sh`).
+- Dateien außerhalb dieses Repos ändern oder löschen; Ausnahme: eigene Temp-Ordner `%TEMP%\trendo*`, die du am Ende aufräumst.
 
-## Verbindlicher Bericht
-Scope/Änderung/Dateien/Tests/Logs/Pass-Fail-Blocked/Risiken/Freigabe/Nächster Schritt. `APPROVED_SPEC` ist kein `IMPLEMENTED`.
+## Fachregeln
+- Status ehrlich: `APPROVED_SPEC` ist nicht `IMPLEMENTED`. `TESTED`/`PC_VERIFIED` nur mit Rohlog + SHA-256 unter `reports/`. QA-017, QA-019 und Codesignatur nie als bestanden markieren.
+- Das Logo bleibt ein nicht freigegebenes Konzept. SPEC-07 ist abgelehnt – nicht bauen.
+- Kostenpflichtige KI-APIs bleiben optional; Trendo darf sie nie voraussetzen.
+- UI: höchstens 2 Navigationsebenen, deutsche, alltagsnahe Beschriftungen. Studio-Namen kommen zentral aus `src/Trendo.App/StudioCatalog.cs`.
+- W1-Issues (#14, #15, #17–#22) und W7-Issues (#64–#66) bleiben offen, bis die Module fertig sind.
+
+## Bericht (`tasks/<task-id>.bericht.md`)
+Auftrag · Branch · geänderte Dateien · Testergebnis je Projekt (Zahlen aus der Ausgabe) · offene Punkte/Risiken · was du NICHT geprüft hast.
