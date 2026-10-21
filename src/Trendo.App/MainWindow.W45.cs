@@ -18,6 +18,7 @@ public partial class MainWindow
     private void InitWave45()
     {
         InitW4Dev();
+        InitW4Media();
         InitW4Oss();
     }
 

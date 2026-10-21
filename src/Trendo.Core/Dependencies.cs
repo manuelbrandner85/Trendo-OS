@@ -56,6 +56,8 @@ public static class DependencyCatalog
             "7zip.7zip", 6, "https://www.7-zip.org", ["7z"], [@"%ProgramFiles%\7-Zip\7z.exe"]),
         new("libreoffice", "LibreOffice", "Office Studio", "MPL-2.0", DeliveryMode.AutoElevated, "Nur systemweiter MSI-Installer – Windows fragt nach Admin",
             "TheDocumentFoundation.LibreOffice", 350, "https://libreoffice.org", ["libreoffice"], [@"%ProgramFiles%\LibreOffice\program\soffice.exe"]),
+        new("ffmpeg", "FFmpeg", "Medien-Studio: umwandeln, schneiden, Ton herausholen", "LGPL-2.1-or-later / GPL (Build)", DeliveryMode.AutoUser,
+            "Pro Benutzer ohne Admin über winget", "Gyan.FFmpeg", 100, "https://ffmpeg.org", ["ffmpeg"], [@"%LOCALAPPDATA%\Microsoft\WinGet\Links\ffmpeg.exe"]),
         new("blender", "Blender", "3D Studio", "GPL-3.0-or-later", DeliveryMode.AutoElevated, "Nur systemweiter Installer – Windows fragt nach Admin",
             "BlenderFoundation.Blender", 400, "https://blender.org", ["blender"], [@"%ProgramFiles%\Blender Foundation\*\blender.exe"]),
         new("krita", "Krita", "Medien Studio – Grafik", "GPL-3.0", DeliveryMode.AutoElevated, "Systemweiter Installer", "KDE.Krita", 200, "https://krita.org", ["krita"], [@"%ProgramFiles%\Krita (x64)\bin\krita.exe"]),
