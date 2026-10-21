@@ -127,6 +127,15 @@ public partial class MainWindow
         }
     }
 
+    /// <summary>Nach dem Neuaufbau (Einstellungen übernehmen): dieselben Fenster wieder öffnen, mit Lage, Größe, Zustand und Reihenfolge. Titel kommen neu aus der Namenskarte.</summary>
+    public void RestoreWindows((List<WindowManager.Saved> Windows, List<string> Stack) s, string? activePage)
+    {
+        foreach (var x in s.Windows) if (_showMap.ContainsKey(x.Page) && Windows.Get(x.Id) is null) PresentPage(x.Page);
+        Windows.Apply(s);
+        if (activePage is not null && Windows.Get(WindowGroupOf(activePage)) is { } a && !a.Minimized) Windows.Activate(a.Id);
+        AfterWindowChange();
+    }
+
     public void FocusWindow(string id) { if (Windows.Get(id) is null || Windows.Active?.Id == id) return; Windows.Activate(id); AfterWindowChange(); }
     public void CloseWindow(string id)
     {

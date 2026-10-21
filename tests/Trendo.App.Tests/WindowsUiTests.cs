@@ -95,3 +95,26 @@ public class Fenster_Ui
         w.Close();
     }
 }
+
+public class Fenster_Behalten_Ui
+{
+    [AvaloniaFact(DisplayName = "Fenster: Einstellung übernehmen (Design-Knopf per Mausklick) schließt keine Fenster – alle kommen mit Lage und Zustand zurück")]
+    public void ReopenKeepsWindows()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show("werkzeuge"); w.Show("prog-pflege"); w.Show("settings"); Settle();
+        w.Windows.Move("werkzeuge", 50, 40); w.Show("prog-pflege"); Settle(); RealClick(w, V<Button>(w, "win-min-prog-pflege")); w.Show("settings"); Settle();
+        var before = w.Windows.Snapshot();
+        var hell = V<Button>(w, "theme-dunkel"); // übernimmt die Einstellung neu (wie jede Design-Wahl)
+        RealClick(w, hell);
+        var n = w.ReopenedAs; Assert.NotNull(n); Settle();
+        var after = n!.Windows.Snapshot();
+        Assert.Equal(before.Windows.Select(x => x.Id), after.Windows.Select(x => x.Id));
+        Assert.Equal(before.Windows.Select(x => (x.Page, x.Minimized, x.Maximized)), after.Windows.Select(x => (x.Page, x.Minimized, x.Maximized)));
+        var wb = before.Windows.First(x => x.Id == "werkzeuge"); var wa = n.Windows.Get("werkzeuge")!;
+        Assert.Equal((wb.X, wb.Y), (wa.X, wa.Y));
+        Assert.Equal("settings", n.Windows.Active!.Id); Assert.Equal("settings", n.CurrentView);
+        Assert.Equal(3, n.GetVisualDescendants().OfType<Button>().Count(b => b.Name?.StartsWith("task-") == true));
+        n.Close();
+    }
+}
