@@ -146,14 +146,25 @@ public sealed partial class MainWindow
 
     private Control SystemCheckPanel()
     {
+        var host = new StackPanel { Spacing = 6, Name = "syscheck-host", Children = { P("Prüfe …", Text) } };
+        var comps = SetupPacks.ComponentsFor(_settings.StudioPacks.Count > 0 ? _settings.StudioPacks : _wizPacks).ToList();
+        // Prüfen im Hintergrund (startet Programme mit --version) – nie auf dem UI-Thread blockieren
+        _ = Task.Run(async () =>
+        {
+            var checks = new List<(Component C, ToolCheck R)>();
+            foreach (var c in comps) checks.Add((c, await _deps.CheckAsync(c)));
+            await Dispatcher.UIThread.InvokeAsync(() => { host.Children.Clear(); host.Children.Add(BuildCheckGrid(checks)); });
+        });
+        return host;
+    }
+
+    private Control BuildCheckGrid(List<(Component C, ToolCheck R)> checks)
+    {
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("230,*,130"), Name = "syscheck" };
         var rows = new List<(string Name, string State, string Detail, Component? Fix)>();
-        foreach (var c in SetupPacks.ComponentsFor(_settings.StudioPacks.Count > 0 ? _settings.StudioPacks : _wizPacks))
-        {
-            var ch = _deps.CheckAsync(c).GetAwaiter().GetResult();
+        foreach (var (c, ch) in checks)
             rows.Add((c.Name, ch.State switch { ToolState.Working => "Bereit", ToolState.Broken => "Defekt", _ => "Fehlt" }, ch.Version ?? ch.Detail ?? "",
                 ch.State == ToolState.Working || c.Mode is not (DeliveryMode.AutoUser or DeliveryMode.AutoElevated) ? null : c));
-        }
         rows.Add(("Benutzerdaten", Directory.Exists(_core.DataRoot) ? "Bereit" : "Fehlt", _core.DataRoot, null));
         rows.Add(("Projektordner", Directory.Exists(_settings.ProjectsFolder) ? "Bereit" : "Fehlt", _settings.ProjectsFolder, null));
         var last = Backups.List().FirstOrDefault();

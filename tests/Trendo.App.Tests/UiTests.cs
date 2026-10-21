@@ -316,7 +316,8 @@ public class W0_SetupWizard
         Assert.True(File.Exists(Path.Combine(proj, "Vorlagen", "DIN5008-Geschaeftsbrief-FormB.docx")));
         var s = UserSettings.Load(root);
         Assert.True(s.SetupDone); Assert.Equal("Manuel", s.Name); Assert.Equal("kontrast", s.Theme); Assert.Equal(proj, s.ProjectsFolder);
-        Assert.NotNull(w.TryFind<Button>("fix-sumatra")); // Systemcheck: fehlt → Reparieren
+        for (var i = 0; i < 200 && w.TryFind<Button>("fix-sumatra") is null; i++) { await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }
+        Assert.NotNull(w.TryFind<Button>("fix-sumatra")); // Systemcheck (im Hintergrund geprüft): fehlt → Reparieren
         Assert.Single(new Backup(root, Path.Combine(root, "backups"), core.Audit).List());
         w.Close(); Directory.Delete(root, true);
     }
