@@ -94,4 +94,7 @@ public static class StudioCatalog
 
     /// <summary>Info zu einem Studio oder null.</summary>
     public static StudioInfo? For(string? id) => id is not null && ById.TryGetValue(id, out var i) ? i : null;
+
+    /// <summary>Anzeigename aus dem Katalog. Fehlt der Eintrag, bleibt der bisherige Text.</summary>
+    public static string NameOf(string? id, string fallback) => For(id)?.Name ?? fallback;
 }
