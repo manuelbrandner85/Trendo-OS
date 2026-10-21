@@ -78,7 +78,7 @@ public static class Fashion
     }
 
     /// <summary>Kalkulation: Material + Arbeit + Gemeinkosten-% → Selbstkosten; + Gewinn-% → netto; + MwSt → brutto, auf ,90 / ,99 gerundet.</summary>
-    public static PriceCalc Price(double material, double labour, double overheadPct, double profitPct, double vatPct = 19, bool charm = true)
+    public static PriceCalc Price(double material, double labour, double overheadPct, double profitPct, double vatPct = 19 /* LegalRates.VatStandard, § 12 Abs. 1 UStG */, bool charm = true)
     {
         if (material < 0 || labour < 0) throw new ArgumentException("Kosten dürfen nicht negativ sein.");
         var cost = (material + labour) * (1 + overheadPct / 100); var net = cost * (1 + profitPct / 100); var gross = net * (1 + vatPct / 100);

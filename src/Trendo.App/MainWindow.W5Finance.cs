@@ -34,7 +34,7 @@ public partial class MainWindow
             try
             {
                 var d = DateOnly.Parse(date.Text ?? "", System.Globalization.CultureInfo.GetCultureInfo("de-DE"));
-                Money.Add(new(d, text.Text ?? "", Finance.ParseAmount(amount.Text ?? ""), Finance.Categories[Math.Max(0, cat.SelectedIndex)], vat.SelectedIndex switch { 1 => 7m, 2 => 19m, _ => 0m }));
+                Money.Add(new(d, text.Text ?? "", Finance.ParseAmount(amount.Text ?? ""), Finance.Categories[Math.Max(0, cat.SelectedIndex)], vat.SelectedIndex switch { 1 => LegalRates.VatReduced, 2 => LegalRates.VatStandard, _ => 0m }));
                 Say("Eingetragen.", "finanzen");
             }
             catch (FormatException) { Say("Bitte Datum (TT.MM.JJJJ) und Betrag prüfen. Ausgaben mit Minus.", "finanzen"); }
@@ -61,9 +61,9 @@ public partial class MainWindow
             try
             {
                 var inv = new Invoice(Finance.NextInvoiceNumber(Money.InvoiceNumbers(), DateOnly.FromDateTime(DateTime.Today)), DateOnly.FromDateTime(DateTime.Today), seller.Text ?? "", buyer.Text ?? "",
-                    [new(item.Text ?? "", Finance.ParseAmount(qty.Text ?? "1"), Finance.ParseAmount(unit.Text ?? ""))], 19m, small.IsChecked == true);
+                    [new(item.Text ?? "", Finance.ParseAmount(qty.Text ?? "1"), Finance.ParseAmount(unit.Text ?? ""))], LegalRates.VatStandard, small.IsChecked == true);
                 var p = Money.WriteInvoice(inv);
-                Money.Add(new(inv.Date, $"Rechnung {inv.Number}", Finance.Totals(inv).Gross, "Einnahmen", inv.SmallBusiness ? 0 : 19m));
+                Money.Add(new(inv.Date, $"Rechnung {inv.Number}", Finance.Totals(inv).Gross, "Einnahmen", inv.SmallBusiness ? 0 : LegalRates.VatStandard));
                 _core.Audit.Append(Principal.LocalOwner.Name, "finance.invoice", inv.Number);
                 Launch(p); Say($"Rechnung {inv.Number} erstellt und als Einnahme eingetragen.", "finanzen");
             }
