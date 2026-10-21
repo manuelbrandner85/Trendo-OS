@@ -252,3 +252,36 @@ public class LetterQa : IDisposable
         Assert.NotEqual(LetterKit.ShaText(c.Draft.Body), c.Translations[0].MasterSha256); // Übersetzung veraltet → UI zeigt Hinweis
     }
 }
+
+public class LetterOcrReal
+{
+    [Fact(DisplayName = "LETTER-012: Echte Tesseract-Texterkennung eines gerenderten Briefs (deu), unsichere Wörter markiert, Sprachpaket per Hash geprüft")]
+    public async Task Real_ocr()
+    {
+        var tess = new[] { "/usr/bin/tesseract", @"C:\Program Files\Tesseract-OCR\tesseract.exe" }.FirstOrDefault(File.Exists);
+        var soffice = new[] { "/usr/bin/soffice", @"C:\Program Files\LibreOffice\program\soffice.exe" }.FirstOrDefault(File.Exists);
+        if (tess is null || soffice is null) return;
+        var root = Path.Combine(Path.GetTempPath(), "trendo-ocr-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(root);
+        var audit = new AuditLog(Path.Combine(root, "a.jsonl"));
+        var run = new RealProcessRunner();
+        string? dir = (await Ocr.LanguagesAsync(run, tess)).Contains("deu") ? null : Ocr.UserTessdata(root);
+        if (dir is not null) Assert.True((await Ocr.DownloadGermanAsync(new HttpClient(), root, audit, Principal.LocalOwner)).Ok);
+        var bad = await Ocr.DownloadGermanAsync(new HttpClient(), Path.Combine(root, "x"), audit, Principal.LocalOwner, sha: "00");
+        Assert.False(bad.Ok); Assert.False(Ocr.HasUserGerman(Path.Combine(root, "x")));
+        // Brief → PDF → PNG über LibreOffice (png-Export der 1. Seite)
+        var d = new LetterDraft { SenderName = "Erika Muster", SenderStreet = "Hauptstraße 1", SenderCity = "10115 Berlin", Recipient = "Stadtwerke München GmbH\nAm Werk 5\n80331 München", Subject = "Kündigung Stromvertrag 4711", Body = "hiermit kündige ich fristgerecht zum 31.12.2026. Bitte bestätigen Sie die Kündigung." };
+        var docx = Path.Combine(root, "brief.docx"); Letters.WriteDocx(d, docx);
+        var png = await PdfExport.ConvertToAsync(run, soffice, docx, "pdf");
+        Assert.True(png.Ok);
+        var img = Path.Combine(root, "brief.png");
+        if (File.Exists("/usr/bin/pdftoppm")) { System.Diagnostics.Process.Start("pdftoppm", $"-r 200 -png -singlefile \"{png.Pdf}\" \"{Path.Combine(root, "brief")}\"")!.WaitForExit(); }
+        else { var r2 = await run.RunAsync(soffice, $"--headless --convert-to png --outdir \"{root}\" \"{png.Pdf}\"", null, default); }
+        Assert.True(File.Exists(img), "Bild nicht erzeugt");
+        var r = await Ocr.RunAsync(run, tess, img, default, dir);
+        Assert.True(r.Ok, r.Message);
+        foreach (var w in new[] { "Kündigung", "Stromvertrag", "4711", "München", "31.12.2026" }) Assert.Contains(w, r.Text);
+        Assert.True(r.Confidence > 80, $"Sicherheit {r.Confidence}");
+        File.WriteAllText(Path.Combine(root, "report.txt"), $"{r.Message}\n{r.Text}");
+        Directory.Delete(root, true);
+    }
+}

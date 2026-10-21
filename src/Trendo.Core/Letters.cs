@@ -196,17 +196,51 @@ public static class PdfExport
 public static class Ocr
 {
     public static readonly string[] ImageExt = [".png", ".jpg", ".jpeg", ".tif", ".tiff", ".bmp", ".webp"];
-    public static async Task<(bool Ok, string Text, double Confidence, List<string> Unreadable, string Message)> RunAsync(IProcessRunner run, string tesseract, string image, CancellationToken ct = default)
+    /// <summary>Deutsches Sprachpaket (tessdata_fast, Apache-2.0) – pro Benutzer, ohne Admin, mit festem SHA-256.</summary>
+    public const string GermanUrl = "https://github.com/tesseract-ocr/tessdata_fast/raw/main/deu.traineddata";
+    public const string GermanSha256 = "19D219BBB6672C869D20A9636C6816A81EB9A71796CB93EBE0CB1530E2CDB22D";
+    public static string UserTessdata(string dataRoot) => Path.Combine(dataRoot, "tessdata");
+    public static bool HasUserGerman(string dataRoot) => File.Exists(Path.Combine(UserTessdata(dataRoot), "deu.traineddata"));
+
+    public static async Task<IReadOnlyList<string>> LanguagesAsync(IProcessRunner run, string tesseract, string? tessdata = null)
+    {
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            var (_, o) = await run.RunAsync(tesseract, (tessdata is null ? "" : $"--tessdata-dir \"{tessdata}\" ") + "--list-langs", null, cts.Token);
+            return o.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Where(l => !l.Contains(' ') && !l.Contains(':')).ToList();
+        }
+        catch (OperationCanceledException) { return []; }
+    }
+
+    /// <summary>Lädt deu.traineddata in den Benutzerordner; falscher Hash → Datei wird verworfen.</summary>
+    public static async Task<(bool Ok, string Message)> DownloadGermanAsync(HttpClient http, string dataRoot, AuditLog audit, Principal by, string url = GermanUrl, string sha = GermanSha256)
+    {
+        var dir = UserTessdata(dataRoot); Directory.CreateDirectory(dir);
+        var tmp = Path.Combine(dir, "deu.traineddata.part");
+        try
+        {
+            await using (var s = await http.GetStreamAsync(url)) await using (var f = File.Create(tmp)) await s.CopyToAsync(f);
+            var got = LetterKit.Sha(tmp);
+            if (got != sha) { File.Delete(tmp); audit.Append(by.Name, "ocr.lang.rejected", got); return (false, "Download verworfen: Prüfsumme stimmt nicht."); }
+            File.Move(tmp, Path.Combine(dir, "deu.traineddata"), true);
+            audit.Append(by.Name, "ocr.lang.installed", $"deu sha={got[..16]}");
+            return (true, "Deutsches Sprachpaket installiert (1,5 MB, Apache-2.0).");
+        }
+        catch (HttpRequestException e) { try { File.Delete(tmp); } catch { } return (false, "Download fehlgeschlagen: " + e.Message); }
+    }
+
+    public static async Task<(bool Ok, string Text, double Confidence, List<string> Unreadable, string Message)> RunAsync(IProcessRunner run, string tesseract, string image, CancellationToken ct = default, string? tessdata = null, string lang = "deu")
     {
         if (!ImageExt.Contains(Path.GetExtension(image).ToLowerInvariant())) return (false, "", 0, [], "Bitte ein Foto oder einen Scan als Bild (PNG/JPG/TIFF) wählen. PDF-Scans: Seite als Bild speichern.");
         var outBase = Path.Combine(Path.GetTempPath(), "trendo-ocr-" + Guid.NewGuid().ToString("N"));
         using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct); cts.CancelAfter(TimeSpan.FromSeconds(120));
         try
         {
-            var (exit, output) = await run.RunAsync(tesseract, $"\"{image}\" \"{outBase}\" -l deu tsv", null, cts.Token);
+            var (exit, output) = await run.RunAsync(tesseract, (tessdata is null ? "" : $"--tessdata-dir \"{tessdata}\" ") + $"\"{image}\" \"{outBase}\" -l {lang} -c tessedit_create_tsv=1 -c tessedit_create_txt=0", null, cts.Token);
             if (exit != 0 || !File.Exists(outBase + ".tsv")) return (false, "", 0, [], $"Texterkennung fehlgeschlagen (Exit {exit}). Ist das deutsche Sprachpaket installiert?");
             var (text, conf, bad) = LetterKit.ParseTesseractTsv(File.ReadAllText(outBase + ".tsv"));
-            return (true, text, conf, bad, $"Erkannt mit durchschnittlich {conf:0} % Sicherheit, {bad.Count} unsichere Wörter markiert.");
+            return (true, text, conf, bad, $"Erkannt ({lang}) mit durchschnittlich {conf:0} % Sicherheit, {bad.Count} unsichere Wörter markiert.");
         }
         catch (OperationCanceledException) { return (false, "", 0, [], "Texterkennung hat zu lange gebraucht."); }
         finally { foreach (var f in new[] { outBase + ".tsv" }) try { File.Delete(f); } catch { } }

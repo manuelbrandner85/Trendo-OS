@@ -178,7 +178,16 @@ public partial class MainWindow
         {
             var tess = ToolPath("tesseract");
             if (tess is null) { _caseMsg = "Texterkennung (Tesseract) ist nicht installiert – unter Zusatzprogramme nachinstallieren."; return; }
-            var r = await Ocr.RunAsync(new RealProcessRunner(), tess, path);
+            var run = new RealProcessRunner();
+            string? dir = null; var lang = "deu";
+            if (Ocr.HasUserGerman(_core.DataRoot)) dir = Ocr.UserTessdata(_core.DataRoot);
+            else if (!(await Ocr.LanguagesAsync(run, tess)).Contains("deu"))
+            {
+                if (_core.Offline) { _caseMsg = "Deutsches OCR-Sprachpaket fehlt, und Trendo ist offline."; return; }
+                var (ok, m) = await Ocr.DownloadGermanAsync(new HttpClient { Timeout = TimeSpan.FromSeconds(60) }, _core.DataRoot, _core.Audit, Principal.LocalOwner);
+                if (!ok) { _caseMsg = m + " Texterkennung läuft auf Englisch – Umlaute werden schlechter erkannt."; lang = "eng"; } else dir = Ocr.UserTessdata(_core.DataRoot);
+            }
+            var r = await Ocr.RunAsync(run, tess, path, default, dir, lang);
             if (!r.Ok) { _caseMsg = r.Message; return; }
             (text, conf, bad) = (r.Text, r.Confidence, r.Unreadable); _caseMsg = r.Message;
         }
