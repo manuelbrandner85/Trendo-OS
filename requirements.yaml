@@ -110,8 +110,8 @@ modules:
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: PC_VERIFIED
-  evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  test_status: TESTED_BOX
+  evidence: reports/w23/CORE-09.md
 - id: CORE-10
   name: Knowledge Memory & Self Improvement Core 2.0
   approved_expansion_functions: '20'
