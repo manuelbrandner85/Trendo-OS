@@ -23,6 +23,7 @@ public partial class MainWindow
         InitW4Studio3D();
         InitW4Game();
         InitW4Assets();
+        InitW4Builder();
     }
 
     private void RegisterTab(List<(string, string, string)> tabs, string key, string label, string module, Func<Control> view, params string[] words)

@@ -325,8 +325,9 @@ modules:
   name: Visual Builder & No-Code
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/X-03.txt
 - id: X-04
   name: Extension Marketplace & Studio Evolution
   approved_expansion_functions: '20'
