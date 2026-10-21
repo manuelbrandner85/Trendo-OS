@@ -413,3 +413,35 @@ public class W1_Search_Access
         Assert.NotNull(w.TryFind<Border>("hint"));
     }
 }
+
+public class W1_Apps
+{
+    [AvaloniaFact(DisplayName = "SYS-02: Notiz-Schnelltool öffnet Werkzeuge; Notiz wird gespeichert; Rechner rechnet bei Enter")]
+    public void Notes_and_calc()
+    {
+        var (w, _, root) = Ui.Open();
+        w.Find<Button>("tool-notiz").Press();
+        Assert.Equal("werkzeuge", w.CurrentView);
+        w.Find<TextBox>("note-input").Text = "Zahnarzt Dienstag";
+        w.Find<Button>("note-add").Press();
+        Assert.Equal("Zahnarzt Dienstag", Assert.Single(new NoteStore(root).All()).Text);
+        w.Find<TextBox>("calc-input").Text = "(2+3)*4";
+        w.Find<Button>("calc-run").Press();
+        Assert.Equal("= 20", w.Find<TextBlock>("calc-result").Text);
+        w.StartTimer(TimeSpan.FromMinutes(5));
+        Assert.Equal("05:00", w.Find<TextBlock>("timer-text").Text);
+    }
+
+    [AvaloniaFact(DisplayName = "SYS-11/X-09: Apps hat genau eine Unterebene; Programme und Speicher-Seite öffnen")]
+    public void Apps_tabs()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show("apps");
+        Assert.NotNull(w.TryFind<Button>("app-"));
+        w.Find<Button>("apps-tab-ressourcen").Press();
+        Assert.Equal("ressourcen", w.CurrentView);
+        Assert.NotNull(w.TryFind<Button>("apps-tab-apps"));
+        w.Find<Button>("apps-tab-medien").Press();
+        Assert.Equal("medien", w.CurrentView);
+    }
+}

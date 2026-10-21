@@ -25,6 +25,25 @@ public sealed class OllamaClient
         catch { return false; }
     }
 
+    /// <summary>X-09: Modelle, die gerade im Speicher liegen (/api/ps).</summary>
+    public async Task<List<(string Name, long Bytes)>> LoadedAsync()
+    {
+        try
+        {
+            using var cts = new CancellationTokenSource(1500);
+            var doc = await _http.GetFromJsonAsync<JsonElement>("/api/ps", cts.Token);
+            return doc.GetProperty("models").EnumerateArray().Select(m => (m.GetProperty("name").GetString() ?? "", m.TryGetProperty("size", out var s) ? s.GetInt64() : 0)).ToList();
+        }
+        catch { return []; }
+    }
+
+    /// <summary>X-09: Modell sofort aus dem Speicher entladen (keep_alive 0). Es bleibt installiert und lädt bei der nächsten Frage neu.</summary>
+    public async Task<bool> UnloadAsync(string model)
+    {
+        try { using var r = await _http.PostAsJsonAsync("/api/generate", new { model, keep_alive = 0 }); return r.IsSuccessStatusCode; }
+        catch { return false; }
+    }
+
     public async Task<string> ChatAsync(string model, string question)
     {
         try
