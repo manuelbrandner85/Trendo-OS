@@ -1,0 +1,3 @@
+# SYS-13 – Box-Tests 21.10.2026 20:56 (Linux, headless)
+  Passed SYS-13: Absturzprotokoll schwärzt Benutzerpfade und behält höchstens 20 Dateien [9 ms]
+  Passed SYS-13: Release-Skript baut nur von sauberem main [< 1 ms]

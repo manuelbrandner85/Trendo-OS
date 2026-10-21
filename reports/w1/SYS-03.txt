@@ -1,0 +1,10 @@
+# SYS-03 – Box-Tests 21.10.2026 20:56 (Linux, headless)
+  Passed SYS-03: Adressen werden sicher normalisiert (nur http/https, sonst Suche oder Ablehnung)(input: "tagesschau.de", expected: "https://tagesschau.de/") [3 ms]
+  Passed SYS-03: Adressen werden sicher normalisiert (nur http/https, sonst Suche oder Ablehnung)(input: "http://example.org/x", expected: "http://example.org/x") [< 1 ms]
+  Passed SYS-03: Adressen werden sicher normalisiert (nur http/https, sonst Suche oder Ablehnung)(input: "ftp://x.org", expected: null) [< 1 ms]
+  Passed SYS-03: Adressen werden sicher normalisiert (nur http/https, sonst Suche oder Ablehnung)(input: "file:///C:/Windows", expected: null) [< 1 ms]
+  Passed SYS-03: Adressen werden sicher normalisiert (nur http/https, sonst Suche oder Ablehnung)(input: "  ", expected: null) [< 1 ms]
+  Passed SYS-03: Adressen werden sicher normalisiert (nur http/https, sonst Suche oder Ablehnung)(input: "javascript:alert(1)", expected: null) [< 1 ms]
+  Passed SYS-03: Adressen werden sicher normalisiert (nur http/https, sonst Suche oder Ablehnung)(input: "wetter berlin", expected: "https://duckduckgo.com/?q=wetter%20berlin") [< 1 ms]
+  Passed SYS-03: Browser werden über bekannte Pfade gefunden; riskante und unfertige Downloads erkannt [23 ms]
+  Passed SYS-03: Dock-Browser öffnet Browser & Downloads; Adresse wird geöffnet, javascript: abgelehnt; offline gesperrt [155 ms]

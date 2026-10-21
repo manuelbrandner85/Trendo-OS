@@ -122,6 +122,7 @@ public sealed partial class MainWindow
         ["ressourcen"] = "Hier siehst du, was gerade Arbeitsspeicher belegt. Die KI kannst du mit einem Klick aus dem Speicher nehmen.",
         ["office"] = "Deine Dokumente an einem Ort: neue Briefe aus DIN-Vorlagen, zuletzt bearbeitete Dateien öffnen und als PDF speichern.",
         ["brief"] = "Schreib einen Brief in vier Schritten: Art wählen, Absender und Empfänger, Text, prüfen. Trendo speichert ihn als Word-Datei im Ordner Briefe – und auf Wunsch als PDF.",
+        ["downloads"] = "Gib eine Adresse oder einen Suchbegriff ein und wähle den Browser. Darunter siehst du deine neuesten Downloads – Programmdateien sind markiert.",
         ["suche"] = "Die Suche findet Seiten, Studios, Projekte und Dateien in deinem Projektordner. Mit Strg+K springst du jederzeit ins Suchfeld.",
         ["fortschritt"] = "So weit ist Trendo OS gebaut. Die Angaben kommen direkt aus der Projektliste – nichts ist geschönt.",
         ["keys"] = "Für einige Online-Dienste brauchst du einen Zugangsschlüssel. Er wird sicher in Windows gespeichert, nicht in einer Datei.",

@@ -1,0 +1,3 @@
+# SYS-12 – Box-Tests 21.10.2026 20:56 (Linux, headless)
+  Passed SYS-12: Anzeigegröße wird auf erlaubte Stufen begrenzt [8 ms]
+  Passed SYS-12: Anzeigegröße „Sehr groß“ wird gespeichert; F1 zeigt die Hilfe [276 ms]

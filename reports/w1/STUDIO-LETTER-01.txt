@@ -1,0 +1,6 @@
+# STUDIO-LETTER-01 – Box-Tests 21.10.2026 20:56 (Linux, headless)
+  Passed LETTER-002/004: Briefarten liefern Vorlagen; rechtliche Arten sind markiert [13 ms]
+  Passed LETTER-018: vollständiger Brief ohne Pflichtfehler; fehlende Felder und Platzhalter blockieren [20 ms]
+  Passed LETTER-003/016/022: DOCX ist gültig (A4, Ränder DIN), enthält alle Teile; Archiv versioniert statt zu überschreiben [65 ms]
+  Passed Bauplan: alle 53 genehmigten Module in Wellen, 55 BUS/LETTER-Teilanforderungen, Status live aus requirements.yaml [176 ms]
+  Passed STUDIO-LETTER-01: Schnellzugriff „Neuer Brief“ → Kündigung → ausfüllen → prüfen → speichern; Absender gemerkt [397 ms]

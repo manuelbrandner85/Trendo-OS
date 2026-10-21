@@ -137,8 +137,8 @@
   "order": 1,
   "id": "SYS-13",
   "name": "System Architecture Integration & Release Quality",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IN_PROGRESS",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -148,8 +148,8 @@
   "order": 2,
   "id": "CORE-01",
   "name": "Intelligent Desktop OS",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IN_PROGRESS",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -159,8 +159,8 @@
   "order": 3,
   "id": "SYS-12",
   "name": "Adaptive Interface Accessibility & Personalization",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IN_PROGRESS",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -170,8 +170,8 @@
   "order": 4,
   "id": "X-09",
   "name": "System Resource & Studio Manager",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IN_PROGRESS",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -181,8 +181,8 @@
   "order": 5,
   "id": "SYS-11",
   "name": "Ready-to-Run & Software Integration",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IN_PROGRESS",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -192,8 +192,8 @@
   "order": 6,
   "id": "SYS-02",
   "name": "Ultimate Desktop Utilities & Media Center",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IN_PROGRESS",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -203,8 +203,8 @@
   "order": 7,
   "id": "SYS-10",
   "name": "Office Documents & Productivity Center",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IN_PROGRESS",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -214,8 +214,8 @@
   "order": 8,
   "id": "STUDIO-LETTER-01",
   "name": "Ultimate Letter Business & Legal Correspondence Studio GODMODE",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IN_PROGRESS",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": [
    {
@@ -227,26 +227,26 @@
    {
     "id": "LETTER-002",
     "title": "Universal Letter Category Engine",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-003",
     "title": "DIN-5008-orientierter Letter Designer",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-004",
     "title": "Professional Template Library",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-005",
     "title": "Intelligent Tone & Writing Director",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IN_PROGRESS",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-006",
@@ -311,20 +311,20 @@
    {
     "id": "LETTER-016",
     "title": "DOCX ODT PDF Print Production Engine",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-017",
     "title": "Personal & Business Letterhead Vault",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IN_PROGRESS",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-018",
     "title": "Missing Information & Consistency Validator",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-019",
@@ -347,8 +347,8 @@
    {
     "id": "LETTER-022",
     "title": "Correspondence Case Archive & Version History",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "LETTER-023",
@@ -376,8 +376,8 @@
   "order": 9,
   "id": "SYS-03",
   "name": "Ultimate Browser Internet & Download Center",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IN_PROGRESS",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -552,8 +552,8 @@
   "order": 2,
   "id": "X-06",
   "name": "GitHub Open-Source Integration",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },

@@ -1,0 +1,4 @@
+# CORE-01 – Box-Tests 21.10.2026 20:56 (Linux, headless)
+  Passed CORE-01: Dateisuche begrenzt Tiefe und Anzahl [26 ms]
+  Passed CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte [< 1 ms]
+  Passed CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+K fokussiert die Suche [196 ms]

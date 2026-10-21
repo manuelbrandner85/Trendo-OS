@@ -1,0 +1,2 @@
+# SYS-10 – Box-Tests 21.10.2026 20:56 (Linux, headless)
+  Passed SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien [16 ms]

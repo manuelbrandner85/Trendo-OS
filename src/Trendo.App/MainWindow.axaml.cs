@@ -112,7 +112,7 @@ public sealed partial class MainWindow : Window
         _showMap = new()
         {
             ["start"] = DesktopView, ["studios"] = StudiosView, ["projects"] = ProjectsView,
-            ["approvals"] = ApprovalsView, ["system"] = SystemView, ["apps"] = AppsView, ["ki"] = KiView, ["settings"] = SettingsView, ["components"] = ComponentsView, ["studio-deps"] = StudioDepsView, ["keys"] = KeysView, ["notbuilt"] = NotBuiltView, ["fortschritt"] = ProgressView, ["suche"] = SearchView, ["werkzeuge"] = ToolsView, ["medien"] = MediaView, ["ressourcen"] = ResourcesView, ["office"] = OfficeView, ["brief"] = LetterView,
+            ["approvals"] = ApprovalsView, ["system"] = SystemView, ["apps"] = AppsView, ["ki"] = KiView, ["settings"] = SettingsView, ["components"] = ComponentsView, ["studio-deps"] = StudioDepsView, ["keys"] = KeysView, ["notbuilt"] = NotBuiltView, ["fortschritt"] = ProgressView, ["suche"] = SearchView, ["werkzeuge"] = ToolsView, ["medien"] = MediaView, ["ressourcen"] = ResourcesView, ["office"] = OfficeView, ["brief"] = LetterView, ["downloads"] = DownloadsView,
         };
         string[] order = ["start", "studios", "projects", "approvals", "system"];
         for (var i = 0; i < order.Length; i++)
@@ -647,6 +647,7 @@ public sealed partial class MainWindow : Window
                 {
                     case "start": Show("start"); break;
                     case "ki": Show("ki"); break;
+                    case "browser": Show("downloads"); break;
                     case "media": await OpenStudio("CORE-08", "Medien Studio"); break;
                     case "settings": Show("settings"); break;
                     case "components": Show("components"); break;
