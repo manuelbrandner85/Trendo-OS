@@ -1,0 +1,98 @@
+﻿  Wiederherzustellende Projekte werden ermittelt...
+  Alle Projekte sind f├╝r die Wiederherstellung auf dem neuesten Stand.
+  Trendo.Core -> C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Api -> C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\src\Trendo.Api\bin\Release\net10.0\Trendo.Api.dll
+C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.Core.Tests\LetterQaTests.cs(35,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.Core.Tests\W2Tests.cs(227,9): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.Core.Tests\LetterQaTests.cs(84,9): warning xUnit2013: Do not use Assert.Equal() to check for collection size. Use Assert.Single instead. (https://xunit.net/xunit.analyzers/rules/xUnit2013) [C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.Core.Tests\LetterQaTests.cs(206,9): warning xUnit2013: Do not use Assert.Equal() to check for collection size. Use Assert.Single instead. (https://xunit.net/xunit.analyzers/rules/xUnit2013) [C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+  Trendo.Core.Tests -> C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf f├╝r "C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster ├╝berein.
+  Trendo.Api.Tests -> C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll
+Testlauf f├╝r "C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster ├╝berein.
+C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\src\Trendo.App\MainWindow.W6.cs(30,155): warning CS0618: "TextBox.Watermark" ist veraltet: "Use PlaceholderText instead." [C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\src\Trendo.App\Trendo.App.csproj]
+  Trendo.App -> C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\src\Trendo.App\bin\Release\net10.0\TrendoOS.dll
+C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\BusOpsUiTests.cs(18,34): warning CS8602: Dereferenzierung eines m├Âglichen Nullverweises. [C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\W2UiTests.cs(73,27): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\W2UiTests.cs(74,44): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\W2UiTests.cs(75,38): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\W4OssUiTests.cs(25,37): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+  Trendo.App.Tests -> C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll
+Testlauf f├╝r "C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster ├╝berein.
+
+Bestanden!   : Fehler:     0, erfolgreich:    14, ├╝bersprungen:     0, gesamt:    14, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+dotnet : [xUnit.net 00:00:07.14]     X-03 (UI): Baustein hinzuf├╝gen, verschieben, entfernen, ver├Âffentlichen [FAIL]
+In C:\Users\<user>\AppData\Local\Temp\ps-script-4c92d2dc-cb22-417f-9881-a2b45b5794ae.ps1:85 Zeichen:167
++ ...  git checkout -q FETCH_HEAD 2>&1; dotnet test -c Release 2>&1 | Out-F ...
++                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([xUnit.net 00:0...ntlichen [FAIL]:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+Bestanden!   : Fehler:     0, erfolgreich:   178, ├╝bersprungen:     0, gesamt:   178, Dauer: 7 s - Trendo.Core.Tests.dll (net10.0)
+  Fehler X-03 (UI): Baustein hinzuf├╝gen, verschieben, entfernen, ver├Âffentlichen [267 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 3
+Actual:   5
+  Stapelverfolgung:
+     at Trendo.App.Tests.W4_X03_Ui.Build() in C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\W4BuilderUiTests.cs:line 15
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:20.98]     Studio-Klick: Unreal nur gef├╝hrt ÔÇô kein Installieren-Knopf, offizieller Installer-Link 
+[FAIL]
+  Fehler Studio-Klick: Unreal nur gef├╝hrt ÔÇô kein Installieren-Knopf, offizieller Installer-Link [170 ms]
+  Fehlermeldung:
+   System.InvalidOperationException : Sequence contains no matching element
+  Stapelverfolgung:
+     at System.Linq.ThrowHelper.ThrowNoMatchException()
+   at System.Linq.Enumerable.First[TSource](IEnumerable`1 source, Func`2 predicate)
+   at Trendo.App.Tests.Ui.Find[T](Window w, String name) in C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\UiTests.cs:line 43
+   at Trendo.App.Tests.StudioDepsUi.Unreal_guided() in C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\UiTests.cs:line 267
+--- End of stack trace from previous location ---
+[xUnit.net 00:00:27.89]     W0-01/03/06: Assistent ÔÇô Name, Ordner, Design, Pakete, Installation ├╝ber Zustimmung, 
+Vorlagen, Systemcheck [FAIL]
+[xUnit.net 00:00:28.06]     X-10 (UI): Projekt anlegen, Tagebuch-Eintrag, Pr├╝fung ohne Treffer schreibt Bericht [FAIL]
+[xUnit.net 00:00:28.18]     Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert [FAIL]
+  Fehler W0-01/03/06: Assistent ÔÇô Name, Ordner, Design, Pakete, Installation ├╝ber Zustimmung, Vorlagen, Systemcheck [211 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Filter not matched in collection
+Collection: []
+  Stapelverfolgung:
+     at Trendo.App.Tests.W0_SetupWizard.Wizard_flow() in C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\UiTests.cs:line 313
+--- End of stack trace from previous location ---
+  Fehler X-10 (UI): Projekt anlegen, Tagebuch-Eintrag, Pr├╝fung ohne Treffer schreibt Bericht [169 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Values differ
+Expected: 2
+Actual:   4
+  Stapelverfolgung:
+     at Trendo.App.Tests.W5_X10_Ui.Flow() in C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\W5CleanRoomUiTests.cs:line 20
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+  Fehler Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert [111 ms]
+  Fehlermeldung:
+   Assert.Equal() Failure: Strings differ
+           Ôåô (pos 0)
+Expected: "Nicht verbunden"
+Actual:   "Online (lokal)"
+           Ôåæ (pos 0)
+  Stapelverfolgung:
+     at Trendo.App.Tests.DesignHonesty.Ki_not_connected() in C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\UiTests.cs:line 178
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[xUnit.net 00:00:30.08]     SYS-07 UI: Ger├ñte suchen zeigt Gruppen [FAIL]
+  Fehler SYS-07 UI: Ger├ñte suchen zeigt Gruppen [1 s]
+  Fehlermeldung:
+   Assert.NotNull() Failure: Value is null
+  Stapelverfolgung:
+     at Trendo.App.Tests.SYS07_Ui.Devices_page() in C:\Users\<user>\AppData\Local\Temp\trendo-pc090\repo\tests\Trendo.App.Tests\W3UiTests.cs:line 91
+--- End of stack trace from previous location ---
+
+Fehler!      : Fehler:     6, erfolgreich:    65, ├╝bersprungen:     0, gesamt:    71, Dauer: 30 s - Trendo.App.Tests.dll (net10.0)
+
