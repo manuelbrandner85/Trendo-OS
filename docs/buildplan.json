@@ -943,7 +943,7 @@
   "id": "SPEC-09",
   "name": "3D Scanning & Reconstruction 2.0",
   "impl": "IMPLEMENTED",
-  "test": "PC_VERIFIED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
