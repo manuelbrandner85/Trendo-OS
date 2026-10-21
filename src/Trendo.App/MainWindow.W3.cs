@@ -17,7 +17,7 @@ public partial class MainWindow
     {
         _showMap["schutz"] = SecurityView; SysTabs.Add(("schutz", "Schutz"));
         StudioPages["CORE-11"] = "schutz";
-        InitX02();
+        InitX02(); InitSys04();
         ExtraPages.Add(("Schutz & Datenschutz", "schutz", ["sicherheit", "datenschutz", "passwort", "privat", "wiederherstellen", "schutz"]));
     }
 

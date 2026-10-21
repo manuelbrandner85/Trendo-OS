@@ -40,3 +40,33 @@ public class X02_Ui
         Assert.NotNull(w.TryFind<Button>("sys-tab-schutz"));
     }
 }
+
+public sealed class FakePkg : IPackageBackend
+{
+    public List<string> Done { get; } = [];
+    public string Name => "Test-Paketverwaltung"; public string Exe => "x";
+    public Task<IReadOnlyList<PackageInfo>> SearchAsync(string q, CancellationToken ct = default) => Task.FromResult<IReadOnlyList<PackageInfo>>([new("VLC", "VideoLAN.VLC", "3.0")]);
+    public Task<IReadOnlyList<PackageInfo>> InstalledAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<PackageInfo>>([new("Git", "Git.Git", "2.45")]);
+    public Task<IReadOnlyList<PackageInfo>> UpgradesAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<PackageInfo>>([new("Git", "Git.Git", "2.45", "2.47")]);
+    public Task<(bool Ok, string Log)> InstallAsync(string id, Action<string>? l = null, CancellationToken ct = default) { Done.Add("i " + id); return Task.FromResult((true, "")); }
+    public Task<(bool Ok, string Log)> UpgradeAsync(string id, Action<string>? l = null, CancellationToken ct = default) { Done.Add("u " + id); return Task.FromResult((true, "")); }
+    public Task<(bool Ok, string Log)> UninstallAsync(string id, Action<string>? l = null, CancellationToken ct = default) { Done.Add("x " + id); return Task.FromResult((true, "")); }
+}
+
+public class SYS04_Ui
+{
+    [AvaloniaFact(DisplayName = "SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen")]
+    public async Task AppCenter_page()
+    {
+        var (w, _, _) = Ui.Open();
+        var pkg = new FakePkg(); w.AppBackendOverride = pkg;
+        w.Show("appcenter");
+        await w.AppSearchAsync("vlc"); w.Show("appcenter");
+        w.Find<Button>("appc-hit-install-0").Press(); W2Ui.Settle();
+        Assert.Contains("VLC: installiert", w.Find<TextBlock>("appc-msg").Text);
+        await w.AppLoadAsync(); w.Show("appcenter");
+        w.Find<Button>("appc-upd-upgrade-0").Press(); W2Ui.Settle();
+        w.Find<Button>("appc-inst-uninstall-0").Press(); W2Ui.Settle();
+        Assert.Equal(["i VideoLAN.VLC", "u Git.Git", "x Git.Git"], pkg.Done);
+    }
+}

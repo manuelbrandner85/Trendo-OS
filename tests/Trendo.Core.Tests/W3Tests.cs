@@ -72,3 +72,43 @@ public class X02_SelfHealing
         Assert.StartsWith(before, File.ReadAllText(f.Core.Audit.FilePath));
     }
 }
+
+public sealed class FakeRunner(Func<string, string, (int, string)> f) : IProcessRunner
+{
+    public List<string> Calls { get; } = [];
+    public Task<(int Exit, string Output)> RunAsync(string file, string args, Action<string>? line = null, CancellationToken ct = default) { Calls.Add($"{file} {args}"); return Task.FromResult(f(file, args)); }
+}
+
+public class SYS04_AppCenter
+{
+    public const string WingetSearch = "\b-\b\\\b|\bName                 Id                       Version   Source\n------------------------------------------------------------------\nVLC media player     VideoLAN.VLC             3.0.21    winget\nGIMP                 GIMP.GIMP                2.10.38   winget\n";
+    public const string WingetUpgrade = "Name           Id                Version  Available  Source\n-----------------------------------------------------------\nGit            Git.Git           2.45.0   2.47.1     winget\n7-Zip          7zip.7zip         23.01    24.08      winget\n2 upgrades available.\n";
+
+    [Fact(DisplayName = "SYS-04: winget- und flatpak-Ausgaben werden korrekt gelesen")]
+    public void Parse()
+    {
+        var s = PackageParsers.ParseWinget(WingetSearch);
+        Assert.Equal(2, s.Count); Assert.Equal(new PackageInfo("VLC media player", "VideoLAN.VLC", "3.0.21", null, "winget"), s[0]);
+        var u = PackageParsers.ParseWinget(WingetUpgrade);
+        Assert.Equal(2, u.Count); Assert.Equal("2.47.1", u[0].Available); Assert.Equal("2.45.0", u[0].Version);
+        var f = PackageParsers.ParseFlatpak("VLC\torg.videolan.VLC\t3.0.21\nGIMP\torg.gimp.GIMP\t2.10\n");
+        Assert.Equal("org.gimp.GIMP", f[1].Id);
+        Assert.False(PackageParsers.SafeId("x; rm -rf /")); Assert.True(PackageParsers.SafeId("VideoLAN.VLC"));
+    }
+
+    [Fact(DisplayName = "SYS-04: Installieren nur nach Freigabe, als Benutzer, gefährliche IDs abgelehnt")]
+    public async Task Install_gated()
+    {
+        using var f = new Fixture();
+        var run = new FakeRunner((_, a) => (0, a.StartsWith("search") ? WingetSearch : "ok"));
+        var c = new AppCenter(new WingetBackend(run), f.Core.Approvals, f.Core.Audit);
+        var vlc = (await c.Backend.SearchAsync("vlc"))[0];
+        var r = c.Plan("install", vlc);
+        await Assert.ThrowsAsync<ApprovalException>(() => c.ExecuteAsync(r));
+        var r2 = c.Plan("install", vlc); f.Core.Approvals.Approve(r2.Id, Principal.LocalOwner);
+        Assert.True((await c.ExecuteAsync(r2)).Ok);
+        Assert.Contains(run.Calls, x => x.Contains("install --id VideoLAN.VLC -e --scope user"));
+        Assert.False((await new WingetBackend(run).InstallAsync("a&b")).Item1);
+        Assert.Contains(f.Core.Audit.ReadAll(), e => e.Action == "app.done");
+    }
+}
