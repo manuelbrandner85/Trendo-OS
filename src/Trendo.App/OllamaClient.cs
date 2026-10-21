@@ -8,6 +8,12 @@ public sealed class OllamaClient
 {
     private readonly HttpClient _http = new() { BaseAddress = new Uri("http://127.0.0.1:11434"), Timeout = TimeSpan.FromSeconds(120) };
 
+    public async Task<bool> IsUpAsync()
+    {
+        try { using var cts = new CancellationTokenSource(1000); using var r = await _http.GetAsync("/api/version", cts.Token); return r.IsSuccessStatusCode; }
+        catch { return false; }
+    }
+
     public async Task<bool> HasModelAsync(string model)
     {
         try

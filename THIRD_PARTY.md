@@ -35,3 +35,7 @@ Hinweise:
 - Systemweite Installer (MSI/NSIS) von LibreOffice, Blender, Krita, Inkscape, Audacity, Tesseract: automatisch per winget, aber Windows fragt nach Administratorrechten; bereits installierte Programme werden nur erkannt, nie verändert.
 - Studio-Kacheln zeigen „Bereit“ nur, wenn Programm real erkannt UND Studio-Adapter implementiert und getestet ist.
 - Weitergabe der NuGet-Bibliotheken (MIT/BSD/OFL) im Setup ist durch die Lizenzen gedeckt; Lizenztexte siehe jeweilige Projekte.
+
+## Stand Test-PC (21.10.2026)
+- Ollama 0.40.7 + qwen2.5:0.5b: installiert pro Benutzer, getestet (siehe reports/p1/ki).
+- Python 3.13.15: installiert pro Benutzer, getestet (siehe reports/p1/deps).

@@ -67,6 +67,7 @@ public sealed class MainWindow : Window
     {
         _opt = opt; _core = core; _probe = probe;
         _deps = new DependencyManager(core.Audit, new RealProcessRunner()) { ConsentFile = Path.Combine(core.DataRoot, "deps-consent.txt"), ToolsFile = Path.Combine(core.DataRoot, "tools.json") };
+        _deps.OllamaUp = _ollama.IsUpAsync;
         FirstStartDefaults();
         Title = "Trendo OS";
         Width = 1440; Height = 900; MinWidth = 960; MinHeight = 600; WindowState = WindowState.Maximized;
@@ -165,6 +166,12 @@ public sealed class MainWindow : Window
 
     private async void OnOpened(object? s, EventArgs e)
     {
+        await EnsureOllamaRunning();
+        if (_opt.KiAsk is { } q)
+        {
+            await RefreshKi();
+            if (_kiConnected) await AskKi(q);
+        }
         if (_opt.ScreenshotPath is { } path)
         {
             await Task.Delay(2500);
@@ -577,6 +584,22 @@ public sealed class MainWindow : Window
         }
         try { var t = new Trendo.Api.ApiTokens(_core.Secrets); foreach (var r in new[] { Role.Guest, Role.User, Role.Owner }) t.GetOrCreate(r); }
         catch (Exception ex) { _core.Audit.Append("app", "app.tokens_failed", ex.GetType().Name); }
+    }
+
+    /// <summary>Startet den lokalen Ollama-Dienst (nur 127.0.0.1), falls installiert aber nicht aktiv. Startet nichts anderes.</summary>
+    private async Task EnsureOllamaRunning()
+    {
+        if (await _ollama.IsUpAsync()) return;
+        var ch = await _deps.CheckAsync(DependencyCatalog.Get("ollama"));
+        if (ch.State != ToolState.Working || ch.Path is null) return;
+        try
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(ch.Path, "serve") { UseShellExecute = false, CreateNoWindow = true });
+            _core.Audit.Append("app", "ki.runtime_started", "ollama serve (127.0.0.1)");
+            for (var i = 0; i < 20 && !await _ollama.IsUpAsync(); i++) await Task.Delay(500);
+        }
+        catch (Exception ex) { _core.Audit.Append("app", "ki.runtime_failed", ex.GetType().Name); }
+        await RefreshKi();
     }
 
     private async Task RefreshKi()

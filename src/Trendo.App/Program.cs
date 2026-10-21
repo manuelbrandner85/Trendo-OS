@@ -3,7 +3,7 @@ using Trendo.Core;
 
 namespace Trendo.App;
 
-public sealed record AppOptions(string? DataRoot, string? ScreenshotPath, int AutoExitSeconds, bool Offline = false, int? ApiPort = null, bool FirstRun = false, string? Page = null);
+public sealed record AppOptions(string? DataRoot, string? ScreenshotPath, int AutoExitSeconds, bool Offline = false, int? ApiPort = null, bool FirstRun = false, string? Page = null, string? KiAsk = null);
 
 class Program
 {
@@ -19,7 +19,7 @@ class Program
             int.TryParse(Arg("--auto-exit"), out var s) ? s : (args.Contains("--smoke") ? 5 : 0),
             args.Contains("--offline"),
             args.Contains("--api") ? (int.TryParse(Arg("--api-port"), out var ap) ? ap : 47800) : null,
-            FirstRun: !args.Contains("--no-first-run"), Page: Arg("--page"));
+            FirstRun: !args.Contains("--no-first-run"), Page: Arg("--page"), KiAsk: Arg("--ki-ask"));
 
         if (args.Contains("--selftest-open-explorer"))
         {
@@ -31,6 +31,7 @@ class Program
             // Konsolenweg für dieselbe Komponenten-Logik wie in der UI (z. B. für Tests/stille Erstinstallation).
             var core = new TrendoCore(Options.DataRoot ?? TrendoCore.DefaultDataRoot(), offline: Options.Offline);
             var dm = new DependencyManager(core.Audit, new RealProcessRunner()) { ConsentFile = Path.Combine(core.DataRoot, "deps-consent.txt"), ToolsFile = Path.Combine(core.DataRoot, "tools.json") };
+            dm.OllamaUp = new OllamaClient().IsUpAsync;
             var rc = 0;
             if (Arg("--install-deps") is { } ids)
             {
