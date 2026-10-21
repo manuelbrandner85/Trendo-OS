@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>trendo-companion</AssemblyName>
-    <Version>0.9.4</Version><!-- wird beim Release mit -p:Version überschrieben -->
+    <Version>0.9.5</Version><!-- wird beim Release mit -p:Version überschrieben -->
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
   <ItemGroup>
