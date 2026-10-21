@@ -1,4 +1,6 @@
 using Avalonia.Headless.XUnit;
+using Avalonia.Controls;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Trendo.App;
 using Trendo.Core;
@@ -30,5 +32,23 @@ public class StudioIconTests
             Assert.NotNull(Geometry.Parse(i.Path));
             Color.Parse(i.C1); Color.Parse(i.C2);
         }
+    }
+
+    [AvaloniaFact(DisplayName = "Symbole: jede Karte unter „Alle Studios“ und jeder Fach-Reiter zeigt sein Studio-Symbol")]
+    public void Cards_and_tabs_show_icons()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show("studios");
+        var cards = w.GetLogicalDescendants().OfType<Button>().Where(b => b.Name?.StartsWith("studio-card-") == true).ToList();
+        Assert.True(cards.Count >= 54, $"nur {cards.Count} Karten");
+        foreach (var c in cards)
+        {
+            var id = c.Name!["studio-card-".Length..];
+            Assert.Contains(c.GetLogicalDescendants().OfType<Border>(), b => b.Name == "studio-icon-" + id);
+        }
+        w.Show(MainWindow.StudioPages["SPEC-16"]);
+        foreach (var (k, _, _) in MainWindow.FachTabs)
+            Assert.NotNull(w.Find<Border>("fach-tabicon-" + k));
+        w.Close();
     }
 }
