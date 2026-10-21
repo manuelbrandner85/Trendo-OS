@@ -865,8 +865,8 @@
   "order": 1,
   "id": "SPEC-01",
   "name": "Architecture & Interior 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
