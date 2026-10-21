@@ -227,8 +227,8 @@ public class ComponentsUi
         Assert.Contains(texts, t => t.Contains("Ollama") && t.Contains("MIT"));
         Assert.Contains(texts, t => t.Contains("Unreal Engine") && t.Contains("Epic EULA"));
         Assert.Null(w.TryFind<Button>("btn-install-unreal"));
-        w.Find<Button>("btn-guide-unreal").Press();
-        Assert.Contains(l.Opened, o => o.Contains("unrealengine.com"));
+        if (w.TryFind<Button>("btn-guide-unreal") is { } g) // auf Rechnern mit Unreal steht dort „erkannt“
+        { g.Press(); Assert.Contains(l.Opened, o => o.Contains("unrealengine.com")); }
         w.Find<Button>("btn-deps-consent").Press(); Dispatcher.UIThread.RunJobs();
         Assert.True(File.Exists(Path.Combine(root, "deps-consent.txt")));
         Assert.True(File.Exists(Path.Combine(root, "config.json")));
