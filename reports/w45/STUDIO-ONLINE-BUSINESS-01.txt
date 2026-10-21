@@ -1,0 +1,4 @@
+Nachweis STUDIO-ONLINE-BUSINESS-01 – Linux-Box (nicht Windows-PC), 21.10.2026 21:55 MESZ, Commit-Basis f18068c
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 771 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   186, Skipped:     0, Total:   186, Duration: 12 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:    76, Skipped:     0, Total:    76, Duration: 23 s - Trendo.App.Tests.dll (net10.0)
