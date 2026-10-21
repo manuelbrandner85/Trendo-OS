@@ -160,8 +160,8 @@ public class WinRealTests
     [WinFact]
     public async Task Qpdf_verwaltet_zusammenfuegen_und_teilen()
     {
-        var t = Tmp();
-        var deps = new DependencyManager(new AuditLog(Path.Combine(t, "a.jsonl")), new RealProcessRunner()) { ConsentFile = Path.Combine(t, "c.txt") };
+        var tq = Tmp();
+        var deps = new DependencyManager(new AuditLog(Path.Combine(tq, "a.jsonl")), new RealProcessRunner()) { ConsentFile = Path.Combine(tq, "c.txt") };
         var q = deps.ResolvePath(DependencyCatalog.Get("qpdf"));
         if (q is null && Environment.GetEnvironmentVariable("TRENDO_INSTALL_QPDF") == "1")
         {
