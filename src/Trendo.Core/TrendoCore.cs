@@ -29,8 +29,13 @@ public sealed class TrendoCore
 
     public void Shutdown() => Audit.Append("core", "core.stop", "sauber beendet");
 
-    public static string DefaultDataRoot() => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TrendoOS");
+    /// <summary>%APPDATA%\\TrendoOS – getrennt vom Programmordner (%LOCALAPPDATA%\\TrendoOS); alte Daten werden einmalig migriert.</summary>
+    public static string DefaultDataRoot()
+    {
+        var d = DataLocation.Default();
+        try { DataLocation.MigrateLegacy(DataLocation.Legacy(), d); } catch { /* Migration darf Start nicht verhindern */ }
+        return d;
+    }
 
     /// <summary>Sucht requirements.yaml neben der Anwendung oder aufwärts im Repo.</summary>
     public static string? FindRequirements(string startDir)

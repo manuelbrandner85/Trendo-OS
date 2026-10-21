@@ -26,6 +26,7 @@ public sealed record Component(
 public static class DependencyCatalog
 {
     public const string LocalModel = "qwen2.5:0.5b";
+    public const string LargeModel = "qwen2.5:3b";
 
     public static readonly IReadOnlyList<Component> All =
     [
@@ -41,6 +42,8 @@ public static class DependencyCatalog
             "Ollama.Ollama", 1100, "https://ollama.com/download", ["ollama"], [@"%LOCALAPPDATA%\Programs\Ollama\ollama.exe"]),
         new("model", $"KI-Modell Qwen2.5 0.5B ({LocalModel})", "Lokales Sprachmodell", "Apache-2.0", DeliveryMode.AutoUser,
             "Gewichte ~400 MB, über Ollama geladen", null, 400, "https://ollama.com/library/qwen2.5", ["model"], null, $"ollama pull {LocalModel}"),
+        new("model-3b", $"KI-Modell Qwen2.5 3B ({LargeModel}, optional)", "Größeres lokales Sprachmodell, besseres Deutsch", "Qwen Research License (nicht-kommerziell frei)", DeliveryMode.AutoUser,
+            "Gewichte ~1,9 GB, nur nach Zustimmung über Ollama geladen; empfohlen ab 16 GB RAM", null, 1900, "https://ollama.com/library/qwen2.5:3b", ["model-3b"], null, $"ollama pull {LargeModel}"),
         new("git", "Git für Windows", "Web & App Studio, Versionierung", "GPL-2.0", DeliveryMode.AutoUser, "Pro Benutzer installierbar",
             "Git.Git", 350, "https://git-scm.com", ["git"], [@"%LOCALAPPDATA%\Programs\Git\cmd\git.exe", @"%ProgramFiles%\Git\cmd\git.exe"]),
         new("python", "Python 3.13", "Automatisierung, Hilfswerkzeuge", "PSF-2.0", DeliveryMode.AutoUser, "Pro Benutzer installierbar",
@@ -138,18 +141,18 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
     {
         if (c.Mode is DeliveryMode.Bundled or DeliveryMode.NotNeeded) return true;
         if (c.Id == "model") return ModelPresent;
+        if (c.Id == "model-3b") return HasModel(DependencyCatalog.LargeModel);
         return c.DetectPaths?.Any(p => _exists(_expand(p))) == true;
     }
 
     /// <summary>Modell vorhanden, wenn Ollama-Manifest existiert (echte Prüfung im Dateisystem).</summary>
-    public bool ModelPresent
+    public bool ModelPresent => HasModel(DependencyCatalog.LocalModel);
+
+    public bool HasModel(string model)
     {
-        get
-        {
-            var name = DependencyCatalog.LocalModel.Split(':');
-            var manifest = Path.Combine(_expand("%USERPROFILE%"), ".ollama", "models", "manifests", "registry.ollama.ai", "library", name[0], name[1]);
-            return _exists(manifest);
-        }
+        var name = model.Split(':');
+        var manifest = Path.Combine(_expand("%USERPROFILE%"), ".ollama", "models", "manifests", "registry.ollama.ai", "library", name[0], name[1]);
+        return _exists(manifest);
     }
 
     public string? ResolvePath(Component c) => c.DetectPaths?.Select(_expand).Where(_exists).Select(p => p.Contains('*') ? ResolveGlob(p) ?? (_customExists ? p : null) : p).FirstOrDefault(p => p is not null);
