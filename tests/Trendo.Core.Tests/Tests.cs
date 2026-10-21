@@ -536,3 +536,32 @@ public class Wave0_Setup
         Assert.Equal("bergsee-nacht", new UserSettings().CurrentWallpaper(DateTime.Now));
     }
 }
+
+public class SYS13_ReleaseQuality
+{
+    [Xunit.Fact(DisplayName = "SYS-13: Absturzprotokoll schwärzt Benutzerpfade und behält höchstens 20 Dateien")]
+    public void Crashlog_redacts_and_rotates()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-crash-" + Guid.NewGuid().ToString("N"));
+        var t0 = new DateTime(2026, 10, 21, 12, 0, 0);
+        for (var i = 0; i < 25; i++) Trendo.Core.CrashLog.Write(root, new Exception(@"Fehler in C:\Users\maxmuster\AppData\x und /home/maxmuster/y"), "Test", t0.AddSeconds(i));
+        var files = Trendo.Core.CrashLog.List(root);
+        Xunit.Assert.Equal(20, files.Count);
+        var txt = File.ReadAllText(files[0]);
+        Xunit.Assert.DoesNotContain("maxmuster", txt);
+        Xunit.Assert.Contains(@"C:\Users\<benutzer>", txt);
+        Xunit.Assert.EndsWith("absturz-20261021-120024-000.txt", files[0]);
+    }
+
+    [Xunit.Fact(DisplayName = "SYS-13: Release-Skript baut nur von sauberem main")]
+    public void Release_script_requires_main()
+    {
+        var dir = AppContext.BaseDirectory;
+        while (!File.Exists(Path.Combine(dir, "installer", "release.sh"))) dir = Path.GetDirectoryName(dir)!;
+        var s = File.ReadAllText(Path.Combine(dir, "installer", "release.sh"));
+        Xunit.Assert.Contains("\"main\" ]", s);
+        Xunit.Assert.Contains("origin/main", s);
+        Xunit.Assert.Contains("git status --porcelain", s);
+        Xunit.Assert.Contains("--target \"$(git rev-parse HEAD)\"", s);
+    }
+}
