@@ -166,6 +166,13 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
         if (c.PostInstall is { } cmd)
         {
             var ollama = ResolvePath(DependencyCatalog.Get("ollama")) ?? throw new InvalidOperationException("Ollama fehlt – zuerst Ollama installieren");
+            // Modell-Download braucht den lokalen Dienst: falls nicht aktiv, „ollama serve“ starten (nur 127.0.0.1)
+            if (!await OllamaUp())
+            {
+                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(ollama, "serve") { UseShellExecute = false, CreateNoWindow = true }); audit.Append("app", "ki.runtime_started", "ollama serve"); }
+                catch { }
+                for (var i = 0; i < 30 && !await OllamaUp(); i++) await Task.Delay(500, ct);
+            }
             r = await Runner.RunAsync(ollama, cmd["ollama ".Length..], progress, ct);
         }
         else
@@ -177,6 +184,10 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
         audit.Append(by.Name, ok ? "deps.install.ok" : "deps.install.fail", $"{c.Id} exit={r.exit}");
         return ok;
     }
+
+    /// <summary>Prüft, ob der lokale Ollama-Dienst antwortet (reiner TCP-Test auf 127.0.0.1:11434).</summary>
+    /// <summary>Vom Host gesetzt (App prüft 127.0.0.1:11434); Core selbst hat keine Netz-Abhängigkeit.</summary>
+    public Func<Task<bool>> OllamaUp { get; set; } = () => Task.FromResult(true);
 
     private static string? ResolveGlob(string p)
     {

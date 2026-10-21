@@ -344,7 +344,8 @@ public class Dependencies_Core
     {
         var f = new Fixture(); var files = new HashSet<string>(); var r = new FakeRunner();
         var m = new DependencyManager(f.Core.Audit, r, p => p.Replace("%LOCALAPPDATA%", "L").Replace("%USERPROFILE%", "U").Replace("%ProgramFiles%", "P"), files.Contains)
-        { ConsentFile = Path.Combine(f.Core.DataRoot, "c.txt") };
+        { ConsentFile = Path.Combine(f.Core.DataRoot, "c.txt"), };
+        m.OllamaUp = () => Task.FromResult(true);
         return (m, r, files, f);
     }
 
