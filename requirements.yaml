@@ -350,8 +350,9 @@ modules:
   name: Global Free Asset Discovery
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/X-07.txt
 - id: X-08
   name: Mobile OS Bridge
   approved_expansion_functions: BASE
