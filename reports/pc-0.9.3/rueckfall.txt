@@ -1,0 +1,7 @@
+﻿vorher: 0.9.3+cd6d34facfae0c8cf5ef06e2c83d541fd2981378
+Setup 0.9.2 exit=0
+nach Rückfall: 0.9.2+427dc10a80739dd194f336131d297c57b67e0fbd
+Lauf 2: Version 0.9.2+427dc10a80739dd194f336131d297c57b67e0fbd, 0.9.2 startet (Seite start): exit=0 png=True
+Einstellungsdatei (Roaming\TrendoOS\settings.json) vorhanden, unverändert durch Rückfall: True
+wieder 0.9.3: 0.9.3+cd6d34facfae0c8cf5ef06e2c83d541fd2981378 exit=0 png=True
+Hinweis: 0.9.2 stürzt bei --page einstellungen ab (Seitenname dort unbekannt) – Fehler der alten Version, nicht des Rückfalls
