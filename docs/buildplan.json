@@ -464,8 +464,8 @@
   "order": 2,
   "id": "X-02",
   "name": "Zero Touch Setup & Self Healing",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -629,21 +629,21 @@
   "order": 1,
   "id": "STUDIO-ONLINE-BUSINESS-01",
   "name": "Ultimate Online Business Creation & Innovation Studio GODMODE (both modes)",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IN_PROGRESS",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": [
    {
     "id": "BUS-001",
     "title": "Business Discovery Director",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-002",
     "title": "Proven Business Model Library",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-003",
@@ -660,8 +660,8 @@
    {
     "id": "BUS-005",
     "title": "Realistic Opportunity & Profitability Score",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-006",
@@ -690,20 +690,20 @@
    {
     "id": "BUS-010",
     "title": "Innovation Go / No-Go Decision Brain",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-011",
     "title": "Business Blueprint Architect",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-012",
     "title": "Revenue, Pricing & Subscription Designer",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-013",
@@ -714,8 +714,8 @@
    {
     "id": "BUS-014",
     "title": "Business Requirements & Legal Feasibility Planner",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-015",

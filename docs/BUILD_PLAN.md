@@ -127,7 +127,7 @@ Schutz, Wiederherstellung, Apps, Geräte, Netzwerk, Mail
 | Reihenfolge | Modul | Name | Umsetzung | Test |
 |---|---|---|---|---|
 | 1 | CORE-11 | Security Privacy Recovery Fortress | IMPLEMENTED | TESTED_BOX |
-| 2 | X-02 | Zero Touch Setup & Self Healing | NOT_STARTED | NOT_RUN |
+| 2 | X-02 | Zero Touch Setup & Self Healing | IMPLEMENTED | TESTED_BOX |
 | 3 | SYS-04 | Ultimate App Installation & System Control Center | NOT_STARTED | NOT_RUN |
 | 4 | SYS-07 | Ultimate Hardware & Device Recognition | NOT_STARTED | NOT_RUN |
 | 5 | SYS-06 | Ultimate Network File Sharing & Remote Workspace | NOT_STARTED | NOT_RUN |
@@ -170,7 +170,7 @@ Online-Business-Studio, Finanzen, Studio-Fusion, Erweiterungen
 
 | Reihenfolge | Modul | Name | Umsetzung | Test |
 |---|---|---|---|---|
-| 1 | STUDIO-ONLINE-BUSINESS-01 | Ultimate Online Business Creation & Innovation Studio GODMODE (both modes) | NOT_STARTED | NOT_RUN |
+| 1 | STUDIO-ONLINE-BUSINESS-01 | Ultimate Online Business Creation & Innovation Studio GODMODE (both modes) | IN_PROGRESS | TESTED_BOX |
 | 2 | SPEC-11 | Business & Finance 2.0 | NOT_STARTED | NOT_RUN |
 | 3 | X-01 | Universal Studio Fusion & Autonomous Production | NOT_STARTED | NOT_RUN |
 | 4 | X-04 | Extension Marketplace & Studio Evolution | NOT_STARTED | NOT_RUN |
