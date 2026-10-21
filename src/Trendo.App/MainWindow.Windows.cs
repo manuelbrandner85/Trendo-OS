@@ -57,6 +57,7 @@ public partial class MainWindow
     private (Border, ContentControl, TextBlock) MakeFrame(DeskWindow w)
     {
         var id = w.Id;
+        var titleIcon = new ContentControl { Name = "win-icon-" + id, Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Content = IconFor(ModuleOf(w.Page), 16) };
         var title = new TextBlock { Name = "win-titletext-" + id, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0), TextTrimming = TextTrimming.CharacterEllipsis };
         Button Cap(string name, string glyph, string tip, Action a)
         {
@@ -69,7 +70,7 @@ public partial class MainWindow
             Cap("win-max", "☐", "Maximieren / Wiederherstellen", () => { Windows.ToggleMaximize(id); AfterWindowChange(); }),
             Cap("win-close", "✕", "Schließen", () => CloseWindow(id)) } };
         var bar = new Border { Name = "win-title-" + id, Height = WindowManager.TitleBar, Background = Brush.Parse("#22FFFFFF"), CornerRadius = new CornerRadius(10, 10, 0, 0), Cursor = new Cursor(StandardCursorType.SizeAll),
-            Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { title, Pos(caps, 1) } } };
+            Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = { titleIcon, Pos(title, 1), Pos(caps, 2) } } };
         // Verschieben mit der Maus an der Titelleiste; Doppelklick maximiert
         Point? from = null;
         bar.PointerPressed += (_, e) =>
@@ -143,7 +144,10 @@ public partial class MainWindow
         {
             var on = w.Id == active;
             var t = w.Title.Length > 22 ? w.Title[..21] + "…" : w.Title;
-            var b = new Button { Name = "task-" + w.Id, Content = t, FontSize = 11.5, Padding = new Thickness(12, 4), CornerRadius = new CornerRadius(8),
+            var content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
+            if (IconFor(ModuleOf(w.Page), 15) is { } ic) content.Children.Add(ic);
+            content.Children.Add(new TextBlock { Text = t, VerticalAlignment = VerticalAlignment.Center });
+            var b = new Button { Name = "task-" + w.Id, Content = content, FontSize = 11.5, Padding = new Thickness(12, 4), CornerRadius = new CornerRadius(8),
                 Background = on ? Accent : Brush.Parse(w.Minimized ? "#330A1630" : "#660A1630"), Foreground = on ? Brushes.White : Text, BorderBrush = on ? Brushes.White : Edge, BorderThickness = new Thickness(on ? 1 : 1) };
             ToolTip.SetTip(b, w.Title + (w.Minimized ? " (minimiert)" : on ? " (aktiv)" : "")); Avalonia.Automation.AutomationProperties.SetName(b, w.Title);
             var id = w.Id; b.Click += (_, _) => TaskbarClick(id);

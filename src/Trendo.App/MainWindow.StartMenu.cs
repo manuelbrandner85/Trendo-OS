@@ -70,11 +70,17 @@ public partial class MainWindow
     public void PinStudio(string id) { _settings.PinnedStudios = StartMenu.Pin(_settings.PinnedStudios, id); SaveSettings(); FillStartMenu(); }
     public void UnpinStudio(string id) { _settings.PinnedStudios = StartMenu.Unpin(_settings.PinnedStudios, id); SaveSettings(); FillStartMenu(); }
 
-    private Button SmItem(string name, string text, string? sub, Func<Task> go)
+    /// <summary>Symbol aus der zentralen Studio-Symbolkarte (StudioIcons), sonst keins.</summary>
+    private static Control? IconFor(string? studioId, double size) => StudioIcons.For(studioId) is { } i ? Ico(i.Path, size, Grad(i.C1, i.C2)) : null;
+
+    private Button SmItem(string name, string text, string? sub, Func<Task> go, string? studioId = null)
     {
-        var b = new Button { Name = name, Background = Brushes.Transparent, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 5),
-            Content = new StackPanel { Children = { new TextBlock { Text = text, Foreground = Text, FontSize = 13, TextTrimming = TextTrimming.CharacterEllipsis } } } };
-        if (sub is not null) ((StackPanel)b.Content).Children.Add(new TextBlock { Text = sub, Foreground = Muted, FontSize = 11 });
+        var lines = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = { new TextBlock { Text = text, Foreground = Text, FontSize = 13, TextTrimming = TextTrimming.CharacterEllipsis } } };
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        if (IconFor(studioId, 18) is { } ic) row.Children.Add(ic);
+        row.Children.Add(lines);
+        var b = new Button { Name = name, Background = Brushes.Transparent, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 5), Content = row };
+        if (sub is not null) lines.Children.Add(new TextBlock { Text = sub, Foreground = Muted, FontSize = 11 });
         Avalonia.Automation.AutomationProperties.SetName(b, text);
         b.Click += async (_, _) => { CloseStartMenu(); await go(); };
         return b;
@@ -97,7 +103,7 @@ public partial class MainWindow
         foreach (var id in _settings.PinnedStudios.Where(byId.ContainsKey))
         {
             var s = byId[id];
-            var open = SmItem("sm-pin-" + id, s.Name, null, () => OpenStudio(s.Id, s.Name)); open.Width = 200;
+            var open = SmItem("sm-pin-" + id, s.Name, null, () => OpenStudio(s.Id, s.Name), s.Id); open.Width = 200;
             var un = new Button { Name = "sm-unpin-" + id, Content = "Lösen", FontSize = 10.5, Padding = new Thickness(6, 2), VerticalAlignment = VerticalAlignment.Center };
             Avalonia.Automation.AutomationProperties.SetName(un, s.Name + " lösen"); un.Click += (_, _) => UnpinStudio(id);
             pins.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 8, 4), Children = { open, un } });
@@ -108,7 +114,7 @@ public partial class MainWindow
         _smBody.Children.Add(H("Zuletzt benutzt", 14));
         var rec = _settings.RecentPages.Where(_showMap.ContainsKey).ToList();
         if (rec.Count == 0) _smBody.Children.Add(P("Hier erscheint, was du zuletzt geöffnet hast.", Muted, 11.5));
-        foreach (var k in rec) _smBody.Children.Add(SmItem("sm-recent-" + k, PageTitle(k), null, () => { Show(k); return Task.CompletedTask; }));
+        foreach (var k in rec) _smBody.Children.Add(SmItem("sm-recent-" + k, PageTitle(k), null, () => { Show(k); return Task.CompletedTask; }, ModuleOf(k)));
 
         _smBody.Children.Add(H("Alle Studios", 14));
         foreach (var (letter, items) in StartMenu.AtoZ(_studios, s => s.Name))
@@ -121,7 +127,7 @@ public partial class MainWindow
                 Avalonia.Automation.AutomationProperties.SetName(pin, s.Name + (pinned ? " lösen" : " anheften"));
                 var sid = s.Id; pin.Click += (_, _) => { if (StartMenu.IsPinned(_settings.PinnedStudios, sid)) UnpinStudio(sid); else PinStudio(sid); };
                 var g = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto") };
-                g.Children.Add(SmItem("sm-az-" + s.Id, s.Name, null, () => OpenStudio(s.Id, s.Name))); g.Children.Add(Pos(pin, 1));
+                g.Children.Add(SmItem("sm-az-" + s.Id, s.Name, null, () => OpenStudio(s.Id, s.Name), s.Id)); g.Children.Add(Pos(pin, 1));
                 _smBody.Children.Add(g);
             }
         }

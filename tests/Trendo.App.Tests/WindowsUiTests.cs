@@ -24,6 +24,8 @@ public class Fenster_Ui
         Assert.NotNull(w.GetVisualDescendants().OfType<Border>().FirstOrDefault(b => b.Name == "win-" + win!.Id && b.IsEffectivelyVisible));
         Assert.NotNull(w.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "task-" + win.Id && b.IsEffectivelyVisible));
         Assert.True(w.GetVisualDescendants().OfType<Control>().First(c => c.Name == "desktop-area").IsEffectivelyVisible);
+        // Symbol aus der zentralen Studio-Symbolkarte im Taskleisten-Eintrag
+        Assert.NotEmpty(V<Button>(w, "task-" + win.Id).GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>());
         // Minimieren per Klick → Startbildschirm wieder klickbar
         RealClick(w, Vis(w, "win-min-" + win.Id)); Assert.Null(w.Windows.Active); Assert.Equal("start", w.CurrentView);
         RealClick(w, w.GetVisualDescendants().OfType<Button>().First(b => b.Name == "tile-SYS-10" && b.IsEffectivelyVisible));
