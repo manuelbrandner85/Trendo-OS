@@ -15,12 +15,12 @@ Katalog-Status: **PROPOSED** (nicht APPROVED). Anzahl: 20 (laut Modulregister).
 | F09 | Zwischenablage | Kapitel kopieren | gebaut | `SPEC-15 UI: Ablauf bauen, speichern, Leitung prüfen` |
 | F10 | Bitraten-Planer | Plattform, Qualität, Upload | gebaut | `SPEC-15: Sendeablauf mit Zeiten, Überziehung, Kapitelmarken, Bitrate, Speicher` |
 | F11 | Speicherbedarf | GB je Aufnahme | gebaut | `SPEC-15: Sendeablauf mit Zeiten, Überziehung, Kapitelmarken, Bitrate, Speicher` |
-| F12 | Was läuft gerade | aktueller Punkt und Restzeit | offen | `SPEC-15 F12: Was läuft gerade` |
-| F13 | Untertitel verschieben | SRT prüfen und versetzen | offen | `SPEC-15 F13: Untertitel verschieben` |
-| F14 | Sprechzeit | Text → Minuten | offen | `SPEC-15 F14: Sprechzeit` |
-| F15 | Lautheit | LUFS-Ziel je Plattform, Gain | offen | `SPEC-15 F15: Lautheit` |
-| F16 | Wochenplan | wiederkehrende Sendungen | offen | `SPEC-15 F16: Wochenplan` |
-| F17 | Seitenverhältnis | Auflösung prüfen | offen | `SPEC-15 F17: Seitenverhältnis` |
-| F18 | Hochkant-Ausschnitt | 9:16 aus 16:9 | offen | `SPEC-15 F18: Hochkant-Ausschnitt` |
-| F19 | Moderationskarten | Markdown | offen | `SPEC-15 F19: Moderationskarten` |
-| F20 | Timecode | Frames ↔ hh:mm:ss:ff | offen | `SPEC-15 F20: Timecode` |
+| F12 | Was läuft gerade | aktueller Punkt und Restzeit | gebaut | `SPEC-15 F12: Was läuft gerade` |
+| F13 | Untertitel verschieben | SRT prüfen und versetzen | gebaut | `SPEC-15 F13: Untertitel verschieben` |
+| F14 | Sprechzeit | Text → Minuten | gebaut | `SPEC-15 F14: Sprechzeit` |
+| F15 | Lautheit | LUFS-Ziel je Plattform, Gain | gebaut | `SPEC-15 F15: Lautheit` |
+| F16 | Wochenplan | wiederkehrende Sendungen | gebaut | `SPEC-15 F16: Wochenplan` |
+| F17 | Seitenverhältnis | Auflösung prüfen | gebaut | `SPEC-15 F17: Seitenverhältnis` |
+| F18 | Hochkant-Ausschnitt | 9:16 aus 16:9 | gebaut | `SPEC-15 F18: Hochkant-Ausschnitt` |
+| F19 | Moderationskarten | Markdown | gebaut | `SPEC-15 F19: Moderationskarten` |
+| F20 | Timecode | Frames ↔ hh:mm:ss:ff | gebaut | `SPEC-15 F20: Timecode` |
