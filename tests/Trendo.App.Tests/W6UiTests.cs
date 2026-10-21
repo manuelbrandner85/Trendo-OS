@@ -225,3 +225,22 @@ public class SPEC15_Ui
         Assert.Contains("✓", W6Ui.Run(w, "bc-rate", ("q", "720p30")));
     }
 }
+
+public class SPEC16_Ui
+{
+    [AvaloniaFact(DisplayName = "SPEC-16 UI: Fahrzeug, Tanken, Fahrt, Fahrtenbuch")]
+    public void Vehicle()
+    {
+        var (w, l, _) = Ui.Open();
+        w.Show(MainWindow.StudioPages["SPEC-16"]);
+        W6Ui.Run(w, "car-add", ("name", "Golf"));
+        W6Ui.Run(w, "car-fuel", ("odo", "1000"), ("amt", "40"));
+        W6Ui.Run(w, "car-fuel", ("odo", "1600"), ("amt", "36"));
+        Assert.Contains("6,0 l/100 km", w.Find<TextBlock>("car-stats-Golf").Text);
+        Assert.Contains("⚠", W6Ui.Run(w, "car-trip", ("s", "1600"), ("e", "1650"), ("why", "")));
+        W6Ui.Run(w, "car-trip", ("s", "1600"), ("e", "1650"), ("why", "Baumarkt"));
+        Assert.Single(w.Cars.Get("Golf").Trips);
+        Assert.Contains("Gespeichert", W6Ui.Run(w, "car-export"));
+        Assert.Contains(l.Opened, x => x.EndsWith("fahrtenbuch-Golf.csv"));
+    }
+}
