@@ -17,3 +17,4 @@
 
 ## Welle 4/5 – Kreativ, Entwicklung & Business (Linux-Box, nicht auf dem PC geprüft)
 - 20:53 CORE-07 Software-Studio: 4 Vorlagen (Web, Python, C#, Node), Git-Stand anlegen/anzeigen/speichern, Testen mit vorhandenen Werkzeugen; Bereich „Kreativ“ mit Unterebene, Studio-Kachel öffnet die Seite. requirements.yaml: Fortschritt nur mit Nachweis-Datei (evidence), Generator übernimmt ihn. Tests +5.
+- 20:54 SYS-10: Dokumente (neu aus DIN-Vorlage, zuletzt bearbeitet, PDF über LibreOffice headless mit 90-s-Limit). STUDIO-LETTER-01: Briefstudio in 4 Schritten, 7 Briefarten mit Vorlagen (rechtliche mit Hinweis „keine Rechtsberatung“), Prüfung (Pflichtfelder, Platzhalter, PLZ, DIN-Regeln), eigene DOCX nach DIN 5008 Form B, PDF, KI-Verbesserung nur als Vorschlag, Archiv mit Versionen in Projektordner\Briefe, Absender gemerkt. Box-Beleg: DOCX → PDF mit LibreOffice, 1 Seite A4 (reports/w1/brief-beispiel.png). Tests +4.

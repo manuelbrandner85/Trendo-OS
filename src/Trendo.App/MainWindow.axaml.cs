@@ -112,7 +112,7 @@ public sealed partial class MainWindow : Window
         _showMap = new()
         {
             ["start"] = DesktopView, ["studios"] = StudiosView, ["projects"] = ProjectsView,
-            ["approvals"] = ApprovalsView, ["system"] = SystemView, ["apps"] = AppsView, ["ki"] = KiView, ["settings"] = SettingsView, ["components"] = ComponentsView, ["studio-deps"] = StudioDepsView, ["keys"] = KeysView, ["notbuilt"] = NotBuiltView, ["fortschritt"] = ProgressView, ["suche"] = SearchView, ["werkzeuge"] = ToolsView, ["medien"] = MediaView, ["ressourcen"] = ResourcesView,
+            ["approvals"] = ApprovalsView, ["system"] = SystemView, ["apps"] = AppsView, ["ki"] = KiView, ["settings"] = SettingsView, ["components"] = ComponentsView, ["studio-deps"] = StudioDepsView, ["keys"] = KeysView, ["notbuilt"] = NotBuiltView, ["fortschritt"] = ProgressView, ["suche"] = SearchView, ["werkzeuge"] = ToolsView, ["medien"] = MediaView, ["ressourcen"] = ResourcesView, ["office"] = OfficeView, ["brief"] = LetterView,
         };
         string[] order = ["start", "studios", "projects", "approvals", "system"];
         for (var i = 0; i < order.Length; i++)
@@ -371,7 +371,7 @@ public sealed partial class MainWindow : Window
         _sideStart = SideItem("side-start", Chip(Mdi.Home, "#64B5F6", "#1E88E5", 26), "Start", () => Show("start"));
         nav.Children.Add(_sideStart);
         foreach (var (label, icon, c1, c2, filter) in Categories)
-            nav.Children.Add(SideItem("side-" + label.ToLowerInvariant().Replace(' ', '-').Replace("&", "und"), Chip(icon, c1, c2), label, () => { _studioFilter = filter; Show("studios"); }));
+            nav.Children.Add(SideItem("side-" + label.ToLowerInvariant().Replace(' ', '-').Replace("&", "und"), Chip(icon, c1, c2), label, () => { if (filter == "STUDIO-LETTER") { Show("brief"); return; } if (filter == "SYS-10") { Show("office"); return; } _studioFilter = filter; Show("studios"); }));
         nav.Children.Add(SideItem("side-dateien", Chip(Mdi.Folder, "#42A5F5", "#1565C0"), "Dateien", () => Show("projects")));
         nav.Children.Add(SideItem("side-einstellungen", Chip(Mdi.Cog, "#78909C", "#37474F"), "Einstellungen", () => Show("settings")));
         var quick = new StackPanel { Spacing = 1 };
@@ -379,7 +379,7 @@ public sealed partial class MainWindow : Window
         quick.Children.Add(qh);
         quick.Children.Add(SideItem("quick-new-task", Chip(Mdi.CheckboxMarkedOutline, "#29B6F6", "#0277BD", 22), "Neue Aufgabe", () => NotBuilt("Aufgaben"), 12.5));
         quick.Children.Add(SideItem("quick-new-project", Chip(Mdi.FolderPlus, "#42A5F5", "#1565C0", 22), "Neues Projekt", () => Show("projects"), 12.5));
-        quick.Children.Add(SideItem("quick-new-letter", Chip(Mdi.EmailPlus, "#FB8C00", "#E65100", 22), "Neuer Brief", () => NotBuilt("Briefstudio"), 12.5));
+        quick.Children.Add(SideItem("quick-new-letter", Chip(Mdi.EmailPlus, "#FB8C00", "#E65100", 22), "Neuer Brief", () => Show("brief"), 12.5));
         quick.Children.Add(SideItem("quick-approvals", Chip(Mdi.ChartLine, "#AB47BC", "#6A1B9A", 22), "Offene Freigaben", () => Show("approvals"), 12.5));
         quick.Children.Add(SideItem("quick-system-check", Chip(Mdi.ShieldSearch, "#66BB6A", "#2E7D32", 22), "System-Check", () => Show("system"), 12.5));
         var navPanel = Panel(nav, 8); var quickPanel = Panel(quick, 8);
@@ -443,7 +443,7 @@ public sealed partial class MainWindow : Window
             };
             Avalonia.Automation.AutomationProperties.SetName(t, $"{title}: {badge.Text}");
             ToolTip.SetTip(t, $"{badge.Text} – {st?.Reason ?? "Status unbekannt"}");
-            t.Click += async (_, _) => await OpenStudio(id, title);
+            t.Click += async (_, _) => { if (id == "STUDIO-LETTER-01") Show("brief"); else if (id == "SYS-10") Show("office"); else await OpenStudio(id, title); };
             Hover(t); tiles.Children.Add(t);
         }
         var all = SmallOutline("btn-all-studios", "Alle anzeigen"); all.HorizontalAlignment = HorizontalAlignment.Right;
@@ -651,7 +651,7 @@ public sealed partial class MainWindow : Window
                     case "settings": Show("settings"); break;
                     case "components": Show("components"); break;
                     case "code": await OpenStudio("CORE-07", "Web & App Studio"); break;
-                    case "office": await OpenStudio("SYS-10", "Office Studio"); break;
+                    case "office": Show("office"); break;
                     case "security": _studioFilter = "CORE-11"; Show("studios"); break;
                     case "blender": if (a.Target() is { } bl) _core.Integrations.LaunchDirect(Principal.LocalOwner, bl, _core.Audit); else await OpenStudio("CORE-05", "3D Studio"); break;
                     case "unreal": if (a.Target() is { } ue) _core.Integrations.LaunchDirect(Principal.LocalOwner, ue, _core.Audit); else await OpenStudio("CORE-06", "Game Studio"); break;
