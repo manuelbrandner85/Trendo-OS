@@ -1,0 +1,34 @@
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\src\Trendo.Companion\Trendo.Companion.csproj" wiederhergestellt (in 414 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\src\Trendo.Core\Trendo.Core.csproj" wiederhergestellt (in 414 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj" wiederhergestellt (in 492 ms.).
+  Trendo.Core -> C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Companion -> C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\tests\Trendo.Core.Tests\W7Tests.cs(152,33): warning CS9113: Der Parameter ÔÇ×rootÔÇ£ ist ungelesen. [C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\tests\Trendo.Core.Tests\LetterQaTests.cs(35,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\tests\Trendo.Core.Tests\LetterQaTests.cs(84,9): warning xUnit2013: Do not use Assert.Equal() to check for collection size. Use Assert.Single instead. (https://xunit.net/xunit.analyzers/rules/xUnit2013) [C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\tests\Trendo.Core.Tests\W2Tests.cs(227,9): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\tests\Trendo.Core.Tests\LetterQaTests.cs(206,9): warning xUnit2013: Do not use Assert.Equal() to check for collection size. Use Assert.Single instead. (https://xunit.net/xunit.analyzers/rules/xUnit2013) [C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+  Trendo.Core.Tests -> C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf f├╝r "C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster ├╝berein.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)
+[xUnit.net 00:00:01.68]   Discovering: Trendo.Core.Tests
+[xUnit.net 00:00:01.74]   Discovered:  Trendo.Core.Tests
+[xUnit.net 00:00:01.76]   Starting:    Trendo.Core.Tests
+  Bestanden Trendo.Core.Tests.WinRealTests.Drucker_auflisten_und_Seite_als_PDF [1 s]
+  Bestanden Trendo.Core.Tests.WinRealTests.Bildschirme_echt_und_Fensterposition [946 ms]
+  Bestanden Trendo.Core.Tests.WinRealTests.Qpdf_verwaltet_zusammenfuegen_und_teilen [4 s]
+  Bestanden Trendo.Core.Tests.WinRealTests.Autostart_echt_lesen_und_im_Temp_umschalten [5 ms]
+  Bestanden Trendo.Core.Tests.WinRealTests.Dateizuordnungen_echt_lesen [3 ms]
+  Bestanden Trendo.Core.Tests.WinRealTests.Winget_export_und_ImportIds [2 s]
+  Bestanden Trendo.Core.Tests.WinRealTests.Defender_scan_saubere_Datei [63 ms]
+[xUnit.net 00:00:12.71]   Finished:    Trendo.Core.Tests
+  Bestanden Trendo.Core.Tests.WinRealTests.Vorlesen_SAPI_in_WAV_und_Sprachausgabe_vorhanden [1 s]
+  Bestanden Trendo.Core.Tests.WinRealTests.Rueckfall_vorbereiten_sichert_Einstellungen [4 ms]
+  Bestanden Trendo.Core.Tests.WinRealTests.Papierkorb_echt_lesen [165 ms]
+
+Der Testlauf war erfolgreich.
+Gesamtzahl Tests: 10
+     Bestanden: 10
+ Gesamtzeit: 14,1529 Sekunden

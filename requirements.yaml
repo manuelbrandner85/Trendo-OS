@@ -145,16 +145,18 @@ modules:
   name: Ultimate Desktop Utilities & Media Center
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
-  implementation_status: IN_PROGRESS
+  implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
-  evidence: reports/w1/pc/README.md
+  evidence: reports/pc-0.9.3/README.md
+  note: 'Alle 25 Funktionen gebaut; PC 0.9.3: echter Papierkorb ($I gelesen, Testdatei gefunden), volle Testsuite grün'
 - id: SYS-03
   name: Ultimate Browser Internet & Download Center
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
-  implementation_status: IN_PROGRESS
+  implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
-  evidence: reports/w1/pc/README.md
+  evidence: reports/pc-0.9.3/README.md
+  note: 'Alle 25 Funktionen gebaut; PC 0.9.3: Defender-Scan (exit 0, ohne Admin), Druck als PDF über Chrome, Drucker nur gelistet'
 - id: SYS-04
   name: Ultimate App Installation & System Control Center
   approved_expansion_functions: '25'
@@ -201,23 +203,26 @@ modules:
   name: Office Documents & Productivity Center
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
-  implementation_status: IN_PROGRESS
+  implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
-  evidence: reports/w1/pc/README.md
+  evidence: reports/pc-0.9.3/README.md
+  note: 'Alle 25 Funktionen gebaut; PC 0.9.3: qpdf 12.4.2 verwaltet installiert, echt zusammengefügt (2 Seiten) und geteilt (1 Seite)'
 - id: SYS-11
   name: Ready-to-Run & Software Integration
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
-  implementation_status: IN_PROGRESS
+  implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
-  evidence: reports/w1/pc/README.md
+  evidence: reports/pc-0.9.3/README.md
+  note: 'Alle 25 Funktionen gebaut; PC 0.9.3: Autostart (Ordner + HKCU-Run nur gelesen, Umschalten im Temp), Dateizuordnungen gelesen, winget export 47 Pakete → ImportIds'
 - id: SYS-12
   name: Adaptive Interface Accessibility & Personalization
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IN_PROGRESS
-  test_status: TESTED_BOX
-  evidence: reports/w1/SYS-12.txt
+  test_status: PC_VERIFIED
+  evidence: reports/pc-0.9.3/README.md
+  note: 'Alle 25 Funktionen gebaut; PC 0.9.3: SAPI-Vorlesen (de-DE) in WAV geprüft, Fensterposition mit echtem Bildschirm. OFFEN: Narrator-Bedienung nur manuell prüfbar, Mehrschirm nur mit 1 Bildschirm getestet'
 - id: SYS-13
   name: System Architecture Integration & Release Quality
   approved_expansion_functions: '25'

@@ -1,0 +1,11 @@
+  Wiederherzustellende Projekte werden ermittelt...
+  "C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\tests\Trendo.Api.Tests\Trendo.Api.Tests.csproj" wiederhergestellt (in 171 ms.).
+  "C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\src\Trendo.Api\Trendo.Api.csproj" wiederhergestellt (in 171 ms.).
+  1 von 3 Projekten sind f├╝r die Wiederherstellung auf dem neuesten Stand.
+  Trendo.Core -> C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Api -> C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\src\Trendo.Api\bin\Release\net10.0\Trendo.Api.dll
+  Trendo.Api.Tests -> C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll
+Testlauf f├╝r "C:\Users\<user>\AppData\Local\Temp\trendo-pc095\src\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster ├╝berein.
+
+Bestanden!   : Fehler:     0, erfolgreich:    14, ├╝bersprungen:     0, gesamt:    14, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
