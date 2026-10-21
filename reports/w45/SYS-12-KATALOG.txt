@@ -1,0 +1,4 @@
+Nachweis SYS-12-KATALOG – Linux-Box (nicht Windows-PC), 21.10.2026 22:52 MESZ, Commit-Basis 533eed3
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 717 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   377, Skipped:     0, Total:   377, Duration: 13 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   106, Skipped:     0, Total:   106, Duration: 34 s - Trendo.App.Tests.dll (net10.0)
