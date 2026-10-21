@@ -71,6 +71,7 @@ public partial class MainWindow
         }, true);
         sp.Children.Add(Card(new StackPanel { Spacing = 5, Children = { H("Rechnung schreiben", 14), new WrapPanel { Children = { seller, buyer } }, new WrapPanel { Children = { item, qty, unit } }, small, make } }));
 
+        sp.Children.Add(SmallBizCheck("fin-ku"));
         sp.Children.Add(H("Letzte Buchungen", 14));
         var k = 0;
         foreach (var e in all.Take(25))
