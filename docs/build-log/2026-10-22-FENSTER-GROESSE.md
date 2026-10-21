@@ -1,0 +1,1 @@
+- 01:28 Fenster an allen vier Rändern und Ecken in der Größe änderbar (Mindestgröße 360×240, passende Mauszeiger). Titelleiste an den linken oder rechten Rand ziehen rastet auf die halbe Fläche ein; aus maximiert herausziehen stellt wieder her. Tests mit echtem Ziehen per Maus. (Linux-Box getestet, PC offen)

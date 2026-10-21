@@ -66,6 +66,33 @@ public sealed class WindowManager
         AreaW = w; AreaH = h;
         foreach (var x in _stack) { if (!x.Moved) { x.W = AreaW * 0.9; x.H = AreaH * 0.9; } Clamp(x); }
     }
+    /// <summary>Größe ändern an Rand oder Ecke. edge enthält L, R, T, B (z. B. „BR“ = Ecke unten rechts). Mindestgröße bleibt.</summary>
+    public void ResizeEdge(string id, string edge, double dx, double dy)
+    {
+        if (Get(id) is not { } w) return;
+        if (w.Maximized) { w.Maximized = false; }
+        w.Moved = true;
+        if (edge.Contains('R')) w.W = Math.Max(MinW, w.W + dx);
+        if (edge.Contains('B')) w.H = Math.Max(MinH, w.H + dy);
+        if (edge.Contains('L')) { var nw = Math.Max(MinW, w.W - dx); w.X += w.W - nw; w.W = nw; }
+        if (edge.Contains('T')) { var nh = Math.Max(MinH, w.H - dy); w.Y += w.H - nh; w.H = nh; }
+        if (w.X < 0 && edge.Contains('L')) { w.W += w.X; w.X = 0; }
+        if (w.Y < 0) { if (edge.Contains('T')) w.H += w.Y; w.Y = 0; }
+        if (w.X + w.W > AreaW && edge.Contains('R')) w.W = Math.Max(MinW, AreaW - w.X);
+        if (w.Y + w.H > AreaH && edge.Contains('B')) w.H = Math.Max(MinH, AreaH - w.Y);
+    }
+
+    /// <summary>Wie bei Windows: Fenster an den linken/rechten Rand gezogen → halbe Fläche. pointerX = Mausposition im Bereich. Gibt die Seite zurück („links“/„rechts“) oder null.</summary>
+    public string? SnapAt(string id, double pointerX, double margin = 12)
+    {
+        if (Get(id) is not { } w) return null;
+        string? side = pointerX <= margin ? "links" : pointerX >= AreaW - margin ? "rechts" : null;
+        if (side is null) return null;
+        w.Maximized = false; w.Moved = true;
+        w.W = AreaW / 2; w.H = AreaH; w.Y = 0; w.X = side == "links" ? 0 : AreaW / 2;
+        return side;
+    }
+
     public void Clamp(DeskWindow w)
     {
         w.W = Math.Clamp(w.W, MinW, Math.Max(MinW, AreaW)); w.H = Math.Clamp(w.H, MinH, Math.Max(MinH, AreaH));

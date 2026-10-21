@@ -73,4 +73,25 @@ public class Fenster_Ui
         w.Show("prog-start"); Assert.Equal("prog-pflege", w.Windows.Active!.Id); Assert.Equal("prog-start", w.CurrentView); Assert.Equal(2, w.Windows.TaskOrder.Count);
         w.Close();
     }
+
+    static void Drag(Window w, Point a, Point b) { w.MouseDown(a, MouseButton.Left); w.MouseMove(a + (b - a) / 2, RawInputModifiers.LeftMouseButton); w.MouseMove(b, RawInputModifiers.LeftMouseButton); w.MouseUp(b, MouseButton.Left); Settle(); }
+
+    [AvaloniaFact(DisplayName = "Fenster: Größe an Ecke und Rand per Maus ziehen; an linken/rechten Rand ziehen rastet auf halbe Fläche ein")]
+    public void ResizeAndSnap()
+    {
+        var (w, _, _) = Ui.Open(); w.Show("settings"); Settle();
+        var win = w.Windows.Get("settings")!; var (w0, h0) = (win.W, win.H);
+        var corner = V<Border>(w, "win-size-BR-settings"); var c = corner.TranslatePoint(new Point(6, 6), w)!.Value;
+        Drag(w, c, c - new Point(80, 60));
+        Assert.True(win.W < w0 - 40 && win.H < h0 - 30, $"{w0}x{h0} → {win.W}x{win.H}");
+        var left = V<Border>(w, "win-size-L-settings"); var l = left.TranslatePoint(new Point(3, left.Bounds.Height / 2), w)!.Value;
+        var x0 = win.X; Drag(w, l, l + new Point(30, 0)); Assert.True(win.X > x0 + 15);
+        var area = V<Canvas>(w, "window-area"); var bar = V<Border>(w, "win-title-settings");
+        var p = bar.TranslatePoint(new Point(80, 15), w)!.Value; var edge = area.TranslatePoint(new Point(2, 200), w)!.Value;
+        Drag(w, p, edge);
+        Assert.Equal((0d, 0d), (win.X, win.Y)); Assert.Equal(w.Windows.AreaW / 2, win.W, 1); Assert.Equal(w.Windows.AreaH, win.H, 1);
+        p = V<Border>(w, "win-title-settings").TranslatePoint(new Point(80, 15), w)!.Value; var right = area.TranslatePoint(new Point(area.Bounds.Width - 2, 200), w)!.Value;
+        Drag(w, p, right); Assert.Equal(w.Windows.AreaW / 2, win.X, 1);
+        w.Close();
+    }
 }

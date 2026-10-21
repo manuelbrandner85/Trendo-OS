@@ -24,3 +24,21 @@ public class WindowManager_Logik
         Assert.Equal(WindowManager.MaxOpen, m.Stack.Count); Assert.Null(m.Get("b"));
     }
 }
+
+public class WindowManager_Groesse
+{
+    [Fact(DisplayName = "Fenster: Größe an Rändern/Ecken ändern mit Mindestgröße; am Rand einrasten auf halbe Fläche")]
+    public void ResizeSnap()
+    {
+        var m = new WindowManager { AreaW = 1000, AreaH = 600 }; var w = m.Open("a", "a", "A").Window;
+        w.X = 100; w.Y = 100; w.W = 500; w.H = 300;
+        m.ResizeEdge("a", "BR", 50, 40); Assert.Equal((550d, 340d), (w.W, w.H));
+        m.ResizeEdge("a", "L", -30, 0); Assert.Equal((70d, 580d), (w.X, w.W));
+        m.ResizeEdge("a", "T", 0, 1000); Assert.Equal(WindowManager.MinH, w.H); Assert.Equal(100 + 340 - WindowManager.MinH, w.Y);
+        m.ResizeEdge("a", "R", 5000, 0); Assert.Equal(1000 - w.X, w.W);
+        m.ToggleMaximize("a"); m.ResizeEdge("a", "B", 0, -10); Assert.False(w.Maximized);
+        Assert.Null(m.SnapAt("a", 500));
+        Assert.Equal("links", m.SnapAt("a", 3)); Assert.Equal((0d, 0d, 500d, 600d), m.Rect(w));
+        Assert.Equal("rechts", m.SnapAt("a", 995)); Assert.Equal((500d, 0d, 500d, 600d), m.Rect(w));
+    }
+}
