@@ -120,7 +120,7 @@ public sealed partial class MainWindow : Window
             var key = order[i];
             KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.D1 + i, KeyModifiers.Control), Command = new RelayCommand(() => Show(key)) });
         }
-        InitWave1(); _query = opt.Query ?? "";
+        InitWave1(); InitWave45(); _query = opt.Query ?? "";
         InitSetup(opt);
         Show(opt.Page ?? (NeedsSetup(opt) ? "einrichtung" : "start"));
         RefreshStatusBar();
@@ -920,13 +920,14 @@ public sealed partial class MainWindow : Window
     public async Task OpenStudio(string id, string title)
     {
         _studioFilter = id;
-        if (!StudioTools.Required.TryGetValue(id, out var need)) { Show("studios"); return; }
+        var page = StudioPages.TryGetValue(id, out var sp) ? sp : "studios";
+        if (!StudioTools.Required.TryGetValue(id, out var need)) { Show(page); return; }
         _depStudio = id; _depStudioTitle = title; _depChecks = [];
         _depLog.Text = $"{title}: prüfe benötigte Programme …"; Show("studio-deps");
         foreach (var t in need) _depChecks.Add(await _deps.CheckAsync(DependencyCatalog.Get(t)));
         _core.Audit.Append(Principal.LocalOwner.Name, "deps.check", $"{id}: " + string.Join(", ", _depChecks.Select(c => $"{c.Component.Id}={c.State}")));
         _depLog.Text = _depChecks.All(c => c.Ok) ? $"{title}: alle benötigten Programme gefunden und funktionsfähig." : "";
-        if (_depChecks.All(c => c.Ok)) { ReloadStudios(); Show("studios"); } else Show("studio-deps");
+        if (_depChecks.All(c => c.Ok)) { ReloadStudios(); Show(page); } else Show("studio-deps");
     }
 
     private Control StudioDepsView()

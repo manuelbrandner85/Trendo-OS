@@ -14,3 +14,6 @@
 - 20:42 SYS-13: Releases nur noch von sauberem main (installer/release.sh prüft Branch, Sauberkeit, origin/main, Version, Tests). Absturzprotokoll (logs/, Benutzerpfade geschwärzt, max. 20), Version mit Stand unter System. Tests +2.
 - 20:45 CORE-01: Globale Suche (Seiten, Bereiche, Studios, Projekte, Dateinamen im Projektordner; Umlaute egal; Strg+K). SYS-12: Anzeigegröße Normal/Groß/Sehr groß, F1 = Hilfe, Tastaturhinweise; Versionsanzeige in Einstellungen korrigiert. Tests +5.
 - 20:48 SYS-11: Apps-Seite startet gefundene Programme direkt, Fehlendes führt zu Zusatzprogramme. SYS-02: Werkzeuge (Notizen, eigener Rechner ohne eval, Kurzzeitwecker), Medien (Musik/Videos, mpv). X-09: Speicher & Leistung (größte Programme, KI-Modell entladen per Ollama keep_alive 0; beendet keine fremden Programme). Apps mit einer Unterebene. Tests +16.
+
+## Welle 4/5 – Kreativ, Entwicklung & Business (Linux-Box, nicht auf dem PC geprüft)
+- 20:53 CORE-07 Software-Studio: 4 Vorlagen (Web, Python, C#, Node), Git-Stand anlegen/anzeigen/speichern, Testen mit vorhandenen Werkzeugen; Bereich „Kreativ“ mit Unterebene, Studio-Kachel öffnet die Seite. requirements.yaml: Fortschritt nur mit Nachweis-Datei (evidence), Generator übernimmt ihn. Tests +5.
