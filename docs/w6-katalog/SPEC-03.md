@@ -11,12 +11,12 @@ Katalog-Status: **PROPOSED** (nicht APPROVED). Anzahl: 16 (laut Modulregister).
 | F05 | Sicherheitsurteil | Sicherheit ≥ 1,5 und L/300 | gebaut | `SPEC-03: Balken (4 Lagerungen), Querschnitte, Wärmedehnung, Einheiten` |
 | F06 | Wärmedehnung | ΔL = α·L·ΔT | gebaut | `SPEC-03: Balken (4 Lagerungen), Querschnitte, Wärmedehnung, Einheiten` |
 | F07 | Einheiten | Länge, Kraft, Druck, Leistung | gebaut | `SPEC-03: Balken (4 Lagerungen), Querschnitte, Wärmedehnung, Einheiten` |
-| F08 | Hohlprofil | Rechteck-Hohlprofil Querschnittswerte | offen | `SPEC-03 F08: Hohlprofil` |
-| F09 | Knicken (Euler) | kritische Last für 4 Euler-Fälle | offen | `SPEC-03 F09: Knicken (Euler)` |
-| F10 | Schrauben | Anzugsmoment und Vorspannkraft metrisch | offen | `SPEC-03 F10: Schrauben` |
-| F11 | Zug & Druck | Spannung, Dehnung, Längenänderung | offen | `SPEC-03 F11: Zug & Druck` |
-| F12 | Torsion Welle | Schubspannung und Verdrehwinkel | offen | `SPEC-03 F12: Torsion Welle` |
-| F13 | Druckfeder | Federrate und Weg | offen | `SPEC-03 F13: Druckfeder` |
-| F14 | Zahnräder | Übersetzung, Drehzahl, Drehmoment | offen | `SPEC-03 F14: Zahnräder` |
-| F15 | Wärmedurchgang Wand | U-Wert aus Schichten, Wärmestrom | offen | `SPEC-03 F15: Wärmedurchgang Wand` |
-| F16 | Gewicht | Masse aus Volumen und Werkstoff | offen | `SPEC-03 F16: Gewicht` |
+| F08 | Hohlprofil | Rechteck-Hohlprofil Querschnittswerte | gebaut | `SPEC-03 F08: Hohlprofil` |
+| F09 | Knicken (Euler) | kritische Last für 4 Euler-Fälle | gebaut | `SPEC-03 F09: Knicken (Euler)` |
+| F10 | Schrauben | Anzugsmoment und Vorspannkraft metrisch | gebaut | `SPEC-03 F10: Schrauben` |
+| F11 | Zug & Druck | Spannung, Dehnung, Längenänderung | gebaut | `SPEC-03 F11: Zug & Druck` |
+| F12 | Torsion Welle | Schubspannung und Verdrehwinkel | gebaut | `SPEC-03 F12: Torsion Welle` |
+| F13 | Druckfeder | Federrate und Weg | gebaut | `SPEC-03 F13: Druckfeder` |
+| F14 | Zahnräder | Übersetzung, Drehzahl, Drehmoment | gebaut | `SPEC-03 F14: Zahnräder` |
+| F15 | Wärmedurchgang Wand | U-Wert aus Schichten, Wärmestrom | gebaut | `SPEC-03 F15: Wärmedurchgang Wand` |
+| F16 | Gewicht | Masse aus Volumen und Werkstoff | gebaut | `SPEC-03 F16: Gewicht` |
