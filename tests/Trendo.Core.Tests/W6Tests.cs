@@ -425,3 +425,20 @@ public class SPEC04_Plus
     [Fact(DisplayName = "SPEC-04 F15: Zeichenaufrufe je Material")] public void F15() { using var f = new Fixture(); Directory.CreateDirectory(f.Root); var d = XrPlus.Detail(Gltf.Write(f.Root)).DrawCallsPerMaterial; Assert.Equal(2, d["Holz"]); Assert.Equal(1, d["(ohne Material)"]); }
     [Fact(DisplayName = "SPEC-04 F16: Erweiterungen")] public void F16() { using var f = new Fixture(); Directory.CreateDirectory(f.Root); var n = XrPlus.ExtensionNotes(XrPlus.Detail(Gltf.Write(f.Root))); Assert.Contains("Pflicht: KHR_draco_mesh_compression", Assert.Single(n)); Assert.Contains("unbekannt", XrPlus.ExtensionNotes(XrPlus.Detail(Gltf.Write(f.Root, 2, "VENDOR_x"))).Single()); }
 }
+
+public class SPEC05_Plus
+{
+    [Fact(DisplayName = "SPEC-05 F05: Zusammenhang deuten")] public void F05() { Assert.StartsWith("sehr starker positiver", StatsPlus.Describe(0.9)); Assert.StartsWith("mittlerer negativer", StatsPlus.Describe(-0.4)); Assert.Equal("kein erkennbarer Zusammenhang", StatsPlus.Describe(0.05)); }
+    // Handrechnung: d = −2,−2,−1,−2,−3 → Mittel −2, s = √0,5 → t = −2/(√0,5/√5) = −6,3246; df 4 → p ≈ 0,0032
+    [Fact(DisplayName = "SPEC-05 F07: Gepaarter t-Test")] public void F07() { var r = StatsPlus.Paired([10, 12, 9, 11, 13], [12, 14, 10, 13, 16]); Assert.Equal(-2 / (Math.Sqrt(0.5) / Math.Sqrt(5)), r.T, 9); Assert.Equal(4, r.Df); Assert.InRange(r.P, 0.0030, 0.0034); Assert.True(r.Significant); Assert.Throws<ArgumentException>(() => StatsPlus.Paired([1, 2], [1])); }
+    [Fact(DisplayName = "SPEC-05 F08: Quartile & Ausreißer")] public void F08() { var q = StatsPlus.Quartiles([1, 2, 3, 4, 5, 6, 7, 8, 100]); Assert.Equal((3, 5, 7, 4), (q.Q1, q.Q2, q.Q3, q.Iqr)); Assert.Equal([100.0], q.Outliers); }
+    [Fact(DisplayName = "SPEC-05 F09: Histogramm")] public void F09() { var h = StatsPlus.Histogram(Enumerable.Range(1, 16).Select(i => (double)i).ToArray()); Assert.Equal(5, h.Count); Assert.Equal(16, h.Sum(x => x.Count)); Assert.Contains("<rect", StatsPlus.HistogramSvg(h, "Test")); }
+    [Fact(DisplayName = "SPEC-05 F10: Konfidenzintervall")] public void F10() { Assert.Equal(2.776, StatsPlus.TCrit(4), 3); var c = StatsPlus.Confidence([1, 2, 3, 4, 5]); Assert.Equal(1.9632, c.Half, 3); }
+    // Referenz R: chisq.test(matrix(c(20,40,30,10),2), correct=FALSE): X² = 16,667, p = 4,456e-05
+    [Fact(DisplayName = "SPEC-05 F11: Chi²-Test")] public void F11() { var r = StatsPlus.ChiSquare([[20, 30], [40, 10]]); Assert.Equal(16.667, r.Chi2, 3); Assert.Equal(1, r.Df); Assert.Equal(4.456e-5, r.P, 7); Assert.True(r.LowExpected == false); Assert.Equal(0.3173, StatsPlus.GammaQ(0.5, 0.5), 4); }
+    [Fact(DisplayName = "SPEC-05 F12: Fehlerfortpflanzung")] public void F12() { var s = StatsPlus.Propagate('+', (10, 0.3), (5, 0.4)); Assert.Equal((15, 0.5), (s.Value, Math.Round(s.Uncertainty, 9))); var p = StatsPlus.Propagate('*', (10, 0.1), (5, 0.05)); Assert.Equal(50, p.Value); Assert.Equal(50 * Math.Sqrt(0.0002), p.Uncertainty, 9); }
+    [Fact(DisplayName = "SPEC-05 F13: Stichprobengröße")] public void F13() { Assert.Equal(97, StatsPlus.SampleSize(10, 2)); Assert.Equal(385, StatsPlus.SampleSizeShare(0.05)); }
+    [Fact(DisplayName = "SPEC-05 F14: Streudiagramm")] public void F14() { var s = StatsPlus.ScatterSvg([1, 2, 3], [2, 4, 6.1], "t"); Assert.Equal(3, System.Text.RegularExpressions.Regex.Matches(s, "<circle").Count); Assert.Contains("<line", s); }
+    [Fact(DisplayName = "SPEC-05 F15: Glätten")] public void F15() { Assert.Equal([null, 2, 3, 4, null], StatsPlus.MovingAverage([1, 2, 3, 4, 5], 3)); Assert.Throws<ArgumentException>(() => StatsPlus.MovingAverage([1], 2)); Assert.Contains("x;y;y_g\n1;2;\n2;4;4\n3;6;", StatsPlus.AppendColumn("x;y\n1;2\n2;4\n3;6", "y_g", [null, 4, null], 1)); }
+    [Fact(DisplayName = "SPEC-05 F16: Standardisieren")] public void F16() { var z = StatsPlus.ZScores([2, 4, 6]); Assert.Equal([-1, 0, 1], z); }
+}

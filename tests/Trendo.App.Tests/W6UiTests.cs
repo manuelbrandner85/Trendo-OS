@@ -369,3 +369,24 @@ public class SPEC04_UiPlus
         Assert.Contains("Komfort", W6Ui.Run(w, "xr-move"));
     }
 }
+
+public class SPEC05_UiPlus
+{
+    [AvaloniaFact(DisplayName = "SPEC-05 UI Ausbau: Tests, Darstellung, Aufbereitung")]
+    public void Plus()
+    {
+        var (w, l, root) = Ui.Open(); Directory.CreateDirectory(root);
+        var f = Path.Combine(root, "m.csv"); File.WriteAllText(f, "vor;nach\n10;12\n12;14\n9;10\n11;13\n13;16\n");
+        w.Show("wissenschaft");
+        Assert.Contains("sehr wahrscheinlich echt", W6Ui.Run(w, "sci-paired", ("file", f)));
+        Assert.Contains("hängen zusammen", W6Ui.Run(w, "sci-chi"));
+        Assert.Contains("95 % Sicherheit", W6Ui.Run(w, "sci-ci", ("file", f)));
+        Assert.Contains("97 Messungen", W6Ui.Run(w, "sci-n"));
+        Assert.Contains("Ergebnis", W6Ui.Run(w, "sci-err"));
+        Assert.Contains("Median", W6Ui.Run(w, "sci-quart", ("file", f)));
+        Assert.True(File.Exists(Path.Combine(root, "m.histogramm.svg")));
+        W6Ui.Run(w, "sci-scatter", ("file", f)); Assert.Contains(l.Opened, x => x.EndsWith("m.streudiagramm.svg"));
+        W6Ui.Run(w, "sci-smooth", ("file", f));
+        Assert.Contains("nach_geglaettet;nach_z", File.ReadAllText(Path.Combine(root, "m.aufbereitet.csv")));
+    }
+}
