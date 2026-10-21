@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -26,24 +27,36 @@ public sealed class MainWindow : Window
     public MainWindow() : this(new AppOptions(null, null, 0)) { }
 
     public MainWindow(AppOptions opt)
+        : this(new TrendoCore(opt.DataRoot ?? TrendoCore.DefaultDataRoot(), offline: opt.Offline), opt, new DefaultToolProbe()) { }
+
+    public TrendoCore Core => _core;
+    /// <summary>Name der aktuell angezeigten Ansicht (für Tests und Barrierefreiheit).</summary>
+    public string CurrentView { get; private set; } = "";
+
+    public MainWindow(TrendoCore core, AppOptions opt, IToolProbe probe)
     {
         _opt = opt;
-        _core = new TrendoCore(opt.DataRoot ?? TrendoCore.DefaultDataRoot());
+        _core = core;
         Title = "Trendo OS – Windows-Vorschau (P1)";
         Width = 1280; Height = 800; Background = Bg;
 
         var req = TrendoCore.FindRequirements(AppContext.BaseDirectory);
-        _studios = req is null ? [] : _core.Studios.Load(req, new DefaultToolProbe());
+        _studios = req is null ? [] : _core.Studios.Load(req, probe);
 
         var nav = new StackPanel { Spacing = 4, Margin = new Thickness(12) };
         nav.Children.Add(new TextBlock { Text = "Trendo OS", FontSize = 22, FontWeight = FontWeight.Bold, Foreground = Text, Margin = new Thickness(4, 4, 4, 16) });
-        foreach (var (label, view) in new (string, Func<Control>)[]
-                 { ("Start", StartView), ("Alle Studios", StudiosView), ("Projekte", ProjectsView), ("Freigaben", ApprovalsView), ("System & Sicherheit", SystemView) })
+        var views = new (string Key, string Label, Func<Control> View)[]
+            { ("start", "Start", StartView), ("studios", "Alle Studios", StudiosView), ("projects", "Projekte", ProjectsView), ("approvals", "Freigaben", ApprovalsView), ("system", "System & Sicherheit", SystemView) };
+        for (var i = 0; i < views.Length; i++)
         {
-            var b = new Button { Content = label, HorizontalAlignment = HorizontalAlignment.Stretch, Background = Brushes.Transparent, Foreground = Text, Padding = new Thickness(12, 8) };
-            b.Click += (_, _) => _main.Content = view();
+            var (key, label, view) = views[i];
+            var b = new Button { Name = "nav-" + key, Content = $"{label}   (Strg+{i + 1})", HorizontalAlignment = HorizontalAlignment.Stretch, Background = Brushes.Transparent, Foreground = Text, Padding = new Thickness(12, 8), IsTabStop = true };
+            Avalonia.Automation.AutomationProperties.SetName(b, label);
+            b.Click += (_, _) => Show(key, view);
             nav.Children.Add(b);
+            KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.D1 + i, KeyModifiers.Control), Command = new RelayCommand(() => Show(key, view)) });
         }
+        _showMap = views.ToDictionary(v => v.Key, v => v.View);
         var root = new DockPanel();
         var left = new Border { Background = Panel, Width = 230, Child = nav };
         DockPanel.SetDock(left, Dock.Left);
@@ -52,12 +65,16 @@ public sealed class MainWindow : Window
         root.Children.Add(left); root.Children.Add(bottom);
         root.Children.Add(new ScrollViewer { Content = _main, Padding = new Thickness(24) });
         Content = root;
-        _main.Content = StartView();
-        _status.Text = $"Core {_core.Version} · Secrets: {_core.Secrets.BackendName} · Audit-Kette: {(_core.Audit.Verify() ? "intakt" : "FEHLER")} · Trendo-KI: Nicht verbunden";
+        Show("start", StartView);
+        _status.Text = $"Core {_core.Version}{(_core.Offline ? " · OFFLINE" : "")} · Secrets: {_core.Secrets.BackendName} · Audit-Kette: {(_core.Audit.Verify() ? "intakt" : "FEHLER")} · Trendo-KI: Nicht verbunden";
 
         Opened += OnOpened;
         Closing += (_, _) => _core.Shutdown();
     }
+
+    private Dictionary<string, Func<Control>> _showMap = new();
+    public void Show(string key) => Show(key, _showMap[key]);
+    private void Show(string key, Func<Control> view) { CurrentView = key; _main.Content = view(); }
 
     private async void OnOpened(object? s, EventArgs e)
     {
@@ -69,7 +86,7 @@ public sealed class MainWindow : Window
                 var size = new PixelSize((int)Bounds.Width, (int)Bounds.Height);
                 using var bmp = new RenderTargetBitmap(size);
                 bmp.Render(this);
-                bmp.Save(path);
+                bmp.Save(path, new PngBitmapEncoderOptions());
             });
             _core.Audit.Append("app", "app.screenshot", Path.GetFileName(path));
         }
@@ -123,24 +140,25 @@ public sealed class MainWindow : Window
     {
         var sp = new StackPanel();
         sp.Children.Add(H("Projekte"));
-        var id = new TextBox { PlaceholderText = "projekt-id (a-z, 0-9, -)", Width = 260 };
-        var create = new Button { Content = "Projekt anlegen" };
-        var msg = P("");
+        var id = new TextBox { Name = "txt-project-id", PlaceholderText = "projekt-id (a-z, 0-9, -)", Width = 260 };
+        var create = new Button { Name = "btn-create-project", Content = "Projekt anlegen" };
+        var msg = P(""); msg.Name = "txt-project-msg";
         create.Click += (_, _) =>
         {
-            try { _core.Projects.Create(id.Text ?? "", id.Text ?? ""); _main.Content = ProjectsView(); }
+            try { _core.Projects.Create(id.Text ?? "", id.Text ?? ""); Show("projects"); }
             catch (Exception ex) { msg.Text = ex.Message; }
         };
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { id, create } });
         sp.Children.Add(msg);
         foreach (var p in _core.Projects.List())
         {
-            var open = new Button { Content = "Ordner im Explorer öffnen (Freigabe nötig)" };
-            open.Click += (_, _) => { _core.Integrations.PlanOpenProjectFolder(p.Id); _main.Content = ApprovalsView(); };
+            var open = new Button { Name = "btn-open-folder-" + p.Id, Content = "Ordner im Explorer öffnen (Freigabe nötig)" };
+            open.Click += (_, _) => { _core.Integrations.PlanOpenProjectFolder(p.Id); Show("approvals"); };
             sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { new TextBlock { Text = p.Name, Foreground = Text }, P($"Angelegt {p.CreatedAt:dd.MM.yyyy HH:mm}"), open } }));
         }
-        var url = new Button { Content = "Trendo-Repository im Browser öffnen (Freigabe nötig)" };
-        url.Click += (_, _) => { _core.Integrations.PlanOpenUrl("https://github.com/manuelbrandner85/Trendo-OS"); _main.Content = ApprovalsView(); };
+        var url = new Button { Name = "btn-open-url", Content = "Trendo-Repository im Browser öffnen (Freigabe nötig)", IsEnabled = !_core.Offline };
+        if (_core.Offline) ToolTip.SetTip(url, "Offline-Modus: deaktiviert");
+        url.Click += (_, _) => { try { _core.Integrations.PlanOpenUrl("https://github.com/manuelbrandner85/Trendo-OS"); Show("approvals"); } catch (OfflineException ex) { msg.Text = ex.Message; } };
         sp.Children.Add(url);
         return sp;
     }
@@ -153,10 +171,10 @@ public sealed class MainWindow : Window
         if (pending.Count == 0) sp.Children.Add(P("Keine offenen Freigaben."));
         foreach (var r in pending)
         {
-            var yes = new Button { Content = "Freigeben und ausführen", Background = Accent };
-            var no = new Button { Content = "Ablehnen" };
-            yes.Click += (_, _) => { _core.Approvals.Approve(r.Id); _core.Integrations.Execute(r); _main.Content = ApprovalsView(); };
-            no.Click += (_, _) => { _core.Approvals.Deny(r.Id); _main.Content = ApprovalsView(); };
+            var yes = new Button { Name = "btn-approve-" + r.Id, Content = "Freigeben und ausführen", Background = Accent };
+            var no = new Button { Name = "btn-deny-" + r.Id, Content = "Ablehnen" };
+            yes.Click += (_, _) => { _core.Approvals.Approve(r.Id); _core.Integrations.Execute(r); Show("approvals"); };
+            no.Click += (_, _) => { _core.Approvals.Deny(r.Id); Show("approvals"); };
             sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = {
                 new TextBlock { Text = r.Description, Foreground = Text },
                 P($"Aktion {r.Action} · gültig bis {r.ExpiresAt:HH:mm}"),
@@ -176,4 +194,11 @@ public sealed class MainWindow : Window
             sp.Children.Add(P($"{e.At:HH:mm:ss}  {e.Actor}  {e.Action}  {e.Detail}"));
         return sp;
     }
+}
+
+internal sealed class RelayCommand(Action run) : System.Windows.Input.ICommand
+{
+    public event EventHandler? CanExecuteChanged { add { } remove { } }
+    public bool CanExecute(object? p) => true;
+    public void Execute(object? p) => run();
 }
