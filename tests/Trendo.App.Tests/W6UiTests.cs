@@ -409,3 +409,21 @@ public class SPEC06_UiPlus
         Assert.Contains("Gespeichert", W6Ui.Run(w, "learn-export"));
     }
 }
+
+public class SPEC08_UiPlus
+{
+    [AvaloniaFact(DisplayName = "SPEC-08 UI Ausbau: Größen, Herstellen, Verkaufen")]
+    public void Plus()
+    {
+        var (w, l, _) = Ui.Open(); w.Show("mode");
+        Assert.Contains("Größe 98", W6Ui.Run(w, "fa-kid"));
+        Assert.Contains("75C", W6Ui.Run(w, "fa-bra"));
+        Assert.Contains("US 7", W6Ui.Run(w, "fa-ring"));
+        Assert.Contains("XL: 108,0 cm", W6Ui.Run(w, "fa-grade"));
+        Assert.Contains("Knäuel", W6Ui.Run(w, "fa-yarn"));
+        Assert.Contains("✓", W6Ui.Run(w, "fa-label"));
+        Assert.Contains("4006381333931", W6Ui.Run(w, "fa-ean"));
+        Assert.Contains("10 % Rabatt", W6Ui.Run(w, "fa-tier"));
+        W6Ui.Run(w, "fa-sheet"); Assert.Contains(l.Opened, x => x.EndsWith("datenblatt.md"));
+    }
+}

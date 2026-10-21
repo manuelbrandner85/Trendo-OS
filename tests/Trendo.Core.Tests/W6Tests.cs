@@ -461,3 +461,16 @@ public class SPEC06_Plus
     [Fact(DisplayName = "SPEC-06 F15: Umgekehrte Karten")] public void F15() { var (f, l, _, _) = Box(); using var _f = f; Assert.Equal(4, l.AddReversed("En")); Assert.Equal(0, l.AddReversed("En")); Assert.Contains(l.Store.Cards, c => c.Deck == "En (umgekehrt)" && c.Front == "dog" && c.Back == "Hund"); }
     [Fact(DisplayName = "SPEC-06 F16: Prüfungsplan")] public void F16() { var (f, l, now, _) = Box(); using var _f = f; var p = l.ExamPlan(now().AddDays(5)); Assert.Equal((2, 5, 4), (p.NewPerDay, p.DaysLeft, p.NewCards)); Assert.Throws<ArgumentException>(() => l.ExamPlan(now())); }
 }
+
+public class SPEC08_Plus
+{
+    [Fact(DisplayName = "SPEC-08 F10: Kindergrößen")] public void F10() { Assert.Equal(98, FashionPlus.KidSize(95).Size); Assert.Equal(104, FashionPlus.KidSize(100).Size); Assert.Equal("4–6 Monate", FashionPlus.KidSize(66).Age); Assert.Throws<ArgumentException>(() => FashionPlus.KidSize(200)); }
+    [Fact(DisplayName = "SPEC-08 F11: BH-Größe")] public void F11() { Assert.Equal("75B", FashionPlus.BraSize(75, 89)); Assert.Equal("75D", FashionPlus.BraSize(75, 93)); Assert.Equal("80A", FashionPlus.BraSize(78, 90)); }
+    [Fact(DisplayName = "SPEC-08 F12: Ringgröße")] public void F12() { var r = FashionPlus.Ring(54); Assert.Equal(54, r.Eu); Assert.Equal(17.2, r.DiameterMm); Assert.Equal(7, r.Us); }
+    [Fact(DisplayName = "SPEC-08 F13: Textilkennzeichnung")] public void F13() { var ok = FashionPlus.TextileLabel("5% Elasthan, 95 % Baumwolle"); Assert.True(ok.Ok); Assert.Equal("95 % Baumwolle, 5 % Elasthan", ok.Label); var bad = FashionPlus.TextileLabel("80 % Cotton, 10 % Plastik"); Assert.False(bad.Ok); Assert.Equal(3, bad.Problems.Count); }
+    [Fact(DisplayName = "SPEC-08 F14: Gradierung")] public void F14() { var g = FashionPlus.Grade(["S", "M", "L"], "M", 100, 4); Assert.Equal([("S", 96.0), ("M", 100.0), ("L", 104.0)], g); }
+    [Fact(DisplayName = "SPEC-08 F15: Garnbedarf")] public void F15() { var y = FashionPlus.Yarn(50, 60, 22, 30, 125); Assert.Equal((110, 180), (y.Stitches, y.Rows)); Assert.Equal(297, y.Meters); Assert.Equal(3, y.Balls); }
+    [Fact(DisplayName = "SPEC-08 F16: EAN-13")] public void F16() { Assert.Equal(1, FashionPlus.EanCheckDigit("400638133393")); Assert.True(FashionPlus.EanValid("4006381333931")); Assert.False(FashionPlus.EanValid("4006381333932")); }
+    [Fact(DisplayName = "SPEC-08 F17: Staffelpreise")] public void F17() { var r = FashionPlus.Tier(29.9, 50, [(10, 5), (25, 10), (100, 15)]); Assert.Equal((26.91, 1345.5, 10), (r.Unit, r.Total, r.DiscountPct)); Assert.Equal(0, FashionPlus.Tier(10, 1, [(10, 5)]).DiscountPct); }
+    [Fact(DisplayName = "SPEC-08 F18: Produktdatenblatt")] public void F18() { var md = FashionPlus.DataSheet("Shirt", "S-1", "Weich.", "100 % Baumwolle", Fashion.Variants("S-1", ["M"], ["Rot"]), Fashion.Price(5, 5, 0, 50)); Assert.Contains("# Shirt", md); Assert.Contains("| S-1-ROT-M | M | Rot |", md); Assert.Contains("inkl. MwSt.", md); }
+}
