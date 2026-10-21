@@ -65,7 +65,7 @@ public static class DependencyCatalog
         new("kdenlive", "Kdenlive", "Medien Studio – Video", "GPL-3.0", DeliveryMode.AutoUser, "Pro Benutzer installierbar (winget-Benutzerinstaller vorhanden)", "KDE.Kdenlive", 300, "https://kdenlive.org", ["kdenlive"], [@"%LOCALAPPDATA%\Programs\kdenlive\bin\kdenlive.exe", @"%ProgramFiles%\kdenlive\bin\kdenlive.exe"]),
         new("audacity", "Audacity", "Medien Studio – Audio", "GPL-3.0-or-later", DeliveryMode.AutoElevated, "Systemweiter Installer", "Audacity.Audacity", 100, "https://audacityteam.org", ["audacity"], [@"%ProgramFiles%\Audacity\Audacity.exe"]),
         new("qpdf", "qpdf", "Office – PDF zusammenfügen/teilen", "Apache-2.0", DeliveryMode.AutoUser, "Offizielles Portable-ZIP (GitHub-Release), Prüfsumme fest – ohne Admin, nur im Benutzerordner", null, 25, "https://github.com/qpdf/qpdf/releases/tag/v12.4.2", ["qpdf"],
-            [@"%LOCALAPPDATA%\TrendoOS\werkzeuge\qpdf\qpdf-*\bin\qpdf.exe", "/usr/bin/qpdf"], null,
+            [@"%LOCALAPPDATA%\TrendoWerkzeuge\qpdf\qpdf-*\bin\qpdf.exe", "/usr/bin/qpdf"], null,
             "https://github.com/qpdf/qpdf/releases/download/v12.4.2/qpdf-12.4.2-msvc64.zip", "db87077e683630c1217e0e8f9a20a9749d952ab676e881c3689187763a5de25d"),
         new("tesseract", "Tesseract OCR", "Letter Studio – Texterkennung", "Apache-2.0", DeliveryMode.AutoElevated, "Systemweiter Installer", "UB-Mannheim.TesseractOCR", 100, "https://github.com/UB-Mannheim/tesseract", ["tesseract"], [@"%ProgramFiles%\Tesseract-OCR\tesseract.exe"]),
         new("unreal", "Unreal Engine", "Game Studio", "Epic EULA (nicht weitergebbar)", DeliveryMode.Guided,
@@ -165,8 +165,8 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
         return _exists(manifest);
     }
 
-    /// <summary>Ziel für Portable-Werkzeuge (Benutzerordner, kein Admin).</summary>
-    public string ToolsRoot { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TrendoOS", "werkzeuge");
+    /// <summary>Ziel für Portable-Werkzeuge (Benutzerordner, kein Admin) – bewusst außerhalb von %LOCALAPPDATA%\\TrendoOS, das Setup/Rückfall komplett ersetzt.</summary>
+    public string ToolsRoot { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TrendoWerkzeuge");
 
     public string? ResolvePath(Component c) => c.DetectPaths?.Select(_expand).Where(_exists).Select(p => p.Contains('*') ? ResolveGlob(p) ?? (_customExists ? p : null) : p).FirstOrDefault(p => p is not null);
 

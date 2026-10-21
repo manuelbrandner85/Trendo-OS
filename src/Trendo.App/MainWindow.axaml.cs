@@ -66,11 +66,13 @@ public sealed partial class MainWindow : Window
 
     public MainWindow(TrendoCore core, AppOptions opt, IToolProbe probe)
     {
+        StartupTrace.Mark("window.ctor");
         _opt = opt; _core = core; _probe = probe;
         // Isolated: nichts außerhalb des Datenordners erkennen (Tests sind unabhängig von installierten Programmen/laufendem Ollama)
         Func<string, bool>? exists = opt.Isolated ? p => Path.GetFullPath(p).StartsWith(Path.GetFullPath(core.DataRoot), StringComparison.OrdinalIgnoreCase) && File.Exists(p) : null;
         _deps = new DependencyManager(core.Audit, new RealProcessRunner(), fileExists: exists) { ConsentFile = Path.Combine(core.DataRoot, "deps-consent.txt"), ToolsFile = Path.Combine(core.DataRoot, "tools.json") };
         _deps.OllamaUp = opt.Isolated ? () => Task.FromResult(false) : _ollama.IsUpAsync;
+        StartupTrace.Mark("ctor.deps");
         _settings = UserSettings.Load(core.DataRoot); ApplyTheme(_settings);
         // Felder wurden vor ApplyTheme erzeugt: Schriftfarben nachziehen
         _clock.Foreground = Text; _kiText.Foreground = Brush.Parse(C("#E6EDF7", "#1B2A44")); _kiStatus.Foreground = Muted; _depLog.Foreground = Muted;
@@ -79,8 +81,10 @@ public sealed partial class MainWindow : Window
         Width = 1440; Height = 900; MinWidth = 960; MinHeight = 600; WindowState = WindowState.Maximized;
         Background = Brush.Parse("#050B18");
 
+        StartupTrace.Mark("ctor.theme");
         var req = TrendoCore.FindRequirements(AppContext.BaseDirectory);
         _studios = req is null ? [] : _core.Studios.Load(req, probe);
+        StartupTrace.Mark("studios.loaded");
 
         // Raster nach Konzept (Designfläche 1536 × 800): Topbar | Seitenleiste 192 · Mitte · rechte Spalte 322, Dock unter der Mitte
         var root = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
@@ -89,12 +93,14 @@ public sealed partial class MainWindow : Window
         // Echter Hintergrund-Blur: unscharfe Kopie des Wallpapers, sichtbar nur dort, wo Glas-Panels liegen (Maske = Alpha der Oberfläche)
         if (BlurredWallpaper(ui) is { } blur) { root.Children.Add(blur); Grid.SetRowSpan(blur, 2); }
         Grid.SetRowSpan(ui, 2); root.Children.Add(ui);
+        StartupTrace.Mark("ctor.wallpaper");
         var top = TopBar(); ui.Children.Add(top);
         var body = new Grid { ColumnDefinitions = new ColumnDefinitions("192,*,322"), RowDefinitions = new RowDefinitions("*,Auto"), Margin = new Thickness(8, 10, 8, 4) };
         Grid.SetRow(body, 1); ui.Children.Add(body);
         var left = LeftColumn(); Grid.SetRowSpan(left, 2); body.Children.Add(left);
         Grid.SetColumn(_center, 1); _center.Margin = new Thickness(12, 0, 12, 0); body.Children.Add(_center);
         var dock = Dock(); Grid.SetColumn(dock, 1); Grid.SetRow(dock, 1); body.Children.Add(dock);
+        StartupTrace.Mark("ctor.left+dock");
         var right = RightColumn(); Grid.SetColumn(right, 2); Grid.SetRowSpan(right, 2); body.Children.Add(right);
         _status.IsVisible = false; // Statusinfos stehen unter System/Einstellungen und als Tooltip
         // Designfläche skaliert proportional (Konzept ist für ~1440 px Breite gestaltet), damit kleine Bildschirme nicht abschneiden
@@ -122,14 +128,19 @@ public sealed partial class MainWindow : Window
             var key = order[i];
             KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.D1 + i, KeyModifiers.Control), Command = new RelayCommand(() => Show(key)) });
         }
-        InitWave1(); InitWave45(); InitWave23(); InitW7(); _query = opt.Query ?? "";
+        StartupTrace.Mark("ctor.layout");
+        InitWave1(); InitWave45(); InitWave23(); InitW7(); StartupTrace.Mark("ctor.initwaves"); _query = opt.Query ?? "";
         InitSetup(opt);
         Show(opt.Page ?? (NeedsSetup(opt) ? "einrichtung" : "start"));
+        StartupTrace.Mark("ctor.show");
         RefreshStatusBar();
+        StartupTrace.Mark("ctor.statusbar");
 
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         timer.Tick += (_, _) => Tick();
-        timer.Start(); Tick();
+        // Uhr sofort; erste Messung (CPU/GPU-Zähler, ~65 ms) erst nach dem ersten Bild
+        _clock.Text = DateTime.Now.ToString("HH:mm", De); _date.Text = DateTime.Now.ToString("ddd, d. MMM yyyy", De);
+        timer.Start(); Dispatcher.UIThread.Post(Tick, DispatcherPriority.Background); StartupTrace.Mark("ctor.tick");
 
         if (opt.ApiPort is { } port)
         {
@@ -147,6 +158,7 @@ public sealed partial class MainWindow : Window
         Opened += OnOpened;
         Closing += (_, _) => { if (_reopening) return; _api?.DisposeAsync().AsTask().Wait(2000); _core.Shutdown(); };
         InitLook(root, opt);
+        StartupTrace.Mark("window.ready");
     }
 
     private string _apiInfo = "";
@@ -155,6 +167,7 @@ public sealed partial class MainWindow : Window
 
     public void Show(string key)
     {
+        var sw = System.Diagnostics.Stopwatch.StartNew();
         CurrentView = key;
         MarkTab(key); MarkSide(key);
         _center.Children.Clear();
@@ -162,6 +175,7 @@ public sealed partial class MainWindow : Window
         AfterShow(key);
         _bellBadge.Text = _core.Approvals.Pending().Count is var n && n > 0 ? n.ToString() : "";
         RefreshProjects();
+        StartupTrace.Took("page." + key, sw.Elapsed.TotalMilliseconds);
     }
 
     private void Tick()
@@ -188,9 +202,14 @@ public sealed partial class MainWindow : Window
 
     private async void OnOpened(object? s, EventArgs e)
     {
-        await EnsureOllamaRunning();
+        StartupTrace.Mark("window.opened");
+        // erstes gezeichnetes Bild = sichtbarer Start
+        RequestAnimationFrame(_ => { StartupTrace.Mark("first.frame"); StartupTrace.Flush(); });
+        // KI-Laufzeit im Hintergrund prüfen/starten – blockiert weder Start noch Bildschirmfoto
+        var ollama = EnsureOllamaRunning();
         if (_opt.KiAsk is { } q)
         {
+            await ollama;
             await RefreshKi();
             if (_kiConnected) await AskKi(q);
         }

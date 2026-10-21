@@ -25,6 +25,9 @@ public class QpdfDepTests
         var c = DependencyCatalog.Get("qpdf");
         Assert.Equal(DeliveryMode.AutoUser, c.Mode); Assert.Null(c.WingetId);
         Assert.StartsWith("https://github.com/qpdf/qpdf/releases/download/", c.PortableZip);
+        // Setup und Rückfall ersetzen %LOCALAPPDATA%\TrendoOS komplett – Werkzeuge dürfen dort nicht liegen (auf dem PC so verloren gegangen)
+        Assert.All(c.DetectPaths!, p => Assert.DoesNotContain(@"\TrendoOS\", p));
+        Assert.DoesNotContain(Path.DirectorySeparatorChar + "TrendoOS" + Path.DirectorySeparatorChar, new DependencyManager(new AuditLog(Path.Combine(Path.GetTempPath(), "trendo-x.jsonl")), new FakeRunner((_, _) => (0, ""))).ToolsRoot + Path.DirectorySeparatorChar);
         Assert.Equal("db87077e683630c1217e0e8f9a20a9749d952ab676e881c3689187763a5de25d", c.PortableSha256);
     }
 

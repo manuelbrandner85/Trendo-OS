@@ -165,11 +165,11 @@ public class WinRealTests
         var q = deps.ResolvePath(DependencyCatalog.Get("qpdf"));
         if (q is null && Environment.GetEnvironmentVariable("TRENDO_INSTALL_QPDF") == "1")
         {
-            // echte verwaltete Installation: Download + Prüfsumme + Entpacken nach %LOCALAPPDATA%\TrendoOS\werkzeuge (kein Admin)
+            // echte verwaltete Installation: Download + Prüfsumme + Entpacken nach %LOCALAPPDATA%\TrendoWerkzeuge (kein Admin)
             deps.GiveConsent(Principal.LocalOwner);
             var sw = Stopwatch.StartNew(); var ok = await deps.InstallAsync(Principal.LocalOwner, DependencyCatalog.Get("qpdf"));
             q = deps.ResolvePath(DependencyCatalog.Get("qpdf"));
-            Log($"QPDF verwaltete Installation ok={ok} in {sw.ElapsedMilliseconds} ms → %LOCALAPPDATA%\\TrendoOS\\werkzeuge\\qpdf");
+            Log($"QPDF verwaltete Installation ok={ok} in {sw.ElapsedMilliseconds} ms → %LOCALAPPDATA%\\TrendoWerkzeuge\\qpdf");
         }
         if (q is null) { Log("QPDF nicht installiert – NICHT GEPRÜFT"); Assert.Fail("qpdf fehlt"); return; }
         var chrome = Chrome()!; var d = Tmp(); var a = Path.Combine(d, "a.pdf"); var b = Path.Combine(d, "b.pdf");
