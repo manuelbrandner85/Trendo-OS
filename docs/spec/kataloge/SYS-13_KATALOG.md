@@ -1,6 +1,6 @@
-# SYS-13 – System Architecture Integration & Release Quality: Funktionskatalog (PROPOSED)
+# SYS-13 – System Architecture Integration & Release Quality: Funktionskatalog (APPROVED)
 
-> **Status: PROPOSED – nicht freigegeben.** Abgeleitet aus Modulname und Spezifikationsabsicht (MODULE_REGISTER: 25 Erweiterungsfunktionen ohne Katalog). Wird erst mit Manuels Freigabe zu APPROVED; nichts davon ist ACCEPTED.
+> **Status: APPROVED (APPROVED_SPEC).** Von Manuel am 21.10.2026 im Chat freigegeben (Vorschlag aus PR #143). Freigegeben heißt: Umfang festgelegt – nicht ACCEPTED. Die Spalte „Stand im Code“ wird bei Umsetzung ehrlich gepflegt (höchstens „umgesetzt, Box getestet“; PC-Prüfung offen).
 
 | ID | Funktion | Beschreibung | Abnahmekriterium | Stand im Code |
 |---|---|---|---|---|

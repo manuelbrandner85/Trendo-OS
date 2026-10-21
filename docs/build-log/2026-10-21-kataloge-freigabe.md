@@ -1,0 +1,1 @@
+- 22:15 Kataloge SYS-02/03/10/11/12/13 (je 25) von Manuel am 21.10.2026 im Chat freigegeben → APPROVED, verschoben nach docs/spec/kataloge/.
