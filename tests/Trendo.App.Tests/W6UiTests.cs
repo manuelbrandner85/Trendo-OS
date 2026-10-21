@@ -174,3 +174,18 @@ public class SPEC10_Ui
         Assert.Contains("Alarm", w.Find<TextBlock>("twin-Heizung-Vorlauf").Text);
     }
 }
+
+public class SPEC13_Ui
+{
+    [AvaloniaFact(DisplayName = "SPEC-13 UI: GPX auswerten, Koordinaten, Luftlinie")]
+    public void Geo()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        var f = Path.Combine(root, "tour.gpx"); File.WriteAllText(f, "<gpx xmlns=\"http://www.topografix.com/GPX/1/1\"><trk><trkseg><trkpt lat=\"47.40\" lon=\"10.98\"><ele>1000</ele></trkpt><trkpt lat=\"47.41\" lon=\"10.98\"><ele>1100</ele></trkpt></trkseg></trk></gpx>");
+        w.Show(MainWindow.StudioPages["SPEC-13"]);
+        Assert.Contains("↑ 100 m", W6Ui.Run(w, "geo-gpx", ("file", f)));
+        Assert.True(File.Exists(Path.Combine(root, "tour.geojson"))); Assert.True(File.Exists(Path.Combine(root, "tour.svg")));
+        Assert.Contains("UTM: 32U", W6Ui.Run(w, "geo-coord"));
+        Assert.Contains("504", W6Ui.Run(w, "geo-dist"));
+    }
+}

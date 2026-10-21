@@ -210,3 +210,37 @@ public class SPEC10_Twin
         Assert.Throws<ArgumentException>(() => h.Define("a", "b", "", 80, 70));
     }
 }
+
+public class SPEC13_Geo
+{
+    public const string Gpx = """
+<?xml version="1.0"?><gpx version="1.1" creator="t" xmlns="http://www.topografix.com/GPX/1/1">
+<wpt lat="47.4210" lon="10.9850"><name>Gipfel</name></wpt>
+<trk><trkseg>
+<trkpt lat="47.4000" lon="10.9800"><ele>1000</ele><time>2026-10-01T08:00:00Z</time></trkpt>
+<trkpt lat="47.4100" lon="10.9800"><ele>1001</ele><time>2026-10-01T08:30:00Z</time></trkpt>
+<trkpt lat="47.4200" lon="10.9800"><ele>1200</ele><time>2026-10-01T09:30:00Z</time></trkpt>
+<trkpt lat="47.4100" lon="10.9800"><ele>1100</ele><time>2026-10-01T10:00:00Z</time></trkpt>
+</trkseg></trk></gpx>
+""";
+
+    [Fact(DisplayName = "SPEC-13: GPX lesen, km/Höhenmeter/Dauer, GeoJSON, Koordinaten DMS/UTM, Luftlinie")]
+    public void Geo_()
+    {
+        using var f = new Fixture(); Directory.CreateDirectory(f.Root);
+        var p = Path.Combine(f.Root, "t.gpx"); File.WriteAllText(p, Gpx);
+        var (trk, wpt) = Geo.ReadGpx(p);
+        Assert.Equal(4, trk.Count); Assert.Equal("Gipfel", wpt[0].Name);
+        var s = Geo.Analyse(trk);
+        Assert.Equal(3.336, s.DistanceKm, 2); Assert.Equal(200, s.AscentM); Assert.Equal(100, s.DescentM); Assert.Equal(TimeSpan.FromHours(2), s.Duration);
+        Assert.Contains("\"LineString\"", Geo.GeoJson(trk, wpt, "t")); Assert.Contains("[10.985,47.421]", Geo.GeoJson(trk, wpt, "t"));
+        Assert.Contains("<polyline", Geo.Svg(trk));
+        Assert.Equal(504.2, Geo.Haversine(new(52.52, 13.405), new(48.1372, 11.5756)), 0);
+        var (lat, lon) = Geo.ParseCoord("48°8'13.9\"N 11°34'32.2\"E"); Assert.Equal(48.1372, lat, 3); Assert.Equal(11.5756, lon, 3);
+        Assert.Equal((-33.8688, 151.2093), Geo.ParseCoord("-33,8688 151,2093"));
+        Assert.Equal("48°8'13.9\"N 11°34'32.2\"E", Geo.Dms(48.1372, 11.5756));
+        // Referenz München (Marienplatz) ≈ 32U 691 607 O / 5 334 760 N
+        var u = Geo.Utm(48.1372, 11.5756); Assert.Equal(32, u.Zone); Assert.Equal('U', u.Band); Assert.InRange(u.Easting, 691_557, 691_657); Assert.InRange(u.Northing, 5_334_710, 5_334_810);
+        Assert.Throws<FormatException>(() => Geo.ParseCoord("95 10"));
+    }
+}
