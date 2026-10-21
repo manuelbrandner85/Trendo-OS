@@ -275,7 +275,7 @@ public class LetterOcrReal
         Assert.True(png.Ok, png.Message);
         var img = Path.Combine(root, "brief.png");
         if (File.Exists("/usr/bin/pdftoppm")) { System.Diagnostics.Process.Start("pdftoppm", $"-r 200 -png -singlefile \"{png.Pdf}\" \"{Path.Combine(root, "brief")}\"")!.WaitForExit(); }
-        else { var r2 = await run.RunAsync(soffice, $"--headless --convert-to png --outdir \"{root}\" \"{png.Pdf}\"", null, default); }
+        else { var r2 = await run.RunAsync(soffice, $"\"-env:UserInstallation={new Uri(Path.Combine(root, "lo")).AbsoluteUri}\" --headless --convert-to png --outdir \"{root}\" \"{png.Pdf}\"", null, default); }
         Assert.True(File.Exists(img), "Bild nicht erzeugt");
         var r = await Ocr.RunAsync(run, tess, img, default, dir);
         Assert.True(r.Ok, r.Message);
