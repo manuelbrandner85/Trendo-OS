@@ -46,3 +46,17 @@ public class SPEC02_Ui
         Assert.Equal("architektur", w.CurrentView);
     }
 }
+
+public class SPEC03_Ui
+{
+    [AvaloniaFact(DisplayName = "SPEC-03 UI: Balken prüfen, Wärmedehnung, Einheiten")]
+    public void Engineering()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show(MainWindow.StudioPages["SPEC-03"]);
+        Assert.Contains("Sicherheit", W6Ui.Run(w, "eng-beam"));
+        Assert.Contains("⚠", W6Ui.Run(w, "eng-beam", ("case", "9")));
+        Assert.Contains("2,76 mm", W6Ui.Run(w, "eng-heat"));
+        Assert.Contains("6,8948 bar", W6Ui.Run(w, "eng-unit"));
+    }
+}
