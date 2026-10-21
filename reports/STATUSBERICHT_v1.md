@@ -110,3 +110,6 @@ P0: IN_PROGRESS (offen: ADR-0005-Abnahme, Grok-Build-Einrichtung) · P1: PLANNED
 - P1-Slice implementiert (`src/`, `tests/`), auf Manuels Windows-PC ohne Admin und ohne Installation gebaut und getestet: Build 0 Fehler, **29/29 Tests bestanden**, App startet und beendet sauber (Screenshot vorhanden). Details: `reports/P1_TESTBERICHT.md`.
 - Status P1: IN_PROGRESS (Kernbausteine IMPLEMENTED, QA-001/003/004/015/019 als TESTED im Teilumfang; Installer, Live-Integration, Tastatur offen).
 - Grok Build weiterhin NOT_FOUND – Arbeit erfolgte durch Grok Bot über freigegebene lokale Shell.
+
+## Nachtrag 21.10.2026, 14:55 – P1-Abnahmevorbereitung
+Build 0 Warnungen; Tests Windows 31/31 Core + 7/7 UI; Benutzer-Installer (ohne Admin) installiert/startet/deinstalliert erfolgreich; echter Explorer-Start nur über protokollierte Freigabe nachgewiesen; Offline nur simuliert. P1: IN_PROGRESS → bereit zur Teilabnahme; offen: Narrator/Kontrast, echter Offline-Lauf, localhost-API, RBAC, Signatur. Details `reports/P1_TESTBERICHT.md`.

@@ -10,18 +10,21 @@ public sealed class TrendoCore
     public ISecretStore Secrets { get; }
     public Integrations Integrations { get; }
     public StudioRegistry Studios { get; } = new();
-    public string Version => "0.1.0-p1";
+    public string Version => "0.2.0-p1";
+    /// <summary>Offline-Modus: alle netzwerkbezogenen Aktionen werden vom Core abgewiesen.</summary>
+    public bool Offline { get; }
 
-    public TrendoCore(string dataRoot, ISecretStore? secrets = null, IProcessLauncher? launcher = null, TimeProvider? time = null)
+    public TrendoCore(string dataRoot, ISecretStore? secrets = null, IProcessLauncher? launcher = null, TimeProvider? time = null, bool offline = false)
     {
+        Offline = offline;
         DataRoot = Path.GetFullPath(dataRoot);
         Directory.CreateDirectory(DataRoot);
         Audit = new AuditLog(Path.Combine(DataRoot, "audit", "audit.jsonl"));
         Projects = new ProjectStore(Path.Combine(DataRoot, "projects"), Audit);
         Approvals = new ApprovalGate(Audit, time);
         Secrets = secrets ?? SecretStoreFactory.CreateDefault();
-        Integrations = new Integrations(Approvals, Projects, launcher ?? new ShellProcessLauncher());
-        Audit.Append("core", "core.start", $"v{Version} secrets={Secrets.BackendName}");
+        Integrations = new Integrations(Approvals, Projects, launcher ?? new ShellProcessLauncher(), () => Offline);
+        Audit.Append("core", "core.start", $"v{Version} secrets={Secrets.BackendName} offline={Offline}");
     }
 
     public void Shutdown() => Audit.Append("core", "core.stop", "sauber beendet");

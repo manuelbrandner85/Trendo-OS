@@ -1,6 +1,6 @@
 # Trendo OS
 
-**Status: P1 in Arbeit.** Ein erster Windows-Vertical-Slice (.NET 10 + Avalonia) baut und besteht 29 Unit-Tests auf Windows (siehe `reports/P1_TESTBERICHT.md`). Es gibt noch keinen Installer und kein Release.
+**Status: P1 in Arbeit.** Ein erster Windows-Vertical-Slice (.NET 10 + Avalonia) baut ohne Warnungen und besteht 38 Tests (31 Core, 7 UI) auf Windows (siehe `reports/P1_TESTBERICHT.md`). Ein Benutzer-Installer ohne Adminrechte existiert (`installer/`); noch kein Release.
 
 Trendo OS ist ein geplantes, lokal arbeitendes, KI-unterstütztes Arbeits- und Produktionssystem mit dem integrierten Assistenten **Trendo**. Ein Produkt, drei Editionen:
 
@@ -33,6 +33,13 @@ Trendo OS ist ein geplantes, lokal arbeitendes, KI-unterstütztes Arbeits- und P
 dotnet build Trendo.sln -c Release
 dotnet test Trendo.sln -c Release
 dotnet run --project src/Trendo.App -c Release
+```
+
+## Windows-Paket (ohne Admin)
+```powershell
+powershell -ExecutionPolicy Bypass -File installer\build-package.ps1
+powershell -ExecutionPolicy Bypass -File artifacts\TrendoOS-win-x64\install.ps1
+# Deinstallation: %LOCALAPPDATA%\Programs\TrendoOS\uninstall.ps1
 ```
 
 ## Validierung

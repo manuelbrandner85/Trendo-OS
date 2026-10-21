@@ -1,0 +1,4 @@
+﻿cd58607a5ac30c651c704ccef01a5ab23618c368bb22cb89698e2f85efacab99  TrendoOS-win-x64.zip
+294227c0e3cd3749db6cd202101377727c9fdca1c6c0edc2c49c00dd120ac936  TrendoOS.exe
+296703cea81eb2b232aa6740a6ceee2acc6878c5c523d34ba2144cd1096f9fe2  TrendoOS.dll
+bac4533895a8ccc9f02e4d3ad5f07e8e51dbbefe147601f1e4fc5c126f8c2bd0  Trendo.Core.dll

@@ -233,3 +233,47 @@ public class QA019_Offline
         Assert.DoesNotContain("System.Net.Sockets", asm);
     }
 }
+
+/// QA-019 (simuliert): Netzwerk blockiert
+public class QA019_SimulatedNoNetwork
+{
+    [Fact(DisplayName = "QA-019 (simuliert): Blockierter HttpClient schlägt fehl, Core-Workflows laufen trotzdem")]
+    public async Task Blocked_network_core_still_works()
+    {
+        using var http = new HttpClient(new BlockedNetworkHandler());
+        await Assert.ThrowsAsync<HttpRequestException>(() => http.GetAsync("https://example.org"));
+        var root = Path.Combine(Path.GetTempPath(), "trendo-off-" + Guid.NewGuid().ToString("N"));
+        var l = new FakeLauncher();
+        var core = new TrendoCore(root, new InMemorySecretStore(), l, offline: true);
+        core.Projects.Create("off", "Off");
+        core.Projects.WriteFile("off", "a.txt", "x");
+        Assert.Throws<OfflineException>(() => core.Integrations.PlanOpenUrl("https://example.org"));
+        var r = core.Integrations.PlanOpenProjectFolder("off");
+        core.Approvals.Approve(r.Id); core.Integrations.Execute(r);
+        Assert.Single(l.Opened);
+        Assert.Contains("offline=True", core.Audit.ReadAll()[0].Detail);
+    }
+}
+
+public class SelfTestCli
+{
+    [Fact(DisplayName = "Selbsttest Explorer: läuft nur über protokollierte Freigabe")]
+    public void Selftest_logs_approval()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-st-" + Guid.NewGuid().ToString("N"));
+        var l = new FakeLauncher();
+        var core = new TrendoCore(root, new InMemorySecretStore(), l);
+        Assert.Equal(0, SelfTest.OpenExplorer(core, "test-operator", TextWriter.Null));
+        var log = core.Audit.ReadAll();
+        Assert.Contains(log, e => e.Action == "approval.approved" && e.Actor == "test-operator");
+        Assert.Contains(log, e => e.Action == "execution.done");
+        Assert.Single(l.Opened);
+    }
+}
+
+/// <summary>HttpMessageHandler, der jede Anfrage verweigert. Nur für simulierte Offline-Tests (der Core selbst hat keine Netzwerkabhängigkeit).</summary>
+public sealed class BlockedNetworkHandler : HttpMessageHandler
+{
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken ct)
+        => throw new HttpRequestException("Netzwerk im Offline-Modus blockiert (simuliert).");
+}

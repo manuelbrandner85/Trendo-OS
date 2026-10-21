@@ -37,3 +37,48 @@ Log-Hashes: `p1/windows/SHA256SUMS.txt` (Logs sind um Benutzer-/Host-/Pfadangabe
 
 ## Offene Punkte für P1-Abnahme
 Installer/Paket, localhost-API mit Auth, Live-Test Explorer/Browser per Klick, Tastatur-/Screenreader-Test, Projekt-Rollen (RBAC), UI-Automatisierungstests, veraltete API-Warnung beheben.
+
+---
+# Nachtrag: P1-Abnahmevorbereitung (21.10.2026, 14:50 Europe/Berlin)
+**Commit getestet:** `65ce31d` (Branch `p1/acceptance`) · Windows 11 Pro 26H2, Standardbenutzer, ohne Admin · Nachweise: `reports/p1/acceptance/` (+ `SHA256SUMS.txt`)
+
+## Änderungen
+- Build-Warnung behoben (`Bitmap.Save` mit `PngBitmapEncoderOptions`) → **0 Warnungen, 0 Fehler**.
+- Paket + Installer pro Benutzer: `installer/build-package.ps1` (self-contained win-x64, ZIP + SHA-256), `install.ps1` (→ `%LOCALAPPDATA%\Programs\TrendoOS`, Startmenü-Verknüpfung, keine Registry, kein Admin), `uninstall.ps1` (Benutzerdaten bleiben, außer `-RemoveData`).
+- Tastatur: Strg+1…5 für alle Hauptbereiche, Tab-Reihenfolge, zugängliche Namen (AutomationProperties).
+- Offline-Modus `--offline`: Browser-/Netzwerkaktionen im Core abgewiesen, UI-Knopf deaktiviert, Status „OFFLINE“.
+- Explorer-Selbsttest `--selftest-open-explorer --approver …`: echter Explorer-Start nur über Approval-Gate mit protokollierter Freigabe.
+- Neues Projekt `tests/Trendo.App.Tests` (Avalonia.Headless + xUnit v3).
+
+## Ergebnisse
+| Schritt | Ergebnis |
+|---|---|
+| Build | 0 Warnungen, 0 Fehler |
+| Core-Tests | **31/31 bestanden** (Windows) |
+| UI-Tests (headless) | **7/7 bestanden** (Windows) |
+| Linux-Box | 31/31 + 7/7 bestanden |
+| Paket | `TrendoOS-win-x64.zip` 70,8 MB, SHA-256 `cd58607a5ac30c651c704ccef01a5ab23618c368bb22cb89698e2f85efacab99` (`artifact_SHA256SUMS.txt`) |
+| Installation pro Benutzer | exe + Startmenü-Verknüpfung vorhanden, Ziel korrekt |
+| Installierte App, offline, Screenshot | Exit 0, Statusleiste „OFFLINE“ (`screenshot_installed_offline.png`) |
+| Echter Explorer-Start | Freigabe `D15FE2EA690F766B` durch „Manuel (Freigabe über Grok Bot)“ protokolliert, Explorer-Fenster mit Projektordner nachweislich offen (danach geschlossen), Exit 0 |
+| Deinstallation | exe und Verknüpfung entfernt |
+
+Hinweis: Audit-Kopien im Repo sind um Benutzerpfade bereinigt, ihre Hash-Kette ist dadurch nicht mehr nachrechenbar; Prüfung „Audit-Kette intakt: True“ erfolgte auf dem PC vor der Bereinigung.
+
+## QA-Status (aktualisiert)
+| QA | Status | Umfang |
+|---|---|---|
+| QA-001 | **TESTED** | Start/Ende aus Build und aus Benutzer-Installation, Exit 0 |
+| QA-003 | TESTED (Unit, Windows) | unverändert; Symlink-Fall nur Linux |
+| QA-004 | **TESTED** | Unit + UI (Klick → Freigabe → genau eine Ausführung, Ablehnen) + echter Explorer-Start mit Freigabeprotokoll |
+| QA-015 | TESTED | unverändert |
+| QA-017 | **TESTED (Teilumfang)** | Tastaturnavigation + zugängliche Namen automatisiert; Screenreader (Narrator), Kontrast, Multi-Monitor, Reduced Motion: NOT_RUN |
+| QA-019 | **TESTED (simuliert)** | Offline-Modus + blockierter HttpClient; **kein** Lauf mit physisch getrenntem Netzwerk |
+| Browser-Öffnung live | NOT_RUN | nur mit Fake-Launcher (UI-Test); kein echter Browser-Start, um keine Webseite ungefragt zu öffnen |
+
+## Noch offen für P1-Abnahme
+1. Manuels Abnahme (ACCEPTED erfolgt nur durch ihn).
+2. Narrator-/Kontrast-Test (QA-017 Rest), echter Offline-Lauf mit getrenntem Netz (QA-019 real).
+3. Lokale API (localhost + Auth) – laut Spezifikation Teil von P1, noch In-Process.
+4. Rollen/RBAC im Core; Code-Signatur des Pakets (kein Zertifikat vorhanden).
+5. Kosmetik: Navigationsbeschriftung „Strg+5“ abgeschnitten.

@@ -19,7 +19,7 @@ public sealed class ShellProcessLauncher : IProcessLauncher
 }
 
 /// <summary>Integrationen, die nur nach Freigabe laufen.</summary>
-public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProcessLauncher launcher)
+public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProcessLauncher launcher, Func<bool>? isOffline = null)
 {
     public const string OpenFolder = "explorer.open_project";
     public const string OpenUrl = "browser.open_url";
@@ -32,6 +32,7 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
 
     public ApprovalRequest PlanOpenUrl(string url)
     {
+        if (isOffline?.Invoke() == true) throw new OfflineException("Offline-Modus: Browser-/Netzwerkaktionen sind deaktiviert.");
         if (!Uri.TryCreate(url, UriKind.Absolute, out var u) || u.Scheme != Uri.UriSchemeHttps)
             throw new ArgumentException("Nur https-URLs erlaubt.");
         return gate.Request(OpenUrl, $"URL im Standardbrowser öffnen: {u.Host}", u.AbsoluteUri);
@@ -40,3 +41,6 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
     public void Execute(ApprovalRequest r) =>
         gate.Execute(r.Id, r.Action, r.Target, () => { launcher.Open(r.Target); return true; });
 }
+
+public sealed class OfflineException(string msg) : Exception(msg);
+
