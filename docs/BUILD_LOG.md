@@ -11,6 +11,7 @@
 - 19:40 PR #79 gemergt: ISO Build 6 (Autologin PASS), BUILD_PLAN, Fortschritt-Seite, Issues #14–#78.
 
 ## Welle 2 & 3 – KI, Automatisierung, System (Builder W2/W3, Linux-Testrechner)
+- 21:04 CORE-12 Vorlagen: 6 mitgelieferte KI-Vorlagen mit Lücken ({{Thema}}, {{Anzahl|3}}), ausfüllen und an die lokale KI senden oder kopieren, eigene Vorlagen mit Versionen und Zurückholen, verständliche Qualitätsprüfung (Aufgabe, Format, Geheimnisse, offene Lücken), Masterprompt-Baukasten (Rolle, Ziel, Hintergrund, Form, Regeln). Tests +4.
 - 21:01 CORE-10 Wissen: eigene Notizen merken, Ordner mit Textdateien einlesen, Suche (BM25, Umlaute/Mehrzahl egal), KI liest passendes Wissen mit und nennt die Quelle; Rückmeldung „Gut/Verbessern“ im Gespräch, Korrekturen werden Wissen. Alles lokal. Tests +4.
 - 20:59 X-05 KI-Quellen: findet freie lokale KI (Ollama, LM Studio, llama.cpp, Jan, KoboldCpp), Reihenfolge/aus-ein gespeichert, Fragen nutzt die Kette automatisch, freie Modelle passend zum Arbeitsspeicher mit Zustimmung holen (Ollama pull über Freigabe). Tests +3.
 - 20:56 CORE-02 Intelligence Core: ein Eingang für alle KI-Fragen (nur lokal, Rückfallkette, Wissen einbinden, Verlauf, Protokoll ohne Frage-Inhalt). Seite KI › Fragen, Studio-Kachel springt hin (nach Programm-Check). Tests +5.

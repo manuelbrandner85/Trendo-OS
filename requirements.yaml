@@ -124,8 +124,9 @@ modules:
   name: Ultimate Prompt & Masterprompt Studio 2.0
   approved_expansion_functions: '50'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w23/CORE-12.md
 - id: SYS-01
   name: Triple Mode OS GODMODE
   approved_expansion_functions: '20'
