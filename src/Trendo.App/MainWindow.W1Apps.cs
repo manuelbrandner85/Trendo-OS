@@ -11,7 +11,7 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     public static readonly (string Key, string Label)[] AppsTabs =
-        [("apps", "Programme"), ("werkzeuge", "Werkzeuge"), ("medien", "Medien"), ("office", "Dokumente"), ("brief", "Briefe"), ("downloads", "Downloads"), ("ressourcen", "Speicher & Leistung")];
+        [("apps", "Programme"), ("werkzeuge", "Werkzeuge"), ("medien", "Medien"), ("office", "Dokumente"), ("downloads", "Downloads"), ("ressourcen", "Speicher & Leistung")];
 
     private Control AppsNav()
     {

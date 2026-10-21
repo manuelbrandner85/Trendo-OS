@@ -162,7 +162,7 @@ public partial class MainWindow
                 sp.Children.Add(r); i++;
             }
         }
-        return AppsPage("Briefstudio", sp);
+        return LetterPage("Schnell schreiben", sp);
     }
     private static Control Sp(Control c) { c.Margin = new Thickness(6, 0, 0, 6); return c; }
 }

@@ -29,7 +29,7 @@ public partial class MainWindow
         ("Fortschritt", "fortschritt", ["bauplan"]), ("Online-Dienste", "keys", ["schluessel", "api"]), ("Ersteinrichtung", "einrichtung", ["assistent", "setup"]),
         ("Werkzeuge: Notizen, Rechner, Wecker", "werkzeuge", ["notiz", "rechner", "taschenrechner", "timer", "wecker"]), ("Medien", "medien", ["musik", "video", "mpv"]),
         ("Speicher & Leistung", "ressourcen", ["ram", "arbeitsspeicher", "leistung", "langsam"]), ("Dokumente", "office", ["office", "word", "excel", "pdf"]),
-        ("Briefstudio", "brief", ["brief", "kuendigung", "widerspruch", "din"]), ("Downloads", "downloads", ["download", "browser", "internet"]),
+        ("Briefstudio", "brief", ["brief", "kuendigung", "widerspruch", "din"]), ("Briefstudio: Akten", "akten", ["akte", "vorgang", "frist", "bescheid", "gericht", "versicherung", "anwalt"]), ("Briefköpfe", "briefkoepfe", ["absender", "briefkopf"]), ("Downloads", "downloads", ["download", "browser", "internet"]),
     ];
     public static readonly List<(string Title, string Key, string[] Words)> ExtraPages = [];
 
