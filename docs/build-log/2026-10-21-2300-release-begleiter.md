@@ -1,0 +1,2 @@
+# Release-Pipeline: Begleiter-Pakete
+release.sh baut jetzt installer/companion/build.sh <Version> (linux-arm64 + linux-x64, Versionsprüfung des x64-Binärs) und hängt trendo-companion-linux-*.tar.gz mit Prüfsummen in SHA256SUMS.txt an das GitHub-Release. Probelauf ohne Veröffentlichung: TRENDO_RELEASE_DRY=1 installer/release.sh <ver> – erfolgreich (Setup + 2 Begleiter-Pakete). Version des Begleiters kommt aus der Assembly.

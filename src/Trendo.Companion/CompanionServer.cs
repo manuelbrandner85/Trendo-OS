@@ -8,7 +8,7 @@ namespace Trendo.Companion;
 /// <summary>Kopfloser Trendo-Begleiter für Linux/Raspberry Pi. Nur Heimnetz, nur gekoppelte PCs, feste Aufgabenliste – keine Shell-Befehle von außen.</summary>
 public sealed class CompanionServer : IDisposable
 {
-    public const string Version = "0.9.2";
+    public static string Version => typeof(CompanionServer).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
     private readonly HttpListener _http = new();
     private readonly string _stateFile;
     private readonly string _sysRoot;
