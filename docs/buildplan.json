@@ -138,7 +138,7 @@
   "id": "SYS-13",
   "name": "System Architecture Integration & Release Quality",
   "impl": "IN_PROGRESS",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -149,7 +149,7 @@
   "id": "CORE-01",
   "name": "Intelligent Desktop OS",
   "impl": "IN_PROGRESS",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -171,7 +171,7 @@
   "id": "X-09",
   "name": "System Resource & Studio Manager",
   "impl": "IN_PROGRESS",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -182,7 +182,7 @@
   "id": "SYS-11",
   "name": "Ready-to-Run & Software Integration",
   "impl": "IN_PROGRESS",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -193,7 +193,7 @@
   "id": "SYS-02",
   "name": "Ultimate Desktop Utilities & Media Center",
   "impl": "IN_PROGRESS",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -204,7 +204,7 @@
   "id": "SYS-10",
   "name": "Office Documents & Productivity Center",
   "impl": "IN_PROGRESS",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },
@@ -215,7 +215,7 @@
   "id": "STUDIO-LETTER-01",
   "name": "Ultimate Letter Business & Legal Correspondence Studio GODMODE",
   "impl": "IN_PROGRESS",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": [
    {
@@ -312,7 +312,7 @@
     "id": "LETTER-016",
     "title": "DOCX ODT PDF Print Production Engine",
     "impl": "IMPLEMENTED",
-    "test": "TESTED_BOX"
+    "test": "PC_VERIFIED"
    },
    {
     "id": "LETTER-017",
@@ -377,7 +377,7 @@
   "id": "SYS-03",
   "name": "Ultimate Browser Internet & Download Center",
   "impl": "IN_PROGRESS",
-  "test": "TESTED_BOX",
+  "test": "PC_VERIFIED",
   "local": false,
   "subs": []
  },

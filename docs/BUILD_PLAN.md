@@ -53,15 +53,15 @@ Desktop, Barrierefreiheit, Dateien, Office, Briefe, Browser – das tägliche Ar
 
 | Reihenfolge | Modul | Name | Umsetzung | Test |
 |---|---|---|---|---|
-| 1 | SYS-13 | System Architecture Integration & Release Quality | IN_PROGRESS | TESTED_BOX |
-| 2 | CORE-01 | Intelligent Desktop OS | IN_PROGRESS | TESTED_BOX |
+| 1 | SYS-13 | System Architecture Integration & Release Quality | IN_PROGRESS | PC_VERIFIED |
+| 2 | CORE-01 | Intelligent Desktop OS | IN_PROGRESS | PC_VERIFIED |
 | 3 | SYS-12 | Adaptive Interface Accessibility & Personalization | IN_PROGRESS | TESTED_BOX |
-| 4 | X-09 | System Resource & Studio Manager | IN_PROGRESS | TESTED_BOX |
-| 5 | SYS-11 | Ready-to-Run & Software Integration | IN_PROGRESS | TESTED_BOX |
-| 6 | SYS-02 | Ultimate Desktop Utilities & Media Center | IN_PROGRESS | TESTED_BOX |
-| 7 | SYS-10 | Office Documents & Productivity Center | IN_PROGRESS | TESTED_BOX |
-| 8 | STUDIO-LETTER-01 | Ultimate Letter Business & Legal Correspondence Studio GODMODE | IN_PROGRESS | TESTED_BOX |
-| 9 | SYS-03 | Ultimate Browser Internet & Download Center | IN_PROGRESS | TESTED_BOX |
+| 4 | X-09 | System Resource & Studio Manager | IN_PROGRESS | PC_VERIFIED |
+| 5 | SYS-11 | Ready-to-Run & Software Integration | IN_PROGRESS | PC_VERIFIED |
+| 6 | SYS-02 | Ultimate Desktop Utilities & Media Center | IN_PROGRESS | PC_VERIFIED |
+| 7 | SYS-10 | Office Documents & Productivity Center | IN_PROGRESS | PC_VERIFIED |
+| 8 | STUDIO-LETTER-01 | Ultimate Letter Business & Legal Correspondence Studio GODMODE | IN_PROGRESS | PC_VERIFIED |
+| 9 | SYS-03 | Ultimate Browser Internet & Download Center | IN_PROGRESS | PC_VERIFIED |
 
 Abnahmekriterien je Modul:
 - Modul im Studio-Layout erreichbar (max. 2 Navigationsebenen, deutsche Beschriftung)
@@ -89,7 +89,7 @@ Abnahmekriterien je Modul:
 | LETTER-013 | Case Timeline Evidence & Attachment Organizer | NOT_STARTED | NOT_RUN |
 | LETTER-014 | Verified Legal Sources & Deadline Inspector | NOT_STARTED | NOT_RUN |
 | LETTER-015 | German-First Cross-Border Letter Composer | NOT_STARTED | NOT_RUN |
-| LETTER-016 | DOCX ODT PDF Print Production Engine | IMPLEMENTED | TESTED_BOX |
+| LETTER-016 | DOCX ODT PDF Print Production Engine | IMPLEMENTED | PC_VERIFIED |
 | LETTER-017 | Personal & Business Letterhead Vault | IN_PROGRESS | TESTED_BOX |
 | LETTER-018 | Missing Information & Consistency Validator | IMPLEMENTED | TESTED_BOX |
 | LETTER-019 | Deadline Reply & Follow-Up Planner | NOT_STARTED | NOT_RUN |
