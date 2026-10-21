@@ -997,8 +997,8 @@
   "order": 13,
   "id": "SPEC-16",
   "name": "Transport & Vehicle 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
