@@ -78,8 +78,9 @@ modules:
   name: Ultimate 3D Creation Studio 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/CORE-05.txt
 - id: CORE-06
   name: Ultimate Game Development Studio 2.0
   approved_expansion_functions: '20'

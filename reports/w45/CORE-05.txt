@@ -1,0 +1,4 @@
+Nachweis CORE-05 – Linux-Box (nicht Windows-PC), 21.10.2026 21:02 MESZ, Commit-Basis f968c37
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 555 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:    36, Skipped:     0, Total:    36, Duration: 7 s - Trendo.App.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:    97, Skipped:     0, Total:    97, Duration: 11 s - Trendo.Core.Tests.dll (net10.0)
