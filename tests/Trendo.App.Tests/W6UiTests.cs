@@ -390,3 +390,22 @@ public class SPEC05_UiPlus
         Assert.Contains("nach_geglaettet;nach_z", File.ReadAllText(Path.Combine(root, "m.aufbereitet.csv")));
     }
 }
+
+public class SPEC06_UiPlus
+{
+    [AvaloniaFact(DisplayName = "SPEC-06 UI Ausbau: Eintippen, Quiz, Fortschritt, Verwalten")]
+    public void Plus()
+    {
+        var (w, _, _) = Ui.Open(); w.Show("lernen");
+        W6Ui.Run(w, "learn-import", ("text", "Hund;dog|Katze;cat|Haus;house"));
+        Assert.Contains("✓ Richtig", W6Ui.Run(w, "learn-type", ("ans", "dog")));
+        var q = W6Ui.Run(w, "learn-quiz"); Assert.Contains("1)", q);
+        Assert.Contains("Richtig", W6Ui.Run(w, "learn-quiz", ("pick", "1")));
+        Assert.Contains("Nächste 7 Tage", w.Find<TextBlock>("learn-forecast").Text);
+        Assert.Contains("pro Tag", W6Ui.Run(w, "learn-exam"));
+        Assert.Contains("Geändert", W6Ui.Run(w, "learn-edit", ("front", "Haus"), ("back", "home")));
+        Assert.Contains("3 umgekehrte", W6Ui.Run(w, "learn-rev", ("deck", "Englisch")));
+        Assert.Contains("3 Karte(n) verschoben", W6Ui.Run(w, "learn-rename", ("from", "Englisch"), ("to", "EN")));
+        Assert.Contains("Gespeichert", W6Ui.Run(w, "learn-export"));
+    }
+}
