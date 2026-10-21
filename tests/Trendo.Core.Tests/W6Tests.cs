@@ -285,3 +285,26 @@ public class SPEC15_Broadcast
         Assert.Equal(2.77, BroadcastDesk.StorageGb(6160, 60));
     }
 }
+
+public class SPEC16_Vehicle
+{
+    [Fact(DisplayName = "SPEC-16: Tankbuch (Volltank-Methode), Fahrtenbuch mit Lücken, Erinnerungen, CSV")]
+    public void Book()
+    {
+        using var f = new Fixture(); var d = new DateTime(2026, 10, 1);
+        var b = new VehicleBook(f.Root); var v = b.Add("Golf", "m-ab 123");
+        b.Refuel("Golf", d, 10000, 40, 1.80);
+        b.Refuel("Golf", d.AddDays(7), 10500, 20, 1.70, full: false);
+        b.Refuel("Golf", d.AddDays(14), 11000, 15, 1.90);
+        var s = VehicleBook.Stats(v); Assert.Equal(3.5, s.AvgPer100); Assert.Equal(1000, s.Km); Assert.Equal(Math.Round((20 * 1.7 + 15 * 1.9) / 1000, 3), s.CostPerKm);
+        Assert.Throws<ArgumentException>(() => b.Refuel("Golf", d.AddDays(20), 10900, 10, 1.8));
+        b.Drive("Golf", d, 11000, 11100, true, "Kunde Müller, Augsburg");
+        b.Drive("Golf", d, 11150, 11200, false);
+        Assert.Throws<ArgumentException>(() => b.Drive("Golf", d, 11180, 11190, false));
+        Assert.Throws<ArgumentException>(() => b.Drive("Golf", d, 11300, 11400, true));
+        Assert.Equal((100, 50, 66.7), VehicleBook.TripShare(v)); Assert.Equal([(11100.0, 11150.0)], VehicleBook.Gaps(v));
+        v.InspectionDue = new DateTime(2026, 11, 1); v.ServiceDueKm = 12000;
+        var r = VehicleBook.Reminders(v, d); Assert.True(r[0].Urgent); Assert.True(r[1].Urgent); Assert.Contains("800 km", r[1].Text);
+        Assert.Contains("dienstlich;Kunde Müller", VehicleBook.LogCsv(v)); Assert.Equal("M-AB 123", new VehicleBook(f.Root).Get("golf").Plate);
+    }
+}
