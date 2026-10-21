@@ -23,6 +23,16 @@ doc = {"schema_version": 1, "source": "Trendo OS Grok Production Package v2.1 (2
        "note": "APPROVED_SPEC bedeutet genehmigte Spezifikation, NICHT gebaut. Alle Tests NOT_RUN bis echte Logs existieren.",
        "status_model": ["PROPOSED", "APPROVED_SPEC", "PLANNED", "IN_PROGRESS", "IMPLEMENTED", "TESTED", "ACCEPTED", "RELEASED", "FAILED", "BLOCKED"],
        "editions": ["windows-app", "linux-usb-ssd", "pi4-plus-windows"],
+       "phases": [
+           {"id": "P0", "name": "Repository & Requirements Lock", "status": "ACCEPTED", "note": "Spezifikation importiert, ADRs, Inventur (PR #1, #2)"},
+           {"id": "P1", "name": "Windows Kern-Vertical-Slice", "status": "ACCEPTED",
+            "accepted_by": "Manuel", "accepted_at": "2026-10-21T14:57+02:00", "evidence": "reports/P1_TESTBERICHT.md",
+            "open_items": ["QA-017 Narrator/Kontrast/Multi-Monitor NOT_RUN", "QA-019 realer Offline-Lauf NOT_RUN", "Code-Signatur fehlt"]},
+           {"id": "P2", "name": "Linux USB/SSD Boot & Ready-to-Run Essentials", "status": "IN_PROGRESS"},
+           {"id": "P3", "name": "Pi/Windows Bridge", "status": "APPROVED_SPEC"},
+           {"id": "P4", "name": "Funktionsfamilien", "status": "APPROVED_SPEC"},
+           {"id": "P5", "name": "Security, Integration, Recovery", "status": "APPROVED_SPEC"},
+           {"id": "P6", "name": "Release Candidates", "status": "APPROVED_SPEC"}],
        "modules": mods, "business_requirements": bus, "letter_requirements": let, "tests": tests}
 hdr = "# AUTOMATISCH ERZEUGT durch scripts/generate_requirements.py – nicht von Hand Status hochsetzen.\n"
 (R / "requirements.yaml").write_text(hdr + yaml.safe_dump(doc, allow_unicode=True, sort_keys=False, width=120), encoding="utf-8")

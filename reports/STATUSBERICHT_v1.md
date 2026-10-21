@@ -116,3 +116,6 @@ Build 0 Warnungen; Tests Windows 31/31 Core + 7/7 UI; Benutzer-Installer (ohne A
 
 ## Nachtrag 21.10.2026, 15:00 – Lokale API + RBAC
 Lokale API (nur 127.0.0.1, Token im Credential Manager) und RBAC Owner/User/Guest implementiert und auf Windows getestet: 60/60 Tests, API-Live-Selbsttest 13/13, Listener nur Loopback, keine Firewall-Regel. P1: IN_PROGRESS, bereit zur Abnahme bis auf Narrator/Kontrast, echten Offline-Lauf und Code-Signatur.
+
+## 21.10.2026, 14:57 – P1 ACCEPTED
+P1 von Manuel abgenommen (Chat). Offene Punkte: QA-017 Narrator/Kontrast/Multi-Monitor NOT_RUN, QA-019 realer Offline-Lauf NOT_RUN, Code-Signatur fehlt. Phasenstatus in `requirements.yaml` (`phases`). P2 gestartet (IN_PROGRESS).
