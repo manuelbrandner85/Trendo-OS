@@ -52,6 +52,7 @@ public sealed partial class MainWindow : Window
     private readonly Dictionary<string, (Arc Arc, TextBlock Value)> _rings = new();
     private readonly TextBox _search = new() { Name = "txt-search", PlaceholderText = "Suchen in Trendo OS …", Width = 220, Height = 30 };
     private IReadOnlyList<StudioEntry> _studios = [];
+    public IReadOnlyList<StudioEntry> Studios => _studios;
     private Trendo.Api.LocalApi? _api;
     private Dictionary<string, Func<Control>> _showMap = new();
     private string? _studioFilter;
@@ -464,7 +465,7 @@ public sealed partial class MainWindow : Window
             };
             Avalonia.Automation.AutomationProperties.SetName(t, $"{title}: {badge.Text}");
             ToolTip.SetTip(t, $"{badge.Text} – {st?.Reason ?? "Status unbekannt"}");
-            t.Click += async (_, _) => { if (id == "STUDIO-LETTER-01") Show("brief"); else if (id == "SYS-10") Show("office"); else await OpenStudio(id, title); };
+            t.Click += async (_, _) => await OpenStudio(id, title);
             Hover(t); tiles.Children.Add(t);
         }
         var all = SmallOutline("btn-all-studios", "Alle anzeigen"); all.HorizontalAlignment = HorizontalAlignment.Right;
@@ -712,8 +713,16 @@ public sealed partial class MainWindow : Window
         var list = string.IsNullOrWhiteSpace(f) ? _studios
             : _studios.Where(s => f.Split('|').Any(x => s.Id.StartsWith(x, StringComparison.OrdinalIgnoreCase)) || s.Name.Contains(f, StringComparison.OrdinalIgnoreCase)).ToList();
         foreach (var st in list)
-            wrap.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Margin = new Thickness(0, 0, 10, 10), Width = 230,
-                Child = new StackPanel { Spacing = 2, Children = { new TextBlock { Text = st.Name, Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap }, P($"{st.Id} · {st.ApprovalStatus}"), Badge(st), P(st.Reason, null, 11) } } });
+        {
+            // Karten sind echte Knöpfe: Klick öffnet das Studio (vorher reine Anzeige – Klick tat nichts)
+            var card = new Button { Name = "studio-card-" + st.Id, Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Margin = new Thickness(0, 0, 10, 10), Width = 230,
+                HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch,
+                Content = new StackPanel { Spacing = 2, Children = { new TextBlock { Text = st.Name, Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap }, P($"{st.Id} · {st.ApprovalStatus}"), Badge(st), P(st.Reason, null, 11) } } };
+            Avalonia.Automation.AutomationProperties.SetName(card, st.Name);
+            var sid = st.Id; var sname = st.Name;
+            card.Click += async (_, _) => await OpenStudio(sid, sname);
+            Hover(card); wrap.Children.Add(card);
+        }
         var info = P(string.IsNullOrWhiteSpace(f) ? $"{list.Count} Studios/Module" : $"Filter „{f}“: {list.Count} Treffer");
         if (_studios.Count == 0) info = P("requirements.yaml nicht gefunden – Status unbekannt.", Brushes.OrangeRed);
         return Page("Alle Studios", new StackPanel { Spacing = 8, Children = { info, wrap } });
@@ -940,10 +949,26 @@ public sealed partial class MainWindow : Window
     private List<ToolCheck> _depChecks = [];
     public Func<string, Task<bool>>? KeyValidatorOverride { get; set; }
 
+    /// <summary>Seite eines Studios: eigener Bereich, erste Registerkarte des Moduls oder null (noch kein Bereich).</summary>
+    public string? PageForStudio(string id)
+    {
+        if (id.StartsWith("STUDIO-LETTER", StringComparison.OrdinalIgnoreCase)) return "brief";
+        if (id.Equals("SYS-10", StringComparison.OrdinalIgnoreCase)) return "office";
+        if (StudioPages.TryGetValue(id, out var sp) && _showMap.ContainsKey(sp)) return sp;
+        var tab = PageModules.FirstOrDefault(kv => string.Equals(kv.Value, id, StringComparison.OrdinalIgnoreCase) && _showMap.ContainsKey(kv.Key)).Key;
+        if (tab is not null) return tab;
+        return BasePageModules.FirstOrDefault(kv => string.Equals(kv.Value, id, StringComparison.OrdinalIgnoreCase) && _showMap.ContainsKey(kv.Key)).Key;
+    }
+
     public async Task OpenStudio(string id, string title)
     {
-        _studioFilter = id;
-        var page = StudioPages.TryGetValue(id, out var sp) ? sp : "studios";
+        _core.Audit.Append(Principal.LocalOwner.Name, "studio.open", id);
+        var page = PageForStudio(id);
+        if (page is null)
+        {
+            // Kein eigener Bereich: ehrlich sagen statt still auf dieselbe Liste zurückzuspringen
+            _notBuilt = title; Show("notbuilt"); return;
+        }
         if (!StudioTools.Required.TryGetValue(id, out var need)) { Show(page); return; }
         _depStudio = id; _depStudioTitle = title; _depChecks = [];
         _depLog.Text = $"{title}: prüfe benötigte Programme …"; Show("studio-deps");
