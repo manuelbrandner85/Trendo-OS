@@ -151,8 +151,7 @@ public sealed partial class MainWindow
         // Prüfen im Hintergrund (startet Programme mit --version) – nie auf dem UI-Thread blockieren
         _ = Task.Run(async () =>
         {
-            var checks = new List<(Component C, ToolCheck R)>();
-            foreach (var c in comps) checks.Add((c, await _deps.CheckAsync(c)));
+            var checks = (await Task.WhenAll(comps.Select(async c => (C: c, R: await _deps.CheckAsync(c))))).ToList();
             await Dispatcher.UIThread.InvokeAsync(() => { host.Children.Clear(); host.Children.Add(BuildCheckGrid(checks)); });
         });
         return host;

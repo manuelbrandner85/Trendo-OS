@@ -90,7 +90,8 @@ public sealed class RealProcessRunner : IProcessRunner
         var sb = new System.Text.StringBuilder();
         void On(object _, DataReceivedEventArgs e) { if (e.Data is null) return; lock (sb) sb.AppendLine(e.Data); line?.Invoke(e.Data); }
         p.OutputDataReceived += On; p.ErrorDataReceived += On; p.BeginOutputReadLine(); p.BeginErrorReadLine();
-        await p.WaitForExitAsync(ct);
+        try { await p.WaitForExitAsync(ct); }
+        catch (OperationCanceledException) { try { p.Kill(entireProcessTree: true); } catch { } throw; }
         return (p.ExitCode, sb.ToString());
     }
 }

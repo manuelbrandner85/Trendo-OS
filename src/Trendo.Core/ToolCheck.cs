@@ -21,7 +21,7 @@ public static class StudioTools
     /// <summary>Exe-Name (für PATH/App-Paths-Suche) und Prüfargumente. null = nicht starten, nur Dateiversion lesen (z. B. Unreal-Editor).</summary>
     public static readonly IReadOnlyDictionary<string, (string Exe, string? VerifyArgs)> Verify = new Dictionary<string, (string, string?)>
     {
-        ["blender"] = ("blender.exe", "--version"), ["libreoffice"] = ("soffice.exe", "--version"), ["ollama"] = ("ollama.exe", "--version"),
+        ["blender"] = ("blender.exe", "--version"), ["libreoffice"] = ("soffice.exe", null) /* --version öffnet unter Windows teils ein Fenster und hängt */, ["ollama"] = ("ollama.exe", "--version"),
         ["sumatra"] = ("SumatraPDF.exe", null), ["7zip"] = ("7z.exe", null), ["git"] = ("git.exe", "--version"), ["python"] = ("python.exe", "--version"), ["mpv"] = ("mpv.exe", "--version"),
         ["tesseract"] = ("tesseract.exe", "--version"), ["unreal"] = ("UnrealEditor.exe", null), ["krita"] = ("krita.exe", null),
         ["inkscape"] = ("inkscape.exe", "--version"), ["kdenlive"] = ("kdenlive.exe", null), ["audacity"] = ("Audacity.exe", null),

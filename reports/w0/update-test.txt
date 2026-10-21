@@ -1,0 +1,4 @@
+Vorher: 0.7.1+f831b9f2bf56ae2b54d9092e4bc6f71b73b3cf26
+App beendet (exit 0)
+Nachher: 0.7.2+b7be8c8c0307929fabbe630528d777527168f256
+2026-10-21T20:27:02.2022274+02:00 update.downloaded 0.7.2

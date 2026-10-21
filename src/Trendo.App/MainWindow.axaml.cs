@@ -272,8 +272,11 @@ public sealed partial class MainWindow : Window
         try
         {
             var img = _blurImg; img.Source = LoadWallpaper(_wallName); img.Stretch = Stretch.UniformToFill; img.HorizontalAlignment = HorizontalAlignment.Center; img.VerticalAlignment = VerticalAlignment.Center; img.Effect = new BlurEffect { Radius = 36 };
-            return new Border { Name = "backdrop-blur", ClipToBounds = true, IsHitTestVisible = false, Child = img,
-                OpacityMask = new VisualBrush { Visual = mask, Stretch = Stretch.None, AlignmentX = AlignmentX.Left, AlignmentY = AlignmentY.Top, TileMode = TileMode.None } };
+            var brush = new VisualBrush { Visual = mask, Stretch = Stretch.None, AlignmentX = AlignmentX.Left, AlignmentY = AlignmentY.Top, TileMode = TileMode.None };
+            // Quelle/Ziel absolut auf die Fläche der Oberfläche festlegen – sonst verschiebt überstehender Inhalt (Glow) die Maske
+            void Fit() { var b = mask.Bounds; if (b.Width > 0) brush.SourceRect = brush.DestinationRect = new RelativeRect(0, 0, b.Width, b.Height, RelativeUnit.Absolute); }
+            mask.PropertyChanged += (_, e) => { if (e.Property == BoundsProperty) Fit(); };
+            return new Border { Name = "backdrop-blur", ClipToBounds = true, IsHitTestVisible = false, Child = img, OpacityMask = brush };
         }
         catch { return null; }
     }
