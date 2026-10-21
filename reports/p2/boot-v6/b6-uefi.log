@@ -1,0 +1,15 @@
+CMD: qemu-system-x86_64 -accel tcg -cpu max -m 4096 -smp 2 -cdrom out/trendo-os-p2-amd64.hybrid.iso -boot d -vga std -display none -qmp unix:/tmp/p2/b6/qmp-uefi.sock,server,wait=off -serial file:/tmp/p2/b6/serial-uefi.log -nic user,model=virtio-net-pci -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd -drive if=pflash,format=raw,file=/tmp/p2/b6/vars-uefi.fd
+Bootmenü: Enter {'return': {}}
+{'return': {}}
+SHOT /tmp/p2/b6/uefi-20s.png
+{'return': {}}
+SHOT /tmp/p2/b6/uefi-300s.png
+{'return': {}}
+SHOT /tmp/p2/b6/uefi-380s.png
+KRunner {'return': {}}
+SHOT /tmp/p2/b6/uefi-keyboard.png
+Traceback (most recent call last):
+  File "/workspace/Trendo-OS/linux-image/tests/boot-qemu.py", line 35, in <module>
+    qmp("quit"); p.wait(30); os.remove(f"{out}/qmp-{mode}.sock")
+                             ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/p2/b6/qmp-uefi.sock'

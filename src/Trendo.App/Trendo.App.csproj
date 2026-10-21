@@ -22,5 +22,6 @@
     <ProjectReference Include="..\Trendo.Core\Trendo.Core.csproj" />
     <ProjectReference Include="..\Trendo.Api\Trendo.Api.csproj" />
     <None Include="..\..\requirements.yaml" Link="requirements.yaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\docs\buildplan.json" Link="buildplan.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

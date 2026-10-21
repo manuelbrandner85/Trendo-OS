@@ -15,6 +15,13 @@ has(){ grep -qxE "$1" <<<"$L"; }
 has '/opt/trendo/TrendoOS' && ok "Trendo-App unter /opt/trendo" || ko "Trendo-App fehlt"
 has '/etc/udev/rules.d/90-trendo-protect-windows.rules' && ok "udev-Schutzregel Windows/BitLocker" || ko "udev-Regel fehlt"
 has '/etc/xdg/autostart/trendo-os.desktop' && ok "Autostart-Eintrag" || ko "Autostart fehlt"
+has '/etc/sddm.conf.d/10-trendo-autologin.conf' && ok "SDDM-Autologin-Konfiguration" || ko "Autologin-Konfiguration fehlt"
+unsquashfs -cat "$T/fs.sq" etc/default/keyboard 2>/dev/null | grep -q 'XKBLAYOUT="de"' && ok "Tastatur de (etc/default/keyboard)" || ko "Tastatur nicht de"
+unsquashfs -cat "$T/fs.sq" etc/sddm.conf.d/10-trendo-autologin.conf 2>/dev/null | grep -q "User=trendo" && ok "Autologin-Benutzer trendo" || ko "Autologin-Benutzer fehlt"
+has '/usr/sbin/user-setup|/usr/lib/user-setup/user-setup-apply' || grep -q user-setup <<<"$L" && ok "user-setup (Live-Benutzer wird angelegt)" || ko "user-setup fehlt – kein Live-Benutzer, kein Autologin"
+has '/etc/X11/xorg.conf.d/00-keyboard.conf' && ok "X11-Tastatur de (Anmeldebildschirm)" || ko "X11-Tastatur fehlt"
+has '/etc/skel/.config/kxkbrc' && ok "Plasma-Tastatur de (kxkbrc)" || ko "kxkbrc fehlt"
+has '/etc/skel/.config/kscreenlockerrc' && ok "Bildschirmsperre im Live-System aus" || ko "kscreenlockerrc fehlt"
 for b in chromium libreoffice mpv okular dolphin konsole git python3 tesseract cryptsetup; do
   grep -qE "^/(usr/)?s?bin/$b$" <<<"$L" && ok "Programm: $b" || ko "Programm fehlt: $b"
 done

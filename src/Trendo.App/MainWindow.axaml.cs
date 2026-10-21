@@ -15,7 +15,7 @@ using Path = System.IO.Path;
 namespace Trendo.App;
 
 /// <summary>Trendo-OS-Desktop nach Designkonzept (docs/design). Zeigt ausschließlich echte Zustände und Messwerte.</summary>
-public sealed class MainWindow : Window
+public sealed partial class MainWindow : Window
 {
     // Farben: dunkles Blau, Glas-Panels, kühle Akzente
     private static readonly IBrush Glass = new SolidColorBrush(Color.Parse("#B30B1730"));
@@ -107,7 +107,7 @@ public sealed class MainWindow : Window
         _showMap = new()
         {
             ["start"] = DesktopView, ["studios"] = StudiosView, ["projects"] = ProjectsView,
-            ["approvals"] = ApprovalsView, ["system"] = SystemView, ["apps"] = AppsView, ["ki"] = KiView, ["settings"] = SettingsView, ["components"] = ComponentsView, ["studio-deps"] = StudioDepsView, ["keys"] = KeysView, ["notbuilt"] = NotBuiltView,
+            ["approvals"] = ApprovalsView, ["system"] = SystemView, ["apps"] = AppsView, ["ki"] = KiView, ["settings"] = SettingsView, ["components"] = ComponentsView, ["studio-deps"] = StudioDepsView, ["keys"] = KeysView, ["notbuilt"] = NotBuiltView, ["fortschritt"] = ProgressView,
         };
         string[] order = ["start", "studios", "projects", "approvals", "system"];
         for (var i = 0; i < order.Length; i++)
@@ -115,7 +115,8 @@ public sealed class MainWindow : Window
             var key = order[i];
             KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.D1 + i, KeyModifiers.Control), Command = new RelayCommand(() => Show(key)) });
         }
-        Show(opt.Page ?? "start");
+        InitSetup(opt);
+        Show(opt.Page ?? (NeedsSetup(opt) ? "einrichtung" : "start"));
         RefreshStatusBar();
 
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
@@ -723,10 +724,43 @@ public sealed class MainWindow : Window
         return Page("Freigaben", sp);
     }
 
+    // ---------- Fortschritt: Status live aus requirements.yaml, Reihenfolge aus docs/buildplan.json ----------
+    private Control ProgressView()
+    {
+        var sp = new StackPanel { Spacing = 6 };
+        var req = TrendoCore.FindRequirements(AppContext.BaseDirectory);
+        var plan = req is null ? null : Path.Combine(Path.GetDirectoryName(req)!, "buildplan.json");
+        if (plan is null || !File.Exists(plan)) { sp.Children.Add(P("Bauplan nicht gefunden (requirements.yaml / buildplan.json).", Text)); return Page("Fortschritt", sp); }
+        var mods = Progress.Load(req!, plan);
+        var done = mods.Count(m => m.Done); var subs = mods.SelectMany(m => m.Subs).ToList();
+        sp.Children.Add(P($"{done} von {mods.Count} Modulen fertig und getestet · Teilanforderungen (Brief/Business): {subs.Count(x => Progress.GermanStatus(x) == "Fertig & getestet")} von {subs.Count}. Quelle: requirements.yaml (keine geschönten Angaben).", Text));
+        foreach (var w in mods.GroupBy(m => m.Wave))
+        {
+            var list = w.ToList();
+            sp.Children.Add(H($"{w.Key} · {list[0].WaveName}  ({list.Count(m => m.Done)}/{list.Count})", 15));
+            var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("180,*,150") };
+            var r = 0;
+            foreach (var m in list)
+            {
+                grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+                var st = Progress.GermanStatus(m.Module);
+                var cells = new Control[] { P(m.Module.Id, null, 11), P(m.Module.Name + (m.Subs.Count > 0 ? $"  ·  {m.Subs.Count} Teilanforderungen" : ""), Text, 12),
+                    new Border { CornerRadius = new CornerRadius(6), Padding = new Thickness(6, 1), Margin = new Thickness(0, 1), HorizontalAlignment = HorizontalAlignment.Left,
+                        Background = Brush.Parse(st switch { "Fertig & getestet" => "#3322C55E", "In Arbeit" or "Gebaut, Test offen" => "#33FACC15", _ => "#22FFFFFF" }),
+                        Child = P(st, Text, 11) } };
+                for (var c = 0; c < 3; c++) { Grid.SetRow(cells[c], r); Grid.SetColumn(cells[c], c); grid.Children.Add(cells[c]); }
+                r++;
+            }
+            sp.Children.Add(grid);
+        }
+        return Page("Fortschritt", sp);
+    }
+
     private Control SystemView()
     {
         var sp = new StackPanel { Spacing = 4 };
-        sp.Children.Add(P("Datenordner: lokal im Benutzerprofil (TrendoOS)"));
+        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Nav2("Systemcheck", "systemcheck"), Nav2("Sicherung", "sicherung"), Nav2("Bau-Fortschritt", "fortschritt"), Nav2("Einrichtung erneut", "einrichtung") } });
+        sp.Children.Add(P($"Benutzerdaten: {_core.DataRoot} (bleiben bei Update und Deinstallation erhalten)"));
         sp.Children.Add(P($"Secrets-Backend: {_core.Secrets.BackendName}"));
         sp.Children.Add(P($"Audit-Log: {_core.Audit.ReadAll().Count} Einträge, Hash-Kette {(_core.Audit.Verify() ? "intakt" : "BESCHÄDIGT")}"));
         foreach (var e in _core.Audit.ReadAll().TakeLast(15).Reverse())

@@ -1,0 +1,25 @@
+PASS  squashfs vorhanden (/live/filesystem.squashfs)
+PASS  UEFI-Bootloader vorhanden
+PASS  BIOS-Bootloader vorhanden
+PASS  Boot-Option LUKS-Persistenz (GRUB)
+PASS  Trendo-App unter /opt/trendo
+PASS  udev-Schutzregel Windows/BitLocker
+PASS  Autostart-Eintrag
+PASS  SDDM-Autologin-Konfiguration
+PASS  Tastatur de (etc/default/keyboard)
+PASS  Autologin-Benutzer trendo
+PASS  user-setup (Live-Benutzer wird angelegt)
+PASS  X11-Tastatur de (Anmeldebildschirm)
+PASS  Plasma-Tastatur de (kxkbrc)
+PASS  Programm: chromium
+PASS  Programm: libreoffice
+PASS  Programm: mpv
+PASS  Programm: okular
+PASS  Programm: dolphin
+PASS  Programm: konsole
+PASS  Programm: git
+PASS  Programm: python3
+PASS  Programm: tesseract
+PASS  Programm: cryptsetup
+PASS  Sprache de_DE + Tastatur de (Bootparameter)
+ERGEBNIS: ALLE BESTANDEN
