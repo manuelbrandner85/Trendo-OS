@@ -233,7 +233,7 @@ Spezial-Studios auf Basis der fertigen Kernbausteine
 | 7 | SPEC-08 | Fashion & Product 2.0 | IMPLEMENTED | TESTED_BOX |
 | 8 | SPEC-09 | 3D Scanning & Reconstruction 2.0 | IMPLEMENTED | TESTED_BOX |
 | 9 | SPEC-10 | Digital Twin 2.0 | IMPLEMENTED | TESTED_BOX |
-| 10 | SPEC-13 | Maps & Geospatial 2.0 | NOT_STARTED | NOT_RUN |
+| 10 | SPEC-13 | Maps & Geospatial 2.0 | IMPLEMENTED | TESTED_BOX |
 | 11 | SPEC-14 | Manufacturing & CNC 2.0 | NOT_STARTED | NOT_RUN |
 | 12 | SPEC-15 | Broadcast & Streaming 2.0 | NOT_STARTED | NOT_RUN |
 | 13 | SPEC-16 | Transport & Vehicle 2.0 | NOT_STARTED | NOT_RUN |
