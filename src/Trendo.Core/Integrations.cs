@@ -38,6 +38,14 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
         return gate.Request(by, OpenUrl, $"URL im Standardbrowser öffnen: {u.Host}", u.AbsoluteUri);
     }
 
+    /// <summary>Direkter Start durch den lokalen Owner per Klick (Dock/Schnellstart). Kein Agent darf das; wird auditiert.</summary>
+    public void LaunchDirect(Principal by, string target, AuditLog audit)
+    {
+        Rbac.Demand(by, Permission.ApproveAction, audit);
+        audit.Append(by.Name, "user.direct_launch", target);
+        launcher.Open(target);
+    }
+
     public void Execute(ApprovalRequest r) =>
         gate.Execute(r.Id, r.Action, r.Target, () => { launcher.Open(r.Target); return true; });
 }

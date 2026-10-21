@@ -12,6 +12,8 @@ class Program
     [STAThread]
     public static int Main(string[] args)
     {
+        // Velopack: verarbeitet Installations-/Deinstallations-Hooks des Setup.exe (muss zuerst laufen)
+        Velopack.VelopackApp.Build().Run();
         string? Arg(string n) { var i = Array.IndexOf(args, n); return i >= 0 && i + 1 < args.Length ? args[i + 1] : null; }
         Options = new AppOptions(Arg("--data-root"), Arg("--screenshot"),
             int.TryParse(Arg("--auto-exit"), out var s) ? s : (args.Contains("--smoke") ? 5 : 0),

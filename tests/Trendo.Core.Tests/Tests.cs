@@ -306,3 +306,28 @@ public class Rbac_Core
     [InlineData(Role.User, Permission.ViewAudit, false)] [InlineData(Role.Owner, Permission.ApproveAction, true)]
     public void Matrix(Role r, Permission p, bool expected) => Assert.Equal(expected, Rbac.Has(new Principal("x", r), p));
 }
+
+public class Metrics_Core
+{
+    [Fact(DisplayName = "Systemmetriken: RAM/Disk echt messbar, CPU nach zweitem Messpunkt, Werte 0–100 oder null")]
+    public void Metrics_plausible()
+    {
+        var m = new SystemMetrics();
+        var a = m.Sample();
+        Assert.Null(a.CpuPercent); // erster Messpunkt hat kein Intervall
+        Thread.Sleep(300);
+        var b = m.Sample();
+        foreach (var v in new[] { b.CpuPercent, b.RamPercent, b.DiskPercent, b.GpuPercent })
+            if (v is { } x) Assert.InRange(x, 0, 100);
+        Assert.NotNull(b.RamPercent); Assert.NotNull(b.DiskPercent);
+    }
+
+    [Fact(DisplayName = "Direktstart: nur Owner, auditiert")]
+    public void Direct_launch_owner_only()
+    {
+        using var f = new Fixture();
+        Assert.Throws<UnauthorizedAccessException>(() => f.Core.Integrations.LaunchDirect(new Principal("u", Role.User), "x", f.Core.Audit));
+        f.Core.Integrations.LaunchDirect(Principal.LocalOwner, "x", f.Core.Audit);
+        Assert.Single(f.Launcher.Opened);
+    }
+}
