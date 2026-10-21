@@ -34,6 +34,10 @@ public sealed class UserSettings
     public bool AutoUpdate { get; set; } = true;
     public int BackupEveryHours { get; set; } = 24;
     public bool SetupDone { get; set; }
+    /// <summary>SYS-12: Anzeigegröße (1,0 = normal; 1,15 = groß; 1,3 = sehr groß).</summary>
+    public double UiScale { get; set; } = 1.0;
+    public static readonly double[] UiScales = [1.0, 1.15, 1.3];
+    public static double ClampScale(double v) => UiScales.OrderBy(x => Math.Abs(x - v)).First();
 
     public static readonly string[] Themes = ["dunkel", "hell", "kontrast"];
     public static readonly string[] Wallpapers = ["bergsee-nacht", "polarlicht", "wellen", "morgen"];

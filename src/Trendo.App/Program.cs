@@ -3,7 +3,7 @@ using Trendo.Core;
 
 namespace Trendo.App;
 
-public sealed record AppOptions(string? DataRoot, string? ScreenshotPath, int AutoExitSeconds, bool Offline = false, int? ApiPort = null, bool FirstRun = false, string? Page = null, string? KiAsk = null);
+public sealed record AppOptions(string? DataRoot, string? ScreenshotPath, int AutoExitSeconds, bool Offline = false, int? ApiPort = null, bool FirstRun = false, string? Page = null, string? KiAsk = null, string? Query = null);
 
 class Program
 {
@@ -21,7 +21,7 @@ class Program
             int.TryParse(Arg("--auto-exit"), out var s) ? s : (args.Contains("--smoke") ? 5 : 0),
             args.Contains("--offline"),
             args.Contains("--api") ? (int.TryParse(Arg("--api-port"), out var ap) ? ap : 47800) : null,
-            FirstRun: !args.Contains("--no-first-run"), Page: Arg("--page"), KiAsk: Arg("--ki-ask"));
+            FirstRun: !args.Contains("--no-first-run"), Page: Arg("--page"), KiAsk: Arg("--ki-ask"), Query: Arg("--query"));
 
         var crashRoot = Options.DataRoot ?? TrendoCore.DefaultDataRoot();
         AppDomain.CurrentDomain.UnhandledException += (_, e) => { if (e.ExceptionObject is Exception ex) try { CrashLog.Write(crashRoot, ex, "Programm"); } catch { } };
