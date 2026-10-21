@@ -64,3 +64,37 @@ public class SPEC03_Engineering
         Assert.Throws<ArgumentException>(() => Engineering.Convert(1, "m", "bar"));
     }
 }
+
+public static class Glb
+{
+    /// <summary>Echte, minimale GLB-Datei mit einem Dreiecksnetz (tris Dreiecke).</summary>
+    public static string Write(string dir, long tris, int textures = 0)
+    {
+        var json = $"{{\"asset\":{{\"version\":\"2.0\",\"generator\":\"Test\"}},\"meshes\":[{{\"primitives\":[{{\"attributes\":{{\"POSITION\":0}},\"indices\":1,\"material\":0}}]}}],\"materials\":[{{}}],\"accessors\":[{{\"count\":{tris * 3}}},{{\"count\":{tris * 3}}}],\"textures\":[{string.Join(",", Enumerable.Repeat("{}", textures))}],\"nodes\":[{{\"mesh\":0}}]}}";
+        while (json.Length % 4 != 0) json += " ";
+        var j = System.Text.Encoding.UTF8.GetBytes(json);
+        var p = Path.Combine(dir, $"m{tris}.glb");
+        using var w = new BinaryWriter(File.Create(p));
+        w.Write(0x46546C67u); w.Write(2u); w.Write((uint)(12 + 8 + j.Length)); w.Write((uint)j.Length); w.Write(0x4E4F534Au); w.Write(j);
+        return p;
+    }
+}
+
+public class SPEC04_Xr
+{
+    [Fact(DisplayName = "SPEC-04: GLB lesen, Dreiecke zählen, Geräte-Grenzen und Bildzeit prüfen")]
+    public void Inspect()
+    {
+        using var f = new Fixture(); Directory.CreateDirectory(f.Root);
+        var small = XrInspector.Inspect(Glb.Write(f.Root, 1000));
+        Assert.Equal(1000, small.Triangles); Assert.Equal(1, small.Primitives); Assert.Equal("Test", small.Generator);
+        Assert.All(XrInspector.Budgets, b => Assert.True(XrInspector.Check(small, b).Ok));
+        var big = XrInspector.Inspect(Glb.Write(f.Root, 1_000_000, 50));
+        var q3 = XrInspector.Check(big, XrInspector.Budgets[0]);
+        Assert.False(q3.Ok); Assert.Contains(q3.Problems, p => p.Contains("Dreiecke")); Assert.Contains(q3.Problems, p => p.Contains("Texturen"));
+        Assert.True(XrInspector.Check(big, XrInspector.Budgets[3]).Ok);
+        var bad = Path.Combine(f.Root, "x.glb"); File.WriteAllText(bad, "kaputt");
+        Assert.Throws<InvalidOperationException>(() => XrInspector.Inspect(bad));
+        Assert.Equal((13.89, true, 13.6), XrInspector.FrameBudget(72, 12));
+    }
+}

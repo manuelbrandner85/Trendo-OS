@@ -245,8 +245,9 @@ modules:
   name: VR/AR/MR 2.0
   approved_expansion_functions: '16'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w23/SPEC-04.md
 - id: SPEC-05
   name: Science & Research 2.0
   approved_expansion_functions: '16'

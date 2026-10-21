@@ -60,3 +60,33 @@ public class SPEC03_Ui
         Assert.Contains("6,8948 bar", W6Ui.Run(w, "eng-unit"));
     }
 }
+
+public class SPEC04_Ui
+{
+    [AvaloniaFact(DisplayName = "SPEC-04 UI: GLB-Modell prüfen und Bildzeit")]
+    public void Xr()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        w.Show(MainWindow.StudioPages["SPEC-04"]);
+        var o = W6Ui.Run(w, "xr-check", ("file", Glb.Write(root, 500_000)));
+        Assert.Contains("500.000 Dreiecke", o); Assert.Contains("⚠ Meta Quest 2", o); Assert.Contains("✓ PC-VR", o);
+        Assert.Contains("⚠", W6Ui.Run(w, "xr-check", ("file", "/gibtsnicht.glb")));
+        Assert.Contains("Ruckelt", W6Ui.Run(w, "xr-frame", ("ms", "20")));
+    }
+}
+
+public static class Glb
+{
+    /// <summary>Echte, minimale GLB-Datei mit einem Dreiecksnetz (tris Dreiecke).</summary>
+    public static string Write(string dir, long tris, int textures = 0)
+    {
+        var json = $"{{\"asset\":{{\"version\":\"2.0\",\"generator\":\"Test\"}},\"meshes\":[{{\"primitives\":[{{\"attributes\":{{\"POSITION\":0}},\"indices\":1,\"material\":0}}]}}],\"materials\":[{{}}],\"accessors\":[{{\"count\":{tris * 3}}},{{\"count\":{tris * 3}}}],\"textures\":[{string.Join(",", Enumerable.Repeat("{}", textures))}],\"nodes\":[{{\"mesh\":0}}]}}";
+        while (json.Length % 4 != 0) json += " ";
+        var j = System.Text.Encoding.UTF8.GetBytes(json);
+        var p = Path.Combine(dir, $"m{tris}.glb");
+        using var w = new BinaryWriter(File.Create(p));
+        w.Write(0x46546C67u); w.Write(2u); w.Write((uint)(12 + 8 + j.Length)); w.Write((uint)j.Length); w.Write(0x4E4F534Au); w.Write(j);
+        return p;
+    }
+}
+

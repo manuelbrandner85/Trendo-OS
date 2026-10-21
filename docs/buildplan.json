@@ -648,14 +648,14 @@
    {
     "id": "BUS-003",
     "title": "Competitor & Market Intelligence",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-004",
     "title": "Customer Problem & Niche Discovery",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-005",
@@ -666,26 +666,26 @@
    {
     "id": "BUS-006",
     "title": "Business Innovation Engine",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-007",
     "title": "Cross-Industry Business Fusion",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-008",
     "title": "Originality & Similarity Research",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-009",
     "title": "Market Validation & Prototype Laboratory",
-    "impl": "NOT_STARTED",
-    "test": "NOT_RUN"
+    "impl": "IMPLEMENTED",
+    "test": "TESTED_BOX"
    },
    {
     "id": "BUS-010",
@@ -898,8 +898,8 @@
   "order": 4,
   "id": "SPEC-04",
   "name": "VR/AR/MR 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
