@@ -244,3 +244,24 @@ public class SPEC13_Geo
         Assert.Throws<FormatException>(() => Geo.ParseCoord("95 10"));
     }
 }
+
+public class SPEC14_Cnc
+{
+    [Fact(DisplayName = "SPEC-14: G-Code (G0/G1/G2/G3, G20/G91), Wege, Zeit, Grenzen, Warnungen, Schnittwerte")]
+    public void Gcode()
+    {
+        var g = "%\n(Quadrat) G21 G90\nT1 M6\nS18000 M3\nG0 X0 Y0 Z5\nG1 Z-1 F100\nG1 X100 F1000 ; unten\nY100\nX0\nY0\nG0 Z5\nG2 X20 Y0 I10 J0 F500\nM30\n%";
+        var r = Cnc.Analyse(g, 3000);
+        Assert.Equal(400 + 6 + Math.PI * 10, r.CutMm, 0);
+        Assert.Equal(Math.Round(Math.Sqrt(25) + 6, 1), r.RapidMm);
+        var expect = 6 / 100.0 + 400 / 1000.0 + Math.PI * 10 / 500.0 + (5 + 6) / 3000.0; // Minuten (Bogen: Z5 → 5 mm Eilgang-Ansatz 5 + 6 Rückzug)
+        Assert.Equal(expect * 60, r.Time.TotalSeconds, 0);
+        Assert.Equal((0, 0, -1, 100, 100, 5), (r.Box.X0, Math.Round(r.Box.Y0, 6), r.Box.Z0, r.Box.X1, r.Box.Y1, r.Box.Z1));
+        Assert.Equal([1], r.Tools); Assert.Equal(18000, r.MaxSpindle); Assert.Empty(r.Warnings); Assert.Contains("<path", r.Svg);
+        var w = Cnc.Analyse("G20 G91\nG1 X1 Y1\nG0 X1 Z-0.5", 3000, (20, 20, 50));
+        Assert.Equal(Math.Sqrt(2) * 25.4, w.CutMm, 0);
+        Assert.Contains(w.Warnings, x => x.Contains("ohne Vorschub")); Assert.Contains(w.Warnings, x => x.Contains("Eilgang schräg")); Assert.Contains(w.Warnings, x => x.Contains("Arbeitsraum"));
+        Assert.Throws<InvalidOperationException>(() => Cnc.Analyse("hallo"));
+        var fd = Cnc.Feeds("Aluminium", 6, 2); Assert.Equal(13263, fd.Rpm); Assert.Equal(1061, fd.FeedMmMin); Assert.True(Cnc.Feeds("Holz", 3, 1).Limited);
+    }
+}
