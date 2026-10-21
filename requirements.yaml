@@ -53,8 +53,8 @@ modules:
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
   implementation_status: IN_PROGRESS
-  test_status: TESTED_BOX
-  evidence: reports/w1/CORE-01.txt
+  test_status: PC_VERIFIED
+  evidence: reports/w1/pc/README.md
 - id: CORE-02
   name: Trendo Intelligence Core
   approved_expansion_functions: BASE
@@ -140,15 +140,15 @@ modules:
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IN_PROGRESS
-  test_status: TESTED_BOX
-  evidence: reports/w1/SYS-02.txt
+  test_status: PC_VERIFIED
+  evidence: reports/w1/pc/README.md
 - id: SYS-03
   name: Ultimate Browser Internet & Download Center
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IN_PROGRESS
-  test_status: TESTED_BOX
-  evidence: reports/w1/SYS-03.txt
+  test_status: PC_VERIFIED
+  evidence: reports/w1/pc/README.md
 - id: SYS-04
   name: Ultimate App Installation & System Control Center
   approved_expansion_functions: '25'
@@ -190,15 +190,15 @@ modules:
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IN_PROGRESS
-  test_status: TESTED_BOX
-  evidence: reports/w1/SYS-10.txt
+  test_status: PC_VERIFIED
+  evidence: reports/w1/pc/README.md
 - id: SYS-11
   name: Ready-to-Run & Software Integration
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IN_PROGRESS
-  test_status: TESTED_BOX
-  evidence: reports/w1/SYS-11.txt
+  test_status: PC_VERIFIED
+  evidence: reports/w1/pc/README.md
 - id: SYS-12
   name: Adaptive Interface Accessibility & Personalization
   approved_expansion_functions: '25'
@@ -211,8 +211,8 @@ modules:
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IN_PROGRESS
-  test_status: TESTED_BOX
-  evidence: reports/w1/SYS-13.txt
+  test_status: PC_VERIFIED
+  evidence: reports/w1/pc/README.md
 - id: SPEC-01
   name: Architecture & Interior 2.0
   approved_expansion_functions: '16'
@@ -366,8 +366,8 @@ modules:
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
   implementation_status: IN_PROGRESS
-  test_status: TESTED_BOX
-  evidence: reports/w1/X-09.txt
+  test_status: PC_VERIFIED
+  evidence: reports/w1/pc/README.md
 - id: X-10
   name: Legal Clean-Room Software Reconstruction
   approved_expansion_functions: BASE
@@ -391,8 +391,8 @@ modules:
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IN_PROGRESS
-  test_status: TESTED_BOX
-  evidence: reports/w1/STUDIO-LETTER-01.txt
+  test_status: PC_VERIFIED
+  evidence: reports/w1/pc/README.md
 business_requirements:
 - id: BUS-001
   module: STUDIO-ONLINE-BUSINESS-01
@@ -704,8 +704,8 @@ letter_requirements:
   title: DOCX ODT PDF Print Production Engine
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w1/STUDIO-LETTER-01.txt
+  test_status: PC_VERIFIED
+  evidence: reports/w1/pc/README.md
 - id: LETTER-017
   module: STUDIO-LETTER-01
   title: Personal & Business Letterhead Vault
