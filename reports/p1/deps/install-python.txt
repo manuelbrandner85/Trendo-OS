@@ -1,0 +1,39 @@
+Admin: False
+Start: 2026-10-21T16:00:47.1349164+02:00
+Freigabe AD157A01 erteilt f³r python
+  python: Gefunden Python 3.13 [Python.Python.3.13] Version 3.13.15
+  python: Diese Anwendung wird von ihrem Besitzer an Sie lizenziert.
+  python: Microsoft ist nicht verantwortlich und erteilt keine Lizenzen f├╝r Pakete von Drittanbietern.
+  python: Download l├ñuft https://www.python.org/ftp/python/3.13.15/python-3.13.15-amd64.exe
+  python: Der Installer-Hash wurde erfolgreich ├╝berpr├╝ft
+  python: Paketinstallation wird gestartet...
+  python: Erfolgreich installiert
+PASS  Installation Python 3.13
+dotnet       Bundled      Bundled                                             MIT
+avalonia     Bundled      Bundled                                             MIT / BSD-3-Clause
+inter        Bundled      Bundled                                             SIL OFL 1.1
+velopack     Bundled      Bundled                                             MIT
+yamldotnet   Bundled      Bundled                                             MIT
+wallpaper    Bundled      Bundled                                             Eigenes Projekt-Asset (KI-generiert)
+webview2     NotNeeded    NotNeeded                                           Microsoft
+ollama       AutoUser     Missing                                             MIT
+model        AutoUser     Missing                                             Apache-2.0
+git          AutoUser     Working    git version 2.55.0.windows.3             GPL-2.0
+python       AutoUser     Working    Python 3.13.15                           PSF-2.0
+mpv          AutoUser     Missing                                             GPL-2.0-or-later
+libreoffice  AutoElevated Missing                                             MPL-2.0
+blender      AutoElevated Working    Blender 5.2.1 LTS                        GPL-3.0-or-later
+krita        AutoElevated Missing                                             GPL-3.0
+inkscape     AutoElevated Missing                                             GPL-2.0
+kdenlive     AutoUser     Missing                                             GPL-3.0
+audacity     AutoElevated Missing                                             GPL-3.0-or-later
+tesseract    AutoElevated Missing                                             Apache-2.0
+unreal       Guided       Working    ++UE5+Release-5.8-CL-58210709            Epic EULA (nicht weitergebbar)
+chrome       Guided       Missing                                             Google-Lizenz (proprietõr)
+grokbuild    Guided       Missing                                             Konto/Berechtigung erforderlich
+tor          Guided       Missing                                             BSD-3-Clause u. a.
+chromium     NotNeeded    NotNeeded                                           BSD-3-Clause
+grokbot      NotNeeded    NotNeeded                                           Kontotarif
+
+Ende: 2026-10-21T16:01:14.4639587+02:00
+Python 3.13.15

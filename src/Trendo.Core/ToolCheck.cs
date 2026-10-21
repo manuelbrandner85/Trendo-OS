@@ -50,7 +50,10 @@ public static class DependencyChecks
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct); cts.CancelAfter(TimeSpan.FromSeconds(25));
             var (exit, output) = await m.Runner.RunAsync(path, v.VerifyArgs, null, cts.Token);
             var first = output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault() ?? "";
-            if (exit != 0) return new(c, ToolState.Broken, path, null, $"Start fehlgeschlagen (Exit {exit})");
+            if (exit != 0)
+                return path.Contains("WindowsApps", StringComparison.OrdinalIgnoreCase)
+                    ? new(c, ToolState.Missing, null, null, "nur Microsoft-Store-Platzhalter gefunden")
+                    : new(c, ToolState.Broken, path, null, $"Start fehlgeschlagen (Exit {exit})");
             m.Integrate(c.Id, path);
             return new(c, ToolState.Working, path, first.Length > 80 ? first[..80] : first, "funktioniert");
         }

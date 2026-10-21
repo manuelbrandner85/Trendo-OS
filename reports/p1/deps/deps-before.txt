@@ -1,0 +1,26 @@
+dotnet       Bundled      Bundled                                             MIT
+avalonia     Bundled      Bundled                                             MIT / BSD-3-Clause
+inter        Bundled      Bundled                                             SIL OFL 1.1
+velopack     Bundled      Bundled                                             MIT
+yamldotnet   Bundled      Bundled                                             MIT
+wallpaper    Bundled      Bundled                                             Eigenes Projekt-Asset (KI-generiert)
+webview2     NotNeeded    NotNeeded                                           Microsoft
+ollama       AutoUser     Missing                                             MIT
+model        AutoUser     Missing                                             Apache-2.0
+git          AutoUser     Working    git version 2.55.0.windows.3             GPL-2.0
+python       AutoUser     Broken                                              PSF-2.0
+mpv          AutoUser     Missing                                             GPL-2.0-or-later
+libreoffice  AutoElevated Missing                                             MPL-2.0
+blender      AutoElevated Working    Blender 5.2.1 LTS                        GPL-3.0-or-later
+krita        AutoElevated Missing                                             GPL-3.0
+inkscape     AutoElevated Missing                                             GPL-2.0
+kdenlive     AutoUser     Missing                                             GPL-3.0
+audacity     AutoElevated Missing                                             GPL-3.0-or-later
+tesseract    AutoElevated Missing                                             Apache-2.0
+unreal       Guided       Working    ++UE5+Release-5.8-CL-58210709            Epic EULA (nicht weitergebbar)
+chrome       Guided       Missing                                             Google-Lizenz (proprietõr)
+grokbuild    Guided       Missing                                             Konto/Berechtigung erforderlich
+tor          Guided       Missing                                             BSD-3-Clause u. a.
+chromium     NotNeeded    NotNeeded                                           BSD-3-Clause
+grokbot      NotNeeded    NotNeeded                                           Kontotarif
+
