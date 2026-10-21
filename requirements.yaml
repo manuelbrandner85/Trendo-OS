@@ -154,8 +154,9 @@ modules:
   name: Ultimate App Installation & System Control Center
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w23/SYS-04.md
 - id: SYS-05
   name: Universal Automation & Workflow Engine
   approved_expansion_functions: '20'
