@@ -1,13 +1,57 @@
-# Trendo OS – Grok Build projektbezogene Konfiguration (SICHERE VORLAGE)
-# NICHT durch bloßes Umbenennen nicht existierende MCP-Server erfinden.
-# Nach bestätigter Installation und Sicherheitsprüfung kann ein autorisierter Operator
-# konkret geprüfte MCP-Server in einer lokalen, nicht geheimnistragenden config ergänzen.
-# Beispielsyntax laut https://docs.x.ai/build/features/mcp-servers :
-# [mcp_servers.trendo_blender]
-# command = "C:\\PFAD\\ZU\\GEPRUEFTEM\\BLENDER_ADAPTER.exe"
-# args = ["--project", "C:\\TRENDO\\approved-project"]
-# enabled = true
-# [mcp_servers.trendo_unreal]
-# command = "C:\\PFAD\\ZU\\GEPRUEFTEM\\UE_ADAPTER.exe"
-# enabled = true
-# Absichtlich keine aktiven MCP-Server, keine Tokens, keine Zugangsdaten.
+# Trendo OS – projektbezogene Grok-Build-Konfiguration (wirkt nur in einem vertrauten Ordner).
+# Keine MCP-Server, keine Tokens. Grok Bot startet Grok über scripts/grok-trendo.ps1 mit --permission-mode dontAsk:
+# Alles, was hier nicht erlaubt ist, wird abgelehnt. deny gewinnt immer.
+
+[permission]
+rules = [
+  { action = "allow", tool = "read" },
+  { action = "allow", tool = "grep" },
+  { action = "allow", tool = "edit" },
+  { action = "allow", tool = "bash", pattern = "git status*" },
+  { action = "allow", tool = "bash", pattern = "git diff*" },
+  { action = "allow", tool = "bash", pattern = "git log*" },
+  { action = "allow", tool = "bash", pattern = "git show*" },
+  { action = "allow", tool = "bash", pattern = "git branch*" },
+  { action = "allow", tool = "bash", pattern = "git switch *" },
+  { action = "allow", tool = "bash", pattern = "git checkout -b *" },
+  { action = "allow", tool = "bash", pattern = "git add *" },
+  { action = "allow", tool = "bash", pattern = "git commit *" },
+  { action = "allow", tool = "bash", pattern = "git fetch*" },
+  { action = "allow", tool = "bash", pattern = "git pull*" },
+  { action = "allow", tool = "bash", pattern = "git push -u origin grok/*" },
+  { action = "allow", tool = "bash", pattern = "git push origin grok/*" },
+  { action = "allow", tool = "bash", pattern = "dotnet build*" },
+  { action = "allow", tool = "bash", pattern = "dotnet test*" },
+  { action = "allow", tool = "bash", pattern = "dotnet restore*" },
+  { action = "allow", tool = "bash", pattern = "dotnet --version" },
+  { action = "allow", tool = "bash", pattern = "rg *" },
+  { action = "allow", tool = "bash", pattern = "Get-ChildItem*" },
+  { action = "allow", tool = "bash", pattern = "Get-Content*" },
+  { action = "allow", tool = "bash", pattern = "Select-String*" },
+
+  { action = "deny", tool = "bash", pattern = "git push*main*" },
+  { action = "deny", tool = "bash", pattern = "git push*--force*" },
+  { action = "deny", tool = "bash", pattern = "git push*-f *" },
+  { action = "deny", tool = "bash", pattern = "git reset --hard*" },
+  { action = "deny", tool = "bash", pattern = "git rebase*" },
+  { action = "deny", tool = "bash", pattern = "gh release*" },
+  { action = "deny", tool = "bash", pattern = "*installer/release.sh*" },
+  { action = "deny", tool = "bash", pattern = "rm -rf *" },
+  { action = "deny", tool = "bash", pattern = "*Remove-Item*-Recurse*" },
+  { action = "deny", tool = "bash", pattern = "*-Verb RunAs*" },
+  { action = "deny", tool = "bash", pattern = "*winget*" },
+  { action = "deny", tool = "bash", pattern = "*msiexec*" },
+  { action = "deny", tool = "bash", pattern = "*choco *" },
+  { action = "deny", tool = "bash", pattern = "*reg add*" },
+  { action = "deny", tool = "bash", pattern = "*reg delete*" },
+  { action = "deny", tool = "bash", pattern = "*Set-ItemProperty*HK*" },
+  { action = "deny", tool = "bash", pattern = "*Set-ExecutionPolicy*" },
+  { action = "deny", tool = "bash", pattern = "*diskpart*" },
+  { action = "deny", tool = "bash", pattern = "*bcdedit*" },
+  { action = "deny", tool = "bash", pattern = "*Format-Volume*" },
+  { action = "deny", tool = "bash", pattern = "*shutdown*" },
+  { action = "deny", tool = "bash", pattern = "*Stop-Computer*" },
+  { action = "deny", tool = "bash", pattern = "*Restart-Computer*" },
+  { action = "deny", tool = "bash", pattern = "*sc.exe*" },
+  { action = "deny", tool = "bash", pattern = "*netsh*" },
+]
