@@ -555,3 +555,25 @@ public class SPEC16_UiPlus
         Assert.Contains("im Monat", W6Ui.Run(w, "car-year"));
     }
 }
+
+public class CORE09_UiPlus
+{
+    [AvaloniaFact(DisplayName = "CORE-09 UI Ausbau: Bild prüfen und Arm planen")]
+    public void Plus()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        var a = Img.Png(root, 80, 60, (10, 20, 29, 39));
+        var b = Path.Combine(root, "leer.png"); var grey = new byte[80 * 60 * 3]; Array.Fill(grey, (byte)120); File.WriteAllBytes(b, VisionPlus.EncodePng(new RgbImage(80, 60, grey)));
+        w.Show(MainWindow.StudioPages["CORE-09"]);
+        Assert.Contains("1 Objekt(e)", W6Ui.Run(w, "rob-count", ("file", a)));
+        Assert.Contains("Schärfe", W6Ui.Run(w, "rob-exp", ("file", a)));
+        Assert.Contains("Bewegung: 8,3 %", W6Ui.Run(w, "rob-motion", ("file", a), ("file2", b)));
+        W6Ui.Run(w, "rob-mask", ("file", a)); Assert.True(File.Exists(Path.Combine(root, "bild.maske-rot.png")));
+        Assert.Contains("x = 0,0 mm, y = 300,0 mm", W6Ui.Run(w, "rob-cal", ("pt", "100 50")));
+        var pick = W6Ui.Run(w, "rob-pick"); Assert.Contains("5. loslassen", pick); Assert.Contains("Aktion", File.ReadAllText(Path.Combine(MainWindowData(root), "greifbahn.csv")));
+        Assert.Contains("% des Quadrats", W6Ui.Run(w, "rob-reach"));
+        Assert.Contains("1500 µs", W6Ui.Run(w, "rob-servo"));
+        Assert.Contains("2,50 s", W6Ui.Run(w, "rob-prof"));
+    }
+    static string MainWindowData(string root) => Directory.GetDirectories(root, "roboter", SearchOption.AllDirectories).First();
+}
