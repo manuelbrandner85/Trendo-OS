@@ -331,8 +331,9 @@ modules:
   name: Free AI Discovery & Fallback
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w23/X-05.md
 - id: X-06
   name: GitHub Open-Source Integration
   approved_expansion_functions: BASE
