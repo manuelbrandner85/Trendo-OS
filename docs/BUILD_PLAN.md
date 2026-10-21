@@ -133,7 +133,7 @@ Schutz, Wiederherstellung, Apps, Geräte, Netzwerk, Mail
 | 5 | SYS-06 | Ultimate Network File Sharing & Remote Workspace | IMPLEMENTED | TESTED_BOX |
 | 6 | SYS-09 | Communication Mail & Collaboration Center | IMPLEMENTED | TESTED_BOX |
 | 7 | SPEC-12 | Cybersecurity & Forensics 2.0 | IMPLEMENTED | TESTED_BOX |
-| 8 | SYS-08 | Deep Web & Dark Web READ-ONLY Research Studio | NOT_STARTED | NOT_RUN |
+| 8 | SYS-08 | Deep Web & Dark Web READ-ONLY Research Studio | IMPLEMENTED | TESTED_BOX |
 
 Abnahmekriterien je Modul:
 - Modul im Studio-Layout erreichbar (max. 2 Navigationsebenen, deutsche Beschriftung)
