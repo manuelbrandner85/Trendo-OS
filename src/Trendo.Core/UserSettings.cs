@@ -24,6 +24,9 @@ public sealed class UserSettings
     public string NotifyStyle { get; set; } = "normal";
     public bool SimpleMode { get; set; }
     public int[]? WindowRect { get; set; }
+    /// <summary>Startmenü: angeheftete Studios (IDs) und zuletzt benutzte Seiten (neueste zuerst).</summary>
+    public List<string> PinnedStudios { get; set; } = [];
+    public List<string> RecentPages { get; set; } = [];
     public List<string> StudioPacks { get; set; } = [];
     public List<string> HiddenTiles { get; set; } = [];
     public List<string> DockOrder { get; set; } = [];

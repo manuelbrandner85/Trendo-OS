@@ -173,6 +173,7 @@ public sealed partial class MainWindow : Window
         MarkTab(key); MarkSide(key);
         _center.Children.Clear();
         _center.Children.Add(SafeView(key));
+        NoteRecent(key);
         AfterShow(key);
         _bellBadge.Text = _core.Approvals.Pending().Count is var n && n > 0 ? n.ToString() : "";
         RefreshProjects();
@@ -660,7 +661,7 @@ public sealed partial class MainWindow : Window
             new("security", Mdi.ShieldCheck, "#66BB6A", "#1B5E20", "Security Studio", () => null),
         };
         var bar = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, VerticalAlignment = VerticalAlignment.Center };
-        foreach (var a in UserSettings.Ordered(apps, x => x.Id, _settings.DockOrder).Where(x => !_settings.HiddenTiles.Contains("dock-" + x.Id)))
+        foreach (var a in UserSettings.Ordered(apps, x => x.Id, _settings.DockOrder).Where(x => x.Id != "start" && !_settings.HiddenTiles.Contains("dock-" + x.Id)))
         {
             var b = new Button { Name = "dock-" + a.Id, Width = 50, Height = 50, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Content = a.Id is "mail" or "media" or "office" ? Chip(a.Icon, a.C1, a.C2, 38, 0.62, a.Fg) : Ico(a.Icon, 36, Grad(a.C1, a.C2), a.C2) };
             ToolTip.SetTip(b, a.Label); Avalonia.Automation.AutomationProperties.SetName(b, a.Label);
@@ -689,7 +690,7 @@ public sealed partial class MainWindow : Window
         }
         var trash = new Button { Name = "dock-trash", Width = 46, Height = 46, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Content = Ico(Mdi.Delete, 34, Grad("#ECEFF1", "#90A4AE")) };
         ToolTip.SetTip(trash, "Papierkorb"); trash.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, "shell:RecycleBinFolder", _core.Audit);
-        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 14, Children = { bar, new Border { Width = 1, Height = 40, Background = Brush.Parse("#553F7FD0") }, trash } };
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 14, Children = { StartButton(), new Border { Width = 1, Height = 40, Background = Brush.Parse("#553F7FD0") }, bar, new Border { Width = 1, Height = 40, Background = Brush.Parse("#553F7FD0") }, trash } };
         return new Border { Background = Brush.Parse(C("#B30A1630", "#CCF2F6FC")), BorderBrush = Brush.Parse("#664C8DFF"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(16), Padding = new Thickness(18, 9),
             HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 6, 0, 26), Child = row, BoxShadow = BoxShadows.Parse("0 0 24 0 #442F86F6") };
     }
