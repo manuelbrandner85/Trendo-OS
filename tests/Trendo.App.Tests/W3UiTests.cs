@@ -25,3 +25,18 @@ public class CORE11_Ui
         Assert.Contains("1 Fundstelle", w.Find<TextBlock>("sec-msg").Text);
     }
 }
+
+public class X02_Ui
+{
+    [AvaloniaFact(DisplayName = "X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen")]
+    public void Heal_page()
+    {
+        var (w, _, _) = Ui.Open();
+        w.StartupHeal!.Wait(5000); W2Ui.Settle();
+        Assert.NotEmpty(w.LastHeal);
+        w.Show("heilung");
+        Assert.NotEqual("Noch nicht geprüft.", w.Find<TextBlock>("heal-summary").Text);
+        w.Find<Button>("heal-run").Press();
+        Assert.NotNull(w.TryFind<Button>("sys-tab-schutz"));
+    }
+}
