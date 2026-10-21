@@ -141,3 +141,19 @@ public class SPEC08_Ui
         Assert.Contains("39,90 €", W6Ui.Run(w, "fa-price"));
     }
 }
+
+public class SPEC09_Ui
+{
+    [AvaloniaFact(DisplayName = "SPEC-09 UI: Scan lesen und bereinigt speichern")]
+    public void Scan()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        var f = Path.Combine(root, "s.xyz");
+        File.WriteAllLines(f, Enumerable.Range(0, 400).Select(i => $"{i % 20 * 0.002} {i / 20 * 0.002} 0").Append("3 3 3"));
+        w.Show(MainWindow.StudioPages["SPEC-09"]);
+        Assert.Contains("401 Punkte", W6Ui.Run(w, "scan-info", ("file", f)));
+        var o = W6Ui.Run(w, "scan-clean", ("file", f), ("voxel", "0,004"), ("radius", "0,01"));
+        Assert.Contains("1 Störpunkte", o); Assert.Contains("100 Punkte", o);
+        Assert.True(File.Exists(Path.Combine(root, "s.bereinigt.ply")));
+    }
+}

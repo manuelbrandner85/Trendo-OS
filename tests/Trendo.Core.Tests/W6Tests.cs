@@ -157,3 +157,35 @@ public class SPEC08_Fashion
         var p = Fashion.Price(8, 12, 20, 40); Assert.Equal(24, p.Cost); Assert.Equal(39.9, p.Gross); Assert.True(p.MarginPct > 25);
     }
 }
+
+public class SPEC09_Scan
+{
+    [Fact(DisplayName = "SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern")]
+    public void Cloud()
+    {
+        using var f = new Fixture(); Directory.CreateDirectory(f.Root);
+        var xyz = Path.Combine(f.Root, "a.xyz");
+        var lines = new List<string>(); for (var i = 0; i < 10; i++) for (var j = 0; j < 10; j++) lines.Add($"{i * 0.01} {j * 0.01} 0 200 100 50");
+        lines.Add("5 5 5 255 0 0"); File.WriteAllLines(xyz, lines);
+        var pc = PointCloud.Load(xyz); var info = pc.Info();
+        Assert.Equal(101, info.Points); Assert.True(info.HasColor); Assert.Equal(5, info.SizeZ);
+        var clean = pc.RemoveOutliers(0.015, 2); Assert.Equal(100, clean.Points.Count);
+        var ds = clean.Downsample(0.02); Assert.Equal(25, ds.Points.Count); Assert.Equal(200, ds.Colors![0].R);
+        var ply = Path.Combine(f.Root, "o.ply"); ds.SavePly(ply);
+        var back = PointCloud.Load(ply); Assert.Equal(25, back.Points.Count); Assert.Equal(ds.Info().Center.X, back.Info().Center.X, 5);
+        // binäres PLY
+        var bin = Path.Combine(f.Root, "b.ply");
+        using (var w = new BinaryWriter(File.Create(bin)))
+        {
+            w.Write(System.Text.Encoding.ASCII.GetBytes("ply\nformat binary_little_endian 1.0\nelement vertex 2\nproperty float x\nproperty float y\nproperty float z\nproperty uchar red\nproperty uchar green\nproperty uchar blue\nelement face 0\nproperty list uchar int vertex_indices\nend_header\n"));
+            w.Write(1f); w.Write(2f); w.Write(3f); w.Write((byte)9); w.Write((byte)8); w.Write((byte)7);
+            w.Write(4f); w.Write(5f); w.Write(6f); w.Write((byte)1); w.Write((byte)2); w.Write((byte)3);
+        }
+        var b = PointCloud.Load(bin); Assert.Equal(new P3(4, 5, 6), b.Points[1]); Assert.Equal((byte)9, b.Colors![0].R);
+        var obj = Path.Combine(f.Root, "m.obj"); File.WriteAllText(obj, "# x\nv 0 0 0\nv 1 0 0\nvn 0 0 1\nv 0 1 0\nf 1 2 3\n");
+        Assert.Equal(3, PointCloud.Load(obj).Points.Count);
+        Assert.Throws<InvalidOperationException>(() => PointCloud.Load(Path.Combine(f.Root, "a.xyz").Replace("a.xyz", "x.stl").Also()));
+    }
+}
+
+static class TestExt { public static string Also(this string p) { File.WriteAllText(p, "solid"); return p; } }

@@ -15,7 +15,7 @@ public partial class MainWindow
 
     private void InitWave6()
     {
-        InitSpec01(); InitSpec02(); InitSpec03(); InitSpec04(); InitSpec05(); InitSpec06(); InitSpec08();
+        InitSpec01(); InitSpec02(); InitSpec03(); InitSpec04(); InitSpec05(); InitSpec06(); InitSpec08(); InitSpec09();
     }
 
     private Control FachPage(string title, Control body) => W45Page(title, FachTabs, "fach", body);
