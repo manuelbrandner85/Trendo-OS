@@ -110,3 +110,43 @@ public class CORE10_Knowledge
         Assert.Single(a.Sources);
     }
 }
+
+public class CORE12_Prompts
+{
+    [Fact(DisplayName = "CORE-12: Platzhalter mit Standardwert ausfüllen, fehlende werden genannt")]
+    public void Fill_vars()
+    {
+        var t = "Erkläre {{Thema}} für {{Alter|12}}-Jährige. {{Thema}}!";
+        Assert.Equal([("Thema", null), ("Alter", "12")], PromptLibrary.Variables(t));
+        var (txt, miss) = PromptLibrary.Fill(t, new Dictionary<string, string> { ["Thema"] = "Strom" });
+        Assert.Equal("Erkläre Strom für 12-Jährige. Strom!", txt); Assert.Empty(miss);
+        Assert.Equal(["Thema"], PromptLibrary.Fill(t, new Dictionary<string, string>()).Missing);
+    }
+
+    [Fact(DisplayName = "CORE-12: Versionen speichern und zurückholen, Mitgelieferte nicht löschbar")]
+    public void Versions()
+    {
+        using var f = new Fixture();
+        var lib = new PromptLibrary(f.Root, f.Core.Audit);
+        Assert.Equal(PromptLibrary.Defaults.Length, lib.All().Count);
+        var p = lib.Save(null, "Mein Test", "Test", "Schreibe A");
+        lib.Save(p.Id, "Mein Test", "Test", "Schreibe B");
+        Assert.Equal(2, lib.Get(p.Id)!.Version);
+        lib.Restore(p.Id, 1);
+        var re = new PromptLibrary(f.Root, f.Core.Audit).Get(p.Id)!;
+        Assert.Equal("Schreibe A", re.Text); Assert.Equal(3, re.Version);
+        Assert.False(lib.Delete("zusammenfassen")); Assert.True(lib.Delete(p.Id));
+    }
+
+    [Fact(DisplayName = "CORE-12: Qualitätsprüfung erkennt kurze Aufträge, Geheimnisse, offene Platzhalter; Masterprompt hat Regeln")]
+    public void Check_and_master()
+    {
+        Assert.Contains(PromptLibrary.Check("Hund"), h => h.Text.Contains("kurz"));
+        Assert.Contains(PromptLibrary.Check("Schreibe in 3 Sätzen. password: geheim123"), h => h.Text.Contains("Passwort"));
+        Assert.Contains(PromptLibrary.Check("Schreibe {{Thema in 3 Sätzen über Hunde"), h => h.Text.Contains("Platzhalter"));
+        Assert.Equal("ok", PromptLibrary.Check("Erkläre Photosynthese in 3 kurzen Sätzen.")[0].Level);
+        var m = PromptLibrary.Master("ein Lehrer", "Plan für Mathe", "", "Tabelle", "- kurz\nfreundlich");
+        Assert.Contains("## Rolle\nDu bist ein Lehrer.", m); Assert.Contains("- freundlich", m); Assert.Contains("Erfinde keine Fakten", m);
+        Assert.DoesNotContain("Hintergrund", m);
+    }
+}

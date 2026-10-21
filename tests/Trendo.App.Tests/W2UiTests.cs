@@ -126,3 +126,30 @@ public class CORE10_Ui
         Assert.Single(w.Wissen.All());
     }
 }
+
+public class CORE12_Ui
+{
+    [AvaloniaFact(DisplayName = "CORE-12 UI: Vorlage ausfüllen und senden, neue Vorlage speichern, Masterprompt bauen")]
+    public void Prompts_page()
+    {
+        var (w, _, _) = Ui.Open();
+        w.KiBackendsOverride = () => [new FakeKi("Strom fließt.")];
+        w.Show("ki-vorlagen");
+        w.Find<Button>("prompt-einfach-erklaeren").Press();
+        w.Find<Button>("prompt-send").Press(); W2Ui.Settle();
+        Assert.Contains("Thema", w.Find<TextBlock>("prompt-msg").Text);
+        w.Find<TextBox>("pvar-Thema").Text = "Strom";
+        w.Find<Button>("prompt-send").Press(); W2Ui.Settle();
+        Assert.Equal("Strom fließt.", w.LastPromptOutput);
+        w.Find<Button>("prompt-new").Press();
+        w.Find<TextBox>("pedit-name").Text = "Gedicht"; w.Find<TextBox>("pedit-text").Text = "Schreibe ein Gedicht über {{Tier}} in 4 Zeilen.";
+        w.Find<Button>("pedit-save").Press();
+        Assert.Contains("Version 1", w.Find<TextBlock>("prompt-msg").Text);
+        Assert.NotNull(w.TryFind<TextBox>("pvar-Tier"));
+        w.Find<Button>("prompt-master").Press();
+        w.Find<TextBox>("master-role").Text = "ein Koch"; w.Find<Button>("master-build").Press();
+        Assert.Contains("Du bist ein Koch.", w.Find<SelectableTextBlock>("master-out").Text);
+        w.Find<Button>("master-save").Press();
+        Assert.Contains(w.Prompts.All(), p => p.Category == "Masterprompts");
+    }
+}
