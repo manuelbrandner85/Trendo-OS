@@ -10,7 +10,7 @@ public sealed record CloudInfo(int Points, P3 Min, P3 Max, P3 Center, double Siz
 public sealed class PointCloud
 {
     public List<P3> Points { get; } = [];
-    public List<(byte R, byte G, byte B)>? Colors { get; private set; }
+    public List<(byte R, byte G, byte B)>? Colors { get; internal set; }
 
     public static PointCloud Load(string path)
     {
