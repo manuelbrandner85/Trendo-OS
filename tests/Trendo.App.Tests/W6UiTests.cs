@@ -335,3 +335,37 @@ public class SPEC03_UiPlus
         Assert.Contains("2,70 kg", W6Ui.Run(w, "eng-mass"));
     }
 }
+
+public static class Gltf
+{
+    public static byte[] TinyPng(int w, int h) { var b = new byte[33]; new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52 }.CopyTo(b, 0); b[16] = (byte)(w >> 24); b[17] = (byte)(w >> 16); b[18] = (byte)(w >> 8); b[19] = (byte)w; b[20] = (byte)(h >> 24); b[21] = (byte)(h >> 16); b[22] = (byte)(h >> 8); b[23] = (byte)h; return b; }
+
+    /// <summary>GLB mit JSON- und BIN-Teil, eingebetteter PNG-Textur, Namen, Animation, Erweiterungen.</summary>
+    public static string Write(string dir, double size = 2, string ext = "KHR_draco_mesh_compression")
+    {
+        var png = TinyPng(1024, 512); var binLen = (png.Length + 3) / 4 * 4;
+        var json = $"{{\"asset\":{{\"version\":\"2.0\"}},\"extensionsUsed\":[\"{ext}\"],\"extensionsRequired\":[\"{ext}\"],\"nodes\":[{{\"name\":\"Stuhl\",\"mesh\":0}},{{\"name\":\"Tisch\"}}],\"meshes\":[{{\"name\":\"StuhlMesh\",\"primitives\":[{{\"attributes\":{{\"POSITION\":0}},\"material\":0}},{{\"attributes\":{{\"POSITION\":0}},\"material\":0}},{{\"attributes\":{{\"POSITION\":0}}}}]}}],\"materials\":[{{\"name\":\"Holz\"}}],\"accessors\":[{{\"count\":30,\"min\":[0,0,0],\"max\":[{size.ToString(System.Globalization.CultureInfo.InvariantCulture)},{(size / 2).ToString(System.Globalization.CultureInfo.InvariantCulture)},{(size / 4).ToString(System.Globalization.CultureInfo.InvariantCulture)}]}}],\"animations\":[{{\"name\":\"Wackeln\"}}],\"bufferViews\":[{{\"buffer\":0,\"byteOffset\":0,\"byteLength\":{png.Length}}}],\"images\":[{{\"name\":\"Holz_Farbe\",\"bufferView\":0,\"mimeType\":\"image/png\"}}],\"textures\":[{{\"source\":0}}]}}";
+        while (json.Length % 4 != 0) json += " ";
+        var j = System.Text.Encoding.UTF8.GetBytes(json); var p = Path.Combine(dir, "szene.glb");
+        using var w = new BinaryWriter(File.Create(p));
+        w.Write(0x46546C67u); w.Write(2u); w.Write((uint)(12 + 8 + j.Length + 8 + binLen)); w.Write((uint)j.Length); w.Write(0x4E4F534Au); w.Write(j);
+        w.Write((uint)binLen); w.Write(0x004E4942u); w.Write(png); w.Write(new byte[binLen - png.Length]);
+        return p;
+    }
+}
+
+
+public class SPEC04_UiPlus
+{
+    [AvaloniaFact(DisplayName = "SPEC-04 UI Ausbau: Details, LOD, Texel, Komfort")]
+    public void Plus()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root); w.Show("xr");
+        var o = W6Ui.Run(w, "xr-detail", ("file", Gltf.Write(root)));
+        Assert.Contains("Maßstab plausibel", o); Assert.Contains("Stuhl", o); Assert.Contains("1024 × 512", o); Assert.Contains("Draco", o);
+        Assert.True(File.Exists(Path.Combine(root, "szene.pruefbericht.md")));
+        Assert.Contains("Stufe 3", W6Ui.Run(w, "xr-lod"));
+        Assert.Contains("1.024 Pixel", W6Ui.Run(w, "xr-texel"));
+        Assert.Contains("Komfort", W6Ui.Run(w, "xr-move"));
+    }
+}
