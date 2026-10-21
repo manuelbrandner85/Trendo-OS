@@ -1,0 +1,8 @@
+Blender | BlenderFoundation.Blender | 5.2.1 | 5.2.2 | winget
+Epic Games Launcher | EpicGames.EpicGamesLauncher | 1.3.193.0 | 1.3.210.0 | winget
+Epic Online Services | EpicGames.EpicOnlineServices | 5.7.0 | winget
+Git | Git.Git | 2.55.0.3 | 2.55.0.5 | winget
+GitHub CLI | GitHub.cli | 2.101.0 | 2.102.1 | winget
+Microsoft .NET SDK 10.0.402 (x64) from Visual Studio | ARP\Machine\X64\{F35ABD6B-6374-4345-AD58-4E6E64BD3F8A} | 40.11.62483 | 
+Microsoft Visual Studio Installer | ARP\Machine\X64\{6F320B93-EE3C-4826-85E0-ADF79F8D4C61} | 4.11.24.2075 | 
+Visual Studio Community 2026 | Microsoft.VisualStudio.Community | 18.10.4 | 18.11.1 | winget

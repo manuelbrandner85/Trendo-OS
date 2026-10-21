@@ -214,3 +214,71 @@ public class DesignHonesty
         w.Close();
     }
 }
+
+public class ComponentsUi
+{
+    [AvaloniaFact(DisplayName = "Komponenten: Lizenzliste, Unreal nur geführt (offizieller Link), Zustimmung wird gespeichert")]
+    public void Components_view()
+    {
+        var (w, l, root) = Ui.Open();
+        w.Runner = new NoRun();
+        w.Show("components");
+        var texts = w.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text ?? "").ToList();
+        Assert.Contains(texts, t => t.Contains("Ollama") && t.Contains("MIT"));
+        Assert.Contains(texts, t => t.Contains("Unreal Engine") && t.Contains("Epic EULA"));
+        Assert.Null(w.TryFind<Button>("btn-install-unreal"));
+        if (w.TryFind<Button>("btn-guide-unreal") is { } g) // auf Rechnern mit Unreal steht dort „erkannt“
+        { g.Press(); Assert.Contains(l.Opened, o => o.Contains("unrealengine.com")); }
+        w.Find<Button>("btn-deps-consent").Press(); Dispatcher.UIThread.RunJobs();
+        Assert.True(File.Exists(Path.Combine(root, "deps-consent.txt")));
+        Assert.True(File.Exists(Path.Combine(root, "config.json")));
+        w.Close();
+    }
+    sealed class NoRun : IProcessRunner
+    { public Task<(int Exit, string Output)> RunAsync(string f, string a, Action<string>? l = null, CancellationToken c = default) => Task.FromResult((1, "test")); }
+}
+
+public class StudioDepsUi
+{
+    sealed class Runner(int exit) : IProcessRunner
+    { public List<string> Calls = []; public Task<(int Exit, string Output)> RunAsync(string f, string a, Action<string>? l = null, CancellationToken c = default) { Calls.Add(a); return Task.FromResult((exit, "x 1.0")); } }
+
+    [AvaloniaFact(DisplayName = "Studio-Klick: fehlendes Programm → genau eine Frage 'Studio braucht X. Jetzt installieren?', 'Später' installiert nichts")]
+    public async Task Missing_tool_asks_once()
+    {
+        var (w, _, _) = Ui.Open(); var r = new Runner(1); w.Runner = r;
+        await w.OpenStudio("CORE-08", "Medien Studio"); Dispatcher.UIThread.RunJobs();
+        if (w.CurrentView == "studios") { w.Close(); return; } // mpv auf dem Testrechner vorhanden → keine Frage nötig
+        Assert.Equal("studio-deps", w.CurrentView);
+        Assert.Equal("Medien Studio braucht mpv Player. Jetzt installieren?", w.Find<TextBlock>("ask-mpv").Text);
+        w.Find<Button>("btn-later-mpv").Press(); Dispatcher.UIThread.RunJobs();
+        Assert.DoesNotContain(r.Calls, a => a.Contains("install"));
+        Assert.Contains(w.Core.Audit.ReadAll(), e => e.Action == "deps.declined");
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Studio-Klick: Unreal nur geführt – kein Installieren-Knopf, offizieller Installer-Link")]
+    public async Task Unreal_guided()
+    {
+        var (w, l, _) = Ui.Open(); w.Runner = new Runner(1);
+        await w.OpenStudio("CORE-06", "Game Studio"); Dispatcher.UIThread.RunJobs();
+        if (w.CurrentView == "studios") { w.Close(); return; }
+        Assert.Null(w.TryFind<Button>("btn-yes-unreal"));
+        w.Find<Button>("btn-guide-unreal").Press();
+        Assert.Contains(l.Opened, o => o.Contains("unrealengine.com"));
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Schlüssel: ungültig wird nicht gespeichert, gültig landet im Secret-Store, nie im Audit")]
+    public async Task Keys()
+    {
+        var (w, _, _) = Ui.Open(); w.Show("keys");
+        w.KeyValidatorOverride = k => Task.FromResult(k == "good-key");
+        w.Find<TextBox>("txt-key-xai").Text = "bad"; w.Find<Button>("btn-savekey-xai").Press(); await Task.Delay(50); Dispatcher.UIThread.RunJobs();
+        Assert.Null(w.Core.Secrets.Get("TrendoOS:key-xai"));
+        w.Find<TextBox>("txt-key-xai").Text = "good-key"; w.Find<Button>("btn-savekey-xai").Press(); await Task.Delay(50); Dispatcher.UIThread.RunJobs();
+        Assert.Equal("good-key", w.Core.Secrets.Get("TrendoOS:key-xai"));
+        Assert.DoesNotContain(w.Core.Audit.ReadAll(), e => e.Detail.Contains("good-key"));
+        w.Close();
+    }
+}

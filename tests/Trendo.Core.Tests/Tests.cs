@@ -331,3 +331,87 @@ public class Metrics_Core
         Assert.Single(f.Launcher.Opened);
     }
 }
+
+public class Dependencies_Core
+{
+    sealed class FakeRunner : IProcessRunner
+    {
+        public List<(string F, string A)> Calls = []; public Action? OnRun;
+        public Task<(int Exit, string Output)> RunAsync(string file, string args, Action<string>? line = null, CancellationToken ct = default)
+        { Calls.Add((file, args)); OnRun?.Invoke(); line?.Invoke("ok"); return Task.FromResult((0, "ok")); }
+    }
+    static (DependencyManager M, FakeRunner R, HashSet<string> Files, Fixture F) Make()
+    {
+        var f = new Fixture(); var files = new HashSet<string>(); var r = new FakeRunner();
+        var m = new DependencyManager(f.Core.Audit, r, p => p.Replace("%LOCALAPPDATA%", "L").Replace("%USERPROFILE%", "U").Replace("%ProgramFiles%", "P"), files.Contains)
+        { ConsentFile = Path.Combine(f.Core.DataRoot, "c.txt") };
+        return (m, r, files, f);
+    }
+
+    [Fact(DisplayName = "Katalog: jede Komponente hat Lizenz; jede Bundle-Manifest-Zeile ist abgedeckt; Unreal nur geführt")]
+    public void Catalog_complete()
+    {
+        Assert.All(DependencyCatalog.All, c => Assert.False(string.IsNullOrWhiteSpace(c.License)));
+        Assert.Equal(DeliveryMode.Guided, DependencyCatalog.Get("unreal").Mode);
+        Assert.Null(DependencyCatalog.Get("unreal").WingetId);
+        Assert.All(DependencyCatalog.All.Where(c => c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated), c => Assert.True(c.WingetId is not null || c.PostInstall is not null));
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (!File.Exists(Path.Combine(dir!.FullName, "docs", "spec", "SOFTWARE_BUNDLE_MANIFEST.csv"))) dir = dir.Parent;
+        var csv = File.ReadAllLines(Path.Combine(dir.FullName, "docs", "spec", "SOFTWARE_BUNDLE_MANIFEST.csv")).Skip(1)
+            .Select(l => l.Split(',')[0].ToLowerInvariant()).ToList();
+        foreach (var name in csv)
+            Assert.Contains(DependencyCatalog.All, c => name.Split(' ').Any(w => w.Length >= 3 && c.Name.ToLowerInvariant().Contains(w)));
+    }
+
+    [Fact(DisplayName = "Installation ohne Zustimmung verweigert; nach Zustimmung winget --scope user; Erfolg nur bei echter Erkennung")]
+    public async Task Install_flow()
+    {
+        var (m, r, files, f) = Make(); using var _ = f;
+        var git = DependencyCatalog.Get("git");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => m.InstallAsync(Principal.LocalOwner, git));
+        Assert.Throws<UnauthorizedAccessException>(() => m.GiveConsent(new Principal("u", Role.User)));
+        m.GiveConsent(Principal.LocalOwner);
+        Assert.False(await m.InstallAsync(Principal.LocalOwner, git)); // ExitCode 0, aber nicht erkannt → kein Erfolg
+        Assert.Contains("--scope user", r.Calls[0].A); Assert.Contains("Git.Git", r.Calls[0].A);
+        r.OnRun = () => files.Add(@"L\Programs\Git\cmd\git.exe");
+        Assert.True(await m.InstallAsync(Principal.LocalOwner, git));
+        Assert.Contains(f.Core.Audit.ReadAll(), e => e.Action == "deps.install.ok");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => m.InstallAsync(Principal.LocalOwner, DependencyCatalog.Get("unreal")));
+        var lo = DependencyCatalog.Get("libreoffice"); await m.InstallAsync(Principal.LocalOwner, lo);
+        Assert.DoesNotContain("--scope user", r.Calls[^1].A);
+    }
+
+    [Fact(DisplayName = "Modell: Download über erkannte Ollama-Installation, erkannt über Manifest-Datei")]
+    public async Task Model_flow()
+    {
+        var (m, r, files, f) = Make(); using var _ = f; m.GiveConsent(Principal.LocalOwner);
+        var model = DependencyCatalog.Get("model");
+        await Assert.ThrowsAsync<InvalidOperationException>(() => m.InstallAsync(Principal.LocalOwner, model));
+        files.Add(@"L\Programs\Ollama\ollama.exe");
+        r.OnRun = () => files.Add(Path.Combine("U", ".ollama", "models", "manifests", "registry.ollama.ai", "library", "qwen2.5", "0.5b"));
+        Assert.True(await m.InstallAsync(Principal.LocalOwner, model));
+        Assert.Equal("pull qwen2.5:0.5b", r.Calls[0].A);
+    }
+}
+
+public class ToolCheck_Core
+{
+    sealed class R(int exit) : IProcessRunner
+    { public Task<(int Exit, string Output)> RunAsync(string f, string a, Action<string>? l = null, CancellationToken c = default) => Task.FromResult((exit, "Blender 4.2.0\nmore")); }
+
+    [Fact(DisplayName = "Prüfung: vorhandenes Programm wird gestartet (--version), integriert und nicht neu installiert; kaputt = Broken")]
+    public async Task Check_working_and_broken()
+    {
+        using var f = new Fixture();
+        var files = new HashSet<string> { @"P\Blender Foundation\Blender 4.2\blender.exe" };
+        DependencyManager M(int exit) => new(f.Core.Audit, new R(exit), p => p.Replace("%ProgramFiles%", "P"), x => files.Contains(x) || x.Contains('*') && files.Any(y => y.StartsWith(x.Split('*')[0])))
+        { ToolsFile = Path.Combine(f.Core.DataRoot, "tools.json") };
+        var ok = await M(0).CheckAsync(DependencyCatalog.Get("blender"));
+        Assert.Equal(ToolState.Working, ok.State); Assert.Equal("Blender 4.2.0", ok.Version);
+        Assert.Contains("blender", File.ReadAllText(Path.Combine(f.Core.DataRoot, "tools.json")));
+        var bad = await M(1).CheckAsync(DependencyCatalog.Get("blender"));
+        Assert.Equal(ToolState.Broken, bad.State);
+        var miss = await new DependencyManager(f.Core.Audit, new R(0), p => p, _ => false).CheckAsync(DependencyCatalog.Get("git"));
+        Assert.Equal(ToolState.Missing, miss.State);
+    }
+}

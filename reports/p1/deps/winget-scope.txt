@@ -1,0 +1,16 @@
+Ollama.Ollama;user=ja;machine=nein
+Git.Git;user=ja;machine=ja
+Python.Python.3.13;user=ja;machine=ja
+shinchiro.mpv;user=nein;machine=nein
+TheDocumentFoundation.LibreOffice;user=nein;machine=ja
+BlenderFoundation.Blender;user=nein;machine=ja
+KDE.Krita;user=nein;machine=ja
+Inkscape.Inkscape;user=nein;machine=ja
+KDE.Kdenlive;user=ja;machine=ja
+Audacity.Audacity;user=nein;machine=nein
+UB-Mannheim.TesseractOCR;user=nein;machine=nein
+VideoLAN.VLC;user=nein;machine=ja
+Google.Chrome;user=nein;machine=ja
+TorProject.TorBrowser;user=ja;machine=nein
+EpicGames.EpicGamesLauncher;user=nein;machine=ja
+Hibbiki.Chromium;user=ja;machine=ja
