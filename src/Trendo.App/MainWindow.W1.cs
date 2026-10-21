@@ -40,6 +40,7 @@ public partial class MainWindow
         foreach (var c in Categories) gs.Add("Seite", c.Label, "filter:" + c.Filter, c.Label.Split(' ', '&'));
         foreach (var s in _studios) gs.Add("Studio", s.Name, "studio:" + s.Id, s.Id);
         foreach (var p in _core.Projects.List()) gs.Add("Projekt", p.Name, "project:" + p.Id, p.Id);
+        foreach (var n in new NoteStore(_core.DataRoot).All()) gs.Add("Notiz", n.Text.Split('\n')[0], "page:werkzeuge", n.Text.Split([' ', '\n', '/', '.', '-'], StringSplitOptions.RemoveEmptyEntries)); // SYS-03-P21
         gs.AddFiles(string.IsNullOrEmpty(_settings.ProjectsFolder) ? UserSettings.DefaultProjectsFolder() : _settings.ProjectsFolder);
         return gs;
     }
@@ -51,7 +52,7 @@ public partial class MainWindow
         sp.Children.Add(P(hits.Count == 0 ? $"Nichts gefunden für „{_query}“. Tipp: kürzere Wörter versuchen, z. B. „brief“ statt „briefvorlage“." : $"{hits.Count} Treffer für „{_query}“", Text));
         foreach (var g in hits.GroupBy(h => h.Kind))
         {
-            sp.Children.Add(H(g.Key switch { "Seite" => "Seiten", "Studio" => "Studios", "Projekt" => "Projekte", _ => "Dateien" }, 14));
+            sp.Children.Add(H(g.Key switch { "Seite" => "Seiten", "Studio" => "Studios", "Projekt" => "Projekte", "Notiz" => "Notizen", _ => "Dateien" }, 14));
             var i = 0;
             foreach (var h in g)
             {
@@ -60,6 +61,11 @@ public partial class MainWindow
                 b.Click += async (_, _) => await OpenHit(h);
                 sp.Children.Add(b);
             }
+        }
+        if (!_core.Offline && _query.Trim().Length > 0 && Trendo.Core.Sys.Web.Engines.First(e => e.Id == Trendo.Core.Sys.Web.Engine(_core.DataRoot)) is var eng) // SYS-03-P13
+        {
+            var web = new Button { Name = "hit-web", Content = $"Im Internet suchen mit {eng.Name}", Margin = new Thickness(0, 8, 0, 0) };
+            web.Click += (_, _) => Launch(eng.Url + Uri.EscapeDataString(_query.Trim())); sp.Children.Add(web);
         }
         return Page("Suche", sp);
     }

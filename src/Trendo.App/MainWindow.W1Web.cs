@@ -18,7 +18,7 @@ public partial class MainWindow
         var row = new WrapPanel();
         void Go(string? exe)
         {
-            var u = Browsers.Normalize(url.Text ?? "");
+            var u = Browsers.Normalize(url.Text ?? "", Trendo.Core.Sys.Web.SearchUrl(_core.DataRoot));
             if (u is null) { msg.Text = "Diese Adresse öffnet Trendo nicht (nur http und https)."; return; }
             if (exe is null) Launch(u.AbsoluteUri); else _core.Integrations.LaunchDirect(Principal.LocalOwner, exe, _core.Audit, u.AbsoluteUri);
             msg.Text = $"Geöffnet: {u.Host}";
@@ -32,7 +32,7 @@ public partial class MainWindow
             btn.Click += (_, _) => Go(b.Path); row.Children.Add(btn);
         }
         sp.Children.Add(new StackPanel { Spacing = 6, Children = { H("Internet", 15), url, row, msg,
-            P(browsers.Count == 0 ? "Kein bekannter Browser gefunden – der Windows-Standard wird benutzt." : $"Gefunden: {string.Join(", ", browsers.Select(b => b.Name))}. Suchbegriffe gehen an DuckDuckGo (ohne Tracking).", null, 11) } });
+            P(browsers.Count == 0 ? "Kein bekannter Browser gefunden – der Windows-Standard wird benutzt." : $"Gefunden: {string.Join(", ", browsers.Select(b => b.Name))}. Suchbegriffe gehen an {Trendo.Core.Sys.Web.Engines.First(e => e.Id == Trendo.Core.Sys.Web.Engine(_core.DataRoot)).Name} (änderbar unter „Netz & Sicherheit“).", null, 11) } });
 
         var dl = Browsers.DownloadsFolder();
         var files = FileShelf.Recent([dl], null, 30, depth: 0);
