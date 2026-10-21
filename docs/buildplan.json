@@ -431,8 +431,8 @@
   "order": 5,
   "id": "CORE-12",
   "name": "Ultimate Prompt & Masterprompt Studio 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
@@ -574,8 +574,8 @@
   "order": 4,
   "id": "CORE-05",
   "name": "Ultimate 3D Creation Studio 2.0",
-  "impl": "NOT_STARTED",
-  "test": "NOT_RUN",
+  "impl": "IMPLEMENTED",
+  "test": "TESTED_BOX",
   "local": false,
   "subs": []
  },
