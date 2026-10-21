@@ -445,3 +445,37 @@ public class W1_Apps
         Assert.Equal("medien", w.CurrentView);
     }
 }
+
+public class W1_Letter
+{
+    [AvaloniaFact(DisplayName = "STUDIO-LETTER-01: Schnellzugriff „Neuer Brief“ → Kündigung → ausfüllen → prüfen → speichern; Absender gemerkt")]
+    public async Task Letter_flow()
+    {
+        var (w, _, root) = Ui.Open();
+        var proj = Path.Combine(root, "projekte"); var s = UserSettings.Load(root); s.ProjectsFolder = proj; s.SetupDone = true; s.Save(root);
+        w = Reopen(root);
+        w.Find<Button>("quick-new-letter").Press();
+        Assert.Equal("brief", w.CurrentView);
+        w.Find<Button>("letter-cat-kuendigung").Press();
+        w.Find<Button>("letter-save").Press(); await Task.Delay(20); Dispatcher.UIThread.RunJobs();
+        Assert.Contains("Pflichtpunkte", w.Find<TextBlock>("letter-msg").Text);
+        w.Find<TextBox>("letter-sender-name").Text = "Erika Muster";
+        w.Find<TextBox>("letter-sender-street").Text = "Hauptstraße 1";
+        w.Find<TextBox>("letter-sender-city").Text = "10115 Berlin";
+        w.Find<TextBox>("letter-recipient").Text = "Fitness AG\nAm Park 2\n50667 Köln";
+        w.Find<TextBox>("letter-subject").Text = "Kündigung Mitgliedschaft 123";
+        Dispatcher.UIThread.RunJobs();
+        w.Find<Button>("letter-save").Press(); await Task.Delay(50); Dispatcher.UIThread.RunJobs();
+        Assert.True(w.Find<TextBlock>("letter-msg").Text!.Contains("Gespeichert"), w.Find<TextBlock>("letter-msg").Text + " | " + string.Join(";", Letters.Validate(w.Letter).Select(i => i.Message)));
+        Assert.Single(Directory.GetFiles(Path.Combine(proj, "Briefe"), "*.docx"));
+        Assert.Equal("10115 Berlin", UserSettings.Load(root).SenderCity);
+        w.Show("office");
+        Assert.NotNull(w.TryFind<Button>("doc-open-0"));
+    }
+
+    static MainWindow Reopen(string root)
+    {
+        var core = new TrendoCore(root, new InMemorySecretStore(), new FakeLauncher());
+        var w = new MainWindow(core, new AppOptions(root, null, 0), new Probe("browser")); w.Show(); Dispatcher.UIThread.RunJobs(); return w;
+    }
+}

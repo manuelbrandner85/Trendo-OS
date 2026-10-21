@@ -649,3 +649,57 @@ public class SYS02_X09_Utilities
         Directory.Delete(root, true);
     }
 }
+
+public class LETTER01_Studio
+{
+    static Trendo.Core.LetterDraft Good() => new()
+    {
+        SenderName = "Erika Muster", SenderStreet = "Hauptstraße 1", SenderCity = "10115 Berlin", Recipient = "Stadtwerke GmbH\nKundenservice\nAm Werk 5\n80331 München",
+        Subject = "Kündigung meines Stromvertrags 4711", Body = "hiermit kündige ich den Vertrag zum 31.12.2026.", Place = "Berlin", Date = DateTime.Today,
+    };
+
+    [Xunit.Fact(DisplayName = "LETTER-018: vollständiger Brief ohne Pflichtfehler; fehlende Felder und Platzhalter blockieren")]
+    public void Validate()
+    {
+        Xunit.Assert.DoesNotContain(Trendo.Core.Letters.Validate(Good()), i => i.Blocking);
+        var d = Good(); Trendo.Core.Letters.ApplyTemplate(d, "widerspruch"); d.SenderName = ""; d.Recipient = "Amt";
+        var issues = Trendo.Core.Letters.Validate(d);
+        Xunit.Assert.Contains(issues, i => i.Field == "Absender" && i.Blocking);
+        Xunit.Assert.Contains(issues, i => i.Message.Contains("[Datum]"));
+        Xunit.Assert.Contains(issues, i => i.Field == "Empfänger" && i.Message.Contains("unvollständig"));
+        var g = Good(); g.Closing = "Mit freundlichen Grüßen,"; g.Recipient = "A\nB\nC\nD\nE\nF\nG";
+        Xunit.Assert.Contains(Trendo.Core.Letters.Validate(g), i => i.Field == "Gruß");
+        Xunit.Assert.Contains(Trendo.Core.Letters.Validate(g), i => i.Message.Contains("6 Zeilen"));
+    }
+
+    [Xunit.Fact(DisplayName = "LETTER-002/004: Briefarten liefern Vorlagen; rechtliche Arten sind markiert")]
+    public void Categories()
+    {
+        Xunit.Assert.True(Trendo.Core.Letters.Categories.Length >= 7);
+        Xunit.Assert.True(Trendo.Core.Letters.Category("widerspruch").Legal);
+        var d = new Trendo.Core.LetterDraft(); Trendo.Core.Letters.ApplyTemplate(d, "kuendigung");
+        Xunit.Assert.StartsWith("Kündigung", d.Subject);
+        Xunit.Assert.Equal("frei", Trendo.Core.Letters.Category("gibt-es-nicht").Id);
+    }
+
+    [Xunit.Fact(DisplayName = "LETTER-003/016/022: DOCX ist gültig (A4, Ränder DIN), enthält alle Teile; Archiv versioniert statt zu überschreiben")]
+    public void Docx_and_archive()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-letter-" + Guid.NewGuid().ToString("N"));
+        var d = Good(); d.Body = "Absatz eins & <Test>.\n\nAbsatz zwei."; d.Attachments = "Vertragskopie";
+        var a = new Trendo.Core.LetterArchive(root);
+        var (docx, json, v1) = a.Save(d); var (docx2, _, v2) = a.Save(d);
+        Xunit.Assert.Equal((1, 2), (v1, v2)); Xunit.Assert.NotEqual(docx, docx2); Xunit.Assert.EndsWith("-v2.docx", docx2);
+        Xunit.Assert.StartsWith($"{DateTime.Today:yyyy-MM-dd}-Kündigung-meines-Stromvertrags-4711", Path.GetFileName(docx));
+        var txt = Trendo.Core.Letters.ReadDocxText(docx);
+        foreach (var part in new[] { "Erika Muster · Hauptstraße 1 · 10115 Berlin", "80331 München", "Kündigung meines Stromvertrags 4711", "Absatz eins & <Test>.", "Absatz zwei.", "Mit freundlichen Grüßen", "Anlagen", "Vertragskopie", "Berlin, " })
+            Xunit.Assert.Contains(part, txt);
+        using var z = System.IO.Compression.ZipFile.OpenRead(docx);
+        var xml = new StreamReader(z.GetEntry("word/document.xml")!.Open()).ReadToEnd();
+        System.Xml.Linq.XDocument.Parse(xml);
+        Xunit.Assert.Contains("w:w=\"11906\" w:h=\"16838\"", xml); Xunit.Assert.Contains("w:left=\"1418\"", xml);
+        Xunit.Assert.NotNull(z.GetEntry("[Content_Types].xml"));
+        Xunit.Assert.Equal(d.Subject, Trendo.Core.LetterArchive.Load(docx)!.Subject);
+        Directory.Delete(root, true);
+    }
+}
