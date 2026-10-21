@@ -1,0 +1,4 @@
+Nachweis BUS-001 – Linux-Box (nicht Windows-PC), 21.10.2026 21:15 MESZ, Commit-Basis 49bfd14
+Passed!  - Failed:     0, Passed:    14, Skipped:     0, Total:    14, Duration: 634 ms - Trendo.Api.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:   119, Skipped:     0, Total:   119, Duration: 11 s - Trendo.Core.Tests.dll (net10.0)
+Passed!  - Failed:     0, Passed:    46, Skipped:     0, Total:    46, Duration: 12 s - Trendo.App.Tests.dll (net10.0)

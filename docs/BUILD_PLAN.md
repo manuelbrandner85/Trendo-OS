@@ -187,20 +187,20 @@ Abnahmekriterien je Modul:
 
 | ID | Titel | Umsetzung | Test |
 |---|---|---|---|
-| BUS-001 | Business Discovery Director | NOT_STARTED | NOT_RUN |
-| BUS-002 | Proven Business Model Library | NOT_STARTED | NOT_RUN |
+| BUS-001 | Business Discovery Director | IMPLEMENTED | TESTED_BOX |
+| BUS-002 | Proven Business Model Library | IMPLEMENTED | TESTED_BOX |
 | BUS-003 | Competitor & Market Intelligence | NOT_STARTED | NOT_RUN |
 | BUS-004 | Customer Problem & Niche Discovery | NOT_STARTED | NOT_RUN |
-| BUS-005 | Realistic Opportunity & Profitability Score | NOT_STARTED | NOT_RUN |
+| BUS-005 | Realistic Opportunity & Profitability Score | IMPLEMENTED | TESTED_BOX |
 | BUS-006 | Business Innovation Engine | NOT_STARTED | NOT_RUN |
 | BUS-007 | Cross-Industry Business Fusion | NOT_STARTED | NOT_RUN |
 | BUS-008 | Originality & Similarity Research | NOT_STARTED | NOT_RUN |
 | BUS-009 | Market Validation & Prototype Laboratory | NOT_STARTED | NOT_RUN |
-| BUS-010 | Innovation Go / No-Go Decision Brain | NOT_STARTED | NOT_RUN |
-| BUS-011 | Business Blueprint Architect | NOT_STARTED | NOT_RUN |
-| BUS-012 | Revenue, Pricing & Subscription Designer | NOT_STARTED | NOT_RUN |
+| BUS-010 | Innovation Go / No-Go Decision Brain | IMPLEMENTED | TESTED_BOX |
+| BUS-011 | Business Blueprint Architect | IMPLEMENTED | TESTED_BOX |
+| BUS-012 | Revenue, Pricing & Subscription Designer | IMPLEMENTED | TESTED_BOX |
 | BUS-013 | Brand Identity & Premium UX Director | NOT_STARTED | NOT_RUN |
-| BUS-014 | Business Requirements & Legal Feasibility Planner | NOT_STARTED | NOT_RUN |
+| BUS-014 | Business Requirements & Legal Feasibility Planner | IMPLEMENTED | TESTED_BOX |
 | BUS-015 | Customer Journey & Process Architect | NOT_STARTED | NOT_RUN |
 | BUS-016 | Grok Build Full-Stack Business Builder | NOT_STARTED | NOT_RUN |
 | BUS-017 | Accounts, Membership & Multi-Tenant Engine | NOT_STARTED | NOT_RUN |

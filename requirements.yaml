@@ -387,8 +387,9 @@ modules:
   name: Ultimate Online Business Creation & Innovation Studio GODMODE (both modes)
   approved_expansion_functions: '30'
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IN_PROGRESS
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-001.txt
 - id: STUDIO-LETTER-01
   name: Ultimate Letter Business & Legal Correspondence Studio GODMODE
   approved_expansion_functions: '25'
@@ -402,15 +403,17 @@ business_requirements:
   mode: EXISTING
   title: Business Discovery Director
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-001.txt
 - id: BUS-002
   module: STUDIO-ONLINE-BUSINESS-01
   mode: EXISTING
   title: Proven Business Model Library
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-001.txt
 - id: BUS-003
   module: STUDIO-ONLINE-BUSINESS-01
   mode: EXISTING
@@ -430,8 +433,9 @@ business_requirements:
   mode: EXISTING
   title: Realistic Opportunity & Profitability Score
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-001.txt
 - id: BUS-006
   module: STUDIO-ONLINE-BUSINESS-01
   mode: INNOVATION
@@ -465,22 +469,25 @@ business_requirements:
   mode: INNOVATION
   title: Innovation Go / No-Go Decision Brain
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-001.txt
 - id: BUS-011
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Business Blueprint Architect
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-001.txt
 - id: BUS-012
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Revenue, Pricing & Subscription Designer
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-001.txt
 - id: BUS-013
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -493,8 +500,9 @@ business_requirements:
   mode: BOTH
   title: Business Requirements & Legal Feasibility Planner
   approval_status: APPROVED_SPEC
-  implementation_status: NOT_STARTED
-  test_status: NOT_RUN
+  implementation_status: IMPLEMENTED
+  test_status: TESTED_BOX
+  evidence: reports/w45/BUS-001.txt
 - id: BUS-015
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
