@@ -72,6 +72,9 @@ public sealed partial class MainWindow : Window
     public string CurrentView { get; private set; } = "";
     public DependencyManager Deps => _deps;
 
+    /// <summary>Ersatz für die echte Programm-Prüfung. null = wie bisher <c>CheckAsync</c> (nichts wird anders).</summary>
+    public Func<Component, Task<ToolCheck>>? DependencyProbe { get; set; }
+
     public MainWindow() : this(new AppOptions(null, null, 0)) { }
     public MainWindow(AppOptions opt)
         : this(new TrendoCore(opt.DataRoot ?? TrendoCore.DefaultDataRoot(), offline: opt.Offline), opt, new DefaultToolProbe()) { }
@@ -1203,7 +1206,12 @@ public sealed partial class MainWindow : Window
         _depReturn = page;
         _depStudio = id; _depStudioTitle = title; _depChecks = [];
         _depLog.Text = $"{title}: prüfe benötigte Programme …"; Show("studio-deps");
-        foreach (var t in need) _depChecks.Add(await _deps.CheckAsync(DependencyCatalog.Get(t)));
+        foreach (var t in need)
+        {
+            var comp = DependencyCatalog.Get(t);
+            // Tests setzen DependencyProbe, damit hier kein echtes Programm startet. Ohne Probe bleibt es bei CheckAsync.
+            _depChecks.Add(DependencyProbe is { } probe ? await probe(comp) : await _deps.CheckAsync(comp));
+        }
         _core.Audit.Append(Principal.LocalOwner.Name, "deps.check", $"{id}: " + string.Join(", ", _depChecks.Select(c => $"{c.Component.Id}={c.State}")));
         _depLog.Text = _depChecks.All(c => c.Ok) ? $"{title}: alle benötigten Programme gefunden und funktionsfähig." : "";
         if (_depChecks.All(c => c.Ok)) { ReloadStudios(); Show(page); } else Show("studio-deps");
