@@ -28,6 +28,7 @@ public static class PromptActions
     public static IReadOnlyList<IStudioActionAdapter> CreateDefault() =>
         [
             new LetterPromptAdapter(), new SheetPromptAdapter(), new MailSendAdapter(), new MailDraftAdapter(),
-            new InvoicePromptAdapter(), new MoneyPayAdapter(), new BusinessPlanAdapter()
+            new InvoicePromptAdapter(), new MoneyPayAdapter(), new BusinessPlanAdapter(),
+            new SoftwareScaffoldAdapter(), new SoftwarePublishAdapter()
         ];
 }
