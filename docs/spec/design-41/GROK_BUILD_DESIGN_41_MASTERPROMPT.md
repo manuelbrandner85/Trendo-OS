@@ -6,7 +6,7 @@
 **Produkt:** Trendo OS  
 **Repository:** https://github.com/manuelbrandner85/Trendo-OS  
 **Verantwortung:** Grok Bot = Planung, sichere Übergabe, Review; Grok Build = echte lokale Änderungen, Builds, Tests und Bildnachweise  
-**Umfang:** NUR die bereits ausdrücklich genehmigte Designverbesserung 41 (alle 20 Funktionen). Kein Neuaufbau oder implizites Aktivieren anderer Erweiterungen.  
+**Umfang:** Die bereits ausdrücklich genehmigte Designverbesserung 41 (alle 20 Funktionen) **plus ausdrücklich bestätigte Startmenü-/Fenster-Präzisierung UI41-SM-01**. Kein Neuaufbau oder implizites Aktivieren anderer Erweiterungen.  
 **Projektstand:** Vor Ausführung anhand des *aktuellen* Repository-HEAD erneut prüfen; alle unten genannten Beobachtungen sind Momentaufnahmen.
 
 > **Starte mit einer Bestandsprüfung und entwickle anschließend einen echten ausführbaren Design-Vertical-Slice.** Die Bilder sind Designvorgaben und **KEINE** Screenshots eines echten Trendo-Builds. Erzeuge keine bloße visuelle Attrappe. Stelle dem Auftraggeber Vergleichsbilder des tatsächlich laufenden Avalonia-Builds vor. **Warte vor der Übertragung auf sämtliche Studios auf die gesonderte visuelle Freigabe des Auftraggebers.**
@@ -41,6 +41,39 @@ Die Dateien liegen relativ zu **dieser Markdown-Datei** im Unterordner `referenz
 - Abgebildete Anwendungen wie Blender oder Unreal sind nur dann als bereit/startfähig anzuzeigen, wenn sie tatsächlich verfügbar und entsprechend freigegeben sind.
 - Verwende Bilder nicht als Hintergründe, die eine Benutzeroberfläche nur vortäuschen. Programmiere jede Schaltfläche, jedes Fenster und jeden relevanten Zustand **echt**.
 - Die Referenzen sind zusätzliche Bestandteile der freigegebenen Designrichtung. Bei Konflikten mit Sicherheit, Benutzbarkeit oder technischen Vorgaben gilt die vorhandene funktionierende Systemarchitektur.
+
+---
+
+
+## Genehmigte Zusatzanforderung – Startmenü wie Windows (UI41-SM-01)
+
+**Explizite Auftraggeberentscheidung, verbindlich für dieses Designupgrade:** **JEDES im Trendo-Katalog enthaltene Studio muss direkt aus dem Trendo-Startmenü gestartet werden können – wie ein normales Programm bei Windows.** Die schönen Referenzbilder sind Designziele; die Navigation darunter muss wirklich funktionieren. Diese Ergänzung erweitert die bereits bestätigte Funktionalität, ohne eine neue, noch nicht genehmigte Gesamterweiterung einzuführen.
+
+### A. Startmenü – alle Studios direkt startbar
+
+1. Ein einzelner Klick auf einen Studio-Eintrag im Trendo-Startmenü startet **direkt den konkreten Studio-Arbeitsbereich** in einem eigenen Trendo-Desktopfenster (keine Umleitung zur allgemeinen Studioübersicht, keine erneute Klickpflicht).
+2. Alle **tatsächlich im aktuellen Katalog enthaltenen** Studio-IDs erscheinen mit korrekt aus `StudioCatalog.cs` abgeleitetem deutschem Anzeigenamen, einheitlichem eigenen Symbol aus `StudioIcons.cs` soweit vorhanden und einer auffindbaren A–Z-Sortierung. Der zuvor dokumentierte Katalog umfasste 54 Studio-Karten; die Zahl bei Ausführung am aktuellen HEAD neu ermitteln, nicht hardcoden.
+3. Die Suchleiste findet sowohl Studiobezeichnungen als auch passende Schlagwörter. Enter auf einem gefundenen Studio startet dasselbe Studio unmittelbar; `Esc` schließt das Menü; die vorhandene Windows-Tastenbehandlung wird erhalten, soweit auf der jeweiligen Hostplattform technisch möglich.
+4. Nutzer können jedes Studio anheften/lösen und häufig verwendete Studios am Dock beziehungsweise in der Trendo-Taskleiste verfügbar machen. Pinned-/Recent-Einstellungen werden dauerhaft gespeichert und nach Neustart wiederhergestellt.
+5. Tatsächlich **nicht implementierte** Studios müssen ehrlich als „Noch nicht verfügbar“ gekennzeichnet sein; ein Startversuch öffnet dann eine **studio-spezifische informative Ansicht** mit dem echten Status, nicht als Täuschung eine funktionierende leere Anwendung und nicht nur die generische Studio-Kartenliste.
+
+### B. Eigenständige Fenster, nicht nur Seiten
+
+6. Jedes gestartete funktionsfähige Studio öffnet sich **als eigenständig steuerbares Fenster innerhalb des Trendo-Desktops**: Titel, Icon, eigene Arbeitsfläche, Minimieren, Maximieren/Wiederherstellen, Schließen, Verschieben, Größenändern, Fokus/Z-Order und vorhandene Snap-Funktionen.
+7. Mehrere **verschiedene Studios laufen parallel**; der Start eines zweiten Studios darf weder das erste schließen noch dessen ungespeicherte Eingaben zerstören. Ein bereits geöffnetes Studio darf beim erneuten Start standardmäßig aktiviert statt dupliziert werden; falls mehrere Dokumentfenster unterstützt werden, implementiere das kontrolliert.
+8. Für jedes offene Studio wird **ein eigener, eindeutig zuordenbarer Eintrag in der Trendo-Taskleiste** angezeigt (Status aktiv/minimiert, Symbol und Name). Ein Klick aktiviert es oder stellt es wieder her; Wechsel per Tastatur sollte konsistent möglich sein.
+9. **Keine starre kleine Fensterzahl als unerklärliche Beschränkung**: prüfe im vorhandenen WindowManager eine bisherige Begrenzung (z. B. 8 Fenster). Ersetze ein willkürliches stilles Verdrängen durch nachvollziehbare Ressourcenregeln, kontrollierte Sitzungsverwaltung und klare Hinweise; never silently close other studio windows or discard changes.
+10. Auf der Windows-Edition darf der interne Trendo-Startmodus **nicht ungefragt die Windows-Taskleiste oder Windows-Shell ersetzen**. Es sind zuerst eigenständige Fenster *innerhalb Trendo* gemeint, nicht zwingend je Studio ein eigener `.exe`-Prozess oder eigener Windows-OS-Taskleistenknopf. Eine echte separate Windows-Top-Level-Fensterintegration ist nur als später technisch prüfbare Option zu betrachten, nicht ohne Auftrag hinzufügen.
+
+### C. Echte Tests/Abnahme
+
+11. Teste programmatisch und möglichst mit echten Maus-/Tastatureingaben **jede aktuell registrierte Studio-ID**: Startmenü öffnen → Eintrag wählen → korrektes Studiofenster/korrekte ehrliche Statusansicht → Titel und Inhalt prüfen → Taskleisteneintrag prüfen → minimieren → wiederherstellen → schließen; danach Startmenü erneut nutzen.
+12. Teste mindestens drei verschiedene Studios gleichzeitig, insbesondere **Briefstudio, Game Studio und 3D Studio**, mit Wechsel über Taskleiste, Fensterfokus, Größenänderung, Snap und anschließender wiederhergestellter Eingabe. Bei externen Blender-/Unreal-Komponenten prüfe ihre tatsächliche Verfügbarkeit; keine erfundenen Starts.
+13. Teste A–Z, Suchergebnis/Enter, Favoriten anheften/lösen, zuletzt verwendet, Neustart-Persistenz, kein Doppelöffnen eines bereits aktiven Studiofensters ohne ausdrückliche gewünschte Mehrinstanzfunktion sowie korrekte Bedienung bei 1366 × 768.
+14. **Regression:** Prüfe die dokumentierten 54/54 Karten-Klicktests und die bisherigen WindowManager-Tests; vorhandene Fehler („Klick tut nichts“, Karten unter Dock verdeckt, generischer Rücksprung) dürfen nicht zurückkehren.
+15. Erstelle einen tatsächlichen Screenshot, auf dem das **geöffnete Trendo-Startmenü** und danach **mehrere unterschiedliche gleichzeitig laufende Studiofenster mitsamt Trendo-Taskleistenknöpfen** zu sehen sind. Diese Screenshots müssen aus der echten laufenden Avalonia-App stammen, nicht aus den KI-Referenzbildern.
+
+**UI41-ABNAHMESCHRANKE:** Grok Build darf die Startmenü-/Fensterfunktion erst `TESTED` nennen, wenn alle im tatsächlichen Katalog verzeichneten Studios eine korrekte direkte und ehrlich ausgewiesene Startwirkung haben; visuelle Designfreigabe des Auftraggebers bleibt für den anschließenden globalen Studio-Rollout erforderlich.
 
 ---
 
@@ -132,7 +165,7 @@ Implementiere **alle 20 freigegebenen Bereiche**, zunächst im eingeschränkten 
 8. **Premium Studio Card System:** visuell hochwertige Karten mit realen Statuswerten und echten Klick-/Tastaturaktionen.
 9. **Ultra-Professional Studio Workspaces:** fachlich unterschiedliche Oberflächen, mit dem Briefstudio als erstem komplett getesteten Referenzstudio.
 10. **Trendo AI Living Interface:** hochwertige KI-Panels; nur echte Zustände `nicht verbunden/prüfen/bereit/arbeitet/fehler`.
-11. **Next-Generation Start Menu & Command Center:** Suche, Favoriten, letzte Projekte, alle Studios, Tastatur/Win/Esc, klare Hierarchie.
+11. **Next-Generation Start Menu & Command Center:** Suche, Favoriten, letzte Projekte, **direktes Öffnen jedes Studios als eigenständiges Trendo-Fenster**, getrennte Trendo-Taskleistenknöpfe, Tastatur/Win/Esc, klare Hierarchie; verbindliche Details siehe UI41-SM-01.
 12. **Luxury Dock & Taskbar Experience:** verlässliche Taskleiste, aktive Fenster, Fokus, Min/Max, optionales Autohide ohne Overlayfehler.
 13. **Beautiful Real-Time System Center:** CPU/RAM/GPU/SSD nur mit echten Messdaten, bei fehlender Quelle ehrlich `Nicht verfügbar`.
 14. **Premium Typography & Iconography:** einheitliche Icons, Größen, Kontraste, Abstände und Fonts.
@@ -169,11 +202,11 @@ Implementiere **alle 20 freigegebenen Bereiche**, zunächst im eingeschränkten 
 - DPI- und Betriebssystemskalierung beachten; kein genereller `ScaleTransform` als Ersatz für adaptives Layout.
 - Große, klare Desktop-Studio-Karten und hochwertige Widget-Hierarchie.
 - Dock/Taskbar darf keinen Input blockieren und keine Karten verdecken.
-- Fensterverwaltung bewahren.
+- Fensterverwaltung bewahren, **parallele Studiofenster mit einzelnen Trendo-Taskleistenknöpfen** real sicherstellen; keine stillen Fensterverdrängungen oder nur Listen-Navigation.
 
 ### UI41-3 – Startmenü und KI-Bereich
 
-- Bestehendes Startmenü aus `MainWindow.StartMenu.cs` visuell modernisieren, Such- und Keybinding-Funktion unverändert erhalten.
+- Bestehendes Startmenü aus `MainWindow.StartMenu.cs` visuell modernisieren, **jedes registrierte Studio direkt aus dem Menü in einem eigenen Arbeitsfenster öffnen** und Such-/Keybinding-/Favoritenfunktionen erhalten. Verbindlichen Funktionstest nach UI41-SM-01 ausführen.
 - Bestehende lokale KI-Anbindung und ihre Zustände bewahren und visuell verbessern.
 - KI-Status nur aus tatsächlichen Verbindungs-/Ausführungsdaten abbilden: `Nicht verbunden`, `Verbindung wird geprüft`, `Bereit`, `Antwort läuft`, `Fehler`, `Offline`.
 - Unverfügbare Modelle und Werkzeuge dürfen nicht als online/bereit erscheinen. Keine künstlich erzeugten Unterhaltungen als echte Nutzerdaten.
@@ -203,7 +236,7 @@ Implementiere **alle 20 freigegebenen Bereiche**, zunächst im eingeschränkten 
 Liefern:
 1. Echten startbaren Windows-Entwicklungsbuild.
 2. Baseline-Vorher-/Nachher-Screenshots unter identischen Bedingungen.
-3. Premium-Desktop, Startmenü, Studioübersicht, KI und echtes Briefstudio.
+3. Premium-Desktop, **startfähiges Windows-ähnliches Startmenü für den vollständigen aktuellen Studio-Katalog**, parallel geöffnete echte Studiofenster mit Taskleisteneinträgen, Studioübersicht, KI und echtes Briefstudio.
 4. Responsivität mindestens 1366 × 768 und 1920 × 1080; soweit möglich DPI 125/150 %.
 5. Kontrast-/Tastatur-/Klicktests einschließlich aller aktuell katalogisierten Studio-Karten.
 6. Reales Testprotokoll und Performancevergleich.
@@ -229,7 +262,7 @@ Liefern:
 - `dotnet test Trendo.sln -c Release`, sofern aktuelle Lösung dies unterstützt; ansonsten alle aktuellen Core-/App-/API-Tests separat gemäß `AGENTS.md`.
 - Studio-Karten: tatsächliche Klicks und Tastaturaktivierung; kein Dead-Button-Regression.
 - Fenster: Drag, Resize an Kanten, Snap, Focus, Min/Max/Close, Taskleistenaktivierung.
-- Startmenü: Win/Esc, Suche, Tastatur, Pins/Favoriten und aktive Suche.
+- Startmenü: **direktes Starten jedes Katalogstudios in einem eigenen Fenster**, Win/Esc, Suche, Enter, Tastatur, Pins/Favoriten, Wiederöffnung aus Taskleiste und keine nicht reagierenden Einträge. Nicht implementierte Studios müssen ihren echten Zustand anzeigen.
 - KI-Panel: getrennte Tests im Modus `Nicht verbunden` und mit echter lokaler KI, falls technisch eingerichtet.
 - Briefstudio: Schreiben mit Testdaten, echtes Speichern, nach Möglichkeit DOCX-/PDF-Export und erneutes Öffnen.
 - Themes: Dunkel, Hell, hoher Kontrast, User-Wallpaper, Akzentwechsel, gespeicherte Einstellungen.
@@ -311,7 +344,7 @@ Erstelle bei tatsächlicher lokaler Grok-Build-Ausführung:
 2. Einen Vorher-/Nachher-Bericht mit aktuellem Commit-SHA und Datum.
 3. Echte Avalonia-Styles, Controls und responsive Layouts (kein Screenshot-Trick).
 4. Screenshots des tatsächlich gestarteten Windows-Builds für Desktop, Startmenü, Studioübersicht, Briefstudio, KI, kleine und große Bildschirmauflösung.
-5. Einen Bildvergleich gegen Referenz `01` bis `05`, mit dokumentierten Abweichungen und Ursachen.
+5. Einen Bildvergleich gegen Referenz `01` bis `05`, mit dokumentierten Abweichungen und Ursachen; **zusätzliche echte Startmenü-und-Mehrfenster-Screenshots** mit sichtbarer Trendo-Taskleiste.
 6. Rohlogs der `dotnet` Builds und aller Testprojekte; Fehl- und Warnungszahlen angeben.
 7. Messergebnisse für Startzeit, Speicherverbrauch und UI-Reaktion mit dokumentierter Hardware.
 8. Liste verbleibender Defekte, technischer Einschränkungen und nicht gelaufener Tests.
