@@ -71,6 +71,15 @@ public partial class MainWindow
     }
 
     private Control KreativPage(string title, Control body) => W45Page(title, KreativTabs, "kreativ", body);
+
+    /// <summary>Wie KreativPage, aber der untere Teil füllt das Fenster. Vorschau und Knöpfe bleiben ohne Scrollen sichtbar.</summary>
+    private Control FitKreativPage(string title, Control header, Control fill)
+    {
+        var head = new StackPanel { Spacing = 6, Children = { TabNav(KreativTabs, "kreativ") } };
+        if (_w45Msg.Length > 0) head.Children.Add(new Border { Name = "w45-msg", Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6), Child = P(_w45Msg, Text) });
+        head.Children.Add(header);
+        return FitPage(title, head, fill);
+    }
     private Control BusinessPage(string title, Control body) => W45Page(title, BusinessTabs, "business", body);
 
     private Control W45Page(string title, List<(string, string, string)> tabs, string prefix, Control body)

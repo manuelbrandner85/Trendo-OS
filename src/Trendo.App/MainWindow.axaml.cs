@@ -80,7 +80,7 @@ public sealed partial class MainWindow : Window
         FirstStartDefaults();
         Title = "Trendo OS";
         try { using var ico = Avalonia.Platform.AssetLoader.Open(new Uri("avares://TrendoOS/Assets/logo/trendo.ico")); Icon = new WindowIcon(ico); } catch (Exception) { /* Symbol fehlt: Standard */ }
-        Width = 1440; Height = 900; MinWidth = 960; MinHeight = 600; WindowState = WindowState.Maximized;
+        Width = 1440; Height = 900; MinWidth = 960; MinHeight = 600;
         Background = Brush.Parse("#050B18");
 
         StartupTrace.Mark("ctor.theme");
@@ -104,6 +104,7 @@ public sealed partial class MainWindow : Window
         var dock = Dock(); Grid.SetColumn(dock, 1); Grid.SetRow(dock, 1); body.Children.Add(dock);
         StartupTrace.Mark("ctor.left+dock");
         var right = RightColumn(); Grid.SetColumn(right, 2); Grid.SetRowSpan(right, 2); body.Children.Add(right);
+        Grid.SetColumnSpan(_workArea, 3); Grid.SetRowSpan(_workArea, 2); _workArea.ZIndex = 30; body.Children.Add(_workArea);
         _status.IsVisible = false; // Statusinfos stehen unter System/Einstellungen und als Tooltip
         // Designfläche skaliert proportional (Konzept ist für ~1440 px Breite gestaltet), damit kleine Bildschirme nicht abschneiden
         var scaler = new LayoutTransformControl { Child = root };
@@ -202,9 +203,30 @@ public sealed partial class MainWindow : Window
         r.Value.Text = v is { } y ? $"{y:0}%" : "n. v.";
     }
 
+    /// <summary>Hauptfenster nach vorn holen. Velopack startet den Prozess nach der Installation oft ohne sichtbares Fenster.</summary>
+    private bool _revealed;
+    public void Reveal()
+    {
+        var hidden = !IsVisible || WindowState == WindowState.Minimized;
+        if (!hidden && _revealed) return;
+        var first = !_revealed;
+        _revealed = true;
+        ShowInTaskbar = true;
+        if (!IsVisible) Show();
+        if (hidden || first)
+        {
+            if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
+            WindowState = WindowState.Maximized;
+            WindowReveal.Force(this);
+        }
+        Activate();
+    }
+
     private async void OnOpened(object? s, EventArgs e)
     {
         StartupTrace.Mark("window.opened");
+        Reveal();
+        Dispatcher.UIThread.Post(Reveal, DispatcherPriority.Loaded);
         // erstes gezeichnetes Bild = sichtbarer Start
         RequestAnimationFrame(_ => { StartupTrace.Mark("first.frame"); StartupTrace.Flush(); });
         // KI-Laufzeit im Hintergrund prüfen/starten – blockiert weder Start noch Bildschirmfoto
@@ -736,15 +758,35 @@ public sealed partial class MainWindow : Window
 
     private Control Page(string title, Control content)
     {
+        var sp = new StackPanel { Spacing = 8, Children = { PageHead(title), content } };
+        Detach(_hintHost); sp.Children.Insert(1, _hintHost);
+        return Panel(new ScrollViewer { Content = sp }, 18);
+    }
+
+    /// <summary>Seite ohne äußeres Scrollen: Kopf bleibt stehen, <paramref name="fill"/> füllt die restliche Höhe.</summary>
+    private Control FitPage(string title, Control header, Control fill)
+    {
+        var root = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,Auto,*"), MinHeight = 0, VerticalAlignment = VerticalAlignment.Stretch };
+        root.Children.Add(PageHead(title));
+        var hint = Detach(_hintHost); Grid.SetRow(hint, 1); root.Children.Add(hint);
+        Grid.SetRow(header, 2); root.Children.Add(header);
+        fill.VerticalAlignment = VerticalAlignment.Stretch; fill.MinHeight = 0;
+        Grid.SetRow(fill, 3); root.Children.Add(fill);
+        return Panel(root, 12);
+    }
+
+    private Control PageHead(string title)
+    {
         title = StudioHeading(title);
         var help = new Button { Name = "btn-help", Content = "?", Width = 28, Height = 28, Padding = new Thickness(0), CornerRadius = new CornerRadius(14), HorizontalContentAlignment = HorizontalAlignment.Center, FontWeight = FontWeight.Bold, Background = Brush.Parse("#33FFFFFF"), Foreground = Text };
         ToolTip.SetTip(help, "Was kann ich hier tun?"); var key = CurrentView;
-        help.Click += (_, _) => ShowHelp(key, force: true);
+        help.Click += (_, _) =>
+        {
+            if (_hintHost.Children.Count > 0) { _hintHost.Children.Clear(); return; }
+            ShowHelp(key, force: true);
+        };
         var heading = H(title, 22); heading.Name = "page-title";
-        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { heading, Pos(help, 1) } };
-        var sp = new StackPanel { Spacing = 8, Children = { head, content } };
-        Detach(_hintHost); sp.Children.Insert(1, _hintHost);
-        return Panel(new ScrollViewer { Content = sp }, 18);
+        return new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { heading, Pos(help, 1) } };
     }
 
     private Control StudiosView()

@@ -14,27 +14,29 @@ class Program
     {
         // Velopack: verarbeitet Installations-/Deinstallations-Hooks des Setup.exe (muss zuerst laufen)
         StartupTrace.Mark("main");
-        Velopack.VelopackApp.Build().Run();
+        var uiArgs = AppStartup.WithoutVelopack(args);
+        // Fast-Hooks (--veloapp-install usw.) beendet Velopack selbst. OnFirstRun beendet nicht: danach muss das Fenster erscheinen.
+        Velopack.VelopackApp.Build().OnFirstRun(_ => AppStartup.NoteFirstRun()).Run();
         // Arbeitsverzeichnis aus dem Programmordner herausnehmen: gestartete Programme (winget, Ollama) würden sonst Updates blockieren
         try { Directory.SetCurrentDirectory(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)); } catch { }
-        string? Arg(string n) { var i = Array.IndexOf(args, n); return i >= 0 && i + 1 < args.Length ? args[i + 1] : null; }
+        string? Arg(string n) { var i = Array.IndexOf(uiArgs, n); return i >= 0 && i + 1 < uiArgs.Length ? uiArgs[i + 1] : null; }
         Options = new AppOptions(Arg("--data-root"), Arg("--screenshot"),
-            int.TryParse(Arg("--auto-exit"), out var s) ? s : (args.Contains("--smoke") ? 5 : 0),
-            args.Contains("--offline"),
-            args.Contains("--api") ? (int.TryParse(Arg("--api-port"), out var ap) ? ap : 47800) : null,
-            FirstRun: !args.Contains("--no-first-run"), Page: Arg("--page"), KiAsk: Arg("--ki-ask"), Query: Arg("--query"));
+            int.TryParse(Arg("--auto-exit"), out var s) ? s : (uiArgs.Contains("--smoke") ? 5 : 0),
+            uiArgs.Contains("--offline"),
+            uiArgs.Contains("--api") ? (int.TryParse(Arg("--api-port"), out var ap) ? ap : 47800) : null,
+            FirstRun: !uiArgs.Contains("--no-first-run"), Page: Arg("--page"), KiAsk: Arg("--ki-ask"), Query: Arg("--query"));
 
         var crashRoot = Options.DataRoot ?? TrendoCore.DefaultDataRoot();
         AppDomain.CurrentDomain.UnhandledException += (_, e) => { if (e.ExceptionObject is Exception ex) try { CrashLog.Write(crashRoot, ex, "Programm"); } catch { } };
         TaskScheduler.UnobservedTaskException += (_, e) => { try { CrashLog.Write(crashRoot, e.Exception, "Hintergrundaufgabe"); } catch { } e.SetObserved(); };
-        if (args.Contains("--selftest-crashlog")) { Console.WriteLine(CrashLog.Write(crashRoot, new InvalidOperationException("Selbsttest Absturzprotokoll"), "Selbsttest")); return 0; }
-        if (args.Contains("--version")) { Console.WriteLine(CrashLog.AppVersion()); return 0; }
-        if (args.Contains("--selftest-open-explorer"))
+        if (uiArgs.Contains("--selftest-crashlog")) { Console.WriteLine(CrashLog.Write(crashRoot, new InvalidOperationException("Selbsttest Absturzprotokoll"), "Selbsttest")); return 0; }
+        if (uiArgs.Contains("--version")) { Console.WriteLine(CrashLog.AppVersion()); return 0; }
+        if (uiArgs.Contains("--selftest-open-explorer"))
         {
             var core = new TrendoCore(Options.DataRoot ?? TrendoCore.DefaultDataRoot(), offline: Options.Offline);
             return SelfTest.OpenExplorer(core, Arg("--approver") ?? "operator-cli", Console.Out);
         }
-        if (args.Contains("--deps-status") || Arg("--install-deps") is not null)
+        if (uiArgs.Contains("--deps-status") || Arg("--install-deps") is not null)
         {
             // Konsolenweg für dieselbe Komponenten-Logik wie in der UI (z. B. für Tests/stille Erstinstallation).
             var core = new TrendoCore(Options.DataRoot ?? TrendoCore.DefaultDataRoot(), offline: Options.Offline);
@@ -45,7 +47,7 @@ class Program
             {
                 if (!dm.HasConsent)
                 {
-                    if (!args.Contains("--accept-licenses")) { Console.WriteLine("Lizenz-Zustimmung fehlt (--accept-licenses)"); return 3; }
+                    if (!uiArgs.Contains("--accept-licenses")) { Console.WriteLine("Lizenz-Zustimmung fehlt (--accept-licenses)"); return 3; }
                     dm.GiveConsent(Principal.LocalOwner);
                 }
                 var list = ids == "auto" ? DependencyCatalog.All.Where(c => c.Mode == DeliveryMode.AutoUser).ToList() : ids.Split(',').Select(DependencyCatalog.Get).ToList();
@@ -66,7 +68,7 @@ class Program
             core.Shutdown();
             return rc;
         }
-        if (args.Contains("--api-selftest"))
+        if (uiArgs.Contains("--api-selftest"))
         {
             var core = new TrendoCore(Options.DataRoot ?? TrendoCore.DefaultDataRoot(), launcher: new NoopLauncher(), offline: Options.Offline);
             var req = TrendoCore.FindRequirements(AppContext.BaseDirectory) ?? throw new FileNotFoundException("requirements.yaml");
@@ -76,11 +78,35 @@ class Program
         }
         StartupTrace.LogPath = Arg("--startup-log");
         StartupTrace.Mark("avalonia.start");
-        return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+        return BuildAvaloniaApp().StartWithClassicDesktopLifetime(uiArgs);
     }
 
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>().UsePlatformDetect().WithInterFont().LogToTrace();
+}
+
+/// <summary>Start nach dem Installer: Velopack-Schalter bleiben bei Velopack, die Oberfläche bekommt sie nicht.</summary>
+public static class AppStartup
+{
+    public static bool VelopackFirstRun { get; private set; }
+    public static void NoteFirstRun() => VelopackFirstRun = true;
+
+    public static string[] WithoutVelopack(string[] args)
+    {
+        var list = new List<string>();
+        for (var i = 0; i < args.Length; i++)
+        {
+            var a = args[i];
+            if (a.StartsWith("--veloapp-", StringComparison.OrdinalIgnoreCase) || a.StartsWith("--velopack-", StringComparison.OrdinalIgnoreCase)
+                || a.StartsWith("--squirrel-", StringComparison.OrdinalIgnoreCase))
+            {
+                if (i + 1 < args.Length && !args[i + 1].StartsWith('-')) i++;
+                continue;
+            }
+            list.Add(a);
+        }
+        return list.ToArray();
+    }
 }
 
 /// <summary>Launcher für den API-Selbsttest: führt nichts aus (der Test lehnt Aktionen ab).</summary>

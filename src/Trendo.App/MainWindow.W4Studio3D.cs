@@ -1,6 +1,7 @@
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -52,29 +53,56 @@ public partial class MainWindow
         try { _png3d = PreviewBytes(); _previewError = null; }
         catch (Exception ex) { _png3d = null; _previewError = "Vorschau nicht möglich: " + ex.Message; }
 
-        var sp = new StackPanel { Spacing = 8 };
-        sp.Children.Add(P("Baue ein Objekt aus Teilen, sieh es hier an und öffne genau dieses Objekt in Blender. Maße sind Zentimeter, Z zeigt nach oben."));
-        sp.Children.Add(Card(BlenderRow()));
-
         var objName = new TextBox { Name = "3d-name", Text = _scene.Name, Width = 200 };
-        sp.Children.Add(Card(new StackPanel
+        var header = new StackPanel
+        {
+            Spacing = 6,
+            Children =
+            {
+                P("Baue ein Objekt aus Teilen, sieh es hier an und öffne genau dieses Objekt in Blender. Maße sind Zentimeter, Z zeigt nach oben."),
+                BlenderRow(),
+                FileBlock(objName),
+            },
+        };
+        var editor = new StackPanel
         {
             Spacing = 8,
             Children =
             {
-                H("Objekt", 14),
-                new WrapPanel { Children = { Labeled("Name", objName), Act("3d-save", "Speichern", () => SaveScene(objName)), Act("3d-new", "Neues Objekt", () => NewScene(objName)), Act("3d-undo", "Rückgängig", UndoScene) } },
-                H("Teile", 14),
-                PartsList(objName),
-                H("Teil", 14),
-                PartForm(objName),
+                Card(new StackPanel
+                {
+                    Spacing = 8,
+                    Children =
+                    {
+                        H("Objekt", 14),
+                        new WrapPanel { Children = { Labeled("Name", objName), Act("3d-save", "Speichern", () => SaveScene(objName)), Act("3d-new", "Neues Objekt", () => NewScene(objName)), Act("3d-undo", "Rückgängig", UndoScene) } },
+                        H("Teile", 14),
+                        PartsList(objName),
+                        H("Teil", 14),
+                        PartForm(objName),
+                    },
+                }),
+                Card(AiBlock(aiOn, objName)),
+                Card(SavedBlock()),
             },
-        }));
-        sp.Children.Add(Card(AiBlock(aiOn, objName)));
-        sp.Children.Add(Card(PreviewBlock()));
-        sp.Children.Add(Card(FileBlock(objName)));
-        sp.Children.Add(Card(SavedBlock()));
-        return KreativPage("3D-Modelle erstellen", sp);
+        };
+        var left = new ScrollViewer
+        {
+            Name = "3d-editor-scroll",
+            Content = editor,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+        };
+        var split = new Grid { ColumnDefinitions = new ColumnDefinitions("*,260"), MinHeight = 0, VerticalAlignment = VerticalAlignment.Stretch };
+        split.Children.Add(left);
+        var preview = Card(PreviewBlock());
+        preview.VerticalAlignment = VerticalAlignment.Stretch;
+        preview.Margin = new Thickness(8, 0, 0, 0);
+        Grid.SetColumn(preview, 1);
+        split.Children.Add(preview);
+        return FitKreativPage("3D-Modelle erstellen", header, split);
     }
 
     private Control BlenderRow()
@@ -192,28 +220,25 @@ public partial class MainWindow
 
     private Control PreviewBlock()
     {
-        var box = new StackPanel
+        var box = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,*"), VerticalAlignment = VerticalAlignment.Stretch, MinHeight = 0 };
+        box.Children.Add(H("Vorschau", 14));
+        var views = new WrapPanel
         {
-            Spacing = 6,
             Children =
             {
-                H("Vorschau", 14),
-                new WrapPanel
-                {
-                    Children =
-                    {
-                        Act("3d-view-front", "Vorne", () => SetView("front", "Ansicht von vorn.")),
-                        Act("3d-view-right", "Rechts", () => SetView("right", "Ansicht von rechts.")),
-                        Act("3d-view-top", "Oben", () => SetView("top", "Ansicht von oben.")),
-                        Act("3d-view-angle", "Schräg", () => SetView("angle", "Schräge Ansicht.")),
-                    },
-                },
+                Act("3d-view-front", "Vorne", () => SetView("front", "Ansicht von vorn.")),
+                Act("3d-view-right", "Rechts", () => SetView("right", "Ansicht von rechts.")),
+                Act("3d-view-top", "Oben", () => SetView("top", "Ansicht von oben.")),
+                Act("3d-view-angle", "Schräg", () => SetView("angle", "Schräge Ansicht.")),
             },
         };
-        if (_previewError is { Length: > 0 }) box.Children.Add(P(_previewError, Brush.Parse("#FACC15")));
-        if (_png3d is { Length: > 0 })
-            box.Children.Add(new Image { Name = "3d-preview-image", Source = new Bitmap(new MemoryStream(_png3d)), Width = 360, Height = 270, HorizontalAlignment = HorizontalAlignment.Left });
-        else if (_previewError is null) box.Children.Add(P("Die Vorschau erscheint, sobald ein Teil da ist."));
+        Grid.SetRow(views, 1); box.Children.Add(views);
+        Control view = _previewError is { Length: > 0 }
+            ? P(_previewError, Brush.Parse("#FACC15"))
+            : _png3d is { Length: > 0 }
+                ? new Image { Name = "3d-preview-image", Source = new Bitmap(new MemoryStream(_png3d)), Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch }
+                : P("Die Vorschau erscheint, sobald ein Teil da ist.");
+        Grid.SetRow(view, 2); box.Children.Add(view);
         return box;
     }
 
