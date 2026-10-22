@@ -47,6 +47,88 @@ phases:
 - id: P6
   name: Release Candidates
   status: APPROVED_SPEC
+principles:
+- id: GRUNDSATZ-01
+  title: 'Betriebssystem für jeden: jedes Fachprogramm und Tool ist installierbar'
+  source: Manuel, übermittelt von TRENDO OS MASTER (2026-10-23)
+  wording: Trendo OS soll ein Betriebssystem für jeden werden, also alles ist an den Nutzer anpassbar. Fachprogramme oder
+    Tools im besten Fall schon bei der Installation von Trendo OS mitinstallieren und ansonsten innerhalb von Trendo OS installierbar.
+    Es darf kein Programm oder Tool geben, wo dies nicht möglich ist.
+  approval_status: APPROVED_SPEC
+  note: Wortlaut von Manuel übermittelt; Manuel muss den Eintrag und die Abnahmekriterien noch bestätigen.
+  acceptance_criteria_proposed:
+  - 'AK-1: Jedes Programm oder Tool, das ein Studio braucht, steht im Abhängigkeitskatalog (src/Trendo.Core/Dependencies.cs).
+    Ein Test schlägt fehl, wenn ein Studio ein Programm nutzt, das dort fehlt.'
+  - 'AK-2: Für jedes Programm ist festgelegt, wie es zum Nutzer kommt: im Setup enthalten, beim Setup zur Auswahl angeboten
+    oder später in Trendo OS mit einem Klick installierbar.'
+  - 'AK-3: Kein Programm hat den Zustand ‚nicht installierbar‘. Wo der Hersteller keine automatische Installation erlaubt
+    (z. B. Konto nötig), führt Trendo OS den Nutzer Schritt für Schritt zur offiziellen Installation und erkennt das Programm
+    danach selbst.'
+  - 'AK-4: Installiert wird nur nach Zustimmung des Nutzers, nur aus offiziellen Quellen (winget oder Herstellerseite) und
+    mit Eintrag im Audit-Log. Kein heimlicher Auto-Download.'
+  - 'AK-5: Lizenz, Kosten und Hürden (z. B. Konto-Pflicht) werden vor der Installation in leicht verständlichem Deutsch angezeigt.'
+  - 'AK-6: Nach der Installation prüft Trendo OS, ob das Programm wirklich startet, und zeigt das Ergebnis an.'
+  - 'AK-7: Der Nutzer kann jedes optionale Programm wieder entfernen oder abwählen (alles ist anpassbar).'
+  - 'AK-8: Nachweis auf einem echten Windows-PC: Installation aus Trendo OS heraus mit Log für mindestens ein Programm je
+    Liefer-Art.'
+packages:
+- id: PAKET-44
+  title: Fachprogramme nur bei Bedarf (Universal Professional Studio Fusion)
+  source: MASTER_BIS_94.md Zeile 86; 10 Funktionen von Manuel am 2026-10-23 freigegeben
+  approval_status: APPROVED_SPEC
+  functions:
+  - id: P44-01
+    name: Programmkatalog
+    for_user: Zeigt, welche Fachprogramme TRENDO kennt.
+    acceptance: Die Seite „Externe Programme“ listet alle Programme aus dem Katalog.
+    approval_status: APPROVED_SPEC
+  - id: P44-02
+    name: Nicht vorladen
+    for_user: Programme starten nicht beim Hochfahren.
+    acceptance: Nach dem Start steht überall „Nicht geladen“, kein Programm läuft im Hintergrund.
+    approval_status: APPROVED_SPEC
+  - id: P44-03
+    name: Erkennen
+    for_user: Findet ein schon installiertes Programm.
+    acceptance: Ein installiertes Programm wird als „gefunden, nicht geprüft“ angezeigt.
+    approval_status: APPROVED_SPEC
+  - id: P44-04
+    name: Prüfen auf Knopfdruck
+    for_user: Kurzer Test, ob das Programm funktioniert.
+    acceptance: Nur „Verbindung prüfen“ startet die Prüfung; Ergebnis ist bestanden oder fehlgeschlagen.
+    approval_status: APPROVED_SPEC
+  - id: P44-05
+    name: Öffnen nur mit Freigabe
+    for_user: Programm öffnet erst nach bestandener Prüfung und Freigabe.
+    acceptance: Ohne Prüfung und Freigabe öffnet nichts.
+    approval_status: APPROVED_SPEC
+  - id: P44-06
+    name: Alle Wege über dieselbe Prüfung
+    for_user: Auch alte Knöpfe sowie 3D- und Spielestudio nutzen dieselbe Prüfung.
+    acceptance: '„Starten“, „Einrichten“ und die Wege aus #251/#253 öffnen nichts ohne Prüfung.'
+    approval_status: APPROVED_SPEC
+  - id: P44-07
+    name: Kein automatischer Download
+    for_user: Es wird nie heimlich oder automatisch etwas heruntergeladen.
+    acceptance: Offline, beim Start und bei fehlgeschlagener Prüfung wird nichts geladen; Download nur nach ausdrücklicher
+      Zustimmung (siehe P44-08).
+    approval_status: APPROVED_SPEC
+  - id: P44-08
+    name: Fehlendes Programm per Knopf installieren
+    for_user: Installiert ein fehlendes Programm per Knopf mit Rückfrage aus offizieller kostenloser Quelle.
+    acceptance: Nach Klick erscheint eine Rückfrage mit Quelle, Lizenz und Größe; erst nach Ja wird aus der offiziellen kostenlosen
+      Quelle (z. B. winget) installiert und das Programm danach erkannt.
+    approval_status: APPROVED_SPEC
+  - id: P44-09
+    name: Geheimnisse schützen
+    for_user: Schlüssel nur bei Bedarf aus dem Secret Store, nie im Protokoll.
+    acceptance: Ein Test zeigt, dass kein geheimer Wert im Protokoll steht.
+    approval_status: APPROVED_SPEC
+  - id: P44-10
+    name: Echter Start auf dem PC
+    for_user: Blender, Unreal und LibreOffice laufen auf Windows wirklich.
+    acceptance: Je ein dokumentierter Lauf auf Manuels PC mit Beleg.
+    approval_status: APPROVED_SPEC
 modules:
 - id: CORE-01
   name: Intelligent Desktop OS
