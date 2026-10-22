@@ -17,6 +17,8 @@
 | Master 94 Phase 2 | Cloud-Agent bc-58118c68 | läuft | Meldung Trendo OS |
 | Blender, Vorschau, Kamera | Cloud-Agent bc-cc4c2d77 | läuft | Meldung Trendo OS |
 | T-0005–T-0108 | Cloud-Agent bc-6fb045c7 | läuft | Meldung Trendo OS |
+| Programmliste (alle Fachprogramme/Tools) | REQUIREMENTS GODMODE | neu vergeben | Meldung MASTER 23.10.2026 |
+| Konzept Mitinstallation/Nachinstallation | BUILD & RELEASE GODMODE (Lead), CONNECTION GODMODE (Hilfe) | neu vergeben; Code erst nach Manuels JA | Meldung MASTER 23.10.2026 |
 | docs/state anlegen (Testtask) | TOKEN & PRODUCTION GODMODE | PR offen | dieser PR |
 
 Format für Statusmeldungen: Task | Nr. | Stand | Beleg | Nächster Schritt (max. 5 Zeilen).
