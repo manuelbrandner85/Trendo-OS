@@ -167,4 +167,16 @@ public class Sys02_Alltag
         Assert.StartsWith("https://api.open-meteo.com/", Weather.Url(52.52, 13.4));
         Assert.Empty(ResourceWarn.Check(50, 100L << 30)); Assert.Equal(2, ResourceWarn.Check(95, 1L << 30).Count); Assert.Empty(ResourceWarn.Check(null, null));
     }
+
+    [Fact(DisplayName = "SYS-02: Calc.Zahl liest 1,5 und 1.5, lehnt Leeres und Buchstaben ab")]
+    public void Zahl()
+    {
+        Assert.Equal(1.5, Calc.Zahl("1,5", "den Betrag"));
+        Assert.Equal(1.5, Calc.Zahl("1.5", "den Betrag"));
+        Assert.Equal(10, Calc.Zahl(" 10 € ", "den Betrag"));
+        var leer = Assert.Throws<ArgumentException>(() => Calc.Zahl("  ", "den Betrag"));
+        Assert.Contains("Betrag", leer.Message);
+        var falsch = Assert.Throws<ArgumentException>(() => Calc.Zahl("abc", "den Kurs"));
+        Assert.Contains("Kurs", falsch.Message);
+    }
 }

@@ -33,7 +33,14 @@ public partial class MainWindow
         var files = FileShelf.Recent([MediaFolder, Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)], MediaStudio.Inputs, 15);
         sp.Children.Add(H("1. Datei wählen", 14));
         var path = new TextBox { Name = "media-path", Text = _mediaFile ?? "", PlaceholderText = "Pfad zur Datei", Width = 380 };
-        sp.Children.Add(new WrapPanel { Children = { path, Act("media-use", "Übernehmen", () => MediaPick(path.Text?.Trim('"', ' ') ?? "")), Act("media-folder", "Medienordner öffnen", () => Launch(MediaFolder)) } });
+        sp.Children.Add(new WrapPanel { Children = { path, Act("media-use", "Übernehmen", async () =>
+        {
+            var p = path.Text?.Trim().Trim('"') ?? "";
+            if (p.Length == 0) { var picked = await PickFileAsync("Mediendatei", ["*.mp4", "*.mkv", "*.mov", "*.webm", "*.mp3", "*.wav", "*.jpg", "*.png"]); if (!string.IsNullOrEmpty(picked)) p = picked; }
+            if (p.Length == 0) { Say("Bitte eine Mediendatei wählen oder den Pfad eintragen.", "kreativ-medien"); return; }
+            if (!File.Exists(p)) { Say("Diese Mediendatei gibt es nicht.", "kreativ-medien"); return; }
+            _mediaFile = p; Say("Gewählt: " + Path.GetFileName(p), "kreativ-medien");
+        }), Act("media-folder", "Medienordner öffnen", () => Launch(MediaFolder)) } });
         var i = 0;
         foreach (var f in files.Take(8)) { var fp = f.FullName; sp.Children.Add(Act($"media-file-{i++}", (fp == _mediaFile ? "● " : "") + f.Name, () => MediaPick(fp))); }
         if (_mediaFile is { } mf && File.Exists(mf))

@@ -70,6 +70,16 @@ public static class Calc
         }
     }
     public static string Format(double v) => Math.Round(v, 10).ToString("#,##0.##########", CultureInfo.GetCultureInfo("de-DE"));
+
+    /// <summary>Zahl aus einem Eingabefeld. Leere oder falsche Eingabe wird eine verständliche Meldung, kein Absturz.</summary>
+    public static double Zahl(string? text, string feld)
+    {
+        var s = (text ?? "").Trim().Trim('€', '$', ' ').Trim();
+        if (s.Length == 0) throw new ArgumentException($"Bitte {feld} ausfüllen.");
+        if (double.TryParse(s, NumberStyles.Float, CultureInfo.GetCultureInfo("de-DE"), out var v)) return v;
+        if (double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out v)) return v;
+        throw new ArgumentException($"„{s}“ ist keine Zahl. Bitte {feld} als Zahl eintragen.");
+    }
 }
 
 /// <summary>SYS-02 Medien / SYS-10 Office / SYS-03 Downloads: Dateien eines Ordners nach Art, neueste zuerst.</summary>

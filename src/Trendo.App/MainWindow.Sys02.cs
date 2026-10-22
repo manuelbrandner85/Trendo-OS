@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Layout;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Trendo.Core;
 using Trendo.Core.Sys;
@@ -14,6 +15,23 @@ public partial class MainWindow
     private string? _lastUndo, _lastShot;
     private List<TrashItem> _trash = [];
     private bool _trashAsk;
+    private string _renFolder = "", _renPattern = "{name}", _renFind = "", _renReplace = "";
+    private List<Move> _renamePreview = [];
+    private bool _renameReady;
+    private string _renameSig = "";
+    private string _photoFolder = "";
+    private List<Move> _photoPreview = [];
+    private bool _photoReady;
+    private string _photoSig = "";
+    private string _duFolder = "", _duSummary = "";
+    private List<FileAnalysis.Usage> _duTop = [];
+    private string _dupFolder = "";
+    private string _trashNote = "";
+    /// <summary>Tests setzen das, damit ein Ordner- oder Dateidialog ohne echtes Fenster gewählt werden kann.</summary>
+    internal Func<string, Task<string?>>? FolderDialog;
+    internal Func<string, Task<string?>>? FileDialog;
+    public void UseFolderDialog(Func<string, Task<string?>>? pick) => FolderDialog = pick;
+    public void UseFileDialog(Func<string, Task<string?>>? pick) => FileDialog = pick;
     private DateTime? _swStart; private TimeSpan _swAcc;
     private string _weather = "";
     private DispatcherTimer? _remTimer;
@@ -59,6 +77,7 @@ public partial class MainWindow
     {
         try { a(); }
         catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException or InvalidDataException) { Say(ex.Message, view); }
+        catch (FormatException) { Say("Bitte eine gültige Zahl eintragen.", view); }
     }
 
     // ---------- Dateien ----------
@@ -67,49 +86,132 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 10 };
         const string V = "alltag-dateien";
 
-        var rd = Field("ren-folder", "Ordner mit den Dateien"); var rp = Field("ren-pattern", "Muster, z. B. Urlaub_{n:000}", 220, "{name}"); var rf = Field("ren-find", "Suchen (optional)", 140); var rr = Field("ren-replace", "Ersetzen durch", 140);
+        var rd = Field("ren-folder", "Ordner mit den Dateien", text: _renFolder); var rp = Field("ren-pattern", "Muster, z. B. Urlaub_{n:000}", 220, _renPattern); var rf = Field("ren-find", "Suchen (optional)", 140, _renFind); var rr = Field("ren-replace", "Ersetzen durch", 140, _renReplace);
         var prev = new StackPanel { Name = "ren-preview" };
-        List<Move> Plan() => Renamer.Plan(Directory.GetFiles(Clean(rd)), rp.Text ?? "{name}", rf.Text ?? "", rr.Text ?? "");
+        foreach (var m in _renamePreview.Take(30)) prev.Children.Add(P($"{Path.GetFileName(m.From)} → {Path.GetFileName(m.To)}", Text, 11));
+        void RememberRename() { _renFolder = Clean(rd); _renPattern = rp.Text ?? "{name}"; _renFind = rf.Text ?? ""; _renReplace = rr.Text ?? ""; }
+        string RenSig() => _renFolder + "|" + _renPattern + "|" + _renFind + "|" + _renReplace;
+        List<Move> Plan() => Renamer.Plan(Directory.GetFiles(_renFolder), _renPattern, _renFind, _renReplace);
         sp.Children.Add(Card(Section("Viele Dateien umbenennen", "Erst Vorschau ansehen, dann umbenennen. Mit „Rückgängig“ kommt alles zurück. Platzhalter: {name}, {n}, {n:000}, {datum}.",
             Line(rd, rp), Line(rf, rr,
-                Act("ren-preview-btn", "Vorschau", () => Try(V, () => { prev.Children.Clear(); foreach (var m in Plan().Take(30)) prev.Children.Add(P($"{Path.GetFileName(m.From)} → {Path.GetFileName(m.To)}", Text, 11)); })),
-                Act("ren-apply", "Umbenennen", () => Try(V, () => { var p = Plan(); _lastUndo = Renamer.Apply(p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig")); _core.Audit.Append("app", "files.rename", $"{p.Count} Dateien"); Say($"{p.Count} Dateien umbenannt.", V); }), true),
-                Act("ren-undo", "Rückgängig", () => Try(V, () => { if (_lastUndo is null) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen."); Renamer.Undo(_lastUndo); _lastUndo = null; Say("Zurückgesetzt.", V); }))), prev)));
+                Act("ren-preview-btn", "Vorschau", () =>
+                {
+                    RememberRename();
+                    if (!Directory.Exists(_renFolder)) { _renameReady = false; _renamePreview = []; Say("Bitte zuerst einen Ordner wählen, dessen Dateien du umbenennen willst.", V); return; }
+                    Try(V, () => { _renamePreview = Plan(); _renameSig = RenSig(); _renameReady = _renamePreview.Count > 0; Say(_renamePreview.Count == 0 ? "Vorschau: in diesem Ordner liegt keine Datei." : $"Vorschau: {_renamePreview.Count} Dateien können umbenannt werden.", V); });
+                }),
+                Act("ren-apply", "Umbenennen", async () =>
+                {
+                    RememberRename();
+                    if (!Directory.Exists(_renFolder)) { var picked = await PickFolderAsync("Ordner mit den Dateien"); if (!string.IsNullOrEmpty(picked)) { _renFolder = picked; rd.Text = picked; } }
+                    if (!Directory.Exists(_renFolder)) { Say("Umbenennen braucht einen Ordner. Wähl ihn im Dialog oder trag ihn ins Feld.", V); return; }
+                    try
+                    {
+                        if (!_renameReady || _renameSig != RenSig())
+                        {
+                            _renamePreview = Plan(); _renameSig = RenSig(); _renameReady = _renamePreview.Count > 0;
+                            Say(_renamePreview.Count == 0 ? "In diesem Ordner gibt es nichts umzubenennen." : $"Vorschau: {_renamePreview.Count} Dateien. Nochmal auf „Umbenennen“ klicken, dann wird umbenannt.", V);
+                            return;
+                        }
+                        var p = Plan(); _renameReady = false; _renamePreview = [];
+                        _lastUndo = Renamer.Apply(p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig"));
+                        _core.Audit.Append("app", "files.rename", $"{p.Count} Dateien");
+                        Say($"{p.Count} Dateien umbenannt.", V);
+                    }
+                    catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException) { Say(ex.Message, V); }
+                }, true),
+                Act("ren-undo", "Rückgängig", () => Try(V, () => { if (_lastUndo is null) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen."); Renamer.Undo(_lastUndo); _lastUndo = null; _renameReady = false; Say("Umbenennen rückgängig gemacht.", V); }))), prev)));
 
-        var dd = Field("dup-folder", "Ordner durchsuchen"); var dupOut = new StackPanel { Name = "dup-result" };
+        var dd = Field("dup-folder", "Ordner durchsuchen", text: _dupFolder);
+        var dupOut = new StackPanel { Name = "dup-result" };
         sp.Children.Add(Card(Section("Doppelte Dateien finden", "Vergleicht den Inhalt (nicht nur den Namen). Trendo löscht nichts – du entscheidest selbst.",
-            Line(dd, Act("dup-run", "Suchen", () => Try(V, () =>
+            Line(dd, Act("dup-run", "Suchen", async () =>
             {
-                dupOut.Children.Clear(); var g = FileAnalysis.Duplicates(Clean(dd));
-                dupOut.Children.Add(P(g.Count == 0 ? "Keine doppelten Dateien gefunden." : $"{g.Count} Gruppen mit gleichem Inhalt:", Text));
-                foreach (var grp in g.Take(20)) dupOut.Children.Add(P($"{ResourceMonitor.Size(new FileInfo(grp[0]).Length)}: " + string.Join("  ·  ", grp.Select(Path.GetFileName)), null, 11));
-            }))), dupOut)));
+                _dupFolder = Clean(dd);
+                if (!Directory.Exists(_dupFolder)) { var picked = await PickFolderAsync("Ordner nach doppelten Dateien durchsuchen"); if (!string.IsNullOrEmpty(picked)) _dupFolder = picked; }
+                if (!Directory.Exists(_dupFolder)) { Say("Bitte zuerst den Ordner angeben, in dem nach doppelten Dateien gesucht wird.", V); return; }
+                try
+                {
+                    var g = FileAnalysis.Duplicates(_dupFolder);
+                    _w45Msg = g.Count == 0 ? "Keine doppelten Dateien gefunden." : $"{g.Count} Gruppen mit gleichem Inhalt.";
+                    dupOut.Children.Clear();
+                    dupOut.Children.Add(P(_w45Msg, Text));
+                    foreach (var grp in g.Take(20)) dupOut.Children.Add(P($"{ResourceMonitor.Size(new FileInfo(grp[0]).Length)}: " + string.Join("  ·  ", grp.Select(Path.GetFileName)), null, 11));
+                    Show(V);
+                }
+                catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException) { Say(ex.Message, V); }
+            })), dupOut)));
 
-        var sd = Field("du-folder", "Ordner, z. B. C:\\Users\\Name"); var duOut = new StackPanel { Name = "du-result" };
+        var sd = Field("du-folder", "Ordner, z. B. C:\\Users\\Name", text: _duFolder); var duOut = new StackPanel { Name = "du-result" };
+        if (_duSummary.Length > 0) duOut.Children.Add(P(_duSummary, Text));
+        foreach (var u in _duTop) duOut.Children.Add(P($"{(u.IsFolder ? "📁" : "📄")} {Path.GetFileName(u.Path)} – {ResourceMonitor.Size(u.Bytes)}", null, 11));
         sp.Children.Add(Card(Section("Speicherplatz", "Zeigt, welche Ordner und Dateien am meisten Platz brauchen.",
-            Line(sd, Act("du-run", "Anzeigen", () => Try(V, () =>
+            Line(sd, Act("du-run", "Anzeigen", async () =>
             {
-                duOut.Children.Clear(); var (total, top) = FileAnalysis.Analyze(Clean(sd));
-                duOut.Children.Add(P($"Zusammen {ResourceMonitor.Size(total)}", Text));
-                foreach (var u in top) duOut.Children.Add(P($"{(u.IsFolder ? "📁" : "📄")} {Path.GetFileName(u.Path)} – {ResourceMonitor.Size(u.Bytes)}", null, 11));
-            }))), duOut)));
+                _duFolder = Clean(sd);
+                if (!Directory.Exists(_duFolder)) { var picked = await PickFolderAsync("Ordner, dessen Speicherplatz angezeigt wird"); if (!string.IsNullOrEmpty(picked)) _duFolder = picked; }
+                if (!Directory.Exists(_duFolder)) { Say("Bitte zuerst den Ordner angeben, dessen Speicherplatz angezeigt werden soll.", V); return; }
+                try { var (total, top) = FileAnalysis.Analyze(_duFolder); _duSummary = $"Zusammen {ResourceMonitor.Size(total)}"; _duTop = top; Say("Speicherplatz: " + _duSummary, V); }
+                catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException) { Say("Speicherplatz konnte nicht gelesen werden: " + ex.Message, V); }
+            })), duOut)));
 
         var zs = Field("zip-src", "Ordner oder Datei zum Packen"); var zu = Field("zip-file", "ZIP-Datei zum Entpacken");
         sp.Children.Add(Card(Section("ZIP packen und entpacken", "Gepackt wird neben das Original. Unsichere Archive (die Dateien außerhalb des Zielordners ablegen wollen) werden abgelehnt.",
-            Line(zs, Act("zip-pack", "Packen", () => Try(V, () => { var s = Clean(zs).TrimEnd('/', '\\'); var z = s + ".zip"; Archives.Pack([s], z); Say("Gepackt: " + Path.GetFileName(z), V); }))),
-            Line(zu, Act("zip-unpack", "Entpacken", () => Try(V, () => { var z = Clean(zu); var d = Path.Combine(Path.GetDirectoryName(z)!, Path.GetFileNameWithoutExtension(z)); var n = Archives.Unpack(z, d); Say($"{n} Dateien entpackt nach {Path.GetFileName(d)}.", V); }))))));
+            Line(zs, Act("zip-pack", "Packen", async () =>
+            {
+                var s = Clean(zs).TrimEnd('/', '\\');
+                if (s.Length == 0) { var picked = await PickFolderAsync("Ordner zum Packen"); if (!string.IsNullOrEmpty(picked)) s = picked; }
+                if (s.Length == 0 || (!File.Exists(s) && !Directory.Exists(s))) { Say("Bitte zuerst einen Ordner oder eine Datei zum Packen wählen.", V); return; }
+                try { var z = s + ".zip"; Archives.Pack([s], z); Say("Gepackt: " + Path.GetFileName(z), V); }
+                catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException) { Say(ex.Message, V); }
+            })),
+            Line(zu, Act("zip-unpack", "Entpacken", async () =>
+            {
+                var z = Clean(zu);
+                if (z.Length == 0) { var picked = await PickFileAsync("ZIP-Datei", ["*.zip"]); if (!string.IsNullOrEmpty(picked)) z = picked; }
+                if (!File.Exists(z)) { Say("Bitte zuerst die ZIP-Datei angeben, die entpackt werden soll.", V); return; }
+                try { var d = Path.Combine(Path.GetDirectoryName(z)!, Path.GetFileNameWithoutExtension(z)); var n = Archives.Unpack(z, d); Say($"{n} Dateien entpackt nach {Path.GetFileName(d)}.", V); }
+                catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException or InvalidDataException) { Say(ex.Message, V); }
+            })))));
 
-        var pf = Field("photo-folder", "Ordner mit Fotos"); var pOut = new StackPanel { Name = "photo-preview" };
+        var pf = Field("photo-folder", "Ordner mit Fotos", text: _photoFolder); var pOut = new StackPanel { Name = "photo-preview" };
+        foreach (var m in _photoPreview.Take(20)) pOut.Children.Add(P($"{Path.GetFileName(m.From)} → {Path.GetRelativePath(_photoFolder.Length > 0 ? _photoFolder : ".", m.To)}", null, 11));
         sp.Children.Add(Card(Section("Fotos nach Datum ordnen", "Sortiert nach Aufnahmedatum in Ordner wie 2026/2026-10. Erst Probelauf, dann ausführen – rückgängig machbar.",
-            Line(pf, Act("photo-sim", "Probelauf", () => Try(V, () => { pOut.Children.Clear(); var p = PhotoSorter.Plan(Clean(pf)); pOut.Children.Add(P($"{p.Count} Fotos würden verschoben:", Text)); foreach (var m in p.Take(20)) pOut.Children.Add(P($"{Path.GetFileName(m.From)} → {Path.GetRelativePath(Clean(pf), m.To)}", null, 11)); })),
-                Act("photo-apply", "Ordnen", () => Try(V, () => { var p = PhotoSorter.Plan(Clean(pf)); _lastUndo = Renamer.Apply(p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig")); Say($"{p.Count} Fotos einsortiert. „Rückgängig“ oben setzt es zurück.", V); }), true)), pOut)));
+            Line(pf, Act("photo-sim", "Probelauf", () =>
+            {
+                _photoFolder = Clean(pf);
+                if (!Directory.Exists(_photoFolder)) { _photoReady = false; Say("Bitte zuerst den Ordner mit den Fotos wählen.", V); return; }
+                try { _photoPreview = PhotoSorter.Plan(_photoFolder); _photoSig = _photoFolder; _photoReady = true; Say(_photoPreview.Count == 0 ? "Probelauf: in diesem Ordner liegt kein Foto." : $"Probelauf: {_photoPreview.Count} Fotos würden verschoben.", V); }
+                catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException) { Say(ex.Message, V); }
+            }),
+                Act("photo-apply", "Ordnen", async () =>
+                {
+                    _photoFolder = Clean(pf);
+                    if (!Directory.Exists(_photoFolder)) { var picked = await PickFolderAsync("Ordner mit Fotos"); if (!string.IsNullOrEmpty(picked)) _photoFolder = picked; }
+                    if (!Directory.Exists(_photoFolder)) { Say("Ordnen braucht einen Ordner mit Fotos. Wähl ihn im Dialog oder trag ihn ins Feld.", V); return; }
+                    try
+                    {
+                        if (!_photoReady || _photoSig != _photoFolder) { _photoPreview = PhotoSorter.Plan(_photoFolder); _photoSig = _photoFolder; _photoReady = true; Say(_photoPreview.Count == 0 ? "In diesem Ordner gibt es keine Fotos zum Ordnen." : $"Vorschau: {_photoPreview.Count} Fotos. Nochmal auf „Ordnen“ klicken, dann werden sie einsortiert.", V); return; }
+                        var p = PhotoSorter.Plan(_photoFolder); _photoReady = false; _photoPreview = [];
+                        if (p.Count == 0) { Say("Keine Fotos einsortiert.", V); return; }
+                        _lastUndo = Renamer.Apply(p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig"));
+                        Say($"{p.Count} Fotos einsortiert. „Rückgängig“ oben setzt es zurück.", V);
+                    }
+                    catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException) { Say(ex.Message, V); }
+                }, true)), pOut)));
 
         var trash = new StackPanel { Spacing = 3, Name = "trash-list" };
         if (_trash.Count > 0) trash.Children.Add(P($"{_trash.Count} Einträge, zusammen {ResourceMonitor.Size(_trash.Sum(t => t.Bytes))}", Text));
+        else if (_trashNote.Length > 0) trash.Children.Add(new TextBlock { Name = "trash-note", Text = _trashNote, Foreground = Text, TextWrapping = Avalonia.Media.TextWrapping.Wrap });
         foreach (var t in _trash.Take(15)) trash.Children.Add(P($"{Path.GetFileName(t.OriginalPath)} – {ResourceMonitor.Size(t.Bytes)} – gelöscht {t.Deleted:dd.MM.yyyy}", null, 11));
         var empty = _trashAsk
-            ? Line(P("Wirklich endgültig löschen? Das lässt sich nicht rückgängig machen.", Text), Act("trash-yes", "Ja, endgültig leeren", () => Try(V, () => { var n = Trash.Empty(_trash, true, _core.Audit); _trash = []; _trashAsk = false; Say($"{n} Einträge gelöscht.", V); }), true), Act("trash-no", "Abbrechen", () => { _trashAsk = false; Show(V); }))
-            : Line(Act("trash-show", "Papierkorb anzeigen", () => { _trash = Trash.List(WindowsBin(), LinuxTrash()); Show(V); }), Act("trash-empty", "Papierkorb leeren …", () => { if (_trash.Count > 0) { _trashAsk = true; Show(V); } }));
+            ? Line(P("Wirklich endgültig löschen? Das lässt sich nicht rückgängig machen.", Text), Act("trash-yes", "Ja, endgültig leeren", () => Try(V, () => { var n = Trash.Empty(_trash, true, _core.Audit); _trash = []; _trashAsk = false; _trashNote = "Der Papierkorb ist jetzt leer."; Say($"{n} Einträge gelöscht.", V); }), true), Act("trash-no", "Abbrechen", () => { _trashAsk = false; Say("Leeren abgebrochen.", V); }))
+            : Line(Act("trash-show", "Papierkorb anzeigen", () => { _trashNote = LoadTrash(); Say(_trashNote, V); }), Act("trash-empty", "Papierkorb leeren …", () =>
+            {
+                if (_trash.Count == 0) _trashNote = LoadTrash();
+                if (_trash.Count == 0) { Say("Leeren geht nicht: " + (_trashNote.Contains("nicht verfügbar") ? _trashNote : "der Papierkorb ist leer."), V); return; }
+                _trashAsk = true; Say("Bitte bestätigen: der Papierkorb wird endgültig geleert.", V);
+            }));
         sp.Children.Add(Card(Section("Papierkorb", "Zeigt, was im Papierkorb liegt. Geleert wird nur nach deiner Bestätigung.", trash, empty)));
         return AlltagPage("Dateien", sp);
     }
@@ -121,6 +223,54 @@ public partial class MainWindow
         catch (Exception) { return null; }
     }
     private static string? LinuxTrash() => OperatingSystem.IsWindows() ? null : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".local", "share", "Trash");
+
+    private string LoadTrash()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            var linux = LinuxTrash();
+            if (linux is null || !Directory.Exists(linux)) { _trash = []; return "Papierkorb ist unter Linux nicht verfügbar."; }
+            _trash = Trash.List(null, linux);
+            return _trash.Count == 0 ? "Der Papierkorb ist leer." : $"{_trash.Count} Einträge im Papierkorb.";
+        }
+        var bin = WindowsBin();
+        if (bin is null) { _trash = []; return "Papierkorb ist auf diesem Windows-Konto nicht verfügbar."; }
+        _trash = Trash.List(bin, null);
+        return _trash.Count == 0 ? "Der Papierkorb ist leer." : $"{_trash.Count} Einträge im Papierkorb.";
+    }
+
+    internal async Task<string?> PickFolderAsync(string title)
+    {
+        if (FolderDialog is { } over) return await over(title);
+        try
+        {
+            var r = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = title, AllowMultiple = false });
+            return r.Count > 0 ? r[0].TryGetLocalPath() : null;
+        }
+        catch (Exception) { return null; }
+    }
+
+    internal async Task<string?> PickFileAsync(string title, string[]? patterns = null)
+    {
+        if (FileDialog is { } over) return await over(title);
+        try
+        {
+            var opt = new FilePickerOpenOptions { Title = title, AllowMultiple = false };
+            if (patterns is { Length: > 0 }) opt.FileTypeFilter = [new FilePickerFileType("Dateien") { Patterns = patterns.ToList() }];
+            var r = await StorageProvider.OpenFilePickerAsync(opt);
+            return r.Count > 0 ? r[0].TryGetLocalPath() : null;
+        }
+        catch (Exception) { return null; }
+    }
+
+    private async Task<string?> ImageOrDialog(TextBox box, string title)
+    {
+        var t = Clean(box);
+        if (File.Exists(t)) return t;
+        var p = await PickFileAsync(title, ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp", "*.gif"]);
+        if (p is not null && File.Exists(p)) { box.Text = p; return p; }
+        return null;
+    }
 
     // ---------- Bilder & Medien ----------
     private Control AlltagMediaView()
@@ -143,10 +293,24 @@ public partial class MainWindow
 
         var img = Field("img-file", "Bilddatei (PNG, JPG …)");
         var size = Field("img-size", "längste Seite in Pixeln", 160, "1600");
+        async Task Turn(int degrees, string missing)
+        {
+            var file = await ImageOrDialog(img, "Bild wählen");
+            if (file is null) { Say(missing, V); return; }
+            try { Say("Gespeichert: " + Path.GetFileName(ImageTools.Rotate(file, degrees)), V); }
+            catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException) { Say(ex.Message, V); }
+        }
         sp.Children.Add(Card(Section("Bild drehen oder verkleinern", "Es entsteht immer eine Kopie neben dem Original – das Original bleibt unverändert.",
-            Line(img, Act("img-rotate", "Nach rechts drehen", () => Try(V, () => Say("Gespeichert: " + Path.GetFileName(ImageTools.Rotate(Clean(img), 90)), V))),
-                Act("img-left", "Nach links drehen", () => Try(V, () => Say("Gespeichert: " + Path.GetFileName(ImageTools.Rotate(Clean(img), 270)), V)))),
-            Line(size, Act("img-resize", "Verkleinern", () => Try(V, () => Say("Gespeichert: " + Path.GetFileName(ImageTools.Resize(Clean(img), int.TryParse(size.Text, out var s) ? s : 0)), V)))))));
+            Line(img, Act("img-rotate", "Nach rechts drehen", () => Turn(90, "Bitte zuerst ein Bild wählen, das nach rechts gedreht werden soll.")),
+                Act("img-left", "Nach links drehen", () => Turn(270, "Bitte zuerst ein Bild wählen, das nach links gedreht werden soll."))),
+            Line(size, Act("img-resize", "Verkleinern", async () =>
+            {
+                var file = await ImageOrDialog(img, "Bild zum Verkleinern");
+                if (file is null) { Say("Bitte zuerst ein Bild wählen, das verkleinert werden soll.", V); return; }
+                if (!int.TryParse(size.Text, out var px) || px < 16) { Say("Bitte die längste Seite in Pixeln angeben, mindestens 16.", V); return; }
+                try { Say("Gespeichert: " + Path.GetFileName(ImageTools.Resize(file, px)), V); }
+                catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException) { Say(ex.Message, V); }
+            })))));
 
         var shotAreas = Field("shot-areas", "Schwärzen: x,y,Breite,Höhe; weitere mit ; trennen", 360);
         var shotFile = Field("shot-file", "oder vorhandenes Bild zum Schwärzen", 340, _lastShot);
@@ -179,9 +343,10 @@ public partial class MainWindow
 
         var au = Field("audio-file", "Audiodatei"); var fmt = new ComboBox { Name = "audio-format", ItemsSource = FfmpegJobs.AudioFormats.Select(f => f.ToUpperInvariant()).ToList(), SelectedIndex = 0 };
         sp.Children.Add(Card(Section("Audio umwandeln", "MP3, OGG oder WAV. Die neue Datei liegt neben dem Original, ihre Prüfsumme steht im Protokoll.",
-            Line(au, fmt, Act("audio-run", "Umwandeln", () => Try(V, () =>
+            Line(au, fmt,                 Act("audio-run", "Umwandeln", () => Try(V, () =>
             {
                 if (ffmpeg is null) throw new InvalidOperationException("Dafür fehlt ffmpeg.");
+                if (!File.Exists(Clean(au))) throw new ArgumentException("Bitte die Audiodatei angeben, die umgewandelt werden soll.");
                 var (ok, msg, sha) = FfmpegJobs.ConvertAudio(ffmpeg, Clean(au), FfmpegJobs.AudioFormats[Math.Max(0, fmt.SelectedIndex)], _core.Audit);
                 Say(ok ? $"Fertig: {msg} (Prüfsumme {sha![..12]}…)" : msg, V);
             }))))));
@@ -217,7 +382,12 @@ public partial class MainWindow
         var swText = new TextBlock { Name = "sw-time", Foreground = Text, FontSize = 18, Text = SwNow().ToString(@"hh\:mm\:ss\.f") };
         sp.Children.Add(Card(Section("Stoppuhr", "Misst die Zeit, auch wenn du die Seite wechselst.", Line(swText,
             Act("sw-start", _swStart is null ? "Start" : "Pause", () => { if (_swStart is null) _swStart = DateTime.Now; else { _swAcc += DateTime.Now - _swStart.Value; _swStart = null; } Show(V); }, true),
-            Act("sw-reset", "Zurücksetzen", () => { _swStart = null; _swAcc = TimeSpan.Zero; Show(V); })))));
+            Act("sw-reset", "Zurücksetzen", () =>
+            {
+                var lief = _swStart is not null || _swAcc != TimeSpan.Zero;
+                _swStart = null; _swAcc = TimeSpan.Zero;
+                Say(lief ? "Stoppuhr zurückgesetzt." : "Die Stoppuhr steht schon auf null.", V);
+            })))));
 
         var rd = Field("rem-when", "Wann? TT.MM.JJJJ HH:MM oder Minuten", 230); var rt = Field("rem-text", "Woran erinnern?", 260);
         var rl = new StackPanel { Spacing = 2 };
@@ -244,7 +414,14 @@ public partial class MainWindow
                 if (string.IsNullOrWhiteSpace(ct.Text)) throw new ArgumentException("Bitte einen Titel eintragen.");
                 Cal.Add(new(Guid.NewGuid().ToString("N"), s, s.AddMinutes(int.TryParse(cl.Text, out var m) ? m : 60), ct.Text.Trim(), co.Text?.Trim() ?? "")); Show(V);
             }), true)),
-            Line(cf, Act("cal-import", "Einlesen", () => Try(V, () => Say($"{Cal.ImportFile(Clean(cf))} Termine eingelesen.", V))),
+            Line(cf, Act("cal-import", "Einlesen", async () =>
+            {
+                var f = Clean(cf);
+                if (!File.Exists(f)) { var picked = await PickFileAsync("ICS-Datei", ["*.ics"]); if (!string.IsNullOrEmpty(picked)) f = picked; }
+                if (!File.Exists(f)) { Say("Bitte zuerst die ICS-Datei wählen, die eingelesen werden soll.", V); return; }
+                try { Say($"{Cal.ImportFile(f)} Termine eingelesen.", V); }
+                catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException or InvalidDataException) { Say(ex.Message, V); }
+            }),
                 Act("cal-export", "Als ICS speichern", () => Try(V, () => { var f = Path.Combine(WorkFolder("kalender"), "termine.ics"); Cal.ExportFile(f); Say("Gespeichert: " + f, V); }))), list)));
         return AlltagPage("Zeit & Kalender", sp);
     }
@@ -255,6 +432,7 @@ public partial class MainWindow
     {
         if (_core.Offline) { _weather = "Offline-Modus: Wetter wird nicht geladen."; Show("alltag-zeit"); return; }
         if (!double.TryParse(lat, System.Globalization.NumberStyles.Float, De, out var la) || !double.TryParse(lon, System.Globalization.NumberStyles.Float, De, out var lo)) { _weather = "Bitte Breite und Länge als Zahl eingeben."; Show("alltag-zeit"); return; }
+        _weather = "Wetter wird geladen …"; Show("alltag-zeit");
         try { using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) }; _weather = "Wetter: " + (Weather.Parse(await http.GetStringAsync(Weather.Url(la, lo))) ?? "keine Daten"); }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException) { _weather = "Wetter gerade nicht erreichbar."; }
         Show("alltag-zeit");
@@ -281,8 +459,26 @@ public partial class MainWindow
         if (i == 0) clips.Children.Add(P("Noch nichts gemerkt."));
         var manual = Field("clip-add-text", "Text, den du dir merken willst", 340);
         sp.Children.Add(Card(Section("Zwischenablage-Verlauf", "Bis zu 50 Texte, nur auf diesem Rechner. Passwörter und Schlüssel werden nie gespeichert.",
-            Line(Act("clip-grab", "Aktuelle Zwischenablage merken", async () => { var t = Clipboard is { } cb ? await cb.TryGetTextAsync() : null; Say(t is not null && Clips.Add(t) ? "Gemerkt." : "Nicht gemerkt (leer oder sieht wie ein Passwort aus).", V); }, true),
-                manual, Act("clip-add", "Merken", () => Say(Clips.Add(manual.Text ?? "") ? "Gemerkt." : "Nicht gemerkt (leer oder sieht wie ein Passwort aus).", V)), Act("clip-clear", "Alles löschen", () => { Clips.Clear(); Show(V); })), clips)));
+            Line(Act("clip-grab", "Aktuelle Zwischenablage merken", async () =>
+                {
+                    Say("Zwischenablage wird gelesen …", V);
+                    try
+                    {
+                        var t = Clipboard is { } cb ? await cb.TryGetTextAsync() : null;
+                        Say(t is not null && Clips.Add(t) ? "Aus der Zwischenablage gemerkt." : "Nicht gemerkt (leer oder sieht wie ein Passwort aus).", V);
+                    }
+                    catch (Exception ex) { Say("Zwischenablage ließ sich nicht lesen: " + ex.Message, V); }
+                }, true),
+                manual, Act("clip-add", "Merken", () =>
+                {
+                    var t = manual.Text ?? "";
+                    if (string.IsNullOrWhiteSpace(t)) { Say("Bitte einen Text eintragen, den du dir merken willst.", V); return; }
+                    Say(Clips.Add(t) ? "Text gemerkt." : "Nicht gemerkt: das sieht aus wie ein Passwort oder ein Schlüssel.", V);
+                }), Act("clip-clear", "Alles löschen", () =>
+                {
+                    if (Clips.All().Count == 0) { Say("Es ist nichts gemerkt, das gelöscht werden könnte.", V); return; }
+                    Clips.Clear(); Say("Alles Gemerkte ist gelöscht.", V);
+                })), clips)));
 
         var uv = Field("unit-value", "Wert", 100, "1"); var units = Units.All.ToList();
         var uf = new ComboBox { Name = "unit-from", ItemsSource = units, SelectedItem = "km" }; var ut = new ComboBox { Name = "unit-to", ItemsSource = units, SelectedItem = "meile" };
@@ -290,15 +486,42 @@ public partial class MainWindow
         var rate = Field("cur-rate", "Kurs, z. B. 1 € = 1,08 $", 160); var amt = Field("cur-amount", "Betrag", 100);
         sp.Children.Add(Card(Section("Einheiten umrechnen", "Länge, Gewicht, Volumen, Fläche, Tempo und Temperatur. Für Geld trägst du den Kurs selbst ein – Trendo holt keine Kurse aus dem Internet.",
             Line(uv, uf, P("in"), ut, Act("unit-run", "Umrechnen", () => Try(V, () => { var v = double.Parse(Clean(uv), De); uo.Text = $"= {Calc.Format(Units.Convert(v, (string)uf.SelectedItem!, (string)ut.SelectedItem!))} {ut.SelectedItem}"; })), uo),
-            Line(amt, P("×"), rate, Act("cur-run", "Geld umrechnen", () => Try(V, () => uo.Text = "= " + Calc.Format(Units.Currency(double.Parse(Clean(amt), De), double.Parse(Clean(rate), De)))))))));
+            Line(amt, P("×"), rate, Act("cur-run", "Geld umrechnen", () => Try(V, () =>
+            {
+                var betrag = Calc.Zahl(Clean(amt), "den Betrag");
+                var kurs = Calc.Zahl(Clean(rate), "den Kurs");
+                uo.Text = "= " + Calc.Format(Units.Currency(betrag, kurs)) + " (mit deinem Kurs)";
+            }))))));
 
         var hex = Field("color-hex", "#2F86F6", 120); var co = new TextBlock { Name = "color-result", Foreground = Text };
         var pf = Field("color-file", "Bild für die Pipette", 260); var px = Field("color-xy", "x,y", 90);
         void ShowColor((byte R, byte G, byte B) c) { var (h, s, l) = Trendo.Core.Sys.Colors.Hsl(c.R, c.G, c.B); co.Text = $"{Trendo.Core.Sys.Colors.Hex(c.R, c.G, c.B)} · {Trendo.Core.Sys.Colors.Rgb(c.R, c.G, c.B)} · Farbton {h}°, Sättigung {s} %, Helligkeit {l} %"; hex.Text = Trendo.Core.Sys.Colors.Hex(c.R, c.G, c.B); }
         sp.Children.Add(Card(Section("Farben", "Farbcode umrechnen oder mit der Pipette eine Stelle in einem Bild (z. B. Bildschirmfoto) auslesen. Der Wert landet in der Zwischenablage.",
-            Line(hex, Act("color-run", "Umrechnen", () => Try(V, () => ShowColor(Trendo.Core.Sys.Colors.ParseHex(hex.Text ?? "")))),
-                Act("color-copy", "Kopieren", async () => { if (Clipboard is { } cb && hex.Text is { } t) await cb.SetTextAsync(t); })),
-            Line(pf, px, Act("color-pick", "Pipette", () => Try(V, () => { var xy = Clean(px).Split(',').Select(int.Parse).ToArray(); if (xy.Length != 2) throw new ArgumentException("Stelle bitte als x,y."); ShowColor(ImageTools.ColorAt(Clean(pf), xy[0], xy[1])); }))), co)));
+            Line(hex, Act("color-run", "Umrechnen", () => Try(V, () => { if (string.IsNullOrWhiteSpace(hex.Text)) throw new ArgumentException("Bitte eine Farbe eintragen, zum Beispiel #2F86F6."); ShowColor(Trendo.Core.Sys.Colors.ParseHex(hex.Text!)); })),
+                Act("color-copy", "Kopieren", async () =>
+                {
+                    if (string.IsNullOrWhiteSpace(hex.Text)) { Say("Bitte zuerst eine Farbe eintragen, die kopiert werden soll.", V); return; }
+                    try
+                    {
+                        var c = Trendo.Core.Sys.Colors.ParseHex(hex.Text);
+                        var text = Trendo.Core.Sys.Colors.Hex(c.R, c.G, c.B);
+                        if (Clipboard is { } cb) await cb.SetTextAsync(text);
+                        Say("Kopiert: " + text, V);
+                    }
+                    catch (ArgumentException ex) { Say(ex.Message, V); }
+                })),
+            Line(pf, px, Act("color-pick", "Pipette", async () =>
+            {
+                var file = Clean(pf);
+                if (!File.Exists(file)) { var picked = await PickFileAsync("Bild für die Pipette", ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"]); if (!string.IsNullOrEmpty(picked)) { file = picked; pf.Text = picked; } }
+                if (!File.Exists(file)) { Say("Bitte zuerst ein Bild für die Pipette wählen.", V); return; }
+                var raw = Clean(px);
+                if (raw.Length == 0) { Say("Bitte die Stelle im Bild als x,y eintragen, zum Beispiel 10,20.", V); return; }
+                var parts = raw.Split(',');
+                if (parts.Length != 2 || !int.TryParse(parts[0].Trim(), out var x) || !int.TryParse(parts[1].Trim(), out var y)) { Say("Die Stelle bitte als x,y eintragen, zum Beispiel 10,20.", V); return; }
+                try { ShowColor(ImageTools.ColorAt(file, x, y)); }
+                catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or IOException) { Say(ex.Message, V); }
+            })), co)));
         return AlltagPage("Kleine Helfer", sp);
     }
 

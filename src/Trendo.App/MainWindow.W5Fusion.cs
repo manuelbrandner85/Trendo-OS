@@ -43,7 +43,7 @@ public partial class MainWindow
         {
             var idx = k; var rr = Fusion.Recipes[k];
             var b = new Button { Name = "fusion-recipe-" + rr.Id, Width = 230, Margin = new Avalonia.Thickness(0, 0, 8, 8), Background = idx == _fusionRecipe ? Accent : TileBg, Content = new StackPanel { Children = { new TextBlock { Text = rr.Label, Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap }, P(rr.Help, null, 10.5) } } };
-            b.Click += (_, _) => { _fusionRecipe = idx; _fusionApproval = null; _fusionResult = []; Show("produktion"); };
+            b.Click += (_, _) => { _fusionRecipe = idx; _fusionApproval = null; _fusionResult = []; Say($"Ablauf „{rr.Label}“ ist ausgewählt. Trag die Angaben ein und gib den Plan frei.", "produktion"); };
             pick.Children.Add(b);
         }
         sp.Children.Add(pick);

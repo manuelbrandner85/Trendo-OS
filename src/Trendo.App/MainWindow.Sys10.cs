@@ -42,6 +42,8 @@ public partial class MainWindow
             }), true)),
             Line(si, sr, Act("pdf-split", "Seiten herausholen", () => Try(V, () =>
             {
+                if (!File.Exists(Clean(si))) throw new ArgumentException("Bitte die PDF angeben, aus der Seiten herausgeholt werden sollen.");
+                if (string.IsNullOrWhiteSpace(sr.Text)) throw new ArgumentException("Bitte die Seiten angeben, zum Beispiel 2-5.");
                 var (a, b) = Pdf.ParseRange(Clean(sr)); var f = Clean(si); var n = Pdf.Pages(f); if (b > n) throw new ArgumentException($"Das PDF hat nur {n} Seiten.");
                 var o = Path.Combine(DokuOut, $"{Path.GetFileNameWithoutExtension(f)}-seiten-{a}-{b}.pdf"); var (exe, args) = Pdf.ExtractCmd(qpdf, sep, f, a, b, o);
                 Cli.Run(exe, args, timeoutMs: 120000);
@@ -53,6 +55,7 @@ public partial class MainWindow
         sp.Children.Add(Card(Section("Text herausholen und Scans durchsuchbar machen", "Holt den Text aus einem PDF (bei Scans per Texterkennung). Aus einem Foto oder Scan wird ein PDF, in dem man suchen kann.",
             Line(tf, Act("pdf-text-run", "Text holen", () => Try(V, () =>
             {
+                if (!File.Exists(Clean(tf))) throw new ArgumentException("Bitte die PDF oder das Bild angeben, aus dem der Text geholt werden soll.");
                 var (ok, t, how) = PdfText.Extract(Clean(tf), Tool("pdftotext"), Tool("pdftoppm"), tess, lang, Ocr.HasUserGerman(_core.DataRoot) ? Ocr.UserTessdata(_core.DataRoot) : null);
                 if (!ok) throw new InvalidOperationException(how);
                 var o = Path.Combine(DokuOut, Path.GetFileNameWithoutExtension(Clean(tf)) + ".txt"); File.WriteAllText(o, t); tout.Text = t.Length > 3000 ? t[..3000] + " …" : t;
@@ -60,6 +63,7 @@ public partial class MainWindow
             }), true), Act("pdf-scan", "Scan → durchsuchbares PDF", () => Try(V, () =>
             {
                 if (tess is null) throw new InvalidOperationException("Dafür fehlt Tesseract (unter „Zusatzprogramme“ kostenlos).");
+                if (!File.Exists(Clean(tf))) throw new ArgumentException("Bitte den Scan angeben, der durchsuchbar werden soll.");
                 var ob = Path.Combine(DokuOut, Path.GetFileNameWithoutExtension(Clean(tf)) + "-durchsuchbar");
                 var r = Cli.Run(tess, PdfText.ScanToPdfArgs(Clean(tf), ob, lang, Ocr.HasUserGerman(_core.DataRoot) ? Ocr.UserTessdata(_core.DataRoot) : null), timeoutMs: 180000);
                 if (!File.Exists(ob + ".pdf")) throw new InvalidOperationException("Texterkennung hat nicht geklappt. Ist das deutsche Sprachpaket installiert?");
@@ -70,10 +74,12 @@ public partial class MainWindow
         sp.Children.Add(Card(Section("Persönliche Angaben entfernen und Barrierefreiheit prüfen", "Vor dem Weitergeben: Autor, Firma und Programmname aus einer Kopie entfernen. Die Prüfung zeigt, was Bildschirmleser brauchen.",
             Line(mf, Act("meta-strip", "Angaben entfernen", () => Try(V, () =>
             {
-                var f = Clean(mf); var o = Path.GetExtension(f).Equals(".pdf", StringComparison.OrdinalIgnoreCase) ? Pdf.StripMeta(f) : Ooxml.StripOfficeMeta(f);
+                var f = Clean(mf); if (!File.Exists(f)) throw new ArgumentException("Bitte die Datei angeben, aus der die persönlichen Angaben entfernt werden sollen.");
+                var o = Path.GetExtension(f).Equals(".pdf", StringComparison.OrdinalIgnoreCase) ? Pdf.StripMeta(f) : Ooxml.StripOfficeMeta(f);
                 Say("Kopie ohne Angaben: " + Path.GetFileName(o), V);
             }), true), Act("a11y-check", "Barrierefreiheit prüfen", () => Try(V, () =>
             {
+                if (!File.Exists(Clean(mf))) throw new ArgumentException("Bitte die PDF angeben, die auf Barrierefreiheit geprüft werden soll.");
                 ao.Children.Clear(); var l = Pdf.AccessibilityIssues(Clean(mf));
                 ao.Children.Add(l.Count == 0 ? P("Keine Mängel gefunden.", Text) : P("Mängel:\n• " + string.Join("\n• ", l), Warn));
                 File.WriteAllText(Path.Combine(DokuOut, Path.GetFileNameWithoutExtension(Clean(mf)) + "-barrierefreiheit.txt"), string.Join("\n", l.DefaultIfEmpty("Keine Mängel gefunden.")));
@@ -82,19 +88,38 @@ public partial class MainWindow
         var ff = Field("form-file", "PDF mit Formularfeldern", 340, _formFile); var fields = new StackPanel { Spacing = 4, Name = "form-fields" }; var boxes = new Dictionary<string, TextBox>();
         foreach (var f in _formFields) { var t = new TextBox { Name = "form-field-" + boxes.Count, Text = f.Value, Width = 260, PlaceholderText = f.Type == "Btn" ? "ja / nein" : "" }; boxes[f.Name] = t; fields.Children.Add(Line(P(f.Name, Text), t)); }
         sp.Children.Add(Card(Section("PDF-Formular ausfüllen", "Liest die Felder eines PDF-Formulars. Ausgefüllt wird eine Kopie – das Original bleibt.",
-            Line(ff, Act("form-read", "Felder lesen", () => Try(V, () => { _formFile = Clean(ff); _formFields = PdfForm.Fields(_formFile); Say(_formFields.Count == 0 ? "Keine ausfüllbaren Felder gefunden." : $"{_formFields.Count} Felder gefunden.", V); })),
-                Act("form-save", "Ausgefüllt speichern", () => Try(V, () => { var o = PdfForm.Fill(_formFile, boxes.ToDictionary(b => b.Key, b => b.Value.Text ?? "")); _formFields = []; Say("Gespeichert: " + Path.GetFileName(o), V); }), true)), fields)));
+            Line(ff, Act("form-read", "Felder lesen", async () =>
+            {
+                var file = Clean(ff);
+                if (!File.Exists(file)) { var picked = await PickFileAsync("PDF mit Formularfeldern", ["*.pdf"]); if (!string.IsNullOrEmpty(picked)) file = picked; }
+                if (!File.Exists(file)) { Say("Bitte die PDF mit den Formularfeldern wählen.", V); return; }
+                try { _formFile = file; _formFields = PdfForm.Fields(file); Say(_formFields.Count == 0 ? "Keine ausfüllbaren Felder gefunden." : $"{_formFields.Count} Felder gefunden.", V); }
+                catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException) { Say(ex.Message, V); }
+            }),
+                Act("form-save", "Ausgefüllt speichern", () => Try(V, () =>
+                {
+                    if (!File.Exists(_formFile) || _formFields.Count == 0) throw new ArgumentException("Bitte zuerst „Felder lesen“ auf einer PDF mit Formularfeldern.");
+                    var o = PdfForm.Fill(_formFile, boxes.ToDictionary(b => b.Key, b => b.Value.Text ?? "")); _formFields = []; Say("Gespeichert: " + Path.GetFileName(o), V);
+                }), true)), fields)));
 
         var pf = Field("print-file", "PDF zum Drucken", 340, _printFile); var info = new StackPanel { Name = "print-info" };
         var sumatra = ToolPath("sumatra");
         sp.Children.Add(Card(Section("Druckvorschau und Drucken", "Zeigt Seitenzahl und Format (A4?) und öffnet die Vorschau. Gedruckt wird nur nach deinem ausdrücklichen Klick.",
-            Line(pf, Act("print-preview", "Vorschau", () => Try(V, () =>
+            Line(pf, Act("print-preview", "Vorschau", async () =>
             {
-                var f = Clean(pf); var b = Pdf.MediaBox(f); _printFile = f; info.Children.Clear();
-                info.Children.Add(P($"{Pdf.Pages(f)} Seiten · {(b is { } x ? $"{x.W / 72 * 25.4:0} × {x.H / 72 * 25.4:0} mm" : "Format unbekannt")} · {(Pdf.IsA4(b) ? "A4 ✓" : "nicht A4")}", Text));
-                if (sumatra is not null) _core.Integrations.LaunchDirect(Principal.LocalOwner, sumatra, _core.Audit, f); else Launch(f);
-            })), _printAsk ? Line(P("Jetzt auf dem Standarddrucker drucken?", Text), Act("print-yes", "Ja, drucken", () => Try(V, () => { PrintNow(_printFile, sumatra); _printAsk = false; Say("An den Drucker geschickt.", V); }), true), Act("print-no", "Abbrechen", () => { _printAsk = false; Show(V); }))
-                            : Act("print-ask", "Drucken …", () => { _printFile = Clean(pf); if (File.Exists(_printFile)) { _printAsk = true; Show(V); } else Say("Datei nicht gefunden.", V); })), info)));
+                var f = Clean(pf);
+                if (!File.Exists(f)) { var picked = await PickFileAsync("PDF für die Druckvorschau", ["*.pdf"]); if (!string.IsNullOrEmpty(picked)) f = picked; }
+                if (!File.Exists(f)) { Say("Bitte die PDF für die Druckvorschau wählen.", V); return; }
+                try
+                {
+                    var b = Pdf.MediaBox(f); _printFile = f;
+                    var line = $"{Pdf.Pages(f)} Seiten · {(b is { } x ? $"{x.W / 72 * 25.4:0} × {x.H / 72 * 25.4:0} mm" : "Format unbekannt")} · {(Pdf.IsA4(b) ? "A4 ✓" : "nicht A4")}";
+                    if (sumatra is not null) _core.Integrations.LaunchDirect(Principal.LocalOwner, sumatra, _core.Audit, f); else Launch(f);
+                    Say("Druckvorschau: " + line, V);
+                }
+                catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException) { Say(ex.Message, V); }
+            }), _printAsk ? Line(P("Jetzt auf dem Standarddrucker drucken?", Text), Act("print-yes", "Ja, drucken", () => Try(V, () => { PrintNow(_printFile, sumatra); _printAsk = false; Say("An den Drucker geschickt.", V); }), true), Act("print-no", "Abbrechen", () => { _printAsk = false; Show(V); }))
+                            : Act("print-ask", "Drucken …", () => { _printFile = Clean(pf); if (File.Exists(_printFile)) { _printAsk = true; Say("Bitte bestätigen: jetzt auf dem Standarddrucker drucken.", V); } else Say("Bitte die PDF angeben, die gedruckt werden soll.", V); })), info)));
         return DokuPage("PDF", sp);
     }
 

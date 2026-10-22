@@ -13,6 +13,8 @@ public partial class MainWindow
     private string _reader = "", _readerTitle = "", _netStatus = "";
     private string? _dlStatus;
     private CancellationTokenSource? _dlCts;
+    private bool _dlSortReady;
+    private string _dlSortFolder = "";
     private readonly IBrush Warn = Brush.Parse("#F97316");
 
     private void InitSys03()
@@ -81,7 +83,7 @@ public partial class MainWindow
         sp.Children.Add(Card(Section("Download mit Fortsetzen", off ? "Offline-Modus: Downloads sind ausgeschaltet." : "Bricht der Download ab, macht „Weiter laden“ dort weiter, wo er aufgehört hat. Die Datei landet im Download-Ordner.",
             Line(du, Act("dl-start", "Laden / Weiter laden", async () =>
             {
-                if (off) return;
+                if (off) { Say("Offline-Modus: Downloads sind ausgeschaltet.", V); return; }
                 if (!Uri.TryCreate(Clean(du), UriKind.Absolute, out var u) || u.Scheme is not ("http" or "https")) { Say("Bitte eine http- oder https-Adresse.", V); return; }
                 var target = Path.Combine(DownloadTarget, Web.SafeFileName(u)); _dlCts = new();
                 _dlStatus = "Lädt …"; var prog = new Progress<(long Done, long Total)>(p => { if (p.Total > 0) bar.Value = 100.0 * p.Done / p.Total; });
@@ -89,20 +91,42 @@ public partial class MainWindow
                 catch (OperationCanceledException) { _dlStatus = "Angehalten – „Weiter laden“ macht dort weiter."; }
                 catch (HttpRequestException ex) { _dlStatus = "Abgebrochen: " + ex.Message + " – „Weiter laden“ versucht es erneut."; }
                 Say(_dlStatus, V);
-            }, true), Act("dl-stop", "Anhalten", () => _dlCts?.Cancel()), bar), P(_dlStatus ?? "", Text, 11))));
+            }, true), Act("dl-stop", "Anhalten", () =>
+            {
+                if (_dlCts is null) { Say("Es lädt gerade nichts.", V); return; }
+                _dlCts.Cancel(); Say("Laden wird angehalten.", V);
+            }), bar), P(_dlStatus ?? "", Text, 11))));
 
         var sf = Field("dlsort-folder", "Ordner", 340, Browsers.DownloadsFolder()); var so = new StackPanel { Name = "dlsort-preview" };
         sp.Children.Add(Card(Section("Downloads aufräumen", "Sortiert nach Art in Unterordner (Dokumente, Bilder, Programme …). Erst Vorschau, rückgängig machbar über „Dateien“.",
-            Line(sf, Act("dlsort-sim", "Vorschau", () => Try(V, () => { so.Children.Clear(); var p = Web.SortPlan(Clean(sf)); so.Children.Add(P($"{p.Count} Dateien:", Text)); foreach (var g in p.GroupBy(m => Path.GetFileName(Path.GetDirectoryName(m.To)))) so.Children.Add(P($"{g.Key}: {g.Count()}", null, 11)); })),
-                Act("dlsort-apply", "Sortieren", () => Try(V, () => { var p = Web.SortPlan(Clean(sf)); _lastUndo = Renamer.Apply(p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig")); Say($"{p.Count} Dateien einsortiert.", V); })),
+            Line(sf, Act("dlsort-sim", "Vorschau", () =>
+            {
+                var folder = Clean(sf);
+                if (!Directory.Exists(folder)) { Say("Bitte den Ordner angeben, dessen Downloads sortiert werden sollen.", V); return; }
+                try { var p = Web.SortPlan(folder); Say(p.Count == 0 ? "Vorschau: in diesem Ordner liegt nichts zum Sortieren." : $"Vorschau: {p.Count} Dateien würden in Unterordner sortiert.", V); }
+                catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException) { Say(ex.Message, V); }
+            }),
+                Act("dlsort-apply", "Sortieren", () =>
+                {
+                    var folder = Clean(sf);
+                    if (!Directory.Exists(folder)) { Say("Sortieren braucht einen Ordner. Trag ihn ins Feld oder wähl den Download-Ordner.", V); return; }
+                    try
+                    {
+                        var p = Web.SortPlan(folder);
+                        if (!_dlSortReady || _dlSortFolder != folder) { _dlSortReady = true; _dlSortFolder = folder; Say(p.Count == 0 ? "In diesem Ordner gibt es nichts zu sortieren." : $"Vorschau: {p.Count} Dateien. Nochmal auf „Sortieren“ klicken, dann werden sie verschoben.", V); return; }
+                        if (p.Count == 0) { _dlSortReady = false; Say("Nichts verschoben, der Ordner ist leer.", V); return; }
+                        _dlSortReady = false; _lastUndo = Renamer.Apply(p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig")); Say($"{p.Count} Dateien einsortiert.", V);
+                    }
+                    catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException) { Say(ex.Message, V); }
+                }),
                 Act("dlsort-undo", "Rückgängig", () => Try(V, () => { if (_lastUndo is null) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen."); Renamer.Undo(_lastUndo); _lastUndo = null; Say("Zurückgesetzt.", V); }))), so)));
 
         var pu = Field("page-url", "Adresse einer Webseite", 420);
         var reader = new SelectableTextBlock { Name = "reader-text", Text = _reader, Foreground = Text, TextWrapping = TextWrapping.Wrap, FontSize = 13.5, MaxWidth = 760 };
         sp.Children.Add(Card(Section("Webseite lesen, speichern, merken", off ? "Offline-Modus: Webseiten werden nicht geladen." : "Lesemodus zeigt nur den Text (ohne Werbung, ohne Skripte). Speichern legt eine Offline-Kopie oder ein PDF in den Projektordner.",
-            Line(pu, Act("page-read", "Lesemodus", () => PageJob(pu, V, async u => { var h = await WebTools.GetHtmlAsync(u); _readerTitle = Web.Title(h); _reader = Web.ReaderText(h); return ""; }), true),
-                Act("page-offline", "Offline speichern", () => PageJob(pu, V, async u => { var h = await WebTools.GetHtmlAsync(u); var f = Path.Combine(WorkFolder("webseiten"), Web.SafeFileName(new Uri(u.GetLeftPart(UriPartial.Authority) + "/" + (Web.Title(h).Length > 0 ? Web.Title(h) : u.Host))) + ".html"); await File.WriteAllTextAsync(f, Web.OfflineCopy(h, u)); return "Gespeichert: " + f; })),
-                Act("page-pdf", "Als PDF", () => PageJob(pu, V, async u => SavePdf(u, await WebTools.GetHtmlAsync(u)))),
+            Line(pu, Act("page-read", "Lesemodus", () => PageJob(pu, V, async u => { var h = await WebTools.GetHtmlAsync(u); _readerTitle = Web.Title(h); _reader = Web.ReaderText(h); return ""; }, "Bitte die Adresse der Seite eingeben, die du lesen willst."), true),
+                Act("page-offline", "Offline speichern", () => PageJob(pu, V, async u => { var h = await WebTools.GetHtmlAsync(u); var f = Path.Combine(WorkFolder("webseiten"), Web.SafeFileName(new Uri(u.GetLeftPart(UriPartial.Authority) + "/" + (Web.Title(h).Length > 0 ? Web.Title(h) : u.Host))) + ".html"); await File.WriteAllTextAsync(f, Web.OfflineCopy(h, u)); return "Gespeichert: " + f; }, "Bitte die Adresse der Seite eingeben, die offline gespeichert werden soll.")),
+                Act("page-pdf", "Als PDF", () => PageJob(pu, V, async u => SavePdf(u, await WebTools.GetHtmlAsync(u)), "Bitte die Adresse der Seite eingeben, aus der ein PDF werden soll.")),
                 Act("page-note", "Als Notiz merken", () => Try(V, () => { if (!Uri.TryCreate(Clean(pu), UriKind.Absolute, out var u)) throw new ArgumentException("Bitte eine vollständige Adresse."); new NoteStore(_core.DataRoot).Add(Web.WebNote(u, _readerTitle.Length > 0 ? _readerTitle : u.Host)); Say("Als Notiz gespeichert – über die Suche (Strg+K) wiederzufinden.", V); }))),
             _reader.Length > 0 ? new StackPanel { Spacing = 6, Children = { H(_readerTitle, 16), reader } } : new Panel())));
         return NetzPage("Laden & Speichern", sp);
@@ -110,10 +134,10 @@ public partial class MainWindow
 
     private string DownloadTarget { get { var d = Browsers.DownloadsFolder(); try { Directory.CreateDirectory(d); return d; } catch (Exception) { return WorkFolder("downloads"); } } }
 
-    private async void PageJob(TextBox url, string view, Func<Uri, Task<string>> job)
+    private async void PageJob(TextBox url, string view, Func<Uri, Task<string>> job, string empty)
     {
         if (_core.Offline) { Say("Offline-Modus: Webseiten werden nicht geladen.", view); return; }
-        var u = Browsers.Normalize(Clean(url)); if (u is null || u.AbsoluteUri.StartsWith(Web.SearchUrl(_core.DataRoot))) { Say("Bitte eine Webseiten-Adresse eingeben.", view); return; }
+        var u = Browsers.Normalize(Clean(url)); if (u is null || u.AbsoluteUri.StartsWith(Web.SearchUrl(_core.DataRoot))) { Say(empty, view); return; }
         try { var m = await job(u); Say(m, view); }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException or InvalidOperationException) { Say("Hat nicht geklappt: " + ex.Message, view); }
     }
