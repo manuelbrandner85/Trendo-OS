@@ -170,6 +170,7 @@ public sealed partial class MainWindow : Window
     public void Show(string key)
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
+        _dateiFelder.Clear();
         CurrentView = key;
         MarkTab(key); MarkSide(key);
         PresentPage(key);

@@ -32,8 +32,11 @@ public partial class MainWindow
         if (FfmpegPath is null) sp.Children.Add(Card(Row(P("FFmpeg fehlt noch. Ohne FFmpeg geht hier nichts.", Brush.Parse("#FACC15")), Nav2("Einrichten", "components"))));
         var files = FileShelf.Recent([MediaFolder, Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)], MediaStudio.Inputs, 15);
         sp.Children.Add(H("1. Datei wählen", 14));
-        var path = new TextBox { Name = "media-path", Text = _mediaFile ?? "", PlaceholderText = "Pfad zur Datei", Width = 380 };
-        sp.Children.Add(new WrapPanel { Children = { path, Act("media-use", "Übernehmen", () => MediaPick(path.Text?.Trim('"', ' ') ?? "")), Act("media-folder", "Medienordner öffnen", () => Launch(MediaFolder)) } });
+        var path = new DateiFeld(this, "media-path", "Datei", _mediaFile ?? "", false, "kreativ-medien", MediaStudio.Inputs.Select(e => "*" + e).ToArray());
+        path.Eingabe.Width = 380;
+        path.Gewaehlt = MediaPick;
+        sp.Children.Add(ProgrammLeiste("mpv", "mpv", () => _mediaFile));
+        sp.Children.Add(new WrapPanel { Children = { path, Act("media-use", "Übernehmen", () => MediaPick(path.Eingabe.Text?.Trim('"', ' ') ?? "")), Act("media-folder", "Medienordner öffnen", () => Launch(MediaFolder)) } });
         var i = 0;
         foreach (var f in files.Take(8)) { var fp = f.FullName; sp.Children.Add(Act($"media-file-{i++}", (fp == _mediaFile ? "● " : "") + f.Name, () => MediaPick(fp))); }
         if (_mediaFile is { } mf && File.Exists(mf))

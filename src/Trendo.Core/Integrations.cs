@@ -59,6 +59,14 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
         launcher.OpenWith(exe, arg);
     }
 
+    /// <summary>Öffnet ein externes Programm mit der aktuellen Datei oder dem Projektordner.</summary>
+    public void OpenWithFile(Principal by, string exe, string fileOrFolder, AuditLog audit)
+    {
+        if (string.IsNullOrWhiteSpace(exe)) throw new ArgumentException("Kein Programm angegeben.");
+        if (string.IsNullOrWhiteSpace(fileOrFolder)) throw new ArgumentException("Keine Datei oder kein Projekt angegeben.");
+        LaunchDirect(by, exe, audit, fileOrFolder);
+    }
+
     public void Execute(ApprovalRequest r) =>
         gate.Execute(r.Id, r.Action, r.Target, () => { launcher.Open(r.Target); return true; });
 }

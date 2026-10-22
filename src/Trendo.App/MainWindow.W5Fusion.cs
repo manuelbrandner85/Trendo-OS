@@ -53,7 +53,12 @@ public partial class MainWindow
         switch (r.Id)
         {
             case "idea-site": I("name", "Name der Idee"); I("problem", "Welches Problem löst du?"); I("solution", "Wie löst du es?"); I("audience", "Für wen?"); I("price", "Preis in €"); I("email", "Deine E-Mail für Anfragen"); break;
-            case "video-pack": I("file", "Pfad zur Videodatei"); break;
+            case "video-pack":
+                var video = new DateiFeld(this, "fusion-in-file", "Videodatei", _fusionInput.GetValueOrDefault("file", ""), false, "produktion", ["*.mp4", "*.mkv", "*.mov", "*.webm", "*.avi"]);
+                video.Eingabe.MinWidth = 360;
+                video.Eingabe.TextChanged += (_, _) => _fusionInput["file"] = video.Eingabe.Text ?? "";
+                inputs.Children.Add(video);
+                break;
             case "logo-print": I("text", "Wort für den Schriftzug, z. B. Trendo"); break;
         }
         sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { H("1. Angaben", 14), inputs } }));

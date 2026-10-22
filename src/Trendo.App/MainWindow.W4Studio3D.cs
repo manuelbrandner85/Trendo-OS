@@ -28,8 +28,7 @@ public partial class MainWindow
     private Control Studio3DView()
     {
         var sp = new StackPanel { Spacing = 8, Children = { P("Trendo steuert Blender im Hintergrund. Du brauchst dafür kein Blender-Wissen.") } };
-        if (BlenderPath is null) sp.Children.Add(Card(Row(P("Blender fehlt noch.", Brush.Parse("#FACC15")), Nav2("Einrichten", "components"))));
-        else sp.Children.Add(Card(Row(P("Blender ist da."), Act("3d-open-blender", "Blender öffnen", () => Launch(BlenderPath!)))));
+        sp.Children.Add(Card(ProgrammLeiste("blender", "Blender", AktuelleModellDatei)));
 
         var name = new TextBox { Name = "3d-name", PlaceholderText = "Name", Text = "Mein Modell", Width = 180 };
         var shape = new ComboBox { Name = "3d-shape", ItemsSource = Studio3D.Shapes.Select(s => s.Label).ToList(), SelectedIndex = 0, Width = 150 };

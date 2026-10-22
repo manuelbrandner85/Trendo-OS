@@ -31,6 +31,7 @@ public partial class MainWindow
         var letter = new Button { Name = "office-brief", Content = "Im Briefstudio schreiben", Margin = new Thickness(0, 0, 6, 6), Background = Accent };
         letter.Click += (_, _) => Show("brief"); row.Children.Add(letter);
         sp.Children.Add(row); sp.Children.Add(msg);
+        sp.Children.Add(ProgrammLeiste("libreoffice", "LibreOffice", AktuellesDokument));
         var soffice = ToolPath("libreoffice");
         sp.Children.Add(P(soffice is null ? "LibreOffice ist nicht installiert – Öffnen nutzt dein Standardprogramm, PDF-Export ist aus." : "Zuletzt bearbeitet (Projektordner und Dokumente). „PDF“ wandelt mit LibreOffice im Hintergrund um.", null, 11));
         var docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -43,6 +44,7 @@ public partial class MainWindow
                 var pdf = new Button { Name = $"doc-pdf-{i}", Content = "PDF", FontSize = 11, Padding = new Thickness(10, 2) };
                 pdf.Click += async (_, _) => { msg.Text = $"Erstelle PDF aus {f.Name} …"; var (ok, m, p) = await PdfExport.ConvertAsync(new RealProcessRunner(), soffice, f.FullName); msg.Text = ok ? $"{m}: {Path.GetFileName(p)}" : m; _core.Audit.Append(Principal.LocalOwner.Name, "office.pdf", $"{f.Name} ok={ok}"); };
                 ((StackPanel)((Grid)r.Child!).Children[1]).Children.Insert(1, pdf);
+                ((StackPanel)((Grid)r.Child!).Children[1]).Children.Insert(0, ProgrammKnopf($"doc-lo-{i}", "libreoffice", f.FullName));
             }
             sp.Children.Add(r); i++;
         }

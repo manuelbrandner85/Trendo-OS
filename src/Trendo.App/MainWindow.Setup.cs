@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
-using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using Trendo.Core;
 using Path = System.IO.Path;
@@ -54,15 +53,10 @@ public sealed partial class MainWindow
                 break;
             case 1:
                 sp.Children.Add(P("Hier speichert Trendo deine Projekte, Briefe und Vorlagen. Deine Daten bleiben auf diesem PC.", Text, 13));
-                var folder = new TextBox { Name = "wiz-folder", Text = _settings.ProjectsFolder, Width = 460, HorizontalAlignment = HorizontalAlignment.Left };
-                folder.TextChanged += (_, _) => _settings.ProjectsFolder = folder.Text?.Trim() ?? "";
-                var pick = new Button { Content = "Ordner wählen …" };
-                pick.Click += async (_, _) =>
-                {
-                    var r = await StorageProvider.OpenFolderPickerAsync(new Avalonia.Platform.Storage.FolderPickerOpenOptions { Title = "Ordner für Trendo OS" });
-                    if (r.FirstOrDefault()?.TryGetLocalPath() is { } p) folder.Text = p;
-                };
-                sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { folder, pick } });
+                var folder = new DateiFeld(this, "wiz-folder", "Projektordner", _settings.ProjectsFolder, true, "einrichtung");
+                folder.Eingabe.Width = 460;
+                folder.Eingabe.TextChanged += (_, _) => _settings.ProjectsFolder = folder.Eingabe.Text?.Trim() ?? "";
+                sp.Children.Add(folder);
                 sp.Children.Add(P($"Einstellungen und Sicherungen liegen getrennt in {_core.DataRoot} und bleiben auch bei einer Deinstallation erhalten.", null, 11));
                 break;
             case 2:

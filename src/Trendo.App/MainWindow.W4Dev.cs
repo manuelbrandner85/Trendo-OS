@@ -31,7 +31,7 @@ public partial class MainWindow
             }
             catch (Exception ex) { Say("Hat nicht geklappt: " + ex.Message, "dev"); }
         }, true);
-        sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { H("Neues Projekt", 14), new WrapPanel { Children = { name, tpl } }, create } }));
+        sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { H("Neues Projekt", 14), ProgrammLeiste("vscode", "VS Code", AktuellesDevProjekt), new WrapPanel { Children = { name, tpl } }, create } }));
 
         var tools = string.Join(" · ", new[] { ("git", "Git"), ("dotnet", ".NET"), (OperatingSystem.IsWindows() ? "python" : "python3", "Python"), ("node", "Node") }
             .Select(x => (Cli.Find(x.Item1) is null ? "✗ " : "✓ ") + x.Item2));
@@ -46,6 +46,7 @@ public partial class MainWindow
             var dir = d; var g = DevStudio.Git(dir);
             var info = g.IsRepo ? $"Zweig {g.Branch} · {(g.Changed == 0 ? "alles gespeichert" : g.Changed + " geänderte Dateien")} · {g.LastCommit}" : "ohne Versionsstand";
             var buttons = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = {
+                ProgrammKnopf($"dev-code-{i}", "vscode", dir),
                 Act($"dev-open-{i}", "Ordner", () => Launch(dir)),
                 Act($"dev-test-{i}", "Testen", () => { var r = DevStudio.RunTests(dir); _core.Audit.Append(Principal.LocalOwner.Name, "dev.test", $"{Path.GetFileName(dir)} exit={r.Exit}"); Say(r.Ok ? $"„{Path.GetFileName(dir)}“: Test bestanden." : $"„{Path.GetFileName(dir)}“: Test nicht bestanden. {Short(r.Err + r.Out)}", "dev"); }),
                 Act($"dev-select-{i}", "Stand speichern …", () => { _devSelected = dir; Show("dev"); }) } };

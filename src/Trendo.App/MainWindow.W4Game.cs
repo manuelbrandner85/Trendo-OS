@@ -31,9 +31,9 @@ public partial class MainWindow
             }, true) } }));
 
         var engines = EngineFinder();
-        var ue = new StackPanel { Spacing = 6, Children = { H("Unreal Engine", 14) } };
+        var ue = new StackPanel { Spacing = 6, Children = { H("Unreal Engine", 14), ProgrammLeiste("unreal", "Unreal", AktuellesUnrealProjekt, "game-get-unreal") } };
         if (engines.Count == 0)
-            ue.Children.Add(Row(P("Unreal Engine ist nicht installiert. Sie kommt über den Epic Games Launcher (kostenloses Konto nötig)."), Act("game-get-unreal", "Epic Launcher holen", () => Launch("https://store.epicgames.com/download"))));
+            ue.Children.Add(P("Unreal kommt über den Epic Games Launcher (kostenloses Konto nötig). Einrichten fragt einmal nach und öffnet dann die offizielle Seite."));
         else
         {
             var uname = new TextBox { Name = "game-ue-name", Text = "MeinUnrealSpiel", Width = 200 };
@@ -60,7 +60,8 @@ public partial class MainWindow
         {
             var dir = d; var html = Path.Combine(dir, "index.html"); var up = Directory.GetFiles(dir, "*.uproject").FirstOrDefault();
             sp.Children.Add(Card(Row(P(Path.GetFileName(dir) + (up is not null ? " · Unreal" : " · Browser"), Text), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
-                Act($"game-play-{i}", up is not null ? "Öffnen" : "Spielen", () => Launch(up ?? html)), Act($"game-folder-{i}", "Ordner", () => Launch(dir)) } })));
+                Act($"game-play-{i}", up is not null ? "In Unreal öffnen" : "Spielen", () => { if (up is null) Launch(html); else OeffneProgramm("unreal", up); }),
+                Act($"game-folder-{i}", "Ordner", () => Launch(dir)) } })));
             i++;
         }
         return KreativPage("Spiele-Studio", sp);

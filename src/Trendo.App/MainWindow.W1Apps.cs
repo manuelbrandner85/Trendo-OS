@@ -45,18 +45,35 @@ public partial class MainWindow
     // ---------- SYS-11: Programme – was da ist, startet mit einem Klick; was fehlt, ist einen Klick entfernt ----------
     private Control AppsView()
     {
-        var sp = new StackPanel { Spacing = 5, Children = { P("Gefundene Programme starten direkt. Fehlt etwas, installiert Trendo es nach deiner Zustimmung.") } };
+        var sp = new StackPanel { Spacing = 5, Children = { P("Erkannte Programme starten direkt. Fehlt etwas, richtet Trendo es nach einer Rückfrage ein.") } };
         var i = 0;
         foreach (var c in DependencyCatalog.All.Where(c => c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Guided))
         {
-            var path = ToolPath(c.Id);
-            var exe = path is not null && (path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || File.Exists(path) && !Directory.Exists(path)) ? path : null;
-            var have = _deps.IsInstalled(c);
-            var b = new Button { Name = "app-" + c.Id, FontSize = 11, Padding = new Thickness(10, 2), Content = exe is not null ? "Starten" : have ? "Vorhanden" : "Installieren …", IsEnabled = exe is not null || !have };
-            b.Click += (_, _) => { if (exe is not null) Launch(exe); else Show("components"); };
+            var exe = ProgrammPfad(c.Id);
+            var have = exe is not null || _deps.IsInstalled(c);
+            Control rechts;
+            if (_programmFrage == c.Id)
+                rechts = ProgrammLeiste(c.Id, ProgrammName(c.Id), () => DateiFuerProgramm(c.Id));
+            else
+            {
+                var b = new Button { Name = "app-" + c.Id, FontSize = 11, Padding = new Thickness(10, 2), Content = exe is not null ? "Starten" : have && c.DetectPaths is null ? "Vorhanden" : "Einrichten", IsEnabled = exe is not null || !have || c.DetectPaths is not null };
+                var id = c.Id;
+                b.Click += (_, _) =>
+                {
+                    if (ProgrammPfad(id) is { } start)
+                    {
+                        var datei = DateiFuerProgramm(id);
+                        if (datei is not null && (File.Exists(datei) || Directory.Exists(datei)))
+                            _core.Integrations.OpenWithFile(Principal.LocalOwner, start, datei, _core.Audit);
+                        else Launch(start);
+                    }
+                    else { _programmFrage = id; Show("apps"); }
+                };
+                rechts = b;
+            }
             sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 5), Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {
                 new StackPanel { Children = { new TextBlock { Text = c.Name, Foreground = Text, FontSize = 12.5 }, P((have ? "✓ vorhanden · " : "fehlt · ") + c.Purpose, have ? null : Brush.Parse("#FACC15"), 10.5) } },
-                Pos(b, 1) } } });
+                Pos(rechts, 1) } } });
             i++;
         }
         sp.Children.Add(Nav2("Zusatzprogramme verwalten", "components"));

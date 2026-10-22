@@ -40,8 +40,9 @@ public partial class MainWindow
             catch (FormatException) { Say("Bitte Datum (TT.MM.JJJJ) und Betrag prüfen. Ausgaben mit Minus.", "finanzen"); }
         }, true);
         sp.Children.Add(Card(new StackPanel { Spacing = 5, Children = { H("Neue Buchung", 14), new WrapPanel { Children = { date, text, amount, cat, vat, add } } } }));
-        var csv = new TextBox { Name = "fin-csv", PlaceholderText = "Pfad zur Bank-CSV", Width = 340 };
-        sp.Children.Add(Card(new WrapPanel { Children = { P("Kontoauszug als CSV übernehmen  "), csv, Act("fin-import", "Übernehmen", () => FinanceImport(csv.Text?.Trim('"', ' ') ?? "")),
+        var csv = new DateiFeld(this, "fin-csv", "Bank-CSV", "", false, "finanzen", ["*.csv"]);
+        csv.Eingabe.Width = 340;
+        sp.Children.Add(Card(new WrapPanel { Children = { P("Kontoauszug als CSV übernehmen  "), csv, Act("fin-import", "Übernehmen", () => FinanceImport(csv.Eingabe.Text?.Trim('"', ' ') ?? "")),
             Act("fin-export", "Als CSV speichern", () => { var f = Path.Combine(BusinessFolder, $"Buchungen-{DateTime.Today:yyyy-MM-dd}.csv"); File.WriteAllText(f, Finance.ExportCsv(all), new System.Text.UTF8Encoding(true)); Say("Gespeichert: " + Path.GetFileName(f), "finanzen"); }) } }));
 
         var y = Finance.Year(all, _finYear);

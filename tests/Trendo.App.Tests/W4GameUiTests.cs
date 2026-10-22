@@ -13,7 +13,7 @@ public class W4_Core06_Ui
         var (w, l, _) = Ui.Open();
         w.EngineFinder = () => [];
         w.Show("spiele");
-        Assert.NotNull(w.TryFind<Button>("game-get-unreal"));
+        Assert.True(w.TryFind<Button>("game-get-unreal") is not null || w.TryFind<Button>("prog-open-unreal") is not null);
         w.Find<Button>("game-create").Press();
         Assert.True(File.Exists(Path.Combine(w.GameFolder, "Mein-Spiel", "index.html")));
         w.EngineFinder = () => [new("5.5", "/nicht/da")];

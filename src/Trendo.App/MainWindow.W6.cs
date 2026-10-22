@@ -36,9 +36,20 @@ public partial class MainWindow
         var wrap = new WrapPanel();
         foreach (var (k, l, d) in fields)
         {
-            var tb = new TextBox { Name = $"{id}-{k}", Text = _fachIn.TryGetValue($"{id}-{k}", out var v) ? v : d, Width = fields.Length > 3 ? 150 : 220, Watermark = l };
-            boxes[k] = tb;
-            wrap.Children.Add(MSp(new StackPanel { Children = { new TextBlock { Text = l, Foreground = Muted, FontSize = 11 }, tb } }));
+            var text = _fachIn.TryGetValue($"{id}-{k}", out var v) ? v : d;
+            if (DateiFeld.IstPfadSchluessel(k))
+            {
+                var feld = new DateiFeld(this, $"{id}-{k}", l, text, DateiFeld.IstOrdner(k, l), CurrentView);
+                feld.Eingabe.Width = 220;
+                boxes[k] = feld.Eingabe;
+                wrap.Children.Add(MSp(feld));
+            }
+            else
+            {
+                var tb = new TextBox { Name = $"{id}-{k}", Text = text, Width = fields.Length > 3 ? 150 : 220, Watermark = l };
+                boxes[k] = tb;
+                wrap.Children.Add(MSp(new StackPanel { Children = { new TextBlock { Text = l, Foreground = Muted, FontSize = 11 }, tb } }));
+            }
         }
         var outp = new SelectableTextBlock { Name = $"{id}-out", Text = _fachOut.GetValueOrDefault(id, ""), Foreground = Text, TextWrapping = TextWrapping.Wrap };
         var go = new Button { Name = $"{id}-run", Content = button, Background = Accent, VerticalAlignment = VerticalAlignment.Bottom };

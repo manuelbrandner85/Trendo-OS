@@ -17,6 +17,7 @@ public partial class MainWindow
     private Control BroadcastView()
     {
         var sp = new StackPanel { Spacing = 8 };
+        sp.Children.Add(Card(ProgrammLeiste("obs", "OBS", AktuelleSendung)));
         var over = Broadcast.Over;
         sp.Children.Add(new TextBlock { Name = "bc-total", Text = $"{Broadcast.Plan.Show}: {BroadcastDesk.Clock(Broadcast.Total)} von {Broadcast.Plan.SlotMinutes} min" + (over > TimeSpan.Zero ? $" – {BroadcastDesk.Clock(over)} zu lang!" : $" – noch {BroadcastDesk.Clock(-over)} frei"), Foreground = over > TimeSpan.Zero ? Brush.Parse("#F87171") : Text, FontSize = 14 });
         foreach (var r in Broadcast.Rows())

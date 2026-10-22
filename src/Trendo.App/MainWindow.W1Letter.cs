@@ -1,8 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.Platform.Storage;
 using Trendo.Core;
 
 namespace Trendo.App;
@@ -102,10 +102,20 @@ public partial class MainWindow
         foreach (var a in c.Attachments.OrderBy(a => a.No)) sp.Children.Add(P($"Anlage {a.No}: {a.Title}  ·  SHA-256 {a.Sha256[..12]}…", Text, 12));
         sp.Children.Add(Row(Btn("att-add", "Anlage hinzufügen …", async () =>
         {
-            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Anlage wählen", AllowMultiple = true });
-            foreach (var f in files) if (f.TryGetLocalPath() is { } p) Cases.AddAttachment(c, p, Path.GetFileNameWithoutExtension(p), Principal.LocalOwner);
+            foreach (var p in await DateienWaehlen(false, "Anlage wählen", true, null))
+                Cases.AddAttachment(c, p, Path.GetFileNameWithoutExtension(p), Principal.LocalOwner);
             Show("akte");
         }), Btn("att-renumber", "Neu nummerieren", () => { Cases.Renumber(c, Principal.LocalOwner); Show("akte"); })));
+        var attDrop = new Border { Name = "att-drop", Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(8), Child = P("Oder eine Datei hierher ziehen.") };
+        DragDrop.SetAllowDrop(attDrop, true);
+        attDrop.AddHandler(DragDrop.DragOverEvent, (_, e) => { if (!DateiFeld.HatDateien(e.DataTransfer)) return; e.DragEffects = DragDropEffects.Copy; e.Handled = true; });
+        attDrop.AddHandler(DragDrop.DropEvent, (_, e) =>
+        {
+            if (DateiFeld.ErsterPfad(e.DataTransfer) is not { } p) return;
+            Cases.AddAttachment(c, p, Path.GetFileNameWithoutExtension(p), Principal.LocalOwner);
+            e.Handled = true; Show("akte");
+        });
+        sp.Children.Add(attDrop);
         // Eingangspost
         sp.Children.Add(H("Eingangspost (Brief, Bescheid, Scan)", 14));
         foreach (var inc in c.Incoming)
@@ -132,8 +142,8 @@ public partial class MainWindow
         var ephemeral = new CheckBox { Name = "inc-ephemeral", Content = "Nur forensische Kopie (nach 120 Stunden automatisch löschen)", Foreground = Text };
         sp.Children.Add(Row(Btn("inc-add", "Scan/Foto einlesen …", async () =>
         {
-            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Brief-Foto oder Scan", FileTypeFilter = [new("Bilder") { Patterns = Ocr.ImageExt.Select(e => "*" + e).ToList() }, new("Text") { Patterns = ["*.txt"] }] });
-            foreach (var f in files) if (f.TryGetLocalPath() is { } p) await ImportIncoming(c, p, ephemeral.IsChecked == true);
+            foreach (var p in await DateienWaehlen(false, "Brief-Foto oder Scan", true, Ocr.ImageExt.Select(e => "*" + e).Append("*.txt").ToList()))
+                await ImportIncoming(c, p, ephemeral.IsChecked == true);
             Show("akte");
         }), ephemeral));
         // Fristen
@@ -232,6 +242,7 @@ public partial class MainWindow
         // Ausgabe
         var so = ToolPath("libreoffice");
         sp.Children.Add(H("Ausgabe", 14));
+        sp.Children.Add(ProgrammLeiste("libreoffice", "LibreOffice", () => _finalFile));
         async Task Export(string fmt)
         {
             if (issues.Any(i => i.Blocking)) throw new InvalidOperationException("Erst die Pflichtpunkte erledigen – so geht der Brief nicht raus.");
@@ -251,7 +262,7 @@ public partial class MainWindow
         }
         Button ExportBtn(string n, string l, string f) { var b = new Button { Name = n, Content = l, IsEnabled = f == "docx" || so is not null }; b.Click += async (_, _) => { try { await Export(f); } catch (InvalidOperationException ex) { _caseMsg = ex.Message; Show("ausgabe"); } }; return b; }
         sp.Children.Add(Row(ExportBtn("out-docx", "Word (DOCX)", "docx"), ExportBtn("out-odt", "OpenDocument (ODT)", "odt"), ExportBtn("out-pdf", "PDF zum Drucken", "pdf")));
-        if (_finalFile is not null && File.Exists(_finalFile)) sp.Children.Add(Row(P("Letzte Ausgabe: " + Path.GetFileName(_finalFile), Text, 11.5), Btn("out-open", "Öffnen", () => Launch(_finalFile)), Btn("out-folder", "Ordner", () => Launch(Path.GetDirectoryName(_finalFile)!))));
+        if (_finalFile is not null && File.Exists(_finalFile)) sp.Children.Add(Row(P("Letzte Ausgabe: " + Path.GetFileName(_finalFile), Text, 11.5), ProgrammKnopf("letter-lo", "libreoffice", _finalFile), Btn("out-open", "Öffnen", () => Launch(_finalFile)), Btn("out-folder", "Ordner", () => Launch(Path.GetDirectoryName(_finalFile)!))));
         // Übersetzung (nur Entwurf)
         sp.Children.Add(H("Übersetzung (nur Entwurf, Deutsch bleibt maßgeblich)", 14));
         var langs = new WrapPanel();

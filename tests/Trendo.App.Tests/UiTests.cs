@@ -23,7 +23,9 @@ public static class TestApp
 public sealed class FakeLauncher : IProcessLauncher
 {
     public List<string> Opened { get; } = [];
+    public List<(string Exe, string Arg)> With { get; } = [];
     public void Open(string target) => Opened.Add(target);
+    public void OpenWith(string exe, string arg) { With.Add((exe, arg)); Open($"{exe} \"{arg}\""); }
 }
 public sealed class Probe(params string[] t) : IToolProbe { public bool IsAvailable(string x) => t.Contains(x); }
 
