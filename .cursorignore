@@ -1,0 +1,36 @@
+# Agentenindex. Dateien bleiben im Git, nichts wird gelöscht.
+# Terminal kann die Pfade weiter lesen; Agent, Tab und @-Erwähnung nicht.
+
+# Belege und Rohdaten. Beispiel: reports/audit/klick-rohdaten.tsv (etwa 3,6 MB).
+reports/
+
+# Große PNGs (Referenz- und Konzeptbilder, etwa 0,4–2,3 MB je Datei).
+# Kleine Logos unter src/Trendo.App/Assets/logo/ bleiben draußen aus dieser Liste.
+docs/design/*.png
+docs/spec/design-41/referenzen/*.png
+
+# Lockfiles. Im Repo liegt aktuell keins; die Muster gelten, sobald eines entsteht.
+*.lock
+package-lock.json
+packages.lock.json
+npm-shrinkwrap.json
+pnpm-lock.yaml
+yarn.lock
+Cargo.lock
+poetry.lock
+Pipfile.lock
+composer.lock
+Gemfile.lock
+bun.lockb
+
+# Build-Ausgabe, auch wenn sie nur lokal liegt.
+bin/
+obj/
+build/
+dist/
+artifacts/
+node_modules/
+target/
+linux-image/out/
+TestResults/
+*.trx
