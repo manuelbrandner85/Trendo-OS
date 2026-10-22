@@ -107,6 +107,22 @@ public static partial class Mesh3D
 
     static string F(double v) => v.ToString("0.######", CultureInfo.InvariantCulture);
 
+    /// <summary>Liest ein Netz (OBJ, STL, GLB, glTF). PLY mit Flächen liest der Foto-Scan.</summary>
+    public static Mesh ReadMeshFile(string path)
+    {
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        var mesh = ext switch
+        {
+            ".obj" => ReadObj(path, 1),
+            ".stl" => ReadStl(path),
+            ".glb" => ReadGlb(path),
+            ".gltf" => ReadGltf(path),
+            _ => throw new InvalidOperationException("Diese Datei ist kein Netz, das Trendo kennt."),
+        };
+        if (mesh.Triangles == 0) throw new InvalidOperationException("In der Datei ist kein Dreieck.");
+        return mesh;
+    }
+
     public static Part3D Import(string path)
     {
         var ext = Path.GetExtension(path).ToLowerInvariant();

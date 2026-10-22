@@ -60,6 +60,15 @@ public static class DependencyCatalog
             "Pro Benutzer ohne Admin über winget", "Gyan.FFmpeg", 100, "https://ffmpeg.org", ["ffmpeg"], [@"%LOCALAPPDATA%\Microsoft\WinGet\Links\ffmpeg.exe"]),
         new("blender", "Blender", "3D Studio", "GPL-3.0-or-later", DeliveryMode.AutoElevated, "Nur systemweiter Installer – Windows fragt nach Admin",
             "BlenderFoundation.Blender", 400, "https://blender.org", ["blender"], [@"%ProgramFiles%\Blender Foundation\*\blender.exe"]),
+        new("colmap", "COLMAP", "Gegenstände aus Fotos als 3D-Modell rechnen", "BSD-3-Clause", DeliveryMode.AutoUser,
+            "Kein winget-Paket. Offizielles Windows-ZIP ohne Grafikkarte, Prüfsumme von der Herstellerseite, nur im Benutzerordner",
+            null, 122, "https://github.com/colmap/colmap/releases/tag/4.2.1", ["colmap"],
+            [@"%LOCALAPPDATA%\TrendoWerkzeuge\colmap\bin\colmap.exe", @"%LOCALAPPDATA%\TrendoWerkzeuge\colmap\*\bin\colmap.exe", @"%ProgramFiles%\COLMAP\bin\colmap.exe", "/usr/bin/colmap", "/usr/local/bin/colmap"],
+            null, "https://github.com/colmap/colmap/releases/download/4.2.1/colmap-x64-windows-nocuda.zip", "c493d88cb4a43f21afba42cb55bf786e5434a0420e73db0ba1454c5d8b3686ae"),
+        new("meshroom", "Meshroom", "Gegenstände aus Fotos als 3D-Modell rechnen (Alternative)", "MPL-2.0", DeliveryMode.Guided,
+            "Kein zuverlässiges winget-Paket. Nur der offizielle Download, danach erkennt Trendo das Programm",
+            null, 1500, "https://github.com/alicevision/Meshroom/releases", ["meshroom_batch"],
+            [@"%LOCALAPPDATA%\Programs\Meshroom\meshroom_batch.exe", @"%ProgramFiles%\Meshroom\meshroom_batch.exe", "/usr/bin/meshroom_batch", "/usr/local/bin/meshroom_batch"]),
         new("krita", "Krita", "Medien Studio – Grafik", "GPL-3.0", DeliveryMode.AutoElevated, "Systemweiter Installer", "KDE.Krita", 200, "https://krita.org", ["krita"], [@"%ProgramFiles%\Krita (x64)\bin\krita.exe"]),
         new("inkscape", "Inkscape", "Medien Studio – Vektor", "GPL-2.0", DeliveryMode.AutoElevated, "Systemweiter Installer", "Inkscape.Inkscape", 200, "https://inkscape.org", ["inkscape"], [@"%ProgramFiles%\Inkscape\bin\inkscape.exe"]),
         new("kdenlive", "Kdenlive", "Medien Studio – Video", "GPL-3.0", DeliveryMode.AutoUser, "Pro Benutzer installierbar (winget-Benutzerinstaller vorhanden)", "KDE.Kdenlive", 300, "https://kdenlive.org", ["kdenlive"], [@"%LOCALAPPDATA%\Programs\kdenlive\bin\kdenlive.exe", @"%ProgramFiles%\kdenlive\bin\kdenlive.exe"]),
@@ -92,9 +101,13 @@ public interface IProcessRunner
 
 public sealed class RealProcessRunner : IProcessRunner
 {
-    public async Task<(int, string)> RunAsync(string file, string args, Action<string>? line = null, CancellationToken ct = default)
+    public Task<(int, string)> RunAsync(string file, string args, Action<string>? line = null, CancellationToken ct = default)
+        => RunInAsync(file, args, Path.GetTempPath(), line, ct);
+
+    /// <summary>Wie <see cref="RunAsync"/>, aber mit Arbeitsordner. Meshroom findet seine Bibliotheken nur neben der Programmdatei.</summary>
+    public async Task<(int, string)> RunInAsync(string file, string args, string? workDir, Action<string>? line = null, CancellationToken ct = default)
     {
-        var psi = new ProcessStartInfo(file, args) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetTempPath() }; // nie im Programmordner: hält sonst Updates auf
+        var psi = new ProcessStartInfo(file, args) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = string.IsNullOrEmpty(workDir) ? Path.GetTempPath() : workDir }; // nie im Programmordner: hält sonst Updates auf
         using var p = Process.Start(psi)!;
         var sb = new System.Text.StringBuilder();
         void On(object _, DataReceivedEventArgs e) { if (e.Data is null) return; lock (sb) sb.AppendLine(e.Data); line?.Invoke(e.Data); }
