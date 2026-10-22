@@ -209,6 +209,7 @@ public sealed partial class MainWindow
     // ---------- Sicherung & Wiederherstellung ----------
     private string _backupMsg = "";
     private string? _backupConfirm;
+    private string _backupAsk = "";
     private Control BackupView()
     {
         var sp = new StackPanel { Spacing = 6 };
@@ -228,24 +229,64 @@ public sealed partial class MainWindow
                 yes.Click += (_, _) =>
                 {
                     _backupConfirm = null;
+                    _backupAsk = "";
                     try { var n = Backups.Restore(file, DateTime.Now); _settings = UserSettings.Load(_core.DataRoot); _backupMsg = $"Wiederhergestellt: {n} Dateien. Der vorherige Stand wurde vorher gesichert."; }
                     catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException) { _backupMsg = "Wiederherstellen hat nicht geklappt: " + ex.Message; }
                     Show("sicherung");
                 };
                 var no = new Button { Name = $"backup-restore-no-{idx}", Content = "Abbrechen", FontSize = 11 };
-                no.Click += (_, _) => { _backupConfirm = null; _backupMsg = "Abgebrochen – nichts geändert."; Show("sicherung"); };
-                row.Children.Add(P("Der aktuelle Stand wird ersetzt (vorher gesichert). Sicher?", Brush.Parse("#FACC15"), 11)); row.Children.Add(yes); row.Children.Add(no);
+                no.Click += (_, _) => { _backupConfirm = null; _backupAsk = ""; _backupMsg = "Abgebrochen – nichts geändert."; Show("sicherung"); };
+                row.Children.Add(yes); row.Children.Add(no);
             }
             else
             {
                 var rb = new Button { Name = $"backup-restore-{idx}", Content = "Wiederherstellen", FontSize = 11 };
-                rb.Click += (_, _) => { _backupConfirm = file; _backupMsg = ""; Show("sicherung"); };
+                rb.Click += (_, _) =>
+                {
+                    try
+                    {
+                        _backupAsk = AskText(Backups.Preview(file));
+                        _backupConfirm = file;
+                        _backupMsg = "";
+                    }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
+                    {
+                        _backupConfirm = null;
+                        _backupAsk = "";
+                        _backupMsg = "Wiederherstellen hat nicht geklappt: " + ex.Message;
+                    }
+                    Show("sicherung");
+                };
                 row.Children.Add(rb);
             }
             sp.Children.Add(row);
+            if (_backupConfirm == file)
+            {
+                var ask = P(string.IsNullOrWhiteSpace(_backupAsk) ? "Der aktuelle Stand wird ersetzt (vorher gesichert). Sicher?" : _backupAsk, Brush.Parse("#FACC15"), 12);
+                ask.Name = "backup-ask";
+                sp.Children.Add(ask);
+            }
         }
         sp.Children.Add(P("Beim Wiederherstellen wird der aktuelle Stand vorher gesichert. Das Protokoll, was Trendo getan hat, bleibt immer erhalten.", null, 11));
         return Page("Sicherung", sp);
+    }
+
+    private static string AskText(BackupPreview preview)
+    {
+        var extra = preview.Added switch
+        {
+            0 => "",
+            1 => " 1 Datei kommt neu dazu.",
+            _ => $" {preview.Added} Dateien kommen neu dazu.",
+        };
+        const string tail = " Der aktuelle Stand wird vorher gesichert. Sicher?";
+        if (preview.Overwrite.Count == 0)
+            return "Diese Sicherung überschreibt keine vorhandene Datei." + extra + tail;
+        var wort = preview.Overwrite.Count == 1 ? "Datei" : "Dateien";
+        const int max = 12;
+        var sample = string.Join(", ", preview.Overwrite.Take(max));
+        var more = preview.Overwrite.Count > max ? $" und {preview.Overwrite.Count - max} weitere" : "";
+        return $"Diese Sicherung überschreibt {preview.Overwrite.Count} {wort}: {sample}{more}." + extra + tail;
     }
 
     // ---------- Auto-Updates über GitHub Releases (Velopack) ----------
