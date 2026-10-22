@@ -57,7 +57,7 @@ public partial class MainWindow
         if (!ExtraPages.Any(p => p.Key == key)) ExtraPages.Add((label, key, words));
     }
 
-    private Control TabNav(List<(string Key, string Label, string Module)> tabs, string prefix)
+    private Control TabNav(List<(string Key, string Label, string Module)> tabs, string prefix, bool compact = false)
     {
         var row = new WrapPanel();
         foreach (var (k, l, m) in tabs)
@@ -65,10 +65,11 @@ public partial class MainWindow
             object content = l;
             if (StudioIcons.For(m) is { } si)
             {
-                var chip = Chip(si.Path, si.C1, si.C2, 20, 0.64); chip.Name = prefix + "-tabicon-" + k;
+                var chip = Chip(si.Path, si.C1, si.C2, compact ? 16 : 20, 0.64); chip.Name = prefix + "-tabicon-" + k;
                 content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { chip, new TextBlock { Text = l, VerticalAlignment = VerticalAlignment.Center } } };
             }
-            var b = new Button { Name = prefix + "-tab-" + k, Content = content, Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(10), Foreground = Text, Background = CurrentView == k ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(CurrentView == k ? 0 : 1) };
+            var b = new Button { Name = prefix + "-tab-" + k, Content = content, Margin = compact ? new Thickness(0, 0, 4, 4) : new Thickness(0, 0, 6, 6), Padding = compact ? new Thickness(7, 3) : new Thickness(10, 6), CornerRadius = new CornerRadius(10), Foreground = Text, Background = CurrentView == k ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(CurrentView == k ? 0 : 1) };
+            if (compact) b.FontSize = 12;
             b.Click += (_, _) => { _w45Msg = ""; Show(k); }; row.Children.Add(b);
         }
         return row;
@@ -79,7 +80,7 @@ public partial class MainWindow
     /// <summary>Wie KreativPage, aber der untere Teil füllt das Fenster. Vorschau und Knöpfe bleiben ohne Scrollen sichtbar.</summary>
     private Control FitKreativPage(string title, Control header, Control fill)
     {
-        var head = new StackPanel { Spacing = 6, Children = { TabNav(KreativTabs, "kreativ") } };
+        var head = new StackPanel { Spacing = 6, Children = { TabNav(KreativTabs, "kreativ", compact: true) } };
         if (_w45Msg.Length > 0) head.Children.Add(new Border { Name = "w45-msg", Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6), Child = P(_w45Msg, Text) });
         head.Children.Add(header);
         return FitPage(title, head, fill);

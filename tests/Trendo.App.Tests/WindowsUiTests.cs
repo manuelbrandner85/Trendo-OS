@@ -58,7 +58,7 @@ public class Fenster_Ui
         var work = V<Panel>(w, "work-area"); var center = V<Canvas>(w, "window-area");
         Assert.Equal(work.Bounds.Width, act.Bounds.Width, 1);
         Assert.Equal(work.Bounds.Height, act.Bounds.Height, 1);
-        Assert.True(act.Bounds.Width > center.Bounds.Width + 80, $"maximiert {act.Bounds.Width} soll breiter sein als die Mitte {center.Bounds.Width}");
+        Assert.True(act.Bounds.Width >= center.Bounds.Width - 1, $"maximiert {act.Bounds.Width} soll mindestens so breit sein wie die Mitte {center.Bounds.Width}"); // Design 41: keine Seitenspalten mehr, die Mitte ist schon die volle Breite
         RealClick(w, Vis(w, "win-max-settings")); Assert.False(w.Windows.Get("settings")!.Maximized);
         RealClick(w, Vis(w, "win-close-settings")); Assert.Null(w.Windows.Get("settings"));
         Assert.Null(w.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "task-settings"));

@@ -36,7 +36,12 @@ public partial class MainWindow
         }
         var emp = new Button { Name = "letter-nav-empfaenger", Content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Ico(Mdi.AccountCircleOutline, 16, Text), new TextBlock { Text = "Empfänger", Foreground = Text, VerticalAlignment = VerticalAlignment.Center } } }, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 8), Background = Brushes.Transparent, Foreground = Text };
         Avalonia.Automation.AutomationProperties.SetName(emp, "Empfänger");
-        emp.Click += (_, _) => Show("brief"); sp.Children.Add(emp);
+        emp.Click += (_, _) =>
+        {
+            _letterMsg = "Empfänger: Firma, Name, Straße und PLZ Ort, eine Angabe pro Zeile.";
+            Show("brief");
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(this).OfType<TextBox>().FirstOrDefault(t => t.Name == "letter-recipient")?.Focus());
+        }; sp.Children.Add(emp);
         return new Border { Background = Brush.Parse(C("#55101830", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(8), Child = sp, Margin = new Thickness(0, 0, 10, 0) };
     }
 
