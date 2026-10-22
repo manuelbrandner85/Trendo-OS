@@ -101,7 +101,7 @@ public partial class MainWindow
         var port = new TextBox { Name = "fus-port", Text = "8787", Width = 70 };
         var pcode = new TextBox { Name = "fus-pcode", PlaceholderText = "Code vom Gerät", Width = 120 };
         sp.Children.Add(WCard(new StackPanel { Spacing = 6, Children = { new TextBlock { Text = "Gerät koppeln", Foreground = Text },
-            P("Auf dem Pi/Linux-Gerät: „trendo-companion pair“ ausführen und den 6-stelligen Code hier eingeben.", null, 11),
+            P("Auf dem Pi/Linux-Gerät einmalig „trendo-companion netz an“ (nur das eigene Heimnetz), dann „trendo-companion pair“ und den 6-stelligen Code hier eingeben.", null, 11),
             new WrapPanel { Children = { addr, port, pcode, Act("fus-pair", "Koppeln", () => _ = PairRemoteAsync(addr.Text ?? "", int.TryParse(port.Text, out var p) ? p : 0, pcode.Text ?? ""), true) } } } }));
         var nodes = Verbund.Nodes();
         sp.Children.Add(new TextBlock { Text = "Dieser PC: " + string.Join(", ", SelfCaps()), Foreground = Muted, FontSize = 11 });
