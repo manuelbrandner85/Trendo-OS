@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Trendo.Core;
 
 namespace Trendo.App;
@@ -33,7 +34,7 @@ public partial class MainWindow
         var engines = EngineFinder();
         var ue = new StackPanel { Spacing = 6, Children = { H("Unreal Engine", 14) } };
         if (engines.Count == 0)
-            ue.Children.Add(Row(P("Unreal Engine ist nicht installiert. Sie kommt über den Epic Games Launcher (kostenloses Konto nötig)."), Act("game-get-unreal", "Epic Launcher holen", () => Launch("https://store.epicgames.com/download"))));
+            ue.Children.Add(Row(P("Unter Programme\\Epic Games und in der Epic-Launcher-Liste wurde keine Unreal Engine gefunden. Sie kommt über den Epic Games Launcher (kostenloses Konto nötig)."), Act("game-get-unreal", "Epic Launcher holen", () => Launch("https://store.epicgames.com/download"))));
         else
         {
             var uname = new TextBox { Name = "game-ue-name", Text = "MeinUnrealSpiel", Width = 200 };
@@ -59,8 +60,27 @@ public partial class MainWindow
         foreach (var d in Directory.GetDirectories(GameFolder).OrderByDescending(Directory.GetLastWriteTime).Take(15))
         {
             var dir = d; var html = Path.Combine(dir, "index.html"); var up = Directory.GetFiles(dir, "*.uproject").FirstOrDefault();
-            sp.Children.Add(Card(Row(P(Path.GetFileName(dir) + (up is not null ? " · Unreal" : " · Browser"), Text), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
-                Act($"game-play-{i}", up is not null ? "Öffnen" : "Spielen", () => Launch(up ?? html)), Act($"game-folder-{i}", "Ordner", () => Launch(dir)), up is not null ? OpenInButton("unreal", () => up, "spiele", $"-{i}") : new Panel() } })));
+            var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
+                Act($"game-play-{i}", up is not null ? "Öffnen" : "Spielen", () => Launch(up ?? html)), Act($"game-folder-{i}", "Ordner", () => Launch(dir)) } };
+            if (up is not null)
+            {
+                var project = up;
+                actions.Children.Add(OpenInButton("unreal", () => project, "spiele", $"-{i}"));
+                actions.Children.Add(Act($"game-ue-check-{i}", "Projekt prüfen", () =>
+                {
+                    var e = EngineFinder().FirstOrDefault();
+                    if (e is null) { Say("Unter Programme\\Epic Games und in der Epic-Launcher-Liste wurde keine Unreal Engine gefunden.", "spiele"); return; }
+                    var cmd = GameStudio.EditorCmdExe(e);
+                    if (!File.Exists(cmd)) { Say("UnrealEditor-Cmd.exe liegt im Ordner der gefundenen Engine nicht.", "spiele"); return; }
+                    Say("Der Editor prüft das Projekt. Das kann dauern.", "spiele");
+                    _ = Task.Run(() =>
+                    {
+                        var c = GameStudio.CheckProject(cmd, project);
+                        Dispatcher.UIThread.Post(() => Say(c.Message, "spiele"));
+                    });
+                }));
+            }
+            sp.Children.Add(Card(Row(P(Path.GetFileName(dir) + (up is not null ? " · Unreal" : " · Browser"), Text), actions)));
             i++;
         }
         return KreativPage("Spiele-Studio", sp);

@@ -49,7 +49,8 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
     public ApprovalRequest PlanOpenProjectFolder(Principal by, string projectId)
     {
         var dir = projects.ProjectFilesRoot(projectId);
-        return gate.Request(by, OpenFolder, $"Projektordner '{projectId}' im Explorer öffnen", dir);
+        return gate.Request(by, OpenFolder, $"Projektordner '{projectId}' im Explorer öffnen", dir, preview:
+            [$"Ordner öffnen: {dir}", "Es wird nichts gelöscht oder verändert."]);
     }
 
     public ApprovalRequest PlanOpenUrl(Principal by, string url)
@@ -57,7 +58,8 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
         if (isOffline?.Invoke() == true) throw new OfflineException("Offline-Modus: Browser-/Netzwerkaktionen sind deaktiviert.");
         if (!Uri.TryCreate(url, UriKind.Absolute, out var u) || u.Scheme != Uri.UriSchemeHttps)
             throw new ArgumentException("Nur https-URLs erlaubt.");
-        return gate.Request(by, OpenUrl, $"URL im Standardbrowser öffnen: {u.Host}", u.AbsoluteUri);
+        return gate.Request(by, OpenUrl, $"URL im Standardbrowser öffnen: {u.Host}", u.AbsoluteUri, preview:
+            [$"Adresse öffnen: {u.AbsoluteUri}", "Es wird nichts heruntergeladen und nichts gesendet."]);
     }
 
     /// <summary>Direkter Start durch den lokalen Owner per Klick (Dock/Schnellstart). Kein Agent darf das; wird auditiert.</summary>

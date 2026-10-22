@@ -104,6 +104,7 @@ public class QA004_UiApproval
         w.Find<Button>("btn-open-folder-ui-test").Press();
         Assert.Equal("approvals", w.CurrentView);
         Assert.Empty(l.Opened);
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("nichts gelöscht", StringComparison.Ordinal));
         w.TryFind<Button>("btn-approve-")!.Press();
         Assert.Single(l.Opened);
         Assert.EndsWith(Path.Combine("ui-test", "files"), l.Opened[0]);

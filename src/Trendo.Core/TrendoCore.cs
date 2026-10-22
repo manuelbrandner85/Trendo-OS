@@ -7,6 +7,7 @@ public sealed class TrendoCore
     public AuditLog Audit { get; }
     public ProjectStore Projects { get; }
     public ApprovalGate Approvals { get; }
+    public NotStopp NotStopp { get; } = new();
     public ISecretStore Secrets { get; }
     public Integrations Integrations { get; }
     public StudioRegistry Studios { get; } = new();

@@ -1,6 +1,69 @@
 #!/usr/bin/env python3
 """Erzeugt requirements.yaml aus den Spezifikations-CSVs (docs/spec). Nur Statuswerte aus der Quelle; nichts wird als gebaut markiert."""
-import csv, pathlib, yaml
+import csv, pathlib, re, sys, yaml
+R = pathlib.Path(__file__).resolve().parent.parent
+
+def improvement_rows():
+    text = (R / "docs" / "spec" / "MASTERPROMPT.md").read_text(encoding="utf-8")
+    start = text.find("# 11. VERBINDLICHE BESTÄTIGTE VERBESSERUNGEN")
+    end = text.find("# 12. AUSDRÜCKLICH")
+    if start < 0 or end < start:
+        raise SystemExit("Masterprompt-Abschnitt 11/12 nicht gefunden")
+    rows, current, n = [], None, 0
+    for line in text[start:end].splitlines():
+        m = re.match(r"## VERBESSERUNG (\d+)", line)
+        if m:
+            current, n = int(m.group(1)), 0
+            continue
+        if current and line.startswith("- "):
+            n += 1
+            rows.append({
+                "id": f"IMP-{current}-{n:02d}", "parent": f"IMP-{current}", "title": line[2:].strip(),
+                "approval_status": "APPROVED_SPEC", "implementation_status": "NOT_STARTED", "test_status": "NOT_RUN",
+            })
+    rejected = {
+        23: "Ultimate Multi-User & Secure Identity GODMODE",
+        25: "Ultimate Smart Migration & Data Freedom GODMODE",
+        34: "Ultimate Native Antivirus & Cyber Protection GODMODE",
+    }
+    for num, title in rejected.items():
+        rows.append({
+            "id": f"IMP-{num}", "parent": f"IMP-{num}", "title": title,
+            "approval_status": "REJECTED_UPGRADE_BASE_PRESERVED", "decision": "REJECTED",
+            "implementation_status": "NOT_STARTED", "test_status": "NOT_RUN",
+        })
+    rows.append({
+        "id": "IMP-35", "parent": "IMP-35", "title": "Ultimate Intelligent Bugfix & Continuous Evolution GODMODE",
+        "approval_status": "PROPOSED", "decision": "UNDECIDED",
+        "implementation_status": "NOT_STARTED", "test_status": "NOT_RUN",
+    })
+    def key(r):
+        parts = r["id"].split("-")
+        return (int(parts[1]), int(parts[2]) if len(parts) > 2 else 0)
+    rows.sort(key=key)
+    return rows
+
+def splice_improvements():
+    """Hängt nur den Block improvements an. Der Rest von requirements.yaml bleibt, inklusive note-Felder."""
+    path = R / "requirements.yaml"
+    text = path.read_text(encoding="utf-8")
+    lines = text.splitlines(keepends=True)
+    idx = next(i for i, l in enumerate(lines) if l.startswith("tests:"))
+    start = next((i for i, l in enumerate(lines) if l.startswith("improvements:")), None)
+    block = yaml.safe_dump({"improvements": improvement_rows()}, allow_unicode=True, sort_keys=False, width=120)
+    if not block.endswith("\n"):
+        block += "\n"
+    if start is not None and start < idx:
+        lines[start:idx] = [block]
+    else:
+        lines.insert(idx, block)
+    path.write_text("".join(lines), encoding="utf-8")
+    print(f"improvements: {len(improvement_rows())} Einträge, übrige requirements.yaml unverändert")
+
+if "--improvements-only" in sys.argv:
+    splice_improvements()
+    raise SystemExit(0)
+
 R = pathlib.Path(__file__).resolve().parent.parent
 S = R / "docs" / "spec"
 def rows(p): return list(csv.DictReader(open(p, encoding="utf-8")))

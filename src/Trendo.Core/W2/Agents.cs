@@ -51,11 +51,12 @@ public sealed class AgentCenter
     ];
 
     private readonly string _file; private readonly AuditLog _audit; private readonly ApprovalGate _gate; private readonly ProjectStore _projects;
+    private readonly NotStopp? _stop;
     private readonly List<AgentTask> _tasks;
 
-    public AgentCenter(string dataRoot, AuditLog audit, ApprovalGate gate, ProjectStore projects)
+    public AgentCenter(string dataRoot, AuditLog audit, ApprovalGate gate, ProjectStore projects, NotStopp? stop = null)
     {
-        _audit = audit; _gate = gate; _projects = projects;
+        _audit = audit; _gate = gate; _projects = projects; _stop = stop;
         _file = Path.Combine(dataRoot, "ki", "agenten.json");
         Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
         try { _tasks = File.Exists(_file) ? JsonSerializer.Deserialize<List<AgentTask>>(File.ReadAllText(_file)) ?? [] : []; } catch { _tasks = []; }
@@ -80,11 +81,42 @@ public sealed class AgentCenter
     public async Task<AgentTask> RunAsync(AgentTask t, IntelligenceCore ki, string? model = null, CancellationToken ct = default)
     {
         var r = Role(t.RoleId);
+        if (_stop?.IsStopped == true) return Halt(t, r.Id);
+        if (ct.IsCancellationRequested) return Cancelled(t, r.Id);
         t.State = AgentTaskState.Laeuft; Save();
         var q = t.Input is { Length: > 0 } inp ? $"Auftrag: {t.Goal}\n\nVorarbeit/Eingabe:\n{inp}" : $"Auftrag: {t.Goal}";
-        var a = await ki.AskAsync(new KiRequest(q, r.SystemPrompt + " Antworte auf Deutsch.", model), ct);
-        t.Result = a.Text; t.State = a.Ok ? AgentTaskState.Fertig : AgentTaskState.Fehler; t.Finished = DateTimeOffset.Now; Save();
-        _audit.Append("agent:" + r.Id, a.Ok ? "agent.done" : "agent.failed", $"{t.Id} {a.Text.Length}Z");
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(ct, _stop?.Token ?? CancellationToken.None);
+        try
+        {
+            var a = await ki.AskAsync(new KiRequest(q, r.SystemPrompt + " Antworte auf Deutsch.", model), linked.Token);
+            if (_stop?.IsStopped == true) return Halt(t, r.Id);
+            t.Result = a.Text; t.State = a.Ok ? AgentTaskState.Fertig : AgentTaskState.Fehler; t.Finished = DateTimeOffset.Now; Save();
+            _audit.Append("agent:" + r.Id, a.Ok ? "agent.done" : "agent.failed", $"{t.Id} {a.Text.Length}Z");
+            return t;
+        }
+        catch (OperationCanceledException)
+        {
+            return _stop?.IsStopped == true ? Halt(t, r.Id) : Cancelled(t, r.Id);
+        }
+    }
+
+    private AgentTask Cancelled(AgentTask t, string roleId)
+    {
+        t.State = AgentTaskState.Fehler;
+        t.Result = "Abgebrochen.";
+        t.Finished = DateTimeOffset.Now;
+        Save();
+        _audit.Append("agent:" + roleId, "agent.cancelled", t.Id);
+        return t;
+    }
+
+    private AgentTask Halt(AgentTask t, string roleId)
+    {
+        t.State = AgentTaskState.Fehler;
+        t.Result = "Not-Stopp: abgebrochen.";
+        t.Finished = DateTimeOffset.Now;
+        Save();
+        _audit.Append("agent:" + roleId, "agent.stopped", t.Id);
         return t;
     }
 
@@ -95,6 +127,7 @@ public sealed class AgentCenter
         var done = new List<AgentTask>(); string? prev = null;
         foreach (var role in team.Roles)
         {
+            if (_stop?.IsStopped == true || ct.IsCancellationRequested) break;
             var t = Create(role, goal, projectId, prev, $"{teamId}-{run}");
             await RunAsync(t, ki, model, ct); done.Add(t);
             if (t.State != AgentTaskState.Fertig) break;
@@ -110,7 +143,10 @@ public sealed class AgentCenter
         if (!Role(t.RoleId).MayWriteFiles) throw new UnauthorizedAccessException($"{Role(t.RoleId).Name} darf keine Dateien schreiben.");
         if (t.State is not (AgentTaskState.Fertig or AgentTaskState.WartetAufFreigabe)) throw new InvalidOperationException("Aufgabe ist nicht fertig.");
         _projects.ResolveInProject(t.ProjectId, fileName);
-        var req = _gate.Request(Principal.LocalOwner, "agent.save", $"{Role(t.RoleId).Name}: Ergebnis als {fileName} im Projekt speichern", $"{t.ProjectId}/{fileName}");
+        var snippet = t.Result.Replace("\r", "").Trim();
+        if (snippet.Length > 180) snippet = snippet[..180] + "…";
+        var req = _gate.Request(Principal.LocalOwner, "agent.save", $"{Role(t.RoleId).Name}: Ergebnis als {fileName} im Projekt speichern", $"{t.ProjectId}/{fileName}", preview:
+            [$"Neue Datei: {fileName}", $"Inhalt, {t.Result.Length} Zeichen:", snippet]);
         t.ApprovalId = req.Id; t.State = AgentTaskState.WartetAufFreigabe; Save();
         return req;
     }
