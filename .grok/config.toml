@@ -6,6 +6,8 @@
 rules = [
   { action = "allow", tool = "read" },
   { action = "allow", tool = "grep" },
+  { action = "allow", tool = "webfetch" },
+  { action = "allow", tool = "websearch" },
   { action = "allow", tool = "edit" },
   { action = "allow", tool = "bash", pattern = "git status*" },
   { action = "allow", tool = "bash", pattern = "git diff*" },
