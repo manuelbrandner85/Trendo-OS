@@ -3,7 +3,8 @@
 namespace Trendo.App;
 
 /// <summary>Kurzer deutscher Name, ein einfacher Satz und der Bereich, unter dem das Studio steht.</summary>
-public sealed record StudioInfo(string Name, string Sentence, string Area);
+/// <summary>Hidden: Studio bleibt im Katalog, erscheint aber nicht in Karten, Startmenü und Suche (T-0213, z. B. SPEC-07 abgelehnt).</summary>
+public sealed record StudioInfo(string Name, string Sentence, string Area, bool Hidden = false);
 
 public static class StudioCatalog
 {
@@ -26,15 +27,15 @@ public static class StudioCatalog
         ["SPEC-11"] = new("Geld & Rechnungen", "Haushaltsbuch, Rechnungen, Kredite und Steuern im Blick.", "Business & Geld"),
 
         ["CORE-08"] = new("Videos & Fotos bearbeiten", "Videos schneiden, Musik aufnehmen und Bilder gestalten.", "Kreativ & Medien"),
-        ["SPEC-15"] = new("Live streamen", "Livestreams und Sendungen planen und durchführen.", "Kreativ & Medien"),
+        ["SPEC-15"] = new("Livestream planen", "Ablauf, Bitrate und Lautstärke für deine Sendung planen.", "Kreativ & Medien"),
         ["SPEC-08"] = new("Kleidung & Produkte entwerfen", "Kleidergrößen, Schnitte und Produktideen.", "Kreativ & Medien"),
         ["X-07"] = new("Freie Bilder & Klänge finden", "Kostenlose Bilder, Klänge und Schriften finden.", "Kreativ & Medien"),
         ["CORE-12"] = new("KI-Anweisungen schreiben", "Gute Anweisungen für die KI schreiben und sammeln.", "Kreativ & Medien"),
 
         ["CORE-05"] = new("3D-Modelle erstellen", "3D-Modelle bauen und ansehen – mit Blender.", "3D, Spiele & VR"),
-        ["CORE-06"] = new("Spiele bauen", "Eigene Spiele bauen – mit der Unreal Engine.", "3D, Spiele & VR"),
+        ["CORE-06"] = new("Spiele-Vorlagen", "Fertige kleine Browser-Spiele ausprobieren und ein Unreal-Projekt anlegen.", "3D, Spiele & VR"),
         ["SPEC-04"] = new("VR & AR gestalten", "Virtuelle Räume und 3D-Modelle für die Brille vorbereiten.", "3D, Spiele & VR"),
-        ["SPEC-09"] = new("Gegenstände einscannen", "Gegenstände und Räume einscannen und vermessen.", "3D, Spiele & VR"),
+        ["SPEC-09"] = new("Scans bearbeiten", "Vorhandene 3D-Scans (Punktwolken) bearbeiten und vermessen.", "3D, Spiele & VR"),
 
         ["SPEC-01"] = new("Wohnung planen", "Räume ausmessen, Flächen berechnen und einrichten.", "Technik & Fachgebiete"),
         ["SPEC-02"] = new("Schaltungen berechnen", "Widerstände, LEDs und Schaltungen berechnen.", "Technik & Fachgebiete"),
@@ -43,11 +44,11 @@ public static class StudioCatalog
         ["SPEC-13"] = new("Routen & Karten", "Routen planen, Strecken messen und GPS-Dateien ansehen.", "Technik & Fachgebiete"),
         ["SPEC-14"] = new("Fräsen & Fertigen", "Fräsen, Drehzahlen und Werkstücke planen.", "Technik & Fachgebiete"),
         ["SPEC-16"] = new("Auto & Fahrten", "Verbrauch, Fahrtenbuch und Kosten rund ums Auto.", "Technik & Fachgebiete"),
-        ["CORE-09"] = new("Kameras & Roboter steuern", "Kameras und Roboterarme steuern und auswerten.", "Technik & Fachgebiete"),
+        ["CORE-09"] = new("Kamerabilder auswerten", "Bilder auswerten und Roboter-Bewegungen berechnen.", "Technik & Fachgebiete"),
 
         ["SPEC-05"] = new("Messwerte auswerten", "Messwerte auswerten und als Diagramm zeigen.", "Wissen & Lernen"),
         ["SPEC-06"] = new("Lernen mit Karteikarten", "Karteikarten, Vokabeln und Prüfungen üben.", "Wissen & Lernen"),
-        ["SPEC-07"] = new("Texte übersetzen", "Texte übersetzen und Programme eindeutschen.", "Wissen & Lernen"),
+        ["SPEC-07"] = new("Texte übersetzen", "Texte übersetzen und Programme eindeutschen.", "Wissen & Lernen", Hidden: true),
         ["CORE-10"] = new("Wissen merken", "Merkt sich, was du gelernt und gemacht hast.", "Wissen & Lernen"),
         ["SYS-08"] = new("Sicher recherchieren", "Sicher im Netz recherchieren – nur lesen.", "Wissen & Lernen"),
 
@@ -57,7 +58,7 @@ public static class StudioCatalog
         ["SYS-05"] = new("Aufgaben automatisieren", "Wiederkehrende Aufgaben automatisch erledigen lassen.", "KI & Automatik"),
         ["X-01"] = new("Großprojekte umsetzen", "Mehrere Studios arbeiten zusammen an einem Projekt.", "KI & Automatik"),
 
-        ["CORE-07"] = new("Webseite bauen", "Webseiten und Apps programmieren.", "Entwickeln"),
+        ["CORE-07"] = new("Webseite aus Vorlage", "Webseite aus einer Vorlage anlegen, testen und sichern.", "Entwickeln"),
         ["X-03"] = new("Apps zusammenklicken", "Apps zusammenklicken – ganz ohne Programmieren.", "Entwickeln"),
         ["X-06"] = new("Projekte von GitHub holen", "Freie Projekte von GitHub finden und nutzen.", "Entwickeln"),
         ["X-04"] = new("Trendo erweitern", "Neue Funktionen für Trendo hinzufügen.", "Entwickeln"),
@@ -82,7 +83,10 @@ public static class StudioCatalog
 
     /// <summary>Studio-Liste mit den alltagsnahen Namen (gilt dann überall: Karten, Kacheln, Startmenü, Fenstertitel).</summary>
     public static IReadOnlyList<Trendo.Core.StudioEntry> Friendly(IEnumerable<Trendo.Core.StudioEntry> list) =>
-        list.Select(s => For(s.Id) is { } i ? s with { Name = i.Name } : s).ToList();
+        list.Where(s => !IsHidden(s.Id)).Select(s => For(s.Id) is { } i ? s with { Name = i.Name } : s).ToList();
+
+    /// <summary>True, wenn das Studio ausgeblendet ist (T-0213).</summary>
+    public static bool IsHidden(string? id) => For(id)?.Hidden == true;
 
     /// <summary>Anzeigenamen der Seitenleiste (Schlüssel = bisherige Bezeichnung, bleibt für Steuerelement-Namen erhalten).</summary>
     public static readonly IReadOnlyDictionary<string, string> SideLabels = new Dictionary<string, string>

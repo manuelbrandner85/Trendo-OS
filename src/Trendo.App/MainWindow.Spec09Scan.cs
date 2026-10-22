@@ -154,7 +154,7 @@ public partial class MainWindow
     private void ShowScanAsk(ToolCheck check, string log)
     {
         _depStudio = "SPEC-09";
-        _depStudioTitle = "Gegenstände einscannen";
+        _depStudioTitle = StudioCatalog.NameOf("SPEC-09", "Scans bearbeiten");
         _depChecks = [check];
         _depReturn = "scan3d";
         _depLog.Text = log;

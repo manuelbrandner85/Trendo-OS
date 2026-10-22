@@ -97,7 +97,7 @@ public partial class MainWindow
     {
         var list = new List<(string Id, string Name)>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var (id, info) in StudioCatalog.ById) { seen.Add(id); list.Add((id, info.Name)); }
+        foreach (var (id, info) in StudioCatalog.ById) { seen.Add(id); if (!info.Hidden) list.Add((id, info.Name)); }
         foreach (var s in _studios) if (seen.Add(s.Id)) list.Add((s.Id, s.Name));
         return list;
     }

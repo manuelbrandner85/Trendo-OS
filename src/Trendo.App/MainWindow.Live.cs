@@ -171,7 +171,7 @@ public partial class MainWindow
     private async Task InstallFfmpeg()
     {
         var comp = DependencyCatalog.Get("ffmpeg");
-        var req = _core.Approvals.Request(Principal.LocalOwner, "deps.install", "FFmpeg für Live streamen installieren", comp.Id);
+        var req = _core.Approvals.Request(Principal.LocalOwner, "deps.install", "FFmpeg für Livestream planen installieren", comp.Id);
         _core.Approvals.Approve(req.Id, Principal.LocalOwner);
         if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
         _liveMsg = "FFmpeg wird installiert …";

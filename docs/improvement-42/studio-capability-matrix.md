@@ -12,14 +12,14 @@ Erzeugt aus `CapabilityCatalog` und den wirklich registrierten Adaptern. `ready`
 | STUDIO-ONLINE-BUSINESS-01 | Online verkaufen | Business & Geld | BusinessStudio | Geschäftsplan rechnen | Preis, Kosten, Menge | keiner | Bewertung | not_implemented | — | Kein Fachadapter registriert. |
 | SPEC-11 | Geld & Rechnungen | Business & Geld | Finance, Ledger | Rechnung mit Decimal rechnen, nicht buchen | Verkäufer, Käufer, Positionen | keiner | HTML-Entwurf | not_implemented | — | Kein Fachadapter registriert. |
 | CORE-08 | Videos & Fotos bearbeiten | Kreativ & Medien | MediaStudio, ffmpeg | Datei wirklich umwandeln | Quelldatei im Projekt | keiner | Mediendatei | not_implemented | — | Kein Fachadapter registriert. |
-| SPEC-15 | Live streamen | Kreativ & Medien | Live-Studio der App | Sendungsplan | Titel, Ablauf | keiner | Plan | not_implemented | — | Kein Fachadapter registriert. |
+| SPEC-15 | Livestream planen | Kreativ & Medien | Live-Studio der App | Sendungsplan | Titel, Ablauf | keiner | Plan | not_implemented | — | Kein Fachadapter registriert. |
 | SPEC-08 | Kleidung & Produkte entwerfen | Kreativ & Medien | Größen- und Schnittlogik der App | Maße prüfen | Maße | keiner | Zuschnitt | not_implemented | — | Kein Fachadapter registriert. |
 | X-07 | Freie Bilder & Klänge finden | Kreativ & Medien | OpenSource | Quelle mit Lizenz merken | Suchwort | keiner | Liste | not_implemented | — | Kein Fachadapter registriert. |
 | CORE-12 | KI-Anweisungen schreiben | Kreativ & Medien | PromptLibrary | Vorlage füllen | Vorlage, Platzhalter | keiner | Text | not_implemented | — | Kein Fachadapter registriert. |
 | CORE-05 | 3D-Modelle erstellen | 3D, Spiele & VR | Scene3D, Mesh3D, Studio3D | Modelldatei, Render nur mit Blender | Form und Maße | keiner | OBJ, optional Blend | not_implemented | — | Kein Fachadapter registriert. |
-| CORE-06 | Spiele bauen | 3D, Spiele & VR | GameStudio | Browser-Spiel, Unreal nur wenn installiert | Vorlage, Name | keiner | HTML oder uproject | not_implemented | — | Kein Fachadapter registriert. |
+| CORE-06 | Spiele-Vorlagen | 3D, Spiele & VR | GameStudio | Browser-Spiel, Unreal nur wenn installiert | Vorlage, Name | keiner | HTML oder uproject | not_implemented | — | Kein Fachadapter registriert. |
 | SPEC-04 | VR & AR gestalten | 3D, Spiele & VR | XrModels | Raumskizze | Maße | keiner | Beschreibung | not_implemented | — | Kein Fachadapter registriert. |
-| SPEC-09 | Gegenstände einscannen | 3D, Spiele & VR | PhotoScan, PointCloud | Scan aus echten Bildern | Bilder | keiner | Punktwolke | not_implemented | — | Kein Fachadapter registriert. |
+| SPEC-09 | Scans bearbeiten | 3D, Spiele & VR | PhotoScan, PointCloud | Scan aus echten Bildern | Bilder | keiner | Punktwolke | not_implemented | — | Kein Fachadapter registriert. |
 | SPEC-01 | Wohnung planen | Technik & Fachgebiete | Flächenrechnung der App | Fläche aus Maßen | Länge, Breite | keiner | Zahl mit Einheit | not_implemented | — | Kein Fachadapter registriert. |
 | SPEC-02 | Schaltungen berechnen | Technik & Fachgebiete | Elektronik-Rechner der App | Widerstand und LED prüfen | Spannung, Strom | keiner | Zahl mit Einheit | not_implemented | — | Kein Fachadapter registriert. |
 | SPEC-03 | Statik nachrechnen | Technik & Fachgebiete | Balkenrechnung der App | Balken mit Annahmen prüfen | Last, Länge, Profil | keiner | Prüfwert | not_implemented | — | Kein Fachadapter registriert. |
@@ -27,7 +27,7 @@ Erzeugt aus `CapabilityCatalog` und den wirklich registrierten Adaptern. `ready`
 | SPEC-13 | Routen & Karten | Technik & Fachgebiete | Routenlogik der App | Strecke aus Punkten | Punkte | keiner | Länge | not_implemented | — | Kein Fachadapter registriert. |
 | SPEC-14 | Fräsen & Fertigen | Technik & Fachgebiete | Drehzahlrechnung der App | Nur rechnen, keine Maschine starten | Werkzeug, Material | keiner | Drehzahl | not_implemented | — | Keine Fräs- oder Maschinenbefehle aus einem Prompt. |
 | SPEC-16 | Auto & Fahrten | Technik & Fachgebiete | Fahrtenlogik der App | Verbrauch rechnen | Strecke, Liter | keiner | Kosten | not_implemented | — | Kein Fachadapter registriert. |
-| CORE-09 | Kameras & Roboter steuern | Technik & Fachgebiete | Robotik-Modelle der App | Keine Bewegung aus einem Prompt | keine | keiner | keine | not_implemented | — | Keine Kamerasteuerung und keine Roboterbefehle aus einem Prompt. |
+| CORE-09 | Kamerabilder auswerten | Technik & Fachgebiete | Robotik-Modelle der App | Keine Bewegung aus einem Prompt | keine | keiner | keine | not_implemented | — | Keine Kamerasteuerung und keine Roboterbefehle aus einem Prompt. |
 | SPEC-05 | Messwerte auswerten | Wissen & Lernen | Science | Messreihe auswerten | Werte | keiner | Kennzahl | not_implemented | — | Kein Fachadapter registriert. |
 | SPEC-06 | Lernen mit Karteikarten | Wissen & Lernen | Karteikarten der App | Karte anlegen | Vorderseite, Rückseite | keiner | Karte | not_implemented | — | Kein Fachadapter registriert. |
 | SPEC-07 | Texte übersetzen | Wissen & Lernen | bestehendes Basisstudio, kein 2.0-Ausbau | keine neue Übersetzung über diesen Auftrag | keine | keiner | keine | not_implemented | — | Language & Localization Studio 2.0 bleibt abgelehnt. Kein neuer Übersetzungsadapter. |
@@ -38,7 +38,7 @@ Erzeugt aus `CapabilityCatalog` und den wirklich registrierten Adaptern. `ready`
 | X-05 | Kostenlose KI finden | KI & Automatik | KiSources, nur Loopback | Lokale Quelle prüfen | keine | keiner | Status | not_implemented | — | Kein Fachadapter registriert. |
 | SYS-05 | Aufgaben automatisieren | KI & Automatik | WorkflowEngine | Ablauf planen | Schritte | keiner | Ablauf | not_implemented | — | Kein Fachadapter registriert. |
 | X-01 | Großprojekte umsetzen | KI & Automatik | bestehende Studios | Studios nur nennen | Ziel | keiner | Plan | not_implemented | — | Kein Fachadapter registriert. |
-| CORE-07 | Webseite bauen | Entwickeln | DevStudio | Projektvorlage anlegen, nicht veröffentlichen | Vorlage, Name | keiner | Quelltext | not_implemented | — | Kein Fachadapter registriert. |
+| CORE-07 | Webseite aus Vorlage | Entwickeln | DevStudio | Projektvorlage anlegen, nicht veröffentlichen | Vorlage, Name | keiner | Quelltext | not_implemented | — | Kein Fachadapter registriert. |
 | X-03 | Apps zusammenklicken | Entwickeln | PageBuilder | Seitenentwurf | Inhalt | keiner | HTML | not_implemented | — | Kein Fachadapter registriert. |
 | X-06 | Projekte von GitHub holen | Entwickeln | OpenSource | Nur anzeigen, nicht mergen | Name | keiner | Hinweis | not_implemented | — | Kein Fachadapter registriert. |
 | X-04 | Trendo erweitern | Entwickeln | ExtensionCatalog | Erweiterung entwerfen | Name | keiner | Entwurf | not_implemented | — | Kein Fachadapter registriert. |

@@ -53,10 +53,10 @@ public class StartMenu_StudioFenster
         Prepare(w, 1440, 900);
         w.Show("start"); Settle();
         Assert.True(StudioCatalog.ById.Count >= 54, "Katalog kleiner als 54");
-        foreach (var id in StudioCatalog.ById.Keys)
+        foreach (var id in StudioCatalog.ById.Keys.Where(k => !StudioCatalog.IsHidden(k)))
             Assert.Contains(w.Studios, s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
 
-        foreach (var (id, info) in StudioCatalog.ById)
+        foreach (var (id, info) in StudioCatalog.ById.Where(e => !e.Value.Hidden))
         {
             RealClick(w, V<Button>(w, "start-button"));
             Assert.True(w.StartMenuOpen, id);
@@ -107,7 +107,10 @@ public class StartMenu_StudioFenster
         Assert.True(w.StartMenuOpen);
         var letters = w.GetVisualDescendants().OfType<TextBlock>().Where(t => t.Name?.StartsWith("sm-letter-") == true).Select(t => t.Text).ToList();
         Assert.Equal(letters.OrderBy(x => x, StringComparer.Create(new System.Globalization.CultureInfo("de-DE"), true)), letters);
-        Assert.Equal(StudioCatalog.ById.Count, w.GetVisualDescendants().OfType<Button>().Count(b => b.Name?.StartsWith("sm-az-") == true));
+        Assert.Equal(StudioCatalog.ById.Count(e => !e.Value.Hidden), w.GetVisualDescendants().OfType<Button>().Count(b => b.Name?.StartsWith("sm-az-") == true));
+        Assert.Null(w.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "sm-az-SPEC-07"));
+        Assert.DoesNotContain(w.Studios, s => s.Id == "SPEC-07");
+        Assert.DoesNotContain(w.BuildSearch().Find("übersetzen"), h => h.Target == "studio:SPEC-07");
         w.Close();
     }
 
@@ -173,7 +176,7 @@ public class StartMenu_StudioFenster
         Assert.Equal(3, w.Windows.TaskOrder.Count);
         Assert.NotEqual(letterId, gameId); Assert.NotEqual(letterId, d3); Assert.NotEqual(gameId, d3);
         Assert.Equal("Briefe schreiben", w.Windows.Get(letterId)!.Title);
-        Assert.Equal("Spiele bauen", w.Windows.Get(gameId)!.Title);
+        Assert.Equal("Spiele-Vorlagen", w.Windows.Get(gameId)!.Title);
         Assert.Equal("3D-Modelle erstellen", w.Windows.Get(d3)!.Title);
         Assert.NotNull(V<Button>(w, "task-" + letterId));
         Assert.NotNull(V<Button>(w, "task-" + gameId));
@@ -242,7 +245,7 @@ public class StartMenu_StudioFenster
         var (w, _, _) = Ui.Open();
         w.Show("start"); Settle();
         string? first = null;
-        foreach (var id in StudioCatalog.ById.Keys.Take(26))
+        foreach (var id in StudioCatalog.ById.Keys.Where(k => !StudioCatalog.IsHidden(k)).Take(26))
         {
             w.Show(w.StudioLaunchPage(id));
             first ??= w.Windows.Active!.Id;
