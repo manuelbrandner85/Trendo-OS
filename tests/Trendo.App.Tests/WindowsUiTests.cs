@@ -14,12 +14,18 @@ public class Fenster_Ui
 {
     static Button Vis(Window w, string name) => V<Button>(w, name);
 
-    [AvaloniaFact(DisplayName = "Fenster: Kachel-Klick öffnet Fenster mit Taskleisten-Eintrag, Startbildschirm bleibt dahinter")]
+    [AvaloniaFact(DisplayName = "Fenster: Startmenü öffnet Dokumente mit Taskleisten-Eintrag, Startbildschirm bleibt dahinter")]
     public void TileOpensWindow()
     {
         var (w, _, _) = Ui.Open(); w.Show("start"); Settle();
-        var tile = w.GetVisualDescendants().OfType<Button>().First(b => b.Name == "tile-SYS-10" && b.IsEffectivelyVisible);
-        RealClick(w, tile);
+        void OpenOffice()
+        {
+            RealClick(w, V<Button>(w, "start-button"));
+            var item = w.GetVisualDescendants().OfType<Button>().First(b => b.Name == "sm-az-SYS-10");
+            item.BringIntoView(); Settle();
+            RealClick(w, V<Button>(w, "sm-az-SYS-10"));
+        }
+        OpenOffice();
         var win = w.Windows.Active; Assert.NotNull(win);
         Assert.NotNull(w.GetVisualDescendants().OfType<Border>().FirstOrDefault(b => b.Name == "win-" + win!.Id && b.IsEffectivelyVisible));
         Assert.NotNull(w.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "task-" + win.Id && b.IsEffectivelyVisible));
@@ -28,7 +34,7 @@ public class Fenster_Ui
         Assert.NotEmpty(V<Button>(w, "task-" + win.Id).GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Path>());
         // Minimieren per Klick → Startbildschirm wieder klickbar
         RealClick(w, Vis(w, "win-min-" + win.Id)); Assert.Null(w.Windows.Active); Assert.Equal("start", w.CurrentView);
-        RealClick(w, w.GetVisualDescendants().OfType<Button>().First(b => b.Name == "tile-SYS-10" && b.IsEffectivelyVisible));
+        OpenOffice();
         Assert.Equal(win.Id, w.Windows.Active?.Id); Assert.Single(w.Windows.TaskOrder);
         w.Close();
     }

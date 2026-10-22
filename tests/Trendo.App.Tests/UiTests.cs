@@ -86,7 +86,7 @@ public class QA017_Keyboard
     public void Accessible_names()
     {
         var (w, _, _) = Ui.Open();
-        foreach (var n in new[] { "nav-start", "nav-studios", "nav-projects", "nav-approvals", "nav-system" })
+        foreach (var n in new[] { "nav-start", "nav-studios", "nav-ki", "side-dateien", "side-einstellungen" })
             Assert.False(string.IsNullOrWhiteSpace(Avalonia.Automation.AutomationProperties.GetName(w.Find<Button>(n))));
         w.Close();
     }
@@ -158,19 +158,21 @@ public class QA019_OfflineUi
 /// Design-Ehrlichkeit: neue Oberfläche zeigt nur echte Zustände
 public class DesignHonesty
 {
-    [AvaloniaFact(DisplayName = "Design: 9 Studio-Kacheln mit echtem Status-Badge – gleich dem Status aus requirements.yaml")]
+    [AvaloniaFact(DisplayName = "Design: die neun bekannten Studios zeigen auf der Studios-Seite den echten Status aus requirements.yaml")]
     public void Tiles_have_real_badges()
     {
         var (w, _, _) = Ui.Open();
-        var tiles = w.GetLogicalDescendants().OfType<Button>().Where(b => b.Name?.StartsWith("tile-") == true).ToList();
-        Assert.Equal(9, tiles.Count);
-        foreach (var t in tiles)
+        w.Show("studios");
+        string[] ids = ["STUDIO-ONLINE-BUSINESS-01", "STUDIO-LETTER-01", "CORE-05", "CORE-06", "SYS-10", "CORE-02", "CORE-08", "CORE-07", "CORE-11"];
+        var req = Path.Combine(AppContext.BaseDirectory, "requirements.yaml");
+        var reg = new StudioRegistry().Load(req, new Probe("browser"));
+        foreach (var id in ids)
         {
-            var name = Avalonia.Automation.AutomationProperties.GetName(t);
-            var id = t.Name!["tile-".Length..];
-            var req = Path.Combine(AppContext.BaseDirectory, "requirements.yaml");
-            var st = new StudioRegistry().Load(req, new Probe("browser")).Single(x => x.Id == id);
-            Assert.Contains(StudioRegistry.FriendlyLabel(st.Capability) ?? "", name);
+            var card = w.GetLogicalDescendants().OfType<Button>().Single(b => b.Name == "studio-card-" + id);
+            var texts = string.Join(" ", card.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text));
+            var st = reg.Single(x => x.Id == id);
+            var label = StudioRegistry.FriendlyLabel(st.Capability);
+            if (label is not null) Assert.Contains(label, texts);
             if (st.Capability == Capability.Ready) Assert.True(StatusRules.Done(st.ImplementationStatus, st.TestStatus));
         }
         w.Close();
@@ -180,6 +182,7 @@ public class DesignHonesty
     public void Ki_not_connected()
     {
         var (w, _, _) = Ui.Open();
+        w.Show("ki");
         Assert.Equal("Nicht verbunden", w.Find<TextBlock>("ki-status").Text);
         Assert.False(w.Find<TextBox>("ki-input").IsEnabled);
         w.Close();
