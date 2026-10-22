@@ -468,6 +468,49 @@ public class PromptActionTests
         Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase));
     }
 
+    const string MailText = "An: a@b.de\nBetreff: Hallo\nText: Bitte um Rückruf.";
+
+    [Fact(DisplayName = "E-Mail-Entwurf wird geschrieben und wieder gelesen")]
+    public void Mail_entwurf_wird_gelesen()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var plan = wf.Start(fx.Req("SYS-09", "Freigabe: erteilt\n" + MailText), fx.Ctx());
+        var done = wf.Los(fx.Project, plan.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        Assert.Null(done.Receipt);
+        Assert.Contains("Bitte um Rückruf.", done.Preview);
+        var file = fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath);
+        var parsed = MailCenter.ParseEml(File.ReadAllText(file));
+        Assert.Equal("a@b.de", parsed.To);
+        Assert.Equal("Hallo", parsed.Subject);
+        var next = wf.Los(fx.Project, wf.Revise(fx.Project, plan.RunId, MailText.Replace("Hallo", "Zweite Fassung"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal("Zweite Fassung", MailCenter.ParseEml(File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, next.Artifacts.Single(a => a.Version == 2).RelativePath))).Subject);
+        Assert.Equal("Hallo", parsed.Subject);
+    }
+
+    [Fact(DisplayName = "Senden ja verschickt keine Nachricht")]
+    public void Mail_senden_schickt_nichts()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var plan = wf.Start(fx.Req("SYS-09", "Senden: ja\nFreigabe: erteilt\n" + MailText), fx.Ctx());
+        var done = wf.Los(fx.Project, plan.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Unsupported, done.Status);
+        Assert.Null(done.Receipt);
+        Assert.Contains(done.Warnings, w => w.Contains("nichts gesendet", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains("X-Unsent: 1", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath)));
+    }
+
+    [Fact(DisplayName = "Ungültige Adresse wird keine E-Mail")]
+    public void Mail_adresse_ungueltig()
+    {
+        using var fx = new Fixture(new MailDraftAdapter());
+        var result = fx.Wf.Start(fx.Req("SYS-09", "An: keine-adresse\nBetreff: Hallo\nText: Text"), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, result.Status);
+        Assert.Empty(result.Artifacts);
+    }
+
     [Fact(DisplayName = "Katalogmatrix nennt jede Studio-ID genau einmal")]
     public void Matrix_deckt_den_Katalog()
     {
@@ -476,8 +519,10 @@ public class PromptActionTests
         var registered = PromptActions.CreateDefault().Select(a => a.StudioId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         Assert.Contains(registered, id => id == "STUDIO-LETTER-01");
         Assert.Contains(registered, id => id == "SYS-10");
+        Assert.Contains(registered, id => id == "SYS-09");
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-LETTER-01", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-10", PromptActions.CreateDefault()));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-09", PromptActions.CreateDefault()));
         Assert.All(ids.Where(id => !registered.Contains(id)), id => Assert.Equal(CapabilityLevel.NotImplemented, CapabilityCatalog.Level(id, PromptActions.CreateDefault())));
         var markdown = CapabilityCatalog.Markdown(PromptActions.CreateDefault());
         Assert.Equal(Normalize(markdown), Normalize(File.ReadAllText(Repo("docs/improvement-42/studio-capability-matrix.md"))));

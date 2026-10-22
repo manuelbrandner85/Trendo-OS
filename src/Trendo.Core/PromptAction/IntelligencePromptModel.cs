@@ -25,5 +25,6 @@ public sealed class IntelligencePromptModel(IntelligenceCore core, Func<bool> lo
 public static class PromptActions
 {
     /// <summary>Registrierte Fachadapter. Alles andere bleibt „nicht eingebaut“.</summary>
-    public static IReadOnlyList<IStudioActionAdapter> CreateDefault() => [new LetterPromptAdapter(), new SheetPromptAdapter()];
+    public static IReadOnlyList<IStudioActionAdapter> CreateDefault() =>
+        [new LetterPromptAdapter(), new SheetPromptAdapter(), new MailSendAdapter(), new MailDraftAdapter()];
 }
