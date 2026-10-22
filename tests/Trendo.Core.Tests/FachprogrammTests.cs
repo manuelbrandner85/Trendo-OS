@@ -29,7 +29,7 @@ public class Paket44_Fachprogramme
         public bool Delete(string key) => _d.Remove(key);
     }
 
-    static FachprogrammAdapter Neu(Fixture f, Runner runner, Secrets secrets, bool offline = false, IReadOnlyList<Fachprogramm>? katalog = null) =>
+    static FachprogrammAdapter Neu(Fixture f, IProcessRunner runner, Secrets secrets, bool offline = false, IReadOnlyList<Fachprogramm>? katalog = null) =>
         new(new DependencyManager(f.Core.Audit, runner, p => p, _ => false)
         {
             ConsentFile = Path.Combine(f.Core.DataRoot, "c.txt"),
@@ -129,6 +129,115 @@ public class Paket44_Fachprogramme
         Assert.Contains("offen", unreal.Hinweis);
         Assert.DoesNotContain(runner.Calls, c => c.File.Contains("unreal"));
         Assert.False(a.Anbinden("unreal").Angebunden);
+    }
+
+    sealed class Haenger : IProcessRunner
+    {
+        public List<(string File, string Args)> Calls { get; } = [];
+        public async Task<(int Exit, string Output)> RunAsync(string file, string args, Action<string>? line = null, CancellationToken ct = default)
+        {
+            Calls.Add((file, args));
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            return (0, "");
+        }
+    }
+
+    [Fact(DisplayName = "Paket 44: LibreOffice und VS Code starten nach --version und Freigabe, sonst nicht")]
+    public async Task Versionsabfrage_startet_danach()
+    {
+        using var f = new Fixture();
+        var runner = new Runner { Output = "LibreOffice 24.8.2\n" };
+        var a = Neu(f, runner, new Secrets());
+        var fehlt = await a.ProbeAsync("libreoffice");
+        Assert.Equal(FachprogrammStand.NichtGefunden, fehlt.Stand);
+        Assert.Contains("nichts installiert", fehlt.Hinweis);
+        Assert.Empty(runner.Calls);
+        Assert.Empty(f.Launcher.Opened);
+
+        a.PfadSuche = p => p.Id is "libreoffice" or "vscode" ? "/opt/" + p.Id : null;
+        var ok = await a.ProbeAsync("libreoffice");
+        Assert.Equal(FachprogrammStand.Erreichbar, ok.Stand);
+        Assert.Equal("LibreOffice 24.8.2", ok.Ausgabe);
+        Assert.Equal(("/opt/libreoffice", "--version"), runner.Calls.Single());
+        Assert.Empty(f.Launcher.Opened);
+        a.Anbinden("libreoffice");
+        var auf = a.Aufrufen(Frei(f, FachprogrammAdapter.AufrufAktion, "libreoffice"), "libreoffice", ["brief.docx"]);
+        Assert.Contains("Geöffnet", auf.Hinweis);
+        Assert.Contains("brief.docx", f.Launcher.Opened.Single());
+
+        runner.Output = "1.90.0\n";
+        runner.Exit = 0;
+        var code = await a.ProbeAsync("vscode");
+        Assert.Equal(FachprogrammStand.Erreichbar, code.Stand);
+        Assert.Contains(runner.Calls, c => c == ("/opt/vscode", "--version"));
+        Assert.Single(f.Launcher.Opened);
+
+        runner.Exit = 2;
+        runner.Output = "nein";
+        var neu = Neu(f, runner, new Secrets());
+        neu.PfadSuche = a.PfadSuche;
+        var schlecht = await neu.ProbeAsync("vscode");
+        Assert.Equal(FachprogrammStand.NichtErreichbar, schlecht.Stand);
+        Assert.Contains("nicht geklappt", schlecht.Hinweis);
+        Assert.False(neu.Anbinden("vscode").Angebunden);
+        Assert.Single(f.Launcher.Opened);
+    }
+
+    [Fact(DisplayName = "Paket 44: läuft die Versionsabfrage zu lange, startet LibreOffice nicht")]
+    public async Task Versionsabfrage_laeuft_ab()
+    {
+        using var f = new Fixture();
+        var runner = new Haenger();
+        var a = Neu(f, runner, new Secrets());
+        a.Versionszeit = TimeSpan.FromMilliseconds(80);
+        a.PfadSuche = p => p.Id == "libreoffice" ? "/opt/soffice" : null;
+        var zeit = await a.ProbeAsync("libreoffice");
+        Assert.Equal(FachprogrammStand.NichtErreichbar, zeit.Stand);
+        Assert.Contains("zu lange gedauert", zeit.Hinweis);
+        Assert.Contains("nicht gestartet", zeit.Hinweis);
+        Assert.Equal(("/opt/soffice", "--version"), runner.Calls.Single());
+        Assert.False(a.Anbinden("libreoffice").Angebunden);
+        Assert.Empty(f.Launcher.Opened);
+    }
+
+    [Fact(DisplayName = "Paket 44: OBS liest unter Windows die Dateiversion und startet sonst mit --version")]
+    public async Task Obs_dateiversion_oder_version()
+    {
+        using var f = new Fixture();
+        var runner = new Runner { Output = "OBS Studio 30.2.3\n" };
+        var windows = Neu(f, runner, new Secrets());
+        windows.ObsWieWindows = true;
+        windows.DateiversionLesen = _ => "30.2.3.0";
+        windows.PfadSuche = p => p.Id == "obs" ? "/opt/obs" : null;
+        var datei = await windows.ProbeAsync("obs");
+        Assert.Equal(FachprogrammStand.Erreichbar, datei.Stand);
+        Assert.Equal("30.2.3.0", datei.Ausgabe);
+        Assert.Empty(runner.Calls);
+        Assert.Empty(f.Launcher.Opened);
+        windows.Anbinden("obs");
+        var auf = windows.Aufrufen(Frei(f, FachprogrammAdapter.AufrufAktion, "obs"), "obs", ["--collection", "Trendo"]);
+        Assert.Contains("Geöffnet", auf.Hinweis);
+        Assert.Contains("--collection", f.Launcher.Opened.Single());
+
+        var leer = Neu(f, runner, new Secrets());
+        leer.ObsWieWindows = true;
+        leer.DateiversionLesen = _ => "  ";
+        leer.PfadSuche = windows.PfadSuche;
+        var unlesbar = await leer.ProbeAsync("obs");
+        Assert.Equal(FachprogrammStand.NichtErreichbar, unlesbar.Stand);
+        Assert.Contains("nicht lesbar", unlesbar.Hinweis);
+        Assert.Contains("nicht gestartet", unlesbar.Hinweis);
+        Assert.Empty(runner.Calls);
+        Assert.False(leer.Anbinden("obs").Angebunden);
+
+        var linux = Neu(f, runner, new Secrets());
+        linux.ObsWieWindows = false;
+        linux.PfadSuche = windows.PfadSuche;
+        var arg = await linux.ProbeAsync("obs");
+        Assert.Equal(FachprogrammStand.Erreichbar, arg.Stand);
+        Assert.Equal("OBS Studio 30.2.3", arg.Ausgabe);
+        Assert.Equal(("/opt/obs", "--version"), runner.Calls.Single());
+        Assert.Single(f.Launcher.Opened);
     }
 
     [Fact(DisplayName = "Paket 44: Öffnen nur nach Prüfung und Freigabe, dieselbe Freigabe nur einmal")]

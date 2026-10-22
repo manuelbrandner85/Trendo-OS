@@ -15,6 +15,15 @@ public partial class MainWindow
     /// <summary>Für Tests: OBS-Szenenordner.</summary>
     public string? ObsDirOverride { get; set; }
 
+    /// <summary>Für Tests: wie lange die Versionsabfrage höchstens wartet. Leer bleibt bei acht Sekunden.</summary>
+    public TimeSpan? VersionspruefungDauer { get; set; }
+
+    /// <summary>Für Tests: OBS wie unter Windows prüfen (Dateiversion, kein Prozess). Leer folgt dem echten System.</summary>
+    public bool? ObsPruefungWieWindows { get; set; }
+
+    /// <summary>Für Tests: Dateiversion ohne echten Prozess. Leer liest die Dateiinformation.</summary>
+    public Func<string, string?>? DateiversionLesen { get; set; }
+
     public string? AppPath(string appId)
     {
         if (AppPathOverride is { } o) return o(appId);
@@ -184,11 +193,13 @@ public partial class MainWindow
 
     private FachprogrammAdapter FachAdapter()
     {
-        if (_fach is not null) return _fach;
-        _fach = new FachprogrammAdapter(_deps, _core.Approvals, _core.Secrets, _core.Audit, new FachLauncher(_core.Integrations, _core.Audit), _core.Offline)
+        _fach ??= new FachprogrammAdapter(_deps, _core.Approvals, _core.Secrets, _core.Audit, new FachLauncher(_core.Integrations, _core.Audit), _core.Offline)
         {
             PfadSuche = p => ExternalApps.All.Any(a => a.Id == p.Id) ? AppPath(p.Id) : null
         };
+        if (VersionspruefungDauer is { } dauer) _fach.Versionszeit = dauer;
+        if (ObsPruefungWieWindows is { } wieWindows) _fach.ObsWieWindows = wieWindows;
+        if (DateiversionLesen is not null) _fach.DateiversionLesen = DateiversionLesen;
         return _fach;
     }
 

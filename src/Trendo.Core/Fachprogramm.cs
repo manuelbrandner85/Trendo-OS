@@ -75,6 +75,15 @@ public sealed class FachprogrammAdapter
     /// <summary>Optionaler Pfad aus der Oberfläche. Null heißt: im Katalog weiter suchen. Ein gesetzter Pfad wird nicht noch einmal auf die Festplatte geprüft.</summary>
     public Func<Fachprogramm, string?>? PfadSuche { get; set; }
 
+    /// <summary>Wie lange LibreOffice, OBS und VS Code auf die Versionsabfrage warten. Danach wird abgebrochen, ohne das Programm zu öffnen.</summary>
+    public TimeSpan Versionszeit { get; set; } = TimeSpan.FromSeconds(8);
+
+    /// <summary>Unter Windows liest OBS die Dateiversion und startet keinen Prozess. Sonst gilt obs --version.</summary>
+    public bool ObsWieWindows { get; set; } = OperatingSystem.IsWindows();
+
+    /// <summary>Liest die Dateiversion, ohne ein Programm zu starten. Tests setzen hier einen Ersatz. Sonst gilt die Dateiinformation.</summary>
+    public Func<string, string?>? DateiversionLesen { get; set; }
+
     public FachprogrammAdapter(DependencyManager deps, ApprovalGate gate, ISecretStore secrets, AuditLog audit, IProcessLauncher launcher, bool offline = false, IReadOnlyList<Fachprogramm>? katalog = null)
     {
         _deps = deps;
@@ -98,7 +107,7 @@ public sealed class FachprogrammAdapter
         return Neu(p, FachprogrammStand.GefundenNichtGeprueft, "Die Datei liegt da. Ob sie funktioniert, ist noch nicht geprüft.", pfad, null, false);
     }
 
-    /// <summary>Kurzer Start mit dem Prüfargument aus dem Katalog. Der Prozess wird nicht behalten. Ohne sicheres Prüfargument wird nichts gestartet.</summary>
+    /// <summary>Kurze Prüfung. LibreOffice, OBS und VS Code fragen die Version ab, ohne ein Fenster zu behalten. Ohne sicheres Prüfargument wird nichts gestartet.</summary>
     public async Task<FachprogrammBericht> ProbeAsync(string id, CancellationToken ct = default)
     {
         var p = Programm(id);
@@ -116,7 +125,10 @@ public sealed class FachprogrammAdapter
             Merken(weg);
             return weg;
         }
-        var args = PruefArgs(p.Id);
+        if (p.Id == "obs" && ObsWieWindows)
+            return DateiVersion(p, pfad);
+        var versionsabfrage = p.Id is "libreoffice" or "vscode" or "obs";
+        var args = versionsabfrage ? "--version" : PruefArgs(p.Id);
         if (args is null)
         {
             var offen = Neu(p, FachprogrammStand.GefundenNichtGeprueft, "Die Datei liegt da. Eine stille Prüfung würde ein Fenster öffnen oder hängen. Ob es funktioniert, ist offen.", pfad, null, false);
@@ -124,10 +136,13 @@ public sealed class FachprogrammAdapter
             _audit.Append("fachprogramm", "fachprogramm.probe", $"{p.Id} GefundenNichtGeprueft");
             return offen;
         }
+        var zeitText = versionsabfrage
+            ? "Die Versionsabfrage hat zu lange gedauert. Das Programm wurde nicht gestartet."
+            : "Zeitüberschreitung. Nicht bereit.";
         try
         {
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            cts.CancelAfter(TimeSpan.FromSeconds(25));
+            cts.CancelAfter(versionsabfrage ? Versionszeit : TimeSpan.FromSeconds(25));
             var (exit, output) = await _deps.Runner.RunAsync(pfad, args, null, cts.Token);
             var zeile = output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault();
             if (!string.IsNullOrEmpty(zeile) && zeile.Length > 80) zeile = zeile[..80];
@@ -152,7 +167,7 @@ public sealed class FachprogrammAdapter
         }
         catch (OperationCanceledException)
         {
-            var zeit = Neu(p, FachprogrammStand.NichtErreichbar, "Zeitüberschreitung. Nicht bereit.", pfad, null, false);
+            var zeit = Neu(p, FachprogrammStand.NichtErreichbar, zeitText, pfad, null, false);
             Merken(zeit);
             _audit.Append("fachprogramm", "fachprogramm.probe", $"{p.Id} NichtErreichbar zeit");
             return zeit;
@@ -291,6 +306,26 @@ public sealed class FachprogrammAdapter
                 if (_deps.Exists(candidate)) return candidate;
             }
         return null;
+    }
+
+    private FachprogrammBericht DateiVersion(Fachprogramm p, string pfad)
+    {
+        string? version = null;
+        try { version = (DateiversionLesen ?? _deps.FileVersion)(pfad); }
+        catch { version = null; }
+        if (string.IsNullOrWhiteSpace(version))
+        {
+            var leer = Neu(p, FachprogrammStand.NichtErreichbar, "Die Datei liegt da, aber eine Version ist nicht lesbar. Das Programm wurde nicht gestartet.", pfad, null, false);
+            Merken(leer);
+            _audit.Append("fachprogramm", "fachprogramm.probe", $"{p.Id} NichtErreichbar version");
+            return leer;
+        }
+        if (version.Length > 80) version = version[..80];
+        _deps.Integrate(p.Id, pfad);
+        var ok = Neu(p, FachprogrammStand.Erreichbar, "Die Prüfung hat geklappt. Das Programm ist nicht weiter geladen.", pfad, version, false);
+        Merken(ok);
+        _audit.Append("fachprogramm", "fachprogramm.probe", $"{p.Id} Erreichbar");
+        return ok;
     }
 
     private static string? PruefArgs(string id) =>

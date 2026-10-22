@@ -15,7 +15,11 @@
 
 Auf den Seiten Programme, Dokumente, Software und Sendung gehen diese Knöpfe jetzt durch die Prüfung und die Freigabe.
 
-Ohne bestandene Prüfung wird nichts geöffnet und nichts heruntergeladen. LibreOffice, OBS und VS Code haben keinen stillen Test (ein Test im Hintergrund, ohne Fenster). Der Knopf sagt das und startet sie nicht.
+Ohne bestandene Prüfung wird nichts geöffnet und nichts heruntergeladen.
+
+LibreOffice, OBS und VS Code starten wieder, aber nur nach einer kurzen Prüfung und nach der Freigabe. Die Prüfung schaut, ob die Programmdatei da ist, und fragt die Version ab, ohne ein Fenster offenzuhalten: `soffice --version`, `code --version`, und außerhalb von Windows `obs --version`. Unter Windows liest OBS nur die Dateiversion und startet dafür keinen Prozess. Die Abfrage wartet höchstens acht Sekunden. Antwortet sie mit Code 0, gilt die Prüfung als bestanden, und der alte Knopf öffnet das Programm. Fehlt die Datei, ist keine Version lesbar oder läuft die Zeit ab, erscheint ein deutscher Satz. Es wird dann nichts geöffnet.
+
+Die übrige Werkzeugliste bleibt wie bisher. Dort startet LibreOffice nicht von selbst, weil `--version` unter Windows ein Fenster öffnen und hängen kann. Nur der Knopf, den jemand drückt, stellt diese kurze Frage.
 
 3D und Spiele sind nicht umgebaut. Dort bleibt der alte Weg, bis #251 und #253 gemergt sind.
 
@@ -61,7 +65,7 @@ Abweichung bei Punkt 8: die Freigabe nutzt das vorhandene Freigabetor (`Approval
 
 ## Geänderte Dateien
 
-- `src/Trendo.Core/Fachprogramm.cs` (erster Schritt, unverändert in diesem Folgecommit)
+- `src/Trendo.Core/Fachprogramm.cs` (kurze Versionsabfrage für LibreOffice, OBS und VS Code)
 - `src/Trendo.Core/ProgramInstaller.cs`
 - `src/Trendo.App/MainWindow.Programs.cs`
 - `src/Trendo.App/MainWindow.W1Office.cs` (Hinweistext auf der Dokumentenseite)
@@ -74,18 +78,18 @@ Abweichung bei Punkt 8: die Freigabe nutzt das vorhandene Freigabetor (`Approval
 
 ## Testergebnis
 
-`dotnet test Trendo.sln -c Release` am 22.10.2026, mit Quellensperre (nur https-Herstellerseite oder Paketkennung):
+Gezielte Tests am 22.10.2026, bevor die ganze Suite noch einmal läuft:
 
-- Api: 15 bestanden, 0 Fehler
-- Core: 538 bestanden, 10 übersprungen (`WinRealTests`), 0 Fehler
-- App: 232 bestanden, 0 Fehler
-- Exit-Code 0
+- Core, Paket 44: 10 bestanden, 0 Fehler (darunter Versionsabfrage, Zeitablauf, Dateiversion von OBS)
+- App, Knöpfe der externen Programme: 12 bestanden, 0 Fehler
+- App, Paket 44 inkl. Installieren-Knopf: 7 bestanden, 0 Fehler
 
-Davor, ohne diese Sperre: Api 15, Core 538 plus 10 übersprungen, App 231, ebenfalls 0 Fehler. Der Kopf von Chrome für den PDF-Test blieb hängen (bekanntes Verhalten dieses Images, die App ist dafür nicht geändert). Der Prozess wurde einzeln beendet, danach lief die Suite zu Ende.
+Die Zahlen der ganzen Suite stehen nach dem erneuten `dotnet test Trendo.sln -c Release` in der nächsten Ergänzung dieses Berichts. Der Stand davor, mit Quellensperre: Api 15, Core 538 plus 10 übersprungen, App 232, 0 Fehler.
 
 ## Nicht geprüft
 
-- Kein echtes Blender, Unreal, LibreOffice, Krita, Inkscape, Kdenlive, Audacity, OBS, COLMAP, Meshroom oder VS Code. Kein winget, kein echter Download.
+- Kein echtes LibreOffice, OBS oder VS Code. `soffice --version`, `obs --version` und `code --version` liefen nur gegen einen Fake. Die Dateiversion von OBS unter Windows ist ein Ersatz im Test, keine echte Programmdatei.
+- Kein echtes Blender, Unreal, Krita, Inkscape, Kdenlive, Audacity, COLMAP oder Meshroom. Kein winget, kein echter Download.
 - Kein Windows-PC. QA-017, QA-019 und die Codesignatur sind nicht bestanden. Punkt 10 der Abnahme ist nicht abgehakt.
 - 3D- und Spiele-Dateien sind nicht geändert. Ein Spiele-Test prüft, dass Unreal dort noch den alten Weg geht.
 - #252 KI-Laden ist nicht angefasst. Die Punkte 23, 25, 34, 86 und Language Studio 2.0 bleiben aus. Punkt 35 ist nicht aktiviert.

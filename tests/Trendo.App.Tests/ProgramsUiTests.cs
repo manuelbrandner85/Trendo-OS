@@ -2,6 +2,7 @@ using Avalonia; using Avalonia.Input; using Avalonia.VisualTree;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.LogicalTree;
+using Avalonia.Threading;
 using Trendo.App;
 using Trendo.Core;
 using Xunit;
@@ -13,10 +14,12 @@ public class T0203_Programme_Ui
 {
     static Button B(Window w, string name) { var b = V<Button>(w, name); b.BringIntoView(); Settle(); return b; }
 
-    [AvaloniaFact(DisplayName = "T-0203: „In LibreOffice öffnen“ startet nichts, solange die stille Prüfung nicht besteht")]
+    [AvaloniaFact(DisplayName = "T-0203: „In LibreOffice öffnen“ startet die Datei, wenn --version schnell antwortet")]
     public void LibreOfficeGetsFile()
     {
         var (w, l, _) = Ui.Open();
+        var runner = new ExitRunner { Output = "LibreOffice 24.8" };
+        w.Runner = runner;
         w.AppPathOverride = id => "/fake/" + id;
         w.Show("office"); Settle();
         RealClick(w, B(w, "office-new-privat"));
@@ -24,9 +27,34 @@ public class T0203_Programme_Ui
         w.Show("office"); Settle();
         RealClick(w, B(w, "open-libreoffice-office"));
         Settle();
+        Assert.Equal(n + 1, l.Opened.Count);
+        Assert.Contains(l.Opened, o => o.Contains("/fake/libreoffice \"") && o.Contains(".docx"));
+        Assert.Contains(runner.Calls, c => c.Contains("/fake/libreoffice") && c.Contains("--version"));
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Geöffnet"));
+    }
+
+    [AvaloniaFact(DisplayName = "T-0203: LibreOffice bleibt zu, wenn die Versionsabfrage zu lange dauert")]
+    public async Task LibreOfficeZeitLaeuftAb()
+    {
+        var (w, l, _) = Ui.Open();
+        var runner = new WartenderRunner();
+        w.Runner = runner;
+        w.VersionspruefungDauer = TimeSpan.FromMilliseconds(80);
+        w.AppPathOverride = id => "/fake/" + id;
+        w.Show("office"); Settle();
+        RealClick(w, B(w, "office-new-privat"));
+        var n = l.Opened.Count;
+        w.Show("office"); Settle();
+        RealClick(w, B(w, "open-libreoffice-office"));
+        for (var i = 0; i < 40 && !w.GetLogicalTexts().Any(t => t.Contains("zu lange gedauert")); i++)
+        {
+            await Task.Delay(40);
+            Dispatcher.UIThread.RunJobs();
+        }
         Assert.Equal(n, l.Opened.Count);
         Assert.DoesNotContain(l.Opened, o => o.Contains("libreoffice"));
-        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("stille Prüfung") && t.Contains("Nichts geöffnet"));
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("zu lange gedauert") && t.Contains("Nichts geöffnet"));
+        Assert.Contains(runner.Calls, c => c.Contains("--version"));
     }
 
     [AvaloniaFact(DisplayName = "T-0203: „Einrichten“ fragt, „Ja“ lädt nichts, solange die Prüfung nicht besteht")]
@@ -62,23 +90,66 @@ public class T0203_Programme_Ui
         Assert.NotNull(V<Button>(w, "setup-obs-prog-extern"));
     }
 
-    [AvaloniaFact(DisplayName = "T-0203: „In OBS öffnen“ startet nichts und legt keine Szenensammlung an, solange die Prüfung nicht besteht")]
+    [AvaloniaFact(DisplayName = "T-0203: „In OBS öffnen“ startet die Sammlung, wenn --version schnell antwortet")]
     public void ObsGetsCollection()
     {
         var (w, l, root) = Ui.Open();
+        var runner = new ExitRunner { Output = "OBS Studio 30.2.3" };
+        w.Runner = runner;
+        w.ObsPruefungWieWindows = false;
         w.AppPathOverride = id => "/fake/" + id; w.ObsDirOverride = Path.Combine(root, "obs");
         w.Show("sendung"); Settle();
         RealClick(w, B(w, "bc-add-run"));
         var n = l.Opened.Count;
         RealClick(w, B(w, "open-obs-sendung"));
         Settle();
-        Assert.Equal(n, l.Opened.Count);
-        Assert.DoesNotContain(l.Opened, o => o.Contains("/fake/obs"));
-        Assert.False(Directory.Exists(w.ObsDirOverride));
-        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("stille Prüfung") && t.Contains("Nichts geöffnet"));
+        Assert.Equal(n + 1, l.Opened.Count);
+        Assert.Contains(l.Opened, o => o.Contains("/fake/obs") && o.Contains("--collection") && o.Contains("Trendo"));
+        Assert.Contains(runner.Calls, c => c.Contains("/fake/obs") && c.Contains("--version"));
+        Assert.True(Directory.Exists(w.ObsDirOverride));
+        Assert.NotEmpty(Directory.GetFiles(w.ObsDirOverride!, "*.json"));
     }
 
-    [AvaloniaFact(DisplayName = "T-0203: „Starten“ öffnet Blender erst nach bestandener Prüfung und Freigabe")]
+    [AvaloniaFact(DisplayName = "T-0203: OBS unter Windows liest die Dateiversion und öffnet ohne Prozess in der Prüfung")]
+    public void ObsWindowsDateiversionOeffnet()
+    {
+        var (w, l, root) = Ui.Open();
+        var runner = new ExitRunner { Exit = 9, Output = "darf nicht laufen" };
+        w.Runner = runner;
+        w.ObsPruefungWieWindows = true;
+        w.DateiversionLesen = _ => "30.0.0";
+        w.AppPathOverride = id => "/fake/" + id;
+        w.ObsDirOverride = Path.Combine(root, "obs");
+        w.Show("sendung"); Settle();
+        RealClick(w, B(w, "bc-add-run"));
+        RealClick(w, B(w, "open-obs-sendung"));
+        Settle();
+        Assert.Empty(runner.Calls);
+        Assert.Contains(l.Opened, o => o.Contains("/fake/obs") && o.Contains("--collection"));
+    }
+
+    [AvaloniaFact(DisplayName = "T-0203: OBS startet nicht, wenn die Dateiversion fehlt")]
+    public void ObsOhneDateiversionBleibtZu()
+    {
+        var (w, l, root) = Ui.Open();
+        var runner = new ExitRunner();
+        w.Runner = runner;
+        w.ObsPruefungWieWindows = true;
+        w.DateiversionLesen = _ => null;
+        w.AppPathOverride = id => "/fake/" + id;
+        w.ObsDirOverride = Path.Combine(root, "obs");
+        w.Show("sendung"); Settle();
+        RealClick(w, B(w, "bc-add-run"));
+        var n = l.Opened.Count;
+        RealClick(w, B(w, "open-obs-sendung"));
+        Settle();
+        Assert.Equal(n, l.Opened.Count);
+        Assert.Empty(runner.Calls);
+        Assert.False(Directory.Exists(w.ObsDirOverride));
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("nicht lesbar") && t.Contains("Nichts geöffnet"));
+    }
+
+    [AvaloniaFact(DisplayName = "T-0203: „Starten“ öffnet LibreOffice und Blender erst nach bestandener Prüfung und Freigabe")]
     public void CentralList()
     {
         var (w, l, _) = Ui.Open();
@@ -89,12 +160,30 @@ public class T0203_Programme_Ui
         foreach (var a in ExternalApps.All) Assert.NotNull(V<Button>(w, "prog-run-" + a.Id));
         RealClick(w, B(w, "prog-run-libreoffice"));
         Settle();
-        Assert.Empty(l.Opened);
+        Assert.Equal("/fake/libreoffice ", l.Opened.Single());
         RealClick(w, B(w, "prog-run-blender"));
         Settle();
-        Assert.Equal("/fake/blender ", l.Opened.Single());
-        Assert.Contains(runner.Calls, c => c.Contains("--version"));
+        Assert.Equal(["/fake/libreoffice ", "/fake/blender "], l.Opened);
+        Assert.Contains(runner.Calls, c => c.Contains("/fake/libreoffice") && c.Contains("--version"));
+        Assert.Contains(runner.Calls, c => c.Contains("/fake/blender") && c.Contains("--version"));
         Assert.Contains(w.Core.Audit.ReadAll(), e => e.Action == "fachprogramm.aufruf");
+    }
+
+    [AvaloniaFact(DisplayName = "T-0203: „In VS Code öffnen“ startet den Ordner, wenn --version schnell antwortet")]
+    public void VscodeOeffnetOrdner()
+    {
+        var (w, l, _) = Ui.Open();
+        var runner = new ExitRunner { Output = "1.90.0" };
+        w.Runner = runner;
+        w.AppPathOverride = id => "/fake/" + id;
+        var ordner = Path.Combine(w.DevFolder, "meine-seite");
+        Directory.CreateDirectory(ordner);
+        w.Show("dev"); Settle();
+        RealClick(w, B(w, "open-vscode-dev-0"));
+        Settle();
+        Assert.Contains(l.Opened, o => o.Contains("/fake/vscode \"") && o.Contains("meine-seite"));
+        Assert.Contains(runner.Calls, c => c.Contains("/fake/vscode") && c.Contains("--version"));
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Geöffnet"));
     }
 
     [AvaloniaFact(DisplayName = "T-0203: „Starten“ öffnet nicht, wenn die Prüfung scheitert")]
@@ -163,6 +252,17 @@ public class T0203_Programme_Ui
         {
             Calls.Add(file + " " + args);
             return Task.FromResult((Exit, Output));
+        }
+    }
+
+    sealed class WartenderRunner : IProcessRunner
+    {
+        public List<string> Calls { get; } = [];
+        public async Task<(int Exit, string Output)> RunAsync(string file, string args, Action<string>? line = null, CancellationToken ct = default)
+        {
+            Calls.Add(file + " " + args);
+            await Task.Delay(Timeout.InfiniteTimeSpan, ct);
+            return (0, "");
         }
     }
 }
