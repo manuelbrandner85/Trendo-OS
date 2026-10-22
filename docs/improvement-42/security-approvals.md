@@ -19,13 +19,15 @@ Die Tabelle folgt Abschnitt 7 des Auftrags. „Blockiert“ heißt: der gemeinsa
 - `Rbac`: anfordern darf, wer `RequestAction` hat. Freigeben bleibt `ApproveAction` (Owner). Ein Gast ohne dieses Recht kommt nicht in den Lauf.
 - Eine abgelaufene Freigabe setzt `ApprovalGate.Execute` auf `Expired`, bevor die Wirkung läuft.
 - Abbruch vor der Wirkung verbraucht die offene Freigabe über `Deny` und sendet nichts.
-- Ein Schlüssel, der schon `claimed`, `done` oder `blocked` ist, wird bei Retry und Resume nicht noch einmal ausgeführt.
+- Ein Schlüssel, der schon `claimed`, `done` oder `blocked` ist, wird bei Retry und Resume nicht noch einmal ausgeführt. `blocked` entsteht erst, wenn die Wirkung nach außen angefangen hat und keinen Beleg liefert. Eine Ablehnung davor (fehlende Zustimmung, fehlender Dienst) gibt den Schlüssel frei.
 - Die Forensik bleibt `ForensicsLab.MaxLife` = 120 Stunden und `WarnBefore` = 24 Stunden. Dieser Auftrag ändert `Forensics.cs` nicht.
 
 ## Registrierte Adapter
 
-`PromptActions.CreateDefault()` registriert 68 Aktionen für alle 54 Katalogstudios. Keine hat `CanPerformSideEffect`. Gesperrte Aktionen liefern aus `Produce` den Wert `Supported: false`. Es entsteht keine Datei und kein Beleg. `Gesperrte_Studios_schreiben_nichts` startet jedes blockierte Studio mit dem Text „Freigabe: erteilt“.
+`PromptActions.CreateDefault()` registriert 82 Aktionen für alle 54 Katalogstudios. `CanPerformSideEffect` ist nur bei `datei.laden`, `datei.teilen`, `programm.installieren` und `programm.starten` wahr. Diese vier laufen nur in `ApprovalGate.Execute`, nach dem Knopf „Einmal freigeben“. Installieren verlangt zusätzlich die Lizenzdatei und ein Programm aus `DependencyCatalog`. Der Auftragstext „Freigabe: erteilt“ setzt das nicht.
 
-Lokale Dateien schreiben nur Adapter mit `SideEffectClass.None`. Die Geschwister für Veröffentlichen, Klonen, Senden, Zahlen, Hochladen, Blender, Unreal, Maschinenstart und Installation gewinnen, sobald das gefährliche Feld auf `ja` steht, und schreiben dann nichts.
+`SPEC-09` und `SPEC-12` bleiben `blocked`. `Gesperrte_Studios_schreiben_nichts` startet sie mit „Freigabe: erteilt“. Es entsteht keine Datei. Kamera, Mikrofon, Roboter, Handy-Verbindung, Kopplung, Explorer, Reparatur, Theme, Desktop und Geheimniswerte bleiben ohne Wirkung. Lesen (Namen, Liste, Protokoll, Speichername) schreibt nur eine Textdatei.
 
-Testadapter, die eine Wirkung nur im Test simulieren, stehen nicht in `CreateDefault`. Versand, Zahlung, Veröffentlichung, Boot und Maschinenlauf haben keine Produktionswirkung. Verbesserung 42 ist nicht vollständig implementiert.
+Die Geschwister für Veröffentlichen, Klonen, Senden, Zahlen, Hochladen, Blender, Unreal und Maschinenstart gewinnen, sobald das gefährliche Feld auf `ja` steht, und schreiben dann nichts.
+
+Testadapter, die eine Wirkung nur im Test simulieren, stehen nicht in `CreateDefault`. Versand, Zahlung, Veröffentlichung, Boot und Maschinenlauf haben keine Produktionswirkung. Eine kostenpflichtige KI wird nicht vorausgesetzt. Verbesserung 42 ist nicht vollständig implementiert.

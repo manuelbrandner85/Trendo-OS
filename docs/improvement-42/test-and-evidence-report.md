@@ -8,10 +8,10 @@ Die erste Fassung dieses Berichts gehörte zu Phase A+B auf `bbbfd5d7656fa73ad52
 
 | Befehl | Ergebnis |
 |---|---|
-| `dotnet test Trendo.sln -c Release` | Api 15, Core 577 bestanden und 10 übersprungen, App 212, Fehler 0 |
-| `dotnet test tests/Trendo.Core.Tests -c Release --filter PromptActionTests` | Bestanden: 82, Fehler: 0 |
+| `dotnet test Trendo.sln -c Release` | Api 15, Core 598 bestanden und 10 übersprungen, App 213, Fehler 0 |
+| `dotnet test tests/Trendo.Core.Tests -c Release --filter PromptActionTests\|ConnectedPromptTests` | Bestanden: 103, Fehler: 0 |
 
-Die 10 übersprungenen Core-Tests sind die vorhandenen Windows-Prüfungen. Der Kern hat 82 Prompt-Tests, darunter Plan-vor-Los, die Fachadapter und `Uebergabe_behauptet_keine_fertigstellung`. Die App-Prüfung der Leiste umfasst Vorschau und den Profi-Schalter.
+Die 10 übersprungenen Core-Tests sind die vorhandenen Windows-Prüfungen. Der Kern hat 103 Prompt-Tests, darunter Plan-vor-Los, die Fachadapter, die angeschlossenen Dienste und `Uebergabe_behauptet_keine_fertigstellung`. Die App-Prüfung der Leiste umfasst Vorschau, den Profi-Schalter und das Baukasten-Formular.
 
 Ein früher Lauf der App-Tests mit einer hohen Leiste ist rot gewesen (Ordnerklick traf den Desktop, 3D-Vorschau 0×0 bei 1366×768). Die Leiste ist danach flach, und auf der 3D-Seite liegt sie im linken Rollbereich. Der Lauf danach ist grün. Ohne Leiste misst die Vorschau dort 55×55 px; die Prüfung verlangt mindestens 48 px.
 
@@ -21,7 +21,7 @@ Ein früher Lauf der App-Tests mit einer hohen Leiste ist rot gewesen (Ordnerkli
 |---|---|---|---|
 | 1 | Brief erzeugen, ändern, wieder öffnen, Export | passed für DOCX, PDF blocked | `Brief_wird_geschrieben_und_wieder_gelesen`. LibreOffice fehlt. |
 | 2 | Tabellenformel, deterministisch | passed für SUMME | `Tabelle_rechnet_formel`. LibreOffice rechnet nicht nach. |
-| 3 | E-Mail: ohne Freigabe null, mit Freigabe genau eine | blocked für den Versand | `Mail_senden_schickt_nichts`, `Mail_entwurf_wird_gelesen`. Kein SMTP. |
+| 3 | E-Mail: ohne Freigabe null, mit Freigabe genau eine | blocked für den Versand | `Mail_senden_schickt_nichts`, `Mail_entwurf_wird_gelesen`. Kein SMTP. Der Freigabetext ändert das nicht. |
 | 4 | Cloud ohne Einwilligung, Widerruf | passed | `Cloud_ohne_Einwilligung_bleibt_stumm`, `Einwilligung_widerrufen`. Audit `ki.external.blocked`. |
 | 5 | Unvollständig oder widersprüchlich | passed | `Rueckfrage_dann_Datei`, `Widerspruch_blockiert`. |
 | 6 | Studio ohne Adapter | passed für eine leere Liste | `Ohne_Adapter_keine_Datei`. Im Katalog ist kein Studio mehr `not_implemented`. |
@@ -30,10 +30,10 @@ Ein früher Lauf der App-Tests mit einer hohen Leiste ist rot gewesen (Ordnerkli
 | 9 | Anhang mit Prompt-Injection | passed | `Anhang_injiziert_keine_Freigabe`. |
 | 10 | Technische Rechnung mit Einheiten | passed für die registrierten Rechner | `Rechnung_rechnet_und_bucht_nicht`, `Messung_rechnet_mittelwert`. |
 | 11 | Blender / Unreal | blocked | `Modell_startet_blender_nicht`, `Spiel_startet_nichts`. |
-| 12 | 23, 25, 34, Language Studio 2.0, 35, Design 41 | passed | `Entscheidungen_bleiben` liest `docs/spec/decisions.yaml`. Datei nicht geändert. |
+| 12 | 23, 25, 34, Language Studio 2.0, 35, Design 41 | passed | `Entscheidungen_bleiben` liest `docs/spec/decisions.yaml`. Datei nicht geändert. Übersetzung, Desktop und Darstellung ändern diese Entscheidungen nicht. |
 | 13 | Forensik 120 Stunden | passed | `Forensik_120_Stunden` gegen `ForensicsLab.MaxLife` und `WarnBefore`. |
 | 14 | Wirkung ohne Freigabe | blocked | `Geld_zahlt_nichts`, `Gesperrte_Studios_schreiben_nichts`, `Freigabe_laeuft_ab`. |
-| 15 | Matrix enthält jede StudioCatalog-ID einmal | passed | `Matrix_deckt_den_Katalog`, `Katalog_und_Abdeckung_stimmen`. 54 IDs, 68 Aktionen, kein `not_implemented`, kein `ready`. |
+| 15 | Matrix enthält jede StudioCatalog-ID einmal | passed | `Matrix_deckt_den_Katalog`, `Katalog_und_Abdeckung_stimmen`. 54 IDs, 82 Aktionen, 52 `partial`, 2 `blocked`, kein `not_implemented`, kein `ready`. |
 
 ## Verbesserung 43, Punkte 1, 2, 9, 10, 11
 
@@ -44,8 +44,8 @@ Ein früher Lauf der App-Tests mit einer hohen Leiste ist rot gewesen (Ordnerkli
 | 9 Versionen und Rückgängig | passed | `Rollback_der_Laufdatei` über `Undo`. Fassung zählt nur hoch, wenn schon eine Datei da war. |
 | 10 Echte Datei am Ende | passed | `Ohne_Datei_kein_Erfolg`. `QA bestanden` ohne Datei gibt es nicht. |
 | 11 Einfach und Profi | passed in der Leiste | Knopf `auftrag-modus`. Profi zeigt Fassung und Schritte, schaltet keine Rechte frei. |
-| 3–8 Webseite | not_run | Schnittstelle `IWebsitePageAdapter`, nicht registriert. `Webseiten_Adapter_ist_nicht_registriert`. |
+| 3–8 Webseite | partial | `IWebsitePageAdapter` ist als `PageWriteAdapter` registriert. `Webseiten_Adapter_ist_begrenzt_registriert`. 3D, Scroll-Geschichte, Partikel, Videohintergrund und Pixel-Streaming bleiben aus. |
 
 ## Was die Oberfläche zeigt
 
-Headless-Bilder, nicht im Repository: `briefe-vorschau.png`, `tabelle-vorschau.png`, `mail-vorschau.png`, `rechnung-vorschau.png`, `geschaeft-vorschau.png`, `software-vorschau.png`, `modell-vorschau.png`, `spiel-vorschau.png`, `medien-vorschau.png`, `wohnung-vorschau.png`, `lernen-vorschau.png`, `baukasten-vorschau.png`. Die Leiste steht auf „QA bestanden“. Ohne Projekt wird daraus „Rückfrage“ / „Lege zuerst ein Projekt an.“ Der Startbildschirm hat das Feld nicht.
+Headless-Bilder, nicht im Repository: `briefe-vorschau.png`, `tabelle-vorschau.png`, `mail-vorschau.png`, `rechnung-vorschau.png`, `geschaeft-vorschau.png`, `software-vorschau.png`, `modell-vorschau.png`, `spiel-vorschau.png`, `medien-vorschau.png`, `wohnung-vorschau.png`, `lernen-vorschau.png`, `baukasten-vorschau.png`. Die Leiste steht auf „QA bestanden“. Beim Baukasten steht im Formular danach „Hofseite“. Ohne Projekt wird daraus „Rückfrage“ / „Lege zuerst ein Projekt an.“ Der Startbildschirm hat das Feld nicht.

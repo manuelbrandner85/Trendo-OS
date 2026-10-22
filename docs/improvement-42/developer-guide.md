@@ -13,17 +13,18 @@ Verbesserung 42 ist nicht vollständig implementiert. `ready` steht bei keiner A
 | Katalog und Matrix | `src/Trendo.Core/PromptAction/CapabilityCatalog.cs` |
 | Registrierung | `PromptActions.CreateDefault` in `IntelligencePromptModel.cs` |
 | Gesperrte Systemaktionen | `src/Trendo.Core/PromptAction/SystemPromptAdapter.cs` |
-| Webseiten-Naht | `IWebsitePageAdapter` in `WebsiteStudio.cs`, nicht registriert |
+| Angeschlossene Dienste | `src/Trendo.Core/PromptAction/ConnectedAdapters.cs`, `PromptServices.cs` |
+| Webseiten-Naht | `PageWriteAdapter` implementiert `IWebsitePageAdapter` und ist registriert |
 | Leiste | `src/Trendo.App/MainWindow.PromptAction.cs` |
-| Tests | `tests/Trendo.Core.Tests/PromptActionTests.cs` |
+| Tests | `tests/Trendo.Core.Tests/PromptActionTests.cs`, `ConnectedPromptTests.cs` |
 
 ## Adapter
 
 Eine Klasse implementiert `IStudioActionAdapter`. `TryParse` liest den Auftrag und gibt `null` zurück, wenn eine andere Aktion desselben Studios gemeint ist. Die erste Treffer-Aktion gewinnt. Die gesperrte Geschwisteraktion steht in `CreateDefault` vor der lokalen Aktion.
 
-`Missing` fragt nur fehlende Pflichtfelder. `Validate` lehnt ungültige Werte ab und rät nichts. `Produce` schreibt nur über `ProjectStore` in das aktuelle Projekt, oder es liefert `FieldKit.Blocked`. `SideEffect` liefert bei den registrierten Adaptern ebenfalls `FieldKit.Blocked`.
+`Missing` fragt nur fehlende Pflichtfelder. `Validate` lehnt ungültige Werte ab und rät nichts. `Produce` schreibt nur über `ProjectStore` in das aktuelle Projekt, oder es liefert `FieldKit.Blocked`. `SideEffect` bleibt `FieldKit.Blocked`, außer bei den vier Aktionen mit `CanPerformSideEffect`.
 
-`CanPerformSideEffect` bleibt `false`. Der Workflow ruft `ApprovalGate.Execute` nur, wenn diese Eigenschaft wahr ist. Solange sie falsch ist, endet eine Wirkung mit `Unsupported`.
+`CanPerformSideEffect` ist nur bei `datei.laden`, `datei.teilen`, `programm.installieren` und `programm.starten` wahr. Der Workflow ruft `ApprovalGate.Execute` nur dann. Sonst endet eine Wirkung mit `Unsupported`. Eine Ablehnung, bevor etwas nach außen lief, gibt den Idempotenzschlüssel frei. Ein angefangener Installations-, Freigabe- oder Programmstart ohne Beleg bleibt `blocked`. Eine Ausnahme lässt den Schlüssel auf `claimed`.
 
 ## Reife
 
@@ -34,7 +35,7 @@ Eine Klasse implementiert `IStudioActionAdapter`. `TryParse` liest den Auftrag u
 | `Ready` | Jede registrierte Aktion des Studios ist `Ready`, und der Beleg ist ein Test, der die Aktion wirklich ausführt. Aktuell keiner. |
 | `NotImplemented` | Kein Adapter. Im Katalog aktuell keiner. |
 
-`Evidence` ist `PromptActionTests.Methodenname` nur, wenn diese Methode die Aktion ausführt. Sonst leer.
+`Evidence` nennt die Testklasse und die Methode, die die Aktion ausführt (`PromptActionTests` oder `ConnectedPromptTests`). Sonst leer.
 
 ## Seiteneffekt
 
@@ -43,13 +44,13 @@ Verboten aus dem Auftragstext, auch mit `Freigabe: erteilt`:
 - `SitePage.Publish`, `OpenSource.Fetch`, `ExtensionCatalog.InstallVerified`
 - `LiveBroadcast.Go`, `WorkflowEngine` erzeugen oder laufen lassen
 - Blender, Unreal-Editor, Upload, SMTP, Zahlung, `Ledger`-Buchung
-- Theme, zweites Freigabesystem, Forensikfrist, Desktop
-- Kamera, Roboter, CNC, Download, Geräteabfrage, Programmstart, Handy, Kopplung
-- Cloud-KI und Netzrecherche
+- Theme, zweites Freigabesystem, Forensikfrist, Desktop ändern
+- Kamera öffnen, Mikrofon, Roboter, CNC, Explorer, Reparatur, Handy verbinden, Koppeln
+- Kostenpflichtige KI, Online-Konten, Language Studio 2.0
 
 Die verbotenen Schlüssel `approval`, `approved`, `consent`, `freigabe`, `sideeffect`, `password`, `apikey` entfernt der Workflow aus den Parametern. `TryParse` darf „Freigabe: erteilt“ nicht als Erlaubnis lesen.
 
-Ein lokaler Adapter setzt `Effect` auf `None`. Hat er ein anderes `Effect` und `CanPerformSideEffect` ist falsch, wird aus einer geschriebenen Datei kein `QA bestanden`: der Lauf endet bei der Wirkung mit `Unsupported`. Deshalb schreiben Dateien nur Adapter mit `Effect == None`. Die gefährliche Aktion ist ein eigener Adapter mit `FieldKit.Blocked`.
+Ein lokaler Adapter setzt `Effect` auf `None`. Hat er ein anderes `Effect` und `CanPerformSideEffect` ist falsch, wird aus einer geschriebenen Datei kein `QA bestanden`: der Lauf endet bei der Wirkung mit `Unsupported`. Die gefährliche Schwesteraktion steht davor und liefert `FieldKit.Blocked`. Die vier freigabepflichtigen Aktionen schreiben den Plan mit `Effect != None` und führen die Wirkung erst in `SideEffect` aus.
 
 ## Matrix
 
