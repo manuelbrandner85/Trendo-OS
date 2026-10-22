@@ -95,10 +95,13 @@ elif mode == "info":
         return (Blender(blender, "new", text, outp, shape, color), outp);
     }
 
-    public static (Cli.Result R, string Out) Convert(string blender, string input, string format)
+    public static (Cli.Result R, string Out) Convert(string blender, string input, string format, string? output = null)
     {
         if (!Imports.Contains(Path.GetExtension(input).ToLowerInvariant())) return (new(-1, "", "Dieses Format kann Trendo nicht öffnen."), "");
-        var outp = Free(Path.ChangeExtension(input, format));
+        if (!Formats.Any(f => f.Ext.Equals(format, StringComparison.OrdinalIgnoreCase))) return (new(-1, "", "In dieses Format kann Trendo nicht speichern."), "");
+        var outp = string.IsNullOrWhiteSpace(output) ? Free(Path.ChangeExtension(input, format)) : output;
+        var dir = Path.GetDirectoryName(outp);
+        if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
         return (Blender(blender, "convert", input, outp), outp);
     }
 

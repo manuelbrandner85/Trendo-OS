@@ -869,11 +869,19 @@ public static partial class Mesh3D
 
     public static byte[] RenderPng(Mesh mesh, string view, int w, int h)
     {
+        double minx = 1e9, miny = 1e9, minz = 1e9, maxx = -1e9, maxy = -1e9, maxz = -1e9;
+        foreach (var v in mesh.V)
+        {
+            minx = Math.Min(minx, v.X); miny = Math.Min(miny, v.Y); minz = Math.Min(minz, v.Z);
+            maxx = Math.Max(maxx, v.X); maxy = Math.Max(maxy, v.Y); maxz = Math.Max(maxz, v.Z);
+        }
+        var center = mesh.V.Count == 0 ? new Vec3(0, 0, 0) : new Vec3((minx + maxx) / 2, (miny + maxy) / 2, (minz + maxz) / 2);
+        var ext = mesh.V.Count == 0 ? 1 : Math.Max(1e-3, new Vec3(maxx - minx, maxy - miny, maxz - minz).Len);
         var proj = new (float X, float Y, float Z)[mesh.V.Count];
         float minX = float.MaxValue, minY = float.MaxValue, maxX = float.MinValue, maxY = float.MinValue;
         for (var i = 0; i < mesh.V.Count; i++)
         {
-            var s = Project(mesh.V[i], view);
+            var s = view == "angle" ? ProjectAngle(mesh.V[i] - center, ext) : Project(mesh.V[i], view);
             proj[i] = s;
             minX = Math.Min(minX, s.X); maxX = Math.Max(maxX, s.X);
             minY = Math.Min(minY, s.Y); maxY = Math.Max(maxY, s.Y);
@@ -907,18 +915,26 @@ public static partial class Mesh3D
 
     static (float X, float Y, float Z) Project(Vec3 p, string view)
     {
+        if (view == "back") return ((float)-p.X, (float)p.Z, (float)-p.Y);
+        if (view == "left") return ((float)p.Y, (float)p.Z, (float)-p.X);
         if (view == "right") return ((float)-p.Y, (float)p.Z, (float)p.X);
         if (view == "top") return ((float)p.X, (float)-p.Y, (float)p.Z);
-        if (view == "angle")
-        {
-            var yaw = 38 * Math.PI / 180; var pitch = 28 * Math.PI / 180;
-            var x = p.X * Math.Cos(yaw) - p.Y * Math.Sin(yaw);
-            var y = p.X * Math.Sin(yaw) + p.Y * Math.Cos(yaw);
-            var y2 = y * Math.Cos(pitch) - p.Z * Math.Sin(pitch);
-            var z = y * Math.Sin(pitch) + p.Z * Math.Cos(pitch);
-            return ((float)x, (float)z, (float)y2);
-        }
         return ((float)p.X, (float)p.Z, (float)p.Y);
+    }
+
+    /// <summary>Schräge Ansicht mit Fluchtpunkt. Näher liegt als größerer Tiefenwert im Puffer.</summary>
+    static (float X, float Y, float Z) ProjectAngle(Vec3 d, double ext)
+    {
+        var eye = new Vec3(0.9, -1.1, 0.65).Norm() * (ext * 2.5);
+        var forward = (eye * -1).Norm();
+        var right = Vec3.Cross(forward, new Vec3(0, 0, 1));
+        if (right.Len < 1e-8) right = new Vec3(1, 0, 0);
+        right = right.Norm();
+        var up = Vec3.Cross(right, forward).Norm();
+        var rel = d - eye;
+        var z = Vec3.Dot(rel, forward);
+        if (z < 0.05) z = 0.05;
+        return ((float)(Vec3.Dot(rel, right) / z * ext), (float)(Vec3.Dot(rel, up) / z * ext), (float)(-z));
     }
 
     static void Fill(byte[] rgb, float[] zbuf, int w, int h, (float X, float Y, float Z) a, (float X, float Y, float Z) b, (float X, float Y, float Z) c, byte r, byte g, byte bl)
