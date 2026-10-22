@@ -17,6 +17,7 @@ public partial class MainWindow
         RegisterTab(ProgTabs, "prog-pflege", "Pflegen", "SYS-11", ProgCareView, "updates", "aktualisieren", "portable", "offline-installer", "deinstallieren", "zurücksetzen", "einstellungen sichern");
         RegisterTab(ProgTabs, "prog-start", "Starten", "SYS-11", ProgStartView, "verknüpfung", "parameter", "autostart", "dateizuordnung", "öffnen mit");
         RegisterTab(ProgTabs, "prog-pruefen", "Prüfen", "SYS-11", ProgCheckView, "systemvoraussetzungen", "kompatibel", "integrationstest", "speicherplatz", "softwareliste", "csv", "wiederherstellen", "winget import", "selbsttest");
+        RegisterTab(ProgTabs, "prog-extern", "Externe Programme", "SYS-11", ProgExternView, "blender", "unreal", "vs code", "vscode", "libreoffice", "obs", "externe programme", "öffnen in");
     }
     private Control ProgPage(string title, Control body) => W45Page(title, ProgTabs, "prog", body);
     private string ProgFolder => WorkFolder("Programme");
