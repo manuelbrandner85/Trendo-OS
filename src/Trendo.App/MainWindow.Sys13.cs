@@ -47,7 +47,7 @@ public partial class MainWindow
     // P13 Modul-Register
     public static readonly Dictionary<string, string> BasePageModules = new(StringComparer.OrdinalIgnoreCase)
     {
-        ["start"] = "CORE-01", ["studios"] = "CORE-01", ["suche"] = "CORE-01", ["einrichtung"] = "CORE-01", ["projects"] = "CORE-01", ["approvals"] = "CORE-11",
+        ["start"] = "CORE-01", ["studios"] = "CORE-01", ["suche"] = "CORE-01", ["einrichtung"] = "CORE-01", ["projects"] = "CORE-01", ["approvals"] = "CORE-11", ["arbeitsplatz"] = "X-11",
         ["system"] = "SYS-13", ["systemcheck"] = "SYS-13", ["notbuilt"] = "SYS-13", ["fortschritt"] = "SYS-13", ["sicherung"] = "CORE-11", ["ressourcen"] = "SYS-07",
         ["ki"] = "CORE-02", ["keys"] = "CORE-02", ["settings"] = "SYS-12", ["apps"] = "SYS-11", ["components"] = "SYS-11", ["studio-deps"] = "SYS-11",
         ["werkzeuge"] = "SYS-02", ["medien"] = "SYS-02", ["office"] = "SYS-10", ["downloads"] = "SYS-03",
