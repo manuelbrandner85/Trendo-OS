@@ -5,8 +5,11 @@ Aufträge kommen als Datei aus `tasks/` (siehe `tasks/README.md`). Antworte und 
 
 ## Projekt
 - Trendo OS: Desktop-/Studio-Oberfläche (.NET 10, Avalonia) mit lokalem KI-Assistenten.
-- Code: `src/` (Trendo.Core, Trendo.App, Trendo.Api, Trendo.Companion), Tests `tests/`, Spezifikation `docs/spec/` (Kataloge `docs/spec/kataloge/`), Status `requirements.yaml`, Belege `reports/`, Build-Log `docs/build-log/<datum>-<modul>.md` (eine Datei pro Eintrag).
+- Code: `src/` (Trendo.Core, Trendo.App, Trendo.Api, Trendo.Companion), Tests `tests/`, Status `requirements.yaml`, Build-Log `docs/build-log/<datum>-<modul>.md` (eine Datei pro Eintrag). Spezifikation und Belege nicht vorladen, siehe unten.
 - Bauen/Testen (PowerShell): `dotnet build Trendo.sln -c Release` und `dotnet test tests/Trendo.Core.Tests -c Release` (ebenso `Trendo.App.Tests`, `Trendo.Api.Tests`). Die Testausgabe ist deutsch („Bestanden!/Fehler!“).
+
+## Spezifikation nur bei Bedarf
+Volltexte unter `docs/spec/` nicht vorladen und nicht in den Kontext kopieren. Fachvorgaben, wenn der Auftrag sie braucht, zuerst aus `docs/spec/KURZFASSUNG.md`. `MASTERPROMPT.md`, `SYSTEMBIBEL.md` und `design-41/GROK_BUILD_DESIGN_41_MASTERPROMPT.md` nur öffnen, wenn die Kurzfassung nicht reicht, und dann nur diese eine Datei. `reports/` bleibt im Git und steht in `.cursorignore`.
 
 ## Arbeitsweise (Pflicht)
 1. Nur PowerShell. Pfade immer in Anführungszeichen (der Projektordner enthält ein Leerzeichen).
