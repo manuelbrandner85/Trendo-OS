@@ -16,6 +16,8 @@ public partial class MainWindow
     public WindowManager Windows { get; } = new();
     private readonly Panel _deskHost = new() { Name = "desk-host" };
     private readonly Canvas _winCanvas = new() { Name = "window-area" };
+    /// <summary>Liegt über Seitenleiste, Arbeitsfläche und Assistent. Maximierte Fenster füllen diese Fläche.</summary>
+    private readonly WorkAreaLayer _workArea = new();
     private readonly StackPanel _taskbar = new() { Name = "taskbar-windows", Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4, 0, 0) };
     private readonly Dictionary<string, (Border Frame, ContentControl Body, TextBlock Title)> _frames = [];
     private readonly Dictionary<string, string> _windowGroups = new(StringComparer.OrdinalIgnoreCase);
@@ -48,7 +50,7 @@ public partial class MainWindow
         if (_deskHost.Children.Count == 0) _deskHost.Children.Add(SafeView("start"));
         var content = SafeView(key);
         var (win, closed) = Windows.Open(WindowGroupOf(key), key, PageTitle(key));
-        if (closed is not null && _frames.Remove(closed.Id, out var old)) _winCanvas.Children.Remove(old.Frame);
+        if (closed is not null && _frames.Remove(closed.Id, out var old)) DetachFrame(old.Frame);
         if (!_frames.TryGetValue(win.Id, out var fr)) { fr = MakeFrame(win); _frames[win.Id] = fr; _winCanvas.Children.Add(fr.Frame); }
         fr.Title.Text = win.Title; fr.Body.Content = content;
         RenderWindows();
@@ -140,7 +142,7 @@ public partial class MainWindow
     public void CloseWindow(string id)
     {
         Windows.Close(id);
-        if (_frames.Remove(id, out var f)) _winCanvas.Children.Remove(f.Frame);
+        if (_frames.Remove(id, out var f)) DetachFrame(f.Frame);
         AfterWindowChange();
     }
     public void TaskbarClick(string id) { Windows.TaskbarClick(id); AfterWindowChange(); }
@@ -156,9 +158,12 @@ public partial class MainWindow
     private void RenderWindows()
     {
         var active = Windows.Active;
-        // Aktives Fenster zuerst in der Liste (wird zuerst gefunden), Zeichenreihenfolge über ZIndex
-        var order = Windows.Stack.Reverse().Select(w => _frames[w.Id].Frame).ToList();
-        if (!_winCanvas.Children.SequenceEqual(order)) { _winCanvas.Children.Clear(); foreach (var f in order) _winCanvas.Children.Add(f); }
+        // Aktives Fenster zuerst in der Liste (wird zuerst gefunden), Zeichenreihenfolge über ZIndex.
+        // Maximierte Fenster liegen in der Arbeitsfläche über Seitenleiste und Assistent, die übrigen im Mittelbereich.
+        var order = Windows.Stack.Reverse().Where(w => !w.Maximized).Select(w => _frames[w.Id].Frame).ToList();
+        var maxOrder = Windows.Stack.Where(w => w.Maximized).Select(w => _frames[w.Id].Frame).ToList();
+        Host(_winCanvas, order);
+        Host(_workArea, maxOrder);
         var z = 0;
         foreach (var w in Windows.Stack)
         {
@@ -177,10 +182,34 @@ public partial class MainWindow
         foreach (var w in Windows.Stack)
         {
             if (!_frames.TryGetValue(w.Id, out var fr)) continue;
-            var (x, y, ww, hh) = Windows.Rect(w);
-            Canvas.SetLeft(fr.Frame, x); Canvas.SetTop(fr.Frame, y); fr.Frame.Width = ww; fr.Frame.Height = hh;
-            fr.Frame.CornerRadius = new CornerRadius(w.Maximized ? 4 : 11);
+            var host = w.Maximized ? (Panel)_workArea : _winCanvas;
+            if (!ReferenceEquals(fr.Frame.Parent, host)) { DetachFrame(fr.Frame); host.Children.Add(fr.Frame); }
+            if (w.Maximized)
+            {
+                fr.Frame.Width = double.NaN; fr.Frame.Height = double.NaN;
+                fr.Frame.HorizontalAlignment = HorizontalAlignment.Stretch; fr.Frame.VerticalAlignment = VerticalAlignment.Stretch;
+                fr.Frame.CornerRadius = new CornerRadius(4);
+            }
+            else
+            {
+                var (x, y, ww, hh) = Windows.Rect(w);
+                Canvas.SetLeft(fr.Frame, x); Canvas.SetTop(fr.Frame, y); fr.Frame.Width = ww; fr.Frame.Height = hh;
+                fr.Frame.CornerRadius = new CornerRadius(11);
+            }
         }
+        _workArea.IsHitTestVisible = Windows.Stack.Any(w => w.Maximized && !w.Minimized);
+    }
+
+    private static void DetachFrame(Control frame) { if (frame.Parent is Panel p) p.Children.Remove(frame); }
+
+    /// <summary>Hängt die Rahmen um, ohne einen Rahmen hinzuzufügen, der noch woanders hängt.</summary>
+    private static void Host(Panel panel, IEnumerable<Control> order)
+    {
+        var list = order.ToList();
+        if (panel.Children.SequenceEqual(list)) return;
+        foreach (var f in list) DetachFrame(f);
+        panel.Children.Clear();
+        foreach (var f in list) panel.Children.Add(f);
     }
 
     private void RenderTaskbar()
@@ -201,5 +230,22 @@ public partial class MainWindow
             _taskbar.Children.Add(b);
         }
         _taskbar.IsVisible = _taskbar.Children.Count > 0;
+    }
+
+    /// <summary>Misst sich mit Größe 0, damit die Fläche die Zeilen nicht aufbläht, und legt Kinder beim Anordnen auf die ganze Fläche.</summary>
+    private sealed class WorkAreaLayer : Panel
+    {
+        public WorkAreaLayer() { Name = "work-area"; Background = Brushes.Transparent; IsHitTestVisible = false; }
+        protected override Size MeasureOverride(Size available)
+        {
+            var finite = new Size(double.IsInfinity(available.Width) ? 0 : available.Width, double.IsInfinity(available.Height) ? 0 : available.Height);
+            foreach (var c in Children) c.Measure(finite);
+            return new Size();
+        }
+        protected override Size ArrangeOverride(Size final)
+        {
+            foreach (var c in Children) c.Arrange(new Rect(final));
+            return final;
+        }
     }
 }

@@ -4,6 +4,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using Trendo.App;
+using Trendo.Core.Shell;
 using Xunit;
 using static Trendo.App.Tests.StartMenu_Ui;
 namespace Trendo.App.Tests;
@@ -11,23 +12,59 @@ namespace Trendo.App.Tests;
 /// <summary>T-0201: echte Dateiauswahl und Drag &amp; Drop für alle Pfadfelder.</summary>
 public class T0201_Dateiauswahl_Ui
 {
-    [AvaloniaFact(DisplayName = "T-0201: jedes Datei-/Ordnerfeld auf jeder Seite hat „Datei wählen …“ bzw. „Ordner wählen …“")]
+    [AvaloniaFact(DisplayName = "T-0201: jedes Pfad- oder Ordnerfeld hat „Datei wählen …“ bzw. „Ordner wählen …“")]
     public void EveryPathFieldHasPicker()
     {
         var (w, _, _) = Ui.Open();
-        var seen = new HashSet<string>(); var missing = new List<string>();
-        foreach (var k in w.PageKeys.OrderBy(x => x).ToList())
+        var missing = new List<string>();
+        var fehler = new List<string>();
+        var gesehen = new HashSet<string>(StringComparer.Ordinal);
+        void Scan(string key)
         {
-            w.Show(k); Dispatcher.UIThread.RunJobs();
-            foreach (var t in w.GetLogicalDescendants().OfType<TextBox>().Where(t => t.Name is { } n && System.Text.RegularExpressions.Regex.IsMatch(n, @"-(file\d?|files|folder|path)$") && n != "bm-folder"))
+            w.Show(key); Dispatcher.UIThread.RunJobs();
+            var root = w.ActivePageRoot;
+            if (root is null) { fehler.Add(key + " ohne Seite"); return; }
+            if (root.Name == "error-page") { fehler.Add(key); return; }
+            foreach (var box in root.GetLogicalDescendants().OfType<TextBox>())
             {
-                seen.Add(t.Name!);
-                var row = t.Parent as StackPanel;
-                if (row?.Children.OfType<Button>().Any(b => b.Name == t.Name + "-pick" || b.Name == t.Name + "-pickdir") != true) missing.Add($"{k}: {t.Name}");
+                var hint = box.PlaceholderText ?? box.Watermark ?? "";
+                var kind = PathFields.Classify(box.Name, hint);
+                if (kind == PathFields.Kind.None) continue;
+                if (string.IsNullOrEmpty(box.Name)) { missing.Add($"{key}: Feld ohne Namen ({hint})"); continue; }
+                void Need(string suffix, string label)
+                {
+                    var b = root.GetLogicalDescendants().OfType<Button>().FirstOrDefault(x => x.Name == box.Name + suffix);
+                    if (b is null || !Equals(b.Content, label)) missing.Add($"{key}: {box.Name} ({hint}) ohne „{label}“");
+                    else gesehen.Add(box.Name!);
+                }
+                if (kind is PathFields.Kind.File or PathFields.Kind.FileOrFolder) Need("-pick", "Datei wählen …");
+                if (kind is PathFields.Kind.Folder or PathFields.Kind.FileOrFolder) Need("-pickdir", "Ordner wählen …");
             }
         }
-        Assert.Empty(missing);
-        Assert.True(seen.Count >= 36, $"nur {seen.Count} Felder gefunden");
+        foreach (var key in w.PageKeys.OrderBy(k => k, StringComparer.Ordinal).ToList()) Scan(key);
+        w.Show("ablaeufe"); w.Find<Button>("wf-new").Press(); Scan("ablaeufe");
+        w.Show("produktion"); w.Find<Button>("fusion-recipe-video-pack").Press(); Scan("produktion");
+        w.Show("baukasten"); w.Find<Button>("builder-add-img").Press(); Scan("baukasten");
+        w.Show("forensik");
+        w.Find<TextBox>("for-case-title").Text = "Beweis";
+        w.Find<Button>("for-case-new").Press();
+        Scan("forensik");
+        w.Show("nachbau");
+        w.Find<TextBox>("clean-name").Text = "Probe";
+        w.Find<Button>("clean-create").Press();
+        Scan("nachbau");
+        w.ShareAddressOverride = System.Net.IPAddress.Loopback;
+        Scan("teilen");
+        typeof(MainWindow).GetProperty(nameof(MainWindow.Phones))!.SetValue(w, new[] { new Trendo.Core.PhoneDevice("test", "device", "Probe") });
+        Scan("handy");
+        foreach (var name in new[] { "wissen-folder", "ext-path", "sec-folder", "for-file", "for-add-file-0", "contact-file", "share-folder", "clean-theirs", "wfe-at", "wfe-from", "wfe-to", "pdf-merge-files", "pkg-att", "pkg-main", "phone-file-0", "settings-file", "hash-file", "zip-src", "wiz-folder" })
+            if (!gesehen.Contains(name)) missing.Add("erwartet, aber nie mit Auswahl gesehen: " + name);
+        if (!gesehen.Any(n => n.StartsWith("builder-url-", StringComparison.Ordinal)))
+            missing.Add("erwartet, aber nie mit Auswahl gesehen: builder-url- (Bild im Baukasten)");
+        Assert.True(fehler.Count == 0, "Seiten mit Fehler statt Inhalt:\n" + string.Join("\n", fehler));
+        Assert.True(missing.Count == 0, "Pfadfelder ohne Auswahl:\n" + string.Join("\n", missing));
+        Assert.True(gesehen.Count >= 36, $"nur {gesehen.Count} Felder gefunden");
+        w.Close();
     }
 
     [AvaloniaFact(DisplayName = "T-0201: Mausklick auf „Datei wählen …“ füllt das Feld, die Datei steht danach unter „Zuletzt“; Eintippen geht weiter")]
@@ -72,5 +109,11 @@ public class T0201_Dateiauswahl_Ui
         w.Show("alltag-dateien"); Settle();
         Assert.True(w.DropPaths(V<TextBox>(w, "dup-folder"), [a]));
         Assert.Equal(root, V<TextBox>(w, "dup-folder").Text); // Datei auf Ordnerfeld → ihr Ordner
+        w.Show("ki-wissen"); Settle();
+        Assert.True(w.DropPaths(V<TextBox>(w, "wissen-folder"), [a]));
+        Assert.Equal(a, V<TextBox>(w, "wissen-folder").Text);
+        w.Show("doku-schreiben"); Settle();
+        Assert.True(w.DropPaths(V<TextBox>(w, "pkg-att"), [b]));
+        Assert.Equal(b, V<TextBox>(w, "pkg-att").Text);
     }
 }

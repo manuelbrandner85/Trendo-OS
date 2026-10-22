@@ -22,16 +22,21 @@ public sealed class ShellProcessLauncher : IProcessLauncher
         }
         else Process.Start(new ProcessStartInfo("xdg-open", target) { UseShellExecute = false });
     }
-    public void OpenWith(string exe, string arg)
+    public void OpenWith(string exe, string arg) => Process.Start(ForProgram(exe, [arg]));
+    public void OpenWithArgs(string exe, IReadOnlyList<string> args) => Process.Start(ForProgram(exe, args));
+
+    /// <summary>Programm mit Argumenten, ohne extra Konsolenfenster. Die eigene Oberfläche des Programms (z. B. Blender) bleibt sichtbar.</summary>
+    public static ProcessStartInfo ForProgram(string exe, IReadOnlyList<string> args)
     {
-        var psi = new ProcessStartInfo(exe) { UseShellExecute = false, WorkingDirectory = Path.GetTempPath() };
-        psi.ArgumentList.Add(arg); Process.Start(psi);
-    }
-    public void OpenWithArgs(string exe, IReadOnlyList<string> args)
-    {
-        var psi = new ProcessStartInfo(exe) { UseShellExecute = false, WorkingDirectory = Path.GetTempPath() };
+        var psi = new ProcessStartInfo(exe)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            WindowStyle = ProcessWindowStyle.Normal,
+            WorkingDirectory = Path.GetTempPath(),
+        };
         foreach (var a in args) psi.ArgumentList.Add(a);
-        Process.Start(psi);
+        return psi;
     }
 }
 

@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
@@ -47,7 +48,11 @@ public class Fenster_Ui
         RealClick(w, Vis(w, "task-settings")); Assert.True(w.Windows.Get("settings")!.Minimized); Assert.Equal("werkzeuge", w.Windows.Active!.Id);
         RealClick(w, Vis(w, "task-settings"));
         RealClick(w, Vis(w, "win-max-settings")); Assert.True(w.Windows.Get("settings")!.Maximized);
-        Settle(); Assert.Equal(V<Canvas>(w, "window-area").Bounds.Width, act.Bounds.Width, 1);
+        Settle();
+        var work = V<Panel>(w, "work-area"); var center = V<Canvas>(w, "window-area");
+        Assert.Equal(work.Bounds.Width, act.Bounds.Width, 1);
+        Assert.Equal(work.Bounds.Height, act.Bounds.Height, 1);
+        Assert.True(act.Bounds.Width > center.Bounds.Width + 80, $"maximiert {act.Bounds.Width} soll breiter sein als die Mitte {center.Bounds.Width}");
         RealClick(w, Vis(w, "win-max-settings")); Assert.False(w.Windows.Get("settings")!.Maximized);
         RealClick(w, Vis(w, "win-close-settings")); Assert.Null(w.Windows.Get("settings"));
         Assert.Null(w.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "task-settings"));
@@ -116,5 +121,24 @@ public class Fenster_Behalten_Ui
         Assert.Equal("settings", n.Windows.Active!.Id); Assert.Equal("settings", n.CurrentView);
         Assert.Equal(3, n.GetVisualDescendants().OfType<Button>().Count(b => b.Name?.StartsWith("task-") == true));
         n.Close();
+    }
+}
+
+public class Fenster_Erscheint_Ui
+{
+    [AvaloniaFact(DisplayName = "Start: das Hauptfenster ist sichtbar und kommt aus dem minimierten Zustand zurück")]
+    public void Reveal_shows_window()
+    {
+        var (w, _, _) = Ui.Open();
+        Assert.True(w.IsVisible);
+        Assert.NotEqual(WindowState.Minimized, w.WindowState);
+        w.WindowState = WindowState.Minimized;
+        w.Reveal();
+        Assert.True(w.IsVisible);
+        Assert.Equal(WindowState.Maximized, w.WindowState);
+        w.WindowState = WindowState.Normal;
+        w.Reveal();
+        Assert.Equal(WindowState.Normal, w.WindowState);
+        w.Close();
     }
 }

@@ -41,8 +41,15 @@ public partial class MainWindow
         var set = KiSourceSettings.Load(_core.DataRoot);
         var sp = new StackPanel { Spacing = 6, Children = { P("Trendo nutzt nur kostenlose KI auf diesem PC. Ist die erste Quelle aus, fragt Trendo automatisch die nächste.") } };
         var scan = new Button { Name = "src-scan", Content = "Jetzt suchen", Background = Accent };
-        scan.Click += async (_, _) => { scan.IsEnabled = false; await ScanSourcesAsync(); Show("ki-quellen"); };
-        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { scan, new TextBlock { Name = "src-msg", Text = _srcMsg, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap } } });
+        var srcMsg = new TextBlock { Name = "src-msg", Text = _srcMsg, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap };
+        scan.Click += async (_, _) =>
+        {
+            scan.IsEnabled = false; _srcMsg = "Suche läuft …"; srcMsg.Text = _srcMsg;
+            try { await ScanSourcesAsync(); }
+            catch (Exception ex) { _srcMsg = "Suche hat nicht geklappt: " + ex.Message; }
+            Show("ki-quellen");
+        };
+        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { scan, srcMsg } });
         sp.Children.Add(H("Reihenfolge", 14));
         var n = 0;
         foreach (var id in set.Order)

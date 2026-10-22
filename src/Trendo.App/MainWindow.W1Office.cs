@@ -68,7 +68,12 @@ public partial class MainWindow
         foreach (var c in Letters.Categories)
         {
             var b = new Button { Name = "letter-cat-" + c.Id, Content = c.Label, Margin = new Thickness(0, 0, 6, 6), Background = d.Category == c.Id ? Accent : null };
-            b.Click += (_, _) => { Letters.ApplyTemplate(d, c.Id); Show("brief"); };
+            b.Click += (_, _) =>
+            {
+                Letters.ApplyTemplate(d, c.Id);
+                _letterMsg = c.Id == "frei" ? "Freier Brief: ohne Vorlage. Betreff und Text schreibst du selbst." : $"Vorlage „{c.Label}“ eingesetzt. Passe die eckigen Klammern an.";
+                Show("brief");
+            };
             cats.Children.Add(b);
         }
         sp.Children.Add(new StackPanel { Spacing = 4, Children = { H("1. Welche Art Brief?", 14), cats } });
@@ -143,7 +148,7 @@ public partial class MainWindow
             suggestion.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10), Child = new StackPanel { Spacing = 6, Children = { P("Vorschlag der KI (bitte prüfen):", null, 11), P(ans, Text, 12), take } } });
             improve.IsEnabled = true;
         };
-        var reset = new Button { Name = "letter-new", Content = "Neuer Brief" }; reset.Click += (_, _) => { _letter = NewLetter(); _letterMsg = ""; Show("brief"); };
+        var reset = new Button { Name = "letter-new", Content = "Neuer Brief" }; reset.Click += (_, _) => { _letter = NewLetter(); _letterMsg = "Neuer Brief. Betreff und Text schreibst du selbst."; Show("brief"); };
         sp.Children.Add(H("4. Prüfen und speichern", 14));
         sp.Children.Add(new WrapPanel { Children = { check, Sp(save), Sp(pdf), Sp(improve), Sp(reset) } });
         sp.Children.Add(msg); sp.Children.Add(issues); sp.Children.Add(suggestion);
