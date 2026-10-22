@@ -14,6 +14,7 @@ Aufträge kommen als Datei aus `tasks/` (siehe `tasks/README.md`). Antworte und 
 3. Vor dem Push alle drei Testprojekte laufen lassen; nur pushen, wenn alles grün ist. Wenn etwas rot bleibt: nicht pushen, Ursache berichten.
 4. Kleine, gezielte Änderungen; nichts umbauen, was der Auftrag nicht verlangt. Andere Builder arbeiten parallel – nur die im Auftrag genannten Dateien/Bereiche anfassen.
 5. Nach Abschluss einen Bericht nach `tasks/<task-id>.bericht.md` schreiben (siehe unten) und mitcommitten.
+6. Wird ein Befehl abgelehnt oder bräuchte er eine Freigabe, nicht warten und nicht wiederholen. Stattdessen die erlaubte Form nehmen (z. B. einfach `git commit -m "…"`; Name/E-Mail sind im Repo gesetzt, kein `git -c`). Sonst sofort aufhören und im Bericht unter „Offene Punkte“ den abgelehnten Befehl nennen.
 
 ## Verboten
 - Admin-Rechte, systemweite Installationen, `winget`/`msiexec`/`choco`, Registry-Änderungen, Dienste, Treiber, Firmware, Datenträger, Windows-Einstellungen.
