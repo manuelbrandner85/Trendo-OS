@@ -53,4 +53,62 @@ Die App übernimmt Aufbau, Glas, Abstände, Farben, Schrift und Symbole. Texte, 
 
 ## Bewusst nicht in dieser Phase
 
-Studio-Karten (03), KI-Seite (05), Einstellungen (07), Systemmetriken als eigene Tafel (08), Dateimanager (10), Themes-Tafel (09). Die älteren JPG dazu stammen vom Stand main 0c0525b und sind nicht neu fotografiert.
+Die folgenden Punkte galten bis zur Freigabe. Der Besitzer hat JA gesagt. Die Übertragung steht im nächsten Abschnitt. Die älteren JPG `03`, `05`, `07` und `08` direkt in diesem Ordner stammen vom Stand main `0c0525b` und sind nicht die neuen Aufnahmen.
+
+## UI41-7 – Übertragung auf die übrigen Studios
+
+Stand: 22.10.2026, nach dem JA. Neue Bilder liegen in `gruppen/`. Links ist die Referenz, rechts die App. Rohbilder: `gruppen/ist/`. Je Seite 1920×1080 und 1366×768. Seiten ohne eigene Referenz sind nur IST.
+
+Die Fachseiten sind nicht neu geschrieben. Dieselbe Glashülle (Titel mit Katalog-Symbol und Satz, Glas-Reiter, Glas-Knöpfe, eigenes Fenster, Taskleiste, Startmenü) liegt über den bestehenden Arbeitsflächen. Jeder Knopf macht dasselbe wie vorher.
+
+### 03 Alle Studios
+
+- Große Glaskarten, Bereichs-Chips aus `StudioCatalog` (nicht Kreativität/Produktivität aus dem Bild), Suche „Studio suchen“.
+- Namen und Sätze kommen aus dem Katalog. Kennungen stehen nur im Tooltip.
+- Klick öffnet das Studio. „Alle“ zeigt wieder jede Karte (54).
+- Keine Fotos auf den Karten. Das Symbol ist das vorhandene Studio-Symbol, keine Bildkarte aus der Referenz.
+
+### 05 KI
+
+- Drei Spalten: Bereiche, Gespräch, Modell und Status. Eingabe unten, fest am Rand.
+- Status in dieser Aufnahme: „Nicht verbunden“. Kein „GPT-4o“, keine Bild-generieren-Karten.
+- Die Modelle sind die echten lokalen: Qwen2.5 0.5B und Qwen2.5 3B.
+
+### 07 Einstellungen und 09 Hintergründe
+
+- Linke Leiste schaltet Aussehen, Farbe, Hintergrund, Bedienung, Startbildschirm, Weiteres. Der gewählte Abschnitt ist der einzige sichtbare.
+- Themen bleiben Dunkel Premium, Hell, Hoher Kontrast. Keine Namen Obsidian, Aurora, Sunset.
+- Hintergründe: Bergsee, Polarlicht, Wellen, Morgen. Das ist `gruppen/settings-hintergrund-*.jpg` gegen Referenz 09.
+- „Dunkel Premium“ liegt beim ersten Öffnen im sichtbaren Bereich.
+
+### 08 Leistung
+
+- Drei Karten: Prozessor, Arbeitsspeicher, Grafik. Werte sind die Messung dieser Box. Grafik ist „n. v.“, weil kein nvidia-smi da ist.
+- Darunter die echten Prozesse. Trendo beendet sie nicht. Keine zweite `metric-*`-Anzeige; die Schreibtisch-Karten behalten diese Namen.
+
+### 10 Dateien
+
+- Die Seite ist „Kleine Helfer & Musik“, Reiter Dateien: umbenennen, Doppelte, Speicherplatz, ZIP, Fotos, Papierkorb. Jeder Knopf tut das, was er schon tat.
+- Das ist kein nachgebauter Explorer mit erfundenen Ordnern. Die Referenz 10 zeigt einen Dateimanager mit Beispieldateien. Den gibt es hier nicht.
+
+### Übrige Bereiche (nur IST, keine eigene Referenz)
+
+- Arbeiten & Büro: `office` (Texte & Tabellen).
+- Business & Geld: `business` (Online verkaufen).
+- Kreativ & Medien: `kreativ-medien`. 3D und Spiele extra, weil die Arbeitsfläche anders ist: `3d`, `spiele`.
+- Technik & Fachgebiete: `architektur` (Wohnung planen). Die Fach-Reiter tragen die Katalog-Namen und umbrechen bei 1366×768.
+- Wissen & Lernen: `lernen`.
+- KI & Automatik, die Frageseite: `ki-fragen`.
+- Entwickeln: `dev` (Webseite bauen).
+
+Solange ein Fenster offen ist, blendet der Schreibtisch die Widgets aus, damit Uhr und Messwerte nicht durch das Glas scheinen. Zurück auf den Startbildschirm sind sie wieder da.
+
+## Offen nach der Übertragung
+
+- DPI 125 % und 150 %, der Windows-PC, QA-017 am Gerät, QA-019 und die Codesignatur sind nicht geprüft. `WinRealTests` (10) sind auf Linux übersprungen.
+- `SYS-03-P14` (Seite als PDF, A4) schlägt auf diesem Image fehl, sobald `google-chrome` im PATH liegt. Die App ist dafür unverändert.
+- Keine Fotokarten, keine Themennamen aus den Bildern (Obsidian, Aurora, Sunset), kein „GPT-4o“. Die Tapete bleibt `bergsee-nacht`.
+- Der Schriftzug „Trendo OS“ kann durch das halbtransparente Glas noch schwach durchscheinen. Kurze Seiten lassen darunter leeres Glas, weil der Inhalt in einem Rollbereich liegt.
+- Bei 1366×768 umbrechen die vielen Fach- und Kreativ-Reiter. Sie bleiben klickbar.
+- „Briefe schreiben“ aus dem Startmenü fragt zuerst nach der Texterkennung, wenn sie fehlt. „Später“ öffnet den Brief. Die Suche nach „Brief“ öffnet die Seite direkt.
+- Wetter steht nur in „Zeit & Kalender“, erst nach Ort und Klick. SPEC-07 ist nicht gebaut. Das Logo bleibt Entwurf A.
