@@ -161,10 +161,19 @@ public class SPEC09_Ui
 
 public class SPEC10_Ui
 {
-    static void Messen(MainWindow w, double platte, double ram)
+    /// <summary>Speist Festplatte (%) und Arbeitsspeicher (MB) ein und verlangt genau diese Ampel, im Modell und in der Zeile.</summary>
+    static void Erwarte(MainWindow w, double platte, double ram, TwinLevel platteAmpel, TwinLevel ramAmpel)
     {
         w.PcSampleSource = () => new MainWindow.PcSample(platte, ram);
         w.Find<Button>("twin-pc").Press();
+        var p = w.Twin.States().Single(s => s.Sensor == "Festplatte belegt");
+        var r = w.Twin.States().Single(s => s.Sensor == "Trendo-Arbeitsspeicher");
+        Assert.Equal(platte, p.Last!.Value, 4);
+        Assert.Equal(ram, r.Last!.Value, 4);
+        Assert.Equal(platteAmpel, p.Level);
+        Assert.Equal(ramAmpel, r.Level);
+        Assert.Contains(platteAmpel.ToString(), w.Find<TextBlock>("twin-Dieser_PC-Festplatte_belegt").Text);
+        Assert.Contains(ramAmpel.ToString(), w.Find<TextBlock>("twin-Dieser_PC-Trendo-Arbeitsspeicher").Text);
     }
 
     [AvaloniaFact(DisplayName = "SPEC-10 UI: diesen PC live messen, Sensor anlegen, CSV einlesen")]
@@ -172,16 +181,12 @@ public class SPEC10_Ui
     {
         var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
         w.Show(MainWindow.StudioPages["SPEC-10"]);
-        // Grenzen im Produkt: Platte Warnung ab 85 / Alarm ab 95, Arbeitsspeicher 1500 / 3000 MB.
-        Messen(w, 10, 100);
-        Assert.Contains("Ok", w.Find<TextBlock>("twin-Dieser_PC-Festplatte_belegt").Text);
-        Assert.Contains("Ok", w.Find<TextBlock>("twin-Dieser_PC-Trendo-Arbeitsspeicher").Text);
-        Messen(w, 85, 1500);
-        Assert.Contains("Warnung", w.Find<TextBlock>("twin-Dieser_PC-Festplatte_belegt").Text);
-        Assert.Contains("Warnung", w.Find<TextBlock>("twin-Dieser_PC-Trendo-Arbeitsspeicher").Text);
-        Messen(w, 95, 3000);
-        Assert.Contains("Alarm", w.Find<TextBlock>("twin-Dieser_PC-Festplatte_belegt").Text);
-        Assert.Contains("Alarm", w.Find<TextBlock>("twin-Dieser_PC-Trendo-Arbeitsspeicher").Text);
+        // Grenzen im Produkt, Vergleich ist >= : Platte 85/95, Arbeitsspeicher 1500/3000 MB.
+        // Direkt darunter bleibt die niedrigere Ampel, auf der Grenze springt sie.
+        Erwarte(w, 84.9, 1499, TwinLevel.Ok, TwinLevel.Ok);
+        Erwarte(w, 85, 1500, TwinLevel.Warnung, TwinLevel.Warnung);
+        Erwarte(w, 94.9, 2999, TwinLevel.Warnung, TwinLevel.Warnung);
+        Erwarte(w, 95, 3000, TwinLevel.Alarm, TwinLevel.Alarm);
         W6Ui.Run(w, "twin-def");
         var f = Path.Combine(root, "m.csv"); File.WriteAllText(f, "Zeit;Anlage;Sensor;Wert\n21.10.2026 10:00;Heizung;Vorlauf;85\n");
         Assert.Contains("1 Messwerte", W6Ui.Run(w, "twin-import", ("file", f)));
