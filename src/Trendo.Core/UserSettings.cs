@@ -27,6 +27,8 @@ public sealed class UserSettings
     /// <summary>Startmenü: angeheftete Studios (IDs) und zuletzt benutzte Seiten (neueste zuerst).</summary>
     public List<string> PinnedStudios { get; set; } = [];
     public List<string> RecentPages { get; set; } = [];
+    /// <summary>T-0201: zuletzt gewählte Dateien je Seite (neueste zuerst).</summary>
+    public Dictionary<string, List<string>> RecentFiles { get; set; } = [];
     public List<string> StudioPacks { get; set; } = [];
     public List<string> HiddenTiles { get; set; } = [];
     public List<string> DockOrder { get; set; } = [];
