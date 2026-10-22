@@ -17,6 +17,7 @@ public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
     {
         Directory.CreateDirectory(backupDir);
         var zip = Path.Combine(backupDir, $"trendo-sicherung-{now:yyyyMMdd-HHmmss}.zip");
+        for (var n = 2; File.Exists(zip); n++) zip = Path.Combine(backupDir, $"trendo-sicherung-{now:yyyyMMdd-HHmmss}-{n}.zip"); // nie eine vorhandene Sicherung überschreiben
         using (var z = ZipFile.Open(zip, ZipArchiveMode.Create))
             foreach (var f in Directory.EnumerateFiles(dataRoot, "*", SearchOption.AllDirectories))
             {
@@ -32,19 +33,24 @@ public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
     }
 
     /// <summary>Stellt eine Sicherung wieder her. Vorher wird der aktuelle Stand als eigene Sicherung gespeichert.</summary>
-    public void Restore(string zip, DateTime now)
+    public int Restore(string zip, DateTime now)
     {
         if (!File.Exists(zip)) throw new FileNotFoundException(zip);
         var before = Create(now.AddSeconds(-1), keep: 20);
         using var z = ZipFile.OpenRead(zip);
+        var count = 0;
         foreach (var e in z.Entries)
         {
             var dest = Path.GetFullPath(Path.Combine(dataRoot, e.FullName));
             if (!dest.StartsWith(Path.GetFullPath(dataRoot) + Path.DirectorySeparatorChar)) continue; // kein Zip-Slip
             if (e.FullName.StartsWith("audit/")) continue; // Audit-Kette wird nie überschrieben
+            if (e.FullName.EndsWith('/')) { Directory.CreateDirectory(dest); continue; }
             Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
+            if (File.Exists(dest)) { File.SetAttributes(dest, FileAttributes.Normal); File.Delete(dest); } // z. B. schreibgeschützte .git-Objekte
             e.ExtractToFile(dest, true);
+            count++;
         }
         audit.Append("owner", "backup.restored", $"{Path.GetFileName(zip)} (vorher gesichert: {Path.GetFileName(before)})");
+        return count;
     }
 }
