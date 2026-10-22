@@ -24,6 +24,8 @@ Die Soll-Namen aus Abschnitt 4 des Auftrags sind so abgebildet:
 
 `StudioWorkflow` hält den Zustandsautomaten aus dem Auftrag. Leer, unbekanntes Studio oder mehr als 20 000 Zeichen enden ehrlich mit `Failed`. Ohne Adapter endet der Lauf mit `Unsupported` und ohne Ausgabedatei. Fehlende Pflichtfelder werden gefragt. `???` im Prüftext des Testadapters blockiert, statt einen Inhalt zu raten.
 
+Prüfung endet beim Plan (`Plan steht`). `Los` schreibt danach die Datei. Ohne echte Datei gibt es kein `QA bestanden`. Die Vorschau ist der gelesene Text oder der Satz, dass es keine Textvorschau gibt. Eine Folgeeingabe ruft `Revise` auf und zählt die Fassung nur hoch, wenn schon eine Datei da war. `Undo` holt `lauf.json.bak` zurück. Der Profi-Schalter ändert nur die Anzeige, keine Rechte.
+
 `Vorlage: id` füllt eine `PromptLibrary`-Vorlage. Fehlende Platzhalter werden Fragen. Fassung und Kennung der Vorlage stehen im Lauf.
 
 `Studio: ID` oder `Weiterleiten: Titel` setzt das Zielstudio und schreibt den Grund in `RoutingReason`. Sonst: „Bleibt im aktuellen Studio.“

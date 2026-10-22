@@ -27,6 +27,9 @@ public sealed partial class MainWindow
         [("widget-studios", "Studios"), ("widget-ki", "KI-Assistent"), ("widget-system", "Systemstatus"), ("widget-projekte", "Aktuelle Projekte"), ("widget-tools", "Schnell-Tools")];
 
     private static string _theme = "dunkel";
+    private string _settingsSection = "aussehen";
+    /// <summary>Nur für den direkten Neuaufbau: die nächste Instanz öffnet denselben Abschnitt. Sonst immer „Aussehen“.</summary>
+    private static string? _reopenSection;
     /// <summary>Farbe je Design: im hellen Design die helle Variante.</summary>
     private static string C(string dark, string light) => _theme == "hell" ? light : dark;
 
@@ -68,7 +71,7 @@ public sealed partial class MainWindow
             _wallName = w; _wallImg.Source = _blurImg.Source = LoadWallpaper(w);
             if (_settings.AccentFromWallpaper && CurrentView == "settings") Reopen("settings");
         };
-        t.Start();
+        OwnTimer(t);
         if (!_settings.ReduceMotion)
         {
             _center.Transitions = [new DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(220), Easing = new Avalonia.Animation.Easings.CubicEaseOut() }];
@@ -144,6 +147,7 @@ public sealed partial class MainWindow
         ["fortschritt"] = "So weit ist Trendo OS gebaut. Die Angaben kommen direkt aus der Projektliste – nichts ist geschönt.",
         ["keys"] = "Für einige Online-Dienste brauchst du einen Zugangsschlüssel. Er wird sicher in Windows gespeichert, nicht in einer Datei.",
         ["3d"] = "Baue ein Objekt aus Würfel, Kugel und den anderen Formen. Stell Größe, Lage und Farbe ein, runde Kanten ab oder bohre ein Loch. Die Vorschau siehst du hier, von mehreren Seiten. Speichern legt eine Datei in den 3D-Ordner. Blender öffnet genau dieses Objekt und wird nur installiert, wenn du zustimmst.",
+        ["dev"] = "Beschreibe eine Webseite, wähle auf Wunsch Stil und Technik, und Trendo legt einen Ordner mit HTML, CSS und JavaScript an. Die Vorschau zeigt Handy und Desktop. Veröffentlichen geht nur nach deiner Bestätigung und lädt nichts hoch.",
     };
 
     private void ShowHelp(string key, bool force)
@@ -168,6 +172,7 @@ public sealed partial class MainWindow
     private void Reopen(string page)
     {
         SaveSettings();
+        _reopenSection = _settingsSection;
         var w = new MainWindow(_core, _opt with { Page = page, FirstRun = false, ScreenshotPath = null, AutoExitSeconds = 0 }, _probe) { WindowState = WindowState, Width = Width, Height = Height };
         w._reopening = true;
         // Offene Fenster bleiben: gleiche Seiten, Lage, Größe und Reihenfolge (aktiv bleibt das, auf dem man war)
@@ -182,22 +187,23 @@ public sealed partial class MainWindow
     // ---------- Einstellungen ----------
     private Control SettingsView()
     {
-        var sp = new StackPanel { Spacing = 10 };
-        Control Section(string title, Control body) => new StackPanel { Spacing = 6, Children = { H(title, 15), body } };
+        var sections = new StackPanel { Spacing = 12 };
+        Control Section(string id, string title, Control body) => new StackPanel { Name = "settings-section-" + id, Spacing = 6, IsVisible = _settingsSection == id, Children = { H(title, 15), body } };
 
-        var themes = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        var themes = new WrapPanel();
         foreach (var (id, label) in new[] { ("dunkel", "Dunkel Premium"), ("hell", "Hell"), ("kontrast", "Hoher Kontrast") })
         {
-            var b = new Button { Name = "theme-" + id, Content = (_settings.Theme == id ? "✓ " : "") + label, Background = _settings.Theme == id ? Accent : null };
+            var on = _settings.Theme == id;
+            var b = new Button { Name = "theme-" + id, Content = (on ? "✓ " : "") + label, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 8), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
             b.Click += (_, _) => { _settings.Theme = id; Reopen("settings"); };
             themes.Children.Add(b);
         }
-        sp.Children.Add(Section("Aussehen", themes));
+        sections.Children.Add(Section("aussehen", "Aussehen", themes));
 
-        var colors = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        var colors = new WrapPanel();
         foreach (var (id, label) in AccentChoices)
         {
-            var b = new Button { Name = "accent-" + label.ToLowerInvariant(), Width = 34, Height = 34, CornerRadius = new CornerRadius(17), Background = Brush.Parse(id),
+            var b = new Button { Name = "accent-" + label.ToLowerInvariant(), Width = 34, Height = 34, Margin = new Thickness(0, 0, 8, 8), CornerRadius = new CornerRadius(17), Background = Brush.Parse(id),
                 BorderBrush = Brushes.White, BorderThickness = new Thickness(!_settings.AccentFromWallpaper && _settings.Accent == id ? 3 : 0) };
             ToolTip.SetTip(b, label); Avalonia.Automation.AutomationProperties.SetName(b, "Akzentfarbe " + label);
             b.Click += (_, _) => { _settings.Accent = id; _settings.AccentFromWallpaper = false; Reopen("settings"); };
@@ -205,37 +211,36 @@ public sealed partial class MainWindow
         }
         var auto = new CheckBox { Name = "accent-auto", Content = "Farbe passend zum Hintergrund wählen", IsChecked = _settings.AccentFromWallpaper, Foreground = Text };
         auto.IsCheckedChanged += (_, _) => { _settings.AccentFromWallpaper = auto.IsChecked == true; Reopen("settings"); };
-        sp.Children.Add(Section("Akzentfarbe", new StackPanel { Spacing = 6, Children = { colors, auto } }));
+        sections.Children.Add(Section("farbe", "Akzentfarbe", new StackPanel { Spacing = 6, Children = { colors, auto } }));
 
-        var walls = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
+        var walls = new WrapPanel();
         foreach (var (id, label) in new[] { ("bergsee-nacht", "Bergsee"), ("polarlicht", "Polarlicht"), ("wellen", "Wellen"), ("morgen", "Morgen") })
         {
             var on = !_settings.WallpaperByTime && _settings.Wallpaper == id;
-            var b = new Button { Name = "wall-" + id, Padding = new Thickness(3), BorderBrush = on ? Accent : Brushes.Transparent, BorderThickness = new Thickness(2), Background = Brushes.Transparent,
+            var b = new Button { Name = "wall-" + id, Margin = new Thickness(0, 0, 10, 10), Padding = new Thickness(3), BorderBrush = on ? Accent : Brushes.Transparent, BorderThickness = new Thickness(2), Background = Brushes.Transparent, CornerRadius = new CornerRadius(8),
                 Content = new StackPanel { Spacing = 4, Children = { new Image { Source = LoadWallpaper(id), Width = 150, Height = 84, Stretch = Stretch.UniformToFill }, new TextBlock { Text = label, Foreground = Text, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center } } } };
-            b.Click += (_, _) => { _settings.Wallpaper = id; _settings.WallpaperByTime = false; SaveSettings(); _wallName = id; _wallImg.Source = _blurImg.Source = LoadWallpaper(id); if (_settings.AccentFromWallpaper) Reopen("settings"); else Show("settings"); };
+            b.Click += (_, _) => { _settingsSection = "hintergrund"; _settings.Wallpaper = id; _settings.WallpaperByTime = false; SaveSettings(); _wallName = id; _wallImg.Source = _blurImg.Source = LoadWallpaper(id); if (_settings.AccentFromWallpaper) Reopen("settings"); else Show("settings"); };
             walls.Children.Add(b);
         }
         var byTime = new CheckBox { Name = "wall-bytime", Content = "Hintergrund nach Tageszeit wechseln (Morgen · Wellen · Bergsee · Polarlicht)", IsChecked = _settings.WallpaperByTime, Foreground = Text };
         byTime.IsCheckedChanged += (_, _) => { _settings.WallpaperByTime = byTime.IsChecked == true; SaveSettings(); var w = _settings.CurrentWallpaper(DateTime.Now); _wallName = w; _wallImg.Source = _blurImg.Source = LoadWallpaper(w); };
-        sp.Children.Add(Section("Hintergrund", new StackPanel { Spacing = 6, Children = { walls, byTime } }));
+        sections.Children.Add(Section("hintergrund", "Hintergrund", new StackPanel { Spacing = 6, Children = { walls, byTime } }));
 
         var motion = new CheckBox { Name = "reduce-motion", Content = "Bewegung reduzieren (keine Animationen)", IsChecked = _settings.ReduceMotion, Foreground = Text };
-        motion.IsCheckedChanged += (_, _) => { _settings.ReduceMotion = motion.IsChecked == true; Reopen("settings"); };
+        motion.IsCheckedChanged += (_, _) => { _settingsSection = "bedienung"; _settings.ReduceMotion = motion.IsChecked == true; Reopen("settings"); };
         var upd = new CheckBox { Name = "auto-update", Content = $"Updates automatisch laden ({_updateInfo})", IsChecked = _settings.AutoUpdate, Foreground = Text };
         upd.IsCheckedChanged += (_, _) => { _settings.AutoUpdate = upd.IsChecked == true; SaveSettings(); };
-        var sizes = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        var sizes = new WrapPanel();
         foreach (var (v, label) in new[] { (1.0, "Normal"), (1.15, "Groß"), (1.3, "Sehr groß") })
         {
             var on = Math.Abs(_settings.UiScale - v) < 0.01;
-            var b = new Button { Name = "size-" + (int)(v * 100), Content = (on ? "✓ " : "") + label, Background = on ? Accent : null };
-            b.Click += (_, _) => { _settings.UiScale = v; SaveSettings(); Rescale?.Invoke(); Show("settings"); };
+            var b = new Button { Name = "size-" + (int)(v * 100), Content = (on ? "✓ " : "") + label, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 8), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
+            b.Click += (_, _) => { _settingsSection = "bedienung"; _settings.UiScale = v; SaveSettings(); Rescale?.Invoke(); Show("settings"); };
             sizes.Children.Add(b);
         }
-        sp.Children.Add(Section("Bedienung", new StackPanel { Spacing = 4, Children = { motion, upd, P("Anzeigegröße (Schrift und Bedienelemente):", Text), sizes,
+        sections.Children.Add(Section("bedienung", "Bedienung", new StackPanel { Spacing = 4, Children = { motion, upd, P("Anzeigegröße (Schrift und Bedienelemente):", Text), sizes,
             P("Tastatur: Strg+K Suche · F1 Hilfe zur Seite · Strg+1 bis 5 Hauptbereiche · Tab/Enter bedienen alles ohne Maus", null, 11) } }));
 
-        // Startbildschirm anpassen: ein-/ausblenden und sortieren
         var desk = new StackPanel { Spacing = 4 };
         foreach (var (id, label) in WidgetChoices)
         {
@@ -244,17 +249,36 @@ public sealed partial class MainWindow
             desk.Children.Add(cb);
         }
         desk.Children.Add(P("Reihenfolge der Studio-Kacheln:", Text));
-        desk.Children.Add(OrderList("tile", FeaturedStudios.Select(f => (f.Id, f.Title)).ToList(), _settings.TileOrder, l => _settings.TileOrder = l));
+        desk.Children.Add(OrderList("tile", FeaturedStudios.Select(f => (f.Id, StudioCatalog.NameOf(f.Id, f.Title))).ToList(), _settings.TileOrder, l => _settings.TileOrder = l));
         desk.Children.Add(P("Reihenfolge im Dock:", Text));
         desk.Children.Add(OrderList("dock", DockIds, _settings.DockOrder, l => _settings.DockOrder = l));
-        var apply = new Button { Name = "btn-apply-desktop", Content = "Startbildschirm übernehmen", Background = Accent };
+        var apply = new Button { Name = "btn-apply-desktop", Content = "Startbildschirm übernehmen", Background = Accent, CornerRadius = new CornerRadius(8), Padding = new Thickness(12, 6) };
         apply.Click += (_, _) => Reopen("start");
         desk.Children.Add(apply);
-        sp.Children.Add(Section("Startbildschirm anpassen", desk));
+        sections.Children.Add(Section("start", "Startbildschirm anpassen", desk));
 
-        sp.Children.Add(Section("Mehr", new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Nav2("Zusatzprogramme", "components"), Nav2("Online-Dienste", "keys"), Nav2("Ersteinrichtung", "einrichtung"), Nav2("Systemcheck", "systemcheck") } }));
-        sp.Children.Add(P($"Version {CrashLog.AppVersion()} · Trendo-Logo: eigener Entwurf · Hintergründe: KI-erstellt für Trendo OS", null, 11));
-        return Page("Einstellungen", sp);
+        sections.Children.Add(Section("mehr", "Mehr", new WrapPanel { Children = { Nav2("Zusatzprogramme", "components"), Nav2("Online-Dienste", "keys"), Nav2("Ersteinrichtung", "einrichtung"), Nav2("Systemcheck", "systemcheck") } }));
+        sections.Children.Add(new TextBlock { Text = $"Version {CrashLog.AppVersion()} · Trendo-Logo: eigener Entwurf · Hintergründe: KI-erstellt für Trendo OS", Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap, IsVisible = _settingsSection == "mehr" });
+
+        var nav = new StackPanel { Spacing = 4 };
+        void NavItem(string id, string label, string icon)
+        {
+            var on = _settingsSection == id;
+            var b = new Button { Name = "settings-nav-" + id, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 8), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1),
+                Content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Ico(icon, 16, Text), new TextBlock { Text = label, Foreground = Text, VerticalAlignment = VerticalAlignment.Center } } } };
+            b.Click += (_, _) => { _settingsSection = id; Show("settings"); };
+            nav.Children.Add(b);
+        }
+        NavItem("aussehen", "Aussehen", Mdi.Palette);
+        NavItem("farbe", "Farbe", Mdi.StarFourPoints);
+        NavItem("hintergrund", "Hintergrund", Mdi.Image);
+        NavItem("bedienung", "Bedienung", Mdi.Tune);
+        NavItem("start", "Startbildschirm", Mdi.Monitor);
+        NavItem("mehr", "Weiteres", Mdi.Cog);
+        var navBox = new Border { Background = Brush.Parse(C("#55101830", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(8), Child = nav };
+        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("200,*"), ColumnSpacing = 14 };
+        grid.Children.Add(navBox); Grid.SetColumn(sections, 1); grid.Children.Add(sections);
+        return Page("Einstellungen", grid);
     }
 
     private static readonly List<(string Id, string Label)> DockIds =
