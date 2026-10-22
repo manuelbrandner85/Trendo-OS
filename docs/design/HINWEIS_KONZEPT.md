@@ -1,7 +1,7 @@
 # Hinweis zum Designbild
 `TRENDO_OS_DESKTOP_KONZEPT.png` ist ein **KI-generiertes Konzeptbild**, kein Screenshot einer realen Trendo-OS-Installation.
 - Alle Inhalte (Uhrzeit, CPU/RAM/GPU-Werte, Projekte, „Online“-Status) sind **Demodaten**.
-- Das V-/T-Logo ist eine **nicht freigegebene** Konzeptvariante.
+- Das V-/T-Logo im Konzeptbild ist veraltet; gültig ist Logo A (`src/Trendo.App/Assets/logo/trendo-logo-a.svg`, von Manuel am 22.10.2026 gewählt).
 - Verbindlich sind nur die Gestaltungsziele in `DESIGN_BRIEF.md`.
 
 ## Umsetzung in der App (UI v0.3)
@@ -12,5 +12,5 @@ Die Avalonia-Oberfläche bildet Layout und Stil des Konzepts nach (Topbar, Seite
 - Studio-Kacheln tragen **echte Status-Badges** (aktuell „Noch nicht gebaut“/„Nicht verbunden“/„Blockiert“).
 - Nicht umgesetzte Schnell-Tools (Aufnahme, Notiz, Übersetzen) sind deaktiviert; „Übersetzen“ berührt nicht das abgelehnte Language-Studio 2.0.
 - Die Vorschau-Leiste am unteren Bildrand des Konzepts (Marketing-Thumbnails) ist kein Desktop-Element und wurde nicht übernommen.
-- **Logo:** Vektor-Nachbau der Konzeptvariante, weiterhin **nicht freigegeben**.
+- **Logo:** Logo A „Obsidian-Kachel“ (App-Symbol, Fenster, Taskleiste, Startknopf, Desktop).
 - **Hintergrund:** `src/Trendo.App/Assets/wallpaper.jpg`, KI-generiert (Grok Bot, 21.10.2026) eigens für Trendo OS; keine Fremdfotos.

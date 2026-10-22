@@ -49,7 +49,7 @@ public partial class MainWindow
     /// <summary>Startknopf ganz links in der Taskleiste (gleiches Windows-Zeichen wie bisher).</summary>
     private Button StartButton()
     {
-        var b = new Button { Name = "start-button", Width = 50, Height = 50, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Content = Ico(Mdi.MicrosoftWindows, 36, Grad("#3BA7FF", "#1565C0"), "#1565C0") };
+        var b = new Button { Name = "start-button", Width = 50, Height = 50, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Content = Logo(38) };
         ToolTip.SetTip(b, "Start"); Avalonia.Automation.AutomationProperties.SetName(b, "Start");
         b.Click += (_, _) => ToggleStartMenu();
         return b;

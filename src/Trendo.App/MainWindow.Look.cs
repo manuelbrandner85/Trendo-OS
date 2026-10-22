@@ -242,7 +242,7 @@ public sealed partial class MainWindow
         sp.Children.Add(Section("Startbildschirm anpassen", desk));
 
         sp.Children.Add(Section("Mehr", new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Nav2("Zusatzprogramme", "components"), Nav2("Online-Dienste", "keys"), Nav2("Ersteinrichtung", "einrichtung"), Nav2("Systemcheck", "systemcheck") } }));
-        sp.Children.Add(P($"Version {CrashLog.AppVersion()} · Logo: Entwurf, noch nicht freigegeben · Hintergründe: KI-erstellt für Trendo OS", null, 11));
+        sp.Children.Add(P($"Version {CrashLog.AppVersion()} · Trendo-Logo: eigener Entwurf · Hintergründe: KI-erstellt für Trendo OS", null, 11));
         return Page("Einstellungen", sp);
     }
 

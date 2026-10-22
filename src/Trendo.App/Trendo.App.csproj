@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\logo\trendo.ico</ApplicationIcon>
     <AssemblyName>TrendoOS</AssemblyName>
     <Version>0.9.5</Version>
     <!-- SYS-13-P15: vorkompiliert (ReadyToRun) – spart auf dem PC ~0,5 s beim Start -->
