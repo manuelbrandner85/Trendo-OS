@@ -22,6 +22,10 @@ Die Tabelle folgt Abschnitt 7 des Auftrags. „Blockiert“ heißt: der gemeinsa
 - Ein Schlüssel, der schon `claimed`, `done` oder `blocked` ist, wird bei Retry und Resume nicht noch einmal ausgeführt.
 - Die Forensik bleibt `ForensicsLab.MaxLife` = 120 Stunden und `WarnBefore` = 24 Stunden. Dieser Auftrag ändert `Forensics.cs` nicht.
 
-## Was noch keine Produktionswirkung hat
+## Registrierte Adapter
 
-`PromptActions.CreateDefault()` ist leer. Die Leiste kann deshalb keinen Brief schreiben, keine Mail senden und nichts bezahlen. Testadapter in `PromptActionTests` beweisen die Regeln, sind aber nicht in der App registriert.
+`PromptActions.CreateDefault()` registriert 68 Aktionen für alle 54 Katalogstudios. Keine hat `CanPerformSideEffect`. Gesperrte Aktionen liefern aus `Produce` den Wert `Supported: false`. Es entsteht keine Datei und kein Beleg. `Gesperrte_Studios_schreiben_nichts` startet jedes blockierte Studio mit dem Text „Freigabe: erteilt“.
+
+Lokale Dateien schreiben nur Adapter mit `SideEffectClass.None`. Die Geschwister für Veröffentlichen, Klonen, Senden, Zahlen, Hochladen, Blender, Unreal, Maschinenstart und Installation gewinnen, sobald das gefährliche Feld auf `ja` steht, und schreiben dann nichts.
+
+Testadapter, die eine Wirkung nur im Test simulieren, stehen nicht in `CreateDefault`. Versand, Zahlung, Veröffentlichung, Boot und Maschinenlauf haben keine Produktionswirkung. Verbesserung 42 ist nicht vollständig implementiert.

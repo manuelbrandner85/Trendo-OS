@@ -1535,6 +1535,39 @@ public class PromptActionTests
         Assert.Equal(TimeSpan.FromHours(120), ForensicsLab.MaxLife);
     }
 
+    [Fact(DisplayName = "Übergabe behauptet keine Fertigstellung")]
+    public void Uebergabe_behauptet_keine_fertigstellung()
+    {
+        const string sentence = "Verbesserung 42 ist nicht vollständig implementiert.";
+        foreach (var rel in new[]
+        {
+            "docs/improvement-42/user-guide.md",
+            "docs/improvement-42/developer-guide.md",
+            "docs/improvement-42/abnahmeprotokoll.md",
+            "docs/improvement-42/security-approvals.md",
+            "docs/improvement-42/test-and-evidence-report.md",
+            "docs/improvement-42/architecture-decision.md",
+        })
+            Assert.Contains(sentence, File.ReadAllText(Repo(rel)));
+        var decisions = Decisions(File.ReadAllText(Repo("docs/spec/decisions.yaml")));
+        Assert.Equal("REJECTED", decisions["IMP-23"]);
+        Assert.Equal("REJECTED", decisions["IMP-25"]);
+        Assert.Equal("REJECTED", decisions["IMP-34"]);
+        Assert.Equal("UNDECIDED", decisions["IMP-35"]);
+        Assert.Equal("REJECTED", decisions["LANG-2.0"]);
+        Assert.Equal("APPROVED", decisions["IMP-41"]);
+        Assert.Equal(TimeSpan.FromHours(120), ForensicsLab.MaxLife);
+        Assert.Equal(TimeSpan.FromHours(24), ForensicsLab.WarnBefore);
+        var adapters = PromptActions.CreateDefault();
+        Assert.All(adapters, a => Assert.False(a.CanPerformSideEffect));
+        Assert.DoesNotContain(adapters, a => a is IWebsitePageAdapter);
+        foreach (var id in new[] { "SPEC-07", "SPEC-12", "X-02", "CORE-01", "SYS-12", "CORE-09" })
+            Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level(id, adapters));
+        Assert.DoesNotContain(CapabilityCatalog.Ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.NotImplemented);
+        Assert.DoesNotContain(CapabilityCatalog.Ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Ready);
+        Assert.DoesNotContain("ist leer", File.ReadAllText(Repo("docs/improvement-42/security-approvals.md")));
+    }
+
     [Fact(DisplayName = "Katalogmatrix nennt jede Studio-ID genau einmal")]
     public void Matrix_deckt_den_Katalog()
     {
