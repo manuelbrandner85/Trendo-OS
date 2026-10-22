@@ -104,7 +104,8 @@ public sealed record StudioExecutionResult(
     string RoutingReason,
     string? Preview,
     IReadOnlyList<ClarificationQuestion> Questions,
-    string? Receipt);
+    string? Receipt,
+    int Version);
 
 public sealed record ActionDraft(string ActionId, IReadOnlyDictionary<string, string> Parameters);
 
@@ -192,4 +193,8 @@ public static class StatusText
         CapabilityLevel.Blocked => "blockiert",
         _ => "nicht eingebaut"
     };
+
+    /// <summary>„Plan steht“ nur, wenn wirklich ein Plan vorliegt. Vorher bleibt „Noch nicht gestartet“.</summary>
+    public static string For(StudioExecutionResult result) =>
+        result.Phase == WorkflowPhase.Planned ? "Plan steht" : German(result.Status);
 }

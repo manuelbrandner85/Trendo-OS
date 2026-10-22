@@ -14,6 +14,7 @@ public partial class MainWindow
     private StudioWorkflow? _promptFlow;
     private string? _promptProject;
     private string? _promptRun;
+    private WorkflowPhase? _promptPhase;
 
     private StudioWorkflow PromptFlow => _promptFlow ??= new StudioWorkflow(_core, model: new IntelligencePromptModel(Intel, BackendsAreLocal));
 
@@ -58,7 +59,12 @@ public partial class MainWindow
         AutomationProperties.SetName(box, "Auftrag an dieses Studio");
         var status = new TextBlock { Name = "auftrag-status", Text = "Noch nicht gestartet", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.NoWrap, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center, MaxWidth = 220 };
         AutomationProperties.SetName(status, "Stand des Auftrags");
+        var preview = new TextBlock { Name = "auftrag-vorschau", Text = "Noch keine Vorschau.", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap, MaxHeight = 36, TextTrimming = TextTrimming.CharacterEllipsis };
+        AutomationProperties.SetName(preview, "Vorschau");
         var detail = new TextBlock { Name = "auftrag-detail", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = false };
+        var pro = new TextBlock { Name = "auftrag-profi", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = false };
+        var proOn = false;
+        StudioExecutionResult? last = null;
         var ability = P(CapabilityCatalog.UiLine(studio, PromptFlow.Adapters) + " Cloud-KI ist aus.", null, 12);
         ability.Name = "auftrag-faehigkeit";
         ability.TextTrimming = TextTrimming.CharacterEllipsis;
@@ -72,28 +78,51 @@ public partial class MainWindow
         AutomationProperties.SetName(approve, "Diesen einen Vorgang freigeben");
         var answer = new Button { Name = "auftrag-antworten", Content = "Antwort übernehmen", Height = 32, MinWidth = 156, IsVisible = false };
         AutomationProperties.SetName(answer, "Antwort auf die Rückfrage übernehmen");
+        var go = new Button { Name = "auftrag-los", Content = "Los", Height = 32, MinWidth = 72, Background = Accent, Foreground = Brushes.White, IsVisible = false };
+        AutomationProperties.SetName(go, "Plan ausführen");
+        var undo = new Button { Name = "auftrag-rueckgaengig", Content = "Rückgängig", Height = 32, MinWidth = 110 };
+        AutomationProperties.SetName(undo, "Letzte Fassung zurückholen");
+        var mode = new Button { Name = "auftrag-modus", Content = "Profi", Height = 32, MinWidth = 88 };
+        AutomationProperties.SetName(mode, "Einfach oder Profi");
+
+        void FillPro()
+        {
+            if (!proOn) { pro.IsVisible = false; return; }
+            pro.IsVisible = true;
+            if (last is null) { pro.Text = "Profi: noch kein Plan."; return; }
+            var lines = new List<string> { "Fassung " + last.Version };
+            if (last.RoutingReason.Length > 0) lines.Add(last.RoutingReason);
+            lines.AddRange(last.StepEvidence.Select(s => s.Label + ": " + s.Detail));
+            lines.AddRange(last.Artifacts.Select(f => f.RelativePath));
+            lines.AddRange(last.QaResults.Select(q => (q.Passed ? "Prüfung ok: " : "Prüfung nicht ok: ") + q.Detail));
+            if (last.Receipt is not null) lines.Add("Beleg: " + last.Receipt);
+            pro.Text = string.Join("\n", lines);
+        }
 
         void ShowResult(StudioExecutionResult result)
         {
+            last = result;
             _promptRun = result.RunId;
-            status.Text = Trendo.Core.PromptAction.StatusText.German(result.Status);
+            _promptPhase = result.Phase;
+            status.Text = Trendo.Core.PromptAction.StatusText.For(result);
+            preview.Text = string.IsNullOrWhiteSpace(result.Preview) ? "Noch keine Vorschau." : (result.Preview.Length > 500 ? result.Preview[..500] : result.Preview);
             var lines = new List<string>();
-            if (result.RoutingReason.Length > 0) lines.Add(result.RoutingReason);
             lines.AddRange(result.Questions.Select(q => q.Question));
             lines.AddRange(result.Errors);
             lines.AddRange(result.Warnings);
-            if (result.Preview is { Length: > 0 }) lines.Add(result.Preview.Length > 500 ? result.Preview[..500] : result.Preview);
-            foreach (var file in result.Artifacts) lines.Add(file.RelativePath + (file.Sha256 is null ? "" : " · " + file.Sha256[..12]));
-            if (result.Receipt is not null) lines.Add("Beleg: " + result.Receipt);
             detail.Text = string.Join("\n", lines.Where(l => l.Length > 0));
             detail.IsVisible = detail.Text is { Length: > 0 };
             approve.IsVisible = result.Status == RunStatus.AwaitingApproval;
             answer.IsVisible = result.Status == RunStatus.AwaitingInput;
+            go.IsVisible = result.Phase == WorkflowPhase.Planned;
+            FillPro();
         }
+
+        StudioExecutionContext Ctx(string project) => new(project, Principal.LocalOwner, CancellationToken.None, ResourceBudget.Default);
 
         check.Click += async (_, _) =>
         {
-            status.Text = "Wird wirklich ausgeführt";
+            status.Text = "Plan wird erstellt";
             check.IsEnabled = false;
             try
             {
@@ -105,13 +134,22 @@ public partial class MainWindow
                     detail.IsVisible = true;
                     answer.IsVisible = false;
                     approve.IsVisible = false;
+                    go.IsVisible = false;
                     return;
                 }
                 _promptProject = project;
-                var id = "ui-" + DateTime.UtcNow.ToString("yyyyMMddHHmmss");
-                var request = new StudioPromptRequest(id, project, studio, box.Text ?? "", [], "de", null, PrivacyMode.Local, new Provenance("oberflaeche", null, null));
-                var ctx = new StudioExecutionContext(project, Principal.LocalOwner, CancellationToken.None, ResourceBudget.Default);
-                var result = await Task.Run(() => PromptFlow.Start(request, ctx));
+                var ctx = Ctx(project);
+                StudioExecutionResult result;
+                if (_promptRun is not null && _promptPhase is WorkflowPhase.Planned or WorkflowPhase.Verified or WorkflowPhase.Failed or WorkflowPhase.NeedsApproval or WorkflowPhase.Produced or WorkflowPhase.Qa)
+                    result = await Task.Run(() => PromptFlow.Revise(project, _promptRun, box.Text ?? "", ctx));
+                else if (_promptRun is not null && _promptPhase is WorkflowPhase.NeedsClarification or WorkflowPhase.RevisionRequested)
+                    result = await Task.Run(() => PromptFlow.Answer(project, _promptRun, PromptFields.Read(box.Text), ctx));
+                else
+                {
+                    var id = "ui-" + DateTime.UtcNow.ToString("yyyyMMddHHmmss");
+                    var request = new StudioPromptRequest(id, project, studio, box.Text ?? "", [], "de", null, PrivacyMode.Local, new Provenance("oberflaeche", null, null));
+                    result = await Task.Run(() => PromptFlow.Start(request, ctx));
+                }
                 await Dispatcher.UIThread.InvokeAsync(() => ShowResult(result));
             }
             catch (Exception ex)
@@ -133,7 +171,7 @@ public partial class MainWindow
             }
             try
             {
-                var result = PromptFlow.Cancel(_promptProject, _promptRun, Principal.LocalOwner, new StudioExecutionContext(_promptProject, Principal.LocalOwner, CancellationToken.None, ResourceBudget.Default));
+                var result = PromptFlow.Cancel(_promptProject, _promptRun, Principal.LocalOwner, Ctx(_promptProject));
                 ShowResult(result);
             }
             catch (Exception ex)
@@ -148,7 +186,7 @@ public partial class MainWindow
             if (_promptProject is null || _promptRun is null) return;
             try
             {
-                var result = PromptFlow.Approve(_promptProject, _promptRun, Principal.LocalOwner, new StudioExecutionContext(_promptProject, Principal.LocalOwner, CancellationToken.None, ResourceBudget.Default));
+                var result = PromptFlow.Approve(_promptProject, _promptRun, Principal.LocalOwner, Ctx(_promptProject));
                 ShowResult(result);
             }
             catch (Exception ex)
@@ -163,7 +201,7 @@ public partial class MainWindow
             if (_promptProject is null || _promptRun is null) return;
             try
             {
-                var result = PromptFlow.Answer(_promptProject, _promptRun, PromptFields.Read(box.Text), new StudioExecutionContext(_promptProject, Principal.LocalOwner, CancellationToken.None, ResourceBudget.Default));
+                var result = PromptFlow.Answer(_promptProject, _promptRun, PromptFields.Read(box.Text), Ctx(_promptProject));
                 ShowResult(result);
             }
             catch (Exception ex)
@@ -174,11 +212,51 @@ public partial class MainWindow
             }
         };
 
+        go.Click += async (_, _) =>
+        {
+            if (_promptProject is null || _promptRun is null) { status.Text = "Zuerst den Plan prüfen."; return; }
+            status.Text = "Wird wirklich ausgeführt";
+            go.IsEnabled = false;
+            try
+            {
+                var result = await Task.Run(() => PromptFlow.Los(_promptProject, _promptRun, Ctx(_promptProject)));
+                await Dispatcher.UIThread.InvokeAsync(() => ShowResult(result));
+            }
+            catch (Exception ex)
+            {
+                status.Text = "Fehlgeschlagen";
+                detail.Text = ex.Message;
+                detail.IsVisible = true;
+            }
+            finally { go.IsEnabled = true; }
+        };
+        undo.Click += (_, _) =>
+        {
+            if (_promptProject is null || _promptRun is null)
+            {
+                status.Text = "Nichts zum Rückgängigmachen.";
+                return;
+            }
+            try { ShowResult(PromptFlow.Undo(_promptProject, _promptRun, Ctx(_promptProject))); }
+            catch (Exception ex)
+            {
+                status.Text = "Fehlgeschlagen";
+                detail.Text = ex.Message;
+                detail.IsVisible = true;
+            }
+        };
+        mode.Click += (_, _) =>
+        {
+            proOn = !proOn;
+            mode.Content = proOn ? "Einfach" : "Profi";
+            FillPro();
+        };
+
         var buttons = new StackPanel
         {
             Orientation = Orientation.Horizontal,
             Spacing = 8,
-            Children = { check, answer, approve, cancel }
+            Children = { check, go, answer, approve, undo, mode, cancel }
         };
         var row = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), ColumnSpacing = 8 };
         Grid.SetColumn(box, 0);
@@ -194,7 +272,7 @@ public partial class MainWindow
             CornerRadius = new Avalonia.CornerRadius(8),
             Padding = new Avalonia.Thickness(8, 6),
             Margin = new Avalonia.Thickness(0, 0, 0, 4),
-            Child = new StackPanel { Spacing = 4, Children = { ability, row, detail } }
+            Child = new StackPanel { Spacing = 4, Children = { ability, row, preview, detail, pro } }
         };
     }
 }

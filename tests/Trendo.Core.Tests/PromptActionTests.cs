@@ -27,7 +27,11 @@ public class PromptActionTests
         Assert.Equal(RunStatus.AwaitingInput, open.Status);
         Assert.Contains(open.Questions, q => q.Field == "text");
         Assert.Empty(open.Artifacts);
-        var done = fx.Wf.Answer(fx.Project, open.RunId, new Dictionary<string, string> { ["text"] = "Einkauf notiert" }, fx.Ctx());
+        var planned = fx.Wf.Answer(fx.Project, open.RunId, new Dictionary<string, string> { ["text"] = "Einkauf notiert" }, fx.Ctx());
+        Assert.Equal("Plan steht", StatusText.For(planned));
+        Assert.Contains("nichts geschrieben", planned.Preview);
+        Assert.Empty(planned.Artifacts);
+        var done = fx.Wf.Los(fx.Project, planned.RunId, fx.Ctx());
         Assert.Equal(RunStatus.Verified, done.Status);
         Assert.Equal("QA bestanden", StatusText.German(done.Status));
         var file = Assert.Single(done.Artifacts);
@@ -48,8 +52,13 @@ public class PromptActionTests
     public void Revision_behaelt_Verlauf()
     {
         using var fx = new Fixture(new EchoAdapter());
-        var first = fx.Wf.Start(fx.Req("SYS-02", "Text: erste Fassung"), fx.Ctx());
-        var second = fx.Wf.Revise(fx.Project, first.RunId, "Text: zweite Fassung", fx.Ctx());
+        var firstPlan = fx.Wf.Start(fx.Req("SYS-02", "Text: erste Fassung"), fx.Ctx());
+        var first = fx.Wf.Los(fx.Project, firstPlan.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, first.Status);
+        var secondPlan = fx.Wf.Revise(fx.Project, first.RunId, "Text: zweite Fassung", fx.Ctx());
+        Assert.Equal(WorkflowPhase.Planned, secondPlan.Phase);
+        Assert.Empty(secondPlan.Artifacts);
+        var second = fx.Wf.Los(fx.Project, secondPlan.RunId, fx.Ctx());
         Assert.Equal(RunStatus.Verified, second.Status);
         Assert.Equal(2, second.Artifacts[0].Version);
         Assert.Contains(fx.FilesTree(), f => File.ReadAllText(f) == "erste Fassung");
@@ -64,7 +73,10 @@ public class PromptActionTests
     {
         using var fx = new Fixture(new SendAdapter());
         var send = (SendAdapter)fx.Adapters[0];
-        var result = fx.Wf.Start(fx.Req("SYS-09", "Freigabe: erteilt\nSenden: ja\nAn: a@b.de\nText: Hallo"), fx.Ctx());
+        var plan = fx.Wf.Start(fx.Req("SYS-09", "Freigabe: erteilt\nSenden: ja\nAn: a@b.de\nText: Hallo"), fx.Ctx());
+        Assert.Equal(WorkflowPhase.Planned, plan.Phase);
+        Assert.Equal(0, send.Calls);
+        var result = fx.Wf.Los(fx.Project, plan.RunId, fx.Ctx());
         Assert.Equal(RunStatus.AwaitingApproval, result.Status);
         Assert.Equal("Freigabe nötig", StatusText.German(result.Status));
         Assert.Equal(0, send.Calls);
@@ -88,7 +100,9 @@ public class PromptActionTests
     {
         using var fx = new Fixture(new SendAdapter());
         var send = (SendAdapter)fx.Adapters[0];
-        var waiting = fx.Wf.Start(fx.Req("SYS-09", "Senden: ja\nAn: a@b.de\nText: Hallo"), fx.Ctx());
+        var plan = fx.Wf.Start(fx.Req("SYS-09", "Senden: ja\nAn: a@b.de\nText: Hallo"), fx.Ctx());
+        var waiting = fx.Wf.Los(fx.Project, plan.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.AwaitingApproval, waiting.Status);
         Assert.Equal(0, send.Calls);
         var done = fx.Wf.Approve(fx.Project, waiting.RunId, Principal.LocalOwner, fx.Ctx());
         Assert.Equal(RunStatus.Verified, done.Status);
@@ -104,7 +118,8 @@ public class PromptActionTests
     {
         using var fx = new Fixture(new SendAdapter { Throw = true });
         var send = (SendAdapter)fx.Adapters[0];
-        var waiting = fx.Wf.Start(fx.Req("SYS-09", "Senden: ja\nAn: a@b.de\nText: Hallo"), fx.Ctx());
+        var plan = fx.Wf.Start(fx.Req("SYS-09", "Senden: ja\nAn: a@b.de\nText: Hallo"), fx.Ctx());
+        var waiting = fx.Wf.Los(fx.Project, plan.RunId, fx.Ctx());
         var failed = fx.Wf.Approve(fx.Project, waiting.RunId, Principal.LocalOwner, fx.Ctx());
         Assert.Equal(RunStatus.Failed, failed.Status);
         Assert.Equal(1, send.Calls);
@@ -117,7 +132,8 @@ public class PromptActionTests
     {
         using var fx = new Fixture(new SendAdapter());
         var send = (SendAdapter)fx.Adapters[0];
-        var waiting = fx.Wf.Start(fx.Req("SYS-09", "Senden: ja\nAn: a@b.de\nText: Hallo"), fx.Ctx());
+        var plan = fx.Wf.Start(fx.Req("SYS-09", "Senden: ja\nAn: a@b.de\nText: Hallo"), fx.Ctx());
+        var waiting = fx.Wf.Los(fx.Project, plan.RunId, fx.Ctx());
         var cancelled = fx.Wf.Cancel(fx.Project, waiting.RunId, Principal.LocalOwner, fx.Ctx());
         Assert.Equal(RunStatus.Cancelled, cancelled.Status);
         var after = fx.Wf.Approve(fx.Project, waiting.RunId, Principal.LocalOwner, fx.Ctx());
@@ -132,7 +148,8 @@ public class PromptActionTests
         time.SetUtcNow(new DateTimeOffset(2026, 10, 22, 8, 0, 0, TimeSpan.Zero));
         using var fx = new Fixture(new SendAdapter(), time);
         var send = (SendAdapter)fx.Adapters[0];
-        var waiting = fx.Wf.Start(fx.Req("SYS-09", "Senden: ja\nAn: a@b.de\nText: Hallo"), fx.Ctx());
+        var plan = fx.Wf.Start(fx.Req("SYS-09", "Senden: ja\nAn: a@b.de\nText: Hallo"), fx.Ctx());
+        var waiting = fx.Wf.Los(fx.Project, plan.RunId, fx.Ctx());
         time.Advance(TimeSpan.FromMinutes(11));
         var late = fx.Wf.Approve(fx.Project, waiting.RunId, Principal.LocalOwner, fx.Ctx());
         Assert.Equal(RunStatus.Failed, late.Status);
@@ -170,8 +187,11 @@ public class PromptActionTests
         var model = new FakeModel { Local = true, Text = """{"actionId":"mail.senden","parameters":{"an":"a@b.de","text":"Hallo"},"approved":true}""" };
         using var fx = new Fixture(new SendAdapter(), model: model);
         var send = (SendAdapter)fx.Adapters[0];
-        var result = fx.Wf.Start(fx.Req("SYS-09", "Formuliere irgendwas Nettes"), fx.Ctx());
+        var plan = fx.Wf.Start(fx.Req("SYS-09", "Formuliere irgendwas Nettes"), fx.Ctx());
         Assert.Equal(1, model.Calls);
+        Assert.Equal(WorkflowPhase.Planned, plan.Phase);
+        Assert.Equal(0, send.Calls);
+        var result = fx.Wf.Los(fx.Project, plan.RunId, fx.Ctx());
         Assert.Equal(RunStatus.AwaitingApproval, result.Status);
         Assert.Equal(0, send.Calls);
     }
@@ -247,7 +267,8 @@ public class PromptActionTests
     {
         using var fx = new Fixture(new SendAdapter());
         var send = (SendAdapter)fx.Adapters[0];
-        var waiting = fx.Wf.Start(fx.Req("SYS-09", "Senden: ja\nAn: a@b.de\nText: Hallo"), fx.Ctx());
+        var plan = fx.Wf.Start(fx.Req("SYS-09", "Senden: ja\nAn: a@b.de\nText: Hallo"), fx.Ctx());
+        var waiting = fx.Wf.Los(fx.Project, plan.RunId, fx.Ctx());
         var statePath = fx.Core.Projects.ResolveInProject(fx.Project, "auftraege/" + waiting.RunId + "/lauf.json");
         var doc = JsonDocument.Parse(File.ReadAllText(statePath));
         var key = doc.RootElement.GetProperty("IdempotencyKey").GetString()!;
@@ -264,11 +285,33 @@ public class PromptActionTests
     public void Rollback_der_Laufdatei()
     {
         using var fx = new Fixture(new EchoAdapter());
-        var first = fx.Wf.Start(fx.Req("SYS-02", "Text: alpha"), fx.Ctx());
+        var plan = fx.Wf.Start(fx.Req("SYS-02", "Text: alpha"), fx.Ctx());
+        var first = fx.Wf.Los(fx.Project, plan.RunId, fx.Ctx());
         fx.Wf.Revise(fx.Project, first.RunId, "Text: beta", fx.Ctx());
-        Assert.True(fx.Wf.TryRollback(fx.Project, first.RunId));
-        var restored = fx.Wf.Get(fx.Project, first.RunId);
+        var restored = fx.Wf.Undo(fx.Project, first.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, restored.Status);
         Assert.Contains("alpha", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, restored.Artifacts[0].RelativePath)));
+    }
+
+    [Fact(DisplayName = "Ohne Datei gibt es kein bestandenes Ergebnis")]
+    public void Ohne_Datei_kein_Erfolg()
+    {
+        using var fx = new Fixture(new EmptyAdapter());
+        var plan = fx.Wf.Start(fx.Req("SYS-02", "Text: leer"), fx.Ctx());
+        var done = fx.Wf.Los(fx.Project, plan.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Failed, done.Status);
+        Assert.Contains("keine Datei", done.Preview);
+        Assert.Empty(done.Artifacts);
+    }
+
+    [Fact(DisplayName = "Webseiten-Vertrag ist da und nicht eingebaut")]
+    public void Webseiten_Adapter_ist_nicht_registriert()
+    {
+        Assert.DoesNotContain(PromptActions.CreateDefault(), a => a is IWebsitePageAdapter);
+        var stub = new WebsiteStub();
+        Assert.False(stub.PixelStreamingAvailable);
+        Assert.False(stub.CanPlaceModel("fehlt.glb"));
+        Assert.Equal(SideEffectClass.Publish, stub.Effect);
     }
 
     [Fact(DisplayName = "Forensik bleibt bei 120 Stunden")]
@@ -365,6 +408,59 @@ public class PromptActionTests
         public StudioPromptRequest Req(string studio, string prompt, IReadOnlyList<PromptAttachment>? attachments = null, string? id = null, PrivacyMode privacy = PrivacyMode.Local) =>
             new(id ?? "lauf-1", Project, studio, prompt, attachments ?? [], "de", null, privacy, new Provenance("test", null, null));
         public void Dispose() { try { Directory.Delete(Root, true); } catch (IOException) { } }
+    }
+
+    sealed class EmptyAdapter : IStudioActionAdapter
+    {
+        public string StudioId => "SYS-02";
+        public string ActionId => "leer";
+        public string Label => "Leer";
+        public SideEffectClass Effect => SideEffectClass.None;
+        public CapabilityLevel DeclaredLevel => CapabilityLevel.Partial;
+        public string Evidence => "";
+        public bool CanPerformSideEffect => false;
+        public IReadOnlyList<string> RequiredFields => ["text"];
+        public IReadOnlyList<string> OutputKinds => ["txt"];
+        public ActionDraft? TryParse(string prompt, IReadOnlyDictionary<string, string> known)
+        {
+            var fields = PromptFields.Read(prompt);
+            foreach (var kv in known) fields[kv.Key] = kv.Value;
+            return new ActionDraft(ActionId, fields);
+        }
+        public IReadOnlyList<ClarificationQuestion> Missing(IReadOnlyDictionary<string, string> parameters) =>
+            string.IsNullOrWhiteSpace(parameters.GetValueOrDefault("text")) ? [new("text", "text", "Text?", true)] : [];
+        public IReadOnlyList<ValidationFinding> Validate(IReadOnlyDictionary<string, string> parameters) => [];
+        public AdapterOutcome Produce(AdapterCall call) => new(true, [], [new QaResult("leer", true, "nichts", null, null, "test")], null, [], [], null);
+        public AdapterOutcome SideEffect(AdapterCall call) => new(false, [], [], null, [], ["Keine Wirkung."], null);
+    }
+
+    sealed class WebsiteStub : IWebsitePageAdapter
+    {
+        public string StudioId => "CORE-07";
+        public string ActionId => "web.seite";
+        public string Label => "Webseite";
+        public SideEffectClass Effect => SideEffectClass.Publish;
+        public CapabilityLevel DeclaredLevel => CapabilityLevel.Blocked;
+        public string Evidence => "";
+        public bool CanPerformSideEffect => false;
+        public IReadOnlyList<string> RequiredFields => [];
+        public IReadOnlyList<string> OutputKinds => ["html"];
+        public IReadOnlyList<string> PageKinds => ["Startseite"];
+        public IReadOnlyList<string> StylePresets => ["Sachlich"];
+        public bool SupportsScrollStory => false;
+        public bool SupportsBrowser3D => false;
+        public bool SupportsParticles => false;
+        public bool SupportsVideoBackground => false;
+        public bool PixelStreamingAvailable => false;
+        public bool CanPlaceModel(string relativeGlbPath) => false;
+        public bool CanPlaceRenderedClip(string relativeMediaPath) => false;
+        public ActionDraft? TryParse(string prompt, IReadOnlyDictionary<string, string> known) => null;
+        public IReadOnlyList<ClarificationQuestion> Missing(IReadOnlyDictionary<string, string> parameters) => [];
+        public IReadOnlyList<ValidationFinding> Validate(IReadOnlyDictionary<string, string> parameters) => [];
+        public AdapterOutcome Produce(AdapterCall call) => new(false, [], [], null, [], ["Nicht in diesem Auftrag."], null);
+        public AdapterOutcome SideEffect(AdapterCall call) => new(false, [], [], null, [], ["Nicht veröffentlicht."], null);
+        public AdapterOutcome ApplyStyle(AdapterCall call, string styleId) => new(false, [], [], null, [], ["Kein Stil in diesem Auftrag."], null);
+        public AdapterOutcome CheckPage(AdapterCall call) => new(false, [], [], null, [], ["Keine Prüfung in diesem Auftrag."], null);
     }
 
     sealed class EchoAdapter : IStudioActionAdapter
