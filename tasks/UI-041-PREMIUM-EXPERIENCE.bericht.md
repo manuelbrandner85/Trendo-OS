@@ -31,7 +31,7 @@ UI41-SM-01 (jedes Studio, drei parallel, 1366×768) steckt im Commit `241da0e` u
 - Die linke Liste aus Referenz 01 ist bewusst weg. Unterschiede stehen in `reports/design-41/vergleich/UNTERSCHIEDE.md`.
 - Kein Wetter auf dem Schreibtisch. Es bleibt in „Zeit & Kalender“ und erscheint erst nach Ort und Klick.
 - Fehlt die Texterkennung, öffnet „Briefe schreiben“ im Startmenü zuerst die Programmfrage. „Später“ führt in den Brief. Die Suche nach „Brief“ öffnet die Seite direkt.
-- Auf dieser Linux-Box liegt Chrome im PATH, deshalb zeigt das Dock den Browser. Mail, Blender und Unreal nicht.
+- Auf dieser Linux-Box liegt Chrome im PATH, deshalb zeigt das Dock den Browser. Blender und Unreal Engine sind auf dem PC installiert. Diese Box startet die Windows-Programme nicht, deshalb fehlen ihre Dock-Symbole hier.
 
 ## Nicht geprüft
 
@@ -74,7 +74,7 @@ UI41-SM-01 (jedes Studio, drei parallel, 1366×768) steckt im Commit `241da0e` u
 - „Briefe schreiben“ aus dem Startmenü fragt ohne Texterkennung zuerst nach dem Zusatzprogramm. „Später“ öffnet den Brief.
 - Wetter nur in „Zeit & Kalender“. SPEC-07 nicht gebaut. Logo bleibt Entwurf A.
 - Die Dateien-Seite ist „Kleine Helfer & Musik“, kein nachgebauter Explorer.
-- Dock auf dieser Box: Dateien, Browser (Chrome im PATH), Papierkorb. Mail, Blender und Unreal fehlen.
+- Dock auf dieser Box: Dateien, Browser (Chrome im PATH), Papierkorb. Blender und Unreal Engine sind auf dem PC installiert; die Windows-Programme laufen in dieser Linux-Aufnahme nicht.
 
 ### Nicht geprüft
 

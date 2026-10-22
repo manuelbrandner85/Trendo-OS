@@ -116,7 +116,7 @@ public partial class MainWindow
             {
                 Children =
                 {
-                    P("Blender ist nicht installiert. Bauen, Ansehen und der Export als OBJ, STL und GLB gehen trotzdem.", Brush.Parse("#FACC15")),
+                    P("Unter Programme\\Blender Foundation und im PATH wurde hier keine blender.exe gefunden. Bauen, Ansehen und der Export als OBJ, STL und GLB gehen trotzdem.", Brush.Parse("#FACC15")),
                     Act("3d-setup-blender", "Blender einrichten", () => _ = SetupBlender()),
                     Act("3d-open-blender", "In Blender öffnen", () => _ = AskBlender()),
                     Act("3d-folder", "Ordner zeigen", ShowFolder),
