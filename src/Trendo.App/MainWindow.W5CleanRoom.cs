@@ -12,7 +12,11 @@ public partial class MainWindow
     private string? _cleanOpen;
     private IReadOnlyList<Similar>? _cleanSims;
 
-    private void InitW5CleanRoom() => RegisterTab(BusinessTabs, "nachbau", "Sauberer Nachbau", "X-10", CleanView, "clean room", "nachbau", "nachbauen", "urheberrecht", "aehnlichkeit", "plagiat");
+    private void InitW5CleanRoom()
+    {
+        RegisterTab(BusinessTabs, "nachbau", "Sauberer Nachbau", "X-10", CleanView, "clean room", "nachbau", "nachbauen", "urheberrecht", "aehnlichkeit", "plagiat");
+        EnsureMyPrograms();
+    }
 
     public void CleanCheck(string original)
     {
@@ -25,7 +29,8 @@ public partial class MainWindow
 
     private Control CleanView()
     {
-        var sp = new StackPanel { Spacing = 8, Children = { P("Baue eine Idee neu, ohne fremden Code zu kopieren. Trendo trennt die Rollen, führt ein Tagebuch und vergleicht dein Ergebnis mit dem Original. Keine Rechtsberatung.") } };
+        var sp = new StackPanel { Spacing = 8, Children = { P("Du kannst ein Programm benennen oder beschreiben, zum Beispiel „ein Notizprogramm wie Notepad++“ oder „so etwas wie Paint“. Trendo baut daraus eine eigene App. Ein Original-Ordner bleibt freiwillig und dient nur dem späteren Vergleich, nie als Code-Vorlage. Keine Rechtsberatung.") } };
+        RebuildSection(sp);
         var rules = new StackPanel { Spacing = 2, Children = { H("Die Regeln", 14) } };
         foreach (var r in CleanRoom.Rules) rules.Children.Add(P("• " + r, null, 11));
         sp.Children.Add(Card(rules));
