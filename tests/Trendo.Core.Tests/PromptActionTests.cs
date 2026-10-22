@@ -716,6 +716,59 @@ public class PromptActionTests
         Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith("index.html", StringComparison.OrdinalIgnoreCase));
     }
 
+    const string ModelText = """
+        Name: Klotz
+        Form: Wuerfel
+        Breite: 10
+        Tiefe: 10
+        Hoehe: 10
+        Farbe: Blau
+        """;
+
+    [Fact(DisplayName = "Modell schreibt OBJ und PNG, Blender läuft nicht")]
+    public void Modell_schreibt_obj_und_vorschau()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var plan = wf.Start(fx.Req("CORE-05", ModelText), fx.Ctx());
+        Assert.Equal(RunStatus.Planned, plan.Status);
+        var done = wf.Los(fx.Project, plan.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var obj = fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith(".obj", StringComparison.Ordinal)).RelativePath);
+        var imported = Mesh3D.Import(obj);
+        Assert.InRange(imported.Sx, 9.5, 10.5);
+        Assert.Equal("#2F86F6", imported.Color);
+        var json = Scene3D.FromJson(File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith(".json")).RelativePath)));
+        Assert.Equal("cube", json.Parts.Single().Shape);
+        var png = File.ReadAllBytes(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith(".png")).RelativePath));
+        Assert.Equal(new byte[] { 0x89, 0x50, 0x4E, 0x47 }, png[..4]);
+        Assert.Contains("Blender ist nicht gelaufen", done.Preview);
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith(".blend", StringComparison.OrdinalIgnoreCase));
+        var next = wf.Los(fx.Project, wf.Revise(fx.Project, plan.RunId, ModelText.Replace("Breite: 10", "Breite: 20"), fx.Ctx()).RunId, fx.Ctx());
+        var wider = Mesh3D.Import(fx.Core.Projects.ResolveInProject(fx.Project, next.Artifacts.Single(a => a.Version == 2 && a.RelativePath.EndsWith(".obj")).RelativePath));
+        Assert.InRange(wider.Sx, 19, 21);
+        Assert.InRange(Mesh3D.Import(obj).Sx, 9.5, 10.5);
+    }
+
+    [Fact(DisplayName = "Blender ja startet Blender nicht")]
+    public void Modell_startet_blender_nicht()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var plan = wf.Start(fx.Req("CORE-05", "Freigabe: erteilt\nBlender: ja\n" + ModelText), fx.Ctx());
+        var done = wf.Los(fx.Project, plan.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Unsupported, done.Status);
+        Assert.Null(done.Receipt);
+        Assert.Empty(done.Artifacts);
+        Assert.Contains(done.Errors, e => e.Contains("nicht angeschlossen", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith(".blend", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".obj", StringComparison.OrdinalIgnoreCase));
+        var waiting = wf.Start(fx.Req("CORE-05", "Name: Klotz\nForm: Wuerfel\nBreite: 10\nTiefe: 10\nFarbe: Blau", id: "hoehe-1"), fx.Ctx());
+        Assert.Equal(RunStatus.AwaitingInput, waiting.Status);
+        var bad = wf.Start(fx.Req("CORE-05", "Name: Klotz\nForm: Pyramide\nBreite: 10\nTiefe: 10\nHoehe: 10\nFarbe: Blau", id: "form-1"), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, bad.Status);
+        Assert.Empty(bad.Artifacts);
+    }
+
     [Fact(DisplayName = "Katalogmatrix nennt jede Studio-ID genau einmal")]
     public void Matrix_deckt_den_Katalog()
     {
@@ -728,12 +781,14 @@ public class PromptActionTests
         Assert.Contains(registered, id => id == "SPEC-11");
         Assert.Contains(registered, id => id == "STUDIO-ONLINE-BUSINESS-01");
         Assert.Contains(registered, id => id == "CORE-07");
+        Assert.Contains(registered, id => id == "CORE-05");
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-LETTER-01", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-10", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-09", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SPEC-11", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-ONLINE-BUSINESS-01", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-07", PromptActions.CreateDefault()));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-05", PromptActions.CreateDefault()));
         Assert.All(ids.Where(id => !registered.Contains(id)), id => Assert.Equal(CapabilityLevel.NotImplemented, CapabilityCatalog.Level(id, PromptActions.CreateDefault())));
         var markdown = CapabilityCatalog.Markdown(PromptActions.CreateDefault());
         Assert.Equal(Normalize(markdown), Normalize(File.ReadAllText(Repo("docs/improvement-42/studio-capability-matrix.md"))));

@@ -29,7 +29,7 @@ public static class CapabilityCatalog
         P("SPEC-08", "Kleidung & Produkte entwerfen", "Kreativ & Medien", "Größen- und Schnittlogik der App", "Maße prüfen", "Maße", "Zuschnitt", "Kein Fachadapter registriert."),
         P("X-07", "Freie Bilder & Klänge finden", "Kreativ & Medien", "OpenSource", "Quelle mit Lizenz merken", "Suchwort", "Liste", "Kein Fachadapter registriert."),
         P("CORE-12", "KI-Anweisungen schreiben", "Kreativ & Medien", "PromptLibrary", "Vorlage füllen", "Vorlage, Platzhalter", "Text", "Kein Fachadapter registriert."),
-        P("CORE-05", "3D-Modelle erstellen", "3D, Spiele & VR", "Scene3D, Mesh3D, Studio3D", "Modelldatei, Render nur mit Blender", "Form und Maße", "OBJ, optional Blend", "Kein Fachadapter registriert."),
+        P("CORE-05", "3D-Modelle erstellen", "3D, Spiele & VR", "Scene3D, Mesh3D, Studio3D", "Modelldatei, Render nur mit Blender", "Form und Maße", "OBJ, optional Blend", "Blender wird aus dem Auftrag nicht gestartet. OBJ und die eingebaute Vorschau brauchen es nicht."),
         P("CORE-06", "Spiele bauen", "3D, Spiele & VR", "GameStudio", "Browser-Spiel, Unreal nur wenn installiert", "Vorlage, Name", "HTML oder uproject", "Kein Fachadapter registriert."),
         P("SPEC-04", "VR & AR gestalten", "3D, Spiele & VR", "XrModels", "Raumskizze", "Maße", "Beschreibung", "Kein Fachadapter registriert."),
         P("SPEC-09", "Gegenstände einscannen", "3D, Spiele & VR", "PhotoScan, PointCloud", "Scan aus echten Bildern", "Bilder", "Punktwolke", "Kein Fachadapter registriert."),

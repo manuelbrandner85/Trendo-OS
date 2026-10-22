@@ -29,6 +29,7 @@ public static class PromptActions
         [
             new LetterPromptAdapter(), new SheetPromptAdapter(), new MailSendAdapter(), new MailDraftAdapter(),
             new InvoicePromptAdapter(), new MoneyPayAdapter(), new BusinessPlanAdapter(),
-            new SoftwareScaffoldAdapter(), new SoftwarePublishAdapter()
+            new SoftwareScaffoldAdapter(), new SoftwarePublishAdapter(),
+            new ModelPromptAdapter(), new BlenderPromptAdapter()
         ];
 }

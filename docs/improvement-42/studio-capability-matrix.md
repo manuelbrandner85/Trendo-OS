@@ -16,7 +16,7 @@ Erzeugt aus `CapabilityCatalog` und den wirklich registrierten Adaptern. `ready`
 | SPEC-08 | Kleidung & Produkte entwerfen | Kreativ & Medien | Größen- und Schnittlogik der App | Maße prüfen | Maße | keiner | Zuschnitt | not_implemented | — | Kein Fachadapter registriert. |
 | X-07 | Freie Bilder & Klänge finden | Kreativ & Medien | OpenSource | Quelle mit Lizenz merken | Suchwort | keiner | Liste | not_implemented | — | Kein Fachadapter registriert. |
 | CORE-12 | KI-Anweisungen schreiben | Kreativ & Medien | PromptLibrary | Vorlage füllen | Vorlage, Platzhalter | keiner | Text | not_implemented | — | Kein Fachadapter registriert. |
-| CORE-05 | 3D-Modelle erstellen | 3D, Spiele & VR | Scene3D, Mesh3D, Studio3D | Modelldatei, Render nur mit Blender | Form und Maße | keiner | OBJ, optional Blend | not_implemented | — | Kein Fachadapter registriert. |
+| CORE-05 | 3D-Modelle erstellen | 3D, Spiele & VR | Scene3D, Mesh3D, Studio3D | Modelldatei, Render nur mit Blender | Form und Maße | modell.bauen, modell.blender | OBJ, optional Blend | partial | PromptActionTests.Modell_schreibt_obj_und_vorschau, PromptActionTests.Modell_startet_blender_nicht | Blender wird aus dem Auftrag nicht gestartet. OBJ und die eingebaute Vorschau brauchen es nicht. |
 | CORE-06 | Spiele bauen | 3D, Spiele & VR | GameStudio | Browser-Spiel, Unreal nur wenn installiert | Vorlage, Name | keiner | HTML oder uproject | not_implemented | — | Kein Fachadapter registriert. |
 | SPEC-04 | VR & AR gestalten | 3D, Spiele & VR | XrModels | Raumskizze | Maße | keiner | Beschreibung | not_implemented | — | Kein Fachadapter registriert. |
 | SPEC-09 | Gegenstände einscannen | 3D, Spiele & VR | PhotoScan, PointCloud | Scan aus echten Bildern | Bilder | keiner | Punktwolke | not_implemented | — | Kein Fachadapter registriert. |
@@ -59,4 +59,4 @@ Erzeugt aus `CapabilityCatalog` und den wirklich registrierten Adaptern. `ready`
 | CORE-04 | PC, Pi & Handy verbinden | System & Sicherheit | Fusion | Verbund nur anzeigen | keine | keiner | Hinweis | not_implemented | — | Kein Fachadapter registriert. |
 | X-09 | Leistung anzeigen | System & Sicherheit | ResourceMonitor, SystemMetrics | Messwerte lesen | keine | keiner | Messwert | not_implemented | — | Kein Fachadapter registriert. |
 
-Anzahl: 54 Katalogeinträge, 9 registrierte Aktionen.
+Anzahl: 54 Katalogeinträge, 11 registrierte Aktionen.
