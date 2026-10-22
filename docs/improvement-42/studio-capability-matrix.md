@@ -11,7 +11,7 @@ Erzeugt aus `CapabilityCatalog` und den wirklich registrierten Adaptern. `ready`
 | SYS-02 | Kleine Helfer & Musik | Arbeiten & Büro | Calc, NoteStore, FileShelf | Notiz oder Rechnung | Text oder Ausdruck | keiner | Notiz, Zahl | not_implemented | — | Kein Fachadapter registriert. |
 | STUDIO-ONLINE-BUSINESS-01 | Online verkaufen | Business & Geld | BusinessStudio | Geschäftsplan rechnen | Preis, Kosten, Menge | geschaeft.bewerten | Markdown | partial | PromptActionTests.Geschaeft_bewertet_ohne_buchung | Nur eine Schätzung aus deinen Zahlen. Kein Shop, keine Zahlung, keine Rechtsberatung. |
 | SPEC-11 | Geld & Rechnungen | Business & Geld | Finance, Ledger | Rechnung mit Decimal rechnen, nicht buchen | Verkäufer, Käufer, Positionen | rechnung.schreiben, geld.zahlen | HTML-Entwurf | partial | PromptActionTests.Rechnung_rechnet_und_bucht_nicht, PromptActionTests.Geld_zahlt_nichts | Zahlung und Buchung sind nicht angeschlossen. Keine Steuerberatung. |
-| CORE-08 | Videos & Fotos bearbeiten | Kreativ & Medien | MediaStudio, ffmpeg | Datei wirklich umwandeln | Quelldatei im Projekt | keiner | Mediendatei | not_implemented | — | Kein Fachadapter registriert. |
+| CORE-08 | Videos & Fotos bearbeiten | Kreativ & Medien | MediaStudio, ffmpeg | Datei wirklich umwandeln | Quelldatei im Projekt | medien.umwandeln, medien.hochladen | Mediendatei | partial | PromptActionTests.Medien_wandelt_bild_mit_ffmpeg, PromptActionTests.Medien_laedt_nichts_hoch | Hochladen ist nicht angeschlossen. Umwandeln braucht ffmpeg. |
 | SPEC-15 | Live streamen | Kreativ & Medien | Live-Studio der App | Sendungsplan | Titel, Ablauf | keiner | Plan | not_implemented | — | Kein Fachadapter registriert. |
 | SPEC-08 | Kleidung & Produkte entwerfen | Kreativ & Medien | Größen- und Schnittlogik der App | Maße prüfen | Maße | keiner | Zuschnitt | not_implemented | — | Kein Fachadapter registriert. |
 | X-07 | Freie Bilder & Klänge finden | Kreativ & Medien | OpenSource | Quelle mit Lizenz merken | Suchwort | keiner | Liste | not_implemented | — | Kein Fachadapter registriert. |
@@ -59,4 +59,4 @@ Erzeugt aus `CapabilityCatalog` und den wirklich registrierten Adaptern. `ready`
 | CORE-04 | PC, Pi & Handy verbinden | System & Sicherheit | Fusion | Verbund nur anzeigen | keine | keiner | Hinweis | not_implemented | — | Kein Fachadapter registriert. |
 | X-09 | Leistung anzeigen | System & Sicherheit | ResourceMonitor, SystemMetrics | Messwerte lesen | keine | keiner | Messwert | not_implemented | — | Kein Fachadapter registriert. |
 
-Anzahl: 54 Katalogeinträge, 14 registrierte Aktionen.
+Anzahl: 54 Katalogeinträge, 16 registrierte Aktionen.

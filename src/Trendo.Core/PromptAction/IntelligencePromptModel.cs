@@ -31,6 +31,7 @@ public static class PromptActions
             new InvoicePromptAdapter(), new MoneyPayAdapter(), new BusinessPlanAdapter(),
             new SoftwareScaffoldAdapter(), new SoftwarePublishAdapter(),
             new ModelPromptAdapter(), new BlenderPromptAdapter(),
-            new GameBrowserAdapter(), new GameUnrealAdapter(), new GameLaunchAdapter()
+            new GameBrowserAdapter(), new GameUnrealAdapter(), new GameLaunchAdapter(),
+            new MediaConvertAdapter(), new MediaUploadAdapter()
         ];
 }

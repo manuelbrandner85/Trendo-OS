@@ -35,6 +35,25 @@ if (Environment.GetEnvironmentVariable("TRENDO_DEMO_CASE") is not null)
     win.OpenCase(c); win.Show(args.Length > 3 ? args[3] : "akte");
 }
 void Pump() { for (var n = 0; n < 8; n++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); } }
+if (Environment.GetEnvironmentVariable("TRENDO_MEDIA_PROMPT") == "1")
+{
+    var project = core.Projects.Create("medienprobe", "Medienprobe");
+    var png = Mesh3D.RenderPng(new Scene3D { Name = "Quelle", Parts = [new Part3D { Shape = "cube", Sx = 8, Sy = 8, Sz = 8, Color = "#2F86F6" }] }, "front", 64, 48)
+        ?? throw new InvalidOperationException("Keine Bildquelle.");
+    var source = core.Projects.ResolveInProject(project.Id, "quelle.png");
+    Directory.CreateDirectory(Path.GetDirectoryName(source)!);
+    File.WriteAllBytes(source, png);
+    win.Show("kreativ-medien");
+    Pump();
+    T Find<T>(string name) where T : Control => win.GetLogicalDescendants().OfType<T>().First(c => c.Name == name);
+    Find<TextBox>("auftrag-prompt").Text = "Datei: quelle.png\nAufgabe: Bild";
+    Find<Button>("auftrag-pruefen").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "Plan steht"; i++) Pump();
+    Find<Button>("auftrag-los").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 80 && Find<TextBlock>("auftrag-status").Text != "QA bestanden"; i++) Pump();
+    if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
+        throw new InvalidOperationException("Medien steht auf " + Find<TextBlock>("auftrag-status").Text + " / " + Find<TextBlock>("auftrag-detail").Text);
+}
 if (Environment.GetEnvironmentVariable("TRENDO_GAME_PROMPT") == "1")
 {
     core.Projects.Create("spielprobe", "Spielprobe");

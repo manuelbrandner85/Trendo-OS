@@ -7,6 +7,14 @@ using Xunit;
 
 namespace Trendo.Core.Tests;
 
+public sealed class FfmpegFactAttribute : FactAttribute
+{
+    public FfmpegFactAttribute()
+    {
+        if (Cli.Find("ffmpeg") is null) Skip = "ffmpeg fehlt";
+    }
+}
+
 public class PromptActionTests
 {
     [Fact(DisplayName = "Studio ohne Adapter endet unsupported und ohne Datei")]
@@ -819,6 +827,50 @@ public class PromptActionTests
         Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith("index.html", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".uproject", StringComparison.OrdinalIgnoreCase));
     }
 
+    [FfmpegFact(DisplayName = "ffmpeg macht aus dem Bild eine JPEG-Datei")]
+    public void Medien_wandelt_bild_mit_ffmpeg()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var png = Mesh3D.RenderPng(new Scene3D { Name = "Quelle", Parts = [new Part3D { Shape = "cube", Sx = 8, Sy = 8, Sz = 8, Color = "#2F86F6" }] }, "front", 64, 48);
+        Assert.NotNull(png);
+        var source = fx.Core.Projects.ResolveInProject(fx.Project, "quelle.png");
+        Directory.CreateDirectory(Path.GetDirectoryName(source)!);
+        File.WriteAllBytes(source, png);
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("CORE-08", "Datei: quelle.png\nAufgabe: Bild"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var jpg = fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith(".jpg", StringComparison.Ordinal)).RelativePath);
+        var bytes = File.ReadAllBytes(jpg);
+        Assert.True(bytes.Length > 2);
+        Assert.Equal(0xFF, bytes[0]);
+        Assert.Equal(0xD8, bytes[1]);
+        Assert.Contains("Nichts hochgeladen", done.Preview);
+        var next = wf.Los(fx.Project, wf.Revise(fx.Project, done.RunId, "Datei: quelle.png\nAufgabe: Bild", fx.Ctx()).RunId, fx.Ctx());
+        var second = fx.Core.Projects.ResolveInProject(fx.Project, next.Artifacts.Single(a => a.Version == 2 && a.RelativePath.EndsWith(".jpg")).RelativePath);
+        Assert.Equal(0xFF, File.ReadAllBytes(second)[0]);
+        Assert.Equal(bytes, File.ReadAllBytes(jpg));
+        var missing = wf.Los(fx.Project, wf.Start(fx.Req("CORE-08", "Datei: fehlt.png\nAufgabe: Bild", id: "fehlt-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Failed, missing.Status);
+        var outside = wf.Start(fx.Req("CORE-08", "Datei: ../geheim.png\nAufgabe: Bild", id: "aussen-1"), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, outside.Status);
+        Assert.Empty(outside.Artifacts);
+    }
+
+    [Fact(DisplayName = "Hochladen veröffentlicht keine Mediendatei")]
+    public void Medien_laedt_nichts_hoch()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("CORE-08", "Freigabe: erteilt\nHochladen: ja\nDatei: quelle.png\nAufgabe: Bild"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Unsupported, done.Status);
+        Assert.Null(done.Receipt);
+        Assert.Empty(done.Artifacts);
+        Assert.Contains(done.Errors, e => e.Contains("nicht angeschlossen", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase));
+        var bad = wf.Start(fx.Req("CORE-08", "Datei: quelle.png\nAufgabe: Zauber", id: "zauber-1"), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, bad.Status);
+    }
+
     [Fact(DisplayName = "Katalogmatrix nennt jede Studio-ID genau einmal")]
     public void Matrix_deckt_den_Katalog()
     {
@@ -833,6 +885,7 @@ public class PromptActionTests
         Assert.Contains(registered, id => id == "CORE-07");
         Assert.Contains(registered, id => id == "CORE-05");
         Assert.Contains(registered, id => id == "CORE-06");
+        Assert.Contains(registered, id => id == "CORE-08");
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-LETTER-01", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-10", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-09", PromptActions.CreateDefault()));
@@ -841,6 +894,7 @@ public class PromptActionTests
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-07", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-05", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-06", PromptActions.CreateDefault()));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-08", PromptActions.CreateDefault()));
         Assert.All(ids.Where(id => !registered.Contains(id)), id => Assert.Equal(CapabilityLevel.NotImplemented, CapabilityCatalog.Level(id, PromptActions.CreateDefault())));
         var markdown = CapabilityCatalog.Markdown(PromptActions.CreateDefault());
         Assert.Equal(Normalize(markdown), Normalize(File.ReadAllText(Repo("docs/improvement-42/studio-capability-matrix.md"))));

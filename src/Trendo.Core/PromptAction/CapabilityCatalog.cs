@@ -24,7 +24,7 @@ public static class CapabilityCatalog
         P("SYS-02", "Kleine Helfer & Musik", "Arbeiten & Büro", "Calc, NoteStore, FileShelf", "Notiz oder Rechnung", "Text oder Ausdruck", "Notiz, Zahl", "Kein Fachadapter registriert."),
         P("STUDIO-ONLINE-BUSINESS-01", "Online verkaufen", "Business & Geld", "BusinessStudio", "Geschäftsplan rechnen", "Preis, Kosten, Menge", "Markdown", "Nur eine Schätzung aus deinen Zahlen. Kein Shop, keine Zahlung, keine Rechtsberatung."),
         P("SPEC-11", "Geld & Rechnungen", "Business & Geld", "Finance, Ledger", "Rechnung mit Decimal rechnen, nicht buchen", "Verkäufer, Käufer, Positionen", "HTML-Entwurf", "Zahlung und Buchung sind nicht angeschlossen. Keine Steuerberatung."),
-        P("CORE-08", "Videos & Fotos bearbeiten", "Kreativ & Medien", "MediaStudio, ffmpeg", "Datei wirklich umwandeln", "Quelldatei im Projekt", "Mediendatei", "Kein Fachadapter registriert."),
+        P("CORE-08", "Videos & Fotos bearbeiten", "Kreativ & Medien", "MediaStudio, ffmpeg", "Datei wirklich umwandeln", "Quelldatei im Projekt", "Mediendatei", "Hochladen ist nicht angeschlossen. Umwandeln braucht ffmpeg."),
         P("SPEC-15", "Live streamen", "Kreativ & Medien", "Live-Studio der App", "Sendungsplan", "Titel, Ablauf", "Plan", "Kein Fachadapter registriert."),
         P("SPEC-08", "Kleidung & Produkte entwerfen", "Kreativ & Medien", "Größen- und Schnittlogik der App", "Maße prüfen", "Maße", "Zuschnitt", "Kein Fachadapter registriert."),
         P("X-07", "Freie Bilder & Klänge finden", "Kreativ & Medien", "OpenSource", "Quelle mit Lizenz merken", "Suchwort", "Liste", "Kein Fachadapter registriert."),
