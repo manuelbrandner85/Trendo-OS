@@ -257,6 +257,7 @@ public partial class MainWindow
     {
         if (_core.Offline) { _weather = "Offline-Modus: Wetter wird nicht geladen."; Show("alltag-zeit"); return; }
         if (!double.TryParse(lat, System.Globalization.NumberStyles.Float, De, out var la) || !double.TryParse(lon, System.Globalization.NumberStyles.Float, De, out var lo)) { _weather = "Bitte Breite und Länge als Zahl eingeben."; Show("alltag-zeit"); return; }
+        _weather = "Wetter wird geladen …"; Show("alltag-zeit");
         try { using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) }; _weather = "Wetter: " + (Weather.Parse(await http.GetStringAsync(Weather.Url(la, lo))) ?? "keine Daten"); }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException) { _weather = "Wetter gerade nicht erreichbar."; }
         Show("alltag-zeit");

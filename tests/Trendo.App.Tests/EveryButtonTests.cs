@@ -16,6 +16,11 @@ public class EveryButton_Alltag
     public void Jeder_Knopf_wirkt()
     {
         var (w, l, root) = Ui.Open();
+        var datei = Path.Combine(root, "auswahl.txt");
+        File.WriteAllText(datei, "x");
+        w.PickOverride = _ => Task.FromResult<string[]?>([datei]);
+        var downloads = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+        if (!Directory.Exists(downloads)) Directory.CreateDirectory(downloads);
         var fehl = ButtonProbe.Require(w, l, root, Pages);
         w.Close();
         Assert.True(fehl.Count == 0, "Knopf ohne Wirkung oder Absturz:\n" + string.Join("\n", fehl));
