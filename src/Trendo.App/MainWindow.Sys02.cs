@@ -47,6 +47,8 @@ public partial class MainWindow
     private Control AlltagPage(string title, Control body) => W45Page(title, AlltagTabs, "alltag", body);
     private TextBox Field(string name, string hint, double w = 340, string? text = null) => new() { Name = name, PlaceholderText = hint, Width = w, Text = text };
     private static string Clean(TextBox t) => t.Text?.Trim().Trim('"') ?? "";
+    /// <summary>T-0209: Pflichtfeld – bei leerem Feld eine klare Meldung statt Absturz oder Stille.</summary>
+    private static string Need(TextBox t, string what) => Clean(t) is { Length: > 0 } v ? v : throw new ArgumentException($"Bitte zuerst {what} eintragen.");
     private static Control Section(string title, string help, params Control[] body)
     {
         var sp = new StackPanel { Spacing = 5, Children = { H(title, 14), P(help, null, 11) } };
@@ -58,7 +60,7 @@ public partial class MainWindow
     private void Try(string view, Action a)
     {
         try { a(); }
-        catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException or InvalidDataException) { Say(ex.Message, view); }
+        catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException or InvalidDataException or FormatException or OverflowException) { Say(ex is FormatException or OverflowException ? "Das ist keine gültige Zahl. Bitte z. B. 12,50 eingeben." : ex.Message, view); }
     }
 
     // ---------- Dateien ----------
@@ -73,7 +75,7 @@ public partial class MainWindow
         sp.Children.Add(Card(Section("Viele Dateien umbenennen", "Erst Vorschau ansehen, dann umbenennen. Mit „Rückgängig“ kommt alles zurück. Platzhalter: {name}, {n}, {n:000}, {datum}.",
             Line(rd, rp), Line(rf, rr,
                 Act("ren-preview-btn", "Vorschau", () => Try(V, () => { prev.Children.Clear(); foreach (var m in Plan().Take(30)) prev.Children.Add(P($"{Path.GetFileName(m.From)} → {Path.GetFileName(m.To)}", Text, 11)); })),
-                Act("ren-apply", "Umbenennen", () => Try(V, () => { var p = Plan(); _lastUndo = Renamer.Apply(p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig")); _core.Audit.Append("app", "files.rename", $"{p.Count} Dateien"); Say($"{p.Count} Dateien umbenannt.", V); }), true),
+                Act("ren-apply", "Umbenennen", () => Try(V, () => { Need(rd, "den Ordner mit den Dateien"); var p = Plan(); if (p.Count == 0) { Say("Nichts umzubenennen – im Ordner passt keine Datei zum Muster.", V); return; } _lastUndo = Renamer.Apply(p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig")); _core.Audit.Append("app", "files.rename", $"{p.Count} Dateien"); Say($"{p.Count} Dateien umbenannt.", V); }), true),
                 Act("ren-undo", "Rückgängig", () => Try(V, () => { if (_lastUndo is null) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen."); Renamer.Undo(_lastUndo); _lastUndo = null; Say("Zurückgesetzt.", V); }))), prev)));
 
         var dd = Field("dup-folder", "Ordner durchsuchen"); var dupOut = new StackPanel { Name = "dup-result" };
@@ -89,8 +91,8 @@ public partial class MainWindow
         sp.Children.Add(Card(Section("Speicherplatz", "Zeigt, welche Ordner und Dateien am meisten Platz brauchen.",
             Line(sd, Act("du-run", "Anzeigen", () => Try(V, () =>
             {
-                duOut.Children.Clear(); var (total, top) = FileAnalysis.Analyze(Clean(sd));
-                duOut.Children.Add(P($"Zusammen {ResourceMonitor.Size(total)}", Text));
+                duOut.Children.Clear(); var (total, top) = FileAnalysis.Analyze(Need(sd, "einen Ordner für den Speicherplatz"));
+                duOut.Children.Add(P($"Zusammen {ResourceMonitor.Size(total)}" + (top.Count == 0 ? " – der Ordner ist leer." : ""), Text));
                 foreach (var u in top) duOut.Children.Add(P($"{(u.IsFolder ? "📁" : "📄")} {Path.GetFileName(u.Path)} – {ResourceMonitor.Size(u.Bytes)}", null, 11));
             }))), duOut)));
 
@@ -101,15 +103,15 @@ public partial class MainWindow
 
         var pf = Field("photo-folder", "Ordner mit Fotos"); var pOut = new StackPanel { Name = "photo-preview" };
         sp.Children.Add(Card(Section("Fotos nach Datum ordnen", "Sortiert nach Aufnahmedatum in Ordner wie 2026/2026-10. Erst Probelauf, dann ausführen – rückgängig machbar.",
-            Line(pf, Act("photo-sim", "Probelauf", () => Try(V, () => { pOut.Children.Clear(); var p = PhotoSorter.Plan(Clean(pf)); pOut.Children.Add(P($"{p.Count} Fotos würden verschoben:", Text)); foreach (var m in p.Take(20)) pOut.Children.Add(P($"{Path.GetFileName(m.From)} → {Path.GetRelativePath(Clean(pf), m.To)}", null, 11)); })),
-                Act("photo-apply", "Ordnen", () => Try(V, () => { var p = PhotoSorter.Plan(Clean(pf)); _lastUndo = Renamer.Apply(p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig")); Say($"{p.Count} Fotos einsortiert. „Rückgängig“ oben setzt es zurück.", V); }), true)), pOut)));
+            Line(pf, Act("photo-sim", "Probelauf", () => Try(V, () => { pOut.Children.Clear(); var p = PhotoSorter.Plan(Need(pf, "den Ordner mit den Fotos (Probelauf)")); pOut.Children.Add(P($"{p.Count} Fotos würden verschoben:", Text)); foreach (var m in p.Take(20)) pOut.Children.Add(P($"{Path.GetFileName(m.From)} → {Path.GetRelativePath(Clean(pf), m.To)}", null, 11)); })),
+                Act("photo-apply", "Ordnen", () => Try(V, () => { var p = PhotoSorter.Plan(Need(pf, "den Ordner mit den Fotos")); if (p.Count == 0) { Say("Keine Fotos zum Ordnen gefunden.", V); return; } _lastUndo = Renamer.Apply(p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig")); Say($"{p.Count} Fotos einsortiert. „Rückgängig“ oben setzt es zurück.", V); }), true)), pOut)));
 
         var trash = new StackPanel { Spacing = 3, Name = "trash-list" };
         if (_trash.Count > 0) trash.Children.Add(P($"{_trash.Count} Einträge, zusammen {ResourceMonitor.Size(_trash.Sum(t => t.Bytes))}", Text));
         foreach (var t in _trash.Take(15)) trash.Children.Add(P($"{Path.GetFileName(t.OriginalPath)} – {ResourceMonitor.Size(t.Bytes)} – gelöscht {t.Deleted:dd.MM.yyyy}", null, 11));
         var empty = _trashAsk
             ? Line(P("Wirklich endgültig löschen? Das lässt sich nicht rückgängig machen.", Text), Act("trash-yes", "Ja, endgültig leeren", () => Try(V, () => { var n = Trash.Empty(_trash, true, _core.Audit); _trash = []; _trashAsk = false; Say($"{n} Einträge gelöscht.", V); }), true), Act("trash-no", "Abbrechen", () => { _trashAsk = false; Show(V); }))
-            : Line(Act("trash-show", "Papierkorb anzeigen", () => { _trash = Trash.List(WindowsBin(), LinuxTrash()); Show(V); }), Act("trash-empty", "Papierkorb leeren …", () => { if (_trash.Count > 0) { _trashAsk = true; Show(V); } }));
+            : Line(Act("trash-show", "Papierkorb anzeigen", () => Try(V, () => { _trash = Trash.List(WindowsBin(), LinuxTrash()); Say(_trash.Count == 0 ? $"Der Papierkorb ist leer ({DateTime.Now:HH:mm:ss})." : $"Papierkorb gelesen: {_trash.Count} Einträge.", V); })), Act("trash-empty", "Papierkorb leeren …", () => { if (_trash.Count > 0) { _trashAsk = true; Show(V); } else Say("Nichts zu leeren – der Papierkorb ist leer oder wurde noch nicht angezeigt.", V); }));
         sp.Children.Add(Card(Section("Papierkorb", "Zeigt, was im Papierkorb liegt. Geleert wird nur nach deiner Bestätigung.", trash, empty)));
         return AlltagPage("Dateien", sp);
     }
@@ -145,8 +147,8 @@ public partial class MainWindow
         var size = Field("img-size", "längste Seite in Pixeln", 160, "1600");
         sp.Children.Add(Card(Section("Bild drehen oder verkleinern", "Es entsteht immer eine Kopie neben dem Original – das Original bleibt unverändert.",
             Line(img, Act("img-rotate", "Nach rechts drehen", () => Try(V, () => Say("Gespeichert: " + Path.GetFileName(ImageTools.Rotate(Clean(img), 90)), V))),
-                Act("img-left", "Nach links drehen", () => Try(V, () => Say("Gespeichert: " + Path.GetFileName(ImageTools.Rotate(Clean(img), 270)), V)))),
-            Line(size, Act("img-resize", "Verkleinern", () => Try(V, () => Say("Gespeichert: " + Path.GetFileName(ImageTools.Resize(Clean(img), int.TryParse(size.Text, out var s) ? s : 0)), V)))))));
+                Act("img-left", "Nach links drehen", () => Try(V, () => Say("Gespeichert: " + Path.GetFileName(ImageTools.Rotate(Need(img, "ein Bild (zum Drehen)"), 270)), V)))),
+            Line(size, Act("img-resize", "Verkleinern", () => Try(V, () => Say("Gespeichert: " + Path.GetFileName(ImageTools.Resize(Need(img, "ein Bild (zum Verkleinern)"), int.TryParse(size.Text, out var s) && s > 0 ? s : throw new ArgumentException("Bitte die neue Breite in Pixeln eintragen, z. B. 1200."))), V)))))));
 
         var shotAreas = Field("shot-areas", "Schwärzen: x,y,Breite,Höhe; weitere mit ; trennen", 360);
         var shotFile = Field("shot-file", "oder vorhandenes Bild zum Schwärzen", 340, _lastShot);
@@ -282,7 +284,7 @@ public partial class MainWindow
         var manual = Field("clip-add-text", "Text, den du dir merken willst", 340);
         sp.Children.Add(Card(Section("Zwischenablage-Verlauf", "Bis zu 50 Texte, nur auf diesem Rechner. Passwörter und Schlüssel werden nie gespeichert.",
             Line(Act("clip-grab", "Aktuelle Zwischenablage merken", async () => { var t = Clipboard is { } cb ? await cb.TryGetTextAsync() : null; Say(t is not null && Clips.Add(t) ? "Gemerkt." : "Nicht gemerkt (leer oder sieht wie ein Passwort aus).", V); }, true),
-                manual, Act("clip-add", "Merken", () => Say(Clips.Add(manual.Text ?? "") ? "Gemerkt." : "Nicht gemerkt (leer oder sieht wie ein Passwort aus).", V)), Act("clip-clear", "Alles löschen", () => { Clips.Clear(); Show(V); })), clips)));
+                manual, Act("clip-add", "Merken", () => Say(string.IsNullOrWhiteSpace(manual.Text) ? "Bitte zuerst einen Text zum Merken eintragen." : Clips.Add(manual.Text) ? $"Gemerkt: „{(manual.Text.Length > 30 ? manual.Text[..30] + "…" : manual.Text)}“." : "Nicht gemerkt – das sieht wie ein Passwort aus.", V)), Act("clip-clear", "Alles löschen", () => { Clips.Clear(); Show(V); })), clips)));
 
         var uv = Field("unit-value", "Wert", 100, "1"); var units = Units.All.ToList();
         var uf = new ComboBox { Name = "unit-from", ItemsSource = units, SelectedItem = "km" }; var ut = new ComboBox { Name = "unit-to", ItemsSource = units, SelectedItem = "meile" };
@@ -290,15 +292,15 @@ public partial class MainWindow
         var rate = Field("cur-rate", "Kurs, z. B. 1 € = 1,08 $", 160); var amt = Field("cur-amount", "Betrag", 100);
         sp.Children.Add(Card(Section("Einheiten umrechnen", "Länge, Gewicht, Volumen, Fläche, Tempo und Temperatur. Für Geld trägst du den Kurs selbst ein – Trendo holt keine Kurse aus dem Internet.",
             Line(uv, uf, P("in"), ut, Act("unit-run", "Umrechnen", () => Try(V, () => { var v = double.Parse(Clean(uv), De); uo.Text = $"= {Calc.Format(Units.Convert(v, (string)uf.SelectedItem!, (string)ut.SelectedItem!))} {ut.SelectedItem}"; })), uo),
-            Line(amt, P("×"), rate, Act("cur-run", "Geld umrechnen", () => Try(V, () => uo.Text = "= " + Calc.Format(Units.Currency(double.Parse(Clean(amt), De), double.Parse(Clean(rate), De)))))))));
+            Line(amt, P("×"), rate, Act("cur-run", "Geld umrechnen", () => Try(V, () => uo.Text = "= " + Calc.Format(Units.Currency(double.Parse(Need(amt, "den Betrag"), De), double.Parse(Need(rate, "den Kurs"), De)))))))));
 
         var hex = Field("color-hex", "#2F86F6", 120); var co = new TextBlock { Name = "color-result", Foreground = Text };
         var pf = Field("color-file", "Bild für die Pipette", 260); var px = Field("color-xy", "x,y", 90);
         void ShowColor((byte R, byte G, byte B) c) { var (h, s, l) = Trendo.Core.Sys.Colors.Hsl(c.R, c.G, c.B); co.Text = $"{Trendo.Core.Sys.Colors.Hex(c.R, c.G, c.B)} · {Trendo.Core.Sys.Colors.Rgb(c.R, c.G, c.B)} · Farbton {h}°, Sättigung {s} %, Helligkeit {l} %"; hex.Text = Trendo.Core.Sys.Colors.Hex(c.R, c.G, c.B); }
         sp.Children.Add(Card(Section("Farben", "Farbcode umrechnen oder mit der Pipette eine Stelle in einem Bild (z. B. Bildschirmfoto) auslesen. Der Wert landet in der Zwischenablage.",
             Line(hex, Act("color-run", "Umrechnen", () => Try(V, () => ShowColor(Trendo.Core.Sys.Colors.ParseHex(hex.Text ?? "")))),
-                Act("color-copy", "Kopieren", async () => { if (Clipboard is { } cb && hex.Text is { } t) await cb.SetTextAsync(t); })),
-            Line(pf, px, Act("color-pick", "Pipette", () => Try(V, () => { var xy = Clean(px).Split(',').Select(int.Parse).ToArray(); if (xy.Length != 2) throw new ArgumentException("Stelle bitte als x,y."); ShowColor(ImageTools.ColorAt(Clean(pf), xy[0], xy[1])); }))), co)));
+                Act("color-copy", "Kopieren", async () => { var t = hex.Text?.Trim() ?? ""; if (t.Length == 0) { Say("Bitte zuerst einen Farbcode eintragen.", V); return; } if (Clipboard is { } cb) await cb.SetTextAsync(t); Say($"Kopiert: {t}", V); })),
+            Line(pf, px, Act("color-pick", "Pipette", () => Try(V, () => { var file = Need(pf, "ein Bild für die Pipette"); var xy = Need(px, "die Stelle als x,y").Split(',').Select(int.Parse).ToArray(); if (xy.Length != 2) throw new ArgumentException("Stelle bitte als x,y."); ShowColor(ImageTools.ColorAt(file, xy[0], xy[1])); }))), co)));
         return AlltagPage("Kleine Helfer", sp);
     }
 
