@@ -11,7 +11,7 @@ Keine für Tokens. Dieser Bericht.
 
 ## Testergebnis
 
-Die bestehende Suite bleibt die aus T-0005: Api 15, Core 531 plus 10 übersprungen, App 222. Ein eigener Fokusring-Test für neue Token-Bausteine gibt es nicht, weil die Bausteine nicht angelegt wurden.
+Die bestehende Suite bleibt die aus T-0005: Api 15, Core 538 plus 10 übersprungen, App 225. Ein eigener Fokusring-Test für neue Token-Bausteine gibt es nicht, weil die Bausteine nicht angelegt wurden.
 
 ## Offene Punkte
 

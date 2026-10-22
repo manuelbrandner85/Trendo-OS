@@ -17,7 +17,7 @@ Blender und Unreal Engine sind auf dem PC installiert. In den Linux-Bildern fehl
 
 ## Testergebnis
 
-Wie T-0005: Api 15 grün, Core 531 grün plus 10 übersprungen, App 222 grün. Kein Rohlog mit SHA-256 unter `reports/` für einen PC-Lauf. Deshalb kein `TESTED` und kein `PC_VERIFIED`.
+Wie T-0005: Api 15 grün, Core 538 grün plus 10 übersprungen, App 225 grün. Kein Rohlog mit SHA-256 unter `reports/` für einen PC-Lauf. Deshalb kein `TESTED` und kein `PC_VERIFIED`.
 
 ## Offene Punkte
 

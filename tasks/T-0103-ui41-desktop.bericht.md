@@ -13,7 +13,7 @@ In diesem Branch keine Layoutänderung am Schreibtisch. Der Vergleichstext nennt
 
 ## Testergebnis
 
-Wie T-0005, App 222 grün. Die Design-41-Prüfungen (Suche, Fenster, Studios) liefen in dieser Suite mit.
+Wie T-0005, App 225 grün. Die Design-41-Prüfungen (Suche, Fenster, Studios) liefen in dieser Suite mit.
 
 ## Offene Punkte
 

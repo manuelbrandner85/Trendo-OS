@@ -11,7 +11,7 @@ Keine an Fenstern oder Einstellungen. Dieser Bericht.
 
 ## Testergebnis
 
-App 222 grün, darin Ziehen, Größe, Taskleiste und die Design-41-Einstellungsabschnitte, soweit die Suite sie schon prüft.
+App 225 grün, darin Ziehen, Größe, Taskleiste und die Design-41-Einstellungsabschnitte, soweit die Suite sie schon prüft.
 
 ## Offene Punkte
 

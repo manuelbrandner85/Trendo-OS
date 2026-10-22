@@ -13,7 +13,7 @@ Keine an der Übersicht. Dieser Bericht.
 
 ## Testergebnis
 
-App 222 grün. Die Suite öffnet die Studios aus dem Startmenü und prüft Überschriften und Symbole. Ein einzelner Klick auf jede der über 50 Arbeitsflächen von Hand ist nicht gelaufen.
+App 225 grün. Die Suite öffnet die Studios aus dem Startmenü und prüft Überschriften und Symbole. Ein einzelner Klick auf jede der über 50 Arbeitsflächen von Hand ist nicht gelaufen.
 
 ## Offene Punkte
 

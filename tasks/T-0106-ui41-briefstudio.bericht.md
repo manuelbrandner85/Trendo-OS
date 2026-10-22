@@ -11,11 +11,11 @@ Keine an der Briefseite. Dieser Bericht.
 
 ## Testergebnis
 
-App 222 grün, darin die Briefprüfungen der bestehenden Suite. Ein frischer DOCX- und PDF-Nachweis mit Datei-Hash aus diesem Lauf liegt nicht extra unter `reports/`.
+App 225 grün, darin die Briefprüfungen der bestehenden Suite. Ein frischer DOCX- und PDF-Nachweis mit Datei-Hash aus diesem Lauf liegt nicht extra unter `reports/`.
 
 ## Offene Punkte
 
-- `SYS-03-P14` (PDF, A4) kann auf diesem Image scheitern, sobald `google-chrome` im PATH liegt. Die App ist dafür unverändert. In dem genannten App-Lauf war die Suite grün (222/222).
+- `SYS-03-P14` (PDF, A4) kann auf diesem Image scheitern, sobald `google-chrome` im PATH liegt. Die App ist dafür unverändert. In dem genannten App-Lauf war die Suite grün (225/225).
 - Ohne Tesseract fragt „Briefe schreiben“ aus dem Startmenü zuerst nach dem Zusatzprogramm.
 
 ## Nicht geprüft

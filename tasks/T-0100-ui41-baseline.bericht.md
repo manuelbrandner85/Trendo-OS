@@ -13,7 +13,7 @@ Keine für die Vorher-Bilder. Dieser Bericht.
 
 ## Testergebnis
 
-Die Suite aus T-0005 prüft diesen Auftrag nicht. Api 15 grün, Core 531 grün plus 10 übersprungene `WinRealTests`, App 222 grün. Zahlen vor dem letzten Hinweistext im 3D-Studio.
+Die Suite aus T-0005 prüft diesen Auftrag nicht. Schluss-Lauf: Api 15, Core 538 plus 10 übersprungene `WinRealTests`, App 225. Der 3D-Hinweis ist in diesem App-Lauf enthalten.
 
 ## Offene Punkte
 

@@ -11,7 +11,7 @@ Keine für das Layout. Dieser Bericht.
 
 ## Testergebnis
 
-App-Suite aus T-0005: Failed 0, Passed 222. Darin die Fensterprüfungen, die mit Design 41 auf `main` kamen. Eine eigene Bounds-Prüfung für 1024×768 und 2560×1440 ist in diesem Lauf nicht neu geschrieben.
+App-Suite aus T-0005: Failed 0, Passed 225. Darin die Fensterprüfungen, die mit Design 41 auf `main` kamen. Eine eigene Bounds-Prüfung für 1024×768 und 2560×1440 ist in diesem Lauf nicht neu geschrieben.
 
 ## Offene Punkte
 

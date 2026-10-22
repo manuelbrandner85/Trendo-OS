@@ -13,7 +13,7 @@ Keine neue Startmenü-Optik. Siehe T-0006 für den Filter. Dieser Bericht.
 
 ## Testergebnis
 
-App-Suite 222 grün, darin Tab über Profil und Einstellungen im Startmenü. Ein KI-Lauf mit Ollama im Zustand „Bereit“ ist in dieser Sitzung nicht der Nachweis für Referenz 05.
+App-Suite 225 grün, darin Tab über Profil und Einstellungen im Startmenü. Ein KI-Lauf mit Ollama im Zustand „Bereit“ ist in dieser Sitzung nicht der Nachweis für Referenz 05.
 
 ## Offene Punkte
 
