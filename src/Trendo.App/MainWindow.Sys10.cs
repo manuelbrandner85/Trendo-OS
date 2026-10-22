@@ -82,15 +82,15 @@ public partial class MainWindow
         var ff = Field("form-file", "PDF mit Formularfeldern", 340, _formFile); var fields = new StackPanel { Spacing = 4, Name = "form-fields" }; var boxes = new Dictionary<string, TextBox>();
         foreach (var f in _formFields) { var t = new TextBox { Name = "form-field-" + boxes.Count, Text = f.Value, Width = 260, PlaceholderText = f.Type == "Btn" ? "ja / nein" : "" }; boxes[f.Name] = t; fields.Children.Add(Line(P(f.Name, Text), t)); }
         sp.Children.Add(Card(Section("PDF-Formular ausfüllen", "Liest die Felder eines PDF-Formulars. Ausgefüllt wird eine Kopie – das Original bleibt.",
-            Line(ff, Act("form-read", "Felder lesen", () => Try(V, () => { _formFile = Clean(ff); _formFields = PdfForm.Fields(_formFile); Say(_formFields.Count == 0 ? "Keine ausfüllbaren Felder gefunden." : $"{_formFields.Count} Felder gefunden.", V); })),
-                Act("form-save", "Ausgefüllt speichern", () => Try(V, () => { var o = PdfForm.Fill(_formFile, boxes.ToDictionary(b => b.Key, b => b.Value.Text ?? "")); _formFields = []; Say("Gespeichert: " + Path.GetFileName(o), V); }), true)), fields)));
+            Line(ff, Act("form-read", "Felder lesen", () => Try(V, () => { _formFile = Need(ff, "die PDF-Datei mit dem Formular"); _formFields = PdfForm.Fields(_formFile); Say(_formFields.Count == 0 ? "Keine ausfüllbaren Felder gefunden." : $"{_formFields.Count} Felder gefunden.", V); })),
+                Act("form-save", "Ausgefüllt speichern", () => Try(V, () => { if (string.IsNullOrEmpty(_formFile) || _formFields.Count == 0) { Say("Erst „Felder lesen“ – dann ausfüllen und speichern.", V); return; } var o = PdfForm.Fill(_formFile, boxes.ToDictionary(b => b.Key, b => b.Value.Text ?? "")); _formFields = []; Say("Gespeichert: " + Path.GetFileName(o), V); }), true)), fields)));
 
         var pf = Field("print-file", "PDF zum Drucken", 340, _printFile); var info = new StackPanel { Name = "print-info" };
         var sumatra = ToolPath("sumatra");
         sp.Children.Add(Card(Section("Druckvorschau und Drucken", "Zeigt Seitenzahl und Format (A4?) und öffnet die Vorschau. Gedruckt wird nur nach deinem ausdrücklichen Klick.",
             Line(pf, Act("print-preview", "Vorschau", () => Try(V, () =>
             {
-                var f = Clean(pf); var b = Pdf.MediaBox(f); _printFile = f; info.Children.Clear();
+                var f = Need(pf, "die PDF-Datei für die Vorschau"); if (!File.Exists(f)) { Say("Datei nicht gefunden: " + Path.GetFileName(f), V); return; } var b = Pdf.MediaBox(f); _printFile = f; info.Children.Clear();
                 info.Children.Add(P($"{Pdf.Pages(f)} Seiten · {(b is { } x ? $"{x.W / 72 * 25.4:0} × {x.H / 72 * 25.4:0} mm" : "Format unbekannt")} · {(Pdf.IsA4(b) ? "A4 ✓" : "nicht A4")}", Text));
                 if (sumatra is not null) _core.Integrations.LaunchDirect(Principal.LocalOwner, sumatra, _core.Audit, f); else Launch(f);
             })), _printAsk ? Line(P("Jetzt auf dem Standarddrucker drucken?", Text), Act("print-yes", "Ja, drucken", () => Try(V, () => { PrintNow(_printFile, sumatra); _printAsk = false; Say("An den Drucker geschickt.", V); }), true), Act("print-no", "Abbrechen", () => { _printAsk = false; Show(V); }))
