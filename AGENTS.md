@@ -33,3 +33,13 @@ Aufträge kommen als Datei aus `tasks/` (siehe `tasks/README.md`). Antworte und 
 
 ## Bericht (`tasks/<task-id>.bericht.md`)
 Auftrag · Branch · geänderte Dateien · Testergebnis je Projekt (Zahlen aus der Ausgabe) · offene Punkte/Risiken · was du NICHT geprüft hast.
+
+## Cursor Cloud specific instructions
+
+Cloud-Agenten laufen auf Linux. Die PowerShell-Regeln weiter oben gelten für Grok Build auf dem Windows-PC. Auf dem Cloud-Agenten sind normale Shell-Befehle in Ordnung.
+
+- .NET SDK 10 liegt unter `/usr/share/dotnet`; `dotnet` ist über `/usr/local/bin` erreichbar. `poppler-utils` und `python3-yaml` sind vorinstalliert.
+- Bauen und testen wie in der README: `dotnet build Trendo.sln -c Release` und `dotnet test Trendo.sln -c Release`.
+- Lokale API prüfen: `dotnet run --project src/Trendo.App -c Release -- --api-selftest --offline --no-first-run --data-root /tmp/trendo-api`.
+- Oberfläche ohne Fenster: `dotnet run --project tools/Trendo.Render -c Release -- /tmp/trendo.png`. Das Fenster auf dem vorhandenen Display: `dotnet run --project src/Trendo.App -c Release -- --no-first-run --page start`.
+- `SYS-03-P14` (Seite als PDF, A4) schlägt auf diesem Image fehl, sobald `google-chrome` im PATH liegt. Das Image-Chrome druckt headless im Format US Letter (612×792 pt) und beendet sich nach `--print-to-pdf` nicht von selbst. Der Fehlschlag kommt vom Papierformat dieses Chrome. Die App bleibt unverändert.
