@@ -87,7 +87,7 @@ public partial class MainWindow
 
     private Button Act(string name, string label, Action click, bool primary = false)
     {
-        var b = new Button { Name = name, Content = label, FontSize = 11.5, Padding = new Thickness(10, 3), Background = primary ? Accent : null };
+        var b = new Button { Name = name, Content = label, FontSize = 11.5, Padding = new Thickness(10, 3), Background = primary ? Accent : Avalonia.Media.Brushes.Transparent }; // null wäre per Maus nicht anklickbar, Transparent sieht gleich aus
         b.Click += (_, _) => click();
         return b;
     }

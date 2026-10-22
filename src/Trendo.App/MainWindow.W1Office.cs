@@ -30,6 +30,7 @@ public partial class MainWindow
         }
         var letter = new Button { Name = "office-brief", Content = "Im Briefstudio schreiben", Margin = new Thickness(0, 0, 6, 6), Background = Accent };
         letter.Click += (_, _) => Show("brief"); row.Children.Add(letter);
+        row.Children.Add(OpenInButton("libreoffice", () => LatestOfficeDoc(), "office"));
         sp.Children.Add(row); sp.Children.Add(msg);
         var soffice = ToolPath("libreoffice");
         sp.Children.Add(P(soffice is null ? "LibreOffice ist nicht installiert – Öffnen nutzt dein Standardprogramm, PDF-Export ist aus." : "Zuletzt bearbeitet (Projektordner und Dokumente). „PDF“ wandelt mit LibreOffice im Hintergrund um.", null, 11));
@@ -165,4 +166,10 @@ public partial class MainWindow
         return LetterPage("Schnell schreiben", sp);
     }
     private static Control Sp(Control c) { c.Margin = new Thickness(6, 0, 0, 6); return c; }
+    /// <summary>T-0203: zuletzt angelegtes Dokument im Ordner „Dokumente“.</summary>
+    private string? LatestOfficeDoc()
+    {
+        var dir = Path.Combine(ProjectsRoot, "Dokumente");
+        return Directory.Exists(dir) ? Directory.GetFiles(dir).Where(f => ExternalApps.Accepts(ExternalApps.Get("libreoffice"), f)).OrderByDescending(File.GetLastWriteTime).FirstOrDefault() : null;
+    }
 }

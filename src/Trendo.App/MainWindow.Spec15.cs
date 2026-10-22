@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.Input.Platform;
 using Avalonia.Media;
 using Trendo.Core;
@@ -41,6 +42,7 @@ public partial class MainWindow
             Launch(d); Show("sendung");
         };
         sp.Children.Add(exp);
+        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { P("Ablauf als OBS-Szenensammlung (eine Szene je Programmpunkt):", null, 11), OpenInButton("obs", () => ObsCollectionFile(), "sendung") } });
         sp.Children.Add(FachTool("bc-rate", "Reicht meine Leitung?", "Upload-Geschwindigkeit z. B. aus einem Speedtest. Qualität wie „1080p60“.",
             [("pf", "Plattform", "YouTube"), ("q", "Qualität", "1080p60"), ("up", "Upload (Mbit/s)", "10"), ("min", "Aufnahme (min)", "60")],
             v => { var p = BroadcastDesk.PlanStream(v("pf"), v("q"), Fach.Num(v("up"), "Upload")); return $"{(p.Fits ? "✓" : "⚠")} Video {Fach.F(p.VideoKbps, 0)} kbit/s + Ton {p.AudioKbps} kbit/s → du brauchst ca. {Fach.F(p.NeededUploadMbps, 1)} Mbit/s Upload. {p.Advice}\nAufnahme auf Platte: ca. {Fach.F(BroadcastDesk.StorageGb(p.VideoKbps + p.AudioKbps, Fach.Num(v("min"), "Minuten")), 1)} GB"; }, "Prüfen"));
@@ -67,5 +69,14 @@ public partial class MainWindow
             FachTool("bc-srt", "Untertitel verschieben", "SRT-Datei und Versatz in Sekunden (negativ = früher). Speichert eine Kopie.", [("file", "SRT-Datei", ""), ("s", "Versatz (s)", "0")],
                 v => { var f = v("file").Trim().Trim('"'); if (!File.Exists(f)) throw new IOException("Diese Datei gibt es nicht."); var (srt, n, p) = BroadcastPlus.ShiftSrt(File.ReadAllText(f), TimeSpan.FromSeconds(Fach.Num(v("s")))); var o = Path.Combine(Path.GetDirectoryName(f) ?? ".", Path.GetFileNameWithoutExtension(f) + ".versetzt.srt"); File.WriteAllText(o, srt); return $"{n} Untertitel" + (p.Count == 0 ? " – alles in Ordnung." : "\n⚠ " + string.Join("\n⚠ ", p)) + $"\nGespeichert: {o}"; }, "Verschieben")));
         return FachPage("Sendung & Stream", sp);
+    }
+    /// <summary>T-0203: schreibt die OBS-Szenensammlung zur aktuellen Sendung.</summary>
+    private string? ObsCollectionFile()
+    {
+        if (Broadcast.Plan.Segments.Count == 0) throw new InvalidOperationException("Bitte zuerst Programmpunkte anlegen.");
+        var name = "Trendo " + (string.IsNullOrWhiteSpace(Broadcast.Plan.Show) ? "Sendung" : Broadcast.Plan.Show.Trim());
+        var f = Path.Combine(Fach.StoreDir(_core.DataRoot, "sendung"), string.Concat(name.Split(Path.GetInvalidFileNameChars())) + ".json");
+        File.WriteAllText(f, ObsScenes.Collection(name, Broadcast.Plan.Segments.Select(s => s.Title)));
+        return f;
     }
 }

@@ -304,7 +304,7 @@ public partial class MainWindow
 
     private Button Act(string name, string label, Func<Task> click, bool primary = false)
     {
-        var b = new Button { Name = name, Content = label, FontSize = 11.5, Padding = new Avalonia.Thickness(10, 3), Background = primary ? Accent : null };
+        var b = new Button { Name = name, Content = label, FontSize = 11.5, Padding = new Avalonia.Thickness(10, 3), Background = primary ? Accent : Avalonia.Media.Brushes.Transparent }; // null wäre per Maus nicht anklickbar, Transparent sieht gleich aus
         b.Click += async (_, _) => await click();
         return b;
     }
