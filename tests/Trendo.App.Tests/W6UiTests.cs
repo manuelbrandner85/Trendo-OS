@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Trendo.App;
 using Trendo.Core;
 using Xunit;
 
@@ -160,18 +161,51 @@ public class SPEC09_Ui
 
 public class SPEC10_Ui
 {
-    [AvaloniaFact(DisplayName = "SPEC-10 UI: diesen PC live messen, Sensor anlegen, CSV einlesen")]
-    public void Twin()
+    static void Messen(MainWindow w, double platte, double ram)
+    {
+        w.PcSampleSource = () => new MainWindow.PcSample(platte, ram);
+        w.Find<Button>("twin-pc").Press();
+    }
+
+    [AvaloniaFact(DisplayName = "SPEC-10 UI: Schwellen Ok, Warnung und Alarm mit festen Messwerten; Sensor anlegen, CSV einlesen")]
+    public void Twin_schwellen()
     {
         var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
         w.Show(MainWindow.StudioPages["SPEC-10"]);
-        w.Find<Button>("twin-pc").Press();
+        // Grenzen im Produkt: Platte Warnung ab 85 / Alarm ab 95, Arbeitsspeicher 1500 / 3000 MB.
+        Messen(w, 10, 100);
+        Assert.Contains("Ok", w.Find<TextBlock>("twin-Dieser_PC-Festplatte_belegt").Text);
         Assert.Contains("Ok", w.Find<TextBlock>("twin-Dieser_PC-Trendo-Arbeitsspeicher").Text);
-        Assert.True(w.Twin.Model.Readings.Count >= 2);
+        Messen(w, 85, 1500);
+        Assert.Contains("Warnung", w.Find<TextBlock>("twin-Dieser_PC-Festplatte_belegt").Text);
+        Assert.Contains("Warnung", w.Find<TextBlock>("twin-Dieser_PC-Trendo-Arbeitsspeicher").Text);
+        Messen(w, 95, 3000);
+        Assert.Contains("Alarm", w.Find<TextBlock>("twin-Dieser_PC-Festplatte_belegt").Text);
+        Assert.Contains("Alarm", w.Find<TextBlock>("twin-Dieser_PC-Trendo-Arbeitsspeicher").Text);
         W6Ui.Run(w, "twin-def");
         var f = Path.Combine(root, "m.csv"); File.WriteAllText(f, "Zeit;Anlage;Sensor;Wert\n21.10.2026 10:00;Heizung;Vorlauf;85\n");
         Assert.Contains("1 Messwerte", W6Ui.Run(w, "twin-import", ("file", f)));
         Assert.Contains("Alarm", w.Find<TextBlock>("twin-Heizung-Vorlauf").Text);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "SPEC-10 UI: Live-Messung liefert eine plausible Zahl und einen gültigen Status")]
+    public void Twin_live()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        w.Show(MainWindow.StudioPages["SPEC-10"]);
+        Assert.Null(w.PcSampleSource);
+        w.Find<Button>("twin-pc").Press();
+        var ram = w.Twin.States().Single(s => s.Sensor == "Trendo-Arbeitsspeicher");
+        var platte = w.Twin.States().Single(s => s.Sensor == "Festplatte belegt");
+        Assert.Contains(ram.Level, new[] { TwinLevel.Ok, TwinLevel.Warnung, TwinLevel.Alarm });
+        Assert.Contains(platte.Level, new[] { TwinLevel.Ok, TwinLevel.Warnung, TwinLevel.Alarm });
+        Assert.Contains(ram.Level.ToString(), w.Find<TextBlock>("twin-Dieser_PC-Trendo-Arbeitsspeicher").Text);
+        Assert.Contains(platte.Level.ToString(), w.Find<TextBlock>("twin-Dieser_PC-Festplatte_belegt").Text);
+        Assert.InRange(ram.Last!.Value, 1, 500_000);
+        Assert.InRange(platte.Last!.Value, 0, 100);
+        Assert.True(w.Twin.Model.Readings.Count >= 2);
+        w.Close();
     }
 }
 
