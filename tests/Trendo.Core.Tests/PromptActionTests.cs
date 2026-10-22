@@ -511,6 +511,156 @@ public class PromptActionTests
         Assert.Empty(result.Artifacts);
     }
 
+    const string InvoiceText = """
+        Verkaeufer: Anna Beispiel
+        Kaeufer: Bruno Beispiel
+        Position: Beratung | 2 | 10
+        Position: Fahrt | 1 | 5,50
+        MwSt: 19
+        Datum: 2026-10-22
+        """;
+
+    [Fact(DisplayName = "Rechnung rechnet in Decimal und bucht nicht")]
+    public void Rechnung_rechnet_und_bucht_nicht()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var plan = wf.Start(fx.Req("SPEC-11", InvoiceText), fx.Ctx());
+        Assert.Equal(RunStatus.Planned, plan.Status);
+        var done = wf.Los(fx.Project, plan.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        Assert.Null(done.Receipt);
+        Assert.Contains(done.Warnings, w => w.Contains("nichts bezahlt", StringComparison.OrdinalIgnoreCase));
+        var invoice = new Invoice("RE-2026-001", new DateOnly(2026, 10, 22), "Anna Beispiel", "Bruno Beispiel",
+            [new("Beratung", 2, 10m), new("Fahrt", 1, 5.50m)], 19m, false);
+        var (_, _, gross) = Finance.Totals(invoice);
+        var file = fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath);
+        var html = File.ReadAllText(file);
+        Assert.Equal(Finance.InvoiceHtml(invoice), html);
+        Assert.Contains(gross.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("de-DE")) + " €", html);
+        Assert.Contains("Gesamt " + gross.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("de-DE")) + " €", done.Preview);
+        Assert.DoesNotContain("gebucht", html, StringComparison.OrdinalIgnoreCase);
+        Assert.False(File.Exists(Path.Combine(fx.Root, "finanzen", "buchungen.json")));
+        var next = wf.Los(fx.Project, wf.Revise(fx.Project, plan.RunId, InvoiceText.Replace("5,50", "6"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(2, next.Version);
+        var again = new Invoice("RE-2026-001", new DateOnly(2026, 10, 22), "Anna Beispiel", "Bruno Beispiel",
+            [new("Beratung", 2, 10m), new("Fahrt", 1, 6m)], 19m, false);
+        Assert.Equal(Finance.InvoiceHtml(again), File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, next.Artifacts.Single(a => a.Version == 2).RelativePath)));
+        Assert.Equal(html, File.ReadAllText(file));
+    }
+
+    [Fact(DisplayName = "Kleinunternehmer und Angebot bleiben ungebucht")]
+    public void Rechnung_klein_und_angebot()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var smallText = """
+            Verkaeufer: Anna Beispiel
+            Kaeufer: Bruno Beispiel
+            Leistung: Beratung
+            Menge: 2
+            Preis: 10
+            Kleinunternehmer: ja
+            Datum: 2026-10-22
+            """;
+        var small = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-11", smallText, id: "klein-1"), fx.Ctx()).RunId, fx.Ctx());
+        var smallInvoice = new Invoice("RE-2026-001", new DateOnly(2026, 10, 22), "Anna Beispiel", "Bruno Beispiel", [new("Beratung", 2, 10m)], 0m, true);
+        var smallHtml = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, small.Artifacts.Single().RelativePath));
+        Assert.Equal(Finance.InvoiceHtml(smallInvoice), smallHtml);
+        Assert.Contains("§ 19 UStG", smallHtml);
+        Assert.Equal(RunStatus.Verified, small.Status);
+
+        var offerText = """
+            Art: Angebot
+            Verkaeufer: Anna Beispiel
+            Kaeufer: Bruno Beispiel
+            Leistung: Beratung
+            Menge: 2
+            Preis: 10
+            MwSt: 19
+            Datum: 2026-10-22
+            """;
+        var offer = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-11", offerText, id: "angebot-1"), fx.Ctx()).RunId, fx.Ctx());
+        var offerInvoice = new Invoice("AN-2026-001", new DateOnly(2026, 10, 22), "Anna Beispiel", "Bruno Beispiel", [new("Beratung", 2, 10m)], 19m, false);
+        Assert.Equal(Finance.InvoiceHtml(offerInvoice, "Angebot"), File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, offer.Artifacts.Single().RelativePath)));
+        Assert.Contains("<h2>Angebot AN-2026-001</h2>", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, offer.Artifacts.Single().RelativePath)));
+
+        var waiting = wf.Start(fx.Req("SPEC-11", "Verkaeufer: Anna\nMwSt: 19\nPosition: Beratung | 1 | 10", id: "rueck-1"), fx.Ctx());
+        Assert.Equal(RunStatus.AwaitingInput, waiting.Status);
+        Assert.Empty(waiting.Artifacts);
+        var bad = wf.Start(fx.Req("SPEC-11", "Verkaeufer: Anna\nKaeufer: Bruno\nLeistung: Beratung\nMenge: 1\nPreis: abc\nMwSt: 19", id: "preis-1"), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, bad.Status);
+        Assert.Empty(bad.Artifacts);
+    }
+
+    [Fact(DisplayName = "Zahlen ja bucht und überweist nichts")]
+    public void Geld_zahlt_nichts()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var plan = wf.Start(fx.Req("SPEC-11", "Freigabe: erteilt\nZahlen: ja\nBetrag: 10\nEmpfaenger: Bruno"), fx.Ctx());
+        var done = wf.Los(fx.Project, plan.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Unsupported, done.Status);
+        Assert.Null(done.Receipt);
+        Assert.Empty(done.Artifacts);
+        Assert.Contains(done.Errors, e => e.Contains("nicht angeschlossen", StringComparison.OrdinalIgnoreCase));
+        Assert.False(File.Exists(Path.Combine(fx.Root, "finanzen", "buchungen.json")));
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith(".html", StringComparison.OrdinalIgnoreCase));
+    }
+
+    const string PlanText = """
+        Name: Kerzen
+        Problem: Kerzen riechen im Flur zu schwach und halten nicht lange.
+        Zielgruppe: Haushalte
+        Loesung: Duftkerzen aus Sojawachs mit langer Brenndauer im Glas.
+        Modell: Shop
+        Preis: 20
+        Kosten: 5
+        Fix: 100
+        Menge: 30
+        Stunden: 10
+        Startgeld: 3000
+        Mitbewerber: 4
+        Koennen: 4
+        """;
+
+    [Fact(DisplayName = "Geschäftsidee schreibt einen Bauplan und bucht nicht")]
+    public void Geschaeft_bewertet_ohne_buchung()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var plan = wf.Start(fx.Req("STUDIO-ONLINE-BUSINESS-01", PlanText), fx.Ctx());
+        Assert.Equal(RunStatus.Planned, plan.Status);
+        var done = wf.Los(fx.Project, plan.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var idea = new BusinessIdea
+        {
+            Name = "Kerzen",
+            Problem = "Kerzen riechen im Flur zu schwach und halten nicht lange.",
+            Audience = "Haushalte",
+            Solution = "Duftkerzen aus Sojawachs mit langer Brenndauer im Glas.",
+            ModelId = "shop",
+            Price = 20,
+            VariableCost = 5,
+            FixedCostMonth = 100,
+            CustomersMonth = 30,
+            HoursWeek = 10,
+            Capital = 3000,
+            Competitors = 4,
+            Skill = 4
+        };
+        var file = fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath);
+        Assert.Equal(BusinessStudio.Blueprint(idea).Replace("\r\n", "\n"), File.ReadAllText(file).Replace("\r\n", "\n"));
+        Assert.Contains(BusinessStudio.Evaluate(idea).Decision, done.Preview);
+        Assert.Contains(done.Warnings, w => w.Contains("Keine Buchung", StringComparison.Ordinal));
+        Assert.False(File.Exists(Path.Combine(fx.Root, "finanzen", "buchungen.json")));
+        var changed = PlanText.Replace("Preis: 20", "Preis: 24");
+        var next = wf.Los(fx.Project, wf.Revise(fx.Project, plan.RunId, changed, fx.Ctx()).RunId, fx.Ctx());
+        idea.Price = 24;
+        Assert.Equal(BusinessStudio.Blueprint(idea).Replace("\r\n", "\n"), File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, next.Artifacts.Single(a => a.Version == 2).RelativePath)).Replace("\r\n", "\n"));
+        Assert.Contains("Preis: 20,00 €", File.ReadAllText(file));
+    }
+
     [Fact(DisplayName = "Katalogmatrix nennt jede Studio-ID genau einmal")]
     public void Matrix_deckt_den_Katalog()
     {
@@ -520,9 +670,13 @@ public class PromptActionTests
         Assert.Contains(registered, id => id == "STUDIO-LETTER-01");
         Assert.Contains(registered, id => id == "SYS-10");
         Assert.Contains(registered, id => id == "SYS-09");
+        Assert.Contains(registered, id => id == "SPEC-11");
+        Assert.Contains(registered, id => id == "STUDIO-ONLINE-BUSINESS-01");
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-LETTER-01", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-10", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-09", PromptActions.CreateDefault()));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SPEC-11", PromptActions.CreateDefault()));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-ONLINE-BUSINESS-01", PromptActions.CreateDefault()));
         Assert.All(ids.Where(id => !registered.Contains(id)), id => Assert.Equal(CapabilityLevel.NotImplemented, CapabilityCatalog.Level(id, PromptActions.CreateDefault())));
         var markdown = CapabilityCatalog.Markdown(PromptActions.CreateDefault());
         Assert.Equal(Normalize(markdown), Normalize(File.ReadAllText(Repo("docs/improvement-42/studio-capability-matrix.md"))));

@@ -109,13 +109,14 @@ public static class Finance
         return (net, vat, net + vat);
     }
 
-    public static string InvoiceHtml(Invoice i)
+    public static string InvoiceHtml(Invoice i, string heading = "Rechnung")
     {
+        if (heading is not ("Rechnung" or "Angebot")) heading = "Rechnung";
         string E(string s) => WebUtility.HtmlEncode(s).Replace("\n", "<br>");
         string M(decimal d) => d.ToString("N2", De) + " €";
         var (net, vat, gross) = Totals(i);
-        var sb = new StringBuilder($"<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"><title>Rechnung {E(i.Number)}</title><style>body{{font-family:system-ui,sans-serif;max-width:720px;margin:2rem auto;color:#111}}table{{width:100%;border-collapse:collapse}}td,th{{padding:6px;border-bottom:1px solid #ddd;text-align:left}}.r{{text-align:right}}</style></head><body>");
-        sb.Append($"<p>{E(i.Seller)}</p><p><b>An:</b><br>{E(i.Buyer)}</p><h2>Rechnung {E(i.Number)}</h2><p>Datum: {i.Date.ToString("dd.MM.yyyy", De)} · Leistungsdatum: {i.Date.ToString("dd.MM.yyyy", De)}</p>");
+        var sb = new StringBuilder($"<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"><title>{heading} {E(i.Number)}</title><style>body{{font-family:system-ui,sans-serif;max-width:720px;margin:2rem auto;color:#111}}table{{width:100%;border-collapse:collapse}}td,th{{padding:6px;border-bottom:1px solid #ddd;text-align:left}}.r{{text-align:right}}</style></head><body>");
+        sb.Append($"<p>{E(i.Seller)}</p><p><b>An:</b><br>{E(i.Buyer)}</p><h2>{heading} {E(i.Number)}</h2><p>Datum: {i.Date.ToString("dd.MM.yyyy", De)} · Leistungsdatum: {i.Date.ToString("dd.MM.yyyy", De)}</p>");
         sb.Append("<table><tr><th>Leistung</th><th class=r>Menge</th><th class=r>Einzelpreis</th><th class=r>Summe</th></tr>");
         foreach (var l in i.Lines) sb.Append($"<tr><td>{E(l.Text)}</td><td class=r>{l.Qty.ToString("0.##", De)}</td><td class=r>{M(l.UnitNet)}</td><td class=r>{M(Math.Round(l.Qty * l.UnitNet, 2))}</td></tr>");
         sb.Append($"<tr><td colspan=3 class=r>Netto</td><td class=r>{M(net)}</td></tr>");
