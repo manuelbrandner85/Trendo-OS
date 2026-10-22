@@ -70,9 +70,15 @@ public sealed partial class MainWindow
                 foreach (var (id, label) in new[] { ("dunkel", "Dunkel Premium (empfohlen)"), ("hell", "Hell"), ("kontrast", "Hoher Kontrast (gut lesbar)") })
                 {
                     var rb = new RadioButton { Name = "wiz-theme-" + id, Content = label, GroupName = "theme", IsChecked = _settings.Theme == id, Foreground = Text };
-                    rb.IsCheckedChanged += (_, _) => { if (rb.IsChecked == true) _settings.Theme = id; };
+                    rb.IsCheckedChanged += (_, _) => { if (rb.IsChecked == true && _settings.Theme != id) { _settings.Theme = id; Show("einrichtung"); } };
                     sp.Children.Add(rb);
                 }
+                // T-0210: sichtbare Vorschau der Wahl (wird nach „Weiter“ für ganz Trendo übernommen)
+                var (bg, fg, edge) = _settings.Theme switch { "hell" => ("#F4F7FC", "#0F1B2E", "#335C99"), "kontrast" => ("#000000", "#FFFFFF", "#FFFF00"), _ => ("#0B1730", "#E6EDF7", "#2F86F6") };
+                var themeLabel = _settings.Theme switch { "hell" => "Hell", "kontrast" => "Hoher Kontrast", _ => "Dunkel Premium" };
+                sp.Children.Add(new Border { Name = "wiz-theme-preview", Background = Brush.Parse(bg), BorderBrush = Brush.Parse(edge), BorderThickness = new Thickness(2), CornerRadius = new CornerRadius(10), Padding = new Thickness(14, 10), Width = 320, HorizontalAlignment = HorizontalAlignment.Left,
+                    Child = new StackPanel { Spacing = 4, Children = { new TextBlock { Text = "Vorschau: " + themeLabel, Foreground = Brush.Parse(fg), FontWeight = FontWeight.SemiBold }, new TextBlock { Text = "So sehen Fenster und Texte aus.", Foreground = Brush.Parse(fg), FontSize = 11 } } } });
+                sp.Children.Add(new TextBlock { Name = "wiz-theme-choice", Text = $"Gewählt: {themeLabel} – gilt nach „Weiter“ für ganz Trendo.", Foreground = Text, FontSize = 11 });
                 break;
             case 3:
                 var hw = HardwareProbe.Read(); var (model, why) = KiAdvisor.Choose(hw);
@@ -81,9 +87,10 @@ public sealed partial class MainWindow
                 {
                     var cb = new CheckBox { Name = "wiz-pack-" + p.Id, IsChecked = _wizPacks.Contains(p.Id), Foreground = Text,
                         Content = new StackPanel { Children = { new TextBlock { Text = p.Name, Foreground = Text, FontWeight = FontWeight.SemiBold }, P(p.Description + (p.Id == "ki" ? $" · Modell: {model}" : ""), null, 11) } } };
-                    cb.IsCheckedChanged += (_, _) => { if (cb.IsChecked == true) _wizPacks.Add(p.Id); else _wizPacks.Remove(p.Id); };
+                    cb.IsCheckedChanged += (_, _) => { var changed = cb.IsChecked == true ? _wizPacks.Add(p.Id) : _wizPacks.Remove(p.Id); if (changed) Show("einrichtung"); };
                     sp.Children.Add(cb);
                 }
+                sp.Children.Add(new TextBlock { Name = "wiz-pack-summary", Text = "Gewählt: " + string.Join(", ", new[] { SetupPacks.Base.Name }.Concat(SetupPacks.Studios.Where(x => _wizPacks.Contains(x.Id)).Select(x => x.Name))), Foreground = Text, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
                 sp.Children.Add(P("KI-Empfehlung für diesen PC: " + why, null, 11));
                 var comps = SetupPacks.ComponentsFor(_wizPacks).Where(c => !_deps.IsInstalled(c)).ToList();
                 sp.Children.Add(P(comps.Count == 0 ? "Alles Ausgewählte ist schon vorhanden." :
@@ -157,6 +164,7 @@ public sealed partial class MainWindow
         return host;
     }
 
+    private string _repairMsg = "";
     private Control BuildCheckGrid(List<(Component C, ToolCheck R)> checks)
     {
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("230,*,130"), Name = "syscheck" };
@@ -179,11 +187,19 @@ public sealed partial class MainWindow
             for (var k = 0; k < 3; k++) { Grid.SetRow(cells[k], i); Grid.SetColumn(cells[k], k); cells[k].Margin = new Thickness(0, 2); cells[k].VerticalAlignment = VerticalAlignment.Center; grid.Children.Add(cells[k]); }
         }
         var sum = rows.Count(r => r.State == "Bereit");
-        return new StackPanel { Spacing = 6, Children = { P($"{sum} von {rows.Count} Punkten bereit.", Text), grid } };
+        var panel = new StackPanel { Spacing = 6, Children = { P($"{sum} von {rows.Count} Punkten bereit.", Text), grid } };
+        if (_repairMsg.Length > 0) panel.Children.Insert(0, new TextBlock { Name = "repair-msg", Text = _repairMsg, Foreground = _repairMsg.Contains('✓') ? Brush.Parse("#4ADE80") : Brush.Parse("#FACC15"), TextWrapping = TextWrapping.Wrap });
+        return panel;
         Control MakeFix(Component c)
         {
             var b = new Button { Name = "fix-" + c.Id, Content = "Reparieren", FontSize = 11, IsEnabled = !_depBusy };
-            b.Click += async (_, _) => { await InstallOne(c, refresh: false); ReloadStudios(); Show(CurrentView); };
+            b.Click += async (_, _) =>
+            {
+                _repairMsg = $"{c.Name}: wird repariert …"; Show(CurrentView);
+                bool ok; try { ok = InstallOverride is { } fake ? await fake(c) : await InstallOne(c, refresh: false); } catch (Exception ex) { ok = false; _depLog.Text = ex.Message; }
+                _repairMsg = ok ? $"{c.Name}: repariert ✓" : $"{c.Name}: hat nicht geklappt{(_core.Offline ? " – keine Internetverbindung" : "")}. {_depLog.Text}".Trim();
+                ReloadStudios(); Show(CurrentView);
+            };
             return b;
         }
     }
