@@ -8,7 +8,7 @@ Die erste Fassung dieses Berichts gehörte zu Phase A+B auf `bbbfd5d7656fa73ad52
 
 | Befehl | Ergebnis |
 |---|---|
-| `dotnet test Trendo.sln -c Release` | Api 15, Core 598 bestanden und 10 übersprungen, App 213, Fehler 0 |
+| `dotnet test Trendo.sln -c Release` | Api 15, Core 609 bestanden und 10 übersprungen, App 224, Fehler 0 |
 | `dotnet test tests/Trendo.Core.Tests -c Release --filter PromptActionTests\|ConnectedPromptTests` | Bestanden: 103, Fehler: 0 |
 
 Die 10 übersprungenen Core-Tests sind die vorhandenen Windows-Prüfungen. Der Kern hat 103 Prompt-Tests, darunter Plan-vor-Los, die Fachadapter, die angeschlossenen Dienste und `Uebergabe_behauptet_keine_fertigstellung`. Die App-Prüfung der Leiste umfasst Vorschau, den Profi-Schalter und das Baukasten-Formular.

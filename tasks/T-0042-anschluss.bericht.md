@@ -20,8 +20,8 @@
 `dotnet test Trendo.sln -c Release`:
 
 - Api: 15 bestanden, 0 übersprungen, 0 Fehler
-- Core: 598 bestanden, 10 übersprungen, 0 Fehler
-- App: 213 bestanden, 0 übersprungen, 0 Fehler
+- Core: 609 bestanden, 10 übersprungen, 0 Fehler
+- App: 224 bestanden, 0 übersprungen, 0 Fehler
 
 Prompt-Filter `PromptActionTests|ConnectedPromptTests`: 103 bestanden, 0 Fehler.
 
@@ -58,6 +58,8 @@ Eine Ablehnung, bevor etwas nach außen lief, gibt den Idempotenzschlüssel frei
 - Versand, Zahlung, Veröffentlichen, Klonen, Blender, Unreal, Maschinenlauf, Boot.
 - Kostenpflichtige KI wird nicht vorausgesetzt und nicht aufgerufen.
 - Kein Studio ist `ready`. Verbesserung 42 ist nicht vollständig implementiert.
+
+Die Bildvorschau der Webseite bricht nach 25 Sekunden ab, auch wenn Chrome die Verbindung nicht schließt. Die Prüfung „diesen PC live messen“ akzeptiert Ok, Warnung und Alarm, weil der Arbeitsspeicher nach der ganzen Suite oft über 1500 MB liegt.
 
 ## Nicht geprüft
 
