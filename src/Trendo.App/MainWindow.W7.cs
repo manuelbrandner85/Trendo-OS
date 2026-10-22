@@ -62,7 +62,7 @@ public partial class MainWindow
         _showMap["modus"] = ModeView; SysTabs.Add(("modus", "Betriebsmodus"));
         StudioPages["CORE-04"] = "verbund"; StudioPages["X-08"] = "handy"; StudioPages["SYS-01"] = "modus";
         ExtraPages.Add(("Geräteverbund (PC, Pi, Android)", "verbund", ["verbund", "pi", "raspberry", "koppeln", "netzwerk", "fusion"]));
-        ExtraPages.Add(("Handy verbinden", "handy", ["handy", "android", "smartphone", "adb", "iphone", "telefon"]));
+        ExtraPages.Add(("Handy verbinden", "handy", ["handy", "android", "smartphone", "adb", "iphone", "telefon", "wlan", "bluetooth", "qr"]));
         ExtraPages.Add(("Betriebsmodus", "modus", ["modus", "linux", "usb-stick", "triple", "windows"]));
     }
 
@@ -120,68 +120,6 @@ public partial class MainWindow
         sp.Children.Add(new WrapPanel { Children = { Act("fus-check", "Erreichbarkeit prüfen", () => _ = CheckNodesAsync()), task,
             Act("fus-route", "Wo läuft das?", () => { var (w, why) = FusionStore.Route(task.Text?.Trim() ?? "", SelfCaps(), Verbund.Nodes()); W7Say(w.Length > 0 ? $"→ {w}: {why}" : "Nicht möglich: " + why, "verbund"); }) } });
         return SysPage("Geräteverbund", sp);
-    }
-
-    public async Task ScanPhonesAsync()
-    {
-        var adb = AdbOverride ?? MobileBridge.FindAdb(File.Exists, Environment.GetEnvironmentVariable("LOCALAPPDATA"), Environment.GetEnvironmentVariable("PATH"));
-        if (adb is null) { Phones = []; W7Say("Android-Werkzeug (adb) nicht gefunden – siehe Anleitung unten.", "handy"); return; }
-        var (e, o) = await Runner.RunAsync(adb, "devices -l");
-        Phones = e == 0 ? MobileBridge.ParseDevices(o) : [];
-        W7Say(e != 0 ? $"adb meldet Fehler (Exit {e})." : Phones.Count == 0 ? "Kein Handy gefunden. Kabel und USB-Debugging prüfen." : $"{Phones.Count} Handy gefunden.", "handy");
-    }
-
-    public async Task PushToPhoneAsync(PhoneDevice d, string file, bool consent)
-    {
-        var (ok, args, m) = MobileBridge.PushArgs(d, file, consent);
-        if (!ok) { W7Say(m, "handy"); return; }
-        var adb = AdbOverride ?? MobileBridge.FindAdb(File.Exists, Environment.GetEnvironmentVariable("LOCALAPPDATA"), Environment.GetEnvironmentVariable("PATH"))!;
-        var (e, _) = await Runner.RunAsync(adb, args);
-        _core.Audit.Append("local-owner", "phone.push", $"{Path.GetFileName(file)} sha={LetterKit.Sha(file)[..16]} exit={e}");
-        W7Say(e == 0 ? m + " ✓" : $"Übertragung fehlgeschlagen (Exit {e}).", "handy");
-    }
-
-    private string Adb() => AdbOverride ?? MobileBridge.FindAdb(File.Exists, Environment.GetEnvironmentVariable("LOCALAPPDATA"), Environment.GetEnvironmentVariable("PATH")) ?? "adb";
-    public string PhoneFolder => WorkFolder("Vom Handy");
-
-    public async Task PhoneInfoAsync(PhoneDevice d)
-    {
-        var i = await AndroidSide.InfoAsync(Runner, Adb(), d.Serial);
-        W7Say(i is null ? "Handy antwortet nicht." : $"{i.Model} · Android {i.Android}" + (i.Battery is { } b ? $" · Akku {b} %{(i.Charging ? " (lädt)" : "")}" : ""), "handy");
-    }
-    public async Task PhoneShotAsync(PhoneDevice d, bool consent)
-    {
-        var (ok, m, f) = await AndroidSide.ScreenshotAsync(Runner, Adb(), d.Serial, PhoneFolder, consent, DateTime.Now);
-        if (ok) _core.Audit.Append("local-owner", "phone.screenshot", $"sha={LetterKit.Sha(f!)[..16]}");
-        W7Say(m, "handy");
-    }
-    public async Task PhonePhotoAsync(PhoneDevice d, bool consent)
-    {
-        var (ok, m, f) = await AndroidSide.LatestPhotoAsync(Runner, Adb(), d.Serial, PhoneFolder, consent);
-        if (ok) _core.Audit.Append("local-owner", "phone.photo", $"{Path.GetFileName(f)} sha={LetterKit.Sha(f!)[..16]}");
-        W7Say(m, "handy");
-    }
-
-    private Control PhoneView()
-    {
-        var sp = new StackPanel { Spacing = 8, Children = { P("Dateien aufs Android-Handy schicken und sehen, welches Handy verbunden ist. Trendo steuert das Handy nicht fern und liest keine privaten Daten.") } };
-        W7Msgs(sp);
-        sp.Children.Add(Act("phone-scan", "Handy suchen", () => _ = ScanPhonesAsync(), true));
-        var i = 0;
-        foreach (var d in Phones)
-        {
-            var dev = d; var file = new TextBox { Name = $"phone-file-{i}", PlaceholderText = "Datei, z. B. Brief als PDF", Width = 300 };
-            var ok = new CheckBox { Name = $"phone-ok-{i}", Content = "Ich will diese Datei senden" };
-            sp.Children.Add(WCard(new StackPanel { Spacing = 4, Children = { new TextBlock { Name = $"phone-dev-{i}", Text = $"📱 {d.Model} – {MobileBridge.StateText(d.State)}", Foreground = Text },
-                new WrapPanel { Children = { file, ok, Act($"phone-push-{i}", "Senden", () => _ = PushToPhoneAsync(dev, file.Text?.Trim('"', ' ') ?? "", ok.IsChecked == true)) } },
-                new WrapPanel { Children = { Act($"phone-info-{i}", "Details", () => _ = PhoneInfoAsync(dev)),
-                    Act($"phone-shot-{i}", "Bildschirmfoto holen", () => _ = PhoneShotAsync(dev, ok.IsChecked == true)),
-                    Act($"phone-photo-{i}", "Neuestes Foto holen", () => _ = PhonePhotoAsync(dev, ok.IsChecked == true)) } } } }));
-            i++;
-        }
-        var g = new StackPanel { Spacing = 2 }; foreach (var s in MobileBridge.Guide) g.Children.Add(P("• " + s, null, 11.5));
-        sp.Children.Add(WCard(g));
-        return SysPage("Handy", sp);
     }
 
     private Control ModeView()

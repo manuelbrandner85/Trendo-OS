@@ -75,7 +75,7 @@ public static class StudioCatalog
         ["SYS-12"] = new("Schrift & Farben anpassen", "Größere Schrift, Farben und einfache Bedienung.", "System & Sicherheit"),
         ["SYS-13"] = new("Qualität prüfen", "Prüft, ob alles zusammen funktioniert.", "System & Sicherheit"),
         ["X-02"] = new("Einrichten & Reparieren", "Richtet Trendo automatisch ein und repariert Fehler.", "System & Sicherheit"),
-        ["X-08"] = new("Handy verbinden", "Verbindet Trendo mit deinem Handy.", "System & Sicherheit"),
+        ["X-08"] = new("Handy verbinden", "Verbindet Trendo mit deinem Handy per Kabel, WLAN oder Bluetooth.", "System & Sicherheit"),
         ["CORE-04"] = new("PC, Pi & Handy verbinden", "Trendo auf PC, Raspberry Pi und Android gemeinsam nutzen.", "System & Sicherheit"),
         ["X-09"] = new("Leistung anzeigen", "Zeigt, was Speicher und Prozessor gerade tun.", "System & Sicherheit"),
     };

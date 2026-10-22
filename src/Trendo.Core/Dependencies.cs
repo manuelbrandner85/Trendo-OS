@@ -58,6 +58,20 @@ public static class DependencyCatalog
             "TheDocumentFoundation.LibreOffice", 350, "https://libreoffice.org", ["libreoffice"], [@"%ProgramFiles%\LibreOffice\program\soffice.exe"]),
         new("ffmpeg", "FFmpeg", "Medien-Studio: umwandeln, schneiden, Ton herausholen", "LGPL-2.1-or-later / GPL (Build)", DeliveryMode.AutoUser,
             "Pro Benutzer ohne Admin über winget", "Gyan.FFmpeg", 100, "https://ffmpeg.org", ["ffmpeg"], [@"%LOCALAPPDATA%\Microsoft\WinGet\Links\ffmpeg.exe"]),
+        new("adb", "Android Platform-Tools (adb)", "Handy per Kabel oder WLAN verbinden", "Apache-2.0", DeliveryMode.AutoUser,
+            "Offizielles Werkzeug von Google. Nur nach Zustimmung. Unter Linux liegt es meist als Paket „adb“ vor.",
+            "Google.PlatformTools", 15, "https://developer.android.com/tools/releases/platform-tools", ["adb"],
+            [@"%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe", @"%LOCALAPPDATA%\Microsoft\WinGet\Links\adb.exe",
+             @"%LOCALAPPDATA%\Microsoft\WinGet\Packages\Google.PlatformTools*\platform-tools\adb.exe",
+             @"%LOCALAPPDATA%\Microsoft\WinGet\Packages\Genymobile.scrcpy*\*\adb.exe",
+             "/usr/bin/adb", "/usr/local/bin/adb", "/usr/lib/android-sdk/platform-tools/adb"]),
+        new("scrcpy", "scrcpy", "Handy-Bildschirm auf dem PC zeigen", "Apache-2.0", DeliveryMode.AutoUser,
+            "Zeigt den Handy-Bildschirm. Nur nach Zustimmung. Unter Linux liegt es meist als Paket „scrcpy“ vor.",
+            "Genymobile.scrcpy", 10, "https://github.com/Genymobile/scrcpy", ["scrcpy"],
+            [@"%LOCALAPPDATA%\Microsoft\WinGet\Links\scrcpy.exe",
+             @"%LOCALAPPDATA%\Microsoft\WinGet\Packages\Genymobile.scrcpy*\scrcpy.exe",
+             @"%LOCALAPPDATA%\Microsoft\WinGet\Packages\Genymobile.scrcpy*\*\scrcpy.exe",
+             "/usr/bin/scrcpy", "/usr/local/bin/scrcpy"]),
         new("blender", "Blender", "3D Studio", "GPL-3.0-or-later", DeliveryMode.AutoElevated, "Nur systemweiter Installer – Windows fragt nach Admin",
             "BlenderFoundation.Blender", 400, "https://blender.org", ["blender"], [@"%ProgramFiles%\Blender Foundation\*\blender.exe"]),
         new("colmap", "COLMAP", "Gegenstände aus Fotos als 3D-Modell rechnen", "BSD-3-Clause", DeliveryMode.AutoUser,
@@ -222,7 +236,8 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
         }
         else
         {
-            var scope = c.Mode == DeliveryMode.AutoUser && c.Id != "mpv" ? " --scope user" : "";
+            // mpv, adb und scrcpy sind portable Pakete. winget lehnt dort „--scope user“ ab und legt sie schon im Benutzerordner ab.
+            var scope = c.Mode == DeliveryMode.AutoUser && c.Id is not ("mpv" or "adb" or "scrcpy") ? " --scope user" : "";
             r = await Runner.RunAsync("winget", $"install --id {c.WingetId} -e --silent{scope} --accept-package-agreements --accept-source-agreements --disable-interactivity", progress, ct);
         }
         var ok = r.exit == 0 && IsInstalled(c);

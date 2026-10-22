@@ -17,6 +17,8 @@ Quelle: `src/Trendo.Core/DependencyCatalog` (Installation bei Bedarf beim Öffne
 | Git für Windows | GPL-2.0 | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | Git.Git | Pro Benutzer installierbar |
 | Python 3.13 | PSF-2.0 | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | Python.Python.3.13 | Pro Benutzer installierbar |
 | mpv Player | GPL-2.0-or-later | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | shinchiro.mpv | Pro Benutzer installierbar |
+| Android Platform-Tools (adb) | Apache-2.0 | Auto pro Benutzer nach Zustimmung (winget, portables Paket, ohne --scope user) | Google.PlatformTools | Handy per Kabel oder WLAN. Unter Linux das Paket „adb“. Keine Treiber |
+| scrcpy | Apache-2.0 | Auto pro Benutzer nach Zustimmung (winget, portables Paket, ohne --scope user) | Genymobile.scrcpy | Bildschirm zeigen. Unter Linux das Paket „scrcpy“. Keine Treiber |
 | LibreOffice | MPL-2.0 | Auto-Installation nach Zustimmung, Windows-UAC nötig (nur systemweiter Herstellerinstaller) | TheDocumentFoundation.LibreOffice | Nur systemweiter MSI-Installer – Windows fragt nach Admin |
 | Blender | GPL-3.0-or-later | Auto-Installation nach Zustimmung, Windows-UAC nötig (nur systemweiter Herstellerinstaller) | BlenderFoundation.Blender | Nur systemweiter Installer – Windows fragt nach Admin |
 | COLMAP | BSD-3-Clause | Auto pro Benutzer nach Zustimmung (offizielles Windows-ZIP, Prüfsumme fest, ohne Admin) | — | Fotogrammetrie. Kein winget-Paket. ZIP 4.2.1 ohne CUDA, nur im Benutzerordner |
