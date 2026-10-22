@@ -26,6 +26,7 @@ public static class StudioTools
         ["tesseract"] = ("tesseract.exe", "--version"), ["unreal"] = ("UnrealEditor.exe", null), ["krita"] = ("krita.exe", null),
         ["inkscape"] = ("inkscape.exe", "--version"), ["kdenlive"] = ("kdenlive.exe", null), ["audacity"] = ("Audacity.exe", null),
         ["colmap"] = ("colmap.exe", "-h"), ["meshroom"] = ("meshroom_batch.exe", "--help"),
+        ["adb"] = ("adb.exe", "version"), ["scrcpy"] = ("scrcpy.exe", "--version"),
     };
 }
 

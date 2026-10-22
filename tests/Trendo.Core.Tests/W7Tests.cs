@@ -137,6 +137,7 @@ public class W7Tests
         var o = "List of devices attached\nR58N123ABC     device usb:1-1 product:a52q model:SM_A525F device:a52q transport_id:1\nemulator-5554  unauthorized\n* daemon started successfully\n";
         var d = MobileBridge.ParseDevices(o);
         Assert.Equal(2, d.Count); Assert.Equal("SM A525F", d[0].Model); Assert.Equal("unauthorized", d[1].State);
+        Assert.Equal(PhoneLink.Kabel, d[0].Link); Assert.Equal(PhoneLink.Unbekannt, d[1].Link);
         Assert.Contains("zulassen", MobileBridge.StateText("unauthorized"));
         var (_, _, r) = Make(); var f = Path.Combine(r, "brief.pdf"); File.WriteAllText(f, "x");
         Assert.False(MobileBridge.PushArgs(d[0], f, false).Ok);
