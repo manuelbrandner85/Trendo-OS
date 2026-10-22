@@ -37,6 +37,10 @@ public static class PromptActions
             new RoomPlanAdapter(), new CircuitAdapter(), new BeamCheckAdapter(),
             new TwinSeriesAdapter(), new RouteAdapter(),
             new CncMachineAdapter(), new CncFeedAdapter(),
-            new VehicleCostAdapter(), new StatsAdapter()
+            new VehicleCostAdapter(), new StatsAdapter(),
+            new KnowledgeRememberAdapter(), new LearnCardAdapter(), new PromptFillAdapter(), new FashionSizeAdapter(),
+            new StreamSendAdapter(), new RundownAdapter(),
+            new LicenseFetchAdapter(), new LicenseNoteAdapter(),
+            new XrBudgetAdapter(), new ScanBlockedAdapter()
         ];
 }
