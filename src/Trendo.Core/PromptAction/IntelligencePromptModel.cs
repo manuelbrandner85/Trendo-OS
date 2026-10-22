@@ -32,6 +32,11 @@ public static class PromptActions
             new SoftwareScaffoldAdapter(), new SoftwarePublishAdapter(),
             new ModelPromptAdapter(), new BlenderPromptAdapter(),
             new GameBrowserAdapter(), new GameUnrealAdapter(), new GameLaunchAdapter(),
-            new MediaConvertAdapter(), new MediaUploadAdapter()
+            new MediaConvertAdapter(), new MediaUploadAdapter(),
+            new CalcNoteAdapter(), new ProjectCreateAdapter(),
+            new RoomPlanAdapter(), new CircuitAdapter(), new BeamCheckAdapter(),
+            new TwinSeriesAdapter(), new RouteAdapter(),
+            new CncMachineAdapter(), new CncFeedAdapter(),
+            new VehicleCostAdapter(), new StatsAdapter()
         ];
 }

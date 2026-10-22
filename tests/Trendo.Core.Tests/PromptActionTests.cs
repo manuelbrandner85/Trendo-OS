@@ -871,6 +871,264 @@ public class PromptActionTests
         Assert.Equal(RunStatus.Failed, bad.Status);
     }
 
+    [Fact(DisplayName = "Helfer rechnet den Ausdruck und merkt die Notiz")]
+    public void Helfer_rechnet_und_merkt_notiz()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SYS-02", "Ausdruck: (2+3)*4\nNotiz: Milch kaufen"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        Assert.Equal(20, Calc.Eval("(2+3)*4"));
+        var file = fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath);
+        var text = File.ReadAllText(file);
+        Assert.Contains("Ergebnis " + Calc.Format(20), text);
+        Assert.Contains("Milch kaufen", text);
+        Assert.Contains(new NoteStore(fx.Root).All(), n => n.Text == "Milch kaufen");
+        Assert.StartsWith("Ergebnis", done.Preview);
+        var next = wf.Los(fx.Project, wf.Revise(fx.Project, done.RunId, "Ausdruck: 7*3\nNotiz: Brot", fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, next.Status);
+        var second = fx.Core.Projects.ResolveInProject(fx.Project, next.Artifacts.Single(a => a.Version == 2).RelativePath);
+        Assert.Contains("Ergebnis " + Calc.Format(21), File.ReadAllText(second));
+        Assert.Equal(text, File.ReadAllText(file));
+        Assert.Contains(new NoteStore(fx.Root).All(), n => n.Text == "Brot");
+        var zero = wf.Start(fx.Req("SYS-02", "Ausdruck: 1/0", id: "null-1"), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, zero.Status);
+        Assert.Empty(zero.Artifacts);
+        Assert.Contains("0", string.Join(" ", zero.Errors));
+        var open = wf.Start(fx.Req("SYS-02", "Hallo", id: "leer-1"), fx.Ctx());
+        Assert.Equal(RunStatus.AwaitingInput, open.Status);
+        Assert.Empty(open.Artifacts);
+    }
+
+    [Fact(DisplayName = "Projektordner wird angelegt und wieder gelesen")]
+    public void Projekt_wird_angelegt()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("X-11", "Kennung: kueche\nName: Küche"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        Assert.StartsWith("Projekt kueche", done.Preview);
+        var json = File.ReadAllText(Path.Combine(fx.Root, "projects", "kueche", "project.json"));
+        var back = JsonSerializer.Deserialize<TrendoProject>(json);
+        Assert.Equal("kueche", back!.Id);
+        Assert.Equal("Küche", back.Name);
+        Assert.True(Directory.Exists(fx.Core.Projects.ProjectFilesRoot("kueche")));
+        var receipt = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.Contains("Projekt kueche", receipt);
+        var again = wf.Los(fx.Project, wf.Revise(fx.Project, done.RunId, "Kennung: kueche\nName: Küche", fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, again.Status);
+        Assert.Equal(2, again.Artifacts.Single().Version);
+        Assert.Single(fx.Core.Projects.List(), p => p.Id == "kueche");
+        var clash = wf.Los(fx.Project, wf.Revise(fx.Project, done.RunId, "Kennung: kueche\nName: Andere", fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Failed, clash.Status);
+        Assert.Contains(clash.Errors, e => e.Contains("anderen Namen", StringComparison.Ordinal));
+        Assert.Single(fx.Core.Projects.List(), p => p.Id == "kueche");
+        var bad = wf.Start(fx.Req("X-11", "Kennung: ../kueche\nName: Nebenan", id: "pfad-1"), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, bad.Status);
+        Assert.Empty(bad.Artifacts);
+    }
+
+    [Fact(DisplayName = "Wohnung rechnet die Fläche und schreibt den Grundriss")]
+    public void Wohnung_rechnet_flaeche()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-01", "Name: Wohnzimmer\nLaenge: 4\nBreite: 3"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var room = new Room("Wohnzimmer", 4, 3);
+        Assert.Equal(12, room.Floor);
+        var path = fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath);
+        var svg = File.ReadAllText(path);
+        Assert.Equal(RoomPlanner.Svg([room]), svg);
+        Assert.Contains(Fach.F(room.Floor), svg);
+        Assert.Equal("Wohnzimmer · " + Fach.F(room.Floor) + " m²", done.Preview);
+        var next = wf.Los(fx.Project, wf.Revise(fx.Project, done.RunId, "Name: Wohnzimmer\nLaenge: 4\nBreite: 5", fx.Ctx()).RunId, fx.Ctx());
+        var second = fx.Core.Projects.ResolveInProject(fx.Project, next.Artifacts.Single(a => a.Version == 2).RelativePath);
+        Assert.Equal(RoomPlanner.Svg([new Room("Wohnzimmer", 4, 5)]), File.ReadAllText(second));
+        Assert.Equal(svg, File.ReadAllText(path));
+        var bad = wf.Start(fx.Req("SPEC-01", "Name: Kammer\nLaenge: 0\nBreite: 3", id: "null-1"), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, bad.Status);
+        Assert.Empty(bad.Artifacts);
+    }
+
+    [Fact(DisplayName = "Schaltung rechnet Widerstand und LED")]
+    public void Schaltung_rechnet_ohm_und_led()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var law = Electronics.OhmsLaw(12, 0.5, 0);
+        Assert.Equal(24, law.R);
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-02", "Spannung: 12\nStrom: 0,5"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.Equal("Widerstand " + Electronics.Ohm(law.R) + "\nSpannung " + Fach.F(law.U, 3) + " V\nStrom " + Fach.F(law.I, 4) + " A\nLeistung " + Fach.F(law.P, 3) + " W\n", text);
+        var led = Electronics.LedResistor(5, 2, 20);
+        var lamp = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-02", "Versorgung: 5\nLed: 2\nStrom: 20", id: "led-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, lamp.Status);
+        var lampText = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, lamp.Artifacts.Single().RelativePath));
+        Assert.Contains("Vorwiderstand " + Electronics.Ohm(led.E12), lampText);
+        Assert.True(led.E12 + 1e-9 >= led.Exact);
+        var both = wf.Start(fx.Req("SPEC-02", "Spannung: 12\nStrom: 0,5\nWiderstand: 10", id: "drei-1"), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, both.Status);
+        Assert.Empty(both.Artifacts);
+    }
+
+    [Fact(DisplayName = "Balken übernimmt das Urteil der eingebauten Rechnung")]
+    public void Balken_prueft_last()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var mat = Engineering.Mat("Baustahl");
+        var beam = Engineering.Beam(BeamCase.EinfeldMitte, 2, 1, Engineering.Rect(100, 200), mat);
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-03", "Laenge: 2\nLast: 1\nBreite: 100\nHoehe: 200\nWerkstoff: Baustahl"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.StartsWith(beam.Verdict, text);
+        Assert.Contains("Sicherheit " + Fach.F(beam.Safety), text);
+        Assert.Contains(mat.Name, text);
+        Assert.True(beam.Ok);
+        Assert.StartsWith("Hält", done.Preview);
+        var weak = Engineering.Beam(BeamCase.EinfeldMitte, 5, 10, Engineering.Rect(10, 10), mat);
+        var failedBeam = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-03", "Laenge: 5\nLast: 10\nBreite: 10\nHoehe: 10\nWerkstoff: Baustahl", id: "schwach-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, failedBeam.Status);
+        Assert.False(weak.Ok);
+        Assert.StartsWith(weak.Verdict, File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, failedBeam.Artifacts.Single().RelativePath)));
+    }
+
+    [Fact(DisplayName = "Messreihe zeigt die Ampel und verbindet kein Gerät")]
+    public void Messreihe_zeigt_ampel()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var sensor = new TwinSensor { Name = "Temperatur", Unit = "°C", WarnAbove = 80, AlarmAbove = 95 };
+        Assert.Equal(TwinLevel.Ok, TwinHub.Level(sensor, 70));
+        Assert.Equal(TwinLevel.Warnung, TwinHub.Level(sensor, 82));
+        Assert.Equal(TwinLevel.Alarm, TwinHub.Level(sensor, 96));
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-10", "Anlage: Kessel\nSensor: Temperatur\nEinheit: °C\nWarnung: 80\nAlarm: 95\nWerte: 70, 82, 96"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.Contains("70,00 °C · in Ordnung", text);
+        Assert.Contains("82,00 °C · Warnung", text);
+        Assert.Contains("96,00 °C · Alarm", text);
+        Assert.Contains("Kein Gerät verbunden", text);
+        Assert.Equal("Kessel · 96,00 °C · Alarm", done.Preview);
+        var model = new TwinModel { Assets = [new TwinAsset { Name = "Kessel", Sensors = [sensor] }], Readings = [new(DateTime.Now, "Kessel", "Temperatur", 96)] };
+        Assert.Single(TwinPlus.Series(model, "Kessel", "Temperatur"));
+    }
+
+    [Fact(DisplayName = "Route misst die Strecke und lädt keine Karte")]
+    public void Route_misst_strecke()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var from = Geo.ParseCoord("52.52, 13.405");
+        var to = Geo.ParseCoord("48.137, 11.575");
+        var km = Geo.Haversine(new GeoPoint(from.Lat, from.Lon), new GeoPoint(to.Lat, to.Lon));
+        Assert.InRange(km, 400, 600);
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-13", "Von: 52.52, 13.405\nNach: 48.137, 11.575"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.Contains("Strecke " + Fach.F(km, 3) + " km", text);
+        Assert.Contains("Keine Karte geladen", text);
+        Assert.Equal("Strecke " + Fach.F(km, 3) + " km", done.Preview);
+        var gpx = """
+            <?xml version="1.0"?>
+            <gpx>
+              <trk><trkseg>
+                <trkpt lat="48.1" lon="11.5"></trkpt>
+                <trkpt lat="48.2" lon="11.6"></trkpt>
+              </trkseg></trk>
+            </gpx>
+            """;
+        fx.Core.Projects.WriteFile(fx.Project, "tour.gpx", gpx);
+        var full = fx.Core.Projects.ResolveInProject(fx.Project, "tour.gpx");
+        var stats = Geo.Analyse(Geo.ReadGpx(full).Track);
+        var fromFile = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-13", "Datei: tour.gpx", id: "gpx-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, fromFile.Status);
+        Assert.Contains("Strecke " + Fach.F(stats.DistanceKm, 3) + " km", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, fromFile.Artifacts.Single().RelativePath)));
+        var outside = wf.Start(fx.Req("SPEC-13", "Datei: ../tour.gpx", id: "aussen-1"), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, outside.Status);
+        Assert.Empty(outside.Artifacts);
+        var missing = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-13", "Datei: fehlt.gpx", id: "fehlt-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Failed, missing.Status);
+        Assert.Contains(missing.Errors, e => e.Contains("nicht im Projekt", StringComparison.Ordinal));
+    }
+
+    [Fact(DisplayName = "Fräse rechnet die Drehzahl und lässt die Datei stehen")]
+    public void Fraese_rechnet_drehzahl()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var feed = Cnc.Feeds("Aluminium", 6, 2);
+        Assert.True(feed.Rpm > 1000);
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-14", "Material: Aluminium\nDurchmesser: 6\nSchneiden: 2"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.Contains("Drehzahl " + feed.Rpm.ToString("0", System.Globalization.CultureInfo.InvariantCulture), text);
+        Assert.Contains("Vorschub " + feed.FeedMmMin.ToString("0", System.Globalization.CultureInfo.InvariantCulture), text);
+        Assert.Contains("Die Maschine ist nicht gelaufen.", text);
+        Assert.Contains("Maschine steht", done.Preview);
+        var old = File.ReadAllBytes(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        var next = wf.Los(fx.Project, wf.Revise(fx.Project, done.RunId, "Material: Holz\nDurchmesser: 6\nSchneiden: 2", fx.Ctx()).RunId, fx.Ctx());
+        var wood = Cnc.Feeds("Holz", 6, 2);
+        var second = fx.Core.Projects.ResolveInProject(fx.Project, next.Artifacts.Single(a => a.Version == 2).RelativePath);
+        Assert.Contains("Drehzahl " + wood.Rpm.ToString("0", System.Globalization.CultureInfo.InvariantCulture), File.ReadAllText(second));
+        Assert.Equal(old, File.ReadAllBytes(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath)));
+    }
+
+    [Fact(DisplayName = "Fräse startet auch mit Freigabe im Text nichts")]
+    public void Fraese_startet_nichts()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-14", "Freigabe: erteilt\nStarten: ja\nMaterial: Aluminium\nDurchmesser: 6\nSchneiden: 2"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Unsupported, done.Status);
+        Assert.Null(done.Receipt);
+        Assert.Empty(done.Artifacts);
+        Assert.Contains(done.Errors, e => e.Contains("nicht angeschlossen", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith("drehzahl.txt", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".nc", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact(DisplayName = "Fahrtkosten rechnen 1.200 Euro und buchen nichts")]
+    public void Fahrt_rechnet_kosten()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var cost = VehiclePlus.YearCost(10000, 6, 2, 0, 0, 0);
+        Assert.Equal(1200, cost.Year);
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-16", "Kilometer: 10000\nVerbrauch: 6\nPreis: 2"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.Contains("Im Jahr " + cost.Year.ToString("N2", Fach.De) + " €", text);
+        Assert.Contains("Im Monat " + cost.Month.ToString("N2", Fach.De) + " €", text);
+        Assert.Contains("Nicht gebucht.", text);
+        Assert.Equal("Im Jahr " + cost.Year.ToString("N2", Fach.De) + " €", done.Preview);
+        Assert.False(File.Exists(Path.Combine(fx.Root, "finanzen", "buchungen.json")));
+    }
+
+    [Fact(DisplayName = "Messwerte liefern Mittelwert und Gerade")]
+    public void Messung_rechnet_mittelwert()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var stats = Stats.Describe("werte", [2, 4, 4, 6]);
+        Assert.Equal(4, stats.Mean);
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-05", "Werte: 2, 4, 4, 6"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.Contains("Mittelwert " + Fach.F(stats.Mean), text);
+        Assert.Contains("Streuung " + Fach.F(stats.StdDev), text);
+        Assert.Equal("Mittelwert " + Fach.F(stats.Mean), done.Preview);
+        var line = Stats.Linear([1, 2, 3], [2, 4, 6]);
+        Assert.Equal(2, line.Slope);
+        var straight = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-05", "X-Werte: 1, 2, 3\nY-Werte: 2, 4, 6", id: "gerade-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, straight.Status);
+        Assert.Contains("Steigung " + Fach.F(line.Slope, 4), File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, straight.Artifacts.Single().RelativePath)));
+        var shortLine = wf.Start(fx.Req("SPEC-05", "X-Werte: 1, 2\nY-Werte: 2, 4", id: "kurz-1"), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, shortLine.Status);
+        Assert.Empty(shortLine.Artifacts);
+    }
+
     [Fact(DisplayName = "Katalogmatrix nennt jede Studio-ID genau einmal")]
     public void Matrix_deckt_den_Katalog()
     {
@@ -895,6 +1153,11 @@ public class PromptActionTests
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-05", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-06", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-08", PromptActions.CreateDefault()));
+        foreach (var id in new[] { "SYS-02", "X-11", "SPEC-01", "SPEC-02", "SPEC-03", "SPEC-05", "SPEC-10", "SPEC-13", "SPEC-14", "SPEC-16" })
+        {
+            Assert.Contains(registered, item => item == id);
+            Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level(id, PromptActions.CreateDefault()));
+        }
         Assert.All(ids.Where(id => !registered.Contains(id)), id => Assert.Equal(CapabilityLevel.NotImplemented, CapabilityCatalog.Level(id, PromptActions.CreateDefault())));
         var markdown = CapabilityCatalog.Markdown(PromptActions.CreateDefault());
         Assert.Equal(Normalize(markdown), Normalize(File.ReadAllText(Repo("docs/improvement-42/studio-capability-matrix.md"))));
