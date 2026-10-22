@@ -6,6 +6,7 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Media.Immutable;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
@@ -208,20 +209,37 @@ public sealed partial class MainWindow : Window
         _weekday.Text = now.ToString("dddd", De);
         _date.Text = now.ToString("d. MMMM yyyy", De);
         if (_tick++ % 5 == 0) _ = RefreshKi();
-        var m = _metrics.Sample();
+        // Messung (CPU/GPU-Zähler, Dateisystem, Netzwerk) im Hintergrund, Anzeige danach im UI-Thread
+        if (_sampling) return;
+        _sampling = true;
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                MetricsSnapshot m; (double? UsedGb, double? TotalGb) mem, disk; (double? DownBps, double? UpBps) net;
+                lock (_metrics) { m = _metrics.Sample(); mem = _metrics.MemorySize(); disk = _metrics.DiskSize(); net = _metrics.NetworkSpeed(); }
+                Dispatcher.UIThread.Post(() => { _sampling = false; ApplyMetrics(m, mem, disk, net); });
+            }
+            catch (Exception) { Dispatcher.UIThread.Post(() => _sampling = false); }
+        });
+    }
+
+    private bool _sampling;
+    private static readonly IBrush BrushHigh = new ImmutableSolidColorBrush(Color.Parse("#FACC15"));
+    private static readonly IBrush BrushOk = new ImmutableSolidColorBrush(Color.Parse("#4ADE80"));
+
+    private void ApplyMetrics(MetricsSnapshot m, (double? UsedGb, double? TotalGb) mem, (double? UsedGb, double? TotalGb) disk, (double? DownBps, double? UpBps) net)
+    {
         SetMeter("CPU", m.CpuPercent, null);
-        var mem = _metrics.MemorySize();
         SetMeter("RAM", m.RamPercent, mem.UsedGb is { } mu && mem.TotalGb is { } mt ? $"{mu:0.0} / {mt:0.0} GB" : null);
-        var disk = _metrics.DiskSize();
         SetMeter("SSD", m.DiskPercent, disk.UsedGb is { } du && disk.TotalGb is { } dt ? $"{du:0} / {dt:0} GB" : null);
         SetMeter("GPU", m.GpuPercent, m.GpuPercent is null ? "Nicht verfügbar" : m.GpuSource);
-        var net = _metrics.NetworkSpeed();
         _netDown.Text = net.DownBps is { } down ? "↓ " + Rate(down) : _tick < 2 ? "↓ Messung läuft …" : "↓ Nicht verfügbar";
         _netUp.Text = net.UpBps is { } up ? "↑ " + Rate(up) : _tick < 2 ? "↑ Messung läuft …" : "↑ Nicht verfügbar";
         var vals = new[] { m.CpuPercent, m.RamPercent, m.DiskPercent, m.GpuPercent }.Where(v => v.HasValue).Select(v => v!.Value).ToList();
         var high = vals.Count > 0 && vals.Max() >= 90;
         _sysState.Text = vals.Count == 0 ? "Messung läuft …" : high ? "Hohe Auslastung" : "Alles in Ordnung";
-        _sysDot.Fill = _sysState.Foreground = Brush.Parse(high ? "#FACC15" : "#4ADE80");
+        _sysDot.Fill = _sysState.Foreground = high ? BrushHigh : BrushOk;
     }
 
     private static string Rate(double bps) => bps < 1024 ? $"{bps:0} B/s" : bps < 1024 * 1024 ? $"{bps / 1024:0.0} KB/s" : $"{bps / 1024 / 1024:0.0} MB/s";
