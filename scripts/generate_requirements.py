@@ -27,6 +27,87 @@ for f, key in [("QA_MATRIX_GROK", "GROK_QA_MATRIX.csv"), ("BUSINESS", "BUSINESS_
     for r in rows(S / "qa" / key):
         tests.append({"id": r["test_id"], "catalog": key, "status": r.get("status") or r.get("initial_status")})
 # Grundsätze (von Hand gepflegt, hier im Generator, damit Neugenerieren sie nicht löscht)
+packages = [
+ {
+  "id": "PAKET-44",
+  "title": "Fachprogramme nur bei Bedarf (Universal Professional Studio Fusion)",
+  "source": "MASTER_BIS_94.md Zeile 86; 10 Funktionen von Manuel am 2026-10-23 freigegeben",
+  "approval_status": "APPROVED_SPEC",
+  "functions": [
+   {
+    "id": "P44-01",
+    "name": "Programmkatalog",
+    "for_user": "Zeigt, welche Fachprogramme TRENDO kennt.",
+    "acceptance": "Die Seite „Externe Programme“ listet alle Programme aus dem Katalog.",
+    "approval_status": "APPROVED_SPEC"
+   },
+   {
+    "id": "P44-02",
+    "name": "Nicht vorladen",
+    "for_user": "Programme starten nicht beim Hochfahren.",
+    "acceptance": "Nach dem Start steht überall „Nicht geladen“, kein Programm läuft im Hintergrund.",
+    "approval_status": "APPROVED_SPEC"
+   },
+   {
+    "id": "P44-03",
+    "name": "Erkennen",
+    "for_user": "Findet ein schon installiertes Programm.",
+    "acceptance": "Ein installiertes Programm wird als „gefunden, nicht geprüft“ angezeigt.",
+    "approval_status": "APPROVED_SPEC"
+   },
+   {
+    "id": "P44-04",
+    "name": "Prüfen auf Knopfdruck",
+    "for_user": "Kurzer Test, ob das Programm funktioniert.",
+    "acceptance": "Nur „Verbindung prüfen“ startet die Prüfung; Ergebnis ist bestanden oder fehlgeschlagen.",
+    "approval_status": "APPROVED_SPEC"
+   },
+   {
+    "id": "P44-05",
+    "name": "Öffnen nur mit Freigabe",
+    "for_user": "Programm öffnet erst nach bestandener Prüfung und Freigabe.",
+    "acceptance": "Ohne Prüfung und Freigabe öffnet nichts.",
+    "approval_status": "APPROVED_SPEC"
+   },
+   {
+    "id": "P44-06",
+    "name": "Alle Wege über dieselbe Prüfung",
+    "for_user": "Auch alte Knöpfe sowie 3D- und Spielestudio nutzen dieselbe Prüfung.",
+    "acceptance": "„Starten“, „Einrichten“ und die Wege aus #251/#253 öffnen nichts ohne Prüfung.",
+    "approval_status": "APPROVED_SPEC"
+   },
+   {
+    "id": "P44-07",
+    "name": "Kein automatischer Download",
+    "for_user": "Es wird nie heimlich oder automatisch etwas heruntergeladen.",
+    "acceptance": "Offline, beim Start und bei fehlgeschlagener Prüfung wird nichts geladen; Download nur nach ausdrücklicher Zustimmung (siehe P44-08).",
+    "approval_status": "APPROVED_SPEC"
+   },
+   {
+    "id": "P44-08",
+    "name": "Fehlendes Programm per Knopf installieren",
+    "for_user": "Installiert ein fehlendes Programm per Knopf mit Rückfrage aus offizieller kostenloser Quelle.",
+    "acceptance": "Nach Klick erscheint eine Rückfrage mit Quelle, Lizenz und Größe; erst nach Ja wird aus der offiziellen kostenlosen Quelle (z. B. winget) installiert und das Programm danach erkannt.",
+    "approval_status": "APPROVED_SPEC"
+   },
+   {
+    "id": "P44-09",
+    "name": "Geheimnisse schützen",
+    "for_user": "Schlüssel nur bei Bedarf aus dem Secret Store, nie im Protokoll.",
+    "acceptance": "Ein Test zeigt, dass kein geheimer Wert im Protokoll steht.",
+    "approval_status": "APPROVED_SPEC"
+   },
+   {
+    "id": "P44-10",
+    "name": "Echter Start auf dem PC",
+    "for_user": "Blender, Unreal und LibreOffice laufen auf Windows wirklich.",
+    "acceptance": "Je ein dokumentierter Lauf auf Manuels PC mit Beleg.",
+    "approval_status": "APPROVED_SPEC"
+   }
+  ]
+ }
+]
+
 principles = [{
     "id": "GRUNDSATZ-01",
     "title": "Betriebssystem für jeden: jedes Fachprogramm und Tool ist installierbar",
@@ -61,7 +142,7 @@ doc = {"schema_version": 1, "source": "Trendo OS Grok Production Package v2.1 (2
            {"id": "P4", "name": "Funktionsfamilien", "status": "APPROVED_SPEC"},
            {"id": "P5", "name": "Security, Integration, Recovery", "status": "APPROVED_SPEC"},
            {"id": "P6", "name": "Release Candidates", "status": "APPROVED_SPEC"}],
-       "principles": principles, "modules": mods, "business_requirements": bus, "letter_requirements": let, "tests": tests}
+       "principles": principles, "packages": packages, "modules": mods, "business_requirements": bus, "letter_requirements": let, "tests": tests}
 hdr ="# AUTOMATISCH ERZEUGT durch scripts/generate_requirements.py – nicht von Hand Status hochsetzen.\n"
 (R / "requirements.yaml").write_text(hdr + yaml.safe_dump(doc, allow_unicode=True, sort_keys=False, width=120), encoding="utf-8")
 print(f"requirements.yaml: {len(mods)} Module, {len(bus)} BUS, {len(let)} LETTER, {len(tests)} Tests")
