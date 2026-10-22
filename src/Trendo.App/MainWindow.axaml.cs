@@ -799,8 +799,17 @@ public sealed partial class MainWindow : Window
         {
             var open = new Button { Name = "btn-open-folder-" + p.Id, Content = "Ordner im Explorer öffnen (Freigabe nötig)" };
             open.Click += (_, _) => { _core.Integrations.PlanOpenProjectFolder(Principal.LocalOwner, p.Id); Show("approvals"); };
+            var zeile = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { open } };
+            var szene = Path.Combine(_core.Projects.ProjectFilesRoot(p.Id), "3d", "szene.json");
+            if (File.Exists(szene))
+            {
+                var drei = new Button { Name = "btn-open-3d-" + p.Id, Content = "3D-Modell öffnen" };
+                var pid = p.Id;
+                drei.Click += (_, _) => OpenSaved3D(pid);
+                zeile.Children.Add(drei);
+            }
             sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12),
-                Child = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = p.Name, Foreground = Text }, P($"Angelegt {p.CreatedAt:dd.MM.yyyy HH:mm}"), open } } });
+                Child = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = p.Name, Foreground = Text }, P($"Angelegt {p.CreatedAt:dd.MM.yyyy HH:mm}"), zeile } } });
         }
         var url = new Button { Name = "btn-open-url", Content = "Trendo-Repository im Browser öffnen (Freigabe nötig)", IsEnabled = !_core.Offline };
         if (_core.Offline) ToolTip.SetTip(url, "Offline-Modus: deaktiviert");
@@ -1035,6 +1044,8 @@ public sealed partial class MainWindow : Window
             // Kein eigener Bereich: ehrlich sagen statt still auf dieselbe Liste zurückzuspringen
             _notBuilt = title; Show("notbuilt"); return;
         }
+        // 3D baut und zeigt Objekte auch ohne Blender. Die Einrichtung wird erst beim Öffnen in Blender gefragt.
+        if (string.Equals(id, "CORE-05", StringComparison.OrdinalIgnoreCase)) { Show(page); return; }
         if (!StudioTools.Required.TryGetValue(id, out var need)) { Show(page); return; }
         _depStudio = id; _depStudioTitle = title; _depChecks = [];
         _depLog.Text = $"{title}: prüfe benötigte Programme …"; Show("studio-deps");
