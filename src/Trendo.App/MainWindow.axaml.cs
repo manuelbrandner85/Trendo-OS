@@ -739,7 +739,11 @@ public sealed partial class MainWindow : Window
         title = StudioHeading(title);
         var help = new Button { Name = "btn-help", Content = "?", Width = 28, Height = 28, Padding = new Thickness(0), CornerRadius = new CornerRadius(14), HorizontalContentAlignment = HorizontalAlignment.Center, FontWeight = FontWeight.Bold, Background = Brush.Parse("#33FFFFFF"), Foreground = Text };
         ToolTip.SetTip(help, "Was kann ich hier tun?"); var key = CurrentView;
-        help.Click += (_, _) => ShowHelp(key, force: true);
+        help.Click += (_, _) =>
+        {
+            if (_hintHost.Children.Count > 0) { _hintHost.Children.Clear(); return; }
+            ShowHelp(key, force: true);
+        };
         var heading = H(title, 22); heading.Name = "page-title";
         var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { heading, Pos(help, 1) } };
         var sp = new StackPanel { Spacing = 8, Children = { head, content } };

@@ -133,6 +133,9 @@ public sealed partial class MainWindow
         ["suche"] = "Die Suche findet Seiten, Studios, Projekte und Dateien in deinem Projektordner. Mit Strg+K springst du jederzeit ins Suchfeld.",
         ["fortschritt"] = "So weit ist Trendo OS gebaut. Die Angaben kommen direkt aus der Projektliste – nichts ist geschönt.",
         ["keys"] = "Für einige Online-Dienste brauchst du einen Zugangsschlüssel. Er wird sicher in Windows gespeichert, nicht in einer Datei.",
+        ["biz-betrieb"] = "Hier legst du Kontakte, Tarife, Mitglieder, Ware und Anfragen an. Leere Pflichtfelder werden rot. Jeder Eintrag lässt sich ändern und löschen. Zahlen übernimmst du aus einer CSV-Datei.",
+        ["biz-marke"] = "Farben, Kundenweg und Suchwort gehören zu deiner Idee. „Prüfen“ und „Berechnen“ zeigen das Ergebnis direkt auf der Seite.",
+        ["biz-markt"] = "Mitbewerber, Probleme und Tests trägst du hier ein. Sie erscheinen sofort in der Liste und lassen sich wieder entfernen.",
     };
 
     private void ShowHelp(string key, bool force)
