@@ -29,26 +29,33 @@ public class StudioClickTests
         }
     }
 
-    /// <summary>Schiebt das Element ins Fenster, bevor der Klick die Bildschirmstelle trifft.</summary>
-    static async Task InsBild(Window w, Control c)
+    /// <summary>Klickt die Mitte, sobald dort wirklich diese Kachel liegt. Bis dahin läuft das Layout, ohne feste Pause.</summary>
+    static async Task RealClick(Window w, Control c)
     {
-        c.BringIntoView();
-        await Until(() =>
+        var ende = Environment.TickCount64 + 4000;
+        string zuletzt = "noch kein Treffer";
+        while (true)
         {
-            var p = c.TranslatePoint(new Point(8, 8), w);
-            return c.Bounds.Width > 8 && p is { } pt && pt.X >= 0 && pt.Y >= 0 && pt.X < w.Bounds.Width && pt.Y < w.Bounds.Height;
-        });
-    }
-
-    static void RealClick(Window w, Control c)
-    {
-        Dispatcher.UIThread.RunJobs();
-        var p = c.TranslatePoint(new Point(c.Bounds.Width / 2, c.Bounds.Height / 2), w) ?? throw new InvalidOperationException("nicht sichtbar: " + c.Name);
-        var hit = w.InputHitTest(p) as Visual;
-        Assert.True(hit is not null && (hit == c || hit.GetVisualAncestors().Contains(c)), $"{c.Name}: an der Stelle liegt {hit?.GetType().Name} statt der Kachel");
-        w.MouseDown(p, MouseButton.Left);
-        w.MouseUp(p, MouseButton.Left);
-        Dispatcher.UIThread.RunJobs();
+            c.BringIntoView();
+            Dispatcher.UIThread.RunJobs();
+            if (c.Bounds.Width > 8 && c.Bounds.Height > 8
+                && c.TranslatePoint(new Point(c.Bounds.Width / 2, c.Bounds.Height / 2), w) is { } point
+                && point.X >= 0 && point.Y >= 0 && point.X < w.Bounds.Width && point.Y < w.Bounds.Height)
+            {
+                var hit = w.InputHitTest(point) as Visual;
+                zuletzt = hit?.GetType().Name ?? "nichts";
+                if (hit is not null && (hit == c || hit.GetVisualAncestors().Contains(c)))
+                {
+                    w.MouseDown(point, MouseButton.Left);
+                    w.MouseUp(point, MouseButton.Left);
+                    Dispatcher.UIThread.RunJobs();
+                    return;
+                }
+            }
+            if (Environment.TickCount64 > ende)
+                throw new TimeoutException($"{c.Name}: an der Stelle liegt {zuletzt} statt der Kachel.");
+            await Task.Delay(5);
+        }
     }
 
     static List<Button> Buttons(Window w, string prefix) => w.GetVisualDescendants().OfType<Button>().Where(b => b.Name?.StartsWith(prefix) == true && b.IsEffectivelyVisible).ToList();
@@ -61,22 +68,24 @@ public class StudioClickTests
     public async Task Startseite_Kacheln()
     {
         var (w, _, _) = Ui.Open();
-        OhneEchteProgramme(w);
-        string[] ids = ["STUDIO-ONLINE-BUSINESS-01", "STUDIO-LETTER-01", "CORE-05", "CORE-06", "SYS-10", "CORE-02", "CORE-08", "CORE-07", "CORE-11"];
-        foreach (var id in ids)
+        try
         {
-            w.Show("start");
-            await Until(() => Buttons(w, "start-button").Count == 1);
-            RealClick(w, Buttons(w, "start-button").Single());
-            await Until(() => w.GetVisualDescendants().OfType<Button>().Any(b => b.Name == "sm-az-" + id));
-            var item = w.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "sm-az-" + id);
-            await InsBild(w, item);
-            RealClick(w, item);
-            await Until(() => w.CurrentView != "start" && w.CurrentView != "studios");
-            Assert.NotEqual("start", w.CurrentView);
-            Assert.NotEqual("studios", w.CurrentView);
+            OhneEchteProgramme(w);
+            string[] ids = ["STUDIO-ONLINE-BUSINESS-01", "STUDIO-LETTER-01", "CORE-05", "CORE-06", "SYS-10", "CORE-02", "CORE-08", "CORE-07", "CORE-11"];
+            foreach (var id in ids)
+            {
+                w.Show("start");
+                await Until(() => Buttons(w, "start-button").Count == 1);
+                await RealClick(w, Buttons(w, "start-button").Single());
+                await Until(() => w.GetVisualDescendants().OfType<Button>().Any(b => b.Name == "sm-az-" + id));
+                var item = w.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "sm-az-" + id);
+                await RealClick(w, item);
+                await Until(() => w.CurrentView != "start" && w.CurrentView != "studios");
+                Assert.NotEqual("start", w.CurrentView);
+                Assert.NotEqual("studios", w.CurrentView);
+            }
         }
-        w.Close();
+        finally { w.Close(); }
     }
 
     [AvaloniaFact(DisplayName = "Alle Studios + Bereiche: jede Karte ist klickbar, Teil 1 von 6")]
@@ -101,26 +110,28 @@ public class StudioClickTests
     async Task KartenTeil(int teil)
     {
         var (w, _, _) = Ui.Open();
-        OhneEchteProgramme(w);
-        w.Show("studios");
-        await Until(() => Buttons(w, "studio-card-").Count > 20);
-        var names = Buttons(w, "studio-card-").Select(b => b.Name!).Distinct().OrderBy(n => n, StringComparer.Ordinal).ToList();
-        Assert.True(names.Count > 20, $"nur {names.Count} Karten");
-        var meine = names.Where((_, i) => i % Teile == teil).ToList();
-        var basis = names.Count / Teile;
-        var rest = names.Count % Teile;
-        Assert.Equal(basis + (teil < rest ? 1 : 0), meine.Count);
-        foreach (var n in meine)
+        try
         {
+            OhneEchteProgramme(w);
             w.Show("studios");
-            await Until(() => Buttons(w, "studio-card-").Any(b => b.Name == n));
-            var card = Buttons(w, "studio-card-").Single(b => b.Name == n);
-            await InsBild(w, card);
-            RealClick(w, card);
-            await Until(() => w.CurrentView != "studios");
-            Assert.NotEqual("studios", w.CurrentView);
+            await Until(() => Buttons(w, "studio-card-").Count > 20);
+            var names = Buttons(w, "studio-card-").Select(b => b.Name!).Distinct().OrderBy(n => n, StringComparer.Ordinal).ToList();
+            Assert.True(names.Count > 20, $"nur {names.Count} Karten");
+            var meine = names.Where((_, i) => i % Teile == teil).ToList();
+            var basis = names.Count / Teile;
+            var rest = names.Count % Teile;
+            Assert.Equal(basis + (teil < rest ? 1 : 0), meine.Count);
+            foreach (var n in meine)
+            {
+                w.Show("studios");
+                await Until(() => Buttons(w, "studio-card-").Any(b => b.Name == n));
+                var card = Buttons(w, "studio-card-").Single(b => b.Name == n);
+                await RealClick(w, card);
+                await Until(() => w.CurrentView != "studios");
+                Assert.NotEqual("studios", w.CurrentView);
+            }
         }
-        w.Close();
+        finally { w.Close(); }
     }
 
     [AvaloniaFact(DisplayName = "Jedes Studio mit Status IMPLEMENTED hat einen eigenen Bereich (keine Sackgasse)")]

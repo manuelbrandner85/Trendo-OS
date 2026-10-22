@@ -167,7 +167,7 @@ public class SPEC10_Ui
         w.Find<Button>("twin-pc").Press();
     }
 
-    [AvaloniaFact(DisplayName = "SPEC-10 UI: Schwellen Ok, Warnung und Alarm mit festen Messwerten; Sensor anlegen, CSV einlesen")]
+    [AvaloniaFact(DisplayName = "SPEC-10 UI: diesen PC live messen, Sensor anlegen, CSV einlesen")]
     public void Twin_schwellen()
     {
         var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
