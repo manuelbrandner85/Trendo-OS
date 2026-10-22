@@ -9,3 +9,4 @@
 | 23.10.2026 | Rollen: TRENDO OS MASTER vergibt und priorisiert alle Aufgaben; TOKEN & PRODUCTION GODMODE pflegt `docs/state/` nur als Protokoll | Abstimmung MASTER ↔ TOKEN-Bot |
 | 23.10.2026 | Kein Merge, solange der Merge-Lauf für #243–#259 nicht abgeschlossen ist | MASTER |
 | 23.10.2026 | Dieser PR darf geöffnet werden (nicht gemergt) | Manuel: „JA, docs/state-PR darf geöffnet werden“ |
+| 23.10.2026 | Merge-Reihenfolge freigegeben (laut MASTER durch Manuel): GITHUB & RECOVERY merged einzeln #243, #244–#258, #260, #248, #252, zuletzt #259 | Meldung MASTER |

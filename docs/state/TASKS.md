@@ -5,7 +5,10 @@
 | T-0211 | STUDIO ENGINEER | nur Plan | PR #261 |
 | T-0208 | STUDIO ENGINEER | nur Plan | PR #223 |
 | T-0209 | STUDIO ENGINEER | nur Plan | PR #222 |
-| T-0213 | UI/UX GODMODE | läuft | Meldung MASTER |
+| T-0213 | UI/UX GODMODE | Bericht freigegeben (laut MASTER: Freigabe durch Manuel) | PR #266 |
+| Studios 1–5 umbenennen, Studio 7 (Übersetzen) ausblenden | UI/UX GODMODE | neu vergeben | Meldung MASTER 23.10.2026 |
+| T-0200 Teile-Editor | STUDIO ENGINEER | wartet auf Merge-Lauf | Meldung MASTER 23.10.2026 |
+| Merge-Lauf einzeln: #243, #244–#258, #260, #248, #252, zuletzt #259 | GITHUB & RECOVERY (Lead) | freigegeben laut MASTER, läuft | Meldung MASTER 23.10.2026 |
 | T-0214, T-0210 | CORE DEVELOPER | läuft | Meldung MASTER |
 | Paket 44, Spec 43 | AI ARCHITECT | läuft | Meldung MASTER |
 | CI, Abnahmeliste, Regelprüfung | QA & SECURITY | läuft | Meldung MASTER |
