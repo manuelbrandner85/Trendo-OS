@@ -1301,12 +1301,251 @@ public class PromptActionTests
         Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith(".ply", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".obj", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Fact(DisplayName = "Baukasten schreibt HTML und veröffentlicht nichts")]
+    public void Seite_schreibt_html()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var ask = wf.Start(fx.Req("X-03", "Titel: Nur", id: "frage-seite"), fx.Ctx());
+        Assert.Equal(RunStatus.AwaitingInput, ask.Status);
+        Assert.Empty(ask.Artifacts);
+        var page = new SitePage { Title = "Hofseite", Accent = "#112233" };
+        page.Blocks.Add(new Block("h1", "Hofseite"));
+        page.Blocks.Add(new Block("p", "Willkommen im Hof"));
+        page.Blocks.Add(new Block("list", "Apfel\nBirne"));
+        page.Blocks.Add(new Block("button", "Mehr", "https://example.com/hof"));
+        page.Blocks.Add(new Block("p", "Es wurde nichts veröffentlicht."));
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("X-03", "Titel: Hofseite\nText: Willkommen im Hof\nListe: Apfel\nListe: Birne\nKnopf: Mehr\nLink: https://example.com/hof\nFarbe: #112233", id: "seite-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var html = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.Equal(page.ToHtml(), html);
+        Assert.Equal("Hofseite · HTML im Projekt", done.Preview);
+        Assert.Contains(done.Warnings, w => w.Contains("nichts veröffentlicht", StringComparison.Ordinal));
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith("index.html", StringComparison.OrdinalIgnoreCase));
+        var old = File.ReadAllBytes(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        var next = wf.Los(fx.Project, wf.Revise(fx.Project, done.RunId, "Titel: Hofseite\nText: Zweite Fassung", fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, next.Status);
+        Assert.Contains("Zweite Fassung", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, next.Artifacts.Single(a => a.Version == 2).RelativePath)));
+        Assert.Equal(old, File.ReadAllBytes(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath)));
+        var bad = new SitePage { Title = "Hofseite" };
+        bad.Blocks.Add(new Block("h1", "Hofseite"));
+        bad.Blocks.Add(new Block("p", "Willkommen"));
+        bad.Blocks.Add(new Block("button", "Klick", "javascript:alert(1)"));
+        bad.Blocks.Add(new Block("p", "Es wurde nichts veröffentlicht."));
+        var unsafePage = wf.Los(fx.Project, wf.Start(fx.Req("X-03", "Titel: Hofseite\nText: Willkommen\nKnopf: Klick\nLink: javascript:alert(1)", id: "seite-js"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(bad.ToHtml(), File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, unsafePage.Artifacts.Single().RelativePath)));
+        Assert.Contains(unsafePage.Warnings, w => w.Contains("unsicher", StringComparison.Ordinal));
+        var allowed = wf.Los(fx.Project, wf.Start(fx.Req("X-03", "Freigabe: erteilt\nTitel: Hofseite\nText: Willkommen im Hof", id: "seite-frei"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, allowed.Status);
+        Assert.Null(allowed.Receipt);
+        Assert.Contains(System.Net.WebUtility.HtmlEncode("Es wurde nichts veröffentlicht."), File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, allowed.Artifacts.Single().RelativePath)));
+    }
+
+    [Fact(DisplayName = "Veröffentlichen bleibt auch mit Freigabe im Text aus")]
+    public void Seite_wird_nicht_veroeffentlicht()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("X-03", "Freigabe: erteilt\nVeroeffentlichen: ja\nTitel: Hofseite\nText: Willkommen"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Unsupported, done.Status);
+        Assert.Null(done.Receipt);
+        Assert.Empty(done.Artifacts);
+        Assert.Contains(done.Errors, e => e.Contains("nicht angeschlossen", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith(".html", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact(DisplayName = "Nachbau schreibt Regeln und liest kein Original")]
+    public void Nachbau_schreibt_regeln()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("X-10", "Name: Hofprogramm\nVorbild: Taschenrechner"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var rules = done.Artifacts.Single(a => a.RelativePath.EndsWith("REGELN.md", StringComparison.Ordinal));
+        var desc = done.Artifacts.Single(a => a.RelativePath.EndsWith("BESCHREIBUNG.md", StringComparison.Ordinal));
+        var rulesPath = fx.Core.Projects.ResolveInProject(fx.Project, rules.RelativePath);
+        Assert.StartsWith(fx.Files + Path.DirectorySeparatorChar, rulesPath, StringComparison.Ordinal);
+        Assert.Contains("Keine Rechtsberatung.", File.ReadAllText(rulesPath));
+        Assert.Contains("Hofprogramm", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, desc.RelativePath)));
+        Assert.Contains("Taschenrechner", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, desc.RelativePath)));
+        Assert.True(File.Exists(Path.Combine(Path.GetDirectoryName(rulesPath)!, "tagebuch.jsonl")));
+        Assert.DoesNotContain(Directory.GetFiles(Path.GetDirectoryName(rulesPath)!, "*", SearchOption.AllDirectories), f => Path.GetExtension(f) is ".cs" or ".js");
+        Assert.Equal("Hofprogramm · Beschreibung, keine Rechtsberatung", done.Preview);
+        var old = File.ReadAllBytes(rulesPath);
+        var next = wf.Los(fx.Project, wf.Revise(fx.Project, done.RunId, "Name: Hofprogramm\nVorbild: Uhr", fx.Ctx()).RunId, fx.Ctx());
+        Assert.Contains("Uhr", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, next.Artifacts.Single(a => a.Version == 2 && a.RelativePath.EndsWith("BESCHREIBUNG.md")).RelativePath)));
+        Assert.Equal(old, File.ReadAllBytes(rulesPath));
+        var sneak = wf.Los(fx.Project, wf.Start(fx.Req("X-10", "Name: ../geheim\nVorbild: Alt", id: "weg-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, sneak.Status);
+        var escaped = sneak.Artifacts.Single(a => a.RelativePath.EndsWith("REGELN.md")).RelativePath;
+        Assert.DoesNotContain("..", escaped);
+        Assert.StartsWith(fx.Files + Path.DirectorySeparatorChar, fx.Core.Projects.ResolveInProject(fx.Project, escaped), StringComparison.Ordinal);
+    }
+
+    [Fact(DisplayName = "Leistung liest Prozesse und beendet keinen")]
+    public void Leistung_liest_prozesse()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("X-09", "Lesen: jetzt"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.Contains("Es wird kein Programm beendet.", text);
+        Assert.True(text.Contains('×', StringComparison.Ordinal) || text.Contains("Keine Prozesse gelesen.", StringComparison.Ordinal));
+        Assert.Contains("Prozesse gelesen", done.Preview);
+    }
+
+    [Fact(DisplayName = "Großprojekt nennt nur Studionamen")]
+    public void Studios_werden_nur_genannt()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("X-01", "Ziel: Geburtstag"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        foreach (var profile in CapabilityCatalog.Profiles)
+            Assert.Contains(profile.Title + " (" + profile.Id + ")", text);
+        Assert.Contains("Es wird nichts ausgeführt.", text);
+        Assert.Equal("Geburtstag · " + CapabilityCatalog.Ids.Count + " Studios genannt", done.Preview);
+        Assert.False(File.Exists(Path.Combine(fx.Core.DataRoot, "verbund", "geraete.json")));
+    }
+
+    [Fact(DisplayName = "GitHub erklärt die Lizenz und klont nicht")]
+    public void Github_erklaert_lizenz()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var explain = OpenSource.Explain("MIT");
+        Assert.Equal(OpenSource.LicenseKind.Frei, OpenSource.Classify("MIT"));
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("X-06", "Name: beispiel/uhr\nLizenz: MIT"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.Contains(explain, text);
+        Assert.Contains("Es wurde nichts geklont.", text);
+        Assert.Equal(explain, done.Preview);
+        Assert.DoesNotContain(fx.FilesTree(), f => f.Contains(".git", StringComparison.Ordinal));
+    }
+
+    [Fact(DisplayName = "Klonen bleibt auch mit Freigabe im Text aus")]
+    public void Github_klont_nichts()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("X-06", "Freigabe: erteilt\nKlonen: ja\nName: beispiel/uhr\nLizenz: MIT"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Unsupported, done.Status);
+        Assert.Null(done.Receipt);
+        Assert.Empty(done.Artifacts);
+        Assert.Contains(done.Errors, e => e.Contains("nicht angeschlossen", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(fx.FilesTree(), f => f.Contains(".git", StringComparison.Ordinal) || f.EndsWith("hinweis.txt", StringComparison.Ordinal));
+    }
+
+    [Fact(DisplayName = "Startmodus wird angezeigt und nicht umgestellt")]
+    public void Modus_wird_angezeigt()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var label = TripleMode.Label(TripleMode.DetectHere());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SYS-01", "Anzeigen: ja"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.Equal("Modus: " + label + "\nEs wird nichts umgestellt.\n", text);
+        Assert.Equal(label, done.Preview);
+        Assert.False(File.Exists(Path.Combine(fx.Root, "settings.json")));
+    }
+
+    [Fact(DisplayName = "Ablauf bleibt ein Plan und verschiebt nichts")]
+    public void Ablauf_plant_und_verschiebt_nichts()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SYS-05", "Name: Morgen\nSchritt: Ordner Notizen anlegen\nSchritt: PDFs verschieben"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.Contains("Der Ablauf ist nicht gelaufen.", text);
+        Assert.Contains("Ordner Notizen anlegen — " + WorkflowEngine.StepLabel(StepKind.OrdnerAnlegen), text);
+        Assert.Contains("PDFs verschieben — " + WorkflowEngine.StepLabel(StepKind.Verschieben), text);
+        Assert.Contains("Es wurde nichts verschoben und nichts kopiert.", text);
+        Assert.Equal("Morgen · 2 Schritte, nicht gelaufen", done.Preview);
+        Assert.False(Directory.Exists(Path.Combine(fx.Core.DataRoot, "ablaeufe")));
+    }
+
+    [Fact(DisplayName = "Ablauf startet auch mit Freigabe im Text nichts")]
+    public void Ablauf_startet_nichts()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SYS-05", "Freigabe: erteilt\nStarten: ja\nName: Morgen\nSchritt: PDFs verschieben"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Unsupported, done.Status);
+        Assert.Null(done.Receipt);
+        Assert.Empty(done.Artifacts);
+        Assert.Contains(done.Errors, e => e.Contains("nicht angeschlossen", StringComparison.OrdinalIgnoreCase));
+        Assert.False(Directory.Exists(Path.Combine(fx.Core.DataRoot, "ablaeufe")));
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith("plan.txt", StringComparison.Ordinal));
+    }
+
+    [Fact(DisplayName = "Erweiterung ist nur ein Entwurf")]
+    public void Erweiterung_ist_nur_entwurf()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("X-04", "Name: Hofuhr\nZweck: Zeigt die Uhr"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.Contains("Hofuhr", text);
+        Assert.Contains("Zeigt die Uhr", text);
+        Assert.Contains("Es wurde nichts installiert.", text);
+        Assert.Equal("Hofuhr · nur Entwurf", done.Preview);
+    }
+
+    [Fact(DisplayName = "Erweiterung wird auch mit Freigabe im Text nicht installiert")]
+    public void Erweiterung_wird_nicht_installiert()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("X-04", "Freigabe: erteilt\nInstallieren: ja\nName: Hofuhr\nZweck: Zeigt die Uhr"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Unsupported, done.Status);
+        Assert.Null(done.Receipt);
+        Assert.Empty(done.Artifacts);
+        Assert.Contains(done.Errors, e => e.Contains("nicht angeschlossen", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith("entwurf.md", StringComparison.Ordinal));
+    }
+
+    [Fact(DisplayName = "Gesperrte Studios schreiben auch mit Freigabe nichts")]
+    public void Gesperrte_Studios_schreiben_nichts()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var adapters = PromptActions.CreateDefault();
+        var blocked = CapabilityCatalog.Ids.Where(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Blocked).ToList();
+        Assert.Equal(20, blocked.Count);
+        foreach (var id in new[] { "SPEC-09", "SPEC-07", "CORE-01", "SPEC-12", "X-02", "SYS-12", "CORE-09", "CORE-02", "SYS-08" })
+            Assert.Contains(blocked, item => item == id);
+        foreach (var id in blocked)
+        {
+            var token = "gate-" + id.ToLowerInvariant();
+            var done = wf.Los(fx.Project, wf.Start(fx.Req(id, "Freigabe: erteilt", id: token), fx.Ctx()).RunId, fx.Ctx());
+            Assert.Equal(RunStatus.Unsupported, done.Status);
+            Assert.Empty(done.Artifacts);
+            Assert.Null(done.Receipt);
+            Assert.Contains(done.Errors, e => e.Contains("nicht angeschlossen", StringComparison.OrdinalIgnoreCase));
+        }
+        Assert.All(fx.FilesTree(), f => Assert.Contains("/auftraege/", f.Replace('\\', '/')));
+        Assert.False(File.Exists(Path.Combine(fx.Root, "settings.json")));
+        Assert.All(adapters, a => Assert.False(a.CanPerformSideEffect));
+        Assert.Equal(TimeSpan.FromHours(120), ForensicsLab.MaxLife);
+    }
+
     [Fact(DisplayName = "Katalogmatrix nennt jede Studio-ID genau einmal")]
     public void Matrix_deckt_den_Katalog()
     {
         var ids = CapabilityCatalog.Ids;
         Assert.Equal(ids.Count, ids.Distinct(StringComparer.OrdinalIgnoreCase).Count());
-        var registered = PromptActions.CreateDefault().Select(a => a.StudioId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var adapters = PromptActions.CreateDefault();
+        var registered = adapters.Select(a => a.StudioId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        Assert.Equal(ids.Count, registered.Count);
+        Assert.Equal(68, adapters.Count);
+        Assert.Equal(adapters.Count, adapters.Select(a => a.ActionId).Distinct(StringComparer.OrdinalIgnoreCase).Count());
+        Assert.All(adapters, a => Assert.NotNull(CapabilityCatalog.Find(a.StudioId)));
         Assert.Contains(registered, id => id == "STUDIO-LETTER-01");
         Assert.Contains(registered, id => id == "SYS-10");
         Assert.Contains(registered, id => id == "SYS-09");
@@ -1316,23 +1555,25 @@ public class PromptActionTests
         Assert.Contains(registered, id => id == "CORE-05");
         Assert.Contains(registered, id => id == "CORE-06");
         Assert.Contains(registered, id => id == "CORE-08");
-        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-LETTER-01", PromptActions.CreateDefault()));
-        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-10", PromptActions.CreateDefault()));
-        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-09", PromptActions.CreateDefault()));
-        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SPEC-11", PromptActions.CreateDefault()));
-        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-ONLINE-BUSINESS-01", PromptActions.CreateDefault()));
-        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-07", PromptActions.CreateDefault()));
-        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-05", PromptActions.CreateDefault()));
-        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-06", PromptActions.CreateDefault()));
-        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-08", PromptActions.CreateDefault()));
-        foreach (var id in new[] { "SYS-02", "X-11", "SPEC-01", "SPEC-02", "SPEC-03", "SPEC-05", "SPEC-10", "SPEC-13", "SPEC-14", "SPEC-16", "CORE-10", "SPEC-06", "CORE-12", "SPEC-08", "SPEC-15", "X-07", "SPEC-04" })
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-LETTER-01", adapters));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-10", adapters));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-09", adapters));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SPEC-11", adapters));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-ONLINE-BUSINESS-01", adapters));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-07", adapters));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-05", adapters));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-06", adapters));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-08", adapters));
+        foreach (var id in new[] { "SYS-02", "X-11", "SPEC-01", "SPEC-02", "SPEC-03", "SPEC-05", "SPEC-10", "SPEC-13", "SPEC-14", "SPEC-16", "CORE-10", "SPEC-06", "CORE-12", "SPEC-08", "SPEC-15", "X-07", "SPEC-04", "X-03", "X-10", "X-09", "X-01", "X-06", "SYS-01", "SYS-05", "X-04" })
         {
             Assert.Contains(registered, item => item == id);
-            Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level(id, PromptActions.CreateDefault()));
+            Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level(id, adapters));
         }
-        Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level("SPEC-09", PromptActions.CreateDefault()));
-        Assert.All(ids.Where(id => !registered.Contains(id)), id => Assert.Equal(CapabilityLevel.NotImplemented, CapabilityCatalog.Level(id, PromptActions.CreateDefault())));
-        var markdown = CapabilityCatalog.Markdown(PromptActions.CreateDefault());
+        Assert.Equal(34, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Partial));
+        Assert.Equal(20, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Blocked));
+        Assert.DoesNotContain(ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.NotImplemented);
+        Assert.DoesNotContain(ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Ready);
+        var markdown = CapabilityCatalog.Markdown(adapters);
         Assert.Equal(Normalize(markdown), Normalize(File.ReadAllText(Repo("docs/improvement-42/studio-capability-matrix.md"))));
     }
 
