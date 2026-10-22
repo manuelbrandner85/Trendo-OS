@@ -1,26 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="f97090d8-0333-4e53-8942-12f09ea7b94b" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:42:37" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestRun id="f97090d8-0333-4e53-8942-12f09ea7b94b" name="<user>@<host> 2026-10-22 02:42:37" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:37.4883334+02:00" queuing="2026-10-22T02:42:37.4883335+02:00" start="2026-10-22T02:42:36.7563886+02:00" finish="2026-10-22T02:42:37.4923370+02:00" />
   <TestSettings name="default" id="34ac915b-27c7-4c47-9de8-5a5b26bb4b0d">
-    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_42_37" />
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_37" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="10e64488-798a-4283-a7be-6bf83fd5ae3a" testId="9162004a-a51a-2e08-0666-dda40ee01a3a" testName="SYS-09: Kontakte speichern, vCard ein- und ausgeben, ungültige Adresse abgelehnt" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0640218" startTime="2026-10-22T02:42:37.3467684+02:00" endTime="2026-10-22T02:42:37.4026058+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="10e64488-798a-4283-a7be-6bf83fd5ae3a" />
-    <UnitTestResult executionId="5d9f314b-819e-46be-b763-bf8eededd895" testId="2224a16e-8c3a-8380-cda9-d97f812a63b8" testName="SYS-09: Eingegangene E-Mail (multipart, quoted-printable) wird lesbar" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0005706" startTime="2026-10-22T02:42:37.3462464+02:00" endTime="2026-10-22T02:42:37.3463014+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5d9f314b-819e-46be-b763-bf8eededd895" />
-    <UnitTestResult executionId="a16a0915-1a95-4845-aaba-473afd4969dc" testId="3d77f380-d97d-52b2-4e1f-ee4056ec3cf7" testName="SYS-09: Entwurf als .eml (Umlaute korrekt, X-Unsent) und mailto; Prüfung findet Fehler" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0218075" startTime="2026-10-22T02:42:37.3102214+02:00" endTime="2026-10-22T02:42:37.3377090+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a16a0915-1a95-4845-aaba-473afd4969dc" />
+    <UnitTestResult executionId="10e64488-798a-4283-a7be-6bf83fd5ae3a" testId="9162004a-a51a-2e08-0666-dda40ee01a3a" testName="SYS-09: Kontakte speichern, vCard ein- und ausgeben, ungültige Adresse abgelehnt" computerName="<host>" duration="00:00:00.0640218" startTime="2026-10-22T02:42:37.3467684+02:00" endTime="2026-10-22T02:42:37.4026058+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="10e64488-798a-4283-a7be-6bf83fd5ae3a" />
+    <UnitTestResult executionId="5d9f314b-819e-46be-b763-bf8eededd895" testId="2224a16e-8c3a-8380-cda9-d97f812a63b8" testName="SYS-09: Eingegangene E-Mail (multipart, quoted-printable) wird lesbar" computerName="<host>" duration="00:00:00.0005706" startTime="2026-10-22T02:42:37.3462464+02:00" endTime="2026-10-22T02:42:37.3463014+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5d9f314b-819e-46be-b763-bf8eededd895" />
+    <UnitTestResult executionId="a16a0915-1a95-4845-aaba-473afd4969dc" testId="3d77f380-d97d-52b2-4e1f-ee4056ec3cf7" testName="SYS-09: Entwurf als .eml (Umlaute korrekt, X-Unsent) und mailto; Prüfung findet Fehler" computerName="<host>" duration="00:00:00.0218075" startTime="2026-10-22T02:42:37.3102214+02:00" endTime="2026-10-22T02:42:37.3377090+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a16a0915-1a95-4845-aaba-473afd4969dc" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="SYS-09: Eingegangene E-Mail (multipart, quoted-printable) wird lesbar" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="2224a16e-8c3a-8380-cda9-d97f812a63b8">
+    <UnitTest name="SYS-09: Eingegangene E-Mail (multipart, quoted-printable) wird lesbar" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="2224a16e-8c3a-8380-cda9-d97f812a63b8">
       <Execution id="5d9f314b-819e-46be-b763-bf8eededd895" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SYS09_Mail" name="Read_eml" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SYS09_Mail" name="Read_eml" />
     </UnitTest>
-    <UnitTest name="SYS-09: Kontakte speichern, vCard ein- und ausgeben, ungültige Adresse abgelehnt" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="9162004a-a51a-2e08-0666-dda40ee01a3a">
+    <UnitTest name="SYS-09: Kontakte speichern, vCard ein- und ausgeben, ungültige Adresse abgelehnt" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="9162004a-a51a-2e08-0666-dda40ee01a3a">
       <Execution id="10e64488-798a-4283-a7be-6bf83fd5ae3a" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SYS09_Mail" name="Contacts" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SYS09_Mail" name="Contacts" />
     </UnitTest>
-    <UnitTest name="SYS-09: Entwurf als .eml (Umlaute korrekt, X-Unsent) und mailto; Prüfung findet Fehler" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="3d77f380-d97d-52b2-4e1f-ee4056ec3cf7">
+    <UnitTest name="SYS-09: Entwurf als .eml (Umlaute korrekt, X-Unsent) und mailto; Prüfung findet Fehler" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="3d77f380-d97d-52b2-4e1f-ee4056ec3cf7">
       <Execution id="a16a0915-1a95-4845-aaba-473afd4969dc" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SYS09_Mail" name="Draft" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SYS09_Mail" name="Draft" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>

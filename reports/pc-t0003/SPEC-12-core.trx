@@ -1,21 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="aa755e71-e0de-4bab-9bec-60e0432af447" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:42:42" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestRun id="aa755e71-e0de-4bab-9bec-60e0432af447" name="<user>@<host> 2026-10-22 02:42:42" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:42.9339262+02:00" queuing="2026-10-22T02:42:42.9339264+02:00" start="2026-10-22T02:42:42.1888474+02:00" finish="2026-10-22T02:42:42.9379409+02:00" />
   <TestSettings name="default" id="50ddcd44-3ad8-4799-a66f-d1f23c55059d">
-    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_42_42" />
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_42" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="d5902102-d0d0-4a17-b3f5-d3b49f4859b5" testId="7863e463-dc17-ed9b-db5b-041476f9d844" testName="SPEC-12: Höchstens 120 h, Warnung 24 h vorher, danach vollständig gelöscht" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0572031" startTime="2026-10-22T02:42:42.7343452+02:00" endTime="2026-10-22T02:42:42.7975197+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d5902102-d0d0-4a17-b3f5-d3b49f4859b5" />
-    <UnitTestResult executionId="c11c5067-d715-4d35-8c86-6fa75a428381" testId="155dfaf0-b658-fb77-2795-1baea5b93404" testName="SPEC-12: Beweis wird unverändert mit SHA-256 und Kette gesichert, Veränderung wird erkannt" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0500117" startTime="2026-10-22T02:42:42.8062248+02:00" endTime="2026-10-22T02:42:42.8479066+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c11c5067-d715-4d35-8c86-6fa75a428381" />
+    <UnitTestResult executionId="d5902102-d0d0-4a17-b3f5-d3b49f4859b5" testId="7863e463-dc17-ed9b-db5b-041476f9d844" testName="SPEC-12: Höchstens 120 h, Warnung 24 h vorher, danach vollständig gelöscht" computerName="<host>" duration="00:00:00.0572031" startTime="2026-10-22T02:42:42.7343452+02:00" endTime="2026-10-22T02:42:42.7975197+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d5902102-d0d0-4a17-b3f5-d3b49f4859b5" />
+    <UnitTestResult executionId="c11c5067-d715-4d35-8c86-6fa75a428381" testId="155dfaf0-b658-fb77-2795-1baea5b93404" testName="SPEC-12: Beweis wird unverändert mit SHA-256 und Kette gesichert, Veränderung wird erkannt" computerName="<host>" duration="00:00:00.0500117" startTime="2026-10-22T02:42:42.8062248+02:00" endTime="2026-10-22T02:42:42.8479066+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c11c5067-d715-4d35-8c86-6fa75a428381" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="SPEC-12: Höchstens 120 h, Warnung 24 h vorher, danach vollständig gelöscht" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="7863e463-dc17-ed9b-db5b-041476f9d844">
+    <UnitTest name="SPEC-12: Höchstens 120 h, Warnung 24 h vorher, danach vollständig gelöscht" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="7863e463-dc17-ed9b-db5b-041476f9d844">
       <Execution id="d5902102-d0d0-4a17-b3f5-d3b49f4859b5" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC12_Forensics" name="Expiry" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC12_Forensics" name="Expiry" />
     </UnitTest>
-    <UnitTest name="SPEC-12: Beweis wird unverändert mit SHA-256 und Kette gesichert, Veränderung wird erkannt" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="155dfaf0-b658-fb77-2795-1baea5b93404">
+    <UnitTest name="SPEC-12: Beweis wird unverändert mit SHA-256 und Kette gesichert, Veränderung wird erkannt" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="155dfaf0-b658-fb77-2795-1baea5b93404">
       <Execution id="c11c5067-d715-4d35-8c86-6fa75a428381" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC12_Forensics" name="Evidence" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC12_Forensics" name="Evidence" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>

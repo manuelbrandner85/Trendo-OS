@@ -1,16 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="c68d5476-dc95-4f57-b56c-ab58f6406729" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:42:54" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestRun id="c68d5476-dc95-4f57-b56c-ab58f6406729" name="<user>@<host> 2026-10-22 02:42:54" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:54.4561745+02:00" queuing="2026-10-22T02:42:54.4561746+02:00" start="2026-10-22T02:42:52.0272298+02:00" finish="2026-10-22T02:42:54.4600154+02:00" />
   <TestSettings name="default" id="c86bfafa-ea8a-4b72-957a-484372297e81">
-    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_42_54" />
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_54" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="1308c133-766f-4856-bfaf-1dc9a85dc075" testId="c615e848-c21c-1cb3-492b-ec6cf16b3120" testName="SYS-09 UI: Kontakt anlegen, Entwurf prüfen und im Mailprogramm öffnen (nichts wird gesendet)" computerName="DESKTOP-9JVIIPU" duration="00:00:01.2175661" startTime="2026-10-22T02:42:53.1367968+02:00" endTime="2026-10-22T02:42:54.3618455+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1308c133-766f-4856-bfaf-1dc9a85dc075" />
+    <UnitTestResult executionId="1308c133-766f-4856-bfaf-1dc9a85dc075" testId="c615e848-c21c-1cb3-492b-ec6cf16b3120" testName="SYS-09 UI: Kontakt anlegen, Entwurf prüfen und im Mailprogramm öffnen (nichts wird gesendet)" computerName="<host>" duration="00:00:01.2175661" startTime="2026-10-22T02:42:53.1367968+02:00" endTime="2026-10-22T02:42:54.3618455+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1308c133-766f-4856-bfaf-1dc9a85dc075" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="SYS-09 UI: Kontakt anlegen, Entwurf prüfen und im Mailprogramm öffnen (nichts wird gesendet)" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="c615e848-c21c-1cb3-492b-ec6cf16b3120">
+    <UnitTest name="SYS-09 UI: Kontakt anlegen, Entwurf prüfen und im Mailprogramm öffnen (nichts wird gesendet)" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="c615e848-c21c-1cb3-492b-ec6cf16b3120">
       <Execution id="1308c133-766f-4856-bfaf-1dc9a85dc075" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SYS09_Ui" name="Mail_page" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SYS09_Ui" name="Mail_page" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>

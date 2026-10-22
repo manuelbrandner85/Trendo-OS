@@ -1,21 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="6c6d869b-5e90-4325-a06a-5f9d3d5a3109" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:42:36" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestRun id="6c6d869b-5e90-4325-a06a-5f9d3d5a3109" name="<user>@<host> 2026-10-22 02:42:36" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:36.0793365+02:00" queuing="2026-10-22T02:42:36.0793369+02:00" start="2026-10-22T02:42:35.3546637+02:00" finish="2026-10-22T02:42:36.0833822+02:00" />
   <TestSettings name="default" id="347c8f27-601d-47b0-844b-34b4c0ace2ea">
-    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_42_36" />
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_36" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="7291b2ec-2bc8-4e87-8542-d4a1bbb244d6" testId="b8dec13f-95d9-df66-564b-4182cf721767" testName="SYS-08: .onion nur Tor Browser, andere Schemata und Heimnetz abgelehnt, Webseiten im Lesemodus" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0084799" startTime="2026-10-22T02:42:35.8993477+02:00" endTime="2026-10-22T02:42:35.9135649+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7291b2ec-2bc8-4e87-8542-d4a1bbb244d6" />
-    <UnitTestResult executionId="4bb9ae24-c69f-4641-bac4-af8ac6fe0220" testId="71bdcb99-1223-e326-9cb3-b27256c57689" testName="SYS-08: Lesetext ohne Skripte und Formulare, Links absolut; Sitzung flüchtig" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0768168" startTime="2026-10-22T02:42:35.9225906+02:00" endTime="2026-10-22T02:42:35.9907272+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4bb9ae24-c69f-4641-bac4-af8ac6fe0220" />
+    <UnitTestResult executionId="7291b2ec-2bc8-4e87-8542-d4a1bbb244d6" testId="b8dec13f-95d9-df66-564b-4182cf721767" testName="SYS-08: .onion nur Tor Browser, andere Schemata und Heimnetz abgelehnt, Webseiten im Lesemodus" computerName="<host>" duration="00:00:00.0084799" startTime="2026-10-22T02:42:35.8993477+02:00" endTime="2026-10-22T02:42:35.9135649+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7291b2ec-2bc8-4e87-8542-d4a1bbb244d6" />
+    <UnitTestResult executionId="4bb9ae24-c69f-4641-bac4-af8ac6fe0220" testId="71bdcb99-1223-e326-9cb3-b27256c57689" testName="SYS-08: Lesetext ohne Skripte und Formulare, Links absolut; Sitzung flüchtig" computerName="<host>" duration="00:00:00.0768168" startTime="2026-10-22T02:42:35.9225906+02:00" endTime="2026-10-22T02:42:35.9907272+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4bb9ae24-c69f-4641-bac4-af8ac6fe0220" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="SYS-08: Lesetext ohne Skripte und Formulare, Links absolut; Sitzung flüchtig" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="71bdcb99-1223-e326-9cb3-b27256c57689">
+    <UnitTest name="SYS-08: Lesetext ohne Skripte und Formulare, Links absolut; Sitzung flüchtig" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="71bdcb99-1223-e326-9cb3-b27256c57689">
       <Execution id="4bb9ae24-c69f-4641-bac4-af8ac6fe0220" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SYS08_Research" name="Reader_and_session" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SYS08_Research" name="Reader_and_session" />
     </UnitTest>
-    <UnitTest name="SYS-08: .onion nur Tor Browser, andere Schemata und Heimnetz abgelehnt, Webseiten im Lesemodus" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="b8dec13f-95d9-df66-564b-4182cf721767">
+    <UnitTest name="SYS-08: .onion nur Tor Browser, andere Schemata und Heimnetz abgelehnt, Webseiten im Lesemodus" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="b8dec13f-95d9-df66-564b-4182cf721767">
       <Execution id="7291b2ec-2bc8-4e87-8542-d4a1bbb244d6" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SYS08_Research" name="Classify" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SYS08_Research" name="Classify" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>

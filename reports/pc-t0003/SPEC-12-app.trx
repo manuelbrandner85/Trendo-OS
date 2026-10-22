@@ -1,16 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="0c283d1c-b4df-4525-afa0-ef2584db2dd7" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:43:11" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestRun id="0c283d1c-b4df-4525-afa0-ef2584db2dd7" name="<user>@<host> 2026-10-22 02:43:11" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:43:11.3550732+02:00" queuing="2026-10-22T02:43:11.3550734+02:00" start="2026-10-22T02:43:08.9005856+02:00" finish="2026-10-22T02:43:11.3588891+02:00" />
   <TestSettings name="default" id="9e57e7a9-8fd9-4b6b-a61f-336074bf6ed3">
-    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_43_11" />
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_43_11" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="4e238172-9030-415a-9003-e03a7a32d908" testId="2f7e2204-e413-1661-b56a-8d042ead27a0" testName="SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht" computerName="DESKTOP-9JVIIPU" duration="00:00:01.2648164" startTime="2026-10-22T02:43:09.9904552+02:00" endTime="2026-10-22T02:43:11.2628209+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4e238172-9030-415a-9003-e03a7a32d908" />
+    <UnitTestResult executionId="4e238172-9030-415a-9003-e03a7a32d908" testId="2f7e2204-e413-1661-b56a-8d042ead27a0" testName="SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht" computerName="<host>" duration="00:00:01.2648164" startTime="2026-10-22T02:43:09.9904552+02:00" endTime="2026-10-22T02:43:11.2628209+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4e238172-9030-415a-9003-e03a7a32d908" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="2f7e2204-e413-1661-b56a-8d042ead27a0">
+    <UnitTest name="SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="2f7e2204-e413-1661-b56a-8d042ead27a0">
       <Execution id="4e238172-9030-415a-9003-e03a7a32d908" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SPEC12_Ui" name="Forensics_page" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SPEC12_Ui" name="Forensics_page" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>

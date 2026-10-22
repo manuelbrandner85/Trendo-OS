@@ -1,21 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="a62e9354-55a0-4267-929c-539125afc58c" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:42:33" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestRun id="a62e9354-55a0-4267-929c-539125afc58c" name="<user>@<host> 2026-10-22 02:42:33" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:33.2584498+02:00" queuing="2026-10-22T02:42:33.2584500+02:00" start="2026-10-22T02:42:32.5654201+02:00" finish="2026-10-22T02:42:33.2629296+02:00" />
   <TestSettings name="default" id="cf8bf4ee-a0e5-4300-8ed0-7b15cd29f960">
-    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_42_33" />
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_33" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="01680161-bd03-4af9-a0b7-cbf3bfae4696" testId="780f9115-6d8e-195e-fea2-81e3df25596c" testName="SYS-06: Nur private Heimnetz-Adressen" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0030839" startTime="2026-10-22T02:42:33.1207020+02:00" endTime="2026-10-22T02:42:33.1294534+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="01680161-bd03-4af9-a0b7-cbf3bfae4696" />
-    <UnitTestResult executionId="39f6b094-f217-4803-9b5e-b9771eeaf2c9" testId="8002b266-330d-8c96-1cbb-694c5230e294" testName="SYS-06: Freigabe nur mit Token, nur im Ordner, keine versteckten Dateien, läuft ab" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0403866" startTime="2026-10-22T02:42:33.1385155+02:00" endTime="2026-10-22T02:42:33.1702425+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="39f6b094-f217-4803-9b5e-b9771eeaf2c9" />
+    <UnitTestResult executionId="01680161-bd03-4af9-a0b7-cbf3bfae4696" testId="780f9115-6d8e-195e-fea2-81e3df25596c" testName="SYS-06: Nur private Heimnetz-Adressen" computerName="<host>" duration="00:00:00.0030839" startTime="2026-10-22T02:42:33.1207020+02:00" endTime="2026-10-22T02:42:33.1294534+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="01680161-bd03-4af9-a0b7-cbf3bfae4696" />
+    <UnitTestResult executionId="39f6b094-f217-4803-9b5e-b9771eeaf2c9" testId="8002b266-330d-8c96-1cbb-694c5230e294" testName="SYS-06: Freigabe nur mit Token, nur im Ordner, keine versteckten Dateien, läuft ab" computerName="<host>" duration="00:00:00.0403866" startTime="2026-10-22T02:42:33.1385155+02:00" endTime="2026-10-22T02:42:33.1702425+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="39f6b094-f217-4803-9b5e-b9771eeaf2c9" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="SYS-06: Freigabe nur mit Token, nur im Ordner, keine versteckten Dateien, läuft ab" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="8002b266-330d-8c96-1cbb-694c5230e294">
+    <UnitTest name="SYS-06: Freigabe nur mit Token, nur im Ordner, keine versteckten Dateien, läuft ab" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="8002b266-330d-8c96-1cbb-694c5230e294">
       <Execution id="39f6b094-f217-4803-9b5e-b9771eeaf2c9" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SYS06_Share" name="Rules" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SYS06_Share" name="Rules" />
     </UnitTest>
-    <UnitTest name="SYS-06: Nur private Heimnetz-Adressen" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="780f9115-6d8e-195e-fea2-81e3df25596c">
+    <UnitTest name="SYS-06: Nur private Heimnetz-Adressen" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="780f9115-6d8e-195e-fea2-81e3df25596c">
       <Execution id="01680161-bd03-4af9-a0b7-cbf3bfae4696" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SYS06_Share" name="Lan" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SYS06_Share" name="Lan" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>

@@ -1,21 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="788320b4-286f-4cbd-8762-21a09ff6790f" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:42:27" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestRun id="788320b4-286f-4cbd-8762-21a09ff6790f" name="<user>@<host> 2026-10-22 02:42:27" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:27.5460406+02:00" queuing="2026-10-22T02:42:27.5460407+02:00" start="2026-10-22T02:42:26.8190499+02:00" finish="2026-10-22T02:42:27.5501084+02:00" />
   <TestSettings name="default" id="3db618a4-d82e-459e-a838-ab513012689d">
-    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_42_27" />
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_27" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="c84564ed-0553-4181-a0f6-00a61796b418" testId="d3a2c642-1f8b-e3de-7de1-726ab6fd5efe" testName="CORE-11: Schutz-Prüfung erkennt fehlende Sicherung und verändertes Protokoll" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0637168" startTime="2026-10-22T02:42:27.3633011+02:00" endTime="2026-10-22T02:42:27.4324095+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c84564ed-0553-4181-a0f6-00a61796b418" />
-    <UnitTestResult executionId="d250b2fb-216f-4ea7-b196-a796d5e8f9ea" testId="801f2245-5b8c-3d33-5e34-447f242fc180" testName="CORE-11: Ordnerprüfung findet Passwort, Schlüssel, gültige IBAN, Kartennummer – maskiert" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0272725" startTime="2026-10-22T02:42:27.4406642+02:00" endTime="2026-10-22T02:42:27.4599433+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d250b2fb-216f-4ea7-b196-a796d5e8f9ea" />
+    <UnitTestResult executionId="c84564ed-0553-4181-a0f6-00a61796b418" testId="d3a2c642-1f8b-e3de-7de1-726ab6fd5efe" testName="CORE-11: Schutz-Prüfung erkennt fehlende Sicherung und verändertes Protokoll" computerName="<host>" duration="00:00:00.0637168" startTime="2026-10-22T02:42:27.3633011+02:00" endTime="2026-10-22T02:42:27.4324095+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c84564ed-0553-4181-a0f6-00a61796b418" />
+    <UnitTestResult executionId="d250b2fb-216f-4ea7-b196-a796d5e8f9ea" testId="801f2245-5b8c-3d33-5e34-447f242fc180" testName="CORE-11: Ordnerprüfung findet Passwort, Schlüssel, gültige IBAN, Kartennummer – maskiert" computerName="<host>" duration="00:00:00.0272725" startTime="2026-10-22T02:42:27.4406642+02:00" endTime="2026-10-22T02:42:27.4599433+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d250b2fb-216f-4ea7-b196-a796d5e8f9ea" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="CORE-11: Ordnerprüfung findet Passwort, Schlüssel, gültige IBAN, Kartennummer – maskiert" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="801f2245-5b8c-3d33-5e34-447f242fc180">
+    <UnitTest name="CORE-11: Ordnerprüfung findet Passwort, Schlüssel, gültige IBAN, Kartennummer – maskiert" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="801f2245-5b8c-3d33-5e34-447f242fc180">
       <Execution id="d250b2fb-216f-4ea7-b196-a796d5e8f9ea" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.CORE11_Security" name="Privacy_scan" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.CORE11_Security" name="Privacy_scan" />
     </UnitTest>
-    <UnitTest name="CORE-11: Schutz-Prüfung erkennt fehlende Sicherung und verändertes Protokoll" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="d3a2c642-1f8b-e3de-7de1-726ab6fd5efe">
+    <UnitTest name="CORE-11: Schutz-Prüfung erkennt fehlende Sicherung und verändertes Protokoll" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="d3a2c642-1f8b-e3de-7de1-726ab6fd5efe">
       <Execution id="c84564ed-0553-4181-a0f6-00a61796b418" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.CORE11_Security" name="Checks" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.CORE11_Security" name="Checks" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>

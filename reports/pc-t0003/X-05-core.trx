@@ -1,21 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="cdd74aac-07ba-4f6e-ae90-8888aa5a7263" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:42:51" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestRun id="cdd74aac-07ba-4f6e-ae90-8888aa5a7263" name="<user>@<host> 2026-10-22 02:42:51" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:51.2029008+02:00" queuing="2026-10-22T02:42:51.2029010+02:00" start="2026-10-22T02:42:50.4835113+02:00" finish="2026-10-22T02:42:51.2074297+02:00" />
   <TestSettings name="default" id="7bc357c2-3d1b-4279-88bf-dcb977131ce3">
-    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_42_51" />
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_51" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="7b4f37a6-2e41-42ca-b238-24b11b36d86b" testId="2afe89cb-1dae-fb79-a4d8-23309b3dab77" testName="X-05: Rückfallkette lässt sich sortieren, abschalten und bleibt gespeichert" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0568388" startTime="2026-10-22T02:42:51.0632142+02:00" endTime="2026-10-22T02:42:51.1112690+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7b4f37a6-2e41-42ca-b238-24b11b36d86b" />
-    <UnitTestResult executionId="fa66efe6-1932-4dd6-8f88-8723599d094f" testId="2f0ae0ab-30a2-904c-a1d9-7db5536334ec" testName="X-05: Nur freie Quellen auf diesem Gerät, Modelle passend zur Hardware" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0052263" startTime="2026-10-22T02:42:51.0421623+02:00" endTime="2026-10-22T02:42:51.0539789+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fa66efe6-1932-4dd6-8f88-8723599d094f" />
+    <UnitTestResult executionId="7b4f37a6-2e41-42ca-b238-24b11b36d86b" testId="2afe89cb-1dae-fb79-a4d8-23309b3dab77" testName="X-05: Rückfallkette lässt sich sortieren, abschalten und bleibt gespeichert" computerName="<host>" duration="00:00:00.0568388" startTime="2026-10-22T02:42:51.0632142+02:00" endTime="2026-10-22T02:42:51.1112690+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7b4f37a6-2e41-42ca-b238-24b11b36d86b" />
+    <UnitTestResult executionId="fa66efe6-1932-4dd6-8f88-8723599d094f" testId="2f0ae0ab-30a2-904c-a1d9-7db5536334ec" testName="X-05: Nur freie Quellen auf diesem Gerät, Modelle passend zur Hardware" computerName="<host>" duration="00:00:00.0052263" startTime="2026-10-22T02:42:51.0421623+02:00" endTime="2026-10-22T02:42:51.0539789+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fa66efe6-1932-4dd6-8f88-8723599d094f" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="X-05: Nur freie Quellen auf diesem Gerät, Modelle passend zur Hardware" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="2f0ae0ab-30a2-904c-a1d9-7db5536334ec">
+    <UnitTest name="X-05: Nur freie Quellen auf diesem Gerät, Modelle passend zur Hardware" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="2f0ae0ab-30a2-904c-a1d9-7db5536334ec">
       <Execution id="fa66efe6-1932-4dd6-8f88-8723599d094f" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.X05_FreeAi" name="Catalog_free_local" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.X05_FreeAi" name="Catalog_free_local" />
     </UnitTest>
-    <UnitTest name="X-05: Rückfallkette lässt sich sortieren, abschalten und bleibt gespeichert" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="2afe89cb-1dae-fb79-a4d8-23309b3dab77">
+    <UnitTest name="X-05: Rückfallkette lässt sich sortieren, abschalten und bleibt gespeichert" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="2afe89cb-1dae-fb79-a4d8-23309b3dab77">
       <Execution id="7b4f37a6-2e41-42ca-b238-24b11b36d86b" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.X05_FreeAi" name="Order_persist" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.X05_FreeAi" name="Order_persist" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>

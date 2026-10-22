@@ -7,7 +7,7 @@ Zähler aus `Counters` der jeweiligen `.trx`. In allen 44 Modulprotokollen ist `
 
 `tests/Trendo.Api.Tests` enthält keine dieser Modul-IDs. Dafür liegt die komplette Api-Suite als `suite-api.trx` bei.
 
-SHA-256 steht in dieser Übersicht noch nicht. Grok Bot ergänzt die Prüfsummen.
+SHA-256 aller .trx: `SHA256SUMS.txt` (nach Schwärzung von Konto- und Rechnername, Grok Bot).
 
 | Modul | Testfilter | Testanzahl | Ergebnis | Datei |
 | --- | --- | --- | --- | --- |

@@ -1,21 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="8a8635c4-43ab-459f-8514-75fe990663a5" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:43:28" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestRun id="8a8635c4-43ab-459f-8514-75fe990663a5" name="<user>@<host> 2026-10-22 02:43:28" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:43:28.5407239+02:00" queuing="2026-10-22T02:43:28.5407240+02:00" start="2026-10-22T02:43:25.1835647+02:00" finish="2026-10-22T02:43:29.3344636+02:00" />
   <TestSettings name="default" id="bd1a24ea-947c-446e-a03b-69a3e43952d3">
-    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_43_28" />
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_43_28" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="c9607d54-fd4c-422c-8c7b-8d1758480527" testId="0c0cb820-9373-1f68-4647-92521bc8c5cf" testName="SPEC-16 UI Ausbau: Steuer &amp; Erstattung, Rechner" computerName="DESKTOP-9JVIIPU" duration="00:00:01.7981930" startTime="2026-10-22T02:43:26.2877433+02:00" endTime="2026-10-22T02:43:28.0934602+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c9607d54-fd4c-422c-8c7b-8d1758480527" />
-    <UnitTestResult executionId="52a59a7a-a138-4bb1-9ed7-64178f67fb44" testId="3ecac68f-5daf-f5af-2c68-ce3206599e02" testName="SPEC-16 UI: Fahrzeug, Tanken, Fahrt, Fahrtenbuch" computerName="DESKTOP-9JVIIPU" duration="00:00:01.1632221" startTime="2026-10-22T02:43:28.1058693+02:00" endTime="2026-10-22T02:43:29.2691920+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="52a59a7a-a138-4bb1-9ed7-64178f67fb44" />
+    <UnitTestResult executionId="c9607d54-fd4c-422c-8c7b-8d1758480527" testId="0c0cb820-9373-1f68-4647-92521bc8c5cf" testName="SPEC-16 UI Ausbau: Steuer &amp; Erstattung, Rechner" computerName="<host>" duration="00:00:01.7981930" startTime="2026-10-22T02:43:26.2877433+02:00" endTime="2026-10-22T02:43:28.0934602+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c9607d54-fd4c-422c-8c7b-8d1758480527" />
+    <UnitTestResult executionId="52a59a7a-a138-4bb1-9ed7-64178f67fb44" testId="3ecac68f-5daf-f5af-2c68-ce3206599e02" testName="SPEC-16 UI: Fahrzeug, Tanken, Fahrt, Fahrtenbuch" computerName="<host>" duration="00:00:01.1632221" startTime="2026-10-22T02:43:28.1058693+02:00" endTime="2026-10-22T02:43:29.2691920+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="52a59a7a-a138-4bb1-9ed7-64178f67fb44" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="SPEC-16 UI: Fahrzeug, Tanken, Fahrt, Fahrtenbuch" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="3ecac68f-5daf-f5af-2c68-ce3206599e02">
+    <UnitTest name="SPEC-16 UI: Fahrzeug, Tanken, Fahrt, Fahrtenbuch" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="3ecac68f-5daf-f5af-2c68-ce3206599e02">
       <Execution id="52a59a7a-a138-4bb1-9ed7-64178f67fb44" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SPEC16_Ui" name="Vehicle" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SPEC16_Ui" name="Vehicle" />
     </UnitTest>
-    <UnitTest name="SPEC-16 UI Ausbau: Steuer &amp; Erstattung, Rechner" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="0c0cb820-9373-1f68-4647-92521bc8c5cf">
+    <UnitTest name="SPEC-16 UI Ausbau: Steuer &amp; Erstattung, Rechner" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="0c0cb820-9373-1f68-4647-92521bc8c5cf">
       <Execution id="c9607d54-fd4c-422c-8c7b-8d1758480527" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SPEC16_UiPlus" name="Plus" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SPEC16_UiPlus" name="Plus" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>

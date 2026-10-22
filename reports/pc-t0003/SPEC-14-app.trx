@@ -1,21 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="13313d8c-d014-4e65-a31d-b661717fb730" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:43:19" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestRun id="13313d8c-d014-4e65-a31d-b661717fb730" name="<user>@<host> 2026-10-22 02:43:19" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:43:19.4058079+02:00" queuing="2026-10-22T02:43:19.4058081+02:00" start="2026-10-22T02:43:16.0051239+02:00" finish="2026-10-22T02:43:19.4097252+02:00" />
   <TestSettings name="default" id="3f043d36-8bab-4737-8fe1-0c5056fe7e47">
-    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_43_19" />
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_43_19" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="3f197690-68c5-40e7-9ba6-f732234ccf4c" testId="32366df5-b447-31de-6029-8ff05291355e" testName="SPEC-14 UI Ausbau: Programme erzeugen und Werkstatt-Rechner" computerName="DESKTOP-9JVIIPU" duration="00:00:01.7193386" startTime="2026-10-22T02:43:17.1082368+02:00" endTime="2026-10-22T02:43:18.8351583+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3f197690-68c5-40e7-9ba6-f732234ccf4c" />
-    <UnitTestResult executionId="87905f45-d953-4b2a-9d8d-27d4ba7a96fb" testId="d0cbb737-5479-f762-1dde-c5a18406556e" testName="SPEC-14 UI: G-Code prüfen mit Vorschau, Schnittwerte" computerName="DESKTOP-9JVIIPU" duration="00:00:00.4792221" startTime="2026-10-22T02:43:18.8473720+02:00" endTime="2026-10-22T02:43:19.3266881+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="87905f45-d953-4b2a-9d8d-27d4ba7a96fb" />
+    <UnitTestResult executionId="3f197690-68c5-40e7-9ba6-f732234ccf4c" testId="32366df5-b447-31de-6029-8ff05291355e" testName="SPEC-14 UI Ausbau: Programme erzeugen und Werkstatt-Rechner" computerName="<host>" duration="00:00:01.7193386" startTime="2026-10-22T02:43:17.1082368+02:00" endTime="2026-10-22T02:43:18.8351583+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3f197690-68c5-40e7-9ba6-f732234ccf4c" />
+    <UnitTestResult executionId="87905f45-d953-4b2a-9d8d-27d4ba7a96fb" testId="d0cbb737-5479-f762-1dde-c5a18406556e" testName="SPEC-14 UI: G-Code prüfen mit Vorschau, Schnittwerte" computerName="<host>" duration="00:00:00.4792221" startTime="2026-10-22T02:43:18.8473720+02:00" endTime="2026-10-22T02:43:19.3266881+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="87905f45-d953-4b2a-9d8d-27d4ba7a96fb" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="SPEC-14 UI Ausbau: Programme erzeugen und Werkstatt-Rechner" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="32366df5-b447-31de-6029-8ff05291355e">
+    <UnitTest name="SPEC-14 UI Ausbau: Programme erzeugen und Werkstatt-Rechner" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="32366df5-b447-31de-6029-8ff05291355e">
       <Execution id="3f197690-68c5-40e7-9ba6-f732234ccf4c" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SPEC14_UiPlus" name="Plus" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SPEC14_UiPlus" name="Plus" />
     </UnitTest>
-    <UnitTest name="SPEC-14 UI: G-Code prüfen mit Vorschau, Schnittwerte" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="d0cbb737-5479-f762-1dde-c5a18406556e">
+    <UnitTest name="SPEC-14 UI: G-Code prüfen mit Vorschau, Schnittwerte" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="d0cbb737-5479-f762-1dde-c5a18406556e">
       <Execution id="87905f45-d953-4b2a-9d8d-27d4ba7a96fb" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SPEC14_Ui" name="Cnc" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SPEC14_Ui" name="Cnc" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>

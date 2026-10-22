@@ -1,16 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="00e6c3c6-b22e-4cb6-a4ae-c278ce2b0a57" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:42:34" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestRun id="00e6c3c6-b22e-4cb6-a4ae-c278ce2b0a57" name="<user>@<host> 2026-10-22 02:42:34" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:34.8431889+02:00" queuing="2026-10-22T02:42:34.8431890+02:00" start="2026-10-22T02:42:32.1088585+02:00" finish="2026-10-22T02:42:34.8471746+02:00" />
   <TestSettings name="default" id="0aaaded4-536d-4b81-af9a-c249a2f39701">
-    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_42_34" />
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_34" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="9963e925-daad-4996-8332-7c3fa1ce6c94" testId="8cdfb011-15a3-efe0-c07c-2ed662868cf0" testName="CORE-12 UI: Vorlage ausfüllen und senden, neue Vorlage speichern, Masterprompt bauen" computerName="DESKTOP-9JVIIPU" duration="00:00:01.4845329" startTime="2026-10-22T02:42:33.2558094+02:00" endTime="2026-10-22T02:42:34.7479849+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9963e925-daad-4996-8332-7c3fa1ce6c94" />
+    <UnitTestResult executionId="9963e925-daad-4996-8332-7c3fa1ce6c94" testId="8cdfb011-15a3-efe0-c07c-2ed662868cf0" testName="CORE-12 UI: Vorlage ausfüllen und senden, neue Vorlage speichern, Masterprompt bauen" computerName="<host>" duration="00:00:01.4845329" startTime="2026-10-22T02:42:33.2558094+02:00" endTime="2026-10-22T02:42:34.7479849+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9963e925-daad-4996-8332-7c3fa1ce6c94" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="CORE-12 UI: Vorlage ausfüllen und senden, neue Vorlage speichern, Masterprompt bauen" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="8cdfb011-15a3-efe0-c07c-2ed662868cf0">
+    <UnitTest name="CORE-12 UI: Vorlage ausfüllen und senden, neue Vorlage speichern, Masterprompt bauen" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="8cdfb011-15a3-efe0-c07c-2ed662868cf0">
       <Execution id="9963e925-daad-4996-8332-7c3fa1ce6c94" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.CORE12_Ui" name="Prompts_page" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.CORE12_Ui" name="Prompts_page" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>

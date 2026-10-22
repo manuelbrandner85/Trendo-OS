@@ -1,16 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="7478a254-b21b-4f0a-b1f9-1e360018503c" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:43:32" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestRun id="7478a254-b21b-4f0a-b1f9-1e360018503c" name="<user>@<host> 2026-10-22 02:43:32" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:43:32.3598035+02:00" queuing="2026-10-22T02:43:32.3598037+02:00" start="2026-10-22T02:43:29.9965772+02:00" finish="2026-10-22T02:43:32.3637186+02:00" />
   <TestSettings name="default" id="92a2e0f9-9ee2-4ab6-8aa9-0107eb7f1e23">
-    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_43_32" />
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_43_32" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="bbd58e7d-609e-440f-a0ef-b2978453848d" testId="d633ebb9-27a7-2d22-1274-a62146777fc4" testName="X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen" computerName="DESKTOP-9JVIIPU" duration="00:00:01.1529377" startTime="2026-10-22T02:43:31.1061352+02:00" endTime="2026-10-22T02:43:32.2666269+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bbd58e7d-609e-440f-a0ef-b2978453848d" />
+    <UnitTestResult executionId="bbd58e7d-609e-440f-a0ef-b2978453848d" testId="d633ebb9-27a7-2d22-1274-a62146777fc4" testName="X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen" computerName="<host>" duration="00:00:01.1529377" startTime="2026-10-22T02:43:31.1061352+02:00" endTime="2026-10-22T02:43:32.2666269+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bbd58e7d-609e-440f-a0ef-b2978453848d" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="d633ebb9-27a7-2d22-1274-a62146777fc4">
+    <UnitTest name="X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="d633ebb9-27a7-2d22-1274-a62146777fc4">
       <Execution id="bbd58e7d-609e-440f-a0ef-b2978453848d" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.X02_Ui" name="Heal_page" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.X02_Ui" name="Heal_page" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>

@@ -1,16 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="98b90d2a-4f29-4361-8600-d0211c8868eb" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:43:35" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestRun id="98b90d2a-4f29-4361-8600-d0211c8868eb" name="<user>@<host> 2026-10-22 02:43:35" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:43:35.4927920+02:00" queuing="2026-10-22T02:43:35.4927922+02:00" start="2026-10-22T02:43:33.0442833+02:00" finish="2026-10-22T02:43:35.4967566+02:00" />
   <TestSettings name="default" id="988c14ef-2af9-4edc-b030-4e4c4b01b53d">
-    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_43_35" />
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_43_35" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="df24501a-a8d0-4e9a-99e3-2ffefce91697" testId="6c9f5cfd-6b9c-b2c5-1536-a805fee408a2" testName="X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette" computerName="DESKTOP-9JVIIPU" duration="00:00:01.2389887" startTime="2026-10-22T02:43:34.1533580+02:00" endTime="2026-10-22T02:43:35.3999168+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="df24501a-a8d0-4e9a-99e3-2ffefce91697" />
+    <UnitTestResult executionId="df24501a-a8d0-4e9a-99e3-2ffefce91697" testId="6c9f5cfd-6b9c-b2c5-1536-a805fee408a2" testName="X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette" computerName="<host>" duration="00:00:01.2389887" startTime="2026-10-22T02:43:34.1533580+02:00" endTime="2026-10-22T02:43:35.3999168+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="df24501a-a8d0-4e9a-99e3-2ffefce91697" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="6c9f5cfd-6b9c-b2c5-1536-a805fee408a2">
+    <UnitTest name="X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="6c9f5cfd-6b9c-b2c5-1536-a805fee408a2">
       <Execution id="df24501a-a8d0-4e9a-99e3-2ffefce91697" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.X05_Ui" name="Scan_and_fallback" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.X05_Ui" name="Scan_and_fallback" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>

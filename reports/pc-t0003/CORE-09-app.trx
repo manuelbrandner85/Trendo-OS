@@ -1,21 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="98793a2b-8265-432b-a6c6-b8eee45864ca" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:42:24" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestRun id="98793a2b-8265-432b-a6c6-b8eee45864ca" name="<user>@<host> 2026-10-22 02:42:24" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:24.5051360+02:00" queuing="2026-10-22T02:42:24.5051362+02:00" start="2026-10-22T02:42:21.1397397+02:00" finish="2026-10-22T02:42:24.9767881+02:00" />
   <TestSettings name="default" id="d3969d84-6253-448b-89cf-a806f739004c">
-    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_42_24" />
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_24" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="a538d3ed-c5da-4949-81cb-3361e4aff26d" testId="45768f05-539f-65a1-6655-70876148f644" testName="CORE-09 UI Ausbau: Bild prüfen und Arm planen" computerName="DESKTOP-9JVIIPU" duration="00:00:00.9481010" startTime="2026-10-22T02:42:23.9603808+02:00" endTime="2026-10-22T02:42:24.9086172+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a538d3ed-c5da-4949-81cb-3361e4aff26d" />
-    <UnitTestResult executionId="524433f9-a2fb-4e64-8749-95bba5fad1ce" testId="1a570215-e03c-11a2-f953-472c1a510eb1" testName="CORE-09 UI: Objekt im Bild finden, Arm rechnen, Programm speichern" computerName="DESKTOP-9JVIIPU" duration="00:00:01.6601457" startTime="2026-10-22T02:42:22.2800727+02:00" endTime="2026-10-22T02:42:23.9478270+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="524433f9-a2fb-4e64-8749-95bba5fad1ce" />
+    <UnitTestResult executionId="a538d3ed-c5da-4949-81cb-3361e4aff26d" testId="45768f05-539f-65a1-6655-70876148f644" testName="CORE-09 UI Ausbau: Bild prüfen und Arm planen" computerName="<host>" duration="00:00:00.9481010" startTime="2026-10-22T02:42:23.9603808+02:00" endTime="2026-10-22T02:42:24.9086172+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a538d3ed-c5da-4949-81cb-3361e4aff26d" />
+    <UnitTestResult executionId="524433f9-a2fb-4e64-8749-95bba5fad1ce" testId="1a570215-e03c-11a2-f953-472c1a510eb1" testName="CORE-09 UI: Objekt im Bild finden, Arm rechnen, Programm speichern" computerName="<host>" duration="00:00:01.6601457" startTime="2026-10-22T02:42:22.2800727+02:00" endTime="2026-10-22T02:42:23.9478270+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="524433f9-a2fb-4e64-8749-95bba5fad1ce" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="CORE-09 UI: Objekt im Bild finden, Arm rechnen, Programm speichern" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="1a570215-e03c-11a2-f953-472c1a510eb1">
+    <UnitTest name="CORE-09 UI: Objekt im Bild finden, Arm rechnen, Programm speichern" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="1a570215-e03c-11a2-f953-472c1a510eb1">
       <Execution id="524433f9-a2fb-4e64-8749-95bba5fad1ce" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.CORE09_Ui" name="Robot" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.CORE09_Ui" name="Robot" />
     </UnitTest>
-    <UnitTest name="CORE-09 UI Ausbau: Bild prüfen und Arm planen" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="45768f05-539f-65a1-6655-70876148f644">
+    <UnitTest name="CORE-09 UI Ausbau: Bild prüfen und Arm planen" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="45768f05-539f-65a1-6655-70876148f644">
       <Execution id="a538d3ed-c5da-4949-81cb-3361e4aff26d" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.CORE09_UiPlus" name="Plus" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.CORE09_UiPlus" name="Plus" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>

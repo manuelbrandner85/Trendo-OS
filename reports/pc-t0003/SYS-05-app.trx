@@ -1,16 +1,16 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="b6d5a062-a58a-41f2-ac7d-f6497d088334" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:42:42" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+<TestRun id="b6d5a062-a58a-41f2-ac7d-f6497d088334" name="<user>@<host> 2026-10-22 02:42:42" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Times creation="2026-10-22T02:42:42.0242667+02:00" queuing="2026-10-22T02:42:42.0242669+02:00" start="2026-10-22T02:42:38.9018410+02:00" finish="2026-10-22T02:42:42.0280896+02:00" />
   <TestSettings name="default" id="9810948c-d522-489d-ba53-8d794d549c86">
-    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_42_42" />
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_42" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="e3e74b52-1413-4a57-809f-2af9554ecf22" testId="17165643-9ae1-f204-5553-8a4f99a4d426" testName="SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf" computerName="DESKTOP-9JVIIPU" duration="00:00:01.9038718" startTime="2026-10-22T02:42:40.0136363+02:00" endTime="2026-10-22T02:42:41.9268813+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e3e74b52-1413-4a57-809f-2af9554ecf22" />
+    <UnitTestResult executionId="e3e74b52-1413-4a57-809f-2af9554ecf22" testId="17165643-9ae1-f204-5553-8a4f99a4d426" testName="SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf" computerName="<host>" duration="00:00:01.9038718" startTime="2026-10-22T02:42:40.0136363+02:00" endTime="2026-10-22T02:42:41.9268813+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e3e74b52-1413-4a57-809f-2af9554ecf22" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="17165643-9ae1-f204-5553-8a4f99a4d426">
+    <UnitTest name="SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="17165643-9ae1-f204-5553-8a4f99a4d426">
       <Execution id="e3e74b52-1413-4a57-809f-2af9554ecf22" />
-      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SYS05_Ui" name="Workflows_page" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SYS05_Ui" name="Workflows_page" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>
