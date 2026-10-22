@@ -44,6 +44,7 @@ public sealed partial class MainWindow : Window
     private bool _depBusy;
     private readonly SystemMetrics _metrics = new();
     private readonly Grid _center = new();
+    private Control? _deskWidgets;
     private readonly TextBlock _clock = new() { Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Right };
     private readonly TextBlock _date = new() { Foreground = Muted, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Right };
     private readonly TextBlock _status = new() { Foreground = Muted, FontSize = 11 };
@@ -108,7 +109,7 @@ public sealed partial class MainWindow : Window
         var body = new Grid { Name = "shell", ColumnDefinitions = new ColumnDefinitions("*"), RowDefinitions = new RowDefinitions("*,Auto"), Margin = new Thickness(28, 22, 22, 10) };
         ui.Children.Add(body);
         body.Children.Add(_center);
-        var widgets = DesktopWidgets();
+        var widgets = _deskWidgets = DesktopWidgets();
         widgets.ZIndex = 1; widgets.HorizontalAlignment = HorizontalAlignment.Right; widgets.VerticalAlignment = VerticalAlignment.Top;
         widgets.Margin = new Thickness(0, 4, 4, 0); widgets.Width = 300; body.Children.Add(widgets);
         var dock = Dock(); Grid.SetRow(dock, 1); dock.ZIndex = 5; body.Children.Add(dock);
@@ -127,7 +128,7 @@ public sealed partial class MainWindow : Window
             var showSystem = !_settings.HiddenTiles.Contains("widget-system");
             var showProjects = !_settings.HiddenTiles.Contains("widget-projekte");
             var showPins = _pinCard?.IsVisible == true;
-            widgets.IsVisible = root.Width >= 1280 && (showSystem || showProjects || showPins);
+            widgets.IsVisible = Windows.Active is null && root.Width >= 1280 && (showSystem || showProjects || showPins);
         }
         Rescale = DoRescale;
         PropertyChanged += (_, e) => { if (e.Property == ClientSizeProperty) DoRescale(); };
@@ -148,6 +149,7 @@ public sealed partial class MainWindow : Window
         InitWave1(); InitWave45(); InitWave23(); InitW7(); StartupTrace.Mark("ctor.initwaves"); _query = opt.Query ?? "";
         InitSetup(opt);
         if (_reopenSection is { } keepSection) { _settingsSection = keepSection; _reopenSection = null; }
+        if (Environment.GetEnvironmentVariable("TRENDO_SETTINGS") is { Length: > 0 } settingsSection) _settingsSection = settingsSection;
         Show(opt.Page ?? (NeedsSetup(opt) ? "einrichtung" : "start"));
         StartupTrace.Mark("ctor.show");
         RefreshStatusBar();

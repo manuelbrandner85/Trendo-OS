@@ -219,6 +219,7 @@ public partial class MainWindow
         }
         _deskHost.IsHitTestVisible = true;
         LayoutWindows(); RenderTaskbar();
+        Rescale?.Invoke();
     }
 
     private void LayoutWindows()

@@ -57,4 +57,14 @@ public class Design41RolloutTests
         Assert.True(w.Find<Button>("theme-dunkel")!.IsVisible);
         w.Close();
     }
+
+    [AvaloniaFact(DisplayName = "KI: die Seite lässt sich erneut öffnen, Status bleibt „Nicht verbunden“")]
+    public void Ki_reopen_keeps_status()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show("ki"); w.Show("settings"); w.Show("ki");
+        Assert.Equal("Nicht verbunden", w.Find<TextBlock>("ki-status")!.Text);
+        Assert.False(w.Find<TextBox>("ki-input")!.IsEnabled);
+        w.Close();
+    }
 }

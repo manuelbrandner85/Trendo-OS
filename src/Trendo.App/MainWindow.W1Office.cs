@@ -28,7 +28,7 @@ public partial class MainWindow
             };
             row.Children.Add(b);
         }
-        var letter = new Button { Name = "office-brief", Content = "Im Briefstudio schreiben", Margin = new Thickness(0, 0, 6, 6), Background = Accent };
+        var letter = new Button { Name = "office-brief", Content = "Briefe schreiben", Margin = new Thickness(0, 0, 6, 6), Background = Accent };
         letter.Click += (_, _) => Show("brief"); row.Children.Add(letter);
         row.Children.Add(OpenInButton("libreoffice", () => LatestOfficeDoc(), "office"));
         sp.Children.Add(row); sp.Children.Add(msg);

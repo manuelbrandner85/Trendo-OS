@@ -239,7 +239,7 @@ public sealed partial class MainWindow
             desk.Children.Add(cb);
         }
         desk.Children.Add(P("Reihenfolge der Studio-Kacheln:", Text));
-        desk.Children.Add(OrderList("tile", FeaturedStudios.Select(f => (f.Id, f.Title)).ToList(), _settings.TileOrder, l => _settings.TileOrder = l));
+        desk.Children.Add(OrderList("tile", FeaturedStudios.Select(f => (f.Id, StudioCatalog.NameOf(f.Id, f.Title))).ToList(), _settings.TileOrder, l => _settings.TileOrder = l));
         desk.Children.Add(P("Reihenfolge im Dock:", Text));
         desk.Children.Add(OrderList("dock", DockIds, _settings.DockOrder, l => _settings.DockOrder = l));
         var apply = new Button { Name = "btn-apply-desktop", Content = "Startbildschirm übernehmen", Background = Accent, CornerRadius = new CornerRadius(8), Padding = new Thickness(12, 6) };
