@@ -46,9 +46,13 @@ Der Studioname bleibt „3D-Modelle erstellen“. `requirements.yaml` ist unver�
 Entwurf #224 kann nach dem Merge dieses Stands geschlossen werden. Diese Änderung schließt ihn nicht.
 
 ## Testergebnis
-3D-Tests in Trendo.Core.Tests: 9 bestanden, 0 Fehler (Filter Scene3D, Release).
+`dotnet test Trendo.sln -c Release`, SDK 10:
 
-Der Lauf aller drei Testprojekte steht noch aus und wird im Bericht nachgezogen.
+- Trendo.Core.Tests: Bestanden 444, übersprungen 10, Fehler 0, gesamt 454. Dauer 8 s. Die 10 Übersprungenen sind die Windows-Prüfungen. Die 3D-Tests sind darin, darunter FBX, Farbe und die sechs Ansichten.
+- Trendo.Api.Tests: Bestanden 14, Fehler 0, gesamt 14. Dauer 696 ms.
+- Trendo.App.Tests: Bestanden 183, Fehler 1, gesamt 184. Dauer 5 min 33 s. Die 3D-Oberflächentests sind in den grünen Zahlen, inklusive FBX-Export ohne Blender.
+
+Der eine Fehler ist `X-06` Live-Suche bei GitHub (`W4OssUiTests`, die Liste kam leer zurück). Ein zweiter Lauf nur dieses Tests war grün. Er hängt am Netz, nicht am 3D-Studio. SYS-03-P14 war in diesem Lauf nicht rot.
 
 ## Offene Punkte / Risiken
 - ASCII-FBX ist der Hin-und-her-Weg in Trendo. Eine FBX, die andere Programme sicher öffnen, schreibt Blender, wenn es da ist.
@@ -58,4 +62,4 @@ Der Lauf aller drei Testprojekte steht noch aus und wird im Bericht nachgezogen.
 ## Nicht geprüft
 - Kein echtes Blender und kein echtes Ollama auf diesem Rechner.
 - Kein Ziehen aus dem Explorer mit einer echten Maus. Der Ablage-Weg ist derselbe wie der Dialog.
-- Gesamtlauf von Core, App und Api noch nicht in diesem Stand festgehalten.
+- Die kopflose Oberfläche zeigt das Studio mit einem Würfel und der schrägen Vorschau. Ein echter Klick mit der Maus ist hier nicht gelaufen.
