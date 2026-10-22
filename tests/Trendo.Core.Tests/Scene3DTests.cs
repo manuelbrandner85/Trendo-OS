@@ -85,6 +85,15 @@ public class Scene3D_Teile
         Mesh3D.WriteGlb(cube, Path.Combine(dir, "k.glb"));
         var glb = Mesh3D.Import(Path.Combine(dir, "k.glb"));
         Assert.InRange(glb.Sx, 9.5, 10.5);
+        Assert.Equal("#2F86F6", glb.Color);
+        var objBack = Mesh3D.Import(Path.Combine(dir, "k.obj"));
+        Assert.Equal("#2F86F6", objBack.Color);
+        Mesh3D.WriteFbx(cube, Path.Combine(dir, "k.fbx"));
+        var fbx = Mesh3D.Import(Path.Combine(dir, "k.fbx"));
+        Assert.InRange(fbx.Sx, 9.5, 10.5);
+        Assert.Equal(cube.Triangles, Mesh3D.FromStored(fbx).Triangles);
+        File.WriteAllBytes(Path.Combine(dir, "bin.fbx"), "Kaydara FBX Binary  \0"u8.ToArray());
+        Assert.Throws<InvalidOperationException>(() => Mesh3D.Import(Path.Combine(dir, "bin.fbx")));
         Assert.Throws<InvalidOperationException>(() => Mesh3D.Import(Path.Combine(dir, "k.obj") + ".exe"));
     }
 
@@ -101,6 +110,10 @@ public class Scene3D_Teile
         Assert.True(ScenePlan.TryRead("{\"parts\":[{\"name\":\"Platte\",\"shape\":\"cube\",\"sx\":120,\"sy\":80,\"sz\":4,\"z\":40,\"color\":\"#8B5A2B\"}]}", out var parts, out var err), err);
         Assert.Equal(120, parts[0].Sx);
         Assert.Equal("#8B5A2B", parts[0].Color);
+        Assert.Equal(40, parts[0].Z);
+        Assert.True(ScenePlan.TryRead("{\"parts\":[{\"shape\":\"cube\",\"sx\":10,\"sy\":10,\"sz\":8}]}", out var ohneZ, out var zErr), zErr);
+        Assert.Equal(4, ohneZ[0].Z);
+        Assert.Contains("Boden", ScenePlan.Prompt("Tisch"));
         Assert.False(ScenePlan.TryRead("kein json", out _, out var why));
         Assert.Contains("Bauplan", why);
         var spec = scene.WriteBlenderSpec(Path.Combine(Path.GetTempPath(), "trendo-spec-" + Guid.NewGuid().ToString("N")));
@@ -114,10 +127,15 @@ public class Scene3D_Teile
     {
         var scene = new Scene3D();
         scene.Parts.Add(Würfel());
+        scene.Parts.Add(new Part3D { Shape = "cube", Sx = 4, Sy = 4, Sz = 12, X = 10, Color = "#E23B3B" });
         var front = Mesh3D.RenderPng(scene, "front", 80, 60)!;
         var top = Mesh3D.RenderPng(scene, "top", 80, 60)!;
+        var back = Mesh3D.RenderPng(scene, "back", 80, 60)!;
+        var angle = Mesh3D.RenderPng(scene, "angle", 80, 60)!;
         Assert.Equal(new byte[] { 137, 80, 78, 71 }, front[..4]);
         Assert.NotEqual(front, top);
+        Assert.NotEqual(front, back);
+        Assert.NotEqual(front, angle);
         Assert.Null(Mesh3D.RenderPng(new Scene3D(), "front", 80, 60));
     }
 }

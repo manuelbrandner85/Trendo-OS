@@ -25,6 +25,8 @@ public partial class MainWindow
     private string _view3d = "front";
     private readonly List<string> _undo3d = [];
     private List<Part3D>? _aiParts;
+    private List<(Part3D Part, TextBox Sx, TextBox Sy, TextBox Sz, TextBox X, TextBox Y, TextBox Z)>? _aiFields;
+    private string _importUnit = "auto";
     private byte[]? _png3d;
     private string _pngKey = "";
     private string? _previewError;
@@ -57,7 +59,7 @@ public partial class MainWindow
         sp.Children.Add(Card(BlenderRow()));
 
         var objName = new TextBox { Name = "3d-name", Text = _scene.Name, Width = 200 };
-        sp.Children.Add(Card(new StackPanel
+        var left = Card(new StackPanel
         {
             Spacing = 8,
             Children =
@@ -69,9 +71,14 @@ public partial class MainWindow
                 H("Teil", 14),
                 PartForm(objName),
             },
-        }));
+        });
+        var right = Card(PreviewBlock());
+        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,*") };
+        grid.Children.Add(left);
+        Grid.SetColumn(right, 2);
+        grid.Children.Add(right);
+        sp.Children.Add(grid);
         sp.Children.Add(Card(AiBlock(aiOn, objName)));
-        sp.Children.Add(Card(PreviewBlock()));
         sp.Children.Add(Card(FileBlock(objName)));
         sp.Children.Add(Card(SavedBlock()));
         return KreativPage("3D-Modelle erstellen", sp);
@@ -183,10 +190,24 @@ public partial class MainWindow
             box.Children.Add(new TextBlock { Name = "3d-ai-reason", Text = "Die lokale KI (Ollama) ist nicht verbunden. Deshalb ist „Teile vorschlagen“ aus.", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap });
         if (_aiParts is { Count: > 0 })
         {
-            box.Children.Add(P("Vorschlag, noch nicht gebaut:", Text));
-            foreach (var p in _aiParts) box.Children.Add(P(p.Line(), Text));
-            box.Children.Add(new WrapPanel { Children = { Act("3d-ai-use", "Übernehmen", () => UseAi(objName), true), Act("3d-ai-drop", "Verwerfen", () => { _aiParts = null; Say("Vorschlag verworfen.", "3d"); }) } });
+            box.Children.Add(P("Vorschlag, noch nicht gebaut. Die Zahlen kannst du vorher ändern:", Text));
+            _aiFields = [];
+            for (var i = 0; i < _aiParts.Count; i++)
+            {
+                var p = _aiParts[i];
+                var sx = NumBox("3d-prop-sx-" + i, p.Sx);
+                var sy = NumBox("3d-prop-sy-" + i, p.Sy);
+                var sz = NumBox("3d-prop-sz-" + i, p.Sz);
+                var x = NumBox("3d-prop-x-" + i, p.X);
+                var y = NumBox("3d-prop-y-" + i, p.Y);
+                var z = NumBox("3d-prop-z-" + i, p.Z);
+                _aiFields.Add((p, sx, sy, sz, x, y, z));
+                box.Children.Add(P(p.Line(), Text));
+                box.Children.Add(new WrapPanel { Children = { Labeled("Breite", sx), Labeled("Tiefe", sy), Labeled("Höhe", sz), Labeled("X", x), Labeled("Y", y), Labeled("Z", z) } });
+            }
+            box.Children.Add(new WrapPanel { Children = { Act("3d-ai-use", "Übernehmen", () => UseAi(objName), true), Act("3d-ai-drop", "Verwerfen", () => { _aiParts = null; _aiFields = null; Say("Vorschlag verworfen.", "3d"); }) } });
         }
+        else _aiFields = null;
         return box;
     }
 
@@ -202,44 +223,57 @@ public partial class MainWindow
                 {
                     Children =
                     {
-                        Act("3d-view-front", "Vorne", () => SetView("front", "Ansicht von vorn.")),
-                        Act("3d-view-right", "Rechts", () => SetView("right", "Ansicht von rechts.")),
-                        Act("3d-view-top", "Oben", () => SetView("top", "Ansicht von oben.")),
-                        Act("3d-view-angle", "Schräg", () => SetView("angle", "Schräge Ansicht.")),
+                        ViewBtn("front", "Vorne", "Ansicht von vorn."),
+                        ViewBtn("back", "Hinten", "Ansicht von hinten."),
+                        ViewBtn("left", "Links", "Ansicht von links."),
+                        ViewBtn("right", "Rechts", "Ansicht von rechts."),
+                        ViewBtn("top", "Oben", "Ansicht von oben."),
+                        ViewBtn("angle", "Schräg", "Schräge Ansicht."),
                     },
                 },
             },
         };
         if (_previewError is { Length: > 0 }) box.Children.Add(P(_previewError, Brush.Parse("#FACC15")));
         if (_png3d is { Length: > 0 })
-            box.Children.Add(new Image { Name = "3d-preview-image", Source = new Bitmap(new MemoryStream(_png3d)), Width = 360, Height = 270, HorizontalAlignment = HorizontalAlignment.Left });
+            box.Children.Add(new Image { Name = "3d-preview-image", Source = new Bitmap(new MemoryStream(_png3d)), Width = 420, Height = 300, HorizontalAlignment = HorizontalAlignment.Left });
         else if (_previewError is null) box.Children.Add(P("Die Vorschau erscheint, sobald ein Teil da ist."));
         return box;
     }
 
+    private Button ViewBtn(string id, string label, string msg)
+    {
+        var b = Act("3d-view-" + id, label, () => SetView(id, msg));
+        if (_view3d == id) b.Background = Accent;
+        return b;
+    }
+
     private Control FileBlock(TextBox objName)
     {
+        var unit = new ComboBox { Name = "3d-unit", ItemsSource = new[] { "Automatisch", "Millimeter", "Zentimeter" }, SelectedIndex = _importUnit switch { "mm" => 1, "cm" => 2, _ => 0 }, Width = 150 };
+        unit.SelectionChanged += (_, _) => _importUnit = unit.SelectedIndex switch { 1 => "mm", 2 => "cm", _ => "auto" };
         var drop = new StackPanel
         {
             Spacing = 6,
             Children =
             {
                 H("Datei", 14),
+                new WrapPanel { Children = { Labeled("Maße in der Datei", unit), Act("3d-open-file", "Datei öffnen …", () => _ = Browse(objName)) } },
                 new WrapPanel
                 {
                     Children =
                     {
-                        Act("3d-open-file", "Datei öffnen …", () => _ = Browse(objName)),
                         Act("3d-export-obj", "Als OBJ", () => ExportNative(objName, ".obj")),
                         Act("3d-export-stl", "Als STL", () => ExportNative(objName, ".stl")),
                         Act("3d-export-glb", "Als GLB", () => ExportNative(objName, ".glb")),
+                        Act("3d-export-fbx", "Als FBX", () => ExportFbx(objName)),
                         Act("3d-export-blend", "Als Blender-Datei", () => _ = ExportWithBlender(objName, ".blend")),
-                        Act("3d-export-fbx", "Als FBX", () => _ = ExportWithBlender(objName, ".fbx")),
                     },
                 },
-                P("OBJ und die Vorschau sind in Zentimetern, STL in Millimetern, GLB in Metern. Eine Datei kannst du auch hierher ziehen."),
+                P("Automatisch: STL als Millimeter, OBJ und FBX als Zentimeter, GLB als Meter. Ist Blender da, wird FBX darüber geschrieben. Sonst schreibt Trendo eine FBX-Datei selbst. Eine Datei kannst du auch hierher ziehen."),
             },
         };
+        if (_last3dFile is { } last && File.Exists(last))
+            drop.Children.Add(new TextBlock { Name = "3d-marked", Text = "Zuletzt gespeichert: " + Path.GetFileName(last), Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
         var host = new Border { Name = "3d-drop", Child = drop, Background = Brushes.Transparent, MinHeight = 40 };
         DragDrop.SetAllowDrop(host, true);
         host.AddHandler(DragDrop.DragOverEvent, (_, e) => { e.DragEffects = DragDropEffects.Copy; e.Handled = true; });
@@ -386,6 +420,21 @@ public partial class MainWindow
             if (_core.Projects.List().All(p => p.Id != id)) _core.Projects.Create(id, _scene.Name);
             _scene.ProjectId = id;
             _core.Projects.WriteFile(id, "3d/szene.json", _scene.ToJson());
+            var mesh = Mesh3D.FromScene(_scene);
+            if (mesh.Triangles > 0)
+            {
+                var tmp = Path.Combine(Path.GetTempPath(), "trendo-3d-obj-" + Guid.NewGuid().ToString("N"));
+                Directory.CreateDirectory(tmp);
+                try
+                {
+                    var obj = Path.Combine(tmp, "modell.obj");
+                    Mesh3D.WriteObj(mesh, obj);
+                    _core.Projects.WriteFile(id, "3d/modell.obj", File.ReadAllText(obj));
+                    var mtl = Path.ChangeExtension(obj, ".mtl");
+                    if (File.Exists(mtl)) _core.Projects.WriteFile(id, "3d/modell.mtl", File.ReadAllText(mtl));
+                }
+                finally { try { Directory.Delete(tmp, true); } catch { } }
+            }
         }
         catch (Exception ex) { Say("Speichern nicht möglich: " + ex.Message, "3d"); return; }
         Say($"Gespeichert im Projekt „{_scene.Name}“. Du findest es unter Projekte.", "3d");
@@ -446,11 +495,23 @@ public partial class MainWindow
     {
         Keep(objName);
         if (_aiParts is not { Count: > 0 }) { Say("Es liegt kein Vorschlag da.", "3d"); return; }
+        if (_aiFields is { Count: > 0 })
+        {
+            foreach (var e in _aiFields)
+            {
+                var sx = Read(e.Sx.Text); var sy = Read(e.Sy.Text); var sz = Read(e.Sz.Text);
+                if (double.IsNaN(sx) || double.IsNaN(sy) || double.IsNaN(sz) || sx <= 0 || sy <= 0 || sz <= 0)
+                { Say("Im Vorschlag müssen Breite, Tiefe und Höhe größer als 0 sein.", "3d"); return; }
+                e.Part.Sx = sx; e.Part.Sy = sy; e.Part.Sz = sz;
+                e.Part.X = Or0(e.X.Text); e.Part.Y = Or0(e.Y.Text); e.Part.Z = Or0(e.Z.Text);
+            }
+        }
         Push();
         _scene.Parts.AddRange(_aiParts);
         _selId = _aiParts[^1].Id;
         var n = _aiParts.Count;
         _aiParts = null;
+        _aiFields = null;
         Say($"{n} Teile übernommen. Du kannst sie noch ändern.", "3d");
     }
 
@@ -466,10 +527,13 @@ public partial class MainWindow
                 var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
                     Title = "3D-Datei öffnen",
-                    AllowMultiple = false,
+                    AllowMultiple = true,
                     FileTypeFilter = [new FilePickerFileType("3D-Datei") { Patterns = ["*.obj", "*.stl", "*.glb", "*.gltf", "*.fbx", "*.blend"] }],
                 });
-                path = files.Count > 0 ? files[0].TryGetLocalPath() : null;
+                var picked = files.Select(f => f.TryGetLocalPath()).Where(p => !string.IsNullOrWhiteSpace(p)).Cast<string>().ToList();
+                if (picked.Count == 0) { Say("Keine Datei gewählt.", "3d"); return; }
+                foreach (var p in picked) ImportPath(p);
+                return;
             }
             catch (Exception ex) { Say("Die Dateiauswahl geht hier nicht: " + ex.Message, "3d"); return; }
         }
@@ -479,31 +543,76 @@ public partial class MainWindow
 
     public void Import3DFile(string path) => ImportPath(path);
 
-    private void ImportPath(string path)
+    private void ImportPath(string path, string? displayName = null)
     {
         var ext = Path.GetExtension(path).ToLowerInvariant();
         if (!File.Exists(path)) { Say("Die Datei gibt es nicht.", "3d"); return; }
-        if (ext is ".fbx" or ".blend") { _ = ImportViaBlender(path); return; }
-        if (ext is not ".obj" and not ".stl" and not ".glb" and not ".gltf") { Say("Trendo öffnet OBJ, STL, GLB und glTF. FBX und Blend gehen über Blender.", "3d"); return; }
+        if (ext == ".blend" || (ext == ".fbx" && Mesh3D.IsBinaryFbx(path))) { _ = ImportViaBlender(path); return; }
+        if (ext is not ".obj" and not ".stl" and not ".glb" and not ".gltf" and not ".fbx") { Say("Trendo öffnet OBJ, STL, GLB, glTF und FBX. Blend geht über Blender.", "3d"); return; }
         try
         {
-            var part = Mesh3D.Import(path);
+            var parts = Mesh3D.ImportParts(path, _importUnit);
+            if (displayName is { Length: > 0 } label)
+            {
+                if (label.Length > 40) label = label[..40];
+                foreach (var part in parts)
+                    if (part.Name.StartsWith("trendo-3d-import-", StringComparison.Ordinal)) part.Name = label;
+            }
             Push();
-            _scene.Parts.Add(part);
-            _selId = part.Id;
-            var unit = ext == ".stl" ? "STL rechne ich von Millimetern in Zentimeter um." : "Die Zahlen nehme ich als Zentimeter.";
-            Say($"Eingelesen: {part.Name}, {part.Indices!.Length / 3} Dreiecke. {unit}", "3d");
+            foreach (var part in parts) _scene.Parts.Add(part);
+            _selId = parts[^1].Id;
+            var tris = parts.Sum(p => p.Indices is null ? 0 : p.Indices.Length / 3);
+            var names = parts.Count == 1 ? parts[0].Name : parts.Count + " Teile";
+            Say($"Eingelesen: {names}, {tris} Dreiecke. {UnitNote(ext)}", "3d");
         }
         catch (Exception ex) { Say(ex.Message, "3d"); }
+    }
+
+    private string UnitNote(string ext)
+    {
+        if (ext is ".glb" or ".gltf") return "GLB von Metern nach Zentimeter.";
+        var mm = _importUnit == "mm" || (_importUnit != "cm" && ext == ".stl");
+        return ext switch
+        {
+            ".stl" => mm ? "STL von Millimetern nach Zentimeter." : "STL als Zentimeter gelesen.",
+            ".fbx" => mm ? "FBX als Millimeter gelesen." : "FBX als Zentimeter gelesen.",
+            _ => mm ? "Maße als Millimeter gelesen." : "Maße als Zentimeter gelesen.",
+        };
     }
 
     private async Task ImportViaBlender(string path)
     {
         var bl = BlenderPath;
         if (bl is null) { await AskBlender(); return; }
-        var (r, obj) = Studio3D.Convert(bl, path, ".obj");
-        if (!r.Ok || !File.Exists(obj)) { Say("Blender konnte die Datei nicht lesen: " + Short(r.Err.Length > 0 ? r.Err : r.Out), "3d"); return; }
-        ImportPath(obj);
+        var tmp = Path.Combine(Path.GetTempPath(), "trendo-3d-import-" + Guid.NewGuid().ToString("N") + ".obj");
+        try
+        {
+            var (r, obj) = Studio3D.Convert(bl, path, ".obj", tmp);
+            if (!r.Ok || !File.Exists(obj)) { Say("Blender konnte die Datei nicht lesen: " + Short(r.Err.Length > 0 ? r.Err : r.Out), "3d"); return; }
+            ImportPath(obj, Path.GetFileNameWithoutExtension(path));
+        }
+        finally
+        {
+            try { if (File.Exists(tmp)) File.Delete(tmp); } catch { }
+            try { var mtl = Path.ChangeExtension(tmp, ".mtl"); if (File.Exists(mtl)) File.Delete(mtl); } catch { }
+        }
+    }
+
+    private void ExportFbx(TextBox objName)
+    {
+        if (BlenderPath is not null) { _ = ExportWithBlender(objName, ".fbx"); return; }
+        Keep(objName);
+        if (_scene.Parts.Count == 0) { Say("Noch kein Teil. Füge zuerst eines hinzu.", "3d"); return; }
+        try
+        {
+            var mesh = Mesh3D.FromScene(_scene);
+            if (mesh.Triangles == 0) { Say("Das Objekt hat keine Fläche.", "3d"); return; }
+            var path = Mesh3D.Unique(Path.Combine(Folder3D, DevStudio.SafeName(_scene.Name) + ".fbx"));
+            Mesh3D.WriteFbx(mesh, path);
+            _last3dFile = path;
+            Say($"Gespeichert: {Path.GetFileName(path)}. FBX in Zentimetern, ohne Blender.", "3d");
+        }
+        catch (Exception ex) { Say("Export nicht möglich: " + ex.Message, "3d"); }
     }
 
     private void ExportNative(TextBox objName, string ext)
@@ -596,7 +705,7 @@ public partial class MainWindow
         var key = _view3d + "|" + _scene.ToJson();
         if (key == _pngKey) return _png3d;
         _pngKey = key;
-        _png3d = Mesh3D.RenderPng(_scene, _view3d, 360, 270);
+        _png3d = Mesh3D.RenderPng(_scene, _view3d, 480, 360);
         return _png3d;
     }
 
