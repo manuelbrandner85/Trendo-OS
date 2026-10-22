@@ -34,7 +34,7 @@ public partial class MainWindow
         var cp = new TextBox { Name = "mk-c-price", PlaceholderText = "Preis €", Width = 80 }; var cs = new TextBox { Name = "mk-c-strong", PlaceholderText = "Stärken", Width = 160 };
         var cw = new TextBox { Name = "mk-c-weak", PlaceholderText = "Schwächen", Width = 160 }; var cd = new TextBox { Name = "mk-c-desc", PlaceholderText = "Was bieten sie an?", Width = 300 };
         var csec = new StackPanel { Spacing = 4, Children = { H("Mitbewerber", 14), new WrapPanel { Children = { cn, cu, cp, cs, cw, cd,
-            Act("mk-c-add", "Hinzufügen", () => { if (string.IsNullOrWhiteSpace(cn.Text)) return; Competitors.Add(new(cn.Text!, cu.Text ?? "", ParseD(cp.Text), cs.Text ?? "", cw.Text ?? "", cd.Text ?? "")); Show("biz-markt"); }, true) } } } };
+            Act("mk-c-add", "Hinzufügen", () => { if (string.IsNullOrWhiteSpace(cn.Text)) { Say("Bitte zuerst den Namen des Mitbewerbers eintragen.", "biz-markt"); return; } Competitors.Add(new(cn.Text!, cu.Text ?? "", ParseD(cp.Text), cs.Text ?? "", cw.Text ?? "", cd.Text ?? "")); Say($"Mitbewerber „{cn.Text}“ hinzugefügt.", "biz-markt"); }, true) } } } };
         for (var k = 0; k < comps.Count; k++) { var idx = k; var c = comps[k]; csec.Children.Add(Row(P($"{c.Name} · {c.Price:0.##} € · + {c.Strengths} · − {c.Weaknesses}", Text, 11), Act($"mk-c-del-{k}", "Entfernen", () => { Competitors.RemoveAt(idx); Show("biz-markt"); }))); }
         if (BusinessMarket.Prices(comps, i.Price) is { } pp)
         {
@@ -50,7 +50,7 @@ public partial class MainWindow
         var pw = new TextBox { Name = "mk-p-who", PlaceholderText = "Wer? z. B. Pflegekräfte", Width = 160 }; var pt = new TextBox { Name = "mk-p-text", PlaceholderText = "Welches Problem hat die Person?", Width = 280 };
         var pain = new NumericUpDown { Name = "mk-p-pain", Minimum = 1, Maximum = 5, Value = 3, Width = 110 }; var freq = new NumericUpDown { Name = "mk-p-freq", Minimum = 1, Maximum = 5, Value = 3, Width = 110 };
         var psec = new StackPanel { Spacing = 4, Children = { H("Probleme und Nischen", 14), P("Schreib auf, was Menschen dir erzählen. Wie schlimm (1–5) und wie oft (1–5)?", null, 11),
-            new WrapPanel { Children = { pw, pt, P(" schlimm "), pain, P(" oft "), freq, Act("mk-p-add", "Merken", () => { if (string.IsNullOrWhiteSpace(pt.Text)) return; Problems.Add(new(pw.Text ?? "", pt.Text!, (int)(pain.Value ?? 3), (int)(freq.Value ?? 3))); Show("biz-markt"); }) } } } };
+            new WrapPanel { Children = { pw, pt, P(" schlimm "), pain, P(" oft "), freq, Act("mk-p-add", "Merken", () => { if (string.IsNullOrWhiteSpace(pt.Text)) { Say("Bitte zuerst das Problem beschreiben.", "biz-markt"); return; } Problems.Add(new(pw.Text ?? "", pt.Text!, (int)(pain.Value ?? 3), (int)(freq.Value ?? 3))); Say("Problem gemerkt.", "biz-markt"); }) } } } };
         var n = 0;
         foreach (var ni in BusinessMarket.Niches(Problems.All()).Take(6)) psec.Children.Add(new TextBlock { Name = $"mk-niche-{n++}", Text = $"{ni.Score} Punkte · {ni.Who}: {ni.Problem} ({ni.Mentions}× genannt)", Foreground = Text, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
         sp.Children.Add(Card(psec));
@@ -63,7 +63,7 @@ public partial class MainWindow
         // BUS-009 Tests
         var ex = Experiments.All();
         var eh = new TextBox { Name = "mk-e-hyp", PlaceholderText = "Annahme, z. B. 3 Vorbestellungen in 2 Wochen", Width = 320 }; var em = new TextBox { Name = "mk-e-metric", PlaceholderText = "Messgröße", Width = 140 }; var et = new TextBox { Name = "mk-e-target", PlaceholderText = "Ziel", Width = 70 };
-        var esec = new StackPanel { Spacing = 4, Children = { H("Am Markt testen", 14), new WrapPanel { Children = { eh, em, et, Act("mk-e-add", "Test anlegen", () => { if (string.IsNullOrWhiteSpace(eh.Text)) return; Experiments.Add(new(eh.Text!, em.Text ?? "", ParseD(et.Text))); Show("biz-markt"); }) } } } };
+        var esec = new StackPanel { Spacing = 4, Children = { H("Am Markt testen", 14), new WrapPanel { Children = { eh, em, et, Act("mk-e-add", "Test anlegen", () => { if (string.IsNullOrWhiteSpace(eh.Text)) { Say("Bitte zuerst deine Vermutung eintragen, die du testen willst.", "biz-markt"); return; } Experiments.Add(new(eh.Text!, em.Text ?? "", ParseD(et.Text))); Say("Test angelegt.", "biz-markt"); }) } } } };
         if (ex.Count == 0) { var sug = Act("mk-e-suggest", "Vorschläge übernehmen", () => { foreach (var s in BusinessMarket.ExperimentIdeas) Experiments.Add(s); Show("biz-markt"); }); esec.Children.Add(sug); }
         for (var k = 0; k < ex.Count; k++)
         {
