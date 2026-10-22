@@ -17,6 +17,8 @@ public sealed partial class MainWindow
     private int _wizStep;
     private readonly HashSet<string> _wizPacks = [];
     private string _updateInfo = "Noch nicht geprüft";
+    private string? _restoreZip;
+    private string _backupMsg = "";
 
     private Backup Backups => new(_core.DataRoot, Path.Combine(_core.DataRoot, "backups"), _core.Audit);
 
@@ -193,17 +195,62 @@ public sealed partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 6 };
         sp.Children.Add(P($"Trendo sichert deine Projekte und Einstellungen automatisch alle {_settings.BackupEveryHours} Stunden (die letzten 10 bleiben). Ablage: {Backups.Folder}", Text));
+        if (_backupMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "backup-msg", Text = _backupMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap });
         var now = new Button { Name = "btn-backup-now", Content = "Jetzt sichern", Background = Accent };
-        now.Click += (_, _) => { Backups.Create(DateTime.Now); Show("sicherung"); };
+        now.Click += (_, _) =>
+        {
+            try { Backups.Create(DateTime.Now); _backupMsg = "Sicherung angelegt."; }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _backupMsg = "Sichern hat nicht geklappt: " + ex.Message; }
+            Show("sicherung");
+        };
         sp.Children.Add(now);
+        var i = 0;
         foreach (var f in Backups.List())
         {
-            var rb = new Button { Content = "Wiederherstellen", FontSize = 11 };
-            rb.Click += (_, _) => { Backups.Restore(f.FullName, DateTime.Now); _settings = UserSettings.Load(_core.DataRoot); Show("sicherung"); };
+            var path = f.FullName; var n = i++;
+            var rb = new Button { Name = "backup-restore-" + n, Content = "Wiederherstellen", FontSize = 11 };
+            rb.Click += (_, _) => AskRestore(path);
             sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { P($"{f.LastWriteTime:dd.MM.yyyy HH:mm} · {f.Length / 1024} KB", Text), rb } });
+        }
+        if (_restoreZip is { } pending && File.Exists(pending))
+        {
+            var yes = new Button { Name = "backup-restore-yes", Content = "Ja, wiederherstellen", Background = Accent, FontSize = 11 };
+            yes.Click += (_, _) => DoRestore(pending);
+            var no = new Button { Name = "backup-restore-no", Content = "Abbrechen", FontSize = 11 };
+            no.Click += (_, _) => { _restoreZip = null; _backupMsg = "Wiederherstellen abgebrochen."; Show("sicherung"); };
+            sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { yes, no } });
         }
         sp.Children.Add(P("Beim Wiederherstellen wird der aktuelle Stand vorher gesichert. Das Protokoll, was Trendo getan hat, bleibt immer erhalten.", null, 11));
         return Page("Sicherung", sp);
+    }
+
+    private void AskRestore(string zip)
+    {
+        try
+        {
+            var over = Backups.WillOverwrite(zip);
+            _restoreZip = zip;
+            var sample = over.Count == 0 ? "" : " Zum Beispiel: " + string.Join(", ", over.Take(6).Select(Path.GetFileName)) + ".";
+            _backupMsg = over.Count == 0
+                ? $"Diese Sicherung überschreibt keine vorhandene Datei. Der aktuelle Stand wird vorher gesichert. Datei: {Path.GetFileName(zip)}."
+                : $"Diese Sicherung überschreibt {over.Count} Dateien.{sample} Der aktuelle Stand wird vorher gesichert.";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or FileNotFoundException or InvalidDataException) { _restoreZip = null; _backupMsg = ex.Message; }
+        Show("sicherung");
+    }
+
+    private void DoRestore(string zip)
+    {
+        try
+        {
+            var n = Backups.Restore(zip, DateTime.Now);
+            _settings = UserSettings.Load(_core.DataRoot);
+            _restoreZip = null;
+            _backupMsg = $"Wiederhergestellt: {n} Dateien.";
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or FileNotFoundException or InvalidDataException)
+        { _backupMsg = "Wiederherstellen hat nicht geklappt: " + ex.Message; }
+        Show("sicherung");
     }
 
     // ---------- Auto-Updates über GitHub Releases (Velopack) ----------

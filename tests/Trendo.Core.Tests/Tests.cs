@@ -545,6 +545,34 @@ public class Wave0_Setup
         Assert.Equal(10, b.List().Count);
     }
 
+    [Fact(DisplayName = "T-0214: Wiederherstellen überschreibt schreibgeschützte Git-Objekte und legt bei gleichem Zeitstempel eine zweite Sicherung an")]
+    public void Backup_restore_readonly_git_and_same_second()
+    {
+        using var f = new Fixture(); var root = f.Core.DataRoot;
+        var b = new Backup(root, Path.Combine(root, "backups"), f.Core.Audit);
+        var t = new DateTime(2026, 10, 22, 3, 26, 8);
+        var objDir = Path.Combine(root, "Projekte", "Demo", ".git", "objects", "03");
+        Directory.CreateDirectory(objDir);
+        var obj = Path.Combine(objDir, "0f1f42cd10cfe2981a551dd9677151fed7ab11");
+        File.WriteAllText(obj, "blob-v1");
+        File.SetAttributes(obj, FileAttributes.ReadOnly);
+        File.WriteAllText(Path.Combine(root, "notiz.txt"), "alt");
+        var z = b.Create(t);
+        File.WriteAllText(Path.Combine(root, "notiz.txt"), "neu");
+        var over = b.WillOverwrite(z);
+        Assert.Contains(over, p => p.EndsWith("notiz.txt", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(over, p => p.Contains(".git/objects", StringComparison.Ordinal));
+        var n = b.Restore(z, t);
+        Assert.True(n >= 2);
+        Assert.Equal("alt", File.ReadAllText(Path.Combine(root, "notiz.txt")));
+        Assert.Equal("blob-v1", File.ReadAllText(obj));
+        var again = b.Create(t);
+        Assert.NotEqual(z, again);
+        Assert.True(File.Exists(again));
+        var n2 = b.Restore(z, t);
+        Assert.True(n2 >= 2);
+    }
+
     [Fact(DisplayName = "W0b-03: Hintergrund nach Tageszeit")]
     public void Wallpaper_by_time()
     {
