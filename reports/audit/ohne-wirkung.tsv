@@ -1,0 +1,74 @@
+ABSTURZ	alltag-helfer	color-pick	Pipette	FormatException: The input string '' was not in a correct format.
+ABSTURZ	alltag-helfer	cur-run	Geld umrechnen	FormatException: The input string '' was not in a correct format.
+ABSTURZ	biz-betrieb	op-s-import	Übernehmen	ArgumentException: The value cannot be an empty string. (Parameter 'path')
+ABSTURZ	sicherung	sicherung#5	Wiederherstellen	IOException: The file '/tmp/trendo-audit-d4e6006ede3c488a9bba2325ded534e5/backups/trendo-sicherung-20261022-03
+ABSTURZ	spiele	spiele#14	Wiederherstellen	UnauthorizedAccessException: Access to the path '/tmp/trendo-audit-d4e6006ede3c488a9bba2325ded534e5/Projekte/S
+ABSTURZ	spiele	spiele#15	Wiederherstellen	IOException: The file '/tmp/trendo-audit-d4e6006ede3c488a9bba2325ded534e5/backups/trendo-sicherung-20261022-03
+ASYNC_OFFLINE_UNKLAR	heilung	heal-run	Jetzt prüfen und reparieren	
+ASYNC_OFFLINE_UNKLAR	netz-browser	tor-get	Tor-Browser offiziell holen	
+ASYNC_OFFLINE_UNKLAR	netz-laden	dl-start	Laden / Weiter laden	
+ASYNC_OFFLINE_UNKLAR	netz-laden	dl-stop	Anhalten	
+ASYNC_OFFLINE_UNKLAR	netz-laden	page-offline	Offline speichern	
+ASYNC_OFFLINE_UNKLAR	netz-laden	page-pdf	Als PDF	
+ASYNC_OFFLINE_UNKLAR	prog-pflege	offline-scan	Prüfen	
+ASYNC_OFFLINE_UNKLAR	schutz	sec-scan	Ordner prüfen	
+ASYNC_OFFLINE_UNKLAR	systemcheck	systemcheck#11	Systemcheck	
+SCHALTER_NICHT_PRUEFBAR	bedien-hilfen	easy-lang	Leichte Sprache für Hilfetexte	
+SCHALTER_NICHT_PRUEFBAR	bedien-sehen	a11y-motion	Bewegung reduzieren (keine Animationen)	
+SCHALTER_NICHT_PRUEFBAR	bedien-sehen	color-blind	Status mit Zeichen statt nur Farbe	
+SCHALTER_NICHT_PRUEFBAR	bedien-sehen	simple-mode	Einfachen Modus einschalten	
+SCHALTER_NICHT_PRUEFBAR	biz-start	ln-consumers		
+SCHALTER_NICHT_PRUEFBAR	biz-start	ln-small		
+SCHALTER_NICHT_PRUEFBAR	einrichtung-2	wiz-theme-dunkel	Dunkel Premium (empfohlen)	
+SCHALTER_NICHT_PRUEFBAR	einrichtung-2	wiz-theme-hell	Hell	
+SCHALTER_NICHT_PRUEFBAR	einrichtung-2	wiz-theme-kontrast	Hoher Kontrast (gut lesbar)	
+SCHALTER_NICHT_PRUEFBAR	einrichtung-3	wiz-pack-dev	Programmieren Git und Python für eigene Apps	
+SCHALTER_NICHT_PRUEFBAR	einrichtung-3	wiz-pack-ki	KI-Assistent (lokal) Trendo beantwortet Fragen direkt auf diesem PC – 	
+SCHALTER_NICHT_PRUEFBAR	einrichtung-3	wiz-pack-letter-ocr	Briefe scannen Texterkennung für eingescannte Briefe	
+SCHALTER_NICHT_PRUEFBAR	einrichtung-3	wiz-pack-media	Medien Videoschnitt	
+SCHALTER_NICHT_PRUEFBAR	einrichtung-3	wiz-pack-office	Büro & Briefe Texte, Tabellen, Präsentationen	
+SCHALTER_NICHT_PRUEFBAR	finanzen	inv-small		
+SCHALTER_NICHT_PRUEFBAR	settings	accent-auto	Farbe passend zum Hintergrund wählen	
+SCHALTER_NICHT_PRUEFBAR	settings	reduce-motion	Bewegung reduzieren (keine Animationen)	
+SCHALTER_NICHT_PRUEFBAR	settings	show-widget-ki	KI-Assistent	
+SCHALTER_NICHT_PRUEFBAR	settings	show-widget-projekte	Aktuelle Projekte	
+SCHALTER_NICHT_PRUEFBAR	settings	show-widget-studios	Studios	
+SCHALTER_NICHT_PRUEFBAR	settings	show-widget-system	Systemstatus	
+SCHALTER_NICHT_PRUEFBAR	settings	show-widget-tools	Schnell-Tools	
+SCHALTER_NICHT_PRUEFBAR	settings	wall-bytime	Hintergrund nach Tageszeit wechseln (Morgen · Wellen · Bergsee · Polar	
+STUMM	akte	src-scan	Jetzt suchen	
+STUMM	alltag-bilder	img-left	Nach links drehen	
+STUMM	alltag-bilder	img-resize	Verkleinern	
+STUMM	alltag-dateien	du-run	Anzeigen	
+STUMM	alltag-dateien	photo-apply	Ordnen	
+STUMM	alltag-dateien	ren-apply	Umbenennen	
+STUMM	alltag-dateien	trash-empty	Papierkorb leeren …	
+STUMM	alltag-dateien	trash-show	Papierkorb anzeigen	
+STUMM	alltag-helfer	clip-add	Merken	
+STUMM	alltag-helfer	color-copy	Kopieren	
+STUMM	biz-betrieb	op-c-add	Speichern	
+STUMM	biz-betrieb	op-k-add	Aufnehmen	
+STUMM	biz-betrieb	op-m-add	Mitglied anlegen	
+STUMM	biz-betrieb	op-p-add	Hinzufügen	
+STUMM	biz-betrieb	op-t-add	Tarif anlegen	
+STUMM	biz-marke	br-f-calc	Berechnen	
+STUMM	biz-marke	br-p-add	Schritt anhängen	
+STUMM	biz-marke	br-palette	Farben berechnen	
+STUMM	biz-marke	br-seo-check	Prüfen	
+STUMM	biz-markt	mk-c-add	Hinzufügen	
+STUMM	biz-markt	mk-e-add	Test anlegen	
+STUMM	biz-markt	mk-p-add	Merken	
+STUMM	brief	letter-cat-frei	Freier Brief	
+STUMM	doku-pdf	form-read	Felder lesen	
+STUMM	doku-pdf	form-save	Ausgefüllt speichern	
+STUMM	doku-pdf	print-preview	Vorschau	
+STUMM	einrichtung	fix-7zip	Reparieren	
+STUMM	einrichtung	fix-libreoffice	Reparieren	
+STUMM	einrichtung	fix-model	Reparieren	
+STUMM	einrichtung	fix-mpv	Reparieren	
+STUMM	einrichtung	fix-ollama	Reparieren	
+STUMM	einrichtung	fix-sumatra	Reparieren	
+STUMM	einrichtung-1	einrichtung-1#3	Ordner wählen …	
+STUMM	kreativ-medien	media-use	Übernehmen	
+STUMM	netz-laden	dlsort-apply	Sortieren	
+STUMM	produktion	fusion-recipe-idea-site	Geschäftsidee → Bauplan → Webseite Aus deiner Idee entstehen Bauplan u	
