@@ -1,0 +1,6 @@
+# Volltexte bleiben lesbar (Read, gezieltes Öffnen). Sie stehen nicht im Suchindex,
+# damit MASTERPROMPT, SYSTEMBIBEL und der Design-Masterprompt nicht von selbst
+# in den Agentenkontext rutschen. Alltag: docs/spec/KURZFASSUNG.md.
+docs/spec/MASTERPROMPT.md
+docs/spec/SYSTEMBIBEL.md
+docs/spec/design-41/GROK_BUILD_DESIGN_41_MASTERPROMPT.md
