@@ -24,7 +24,7 @@ public sealed class IntelligencePromptModel(IntelligenceCore core, Func<bool> lo
 
 public static class PromptActions
 {
-    /// <summary>Registrierte Fachadapter. Alles andere bleibt „nicht eingebaut“.</summary>
+    /// <summary>Registrierte Fachadapter. Gesperrte Aktionen bleiben unsupported und schreiben keine Datei.</summary>
     public static IReadOnlyList<IStudioActionAdapter> CreateDefault() =>
         [
             new LetterPromptAdapter(), new SheetPromptAdapter(), new MailSendAdapter(), new MailDraftAdapter(),
@@ -41,6 +41,7 @@ public static class PromptActions
             new KnowledgeRememberAdapter(), new LearnCardAdapter(), new PromptFillAdapter(), new FashionSizeAdapter(),
             new StreamSendAdapter(), new RundownAdapter(),
             new LicenseFetchAdapter(), new LicenseNoteAdapter(),
-            new XrBudgetAdapter(), new ScanBlockedAdapter()
+            new XrBudgetAdapter(), new ScanBlockedAdapter(),
+            ..SystemActions.Create()
         ];
 }
