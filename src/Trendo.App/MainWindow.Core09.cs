@@ -3,7 +3,7 @@ using Trendo.Core;
 
 namespace Trendo.App;
 
-/// <summary>CORE-09: Sehen & Roboter – Farbobjekte im Bild finden, Roboterarm rechnen, Fahrprogramm erzeugen.</summary>
+/// <summary>CORE-09: Kameras live sehen, Fotos und Aufnahmen, Roboterarm in Simulation, Trockenlauf oder nach Freigabe echt fahren.</summary>
 public partial class MainWindow
 {
     private void InitCore09() => RegisterTab(FachTabs, "roboter", "Sehen & Roboter", "CORE-09", RobotView, "roboter", "robotik", "roboterarm", "kamera", "bilderkennung", "vision", "servo", "kinematik", "greifer");
@@ -13,6 +13,10 @@ public partial class MainWindow
     private Control RobotView()
     {
         var sp = new StackPanel { Spacing = 8 };
+        sp.Children.Add(P("Kameras siehst du hier live, mit Foto und Aufnahme. Der Arm bleibt in der Simulation, bis du eine echte Bewegung freigibst. Not-Aus gilt immer."));
+        sp.Children.Add(EstopBar());
+        sp.Children.Add(CameraPanel());
+        sp.Children.Add(DrivePanel());
         sp.Children.Add(FachTool("rob-see", "Objekt im Bild finden", "Kamerabild (PNG oder BMP), Kamera senkrecht von oben. Trendo sucht das größte Objekt der Farbe und rechnet die Lage auf dem Tisch aus. Farben: " + string.Join(", ", Vision.Hues.Keys) + ".",
             [("file", "Bild", ""), ("color", "Farbe", "rot"), ("tw", "Tisch-Breite im Bild (mm)", "400"), ("th", "Tisch-Höhe im Bild (mm)", "300")],
             v =>
