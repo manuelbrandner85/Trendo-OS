@@ -13,14 +13,30 @@ public partial class MainWindow
 
     private void InitSpec10() => RegisterTab(FachTabs, "zwilling", "Digitaler Zwilling", "SPEC-10", TwinView, "digitaler zwilling", "digital twin", "sensor", "messwerte", "überwachung", "anlage", "maschine", "iot");
 
-    /// <summary>Echte Messung dieses PCs: Speicherplatz, Arbeitsspeicher der Trendo-App.</summary>
+    /// <summary>Festplatte in Prozent belegt und Arbeitsspeicher der App in MB. Dieselben Grenzen wie bisher: Platte 85/95, Speicher 1500/3000.</summary>
+    public readonly record struct PcSample(double DiskUsedPercent, double WorkingSetMb);
+
+    /// <summary>Quelle für „Diesen PC messen“. null = echte Festplatte und echter Arbeitsspeicher, unverändert.</summary>
+    public Func<PcSample>? PcSampleSource { get; set; }
+
+    /// <summary>Liest die echten Werte dieses PCs (bisherige Formel).</summary>
+    public static PcSample ReadLivePc(string dataRoot)
+    {
+        var root = Path.GetPathRoot(dataRoot) ?? "/";
+        var d = new DriveInfo(root);
+        var disk = Math.Round(100.0 * (d.TotalSize - d.AvailableFreeSpace) / d.TotalSize, 1);
+        var ram = Math.Round(Environment.WorkingSet / 1048576.0, 0);
+        return new PcSample(disk, ram);
+    }
+
+    /// <summary>Messung dieses PCs: Speicherplatz, Arbeitsspeicher der Trendo-App.</summary>
     public void MeasureThisPc()
     {
         var now = DateTime.Now;
         if (!Twin.Model.Assets.Any(a => a.Name == "Dieser PC")) { Twin.Define("Dieser PC", "Festplatte belegt", "%", 85, 95, kind: "Computer"); Twin.Define("Dieser PC", "Trendo-Arbeitsspeicher", "MB", 1500, 3000, kind: "Computer"); }
-        var root = Path.GetPathRoot(_core.DataRoot) ?? "/"; var d = new DriveInfo(root);
-        Twin.Record(now, "Dieser PC", "Festplatte belegt", Math.Round(100.0 * (d.TotalSize - d.AvailableFreeSpace) / d.TotalSize, 1), false);
-        Twin.Record(now, "Dieser PC", "Trendo-Arbeitsspeicher", Math.Round(Environment.WorkingSet / 1048576.0, 0));
+        var m = PcSampleSource?.Invoke() ?? ReadLivePc(_core.DataRoot);
+        Twin.Record(now, "Dieser PC", "Festplatte belegt", m.DiskUsedPercent, false);
+        Twin.Record(now, "Dieser PC", "Trendo-Arbeitsspeicher", m.WorkingSetMb);
     }
 
     private Control TwinView()
