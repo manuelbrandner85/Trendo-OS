@@ -26,5 +26,8 @@ public static class PromptActions
 {
     /// <summary>Registrierte Fachadapter. Alles andere bleibt „nicht eingebaut“.</summary>
     public static IReadOnlyList<IStudioActionAdapter> CreateDefault() =>
-        [new LetterPromptAdapter(), new SheetPromptAdapter(), new MailSendAdapter(), new MailDraftAdapter()];
+        [
+            new LetterPromptAdapter(), new SheetPromptAdapter(), new MailSendAdapter(), new MailDraftAdapter(),
+            new InvoicePromptAdapter(), new MoneyPayAdapter(), new BusinessPlanAdapter()
+        ];
 }
