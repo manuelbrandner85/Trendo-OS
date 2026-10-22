@@ -6,7 +6,7 @@
 
 ## Testergebnis
 
-`Mail_entwurf_wird_gelesen`, `Mail_senden_schickt_nichts`, `Mail_adresse_ungueltig` und die Matrix sind grün. Der Gesamtlauf folgt.
+`dotnet test Trendo.sln -c Release`: Api 15 bestanden, Core 528 bestanden und 10 übersprungen, App 212 bestanden, Fehler 0.
 
 ## Offene Punkte
 
