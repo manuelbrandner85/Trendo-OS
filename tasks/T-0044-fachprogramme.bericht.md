@@ -48,7 +48,16 @@ Die alte Methode im Adapter, die winget aufrufen kann, bleibt für ihre bisherig
 
 ## Zehn Funktionen
 
-Die Masterzeile nennt zehn Funktionen, aber keine Namen. Im Commit von `cursor/master-bis-94-5d61` steht nur der eine Satz zu Paket 44. Eine freigegebene Namensliste von TRENDO REQUIREMENTS liegt in diesem Checkout nicht. Es wurden keine Namen erfunden. Der Katalog bleibt bei den 11 Programmen, die schon im Abhängigkeitskatalog stehen.
+Gesucht in `docs/spec/MASTER_BIS_94.md` und `reports/master-94/` auf `cursor/master-bis-94-5d61`, und in `docs/state/` auf `state/docs-state-init`. Die Masterzeile sagt nur: zehn Funktionen, Fachprogramme wie Blender oder Unreal nur bei Bedarf. Das Protokoll `docs/state/DECISIONS.md` vom 23.10.2026 sagt, Manuel habe alle zehn freigegeben, und benennt nur Punkt 7 und Punkt 8. Eine Liste mit zehn Namen gibt es dort nicht. Es wurden keine Namen erfunden.
+
+Bekannt und in diesem PR umgesetzt, ohne die übrigen zu erfinden:
+
+- Punkt 6: alte Knöpfe „Starten“ und „Einrichten“
+- Punkt 7: kein Download von selbst
+- Punkt 8: fehlendes Programm nur auf Knopf, mit Rückfrage
+- Punkt 10: Abnahmeliste von QA, hier nicht abgehakt
+
+Abweichung bei Punkt 8: die Freigabe nutzt das vorhandene Freigabetor (`ApprovalGate`). Der Download selbst geht nicht über die alte winget-Strecke in `Dependencies`. Den echten Baustein baut BUILD & RELEASE. Dieser PR ruft nur `IProgramInstaller` auf. Eine Quelle wird nur akzeptiert, wenn sie eine https-Herstellerseite oder eine Paketkennung wie „Hersteller.Programm“ ist. Ob das Paket wirklich offiziell ist, prüft der echte Baustein später. Der YAML-Katalog fehlt noch.
 
 ## Geänderte Dateien
 
@@ -65,12 +74,14 @@ Die Masterzeile nennt zehn Funktionen, aber keine Namen. Im Commit von `cursor/m
 
 ## Testergebnis
 
-Gezielte Läufe am 22.10.2026, bevor die Gesamtsuite erneut lief:
+`dotnet test Trendo.sln -c Release` am 22.10.2026, mit Quellensperre (nur https-Herstellerseite oder Paketkennung):
 
-- Core, Filter `Paket44_ProgramInstaller`: 2 bestanden, 0 Fehler
-- App, Filter `Paket44_InstallKnopf`, `T0203_Programme_Ui`, `Paket44_FachprogrammUi`: 14 bestanden, 0 Fehler
+- Api: 15 bestanden, 0 Fehler
+- Core: 538 bestanden, 10 übersprungen (`WinRealTests`), 0 Fehler
+- App: 232 bestanden, 0 Fehler
+- Exit-Code 0
 
-Die Gesamtsuite steht im nächsten Absatz, sobald sie durch ist. Der erste Gesamtlauf dieses PR (vor Punkt 6 und Punkt 8) war: Api 15, Core 536 plus 10 übersprungen, App 224, 0 Fehler.
+Davor, ohne diese Sperre: Api 15, Core 538 plus 10 übersprungen, App 231, ebenfalls 0 Fehler. Der Kopf von Chrome für den PDF-Test blieb hängen (bekanntes Verhalten dieses Images, die App ist dafür nicht geändert). Der Prozess wurde einzeln beendet, danach lief die Suite zu Ende.
 
 ## Nicht geprüft
 

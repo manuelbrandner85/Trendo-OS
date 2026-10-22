@@ -144,6 +144,20 @@ public partial class MainWindow
 
     private static bool InstallKnopfAn(bool sichtbar, IProgramInstaller? installer) => sichtbar && installer is not null;
 
+    /// <summary>Herstellerseite (https) oder Paketkennung wie „Hersteller.Programm“. Sonst wird nicht installiert.</summary>
+    private static bool OffizielleQuelle(string? quelle)
+    {
+        if (string.IsNullOrWhiteSpace(quelle)) return false;
+        if (Uri.TryCreate(quelle, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps && !string.IsNullOrEmpty(uri.Host))
+            return true;
+        if (quelle.Contains(' ') || quelle.Contains('/') || quelle.Contains('\\')) return false;
+        var teile = quelle.Split('.', StringSplitOptions.RemoveEmptyEntries);
+        if (teile.Length < 2) return false;
+        foreach (var teil in teile)
+            if (teil.Any(c => !char.IsLetterOrDigit(c) && c is not '-' and not '_')) return false;
+        return true;
+    }
+
     private static string GroesseText(ProgramOffer angebot)
     {
         if (!string.IsNullOrWhiteSpace(angebot.Groesse)) return angebot.Groesse!;
@@ -271,6 +285,11 @@ public partial class MainWindow
         if (angebot is null)
         {
             Say("Dafür gibt es kein Angebot. Es wurde nichts geladen.", view);
+            return;
+        }
+        if (angebot.IsFree && !angebot.NeedsUserStep && !OffizielleQuelle(angebot.Quelle))
+        {
+            Say("Die Quelle ist keine Herstellerseite und keine Paketkennung. Es wurde nichts geladen.", view);
             return;
         }
         _installMaske[programm.Id] = new InstallMaske

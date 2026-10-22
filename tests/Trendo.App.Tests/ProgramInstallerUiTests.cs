@@ -44,7 +44,7 @@ public class Paket44_InstallKnopf
     }
 
     static ProgramOffer Frei(string? groesse = "400 MB", long? bytes = null) => new(
-        "Blender", "Offizielle Quelle BlenderFoundation.Blender", groesse, "GPL-3.0", "Kostenlos auf diesem PC.",
+        "Blender", "BlenderFoundation.Blender", groesse, "GPL-3.0", "Kostenlos auf diesem PC.",
         true, false, "https://blender.org", null, bytes);
 
     static void Ein(MainWindow w, Fake fake)
@@ -168,6 +168,22 @@ public class Paket44_InstallKnopf
         Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Die Quelle hat abgelehnt."));
         Assert.Empty(runner.Calls);
         Assert.DoesNotContain(fake.Calls, c => c.StartsWith("is:"));
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Paket 44: ohne Herstellerseite oder Paketkennung wird nicht installiert")]
+    public async Task Quelle_muss_offiziell_sein()
+    {
+        var (w, l, _) = Ui.Open();
+        var fake = new Fake { Offer = Frei() with { Quelle = "irgendwo aus dem Netz" } };
+        Ein(w, fake);
+        w.Show("prog-extern"); Settle();
+        RealClick(w, B(w, "fach-inst-blender"));
+        await Bis(() => w.GetLogicalTexts().Any(t => t.Contains("keine Herstellerseite")));
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("keine Herstellerseite") && t.Contains("nichts geladen"));
+        Assert.Null(w.TryFind<Button>("fach-inst-yes-blender"));
+        Assert.DoesNotContain(fake.Calls, c => c.StartsWith("install:"));
+        Assert.Empty(l.Opened);
         w.Close();
     }
 }
