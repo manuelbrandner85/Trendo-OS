@@ -769,6 +769,56 @@ public class PromptActionTests
         Assert.Empty(bad.Artifacts);
     }
 
+    [Fact(DisplayName = "Browser-Spiel schreibt HTML und lässt die alte Fassung stehen")]
+    public void Spiel_schreibt_browser_datei()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var text = "Vorlage: Schlange\nName: Hofspiel";
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("CORE-06", text), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var htmlPath = fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith("index.html", StringComparison.Ordinal)).RelativePath);
+        Assert.Contains("<title>Hofspiel</title>", File.ReadAllText(htmlPath));
+        Assert.Contains("Punkte", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith("game.js")).RelativePath)));
+        Assert.Contains("nicht gestartet", done.Preview);
+        var next = wf.Los(fx.Project, wf.Revise(fx.Project, done.RunId, "Vorlage: Schlange\nName: ZweiteRunde", fx.Ctx()).RunId, fx.Ctx());
+        Assert.Contains("<title>ZweiteRunde</title>", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, next.Artifacts.Single(a => a.Version == 2 && a.RelativePath.EndsWith("index.html")).RelativePath)));
+        Assert.Contains("<title>Hofspiel</title>", File.ReadAllText(htmlPath));
+        var waiting = wf.Start(fx.Req("CORE-06", "Vorlage: Schlange", id: "name-spiel"), fx.Ctx());
+        Assert.Equal(RunStatus.AwaitingInput, waiting.Status);
+        var bad = wf.Start(fx.Req("CORE-06", "Vorlage: Schach\nName: X", id: "schach-1"), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, bad.Status);
+        Assert.Empty(bad.Artifacts);
+    }
+
+    [Fact(DisplayName = "Unreal-Projektdatei ohne Editor")]
+    public void Spiel_schreibt_uprojekt()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("CORE-06", "Vorlage: Unreal\nName: Hof\nVersion: 5.4"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var file = fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath);
+        Assert.EndsWith(".uproject", file);
+        using var doc = System.Text.Json.JsonDocument.Parse(File.ReadAllText(file));
+        Assert.Equal("5.4", doc.RootElement.GetProperty("EngineAssociation").GetString());
+        Assert.Contains(done.Warnings, w => w.Contains("nicht gestartet", StringComparison.OrdinalIgnoreCase));
+        Assert.Empty(GameStudio.FindEngines());
+    }
+
+    [Fact(DisplayName = "Starten ja öffnet kein Spiel")]
+    public void Spiel_startet_nichts()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("CORE-06", "Freigabe: erteilt\nStarten: ja\nVorlage: Schlange\nName: Heimlich"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Unsupported, done.Status);
+        Assert.Null(done.Receipt);
+        Assert.Empty(done.Artifacts);
+        Assert.Contains(done.Errors, e => e.Contains("nicht angeschlossen", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith("index.html", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".uproject", StringComparison.OrdinalIgnoreCase));
+    }
+
     [Fact(DisplayName = "Katalogmatrix nennt jede Studio-ID genau einmal")]
     public void Matrix_deckt_den_Katalog()
     {
@@ -782,6 +832,7 @@ public class PromptActionTests
         Assert.Contains(registered, id => id == "STUDIO-ONLINE-BUSINESS-01");
         Assert.Contains(registered, id => id == "CORE-07");
         Assert.Contains(registered, id => id == "CORE-05");
+        Assert.Contains(registered, id => id == "CORE-06");
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-LETTER-01", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-10", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-09", PromptActions.CreateDefault()));
@@ -789,6 +840,7 @@ public class PromptActionTests
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-ONLINE-BUSINESS-01", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-07", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-05", PromptActions.CreateDefault()));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-06", PromptActions.CreateDefault()));
         Assert.All(ids.Where(id => !registered.Contains(id)), id => Assert.Equal(CapabilityLevel.NotImplemented, CapabilityCatalog.Level(id, PromptActions.CreateDefault())));
         var markdown = CapabilityCatalog.Markdown(PromptActions.CreateDefault());
         Assert.Equal(Normalize(markdown), Normalize(File.ReadAllText(Repo("docs/improvement-42/studio-capability-matrix.md"))));
