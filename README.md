@@ -22,7 +22,7 @@ Trendo OS ist ein geplantes, lokal arbeitendes, KI-unterstütztes Arbeits- und P
 | `docs/spec/studios/` | Online-Business-Studio (30) und Brief-Studio (25) |
 | `docs/spec/qa/` | Abnahmekriterien und Testmatrizen (alle `NOT_RUN`) |
 | `docs/spec/grok/` | Grok-Bot/Grok-Build-Prompts, Setup, Agenten-/MCP-Architektur |
-| `docs/design/` | Designbrief und **Konzeptbild** (Demodaten, Logo nicht freigegeben) |
+| `docs/design/` | Designbrief und **Konzeptbild** (Demodaten; das V-Logo darin ist durch Logo A ersetzt) |
 | `docs/adr/` | Architekturentscheidungen (ADRs) |
 | `requirements.yaml` | Maschinenlesbare Anforderungen, erzeugt aus den CSVs |
 | `tasks/` | Aufträge an Grok Build |

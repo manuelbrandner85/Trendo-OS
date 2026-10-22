@@ -668,7 +668,7 @@ public sealed partial class MainWindow : Window
         string? Tool(string id) { var c = DependencyCatalog.Get(id); return _deps.Integrated(id) ?? _deps.ResolvePath(c); }
         var apps = new List<DockApp>
         {
-            new("start", Mdi.MicrosoftWindows, "#3BA7FF", "#1565C0", "Start", () => null),
+            new("start", "M18,14 H46 A5,5 0 0 1 46,24 H37 V45 A5,5 0 0 1 27,45 V24 H18 A5,5 0 0 1 18,14 Z", "#3BA7FF", "#1565C0", "Start", () => null),
             new("files", Mdi.Folder, "#FFD54F", "#F9A825", "Dateien", () => Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)),
             new("browser", Mdi.Web, "#4FC3F7", "#1565C0", "Browser", () => _core.Offline ? null : "https://github.com/manuelbrandner85/Trendo-OS"),
             new("mail", Mdi.Email, "#42A5F5", "#1565C0", "E-Mail", () => _core.Offline ? null : "mailto:"),

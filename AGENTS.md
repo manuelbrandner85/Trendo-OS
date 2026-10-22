@@ -26,7 +26,7 @@ Aufträge kommen als Datei aus `tasks/` (siehe `tasks/README.md`). Antworte und 
 
 ## Fachregeln
 - Status ehrlich: `APPROVED_SPEC` ist nicht `IMPLEMENTED`. `TESTED`/`PC_VERIFIED` nur mit Rohlog + SHA-256 unter `reports/`. QA-017, QA-019 und Codesignatur nie als bestanden markieren.
-- Das Logo bleibt ein nicht freigegebenes Konzept. SPEC-07 ist abgelehnt – nicht bauen.
+- Logo: Entwurf A „Obsidian-Kachel“ (von Manuel am 22.10.2026 gewählt), Quelle `src/Trendo.App/Assets/logo/trendo-logo-a.svg`. SPEC-07 ist abgelehnt – nicht bauen.
 - Kostenpflichtige KI-APIs bleiben optional; Trendo darf sie nie voraussetzen.
 - UI: höchstens 2 Navigationsebenen, deutsche, alltagsnahe Beschriftungen. Studio-Namen kommen zentral aus `src/Trendo.App/StudioCatalog.cs`.
 - W1-Issues (#14, #15, #17–#22) und W7-Issues (#64–#66) bleiben offen, bis die Module fertig sind.

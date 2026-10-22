@@ -18,6 +18,7 @@ public class LogoTests
             if (f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") || f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}")) continue;
             var t = File.ReadAllText(f);
             Assert.False(t.Contains("L50,90"), $"V-Pfad in {f}");
+            if (!f.EndsWith("MdiIcons.cs")) Assert.False(t.Contains("Mdi.MicrosoftWindows"), $"Windows-Zeichen statt Logo in {f}");
             Assert.False(t.Contains("Logo-Konzept") || t.Contains("Logo: Konzept") || t.Contains("Logo: Entwurf, noch nicht"), $"Konzept-Hinweis in {f}");
         }
     }
