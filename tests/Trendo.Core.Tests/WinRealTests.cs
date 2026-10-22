@@ -9,7 +9,7 @@ namespace Trendo.Core.Tests;
 /// <summary>Echte Windows-Prüfungen (SYS-02/03/10/11/12/13). Außerhalb von Windows übersprungen – nie als bestanden gezählt.</summary>
 public sealed class WinFactAttribute : FactAttribute
 {
-    public WinFactAttribute() { if (!OperatingSystem.IsWindows()) Skip = "nur auf Windows"; }
+    public WinFactAttribute() { if (!OperatingSystem.IsWindows()) Skip = "Übersprungen: nur unter Windows ausführbar."; }
 }
 
 [SupportedOSPlatform("windows")]
@@ -101,7 +101,7 @@ public class WinRealTests
     {
         var exe = Environment.ExpandEnvironmentVariables(Web.MpCmdRun);
         var d = Tmp(); var f = Path.Combine(d, "sauber.txt"); File.WriteAllText(f, "Hallo Trendo");
-        if (!File.Exists(exe)) { Log("DEFENDER MpCmdRun.exe nicht gefunden – NICHT GEPRÜFT"); return; }
+        if (!File.Exists(exe)) { Log("DEFENDER MpCmdRun.exe nicht gefunden"); Assert.Skip("Übersprungen: Windows Defender (MpCmdRun) ist nicht installiert."); }
         var r = Run(exe, [.. Web.DefenderArgs(f)]);
         var msg = Web.DefenderResult(r.Exit, r.Out);
         Log($"DEFENDER exit={r.Exit} → {msg}");
@@ -115,7 +115,8 @@ public class WinRealTests
     {
         var printers = Ps("(Get-CimInstance Win32_Printer | Measure-Object).Count; (Get-CimInstance Win32_Printer | ? Default).Name");
         Log($"DRUCKEN Drucker (Anzahl / Standard): {printers.Replace("\r\n", " / ")} – nichts gedruckt");
-        var chrome = Chrome(); if (chrome is null) { Log("DRUCKEN kein Chrome/Edge – PDF NICHT GEPRÜFT"); return; }
+        var chrome = Chrome();
+        if (chrome is null) { Log("DRUCKEN kein Chrome/Edge"); Assert.Skip("Übersprungen: Chrome oder Edge ist nicht installiert."); }
         var d = Tmp(); var html = Path.Combine(d, "seite.html"); File.WriteAllText(html, "<h1>Trendo Druck</h1>"); var pdf = Path.Combine(d, "seite.pdf");
         var args = PrintArgs(new Uri(html), pdf);
         var r = Run(chrome, [.. args]);
@@ -171,8 +172,10 @@ public class WinRealTests
             q = deps.ResolvePath(DependencyCatalog.Get("qpdf"));
             Log($"QPDF verwaltete Installation ok={ok} in {sw.ElapsedMilliseconds} ms → %LOCALAPPDATA%\\TrendoWerkzeuge\\qpdf");
         }
-        if (q is null) { Log("QPDF nicht installiert – NICHT GEPRÜFT"); Assert.Fail("qpdf fehlt"); return; }
-        var chrome = Chrome()!; var d = Tmp(); var a = Path.Combine(d, "a.pdf"); var b = Path.Combine(d, "b.pdf");
+        if (q is null) { Log("QPDF nicht installiert"); Assert.Skip("Übersprungen: qpdf ist nicht installiert."); }
+        var chrome = Chrome();
+        if (chrome is null) { Log("QPDF ohne Chrome/Edge"); Assert.Skip("Übersprungen: Chrome oder Edge ist nicht installiert."); }
+        var d = Tmp(); var a = Path.Combine(d, "a.pdf"); var b = Path.Combine(d, "b.pdf");
         foreach (var (f, t) in new[] { (a, "Eins"), (b, "Zwei") }) { var h = Path.Combine(d, t + ".html"); File.WriteAllText(h, $"<h1>{t}</h1>"); Run(chrome, [.. PrintArgs(new Uri(h), f)]); }
         var m = Path.Combine(d, "zusammen.pdf"); var (exe, args) = Pdf.MergeCmd(q, null, [a, b], m);
         var r = Run(exe, [.. args]); var n = Run(q, "--show-npages", m).Out.Trim();

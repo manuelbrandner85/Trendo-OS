@@ -82,7 +82,7 @@ public class QA003_ProjectIsolation
         var outside = Directory.CreateDirectory(Path.Combine(f.Root, "outside")).FullName;
         var link = Path.Combine(f.Core.Projects.ProjectFilesRoot("projekt-a"), "link");
         try { Directory.CreateSymbolicLink(link, outside); }
-        catch (Exception) { return; } // Windows ohne Entwicklermodus/Admin: Symlink nicht erstellbar → nicht testbar, kein Risiko
+        catch (Exception) { Assert.Skip("Übersprungen: symbolische Links lassen sich hier nicht anlegen (unter Windows oft ohne Entwicklermodus)."); }
         Assert.Throws<ProjectIsolationException>(() => f.Core.Projects.ResolveInProject("projekt-a", "link/x.txt"));
     }
 }
@@ -176,7 +176,7 @@ public class QA004_ApprovalGate
     [Fact(DisplayName = "Secrets (nur Windows): Credential Manager Roundtrip")]
     public void Windows_credential_roundtrip()
     {
-        if (!OperatingSystem.IsWindows()) return; // auf Linux nicht anwendbar
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Übersprungen: der Windows-Anmeldeinformationsspeicher gibt es nur unter Windows.");
         var s = new WindowsCredentialStore();
         var key = "selftest-" + Guid.NewGuid().ToString("N");
         s.Set(key, "wert-äöü");

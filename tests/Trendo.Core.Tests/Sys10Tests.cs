@@ -46,8 +46,14 @@ public class Sys10_Office
         Assert.Equal(1000, back.Count); Assert.Equal(["Name", "Betrag"], back[0]); Assert.Equal(["Zeile 998", "998"], back[999]);
         var csv = Csv.Parse("Name;Notiz\n\"Müller, Hans\";\"sagt \"\"Hallo\"\"\nzweite Zeile\"\nB;2\n");
         Assert.Equal(3, csv.Count); Assert.Equal("Müller, Hans", csv[1][0]); Assert.Equal("sagt \"Hallo\"\nzweite Zeile", csv[1][1]);
-        if (Lo is null) return;
-        Assert.True(File.Exists(ToPdf(docx))); // LibreOffice öffnet die Datei
+    }
+
+    [Fact(DisplayName = "SYS-10: LibreOffice öffnet ein neues DOCX als PDF")]
+    public void LibreOffice_oeffnet_docx()
+    {
+        Assert.SkipUnless(Lo is not null, "Übersprungen: LibreOffice ist nicht installiert.");
+        var d = Tmp(); var docx = Path.Combine(d, "a.docx"); Ooxml.NewDocx(docx, "Titel", ["Absatz"]);
+        Assert.True(File.Exists(ToPdf(docx)));
     }
 
     [Fact(DisplayName = "SYS-10-P04: Zuletzt verwendet – neueste zuerst")]
@@ -57,31 +63,62 @@ public class Sys10_Office
         Assert.Equal(["d0.docx", "d1.docx", "d2.docx"], FileShelf.Recent([d], FileShelf.Office).Select(f => f.Name));
     }
 
-    [Fact(DisplayName = "SYS-10-P05/P06/P17: Seitenzahl und A4 ohne Zusatzprogramm; Zusammenfügen = Summe, Teilen stimmt")]
+    [Fact(DisplayName = "SYS-10-P05/P06/P17: Seitenbereich lesen; Zusammenfügen ohne Werkzeug wird abgewiesen")]
     public void PdfPages()
     {
-        if (Lo is null) return;
+        Assert.Throws<InvalidOperationException>(() => Pdf.MergeCmd(null, null, ["a.pdf"], "o.pdf"));
+        Assert.Equal((2, 5), Pdf.ParseRange("2-5"));
+        Assert.Throws<ArgumentException>(() => Pdf.ParseRange("x"));
+    }
+
+    [Fact(DisplayName = "SYS-10: Seitenzahl und A4 mit LibreOffice, ohne weiteres Zusatzprogramm")]
+    public void PdfPages_libreoffice()
+    {
+        Assert.SkipUnless(Lo is not null, "Übersprungen: LibreOffice ist nicht installiert.");
         var d = Tmp(); var a = Path.Combine(d, "a.docx"); Ooxml.NewDocx(a, "A", Enumerable.Range(0, 120).Select(i => "Zeile " + i)); var pa = ToPdf(a);
         var b = Path.Combine(d, "b.docx"); Ooxml.NewDocx(b, "B", ["x"]); var pb = ToPdf(b);
-        var na = Pdf.Pages(pa); Assert.True(na >= 2); Assert.Equal(1, Pdf.Pages(pb)); Assert.True(Pdf.IsA4(Pdf.MediaBox(pa)));
-        var unite = Cli.Find("pdfunite"); var sep = Cli.Find("pdfseparate"); var qpdf = Cli.Find("qpdf"); if (unite is null && qpdf is null) return;
+        Assert.True(Pdf.Pages(pa) >= 2); Assert.Equal(1, Pdf.Pages(pb)); Assert.True(Pdf.IsA4(Pdf.MediaBox(pa)));
+    }
+
+    [Fact(DisplayName = "SYS-10: PDF zusammenfügen und teilen (qpdf oder pdfunite)")]
+    public void Pdf_zusammenfuegen()
+    {
+        Assert.SkipUnless(Lo is not null, "Übersprungen: LibreOffice ist nicht installiert.");
+        var unite = Cli.Find("pdfunite"); var sep = Cli.Find("pdfseparate"); var qpdf = Cli.Find("qpdf");
+        Assert.SkipUnless(unite is not null || qpdf is not null, "Übersprungen: qpdf und pdfunite sind nicht installiert.");
+        var d = Tmp(); var a = Path.Combine(d, "a.docx"); Ooxml.NewDocx(a, "A", Enumerable.Range(0, 120).Select(i => "Zeile " + i)); var pa = ToPdf(a);
+        var b = Path.Combine(d, "b.docx"); Ooxml.NewDocx(b, "B", ["x"]); var pb = ToPdf(b);
+        var na = Pdf.Pages(pa);
         var o = Path.Combine(d, "m.pdf"); var (exe, args) = Pdf.MergeCmd(qpdf, unite, [pa, pb], o); Cli.Run(exe, args);
         Assert.Equal(na + 1, Pdf.Pages(o));
         var s = Path.Combine(d, "s.pdf"); (exe, args) = Pdf.ExtractCmd(qpdf, sep, o, 2, 2, s); Cli.Run(exe, args);
         Assert.Equal(1, Pdf.Pages(qpdf is not null ? s : s.Replace(".pdf", "-2.pdf")));
-        Assert.Throws<InvalidOperationException>(() => Pdf.MergeCmd(null, null, [pa], o)); Assert.Equal((2, 5), Pdf.ParseRange("2-5")); Assert.Throws<ArgumentException>(() => Pdf.ParseRange("x"));
     }
 
     [Fact(DisplayName = "SYS-10-P07/P08: Text aus PDF; Scan → durchsuchbares PDF mit Tesseract")]
     public void Text()
     {
-        if (Lo is null || Cli.Find("pdftotext") is null) return;
+        Assert.SkipUnless(Lo is not null, "Übersprungen: LibreOffice ist nicht installiert.");
+        var pdftotext = Cli.Find("pdftotext");
+        Assert.SkipUnless(pdftotext is not null, "Übersprungen: pdftotext ist nicht installiert.");
         var d = Tmp(); var a = Path.Combine(d, "a.docx"); Ooxml.NewDocx(a, "Rechnung Nummer 4711", ["Betrag 12,50 Euro"]); var pdf = ToPdf(a);
-        var (ok, t, _) = PdfText.Extract(pdf, Cli.Find("pdftotext"), null, null); Assert.True(ok); Assert.Contains("4711", t);
-        var tess = Cli.Find("tesseract"); var ppm = Cli.Find("pdftoppm"); if (tess is null || ppm is null) return;
+        var (ok, t, _) = PdfText.Extract(pdf, pdftotext, null, null); Assert.True(ok); Assert.Contains("4711", t);
+    }
+
+    [Fact(DisplayName = "SYS-10: Scan wird mit Tesseract zu einem durchsuchbaren PDF")]
+    public void Text_tesseract()
+    {
+        Assert.SkipUnless(Lo is not null, "Übersprungen: LibreOffice ist nicht installiert.");
+        var pdftotext = Cli.Find("pdftotext");
+        Assert.SkipUnless(pdftotext is not null, "Übersprungen: pdftotext ist nicht installiert.");
+        var tess = Cli.Find("tesseract");
+        Assert.SkipUnless(tess is not null, "Übersprungen: Tesseract ist nicht installiert.");
+        var ppm = Cli.Find("pdftoppm");
+        Assert.SkipUnless(ppm is not null, "Übersprungen: pdftoppm ist nicht installiert.");
+        var d = Tmp(); var a = Path.Combine(d, "a.docx"); Ooxml.NewDocx(a, "Rechnung Nummer 4711", ["Betrag 12,50 Euro"]); var pdf = ToPdf(a);
         Cli.Run(ppm, ["-r", "150", "-png", "-singlefile", pdf, Path.Combine(d, "scan")]);
         var ob = Path.Combine(d, "scan-durchsuchbar"); Cli.Run(tess, PdfText.ScanToPdfArgs(Path.Combine(d, "scan.png"), ob, "eng", null), timeoutMs: 120000);
-        Assert.Contains("4711", PdfText.Extract(ob + ".pdf", Cli.Find("pdftotext"), null, null).Text);
+        Assert.Contains("4711", PdfText.Extract(ob + ".pdf", pdftotext, null, null).Text);
     }
 
     [Fact(DisplayName = "SYS-10-P10: Serienbrief – N Zeilen = N Dateien, Platzhalter auch über Formatgrenzen")]
@@ -93,7 +130,16 @@ public class Sys10_Office
         var rows = Csv.Records("Name;Ort\nAnna & Co;Berlin\nBernd;Köln\nCem;Ulm\n");
         var files = Ooxml.MailMerge(tpl, rows, Path.Combine(d, "out"), "Name");
         Assert.Equal(3, files.Count); Assert.Equal("Hallo Anna & Co, Ihr Ort: Berlin", Ooxml.DocxText(files[0])); Assert.Contains("Bernd", Path.GetFileName(files[1]));
-        if (Lo is not null) Assert.True(File.Exists(ToPdf(files[0])));
+    }
+
+    [Fact(DisplayName = "SYS-10: Serienbrief lässt sich mit LibreOffice als PDF öffnen")]
+    public void Serienbrief_pdf()
+    {
+        Assert.SkipUnless(Lo is not null, "Übersprungen: LibreOffice ist nicht installiert.");
+        var d = Tmp(); var tpl = Path.Combine(d, "vorlage.docx");
+        Ooxml.WriteDocxXml(tpl, "<w:p><w:r><w:t>Hallo {{Name}}</w:t></w:r></w:p>");
+        var files = Ooxml.MailMerge(tpl, Csv.Records("Name\nAnna\n"), Path.Combine(d, "out"), "Name");
+        Assert.True(File.Exists(ToPdf(files[0])));
     }
 
     [Fact(DisplayName = "SYS-10-P12/P21: Protokoll als DOCX + Aufgaben als .ics (VTODO mit Fälligkeit und Erinnerung)")]
@@ -141,9 +187,16 @@ public class Sys10_Office
         var raw = File.ReadAllText(pdf, Encoding.Latin1).Replace("/Root 1 0 R >>", "/Root 1 0 R /Info 7 0 R >>").Replace("xref", "7 0 obj\n<< /Author (Max Mustermann) /Producer (Word) >>\nendobj\nxref");
         File.WriteAllText(pdf, raw, Encoding.Latin1);
         var po = Pdf.StripMeta(pdf); Assert.Equal("", Pdf.Info(po)["Author"]); Assert.Equal(new FileInfo(pdf).Length, new FileInfo(po).Length);
-        if (Lo is null || Cli.Find("pdfinfo") is null) return;
-        var real = Path.Combine(d, "r.docx"); Ooxml.NewDocx(real, "T", ["x"]); var rp = ToPdf(real); var ro = Pdf.StripMeta(rp);
-        var info = Cli.Run(Cli.Find("pdfinfo")!, [ro]); Assert.True(info.Ok, info.Err); Assert.DoesNotContain("LibreOffice", info.Out);
+    }
+
+    [Fact(DisplayName = "SYS-10: LibreOffice-PDF hat nach dem Bereinigen keinen LibreOffice-Hinweis (pdfinfo)")]
+    public void Meta_pdfinfo()
+    {
+        Assert.SkipUnless(Lo is not null, "Übersprungen: LibreOffice ist nicht installiert.");
+        var pdfinfo = Cli.Find("pdfinfo");
+        Assert.SkipUnless(pdfinfo is not null, "Übersprungen: pdfinfo ist nicht installiert.");
+        var d = Tmp(); var real = Path.Combine(d, "r.docx"); Ooxml.NewDocx(real, "T", ["x"]); var rp = ToPdf(real); var ro = Pdf.StripMeta(rp);
+        var info = Cli.Run(pdfinfo, [ro]); Assert.True(info.Ok, info.Err); Assert.DoesNotContain("LibreOffice", info.Out);
     }
 
     [Fact(DisplayName = "SYS-10-P19/P24/P09: Versionen vor dem Überschreiben, Export-Paket mit stimmender SHA-Liste, Vorlagen mit Version")]
@@ -176,7 +229,16 @@ public class Sys10_Office
         var o = Ooxml.InsertSignature(docx, png, 100, 40, "Bild-Unterschrift – nicht rechtsverbindlich");
         Assert.Contains("nicht rechtsverbindlich", Ooxml.DocxText(o)); Assert.DoesNotContain("rechtsverbindlich", Ooxml.DocxText(docx));
         using (var z = ZipFile.OpenRead(o)) { Assert.NotNull(z.GetEntry("word/media/trendo-unterschrift.png")); }
-        if (Lo is not null) Assert.True(File.Exists(ToPdf(o)));
+    }
+
+    [Fact(DisplayName = "SYS-10: unterschriebener DOCX lässt sich mit LibreOffice als PDF öffnen")]
+    public void Unterschrift_pdf()
+    {
+        Assert.SkipUnless(Lo is not null, "Übersprungen: LibreOffice ist nicht installiert.");
+        var d = Tmp(); var docx = Path.Combine(d, "v.docx"); Ooxml.NewDocx(docx, "Vertrag", ["Text"]);
+        var png = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==");
+        var o = Ooxml.InsertSignature(docx, png, 100, 40, "Bild-Unterschrift – nicht rechtsverbindlich");
+        Assert.True(File.Exists(ToPdf(o)));
     }
 
     [Fact(DisplayName = "SYS-10-P23: PDF-Formular lesen und ausfüllen (Kopie, inkrementell, Original unverändert)")]
@@ -187,8 +249,18 @@ public class Sys10_Office
         var o = PdfForm.Fill(f, new() { ["Name"] = "Anna (Test)", ["Zustimmung"] = "ja" });
         var back = PdfForm.Fields(o); Assert.Equal("Anna (Test)", back[0].Value); Assert.Equal("Yes", back[1].Value);
         Assert.Equal(before, File.ReadAllBytes(f)); Assert.Contains("/NeedAppearances true", File.ReadAllText(o, Encoding.Latin1));
-        if (Cli.Find("pdfinfo") is { } pi) { var r = Cli.Run(pi, [o]); Assert.True(r.Ok, r.Err); Assert.DoesNotContain("rror", r.Err); }
         Assert.Throws<ArgumentException>(() => PdfForm.Fill(f, new() { ["Gibtsnicht"] = "x" }));
+    }
+
+    [Fact(DisplayName = "SYS-10: ausgefülltes PDF bleibt für pdfinfo lesbar")]
+    public void Formular_pdfinfo()
+    {
+        var pdfinfo = Cli.Find("pdfinfo");
+        Assert.SkipUnless(pdfinfo is not null, "Übersprungen: pdfinfo ist nicht installiert.");
+        var d = Tmp(); var f = FormPdf(d);
+        var o = PdfForm.Fill(f, new() { ["Name"] = "Anna (Test)", ["Zustimmung"] = "ja" });
+        var r = Cli.Run(pdfinfo, [o]);
+        Assert.True(r.Ok, r.Err); Assert.DoesNotContain("rror", r.Err);
     }
 
     [Fact(DisplayName = "SYS-10-P25: Barrierefreiheits-Bericht listet Mängel")]

@@ -29,7 +29,13 @@ public class Sys02_Alltag
         Assert.DoesNotContain("-c:a", FfmpegJobs.RecordArgs(false, "b.mp4", 5));
         Assert.Throws<ArgumentException>(() => FfmpegJobs.RecordArgs(true, "c.mp4", 0));
         Assert.Throws<ArgumentException>(() => FfmpegJobs.AudioArgs("a.wav", "a.exe"));
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
+    }
+
+    [Fact(DisplayName = "SYS-02: Audio umwandeln mit echtem FFmpeg und Prüfsumme")]
+    public void Ffmpeg_umwandeln()
+    {
+        var ff = Cli.Find("ffmpeg");
+        Assert.SkipUnless(ff is not null, "Übersprungen: FFmpeg ist nicht installiert.");
         var d = Tmp(); var wav = Path.Combine(d, "ton.wav");
         Assert.True(Cli.Run(ff, ["-y", "-f", "lavfi", "-i", "sine=frequency=440:duration=1", wav]).Ok);
         var log = new AuditLog(Path.Combine(d, "audit.jsonl"));

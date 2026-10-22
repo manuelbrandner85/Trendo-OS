@@ -6,7 +6,8 @@ public class W4_Core05_3D
     [Fact(DisplayName = "CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen")]
     public void Blender_roundtrip()
     {
-        var bl = Cli.Find("blender"); if (bl is null) return;
+        var bl = Cli.Find("blender");
+        Assert.SkipUnless(bl is not null, "Übersprungen: Blender ist nicht installiert.");
         var dir = Path.Combine(Path.GetTempPath(), "trendo-3d-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(dir);
         var (r, blend) = Studio3D.Create(bl, dir, "monkey", "Affe");
         Assert.True(r.Ok, r.Err + r.Out); Assert.True(File.Exists(blend));

@@ -18,7 +18,7 @@ public class W7_Ui
     [AvaloniaFact(DisplayName = "CORE-04 UI: mit echtem Begleiter koppeln (Code vom Gerät), Details holen, Erreichbarkeit, Aufgabe zuordnen, entfernen")]
     public async Task Verbund()
     {
-        if (OperatingSystem.IsWindows()) return; // Begleiter-Server läuft nur unter Linux
+        Assert.SkipUnless(!OperatingSystem.IsWindows(), "Übersprungen: der Begleiter-Server läuft in diesem Test nur unter Linux.");
         var (w, _, root) = Ui.Open();
         var port = 20000 + Random.Shared.Next(2000); var stateFile = Path.Combine(root, "begleiter", "zustand.json");
         using var srv = new Trendo.Companion.CompanionServer(port, stateFile, loopbackOnly: true); srv.Start();

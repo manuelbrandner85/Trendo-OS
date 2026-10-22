@@ -15,7 +15,9 @@ public class W4_Core08_Media
     [Fact(DisplayName = "CORE-08: Alle Aufgaben laufen mit echtem FFmpeg, Original bleibt, nichts wird überschrieben")]
     public void All_jobs()
     {
-        var src = Sample(out var dir); if (src is null) return;
+        Assert.SkipUnless(Cli.Find("ffmpeg") is not null, "Übersprungen: FFmpeg ist nicht installiert.");
+        var src = Sample(out var dir);
+        Assert.NotNull(src);
         var before = File.ReadAllBytes(src);
         foreach (var j in MediaStudio.Jobs.Where(j => j.Id != "image"))
         {
