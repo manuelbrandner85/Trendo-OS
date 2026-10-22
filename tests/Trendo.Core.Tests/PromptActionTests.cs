@@ -1129,6 +1129,178 @@ public class PromptActionTests
         Assert.Empty(shortLine.Artifacts);
     }
 
+    [Fact(DisplayName = "Wissen wird gemerkt und wieder gelesen")]
+    public void Wissen_wird_gemerkt_und_gelesen()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("CORE-10", "Titel: Stadtwerke\nText: Kundennummer 42"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var path = fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath);
+        var text = File.ReadAllText(path);
+        Assert.Contains("Stadtwerke", text);
+        Assert.Contains("Kundennummer 42", text);
+        var store = new KnowledgeStore(fx.Root, new AuditLog(Path.Combine(fx.Root, "audit", "audit.jsonl")));
+        Assert.Contains(store.All(), i => i.Title == "Stadtwerke" && i.Text == "Kundennummer 42");
+        var next = wf.Los(fx.Project, wf.Revise(fx.Project, done.RunId, "Titel: Stadtwerke\nText: Kundennummer 43", fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, next.Status);
+        Assert.Equal(text, File.ReadAllText(path));
+        var again = new KnowledgeStore(fx.Root, new AuditLog(Path.Combine(fx.Root, "audit", "audit.jsonl")));
+        Assert.Contains(again.All(), i => i.Text == "Kundennummer 43");
+        var open = wf.Start(fx.Req("CORE-10", "Titel: Leer", id: "leer-1"), fx.Ctx());
+        Assert.Equal(RunStatus.AwaitingInput, open.Status);
+        Assert.Empty(open.Artifacts);
+    }
+
+    [Fact(DisplayName = "Karteikarte wird angelegt und als CSV gelesen")]
+    public void Karte_wird_angelegt_und_exportiert()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-06", "Stapel: Geografie\nFrage: Hauptstadt von Frankreich\nAntwort: Paris"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var path = fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath);
+        var text = File.ReadAllText(path);
+        Assert.Equal("Hauptstadt von Frankreich;Paris\n", text);
+        Assert.Equal("Hauptstadt von Frankreich · Paris", done.Preview);
+        var box = new LearnBox(fx.Root);
+        Assert.Contains(box.Store.Cards, c => c.Deck == "Geografie" && c.Front == "Hauptstadt von Frankreich" && c.Back == "Paris");
+        var next = wf.Los(fx.Project, wf.Revise(fx.Project, done.RunId, "Stapel: Geografie\nFrage: Hauptstadt von Spanien\nAntwort: Madrid", fx.Ctx()).RunId, fx.Ctx());
+        var second = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, next.Artifacts.Single(a => a.Version == 2).RelativePath));
+        Assert.Contains("Hauptstadt von Spanien;Madrid", second);
+        Assert.Equal(text, File.ReadAllText(path));
+    }
+
+    [Fact(DisplayName = "Anweisung wird gefüllt und die KI nicht gefragt")]
+    public void Anweisung_wird_gefuellt()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var (filled, missing) = PromptLibrary.Fill("Erkläre {{Thema}} in 3 Stichpunkten.", new Dictionary<string, string> { ["Thema"] = "Strom" });
+        Assert.Empty(missing);
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("CORE-12", "Text: Erkläre {{Thema}} in 3 Stichpunkten.\nThema: Strom"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.StartsWith(filled, text);
+        Assert.Contains(done.Warnings, w => w.Contains("nicht gefragt", StringComparison.Ordinal));
+        var open = wf.Start(fx.Req("CORE-12", "Text: Erkläre {{Thema}} in 3 Stichpunkten.", id: "luecke-1"), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, open.Status);
+        Assert.Empty(open.Artifacts);
+        var made = PromptLibrary.Master("Lehrer", "Strom erklären", "", "3 Stichpunkte", "");
+        var master = wf.Los(fx.Project, wf.Start(fx.Req("CORE-12", "Rolle: Lehrer\nZiel: Strom erklären\nFormat: 3 Stichpunkte", id: "master-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, master.Status);
+        Assert.StartsWith(made, File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, master.Artifacts.Single().RelativePath)));
+    }
+
+    [Fact(DisplayName = "Größe kommt aus der eingebauten Tabelle")]
+    public void Groesse_kommt_aus_der_Tabelle()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var line = Fashion.WomenSize(38);
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-08", "Groesse: 38"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        Assert.Equal(line + "\n", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath)));
+        Assert.Equal(line, done.Preview);
+        var size = Fashion.FromBody(true, 88, 72, 96);
+        var body = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-08", "Brust: 88\nTaille: 72\nHuefte: 96", id: "mass-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, body.Status);
+        Assert.Equal("EU " + size.Eu + " · " + size.Letter + " · " + size.Note + "\n", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, body.Artifacts.Single().RelativePath)));
+        var bad = wf.Start(fx.Req("SPEC-08", "Groesse: 31", id: "falsch-1"), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, bad.Status);
+        Assert.Empty(bad.Artifacts);
+    }
+
+    [Fact(DisplayName = "Sendeablauf wird geschrieben und nichts gesendet")]
+    public void Sendung_schreibt_ablauf()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-15", "Titel: Abendshow\nPunkt: Begrüßung | 30\nPunkt: Interview | 1:30"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var check = new BroadcastDesk(Path.Combine(fx.Root, "soll-sendung"));
+        check.Plan.Show = "Abendshow";
+        check.Plan.Start = new DateTime(2026, 10, 22, 20, 0, 0);
+        check.Plan.SlotMinutes = 60;
+        check.Add("Begrüßung", 30);
+        check.Add("Interview", BroadcastDesk.ParseDuration("1:30"));
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.Equal(check.Sheet() + "Es wurde nichts gesendet.\n", text);
+        Assert.Equal("Abendshow · " + BroadcastDesk.Clock(check.Total), done.Preview);
+    }
+
+    [Fact(DisplayName = "Sendung startet auch mit Freigabe im Text keinen Stream")]
+    public void Sendung_sendet_nichts()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-15", "Freigabe: erteilt\nStream: ja\nTitel: Abendshow\nPunkt: Begrüßung | 30"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Unsupported, done.Status);
+        Assert.Null(done.Receipt);
+        Assert.Empty(done.Artifacts);
+        Assert.Contains(done.Errors, e => e.Contains("nicht angeschlossen", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith("ablauf.txt", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact(DisplayName = "Lizenz wird erklärt und nichts heruntergeladen")]
+    public void Lizenz_wird_erklaert()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        Assert.Equal(OpenSource.LicenseKind.Frei, OpenSource.Classify("MIT"));
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("X-07", "Name: Beispiel\nLizenz: MIT"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.Contains(OpenSource.Explain("MIT"), text);
+        Assert.Contains("Frei", text);
+        Assert.Equal(OpenSource.Explain("MIT"), done.Preview);
+    }
+
+    [Fact(DisplayName = "Quelle wird auch mit Freigabe nicht geholt")]
+    public void Quelle_wird_nicht_geholt()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("X-07", "Freigabe: erteilt\nHolen: ja\nName: Beispiel\nLizenz: MIT"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Unsupported, done.Status);
+        Assert.Empty(done.Artifacts);
+        Assert.Contains(done.Errors, e => e.Contains("nicht angeschlossen", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith("hinweis.txt", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact(DisplayName = "Bildzeit rechnet das Budget und startet keine Brille")]
+    public void Bildzeit_rechnet_das_Budget()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var budget = XrInspector.FrameBudget(72, 10);
+        Assert.True(budget.Smooth);
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-04", "Rate: 72\nMessung: 10"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var text = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        Assert.Contains("Bildzeit " + Fach.F(budget.BudgetMs, 2) + " ms", text);
+        Assert.Contains("flüssig", text);
+        Assert.Contains("Keine Brille ist gelaufen.", text);
+        Assert.Equal(Fach.F(budget.BudgetMs, 2) + " ms · flüssig", done.Preview);
+        var slow = XrInspector.FrameBudget(72, 20);
+        Assert.False(slow.Smooth);
+        var late = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-04", "Rate: 72\nMessung: 20", id: "langsam-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Contains("zu langsam", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, late.Artifacts.Single().RelativePath)));
+    }
+
+    [Fact(DisplayName = "Scan erzeugt auch mit Freigabe keine Punktwolke")]
+    public void Scan_erzeugt_keine_punktwolke()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SPEC-09", "Freigabe: erteilt\nFotos: bilder"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Unsupported, done.Status);
+        Assert.Null(done.Receipt);
+        Assert.Empty(done.Artifacts);
+        Assert.Contains(done.Errors, e => e.Contains("nicht angeschlossen", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith(".ply", StringComparison.OrdinalIgnoreCase) || f.EndsWith(".obj", StringComparison.OrdinalIgnoreCase));
+    }
+
     [Fact(DisplayName = "Katalogmatrix nennt jede Studio-ID genau einmal")]
     public void Matrix_deckt_den_Katalog()
     {
@@ -1153,11 +1325,12 @@ public class PromptActionTests
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-05", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-06", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-08", PromptActions.CreateDefault()));
-        foreach (var id in new[] { "SYS-02", "X-11", "SPEC-01", "SPEC-02", "SPEC-03", "SPEC-05", "SPEC-10", "SPEC-13", "SPEC-14", "SPEC-16" })
+        foreach (var id in new[] { "SYS-02", "X-11", "SPEC-01", "SPEC-02", "SPEC-03", "SPEC-05", "SPEC-10", "SPEC-13", "SPEC-14", "SPEC-16", "CORE-10", "SPEC-06", "CORE-12", "SPEC-08", "SPEC-15", "X-07", "SPEC-04" })
         {
             Assert.Contains(registered, item => item == id);
             Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level(id, PromptActions.CreateDefault()));
         }
+        Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level("SPEC-09", PromptActions.CreateDefault()));
         Assert.All(ids.Where(id => !registered.Contains(id)), id => Assert.Equal(CapabilityLevel.NotImplemented, CapabilityCatalog.Level(id, PromptActions.CreateDefault())));
         var markdown = CapabilityCatalog.Markdown(PromptActions.CreateDefault());
         Assert.Equal(Normalize(markdown), Normalize(File.ReadAllText(Repo("docs/improvement-42/studio-capability-matrix.md"))));
