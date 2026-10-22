@@ -144,6 +144,7 @@ public sealed partial class MainWindow
         ["fortschritt"] = "So weit ist Trendo OS gebaut. Die Angaben kommen direkt aus der Projektliste – nichts ist geschönt.",
         ["keys"] = "Für einige Online-Dienste brauchst du einen Zugangsschlüssel. Er wird sicher in Windows gespeichert, nicht in einer Datei.",
         ["3d"] = "Baue ein Objekt aus Würfel, Kugel und den anderen Formen. Stell Größe, Lage und Farbe ein, runde Kanten ab oder bohre ein Loch. Die Vorschau siehst du hier, von mehreren Seiten. Speichern legt eine Datei in den 3D-Ordner. Blender öffnet genau dieses Objekt und wird nur installiert, wenn du zustimmst.",
+        ["dev"] = "Beschreibe eine Webseite, wähle auf Wunsch Stil und Technik, und Trendo legt einen Ordner mit HTML, CSS und JavaScript an. Die Vorschau zeigt Handy und Desktop. Veröffentlichen geht nur nach deiner Bestätigung und lädt nichts hoch.",
     };
 
     private void ShowHelp(string key, bool force)
