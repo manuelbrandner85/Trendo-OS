@@ -121,6 +121,41 @@ public static partial class Mesh3D
 
     static string F(double v) => v.ToString("0.######", CultureInfo.InvariantCulture);
 
+    /// <summary>Liest ein Netz (OBJ, STL, GLB, glTF) in Originaleinheiten. PLY mit Flächen liest der Foto-Scan.</summary>
+    public static Mesh ReadMeshFile(string path)
+    {
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        var mesh = ext switch
+        {
+            ".obj" => ReadObjPlain(path),
+            ".stl" => ReadStl(path, 1),
+            ".glb" => ReadGlb(path),
+            ".gltf" => ReadGltf(path),
+            _ => throw new InvalidOperationException("Diese Datei ist kein Netz, das Trendo kennt."),
+        };
+        if (mesh.Triangles == 0) throw new InvalidOperationException("In der Datei ist kein Dreieck.");
+        return mesh;
+    }
+
+    static Mesh ReadObjPlain(string path)
+    {
+        var v = new List<Vec3>(); var m = new Mesh();
+        foreach (var raw in File.ReadLines(path))
+        {
+            var t = raw.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (t.Length == 0) continue;
+            if (t[0] == "v" && t.Length >= 4)
+                v.Add(new Vec3(double.Parse(t[1], CultureInfo.InvariantCulture), double.Parse(t[2], CultureInfo.InvariantCulture), double.Parse(t[3], CultureInfo.InvariantCulture)));
+            else if (t[0] == "f" && t.Length >= 4)
+            {
+                int Ix(string s) { var n = int.Parse(s.Split('/')[0], CultureInfo.InvariantCulture); return n < 0 ? v.Count + n : n - 1; }
+                var f = t.Skip(1).Select(Ix).ToArray();
+                for (var k = 1; k + 1 < f.Length; k++) m.Add(v[f[0]], v[f[k]], v[f[k + 1]]);
+            }
+        }
+        return m;
+    }
+
     public static Part3D Import(string path) => ImportParts(path, "auto")[0];
 
     /// <summary>Liest eine Datei als Teile. unit ist auto, mm oder cm. GLB und glTF bleiben Meter.</summary>
