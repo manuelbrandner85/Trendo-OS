@@ -63,7 +63,8 @@ public partial class MainWindow
             Act("offline-no", "Abbrechen", () => { _offAsk = default; Say("Nicht gestartet.", V); }))));
 
         var steps = new StackPanel(); foreach (var (s, i) in Software.UninstallSteps.Select((s, i) => (s, i))) steps.Children.Add(P($"{i + 1}. {s}"));
-        sp.Children.Add(Card(Section("Programm entfernen", "Trendo entfernt nichts heimlich. So geht's in Windows:", steps,
+        var planText = UninstallPlanSentence();
+        sp.Children.Add(Card(Section("Programm entfernen", "Trendo entfernt nichts heimlich. So geht's in Windows:", new TextBlock { Name = "uninstall-plan", Text = planText, Foreground = Text, TextWrapping = TextWrapping.Wrap }, steps,
             Line(Act("uninstall-open", "Windows-Einstellungen öffnen", () => Try(V, () =>
             { if (!OperatingSystem.IsWindows()) throw new InvalidOperationException("Das geht nur unter Windows."); Launch(Software.UninstallSettings); }))))));
 
@@ -166,5 +167,15 @@ public partial class MainWindow
             { var ids = Software.ImportIds(File.ReadAllText(Clean(rf))); _progOut = $"{ids.Count} Programme. Auf dem neuen Rechner: winget import -i \"{Path.GetFileName(Clean(rf))}\"\n" + string.Join("\n", ids); Say("Liste gelesen.", V); }))))));
         if (_progOut.Length > 0) sp.Children.Add(Card(Out("prog-out")));
         return ProgPage("Programme prüfen", sp);
+    }
+
+    private string UninstallPlanSentence()
+    {
+        try
+        {
+            var plan = EditionCMaintenance.PlanUninstall(DataLocation.Legacy(), _core.DataRoot);
+            return $"Geplant: nur der Programmordner ({plan.Remove.Count} Einträge) würde entfernt. Deine Dateien ({plan.Keep.Count} Einträge) bleiben. Dieser Bildschirm löscht nichts.";
+        }
+        catch (InvalidOperationException ex) { return ex.Message; }
     }
 }

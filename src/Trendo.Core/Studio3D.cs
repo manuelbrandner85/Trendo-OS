@@ -9,6 +9,83 @@ public static class Studio3D
     public static readonly (string Ext, string Label)[] Formats = [(".glb", "glTF (Web, Spiele)"), (".obj", "OBJ"), (".stl", "STL (3D-Druck)"), (".fbx", "FBX"), (".blend", "Blender-Datei")];
     public static readonly string[] Imports = [".glb", ".gltf", ".obj", ".stl", ".fbx", ".blend"];
 
+    public sealed record BlenderInstall(string Path, Version Version);
+
+    /// <summary>Sucht Blender im PATH und unter „Programme\Blender Foundation“. Die höchste Fassung gewinnt (4.10 vor 4.9).</summary>
+    public static BlenderInstall? FindBlender(IEnumerable<string>? roots = null)
+    {
+        var hits = new List<BlenderInstall>();
+        void Add(string? path)
+        {
+            if (string.IsNullOrWhiteSpace(path) || !File.Exists(path)) return;
+            if (hits.Any(h => string.Equals(h.Path, path, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))) return;
+            hits.Add(new(path, VersionIn(path)));
+        }
+        if (roots is null)
+        {
+            Add(Cli.Find("blender"));
+            foreach (var root in DefaultBlenderRoots())
+                foreach (var exe in EnumerateBlender(root)) Add(exe);
+        }
+        else
+        {
+            foreach (var root in roots)
+                foreach (var exe in EnumerateBlender(root)) Add(exe);
+        }
+        return hits.OrderByDescending(h => h.Version).ThenByDescending(h => h.Path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+    }
+
+    /// <summary>Offizielle Installationsordner auf dem Windows-PC.</summary>
+    public static IEnumerable<string> DefaultBlenderRoots()
+    {
+        foreach (var spec in new[] { Environment.SpecialFolder.ProgramFiles, Environment.SpecialFolder.ProgramFilesX86 })
+        {
+            var pf = Environment.GetFolderPath(spec);
+            if (!string.IsNullOrEmpty(pf)) yield return Path.Combine(pf, "Blender Foundation");
+        }
+    }
+
+    static IEnumerable<string> EnumerateBlender(string root)
+    {
+        if (File.Exists(root))
+        {
+            var name = Path.GetFileName(root);
+            if (name.Equals("blender.exe", StringComparison.OrdinalIgnoreCase) || name.Equals("blender", StringComparison.Ordinal)) yield return root;
+            yield break;
+        }
+        if (!Directory.Exists(root)) yield break;
+        var dirs = new List<string> { root };
+        foreach (var d in ChildDirs(root))
+        {
+            dirs.Add(d);
+            dirs.AddRange(ChildDirs(d));
+        }
+        foreach (var d in dirs)
+        {
+            var exe = Path.Combine(d, "blender.exe");
+            if (File.Exists(exe)) yield return exe;
+            var bin = Path.Combine(d, "blender");
+            if (File.Exists(bin)) yield return bin;
+        }
+    }
+
+    static IEnumerable<string> ChildDirs(string dir)
+    {
+        try { return Directory.EnumerateDirectories(dir).ToList(); }
+        catch (IOException) { return []; }
+        catch (UnauthorizedAccessException) { return []; }
+    }
+
+    static Version VersionIn(string path)
+    {
+        var dir = Path.GetFileName(Path.GetDirectoryName(path) ?? "");
+        var m = System.Text.RegularExpressions.Regex.Match(dir, @"(\d+)\.(\d+)(?:\.(\d+))?");
+        if (!m.Success) return new Version(0, 0);
+        var major = int.Parse(m.Groups[1].Value);
+        var minor = int.Parse(m.Groups[2].Value);
+        return m.Groups[3].Success ? new Version(major, minor, int.Parse(m.Groups[3].Value)) : new Version(major, minor);
+    }
+
     // Das Skript liest seine Parameter aus sys.argv nach "--"; Werte werden nie in den Code eingesetzt.
     public const string Script = """
 import bpy, sys, os, math

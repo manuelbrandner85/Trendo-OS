@@ -10,7 +10,7 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     private AgentCenter? _agents;
-    public AgentCenter Agents => _agents ??= new AgentCenter(_core.DataRoot, _core.Audit, _core.Approvals, _core.Projects);
+    public AgentCenter Agents => _agents ??= new AgentCenter(_core.DataRoot, _core.Audit, _core.Approvals, _core.Projects, _core.NotStopp);
     private string _agentRole = "planer", _agentMsg = ""; private string? _agentProject; private bool _agentBusy;
 
     private void InitCore03()

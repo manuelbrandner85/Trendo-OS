@@ -4,7 +4,7 @@ using System.Text.Json;
 namespace Trendo.Core;
 
 /// <summary>CORE-06: Spiele-Studio – spielbare Browser-Spiele aus Vorlagen; Unreal-Projekte anlegen und installierte Engines erkennen.</summary>
-public static class GameStudio
+public static partial class GameStudio
 {
     public static readonly (string Id, string Label, string Help)[] Templates =
     [
@@ -91,13 +91,69 @@ step();
         return list.OrderByDescending(e => Version.TryParse(e.Version, out var v) ? v : new Version(0, 0)).ToList();
     }
 
-    public static IReadOnlyList<Engine> FindEngines()
+    public static string DefaultLauncherFile() => System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Epic", "UnrealEngineLauncher", "LauncherInstalled.dat");
+
+    /// <summary>Übliche Installationsordner auf dem Windows-PC: „Programme\Epic Games“.</summary>
+    public static IEnumerable<string> DefaultEpicRoots()
     {
-        var f = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Epic", "UnrealEngineLauncher", "LauncherInstalled.dat");
-        return File.Exists(f) ? ParseLauncherInstalled(File.ReadAllText(f)) : [];
+        foreach (var spec in new[] { Environment.SpecialFolder.ProgramFiles, Environment.SpecialFolder.ProgramFilesX86 })
+        {
+            var pf = Environment.GetFolderPath(spec);
+            if (!string.IsNullOrEmpty(pf)) yield return System.IO.Path.Combine(pf, "Epic Games");
+        }
     }
 
+    /// <summary>Launcher-Liste und die Ordner unter Programme\Epic Games. Neueste Fassung zuerst.</summary>
+    public static IReadOnlyList<Engine> FindEngines() => FindEngines(DefaultLauncherFile(), DefaultEpicRoots());
+
+    public static IReadOnlyList<Engine> FindEngines(string? launcherFile, IEnumerable<string> epicRoots)
+    {
+        var all = new List<Engine>();
+        if (!string.IsNullOrEmpty(launcherFile) && File.Exists(launcherFile))
+            all.AddRange(ParseLauncherInstalled(File.ReadAllText(launcherFile)));
+        foreach (var root in epicRoots) all.AddRange(ScanEpicFolder(root));
+        return Merge(all);
+    }
+
+    /// <summary>Liest UE_*-Ordner, in denen der Editor liegt.</summary>
+    public static IReadOnlyList<Engine> ScanEpicFolder(string epicRoot)
+    {
+        if (!Directory.Exists(epicRoot)) return [];
+        var list = new List<Engine>();
+        IEnumerable<string> dirs;
+        try { dirs = Directory.EnumerateDirectories(epicRoot); }
+        catch (IOException) { return []; }
+        catch (UnauthorizedAccessException) { return []; }
+        foreach (var dir in dirs)
+        {
+            var name = System.IO.Path.GetFileName(dir);
+            if (!name.StartsWith("UE_", StringComparison.OrdinalIgnoreCase)) continue;
+            var editor = System.IO.Path.Combine(dir, "Engine", "Binaries", "Win64", "UnrealEditor.exe");
+            var cmd = System.IO.Path.Combine(dir, "Engine", "Binaries", "Win64", "UnrealEditor-Cmd.exe");
+            if (!File.Exists(editor) && !File.Exists(cmd)) continue;
+            list.Add(new(name[3..], dir));
+        }
+        return Merge(list);
+    }
+
+    public static IReadOnlyList<Engine> Merge(IEnumerable<Engine> engines)
+    {
+        var cmp = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        var best = new Dictionary<string, Engine>(cmp);
+        foreach (var e in engines)
+        {
+            if (string.IsNullOrWhiteSpace(e.Path) || string.IsNullOrWhiteSpace(e.Version)) continue;
+            var key = System.IO.Path.GetFullPath(e.Path).TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
+            if (!best.TryGetValue(key, out var old) || Ver(e.Version) > Ver(old.Version)) best[key] = e;
+        }
+        return best.Values.OrderByDescending(e => Ver(e.Version)).ThenBy(e => e.Version, StringComparer.Ordinal).ToList();
+    }
+
+    static Version Ver(string s) => Version.TryParse(s, out var v) ? v : new Version(0, 0);
+
     public static string EditorExe(Engine e) => System.IO.Path.Combine(e.Path, "Engine", "Binaries", "Win64", "UnrealEditor.exe");
+
+    public static string EditorCmdExe(Engine e) => System.IO.Path.Combine(e.Path, "Engine", "Binaries", "Win64", "UnrealEditor-Cmd.exe");
 
     /// <summary>Legt ein leeres Unreal-Projekt (Blueprint, ohne C++) an, das der Editor öffnen kann.</summary>
     public static string CreateUnrealProject(string parent, string name, string engineVersion)
@@ -107,7 +163,15 @@ step();
         var dir = System.IO.Path.Combine(parent, safe);
         if (Directory.Exists(dir)) throw new IOException($"Den Ordner „{safe}“ gibt es schon.");
         Directory.CreateDirectory(System.IO.Path.Combine(dir, "Content")); Directory.CreateDirectory(System.IO.Path.Combine(dir, "Config"));
-        var up = new { FileVersion = 3, EngineAssociation = engineVersion, Category = "", Description = name, Plugins = new[] { new { Name = "ModelingToolsEditorMode", Enabled = true, TargetAllowList = new[] { "Editor" } } } };
+        var up = new
+        {
+            FileVersion = 3, EngineAssociation = engineVersion, Category = "", Description = name,
+            Plugins = new object[]
+            {
+                new { Name = "ModelingToolsEditorMode", Enabled = true, TargetAllowList = new[] { "Editor" } },
+                new { Name = "PythonScriptPlugin", Enabled = true },
+            },
+        };
         File.WriteAllText(System.IO.Path.Combine(dir, safe + ".uproject"), JsonSerializer.Serialize(up, new JsonSerializerOptions { WriteIndented = true }));
         File.WriteAllText(System.IO.Path.Combine(dir, "Config", "DefaultEngine.ini"), "[/Script/EngineSettings.GameMapsSettings]\nGameDefaultMap=/Engine/Maps/Templates/OpenWorld\n\n[/Script/Engine.RendererSettings]\nr.DefaultFeature.AutoExposure=False\n");
         File.WriteAllText(System.IO.Path.Combine(dir, "Config", "DefaultGame.ini"), $"[/Script/EngineSettings.GeneralProjectSettings]\nProjectName={safe}\n");

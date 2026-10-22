@@ -44,13 +44,14 @@ public sealed record WfRun(string WorkflowId, DateTimeOffset At, bool DryRun, bo
 public sealed class WorkflowEngine
 {
     private readonly string _file, _runs; private readonly AuditLog _audit; private readonly ApprovalGate _gate;
+    private readonly NotStopp? _stop;
     private readonly IReadOnlyList<string> _allowed;
     private readonly List<Workflow> _items;
     public Func<string, Task<string?>>? Summarize { get; set; }
 
-    public WorkflowEngine(string dataRoot, AuditLog audit, ApprovalGate gate, IEnumerable<string>? allowedRoots = null)
+    public WorkflowEngine(string dataRoot, AuditLog audit, ApprovalGate gate, IEnumerable<string>? allowedRoots = null, NotStopp? stop = null)
     {
-        _audit = audit; _gate = gate;
+        _audit = audit; _gate = gate; _stop = stop;
         _file = Path.Combine(dataRoot, "ablaeufe", "ablaeufe.json"); _runs = Path.Combine(dataRoot, "ablaeufe", "protokoll.jsonl");
         Directory.CreateDirectory(Path.GetDirectoryName(_file)!);
         _allowed = (allowedRoots ?? [Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)]).Where(r => r != "").Select(r => Path.GetFullPath(r).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar).ToList();
@@ -82,7 +83,28 @@ public sealed class WorkflowEngine
     public void Update(Workflow w) { Save(); _audit.Append(Principal.LocalOwner.Name, "workflow.update", $"{w.Id} hash={w.Hash()}"); }
     public bool Remove(string id) { var n = _items.RemoveAll(w => w.Id == id); Save(); return n > 0; }
 
-    public ApprovalRequest RequestApproval(Workflow w) => _gate.Request(Principal.LocalOwner, "workflow.approve", $"Ablauf „{w.Name}“ darf Dateien verschieben/umbenennen", $"{w.Id}:{w.Hash()}", TimeSpan.FromHours(1));
+    /// <summary>Zeigt die geplanten Dateiänderungen, ohne etwas anzufassen.</summary>
+    public IReadOnlyList<string> ChangePreview(Workflow w)
+    {
+        var lines = new List<string> { $"Ablauf „{w.Name}“ möchte diese Änderungen:" };
+        foreach (var s in w.Steps)
+        {
+            lines.Add(s.Kind switch
+            {
+                StepKind.OrdnerAnlegen => $"Ordner anlegen: {s.To}",
+                StepKind.Kopieren => $"Kopieren: {s.From} ({s.Pattern}) → {s.To}",
+                StepKind.Verschieben => $"Verschieben: {s.From} ({s.Pattern}) → {s.To}",
+                StepKind.DatumVoranstellen => $"Datum vor den Namen setzen: {s.From} ({s.Pattern})",
+                StepKind.TextSchreiben => $"Textdatei schreiben: {s.To}",
+                StepKind.Zippen => $"Als ZIP packen: {s.From} → {s.To}",
+                _ => $"Mit KI zusammenfassen: {s.From} → {s.To}",
+            });
+        }
+        lines.Add("Ohne Freigabe bleibt alles an seinem Platz.");
+        return lines;
+    }
+
+    public ApprovalRequest RequestApproval(Workflow w) => _gate.Request(Principal.LocalOwner, "workflow.approve", $"Ablauf „{w.Name}“ darf Dateien verschieben/umbenennen", $"{w.Id}:{w.Hash()}", TimeSpan.FromHours(1), ChangePreview(w));
 
     public void ApplyApproval(Workflow w, string requestId)
     {
@@ -124,11 +146,13 @@ public sealed class WorkflowEngine
 
     public async Task<WfRun> RunAsync(Workflow w, bool dryRun, string? triggerFile = null, DateTimeOffset? now = null)
     {
-        var t = now ?? DateTimeOffset.Now; var lines = new List<string>(); var ok = true;
+        var t = now ?? DateTimeOffset.Now; var lines = new List<string>(); var ok = true; var halted = false;
         string V(string s) => s.Replace("{datum}", t.ToString("yyyy-MM-dd")).Replace("{zeit}", t.ToString("HH-mm")).Replace("{datei}", triggerFile is null ? "" : Path.GetFileName(triggerFile));
+        if (!dryRun && _stop?.IsStopped == true) { lines.Add("Not-Stopp: dieser Ablauf wurde angehalten."); return Log(new(w.Id, t, dryRun, false, lines)); }
         if (!dryRun && !w.IsApproved) { lines.Add("Gestoppt: Dieser Ablauf verschiebt oder benennt Dateien um und braucht zuerst deine Freigabe."); return Log(new(w.Id, t, dryRun, false, lines)); }
         foreach (var s in w.Steps)
         {
+            if (!dryRun && _stop?.IsStopped == true) { ok = false; halted = true; lines.Add("Not-Stopp: dieser Ablauf wurde angehalten."); break; }
             try
             {
                 var from = V(s.From); var to = V(s.To);
@@ -173,20 +197,22 @@ public sealed class WorkflowEngine
                             lines.Add($"KI fasst zusammen: {Path.GetFileName(f)} → {Path.GetFileName(dest)}");
                             if (dryRun) continue;
                             var r = Summarize is null ? null : await Summarize(File.ReadAllText(f));
+                            if (_stop?.IsStopped == true) throw new InvalidOperationException("Not-Stopp: dieser Ablauf wurde angehalten.");
                             if (r is null) throw new InvalidOperationException("Die KI ist gerade nicht erreichbar.");
                             Directory.CreateDirectory(Path.GetDirectoryName(dest)!); File.WriteAllText(dest, r);
                         }
                         break;
                 }
             }
-            catch (Exception ex) { ok = false; lines.Add($"Hat nicht geklappt bei „{StepLabel(s.Kind)}“: {ex.Message}"); break; }
+            catch (Exception ex) { ok = false; halted = ex.Message.StartsWith("Not-Stopp", StringComparison.Ordinal); lines.Add(halted ? ex.Message : $"Hat nicht geklappt bei „{StepLabel(s.Kind)}“: {ex.Message}"); break; }
         }
-        if (!dryRun) { w.LastRun = t; Save(); }
+        if (!dryRun && !halted) { w.LastRun = t; Save(); }
         return Log(new(w.Id, t, dryRun, ok, lines));
     }
 
     public async Task<IReadOnlyList<WfRun>> RunDueAsync(DateTimeOffset now)
     {
+        if (_stop?.IsStopped == true) return [];
         var res = new List<WfRun>();
         foreach (var (w, f) in Due(now)) res.Add(await RunAsync(w, false, f, now));
         return res;

@@ -13,6 +13,8 @@ public sealed class ApprovalRequest
     public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.Now;
     public DateTimeOffset ExpiresAt { get; init; }
     public ApprovalState State { get; internal set; } = ApprovalState.Pending;
+    /// <summary>Was passieren würde. Steht vor der Freigabe, die Ausführung ändert daran nichts.</summary>
+    public IReadOnlyList<string> Preview { get; init; } = [];
 }
 
 /// <summary>Plan → Freigabe → Ausführung. Ohne gültige, einmalige, nicht abgelaufene Freigabe wird nichts ausgeführt.</summary>
@@ -22,14 +24,16 @@ public sealed class ApprovalGate(AuditLog audit, TimeProvider? time = null)
     private readonly TimeProvider _time = time ?? TimeProvider.System;
     private readonly object _lock = new();
 
-    public ApprovalRequest Request(Principal by, string action, string description, string target, TimeSpan? ttl = null)
+    public ApprovalRequest Request(Principal by, string action, string description, string target, TimeSpan? ttl = null, IReadOnlyList<string>? preview = null)
     {
         Rbac.Demand(by, Permission.RequestAction, audit);
+        var lines = preview is { Count: > 0 } ? preview.ToArray() : new[] { description };
         var r = new ApprovalRequest
         {
             Id = Convert.ToHexString(RandomNumberGenerator.GetBytes(8)),
             Action = action, Description = description, Target = target,
-            CreatedAt = _time.GetLocalNow(), ExpiresAt = _time.GetLocalNow() + (ttl ?? TimeSpan.FromMinutes(10))
+            CreatedAt = _time.GetLocalNow(), ExpiresAt = _time.GetLocalNow() + (ttl ?? TimeSpan.FromMinutes(10)),
+            Preview = lines,
         };
         lock (_lock) _requests[r.Id] = r;
         audit.Append(by.Name, "approval.requested", $"{r.Id} {action} {target}");
@@ -39,6 +43,13 @@ public sealed class ApprovalGate(AuditLog audit, TimeProvider? time = null)
     public IReadOnlyList<ApprovalRequest> Pending()
     {
         lock (_lock) return _requests.Values.Where(r => r.State == ApprovalState.Pending).ToList();
+    }
+
+    /// <summary>Freigegeben, aber noch nicht ausgeführt. Das Handy nimmt nur an, der PC führt aus.</summary>
+    public IReadOnlyList<ApprovalRequest> Ready()
+    {
+        var now = _time.GetLocalNow();
+        lock (_lock) return _requests.Values.Where(r => r.State == ApprovalState.Approved && now <= r.ExpiresAt).ToList();
     }
 
     /// <summary>Nur die Rolle Owner darf freigeben oder ablehnen.</summary>

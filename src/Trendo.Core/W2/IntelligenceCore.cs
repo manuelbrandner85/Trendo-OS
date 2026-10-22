@@ -40,6 +40,11 @@ public sealed class IntelligenceCore
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
         if (string.IsNullOrWhiteSpace(req.Question)) return new(false, "Bitte schreib zuerst eine Frage.", null, null, [], sw.Elapsed);
+        if (PromptGuard.Blocked(req.Question) || (req.History?.Any(m => string.Equals(m.Role, "user", StringComparison.OrdinalIgnoreCase) && PromptGuard.Blocked(m.Content)) ?? false))
+        {
+            _audit.Append("ki", "ki.injection.blocked", $"frage={req.Question.Length}Z");
+            return new(false, PromptGuard.Hinweis, null, null, [], sw.Elapsed);
+        }
         var sources = new List<string>();
         var sys = new StringBuilder(req.SystemPrompt ?? DefaultSystem);
         if (req.UseKnowledge && _knowledge is not null)

@@ -39,6 +39,10 @@ public sealed partial class MainWindow : Window
     private readonly TextBlock _kiText = new() { Text = "Hallo! Ich bin noch nicht verbunden. Mit „KI einrichten“ installierst du die kostenlose lokale KI – danach kannst du mir Aufgaben geben, Studios öffnen oder Fragen stellen.", Foreground = Brush.Parse(C("#E6EDF7", "#1B2A44")), FontSize = 12, TextWrapping = TextWrapping.Wrap };
     private readonly Button _kiSetup = new() { Name = "btn-ki-setup", Content = "KI einrichten", Margin = new Thickness(0, 6, 0, 0) };
     private bool _kiConnected; private int _tick;
+    private Button? _notStopp;
+    private MobileCommandServer? _handy;
+    private string _handyMsg = "";
+    public MobileCommandServer? HandyServer => _handy;
     private readonly ProgressBar _depProgress = new() { Name = "deps-progress", IsIndeterminate = false, IsVisible = false, Height = 6, Margin = new Thickness(0, 6) };
     private readonly TextBlock _depLog = new() { Name = "deps-log", Foreground = Brush.Parse("#93A4C3"), FontSize = 11, TextWrapping = TextWrapping.Wrap };
     private bool _depBusy;
@@ -176,7 +180,7 @@ public sealed partial class MainWindow : Window
             });
         }
         Opened += OnOpened;
-        Closing += (_, _) => { foreach (var t in _ownedTimers) t.Stop(); if (_reopening) return; _api?.DisposeAsync().AsTask().Wait(2000); _core.Shutdown(); };
+        Closing += (_, _) => { foreach (var t in _ownedTimers) t.Stop(); if (_reopening) return; try { _handy?.Dispose(); } catch { } _api?.DisposeAsync().AsTask().Wait(2000); _core.Shutdown(); };
         InitLook(root, opt);
         StartupTrace.Mark("window.ready");
     }
@@ -208,6 +212,7 @@ public sealed partial class MainWindow : Window
         _weekday.Text = now.ToString("dddd", De);
         _date.Text = now.ToString("d. MMMM yyyy", De);
         if (_tick++ % 5 == 0) _ = RefreshKi();
+        RefreshNotStopp();
         var m = _metrics.Sample();
         SetMeter("CPU", m.CpuPercent, null);
         var mem = _metrics.MemorySize();
@@ -644,7 +649,20 @@ public sealed partial class MainWindow : Window
         var trash = new Button { Name = "dock-trash", Width = 46, Height = 46, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Content = Ico(Mdi.Delete, 28, Grad("#ECEFF1", "#90A4AE")) };
         ToolTip.SetTip(trash, "Papierkorb"); Avalonia.Automation.AutomationProperties.SetName(trash, "Papierkorb");
         trash.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, OperatingSystem.IsWindows() ? "shell:RecycleBinFolder" : "trash://", _core.Audit);
-        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { StartButton(), new Border { Width = 1, Height = 36, Background = Brush.Parse("#553F7FD0"), VerticalAlignment = VerticalAlignment.Center }, bar, new Border { Width = 1, Height = 36, Background = Brush.Parse("#553F7FD0"), VerticalAlignment = VerticalAlignment.Center }, trash } };
+        _notStopp = new Button
+        {
+            Name = "btn-notstopp", Content = "Not-Stopp", Background = Brush.Parse("#B91C1C"), Foreground = Brushes.White,
+            Padding = new Thickness(12, 8), FontSize = 13, VerticalAlignment = VerticalAlignment.Center,
+        };
+        Avalonia.Automation.AutomationProperties.SetName(_notStopp, "Not-Stopp");
+        _notStopp.Click += (_, _) =>
+        {
+            if (_core.NotStopp.IsStopped) _core.NotStopp.Resume(_core.Audit, Principal.LocalOwner.Name);
+            else _core.NotStopp.StopAll(_core.Audit, Principal.LocalOwner.Name, "Schaltfläche");
+            RefreshNotStopp();
+        };
+        RefreshNotStopp();
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { StartButton(), new Border { Width = 1, Height = 36, Background = Brush.Parse("#553F7FD0"), VerticalAlignment = VerticalAlignment.Center }, bar, new Border { Width = 1, Height = 36, Background = Brush.Parse("#553F7FD0"), VerticalAlignment = VerticalAlignment.Center }, _notStopp, trash } };
         var dockBar = new Border
         {
             Background = Brush.Parse(C("#C0101C33", "#E6F4F7FC")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(22), Padding = new Thickness(14, 8),
@@ -879,9 +897,85 @@ public sealed partial class MainWindow : Window
         return Page("Projekte", sp);
     }
 
+    private void RefreshNotStopp()
+    {
+        if (_notStopp is null) return;
+        var on = _core.NotStopp.IsStopped;
+        _notStopp.Content = on ? "Automatik wieder erlauben" : "Not-Stopp";
+        _notStopp.Background = Brush.Parse(on ? "#B45309" : "#B91C1C");
+    }
+
+    private void StartHandy()
+    {
+        try
+        {
+            _handy ??= new MobileCommandServer(_core, MobileCommandServer.FreePort(), loopbackOnly: false);
+            if (!_handy.IsRunning) _handy.Start();
+            _handy.NewCode();
+            _handyMsg = _handy.LanHinweis ?? "Die Seite läuft. Der Code steht nur hier.";
+        }
+        catch (Exception ex) { _handyMsg = ex.Message; }
+    }
+
+    private Control HandyCard()
+    {
+        var sp = new StackPanel { Spacing = 6, Children = { H("Handy", 14), P("Kopple das Handy einmalig. Der Code steht nur auf diesem PC, nicht auf der Webseite. Das Handy führt nichts aus.") } };
+        var start = new Button { Name = "btn-handy-start", Content = _handy?.IsRunning == true ? "Neuen Code" : "Handy-Seite starten" };
+        start.Click += (_, _) => { StartHandy(); Show("approvals"); };
+        sp.Children.Add(start);
+        if (_handyMsg.Length > 0) sp.Children.Add(P(_handyMsg));
+        if (_handy?.IsRunning == true)
+        {
+            sp.Children.Add(new TextBlock { Name = "handy-code", Text = _handy.Code ?? "Code wurde schon verwendet.", FontSize = 28, Foreground = Text });
+            sp.Children.Add(P(_handy.PageUrl));
+            try
+            {
+                var m = QrMatrix.Encode(_handy.QrText);
+                var n = m.GetLength(0);
+                var grid = new UniformGrid { Name = "handy-qr", Rows = n, Columns = n, Width = 168, Height = 168 };
+                for (var y = 0; y < n; y++)
+                    for (var x = 0; x < n; x++)
+                        grid.Children.Add(new Border { Background = m[y, x] ? Brushes.Black : Brushes.White, Width = 168.0 / n, Height = 168.0 / n });
+                sp.Children.Add(grid);
+            }
+            catch (InvalidOperationException) { sp.Children.Add(P("Der QR-Code passt nicht. Die Adresse ist zu lang.")); }
+        }
+        return new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = sp };
+    }
+
+    /// <summary>Freigeben heißt noch nicht ausführen. Abläufe und Speicheraufträge laufen über ihre eigene Ausführung, nicht über „Datei öffnen“.</summary>
+    private void FinishApproval(ApprovalRequest r)
+    {
+        if (r.Action == LiveBroadcast.Action) { NoteLiveApproved(r.Id); Show("sendung"); return; }
+        if (r.Action == "workflow.approve")
+        {
+            var id = r.Target.Split(':')[0];
+            var w = Workflows.Get(id);
+            if (w is not null) Workflows.ApplyApproval(w, r.Id);
+            Show("approvals");
+            return;
+        }
+        if (r.Action == "agent.save")
+        {
+            var slash = r.Target.IndexOf('/');
+            if (slash > 0)
+            {
+                var project = r.Target[..slash];
+                var file = r.Target[(slash + 1)..];
+                var task = Agents.Tasks(project).FirstOrDefault(t => t.ApprovalId == r.Id);
+                if (task is not null) Agents.ExecuteSave(task, file);
+            }
+            Show("approvals");
+            return;
+        }
+        _core.Integrations.Execute(r);
+        Show("approvals");
+    }
+
     private Control ApprovalsView()
     {
         var sp = new StackPanel { Spacing = 8 };
+        sp.Children.Add(HandyCard());
         var pending = _core.Approvals.Pending();
         if (pending.Count == 0) sp.Children.Add(P("Keine offenen Freigaben."));
         foreach (var r in pending)
@@ -889,21 +983,38 @@ public sealed partial class MainWindow : Window
             var live = r.Action == LiveBroadcast.Action;
             var yes = new Button { Name = "btn-approve-" + r.Id, Content = live ? "Freigeben, noch nicht senden" : "Freigeben und ausführen", Background = Accent };
             var no = new Button { Name = "btn-deny-" + r.Id, Content = "Ablehnen" };
+            var item = r;
             yes.Click += (_, _) =>
             {
-                _core.Approvals.Approve(r.Id, Principal.LocalOwner);
-                if (live) { NoteLiveApproved(r.Id); Show("sendung"); return; }
-                _core.Integrations.Execute(r); Show("approvals");
+                _core.Approvals.Approve(item.Id, Principal.LocalOwner);
+                FinishApproval(item);
             };
             no.Click += (_, _) =>
             {
-                _core.Approvals.Deny(r.Id, Principal.LocalOwner);
-                if (live) { NoteLiveDenied(r.Id); Show("sendung"); return; }
+                _core.Approvals.Deny(item.Id, Principal.LocalOwner);
+                if (live) { NoteLiveDenied(item.Id); Show("sendung"); return; }
                 Show("approvals");
             };
             sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = new StackPanel { Spacing = 6, Children = {
-                new TextBlock { Text = r.Description, Foreground = Text }, P($"Aktion {r.Action} · gültig bis {r.ExpiresAt:HH:mm}"),
+                new TextBlock { Text = item.Description, Foreground = Text },
+                new TextBlock { Name = "approval-preview-" + item.Id, Text = string.Join("\n", item.Preview), Foreground = Text, TextWrapping = TextWrapping.Wrap },
+                P($"Aktion {item.Action} · gültig bis {item.ExpiresAt:HH:mm}"),
                 new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { yes, no } } } } });
+        }
+        var ready = _core.Approvals.Ready();
+        if (ready.Count > 0)
+        {
+            sp.Children.Add(H("Freigegeben, noch nicht ausgeführt", 14));
+            foreach (var r in ready)
+            {
+                var item = r;
+                var run = new Button { Name = "btn-run-" + item.Id, Content = "Jetzt ausführen", Background = Accent };
+                run.Click += (_, _) => FinishApproval(item);
+                sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = new StackPanel { Spacing = 6, Children = {
+                    new TextBlock { Text = item.Description, Foreground = Text },
+                    new TextBlock { Text = string.Join("\n", item.Preview), Foreground = Text, TextWrapping = TextWrapping.Wrap },
+                    run } } });
+            }
         }
         return Page("Freigaben", sp);
     }

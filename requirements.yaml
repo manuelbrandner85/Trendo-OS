@@ -854,6 +854,2075 @@ letter_requirements:
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
   note: "LTR-QA-018 (Linux-USB/Pi) NOT_RUN – Hardware fehlt"
+improvements:
+- id: IMP-13-01
+  parent: IMP-13
+  title: Jede Anforderung erhält eine ID und überprüfbaren Quellcode-/Testnachweis.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-13-02
+  parent: IMP-13
+  title: Keine Fake-Funktionen, toten Schaltflächen oder erfundenen Fortschrittsanzeigen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-13-03
+  parent: IMP-13
+  title: Automatisierte Tests nach Änderungen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-13-04
+  parent: IMP-13
+  title: Echte Studio-Abnahmetests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-13-05
+  parent: IMP-13
+  title: Soll-Ist-Abgleich mit der vollständigen Spezifikation.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-13-06
+  parent: IMP-13
+  title: Reparatur mit erneutem Test.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-13-07
+  parent: IMP-13
+  title: Nachweisbare Produktionsberichte.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-13-08
+  parent: IMP-13
+  title: Verbindliches menschliches Release-Gate.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-14-01
+  parent: IMP-14
+  title: Dieser eine Masterprompt ist die Grundlage.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-14-02
+  parent: IMP-14
+  title: Automatische Projektarchitektur.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-14-03
+  parent: IMP-14
+  title: Abhängigkeitsbasierte Entwicklungsplanung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-14-04
+  parent: IMP-14
+  title: Klar begrenzte Agentenaufträge.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-14-05
+  parent: IMP-14
+  title: Geprüfte Grok-Bot-/Grok-Build-Übergabe.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-14-06
+  parent: IMP-14
+  title: Persistente Aufgabenwarteschlange.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-14-07
+  parent: IMP-14
+  title: Sitzungs- und Kontextwiederaufnahme.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-14-08
+  parent: IMP-14
+  title: Schrittweise funktionierende Builds.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-14-09
+  parent: IMP-14
+  title: Freigabe- und Blockerverwaltung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-14-10
+  parent: IMP-14
+  title: Zusammenführung und Test aller drei Editionen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-15-01
+  parent: IMP-15
+  title: Alle Studios einheitlich integrieren.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-15-02
+  parent: IMP-15
+  title: Möglichst keine Zusatzinstallationen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-15-03
+  parent: IMP-15
+  title: Eingebautes Office und PDF.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-15-04
+  parent: IMP-15
+  title: Eingebauter Browser.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-15-05
+  parent: IMP-15
+  title: Grafik-, Audio- und Medienfunktionen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-15-06
+  parent: IMP-15
+  title: Integrierte Entwicklungswerkzeuge.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-15-07
+  parent: IMP-15
+  title: Gemeinsame Laufzeitarchitektur.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-15-08
+  parent: IMP-15
+  title: Externe Blender-/Unreal-Brücke.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-15-09
+  parent: IMP-15
+  title: Hochwertiges gemeinsames Design.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-15-10
+  parent: IMP-15
+  title: Hardwareoptimierte Editionen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-15-11
+  parent: IMP-15
+  title: Lizenzkonforme Komponenten.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-15-12
+  parent: IMP-15
+  title: Vollständige Ersteinrichtung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-16-01
+  parent: IMP-16
+  title: Intelligenter vollständiger Updater.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-16-02
+  parent: IMP-16
+  title: Signatur-, Herkunfts- und Integritätsprüfungen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-16-03
+  parent: IMP-16
+  title: Rollback.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-16-04
+  parent: IMP-16
+  title: Offline-Updates.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-16-05
+  parent: IMP-16
+  title: Stable-, Preview- und Developer-Kanäle.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-16-06
+  parent: IMP-16
+  title: Sicherheitsupdates aller mitgelieferten Programme.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-16-07
+  parent: IMP-16
+  title: Sichere Datenmigrationen bei Versionsänderungen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-16-08
+  parent: IMP-16
+  title: Hardwareabhängige Paketprüfung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-16-09
+  parent: IMP-16
+  title: Blender-/Unreal-Adapterkompatibilität.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-16-10
+  parent: IMP-16
+  title: Tests nach Updates.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-16-11
+  parent: IMP-16
+  title: Langfristige Wartungsstrategie.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-16-12
+  parent: IMP-16
+  title: Datenschutz- und Freigabekontrolle.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-17-01
+  parent: IMP-17
+  title: Gemeinsame Projektarbeitsbereiche.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-17-02
+  parent: IMP-17
+  title: Geteiltes Assetregister mit Rechten.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-17-03
+  parent: IMP-17
+  title: Direkter Studio-Datenaustausch.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-17-04
+  parent: IMP-17
+  title: Unterstützte Formatkonvertierung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-17-05
+  parent: IMP-17
+  title: Projektversionen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-17-06
+  parent: IMP-17
+  title: Offline-Projektarbeit.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-17-07
+  parent: IMP-17
+  title: Geräteübergreifende Projektbrücke.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-17-08
+  parent: IMP-17
+  title: Blender-/Unreal-Assetübergabe.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-17-09
+  parent: IMP-17
+  title: Projektbezogene Rechte.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-17-10
+  parent: IMP-17
+  title: Absturzsicheres Speichern.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-17-11
+  parent: IMP-17
+  title: Erkennung fehlender Dateien.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-17-12
+  parent: IMP-17
+  title: Echte Studio-Integrationstests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-01
+  parent: IMP-18
+  title: Natürlichsprachige automatische Aufgabenplanung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-02
+  parent: IMP-18
+  title: Multi-Studio-Koordination.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-03
+  parent: IMP-18
+  title: Automatisierte Softwareentwicklung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-04
+  parent: IMP-18
+  title: Automatisierte 3D-Workflows.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-05
+  parent: IMP-18
+  title: Automatisierte Spieleproduktionsabläufe.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-06
+  parent: IMP-18
+  title: Webseiten- und Business-Systementwicklung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-07
+  parent: IMP-18
+  title: Office- und Dokumentenverarbeitung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-08
+  parent: IMP-18
+  title: Eingangspostanalyse.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-09
+  parent: IMP-18
+  title: Erlaubte Dateiorganisation.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-10
+  parent: IMP-18
+  title: Aufgaben- und Kalenderplanung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-11
+  parent: IMP-18
+  title: Rechtmäßige Recherche.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-12
+  parent: IMP-18
+  title: Fehlererkennung und Reparatur.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-13
+  parent: IMP-18
+  title: Geeignete Connector-Einrichtung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-14
+  parent: IMP-18
+  title: Ressourcenoptimierung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-15
+  parent: IMP-18
+  title: Backup- und Checkpointverwaltung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-16
+  parent: IMP-18
+  title: Sichere Auftragswiederaufnahme.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-17
+  parent: IMP-18
+  title: Intelligentes Freigabecenter.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-18
+  parent: IMP-18
+  title: 'Automatisierungsstufen: manuell, assistiert, weitgehend automatisch.'
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-19
+  parent: IMP-18
+  title: Echte Aktionsprotokolle.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-18-20
+  parent: IMP-18
+  title: Verifizierte Fertigstellung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-19-01
+  parent: IMP-19
+  title: Vorschau geplanter Änderungen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-19-02
+  parent: IMP-19
+  title: Isolierte Testumgebungen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-19-03
+  parent: IMP-19
+  title: Risikoklassifikation.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-19-04
+  parent: IMP-19
+  title: Granulare zeit- und projektgebundene Rechte.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-19-05
+  parent: IMP-19
+  title: Geeignete Undo-/Rollback-Funktionen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-19-06
+  parent: IMP-19
+  title: Kosten- und Ressourcenlimits.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-19-07
+  parent: IMP-19
+  title: Echte Ergebnisprüfung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-19-08
+  parent: IMP-19
+  title: Isolation sensibler Daten.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-19-09
+  parent: IMP-19
+  title: Verständliche gebündelte Freigaben ohne Umgehung kritischer Einzelfreigaben.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-19-10
+  parent: IMP-19
+  title: Erkennung ungewöhnlicher Agentenaktionen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-19-11
+  parent: IMP-19
+  title: Jederzeit erreichbarer Not-Stopp für steuerbare lokale Automationen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-19-12
+  parent: IMP-19
+  title: Echte Sicherheitstests aller Editionen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-20-01
+  parent: IMP-20
+  title: Lernen durch freigegebene Demonstration.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-20-02
+  parent: IMP-20
+  title: Lernen durch natürliche Sprache.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-20-03
+  parent: IMP-20
+  title: Strukturierte Rekonstruktion von Arbeitsabläufen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-20-04
+  parent: IMP-20
+  title: API-first-Automatisierung mit zulässigem visuellen Fallback.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-20-05
+  parent: IMP-20
+  title: Ereignisse und Zeitpläne.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-20-06
+  parent: IMP-20
+  title: Dynamische Variablen und Vorlagen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-20-07
+  parent: IMP-20
+  title: Sichere Simulationen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-20-08
+  parent: IMP-20
+  title: Rechte- und Datenschutzkontrolle.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-20-09
+  parent: IMP-20
+  title: Getestete Reparatur geänderter Abläufe.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-20-10
+  parent: IMP-20
+  title: Versionierte Automatisierungsbibliothek.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-20-11
+  parent: IMP-20
+  title: Geräteübergreifende Ausführung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-20-12
+  parent: IMP-20
+  title: Nachweisbare Ablaufkontrolle.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-21-01
+  parent: IMP-21
+  title: Geräte- und Leistungserkennung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-21-02
+  parent: IMP-21
+  title: Sichere Gerätekopplung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-21-03
+  parent: IMP-21
+  title: Intelligente Aufgabenverteilung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-21-04
+  parent: IMP-21
+  title: Lokaler Windows Production Worker.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-21-05
+  parent: IMP-21
+  title: Tatsächliche externe Blender-/Unreal-Ausführung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-21-06
+  parent: IMP-21
+  title: Verschlüsselte Kommunikation.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-21-07
+  parent: IMP-21
+  title: Geprüfte Dateiübertragung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-21-08
+  parent: IMP-21
+  title: Offline-Auftragswarteschlange.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-21-09
+  parent: IMP-21
+  title: Echte Live-Produktionsanzeige.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-21-10
+  parent: IMP-21
+  title: Energie- und Hardwarekontrolle.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-21-11
+  parent: IMP-21
+  title: Eigenständig nutzbarer Offline-Modus.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-21-12
+  parent: IMP-21
+  title: Echte Geräteübergreifende Tests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-22-01
+  parent: IMP-22
+  title: Ein Installationsvorgang pro Edition.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-22-02
+  parent: IMP-22
+  title: Rechtmäßige Eigenentwicklung vergleichbarer Softwarefunktionen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-22-03
+  parent: IMP-22
+  title: Vollständige integrierte Office-Funktionen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-22-04
+  parent: IMP-22
+  title: Integrierte Browserfunktionen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-22-05
+  parent: IMP-22
+  title: Kreativ- und Medienwerkzeuge.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-22-06
+  parent: IMP-22
+  title: Eigene Entwicklerumgebung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-22-07
+  parent: IMP-22
+  title: Wissenschafts-, Technik- und Fachbibliotheken.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-22-08
+  parent: IMP-22
+  title: Gemeinsames App-Framework.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-22-09
+  parent: IMP-22
+  title: Hardwareangepasste Ausführung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-22-10
+  parent: IMP-22
+  title: Offline-Programmpaket.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-22-11
+  parent: IMP-22
+  title: Lizenzprüfung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-22-12
+  parent: IMP-22
+  title: Blender und Unreal als externe Ausnahmen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-22-13
+  parent: IMP-22
+  title: Zentrale Softwareupdates.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-22-14
+  parent: IMP-22
+  title: Tatsächliche Funktionsabdeckung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-22-15
+  parent: IMP-22
+  title: Clean-Install-Tests ohne zusätzliche manuelle Standardprogramminstallation.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-23
+  parent: IMP-23
+  title: Ultimate Multi-User & Secure Identity GODMODE
+  approval_status: REJECTED_UPGRADE_BASE_PRESERVED
+  decision: REJECTED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-24-01
+  parent: IMP-24
+  title: Weitergebbare Softwarepakete.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-24-02
+  parent: IMP-24
+  title: Hardwareerkennung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-24-03
+  parent: IMP-24
+  title: Einfache Installation.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-24-04
+  parent: IMP-24
+  title: Mitgelieferte Studios.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-24-05
+  parent: IMP-24
+  title: Sichere Treiberintegration.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-24-06
+  parent: IMP-24
+  title: Automatische lokale KI-Einrichtung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-24-07
+  parent: IMP-24
+  title: Geeignete Netzwerkeinrichtung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-24-08
+  parent: IMP-24
+  title: Studioinitialisierung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-24-09
+  parent: IMP-24
+  title: Hardwareoptimierung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-24-10
+  parent: IMP-24
+  title: Offline-Installation.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-24-11
+  parent: IMP-24
+  title: Einfacher Erststart.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-24-12
+  parent: IMP-24
+  title: Datenschutz und Schutz bestehender Systeme.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-24-13
+  parent: IMP-24
+  title: Automatische Selbsttests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-24-14
+  parent: IMP-24
+  title: Updates und Reparaturen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-24-15
+  parent: IMP-24
+  title: Echte Neuinstallationstests auf Zielhardware.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-25
+  parent: IMP-25
+  title: Ultimate Smart Migration & Data Freedom GODMODE
+  approval_status: REJECTED_UPGRADE_BASE_PRESERVED
+  decision: REJECTED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-26-01
+  parent: IMP-26
+  title: Natürliche KI-Befehle.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-26-02
+  parent: IMP-26
+  title: Lokale Sprachsteuerung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-26-03
+  parent: IMP-26
+  title: Sprachausgabe.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-26-04
+  parent: IMP-26
+  title: Freigegebenes Bildschirmverständnis.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-26-05
+  parent: IMP-26
+  title: Sichere Desktop-Bedienung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-26-06
+  parent: IMP-26
+  title: Studio-Copilot.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-26-07
+  parent: IMP-26
+  title: Interaktive Erklärungen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-26-08
+  parent: IMP-26
+  title: Konversationsbasierte Aufgabenplanung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-26-09
+  parent: IMP-26
+  title: Schwebender Trendo-Assistent.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-26-10
+  parent: IMP-26
+  title: Intelligente lokale Dateisuche.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-26-11
+  parent: IMP-26
+  title: Verständliche Fehlerdiagnose.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-26-12
+  parent: IMP-26
+  title: Offline-KI.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-26-13
+  parent: IMP-26
+  title: Schutz von Mikrofon und Bildschirm.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-26-14
+  parent: IMP-26
+  title: Anpassbares Assistenzverhalten.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-26-15
+  parent: IMP-26
+  title: Echte Assistenten- und Datenschutztests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-27-01
+  parent: IMP-27
+  title: Mobile Trendo-Web-App.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-27-02
+  parent: IMP-27
+  title: Sichere QR-/Einmal-Kopplung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-27-03
+  parent: IMP-27
+  title: Mobiler KI-Assistent.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-27-04
+  parent: IMP-27
+  title: Produktionsmonitor.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-27-05
+  parent: IMP-27
+  title: Remote-Spiel- und 3D-Projektüberwachung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-27-06
+  parent: IMP-27
+  title: Mobile Freigaben.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-27-07
+  parent: IMP-27
+  title: Optionale Benachrichtigungen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-27-08
+  parent: IMP-27
+  title: Geschützter Projektbrowser.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-27-09
+  parent: IMP-27
+  title: Ergebnisvorschauen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-27-10
+  parent: IMP-27
+  title: Fernaufträge.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-27-11
+  parent: IMP-27
+  title: Offline-Auftragsentwürfe.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-27-12
+  parent: IMP-27
+  title: Authentifizierter verschlüsselter Zugriff.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-27-13
+  parent: IMP-27
+  title: Remote-Not-Stopp.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-27-14
+  parent: IMP-27
+  title: Daten-/Akkuoptimierung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-27-15
+  parent: IMP-27
+  title: Echte Smartphone-PC-Tests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-28-01
+  parent: IMP-28
+  title: Reproduzierbare Releases.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-28-02
+  parent: IMP-28
+  title: Echte Installationsdateien.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-28-03
+  parent: IMP-28
+  title: Prüfsummen und zulässige Codesignaturen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-28-04
+  parent: IMP-28
+  title: Komponentenliste und Lizenzprüfung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-28-05
+  parent: IMP-28
+  title: Vorbereitbares offizielles Downloadportal.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-28-06
+  parent: IMP-28
+  title: Hardware-Kompatibilitätsberatung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-28-07
+  parent: IMP-28
+  title: Sichere Dateiverteilung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-28-08
+  parent: IMP-28
+  title: Offline-Benutzerhandbuch.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-28-09
+  parent: IMP-28
+  title: Self-Service-Support.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-28-10
+  parent: IMP-28
+  title: Datenschutzfreundliche Diagnosen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-28-11
+  parent: IMP-28
+  title: Versions- und Sicherheitsinformationen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-28-12
+  parent: IMP-28
+  title: Kontrollierte Updates.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-28-13
+  parent: IMP-28
+  title: Echte Endnutzertests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-28-14
+  parent: IMP-28
+  title: Veröffentlichungsfreigabe.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-28-15
+  parent: IMP-28
+  title: Keine öffentliche Freigabe ohne ausdrückliche Zustimmung des Auftraggebers.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-29-01
+  parent: IMP-29
+  title: Optimierter Systemstart.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-29-02
+  parent: IMP-29
+  title: Studios nur bei Bedarf laden.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-29-03
+  parent: IMP-29
+  title: RAM-Effizienz.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-29-04
+  parent: IMP-29
+  title: CPU-/GPU-Beschleunigung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-29-05
+  parent: IMP-29
+  title: Raspberry-Pi-Ultra-Light-Modus.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-29-06
+  parent: IMP-29
+  title: High-End-PC-Modus.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-29-07
+  parent: IMP-29
+  title: Gemeinsame Ressourcenbibliotheken.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-29-08
+  parent: IMP-29
+  title: Temperatur- und Hardwareschutz.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-29-09
+  parent: IMP-29
+  title: Flüssige Oberfläche.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-29-10
+  parent: IMP-29
+  title: Energieoptimierung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-29-11
+  parent: IMP-29
+  title: Echte Leistungsdiagnosen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-29-12
+  parent: IMP-29
+  title: Intelligente Aufgabenprioritäten.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-29-13
+  parent: IMP-29
+  title: Regressionstests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-29-14
+  parent: IMP-29
+  title: Hardwareprofile.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-29-15
+  parent: IMP-29
+  title: Reale Benchmarks.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-30-01
+  parent: IMP-30
+  title: Dateiformaterkennung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-30-02
+  parent: IMP-30
+  title: Echte native Bearbeitung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-30-03
+  parent: IMP-30
+  title: Office-Kompatibilität.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-30-04
+  parent: IMP-30
+  title: Raster- und Vektorgrafik.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-30-05
+  parent: IMP-30
+  title: Audio-/Videoexporte.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-30-06
+  parent: IMP-30
+  title: 3D-Formataustausch.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-30-07
+  parent: IMP-30
+  title: Geeignete technische CAD- und Manufacturing-Formate.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-30-08
+  parent: IMP-30
+  title: Verlustbewusste Konvertierung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-30-09
+  parent: IMP-30
+  title: Farb-, Schrift- und Layouttreue.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-30-10
+  parent: IMP-30
+  title: Sicherer Dateimport.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-30-11
+  parent: IMP-30
+  title: Vollständige Asset-Abhängigkeiten.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-30-12
+  parent: IMP-30
+  title: Stapelverarbeitung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-30-13
+  parent: IMP-30
+  title: Formatversionserkennung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-30-14
+  parent: IMP-30
+  title: Transparente Funktionsmatrix.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-30-15
+  parent: IMP-30
+  title: Echte Export-/Reimport-Tests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-31-01
+  parent: IMP-31
+  title: Eigenständiger lokaler KI-Kern für jeden Endnutzer.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-31-02
+  parent: IMP-31
+  title: Mitgelieferte legale KI-Modelle.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-31-03
+  parent: IMP-31
+  title: Hardwaregerechte Modellauswahl.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-31-04
+  parent: IMP-31
+  title: Automatisches KI-Aufgabenrouting.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-31-05
+  parent: IMP-31
+  title: Echte Offline-KI.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-31-06
+  parent: IMP-31
+  title: Geeignete Offline-Spracherkennung und Sprachausgabe.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-31-07
+  parent: IMP-31
+  title: Lokale Dokumentanalyse und OCR.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-31-08
+  parent: IMP-31
+  title: Private Wissenssuche.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-31-09
+  parent: IMP-31
+  title: Sicheres lokales KI-Gedächtnis.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-31-10
+  parent: IMP-31
+  title: Schutz vor Prompt-Injection.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-31-11
+  parent: IMP-31
+  title: Ressourcen-/Temperaturlimits.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-31-12
+  parent: IMP-31
+  title: Optionale kostenlose Modellbibliothek.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-31-13
+  parent: IMP-31
+  title: Sichere Modellversionsverwaltung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-31-14
+  parent: IMP-31
+  title: Grok nur optional mit tatsächlich unterstütztem Zugang.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-31-15
+  parent: IMP-31
+  title: Echte Offline-KI-Tests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-32-01
+  parent: IMP-32
+  title: Gepflegte Linux-Systembasis.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-32-02
+  parent: IMP-32
+  title: Raspberry-Pi-ARM64-Bootsystem.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-32-03
+  parent: IMP-32
+  title: Eigenständig bootendes Linux-PC-System.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-32-04
+  parent: IMP-32
+  title: Native Windows-Arbeitsumgebung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-32-05
+  parent: IMP-32
+  title: Hardwareabstraktion.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-32-06
+  parent: IMP-32
+  title: Treiberkompatibilität.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-32-07
+  parent: IMP-32
+  title: Echter Boot- und Dienstmanager.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-32-08
+  parent: IMP-32
+  title: Geschützte Dateisystemarchitektur.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-32-09
+  parent: IMP-32
+  title: Bootintegrität.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-32-10
+  parent: IMP-32
+  title: Trennung von System- und Nutzerdaten.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-32-11
+  parent: IMP-32
+  title: Notfall-Recovery.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-32-12
+  parent: IMP-32
+  title: Offline-Systemkern.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-32-13
+  parent: IMP-32
+  title: Automatische Ersteinrichtung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-32-14
+  parent: IMP-32
+  title: Reproduzierbare Builds.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-32-15
+  parent: IMP-32
+  title: Echte Boot- und Hardwaretests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-33-01
+  parent: IMP-33
+  title: Automatische Geräteerkennung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-33-02
+  parent: IMP-33
+  title: Sichere Treiberintegration.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-33-03
+  parent: IMP-33
+  title: Echtes Druckcenter.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-33-04
+  parent: IMP-33
+  title: Scanner/OCR.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-33-05
+  parent: IMP-33
+  title: Kameraverwaltung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-33-06
+  parent: IMP-33
+  title: Audioverwaltung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-33-07
+  parent: IMP-33
+  title: Bluetooth.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-33-08
+  parent: IMP-33
+  title: Mehrmonitor.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-33-09
+  parent: IMP-33
+  title: Controller und Eingabegeräte.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-33-10
+  parent: IMP-33
+  title: Zeichentabletts.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-33-11
+  parent: IMP-33
+  title: Externe Datenträger.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-33-12
+  parent: IMP-33
+  title: Netzwerkgeräte und NAS.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-33-13
+  parent: IMP-33
+  title: Raspberry-Pi-GPIO/HAT mit Sicherheitsgrenzen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-33-14
+  parent: IMP-33
+  title: Hardwarediagnose.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-33-15
+  parent: IMP-33
+  title: Echte Gerätetests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-34
+  parent: IMP-34
+  title: Ultimate Native Antivirus & Cyber Protection GODMODE
+  approval_status: REJECTED_UPGRADE_BASE_PRESERVED
+  decision: REJECTED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-35
+  parent: IMP-35
+  title: Ultimate Intelligent Bugfix & Continuous Evolution GODMODE
+  approval_status: PROPOSED
+  decision: UNDECIDED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-01
+  parent: IMP-36
+  title: Freie Installation rechtmäßiger kompatibler Software.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-02
+  parent: IMP-36
+  title: Reguläre Windows-/Linux-Paketmanager.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-03
+  parent: IMP-36
+  title: Vollständige Shell und Terminal.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-04
+  parent: IMP-36
+  title: Reguläre Administrator-/sudo-Rechte.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-05
+  parent: IMP-36
+  title: Berechtigter Dateisystemzugriff.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-06
+  parent: IMP-36
+  title: Erweiterte Systemeinstellungen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-07
+  parent: IMP-36
+  title: Freie Standardanwendungen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-08
+  parent: IMP-36
+  title: Multitasking und Fensterfreiheit.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-09
+  parent: IMP-36
+  title: Netzwerkfreiheit.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-10
+  parent: IMP-36
+  title: Hardware- und Treiberfreiheit.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-11
+  parent: IMP-36
+  title: Professionelle Softwareentwicklung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-12
+  parent: IMP-36
+  title: Unterstützte Container und virtuelle Maschinen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-13
+  parent: IMP-36
+  title: Kompatibles PC-Gaming.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-14
+  parent: IMP-36
+  title: Optionaler Windows-Kompatibilitätsmodus unter Linux.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-15
+  parent: IMP-36
+  title: Boot- und Datenträgerfreiheit.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-16
+  parent: IMP-36
+  title: Offene APIs und Plugins.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-17
+  parent: IMP-36
+  title: Kein verpflichtender Cloud-/Grok-/Trendo-Account.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-18
+  parent: IMP-36
+  title: Abschaltbare optionale KI und Automatisierung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-19
+  parent: IMP-36
+  title: Eigentümerkontrolle über das eigene System.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-36-20
+  parent: IMP-36
+  title: Reale Freiheits- und Kompatibilitätstests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-37-01
+  parent: IMP-37
+  title: Native kompatible Windows-Programme auf Windows.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-37-02
+  parent: IMP-37
+  title: Native Linux-Programme auf Linux.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-37-03
+  parent: IMP-37
+  title: Unterstützte Wine-Kompatibilität.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-37-04
+  parent: IMP-37
+  title: PC-Gaming-Center.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-37-05
+  parent: IMP-37
+  title: Geeignete DirectX-/Vulkan-Integration.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-37-06
+  parent: IMP-37
+  title: Legale Laufzeitkomponenten.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-37-07
+  parent: IMP-37
+  title: Getrennte Kompatibilitätsumgebungen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-37-08
+  parent: IMP-37
+  title: Hardware-/Software-Anforderungsprüfung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-37-09
+  parent: IMP-37
+  title: Gemeinsame Programmbibliothek.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-37-10
+  parent: IMP-37
+  title: Freie Dateizuordnungen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-37-11
+  parent: IMP-37
+  title: Individuelle Kompatibilitätsprofile.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-37-12
+  parent: IMP-37
+  title: Sichere Ausführung mit Nutzerfreiheit.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-37-13
+  parent: IMP-37
+  title: Geprüfte Kompatibilitätsdatenbank.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-37-14
+  parent: IMP-37
+  title: Transparente DRM-/Anti-Cheat-Grenzen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-37-15
+  parent: IMP-37
+  title: Echte Anwendungs- und Gamingtests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-38-01
+  parent: IMP-38
+  title: Freie Auswahl des Installationswegs.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-38-02
+  parent: IMP-38
+  title: Optionaler Windows-/Trendo-Dual-Boot.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-38-03
+  parent: IMP-38
+  title: Live-USB.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-38-04
+  parent: IMP-38
+  title: Persistente externe SSD.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-38-05
+  parent: IMP-38
+  title: Schutz vorhandener Windows-Systeme.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-38-06
+  parent: IMP-38
+  title: BitLocker-Bewusstsein.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-38-07
+  parent: IMP-38
+  title: UEFI-/Secure-Boot-Kompatibilität.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-38-08
+  parent: IMP-38
+  title: Installationsvorschau.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-38-09
+  parent: IMP-38
+  title: Sichere Partitionierung nur mit Freigabe.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-38-10
+  parent: IMP-38
+  title: Schutz von Bootkonfigurationen bei Updates.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-38-11
+  parent: IMP-38
+  title: Sichere gemeinsame Dateizugriffe.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-38-12
+  parent: IMP-38
+  title: Boot-Recovery.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-38-13
+  parent: IMP-38
+  title: Kontrollierte Deinstallation.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-38-14
+  parent: IMP-38
+  title: Hardwarekompatibilität.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-38-15
+  parent: IMP-38
+  title: Echte Boot-/Datenerhalts-/Rollbacktests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-39-01
+  parent: IMP-39
+  title: Autorisierte Remote-PC-Erkennung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-39-02
+  parent: IMP-39
+  title: Remote-Start echter Windows-Programme.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-39-03
+  parent: IMP-39
+  title: Geeignete Fenster- oder Desktopübertragung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-39-04
+  parent: IMP-39
+  title: Adaptive Streamingqualität.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-39-05
+  parent: IMP-39
+  title: Interaktive Blender-/Unreal-Fernbedienung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-39-06
+  parent: IMP-39
+  title: Geeignetes PC-Gaming-Streaming.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-39-07
+  parent: IMP-39
+  title: Maus-/Tastatur-/Controllerübertragung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-39-08
+  parent: IMP-39
+  title: Remote-Audio.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-39-09
+  parent: IMP-39
+  title: Mehrmonitorunterstützung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-39-10
+  parent: IMP-39
+  title: Erlaubter Datei-/Zwischenablageaustausch.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-39-11
+  parent: IMP-39
+  title: Verschlüsselte authentifizierte Sitzungen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-39-12
+  parent: IMP-39
+  title: Freigegebene Wake-/Power-Funktionen.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-39-13
+  parent: IMP-39
+  title: Sitzungswiederherstellung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-39-14
+  parent: IMP-39
+  title: Mobile Remote-Integration.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-39-15
+  parent: IMP-39
+  title: Echte Streaming- und Funktionstests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-40-01
+  parent: IMP-40
+  title: Vollständiges integriertes Trendo-SDK.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-40-02
+  parent: IMP-40
+  title: KI-gestützte eigene Anwendungserstellung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-40-03
+  parent: IMP-40
+  title: Visueller No-Code-Designer.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-40-04
+  parent: IMP-40
+  title: Einheitliches Trendo-UI-Framework.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-40-05
+  parent: IMP-40
+  title: Berechtigte Datei-/Datenbank-/Projekt-APIs.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-40-06
+  parent: IMP-40
+  title: Eigene App-Pakete.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-40-07
+  parent: IMP-40
+  title: Windows-/Linux-/ARM64-Builds.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-40-08
+  parent: IMP-40
+  title: Transparente Erweiterungsrechte.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-40-09
+  parent: IMP-40
+  title: Offenes Plugin-System.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-40-10
+  parent: IMP-40
+  title: Optionaler nicht exklusiver App-Marktplatz.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-40-11
+  parent: IMP-40
+  title: Git-/Repository-Unterstützung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-40-12
+  parent: IMP-40
+  title: Tatsächliche Anwendungstests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-40-13
+  parent: IMP-40
+  title: App-Updates und Versionierung.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-40-14
+  parent: IMP-40
+  title: Freigegebene rechtmäßige Weitergabe eigener Apps.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-40-15
+  parent: IMP-40
+  title: Echte Installations-, Start-, Update- und Deinstallationstests.
+  approval_status: APPROVED_SPEC
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
 tests:
 - id: GRK-001
   catalog: GROK_QA_MATRIX.csv

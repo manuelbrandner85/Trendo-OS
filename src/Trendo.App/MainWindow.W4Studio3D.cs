@@ -16,7 +16,9 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     public string Folder3D => WorkFolder("3D");
-    public string? BlenderPath => ToolPath("blender") is { } p && File.Exists(p) ? p : (_opt.Isolated ? null : Cli.Find("blender"));
+    public string? BlenderPath => _opt.Isolated
+        ? (ToolPath("blender") is { } isolated && File.Exists(isolated) ? isolated : null)
+        : Studio3D.FindBlender()?.Path ?? (ToolPath("blender") is { } p && File.Exists(p) ? p : null);
     public Func<string, Task<string>>? SceneAi { get; set; }
     public byte[]? CurrentPreview => _png3d;
     public Func<Task<string?>>? Pick3DFile { get; set; }
@@ -114,7 +116,7 @@ public partial class MainWindow
             {
                 Children =
                 {
-                    P("Blender ist nicht installiert. Bauen, Ansehen und der Export als OBJ, STL und GLB gehen trotzdem.", Brush.Parse("#FACC15")),
+                    P("Unter Programme\\Blender Foundation und im PATH wurde hier keine blender.exe gefunden. Bauen, Ansehen und der Export als OBJ, STL und GLB gehen trotzdem.", Brush.Parse("#FACC15")),
                     Act("3d-setup-blender", "Blender einrichten", () => _ = SetupBlender()),
                     Act("3d-open-blender", "In Blender öffnen", () => _ = AskBlender()),
                     Act("3d-folder", "Ordner zeigen", ShowFolder),

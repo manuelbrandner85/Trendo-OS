@@ -12,7 +12,7 @@ public partial class MainWindow
 {
     private WorkflowEngine? _wf;
     public static string WorkflowHome { get; set; } = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-    public WorkflowEngine Workflows => _wf ??= new WorkflowEngine(_core.DataRoot, _core.Audit, _core.Approvals, [WorkflowHome]) { Summarize = async t => { var a = await Intel.AskAsync(new KiRequest("Fasse diesen Text in 5 Stichpunkten zusammen:\n\n" + (t.Length > 8000 ? t[..8000] : t), PreferredModel: KiModelName, UseKnowledge: false)); return a.Ok ? a.Text : null; } };
+    public WorkflowEngine Workflows => _wf ??= new WorkflowEngine(_core.DataRoot, _core.Audit, _core.Approvals, [WorkflowHome], _core.NotStopp) { Summarize = async t => { var a = await Intel.AskAsync(new KiRequest("Fasse diesen Text in 5 Stichpunkten zusammen:\n\n" + (t.Length > 8000 ? t[..8000] : t), PreferredModel: KiModelName, UseKnowledge: false)); return a.Ok ? a.Text : null; } };
     public WfRun? LastWfRun { get; private set; }
     private string _wfMsg = ""; private bool _wfNew;
     private readonly List<WfStep> _wfDraft = [];
@@ -23,7 +23,7 @@ public partial class MainWindow
         StudioPages["SYS-05"] = "ablaeufe";
         ExtraPages.Add(("Abläufe (Automatisch erledigen)", "ablaeufe", ["automatisch", "ablauf", "workflow", "aufraeumen", "zeitplan", "regel"]));
         var t = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
-        t.Tick += async (_, _) => { try { foreach (var r in await Workflows.RunDueAsync(DateTimeOffset.Now)) LastWfRun = r; } catch { } };
+        t.Tick += async (_, _) => { if (_core.NotStopp.IsStopped) return; try { foreach (var r in await Workflows.RunDueAsync(DateTimeOffset.Now)) LastWfRun = r; } catch { } };
         OwnTimer(t);
     }
 
@@ -60,10 +60,11 @@ public partial class MainWindow
         {
             var n = i++;
             var row = new WrapPanel();
-            Button B(string name, string label, Func<Task> act) { var b = new Button { Name = $"wf-{name}-{n}", Content = label, Padding = new Thickness(8, 2), Margin = new Thickness(0, 4, 6, 0) }; b.Click += async (_, _) => { await act(); Show("ablaeufe"); }; row.Children.Add(b); return b; }
+            string? next = null;
+            Button B(string name, string label, Func<Task> act) { var b = new Button { Name = $"wf-{name}-{n}", Content = label, Padding = new Thickness(8, 2), Margin = new Thickness(0, 4, 6, 0) }; b.Click += async (_, _) => { await act(); var dest = next ?? "ablaeufe"; next = null; Show(dest); }; row.Children.Add(b); return b; }
             B("dry", "Probelauf", async () => { LastWfRun = await Workflows.RunAsync(w, true); _wfMsg = ""; });
             B("run", "Jetzt ausführen", async () => { LastWfRun = await Workflows.RunAsync(w, false); _wfMsg = ""; });
-            if (!w.IsApproved) B("approve", "Freigeben …", () => { var r = Workflows.RequestApproval(w); _core.Approvals.Approve(r.Id, Principal.LocalOwner); Workflows.ApplyApproval(w, r.Id); _wfMsg = $"„{w.Name}“ ist freigegeben. Änderst du den Ablauf, fragt Trendo erneut."; return Task.CompletedTask; });
+            if (!w.IsApproved) B("approve", "Vorschau und Freigabe", () => { Workflows.RequestApproval(w); _wfMsg = "Die geplanten Änderungen stehen unter Freigaben."; next = "approvals"; return Task.CompletedTask; });
             B("toggle", w.Enabled ? "Pausieren" : "Einschalten", () => { w.Enabled = !w.Enabled; Workflows.Update(w); return Task.CompletedTask; });
             B("del", "Löschen", () => { Workflows.Remove(w.Id); return Task.CompletedTask; });
             var last = Workflows.History(w.Id, 1).FirstOrDefault();

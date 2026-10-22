@@ -192,6 +192,10 @@ public class SYS05_Ui
         w.Find<Button>("wf-dry-0").Press(); W2Ui.Settle();
         Assert.True(w.LastWfRun!.DryRun); Assert.True(File.Exists(Path.Combine(home, "Downloads", "r.pdf")));
         w.Find<Button>("wf-approve-0").Press(); W2Ui.Settle();
+        Assert.Equal("approvals", w.CurrentView);
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Verschieben", StringComparison.Ordinal));
+        w.TryFind<Button>("btn-approve-")!.Press(); W2Ui.Settle();
+        w.Show("ablaeufe");
         w.Find<Button>("wf-run-0").Press(); W2Ui.Settle();
         await Task.Delay(50); W2Ui.Settle();
         Assert.True(File.Exists(Path.Combine(home, "Documents", "PDF", "r.pdf")));

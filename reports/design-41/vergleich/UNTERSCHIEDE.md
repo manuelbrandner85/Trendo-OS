@@ -15,7 +15,7 @@ Die App übernimmt Aufbau, Glas, Abstände, Farben, Schrift und Symbole. Texte, 
 - Kein Wetter auf dem Schreibtisch und kein „Trendo Radio“. Wetter gibt es in „Zeit & Kalender“, erst nach Ort und Klick, ohne erfundene Temperatur. Ein frischer Schreibtisch hat keinen gespeicherten Ort.
 - Logo ist Entwurf A (Obsidian-Kachel), nicht der T-Kreis aus dem Bild.
 - Wallpaper ist das vorhandene `bergsee-nacht` (Nacht, Lichtkreis), nicht das Sonnenuntergangsbild der Referenz.
-- Dock zeigt nur vorhandene Programme. Auf dieser Linux-Box: Dateien, Browser (Chrome liegt im PATH), Papierkorb. Mail, Blender und Unreal fehlen, weil sie nicht installiert sind. Studios stehen nicht im Dock.
+- Dock zeigt nur Programme, deren Datei diese Sitzung findet. Die Aufnahme entstand auf der Linux-Box: Dateien, Browser (Chrome liegt im PATH), Papierkorb. Blender und Unreal Engine sind auf dem PC installiert. Diese Box startet die Windows-Programme nicht, deshalb fehlen ihre Symbole in diesem Bild. Studios stehen nicht im Dock.
 - GPU ist auf dieser Box „n. v.“ / „Nicht verfügbar“ (kein nvidia-smi). CPU, RAM, SSD und Netz sind echte Werte.
 - Suchplatzhalter: „Studios, Dateien und Einstellungen suchen“. Strg+1 bis Strg+5 öffnen weiterhin Start, Studios, Projekte, Freigaben und System.
 
