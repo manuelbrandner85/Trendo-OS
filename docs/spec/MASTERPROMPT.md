@@ -1,4 +1,5 @@
 <!-- Version MP-1.0 · Eingang 2026-10-22 (Europe/Berlin) · Quelle: Datei von Manuel (01M5GDJQNDZ92PRVTC7NBGX5VR.md, 69735 Bytes) · SHA-256 der Quelldatei: 0f1e3e7722b4ddf38133347ec9e82036856e7dc3c611e64dc44387984a16348d · Alles unterhalb der Markierungszeile ist byteidentisch mit der Quelldatei. -->
+<!-- MASTER_BIS_94: Verbindlich ist zusätzlich docs/spec/MASTER_BIS_94.md (unverändert übernommen, 59976 Bytes, SHA-256 76f963654854b380679b4821e10e3ba283d596705d023b63975cc71fcd1ce6b2). NEIN: 23, 25, 34, Language Studio 2.0 und 86. OFFEN: 35, nicht aktivieren. Die 120-Stunden-Forensikregel bleibt unverändert. -->
 <!-- MASTERPROMPT-BEGIN -->
 # TRENDO OS – ULTIMATE GODMODE
 ## UNIVERSELLER GROK-BOT-MASTERPROMPT
