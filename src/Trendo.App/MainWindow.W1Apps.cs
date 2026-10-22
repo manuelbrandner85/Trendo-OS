@@ -18,7 +18,7 @@ public partial class MainWindow
         var row = new WrapPanel();
         foreach (var (k, l) in AppsTabs.Where(t => _showMap.ContainsKey(t.Key)))
         {
-            var b = new Button { Name = "apps-tab-" + k, Content = l, Margin = new Thickness(0, 0, 6, 6), Background = CurrentView == k ? Accent : null };
+            var b = new Button { Name = "apps-tab-" + k, Content = l, Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(10), Foreground = Text, Background = CurrentView == k ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(CurrentView == k ? 0 : 1) };
             b.Click += (_, _) => Show(k); row.Children.Add(b);
         }
         return row;
@@ -146,8 +146,18 @@ public partial class MainWindow
     // ---------- X-09: Speicher & Leistung ----------
     private Control ResourcesView()
     {
-        var sp = new StackPanel { Spacing = 5 };
+        var sp = new StackPanel { Spacing = 8 };
         var m = _metrics.Sample();
+        Border Meter(string name, string label, string value)
+        {
+            var n = new TextBlock { Name = name, Text = value, Foreground = Text, FontSize = 28, FontWeight = FontWeight.SemiBold };
+            return new Border { Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(14, 10), Margin = new Thickness(0, 0, 10, 10), MinWidth = 180, Child = new StackPanel { Spacing = 2, Children = { P(label, null, 12), n } } };
+        }
+        var meters = new WrapPanel();
+        meters.Children.Add(Meter("res-cpu", "Prozessor", m.CpuPercent is { } cpu ? $"{cpu:0} %" : "n. v."));
+        meters.Children.Add(Meter("res-ram", "Arbeitsspeicher", m.RamPercent is { } ram ? $"{ram:0} %" : "n. v."));
+        meters.Children.Add(Meter("res-gpu", "Grafik", m.GpuPercent is { } gpu ? $"{gpu:0} %" : "n. v."));
+        sp.Children.Add(meters);
         sp.Children.Add(P($"Prozessor {m.CpuPercent?.ToString("0") ?? "n. v."} % · Arbeitsspeicher {m.RamPercent?.ToString("0") ?? "n. v."} % belegt von {TotalRam / (1024 * 1024 * 1024.0):0} GB · Grafik {m.GpuPercent?.ToString("0") ?? "n. v."} %", Text, 13));
         var ki = new StackPanel { Spacing = 4, Children = { P("KI-Modelle im Speicher: wird geprüft …") } };
         sp.Children.Add(new StackPanel { Spacing = 4, Children = { H("Trendo KI", 15), ki } });
