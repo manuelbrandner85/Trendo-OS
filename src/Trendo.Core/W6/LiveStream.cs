@@ -149,7 +149,8 @@ public static class LiveFfmpeg
         var a = new List<string> { "-y", "-hide_banner" };
         AddVideo(a, c);
         int? audio = null;
-        if (c.Microphone)
+        // Die Vorschau öffnet das Mikrofon nicht, sonst bleibt das Gerät belegt.
+        if (output != LiveOutput.Preview && c.Microphone)
         {
             audio = 1;
             AddMic(a, c);

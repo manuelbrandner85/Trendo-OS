@@ -129,6 +129,27 @@ public class SPEC15_LiveUi
         w.Close();
     }
 
+    [AvaloniaFact(DisplayName = "SPEC-15 UI: Mikrofone suchen setzt das Häkchen nicht")]
+    public async Task Mic_search_leaves_checkbox_clear()
+    {
+        var (w, _, root) = Ui.Open();
+        var factory = new Factory();
+        Arm(w, root, factory);
+        w.Show("sendung");
+        Assert.NotEqual(true, w.Find<CheckBox>("live-mic").IsChecked);
+        w.Find<Button>("live-mic-search").Press();
+        await Settle();
+        Assert.Contains("Tischmikrofon", w.Find<ComboBox>("live-mic-list").Items.Cast<object>().First().ToString());
+        Assert.NotEqual(true, w.Find<CheckBox>("live-mic").IsChecked);
+        w.Find<Button>("live-preview-start").Press();
+        await Settle();
+        Assert.DoesNotContain(factory.Args[0], a => a.Contains("mic-in", StringComparison.Ordinal));
+        Assert.DoesNotContain("pulse", factory.Args[0]);
+        Assert.DoesNotContain(factory.Args[0], a => a.StartsWith("audio=", StringComparison.Ordinal));
+        w.Find<Button>("live-stop").Press();
+        w.Close();
+    }
+
     [AvaloniaFact(DisplayName = "SPEC-15 UI: Live startet erst nach Freigabe, Schlüssel bleibt aus Dateien und Protokoll")]
     public async Task Go_live_needs_approval()
     {

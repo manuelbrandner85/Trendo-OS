@@ -82,6 +82,29 @@ public class SPEC15_LiveStream
         Assert.Contains("title=Editor", LiveFfmpeg.Args(LiveOutput.Preview, new CaptureChoice { Os = CaptureOs.Windows, Video = VideoKind.Window, Device = "Editor", Fps = 30, Width = 1280, Height = 720, VideoKbps = 2750 }, "v.jpg", null, null));
     }
 
+    [Fact(DisplayName = "SPEC-15 Live: Mikrofon nur bei Aufnahme und Sendung, nie in der Vorschau")]
+    public void Mic_only_when_recording_or_streaming()
+    {
+        var withMic = Screen(CaptureOs.Linux, mic: true);
+        var preview = LiveFfmpeg.Args(LiveOutput.Preview, withMic, "/tmp/v.jpg", null, null);
+        Assert.DoesNotContain("pulse", preview);
+        Assert.DoesNotContain("Tischmikrofon", preview);
+        Assert.Contains("-an", preview);
+
+        var record = LiveFfmpeg.Args(LiveOutput.Record, withMic, "/tmp/v.jpg", "/tmp/aufnahme.mp4", null);
+        Assert.Contains("pulse", record);
+        Assert.Contains("Tischmikrofon", record);
+
+        var live = LiveFfmpeg.Args(LiveOutput.Broadcast, withMic, "/tmp/v.jpg", null, "rtmp://a.rtmp.youtube.com/live2/yt-test-key-1234");
+        Assert.Contains("pulse", live);
+        Assert.Contains("Tischmikrofon", live);
+        Assert.DoesNotContain(live, a => a.Contains("anullsrc", StringComparison.Ordinal));
+
+        var silent = LiveFfmpeg.Args(LiveOutput.Broadcast, Screen(CaptureOs.Windows), @"C:\v.jpg", null, "rtmp://live.twitch.tv/app/live-key-99");
+        Assert.Contains("anullsrc=channel_layout=stereo:sample_rate=44100", silent);
+        Assert.DoesNotContain(silent, a => a.StartsWith("audio=", StringComparison.Ordinal));
+    }
+
     [Fact(DisplayName = "SPEC-15 Live: Stream-Befehl enthält Plattformadresse, Schlüssel und Stopp-fähige Ausgabe")]
     public void Broadcast_command()
     {
