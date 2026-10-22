@@ -41,6 +41,8 @@ public partial class MainWindow
         foreach (var c in Categories) gs.Add("Seite", c.Label, "filter:" + c.Filter, c.Label.Split(' ', '&'));
         foreach (var s in _studios) gs.Add("Studio", s.Name, "studio:" + s.Id, s.Id);
         foreach (var p in _core.Projects.List()) gs.Add("Projekt", p.Name, "project:" + p.Id, p.Id);
+        foreach (var app in Trendo.Core.Rebuild.MyPrograms.Load(_core.DataRoot))
+            if (_showMap.ContainsKey(app.PageKey)) gs.Add("Programm", app.Name, "page:" + app.PageKey, app.Name, "mein", "programm");
         foreach (var n in new NoteStore(_core.DataRoot).All()) gs.Add("Notiz", n.Text.Split('\n')[0], "page:werkzeuge", n.Text.Split([' ', '\n', '/', '.', '-'], StringSplitOptions.RemoveEmptyEntries)); // SYS-03-P21
         gs.AddFiles(string.IsNullOrEmpty(_settings.ProjectsFolder) ? UserSettings.DefaultProjectsFolder() : _settings.ProjectsFolder);
         return gs;
@@ -53,7 +55,7 @@ public partial class MainWindow
         sp.Children.Add(P(hits.Count == 0 ? $"Nichts gefunden für „{_query}“. Tipp: kürzere Wörter versuchen, z. B. „brief“ statt „briefvorlage“." : $"{hits.Count} Treffer für „{_query}“", Text));
         foreach (var g in hits.GroupBy(h => h.Kind))
         {
-            sp.Children.Add(H(g.Key switch { "Seite" => "Seiten", "Studio" => "Studios", "Projekt" => "Projekte", "Notiz" => "Notizen", _ => "Dateien" }, 14));
+            sp.Children.Add(H(g.Key switch { "Seite" => "Seiten", "Studio" => "Studios", "Projekt" => "Projekte", "Notiz" => "Notizen", "Programm" => "Programme", _ => "Dateien" }, 14));
             var i = 0;
             foreach (var h in g)
             {

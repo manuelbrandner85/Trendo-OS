@@ -55,7 +55,7 @@ public static class CapabilityCatalog
         P("X-03", "Apps zusammenklicken", "Entwickeln", "PageBuilder", "Seitenentwurf", "Inhalt", "HTML", "Kein Fachadapter registriert."),
         P("X-06", "Projekte von GitHub holen", "Entwickeln", "OpenSource", "Nur anzeigen, nicht mergen", "Name", "Hinweis", "Kein Fachadapter registriert."),
         P("X-04", "Trendo erweitern", "Entwickeln", "ExtensionCatalog", "Erweiterung entwerfen", "Name", "Entwurf", "Kein Fachadapter registriert."),
-        P("X-10", "Programme nachbauen", "Entwickeln", "CleanRoom", "Nur eigene Beschreibung", "Verhalten", "Entwurf", "Kein Fachadapter registriert."),
+        P("X-10", "Programme nachbauen", "Entwickeln", "CleanRoom, RebuildEngine", "Eigene App aus Beschreibung bauen", "Beschreibung oder Name", "Avalonia-Projekt", "Setup.exe ist unsigniert. Installation nur unter Windows nach einem eigenen Klick."),
         P("CORE-01", "Desktop einrichten", "System & Sicherheit", "Shell, StartMenu, Design 41", "keine zweite Oberfläche", "keine", "keine", "Desktop, Startmenü und Fenster bleiben beim laufenden Design-41-Auftrag."),
         P("SYS-01", "Startmodus wählen", "System & Sicherheit", "OsMode", "Modus nur anzeigen", "keine", "Hinweis", "Kein Fachadapter registriert."),
         P("CORE-11", "Daten schützen", "System & Sicherheit", "ApprovalGate, Secrets, Backup, Rbac", "Freigabe bleibt beim bestehenden Tor", "keine", "keine", "Kein zweites Freigabe- oder Geheimnissystem."),

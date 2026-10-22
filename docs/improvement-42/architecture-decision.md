@@ -18,7 +18,7 @@ Die Soll-Namen aus Abschnitt 4 des Auftrags sind so abgebildet:
 | IArtifactStore | `RunStore` schreibt `auftraege/{id}/lauf.json` über `ProjectStore` |
 | IPromptModel | `IntelligencePromptModel` ruft `AskAsync` |
 
-`PromptActions.CreateDefault()` liefert in dieser Phase eine leere Liste. Jedes der 54 Studios bleibt dadurch `not_implemented`. Testadapter in `tests/Trendo.Core.Tests/PromptActionTests.cs` sind nicht registriert und erscheinen nicht in der Matrix.
+`PromptActions.CreateDefault()` registriert den Adapter `nachbauen` für X-10 (`partial`, Beleg `RebuildTests.Notiz_wird_gebaut`). Die übrigen 53 Studios bleiben `not_implemented`. Testadapter in `tests/Trendo.Core.Tests/PromptActionTests.cs` sind nicht registriert und erscheinen nicht in der Matrix. Der registrierte Adapter liest standardmäßig nichts aus dem Netz (`OfflineWeb`). Der Wikipedia-Client liegt in der App, damit `Trendo.Core` keine `System.Net.Http`-Referenz bekommt.
 
 ## Ablauf
 

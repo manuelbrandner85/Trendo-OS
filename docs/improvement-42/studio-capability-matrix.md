@@ -42,7 +42,7 @@ Erzeugt aus `CapabilityCatalog` und den wirklich registrierten Adaptern. `ready`
 | X-03 | Apps zusammenklicken | Entwickeln | PageBuilder | Seitenentwurf | Inhalt | keiner | HTML | not_implemented | — | Kein Fachadapter registriert. |
 | X-06 | Projekte von GitHub holen | Entwickeln | OpenSource | Nur anzeigen, nicht mergen | Name | keiner | Hinweis | not_implemented | — | Kein Fachadapter registriert. |
 | X-04 | Trendo erweitern | Entwickeln | ExtensionCatalog | Erweiterung entwerfen | Name | keiner | Entwurf | not_implemented | — | Kein Fachadapter registriert. |
-| X-10 | Programme nachbauen | Entwickeln | CleanRoom | Nur eigene Beschreibung | Verhalten | keiner | Entwurf | not_implemented | — | Kein Fachadapter registriert. |
+| X-10 | Programme nachbauen | Entwickeln | CleanRoom, RebuildEngine | Eigene App aus Beschreibung bauen | Beschreibung oder Name | nachbauen | Avalonia-Projekt | partial | RebuildTests.Notiz_wird_gebaut | Setup.exe ist unsigniert. Installation nur unter Windows nach einem eigenen Klick. |
 | CORE-01 | Desktop einrichten | System & Sicherheit | Shell, StartMenu, Design 41 | keine zweite Oberfläche | keine | keiner | keine | not_implemented | — | Desktop, Startmenü und Fenster bleiben beim laufenden Design-41-Auftrag. |
 | SYS-01 | Startmodus wählen | System & Sicherheit | OsMode | Modus nur anzeigen | keine | keiner | Hinweis | not_implemented | — | Kein Fachadapter registriert. |
 | CORE-11 | Daten schützen | System & Sicherheit | ApprovalGate, Secrets, Backup, Rbac | Freigabe bleibt beim bestehenden Tor | keine | keiner | keine | not_implemented | — | Kein zweites Freigabe- oder Geheimnissystem. |
@@ -59,4 +59,4 @@ Erzeugt aus `CapabilityCatalog` und den wirklich registrierten Adaptern. `ready`
 | CORE-04 | PC, Pi & Handy verbinden | System & Sicherheit | Fusion | Verbund nur anzeigen | keine | keiner | Hinweis | not_implemented | — | Kein Fachadapter registriert. |
 | X-09 | Leistung anzeigen | System & Sicherheit | ResourceMonitor, SystemMetrics | Messwerte lesen | keine | keiner | Messwert | not_implemented | — | Kein Fachadapter registriert. |
 
-Anzahl: 54 Katalogeinträge, 0 registrierte Aktionen.
+Anzahl: 54 Katalogeinträge, 1 registrierte Aktionen.

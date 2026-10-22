@@ -53,7 +53,7 @@ public partial class MainWindow
         ["werkzeuge"] = "SYS-02", ["medien"] = "SYS-02", ["office"] = "SYS-10", ["downloads"] = "SYS-03",
         ["brief"] = "STUDIO-LETTER-01", ["akten"] = "STUDIO-LETTER-01", ["akte"] = "STUDIO-LETTER-01", ["ausgabe"] = "STUDIO-LETTER-01", ["briefkoepfe"] = "STUDIO-LETTER-01",
     };
-    public string? ModuleOf(string key) => PageModules.TryGetValue(key, out var m) ? m : StudioPages.FirstOrDefault(kv => string.Equals(kv.Value, key, StringComparison.OrdinalIgnoreCase)).Key ?? BasePageModules.GetValueOrDefault(key) ?? (key.StartsWith("einrichtung-") ? "CORE-01" : null);
+    public string? ModuleOf(string key) => PageModules.TryGetValue(key, out var m) ? m : StudioPages.FirstOrDefault(kv => string.Equals(kv.Value, key, StringComparison.OrdinalIgnoreCase)).Key ?? BasePageModules.GetValueOrDefault(key) ?? (key.StartsWith("einrichtung-") ? "CORE-01" : null) ?? (key.StartsWith("mein-", StringComparison.OrdinalIgnoreCase) ? "X-10" : null);
     public List<string> OrphanPages() => _showMap.Keys.Where(k => ModuleOf(k) is null).OrderBy(k => k).ToList();
     public IReadOnlyCollection<string> PageKeys => _showMap.Keys;
 

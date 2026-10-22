@@ -61,7 +61,7 @@ public static class StudioCatalog
         ["X-03"] = new("Apps zusammenklicken", "Apps zusammenklicken – ganz ohne Programmieren.", "Entwickeln"),
         ["X-06"] = new("Projekte von GitHub holen", "Freie Projekte von GitHub finden und nutzen.", "Entwickeln"),
         ["X-04"] = new("Trendo erweitern", "Neue Funktionen für Trendo hinzufügen.", "Entwickeln"),
-        ["X-10"] = new("Programme nachbauen", "Programme rechtlich sauber neu entwickeln.", "Entwickeln"),
+        ["X-10"] = new("Programme nachbauen", "Ein Programm benennen oder beschreiben – Trendo baut eine eigene Fassung.", "Entwickeln"),
 
         ["CORE-01"] = new("Desktop einrichten", "Fenster, Startmenü und Arbeitsfläche von Trendo.", "System & Sicherheit"),
         ["SYS-01"] = new("Startmodus wählen", "Erkennt das Gerät und startet Trendo passend.", "System & Sicherheit"),

@@ -24,4 +24,4 @@ Die Tabelle folgt Abschnitt 7 des Auftrags. „Blockiert“ heißt: der gemeinsa
 
 ## Was noch keine Produktionswirkung hat
 
-`PromptActions.CreateDefault()` ist leer. Die Leiste kann deshalb keinen Brief schreiben, keine Mail senden und nichts bezahlen. Testadapter in `PromptActionTests` beweisen die Regeln, sind aber nicht in der App registriert.
+`PromptActions.CreateDefault()` enthält nur `nachbauen` für Programme nachbauen. Die Leiste kann deshalb keinen Brief schreiben, keine Mail senden und nichts bezahlen. Der registrierte Adapter liest standardmäßig nichts aus dem Netz und installiert nichts. Auf der Studio-Seite liest der Schalter „Im Internet recherchieren“ öffentliche Wikipedia-Seiten nur, wenn er an ist und Trendo online ist. Der Seitentext gilt als untrusted und wird nicht ausgeführt. Testadapter in `PromptActionTests` beweisen die Regeln und sind nicht registriert.

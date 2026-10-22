@@ -62,10 +62,14 @@ public partial class MainWindow
         if (!l.SequenceEqual(_settings.RecentPages)) { _settings.RecentPages = l; SaveSettings(); }
     }
 
-    public string PageTitle(string key) =>
-        Pages.Concat(ExtraPages).FirstOrDefault(p => p.Key == key).Title
-        ?? _studios.FirstOrDefault(s => PageForStudio(s.Id) == key)?.Name
-        ?? key switch { "notbuilt" => "Noch nicht gebaut", "studio-deps" => "Benötigte Programme", "akte" => "Akte", "ausgabe" => "Ausgabe", _ => char.ToUpper(key[0]) + key[1..] };
+    public string PageTitle(string key)
+    {
+        if (key.StartsWith("mein-", StringComparison.OrdinalIgnoreCase) && Trendo.Core.Rebuild.MyPrograms.FindByPage(_core.DataRoot, key) is { } mine)
+            return mine.Name;
+        return Pages.Concat(ExtraPages).FirstOrDefault(p => p.Key == key).Title
+            ?? _studios.FirstOrDefault(s => PageForStudio(s.Id) == key)?.Name
+            ?? key switch { "notbuilt" => "Noch nicht gebaut", "studio-deps" => "Benötigte Programme", "akte" => "Akte", "ausgabe" => "Ausgabe", _ => char.ToUpper(key[0]) + key[1..] };
+    }
 
     public void PinStudio(string id) { _settings.PinnedStudios = StartMenu.Pin(_settings.PinnedStudios, id); SaveSettings(); FillStartMenu(); }
     public void UnpinStudio(string id) { _settings.PinnedStudios = StartMenu.Unpin(_settings.PinnedStudios, id); SaveSettings(); FillStartMenu(); }
@@ -115,6 +119,15 @@ public partial class MainWindow
         var rec = _settings.RecentPages.Where(_showMap.ContainsKey).ToList();
         if (rec.Count == 0) _smBody.Children.Add(P("Hier erscheint, was du zuletzt geöffnet hast.", Muted, 11.5));
         foreach (var k in rec) _smBody.Children.Add(SmItem("sm-recent-" + k, PageTitle(k), null, () => { Show(k); return Task.CompletedTask; }, ModuleOf(k)));
+
+        _smBody.Children.Add(H("Meine Programme", 14));
+        var mine = Trendo.Core.Rebuild.MyPrograms.Load(_core.DataRoot);
+        if (mine.Count == 0) _smBody.Children.Add(P("Hier stehen Apps, die du unter Programme nachbauen gebaut hast.", Muted, 11.5));
+        foreach (var p in mine)
+        {
+            var hint = p.Hint.Length > 72 ? p.Hint[..72] : p.Hint;
+            _smBody.Children.Add(SmItem("sm-mein-" + p.Id, p.Name, hint.Length == 0 ? null : hint, () => { Show(p.PageKey); return Task.CompletedTask; }, "X-10"));
+        }
 
         _smBody.Children.Add(H("Alle Studios", 14));
         foreach (var (letter, items) in StartMenu.AtoZ(_studios, s => s.Name))

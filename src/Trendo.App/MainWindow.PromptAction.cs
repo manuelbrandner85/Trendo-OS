@@ -29,7 +29,7 @@ public partial class MainWindow
     private Control WithPromptBar(string key, Control view)
     {
         // start: paralleler Desktop-Auftrag. 3d: die Seite füllt die Höhe; die Leiste sitzt dort im linken Rollbereich.
-        if (key is "start" or "3d") return view;
+        if (key is "start" or "3d" || key.StartsWith("mein-", StringComparison.OrdinalIgnoreCase)) return view;
         var studio = ModuleOf(key);
         if (studio is null || CapabilityCatalog.Find(studio) is null) return view;
         var dock = new DockPanel { LastChildFill = true, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
@@ -89,6 +89,7 @@ public partial class MainWindow
             detail.IsVisible = detail.Text is { Length: > 0 };
             approve.IsVisible = result.Status == RunStatus.AwaitingApproval;
             answer.IsVisible = result.Status == RunStatus.AwaitingInput;
+            AfterPromptResult(studio, result);
         }
 
         check.Click += async (_, _) =>
@@ -197,4 +198,6 @@ public partial class MainWindow
             Child = new StackPanel { Spacing = 4, Children = { ability, row, detail } }
         };
     }
+
+    partial void AfterPromptResult(string studio, StudioExecutionResult result);
 }

@@ -1,4 +1,5 @@
 using Trendo.Core;
+using Trendo.Core.Rebuild;
 
 namespace Trendo.Core.PromptAction;
 
@@ -24,6 +25,6 @@ public sealed class IntelligencePromptModel(IntelligenceCore core, Func<bool> lo
 
 public static class PromptActions
 {
-    /// <summary>Produktion: noch keine Fachadapter. Studios antworten deshalb mit „Nicht unterstützt“.</summary>
-    public static IReadOnlyList<IStudioActionAdapter> CreateDefault() => [];
+    /// <summary>Programm nachbauen ist angebunden. Alle anderen Studios bleiben ohne Adapter.</summary>
+    public static IReadOnlyList<IStudioActionAdapter> CreateDefault() => [new RebuildAdapter()];
 }
