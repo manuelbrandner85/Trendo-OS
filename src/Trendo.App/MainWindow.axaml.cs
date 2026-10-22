@@ -592,7 +592,7 @@ public sealed partial class MainWindow : Window
         {
             // Nur einmal verdrahten: die Felder leben so lange wie das Fenster, die Spalte kann neu gebaut werden
             _kiWired = true;
-            _kiSetup.Click += (_, _) => Show("components");
+            _kiSetup.Click += (_, _) => Show("ki-laden");
             _kiInput.KeyDown += async (_, e) => { if (e.Key == Key.Enter && !string.IsNullOrWhiteSpace(_kiInput.Text)) { e.Handled = true; await AskKi(_kiInput.Text!); } };
         }
         _kiInput.Background = Brushes.Transparent; _kiInput.BorderThickness = new Thickness(0); _kiInput.Margin = new Thickness(0); _kiInput.VerticalContentAlignment = VerticalAlignment.Center; _kiInput.FontSize = 12.5;
@@ -961,8 +961,9 @@ public sealed partial class MainWindow : Window
 
     private Control KiView() => Page("KI", new StackPanel { Spacing = 6, Children = {
         KiNav(), KiModelChooser(),
-        P(_kiConnected ? $"Die KI läuft auf diesem PC (Modell {KiModelName}). Nichts geht ins Internet, nichts kostet extra." : "Die KI ist noch nicht eingerichtet. Unter „Zusatzprogramme“ installiert Trendo sie kostenlos mit einem Klick.", Text),
-        Nav2("Zusatzprogramme öffnen", "components") } });
+        P(_kiConnected ? $"Die KI läuft auf diesem PC (Modell {KiModelName}). Ein kostenloser Online-Dienst nur, wenn du ihn eingeschaltet hast." : "Die KI ist noch nicht eingerichtet. Im KI-Laden holst du kostenlose Modelle auf diesen PC.", Text),
+        new TextBlock { Name = "ki-aktiv", Text = ActiveNow(), Foreground = Text, TextWrapping = TextWrapping.Wrap },
+        Nav2("KI-Laden öffnen", "ki-laden"), Nav2("Zusatzprogramme öffnen", "components") } });
 
     private Button Nav2(string label, string view) { var b = new Button { Content = label }; b.Click += (_, _) => Show(view); return b; }
 
@@ -986,8 +987,10 @@ public sealed partial class MainWindow : Window
         if (ch.State != ToolState.Working || ch.Path is null) return;
         try
         {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(ch.Path, "serve") { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetDirectoryName(ch.Path)! });
-            _core.Audit.Append("app", "ki.runtime_started", "ollama serve (127.0.0.1)");
+            var psi = new System.Diagnostics.ProcessStartInfo(ch.Path, "serve") { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetDirectoryName(ch.Path)! };
+            LoopbackAi.BindLocal(psi.Environment);
+            System.Diagnostics.Process.Start(psi);
+            _core.Audit.Append("app", "ki.serve", "ollama " + LoopbackAi.OllamaHost);
             for (var i = 0; i < 20 && !await _ollama.IsUpAsync(); i++) await Task.Delay(500);
         }
         catch (Exception ex) { _core.Audit.Append("app", "ki.runtime_failed", ex.GetType().Name); }
@@ -1160,39 +1163,7 @@ public sealed partial class MainWindow : Window
         return Page(_depStudioTitle, sp);
     }
 
-    // ---------- API-Schlüssel (optional, nie Pflicht) ----------
-    private static readonly (string Id, string Name, string KeyUrl, string ValidateUrl, string Note)[] KeyServices =
-    [
-        ("xai", "xAI / Grok (optional, kostet Geld)", "https://console.x.ai", "https://api.x.ai/v1/models", "Optional – Trendo KI läuft lokal ohne Schlüssel."),
-        ("github", "GitHub (optional)", "https://github.com/settings/tokens", "https://api.github.com/user", "Für Web & App Studio. GitHub bietet zusätzlich ein offizielles Geräte-Login (OAuth Device Flow) – noch nicht eingebaut."),
-    ];
-
-    private Control KeysView()
-    {
-        var sp = new StackPanel { Spacing = 8, Children = { P("Schlüssel werden nur im Windows-Anmeldeinformationsspeicher abgelegt und vor dem Speichern live geprüft. Konten und Schlüssel kann Trendo OS nicht selbst anlegen (Registrierung, Nutzungsbedingungen, 2FA erfordern dich).", Text) } };
-        foreach (var k in KeyServices)
-        {
-            var has = _core.Secrets.Get("TrendoOS:key-" + k.Id) is not null;
-            var box = new TextBox { Name = "txt-key-" + k.Id, PasswordChar = '•', PlaceholderText = "Schlüssel hier einfügen", Width = 320 };
-            var res = new TextBlock { Name = "key-state-" + k.Id, Text = has ? "gespeichert ✓" : "kein Schlüssel", Foreground = Muted, FontSize = 11 };
-            var get = new Button { Name = "btn-getkey-" + k.Id, Content = "Schlüssel holen", IsEnabled = !_core.Offline };
-            get.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, k.KeyUrl, _core.Audit);
-            var save = new Button { Name = "btn-savekey-" + k.Id, Content = "Prüfen & speichern", IsEnabled = !_core.Offline };
-            save.Click += async (_, _) =>
-            {
-                var key = box.Text?.Trim() ?? ""; if (key.Length == 0) return;
-                res.Text = "prüfe …";
-                var ok = KeyValidatorOverride is { } f ? await f(key) : await ValidateKey(k.ValidateUrl, key);
-                if (ok) { _core.Secrets.Set("TrendoOS:key-" + k.Id, key); box.Text = ""; }
-                _core.Audit.Append(Principal.LocalOwner.Name, ok ? "key.saved" : "key.invalid", k.Id); // Schlüssel selbst nie im Log
-                res.Text = ok ? "gültig und gespeichert ✓" : "ungültig – nicht gespeichert";
-            };
-            sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = new StackPanel { Spacing = 6, Children = {
-                new TextBlock { Text = k.Name, Foreground = Text, FontWeight = FontWeight.SemiBold }, P(k.Note, null, 11),
-                new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { get, box, save } }, res } } });
-        }
-        return Page("Dienste & Schlüssel", sp);
-    }
+    private Control KeysView() => KeysPage();
 
     private static async Task<bool> ValidateKey(string url, string key)
     {

@@ -33,7 +33,7 @@ public class W2_Ui
         w.Find<TextBox>("ask-input").Text = "Wer bist du?";
         w.Find<Button>("ask-send").Press(); W2Ui.Settle();
         Assert.Equal("Hallo, ich bin Trendo.", w.LastAnswer);
-        Assert.Contains("Antwort von test", w.Find<TextBlock>("ask-state").Text);
+        Assert.Contains("Gerade aktiv: test", w.Find<TextBlock>("ask-state").Text);
         Assert.NotNull(w.TryFind<Button>("ki-tab-ki"));
     }
 }

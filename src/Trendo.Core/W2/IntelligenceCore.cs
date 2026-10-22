@@ -13,10 +13,19 @@ public interface IKiBackend
     Task<bool> IsUpAsync(CancellationToken ct = default);
     Task<IReadOnlyList<string>> ModelsAsync(CancellationToken ct = default);
     Task<string> ChatAsync(string model, IReadOnlyList<KiMessage> messages, CancellationToken ct = default);
+    /// <summary>Wahr für Quellen auf diesem PC. Online-Dienste setzen es auf falsch.</summary>
+    bool Local => true;
+    /// <summary>Höher ist besser. Wirkt nur unter den Online-Diensten. Lokal bleibt immer vorn.</summary>
+    int Quality => 0;
+    bool Serves(KiJob job) => job is KiJob.Text or KiJob.Code;
+    Task<string> SeeAsync(string model, string question, byte[] image, CancellationToken ct = default)
+        => Task.FromException<string>(new NotSupportedException("kein Bild"));
+    Task<float[]?> EmbedAsync(string model, string text, CancellationToken ct = default)
+        => Task.FromResult<float[]?>(null);
 }
 
-public sealed record KiRequest(string Question, string? SystemPrompt = null, string? PreferredModel = null, IReadOnlyList<KiMessage>? History = null, bool UseKnowledge = true);
-public sealed record KiAnswer(bool Ok, string Text, string? Backend, string? Model, IReadOnlyList<string> Sources, TimeSpan Took);
+public sealed record KiRequest(string Question, string? SystemPrompt = null, string? PreferredModel = null, IReadOnlyList<KiMessage>? History = null, bool UseKnowledge = true, KiJob Task = KiJob.Text, bool AllowOnline = true, byte[]? Image = null);
+public sealed record KiAnswer(bool Ok, string Text, string? Backend, string? Model, IReadOnlyList<string> Sources, TimeSpan Took, bool OnThisPc = true);
 
 /// <summary>CORE-02 Trendo Intelligence Core: ein Eingang für alle KI-Fragen in Trendo OS.
 /// Wählt die erste erreichbare lokale Quelle (Reihenfolge = Rückfallkette aus X-05), ergänzt passendes Wissen (CORE-10),
@@ -39,12 +48,14 @@ public sealed class IntelligenceCore
     public async Task<KiAnswer> AskAsync(KiRequest req, CancellationToken ct = default)
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
-        if (string.IsNullOrWhiteSpace(req.Question)) return new(false, "Bitte schreib zuerst eine Frage.", null, null, [], sw.Elapsed);
+        if (string.IsNullOrWhiteSpace(req.Question) && req.Image is not { Length: > 0 })
+            return new(false, "Bitte schreib zuerst eine Frage.", null, null, [], sw.Elapsed);
+        var question = string.IsNullOrWhiteSpace(req.Question) ? "Was siehst du?" : req.Question.Trim();
         var sources = new List<string>();
         var sys = new StringBuilder(req.SystemPrompt ?? DefaultSystem);
-        if (req.UseKnowledge && _knowledge is not null)
+        if (req.UseKnowledge && _knowledge is not null && !string.IsNullOrWhiteSpace(req.Question))
         {
-            var hits = _knowledge(req.Question, 3);
+            var hits = _knowledge(question, 3);
             if (hits.Count > 0)
             {
                 sys.Append("\n\nNutze dieses Wissen des Nutzers, wenn es passt, und nenne den Titel als Quelle:\n");
@@ -53,25 +64,46 @@ public sealed class IntelligenceCore
         }
         var msgs = new List<KiMessage> { new("system", sys.ToString()) };
         if (req.History is not null) msgs.AddRange(req.History.TakeLast(10));
-        msgs.Add(new("user", req.Question));
+        msgs.Add(new("user", question));
         var tried = new List<string>();
-        foreach (var b in _backends())
+        var limited = false;
+        var ordered = FreeAiRouter.Order(_backends().Where(b => (req.AllowOnline || b.Local) && b.Serves(req.Task)).ToList());
+        foreach (var b in ordered)
         {
             if (!await b.IsUpAsync(ct)) { tried.Add($"{b.Name}: nicht erreichbar"); continue; }
             var models = await b.ModelsAsync(ct);
-            var model = req.PreferredModel is { } p && models.Contains(p) ? p : models.FirstOrDefault();
-            if (model is null) { tried.Add($"{b.Name}: kein Modell"); continue; }
-            try
+            var picks = LocalAiPlan.Candidates(models, req);
+            if (picks.Count == 0) { tried.Add($"{b.Name}: kein Modell"); continue; }
+            foreach (var model in picks.Take(4))
             {
-                var text = await b.ChatAsync(model, msgs, ct);
-                _audit.Append("ki", "ki.ask", $"quelle={b.Name} modell={model} frage={req.Question.Length}Z antwort={text.Length}Z wissen={sources.Count}");
-                Save(req.Question, text, b.Name, model);
-                return new(true, text, b.Name, model, sources, sw.Elapsed);
+                try
+                {
+                    string text;
+                    if (req.Task == KiJob.Embed)
+                    {
+                        var vec = await b.EmbedAsync(model, question, ct);
+                        if (vec is not { Length: > 0 }) { tried.Add($"{b.Name}: kein Einordnen"); continue; }
+                        text = $"Eingeordnet ({vec.Length} Werte).";
+                    }
+                    else if (req.Task == KiJob.Vision && req.Image is { Length: > 0 } img)
+                        text = await b.SeeAsync(model, question, img, ct);
+                    else
+                        text = await b.ChatAsync(model, msgs, ct);
+                    _audit.Append("ki", "ki.ask", $"quelle={b.Name} modell={model} aufgabe={req.Task} lokal={b.Local} frage={question.Length}Z antwort={text.Length}Z wissen={sources.Count}");
+                    Save(question, text, b.Name, model);
+                    return new(true, text, b.Name, model, sources, sw.Elapsed, b.Local);
+                }
+                catch (KiLimitException) { limited = true; tried.Add($"{b.Name}: Menge leer"); }
+                catch (Exception ex) when (ex is not OperationCanceledException) { tried.Add($"{b.Name}: {ex.Message}"); }
             }
-            catch (Exception ex) when (ex is not OperationCanceledException) { tried.Add($"{b.Name}: {ex.Message}"); }
         }
         _audit.Append("ki", "ki.unavailable", string.Join("; ", tried));
-        return new(false, "Gerade ist keine KI auf diesem PC erreichbar. Unter „KI-Quellen“ siehst du, was fehlt, und kannst es einrichten.", null, null, sources, sw.Elapsed);
+        var hint = limited
+            ? "Die kostenlose Menge ist aufgebraucht. Trendo springt beim nächsten Mal weiter. Im KI-Laden kannst du ein Modell auf diesen PC holen."
+            : req.Task == KiJob.Vision
+                ? "Für Bilder ist noch kein Modell da. Im KI-Laden kannst du eines holen."
+                : "Gerade ist keine KI erreichbar. Im KI-Laden und unter „KI-Quellen“ siehst du, was fehlt.";
+        return new(false, hint, null, null, sources, sw.Elapsed);
     }
 
     private void Save(string q, string a, string backend, string model) =>

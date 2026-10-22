@@ -19,7 +19,7 @@ public partial class MainWindow
 
     private bool BackendsAreLocal()
     {
-        var list = KiBackendsOverride?.Invoke() ?? DefaultKiBackends();
+        var list = KiBackendsOverride?.Invoke() ?? LocalBackends();
         return list.All(b => IntelligencePromptModel.Loopback(b.BaseUrl));
     }
 
@@ -29,7 +29,8 @@ public partial class MainWindow
     private Control WithPromptBar(string key, Control view)
     {
         // start: paralleler Desktop-Auftrag. 3d: die Seite füllt die Höhe; die Leiste sitzt dort im linken Rollbereich.
-        if (key is "start" or "3d") return view;
+        // Laden, Schlüssel und Einrichtung sind keine Studio-Arbeit.
+        if (key is "start" or "3d" or "ki-laden" or "keys" || key.StartsWith("einrichtung")) return view;
         var studio = ModuleOf(key);
         if (studio is null || CapabilityCatalog.Find(studio) is null) return view;
         var dock = new DockPanel { LastChildFill = true, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };

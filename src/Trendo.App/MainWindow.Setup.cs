@@ -74,7 +74,8 @@ public sealed partial class MainWindow
                 sp.Children.Add(new TextBlock { Name = "wiz-theme-choice", Text = $"Gewählt: {themeLabel} – gilt nach „Weiter“ für ganz Trendo.", Foreground = Text, FontSize = 11 });
                 break;
             case 3:
-                var hw = HardwareProbe.Read(); var (model, why) = KiAdvisor.Choose(hw);
+                sp.Children.Add(WizardAiBlock());
+                var hw = ThisHardware(); var (model, why) = KiAdvisor.Choose(hw);
                 sp.Children.Add(P("Das Basispaket ist immer dabei: " + SetupPacks.Base.Description + ". Wähle zusätzlich, was du brauchst – Trendo installiert es gleich mit.", Text, 13));
                 foreach (var p in SetupPacks.Studios)
                 {
@@ -96,6 +97,10 @@ public sealed partial class MainWindow
             case 4:
                 FinishSetup();
                 sp.Children.Add(P($"Alles bereit{(string.IsNullOrEmpty(_settings.Name) ? "" : ", " + _settings.Name)}! Hier ist dein Systemcheck:", Text, 13));
+                sp.Children.Add(new TextBlock { Name = "wiz-aktiv", Text = ActiveNow(), Foreground = Text, TextWrapping = TextWrapping.Wrap });
+                var openShop = new Button { Name = "wiz-ki-laden", Content = "KI-Laden öffnen" };
+                openShop.Click += (_, _) => Show("ki-laden");
+                sp.Children.Add(openShop);
                 sp.Children.Add(SystemCheckPanel());
                 var done = new Button { Name = "wiz-done", Content = "Los geht's", Background = Accent, Padding = new Thickness(16, 6) }; done.Click += (_, _) => Show("start");
                 sp.Children.Add(done);
@@ -119,6 +124,30 @@ public sealed partial class MainWindow
             await InstallOne(todo[i], refresh: false);
         }
         if (_deps.HasModel(model)) KiModel.Select(_core.DataRoot, model, _core.Audit);
+        if (_settings.StudioPacks.Contains("ki"))
+        {
+            _fetchCts?.Cancel();
+            _fetchCts?.Dispose();
+            _fetchCts = new CancellationTokenSource();
+            try
+            {
+                _depLog.Text = "Modelle für diesen PC …";
+                var msg = await ModelFetch.Run(_core.DataRoot, ThisHardware(), FreeBytes(), ModelHere, (tag, progress, ct) =>
+                    PullModel(tag, new InlineProgress(t =>
+                    {
+                        progress.Report(t);
+                        var line = FetchLine(tag, t);
+                        Dispatcher.UIThread.Post(() => _depLog.Text = line);
+                    }), ct), _fetchCts.Token);
+                _depLog.Text = msg;
+                _core.Audit.Append(Principal.LocalOwner.Name, "ki.setup", msg);
+            }
+            catch (Exception ex)
+            {
+                _depLog.Text = "Modelle: " + ex.Message;
+                _core.Audit.Append(Principal.LocalOwner.Name, "ki.setup.fail", ex.GetType().Name);
+            }
+        }
         ReloadStudios();
     }
 
@@ -278,6 +307,21 @@ internal static class HardwareProbe
             }
             catch { /* ohne GPU-Infos weiter */ }
         }
-        return new HardwareInfo(ram, gpu, vram);
+        else TryLinuxGpu(ref gpu, ref vram);
+        return new HardwareInfo(ram, gpu, vram, Environment.ProcessorCount);
+    }
+
+    private static void TryLinuxGpu(ref string? gpu, ref long vram)
+    {
+        try
+        {
+            var mem = "/sys/class/drm/card0/device/mem_info_vram_total";
+            if (File.Exists(mem) && long.TryParse(File.ReadAllText(mem).Trim(), out var bytes) && bytes > 0)
+            {
+                vram = bytes;
+                gpu ??= "Grafikkarte";
+            }
+        }
+        catch { /* ohne Grafikkarte weiter */ }
     }
 }

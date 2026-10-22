@@ -1,6 +1,6 @@
 namespace Trendo.Core;
 
-public sealed record HardwareInfo(long RamBytes, string? Gpu, long VramBytes);
+public sealed record HardwareInfo(long RamBytes, string? Gpu, long VramBytes, int CpuThreads = 0);
 
 /// <summary>Wählt das lokale KI-Modell nach Hardware. Nur freie Modelle; nichts wird ohne Zustimmung geladen.</summary>
 public static class KiAdvisor
