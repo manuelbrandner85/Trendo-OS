@@ -25,6 +25,7 @@ public static class StudioTools
         ["sumatra"] = ("SumatraPDF.exe", null), ["7zip"] = ("7z.exe", null), ["git"] = ("git.exe", "--version"), ["python"] = ("python.exe", "--version"), ["mpv"] = ("mpv.exe", "--version"), ["ffmpeg"] = ("ffmpeg.exe", "-version"),
         ["tesseract"] = ("tesseract.exe", "--version"), ["unreal"] = ("UnrealEditor.exe", null), ["krita"] = ("krita.exe", null),
         ["inkscape"] = ("inkscape.exe", "--version"), ["kdenlive"] = ("kdenlive.exe", null), ["audacity"] = ("Audacity.exe", null),
+        ["meshroom"] = ("meshroom_batch", null), ["colmap"] = ("colmap", null),
     };
 }
 

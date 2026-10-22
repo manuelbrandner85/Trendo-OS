@@ -11,7 +11,10 @@ public partial class MainWindow
     private Control ScanView()
     {
         var sp = new StackPanel { Spacing = 8 };
-        sp.Children.Add(P("Bereite Scans vom Handy (LiDAR, Polycam, Scaniverse) oder Scanner auf: Punktwolke ansehen, ausdünnen, Störpunkte entfernen und als PLY für Blender oder CloudCompare speichern.", Text));
+        sp.Children.Add(P("Fotografiere einen Gegenstand von mehreren Seiten oder nimm ein kurzes Video. Daraus wird ein 3D-Modell, das im Studio „3D-Modelle erstellen“ aufgeht."));
+        sp.Children.Add(PhotoScanPanel());
+        sp.Children.Add(H("Punktwolke aufbereiten", 14));
+        sp.Children.Add(P("Fertige Scans vom Handy (LiDAR, Polycam, Scaniverse) oder Scanner: Punktwolke ansehen, ausdünnen, Störpunkte entfernen und als PLY speichern.", Text));
         sp.Children.Add(FachTool("scan-info", "Scan ansehen", "Datei: .ply, .xyz, .pts, .csv oder .obj.",
             [("file", "Datei", "")],
             v => { var i = PointCloud.Load(v("file").Trim().Trim('"')).Info(); return $"{Fach.F(i.Points, 0)} Punkte{(i.HasColor ? " mit Farbe" : "")}\nGröße: {Fach.F(i.SizeX, 3)} × {Fach.F(i.SizeY, 3)} × {Fach.F(i.SizeZ, 3)} (Einheit der Datei, meist Meter)\nMitte: {Fach.F(i.Center.X, 3)} / {Fach.F(i.Center.Y, 3)} / {Fach.F(i.Center.Z, 3)}"; }, "Lesen"));
