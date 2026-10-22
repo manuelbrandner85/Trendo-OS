@@ -189,18 +189,42 @@ public sealed partial class MainWindow
     }
 
     // ---------- Sicherung & Wiederherstellung ----------
+    private string _backupMsg = "";
+    private string? _backupConfirm;
     private Control BackupView()
     {
         var sp = new StackPanel { Spacing = 6 };
         sp.Children.Add(P($"Trendo sichert deine Projekte und Einstellungen automatisch alle {_settings.BackupEveryHours} Stunden (die letzten 10 bleiben). Ablage: {Backups.Folder}", Text));
         var now = new Button { Name = "btn-backup-now", Content = "Jetzt sichern", Background = Accent };
-        now.Click += (_, _) => { Backups.Create(DateTime.Now); Show("sicherung"); };
+        now.Click += (_, _) => { try { _backupMsg = "Gesichert: " + Path.GetFileName(Backups.Create(DateTime.Now)); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _backupMsg = "Sichern hat nicht geklappt: " + ex.Message; } Show("sicherung"); };
         sp.Children.Add(now);
+        if (_backupMsg.Length > 0) sp.Children.Add(P(_backupMsg, Brush.Parse("#4ADE80")));
+        var bi = 0;
         foreach (var f in Backups.List())
         {
-            var rb = new Button { Content = "Wiederherstellen", FontSize = 11 };
-            rb.Click += (_, _) => { Backups.Restore(f.FullName, DateTime.Now); _settings = UserSettings.Load(_core.DataRoot); Show("sicherung"); };
-            sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { P($"{f.LastWriteTime:dd.MM.yyyy HH:mm} · {f.Length / 1024} KB", Text), rb } });
+            var file = f.FullName; var idx = bi++;
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { P($"{f.LastWriteTime:dd.MM.yyyy HH:mm} · {f.Length / 1024} KB", Text) } };
+            if (_backupConfirm == file)
+            {
+                var yes = new Button { Name = $"backup-restore-yes-{idx}", Content = "Ja, wiederherstellen", FontSize = 11, Background = Accent };
+                yes.Click += (_, _) =>
+                {
+                    _backupConfirm = null;
+                    try { var n = Backups.Restore(file, DateTime.Now); _settings = UserSettings.Load(_core.DataRoot); _backupMsg = $"Wiederhergestellt: {n} Dateien. Der vorherige Stand wurde vorher gesichert."; }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException) { _backupMsg = "Wiederherstellen hat nicht geklappt: " + ex.Message; }
+                    Show("sicherung");
+                };
+                var no = new Button { Name = $"backup-restore-no-{idx}", Content = "Abbrechen", FontSize = 11 };
+                no.Click += (_, _) => { _backupConfirm = null; _backupMsg = "Abgebrochen – nichts geändert."; Show("sicherung"); };
+                row.Children.Add(P("Der aktuelle Stand wird ersetzt (vorher gesichert). Sicher?", Brush.Parse("#FACC15"), 11)); row.Children.Add(yes); row.Children.Add(no);
+            }
+            else
+            {
+                var rb = new Button { Name = $"backup-restore-{idx}", Content = "Wiederherstellen", FontSize = 11 };
+                rb.Click += (_, _) => { _backupConfirm = file; _backupMsg = ""; Show("sicherung"); };
+                row.Children.Add(rb);
+            }
+            sp.Children.Add(row);
         }
         sp.Children.Add(P("Beim Wiederherstellen wird der aktuelle Stand vorher gesichert. Das Protokoll, was Trendo getan hat, bleibt immer erhalten.", null, 11));
         return Page("Sicherung", sp);
