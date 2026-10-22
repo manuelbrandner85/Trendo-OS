@@ -74,14 +74,23 @@ public static class WebsitePreview
             "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "about:blank"
         }) psi.ArgumentList.Add(arg);
         using var process = Process.Start(psi) ?? throw new InvalidOperationException("Chrome ließ sich nicht starten.");
-        _ = process.StandardOutput.ReadToEndAsync(ct);
-        _ = process.StandardError.ReadToEndAsync(ct);
+        // Weiterlesen, auch nach dem Abbruch. Sonst füllt Chrome die Pipe und die Vorschau wartet ewig.
+        _ = process.StandardOutput.CopyToAsync(Stream.Null);
+        _ = process.StandardError.CopyToAsync(Stream.Null);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
         timeout.CancelAfter(TimeSpan.FromSeconds(25));
+        using var stop = timeout.Token.Register(() =>
+        {
+            try { if (!process.HasExited) process.Kill(entireProcessTree: true); } catch { /* schon zu */ }
+        });
         try
         {
             var wsUrl = await PageSocket(port, timeout.Token);
             using var socket = new ClientWebSocket();
+            using var cut = timeout.Token.Register(() =>
+            {
+                try { socket.Abort(); } catch { /* schon zu */ }
+            });
             await socket.ConnectAsync(new Uri(wsUrl), timeout.Token);
             var cdp = new Cdp(socket);
             await cdp.Call("Page.enable", new { }, timeout.Token);
