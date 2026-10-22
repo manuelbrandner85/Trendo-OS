@@ -1,0 +1,25 @@
+Lizenzen der lokalen Web-Bibliotheken
+======================================
+
+Diese Seite braucht kein Netz und kein Bezahl-Abo. Es wird nichts von einem CDN geladen.
+
+trendo-scroll.js
+  Eigene Datei von Trendo OS für Story-Scrolling und Parallax
+  (Kapitel, Fortschrittsbalken, Ebenen).
+  Lizenzprüfung am 22.10.2026: Auf https://gsap.com/pricing/ steht, dass GSAP
+  einschließlich ScrollTrigger kostenlos nutzbar ist. Die Dateien bleiben ein
+  Werk von GreenSock und Webflow und stehen nicht unter der MIT-Lizenz.
+  Trendo legt GSAP deshalb nicht bei und lädt es nicht nach.
+  trendo-scroll.js übernimmt dieselbe Aufgabe und gehört zum Programm.
+
+three.js 0.180.0 und GLTFLoader
+  Copyright (c) 2010-2025 three.js authors
+  Lizenz: MIT. Der volle Text liegt in THREE-LICENSE.txt.
+  Lokal gebündelt als trendo-three.js. Kein Abruf zur Laufzeit.
+  Neu bündeln (nur für die Entwicklung): three@0.180.0 mit esbuild,
+  Quelle trendo-web3-entry.js, Format IIFE, minifiziert.
+
+Bilder, Videos und Modelle
+  Was du selbst ablegst, bleibt deins. Ein Beispielwürfel ohne deine Datei
+  ist von Trendo erzeugt und kein Blender-Export. Ein Platzhalter ist kein
+  Unreal-Film.
