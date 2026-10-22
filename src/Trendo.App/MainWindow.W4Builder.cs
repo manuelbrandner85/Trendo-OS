@@ -45,9 +45,15 @@ public partial class MainWindow
                 t.LostFocus += (_, _) => { pg.Blocks[idx] = pg.Blocks[idx] with { Text = t.Text ?? "" }; pg.Save(BuilderFile); };
                 body.Children.Add(t);
             }
-            if (b.Kind is "img" or "button" or "contact")
+            if (b.Kind == "img")
             {
-                var u = new TextBox { Name = $"builder-url-{i}", Text = b.Url, PlaceholderText = b.Kind == "contact" ? "deine E-Mail-Adresse" : b.Kind == "img" ? "Bilddatei im Baukasten-Ordner oder https-Adresse" : "https://…" };
+                var u = Field($"builder-url-{i}", "Bilddatei im Baukasten-Ordner oder https-Adresse", 360, b.Url);
+                u.LostFocus += (_, _) => { pg.Blocks[idx] = pg.Blocks[idx] with { Url = u.Text ?? "" }; pg.Save(BuilderFile); };
+                body.Children.Add(Wahl(u));
+            }
+            else if (b.Kind is "button" or "contact")
+            {
+                var u = new TextBox { Name = $"builder-url-{i}", Text = b.Url, PlaceholderText = b.Kind == "contact" ? "deine E-Mail-Adresse" : "https://…" };
                 u.LostFocus += (_, _) => { pg.Blocks[idx] = pg.Blocks[idx] with { Url = u.Text ?? "" }; pg.Save(BuilderFile); };
                 body.Children.Add(u);
             }

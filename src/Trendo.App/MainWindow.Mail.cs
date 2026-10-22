@@ -64,7 +64,7 @@ public partial class MainWindow
         var cn = new TextBox { Name = "contact-name", PlaceholderText = "Name", Width = 180 }; var ce = new TextBox { Name = "contact-email", PlaceholderText = "E-Mail", Width = 220 }; var cp = new TextBox { Name = "contact-phone", PlaceholderText = "Telefon", Width = 140 };
         var add = new Button { Name = "contact-add", Content = "Hinzufügen" };
         add.Click += (_, _) => { try { Mail.AddContact(cn.Text ?? "", ce.Text ?? "", cp.Text ?? ""); _mailMsg = "Kontakt gespeichert."; } catch (ArgumentException ex) { _mailMsg = ex.Message; } Show("post"); };
-        var path = new TextBox { Name = "contact-file", PlaceholderText = "Datei (.vcf zum Einlesen, .eml zum Lesen)", Width = 320 };
+        var path = Field("contact-file", "Datei (.vcf zum Einlesen, .eml zum Lesen)", 320);
         var imp = new Button { Name = "contact-import", Content = "Öffnen" };
         imp.Click += (_, _) =>
         {
@@ -90,5 +90,5 @@ public partial class MainWindow
         return SysPage("E-Mail & Kontakte", sp);
     }
 
-    private static Control MSp(Control c) { c.Margin = new Thickness(0, 0, 6, 6); return c; }
+    private static Control MSp(Control c) { var h = Wahl(c); h.Margin = new Thickness(0, 0, 6, 6); return h; }
 }

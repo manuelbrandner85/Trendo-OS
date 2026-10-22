@@ -29,7 +29,7 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 10 }; const string V = "doku-pdf";
         string? qpdf = Tool("qpdf"), unite = Tool("pdfunite"), sep = Tool("pdfseparate");
 
-        var mi = new TextBox { Name = "pdf-merge-files", PlaceholderText = "PDF-Dateien, eine pro Zeile (in dieser Reihenfolge)", AcceptsReturn = true, Width = 520, MinHeight = 60 };
+        var mi = Field("pdf-merge-files", "PDF-Dateien, eine pro Zeile (in dieser Reihenfolge)", 520);
         var si = Field("pdf-split-file", "PDF-Datei"); var sr = Field("pdf-split-range", "Seiten, z. B. 2-5", 120);
         sp.Children.Add(Card(Section("Zusammenfügen und Teilen", qpdf is null && unite is null ? "Dafür fehlt das kostenlose Programm qpdf (Einstellungen → Zusatzprogramme → qpdf, ohne Admin). Seitenzahlen kann Trendo trotzdem anzeigen." : "Die Originale bleiben unverändert; das Ergebnis liegt im Projektordner unter „Dokumente“.",
             mi, Line(Act("pdf-merge", "Zusammenfügen", () => Try(V, () =>
@@ -151,7 +151,7 @@ public partial class MainWindow
             }))), co)));
 
         var sd = Field("sig-doc", "Word-Dokument (DOCX)", 300); var si = Field("sig-img", "Bild der Unterschrift (PNG)", 260);
-        var pm = Field("pkg-main", "Hauptdokument", 260); var pa = new TextBox { Name = "pkg-att", PlaceholderText = "Anlagen, eine pro Zeile", AcceptsReturn = true, Width = 300, MinHeight = 40 };
+        var pm = Field("pkg-main", "Hauptdokument", 260); var pa = Field("pkg-att", "Anlagen, eine pro Zeile", 300);
         sp.Children.Add(Card(Section("Unterschrift und Versand-Paket", "Die Bild-Unterschrift ist KEINE rechtsverbindliche elektronische Signatur. Das Paket ist eine ZIP mit Prüfsummenliste, damit der Empfänger Vollständigkeit prüfen kann.",
             Line(sd, si, Act("sig-run", "Unterschrift einfügen", () => Try(V, () =>
             {

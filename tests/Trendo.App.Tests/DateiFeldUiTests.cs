@@ -85,6 +85,78 @@ public class DateiFeld_Ui
         w.Close();
     }
 
+    [AvaloniaFact(DisplayName = "T-0201: keine Seite hat ein Pfad- oder Ordnerfeld ohne „Durchsuchen …“")]
+    public void No_page_has_a_path_field_without_picker()
+    {
+        var (w, _, _) = Ui.Open();
+        var missing = new List<string>();
+        var fehler = new List<string>();
+        var gesehen = new HashSet<string>(StringComparer.Ordinal);
+        void Scan(string key)
+        {
+            w.Show(key);
+            var root = w.ActivePageRoot;
+            if (root is null) { fehler.Add(key + " ohne Seite"); return; }
+            if (root.Name == "error-page") { fehler.Add(key); return; }
+            foreach (var ex in root.GetLogicalDescendants().OfType<Expander>()) ex.IsExpanded = true;
+            foreach (var box in root.GetLogicalDescendants().OfType<TextBox>())
+            {
+                var hint = box.PlaceholderText ?? box.Watermark ?? "";
+                if (!DateiFeld.BrauchtAuswahl(box.Name, hint)) continue;
+                if (UmgebendesFeld(box) is null)
+                    missing.Add($"{key}: {box.Name} ({hint}) liegt nicht in der gemeinsamen Dateiauswahl");
+                var browse = root.GetLogicalDescendants().OfType<Button>().FirstOrDefault(b => b.Name == box.Name + "-browse");
+                if (browse is null || !Equals(browse.Content, "Durchsuchen …"))
+                    missing.Add($"{key}: {box.Name} ({hint}) ohne „Durchsuchen …“");
+                else gesehen.Add(box.Name!);
+                if (DateiFeld.AuchOrdnerFeld(hint))
+                {
+                    var ord = root.GetLogicalDescendants().OfType<Button>().FirstOrDefault(b => b.Name == box.Name + "-browse-ordner");
+                    if (ord is null || !Equals(ord.Content, "Ordner …"))
+                        missing.Add($"{key}: {box.Name} ohne „Ordner …“");
+                }
+            }
+        }
+
+        foreach (var key in w.PageKeys.OrderBy(k => k, StringComparer.Ordinal)) Scan(key);
+
+        w.Show("ablaeufe"); w.Find<Button>("wf-new").Press(); Scan("ablaeufe");
+        w.Show("produktion"); w.Find<Button>("fusion-recipe-video-pack").Press(); Scan("produktion");
+        w.Show("baukasten"); w.Find<Button>("builder-add-img").Press(); Scan("baukasten");
+        w.Show("forensik");
+        w.Find<TextBox>("for-case-title").Text = "Beweis";
+        w.Find<Button>("for-case-new").Press();
+        Scan("forensik");
+        w.Show("nachbau");
+        w.Find<TextBox>("clean-name").Text = "Probe";
+        w.Find<Button>("clean-create").Press();
+        Scan("nachbau");
+        w.ShareAddressOverride = System.Net.IPAddress.Loopback;
+        Scan("teilen");
+        typeof(MainWindow).GetProperty(nameof(MainWindow.Phones))!.SetValue(w, new[] { new Trendo.Core.PhoneDevice("test", "device", "Probe") });
+        Scan("handy");
+
+        foreach (var name in new[] { "wissen-folder", "ext-path", "sec-folder", "for-file", "for-add-file-0", "contact-file", "share-folder", "clean-theirs", "wfe-at", "wfe-from", "wfe-to", "pdf-merge-files", "pkg-att", "pkg-main", "phone-file-0", "settings-file", "hash-file", "zip-src" })
+            if (!gesehen.Contains(name)) missing.Add("erwartet, aber nie mit Auswahl gesehen: " + name);
+        if (!gesehen.Any(n => n.StartsWith("builder-url-", StringComparison.Ordinal)))
+            missing.Add("erwartet, aber nie mit Auswahl gesehen: builder-url- (Bild im Baukasten)");
+
+        Assert.True(fehler.Count == 0, "Seiten mit Fehler statt Inhalt:\n" + string.Join("\n", fehler));
+        Assert.True(missing.Count == 0, "Pfadfelder ohne Durchsuchen:\n" + string.Join("\n", missing));
+        w.Close();
+    }
+
+    private static DateiFeld? UmgebendesFeld(TextBox box)
+    {
+        Avalonia.LogicalTree.ILogical? n = box;
+        while (n is not null)
+        {
+            if (n is DateiFeld f) return f;
+            n = n.LogicalParent;
+        }
+        return null;
+    }
+
     private static async Task Wait(Func<bool> done)
     {
         for (var i = 0; i < 40 && !done(); i++)

@@ -29,7 +29,7 @@ public partial class MainWindow
         var text = new TextBox { Name = "wissen-text", PlaceholderText = "Was soll Trendo wissen? z. B. „Meine Kundennummer bei den Stadtwerken ist …“", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 60 };
         var add = new Button { Name = "wissen-add", Content = "Merken", Background = Accent };
         add.Click += (_, _) => { if (string.IsNullOrWhiteSpace(text.Text)) { _wissenMsg = "Bitte zuerst etwas eintragen."; } else { Wissen.Add(title.Text ?? "", text.Text); _wissenMsg = "Gemerkt."; } Show("ki-wissen"); };
-        var folder = new TextBox { Name = "wissen-folder", PlaceholderText = "Ordner oder Datei (.txt, .md, .csv)", Width = 340 };
+        var folder = Field("wissen-folder", "Ordner oder Datei (.txt, .md, .csv)", 340);
         var imp = new Button { Name = "wissen-import", Content = "Einlesen" };
         imp.Click += (_, _) =>
         {
@@ -39,7 +39,7 @@ public partial class MainWindow
             Show("ki-wissen");
         };
         sp.Children.Add(title); sp.Children.Add(text);
-        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { add, folder, imp } });
+        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { add, Wahl(folder), imp } });
         sp.Children.Add(new TextBlock { Name = "wissen-msg", Text = _wissenMsg, Foreground = Text, FontSize = 12 });
         var (g, b) = Wissen.FeedbackStats();
         sp.Children.Add(P($"{Wissen.All().Count} Einträge · Rückmeldungen: {g} gut, {b} verbesserungswürdig", null, 11));

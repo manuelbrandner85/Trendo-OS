@@ -49,9 +49,9 @@ public partial class MainWindow
                 new WrapPanel { Children = { role, note, Act("clean-log", "Ins Tagebuch", () => { CleanRoom.Log(open, CleanRoom.Roles[Math.Max(0, role.SelectedIndex)], note.Text ?? ""); Show("nachbau"); }) } } } };
             foreach (var e in CleanRoom.Journal(open).TakeLast(8).Reverse()) j.Children.Add(P($"{e.At:dd.MM. HH:mm} · {e.Role} · {e.Text}", null, 11));
             sp.Children.Add(Card(j));
-            var theirs = new TextBox { Name = "clean-theirs", PlaceholderText = "Ordner mit dem Original-Code (nur zum Vergleich)", Width = 360 };
+            var theirs = Field("clean-theirs", "Ordner mit dem Original-Code (nur zum Vergleich)", 360);
             var chk = new StackPanel { Spacing = 4, Children = { H("Ähnlichkeit prüfen", 14), P("Vergleicht deinen Code in „2-Umsetzung“ mit dem Original. Umbenennen von Namen hilft dabei nicht.", null, 11),
-                new WrapPanel { Children = { theirs, Act("clean-check", "Prüfen", () => CleanCheck(theirs.Text?.Trim('"', ' ') ?? ""), true) } } } };
+                new WrapPanel { Children = { Wahl(theirs), Act("clean-check", "Prüfen", () => CleanCheck(theirs.Text?.Trim('"', ' ') ?? ""), true) } } } };
             if (_cleanSims is { } sims) foreach (var s in sims.Take(10)) chk.Children.Add(P($"⚠ {s.Ours} ↔ {s.Theirs}: {s.Score:P0} gleich", Brush.Parse("#F97316"), 11));
             sp.Children.Add(Card(chk));
         }

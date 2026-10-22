@@ -57,7 +57,7 @@ public partial class MainWindow
         else if (ips.Count == 0) sp.Children.Add(P("Dieser PC ist gerade mit keinem Heimnetz verbunden. Verbinde ihn mit dem WLAN oder Netzwerkkabel.", Brush.Parse("#FACC15")));
         else
         {
-            var folder = new TextBox { Name = "share-folder", PlaceholderText = "Ordner, z. B. C:\\Users\\…\\Pictures", Text = _shareFolder, Width = 360 };
+            var folder = Field("share-folder", "Ordner, z. B. C:\\Users\\…\\Pictures", 360, _shareFolder);
             var dur = new ComboBox { Name = "share-dur", ItemsSource = new[] { "1 Stunde", "4 Stunden", "24 Stunden" }, SelectedIndex = 0 };
             var net = new ComboBox { Name = "share-ip", ItemsSource = ips.Select(i => $"{i.Name} ({i.Ip})").ToList(), SelectedIndex = 0 };
             var go = new Button { Name = "share-start", Content = "Teilen starten", Background = Accent };
@@ -69,7 +69,7 @@ public partial class MainWindow
                 catch (Exception ex) { _shareMsg = "Hat nicht geklappt: " + ex.Message; }
                 Show("teilen");
             };
-            sp.Children.Add(folder); sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { dur, net, go } });
+            sp.Children.Add(Wahl(folder)); sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { dur, net, go } });
             sp.Children.Add(P("Beim ersten Mal fragt Windows vielleicht, ob Trendo im privaten Netzwerk erreichbar sein darf. Wähle „Private Netzwerke“.", null, 11));
         }
         sp.Children.Add(new TextBlock { Name = "share-msg", Text = _shareMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap });

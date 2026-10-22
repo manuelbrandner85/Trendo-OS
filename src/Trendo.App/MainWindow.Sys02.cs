@@ -45,15 +45,44 @@ public partial class MainWindow
     }
 
     private Control AlltagPage(string title, Control body) => W45Page(title, AlltagTabs, "alltag", body);
-    private TextBox Field(string name, string hint, double w = 340, string? text = null) => new() { Name = name, PlaceholderText = hint, Width = w, Text = text };
+    private TextBox Field(string name, string hint, double w = 340, string? text = null)
+    {
+        if (!DateiFeld.BrauchtAuswahl(name, hint))
+            return new TextBox { Name = name, PlaceholderText = hint, Width = w, Text = text };
+        var feld = new DateiFeld(this, name, hint, text ?? "", DateiFeld.IstOrdnerFeld(name, hint), CurrentView, zeigeBeschriftung: false, mehrere: DateiFeld.MehrereFelder(name, hint), auchOrdner: DateiFeld.AuchOrdnerFeld(hint));
+        feld.Eingabe.Width = w;
+        return feld.Eingabe;
+    }
+    /// <summary>Ein Pfadfeld gehört mitsamt „Durchsuchen …“ in die Seite. Das Textfeld allein würde den Knopf verlieren.</summary>
+    private static Control Wahl(Control c)
+    {
+        Control? n = c;
+        while (n is not null)
+        {
+            if (n is DateiFeld feld) return feld;
+            n = n.Parent as Control;
+        }
+        return c;
+    }
     private static string Clean(TextBox t) => t.Text?.Trim().Trim('"') ?? "";
     private static Control Section(string title, string help, params Control[] body)
     {
         var sp = new StackPanel { Spacing = 5, Children = { H(title, 14), P(help, null, 11) } };
-        foreach (var b in body) sp.Children.Add(b);
+        foreach (var b in body) sp.Children.Add(Wahl(b));
         return sp;
     }
-    private WrapPanel Line(params Control[] c) { var w = new WrapPanel(); foreach (var x in c) { x.Margin = new Avalonia.Thickness(0, 0, 6, 6); x.VerticalAlignment = VerticalAlignment.Center; w.Children.Add(x); } return w; }
+    private WrapPanel Line(params Control[] c)
+    {
+        var w = new WrapPanel();
+        foreach (var x in c)
+        {
+            var h = Wahl(x);
+            h.Margin = new Avalonia.Thickness(0, 0, 6, 6);
+            h.VerticalAlignment = VerticalAlignment.Center;
+            w.Children.Add(h);
+        }
+        return w;
+    }
 
     private void Try(string view, Action a)
     {

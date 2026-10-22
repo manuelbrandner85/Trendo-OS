@@ -37,8 +37,8 @@ public partial class MainWindow
     private Control ExtView()
     {
         var sp = new StackPanel { Spacing = 8, Children = { P("Erweiterungen bringen neue Vorlagen, Schrittlisten, Links und Textbausteine. Sie enthalten nie Programme – das prüft Trendo bei jeder Installation.") } };
-        var path = new TextBox { Name = "ext-path", PlaceholderText = "Ordner oder ZIP der Erweiterung", Width = 340 };
-        sp.Children.Add(Card(new WrapPanel { Children = { path, Act("ext-install", "Installieren", () => ExtInstall(path.Text?.Trim('"', ' ') ?? ""), true),
+        var path = Field("ext-path", "Ordner oder ZIP der Erweiterung", 340);
+        sp.Children.Add(Card(new WrapPanel { Children = { Wahl(path), Act("ext-install", "Installieren", () => ExtInstall(path.Text?.Trim('"', ' ') ?? ""), true),
             Act("ext-sample", "Beispiel ausprobieren", () => ExtInstall(ExtensionSamples.WriteSample(Path.Combine(_core.DataRoot, "beispiele")))) } }));
         sp.Children.Add(ExtCatalogCard());
         var all = Exts.All();

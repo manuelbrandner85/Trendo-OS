@@ -31,7 +31,7 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 6 };
         sp.Children.Add(H("Datei prüfen", 14));
         sp.Children.Add(P("Vergleiche die Prüfsumme (SHA-256) eines Downloads mit der Angabe des Herstellers. Stimmt sie, ist die Datei unverändert."));
-        var file = new TextBox { Name = "for-file", PlaceholderText = "Datei", Width = 320 }; var exp = new TextBox { Name = "for-expected", PlaceholderText = "Prüfsumme vom Hersteller (optional)", Width = 320 };
+        var file = Field("for-file", "Datei", 320); var exp = new TextBox { Name = "for-expected", PlaceholderText = "Prüfsumme vom Hersteller (optional)", Width = 320 };
         var calc = new Button { Name = "for-hash", Content = "Prüfen", Background = Accent };
         calc.Click += async (_, _) =>
         {
@@ -61,7 +61,7 @@ public partial class MainWindow
         foreach (var c in Lab.Cases())
         {
             var n = i++; var st = Lab.State(c);
-            var add = new TextBox { Name = $"for-add-file-{n}", PlaceholderText = "Datei hinzufügen", Width = 260 };
+            var add = Field($"for-add-file-{n}", "Datei hinzufügen", 260);
             var addB = new Button { Name = $"for-add-{n}", Content = "Sichern", Padding = new Thickness(8, 2) };
             addB.Click += (_, _) => { try { var it = Lab.Add(c, add.Text?.Trim().Trim('"') ?? ""); _forMsg = $"Gesichert: {it.Name} ({it.Sha256[..12]}…)"; } catch (Exception ex) { _forMsg = "Hat nicht geklappt: " + ex.Message; } Show("forensik"); };
             var ver = new Button { Name = $"for-verify-{n}", Content = "Bericht", Padding = new Thickness(8, 2) };

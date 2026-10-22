@@ -51,7 +51,7 @@ public partial class MainWindow
         }
         sp.Children.Add(H("Liegen Passwörter offen herum?", 14));
         sp.Children.Add(P("Trendo liest Textdateien in einem Ordner und zeigt offen gespeicherte Passwörter, Schlüssel, IBANs und Kartennummern – nur maskiert. Nichts wird verändert oder verschickt."));
-        var folder = new TextBox { Name = "sec-folder", Text = _scanFolder == "" ? (string.IsNullOrEmpty(_settings.ProjectsFolder) ? UserSettings.DefaultProjectsFolder() : _settings.ProjectsFolder) : _scanFolder, Width = 360 };
+        var folder = Field("sec-folder", "Ordner", 360, _scanFolder == "" ? (string.IsNullOrEmpty(_settings.ProjectsFolder) ? UserSettings.DefaultProjectsFolder() : _settings.ProjectsFolder) : _scanFolder);
         var scan = new Button { Name = "sec-scan", Content = "Ordner prüfen", Background = Accent };
         scan.Click += async (_, _) =>
         {
@@ -63,7 +63,7 @@ public partial class MainWindow
             _secMsg = LastPrivacy.Count == 0 ? "Nichts gefunden – gut so." : $"{LastPrivacy.Count} Fundstelle(n). Tipp: Passwörter gehören in einen Passwort-Manager, nicht in Textdateien.";
             Show("schutz");
         };
-        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { folder, scan } });
+        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Wahl(folder), scan } });
         sp.Children.Add(new TextBlock { Name = "sec-msg", Text = _secMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap });
         var i = 0;
         foreach (var f in LastPrivacy.Take(50))

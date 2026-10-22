@@ -170,10 +170,10 @@ public partial class MainWindow
         var i = 0;
         foreach (var d in Phones)
         {
-            var dev = d; var file = new TextBox { Name = $"phone-file-{i}", PlaceholderText = "Datei, z. B. Brief als PDF", Width = 300 };
+            var dev = d; var file = Field($"phone-file-{i}", "Datei, z. B. Brief als PDF", 300);
             var ok = new CheckBox { Name = $"phone-ok-{i}", Content = "Ich will diese Datei senden" };
             sp.Children.Add(WCard(new StackPanel { Spacing = 4, Children = { new TextBlock { Name = $"phone-dev-{i}", Text = $"📱 {d.Model} – {MobileBridge.StateText(d.State)}", Foreground = Text },
-                new WrapPanel { Children = { file, ok, Act($"phone-push-{i}", "Senden", () => _ = PushToPhoneAsync(dev, file.Text?.Trim('"', ' ') ?? "", ok.IsChecked == true)) } },
+                new WrapPanel { Children = { Wahl(file), ok, Act($"phone-push-{i}", "Senden", () => _ = PushToPhoneAsync(dev, file.Text?.Trim('"', ' ') ?? "", ok.IsChecked == true)) } },
                 new WrapPanel { Children = { Act($"phone-info-{i}", "Details", () => _ = PhoneInfoAsync(dev)),
                     Act($"phone-shot-{i}", "Bildschirmfoto holen", () => _ = PhoneShotAsync(dev, ok.IsChecked == true)),
                     Act($"phone-photo-{i}", "Neuestes Foto holen", () => _ = PhonePhotoAsync(dev, ok.IsChecked == true)) } } } }));

@@ -81,10 +81,10 @@ public partial class MainWindow
     {
         var name = new TextBox { Name = "wfe-name", PlaceholderText = "Name des Ablaufs" };
         var trig = new ComboBox { Name = "wfe-trigger", SelectedIndex = 0, ItemsSource = new[] { "Nur von Hand", "Jeden Tag", "Alle X Minuten", "Neue Datei im Ordner" } };
-        var at = new TextBox { Name = "wfe-at", PlaceholderText = "Uhrzeit oder Minuten oder Ordner", Width = 300 };
+        var at = Field("wfe-at", "Uhrzeit oder Minuten oder Ordner", 300);
         var kind = new ComboBox { Name = "wfe-kind", SelectedIndex = 0, ItemsSource = Enum.GetValues<StepKind>().Select(WorkflowEngine.StepLabel).ToList() };
-        var from = new TextBox { Name = "wfe-from", PlaceholderText = "Von Ordner", Width = 220 };
-        var to = new TextBox { Name = "wfe-to", PlaceholderText = "Nach (Ordner/Datei), {datum} erlaubt", Width = 220 };
+        var from = Field("wfe-from", "Von Ordner", 220);
+        var to = Field("wfe-to", "Nach (Ordner/Datei), {datum} erlaubt", 220);
         var pat = new TextBox { Name = "wfe-pattern", PlaceholderText = "Muster, z. B. *.pdf", Width = 120 };
         var text = new TextBox { Name = "wfe-text", PlaceholderText = "Text (für „Textdatei schreiben“)" };
         var steps = new StackPanel { Spacing = 2 };
@@ -102,8 +102,8 @@ public partial class MainWindow
             if (w.Trigger == TriggerKind.NeueDatei) { w.WatchFolder = a; w.WatchPattern = _wfDraft[0].Pattern; }
             Workflows.Add(w); _wfDraft.Clear(); _wfNew = false; _wfMsg = $"„{w.Name}“ gespeichert. Mach zuerst einen Probelauf."; Show("ablaeufe");
         };
-        return WCard(new StackPanel { Spacing = 6, Children = { name, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { trig, at } },
-            new WrapPanel { Children = { kind, from, to, pat } }, text, steps, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { add, save } } } });
+        return WCard(new StackPanel { Spacing = 6, Children = { name, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { trig, Wahl(at) } },
+            new WrapPanel { Children = { kind, Wahl(from), Wahl(to), pat } }, text, steps, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { add, save } } } });
     }
 }
 
