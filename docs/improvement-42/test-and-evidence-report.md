@@ -6,13 +6,13 @@ Umgebung: Linux, .NET 10, Commit-Basis `bbbfd5d7656fa73ad52b4d381afa9980bc34d30f
 
 | Befehl | Ergebnis |
 |---|---|
-| `dotnet test tests/Trendo.Core.Tests -c Release --filter PromptActionTests` | Bestanden: 23, Fehler: 0 |
+| `dotnet test tests/Trendo.Core.Tests -c Release --filter PromptActionTests` | Bestanden: 25, Fehler: 0 |
 | `dotnet test tests/Trendo.App.Tests -c Release --filter "FolderPick\|Preview_and_export_fit\|PromptBar"` | Bestanden: 7, Fehler: 0 |
 | `dotnet test tests/Trendo.Api.Tests -c Release` | Bestanden: 15, Fehler: 0 |
-| `dotnet test tests/Trendo.Core.Tests -c Release` | Bestanden: 511, Übersprungen: 10 (`WinRealTests`), Fehler: 0 |
-| `dotnet test tests/Trendo.App.Tests -c Release` | Bestanden: 207, Fehler: 0 |
+| `dotnet test tests/Trendo.Core.Tests -c Release` | Bestanden: 520, Übersprungen: 10 (`WinRealTests`), Fehler: 0 |
+| `dotnet test tests/Trendo.App.Tests -c Release` | Bestanden: 211, Fehler: 0 |
 
-Die 10 übersprungenen Core-Tests sind die vorhandenen Windows-Prüfungen. Neu in diesem Stand: 23 Core-Tests und 4 App-Tests (Leiste auf der Briefseite, keine Leiste auf dem Startbildschirm, Kataloggleichstand, 3D-Leiste ohne kleinere Vorschau).
+Die 10 übersprungenen Core-Tests sind die vorhandenen Windows-Prüfungen. Der Kern hat 25 Prompt-Tests, darunter Plan-vor-Los, fehlende Datei und den unregistrierten Webseiten-Vertrag. Die App-Prüfung der Leiste umfasst Vorschau und den Profi-Schalter.
 
 Ein früher Lauf der App-Tests mit einer hohen Leiste ist rot gewesen (Ordnerklick traf den Desktop, 3D-Vorschau 0×0 bei 1366×768). Die Leiste ist danach flach, und auf der 3D-Seite liegt sie im linken Rollbereich. Der Lauf danach ist grün. Ohne Leiste misst die Vorschau dort 55×55 px; die Prüfung verlangt mindestens 48 px.
 
@@ -35,6 +35,17 @@ Ein früher Lauf der App-Tests mit einer hohen Leiste ist rot gewesen (Ordnerkli
 | 13 | Forensik 120 Stunden | passed | `Forensik_120_Stunden` gegen `ForensicsLab.MaxLife` und `WarnBefore`. |
 | 14 | Wirkung ohne Freigabe | passed für Nachrichten im Testadapter | `Freigabe_laeuft_ab`. Zahlung, Boot, Maschine: not_run, kein Adapter, Matrix blockiert SPEC-14 und CORE-09. |
 | 15 | Matrix enthält jede StudioCatalog-ID einmal | passed | `Matrix_deckt_den_Katalog`, `Katalog_und_Abdeckung_stimmen`. 54 IDs, 0 Aktionen, Datei gleich `CapabilityCatalog.Markdown`. |
+
+## Verbesserung 43, Punkte 1, 2, 9, 10, 11
+
+| Punkt | Stand | Beleg |
+|---|---|---|
+| 1 Live-Vorschau | passed für den Kern | Plan: „Noch keine Datei…“. Nach `Los` die gelesene Datei oder der Satz, dass es keine Textvorschau gibt. Leiste: `auftrag-vorschau`. |
+| 2 Plan, dann Los, Folgeeingabe | passed | `Rueckfrage_dann_Datei`, `Revision_behaelt_Verlauf`, `Lokale_KI_gibt_nicht_frei`. Datei entsteht erst in `Los`. |
+| 9 Versionen und Rückgängig | passed | `Rollback_der_Laufdatei` über `Undo`. Fassung zählt nur hoch, wenn schon eine Datei da war. |
+| 10 Echte Datei am Ende | passed | `Ohne_Datei_kein_Erfolg`. `QA bestanden` ohne Datei gibt es nicht. |
+| 11 Einfach und Profi | passed in der Leiste | Knopf `auftrag-modus`. Profi zeigt Fassung und Schritte, schaltet keine Rechte frei. |
+| 3–8 Webseite | not_run | Schnittstelle `IWebsitePageAdapter`, nicht registriert. `Webseiten_Adapter_ist_nicht_registriert`. |
 
 ## Was die Oberfläche zeigt
 

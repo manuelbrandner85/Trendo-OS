@@ -18,7 +18,12 @@ public class PromptBarTests
         var box = w.Find<TextBox>("auftrag-prompt");
         Assert.Equal("Was soll dieses Studio tun?", box.PlaceholderText);
         Assert.Equal("Noch nicht gestartet", w.Find<TextBlock>("auftrag-status").Text);
+        Assert.Equal("Noch keine Vorschau.", w.Find<TextBlock>("auftrag-vorschau").Text);
+        Assert.False(w.Find<Button>("auftrag-los").IsVisible);
         Assert.Contains("nicht eingebaut", w.Find<TextBlock>("auftrag-faehigkeit").Text);
+        w.Find<Button>("auftrag-modus").Press();
+        Assert.Equal("Einfach", w.Find<Button>("auftrag-modus").Content);
+        Assert.Contains("Profi", w.Find<TextBlock>("auftrag-profi").Text);
         box.Text = "Schreibe einen Brief an das Amt.";
         w.Find<Button>("auftrag-pruefen").Press();
         for (var i = 0; i < 30; i++) Dispatcher.UIThread.RunJobs();
