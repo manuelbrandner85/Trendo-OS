@@ -15,6 +15,11 @@ public sealed class ShellProcessLauncher : IProcessLauncher
 {
     public void Open(string target)
     {
+        if (BlenderGui.IsBlenderExe(target))
+        {
+            Process.Start(ForGui(target, []));
+            return;
+        }
         if (OperatingSystem.IsWindows())
         {
             if (Directory.Exists(target)) Process.Start(new ProcessStartInfo("explorer.exe", $"\"{target}\"") { UseShellExecute = false });
@@ -22,8 +27,8 @@ public sealed class ShellProcessLauncher : IProcessLauncher
         }
         else Process.Start(new ProcessStartInfo("xdg-open", target) { UseShellExecute = false });
     }
-    public void OpenWith(string exe, string arg) => Process.Start(ForProgram(exe, [arg]));
-    public void OpenWithArgs(string exe, IReadOnlyList<string> args) => Process.Start(ForProgram(exe, args));
+    public void OpenWith(string exe, string arg) => Process.Start(ForGui(exe, [arg]));
+    public void OpenWithArgs(string exe, IReadOnlyList<string> args) => Process.Start(ForGui(exe, args));
 
     /// <summary>Programm mit Argumenten, ohne extra Konsolenfenster. Die eigene Oberfläche des Programms (z. B. Blender) bleibt sichtbar.</summary>
     public static ProcessStartInfo ForProgram(string exe, IReadOnlyList<string> args)
@@ -37,6 +42,36 @@ public sealed class ShellProcessLauncher : IProcessLauncher
         };
         foreach (var a in args) psi.ArgumentList.Add(a);
         return psi;
+    }
+
+    /// <summary>Wie <see cref="ForProgram"/>, auf Windows aber blender-launcher.exe, wenn die Datei neben blender.exe liegt.</summary>
+    public static ProcessStartInfo ForGui(string exe, IReadOnlyList<string> args, bool? windows = null, Func<string, bool>? exists = null) =>
+        ForProgram(BlenderGui.ForWindow(exe, windows ?? OperatingSystem.IsWindows(), exists), args);
+}
+
+/// <summary>Blender-Fenster ohne Konsole. Hintergrundläufe (--background) bleiben bei blender.exe über <see cref="Cli.Run"/>.</summary>
+public static class BlenderGui
+{
+    public const string LauncherName = "blender-launcher.exe";
+
+    public static bool IsBlenderExe(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return false;
+        return Path.GetFileName(path.Trim().Trim('"')).Equals("blender.exe", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Unter Windows die Startdatei ohne Konsole: blender-launcher.exe im selben Ordner, sonst unverändert blender.exe.</summary>
+    public static string ForWindow(string blenderExe, bool windows, Func<string, bool>? exists = null)
+    {
+        exists ??= File.Exists;
+        if (!windows || !IsBlenderExe(blenderExe)) return blenderExe;
+        string full;
+        try { full = Path.GetFullPath(blenderExe.Trim().Trim('"')); }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException) { return blenderExe; }
+        var dir = Path.GetDirectoryName(full);
+        if (string.IsNullOrEmpty(dir)) return blenderExe;
+        var launcher = Path.Combine(dir, LauncherName);
+        return exists(launcher) ? launcher : blenderExe;
     }
 }
 
