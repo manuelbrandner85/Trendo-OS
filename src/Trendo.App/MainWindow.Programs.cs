@@ -63,11 +63,28 @@ public partial class MainWindow
     /// <summary>Für Tests: Installation ersetzen.</summary>
     public Func<Component, Task<bool>>? InstallOverride { get; set; }
 
+    private FachprogrammAdapter? _fach;
+    private readonly Dictionary<string, FachprogrammBericht> _fachStand = new();
+
+    private FachprogrammAdapter FachAdapter()
+    {
+        if (_fach is not null) return _fach;
+        _fach = new FachprogrammAdapter(_deps, _core.Approvals, _core.Secrets, _core.Audit, new FachLauncher(_core.Integrations, _core.Audit), _core.Offline)
+        {
+            PfadSuche = p => ExternalApps.All.Any(a => a.Id == p.Id) ? AppPath(p.Id) : null
+        };
+        return _fach;
+    }
+
+    private static bool KannOeffnen(FachprogrammBericht? bericht) =>
+        bericht is { Angebunden: true, Pfad: not null } && bericht.Stand is FachprogrammStand.Erreichbar or FachprogrammStand.FreigabeNoetig;
+
     // ---------- Zentrale Liste ----------
     private Control ProgExternView()
     {
         const string V = "prog-extern";
         var sp = new StackPanel { Spacing = 8 };
+        sp.Children.Add(FachAbschnitt(V));
         sp.Children.Add(P("Alle Programme, die Trendo-Studios von außen nutzen. Erkannte Programme kannst du hier starten; fehlende einrichten (Trendo fragt vorher).", Text));
         foreach (var a in ExternalApps.All)
         {
@@ -80,4 +97,57 @@ public partial class MainWindow
         }
         return ProgPage("Externe Programme", sp);
     }
+
+    /// <summary>Paket 44: nichts vorinstalliert, nichts im Hintergrund. Die Prüfung startet erst auf Knopfdruck.</summary>
+    private Control FachAbschnitt(string view)
+    {
+        var sp = new StackPanel { Spacing = 8 };
+        sp.Children.Add(new TextBlock
+        {
+            Name = "fach-hinweis",
+            Text = "Diese Programme sind nicht vorinstalliert. Trendo lädt sie nicht im Hintergrund. Prüfe die Verbindung erst, wenn du sie brauchst.",
+            Foreground = Text,
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap
+        });
+        foreach (var f in FachprogrammKatalog.Alle)
+        {
+            _fachStand.TryGetValue(f.Id, out var stand);
+            var text = new TextBlock
+            {
+                Name = "fach-stand-" + f.Id,
+                Text = stand is null ? $"{f.Name}: Nicht geladen. Es läuft nichts im Hintergrund." : $"{f.Name}: {stand.Hinweis}",
+                Foreground = Text,
+                TextWrapping = Avalonia.Media.TextWrapping.Wrap
+            };
+            var buttons = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
+            buttons.Children.Add(Act("fach-probe-" + f.Id, "Verbindung prüfen", async () =>
+            {
+                var b = await FachAdapter().ProbeAsync(f.Id);
+                if (b.Stand == FachprogrammStand.Erreichbar) b = FachAdapter().Anbinden(f.Id);
+                _fachStand[f.Id] = b;
+                Say(b.Hinweis, view);
+            }));
+            if (KannOeffnen(stand))
+                buttons.Children.Add(Act("fach-start-" + f.Id, "Jetzt öffnen", () =>
+                {
+                    var req = _core.Approvals.Request(Principal.LocalOwner, FachprogrammAdapter.AufrufAktion, f.Name + " öffnen", f.Id);
+                    _core.Approvals.Approve(req.Id, Principal.LocalOwner);
+                    var b = FachAdapter().Aufrufen(req.Id, f.Id, []);
+                    _fachStand[f.Id] = b.Angebunden ? b : b with { Angebunden = stand!.Angebunden };
+                    Say(b.Hinweis, view);
+                }));
+            var box = new StackPanel { Spacing = 6 };
+            box.Children.Add(text);
+            box.Children.Add(buttons);
+            sp.Children.Add(Card(box));
+        }
+        return sp;
+    }
+}
+
+/// <summary>Öffnet ein Fachprogramm über die vorhandene Freigabe-Strecke. Hält keinen Prozess fest.</summary>
+sealed class FachLauncher(Integrations integrations, AuditLog audit) : IProcessLauncher
+{
+    public void Open(string target) => integrations.LaunchDirect(Principal.LocalOwner, target, audit);
+    public void OpenWithArgs(string exe, IReadOnlyList<string> args) => integrations.LaunchArgs(Principal.LocalOwner, exe, audit, args);
 }
