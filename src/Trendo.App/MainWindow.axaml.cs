@@ -799,8 +799,18 @@ public sealed partial class MainWindow : Window
         {
             var open = new Button { Name = "btn-open-folder-" + p.Id, Content = "Ordner im Explorer öffnen (Freigabe nötig)" };
             open.Click += (_, _) => { _core.Integrations.PlanOpenProjectFolder(Principal.LocalOwner, p.Id); Show("approvals"); };
-            sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12),
-                Child = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = p.Name, Foreground = Text }, P($"Angelegt {p.CreatedAt:dd.MM.yyyy HH:mm}"), open } } });
+            var box = new StackPanel { Spacing = 6 };
+            box.Children.Add(new TextBlock { Text = p.Name, Foreground = Text });
+            box.Children.Add(P($"Angelegt {p.CreatedAt:dd.MM.yyyy HH:mm}"));
+            var scene3d = Path.Combine(_core.Projects.ProjectFilesRoot(p.Id), "3d", "szene.json");
+            if (File.Exists(scene3d))
+            {
+                var open3 = new Button { Name = "btn-open-3d-" + p.Id, Content = "Im 3D-Studio öffnen" };
+                open3.Click += (_, _) => Open3DProject(p.Id);
+                box.Children.Add(open3);
+            }
+            box.Children.Add(open);
+            sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = box });
         }
         var url = new Button { Name = "btn-open-url", Content = "Trendo-Repository im Browser öffnen (Freigabe nötig)", IsEnabled = !_core.Offline };
         if (_core.Offline) ToolTip.SetTip(url, "Offline-Modus: deaktiviert");
@@ -1011,7 +1021,7 @@ public sealed partial class MainWindow : Window
     }
 
     // ---------- Studio-Klick: erkennen → prüfen → einmal fragen → installieren ----------
-    private string _depStudio = "", _depStudioTitle = "";
+    private string _depStudio = "", _depStudioTitle = "", _depReturn = "studios";
     private List<ToolCheck> _depChecks = [];
     public Func<string, Task<bool>>? KeyValidatorOverride { get; set; }
 
@@ -1035,7 +1045,10 @@ public sealed partial class MainWindow : Window
             // Kein eigener Bereich: ehrlich sagen statt still auf dieselbe Liste zurückzuspringen
             _notBuilt = title; Show("notbuilt"); return;
         }
+        // 3D lässt sich ohne Blender bauen und ansehen. Blender wird erst beim Öffnen gefragt.
+        if (string.Equals(id, "CORE-05", StringComparison.OrdinalIgnoreCase)) { Show(page); return; }
         if (!StudioTools.Required.TryGetValue(id, out var need)) { Show(page); return; }
+        _depReturn = "studios";
         _depStudio = id; _depStudioTitle = title; _depChecks = [];
         _depLog.Text = $"{title}: prüfe benötigte Programme …"; Show("studio-deps");
         foreach (var t in need) _depChecks.Add(await _deps.CheckAsync(DependencyCatalog.Get(t)));
@@ -1086,7 +1099,7 @@ public sealed partial class MainWindow : Window
                 btns.Children.Add(y);
             }
             var later = new Button { Name = "btn-later-" + comp.Id, Content = "Später" };
-            later.Click += (_, _) => { _core.Audit.Append(Principal.LocalOwner.Name, "deps.declined", comp.Id); Show("studios"); };
+            later.Click += (_, _) => { _core.Audit.Append(Principal.LocalOwner.Name, "deps.declined", comp.Id); var back = _depReturn; _depReturn = "studios"; Show(back); };
             btns.Children.Add(later);
             row.Children.Add(btns); ask.Child = row; sp.Children.Add(ask);
         }
