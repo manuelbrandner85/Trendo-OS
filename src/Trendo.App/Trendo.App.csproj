@@ -29,4 +29,7 @@
     <None Include="..\..\docs\RUECKFALL.md" Link="RUECKFALL.md" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\..\docs\buildplan.json" Link="buildplan.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Trendo.App.Tests" />
+  </ItemGroup>
 </Project>

@@ -1,3 +1,7 @@
+using Avalonia.Headless;
+using Avalonia.Input;
+using Avalonia.LogicalTree;
+using Avalonia.Threading;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Trendo.Core;
@@ -94,12 +98,96 @@ public class SYS07_Ui
 
 public class SYS06_Ui
 {
+    [AvaloniaFact(DisplayName = "SYS-06 Freigabe-Gate: ohne Zustimmung keine Freigabe, Anfrage abgelehnt")]
+    public async Task Share_denied_without_consent()
+    {
+        var (w, _, root) = Ui.Open();
+        var d = Path.Combine(root, "teilen-nein"); Directory.CreateDirectory(d);
+        (string F, TimeSpan T)? asked = null;
+        w.ShareConfirm = (f, t) => { asked = (f, t); return Task.FromResult(false); };
+        var ok = await w.StartShareAsync(d, TimeSpan.FromHours(4), System.Net.IPAddress.Loopback);
+        Assert.False(ok);
+        Assert.Null(w.ActiveShare);
+        Assert.Equal(ApprovalState.Denied, w.LastShareRequest!.State);
+        Assert.Equal((d, TimeSpan.FromHours(4)), asked);
+        w.Show("teilen"); Dispatcher.UIThread.RunJobs();
+        Assert.Equal("Freigabe abgelehnt", w.Find<TextBlock>("share-msg").Text);
+        w.Close();
+    }
+
+    static (MainWindow W, Window Dlg, Task<bool> Task, string Dir) OpenDialog(string sub)
+    {
+        var (w, _, root) = Ui.Open();
+        var d = Path.Combine(root, sub); Directory.CreateDirectory(d);
+        var task = w.StartShareAsync(d, TimeSpan.FromHours(1), System.Net.IPAddress.Loopback);
+        Dispatcher.UIThread.RunJobs();
+        return (w, w.OwnedWindows.Single(), task, d);
+    }
+    static Button DlgButton(Window dlg, string name) => dlg.GetLogicalDescendants().OfType<Button>().First(b => b.Name == name);
+
+    [AvaloniaFact(DisplayName = "SYS-06 Freigabe-Dialog: nennt Ordner und Dauer, Esc lehnt ab")]
+    public async Task Share_dialog_escape_denies()
+    {
+        var (w, dlg, task, d) = OpenDialog("teilen-esc");
+        var text = dlg.GetLogicalDescendants().OfType<TextBlock>().First(t => t.Name == "share-confirm-text").Text!;
+        Assert.Contains(d, text); Assert.Contains("1 Stunde", text);
+        var deny = DlgButton(dlg, "share-confirm-deny");
+        Assert.True(deny.IsDefault); Assert.True(deny.IsCancel);
+        dlg.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
+        Dispatcher.UIThread.RunJobs();
+        Assert.False(await task);
+        Assert.Null(w.ActiveShare);
+        Assert.Equal(ApprovalState.Denied, w.LastShareRequest!.State);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "SYS-06 Freigabe-Dialog: Klick auf „Ablehnen“ lehnt ab")]
+    public async Task Share_dialog_deny_click()
+    {
+        var (w, dlg, task, _) = OpenDialog("teilen-nein-klick");
+        DlgButton(dlg, "share-confirm-deny").Press();
+        Assert.False(await task);
+        Assert.Null(w.ActiveShare);
+        Assert.Equal(ApprovalState.Denied, w.LastShareRequest!.State);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "SYS-06 Freigabe-Dialog: Fenster schließen (X) lehnt ab")]
+    public async Task Share_dialog_close_denies()
+    {
+        var (w, dlg, task, _) = OpenDialog("teilen-x");
+        dlg.Close(); Dispatcher.UIThread.RunJobs();
+        Assert.False(await task);
+        Assert.Null(w.ActiveShare);
+        Assert.Equal(ApprovalState.Denied, w.LastShareRequest!.State);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "SYS-06 Freigabe-Dialog: Klick auf „Erlauben“ startet die Freigabe; Schließen des Hauptfensters beendet sie")]
+    public async Task Share_dialog_allow_click_and_close_stops()
+    {
+        var (w, dlg, task, _) = OpenDialog("teilen-ja");
+        DlgButton(dlg, "share-confirm-allow").Press();
+        Assert.True(await task);
+        Assert.NotNull(w.ActiveShare);
+        Assert.Equal(ApprovalState.Executed, w.LastShareRequest!.State);
+        var url = w.ActiveShare!.Url;
+        var closed = false; w.Closed += (_, _) => closed = true;
+        w.Close();
+        for (var i = 0; i < 100 && !closed; i++) { Dispatcher.UIThread.RunJobs(); await Task.Delay(10); }
+        Assert.True(closed, "Hauptfenster wurde nach dem Beenden der Freigabe nicht geschlossen");
+        Assert.Null(w.ActiveShare);
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+        await Assert.ThrowsAnyAsync<Exception>(() => http.GetStringAsync(url));
+    }
+
     [AvaloniaFact(DisplayName = "SYS-06 UI: Ordner teilen, Datei echt per HTTP laden, falsches Token abgelehnt, beenden")]
     public async Task Share_page()
     {
         var (w, _, root) = Ui.Open();
         var d = Path.Combine(root, "teilen"); Directory.CreateDirectory(d); File.WriteAllText(Path.Combine(d, "hallo.txt"), "Hallo Handy");
         w.ShareAddressOverride = System.Net.IPAddress.Loopback;
+        w.ShareConfirm = (_, _) => Task.FromResult(true); // Mensch stimmt zu
         w.Show("teilen");
         await w.StartShareAsync(d, TimeSpan.FromHours(1), System.Net.IPAddress.Loopback); w.Show("teilen");
         var url = w.Find<SelectableTextBlock>("share-url").Text!;
