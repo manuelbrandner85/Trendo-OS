@@ -1,6 +1,7 @@
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -54,34 +55,57 @@ public partial class MainWindow
         try { _png3d = PreviewBytes(); _previewError = null; }
         catch (Exception ex) { _png3d = null; _previewError = "Vorschau nicht möglich: " + ex.Message; }
 
-        var sp = new StackPanel { Spacing = 8 };
-        sp.Children.Add(P("Baue ein Objekt aus Teilen, sieh es hier an und öffne genau dieses Objekt in Blender. Maße sind Zentimeter, Z zeigt nach oben."));
-        sp.Children.Add(Card(BlenderRow()));
-
         var objName = new TextBox { Name = "3d-name", Text = _scene.Name, Width = 200 };
-        var left = Card(new StackPanel
+        var header = new StackPanel
+        {
+            Spacing = 6,
+            Children =
+            {
+                P("Baue ein Objekt aus Teilen, sieh es hier an und öffne genau dieses Objekt in Blender. Maße sind Zentimeter, Z zeigt nach oben."),
+                BlenderRow(),
+                FileBlock(objName),
+            },
+        };
+        var editor = new StackPanel
         {
             Spacing = 8,
             Children =
             {
-                H("Objekt", 14),
-                new WrapPanel { Children = { Labeled("Name", objName), Act("3d-save", "Speichern", () => SaveScene(objName)), Act("3d-new", "Neues Objekt", () => NewScene(objName)), Act("3d-undo", "Rückgängig", UndoScene) } },
-                H("Teile", 14),
-                PartsList(objName),
-                H("Teil", 14),
-                PartForm(objName),
+                BuildPromptBar("CORE-05"),
+                Card(new StackPanel
+                {
+                    Spacing = 8,
+                    Children =
+                    {
+                        H("Objekt", 14),
+                        new WrapPanel { Children = { Labeled("Name", objName), Act("3d-save", "Speichern", () => SaveScene(objName)), Act("3d-new", "Neues Objekt", () => NewScene(objName)), Act("3d-undo", "Rückgängig", UndoScene) } },
+                        H("Teile", 14),
+                        PartsList(objName),
+                        H("Teil", 14),
+                        PartForm(objName),
+                    },
+                }),
+                Card(AiBlock(aiOn, objName)),
+                Card(SavedBlock()),
             },
-        });
-        var right = Card(PreviewBlock());
-        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,*") };
-        grid.Children.Add(left);
-        Grid.SetColumn(right, 2);
-        grid.Children.Add(right);
-        sp.Children.Add(grid);
-        sp.Children.Add(Card(AiBlock(aiOn, objName)));
-        sp.Children.Add(Card(FileBlock(objName)));
-        sp.Children.Add(Card(SavedBlock()));
-        return KreativPage("3D-Modelle erstellen", sp);
+        };
+        var left = new ScrollViewer
+        {
+            Name = "3d-editor-scroll",
+            Content = editor,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+        };
+        var split = new Grid { ColumnDefinitions = new ColumnDefinitions("*,260"), MinHeight = 0, VerticalAlignment = VerticalAlignment.Stretch };
+        split.Children.Add(left);
+        var preview = Card(PreviewBlock());
+        preview.VerticalAlignment = VerticalAlignment.Stretch;
+        preview.Margin = new Thickness(8, 0, 0, 0);
+        Grid.SetColumn(preview, 1);
+        split.Children.Add(preview);
+        return FitKreativPage("3D-Modelle erstellen", header, split);
     }
 
     private Control BlenderRow()
@@ -213,36 +237,36 @@ public partial class MainWindow
 
     private Control PreviewBlock()
     {
-        var box = new StackPanel
+        var box = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,*"), VerticalAlignment = VerticalAlignment.Stretch, MinHeight = 0 };
+        box.Children.Add(H("Vorschau", 14));
+        var views = new Avalonia.Controls.Primitives.UniformGrid
         {
-            Spacing = 6,
+            Columns = 3,
             Children =
             {
-                H("Vorschau", 14),
-                new WrapPanel
-                {
-                    Children =
-                    {
-                        ViewBtn("front", "Vorne", "Ansicht von vorn."),
-                        ViewBtn("back", "Hinten", "Ansicht von hinten."),
-                        ViewBtn("left", "Links", "Ansicht von links."),
-                        ViewBtn("right", "Rechts", "Ansicht von rechts."),
-                        ViewBtn("top", "Oben", "Ansicht von oben."),
-                        ViewBtn("angle", "Schräg", "Schräge Ansicht."),
-                    },
-                },
+                ViewBtn("front", "Vorne", "Ansicht von vorn."),
+                ViewBtn("back", "Hinten", "Ansicht von hinten."),
+                ViewBtn("left", "Links", "Ansicht von links."),
+                ViewBtn("right", "Rechts", "Ansicht von rechts."),
+                ViewBtn("top", "Oben", "Ansicht von oben."),
+                ViewBtn("angle", "Schräg", "Schräge Ansicht."),
             },
         };
-        if (_previewError is { Length: > 0 }) box.Children.Add(P(_previewError, Brush.Parse("#FACC15")));
-        if (_png3d is { Length: > 0 })
-            box.Children.Add(new Image { Name = "3d-preview-image", Source = new Bitmap(new MemoryStream(_png3d)), Width = 420, Height = 300, HorizontalAlignment = HorizontalAlignment.Left });
-        else if (_previewError is null) box.Children.Add(P("Die Vorschau erscheint, sobald ein Teil da ist."));
+        Grid.SetRow(views, 1); box.Children.Add(views);
+        Control view = _previewError is { Length: > 0 }
+            ? P(_previewError, Brush.Parse("#FACC15"))
+            : _png3d is { Length: > 0 }
+                ? new Image { Name = "3d-preview-image", Source = new Bitmap(new MemoryStream(_png3d)), Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch }
+                : P("Die Vorschau erscheint, sobald ein Teil da ist.");
+        Grid.SetRow(view, 2); box.Children.Add(view);
         return box;
     }
 
     private Button ViewBtn(string id, string label, string msg)
     {
         var b = Act("3d-view-" + id, label, () => SetView(id, msg));
+        b.Padding = new Thickness(4, 2); b.Margin = new Thickness(1); b.MinWidth = 0; b.FontSize = 12;
+        b.HorizontalAlignment = HorizontalAlignment.Stretch; b.HorizontalContentAlignment = HorizontalAlignment.Center;
         if (_view3d == id) b.Background = Accent;
         return b;
     }
@@ -250,18 +274,19 @@ public partial class MainWindow
     private Control FileBlock(TextBox objName)
     {
         var unit = new ComboBox { Name = "3d-unit", ItemsSource = new[] { "Automatisch", "Millimeter", "Zentimeter" }, SelectedIndex = _importUnit switch { "mm" => 1, "cm" => 2, _ => 0 }, Width = 150 };
+        ToolTip.SetTip(unit, "Automatisch: STL als Millimeter, OBJ und FBX als Zentimeter, GLB als Meter. Ist Blender da, wird FBX darüber geschrieben. Sonst schreibt Trendo eine FBX-Datei selbst. Eine Datei kannst du auch hierher ziehen.");
         unit.SelectionChanged += (_, _) => _importUnit = unit.SelectedIndex switch { 1 => "mm", 2 => "cm", _ => "auto" };
         var drop = new StackPanel
         {
             Spacing = 6,
             Children =
             {
-                H("Datei", 14),
-                new WrapPanel { Children = { Labeled("Maße in der Datei", unit), Act("3d-open-file", "Datei öffnen …", () => _ = Browse(objName)) } },
                 new WrapPanel
                 {
                     Children =
                     {
+                        Labeled("Maße in der Datei", unit),
+                        Act("3d-open-file", "Datei öffnen …", () => _ = Browse(objName)),
                         Act("3d-export-obj", "Als OBJ", () => ExportNative(objName, ".obj")),
                         Act("3d-export-stl", "Als STL", () => ExportNative(objName, ".stl")),
                         Act("3d-export-glb", "Als GLB", () => ExportNative(objName, ".glb")),
@@ -269,7 +294,6 @@ public partial class MainWindow
                         Act("3d-export-blend", "Als Blender-Datei", () => _ = ExportWithBlender(objName, ".blend")),
                     },
                 },
-                P("Automatisch: STL als Millimeter, OBJ und FBX als Zentimeter, GLB als Meter. Ist Blender da, wird FBX darüber geschrieben. Sonst schreibt Trendo eine FBX-Datei selbst. Eine Datei kannst du auch hierher ziehen."),
             },
         };
         if (_last3dFile is { } last && File.Exists(last))

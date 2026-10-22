@@ -67,7 +67,12 @@ public partial class MainWindow
         foreach (var c in Letters.Categories)
         {
             var b = new Button { Name = "letter-cat-" + c.Id, Content = c.Label, IsTabStop = false, IsHitTestVisible = false, Height = 0, Padding = new Thickness(0), Opacity = 0 };
-            b.Click += (_, _) => { Letters.ApplyTemplate(d, c.Id); Show("brief"); };
+            b.Click += (_, _) =>
+            {
+                Letters.ApplyTemplate(d, c.Id);
+                _letterMsg = c.Id == "frei" ? "Freier Brief: ohne Vorlage. Betreff und Text schreibst du selbst." : $"Vorlage „{c.Label}“ eingesetzt. Passe die eckigen Klammern an.";
+                Show("brief");
+            };
             hiddenCats.Children.Add(b);
         }
         form.Children.Add(hiddenCats);
@@ -79,7 +84,10 @@ public partial class MainWindow
             if (combo.SelectedIndex < 0 || combo.SelectedIndex >= Letters.Categories.Length) return;
             var id = Letters.Categories[combo.SelectedIndex].Id;
             if (id == d.Category) return;
-            Letters.ApplyTemplate(d, id); Show("brief");
+            Letters.ApplyTemplate(d, id);
+            var lbl = Letters.Categories[combo.SelectedIndex].Label;
+            _letterMsg = id == "frei" ? "Freier Brief: ohne Vorlage. Betreff und Text schreibst du selbst." : $"Vorlage „{lbl}“ eingesetzt. Passe die eckigen Klammern an.";
+            Show("brief");
         };
         form.Children.Add(FieldLabel("Vorlage")); form.Children.Add(combo);
         if (Letters.Category(d.Category).Legal)
@@ -175,7 +183,7 @@ public partial class MainWindow
             suggestion.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10), Child = new StackPanel { Spacing = 6, Children = { P("Vorschlag der KI (bitte prüfen):", null, 11), P(ans, Text, 12), take } } });
             improve.IsEnabled = true;
         };
-        var reset = new Button { Name = "letter-new", Content = "Neuer Brief" }; reset.Click += (_, _) => { _letter = NewLetter(); _letterMsg = ""; _letterPreview = true; Show("brief"); };
+        var reset = new Button { Name = "letter-new", Content = "Neuer Brief" }; reset.Click += (_, _) => { _letter = NewLetter(); _letterMsg = "Neuer Brief. Betreff und Text schreibst du selbst."; _letterPreview = true; Show("brief"); };
         form.Children.Add(new WrapPanel { Margin = new Thickness(0, 8, 0, 0), Children = { check, Sp(improve), Sp(reset) } });
         form.Children.Add(msg); form.Children.Add(issues); form.Children.Add(suggestion);
         var arch = new LetterArchive(ProjectsRoot).List().Take(8).ToList();

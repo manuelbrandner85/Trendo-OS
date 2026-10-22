@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.LogicalTree;
@@ -137,6 +138,38 @@ public class W4_Core05_Ui
         Assert.Contains(l2.Opened, p => p.Contains("Stuhl") && p.Contains(".blend"));
         Assert.Contains("öffnet", Msg(w2));
         w2.Close();
+        w.Close();
+    }
+
+    [AvaloniaTheory(DisplayName = "3D: Vorschau und Export sind bei üblichen Fenstergrößen ohne Scrollen sichtbar")]
+    [InlineData(1366, 768)]
+    [InlineData(1920, 1080)]
+    public void Preview_and_export_fit(int width, int height)
+    {
+        var (w, _, _) = Ui.Open();
+        w.WindowState = WindowState.Normal;
+        w.Width = width; w.Height = height;
+        w.Show("3d");
+        for (var i = 0; i < 8; i++) Dispatcher.UIThread.RunJobs();
+        w.Find<Button>("3d-add").Press();
+        var area = w.ClientSize.Width > 0 ? w.ClientSize : new Size(w.Bounds.Width, w.Bounds.Height);
+        void Inside(Control c)
+        {
+            Assert.True(c.Bounds.Width > 8 && c.Bounds.Height > 8, $"{c.Name} ist nicht sichtbar ({c.Bounds.Width}×{c.Bounds.Height})");
+            var top = c.TranslatePoint(new Point(1, 1), w);
+            var bottom = c.TranslatePoint(new Point(1, c.Bounds.Height - 1), w);
+            Assert.NotNull(top); Assert.NotNull(bottom);
+            Assert.InRange(top!.Value.Y, 0, area.Height);
+            Assert.InRange(bottom!.Value.Y, 0, area.Height + 1);
+            Assert.InRange(top.Value.X, 0, area.Width);
+        }
+        Inside(w.Find<Button>("3d-export-obj"));
+        Inside(w.Find<Button>("3d-export-glb"));
+        Inside(w.Find<Button>("3d-open-blender"));
+        Inside(w.Find<Button>("3d-view-front"));
+        var img = w.Find<Image>("3d-preview-image");
+        Inside(img);
+        Assert.True(img.Bounds.Height >= 48, $"Vorschau nur {img.Bounds.Height} px hoch");
         w.Close();
     }
 }

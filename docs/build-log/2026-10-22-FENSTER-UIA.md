@@ -1,0 +1,1 @@
+- 17:50 Maximiertes Schreibtischfenster bleibt in der UI-Automation: eigener Peer mit Fenstertitel (Typ Fenster), die Arbeitsfläche hat einen eigenen Namen, der Schatten fällt im maximierten Zustand weg (sonst ungültiges UIA-Rechteck, ganze Baumabfrage E_FAIL). Headless-Test des AutomationPeer-Baums, maximiert und wiederhergestellt. (Linux-Box getestet, PC offen)
