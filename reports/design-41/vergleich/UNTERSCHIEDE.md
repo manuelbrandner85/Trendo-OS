@@ -8,15 +8,16 @@ Die App übernimmt Aufbau, Glas, Abstände, Farben, Schrift und Symbole. Texte, 
 
 ## 01 Desktop
 
-- Aufbau stimmt: linke Leiste, Wortmarke, Suchfeld, rechte Uhr mit echten Messwerten, Dock unten, Wallpaper randlos.
-- Kein Slogan unter „Trendo OS“. Der Satz aus dem Bild ist nicht freigegeben.
-- Kein Wetter, kein „Trendo Radio“.
+- Die linke App- und Studio-Liste ist weg. Das ist der neue Wunsch des Besitzers: die Tapete bleibt frei, Studios kommen aus dem Startmenü, der Suche oder der Taskleiste. Die Referenz zeigt links noch Start, Studios, KI, Dateien, Einstellungen und erfundene Dateien.
+- Mitte: Logo A, „Trendo OS“, ein Suchfeld. Kein Slogan. Der Satz aus dem Bild ist nicht freigegeben.
+- Rechts schweben wenige Glaskarten: Wochentag, Datum, Uhr, echte CPU/RAM/GPU/SSD und Netz. Darunter „Zuletzt“ nur mit echten Projekten. Ohne Projekt steht dort „Erstes Projekt anlegen“, keine erfundenen Dateien.
+- Angeheftete Studios erscheinen als eigene Karte nur, wenn der Besitzer sie im Startmenü selbst anheftet. Ohne Auswahl bleibt die Fläche leer.
+- Kein Wetter auf dem Schreibtisch und kein „Trendo Radio“. Wetter gibt es in „Zeit & Kalender“, erst nach Ort und Klick, ohne erfundene Temperatur. Ein frischer Schreibtisch hat keinen gespeicherten Ort.
 - Logo ist Entwurf A (Obsidian-Kachel), nicht der T-Kreis aus dem Bild.
 - Wallpaper ist das vorhandene `bergsee-nacht` (Nacht, Lichtkreis), nicht das Sonnenuntergangsbild der Referenz.
 - Dock zeigt nur vorhandene Programme. Auf dieser Linux-Box: Dateien, Browser (Chrome liegt im PATH), Papierkorb. Mail, Blender und Unreal fehlen, weil sie nicht installiert sind. Studios stehen nicht im Dock.
-- Linke Leiste hat drei feste Einträge, die bestehende Tests verlangen: „Neuer Brief“, „Briefe schreiben“, „Notiz“. Die Referenz zeigt stattdessen erfundene Dateien. Ohne echte zuletzt geöffnete Einträge bleibt die Liste leer, plus „Erstes Projekt anlegen“.
 - GPU ist auf dieser Box „n. v.“ / „Nicht verfügbar“ (kein nvidia-smi). CPU, RAM, SSD und Netz sind echte Werte.
-- Suchplatzhalter: „Studios, Dateien und Einstellungen suchen“.
+- Suchplatzhalter: „Studios, Dateien und Einstellungen suchen“. Strg+1 bis Strg+5 öffnen weiterhin Start, Studios, Projekte, Freigaben und System.
 
 ## 02 Startmenü
 
@@ -26,7 +27,7 @@ Die App übernimmt Aufbau, Glas, Abstände, Farben, Schrift und Symbole. Texte, 
 - Nutzer heißt „Lokaler Besitzer“, wenn kein Name gesetzt ist. Kein „Pro Edition“, kein „Herunterfahren“, kein „Sperren“. „Trendo beenden“ schließt nur das Fenster.
 - „Zuletzt verwendet“ zeigt echte Seiten. Im Bild sind erfundene Dateien mit Minutenangaben.
 - Angeheftete Studios erscheinen zusätzlich in der Trendo-Taskleiste (Vorgabe UI41-SM-01). Das Bild zeigt sie nur im Menü.
-- Das Menü liegt über dem Desktop. Leiste, Uhr und Dock bleiben sichtbar.
+- Das Menü liegt über dem Desktop. Die linke Liste fehlt auch hier. Rechts bleiben Uhr und, in dieser Aufnahme, die Karte „Angeheftet“, weil fünf Studios für das Bild angeheftet sind. Dieselben fünf stehen in der Trendo-Taskleiste. Dock und Uhr bleiben sichtbar.
 
 ## 04 Briefe schreiben
 
@@ -48,7 +49,7 @@ Die App übernimmt Aufbau, Glas, Abstände, Farben, Schrift und Symbole. Texte, 
 - Inhalt der Referenz (Datei / Bearbeiten / Ansicht, Ordner-Symbole, erfundene Dateien) ist der Dateimanager und gehört nicht in diese Phase.
 - Die Aufnahme zeigt drei echte Studios gleichzeitig: Briefe schreiben, Spiele bauen, 3D-Modelle erstellen. Blender und Unreal werden nicht gestartet.
 - Inaktive Fenster sind leicht durchscheinend. Das aktive Fenster ist deckender.
-- Bei 1366×768 bleiben Taskleiste, Dock und die drei Fenster bedienbar. Die Seitenleisten werden schmaler, die rechte Uhr bleibt.
+- Bei 1366×768 bleiben Taskleiste, Dock und die drei Fenster bedienbar. Die linke Liste fehlt. Die Uhr bleibt rechts oben, solange das Fenster sie nicht verdeckt.
 
 ## Bewusst nicht in dieser Phase
 

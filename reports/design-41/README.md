@@ -2,6 +2,7 @@
 
 Phase 1 (22.10.2026), Branch `cursor/ui41-sm-01-startmenu-3c36`.
 Aufnahmen aus der laufenden Avalonia-App (`tools/Trendo.Render`, Skia, headless), nicht vom Windows-PC.
+Der Schreibtisch hat keine linke App-Liste mehr. Studios öffnen über Start, Suche oder die Taskleiste. Rechts schweben Uhr, echte Messwerte und – nur bei echten Daten – zuletzt geöffnete Projekte oder selbst angeheftete Studios.
 
 `vergleich/`: links Referenz (SOLL), rechts IST.
 
