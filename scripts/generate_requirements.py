@@ -26,6 +26,27 @@ tests = []
 for f, key in [("QA_MATRIX_GROK", "GROK_QA_MATRIX.csv"), ("BUSINESS", "BUSINESS_QA_MATRIX.csv"), ("LETTER", "LETTER_QA_MATRIX.csv")]:
     for r in rows(S / "qa" / key):
         tests.append({"id": r["test_id"], "catalog": key, "status": r.get("status") or r.get("initial_status")})
+# Grundsätze (von Hand gepflegt, hier im Generator, damit Neugenerieren sie nicht löscht)
+principles = [{
+    "id": "GRUNDSATZ-01",
+    "title": "Betriebssystem für jeden: jedes Fachprogramm und Tool ist installierbar",
+    "source": "Manuel, übermittelt von TRENDO OS MASTER (2026-10-23)",
+    "wording": "Trendo OS soll ein Betriebssystem für jeden werden, also alles ist an den Nutzer anpassbar. "
+               "Fachprogramme oder Tools im besten Fall schon bei der Installation von Trendo OS mitinstallieren "
+               "und ansonsten innerhalb von Trendo OS installierbar. Es darf kein Programm oder Tool geben, wo dies nicht möglich ist.",
+    "approval_status": "PROPOSED",
+    "note": "Wortlaut von Manuel übermittelt; Manuel muss den Eintrag und die Abnahmekriterien noch bestätigen.",
+    "acceptance_criteria_proposed": [
+        "AK-1: Jedes Programm oder Tool, das ein Studio braucht, steht im Abhängigkeitskatalog (src/Trendo.Core/Dependencies.cs). Ein Test schlägt fehl, wenn ein Studio ein Programm nutzt, das dort fehlt.",
+        "AK-2: Für jedes Programm ist festgelegt, wie es zum Nutzer kommt: im Setup enthalten, beim Setup zur Auswahl angeboten oder später in Trendo OS mit einem Klick installierbar.",
+        "AK-3: Kein Programm hat den Zustand ‚nicht installierbar‘. Wo der Hersteller keine automatische Installation erlaubt (z. B. Konto nötig), führt Trendo OS den Nutzer Schritt für Schritt zur offiziellen Installation und erkennt das Programm danach selbst.",
+        "AK-4: Installiert wird nur nach Zustimmung des Nutzers, nur aus offiziellen Quellen (winget oder Herstellerseite) und mit Eintrag im Audit-Log. Kein heimlicher Auto-Download.",
+        "AK-5: Lizenz, Kosten und Hürden (z. B. Konto-Pflicht) werden vor der Installation in leicht verständlichem Deutsch angezeigt.",
+        "AK-6: Nach der Installation prüft Trendo OS, ob das Programm wirklich startet, und zeigt das Ergebnis an.",
+        "AK-7: Der Nutzer kann jedes optionale Programm wieder entfernen oder abwählen (alles ist anpassbar).",
+        "AK-8: Nachweis auf einem echten Windows-PC: Installation aus Trendo OS heraus mit Log für mindestens ein Programm je Liefer-Art.",
+    ],
+}]
 doc = {"schema_version": 1, "source": "Trendo OS Grok Production Package v2.1 (2026-10-21)",
        "note": "APPROVED_SPEC bedeutet genehmigte Spezifikation, NICHT gebaut. Alle Tests NOT_RUN bis echte Logs existieren.",
        "status_model": ["PROPOSED", "APPROVED_SPEC", "PLANNED", "IN_PROGRESS", "IMPLEMENTED", "TESTED", "ACCEPTED", "RELEASED", "FAILED", "BLOCKED"],
@@ -40,7 +61,7 @@ doc = {"schema_version": 1, "source": "Trendo OS Grok Production Package v2.1 (2
            {"id": "P4", "name": "Funktionsfamilien", "status": "APPROVED_SPEC"},
            {"id": "P5", "name": "Security, Integration, Recovery", "status": "APPROVED_SPEC"},
            {"id": "P6", "name": "Release Candidates", "status": "APPROVED_SPEC"}],
-       "modules": mods, "business_requirements": bus, "letter_requirements": let, "tests": tests}
-hdr = "# AUTOMATISCH ERZEUGT durch scripts/generate_requirements.py – nicht von Hand Status hochsetzen.\n"
+       "principles": principles, "modules": mods, "business_requirements": bus, "letter_requirements": let, "tests": tests}
+hdr ="# AUTOMATISCH ERZEUGT durch scripts/generate_requirements.py – nicht von Hand Status hochsetzen.\n"
 (R / "requirements.yaml").write_text(hdr + yaml.safe_dump(doc, allow_unicode=True, sort_keys=False, width=120), encoding="utf-8")
 print(f"requirements.yaml: {len(mods)} Module, {len(bus)} BUS, {len(let)} LETTER, {len(tests)} Tests")
