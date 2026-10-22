@@ -54,7 +54,8 @@ public sealed partial class MainWindow : Window
     private readonly TextBlock _netDown = new() { Name = "metric-net-down", Foreground = Text, FontSize = 12.5 };
     private readonly TextBlock _netUp = new() { Name = "metric-net-up", Foreground = Text, FontSize = 12.5 };
     private readonly Dictionary<string, (ColumnDefinition Fill, ColumnDefinition Track, TextBlock Value, TextBlock Detail)> _meters = new();
-    private readonly List<TextBlock> _railLabels = new();
+    private readonly WrapPanel _pinsPanel = new();
+    private Border? _pinCard;
     private bool _kiWired;
     private readonly Dictionary<string, Button> _tabs = new();
     private string _notBuilt = "";
@@ -102,12 +103,13 @@ public sealed partial class MainWindow : Window
         if (BlurredWallpaper(ui) is { } blur) root.Children.Add(blur);
         root.Children.Add(ui);
         StartupTrace.Mark("ctor.wallpaper");
-        var body = new Grid { Name = "shell", ColumnDefinitions = new ColumnDefinitions("248,*,292"), RowDefinitions = new RowDefinitions("*,Auto"), Margin = new Thickness(14, 14, 14, 10) };
+        var body = new Grid { Name = "shell", ColumnDefinitions = new ColumnDefinitions("*"), RowDefinitions = new RowDefinitions("*,Auto"), Margin = new Thickness(28, 22, 22, 10) };
         ui.Children.Add(body);
-        var left = LeftColumn(); body.Children.Add(left);
-        Grid.SetColumn(_center, 1); _center.Margin = new Thickness(10, 0, 10, 0); body.Children.Add(_center);
-        var right = RightColumn(); Grid.SetColumn(right, 2); body.Children.Add(right);
-        var dock = Dock(); Grid.SetColumnSpan(dock, 3); Grid.SetRow(dock, 1); dock.ZIndex = 5; body.Children.Add(dock);
+        body.Children.Add(_center);
+        var widgets = DesktopWidgets();
+        widgets.ZIndex = 1; widgets.HorizontalAlignment = HorizontalAlignment.Right; widgets.VerticalAlignment = VerticalAlignment.Top;
+        widgets.Margin = new Thickness(0, 4, 4, 0); widgets.Width = 300; body.Children.Add(widgets);
+        var dock = Dock(); Grid.SetRow(dock, 1); dock.ZIndex = 5; body.Children.Add(dock);
         StartupTrace.Mark("ctor.left+dock");
         _status.IsVisible = false;
         _search.KeyDown += (_, e) => { if (e.Key == Key.Enter) { _query = _search.Text ?? ""; Show("suche"); } };
@@ -120,11 +122,10 @@ public sealed partial class MainWindow : Window
             var k = UserSettings.ClampScale(_settings.UiScale);
             scaler.LayoutTransform = Math.Abs(k - 1) < 0.01 ? null : new ScaleTransform(k, k);
             root.Width = cs.Width / k; root.Height = cs.Height / k;
-            var narrow = root.Width < 1100;
-            var showRight = root.Width >= 1180 && !_settings.HiddenTiles.Contains("widget-system");
-            body.ColumnDefinitions = new ColumnDefinitions($"{(narrow ? 72 : 248)},*,{(showRight ? 292 : 0)}");
-            right.IsVisible = showRight;
-            foreach (var t in _railLabels) t.IsVisible = !narrow;
+            var showSystem = !_settings.HiddenTiles.Contains("widget-system");
+            var showProjects = !_settings.HiddenTiles.Contains("widget-projekte");
+            var showPins = _pinCard?.IsVisible == true;
+            widgets.IsVisible = root.Width >= 1280 && (showSystem || showProjects || showPins);
         }
         Rescale = DoRescale;
         PropertyChanged += (_, e) => { if (e.Property == ClientSizeProperty) DoRescale(); };
@@ -365,7 +366,7 @@ public sealed partial class MainWindow : Window
         return grid;
     }
 
-    // ---------- Linke Leiste (Referenz 01) ----------
+    // ---------- Suchbereiche (früher die linke Leiste; die Fläche selbst bleibt leer) ----------
     private static readonly (string Label, string Icon, string C1, string C2, string Filter)[] Categories =
     [
         ("Alle Studios", StudioIcons.Areas["area-all"].Path, StudioIcons.Areas["area-all"].C1, StudioIcons.Areas["area-all"].C2, ""), ("Online Business", StudioIcons.Areas["area-online"].Path, StudioIcons.Areas["area-online"].C1, StudioIcons.Areas["area-online"].C2, "STUDIO-ONLINE"),
@@ -389,18 +390,6 @@ public sealed partial class MainWindow : Window
         ("CORE-11", "Security Studio", "Schutz & Privatsphäre", Mdi.ShieldCheck, "#9CF5A8", "#22B35E", "#2FD07A"),
     ];
 
-    private Button Rail(string key, string name, string icon, string label, Action go)
-    {
-        var text = new TextBlock { Text = label, Foreground = Text, FontSize = 14, VerticalAlignment = VerticalAlignment.Center };
-        _railLabels.Add(text);
-        var b = Flat(name, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { Chip(icon, "#3BA7FF", "#1565C0", 28), text } }, label);
-        b.HorizontalAlignment = HorizontalAlignment.Stretch; b.HorizontalContentAlignment = HorizontalAlignment.Left;
-        b.Padding = new Thickness(10, 7); b.MinHeight = 40; b.CornerRadius = new CornerRadius(12);
-        b.Click += (_, _) => go();
-        _tabs[key] = b;
-        return b;
-    }
-
     private Button Quiet(string name, string label, Action go, string? icon = null)
     {
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
@@ -410,29 +399,6 @@ public sealed partial class MainWindow : Window
         b.HorizontalAlignment = HorizontalAlignment.Stretch; b.HorizontalContentAlignment = HorizontalAlignment.Left;
         b.Padding = new Thickness(10, 5); b.Click += (_, _) => go();
         return b;
-    }
-
-    private Control LeftColumn()
-    {
-        var nav = new StackPanel { Spacing = 4 };
-        nav.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Margin = new Thickness(8, 4, 8, 12), Children = {
-            Logo(36), new TextBlock { Text = "Trendo OS", Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center } } });
-        nav.Children.Add(Rail("start", "nav-start", Mdi.Home, "Start", () => Show("start")));
-        nav.Children.Add(Rail("studios", "nav-studios", Mdi.ViewGridOutline, "Studios", () => { _studioFilter = null; Show("studios"); }));
-        nav.Children.Add(Rail("ki", "nav-ki", Mdi.Brain, "KI-Assistent", () => Show("ki")));
-        nav.Children.Add(Rail("files", "side-dateien", Mdi.Folder, "Dateien", () => Show("projects")));
-        nav.Children.Add(Rail("settings", "side-einstellungen", Mdi.Cog, "Einstellungen", () => Show("settings")));
-        nav.Children.Add(new TextBlock { Text = "Zuletzt verwendet", Foreground = Muted, FontSize = 12, Margin = new Thickness(12, 16, 8, 4) });
-        nav.Children.Add(Quiet("quick-new-letter", "Neuer Brief", () => Show("brief"), Mdi.FileDocumentEdit));
-        nav.Children.Add(Quiet("side-briefstudio", "Briefe schreiben", () => Show("brief"), Mdi.EmailEdit));
-        nav.Children.Add(Quiet("tool-notiz", "Notiz", () => Show("werkzeuge"), Mdi.NoteEdit));
-        var recent = new StackPanel { Name = "rail-recent", Spacing = 2 };
-        nav.Children.Add(recent);
-        var projects = new Border { Name = "widget-projekte", Child = _projectsPanel, IsVisible = !_settings.HiddenTiles.Contains("widget-projekte"), Margin = new Thickness(0, 6, 0, 0) };
-        nav.Children.Add(projects);
-        var card = ShellCard(new ScrollViewer { Content = nav });
-        card.VerticalAlignment = VerticalAlignment.Stretch; card.Margin = new Thickness(0, 0, 0, 8);
-        return card;
     }
 
     private void MarkTab(string key)
@@ -460,14 +426,15 @@ public sealed partial class MainWindow : Window
         };
         var word = new TextBlock
         {
-            Text = "Trendo OS", FontSize = 54, FontWeight = FontWeight.Bold, HorizontalAlignment = HorizontalAlignment.Center,
+            Text = "Trendo OS", FontSize = 48, FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center,
             Foreground = Text,
             Effect = new DropShadowEffect { Color = Color.Parse("#102033"), BlurRadius = 12, OffsetX = 0, OffsetY = 2, Opacity = 0.85 }
         };
+        var brand = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Spacing = 16, Children = { Logo(56), word } };
         var stack = new StackPanel
         {
-            HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Spacing = 22, MaxWidth = 680, Margin = new Thickness(24),
-            Children = { word, pill }
+            HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Spacing = 26, MaxWidth = 680, Margin = new Thickness(24),
+            Children = { brand, pill }
         };
         var g = new Grid { Children = { stack } };
         DesktopMenu(g);
@@ -481,30 +448,56 @@ public sealed partial class MainWindow : Window
         return new TextBlock { Text = txt, IsVisible = txt.Length > 0, Foreground = Brush.Parse(col), FontSize = 9.5, Opacity = 0.9, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 1, 0, 0) };
     }
 
-    // ---------- Rechte Spalte: Uhr und echte Messwerte ----------
+    // ---------- Schwebende Widgets: Uhr, echte Messwerte, eigene Projekte, selbst angeheftete Studios ----------
     private readonly TextBlock _sysState = new() { Name = "sys-state", Text = "…", Foreground = Brush.Parse("#4ADE80"), FontSize = 12 };
     private readonly Ellipse _sysDot = new() { Width = 9, Height = 9, Fill = Brush.Parse("#4ADE80") };
 
-    private Control RightColumn()
+    private Control DesktopWidgets()
     {
-        var sp = new StackPanel { Spacing = 8 };
+        var stack = new StackPanel { Spacing = 12 };
+        stack.Children.Add(SystemCard());
+        stack.Children.Add(ProjectsCard());
+        stack.Children.Add(PinsCard());
+        return stack;
+    }
+
+    private Control SystemCard()
+    {
+        var sp = new StackPanel { Spacing = 6 };
         _weekday.Foreground = Muted; _date.Foreground = Text; _date.FontSize = 15; _date.HorizontalAlignment = HorizontalAlignment.Left;
-        _clock.FontSize = 46; _clock.FontWeight = FontWeight.SemiBold; _clock.HorizontalAlignment = HorizontalAlignment.Left; _clock.Foreground = Text;
+        _clock.FontSize = 42; _clock.FontWeight = FontWeight.SemiBold; _clock.HorizontalAlignment = HorizontalAlignment.Left; _clock.Foreground = Text;
         sp.Children.Add(_weekday); sp.Children.Add(_date); sp.Children.Add(_clock);
-        var state = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(0, 4, 0, 6), Children = { _sysDot, _sysState } };
+        var state = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(0, 2, 0, 2), Children = { _sysDot, _sysState } };
         sp.Children.Add(state);
         sp.Children.Add(Meter("CPU", "CPU", "#51C5FF"));
         sp.Children.Add(Meter("RAM", "RAM", "#3DDC97"));
         sp.Children.Add(Meter("GPU", "GPU", "#A78BFA"));
         sp.Children.Add(Meter("SSD", "SSD", "#F5A524"));
-        sp.Children.Add(new TextBlock { Text = "Netzwerk", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 8, 0, 0) });
+        sp.Children.Add(new TextBlock { Text = "Netzwerk", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 6, 0, 0) });
         _netDown.Text = "↓ Messung läuft …"; _netUp.Text = "↑ Messung läuft …";
         sp.Children.Add(_netDown); sp.Children.Add(_netUp);
         var card = ShellCard(sp);
         card.Name = "widget-system";
-        card.VerticalAlignment = VerticalAlignment.Stretch;
-        card.Margin = new Thickness(0, 0, 0, 8);
         card.IsVisible = !_settings.HiddenTiles.Contains("widget-system");
+        return card;
+    }
+
+    private Control ProjectsCard()
+    {
+        var head = new TextBlock { Text = "Zuletzt", Foreground = Muted, FontSize = 12, Margin = new Thickness(2, 0, 0, 2) };
+        var card = ShellCard(new StackPanel { Spacing = 4, Children = { head, _projectsPanel } });
+        card.Name = "widget-projekte";
+        card.IsVisible = !_settings.HiddenTiles.Contains("widget-projekte");
+        return card;
+    }
+
+    private Control PinsCard()
+    {
+        var head = new TextBlock { Text = "Angeheftet", Foreground = Muted, FontSize = 12, Margin = new Thickness(2, 0, 0, 2) };
+        var card = ShellCard(new StackPanel { Spacing = 4, Children = { head, new ScrollViewer { Content = _pinsPanel, MaxHeight = 168 } } });
+        card.Name = "widget-pins";
+        card.IsVisible = false;
+        _pinCard = card;
         return card;
     }
 
@@ -527,13 +520,31 @@ public sealed partial class MainWindow : Window
         _projectsPanel.Children.Clear();
         var list = _core.Projects.List().OrderByDescending(p => p.CreatedAt).Take(4).ToList();
         if (list.Count == 0)
+            _projectsPanel.Children.Add(Quiet("btn-first-project", "Erstes Projekt anlegen", () => Show("projects")));
+        else foreach (var p in list)
+            _projectsPanel.Children.Add(new TextBlock { Text = p.Name, Foreground = Text, FontSize = 13, Margin = new Thickness(4, 2, 4, 2), TextTrimming = TextTrimming.CharacterEllipsis });
+        RefreshPins();
+    }
+
+    /// <summary>Nur Studios, die der Besitzer selbst angeheftet hat. Ohne Auswahl bleibt die Fläche leer.</summary>
+    private void RefreshPins()
+    {
+        _pinsPanel.Children.Clear();
+        foreach (var id in _settings.PinnedStudios.Distinct(StringComparer.OrdinalIgnoreCase))
         {
-            var b = Quiet("btn-first-project", "Erstes Projekt anlegen", () => Show("projects"));
-            _projectsPanel.Children.Add(b);
-            return;
+            var known = StudioCatalog.For(id) is not null || _studios.Any(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
+            if (!known) continue;
+            var name = StudioCatalog.NameOf(id, _studios.FirstOrDefault(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase))?.Name ?? id);
+            var icon = new Border { Width = 40, Height = 40, CornerRadius = new CornerRadius(12), Background = Brush.Parse(C("#33283C5C", "#E6FFFFFF")), HorizontalAlignment = HorizontalAlignment.Center, Child = IconFor(id, 20) ?? Ico(Mdi.FileDocumentOutline, 20, Accent) };
+            var label = new TextBlock { Text = name, Foreground = Text, FontSize = 11, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap, MaxHeight = 30, TextTrimming = TextTrimming.CharacterEllipsis };
+            var b = new Button { Name = "desk-pin-" + id, Background = Brushes.Transparent, Padding = new Thickness(2), Margin = new Thickness(2), Width = 84, Content = new StackPanel { Spacing = 4, Children = { icon, label } } };
+            Avalonia.Automation.AutomationProperties.SetName(b, name);
+            var sid = id; var sname = name;
+            b.Click += async (_, _) => await ActivateOrOpenStudio(sid, sname);
+            _pinsPanel.Children.Add(b);
         }
-        foreach (var p in list)
-            _projectsPanel.Children.Add(new TextBlock { Text = p.Name, Foreground = Text, FontSize = 13, Margin = new Thickness(12, 2, 8, 2), TextTrimming = TextTrimming.CharacterEllipsis });
+        if (_pinCard is not null) _pinCard.IsVisible = _pinsPanel.Children.Count > 0;
+        Rescale?.Invoke();
     }
 
     // ---------- Dock: nur vorhandene Programme ----------

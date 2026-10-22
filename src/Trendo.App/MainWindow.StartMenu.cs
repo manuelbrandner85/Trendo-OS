@@ -37,7 +37,7 @@ public partial class MainWindow
         Grid.SetColumn(mid, 1); cols.Children.Add(mid);
         var user = SmUserColumn(); Grid.SetColumn(user, 2); cols.Children.Add(user);
         _startMenu.Child = new DockPanel { Children = { Top(search), cols } };
-        if (_center.Parent is Grid body) { Grid.SetColumnSpan(_startMenu, 3); Grid.SetRowSpan(_startMenu, 2); body.Children.Add(_startMenu); }
+        if (_center.Parent is Grid body) { Grid.SetColumnSpan(_startMenu, 1); Grid.SetRowSpan(_startMenu, 2); body.Children.Add(_startMenu); }
         AddHandler(KeyDownEvent, (_, e) =>
         {
             if (e.Key is Key.LWin or Key.RWin) { ToggleStartMenu(); e.Handled = true; }
@@ -119,8 +119,8 @@ public partial class MainWindow
         return h.Target.StartsWith("studio:", StringComparison.OrdinalIgnoreCase) ? h.Target[(i + 1)..] : null;
     }
 
-    public void PinStudio(string id) { _settings.PinnedStudios = StartMenu.Pin(_settings.PinnedStudios, id); SaveSettings(); FillStartMenu(); }
-    public void UnpinStudio(string id) { _settings.PinnedStudios = StartMenu.Unpin(_settings.PinnedStudios, id); SaveSettings(); FillStartMenu(); }
+    public void PinStudio(string id) { _settings.PinnedStudios = StartMenu.Pin(_settings.PinnedStudios, id); SaveSettings(); FillStartMenu(); RefreshPins(); }
+    public void UnpinStudio(string id) { _settings.PinnedStudios = StartMenu.Unpin(_settings.PinnedStudios, id); SaveSettings(); FillStartMenu(); RefreshPins(); }
 
     /// <summary>Symbol aus der zentralen Studio-Symbolkarte (StudioIcons), sonst keins.</summary>
     private static Control? IconFor(string? studioId, double size) => StudioIcons.For(studioId) is { } i ? Ico(i.Path, size, Grad(i.C1, i.C2)) : null;

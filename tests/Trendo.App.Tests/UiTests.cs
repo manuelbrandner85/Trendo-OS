@@ -48,6 +48,19 @@ public static class Ui
     public static void Press(this Button b) { b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); Dispatcher.UIThread.RunJobs(); }
     public static void Key(this Window w, PhysicalKey k, RawInputModifiers m = RawInputModifiers.None)
     { w.KeyPressQwerty(k, m); w.KeyReleaseQwerty(k, m); Dispatcher.UIThread.RunJobs(); }
+
+    /// <summary>Briefe schreiben über das Startmenü. Fehlt die Texterkennung, öffnet „Später“ den Brief trotzdem.</summary>
+    public static async Task OpenLetter(MainWindow w)
+    {
+        w.OpenStartMenu();
+        w.Find<Button>("sm-az-STUDIO-LETTER-01").Press();
+        for (var i = 0; i < 50 && w.CurrentView == "studio-deps" && w.TryFind<Button>("btn-later-tesseract") is null; i++)
+        {
+            await Task.Delay(20);
+            Dispatcher.UIThread.RunJobs();
+        }
+        if (w.CurrentView != "brief") w.Find<Button>("btn-later-tesseract").Press();
+    }
 }
 
 /// QA-017 (Teil Tastatur): Navigation ohne Maus
@@ -71,14 +84,15 @@ public class QA017_Keyboard
     public void Tab_and_enter()
     {
         var (w, _, _) = Ui.Open();
-        var start = w.Find<Button>("nav-start");
-        start.Focus(NavigationMethod.Tab);
+        w.OpenStartMenu();
+        var profile = w.Find<Button>("sm-profile");
+        profile.Focus(NavigationMethod.Tab);
         Dispatcher.UIThread.RunJobs();
         w.Key(PhysicalKey.Tab);
         var focused = w.FocusManager?.GetFocusedElement() as Button;
-        Assert.Equal("nav-studios", focused?.Name);
+        Assert.Equal("sm-settings", focused?.Name);
         w.Key(PhysicalKey.Enter);
-        Assert.Equal("studios", w.CurrentView);
+        Assert.Equal("settings", w.CurrentView);
         w.Close();
     }
 
@@ -86,7 +100,7 @@ public class QA017_Keyboard
     public void Accessible_names()
     {
         var (w, _, _) = Ui.Open();
-        foreach (var n in new[] { "nav-start", "nav-studios", "nav-ki", "side-dateien", "side-einstellungen" })
+        foreach (var n in new[] { "start-button", "sm-profile", "sm-settings", "sm-desktop", "sm-help" })
             Assert.False(string.IsNullOrWhiteSpace(Avalonia.Automation.AutomationProperties.GetName(w.Find<Button>(n))));
         w.Close();
     }
@@ -428,7 +442,11 @@ public class W1_Apps
     public void Notes_and_calc()
     {
         var (w, _, root) = Ui.Open();
-        w.Find<Button>("tool-notiz").Press();
+        w.OpenStartMenu();
+        w.Find<TextBox>("startmenu-search").Text = "Notiz";
+        Dispatcher.UIThread.RunJobs();
+        var hit = w.GetLogicalDescendants().OfType<Button>().First(b => (b.Name ?? "").StartsWith("sm-hit-") && b.GetLogicalDescendants().OfType<TextBlock>().Any(t => (t.Text ?? "").Contains("Werkzeuge")));
+        hit.Press();
         Assert.Equal("werkzeuge", w.CurrentView);
         w.Find<TextBox>("note-input").Text = "Zahnarzt Dienstag";
         w.Find<Button>("note-add").Press();
@@ -462,7 +480,7 @@ public class W1_Letter
         var (w, _, root) = Ui.Open();
         var proj = Path.Combine(root, "projekte"); var s = UserSettings.Load(root); s.ProjectsFolder = proj; s.SetupDone = true; s.Save(root);
         w = Reopen(root);
-        w.Find<Button>("quick-new-letter").Press();
+        await Ui.OpenLetter(w);
         Assert.Equal("brief", w.CurrentView);
         w.Find<Button>("letter-cat-kuendigung").Press();
         w.Find<Button>("letter-save").Press(); await Task.Delay(20); Dispatcher.UIThread.RunJobs();
@@ -569,10 +587,10 @@ public class W1_LetterCases
     }
 
     [AvaloniaFact(DisplayName = "LETTER-UI: Briefstudio hat genau eine Unterebene; Akte/Ausgabe erst mit offener Akte")]
-    public void Tabs()
+    public async Task Tabs()
     {
         var (w, _, _) = Open();
-        w.Find<Button>("side-briefstudio").Press();
+        await Ui.OpenLetter(w);
         Assert.Equal("brief", w.CurrentView);
         Assert.NotNull(w.TryFind<Button>("letter-tab-akten"));
         Assert.Null(w.TryFind<Button>("letter-tab-ausgabe"));
