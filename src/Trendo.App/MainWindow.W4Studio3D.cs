@@ -63,7 +63,6 @@ public partial class MainWindow
             Spacing = 6,
             Children =
             {
-                P("Baue ein Objekt aus Teilen, sieh es hier an und öffne genau dieses Objekt in Blender. Maße sind Zentimeter, Z zeigt nach oben."),
                 BlenderRow(),
                 FileBlock(objName),
             },
@@ -276,7 +275,7 @@ public partial class MainWindow
     private Control FileBlock(TextBox objName)
     {
         var unit = new ComboBox { Name = "3d-unit", ItemsSource = new[] { "Automatisch", "Millimeter", "Zentimeter" }, SelectedIndex = _importUnit switch { "mm" => 1, "cm" => 2, _ => 0 }, Width = 150 };
-        ToolTip.SetTip(unit, "Automatisch: STL als Millimeter, OBJ und FBX als Zentimeter, GLB als Meter. Ist Blender da, wird FBX darüber geschrieben. Sonst schreibt Trendo eine FBX-Datei selbst. Eine Datei kannst du auch hierher ziehen.");
+        ToolTip.SetTip(unit, "Maße im Studio sind Zentimeter, Z zeigt nach oben. Automatisch: STL als Millimeter, OBJ und FBX als Zentimeter, GLB als Meter. Ist Blender da, wird FBX darüber geschrieben. Sonst schreibt Trendo eine FBX-Datei selbst. Eine Datei kannst du auch hierher ziehen.");
         unit.SelectionChanged += (_, _) => _importUnit = unit.SelectedIndex switch { 1 => "mm", 2 => "cm", _ => "auto" };
         var drop = new StackPanel
         {

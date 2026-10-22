@@ -24,7 +24,7 @@ public partial class MainWindow
         ExtraPages.Add(("Abläufe (Automatisch erledigen)", "ablaeufe", ["automatisch", "ablauf", "workflow", "aufraeumen", "zeitplan", "regel"]));
         var t = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
         t.Tick += async (_, _) => { if (_core.NotStopp.IsStopped) return; try { foreach (var r in await Workflows.RunDueAsync(DateTimeOffset.Now)) LastWfRun = r; } catch { } };
-        t.Start();
+        OwnTimer(t);
     }
 
     private static string TriggerText(Workflow w) => w.Trigger switch

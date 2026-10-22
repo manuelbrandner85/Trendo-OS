@@ -105,7 +105,16 @@ public sealed partial class MainWindow
         return Page("Ersteinrichtung", sp);
     }
 
-    private static Control Detach(Control c) { if (c.Parent is Panel p) p.Children.Remove(c); return c; }
+    private static Control Detach(Control c)
+    {
+        switch (c.Parent)
+        {
+            case Panel p: p.Children.Remove(c); break;
+            case ContentControl cc when ReferenceEquals(cc.Content, c): cc.Content = null; break;
+            case Decorator d when ReferenceEquals(d.Child, c): d.Child = null; break;
+        }
+        return c;
+    }
 
     private async Task RunSetupInstall(string model)
     {
