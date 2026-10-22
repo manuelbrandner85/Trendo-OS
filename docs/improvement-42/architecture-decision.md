@@ -18,7 +18,7 @@ Die Soll-Namen aus Abschnitt 4 des Auftrags sind so abgebildet:
 | IArtifactStore | `RunStore` schreibt `auftraege/{id}/lauf.json` über `ProjectStore` |
 | IPromptModel | `IntelligencePromptModel` ruft `AskAsync` |
 
-`PromptActions.CreateDefault()` liefert in dieser Phase eine leere Liste. Jedes der 54 Studios bleibt dadurch `not_implemented`. Testadapter in `tests/Trendo.Core.Tests/PromptActionTests.cs` sind nicht registriert und erscheinen nicht in der Matrix.
+`PromptActions.CreateDefault()` war im Kern zuerst leer. Die Fachadapter stehen jetzt in derselben Methode. Der Stand je Studio steht in der Matrix. Testadapter, die eine Wirkung nur im Test simulieren, sind dort nicht registriert.
 
 ## Ablauf
 
@@ -42,6 +42,10 @@ Die Laufdatei hat `SchemaVersion` 1. Eine neuere Fassung wird nicht ausgeführt.
 
 `MainWindow.PromptAction.cs` hängt eine schmale Leiste über den Seiteninhalt, den `SafeView` liefert. Der Startbildschirm bleibt frei. Die 3D-Seite füllt das Fenster bis auf wenige Pixel; dort liegt dieselbe Leiste im linken Rollbereich (`MainWindow.W4Studio3D.cs`), damit die Vorschau bei 1366×768 sichtbar bleibt. Texte: „Was soll dieses Studio tun?“, „Auftrag prüfen“, „Abbrechen“, „Einmal freigeben“, „Antwort übernehmen“. Der letzte Knopf und die Freigabe bleiben unsichtbar, bis der Lauf sie braucht. Farben bleiben `TileBg`, `Accent`, `Text`, `Muted`. Die Prüfung läuft über `Task.Run`, damit das Fenster nicht auf einen Modellaufruf wartet. Der Status „Wird wirklich ausgeführt“ steht, bevor der Hintergrundauftrag beginnt.
 
-## Was diese Phase nicht tut
+## Was der Kern nicht tut
 
-Keine Brief-, Office-, Mail-, Geschäfts-, Software-, 3D-, Spiele- oder Medienadapter. Kein SMTP, keine Zahlung, kein Git-Push, kein Blender, kein Unreal, kein LibreOffice-PDF. Keine Änderung an Design 41, an der 120-Stunden-Regel und an den abgelehnten Verbesserungen 23, 25, 34, Language Studio 2.0. Verbesserung 35 bleibt offen.
+Kein SMTP, keine Zahlung, kein Git-Push, kein Blender, kein Unreal, kein LibreOffice-PDF. Keine Änderung an Design 41, an der 120-Stunden-Regel und an den abgelehnten Verbesserungen 23, 25, 34, Language Studio 2.0. Verbesserung 35 bleibt offen.
+
+## Stand nach den Fachadaptern
+
+Jede Katalog-ID hat mindestens einen Adapter. `not_implemented` kommt im Katalog nicht mehr vor. `ready` kommt nicht vor. Gesperrte Aktionen liegen in `SystemPromptAdapter.cs`. Lokale Dateien nutzen vorhandene Typen (`SitePage.ToHtml`, `CleanRoom.Create`, `ResourceMonitor.Snapshot`, `OpenSource.Explain`, `TripleMode.DetectHere`, `WorkflowEngine.StepLabel`) und rufen die gefährliche Methode nicht auf. Verbesserung 42 ist nicht vollständig implementiert.
