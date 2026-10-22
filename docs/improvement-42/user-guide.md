@@ -1,6 +1,6 @@
 # Verbesserung 42 – Bedienung
 
-Die Leiste sitzt oben in einem Studio, nicht auf dem Startbildschirm. Bei den 3D-Modellen liegt sie links im Rollbereich, damit die Vorschau sichtbar bleibt. Sie heißt nicht nach einer einzelnen Aktion, weil noch kein Studio eine Aktion wirklich ausführt.
+Die Leiste sitzt oben in einem Studio, nicht auf dem Startbildschirm. Bei den 3D-Modellen liegt sie links im Rollbereich, damit die Vorschau sichtbar bleibt. Der Knopf „Arbeitsplatz“ öffnet dieselbe Stelle für das Studio, das gerade offen ist.
 
 1. Lege zuerst ein Projekt an. Ohne Projekt steht dort „Rückfrage“ und „Lege zuerst ein Projekt an.“
 2. Schreib in das Feld „Was soll dieses Studio tun?“, was passieren soll.

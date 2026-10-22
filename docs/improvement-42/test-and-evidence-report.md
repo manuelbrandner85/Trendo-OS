@@ -42,4 +42,6 @@ Headless, kein Screenshot: Briefseite enthält „Was soll dieses Studio tun?“
 
 ## Nachtrag Master bis 94, Phase 1
 
-Die Tabelle oben bleibt der Beleg von Phase A+B. Sie beschreibt nicht mehr die aktuelle Matrix: X-11 ist `partial` mit der Aktion `arbeitsplatz.blatt`, die anderen 53 Studios bleiben `not_implemented`. Fall 6 gilt weiter für Studios ohne Adapter. Das Arbeitsblatt ist ein neuer Beleg, kein Ersatz für Brief, Tabelle oder E-Mail. Zahlen des neuen Laufs stehen in `tasks/T-0094-master-94.bericht.md`.
+Die Tabelle oben bleibt der Beleg von Phase A+B. Sie beschreibt nicht mehr die aktuelle Matrix: X-11 ist `partial` mit der Aktion `arbeitsplatz.blatt`, die anderen 53 Studios bleiben `not_implemented`. Fall 6 gilt weiter für Studios ohne Adapter. Das Arbeitsblatt ist ein neuer Beleg, kein Ersatz für Brief, Tabelle oder E-Mail.
+
+Lauf am 22.10.2026, `dotnet test Trendo.sln -c Release`: Api 15 bestanden, Core 526 bestanden und 10 übersprungen, App 215 bestanden, jeweils 0 Fehler. Einzelheiten in `tasks/T-0094-master-94.bericht.md`. Das Paket 42 ist dadurch nicht TESTED.

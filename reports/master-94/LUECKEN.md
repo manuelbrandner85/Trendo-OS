@@ -16,7 +16,7 @@ Keine zweite Engine. Der Ablauf ist `StudioWorkflow` in `src/Trendo.Core/PromptA
 
 ## Phase 1 dieses Auftrags
 
-Seite „Ein Arbeitsplatz“, ein Adapter `arbeitsplatz.blatt` nur für X-11, Prüfung liest die geschriebene Datei. 53 Studios bleiben ohne Adapter. Das hebt 42 und 43 nicht auf TESTED. Testergebnis: `tasks/T-0094-master-94.bericht.md`.
+Seite „Ein Arbeitsplatz“, ein Adapter `arbeitsplatz.blatt` nur für X-11, Prüfung liest die geschriebene Datei. 53 Studios bleiben ohne Adapter. Das hebt 42 und 43 nicht auf TESTED. `dotnet test Trendo.sln -c Release` an diesem Stand: Api 15 bestanden, Core 526 bestanden und 10 übersprungen, App 215 bestanden, jeweils 0 Fehler. Einzelheiten: `tasks/T-0094-master-94.bericht.md`.
 
 ## Register
 
