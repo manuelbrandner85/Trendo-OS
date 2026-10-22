@@ -15,7 +15,7 @@ public sealed class ApiFixture : IAsyncLifetime
 {
     public TrendoCore Core = null!; public ApiTokens Tokens = null!; public LocalApi Api = null!; public HttpClient Http = null!;
     public FakeLauncher Launcher = new();
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         var root = Path.Combine(Path.GetTempPath(), "trendo-api-" + Guid.NewGuid().ToString("N"));
         Core = new TrendoCore(root, new InMemorySecretStore(), Launcher);
@@ -23,7 +23,7 @@ public sealed class ApiFixture : IAsyncLifetime
         Api = await LocalApi.StartAsync(Core, Tokens, Path.Combine(AppContext.BaseDirectory, "requirements.yaml"), new Probe());
         Http = new HttpClient { BaseAddress = Api.BaseAddress };
     }
-    public async Task DisposeAsync() { Http.Dispose(); await Api.DisposeAsync(); }
+    public async ValueTask DisposeAsync() { Http.Dispose(); await Api.DisposeAsync(); }
     public HttpRequestMessage Req(HttpMethod m, string url, Role? r, object? body = null)
     {
         var q = new HttpRequestMessage(m, url);
@@ -40,7 +40,7 @@ public class Api_Auth_Binding(ApiFixture f) : IClassFixture<ApiFixture>
     {
         Assert.Equal("127.0.0.1", f.Api.BaseAddress.Host);
         var other = (await Dns.GetHostAddressesAsync(Dns.GetHostName())).FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(a));
-        if (other is null) return; // keine Nicht-Loopback-Adresse vorhanden → nicht prüfbar
+        Assert.SkipUnless(other is not null, "Übersprungen: keine Netzwerkadresse außer 127.0.0.1 – die Bindung ist so nicht prüfbar.");
         using var c = new TcpClient();
         await Assert.ThrowsAnyAsync<SocketException>(() => c.ConnectAsync(other, f.Api.Port).WaitAsync(TimeSpan.FromSeconds(5)));
     }
