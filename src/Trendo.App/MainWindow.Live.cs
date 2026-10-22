@@ -252,8 +252,7 @@ public partial class MainWindow
             {
                 _liveMics = found.Microphones.ToList();
                 _liveMicIndex = 0;
-                _liveMic = true;
-                _liveMsg = _liveMics.Count == 0 ? "Kein Mikrofon gefunden." : _liveMics.Count + " Mikrofone gefunden. Such dir eins aus.";
+                _liveMsg = _liveMics.Count == 0 ? "Kein Mikrofon gefunden." : _liveMics.Count + " Mikrofone gefunden. Such dir eins aus und setze das Häkchen, wenn es mit soll.";
             }
         }
         finally { _liveBusy = false; }
