@@ -32,7 +32,7 @@ Diese Phase ist der Inhalt dieses Branches. Sie macht 42 und 43 nicht fertig.
 - E-Mail: ohne Freigabe null Nachrichten. Mit Freigabe nur, wenn ein Versandweg angeschlossen ist. Sonst Entwurf und „nicht angeschlossen“.
 - Rechnung: Beträge mit Decimal. Keine Buchung, keine Zahlung. Der Zahl-Adapter bleibt ohne `CanPerformSideEffect`, bis ein echter Weg und eine einmalige Freigabe da sind.
 
-**Rechner:** DOCX geht unter Linux. PDF und ein echtes Word-Layout brauchen LibreOffice. Das Chrome in diesem Image druckt US Letter und beendet sich nach dem PDF nicht. Das ist kein App-Fehler. Ein Windows-PC mit LibreOffice ist für die PDF-Abnahme nötig.
+**Rechner:** DOCX geht unter Linux. PDF und ein echtes Word-Layout brauchen LibreOffice. Das Chrome in diesem Image druckt US Letter und beendet sich nach dem PDF nicht. Das ist kein App-Fehler. Die Abnahme für LibreOffice liegt auf dem Windows-PC DESKTOP-9JVIIPU.
 
 ## Phase 3 – Webseite, Programm, Nachbau
 
@@ -66,9 +66,9 @@ Diese Phase ist der Inhalt dieses Branches. Sie macht 42 und 43 nicht fertig.
 
 - Bild: ffmpeg wandelt eine vorhandene Datei um. Log und Ausgabe existieren. Hochladen bleibt aus.
 - 3D: OBJ liegt im Projekt. Blender läuft nur, wenn `blender` startet und ein Log schreibt.
-- Spiel: Browser-Spiel als HTML. Unreal nur mit installiertem Editor und einem echten Projektordner. AION und GENESIS werden nicht aus diesem Repo erzeugt.
+- Spiel: Browser-Spiel als HTML im vom Benutzer gewählten Projektordner. Unreal nur mit installiertem Editor und diesem Ordner. AION und GENESIS werden hier nicht angelegt. Liegt so ein Projekt vor, bleiben Ordner, Regeln, Speicherstände und Freigaben getrennt.
 
-**Rechner:** ffmpeg ist auf diesem Image vorhanden. Blender und Unreal brauchen eine Installation, praktisch einen Windows-PC mit den Programmen und genug Platte. Ohne sie bleibt die Aktion blockiert.
+**Rechner:** ffmpeg ist auf diesem Image vorhanden. Blender und Unreal werden auf dem Windows-PC DESKTOP-9JVIIPU abgenommen. Ohne die Programme bleibt die Aktion blockiert.
 
 ## Phase 6 – Lokale KI wählen
 
@@ -117,24 +117,28 @@ Kameras, Roboter, Handy, Raspberry Pi, Smart Home, CNC, Fahrzeug. Erst Simulatio
 
 49 Rest, 50 Rest, 65, 87 bis 94, soweit sie Blender oder Unreal brauchen. 93 und 94 haben eine volle Spec im Master. Ohne Editor bleibt der Stand „Entwurf“ oder „blockiert“. Keine Behauptung, ein Effekt sei gelaufen.
 
-AION und GENESIS bleiben getrennte Projekte. Story und Figuren werden hier nicht geändert. Der Eigentümer muss die Projektordner nennen, bevor jemand dort schreibt.
+Spielstudios arbeiten allgemein mit dem Projektordner, den der Benutzer wählt. Ein fester Pfad für AION oder GENESIS ist nicht vorgesehen. Sobald so ein Projekt existiert, gelten die Trennregeln aus dem Master: eigene Ordner, Regeln, Speicherstände, Wissenskontexte und Freigaben. Story und Figuren werden dabei nicht geändert.
 
-**Rechner:** Windows, installierte Engine, GPU, genug RAM und VRAM. Leistungswerte nur aus einem echten Lauf.
+**Rechner:** Abnahme auf DESKTOP-9JVIIPU, mit installierter Engine, GPU, genug RAM und VRAM. Leistungswerte nur aus einem echten Lauf auf diesem PC.
 
 ## Nicht in diesen Phasen
 
 - 86 wird nicht gebaut.
-- 35 wird nicht aktiviert. Reparatur in 85 bleibt Anzeige, bis 35 entschieden ist.
+- 35 bleibt aus. Reparatur in 85 bleibt Anzeige. Ob 35 je aktiviert wird, ist offen.
+- Zahlen in 47 und 89 bleibt aus. Der Zahlungsweg ist offen.
+- 76 darf speichern, aber nur lokal, verschlüsselt im Secret Store (auf Windows DPAPI), mit Opt-in je Projekt, löschbar, ohne Cloud-Transfer ohne eigene Freigabe und ohne klinische Diagnoseautomatik. Der Speicher ist in Phase 1 und 2 nicht enthalten.
 - 23, 25, 34 und Language Studio 2.0 bleiben aus.
 - Die 120-Stunden-Forensik bleibt, wie sie in `ForensicsLab` steht.
 - Kein Merge auf `main` aus diesem Auftrag.
 
 ## Entscheidung des Eigentümers
 
-1. Reihenfolge der offenen PRs #237 und #243–#257. Sie kollidieren in denselben Dateien. Phase 1 sollte die gemeinsame Liste sein, die anderen setzen darauf auf.
-2. Ob PR #246 vor dem Merge an `StudioWorkflow` angebunden wird.
-3. Ob Gesundheitsdaten (76) überhaupt gespeichert werden dürfen.
-4. Ob jemals ein Zahlungsweg (47, 89) angeschlossen wird, und welcher. Bis dahin bleibt Zahlen aus.
-5. Wo AION und GENESIS liegen, und dass dort ohne ausdrücklichen Auftrag nichts geändert wird.
-6. Welcher Windows-PC mit Blender, Unreal und LibreOffice die späteren Phasen abnimmt.
-7. Ob 35 je aktiviert wird. Bis dahin keine Selbstreparatur.
+Stand 22.10.2026.
+
+1. Entschieden. Der Integrator mergt #237, dann #246, #248, #252, danach den Stapel #243 von unten nach oben. #237 ist auf `main`. Eine Adapterliste bleibt.
+2. Entschieden. #246 wird nach Phase 2 an `StudioWorkflow` gehängt, nicht als zweiter Auftragsweg.
+3. Entschieden. Gesundheitsdaten (76) dürfen gespeichert werden. Regeln: nur lokal, verschlüsselt über den Secret Store und auf Windows DPAPI, Opt-in je Projekt, löschbar, kein Cloud-Transfer ohne eigene Freigabe, keine automatische klinische Diagnose.
+4. Offen. Ein Zahlungsweg für 47 und 89 ist nicht gewählt. Zahlen bleibt aus.
+5. Entschieden. AION und GENESIS brauchen keinen festen Ort. Trendo OS gilt für alle. Spielstudios arbeiten mit dem Projektordner, den der Benutzer wählt. Die Trennung gilt nur, wenn so ein Projekt vorhanden ist.
+6. Entschieden. Der Windows-PC DESKTOP-9JVIIPU nimmt Blender, Unreal und LibreOffice ab.
+7. Offen. 35 bleibt aus. Keine Selbstreparatur.
