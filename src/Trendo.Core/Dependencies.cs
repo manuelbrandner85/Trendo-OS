@@ -35,7 +35,7 @@ public static class DependencyCatalog
         new("inter", "Schrift Inter", "UI-Schrift", "SIL OFL 1.1", DeliveryMode.Bundled, "Avalonia.Fonts.Inter, frei weitergebbar"),
         new("velopack", "Velopack", "Installer/Updater", "MIT", DeliveryMode.Bundled, "Bestandteil von Setup.exe"),
         new("yamldotnet", "YamlDotNet", "Spezifikation lesen", "MIT", DeliveryMode.Bundled, "NuGet-Bibliothek"),
-        new("wallpaper", "Hintergrund + Logo-Konzept", "Desktop", "Eigenes Projekt-Asset (KI-generiert)", DeliveryMode.Bundled, "Für Trendo OS erstellt"),
+        new("wallpaper", "Hintergrund (KI-generiert) + Trendo-Logo (eigener Entwurf)", "Desktop", "Eigenes Projekt-Asset (KI-generiert)", DeliveryMode.Bundled, "Für Trendo OS erstellt"),
         new("webview2", "Microsoft Edge WebView2", "—", "Microsoft", DeliveryMode.NotNeeded, "Trendo OS nutzt keine Web-Ansichten; nicht erforderlich"),
         new("ollama", "Ollama (lokale KI-Laufzeit)", "Trendo KI Assistent offline", "MIT", DeliveryMode.AutoUser,
             "Installer ~1 GB → nicht ins Setup gepackt; pro Benutzer ohne Admin installierbar",

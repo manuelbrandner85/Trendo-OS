@@ -9,7 +9,7 @@ Quelle: `src/Trendo.Core/DependencyCatalog` (Installation bei Bedarf beim Öffne
 | Schrift Inter | SIL OFL 1.1 | Im Setup enthalten | — | Avalonia.Fonts.Inter, frei weitergebbar |
 | Velopack | MIT | Im Setup enthalten | — | Bestandteil von Setup.exe |
 | YamlDotNet | MIT | Im Setup enthalten | — | NuGet-Bibliothek |
-| Hintergrund + Logo-Konzept | Eigenes Projekt-Asset (KI-generiert) | Im Setup enthalten | — | Für Trendo OS erstellt |
+| Hintergrund (KI-generiert) + Trendo-Logo (eigener Entwurf) | Eigenes Projekt-Asset (KI-generiert) | Im Setup enthalten | — | Für Trendo OS erstellt |
 | Microsoft Edge WebView2 | Microsoft | Nicht erforderlich | — | Trendo OS nutzt keine Web-Ansichten; nicht erforderlich |
 | Ollama (lokale KI-Laufzeit) | MIT | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | Ollama.Ollama | Installer ~1 GB → nicht ins Setup gepackt; pro Benutzer ohne Admin installierbar |
 | KI-Modell Qwen2.5 0.5B (qwen2.5:0.5b) | Apache-2.0 | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | — | Gewichte ~400 MB, über Ollama geladen |

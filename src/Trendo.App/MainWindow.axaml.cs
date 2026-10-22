@@ -79,6 +79,7 @@ public sealed partial class MainWindow : Window
         _clock.Foreground = Text; _kiText.Foreground = Brush.Parse(C("#E6EDF7", "#1B2A44")); _kiStatus.Foreground = Muted; _depLog.Foreground = Muted;
         FirstStartDefaults();
         Title = "Trendo OS";
+        try { using var ico = Avalonia.Platform.AssetLoader.Open(new Uri("avares://TrendoOS/Assets/logo/trendo.ico")); Icon = new WindowIcon(ico); } catch (Exception) { /* Symbol fehlt: Standard */ }
         Width = 1440; Height = 900; MinWidth = 960; MinHeight = 600; WindowState = WindowState.Maximized;
         Background = Brush.Parse("#050B18");
 
@@ -164,7 +165,7 @@ public sealed partial class MainWindow : Window
 
     private string _apiInfo = "";
     private void RefreshStatusBar() =>
-        _status.Text = $"Core {_core.Version}{(_core.Offline ? " · OFFLINE" : "")} · Secrets: {_core.Secrets.BackendName} · Audit-Kette: {(_core.Audit.Verify() ? "intakt" : "FEHLER")}{_apiInfo} · Logo: Konzept, nicht freigegeben · Hintergrund: KI-generiert";
+        _status.Text = $"Core {_core.Version}{(_core.Offline ? " · OFFLINE" : "")} · Secrets: {_core.Secrets.BackendName} · Audit-Kette: {(_core.Audit.Verify() ? "intakt" : "FEHLER")}{_apiInfo} · Hintergrund: KI-generiert";
 
     public void Show(string key)
     {
@@ -285,19 +286,29 @@ public sealed partial class MainWindow : Window
     }
     private static TextBlock Glyph(string glyph, double size = 18) => new() { Text = glyph, FontSize = size, HorizontalAlignment = HorizontalAlignment.Center };
 
-    private static Control Logo(double size, bool glow = false)
+    /// <summary>Trendo-Logo A „Obsidian-Kachel“ (Vektor-Nachbau von Assets/logo/trendo-logo-a.svg, viewBox 64×64).</summary>
+    internal static Control Logo(double size, bool glow = false)
     {
-        // Vektor-Nachbau des V/T-Konzeptsymbols (NICHT freigegeben)
-        var g = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-            GradientStops = { new GradientStop(Color.Parse("#9FE3FF"), 0), new GradientStop(Color.Parse("#3B9BFF"), 0.5), new GradientStop(Color.Parse("#1550E0"), 1) } };
-        var path = new Avalonia.Controls.Shapes.Path
+        static LinearGradientBrush Lg(string a, string b, bool diag) => new()
         {
-            Data = Geometry.Parse("M0,0 L100,0 L50,90 Z M22,12 L50,62 L60,44 L44,12 Z M56,12 L78,12 L64,37 Z"),
-            Fill = g, Stretch = Stretch.Uniform, Width = size, Height = size * 0.9,
+            StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(diag ? 1 : 0, 1, RelativeUnit.Relative),
+            GradientStops = { new GradientStop(Color.Parse(a), 0), new GradientStop(Color.Parse(b), 1) },
         };
-        if (glow) path.Effect = new DropShadowEffect { Color = Color.Parse("#2E8BFF"), BlurRadius = size * 0.45, OffsetX = 0, OffsetY = 0, Opacity = 1 };
-        ToolTip.SetTip(path, "Logo-Konzept – nicht freigegeben");
-        return path;
+        static Border R(double x, double y, double w, double h, double r, IBrush fill, IBrush? stroke = null, double st = 0)
+        {
+            var e = new Border { Width = w, Height = h, CornerRadius = new CornerRadius(r), Background = fill, BorderBrush = stroke, BorderThickness = new Thickness(st) };
+            Canvas.SetLeft(e, x); Canvas.SetTop(e, y); return e;
+        }
+        var canvas = new Canvas { Width = 64, Height = 64, Children =
+        {
+            R(1, 1, 62, 62, 16, Lg("#1B3150", "#060D1A", true), Brush.Parse("#335578"), 2),
+            R(13, 14, 38, 10, 5, Brush.Parse("#F0F6FF")),
+            R(27, 14, 10, 36, 5, Lg("#7FD8FF", "#2A7FFF", false)),
+        } };
+        var box = new Viewbox { Name = "trendo-logo", Width = size, Height = size, Stretch = Stretch.Uniform, Child = canvas };
+        if (glow) box.Effect = new DropShadowEffect { Color = Color.Parse("#2E8BFF"), BlurRadius = size * 0.35, OffsetX = 0, OffsetY = 0, Opacity = 0.8 };
+        ToolTip.SetTip(box, "Trendo-Logo");
+        return box;
     }
 
     private Control? BlurredWallpaper(Visual mask)
