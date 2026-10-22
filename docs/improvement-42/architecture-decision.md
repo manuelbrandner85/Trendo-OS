@@ -18,7 +18,7 @@ Die Soll-Namen aus Abschnitt 4 des Auftrags sind so abgebildet:
 | IArtifactStore | `RunStore` schreibt `auftraege/{id}/lauf.json` über `ProjectStore` |
 | IPromptModel | `IntelligencePromptModel` ruft `AskAsync` |
 
-`PromptActions.CreateDefault()` liefert in dieser Phase eine leere Liste. Jedes der 54 Studios bleibt dadurch `not_implemented`. Testadapter in `tests/Trendo.Core.Tests/PromptActionTests.cs` sind nicht registriert und erscheinen nicht in der Matrix.
+In Phase A+B lieferte `PromptActions.CreateDefault()` eine leere Liste. Seit Phase 1 des Masters bis 94 steht dort nur das Arbeitsblatt für X-11. Die übrigen 53 Studios bleiben `not_implemented`. Testadapter in `tests/Trendo.Core.Tests/PromptActionTests.cs` sind nicht registriert und erscheinen nicht in der Matrix.
 
 ## Ablauf
 
@@ -43,3 +43,7 @@ Die Laufdatei hat `SchemaVersion` 1. Eine neuere Fassung wird nicht ausgeführt.
 ## Was diese Phase nicht tut
 
 Keine Brief-, Office-, Mail-, Geschäfts-, Software-, 3D-, Spiele- oder Medienadapter. Kein SMTP, keine Zahlung, kein Git-Push, kein Blender, kein Unreal, kein LibreOffice-PDF. Keine Änderung an Design 41, an der 120-Stunden-Regel und an den abgelehnten Verbesserungen 23, 25, 34, Language Studio 2.0. Verbesserung 35 bleibt offen.
+
+## Nachtrag: Ein Arbeitsplatz (Master bis 94, Phase 1)
+
+`PromptActions.CreateDefault()` registriert nur `ArbeitsplatzBlattAdapter` für X-11. Er schreibt `arbeitsplatz/blatt-vN.md` über `ProjectStore` und liefert zwei Prüfungen, die die Datei wirklich lesen. `SideEffectClass` bleibt `None`. Die Seite „Ein Arbeitsplatz“ zeigt das Ergebnis von `StudioWorkflow` und setzt keinen eigenen Status. 53 Studios bleiben ohne Adapter. Verbesserung 86 ist nicht eingebaut. Die 120-Stunden-Regel ist nicht angefasst.

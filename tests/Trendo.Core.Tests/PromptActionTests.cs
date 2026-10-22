@@ -317,7 +317,8 @@ public class PromptActionTests
     {
         var ids = CapabilityCatalog.Ids;
         Assert.Equal(ids.Count, ids.Distinct(StringComparer.OrdinalIgnoreCase).Count());
-        Assert.All(ids, id => Assert.Equal(CapabilityLevel.NotImplemented, CapabilityCatalog.Level(id, PromptActions.CreateDefault())));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("X-11", PromptActions.CreateDefault()));
+        Assert.All(ids.Where(id => !string.Equals(id, "X-11", StringComparison.Ordinal)), id => Assert.Equal(CapabilityLevel.NotImplemented, CapabilityCatalog.Level(id, PromptActions.CreateDefault())));
         var markdown = CapabilityCatalog.Markdown(PromptActions.CreateDefault());
         Assert.Equal(Normalize(markdown), Normalize(File.ReadAllText(Repo("docs/improvement-42/studio-capability-matrix.md"))));
     }

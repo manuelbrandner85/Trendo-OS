@@ -65,7 +65,7 @@ public partial class MainWindow
     public string PageTitle(string key) =>
         Pages.Concat(ExtraPages).FirstOrDefault(p => p.Key == key).Title
         ?? _studios.FirstOrDefault(s => PageForStudio(s.Id) == key)?.Name
-        ?? key switch { "notbuilt" => "Noch nicht gebaut", "studio-deps" => "Benötigte Programme", "akte" => "Akte", "ausgabe" => "Ausgabe", _ => char.ToUpper(key[0]) + key[1..] };
+        ?? key switch { "notbuilt" => "Noch nicht gebaut", "studio-deps" => "Benötigte Programme", "akte" => "Akte", "ausgabe" => "Ausgabe", "arbeitsplatz" => "Ein Arbeitsplatz", _ => char.ToUpper(key[0]) + key[1..] };
 
     public void PinStudio(string id) { _settings.PinnedStudios = StartMenu.Pin(_settings.PinnedStudios, id); SaveSettings(); FillStartMenu(); }
     public void UnpinStudio(string id) { _settings.PinnedStudios = StartMenu.Unpin(_settings.PinnedStudios, id); SaveSettings(); FillStartMenu(); }

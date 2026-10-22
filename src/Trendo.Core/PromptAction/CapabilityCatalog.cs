@@ -20,7 +20,7 @@ public static class CapabilityCatalog
         P("STUDIO-LETTER-01", "Briefe schreiben", "Arbeiten & Büro", "Letters, LetterArchive, LetterCase, PdfExport", "Brief als DOCX entwerfen", "Absender, Empfänger, Betreff, Text", "DOCX, optional PDF", "Kein Fachadapter registriert."),
         P("SYS-10", "Texte & Tabellen", "Arbeiten & Büro", "Ooxml, Csv, Pdf, Writing", "Dokument oder Tabelle mit geprüfter Formel", "Text oder Zellen", "DOCX, XLSX", "Kein Fachadapter registriert."),
         P("SYS-09", "E-Mails & Termine", "Arbeiten & Büro", "MailCenter", "Entwurf, Versand nur mit Freigabe", "Empfänger, Betreff, Text", "EML-Entwurf", "Kein Fachadapter registriert."),
-        P("X-11", "Neues Projekt starten", "Arbeiten & Büro", "ProjectStore", "Projekt anlegen", "Projekt-ID", "Projektordner", "Kein Fachadapter registriert."),
+        P("X-11", "Neues Projekt starten", "Arbeiten & Büro", "ProjectStore", "Lokales Arbeitsblatt schreiben", "Titel, Text", "Markdown", "Nur ein lokales Arbeitsblatt. Ein Projekt wird hier nicht neu angelegt."),
         P("SYS-02", "Kleine Helfer & Musik", "Arbeiten & Büro", "Calc, NoteStore, FileShelf", "Notiz oder Rechnung", "Text oder Ausdruck", "Notiz, Zahl", "Kein Fachadapter registriert."),
         P("STUDIO-ONLINE-BUSINESS-01", "Online verkaufen", "Business & Geld", "BusinessStudio", "Geschäftsplan rechnen", "Preis, Kosten, Menge", "Bewertung", "Kein Fachadapter registriert."),
         P("SPEC-11", "Geld & Rechnungen", "Business & Geld", "Finance, Ledger", "Rechnung mit Decimal rechnen, nicht buchen", "Verkäufer, Käufer, Positionen", "HTML-Entwurf", "Kein Fachadapter registriert."),

@@ -29,7 +29,7 @@ public partial class MainWindow
     private Control WithPromptBar(string key, Control view)
     {
         // start: paralleler Desktop-Auftrag. 3d: die Seite füllt die Höhe; die Leiste sitzt dort im linken Rollbereich.
-        if (key is "start" or "3d") return view;
+        if (key is "start" or "3d" or "arbeitsplatz") return view;
         var studio = ModuleOf(key);
         if (studio is null || CapabilityCatalog.Find(studio) is null) return view;
         var dock = new DockPanel { LastChildFill = true, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
@@ -174,11 +174,14 @@ public partial class MainWindow
             }
         };
 
+        var place = new Button { Name = "auftrag-arbeitsplatz", Content = "Arbeitsplatz", Height = 32, MinWidth = 120 };
+        AutomationProperties.SetName(place, "Ein Arbeitsplatz öffnen");
+        place.Click += (_, _) => ShowWorkspace(studio);
         var buttons = new StackPanel
         {
             Orientation = Orientation.Horizontal,
             Spacing = 8,
-            Children = { check, answer, approve, cancel }
+            Children = { check, answer, approve, cancel, place }
         };
         var row = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), ColumnSpacing = 8 };
         Grid.SetColumn(box, 0);

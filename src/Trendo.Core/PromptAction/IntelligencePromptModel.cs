@@ -24,6 +24,6 @@ public sealed class IntelligencePromptModel(IntelligenceCore core, Func<bool> lo
 
 public static class PromptActions
 {
-    /// <summary>Produktion: noch keine Fachadapter. Studios antworten deshalb mit „Nicht unterstützt“.</summary>
-    public static IReadOnlyList<IStudioActionAdapter> CreateDefault() => [];
+    /// <summary>Produktion: nur das lokale Arbeitsblatt. Alle anderen Studios bleiben ohne Aktion.</summary>
+    public static IReadOnlyList<IStudioActionAdapter> CreateDefault() => [new ArbeitsplatzBlattAdapter()];
 }

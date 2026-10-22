@@ -31,6 +31,21 @@ if (Environment.GetEnvironmentVariable("TRENDO_DEMO_CASE") is not null)
     LetterKit.Compose(c, lh); store.Save(c, Principal.LocalOwner);
     win.OpenCase(c); win.Show(args.Length > 3 ? args[3] : "akte");
 }
+var platz = Environment.GetEnvironmentVariable("TRENDO_ARBEITSPLATZ");
+if (platz is "blatt" or "brief")
+{
+    win.Core.Projects.Create("umzug", "Umzug");
+    if (platz == "blatt")
+    {
+        win.ShowWorkspace("X-11");
+        win.SubmitWorkspace("Umzug", "Kartons beschriften und den Vertrag prüfen.");
+    }
+    else
+    {
+        win.ShowWorkspace("STUDIO-LETTER-01");
+        win.SubmitWorkspace("Amt", "Bitte um eine Frist.");
+    }
+}
 for (var i = 0; i < 30; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(50); }
 var frame = win.CaptureRenderedFrame();
 frame!.Save(outPath);
