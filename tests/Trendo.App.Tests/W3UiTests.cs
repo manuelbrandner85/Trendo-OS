@@ -115,17 +115,23 @@ public class SYS06_Ui
         w.Close();
     }
 
+    static (MainWindow W, Window Dlg, Task<bool> Task, string Dir) OpenDialog(string sub)
+    {
+        var (w, _, root) = Ui.Open();
+        var d = Path.Combine(root, sub); Directory.CreateDirectory(d);
+        var task = w.StartShareAsync(d, TimeSpan.FromHours(1), System.Net.IPAddress.Loopback);
+        Dispatcher.UIThread.RunJobs();
+        return (w, w.OwnedWindows.Single(), task, d);
+    }
+    static Button DlgButton(Window dlg, string name) => dlg.GetLogicalDescendants().OfType<Button>().First(b => b.Name == name);
+
     [AvaloniaFact(DisplayName = "SYS-06 Freigabe-Dialog: nennt Ordner und Dauer, Esc lehnt ab")]
     public async Task Share_dialog_escape_denies()
     {
-        var (w, _, root) = Ui.Open();
-        var d = Path.Combine(root, "teilen-esc"); Directory.CreateDirectory(d);
-        var task = w.StartShareAsync(d, TimeSpan.FromHours(1), System.Net.IPAddress.Loopback);
-        Dispatcher.UIThread.RunJobs();
-        var dlg = w.OwnedWindows.Single();
+        var (w, dlg, task, d) = OpenDialog("teilen-esc");
         var text = dlg.GetLogicalDescendants().OfType<TextBlock>().First(t => t.Name == "share-confirm-text").Text!;
         Assert.Contains(d, text); Assert.Contains("1 Stunde", text);
-        var deny = dlg.GetLogicalDescendants().OfType<Button>().First(b => b.Name == "share-confirm-deny");
+        var deny = DlgButton(dlg, "share-confirm-deny");
         Assert.True(deny.IsDefault); Assert.True(deny.IsCancel);
         dlg.KeyPressQwerty(PhysicalKey.Escape, RawInputModifiers.None);
         Dispatcher.UIThread.RunJobs();
@@ -133,6 +139,46 @@ public class SYS06_Ui
         Assert.Null(w.ActiveShare);
         Assert.Equal(ApprovalState.Denied, w.LastShareRequest!.State);
         w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "SYS-06 Freigabe-Dialog: Klick auf „Ablehnen“ lehnt ab")]
+    public async Task Share_dialog_deny_click()
+    {
+        var (w, dlg, task, _) = OpenDialog("teilen-nein-klick");
+        DlgButton(dlg, "share-confirm-deny").Press();
+        Assert.False(await task);
+        Assert.Null(w.ActiveShare);
+        Assert.Equal(ApprovalState.Denied, w.LastShareRequest!.State);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "SYS-06 Freigabe-Dialog: Fenster schließen (X) lehnt ab")]
+    public async Task Share_dialog_close_denies()
+    {
+        var (w, dlg, task, _) = OpenDialog("teilen-x");
+        dlg.Close(); Dispatcher.UIThread.RunJobs();
+        Assert.False(await task);
+        Assert.Null(w.ActiveShare);
+        Assert.Equal(ApprovalState.Denied, w.LastShareRequest!.State);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "SYS-06 Freigabe-Dialog: Klick auf „Erlauben“ startet die Freigabe; Schließen des Hauptfensters beendet sie")]
+    public async Task Share_dialog_allow_click_and_close_stops()
+    {
+        var (w, dlg, task, _) = OpenDialog("teilen-ja");
+        DlgButton(dlg, "share-confirm-allow").Press();
+        Assert.True(await task);
+        Assert.NotNull(w.ActiveShare);
+        Assert.Equal(ApprovalState.Executed, w.LastShareRequest!.State);
+        var url = w.ActiveShare!.Url;
+        var closed = false; w.Closed += (_, _) => closed = true;
+        w.Close();
+        for (var i = 0; i < 100 && !closed; i++) { Dispatcher.UIThread.RunJobs(); await Task.Delay(10); }
+        Assert.True(closed, "Hauptfenster wurde nach dem Beenden der Freigabe nicht geschlossen");
+        Assert.Null(w.ActiveShare);
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+        await Assert.ThrowsAnyAsync<Exception>(() => http.GetStringAsync(url));
     }
 
     [AvaloniaFact(DisplayName = "SYS-06 UI: Ordner teilen, Datei echt per HTTP laden, falsches Token abgelehnt, beenden")]

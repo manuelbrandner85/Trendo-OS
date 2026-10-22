@@ -15,7 +15,7 @@ public partial class MainWindow
     public IPAddress? ShareAddressOverride { get; set; }
     /// <summary>Fragt den Menschen, ob der Ordner geteilt werden darf. Standard: deutscher Dialog („Ablehnen“ ist Standard, Esc = Ablehnen).
     /// Tests setzen hier eine eigene Antwort ein.</summary>
-    public Func<string, TimeSpan, Task<bool>>? ShareConfirm { get; set; }
+    internal Func<string, TimeSpan, Task<bool>>? ShareConfirm { get; set; }
     /// <summary>Die zuletzt angefragte Freigabe (für Tests und Anzeige).</summary>
     public ApprovalRequest? LastShareRequest { get; private set; }
 
@@ -24,7 +24,20 @@ public partial class MainWindow
         _showMap["teilen"] = ShareView; SysTabs.Add(("teilen", "Teilen im Heimnetz"));
         StudioPages["SYS-06"] = "teilen";
         ExtraPages.Add(("Ordner im Heimnetz teilen", "teilen", ["teilen", "freigabe", "netzwerk", "handy", "uebertragen", "wlan"]));
-        Closing += (_, _) => { ActiveShare?.DisposeAsync().AsTask().Wait(1000); };
+        Closing += OnClosingStopShare;
+    }
+
+    private bool _closingAfterShareStop;
+
+    /// <summary>Nicht im UI-Thread blockieren: Schließen anhalten, Freigabe sauber beenden, dann wirklich schließen.</summary>
+    private async void OnClosingStopShare(object? sender, WindowClosingEventArgs e)
+    {
+        if (ActiveShare is null || _closingAfterShareStop) return;
+        e.Cancel = true;
+        _closingAfterShareStop = true;
+        try { await StopShareAsync(); }
+        catch (Exception ex) { _core.Audit.Append(Principal.LocalOwner.Name, "share.stop.error", ex.GetType().Name); }
+        Close();
     }
 
     public async Task<bool> StartShareAsync(string folder, TimeSpan dur, IPAddress ip)
