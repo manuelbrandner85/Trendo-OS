@@ -49,7 +49,7 @@ Quelle für 42–94: `reports/master-94/LUECKEN.md` – Branch `cursor/master-bi
 | 41 | MASTER §3 | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | | MASTER §3 |
 | 42 | Prompt-zu-Auftrag, 20 Bereiche | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | IN_PROGRESS | IN ENTWICKLUNG | LUECKEN.md |
 | 43 | Ein Arbeitsplatz, 20 Funktionen | offen/unbelegt | offen/unbelegt | AI ARCHITECT | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | IN_PROGRESS | IN ENTWICKLUNG | LUECKEN.md |
-| 44 | Fachprogramme nur bei Bedarf | offen/unbelegt | offen/unbelegt | AI ARCHITECT | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | APPROVED_SPEC | GEPLANT | LUECKEN.md |
+| 44 | Fachprogramme nur bei Bedarf | offen/unbelegt | offen/unbelegt | AI ARCHITECT | PR #271 + Folge-PR | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | APPROVED_SPEC | GEPLANT | LUECKEN.md |
 | 45 | Office, 20 Funktionen | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | IN_PROGRESS | IN ENTWICKLUNG | LUECKEN.md |
 | 46 | E-Mail, 20 Funktionen | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | IN_PROGRESS | IN ENTWICKLUNG | LUECKEN.md |
 | 47 | Finanzen, 20 Funktionen | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | offen/unbelegt | IN_PROGRESS | IN ENTWICKLUNG | LUECKEN.md |

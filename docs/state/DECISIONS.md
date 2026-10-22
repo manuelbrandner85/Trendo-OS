@@ -10,3 +10,5 @@
 | 23.10.2026 | Kein Merge, solange der Merge-Lauf für #243–#259 nicht abgeschlossen ist | MASTER |
 | 23.10.2026 | Dieser PR darf geöffnet werden (nicht gemergt) | Manuel: „JA, docs/state-PR darf geöffnet werden“ |
 | 23.10.2026 | Merge-Reihenfolge freigegeben (laut MASTER durch Manuel): GITHUB & RECOVERY merged einzeln #243, #244–#258, #260, #248, #252, zuletzt #259 | Meldung MASTER |
+| 23.10.2026 | Paket 44 mit allen 10 Funktionen freigegeben (laut MASTER durch Manuel). Punkt 7 = „Kein automatischer Download“; Punkt 8 = „Fehlendes Programm per Knopf mit Rückfrage aus offizieller kostenloser Quelle installieren“ | Meldung MASTER |
+| 23.10.2026 | Regel: Alles immer auf Deutsch und leicht verständlich – auch PR-Texte, Berichte und Doku für Manuel | Meldung MASTER |
