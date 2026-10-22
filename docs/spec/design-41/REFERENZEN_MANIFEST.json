@@ -1,0 +1,145 @@
+{
+  "source": "new AI generated two multi-view reference boards (illustrative, not live screenshots)",
+  "views": [
+    {
+      "file": "referenzen/01_DESKTOP_PREMIUM.png",
+      "description": "Desktop-Hauptansicht und Dock",
+      "pixel_size": [
+        1920,
+        779
+      ],
+      "crop": [
+        0,
+        0,
+        1080,
+        438
+      ]
+    },
+    {
+      "file": "referenzen/02_STARTMENUE.png",
+      "description": "Startmenü und App-Start",
+      "pixel_size": [
+        1112,
+        844
+      ],
+      "crop": [
+        980,
+        0,
+        1536,
+        422
+      ]
+    },
+    {
+      "file": "referenzen/03_STUDIOKARTEN.png",
+      "description": "Studio-Bibliothek und Karten",
+      "pixel_size": [
+        1150,
+        656
+      ],
+      "crop": [
+        0,
+        442,
+        575,
+        770
+      ]
+    },
+    {
+      "file": "referenzen/04_BRIEFSTUDIO.png",
+      "description": "Briefstudio, Dokumentenlayout",
+      "pixel_size": [
+        1696,
+        698
+      ],
+      "crop": [
+        5,
+        425,
+        853,
+        774
+      ]
+    },
+    {
+      "file": "referenzen/05_TRENDO_KI.png",
+      "description": "Trendo-Assistent und Zustände",
+      "pixel_size": [
+        1360,
+        698
+      ],
+      "crop": [
+        856,
+        425,
+        1536,
+        774
+      ]
+    },
+    {
+      "file": "referenzen/06_FENSTER.png",
+      "description": "Fensterrahmen, Materialtiefe",
+      "pixel_size": [
+        1100,
+        657
+      ],
+      "crop": [
+        0,
+        776,
+        415,
+        1024
+      ]
+    },
+    {
+      "file": "referenzen/07_EINSTELLUNGEN.png",
+      "description": "Themes und Einstellungen",
+      "pixel_size": [
+        1100,
+        497
+      ],
+      "crop": [
+        380,
+        780,
+        816,
+        977
+      ]
+    },
+    {
+      "file": "referenzen/08_SYSTEMMETRIKEN.png",
+      "description": "Echte Metriken, Performance",
+      "pixel_size": [
+        1100,
+        673
+      ],
+      "crop": [
+        814,
+        780,
+        1136,
+        977
+      ]
+    },
+    {
+      "file": "referenzen/09_WALLPAPER_THEMES.png",
+      "description": "Wallpaper und Theme-Presets",
+      "pixel_size": [
+        1100,
+        544
+      ],
+      "crop": [
+        1138,
+        780,
+        1536,
+        977
+      ]
+    },
+    {
+      "file": "referenzen/10_DATEIMANAGER.png",
+      "description": "Dateimanager/Fensterdarstellung",
+      "pixel_size": [
+        1100,
+        623
+      ],
+      "crop": [
+        0,
+        790,
+        413,
+        1024
+      ]
+    }
+  ]
+}

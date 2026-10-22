@@ -429,3 +429,9 @@ items:
   functions: 0
   decision: REJECTED
   note: "Ausbau von SPEC-07, Masterprompt Abschnitt 12"
+- id: IMP-41
+  kind: improvement
+  title: "Ultimate HyperRealistic Premium Experience GODMODE (Design 41)"
+  functions: 20
+  decision: APPROVED
+  note: "Quelle docs/spec/design-41/; Rollout auf alle Studios und Logo erst nach gesondertem JA (UI41-6)"
