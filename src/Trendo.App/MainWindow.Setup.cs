@@ -16,6 +16,11 @@ public sealed partial class MainWindow
     private int _wizStep;
     private readonly HashSet<string> _wizPacks = [];
     private string _updateInfo = "Noch nicht geprüft";
+    private string _wizFolderMsg = "";
+    private string _repairMsg = "";
+    private string? _repairAsk;
+    private int _repairGen;
+    private int _checkGen;
 
     private Backup Backups => new(_core.DataRoot, Path.Combine(_core.DataRoot, "backups"), _core.Audit);
 
@@ -40,6 +45,7 @@ public sealed partial class MainWindow
         string[] titles = ["Willkommen", "Deine Ordner", "Aussehen", "Was möchtest du nutzen?", "Fertig"];
         sp.Children.Add(P($"Schritt {_wizStep + 1} von {titles.Length} · dauert etwa 2 Minuten", null, 11));
         sp.Children.Add(H(titles[_wizStep], 18));
+        sp.Children.Add(new TextBlock { Name = "wiz-choice", Text = WizSummary(), Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
         Button Next(string label = "Weiter") { var b = new Button { Name = "wiz-next", Content = label, Background = Accent, Padding = new Thickness(16, 6) }; b.Click += (_, _) => { _wizStep++; _settings.Save(_core.DataRoot); Show("einrichtung"); }; return b; }
         var back = new Button { Name = "wiz-back", Content = "Zurück", IsVisible = _wizStep > 0 }; back.Click += (_, _) => { _wizStep--; Show("einrichtung"); };
         switch (_wizStep)
@@ -56,32 +62,50 @@ public sealed partial class MainWindow
                 var folder = new TextBox { Name = "wiz-folder", Text = _settings.ProjectsFolder, PlaceholderText = "Ordner für Projekte", Width = 460, HorizontalAlignment = HorizontalAlignment.Left };
                 folder.TextChanged += (_, _) => _settings.ProjectsFolder = folder.Text?.Trim() ?? "";
                 sp.Children.Add(folder);
+                // „Ordner wählen …“ hängt T-0201 an dieses Feld (wiz-folder-pickdir). Kein zweiter Dialog.
+                sp.Children.Add(new TextBlock { Name = "wiz-folder-msg", Text = _wizFolderMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap, IsVisible = _wizFolderMsg.Length > 0 });
                 sp.Children.Add(P($"Einstellungen und Sicherungen liegen getrennt in {_core.DataRoot} und bleiben auch bei einer Deinstallation erhalten.", null, 11));
                 break;
             case 2:
                 sp.Children.Add(P("Wie soll Trendo aussehen?", Text, 13));
                 foreach (var (id, label) in new[] { ("dunkel", "Dunkel Premium (empfohlen)"), ("hell", "Hell"), ("kontrast", "Hoher Kontrast (gut lesbar)") })
                 {
-                    var rb = new RadioButton { Name = "wiz-theme-" + id, Content = label, GroupName = "theme", IsChecked = _settings.Theme == id, Foreground = Text };
-                    rb.IsCheckedChanged += (_, _) => { if (rb.IsChecked == true && _settings.Theme != id) { _settings.Theme = id; Show("einrichtung"); } };
-                    sp.Children.Add(rb);
+                    var themeId = id; var on = _settings.Theme == themeId;
+                    var rb = new RadioButton
+                    {
+                        Name = "wiz-theme-" + themeId, Content = (on ? "✓ " : "") + label, GroupName = "theme", IsChecked = on, Foreground = Text,
+                        BorderBrush = on ? Accent : Brushes.Transparent, BorderThickness = new Thickness(on ? 2 : 0), Padding = new Thickness(6, 2),
+                    };
+                    rb.IsCheckedChanged += (_, _) => { if (rb.IsChecked == true) ApplyWizardTheme(themeId); };
+                    sp.Children.Add(new Border { BorderBrush = on ? Accent : Brushes.Transparent, BorderThickness = new Thickness(on ? 2 : 0), CornerRadius = new CornerRadius(8), Padding = new Thickness(6, 2), HorizontalAlignment = HorizontalAlignment.Left, Child = rb });
                 }
-                // T-0210: sichtbare Vorschau der Wahl (wird nach „Weiter“ für ganz Trendo übernommen)
+                // Dieselbe Farbwahl wie im Rest von Trendo (ApplyTheme), plus die kleine Karte.
                 var (bg, fg, edge) = _settings.Theme switch { "hell" => ("#F4F7FC", "#0F1B2E", "#335C99"), "kontrast" => ("#000000", "#FFFFFF", "#FFFF00"), _ => ("#0B1730", "#E6EDF7", "#2F86F6") };
-                var themeLabel = _settings.Theme switch { "hell" => "Hell", "kontrast" => "Hoher Kontrast", _ => "Dunkel Premium" };
+                var themeLabel = ThemeLabel(_settings.Theme);
                 sp.Children.Add(new Border { Name = "wiz-theme-preview", Background = Brush.Parse(bg), BorderBrush = Brush.Parse(edge), BorderThickness = new Thickness(2), CornerRadius = new CornerRadius(10), Padding = new Thickness(14, 10), Width = 320, HorizontalAlignment = HorizontalAlignment.Left,
                     Child = new StackPanel { Spacing = 4, Children = { new TextBlock { Text = "Vorschau: " + themeLabel, Foreground = Brush.Parse(fg), FontWeight = FontWeight.SemiBold }, new TextBlock { Text = "So sehen Fenster und Texte aus.", Foreground = Brush.Parse(fg), FontSize = 11 } } } });
-                sp.Children.Add(new TextBlock { Name = "wiz-theme-choice", Text = $"Gewählt: {themeLabel} – gilt nach „Weiter“ für ganz Trendo.", Foreground = Text, FontSize = 11 });
+                sp.Children.Add(new TextBlock { Name = "wiz-theme-choice", Text = $"Gewählt: {themeLabel} – diese Seite zeigt das Aussehen sofort.", Foreground = Text, FontSize = 11, TextWrapping = TextWrapping.Wrap });
                 break;
             case 3:
                 var hw = HardwareProbe.Read(); var (model, why) = KiAdvisor.Choose(hw);
                 sp.Children.Add(P("Das Basispaket ist immer dabei: " + SetupPacks.Base.Description + ". Wähle zusätzlich, was du brauchst – Trendo installiert es gleich mit.", Text, 13));
                 foreach (var p in SetupPacks.Studios)
                 {
-                    var cb = new CheckBox { Name = "wiz-pack-" + p.Id, IsChecked = _wizPacks.Contains(p.Id), Foreground = Text,
-                        Content = new StackPanel { Children = { new TextBlock { Text = p.Name, Foreground = Text, FontWeight = FontWeight.SemiBold }, P(p.Description + (p.Id == "ki" ? $" · Modell: {model}" : ""), null, 11) } } };
-                    cb.IsCheckedChanged += (_, _) => { var changed = cb.IsChecked == true ? _wizPacks.Add(p.Id) : _wizPacks.Remove(p.Id); if (changed) Show("einrichtung"); };
-                    sp.Children.Add(cb);
+                    var pack = p; var on = _wizPacks.Contains(pack.Id);
+                    var cb = new CheckBox
+                    {
+                        Name = "wiz-pack-" + pack.Id, IsChecked = on, Foreground = Text,
+                        BorderBrush = on ? Accent : Brushes.Transparent, BorderThickness = new Thickness(on ? 2 : 0), Padding = new Thickness(4),
+                        Content = new StackPanel { Children = { new TextBlock { Text = (on ? "✓ " : "") + pack.Name, Foreground = Text, FontWeight = FontWeight.SemiBold }, P(pack.Description + (pack.Id == "ki" ? $" · Modell: {model}" : ""), null, 11) } },
+                    };
+                    cb.IsCheckedChanged += (_, _) =>
+                    {
+                        var want = cb.IsChecked == true;
+                        if (want == _wizPacks.Contains(pack.Id)) return;
+                        if (want) _wizPacks.Add(pack.Id); else _wizPacks.Remove(pack.Id);
+                        ShowWizard();
+                    };
+                    sp.Children.Add(new Border { BorderBrush = on ? Accent : Brushes.Transparent, BorderThickness = new Thickness(on ? 2 : 0), CornerRadius = new CornerRadius(8), Padding = new Thickness(4), HorizontalAlignment = HorizontalAlignment.Stretch, Child = cb });
                 }
                 sp.Children.Add(new TextBlock { Name = "wiz-pack-summary", Text = "Gewählt: " + string.Join(", ", new[] { SetupPacks.Base.Name }.Concat(SetupPacks.Studios.Where(x => _wizPacks.Contains(x.Id)).Select(x => x.Name))), Foreground = Text, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
                 sp.Children.Add(P("KI-Empfehlung für diesen PC: " + why, null, 11));
@@ -151,22 +175,37 @@ public sealed partial class MainWindow
 
     // ---------- Systemcheck: bereit / fehlt / Ein-Klick-Reparatur ----------
     private Control SystemCheckView() => Page("Systemcheck", new StackPanel { Spacing = 8, Children = {
-        P("Was Trendo auf diesem PC braucht – und ob es funktioniert. Fehlt etwas, reicht ein Klick auf „Reparieren“.", Text, 13), SystemCheckPanel() } });
+        P("Was Trendo auf diesem PC braucht – und ob es funktioniert. „Reparieren“ prüft den Punkt und fragt, bevor etwas installiert wird.", Text, 13), SystemCheckPanel() } });
 
     private Control SystemCheckPanel()
     {
         var host = new StackPanel { Spacing = 6, Name = "syscheck-host", Children = { P("Prüfe …", Text) } };
         var comps = SetupPacks.ComponentsFor(_settings.StudioPacks.Count > 0 ? _settings.StudioPacks : _wizPacks).ToList();
+        var generation = ++_checkGen;
         // Prüfen im Hintergrund (startet Programme mit --version) – nie auf dem UI-Thread blockieren
         _ = Task.Run(async () =>
         {
             var checks = (await Task.WhenAll(comps.Select(async c => (C: c, R: await _deps.CheckAsync(c))))).ToList();
-            await Dispatcher.UIThread.InvokeAsync(() => { host.Children.Clear(); host.Children.Add(BuildCheckGrid(checks)); });
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                if (generation != _checkGen) return;
+                host.Children.Clear(); host.Children.Add(BuildCheckGrid(checks));
+            });
         });
-        return host;
+        var panel = new StackPanel { Spacing = 6 };
+        if (_repairMsg.Length > 0) panel.Children.Add(new TextBlock { Name = "repair-msg", Text = _repairMsg, Foreground = _repairMsg.Contains('✓') ? Brush.Parse("#4ADE80") : Brush.Parse("#FACC15"), TextWrapping = TextWrapping.Wrap });
+        if (_repairAsk is { } askId && DependencyCatalog.All.FirstOrDefault(c => c.Id == askId) is { } asked)
+        {
+            var yes = new Button { Name = "repair-yes", Content = asked.Mode == DeliveryMode.AutoElevated ? "Ja, installieren (Windows fragt nach Admin)" : "Ja, installieren", Background = Accent, IsEnabled = !_depBusy };
+            yes.Click += async (_, _) => await RunRepairInstall(asked);
+            var no = new Button { Name = "repair-no", Content = "Nein, nicht installieren" };
+            no.Click += (_, _) => { _repairGen++; _repairAsk = null; _repairMsg = $"{asked.Name}: nicht installiert."; Show(CurrentView); };
+            panel.Children.Add(new StackPanel { Name = "repair-ask", Orientation = Orientation.Horizontal, Spacing = 8, Children = { yes, no } });
+        }
+        panel.Children.Add(host);
+        return panel;
     }
 
-    private string _repairMsg = "";
     private Control BuildCheckGrid(List<(Component C, ToolCheck R)> checks)
     {
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("230,*,130"), Name = "syscheck" };
@@ -189,21 +228,87 @@ public sealed partial class MainWindow
             for (var k = 0; k < 3; k++) { Grid.SetRow(cells[k], i); Grid.SetColumn(cells[k], k); cells[k].Margin = new Thickness(0, 2); cells[k].VerticalAlignment = VerticalAlignment.Center; grid.Children.Add(cells[k]); }
         }
         var sum = rows.Count(r => r.State == "Bereit");
-        var panel = new StackPanel { Spacing = 6, Children = { P($"{sum} von {rows.Count} Punkten bereit.", Text), grid } };
-        if (_repairMsg.Length > 0) panel.Children.Insert(0, new TextBlock { Name = "repair-msg", Text = _repairMsg, Foreground = _repairMsg.Contains('✓') ? Brush.Parse("#4ADE80") : Brush.Parse("#FACC15"), TextWrapping = TextWrapping.Wrap });
-        return panel;
+        return new StackPanel { Spacing = 6, Children = { P($"{sum} von {rows.Count} Punkten bereit.", Text), grid } };
         Control MakeFix(Component c)
         {
             var b = new Button { Name = "fix-" + c.Id, Content = "Reparieren", FontSize = 11, IsEnabled = !_depBusy };
-            b.Click += async (_, _) =>
-            {
-                _repairMsg = $"{c.Name}: wird repariert …"; Show(CurrentView);
-                bool ok; try { ok = InstallOverride is { } fake ? await fake(c) : await InstallOne(c, refresh: false); } catch (Exception ex) { ok = false; _depLog.Text = ex.Message; }
-                _repairMsg = ok ? $"{c.Name}: repariert ✓" : $"{c.Name}: hat nicht geklappt{(_core.Offline ? " – keine Internetverbindung" : "")}. {_depLog.Text}".Trim();
-                ReloadStudios(); Show(CurrentView);
-            };
+            b.Click += async (_, _) => await ConfirmRepair(c);
             return b;
         }
+    }
+
+    private static string ThemeLabel(string id) => id switch { "hell" => "Hell", "kontrast" => "Hoher Kontrast", _ => "Dunkel Premium" };
+
+    private string WizSummary()
+    {
+        var names = SetupPacks.Studios.Where(p => _wizPacks.Contains(p.Id)).Select(p => p.Name).ToList();
+        var packs = names.Count == 0 ? "nur das Basispaket" : string.Join(", ", names);
+        var folder = string.IsNullOrWhiteSpace(_settings.ProjectsFolder) ? "kein Ordner" : _settings.ProjectsFolder;
+        return $"Aussehen: {ThemeLabel(_settings.Theme)}. Pakete: {packs}. Ordner: {folder}.";
+    }
+
+    /// <summary>Dieselbe Design-Funktion wie in den Einstellungen (ApplyTheme), ohne das Fenster neu zu öffnen – der Assistent behält den Schritt.</summary>
+    private void ApplyWizardTheme(string id)
+    {
+        if (_settings.Theme == id) return;
+        _settings.Theme = id;
+        ApplyTheme(_settings);
+        RequestedThemeVariant = id == "hell" ? Avalonia.Styling.ThemeVariant.Light : Avalonia.Styling.ThemeVariant.Dark;
+        ShowWizard();
+    }
+
+    private void ShowWizard()
+    {
+        var page = CurrentView.StartsWith("einrichtung", StringComparison.Ordinal) ? CurrentView : "einrichtung";
+        Show(page);
+    }
+
+    /// <summary>Rückmeldung aus dem bestehenden Ordnerdialog (T-0201), nur für das Assistenten-Feld.</summary>
+    private void NoteWizardFolder(TextBox tb, bool chosen)
+    {
+        if (chosen && !string.IsNullOrWhiteSpace(tb.Text)) _settings.ProjectsFolder = tb.Text.Trim();
+        _wizFolderMsg = chosen ? "Ordner gewählt." : "Kein Ordner gewählt.";
+        if (CurrentView.StartsWith("einrichtung", StringComparison.Ordinal)) ShowWizard();
+    }
+
+    private async Task ConfirmRepair(Component c)
+    {
+        var token = ++_repairGen;
+        _repairAsk = null;
+        _repairMsg = $"{c.Name}: wird geprüft …";
+        Show(CurrentView);
+        ToolCheck ch;
+        try { ch = await _deps.CheckAsync(c); }
+        catch (Exception ex)
+        {
+            if (token != _repairGen) return;
+            _repairMsg = $"{c.Name}: Prüfung hat nicht geklappt ({ex.GetType().Name}).";
+            Show(CurrentView);
+            return;
+        }
+        if (token != _repairGen) return;
+        if (ch.Ok) { _repairMsg = $"{c.Name}: repariert ✓"; Show(CurrentView); return; }
+        _repairAsk = c.Id;
+        _repairMsg = $"{c.Name}: fehlt – Installieren?";
+        Show(CurrentView);
+    }
+
+    /// <summary>Installiert erst nach „Ja“. Dieselbe InstallOne-Funktion wie der Rest der App, kein zweiter Installer.</summary>
+    private async Task RunRepairInstall(Component c)
+    {
+        var token = ++_repairGen;
+        _repairAsk = null;
+        _repairMsg = $"{c.Name}: Installation läuft …";
+        Show(CurrentView);
+        var req = _core.Approvals.Request(Principal.LocalOwner, "deps.install", $"{c.Name} reparieren", c.Id);
+        _core.Approvals.Approve(req.Id, Principal.LocalOwner);
+        var ok = false;
+        try { ok = InstallOverride is { } fake ? await fake(c) : await InstallOne(c, refresh: false); }
+        catch (Exception ex) { ok = false; _depLog.Text = ex.Message; }
+        if (token != _repairGen) return;
+        _repairMsg = ok ? $"{c.Name}: repariert ✓" : $"{c.Name}: hat nicht geklappt{(_core.Offline ? " – keine Internetverbindung" : "")}. {_depLog.Text}".Trim();
+        ReloadStudios();
+        Show(CurrentView);
     }
 
     // ---------- Sicherung & Wiederherstellung ----------
