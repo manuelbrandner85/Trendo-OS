@@ -54,7 +54,7 @@ principles:
   wording: Trendo OS soll ein Betriebssystem für jeden werden, also alles ist an den Nutzer anpassbar. Fachprogramme oder
     Tools im besten Fall schon bei der Installation von Trendo OS mitinstallieren und ansonsten innerhalb von Trendo OS installierbar.
     Es darf kein Programm oder Tool geben, wo dies nicht möglich ist.
-  approval_status: PROPOSED
+  approval_status: APPROVED_SPEC
   note: Wortlaut von Manuel übermittelt; Manuel muss den Eintrag und die Abnahmekriterien noch bestätigen.
   acceptance_criteria_proposed:
   - 'AK-1: Jedes Programm oder Tool, das ein Studio braucht, steht im Abhängigkeitskatalog (src/Trendo.Core/Dependencies.cs).
