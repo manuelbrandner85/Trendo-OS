@@ -1,5 +1,6 @@
 using System.Text;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
@@ -25,10 +26,11 @@ public static class ButtonProbe
             if (string.IsNullOrWhiteSpace(kv.Value))
                 return [$"Risiko-Eintrag {kv.Key} ohne Begründung"];
         var failures = new List<string>();
+        var win = w;
         foreach (var page in pages)
         {
-            w.Show(page); Pump();
-            var body = Body(w, page);
+            win = Fresh(win, page);
+            var body = Body(win, page);
             if (body is null) { failures.Add(page + ": Seiteninhalt nicht gefunden"); continue; }
             var buttons = body.GetLogicalDescendants().OfType<Button>().Where(b => b.IsVisible && b.IsEnabled).ToList();
             if (buttons.Count == 0) { failures.Add(page + ": kein sichtbarer aktiver Knopf"); continue; }
@@ -41,20 +43,21 @@ public static class ButtonProbe
                 if (!seen.Add(key)) continue;
                 if (name.EndsWith("-tab-" + page, StringComparison.Ordinal)) continue;
                 if (Risiko.ContainsKey(name)) continue;
-                w.Show(page); Pump();
-                body = Body(w, page);
+                win = Fresh(win, page);
+                body = Body(win, page);
                 if (body is null) { failures.Add($"{page}\t{name}\t{label}\tSeite fehlt nach Neuaufbau"); continue; }
                 var b = name.Length > 0
                     ? body.GetLogicalDescendants().OfType<Button>().FirstOrDefault(x => x.Name == name && x.IsVisible && x.IsEnabled)
                     : body.GetLogicalDescendants().OfType<Button>().FirstOrDefault(x => string.IsNullOrEmpty(x.Name) && Label(x) == label && x.IsVisible && x.IsEnabled);
                 if (b is null) continue;
-                var t0 = Texts(body); var v0 = w.CurrentView; var l0 = launcher.Opened.Count; var f0 = Stamp(root);
+                var t0 = Texts(body); var v0 = win.CurrentView; var l0 = launcher.Opened.Count; var f0 = Stamp(root);
                 try
                 {
-                    b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); Pump();
-                    var now = Body(w, page) ?? body;
+                    Fire(b); Pump();
+                    if (win.ReopenedAs is { } neu) { Carry(win, neu); win = neu; Pump(); }
+                    var now = Body(win, page) ?? body;
                     var eff = new List<string>();
-                    if (w.CurrentView != v0) eff.Add("seite");
+                    if (win.CurrentView != v0) eff.Add("seite");
                     if (launcher.Opened.Count > l0) eff.Add("programm");
                     if (Stamp(root) != f0) eff.Add("datei");
                     if (Texts(now) != t0) eff.Add("text");
@@ -66,8 +69,48 @@ public static class ButtonProbe
         return failures;
     }
 
-    static ContentControl? Body(MainWindow w, string page) =>
-        w.GetLogicalDescendants().OfType<ContentControl>().FirstOrDefault(c => c.Name == "win-body-" + w.WindowGroupOf(page));
+    static void Carry(MainWindow from, MainWindow to)
+    {
+        to.PickOverride = from.PickOverride;
+        to.EngineFinder = from.EngineFinder;
+        to.AppPathOverride = from.AppPathOverride;
+        to.KeyValidatorOverride = from.KeyValidatorOverride;
+        to.AssetGet = from.AssetGet;
+        to.OssSearchOverride = from.OssSearchOverride;
+        to.InstallOverride = from.InstallOverride;
+    }
+
+    static MainWindow Fresh(MainWindow w, string page)
+    {
+        w.QuietNotices();
+        w.Show(page);
+        Pump();
+        return w;
+    }
+
+    /// <summary>Ein echter Klick schaltet einen Schalter um. ClickEvent allein tut das nicht.</summary>
+    static void Fire(Button b)
+    {
+        if (b is ToggleButton tb)
+        {
+            var an = tb.IsChecked == true;
+            if (tb is RadioButton)
+            {
+                if (!an) tb.IsChecked = true;
+                else b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            }
+            else tb.IsChecked = !an;
+            return;
+        }
+        b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    }
+
+    static Control? Body(MainWindow w, string page)
+    {
+        if (page == "start")
+            return w.GetLogicalDescendants().OfType<Control>().FirstOrDefault(c => c.Name == "desk-host");
+        return w.GetLogicalDescendants().OfType<ContentControl>().FirstOrDefault(c => c.Name == "win-body-" + w.WindowGroupOf(page));
+    }
 
     static string Label(Button b) => b.Content as string
         ?? string.Join(" ", b.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text));
@@ -80,6 +123,7 @@ public static class ButtonProbe
             if (c is TextBlock t) sb.Append(t.Text).Append('|');
             else if (c is SelectableTextBlock s) sb.Append(s.Text).Append('|');
             else if (c is TextBox x) sb.Append(x.Text).Append('|');
+            else if (c is ToggleButton tg) sb.Append(tg.IsChecked == true ? "☑" : "☐").Append(tg.Content as string).Append('|');
             else if (c is Button btn && btn.Content is string label) sb.Append(label).Append('|');
         }
         return sb.ToString();

@@ -107,5 +107,22 @@ public partial class MainWindow
         var d = Path.Combine(root, sub); Directory.CreateDirectory(d); return d;
     }
 
-    private void Say(string msg, string view) { _w45Msg = msg; Show(view); }
+    private void Say(string msg, string view) { _w45Msg = msg; RefreshHere(view); }
+
+    /// <summary>Baut die Seite neu, solange sie noch offen ist. Ein fertiger Hintergrundjob wechselt nicht von allein auf eine andere Seite zurück.</summary>
+    private void RefreshHere(string view)
+    {
+        if (CurrentView == view) Show(view);
+    }
+
+    /// <summary>Für den Knopf-Test: Hinweise leeren, damit jeder Klick von einer ruhigen Seite aus bewertet wird.</summary>
+    public void QuietNotices()
+    {
+        _w45Msg = ""; _caseMsg = ""; _a11yOut = ""; _devKiSatz = ""; _wfMsg = ""; _srcMsg = "";
+        _promptMsg = ""; _rsMsg = ""; _repairMsg = ""; _backupMsg = ""; _shareMsg = ""; _scanStatus = "";
+        _progOut = ""; _qualOut = ""; _letterMsg = ""; _secMsg = ""; _devMsg = ""; _forMsg = ""; _hashOut = "";
+        _wizTap = ""; _mailMsg = ""; _wissenMsg = ""; _askState = ""; _agentMsg = ""; _netStatus = "";
+        _noteMsg = ""; _healNote = ""; W7Msg = ""; _depAsk = "";
+        if (_depLog.Text?.Length > 0) _depLog.Text = "";
+    }
 }

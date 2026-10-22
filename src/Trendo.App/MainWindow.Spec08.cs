@@ -11,7 +11,7 @@ public partial class MainWindow
     private Control FashionView()
     {
         var sp = new StackPanel { Spacing = 8 };
-        sp.Children.Add(FachTool("fa-body", "Welche Größe passt?", "Maße in cm am Körper (locker gemessen). Damen: d, Herren: h.",
+        sp.Children.Add(FachTool("fa-body", "Welche Größe passt?", "Maße in cm am Körper, locker gemessen. Damen oder Herren wählst du in der Liste.",
             [("who", "Damen/Herren (d/h)", "d"), ("chest", "Brust (cm)", "90"), ("waist", "Taille (cm)", "74"), ("hip", "Hüfte (cm)", "98")],
             v => { var wmn = !v("who").Trim().StartsWith("h", StringComparison.OrdinalIgnoreCase); var hip = v("hip").Trim() == "" ? 0 : Fach.Num(v("hip"), "Hüfte"); var r = Fashion.FromBody(wmn, Fach.Num(v("chest"), "Brust"), Fach.Num(v("waist"), "Taille"), hip); return $"Größe EU {r.Eu} ({r.Letter}). {r.Note}" + (wmn && r.Eu <= 50 ? "\n" + Fashion.WomenSize(r.Eu) : ""); }, "Größe finden"));
         sp.Children.Add(FachTool("fa-shoe", "Schuhgröße umrechnen", "EU-Größe eingeben – oder die Fußlänge in cm mit „cm“ dahinter, z. B. „26 cm“.",

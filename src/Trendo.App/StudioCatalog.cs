@@ -32,7 +32,7 @@ public static class StudioCatalog
         ["CORE-12"] = new("KI-Anweisungen schreiben", "Gute Anweisungen für die KI schreiben und sammeln.", "Kreativ & Medien"),
 
         ["CORE-05"] = new("3D-Modelle erstellen", "3D-Modelle bauen und ansehen – mit Blender.", "3D, Spiele & VR"),
-        ["CORE-06"] = new("Spiele bauen", "Eigene Spiele bauen – mit der Unreal Engine.", "3D, Spiele & VR"),
+        ["CORE-06"] = new("Spiele bauen", "Eigene kleine Spiele mit Regeln, Level und Export.", "3D, Spiele & VR"),
         ["SPEC-04"] = new("VR & AR gestalten", "Virtuelle Räume und 3D-Modelle für die Brille vorbereiten.", "3D, Spiele & VR"),
         ["SPEC-09"] = new("Gegenstände einscannen", "Gegenstände und Räume einscannen und vermessen.", "3D, Spiele & VR"),
 

@@ -49,7 +49,7 @@ public partial class MainWindow
         };
         plan.Children.Add(exp);
         plan.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { P("Ablauf als OBS-Szenensammlung (eine Szene je Programmpunkt):", null, 11), OpenInButton("obs", () => ObsCollectionFile(), "sendung") } });
-        plan.Children.Add(FachTool("bc-rate", "Reicht meine Leitung?", "Upload-Geschwindigkeit z. B. aus einem Speedtest. Qualität wie „1080p60“.",
+        plan.Children.Add(FachTool("bc-rate", "Reicht meine Leitung?", "Upload-Geschwindigkeit zum Beispiel aus einem Speedtest. Plattform und Qualität stehen in den Listen.",
             [("pf", "Plattform", "YouTube"), ("q", "Qualität", "1080p60"), ("up", "Upload (Mbit/s)", "10"), ("min", "Aufnahme (min)", "60")],
             v => { var p = BroadcastDesk.PlanStream(v("pf"), v("q"), Fach.Num(v("up"), "Upload")); return $"{(p.Fits ? "✓" : "⚠")} Video {Fach.F(p.VideoKbps, 0)} kbit/s + Ton {p.AudioKbps} kbit/s → du brauchst ca. {Fach.F(p.NeededUploadMbps, 1)} Mbit/s Upload. {p.Advice}\nAufnahme auf Platte: ca. {Fach.F(BroadcastDesk.StorageGb(p.VideoKbps + p.AudioKbps, Fach.Num(v("min"), "Minuten")), 1)} GB"; }, "Prüfen"));
         plan.Children.Add(FachGroup("bc-live", "Während der Sendung", false,
@@ -60,7 +60,7 @@ public partial class MainWindow
             FachTool("bc-speak", "Sprechzeit", "Text der Moderation einfügen. Ruhig ≈ 130 Wörter pro Minute, Nachrichten ≈ 160.", [("t", "Text", ""), ("wpm", "Wörter pro Minute", "130")],
                 v => { var (w, t) = BroadcastPlus.SpeakingTime(v("t"), Fach.Num(v("wpm"))); return $"{w} Wörter → etwa {BroadcastDesk.Clock(t)}"; }, "Messen")));
         plan.Children.Add(FachGroup("bc-post", "Bild & Ton", false,
-            FachTool("bc-loud", "Lautheit", "Gemessene Lautheit (LUFS integriert) und Spitzenpegel (dBTP), z. B. aus Audacity oder OBS. Plattformen: " + string.Join(", ", BroadcastPlus.LoudTargets.Keys) + ".",
+            FachTool("bc-loud", "Lautheit", "Gemessene Lautheit in LUFS und Spitzenpegel in dBTP, zum Beispiel aus Audacity oder OBS.",
                 [("pf", "Plattform", "YouTube"), ("lufs", "Gemessen (LUFS)", "-18"), ("tp", "Spitze (dBTP)", "-6")],
                 v => { var l = BroadcastPlus.Loudness(v("pf"), Fach.Num(v("lufs")), Fach.Num(v("tp"))); return $"Ziel {Fach.F(l.Target, 0)} LUFS → {(l.Gain >= 0 ? "+" : "")}{Fach.F(l.Gain, 1)} dB · Spitze danach {Fach.F(l.PeakAfter, 1)} dBTP" + (l.Clips ? "\n⚠ Zu laut für die Spitzen – vorher einen Limiter einsetzen." : ""); }, "Berechnen"),
             FachTool("bc-aspect", "Seitenverhältnis", "Auflösung in Pixeln.", [("w", "Breite", "1920"), ("h", "Höhe", "1080")],

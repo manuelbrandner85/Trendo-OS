@@ -19,7 +19,7 @@ public partial class MainWindow
     private Control IdeaHeader(string view)
     {
         var all = Ideas.All(); var row = new WrapPanel { Children = { P("Idee:  ") } }; var n = 0;
-        foreach (var x in all) { var idea = x; var b = Act($"{view}-idea-{n++}", (idea.Id == BizIdea.Id ? "● " : "") + idea.Name, () => { CurrentIdea = idea; Show(view); }); b.Margin = new Avalonia.Thickness(0, 0, 6, 4); row.Children.Add(b); }
+        foreach (var x in all) { var idea = x; var b = Act($"{view}-idea-{n++}", (idea.Id == BizIdea.Id ? "● " : "") + idea.Name, () => { CurrentIdea = idea; Say($"Idee „{idea.Name}“ ist ausgewählt.", view); }); b.Margin = new Avalonia.Thickness(0, 0, 6, 4); row.Children.Add(b); }
         if (all.Count == 0) row.Children.Add(P(BizIdea.Name, Text));
         return row;
     }

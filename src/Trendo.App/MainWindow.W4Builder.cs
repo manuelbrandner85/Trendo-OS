@@ -29,7 +29,7 @@ public partial class MainWindow
         var pg = BuilderPage;
         var sp = new StackPanel { Spacing = 8, Children = { P("Bau deine Webseite aus Bausteinen. Kein Programmieren nötig.") } };
         var title = new TextBox { Name = "builder-title", Text = pg.Title, Width = 260 };
-        title.LostFocus += (_, _) => { pg.Title = title.Text ?? ""; pg.Save(BuilderFile); };
+        title.LostFocus += (_, _) => { pg.Title = title.Text ?? ""; BuilderSave(); };
         sp.Children.Add(new WrapPanel { Children = { P("Titel der Seite  "), title } });
         var add = new WrapPanel();
         foreach (var (k, l) in SitePage.Kinds) { var kind = k; var b = Act("builder-add-" + k, "+ " + l, () => { pg.Blocks.Add(new(kind, kind switch { "h1" => "Überschrift", "p" => "Neuer Text", "button" => "Mehr erfahren", "list" => "Punkt 1\nPunkt 2", "contact" => "Schreib mir", _ => "" }, kind is "button" ? "https://" : "")); BuilderSave(); }); b.Margin = new Avalonia.Thickness(0, 0, 6, 6); add.Children.Add(b); }
@@ -55,6 +55,21 @@ public partial class MainWindow
                 Act($"builder-up-{i}", "▲", () => { pg.Move(idx, -1); BuilderSave(); }), Act($"builder-down-{i}", "▼", () => { pg.Move(idx, 1); BuilderSave(); }),
                 Act($"builder-del-{i}", "Entfernen", () => { pg.Blocks.RemoveAt(idx); BuilderSave(); }) } })));
         }
+        var live = new StackPanel { Name = "builder-live", Spacing = 6 };
+        live.Children.Add(new TextBlock { Text = string.IsNullOrWhiteSpace(pg.Title) ? "Ohne Titel" : pg.Title, Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold });
+        foreach (var block in pg.Blocks)
+        {
+            live.Children.Add(block.Kind switch
+            {
+                "h1" => (Control)new TextBlock { Text = block.Text, Foreground = Text, FontSize = 16, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+                "button" => new Button { Content = string.IsNullOrWhiteSpace(block.Text) ? "Knopf" : block.Text, IsEnabled = false },
+                "hr" => new Border { Height = 1, Background = Edge },
+                "img" => (Control)P(string.IsNullOrWhiteSpace(block.Text) ? "Bild" : "Bild: " + block.Text),
+                "list" => (Control)P(block.Text, Text),
+                _ => (Control)P(block.Text, Text),
+            });
+        }
+        sp.Children.Add(Card(new StackPanel { Spacing = 4, Children = { H("Vorschau im Studio", 13), P("So sieht die Seite aus, nachdem du ein Feld verlassen hast.", null, 11), live } }));
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = {
             Act("builder-preview", "Ansehen im Browser", () => { pg.Save(BuilderFile); Launch(BuilderPublish()); }, true),
             Act("builder-folder", "Ordner mit fertiger Seite", () => { BuilderPublish(); Launch(Path.Combine(BuilderFolder, "fertig")); }) } });

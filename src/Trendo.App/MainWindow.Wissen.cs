@@ -46,7 +46,12 @@ public partial class MainWindow
 
         var search = new TextBox { Name = "wissen-search", PlaceholderText = "Im Wissen suchen …", Text = _wissenQuery, Width = 340 };
         var go = new Button { Name = "wissen-go", Content = "Suchen" };
-        go.Click += (_, _) => { _wissenQuery = search.Text ?? ""; Show("ki-wissen"); };
+        go.Click += (_, _) =>
+        {
+            _wissenQuery = search.Text ?? "";
+            if (string.IsNullOrWhiteSpace(_wissenQuery)) { _wissenMsg = "Bitte zuerst ein Suchwort eingeben."; Show("ki-wissen"); return; }
+            Show("ki-wissen");
+        };
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { search, go } });
         var list = string.IsNullOrWhiteSpace(_wissenQuery) ? Wissen.All().Take(30).ToList() : Wissen.Search(_wissenQuery, 30).Select(h => h.Item).ToList();
         if (!string.IsNullOrWhiteSpace(_wissenQuery) && list.Count == 0) sp.Children.Add(P($"Nichts gefunden für „{_wissenQuery}“."));

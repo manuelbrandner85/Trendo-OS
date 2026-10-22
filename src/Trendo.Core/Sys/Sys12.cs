@@ -37,7 +37,7 @@ public static class A11y
 
     // P09 Status ohne Farbe
     public enum Level { Gut, Hinweis, Problem }
-    public static string Symbol(Level l) => l switch { Level.Gut => "✓", Level.Hinweis => "⚠", _ => "✕" };
+    public static string Symbol(Level l) => l switch { Level.Gut => "✓", Level.Hinweis => "⚠", _ => "✗" };
     public static string WithSymbol(Level l, string text) => $"{Symbol(l)} {text}";
 
     // P10 Leichte Sprache

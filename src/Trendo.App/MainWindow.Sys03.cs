@@ -170,8 +170,9 @@ public partial class MainWindow
             Line(Act("net-check", "Verbindung prüfen", async () =>
             {
                 if (_core.Offline) { _netStatus = "Offline-Modus ist an – Trendo geht nicht ins Internet."; Show(V); return; }
+                _netStatus = "Prüfung läuft …"; Show(V);
                 var (dns, web) = await WebTools.NetworkCheckAsync();
-                _netStatus = (dns ? "✓ Namensauflösung klappt" : "✗ Namensauflösung klappt nicht") + " · " + (web ? "✓ Internet erreichbar" : "✗ Internet nicht erreichbar"); Show(V);
+                _netStatus = (dns ? "✓ Namensauflösung klappt" : "✗ Namensauflösung klappt nicht") + " · " + (web ? "✓ Internet erreichbar" : "✗ Internet nicht erreichbar"); RefreshHere(V);
             }), P(_netStatus, Text)), P("Proxy: " + proxy, null, 11.5))));
         return NetzPage("Browser", sp);
     }

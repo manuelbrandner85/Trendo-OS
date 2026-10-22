@@ -40,7 +40,7 @@ public partial class MainWindow
         {
             var b = new Button { Name = "role-" + r.Id, Content = r.Name, Margin = new Thickness(0, 0, 6, 6), Background = _agentRole == r.Id ? Accent : null };
             ToolTip.SetTip(b, r.Does);
-            b.Click += (_, _) => { _agentRole = r.Id; Show("ki-rollen"); };
+            b.Click += (_, _) => { _agentRole = r.Id; _agentMsg = "Rolle „" + r.Name + "“ ist gewählt."; Show("ki-rollen"); };
             roles.Children.Add(b);
         }
         sp.Children.Add(roles);

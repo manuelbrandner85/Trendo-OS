@@ -33,6 +33,8 @@ public partial class MainWindow
             sp.Children.Add(FachTool("arch-need", "Was brauche ich?", "Farbe für Wände und Decke, Bodenpakete mit 10 % Verschnitt.",
                 [("pack", "m² je Bodenpaket", "2,2"), ("coats", "Anstriche", "2"), ("yield", "m² je Liter Farbe", "10")],
                 v => { var m = RoomPlanner.Need(Rooms.Project.Rooms, Fach.Num(v("pack"), "Paket"), Fach.Num(v("coats"), "Anstriche"), Fach.Num(v("yield"), "Ergiebigkeit")); return $"Boden: {Fach.F(m.Floor)} m² → {m.FloorPacks} Pakete\nWände + Decke: {Fach.F(m.Walls)} m² → {Fach.F(m.PaintLiters, 1)} l Farbe ({m.PaintBuckets} Eimer à 10 l)\nSockelleisten: {Fach.F(m.SkirtingMeters)} m"; }));
+        sp.Children.Add(H("Grundriss", 14));
+        sp.Children.Add(Grundriss());
         var svg = new Button { Name = "arch-svg", Content = "Grundriss speichern & öffnen", IsEnabled = Rooms.Project.Rooms.Count > 0 };
         svg.Click += (_, _) => { var p = Rooms.ExportSvg(); _w45Msg = "Grundriss gespeichert: " + p; Launch(p); Show("architektur"); };
         sp.Children.Add(svg);
@@ -51,10 +53,10 @@ public partial class MainWindow
             FachTool("arch-furn", "Passt das Möbel?", "Für den ersten Raum. Gehfreiraum davor: 0,9 m.",
                 [("w", "Breite (m)", "2,2"), ("d", "Tiefe (m)", "0,9")],
                 v => { var (ok, why) = Interior.FurnitureFits(FirstRoom(), Fach.Num(v("w")), Fach.Num(v("d"))); return (ok ? "✓ " : "⚠ ") + why; }, "Prüfen"),
-            FachTool("arch-heat", "Heizleistung", "Grobe Schätzung. Standard: altbau, teilsaniert, neubau, kfw, passivhaus.",
+            FachTool("arch-heat", "Heizleistung", "Grobe Schätzung nach dem gewählten Baustandard.",
                 [("std", "Standard", "teilsaniert")],
                 v => string.Join("\n", Rooms.Project.Rooms.Select(r => $"{r.Name}: ca. {Fach.F(Interior.HeatLoad(r, v("std")), 0)} W Heizleistung"))),
-            FachTool("arch-light", "Licht", "Raumart: wohnzimmer, schlafzimmer, küche, bad, büro, flur, kinderzimmer, werkstatt.",
+            FachTool("arch-light", "Licht", "Lichtbedarf nach der gewählten Raumart.",
                 [("kind", "Raumart", "wohnzimmer")],
                 v => { var r = FirstRoom(); var l = Interior.Light(r, v("kind")); return $"{r.Name}: {Fach.F(l.Lux, 0)} lx → {Fach.F(l.Lumen, 0)} lm, z. B. {l.Bulbs806} LED-Lampen à 806 lm (60-W-Ersatz)"; }),
             FachTool("arch-stair", "Treppe", "Höhe von Fußboden zu Fußboden in cm.",

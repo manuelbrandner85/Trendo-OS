@@ -28,7 +28,7 @@ public partial class MainWindow
                 return $"{Fach.F(before, 0)} → {Fach.F(before - mid, 0)} Störpunkte entfernt → {Fach.F(pc.Points.Count, 0)} Punkte nach dem Ausdünnen.\nGespeichert: {outp}";
             }, "Aufräumen"));
         sp.Children.Add(FachGroup("scan-shape", "Umformen", false,
-            FachTool("scan-scale", "Einheit umrechnen", "Von welcher Einheit in welche (mm, cm, m, in, ft).", [("file", "Datei", ""), ("from", "Von", "mm"), ("to", "Nach", "m")],
+            FachTool("scan-scale", "Einheit umrechnen", "Datei und die beiden Einheiten.", [("file", "Datei", ""), ("from", "Von", "mm"), ("to", "Nach", "m")],
                 v => { var f = ScanFile(v); var pc = ScanPlus.Scale(PointCloud.Load(f), ScanPlus.UnitFactor(v("from"), v("to"))); return ScanSave(f, pc, "skaliert", $"Neue Größe: {ScanSize(pc)}"); }, "Umrechnen"),
             FachTool("scan-center", "Zentrieren", "Mitte auf 0, Unterkante auf Höhe 0.", [("file", "Datei", "")],
                 v => { var f = ScanFile(v); return ScanSave(f, ScanPlus.Center(PointCloud.Load(f)), "zentriert", "Mitte liegt jetzt bei 0 / 0, Boden bei 0."); }, "Zentrieren"),

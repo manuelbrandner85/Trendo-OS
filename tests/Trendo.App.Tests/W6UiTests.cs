@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.LogicalTree;
 using Trendo.Core;
 using Xunit;
 
@@ -9,7 +10,20 @@ public static class W6Ui
 {
     public static string Run(MainWindow w, string id, params (string Key, string Val)[] vals)
     {
-        foreach (var (k, v) in vals) w.Find<TextBox>($"{id}-{k}").Text = v;
+        foreach (var (k, v) in vals)
+        {
+            var name = $"{id}-{k}";
+            var cb = w.GetLogicalDescendants().OfType<ComboBox>().FirstOrDefault(c => c.Name == name);
+            if (cb is not null)
+            {
+                var items = cb.Items.Cast<object>().Select(o => o?.ToString() ?? "").ToList();
+                var i = items.FindIndex(x => string.Equals(x, v, StringComparison.OrdinalIgnoreCase));
+                if (i < 0) i = items.FindIndex(x => v.Length > 0 && x.StartsWith(v, StringComparison.OrdinalIgnoreCase));
+                if (i < 0) throw new InvalidOperationException($"Kein Eintrag „{v}“ bei {name}.");
+                cb.SelectedIndex = i;
+            }
+            else w.Find<TextBox>(name).Text = v;
+        }
         w.Find<Button>($"{id}-run").Press(); W2Ui.Settle();
         return w.Find<SelectableTextBlock>($"{id}-out").Text ?? "";
     }
@@ -55,7 +69,7 @@ public class SPEC03_Ui
         var (w, _, _) = Ui.Open();
         w.Show(MainWindow.StudioPages["SPEC-03"]);
         Assert.Contains("Sicherheit", W6Ui.Run(w, "eng-beam"));
-        Assert.Contains("⚠", W6Ui.Run(w, "eng-beam", ("case", "9")));
+        Assert.Contains("⚠", W6Ui.Run(w, "eng-beam", ("b", "5"), ("h", "5"), ("load", "50")));
         Assert.Contains("2,76 mm", W6Ui.Run(w, "eng-heat"));
         Assert.Contains("6,8948 bar", W6Ui.Run(w, "eng-unit"));
     }

@@ -39,7 +39,9 @@ public partial class MainWindow
         var gs = new GlobalSearch();
         foreach (var (t, k, w) in Pages.Concat(ExtraPages)) if (_showMap.ContainsKey(k)) gs.Add("Seite", t, "page:" + k, w);
         foreach (var c in Categories) gs.Add("Seite", c.Label, "filter:" + c.Filter, c.Label.Split(' ', '&'));
-        foreach (var s in _studios) gs.Add("Studio", s.Name, "studio:" + s.Id, s.Id);
+        foreach (var s in _studios)
+            if (!(_settings.SimpleMode && FachTabs.Exists(t => t.Module == s.Id)))
+                gs.Add("Studio", s.Name, "studio:" + s.Id, s.Id);
         foreach (var p in _core.Projects.List()) gs.Add("Projekt", p.Name, "project:" + p.Id, p.Id);
         foreach (var n in new NoteStore(_core.DataRoot).All()) gs.Add("Notiz", n.Text.Split('\n')[0], "page:werkzeuge", n.Text.Split([' ', '\n', '/', '.', '-'], StringSplitOptions.RemoveEmptyEntries)); // SYS-03-P21
         gs.AddFiles(string.IsNullOrEmpty(_settings.ProjectsFolder) ? UserSettings.DefaultProjectsFolder() : _settings.ProjectsFolder);
