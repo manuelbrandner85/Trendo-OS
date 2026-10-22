@@ -15,12 +15,13 @@ public partial class MainWindow
     private string _devKiSatz = "";
     public string DevFolder => WorkFolder("Software");
 
-    private void InitW4Dev() => RegisterTab(KreativTabs, "dev", "Software", "CORE-07", DevView, "programmieren", "code", "git", "app", "software");
+    private void InitW4Dev() => RegisterTab(KreativTabs, "dev", "Software", "CORE-07", DevView, "programmieren", "code", "git", "app", "software", "webseite", "landingpage", "homepage");
 
     private Control DevView()
     {
         var sp = new StackPanel { Spacing = 8 };
-        sp.Children.Add(P("Lege ein neues Programm aus einer Vorlage an. Trendo legt alles an und speichert jeden Stand mit Git."));
+        sp.Children.Add(WebsitePanel());
+        sp.Children.Add(P("Darunter kannst du auch ein Programm aus einer Vorlage anlegen. Trendo speichert jeden Stand mit Git."));
         var name = new TextBox { Name = "dev-name", PlaceholderText = "Name, z. B. Meine Webseite", Width = 260 };
         var tpl = new ComboBox { Name = "dev-template", ItemsSource = DevStudio.Templates.Select(t => t.Name).ToList(), SelectedIndex = 0, Width = 260 };
         var create = Act("dev-create", "Anlegen", () =>

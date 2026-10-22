@@ -18,19 +18,56 @@ public partial class MainWindow
     private string _caseMsg = "";
     private LetterApproval? _approval;
 
-    private Control LetterPage(string title, Control body)
+    private bool _letterPreview = true;
+    private Action? _letterSync;
+
+    private Control LetterNav()
     {
-        var row = new WrapPanel();
+        var sp = new StackPanel { Spacing = 4 };
         foreach (var (k, l) in LetterTabs)
         {
             if (k is "akte" or "ausgabe" && _case is null) continue;
-            var b = new Button { Name = "letter-tab-" + k, Content = k == "akte" && _case is not null ? $"Akte: {ShortTitle(_case.Title)}" : l, Margin = new Thickness(0, 0, 6, 6), Background = CurrentView == k ? Accent : null };
-            b.Click += (_, _) => Show(k); row.Children.Add(b);
+            var label = k switch { "brief" => "Neuer Brief", "akten" => "Meine Briefe", "briefkoepfe" => "Briefköpfe", "ausgabe" => "Prüfen und Ausgabe", _ => l };
+            if (k == "akte" && _case is not null) label = "Akte: " + ShortTitle(_case.Title);
+            var icon = k switch { "brief" => Mdi.FileDocumentEdit, "akten" => Mdi.Folder, "briefkoepfe" => Mdi.FileDocumentOutline, "ausgabe" => Mdi.Send, _ => Mdi.Folder };
+            var b = new Button { Name = "letter-tab-" + k, Content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Ico(icon, 16, Text), new TextBlock { Text = label, Foreground = Text, VerticalAlignment = VerticalAlignment.Center } } }, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(10), Background = CurrentView == k ? Accent : Brushes.Transparent, Foreground = Text };
+            Avalonia.Automation.AutomationProperties.SetName(b, label);
+            b.Click += (_, _) => Show(k); sp.Children.Add(b);
         }
-        var sp = new StackPanel { Spacing = 8, Children = { row } };
-        if (_caseMsg.Length > 0) { var m = P(_caseMsg, Text); m.Name = "case-msg"; sp.Children.Add(m); }
-        sp.Children.Add(body);
-        return Page("Briefstudio · " + title, sp);
+        var emp = new Button { Name = "letter-nav-empfaenger", Content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Ico(Mdi.AccountCircleOutline, 16, Text), new TextBlock { Text = "Empfänger", Foreground = Text, VerticalAlignment = VerticalAlignment.Center } } }, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 8), Background = Brushes.Transparent, Foreground = Text };
+        Avalonia.Automation.AutomationProperties.SetName(emp, "Empfänger");
+        emp.Click += (_, _) =>
+        {
+            _letterMsg = "Empfänger: Firma, Name, Straße und PLZ Ort, eine Angabe pro Zeile.";
+            Show("brief");
+            Avalonia.Threading.Dispatcher.UIThread.Post(() => Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(this).OfType<TextBox>().FirstOrDefault(t => t.Name == "letter-recipient")?.Focus());
+        }; sp.Children.Add(emp);
+        return new Border { Background = Brush.Parse(C("#55101830", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(8), Child = sp, Margin = new Thickness(0, 0, 10, 0) };
+    }
+
+    private Control LetterShell(Control body, Control? actions)
+    {
+        var title = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = {
+            new TextBlock { Name = "page-title", Text = "Briefe schreiben", Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold },
+            new TextBlock { Text = "Briefe, Vorlagen und Akten", Foreground = Muted, FontSize = 12 } } };
+        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Margin = new Thickness(0, 0, 0, 10) };
+        head.Children.Add(title);
+        if (actions is not null) { Grid.SetColumn(actions, 1); head.Children.Add(actions); }
+        var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,Auto,*") };
+        grid.Children.Add(head);
+        if (_caseMsg.Length > 0) { var m = P(_caseMsg, Text); m.Name = "case-msg"; Grid.SetRow(m, 1); grid.Children.Add(m); }
+        Detach(_hintHost); Grid.SetRow(_hintHost, 2); grid.Children.Add(_hintHost);
+        Grid.SetRow(body, 3); grid.Children.Add(body);
+        return Panel(grid, 12);
+    }
+
+    private Control LetterPage(string title, Control body)
+    {
+        _ = title;
+        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("210,*") };
+        grid.Children.Add(LetterNav());
+        var scroll = new ScrollViewer { Content = body }; Grid.SetColumn(scroll, 1); grid.Children.Add(scroll);
+        return LetterShell(grid, null);
     }
     private static string ShortTitle(string s) => s.Length > 22 ? s[..22] + "…" : s;
     private void SaveCase(string why) { if (_case is null) return; Cases.Save(_case, Principal.LocalOwner, why); }

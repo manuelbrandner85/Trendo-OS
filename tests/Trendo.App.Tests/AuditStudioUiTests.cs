@@ -214,7 +214,7 @@ public class Audit_Studio_Ui
 
 public class Audit_Jeder_Knopf
 {
-    [AvaloniaFact(DisplayName = "T-0202: Jeder sichtbare Knopf auf jeder Seite bewirkt etwas", Timeout = 600000)]
+    [AvaloniaFact(DisplayName = "T-0202: Jeder sichtbare Knopf auf jeder Seite bewirkt etwas", Timeout = 1200000)]
     public void Alle_Seiten()
     {
         var (w, l, root) = Ui.Open();

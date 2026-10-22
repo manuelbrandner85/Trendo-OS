@@ -4,7 +4,7 @@ namespace Trendo.Core.Tests;
 
 public class WindowManager_Logik
 {
-    [Fact(DisplayName = "Fenster: öffnen/nach vorn, minimieren, maximieren, schließen, Taskleisten-Klick, Verschieben bleibt im Bereich, max. 8")]
+    [Fact(DisplayName = "Fenster: öffnen/nach vorn, minimieren, maximieren, schließen, Taskleisten-Klick, Verschieben bleibt im Bereich, kein stilles Schließen")]
     public void Rules()
     {
         var m = new WindowManager { AreaW = 1000, AreaH = 600 };
@@ -21,7 +21,24 @@ public class WindowManager_Logik
         m.MinimizeAll(); Assert.Null(m.Active);
         m.Close("a"); Assert.Null(m.Get("a"));
         for (var i = 0; i < 10; i++) m.Open("w" + i, "p", "T");
-        Assert.Equal(WindowManager.MaxOpen, m.Stack.Count); Assert.Null(m.Get("b"));
+        Assert.Equal(11, m.Stack.Count); Assert.NotNull(m.Get("b")); Assert.NotNull(m.Get("w0")); Assert.NotNull(m.Get("w9"));
+        Assert.Null(m.Notice);
+    }
+}
+
+public class WindowManager_Viele
+{
+    [Fact(DisplayName = "Fenster: auch bei vielen offenen Fenstern bleibt das erste, Hinweis statt stillem Schließen")]
+    public void KeinVerdrängen()
+    {
+        var m = new WindowManager { AreaW = 1000, AreaH = 600 };
+        for (var i = 0; i < WindowManager.NoticeAfter; i++) m.Open("n" + i, "p", "T" + i);
+        Assert.Null(m.Notice); Assert.Equal(WindowManager.NoticeAfter, m.Stack.Count);
+        m.Open("extra", "p", "Extra");
+        Assert.Equal(WindowManager.NoticeAfter + 1, m.Stack.Count);
+        Assert.NotNull(m.Get("n0")); Assert.Equal("T0", m.Get("n0")!.Title);
+        Assert.Equal(WindowManager.ManyWindowsNotice, m.Notice);
+        m.Close("extra"); Assert.Null(m.Notice); Assert.NotNull(m.Get("n0"));
     }
 }
 
