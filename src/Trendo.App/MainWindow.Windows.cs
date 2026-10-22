@@ -1,4 +1,6 @@
 using Avalonia;
+using Avalonia.Automation;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
@@ -22,6 +24,7 @@ public partial class MainWindow
     private readonly Dictionary<string, (Border Frame, ContentControl Body, TextBlock Title)> _frames = [];
     private readonly Dictionary<string, string> _windowGroups = new(StringComparer.OrdinalIgnoreCase);
     private bool _windowsReady;
+    static readonly BoxShadows WindowShadow = BoxShadows.Parse("0 10 30 0 #66000000");
 
     /// <summary>Wurzel der gerade sichtbaren Seite (aktives Fenster oder Startbildschirm).</summary>
     public Control? ActivePageRoot => Windows.Active is { } a && _frames.TryGetValue(a.Id, out var f) ? f.Body.Content as Control : _deskHost.Children.FirstOrDefault();
@@ -52,7 +55,7 @@ public partial class MainWindow
         var (win, closed) = Windows.Open(WindowGroupOf(key), key, PageTitle(key));
         if (closed is not null && _frames.Remove(closed.Id, out var old)) DetachFrame(old.Frame);
         if (!_frames.TryGetValue(win.Id, out var fr)) { fr = MakeFrame(win); _frames[win.Id] = fr; _winCanvas.Children.Add(fr.Frame); }
-        fr.Title.Text = win.Title; fr.Body.Content = content;
+        fr.Title.Text = win.Title; ((DeskFrame)fr.Frame).WindowTitle = win.Title; fr.Body.Content = content;
         RenderWindows();
     }
 
@@ -97,7 +100,7 @@ public partial class MainWindow
         var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,*") }; grid.Children.Add(bar); Grid.SetRow(body, 1); grid.Children.Add(body);
         var layers = new Panel { Children = { grid } };
         foreach (var h in ResizeHandles(id)) layers.Children.Add(h);
-        var frame = new Border { Name = "win-" + id, Background = GlassStrong, BorderThickness = new Thickness(1.5), CornerRadius = new CornerRadius(11), Child = layers, ClipToBounds = true, BoxShadow = BoxShadows.Parse("0 10 30 0 #66000000") };
+        var frame = new DeskFrame { Name = "win-" + id, WindowTitle = w.Title, Background = GlassStrong, BorderThickness = new Thickness(1.5), CornerRadius = new CornerRadius(11), Child = layers, ClipToBounds = true, BoxShadow = WindowShadow };
         // Klick ins Fenster holt es nach vorn (nach dem Klick, damit Knöpfe ihren Klick behalten)
         frame.AddHandler(PointerPressedEvent, (_, _) => { if (Windows.Active?.Id != id) Dispatcher.UIThread.Post(() => FocusWindow(id), DispatcherPriority.Background); }, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
         return (frame, body, title);
@@ -186,15 +189,18 @@ public partial class MainWindow
             if (!ReferenceEquals(fr.Frame.Parent, host)) { DetachFrame(fr.Frame); host.Children.Add(fr.Frame); }
             if (w.Maximized)
             {
+                // Schatten würde über die maximierte Fläche (und damit aus dem Windows-Fenster) hinausragen. Das UIA-Rechteck wird dann ungültig und die ganze Baumabfrage bricht mit E_FAIL ab.
                 fr.Frame.Width = double.NaN; fr.Frame.Height = double.NaN;
                 fr.Frame.HorizontalAlignment = HorizontalAlignment.Stretch; fr.Frame.VerticalAlignment = VerticalAlignment.Stretch;
                 fr.Frame.CornerRadius = new CornerRadius(4);
+                fr.Frame.BoxShadow = default;
             }
             else
             {
                 var (x, y, ww, hh) = Windows.Rect(w);
                 Canvas.SetLeft(fr.Frame, x); Canvas.SetTop(fr.Frame, y); fr.Frame.Width = ww; fr.Frame.Height = hh;
                 fr.Frame.CornerRadius = new CornerRadius(11);
+                fr.Frame.BoxShadow = WindowShadow;
             }
         }
         _workArea.IsHitTestVisible = Windows.Stack.Any(w => w.Maximized && !w.Minimized);
@@ -235,17 +241,74 @@ public partial class MainWindow
     /// <summary>Misst sich mit Größe 0, damit die Fläche die Zeilen nicht aufbläht, und legt Kinder beim Anordnen auf die ganze Fläche.</summary>
     private sealed class WorkAreaLayer : Panel
     {
-        public WorkAreaLayer() { Name = "work-area"; Background = Brushes.Transparent; IsHitTestVisible = false; }
+        public WorkAreaLayer()
+        {
+            Name = "work-area"; Background = Brushes.Transparent; IsHitTestVisible = false;
+            // Eigene Kennung: maximiert hat das Fenster dieselben Grenzen. Zwei namenlose Knoten mit gleichem Rechteck lässt Windows die ganze Baumabfrage mit E_FAIL abbrechen.
+            AutomationProperties.SetName(this, "Arbeitsfläche");
+            AutomationProperties.SetControlTypeOverride(this, AutomationControlType.Pane);
+        }
         protected override Size MeasureOverride(Size available)
         {
-            var finite = new Size(double.IsInfinity(available.Width) ? 0 : available.Width, double.IsInfinity(available.Height) ? 0 : available.Height);
+            // Infinity und NaN dürfen nicht an die Kinder: Measure wirft bei NaN, und ein ungültiges Rechteck reißt den UIA-Baum ab.
+            var finite = new Size(double.IsFinite(available.Width) ? available.Width : 0, double.IsFinite(available.Height) ? available.Height : 0);
             foreach (var c in Children) c.Measure(finite);
             return new Size();
+        }
+        protected override AutomationPeer OnCreateAutomationPeer() => new WorkAreaPeer(this);
+
+        sealed class WorkAreaPeer(WorkAreaLayer owner) : ControlAutomationPeer(owner)
+        {
+            protected override Rect GetBoundingRectangleCore() => Finite(base.GetBoundingRectangleCore());
         }
         protected override Size ArrangeOverride(Size final)
         {
             foreach (var c in Children) c.Arrange(new Rect(final));
             return final;
+        }
+    }
+
+    static Rect Finite(Rect rect) =>
+        double.IsFinite(rect.X) && double.IsFinite(rect.Y) && double.IsFinite(rect.Width) && double.IsFinite(rect.Height) && rect.Width >= 0 && rect.Height >= 0
+            ? rect : default;
+
+    /// <summary>Rahmen eines Schreibtischfensters. Der Peer bleibt auch maximiert im Baum, mit dem Fenstertitel als Name.</summary>
+    sealed class DeskFrame : Border
+    {
+        public static readonly DirectProperty<DeskFrame, string> WindowTitleProperty =
+            AvaloniaProperty.RegisterDirect<DeskFrame, string>(nameof(WindowTitle), o => o.WindowTitle, (o, v) => o.WindowTitle = v);
+
+        string _title = "";
+        public string WindowTitle
+        {
+            get => _title;
+            set
+            {
+                var next = value ?? "";
+                if (_title == next) return;
+                SetAndRaise(WindowTitleProperty, ref _title, next);
+                AutomationProperties.SetName(this, next);
+            }
+        }
+
+        protected override AutomationPeer OnCreateAutomationPeer() => new DeskFramePeer(this);
+
+        sealed class DeskFramePeer : ControlAutomationPeer
+        {
+            public DeskFramePeer(DeskFrame owner) : base(owner)
+            {
+                owner.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == WindowTitleProperty)
+                        RaisePropertyChangedEvent(AutomationElementIdentifiers.NameProperty, e.OldValue, e.NewValue);
+                };
+            }
+
+            DeskFrame Frame => (DeskFrame)Owner;
+            // Angehängte ControlType-Vorgabe ist sonst „None“ und verdeckt diesen Wert. None ist für Windows-UIA kein gültiger Typ.
+            protected override AutomationControlType GetControlTypeOverrideCore() => AutomationControlType.Window;
+            protected override string? GetNameCore() => string.IsNullOrWhiteSpace(Frame.WindowTitle) ? base.GetNameCore() : Frame.WindowTitle;
+            protected override Rect GetBoundingRectangleCore() => Finite(base.GetBoundingRectangleCore());
         }
     }
 }
