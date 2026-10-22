@@ -203,6 +203,67 @@ public class W7Tests
         Assert.Equal(PairGate.Ok, lockSt.BeginPair("192.168.1.10", now.AddMinutes(15)).Gate);
     }
 
+    [Fact(DisplayName = "CORE-04 Begleiter: Entkoppeln vergleicht den Hash zeitgleich, abgelaufene PCs verschwinden, alte Fehlversuche auch")]
+    public void Companion_unpair_expiry_and_trim()
+    {
+        var now = new DateTime(2026, 10, 22, 12, 0, 0);
+        var st = new CompanionState { TokenValidHours = 24 };
+        var (live, _) = st.TryPair(st.NewCode(now), "Lebt", now);
+        var (other, _) = st.TryPair(st.NewCode(now), "Zweiter", now);
+        Assert.NotNull(live); Assert.NotNull(other);
+        st.Pcs.Add(new CompanionState.PairedPc("Alt", CompanionState.Sha("WEG"), now.AddDays(-40), now.AddHours(-1)));
+        st.Pcs.Add(new CompanionState.PairedPc("Kurz", "ABC", now, now.AddDays(1)));
+        Assert.Equal("Token abgelaufen", st.AuthError("Bearer WEG", now));
+        Assert.Equal(1, st.DropExpired(now));
+        Assert.Equal(3, st.Pcs.Count);
+        Assert.Contains(st.Pcs, p => p.Name == "Lebt");
+        Assert.Contains(st.Pcs, p => p.Name == "Kurz");
+        Assert.DoesNotContain(st.Pcs, p => p.Name == "Alt");
+        Assert.Equal("nicht gekoppelt", st.AuthError("Bearer WEG", now));
+        Assert.Null(st.AuthError("Bearer " + live, now));
+        Assert.False(st.Unpair(null));
+        Assert.False(st.Unpair("Bearer"));
+        Assert.False(st.Unpair("Bearer falsch"));
+        Assert.True(st.Unpair("Bearer " + live));
+        Assert.False(st.Unpair("Bearer " + live));
+        Assert.Contains(st.Pcs, p => p.TokenSha256 == CompanionState.Sha(other!));
+        Assert.Contains(st.Pcs, p => p.TokenSha256 == "ABC");
+        Assert.DoesNotContain(st.Pcs, p => p.TokenSha256 == CompanionState.Sha(live!));
+
+        var old = new DateTime(2026, 10, 22, 8, 0, 0);
+        var guards = new CompanionState();
+        for (var i = 0; i < 80; i++)
+            guards.PairGuards.Add(new CompanionState.PairGuard
+            {
+                Ip = $"10.2.0.{i}",
+                Failures = 3,
+                LastFailure = old,
+                Attempts = Enumerable.Range(0, 40).Select(n => old.AddSeconds(n)).ToList()
+            });
+        var lockedUntil = old.AddHours(2);
+        guards.PairGuards.Add(new CompanionState.PairGuard { Ip = "10.9.9.9", LockedUntil = lockedUntil, LastFailure = old });
+        guards.NotePairFailure("10.1.1.1", old.AddHours(1));
+        var later = old.AddHours(1);
+        Assert.Equal(PairGate.Ok, guards.BeginPair("10.8.8.8", later).Gate);
+        Assert.DoesNotContain(guards.PairGuards, g => g.Ip.StartsWith("10.2.0."));
+        Assert.Contains(guards.PairGuards, g => g.Ip == "10.9.9.9" && g.LockedUntil == lockedUntil);
+        Assert.Contains(guards.PairGuards, g => g.Ip == "10.1.1.1" && g.Failures == 1);
+        Assert.Contains(guards.PairGuards, g => g.Ip == "10.8.8.8");
+        Assert.All(guards.PairGuards, g => Assert.True(g.Attempts.Count <= guards.MaxAttempts + 1));
+        var (_, _, r) = Make(); var f = Path.Combine(r, "kaputt.json");
+        var notes = new List<string>();
+        File.WriteAllText(f, "{");
+        var broken = CompanionState.Load(f, notes.Add);
+        Assert.Empty(broken.Pcs);
+        Assert.Contains(notes, m => m.Contains("beschädigt"));
+        notes.Clear();
+        File.WriteAllText(f, "{\"Name\":\"Pi\",\"Pcs\":[]}");
+        Assert.Equal("Pi", CompanionState.Load(f, notes.Add).Name);
+        Assert.Empty(notes);
+        Assert.NotNull(CompanionState.Load(Path.Combine(r, "fehlt.json"), notes.Add));
+        Assert.Empty(notes);
+    }
+
     static int FreePort() => 26000 + Random.Shared.Next(8000);
 
     static HttpClient Client(string baseAddress, string? sourceIp = null)
@@ -329,6 +390,7 @@ public class W7Tests
         var expired = await h.GetAsync("info");
         Assert.Equal(HttpStatusCode.Unauthorized, expired.StatusCode);
         Assert.Contains("abgelaufen", await BodyError(expired));
+        Assert.DoesNotContain(CompanionState.Load(f).Pcs, p => p.TokenSha256 == CompanionState.Sha(pr.Token));
         Assert.Equal(HttpStatusCode.OK, (await h.GetAsync("health")).StatusCode);
     }
 

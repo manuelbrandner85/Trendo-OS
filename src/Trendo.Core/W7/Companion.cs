@@ -49,6 +49,7 @@ public sealed class CompanionState
     {
         public string Ip { get; set; } = "";
         public int Failures { get; set; }
+        public DateTime? LastFailure { get; set; }
         public DateTime? LockedUntil { get; set; }
         public List<DateTime> Attempts { get; set; } = [];
     }
@@ -61,7 +62,31 @@ public sealed class CompanionState
     public int LockMinutes => PairLockMinutes is >= 1 and <= 1440 ? PairLockMinutes : DefaultPairLockMinutes;
 
     private static readonly JsonSerializerOptions J = new() { WriteIndented = true };
-    public static CompanionState Load(string file) { try { return File.Exists(file) ? JsonSerializer.Deserialize<CompanionState>(File.ReadAllText(file)) ?? new() : new(); } catch (JsonException) { return new(); } }
+
+    /// <summary>Beschädigtes JSON wird nicht still durch einen leeren Zustand ersetzt: die Meldung geht an log, sonst nach Standardfehler.</summary>
+    public static CompanionState Load(string file, Action<string>? log = null)
+    {
+        if (!File.Exists(file)) return new();
+        try
+        {
+            var state = JsonSerializer.Deserialize<CompanionState>(File.ReadAllText(file));
+            if (state is not null) return state;
+            Report(log, "Zustandsdatei ist leer oder kein Objekt. Es wird mit einem leeren Zustand weitergemacht.");
+            return new();
+        }
+        catch (JsonException ex)
+        {
+            var line = ex.LineNumber is long n ? $" Zeile {n}." : "";
+            Report(log, "Zustandsdatei ist beschädigt und wird nicht verwendet. Es wird mit einem leeren Zustand weitergemacht." + line);
+            return new();
+        }
+    }
+
+    private static void Report(Action<string>? log, string message)
+    {
+        if (log is not null) log(message);
+        else Console.Error.WriteLine("trendo-companion: " + message);
+    }
     public void Save(string file)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(file))!);
@@ -110,21 +135,34 @@ public sealed class CompanionState
     public bool Authorized(string? authHeader) => AuthError(authHeader, DateTime.Now) is null;
     public bool Authorized(string? authHeader, DateTime now) => AuthError(authHeader, now) is null;
 
-    public bool Unpair(string authHeader) { var h = Sha(authHeader[7..].Trim()); return Pcs.RemoveAll(p => p.TokenSha256 == h) > 0; }
+    /// <summary>Entfernt alle PCs, deren Token abgelaufen ist. Gültige Einträge bleiben.</summary>
+    public int DropExpired(DateTime now) => Pcs.RemoveAll(p => now > TokenExpiry(p));
+
+    public bool Unpair(string? authHeader)
+    {
+        if (authHeader is null || !authHeader.StartsWith("Bearer ", StringComparison.Ordinal)) return false;
+        var raw = authHeader[7..].Trim();
+        if (raw.Length == 0) return false;
+        var h = Encoding.ASCII.GetBytes(Sha(raw));
+        return Pcs.RemoveAll(p =>
+        {
+            var stored = Encoding.ASCII.GetBytes(p.TokenSha256 ?? "");
+            return stored.Length == h.Length && CryptographicOperations.FixedTimeEquals(stored, h);
+        }) > 0;
+    }
 
     /// <summary>Rate-Limit und Sperre gelten nur für diese Adresse. Andere Clients bleiben unberührt.</summary>
     public PairDecision BeginPair(string ip, DateTime now)
     {
+        ip = Normalize(ip);
+        Trim(now, ip);
         var g = Guard(ip);
         if (g.LockedUntil is DateTime until && now < until)
             return new(PairGate.Locked, LockText(until), Math.Max(1, (int)Math.Ceiling((until - now).TotalSeconds)));
-        if (g.LockedUntil is not null) { g.LockedUntil = null; g.Failures = 0; }
-        var window = TimeSpan.FromSeconds(WindowSeconds);
-        g.Attempts.RemoveAll(t => now - t >= window);
+        if (g.LockedUntil is not null) { g.LockedUntil = null; g.Failures = 0; g.LastFailure = null; }
         if (g.Attempts.Count >= MaxAttempts)
             return new(PairGate.RateLimited, "zu viele Versuche – bitte kurz warten", WindowSeconds);
         g.Attempts.Add(now);
-        Trim(now, g.Ip);
         return new(PairGate.Ok, "", 0);
     }
 
@@ -132,6 +170,7 @@ public sealed class CompanionState
     {
         var g = Guard(ip);
         g.Failures++;
+        g.LastFailure = now;
         if (g.Failures >= FailuresBeforeLock)
         {
             g.LockedUntil = now.AddMinutes(LockMinutes);
@@ -143,6 +182,7 @@ public sealed class CompanionState
     {
         var g = Guard(ip);
         g.Failures = 0;
+        g.LastFailure = null;
         g.LockedUntil = null;
     }
 
@@ -166,14 +206,27 @@ public sealed class CompanionState
 
     private static string Normalize(string ip) => string.IsNullOrWhiteSpace(ip) ? "unbekannt" : ip.Trim();
 
+    /// <summary>Alte Versuche und abgelaufene Fehlerserien entfernen, damit die Liste nicht mit jeder Adresse wächst. Eine laufende Sperre bleibt.</summary>
     private void Trim(DateTime now, string keep)
     {
-        if (PairGuards.Count < 64) return;
         var window = TimeSpan.FromSeconds(WindowSeconds);
+        var stale = TimeSpan.FromMinutes(LockMinutes);
+        foreach (var g in PairGuards)
+        {
+            g.Attempts.RemoveAll(t => now - t >= window);
+            var locked = g.LockedUntil is DateTime until && now < until;
+            if (!locked) g.LockedUntil = null;
+            if (!locked && (g.LastFailure is null || now - g.LastFailure.Value >= stale) && g.Attempts.Count == 0)
+            {
+                g.Failures = 0;
+                g.LastFailure = null;
+            }
+        }
         PairGuards.RemoveAll(g => !string.Equals(g.Ip, keep, StringComparison.Ordinal)
             && g.Failures == 0
-            && (g.LockedUntil is null || now >= g.LockedUntil)
-            && g.Attempts.TrueForAll(t => now - t >= window));
+            && g.LastFailure is null
+            && g.LockedUntil is null
+            && g.Attempts.Count == 0);
     }
 }
 

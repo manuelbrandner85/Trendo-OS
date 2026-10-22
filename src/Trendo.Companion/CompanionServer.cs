@@ -43,7 +43,7 @@ public sealed class CompanionServer : IDisposable
         _http.Prefixes.Add(ListenPrefix);
     }
 
-    public CompanionState State() { lock (_lock) return CompanionState.Load(_stateFile); }
+    public CompanionState State() { lock (_lock) return CompanionState.Load(_stateFile, _log); }
 
     public string? Tesseract() => new[] { "/usr/bin/tesseract", "/usr/local/bin/tesseract" }.FirstOrDefault(File.Exists);
 
@@ -95,8 +95,9 @@ public sealed class CompanionServer : IDisposable
                     string? token; string err; CompanionState st; PairDecision gate; int? retry = null;
                     lock (_lock)
                     {
-                        st = CompanionState.Load(_stateFile);
+                        st = CompanionState.Load(_stateFile, _log);
                         var now = _now();
+                        st.DropExpired(now);
                         gate = st.BeginPair(ip, now);
                         if (gate.Gate == PairGate.Ok && pr is not null)
                         {
@@ -119,8 +120,15 @@ public sealed class CompanionServer : IDisposable
                     _log($"gekoppelt mit {pr.PcName}");
                     await Send(res, 200, new PairResponse(token, st.Name, LinuxSysInfo.Kind(LinuxSysInfo.Model(_sysRoot)), Caps(), Version)); return;
             }
-            var state = State();
-            var authErr = state.AuthError(req.Headers["Authorization"], _now());
+            CompanionState state;
+            string? authErr;
+            lock (_lock)
+            {
+                var now = _now();
+                state = CompanionState.Load(_stateFile, _log);
+                authErr = state.AuthError(req.Headers["Authorization"], now);
+                if (state.DropExpired(now) > 0) state.Save(_stateFile);
+            }
             if (authErr is not null) { await Send(res, 401, new { error = authErr }); return; }
             switch (req.HttpMethod, path)
             {
@@ -144,7 +152,7 @@ public sealed class CompanionServer : IDisposable
                     finally { try { Directory.Delete(dir, true); } catch (IOException) { } }
                     return;
                 case ("POST", "/unpair"):
-                    lock (_lock) { var s = CompanionState.Load(_stateFile); s.Unpair(req.Headers["Authorization"]!); s.Save(_stateFile); }
+                    lock (_lock) { var s = CompanionState.Load(_stateFile, _log); s.Unpair(req.Headers["Authorization"]); s.DropExpired(_now()); s.Save(_stateFile); }
                     await Send(res, 200, new { ok = true }); return;
                 default:
                     await Send(res, 404, new { error = "unbekannt" }); return;
