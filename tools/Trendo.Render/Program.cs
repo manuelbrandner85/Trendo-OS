@@ -11,12 +11,13 @@ var shot = Environment.GetEnvironmentVariable("TRENDO_SHOT");
 AppBuilder.Configure<App>().UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false }).WithInterFont().SetupWithoutStarting();
 var root = Path.Combine(Path.GetTempPath(), "trendo-render");
 if (Directory.Exists(root)) Directory.Delete(root, true);
-if (shot is "brief" or "fenster")
+if (shot is "brief" or "fenster" or "seite")
 {
     Directory.CreateDirectory(root);
     var prepared = UserSettings.Load(root);
     prepared.SetupDone = true;
-    foreach (var hint in new[] { "brief", "3d", "spiele" }) if (!prepared.SeenHints.Contains(hint)) prepared.SeenHints.Add(hint);
+    foreach (var hint in MainWindow.HelpTexts.Keys) if (!prepared.SeenHints.Contains(hint)) prepared.SeenHints.Add(hint);
+    if (shot == "seite") prepared.ReduceMotion = true;
     if (shot == "brief")
     {
         prepared.Name = "Erika Muster"; prepared.SenderStreet = "Hauptstraße 1"; prepared.SenderCity = "10115 Berlin"; prepared.SenderContact = "erika@example.de";
@@ -59,6 +60,13 @@ else if (shot == "fenster")
         win.Show(win.Windows.Get(d3)!.Page);
     }
 }
+else if (shot == "seite")
+{
+    var page = args.Length > 3 ? args[3] : "studios";
+    win.Show(page);
+    if (win.Windows.Active is { Maximized: false } pageWin) win.Windows.ToggleMaximize(pageWin.Id);
+    win.Show(page);
+}
 else if (shot == "brief")
 {
     var us = UserSettings.Load(root);
@@ -88,7 +96,7 @@ if (Environment.GetEnvironmentVariable("TRENDO_DEMO_CASE") is not null)
     LetterKit.Compose(c, lh); store.Save(c, Principal.LocalOwner);
     win.OpenCase(c); win.Show(args.Length > 3 ? args[3] : "akte");
 }
-for (var i = 0; i < 30; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(50); }
+for (var i = 0; i < 40; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(50); }
 var frame = win.CaptureRenderedFrame();
 frame!.Save(outPath);
 Console.WriteLine($"OK {outPath}");

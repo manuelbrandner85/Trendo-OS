@@ -14,7 +14,7 @@ public static class PathFields
     public static Kind Classify(string? name, string? hint)
     {
         name ??= ""; hint ??= "";
-        if (name is "txt-search" or "startmenu-search" or "ki-input" || NotPath.IsMatch(name) || hint.Contains("http", StringComparison.OrdinalIgnoreCase) || hint.StartsWith("Adresse", StringComparison.OrdinalIgnoreCase)) return Kind.None;
+        if (name is "txt-search" or "startmenu-search" or "ki-input" or "txt-studio-search" || NotPath.IsMatch(name) || hint.Contains("http", StringComparison.OrdinalIgnoreCase) || hint.StartsWith("Adresse", StringComparison.OrdinalIgnoreCase)) return Kind.None;
         var h = hint.ToLowerInvariant();
         bool file = h.Contains("datei") || h.Contains("pfad") || Regex.IsMatch(name, @"-(file\d?|files|csv|zip|exe|import|path)$", RegexOptions.IgnoreCase);
         bool folder = h.Contains("ordner") || h.Contains("verzeichnis") || Regex.IsMatch(name, @"-folder$", RegexOptions.IgnoreCase);

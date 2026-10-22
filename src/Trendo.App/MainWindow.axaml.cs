@@ -64,6 +64,8 @@ public sealed partial class MainWindow : Window
     private Trendo.Api.LocalApi? _api;
     private Dictionary<string, Func<Control>> _showMap = new();
     private string? _studioFilter;
+    private string _studioQuery = "";
+    private int _studioRebuild;
 
     public TrendoCore Core => _core;
     public string CurrentView { get; private set; } = "";
@@ -145,6 +147,7 @@ public sealed partial class MainWindow : Window
         StartupTrace.Mark("ctor.layout");
         InitWave1(); InitWave45(); InitWave23(); InitW7(); StartupTrace.Mark("ctor.initwaves"); _query = opt.Query ?? "";
         InitSetup(opt);
+        if (_reopenSection is { } keepSection) { _settingsSection = keepSection; _reopenSection = null; }
         Show(opt.Page ?? (NeedsSetup(opt) ? "einrichtung" : "start"));
         StartupTrace.Mark("ctor.show");
         RefreshStatusBar();
@@ -679,7 +682,15 @@ public sealed partial class MainWindow : Window
         ToolTip.SetTip(help, "Was kann ich hier tun?"); var key = CurrentView;
         help.Click += (_, _) => ShowHelp(key, force: true);
         var heading = H(title, 22); heading.Name = "page-title";
-        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { heading, Pos(help, 1) } };
+        var titleCol = new StackPanel { Spacing = 2, Children = { heading } };
+        if (StudioIdForPage(CurrentView) is { } sid && StudioCatalog.For(sid) is { } info)
+        {
+            var line = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+            if (StudioIcons.For(sid) is { } si) line.Children.Add(Chip(si.Path, si.C1, si.C2, 22, 0.62));
+            line.Children.Add(new TextBlock { Text = info.Sentence, Foreground = Muted, FontSize = 13, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center });
+            titleCol.Children.Add(line);
+        }
+        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { titleCol, Pos(help, 1) } };
         var sp = new StackPanel { Spacing = 8, Children = { head, content } };
         Detach(_hintHost); sp.Children.Insert(1, _hintHost);
         var scroll = new ScrollViewer { Content = sp };
@@ -690,11 +701,61 @@ public sealed partial class MainWindow : Window
         return Panel(grid, 18);
     }
 
+    private static string StudioFilterId(string? area) => area switch
+    {
+        null or "" => "alle",
+        "Arbeiten & Büro" => "arbeiten",
+        "Business & Geld" => "business",
+        "Kreativ & Medien" => "kreativ",
+        "3D, Spiele & VR" => "spiele",
+        "Technik & Fachgebiete" => "technik",
+        "Wissen & Lernen" => "wissen",
+        "KI & Automatik" => "ki",
+        "Entwickeln" => "entwickeln",
+        "System & Sicherheit" => "system",
+        _ => "weitere",
+    };
+
+    private bool StudioHit(StudioEntry s)
+    {
+        var info = StudioCatalog.For(s.Id);
+        var name = info?.Name ?? s.Name;
+        var q = _studioQuery.Trim();
+        if (q.Length > 0 && !name.Contains(q, StringComparison.OrdinalIgnoreCase) && !(info?.Sentence.Contains(q, StringComparison.OrdinalIgnoreCase) ?? false) && !s.Id.Contains(q, StringComparison.OrdinalIgnoreCase))
+            return false;
+        var f = _studioFilter;
+        if (string.IsNullOrWhiteSpace(f)) return true;
+        if (string.Equals(info?.Area, f, StringComparison.OrdinalIgnoreCase)) return true;
+        return f.Split('|').Any(x => s.Id.StartsWith(x, StringComparison.OrdinalIgnoreCase)) || name.Contains(f, StringComparison.OrdinalIgnoreCase) || s.Name.Contains(f, StringComparison.OrdinalIgnoreCase);
+    }
+
     private Control StudiosView()
     {
-        var f = _studioFilter;
-        var list = string.IsNullOrWhiteSpace(f) ? _studios
-            : _studios.Where(s => f.Split('|').Any(x => s.Id.StartsWith(x, StringComparison.OrdinalIgnoreCase)) || s.Name.Contains(f, StringComparison.OrdinalIgnoreCase)).ToList();
+        var list = _studios.Where(StudioHit).ToList();
+        var tools = new StackPanel { Spacing = 8 };
+        var search = new TextBox { Name = "txt-studio-search", Text = _studioQuery, PlaceholderText = "Studio suchen", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Text, FontSize = 13 };
+        search.TextChanged += (_, _) =>
+        {
+            if (_studioRebuild > 0) return;
+            var next = search.Text ?? "";
+            if (next == _studioQuery) return;
+            _studioQuery = next;
+            _studioRebuild++;
+            try { Show("studios"); }
+            finally { _studioRebuild--; }
+        };
+        tools.Children.Add(new Border { CornerRadius = new CornerRadius(12), BorderBrush = Edge, BorderThickness = new Thickness(1), Background = Brush.Parse(C("#55202C48", "#CCFFFFFF")), Padding = new Thickness(12, 6), MaxWidth = 420, HorizontalAlignment = HorizontalAlignment.Left, Child = search });
+        var filters = new WrapPanel();
+        void ChipFilter(string? area, string label)
+        {
+            var on = string.IsNullOrWhiteSpace(area) ? string.IsNullOrWhiteSpace(_studioFilter) : string.Equals(_studioFilter, area, StringComparison.OrdinalIgnoreCase);
+            var b = new Button { Name = "studio-filter-" + StudioFilterId(area), Content = label, Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
+            b.Click += (_, _) => { _studioFilter = string.IsNullOrWhiteSpace(area) ? null : area; _studioQuery = ""; Show("studios"); };
+            filters.Children.Add(b);
+        }
+        ChipFilter(null, "Alle");
+        foreach (var area in StudioCatalog.Areas) ChipFilter(area, area);
+        tools.Children.Add(filters);
         var body = new StackPanel { Spacing = 4 };
         var groups = list.GroupBy(s => StudioCatalog.For(s.Id)?.Area ?? "Weitere")
             .OrderBy(g => Array.IndexOf(StudioCatalog.Areas, g.Key) is var k && k < 0 ? 99 : k);
@@ -706,12 +767,22 @@ public sealed partial class MainWindow : Window
                 var info = StudioCatalog.For(st.Id);
                 var name = info?.Name ?? st.Name;
                 var badge = Badge(st); badge.HorizontalAlignment = HorizontalAlignment.Left;
-                // Karten sind echte Knöpfe: Klick öffnet das Studio
-                var card = new Button { Name = "studio-card-" + st.Id, Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Margin = new Thickness(0, 0, 10, 10), Width = 230,
-                    HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch,
-                    Content = new StackPanel { Spacing = 4, Children = { CardHead(st.Id, name), P(info?.Sentence ?? "", null, 11.5), badge } } };
+                var foot = new StackPanel { Spacing = 4 };
+                var title = new TextBlock { Text = name, Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 14, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center };
+                foot.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { title, Pos(Ico(Mdi.ChevronRight, 16, Muted), 1) } });
+                foot.Children.Add(P(info?.Sentence ?? "", null, 12));
+                foot.Children.Add(badge);
+                Control top = foot;
+                if (StudioIcons.For(st.Id) is { } si)
+                {
+                    var chip = Chip(si.Path, si.C1, si.C2, 42, 0.58); chip.Name = "studio-icon-" + st.Id;
+                    chip.HorizontalAlignment = HorizontalAlignment.Center; chip.VerticalAlignment = VerticalAlignment.Center;
+                    var plate = new Border { Height = 78, CornerRadius = new CornerRadius(12), Margin = new Thickness(0, 0, 0, 10), Background = Brush.Parse(C("#33243A62", "#E4EDF8")), Child = chip };
+                    top = new StackPanel { Children = { plate, foot } };
+                }
+                var card = new Button { Name = "studio-card-" + st.Id, Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(12), Margin = new Thickness(0, 0, 10, 10), Width = 248,
+                    HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch, Content = top };
                 Avalonia.Automation.AutomationProperties.SetName(card, name);
-                // Technische Angaben nur für Entwickler im Tooltip
                 ToolTip.SetTip(card, $"{st.Id} · {st.ApprovalStatus} · {st.Reason}");
                 var sid = st.Id;
                 card.Click += async (_, _) => await OpenStudio(sid, name);
@@ -720,9 +791,10 @@ public sealed partial class MainWindow : Window
             var head = H(g.Key, 16); head.Name = "studio-area-" + g.Key; head.Margin = new Thickness(0, 8, 0, 4);
             body.Children.Add(head); body.Children.Add(wrap);
         }
-        var count = P(string.IsNullOrWhiteSpace(f) ? $"{list.Count} Studios" : $"{list.Count} Studios in diesem Bereich");
+        if (list.Count == 0 && _studios.Count > 0) body.Children.Add(P("Kein Studio passt zu dieser Suche.", Text));
+        var count = P(string.IsNullOrWhiteSpace(_studioFilter) && _studioQuery.Trim().Length == 0 ? $"{list.Count} Studios" : $"{list.Count} Studios in dieser Ansicht");
         if (_studios.Count == 0) count = P("Die Studio-Liste wurde nicht gefunden.", Brushes.OrangeRed);
-        return Page("Alle Studios", new StackPanel { Spacing = 8, Children = { count, body } });
+        return Page("Alle Studios", new StackPanel { Spacing = 8, Children = { count, tools, body } });
     }
 
     private Control ProjectsView()
@@ -875,10 +947,14 @@ public sealed partial class MainWindow : Window
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), Children = { _kiInput, Pos(_kiSetup, 1), Pos(send, 2) } } };
         _kiSetup.Margin = new Thickness(0, 0, 4, 0); _kiSetup.VerticalAlignment = VerticalAlignment.Center; _kiSetup.Background = Accent; _kiSetup.Padding = new Thickness(8, 2);
         _kiText.FontSize = 13; _kiText.TextWrapping = TextWrapping.Wrap;
-        var chat = new Border { Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(12), MaxHeight = 240, Child = new ScrollViewer { Content = _kiText } };
-        return Page("KI", new StackPanel { Spacing = 8, Children = { KiNav(), state, KiModelChooser(), chat,
-            P(_kiConnected ? $"Die KI läuft auf diesem PC (Modell {KiModelName}). Nichts geht ins Internet, nichts kostet extra." : "Die KI ist noch nicht eingerichtet. Unter „Zusatzprogramme“ installiert Trendo sie kostenlos mit einem Klick.", Text),
-            Nav2("Zusatzprogramme öffnen", "components") } }, inputBox);
+        var chat = new Border { Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(14), MinHeight = 160, Child = new ScrollViewer { Content = _kiText } };
+        var note = P(_kiConnected ? $"Die KI läuft auf diesem PC (Modell {KiModelName}). Nichts geht ins Internet, nichts kostet extra." : "Die KI ist noch nicht eingerichtet. Unter „Zusatzprogramme“ installiert Trendo sie kostenlos mit einem Klick.", Text);
+        var center = new StackPanel { Spacing = 10, Children = { chat, note, Nav2("Zusatzprogramme öffnen", "components") } };
+        var side = new Border { Background = Brush.Parse(C("#55101830", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(12), Child = new StackPanel { Spacing = 8, Children = { H("Modell und Status", 14), state, KiModelChooser() } } };
+        var cols = new Grid { ColumnDefinitions = new ColumnDefinitions("200,*,240"), ColumnSpacing = 12 };
+        var navBox = new Border { Background = Brush.Parse(C("#55101830", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(8), Child = KiNav(vertical: true) };
+        cols.Children.Add(navBox); Grid.SetColumn(center, 1); cols.Children.Add(center); Grid.SetColumn(side, 2); cols.Children.Add(side);
+        return Page("KI", cols, inputBox);
     }
 
     private Button Nav2(string label, string view) { var b = new Button { Content = label }; b.Click += (_, _) => Show(view); return b; }

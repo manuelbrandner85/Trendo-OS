@@ -68,7 +68,7 @@ public partial class MainWindow
                 var chip = Chip(si.Path, si.C1, si.C2, 20, 0.64); chip.Name = prefix + "-tabicon-" + k;
                 content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { chip, new TextBlock { Text = l, VerticalAlignment = VerticalAlignment.Center } } };
             }
-            var b = new Button { Name = prefix + "-tab-" + k, Content = content, Margin = new Thickness(0, 0, 6, 6), Background = CurrentView == k ? Accent : null };
+            var b = new Button { Name = prefix + "-tab-" + k, Content = content, Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(10), Foreground = Text, Background = CurrentView == k ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(CurrentView == k ? 0 : 1) };
             b.Click += (_, _) => { _w45Msg = ""; Show(k); }; row.Children.Add(b);
         }
         return row;
@@ -85,13 +85,13 @@ public partial class MainWindow
         return Page(title, sp);
     }
 
-    private Border Card(Control child) => new() { Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6), Child = child };
+    private Border Card(Control child) => new() { Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 8), Child = child };
 
     private Grid Row(Control left, Control right) => new() { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { left, Pos(right, 1) } };
 
     private Button Act(string name, string label, Action click, bool primary = false)
     {
-        var b = new Button { Name = name, Content = label, FontSize = 11.5, Padding = new Thickness(10, 3), Background = primary ? Accent : Avalonia.Media.Brushes.Transparent }; // null wäre per Maus nicht anklickbar, Transparent sieht gleich aus
+        var b = new Button { Name = name, Content = label, FontSize = 12, Padding = new Thickness(12, 6), CornerRadius = new CornerRadius(8), Foreground = Text, Background = primary ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(primary ? 0 : 1) };
         b.Click += (_, _) => click();
         return b;
     }

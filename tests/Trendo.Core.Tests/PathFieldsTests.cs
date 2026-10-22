@@ -19,6 +19,7 @@ public class T0201_PathFields
     [InlineData("name", "Name der Idee", K.None)]
     [InlineData("txt-search", "Studios, Dateien und Einstellungen suchen", K.None)]
     [InlineData("startmenu-search", "Programme, Studios, Dateien und Einstellungen suchen", K.None)]
+    [InlineData("txt-studio-search", "Studio suchen", K.None)]
     public void Classify(string name, string hint, K want) => Assert.Equal(want, PathFields.Classify(name, hint));
 
     [Fact(DisplayName = "T-0201: Dateityp-Filter aus dem Platzhalter")]
