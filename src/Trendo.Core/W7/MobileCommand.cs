@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 
@@ -36,13 +35,27 @@ public sealed class MobileCommandServer : IDisposable
         _stateFile = Path.Combine(core.DataRoot, "handy", "kopplung.json");
     }
 
+    /// <summary>Freier Port ohne TcpListener. Der Core darf System.Net.Sockets nicht referenzieren.</summary>
     public static int FreePort()
     {
-        var l = new TcpListener(IPAddress.Loopback, 0);
-        l.Start();
-        var p = ((IPEndPoint)l.LocalEndpoint).Port;
-        l.Stop();
-        return p;
+        for (var i = 0; i < 20; i++)
+        {
+            var port = System.Security.Cryptography.RandomNumberGenerator.GetInt32(20000, 45000);
+            var h = new HttpListener();
+            h.Prefixes.Add($"http://127.0.0.1:{port}/");
+            try
+            {
+                h.Start();
+                h.Stop();
+                h.Close();
+                return port;
+            }
+            catch (HttpListenerException)
+            {
+                try { h.Close(); } catch (ObjectDisposedException) { }
+            }
+        }
+        throw new InvalidOperationException("Kein freier Port für die Handy-Seite.");
     }
 
     public static IReadOnlyList<string> LanIpv4()
@@ -55,8 +68,8 @@ public sealed class MobileCommandServer : IDisposable
                 if (ni.OperationalStatus != System.Net.NetworkInformation.OperationalStatus.Up) continue;
                 foreach (var u in ni.GetIPProperties().UnicastAddresses)
                 {
-                    if (u.Address.AddressFamily != AddressFamily.InterNetwork) continue;
                     var s = u.Address.ToString();
+                    if (s.Contains(':')) continue;
                     if (FusionStore.IsLanAddress(s)) list.Add(s);
                 }
             }
