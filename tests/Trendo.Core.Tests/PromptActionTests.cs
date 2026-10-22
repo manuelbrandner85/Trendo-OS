@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Time.Testing;
 using Trendo.Core;
 using Trendo.Core.PromptAction;
+using Trendo.Core.Sys;
 using Xunit;
 
 namespace Trendo.Core.Tests;
@@ -242,9 +243,9 @@ public class PromptActionTests
     public void Routing_mit_Grund()
     {
         using var fx = new Fixture();
-        var result = fx.Wf.Start(fx.Req("STUDIO-LETTER-01", "Studio: SYS-10\nText: Eine Tabelle"), fx.Ctx());
+        var result = fx.Wf.Start(fx.Req("STUDIO-LETTER-01", "Studio: SPEC-15\nText: Eine Tabelle"), fx.Ctx());
         Assert.Equal(RunStatus.Unsupported, result.Status);
-        Assert.Contains("Texte & Tabellen", result.RoutingReason);
+        Assert.Contains("Live streamen", result.RoutingReason);
         Assert.Empty(result.Artifacts);
     }
 
@@ -422,6 +423,51 @@ public class PromptActionTests
         Assert.Empty(result.Artifacts);
     }
 
+    const string Tabelle = """
+        Zelle: A1=Posten
+        Zelle: B1=Betrag
+        Zelle: A2=Papier
+        Zelle: B2=12,50
+        Zelle: A3=Stift
+        Zelle: B3=3,50
+        Zelle: A4=Summe
+        Zelle: B4=SUMME(B2:B3)
+        """;
+
+    [Fact(DisplayName = "Tabelle rechnet SUMME und schreibt die Zahlen in die Datei")]
+    public void Tabelle_rechnet_formel()
+    {
+        using var fx = new Fixture(new SheetPromptAdapter());
+        var plan = fx.Wf.Start(fx.Req("SYS-10", Tabelle), fx.Ctx());
+        Assert.Equal(WorkflowPhase.Planned, plan.Phase);
+        Assert.Empty(plan.Artifacts);
+        var done = fx.Wf.Los(fx.Project, plan.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        Assert.Contains("B4 = 16", done.Preview);
+        var file = fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath);
+        var rows = Ooxml.ReadXlsx(file);
+        Assert.Equal("Papier", rows[1][0]);
+        Assert.Equal(16m, decimal.Parse(rows[3][1], System.Globalization.CultureInfo.InvariantCulture));
+        var changed = Tabelle.Replace("B3=3,50", "B3=4,50");
+        var nextPlan = fx.Wf.Revise(fx.Project, plan.RunId, changed, fx.Ctx());
+        var next = fx.Wf.Los(fx.Project, nextPlan.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, next.Status);
+        Assert.Contains("B4 = 17", next.Preview);
+        Assert.Equal(16m, decimal.Parse(Ooxml.ReadXlsx(file)[3][1], System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    [Fact(DisplayName = "Teilen durch null schreibt keine Tabelle")]
+    public void Tabelle_teilt_nicht_durch_null()
+    {
+        using var fx = new Fixture(new SheetPromptAdapter());
+        var prompt = "Zelle: A1=10\nZelle: A2=0\nZelle: A3=A1/A2";
+        var result = fx.Wf.Start(fx.Req("SYS-10", prompt), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, result.Status);
+        Assert.Contains(result.Errors, e => e.Contains("0", StringComparison.Ordinal));
+        Assert.Empty(result.Artifacts);
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase));
+    }
+
     [Fact(DisplayName = "Katalogmatrix nennt jede Studio-ID genau einmal")]
     public void Matrix_deckt_den_Katalog()
     {
@@ -429,7 +475,9 @@ public class PromptActionTests
         Assert.Equal(ids.Count, ids.Distinct(StringComparer.OrdinalIgnoreCase).Count());
         var registered = PromptActions.CreateDefault().Select(a => a.StudioId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         Assert.Contains(registered, id => id == "STUDIO-LETTER-01");
+        Assert.Contains(registered, id => id == "SYS-10");
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-LETTER-01", PromptActions.CreateDefault()));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-10", PromptActions.CreateDefault()));
         Assert.All(ids.Where(id => !registered.Contains(id)), id => Assert.Equal(CapabilityLevel.NotImplemented, CapabilityCatalog.Level(id, PromptActions.CreateDefault())));
         var markdown = CapabilityCatalog.Markdown(PromptActions.CreateDefault());
         Assert.Equal(Normalize(markdown), Normalize(File.ReadAllText(Repo("docs/improvement-42/studio-capability-matrix.md"))));
