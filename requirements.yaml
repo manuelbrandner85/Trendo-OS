@@ -60,15 +60,15 @@ modules:
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/CORE-02.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: CORE-03
   name: AI Agent Command Center – 12 roles
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/CORE-03.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: CORE-04
   implementation_status: IN_PROGRESS
   test_status: PC_VERIFIED
@@ -110,29 +110,29 @@ modules:
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/CORE-09.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: CORE-10
   name: Knowledge Memory & Self Improvement Core 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/CORE-10.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: CORE-11
   name: Security Privacy Recovery Fortress
   approved_expansion_functions: '16'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/CORE-11.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: CORE-12
   name: Ultimate Prompt & Masterprompt Studio 2.0
   approved_expansion_functions: '50'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/CORE-12.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: SYS-01
   implementation_status: IN_PROGRESS
   test_status: PC_VERIFIED
@@ -162,43 +162,43 @@ modules:
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SYS-04.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: SYS-05
   name: Universal Automation & Workflow Engine
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SYS-05.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: SYS-06
   name: Ultimate Network File Sharing & Remote Workspace
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SYS-06.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: SYS-07
   name: Ultimate Hardware & Device Recognition
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SYS-07.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: SYS-08
   name: Deep Web & Dark Web READ-ONLY Research Studio
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SYS-08.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: SYS-09
   name: Communication Mail & Collaboration Center
   approved_expansion_functions: '25'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SYS-09.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: SYS-10
   name: Office Documents & Productivity Center
   approved_expansion_functions: '25'
@@ -284,22 +284,22 @@ modules:
   approved_expansion_functions: '18'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-08.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: SPEC-09
   name: 3D Scanning & Reconstruction 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-09.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: SPEC-10
   name: Digital Twin 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-10.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: SPEC-11
   name: Business & Finance 2.0
   approved_expansion_functions: '20'
@@ -312,36 +312,36 @@ modules:
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-12.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: SPEC-13
   name: Maps & Geospatial 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-13.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: SPEC-14
   name: Manufacturing & CNC 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-14.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: SPEC-15
   name: Broadcast & Streaming 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-15.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: SPEC-16
   name: Transport & Vehicle 2.0
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/SPEC-16.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: X-01
   name: Universal Studio Fusion & Autonomous Production
   approved_expansion_functions: '18'
@@ -354,8 +354,8 @@ modules:
   approved_expansion_functions: '20'
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/X-02.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: X-03
   name: Visual Builder & No-Code
   approved_expansion_functions: '20'
@@ -375,8 +375,8 @@ modules:
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w23/X-05.md
+  test_status: PC_VERIFIED
+  evidence: reports/pc-t0003/UEBERSICHT.md
 - id: X-06
   name: GitHub Open-Source Integration
   approved_expansion_functions: BASE

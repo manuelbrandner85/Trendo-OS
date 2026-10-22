@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="078e5892-f59c-4c1d-9baa-04a2674a498c" name="<user>@<host> 2026-10-22 02:42:49" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-22T02:42:49.8059460+02:00" queuing="2026-10-22T02:42:49.8059462+02:00" start="2026-10-22T02:42:49.0472613+02:00" finish="2026-10-22T02:42:49.8101403+02:00" />
+  <TestSettings name="default" id="7cb660ac-8be9-4a2d-9887-6e6bd0c23c99">
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_49" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="c16fb177-2edc-4df9-8e7b-7b16667b94f4" testId="d2354146-bad4-ef29-02cf-288155dbed00" testName="X-02: Fehlende Ordner, kaputte Dateien, verwaiste Pfade und alte Zwischendateien werden repariert" computerName="<host>" duration="00:00:00.0863082" startTime="2026-10-22T02:42:49.6041693+02:00" endTime="2026-10-22T02:42:49.6965756+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c16fb177-2edc-4df9-8e7b-7b16667b94f4" />
+    <UnitTestResult executionId="b86e6c9a-8428-420c-a2ea-dcba9ee3b37a" testId="0f3b7d25-8ae9-79b2-c919-945e10ee00a5" testName="X-02: Verändertes Protokoll wird gemeldet, aber bewusst nicht „repariert“" computerName="<host>" duration="00:00:00.0216301" startTime="2026-10-22T02:42:49.7048100+02:00" endTime="2026-10-22T02:42:49.7184872+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b86e6c9a-8428-420c-a2ea-dcba9ee3b37a" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="X-02: Fehlende Ordner, kaputte Dateien, verwaiste Pfade und alte Zwischendateien werden repariert" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="d2354146-bad4-ef29-02cf-288155dbed00">
+      <Execution id="c16fb177-2edc-4df9-8e7b-7b16667b94f4" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.X02_SelfHealing" name="Repairs" />
+    </UnitTest>
+    <UnitTest name="X-02: Verändertes Protokoll wird gemeldet, aber bewusst nicht „repariert“" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="0f3b7d25-8ae9-79b2-c919-945e10ee00a5">
+      <Execution id="b86e6c9a-8428-420c-a2ea-dcba9ee3b37a" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.X02_SelfHealing" name="Audit_not_touched" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="d2354146-bad4-ef29-02cf-288155dbed00" executionId="c16fb177-2edc-4df9-8e7b-7b16667b94f4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0f3b7d25-8ae9-79b2-c919-945e10ee00a5" executionId="b86e6c9a-8428-420c-a2ea-dcba9ee3b37a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="2" executed="2" passed="2" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.08]   Discovering: Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.14]   Discovered:  Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.16]   Starting:    Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.30]   Finished:    Trendo.Core.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

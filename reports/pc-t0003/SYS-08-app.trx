@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="884f84ef-4fc4-4a2e-ba84-c46126fc13a2" name="<user>@<host> 2026-10-22 02:42:51" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-22T02:42:51.3490974+02:00" queuing="2026-10-22T02:42:51.3490976+02:00" start="2026-10-22T02:42:48.9626011+02:00" finish="2026-10-22T02:42:51.3530682+02:00" />
+  <TestSettings name="default" id="aec8dacf-1518-4f1a-819f-196c28531161">
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_51" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="58fe1028-8e2d-4fb5-847b-d1b7d2370761" testId="6330757d-9930-0b36-3446-8feb6a1aa337" testName="SYS-08 UI: Seite im Lesemodus lesen, .onion wird nicht abgerufen, Sitzung beenden" computerName="<host>" duration="00:00:01.1433428" startTime="2026-10-22T02:42:50.1011859+02:00" endTime="2026-10-22T02:42:51.2522517+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="58fe1028-8e2d-4fb5-847b-d1b7d2370761" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="SYS-08 UI: Seite im Lesemodus lesen, .onion wird nicht abgerufen, Sitzung beenden" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="6330757d-9930-0b36-3446-8feb6a1aa337">
+      <Execution id="58fe1028-8e2d-4fb5-847b-d1b7d2370761" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SYS08_Ui" name="Research_page" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="6330757d-9930-0b36-3446-8feb6a1aa337" executionId="58fe1028-8e2d-4fb5-847b-d1b7d2370761" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.17]   Discovering: Trendo.App.Tests&#xD;
+[xUnit.net 00:00:00.42]   Discovered:  Trendo.App.Tests&#xD;
+[xUnit.net 00:00:00.60]   Starting:    Trendo.App.Tests&#xD;
+[xUnit.net 00:00:01.93]   Finished:    Trendo.App.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

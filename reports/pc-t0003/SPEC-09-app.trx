@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="808152ef-b23d-4854-be06-efa7b7fb3861" name="<user>@<host> 2026-10-22 02:43:02" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-22T02:43:02.9903979+02:00" queuing="2026-10-22T02:43:02.9903980+02:00" start="2026-10-22T02:42:59.6285659+02:00" finish="2026-10-22T02:43:03.2845018+02:00" />
+  <TestSettings name="default" id="102aefe6-ed12-4470-b75f-7dac0c4a02a8">
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_43_02" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="e7c35852-eef2-4306-afd9-7f0b98622730" testId="b310c8ed-a7e9-85e0-3db1-75b8a8e40b4a" testName="SPEC-09 UI: Scan lesen und bereinigt speichern" computerName="<host>" duration="00:00:00.3825735" startTime="2026-10-22T02:43:02.8362728+02:00" endTime="2026-10-22T02:43:03.2190285+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e7c35852-eef2-4306-afd9-7f0b98622730" />
+    <UnitTestResult executionId="9a836a6a-b944-4be7-9c7c-374bc281ede7" testId="4156f71c-4236-abc8-16ef-81dbf7c38689" testName="SPEC-09 UI Ausbau: Umformen, Boden, Prüfen" computerName="<host>" duration="00:00:02.0884913" startTime="2026-10-22T02:43:00.7285533+02:00" endTime="2026-10-22T02:43:02.8247846+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9a836a6a-b944-4be7-9c7c-374bc281ede7" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="SPEC-09 UI Ausbau: Umformen, Boden, Prüfen" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="4156f71c-4236-abc8-16ef-81dbf7c38689">
+      <Execution id="9a836a6a-b944-4be7-9c7c-374bc281ede7" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SPEC09_UiPlus" name="Plus" />
+    </UnitTest>
+    <UnitTest name="SPEC-09 UI: Scan lesen und bereinigt speichern" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="b310c8ed-a7e9-85e0-3db1-75b8a8e40b4a">
+      <Execution id="e7c35852-eef2-4306-afd9-7f0b98622730" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SPEC09_Ui" name="Scan" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="b310c8ed-a7e9-85e0-3db1-75b8a8e40b4a" executionId="e7c35852-eef2-4306-afd9-7f0b98622730" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4156f71c-4236-abc8-16ef-81dbf7c38689" executionId="9a836a6a-b944-4be7-9c7c-374bc281ede7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="2" executed="2" passed="2" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.17]   Discovering: Trendo.App.Tests&#xD;
+[xUnit.net 00:00:00.40]   Discovered:  Trendo.App.Tests&#xD;
+[xUnit.net 00:00:00.58]   Starting:    Trendo.App.Tests&#xD;
+[xUnit.net 00:00:03.24]   Finished:    Trendo.App.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

@@ -28,6 +28,7 @@ rules = [
   { action = "allow", tool = "bash", pattern = "Get-ChildItem*" },
   { action = "allow", tool = "bash", pattern = "Get-Content*" },
   { action = "allow", tool = "bash", pattern = "Select-String*" },
+  { action = "allow", tool = "bash", pattern = "Get-FileHash*" },
 
   { action = "deny", tool = "bash", pattern = "git push*main*" },
   { action = "deny", tool = "bash", pattern = "git push*--force*" },

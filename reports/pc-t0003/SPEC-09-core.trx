@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="0fc6fee5-3fb2-4cd9-bedc-376e0864fb1d" name="<user>@<host> 2026-10-22 02:42:40" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-22T02:42:40.0866743+02:00" queuing="2026-10-22T02:42:40.0866744+02:00" start="2026-10-22T02:42:39.4650513+02:00" finish="2026-10-22T02:42:40.1245426+02:00" />
+  <TestSettings name="default" id="b040fa36-ee3a-4005-b04a-97a5fed01bc9">
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_40" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="b4c88957-f5fa-4c33-94d5-7f00b71fd576" testId="6f204133-1711-a195-085b-1cc5f5a23705" testName="SPEC-09 F17: XYZ speichern" computerName="<host>" duration="00:00:00.0007452" startTime="2026-10-22T02:42:40.0651711+02:00" endTime="2026-10-22T02:42:40.0652237+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="b4c88957-f5fa-4c33-94d5-7f00b71fd576" />
+    <UnitTestResult executionId="c69acaf4-cdd3-4e9e-bdd7-5e9071c13ae3" testId="db3a1a24-2db6-2f30-93c9-4d6f5ca66053" testName="SPEC-09 F12: Zuschneiden" computerName="<host>" duration="00:00:00.0068686" startTime="2026-10-22T02:42:40.0088940+02:00" endTime="2026-10-22T02:42:40.0205180+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c69acaf4-cdd3-4e9e-bdd7-5e9071c13ae3" />
+    <UnitTestResult executionId="ceae7170-c511-4659-b100-6a10823975d2" testId="01f63cb4-5ac5-ebf1-5a01-b2b5d8859709" testName="SPEC-09 F10: Skalieren" computerName="<host>" duration="00:00:00.0008932" startTime="2026-10-22T02:42:40.0647272+02:00" endTime="2026-10-22T02:42:40.0648019+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ceae7170-c511-4659-b100-6a10823975d2" />
+    <UnitTestResult executionId="70e1524c-d5ee-44ec-9787-f6d27ae550a1" testId="942ed4dd-21aa-9451-8444-6ba7661c8bf5" testName="SPEC-09 F20: Zusammenführen" computerName="<host>" duration="00:00:00.0005829" startTime="2026-10-22T02:42:40.0362434+02:00" endTime="2026-10-22T02:42:40.0367278+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="70e1524c-d5ee-44ec-9787-f6d27ae550a1" />
+    <UnitTestResult executionId="27cbcbdb-4d6f-483c-9d87-c5203dde1576" testId="43011948-0c75-3e01-5599-03d223f76922" testName="SPEC-09 F13: Boden finden" computerName="<host>" duration="00:00:00.0023528" startTime="2026-10-22T02:42:40.0300746+02:00" endTime="2026-10-22T02:42:40.0301057+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="27cbcbdb-4d6f-483c-9d87-c5203dde1576" />
+    <UnitTestResult executionId="dc958830-469b-4abe-a327-cb8d8212b315" testId="74b029ce-ed98-db7a-ae54-7f64ae1da934" testName="SPEC-09 F11: Zentrieren" computerName="<host>" duration="00:00:00.0051444" startTime="2026-10-22T02:42:40.0294906+02:00" endTime="2026-10-22T02:42:40.0295399+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="dc958830-469b-4abe-a327-cb8d8212b315" />
+    <UnitTestResult executionId="0265991b-3e01-4855-8af8-f3c0c05cfeaa" testId="1b6d92a6-bd79-0523-5a14-c8236911c697" testName="SPEC-09 F16: Volumen" computerName="<host>" duration="00:00:00.0030085" startTime="2026-10-22T02:42:40.0368184+02:00" endTime="2026-10-22T02:42:40.0397833+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0265991b-3e01-4855-8af8-f3c0c05cfeaa" />
+    <UnitTestResult executionId="d92a5188-4f86-41e3-8fcb-2e98f66707f5" testId="0e24f511-4b12-bb2b-fe7b-fdc72680c613" testName="SPEC-09 F14: Boden entfernen" computerName="<host>" duration="00:00:00.0033079" startTime="2026-10-22T02:42:40.0398861+02:00" endTime="2026-10-22T02:42:40.0431273+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d92a5188-4f86-41e3-8fcb-2e98f66707f5" />
+    <UnitTestResult executionId="eb5a8918-e563-426d-8860-de34ce6646f6" testId="b8bcf9fc-4500-62ee-4b60-cf547ba53f97" testName="SPEC-09 F19: Drehen" computerName="<host>" duration="00:00:00.0003443" startTime="2026-10-22T02:42:40.0358364+02:00" endTime="2026-10-22T02:42:40.0361319+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="eb5a8918-e563-426d-8860-de34ce6646f6" />
+    <UnitTestResult executionId="3a3cf563-edca-4fad-a17c-bb6df6ceb259" testId="ae63815c-0c20-51cb-67f2-0e9513fb99d8" testName="SPEC-09 F18: Punktdichte" computerName="<host>" duration="00:00:00.0073645" startTime="2026-10-22T02:42:40.0301816+02:00" endTime="2026-10-22T02:42:40.0357452+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3a3cf563-edca-4fad-a17c-bb6df6ceb259" />
+    <UnitTestResult executionId="f795c83a-4869-4dd2-851b-4e511bfd1794" testId="53c0d82d-e5db-2af6-bd24-08dd831eba77" testName="SPEC-09 F15: Scans vergleichen" computerName="<host>" duration="00:00:00.0027845" startTime="2026-10-22T02:42:40.0653677+02:00" endTime="2026-10-22T02:42:40.0654146+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f795c83a-4869-4dd2-851b-4e511bfd1794" />
+    <UnitTestResult executionId="9a5a1eba-6a06-4c87-bcdc-3323b5ad1f62" testId="f3fbe518-afb1-9b47-184e-7c7a9cca561c" testName="SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern" computerName="<host>" duration="00:00:00.0674423" startTime="2026-10-22T02:42:40.0076432+02:00" endTime="2026-10-22T02:42:40.0791233+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9a5a1eba-6a06-4c87-bcdc-3323b5ad1f62" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="SPEC-09 F11: Zentrieren" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="74b029ce-ed98-db7a-ae54-7f64ae1da934">
+      <Execution id="dc958830-469b-4abe-a327-cb8d8212b315" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC09_Plus" name="F11" />
+    </UnitTest>
+    <UnitTest name="SPEC-09 F13: Boden finden" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="43011948-0c75-3e01-5599-03d223f76922">
+      <Execution id="27cbcbdb-4d6f-483c-9d87-c5203dde1576" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC09_Plus" name="F13" />
+    </UnitTest>
+    <UnitTest name="SPEC-09 F16: Volumen" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="1b6d92a6-bd79-0523-5a14-c8236911c697">
+      <Execution id="0265991b-3e01-4855-8af8-f3c0c05cfeaa" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC09_Plus" name="F16" />
+    </UnitTest>
+    <UnitTest name="SPEC-09 F20: Zusammenführen" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="942ed4dd-21aa-9451-8444-6ba7661c8bf5">
+      <Execution id="70e1524c-d5ee-44ec-9787-f6d27ae550a1" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC09_Plus" name="F20" />
+    </UnitTest>
+    <UnitTest name="SPEC-09 F12: Zuschneiden" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="db3a1a24-2db6-2f30-93c9-4d6f5ca66053">
+      <Execution id="c69acaf4-cdd3-4e9e-bdd7-5e9071c13ae3" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC09_Plus" name="F12" />
+    </UnitTest>
+    <UnitTest name="SPEC-09 F17: XYZ speichern" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="6f204133-1711-a195-085b-1cc5f5a23705">
+      <Execution id="b4c88957-f5fa-4c33-94d5-7f00b71fd576" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC09_Plus" name="F17" />
+    </UnitTest>
+    <UnitTest name="SPEC-09 F15: Scans vergleichen" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="53c0d82d-e5db-2af6-bd24-08dd831eba77">
+      <Execution id="f795c83a-4869-4dd2-851b-4e511bfd1794" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC09_Plus" name="F15" />
+    </UnitTest>
+    <UnitTest name="SPEC-09 F18: Punktdichte" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="ae63815c-0c20-51cb-67f2-0e9513fb99d8">
+      <Execution id="3a3cf563-edca-4fad-a17c-bb6df6ceb259" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC09_Plus" name="F18" />
+    </UnitTest>
+    <UnitTest name="SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="f3fbe518-afb1-9b47-184e-7c7a9cca561c">
+      <Execution id="9a5a1eba-6a06-4c87-bcdc-3323b5ad1f62" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC09_Scan" name="Cloud" />
+    </UnitTest>
+    <UnitTest name="SPEC-09 F19: Drehen" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="b8bcf9fc-4500-62ee-4b60-cf547ba53f97">
+      <Execution id="eb5a8918-e563-426d-8860-de34ce6646f6" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC09_Plus" name="F19" />
+    </UnitTest>
+    <UnitTest name="SPEC-09 F10: Skalieren" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="01f63cb4-5ac5-ebf1-5a01-b2b5d8859709">
+      <Execution id="ceae7170-c511-4659-b100-6a10823975d2" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC09_Plus" name="F10" />
+    </UnitTest>
+    <UnitTest name="SPEC-09 F14: Boden entfernen" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="0e24f511-4b12-bb2b-fe7b-fdc72680c613">
+      <Execution id="d92a5188-4f86-41e3-8fcb-2e98f66707f5" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC09_Plus" name="F14" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="6f204133-1711-a195-085b-1cc5f5a23705" executionId="b4c88957-f5fa-4c33-94d5-7f00b71fd576" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="db3a1a24-2db6-2f30-93c9-4d6f5ca66053" executionId="c69acaf4-cdd3-4e9e-bdd7-5e9071c13ae3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="01f63cb4-5ac5-ebf1-5a01-b2b5d8859709" executionId="ceae7170-c511-4659-b100-6a10823975d2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="942ed4dd-21aa-9451-8444-6ba7661c8bf5" executionId="70e1524c-d5ee-44ec-9787-f6d27ae550a1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="43011948-0c75-3e01-5599-03d223f76922" executionId="27cbcbdb-4d6f-483c-9d87-c5203dde1576" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="74b029ce-ed98-db7a-ae54-7f64ae1da934" executionId="dc958830-469b-4abe-a327-cb8d8212b315" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1b6d92a6-bd79-0523-5a14-c8236911c697" executionId="0265991b-3e01-4855-8af8-f3c0c05cfeaa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0e24f511-4b12-bb2b-fe7b-fdc72680c613" executionId="d92a5188-4f86-41e3-8fcb-2e98f66707f5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b8bcf9fc-4500-62ee-4b60-cf547ba53f97" executionId="eb5a8918-e563-426d-8860-de34ce6646f6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ae63815c-0c20-51cb-67f2-0e9513fb99d8" executionId="3a3cf563-edca-4fad-a17c-bb6df6ceb259" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="53c0d82d-e5db-2af6-bd24-08dd831eba77" executionId="f795c83a-4869-4dd2-851b-4e511bfd1794" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f3fbe518-afb1-9b47-184e-7c7a9cca561c" executionId="9a5a1eba-6a06-4c87-bcdc-3323b5ad1f62" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="12" executed="12" passed="12" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.07]   Discovering: Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.14]   Discovered:  Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.16]   Starting:    Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.25]   Finished:    Trendo.Core.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="91edd430-c7df-4302-b359-23b098fb5112" name="<user>@<host> 2026-10-22 02:42:28" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-22T02:42:28.9419787+02:00" queuing="2026-10-22T02:42:28.9419788+02:00" start="2026-10-22T02:42:28.2210481+02:00" finish="2026-10-22T02:42:28.9465502+02:00" />
+  <TestSettings name="default" id="103f8d81-0ca3-4192-bbb9-3de33597bdbf">
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_28" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="ca25096d-c5a5-4a40-89f1-41ca84e7a21b" testId="0c5e3623-259d-cf43-c7e9-d3339d378c8e" testName="CORE-12: Versionen speichern und zurückholen, Mitgelieferte nicht löschbar" computerName="<host>" duration="00:00:00.0579191" startTime="2026-10-22T02:42:28.7976233+02:00" endTime="2026-10-22T02:42:28.8473921+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ca25096d-c5a5-4a40-89f1-41ca84e7a21b" />
+    <UnitTestResult executionId="8268bffd-554b-41f7-8de0-f96d7ce18ae5" testId="fc9d2472-2a81-092f-253f-dbadec3f6155" testName="CORE-12: Qualitätsprüfung erkennt kurze Aufträge, Geheimnisse, offene Platzhalter; Masterprompt hat Regeln" computerName="<host>" duration="00:00:00.0076631" startTime="2026-10-22T02:42:28.8480669+02:00" endTime="2026-10-22T02:42:28.8550842+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8268bffd-554b-41f7-8de0-f96d7ce18ae5" />
+    <UnitTestResult executionId="ffc1f294-4f17-4a24-b8f6-b193477a009f" testId="240832b9-7ec8-3f6b-c603-cdfa8c3138ed" testName="CORE-12: Platzhalter mit Standardwert ausfüllen, fehlende werden genannt" computerName="<host>" duration="00:00:00.0207013" startTime="2026-10-22T02:42:28.7622886+02:00" endTime="2026-10-22T02:42:28.7890724+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ffc1f294-4f17-4a24-b8f6-b193477a009f" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="CORE-12: Platzhalter mit Standardwert ausfüllen, fehlende werden genannt" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="240832b9-7ec8-3f6b-c603-cdfa8c3138ed">
+      <Execution id="ffc1f294-4f17-4a24-b8f6-b193477a009f" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.CORE12_Prompts" name="Fill_vars" />
+    </UnitTest>
+    <UnitTest name="CORE-12: Versionen speichern und zurückholen, Mitgelieferte nicht löschbar" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="0c5e3623-259d-cf43-c7e9-d3339d378c8e">
+      <Execution id="ca25096d-c5a5-4a40-89f1-41ca84e7a21b" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.CORE12_Prompts" name="Versions" />
+    </UnitTest>
+    <UnitTest name="CORE-12: Qualitätsprüfung erkennt kurze Aufträge, Geheimnisse, offene Platzhalter; Masterprompt hat Regeln" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="fc9d2472-2a81-092f-253f-dbadec3f6155">
+      <Execution id="8268bffd-554b-41f7-8de0-f96d7ce18ae5" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.CORE12_Prompts" name="Check_and_master" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="0c5e3623-259d-cf43-c7e9-d3339d378c8e" executionId="ca25096d-c5a5-4a40-89f1-41ca84e7a21b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fc9d2472-2a81-092f-253f-dbadec3f6155" executionId="8268bffd-554b-41f7-8de0-f96d7ce18ae5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="240832b9-7ec8-3f6b-c603-cdfa8c3138ed" executionId="ffc1f294-4f17-4a24-b8f6-b193477a009f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="3" executed="3" passed="3" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.07]   Discovering: Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.14]   Discovered:  Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.16]   Starting:    Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.28]   Finished:    Trendo.Core.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

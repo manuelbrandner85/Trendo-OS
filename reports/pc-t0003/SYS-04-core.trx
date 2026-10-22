@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="fa59ac53-108e-4256-9493-4ba713da5c31" name="<user>@<host> 2026-10-22 02:42:30" runUser="<host>\<user>" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-22T02:42:30.3270220+02:00" queuing="2026-10-22T02:42:30.3270221+02:00" start="2026-10-22T02:42:29.6065304+02:00" finish="2026-10-22T02:42:30.3309648+02:00" />
+  <TestSettings name="default" id="72d69e34-f797-4eb6-b5a1-d90fad36320d">
+    <Deployment runDeploymentRoot="manue_<host>_2026-10-22_02_42_30" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="7fa96eae-8edd-4a10-b5ef-96d2fc99975a" testId="0f92cc24-252f-f5af-16ab-20f35a7b4b63" testName="SYS-04: winget- und flatpak-Ausgaben werden korrekt gelesen" computerName="<host>" duration="00:00:00.0058024" startTime="2026-10-22T02:42:30.2428207+02:00" endTime="2026-10-22T02:42:30.2429082+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7fa96eae-8edd-4a10-b5ef-96d2fc99975a" />
+    <UnitTestResult executionId="79e31544-94c1-461c-b732-cea0ecb79fca" testId="b5ddf729-994a-015f-9fb9-b0fd5dc96aa7" testName="SYS-04: Installieren nur nach Freigabe, als Benutzer, gefährliche IDs abgelehnt" computerName="<host>" duration="00:00:00.0787871" startTime="2026-10-22T02:42:30.1497338+02:00" endTime="2026-10-22T02:42:30.2343182+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="79e31544-94c1-461c-b732-cea0ecb79fca" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="SYS-04: Installieren nur nach Freigabe, als Benutzer, gefährliche IDs abgelehnt" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="b5ddf729-994a-015f-9fb9-b0fd5dc96aa7">
+      <Execution id="79e31544-94c1-461c-b732-cea0ecb79fca" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SYS04_AppCenter" name="Install_gated" />
+    </UnitTest>
+    <UnitTest name="SYS-04: winget- und flatpak-Ausgaben werden korrekt gelesen" storage="c:\users\<user>\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="0f92cc24-252f-f5af-16ab-20f35a7b4b63">
+      <Execution id="7fa96eae-8edd-4a10-b5ef-96d2fc99975a" />
+      <TestMethod codeBase="C:\Users\<user>\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SYS04_AppCenter" name="Parse" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="0f92cc24-252f-f5af-16ab-20f35a7b4b63" executionId="7fa96eae-8edd-4a10-b5ef-96d2fc99975a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b5ddf729-994a-015f-9fb9-b0fd5dc96aa7" executionId="79e31544-94c1-461c-b732-cea0ecb79fca" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="2" executed="2" passed="2" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.07]   Discovering: Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.14]   Discovered:  Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.16]   Starting:    Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.27]   Finished:    Trendo.Core.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>
