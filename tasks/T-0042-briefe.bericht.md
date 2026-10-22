@@ -6,9 +6,7 @@
 
 ## Testergebnis
 
-Gesamtlauf folgt nach `dotnet test Trendo.sln -c Release`.
-
-Gezielt grün davor: `Brief_`, `Matrix_deckt`, `Ohne_Adapter`.
+`dotnet test Trendo.sln -c Release`: Api 15 bestanden, Core 523 bestanden und 10 übersprungen, App 212 bestanden, Fehler 0.
 
 ## Offene Punkte
 
