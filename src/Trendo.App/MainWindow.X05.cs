@@ -18,6 +18,7 @@ public partial class MainWindow
     private void InitX05()
     {
         _showMap["ki-quellen"] = SourcesView; KiTabs.Add(("ki-quellen", "KI-Quellen"));
+        InitKiShop();
         StudioPages["X-05"] = "ki-quellen";
         ExtraPages.Add(("KI-Quellen", "ki-quellen", ["lm studio", "llama", "jan", "modell", "kostenlos", "quelle"]));
     }

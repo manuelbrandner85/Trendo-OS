@@ -11,9 +11,9 @@ Quelle: `src/Trendo.Core/DependencyCatalog` (Installation bei Bedarf beim Öffne
 | YamlDotNet | MIT | Im Setup enthalten | — | NuGet-Bibliothek |
 | Hintergrund (KI-generiert) + Trendo-Logo (eigener Entwurf) | Eigenes Projekt-Asset (KI-generiert) | Im Setup enthalten | — | Für Trendo OS erstellt |
 | Microsoft Edge WebView2 | Microsoft | Nicht erforderlich | — | Trendo OS nutzt keine Web-Ansichten; nicht erforderlich |
-| Ollama (lokale KI-Laufzeit) | MIT | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | Ollama.Ollama | Installer ~1 GB → nicht ins Setup gepackt; pro Benutzer ohne Admin installierbar |
+| Ollama | MIT | Auto-Installation pro Benutzer (ohne Admin). Windows: winget. Linux: Archiv nur für den Benutzer (.tar.zst, zum Entpacken braucht es zstd; ältere .tgz geht auch). | Ollama.Ollama | Installer etwa 1,5 GB, nicht ins Setup gepackt. Der Dienst hört nur auf 127.0.0.1. |
 | KI-Modell Qwen2.5 0.5B (qwen2.5:0.5b) | Apache-2.0 | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | — | Gewichte ~400 MB, über Ollama geladen |
-| KI-Modell Qwen2.5 3B (qwen2.5:3b, optional) | Qwen Research License (frei für nicht-kommerzielle Nutzung; kommerziell gesonderte Lizenz nötig) | Auto pro Benutzer nach Zustimmung (ollama pull) | — | ~1,9 GB; Standard ab 16 GB RAM, wenn geladen |
+| KI-Modell Qwen2.5 3B (qwen2.5:3b, optional) | Apache-2.0 | Auto pro Benutzer nach Zustimmung (ollama pull) | — | ~1,9 GB; Standard ab 16 GB RAM, wenn geladen |
 | Git für Windows | GPL-2.0 | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | Git.Git | Pro Benutzer installierbar |
 | Python 3.13 | PSF-2.0 | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | Python.Python.3.13 | Pro Benutzer installierbar |
 | mpv Player | GPL-2.0-or-later | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | shinchiro.mpv | Pro Benutzer installierbar |

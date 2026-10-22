@@ -37,12 +37,12 @@ public static class DependencyCatalog
         new("yamldotnet", "YamlDotNet", "Spezifikation lesen", "MIT", DeliveryMode.Bundled, "NuGet-Bibliothek"),
         new("wallpaper", "Hintergrund (KI-generiert) + Trendo-Logo (eigener Entwurf)", "Desktop", "Eigenes Projekt-Asset (KI-generiert)", DeliveryMode.Bundled, "Für Trendo OS erstellt"),
         new("webview2", "Microsoft Edge WebView2", "—", "Microsoft", DeliveryMode.NotNeeded, "Trendo OS nutzt keine Web-Ansichten; nicht erforderlich"),
-        new("ollama", "Ollama (lokale KI-Laufzeit)", "Trendo KI Assistent offline", "MIT", DeliveryMode.AutoUser,
-            "Installer ~1 GB → nicht ins Setup gepackt; pro Benutzer ohne Admin installierbar",
-            "Ollama.Ollama", 1100, "https://ollama.com/download", ["ollama"], [@"%LOCALAPPDATA%\Programs\Ollama\ollama.exe"]),
+        new("ollama", "Ollama", "KI auf diesem PC, ohne Internet", "MIT", DeliveryMode.AutoUser,
+            "Installer etwa 1 GB, nicht ins Setup gepackt. Pro Benutzer, ohne Admin. Der Dienst hört nur auf 127.0.0.1.",
+            "Ollama.Ollama", 1100, "https://ollama.com/download", ["ollama"], [@"%LOCALAPPDATA%\Programs\Ollama\ollama.exe", @"%LOCALAPPDATA%\TrendoWerkzeuge\ollama\bin\ollama.exe", @"%LOCALAPPDATA%\TrendoWerkzeuge\ollama\bin\ollama", "/usr/bin/ollama", "/usr/local/bin/ollama"]),
         new("model", $"KI-Modell Qwen2.5 0.5B ({LocalModel})", "Lokales Sprachmodell", "Apache-2.0", DeliveryMode.AutoUser,
             "Gewichte ~400 MB, über Ollama geladen", null, 400, "https://ollama.com/library/qwen2.5", ["model"], null, $"ollama pull {LocalModel}"),
-        new("model-3b", $"KI-Modell Qwen2.5 3B ({LargeModel}, optional)", "Größeres lokales Sprachmodell, besseres Deutsch", "Qwen Research License (nicht-kommerziell frei)", DeliveryMode.AutoUser,
+        new("model-3b", $"KI-Modell Qwen2.5 3B ({LargeModel}, optional)", "Größeres lokales Sprachmodell, besseres Deutsch", "Apache-2.0", DeliveryMode.AutoUser,
             "Gewichte ~1,9 GB, nur nach Zustimmung über Ollama geladen; empfohlen ab 16 GB RAM", null, 1900, "https://ollama.com/library/qwen2.5:3b", ["model-3b"], null, $"ollama pull {LargeModel}"),
         new("git", "Git für Windows", "Web & App Studio, Versionierung", "GPL-2.0", DeliveryMode.AutoUser, "Pro Benutzer installierbar",
             "Git.Git", 350, "https://git-scm.com", ["git"], [@"%LOCALAPPDATA%\Programs\Git\cmd\git.exe", @"%ProgramFiles%\Git\cmd\git.exe"]),
@@ -183,6 +183,7 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
         if (c.Mode is DeliveryMode.Bundled or DeliveryMode.NotNeeded) return true;
         if (c.Id == "model") return ModelPresent;
         if (c.Id == "model-3b") return HasModel(DependencyCatalog.LargeModel);
+        if (c.Id == "ollama" && _exists(OllamaUserBin)) return true;
         return c.DetectPaths?.Any(p => _exists(_expand(p))) == true;
     }
 
@@ -192,14 +193,30 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
     public bool HasModel(string model)
     {
         var name = model.Split(':');
-        var manifest = Path.Combine(_expand("%USERPROFILE%"), ".ollama", "models", "manifests", "registry.ollama.ai", "library", name[0], name[1]);
-        return _exists(manifest);
+        var tag = name.Length > 1 && name[1].Length > 0 ? name[1] : "latest";
+        var tail = Path.Combine("manifests", "registry.ollama.ai", "library", name[0], tag);
+        var dirs = new List<string>();
+        var custom = Environment.GetEnvironmentVariable("OLLAMA_MODELS");
+        if (!string.IsNullOrWhiteSpace(custom)) dirs.Add(custom);
+        dirs.Add(Path.Combine(_expand("%USERPROFILE%"), ".ollama", "models"));
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (!string.IsNullOrWhiteSpace(home)) dirs.Add(Path.Combine(home, ".ollama", "models"));
+        return dirs.Distinct(StringComparer.OrdinalIgnoreCase).Any(d => _exists(Path.Combine(d, tail)));
     }
+
+    /// <summary>Linux: feste Adresse der Ollama-Datei, damit der Test nicht das Netz braucht. Leer = die aktuelle Veröffentlichung nachschlagen.</summary>
+    public string? OllamaLinuxUrl { get; set; }
+
+    public string OllamaUserBin => Path.Combine(ToolsRoot, "ollama", "bin", OperatingSystem.IsWindows() ? "ollama.exe" : "ollama");
 
     /// <summary>Ziel für Portable-Werkzeuge (Benutzerordner, kein Admin) – bewusst außerhalb von %LOCALAPPDATA%\\TrendoOS, das Setup/Rückfall komplett ersetzt.</summary>
     public string ToolsRoot { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TrendoWerkzeuge");
 
-    public string? ResolvePath(Component c) => c.DetectPaths?.Select(_expand).Where(_exists).Select(p => p.Contains('*') ? ResolveGlob(p) ?? (_customExists ? p : null) : p).FirstOrDefault(p => p is not null);
+    public string? ResolvePath(Component c)
+    {
+        if (c.Id == "ollama" && _exists(OllamaUserBin)) return OllamaUserBin;
+        return c.DetectPaths?.Select(_expand).Where(_exists).Select(p => p.Contains('*') ? ResolveGlob(p) ?? (_customExists ? p : null) : p).FirstOrDefault(p => p is not null);
+    }
 
     /// <summary>Installiert automatisch (AutoUser/AutoElevated). Guided/Bundled werfen.</summary>
     public async Task<bool> InstallAsync(Principal by, Component c, Action<string>? progress = null, CancellationToken ct = default)
@@ -216,7 +233,13 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
             // Modell-Download braucht den lokalen Dienst: falls nicht aktiv, „ollama serve“ starten (nur 127.0.0.1)
             if (!await OllamaUp())
             {
-                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(ollama, "serve") { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetDirectoryName(ollama)! }); audit.Append("app", "ki.runtime_started", "ollama serve"); }
+                try
+                {
+                    var psi = new System.Diagnostics.ProcessStartInfo(ollama, "serve") { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetDirectoryName(ollama)! };
+                    LoopbackAi.BindLocal(psi.Environment);
+                    System.Diagnostics.Process.Start(psi);
+                    audit.Append("app", "ki.runtime_started", "ollama serve " + LoopbackAi.OllamaHost);
+                }
                 catch { }
                 for (var i = 0; i < 30 && !await OllamaUp(); i++) await Task.Delay(500, ct);
             }
@@ -234,6 +257,8 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
             catch (InvalidOperationException e) { r = (1, e.Message); progress?.Invoke(e.Message); }
             finally { try { File.Delete(tmp); } catch (IOException) { } }
         }
+        else if (c.Id == "ollama" && !OperatingSystem.IsWindows())
+            r = await InstallOllamaLinuxAsync(progress, ct);
         else
         {
             // mpv, adb und scrcpy sind portable Pakete. winget lehnt dort „--scope user“ ab und legt sie schon im Benutzerordner ab.
@@ -245,7 +270,43 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
         return ok;
     }
 
-    /// <summary>Prüft, ob der lokale Ollama-Dienst antwortet (reiner TCP-Test auf 127.0.0.1:11434).</summary>
+    /// <summary>Ollama nur für diesen Benutzer und nur auf 127.0.0.1. Kein winget, kein Admin.</summary>
+    private async Task<(int Exit, string Output)> InstallOllamaLinuxAsync(Action<string>? progress, CancellationToken ct)
+    {
+        var url = OllamaLinuxUrl;
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            var meta = Path.Combine(Path.GetTempPath(), "trendo-ollama-release.json");
+            var info = await Runner.RunAsync("curl", $"-fsSL -A TrendoOS -o \"{meta}\" https://api.github.com/repos/ollama/ollama/releases/latest", progress, ct);
+            if (info.Exit == 0 && File.Exists(meta))
+                url = OllamaRelease.LinuxTar(File.ReadAllText(meta), System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
+            try { File.Delete(meta); } catch (IOException) { }
+        }
+        if (string.IsNullOrWhiteSpace(url) || !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            return (1, "Keine passende Ollama-Datei für diesen PC gefunden");
+        if (OllamaRelease.IsZst(url))
+        {
+            var msg = "Zum Entpacken fehlt das Programm zstd auf diesem PC.";
+            try
+            {
+                var probe = await Runner.RunAsync("zstd", "--version", progress, ct);
+                if (probe.Exit != 0) { progress?.Invoke(msg); return (1, msg); }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException) { progress?.Invoke(msg); return (1, msg); }
+        }
+        var dest = Path.Combine(ToolsRoot, "ollama");
+        Directory.CreateDirectory(dest);
+        var tar = Path.Combine(Path.GetTempPath(), $"trendo-ollama-{Guid.NewGuid():N}.tgz");
+        var unpack = OllamaRelease.IsZst(url) ? $"--zstd -xf \"{tar}\" -C \"{dest}\"" : $"-xzf \"{tar}\" -C \"{dest}\"";
+        try
+        {
+            var down = await Runner.RunAsync("curl", $"-L --fail --silent --show-error -o \"{tar}\" {url}", progress, ct);
+            if (down.Exit != 0) return down;
+            return await Runner.RunAsync("tar", unpack, progress, ct);
+        }
+        finally { try { File.Delete(tar); } catch (IOException) { } }
+    }
+
     /// <summary>Vom Host gesetzt (App prüft 127.0.0.1:11434); Core selbst hat keine Netz-Abhängigkeit.</summary>
     public Func<Task<bool>> OllamaUp { get; set; } = () => Task.FromResult(true);
 

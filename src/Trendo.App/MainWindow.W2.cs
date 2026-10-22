@@ -17,7 +17,24 @@ public partial class MainWindow
     public IntelligenceCore Intel => _intel ??= new IntelligenceCore(_core.DataRoot, _core.Audit, () => KiBackendsOverride?.Invoke() ?? DefaultKiBackends(), KnowledgeLookup);
 
     private Func<string, int, IReadOnlyList<(string Title, string Text)>>? KnowledgeLookup => LookupKnowledge;
-    private IReadOnlyList<IKiBackend> DefaultKiBackends() => KiSourceSettings.Load(_core.DataRoot).Active().Select(MakeBackend).ToList();
+    private IReadOnlyList<IKiBackend> LocalBackends() => KiSourceSettings.Load(_core.DataRoot).Active().Select(MakeBackend).ToList();
+
+    public IReadOnlyList<IKiBackend> BackendsNow() => DefaultKiBackends();
+
+    private IReadOnlyList<IKiBackend> DefaultKiBackends()
+    {
+        var list = LocalBackends().ToList();
+        if (_core.Offline) return list;
+        var opt = OnlineOptIn.Load(_core.DataRoot);
+        foreach (var p in FreeOnline.Providers)
+        {
+            if (!opt.Uses(p.Id)) continue;
+            var key = _core.Secrets.Get(FreeOnline.SecretKey(p.Id));
+            if (string.IsNullOrWhiteSpace(key)) continue;
+            list.Add(new OnlineBackend(p, key));
+        }
+        return list;
+    }
 
     private void InitWave23()
     {
@@ -52,7 +69,7 @@ public partial class MainWindow
 
     private Control AskView()
     {
-        var sp = new StackPanel { Spacing = 8, Children = { P("Stell eine Frage. Die Antwort kommt von der KI auf diesem PC – nichts geht ins Internet.") } };
+        var sp = new StackPanel { Spacing = 8, Children = { P("Stell eine Frage. Zuerst antwortet die KI auf diesem PC. Ein kostenloser Online-Dienst ist nur dabei, wenn du ihn eingeschaltet hast.") } };
         var log = new StackPanel { Name = "ask-log", Spacing = 6 };
         foreach (var m in _chat)
             log.Children.Add(WCard(new StackPanel { Children = { P(m.Role == "user" ? "Du" : "Trendo", m.Role == "user" ? Accent : null, 10.5), new SelectableTextBlock { Text = m.Content, Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap } } }));
@@ -69,7 +86,7 @@ public partial class MainWindow
             var a = await Intel.AskAsync(new KiRequest(q, PreferredModel: KiModelName, History: _chat.ToList()));
             LastAnswer = a.Text;
             if (a.Ok) { _chat.Add(new("user", q)); _chat.Add(new("assistant", a.Text)); }
-            _askState = a.Ok ? $"Antwort von {a.Model} ({a.Backend}) in {a.Took.TotalSeconds:0.0} s{(a.Sources.Count > 0 ? " · Wissen: " + string.Join(", ", a.Sources) : "")}" : a.Text;
+            _askState = a.Ok ? $"{LocalAiPlan.ActiveLine(a.Backend, a.Model, a.OnThisPc, KiJob.Text)} · {a.Took.TotalSeconds:0.0} s{(a.Sources.Count > 0 ? " · Wissen: " + string.Join(", ", a.Sources) : "")}" : a.Text;
             Show("ki-fragen");
         };
         sp.Children.Add(log);

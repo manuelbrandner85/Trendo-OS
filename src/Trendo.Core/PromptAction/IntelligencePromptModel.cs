@@ -11,7 +11,7 @@ public sealed class IntelligencePromptModel(IntelligenceCore core, Func<bool> lo
     public async Task<string?> CompleteAsync(string system, string user, CancellationToken cancellation)
     {
         if (!IsLocal) return null;
-        var answer = await core.AskAsync(new KiRequest(user, system, UseKnowledge: false), cancellation);
+        var answer = await core.AskAsync(new KiRequest(user, system, UseKnowledge: false, AllowOnline: false), cancellation);
         return answer.Ok ? answer.Text : null;
     }
 

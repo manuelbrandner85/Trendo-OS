@@ -6,7 +6,7 @@ namespace Trendo.Core;
 public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
 {
     public string Folder => backupDir;
-    private static readonly string[] Skip = ["backups", "settings.json.tmp"];
+    private static readonly string[] Skip = ["backups", "settings.json.tmp", ".schluessel"];
 
     public IReadOnlyList<FileInfo> List() => Directory.Exists(backupDir)
         ? new DirectoryInfo(backupDir).GetFiles("trendo-sicherung-*.zip").OrderByDescending(f => f.Name).ToList() : [];

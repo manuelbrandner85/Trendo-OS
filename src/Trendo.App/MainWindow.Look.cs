@@ -115,7 +115,8 @@ public sealed partial class MainWindow
         ["projects"] = "Ein Projekt ist ein Ordner für eine Sache, an der du arbeitest. Lege ein Projekt an, und Trendo hält alles dazu beisammen.",
         ["approvals"] = "Manche Aktionen brauchen deine Erlaubnis, zum Beispiel ein Programm installieren. Hier siehst du, was auf deine Entscheidung wartet.",
         ["system"] = "Hier siehst du, ob alles in Ordnung ist: Systemcheck, Sicherungen und was Trendo zuletzt gemacht hat.",
-        ["ki"] = "Die Trendo KI läuft direkt auf deinem PC. Nichts geht ins Internet. Ein größeres Modell schreibt besser, braucht aber mehr Speicher.",
+        ["ki"] = "Die Trendo KI läuft zuerst auf deinem PC. Einen kostenlosen Online-Dienst schaltest du nur selbst ein. Ein größeres Modell schreibt besser und braucht mehr Speicher.",
+        ["ki-laden"] = "Im KI-Laden holst du kostenlose Modelle auf diesen PC. Du siehst, was passt, und kannst abbrechen und später weitermachen.",
         ["settings"] = "Stell Trendo so ein, wie es dir gefällt: Aussehen, Farbe, Hintergrund und was auf dem Startbildschirm zu sehen ist.",
         ["components"] = "Zusatzprogramme, die Trendo für einige Studios braucht. Trendo installiert sie nach deiner Zustimmung – ohne Admin, wo das geht.",
         ["systemcheck"] = "Grün heißt: funktioniert. Rot heißt: fehlt oder kaputt – ein Klick auf „Reparieren“ behebt das meistens.",
@@ -142,7 +143,7 @@ public sealed partial class MainWindow
         ["briefkoepfe"] = "Deine Absender: privat und Firma getrennt. In jeder Akte wählst du bewusst, welcher Briefkopf gilt.",
         ["suche"] = "Die Suche findet Seiten, Studios, Projekte und Dateien in deinem Projektordner. Mit Strg+K springst du jederzeit ins Suchfeld.",
         ["fortschritt"] = "So weit ist Trendo OS gebaut. Die Angaben kommen direkt aus der Projektliste – nichts ist geschönt.",
-        ["keys"] = "Für einige Online-Dienste brauchst du einen Zugangsschlüssel. Er wird sicher in Windows gespeichert, nicht in einer Datei.",
+        ["keys"] = "Für einen kostenlosen Online-Dienst brauchst du einen Schlüssel. Du holst ihn selbst. Trendo prüft ihn und speichert ihn sicher. Ohne dein Häkchen bleibt alles auf diesem PC.",
         ["3d"] = "Baue ein Objekt aus Würfel, Kugel und den anderen Formen. Stell Größe, Lage und Farbe ein, runde Kanten ab oder bohre ein Loch. Die Vorschau siehst du hier, von mehreren Seiten. Speichern legt eine Datei in den 3D-Ordner. Blender öffnet genau dieses Objekt und wird nur installiert, wenn du zustimmst.",
     };
 
@@ -252,7 +253,9 @@ public sealed partial class MainWindow
         desk.Children.Add(apply);
         sp.Children.Add(Section("Startbildschirm anpassen", desk));
 
-        sp.Children.Add(Section("Mehr", new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Nav2("Zusatzprogramme", "components"), Nav2("Online-Dienste", "keys"), Nav2("Ersteinrichtung", "einrichtung"), Nav2("Systemcheck", "systemcheck") } }));
+        var laden = new Button { Name = "nav-ki-laden", Content = "KI-Laden" };
+        laden.Click += (_, _) => Show("ki-laden");
+        sp.Children.Add(Section("Mehr", new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { laden, Nav2("Zusatzprogramme", "components"), Nav2("Online-Dienste", "keys"), Nav2("Ersteinrichtung", "einrichtung"), Nav2("Systemcheck", "systemcheck") } }));
         sp.Children.Add(P($"Version {CrashLog.AppVersion()} · Trendo-Logo: eigener Entwurf · Hintergründe: KI-erstellt für Trendo OS", null, 11));
         return Page("Einstellungen", sp);
     }

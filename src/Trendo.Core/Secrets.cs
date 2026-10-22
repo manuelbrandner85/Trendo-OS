@@ -17,9 +17,37 @@ public static class SecretStoreFactory
 {
     public static ISecretStore CreateDefault() =>
         OperatingSystem.IsWindows() ? new WindowsCredentialStore() : new InMemorySecretStore();
+
+    /// <summary>Windows: Anmeldeinformationsverwaltung. Sonst eine Datei nur für dieses Benutzerkonto, nicht in der Sicherung.</summary>
+    public static ISecretStore CreateFor(string dataRoot) =>
+        OperatingSystem.IsWindows() ? new WindowsCredentialStore() : new FileSecretStore(Path.Combine(dataRoot, ".schluessel"));
 }
 
-/// <summary>Nur für Tests/Nicht-Windows: hält Geheimnisse ausschließlich im Speicher, nie auf Platte.</summary>
+/// <summary>Schlüssel als Datei mit engen Rechten. Der Inhalt kommt nicht ins Protokoll und nicht in die Sicherung.</summary>
+public sealed class FileSecretStore : ISecretStore
+{
+    private readonly string _path;
+    private readonly Dictionary<string, string> _d;
+    public FileSecretStore(string path)
+    {
+        _path = path;
+        try { _d = File.Exists(path) ? System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(path)) ?? [] : []; }
+        catch { _d = []; }
+    }
+    public string BackendName => "Datei, nur für dein Benutzerkonto lesbar";
+    public void Set(string key, string value) { _d[key] = value; Flush(); }
+    public string? Get(string key) => _d.TryGetValue(key, out var v) ? v : null;
+    public bool Delete(string key) { var ok = _d.Remove(key); if (ok) Flush(); return ok; }
+    private void Flush()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(_path)!);
+        File.WriteAllText(_path, System.Text.Json.JsonSerializer.Serialize(_d));
+        if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+            File.SetUnixFileMode(_path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+    }
+}
+
+/// <summary>Nur für Tests: hält Geheimnisse im Speicher, nie auf der Platte.</summary>
 public sealed class InMemorySecretStore : ISecretStore
 {
     private readonly Dictionary<string, string> _d = new();
