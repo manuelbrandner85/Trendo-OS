@@ -81,7 +81,7 @@ public partial class MainWindow
         sp.Children.Add(Card(Section("Download mit Fortsetzen", off ? "Offline-Modus: Downloads sind ausgeschaltet." : "Bricht der Download ab, macht „Weiter laden“ dort weiter, wo er aufgehört hat. Die Datei landet im Download-Ordner.",
             Line(du, Act("dl-start", "Laden / Weiter laden", async () =>
             {
-                if (off) return;
+                if (off) { Say("Offline-Modus: Downloads sind ausgeschaltet. Unter Einstellungen kannst du das Internet wieder erlauben.", V); return; }
                 if (!Uri.TryCreate(Clean(du), UriKind.Absolute, out var u) || u.Scheme is not ("http" or "https")) { Say("Bitte eine http- oder https-Adresse.", V); return; }
                 var target = Path.Combine(DownloadTarget, Web.SafeFileName(u)); _dlCts = new();
                 _dlStatus = "Lädt …"; var prog = new Progress<(long Done, long Total)>(p => { if (p.Total > 0) bar.Value = 100.0 * p.Done / p.Total; });
@@ -89,20 +89,20 @@ public partial class MainWindow
                 catch (OperationCanceledException) { _dlStatus = "Angehalten – „Weiter laden“ macht dort weiter."; }
                 catch (HttpRequestException ex) { _dlStatus = "Abgebrochen: " + ex.Message + " – „Weiter laden“ versucht es erneut."; }
                 Say(_dlStatus, V);
-            }, true), Act("dl-stop", "Anhalten", () => _dlCts?.Cancel()), bar), P(_dlStatus ?? "", Text, 11))));
+            }, true), Act("dl-stop", "Anhalten", () => { if (_dlCts is { IsCancellationRequested: false } c && _dlStatus == "Lädt …") { c.Cancel(); Say("Wird angehalten …", V); } else Say("Gerade läuft kein Download.", V); }), bar), P(_dlStatus ?? "", Text, 11))));
 
         var sf = Field("dlsort-folder", "Ordner", 340, Browsers.DownloadsFolder()); var so = new StackPanel { Name = "dlsort-preview" };
         sp.Children.Add(Card(Section("Downloads aufräumen", "Sortiert nach Art in Unterordner (Dokumente, Bilder, Programme …). Erst Vorschau, rückgängig machbar über „Dateien“.",
             Line(sf, Act("dlsort-sim", "Vorschau", () => Try(V, () => { so.Children.Clear(); var p = Web.SortPlan(Clean(sf)); so.Children.Add(P($"{p.Count} Dateien:", Text)); foreach (var g in p.GroupBy(m => Path.GetFileName(Path.GetDirectoryName(m.To)))) so.Children.Add(P($"{g.Key}: {g.Count()}", null, 11)); })),
-                Act("dlsort-apply", "Sortieren", () => Try(V, () => { var p = Web.SortPlan(Clean(sf)); _lastUndo = Renamer.Apply(p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig")); Say($"{p.Count} Dateien einsortiert.", V); })),
+                Act("dlsort-apply", "Sortieren", () => Try(V, () => { var p = Web.SortPlan(Need(sf, "den Ordner zum Aufräumen")); if (p.Count == 0) { Say("Nichts zu sortieren – der Ordner ist schon aufgeräumt.", V); return; } _lastUndo = Renamer.Apply(p, Path.Combine(_core.DataRoot, "werkzeuge", "rueckgaengig")); Say($"{p.Count} Dateien einsortiert.", V); })),
                 Act("dlsort-undo", "Rückgängig", () => Try(V, () => { if (_lastUndo is null) throw new InvalidOperationException("Es gibt nichts rückgängig zu machen."); Renamer.Undo(_lastUndo); _lastUndo = null; Say("Zurückgesetzt.", V); }))), so)));
 
         var pu = Field("page-url", "Adresse einer Webseite", 420);
         var reader = new SelectableTextBlock { Name = "reader-text", Text = _reader, Foreground = Text, TextWrapping = TextWrapping.Wrap, FontSize = 13.5, MaxWidth = 760 };
         sp.Children.Add(Card(Section("Webseite lesen, speichern, merken", off ? "Offline-Modus: Webseiten werden nicht geladen." : "Lesemodus zeigt nur den Text (ohne Werbung, ohne Skripte). Speichern legt eine Offline-Kopie oder ein PDF in den Projektordner.",
-            Line(pu, Act("page-read", "Lesemodus", () => PageJob(pu, V, async u => { var h = await WebTools.GetHtmlAsync(u); _readerTitle = Web.Title(h); _reader = Web.ReaderText(h); return ""; }), true),
-                Act("page-offline", "Offline speichern", () => PageJob(pu, V, async u => { var h = await WebTools.GetHtmlAsync(u); var f = Path.Combine(WorkFolder("webseiten"), Web.SafeFileName(new Uri(u.GetLeftPart(UriPartial.Authority) + "/" + (Web.Title(h).Length > 0 ? Web.Title(h) : u.Host))) + ".html"); await File.WriteAllTextAsync(f, Web.OfflineCopy(h, u)); return "Gespeichert: " + f; })),
-                Act("page-pdf", "Als PDF", () => PageJob(pu, V, async u => SavePdf(u, await WebTools.GetHtmlAsync(u)))),
+            Line(pu, Act("page-read", "Lesemodus", () => PageJob(pu, V, "Lesemodus", async u => { var h = await WebTools.GetHtmlAsync(u); _readerTitle = Web.Title(h); _reader = Web.ReaderText(h); return ""; }), true),
+                Act("page-offline", "Offline speichern", () => PageJob(pu, V, "Offline speichern", async u => { var h = await WebTools.GetHtmlAsync(u); var f = Path.Combine(WorkFolder("webseiten"), Web.SafeFileName(new Uri(u.GetLeftPart(UriPartial.Authority) + "/" + (Web.Title(h).Length > 0 ? Web.Title(h) : u.Host))) + ".html"); await File.WriteAllTextAsync(f, Web.OfflineCopy(h, u)); return "Gespeichert: " + f; })),
+                Act("page-pdf", "Als PDF", () => PageJob(pu, V, "Als PDF", async u => SavePdf(u, await WebTools.GetHtmlAsync(u)))),
                 Act("page-note", "Als Notiz merken", () => Try(V, () => { if (!Uri.TryCreate(Clean(pu), UriKind.Absolute, out var u)) throw new ArgumentException("Bitte eine vollständige Adresse."); new NoteStore(_core.DataRoot).Add(Web.WebNote(u, _readerTitle.Length > 0 ? _readerTitle : u.Host)); Say("Als Notiz gespeichert – über die Suche (Strg+K) wiederzufinden.", V); }))),
             _reader.Length > 0 ? new StackPanel { Spacing = 6, Children = { H(_readerTitle, 16), reader } } : new Panel())));
         return NetzPage("Laden & Speichern", sp);
@@ -110,10 +110,11 @@ public partial class MainWindow
 
     private string DownloadTarget { get { var d = Browsers.DownloadsFolder(); try { Directory.CreateDirectory(d); return d; } catch (Exception) { return WorkFolder("downloads"); } } }
 
-    private async void PageJob(TextBox url, string view, Func<Uri, Task<string>> job)
+    private async void PageJob(TextBox url, string view, string what, Func<Uri, Task<string>> job)
     {
-        if (_core.Offline) { Say("Offline-Modus: Webseiten werden nicht geladen.", view); return; }
-        var u = Browsers.Normalize(Clean(url)); if (u is null || u.AbsoluteUri.StartsWith(Web.SearchUrl(_core.DataRoot))) { Say("Bitte eine Webseiten-Adresse eingeben.", view); return; }
+        if (_core.Offline) { Say($"„{what}“ geht nicht im Offline-Modus – Webseiten werden nicht geladen.", view); return; }
+        var u = Browsers.Normalize(Clean(url)); if (u is null || u.AbsoluteUri.StartsWith(Web.SearchUrl(_core.DataRoot))) { Say($"„{what}“: Bitte zuerst eine Webseiten-Adresse eingeben.", view); return; }
+        Say($"„{what}“ läuft …", view);
         try { var m = await job(u); Say(m, view); }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or IOException or InvalidOperationException) { Say("Hat nicht geklappt: " + ex.Message, view); }
     }
@@ -152,7 +153,7 @@ public partial class MainWindow
         var tor = Web.TorPaths.Select(Environment.ExpandEnvironmentVariables).FirstOrDefault(File.Exists);
         sp.Children.Add(Card(Section("Privat surfen", "Ein privates Fenster speichert keinen Verlauf. Der Tor-Browser verschleiert zusätzlich deinen Standort – Trendo öffnet nur die offizielle Seite.",
             browsers.Count == 0 ? P("Kein bekannter Browser gefunden.") : priv,
-            Line(tor is not null ? Act("tor-open", "Tor-Browser starten", () => _core.Integrations.LaunchDirect(Principal.LocalOwner, tor, _core.Audit)) : Act("tor-get", "Tor-Browser offiziell holen", () => { if (!_core.Offline) Launch(Web.TorOfficial); })))));
+            Line(tor is not null ? Act("tor-open", "Tor-Browser starten", () => _core.Integrations.LaunchDirect(Principal.LocalOwner, tor, _core.Audit)) : Act("tor-get", "Tor-Browser offiziell holen", () => { if (_core.Offline) { Say("Offline-Modus: Die Tor-Seite kann nicht geöffnet werden.", V); return; } Launch(Web.TorOfficial); Say("Offizielle Tor-Seite geöffnet – nach der Installation hier „Tor-Browser starten“.", V); })))));
 
         var eng = Line(); var cur = Web.Engine(_core.DataRoot);
         foreach (var (id, name, _) in Web.Engines) eng.Children.Add(Act("engine-" + id, (cur == id ? "✓ " : "") + name, () => { Web.SetEngine(_core.DataRoot, id); Show(V); }, cur == id));

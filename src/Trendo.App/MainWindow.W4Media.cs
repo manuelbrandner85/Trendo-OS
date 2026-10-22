@@ -14,7 +14,12 @@ public partial class MainWindow
 
     private void InitW4Media() => RegisterTab(KreativTabs, "kreativ-medien", "Medien bearbeiten", "CORE-08", MediaStudioView, "video", "umwandeln", "mp3", "mp4", "gif", "ffmpeg", "schneiden");
 
-    public void MediaPick(string path) { _mediaFile = path; Show("kreativ-medien"); }
+    public void MediaPick(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) { Say("Bitte zuerst den Pfad zu einer Video- oder Audiodatei eintragen.", "kreativ-medien"); return; }
+        if (!File.Exists(path)) { Say("Datei nicht gefunden: " + Path.GetFileName(path), "kreativ-medien"); return; }
+        _mediaFile = path; Say("Übernommen: " + Path.GetFileName(path), "kreativ-medien");
+    }
 
     public (bool Ok, string Output) MediaRun(string jobId, double start = 0, double length = 10)
     {
