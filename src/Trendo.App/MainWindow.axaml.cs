@@ -826,9 +826,16 @@ public sealed partial class MainWindow : Window
         if (pending.Count == 0) sp.Children.Add(P("Keine offenen Freigaben."));
         foreach (var r in pending)
         {
-            var yes = new Button { Name = "btn-approve-" + r.Id, Content = "Freigeben und ausführen", Background = Accent };
+            var opens = r.Action is Integrations.OpenFolder or Integrations.OpenUrl;
+            var yes = new Button { Name = "btn-approve-" + r.Id, Content = opens ? "Freigeben und ausführen" : "Freigeben", Background = Accent };
             var no = new Button { Name = "btn-deny-" + r.Id, Content = "Ablehnen" };
-            yes.Click += (_, _) => { _core.Approvals.Approve(r.Id, Principal.LocalOwner); _core.Integrations.Execute(r); Show("approvals"); };
+            yes.Click += (_, _) =>
+            {
+                _core.Approvals.Approve(r.Id, Principal.LocalOwner);
+                // Ordner und https-Seiten führt die Freigabe selbst aus. Sendung und Bewegung starten erst der Knopf im Studio.
+                if (opens) _core.Integrations.Execute(r);
+                Show("approvals");
+            };
             no.Click += (_, _) => { _core.Approvals.Deny(r.Id, Principal.LocalOwner); Show("approvals"); };
             sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = new StackPanel { Spacing = 6, Children = {
                 new TextBlock { Text = r.Description, Foreground = Text }, P($"Aktion {r.Action} · gültig bis {r.ExpiresAt:HH:mm}"),

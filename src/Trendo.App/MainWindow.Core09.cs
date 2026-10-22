@@ -13,6 +13,9 @@ public partial class MainWindow
     private Control RobotView()
     {
         var sp = new StackPanel { Spacing = 8 };
+        sp.Children.Add(P("Kameras siehst du hier live. Der Roboter rechnet und probiert, bewegt sich aber erst nach deiner Freigabe. Not-Aus bleibt immer sichtbar."));
+        sp.Children.Add(CameraRobotPanel());
+        sp.Children.Add(H("Auswerten und planen", 14));
         sp.Children.Add(FachTool("rob-see", "Objekt im Bild finden", "Kamerabild (PNG oder BMP), Kamera senkrecht von oben. Trendo sucht das größte Objekt der Farbe und rechnet die Lage auf dem Tisch aus. Farben: " + string.Join(", ", Vision.Hues.Keys) + ".",
             [("file", "Bild", ""), ("color", "Farbe", "rot"), ("tw", "Tisch-Breite im Bild (mm)", "400"), ("th", "Tisch-Höhe im Bild (mm)", "300")],
             v =>
