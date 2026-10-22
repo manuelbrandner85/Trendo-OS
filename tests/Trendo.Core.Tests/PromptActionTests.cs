@@ -12,7 +12,7 @@ public class PromptActionTests
     public void Ohne_Adapter_keine_Datei()
     {
         using var fx = new Fixture();
-        var result = fx.Wf.Start(fx.Req("STUDIO-LETTER-01", "Schreibe einen Brief an das Amt."), fx.Ctx());
+        var result = fx.Wf.Start(fx.Req("SPEC-01", "Schreibe einen Brief an das Amt."), fx.Ctx());
         Assert.Equal(RunStatus.Unsupported, result.Status);
         Assert.Equal("Nicht unterstützt", StatusText.German(result.Status));
         Assert.Empty(result.Artifacts);
@@ -355,12 +355,82 @@ public class PromptActionTests
         Assert.Equal("APPROVED", decisions["IMP-41"]);
     }
 
+    const string BriefPrompt = """
+        Absender: Anna Beispiel
+        Strasse: Beispielweg 1
+        Ort: 10115 Berlin
+        Empfaenger: Amt für Beispiel
+        Musterstraße 2
+        10115 Berlin
+        Betreff: Auskunft zu den Unterlagen
+        Text: bitte senden sie mir die unterlagen zu.
+        Datum: 2026-10-22
+        """;
+
+    [Fact(DisplayName = "Unvollständiger Brief fragt nach und schreibt keine Datei")]
+    public void Brief_unvollstaendig_fragt()
+    {
+        using var fx = new Fixture(new LetterPromptAdapter());
+        var open = fx.Wf.Start(fx.Req("STUDIO-LETTER-01", "Schreibe einen Brief an das Amt."), fx.Ctx());
+        Assert.Equal(RunStatus.AwaitingInput, open.Status);
+        Assert.Contains(open.Questions, q => q.Field == "empfaenger");
+        Assert.Empty(open.Artifacts);
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith(".docx", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact(DisplayName = "Brief wird geschrieben, gelesen und bei einer Änderung neu gefasst")]
+    public void Brief_wird_geschrieben_und_wieder_gelesen()
+    {
+        using var fx = new Fixture(new LetterPromptAdapter());
+        var plan = fx.Wf.Start(fx.Req("STUDIO-LETTER-01", BriefPrompt), fx.Ctx());
+        Assert.Equal(WorkflowPhase.Planned, plan.Phase);
+        Assert.Empty(plan.Artifacts);
+        var done = fx.Wf.Los(fx.Project, plan.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        Assert.Contains("Auskunft zu den Unterlagen", done.Preview);
+        Assert.Contains(done.Warnings, w => w.Contains("LibreOffice", StringComparison.Ordinal));
+        var docx = done.Artifacts.Single(a => a.Format == "docx");
+        var full = fx.Core.Projects.ResolveInProject(fx.Project, docx.RelativePath);
+        var text = Letters.ReadDocxText(full);
+        Assert.Contains("Auskunft zu den Unterlagen", text);
+        Assert.Contains("bitte senden sie mir die unterlagen zu.", text);
+        var again = LetterArchive.Load(full);
+        Assert.Equal("Anna Beispiel", again!.SenderName);
+        var revisedPlan = fx.Wf.Revise(fx.Project, plan.RunId, BriefPrompt.Replace("Auskunft zu den Unterlagen", "Zweite Auskunft"), fx.Ctx());
+        var revised = fx.Wf.Los(fx.Project, revisedPlan.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, revised.Status);
+        Assert.Contains(fx.FilesTree().Where(f => f.EndsWith(".docx", StringComparison.OrdinalIgnoreCase)), f => Letters.ReadDocxText(f).Contains("Zweite Auskunft", StringComparison.Ordinal));
+        Assert.Contains("Auskunft zu den Unterlagen", Letters.ReadDocxText(full));
+    }
+
+    [Fact(DisplayName = "Platzhalter im Brief blockieren statt geraten zu werden")]
+    public void Brief_platzhalter_blockiert()
+    {
+        using var fx = new Fixture(new LetterPromptAdapter());
+        var prompt = """
+            Absender: Anna Beispiel
+            Strasse: Beispielweg 1
+            Ort: 10115 Berlin
+            Empfaenger: Amt für Beispiel
+            Musterstraße 2
+            10115 Berlin
+            Art: kuendigung
+            """;
+        var result = fx.Wf.Start(fx.Req("STUDIO-LETTER-01", prompt), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, result.Status);
+        Assert.Contains(result.Errors, e => e.Contains("Platzhalter", StringComparison.Ordinal));
+        Assert.Empty(result.Artifacts);
+    }
+
     [Fact(DisplayName = "Katalogmatrix nennt jede Studio-ID genau einmal")]
     public void Matrix_deckt_den_Katalog()
     {
         var ids = CapabilityCatalog.Ids;
         Assert.Equal(ids.Count, ids.Distinct(StringComparer.OrdinalIgnoreCase).Count());
-        Assert.All(ids, id => Assert.Equal(CapabilityLevel.NotImplemented, CapabilityCatalog.Level(id, PromptActions.CreateDefault())));
+        var registered = PromptActions.CreateDefault().Select(a => a.StudioId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        Assert.Contains(registered, id => id == "STUDIO-LETTER-01");
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-LETTER-01", PromptActions.CreateDefault()));
+        Assert.All(ids.Where(id => !registered.Contains(id)), id => Assert.Equal(CapabilityLevel.NotImplemented, CapabilityCatalog.Level(id, PromptActions.CreateDefault())));
         var markdown = CapabilityCatalog.Markdown(PromptActions.CreateDefault());
         Assert.Equal(Normalize(markdown), Normalize(File.ReadAllText(Repo("docs/improvement-42/studio-capability-matrix.md"))));
     }

@@ -12,8 +12,8 @@ Die Leiste sitzt oben in einem Studio, nicht auf dem Startbildschirm. Bei den 3D
 8. „Profi“ zeigt Fassung, Schritte, Dateipfade und Prüfung. „Einfach“ blendet das wieder aus.
 9. „Abbrechen“ stoppt einen offenen Auftrag, bevor etwas nach außen geht. Ohne Auftrag steht „Nichts zum Abbrechen.“
 
-Die Zeile darunter nennt den Stand des Studios. In dieser Fassung endet das bei allen 54 Studios auf „nicht eingebaut“. „Cloud-KI ist aus.“ Eine kostenpflichtige KI ist keine Voraussetzung.
+Die Zeile darunter nennt den Stand des Studios. Briefe sind „teilweise“: die Word-Datei entsteht, ein PDF nur mit LibreOffice. Die übrigen Studios bleiben „nicht eingebaut“. „Cloud-KI ist aus.“ Eine kostenpflichtige KI ist keine Voraussetzung.
 
 Mögliche Stände: Noch nicht gestartet, Plan steht, Rückfrage, Freigabe nötig, Wird wirklich ausgeführt, Datei erstellt, QA bestanden, Fehlgeschlagen, Abgebrochen, Nicht unterstützt.
 
-„QA bestanden“ erscheint nur, wenn eine Prüfung die erzeugte Datei wirklich gelesen hat. Das ist in der Oberfläche noch bei keinem Studio der Fall. Brief, Tabelle, E-Mail, Rechnung, Programm, 3D, Spiel und Film folgen in späteren Aufträgen und nutzen die vorhandenen Funktionen, sobald sie angeschlossen sind.
+„QA bestanden“ erscheint nur, wenn eine Prüfung die erzeugte Datei wirklich gelesen hat. Beim Brief ist das die Word-Datei. Tabelle, E-Mail, Rechnung, Programm, 3D, Spiel und Film folgen.

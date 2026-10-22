@@ -24,6 +24,6 @@ public sealed class IntelligencePromptModel(IntelligenceCore core, Func<bool> lo
 
 public static class PromptActions
 {
-    /// <summary>Produktion: noch keine Fachadapter. Studios antworten deshalb mit „Nicht unterstützt“.</summary>
-    public static IReadOnlyList<IStudioActionAdapter> CreateDefault() => [];
+    /// <summary>Registrierte Fachadapter. Alles andere bleibt „nicht eingebaut“.</summary>
+    public static IReadOnlyList<IStudioActionAdapter> CreateDefault() => [new LetterPromptAdapter()];
 }

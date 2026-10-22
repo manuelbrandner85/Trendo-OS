@@ -1,6 +1,9 @@
 // Rendert die Oberfläche headless mit Skia in eine PNG (Design-Vergleich ohne Windows-PC).
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Headless;
+using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using Trendo.App;
 using Trendo.Core;
@@ -30,6 +33,21 @@ if (Environment.GetEnvironmentVariable("TRENDO_DEMO_CASE") is not null)
     c.Deadlines.AddRange(LetterKit.FindDeadlines("Gegen diesen Bescheid kann innerhalb eines Monats Widerspruch erhoben werden.", "e01", new DateTime(2026, 9, 5)));
     LetterKit.Compose(c, lh); store.Save(c, Principal.LocalOwner);
     win.OpenCase(c); win.Show(args.Length > 3 ? args[3] : "akte");
+}
+void Pump() { for (var n = 0; n < 8; n++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); } }
+if (Environment.GetEnvironmentVariable("TRENDO_BRIEF_PROMPT") == "1")
+{
+    core.Projects.Create("briefprobe", "Briefprobe");
+    win.Show("brief");
+    Pump();
+    T Find<T>(string name) where T : Control => win.GetLogicalDescendants().OfType<T>().First(c => c.Name == name);
+    Find<TextBox>("auftrag-prompt").Text = "Absender: Anna Beispiel\nStrasse: Beispielweg 1\nOrt: 10115 Berlin\nEmpfaenger: Amt für Beispiel\nMusterstraße 2\n10115 Berlin\nBetreff: Auskunft zu den Unterlagen\nText: bitte senden sie mir die unterlagen zu.\nDatum: 2026-10-22";
+    Find<Button>("auftrag-pruefen").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "Plan steht"; i++) Pump();
+    Find<Button>("auftrag-los").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "QA bestanden"; i++) Pump();
+    if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
+        throw new InvalidOperationException("Briefvorschau steht auf " + Find<TextBlock>("auftrag-status").Text);
 }
 for (var i = 0; i < 30; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(50); }
 var frame = win.CaptureRenderedFrame();
