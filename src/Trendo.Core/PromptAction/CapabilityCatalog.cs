@@ -51,7 +51,7 @@ public static class CapabilityCatalog
         P("X-05", "Kostenlose KI finden", "KI & Automatik", "KiSources, nur Loopback", "Lokale Quelle prüfen", "keine", "Status", "Kein Fachadapter registriert."),
         P("SYS-05", "Aufgaben automatisieren", "KI & Automatik", "WorkflowEngine", "Ablauf planen", "Schritte", "Ablauf", "Kein Fachadapter registriert."),
         P("X-01", "Großprojekte umsetzen", "KI & Automatik", "bestehende Studios", "Studios nur nennen", "Ziel", "Plan", "Kein Fachadapter registriert."),
-        P("CORE-07", "Webseite bauen", "Entwickeln", "DevStudio", "Projektvorlage anlegen, nicht veröffentlichen", "Vorlage, Name", "Quelltext", "Kein Fachadapter registriert."),
+        P("CORE-07", "Webseite bauen", "Entwickeln", "DevStudio", "Projektvorlage anlegen, nicht veröffentlichen", "Vorlage, Name", "Quelltext", "Veröffentlichen und Push sind nicht angeschlossen. Es wird nichts hochgeladen."),
         P("X-03", "Apps zusammenklicken", "Entwickeln", "PageBuilder", "Seitenentwurf", "Inhalt", "HTML", "Kein Fachadapter registriert."),
         P("X-06", "Projekte von GitHub holen", "Entwickeln", "OpenSource", "Nur anzeigen, nicht mergen", "Name", "Hinweis", "Kein Fachadapter registriert."),
         P("X-04", "Trendo erweitern", "Entwickeln", "ExtensionCatalog", "Erweiterung entwerfen", "Name", "Entwurf", "Kein Fachadapter registriert."),

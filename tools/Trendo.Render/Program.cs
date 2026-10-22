@@ -35,6 +35,20 @@ if (Environment.GetEnvironmentVariable("TRENDO_DEMO_CASE") is not null)
     win.OpenCase(c); win.Show(args.Length > 3 ? args[3] : "akte");
 }
 void Pump() { for (var n = 0; n < 8; n++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); } }
+if (Environment.GetEnvironmentVariable("TRENDO_SOFTWARE_PROMPT") == "1")
+{
+    core.Projects.Create("codeprobe", "Codeprobe");
+    win.Show("dev");
+    Pump();
+    T Find<T>(string name) where T : Control => win.GetLogicalDescendants().OfType<T>().First(c => c.Name == name);
+    Find<TextBox>("auftrag-prompt").Text = "Vorlage: Webseite\nName: Kerzenladen";
+    Find<Button>("auftrag-pruefen").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "Plan steht"; i++) Pump();
+    Find<Button>("auftrag-los").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "QA bestanden"; i++) Pump();
+    if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
+        throw new InvalidOperationException("Software steht auf " + Find<TextBlock>("auftrag-status").Text + " / " + Find<TextBlock>("auftrag-vorschau").Text);
+}
 if (Environment.GetEnvironmentVariable("TRENDO_BUSINESS_PROMPT") == "1")
 {
     core.Projects.Create("ideeprobe", "Ideeprobe");

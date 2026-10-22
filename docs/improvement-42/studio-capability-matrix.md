@@ -38,7 +38,7 @@ Erzeugt aus `CapabilityCatalog` und den wirklich registrierten Adaptern. `ready`
 | X-05 | Kostenlose KI finden | KI & Automatik | KiSources, nur Loopback | Lokale Quelle prüfen | keine | keiner | Status | not_implemented | — | Kein Fachadapter registriert. |
 | SYS-05 | Aufgaben automatisieren | KI & Automatik | WorkflowEngine | Ablauf planen | Schritte | keiner | Ablauf | not_implemented | — | Kein Fachadapter registriert. |
 | X-01 | Großprojekte umsetzen | KI & Automatik | bestehende Studios | Studios nur nennen | Ziel | keiner | Plan | not_implemented | — | Kein Fachadapter registriert. |
-| CORE-07 | Webseite bauen | Entwickeln | DevStudio | Projektvorlage anlegen, nicht veröffentlichen | Vorlage, Name | keiner | Quelltext | not_implemented | — | Kein Fachadapter registriert. |
+| CORE-07 | Webseite bauen | Entwickeln | DevStudio | Projektvorlage anlegen, nicht veröffentlichen | Vorlage, Name | software.anlegen, software.veroeffentlichen | Quelltext | partial | PromptActionTests.Software_legt_dateien_an, PromptActionTests.Software_veroeffentlicht_nichts | Veröffentlichen und Push sind nicht angeschlossen. Es wird nichts hochgeladen. |
 | X-03 | Apps zusammenklicken | Entwickeln | PageBuilder | Seitenentwurf | Inhalt | keiner | HTML | not_implemented | — | Kein Fachadapter registriert. |
 | X-06 | Projekte von GitHub holen | Entwickeln | OpenSource | Nur anzeigen, nicht mergen | Name | keiner | Hinweis | not_implemented | — | Kein Fachadapter registriert. |
 | X-04 | Trendo erweitern | Entwickeln | ExtensionCatalog | Erweiterung entwerfen | Name | keiner | Entwurf | not_implemented | — | Kein Fachadapter registriert. |
@@ -59,4 +59,4 @@ Erzeugt aus `CapabilityCatalog` und den wirklich registrierten Adaptern. `ready`
 | CORE-04 | PC, Pi & Handy verbinden | System & Sicherheit | Fusion | Verbund nur anzeigen | keine | keiner | Hinweis | not_implemented | — | Kein Fachadapter registriert. |
 | X-09 | Leistung anzeigen | System & Sicherheit | ResourceMonitor, SystemMetrics | Messwerte lesen | keine | keiner | Messwert | not_implemented | — | Kein Fachadapter registriert. |
 
-Anzahl: 54 Katalogeinträge, 7 registrierte Aktionen.
+Anzahl: 54 Katalogeinträge, 9 registrierte Aktionen.

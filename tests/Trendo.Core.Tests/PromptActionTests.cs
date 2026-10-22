@@ -661,6 +661,61 @@ public class PromptActionTests
         Assert.Contains("Preis: 20,00 €", File.ReadAllText(file));
     }
 
+    [Fact(DisplayName = "Software-Vorlage schreibt Dateien und lässt die alte Fassung stehen")]
+    public void Software_legt_dateien_an()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var text = "Vorlage: Webseite\nName: Kerzenladen";
+        var plan = wf.Start(fx.Req("CORE-07", text), fx.Ctx());
+        Assert.Equal(RunStatus.Planned, plan.Status);
+        var done = wf.Los(fx.Project, plan.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var index = done.Artifacts.Single(a => a.RelativePath.EndsWith("index.html", StringComparison.Ordinal));
+        var html = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, index.RelativePath));
+        Assert.Contains("<title>Kerzenladen</title>", html);
+        Assert.Contains("getElementById", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith("app.js")).RelativePath)));
+        Assert.Contains("Nichts veröffentlicht", done.Preview);
+        Assert.DoesNotContain(fx.FilesTree(), f => f.Contains($"{Path.DirectorySeparatorChar}.git{Path.DirectorySeparatorChar}", StringComparison.Ordinal));
+        var next = wf.Los(fx.Project, wf.Revise(fx.Project, plan.RunId, "Vorlage: Webseite\nName: ZweiteSeite", fx.Ctx()).RunId, fx.Ctx());
+        Assert.Contains("<title>ZweiteSeite</title>", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, next.Artifacts.Single(a => a.Version == 2 && a.RelativePath.EndsWith("index.html")).RelativePath)));
+        Assert.Contains("<title>Kerzenladen</title>", html);
+    }
+
+    [Fact(DisplayName = "Python-Vorlage besteht den eigenen Test, Git bleibt ohne Remote")]
+    public void Software_testet_python()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var text = "Vorlage: Python\nName: Gruss\nTesten: ja\nGit: ja";
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("CORE-07", text), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var main = fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith("/main.py", StringComparison.Ordinal)).RelativePath);
+        Assert.Contains("def gruss", File.ReadAllText(main));
+        var dir = Path.GetDirectoryName(main)!;
+        Assert.True(Directory.Exists(Path.Combine(dir, ".git")));
+        Assert.Equal("", Cli.Run("git", ["remote"], dir, 10000).Out.Trim());
+        var waiting = wf.Start(fx.Req("CORE-07", "Vorlage: Python", id: "name-1"), fx.Ctx());
+        Assert.Equal(RunStatus.AwaitingInput, waiting.Status);
+        var bad = wf.Start(fx.Req("CORE-07", "Vorlage: Rust\nName: X", id: "rust-1"), fx.Ctx());
+        Assert.Equal(RunStatus.Failed, bad.Status);
+        Assert.Empty(bad.Artifacts);
+    }
+
+    [Fact(DisplayName = "Push veröffentlicht kein Softwareprojekt")]
+    public void Software_veroeffentlicht_nichts()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var plan = wf.Start(fx.Req("CORE-07", "Freigabe: erteilt\nPush: ja\nVorlage: Webseite\nName: Heimlich"), fx.Ctx());
+        var done = wf.Los(fx.Project, plan.RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Unsupported, done.Status);
+        Assert.Null(done.Receipt);
+        Assert.Empty(done.Artifacts);
+        Assert.Contains(done.Errors, e => e.Contains("nicht angeschlossen", StringComparison.OrdinalIgnoreCase));
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith("index.html", StringComparison.OrdinalIgnoreCase));
+    }
+
     [Fact(DisplayName = "Katalogmatrix nennt jede Studio-ID genau einmal")]
     public void Matrix_deckt_den_Katalog()
     {
@@ -672,11 +727,13 @@ public class PromptActionTests
         Assert.Contains(registered, id => id == "SYS-09");
         Assert.Contains(registered, id => id == "SPEC-11");
         Assert.Contains(registered, id => id == "STUDIO-ONLINE-BUSINESS-01");
+        Assert.Contains(registered, id => id == "CORE-07");
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-LETTER-01", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-10", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SYS-09", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("SPEC-11", PromptActions.CreateDefault()));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("STUDIO-ONLINE-BUSINESS-01", PromptActions.CreateDefault()));
+        Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-07", PromptActions.CreateDefault()));
         Assert.All(ids.Where(id => !registered.Contains(id)), id => Assert.Equal(CapabilityLevel.NotImplemented, CapabilityCatalog.Level(id, PromptActions.CreateDefault())));
         var markdown = CapabilityCatalog.Markdown(PromptActions.CreateDefault());
         Assert.Equal(Normalize(markdown), Normalize(File.ReadAllText(Repo("docs/improvement-42/studio-capability-matrix.md"))));
