@@ -83,6 +83,8 @@ public sealed class LocalApi : IAsyncDisposable
         {
             var r = core.Approvals.Pending().FirstOrDefault(x => x.Id == id) ?? throw new ApprovalException("Keine offene Freigabe.");
             core.Approvals.Approve(id, P(c));
+            // Ein Livestream startet nie hier. Die Freigabe gilt, senden tut nur das Studio.
+            if (r.Action == LiveBroadcast.Action) return Results.Ok(new { executed = false, approved = true });
             core.Integrations.Execute(r);
             return Results.Ok(new { executed = true });
         });

@@ -826,10 +826,21 @@ public sealed partial class MainWindow : Window
         if (pending.Count == 0) sp.Children.Add(P("Keine offenen Freigaben."));
         foreach (var r in pending)
         {
-            var yes = new Button { Name = "btn-approve-" + r.Id, Content = "Freigeben und ausführen", Background = Accent };
+            var live = r.Action == LiveBroadcast.Action;
+            var yes = new Button { Name = "btn-approve-" + r.Id, Content = live ? "Freigeben, noch nicht senden" : "Freigeben und ausführen", Background = Accent };
             var no = new Button { Name = "btn-deny-" + r.Id, Content = "Ablehnen" };
-            yes.Click += (_, _) => { _core.Approvals.Approve(r.Id, Principal.LocalOwner); _core.Integrations.Execute(r); Show("approvals"); };
-            no.Click += (_, _) => { _core.Approvals.Deny(r.Id, Principal.LocalOwner); Show("approvals"); };
+            yes.Click += (_, _) =>
+            {
+                _core.Approvals.Approve(r.Id, Principal.LocalOwner);
+                if (live) { NoteLiveApproved(r.Id); Show("sendung"); return; }
+                _core.Integrations.Execute(r); Show("approvals");
+            };
+            no.Click += (_, _) =>
+            {
+                _core.Approvals.Deny(r.Id, Principal.LocalOwner);
+                if (live) { NoteLiveDenied(r.Id); Show("sendung"); return; }
+                Show("approvals");
+            };
             sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = new StackPanel { Spacing = 6, Children = {
                 new TextBlock { Text = r.Description, Foreground = Text }, P($"Aktion {r.Action} · gültig bis {r.ExpiresAt:HH:mm}"),
                 new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { yes, no } } } } });
