@@ -30,9 +30,9 @@ public partial class MainWindow
         var stage = new ComboBox { Name = "op-c-stage", ItemsSource = BusinessOps.Stages, SelectedIndex = 0, Width = 120 };
         var csec = new StackPanel { Spacing = 4, Children = { H("Kundenkontakte", 14), new WrapPanel { Children = { cn, cf, cm, stage, cv, cd, Act("op-c-add", "Speichern", () =>
         {
-            if (string.IsNullOrWhiteSpace(cn.Text)) return;
+            if (string.IsNullOrWhiteSpace(cn.Text)) { Say("Bitte zuerst den Namen des Kontakts eintragen.", "biz-betrieb"); return; }
             DateOnly? next = DateOnly.TryParse(cd.Text, System.Globalization.CultureInfo.GetCultureInfo("de-DE"), out var d) ? d : null;
-            BizContacts.Add(new(cn.Text!, cf.Text ?? "", cm.Text ?? "", BusinessOps.Stages[Math.Max(0, stage.SelectedIndex)], next, ParseD(cv.Text))); Show("biz-betrieb");
+            BizContacts.Add(new(cn.Text!, cf.Text ?? "", cm.Text ?? "", BusinessOps.Stages[Math.Max(0, stage.SelectedIndex)], next, ParseD(cv.Text))); Say($"Kontakt „{cn.Text}“ gespeichert.", "biz-betrieb");
         }, true) } } } };
         var due = BusinessOps.Due(contacts, today);
         csec.Children.Add(new TextBlock { Name = "op-due", Text = due.Count == 0 ? "Heute steht nichts an." : $"Heute melden: {string.Join(", ", due.Select(x => x.Name))}", Foreground = due.Count > 0 ? Brush.Parse("#FACC15") : Muted, TextWrapping = TextWrapping.Wrap });
@@ -46,8 +46,8 @@ public partial class MainWindow
         var mn = T("op-m-name", "Name"); var mt = T("op-m-team", "Team", 100); var mp = new ComboBox { Name = "op-m-plan", ItemsSource = tiers.Select(t => t.Name).ToList(), SelectedIndex = 0, Width = 120 };
         var mr = new ComboBox { Name = "op-m-role", ItemsSource = BusinessOps.Roles, SelectedIndex = 2, Width = 110 };
         var msec = new StackPanel { Spacing = 4, Children = { H("Mitglieder und Tarife", 14),
-            new WrapPanel { Children = { tn, tp, Act("op-t-add", "Tarif anlegen", () => { if (!string.IsNullOrWhiteSpace(tn.Text)) { BizTiers.Add(new(tn.Text!, ParseD(tp.Text))); Show("biz-betrieb"); } }) } },
-            new WrapPanel { Children = { mn, mt, mp, mr, Act("op-m-add", "Mitglied anlegen", () => { if (string.IsNullOrWhiteSpace(mn.Text) || tiers.Count == 0) return; BizMembers.Add(new(mn.Text!, "", tiers[Math.Max(0, mp.SelectedIndex)].Name, string.IsNullOrWhiteSpace(mt.Text) ? "Standard" : mt.Text!, BusinessOps.Roles[Math.Max(0, mr.SelectedIndex)], today)); Show("biz-betrieb"); }) } },
+            new WrapPanel { Children = { tn, tp, Act("op-t-add", "Tarif anlegen", () => { if (string.IsNullOrWhiteSpace(tn.Text)) { Say("Bitte zuerst den Namen des Tarifs eintragen.", "biz-betrieb"); return; } BizTiers.Add(new(tn.Text!, ParseD(tp.Text))); Say($"Tarif „{tn.Text}“ angelegt.", "biz-betrieb"); }) } },
+            new WrapPanel { Children = { mn, mt, mp, mr, Act("op-m-add", "Mitglied anlegen", () => { if (tiers.Count == 0) { Say("Bitte zuerst oben einen Tarif anlegen.", "biz-betrieb"); return; } if (string.IsNullOrWhiteSpace(mn.Text)) { Say("Bitte zuerst den Namen des Mitglieds eintragen.", "biz-betrieb"); return; } BizMembers.Add(new(mn.Text!, "", tiers[Math.Max(0, mp.SelectedIndex)].Name, string.IsNullOrWhiteSpace(mt.Text) ? "Standard" : mt.Text!, BusinessOps.Roles[Math.Max(0, mr.SelectedIndex)], today)); Say($"Mitglied „{mn.Text}“ angelegt.", "biz-betrieb"); }) } },
             new TextBlock { Name = "op-mrr", Text = $"{members.Count(m => m.Active)} aktive Mitglieder · {BusinessOps.Mrr(members, tiers):N2} € pro Monat", Foreground = Text } } };
         foreach (var g in members.GroupBy(m => m.Team)) msec.Children.Add(P($"Team {g.Key}: {string.Join(", ", g.Select(m => $"{m.Name} ({m.Role}, {m.Plan})"))}", null, 11));
         sp.Children.Add(Card(msec));
@@ -70,7 +70,7 @@ public partial class MainWindow
         var prods = BizProducts.All();
         var pn = T("op-p-name", "Produkt"); var ps = T("op-p-sup", "Lieferant"); var pc = T("op-p-cost", "Einkauf €", 80); var pp = T("op-p-price", "Verkauf €", 80); var pst = T("op-p-stock", "Bestand", 70); var pl = T("op-p-lead", "Liefertage", 80); var pd = T("op-p-daily", "Verkauf/Tag", 90);
         var wsec = new StackPanel { Spacing = 4, Children = { H("Ware und Lieferanten", 14), new WrapPanel { Children = { pn, ps, pc, pp, pst, pl, pd, Act("op-p-add", "Hinzufügen", () =>
-        { if (string.IsNullOrWhiteSpace(pn.Text)) return; BizProducts.Add(new(pn.Text!, ps.Text ?? "", ParseD(pc.Text), ParseD(pp.Text), (int)ParseD(pst.Text), (int)ParseD(pl.Text), ParseD(pd.Text))); Show("biz-betrieb"); }) } } } };
+        { if (string.IsNullOrWhiteSpace(pn.Text)) { Say("Bitte zuerst den Produktnamen eintragen.", "biz-betrieb"); return; } BizProducts.Add(new(pn.Text!, ps.Text ?? "", ParseD(pc.Text), ParseD(pp.Text), (int)ParseD(pst.Text), (int)ParseD(pl.Text), ParseD(pd.Text))); Say($"Produkt „{pn.Text}“ hinzugefügt.", "biz-betrieb"); }) } } } };
         var k = 0;
         foreach (var p in prods) wsec.Children.Add(new TextBlock { Name = $"op-p-row-{k++}", Text = $"{(BusinessOps.NeedsOrder(p) ? "⚠ nachbestellen: " + BusinessOps.OrderQty(p) + " Stück · " : "✓ ")}{p.Name} ({p.Supplier}) · Bestand {p.Stock} · Marge {BusinessOps.UnitMargin(p):P0}", Foreground = BusinessOps.NeedsOrder(p) ? Brush.Parse("#FACC15") : Text, FontSize = 11.5 });
         sp.Children.Add(Card(wsec));
@@ -78,7 +78,7 @@ public partial class MainWindow
         // BUS-023 Anfragen
         var tickets = BizTickets.All(); var now = DateTimeOffset.Now;
         var tt = T("op-k-title", "Frage oder Problem", 240); var tc = T("op-k-cust", "Kunde"); var tpr = new ComboBox { Name = "op-k-prio", ItemsSource = BusinessOps.Priorities, SelectedIndex = 1, Width = 100 };
-        var ksec = new StackPanel { Spacing = 4, Children = { H("Kundenanfragen", 14), new WrapPanel { Children = { tt, tc, tpr, Act("op-k-add", "Aufnehmen", () => { if (string.IsNullOrWhiteSpace(tt.Text)) return; BizTickets.Add(new(tt.Text!, tc.Text ?? "", BusinessOps.Priorities[Math.Max(0, tpr.SelectedIndex)], DateTimeOffset.Now)); Show("biz-betrieb"); }) } } } };
+        var ksec = new StackPanel { Spacing = 4, Children = { H("Kundenanfragen", 14), new WrapPanel { Children = { tt, tc, tpr, Act("op-k-add", "Aufnehmen", () => { if (string.IsNullOrWhiteSpace(tt.Text)) { Say("Bitte zuerst die Frage oder das Problem eintragen.", "biz-betrieb"); return; } BizTickets.Add(new(tt.Text!, tc.Text ?? "", BusinessOps.Priorities[Math.Max(0, tpr.SelectedIndex)], DateTimeOffset.Now)); Say($"Anfrage „{tt.Text}“ aufgenommen.", "biz-betrieb"); }) } } } };
         for (var n = 0; n < tickets.Count; n++)
         {
             var idx = n; var t = tickets[n]; if (t.State == "gelöst") continue;
@@ -95,8 +95,11 @@ public partial class MainWindow
         var sc = T("op-s-csv", "CSV: Datum;Besucher;Anmeldungen;Verkäufe", 300);
         var zsec = new StackPanel { Spacing = 4, Children = { H("Auswertung", 14), new WrapPanel { Children = { sc, Act("op-s-import", "Übernehmen", () =>
         {
-            try { var add = BusinessOps.ImportStats(File.ReadAllText(sc.Text?.Trim('"', ' ') ?? "")); var l = BizStats.All(); l.RemoveAll(x => add.Any(a => a.Date == x.Date)); l.AddRange(add); BizStats.Save(l.OrderBy(x => x.Date).ToList()); Say($"{add.Count} Tage übernommen.", "biz-betrieb"); }
+            var path = sc.Text?.Trim('"', ' ') ?? "";
+            if (path.Length == 0) { Say("Bitte zuerst den Pfad zur CSV-Datei eintragen.", "biz-betrieb"); return; }
+            try { var add = BusinessOps.ImportStats(File.ReadAllText(path)); var l = BizStats.All(); l.RemoveAll(x => add.Any(a => a.Date == x.Date)); l.AddRange(add); BizStats.Save(l.OrderBy(x => x.Date).ToList()); Say($"{add.Count} Tage übernommen.", "biz-betrieb"); }
             catch (IOException) { Say("Datei nicht gefunden.", "biz-betrieb"); }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or ArgumentException or FormatException) { Say("CSV konnte nicht gelesen werden: " + ex.Message, "biz-betrieb"); }
         }) } } } };
         if (stats.Count > 0) { var tr = BusinessOps.Analyze(stats); zsec.Children.Add(new TextBlock { Name = "op-trend", Text = $"Letzte 7 Tage: {tr.SignupRate:P1} melden sich an, {tr.SaleRate:P1} kaufen (davor {tr.PrevSaleRate:P1}). {tr.Text}", Foreground = Text, TextWrapping = TextWrapping.Wrap }); }
         var pv = BusinessOps.Compare(i, Money.All(), new DateOnly(today.Year, 1, 1), today);
