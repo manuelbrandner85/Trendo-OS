@@ -44,25 +44,26 @@ public sealed class StudioWorkflow
 
     public StudioExecutionResult Start(StudioPromptRequest request, StudioExecutionContext ctx)
     {
+        var runId = request.RequestId ?? "";
         if (!string.Equals(request.ProjectId, ctx.ProjectId, StringComparison.Ordinal))
-            return FailedNow(request.RequestId, "Projekt im Auftrag und in der Ausführung stimmen nicht überein.");
+            return FailedNow(runId, "Projekt im Auftrag und in der Ausführung stimmen nicht überein.");
         try { Rbac.Demand(ctx.User, Permission.RequestAction, _audit); }
-        catch (UnauthorizedAccessException ex) { return FailedNow(request.RequestId, ex.Message); }
-        if (!RunIdPattern.IsMatch(request.RequestId ?? ""))
-            return FailedNow(request.RequestId ?? "", "Die Auftragsnummer ist ungültig.");
+        catch (UnauthorizedAccessException ex) { return FailedNow(runId, ex.Message); }
+        if (!RunIdPattern.IsMatch(runId))
+            return FailedNow(runId, "Die Auftragsnummer ist ungültig.");
         if ((request.Prompt ?? "").Length > 20000)
-            return FailedNow(request.RequestId, "Der Auftrag ist zu lang.");
+            return FailedNow(runId, "Der Auftrag ist zu lang.");
         try
         {
-            if (_runs.TryLoad(request.ProjectId, request.RequestId) is not null)
-                return FailedNow(request.RequestId, "Diesen Auftrag gibt es schon.");
+            if (_runs.TryLoad(request.ProjectId, runId) is not null)
+                return FailedNow(runId, "Diesen Auftrag gibt es schon.");
         }
-        catch (ProjectIsolationException ex) { return FailedNow(request.RequestId, ex.Message); }
+        catch (ProjectIsolationException ex) { return FailedNow(runId, ex.Message); }
 
         var now = _time.GetLocalNow();
         var state = new RunState
         {
-            RunId = request.RequestId,
+            RunId = runId,
             ProjectId = request.ProjectId,
             StudioId = request.StudioId,
             Prompt = request.Prompt ?? "",
@@ -152,9 +153,10 @@ public sealed class StudioWorkflow
         var state = TryNeed(projectId, runId, ctx, out var error);
         if (state is null) return error!;
         if (state.Phase is WorkflowPhase.Executing) return Finish(state, save: false);
+        var hadFile = state.Artifacts.Count > 0;
         state.History.Add(new HistoryEntry { At = _time.GetLocalNow(), Prompt = prompt ?? "" });
         state.Prompt = prompt ?? "";
-        state.Version++;
+        if (hadFile) state.Version++;
         state.Parameters.Clear();
         state.ApprovalId = null;
         state.SideEffectReceipt = null;
@@ -165,6 +167,40 @@ public sealed class StudioWorkflow
         state.IdempotencyKey = null;
         Mark(state, WorkflowPhase.RevisionRequested, "Änderung", "Neue Fassung " + state.Version + ".");
         return Validate(state, ctx, null);
+    }
+
+    /// <summary>Schreibt die Datei erst nach dem Plan. Eine Wirkung nach außen wartet danach auf Freigabe.</summary>
+    public StudioExecutionResult Los(string projectId, string runId, StudioExecutionContext ctx)
+    {
+        var state = TryNeed(projectId, runId, ctx, out var error);
+        if (state is null) return error!;
+        if (state.Phase != WorkflowPhase.Planned)
+        {
+            state.Warnings.Add("Zuerst den Plan prüfen. Es wird nichts geschrieben.");
+            return Finish(state, save: false);
+        }
+        var adapter = _adapters.FirstOrDefault(a => string.Equals(a.StudioId, state.RoutedStudioId, StringComparison.OrdinalIgnoreCase) && string.Equals(a.ActionId, state.ActionId, StringComparison.OrdinalIgnoreCase));
+        if (adapter is null)
+        {
+            state.Errors.Add("Der Adapter für diesen Plan ist nicht mehr da.");
+            Mark(state, WorkflowPhase.Failed, "Adapter", state.Errors[0]);
+            return Finish(state);
+        }
+        return Build(state, adapter, ctx);
+    }
+
+    public StudioExecutionResult Undo(string projectId, string runId, StudioExecutionContext ctx)
+    {
+        if (!string.Equals(projectId, ctx.ProjectId, StringComparison.Ordinal))
+            return FailedNow(runId, "Projekt stimmt nicht überein.");
+        try { Rbac.Demand(ctx.User, Permission.RequestAction, _audit); }
+        catch (UnauthorizedAccessException ex) { return FailedNow(runId, ex.Message); }
+        try
+        {
+            if (!_runs.TryRollback(projectId, runId)) return FailedNow(runId, "Nichts zum Rückgängigmachen.");
+        }
+        catch (ProjectIsolationException ex) { return FailedNow(runId, ex.Message); }
+        return Get(projectId, runId);
     }
 
     public StudioExecutionResult Retry(string projectId, string runId, StudioExecutionContext ctx)
@@ -329,8 +365,26 @@ public sealed class StudioWorkflow
         if (adapter.Effect != SideEffectClass.None)
             state.Steps.Add(new PlanStep("wirkung", "Wirkung nur nach Freigabe", true));
         Mark(state, WorkflowPhase.Planned, "Plan", reason);
+        foreach (var step in state.Steps)
+            state.Evidence.Add(new StepEvidence(step.Id, step.Label, false, "Steht im Plan.", state.UpdatedAt));
+        state.Artifacts.Clear();
+        state.Qa.Clear();
+        state.Preview = "Noch keine Datei. Der Plan steht, es wurde nichts geschrieben.";
+        return Finish(state);
+    }
 
+    private StudioExecutionResult Build(RunState state, IStudioActionAdapter adapter, StudioExecutionContext ctx)
+    {
         if (!Produce(state, adapter, ctx)) return Finish(state);
+        if (state.Artifacts.Count == 0)
+        {
+            state.Errors.Add("Es wurde keine Datei geschrieben.");
+            state.Preview = "Hier gibt es keine Vorschau, weil keine Datei entstanden ist.";
+            Mark(state, WorkflowPhase.Failed, "Datei", state.Errors[^1]);
+            return Finish(state);
+        }
+        if (string.IsNullOrWhiteSpace(state.Preview))
+            state.Preview = "Für " + state.Artifacts[0].Format + " gibt es keine Textvorschau. Die Datei liegt im Projekt: " + state.Artifacts[0].RelativePath;
         if (adapter.Effect == SideEffectClass.None)
             return Judge(state);
 
@@ -561,14 +615,17 @@ public sealed class StudioWorkflow
     private StudioExecutionResult Judge(RunState state)
     {
         Mark(state, WorkflowPhase.Qa, "QA", "Prüfung der erzeugten Datei.");
+        if (state.Artifacts.Count == 0)
+            state.Errors.Add("Es wurde keine Datei geschrieben.");
         if (state.Errors.Count > 0 || state.Qa.Count == 0 || state.Qa.Any(q => !q.Passed))
         {
             if (state.Qa.Count == 0) state.Errors.Add("Die Aktion hat keine Prüfung geliefert.");
             state.Errors.AddRange(state.Qa.Where(q => !q.Passed).Select(q => q.Detail));
+            if (state.Artifacts.Count == 0) state.Preview = "Hier gibt es keine Vorschau, weil keine Datei entstanden ist.";
             Mark(state, WorkflowPhase.Failed, "QA", "Die Prüfung ist nicht bestanden.");
             return Finish(state);
         }
-        Mark(state, WorkflowPhase.Verified, "Fertig", state.Artifacts.Count == 0 ? "Geprüft, ohne neue Datei." : "Datei geprüft.");
+        Mark(state, WorkflowPhase.Verified, "Fertig", "Datei geprüft.");
         return Finish(state);
     }
 
@@ -636,7 +693,7 @@ public sealed class StudioWorkflow
             _audit.Append("prompt", "prompt.phase", $"studio={state.RoutedStudioId} aktion={state.ActionId} phase={state.Phase} zeichen={state.Prompt.Length}");
         }
         return new StudioExecutionResult(state.RunId, state.Phase, StatusText.From(state.Phase), state.Evidence, state.Artifacts, state.Errors, state.Warnings,
-            state.ApprovalId is null ? [] : [state.ApprovalId], state.Qa, state.StartedAt, state.UpdatedAt, state.RoutingReason, state.Preview, state.Questions, state.SideEffectReceipt);
+            state.ApprovalId is null ? [] : [state.ApprovalId], state.Qa, state.StartedAt, state.UpdatedAt, state.RoutingReason, state.Preview, state.Questions, state.SideEffectReceipt, state.Version);
     }
 
     private void Mark(RunState state, WorkflowPhase phase, string label, string detail)
@@ -649,7 +706,7 @@ public sealed class StudioWorkflow
     private StudioExecutionResult FailedNow(string runId, string message)
     {
         var now = _time.GetLocalNow();
-        return new StudioExecutionResult(runId, WorkflowPhase.Failed, RunStatus.Failed, [], [], [message], [], [], [], now, now, "", null, [], null);
+        return new StudioExecutionResult(runId, WorkflowPhase.Failed, RunStatus.Failed, [], [], [message], [], [], [], now, now, "", null, [], null, 0);
     }
 
     private static Dictionary<string, string> Known(RunState state)
