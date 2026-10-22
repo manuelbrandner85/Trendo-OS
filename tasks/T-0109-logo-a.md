@@ -8,7 +8,7 @@
 **Dateien/Bereich:**
 - `src/Trendo.App/MainWindow.axaml.cs`: `Logo(...)` (V-Pfad `M0,0 L100,0 L50,90 Z …`) durch Avalonia-Nachbau von Logo A ersetzen (Kachel + Querbalken + Stamm, gleiche Farben). Tooltip/Status-Texte „Logo-Konzept – nicht freigegeben“ / „Logo: Konzept, nicht freigegeben“ / „Logo: Entwurf, noch nicht freigegeben“ (auch `MainWindow.Look.cs`) ersetzen durch „Trendo-Logo“ bzw. entfernen.
 - Startknopf `start-button` in `src/Trendo.App/MainWindow.StartMenu.cs`: statt `Mdi.MicrosoftWindows` das Logo A (nur diese eine Zeile ändern, sonst nichts am Startmenü).
-- App-Symbol: `src/Trendo.App/Assets/logo/trendo.ico` mit 16, 20, 24, 32, 40, 48, 64, 128, 256 px aus der SVG erzeugen (Skript `scripts/make-logo.py` oder `.ps1`, reproduzierbar, z. B. mit cairosvg/Pillow oder Magick.NET), dazu `trendo-256.png` und `trendo-512.png`. In `Trendo.App.csproj` `<ApplicationIcon>` setzen und das .ico als AvaloniaResource einbinden; `Window.Icon` des Hauptfensters (Fenster- und Taskleistensymbol) darauf setzen.
+- App-Symbol: **liegt fertig vor** (nicht neu erzeugen, kein Python/ImageMagick nötig): `src/Trendo.App/Assets/logo/trendo.ico` (16, 20, 24, 32, 40, 48, 64, 128, 256 px), `trendo-32.png`, `trendo-256.png`, `trendo-512.png`; Erzeugung reproduzierbar mit `scripts/make-logo.py` (läuft auf dem Linux-Testrechner). In `Trendo.App.csproj` `<ApplicationIcon>Assets\logo\trendo.ico</ApplicationIcon>` setzen und das .ico als AvaloniaResource einbinden; `Icon` des Hauptfensters (Fenster- und Taskleistensymbol) darauf setzen (`new WindowIcon(AssetLoader.Open(new Uri("avares://…/Assets/logo/trendo.ico")))`).
 - Setup/Velopack: `installer/build-setup.sh` um `--icon src/Trendo.App/Assets/logo/trendo.ico` ergänzen.
 - README.md und docs: Logo A einbinden (README oben, `trendo-256.png`), Hinweise auf das V-/Konzeptlogo aktualisieren (`Dependencies.cs` Eintrag „Hintergrund + Logo-Konzept“ → „Hintergrund (KI-generiert) + Trendo-Logo (eigener Entwurf)“). THIRD_PARTY/Lizenz: Logo ist eigenes Werk von Trendo OS.
 
@@ -18,5 +18,6 @@
 - [ ] QA-019 und W0b-01 (verbotene Wörter) weiterhin grün.
 - [ ] alle drei Testprojekte grün (Zahlen in den Bericht).
 
+**Arbeitsweise:** Jeden Befehl einzeln ausführen (keine Ketten mit `;`/`&&`/`|`), nur die in `.grok/config.toml` erlaubten Befehle (git, dotnet build/test, rg, Get-ChildItem/Get-Content). Dateien mit dem Edit-Werkzeug ändern.
 **Nicht tun:** Die SVG nicht umgestalten; kein anderes Design-41-Thema (Farben, Fensterverwaltung, Startmenü-Inhalt) anfassen; keine Status-Werte auf PC_VERIFIED setzen; nicht auf main pushen; nichts aus den KI-Referenzbildern übernehmen.
 **Am Ende:** Branch pushen, Bericht `tasks/T-0109-logo-a.bericht.md`.
