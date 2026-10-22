@@ -63,7 +63,7 @@ static class FieldKit
 
     public static AdapterOutcome Fail(string message) => new(true, [], [], null, [], [message], null);
 
-    public static AdapterOutcome Blocked(string message) => new(false, [], [], null, [], [message], null);
+    public static AdapterOutcome Blocked(string message, bool attempted = false) => new(false, [], [], null, [], [message], null, attempted);
 
     public static string DataRoot(AdapterCall call)
     {

@@ -22,8 +22,9 @@ public sealed class StudioWorkflow
     private readonly EffectLedger _ledger;
     private readonly TimeProvider _time;
     private readonly AuditLog _audit;
+    private readonly PromptServices _services;
 
-    public StudioWorkflow(TrendoCore core, IEnumerable<IStudioActionAdapter>? adapters = null, IPromptModel? model = null, TimeProvider? time = null, PromptLibrary? prompts = null)
+    public StudioWorkflow(TrendoCore core, IEnumerable<IStudioActionAdapter>? adapters = null, IPromptModel? model = null, TimeProvider? time = null, PromptLibrary? prompts = null, PromptServices? services = null)
     {
         _core = core;
         _adapters = (adapters ?? PromptActions.CreateDefault()).ToList();
@@ -34,6 +35,7 @@ public sealed class StudioWorkflow
         _runs = new RunStore(core.Projects);
         _ledger = new EffectLedger(core.Projects);
         _audit = core.Audit;
+        _services = PromptServices.For(core, services);
     }
 
     public IReadOnlyList<IStudioActionAdapter> Adapters => _adapters;
@@ -97,6 +99,7 @@ public sealed class StudioWorkflow
 
     public StudioExecutionResult Approve(string projectId, string runId, Principal by, StudioExecutionContext ctx)
     {
+        using var _ = PromptAmbient.Use(_services);
         var state = TryNeed(projectId, runId, ctx, out var error);
         if (state is null) return error!;
         if (state.Phase != WorkflowPhase.NeedsApproval)
@@ -172,6 +175,7 @@ public sealed class StudioWorkflow
     /// <summary>Schreibt die Datei erst nach dem Plan. Eine Wirkung nach außen wartet danach auf Freigabe.</summary>
     public StudioExecutionResult Los(string projectId, string runId, StudioExecutionContext ctx)
     {
+        using var _ = PromptAmbient.Use(_services);
         var state = TryNeed(projectId, runId, ctx, out var error);
         if (state is null) return error!;
         if (state.Phase != WorkflowPhase.Planned)
@@ -525,6 +529,7 @@ public sealed class StudioWorkflow
         if (existing is { State: "done", Receipt: not null })
         {
             state.SideEffectReceipt = existing.Receipt;
+            state.Preview = existing.Receipt;
             state.Warnings.Add("Schon erledigt. Es gibt keinen zweiten Versuch.");
             return Judge(state);
         }
@@ -552,13 +557,17 @@ public sealed class StudioWorkflow
                 var outcome = adapter.SideEffect(new AdapterCall(state.ProjectId, state.Version, state.Parameters, _core.Projects, true, key, ctx.Cancellation));
                 if (!outcome.Supported || string.IsNullOrWhiteSpace(outcome.Receipt))
                 {
-                    _ledger.Block(state.ProjectId, key, state.RunId);
+                    if (outcome.Attempted || outcome.Supported)
+                        _ledger.Block(state.ProjectId, key, state.RunId);
+                    else
+                        _ledger.Release(state.ProjectId, key);
                     throw new InvalidOperationException(outcome.Errors.FirstOrDefault() ?? "Nicht ausgeführt.");
                 }
                 _ledger.Done(state.ProjectId, key, outcome.Receipt);
                 return outcome.Receipt;
             });
             state.SideEffectReceipt = receipt;
+            if (!string.IsNullOrWhiteSpace(receipt)) state.Preview = receipt;
             state.Evidence.Add(new StepEvidence("wirkung", "Ausgeführt", true, "Beleg " + receipt, _time.GetLocalNow()));
         }
         catch (Exception ex) when (ex is ApprovalException or InvalidOperationException or UnauthorizedAccessException)

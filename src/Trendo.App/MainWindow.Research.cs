@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -26,28 +25,8 @@ public partial class MainWindow
 
     private static async Task<(string, string, Uri)> FetchReadOnly(Uri u)
     {
-        using var http = new HttpClient(new SocketsHttpHandler { UseCookies = false, AllowAutoRedirect = false, MaxResponseHeadersLength = 64 }) { Timeout = TimeSpan.FromSeconds(20) };
-        http.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Trendo-Lesemodus)");
-        http.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
-        for (var hop = 0; hop < 4; hop++)
-        {
-            using var r = await http.GetAsync(u, HttpCompletionOption.ResponseHeadersRead);
-            if ((int)r.StatusCode is >= 300 and < 400 && r.Headers.Location is { } loc)
-            {
-                var next = new Uri(u, loc); var v = ResearchDesk.Classify(next.ToString());
-                if (v.Kind != UrlKind.Lesemodus) throw new InvalidOperationException("Weiterleitung blockiert: " + v.Reason);
-                u = next; continue;
-            }
-            r.EnsureSuccessStatusCode();
-            var type = r.Content.Headers.ContentType?.MediaType ?? "";
-            if (type is not ("text/html" or "text/plain" or "application/xhtml+xml")) throw new InvalidOperationException("Das ist ein Download, keine Seite. Im Lesemodus werden keine Dateien geladen.");
-            if (r.Content.Headers.ContentLength > ResearchDesk.MaxBytes) throw new InvalidOperationException("Seite zu groß.");
-            await using var s = await r.Content.ReadAsStreamAsync();
-            var buf = new byte[ResearchDesk.MaxBytes]; int n = 0, k;
-            while (n < buf.Length && (k = await s.ReadAsync(buf.AsMemory(n))) > 0) n += k;
-            return (type, System.Text.Encoding.UTF8.GetString(buf, 0, n), u);
-        }
-        throw new InvalidOperationException("Zu viele Weiterleitungen.");
+        var (type, bytes, final) = await ReadOnlyWeb.GetPageAsync(u);
+        return (type, System.Text.Encoding.UTF8.GetString(bytes), final);
     }
 
     public async Task ReadUrlAsync(string input)

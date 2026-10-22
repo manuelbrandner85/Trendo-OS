@@ -48,6 +48,8 @@ if (Environment.GetEnvironmentVariable("TRENDO_PAGE_PROMPT") == "1")
     for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "QA bestanden"; i++) Pump();
     if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
         throw new InvalidOperationException("Baukasten steht auf " + Find<TextBlock>("auftrag-status").Text + " / " + Find<TextBlock>("auftrag-vorschau").Text);
+    if (Find<TextBox>("builder-title").Text != "Hofseite")
+        throw new InvalidOperationException("Das Formular zeigt „" + Find<TextBox>("builder-title").Text + "“ statt Hofseite.");
 }
 if (Environment.GetEnvironmentVariable("TRENDO_LEARN_PROMPT") == "1")
 {

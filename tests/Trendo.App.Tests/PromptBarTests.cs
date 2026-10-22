@@ -65,6 +65,28 @@ public class PromptBarTests
         w.Close();
     }
 
+    [AvaloniaFact(DisplayName = "Baukasten übernimmt die neue Seite ins Formular")]
+    public void Baukasten_formular_zeigt_die_neue_seite()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Core.Projects.Create("seitenprobe", "Seitenprobe");
+        w.WindowState = WindowState.Normal;
+        w.Width = 1280;
+        w.Height = 800;
+        w.Show("baukasten");
+        Dispatcher.UIThread.RunJobs();
+        w.Find<TextBox>("auftrag-prompt").Text = "Titel: Hofseite\nText: Willkommen im Hof";
+        w.Find<Button>("auftrag-pruefen").Press();
+        Wait(w, () => w.Find<TextBlock>("auftrag-status").Text == "Plan steht");
+        w.Find<Button>("auftrag-los").Press();
+        Wait(w, () => w.Find<TextBlock>("auftrag-status").Text == "QA bestanden");
+        Assert.Equal("QA bestanden", w.Find<TextBlock>("auftrag-status").Text);
+        Assert.Equal("Hofseite", w.Find<TextBox>("builder-title").Text);
+        var json = File.ReadAllText(w.Core.Projects.ResolveInProject("seitenprobe", "baukasten/seite.json"));
+        Assert.Contains("Hofseite", json);
+        w.Close();
+    }
+
     static void Wait(MainWindow w, Func<bool> done)
     {
         for (var i = 0; i < 100 && !done(); i++)

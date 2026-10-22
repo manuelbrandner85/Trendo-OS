@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 
 namespace Trendo.Core.PromptAction;
 
@@ -41,8 +42,8 @@ public sealed class GateAdapter : IStudioActionAdapter
     public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked(_message);
 }
 
-/// <summary>X-03: HTML aus SitePage. SitePage.Publish wird nicht gerufen.</summary>
-public sealed class PageWriteAdapter : IStudioActionAdapter
+/// <summary>X-03: HTML und seite.json aus SitePage. SitePage.Publish wird nicht gerufen.</summary>
+public sealed class PageWriteAdapter : IWebsitePageAdapter
 {
     public string StudioId => "X-03";
     public string ActionId => "seite.schreiben";
@@ -52,7 +53,16 @@ public sealed class PageWriteAdapter : IStudioActionAdapter
     public string Evidence => "PromptActionTests.Seite_schreibt_html";
     public bool CanPerformSideEffect => false;
     public IReadOnlyList<string> RequiredFields => ["titel", "text"];
-    public IReadOnlyList<string> OutputKinds => ["html"];
+    public IReadOnlyList<string> OutputKinds => ["html", "json"];
+    public IReadOnlyList<string> PageKinds => ["Startseite", "Shop", "Portfolio", "Blog", "Firma"];
+    public IReadOnlyList<string> StylePresets => ["klar", "wald", "nacht", "sonne"];
+    public bool SupportsScrollStory => false;
+    public bool SupportsBrowser3D => false;
+    public bool SupportsParticles => false;
+    public bool SupportsVideoBackground => false;
+    public bool PixelStreamingAvailable => false;
+    public bool CanPlaceModel(string relativeGlbPath) => false;
+    public bool CanPlaceRenderedClip(string relativeMediaPath) => false;
     public ActionDraft? TryParse(string prompt, IReadOnlyDictionary<string, string> known)
     {
         var fields = FieldKit.Read(prompt, known);
@@ -62,6 +72,29 @@ public sealed class PageWriteAdapter : IStudioActionAdapter
     public IReadOnlyList<ValidationFinding> Validate(IReadOnlyDictionary<string, string> parameters) => PageFields.Validate(parameters);
     public AdapterOutcome Produce(AdapterCall call) => PageFields.Write(call);
     public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Veröffentlichen ist nicht angeschlossen.");
+    public AdapterOutcome ApplyStyle(AdapterCall call, string styleId)
+    {
+        var accent = PageFields.StyleAccent(styleId);
+        if (accent is null) return FieldKit.Fail("Diese Stil-Vorlage gibt es nicht.");
+        var map = new Dictionary<string, string>(call.Parameters, StringComparer.OrdinalIgnoreCase) { ["farbe"] = accent };
+        if (!FieldKit.Has(map, "titel")) map["titel"] = "Meine Seite";
+        if (!FieldKit.Has(map, "text")) map["text"] = "Stil " + styleId.Trim();
+        return PageFields.Write(call with { Parameters = map });
+    }
+    public AdapterOutcome CheckPage(AdapterCall call)
+    {
+        var html = PageFields.ExistingHtml(call) ?? PageFields.Build(call.Parameters).ToHtml();
+        var lines = new List<string>
+        {
+            html.Contains("viewport", StringComparison.Ordinal) ? "Handy: die Seite nennt die Anzeigebreite." : "Handy: die Anzeigebreite fehlt.",
+            html.Contains("<h1>", StringComparison.Ordinal) ? "Überschrift: vorhanden." : "Überschrift: fehlt.",
+            html.Contains("javascript:", StringComparison.OrdinalIgnoreCase) ? "Link: unsicheres javascript: gefunden." : "Link: kein javascript: im Text.",
+            "3D, Scroll-Geschichte, Partikel und Video-Hintergrund: nicht in dieser Fassung.",
+            "Pixel-Streaming: nicht verfügbar.",
+            "Es wurde nichts veröffentlicht."
+        };
+        return FieldKit.Save(call, FieldKit.Slot("baukasten", call.Version, "pruefung.txt"), string.Join("\n", lines) + "\n", "Seite geprüft", new QaResult("seite.pruefung", html.Contains("viewport", StringComparison.Ordinal), "Prüfung gelesen.", null, null, "SitePage"), ["Es wurde nichts veröffentlicht."]);
+    }
 }
 
 /// <summary>X-10: CleanRoom.Create im Projekt. Kein Originalcode, kein Vergleich gegen fremde Ordner.</summary>
@@ -217,25 +250,39 @@ public static class SystemActions
 
     public static IReadOnlyList<IStudioActionAdapter> Create() =>
     [
-        new GateAdapter("CORE-09", "kamera.steuern", "Kamera steuern", SideEffectClass.Machine, "Die Kamera ist nicht angeschlossen. Es gibt keine Bewegung.", GateEvidence),
-        new GateAdapter("SPEC-07", "text.uebersetzen", "Text übersetzen", SideEffectClass.ExternalAi, "Die Übersetzung ist nicht angeschlossen. Language Studio 2.0 bleibt abgelehnt.", GateEvidence),
-        new GateAdapter("SYS-08", "seite.lesen", "Seite lesen", SideEffectClass.Message, "Die Recherche ist nicht angeschlossen. Es wird nichts aus dem Netz gelesen.", GateEvidence),
-        new GateAdapter("CORE-02", "ki.fragen", "KI fragen", SideEffectClass.ExternalAi, "Die lokale KI ist nicht angeschlossen. Es gibt keine Antwort.", GateEvidence),
-        new GateAdapter("CORE-03", "team.fragen", "Team fragen", SideEffectClass.ExternalAi, "Das KI-Team ist nicht angeschlossen. Es gibt keinen Rat.", GateEvidence),
-        new GateAdapter("X-05", "quelle.pruefen", "Quelle prüfen", SideEffectClass.ExternalAi, "Die kostenlose KI ist nicht angeschlossen. Es gibt keine Netzabfrage.", GateEvidence),
-        new GateAdapter("CORE-01", "desktop.aendern", "Desktop ändern", SideEffectClass.Security, "Der Desktop ist nicht angeschlossen. Design 41 bleibt.", GateEvidence),
-        new GateAdapter("CORE-11", "geheimnis.aendern", "Geheimnis ändern", SideEffectClass.Security, "Ein zweites Freigabesystem ist nicht angeschlossen.", GateEvidence),
+        new GateAdapter("CORE-09", "kamera.steuern", "Kamera steuern", SideEffectClass.Machine, "Die Kamera ist nicht angeschlossen. Es gibt keine Bewegung.", GateEvidence, Intent.Camera),
+        new CameraListAdapter(),
+        new GateAdapter("SPEC-07", "sprache.ausbauen", "Sprache ausbauen", SideEffectClass.ExternalAi, "Language Studio 2.0 ist nicht angeschlossen. Es wird nichts eingedeutscht.", GateEvidence, Intent.OtherLanguage),
+        new TranslateAdapter(),
+        new ResearchAdapter(),
+        new AskAdapter(),
+        new TeamAdapter(),
+        new GateAdapter("X-05", "quelle.online", "Online-Quelle", SideEffectClass.ExternalAi, "Online-KI ist nicht angeschlossen. Es gibt keine Netzabfrage.", GateEvidence, Intent.Online),
+        new ProbeAdapter(),
+        new GateAdapter("CORE-01", "desktop.aendern", "Desktop ändern", SideEffectClass.Security, "Der Desktop ist nicht angeschlossen. Design 41 bleibt.", GateEvidence, Intent.Desktop),
+        new DesktopShowAdapter(),
+        new GateAdapter("CORE-11", "geheimnis.aendern", "Geheimnis ändern", SideEffectClass.Security, "Ein zweites Freigabesystem ist nicht angeschlossen.", GateEvidence, Intent.Secret),
+        new SecretShowAdapter(),
         new GateAdapter("SPEC-12", "forensik.aendern", "Forensik ändern", SideEffectClass.Security, "Die Forensik ist nicht angeschlossen. Die 120-Stunden-Regel bleibt.", GateEvidence),
-        new GateAdapter("SYS-03", "datei.laden", "Datei laden", SideEffectClass.Message, "Der Download ist nicht angeschlossen. Es wird nichts geladen.", GateEvidence),
-        new GateAdapter("SYS-04", "programm.installieren", "Programm installieren", SideEffectClass.Security, "Die Installation ist nicht angeschlossen. Es wird nichts installiert.", GateEvidence),
-        new GateAdapter("SYS-06", "datei.teilen", "Datei teilen", SideEffectClass.Publish, "Die Freigabe ist nicht angeschlossen. Es wird nichts geteilt.", GateEvidence),
-        new GateAdapter("SYS-07", "geraete.nennen", "Geräte nennen", SideEffectClass.Machine, "Die Geräteabfrage ist nicht angeschlossen. Es gibt keine Liste.", GateEvidence),
-        new GateAdapter("SYS-11", "programm.starten", "Programm starten", SideEffectClass.Machine, "Das Programm ist nicht angeschlossen. Es wird nichts gestartet.", GateEvidence),
-        new GateAdapter("SYS-12", "darstellung.aendern", "Darstellung ändern", SideEffectClass.Security, "Das Theme ist nicht angeschlossen. Design 41 bleibt.", GateEvidence),
-        new GateAdapter("SYS-13", "pruefung.starten", "Prüfung starten", SideEffectClass.None, "Die Prüfung ist nicht angeschlossen. Sie startet nicht aus dem Auftrag.", GateEvidence),
-        new GateAdapter("X-02", "reparatur.starten", "Reparatur starten", SideEffectClass.Security, "Die Reparatur ist nicht angeschlossen. Verbesserung 35 bleibt offen.", GateEvidence),
-        new GateAdapter("X-08", "handy.verbinden", "Handy verbinden", SideEffectClass.Machine, "Das Handy ist nicht angeschlossen. Es wird keine Verbindung geöffnet.", GateEvidence),
-        new GateAdapter("CORE-04", "verbund.oeffnen", "Verbund öffnen", SideEffectClass.Machine, "Der Verbund ist nicht angeschlossen. Es wird nichts gekoppelt.", GateEvidence),
+        new DownloadAdapter(),
+        new DownloadNoteAdapter(),
+        new InstallAdapter(),
+        new InstallCheckAdapter(),
+        new ShareAdapter(),
+        new ShareNoteAdapter(),
+        new DeviceListAdapter(),
+        new ProgramStartAdapter(),
+        new ProgramPlanAdapter(),
+        new GateAdapter("SYS-12", "darstellung.aendern", "Darstellung ändern", SideEffectClass.Security, "Das Theme ist nicht angeschlossen. Design 41 bleibt.", GateEvidence, Intent.Theme),
+        new ThemeShowAdapter(),
+        new GateAdapter("SYS-13", "explorer.oeffnen", "Explorer öffnen", SideEffectClass.Machine, "Der Explorer ist nicht angeschlossen. Er wird nicht geöffnet.", GateEvidence, Intent.Explorer),
+        new SelfTestAdapter(),
+        new GateAdapter("X-02", "reparatur.starten", "Reparatur starten", SideEffectClass.Security, "Die Reparatur ist nicht angeschlossen. Verbesserung 35 bleibt offen.", GateEvidence, Intent.Repair),
+        new RepairShowAdapter(),
+        new GateAdapter("X-08", "handy.verbinden", "Handy verbinden", SideEffectClass.Machine, "Das Handy ist nicht angeschlossen. Es wird keine Verbindung geöffnet.", GateEvidence, Intent.Phone),
+        new PhoneListAdapter(),
+        new GateAdapter("CORE-04", "verbund.oeffnen", "Verbund öffnen", SideEffectClass.Machine, "Der Verbund ist nicht angeschlossen. Es wird nichts gekoppelt.", GateEvidence, Intent.Fusion),
+        new FusionShowAdapter(),
         new GateAdapter("X-03", "seite.veroeffentlichen", "Seite veröffentlichen", SideEffectClass.Publish, "Veröffentlichen ist nicht angeschlossen. Es wurde nichts hochgeladen.", "PromptActionTests.Seite_wird_nicht_veroeffentlicht", PageFields.WantsPublish),
         new PageWriteAdapter(),
         new GateAdapter("X-06", "projekt.klonen", "Projekt klonen", SideEffectClass.Publish, "Klonen ist nicht angeschlossen. Es wurde nichts geholt.", "PromptActionTests.Github_klont_nichts", RepoFields.WantsClone),
@@ -269,25 +316,66 @@ static class PageFields
         if (FieldKit.Text(parameters, "titel").Length > 120) return [new("titel", "Der Titel ist zu lang.", true)];
         if (FieldKit.Text(parameters, "text").Length > 8000) return [new("text", "Der Text ist zu lang.", true)];
         var color = FieldKit.Text(parameters, "farbe");
+        var stil = FieldKit.Text(parameters, "stil");
         if (color.Length > 0 && !Hex(color)) return [new("farbe", "Farbe ist ein Wert wie #112233.", true)];
+        if (color.Length == 0 && stil.Length > 0 && StyleAccent(stil) is null) return [new("stil", "Diese Stil-Vorlage gibt es nicht.", true)];
+        var art = FieldKit.Text(parameters, "art");
+        if (art.Length > 0 && !new PageWriteAdapter().PageKinds.Contains(art, StringComparer.OrdinalIgnoreCase))
+            return [new("art", "Die Art ist Startseite, Shop, Portfolio, Blog oder Firma. Ein Shop wird daraus nicht.", true)];
         return [];
+    }
+
+    public static string? StyleAccent(string style) => style.Trim().ToLowerInvariant() switch
+    {
+        "klar" => "#2F86F6",
+        "wald" => "#1F7A4D",
+        "nacht" => "#112233",
+        "sonne" => "#C47B12",
+        _ => null
+    };
+
+    public static string? ExistingHtml(AdapterCall call)
+    {
+        var relative = FieldKit.Slot("baukasten", call.Version, "seite.html");
+        try
+        {
+            var full = call.Projects.ResolveInProject(call.ProjectId, relative);
+            return File.Exists(full) ? call.Projects.ReadFile(call.ProjectId, relative) : null;
+        }
+        catch (ProjectIsolationException) { return null; }
     }
 
     public static AdapterOutcome Write(AdapterCall call)
     {
         var page = Build(call.Parameters);
         var html = page.ToHtml();
+        var htmlRel = FieldKit.Slot("baukasten", call.Version, "seite.html");
+        var jsonRel = "baukasten/seite.json";
+        var json = JsonSerializer.Serialize(page, new JsonSerializerOptions { WriteIndented = true });
+        call.Projects.WriteFile(call.ProjectId, htmlRel, html);
+        call.Projects.WriteFile(call.ProjectId, jsonRel, json);
+        var htmlRead = call.Projects.ReadFile(call.ProjectId, htmlRel);
+        var again = JsonSerializer.Deserialize<SitePage>(call.Projects.ReadFile(call.ProjectId, jsonRel));
+        var htmlOk = htmlRead == html && html.StartsWith("<!doctype html>\n", StringComparison.Ordinal) && html.EndsWith("</html>\n", StringComparison.Ordinal);
+        var jsonOk = again is not null && again.Title == page.Title && again.Accent == page.Accent && again.Blocks.Count == page.Blocks.Count;
         var warnings = new List<string> { "Es wurde nichts veröffentlicht." };
         if (FieldKit.Has(call.Parameters, "link") && SitePage.SafeUrl(FieldKit.Text(call.Parameters, "link")) == "#")
             warnings.Add("Der Link ist unsicher und wird zu #.");
-        var qa = new QaResult("seite.html", html.StartsWith("<!doctype html>\n", StringComparison.Ordinal) && html.EndsWith("</html>\n", StringComparison.Ordinal), "Seite gelesen.", null, page.Title, "SitePage");
-        return FieldKit.Save(call, FieldKit.Slot("baukasten", call.Version, "seite.html"), html, page.Title + " · HTML im Projekt", qa, warnings);
+        var errors = new List<string>();
+        if (!htmlOk) errors.Add("Die HTML-Datei stimmt nach dem Lesen nicht.");
+        if (!jsonOk) errors.Add("Die Formulardatei stimmt nach dem Lesen nicht.");
+        return new(true,
+            [new ProducedFile(htmlRel, "html", true), new ProducedFile(jsonRel, "json", true)],
+            [new QaResult("seite.html", htmlOk, htmlOk ? "Seite gelesen." : "Die HTML-Datei stimmt nach dem Lesen nicht.", null, page.Title, "SitePage"),
+             new QaResult("seite.json", jsonOk, jsonOk ? "Formulardatei gelesen." : "Die Formulardatei stimmt nach dem Lesen nicht.", null, page.Title, "SitePage")],
+            page.Title + " · HTML im Projekt", warnings, errors, null);
     }
 
     public static SitePage Build(IReadOnlyDictionary<string, string> parameters)
     {
         var page = new SitePage { Title = FieldKit.Text(parameters, "titel") };
         var color = FieldKit.Text(parameters, "farbe");
+        if (!Hex(color)) color = StyleAccent(FieldKit.Text(parameters, "stil")) ?? "";
         if (Hex(color)) page.Accent = color;
         page.Blocks.Add(new Block("h1", page.Title));
         page.Blocks.Add(new Block("p", FieldKit.Text(parameters, "text")));
@@ -295,6 +383,8 @@ static class PageFields
         if (list.Length > 0) page.Blocks.Add(new Block("list", list));
         var button = FieldKit.Text(parameters, "knopf");
         if (button.Length > 0) page.Blocks.Add(new Block("button", button, FieldKit.Text(parameters, "link")));
+        var art = FieldKit.Text(parameters, "art");
+        if (art.Length > 0) page.Blocks.Add(new Block("p", "Art: " + art));
         page.Blocks.Add(new Block("p", "Es wurde nichts veröffentlicht."));
         return page;
     }

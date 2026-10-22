@@ -313,14 +313,36 @@ public class PromptActionTests
         Assert.Empty(done.Artifacts);
     }
 
-    [Fact(DisplayName = "Webseiten-Vertrag ist da und nicht eingebaut")]
-    public void Webseiten_Adapter_ist_nicht_registriert()
+    [Fact(DisplayName = "Webseiten-Adapter schreibt Stil und Prüfung, aber kein 3D")]
+    public void Webseiten_Adapter_ist_begrenzt_registriert()
     {
-        Assert.DoesNotContain(PromptActions.CreateDefault(), a => a is IWebsitePageAdapter);
+        var pages = PromptActions.CreateDefault().OfType<IWebsitePageAdapter>().ToList();
+        var page = Assert.Single(pages);
+        Assert.False(page.PixelStreamingAvailable);
+        Assert.False(page.SupportsScrollStory);
+        Assert.False(page.SupportsBrowser3D);
+        Assert.False(page.SupportsParticles);
+        Assert.False(page.SupportsVideoBackground);
+        Assert.False(page.CanPlaceModel("modell.glb"));
+        Assert.False(page.CanPlaceRenderedClip("clip.mp4"));
+        Assert.Equal(SideEffectClass.None, page.Effect);
+        Assert.Contains("Startseite", page.PageKinds);
+        Assert.Contains("wald", page.StylePresets);
         var stub = new WebsiteStub();
         Assert.False(stub.PixelStreamingAvailable);
-        Assert.False(stub.CanPlaceModel("fehlt.glb"));
         Assert.Equal(SideEffectClass.Publish, stub.Effect);
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("X-03", "Titel: Hofseite\nText: Hallo\nStil: wald", id: "stil-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var html = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith("seite.html")).RelativePath));
+        Assert.Contains("#1F7A4D", html);
+        Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith("index.html", StringComparison.OrdinalIgnoreCase));
+        var check = page.CheckPage(new AdapterCall(fx.Project, 1, new Dictionary<string, string>(), fx.Core.Projects, false, "check", CancellationToken.None));
+        Assert.True(check.Supported);
+        var report = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, check.Files.Single().RelativePath));
+        Assert.Contains("nicht verfügbar", report);
+        Assert.Contains("nichts veröffentlicht", report);
     }
 
     [Fact(DisplayName = "Forensik bleibt bei 120 Stunden")]
@@ -1317,28 +1339,32 @@ public class PromptActionTests
         page.Blocks.Add(new Block("p", "Es wurde nichts veröffentlicht."));
         var done = wf.Los(fx.Project, wf.Start(fx.Req("X-03", "Titel: Hofseite\nText: Willkommen im Hof\nListe: Apfel\nListe: Birne\nKnopf: Mehr\nLink: https://example.com/hof\nFarbe: #112233", id: "seite-1"), fx.Ctx()).RunId, fx.Ctx());
         Assert.Equal(RunStatus.Verified, done.Status);
-        var html = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        string Html(StudioExecutionResult result) => File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, result.Artifacts.Single(a => a.RelativePath.EndsWith("seite.html", StringComparison.OrdinalIgnoreCase)).RelativePath));
+        var html = Html(done);
         Assert.Equal(page.ToHtml(), html);
+        var form = SitePage.Load(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith("seite.json", StringComparison.OrdinalIgnoreCase)).RelativePath));
+        Assert.Equal("Hofseite", form.Title);
+        Assert.Equal("#112233", form.Accent);
         Assert.Equal("Hofseite · HTML im Projekt", done.Preview);
         Assert.Contains(done.Warnings, w => w.Contains("nichts veröffentlicht", StringComparison.Ordinal));
         Assert.DoesNotContain(fx.FilesTree(), f => f.EndsWith("index.html", StringComparison.OrdinalIgnoreCase));
-        var old = File.ReadAllBytes(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath));
+        var old = File.ReadAllBytes(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith("seite.html")).RelativePath));
         var next = wf.Los(fx.Project, wf.Revise(fx.Project, done.RunId, "Titel: Hofseite\nText: Zweite Fassung", fx.Ctx()).RunId, fx.Ctx());
         Assert.Equal(RunStatus.Verified, next.Status);
-        Assert.Contains("Zweite Fassung", File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, next.Artifacts.Single(a => a.Version == 2).RelativePath)));
-        Assert.Equal(old, File.ReadAllBytes(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath)));
+        Assert.Contains("Zweite Fassung", Html(next));
+        Assert.Equal(old, File.ReadAllBytes(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith("seite.html")).RelativePath)));
         var bad = new SitePage { Title = "Hofseite" };
         bad.Blocks.Add(new Block("h1", "Hofseite"));
         bad.Blocks.Add(new Block("p", "Willkommen"));
         bad.Blocks.Add(new Block("button", "Klick", "javascript:alert(1)"));
         bad.Blocks.Add(new Block("p", "Es wurde nichts veröffentlicht."));
         var unsafePage = wf.Los(fx.Project, wf.Start(fx.Req("X-03", "Titel: Hofseite\nText: Willkommen\nKnopf: Klick\nLink: javascript:alert(1)", id: "seite-js"), fx.Ctx()).RunId, fx.Ctx());
-        Assert.Equal(bad.ToHtml(), File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, unsafePage.Artifacts.Single().RelativePath)));
+        Assert.Equal(bad.ToHtml(), File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, unsafePage.Artifacts.Single(a => a.RelativePath.EndsWith("seite.html")).RelativePath)));
         Assert.Contains(unsafePage.Warnings, w => w.Contains("unsicher", StringComparison.Ordinal));
         var allowed = wf.Los(fx.Project, wf.Start(fx.Req("X-03", "Freigabe: erteilt\nTitel: Hofseite\nText: Willkommen im Hof", id: "seite-frei"), fx.Ctx()).RunId, fx.Ctx());
         Assert.Equal(RunStatus.Verified, allowed.Status);
         Assert.Null(allowed.Receipt);
-        Assert.Contains(System.Net.WebUtility.HtmlEncode("Es wurde nichts veröffentlicht."), File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, allowed.Artifacts.Single().RelativePath)));
+        Assert.Contains(System.Net.WebUtility.HtmlEncode("Es wurde nichts veröffentlicht."), File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, allowed.Artifacts.Single(a => a.RelativePath.EndsWith("seite.html")).RelativePath)));
     }
 
     [Fact(DisplayName = "Veröffentlichen bleibt auch mit Freigabe im Text aus")]
@@ -1517,9 +1543,9 @@ public class PromptActionTests
         var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
         var adapters = PromptActions.CreateDefault();
         var blocked = CapabilityCatalog.Ids.Where(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Blocked).ToList();
-        Assert.Equal(20, blocked.Count);
-        foreach (var id in new[] { "SPEC-09", "SPEC-07", "CORE-01", "SPEC-12", "X-02", "SYS-12", "CORE-09", "CORE-02", "SYS-08" })
-            Assert.Contains(blocked, item => item == id);
+        Assert.Equal(2, blocked.Count);
+        Assert.Contains(blocked, item => item == "SPEC-09");
+        Assert.Contains(blocked, item => item == "SPEC-12");
         foreach (var id in blocked)
         {
             var token = "gate-" + id.ToLowerInvariant();
@@ -1531,7 +1557,7 @@ public class PromptActionTests
         }
         Assert.All(fx.FilesTree(), f => Assert.Contains("/auftraege/", f.Replace('\\', '/')));
         Assert.False(File.Exists(Path.Combine(fx.Root, "settings.json")));
-        Assert.All(adapters, a => Assert.False(a.CanPerformSideEffect));
+        Assert.Equal(["datei.laden", "datei.teilen", "programm.installieren", "programm.starten"], adapters.Where(a => a.CanPerformSideEffect).Select(a => a.ActionId).Order(StringComparer.Ordinal).ToArray());
         Assert.Equal(TimeSpan.FromHours(120), ForensicsLab.MaxLife);
     }
 
@@ -1559,10 +1585,12 @@ public class PromptActionTests
         Assert.Equal(TimeSpan.FromHours(120), ForensicsLab.MaxLife);
         Assert.Equal(TimeSpan.FromHours(24), ForensicsLab.WarnBefore);
         var adapters = PromptActions.CreateDefault();
-        Assert.All(adapters, a => Assert.False(a.CanPerformSideEffect));
-        Assert.DoesNotContain(adapters, a => a is IWebsitePageAdapter);
-        foreach (var id in new[] { "SPEC-07", "SPEC-12", "X-02", "CORE-01", "SYS-12", "CORE-09" })
-            Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level(id, adapters));
+        Assert.Equal(["datei.laden", "datei.teilen", "programm.installieren", "programm.starten"], adapters.Where(a => a.CanPerformSideEffect).Select(a => a.ActionId).Order(StringComparer.Ordinal).ToArray());
+        Assert.Single(adapters.OfType<IWebsitePageAdapter>());
+        Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level("SPEC-12", adapters));
+        Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level("SPEC-09", adapters));
+        foreach (var id in new[] { "SPEC-07", "X-02", "CORE-01", "SYS-12", "CORE-09" })
+            Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level(id, adapters));
         Assert.DoesNotContain(CapabilityCatalog.Ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.NotImplemented);
         Assert.DoesNotContain(CapabilityCatalog.Ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Ready);
         Assert.DoesNotContain("ist leer", File.ReadAllText(Repo("docs/improvement-42/security-approvals.md")));
@@ -1576,7 +1604,7 @@ public class PromptActionTests
         var adapters = PromptActions.CreateDefault();
         var registered = adapters.Select(a => a.StudioId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         Assert.Equal(ids.Count, registered.Count);
-        Assert.Equal(68, adapters.Count);
+        Assert.Equal(82, adapters.Count);
         Assert.Equal(adapters.Count, adapters.Select(a => a.ActionId).Distinct(StringComparer.OrdinalIgnoreCase).Count());
         Assert.All(adapters, a => Assert.NotNull(CapabilityCatalog.Find(a.StudioId)));
         Assert.Contains(registered, id => id == "STUDIO-LETTER-01");
@@ -1597,13 +1625,13 @@ public class PromptActionTests
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-05", adapters));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-06", adapters));
         Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level("CORE-08", adapters));
-        foreach (var id in new[] { "SYS-02", "X-11", "SPEC-01", "SPEC-02", "SPEC-03", "SPEC-05", "SPEC-10", "SPEC-13", "SPEC-14", "SPEC-16", "CORE-10", "SPEC-06", "CORE-12", "SPEC-08", "SPEC-15", "X-07", "SPEC-04", "X-03", "X-10", "X-09", "X-01", "X-06", "SYS-01", "SYS-05", "X-04" })
+        foreach (var id in new[] { "SYS-02", "X-11", "SPEC-01", "SPEC-02", "SPEC-03", "SPEC-05", "SPEC-10", "SPEC-13", "SPEC-14", "SPEC-16", "CORE-10", "SPEC-06", "CORE-12", "SPEC-08", "SPEC-15", "X-07", "SPEC-04", "X-03", "X-10", "X-09", "X-01", "X-06", "SYS-01", "SYS-05", "X-04", "CORE-09", "SPEC-07", "SYS-08", "CORE-02", "CORE-03", "X-05", "CORE-01", "CORE-11", "SYS-03", "SYS-04", "SYS-06", "SYS-07", "SYS-11", "SYS-12", "SYS-13", "X-02", "X-08", "CORE-04" })
         {
             Assert.Contains(registered, item => item == id);
             Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level(id, adapters));
         }
-        Assert.Equal(34, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Partial));
-        Assert.Equal(20, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Blocked));
+        Assert.Equal(52, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Partial));
+        Assert.Equal(2, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Blocked));
         Assert.DoesNotContain(ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.NotImplemented);
         Assert.DoesNotContain(ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Ready);
         var markdown = CapabilityCatalog.Markdown(adapters);
