@@ -46,7 +46,7 @@ public partial class MainWindow
     public void OpenStartMenu() { _smSearch.Text = ""; FillStartMenu(); _startMenu.IsVisible = true; _smSearch.Focus(); }
     public void CloseStartMenu() => _startMenu.IsVisible = false;
 
-    /// <summary>Startknopf ganz links in der Taskleiste (gleiches Windows-Zeichen wie bisher).</summary>
+    /// <summary>Startknopf ganz links in der Taskleiste (Logo A „Obsidian-Kachel“).</summary>
     private Button StartButton()
     {
         var b = new Button { Name = "start-button", Width = 50, Height = 50, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Content = Logo(38) };
