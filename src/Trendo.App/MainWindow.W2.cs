@@ -33,7 +33,7 @@ public partial class MainWindow
     private Control KiNav()
     {
         var row = new WrapPanel();
-        foreach (var (k, l) in KiTabs.Where(t => _showMap.ContainsKey(t.Key)))
+        foreach (var (k, l) in KiTabs.GroupBy(t => t.Key).Select(g => g.First()).Where(t => _showMap.ContainsKey(t.Key)))
         {
             var b = new Button { Name = "ki-tab-" + k, Content = l, Margin = new Thickness(0, 0, 6, 6), Background = CurrentView == k ? Accent : null };
             b.Click += (_, _) => Show(k); row.Children.Add(b);

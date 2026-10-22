@@ -68,7 +68,7 @@ public sealed partial class MainWindow
             _wallName = w; _wallImg.Source = _blurImg.Source = LoadWallpaper(w);
             if (_settings.AccentFromWallpaper && CurrentView == "settings") Reopen("settings");
         };
-        t.Start();
+        OwnTimer(t);
         if (!_settings.ReduceMotion)
         {
             _center.Transitions = [new DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(220), Easing = new Avalonia.Animation.Easings.CubicEaseOut() }];

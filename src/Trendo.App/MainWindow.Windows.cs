@@ -31,8 +31,17 @@ public partial class MainWindow
     {
         if (_windowsReady) return; _windowsReady = true;
         _center.Children.Clear();
-        _winCanvas.ZIndex = 1; _deskHost.ZIndex = 0;
-        _center.Children.Add(_winCanvas); _center.Children.Add(_deskHost); // Fensterebene zuerst: deren Inhalte findet man zuerst
+        _deskHost.ZIndex = 0;
+        _center.Children.Add(_deskHost);
+        // Fenster liegen über der ganzen Arbeitsfläche (Leiste und Status bleiben sichtbar, solange kein Fenster darüber liegt).
+        // Die leere Fläche fängt keine Klicks ab, der Startbildschirm darunter bleibt erreichbar.
+        _winCanvas.ZIndex = 2; _winCanvas.Background = null;
+        if (_center.Parent is Grid body)
+        {
+            Grid.SetColumnSpan(_winCanvas, 3);
+            body.Children.Add(_winCanvas);
+        }
+        else _center.Children.Add(_winCanvas);
         _winCanvas.SizeChanged += (_, e) => { Windows.Resize(e.NewSize.Width, e.NewSize.Height); LayoutWindows(); };
     }
 
@@ -85,15 +94,15 @@ public partial class MainWindow
         var title = new TextBlock { Name = "win-titletext-" + id, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0), TextTrimming = TextTrimming.CharacterEllipsis };
         Button Cap(string name, string glyph, string tip, Action a)
         {
-            var b = new Button { Name = name + "-" + id, Content = glyph, Width = 40, Height = 30, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Text,
-                HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, FontSize = 13 };
+            var b = new Button { Name = name + "-" + id, Content = glyph, Width = 42, Height = 28, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Text,
+                HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, FontSize = 13, CornerRadius = new CornerRadius(name == "win-close" ? 6 : 4), Margin = new Thickness(0, 0, name == "win-close" ? 6 : 0, 0) };
             ToolTip.SetTip(b, tip); Avalonia.Automation.AutomationProperties.SetName(b, tip); b.Click += (_, _) => a(); return b;
         }
         var caps = new StackPanel { Orientation = Orientation.Horizontal, Children = {
             Cap("win-min", "—", "Minimieren", () => { Windows.Minimize(id); AfterWindowChange(); }),
             Cap("win-max", "☐", "Maximieren / Wiederherstellen", () => { Windows.ToggleMaximize(id); AfterWindowChange(); }),
             Cap("win-close", "✕", "Schließen", () => CloseWindow(id)) } };
-        var bar = new Border { Name = "win-title-" + id, Height = WindowManager.TitleBar, Background = Brush.Parse("#22FFFFFF"), CornerRadius = new CornerRadius(10, 10, 0, 0), Cursor = new Cursor(StandardCursorType.SizeAll),
+        var bar = new Border { Name = "win-title-" + id, Height = WindowManager.TitleBar, Background = Brush.Parse("#331C3058"), CornerRadius = new CornerRadius(0), Cursor = new Cursor(StandardCursorType.SizeAll),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = { titleIcon, Pos(title, 1), Pos(caps, 2) } } };
         // Verschieben mit der Maus an der Titelleiste; Doppelklick maximiert
         Point? from = null;
@@ -119,7 +128,7 @@ public partial class MainWindow
         var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,*") }; grid.Children.Add(bar); Grid.SetRow(body, 1); grid.Children.Add(body);
         var layers = new Panel { Children = { grid } };
         foreach (var h in ResizeHandles(id)) layers.Children.Add(h);
-        var frame = new Border { Name = "win-" + id, Background = GlassStrong, BorderThickness = new Thickness(1.5), CornerRadius = new CornerRadius(11), Child = layers, ClipToBounds = true, BoxShadow = BoxShadows.Parse("0 10 30 0 #66000000") };
+        var frame = new Border { Name = "win-" + id, Background = Brush.Parse(C("#F012182C", "#F7F4F7FC")), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Child = layers, ClipToBounds = true, BoxShadow = BoxShadows.Parse("0 16 40 0 #99000000, 0 2 8 0 #55000000") };
         // Klick ins Fenster holt es nach vorn (nach dem Klick, damit Knöpfe ihren Klick behalten)
         frame.AddHandler(PointerPressedEvent, (_, _) => { if (Windows.Active?.Id != id) Dispatcher.UIThread.Post(() => FocusWindow(id), DispatcherPriority.Background); }, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
         return (frame, body, title);
@@ -201,9 +210,12 @@ public partial class MainWindow
         {
             var f = _frames[w.Id].Frame; f.ZIndex = ++z; f.IsVisible = !w.Minimized;
             var on = active?.Id == w.Id;
-            f.BorderBrush = on ? Accent : Edge; f.Opacity = on ? 1 : 0.96;
+            f.BorderBrush = on ? Accent : Edge; f.Opacity = on ? 1 : 0.9;
+            f.BoxShadow = on ? BoxShadows.Parse("0 22 50 0 #BB000000, 0 0 0 1 #6651C5FF") : BoxShadows.Parse("0 8 18 0 #66000000");
             _frames[w.Id].Title.Foreground = on ? Text : Muted;
-            if (f.Child is Panel { Children: [Grid g, ..] } && g.Children[0] is Border bar) bar.Background = on ? Brush.Parse("#332F86F6") : Brush.Parse("#18FFFFFF");
+            if (f.Child is Panel { Children: [Grid g, ..] } && g.Children[0] is Border bar) bar.Background = on ? Brush.Parse("#55305078") : Brush.Parse("#22101830");
+            if (f.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "win-close-" + w.Id) is { } close)
+            { close.Background = on ? Brush.Parse("#E23B4A") : Brushes.Transparent; close.Foreground = on ? Brushes.White : Text; }
         }
         _deskHost.IsHitTestVisible = true;
         LayoutWindows(); RenderTaskbar();
@@ -216,7 +228,7 @@ public partial class MainWindow
             if (!_frames.TryGetValue(w.Id, out var fr)) continue;
             var (x, y, ww, hh) = Windows.Rect(w);
             Canvas.SetLeft(fr.Frame, x); Canvas.SetTop(fr.Frame, y); fr.Frame.Width = ww; fr.Frame.Height = hh;
-            fr.Frame.CornerRadius = new CornerRadius(w.Maximized ? 4 : 11);
+            fr.Frame.CornerRadius = new CornerRadius(w.Maximized ? 4 : 12);
         }
     }
 
