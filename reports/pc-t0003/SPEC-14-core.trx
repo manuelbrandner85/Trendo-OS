@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="a7a93c66-2e79-4b27-8602-106a2f94cd3e" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:42:45" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-22T02:42:45.6506996+02:00" queuing="2026-10-22T02:42:45.6506997+02:00" start="2026-10-22T02:42:44.9780876+02:00" finish="2026-10-22T02:42:45.6554667+02:00" />
+  <TestSettings name="default" id="56dfeff5-d056-4f9c-abed-99fb4caa4691">
+    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_42_45" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="377ec260-0003-4fde-a42f-99f4c5976559" testId="dda5e5d9-70c6-29fd-abf1-148e8f17e419" testName="SPEC-14 F18: Zerspanleistung" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0015152" startTime="2026-10-22T02:42:45.5672679+02:00" endTime="2026-10-22T02:42:45.5687404+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="377ec260-0003-4fde-a42f-99f4c5976559" />
+    <UnitTestResult executionId="4dc3f854-4aad-4dfd-84e2-deb85c9c3944" testId="3366c682-2aa2-1c5f-53d6-c5286094efe4" testName="SPEC-14: G-Code (G0/G1/G2/G3, G20/G91), Wege, Zeit, Grenzen, Warnungen, Schnittwerte" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0254440" startTime="2026-10-22T02:42:45.5279994+02:00" endTime="2026-10-22T02:42:45.5596630+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4dc3f854-4aad-4dfd-84e2-deb85c9c3944" />
+    <UnitTestResult executionId="0098cd97-8326-4d1c-971d-b6ee33d94634" testId="af94513c-58c1-7eee-0661-a54fb7c5f155" testName="SPEC-14 F17: Außenkontur" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0023343" startTime="2026-10-22T02:42:45.5596343+02:00" endTime="2026-10-22T02:42:45.5604646+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0098cd97-8326-4d1c-971d-b6ee33d94634" />
+    <UnitTestResult executionId="f44ddfa9-2415-4cfa-b713-8448f743b792" testId="d1b897e8-f950-6495-3a41-702df3a266aa" testName="SPEC-14 F14: Nullpunkt verschieben" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0031735" startTime="2026-10-22T02:42:45.5638369+02:00" endTime="2026-10-22T02:42:45.5669836+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f44ddfa9-2415-4cfa-b713-8448f743b792" />
+    <UnitTestResult executionId="2d4161a1-952a-48f4-a324-292e2176e0f4" testId="b00760db-5e7c-5873-bd81-617720dfc345" testName="SPEC-14 F16: Lochkreis" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0169166" startTime="2026-10-22T02:42:45.5266928+02:00" endTime="2026-10-22T02:42:45.5498274+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2d4161a1-952a-48f4-a324-292e2176e0f4" />
+    <UnitTestResult executionId="ad0d1e04-b568-4cce-8689-8d700077b9f4" testId="847d7951-4715-5a7d-3885-9234dc0acf4e" testName="SPEC-14 F19: Teilekosten" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0001742" startTime="2026-10-22T02:42:45.5670681+02:00" endTime="2026-10-22T02:42:45.5671790+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ad0d1e04-b568-4cce-8689-8d700077b9f4" />
+    <UnitTestResult executionId="6584dc54-ee9c-49c1-badd-dec3f220e618" testId="25fa9267-4506-d635-9ae0-23935eea9fcf" testName="SPEC-14 F04: Bögen R" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0001613" startTime="2026-10-22T02:42:45.5636735+02:00" endTime="2026-10-22T02:42:45.5637653+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6584dc54-ee9c-49c1-badd-dec3f220e618" />
+    <UnitTestResult executionId="1b93e414-172b-44f2-8212-05adb2da00c9" testId="ea3dab4c-2936-6842-6ac1-16fea4ca018a" testName="SPEC-14 F20: Kernloch" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0049002" startTime="2026-10-22T02:42:45.5589493+02:00" endTime="2026-10-22T02:42:45.5590324+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1b93e414-172b-44f2-8212-05adb2da00c9" />
+    <UnitTestResult executionId="6f7144a6-9785-4d0d-8dfa-e75edb3d0d99" testId="6da9072d-2fee-2ed6-220d-70ea4cfde5ca" testName="SPEC-14 F15: Rechtecktasche" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0061148" startTime="2026-10-22T02:42:45.5606210+02:00" endTime="2026-10-22T02:42:45.5635868+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6f7144a6-9785-4d0d-8dfa-e75edb3d0d99" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="SPEC-14 F17: Außenkontur" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="af94513c-58c1-7eee-0661-a54fb7c5f155">
+      <Execution id="0098cd97-8326-4d1c-971d-b6ee33d94634" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC14_Plus" name="F17" />
+    </UnitTest>
+    <UnitTest name="SPEC-14: G-Code (G0/G1/G2/G3, G20/G91), Wege, Zeit, Grenzen, Warnungen, Schnittwerte" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="3366c682-2aa2-1c5f-53d6-c5286094efe4">
+      <Execution id="4dc3f854-4aad-4dfd-84e2-deb85c9c3944" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC14_Cnc" name="Gcode" />
+    </UnitTest>
+    <UnitTest name="SPEC-14 F14: Nullpunkt verschieben" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="d1b897e8-f950-6495-3a41-702df3a266aa">
+      <Execution id="f44ddfa9-2415-4cfa-b713-8448f743b792" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC14_Plus" name="F14" />
+    </UnitTest>
+    <UnitTest name="SPEC-14 F20: Kernloch" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="ea3dab4c-2936-6842-6ac1-16fea4ca018a">
+      <Execution id="1b93e414-172b-44f2-8212-05adb2da00c9" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC14_Plus" name="F20" />
+    </UnitTest>
+    <UnitTest name="SPEC-14 F16: Lochkreis" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="b00760db-5e7c-5873-bd81-617720dfc345">
+      <Execution id="2d4161a1-952a-48f4-a324-292e2176e0f4" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC14_Plus" name="F16" />
+    </UnitTest>
+    <UnitTest name="SPEC-14 F04: Bögen R" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="25fa9267-4506-d635-9ae0-23935eea9fcf">
+      <Execution id="6584dc54-ee9c-49c1-badd-dec3f220e618" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC14_Plus" name="F04" />
+    </UnitTest>
+    <UnitTest name="SPEC-14 F15: Rechtecktasche" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="6da9072d-2fee-2ed6-220d-70ea4cfde5ca">
+      <Execution id="6f7144a6-9785-4d0d-8dfa-e75edb3d0d99" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC14_Plus" name="F15" />
+    </UnitTest>
+    <UnitTest name="SPEC-14 F18: Zerspanleistung" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="dda5e5d9-70c6-29fd-abf1-148e8f17e419">
+      <Execution id="377ec260-0003-4fde-a42f-99f4c5976559" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC14_Plus" name="F18" />
+    </UnitTest>
+    <UnitTest name="SPEC-14 F19: Teilekosten" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="847d7951-4715-5a7d-3885-9234dc0acf4e">
+      <Execution id="ad0d1e04-b568-4cce-8689-8d700077b9f4" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC14_Plus" name="F19" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="dda5e5d9-70c6-29fd-abf1-148e8f17e419" executionId="377ec260-0003-4fde-a42f-99f4c5976559" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3366c682-2aa2-1c5f-53d6-c5286094efe4" executionId="4dc3f854-4aad-4dfd-84e2-deb85c9c3944" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="af94513c-58c1-7eee-0661-a54fb7c5f155" executionId="0098cd97-8326-4d1c-971d-b6ee33d94634" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d1b897e8-f950-6495-3a41-702df3a266aa" executionId="f44ddfa9-2415-4cfa-b713-8448f743b792" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b00760db-5e7c-5873-bd81-617720dfc345" executionId="2d4161a1-952a-48f4-a324-292e2176e0f4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="847d7951-4715-5a7d-3885-9234dc0acf4e" executionId="ad0d1e04-b568-4cce-8689-8d700077b9f4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="25fa9267-4506-d635-9ae0-23935eea9fcf" executionId="6584dc54-ee9c-49c1-badd-dec3f220e618" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ea3dab4c-2936-6842-6ac1-16fea4ca018a" executionId="1b93e414-172b-44f2-8212-05adb2da00c9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6da9072d-2fee-2ed6-220d-70ea4cfde5ca" executionId="6f7144a6-9785-4d0d-8dfa-e75edb3d0d99" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="9" executed="9" passed="9" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.08]   Discovering: Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.14]   Discovered:  Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.16]   Starting:    Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.23]   Finished:    Trendo.Core.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

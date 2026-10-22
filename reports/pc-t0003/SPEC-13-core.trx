@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="841ab4f3-d139-4f79-bba6-5a828de0318c" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:42:44" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-22T02:42:44.2712062+02:00" queuing="2026-10-22T02:42:44.2712063+02:00" start="2026-10-22T02:42:43.6072520+02:00" finish="2026-10-22T02:42:44.2969325+02:00" />
+  <TestSettings name="default" id="5a0159f4-c787-47c1-8ea9-f2cb2ad0813d">
+    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_42_44" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="2acd7b13-89ec-4338-b0e6-5f4b0ffbd747" testId="17bba94c-b109-a674-166a-a3607e6992cd" testName="SPEC-13 F02: GPX-Routen" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0461666" startTime="2026-10-22T02:42:44.1577572+02:00" endTime="2026-10-22T02:42:44.2089306+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2acd7b13-89ec-4338-b0e6-5f4b0ffbd747" />
+    <UnitTestResult executionId="099caefc-4e14-4303-93fe-92afe31c9288" testId="4f036299-5a71-0a21-ddb7-fb342a28a24f" testName="SPEC-13 F13: UTM → Grad" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0003310" startTime="2026-10-22T02:42:44.2261325+02:00" endTime="2026-10-22T02:42:44.2263936+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="099caefc-4e14-4303-93fe-92afe31c9288" />
+    <UnitTestResult executionId="78f7432b-de56-4730-aa0e-40f6798b0e01" testId="736fb10c-af16-5dd4-2797-14676a1155e2" testName="SPEC-13 F17: Höhenprofil" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0015171" startTime="2026-10-22T02:42:44.2230860+02:00" endTime="2026-10-22T02:42:44.2240673+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="78f7432b-de56-4730-aa0e-40f6798b0e01" />
+    <UnitTestResult executionId="983bb7dd-0050-4d7b-a7af-111fc446150d" testId="de6f9a3c-8726-4112-df63-7947c37822a6" testName="SPEC-13 F20: GPX schreiben" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0118999" startTime="2026-10-22T02:42:44.2183956+02:00" endTime="2026-10-22T02:42:44.2221452+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="983bb7dd-0050-4d7b-a7af-111fc446150d" />
+    <UnitTestResult executionId="f2a817fa-6fb1-4cff-871f-35f831c1a0e3" testId="bcd5a986-6d65-d77b-bcf0-afe968186074" testName="SPEC-13 F19: Vereinfachen" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0046709" startTime="2026-10-22T02:42:44.2474503+02:00" endTime="2026-10-22T02:42:44.2474906+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f2a817fa-6fb1-4cff-871f-35f831c1a0e3" />
+    <UnitTestResult executionId="fb864146-dfdc-4859-9d46-92755ed6db50" testId="c16533b9-69e5-ff72-41c5-799c816d884c" testName="SPEC-13 F18: Wanderzeit" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0016071" startTime="2026-10-22T02:42:44.2244600+02:00" endTime="2026-10-22T02:42:44.2260448+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="fb864146-dfdc-4859-9d46-92755ed6db50" />
+    <UnitTestResult executionId="0cbfc245-fb5f-451d-8efc-bcea78bfb543" testId="7a3675de-881b-ffd1-d200-4c14f8b99c73" testName="SPEC-13 F15: Zielpunkt" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0002147" startTime="2026-10-22T02:42:44.2264685+02:00" endTime="2026-10-22T02:42:44.2266532+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0cbfc245-fb5f-451d-8efc-bcea78bfb543" />
+    <UnitTestResult executionId="f4264918-26ba-4cad-b7f7-844143054823" testId="c20496bb-4eda-446b-8793-a46134b2a2a5" testName="SPEC-13: GPX lesen, km/Höhenmeter/Dauer, GeoJSON, Koordinaten DMS/UTM, Luftlinie" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0607643" startTime="2026-10-22T02:42:44.1565493+02:00" endTime="2026-10-22T02:42:44.2213807+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f4264918-26ba-4cad-b7f7-844143054823" />
+    <UnitTestResult executionId="1062b9b6-8f8c-4e13-b7c6-6b63c2b5079d" testId="f1de2958-250a-0b26-1af1-839b8b49f99c" testName="SPEC-13 F16: Fläche" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0009947" startTime="2026-10-22T02:42:44.2178513+02:00" endTime="2026-10-22T02:42:44.2179089+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1062b9b6-8f8c-4e13-b7c6-6b63c2b5079d" />
+    <UnitTestResult executionId="ea816de4-c9cd-4152-a35f-fe56e5f695d0" testId="404091b8-9953-5f90-89a5-a3331dc2e697" testName="SPEC-13 F14: Richtung" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0002998" startTime="2026-10-22T02:42:44.2241527+02:00" endTime="2026-10-22T02:42:44.2243894+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ea816de4-c9cd-4152-a35f-fe56e5f695d0" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="SPEC-13 F16: Fläche" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="f1de2958-250a-0b26-1af1-839b8b49f99c">
+      <Execution id="1062b9b6-8f8c-4e13-b7c6-6b63c2b5079d" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC13_Plus" name="F16" />
+    </UnitTest>
+    <UnitTest name="SPEC-13 F19: Vereinfachen" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="bcd5a986-6d65-d77b-bcf0-afe968186074">
+      <Execution id="f2a817fa-6fb1-4cff-871f-35f831c1a0e3" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC13_Plus" name="F19" />
+    </UnitTest>
+    <UnitTest name="SPEC-13 F15: Zielpunkt" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="7a3675de-881b-ffd1-d200-4c14f8b99c73">
+      <Execution id="0cbfc245-fb5f-451d-8efc-bcea78bfb543" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC13_Plus" name="F15" />
+    </UnitTest>
+    <UnitTest name="SPEC-13 F18: Wanderzeit" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="c16533b9-69e5-ff72-41c5-799c816d884c">
+      <Execution id="fb864146-dfdc-4859-9d46-92755ed6db50" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC13_Plus" name="F18" />
+    </UnitTest>
+    <UnitTest name="SPEC-13: GPX lesen, km/Höhenmeter/Dauer, GeoJSON, Koordinaten DMS/UTM, Luftlinie" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="c20496bb-4eda-446b-8793-a46134b2a2a5">
+      <Execution id="f4264918-26ba-4cad-b7f7-844143054823" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC13_Geo" name="Geo_" />
+    </UnitTest>
+    <UnitTest name="SPEC-13 F20: GPX schreiben" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="de6f9a3c-8726-4112-df63-7947c37822a6">
+      <Execution id="983bb7dd-0050-4d7b-a7af-111fc446150d" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC13_Plus" name="F20" />
+    </UnitTest>
+    <UnitTest name="SPEC-13 F14: Richtung" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="404091b8-9953-5f90-89a5-a3331dc2e697">
+      <Execution id="ea816de4-c9cd-4152-a35f-fe56e5f695d0" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC13_Plus" name="F14" />
+    </UnitTest>
+    <UnitTest name="SPEC-13 F13: UTM → Grad" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="4f036299-5a71-0a21-ddb7-fb342a28a24f">
+      <Execution id="099caefc-4e14-4303-93fe-92afe31c9288" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC13_Plus" name="F13" />
+    </UnitTest>
+    <UnitTest name="SPEC-13 F02: GPX-Routen" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="17bba94c-b109-a674-166a-a3607e6992cd">
+      <Execution id="2acd7b13-89ec-4338-b0e6-5f4b0ffbd747" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC13_Plus" name="F02" />
+    </UnitTest>
+    <UnitTest name="SPEC-13 F17: Höhenprofil" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="736fb10c-af16-5dd4-2797-14676a1155e2">
+      <Execution id="78f7432b-de56-4730-aa0e-40f6798b0e01" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.SPEC13_Plus" name="F17" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="17bba94c-b109-a674-166a-a3607e6992cd" executionId="2acd7b13-89ec-4338-b0e6-5f4b0ffbd747" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4f036299-5a71-0a21-ddb7-fb342a28a24f" executionId="099caefc-4e14-4303-93fe-92afe31c9288" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="736fb10c-af16-5dd4-2797-14676a1155e2" executionId="78f7432b-de56-4730-aa0e-40f6798b0e01" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="de6f9a3c-8726-4112-df63-7947c37822a6" executionId="983bb7dd-0050-4d7b-a7af-111fc446150d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bcd5a986-6d65-d77b-bcf0-afe968186074" executionId="f2a817fa-6fb1-4cff-871f-35f831c1a0e3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c16533b9-69e5-ff72-41c5-799c816d884c" executionId="fb864146-dfdc-4859-9d46-92755ed6db50" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7a3675de-881b-ffd1-d200-4c14f8b99c73" executionId="0cbfc245-fb5f-451d-8efc-bcea78bfb543" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c20496bb-4eda-446b-8793-a46134b2a2a5" executionId="f4264918-26ba-4cad-b7f7-844143054823" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f1de2958-250a-0b26-1af1-839b8b49f99c" executionId="1062b9b6-8f8c-4e13-b7c6-6b63c2b5079d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="404091b8-9953-5f90-89a5-a3331dc2e697" executionId="ea816de4-c9cd-4152-a35f-fe56e5f695d0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="10" executed="10" passed="10" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.07]   Discovering: Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.14]   Discovered:  Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.16]   Starting:    Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.27]   Finished:    Trendo.Core.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

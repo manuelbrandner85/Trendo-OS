@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="722cc519-1b46-4043-abd5-4ad28d38239e" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:42:23" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-22T02:42:23.4269230+02:00" queuing="2026-10-22T02:42:23.4269232+02:00" start="2026-10-22T02:42:22.5236412+02:00" finish="2026-10-22T02:42:23.4311314+02:00" />
+  <TestSettings name="default" id="9393e255-f7ce-4953-8760-436aba23a772">
+    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_42_23" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="09546439-9fbc-41cf-a4aa-04e8ce0d7de0" testId="d5fcd332-e380-9798-6ae0-20d82235937a" testName="CORE-03: 12 Rollen mit eigenem Auftrag, Aufgabe nutzt Rollenanweisung" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0247002" startTime="2026-10-22T02:42:23.3144283+02:00" endTime="2026-10-22T02:42:23.3383320+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="09546439-9fbc-41cf-a4aa-04e8ce0d7de0" />
+    <UnitTestResult executionId="044517b6-08e8-47c4-a995-9499423a7e1f" testId="59ce1c99-b0cc-054e-b17a-9869027866bd" testName="CORE-03: Speichern nur mit Schreibrecht, nur nach Freigabe, nur im Projekt; Grok-Build-Auftrag ehrlich" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0989851" startTime="2026-10-22T02:42:23.2232459+02:00" endTime="2026-10-22T02:42:23.3135936+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="044517b6-08e8-47c4-a995-9499423a7e1f" />
+    <UnitTestResult executionId="17a1a2f5-65f2-47bd-b18e-59f591f2848c" testId="dc7857cc-3cf2-ea73-f187-5f55db97ec82" testName="CORE-03: Team gibt Ergebnis weiter, Aufgaben sind je Projekt getrennt" computerName="DESKTOP-9JVIIPU" duration="00:00:00.1209156" startTime="2026-10-22T02:42:23.0874059+02:00" endTime="2026-10-22T02:42:23.2141631+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="17a1a2f5-65f2-47bd-b18e-59f591f2848c" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="CORE-03: 12 Rollen mit eigenem Auftrag, Aufgabe nutzt Rollenanweisung" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="d5fcd332-e380-9798-6ae0-20d82235937a">
+      <Execution id="09546439-9fbc-41cf-a4aa-04e8ce0d7de0" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.CORE03_Agents" name="Roles_run" />
+    </UnitTest>
+    <UnitTest name="CORE-03: Team gibt Ergebnis weiter, Aufgaben sind je Projekt getrennt" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="dc7857cc-3cf2-ea73-f187-5f55db97ec82">
+      <Execution id="17a1a2f5-65f2-47bd-b18e-59f591f2848c" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.CORE03_Agents" name="Team_and_projects" />
+    </UnitTest>
+    <UnitTest name="CORE-03: Speichern nur mit Schreibrecht, nur nach Freigabe, nur im Projekt; Grok-Build-Auftrag ehrlich" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="59ce1c99-b0cc-054e-b17a-9869027866bd">
+      <Execution id="044517b6-08e8-47c4-a995-9499423a7e1f" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.CORE03_Agents" name="Save_gated" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="d5fcd332-e380-9798-6ae0-20d82235937a" executionId="09546439-9fbc-41cf-a4aa-04e8ce0d7de0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="59ce1c99-b0cc-054e-b17a-9869027866bd" executionId="044517b6-08e8-47c4-a995-9499423a7e1f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dc7857cc-3cf2-ea73-f187-5f55db97ec82" executionId="17a1a2f5-65f2-47bd-b18e-59f591f2848c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="3" executed="3" passed="3" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.08]   Discovering: Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.15]   Discovered:  Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.16]   Starting:    Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.44]   Finished:    Trendo.Core.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

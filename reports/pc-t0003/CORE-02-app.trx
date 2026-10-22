@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="ff06e12e-3b5e-47d3-a20b-253611ee6c6d" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:42:15" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-22T02:42:15.9845922+02:00" queuing="2026-10-22T02:42:15.9845923+02:00" start="2026-10-22T02:42:11.5233938+02:00" finish="2026-10-22T02:42:17.2598036+02:00" />
+  <TestSettings name="default" id="9dd5a7ee-5416-4d43-b1d4-46f1bc0fe6f7">
+    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_42_15" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="1e17e3c5-ac7b-4f44-abd4-263f81581f5a" testId="d8242953-0a34-fb0e-14da-639f142a7a21" testName="CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0045658" startTime="2026-10-22T02:42:15.9252773+02:00" endTime="2026-10-22T02:42:15.9299292+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1e17e3c5-ac7b-4f44-abd4-263f81581f5a" />
+    <UnitTestResult executionId="5631257b-ffb3-42b1-a734-ede90521d4f6" testId="04a1f86e-8cbd-26f7-1f29-117240adee6c" testName="CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet" computerName="DESKTOP-9JVIIPU" duration="00:00:01.2292329" startTime="2026-10-22T02:42:15.9614404+02:00" endTime="2026-10-22T02:42:17.1907973+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5631257b-ffb3-42b1-a734-ede90521d4f6" />
+    <UnitTestResult executionId="a648592f-4f3c-47fe-a2a0-48cc000ba98a" testId="3286e4af-e86d-8998-7a47-511cc8a95398" testName="CORE-02: Ollama-Format (tags/chat) wird korrekt gesprochen" computerName="DESKTOP-9JVIIPU" duration="00:00:01.4691299" startTime="2026-10-22T02:42:14.4424966+02:00" endTime="2026-10-22T02:42:15.9194154+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a648592f-4f3c-47fe-a2a0-48cc000ba98a" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="d8242953-0a34-fb0e-14da-639f142a7a21">
+      <Execution id="1e17e3c5-ac7b-4f44-abd4-263f81581f5a" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.CORE02_Backends" name="Rejects_remote" />
+    </UnitTest>
+    <UnitTest name="CORE-02: Ollama-Format (tags/chat) wird korrekt gesprochen" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="3286e4af-e86d-8998-7a47-511cc8a95398">
+      <Execution id="a648592f-4f3c-47fe-a2a0-48cc000ba98a" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.CORE02_Backends" name="Ollama_protocol" />
+    </UnitTest>
+    <UnitTest name="CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="04a1f86e-8cbd-26f7-1f29-117240adee6c">
+      <Execution id="5631257b-ffb3-42b1-a734-ede90521d4f6" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.W2_Ui" name="Ask_page" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="d8242953-0a34-fb0e-14da-639f142a7a21" executionId="1e17e3c5-ac7b-4f44-abd4-263f81581f5a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="04a1f86e-8cbd-26f7-1f29-117240adee6c" executionId="5631257b-ffb3-42b1-a734-ede90521d4f6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3286e4af-e86d-8998-7a47-511cc8a95398" executionId="a648592f-4f3c-47fe-a2a0-48cc000ba98a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="3" executed="3" passed="3" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:01.86]   Discovering: Trendo.App.Tests&#xD;
+[xUnit.net 00:00:02.11]   Discovered:  Trendo.App.Tests&#xD;
+[xUnit.net 00:00:02.29]   Starting:    Trendo.App.Tests&#xD;
+[xUnit.net 00:00:05.11]   Finished:    Trendo.App.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

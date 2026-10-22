@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="91b1075d-b4de-4db4-abf3-2270286e68de" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:43:23" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-22T02:43:23.4321472+02:00" queuing="2026-10-22T02:43:23.4321475+02:00" start="2026-10-22T02:43:20.0757450+02:00" finish="2026-10-22T02:43:24.4976713+02:00" />
+  <TestSettings name="default" id="2438b6ff-322c-42b2-b462-aab5696b70b2">
+    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_43_23" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="770d8eec-d425-4425-802e-e418f4d619aa" testId="f23c2d08-d64f-c268-0cf8-17073d64ae16" testName="SPEC-15 UI Ausbau: Live, Bild &amp; Ton, Planen" computerName="DESKTOP-9JVIIPU" duration="00:00:01.0633971" startTime="2026-10-22T02:43:23.3681358+02:00" endTime="2026-10-22T02:43:24.4316654+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="770d8eec-d425-4425-802e-e418f4d619aa" />
+    <UnitTestResult executionId="0844de44-1b90-4f95-85c7-fb491a280564" testId="7861f5fc-fe83-1aa0-403f-65dba7adee60" testName="SPEC-15 UI: Ablauf bauen, speichern, Leitung prüfen" computerName="DESKTOP-9JVIIPU" duration="00:00:02.1671288" startTime="2026-10-22T02:43:21.1800792+02:00" endTime="2026-10-22T02:43:23.3550895+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0844de44-1b90-4f95-85c7-fb491a280564" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="SPEC-15 UI: Ablauf bauen, speichern, Leitung prüfen" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="7861f5fc-fe83-1aa0-403f-65dba7adee60">
+      <Execution id="0844de44-1b90-4f95-85c7-fb491a280564" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SPEC15_Ui" name="Broadcast" />
+    </UnitTest>
+    <UnitTest name="SPEC-15 UI Ausbau: Live, Bild &amp; Ton, Planen" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="f23c2d08-d64f-c268-0cf8-17073d64ae16">
+      <Execution id="770d8eec-d425-4425-802e-e418f4d619aa" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SPEC15_UiPlus" name="Plus" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="f23c2d08-d64f-c268-0cf8-17073d64ae16" executionId="770d8eec-d425-4425-802e-e418f4d619aa" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7861f5fc-fe83-1aa0-403f-65dba7adee60" executionId="0844de44-1b90-4f95-85c7-fb491a280564" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="2" executed="2" passed="2" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.17]   Discovering: Trendo.App.Tests&#xD;
+[xUnit.net 00:00:00.41]   Discovered:  Trendo.App.Tests&#xD;
+[xUnit.net 00:00:00.59]   Starting:    Trendo.App.Tests&#xD;
+[xUnit.net 00:00:04.00]   Finished:    Trendo.App.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

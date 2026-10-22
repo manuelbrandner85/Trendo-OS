@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="b6d5a062-a58a-41f2-ac7d-f6497d088334" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:42:42" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-22T02:42:42.0242667+02:00" queuing="2026-10-22T02:42:42.0242669+02:00" start="2026-10-22T02:42:38.9018410+02:00" finish="2026-10-22T02:42:42.0280896+02:00" />
+  <TestSettings name="default" id="9810948c-d522-489d-ba53-8d794d549c86">
+    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_42_42" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="e3e74b52-1413-4a57-809f-2af9554ecf22" testId="17165643-9ae1-f204-5553-8a4f99a4d426" testName="SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf" computerName="DESKTOP-9JVIIPU" duration="00:00:01.9038718" startTime="2026-10-22T02:42:40.0136363+02:00" endTime="2026-10-22T02:42:41.9268813+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e3e74b52-1413-4a57-809f-2af9554ecf22" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.app.tests\bin\release\net10.0\trendo.app.tests.dll" id="17165643-9ae1-f204-5553-8a4f99a4d426">
+      <Execution id="e3e74b52-1413-4a57-809f-2af9554ecf22" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.App.Tests.SYS05_Ui" name="Workflows_page" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="17165643-9ae1-f204-5553-8a4f99a4d426" executionId="e3e74b52-1413-4a57-809f-2af9554ecf22" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="1" executed="1" passed="1" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.17]   Discovering: Trendo.App.Tests&#xD;
+[xUnit.net 00:00:00.40]   Discovered:  Trendo.App.Tests&#xD;
+[xUnit.net 00:00:00.59]   Starting:    Trendo.App.Tests&#xD;
+[xUnit.net 00:00:02.68]   Finished:    Trendo.App.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

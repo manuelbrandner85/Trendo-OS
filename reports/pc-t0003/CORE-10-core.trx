@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="4d567692-846f-48e0-bd4b-94eaadde3dc7" name="manue@DESKTOP-9JVIIPU 2026-10-22 02:42:26" runUser="DESKTOP-9JVIIPU\manue" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-22T02:42:26.1601585+02:00" queuing="2026-10-22T02:42:26.1601586+02:00" start="2026-10-22T02:42:25.4294184+02:00" finish="2026-10-22T02:42:26.1649333+02:00" />
+  <TestSettings name="default" id="817e5605-72c0-40e4-a42f-aa5499b853f0">
+    <Deployment runDeploymentRoot="manue_DESKTOP-9JVIIPU_2026-10-22_02_42_26" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="a3c2c307-fb23-45ff-95b2-fcfa861fc990" testId="0a41fbbe-c7ae-64f4-dbb7-9553a3fa3cc7" testName="CORE-10: Suche findet Wissen trotz Umlauten und Mehrzahl, bleibt nach Neustart erhalten" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0593432" startTime="2026-10-22T02:42:25.9700354+02:00" endTime="2026-10-22T02:42:26.0350580+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a3c2c307-fb23-45ff-95b2-fcfa861fc990" />
+    <UnitTestResult executionId="7af6a78a-37cf-44da-8745-a6c500c15d23" testId="cf1e2036-05af-de1b-f0cc-bd737d911cbd" testName="CORE-10: Korrektur wird Wissen und fließt in die nächste KI-Antwort" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0280540" startTime="2026-10-22T02:42:26.0434680+02:00" endTime="2026-10-22T02:42:26.0633912+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7af6a78a-37cf-44da-8745-a6c500c15d23" />
+    <UnitTestResult executionId="e5b8774f-af5f-4c5b-ae3b-446b37f7dea9" testId="fb2d00a8-eafc-2466-9522-efc6f25df06c" testName="CORE-10: Ordner einlesen nur Textdateien, keine Doppelten" computerName="DESKTOP-9JVIIPU" duration="00:00:00.0083654" startTime="2026-10-22T02:42:26.0639760+02:00" endTime="2026-10-22T02:42:26.0717978+02:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e5b8774f-af5f-4c5b-ae3b-446b37f7dea9" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="CORE-10: Suche findet Wissen trotz Umlauten und Mehrzahl, bleibt nach Neustart erhalten" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="0a41fbbe-c7ae-64f4-dbb7-9553a3fa3cc7">
+      <Execution id="a3c2c307-fb23-45ff-95b2-fcfa861fc990" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.CORE10_Knowledge" name="Search_persist" />
+    </UnitTest>
+    <UnitTest name="CORE-10: Ordner einlesen nur Textdateien, keine Doppelten" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="fb2d00a8-eafc-2466-9522-efc6f25df06c">
+      <Execution id="e5b8774f-af5f-4c5b-ae3b-446b37f7dea9" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.CORE10_Knowledge" name="Import_folder" />
+    </UnitTest>
+    <UnitTest name="CORE-10: Korrektur wird Wissen und fließt in die nächste KI-Antwort" storage="c:\users\manue\desktop\trend os\repo\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="cf1e2036-05af-de1b-f0cc-bd737d911cbd">
+      <Execution id="7af6a78a-37cf-44da-8745-a6c500c15d23" />
+      <TestMethod codeBase="C:\Users\manue\Desktop\Trend Os\repo\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="Trendo.Core.Tests.CORE10_Knowledge" name="Learns_from_feedback" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="0a41fbbe-c7ae-64f4-dbb7-9553a3fa3cc7" executionId="a3c2c307-fb23-45ff-95b2-fcfa861fc990" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="cf1e2036-05af-de1b-f0cc-bd737d911cbd" executionId="7af6a78a-37cf-44da-8745-a6c500c15d23" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fb2d00a8-eafc-2466-9522-efc6f25df06c" executionId="e5b8774f-af5f-4c5b-ae3b-446b37f7dea9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="3" executed="3" passed="3" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:00.07]   Discovering: Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.14]   Discovered:  Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.16]   Starting:    Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:00.28]   Finished:    Trendo.Core.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>
