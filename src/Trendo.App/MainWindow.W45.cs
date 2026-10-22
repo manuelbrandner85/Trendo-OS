@@ -112,7 +112,7 @@ public partial class MainWindow
         var d = Path.Combine(root, sub); Directory.CreateDirectory(d); return d;
     }
 
-    private void Say(string msg, string view) { _w45Msg = msg; RefreshHere(view); }
+    private void Say(string msg, string view) { _w45Msg = msg; Show(view); }
 
     /// <summary>Baut die Seite neu, solange sie noch offen ist. Ein fertiger Hintergrundjob wechselt nicht von allein auf eine andere Seite zurück.</summary>
     private void RefreshHere(string view)
