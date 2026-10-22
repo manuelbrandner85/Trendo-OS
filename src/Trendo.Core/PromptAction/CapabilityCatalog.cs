@@ -18,7 +18,7 @@ public static class CapabilityCatalog
     private static readonly StudioProfile[] All =
     [
         P("STUDIO-LETTER-01", "Briefe schreiben", "Arbeiten & Büro", "Letters, LetterArchive, LetterCase, PdfExport", "Brief als DOCX entwerfen", "Absender, Empfänger, Betreff, Text", "DOCX, optional PDF", "PDF nur, wenn LibreOffice (soffice) vorhanden ist."),
-        P("SYS-10", "Texte & Tabellen", "Arbeiten & Büro", "Ooxml, Csv, Pdf, Writing", "Dokument oder Tabelle mit geprüfter Formel", "Text oder Zellen", "DOCX, XLSX", "Kein Fachadapter registriert."),
+        P("SYS-10", "Texte & Tabellen", "Arbeiten & Büro", "Ooxml, Csv, Pdf, Writing", "Dokument oder Tabelle mit geprüfter Formel", "Text oder Zellen", "DOCX, XLSX", "Nur Grundrechenarten und SUMME. LibreOffice rechnet die Datei nicht nach."),
         P("SYS-09", "E-Mails & Termine", "Arbeiten & Büro", "MailCenter", "Entwurf, Versand nur mit Freigabe", "Empfänger, Betreff, Text", "EML-Entwurf", "Kein Fachadapter registriert."),
         P("X-11", "Neues Projekt starten", "Arbeiten & Büro", "ProjectStore", "Projekt anlegen", "Projekt-ID", "Projektordner", "Kein Fachadapter registriert."),
         P("SYS-02", "Kleine Helfer & Musik", "Arbeiten & Büro", "Calc, NoteStore, FileShelf", "Notiz oder Rechnung", "Text oder Ausdruck", "Notiz, Zahl", "Kein Fachadapter registriert."),

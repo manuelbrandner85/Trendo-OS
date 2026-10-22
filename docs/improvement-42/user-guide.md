@@ -16,4 +16,4 @@ Die Zeile darunter nennt den Stand des Studios. Briefe sind „teilweise“: die
 
 Mögliche Stände: Noch nicht gestartet, Plan steht, Rückfrage, Freigabe nötig, Wird wirklich ausgeführt, Datei erstellt, QA bestanden, Fehlgeschlagen, Abgebrochen, Nicht unterstützt.
 
-„QA bestanden“ erscheint nur, wenn eine Prüfung die erzeugte Datei wirklich gelesen hat. Beim Brief ist das die Word-Datei. Tabelle, E-Mail, Rechnung, Programm, 3D, Spiel und Film folgen.
+„QA bestanden“ erscheint nur, wenn eine Prüfung die erzeugte Datei wirklich gelesen hat. Beim Brief ist das die Word-Datei, bei der Tabelle die nachgerechneten Zellen. E-Mail, Rechnung, Programm, 3D, Spiel und Film folgen.

@@ -5,7 +5,7 @@ Erzeugt aus `CapabilityCatalog` und den wirklich registrierten Adaptern. `ready`
 | Studio-ID | Titel | Bereich | Vorhandene Bausteine | Vorgesehene Aktion | Eingaben | Adapter | Ausgabe | Reife | Beleg | Blocker |
 |---|---|---|---|---|---|---|---|---|---|---|
 | STUDIO-LETTER-01 | Briefe schreiben | Arbeiten & Büro | Letters, LetterArchive, LetterCase, PdfExport | Brief als DOCX entwerfen | Absender, Empfänger, Betreff, Text | brief.schreiben | DOCX, optional PDF | partial | PromptActionTests.Brief_wird_geschrieben_und_wieder_gelesen | PDF nur, wenn LibreOffice (soffice) vorhanden ist. |
-| SYS-10 | Texte & Tabellen | Arbeiten & Büro | Ooxml, Csv, Pdf, Writing | Dokument oder Tabelle mit geprüfter Formel | Text oder Zellen | keiner | DOCX, XLSX | not_implemented | — | Kein Fachadapter registriert. |
+| SYS-10 | Texte & Tabellen | Arbeiten & Büro | Ooxml, Csv, Pdf, Writing | Dokument oder Tabelle mit geprüfter Formel | Text oder Zellen | tabelle.rechnen | DOCX, XLSX | partial | PromptActionTests.Tabelle_rechnet_formel | Nur Grundrechenarten und SUMME. LibreOffice rechnet die Datei nicht nach. |
 | SYS-09 | E-Mails & Termine | Arbeiten & Büro | MailCenter | Entwurf, Versand nur mit Freigabe | Empfänger, Betreff, Text | keiner | EML-Entwurf | not_implemented | — | Kein Fachadapter registriert. |
 | X-11 | Neues Projekt starten | Arbeiten & Büro | ProjectStore | Projekt anlegen | Projekt-ID | keiner | Projektordner | not_implemented | — | Kein Fachadapter registriert. |
 | SYS-02 | Kleine Helfer & Musik | Arbeiten & Büro | Calc, NoteStore, FileShelf | Notiz oder Rechnung | Text oder Ausdruck | keiner | Notiz, Zahl | not_implemented | — | Kein Fachadapter registriert. |
@@ -59,4 +59,4 @@ Erzeugt aus `CapabilityCatalog` und den wirklich registrierten Adaptern. `ready`
 | CORE-04 | PC, Pi & Handy verbinden | System & Sicherheit | Fusion | Verbund nur anzeigen | keine | keiner | Hinweis | not_implemented | — | Kein Fachadapter registriert. |
 | X-09 | Leistung anzeigen | System & Sicherheit | ResourceMonitor, SystemMetrics | Messwerte lesen | keine | keiner | Messwert | not_implemented | — | Kein Fachadapter registriert. |
 
-Anzahl: 54 Katalogeinträge, 1 registrierte Aktionen.
+Anzahl: 54 Katalogeinträge, 2 registrierte Aktionen.
