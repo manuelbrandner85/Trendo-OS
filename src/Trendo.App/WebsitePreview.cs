@@ -75,8 +75,8 @@ public static class WebsitePreview
         }) psi.ArgumentList.Add(arg);
         using var process = Process.Start(psi) ?? throw new InvalidOperationException("Chrome ließ sich nicht starten.");
         // Weiterlesen, auch nach dem Abbruch. Sonst füllt Chrome die Pipe und die Vorschau wartet ewig.
-        _ = process.StandardOutput.CopyToAsync(Stream.Null);
-        _ = process.StandardError.CopyToAsync(Stream.Null);
+        _ = process.StandardOutput.BaseStream.CopyToAsync(Stream.Null);
+        _ = process.StandardError.BaseStream.CopyToAsync(Stream.Null);
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
         timeout.CancelAfter(TimeSpan.FromSeconds(25));
         using var stop = timeout.Token.Register(() =>
