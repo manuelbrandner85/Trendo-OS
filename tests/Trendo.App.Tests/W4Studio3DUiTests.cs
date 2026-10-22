@@ -34,6 +34,8 @@ public class W4_Core05_Ui
         w.Find<Button>("3d-apply").Press();
         Assert.Contains("geändert", Msg(w));
         var front = Convert.ToHexString(w.CurrentPreview!);
+        Assert.NotNull(w.TryFind<Button>("3d-view-back"));
+        Assert.NotNull(w.TryFind<Button>("3d-view-left"));
         w.Find<Button>("3d-view-top").Press();
         Assert.Contains("oben", Msg(w));
         Assert.NotEqual(front, Convert.ToHexString(w.CurrentPreview!));
@@ -70,6 +72,9 @@ public class W4_Core05_Ui
         Assert.True(Directory.GetFiles(w.Folder3D, "*.stl").Length >= 1);
         w.Find<Button>("3d-export-glb").Press();
         Assert.True(Directory.GetFiles(w.Folder3D, "*.glb").Length >= 1);
+        w.Find<Button>("3d-export-fbx").Press();
+        Assert.Contains(".fbx", Msg(w));
+        Assert.Contains("FBX", File.ReadAllText(Directory.GetFiles(w.Folder3D, "*.fbx").Single()));
         w.Find<Button>("3d-folder").Press();
         Assert.Contains(l.Opened, p => p.Contains(w.Folder3D));
         var extra = Path.Combine(root, "kugel.obj");

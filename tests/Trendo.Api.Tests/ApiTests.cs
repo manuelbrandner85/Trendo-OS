@@ -115,4 +115,17 @@ public class Api_Rbac(ApiFixture f) : IClassFixture<ApiFixture>
     [Fact(DisplayName = "API: Pfadausbruch über Projekt-ID → 400")]
     public async Task Isolation_via_api()
         => Assert.Equal(HttpStatusCode.BadRequest, (await f.Http.SendAsync(f.Req(HttpMethod.Post, "api/actions/open-folder", Role.User, new { projectId = "../x" }))).StatusCode);
+
+    [Fact(DisplayName = "API: Freigabe eines Livestreams startet nichts und öffnet nichts")]
+    public async Task Live_approval_does_not_start()
+    {
+        var before = f.Launcher.Opened.Count;
+        var r = f.Core.Approvals.Request(Principal.LocalOwner, LiveBroadcast.Action, "Livestream zu YouTube starten. Es startet nicht von allein.", "youtube");
+        var res = await f.Http.SendAsync(f.Req(HttpMethod.Post, $"api/approvals/{r.Id}/approve", Role.Owner));
+        Assert.Equal(HttpStatusCode.OK, res.StatusCode);
+        var body = await res.Content.ReadAsStringAsync();
+        Assert.Contains("false", body, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(before, f.Launcher.Opened.Count);
+        Assert.DoesNotContain(f.Core.Audit.ReadAll(), e => e.Action == "execution.start" && e.Detail.Contains(r.Id, StringComparison.Ordinal));
+    }
 }
