@@ -1,6 +1,9 @@
 // Rendert die Oberfläche headless mit Skia in eine PNG (Design-Vergleich ohne Windows-PC).
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Headless;
+using Avalonia.Interactivity;
+using Avalonia.LogicalTree;
 using Avalonia.Threading;
 using Trendo.App;
 using Trendo.Core;
@@ -95,6 +98,182 @@ if (Environment.GetEnvironmentVariable("TRENDO_DEMO_CASE") is not null)
     c.Deadlines.AddRange(LetterKit.FindDeadlines("Gegen diesen Bescheid kann innerhalb eines Monats Widerspruch erhoben werden.", "e01", new DateTime(2026, 9, 5)));
     LetterKit.Compose(c, lh); store.Save(c, Principal.LocalOwner);
     win.OpenCase(c); win.Show(args.Length > 3 ? args[3] : "akte");
+}
+void Pump() { for (var n = 0; n < 8; n++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); } }
+if (Environment.GetEnvironmentVariable("TRENDO_PAGE_PROMPT") == "1")
+{
+    core.Projects.Create("seitenprobe", "Seitenprobe");
+    win.Show("baukasten");
+    Pump();
+    T Find<T>(string name) where T : Control => win.GetLogicalDescendants().OfType<T>().First(c => c.Name == name);
+    Find<TextBox>("auftrag-prompt").Text = "Titel: Hofseite\nText: Willkommen im Hof";
+    Find<Button>("auftrag-pruefen").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "Plan steht"; i++) Pump();
+    Find<Button>("auftrag-los").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "QA bestanden"; i++) Pump();
+    if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
+        throw new InvalidOperationException("Baukasten steht auf " + Find<TextBlock>("auftrag-status").Text + " / " + Find<TextBlock>("auftrag-vorschau").Text);
+    if (Find<TextBox>("builder-title").Text != "Hofseite")
+        throw new InvalidOperationException("Das Formular zeigt „" + Find<TextBox>("builder-title").Text + "“ statt Hofseite.");
+}
+if (Environment.GetEnvironmentVariable("TRENDO_LEARN_PROMPT") == "1")
+{
+    core.Projects.Create("lernprobe", "Lernprobe");
+    win.Show("lernen");
+    Pump();
+    T Find<T>(string name) where T : Control => win.GetLogicalDescendants().OfType<T>().First(c => c.Name == name);
+    Find<TextBox>("auftrag-prompt").Text = "Stapel: Geografie\nFrage: Hauptstadt von Frankreich\nAntwort: Paris";
+    Find<Button>("auftrag-pruefen").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "Plan steht"; i++) Pump();
+    Find<Button>("auftrag-los").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "QA bestanden"; i++) Pump();
+    if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
+        throw new InvalidOperationException("Lernen steht auf " + Find<TextBlock>("auftrag-status").Text + " / " + Find<TextBlock>("auftrag-vorschau").Text);
+}
+if (Environment.GetEnvironmentVariable("TRENDO_ROOM_PROMPT") == "1")
+{
+    core.Projects.Create("raumprobe", "Raumprobe");
+    win.Show("architektur");
+    Pump();
+    T Find<T>(string name) where T : Control => win.GetLogicalDescendants().OfType<T>().First(c => c.Name == name);
+    Find<TextBox>("auftrag-prompt").Text = "Name: Wohnzimmer\nLaenge: 4\nBreite: 3";
+    Find<Button>("auftrag-pruefen").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "Plan steht"; i++) Pump();
+    Find<Button>("auftrag-los").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "QA bestanden"; i++) Pump();
+    if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
+        throw new InvalidOperationException("Wohnung steht auf " + Find<TextBlock>("auftrag-status").Text + " / " + Find<TextBlock>("auftrag-vorschau").Text);
+}
+if (Environment.GetEnvironmentVariable("TRENDO_MEDIA_PROMPT") == "1")
+{
+    var project = core.Projects.Create("medienprobe", "Medienprobe");
+    var png = Mesh3D.RenderPng(new Scene3D { Name = "Quelle", Parts = [new Part3D { Shape = "cube", Sx = 8, Sy = 8, Sz = 8, Color = "#2F86F6" }] }, "front", 64, 48)
+        ?? throw new InvalidOperationException("Keine Bildquelle.");
+    var source = core.Projects.ResolveInProject(project.Id, "quelle.png");
+    Directory.CreateDirectory(Path.GetDirectoryName(source)!);
+    File.WriteAllBytes(source, png);
+    win.Show("kreativ-medien");
+    Pump();
+    T Find<T>(string name) where T : Control => win.GetLogicalDescendants().OfType<T>().First(c => c.Name == name);
+    Find<TextBox>("auftrag-prompt").Text = "Datei: quelle.png\nAufgabe: Bild";
+    Find<Button>("auftrag-pruefen").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "Plan steht"; i++) Pump();
+    Find<Button>("auftrag-los").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 80 && Find<TextBlock>("auftrag-status").Text != "QA bestanden"; i++) Pump();
+    if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
+        throw new InvalidOperationException("Medien steht auf " + Find<TextBlock>("auftrag-status").Text + " / " + Find<TextBlock>("auftrag-detail").Text);
+}
+if (Environment.GetEnvironmentVariable("TRENDO_GAME_PROMPT") == "1")
+{
+    core.Projects.Create("spielprobe", "Spielprobe");
+    win.Show("spiele");
+    Pump();
+    T Find<T>(string name) where T : Control => win.GetLogicalDescendants().OfType<T>().First(c => c.Name == name);
+    Find<TextBox>("auftrag-prompt").Text = "Vorlage: Schlange\nName: Hofspiel";
+    Find<Button>("auftrag-pruefen").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "Plan steht"; i++) Pump();
+    Find<Button>("auftrag-los").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "QA bestanden"; i++) Pump();
+    if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
+        throw new InvalidOperationException("Spiel steht auf " + Find<TextBlock>("auftrag-status").Text + " / " + Find<TextBlock>("auftrag-vorschau").Text);
+}
+if (Environment.GetEnvironmentVariable("TRENDO_3D_PROMPT") == "1")
+{
+    core.Projects.Create("modellprobe", "Modellprobe");
+    win.Show("3d");
+    Pump();
+    T Find<T>(string name) where T : Control => win.GetLogicalDescendants().OfType<T>().First(c => c.Name == name);
+    Find<TextBox>("auftrag-prompt").Text = "Name: Klotz\nForm: Wuerfel\nBreite: 10\nTiefe: 10\nHoehe: 10\nFarbe: Blau";
+    Find<Button>("auftrag-pruefen").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "Plan steht"; i++) Pump();
+    Find<Button>("auftrag-los").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "QA bestanden"; i++) Pump();
+    if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
+        throw new InvalidOperationException("3D steht auf " + Find<TextBlock>("auftrag-status").Text + " / " + Find<TextBlock>("auftrag-vorschau").Text);
+}
+if (Environment.GetEnvironmentVariable("TRENDO_SOFTWARE_PROMPT") == "1")
+{
+    core.Projects.Create("codeprobe", "Codeprobe");
+    win.Show("dev");
+    Pump();
+    T Find<T>(string name) where T : Control => win.GetLogicalDescendants().OfType<T>().First(c => c.Name == name);
+    Find<TextBox>("auftrag-prompt").Text = "Vorlage: Webseite\nName: Kerzenladen";
+    Find<Button>("auftrag-pruefen").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "Plan steht"; i++) Pump();
+    Find<Button>("auftrag-los").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "QA bestanden"; i++) Pump();
+    if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
+        throw new InvalidOperationException("Software steht auf " + Find<TextBlock>("auftrag-status").Text + " / " + Find<TextBlock>("auftrag-vorschau").Text);
+}
+if (Environment.GetEnvironmentVariable("TRENDO_BUSINESS_PROMPT") == "1")
+{
+    core.Projects.Create("ideeprobe", "Ideeprobe");
+    win.Show("business");
+    Pump();
+    T Find<T>(string name) where T : Control => win.GetLogicalDescendants().OfType<T>().First(c => c.Name == name);
+    Find<TextBox>("auftrag-prompt").Text = "Name: Kerzen\nProblem: Kerzen riechen im Flur zu schwach und halten nicht lange.\nZielgruppe: Haushalte\nLoesung: Duftkerzen aus Sojawachs mit langer Brenndauer im Glas.\nModell: Shop\nPreis: 20\nKosten: 5\nFix: 100\nMenge: 30\nStunden: 10\nStartgeld: 3000\nMitbewerber: 4\nKoennen: 4";
+    Find<Button>("auftrag-pruefen").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "Plan steht"; i++) Pump();
+    Find<Button>("auftrag-los").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "QA bestanden"; i++) Pump();
+    if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
+        throw new InvalidOperationException("Geschäftsidee steht auf " + Find<TextBlock>("auftrag-status").Text + " / " + Find<TextBlock>("auftrag-vorschau").Text);
+}
+if (Environment.GetEnvironmentVariable("TRENDO_MONEY_PROMPT") == "1")
+{
+    core.Projects.Create("geldprobe", "Geldprobe");
+    win.Show("finanzen");
+    Pump();
+    T Find<T>(string name) where T : Control => win.GetLogicalDescendants().OfType<T>().First(c => c.Name == name);
+    Find<TextBox>("auftrag-prompt").Text = "Verkaeufer: Anna Beispiel\nKaeufer: Bruno Beispiel\nPosition: Beratung | 2 | 10\nPosition: Fahrt | 1 | 5,50\nMwSt: 19\nDatum: 2026-10-22";
+    Find<Button>("auftrag-pruefen").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "Plan steht"; i++) Pump();
+    Find<Button>("auftrag-los").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "QA bestanden"; i++) Pump();
+    if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
+        throw new InvalidOperationException("Rechnung steht auf " + Find<TextBlock>("auftrag-status").Text + " / " + Find<TextBlock>("auftrag-vorschau").Text);
+}
+if (Environment.GetEnvironmentVariable("TRENDO_MAIL_PROMPT") == "1")
+{
+    core.Projects.Create("postprobe", "Postprobe");
+    win.Show("post");
+    Pump();
+    T Find<T>(string name) where T : Control => win.GetLogicalDescendants().OfType<T>().First(c => c.Name == name);
+    Find<TextBox>("auftrag-prompt").Text = "An: a@b.de\nBetreff: Hallo\nText: Bitte um Rückruf.";
+    Find<Button>("auftrag-pruefen").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "Plan steht"; i++) Pump();
+    Find<Button>("auftrag-los").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "QA bestanden"; i++) Pump();
+    if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
+        throw new InvalidOperationException("E-Mail steht auf " + Find<TextBlock>("auftrag-status").Text + " / " + Find<TextBlock>("auftrag-vorschau").Text);
+}
+if (Environment.GetEnvironmentVariable("TRENDO_OFFICE_PROMPT") == "1")
+{
+    core.Projects.Create("tabellenprobe", "Tabellenprobe");
+    win.Show("office");
+    Pump();
+    T Find<T>(string name) where T : Control => win.GetLogicalDescendants().OfType<T>().First(c => c.Name == name);
+    Find<TextBox>("auftrag-prompt").Text = "Zelle: A1=Posten\nZelle: B1=Betrag\nZelle: A2=Papier\nZelle: B2=12,50\nZelle: A3=Stift\nZelle: B3=3,50\nZelle: A4=Summe\nZelle: B4=SUMME(B2:B3)";
+    Find<Button>("auftrag-pruefen").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "Plan steht"; i++) Pump();
+    Find<Button>("auftrag-los").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "QA bestanden"; i++) Pump();
+    if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
+        throw new InvalidOperationException("Tabelle steht auf " + Find<TextBlock>("auftrag-status").Text + " / " + Find<TextBlock>("auftrag-detail").Text);
+}
+if (Environment.GetEnvironmentVariable("TRENDO_BRIEF_PROMPT") == "1")
+{
+    core.Projects.Create("briefprobe", "Briefprobe");
+    win.Show("brief");
+    Pump();
+    T Find<T>(string name) where T : Control => win.GetLogicalDescendants().OfType<T>().First(c => c.Name == name);
+    Find<TextBox>("auftrag-prompt").Text = "Absender: Anna Beispiel\nStrasse: Beispielweg 1\nOrt: 10115 Berlin\nEmpfaenger: Amt für Beispiel\nMusterstraße 2\n10115 Berlin\nBetreff: Auskunft zu den Unterlagen\nText: bitte senden sie mir die unterlagen zu.\nDatum: 2026-10-22";
+    Find<Button>("auftrag-pruefen").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "Plan steht"; i++) Pump();
+    Find<Button>("auftrag-los").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 40 && Find<TextBlock>("auftrag-status").Text != "QA bestanden"; i++) Pump();
+    if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
+        throw new InvalidOperationException("Briefvorschau steht auf " + Find<TextBlock>("auftrag-status").Text);
 }
 for (var i = 0; i < 40; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(50); }
 var frame = win.CaptureRenderedFrame();

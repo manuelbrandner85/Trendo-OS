@@ -74,14 +74,37 @@ public static class WebsitePreview
             "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "about:blank"
         }) psi.ArgumentList.Add(arg);
         using var process = Process.Start(psi) ?? throw new InvalidOperationException("Chrome ließ sich nicht starten.");
-        _ = process.StandardOutput.ReadToEndAsync(ct);
-        _ = process.StandardError.ReadToEndAsync(ct);
+        _ = process.StandardOutput.ReadToEndAsync();
+        _ = process.StandardError.ReadToEndAsync();
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
         timeout.CancelAfter(TimeSpan.FromSeconds(25));
+        ClientWebSocket? socket = null;
+        // ReceiveAsync und GetStringAsync lassen den Abbruch auf diesem Chrome oft liegen. Dann bleibt der Prozess stehen.
+        using var wake = timeout.Token.Register(() => Cut(socket, http, process));
         try
         {
-            var wsUrl = await PageSocket(port, timeout.Token);
-            using var socket = new ClientWebSocket();
+            var work = TakeShot();
+            var done = await Task.WhenAny(work, Task.Delay(TimeSpan.FromSeconds(27)));
+            if (done != work)
+            {
+                Cut(socket, http, process);
+                var again = await Task.WhenAny(work, Task.Delay(TimeSpan.FromSeconds(2)));
+                if (again != work) throw new TimeoutException("Die Vorschau hat nicht rechtzeitig geantwortet.");
+            }
+            await work;
+        }
+        finally
+        {
+            Cut(socket, http, process);
+            try { socket?.Dispose(); } catch { /* schon zu */ }
+            try { Directory.Delete(profile, true); } catch { /* Chrome hält die Datei manchmal noch */ }
+        }
+
+        async Task TakeShot()
+        {
+            var wsUrl = await PageSocket(http, port, timeout.Token);
+            socket = new ClientWebSocket();
             await socket.ConnectAsync(new Uri(wsUrl), timeout.Token);
             var cdp = new Cdp(socket);
             await cdp.Call("Page.enable", new { }, timeout.Token);
@@ -102,16 +125,17 @@ public static class WebsitePreview
             if (string.IsNullOrWhiteSpace(data)) throw new InvalidOperationException("Chrome hat kein Bild geliefert.");
             await File.WriteAllBytesAsync(pngPath, Convert.FromBase64String(data), timeout.Token);
         }
-        finally
-        {
-            try { if (!process.HasExited) process.Kill(true); } catch { /* schon zu */ }
-            try { Directory.Delete(profile, true); } catch { /* Chrome hält die Datei manchmal noch */ }
-        }
     }
 
-    static async Task<string> PageSocket(int port, CancellationToken ct)
+    static void Cut(ClientWebSocket? socket, HttpClient http, Process process)
     {
-        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
+        try { socket?.Abort(); } catch { /* noch nicht verbunden */ }
+        try { http.CancelPendingRequests(); } catch { /* schon zu */ }
+        try { if (!process.HasExited) process.Kill(true); } catch { /* schon zu */ }
+    }
+
+    static async Task<string> PageSocket(HttpClient http, int port, CancellationToken ct)
+    {
         for (var i = 0; i < 40; i++)
         {
             ct.ThrowIfCancellationRequested();
@@ -187,7 +211,14 @@ public static class WebsitePreview
             var buf = new byte[64 * 1024];
             while (true)
             {
-                var part = await socket.ReceiveAsync(buf, ct);
+                var receive = socket.ReceiveAsync(buf, ct);
+                var finished = await Task.WhenAny(receive, Task.Delay(TimeSpan.FromSeconds(12)));
+                if (finished != receive)
+                {
+                    try { socket.Abort(); } catch { /* schon zu */ }
+                    throw new TimeoutException("Die Vorschau hat nicht geantwortet.");
+                }
+                var part = await receive;
                 if (part.MessageType == WebSocketMessageType.Close) throw new InvalidOperationException("Die Vorschau wurde unterbrochen.");
                 ms.Write(buf, 0, part.Count);
                 if (part.EndOfMessage) break;

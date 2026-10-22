@@ -118,7 +118,8 @@ public sealed record AdapterOutcome(
     string? Preview,
     IReadOnlyList<string> Warnings,
     IReadOnlyList<string> Errors,
-    string? Receipt);
+    string? Receipt,
+    bool Attempted = false);
 
 public sealed record AdapterCall(
     string ProjectId,

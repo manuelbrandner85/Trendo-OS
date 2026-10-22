@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Trendo.App;
+using Trendo.Core;
 using Trendo.Core.PromptAction;
 using Xunit;
 
@@ -20,7 +21,7 @@ public class PromptBarTests
         Assert.Equal("Noch nicht gestartet", w.Find<TextBlock>("auftrag-status").Text);
         Assert.Equal("Noch keine Vorschau.", w.Find<TextBlock>("auftrag-vorschau").Text);
         Assert.False(w.Find<Button>("auftrag-los").IsVisible);
-        Assert.Contains("nicht eingebaut", w.Find<TextBlock>("auftrag-faehigkeit").Text);
+        Assert.Contains("teilweise", w.Find<TextBlock>("auftrag-faehigkeit").Text);
         w.Find<Button>("auftrag-modus").Press();
         Assert.Equal("Einfach", w.Find<Button>("auftrag-modus").Content);
         Assert.Contains("Profi", w.Find<TextBlock>("auftrag-profi").Text);
@@ -30,6 +31,69 @@ public class PromptBarTests
         Assert.Equal("Rückfrage", w.Find<TextBlock>("auftrag-status").Text);
         Assert.Contains("Projekt", w.Find<TextBlock>("auftrag-detail").Text);
         w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Briefseite zeigt den echten Brieftext in der Vorschau")]
+    public void Brief_vorschau_zeigt_den_text()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Core.Projects.Create("briefprobe", "Briefprobe");
+        w.WindowState = WindowState.Normal;
+        w.Width = 1280;
+        w.Height = 800;
+        w.Show("brief");
+        Dispatcher.UIThread.RunJobs();
+        w.Find<TextBox>("auftrag-prompt").Text = """
+            Absender: Anna Beispiel
+            Strasse: Beispielweg 1
+            Ort: 10115 Berlin
+            Empfaenger: Amt für Beispiel
+            Musterstraße 2
+            10115 Berlin
+            Betreff: Auskunft zu den Unterlagen
+            Text: bitte senden sie mir die unterlagen zu.
+            Datum: 2026-10-22
+            """;
+        w.Find<Button>("auftrag-pruefen").Press();
+        Wait(w, () => w.Find<TextBlock>("auftrag-status").Text == "Plan steht");
+        Assert.Contains("nichts geschrieben", w.Find<TextBlock>("auftrag-vorschau").Text);
+        w.Find<Button>("auftrag-los").Press();
+        Wait(w, () => w.Find<TextBlock>("auftrag-status").Text == "QA bestanden");
+        Assert.Contains("Auskunft zu den Unterlagen", w.Find<TextBlock>("auftrag-vorschau").Text);
+        var docx = Directory.GetFiles(w.Core.Projects.ProjectFilesRoot("briefprobe"), "*.docx", SearchOption.AllDirectories).Single();
+        Assert.Contains("bitte senden sie mir die unterlagen zu.", Letters.ReadDocxText(docx));
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Baukasten übernimmt die neue Seite ins Formular")]
+    public void Baukasten_formular_zeigt_die_neue_seite()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Core.Projects.Create("seitenprobe", "Seitenprobe");
+        w.WindowState = WindowState.Normal;
+        w.Width = 1280;
+        w.Height = 800;
+        w.Show("baukasten");
+        Dispatcher.UIThread.RunJobs();
+        w.Find<TextBox>("auftrag-prompt").Text = "Titel: Hofseite\nText: Willkommen im Hof";
+        w.Find<Button>("auftrag-pruefen").Press();
+        Wait(w, () => w.Find<TextBlock>("auftrag-status").Text == "Plan steht");
+        w.Find<Button>("auftrag-los").Press();
+        Wait(w, () => w.Find<TextBlock>("auftrag-status").Text == "QA bestanden");
+        Assert.Equal("QA bestanden", w.Find<TextBlock>("auftrag-status").Text);
+        Assert.Equal("Hofseite", w.Find<TextBox>("builder-title").Text);
+        var json = File.ReadAllText(w.Core.Projects.ResolveInProject("seitenprobe", "baukasten/seite.json"));
+        Assert.Contains("Hofseite", json);
+        w.Close();
+    }
+
+    static void Wait(MainWindow w, Func<bool> done)
+    {
+        for (var i = 0; i < 100 && !done(); i++)
+        {
+            Dispatcher.UIThread.RunJobs();
+            Thread.Sleep(30);
+        }
     }
 
     [AvaloniaFact(DisplayName = "Startbildschirm bekommt keine Auftragsleiste")]

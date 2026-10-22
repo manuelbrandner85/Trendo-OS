@@ -24,6 +24,24 @@ public sealed class IntelligencePromptModel(IntelligenceCore core, Func<bool> lo
 
 public static class PromptActions
 {
-    /// <summary>Produktion: noch keine Fachadapter. Studios antworten deshalb mit „Nicht unterstützt“.</summary>
-    public static IReadOnlyList<IStudioActionAdapter> CreateDefault() => [];
+    /// <summary>Registrierte Fachadapter. Gesperrte Aktionen bleiben unsupported und schreiben keine Datei.</summary>
+    public static IReadOnlyList<IStudioActionAdapter> CreateDefault() =>
+        [
+            new LetterPromptAdapter(), new SheetPromptAdapter(), new MailSendAdapter(), new MailDraftAdapter(),
+            new InvoicePromptAdapter(), new MoneyPayAdapter(), new BusinessPlanAdapter(),
+            new SoftwareScaffoldAdapter(), new SoftwarePublishAdapter(),
+            new ModelPromptAdapter(), new BlenderPromptAdapter(),
+            new GameBrowserAdapter(), new GameUnrealAdapter(), new GameLaunchAdapter(),
+            new MediaConvertAdapter(), new MediaUploadAdapter(),
+            new CalcNoteAdapter(), new ProjectCreateAdapter(),
+            new RoomPlanAdapter(), new CircuitAdapter(), new BeamCheckAdapter(),
+            new TwinSeriesAdapter(), new RouteAdapter(),
+            new CncMachineAdapter(), new CncFeedAdapter(),
+            new VehicleCostAdapter(), new StatsAdapter(),
+            new KnowledgeRememberAdapter(), new LearnCardAdapter(), new PromptFillAdapter(), new FashionSizeAdapter(),
+            new StreamSendAdapter(), new RundownAdapter(),
+            new LicenseFetchAdapter(), new LicenseNoteAdapter(),
+            new XrBudgetAdapter(), new ScanBlockedAdapter(),
+            ..SystemActions.Create()
+        ];
 }

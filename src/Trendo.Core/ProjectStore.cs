@@ -72,6 +72,14 @@ public sealed partial class ProjectStore
         _audit.Append("user", "file.write", $"{projectId}:{relativePath}");
     }
 
+    public void WriteBytes(string projectId, string relativePath, byte[] content)
+    {
+        var p = ResolveInProject(projectId, relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(p)!);
+        File.WriteAllBytes(p, content);
+        _audit.Append("user", "file.write", $"{projectId}:{relativePath}");
+    }
+
     public string ReadFile(string projectId, string relativePath) => File.ReadAllText(ResolveInProject(projectId, relativePath));
 
     private ProjectIsolationException Deny(string projectId, string rel)

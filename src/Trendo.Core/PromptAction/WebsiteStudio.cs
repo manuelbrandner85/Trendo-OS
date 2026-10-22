@@ -1,11 +1,10 @@
 namespace Trendo.Core.PromptAction;
 
 /// <summary>
-/// Vertrag für Verbesserung 43, Punkte 3–8 (Webseiten-Studio). Dieser Kern setzt ihn nicht um
-/// und registriert keine Webseiten-Aktion. Ein anderer Auftrag hängt eine Klasse hier ein,
-/// über <see cref="PromptActions.CreateDefault"/>.
-/// Veröffentlichen, Pixel-Streaming und jede Wirkung nach außen laufen nur als
-/// <see cref="SideEffectClass"/> durch das bestehende Freigabetor, nie aus dem Plan allein.
+/// Vertrag für Verbesserung 43, Punkte 3–8. Der Baukasten setzt ihn begrenzt um:
+/// Seitenarten und vier Stile als Text und Farbe, Prüfung der geschriebenen HTML-Datei.
+/// Scroll-Geschichte, Browser-3D, Partikel, Video-Hintergrund und Pixel-Streaming bleiben aus.
+/// Veröffentlichen bleibt eine gesperrte Aktion.
 /// </summary>
 public interface IWebsitePageAdapter : IStudioActionAdapter
 {

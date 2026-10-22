@@ -18,7 +18,7 @@ Die Soll-Namen aus Abschnitt 4 des Auftrags sind so abgebildet:
 | IArtifactStore | `RunStore` schreibt `auftraege/{id}/lauf.json` über `ProjectStore` |
 | IPromptModel | `IntelligencePromptModel` ruft `AskAsync` |
 
-`PromptActions.CreateDefault()` liefert in dieser Phase eine leere Liste. Jedes der 54 Studios bleibt dadurch `not_implemented`. Testadapter in `tests/Trendo.Core.Tests/PromptActionTests.cs` sind nicht registriert und erscheinen nicht in der Matrix.
+`PromptActions.CreateDefault()` war im Kern zuerst leer. Die Fachadapter stehen jetzt in derselben Methode. Der Stand je Studio steht in der Matrix. Testadapter, die eine Wirkung nur im Test simulieren, sind dort nicht registriert.
 
 ## Ablauf
 
@@ -30,7 +30,9 @@ Prüfung endet beim Plan (`Plan steht`). `Los` schreibt danach die Datei. Ohne e
 
 `Studio: ID` oder `Weiterleiten: Titel` setzt das Zielstudio und schreibt den Grund in `RoutingReason`. Sonst: „Bleibt im aktuellen Studio.“
 
-Seiteneffekte (`Message`, `Payment`, `Publish`, `DeleteOrRights`, `Security`, `Machine`, `ExternalAi`) laufen nur in `ApprovalGate.Execute`. Die Freigabe heißt `prompt:{actionId}`, das Ziel ist der Idempotenzschlüssel. Der Schlüssel hängt an Projekt, Studio, Aktion, Wirkungsart und den Parametern. Neue Inhalte brauchen eine neue Freigabe. `claimed` oder `blocked` im Wirkungsbuch `auftraege/_wirkung.json` wird nicht erneut ausgeführt.
+Seiteneffekte (`Message`, `Payment`, `Publish`, `DeleteOrRights`, `Security`, `Machine`, `ExternalAi`) laufen nur in `ApprovalGate.Execute`, und nur wenn `CanPerformSideEffect` wahr ist. Das sind `datei.laden`, `datei.teilen`, `programm.installieren` und `programm.starten`. Die Freigabe heißt `prompt:{actionId}`, das Ziel ist der Idempotenzschlüssel. Der Schlüssel hängt an Projekt, Studio, Aktion, Wirkungsart und den Parametern. Neue Inhalte brauchen eine neue Freigabe. `claimed` oder `blocked` im Wirkungsbuch `auftraege/_wirkung.json` wird nicht erneut ausgeführt. Eine Ablehnung, bevor etwas nach außen lief, löscht den Anspruch, damit dieselbe Angabe nach der Zustimmung noch einmal freigegeben werden kann.
+
+`PromptServices` hängt die vorhandenen Dienste an (`AskAsync`, `ResearchDesk`, `DependencyManager`, `ShareServer`, `ExternalApps`, `MobileBridge`, `DeviceScanner`, `UserSettings`, `ISecretStore`, `FusionStore`, `SelfHealer`). `PromptAmbient` gilt nur für den laufenden Auftrag. Ohne gesetzte Methode passiert die Wirkung nicht. Der GET und die Loopback-Prüfung liegen in `ReadOnlyWeb` in der App. Der Kern referenziert dafür weder `System.Net.Http` noch `System.Net.Sockets`.
 
 Die Laufdatei hat `SchemaVersion` 1. Eine neuere Fassung wird nicht ausgeführt. Vor dem Überschreiben entsteht `lauf.json.bak`; `TryRollback` holt sie zurück.
 
@@ -40,8 +42,12 @@ Die Laufdatei hat `SchemaVersion` 1. Eine neuere Fassung wird nicht ausgeführt.
 
 ## Oberfläche
 
-`MainWindow.PromptAction.cs` hängt eine schmale Leiste über den Seiteninhalt, den `SafeView` liefert. Der Startbildschirm bleibt frei. Die 3D-Seite füllt das Fenster bis auf wenige Pixel; dort liegt dieselbe Leiste im linken Rollbereich (`MainWindow.W4Studio3D.cs`), damit die Vorschau bei 1366×768 sichtbar bleibt. Texte: „Was soll dieses Studio tun?“, „Auftrag prüfen“, „Abbrechen“, „Einmal freigeben“, „Antwort übernehmen“. Der letzte Knopf und die Freigabe bleiben unsichtbar, bis der Lauf sie braucht. Farben bleiben `TileBg`, `Accent`, `Text`, `Muted`. Die Prüfung läuft über `Task.Run`, damit das Fenster nicht auf einen Modellaufruf wartet. Der Status „Wird wirklich ausgeführt“ steht, bevor der Hintergrundauftrag beginnt.
+`MainWindow.PromptAction.cs` hängt eine schmale Leiste über den Seiteninhalt, den `SafeView` liefert. Der Startbildschirm bleibt frei. Die 3D-Seite füllt das Fenster bis auf wenige Pixel; dort liegt dieselbe Leiste im linken Rollbereich (`MainWindow.W4Studio3D.cs`), damit die Vorschau bei 1366×768 sichtbar bleibt. Texte: „Was soll dieses Studio tun?“, „Auftrag prüfen“, „Abbrechen“, „Einmal freigeben“, „Antwort übernehmen“. Der letzte Knopf und die Freigabe bleiben unsichtbar, bis der Lauf sie braucht. Farben bleiben `TileBg`, `Accent`, `Text`, `Muted`. Die Prüfung und die Freigabe laufen über `Task.Run`, damit das Fenster nicht auf einen Modellaufruf wartet. Der Status „Wird wirklich ausgeführt“ steht, bevor der Hintergrundauftrag beginnt. Entsteht eine Datei, wird die offene Studiofläche neu gebaut. Der Baukasten liest `baukasten/seite.json` aus dem neuesten Projekt.
 
-## Was diese Phase nicht tut
+## Was der Kern nicht tut
 
-Keine Brief-, Office-, Mail-, Geschäfts-, Software-, 3D-, Spiele- oder Medienadapter. Kein SMTP, keine Zahlung, kein Git-Push, kein Blender, kein Unreal, kein LibreOffice-PDF. Keine Änderung an Design 41, an der 120-Stunden-Regel und an den abgelehnten Verbesserungen 23, 25, 34, Language Studio 2.0. Verbesserung 35 bleibt offen.
+Kein SMTP, keine Zahlung, kein Git-Push, kein Blender, kein Unreal, kein LibreOffice-PDF. Keine Änderung an Design 41, an der 120-Stunden-Regel und an den abgelehnten Verbesserungen 23, 25, 34, Language Studio 2.0. Verbesserung 35 bleibt offen.
+
+## Stand nach den Fachadaptern
+
+Jede Katalog-ID hat mindestens einen Adapter. `not_implemented` kommt im Katalog nicht mehr vor. `ready` kommt nicht vor. 52 Studios sind `partial`, zwei sind `blocked` (`SPEC-09`, `SPEC-12`). `PageWriteAdapter` implementiert `IWebsitePageAdapter` und schreibt HTML plus `seite.json`. Browser-3D, Scroll-Geschichte, Partikel, Videohintergrund und Pixel-Streaming bleiben aus. Lokale Dateien nutzen vorhandene Typen und rufen die gefährliche Methode nicht auf. Verbesserung 42 ist nicht vollständig implementiert.
