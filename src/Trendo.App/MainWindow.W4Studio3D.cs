@@ -71,6 +71,7 @@ public partial class MainWindow
             Spacing = 8,
             Children =
             {
+                BuildPromptBar("CORE-05"),
                 Card(new StackPanel
                 {
                     Spacing = 8,
