@@ -47,7 +47,11 @@ public partial class MainWindow
     {
         if (ReferenceEquals(tabs, FachTabs) && StudioCatalog.For(module) is { } info) label = info.Name; // ein Reiter je Studio: alltagsnaher Name
         if (!tabs.Any(t => t.Item1 == key)) tabs.Add((key, label, module));
-        _windowGroups[key] = tabs[0].Item1;
+        // Ein Fenster je Studio, nicht je Welle: Reiter desselben Moduls teilen sich das Fenster, andere Studios nicht.
+        string group = key;
+        foreach (var (k, m) in PageModules)
+            if (string.Equals(m, module, StringComparison.OrdinalIgnoreCase) && _windowGroups.TryGetValue(k, out var existing)) { group = existing; break; }
+        _windowGroups[key] = group;
         _showMap[key] = view; TabbedPages.Add(key); PageModules[key] = module;
         StudioPages.TryAdd(module, key);
         if (!ExtraPages.Any(p => p.Key == key)) ExtraPages.Add((label, key, words));

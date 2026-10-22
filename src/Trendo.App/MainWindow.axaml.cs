@@ -731,8 +731,18 @@ public sealed partial class MainWindow : Window
         return null;
     }
 
-    private string StudioHeading(string fallback) =>
-        StudioIdForPage(CurrentView) is { } id ? StudioCatalog.NameOf(id, fallback) : fallback;
+    private string StudioHeading(string fallback)
+    {
+        if (CurrentView == "studio-deps" && _depStudio.Length > 0)
+            return StudioCatalog.NameOf(_depStudio, string.IsNullOrWhiteSpace(_depStudioTitle) ? fallback : _depStudioTitle);
+        return StudioIdForPage(CurrentView) is { } id ? StudioCatalog.NameOf(id, fallback) : fallback;
+    }
+
+    /// <summary>Seite gehört zu einem konkreten Studio-Arbeitsbereich (nicht zu Einstellungen, Start oder der Übersicht).</summary>
+    private bool IsStudioWorkspace(string key) =>
+        PageModules.ContainsKey(key)
+        || key is "brief" or "akten" or "akte" or "ausgabe" or "briefkoepfe" or "office"
+        || StudioPages.Any(kv => string.Equals(kv.Value, key, StringComparison.OrdinalIgnoreCase));
 
     private Control Page(string title, Control content)
     {
@@ -1047,19 +1057,80 @@ public sealed partial class MainWindow : Window
         return BasePageModules.FirstOrDefault(kv => string.Equals(kv.Value, id, StringComparison.OrdinalIgnoreCase) && _showMap.ContainsKey(kv.Key)).Key;
     }
 
+    /// <summary>Eigenes Fenster, nicht die Studio-Übersicht und nicht der nackte Startbildschirm.</summary>
+    public bool HasStudioWorkspace(string id)
+    {
+        var page = PageForStudio(id);
+        return page is not null && page is not "start" and not "studios";
+    }
+
+    /// <summary>Seite, die das Startmenü für dieses Studio öffnet. Ohne Arbeitsbereich: ehrliche Statusseite im eigenen Fenster.</summary>
+    public string StudioLaunchPage(string id) => HasStudioWorkspace(id) ? PageForStudio(id)! : EnsureStudioStatus(id);
+
+    private string EnsureStudioStatus(string id)
+    {
+        var key = "studio-status-" + id;
+        if (!_showMap.ContainsKey(key))
+        {
+            var sid = id;
+            _showMap[key] = () => StudioStatusView(sid);
+            _windowGroups[key] = key;
+        }
+        return key;
+    }
+
+    private StudioEntry? StudioEntryOf(string id) =>
+        _studios.FirstOrDefault(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>Kurzer ehrlicher Status. Nicht gebaute Studios heißen „Noch nicht verfügbar“.</summary>
+    public string StudioStatusLabel(string id) => StudioEntryOf(id) switch
+    {
+        null => "Noch nicht verfügbar",
+        { Capability: Capability.Ready } => "Bereit",
+        { Capability: Capability.InProgress } => "In Arbeit",
+        { Capability: Capability.Blocked } => "Braucht ein Zusatzprogramm",
+        _ => "Noch nicht verfügbar",
+    };
+
+    private Control StudioStatusView(string id)
+    {
+        var info = StudioCatalog.For(id);
+        var st = StudioEntryOf(id);
+        var name = info?.Name ?? st?.Name ?? id;
+        var label = new TextBlock { Name = "studio-status-label", Text = StudioStatusLabel(id), Foreground = Text, FontSize = 16, FontWeight = FontWeight.SemiBold };
+        var sentence = new TextBlock { Name = "studio-status-sentence", Text = info?.Sentence ?? "", Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap };
+        var reason = new TextBlock { Name = "studio-status-reason", Text = st?.Reason ?? "Für dieses Studio gibt es noch keinen eigenen Arbeitsbereich.", Foreground = Muted, FontSize = 13, TextWrapping = TextWrapping.Wrap };
+        var box = new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(14), Child = new StackPanel { Spacing = 8, Children = {
+            label, sentence, reason,
+            P("Es öffnet sich hier keine leere Anwendung und nicht die Liste aller Studios.", null, 12) } } };
+        ToolTip.SetTip(box, st is null ? name : $"{id} · {st.ImplementationStatus} · {st.ApprovalStatus}");
+        return Page(name, box);
+    }
+
+    /// <summary>Startmenü und angeheftete Taskleiste: offenes Studio nach vorn holen, sonst öffnen. Kein zweites Fenster, keine verworfene Eingabe.</summary>
+    public async Task ActivateOrOpenStudio(string id, string title)
+    {
+        var page = StudioLaunchPage(id);
+        var group = WindowGroupOf(page);
+        if (Windows.Get(group) is not null && _frames.ContainsKey(group))
+        {
+            Windows.Activate(group);
+            AfterWindowChange();
+            if (Windows.Get(group) is { } open) NoteRecent(open.Page);
+            return;
+        }
+        await OpenStudio(id, title);
+    }
+
     public async Task OpenStudio(string id, string title)
     {
         _core.Audit.Append(Principal.LocalOwner.Name, "studio.open", id);
-        var page = PageForStudio(id);
-        if (page is null)
-        {
-            // Kein eigener Bereich: ehrlich sagen statt still auf dieselbe Liste zurückzuspringen
-            _notBuilt = title; Show("notbuilt"); return;
-        }
+        if (!HasStudioWorkspace(id)) { Show(EnsureStudioStatus(id)); return; }
+        var page = PageForStudio(id)!;
         // 3D lässt sich ohne Blender bauen und ansehen. Blender wird erst beim Öffnen gefragt.
         if (string.Equals(id, "CORE-05", StringComparison.OrdinalIgnoreCase)) { Show(page); return; }
         if (!StudioTools.Required.TryGetValue(id, out var need)) { Show(page); return; }
-        _depReturn = "studios";
+        _depReturn = page;
         _depStudio = id; _depStudioTitle = title; _depChecks = [];
         _depLog.Text = $"{title}: prüfe benötigte Programme …"; Show("studio-deps");
         foreach (var t in need) _depChecks.Add(await _deps.CheckAsync(DependencyCatalog.Get(t)));

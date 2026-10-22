@@ -9,8 +9,8 @@ using Trendo.Core.Shell;
 
 namespace Trendo.App;
 
-/// <summary>Fenster auf dem Trendo-Schreibtisch: jede Seite/jedes Studio in einem eigenen Fenster mit Eintrag in der Taskleiste.
-/// Der Startbildschirm bleibt immer dahinter. Registerkarten einer Gruppe teilen sich ein Fenster.</summary>
+/// <summary>Fenster auf dem Trendo-Schreibtisch: jedes Studio in einem eigenen Fenster mit eigenem Taskleisten-Eintrag.
+/// Der Startbildschirm bleibt immer dahinter. Reiter desselben Studios teilen sich ein Fenster. Die Windows-Taskleiste und die Windows-Shell bleiben unangetastet.</summary>
 public partial class MainWindow
 {
     public WindowManager Windows { get; } = new();
@@ -19,6 +19,7 @@ public partial class MainWindow
     private readonly StackPanel _taskbar = new() { Name = "taskbar-windows", Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4, 0, 0) };
     private readonly Dictionary<string, (Border Frame, ContentControl Body, TextBlock Title)> _frames = [];
     private readonly Dictionary<string, string> _windowGroups = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string> _windowStudio = new(StringComparer.OrdinalIgnoreCase);
     private bool _windowsReady;
 
     /// <summary>Wurzel der gerade sichtbaren Seite (aktives Fenster oder Startbildschirm).</summary>
@@ -47,17 +48,40 @@ public partial class MainWindow
         }
         if (_deskHost.Children.Count == 0) _deskHost.Children.Add(SafeView("start"));
         var content = SafeView(key);
-        var (win, closed) = Windows.Open(WindowGroupOf(key), key, PageTitle(key));
-        if (closed is not null && _frames.Remove(closed.Id, out var old)) _winCanvas.Children.Remove(old.Frame);
+        var (win, closed) = Windows.Open(PresentGroup(key), key, PresentTitle(key));
+        if (closed is not null && _frames.Remove(closed.Id, out var old)) { _winCanvas.Children.Remove(old.Frame); _windowStudio.Remove(closed.Id); }
+        if (StudioKeyFor(key) is { } sid) _windowStudio[win.Id] = sid;
         if (!_frames.TryGetValue(win.Id, out var fr)) { fr = MakeFrame(win); _frames[win.Id] = fr; _winCanvas.Children.Add(fr.Frame); }
         fr.Title.Text = win.Title; fr.Body.Content = content;
         RenderWindows();
     }
 
+    /// <summary>Programm-Fragen liegen im Fenster des Studios, das sie ausgelöst hat – nicht in einem gemeinsamen Fenster, das andere Studios verdrängt.</summary>
+    private string PresentGroup(string key)
+    {
+        if (key == "studio-deps" && _depStudio.Length > 0 && HasStudioWorkspace(_depStudio))
+            return WindowGroupOf(PageForStudio(_depStudio)!);
+        return WindowGroupOf(key);
+    }
+
+    private string PresentTitle(string key)
+    {
+        if (key == "studio-deps" && _depStudio.Length > 0)
+            return StudioCatalog.NameOf(_depStudio, string.IsNullOrWhiteSpace(_depStudioTitle) ? _depStudio : _depStudioTitle);
+        return PageTitle(key);
+    }
+
+    private string? StudioKeyFor(string key)
+    {
+        if (key == "studio-deps" && _depStudio.Length > 0) return _depStudio;
+        if (key.StartsWith("studio-status-", StringComparison.OrdinalIgnoreCase)) return key["studio-status-".Length..];
+        return IsStudioWorkspace(key) ? ModuleOf(key) : null;
+    }
+
     private (Border, ContentControl, TextBlock) MakeFrame(DeskWindow w)
     {
         var id = w.Id;
-        var titleIcon = new ContentControl { Name = "win-icon-" + id, Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Content = IconFor(ModuleOf(w.Page), 16) };
+        var titleIcon = new ContentControl { Name = "win-icon-" + id, Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Content = IconFor(_windowStudio.TryGetValue(id, out var sid) ? sid : ModuleOf(w.Page), 16) };
         var title = new TextBlock { Name = "win-titletext-" + id, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0), TextTrimming = TextTrimming.CharacterEllipsis };
         Button Cap(string name, string glyph, string tip, Action a)
         {
@@ -140,10 +164,23 @@ public partial class MainWindow
     public void CloseWindow(string id)
     {
         Windows.Close(id);
+        _windowStudio.Remove(id);
         if (_frames.Remove(id, out var f)) _winCanvas.Children.Remove(f.Frame);
         AfterWindowChange();
     }
     public void TaskbarClick(string id) { Windows.TaskbarClick(id); AfterWindowChange(); }
+
+    /// <summary>Nächstes oder vorheriges Fenster (Ctrl+Tab / Ctrl+Umschalt+Tab). Minimierte Fenster werden dabei geöffnet.</summary>
+    public void CycleWindows(int direction)
+    {
+        var ids = Windows.TaskOrder.Select(w => w.Id).ToList();
+        if (ids.Count == 0 || direction == 0) return;
+        var i = Windows.Active is { } a ? ids.IndexOf(a.Id) : -1;
+        var n = i < 0 ? 0 : (i + direction) % ids.Count;
+        if (n < 0) n += ids.Count;
+        Windows.Activate(ids[n]);
+        AfterWindowChange();
+    }
 
     /// <summary>Nach Fensterwechsel: aktuelle Seite, Markierungen und Taskleiste nachziehen.</summary>
     private void AfterWindowChange()
@@ -187,17 +224,38 @@ public partial class MainWindow
     {
         _taskbar.Children.Clear();
         var active = Windows.Active?.Id;
+        if (Windows.Notice is { } note)
+        {
+            var hint = new TextBlock { Name = "windows-notice", Text = note, Foreground = Brush.Parse("#FACC15"), FontSize = 11, VerticalAlignment = VerticalAlignment.Center, MaxWidth = 220, TextWrapping = TextWrapping.Wrap };
+            ToolTip.SetTip(hint, note); Avalonia.Automation.AutomationProperties.SetName(hint, note);
+            _taskbar.Children.Add(hint);
+        }
         foreach (var w in Windows.TaskOrder)
         {
             var on = w.Id == active;
             var t = w.Title.Length > 22 ? w.Title[..21] + "…" : w.Title;
+            var iconId = _windowStudio.TryGetValue(w.Id, out var sid) ? sid : ModuleOf(w.Page);
             var content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
-            if (IconFor(ModuleOf(w.Page), 15) is { } ic) content.Children.Add(ic);
+            if (IconFor(iconId, 15) is { } ic) content.Children.Add(ic);
             content.Children.Add(new TextBlock { Text = t, VerticalAlignment = VerticalAlignment.Center });
             var b = new Button { Name = "task-" + w.Id, Content = content, FontSize = 11.5, Padding = new Thickness(12, 4), CornerRadius = new CornerRadius(8),
                 Background = on ? Accent : Brush.Parse(w.Minimized ? "#330A1630" : "#660A1630"), Foreground = on ? Brushes.White : Text, BorderBrush = on ? Brushes.White : Edge, BorderThickness = new Thickness(on ? 1 : 1) };
             ToolTip.SetTip(b, w.Title + (w.Minimized ? " (minimiert)" : on ? " (aktiv)" : "")); Avalonia.Automation.AutomationProperties.SetName(b, w.Title);
             var id = w.Id; b.Click += (_, _) => TaskbarClick(id);
+            _taskbar.Children.Add(b);
+        }
+        foreach (var pin in _settings.PinnedStudios)
+        {
+            if (Windows.TaskOrder.Any(w => string.Equals(_windowStudio.GetValueOrDefault(w.Id), pin, StringComparison.OrdinalIgnoreCase))) continue;
+            var name = StudioCatalog.NameOf(pin, _studios.FirstOrDefault(s => string.Equals(s.Id, pin, StringComparison.OrdinalIgnoreCase))?.Name ?? pin);
+            var content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
+            if (IconFor(pin, 15) is { } ic) content.Children.Add(ic);
+            var shown = name.Length > 22 ? name[..21] + "…" : name;
+            content.Children.Add(new TextBlock { Text = shown, VerticalAlignment = VerticalAlignment.Center, Opacity = 0.85 });
+            var b = new Button { Name = "pinbar-" + pin, Content = content, FontSize = 11.5, Padding = new Thickness(12, 4), CornerRadius = new CornerRadius(8),
+                Background = Brush.Parse("#220A1630"), Foreground = Text, BorderBrush = Edge, BorderThickness = new Thickness(1) };
+            ToolTip.SetTip(b, name + " (angeheftet)"); Avalonia.Automation.AutomationProperties.SetName(b, name);
+            var id = pin; b.Click += async (_, _) => await ActivateOrOpenStudio(id, name);
             _taskbar.Children.Add(b);
         }
         _taskbar.IsVisible = _taskbar.Children.Count > 0;

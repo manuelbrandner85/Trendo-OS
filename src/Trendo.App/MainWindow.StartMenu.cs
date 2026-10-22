@@ -18,19 +18,23 @@ public partial class MainWindow
 
     private void InitStartMenu()
     {
+        foreach (var k in new[] { "brief", "akten", "akte", "ausgabe", "briefkoepfe" }) _windowGroups[k] = "brief";
+        if (_windowGroups.TryGetValue("doku-pdf", out var doku)) _windowGroups["office"] = doku;
         _startMenu.Width = 560; _startMenu.MaxHeight = 640; _startMenu.Background = GlassStrong; _startMenu.BorderBrush = Edge; _startMenu.BorderThickness = new Thickness(1);
         _startMenu.CornerRadius = new CornerRadius(14); _startMenu.Padding = new Thickness(16); _startMenu.BoxShadow = BoxShadows.Parse("0 8 32 0 #66000000");
         _startMenu.HorizontalAlignment = HorizontalAlignment.Left; _startMenu.VerticalAlignment = VerticalAlignment.Bottom; _startMenu.Margin = new Thickness(0, 0, 0, 92);
         _startMenu.ZIndex = 1000;
         _smSearch.Height = 34; _smSearch.FontSize = 13;
         _smSearch.TextChanged += (_, _) => FillStartMenu();
-        _smSearch.KeyDown += async (_, e) => { if (e.Key == Key.Enter && BuildSearch().Find(_smSearch.Text ?? "").FirstOrDefault() is { } h) { CloseStartMenu(); await OpenHit(h); } };
+        _smSearch.KeyDown += async (_, e) => { if (e.Key == Key.Enter && StartHits(_smSearch.Text ?? "").FirstOrDefault() is { } h) { CloseStartMenu(); await OpenStartHit(h); } };
         _startMenu.Child = new DockPanel { Children = { Top(_smSearch), new ScrollViewer { Content = _smBody, Margin = new Thickness(0, 10, 0, 0) } } };
         if (_center.Parent is Grid body) { Grid.SetColumnSpan(_startMenu, 3); Grid.SetRowSpan(_startMenu, 2); body.Children.Add(_startMenu); }
         AddHandler(KeyDownEvent, (_, e) =>
         {
             if (e.Key is Key.LWin or Key.RWin) { ToggleStartMenu(); e.Handled = true; }
             else if (e.Key == Key.Escape && StartMenuOpen) { CloseStartMenu(); e.Handled = true; }
+            else if (e.Key == Key.Tab && e.KeyModifiers.HasFlag(KeyModifiers.Control) && !StartMenuOpen)
+            { CycleWindows(e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? -1 : 1); e.Handled = true; }
         }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         // Klick daneben schließt das Menü
         AddHandler(PointerPressedEvent, (_, e) =>
@@ -62,10 +66,42 @@ public partial class MainWindow
         if (!l.SequenceEqual(_settings.RecentPages)) { _settings.RecentPages = l; SaveSettings(); }
     }
 
-    public string PageTitle(string key) =>
-        Pages.Concat(ExtraPages).FirstOrDefault(p => p.Key == key).Title
-        ?? _studios.FirstOrDefault(s => PageForStudio(s.Id) == key)?.Name
-        ?? key switch { "notbuilt" => "Noch nicht gebaut", "studio-deps" => "Benötigte Programme", "akte" => "Akte", "ausgabe" => "Ausgabe", _ => char.ToUpper(key[0]) + key[1..] };
+    public string PageTitle(string key)
+    {
+        if (key.StartsWith("studio-status-", StringComparison.OrdinalIgnoreCase))
+            return StudioCatalog.NameOf(key["studio-status-".Length..], key);
+        if (IsStudioWorkspace(key) && ModuleOf(key) is { } mid && StudioCatalog.For(mid) is { } info) return info.Name;
+        return Pages.Concat(ExtraPages).FirstOrDefault(p => p.Key == key).Title
+            ?? _studios.FirstOrDefault(s => PageForStudio(s.Id) == key)?.Name
+            ?? key switch { "notbuilt" => "Noch nicht gebaut", "studio-deps" => "Benötigte Programme", "akte" => "Akte", "ausgabe" => "Ausgabe", _ => char.ToUpper(key[0]) + key[1..] };
+    }
+
+    /// <summary>Alle Katalog-Studios, plus Einträge aus der Modulliste, die der Katalog noch nicht kennt.</summary>
+    private List<(string Id, string Name)> MenuStudios()
+    {
+        var list = new List<(string Id, string Name)>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var (id, info) in StudioCatalog.ById) { seen.Add(id); list.Add((id, info.Name)); }
+        foreach (var s in _studios) if (seen.Add(s.Id)) list.Add((s.Id, s.Name));
+        return list;
+    }
+
+    private List<SearchHit> StartHits(string q) =>
+        BuildSearch().Find(q).Where(h => !h.Target.StartsWith("filter:", StringComparison.OrdinalIgnoreCase) && !string.Equals(h.Target, "page:studios", StringComparison.OrdinalIgnoreCase)).Take(12).ToList();
+
+    private async Task OpenStartHit(SearchHit h)
+    {
+        if (h.Target.StartsWith("studio:", StringComparison.OrdinalIgnoreCase))
+        { await ActivateOrOpenStudio(h.Target[(h.Target.IndexOf(':') + 1)..], h.Title); return; }
+        await OpenHit(h);
+    }
+
+    private static string? HitStudio(SearchHit h)
+    {
+        var i = h.Target.IndexOf(':');
+        if (i < 0) return null;
+        return h.Target.StartsWith("studio:", StringComparison.OrdinalIgnoreCase) ? h.Target[(i + 1)..] : null;
+    }
 
     public void PinStudio(string id) { _settings.PinnedStudios = StartMenu.Pin(_settings.PinnedStudios, id); SaveSettings(); FillStartMenu(); }
     public void UnpinStudio(string id) { _settings.PinnedStudios = StartMenu.Unpin(_settings.PinnedStudios, id); SaveSettings(); FillStartMenu(); }
@@ -92,20 +128,20 @@ public partial class MainWindow
         var q = _smSearch.Text ?? "";
         if (q.Trim().Length > 0)
         {
-            var hits = BuildSearch().Find(q).Take(12).ToList();
+            var hits = StartHits(q);
             _smBody.Children.Add(H("Suchergebnisse", 14));
             if (hits.Count == 0) _smBody.Children.Add(P("Nichts gefunden. Versuch ein anderes Wort.", Muted));
-            foreach (var (h, i) in hits.Select((h, i) => (h, i))) _smBody.Children.Add(SmItem("sm-hit-" + i, h.Title, h.Kind, () => OpenHit(h)));
+            foreach (var (h, i) in hits.Select((h, i) => (h, i))) _smBody.Children.Add(SmItem("sm-hit-" + i, h.Title, h.Kind, () => OpenStartHit(h), HitStudio(h)));
             return;
         }
-        var byId = _studios.ToDictionary(s => s.Id, StringComparer.OrdinalIgnoreCase);
+        var byId = MenuStudios().ToDictionary(s => s.Id, s => s.Name, StringComparer.OrdinalIgnoreCase);
         var pins = new WrapPanel();
         foreach (var id in _settings.PinnedStudios.Where(byId.ContainsKey))
         {
-            var s = byId[id];
-            var open = SmItem("sm-pin-" + id, s.Name, null, () => OpenStudio(s.Id, s.Name), s.Id); open.Width = 200;
+            var name = byId[id];
+            var open = SmItem("sm-pin-" + id, name, UnavailableHint(id), () => ActivateOrOpenStudio(id, name), id); open.Width = 200;
             var un = new Button { Name = "sm-unpin-" + id, Content = "Lösen", FontSize = 10.5, Padding = new Thickness(6, 2), VerticalAlignment = VerticalAlignment.Center };
-            Avalonia.Automation.AutomationProperties.SetName(un, s.Name + " lösen"); un.Click += (_, _) => UnpinStudio(id);
+            Avalonia.Automation.AutomationProperties.SetName(un, name + " lösen"); un.Click += (_, _) => UnpinStudio(id);
             pins.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 8, 4), Children = { open, un } });
         }
         _smBody.Children.Add(H("Angeheftet", 14));
@@ -117,7 +153,7 @@ public partial class MainWindow
         foreach (var k in rec) _smBody.Children.Add(SmItem("sm-recent-" + k, PageTitle(k), null, () => { Show(k); return Task.CompletedTask; }, ModuleOf(k)));
 
         _smBody.Children.Add(H("Alle Studios", 14));
-        foreach (var (letter, items) in StartMenu.AtoZ(_studios, s => s.Name))
+        foreach (var (letter, items) in StartMenu.AtoZ(MenuStudios(), s => s.Name))
         {
             _smBody.Children.Add(new TextBlock { Name = "sm-letter-" + letter, Text = letter, Foreground = Accent, FontWeight = FontWeight.Bold, Margin = new Thickness(4, 6, 0, 0) });
             foreach (var s in items)
@@ -125,9 +161,9 @@ public partial class MainWindow
                 var pinned = StartMenu.IsPinned(_settings.PinnedStudios, s.Id);
                 var pin = new Button { Name = "sm-pintoggle-" + s.Id, Content = pinned ? "Lösen" : "Anheften", FontSize = 10.5, Padding = new Thickness(6, 2), VerticalAlignment = VerticalAlignment.Center };
                 Avalonia.Automation.AutomationProperties.SetName(pin, s.Name + (pinned ? " lösen" : " anheften"));
-                var sid = s.Id; pin.Click += (_, _) => { if (StartMenu.IsPinned(_settings.PinnedStudios, sid)) UnpinStudio(sid); else PinStudio(sid); };
+                var sid = s.Id; var sname = s.Name; pin.Click += (_, _) => { if (StartMenu.IsPinned(_settings.PinnedStudios, sid)) UnpinStudio(sid); else PinStudio(sid); };
                 var g = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto") };
-                g.Children.Add(SmItem("sm-az-" + s.Id, s.Name, null, () => OpenStudio(s.Id, s.Name), s.Id)); g.Children.Add(Pos(pin, 1));
+                g.Children.Add(SmItem("sm-az-" + s.Id, s.Name, UnavailableHint(s.Id), () => ActivateOrOpenStudio(sid, sname), s.Id)); g.Children.Add(Pos(pin, 1));
                 _smBody.Children.Add(g);
             }
         }
@@ -136,6 +172,8 @@ public partial class MainWindow
         foot.Children.Add(SmItem("sm-settings", "Einstellungen", null, () => { Show("settings"); return Task.CompletedTask; }));
         _smBody.Children.Add(foot);
     }
+
+    private string? UnavailableHint(string id) => HasStudioWorkspace(id) || StudioStatusLabel(id) != "Noch nicht verfügbar" ? null : "Noch nicht verfügbar";
 }
 
 internal static class VisualExt

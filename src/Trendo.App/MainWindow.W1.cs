@@ -34,12 +34,38 @@ public partial class MainWindow
     ];
     public static readonly List<(string Title, string Key, string[] Words)> ExtraPages = [];
 
+    /// <summary>Suchwörter eines Studios: Name, Satz, Bereich und die Schlagwörter seiner Seiten.</summary>
+    private string[] StudioWords(string id, string name)
+    {
+        var words = new List<string> { id, name };
+        void AddText(string? t)
+        {
+            if (string.IsNullOrWhiteSpace(t)) return;
+            foreach (var part in t.Split([' ', ',', '.', ';', ':', '/', '–', '—', '-', '(', ')'], StringSplitOptions.RemoveEmptyEntries))
+                if (part.Length > 1) words.Add(part);
+        }
+        if (StudioCatalog.For(id) is { } info) { AddText(info.Name); AddText(info.Sentence); AddText(info.Area); }
+        foreach (var (title, key, extra) in Pages.Concat(ExtraPages))
+        {
+            if (key is "start" or "studios") continue;
+            var mod = PageModules.TryGetValue(key, out var m) ? m : null;
+            if (mod is null && string.Equals(PageForStudio(id), key, StringComparison.OrdinalIgnoreCase)) mod = id;
+            if (mod is null && StudioPages.TryGetValue(id, out var sp) && string.Equals(sp, key, StringComparison.OrdinalIgnoreCase)) mod = id;
+            if (!string.Equals(mod, id, StringComparison.OrdinalIgnoreCase)) continue;
+            words.AddRange(extra); AddText(title);
+        }
+        return words.ToArray();
+    }
+
     public GlobalSearch BuildSearch()
     {
         var gs = new GlobalSearch();
         foreach (var (t, k, w) in Pages.Concat(ExtraPages)) if (_showMap.ContainsKey(k)) gs.Add("Seite", t, "page:" + k, w);
         foreach (var c in Categories) gs.Add("Seite", c.Label, "filter:" + c.Filter, c.Label.Split(' ', '&'));
-        foreach (var s in _studios) gs.Add("Studio", s.Name, "studio:" + s.Id, s.Id);
+        foreach (var s in _studios) gs.Add("Studio", StudioCatalog.For(s.Id)?.Name ?? s.Name, "studio:" + s.Id, StudioWords(s.Id, s.Name));
+        foreach (var (id, info) in StudioCatalog.ById)
+            if (!_studios.Any(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase)))
+                gs.Add("Studio", info.Name, "studio:" + id, StudioWords(id, info.Name));
         foreach (var p in _core.Projects.List()) gs.Add("Projekt", p.Name, "project:" + p.Id, p.Id);
         foreach (var n in new NoteStore(_core.DataRoot).All()) gs.Add("Notiz", n.Text.Split('\n')[0], "page:werkzeuge", n.Text.Split([' ', '\n', '/', '.', '-'], StringSplitOptions.RemoveEmptyEntries)); // SYS-03-P21
         gs.AddFiles(string.IsNullOrEmpty(_settings.ProjectsFolder) ? UserSettings.DefaultProjectsFolder() : _settings.ProjectsFolder);

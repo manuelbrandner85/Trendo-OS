@@ -18,6 +18,28 @@ if (Environment.GetEnvironmentVariable("TRENDO_DEMO_CASE") is not null)
 }
 var win = new MainWindow(core, new AppOptions(root, null, 0, Page: args.Length > 3 ? args[3] : null, Query: Environment.GetEnvironmentVariable("TRENDO_QUERY")), new DefaultToolProbe()) { Width = w, Height = h, WindowState = Avalonia.Controls.WindowState.Normal };
 win.Show();
+var shot = Environment.GetEnvironmentVariable("TRENDO_SHOT");
+if (shot == "startmenu") { win.Show("start"); win.OpenStartMenu(); }
+else if (shot == "fenster")
+{
+    win.Show("brief"); var brief = win.Windows.Active!.Id;
+    win.Show("spiele"); var spiele = win.Windows.Active!.Id;
+    win.Show("3d"); var d3 = win.Windows.Active!.Id;
+    for (var i = 0; i < 10; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
+    win.UpdateLayout();
+    var aw = win.Windows.AreaW; var ah = win.Windows.AreaH;
+    if (aw > 700 && ah > 500)
+    {
+        var col = (aw - 28) / 2; var row = (ah - 20) / 2;
+        void Place(string id, double x, double y, double ww, double hh)
+        {
+            var dw = win.Windows.Get(id); if (dw is null) return;
+            dw.Maximized = false; dw.Moved = true; dw.X = x; dw.Y = y; dw.W = ww; dw.H = hh; win.Windows.Clamp(dw);
+        }
+        Place(brief, 8, 8, col, row); Place(spiele, col + 16, 8, col, row); Place(d3, 8, row + 12, col, row);
+        win.Show(win.Windows.Get(d3)!.Page);
+    }
+}
 if (Environment.GetEnvironmentVariable("TRENDO_DEMO_CASE") is not null)
 {
     var store = new CaseStore(Path.Combine(root, "projekte"), core.Audit);
