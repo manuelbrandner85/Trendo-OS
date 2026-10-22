@@ -238,8 +238,9 @@ public partial class MainWindow
     {
         var box = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,*"), VerticalAlignment = VerticalAlignment.Stretch, MinHeight = 0 };
         box.Children.Add(H("Vorschau", 14));
-        var views = new WrapPanel
+        var views = new Avalonia.Controls.Primitives.UniformGrid
         {
+            Columns = 3,
             Children =
             {
                 ViewBtn("front", "Vorne", "Ansicht von vorn."),
@@ -263,6 +264,8 @@ public partial class MainWindow
     private Button ViewBtn(string id, string label, string msg)
     {
         var b = Act("3d-view-" + id, label, () => SetView(id, msg));
+        b.Padding = new Thickness(4, 2); b.Margin = new Thickness(1); b.MinWidth = 0; b.FontSize = 12;
+        b.HorizontalAlignment = HorizontalAlignment.Stretch; b.HorizontalContentAlignment = HorizontalAlignment.Center;
         if (_view3d == id) b.Background = Accent;
         return b;
     }
@@ -270,18 +273,19 @@ public partial class MainWindow
     private Control FileBlock(TextBox objName)
     {
         var unit = new ComboBox { Name = "3d-unit", ItemsSource = new[] { "Automatisch", "Millimeter", "Zentimeter" }, SelectedIndex = _importUnit switch { "mm" => 1, "cm" => 2, _ => 0 }, Width = 150 };
+        ToolTip.SetTip(unit, "Automatisch: STL als Millimeter, OBJ und FBX als Zentimeter, GLB als Meter. Ist Blender da, wird FBX darüber geschrieben. Sonst schreibt Trendo eine FBX-Datei selbst. Eine Datei kannst du auch hierher ziehen.");
         unit.SelectionChanged += (_, _) => _importUnit = unit.SelectedIndex switch { 1 => "mm", 2 => "cm", _ => "auto" };
         var drop = new StackPanel
         {
             Spacing = 6,
             Children =
             {
-                H("Datei", 14),
-                new WrapPanel { Children = { Labeled("Maße in der Datei", unit), Act("3d-open-file", "Datei öffnen …", () => _ = Browse(objName)) } },
                 new WrapPanel
                 {
                     Children =
                     {
+                        Labeled("Maße in der Datei", unit),
+                        Act("3d-open-file", "Datei öffnen …", () => _ = Browse(objName)),
                         Act("3d-export-obj", "Als OBJ", () => ExportNative(objName, ".obj")),
                         Act("3d-export-stl", "Als STL", () => ExportNative(objName, ".stl")),
                         Act("3d-export-glb", "Als GLB", () => ExportNative(objName, ".glb")),
@@ -289,7 +293,6 @@ public partial class MainWindow
                         Act("3d-export-blend", "Als Blender-Datei", () => _ = ExportWithBlender(objName, ".blend")),
                     },
                 },
-                P("Automatisch: STL als Millimeter, OBJ und FBX als Zentimeter, GLB als Meter. Ist Blender da, wird FBX darüber geschrieben. Sonst schreibt Trendo eine FBX-Datei selbst. Eine Datei kannst du auch hierher ziehen."),
             },
         };
         if (_last3dFile is { } last && File.Exists(last))
