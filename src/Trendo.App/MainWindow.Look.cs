@@ -92,6 +92,7 @@ public sealed partial class MainWindow
     {
         if (!_settings.ReduceMotion) { _center.Opacity = 0; Dispatcher.UIThread.Post(() => _center.Opacity = 1, DispatcherPriority.Background); }
         ShowHelp(key, force: false);
+        EnhancePathFields(ActivePageRoot, key);
         if (ActivePageRoot is { } c0) ApplyAccessibility(c0);
         ApplyAccessibility(_hintHost);
     }
