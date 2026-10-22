@@ -87,9 +87,9 @@ public partial class MainWindow
 
         _platzTitel = new TextBox { Name = "platz-titel", PlaceholderText = "Kurzer Titel", FontSize = 14 };
         AutomationProperties.SetName(_platzTitel, "Titel des Arbeitsblatts");
-        _platzText = new TextBox { Name = "platz-text", PlaceholderText = "Was soll festgehalten werden?", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 72, FontSize = 14 };
+        _platzText = new TextBox { Name = "platz-text", PlaceholderText = "Was soll festgehalten werden?", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 56, FontSize = 14 };
         AutomationProperties.SetName(_platzText, "Text des Auftrags");
-        _platzInhalt = new TextBox { Name = "platz-inhalt", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 88, FontSize = 14, IsReadOnly = true };
+        _platzInhalt = new TextBox { Name = "platz-inhalt", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 64, FontSize = 14, IsReadOnly = true };
         AutomationProperties.SetName(_platzInhalt, "Text der gespeicherten Notiz");
 
         var check = new Button { Name = "platz-pruefen", Content = "Auftrag prüfen", Height = 32, MinWidth = 140, Background = Accent, Foreground = Brushes.White };
@@ -138,7 +138,6 @@ public partial class MainWindow
             Spacing = 8,
             Children =
             {
-                H("Ein Arbeitsplatz", 20),
                 P((info?.Name ?? _workspaceStudio) + (info is null ? "" : " · " + info.Sentence), Text, 13),
                 _platzFaehigkeit,
                 Card(new StackPanel
@@ -153,12 +152,12 @@ public partial class MainWindow
                     }
                 }),
                 Card(new StackPanel { Spacing = 6, Children = { H("Auftrag", 14), _platzTitel, _platzText, buttons, _platzStatus, _platzGrund } }),
-                Card(new StackPanel { Spacing = 4, Children = { H("Rückfrage", 14), _platzFragen } }),
-                Card(new StackPanel { Spacing = 4, Children = { H("Freigabe", 14), _platzFreigabeText } }),
-                Card(new StackPanel { Spacing = 4, Children = { H("Datei", 14), _platzPfad, _platzInhalt } }),
-                Card(new StackPanel { Spacing = 4, Children = { H("Vorschau", 14), _platzVorschau } }),
                 Card(new StackPanel { Spacing = 4, Children = { H("Prüfung", 14), _platzPruefung } }),
-                Card(new StackPanel { Spacing = 4, Children = { H("Export", 14), _platzExport } })
+                Card(new StackPanel { Spacing = 4, Children = { H("Export", 14), _platzExport } }),
+                Card(new StackPanel { Spacing = 4, Children = { H("Vorschau", 14), _platzVorschau } }),
+                Card(new StackPanel { Spacing = 4, Children = { H("Datei", 14), _platzPfad, _platzInhalt } }),
+                Card(new StackPanel { Spacing = 4, Children = { H("Rückfrage", 14), _platzFragen } }),
+                Card(new StackPanel { Spacing = 4, Children = { H("Freigabe", 14), _platzFreigabeText } })
             }
         };
         Paint(_workspaceResult);

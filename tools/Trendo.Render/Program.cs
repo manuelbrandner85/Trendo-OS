@@ -34,14 +34,15 @@ if (Environment.GetEnvironmentVariable("TRENDO_DEMO_CASE") is not null)
 var platz = Environment.GetEnvironmentVariable("TRENDO_ARBEITSPLATZ");
 if (platz is "blatt" or "brief")
 {
-    win.Core.Projects.Create("umzug", "Umzug");
     if (platz == "blatt")
     {
+        win.Core.Projects.Create("umzug", "Umzug");
         win.ShowWorkspace("X-11");
         win.SubmitWorkspace("Umzug", "Kartons beschriften und den Vertrag prüfen.");
     }
     else
     {
+        win.Core.Projects.Create("amt", "Amt");
         win.ShowWorkspace("STUDIO-LETTER-01");
         win.SubmitWorkspace("Amt", "Bitte um eine Frist.");
     }
