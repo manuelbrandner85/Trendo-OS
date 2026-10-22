@@ -29,7 +29,7 @@ public partial class MainWindow
         try
         {
             if (FailNextPage == key) { FailNextPage = null; throw new InvalidOperationException("Testfehler"); }
-            return _showMap[key]();
+            return WithPromptBar(key, _showMap[key]());
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {

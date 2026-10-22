@@ -28,17 +28,18 @@ public class StudioClickTests
 
     static List<Button> Buttons(Window w, string prefix) => w.GetVisualDescendants().OfType<Button>().Where(b => b.Name?.StartsWith(prefix) == true && b.IsEffectivelyVisible).ToList();
 
-    [AvaloniaFact(DisplayName = "Startseite: jede Studio-Kachel öffnet per echtem Mausklick eine andere Seite")]
+    [AvaloniaFact(DisplayName = "Startseite: die neun bekannten Studios öffnen aus dem Startmenü per echtem Mausklick eine eigene Seite")]
     public async Task Startseite_Kacheln()
     {
         var (w, _, _) = Ui.Open();
-        w.Show("start"); await Settle();
-        var names = Buttons(w, "tile-").Select(b => b.Name!).ToList();
-        Assert.Equal(9, names.Count);
-        foreach (var n in names)
+        string[] ids = ["STUDIO-ONLINE-BUSINESS-01", "STUDIO-LETTER-01", "CORE-05", "CORE-06", "SYS-10", "CORE-02", "CORE-08", "CORE-07", "CORE-11"];
+        foreach (var id in ids)
         {
             w.Show("start"); await Settle();
-            RealClick(w, Buttons(w, n).Single()); await Settle();
+            RealClick(w, Buttons(w, "start-button").Single()); await Settle();
+            var item = w.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "sm-az-" + id);
+            item.BringIntoView(); await Settle();
+            RealClick(w, Buttons(w, "sm-az-" + id).Single()); await Settle();
             Assert.NotEqual("start", w.CurrentView);
             Assert.NotEqual("studios", w.CurrentView);
         }

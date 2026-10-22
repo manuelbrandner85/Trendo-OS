@@ -16,11 +16,15 @@ public sealed class DeskWindow(string id, string page, string title)
     public bool Moved { get; set; }
 }
 
-/// <summary>Fensterverwaltung wie bei Windows: öffnen, nach vorn holen, minimieren, maximieren, schließen, verschieben. Reihenfolge = Stapel (letztes = oben).</summary>
+/// <summary>Fensterverwaltung innerhalb von Trendo: öffnen, nach vorn holen, minimieren, maximieren, schließen, verschieben. Reihenfolge = Stapel (letztes = oben). Ersetzt nicht die Windows-Taskleiste.</summary>
 public sealed class WindowManager
 {
-    public const int MaxOpen = 8;
+    /// <summary>Ab dieser Zahl erscheint ein Hinweis. Es wird trotzdem nichts geschlossen und keine Eingabe verworfen.</summary>
+    public const int NoticeAfter = 24;
+    public const string ManyWindowsNotice = "Viele Fenster sind offen. Trendo schließt keines davon und verwirft keine Eingaben. Schließe Fenster, die du nicht mehr brauchst.";
     public const double MinW = 360, MinH = 240, TitleBar = 36;
+    /// <summary>Hinweis, wenn sehr viele Fenster offen sind. Null, solange alles übersichtlich bleibt.</summary>
+    public string? Notice { get; private set; }
     private readonly List<DeskWindow> _stack = [];
     private readonly List<DeskWindow> _taskOrder = [];
     public double AreaW { get; set; } = 1000;
@@ -34,15 +38,14 @@ public sealed class WindowManager
     public DeskWindow? Active => _stack.LastOrDefault(w => !w.Minimized);
     public DeskWindow? Get(string id) => _stack.FirstOrDefault(w => w.Id == id);
 
-    /// <summary>Öffnet ein neues Fenster oder holt ein vorhandenes nach vorn. Bei mehr als 8 wird das am längsten unbenutzte geschlossen.</summary>
+    /// <summary>Öffnet ein neues Fenster oder holt ein vorhandenes nach vorn. Ein bereits geöffnetes Studio wird aktiviert, nie dupliziert. Andere Fenster bleiben offen – nichts wird still geschlossen.</summary>
     public (DeskWindow Window, DeskWindow? Closed) Open(string id, string page, string title)
     {
-        DeskWindow? closed = null;
         if (Get(id) is { } w) { w.Page = page; w.Title = title; Activate(id); return (w, null); }
-        if (_stack.Count >= MaxOpen) { closed = _stack[0]; Close(closed.Id); }
-        var n = _taskOrder.Count % 5;
-        w = new DeskWindow(id, page, title) { W = Math.Max(MinW, AreaW * 0.9), H = Math.Max(MinH, AreaH * 0.9), X = 16 + n * 24, Y = 8 + n * 24 };
-        Clamp(w); _stack.Add(w); _taskOrder.Add(w); return (w, closed);
+        if (_stack.Count >= NoticeAfter) Notice ??= ManyWindowsNotice;
+        var n = _taskOrder.Count % 8;
+        w = new DeskWindow(id, page, title) { W = Math.Max(MinW, AreaW * 0.9), H = Math.Max(MinH, AreaH * 0.9), X = 16 + n * 28, Y = 8 + n * 28 };
+        Clamp(w); _stack.Add(w); _taskOrder.Add(w); return (w, null);
     }
 
     /// <summary>Zustand aller Fenster (Taskleisten-Reihenfolge) und Stapel von unten nach oben – zum Wiederherstellen nach dem Neuaufbau.</summary>
@@ -63,7 +66,11 @@ public sealed class WindowManager
     public void Activate(string id) { if (Get(id) is not { } w) return; w.Minimized = false; _stack.Remove(w); _stack.Add(w); }
     public void Minimize(string id) { if (Get(id) is { } w) w.Minimized = true; }
     public void ToggleMaximize(string id) { if (Get(id) is { } w) { w.Maximized = !w.Maximized; Activate(id); } }
-    public void Close(string id) { if (Get(id) is { } w) { _stack.Remove(w); _taskOrder.Remove(w); } }
+    public void Close(string id)
+    {
+        if (Get(id) is { } w) { _stack.Remove(w); _taskOrder.Remove(w); }
+        if (_stack.Count <= NoticeAfter) Notice = null;
+    }
     public void MinimizeAll() { foreach (var w in _stack) w.Minimized = true; }
 
     /// <summary>Taskleisten-Klick: aktives Fenster minimieren, sonst nach vorn holen.</summary>
