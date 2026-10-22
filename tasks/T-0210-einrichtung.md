@@ -1,7 +1,9 @@
 # T-0210: Einrichtung – Auswahl sichtbar, Reparieren mit Rückmeldung
 
+**Ausführung:** Box-Agent (nicht Grok Build). Windows-Nachweise am PC über den Integrator.
+
 **Ziel:** Im Einrichtungsassistenten sehe ich, was ich gewählt habe, und „Reparieren“ sagt, was es getan hat.
-**Branch:** grok/T-0210-einrichtung
+**Branch:** box/T-0210-einrichtung
 **Dateien/Bereich:** `MainWindow.Setup.cs`, `MainWindow.Heal.cs`, Tests.
 **Befund:** Design-Wahl (Dunkel/Hell/Kontrast) und Paket-Wahl (KI, Büro, Programmieren, Medien, Briefe scannen) ändern im Assistenten nichts Sichtbares; 6 „Reparieren“-Knöpfe und „Jetzt prüfen und reparieren“ ohne Rückmeldung; „Ordner wählen …“ ohne Dialog.
 **Fertig, wenn:**
@@ -11,4 +13,4 @@
 - [ ] „Ordner wählen …“ öffnet einen Ordnerdialog.
 - [ ] alle drei Testprojekte grün (Zahlen in den Bericht)
 **Nicht tun:** nichts ohne Rückfrage installieren.
-**Am Ende:** Branch pushen, Bericht. Keinen PR öffnen.
+**Am Ende:** Branch pushen, Bericht. PR über den üblichen Ablauf (kleiner PR, main grün).

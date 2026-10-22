@@ -1,7 +1,9 @@
 # T-0200: 3D-Studio – eigene Objekte bauen, Blender mit einem Klick
 
+**Ausführung:** Box-Agent (nicht Grok Build). Windows-Nachweise am PC über den Integrator.
+
 **Ziel:** Im Studio „3D-Modelle erstellen“ kann ich ein eigenes Objekt beschreiben oder zusammenbauen, ansehen, exportieren und mit einem Klick in Blender weiterbearbeiten.
-**Branch:** grok/T-0200-3d-studio
+**Branch:** box/T-0200-3d-studio
 **Dateien/Bereich:** `src/Trendo.App/MainWindow.W4Studio3D.cs`, `src/Trendo.Core/Studio3D.cs`, neue Hilfsdateien unter `src/Trendo.Core/` (3D), Tests `tests/Trendo.App.Tests/W4Studio3DUiTests.cs`, `tests/Trendo.Core.Tests/`.
 **Befund (Audit 22.10.):** nur 4 feste Formen (Würfel, Kugel, Affenkopf, 3D-Schrift), keine Maße, kein Material außer einer festen Farbe, kein Import per Dateiauswahl, „Blender öffnen“ startet Blender ohne das Modell, Vorschau nur mit Blender.
 **Fertig, wenn (aus Sicht des Nutzers):**
@@ -17,4 +19,4 @@
 - [ ] Am PC mit echtem Blender: Tisch bauen → STL exportieren → in Blender öffnen; Screenshot und Datei-Nachweis im Bericht.
 - [ ] alle drei Testprojekte grün (Zahlen in den Bericht)
 **Nicht tun:** Blender nicht mitliefern oder ungefragt installieren, keine Studionamen ändern, keine anderen Studios.
-**Am Ende:** Branch pushen, Bericht `tasks/T-0200-3d-studio.bericht.md`. Keinen PR öffnen (macht Grok Bot).
+**Am Ende:** Branch pushen, Bericht `tasks/T-0200-3d-studio.bericht.md`. PR über den üblichen Ablauf (kleiner PR, main grün).
