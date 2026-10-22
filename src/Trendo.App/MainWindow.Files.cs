@@ -107,6 +107,7 @@ public partial class MainWindow
             }
         }
         if (got is { Length: > 0 }) Fill(tb, got);
+        if (string.Equals(tb.Name, "wiz-folder", StringComparison.Ordinal)) NoteWizardFolder(tb, got is { Length: > 0 });
     }
 
     /// <summary>Gezogene Dateien: aufs Feld → dieses Feld; aufs Studio → erstes leeres passendes Feld der Seite.</summary>
