@@ -18,6 +18,17 @@ class AgentConfigurationTests(unittest.TestCase):
   settings=json.loads((ROOT/'.claude/settings.json').read_text(encoding='utf-8'))
   self.assertIn('PreToolUse',settings['hooks']);self.assertIn('SubagentStart',settings['hooks'])
   self.assertIn('trendo-readonly',json.loads((ROOT/'.mcp.json').read_text(encoding='utf-8'))['mcpServers'])
+ def test_migration_rules(self):
+  # M1: Grok-Regeln bleiben über den Import aktiv; M3: harte Sperren unabhängig vom Hook.
+  self.assertIn('\n@AGENTS.md\n',(ROOT/'CLAUDE.md').read_text(encoding='utf-8'))
+  self.assertTrue((ROOT/'docs/claude/MIGRATION_GROK_CLAUDE.md').is_file())
+  perms=json.loads((ROOT/'.claude/settings.json').read_text(encoding='utf-8'))['permissions']
+  for rule in ['Bash(git push * main)','PowerShell(git push *--force*)','Bash(*installer/release.sh*)',
+               'PowerShell(Remove-Item *-Recurse*)','Edit(/AGENTS.md)','Edit(/docs/spec/decisions.yaml)']:
+   self.assertIn(rule,perms['deny'])
+  self.assertIn('Bash(git push *)',perms['ask'])
+  ignored=(ROOT/'.gitignore').read_text(encoding='utf-8').splitlines()
+  for p in ['.trendo-local/','.claude/worktrees/','.claude/settings.local.json']:self.assertIn(p,ignored)
  def test_decisions(self):
   txt=(ROOT/'docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md').read_text(encoding='utf-8')
   for s in ['42–85','86','87–96','97','120-Stunden']:self.assertIn(s,txt)

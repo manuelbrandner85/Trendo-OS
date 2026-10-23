@@ -37,5 +37,10 @@ Im geprüften öffentlichen GitHub `main` sind `.NET 10`, `Avalonia`, `Trendo.sl
 ## Migration
 `AGENTS.md` enthält weiterhin **Grok-Build-spezifische** Regeln und einen früheren Merge-/Freigabeverantwortlichen. Nicht blind überschreiben. Deren Security-/Forensik-/QA-Regeln respektieren, Unterschiede als explizite Migration dokumentieren. Bei unklarem Besitzer oder Konflikt NICHT selbst freigeben.
 
+### Bestehende Projektregeln (verbindlich, unverändert eingebunden)
+@AGENTS.md
+
+Für Claude Code gelten die Fach-, Sicherheits-, QA- und Berichtsregeln aus `AGENTS.md` uneingeschränkt. **Ersetzt** sind nur die Grok-spezifischen Teile, die in `docs/claude/MIGRATION_GROK_CLAUDE.md` aufgelistet sind (Grok-Bot-/Grok-Build-Rollen, Shell-Einschränkungen des Grok-`dontAsk`-Modus, eigenständiger Push von `grok/*`-Branches). Bei Widerspruch gilt die strengere Regel.
+
 ## Abschlussbericht
 Immer: Aufgabe, Branch/Worktree, geänderte Dateien, Kommandos, wirklich ausgeführte Tests mit Exitcodes, Artefaktpfade, offene Punkte, Risiken und Status. Keine erdachten Ergebnisse.

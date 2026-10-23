@@ -34,3 +34,9 @@ installer/companion/out/
 
 # Grok-Build-Protokolle (lokal)
 tasks/logs/
+
+# Claude Code (lokal): Job-Status/Ereignisse, eigene Worktrees, persönliche Einstellungen
+.trendo-local/
+.claude/worktrees/
+.claude/settings.local.json
+CLAUDE.local.md
