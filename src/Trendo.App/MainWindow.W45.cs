@@ -128,6 +128,8 @@ public partial class MainWindow
         _progOut = ""; _qualOut = ""; _letterMsg = ""; _secMsg = ""; _devMsg = ""; _forMsg = ""; _hashOut = "";
         _wizTap = ""; _mailMsg = ""; _wissenMsg = ""; _askState = ""; _agentMsg = ""; _netStatus = "";
         _noteMsg = ""; _healNote = ""; W7Msg = ""; _depAsk = "";
+        _settingsNote = ""; _studioNote = "";
+        _kiText.Text = "Hallo! Ich bin noch nicht verbunden. Mit „KI einrichten“ installierst du die kostenlose lokale KI – danach kannst du mir Aufgaben geben, Studios öffnen oder Fragen stellen.";
         if (_depLog.Text?.Length > 0) _depLog.Text = "";
         Bench.CamStatus = "Noch kein Bild. Kamera suchen oder eine rtsp-Adresse eintragen.";
         Bench.DriveStatus = "Die Steuerung steht auf Simulation. Es bewegt sich nichts Echtes.";

@@ -1,4 +1,5 @@
 using System.Text;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
@@ -32,7 +33,7 @@ public static class ButtonProbe
             win = Fresh(win, page);
             var body = Body(win, page);
             if (body is null) { failures.Add(page + ": Seiteninhalt nicht gefunden"); continue; }
-            var buttons = body.GetLogicalDescendants().OfType<Button>().Where(b => b.IsVisible && b.IsEnabled).ToList();
+            var buttons = body.GetLogicalDescendants().OfType<Button>().Where(b => Sichtbar(b, page)).ToList();
             if (buttons.Count == 0) { failures.Add(page + ": kein sichtbarer aktiver Knopf"); continue; }
             var seen = new HashSet<string>();
             foreach (var spec in buttons)
@@ -47,8 +48,8 @@ public static class ButtonProbe
                 body = Body(win, page);
                 if (body is null) { failures.Add($"{page}\t{name}\t{label}\tSeite fehlt nach Neuaufbau"); continue; }
                 var b = name.Length > 0
-                    ? body.GetLogicalDescendants().OfType<Button>().FirstOrDefault(x => x.Name == name && x.IsVisible && x.IsEnabled)
-                    : body.GetLogicalDescendants().OfType<Button>().FirstOrDefault(x => string.IsNullOrEmpty(x.Name) && Label(x) == label && x.IsVisible && x.IsEnabled);
+                    ? body.GetLogicalDescendants().OfType<Button>().FirstOrDefault(x => x.Name == name && Sichtbar(x, page))
+                    : body.GetLogicalDescendants().OfType<Button>().FirstOrDefault(x => string.IsNullOrEmpty(x.Name) && Label(x) == label && Sichtbar(x, page));
                 if (b is null) continue;
                 var t0 = Texts(body); var v0 = win.CurrentView; var l0 = launcher.Opened.Count; var f0 = Stamp(root);
                 try
@@ -105,10 +106,21 @@ public static class ButtonProbe
         b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
     }
 
+    /// <summary>Auf dem Startbildschirm zählt ein Knopf nur, wenn er und jeder Vorfahr eingeblendet sind. Das geschlossene Startmenü bleibt außen vor.</summary>
+    static bool Sichtbar(Control c, string page)
+    {
+        if (!c.IsVisible || !c.IsEnabled) return false;
+        if (page != "start") return true;
+        for (StyledElement? p = c.Parent; p is not null; p = p.Parent)
+            if (p is Visual v && !v.IsVisible) return false;
+        return true;
+    }
+
     static Control? Body(MainWindow w, string page)
     {
+        // Startbildschirm: Suche liegt im Schreibtisch, die Knöpfe im Dock, in den Widgets und im Startknopf.
         if (page == "start")
-            return w.GetLogicalDescendants().OfType<Control>().FirstOrDefault(c => c.Name == "desk-host");
+            return w.GetLogicalDescendants().OfType<Control>().FirstOrDefault(c => c.Name == "shell");
         return w.GetLogicalDescendants().OfType<ContentControl>().FirstOrDefault(c => c.Name == "win-body-" + w.WindowGroupOf(page));
     }
 
@@ -120,7 +132,11 @@ public static class ButtonProbe
         var sb = new StringBuilder();
         foreach (var c in root.GetLogicalDescendants())
         {
-            if (c is TextBlock t) sb.Append(t.Text).Append('|');
+            if (c is TextBlock t)
+            {
+                if (t.Name is string n && (n.StartsWith("metric-", StringComparison.Ordinal) || n is "sys-state" or "desk-clock" or "desk-date" or "desk-weekday")) continue;
+                sb.Append(t.Text).Append('|');
+            }
             else if (c is SelectableTextBlock s) sb.Append(s.Text).Append('|');
             else if (c is TextBox x) sb.Append(x.Text).Append('|');
             else if (c is ToggleButton tg) sb.Append(tg.IsChecked == true ? "☑" : "☐").Append(tg.Content as string).Append('|');

@@ -28,6 +28,8 @@ public sealed partial class MainWindow
 
     private static string _theme = "dunkel";
     private string _settingsSection = "aussehen";
+    /// <summary>Hinweis, wenn der offene Einstellungsbereich erneut gewählt wird.</summary>
+    private string _settingsNote = "";
     /// <summary>Nur für den direkten Neuaufbau: die nächste Instanz öffnet denselben Abschnitt. Sonst immer „Aussehen“.</summary>
     private static string? _reopenSection;
     /// <summary>Farbe je Design: im hellen Design die helle Variante.</summary>
@@ -193,6 +195,7 @@ public sealed partial class MainWindow
     private Control SettingsView()
     {
         var sections = new StackPanel { Spacing = 12 };
+        sections.Children.Add(new TextBlock { Name = "settings-note", Text = _settingsNote, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = _settingsNote.Length > 0 });
         Control Section(string id, string title, Control body) => new StackPanel { Name = "settings-section-" + id, Spacing = 6, IsVisible = _settingsSection == id, Children = { H(title, 15), body } };
 
         var themes = new WrapPanel();
@@ -273,7 +276,12 @@ public sealed partial class MainWindow
             var on = _settingsSection == id;
             var b = new Button { Name = "settings-nav-" + id, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 8), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1),
                 Content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Ico(icon, 16, Text), new TextBlock { Text = label, Foreground = Text, VerticalAlignment = VerticalAlignment.Center } } } };
-            b.Click += (_, _) => { _settingsSection = id; Show("settings"); };
+            b.Click += (_, _) =>
+            {
+                _settingsNote = _settingsSection == id ? "Dieser Bereich ist schon offen." : "";
+                _settingsSection = id;
+                Show("settings");
+            };
             nav.Children.Add(b);
         }
         NavItem("aussehen", "Aussehen", Mdi.Palette);
