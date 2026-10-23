@@ -13,23 +13,73 @@ public partial class MainWindow
     public ShareServer? ActiveShare { get; private set; }
     private string _shareMsg = "", _shareFolder = "";
     public IPAddress? ShareAddressOverride { get; set; }
+    /// <summary>Fragt den Menschen, ob der Ordner geteilt werden darf. Standard: deutscher Dialog („Ablehnen“ ist Standard, Esc = Ablehnen).
+    /// Tests setzen hier eine eigene Antwort ein.</summary>
+    internal Func<string, TimeSpan, Task<bool>>? ShareConfirm { get; set; }
+    /// <summary>Die zuletzt angefragte Freigabe (für Tests und Anzeige).</summary>
+    public ApprovalRequest? LastShareRequest { get; private set; }
 
     private void InitSys06()
     {
         _showMap["teilen"] = ShareView; SysTabs.Add(("teilen", "Teilen im Heimnetz"));
         StudioPages["SYS-06"] = "teilen";
         ExtraPages.Add(("Ordner im Heimnetz teilen", "teilen", ["teilen", "freigabe", "netzwerk", "handy", "uebertragen", "wlan"]));
-        Closing += (_, _) => { ActiveShare?.DisposeAsync().AsTask().Wait(1000); };
+        Closing += OnClosingStopShare;
+    }
+
+    private bool _closingAfterShareStop;
+
+    /// <summary>Nicht im UI-Thread blockieren: Schließen anhalten, Freigabe sauber beenden, dann wirklich schließen.</summary>
+    private async void OnClosingStopShare(object? sender, WindowClosingEventArgs e)
+    {
+        if (ActiveShare is null || _closingAfterShareStop) return;
+        e.Cancel = true;
+        _closingAfterShareStop = true;
+        try { await StopShareAsync(); }
+        catch (Exception ex) { _core.Audit.Append(Principal.LocalOwner.Name, "share.stop.error", ex.GetType().Name); }
+        Close();
     }
 
     public async Task<bool> StartShareAsync(string folder, TimeSpan dur, IPAddress ip)
     {
         await StopShareAsync();
         var req = _core.Approvals.Request(Principal.LocalOwner, "share.start", $"Ordner {Path.GetFileName(folder)} im Heimnetz teilen (nur lesen, {dur.TotalHours:0} h)", folder);
+        LastShareRequest = req;
+        var ok = false;
+        try { ok = await (ShareConfirm ?? ConfirmShareDialog)(folder, dur); }
+        catch { ok = false; }
+        if (!ok)
+        {
+            _core.Approvals.Deny(req.Id, Principal.LocalOwner);
+            _shareMsg = "Freigabe abgelehnt";
+            return false;
+        }
         _core.Approvals.Approve(req.Id, Principal.LocalOwner);
         ActiveShare = _core.Approvals.Execute(req.Id, "share.start", folder, () => new ShareServer(new FolderShare(folder, dur), ip, _core.Audit));
         _shareMsg = "Freigabe läuft. Öffne den Link auf dem Handy oder einem anderen PC im selben WLAN.";
         return true;
+    }
+
+    private async Task<bool> ConfirmShareDialog(string folder, TimeSpan dur)
+    {
+        var hours = dur.TotalHours;
+        var dauer = hours == 1 ? "1 Stunde" : $"{hours:0} Stunden";
+        var dlg = new Window
+        {
+            Title = "Ordner teilen?", Width = 460, SizeToContent = SizeToContent.Height, CanResize = false,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+        };
+        var allow = new Button { Name = "share-confirm-allow", Content = "Erlauben" };
+        var deny = new Button { Name = "share-confirm-deny", Content = "Ablehnen", IsDefault = true, IsCancel = true };
+        allow.Click += (_, _) => dlg.Close(true);
+        deny.Click += (_, _) => dlg.Close(false);
+        dlg.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Escape) { e.Handled = true; dlg.Close(false); } };
+        dlg.Content = new StackPanel { Margin = new Thickness(16), Spacing = 10, Children = {
+            new TextBlock { Text = "Soll dieser Ordner im Heimnetz geteilt werden?", FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+            new TextBlock { Name = "share-confirm-text", Text = $"Ordner: {folder}\nDauer: {dauer}\nAndere Geräte im selben WLAN können die Dateien nur lesen.", TextWrapping = TextWrapping.Wrap },
+            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, Children = { deny, allow } } } };
+        dlg.Opened += (_, _) => deny.Focus();
+        return await dlg.ShowDialog<bool>(this);
     }
 
     public async Task StopShareAsync()
