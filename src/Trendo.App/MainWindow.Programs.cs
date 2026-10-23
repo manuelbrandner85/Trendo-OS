@@ -80,10 +80,15 @@ public partial class MainWindow
     {
         var a = ExternalApps.Get(appId); var id = $"{appId}-{page}{suffix}";
         if (AppPath(appId) is not null)
-            return Act($"open-{id}", $"In {a.Name} öffnen", async () =>
+        {
+            var probe = Act($"probe-{id}", "Verbindung prüfen", async () =>
             {
                 var b = await PruefenUndMerken(appId);
-                if (b.Stand != FachprogrammStand.Erreichbar) { Say(Gesperrt(b.Hinweis), page); return; }
+                Say(b.Stand == FachprogrammStand.Erreichbar ? b.Hinweis : Gesperrt(b.Hinweis), page);
+            });
+            var open = Act($"open-{id}", $"In {a.Name} öffnen", () =>
+            {
+                if (!IstBereit(appId)) { Say(Gesperrt("Zuerst „Verbindung prüfen“."), page); return; }
                 IReadOnlyList<string> args;
                 try
                 {
@@ -97,15 +102,16 @@ public partial class MainWindow
                 }
                 Say(MitFreigabeOeffnen(appId, a.Name, args).Hinweis, page);
             });
+            return new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { probe, open } };
+        }
         if (!_appAsk.Contains(id))
             return Act($"setup-{id}", $"{a.Name} einrichten …", () => { _appAsk.Add(id); Show(page); });
         var c = DependencyCatalog.All.FirstOrDefault(x => x.Id == a.ComponentId);
         var q = new TextBlock { Name = $"ask-{id}", Text = $"{a.Name} fehlt. Einrichten geht erst, wenn die Prüfung bestanden ist. Ohne bestandene Prüfung wird nichts geöffnet und nichts heruntergeladen.", Foreground = Text, TextWrapping = Avalonia.Media.TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center, MaxWidth = 380 };
-        var yes = Act($"setup-yes-{id}", "Ja, einrichten", async () =>
+        var yes = Act($"setup-yes-{id}", "Ja, einrichten", () =>
         {
             _appAsk.Remove(id);
-            var b = await PruefenUndMerken(appId);
-            Say(b.Stand == FachprogrammStand.Erreichbar ? "Schon vorhanden. Es wird nichts heruntergeladen." : Gesperrt(b.Hinweis), page);
+            Say(Gesperrt("Zuerst „Verbindung prüfen“. Es ist nichts installiert."), page);
         }, true);
         var no = Act($"setup-no-{id}", "Abbrechen", () => { _appAsk.Remove(id); _core.Audit.Append(Principal.LocalOwner.Name, "deps.declined", c?.Id ?? appId); Show(page); });
         return new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { q, yes, no } };
@@ -203,6 +209,9 @@ public partial class MainWindow
         return _fach;
     }
 
+    private bool IstBereit(string id) =>
+        _fachStand.TryGetValue(id, out var b) && b.Angebunden && b.Stand == FachprogrammStand.Erreichbar && b.Pfad is not null;
+
     private static bool KannOeffnen(FachprogrammBericht? bericht) =>
         bericht is { Angebunden: true, Pfad: not null } && bericht.Stand is FachprogrammStand.Erreichbar or FachprogrammStand.FreigabeNoetig;
 
@@ -218,10 +227,9 @@ public partial class MainWindow
             var path = AppPath(a.Id);
             var line = new TextBlock { Name = $"prog-state-{a.Id}", Text = path is not null ? $"✓ {a.Name} – {a.Use}\n{path}" : $"✗ {a.Name} – {a.Use} – nicht gefunden", Foreground = Text, TextWrapping = Avalonia.Media.TextWrapping.Wrap };
             Control act = path is not null
-                ? Act($"prog-run-{a.Id}", "Starten", async () =>
+                ? Act($"prog-run-{a.Id}", "Starten", () =>
                 {
-                    var b = await PruefenUndMerken(a.Id);
-                    if (b.Stand != FachprogrammStand.Erreichbar) { Say(Gesperrt(b.Hinweis), V); return; }
+                    if (!IstBereit(a.Id)) { Say(Gesperrt("Zuerst „Verbindung prüfen“."), V); return; }
                     Say(MitFreigabeOeffnen(a.Id, a.Name, []).Hinweis, V);
                 })
                 : OpenInButton(a.Id, () => null, V);
@@ -252,6 +260,12 @@ public partial class MainWindow
                 TextWrapping = Avalonia.Media.TextWrapping.Wrap
             };
             var buttons = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
+            buttons.Children.Add(Act("fach-suche-" + f.Id, "Suchen", () =>
+            {
+                var b = FachAdapter().Erkennen(f.Id);
+                _fachStand[f.Id] = b;
+                Say(b.Hinweis, view);
+            }));
             buttons.Children.Add(Act("fach-probe-" + f.Id, "Verbindung prüfen", async () =>
             {
                 var b = await FachAdapter().ProbeAsync(f.Id);
@@ -378,7 +392,8 @@ public partial class MainWindow
                 Say("Fertig gemeldet, aber das Programm ist nicht da. Es wird nichts weiter geladen.", view);
                 return;
             }
-            var bericht = await PruefenUndMerken(programm.Id);
+            var bericht = FachAdapter().Erkennen(programm.Id);
+            _fachStand[programm.Id] = bericht;
             Say(bericht.Hinweis, view);
         }
         catch (OperationCanceledException)

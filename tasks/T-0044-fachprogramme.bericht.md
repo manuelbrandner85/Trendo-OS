@@ -17,7 +17,7 @@ Auf den Seiten Programme, Dokumente, Software und Sendung gehen diese Knöpfe je
 
 Ohne bestandene Prüfung wird nichts geöffnet und nichts heruntergeladen.
 
-LibreOffice, OBS und VS Code starten wieder, aber nur nach einer kurzen Prüfung und nach der Freigabe. Die Prüfung schaut, ob die Programmdatei da ist, und fragt die Version ab, ohne ein Fenster offenzuhalten: `soffice --version`, `code --version`, und außerhalb von Windows `obs --version`. Unter Windows liest OBS nur die Dateiversion und startet dafür keinen Prozess. Die Abfrage wartet höchstens acht Sekunden. Antwortet sie mit Code 0, gilt die Prüfung als bestanden, und der alte Knopf öffnet das Programm. Fehlt die Datei, ist keine Version lesbar oder läuft die Zeit ab, erscheint ein deutscher Satz. Es wird dann nichts geöffnet.
+LibreOffice, OBS und VS Code starten wieder, aber nur nach „Verbindung prüfen“ und nach der Freigabe. „Starten“ und „In … öffnen“ starten die Prüfung nicht selbst. Die Prüfung schaut, ob die Programmdatei da ist, und fragt die Version ab, ohne ein Fenster offenzuhalten: `soffice --version`, `code --version`, und außerhalb von Windows `obs --version`. Unter Windows liest OBS nur die Dateiversion und startet dafür keinen Prozess. Die Abfrage wartet höchstens acht Sekunden. Antwortet sie mit Code 0, heißt das Ergebnis Bestanden, und der alte Knopf öffnet das Programm. Fehlt die Datei, ist keine Version lesbar oder läuft die Zeit ab, heißt das Ergebnis Fehlgeschlagen. Es wird dann nichts geöffnet.
 
 Die übrige Werkzeugliste bleibt wie bisher. Dort startet LibreOffice nicht von selbst, weil `--version` unter Windows ein Fenster öffnen und hängen kann. Nur der Knopf, den jemand drückt, stellt diese kurze Frage.
 
@@ -37,7 +37,7 @@ Ablauf, wenn der Schalter an ist:
 2. Die Rückfrage nennt Quelle, Größe und Lizenz.
 3. „Ja, installieren“ holt die einmalige Freigabe und ruft dann nur `InstallAsync` auf. Es gibt keinen eigenen Download und kein winget in diesem Knopf.
 4. Der Fortschritt zeigt Prozent und einen kurzen Text. „Abbrechen“ stoppt den Vorgang.
-5. Danach prüft Trendo, ob der Installer das Programm als da meldet, und macht die Verbindungsprüfung erneut.
+5. Danach prüft Trendo, ob der Installer das Programm als da meldet, und sucht die Datei. Die Verbindungsprüfung startet dabei nicht. Die startet nur „Verbindung prüfen“.
 6. Eine Fehlermeldung kommt so an, wie der Installer sie auf Deutsch liefert.
 
 Ist `IsFree` falsch oder `NeedsUserStep` wahr, gibt es nur einen Hinweis mit Link. `InstallAsync` wird nicht aufgerufen. Die Seite öffnet sich erst, wenn man „Seite ansehen“ drückt.
@@ -46,22 +46,26 @@ Ist `IsFree` falsch oder `NeedsUserStep` wahr, gibt es nur einen Hinweis mit Lin
 
 `InstallProgress` stand in der Signatur, aber ohne Feldnamen. Hier heißt es `Percent` und `Meldung`. Wenn BUILD & RELEASE andere Feldnamen nutzt, muss man das beim Zusammenführen anpassen.
 
-Der Katalog als YAML ist nicht in diesem PR. Die Quelle zeigt Trendo so an, wie das Angebot sie liefert. Ob sie offiziell ist, prüft dieser PR nicht. Das gehört zum echten Baustein.
+Der Katalog als YAML ist nicht in diesem PR. Eine Quelle wird nur akzeptiert, wenn sie eine https-Herstellerseite oder eine Paketkennung wie „Hersteller.Programm“ ist. Ob das Paket wirklich das offizielle ist, prüft der echte Baustein.
 
 Die alte Methode im Adapter, die winget aufrufen kann, bleibt für ihre bisherigen Tests. Der neue Knopf ruft sie nicht auf.
 
 ## Zehn Funktionen
 
-Gesucht in `docs/spec/MASTER_BIS_94.md` und `reports/master-94/` auf `cursor/master-bis-94-5d61`, und in `docs/state/` auf `state/docs-state-init`. Die Masterzeile sagt nur: zehn Funktionen, Fachprogramme wie Blender oder Unreal nur bei Bedarf. Das Protokoll `docs/state/DECISIONS.md` vom 23.10.2026 sagt, Manuel habe alle zehn freigegeben, und benennt nur Punkt 7 und Punkt 8. Eine Liste mit zehn Namen gibt es dort nicht. Es wurden keine Namen erfunden.
+Gelesen in `requirements.yaml`, Abschnitt `packages`, Eintrag `PAKET-44`, auf PR #275, Commit `06f8446`. Die Datei `requirements.yaml` auf diesem Branch ist nicht geändert.
 
-Bekannt und in diesem PR umgesetzt, ohne die übrigen zu erfinden:
-
-- Punkt 6: alte Knöpfe „Starten“ und „Einrichten“
-- Punkt 7: kein Download von selbst
-- Punkt 8: fehlendes Programm nur auf Knopf, mit Rückfrage
-- Punkt 10: Abnahmeliste von QA, hier nicht abgehakt
-
-Abweichung bei Punkt 8: die Freigabe nutzt das vorhandene Freigabetor (`ApprovalGate`). Der Download selbst geht nicht über die alte winget-Strecke in `Dependencies`. Den echten Baustein baut BUILD & RELEASE. Dieser PR ruft nur `IProgramInstaller` auf. Eine Quelle wird nur akzeptiert, wenn sie eine https-Herstellerseite oder eine Paketkennung wie „Hersteller.Programm“ ist. Ob das Paket wirklich offiziell ist, prüft der echte Baustein später. Der YAML-Katalog fehlt noch.
+| Punkt | Name | Stand | Grund |
+| --- | --- | --- | --- |
+| P44-01 | Programmkatalog | erledigt | Die Seite „Externe Programme“ listet alle Programme aus dem Katalog. |
+| P44-02 | Nicht vorladen | erledigt | Nach dem Öffnen steht überall „Nicht geladen“. Es startet kein Programm. |
+| P44-03 | Erkennen | erledigt | „Suchen“ zeigt bei einer vorhandenen Datei „Gefunden, nicht geprüft“ und startet nichts. |
+| P44-04 | Prüfen auf Knopfdruck | erledigt | Nur „Verbindung prüfen“ startet die Prüfung. Das Ergebnis heißt Bestanden oder Fehlgeschlagen. Wo eine stille Prüfung ein Fenster öffnen würde, bleibt es bei „nicht geprüft“. |
+| P44-05 | Öffnen nur mit Freigabe | erledigt | Ohne bestandene Prüfung und ohne Freigabe wird nichts geöffnet. |
+| P44-06 | Alle Wege über dieselbe Prüfung | wartet | „Starten“ und „Einrichten“ öffnen nichts ohne bestandene Prüfung. 3D und Spiele bleiben beim alten Weg, bis #251 und #253 gemergt sind. |
+| P44-07 | Kein automatischer Download | erledigt | Beim Start, offline und bei fehlgeschlagener Prüfung wird nichts geladen. |
+| P44-08 | Fehlendes Programm per Knopf | wartet | Rückfrage mit Quelle, Lizenz und Größe ist gebaut. Erst nach Ja spricht der Knopf den Installer an und sucht danach. Der echte Download, zum Beispiel winget, wartet auf den Baustein von BUILD & RELEASE. Bis dahin ist der Knopf aus. |
+| P44-09 | Geheimnisse schützen | erledigt | Ein Test prüft, dass ein geheimer Wert nicht im Protokoll steht. |
+| P44-10 | Echter Start auf dem PC | wartet | Abnahme über QA. Je ein belegter Lauf von Blender, Unreal und LibreOffice auf Manuels PC fehlt. Hier nicht abgehakt. |
 
 ## Geänderte Dateien
 
@@ -86,11 +90,12 @@ Abweichung bei Punkt 8: die Freigabe nutzt das vorhandene Freigabetor (`Approval
 
 Der eine Fehler ist `T-0209` („Jeder sichtbare Knopf … wirkt“): der Reiter „Zeit & Kalender“ auf der Seite Kleine Helfer wurde in diesem Lauf als „ohne Wirkung“ gemeldet. Dieselbe Prüfung allein danach: 1 bestanden, 0 Fehler, 22 Sekunden. Der Reiter gehört nicht zu LibreOffice, OBS oder VS Code. Die neuen Prüfungen waren in dem Lauf dabei und sind nicht der gemeldete Fehler.
 
-Davor, nur die neuen Fälle:
+Abgleich mit P44-01 bis P44-10, nur die betroffenen Tests, am 23.10.2026:
 
 - Core, Paket 44: 10 bestanden, 0 Fehler
-- App, Knöpfe der externen Programme: 12 bestanden, 0 Fehler
-- App, Paket 44 inklusive Installieren-Knopf: 7 bestanden, 0 Fehler
+- App, Katalog, Knöpfe und Installieren: 20 bestanden, 0 Fehler
+
+Die ganze Suite für diesen Abgleich wird danach noch einmal gezählt. Der Lauf davor bleibt der Stand weiter oben.
 
 Der Kopf von Chrome für den PDF-Test startete in diesem Lauf und war danach von selbst weg. Die App ist für das bekannte Papierformat dieses Chrome nicht geändert.
 

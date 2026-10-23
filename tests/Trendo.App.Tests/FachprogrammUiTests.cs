@@ -49,6 +49,7 @@ public class Paket44_FachprogrammUi
             Dispatcher.UIThread.RunJobs();
         }
         Assert.Contains("nicht geklappt", Stand(w, "blender").Text);
+        Assert.Contains("Fehlgeschlagen", Stand(w, "blender").Text);
         Assert.Null(w.TryFind<Button>("fach-start-blender"));
         Assert.Empty(l.Opened);
         Assert.Single(runner.Calls);
@@ -71,11 +72,41 @@ public class Paket44_FachprogrammUi
             Dispatcher.UIThread.RunJobs();
         }
         Assert.Contains("kein Extra-Prozess", Stand(w, "blender").Text);
+        Assert.Contains("Bestanden", Stand(w, "blender").Text);
         Assert.Empty(l.Opened);
         RealClick(w, B(w, "fach-start-blender"));
         Settle();
         Assert.Contains("/fake/blender", l.Opened.Single());
         Assert.DoesNotContain(w.Core.Audit.ReadAll(), e => e.Detail.Contains("/fake/blender") && e.Action.StartsWith("fachprogramm.probe"));
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Paket 44: die Seite listet den Katalog, Suchen startet nichts")]
+    public void Katalog_und_Suchen()
+    {
+        var (w, l, _) = Ui.Open();
+        var runner = new Runner();
+        w.Runner = runner;
+        w.AppPathOverride = id => id == "blender" ? "/fake/blender" : null;
+        w.Show("prog-extern"); Settle();
+        foreach (var p in FachprogrammKatalog.Alle)
+        {
+            Assert.Contains(p.Name, Stand(w, p.Id).Text);
+            Assert.Contains("Nicht geladen", Stand(w, p.Id).Text);
+        }
+        Assert.Empty(runner.Calls);
+        Assert.Empty(l.Opened);
+        RealClick(w, B(w, "fach-suche-blender"));
+        Settle();
+        Assert.Contains("Gefunden, nicht geprüft", Stand(w, "blender").Text);
+        Assert.Empty(runner.Calls);
+        Assert.Empty(l.Opened);
+        Assert.Null(w.TryFind<Button>("fach-start-blender"));
+        RealClick(w, B(w, "fach-suche-unreal"));
+        Settle();
+        Assert.Contains("Nicht geladen", Stand(w, "unreal").Text);
+        Assert.Contains("nichts installiert", Stand(w, "unreal").Text);
+        Assert.Empty(runner.Calls);
         w.Close();
     }
 }

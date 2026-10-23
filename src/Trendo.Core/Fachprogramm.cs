@@ -103,8 +103,8 @@ public sealed class FachprogrammAdapter
         var p = Programm(id);
         var pfad = Finde(p);
         if (pfad is null)
-            return Neu(p, FachprogrammStand.NichtGefunden, "Auf diesem PC nicht gefunden. Trendo hat nichts installiert.", null, null, false);
-        return Neu(p, FachprogrammStand.GefundenNichtGeprueft, "Die Datei liegt da. Ob sie funktioniert, ist noch nicht geprüft.", pfad, null, false);
+            return Neu(p, FachprogrammStand.NichtGefunden, "Nicht geladen. Auf diesem PC nicht gefunden. Trendo hat nichts installiert.", null, null, false);
+        return Neu(p, FachprogrammStand.GefundenNichtGeprueft, "Gefunden, nicht geprüft. Die Datei liegt da. Es läuft nichts.", pfad, null, false);
     }
 
     /// <summary>Kurze Prüfung. LibreOffice, OBS und VS Code fragen die Version ab, ohne ein Fenster zu behalten. Ohne sicheres Prüfargument wird nichts gestartet.</summary>
@@ -113,7 +113,7 @@ public sealed class FachprogrammAdapter
         var p = Programm(id);
         if (p.BrauchtGeheimnis && string.IsNullOrEmpty(_secrets.Get(Slot(p.Id))))
         {
-            var fehlt = Neu(p, FachprogrammStand.NichtErreichbar, "Der Zugang fehlt. Es wurde nichts gesendet.", null, null, false);
+            var fehlt = Neu(p, FachprogrammStand.NichtErreichbar, "Fehlgeschlagen. Der Zugang fehlt. Es wurde nichts gesendet.", null, null, false);
             Merken(fehlt);
             _audit.Append("fachprogramm", "fachprogramm.probe", $"{p.Id} NichtErreichbar zugang");
             return fehlt;
@@ -121,7 +121,7 @@ public sealed class FachprogrammAdapter
         var pfad = Finde(p);
         if (pfad is null)
         {
-            var weg = Neu(p, FachprogrammStand.NichtGefunden, "Auf diesem PC nicht gefunden. Trendo hat nichts installiert.", null, null, false);
+            var weg = Neu(p, FachprogrammStand.NichtGefunden, "Fehlgeschlagen. Auf diesem PC nicht gefunden. Trendo hat nichts installiert.", null, null, false);
             Merken(weg);
             return weg;
         }
@@ -137,8 +137,8 @@ public sealed class FachprogrammAdapter
             return offen;
         }
         var zeitText = versionsabfrage
-            ? "Die Versionsabfrage hat zu lange gedauert. Das Programm wurde nicht gestartet."
-            : "Zeitüberschreitung. Nicht bereit.";
+            ? "Fehlgeschlagen. Die Versionsabfrage hat zu lange gedauert. Das Programm wurde nicht gestartet."
+            : "Fehlgeschlagen. Zeitüberschreitung. Nicht bereit.";
         try
         {
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -150,13 +150,13 @@ public sealed class FachprogrammAdapter
             {
                 var stand = pfad.Contains("WindowsApps", StringComparison.OrdinalIgnoreCase)
                     ? Neu(p, FachprogrammStand.NichtGefunden, "Nur ein Platzhalter, nicht das Programm. Es wurde nichts installiert.", null, null, false)
-                    : Neu(p, FachprogrammStand.NichtErreichbar, $"Die Prüfung hat nicht geklappt (Code {exit}). Es ist nicht bereit.", pfad, zeile, false);
+                    : Neu(p, FachprogrammStand.NichtErreichbar, $"Fehlgeschlagen. Die Prüfung hat nicht geklappt (Code {exit}). Es ist nicht bereit.", pfad, zeile, false);
                 Merken(stand);
                 _audit.Append("fachprogramm", "fachprogramm.probe", $"{p.Id} {stand.Stand} exit={exit}");
                 return stand;
             }
             _deps.Integrate(p.Id, pfad);
-            var ok = Neu(p, FachprogrammStand.Erreichbar, "Die Prüfung hat geklappt. Das Programm ist nicht weiter geladen.", pfad, zeile, false);
+            var ok = Neu(p, FachprogrammStand.Erreichbar, "Bestanden. Die Prüfung hat geklappt. Das Programm ist nicht weiter geladen.", pfad, zeile, false);
             Merken(ok);
             _audit.Append("fachprogramm", "fachprogramm.probe", $"{p.Id} Erreichbar");
             return ok;
@@ -174,7 +174,7 @@ public sealed class FachprogrammAdapter
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            var kaputt = Neu(p, FachprogrammStand.NichtErreichbar, $"Die Prüfung hat nicht geklappt ({ex.GetType().Name}). Es ist nicht bereit.", pfad, null, false);
+            var kaputt = Neu(p, FachprogrammStand.NichtErreichbar, $"Fehlgeschlagen. Die Prüfung hat nicht geklappt ({ex.GetType().Name}). Es ist nicht bereit.", pfad, null, false);
             Merken(kaputt);
             _audit.Append("fachprogramm", "fachprogramm.probe", $"{p.Id} NichtErreichbar {ex.GetType().Name}");
             return kaputt;
@@ -188,7 +188,7 @@ public sealed class FachprogrammAdapter
         if (_probe.TryGetValue(id, out var last) && last.Stand == FachprogrammStand.Erreichbar && last.Pfad is not null)
         {
             _gebunden.Add(id);
-            var verbunden = last with { Angebunden = true, Hinweis = "Verbunden für diesen Start von Trendo. Es läuft kein Extra-Prozess." };
+            var verbunden = last with { Angebunden = true, Hinweis = "Bestanden. Verbunden für diesen Start von Trendo. Es läuft kein Extra-Prozess." };
             _probe[id] = verbunden;
             _audit.Append("fachprogramm", "fachprogramm.anbinden", p.Id);
             return verbunden;
@@ -315,14 +315,14 @@ public sealed class FachprogrammAdapter
         catch { version = null; }
         if (string.IsNullOrWhiteSpace(version))
         {
-            var leer = Neu(p, FachprogrammStand.NichtErreichbar, "Die Datei liegt da, aber eine Version ist nicht lesbar. Das Programm wurde nicht gestartet.", pfad, null, false);
+            var leer = Neu(p, FachprogrammStand.NichtErreichbar, "Fehlgeschlagen. Die Datei liegt da, aber eine Version ist nicht lesbar. Das Programm wurde nicht gestartet.", pfad, null, false);
             Merken(leer);
             _audit.Append("fachprogramm", "fachprogramm.probe", $"{p.Id} NichtErreichbar version");
             return leer;
         }
         if (version.Length > 80) version = version[..80];
         _deps.Integrate(p.Id, pfad);
-        var ok = Neu(p, FachprogrammStand.Erreichbar, "Die Prüfung hat geklappt. Das Programm ist nicht weiter geladen.", pfad, version, false);
+        var ok = Neu(p, FachprogrammStand.Erreichbar, "Bestanden. Die Prüfung hat geklappt. Das Programm ist nicht weiter geladen.", pfad, version, false);
         Merken(ok);
         _audit.Append("fachprogramm", "fachprogramm.probe", $"{p.Id} Erreichbar");
         return ok;

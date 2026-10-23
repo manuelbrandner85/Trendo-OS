@@ -120,10 +120,10 @@ public class Paket44_InstallKnopf
         RealClick(w, B(w, "fach-inst-blender"));
         await Bis(() => w.TryFind<Button>("fach-inst-yes-blender") is not null);
         RealClick(w, B(w, "fach-inst-yes-blender"));
-        await Bis(() => w.GetLogicalTexts().Any(t => t.Contains("kein Extra-Prozess")));
+        await Bis(() => w.GetLogicalTexts().Any(t => t.Contains("Gefunden, nicht geprüft")));
         Assert.Contains(fake.Calls, c => c == "install:blender");
         Assert.Contains(fake.Calls, c => c == "is:blender");
-        Assert.Contains(runner.Calls, c => c.Contains("--version"));
+        Assert.Empty(runner.Calls);
         Assert.DoesNotContain(runner.Calls, c => c.Contains("winget") || c.Contains("curl"));
         w.Close();
     }

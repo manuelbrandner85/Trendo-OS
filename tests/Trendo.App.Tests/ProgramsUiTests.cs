@@ -25,6 +25,9 @@ public class T0203_Programme_Ui
         RealClick(w, B(w, "office-new-privat"));
         var n = l.Opened.Count;
         w.Show("office"); Settle();
+        RealClick(w, B(w, "probe-libreoffice-office"));
+        Settle();
+        Assert.Equal(n, l.Opened.Count);
         RealClick(w, B(w, "open-libreoffice-office"));
         Settle();
         Assert.Equal(n + 1, l.Opened.Count);
@@ -45,7 +48,7 @@ public class T0203_Programme_Ui
         RealClick(w, B(w, "office-new-privat"));
         var n = l.Opened.Count;
         w.Show("office"); Settle();
-        RealClick(w, B(w, "open-libreoffice-office"));
+        RealClick(w, B(w, "probe-libreoffice-office"));
         for (var i = 0; i < 40 && !w.GetLogicalTexts().Any(t => t.Contains("zu lange gedauert")); i++)
         {
             await Task.Delay(40);
@@ -74,6 +77,7 @@ public class T0203_Programme_Ui
         Assert.Equal(0, installs);
         Assert.Empty(l.Opened);
         Assert.Contains(w.GetLogicalTexts(), t => t.Contains("nichts installiert") && t.Contains("Nichts geöffnet"));
+        Assert.DoesNotContain(w.Core.Audit.ReadAll(), e => e.Action.StartsWith("fachprogramm.probe"));
         Assert.Null(w.TryFind<Button>("open-vscode-dev-0"));
         Assert.NotNull(V<Button>(w, "setup-vscode-dev-0"));
     }
@@ -101,6 +105,9 @@ public class T0203_Programme_Ui
         w.Show("sendung"); Settle();
         RealClick(w, B(w, "bc-add-run"));
         var n = l.Opened.Count;
+        RealClick(w, B(w, "probe-obs-sendung"));
+        Settle();
+        Assert.Equal(n, l.Opened.Count);
         RealClick(w, B(w, "open-obs-sendung"));
         Settle();
         Assert.Equal(n + 1, l.Opened.Count);
@@ -122,6 +129,9 @@ public class T0203_Programme_Ui
         w.ObsDirOverride = Path.Combine(root, "obs");
         w.Show("sendung"); Settle();
         RealClick(w, B(w, "bc-add-run"));
+        RealClick(w, B(w, "probe-obs-sendung"));
+        Settle();
+        Assert.Empty(runner.Calls);
         RealClick(w, B(w, "open-obs-sendung"));
         Settle();
         Assert.Empty(runner.Calls);
@@ -141,7 +151,7 @@ public class T0203_Programme_Ui
         w.Show("sendung"); Settle();
         RealClick(w, B(w, "bc-add-run"));
         var n = l.Opened.Count;
-        RealClick(w, B(w, "open-obs-sendung"));
+        RealClick(w, B(w, "probe-obs-sendung"));
         Settle();
         Assert.Equal(n, l.Opened.Count);
         Assert.Empty(runner.Calls);
@@ -160,7 +170,15 @@ public class T0203_Programme_Ui
         foreach (var a in ExternalApps.All) Assert.NotNull(V<Button>(w, "prog-run-" + a.Id));
         RealClick(w, B(w, "prog-run-libreoffice"));
         Settle();
+        Assert.Empty(l.Opened);
+        Assert.Empty(runner.Calls);
+        RealClick(w, B(w, "fach-probe-libreoffice"));
+        Settle();
+        RealClick(w, B(w, "prog-run-libreoffice"));
+        Settle();
         Assert.Equal("/fake/libreoffice ", l.Opened.Single());
+        RealClick(w, B(w, "fach-probe-blender"));
+        Settle();
         RealClick(w, B(w, "prog-run-blender"));
         Settle();
         Assert.Equal(["/fake/libreoffice ", "/fake/blender "], l.Opened);
@@ -179,6 +197,9 @@ public class T0203_Programme_Ui
         var ordner = Path.Combine(w.DevFolder, "meine-seite");
         Directory.CreateDirectory(ordner);
         w.Show("dev"); Settle();
+        RealClick(w, B(w, "probe-vscode-dev-0"));
+        Settle();
+        Assert.Empty(l.Opened);
         RealClick(w, B(w, "open-vscode-dev-0"));
         Settle();
         Assert.Contains(l.Opened, o => o.Contains("/fake/vscode \"") && o.Contains("meine-seite"));
@@ -196,7 +217,14 @@ public class T0203_Programme_Ui
         RealClick(w, B(w, "prog-run-blender"));
         Settle();
         Assert.Empty(l.Opened);
-        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("nicht geklappt") && t.Contains("Nichts geöffnet"));
+        Assert.Empty(((ExitRunner)w.Runner).Calls);
+        RealClick(w, B(w, "fach-probe-blender"));
+        Settle();
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("nicht geklappt") && t.Contains("Fehlgeschlagen"));
+        RealClick(w, B(w, "prog-run-blender"));
+        Settle();
+        Assert.Empty(l.Opened);
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Nichts geöffnet"));
         Assert.DoesNotContain(w.Core.Audit.ReadAll(), e => e.Action == "fachprogramm.aufruf");
     }
 
