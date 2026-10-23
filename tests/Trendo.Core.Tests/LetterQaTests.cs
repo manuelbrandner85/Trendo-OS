@@ -73,7 +73,7 @@ public class LetterQa : IDisposable
     public async Task Qa002_004()
     {
         var soffice = new[] { "/usr/bin/soffice", @"C:\Program Files\LibreOffice\program\soffice.exe" }.FirstOrDefault(File.Exists);
-        if (soffice is null) return; // auf Rechnern ohne LibreOffice: wird im PC-Lauf belegt
+        Assert.SkipUnless(soffice is not null, "Übersprungen: LibreOffice ist nicht installiert.");
         var c = Ready(); var docx = Path.Combine(_store.Dir(c.Id), "brief.docx");
         Letters.WriteDocx(c.Draft, docx);
         var pdf = await PdfExport.ConvertToAsync(new RealProcessRunner(), soffice, docx, "pdf");
@@ -260,7 +260,8 @@ public class LetterOcrReal
     {
         var tess = new[] { "/usr/bin/tesseract", @"C:\Program Files\Tesseract-OCR\tesseract.exe" }.FirstOrDefault(File.Exists);
         var soffice = new[] { "/usr/bin/soffice", @"C:\Program Files\LibreOffice\program\soffice.exe" }.FirstOrDefault(File.Exists);
-        if (tess is null || soffice is null) return;
+        Assert.SkipUnless(tess is not null, "Übersprungen: Tesseract ist nicht installiert.");
+        Assert.SkipUnless(soffice is not null, "Übersprungen: LibreOffice ist nicht installiert.");
         var root = Path.Combine(Path.GetTempPath(), "trendo-ocr-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(root);
         var audit = new AuditLog(Path.Combine(root, "a.jsonl"));
         var run = new RealProcessRunner();

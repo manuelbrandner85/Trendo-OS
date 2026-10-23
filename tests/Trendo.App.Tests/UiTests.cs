@@ -270,7 +270,7 @@ public class StudioDepsUi
     {
         var (w, _, _) = Ui.Open(); var r = new Runner(1); w.Runner = r;
         await w.OpenStudio("CORE-08", "Medien Studio"); Dispatcher.UIThread.RunJobs();
-        if (w.CurrentView == "studios") { w.Close(); return; } // mpv auf dem Testrechner vorhanden → keine Frage nötig
+        if (w.CurrentView == "studios") { w.Close(); Assert.Skip("Übersprungen: mpv ist installiert, die Installationsfrage erscheint nicht."); }
         Assert.Equal("studio-deps", w.CurrentView);
         Assert.Equal("Medien Studio braucht mpv Player. Jetzt installieren?", w.Find<TextBlock>("ask-mpv").Text);
         w.Find<Button>("btn-later-mpv").Press(); Dispatcher.UIThread.RunJobs();
@@ -284,7 +284,7 @@ public class StudioDepsUi
     {
         var (w, l, _) = Ui.Open(); w.Runner = new Runner(1);
         await w.OpenStudio("CORE-06", "Game Studio"); Dispatcher.UIThread.RunJobs();
-        if (w.CurrentView == "studios") { w.Close(); return; }
+        if (w.CurrentView == "studios") { w.Close(); Assert.Skip("Übersprungen: Unreal Engine ist installiert, die geführte Installation erscheint nicht."); }
         Assert.Null(w.TryFind<Button>("btn-yes-unreal"));
         w.Find<Button>("btn-guide-unreal").Press();
         Assert.Contains(l.Opened, o => o.Contains("unrealengine.com"));

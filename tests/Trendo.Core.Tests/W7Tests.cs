@@ -1,3 +1,5 @@
+using System.Net;
+using Trendo.Companion;
 using Trendo.Core;
 using Xunit;
 namespace Trendo.Core.Tests;
@@ -5,6 +7,19 @@ namespace Trendo.Core.Tests;
 public class W7Tests
 {
     static (FusionStore S, AuditLog A, string R) Make() { var r = Path.Combine(Path.GetTempPath(), "trendo-w7-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(r); var a = new AuditLog(Path.Combine(r, "a.jsonl")); return (new FusionStore(r, a), a, r); }
+
+    /// <summary>Startet den Begleiter auf einem freien Port. Bei belegtem Port ein neuer Versuch, die Prüfungen bleiben.</summary>
+    static CompanionServer StartFrei(string stateFile)
+    {
+        HttpListenerException? last = null;
+        for (var i = 0; i < 8; i++)
+        {
+            var srv = new CompanionServer(CompanionServer.FreePort(), stateFile, loopbackOnly: true);
+            try { srv.Start(); return srv; }
+            catch (HttpListenerException ex) { last = ex; srv.Dispose(); }
+        }
+        throw new IOException("Kein freier Port für den Begleiter.", last);
+    }
 
     [Fact(DisplayName = "SYS-01: Modus aus echten Merkmalen, Fähigkeiten ehrlich (Blockiert statt vorgetäuscht), USB nur Anleitung")]
     public void Mode()
@@ -77,14 +92,13 @@ public class W7Tests
         Assert.Equal("Linux-Rechner", LinuxSysInfo.Model(empty)); Assert.Null(LinuxSysInfo.TempC(empty)); Assert.False(LinuxSysInfo.GpioAvailable(empty));
     }
 
-    [Fact(DisplayName = "CORE-04 Begleiter: echter HTTP-Server – Health offen, alles andere nur mit Token, Kopplung, echte OCR, Entkoppeln")]
+    [Fact(DisplayName = "CORE-04 Begleiter: echter HTTP-Server – Health offen, alles andere nur mit Token, Kopplung, Entkoppeln")]
     public async Task Companion_http()
     {
-        if (OperatingSystem.IsWindows()) return; // Begleiter ist für Linux/Pi; auf Windows bräuchte HttpListener eine URL-Freigabe
+        Assert.SkipUnless(!OperatingSystem.IsWindows(), "Übersprungen: der Begleiter-Server läuft in diesem Test nur unter Linux.");
         var (_, _, r) = Make(); var f = Path.Combine(r, "zustand.json");
-        var port = 18000 + Random.Shared.Next(2000);
-        using var srv = new Trendo.Companion.CompanionServer(port, f, loopbackOnly: true); srv.Start();
-        using var h = new HttpClient { BaseAddress = new Uri($"http://127.0.0.1:{port}/") };
+        using var srv = StartFrei(f);
+        using var h = new HttpClient { BaseAddress = new Uri($"http://127.0.0.1:{srv.Port}/") };
         var health = System.Text.Json.JsonSerializer.Deserialize<CompanionHealth>(await h.GetStringAsync("health"))!;
         Assert.Equal("trendo-companion", health.App);
         Assert.Equal(System.Net.HttpStatusCode.Unauthorized, (await h.GetAsync("info")).StatusCode);
@@ -99,16 +113,35 @@ public class W7Tests
         var info = System.Text.Json.JsonSerializer.Deserialize<CompanionInfo>(await h.GetStringAsync("info"))!;
         Assert.True(info.Cpus > 0); Assert.True(info.MemTotalMb > 0);
         Assert.Equal(System.Net.HttpStatusCode.NotFound, (await h.GetAsync("../../etc/passwd")).StatusCode is var sc && sc == System.Net.HttpStatusCode.NotFound ? sc : System.Net.HttpStatusCode.NotFound);
-        if (srv.Tesseract() is not null)
+        Assert.True((await h.PostAsync("unpair", null)).IsSuccessStatusCode);
+        Assert.Equal(System.Net.HttpStatusCode.Unauthorized, (await h.GetAsync("info")).StatusCode);
+    }
+
+    [Fact(DisplayName = "CORE-04 Begleiter: echte OCR mit Tesseract")]
+    public async Task Companion_ocr()
+    {
+        Assert.SkipUnless(!OperatingSystem.IsWindows(), "Übersprungen: der Begleiter-Server läuft in diesem Test nur unter Linux.");
+        var (_, _, r) = Make(); var f = Path.Combine(r, "zustand.json");
+        var srv = new CompanionServer(CompanionServer.FreePort(), f, loopbackOnly: true);
+        try
         {
+            // Erst starten, wenn Tesseract da ist. Sonst belegt der Test keinen Port.
+            if (srv.Tesseract() is null)
+                Assert.Skip("Übersprungen: Tesseract ist nicht installiert.");
+            srv.Dispose();
+            srv = StartFrei(f);
+            using var h = new HttpClient { BaseAddress = new Uri($"http://127.0.0.1:{srv.Port}/") };
+            var st = CompanionState.Load(f); var code = st.NewCode(DateTime.Now); st.Save(f);
+            var ok = await h.PostAsync("pair", new StringContent($"{{\"code\":\"{code}\",\"pcName\":\"Testrechner\"}}"));
+            var pr = System.Text.Json.JsonSerializer.Deserialize<PairResponse>(await ok.Content.ReadAsStringAsync())!;
+            h.DefaultRequestHeaders.Authorization = new("Bearer", pr.Token);
             var img = Path.Combine(AppContext.BaseDirectory, "fixtures", "ocr-pi.png");
             var o = await h.PostAsync("task/ocr?lang=eng", new ByteArrayContent(File.ReadAllBytes(img)));
             Assert.True(o.IsSuccessStatusCode, await o.Content.ReadAsStringAsync());
             var res = System.Text.Json.JsonSerializer.Deserialize<OcrResult>(await o.Content.ReadAsStringAsync())!;
             Assert.Contains("4711", res.Text); Assert.Contains("31.12.2026", res.Text);
         }
-        Assert.True((await h.PostAsync("unpair", null)).IsSuccessStatusCode);
-        Assert.Equal(System.Net.HttpStatusCode.Unauthorized, (await h.GetAsync("info")).StatusCode);
+        finally { try { srv.Dispose(); } catch (InvalidOperationException) { } }
     }
 
     [Fact(DisplayName = "CORE-04 Begleiter: nur Heimnetz-/Loopback-Absender werden bedient")]

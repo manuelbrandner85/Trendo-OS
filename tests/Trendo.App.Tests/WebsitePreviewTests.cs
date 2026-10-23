@@ -26,7 +26,7 @@ public class WebsitePreviewTests
     [Fact(DisplayName = "Webseite: echte Browser-Vorschau je Technik (übersprungen ohne Chrome)")]
     public async Task Preview_screenshots()
     {
-        if (WebsitePreview.FindBrowser() is null) return;
+        Assert.SkipUnless(WebsitePreview.FindBrowser() is not null, "Übersprungen: Chrome oder Chromium ist nicht installiert.");
         var ct = TestContext.Current.CancellationToken;
         var root = Tmp();
         var shotDir = Path.Combine(root, "shots");

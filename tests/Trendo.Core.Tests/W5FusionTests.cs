@@ -30,20 +30,25 @@ public class W5_X01_Fusion
         Assert.Contains("1. Medien: In MP4 umwandeln", Fusion.Plan(R("video-pack")));
     }
 
-    [Fact(DisplayName = "X-01: Video-Paket mit echtem FFmpeg und 3D-Schriftzug mit echtem Blender")]
-    public void Real_tools()
+    [Fact(DisplayName = "X-01: Video-Paket mit echtem FFmpeg")]
+    public void Video_ffmpeg()
     {
-        if (Cli.Find("ffmpeg") is { } ff && W4_Core08_Media.Sample(out _) is { } clip)
-        {
-            var c = new FusionContext { WorkDir = Tmp(), Input = new() { ["file"] = clip }, Ffmpeg = ff };
-            Assert.All(Fusion.Run(R("video-pack"), c), x => Assert.True(x.Ok, x.Detail));
-            Assert.Equal(4, c.Out.Count);
-        }
-        if (Cli.Find("blender") is { } bl)
-        {
-            var c = new FusionContext { WorkDir = Tmp(), Input = new() { ["text"] = "Hi" }, Blender = bl };
-            Assert.All(Fusion.Run(R("logo-print"), c), x => Assert.True(x.Ok, x.Detail));
-            Assert.True(new FileInfo(c.Out["stl"]).Length > 1000);
-        }
+        var ff = Cli.Find("ffmpeg");
+        Assert.SkipUnless(ff is not null, "Übersprungen: FFmpeg ist nicht installiert.");
+        var clip = W4_Core08_Media.Sample(out _);
+        Assert.NotNull(clip);
+        var c = new FusionContext { WorkDir = Tmp(), Input = new() { ["file"] = clip }, Ffmpeg = ff };
+        Assert.All(Fusion.Run(R("video-pack"), c), x => Assert.True(x.Ok, x.Detail));
+        Assert.Equal(4, c.Out.Count);
+    }
+
+    [Fact(DisplayName = "X-01: 3D-Schriftzug mit echtem Blender")]
+    public void Logo_blender()
+    {
+        var bl = Cli.Find("blender");
+        Assert.SkipUnless(bl is not null, "Übersprungen: Blender ist nicht installiert.");
+        var c = new FusionContext { WorkDir = Tmp(), Input = new() { ["text"] = "Hi" }, Blender = bl };
+        Assert.All(Fusion.Run(R("logo-print"), c), x => Assert.True(x.Ok, x.Detail));
+        Assert.True(new FileInfo(c.Out["stl"]).Length > 1000);
     }
 }

@@ -20,7 +20,7 @@ public class W4_Core07_DevStudio
     [Fact(DisplayName = "CORE-07: Git-Stand anlegen, Änderung erkennen, speichern (echtes git)")]
     public void Git_roundtrip()
     {
-        if (Cli.Find("git") is null) return;
+        Assert.SkipUnless(Cli.Find("git") is not null, "Übersprungen: Git ist nicht installiert.");
         var dir = DevStudio.Create(Tmp(), "web", "g");
         Assert.False(DevStudio.Git(dir).IsRepo);
         Assert.True(DevStudio.GitInit(dir).Ok);
@@ -33,22 +33,34 @@ public class W4_Core07_DevStudio
         Assert.Equal(0, DevStudio.Git(dir).Changed);
     }
 
-    [Fact(DisplayName = "CORE-07: Python- und .NET-Vorlage bestehen ihren eigenen Test (echte Werkzeuge)")]
+    [Fact(DisplayName = "CORE-07: Web-Vorlage hat keinen eigenen Testlauf")]
     public void Templates_build()
     {
         var root = Tmp();
-        if (Cli.Find(OperatingSystem.IsWindows() ? "python" : "python3") is not null)
-            Assert.True(DevStudio.RunTests(DevStudio.Create(root, "python", "py")).Ok);
-        if (Cli.Find("node") is not null)
-        {
-            var r = DevStudio.RunTests(DevStudio.Create(root, "node", "nd"));
-            Assert.True(r.Ok, r.Err + r.Out);
-        }
-        if (Cli.Find("dotnet") is not null)
-        {
-            var r = DevStudio.RunTests(DevStudio.Create(root, "dotnet-console", "cs"));
-            Assert.True(r.Ok, r.Err + r.Out);
-        }
         Assert.False(DevStudio.RunTests(DevStudio.Create(root, "web", "w")).Ok);
+    }
+
+    [Fact(DisplayName = "CORE-07: Python-Vorlage besteht ihren eigenen Test")]
+    public void Python_template()
+    {
+        var py = OperatingSystem.IsWindows() ? "python" : "python3";
+        Assert.SkipUnless(Cli.Find(py) is not null, "Übersprungen: Python ist nicht installiert.");
+        Assert.True(DevStudio.RunTests(DevStudio.Create(Tmp(), "python", "py")).Ok);
+    }
+
+    [Fact(DisplayName = "CORE-07: Node-Vorlage besteht ihren eigenen Test")]
+    public void Node_template()
+    {
+        Assert.SkipUnless(Cli.Find("node") is not null, "Übersprungen: Node.js ist nicht installiert.");
+        var r = DevStudio.RunTests(DevStudio.Create(Tmp(), "node", "nd"));
+        Assert.True(r.Ok, r.Err + r.Out);
+    }
+
+    [Fact(DisplayName = "CORE-07: .NET-Vorlage besteht ihren eigenen Test")]
+    public void Dotnet_template()
+    {
+        Assert.SkipUnless(Cli.Find("dotnet") is not null, "Übersprungen: das .NET SDK ist nicht installiert.");
+        var r = DevStudio.RunTests(DevStudio.Create(Tmp(), "dotnet-console", "cs"));
+        Assert.True(r.Ok, r.Err + r.Out);
     }
 }

@@ -14,10 +14,22 @@ public class W4_Core06_Game
         {
             var dir = GameStudio.CreateBrowserGame(root, t.Id, "Spiel " + t.Id);
             Assert.Contains("game.js", File.ReadAllText(Path.Combine(dir, "index.html")));
-            if (Cli.Find("node") is not null) { var r = Cli.Run("node", ["--check", Path.Combine(dir, "game.js")]); Assert.True(r.Ok, t.Id + r.Err); }
         }
         Assert.Throws<IOException>(() => GameStudio.CreateBrowserGame(root, "snake", "Spiel snake"));
         Assert.Contains("&lt;x&gt;", File.ReadAllText(Path.Combine(GameStudio.CreateBrowserGame(root, "jump", "<x>"), "index.html")));
+    }
+
+    [Fact(DisplayName = "CORE-06: JavaScript der Browser-Spiele ist gültig (node --check)")]
+    public void Browser_games_node()
+    {
+        Assert.SkipUnless(Cli.Find("node") is not null, "Übersprungen: Node.js ist nicht installiert.");
+        var root = Tmp();
+        foreach (var t in GameStudio.Templates)
+        {
+            var dir = GameStudio.CreateBrowserGame(root, t.Id, "Spiel " + t.Id);
+            var r = Cli.Run("node", ["--check", Path.Combine(dir, "game.js")]);
+            Assert.True(r.Ok, t.Id + r.Err);
+        }
     }
 
     [Fact(DisplayName = "CORE-06: Unreal-Engines aus Launcher-Liste erkannt, neueste zuerst; .uproject ist gültig")]

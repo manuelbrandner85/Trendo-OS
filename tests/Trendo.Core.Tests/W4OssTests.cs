@@ -20,7 +20,7 @@ public class W4_X06_OpenSource
     [Fact(DisplayName = "X-06: Kopie holen (echtes git, lokales Quell-Repo) mit Herkunftsdatei; unsichere Adressen abgewiesen")]
     public void Fetch_local()
     {
-        if (Cli.Find("git") is null) return;
+        Assert.SkipUnless(Cli.Find("git") is not null, "Übersprungen: Git ist nicht installiert.");
         var t = Path.Combine(Path.GetTempPath(), "trendo-oss-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(t);
         var src = DevStudio.Create(t, "web", "quelle"); Assert.True(DevStudio.GitInit(src).Ok);
         var dst = Path.Combine(t, "ziel"); Directory.CreateDirectory(dst);
