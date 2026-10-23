@@ -1,3 +1,5 @@
+using System.Net;
+using Trendo.Companion;
 using Trendo.Core;
 using Xunit;
 namespace Trendo.Core.Tests;
@@ -5,6 +7,19 @@ namespace Trendo.Core.Tests;
 public class W7Tests
 {
     static (FusionStore S, AuditLog A, string R) Make() { var r = Path.Combine(Path.GetTempPath(), "trendo-w7-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(r); var a = new AuditLog(Path.Combine(r, "a.jsonl")); return (new FusionStore(r, a), a, r); }
+
+    /// <summary>Startet den Begleiter auf einem freien Port. Bei belegtem Port ein neuer Versuch, die Prüfungen bleiben.</summary>
+    static CompanionServer StartFrei(string stateFile)
+    {
+        HttpListenerException? last = null;
+        for (var i = 0; i < 8; i++)
+        {
+            var srv = new CompanionServer(CompanionServer.FreePort(), stateFile, loopbackOnly: true);
+            try { srv.Start(); return srv; }
+            catch (HttpListenerException ex) { last = ex; srv.Dispose(); }
+        }
+        throw new IOException("Kein freier Port für den Begleiter.", last);
+    }
 
     [Fact(DisplayName = "SYS-01: Modus aus echten Merkmalen, Fähigkeiten ehrlich (Blockiert statt vorgetäuscht), USB nur Anleitung")]
     public void Mode()
@@ -82,9 +97,8 @@ public class W7Tests
     {
         Assert.SkipUnless(!OperatingSystem.IsWindows(), "Übersprungen: der Begleiter-Server läuft in diesem Test nur unter Linux.");
         var (_, _, r) = Make(); var f = Path.Combine(r, "zustand.json");
-        var port = 18000 + Random.Shared.Next(2000);
-        using var srv = new Trendo.Companion.CompanionServer(port, f, loopbackOnly: true); srv.Start();
-        using var h = new HttpClient { BaseAddress = new Uri($"http://127.0.0.1:{port}/") };
+        using var srv = StartFrei(f);
+        using var h = new HttpClient { BaseAddress = new Uri($"http://127.0.0.1:{srv.Port}/") };
         var health = System.Text.Json.JsonSerializer.Deserialize<CompanionHealth>(await h.GetStringAsync("health"))!;
         Assert.Equal("trendo-companion", health.App);
         Assert.Equal(System.Net.HttpStatusCode.Unauthorized, (await h.GetAsync("info")).StatusCode);
@@ -108,15 +122,15 @@ public class W7Tests
     {
         Assert.SkipUnless(!OperatingSystem.IsWindows(), "Übersprungen: der Begleiter-Server läuft in diesem Test nur unter Linux.");
         var (_, _, r) = Make(); var f = Path.Combine(r, "zustand.json");
-        var port = 18000 + Random.Shared.Next(2000);
-        var srv = new Trendo.Companion.CompanionServer(port, f, loopbackOnly: true);
+        var srv = new CompanionServer(CompanionServer.FreePort(), f, loopbackOnly: true);
         try
         {
-            // Stop() auf einem nie gestarteten Listener wirft. Deshalb erst starten, wenn Tesseract da ist.
+            // Erst starten, wenn Tesseract da ist. Sonst belegt der Test keinen Port.
             if (srv.Tesseract() is null)
                 Assert.Skip("Übersprungen: Tesseract ist nicht installiert.");
-            srv.Start();
-            using var h = new HttpClient { BaseAddress = new Uri($"http://127.0.0.1:{port}/") };
+            srv.Dispose();
+            srv = StartFrei(f);
+            using var h = new HttpClient { BaseAddress = new Uri($"http://127.0.0.1:{srv.Port}/") };
             var st = CompanionState.Load(f); var code = st.NewCode(DateTime.Now); st.Save(f);
             var ok = await h.PostAsync("pair", new StringContent($"{{\"code\":\"{code}\",\"pcName\":\"Testrechner\"}}"));
             var pr = System.Text.Json.JsonSerializer.Deserialize<PairResponse>(await ok.Content.ReadAsStringAsync())!;

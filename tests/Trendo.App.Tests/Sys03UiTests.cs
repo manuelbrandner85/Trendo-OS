@@ -16,8 +16,7 @@ public class Sys03_Netz_Ui
     public async Task DownloadResume()
     {
         var data = new byte[3_000_000]; new Random(7).NextBytes(data);
-        var port = new Random().Next(20000, 40000);
-        using var l = new HttpListener(); l.Prefixes.Add($"http://127.0.0.1:{port}/"); l.Start();
+        using var l = OffenerTestserver(out var port);
         var calls = 0; var ranges = new List<string?>();
         _ = Task.Run(async () =>
         {
@@ -46,7 +45,23 @@ public class Sys03_Netz_Ui
         Assert.Equal(data.Length, await WebTools.DownloadAsync(url, t));
         Assert.Equal($"bytes={part}-", ranges[^1]);
         Assert.Equal(SHA256.HashData(data), SHA256.HashData(File.ReadAllBytes(t)));
-        Assert.False(File.Exists(Web.PartFile(t))); l.Stop();
+        Assert.False(File.Exists(Web.PartFile(t)));
+    }
+
+    /// <summary>HttpListener kennt Port 0 nicht. Freier Port, bei Belegung neu. Ein Close am Ende, kein Stop davor.</summary>
+    static HttpListener OffenerTestserver(out int port)
+    {
+        HttpListenerException? last = null;
+        port = 0;
+        for (var i = 0; i < 8; i++)
+        {
+            port = WebsitePreview.FreePort();
+            var listener = new HttpListener();
+            listener.Prefixes.Add($"http://127.0.0.1:{port}/");
+            try { listener.Start(); return listener; }
+            catch (HttpListenerException ex) { last = ex; listener.Close(); }
+        }
+        throw new IOException("Kein freier Port für den Download-Test.", last);
     }
 
     [AvaloniaFact(DisplayName = "SYS-03 (UI): Tabs; Prüfsumme rot/grün; Link-Warnung; Suchmaschine wirkt in Strg+K; Webnotiz in der Suche")]

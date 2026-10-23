@@ -1,7 +1,9 @@
+using System.Net;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using Trendo.App;
+using Trendo.Companion;
 using Trendo.Core;
 using Xunit;
 namespace Trendo.App.Tests;
@@ -15,13 +17,26 @@ sealed class AdbRunner(string devices) : IProcessRunner
 
 public class W7_Ui
 {
+    static CompanionServer StartFrei(string stateFile)
+    {
+        HttpListenerException? last = null;
+        for (var i = 0; i < 8; i++)
+        {
+            var srv = new CompanionServer(CompanionServer.FreePort(), stateFile, loopbackOnly: true);
+            try { srv.Start(); return srv; }
+            catch (HttpListenerException ex) { last = ex; srv.Dispose(); }
+        }
+        throw new IOException("Kein freier Port für den Begleiter.", last);
+    }
+
     [AvaloniaFact(DisplayName = "CORE-04 UI: mit echtem Begleiter koppeln (Code vom Gerät), Details holen, Erreichbarkeit, Aufgabe zuordnen, entfernen")]
     public async Task Verbund()
     {
         Assert.SkipUnless(!OperatingSystem.IsWindows(), "Übersprungen: der Begleiter-Server läuft in diesem Test nur unter Linux.");
         var (w, _, root) = Ui.Open();
-        var port = 20000 + Random.Shared.Next(2000); var stateFile = Path.Combine(root, "begleiter", "zustand.json");
-        using var srv = new Trendo.Companion.CompanionServer(port, stateFile, loopbackOnly: true); srv.Start();
+        var stateFile = Path.Combine(root, "begleiter", "zustand.json");
+        using var srv = StartFrei(stateFile);
+        var port = srv.Port;
         var st = CompanionState.Load(stateFile); st.Name = "Pi Wohnzimmer"; var code = st.NewCode(DateTime.Now); st.Save(stateFile);
         w.AllowLoopbackForTests = true;
         w.Show("verbund"); Assert.NotNull(w.TryFind<Button>("sys-tab-verbund"));

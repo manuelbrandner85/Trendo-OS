@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
 using Trendo.Core;
@@ -16,7 +17,18 @@ public sealed class CompanionServer : IDisposable
     private readonly Func<DateTime> _now;
     private readonly object _lock = new();
     private readonly Action<string> _log;
+    private bool _started;
     public int Port { get; }
+
+    /// <summary>Freier Loopback-Port. HttpListener nimmt 0 als Port nicht an, ein TcpListener schon.</summary>
+    public static int FreePort()
+    {
+        var listener = new TcpListener(IPAddress.Loopback, 0);
+        listener.Start();
+        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
+        listener.Stop();
+        return port;
+    }
     public CompanionServer(int port, string stateFile, string sysRoot = "/", IProcessRunner? run = null, Func<DateTime>? now = null, bool loopbackOnly = false, Action<string>? log = null)
     {
         Port = port; _stateFile = stateFile; _sysRoot = sysRoot; _run = run ?? new RealProcessRunner(); _now = now ?? (() => DateTime.Now); _log = log ?? (_ => { });
@@ -36,7 +48,7 @@ public sealed class CompanionServer : IDisposable
         return c;
     }
 
-    public void Start() { _http.Start(); _ = Task.Run(Loop); }
+    public void Start() { _http.Start(); _started = true; _ = Task.Run(Loop); }
 
     private async Task Loop()
     {
@@ -127,5 +139,14 @@ public sealed class CompanionServer : IDisposable
         r.ContentLength64 = b.Length; await r.OutputStream.WriteAsync(b); r.Close();
     }
 
-    public void Dispose() { try { _http.Stop(); _http.Close(); } catch (ObjectDisposedException) { } }
+    public void Dispose()
+    {
+        // Nie gestartet: nicht schließen. Close() würde den Port sonst neu binden.
+        if (!_started) return;
+        // Einmal Close. Stop() und danach Close() nimmt den Port aus der Tabelle
+        // und bindet ihn in Close() neu. Das wirft „Address already in use“,
+        // sobald in der Lücke jemand anderes zuhört.
+        try { _http.Close(); }
+        catch (Exception e) when (e is ObjectDisposedException or HttpListenerException or InvalidOperationException) { }
+    }
 }
