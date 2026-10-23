@@ -82,22 +82,20 @@ Gelesen in `requirements.yaml`, Abschnitt `packages`, Eintrag `PAKET-44`, auf PR
 
 ## Testergebnis
 
-`dotnet test Trendo.sln -c Release` am 22.10.2026, mit der Versionsabfrage:
+`dotnet test Trendo.sln -c Release` am 23.10.2026, Stand des Abgleichs mit P44-01 bis P44-10:
 
 - Api: 15 bestanden, 0 Fehler
 - Core: 541 bestanden, 10 übersprungen (`WinRealTests`), 0 Fehler
-- App: 235 bestanden, 1 Fehler, 236 gesamt
+- App: 236 bestanden, 1 Fehler, 237 gesamt, Dauer 9 min 32 s
 
-Der eine Fehler ist `T-0209` („Jeder sichtbare Knopf … wirkt“): der Reiter „Zeit & Kalender“ auf der Seite Kleine Helfer wurde in diesem Lauf als „ohne Wirkung“ gemeldet. Dieselbe Prüfung allein danach: 1 bestanden, 0 Fehler, 22 Sekunden. Der Reiter gehört nicht zu LibreOffice, OBS oder VS Code. Die neuen Prüfungen waren in dem Lauf dabei und sind nicht der gemeldete Fehler.
+Der eine Fehler ist `SPEC-10 UI` („diesen PC live messen“): der Text zum Trendo-Arbeitsspeicher zeigte „Warnung“ statt „Ok“. Die Warnung beginnt bei 1500 MB belegtem Speicher der Testumgebung. Im langen Lauf war der Speicher darüber. Dieselbe Prüfung allein danach: 1 bestanden, 0 Fehler, 1 Sekunde. Der Test gehört nicht zu den Fachprogrammen.
 
-Abgleich mit P44-01 bis P44-10, nur die betroffenen Tests, am 23.10.2026:
+Davor, nur die betroffenen Tests:
 
 - Core, Paket 44: 10 bestanden, 0 Fehler
 - App, Katalog, Knöpfe und Installieren: 20 bestanden, 0 Fehler
 
-Die ganze Suite für diesen Abgleich wird danach noch einmal gezählt. Der Lauf davor bleibt der Stand weiter oben.
-
-Der Kopf von Chrome für den PDF-Test startete in diesem Lauf und war danach von selbst weg. Die App ist für das bekannte Papierformat dieses Chrome nicht geändert.
+Ein früherer Lauf hatte einmal den Reiter „Zeit & Kalender“ als ohne Wirkung gemeldet. In diesem Lauf ist das nicht wieder passiert. Der PDF-Druck hat diesen Lauf nicht hängen lassen. Die App ist für das bekannte Papierformat von Chrome nicht geändert.
 
 ## Nicht geprüft
 
