@@ -371,11 +371,15 @@ public sealed partial class MainWindow : Window
         if (_settings.Theme == "kontrast") return null;
         try
         {
-            var img = _blurImg; img.Source = LoadWallpaper(_wallName); img.Stretch = Stretch.UniformToFill; img.HorizontalAlignment = HorizontalAlignment.Center; img.VerticalAlignment = VerticalAlignment.Center; img.Effect = new BlurEffect { Radius = 36 };
+            // Glas: Unschärfe wird einmal vorab berechnet (Start/Bildwechsel), nicht mehr live pro Bild.
+            var img = _blurImg; img.Stretch = Stretch.UniformToFill; img.HorizontalAlignment = HorizontalAlignment.Center; img.VerticalAlignment = VerticalAlignment.Center;
+            if (!GlassBlur.LowPower) img.Source = BlurredWallpaperBitmap(_wallName);
             var brush = new VisualBrush { Visual = mask, Stretch = Stretch.None, AlignmentX = AlignmentX.Left, AlignmentY = AlignmentY.Top, TileMode = TileMode.None };
             // Quelle/Ziel absolut auf die Fläche der Oberfläche festlegen – sonst verschiebt überstehender Inhalt (Glow) die Maske
             void Fit() { var b = mask.Bounds; if (b.Width > 0) brush.SourceRect = brush.DestinationRect = new RelativeRect(0, 0, b.Width, b.Height, RelativeUnit.Absolute); }
             mask.PropertyChanged += (_, e) => { if (e.Property == BoundsProperty) Fit(); };
+            // Leistungsprofil Pi: nur halbtransparente Fläche, kein Bild, keine Unschärfe
+            if (GlassBlur.LowPower) return new Border { Name = "backdrop-blur", ClipToBounds = true, IsHitTestVisible = false, Background = Brush.Parse(GlassBlur.LowPowerTint), OpacityMask = brush };
             return new Border { Name = "backdrop-blur", ClipToBounds = true, IsHitTestVisible = false, Child = img, OpacityMask = brush };
         }
         catch { return null; }
