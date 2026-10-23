@@ -543,6 +543,14 @@ public partial class MainWindow
         Keep(objName);
         string? path = null;
         if (Pick3DFile is { } pick) path = await pick();
+        else if (PickOverride is { } fake)
+        {
+            var got = await fake(new PickRequest("3d-browse", false, true, ["obj", "stl", "glb", "gltf", "fbx", "blend"]));
+            var picked = got ?? [];
+            if (picked.Length == 0) { Say("Keine Datei gewählt.", "3d"); return; }
+            foreach (var p in picked) ImportPath(p);
+            return;
+        }
         else
         {
             try
@@ -625,7 +633,7 @@ public partial class MainWindow
     {
         if (BlenderPath is not null) { _ = ExportWithBlender(objName, ".fbx"); return; }
         Keep(objName);
-        if (_scene.Parts.Count == 0) { Say("Noch kein Teil. Füge zuerst eines hinzu.", "3d"); return; }
+        if (_scene.Parts.Count == 0) { Say("Noch kein Teil. Für FBX füge zuerst eines hinzu.", "3d"); return; }
         try
         {
             var mesh = Mesh3D.FromScene(_scene);
@@ -641,7 +649,7 @@ public partial class MainWindow
     private void ExportNative(TextBox objName, string ext)
     {
         Keep(objName);
-        if (_scene.Parts.Count == 0) { Say("Noch kein Teil. Füge zuerst eines hinzu.", "3d"); return; }
+        if (_scene.Parts.Count == 0) { Say($"Noch kein Teil. Für {ext} füge zuerst eines hinzu.", "3d"); return; }
         try
         {
             var mesh = Mesh3D.FromScene(_scene);
@@ -660,7 +668,7 @@ public partial class MainWindow
     private async Task ExportWithBlender(TextBox objName, string ext)
     {
         Keep(objName);
-        if (_scene.Parts.Count == 0) { Say("Noch kein Teil. Füge zuerst eines hinzu.", "3d"); return; }
+        if (_scene.Parts.Count == 0) { Say("Noch kein Teil. Für die Blender-Datei füge zuerst eines hinzu.", "3d"); return; }
         var bl = await ReadyBlender();
         if (bl is null) return;
         var spec = _scene.WriteBlenderSpec(Path.Combine(Folder3D, "blender"));

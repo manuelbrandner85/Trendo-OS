@@ -57,6 +57,7 @@ public partial class MainWindow
         {
             _scanFolder = folder.Text?.Trim().Trim('"') ?? "";
             if (!Directory.Exists(_scanFolder)) { _secMsg = "Diesen Ordner gibt es nicht."; Show("schutz"); return; }
+            _secMsg = "Prüfung läuft …"; Show("schutz");
             scan.IsEnabled = false; var f = _scanFolder;
             LastPrivacy = await Task.Run(() => SecurityCenter.ScanFolder(f));
             _core.Audit.Append(Principal.LocalOwner.Name, "privacy.scan", $"treffer={LastPrivacy.Count}");

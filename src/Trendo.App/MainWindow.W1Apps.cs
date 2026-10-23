@@ -65,6 +65,7 @@ public partial class MainWindow
 
     // ---------- SYS-02: Werkzeuge ----------
     private DispatcherTimer? _timer; private TimeSpan _timerLeft;
+    private string _noteMsg = "";
     private readonly TextBlock _timerText = new() { Name = "timer-text", FontSize = 26, FontWeight = FontWeight.SemiBold };
 
     private Control ToolsView()
@@ -74,7 +75,11 @@ public partial class MainWindow
         // Notizen
         var input = new TextBox { Name = "note-input", PlaceholderText = "Neue Notiz …", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 54 };
         var add = new Button { Name = "note-add", Content = "Notiz speichern", Background = Accent };
-        add.Click += (_, _) => { if (!string.IsNullOrWhiteSpace(input.Text)) { notes.Add(input.Text); _core.Audit.Append(Principal.LocalOwner.Name, "tool.note", "neu"); Show("werkzeuge"); } };
+        add.Click += (_, _) =>
+        {
+            if (string.IsNullOrWhiteSpace(input.Text)) { _noteMsg = "Bitte zuerst eine Notiz schreiben."; Show("werkzeuge"); return; }
+            notes.Add(input.Text); _noteMsg = "Notiz gespeichert."; _core.Audit.Append(Principal.LocalOwner.Name, "tool.note", "neu"); Show("werkzeuge");
+        };
         var list = new StackPanel { Spacing = 4 };
         var n = 0;
         foreach (var note in notes.All().Take(20))
@@ -85,6 +90,7 @@ public partial class MainWindow
                 Children = { new StackPanel { Children = { P(note.Text, Text, 12.5), P(note.Changed.ToString("dd.MM.yyyy HH:mm", De), null, 10) } }, Pos(del, 1) } } });
         }
         if (n == 0) list.Children.Add(P("Noch keine Notizen."));
+        if (_noteMsg.Length > 0) list.Children.Add(new TextBlock { Name = "note-msg", Text = _noteMsg, Foreground = Text });
         sp.Children.Add(new StackPanel { Spacing = 6, Children = { H("Notizen", 15), input, add, list } });
 
         // Taschenrechner

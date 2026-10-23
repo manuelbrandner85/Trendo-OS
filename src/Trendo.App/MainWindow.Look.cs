@@ -28,6 +28,8 @@ public sealed partial class MainWindow
 
     private static string _theme = "dunkel";
     private string _settingsSection = "aussehen";
+    /// <summary>Hinweis, wenn der offene Einstellungsbereich erneut gewählt wird.</summary>
+    private string _settingsNote = "";
     /// <summary>Nur für den direkten Neuaufbau: die nächste Instanz öffnet denselben Abschnitt. Sonst immer „Aussehen“.</summary>
     private static string? _reopenSection;
     /// <summary>Farbe je Design: im hellen Design die helle Variante.</summary>
@@ -93,7 +95,8 @@ public sealed partial class MainWindow
     /// <summary>Wird nach jedem Seitenwechsel aufgerufen: sanftes Einblenden und Hinweis beim ersten Öffnen.</summary>
     private void AfterShow(string key)
     {
-        if (!_settings.ReduceMotion) { _center.Opacity = 0; Dispatcher.UIThread.Post(() => _center.Opacity = 1, DispatcherPriority.Background); }
+        if (_settings.ReduceMotion) _center.Transitions = null;
+        else { _center.Opacity = 0; Dispatcher.UIThread.Post(() => _center.Opacity = 1, DispatcherPriority.Background); }
         ShowHelp(key, force: false);
         EnhancePathFields(ActivePageRoot, key);
         if (ActivePageRoot is { } c0) ApplyAccessibility(c0);
@@ -153,7 +156,11 @@ public sealed partial class MainWindow
     private void ShowHelp(string key, bool force)
     {
         _hintHost.Children.Clear();
-        if (!HelpTexts.TryGetValue(key, out var text)) return;
+        if (!HelpTexts.TryGetValue(key, out var text))
+        {
+            if (!force) return;
+            text = "Die Knöpfe auf dieser Seite machen das, was draufsteht. Wenn etwas fehlt, steht ein Hinweis direkt daneben.";
+        }
         if (!force && _settings.SeenHints.Contains(key)) return;
         var ok = new Button { Name = "hint-ok", Content = "Verstanden", FontSize = 11, Background = Accent, VerticalAlignment = VerticalAlignment.Center };
         ok.Click += (_, _) => { if (!_settings.SeenHints.Contains(key)) { _settings.SeenHints.Add(key); SaveSettings(); } _hintHost.Children.Clear(); };
@@ -188,6 +195,7 @@ public sealed partial class MainWindow
     private Control SettingsView()
     {
         var sections = new StackPanel { Spacing = 12 };
+        sections.Children.Add(new TextBlock { Name = "settings-note", Text = _settingsNote, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = _settingsNote.Length > 0 });
         Control Section(string id, string title, Control body) => new StackPanel { Name = "settings-section-" + id, Spacing = 6, IsVisible = _settingsSection == id, Children = { H(title, 15), body } };
 
         var themes = new WrapPanel();
@@ -209,8 +217,7 @@ public sealed partial class MainWindow
             b.Click += (_, _) => { _settings.Accent = id; _settings.AccentFromWallpaper = false; Reopen("settings"); };
             colors.Children.Add(b);
         }
-        var auto = new CheckBox { Name = "accent-auto", Content = "Farbe passend zum Hintergrund wählen", IsChecked = _settings.AccentFromWallpaper, Foreground = Text };
-        auto.IsCheckedChanged += (_, _) => { _settings.AccentFromWallpaper = auto.IsChecked == true; Reopen("settings"); };
+        var auto = Schalter("accent-auto", "Farbe passend zum Hintergrund wählen", _settings.AccentFromWallpaper, v => _settings.AccentFromWallpaper = v, "settings");
         sections.Children.Add(Section("farbe", "Akzentfarbe", new StackPanel { Spacing = 6, Children = { colors, auto } }));
 
         var walls = new WrapPanel();
@@ -222,14 +229,15 @@ public sealed partial class MainWindow
             b.Click += (_, _) => { _settingsSection = "hintergrund"; _settings.Wallpaper = id; _settings.WallpaperByTime = false; SaveSettings(); _wallName = id; _wallImg.Source = _blurImg.Source = LoadWallpaper(id); if (_settings.AccentFromWallpaper) Reopen("settings"); else Show("settings"); };
             walls.Children.Add(b);
         }
-        var byTime = new CheckBox { Name = "wall-bytime", Content = "Hintergrund nach Tageszeit wechseln (Morgen · Wellen · Bergsee · Polarlicht)", IsChecked = _settings.WallpaperByTime, Foreground = Text };
-        byTime.IsCheckedChanged += (_, _) => { _settings.WallpaperByTime = byTime.IsChecked == true; SaveSettings(); var w = _settings.CurrentWallpaper(DateTime.Now); _wallName = w; _wallImg.Source = _blurImg.Source = LoadWallpaper(w); };
+        var byTime = Schalter("wall-bytime", "Hintergrund nach Tageszeit wechseln (Morgen · Wellen · Bergsee · Polarlicht)", _settings.WallpaperByTime, v =>
+        {
+            _settings.WallpaperByTime = v;
+            var w = _settings.CurrentWallpaper(DateTime.Now); _wallName = w; _wallImg.Source = _blurImg.Source = LoadWallpaper(w);
+        }, null);
         sections.Children.Add(Section("hintergrund", "Hintergrund", new StackPanel { Spacing = 6, Children = { walls, byTime } }));
 
-        var motion = new CheckBox { Name = "reduce-motion", Content = "Bewegung reduzieren (keine Animationen)", IsChecked = _settings.ReduceMotion, Foreground = Text };
-        motion.IsCheckedChanged += (_, _) => { _settingsSection = "bedienung"; _settings.ReduceMotion = motion.IsChecked == true; Reopen("settings"); };
-        var upd = new CheckBox { Name = "auto-update", Content = $"Updates automatisch laden ({_updateInfo})", IsChecked = _settings.AutoUpdate, Foreground = Text };
-        upd.IsCheckedChanged += (_, _) => { _settings.AutoUpdate = upd.IsChecked == true; SaveSettings(); };
+        var motion = Schalter("reduce-motion", "Bewegung reduzieren (keine Animationen)", _settings.ReduceMotion, v => { _settingsSection = "bedienung"; _settings.ReduceMotion = v; }, "settings");
+        var upd = Schalter("auto-update", $"Updates automatisch laden ({_updateInfo})", _settings.AutoUpdate, v => _settings.AutoUpdate = v, null);
         var sizes = new WrapPanel();
         foreach (var (v, label) in new[] { (1.0, "Normal"), (1.15, "Groß"), (1.3, "Sehr groß") })
         {
@@ -244,8 +252,10 @@ public sealed partial class MainWindow
         var desk = new StackPanel { Spacing = 4 };
         foreach (var (id, label) in WidgetChoices)
         {
-            var cb = new CheckBox { Name = "show-" + id, Content = label, IsChecked = !_settings.HiddenTiles.Contains(id), Foreground = Text };
-            cb.IsCheckedChanged += (_, _) => { if (cb.IsChecked == true) _settings.HiddenTiles.Remove(id); else if (!_settings.HiddenTiles.Contains(id)) _settings.HiddenTiles.Add(id); SaveSettings(); };
+            var cb = Schalter("show-" + id, label, !_settings.HiddenTiles.Contains(id), v =>
+            {
+                if (v) _settings.HiddenTiles.Remove(id); else if (!_settings.HiddenTiles.Contains(id)) _settings.HiddenTiles.Add(id);
+            }, null);
             desk.Children.Add(cb);
         }
         desk.Children.Add(P("Reihenfolge der Studio-Kacheln:", Text));
@@ -266,7 +276,12 @@ public sealed partial class MainWindow
             var on = _settingsSection == id;
             var b = new Button { Name = "settings-nav-" + id, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 8), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1),
                 Content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Ico(icon, 16, Text), new TextBlock { Text = label, Foreground = Text, VerticalAlignment = VerticalAlignment.Center } } } };
-            b.Click += (_, _) => { _settingsSection = id; Show("settings"); };
+            b.Click += (_, _) =>
+            {
+                _settingsNote = _settingsSection == id ? "Dieser Bereich ist schon offen." : "";
+                _settingsSection = id;
+                Show("settings");
+            };
             nav.Children.Add(b);
         }
         NavItem("aussehen", "Aussehen", Mdi.Palette);

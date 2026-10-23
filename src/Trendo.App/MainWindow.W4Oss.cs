@@ -21,6 +21,8 @@ public partial class MainWindow
     {
         _ossQuery = q;
         if (_core.Offline) { Say("Trendo ist offline. Die Suche braucht Internet.", "oss"); return; }
+        Say(string.IsNullOrWhiteSpace(q) ? "Bitte zuerst ein Suchwort eingeben." : "Suche läuft …", "oss");
+        if (string.IsNullOrWhiteSpace(q)) return;
         try { _ossHits = OssSearchOverride is not null ? await OssSearchOverride(q) : await OssSearchHttp(OssHttp, q); _w45Msg = _ossHits.Count == 0 ? "Nichts gefunden." : ""; }
         catch (Exception ex) { _ossHits = []; _w45Msg = "Suche hat nicht geklappt: " + ex.Message; }
         _core.Audit.Append(Principal.LocalOwner.Name, "oss.search", q);

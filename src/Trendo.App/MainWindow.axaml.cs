@@ -41,17 +41,18 @@ public sealed partial class MainWindow : Window
     private bool _kiConnected; private int _tick;
     private readonly ProgressBar _depProgress = new() { Name = "deps-progress", IsIndeterminate = false, IsVisible = false, Height = 6, Margin = new Thickness(0, 6) };
     private readonly TextBlock _depLog = new() { Name = "deps-log", Foreground = Brush.Parse("#93A4C3"), FontSize = 11, TextWrapping = TextWrapping.Wrap };
+    private string _depAsk = "";
     private bool _depBusy;
     private readonly SystemMetrics _metrics = new();
     private readonly Grid _center = new();
     private Control? _deskWidgets;
-    private readonly TextBlock _clock = new() { Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Right };
-    private readonly TextBlock _date = new() { Foreground = Muted, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Right };
+    private readonly TextBlock _clock = new() { Name = "desk-clock", Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Right };
+    private readonly TextBlock _date = new() { Name = "desk-date", Foreground = Muted, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Right };
     private readonly TextBlock _status = new() { Foreground = Muted, FontSize = 11 };
     private readonly TextBlock _bellBadge = new() { Foreground = _theme == "hell" ? Brush.Parse("#0F1B2E") : Brushes.White, FontSize = 10, FontWeight = FontWeight.Bold };
     private readonly StackPanel _projectsPanel = new() { Spacing = 6 };
     private readonly TextBox _search = new() { Name = "txt-search", PlaceholderText = "Studios, Dateien und Einstellungen suchen", Height = 36 };
-    private readonly TextBlock _weekday = new() { Foreground = Muted, FontSize = 13 };
+    private readonly TextBlock _weekday = new() { Name = "desk-weekday", Foreground = Muted, FontSize = 13 };
     private readonly TextBlock _netDown = new() { Name = "metric-net-down", Foreground = Text, FontSize = 12.5 };
     private readonly TextBlock _netUp = new() { Name = "metric-net-up", Foreground = Text, FontSize = 12.5 };
     private readonly Dictionary<string, (ColumnDefinition Fill, ColumnDefinition Track, TextBlock Value, TextBlock Detail)> _meters = new();
@@ -65,6 +66,8 @@ public sealed partial class MainWindow : Window
     private Trendo.Api.LocalApi? _api;
     private Dictionary<string, Func<Control>> _showMap = new();
     private string? _studioFilter;
+    /// <summary>Hinweis, wenn die schon aktive Studio-Auswahl erneut geklickt wird.</summary>
+    private string _studioNote = "";
     private string _studioQuery = "";
     private int _studioRebuild;
 
@@ -220,8 +223,20 @@ public sealed partial class MainWindow : Window
         _netUp.Text = net.UpBps is { } up ? "↑ " + Rate(up) : _tick < 2 ? "↑ Messung läuft …" : "↑ Nicht verfügbar";
         var vals = new[] { m.CpuPercent, m.RamPercent, m.DiskPercent, m.GpuPercent }.Where(v => v.HasValue).Select(v => v!.Value).ToList();
         var high = vals.Count > 0 && vals.Max() >= 90;
-        _sysState.Text = vals.Count == 0 ? "Messung läuft …" : high ? "Hohe Auslastung" : "Alles in Ordnung";
-        _sysDot.Fill = _sysState.Foreground = Brush.Parse(high ? "#FACC15" : "#4ADE80");
+        var zustand = vals.Count == 0 ? "Messung läuft …" : high ? "Hohe Auslastung" : "Alles in Ordnung";
+        if (_settings.ColorBlind)
+        {
+            _sysDot.IsVisible = false;
+            var stufe = vals.Count == 0 || high ? Trendo.Core.Sys.A11y.Level.Hinweis : Trendo.Core.Sys.A11y.Level.Gut;
+            _sysState.Text = Trendo.Core.Sys.A11y.WithSymbol(stufe, zustand);
+            _sysState.Foreground = Text;
+        }
+        else
+        {
+            _sysDot.IsVisible = true;
+            _sysState.Text = zustand;
+            _sysDot.Fill = _sysState.Foreground = Brush.Parse(high ? "#FACC15" : "#4ADE80");
+        }
     }
 
     private static string Rate(double bps) => bps < 1024 ? $"{bps:0} B/s" : bps < 1024 * 1024 ? $"{bps / 1024:0.0} KB/s" : $"{bps / 1024 / 1024:0.0} MB/s";
@@ -409,7 +424,7 @@ public sealed partial class MainWindow : Window
         ("STUDIO-ONLINE-BUSINESS-01", "Online Business", "Gründen & Verkaufen", Mdi.RocketLaunch, "#7FD3FF", "#3F6BFF", "#3F8BFF"),
         ("STUDIO-LETTER-01", "Briefstudio", "Briefe, Ämter & Recht", Mdi.FileDocumentEdit, "#FFD39A", "#F08A3C", "#F0A050"),
         ("CORE-05", "3D Studio", "Blender & Assets", Mdi.CubeOutline, "#8FB8FF", "#3D5BFF", "#4D6BFF"),
-        ("CORE-06", "Game Studio", "Unreal Engine 5", Mdi.Unreal, "#FFFFFF", "#C9D6EA", "#9FB8FF"),
+        ("CORE-06", "Game Studio", "Eigene Regeln und Level", Mdi.Unreal, "#FFFFFF", "#C9D6EA", "#9FB8FF"),
         ("SYS-10", "Office Studio", "Dokumente & Tabellen", Mdi.FileDocumentOutline, "#F2F6FF", "#B8C7E6", "#8FB0FF"),
         ("CORE-02", "KI Studio", "Trendo Assistent", Mdi.Brain, "#8FD8FF", "#2F86F6", "#2F9BFF"),
         ("CORE-08", "Medien Studio", "Video, Audio, Grafik", Mdi.PlayBox, "#FF6FB5", "#7C4DFF", "#C04DFF"),
@@ -531,7 +546,7 @@ public sealed partial class MainWindow : Window
     private Control Meter(string key, string label, string color)
     {
         var val = new TextBlock { Name = "metric-" + key.ToLowerInvariant(), Text = "…", Foreground = Text, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Right };
-        var detail = new TextBlock { Foreground = Muted, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Right };
+        var detail = new TextBlock { Name = "metric-" + key.ToLowerInvariant() + "-detail", Foreground = Muted, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Right };
         var fillCol = new ColumnDefinition(new GridLength(0.01, GridUnitType.Star));
         var restCol = new ColumnDefinition(new GridLength(99.99, GridUnitType.Star));
         var fill = new Border { Background = Brush.Parse(color), CornerRadius = new CornerRadius(3) };
@@ -795,7 +810,13 @@ public sealed partial class MainWindow : Window
         {
             var on = string.IsNullOrWhiteSpace(area) ? string.IsNullOrWhiteSpace(_studioFilter) : string.Equals(_studioFilter, area, StringComparison.OrdinalIgnoreCase);
             var b = new Button { Name = "studio-filter-" + StudioFilterId(area), Content = label, Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
-            b.Click += (_, _) => { _studioFilter = string.IsNullOrWhiteSpace(area) ? null : area; _studioQuery = ""; Show("studios"); };
+            b.Click += (_, _) =>
+            {
+                var next = string.IsNullOrWhiteSpace(area) ? null : area;
+                var same = string.IsNullOrWhiteSpace(next) ? string.IsNullOrWhiteSpace(_studioFilter) : string.Equals(_studioFilter, next, StringComparison.OrdinalIgnoreCase);
+                _studioNote = same ? "Diese Auswahl ist schon aktiv." : "";
+                _studioFilter = next; _studioQuery = ""; Show("studios");
+            };
             filters.Children.Add(b);
         }
         ChipFilter(null, "Alle");
@@ -809,6 +830,7 @@ public sealed partial class MainWindow : Window
             var wrap = new WrapPanel();
             foreach (var st in g)
             {
+                if (_settings.SimpleMode && FachTabs.Exists(t => t.Module == st.Id)) continue;
                 var info = StudioCatalog.For(st.Id);
                 var name = info?.Name ?? st.Name;
                 var badge = Badge(st); badge.HorizontalAlignment = HorizontalAlignment.Left;
@@ -833,13 +855,15 @@ public sealed partial class MainWindow : Window
                 card.Click += async (_, _) => await OpenStudio(sid, name);
                 Hover(card); wrap.Children.Add(card);
             }
+            if (wrap.Children.Count == 0) continue;
             var head = H(g.Key, 16); head.Name = "studio-area-" + g.Key; head.Margin = new Thickness(0, 8, 0, 4);
             body.Children.Add(head); body.Children.Add(wrap);
         }
         if (list.Count == 0 && _studios.Count > 0) body.Children.Add(P("Kein Studio passt zu dieser Suche.", Text));
         var count = P(string.IsNullOrWhiteSpace(_studioFilter) && _studioQuery.Trim().Length == 0 ? $"{list.Count} Studios" : $"{list.Count} Studios in dieser Ansicht");
+        var filterNote = new TextBlock { Name = "studio-note", Text = _studioNote, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = _studioNote.Length > 0 };
         if (_studios.Count == 0) count = P("Die Studio-Liste wurde nicht gefunden.", Brushes.OrangeRed);
-        return Page("Alle Studios", new StackPanel { Spacing = 8, Children = { count, tools, body } });
+        return Page("Alle Studios", new StackPanel { Spacing = 8, Children = { filterNote, count, tools, body } });
     }
 
     private Control ProjectsView()
@@ -987,7 +1011,12 @@ public sealed partial class MainWindow : Window
         _kiInput.VerticalContentAlignment = VerticalAlignment.Center; _kiInput.FontSize = 13;
         var send = new Button { Name = "btn-ki-send", Width = 34, Height = 34, Padding = new Thickness(0), Background = Brush.Parse("#33FFFFFF"), CornerRadius = new CornerRadius(8), Content = Ico(Mdi.Send, 15, Text) };
         Avalonia.Automation.AutomationProperties.SetName(send, "Senden");
-        send.Click += async (_, _) => { if (_kiInput.IsEnabled && !string.IsNullOrWhiteSpace(_kiInput.Text)) await AskKi(_kiInput.Text!); };
+        send.Click += async (_, _) =>
+        {
+            if (!_kiInput.IsEnabled) { _kiText.Text = "Bitte zuerst die KI einrichten."; return; }
+            if (string.IsNullOrWhiteSpace(_kiInput.Text)) { _kiText.Text = "Bitte zuerst eine Frage eingeben."; return; }
+            await AskKi(_kiInput.Text!);
+        };
         var inputBox = new Border { Height = 42, CornerRadius = new CornerRadius(12), Background = Brush.Parse(C("#990A1630", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), Padding = new Thickness(8, 0),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), Children = { _kiInput, Pos(_kiSetup, 1), Pos(send, 2) } } };
         _kiSetup.Margin = new Thickness(0, 0, 4, 0); _kiSetup.VerticalAlignment = VerticalAlignment.Center; _kiSetup.Background = Accent; _kiSetup.Padding = new Thickness(8, 2);
@@ -1069,6 +1098,7 @@ public sealed partial class MainWindow : Window
     private Control ComponentsView()
     {
         var sp = new StackPanel { Spacing = 6 };
+        if (_depAsk.Length > 0) sp.Children.Add(new TextBlock { Name = "dep-ask", Text = _depAsk, Foreground = Text, TextWrapping = TextWrapping.Wrap });
         sp.Children.Add(P("Alles, was im Setup enthalten ist, ist sofort nutzbar. Weitere freie Programme installiert Trendo OS nach einmaliger Zustimmung automatisch pro Benutzer (ohne Admin). Nicht weitergebbare Software kann nur über den offiziellen Herstellerweg installiert werden.", Text));
         var consent = new Button { Name = "btn-deps-consent", Content = _deps.HasConsent ? "Fehlende kostenlose Programme installieren" : "Zustimmen & fehlende kostenlose Programme installieren", IsEnabled = !_depBusy, Background = Accent };
         consent.Click += async (_, _) => await InstallAll();
@@ -1106,7 +1136,7 @@ public sealed partial class MainWindow : Window
                 Grid.SetColumn(right, 1); row.Children.Add(right); sp.Children.Add(row);
             }
         }
-        var re = new Button { Name = "btn-deps-recheck", Content = "Neu prüfen" }; re.Click += (_, _) => { ReloadStudios(); Show("components"); };
+        var re = new Button { Name = "btn-deps-recheck", Content = "Neu prüfen" }; re.Click += (_, _) => { ReloadStudios(); _depLog.Text = "Neu geprüft. Die Liste zeigt, was jetzt erkannt ist."; Show("components"); };
         sp.Children.Add(re);
         return Page("Zusatzprogramme", sp);
     }
@@ -1212,6 +1242,7 @@ public sealed partial class MainWindow : Window
     private Control StudioDepsView()
     {
         var sp = new StackPanel { Spacing = 8 };
+        if (_depAsk.Length > 0) sp.Children.Add(new TextBlock { Name = "dep-ask", Text = _depAsk, Foreground = Text, TextWrapping = TextWrapping.Wrap });
         (_depProgress.Parent as Panel)?.Children.Remove(_depProgress); (_depLog.Parent as Panel)?.Children.Remove(_depLog);
         foreach (var c in _depChecks)
         {
@@ -1240,13 +1271,19 @@ public sealed partial class MainWindow : Window
                 var y = new Button { Name = "btn-yes-" + comp.Id, Content = comp.Mode == DeliveryMode.AutoElevated ? "Ja, installieren (Windows fragt nach Admin)" : "Ja, installieren", Background = Accent, IsEnabled = !_depBusy && !_core.Offline };
                 y.Click += async (_, _) =>
                 {
+                    _depAsk = $"{comp.Name}: Installation startet …";
+                    Show("studio-deps");
                     // Freigabe protokolliert über das Approval-Gate (einmalig, zielgebunden)
                     var req = _core.Approvals.Request(Principal.LocalOwner, "deps.install", $"{comp.Name} für {_depStudioTitle} installieren", comp.Id);
                     _core.Approvals.Approve(req.Id, Principal.LocalOwner);
                     if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
                     if (comp.Id == "model" && !_deps.IsInstalled(DependencyCatalog.Get("ollama"))) await InstallOne(DependencyCatalog.Get("ollama"), refresh: false);
-                    await InstallOne(comp, refresh: false);
-                    await OpenStudio(_depStudio, _depStudioTitle);
+                    var ok = await InstallOne(comp, refresh: false);
+                    _depAsk = ok
+                        ? $"{comp.Name} ist installiert."
+                        : $"{comp.Name}: die Installation hat nicht geklappt. Du kannst es später erneut versuchen.";
+                    if (ok) await OpenStudio(_depStudio, _depStudioTitle);
+                    else Show("studio-deps");
                 };
                 btns.Children.Add(y);
             }
@@ -1275,11 +1312,14 @@ public sealed partial class MainWindow : Window
             var box = new TextBox { Name = "txt-key-" + k.Id, PasswordChar = '•', PlaceholderText = "Schlüssel hier einfügen", Width = 320 };
             var res = new TextBlock { Name = "key-state-" + k.Id, Text = has ? "gespeichert ✓" : "kein Schlüssel", Foreground = Muted, FontSize = 11 };
             var get = new Button { Name = "btn-getkey-" + k.Id, Content = "Schlüssel holen", IsEnabled = !_core.Offline };
+            if (_core.Offline) ToolTip.SetTip(get, "Offline: Schlüssel holen geht erst mit Internet.");
             get.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, k.KeyUrl, _core.Audit);
             var save = new Button { Name = "btn-savekey-" + k.Id, Content = "Prüfen & speichern", IsEnabled = !_core.Offline };
+            if (_core.Offline) ToolTip.SetTip(save, "Offline: Prüfen und speichern geht erst mit Internet.");
             save.Click += async (_, _) =>
             {
-                var key = box.Text?.Trim() ?? ""; if (key.Length == 0) return;
+                var key = box.Text?.Trim() ?? "";
+                if (key.Length == 0) { res.Text = "Bitte zuerst einen Schlüssel eingeben."; return; }
                 res.Text = "prüfe …";
                 var ok = KeyValidatorOverride is { } f ? await f(key) : await ValidateKey(k.ValidateUrl, key);
                 if (ok) { _core.Secrets.Set("TrendoOS:key-" + k.Id, key); box.Text = ""; }
@@ -1317,6 +1357,15 @@ public sealed partial class MainWindow : Window
 
     private async Task<bool> InstallOne(Component c, bool refresh = true)
     {
+        if (InstallOverride is { } fake)
+        {
+            _depAsk = $"{c.Name}: Installation startet …";
+            var simuliert = await fake(c);
+            _depAsk = simuliert ? $"{c.Name} ist installiert." : $"{c.Name}: die Installation hat nicht geklappt.";
+            _depLog.Text = _depAsk;
+            if (refresh) { ReloadStudios(); Show("components"); }
+            return simuliert;
+        }
         if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
         _depBusy = true; _depProgress.IsVisible = true; _depProgress.IsIndeterminate = true;
         _depLog.Text = $"Installiere {c.Name} …";

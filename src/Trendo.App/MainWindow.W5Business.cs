@@ -22,7 +22,7 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 8, Children = { P("Prüfe deine Geschäftsidee ehrlich, bevor du Geld ausgibst. Alles bleibt auf diesem PC.") } };
         var list = new WrapPanel();
         var n = 0;
-        foreach (var x in all) { var idea = x; var b = Act($"biz-idea-{n++}", (idea.Id == i.Id ? "● " : "") + idea.Name, () => { CurrentIdea = idea; Show("business"); }); b.Margin = new Avalonia.Thickness(0, 0, 6, 6); list.Children.Add(b); }
+        foreach (var x in all) { var idea = x; var b = Act($"biz-idea-{n++}", (idea.Id == i.Id ? "● " : "") + idea.Name, () => { CurrentIdea = idea; Say($"Idee „{idea.Name}“ ist ausgewählt.", "business"); }); b.Margin = new Avalonia.Thickness(0, 0, 6, 6); list.Children.Add(b); }
         list.Children.Add(Act("biz-new", "+ Neue Idee", () => { CurrentIdea = new BusinessIdea { Name = "Neue Idee" }; Show("business"); }));
         sp.Children.Add(list);
 

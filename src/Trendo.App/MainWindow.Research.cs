@@ -102,7 +102,7 @@ public partial class MainWindow
         }
         sp.Children.Add(H("Gute Startpunkte", 14));
         var wp = new WrapPanel();
-        foreach (var (n, u, why) in ResearchDesk.Sources) { var b = new Button { Content = n }; ToolTip.SetTip(b, why); b.Click += async (_, _) => { await ReadUrlAsync(u); Show("recherche"); }; wp.Children.Add(MSp(b)); }
+        foreach (var (n, u, why) in ResearchDesk.Sources) { var b = new Button { Content = n }; ToolTip.SetTip(b, why); b.Click += async (_, _) => { _rsMsg = "Lade " + n + " …"; Show("recherche"); await ReadUrlAsync(u); Show("recherche"); }; wp.Children.Add(MSp(b)); }
         sp.Children.Add(wp);
         sp.Children.Add(H("Diese Sitzung", 14));
         var srcs = Desk.SessionSources();

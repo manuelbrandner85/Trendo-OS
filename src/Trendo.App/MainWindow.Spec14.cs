@@ -21,7 +21,7 @@ public partial class MainWindow
                 var svg = Path.ChangeExtension(f, ".vorschau.svg"); File.WriteAllText(svg, r.Svg);
                 return $"{(r.Warnings.Count == 0 ? "✓ Keine Auffälligkeiten." : "⚠ " + string.Join("\n⚠ ", r.Warnings))}\nDauer ca. {(int)r.Time.TotalHours}:{r.Time.Minutes:00}:{r.Time.Seconds:00} · Fräsweg {Fach.F(r.CutMm / 1000, 2)} m · Eilgang {Fach.F(r.RapidMm / 1000, 2)} m · {r.Moves} Bewegungen\nGröße {Fach.F(r.Box.X1 - r.Box.X0, 1)} × {Fach.F(r.Box.Y1 - r.Box.Y0, 1)} mm, Z {Fach.F(r.Box.Z0, 2)} bis {Fach.F(r.Box.Z1, 2)} · Werkzeuge: {(r.Tools.Count == 0 ? "–" : string.Join(", ", r.Tools.Select(t => "T" + t)))} · Spindel max. {Fach.F(r.MaxSpindle, 0)} U/min\nVorschau: {svg}";
             }, "Prüfen"));
-        sp.Children.Add(FachTool("cnc-feeds", "Drehzahl & Vorschub", "Startwerte für Schaftfräser. Werkstoffe: " + string.Join(", ", Cnc.Materials.Keys) + ".",
+        sp.Children.Add(FachTool("cnc-feeds", "Drehzahl & Vorschub", "Startwerte für Schaftfräser. Den Werkstoff wählst du in der Liste.",
             [("mat", "Werkstoff", "Aluminium"), ("d", "Fräser-Ø (mm)", "6"), ("z", "Schneiden", "2"), ("max", "max. Drehzahl", "24000")],
             v => { var r = Cnc.Feeds(v("mat"), Fach.Num(v("d")), (int)Fach.Num(v("z")), Fach.Num(v("max"))); return $"Drehzahl {Fach.F(r.Rpm, 0)} U/min · Vorschub {Fach.F(r.FeedMmMin, 0)} mm/min (fz {Fach.F(r.Fz, 3)} mm, Vc {Fach.F(r.Vc, 0)} m/min){(r.Limited ? "\nDie Spindel ist am Limit – Vorschub ist entsprechend kleiner." : "")}"; }));
         string Prog(string name, string g) { var p = Path.Combine(Fach.StoreDir(_core.DataRoot, "cnc"), name + ".nc"); File.WriteAllText(p, g); var r = Cnc.Analyse(g); return $"Dauer ca. {(int)r.Time.TotalHours}:{r.Time.Minutes:00}:{r.Time.Seconds:00} · Fräsweg {Fach.F(r.CutMm / 1000, 2)} m\nGespeichert: {p}\nVor dem Fräsen bitte mit „G-Code prüfen“ und an der Maschine kontrollieren."; }
@@ -39,7 +39,7 @@ public partial class MainWindow
                 [("file", "Datei", ""), ("dx", "X um", "0"), ("dy", "Y um", "0"), ("dz", "Z um", "0")],
                 v => { var f = v("file").Trim().Trim('"'); if (!File.Exists(f)) throw new IOException("Diese Datei gibt es nicht."); var o = Path.Combine(Path.GetDirectoryName(f) ?? ".", Path.GetFileNameWithoutExtension(f) + ".versetzt" + Path.GetExtension(f)); File.WriteAllText(o, CncPlus.Offset(File.ReadAllText(f), Fach.Num(v("dx")), Fach.Num(v("dy")), Fach.Num(v("dz")))); return "Gespeichert: " + o; }, "Verschieben")));
         sp.Children.Add(FachGroup("cnc-calc", "Werkstatt-Rechner", false,
-            FachTool("cnc-mrr", "Zerspanleistung", "Reicht die Spindel? Werkstoffe: " + string.Join(", ", CncPlus.Kc.Keys) + ".",
+            FachTool("cnc-mrr", "Zerspanleistung", "Reicht die Spindel? Den Werkstoff wählst du in der Liste.",
                 [("ae", "Eingriffsbreite (mm)", "3"), ("ap", "Schnitttiefe (mm)", "6"), ("vf", "Vorschub (mm/min)", "1000"), ("mat", "Werkstoff", "Aluminium")],
                 v => { var m = CncPlus.Mrr(Fach.Num(v("ae")), Fach.Num(v("ap")), Fach.Num(v("vf")), v("mat")); return $"Spanvolumen {Fach.F(m.Qcm3, 1)} cm³/min · Schnittleistung {Fach.F(m.CutKw, 2)} kW · Spindel braucht ca. {Fach.F(m.SpindleKw, 2)} kW"; }),
             FachTool("cnc-cost", "Teilekosten", "Maschinenzeit je Teil, Rüstzeit wird auf die Menge verteilt.",

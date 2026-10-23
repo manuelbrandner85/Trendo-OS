@@ -63,7 +63,7 @@ public partial class MainWindow
         var state = new TextBlock { Name = "ask-state", Text = _askState, Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap };
         var send = new Button { Name = "ask-send", Content = "Fragen", Background = Accent };
         var clear = new Button { Name = "ask-clear", Content = "Neues Gespräch" };
-        clear.Click += (_, _) => { _chat.Clear(); Show("ki-fragen"); };
+        clear.Click += (_, _) => { var n = _chat.Count; _chat.Clear(); _askState = n == 0 ? "Das Gespräch ist schon leer." : "Neues Gespräch."; Show("ki-fragen"); };
         send.Click += async (_, _) =>
         {
             var q = input.Text?.Trim() ?? "";

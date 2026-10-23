@@ -12,6 +12,8 @@ using Trendo.Core;
 using Xunit;
 
 [assembly: AvaloniaTestApplication(typeof(Trendo.App.Tests.TestApp))]
+// Eine Oberfläche, ein UI-Thread. Parallele Sammlungen strecken den Knopf-Lauf über seine Frist, obwohl er allein in 24 Minuten durch ist.
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Trendo.App.Tests;
 

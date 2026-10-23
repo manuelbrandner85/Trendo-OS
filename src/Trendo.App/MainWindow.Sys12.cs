@@ -48,7 +48,11 @@ public partial class MainWindow
             if (c is TemplatedControl tc)
             {
                 tc.FontSize = A11y.EffectiveFont(tc.FontSize, _settings.FontMin);
-                if (_settings.SimpleMode && c is Button) tc.FontSize = Math.Max(tc.FontSize, A11y.SimpleButtonFont);
+                if (_settings.SimpleMode && c is Button btn)
+                {
+                    tc.FontSize = Math.Max(tc.FontSize, A11y.SimpleButtonFont);
+                    if (btn.MinHeight < 40) btn.MinHeight = 40;
+                }
             }
             if (c is Button or TextBox or CheckBox or ComboBox or ToggleButton)
             {
@@ -66,7 +70,23 @@ public partial class MainWindow
         _ => ToolTip.GetTip(c) as string ?? c.Name,
     };
 
-    private CheckBox Opt(string name, string label, bool on, Action<bool> set, string page) { var cb = new CheckBox { Name = name, Content = label, IsChecked = on, Foreground = Text }; cb.IsCheckedChanged += (_, _) => { set(cb.IsChecked == true); SaveSettings(); Reopen(page); }; return cb; }
+    private CheckBox Schalter(string name, string label, bool on, Action<bool> set, string? page)
+    {
+        var cb = new CheckBox { Name = name, Foreground = Text, IsChecked = on };
+        void Malen() => cb.Content = label + (cb.IsChecked == true ? " · Ein" : " · Aus");
+        Malen();
+        cb.IsCheckedChanged += (_, _) =>
+        {
+            Malen();
+            set(cb.IsChecked == true);
+            if ((name == "reduce-motion" || name == "a11y-motion") && cb.IsChecked == true) _center.Transitions = null;
+            SaveSettings();
+            if (page is not null) Reopen(page);
+        };
+        return cb;
+    }
+
+    private CheckBox Opt(string name, string label, bool on, Action<bool> set, string page) => Schalter(name, label, on, set, page);
 
     // ---------- Sehen ----------
     private Control BedienSeeView()
@@ -75,9 +95,9 @@ public partial class MainWindow
         var fonts = Line(); foreach (var m in A11y.FontMins)
         { var on = _settings.FontMin == m; fonts.Children.Add(Act($"font-{m}", (on ? "✓ " : "") + (m == 0 ? "Wie gestaltet" : $"mindestens {m} pt"), () => { _settings.FontMin = m; SaveSettings(); Show(V); }, on)); }
         sp.Children.Add(Card(Section("Schriftgröße", "Unabhängig von der Anzeigegröße: kleine Schrift wird auf diese Mindestgröße angehoben.", fonts)));
-        sp.Children.Add(Card(Section("Einfacher Modus", "Nur die wichtigsten Kacheln auf dem Startbildschirm und größere Knöpfe.",
+        sp.Children.Add(Card(Section("Einfacher Modus", "Nur die wichtigsten Kacheln, keine Fachwerkzeuge, größere Knöpfe.",
             Opt("simple-mode", "Einfachen Modus einschalten", _settings.SimpleMode, v => _settings.SimpleMode = v, V))));
-        sp.Children.Add(Card(Section("Farben und Bewegung", "Status zusätzlich mit Zeichen (✓ ⚠ ✕), damit man ihn auch ohne Farben erkennt.",
+        sp.Children.Add(Card(Section("Farben und Bewegung", "Status zusätzlich mit Zeichen (✓ ⚠ ✗), damit man ihn auch ohne Farben erkennt.",
             Opt("color-blind", "Status mit Zeichen statt nur Farbe", _settings.ColorBlind, v => _settings.ColorBlind = v, V),
             Opt("a11y-motion", "Bewegung reduzieren (keine Animationen)", _settings.ReduceMotion, v => _settings.ReduceMotion = v, V),
             new TextBlock { Name = "status-sample", Foreground = Text, Text = _settings.ColorBlind ? $"{A11y.WithSymbol(A11y.Level.Gut, "In Ordnung")}   {A11y.WithSymbol(A11y.Level.Hinweis, "Hinweis")}   {A11y.WithSymbol(A11y.Level.Problem, "Problem")}" : "● In Ordnung   ● Hinweis   ● Problem" },
@@ -92,7 +112,8 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 10 }; const string V = "bedien-hilfen";
         sp.Children.Add(Card(Section("Leichte Sprache", "Hilfetexte werden kürzer: wenige kurze Sätze, einfache Wörter.",
-            Opt("easy-lang", "Leichte Sprache für Hilfetexte", _settings.EasyLanguage, v => { _settings.EasyLanguage = v; _settings.SeenHints.Clear(); }, V))));
+            Opt("easy-lang", "Leichte Sprache für Hilfetexte", _settings.EasyLanguage, v => { _settings.EasyLanguage = v; _settings.SeenHints.Clear(); }, V),
+            new TextBlock { Name = "easy-sample", Foreground = Text, TextWrapping = Avalonia.Media.TextWrapping.Wrap, Text = _settings.EasyLanguage ? A11y.Easy("Die Konfiguration ist verfügbar.") : "Die Konfiguration ist verfügbar." })));
         var notes = Line(); foreach (var (id, label) in new[] { ("normal", "Normal – Fenster kommt nach vorn"), ("leise", "Leise – nur Eintrag, nichts springt auf") })
         { var on = _settings.NotifyStyle == id; notes.Children.Add(Act("notify-" + id, (on ? "✓ " : "") + label, () => { _settings.NotifyStyle = id; SaveSettings(); Show(V); }, on)); }
         sp.Children.Add(Card(Section("Benachrichtigungen", "Wie sich Erinnerungen melden.", notes)));

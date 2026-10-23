@@ -63,7 +63,8 @@ public sealed partial class MainWindow
                 foreach (var (id, label) in new[] { ("dunkel", "Dunkel Premium (empfohlen)"), ("hell", "Hell"), ("kontrast", "Hoher Kontrast (gut lesbar)") })
                 {
                     var rb = new RadioButton { Name = "wiz-theme-" + id, Content = label, GroupName = "theme", IsChecked = _settings.Theme == id, Foreground = Text };
-                    rb.IsCheckedChanged += (_, _) => { if (rb.IsChecked == true && _settings.Theme != id) { _settings.Theme = id; Show("einrichtung"); } };
+                    rb.IsCheckedChanged += (_, _) => { if (rb.IsChecked == true && _settings.Theme != id) { _settings.Theme = id; _wizTap = "Aussehen: " + label; Show("einrichtung"); } };
+                    rb.Click += (_, _) => { if (_settings.Theme == id) { _wizTap = "Aussehen bleibt: " + label; Show("einrichtung"); } };
                     sp.Children.Add(rb);
                 }
                 // T-0210: sichtbare Vorschau der Wahl (wird nach „Weiter“ für ganz Trendo übernommen)
@@ -72,6 +73,7 @@ public sealed partial class MainWindow
                 sp.Children.Add(new Border { Name = "wiz-theme-preview", Background = Brush.Parse(bg), BorderBrush = Brush.Parse(edge), BorderThickness = new Thickness(2), CornerRadius = new CornerRadius(10), Padding = new Thickness(14, 10), Width = 320, HorizontalAlignment = HorizontalAlignment.Left,
                     Child = new StackPanel { Spacing = 4, Children = { new TextBlock { Text = "Vorschau: " + themeLabel, Foreground = Brush.Parse(fg), FontWeight = FontWeight.SemiBold }, new TextBlock { Text = "So sehen Fenster und Texte aus.", Foreground = Brush.Parse(fg), FontSize = 11 } } } });
                 sp.Children.Add(new TextBlock { Name = "wiz-theme-choice", Text = $"Gewählt: {themeLabel} – gilt nach „Weiter“ für ganz Trendo.", Foreground = Text, FontSize = 11 });
+                if (_wizTap.Length > 0) sp.Children.Add(new TextBlock { Name = "wiz-theme-tap", Text = _wizTap, Foreground = Text, FontSize = 11 });
                 break;
             case 3:
                 var hw = HardwareProbe.Read(); var (model, why) = KiAdvisor.Choose(hw);
@@ -167,6 +169,7 @@ public sealed partial class MainWindow
     }
 
     private string _repairMsg = "";
+    private string _wizTap = "";
     private Control BuildCheckGrid(List<(Component C, ToolCheck R)> checks)
     {
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("230,*,130"), Name = "syscheck" };

@@ -113,4 +113,26 @@ public partial class MainWindow
     }
 
     private void Say(string msg, string view) { _w45Msg = msg; Show(view); }
+
+    /// <summary>Baut die Seite neu, solange sie noch offen ist. Ein fertiger Hintergrundjob wechselt nicht von allein auf eine andere Seite zurück.</summary>
+    private void RefreshHere(string view)
+    {
+        if (CurrentView == view) Show(view);
+    }
+
+    /// <summary>Für den Knopf-Test: Hinweise leeren, damit jeder Klick von einer ruhigen Seite aus bewertet wird.</summary>
+    public void QuietNotices()
+    {
+        _w45Msg = ""; _caseMsg = ""; _a11yOut = ""; _devKiSatz = ""; _wfMsg = ""; _srcMsg = "";
+        _promptMsg = ""; _rsMsg = ""; _repairMsg = ""; _backupMsg = ""; _shareMsg = ""; _scanStatus = "";
+        _progOut = ""; _qualOut = ""; _letterMsg = ""; _secMsg = ""; _devMsg = ""; _forMsg = ""; _hashOut = "";
+        _wizTap = ""; _mailMsg = ""; _wissenMsg = ""; _askState = ""; _agentMsg = ""; _netStatus = "";
+        _noteMsg = ""; _healNote = ""; W7Msg = ""; _depAsk = "";
+        _settingsNote = ""; _studioNote = "";
+        _kiText.Text = "Hallo! Ich bin noch nicht verbunden. Mit „KI einrichten“ installierst du die kostenlose lokale KI – danach kannst du mir Aufgaben geben, Studios öffnen oder Fragen stellen.";
+        if (_depLog.Text?.Length > 0) _depLog.Text = "";
+        Bench.CamStatus = "Noch kein Bild. Kamera suchen oder eine rtsp-Adresse eintragen.";
+        Bench.DriveStatus = "Die Steuerung steht auf Simulation. Es bewegt sich nichts Echtes.";
+        if (Bench.Live) { Bench.Live = false; _liveCts?.Cancel(); }
+    }
 }

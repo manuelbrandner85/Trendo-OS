@@ -62,9 +62,12 @@ public partial class MainWindow
         var gs = new GlobalSearch();
         foreach (var (t, k, w) in Pages.Concat(ExtraPages)) if (_showMap.ContainsKey(k)) gs.Add("Seite", t, "page:" + k, w);
         foreach (var c in Categories) gs.Add("Seite", c.Label, "filter:" + c.Filter, c.Label.Split(' ', '&'));
-        foreach (var s in _studios) gs.Add("Studio", StudioCatalog.For(s.Id)?.Name ?? s.Name, "studio:" + s.Id, StudioWords(s.Id, s.Name));
+        foreach (var s in _studios)
+            if (!(_settings.SimpleMode && FachTabs.Exists(t => t.Module == s.Id)))
+                gs.Add("Studio", StudioCatalog.For(s.Id)?.Name ?? s.Name, "studio:" + s.Id, StudioWords(s.Id, s.Name));
         foreach (var (id, info) in StudioCatalog.ById)
-            if (!_studios.Any(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase)))
+            if (!_studios.Any(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase))
+                && !(_settings.SimpleMode && FachTabs.Exists(t => t.Module == id)))
                 gs.Add("Studio", info.Name, "studio:" + id, StudioWords(id, info.Name));
         foreach (var p in _core.Projects.List()) gs.Add("Projekt", p.Name, "project:" + p.Id, p.Id);
         foreach (var n in new NoteStore(_core.DataRoot).All()) gs.Add("Notiz", n.Text.Split('\n')[0], "page:werkzeuge", n.Text.Split([' ', '\n', '/', '.', '-'], StringSplitOptions.RemoveEmptyEntries)); // SYS-03-P21

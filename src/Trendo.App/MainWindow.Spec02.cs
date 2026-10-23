@@ -27,7 +27,7 @@ public partial class MainWindow
             [("text", "Zeilen (mit | trennen)", "R1, 10k, 0805, 1, 0,02 | R2, 10k, 0805, 1, 0,02 | C1, 100n, 0603, 1, 0,03")],
             v => { var bom = Electronics.ParseBom(v("text").Replace('|', '\n')); var p = Path.Combine(Fach.StoreDir(_core.DataRoot, "elektronik"), "stueckliste.csv"); File.WriteAllText(p, Electronics.BomCsv(bom)); return string.Join("\n", bom.Select(b => $"{b.Qty}× {b.Value} {b.Part} ({b.Ref})")) + $"\nSumme: {Fach.F(bom.Sum(b => b.Qty * b.UnitPrice))} €\nGespeichert: {p}"; }, "Zusammenfassen"));
         sp.Children.Add(FachGroup("el-calc", "Bauteile & Schaltungen", false,
-            FachTool("el-comb", "Reihe & parallel", "Werte mit Komma oder Leerzeichen trennen, z. B. „4k7 10k 2k2“. Art: r = Widerstände, c = Kondensatoren.",
+            FachTool("el-comb", "Reihe & parallel", "Werte mit Leerzeichen trennen, zum Beispiel „4k7 10k 2k2“. Die Art wählst du in der Liste.",
                 [("vals", "Werte", "1k 1k 2k"), ("mode", "reihe/parallel", "parallel"), ("kind", "r oder c", "r")],
                 v => { var vals = v("vals").Split([' ', ';'], StringSplitOptions.RemoveEmptyEntries).Select(ElectronicsPlus.Si); var cap = v("kind").Trim().StartsWith("c", StringComparison.OrdinalIgnoreCase); var x = ElectronicsPlus.Combine(vals, v("mode").Trim().StartsWith("p", StringComparison.OrdinalIgnoreCase), cap); return "Gesamt: " + ElectronicsPlus.Fmt(x, cap ? "F" : "Ω"); }),
             FachTool("el-cap", "Kondensator-Aufdruck", "Code wie „104“ oder Wert wie „100n“.",
@@ -54,7 +54,7 @@ public partial class MainWindow
             FachTool("el-reg", "Spannungsregler (z. B. 7805)", "Wie warm wird er? Ohne Kühlkörper ca. 50 K/W.",
                 [("vin", "Eingang (V)", "12"), ("vout", "Ausgang (V)", "5"), ("a", "Strom (A)", "0,5")],
                 v => { var r = ElectronicsPlus.Regulator(Fach.Num(v("vin")), Fach.Num(v("vout")), Fach.Num(v("a"))); return r.NeedsSink ? $"⚠ {Fach.F(r.Watt, 2)} W Verlust – ohne Kühlkörper {Fach.F(r.TjNoSink, 0)} °C. Kühlkörper mit höchstens {Fach.F(r.SinkKPerW, 1)} K/W nötig, oder Schaltregler nehmen." : $"✓ {Fach.F(r.Watt, 2)} W Verlust, ca. {Fach.F(r.TjNoSink, 0)} °C – kein Kühlkörper nötig."; }),
-            FachTool("el-si", "Einheiten-Präfixe", "Wert mit Präfix (p, n, µ/u, m, k, M, G) lesen.",
+            FachTool("el-si", "Einheiten-Präfixe", "Wert mit Vorsilbe lesen, zum Beispiel 4k7 oder 100n.",
                 [("v", "Wert", "4k7")], v => $"{v("v")} = {Fach.F(ElectronicsPlus.Si(v("v")), 12).TrimEnd('0').TrimEnd(',')}", "Lesen")));
         return FachPage("Elektronik", sp);
     }

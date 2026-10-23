@@ -55,6 +55,7 @@ public partial class MainWindow
                 MediaPath: Empty(MediaBox()),
                 PixelStreaming: PixelBox(),
                 ExampleCube: CubeBox());
+            Say("Die Seite wird gebaut …", "dev");
             await RunBuild(brief);
         }, true);
 

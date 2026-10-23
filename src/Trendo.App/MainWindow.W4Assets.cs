@@ -20,6 +20,8 @@ public partial class MainWindow
     {
         _assetType = type; _assetQuery = q;
         if (_core.Offline) { Say("Trendo ist offline. Die Suche braucht Internet.", "assets"); return; }
+        Say(string.IsNullOrWhiteSpace(q) ? "Bitte zuerst ein Suchwort eingeben." : "Suche läuft …", "assets");
+        if (string.IsNullOrWhiteSpace(q)) return;
         try { _assetHits = FreeAssets.ParseList(await AssetGet(FreeAssets.ListUrl(FreeAssets.Types[type].Api)), q); _w45Msg = _assetHits.Count == 0 ? "Nichts gefunden. Versuch ein englisches Wort, z. B. „rock“." : ""; }
         catch (Exception ex) { _assetHits = []; _w45Msg = "Suche hat nicht geklappt: " + ex.Message; }
         Show("assets");

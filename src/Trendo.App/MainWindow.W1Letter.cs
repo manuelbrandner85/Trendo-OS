@@ -139,8 +139,20 @@ public partial class MainWindow
         foreach (var a in c.Attachments.OrderBy(a => a.No)) sp.Children.Add(P($"Anlage {a.No}: {a.Title}  ·  SHA-256 {a.Sha256[..12]}…", Text, 12));
         sp.Children.Add(Row(Btn("att-add", "Anlage hinzufügen …", async () =>
         {
-            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Anlage wählen", AllowMultiple = true });
-            foreach (var f in files) if (f.TryGetLocalPath() is { } p) Cases.AddAttachment(c, p, Path.GetFileNameWithoutExtension(p), Principal.LocalOwner);
+            try
+            {
+                IEnumerable<string> paths;
+                if (PickOverride is { } fake) paths = await fake(new PickRequest("att-add", false, true, [])) ?? [];
+                else
+                {
+                    var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Anlage wählen", AllowMultiple = true });
+                    paths = files.Select(f => f.TryGetLocalPath()).OfType<string>();
+                }
+                var n = 0;
+                foreach (var p in paths) { Cases.AddAttachment(c, p, Path.GetFileNameWithoutExtension(p), Principal.LocalOwner); n++; }
+                _caseMsg = n == 0 ? "Bitte zuerst eine Datei wählen." : $"{n} Anlage(n) hinzugefügt.";
+            }
+            catch (Exception ex) { _caseMsg = "Die Dateiauswahl geht hier nicht: " + ex.Message; }
             Show("akte");
         }), Btn("att-renumber", "Neu nummerieren", () => { Cases.Renumber(c, Principal.LocalOwner); Show("akte"); })));
         // Eingangspost
@@ -169,8 +181,20 @@ public partial class MainWindow
         var ephemeral = new CheckBox { Name = "inc-ephemeral", Content = "Nur forensische Kopie (nach 120 Stunden automatisch löschen)", Foreground = Text };
         sp.Children.Add(Row(Btn("inc-add", "Scan/Foto einlesen …", async () =>
         {
-            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Brief-Foto oder Scan", FileTypeFilter = [new("Bilder") { Patterns = Ocr.ImageExt.Select(e => "*" + e).ToList() }, new("Text") { Patterns = ["*.txt"] }] });
-            foreach (var f in files) if (f.TryGetLocalPath() is { } p) await ImportIncoming(c, p, ephemeral.IsChecked == true);
+            try
+            {
+                IEnumerable<string> paths;
+                if (PickOverride is { } fake) paths = await fake(new PickRequest("inc-add", false, false, ["png", "jpg", "txt"])) ?? [];
+                else
+                {
+                    var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = "Brief-Foto oder Scan", FileTypeFilter = [new("Bilder") { Patterns = Ocr.ImageExt.Select(e => "*" + e).ToList() }, new("Text") { Patterns = ["*.txt"] }] });
+                    paths = files.Select(f => f.TryGetLocalPath()).OfType<string>();
+                }
+                var n = 0;
+                foreach (var p in paths) { await ImportIncoming(c, p, ephemeral.IsChecked == true); n++; }
+                if (n == 0) _caseMsg = "Bitte zuerst eine Datei wählen.";
+            }
+            catch (Exception ex) { _caseMsg = "Die Dateiauswahl geht hier nicht: " + ex.Message; }
             Show("akte");
         }), ephemeral));
         // Fristen
