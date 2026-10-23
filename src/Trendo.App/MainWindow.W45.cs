@@ -129,5 +129,8 @@ public partial class MainWindow
         _wizTap = ""; _mailMsg = ""; _wissenMsg = ""; _askState = ""; _agentMsg = ""; _netStatus = "";
         _noteMsg = ""; _healNote = ""; W7Msg = ""; _depAsk = "";
         if (_depLog.Text?.Length > 0) _depLog.Text = "";
+        Bench.CamStatus = "Noch kein Bild. Kamera suchen oder eine rtsp-Adresse eintragen.";
+        Bench.DriveStatus = "Die Steuerung steht auf Simulation. Es bewegt sich nichts Echtes.";
+        if (Bench.Live) { Bench.Live = false; _liveCts?.Cancel(); }
     }
 }
