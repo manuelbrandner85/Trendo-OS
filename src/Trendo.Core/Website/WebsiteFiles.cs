@@ -208,7 +208,7 @@ Das brauchst du selbst, wenn du es wirklich willst:
 - einen starken PC und genug Netz
 
 Für die meisten Seiten reicht ein gerendertes Video oder eine Bildfolge.
-Die legst du im Studio „Webseite bauen“ ab. Dafür ist kein Server nötig.
+Die legst du im Studio „Webseite aus Vorlage“ ab. Dafür ist kein Server nötig.
 """, new UTF8Encoding(false));
     }
 }

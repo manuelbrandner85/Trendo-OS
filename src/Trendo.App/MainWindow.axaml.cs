@@ -600,7 +600,7 @@ public sealed partial class MainWindow : Window
             new("blender", Mdi.Blender, "#FFB74D", "#EF6C00", "Blender", () => Tool("blender")),
             new("unreal", Mdi.Unreal, "#FFFFFF", "#CFD8DC", "Unreal Engine", () => Tool("unreal")),
             new("components", Mdi.Cart, "#4DD0E1", "#00838F", "Zusatzprogramme", () => null),
-            new("code", Mdi.CodeTags, "#64B5F6", "#1565C0", "Webseite bauen", () => null),
+            new("code", Mdi.CodeTags, "#64B5F6", "#1565C0", "Webseite aus Vorlage", () => null),
             new("office", Mdi.FileDocument, "#ECEFF1", "#B0BEC5", "Texte & Tabellen", () => null, Brush.Parse("#37474F")),
             new("security", Mdi.ShieldCheck, "#66BB6A", "#1B5E20", "Daten schützen", () => null),
         };
@@ -627,7 +627,7 @@ public sealed partial class MainWindow : Window
                     case "media": await OpenStudio("CORE-08", "Videos & Fotos bearbeiten"); break;
                     case "settings": Show("settings"); break;
                     case "components": Show("components"); break;
-                    case "code": await OpenStudio("CORE-07", "Webseite bauen"); break;
+                    case "code": await OpenStudio("CORE-07", "Webseite aus Vorlage"); break;
                     case "office": Show("office"); break;
                     case "security": await OpenStudio("CORE-11", "Daten schützen"); break;
                     case "blender": if (a.Target() is { } bl) _core.Integrations.LaunchDirect(Principal.LocalOwner, bl, _core.Audit); break;
