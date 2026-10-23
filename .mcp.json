@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "trendo-readonly": {
+      "type": "stdio",
+      "command": "python",
+      "args": [
+        "${CLAUDE_PROJECT_DIR}/tools/trendo_mcp.py"
+      ]
+    }
+  }
+}
