@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.LogicalTree;
@@ -217,6 +218,30 @@ public class Audit_Jeder_Knopf
     [AvaloniaFact(DisplayName = "T-0202: Jeder sichtbare Knopf auf jeder Seite bewirkt etwas", Timeout = 3600000)]
     public void Alle_Seiten()
     {
+        // Der Lauf allein braucht etwa 24 Minuten und bleibt im Speicher. Im selben Prozess wie die übrigen Oberflächentests wächst der Schrift-Zwischenspeicher, bis der Lauf mit einem Speicherfehler abbricht.
+        if (Environment.GetEnvironmentVariable("TRENDO_KNOPF_LAUF") != "1")
+        {
+            var rootDir = new DirectoryInfo(AppContext.BaseDirectory);
+            while (rootDir is not null && !File.Exists(Path.Combine(rootDir.FullName, "Trendo.sln"))) rootDir = rootDir.Parent;
+            Assert.NotNull(rootDir);
+            var psi = new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = "test tests/Trendo.App.Tests/Trendo.App.Tests.csproj -c Release --no-build --nologo --filter FullyQualifiedName~Audit_Jeder_Knopf.Alle_Seiten",
+                WorkingDirectory = rootDir!.FullName,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+            };
+            psi.Environment["TRENDO_KNOPF_LAUF"] = "1";
+            using var prozess = Process.Start(psi)!;
+            var ausgabe = prozess.StandardOutput.ReadToEndAsync();
+            var fehlerText = prozess.StandardError.ReadToEndAsync();
+            Assert.True(prozess.WaitForExit(3_300_000), "Der Knopf-Lauf ist nicht fertig geworden.");
+            var text = ausgabe.Result + "\n" + fehlerText.Result;
+            Assert.True(prozess.ExitCode == 0, "Knopf-Lauf im eigenen Prozess fehlgeschlagen:\n" + text[^Math.Min(text.Length, 4000)..]);
+            return;
+        }
         var (w, l, root) = Ui.Open();
         var datei = Path.Combine(root, "probe.txt");
         File.WriteAllText(datei, "probe");
