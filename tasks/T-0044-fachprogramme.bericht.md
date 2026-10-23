@@ -78,13 +78,21 @@ Abweichung bei Punkt 8: die Freigabe nutzt das vorhandene Freigabetor (`Approval
 
 ## Testergebnis
 
-Gezielte Tests am 22.10.2026, bevor die ganze Suite noch einmal läuft:
+`dotnet test Trendo.sln -c Release` am 22.10.2026, mit der Versionsabfrage:
 
-- Core, Paket 44: 10 bestanden, 0 Fehler (darunter Versionsabfrage, Zeitablauf, Dateiversion von OBS)
+- Api: 15 bestanden, 0 Fehler
+- Core: 541 bestanden, 10 übersprungen (`WinRealTests`), 0 Fehler
+- App: 235 bestanden, 1 Fehler, 236 gesamt
+
+Der eine Fehler ist `T-0209` („Jeder sichtbare Knopf … wirkt“): der Reiter „Zeit & Kalender“ auf der Seite Kleine Helfer wurde in diesem Lauf als „ohne Wirkung“ gemeldet. Dieselbe Prüfung allein danach: 1 bestanden, 0 Fehler, 22 Sekunden. Der Reiter gehört nicht zu LibreOffice, OBS oder VS Code. Die neuen Prüfungen waren in dem Lauf dabei und sind nicht der gemeldete Fehler.
+
+Davor, nur die neuen Fälle:
+
+- Core, Paket 44: 10 bestanden, 0 Fehler
 - App, Knöpfe der externen Programme: 12 bestanden, 0 Fehler
-- App, Paket 44 inkl. Installieren-Knopf: 7 bestanden, 0 Fehler
+- App, Paket 44 inklusive Installieren-Knopf: 7 bestanden, 0 Fehler
 
-Die Zahlen der ganzen Suite stehen nach dem erneuten `dotnet test Trendo.sln -c Release` in der nächsten Ergänzung dieses Berichts. Der Stand davor, mit Quellensperre: Api 15, Core 538 plus 10 übersprungen, App 232, 0 Fehler.
+Der Kopf von Chrome für den PDF-Test startete in diesem Lauf und war danach von selbst weg. Die App ist für das bekannte Papierformat dieses Chrome nicht geändert.
 
 ## Nicht geprüft
 
