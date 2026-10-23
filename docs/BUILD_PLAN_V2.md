@@ -4,7 +4,7 @@ Ort: **GB** = Claude Code am PC (Standard für Code laut MP §2.2) · **BOX** = 
 
 | Phase (MP §21) | Ist | Offene Arbeit | Ort |
 |---|---|---|---|
-| 0 Entwicklungsumgebung | IN_PROGRESS | Claude-Code-Workflow (#195/#197) produktiv, T-0002 abschließen, Register (diese PR) | GB · BOX |
+| 0 Entwicklungsumgebung | IN_PROGRESS | seit 23.10.2026 Claude Code als einziger Entwicklungsagent (ADR-0009); Register IMP-xx nachziehen | GB · BOX |
 | 1 Systemarchitektur | weitgehend | 18 Ebenen §15 als Architekturkarte; Betriebssystemadapter Pi; Studio-SDK-Paket | GB |
 | 2 Desktop | IMPLEMENTED (C) | Fenster-Feinschliff (läuft), Deinstallationstest, Abnahme | GB · OK |
 | 3 Standardprogramme | IMPLEMENTED/PC_VERIFIED teilweise | 22 TESTED_BOX-Module am PC prüfen; One-Setup-Entscheidung (mitliefern vs. nachinstallieren) | GB · OK |

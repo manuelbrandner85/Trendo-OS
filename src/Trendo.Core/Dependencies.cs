@@ -35,7 +35,7 @@ public static class DependencyCatalog
         new("inter", "Schrift Inter", "UI-Schrift", "SIL OFL 1.1", DeliveryMode.Bundled, "Avalonia.Fonts.Inter, frei weitergebbar"),
         new("velopack", "Velopack", "Installer/Updater", "MIT", DeliveryMode.Bundled, "Bestandteil von Setup.exe"),
         new("yamldotnet", "YamlDotNet", "Spezifikation lesen", "MIT", DeliveryMode.Bundled, "NuGet-Bibliothek"),
-        new("wallpaper", "Hintergrund + Logo-Konzept", "Desktop", "Eigenes Projekt-Asset (KI-generiert)", DeliveryMode.Bundled, "Für Trendo OS erstellt"),
+        new("wallpaper", "Hintergrund (KI-generiert) + Trendo-Logo (eigener Entwurf)", "Desktop", "Eigenes Projekt-Asset (KI-generiert)", DeliveryMode.Bundled, "Für Trendo OS erstellt"),
         new("webview2", "Microsoft Edge WebView2", "—", "Microsoft", DeliveryMode.NotNeeded, "Trendo OS nutzt keine Web-Ansichten; nicht erforderlich"),
         new("ollama", "Ollama (lokale KI-Laufzeit)", "Trendo KI Assistent offline", "MIT", DeliveryMode.AutoUser,
             "Installer ~1 GB → nicht ins Setup gepackt; pro Benutzer ohne Admin installierbar",
@@ -58,8 +58,31 @@ public static class DependencyCatalog
             "TheDocumentFoundation.LibreOffice", 350, "https://libreoffice.org", ["libreoffice"], [@"%ProgramFiles%\LibreOffice\program\soffice.exe"]),
         new("ffmpeg", "FFmpeg", "Medien-Studio: umwandeln, schneiden, Ton herausholen", "LGPL-2.1-or-later / GPL (Build)", DeliveryMode.AutoUser,
             "Pro Benutzer ohne Admin über winget", "Gyan.FFmpeg", 100, "https://ffmpeg.org", ["ffmpeg"], [@"%LOCALAPPDATA%\Microsoft\WinGet\Links\ffmpeg.exe"]),
+        new("adb", "Android Platform-Tools (adb)", "Handy per Kabel oder WLAN verbinden", "Apache-2.0", DeliveryMode.AutoUser,
+            "Offizielles Werkzeug von Google. Nur nach Zustimmung. Unter Linux liegt es meist als Paket „adb“ vor.",
+            "Google.PlatformTools", 15, "https://developer.android.com/tools/releases/platform-tools", ["adb"],
+            [@"%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe", @"%LOCALAPPDATA%\Microsoft\WinGet\Links\adb.exe",
+             @"%LOCALAPPDATA%\Microsoft\WinGet\Packages\Google.PlatformTools*\platform-tools\adb.exe",
+             @"%LOCALAPPDATA%\Microsoft\WinGet\Packages\Genymobile.scrcpy*\*\adb.exe",
+             "/usr/bin/adb", "/usr/local/bin/adb", "/usr/lib/android-sdk/platform-tools/adb"]),
+        new("scrcpy", "scrcpy", "Handy-Bildschirm auf dem PC zeigen", "Apache-2.0", DeliveryMode.AutoUser,
+            "Zeigt den Handy-Bildschirm. Nur nach Zustimmung. Unter Linux liegt es meist als Paket „scrcpy“ vor.",
+            "Genymobile.scrcpy", 10, "https://github.com/Genymobile/scrcpy", ["scrcpy"],
+            [@"%LOCALAPPDATA%\Microsoft\WinGet\Links\scrcpy.exe",
+             @"%LOCALAPPDATA%\Microsoft\WinGet\Packages\Genymobile.scrcpy*\scrcpy.exe",
+             @"%LOCALAPPDATA%\Microsoft\WinGet\Packages\Genymobile.scrcpy*\*\scrcpy.exe",
+             "/usr/bin/scrcpy", "/usr/local/bin/scrcpy"]),
         new("blender", "Blender", "3D Studio", "GPL-3.0-or-later", DeliveryMode.AutoElevated, "Nur systemweiter Installer – Windows fragt nach Admin",
             "BlenderFoundation.Blender", 400, "https://blender.org", ["blender"], [@"%ProgramFiles%\Blender Foundation\*\blender.exe"]),
+        new("colmap", "COLMAP", "Gegenstände aus Fotos als 3D-Modell rechnen", "BSD-3-Clause", DeliveryMode.AutoUser,
+            "Kein winget-Paket. Offizielles Windows-ZIP ohne Grafikkarte, Prüfsumme von der Herstellerseite, nur im Benutzerordner",
+            null, 122, "https://github.com/colmap/colmap/releases/tag/4.2.1", ["colmap"],
+            [@"%LOCALAPPDATA%\TrendoWerkzeuge\colmap\bin\colmap.exe", @"%LOCALAPPDATA%\TrendoWerkzeuge\colmap\*\bin\colmap.exe", @"%ProgramFiles%\COLMAP\bin\colmap.exe", "/usr/bin/colmap", "/usr/local/bin/colmap"],
+            null, "https://github.com/colmap/colmap/releases/download/4.2.1/colmap-x64-windows-nocuda.zip", "c493d88cb4a43f21afba42cb55bf786e5434a0420e73db0ba1454c5d8b3686ae"),
+        new("meshroom", "Meshroom", "Gegenstände aus Fotos als 3D-Modell rechnen (Alternative)", "MPL-2.0", DeliveryMode.Guided,
+            "Kein zuverlässiges winget-Paket. Nur der offizielle Download, danach erkennt Trendo das Programm",
+            null, 1500, "https://github.com/alicevision/Meshroom/releases", ["meshroom_batch"],
+            [@"%LOCALAPPDATA%\Programs\Meshroom\meshroom_batch.exe", @"%ProgramFiles%\Meshroom\meshroom_batch.exe", "/usr/bin/meshroom_batch", "/usr/local/bin/meshroom_batch"]),
         new("krita", "Krita", "Medien Studio – Grafik", "GPL-3.0", DeliveryMode.AutoElevated, "Systemweiter Installer", "KDE.Krita", 200, "https://krita.org", ["krita"], [@"%ProgramFiles%\Krita (x64)\bin\krita.exe"]),
         new("inkscape", "Inkscape", "Medien Studio – Vektor", "GPL-2.0", DeliveryMode.AutoElevated, "Systemweiter Installer", "Inkscape.Inkscape", 200, "https://inkscape.org", ["inkscape"], [@"%ProgramFiles%\Inkscape\bin\inkscape.exe"]),
         new("kdenlive", "Kdenlive", "Medien Studio – Video", "GPL-3.0", DeliveryMode.AutoUser, "Pro Benutzer installierbar (winget-Benutzerinstaller vorhanden)", "KDE.Kdenlive", 300, "https://kdenlive.org", ["kdenlive"], [@"%LOCALAPPDATA%\Programs\kdenlive\bin\kdenlive.exe", @"%ProgramFiles%\kdenlive\bin\kdenlive.exe"]),
@@ -68,6 +91,10 @@ public static class DependencyCatalog
             [@"%LOCALAPPDATA%\TrendoWerkzeuge\qpdf\qpdf-*\bin\qpdf.exe", "/usr/bin/qpdf"], null,
             "https://github.com/qpdf/qpdf/releases/download/v12.4.2/qpdf-12.4.2-msvc64.zip", "db87077e683630c1217e0e8f9a20a9749d952ab676e881c3689187763a5de25d"),
         new("tesseract", "Tesseract OCR", "Letter Studio – Texterkennung", "Apache-2.0", DeliveryMode.AutoElevated, "Systemweiter Installer", "UB-Mannheim.TesseractOCR", 100, "https://github.com/UB-Mannheim/tesseract", ["tesseract"], [@"%ProgramFiles%\Tesseract-OCR\tesseract.exe"]),
+        new("vscode", "Visual Studio Code", "Web & App Studio – Code bearbeiten", "MIT (Quellcode) / Microsoft-Lizenz (Build)", DeliveryMode.AutoUser, "Pro Benutzer installierbar (winget --scope user)",
+            "Microsoft.VisualStudioCode", 100, "https://code.visualstudio.com", ["code"], [@"%LOCALAPPDATA%\Programs\Microsoft VS Code\Code.exe", @"%ProgramFiles%\Microsoft VS Code\Code.exe"]),
+        new("obs", "OBS Studio", "Sendung & Stream – aufnehmen und streamen", "GPL-2.0-or-later", DeliveryMode.AutoElevated, "Systemweiter Installer – Windows fragt nach Admin",
+            "OBSProject.OBSStudio", 150, "https://obsproject.com", ["obs"], [@"%ProgramFiles%\obs-studio\bin\64bit\obs64.exe"]),
         new("unreal", "Unreal Engine", "Game Studio", "Epic EULA (nicht weitergebbar)", DeliveryMode.Guided,
             "Nur über Epic Games Launcher mit Epic-Konto erlaubt – keine automatische Installation", null, 0, "https://www.unrealengine.com/download", ["unreal"], [@"%ProgramFiles%\Epic Games\UE_*\Engine\Binaries\Win64\UnrealEditor.exe"]),
         new("chrome", "Google Chrome (optional)", "Browser", "Google-Lizenz (proprietär)", DeliveryMode.Guided, "Proprietär – nur offizieller Download", null, 0, "https://www.google.com/chrome/"),
@@ -87,9 +114,13 @@ public interface IProcessRunner
 
 public sealed class RealProcessRunner : IProcessRunner
 {
-    public async Task<(int, string)> RunAsync(string file, string args, Action<string>? line = null, CancellationToken ct = default)
+    public Task<(int, string)> RunAsync(string file, string args, Action<string>? line = null, CancellationToken ct = default)
+        => RunInAsync(file, args, Path.GetTempPath(), line, ct);
+
+    /// <summary>Wie <see cref="RunAsync"/>, aber mit Arbeitsordner. Meshroom findet seine Bibliotheken nur neben der Programmdatei.</summary>
+    public async Task<(int, string)> RunInAsync(string file, string args, string? workDir, Action<string>? line = null, CancellationToken ct = default)
     {
-        var psi = new ProcessStartInfo(file, args) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetTempPath() }; // nie im Programmordner: hält sonst Updates auf
+        var psi = new ProcessStartInfo(file, args) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = string.IsNullOrEmpty(workDir) ? Path.GetTempPath() : workDir }; // nie im Programmordner: hält sonst Updates auf
         using var p = Process.Start(psi)!;
         var sb = new System.Text.StringBuilder();
         void On(object _, DataReceivedEventArgs e) { if (e.Data is null) return; lock (sb) sb.AppendLine(e.Data); line?.Invoke(e.Data); }
@@ -204,7 +235,8 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
         }
         else
         {
-            var scope = c.Mode == DeliveryMode.AutoUser && c.Id != "mpv" ? " --scope user" : "";
+            // mpv, adb und scrcpy sind portable Pakete. winget lehnt dort „--scope user“ ab und legt sie schon im Benutzerordner ab.
+            var scope = c.Mode == DeliveryMode.AutoUser && c.Id is not ("mpv" or "adb" or "scrcpy") ? " --scope user" : "";
             r = await Runner.RunAsync("winget", $"install --id {c.WingetId} -e --silent{scope} --accept-package-agreements --accept-source-agreements --disable-interactivity", progress, ct);
         }
         var ok = r.exit == 0 && IsInstalled(c);

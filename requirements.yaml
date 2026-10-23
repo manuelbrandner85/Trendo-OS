@@ -395,7 +395,7 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.1/tests-pc-7092ce1.txt
-  note: "Android über adb gebaut (Infos, Senden, Bildschirmfoto, Foto holen), nur mit simuliertem adb getestet – kein echtes Handy"
+  note: "Kabel und WLAN (Koppeln, QR, mDNS, Dateien, scrcpy, Apps, Benachrichtigungen) sowie Bluetooth (Suche, Koppeln, OBEX, Akku) sind gebaut. Tests mit nachgebautem adb und Bluetooth. Kein echtes Handy, kein echtes WLAN-Koppeln, kein echtes Bluetooth-Gerät."
   name: Mobile OS Bridge
   approved_expansion_functions: BASE
   approval_status: APPROVED_SPEC

@@ -12,6 +12,12 @@ public sealed class WinFactAttribute : FactAttribute
     public WinFactAttribute() { if (!OperatingSystem.IsWindows()) Skip = "nur auf Windows"; }
 }
 
+/// <summary>Prüfungen für Linux-Werkzeuge (z. B. BlueZ). Außerhalb von Linux übersprungen – nie als bestanden gezählt.</summary>
+public sealed class LinuxFactAttribute : FactAttribute
+{
+    public LinuxFactAttribute() { if (!OperatingSystem.IsLinux()) Skip = "nur auf Linux"; }
+}
+
 [SupportedOSPlatform("windows")]
 public class WinRealTests
 {

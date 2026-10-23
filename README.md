@@ -1,3 +1,5 @@
+<p align="center"><img src="src/Trendo.App/Assets/logo/trendo-256.png" width="128" alt="Trendo-Logo"></p>
+
 # Trendo OS
 
 **Status: P1 ACCEPTED (21.10.2026, mit offenen Punkten), P2 in Arbeit.** Die Windows-App (.NET 10 + Avalonia) baut (Stand 23.10.2026: 18 Compiler-Warnungen) und besteht 629 Tests (427 Core, 188 UI, 14 API) auf Windows, siehe `reports/claude/AUDIT_CLAUDE_MIGRATION_2026-10-23.md`; lokale API nur auf 127.0.0.1 mit Rollen-Tokens (siehe `reports/P1_TESTBERICHT.md`). Ein Benutzer-Installer ohne Adminrechte existiert (`installer/`); noch kein Release.
@@ -18,8 +20,8 @@ Trendo OS ist ein geplantes, lokal arbeitendes, KI-unterstütztes Arbeits- und P
 | `docs/spec/` | Verbindliche Spezifikation v2.1 (Systembibel, Architektur, Roadmap, Modulregister, offene Entscheidungen) |
 | `docs/spec/studios/` | Online-Business-Studio (30) und Brief-Studio (25) |
 | `docs/spec/qa/` | Abnahmekriterien und Testmatrizen (alle `NOT_RUN`) |
-| `docs/claude/` | Claude-Code-Architektur, Startprompt, Entscheidungsdelta, Migration |
-| `docs/design/` | Designbrief und **Konzeptbild** (Demodaten, Logo nicht freigegeben) |
+| `docs/claude/` | Claude-Code-Architektur, Startprompt, Entscheidungsdelta, Migration, Fertigstellungsplan |
+| `docs/design/` | Designbrief und **Konzeptbild** (Demodaten; das V-Logo darin ist durch Logo A ersetzt) |
 | `docs/adr/` | Architekturentscheidungen (ADRs) |
 | `requirements.yaml` | Maschinenlesbare Anforderungen, erzeugt aus den CSVs |
 | `tasks/` | Aufträge an Claude Code |

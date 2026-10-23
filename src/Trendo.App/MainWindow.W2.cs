@@ -30,12 +30,15 @@ public partial class MainWindow
     }
     partial void InitWave3();
 
-    private Control KiNav()
+    private Control KiNav(bool vertical = false)
     {
-        var row = new WrapPanel();
-        foreach (var (k, l) in KiTabs.Where(t => _showMap.ContainsKey(t.Key)))
+        Panel row = vertical ? new StackPanel { Spacing = 4 } : new WrapPanel();
+        foreach (var (k, l) in KiTabs.GroupBy(t => t.Key).Select(g => g.First()).Where(t => _showMap.ContainsKey(t.Key)))
         {
-            var b = new Button { Name = "ki-tab-" + k, Content = l, Margin = new Thickness(0, 0, 6, 6), Background = CurrentView == k ? Accent : null };
+            var on = CurrentView == k;
+            var b = new Button { Name = "ki-tab-" + k, Content = l, Padding = new Thickness(10, vertical ? 8 : 6), CornerRadius = new CornerRadius(10), Background = on ? Accent : Brushes.Transparent, Foreground = Text, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
+            if (vertical) { b.HorizontalAlignment = HorizontalAlignment.Stretch; b.HorizontalContentAlignment = HorizontalAlignment.Left; }
+            else b.Margin = new Thickness(0, 0, 6, 6);
             b.Click += (_, _) => Show(k); row.Children.Add(b);
         }
         return row;

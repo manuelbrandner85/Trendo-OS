@@ -40,8 +40,9 @@ public class DeadButtonTests
         var (w, _, _) = Ui.Open();
         w.Show("start");
         Pump();
-        var nav = w.GetVisualDescendants().OfType<Button>().First(b => b.Name == "nav-start");
-        Assert.True(HasEffect(nav), "Reflexion erkennt den Click von nav-start nicht.");
+        // Die linke Navigation gibt es seit Design 41 nicht mehr; der Startknopf ist der feste Bezugsknopf.
+        var nav = w.GetVisualDescendants().OfType<Button>().First(b => b.Name == "start-button");
+        Assert.True(HasEffect(nav), "Reflexion erkennt den Click von start-button nicht.");
 
         var dead = new List<string>();
         foreach (var page in Pages(w))

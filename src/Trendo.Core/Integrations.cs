@@ -3,7 +3,13 @@ using System.Diagnostics;
 namespace Trendo.Core;
 
 /// <summary>Startet Prozesse ausschließlich über einen Launcher. Echte Implementierung nutzt die Windows-Shell (Explorer/Standardbrowser).</summary>
-public interface IProcessLauncher { void Open(string target); void OpenWith(string exe, string arg) => Open($"{exe} \"{arg}\""); }
+public interface IProcessLauncher
+{
+    void Open(string target);
+    void OpenWith(string exe, string arg) => Open($"{exe} \"{arg}\"");
+    /// <summary>T-0203: Programm mit mehreren Argumenten (ohne Shell-Parsing).</summary>
+    void OpenWithArgs(string exe, IReadOnlyList<string> args) { if (args.Count == 1) OpenWith(exe, args[0]); else Open(exe + " " + string.Join(" ", args.Select(a => $"\"{a}\""))); }
+}
 
 public sealed class ShellProcessLauncher : IProcessLauncher
 {
@@ -16,10 +22,21 @@ public sealed class ShellProcessLauncher : IProcessLauncher
         }
         else Process.Start(new ProcessStartInfo("xdg-open", target) { UseShellExecute = false });
     }
-    public void OpenWith(string exe, string arg)
+    public void OpenWith(string exe, string arg) => Process.Start(ForProgram(exe, [arg]));
+    public void OpenWithArgs(string exe, IReadOnlyList<string> args) => Process.Start(ForProgram(exe, args));
+
+    /// <summary>Programm mit Argumenten, ohne extra Konsolenfenster. Die eigene Oberfläche des Programms (z. B. Blender) bleibt sichtbar.</summary>
+    public static ProcessStartInfo ForProgram(string exe, IReadOnlyList<string> args)
     {
-        var psi = new ProcessStartInfo(exe) { UseShellExecute = false, WorkingDirectory = Path.GetTempPath() };
-        psi.ArgumentList.Add(arg); Process.Start(psi);
+        var psi = new ProcessStartInfo(exe)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            WindowStyle = ProcessWindowStyle.Normal,
+            WorkingDirectory = Path.GetTempPath(),
+        };
+        foreach (var a in args) psi.ArgumentList.Add(a);
+        return psi;
     }
 }
 
@@ -57,6 +74,14 @@ public sealed class Integrations(ApprovalGate gate, ProjectStore projects, IProc
         Rbac.Demand(by, Permission.ApproveAction, audit);
         audit.Append(by.Name, "user.direct_launch", $"{Path.GetFileName(exe)} {arg}");
         launcher.OpenWith(exe, arg);
+    }
+
+    /// <summary>T-0203: externes Programm mit der aktuellen Datei (geplant von <see cref="ExternalApps.Plan"/>).</summary>
+    public void LaunchArgs(Principal by, string exe, AuditLog audit, IReadOnlyList<string> args)
+    {
+        Rbac.Demand(by, Permission.ApproveAction, audit);
+        audit.Append(by.Name, "user.direct_launch", $"{Path.GetFileName(exe)} {string.Join(" ", args)}");
+        launcher.OpenWithArgs(exe, args);
     }
 
     public void Execute(ApprovalRequest r) =>

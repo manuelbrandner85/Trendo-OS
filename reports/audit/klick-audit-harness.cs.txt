@@ -1,0 +1,60 @@
+using System.Reflection; using System.Text;
+using Avalonia; using Avalonia.Controls; using Avalonia.Headless; using Avalonia.Headless.XUnit; using Avalonia.Interactivity; using Avalonia.LogicalTree; using Avalonia.Threading;
+using Trendo.App; using Trendo.Core; using Xunit;
+[assembly: AvaloniaTestApplication(typeof(AuditNs.TestApp))]
+namespace AuditNs;
+public static class TestApp { public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>().UseHeadless(new AvaloniaHeadlessPlatformOptions()); }
+public sealed class FL : IProcessLauncher { public List<string> O { get; } = []; public void Open(string t) => O.Add(t); }
+public sealed class Probe : IToolProbe { public bool IsAvailable(string x) => x == "browser"; }
+public class Audit
+{
+    static string Texts(Window w) { var sb = new StringBuilder(); foreach (var c in w.GetLogicalDescendants()) { if (c is TextBlock t && t.Name != null && t.Name.Contains("clock")) continue; if (c is TextBlock tb) sb.Append(tb.Text).Append('|'); else if (c is TextBox x) sb.Append(x.Text).Append('|'); } return sb.ToString(); }
+    static long Files(string root) { try { return new DirectoryInfo(root).EnumerateFileSystemInfos("*", SearchOption.AllDirectories).Where(f => !f.Name.Contains("audit")).Sum(f => f.LastWriteTimeUtc.Ticks % 1000003 + 1); } catch { return 0; } }
+    static void Pump() { for (int i = 0; i < 5; i++) { Dispatcher.UIThread.RunJobs();  } }
+    [AvaloniaFact(Timeout = 3000000)]
+    public void Run()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-audit-" + Guid.NewGuid().ToString("N"));
+        var l = new FL(); var core = new TrendoCore(root, new InMemorySecretStore(), l, offline: true);
+        var w = new MainWindow(core, new AppOptions(root, null, 0, true, Isolated: true, FirstRun: false), new Probe()); w.Width = 1920; w.Height = 1080; w.Show(); Pump();
+        var map = (System.Collections.IDictionary)typeof(MainWindow).GetField("_showMap", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(w)!;
+        var keys = map.Keys.Cast<string>().OrderBy(k => k).ToList();
+        w.Show("notbuilt"); Pump();
+        var chrome = new HashSet<string>(w.GetLogicalDescendants().OfType<Button>().Select(b => b.Name ?? ""));
+        var outp = new StringBuilder(); File.WriteAllText("/tmp/audit/result.tsv","page\tbutton\tlabel\tenabled\teffect\tdetail\n");
+        var skip = new[] { "close", "min", "max", "quit", "exit", "beenden", "neustart", "restart", "update", "install", "entfernen", "uninstall", "delete", "loeschen", "löschen" };
+        foreach (var k in keys)
+        {
+            try { w.Show(k); Pump(); } catch (Exception ex) { outp.Append($"{k}\t-\t-\t-\tPAGE_CRASH\t{ex.GetType().Name}: {ex.Message.Replace('\n',' ')}\n"); continue; }
+            File.AppendAllText("/tmp/audit/result.tsv", outp.ToString()); outp.Clear(); File.AppendAllText("/tmp/audit/progress.txt", k+" "+DateTime.Now.ToString("T")+"\n");
+            var btns = w.GetLogicalDescendants().OfType<Button>().Where(b => b.IsEffectivelyVisible && !chrome.Contains(b.Name ?? "") ).ToList();
+            var idx = 0;
+            foreach (var b0 in btns)
+            {
+                var name = b0.Name ?? $"#{idx}"; idx++;
+                var label = (b0.Content as string) ?? string.Join(" ", (b0.Content as Control)?.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text) ?? []) ;
+                label = label.Replace('\t', ' ').Replace('\n', ' ');
+                if (!b0.IsEffectivelyEnabled) { outp.Append($"{k}\t{name}\t{label}\tno\tDISABLED\t\n"); continue; }
+                if (skip.Any(s => (name + label).ToLowerInvariant().Contains(s))) { outp.Append($"{k}\t{name}\t{label}\tyes\tSKIPPED_RISKY\t\n"); continue; }
+                try { w.Show(k); Pump(); } catch { }
+                var b = b0.Name != null ? w.GetLogicalDescendants().OfType<Button>().FirstOrDefault(x => x.Name == b0.Name && x.IsEffectivelyVisible) : b0;
+                if (b == null) { outp.Append($"{k}\t{name}\t{label}\tyes\tNOT_REFOUND\t\n"); continue; }
+                var t0 = Texts(w); var v0 = w.CurrentView; var l0 = l.O.Count; var f0 = Files(root); var a0 = File.Exists(Path.Combine(root, "audit.log")) ? new FileInfo(Path.Combine(root,"audit.log")).Length : 0;
+                string effect; string det = "";
+                try
+                {
+                    b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); Pump();
+                    var eff = new List<string>();
+                    if (w.CurrentView != v0) eff.Add("NAV:" + w.CurrentView);
+                    if (l.O.Count > l0) eff.Add("LAUNCH:" + Path.GetFileName(l.O[^1]));
+                    if (Files(root) != f0) eff.Add("FILE");
+                    var t1 = Texts(w); if (t1 != t0) { eff.Add("UI"); var nw = t1.Split('|').Except(t0.Split('|')).Where(s => s.Length > 3).Take(2); det = string.Join(" / ", nw).Replace('\t',' ').Replace('\n',' '); if (det.Length > 160) det = det[..160]; }
+                    effect = eff.Count == 0 ? "NONE" : string.Join(",", eff);
+                }
+                catch (Exception ex) { effect = "CRASH"; det = ex.GetType().Name + ": " + ex.Message.Replace('\n',' '); }
+                outp.Append($"{k}\t{name}\t{label}\tyes\t{effect}\t{det}\n");
+            }
+        }
+        File.AppendAllText("/tmp/audit/result.tsv", outp.ToString());
+    }
+}

@@ -1,5 +1,7 @@
 # TRENDO OS – Design-Referenzpaket zu Verbesserung 41
 
+**AKTUALISIERUNG v2:** Jedes Studio muss direkt aus dem Trendo-Startmenü wie unter Windows als eigenes Trendo-Arbeitsfenster starten, mit eigener Taskleistenrepräsentation. Die ergänzte verbindliche Spezifikation **UI41-SM-01** steht im Masterprompt. Kein bloßer Sprung zur Studioübersicht. Die Referenzbilder selbst sind unverändert.
+
 Dieses Paket enthält **zwei große, neu erzeugte Designatlanten**, **zehn einzeln zugeschnittene Referenzansichten** und **einen vollständigen technischen Claude-Code-Auftrag als Markdown**.
 
 ## Übergabe an Claude Code

@@ -28,8 +28,9 @@ public partial class MainWindow
             };
             row.Children.Add(b);
         }
-        var letter = new Button { Name = "office-brief", Content = "Im Briefstudio schreiben", Margin = new Thickness(0, 0, 6, 6), Background = Accent };
+        var letter = new Button { Name = "office-brief", Content = "Briefe schreiben", Margin = new Thickness(0, 0, 6, 6), Background = Accent };
         letter.Click += (_, _) => Show("brief"); row.Children.Add(letter);
+        row.Children.Add(OpenInButton("libreoffice", () => LatestOfficeDoc(), "office"));
         sp.Children.Add(row); sp.Children.Add(msg);
         var soffice = ToolPath("libreoffice");
         sp.Children.Add(P(soffice is null ? "LibreOffice ist nicht installiert – Öffnen nutzt dein Standardprogramm, PDF-Export ist aus." : "Zuletzt bearbeitet (Projektordner und Dokumente). „PDF“ wandelt mit LibreOffice im Hintergrund um.", null, 11));
@@ -61,40 +62,64 @@ public partial class MainWindow
     private Control LetterView()
     {
         var d = Letter;
-        var sp = new StackPanel { Spacing = 6 };
-        // Briefart
-        var cats = new WrapPanel();
+        var form = new StackPanel { Spacing = 4 };
+        var hiddenCats = new StackPanel { Height = 0, Opacity = 0, IsHitTestVisible = false };
         foreach (var c in Letters.Categories)
         {
-            var b = new Button { Name = "letter-cat-" + c.Id, Content = c.Label, Margin = new Thickness(0, 0, 6, 6), Background = d.Category == c.Id ? Accent : null };
-            b.Click += (_, _) => { Letters.ApplyTemplate(d, c.Id); Show("brief"); };
-            cats.Children.Add(b);
+            var b = new Button { Name = "letter-cat-" + c.Id, Content = c.Label, IsTabStop = false, IsHitTestVisible = false, Height = 0, Padding = new Thickness(0), Opacity = 0 };
+            b.Click += (_, _) =>
+            {
+                Letters.ApplyTemplate(d, c.Id);
+                _letterMsg = c.Id == "frei" ? "Freier Brief: ohne Vorlage. Betreff und Text schreibst du selbst." : $"Vorlage „{c.Label}“ eingesetzt. Passe die eckigen Klammern an.";
+                Show("brief");
+            };
+            hiddenCats.Children.Add(b);
         }
-        sp.Children.Add(new StackPanel { Spacing = 4, Children = { H("1. Welche Art Brief?", 14), cats } });
-        if (Letters.Category(d.Category).Legal)
-            sp.Children.Add(P("Hinweis: Trendo hilft beim Formulieren, ersetzt aber keine Rechtsberatung. Fristen und Ansprüche bitte selbst prüfen oder beraten lassen.", Brush.Parse("#FACC15"), 11));
-
-        TextBox Field(string name, string label, string value, Action<string> set, bool multi = false, double w = 300)
+        form.Children.Add(hiddenCats);
+        var labels = Letters.Categories.Select(c => c.Label).ToList();
+        var selected = Array.FindIndex(Letters.Categories, c => c.Id == d.Category);
+        var combo = new ComboBox { Name = "letter-template", ItemsSource = labels, SelectedIndex = Math.Max(0, selected), HorizontalAlignment = HorizontalAlignment.Stretch };
+        combo.SelectionChanged += (_, _) =>
         {
-            var t = new TextBox { Name = "letter-" + name, Text = value, PlaceholderText = label, Width = w, AcceptsReturn = multi, TextWrapping = multi ? TextWrapping.Wrap : TextWrapping.NoWrap, MinHeight = multi ? 80 : 0, HorizontalAlignment = HorizontalAlignment.Left };
-            t.TextChanged += (_, _) => set(t.Text ?? ""); return t;
-        }
-        var sender = new StackPanel { Spacing = 4, Children = {
-            Field("sender-name", "Dein Name", d.SenderName, v => d.SenderName = v), Field("sender-street", "Straße und Hausnummer", d.SenderStreet, v => d.SenderStreet = v),
-            Field("sender-city", "PLZ und Ort", d.SenderCity, v => d.SenderCity = v), Field("sender-contact", "Telefon / E-Mail (optional)", d.SenderContact, v => d.SenderContact = v) } };
-        var rec = new StackPanel { Spacing = 4, Children = {
-            Field("recipient", "Empfänger: Firma\nFrau/Herrn Name\nStraße Nr.\nPLZ Ort", d.Recipient, v => d.Recipient = v, multi: true),
-            Field("reference", "Kunden-/Vertragsnummer, Aktenzeichen (optional)", d.Reference, v => d.Reference = v), Field("place", "Ort für das Datum", d.Place, v => d.Place = v) } };
-        sp.Children.Add(H("2. Von wem an wen?", 14));
-        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Children = { sender, rec } });
-        sp.Children.Add(H("3. Was steht drin?", 14));
-        sp.Children.Add(Field("subject", "Betreff", d.Subject, v => d.Subject = v, w: 616));
-        sp.Children.Add(Field("salutation", "Anrede", d.Salutation, v => d.Salutation = v, w: 616));
-        var body = Field("body", "Text", d.Body, v => d.Body = v, multi: true, w: 616); body.MinHeight = 140;
-        sp.Children.Add(body);
-        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Children = { Field("closing", "Gruß", d.Closing, v => d.Closing = v), Field("attachments", "Anlagen (eine pro Zeile, optional)", d.Attachments, v => d.Attachments = v, multi: true) } });
+            if (combo.SelectedIndex < 0 || combo.SelectedIndex >= Letters.Categories.Length) return;
+            var id = Letters.Categories[combo.SelectedIndex].Id;
+            if (id == d.Category) return;
+            Letters.ApplyTemplate(d, id);
+            var lbl = Letters.Categories[combo.SelectedIndex].Label;
+            _letterMsg = id == "frei" ? "Freier Brief: ohne Vorlage. Betreff und Text schreibst du selbst." : $"Vorlage „{lbl}“ eingesetzt. Passe die eckigen Klammern an.";
+            Show("brief");
+        };
+        form.Children.Add(FieldLabel("Vorlage")); form.Children.Add(combo);
+        if (Letters.Category(d.Category).Legal)
+            form.Children.Add(P("Hinweis: Trendo hilft beim Formulieren, ersetzt aber keine Rechtsberatung. Fristen und Ansprüche bitte selbst prüfen oder beraten lassen.", Brush.Parse("#FACC15"), 11));
 
-        // Prüfen, KI, Speichern
+        TextBox Field(string name, string label, string value, Action<string> set, bool multi = false)
+        {
+            var t = new TextBox { Name = "letter-" + name, Text = value, PlaceholderText = label, AcceptsReturn = multi, TextWrapping = multi ? TextWrapping.Wrap : TextWrapping.NoWrap, MinHeight = multi ? 72 : 0, HorizontalAlignment = HorizontalAlignment.Stretch };
+            t.TextChanged += (_, _) => { set(t.Text ?? ""); _letterSync?.Invoke(); }; return t;
+        }
+        form.Children.Add(FieldLabel("Absender"));
+        form.Children.Add(Field("sender-name", "Dein Name", d.SenderName, v => d.SenderName = v));
+        form.Children.Add(Field("sender-street", "Straße und Hausnummer", d.SenderStreet, v => d.SenderStreet = v));
+        form.Children.Add(Field("sender-city", "PLZ und Ort", d.SenderCity, v => d.SenderCity = v));
+        form.Children.Add(Field("sender-contact", "Telefon / E-Mail (optional)", d.SenderContact, v => d.SenderContact = v));
+        form.Children.Add(FieldLabel("Empfänger"));
+        form.Children.Add(Field("recipient", "Firma, Name, Straße, PLZ Ort", d.Recipient, v => d.Recipient = v, multi: true));
+        form.Children.Add(FieldLabel("Betreff"));
+        form.Children.Add(Field("subject", "Betreff", d.Subject, v => d.Subject = v));
+        form.Children.Add(FieldLabel("Anrede"));
+        form.Children.Add(Field("salutation", "Anrede", d.Salutation, v => d.Salutation = v));
+        form.Children.Add(FieldLabel("Inhalt"));
+        var body = Field("body", "Text", d.Body, v => d.Body = v, multi: true); body.MinHeight = 120;
+        form.Children.Add(body);
+        form.Children.Add(P("Der Brief wird als Klartext nach DIN 5008 gespeichert.", Muted, 11));
+        form.Children.Add(FieldLabel("Gruß"));
+        form.Children.Add(Field("closing", "Gruß", d.Closing, v => d.Closing = v));
+        form.Children.Add(FieldLabel("Ort und Anlagen"));
+        form.Children.Add(Field("place", "Ort für das Datum", d.Place, v => d.Place = v));
+        form.Children.Add(Field("reference", "Kundennummer oder Aktenzeichen (optional)", d.Reference, v => d.Reference = v));
+        form.Children.Add(Field("attachments", "Anlagen, eine pro Zeile (optional)", d.Attachments, v => d.Attachments = v, multi: true));
+
         var issues = new StackPanel { Name = "letter-issues", Spacing = 2 };
         void Check()
         {
@@ -104,14 +129,11 @@ public partial class MainWindow
             foreach (var x in l) issues.Children.Add(P($"{(x.Blocking ? "✗" : "•")} {x.Field}: {x.Message}", x.Blocking ? Text : null, 11.5));
         }
         var check = new Button { Name = "letter-check", Content = "Brief prüfen" }; check.Click += (_, _) => Check();
-        var save = new Button { Name = "letter-save", Content = "Als Word-Datei speichern", Background = Accent };
-        var pdf = new Button { Name = "letter-pdf", Content = "Speichern + PDF", IsEnabled = ToolPath("libreoffice") is not null };
-        if (!pdf.IsEnabled) ToolTip.SetTip(pdf, "Braucht LibreOffice (Zusatzprogramme)");
         var improve = new Button { Name = "letter-ki", Content = "Text von der KI verbessern lassen", IsEnabled = _kiConnected };
         if (!_kiConnected) ToolTip.SetTip(improve, "Die lokale KI ist nicht bereit");
         var msg = P(_letterMsg, Text); msg.Name = "letter-msg";
         var suggestion = new StackPanel { Spacing = 4 };
-        async Task<string?> Save(bool asPdf)
+        async Task<string?> Save(bool asPdf, string verb)
         {
             Check();
             if (Letters.Validate(d).Any(x => x.Blocking)) { msg.Text = "Bitte zuerst die Pflichtpunkte ergänzen."; return null; }
@@ -120,7 +142,7 @@ public partial class MainWindow
             SaveSettings();
             var (docx, _, v) = new LetterArchive(ProjectsRoot).Save(d);
             _core.Audit.Append(Principal.LocalOwner.Name, "letter.save", $"{Path.GetFileName(docx)} v{v}");
-            msg.Text = _letterMsg = $"Gespeichert in Briefe: {Path.GetFileName(docx)}{(v > 1 ? $" (Version {v})" : "")}";
+            msg.Text = _letterMsg = $"{verb}: {Path.GetFileName(docx)}{(v > 1 ? $" (Version {v})" : "")}";
             if (asPdf && ToolPath("libreoffice") is { } so)
             {
                 msg.Text = "Erstelle PDF …";
@@ -129,9 +151,28 @@ public partial class MainWindow
             }
             return docx;
         }
-        async Task SafeSave(bool asPdf) { try { await Save(asPdf); } catch (Exception ex) { msg.Text = $"Speichern fehlgeschlagen: {ex.Message}"; CrashLog.Write(_core.DataRoot, ex, "Briefstudio"); } }
-        save.Click += async (_, _) => await SafeSave(false);
-        pdf.Click += async (_, _) => await SafeSave(true);
+        async Task SafeSave(bool asPdf, string verb) { try { await Save(asPdf, verb); } catch (Exception ex) { msg.Text = $"Speichern fehlgeschlagen: {ex.Message}"; CrashLog.Write(_core.DataRoot, ex, "Briefstudio"); } }
+        Button Act(string name, string label, string icon, bool accent = false)
+        {
+            var fg = accent ? Brushes.White : Text;
+            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { Ico(icon, 14, fg), new TextBlock { Text = label, Foreground = fg, VerticalAlignment = VerticalAlignment.Center, FontSize = 13 } } };
+            var b = new Button { Name = name, Content = row, Padding = new Thickness(12, 6), CornerRadius = new CornerRadius(8) };
+            if (accent) b.Background = Accent; return b;
+        }
+        var save = Act("letter-save", "Speichern", Mdi.FileDocumentEdit, true);
+        var export = Act("letter-export", "Exportieren", Mdi.Folder);
+        var pdf = Act("letter-pdf", "Als PDF", Mdi.FileDocumentOutline); pdf.IsEnabled = ToolPath("libreoffice") is not null;
+        if (!pdf.IsEnabled) ToolTip.SetTip(pdf, "Braucht LibreOffice (Zusatzprogramme)");
+        var send = Act("letter-send", "Senden", Mdi.Send);
+        save.Click += async (_, _) => await SafeSave(false, "Gespeichert in Briefe");
+        export.Click += async (_, _) => await SafeSave(false, "Exportiert nach Briefe");
+        pdf.Click += async (_, _) => await SafeSave(true, "Gespeichert");
+        send.Click += (_, _) =>
+        {
+            if (_case is null) { msg.Text = "Senden bleibt an der Freigabe. Trendo verschickt den Brief nicht selbst. Lege dafür eine Akte an."; return; }
+            msg.Text = "Senden bleibt an der Freigabe. Trendo verschickt den Brief nicht selbst.";
+            Show("ausgabe");
+        };
         improve.Click += async (_, _) =>
         {
             improve.IsEnabled = false; suggestion.Children.Clear(); suggestion.Children.Add(P("Die KI schreibt …"));
@@ -142,16 +183,13 @@ public partial class MainWindow
             suggestion.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10), Child = new StackPanel { Spacing = 6, Children = { P("Vorschlag der KI (bitte prüfen):", null, 11), P(ans, Text, 12), take } } });
             improve.IsEnabled = true;
         };
-        var reset = new Button { Name = "letter-new", Content = "Neuer Brief" }; reset.Click += (_, _) => { _letter = NewLetter(); _letterMsg = ""; Show("brief"); };
-        sp.Children.Add(H("4. Prüfen und speichern", 14));
-        sp.Children.Add(new WrapPanel { Children = { check, Sp(save), Sp(pdf), Sp(improve), Sp(reset) } });
-        sp.Children.Add(msg); sp.Children.Add(issues); sp.Children.Add(suggestion);
-
-        // Archiv
+        var reset = new Button { Name = "letter-new", Content = "Neuer Brief" }; reset.Click += (_, _) => { _letter = NewLetter(); _letterMsg = "Neuer Brief. Betreff und Text schreibst du selbst."; _letterPreview = true; Show("brief"); };
+        form.Children.Add(new WrapPanel { Margin = new Thickness(0, 8, 0, 0), Children = { check, Sp(improve), Sp(reset) } });
+        form.Children.Add(msg); form.Children.Add(issues); form.Children.Add(suggestion);
         var arch = new LetterArchive(ProjectsRoot).List().Take(8).ToList();
         if (arch.Count > 0)
         {
-            sp.Children.Add(H("Zuletzt geschrieben", 14));
+            form.Children.Add(H("Zuletzt geschrieben", 14));
             var i = 0;
             foreach (var f in arch)
             {
@@ -159,10 +197,74 @@ public partial class MainWindow
                 var edit = new Button { Name = $"letter-edit-{i}", Content = "Weiterschreiben", FontSize = 11, Padding = new Thickness(10, 2), IsEnabled = LetterArchive.Load(f) is not null };
                 edit.Click += (_, _) => { if (LetterArchive.Load(f) is { } old) { _letter = old; _letter.Date = DateTime.Today; Show("brief"); } };
                 ((StackPanel)((Grid)r.Child!).Children[1]).Children.Insert(0, edit);
-                sp.Children.Add(r); i++;
+                form.Children.Add(r); i++;
             }
         }
-        return LetterPage("Schnell schreiben", sp);
+
+        var preview = LetterPreview(d);
+        var formScroll = new ScrollViewer { Content = new Border { Background = Brush.Parse(C("#44101830", "#B3FFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(12), Margin = new Thickness(0, 0, 8, 0), Child = form } };
+        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("200,*,*") };
+        grid.Children.Add(LetterNav());
+        Grid.SetColumn(formScroll, 1); grid.Children.Add(formScroll);
+        Grid.SetColumn(preview, 2); grid.Children.Add(preview);
+        var toggle = new Button { Name = "letter-preview-toggle", Content = _letterPreview ? "Schreiben" : "Vorschau", IsVisible = false, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 0, 0, 6) };
+        void ApplyNarrow(double width)
+        {
+            var narrow = width > 0 && width < 860;
+            toggle.IsVisible = narrow;
+            if (!narrow) { formScroll.IsVisible = true; preview.IsVisible = true; return; }
+            formScroll.IsVisible = !_letterPreview; preview.IsVisible = _letterPreview;
+            toggle.Content = _letterPreview ? "Schreiben" : "Vorschau";
+            grid.ColumnDefinitions = _letterPreview ? new ColumnDefinitions("200,0,*") : new ColumnDefinitions("200,*,0");
+        }
+        toggle.Click += (_, _) => { _letterPreview = !_letterPreview; ApplyNarrow(grid.Bounds.Width); };
+        grid.SizeChanged += (_, e) => ApplyNarrow(e.NewSize.Width);
+        var actions = new WrapPanel { Orientation = Orientation.Horizontal, Children = { save, Sp(export), Sp(pdf), Sp(send) } };
+        var stack = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
+        stack.Children.Add(toggle); Grid.SetRow(grid, 1); stack.Children.Add(grid);
+        return LetterShell(stack, actions);
+    }
+
+    private static TextBlock FieldLabel(string text) => new() { Text = text, Foreground = Muted, FontSize = 12, Margin = new Thickness(0, 8, 0, 2) };
+
+    private Control LetterPreview(LetterDraft d)
+    {
+        var sender = new TextBlock { Name = "letter-preview-sender", FontSize = 10, Foreground = Brush.Parse("#5C6B7A"), TextWrapping = TextWrapping.Wrap };
+        var recip = new TextBlock { Name = "letter-preview-recipient", FontSize = 12, Foreground = Brushes.Black, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 22, 80, 0) };
+        var date = new TextBlock { Name = "letter-preview-date", FontSize = 12, Foreground = Brushes.Black, HorizontalAlignment = HorizontalAlignment.Right };
+        var subject = new TextBlock { Name = "letter-preview-subject", FontSize = 13, FontWeight = FontWeight.Bold, Foreground = Brushes.Black, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 16, 0, 8) };
+        var sal = new TextBlock { Name = "letter-preview-salutation", FontSize = 12, Foreground = Brushes.Black, TextWrapping = TextWrapping.Wrap };
+        var body = new TextBlock { Name = "letter-preview-body", FontSize = 12, Foreground = Brushes.Black, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 8, 0, 8) };
+        var closing = new TextBlock { Name = "letter-preview-closing", FontSize = 12, Foreground = Brushes.Black, TextWrapping = TextWrapping.Wrap };
+        void Sync()
+        {
+            var lines = new[] { d.SenderName, d.SenderStreet, d.SenderCity, d.SenderContact }.Where(s => !string.IsNullOrWhiteSpace(s));
+            sender.Text = string.Join("\n", lines);
+            recip.Text = d.Recipient;
+            date.Text = (string.IsNullOrWhiteSpace(d.Place) ? "" : d.Place + ", ") + d.Date.ToString("d. MMMM yyyy", De);
+            subject.Text = d.Subject;
+            sal.Text = d.Salutation;
+            body.Text = d.Body;
+            closing.Text = d.Closing + (string.IsNullOrWhiteSpace(d.SenderName) ? "" : "\n\n" + d.SenderName);
+            if (!string.IsNullOrWhiteSpace(d.Attachments)) closing.Text += "\n\nAnlagen\n" + d.Attachments.Trim();
+        }
+        _letterSync = Sync; Sync();
+        sender.TextAlignment = TextAlignment.Right; sender.HorizontalAlignment = HorizontalAlignment.Right;
+        var brand = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Children = { Logo(22), new TextBlock { Text = "Trendo OS", Foreground = Brushes.Black, FontWeight = FontWeight.SemiBold, FontSize = 16, VerticalAlignment = VerticalAlignment.Center } } };
+        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,*"), Margin = new Thickness(0, 0, 0, 8), Children = { brand, sender } };
+        Grid.SetColumn(sender, 1);
+        var page = new StackPanel { Children = { head, recip, date, subject, sal, body, closing } };
+        var sheet = new Border { Name = "letter-preview", Background = Brushes.White, CornerRadius = new CornerRadius(8), Padding = new Thickness(18), Child = new ScrollViewer { Content = page }, MinWidth = 180, VerticalAlignment = VerticalAlignment.Stretch };
+        var wrap = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
+        wrap.Children.Add(new TextBlock { Text = "Vorschau", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 0, 0, 6) });
+        Grid.SetRow(sheet, 1); wrap.Children.Add(sheet);
+        return wrap;
     }
     private static Control Sp(Control c) { c.Margin = new Thickness(6, 0, 0, 6); return c; }
+    /// <summary>T-0203: zuletzt angelegtes Dokument im Ordner „Dokumente“.</summary>
+    private string? LatestOfficeDoc()
+    {
+        var dir = Path.Combine(ProjectsRoot, "Dokumente");
+        return Directory.Exists(dir) ? Directory.GetFiles(dir).Where(f => ExternalApps.Accepts(ExternalApps.Get("libreoffice"), f)).OrderByDescending(File.GetLastWriteTime).FirstOrDefault() : null;
+    }
 }

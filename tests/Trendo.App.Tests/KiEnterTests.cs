@@ -15,7 +15,7 @@ public class KiEnter_Ui
     {
         var (w, _, _) = Ui.Open();
         var asked = new List<string>(); w.KiChatOverride = q => { asked.Add(q); return Task.FromResult("Antwort"); };
-        foreach (var k in new[] { "start", "ki", "settings", "start", "ki", "start" }) w.Show(k);
+        foreach (var k in new[] { "start", "ki", "settings", "start", "ki", "start", "ki" }) w.Show(k);
         Settle();
         var box = V<TextBox>(w, "ki-input"); box.IsEnabled = true; box.Text = "Hallo";
         RealClick(w, box); w.Key(PhysicalKey.Enter); Settle();

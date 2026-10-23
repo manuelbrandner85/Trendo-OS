@@ -8,6 +8,7 @@ Weiterentwicklung von `manuelbrandner85/Trendo-OS`, kein Rewrite. Haupt-Chat fun
 - Drei Editionen: Windows, Linux USB/SSD, Pi 4 8GB + Windows-PC.
 - Build/Test: `dotnet build Trendo.sln -c Release`, `dotnet test Trendo.sln -c Release` (deckt Core-, App- und Api-Tests ab; Ausgabe deutsch „Bestanden!/Fehler!“). Paket-Tests: `python -m unittest discover -s tests/claude_handoff`. Keine erfundenen Ausgaben.
 - Der Projektordner enthält ein Leerzeichen: Pfade immer in Anführungszeichen.
+- Lokale API prüfen: `dotnet run --project src/Trendo.App -c Release -- --api-selftest --offline --no-first-run --data-root <temp>`. Oberfläche ohne Fenster rendern: `dotnet run --project tools/Trendo.Render -c Release -- <datei>.png`. App auf einer Seite starten: `dotnet run --project src/Trendo.App -c Release -- --no-first-run --page start`.
 
 ## Rollen und Ablauf (M2, festgelegt von Manuel am 2026-10-23)
 | Aufgabe | Wer | Bedingung |
@@ -22,7 +23,7 @@ Ablauf pro Auftrag: Auftrag in `tasks/T-<nr>-<kurz>.md` (Vorlage `tasks/VORLAGE.
 
 ## Entscheidungsregister
 - Priorität: reale Codebasis (Iststand) -> kanonische `docs/spec/` und `requirements.yaml` -> neueste ausdrückliche Nutzerfreigaben in `docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md` -> `handoff/`. Widersprüche nicht eigenmächtig in `decisions.yaml` überschreiben, sondern Decision-Delta vorlegen. `decisions.yaml` und `requirements.yaml` ändert nur Manuel oder ein ausdrücklich freigegebener Auftrag.
-- Bestätigt: Verbesserungen 42–85 und 87–96. Verbesserung 86 NEIN. Vorher 23,25,34 NEIN, 35 OFFEN, Language Studio 2.0 NEIN. Verbesserung 97 OFFEN. SPEC-07 abgelehnt – nicht bauen. Das Logo bleibt ein nicht freigegebenes Konzept.
+- Bestätigt: Verbesserungen 42–85 und 87–96. Verbesserung 86 NEIN. Vorher 23,25,34 NEIN, 35 OFFEN, Language Studio 2.0 NEIN. Verbesserung 97 OFFEN. SPEC-07 abgelehnt – nicht bauen. Logo: Entwurf A „Obsidian-Kachel“ (von Manuel am 22.10.2026 gewählt), Quelle `src/Trendo.App/Assets/logo/trendo-logo-a.svg`.
 - 120-Stunden-Forensikregel: Forensik-Kopien und Derivate höchstens 120 h, 24 h vorher Warnung, keine dauerhaften Offline-USB-Kopien, kein Browser-/Tor-READ-ONLY-Bypass, keine forensischen Beweiskopien in Cloud-Diensten. Niemals umdeuten (im Code: `ForensicsLab.MaxLife`).
 - `APPROVED_SPEC` bedeutet nicht `IMPLEMENTED`, `TESTED`, `ACCEPTED` oder `RELEASED`.
 

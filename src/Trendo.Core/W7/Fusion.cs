@@ -113,11 +113,15 @@ public sealed class FusionStore(string dataRoot, AuditLog audit)
     }
 }
 
-// ---------- X-08: Handy-Brücke (Android über ADB, sonst Anleitung) ----------
-public sealed record PhoneDevice(string Serial, string State, string Model);
+// ---------- X-08: Handy-Brücke (Android über ADB, Kabel oder WLAN) ----------
+public enum PhoneLink { Unbekannt, Kabel, Wlan }
+
+public sealed record PhoneDevice(string Serial, string State, string Model, PhoneLink Link = PhoneLink.Unbekannt);
 
 public static class MobileBridge
 {
+    /// <summary>Seriennummer, USB-Kennung oder WLAN-Adresse (IP:Port bzw. adb-tls-Name). Keine Steuerzeichen.</summary>
+    public static bool SafeSerial(string s) => Regex.IsMatch(s, @"^[A-Za-z0-9.:_-]{3,128}$");
     public static string? FindAdb(Func<string, bool> exists, string? localAppData, string? path)
     {
         var exe = OperatingSystem.IsWindows() ? "adb.exe" : "adb";
@@ -130,9 +134,28 @@ public static class MobileBridge
     public static IReadOnlyList<PhoneDevice> ParseDevices(string output) =>
         output.Split('\n').Select(l => l.Trim()).Where(l => l.Length > 0 && !l.StartsWith("List of devices") && !l.StartsWith("*"))
             .Select(l => Regex.Match(l, @"^(\S+)\s+(device|unauthorized|offline|recovery|sideload)\b(.*)$")).Where(m => m.Success)
-            .Select(m => new PhoneDevice(m.Groups[1].Value, m.Groups[2].Value, Regex.Match(m.Groups[3].Value, @"model:(\S+)") is { Success: true } mm ? mm.Groups[1].Value.Replace('_', ' ') : "Android-Gerät")).ToList();
+            .Select(m => new PhoneDevice(m.Groups[1].Value, m.Groups[2].Value, ModelOf(m.Groups[3].Value), LinkOf(m.Groups[1].Value, m.Groups[3].Value))).ToList();
 
-    public static string StateText(string s) => s switch { "device" => "verbunden", "unauthorized" => "am Handy „USB-Debugging zulassen“ bestätigen", "offline" => "getrennt", _ => s };
+    static string ModelOf(string rest) => Regex.Match(rest, @"model:(\S+)") is { Success: true } mm ? mm.Groups[1].Value.Replace('_', ' ') : "Android-Gerät";
+
+    /// <summary>Kabel steht als usb: in der Zeile. WLAN ist eine IP mit Port oder der TLS-Name von adb.</summary>
+    public static PhoneLink LinkOf(string serial, string rest)
+    {
+        if (rest.Contains("usb:", StringComparison.OrdinalIgnoreCase)) return PhoneLink.Kabel;
+        if (serial.Contains("_adb-tls-connect", StringComparison.Ordinal) || serial.Contains("._adb._tcp", StringComparison.Ordinal)) return PhoneLink.Wlan;
+        if (Regex.IsMatch(serial, @"^(?:\d{1,3}\.){3}\d{1,3}:\d{2,5}$")) return PhoneLink.Wlan;
+        return PhoneLink.Unbekannt;
+    }
+
+    public static string LinkText(PhoneLink link) => link switch { PhoneLink.Kabel => "Kabel", PhoneLink.Wlan => "WLAN", _ => "Verbindung unbekannt" };
+
+    public static string StateText(string s, PhoneLink link = PhoneLink.Unbekannt) => s switch
+    {
+        "device" => "verbunden",
+        "unauthorized" => link == PhoneLink.Wlan ? "am Handy die WLAN-Freigabe bestätigen" : "am Handy „USB-Debugging zulassen“ bestätigen",
+        "offline" => "getrennt",
+        _ => s,
+    };
 
     /// <summary>Datei aufs Handy (Download-Ordner). Nur nach Zustimmung, nur reguläre Dateien, nie Systempfade.</summary>
     public static (bool Ok, string Args, string Message) PushArgs(PhoneDevice d, string file, bool consent)
@@ -140,17 +163,29 @@ public static class MobileBridge
         if (!consent) return (false, "", "Erst zustimmen.");
         if (d.State != "device") return (false, "", "Handy ist nicht freigegeben.");
         if (!File.Exists(file)) return (false, "", "Datei nicht gefunden.");
-        if (!Regex.IsMatch(d.Serial, @"^[A-Za-z0-9.:_-]{3,64}$")) return (false, "", "Seriennummer ungültig.");
+        if (!SafeSerial(d.Serial)) return (false, "", "Seriennummer ungültig.");
         var name = Path.GetFileName(file).Replace("\"", "");
         return (true, $"-s {d.Serial} push \"{file}\" \"/sdcard/Download/{name}\"", $"„{name}“ → Download-Ordner am Handy");
     }
 
+    public static string? FindScrcpy(Func<string, bool> exists, string? path)
+    {
+        var exe = OperatingSystem.IsWindows() ? "scrcpy.exe" : "scrcpy";
+        foreach (var d in (path ?? "").Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+        {
+            var p = Path.Combine(d, exe);
+            if (exists(p)) return p;
+        }
+        return null;
+    }
+
     public static IReadOnlyList<string> Guide =>
     [
-        "Android: Entwickleroptionen → USB-Debugging an, Kabel anschließen, Freigabe am Handy bestätigen",
-        "Werkzeug: Android Platform-Tools (offiziell von Google) – Trendo installiert sie nur nach Zustimmung",
-        "Ohne Kabel: Windows „Smartphone-Link“ oder KDE Connect nutzen (offizielle Apps)",
-        "iPhone: nur Fotos/Dateien über die Windows-Apps; Trendo steuert iOS nicht",
+        "Kabel: Entwickleroptionen, USB-Debugging an, Kabel anschließen, am Handy auf „Zulassen“ tippen",
+        "WLAN ab Android 11: Entwickleroptionen, Drahtloses Debuggen an, dann hier „Per WLAN verbinden“",
+        "Bluetooth: Dateien und Akkustand. Den Bildschirm zeigen geht per Bluetooth nicht",
+        "adb und scrcpy installiert Trendo nur, wenn du zustimmst. Keine Treiber und keine offenen Ports von allein",
+        "iPhone: nur Fotos und Dateien über die Programme von Apple oder Windows. Trendo steuert iPhones nicht",
     ];
 }
 
@@ -159,7 +194,7 @@ public sealed record PhoneInfo(string Model, string Android, int? Battery, bool 
 
 public static class AndroidSide
 {
-    static bool SafeSerial(string s) => Regex.IsMatch(s, @"^[A-Za-z0-9.:_-]{3,64}$");
+    static bool SafeSerial(string s) => MobileBridge.SafeSerial(s);
 
     public static async Task<PhoneInfo?> InfoAsync(IProcessRunner run, string adb, string serial)
     {
