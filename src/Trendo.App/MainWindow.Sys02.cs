@@ -268,7 +268,7 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 10 };
         const string V = "alltag-helfer";
-        var m = _metrics.Sample();
+        MetricsSnapshot m; lock (_metrics) m = _metrics.Sample();
         long? free = null; try { free = new DriveInfo(Path.GetPathRoot(Path.GetFullPath(_core.DataRoot))!).AvailableFreeSpace; } catch (Exception) { }
         var warn = ResourceWarn.Check(m.RamPercent, free);
         sp.Children.Add(Card(Section("Hinweise zum Rechner", "Trendo warnt nur – es schließt oder löscht nichts von selbst.",

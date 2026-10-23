@@ -147,7 +147,7 @@ public partial class MainWindow
     private Control ResourcesView()
     {
         var sp = new StackPanel { Spacing = 8 };
-        var m = _metrics.Sample();
+        MetricsSnapshot m; lock (_metrics) m = _metrics.Sample();
         Border Meter(string name, string label, string value)
         {
             var n = new TextBlock { Name = name, Text = value, Foreground = Text, FontSize = 28, FontWeight = FontWeight.SemiBold };
