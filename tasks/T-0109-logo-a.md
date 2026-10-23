@@ -1,7 +1,7 @@
 # T-0109: Neues Trendo-Logo A „Obsidian-Kachel“ überall statt V-Logo
 
 **Ziel:** Das alte V-Konzeptlogo wird überall durch das von Manuel am 22.10.2026 gewählte Logo A ersetzt.
-**Branch:** grok/T-0109-logo-a
+**Branch:** claude/T-0109-logo-a
 **Quelle (verbindlich, nicht verändern):** `src/Trendo.App/Assets/logo/trendo-logo-a.svg`
 (viewBox 64×64: dunkle Kachel rx 15 mit Verlauf #1B3150→#060D1A und Rahmen #335578, weißer Querbalken #F0F6FF, Stamm mit Verlauf #7FD8FF→#2A7FFF).
 

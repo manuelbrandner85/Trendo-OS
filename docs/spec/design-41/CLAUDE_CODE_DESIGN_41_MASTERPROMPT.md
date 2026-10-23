@@ -1,11 +1,11 @@
 # TRENDO OS – ULTIMATE HYPERREALISTIC PREMIUM EXPERIENCE GODMODE
 
-## Verbindlicher Grok-Bot-/Grok-Build-Entwicklungsauftrag – Verbesserung 41 (genehmigt)
+## Verbindlicher Claude-Code-Entwicklungsauftrag – Verbesserung 41 (genehmigt)
 
 **Auftragskennung:** `UI-041-PREMIUM-EXPERIENCE`  
 **Produkt:** Trendo OS  
 **Repository:** https://github.com/manuelbrandner85/Trendo-OS  
-**Verantwortung:** Grok Bot = Planung, sichere Übergabe, Review; Grok Build = echte lokale Änderungen, Builds, Tests und Bildnachweise  
+**Verantwortung:** Claude Code = Planung, Review, echte lokale Änderungen, Builds, Tests und Bildnachweise  
 **Umfang:** NUR die bereits ausdrücklich genehmigte Designverbesserung 41 (alle 20 Funktionen). Kein Neuaufbau oder implizites Aktivieren anderer Erweiterungen.  
 **Projektstand:** Vor Ausführung anhand des *aktuellen* Repository-HEAD erneut prüfen; alle unten genannten Beobachtungen sind Momentaufnahmen.
 
@@ -48,7 +48,7 @@ Die Dateien liegen relativ zu **dieser Markdown-Datei** im Unterordner `referenz
 
 Arbeite **nicht** auf einem erfundenen oder neuen Trendo-Projekt. Untersuche zuerst:
 
-- `AGENTS.md`, `README.md`, `Trendo.sln`, `requirements.yaml`.
+- `CLAUDE.md`, `README.md`, `Trendo.sln`, `requirements.yaml`.
 - `src/Trendo.App/Trendo.App.csproj` – beim letzten bekannten Stand `.NET 10`, `Avalonia 12.1.4`, `FluentTheme`, Inter-Font.
 - `src/Trendo.App/App.axaml`, `src/Trendo.App/MainWindow.axaml.cs`.
 - `src/Trendo.App/MainWindow.Look.cs`, `MainWindow.Windows.cs`, `MainWindow.StartMenu.cs`, `MainWindow.DesktopMenu.cs`.
@@ -75,9 +75,9 @@ Arbeite **nicht** auf einem erfundenen oder neuen Trendo-Projekt. Untersuche zue
 
 ## 3. Branch- und Repo-Vorschriften
 
-Richte dich nach `AGENTS.md` und dem neueren tatsächlichen Projektstand.
+Richte dich nach `CLAUDE.md` und dem neueren tatsächlichen Projektstand.
 
-Zielbranch: `grok/UI-041-premium-design` (falls Namenskollision: eindeutiger, konfliktfreier Name). Keine direkten Commits auf `main`; kein Force-Push; kein Rebase fremder gepushter Branches.
+Zielbranch: `claude/UI-041-premium-design` (falls Namenskollision: eindeutiger, konfliktfreier Name). Keine direkten Commits auf `main`; kein Force-Push; kein Rebase fremder gepushter Branches.
 
 Auf dem Windows-Entwicklungs-PC PowerShell gemäß bestehenden Projektregeln nutzen. Kein `winget`, `msiexec`, `choco`, Registry- oder systemweiter Eingriff ohne gesonderte Erlaubnis. Keine Änderung von Sicherheits-, Recovery-, Forensik-, Zahlungs-, Kunden- oder Accountdaten. Keine neuen verpflichtenden APIs. Keine öffentlichen Releases.
 
@@ -291,9 +291,9 @@ Design 41 ist mit **allen 20 Punkten genehmigt**. Es ändert nicht die genehmigt
 - **Linux-PC-Edition** als eigenständig bootendes System auf kompatiblem USB-/SSD-Medium.
 - **Raspberry-Pi-4-ARM64-Edition** als eigenständig bootfähiges ressourcenschonendes System.
 - Weiterhin **One-Setup**, normale Windows-/Linux-Nutzerfreiheiten und Drittanbieterkompatibilität.
-- **Grok Bot** als Projektkoordinator und **Grok Build** als autorisierter lokaler Entwickler; keine erfundenen Tools/APIs.
+- **Claude Code** als Projektkoordinator und **Claude Code** als autorisierter lokaler Entwickler; keine erfundenen Tools/APIs.
 - **Blender und Unreal Engine 5** bleiben externe eigenständige Anwendungen auf geeignetem PC.
-- Lokale Offline-KI darf für normale Endnutzer kein verpflichtendes bezahltes Grok-Abo benötigen.
+- Lokale Offline-KI darf für normale Endnutzer kein verpflichtendes bezahltes Cloud-KI-Abo benötigen.
 - Alle menschlichen Freigaben vor kritischen autonomen Aktionen erhalten.
 - Temporäre forensische Beweiskopien samt abgeleiteter Caches/Indizes unterliegen der bestehenden **maximalen 120-Stunden-Frist**.
 - Verbesserungen **23, 25, 34** bleiben ausdrücklich **NEIN**. Die umfassende Language-&-Localization-2.0-Erweiterung bleibt abgelehnt.
@@ -305,7 +305,7 @@ Die **visuelle finale Logoabnahme** und **Freigabe für den Rollout auf alle Stu
 
 ## 10. Reale Ergebnisartefakte im Projekt-Repository
 
-Erstelle bei tatsächlicher lokaler Grok-Build-Ausführung:
+Erstelle bei tatsächlicher lokaler Claude-Code-Ausführung:
 
 1. Einen eigenen UI41-Branch, mit kleinen nachvollziehbaren Commits.
 2. Einen Vorher-/Nachher-Bericht mit aktuellem Commit-SHA und Datum.
@@ -324,9 +324,9 @@ Keine Pushes bei roten Pflicht-Tests; bei fehlenden Berechtigungen keine voreili
 
 ## 11. Ausführungsauftrag – JETZT
 
-**Grok Bot:** Lies diese Markdown-Datei einschließlich aller im ZIP enthaltenen Referenzbilder. Stelle sicher, dass Grok Build den **wirklichen aktuellen Stand** von `manuelbrandner85/Trendo-OS` benutzt, die geltenden Repo-Regeln beachtet und seine Änderungen auf `UI-041` beschränkt. Überwache echte Tests und Nachweise.
+**Claude Code:** Lies diese Markdown-Datei einschließlich aller im ZIP enthaltenen Referenzbilder. Stelle sicher, dass Claude Code den **wirklichen aktuellen Stand** von `manuelbrandner85/Trendo-OS` benutzt, die geltenden Repo-Regeln beachtet und seine Änderungen auf `UI-041` beschränkt. Überwache echte Tests und Nachweise.
 
-**Grok Build:** Starte mit UI41-0. Implementiere danach UI41-1 bis UI41-6 als **reale, ausführbare Änderungen** am bestehenden Avalonia-Projekt. Behalte funktionierende Studio- und Fensterlogik. Liefere Screenshots und Testergebnisse des tatsächlich gestarteten Programms. Stelle ungetestete Elemente ehrlich dar.
+**Claude Code:** Starte mit UI41-0. Implementiere danach UI41-1 bis UI41-6 als **reale, ausführbare Änderungen** am bestehenden Avalonia-Projekt. Behalte funktionierende Studio- und Fensterlogik. Liefere Screenshots und Testergebnisse des tatsächlich gestarteten Programms. Stelle ungetestete Elemente ehrlich dar.
 
 **HOLD POINT:** **STOPPE vor UI41-7** und präsentiere dem Auftraggeber die echten Vorher-/Nachher-Ergebnisse. Frage ausdrücklich:
 

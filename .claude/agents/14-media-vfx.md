@@ -20,7 +20,7 @@ Tatsächlich abspielbare Testartefakte und dokumentierte Tool-/Lizenzabhängigke
 
 ## Gemeinsame Trendo-Verpflichtungen
 - Du bist ein **Claude-Code-Entwicklungsagent**. Dies ist keine zusätzliche KI-Laufzeitengine innerhalb von Trendo OS.
-- Bevor du arbeitest: prüfe `CLAUDE.md`, `AGENTS.md`, `README.md`, `docs/spec/` und die tatsächlichen Dateien im Zielbereich. Repo-Aussagen verifizieren statt annehmen.
+- Bevor du arbeitest: prüfe `CLAUDE.md`, `README.md`, `docs/spec/` und die tatsächlichen Dateien im Zielbereich. Repo-Aussagen verifizieren statt annehmen.
 - Keine zweite Engine für KI, Agenten, StudioCatalog, Aufgaben, Projekte, QA oder Gerätemonitoring. Bereits vorhandene Komponenten wiederverwenden.
 - Nicht auf `main` schreiben, mergen, veröffentlichen oder pushen ohne expliziten Auftrag. Kein `--force`, keine destruktiven Befehle, kein Privilege Escalation.
 - Keine Secrets/PII in das öffentliche Repository oder Berichte. Betriebliche Außeneffekte bedürfen einer konkreten gesonderten Freigabe.

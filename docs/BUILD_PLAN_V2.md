@@ -1,10 +1,10 @@
 # Bauplan V2 (Masterprompt MP-1.0, Abschnitt 21) – Phasen 0–10
 **Stand:** 2026-10-22 · ordnet die Wellen W0–W7 (`docs/BUILD_PLAN.md`) den Phasen zu. Kein Status hochgesetzt.
-Ort: **GB** = Grok Build am PC (Standard für Code laut MP §2.2) · **BOX** = Grok-Bot-Agent (nur Image-/QEMU-/Doku-Arbeit) · **HW** = echte Hardware · **OK** = Freigabe Manuel.
+Ort: **GB** = Claude Code am PC (Standard für Code laut MP §2.2) · **BOX** = Cloud-Agent (nur Image-/QEMU-/Doku-Arbeit) · **HW** = echte Hardware · **OK** = Freigabe Manuel.
 
 | Phase (MP §21) | Ist | Offene Arbeit | Ort |
 |---|---|---|---|
-| 0 Entwicklungsumgebung | IN_PROGRESS | Grok-Build-Workflow (#195/#197) produktiv, T-0002 abschließen, Register (diese PR) | GB · BOX |
+| 0 Entwicklungsumgebung | IN_PROGRESS | Claude-Code-Workflow (#195/#197) produktiv, T-0002 abschließen, Register (diese PR) | GB · BOX |
 | 1 Systemarchitektur | weitgehend | 18 Ebenen §15 als Architekturkarte; Betriebssystemadapter Pi; Studio-SDK-Paket | GB |
 | 2 Desktop | IMPLEMENTED (C) | Fenster-Feinschliff (läuft), Deinstallationstest, Abnahme | GB · OK |
 | 3 Standardprogramme | IMPLEMENTED/PC_VERIFIED teilweise | 22 TESTED_BOX-Module am PC prüfen; One-Setup-Entscheidung (mitliefern vs. nachinstallieren) | GB · OK |
@@ -16,7 +16,7 @@ Ort: **GB** = Grok Build am PC (Standard für Code laut MP §2.2) · **BOX** = G
 | 9 Integrations- & QA-Tests | teilweise | QA-017, QA-019, Neuinstallation auf Zielhardware (IMP-24), Benchmarks (IMP-29), Update-Tests (IMP-16) | GB · HW · Manuel |
 | 10 Fertigstellung & Veröffentlichung | offen | Code-Signatur, SBOM, Handbuch, Release-Kanäle (IMP-16/28), Abnahme | OK (Kauf, Veröffentlichung) |
 
-## Top 10 Grok-Build-Aufträge
+## Top 10 Claude-Code-Aufträge
 | # | Auftrag | Phase | Ort | Freigabe |
 |---|---|---|---|---|
 | T-0003 | 22 TESTED_BOX-Module am PC verifizieren, Logs in reports/ | 3 | GB | – |

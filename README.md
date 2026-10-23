@@ -1,6 +1,6 @@
 # Trendo OS
 
-**Status: P1 ACCEPTED (21.10.2026, mit offenen Punkten), P2 in Arbeit.** Ein erster Windows-Vertical-Slice (.NET 10 + Avalonia) baut ohne Warnungen und besteht 60 Tests (39 Core, 14 API, 7 UI) auf Windows; lokale API nur auf 127.0.0.1 mit Rollen-Tokens (siehe `reports/P1_TESTBERICHT.md`). Ein Benutzer-Installer ohne Adminrechte existiert (`installer/`); noch kein Release.
+**Status: P1 ACCEPTED (21.10.2026, mit offenen Punkten), P2 in Arbeit.** Die Windows-App (.NET 10 + Avalonia) baut (Stand 23.10.2026: 18 Compiler-Warnungen) und besteht 629 Tests (427 Core, 188 UI, 14 API) auf Windows, siehe `reports/claude/AUDIT_CLAUDE_MIGRATION_2026-10-23.md`; lokale API nur auf 127.0.0.1 mit Rollen-Tokens (siehe `reports/P1_TESTBERICHT.md`). Ein Benutzer-Installer ohne Adminrechte existiert (`installer/`); noch kein Release.
 
 Trendo OS ist ein geplantes, lokal arbeitendes, KI-unterstütztes Arbeits- und Produktionssystem mit dem integrierten Assistenten **Trendo**. Ein Produkt, drei Editionen:
 
@@ -9,9 +9,8 @@ Trendo OS ist ein geplantes, lokal arbeitendes, KI-unterstütztes Arbeits- und P
 3. **Raspberry Pi 4 (8 GB) + Windows-PC** – Pi koordiniert, PC rechnet (GPU, Blender, Unreal).
 
 ## Rollen
-- **Grok Bot** – Projektleitung, Planung, Aufgaben, Review (Cloud).
-- **Grok Build** – lokaler Programmier-/Test-Agent auf dem Windows-PC (Einrichtung noch nicht verifiziert).
-- **Manuel** – Freigaben, Hardware, Merge und Release.
+- **Claude Code** – entwickelt Trendo OS allein: Planung, Code, Tests, Review (QA-Agent), Push; Merge und Release nach Freigabe durch Manuel. Regeln in `CLAUDE.md`.
+- **Manuel** – Freigaben (Merge, Release, Entscheidungen), Hardware.
 
 ## Struktur
 | Pfad | Inhalt |
@@ -19,11 +18,11 @@ Trendo OS ist ein geplantes, lokal arbeitendes, KI-unterstütztes Arbeits- und P
 | `docs/spec/` | Verbindliche Spezifikation v2.1 (Systembibel, Architektur, Roadmap, Modulregister, offene Entscheidungen) |
 | `docs/spec/studios/` | Online-Business-Studio (30) und Brief-Studio (25) |
 | `docs/spec/qa/` | Abnahmekriterien und Testmatrizen (alle `NOT_RUN`) |
-| `docs/spec/grok/` | Grok-Bot/Grok-Build-Prompts, Setup, Agenten-/MCP-Architektur |
+| `docs/claude/` | Claude-Code-Architektur, Startprompt, Entscheidungsdelta, Migration |
 | `docs/design/` | Designbrief und **Konzeptbild** (Demodaten, Logo nicht freigegeben) |
 | `docs/adr/` | Architekturentscheidungen (ADRs) |
 | `requirements.yaml` | Maschinenlesbare Anforderungen, erzeugt aus den CSVs |
-| `tasks/` | Aufträge an Grok Build |
+| `tasks/` | Aufträge an Claude Code |
 | `reports/` | Statusberichte und Testnachweise |
 | `src/`, `tests/` | Trendo.Core, Trendo.App (Avalonia), xUnit-Tests |
 | `scripts/` | Generator und Validierung für `requirements.yaml` |

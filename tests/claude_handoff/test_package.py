@@ -19,14 +19,19 @@ class AgentConfigurationTests(unittest.TestCase):
   self.assertIn('PreToolUse',settings['hooks']);self.assertIn('SubagentStart',settings['hooks'])
   self.assertIn('trendo-readonly',json.loads((ROOT/'.mcp.json').read_text(encoding='utf-8'))['mcpServers'])
  def test_migration_rules(self):
-  # M1: Grok-Regeln bleiben über den Import aktiv; M3: harte Sperren unabhängig vom Hook.
-  self.assertIn('\n@AGENTS.md\n',(ROOT/'CLAUDE.md').read_text(encoding='utf-8'))
-  self.assertTrue((ROOT/'docs/claude/MIGRATION_GROK_CLAUDE.md').is_file())
+  # M1/M2: Die Grok-Fachregeln stehen vollständig in CLAUDE.md, AGENTS.md und Grok-Dateien sind entfernt.
+  claude=(ROOT/'CLAUDE.md').read_text(encoding='utf-8')
+  for rule in ['QA-017','SPEC-07','StudioCatalog.cs','120 h','C:\\Users\\<user>','tasks/<task-id>.bericht.md','nach ausdrücklichem OK']:
+   self.assertIn(rule,claude)
+  for gone in ['AGENTS.md','.grok','scripts/grok-trendo.ps1','docs/spec/grok','docs/spec/qa/GROK_QA_MATRIX.csv']:
+   self.assertFalse((ROOT/gone).exists(),gone)
+  self.assertTrue((ROOT/'docs/claude/MIGRATION_ZU_CLAUDE.md').is_file())
+  # M3: harte Sperren unabhängig vom Hook; Merge und Release nur auf Nachfrage.
   perms=json.loads((ROOT/'.claude/settings.json').read_text(encoding='utf-8'))['permissions']
-  for rule in ['Bash(git push * main)','PowerShell(git push *--force*)','Bash(*installer/release.sh*)',
-               'PowerShell(Remove-Item *-Recurse*)','Edit(/AGENTS.md)','Edit(/docs/spec/decisions.yaml)']:
+  for rule in ['PowerShell(Remove-Item *-Recurse*)','Bash(winget *)','Edit(/docs/spec/decisions.yaml)','Edit(/requirements.yaml)']:
    self.assertIn(rule,perms['deny'])
-  self.assertIn('Bash(git push *)',perms['ask'])
+  for rule in ['Bash(gh pr merge *)','Bash(*installer/release.sh*)','PowerShell(git merge *)']:
+   self.assertIn(rule,perms['ask']+perms['deny'])
   ignored=(ROOT/'.gitignore').read_text(encoding='utf-8').splitlines()
   for p in ['.trendo-local/','.claude/worktrees/','.claude/settings.local.json']:self.assertIn(p,ignored)
  def test_decisions(self):
@@ -39,12 +44,12 @@ class HooksTests(unittest.TestCase):
    env=os.environ.copy();env['CLAUDE_PROJECT_DIR']=d
    def call(tool,values):
     return subprocess.run([sys.executable,str(script),'pre'],input=json.dumps({'tool_name':tool,'tool_input':values,'session_id':'unit-test'}),text=True,capture_output=True,env=env)
-   a=call('Bash',{'command':'git push origin main'});self.assertEqual(0,a.returncode);self.assertIn('"deny"',a.stdout)
+   a=call('Bash',{'command':'git reset --hard HEAD~1'});self.assertEqual(0,a.returncode);self.assertIn('"deny"',a.stdout)
    b=call('PowerShell',{'command':'Remove-Item C:\\ -Recurse'});self.assertIn('"deny"',b.stdout)
-   c=call('Write',{'file_path':'AGENTS.md','content':'oops'});self.assertIn('"deny"',c.stdout)
+   c=call('Write',{'file_path':'docs/spec/decisions.yaml','content':'oops'});self.assertIn('"deny"',c.stdout)
    d2=call('Write',{'file_path':str(pathlib.Path(d)/'src/feature.cs'),'content':'ok'});self.assertEqual('',d2.stdout)
    events=(pathlib.Path(d)/'.trendo-local/events.jsonl').read_text(encoding='utf-8')
-   self.assertNotIn('feature.cs',events);self.assertNotIn('git push',events)
+   self.assertNotIn('feature.cs',events);self.assertNotIn('reset --hard',events)
 class DatabaseTests(unittest.TestCase):
  def test_transactions_survive_new_connection(self):
   t=mod('trendo_ops_test','tools/trendo_ops.py')

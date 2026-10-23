@@ -202,7 +202,7 @@ Abnahmekriterien je Modul:
 | BUS-013 | Brand Identity & Premium UX Director | IMPLEMENTED | TESTED_BOX |
 | BUS-014 | Business Requirements & Legal Feasibility Planner | IMPLEMENTED | TESTED_BOX |
 | BUS-015 | Customer Journey & Process Architect | IMPLEMENTED | TESTED_BOX |
-| BUS-016 | Grok Build Full-Stack Business Builder | IMPLEMENTED | TESTED_BOX |
+| BUS-016 | Claude Code Full-Stack Business Builder | IMPLEMENTED | TESTED_BOX |
 | BUS-017 | Accounts, Membership & Multi-Tenant Engine | IMPLEMENTED | TESTED_BOX |
 | BUS-018 | Payments, Billing & Subscription Integration | IMPLEMENTED | TESTED_BOX |
 | BUS-019 | Business Admin, CRM & Operations Center | IMPLEMENTED | TESTED_BOX |

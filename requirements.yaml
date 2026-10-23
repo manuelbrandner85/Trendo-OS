@@ -1,6 +1,6 @@
 # AUTOMATISCH ERZEUGT durch scripts/generate_requirements.py – nicht von Hand Status hochsetzen.
 schema_version: 1
-source: Trendo OS Grok Production Package v2.1 (2026-10-21)
+source: Trendo OS Production Package v2.1 (2026-10-21)
 note: APPROVED_SPEC bedeutet genehmigte Spezifikation, NICHT gebaut. Alle Tests NOT_RUN bis echte Logs existieren.
 status_model:
 - PROPOSED
@@ -558,7 +558,7 @@ business_requirements:
 - id: BUS-016
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
-  title: Grok Build Full-Stack Business Builder
+  title: Claude Code Full-Stack Business Builder
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
   test_status: TESTED_BOX
@@ -855,66 +855,6 @@ letter_requirements:
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
   note: "LTR-QA-018 (Linux-USB/Pi) NOT_RUN – Hardware fehlt"
 tests:
-- id: GRK-001
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-002
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-003
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-004
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-005
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-006
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-007
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-008
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-009
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-010
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-011
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-012
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-013
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-014
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-015
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-016
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-017
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-018
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-019
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
-- id: GRK-020
-  catalog: GROK_QA_MATRIX.csv
-  status: NOT_RUN
 - id: BQ-001
   catalog: BUSINESS_QA_MATRIX.csv
   status: NOT_RUN

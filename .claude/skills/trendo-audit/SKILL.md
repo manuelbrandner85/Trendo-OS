@@ -5,7 +5,7 @@ description: Bestandsaudit für das bestehende Trendo-OS-Projekt. Bei passenden 
 # Bestandsaudit
 
 ## Zweck
-README, AGENTS.md, docs/spec, branches und tatsächliche Tests prüfen, ohne Dateien zu ändern. Gib Konfliktmatrix Alt-Grok vs. Claude und APPROVED_SPEC vs. IMPLEMENTED aus.
+README, CLAUDE.md, docs/spec, branches und tatsächliche Tests prüfen, ohne Dateien zu ändern. Gib Konfliktmatrix APPROVED_SPEC vs. IMPLEMENTED aus.
 
 ## Ablauf
 1. Ist-Repo und Projektentscheidungen prüfen; bei Bedarf einen read-only Audit voranstellen.

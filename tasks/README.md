@@ -1,11 +1,9 @@
-# Aufträge für Grok Build
+# Aufträge für Claude Code
 
-Ablauf (Grok Bot = Dispatcher/Reviewer, Grok Build = Entwickler auf dem PC):
-1. Grok Bot legt `tasks/T-<nr>-<kurz>.md` nach `tasks/VORLAGE.md` an (auf `main` per PR oder direkt im PC-Klon).
-2. Start auf dem PC im Repo-Ordner:
-   `& ".\scripts\grok-trendo.ps1" -Task "tasks\T-<nr>-<kurz>.md"`
-   Optional `-TimeoutMin` (Minuten, Standard 60): danach beendet das Skript den Lauf und endet mit Exit-Code 2.
-   (Protokoll landet in `tasks/logs/` – nicht im Repo, siehe .gitignore.)
-3. Grok Build arbeitet auf `grok/T-<nr>-…`, testet, pusht den Branch und schreibt `tasks/T-<nr>-….bericht.md`.
-4. Grok Bot öffnet/prüft den PR (Diff, Tests auf Box und PC), merged nur bei Grün und meldet Manuel das Ergebnis.
-5. Folgefragen in derselben Sitzung: `grok -c` im Repo-Ordner.
+Ablauf (Regeln in `CLAUDE.md`, Abschnitt „Rollen und Ablauf“):
+1. Auftrag `tasks/T-<nr>-<kurz>.md` nach `tasks/VORLAGE.md` anlegen (Claude Code per `/trendo-plan` oder Manuel).
+2. Claude Code im Repo-Ordner starten (`claude`) und den Auftrag nennen, z. B. „Bearbeite tasks/T-<nr>-<kurz>.md“.
+   Lange Aufträge optional über das lokale Job-System: `python tools/trendo_ops.py job create …` (Status in `.trendo-local/`, nicht im Repo).
+3. Claude Code arbeitet auf `claude/T-<nr>-<kurz>`, testet (`dotnet test Trendo.sln -c Release` + Paket-Tests), schreibt `tasks/T-<nr>-<kurz>.bericht.md` und pusht den Branch nur bei grünen Tests.
+4. Claude-QA (Agent `19-qa-verification`, bei Sicherheitsthemen zusätzlich `03-security-permissions`) prüft den PR unabhängig und schreibt das Ergebnis in den PR.
+5. Merge nach `main` und Releases erst nach ausdrücklichem OK von Manuel im Chat.

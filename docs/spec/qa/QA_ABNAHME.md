@@ -53,5 +53,5 @@ Vollständiger zusätzlicher Testkatalog: `BUSINESS_QA_MATRIX.csv`, beginnend **
 Zusätzlicher Katalog `LETTER_QA_MATRIX.csv` (mindestens 20 benannte Tests), vollständig initial `NOT_RUN`. Spezifische Anforderungen und nachprüfbare Einzelkriterien unter `LETTER_REQUIREMENTS_25.csv`. Keine fingierte Versand-/Einreichungsbestätigung.
 
 
-## v2.0 – zusätzliche Grok-spezifische Abnahmekriterien
-Die 20 Grok-spezifischen Testfälle stehen in `GROK_QA_MATRIX.csv`. Alle starten auf `NOT_RUN`. Vor dem ersten Trendo-Release müssen u.a. lokale Grok-Build-Codeänderung, Prüfung von Git-Diffs/Tests, sichere manuelle Grok-Bot-Taskübergabe, Cloud-Datenisolation, echte Blender-/UE5-Adapter und Negativtests für nicht genehmigte externe/systemkritische Aktionen nachgewiesen sein. Kein automatischer Erfolg durch Vorhandensein dieses Pakets.
+## v2.0 – zusätzliche Claude-Code-spezifische Abnahmekriterien
+Die Claude-Code-spezifischen Abnahmekriterien stehen in `docs/claude/QA_RELEASE_MATRIX.md`. Alle starten auf `NOT_RUN`. Vor dem ersten Trendo-Release müssen u.a. lokale Claude-Code-Codeänderung, Prüfung von Git-Diffs/Tests, sichere Auftragsübergabe an Claude Code, Cloud-Datenisolation, echte Blender-/UE5-Adapter und Negativtests für nicht genehmigte externe/systemkritische Aktionen nachgewiesen sein. Kein automatischer Erfolg durch Vorhandensein dieses Pakets.

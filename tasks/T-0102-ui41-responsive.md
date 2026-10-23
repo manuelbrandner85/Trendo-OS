@@ -1,7 +1,7 @@
 # T-0102: UI41-2a Responsives Desktop-Layout statt Gesamtzoom
 
 **Ziel:** Feste Designfläche ~1536×800 mit `LayoutTransformControl`/`ScaleTransform` und Spalten `192,*,322` durch echte adaptive Spalten ersetzen.
-**Branch:** grok/T-0102-ui41-responsive
+**Branch:** claude/T-0102-ui41-responsive
 **Dateien/Bereich:** `src/Trendo.App/MainWindow.axaml`, `MainWindow.axaml.cs` (Layoutaufbau), `MainWindow.Windows.cs` nur falls für Arbeitsfläche nötig, Tests.
 **Vorgehen:** Breakpoints (z. B. < 1280: linke Leiste nur Symbole, rechtes Panel ausklappbar); Schrift bleibt bei 1366×768 lesbar; Dock verdeckt nichts.
 **Fertig, wenn:**

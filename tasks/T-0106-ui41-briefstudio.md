@@ -1,7 +1,7 @@
 # T-0106: UI41-4 Briefstudio als Referenzstudio nach Referenz 04
 
 **Ziel:** Dreiteiliges Briefstudio: links Navigation (Neuer Brief, Vorlagen, Meine Briefe, Empfänger, Einstellungen), Mitte Formular + Editor mit Formatleiste, rechts echte DIN-5008-Vorschau (bei schmalem Fenster umschaltbar); Kopfaktionen Speichern / Exportieren / Als PDF / Senden.
-**Branch:** grok/T-0106-ui41-briefstudio
+**Branch:** claude/T-0106-ui41-briefstudio
 **Dateien/Bereich:** `MainWindow.W1Letter.cs` und zugehörige Briefstudio-Views, Tests. Logik (`Letters.cs`, `LetterCase.cs`) nur nutzen, nicht umbauen.
 **Fertig, wenn:**
 - [ ] Testbrief mit Testdaten schreiben, speichern, erneut öffnen, DOCX- und PDF-Export (Test bzw. PC-Lauf mit Datei-Nachweis)

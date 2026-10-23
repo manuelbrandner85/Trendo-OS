@@ -1,11 +1,11 @@
-# GROK BUILD — TRENDO OS: ONLINE BUSINESS STUDIO, GENEHMIGTE ERWEITERUNG
+# CLAUDE CODE — TRENDO OS: ONLINE BUSINESS STUDIO, GENEHMIGTE ERWEITERUNG
 
 **Status 2026-10-21: 30 Funktionen + beide Modi JA; nur SPEZIFIKATION, nicht implementiert.**
 
-Diese Datei erweitert den allgemeinen `GROK_BUILD_MASTERPROMPT.md`. Zuerst globale Systembibel, Security-/Privacy-Regeln, Modulregister, `STUDIO_ONLINE_BUSINESS_30.md`, `BUSINESS_REQUIREMENTS_30.csv`, `BUSINESS_QA_MATRIX.csv`, `ARCHITEKTUR.md` und `ROADMAP.md` lesen. Globale Trendo-Sicherheit hat Vorrang vor jeder Business-Funktion.
+Diese Datei erweitert den allgemeinen `CLAUDE.md`. Zuerst globale Systembibel, Security-/Privacy-Regeln, Modulregister, `STUDIO_ONLINE_BUSINESS_30.md`, `BUSINESS_REQUIREMENTS_30.csv`, `BUSINESS_QA_MATRIX.csv`, `ARCHITEKTUR.md` und `ROADMAP.md` lesen. Globale Trendo-Sicherheit hat Vorrang vor jeder Business-Funktion.
 
 ## Auftragsbedingungen
-- Trendo OS ist das Mutterprojekt. Prüfe Existenz/Berechtigung von Repo, Hardware, Grok Build und Builder-Tools; kein Repo erfinden.
+- Trendo OS ist das Mutterprojekt. Prüfe Existenz/Berechtigung von Repo, Hardware, Claude Code und Builder-Tools; kein Repo erfinden.
 - Die 30 Anforderungen `BUS-001..030` sind **APPROVED_SPEC**, nicht erledigt. Implementiere sie erst in passender Trendo-Phase mit echter Nutzerfreigabe für konkreten Produktionsumfang.
 - Kein kostenpflichtiger zusätzlicher KI-API-Zwang; lokale Tools/OSS dort einsetzen, wo lizenz-/plattformkompatibel.
 - **Beide Modi** entwickeln: (A) bestehende Businessmodelle, (B) neuartige Ideen und Vergleich zu bestehenden. Die Suite erstellt pro Geschäft nur dessen wirklich benötigte Module.

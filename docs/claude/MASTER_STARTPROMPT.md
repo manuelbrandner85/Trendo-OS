@@ -8,14 +8,14 @@ Du bist der Hauptkoordinator für die **Weiterentwicklung** des existierenden Re
 Im Projekt liegen in `.claude/agents/` zwanzig Claude-Code-Subagenten. Lies ihre `name`/`description`-Felder und setze sie nur bei passenden Fachaufträgen ein. Du bist Lead, stellst Task-Karten zusammen und integrierst Ergebnisse. Mehrere unabhängige Agenten können parallel recherchieren, **aber niemals dieselbe Datei parallel ändern**. Bei großen, voneinander unabhängigen Implementierungen nach expliziter Zustimmung getrennte Worktrees/Agententeams prüfen; Agent Teams sind experimentell und können mehr Kontingent verbrauchen.
 
 ## Verbindliche Eingabedokumente
-- `CLAUDE.md`, `AGENTS.md`, `README.md`
+- `CLAUDE.md`, `README.md`
 - `docs/spec/` einschließlich ARCHITEKTUR, SYSTEMBIBEL, ROADMAP, Entscheidungen, IMPROVEMENT_42, 43
 - `requirements.yaml` und `docs/spec/decisions.yaml`
 - `docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md`
 - `handoff/Trendo_OS_MASTER_Alle_bestaetigten_Verbesserungen_bis_94.md`
 - Reale Source- und Testdateien in `src/`, `tests/`, `installer/`, `linux-image/`, `reports/`.
 
-Die bestehende `AGENTS.md` ist ausdrücklich auf **Grok Build** ausgerichtet. Sicherheit/QA respektieren; alte Grok-Rollen/Powershell-Restriktionen auf Claude Code nur nach Prüfung migrieren. Schlage eine sichere Umstellung in einem separaten PR vor, ohne das Original ungefragt zu ersetzen.
+Alle Projektregeln stehen in `CLAUDE.md` (die früheren Regeln aus `AGENTS.md` sind dort vollständig übernommen, siehe `docs/claude/MIGRATION_ZU_CLAUDE.md`).
 
 ## Ziele
 1. Eine hochwertige, moderne, kinderleicht bedienbare, deutschsprachige Trendo-OS-Erfahrung auf vorhandener .NET-10-/Avalonia-Codebasis.
@@ -30,7 +30,6 @@ Die bestehende `AGENTS.md` ist ausdrücklich auf **Grok Build** ausgerichtet. Si
 ## Erstes Lieferpaket – READ ONLY
 Bevor du programmierst:
 - Lies Repo-HEAD und melde **wirkliche** Branch-/Commit-ID, vorhandene Projekte, StudioCatalog-Umfang, zentrale Dienste.
-- Prüfe bestehende Grok-Build-Skripte, AGENTS.md und ihre mögliche sichere Überführung in Claude Code.
 - Lies Requirements und entscheide pro Funktion, was geplant, implementiert, getestet und ungeprüft ist.
 - Stelle Konflikte/fehlende Originaldokumente fest, inkl. bestätigte 95/96 und offene 97.
 - Führe nur **zulässige read-only** Prüfungen aus; keine Änderungen, kein Push.

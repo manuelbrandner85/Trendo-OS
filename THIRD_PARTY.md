@@ -26,13 +26,13 @@ Quelle: `src/Trendo.Core/DependencyCatalog` (Installation bei Bedarf beim Öffne
 | Tesseract OCR | Apache-2.0 | Auto-Installation nach Zustimmung, Windows-UAC nötig (nur systemweiter Herstellerinstaller) | UB-Mannheim.TesseractOCR | Systemweiter Installer |
 | Unreal Engine | Epic EULA (nicht weitergebbar) | Nur geführt: offizieller Herstellerweg | — | Nur über Epic Games Launcher mit Epic-Konto erlaubt – keine automatische Installation |
 | Google Chrome (optional) | Google-Lizenz (proprietär) | Nur geführt: offizieller Herstellerweg | — | Proprietär – nur offizieller Download |
-| Grok Build | Konto/Berechtigung erforderlich | Nur geführt: offizieller Herstellerweg | — | Kontogebunden – nur offizieller Zugang |
+| Claude Code | Konto/Berechtigung erforderlich | Nur geführt: offizieller Herstellerweg | — | Kontogebunden – nur offizieller Zugang |
 | Tor Browser | BSD-3-Clause u. a. | Nur geführt: offizieller Herstellerweg | — | Sicherheits-QA ausstehend – nur offizielle Quelle |
 | Chromium | BSD-3-Clause | Nicht erforderlich | — | Windows: Microsoft Edge ist vorhanden; in der Linux-Edition enthalten |
-| Grok Bot | Kontotarif | Nicht erforderlich | — | Optionaler Cloudbereich, nicht Teil des OS-Bundles |
+| Claude Code | Kontotarif | Nicht erforderlich | — | Optionaler Cloudbereich, nicht Teil des OS-Bundles |
 
 Hinweise:
-- Unreal Engine (Epic EULA), Google Chrome, Grok Build, Tor Browser: keine automatische Installation – rechtlich bzw. aus Sicherheits-/Kontogründen nur offizieller Weg.
+- Unreal Engine (Epic EULA), Google Chrome, Claude Code, Tor Browser: keine automatische Installation – rechtlich bzw. aus Sicherheits-/Kontogründen nur offizieller Weg.
 - Systemweite Installer (MSI/NSIS) von LibreOffice, Blender, Krita, Inkscape, Audacity, Tesseract: automatisch per winget, aber Windows fragt nach Administratorrechten; bereits installierte Programme werden nur erkannt, nie verändert.
 - Studio-Kacheln zeigen „Bereit“ nur, wenn Programm real erkannt UND Studio-Adapter implementiert und getestet ist.
 - Weitergabe der NuGet-Bibliotheken (MIT/BSD/OFL) im Setup ist durch die Lizenzen gedeckt; Lizenztexte siehe jeweilige Projekte.
@@ -43,4 +43,4 @@ Hinweise:
 
 - Material Design Icons (@mdi/js 7.4.47, Apache-2.0): Symbolpfade in `src/Trendo.App/MdiIcons.cs` (im Setup enthalten).
 - Fluent UI System Icons (@fluentui/svg-icons 1.1.344, MIT, © Microsoft Corporation): Studio-Symbole in `src/Trendo.App/StudioIcons.cs` (Pfade eingebettet, im Setup enthalten). https://github.com/microsoft/fluentui-system-icons
-- Hintergrund v2 (`Assets/wallpaper.jpg`): KI-generiert für Trendo OS (Grok Bot, 21.10.2026), keine Fremdfotos.
+- Hintergrund v2 (`Assets/wallpaper.jpg`): KI-generiert für Trendo OS (Claude Code, 21.10.2026), keine Fremdfotos.

@@ -1,7 +1,7 @@
 # T-0105: UI41-2c Studioübersicht mit Premium-Karten nach Referenz 03
 
 **Ziel:** „Alle Studios“ mit großen Karten (großes Studio-Symbol aus `StudioIcons`), Filter-Chips nach den 9 Bereichen, Suchfeld, echter Status („Bereit“/„Braucht ein Zusatzprogramm“/„Noch nicht verfügbar“).
-**Branch:** grok/T-0105-ui41-studiokarten
+**Branch:** claude/T-0105-ui41-studiokarten
 **Dateien/Bereich:** Studioübersicht in `MainWindow.axaml.cs`, `StudioCatalog.cs` (nur lesen/Hilfsmethoden), `StudioIcons.cs`, Tests.
 **Fertig, wenn:**
 - [ ] alle 54 Karten per Maus UND Tastatur öffnen (bestehender Klicktest erweitert)

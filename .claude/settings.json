@@ -59,7 +59,6 @@
       "PowerShell(Restart-Computer *)",
       "PowerShell(sc.exe *)",
       "PowerShell(netsh *)",
-      "Edit(/AGENTS.md)",
       "Edit(/requirements.yaml)",
       "Edit(/docs/spec/decisions.yaml)",
       "Edit(/.claude/settings.json)",
@@ -72,7 +71,17 @@
     ],
     "ask": [
       "Bash(git push *)",
-      "PowerShell(git push *)"
+      "PowerShell(git push *)",
+      "Bash(git merge *)",
+      "PowerShell(git merge *)",
+      "Bash(gh pr merge *)",
+      "PowerShell(gh pr merge *)",
+      "Bash(gh release *)",
+      "PowerShell(gh release *)",
+      "Bash(*installer/release.sh*)",
+      "PowerShell(*installer/release.sh*)",
+      "Bash(*installer\\release.sh*)",
+      "PowerShell(*installer\\release.sh*)"
     ]
   },
   "hooks": {

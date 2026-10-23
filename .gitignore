@@ -6,7 +6,6 @@
 *.pfx
 secrets/
 credentials*
-.grok/*.local.toml
 # Forensik-/sensible Arbeitsdaten (120h-Regel, nie ins Repo)
 forensics/
 evidence/
@@ -32,8 +31,6 @@ linux-image/out/
 linux-image/config/includes.chroot/opt/
 installer/companion/out/
 
-# Grok-Build-Protokolle (lokal)
-tasks/logs/
 
 # Claude Code (lokal): Job-Status/Ereignisse, eigene Worktrees, persönliche Einstellungen
 .trendo-local/
