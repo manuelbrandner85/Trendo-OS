@@ -13,7 +13,7 @@ Der Stack muss Windows jetzt und später Linux (SSD-Edition) und ARM (Pi) tragen
 | D: Python-Core + Qt (PySide6) | schnell prototypisierbar, KDE/Qt-nah für Linux | Packaging/Signierung aufwendiger, Performance |
 
 ## Befund TASK-0001 (21.10.2026)
-Am PC vorhanden: .NET 10 SDK, Visual Studio 2026 mit MSVC, Windows SDK, WebView2, Node 24. Nicht vorhanden: Rust, echtes Python. Siehe `reports/P0_INVENTUR.md`.
+Am PC vorhanden: .NET 10 SDK, Visual Studio 2026 mit MSVC, Windows SDK, WebView2, Node 24. Nicht vorhanden: Rust, echtes Python. (Inventur vom 21.10.2026.)
 
 ## Entscheidung
 **.NET 10 + Avalonia UI** (Option C), von Manuel am 21.10.2026 angenommen. Erste Umsetzung: P1-Slice unter `src/`.

@@ -6,4 +6,4 @@ Jeder Lauf filtert `DisplayName~<Modul>` in Core und App, Release, Rohprotokoll 
 
 Nachweis: `reports/pc-t0003/UEBERSICHT.md`. In `requirements.yaml` ist nur bei diesen 22 der Teststatus auf PC_VERIFIED und der Nachweis auf diese Übersicht gesetzt. BUS-* unverändert. QA-017, QA-019 und Codesignatur sind nicht geprüft und nicht als bestanden gewertet.
 
-SHA-256 der `.trx` ist in der Übersicht noch offen. Grok Bot ergänzt die Prüfsummen. Die Rohprotokolle enthalten Kontoname, Rechnername und Pfade unter `C:\Users\<user>\`. Die Stellen bleiben im Rohprotokoll stehen.
+SHA-256 der `.trx` ist in der Übersicht noch offen. Die Prüfsummen werden nachgetragen. Die Rohprotokolle enthalten Kontoname, Rechnername und Pfade unter `C:\Users\<user>\`. Die Stellen bleiben im Rohprotokoll stehen.

@@ -1,5 +1,5 @@
 diff --git a/.claude/hooks/trendo_hook.py b/.claude/hooks/trendo_hook.py
-index a449143..74589d6 100644
+index 5a18697..c730469 100644
 --- a/.claude/hooks/trendo_hook.py
 +++ b/.claude/hooks/trendo_hook.py
 @@ -33,8 +33,7 @@ def main():
@@ -12,12 +12,9 @@ index a449143..74589d6 100644
               r'\b(?:format(?:-volume)?|diskpart|reg\s+(?:add|delete)|bcdedit|Set-ExecutionPolicy)\b',
               r'\b(?:curl|wget|Invoke-WebRequest)\b[^\n]*\|\s*(?:bash|sh|iex|Invoke-Expression)\b',
               r'\b(?:shutdown|Restart-Computer|Stop-Computer)\b',
-@@ -46,9 +45,9 @@ def main():
-   if tool in ('Write','Edit','MultiEdit','NotebookEdit'):
-    path=str(ti.get('file_path') or ti.get('notebook_path') or '')
+@@ -48,7 +47,7 @@ def main():
     if not path:return denial('Dateipfad nicht angegeben')
--   # Disallow edits to authoritative registers, legacy Grok rules and installed hook safeguards.
-+   # Disallow edits to authoritative registers, and installed hook safeguards.
+    # Disallow edits to authoritative registers and installed hook safeguards.
     normalized='/'+path.replace('\\','/').lower().strip().lstrip('/')
 -   blocked=['/agents.md','/docs/spec/decisions.yaml','/requirements.yaml',
 +   blocked=['/docs/spec/decisions.yaml','/requirements.yaml',

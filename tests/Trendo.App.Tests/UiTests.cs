@@ -296,10 +296,10 @@ public class StudioDepsUi
     {
         var (w, _, _) = Ui.Open(); w.Show("keys");
         w.KeyValidatorOverride = k => Task.FromResult(k == "good-key");
-        w.Find<TextBox>("txt-key-xai").Text = "bad"; w.Find<Button>("btn-savekey-xai").Press(); await Task.Delay(50); Dispatcher.UIThread.RunJobs();
-        Assert.Null(w.Core.Secrets.Get("TrendoOS:key-xai"));
-        w.Find<TextBox>("txt-key-xai").Text = "good-key"; w.Find<Button>("btn-savekey-xai").Press(); await Task.Delay(50); Dispatcher.UIThread.RunJobs();
-        Assert.Equal("good-key", w.Core.Secrets.Get("TrendoOS:key-xai"));
+        w.Find<TextBox>("txt-key-github").Text = "bad"; w.Find<Button>("btn-savekey-github").Press(); await Task.Delay(50); Dispatcher.UIThread.RunJobs();
+        Assert.Null(w.Core.Secrets.Get("TrendoOS:key-github"));
+        w.Find<TextBox>("txt-key-github").Text = "good-key"; w.Find<Button>("btn-savekey-github").Press(); await Task.Delay(50); Dispatcher.UIThread.RunJobs();
+        Assert.Equal("good-key", w.Core.Secrets.Get("TrendoOS:key-github"));
         Assert.DoesNotContain(w.Core.Audit.ReadAll(), e => e.Detail.Contains("good-key"));
         w.Close();
     }

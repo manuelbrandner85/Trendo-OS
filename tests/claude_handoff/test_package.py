@@ -19,11 +19,12 @@ class AgentConfigurationTests(unittest.TestCase):
   self.assertIn('PreToolUse',settings['hooks']);self.assertIn('SubagentStart',settings['hooks'])
   self.assertIn('trendo-readonly',json.loads((ROOT/'.mcp.json').read_text(encoding='utf-8'))['mcpServers'])
  def test_migration_rules(self):
-  # M1/M2: Die Grok-Fachregeln stehen vollständig in CLAUDE.md, AGENTS.md und Grok-Dateien sind entfernt.
+  # M1/M2: Die früheren Fachregeln stehen vollständig in CLAUDE.md; AGENTS.md und die Dateien des früheren Agenten sind entfernt.
   claude=(ROOT/'CLAUDE.md').read_text(encoding='utf-8')
   for rule in ['QA-017','SPEC-07','StudioCatalog.cs','120 h','C:\\Users\\<user>','tasks/<task-id>.bericht.md','nach ausdrücklichem OK']:
    self.assertIn(rule,claude)
-  for gone in ['AGENTS.md','.grok','scripts/grok-trendo.ps1','docs/spec/grok','docs/spec/qa/GROK_QA_MATRIX.csv']:
+  old='gr'+'ok'  # Name des früheren Agenten, damit diese Datei ihn selbst nicht enthält
+  for gone in ['AGENTS.md','.'+old,'scripts/'+old+'-trendo.ps1','docs/spec/'+old,'docs/spec/qa/'+old.upper()+'_QA_MATRIX.csv']:
    self.assertFalse((ROOT/gone).exists(),gone)
   self.assertTrue((ROOT/'docs/claude/MIGRATION_ZU_CLAUDE.md').is_file())
   # M3: harte Sperren unabhängig vom Hook; Merge und Release nur auf Nachfrage.
@@ -34,6 +35,23 @@ class AgentConfigurationTests(unittest.TestCase):
    self.assertIn(rule,perms['ask']+perms['deny'])
   ignored=(ROOT/'.gitignore').read_text(encoding='utf-8').splitlines()
   for p in ['.trendo-local/','.claude/worktrees/','.claude/settings.local.json']:self.assertIn(p,ignored)
+ def test_no_former_agent_left(self):
+  # Keine Datei erwähnt den früheren Agenten. Ausnahme nur unveränderliche Rohbelege mit SHA-256 bzw. wörtlichem Logzitat.
+  old='gr'+'ok'
+  raw={'reports/P1_TESTBERICHT.md','reports/audit/klick-rohdaten.tsv','reports/p1/acceptance/audit_selftest_explorer.jsonl',
+       'reports/p1/deps/deps-before.txt','reports/p1/deps/install-python.txt','reports/p1/ki/README.md','reports/p1/ki/install-ki.txt',
+       'reports/p1/v06/pull3b.txt','reports/pc-t0003/CORE-03-core.trx','reports/pc-t0003/suite-core.trx','reports/w0/sumatra-install.txt'}
+  skip=('.git/','.trendo-local/','bin/','obj/')
+  hits=[]
+  for f in ROOT.rglob('*'):
+   rel=f.relative_to(ROOT).as_posix()
+   if not f.is_file() or rel in raw or any(rel.startswith(s) or ('/'+s) in ('/'+rel) for s in skip): continue
+   if f.suffix.lower() in ('.png','.jpg','.jpeg','.ico','.exe','.dll','.pdb','.zip','.iso','.xz','.blend'): continue
+   if old in rel.lower(): hits.append(rel); continue
+   try:
+    if old in f.read_text(encoding='utf-8',errors='ignore').lower(): hits.append(rel)
+   except OSError: pass
+  self.assertEqual([],hits)
  def test_decisions(self):
   txt=(ROOT/'docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md').read_text(encoding='utf-8')
   for s in ['42–85','86','87–96','97','120-Stunden']:self.assertIn(s,txt)
