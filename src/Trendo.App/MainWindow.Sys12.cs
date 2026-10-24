@@ -66,6 +66,9 @@ public partial class MainWindow
         _ => ToolTip.GetTip(c) as string ?? c.Name,
     };
 
+    /// <summary>Statuspunkt: farbiger Punkt, bei „Status mit Zeichen“ zusätzlich ✓ ⚠ ✕ (nicht nur Farbe).</summary>
+    private string Dot(A11y.Level l) => _settings.ColorBlind ? A11y.Symbol(l) : "●";
+
     private CheckBox Opt(string name, string label, bool on, Action<bool> set, string page) { var cb = new CheckBox { Name = name, Content = label, IsChecked = on, Foreground = Text }; cb.IsCheckedChanged += (_, _) => { set(cb.IsChecked == true); SaveSettings(); Reopen(page); }; return cb; }
 
     // ---------- Sehen ----------

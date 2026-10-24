@@ -185,7 +185,7 @@ public sealed partial class MainWindow
             var r = rows[i]; grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
             var color = r.State switch { "Bereit" => "#4ADE80", "Aus" => "#93A4C3", "Hinweis" => "#FACC15", _ => "#F87171" };
             Control fix = r.Fix is { } c ? MakeFix(c) : new TextBlock();
-            var cells = new Control[] { P(r.Name, Text, 12), new TextBlock { Text = $"● {r.State}  {r.Detail}", Foreground = Brush.Parse(color), FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center }, fix };
+            var cells = new Control[] { P(r.Name, Text, 12), new TextBlock { Text = $"{Dot(r.State switch { "Bereit" or "Aus" => Trendo.Core.Sys.A11y.Level.Gut, "Hinweis" => Trendo.Core.Sys.A11y.Level.Hinweis, _ => Trendo.Core.Sys.A11y.Level.Problem })} {r.State}  {r.Detail}", Foreground = Brush.Parse(color), FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center }, fix };
             for (var k = 0; k < 3; k++) { Grid.SetRow(cells[k], i); Grid.SetColumn(cells[k], k); cells[k].Margin = new Thickness(0, 2); cells[k].VerticalAlignment = VerticalAlignment.Center; grid.Children.Add(cells[k]); }
         }
         var sum = rows.Count(r => r.State == "Bereit");

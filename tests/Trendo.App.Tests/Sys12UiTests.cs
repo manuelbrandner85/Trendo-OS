@@ -46,4 +46,28 @@ public class Sys12_Bedienung_Ui
         Assert.Null(w.TryFind<Control>("tile-CORE-05")); 
         w.Close();
     }
+
+    [AvaloniaFact(DisplayName = "T-0212: Schalter zeigt Zustand; „Status mit Zeichen“ setzt ✓ ⚠ ✕ an echte Statuspunkte")]
+    public void Symbols_on_real_status()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show("bedien-sehen");
+        Assert.False(w.Find<CheckBox>("color-blind").IsChecked);
+        w.Settings.ColorBlind = true; w.Show("bedien-sehen");
+        Assert.True(w.Find<CheckBox>("color-blind").IsChecked);
+        Assert.StartsWith("✓", w.Find<TextBlock>("status-sample").Text);
+        w.Show(MainWindow.StudioPages["SPEC-10"]);
+        w.Find<Button>("twin-pc").Press();
+        Assert.Matches("^[✓⚠✕] ", w.Find<TextBlock>("twin-Dieser_PC-Trendo-Arbeitsspeicher").Text ?? "");
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "T-0212: Einfacher Modus vergrößert Knöpfe")]
+    public void Simple_mode_bigger_buttons()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Settings.SimpleMode = true; w.Show("bedien-hilfen");
+        Assert.All(w.GetLogicalDescendants().OfType<Button>().Where(b => b.IsVisible && b.Content is string && !(b.Name ?? "").StartsWith("win-")), b => Assert.True(b.FontSize >= Trendo.Core.Sys.A11y.SimpleButtonFont, b.Name));
+        w.Close();
+    }
 }

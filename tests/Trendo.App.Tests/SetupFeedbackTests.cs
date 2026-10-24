@@ -46,4 +46,20 @@ public class SetupFeedbackTests
         for (var i = 0; i < 200; i++) { await Task.Delay(20); Dispatcher.UIThread.RunJobs(); msg = w.TryFind<TextBlock>("repair-msg"); if (msg?.Text?.Contains('✓') == true) break; }
         Assert.NotNull(msg); Assert.Contains("repariert ✓", msg!.Text);
     }
+
+    [AvaloniaFact(DisplayName = "T-0210: „Ordner wählen …“ im Assistenten öffnet den Ordnerdialog und übernimmt die Wahl")]
+    public async Task Folder_pick_in_wizard()
+    {
+        var (w, _, root) = Ui.Open();
+        var ziel = Path.Combine(root, "MeineProjekte"); Directory.CreateDirectory(ziel);
+        MainWindow.PickRequest? frage = null;
+        w.PickOverride = r => { frage = r; return Task.FromResult<string[]?>([ziel]); };
+        w.Show("einrichtung-1");
+        w.Find<Button>("wiz-folder-pickdir").Press();
+        for (var i = 0; i < 20 && w.Find<TextBox>("wiz-folder").Text != ziel; i++) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); await Task.Delay(20); }
+        Assert.True(frage?.Folder);
+        Assert.Equal(ziel, w.Find<TextBox>("wiz-folder").Text);
+        Assert.Equal(ziel, w.Settings.ProjectsFolder);
+        w.Close();
+    }
 }

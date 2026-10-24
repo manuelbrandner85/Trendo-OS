@@ -34,7 +34,7 @@ public partial class MainWindow
         {
             var col = s.Level switch { TwinLevel.Alarm => Brush.Parse("#F87171"), TwinLevel.Warnung => Brush.Parse("#FACC15"), TwinLevel.Ok => Brush.Parse("#4ADE80"), _ => Muted };
             var info = s.Last is null ? "noch keine Werte" : $"{Fach.F(s.Last.Value, 2)} {s.Unit} · {s.At:dd.MM. HH:mm}" + (s.TrendPerHour is { } t ? $" · Trend {(t >= 0 ? "+" : "")}{Fach.F(t, 3)} {s.Unit}/h" : "") + (s.HoursToAlarm is { } h ? h < 48 ? $" · ⚠ Alarm in etwa {Fach.F(h, 1)} h" : $" · Alarm frühestens in {Fach.F(h / 24, 0)} Tagen" : "");
-            sp.Children.Add(WCard(new StackPanel { Children = { new TextBlock { Name = $"twin-{s.Asset}-{s.Sensor}".Replace(' ', '_'), Text = $"● {s.Asset} – {s.Sensor}: {s.Level}", Foreground = col, FontWeight = FontWeight.SemiBold }, P(info, null, 11) } }));
+            sp.Children.Add(WCard(new StackPanel { Children = { new TextBlock { Name = $"twin-{s.Asset}-{s.Sensor}".Replace(' ', '_'), Text = $"{Dot(s.Level switch { TwinLevel.Alarm => Trendo.Core.Sys.A11y.Level.Problem, TwinLevel.Warnung => Trendo.Core.Sys.A11y.Level.Hinweis, _ => Trendo.Core.Sys.A11y.Level.Gut })} {s.Asset} – {s.Sensor}: {s.Level}", Foreground = col, FontWeight = FontWeight.SemiBold }, P(info, null, 11) } }));
         }
         sp.Children.Add(FachTool("twin-def", "Sensor anlegen", "Grenzen leer lassen, wenn es keine gibt. Beispiel: Heizung, Vorlauf, °C, Warnung ab 70, Alarm ab 80.",
             [("asset", "Anlage", "Heizung"), ("sensor", "Sensor", "Vorlauf"), ("unit", "Einheit", "°C"), ("wa", "Warnung ab", "70"), ("aa", "Alarm ab", "80"), ("ab", "Alarm unter", "")],

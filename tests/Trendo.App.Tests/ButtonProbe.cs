@@ -1,5 +1,6 @@
 using System.Text;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Threading;
@@ -48,22 +49,66 @@ public static class ButtonProbe
                     ? body.GetLogicalDescendants().OfType<Button>().FirstOrDefault(x => x.Name == name && x.IsVisible && x.IsEnabled)
                     : body.GetLogicalDescendants().OfType<Button>().FirstOrDefault(x => string.IsNullOrEmpty(x.Name) && Label(x) == label && x.IsVisible && x.IsEnabled);
                 if (b is null) continue;
-                var t0 = Texts(body); var v0 = w.CurrentView; var l0 = launcher.Opened.Count; var f0 = Stamp(root);
-                try
-                {
-                    b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); Pump();
-                    var now = Body(w, page) ?? body;
-                    var eff = new List<string>();
-                    if (w.CurrentView != v0) eff.Add("seite");
-                    if (launcher.Opened.Count > l0) eff.Add("programm");
-                    if (Stamp(root) != f0) eff.Add("datei");
-                    if (Texts(now) != t0) eff.Add("text");
-                    if (eff.Count == 0) failures.Add($"{page}\t{name}\t{label}\tohne Wirkung");
-                }
-                catch (Exception ex) { failures.Add($"{page}\t{name}\t{label}\tAbsturz {ex.GetType().Name}: {ex.Message}"); }
+                if (Click(w, launcher, root, page, b, name, label) is { } f) failures.Add(f);
             }
         }
         return failures;
+    }
+
+    /// <summary>Wie <see cref="Require"/>, aber jeder Knopf in einem frischen Fenster: keine Meldung eines vorherigen Knopfs verdeckt die Wirkung.</summary>
+    public static IReadOnlyList<string> RequireFresh(Func<(MainWindow W, FakeLauncher L, string Root)> open, params string[] pages)
+    {
+        var failures = new List<string>();
+        foreach (var page in pages)
+        {
+            var (w0, _, _) = open();
+            w0.Show(page); Pump();
+            var body0 = Body(w0, page);
+            if (body0 is null) { failures.Add(page + ": Seiteninhalt nicht gefunden"); w0.Close(); continue; }
+            var keys = body0.GetLogicalDescendants().OfType<Button>().Where(b => b.IsVisible && b.IsEnabled)
+                .Select(b => (Name: b.Name ?? "", Label: Label(b))).Distinct().ToList();
+            w0.Close();
+            if (keys.Count == 0) { failures.Add(page + ": kein sichtbarer aktiver Knopf"); continue; }
+            foreach (var (name, label) in keys)
+            {
+                if (name.EndsWith("-tab-" + page, StringComparison.Ordinal) || Risiko.ContainsKey(name)) continue;
+                var (w, l, root) = open();
+                try
+                {
+                    w.Show(page); Pump();
+                    var body = Body(w, page);
+                    var b = body?.GetLogicalDescendants().OfType<Button>().FirstOrDefault(x => name.Length > 0 ? x.Name == name : string.IsNullOrEmpty(x.Name) && Label(x) == label);
+                    if (b is null || !b.IsVisible || !b.IsEnabled) continue;
+                    if (Click(w, l, root, page, b, name, label) is { } f) failures.Add(f);
+                }
+                finally { w.ReopenedAs?.Close(); w.Close(); }
+            }
+        }
+        return failures;
+    }
+
+    static string? Click(MainWindow w, FakeLauncher launcher, string root, string page, Button b, string name, string label)
+    {
+        var body = Body(w, page)!;
+        var t0 = Texts(body); var tw0 = Texts(w); var r0 = w.ReopenedAs; var v0 = w.CurrentView; var l0 = launcher.Opened.Count; var f0 = Stamp(root);
+        try
+        {
+            // Wie ein echter Klick: Schalter (Häkchen, Auswahlpunkt) wechseln dabei ihren Zustand
+            if (b is ToggleButton tg) tg.IsChecked = tg.IsChecked != true;
+            b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            // Wirkung darf auch nach einem await kommen (KI, Netz, Prüfung) – bis zu 2 s nachsehen
+            for (var i = 0; i < 40; i++)
+            {
+                Pump();
+                var now = Body(w, page) ?? body;
+                if (w.CurrentView != v0 || launcher.Opened.Count > l0 || Stamp(root) != f0 || Texts(now) != t0 || Texts(w) != tw0
+                    || w.ReopenedAs != r0) // Einstellung übernommen: Trendo baut das Fenster neu auf
+                    return null;
+                Thread.Sleep(50);
+            }
+            return $"{page}	{name}	{label}	ohne Wirkung";
+        }
+        catch (Exception ex) { return $"{page}	{name}	{label}	Absturz {ex.GetType().Name}: {ex.Message}"; }
     }
 
     static ContentControl? Body(MainWindow w, string page) =>
@@ -77,6 +122,7 @@ public static class ButtonProbe
         var sb = new StringBuilder();
         foreach (var c in root.GetLogicalDescendants())
         {
+            if (c is Control { Name: { } n } && Uhr.Any(n.StartsWith)) continue; // laufende Uhren ändern sich ohne Klick
             if (c is TextBlock t) sb.Append(t.Text).Append('|');
             else if (c is SelectableTextBlock s) sb.Append(s.Text).Append('|');
             else if (c is TextBox x) sb.Append(x.Text).Append('|');
@@ -84,6 +130,8 @@ public static class ButtonProbe
         }
         return sb.ToString();
     }
+
+    static readonly string[] Uhr = ["clock", "sw-time", "timer-text", "desk-clock", "widget-clock"];
 
     static long Stamp(string root)
     {
