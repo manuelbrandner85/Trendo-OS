@@ -70,9 +70,9 @@ public class CORE02_Backends
             _ => (HttpStatusCode.NotFound, "{}"),
         });
         var b = new OllamaBackend(handler: h);
-        Assert.True(await b.IsUpAsync());
-        Assert.Equal(["qwen2.5:3b"], await b.ModelsAsync());
-        Assert.Equal("Hallo!", await b.ChatAsync("qwen2.5:3b", [new("user", "hi")]));
+        Assert.True(await b.IsUpAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(["qwen2.5:3b"], await b.ModelsAsync(TestContext.Current.CancellationToken));
+        Assert.Equal("Hallo!", await b.ChatAsync("qwen2.5:3b", [new("user", "hi")], TestContext.Current.CancellationToken));
     }
 
 }

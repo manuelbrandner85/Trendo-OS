@@ -45,7 +45,7 @@ public partial class MainWindow
         foreach (var tb in root.GetLogicalDescendants().OfType<TextBox>().ToList())
         {
             if (_pathFields.TryGetValue(tb, out _)) continue;
-            var hint = tb.PlaceholderText ?? tb.Watermark;
+            var hint = tb.PlaceholderText;
             var kind = PathFields.Classify(tb.Name, hint);
             if (kind == PathFields.Kind.None) continue;
             var info = new PathInfo { Page = page, Kind = kind, Multi = PathFields.Multiple(tb.Name, hint), Ext = PathFields.Extensions(hint) };

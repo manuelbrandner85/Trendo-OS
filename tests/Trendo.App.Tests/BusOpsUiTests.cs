@@ -15,7 +15,7 @@ public class W5_Bus_Ops_Ui
         Assert.Contains("Anna", w.Find<TextBlock>("op-due").Text);
         w.Find<TextBox>("op-t-name").Text = "Basis"; w.Find<TextBox>("op-t-price").Text = "10"; w.Find<Button>("op-t-add").Press();
         w.Find<TextBox>("op-m-name").Text = "Ben"; w.Find<Button>("op-m-add").Press();
-        Assert.Contains("10,00", w.Find<TextBlock>("op-mrr").Text.Replace('.', ','));
+        Assert.Contains("10,00", w.Find<TextBlock>("op-mrr").Text!.Replace('.', ','));
         w.Find<TextBox>("op-g-name").Text = "Ich"; w.Find<TextBox>("op-g-iban").Text = "DE89370400440532013000"; w.Find<TextBox>("op-g-amount").Text = "5"; w.Find<Button>("op-g-make").Press();
         Assert.StartsWith("BCD", w.Find<SelectableTextBlock>("op-g-out").Text);
         w.Find<TextBox>("op-p-name").Text = "Tasse"; w.Find<TextBox>("op-p-stock").Text = "1"; w.Find<TextBox>("op-p-lead").Text = "5"; w.Find<TextBox>("op-p-daily").Text = "1"; w.Find<Button>("op-p-add").Press();

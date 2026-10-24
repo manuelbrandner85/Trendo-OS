@@ -224,7 +224,7 @@ public class SYS05_Workflows
         Assert.True((await e.RunAsync(w, false)).Ok);
         Assert.True(File.Exists(Path.Combine(home, "Documents", "PDF", "a.pdf")));
         w.Steps[1].Pattern = "*.*"; Assert.False(w.IsApproved);
-        Assert.Single(e.History(w.Id).Where(h => h.Ok));
+        Assert.Single(e.History(w.Id), h => h.Ok);
     }
 
     [Fact(DisplayName = "SYS-05: Nur erlaubte Ordner, Textdatei mit {datum}, ZIP, Datum voranstellen")]

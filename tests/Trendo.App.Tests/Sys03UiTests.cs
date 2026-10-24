@@ -36,12 +36,12 @@ public class Sys03_Netz_Ui
                 }
                 catch { }
             }
-        });
+        }, TestContext.Current.CancellationToken);
         var d = Path.Combine(Path.GetTempPath(), "trendo-dl-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(d); var t = Path.Combine(d, "datei.bin");
         var url = $"http://127.0.0.1:{port}/datei.bin";
-        await Assert.ThrowsAnyAsync<Exception>(() => WebTools.DownloadAsync(url, t));
+        await Assert.ThrowsAnyAsync<Exception>(() => WebTools.DownloadAsync(url, t, ct: TestContext.Current.CancellationToken));
         var part = new FileInfo(Web.PartFile(t)).Length; Assert.InRange(part, 1, data.Length - 1);
-        Assert.Equal(data.Length, await WebTools.DownloadAsync(url, t));
+        Assert.Equal(data.Length, await WebTools.DownloadAsync(url, t, ct: TestContext.Current.CancellationToken));
         Assert.Equal($"bytes={part}-", ranges[^1]);
         Assert.Equal(SHA256.HashData(data), SHA256.HashData(File.ReadAllBytes(t)));
         Assert.False(File.Exists(Web.PartFile(t))); l.Stop();

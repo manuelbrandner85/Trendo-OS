@@ -19,7 +19,7 @@ public partial class MainWindow
     private DispatcherTimer? _remTimer;
     public ClipHistory Clips => new(_core.DataRoot);
     public ErinnerungStore Erinnerungen => new(_core.DataRoot);
-    public FocusMode Focus => new(_core.DataRoot);
+    public new FocusMode Focus => new(_core.DataRoot);
     public Trendo.Core.Sys.Calendar Cal => new(_core.DataRoot);
 
     private void InitSys02()

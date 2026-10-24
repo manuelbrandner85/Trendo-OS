@@ -36,7 +36,7 @@ public partial class MainWindow
         var wrap = new WrapPanel();
         foreach (var (k, l, d) in fields)
         {
-            var tb = new TextBox { Name = $"{id}-{k}", Text = _fachIn.TryGetValue($"{id}-{k}", out var v) ? v : d, Width = fields.Length > 3 ? 150 : 220, Watermark = l };
+            var tb = new TextBox { Name = $"{id}-{k}", Text = _fachIn.TryGetValue($"{id}-{k}", out var v) ? v : d, Width = fields.Length > 3 ? 150 : 220, PlaceholderText = l };
             boxes[k] = tb;
             wrap.Children.Add(MSp(new StackPanel { Children = { new TextBlock { Text = l, Foreground = Muted, FontSize = 11 }, tb } }));
         }

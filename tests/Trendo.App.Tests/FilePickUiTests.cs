@@ -27,7 +27,7 @@ public class T0201_Dateiauswahl_Ui
             if (root.Name == "error-page") { fehler.Add(key); return; }
             foreach (var box in root.GetLogicalDescendants().OfType<TextBox>())
             {
-                var hint = box.PlaceholderText ?? box.Watermark ?? "";
+                var hint = box.PlaceholderText ?? "";
                 var kind = PathFields.Classify(box.Name, hint);
                 if (kind == PathFields.Kind.None) continue;
                 if (string.IsNullOrEmpty(box.Name)) { missing.Add($"{key}: Feld ohne Namen ({hint})"); continue; }

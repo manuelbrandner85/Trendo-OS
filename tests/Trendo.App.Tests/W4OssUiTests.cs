@@ -22,7 +22,7 @@ public class W4_X06_Ui
     [Fact(DisplayName = "X-06: Live-Suche bei GitHub (übersprungen ohne Internet)")]
     public async Task Live()
     {
-        try { Assert.NotEmpty(await MainWindow.OssSearchHttp(new HttpClient { Timeout = TimeSpan.FromSeconds(15) }, "avalonia")); }
+        try { Assert.NotEmpty(await MainWindow.OssSearchHttp(new HttpClient { Timeout = TimeSpan.FromSeconds(15) }, "avalonia", ct: TestContext.Current.CancellationToken)); }
         catch (HttpRequestException) { } catch (TaskCanceledException) { } catch (InvalidOperationException) { }
     }
 }

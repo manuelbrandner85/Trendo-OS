@@ -150,7 +150,7 @@ public class W7Tests
         Assert.Null(MobileBridge.FindAdb(_ => false, "/la", "/x"));
     }
 
-    sealed class AdbFake(string root) : IProcessRunner
+    sealed class AdbFake : IProcessRunner
     {
         public List<string> Calls { get; } = [];
         public Task<(int Exit, string Output)> RunAsync(string file, string args, Action<string>? line = null, CancellationToken ct = default)
@@ -169,7 +169,7 @@ public class W7Tests
     [Fact(DisplayName = "X-08 Android-Seite: Modell/Version/Akku per adb, Bildschirmfoto und neuestes Foto nur mit Zustimmung, Handy-Temp gelöscht")]
     public async Task Android_side()
     {
-        var (_, _, r) = Make(); var run = new AdbFake(r);
+        var (_, _, r) = Make(); var run = new AdbFake();
         var i = await AndroidSide.InfoAsync(run, "adb", "R58N1");
         Assert.Equal(new PhoneInfo("Pixel 8", "15", 76, true), i);
         Assert.Null(await AndroidSide.InfoAsync(run, "adb", "x;reboot"));

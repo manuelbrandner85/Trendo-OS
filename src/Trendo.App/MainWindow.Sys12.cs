@@ -59,7 +59,7 @@ public partial class MainWindow
     }
     public static string? LabelOf(Control c) => c switch
     {
-        TextBox t => t.PlaceholderText ?? t.Watermark ?? t.Name,
+        TextBox t => t.PlaceholderText ?? t.Name,
         ContentControl { Content: string s } => s.TrimStart('✓', ' '),
         ContentControl { Content: Control inner } => inner.GetLogicalDescendants().Prepend(inner).OfType<TextBlock>().Select(x => x.Text).FirstOrDefault(x => !string.IsNullOrWhiteSpace(x) && x.Any(char.IsLetter))
                                                   ?? ToolTip.GetTip(c) as string ?? c.Name,

@@ -16,7 +16,7 @@ public class PromptActionTests
         Assert.Equal(RunStatus.Unsupported, result.Status);
         Assert.Equal("Nicht unterstützt", StatusText.German(result.Status));
         Assert.Empty(result.Artifacts);
-        Assert.Empty(Directory.GetFiles(fx.Files, "*", SearchOption.AllDirectories).Where(f => f.EndsWith(".docx") || f.EndsWith(".pdf")));
+        Assert.DoesNotContain(Directory.GetFiles(fx.Files, "*", SearchOption.AllDirectories), f => f.EndsWith(".docx") || f.EndsWith(".pdf"));
     }
 
     [Fact(DisplayName = "Unvollständiger Auftrag fragt nach und rät nicht")]
@@ -219,8 +219,8 @@ public class PromptActionTests
         }
         var escape = fx.Wf.Start(fx.Req("SYS-02", "Text: noch eins", [new PromptAttachment("fremd", "../../" + other.Id + "/files/geheim.txt")], "zweit-auftrag"), fx.Ctx());
         Assert.Equal(RunStatus.Failed, escape.Status);
-        Assert.False(File.ReadAllText(fx.Core.Audit.FilePath).Contains("streng-geheim-99"));
-        Assert.False(Directory.GetFiles(fx.Core.Projects.ProjectFilesRoot(other.Id), "*", SearchOption.AllDirectories).Any(f => File.ReadAllText(f).Contains("sichtbar")));
+        Assert.DoesNotContain("streng-geheim-99", File.ReadAllText(fx.Core.Audit.FilePath));
+        Assert.DoesNotContain(Directory.GetFiles(fx.Core.Projects.ProjectFilesRoot(other.Id), "*", SearchOption.AllDirectories), f => File.ReadAllText(f).Contains("sichtbar"));
     }
 
     [Fact(DisplayName = "Geheimnisse stehen nicht im Protokoll")]
