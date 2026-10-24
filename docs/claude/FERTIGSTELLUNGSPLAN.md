@@ -16,7 +16,7 @@ Trendo OS ist fertig, wenn alle Punkte erfüllt sind:
 | Basis-Module (`modules`) | 54 | 46 | 7 IN_PROGRESS (CORE-01, CORE-04, SYS-01, SYS-12, X-08, X-09, STUDIO-LETTER-01); SPEC-07 abgelehnt |
 | Online-Business-Studio (`BUS-001…030`) | 30 | 0 | alle nur `TESTED_BOX` (Linux-Box), PC-Nachweis fehlt |
 | Brief-Studio (`LTR-…`) | 25 | 25 | – (Modul selbst noch IN_PROGRESS) |
-| Verbesserungen 13–41 | 25 genehmigte (≈ 340 Funktionen) | 0 einzeln erfasst | nicht im Register, Teilfunktionen vorhanden (GAP_ANALYSIS §2) |
+| Verbesserungen 13–41 | 25 genehmigte (≈ 340 Funktionen) | 0 abgenommen | im Register (`improvements`), 24 IN_PROGRESS (23 mit Teilfunktionen laut GAP_ANALYSIS §2, dazu Design 41) |
 | Verbesserungen 42–96 | 54 genehmigte (≈ 2 400 Funktionen) | 0 abgenommen | 42/43: gemeinsamer Kern auf `main`, Fachadapter in offenen PRs; Rest nur APPROVED_SPEC; 95/96 ohne Funktionsliste; 97 offen |
 | Editionen | 3 | 0 abgenommen | C am weitesten, B bootet in QEMU, A nicht begonnen |
 | Build/Tests | siehe Commit-Nachricht der Zusammenführung | – | Compiler-Warnungen beheben (A6) |
@@ -32,8 +32,8 @@ Trendo OS ist fertig, wenn alle Punkte erfüllt sind:
 | A1 | Rechte-Patch `docs/claude/M2_RECHTE_PATCH.diff` anwenden (Push `main`/`--force`) | **Manuel** |
 | A2 | ✅ erledigt 2026-10-23: Claude Code 2.1.282 → 2.1.309 (Hook blockiert jetzt auch bei Ausfall) | – |
 | A3 | ✅ erledigt 2026-10-24: #281 nach `main` (6d92923), letzte Reste des früheren Agenten entfernt (16c8e99) | – |
-| A4 | M4: Verbesserungen 42–97 in `decisions.yaml`, `source_sha256` des Masterprompts erneuern | Claude nach **OK** (Register) |
-| A5 | T-0007: Verbesserungen 13–96 als einzelne Requirements (`IMP-xx-nn`) in `requirements.yaml` + Generator, damit Fortschritt messbar wird | Claude, Register-OK |
+| A4 | ✅ erledigt 2026-10-24: IMP-42…97 in `decisions.yaml` (86 REJECTED, 97 UNDECIDED, 95/96 mit Hinweis „Funktionsliste fehlt“), `source_sha256` erneuert, Sperren im Test | – |
+| A5 | ✅ erledigt 2026-10-24: `requirements.yaml` mit `improvements` (IMP-13…97) und `improvement_functions` (120 Einzelfunktionen zu 42/93/94); Quellen `docs/spec/IMPROVEMENTS.csv`, `IMPROVEMENT_FUNCTIONS.csv`; Generator + Prüfer erweitert | – |
 | A6 | ✅ erledigt 2026-10-24: alle Compiler- und xUnit-Analysator-Warnungen behoben, Build mit 0 Warnungen | – |
 
 ### D – Design 41 komplett mit Claude

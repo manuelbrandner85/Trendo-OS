@@ -854,6 +854,1322 @@ letter_requirements:
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
   note: "LTR-QA-018 (Linux-USB/Pi) NOT_RUN – Hardware fehlt"
+improvements:
+- id: IMP-13
+  title: Reality & Completion Control GODMODE
+  approved_functions: 8
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-14
+  title: Claude One-Prompt Production Orchestrator GODMODE
+  approved_functions: 10
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-15
+  title: Native All-in-One Integration GODMODE
+  approved_functions: 12
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-16
+  title: Futureproof & Intelligent Update GODMODE
+  approved_functions: 12
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-17
+  title: Universal Studio Fusion & Project Workspace GODMODE
+  approved_functions: 12
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-18
+  title: Autonomous Everything GODMODE
+  approved_functions: 20
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-19
+  title: Autonomous Sandbox & Intelligent Approval GODMODE
+  approved_functions: 12
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-20
+  title: Teach & Automate GODMODE
+  approved_functions: 12
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-21
+  title: Hybrid Power & Seamless Studio Execution GODMODE
+  approved_functions: 12
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-22
+  title: Native Software Reconstruction & One-Setup GODMODE
+  approved_functions: 15
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-23
+  title: Ultimate Multi-User & Secure Identity GODMODE
+  approved_functions: 12
+  decision: REJECTED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Abgelehnt – nicht bauen
+- id: IMP-24
+  title: Universal Distribution & Zero-Touch Installation GODMODE
+  approved_functions: 15
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-25
+  title: Ultimate Smart Migration & Data Freedom GODMODE
+  approved_functions: 15
+  decision: REJECTED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Abgelehnt – nicht bauen
+- id: IMP-26
+  title: Intelligent Desktop & JARVIS Experience GODMODE
+  approved_functions: 15
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-27
+  title: Mobile Command & Remote Production GODMODE
+  approved_functions: 15
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-28
+  title: Global Release & Trusted Distribution GODMODE
+  approved_functions: 15
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-29
+  title: HyperPerformance & Zero-Bloat GODMODE
+  approved_functions: 15
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-30
+  title: Professional File & Studio Compatibility GODMODE
+  approved_functions: 15
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-31
+  title: Independent AI & Offline Intelligence GODMODE
+  approved_functions: 15
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-32
+  title: True Operating System Foundation GODMODE
+  approved_functions: 15
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-33
+  title: Plug & Play Hardware GODMODE
+  approved_functions: 15
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-34
+  title: Ultimate Native Antivirus & Cyber Protection GODMODE
+  approved_functions: 15
+  decision: REJECTED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Abgelehnt – nicht bauen
+- id: IMP-35
+  title: Ultimate Intelligent Bugfix & Continuous Evolution GODMODE
+  approved_functions: 15
+  decision: UNDECIDED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Unentschieden – nicht bauen
+- id: IMP-36
+  title: Freedom & Open PC GODMODE
+  approved_functions: 20
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-37
+  title: Universal Software & Gaming Compatibility GODMODE
+  approved_functions: 15
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-38
+  title: Dual-Boot & Install Anywhere GODMODE
+  approved_functions: 15
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-39
+  title: Remote App Fusion & Desktop Streaming GODMODE
+  approved_functions: 15
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-40
+  title: Open Developer & App Ecosystem GODMODE
+  approved_functions: 15
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: docs/spec/GAP_ANALYSIS.md
+  note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
+- id: IMP-41
+  title: Ultimate HyperRealistic Premium Experience GODMODE (Design 41)
+  approved_functions: 20
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: tasks/UI-041-PREMIUM-EXPERIENCE.bericht.md
+  note: Teilumsetzung laut Bericht; nicht vollständig, nicht abgenommen
+- id: IMP-42
+  title: Universal Studio Prompt-to-Action GODMODE
+  approved_functions: 20
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: tasks/T-0042-prompt-action.bericht.md
+  note: Teilumsetzung laut Bericht; nicht vollständig, nicht abgenommen
+- id: IMP-43
+  title: Trendo ONE Workspace GODMODE
+  approved_functions: 20
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: tasks/T-0043-erlebnis.bericht.md
+  note: Teilumsetzung laut Bericht; nicht vollständig, nicht abgenommen
+- id: IMP-44
+  title: Universal Professional Studio Fusion
+  approved_functions: 10
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-45
+  title: Ultimate Office Studio GODMODE
+  approved_functions: 20
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-46
+  title: Ultimate E-Mail & Communication Studio GODMODE
+  approved_functions: 20
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-47
+  title: Ultimate Business & Finance Studio GODMODE
+  approved_functions: 20
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-48
+  title: Ultimate Software Development Studio GODMODE
+  approved_functions: 23
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-49
+  title: Ultimate Blender & 3D Creation Studio GODMODE
+  approved_functions: 25
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-50
+  title: Ultimate Game Development Studio GODMODE
+  approved_functions: 40
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-51
+  title: Ultimate Film, Video & Cinematic Studio GODMODE
+  approved_functions: 40
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-52
+  title: Ultimate Image, Photo & Graphic Design Studio GODMODE
+  approved_functions: 40
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-53
+  title: Ultimate Music, Audio & Voice Studio GODMODE
+  approved_functions: 40
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-54
+  title: Ultimate Web Design & Website Development Studio GODMODE
+  approved_functions: 40
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-55
+  title: Ultimate Architecture & Interior Design Studio GODMODE
+  approved_functions: 40
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-56
+  title: Ultimate Engineering & Simulation Studio GODMODE 3.0
+  approved_functions: 60
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-57
+  title: Ultimate Electronics, PCB & Embedded Systems Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-58
+  title: Ultimate Science & Research Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-59
+  title: Ultimate Product, Industrial & Fashion Design Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-60
+  title: Ultimate 3D Scanning & Reconstruction Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-61
+  title: Ultimate Manufacturing, CNC & 3D Printing Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-62
+  title: Ultimate Transport, Vehicle & Logistics Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-63
+  title: Ultimate Cybersecurity & Digital Forensics Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-64
+  title: Ultimate Maps, Geospatial & Digital Earth Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-65
+  title: Ultimate VR, AR & Mixed Reality Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-66
+  title: Ultimate Education, Training & Learning Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-67
+  title: Ultimate Robotics, Vision & Automation Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-68
+  title: Ultimate Data Analytics, Business Intelligence & Visualization Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-69
+  title: Ultimate Book, Publishing & Editorial Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-70
+  title: Ultimate Smart Home, IoT & Building Automation Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-71
+  title: Ultimate Business Process & Workflow Automation Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-72
+  title: Ultimate Personal Productivity & Life Management Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-73
+  title: Ultimate Event, Broadcast & Live Production Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-74
+  title: Ultimate Knowledge, Research & Document Intelligence Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-75
+  title: Ultimate Digital Twin & Reality Simulation Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-76
+  title: Ultimate Medical Visualization & Biomedical Engineering Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-77
+  title: Ultimate AI Agent & Multi-Agent Orchestration Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-78
+  title: Ultimate Legal Documents, Contracts & Compliance Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-79
+  title: Ultimate Cloud, Server, DevOps & Infrastructure Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-80
+  title: Ultimate Visual App Builder & No-Code Creation Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-81
+  title: Ultimate AI Model, Training & Fine-Tuning Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-82
+  title: Ultimate Plugin, Extension & Marketplace Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-83
+  title: Ultimate Quality Assurance, Testing & Reliability Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-84
+  title: Ultimate Device Fusion, Remote Control & Distributed Computing Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-85
+  title: Ultimate System Performance, Optimization & Self-Healing Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-86
+  title: Ultimate Customer Support, CRM & Service Desk Studio GODMODE
+  approved_functions: 50
+  decision: REJECTED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Abgelehnt – nicht bauen
+- id: IMP-87
+  title: Ultimate Automotive Design, Vehicle Engineering & Driving Simulation Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-88
+  title: Ultimate Space, Astronomy & Aerospace Engineering Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-89
+  title: Ultimate E-Commerce, Digital Products & Online Store Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-90
+  title: Ultimate Motion Capture, Character Animation & Virtual Production Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-91
+  title: Ultimate Materials, Textures & Photorealistic Rendering Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-92
+  title: Ultimate Procedural World, Terrain & Environment Creation Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93
+  title: Ultimate Living World, NPC & Artificial Life Simulation Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94
+  title: Ultimate Cinematic Lighting, Visual Effects & Destruction Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-95
+  title: Ultimate Architecture & BIM Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Freigabe 2026-10-23; Originalbeschreibung der 50 Funktionen fehlt im Repo, Abgrenzung zu IMP-55 klären
+- id: IMP-96
+  title: Ultimate Lighting & Acoustics Studio GODMODE
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Freigabe 2026-10-23; Originalbeschreibung der 50 Funktionen fehlt im Repo
+- id: IMP-97
+  title: Invention, Prototyping & Product Validation
+  approved_functions: 0
+  decision: UNDECIDED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: OFFEN laut Entscheidungsdelta 2026-10-23; nicht als JA behandeln
+improvement_functions:
+- id: IMP-42-01
+  improvement: IMP-42
+  title: Universal Prompt Entry
+  requirement: Einheitliche Eingabe pro Studio mit Anhängen, Sprache, Kontext und verlustfreier Verlaufshistorie.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-02
+  improvement: IMP-42
+  title: Studio Context & Routing
+  requirement: Zuordnung zum aktuellen Studio oder bewusstes Routing auf ein anderes Studio, stets mit sichtbarer Begründung.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-03
+  improvement: IMP-42
+  title: Intent & Action Parser
+  requirement: Strukturiertes, versioniertes Auftragsobjekt statt freier, unkontrollierter Tool-Aufrufe.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-04
+  improvement: IMP-42
+  title: Schema Validation
+  requirement: Studio-, Aktions- und Dateiformat-spezifische Validierung mit verständlichen Fehlermeldungen.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-05
+  improvement: IMP-42
+  title: Smart Clarifications
+  requirement: Nur fehlende, entscheidungsrelevante Daten nachfragen; Teilantworten fortsetzen können.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-06
+  improvement: IMP-42
+  title: PromptLibrary Integration
+  requirement: Bestehende Promptvorlagen und Fachinstruktionen referenzieren und versioniert anwenden.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-07
+  improvement: IMP-42
+  title: Existing AI Orchestration
+  requirement: '`Intel.AskAsync` bzw. reale vorhandene KI-Abstraktion verwenden; keine zweite Model-Routing-/Conversation-Engine.'
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-08
+  improvement: IMP-42
+  title: Local-First Provider Policy
+  requirement: Anbieterberechtigungen, Datenschutz, Kostenhinweis, explizite Einwilligung, Offline-Verhalten und Widerruf.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-09
+  improvement: IMP-42
+  title: Studio Capability Registry
+  requirement: Für jeden bestehenden Studioeintrag eindeutige unterstützte Aktionen, Adapter, Outputtypen und Capability-Level
+    deklarieren.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-10
+  improvement: IMP-42
+  title: Adapter Execution Layer
+  requirement: Echte typisierte Adapter und ausführbare Aktionen, mit Cancellation, Timeouts, Fehlerbehandlung und Ressourcenlimits.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-11
+  improvement: IMP-42
+  title: Editable Artifact Workspace
+  requirement: Persistierte, editierbare Zwischen- und Endartefakte mit Projektbezug und Wiederaufnahme.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-12
+  improvement: IMP-42
+  title: Live Progress & Evidence
+  requirement: Wahrheitsgemäßer Fortschritt, Schritte, Tool-Ergebnisse, Protokolle und Dateinachweise, keine erfundenen Prozente.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-13
+  improvement: IMP-42
+  title: Deterministic Verification Hub
+  requirement: Fachrechner/Validatoren mit Einheiten, Eingangsannahmen, Versionsstand und reproduzierbarem Prüfergebnis.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-14
+  improvement: IMP-42
+  title: Specialized QA
+  requirement: Fachspezifische Lint-, Schema-, Render-, Dokument-, Laufzeit-, Geometrie-, Medien- oder Formatprüfungen.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-15
+  improvement: IMP-42
+  title: Preview Engine
+  requirement: Echte Vorschau aus erstelltem Artefakt (oder sichtbare Kennzeichnung, wenn Vorschau unmöglich).
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-16
+  improvement: IMP-42
+  title: Revision Loop
+  requirement: Gezielt änderbare Artefakte, Diff/Versionen, Undo/Redo nach realer Unterstützung, QA nach Änderungen erneut
+    ausführen.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-17
+  improvement: IMP-42
+  title: Export & File Handoff
+  requirement: Wirklich existierende Dateien, prüfbare Pfade/Checksummen, Formate, Importierbarkeit und Download-/Öffnen-Aktion.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-18
+  improvement: IMP-42
+  title: Human Approval Gateway
+  requirement: Aktionsgebundene Freigaben für Senden, Bezahlen, Publizieren, Geräte/Maschinen, Sicherheit, Boot und andere
+    Seiteneffekte; Ablehnung/Timeout sicher behandeln.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-19
+  improvement: IMP-42
+  title: Project Isolation, Security & Forensics
+  requirement: Sandbox, Berechtigungen, Redaction, Protokolle und die bestehende 120-Stunden-Forensikregel ohne Regression.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-42-20
+  improvement: IMP-42
+  title: Testing, Telemetry & Recovery
+  requirement: Unit-, Integrations-, E2E-, Sicherheits-, Abbruch-/Recovery-Tests und nachvollziehbare Betriebsdiagnose ohne
+    sensitive Datenlecks.
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: Einzelabgleich mit vorhandenem Kern (T-0042/T-0043) offen
+- id: IMP-93-01
+  improvement: IMP-93
+  title: Prompt-to-Living-World
+  requirement: Welten und Lebenssimulationen aus einfachen Beschreibungen planen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-02
+  improvement: IMP-93
+  title: Living World ONE Workspace
+  requirement: NPCs, Verhalten, Ergebnisse und QA zentral verwalten
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-03
+  improvement: IMP-93
+  title: NPC Character Architect
+  requirement: Individuelle Figurenmerkmale definieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-04
+  improvement: IMP-93
+  title: Personality Intelligence
+  requirement: Unterschiedliche Persönlichkeiten modellieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-05
+  improvement: IMP-93
+  title: Daily Routine Director
+  requirement: Tages- und Wochenabläufe steuern
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-06
+  improvement: IMP-93
+  title: Needs & Motivation System
+  requirement: Bedürfnisse, Ziele und Prioritäten simulieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-07
+  improvement: IMP-93
+  title: NPC Memory
+  requirement: Relevante Begegnungen und Ereignisse speichern
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-08
+  improvement: IMP-93
+  title: Player Recognition
+  requirement: Spieler anhand tatsächlicher Spielereignisse wiedererkennen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-09
+  improvement: IMP-93
+  title: Relationship Simulation
+  requirement: Beziehungen und Konflikte modellieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-10
+  improvement: IMP-93
+  title: Family & Social Networks
+  requirement: Familien und soziale Netzwerke darstellen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-11
+  improvement: IMP-93
+  title: Dialogue Intelligence
+  requirement: Kontextabhängige Gespräche ermöglichen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-12
+  improvement: IMP-93
+  title: Emotion & Reaction System
+  requirement: Nachvollziehbare Reaktionen steuern
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-13
+  improvement: IMP-93
+  title: Occupation Simulation
+  requirement: Arbeits- und Berufsabläufe modellieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-14
+  improvement: IMP-93
+  title: Shopping & Economy
+  requirement: Einkaufen, Handel und vereinfachte Wirtschaftskreisläufe
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-15
+  improvement: IMP-93
+  title: Home & Property Behavior
+  requirement: Wohnungen und Gebäude sinnvoll nutzen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-16
+  improvement: IMP-93
+  title: Education & Learning
+  requirement: Lernen und Fähigkeiten darstellen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-17
+  improvement: IMP-93
+  title: NPC Decision Engine
+  requirement: Entscheidungen anhand dokumentierter Regeln
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-18
+  improvement: IMP-93
+  title: Behavior Tree Integration
+  requirement: Unreal Behavior Trees über Adapter verwenden
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-19
+  improvement: IMP-93
+  title: StateTree Integration
+  requirement: Unreal StateTree unterstützen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-20
+  improvement: IMP-93
+  title: Smart Object Interaction
+  requirement: Objekte und Einrichtungen als Interaktionsziele verwenden
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-21
+  improvement: IMP-93
+  title: Navigation Intelligence
+  requirement: Wegefindung und Navigation
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-22
+  improvement: IMP-93
+  title: Crowd Simulation
+  requirement: Große Menschenmengen performant simulieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-23
+  improvement: IMP-93
+  title: Pedestrian Traffic
+  requirement: Fußgängerverkehr abbilden
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-24
+  improvement: IMP-93
+  title: Vehicle Traffic Fusion
+  requirement: Verkehrssysteme einbinden
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-25
+  improvement: IMP-93
+  title: Wildlife Intelligence
+  requirement: Tiere und Lebensräume modellieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-26
+  improvement: IMP-93
+  title: Creature Behavior
+  requirement: Gegner und Fantasiekreaturen steuern
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-27
+  improvement: IMP-93
+  title: Combat NPC Intelligence
+  requirement: Taktische Gegnerreaktionen definieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-28
+  improvement: IMP-93
+  title: NPC Perception
+  requirement: Sehen, Hören und Spielreize
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-29
+  improvement: IMP-93
+  title: Dynamic Events
+  requirement: Regelbasierte dynamische Ereignisse
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-30
+  improvement: IMP-93
+  title: Mission & Story Fusion
+  requirement: NPCs mit genehmigten Missionen verbinden
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-31
+  improvement: IMP-93
+  title: Weather Response
+  requirement: Verhalten bei unterschiedlichem Wetter
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-32
+  improvement: IMP-93
+  title: Day & Night Behavior
+  requirement: Tageszeitabhängige Handlungen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-33
+  improvement: IMP-93
+  title: World Persistence
+  requirement: Relevante Weltzustände sichern
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-34
+  improvement: IMP-93
+  title: Savegame Integration
+  requirement: NPC-Daten zuverlässig speichern/laden
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-35
+  improvement: IMP-93
+  title: Blender Character Fusion
+  requirement: Freigegebene Charaktere und Animationen integrieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-36
+  improvement: IMP-93
+  title: Unreal AI Integration
+  requirement: Unreal Gameplay- und KI-Systeme verbinden
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-37
+  improvement: IMP-93
+  title: NPC Debugging
+  requirement: Entscheidungswege und Fehler nachvollziehbar machen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-38
+  improvement: IMP-93
+  title: Population & Performance
+  requirement: Detailstufen und Rechenlast abstimmen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-39
+  improvement: IMP-93
+  title: Living World QA Guardian
+  requirement: Verhalten, Persistenz und Performance real testen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-40
+  improvement: IMP-93
+  title: Controlled Living World Production
+  requirement: Freigegebene Produktionsabläufe koordinieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-41
+  improvement: IMP-93
+  title: Persistent Life Intelligence
+  requirement: Ereignisse mit langfristigen Folgen speichern
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-42
+  improvement: IMP-93
+  title: Long-Term Character Development
+  requirement: Figurenentwicklung über Zeit
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-43
+  improvement: IMP-93
+  title: Social Consequence Engine
+  requirement: Konsequenzen von Spielerentscheidungen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-44
+  improvement: IMP-93
+  title: Autonomous Society Simulation
+  requirement: Gesellschaft innerhalb definierter Regeln simulieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-45
+  improvement: IMP-93
+  title: Smart NPC Conversation Memory
+  requirement: Vergangene Gespräche situationsbezogen berücksichtigen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-46
+  improvement: IMP-93
+  title: Adaptive World Population
+  requirement: NPC-Dichte an Gebiet und Hardware anpassen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-47
+  improvement: IMP-93
+  title: Background Life Simulation
+  requirement: Entfernte NPCs abstrahiert fortschreiben
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-48
+  improvement: IMP-93
+  title: Intelligent NPC Animation Fusion
+  requirement: Bewegung, Handlung und Umgebung abstimmen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-49
+  improvement: IMP-93
+  title: Living World Director Team
+  requirement: Vorhandene Story-/Unreal-/Animation-/QA-Agenten nutzen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-93-50
+  improvement: IMP-93
+  title: Verified Living World Release Gate
+  requirement: Veröffentlichung erst nach echten Tests
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-01
+  improvement: IMP-94
+  title: Prompt-to-VFX
+  requirement: Effekte aus natürlichsprachlichen Aufträgen planen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-02
+  improvement: IMP-94
+  title: VFX ONE Workspace
+  requirement: Effektplanung, Livevorschau, Bearbeitung und QA an einem Ort
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-03
+  improvement: IMP-94
+  title: VFX Scene Architect
+  requirement: Szenen und Abhängigkeiten aufbauen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-04
+  improvement: IMP-94
+  title: Cinematic Lighting Director
+  requirement: Filmische Beleuchtung
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-05
+  improvement: IMP-94
+  title: Dynamic Global Illumination
+  requirement: Engineunterstützte globale Beleuchtung
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-06
+  improvement: IMP-94
+  title: Volumetric Lighting
+  requirement: Atmosphärische Lichtstrahlen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-07
+  improvement: IMP-94
+  title: Shadow Quality Guardian
+  requirement: Schatten und Leistung kontrollieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-08
+  improvement: IMP-94
+  title: Particle Effect Creator
+  requirement: Partikelsysteme für Funken und Staub
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-09
+  improvement: IMP-94
+  title: Fire Simulation
+  requirement: Feuereffekte
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-10
+  improvement: IMP-94
+  title: Smoke & Fog Creator
+  requirement: Rauch und Nebel
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-11
+  improvement: IMP-94
+  title: Explosion Director
+  requirement: Virtuelle Explosionen inszenieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-12
+  improvement: IMP-94
+  title: Lightning & Electricity
+  requirement: Blitz- und Energieeffekte
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-13
+  improvement: IMP-94
+  title: Water VFX
+  requirement: Spritzwasser, Wellen und Gischt
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-14
+  improvement: IMP-94
+  title: Weather Effects
+  requirement: Regen, Schnee, Sturm und Wind
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-15
+  improvement: IMP-94
+  title: Destruction Architect
+  requirement: Zerstörungsszenen strukturiert planen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-16
+  improvement: IMP-94
+  title: Fracture System
+  requirement: Bauteile in Bruchstücke zerlegen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-17
+  improvement: IMP-94
+  title: Debris Simulation
+  requirement: Trümmerbewegung simulieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-18
+  improvement: IMP-94
+  title: Building Destruction
+  requirement: Zerstörbare Gebäude für virtuelle Szenen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-19
+  improvement: IMP-94
+  title: Terrain Destruction
+  requirement: Kontrollierte Terrainänderungen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-20
+  improvement: IMP-94
+  title: Vehicle Damage VFX
+  requirement: Visuelle Fahrzeugschäden
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-21
+  improvement: IMP-94
+  title: Impact Effects
+  requirement: Treffer- und Aufpralleffekte
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-22
+  improvement: IMP-94
+  title: Magic & Energy Effects
+  requirement: Fiktive magische Kräfte
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-23
+  improvement: IMP-94
+  title: Character VFX
+  requirement: Effekte mit Figuren koppeln
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-24
+  improvement: IMP-94
+  title: Boss Battle VFX
+  requirement: Bosskampf-Effekte
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-25
+  improvement: IMP-94
+  title: Environmental Storytelling
+  requirement: Atmosphäre mit Umwelteffekten unterstützen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-26
+  improvement: IMP-94
+  title: Cinematic Camera Fusion
+  requirement: Kameras mit Effektablauf abstimmen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-27
+  improvement: IMP-94
+  title: Color Grading
+  requirement: Filmische Farbgebung
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-28
+  improvement: IMP-94
+  title: Post-Processing
+  requirement: Unterstützte Post-Processing-Effekte
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-29
+  improvement: IMP-94
+  title: Blender Simulation Fusion
+  requirement: Blender-Simulationsadapter
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-30
+  improvement: IMP-94
+  title: Unreal Niagara Fusion
+  requirement: Unreal Niagara über echten Adapter
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-31
+  improvement: IMP-94
+  title: Unreal Chaos Fusion
+  requirement: Unreal Chaos für passende Zerstörungssimulationen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-32
+  improvement: IMP-94
+  title: Material Studio Fusion
+  requirement: Bestehende Materialien/Shader weiterverwenden
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-33
+  improvement: IMP-94
+  title: Audio Synchronization
+  requirement: Sound und visuelle Ereignisse abstimmen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-34
+  improvement: IMP-94
+  title: Timeline Editor
+  requirement: Zeitachsen bearbeiten
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-35
+  improvement: IMP-94
+  title: VFX Reference Lock
+  requirement: Freigegebene Stil- und Szenenreferenzen sichern
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-36
+  improvement: IMP-94
+  title: Performance Optimizer
+  requirement: CPU/GPU/VRAM-Auswirkungen prüfen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-37
+  improvement: IMP-94
+  title: VFX Asset Library
+  requirement: Getestete Effekte wiederverwendbar ablegen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-38
+  improvement: IMP-94
+  title: VFX Versioning
+  requirement: Varianten und Stände versionieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-39
+  improvement: IMP-94
+  title: VFX QA Guardian
+  requirement: Echte Assets/Render/Engine-Tests durchführen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-40
+  improvement: IMP-94
+  title: Controlled VFX Production
+  requirement: Freigegebene Produktionsjobs koordinieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-41
+  improvement: IMP-94
+  title: Hyperrealistic VFX Intelligence
+  requirement: Referenzgebundene visuelle Qualität
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-42
+  improvement: IMP-94
+  title: Cinematic Destruction Director
+  requirement: Filmisch inszenierte virtuelle Zerstörung
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-43
+  improvement: IMP-94
+  title: Physics-Aware VFX
+  requirement: Effekte an geeignete Physikdaten koppeln
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-44
+  improvement: IMP-94
+  title: Intelligent Effect Layering
+  requirement: Mehrere VFX-Ebenen koordinieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-45
+  improvement: IMP-94
+  title: Dynamic Environment Reaction
+  requirement: Virtuelle Welt reagiert auf Ereignisse
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-46
+  improvement: IMP-94
+  title: Procedural Disaster Scenarios
+  requirement: Sichere rein virtuelle Katastrophenszenen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-47
+  improvement: IMP-94
+  title: Multi-Scale VFX Optimization
+  requirement: Effektdetail nach Entfernung/Hardware
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-48
+  improvement: IMP-94
+  title: Visual Fidelity Benchmark
+  requirement: Vergleich mit genehmigten Referenzen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-49
+  improvement: IMP-94
+  title: Autonomous VFX Production Team
+  requirement: Bestehende Studio-Agenten koordinieren
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+- id: IMP-94-50
+  improvement: IMP-94
+  title: Verified VFX Release Gate
+  requirement: Freigabe erst nach realen VFX-/Performanceprüfungen
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
 tests:
 - id: BQ-001
   catalog: BUSINESS_QA_MATRIX.csv

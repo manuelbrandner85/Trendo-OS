@@ -21,6 +21,25 @@ for sec, src, n in [("modules", S/"MODULE_REGISTER.csv", 54), ("business_require
             if ev and (R / ev).is_file(): continue  # Fortschritt nur mit Nachweis-Datei im Repo
             err.append(f"{m['id']}: Fortschritt ohne Nachweis ({m['implementation_status']}/{m['test_status']})")
     print(f"OK  {sec}: {len(y)} IDs geprüft" if not any(e.startswith(sec) for e in err) else f"FAIL {sec}")
+# Verbesserungen 13–97: IDs wie Quelle, Entscheidung wie decisions.yaml, Abgelehntes/Offenes nie begonnen, Fortschritt nur mit Nachweis
+imps = d.get("improvements", []); src = ids(S / "IMPROVEMENTS.csv")
+if [m["id"] for m in imps] != src or [m["id"] for m in imps] != [f"IMP-{n}" for n in range(13, 98)]: err.append("improvements: IDs weichen von IMPROVEMENTS.csv bzw. IMP-13…97 ab")
+dec = {}; cur = None
+for line in open(S / "decisions.yaml", encoding="utf-8"):
+    s = line.strip()
+    if s.startswith("- id:"): cur = s[5:].strip()
+    elif cur and s.startswith("decision:"): dec[cur] = s[9:].strip()
+for m in imps + d.get("improvement_functions", []):
+    for k in ("implementation_status", "test_status"):
+        if m[k] not in allowed: err.append(f"{m['id']}: unbekannter Status {m[k]}")
+    parent = m.get("improvement", m["id"])
+    if "decision" in m and dec.get(m["id"]) != m["decision"]: err.append(f"{m['id']}: Entscheidung {m['decision']} ≠ decisions.yaml {dec.get(m['id'])}")
+    if dec.get(parent) in ("REJECTED", "UNDECIDED") and m["implementation_status"] != "NOT_STARTED": err.append(f"{m['id']}: abgelehnt/offen, aber begonnen")
+    if (m["implementation_status"] != "NOT_STARTED" or m["test_status"] != "NOT_RUN") and not (m.get("evidence") and (R / m["evidence"]).is_file()):
+        err.append(f"{m['id']}: Fortschritt ohne Nachweis")
+fn = d.get("improvement_functions", [])
+if [m["id"] for m in fn] != ids(S / "IMPROVEMENT_FUNCTIONS.csv"): err.append("improvement_functions: IDs weichen von IMPROVEMENT_FUNCTIONS.csv ab")
+if not any(e.startswith(("improvement", "IMP-")) for e in err): print(f"OK  improvements: {len(imps)} Verbesserungen, {len(fn)} Einzelfunktionen geprüft")
 rej = [m["id"] for m in d["modules"] if m["approval_status"] != "APPROVED_SPEC"]
 if rej != ["SPEC-07"]: err.append(f"Abgelehnt erwartet nur SPEC-07, gefunden {rej}")
 else: print("OK  SPEC-07 bleibt REJECTED_UPGRADE_BASE_PRESERVED, alle anderen APPROVED_SPEC")

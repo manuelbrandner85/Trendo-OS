@@ -1,10 +1,10 @@
 # Entscheidungsregister Masterprompt MP-1.0 (2026-10-22), Quelle docs/spec/MASTERPROMPT.md Abschnitte 5–12.
-# Nur Manuel ändert decision. DecisionRegisterTests sperrt: REJECTED/UNDECIDED dürfen nie APPROVED werden.
+# Nur Manuel ändert decision (IMP-42…97 nach Freigabe vom 2026-10-24 nachgetragen). DecisionRegisterTests sperrt: REJECTED/UNDECIDED dürfen nie APPROVED werden.
 # diff = Abweichung Masterprompt ↔ requirements.yaml (Name/Zahl). requirements.yaml wurde NICHT geändert.
 schema_version: 2
 source: docs/spec/MASTERPROMPT.md
-source_sha256: 0f1e3e7722b4ddf38133347ec9e82036856e7dc3c611e64dc44387984a16348d
-date: 2026-10-22
+source_sha256: 6432ea2c07e442a39c0dc148098b8887b7806b7547e9545c5098dd9564b4bac8
+date: 2026-10-24
 items:
 - id: CORE-01
   kind: module
@@ -435,3 +435,339 @@ items:
   functions: 20
   decision: APPROVED
   note: "Quelle docs/spec/design-41/; Rollout auf alle Studios und Logo erst nach gesondertem JA (UI41-6)"
+- id: IMP-42
+  kind: improvement
+  title: "Universal Studio Prompt-to-Action GODMODE"
+  functions: 20
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-43
+  kind: improvement
+  title: "Trendo ONE Workspace GODMODE"
+  functions: 20
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-44
+  kind: improvement
+  title: "Universal Professional Studio Fusion"
+  functions: 10
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-45
+  kind: improvement
+  title: "Ultimate Office Studio GODMODE"
+  functions: 20
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-46
+  kind: improvement
+  title: "Ultimate E-Mail & Communication Studio GODMODE"
+  functions: 20
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-47
+  kind: improvement
+  title: "Ultimate Business & Finance Studio GODMODE"
+  functions: 20
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-48
+  kind: improvement
+  title: "Ultimate Software Development Studio GODMODE"
+  functions: 23
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-49
+  kind: improvement
+  title: "Ultimate Blender & 3D Creation Studio GODMODE"
+  functions: 25
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-50
+  kind: improvement
+  title: "Ultimate Game Development Studio GODMODE"
+  functions: 40
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-51
+  kind: improvement
+  title: "Ultimate Film, Video & Cinematic Studio GODMODE"
+  functions: 40
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-52
+  kind: improvement
+  title: "Ultimate Image, Photo & Graphic Design Studio GODMODE"
+  functions: 40
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-53
+  kind: improvement
+  title: "Ultimate Music, Audio & Voice Studio GODMODE"
+  functions: 40
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-54
+  kind: improvement
+  title: "Ultimate Web Design & Website Development Studio GODMODE"
+  functions: 40
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-55
+  kind: improvement
+  title: "Ultimate Architecture & Interior Design Studio GODMODE"
+  functions: 40
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-56
+  kind: improvement
+  title: "Ultimate Engineering & Simulation Studio GODMODE 3.0"
+  functions: 60
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-57
+  kind: improvement
+  title: "Ultimate Electronics, PCB & Embedded Systems Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-58
+  kind: improvement
+  title: "Ultimate Science & Research Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-59
+  kind: improvement
+  title: "Ultimate Product, Industrial & Fashion Design Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-60
+  kind: improvement
+  title: "Ultimate 3D Scanning & Reconstruction Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-61
+  kind: improvement
+  title: "Ultimate Manufacturing, CNC & 3D Printing Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-62
+  kind: improvement
+  title: "Ultimate Transport, Vehicle & Logistics Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-63
+  kind: improvement
+  title: "Ultimate Cybersecurity & Digital Forensics Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-64
+  kind: improvement
+  title: "Ultimate Maps, Geospatial & Digital Earth Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-65
+  kind: improvement
+  title: "Ultimate VR, AR & Mixed Reality Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-66
+  kind: improvement
+  title: "Ultimate Education, Training & Learning Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-67
+  kind: improvement
+  title: "Ultimate Robotics, Vision & Automation Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-68
+  kind: improvement
+  title: "Ultimate Data Analytics, Business Intelligence & Visualization Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-69
+  kind: improvement
+  title: "Ultimate Book, Publishing & Editorial Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-70
+  kind: improvement
+  title: "Ultimate Smart Home, IoT & Building Automation Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-71
+  kind: improvement
+  title: "Ultimate Business Process & Workflow Automation Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-72
+  kind: improvement
+  title: "Ultimate Personal Productivity & Life Management Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-73
+  kind: improvement
+  title: "Ultimate Event, Broadcast & Live Production Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-74
+  kind: improvement
+  title: "Ultimate Knowledge, Research & Document Intelligence Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-75
+  kind: improvement
+  title: "Ultimate Digital Twin & Reality Simulation Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-76
+  kind: improvement
+  title: "Ultimate Medical Visualization & Biomedical Engineering Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-77
+  kind: improvement
+  title: "Ultimate AI Agent & Multi-Agent Orchestration Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-78
+  kind: improvement
+  title: "Ultimate Legal Documents, Contracts & Compliance Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-79
+  kind: improvement
+  title: "Ultimate Cloud, Server, DevOps & Infrastructure Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-80
+  kind: improvement
+  title: "Ultimate Visual App Builder & No-Code Creation Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-81
+  kind: improvement
+  title: "Ultimate AI Model, Training & Fine-Tuning Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-82
+  kind: improvement
+  title: "Ultimate Plugin, Extension & Marketplace Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-83
+  kind: improvement
+  title: "Ultimate Quality Assurance, Testing & Reliability Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-84
+  kind: improvement
+  title: "Ultimate Device Fusion, Remote Control & Distributed Computing Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-85
+  kind: improvement
+  title: "Ultimate System Performance, Optimization & Self-Healing Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-86
+  kind: improvement
+  title: "Ultimate Customer Support, CRM & Service Desk Studio GODMODE"
+  functions: 50
+  decision: REJECTED
+  note: "Freigabe-Delta 2026-10-23: NEIN; vorher bestätigte CRM-/Kommunikationsfunktionen gelten weiter"
+- id: IMP-87
+  kind: improvement
+  title: "Ultimate Automotive Design, Vehicle Engineering & Driving Simulation Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-88
+  kind: improvement
+  title: "Ultimate Space, Astronomy & Aerospace Engineering Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-89
+  kind: improvement
+  title: "Ultimate E-Commerce, Digital Products & Online Store Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-90
+  kind: improvement
+  title: "Ultimate Motion Capture, Character Animation & Virtual Production Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-91
+  kind: improvement
+  title: "Ultimate Materials, Textures & Photorealistic Rendering Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-92
+  kind: improvement
+  title: "Ultimate Procedural World, Terrain & Environment Creation Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-93
+  kind: improvement
+  title: "Ultimate Living World, NPC & Artificial Life Simulation Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-94
+  kind: improvement
+  title: "Ultimate Cinematic Lighting, Visual Effects & Destruction Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+- id: IMP-95
+  kind: improvement
+  title: "Ultimate Architecture & BIM Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23; Funktionsliste fehlt im Repo, Abgrenzung zu IMP-55 klären"
+- id: IMP-96
+  kind: improvement
+  title: "Ultimate Lighting & Acoustics Studio GODMODE"
+  functions: 50
+  decision: APPROVED
+  note: "Freigabe-Delta 2026-10-23; Funktionsliste fehlt im Repo"
+- id: IMP-97
+  kind: improvement
+  title: "Invention, Prototyping & Product Validation"
+  functions: 0
+  decision: UNDECIDED
+  note: "Freigabe-Delta 2026-10-23: OFFEN, nicht als JA behandeln"
