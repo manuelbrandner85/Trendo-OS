@@ -1,6 +1,6 @@
 # Design-Lückenliste Verbesserung 41 (UI-041-PREMIUM-EXPERIENCE)
 **Stand:** 2026-10-22 · Vergleich gegen main `0c0525b` · IST-Bilder: Box-Build (Linux, Xvfb 1920×1080, `--offline --no-first-run --page …`), **nicht** Windows-PC. Vergleichsbilder: `reports/design-41/vergleich/`.
-Paket unverändert in `docs/spec/design-41/` (Prüfsummen `SHA256SUMS`). Bilder sind KI-Entwürfe, keine Screenshots, keine Daten/Logos übernehmen.
+Paket unverändert in `docs/spec/design-41/` (Prüfsummen `SHA256SUMS`). Referenzbilder seit 2026-10-24 mit Claude Code als HTML gebaut (`tools/design/views.py`), Hintergründe lokal mit KI (FLUX.2 klein); keine Screenshots, Beispieldaten nicht übernehmen.
 
 | Ref | Bereich | IST (main) | SOLL (Ref) | Lücke | Task |
 |---|---|---|---|---|---|

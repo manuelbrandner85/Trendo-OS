@@ -18,7 +18,6 @@ Trendo OS wird ab 2026-10-23 ausschließlich mit Claude Code entwickelt. Alle Re
 | Lockerung in `.claude/settings.json` und Hook für Push auf `main`/`--force` | Claude darf seine eigenen Schutzregeln nicht lockern | Manuel wendet `docs/claude/M2_RECHTE_PATCH.diff` an |
 | `decisions.yaml`: Verbesserungen 42–97 eintragen, `source_sha256` des geänderten `docs/spec/MASTERPROMPT.md` erneuern | Register ändert nur Manuel bzw. ein freigegebener Auftrag | M4 |
 | Optionale Cloud-KI „xAI“ in der Trendo-App (`MainWindow.axaml.cs`) | Produktfunktion für Endnutzer, kein Entwicklungswerkzeug | Entscheidung Manuel |
-| Design-Referenzen (`docs/spec/design-41/referenzen/`) und Hintergrundbild stammen vom früheren Werkzeug | Sollen neu mit Claude erstellt werden | Arbeitspaket D im Fertigstellungsplan |
 
 ## Bleibt erhalten
 Testnachweise in `reports/` und Einträge in `docs/build-log/` sind Belege für die Status in `requirements.yaml` und bleiben unverändert, auch wenn sie den früheren Agenten erwähnen.

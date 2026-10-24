@@ -47,4 +47,4 @@ Hinweise:
 
 - Material Design Icons (@mdi/js 7.4.47, Apache-2.0): Symbolpfade in `src/Trendo.App/MdiIcons.cs` (im Setup enthalten).
 - Fluent UI System Icons (@fluentui/svg-icons 1.1.344, MIT, © Microsoft Corporation): Studio-Symbole in `src/Trendo.App/StudioIcons.cs` (Pfade eingebettet, im Setup enthalten). https://github.com/microsoft/fluentui-system-icons
-- Hintergrund v2 (`Assets/wallpaper.jpg`): KI-generiert für Trendo OS mit dem früheren Entwicklungswerkzeug (21.10.2026), keine Fremdfotos; wird durch eine mit Claude erstellte Fassung ersetzt.
+- Hintergründe (`Assets/wallpaper.jpg`, `Assets/wallpapers/*.jpg`): am 24.10.2026 lokal mit KI erzeugt (ComfyUI + FLUX.2 klein 4B, kein Cloud-Dienst) eigens für Trendo OS, keine Fremdfotos; Anweisung, Startwert und Modell je Bild in `docs/design/HINTERGRUENDE.json`.

@@ -21,7 +21,7 @@ Dieses Paket enthält **zwei große, neu erzeugte Designatlanten**, **zehn einze
 - `referenzen/01_DESKTOP_PREMIUM.png` bis `10_DATEIMANAGER.png` – Einzelreferenzen.
 - `REFERENZEN_MANIFEST.json` – Dateinamen und Beschreibungen.
 
-**Wichtig:** Sämtliche Bilder sind KI-generierte konzeptionelle Entwürfe, keine Screenshots des realen Trendo OS. Texte, Logoentwürfe, Beispielmetriken und angebliche Live-Statusmeldungen in den Bildern sind nicht als produktive Daten oder bestätigte Logos zu übernehmen.
+**Wichtig:** Die Referenzbilder sind seit 2026-10-24 mit Claude Code gebaut: Oberflächen als HTML (`tools/design/views.py`, Rendern mit `python tools/design/build.py`), Hintergründe lokal mit Bild-KI (FLUX.2 klein, Herkunft in `docs/design/HINTERGRUENDE.json`). Sie sind Soll-Bilder, keine Screenshots des realen Trendo OS. Studionamen und Symbole kommen aus `StudioCatalog.cs`/`StudioIcons.cs`; Beispieldaten nicht übernehmen.
 
 ### Kurzer Satz zur Übergabe
 

@@ -1,0 +1,42 @@
+{
+  "wallpaper": {
+    "datei": "src/Trendo.App/Assets/wallpaper.jpg",
+    "seed": 29,
+    "prompt": "Majestic alpine mountain lake at blue hour, snow-capped granite peaks, perfectly calm water with a mirror reflection, dark pine forest along the shore, deep navy sky with first stars and a faint cyan glow above the ridge. cinematic wide landscape photograph, 16:9, ultra detailed, photorealistic, natural light, calm balanced composition with a quiet uncluttered center, pure scenery only, no user interface, no taskbar, no icons, no buttons, no screen, no people, no animals, no text, no letters, no logo, no watermark, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "bergsee-nacht": {
+    "datei": "src/Trendo.App/Assets/wallpapers/bergsee-nacht.jpg",
+    "seed": 29,
+    "prompt": "Clear night over a remote mountain lake, Milky Way above jagged snowy peaks, bright moon behind thin clouds, silver moonlight reflecting on still water, silhouettes of spruce trees, deep blue and teal tones. cinematic wide landscape photograph, 16:9, ultra detailed, photorealistic, natural light, calm balanced composition with a quiet uncluttered center, pure scenery only, no user interface, no taskbar, no icons, no buttons, no screen, no people, no animals, no text, no letters, no logo, no watermark, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "morgen": {
+    "datei": "src/Trendo.App/Assets/wallpapers/morgen.jpg",
+    "seed": 29,
+    "prompt": "Sunrise in a quiet mountain valley, soft golden and pink light touching the summits, morning mist drifting over a glassy lake, warm and fresh atmosphere, gentle pastel sky. cinematic wide landscape photograph, 16:9, ultra detailed, photorealistic, natural light, calm balanced composition with a quiet uncluttered center, pure scenery only, no user interface, no taskbar, no icons, no buttons, no screen, no people, no animals, no text, no letters, no logo, no watermark, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "polarlicht": {
+    "datei": "src/Trendo.App/Assets/wallpapers/polarlicht.jpg",
+    "seed": 29,
+    "prompt": "Green and violet aurora borealis dancing over snow-covered mountains and a frozen lake, starry arctic night, the aurora reflected on smooth ice, crisp cold air. cinematic wide landscape photograph, 16:9, ultra detailed, photorealistic, natural light, calm balanced composition with a quiet uncluttered center, pure scenery only, no user interface, no taskbar, no icons, no buttons, no screen, no people, no animals, no text, no letters, no logo, no watermark, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "wellen": {
+    "datei": "src/Trendo.App/Assets/wallpapers/wellen.jpg",
+    "seed": 29,
+    "prompt": "Abstract flowing translucent glass ribbons and soft light waves, deep navy, electric blue and violet gradients, subtle glow and depth of field, elegant minimal digital art, dark background. cinematic wide landscape photograph, 16:9, ultra detailed, photorealistic, natural light, calm balanced composition with a quiet uncluttered center, pure scenery only, no user interface, no taskbar, no icons, no buttons, no screen, no people, no animals, no text, no letters, no logo, no watermark, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  }
+}

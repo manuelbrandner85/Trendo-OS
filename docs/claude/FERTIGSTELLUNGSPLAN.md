@@ -39,8 +39,8 @@ Trendo OS ist fertig, wenn alle Punkte erfüllt sind:
 ### D – Design 41 komplett mit Claude
 | # | Auftrag | Wer/Freigabe |
 |---|---|---|
-| D1 | Design-Referenzen neu mit Claude erstellen: die 10 Ansichten + 2 Atlanten aus `docs/spec/design-41/referenzen/` als HTML-/SVG-Mockups bauen, im Browser rendern und als PNG ablegen; alte Bilder ersetzen, `REFERENZEN_MANIFEST.json` und `SHA256SUMS` erneuern | Claude, danach **JA/NEIN Manuel** |
-| D2 | Hintergrundbilder (`Assets/wallpaper*`) neu, von Claude erzeugt (SVG/Shader-Verlauf, lizenzfrei), `THIRD_PARTY.md` anpassen | Claude |
+| D1 | ✅ erledigt 2026-10-24: 10 Ansichten + 2 Atlanten mit Claude Code als HTML gebaut (`tools/design/views.py`, Rendern `python tools/design/build.py`), alte Bilder ersetzt, Manifest und Prüfsummen neu | – |
+| D2 | ✅ erledigt 2026-10-24: 5 Hintergründe lokal mit KI (ComfyUI + FLUX.2 klein, `tools/design/ki_hintergruende.py`), Herkunft in `docs/design/HINTERGRUENDE.json` | – |
 | D3 | Ist auf `main`: Design 41 Phase 1 (Desktop, Startmenü, Fenster, Briefe) umgesetzt, JA von Manuel, auf übrige Studios übertragen (Bericht `tasks/UI-041-PREMIUM-EXPERIENCE.bericht.md`); Logo A gewählt (T-0109). Die Aufträge T-0100…T-0108 haben keinen eigenen Bericht → gegen den Ist-Stand prüfen, Erledigtes schließen | Claude |
 | D4 | Ist-Stand gegen die neuen Claude-Referenzen aus D1 vergleichen (Vorher/Nachher-Bilder mit `tools/Trendo.Render`), Abweichungen als Aufträge | Claude |
 | D5 | Viewport-/DPI-Matrix, Kontrast, Tastatur (Design-41-Fkt. 19/20) am Windows-PC | Claude |
