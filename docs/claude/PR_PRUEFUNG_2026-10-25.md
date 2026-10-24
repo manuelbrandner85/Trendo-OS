@@ -64,3 +64,31 @@
 3. #277 (größter Block, eigener Review)
 4. #271 nach Entscheidung zu #275
 5. Teile von #278
+
+## Ergebnis der Übernahme (Freigabe Manuel, 2026-10-25)
+**Übernommen** (Merge-Commits auf `claude/T-02xx`, danach `main`): #279, #272, #262, #273, #268, #280, #277 (enthält #244–#258).
+
+**Anpassungen bei der Übernahme:**
+- **#268:** Glas folgt nur dem Leistungsprofil (T-0107), der doppelte Pi-Erkenner ist entfernt.
+- **#280:** Messung im Hintergrund, zusammengeführt mit den Ringen und Hellmodus-Farben aus T-0218.
+- **#277:**
+  - Konflikte gelöst: Katalog/Matrix mit CORE-01 nach T-0218, SPEC-03-Test.
+  - **SPEC-07 ist im Register abgelehnt:** Der Übersetzungsadapter aus dem PR ist nicht übernommen, die Sperre fängt jeden Auftrag ab.
+  - Unreal-Test hängt nicht mehr an einer installierten Engine, die Test-Aufräumroutine kommt mit schreibgeschützten Git-Dateien zurecht.
+
+**Review:**
+- QA: keine hohen Befunde, 1 mittel (toter Code und Test zum Sparprofil aus #268), mehrere niedrig. Behoben.
+- Sicherheit: keine hohen Befunde.
+  - **B1 (mittel, behoben):** Lesemodus und Download verbinden nur noch zu öffentlichen Adressen. Geprüft wird die tatsächlich aufgelöste IP: mapped IPv6, 0.0.0.0, CGNAT, ULA, Link-Local und interne Namen werden abgelehnt.
+  - **B2 (mittel, behoben):** Der Freigabetext zeigt die Pflichtfelder immer vollständig, weitere Angaben werden nur gezählt. Der Text steht neben dem Freigabe-Knopf.
+  - **B3 (mittel, behoben):** Ein Auftrag installiert nur für den eigenen Benutzer, nie systemweit mit Administrator-Abfrage. Solche Programme laufen weiter über Einstellungen → Zusatzprogramme.
+  - **N1–N3 und N6 (niedrig, behoben):** systemd-Härtung, Protokoll ohne Steuerzeichen, Kopplungscode genau 6 Ziffern, Freigabe gilt nicht für nachträglich geänderte Angaben.
+  - **Offen (niedrig):**
+    - N4: Begleiter im LAN ohne TLS (vorbestehend, dokumentiert).
+    - N5: Installation prüft die Rechte des Besitzers statt des Freigebenden; abgedeckt durch das Gate.
+    - N7: Website-Vorschau startet Chrome mit `--no-sandbox` und `--remote-allow-origins=*` (vorbestehend).
+- Neue Negativtests für B1–B3 und N3.
+
+**Auf GitHub schließen (Manuel):** alle unter „Schließen“ genannten PRs. Übernommene PRs markiert GitHub selbst als gemergt, sobald ihr Stand in `main` liegt. Die gestapelten Entwürfe #244–#258 zielen auf andere Branches und müssen eventuell von Hand geschlossen werden.
+
+**Tests (Release, Windows-PC, Stand nach allen Korrekturen):** Build 0 Warnungen, 0 Fehler · Api 15/15 · Core 654 bestanden, 1 übersprungen (von 655) · App 307 bestanden, 1 übersprungen (von 308), 22 min 54 s · Paket-Tests OK.
