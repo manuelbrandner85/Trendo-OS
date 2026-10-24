@@ -121,7 +121,7 @@ public sealed partial class MainWindow : Window
         void DoRescale()
         {
             var cs = ClientSize; if (cs.Width <= 0 || cs.Height <= 0) return;
-            var k = Math.Clamp(Math.Min(cs.Width / DesignW, cs.Height / DesignH), 0.5, 2.0) * UserSettings.ClampScale(_settings.UiScale);
+            var k = Math.Clamp(Math.Min(cs.Width / DesignW, cs.Height / DesignH), 0.5, 3.0) * UserSettings.ClampScale(_settings.UiScale);
             scaler.LayoutTransform = Math.Abs(k - 1) < 0.01 ? null : new ScaleTransform(k, k);
             root.Width = cs.Width / k; root.Height = cs.Height / k;
         }
@@ -216,7 +216,7 @@ public sealed partial class MainWindow : Window
         var vals = new[] { m.CpuPercent, m.RamPercent, m.DiskPercent, m.GpuPercent }.Where(v => v.HasValue).Select(v => v!.Value).ToList();
         var high = vals.Count > 0 && vals.Max() >= 90;
         _sysState.Text = vals.Count == 0 ? "Messung läuft …" : high ? "Hohe Auslastung" : "Alles in Ordnung";
-        _sysDot.Fill = _sysState.Foreground = Brush.Parse(high ? "#FACC15" : "#4ADE80");
+        _sysDot.Fill = _sysState.Foreground = Brush.Parse(high ? C("#FACC15", "#B45309") : C("#4ADE80", "#15803D"));
     }
 
     private static string Rate(double bps) => bps < 1024 ? $"{bps:0} B/s" : bps < 1024 * 1024 ? $"{bps / 1024:0.0} KB/s" : $"{bps / 1024 / 1024:0.0} MB/s";

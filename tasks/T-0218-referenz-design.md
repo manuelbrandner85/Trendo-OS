@@ -11,5 +11,5 @@
 - [ ] Jede sichtbare Taste wirkt (Tote-Tasten-Test), nur echte Zustände.
 - [ ] alle drei Testprojekte + Paket-Tests grün (Zahlen in den Bericht)
 **Nicht tun:** Logo ändern (Logo A bleibt), Studionamen aus den Bildern übernehmen (Katalognamen bleiben), den Hinweis auf eine Ersatz-KI eines anderen Anbieters aus Bild 2 oder die Namen „AION/JARVIS“ übernehmen, erfundene Zahlen anzeigen, Unreal als Oberfläche einsetzen.
-**Decision-Delta:** IMP-41 (Design 41) hatte den Desktop mit Kachelraster, Ringen und Schnell-Tools durch eine ruhige Mitte ersetzt. Manuels Wahl vom 2026-10-24 setzt für Startseite und „Alle Studios“ wieder die Referenzbilder 1 und 2. `decisions.yaml` wird nicht eigenmächtig geändert – Eintrag durch Manuel oder ausdrücklich freigegebenen Auftrag.
+**Decision-Delta:** IMP-41 (Design 41) hatte den Desktop mit Kachelraster, Ringen und Schnell-Tools durch eine ruhige Mitte ersetzt. Nach Manuels Wahl vom 2026-10-24 und seinem „mach automatisch“ ist die Abweichung als Hinweis bei IMP-41 in `docs/spec/decisions.yaml` eingetragen; die Entscheidung IMP-41 bleibt APPROVED.
 **Am Ende:** Branch pushen, Bericht `tasks/T-0218-referenz-design.bericht.md`.

@@ -38,18 +38,24 @@
 - Erfundene Zahlen (CPU 12 %, Projekt-Fortschritt, „3 Geräte verbunden“).
 - Unreal als Oberfläche: Die Unreal-MCP-Verbindung war in dieser Sitzung nicht erreichbar. Die Bilder kommen deshalb aus FLUX.2.
 
-## Decision-Delta (offen für Manuel)
-IMP-41 hatte den Desktop mit Kachelraster, Ringen und Schnell-Tools ersetzt. Dieser Auftrag stellt Startseite und „Alle Studios“ nach Manuels Wahl auf die Referenzbilder 1 und 2 um. `decisions.yaml` ist unverändert, ein Eintrag braucht Manuels Freigabe.
+## Decision-Delta
+IMP-41 hatte den Desktop mit Kachelraster, Ringen und Schnell-Tools ersetzt. Die Abweichung ist seit 2026-10-24 als Hinweis bei IMP-41 in `docs/spec/decisions.yaml` eingetragen (Wahl Manuel, „mach automatisch“); die Entscheidung bleibt APPROVED.
 
 ## Tests
 Gesamtlauf Release am 2026-10-24 (Windows-PC):
 - `dotnet build Trendo.sln -c Release`: 0 Warnungen, 0 Fehler.
 - Trendo.Api.Tests: 15/15 bestanden.
 - Trendo.Core.Tests: 542 bestanden, 1 übersprungen (von 543).
-- Trendo.App.Tests: 300 bestanden, 1 übersprungen, 24 min 28 s. Der übersprungene Test ist der T-0202-Klick-Audit.
+- Trendo.App.Tests: 300 bestanden, 1 übersprungen, 24 min 28 s (Nachlauf nach der Darstellungs-Prüfung: 24 min 34 s, ebenso grün). Der übersprungene Test ist der T-0202-Klick-Audit.
 - Paket-Tests `tests/claude_handoff`: 8/8 OK.
 
+## Nachprüfung Darstellung (2026-10-24, Render `tools/Trendo.Render`)
+- Geprüft: 1536 × 800 dunkel und hell, 1024 × 768, 3840 × 2160.
+- Behoben:
+  - Skalierung war bei Faktor 2 gedeckelt, jetzt 3. 4K füllt damit die Fläche.
+  - Slogan und Ringwerte im Hellmodus waren kaum lesbar.
+  - Die Statusfarbe hat jetzt im Hellmodus genug Kontrast.
+
 ## Nicht geprüft
-- Darstellung auf echten Monitoren mit 4K oder 150 % DPI. Geprüft ist nur der Render mit 1536 × 800 (`tools/Trendo.Render`).
-- Hellmodus der neuen Seiten.
-- Pi-Edition: Bilder sind 1,5 MB plus Hintergrund, Leistung nicht gemessen.
+- Echte Monitore mit 150 % DPI. Geprüft sind nur Renders.
+- Pi-Edition: Bilder 1,5 MB plus Hintergrund, Leistung nicht gemessen.

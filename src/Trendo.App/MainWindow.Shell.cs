@@ -182,7 +182,8 @@ public partial class MainWindow
             Children = {
                 new Border { HorizontalAlignment = HorizontalAlignment.Center, Child = Logo(124, glow: true) },
                 word,
-                new TextBlock { Text = "DEIN SYSTEM. DEINE IDEEN. KEINE GRENZEN.", Foreground = Brush.Parse(C("#DCE9FA", "#1B2A44")), FontSize = 13, LetterSpacing = 1.6, HorizontalAlignment = HorizontalAlignment.Center },
+                new TextBlock { Text = "DEIN SYSTEM. DEINE IDEEN. KEINE GRENZEN.", Foreground = Brush.Parse("#EAF2FF"), FontSize = 13, LetterSpacing = 1.6, HorizontalAlignment = HorizontalAlignment.Center,
+                    Effect = new DropShadowEffect { Color = Color.Parse("#040A18"), BlurRadius = 8, OffsetX = 0, OffsetY = 1, Opacity = 0.9 } }, // liegt immer über dem Foto
                 actions,
                 GlowRing(),
             }
@@ -288,12 +289,12 @@ public partial class MainWindow
 
     private Control Ring(string key)
     {
-        var bg = new Ellipse { Width = 60, Height = 60, Stroke = Brush.Parse("#2AFFFFFF"), StrokeThickness = 5 };
+        var bg = new Ellipse { Width = 60, Height = 60, Stroke = Brush.Parse(C("#2AFFFFFF", "#22000000")), StrokeThickness = 5 };
         var arc = new Arc { Width = 60, Height = 60, StrokeThickness = 5, StartAngle = -90, SweepAngle = 0, StrokeLineCap = PenLineCap.Round,
             Stroke = Grad("#34E3C3", "#18B892"), Effect = new DropShadowEffect { Color = Color.Parse("#22D3A6"), BlurRadius = 8, OffsetX = 0, OffsetY = 0, Opacity = 0.8 } };
         var val = new TextBlock { Name = "metric-" + key.ToLowerInvariant(), Text = "…", Foreground = Text, FontSize = 13, HorizontalAlignment = HorizontalAlignment.Center };
         _rings[key] = (arc, val);
-        var ring = new Grid { Name = "ring-" + key.ToLowerInvariant(), Width = 64, Height = 64, Children = { new Ellipse { Width = 60, Height = 60, Fill = Brush.Parse("#66091428") }, bg, arc,
+        var ring = new Grid { Name = "ring-" + key.ToLowerInvariant(), Width = 64, Height = 64, Children = { new Ellipse { Width = 60, Height = 60, Fill = Brush.Parse(C("#66091428", "#E6FFFFFF")) }, bg, arc,
             new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = { new TextBlock { Text = key, Foreground = Text, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center }, val } } } };
         return ring;
     }

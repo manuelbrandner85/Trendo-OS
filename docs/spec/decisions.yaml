@@ -434,7 +434,7 @@ items:
   title: "Ultimate HyperRealistic Premium Experience GODMODE (Design 41)"
   functions: 20
   decision: APPROVED
-  note: "Quelle docs/spec/design-41/; Rollout auf alle Studios und Logo erst nach gesondertem JA (UI41-6)"
+  note: "Quelle docs/spec/design-41/; Rollout auf alle Studios und Logo erst nach gesondertem JA (UI41-6). Ab 2026-10-24 (Wahl Manuel, T-0218): Startseite nach Referenzbild 1, Alle Studios nach Referenzbild 2 (tasks/T-0218-referenz-design.md); übrige Design-41-Teile bleiben"
 - id: IMP-42
   kind: improvement
   title: "Universal Studio Prompt-to-Action GODMODE"

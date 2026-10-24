@@ -1,6 +1,6 @@
 # Trendo OS – Fertigstellungsplan (Claude Code)
 
-**Stand:** 2026-10-23, nach Zusammenführung mit `main` @ `0177568` · **Grundlage:** `requirements.yaml`, `docs/spec/GAP_ANALYSIS.md`, `docs/BUILD_PLAN_V2.md`, `docs/spec/design-41/GAP_DESIGN_41.md`, `handoff/…bis_94.md`, Audit `reports/claude/AUDIT_CLAUDE_MIGRATION_2026-10-23.md`
+**Stand:** 2026-10-24, `main` @ `74761b1` (T-02xx-Block und T-0218 übernommen) · **Grundlage:** `requirements.yaml`, `docs/spec/GAP_ANALYSIS.md`, `docs/BUILD_PLAN_V2.md`, `docs/spec/design-41/GAP_DESIGN_41.md`, `handoff/…bis_94.md`, Audit `reports/claude/AUDIT_CLAUDE_MIGRATION_2026-10-23.md`
 **Regel:** Jede Zeile wird ein eigener Auftrag `tasks/T-<nr>-<kurz>.md` und ein eigener PR. Status nur mit Rohlog. Nichts hier ist erledigt, wenn es nicht als erledigt markiert ist.
 
 ## Was „fertig“ heißt
@@ -21,7 +21,7 @@ Trendo OS ist fertig, wenn alle Punkte erfüllt sind:
 | Editionen | 3 | 0 abgenommen | C am weitesten, B bootet in QEMU, A nicht begonnen |
 | Build/Tests | siehe Commit-Nachricht der Zusammenführung | – | Compiler-Warnungen beheben (A6) |
 | QA-Testfälle (`tests` in `requirements.yaml`) | 44 (BQ, LTR) | 0 | alle `NOT_RUN` |
-| Offene Aufträge in `tasks/` ohne Bericht | 21 | – | T-0100…T-0108, T-0202, T-0204…T-0214 |
+| Offene Aufträge in `tasks/` ohne Bericht | 9 | – | T-0100…T-0108 (gegen Ist-Stand prüfen, D3); T-0202…T-0214 und T-0218 haben Berichte |
 | Offene Pull Requests auf GitHub | 37 | – | von früheren Agenten, siehe O |
 
 ## Arbeitspakete in Reihenfolge
@@ -43,7 +43,8 @@ Trendo OS ist fertig, wenn alle Punkte erfüllt sind:
 | D2 | ✅ erledigt 2026-10-24: 5 Hintergründe lokal mit KI (ComfyUI + FLUX.2 klein, `tools/design/ki_hintergruende.py`), Herkunft in `docs/design/HINTERGRUENDE.json` | – |
 | D3 | Ist auf `main`: Design 41 Phase 1 (Desktop, Startmenü, Fenster, Briefe) umgesetzt, JA von Manuel, auf übrige Studios übertragen (Bericht `tasks/UI-041-PREMIUM-EXPERIENCE.bericht.md`); Logo A gewählt (T-0109). Die Aufträge T-0100…T-0108 haben keinen eigenen Bericht → gegen den Ist-Stand prüfen, Erledigtes schließen | Claude |
 | D4 | Ist-Stand gegen die neuen Claude-Referenzen aus D1 vergleichen (Vorher/Nachher-Bilder mit `tools/Trendo.Render`), Abweichungen als Aufträge | Claude |
-| D5 | Viewport-/DPI-Matrix, Kontrast, Tastatur (Design-41-Fkt. 19/20) am Windows-PC | Claude |
+| D5 | Viewport-/DPI-Matrix, Kontrast, Tastatur (Design-41-Fkt. 19/20) am Windows-PC – Renders 1024×768, 1536×800 (hell/dunkel), 3840×2160 für Startseite geprüft (T-0218); echte DPI-Stufen offen | Claude |
+| D6 | ✅ erledigt 2026-10-24: T-0218 Startseite nach Referenzbild 1, „Alle Studios“ nach Referenzbild 2; Hintergrund „Abendrot“ und 54 Kartenbilder lokal mit FLUX.2 (`docs/design/STUDIOBILDER.json`); Hinweis bei IMP-41 in `decisions.yaml` | – |
 
 ### C – Edition C (Windows) abnahmefähig machen
 | # | Auftrag | Wer/Freigabe |
@@ -84,7 +85,8 @@ IMP-27 mobile Web-App mit QR-Kopplung + Remote-Not-Stopp (T-0012), IMP-33 Gerät
 SBOM, Offline-Handbuch, Release-Kanal (Offene Entscheidung 10), förmliche Abnahme je Edition. Release durch Claude nur nach **OK**.
 
 ### T – Offene Aufträge in `tasks/`
-T-0202 Jeder Knopf wirkt · T-0204 Spiele-Studio · T-0205 Video/Foto · T-0206 Webseite · T-0207 Fach-Studios · T-0208 Business · T-0209 Kleine Helfer · T-0210 Einrichtung · T-0211 PDF/Druck/Downloads · T-0212 Schrift & Farben · T-0213 Studionamen (nur Vorschlag) · T-0214 Sicherung wiederherstellen. Zu mehreren gibt es bereits PRs (siehe O).
+✅ 2026-10-24 auf `main` mit Bericht: T-0202 Jeder Knopf wirkt (Allseiten-Audit optional, Restliste stummer Knöpfe offen) · T-0204 Spiele-Studio · T-0205 Video/Foto · T-0206 Webseite · T-0207 Fach-Studios · T-0208 Business · T-0209 Kleine Helfer · T-0210 Einrichtung · T-0211 PDF/Druck/Downloads · T-0212 Schrift & Farben · T-0214 Sicherung wiederherstellen · T-0218 Referenz-Design.
+Offen: **T-0213** Studionamen – Vorschlagsliste liegt vor (14 Studios mit Handlungsbedarf), Entscheidung **Manuel**. PRs früherer Agenten zu denselben Themen (#263, #264, #270) sind damit überholt → schließen (O).
 
 ### O – Offene Pull Requests der früheren Agenten (37)
 Trendo OS wird nur noch mit Claude Code gebaut. Deshalb prüft Claude-QA jeden offenen PR einzeln: übernehmen (Merge nach **OK**) oder schließen. Danach werden die 154 Remote-Branches aufgeräumt.
@@ -107,11 +109,11 @@ Trendo OS wird nur noch mit Claude Code gebaut. Deshalb prüft Claude-QA jeden o
 | Code-Signatur (Kauf) | C7 |
 | Hardware: Raspberry Pi 4 + SD, externe SSD, Android-Gerät, Mehrmonitor | B, A-Edition, I, C3 |
 | Offene Entscheidungen 1–14 (`docs/spec/OFFENE_ENTSCHEIDUNGEN.md`), u. a. Linux-Basis, Vorinstallation, Lizenzen, Release-Ziel | – |
-| Optionale Cloud-KI „xAI“ in der App behalten oder entfernen | `MainWindow.axaml.cs` |
+| Namen der 14 Studios aus T-0213 | `tasks/T-0213-namen-versprechen.bericht.md` |
 
 ## Empfohlene nächste Aufträge
-1. A1 + A2 (Manuel), dann A3 Merge von `claude/godmode-2` nach `main`.
-2. O: offene PRs prüfen und übernehmen bzw. schließen – sie enthalten viel fertige Arbeit (v. a. Verbesserung 42).
-3. A5 Register (ohne messbaren Fortschritt kann niemand „fertig“ nachweisen).
-4. D1 Design-Referenzen mit Claude neu erstellen, dann D4.
-5. Parallel C2/C4/C5 und T-02xx (Windows-Abnahme und Fehler), danach G2/G3 Studio für Studio.
+1. A1 Rechte-Patch (Manuel) und T-0213 Namensentscheidung (Manuel).
+2. O: offene PRs prüfen und übernehmen bzw. schließen – v. a. Verbesserung 42 (Fachadapter).
+3. D3/D4: T-0100…T-0108 gegen den Ist-Stand prüfen und schließen; übrige Design-41-Ansichten mit den Referenzen vergleichen.
+4. C2/C4/C5: Windows-Abnahme (Business am PC, Deinstallation/Update, Not-Stopp).
+5. Danach G2/G3 Studio für Studio.
