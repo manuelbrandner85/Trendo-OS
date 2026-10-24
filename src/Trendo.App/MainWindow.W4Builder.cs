@@ -11,11 +11,43 @@ public partial class MainWindow
     public string BuilderFolder => WorkFolder("Baukasten");
     public string BuilderFile => Path.Combine(BuilderFolder, "seite.json");
     private SitePage? _page;
-    public SitePage BuilderPage => _page ??= File.Exists(BuilderFile) ? SitePage.Load(BuilderFile) : new SitePage { Blocks = [new("h1", "Willkommen"), new("p", "Schreib hier etwas über dich.")] };
+    public SitePage BuilderPage => _page ??= LoadBuilder();
 
     private void InitW4Builder() => RegisterTab(KreativTabs, "baukasten", "Baukasten", "X-03", BuilderView, "no-code", "webseite", "homepage", "baukasten", "ohne programmieren");
 
-    private void BuilderSave() { BuilderPage.Save(BuilderFile); Show("baukasten"); }
+    private void BuilderSave() { PersistBuilder(); Show("baukasten"); }
+
+    private void ReloadBuilder() => _page = LoadBuilder();
+
+    private SitePage LoadBuilder()
+    {
+        var project = NewestProject();
+        if (project is not null)
+        {
+            try
+            {
+                var full = _core.Projects.ResolveInProject(project, "baukasten/seite.json");
+                if (File.Exists(full)) return SitePage.Load(full);
+            }
+            catch (Exception ex) when (ex is ProjectIsolationException or IOException) { }
+        }
+        return File.Exists(BuilderFile) ? SitePage.Load(BuilderFile) : new SitePage { Blocks = [new("h1", "Willkommen"), new("p", "Schreib hier etwas über dich.")] };
+    }
+
+    private void PersistBuilder()
+    {
+        var page = BuilderPage;
+        var project = NewestProject();
+        if (project is null) { page.Save(BuilderFile); return; }
+        var tmp = Path.Combine(Path.GetTempPath(), "trendo-seite-" + Guid.NewGuid().ToString("N") + ".json");
+        try
+        {
+            page.Save(tmp);
+            _core.Projects.WriteFile(project, "baukasten/seite.json", File.ReadAllText(tmp));
+            page.Save(BuilderFile);
+        }
+        finally { try { File.Delete(tmp); } catch (IOException) { } }
+    }
 
     public string BuilderPublish()
     {
@@ -26,10 +58,11 @@ public partial class MainWindow
 
     private Control BuilderView()
     {
+        ReloadBuilder();
         var pg = BuilderPage;
         var sp = new StackPanel { Spacing = 8, Children = { P("Bau deine Webseite aus Bausteinen. Kein Programmieren nötig.") } };
         var title = new TextBox { Name = "builder-title", Text = pg.Title, Width = 260 };
-        title.LostFocus += (_, _) => { pg.Title = title.Text ?? ""; pg.Save(BuilderFile); };
+        title.LostFocus += (_, _) => { pg.Title = title.Text ?? ""; PersistBuilder(); };
         sp.Children.Add(new WrapPanel { Children = { P("Titel der Seite  "), title } });
         var add = new WrapPanel();
         foreach (var (k, l) in SitePage.Kinds) { var kind = k; var b = Act("builder-add-" + k, "+ " + l, () => { pg.Blocks.Add(new(kind, kind switch { "h1" => "Überschrift", "p" => "Neuer Text", "button" => "Mehr erfahren", "list" => "Punkt 1\nPunkt 2", "contact" => "Schreib mir", _ => "" }, kind is "button" ? "https://" : "")); BuilderSave(); }); b.Margin = new Avalonia.Thickness(0, 0, 6, 6); add.Children.Add(b); }
@@ -42,13 +75,13 @@ public partial class MainWindow
             if (b.Kind != "hr")
             {
                 var t = new TextBox { Name = $"builder-text-{i}", Text = b.Text, AcceptsReturn = b.Kind is "p" or "list", TextWrapping = TextWrapping.Wrap, PlaceholderText = b.Kind == "img" ? "Beschreibung des Bildes" : "Text" };
-                t.LostFocus += (_, _) => { pg.Blocks[idx] = pg.Blocks[idx] with { Text = t.Text ?? "" }; pg.Save(BuilderFile); };
+                t.LostFocus += (_, _) => { pg.Blocks[idx] = pg.Blocks[idx] with { Text = t.Text ?? "" }; PersistBuilder(); };
                 body.Children.Add(t);
             }
             if (b.Kind is "img" or "button" or "contact")
             {
                 var u = new TextBox { Name = $"builder-url-{i}", Text = b.Url, PlaceholderText = b.Kind == "contact" ? "deine E-Mail-Adresse" : b.Kind == "img" ? "Bilddatei im Baukasten-Ordner oder https-Adresse" : "https://…" };
-                u.LostFocus += (_, _) => { pg.Blocks[idx] = pg.Blocks[idx] with { Url = u.Text ?? "" }; pg.Save(BuilderFile); };
+                u.LostFocus += (_, _) => { pg.Blocks[idx] = pg.Blocks[idx] with { Url = u.Text ?? "" }; PersistBuilder(); };
                 body.Children.Add(u);
             }
             sp.Children.Add(Card(Row(body, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Top, Children = {
@@ -56,7 +89,7 @@ public partial class MainWindow
                 Act($"builder-del-{i}", "Entfernen", () => { pg.Blocks.RemoveAt(idx); BuilderSave(); }) } })));
         }
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = {
-            Act("builder-preview", "Ansehen im Browser", () => { pg.Save(BuilderFile); Launch(BuilderPublish()); }, true),
+            Act("builder-preview", "Ansehen im Browser", () => { PersistBuilder(); Launch(BuilderPublish()); }, true),
             Act("builder-folder", "Ordner mit fertiger Seite", () => { BuilderPublish(); Launch(Path.Combine(BuilderFolder, "fertig")); }) } });
         return KreativPage("Baukasten", sp);
     }

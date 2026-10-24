@@ -1,3 +1,4 @@
+using System.Net;
 using Avalonia.Automation;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -16,7 +17,36 @@ public partial class MainWindow
     private string? _promptRun;
     private WorkflowPhase? _promptPhase;
 
-    private StudioWorkflow PromptFlow => _promptFlow ??= new StudioWorkflow(_core, model: new IntelligencePromptModel(Intel, BackendsAreLocal));
+    private StudioWorkflow PromptFlow => _promptFlow ??= new StudioWorkflow(_core, model: new IntelligencePromptModel(Intel, BackendsAreLocal), services: PromptHostServices());
+
+    private PromptServices PromptHostServices() => new()
+    {
+        Offline = _core.Offline,
+        Ask = (question, system, token) => Intel.AskAsync(new KiRequest(question, system, UseKnowledge: false), token),
+        Launch = LaunchCatalog,
+        StartShare = StartApprovedShare,
+        Runner = _deps.Runner,
+        FindAdb = () => MobileBridge.FindAdb(File.Exists, Environment.GetEnvironmentVariable("LOCALAPPDATA"), Environment.GetEnvironmentVariable("PATH")),
+        ReadBytes = ReadOnlyWeb.GetAsync,
+        Probe = ReadOnlyWeb.ProbeLoopback,
+    };
+
+    private string LaunchCatalog(string exe, IReadOnlyList<string> args)
+    {
+        new ShellProcessLauncher().OpenWithArgs(exe, args);
+        return "Gestartet: " + exe;
+    }
+
+    private string StartApprovedShare(string folder, TimeSpan duration)
+    {
+        var addresses = ShareServer.LanAddresses();
+        var ip = addresses.Count > 0 ? addresses[0].Ip : IPAddress.Loopback;
+        var server = new ShareServer(new FolderShare(folder, duration), ip, _core.Audit);
+        var previous = ActiveShare;
+        ActiveShare = server;
+        if (previous is not null) previous.DisposeAsync().AsTask().Wait(1000);
+        return "Geteilt, nur lesen, bis " + server.Share.Expires.ToString("HH:mm") + " Uhr: " + server.Url;
+    }
 
     private bool BackendsAreLocal()
     {
@@ -116,6 +146,24 @@ public partial class MainWindow
             answer.IsVisible = result.Status == RunStatus.AwaitingInput;
             go.IsVisible = result.Phase == WorkflowPhase.Planned;
             FillPro();
+            if (result.Artifacts.Count > 0) RefreshStudioBody();
+        }
+
+        void RefreshStudioBody()
+        {
+            if (CurrentView is "start" or "3d" or "") return;
+            if (!_showMap.ContainsKey(CurrentView)) return;
+            foreach (var frame in _frames.Values)
+            {
+                if (frame.Body.Content is not DockPanel dock || dock.Children.Count < 2) continue;
+                if (dock.Children[0] is not Border { Name: "auftrag-leiste" }) continue;
+                var view = _showMap[CurrentView]();
+                view.HorizontalAlignment = HorizontalAlignment.Stretch;
+                view.VerticalAlignment = VerticalAlignment.Stretch;
+                dock.Children.RemoveAt(dock.Children.Count - 1);
+                dock.Children.Add(view);
+                return;
+            }
         }
 
         StudioExecutionContext Ctx(string project) => new(project, Principal.LocalOwner, CancellationToken.None, ResourceBudget.Default);
@@ -181,13 +229,14 @@ public partial class MainWindow
                 detail.IsVisible = true;
             }
         };
-        approve.Click += (_, _) =>
+        approve.Click += async (_, _) =>
         {
             if (_promptProject is null || _promptRun is null) return;
+            approve.IsEnabled = false;
             try
             {
-                var result = PromptFlow.Approve(_promptProject, _promptRun, Principal.LocalOwner, Ctx(_promptProject));
-                ShowResult(result);
+                var result = await Task.Run(() => PromptFlow.Approve(_promptProject, _promptRun, Principal.LocalOwner, Ctx(_promptProject)));
+                await Dispatcher.UIThread.InvokeAsync(() => ShowResult(result));
             }
             catch (Exception ex)
             {
@@ -195,6 +244,7 @@ public partial class MainWindow
                 detail.Text = ex.Message;
                 detail.IsVisible = true;
             }
+            finally { approve.IsEnabled = true; }
         };
         answer.Click += (_, _) =>
         {

@@ -154,6 +154,18 @@ public sealed class EffectLedger
         }
     }
 
+    /// <summary>Nur wenn noch nichts nach außen gelaufen ist. „done“ bleibt stehen.</summary>
+    public void Release(string projectId, string key)
+    {
+        lock (_lock)
+        {
+            var dto = Read(projectId);
+            if (!dto.Keys.TryGetValue(key, out var e) || e.State is not ("claimed" or "blocked")) return;
+            dto.Keys.Remove(key);
+            Write(projectId, dto);
+        }
+    }
+
     private FileDto Read(string projectId)
     {
         var full = Full(projectId);

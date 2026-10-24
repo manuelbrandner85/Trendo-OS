@@ -25,7 +25,7 @@ public partial class MainWindow
         {
             case "seite":
                 var tmp = Path.Combine(Path.GetTempPath(), "trendo-seite-" + Guid.NewGuid().ToString("N") + ".json"); File.WriteAllText(tmp, Exts.EntryText(e));
-                _page = SitePage.Load(tmp); File.Delete(tmp); _page.Save(BuilderFile); Show("baukasten"); break;
+                _page = SitePage.Load(tmp); File.Delete(tmp); PersistBuilder(); Show("baukasten"); break;
             case "vorhaben":
                 var dir = Path.Combine(SuiteFolder, DevStudio.SafeName(e.Manifest.Name));
                 if (!Directory.Exists(dir)) { Directory.CreateDirectory(dir); File.WriteAllText(Path.Combine(dir, CreationSuite.ListFile), Exts.EntryText(e)); }
