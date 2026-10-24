@@ -1262,7 +1262,6 @@ public sealed partial class MainWindow : Window
     // ---------- API-Schlüssel (optional, nie Pflicht) ----------
     private static readonly (string Id, string Name, string KeyUrl, string ValidateUrl, string Note)[] KeyServices =
     [
-        ("xai", "xAI / Grok (optional, kostet Geld)", "https://console.x.ai", "https://api.x.ai/v1/models", "Optional – Trendo KI läuft lokal ohne Schlüssel."),
         ("github", "GitHub (optional)", "https://github.com/settings/tokens", "https://api.github.com/user", "Für Web & App Studio. GitHub bietet zusätzlich ein offizielles Geräte-Login (OAuth Device Flow) – noch nicht eingebaut."),
     ];
 

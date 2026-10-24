@@ -12,6 +12,6 @@ Testnamen mit „CORE-03“: 4
 - "CORE-03 UI: Rolle wählen, starten, Team-Ablauf, Speichern über Freigabe"
 - "CORE-03: 12 Rollen mit eigenem Auftrag, Aufgabe nutzt Rollenanweisung"
 - "CORE-03: Team gibt Ergebnis weiter, Aufgaben sind je Projekt getrennt"
-- "CORE-03: Speichern nur mit Schreibrecht, nur nach Freigabe, nur im Projekt; Grok-Build-Auftrag ehrlich"
+- "CORE-03: Speichern nur mit Schreibrecht, nur nach Freigabe, nur im Projekt; Agenten-Auftrag ehrlich"
 
 PC-Prüfung: offen (NOT_RUN).

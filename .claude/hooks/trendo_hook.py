@@ -46,7 +46,7 @@ def main():
   if tool in ('Write','Edit','MultiEdit','NotebookEdit'):
    path=str(ti.get('file_path') or ti.get('notebook_path') or '')
    if not path:return denial('Dateipfad nicht angegeben')
-   # Disallow edits to authoritative registers, legacy Grok rules and installed hook safeguards.
+   # Disallow edits to authoritative registers and installed hook safeguards.
    normalized='/'+path.replace('\\','/').lower().strip().lstrip('/')
    blocked=['/agents.md','/docs/spec/decisions.yaml','/requirements.yaml',
             '/.claude/settings.json','/.mcp.json','/.claude/hooks/trendo_hook.py']

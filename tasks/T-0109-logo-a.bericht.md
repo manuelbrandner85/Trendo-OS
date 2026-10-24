@@ -20,7 +20,7 @@ Unter `src/**/*.cs` kommt der V-Pfad `L50,90` nicht mehr vor, auch nicht „Logo
 Weiterhin vorhanden, aber nicht das laufende Logo:
 
 - `tasks/T-0109-logo-a.md` beschreibt den alten Pfad als Auftragstext.
-- Historische Belege: `reports/STATUSBERICHT_v1.md`, `reports/p1/ui-design/DESIGN_DIFF_CHECKLIST.md`, `docs/build-log/2026-10-22-STARTMENUE.md`. Das sind damalige Stände, keine aktuelle Oberfläche. Nicht umgeschrieben.
+- Historische Belege: `reports/p1/ui-design/DESIGN_DIFF_CHECKLIST.md`, `docs/build-log/2026-10-22-STARTMENUE.md`. Das sind damalige Stände, keine aktuelle Oberfläche. Nicht umgeschrieben.
 - Im Dock steht beim Eintrag `start` noch ein ungenutzter Pfad (der Eintrag wird ausgefiltert, der sichtbare Knopf ist `StartButton()`). Das ist kein V-Pfad.
 
 ## Kontrollbild 16 px
@@ -52,5 +52,5 @@ Ein erster App-Lauf meldete einen Fehler bei SYS-03-P14 (PDF), weil `pdfinfo` fe
 
 - Kein Windows-PC, kein echtes Setup.exe, kein Velopack-Lauf. `installer/build-setup.sh` enthält `--icon` bereits, wurde hier nicht ausgeführt.
 - Kein Klick mit der Maus durch die Einrichtung. Der Setup-Schritt zeigt kein eigenes großes Logo; gemeint ist das Installer-Icon.
-- Historische Berichte unter `reports/p1/` und `reports/STATUSBERICHT_v1.md` nicht inhaltlich neu bewertet.
+- Historische Berichte unter `reports/p1/` nicht inhaltlich neu bewertet.
 - `requirements.yaml` nicht geändert, kein Status auf PC_VERIFIED gesetzt.
