@@ -1,6 +1,6 @@
 # T-0201: Echte Dateiauswahl und Drag & Drop überall statt Pfad eintippen
 
-**Ausführung:** Box-Agent (nicht Grok Build). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
 
 **Ziel:** Ich muss nie einen Dateipfad abtippen.
 **Branch:** box/T-0201-dateiauswahl

@@ -1,7 +1,7 @@
 # T-<nr>: <Titel>
 
 **Ziel:** <ein Satz>
-**Branch:** grok/T-<nr>-<kurz>
+**Branch:** claude/T-<nr>-<kurz>
 **Dateien/Bereich:** <nur diese anfassen>
 **Fertig, wenn:**
 - [ ] <prüfbares Kriterium>

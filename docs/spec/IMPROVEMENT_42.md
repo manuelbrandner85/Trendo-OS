@@ -1,12 +1,12 @@
 # TRENDO OS – VERBESSERUNG 42
-## Universal Studio Prompt-to-Action GODMODE – verbindlicher Grok-Build-Auftrag
+## Universal Studio Prompt-to-Action GODMODE – verbindlicher Claude-Code-Auftrag
 
 **Auftraggeber:** Trendo OS  
 **Ziel-Repository:** `manuelbrandner85/Trendo-OS`  
 **Stand der Beauftragung:** 22.10.2026  
 **Status:** Verbesserung 42 einschließlich aller 20 Funktionen **JA – zur Implementierung freigegeben**. Dies ist **kein Nachweis**, dass sie bereits implementiert sind.
 
-> **Arbeitsbefehl an Grok:** Implementiere Verbesserung 42 in der **bestehenden** Trendo-OS-Codebasis. Untersuche zuerst den tatsächlichen Repository-Stand und passe sämtliche Namen, Dateipfade, Schnittstellen und Implementierungen an den real gefundenen Code an. Erfinde weder vorhandene Komponenten noch erfolgreiche Testergebnisse. Kein Rewrite des Betriebssystems, keine zweite KI-Engine, keine Umgehung bestehender Freigaben. Liefere funktionsfähigen, getesteten Code statt einer bloßen Präsentation oder Demo mit vorgetäuschten Ergebnissen.
+> **Arbeitsbefehl an Claude Code:** Implementiere Verbesserung 42 in der **bestehenden** Trendo-OS-Codebasis. Untersuche zuerst den tatsächlichen Repository-Stand und passe sämtliche Namen, Dateipfade, Schnittstellen und Implementierungen an den real gefundenen Code an. Erfinde weder vorhandene Komponenten noch erfolgreiche Testergebnisse. Kein Rewrite des Betriebssystems, keine zweite KI-Engine, keine Umgehung bestehender Freigaben. Liefere funktionsfähigen, getesteten Code statt einer bloßen Präsentation oder Demo mit vorgetäuschten Ergebnissen.
 
 ## 1. Nicht verhandelbare Projektregeln
 
@@ -216,7 +216,7 @@ Verbesserung 42 darf als **vollständig implementiert** bezeichnet werden, wenn 
 - Bestehende Entscheidungen/Module und die 120-Stunden-Forensikregel bestehen die Regressionstests.
 - Build, Tests und PR-Übergabedokumentation sind nachvollziehbar; bekannte Blocker offen ausgewiesen.
 
-## 13. Exakte Ausgabeanforderung an Grok
+## 13. Exakte Ausgabeanforderung an Claude Code
 
 Starte mit einem knappen **Ist-Stand-Audit mit echten Repository-Pfaden und Commit-SHA**, anschließend implementiere den Code inkrementell. Zeige nach jeder Phase:
 

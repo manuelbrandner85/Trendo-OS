@@ -125,8 +125,11 @@ public class W4_Core05_Ui
         Assert.Contains(w.Core.Audit.ReadAll(), e => e.Action == "deps.declined");
 
         var (w2, l2, root) = Ui.Open();
-        var script = Path.Combine(root, "blender");
-        await File.WriteAllTextAsync(script, "#!/bin/sh\nlast=\nfor a in \"$@\"; do\n  last=\"$a\"\ndone\nif [ -n \"$last\" ]; then printf BLENDER > \"$last\"; fi\nexit 0\n");
+        // Nachgebildetes Blender schreibt „BLENDER“ in das letzte Argument (die .blend-Datei). Windows führt kein sh-Skript aus, dort eine .cmd.
+        var script = Path.Combine(root, OperatingSystem.IsWindows() ? "blender.cmd" : "blender");
+        await File.WriteAllTextAsync(script, OperatingSystem.IsWindows()
+            ? "@echo off\r\nset \"last=\"\r\n:loop\r\nif \"%~1\"==\"\" goto done\r\nset \"last=%~1\"\r\nshift\r\ngoto loop\r\n:done\r\nif defined last (<nul set /p =BLENDER> \"%last%\")\r\nexit /b 0\r\n"
+            : "#!/bin/sh\nlast=\nfor a in \"$@\"; do\n  last=\"$a\"\ndone\nif [ -n \"$last\" ]; then printf BLENDER > \"$last\"; fi\nexit 0\n");
         if (!OperatingSystem.IsWindows())
             File.SetUnixFileMode(script, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         await File.WriteAllTextAsync(Path.Combine(root, "tools.json"), JsonSerializer.Serialize(new Dictionary<string, string> { ["blender"] = script }));

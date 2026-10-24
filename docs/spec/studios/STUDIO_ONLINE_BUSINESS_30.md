@@ -5,7 +5,7 @@
 
 ## A. Zweck und Betriebsarten
 
-Dies ist ein neues bestätigtes Trendo-Spezialstudio, **kein separates unkoordiniertes Produkt**. Es nutzt bestätigte App-&-Software-Development-, Business-&-Finance-, Prompt-, Browser-, Office-, Communication-, Automation-, Memory-, Security- und Grok-Build-Agentenschnittstellen. Trendo ist der Orchestrator, Grok Build führt nur tatsächlich autorisierte Produktionsaufgaben aus. Alle drei Editionen (Pi+Windows-PC; Linux USB/SSD; Windows-App) zeigen dieselbe Studio-Verwaltung, wohingegen aufwendige Builds ausschließlich auf kompatibler Zielhardware laufen. Trendo arbeitet ohne Pflicht zusätzlicher kostenpflichtiger KI-APIs.
+Dies ist ein neues bestätigtes Trendo-Spezialstudio, **kein separates unkoordiniertes Produkt**. Es nutzt bestätigte App-&-Software-Development-, Business-&-Finance-, Prompt-, Browser-, Office-, Communication-, Automation-, Memory-, Security- und Claude-Code-Agentenschnittstellen. Trendo ist der Orchestrator, Claude Code führt nur tatsächlich autorisierte Produktionsaufgaben aus. Alle drei Editionen (Pi+Windows-PC; Linux USB/SSD; Windows-App) zeigen dieselbe Studio-Verwaltung, wohingegen aufwendige Builds ausschließlich auf kompatibler Zielhardware laufen. Trendo arbeitet ohne Pflicht zusätzlicher kostenpflichtiger KI-APIs.
 
 ### Zwei unabhängige, genehmigte Geschäftsmodi
 
@@ -35,7 +35,7 @@ Studio-Funktionen sind bestätigt, **aber kein konkretes Online-Business-Projekt
 | BUS-013 | **Brand Identity & Premium UX Director** | Erzeuge Marken- und Interfacevarianten; prüfe Domain-/Markenverfügbarkeit nicht als rechtliche Garantie. | Editierbare Branding-Assets, barrierearmes UX-Konzept, Rechte-/Markenprüfliste. |
 | BUS-014 | **Business Requirements & Legal Feasibility Planner** | Dokumentiere landes-/branchenabhängige Datenschutz-, Verbraucher-, Steuern-, Gewerbe- und Vertragsprüfpflichten. | Länder-/Rechtsprüfliste, Verantwortliche, dokumentierte noch notwendige Expertenfreigaben. |
 | BUS-015 | **Customer Journey & Process Architect** | Definiere Besuch, Anmeldung, Bestellen, Zahlen, Erfüllung, Support, Kündigung und Rückerstattung modellabhängig. | Testbare User-Journey und Zustandsdiagramme inkl. Fehler-/Abbruchfällen. |
-| BUS-016 | **Grok Build Full-Stack Business Builder** | Baue echtes Frontend/Backend/DB/Migration/API mit CI, reproduzierbarem lokalen Start und echtem Code. | Repo-Dateien, lauffähiger Build, Migrations-/API-Verifikation mit realen Logs. |
+| BUS-016 | **Claude Code Full-Stack Business Builder** | Baue echtes Frontend/Backend/DB/Migration/API mit CI, reproduzierbarem lokalen Start und echtem Code. | Repo-Dateien, lauffähiger Build, Migrations-/API-Verifikation mit realen Logs. |
 | BUS-017 | **Accounts, Membership & Multi-Tenant Engine** | Implementiere sichere Auth, RBAC, Membership und wenn erforderlich Daten-/Mandantenisolation. | Automatisierte Autorisierungs- und Tenant-Leakage-Negativtests bestanden. |
 | BUS-018 | **Payments, Billing & Subscription Integration** | Binde autorisierten Zahlungsanbieter zunächst ausschließlich in der Sandbox ein, prüfe Rechnungen, Steuern, Abo-Events und Webhook-Idempotenz. | Sandbox-Protokolle für Zahlung, Fehlzahlung, Refund und Webhook-Replay; Live-Einstellung bleibt gesperrt. |
 | BUS-019 | **Business Admin, CRM & Operations Center** | Baue Admin-/CRM-Bereiche mit Kunden, Vorgängen, Aufträgen, Rechnungsentwürfen und delegierten Rechten. | Echte CRUD-/Berechtigungs-Tests für relevante Rollen inklusive Sperr-/Löschfällen. |
@@ -105,7 +105,7 @@ Obige Struktur ist ein **Sollschema**, keine Behauptung vorhandener Programmdate
 - Studio-Registry ID `studio.online_business`; Status zunächst `APPROVED_SPEC`.
 - Projektindividuelle Modi `existing` und `innovation`; eigene `business_id`, `project_id`, `tenant_id` (wo erforderlich).
 - Trendo Studio SDK: `plan`, `compare_sources`, `validate_idea`, `request_approval`, `build_task`, `run_tests`, `prepare_release`; Methodenbezeichner sind Vorschläge, **noch keine implementierten APIs**.
-- Rollen: Business Research, Business Model/Finance, UX/Brand, Security/Compliance, Grok Build Full-Stack, QA/Operations. Sind logische Aufgabenrollen, noch keine gestarteten Agenten.
+- Rollen: Business Research, Business Model/Finance, UX/Brand, Security/Compliance, Claude Code Full-Stack, QA/Operations. Sind logische Aufgabenrollen, noch keine gestarteten Agenten.
 - Die bestätigte Web- und Browserautomation für Recherche nur auf zulässigen öffentlichen Quellen und innerhalb ihrer Rechte; Browserdaten gelten als **untrusted**.
 - Bereits bestätigte Trendo Business & Finance Studio Fähigkeiten **wiederverwenden**, nicht separat duplizieren. Online-Business-Studio steuert die Ende-zu-Ende-Produktproduktion und die beiden Ideenmodi.
 

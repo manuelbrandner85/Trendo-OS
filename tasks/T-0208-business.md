@@ -1,6 +1,6 @@
 # T-0208: Online verkaufen / Business – Eingaben mit Rückmeldung, kein Absturz
 
-**Ausführung:** Box-Agent (nicht Grok Build). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
 
 **Ziel:** Jeder „Hinzufügen/Speichern“-Knopf im Business-Bereich sagt mir, was passiert ist oder was fehlt.
 **Branch:** box/T-0208-business

@@ -1,6 +1,6 @@
 # T-0207: Fach-Studios – Auswahllisten, Bilder statt nur Text, Versprechen halten
 
-**Ausführung:** Box-Agent (nicht Grok Build). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
 
 **Ziel:** Die 14 Fach-Studios sind bequem zu bedienen und halten, was ihr Name verspricht.
 **Branch:** box/T-0207-fachstudios-bedienung

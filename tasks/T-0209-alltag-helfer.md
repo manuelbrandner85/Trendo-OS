@@ -1,6 +1,6 @@
 # T-0209: Kleine Helfer & Dateien – Abstürze und stumme Knöpfe beheben
 
-**Ausführung:** Box-Agent (nicht Grok Build). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
 
 **Ziel:** Die Alltagshelfer funktionieren ohne Vorwissen.
 **Branch:** box/T-0209-alltag-helfer

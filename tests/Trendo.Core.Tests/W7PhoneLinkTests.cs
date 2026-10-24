@@ -126,7 +126,7 @@ public class W7PhoneLinkTests
         Assert.Contains("Kabel oder WLAN", BluetoothLink.LimitHint);
     }
 
-    [Fact(DisplayName = "X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku")]
+    [LinuxFact(DisplayName = "X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku")]
     public async Task Bluez()
     {
         var calls = new List<string>();

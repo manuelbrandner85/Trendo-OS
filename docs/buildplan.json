@@ -725,7 +725,7 @@
    },
    {
     "id": "BUS-016",
-    "title": "Grok Build Full-Stack Business Builder",
+    "title": "Claude Code Full-Stack Business Builder",
     "impl": "IMPLEMENTED",
     "test": "TESTED_BOX"
    },

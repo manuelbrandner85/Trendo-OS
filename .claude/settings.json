@@ -1,0 +1,182 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(git push * main)",
+      "Bash(git push * main *)",
+      "Bash(git push * HEAD:main)",
+      "Bash(git push *--force*)",
+      "Bash(git push -f *)",
+      "Bash(git push * -f)",
+      "Bash(git push * -f *)",
+      "Bash(git reset --hard *)",
+      "Bash(git rebase *)",
+      "Bash(git clean *)",
+      "Bash(git branch -D *)",
+      "Bash(gh pr merge *)",
+      "Bash(gh release *)",
+      "Bash(*installer/release.sh*)",
+      "Bash(rm -rf *)",
+      "Bash(sudo *)",
+      "Bash(winget *)",
+      "Bash(msiexec *)",
+      "Bash(choco *)",
+      "Bash(reg add *)",
+      "Bash(reg delete *)",
+      "Bash(diskpart *)",
+      "Bash(bcdedit *)",
+      "Bash(shutdown *)",
+      "Bash(sc.exe *)",
+      "Bash(netsh *)",
+      "PowerShell(git push * main)",
+      "PowerShell(git push * main *)",
+      "PowerShell(git push * HEAD:main)",
+      "PowerShell(git push *--force*)",
+      "PowerShell(git push -f *)",
+      "PowerShell(git push * -f)",
+      "PowerShell(git push * -f *)",
+      "PowerShell(git reset --hard *)",
+      "PowerShell(git rebase *)",
+      "PowerShell(git clean *)",
+      "PowerShell(git branch -D *)",
+      "PowerShell(gh pr merge *)",
+      "PowerShell(gh release *)",
+      "PowerShell(*installer/release.sh*)",
+      "PowerShell(Remove-Item *-Recurse*)",
+      "PowerShell(Start-Process *-Verb RunAs*)",
+      "PowerShell(winget *)",
+      "PowerShell(msiexec *)",
+      "PowerShell(choco *)",
+      "PowerShell(reg add *)",
+      "PowerShell(reg delete *)",
+      "PowerShell(Set-ItemProperty *HK*)",
+      "PowerShell(New-ItemProperty *HK*)",
+      "PowerShell(Set-ExecutionPolicy *)",
+      "PowerShell(diskpart *)",
+      "PowerShell(bcdedit *)",
+      "PowerShell(Format-Volume *)",
+      "PowerShell(shutdown *)",
+      "PowerShell(Stop-Computer *)",
+      "PowerShell(Restart-Computer *)",
+      "PowerShell(sc.exe *)",
+      "PowerShell(netsh *)",
+      "Edit(/requirements.yaml)",
+      "Edit(/docs/spec/decisions.yaml)",
+      "Edit(/.claude/settings.json)",
+      "Edit(/.claude/hooks/**)",
+      "Edit(/.mcp.json)",
+      "Edit(/.git/**)",
+      "Read(/.env)",
+      "Read(/.env.*)",
+      "Read(/secrets/**)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "PowerShell(git push *)",
+      "Bash(git merge *)",
+      "PowerShell(git merge *)",
+      "Bash(gh pr merge *)",
+      "PowerShell(gh pr merge *)",
+      "Bash(gh release *)",
+      "PowerShell(gh release *)",
+      "Bash(*installer/release.sh*)",
+      "PowerShell(*installer/release.sh*)",
+      "Bash(*installer\\release.sh*)",
+      "PowerShell(*installer\\release.sh*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell|Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/trendo_hook.py",
+              "pre"
+            ],
+            "timeout": 20,
+            "onFailure": "block"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|PowerShell|Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/trendo_hook.py",
+              "post"
+            ],
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/trendo_hook.py",
+              "subagent-start"
+            ],
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/trendo_hook.py",
+              "subagent-stop"
+            ],
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/trendo_hook.py",
+              "session-start"
+            ],
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/trendo_hook.py",
+              "stop"
+            ],
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 # T-0210: Einrichtung – Auswahl sichtbar, Reparieren mit Rückmeldung
 
-**Ausführung:** Box-Agent (nicht Grok Build). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
 
 **Ziel:** Im Einrichtungsassistenten sehe ich, was ich gewählt habe, und „Reparieren“ sagt, was es getan hat.
 **Branch:** box/T-0210-einrichtung

@@ -17,7 +17,7 @@ public partial class MainWindow
     {
         _showMap["ki-rollen"] = AgentsView; KiTabs.Add(("ki-rollen", "Rollen"));
         StudioPages["CORE-03"] = "ki-rollen";
-        ExtraPages.Add(("KI-Rollen und Teams", "ki-rollen", ["agent", "rolle", "team", "planer", "texter", "grok build"]));
+        ExtraPages.Add(("KI-Rollen und Teams", "ki-rollen", ["agent", "rolle", "team", "planer", "texter", "claude code"]));
     }
 
     public async Task RunAgentAsync(string goal, string? team = null)
@@ -88,9 +88,9 @@ public partial class MainWindow
             }
             if (t.ProjectId is not null && t.State is AgentTaskState.Fertig or AgentTaskState.Gespeichert)
             {
-                var gb = new Button { Name = $"agent-grok-{n}", Content = "An Grok Build übergeben", Padding = new Thickness(8, 2) };
-                ToolTip.SetTip(gb, "Legt einen Auftrag im Projekt ab. Grok Build ist noch nicht verbunden.");
-                gb.Click += (_, _) => { _agentMsg = $"Auftrag abgelegt: {Agents.ExportGrokBuildJob(t)}. Grok Build ist noch nicht verbunden – er führt ihn aus, sobald er eingerichtet ist."; Show("ki-rollen"); };
+                var gb = new Button { Name = $"agent-claude-{n}", Content = "An Claude Code übergeben", Padding = new Thickness(8, 2) };
+                ToolTip.SetTip(gb, "Legt einen Auftrag im Projekt ab. Claude Code ist noch nicht verbunden.");
+                gb.Click += (_, _) => { _agentMsg = $"Auftrag abgelegt: {Agents.ExportClaudeCodeJob(t)}. Claude Code ist noch nicht verbunden – es führt ihn aus, sobald er eingerichtet ist."; Show("ki-rollen"); };
                 row.Children.Add(gb);
             }
             var del = new Button { Name = $"agent-del-{n}", Content = "Entfernen", Padding = new Thickness(8, 2) };

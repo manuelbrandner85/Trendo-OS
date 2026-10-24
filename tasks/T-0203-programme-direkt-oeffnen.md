@@ -1,6 +1,6 @@
 # T-0203: Externe Programme direkt öffnen – mit der aktuellen Datei
 
-**Ausführung:** Box-Agent (nicht Grok Build). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
 
 **Ziel:** Wo ein Studio ein externes Programm nutzt, öffnet ein Klick das Programm mit meiner aktuellen Datei.
 **Branch:** box/T-0203-programme-direkt-oeffnen

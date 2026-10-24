@@ -1,6 +1,6 @@
 # T-0204: Spiele-Studio – eigenes Spiel statt drei fester Vorlagen
 
-**Ausführung:** Box-Agent (nicht Grok Build). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
 
 **Ziel:** Ich kann ein eigenes kleines Spiel gestalten, nicht nur eine von drei Vorlagen (Schlange, Mauerbrecher, Hüpfspiel) kopieren.
 **Branch:** box/T-0204-spiele-studio

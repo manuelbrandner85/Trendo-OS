@@ -13,4 +13,4 @@ Die Avalonia-Oberfläche bildet Layout und Stil des Konzepts nach (Topbar, Seite
 - Nicht umgesetzte Schnell-Tools (Aufnahme, Notiz, Übersetzen) sind deaktiviert; „Übersetzen“ berührt nicht das abgelehnte Language-Studio 2.0.
 - Die Vorschau-Leiste am unteren Bildrand des Konzepts (Marketing-Thumbnails) ist kein Desktop-Element und wurde nicht übernommen.
 - **Logo:** Logo A „Obsidian-Kachel“ (App-Symbol, Fenster, Taskleiste, Startknopf, Desktop).
-- **Hintergrund:** `src/Trendo.App/Assets/wallpaper.jpg`, KI-generiert (Grok Bot, 21.10.2026) eigens für Trendo OS; keine Fremdfotos.
+- **Hintergrund:** `src/Trendo.App/Assets/wallpaper.jpg`, KI-generiert mit dem früheren Entwicklungswerkzeug (21.10.2026) eigens für Trendo OS; keine Fremdfotos. Wird durch eine mit Claude erstellte Fassung ersetzt (`docs/claude/FERTIGSTELLUNGSPLAN.md`, D2).

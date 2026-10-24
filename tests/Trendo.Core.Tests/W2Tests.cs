@@ -180,7 +180,7 @@ public class CORE03_Agents
         Assert.Throws<ProjectIsolationException>(() => c.Create("planer", "x", "gibtsnicht"));
     }
 
-    [Fact(DisplayName = "CORE-03: Speichern nur mit Schreibrecht, nur nach Freigabe, nur im Projekt; Grok-Build-Auftrag ehrlich")]
+    [Fact(DisplayName = "CORE-03: Speichern nur mit Schreibrecht, nur nach Freigabe, nur im Projekt; Claude-Code-Auftrag ehrlich")]
     public async Task Save_gated()
     {
         using var f = new Fixture();
@@ -197,7 +197,7 @@ public class CORE03_Agents
         f.Core.Approvals.Approve(req2.Id, Principal.LocalOwner);
         c.ExecuteSave(t, "text.md");
         Assert.Equal("Antwort von A", f.Core.Projects.ReadFile("p1", "text.md"));
-        var job = c.ExportGrokBuildJob(t);
+        var job = c.ExportClaudeCodeJob(t);
         Assert.Contains("nicht verbunden", f.Core.Projects.ReadFile("p1", job));
     }
 }

@@ -24,7 +24,7 @@ public sealed class AgentTask
 
 /// <summary>CORE-03 AI Agent Command Center: 12 Rollen mit eigenem Auftrag und eigenen Rechten, Aufgaben je Projekt getrennt,
 /// Team-Abläufe (Ergebnis einer Rolle ist Eingabe der nächsten), Speichern in Projektdateien nur nach Freigabe,
-/// Übergabe an Grok Build als Auftragsdatei (Grok Build selbst wird nicht vorgetäuscht).</summary>
+/// Übergabe an Claude Code als Auftragsdatei (Claude Code selbst wird nicht vorgetäuscht).</summary>
 public sealed class AgentCenter
 {
     public static readonly IReadOnlyList<AgentRole> Roles =
@@ -121,14 +121,14 @@ public sealed class AgentCenter
         t.SavedAs = fileName; t.State = AgentTaskState.Gespeichert; Save();
     }
 
-    /// <summary>Übergabe an Grok Build: schreibt einen Auftrag als Markdown ins Projekt. Ausgeführt wird er erst, wenn Grok Build verbunden ist.</summary>
-    public string ExportGrokBuildJob(AgentTask t)
+    /// <summary>Übergabe an Claude Code: schreibt einen Auftrag als Markdown ins Projekt. Ausgeführt wird er erst, wenn Claude Code verbunden ist.</summary>
+    public string ExportClaudeCodeJob(AgentTask t)
     {
         if (t.ProjectId is null) throw new InvalidOperationException("Aufgabe gehört zu keinem Projekt.");
-        var name = $"grok-build-auftrag-{t.Id}.md";
-        var md = $"# Auftrag für Grok Build\n\n- Erstellt: {DateTimeOffset.Now:yyyy-MM-dd HH:mm}\n- Rolle: {Role(t.RoleId).Name}\n- Status: wartet auf Grok Build (nicht verbunden)\n- Regeln: nur im Projektordner arbeiten, keine Adminrechte, kein Push ohne Freigabe, Testergebnisse ehrlich als Rohlog\n\n## Ziel\n{t.Goal}\n\n## Vorarbeit\n{(t.Result.Length > 0 ? t.Result : "(keine)")}\n";
+        var name = $"claude-code-auftrag-{t.Id}.md";
+        var md = $"# Auftrag für Claude Code\n\n- Erstellt: {DateTimeOffset.Now:yyyy-MM-dd HH:mm}\n- Rolle: {Role(t.RoleId).Name}\n- Status: wartet auf Claude Code (nicht verbunden)\n- Regeln: nur im Projektordner arbeiten, keine Adminrechte, kein Push ohne Freigabe, Testergebnisse ehrlich als Rohlog\n\n## Ziel\n{t.Goal}\n\n## Vorarbeit\n{(t.Result.Length > 0 ? t.Result : "(keine)")}\n";
         _projects.WriteFile(t.ProjectId, name, md);
-        _audit.Append(Principal.LocalOwner.Name, "agent.grokbuild.export", $"{t.Id} -> {name}");
+        _audit.Append(Principal.LocalOwner.Name, "agent.claudecode.export", $"{t.Id} -> {name}");
         return name;
     }
 

@@ -1,7 +1,7 @@
 # T-0109: Neues Trendo-Logo A „Obsidian-Kachel“ überall statt V-Logo
 
 **Ziel:** Das alte V-Konzeptlogo wird überall durch das von Manuel am 22.10.2026 gewählte Logo A ersetzt.
-**Branch:** grok/T-0109-logo-a
+**Branch:** claude/T-0109-logo-a
 **Quelle (verbindlich, nicht verändern):** `src/Trendo.App/Assets/logo/trendo-logo-a.svg`
 (viewBox 64×64: dunkle Kachel rx 15 mit Verlauf #1B3150→#060D1A und Rahmen #335578, weißer Querbalken #F0F6FF, Stamm mit Verlauf #7FD8FF→#2A7FFF).
 
@@ -18,6 +18,6 @@
 - [ ] QA-019 und W0b-01 (verbotene Wörter) weiterhin grün.
 - [ ] alle drei Testprojekte grün (Zahlen in den Bericht).
 
-**Arbeitsweise:** Jeden Befehl einzeln ausführen (keine Ketten mit `;`/`&&`/`|`), nur die in `.grok/config.toml` erlaubten Befehle (git, dotnet build/test, rg, Get-ChildItem/Get-Content). Dateien mit dem Edit-Werkzeug ändern.
+**Arbeitsweise:** Jeden Befehl einzeln ausführen (keine Ketten mit `;`/`&&`/`|`), nur die in `.mcp.json` erlaubten Befehle (git, dotnet build/test, rg, Get-ChildItem/Get-Content). Dateien mit dem Edit-Werkzeug ändern.
 **Nicht tun:** Die SVG nicht umgestalten; kein anderes Design-41-Thema (Farben, Fensterverwaltung, Startmenü-Inhalt) anfassen; keine Status-Werte auf PC_VERIFIED setzen; nicht auf main pushen; nichts aus den KI-Referenzbildern übernehmen.
 **Am Ende:** Branch pushen, Bericht `tasks/T-0109-logo-a.bericht.md`.

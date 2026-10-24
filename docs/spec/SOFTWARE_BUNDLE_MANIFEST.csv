@@ -11,7 +11,7 @@ Audacity,Audio,Windows oder kompatibles Linux,NUR KANDIDAT,JA,Audio/Plugins,NOT_
 Tesseract OCR,Texterkennung,Windows oder kompatibles Linux,NUR KANDIDAT,JA,Lokale Sprachenpakete,NOT_RUN
 Git,Quellcode-Versionierung,Windows/Linux/Pi kompatible Pakete,NUR KANDIDAT,JA,Edition/Architektur,NOT_RUN
 Python,Runtime und Hilfswerkzeuge,Windows/Linux/Pi kompatible Pakete,NUR KANDIDAT,JA,Runtime/Lizenzen,NOT_RUN
-Grok Build,Lokaler KI-Programmier- und Testagent,Windows Host/geeignete Systeme,OFFIZIELLER ZUGANG ERFORDERLICH,JA,Nutzerkonto/Berechtigung,NOT_RUN
+Claude Code,Lokaler KI-Programmier- und Testagent,Windows Host/geeignete Systeme,OFFIZIELLER ZUGANG ERFORDERLICH,JA,Nutzerkonto/Berechtigung,NOT_RUN
 Unreal Engine,AAA Spieleentwicklung,Windows PC und geeignete Linux-Hosts,NICHT PAUSCHAL BUNDLEBAR,JA,Herstellerbedingungen/GPU/Groesse,NOT_RUN
 Tor Browser,Isolierte legal READ-ONLY .onion Recherche,Windows Host/geeignete Linux Hosts,NUR NACH OFFIZIELLER QUELLE/QA,JA,Tor-Sicherheit/Plattform/Isolation,NOT_RUN
-Grok Bot,Cloud-Projektleitung,Desktop/Mobil/Cloud mit freigegebenem Zugriff,OPTIONALER CLOUDBEREICH NICHT IM OS-BUNDLE,JA,Kontotarif/Cloudprivacy/Taskübergabe,NOT_RUN
+Claude Code,Cloud-Projektleitung,Desktop/Mobil/Cloud mit freigegebenem Zugriff,OPTIONALER CLOUDBEREICH NICHT IM OS-BUNDLE,JA,Kontotarif/Cloudprivacy/Taskübergabe,NOT_RUN

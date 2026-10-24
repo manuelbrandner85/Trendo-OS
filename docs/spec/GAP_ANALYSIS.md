@@ -73,7 +73,7 @@ Keine Verbesserung ist als eigenes Requirement in `requirements.yaml` erfasst �
 | Nr | Titel | Fkt. | Vorhanden (Anhaltspunkte) | Fehlt |
 |---|---|---|---|---|
 | 13 | Reality & Completion Control GODMODE | 8 | Requirement-IDs+Nachweise in requirements.yaml/reports, Tests bei jedem PR, Status-Guard, menschliches Gate (Abnahme P1) | keine automatische Erkennung toter Schaltflächen; Studio-Abnahmetests je Studio; Soll-Ist-Abgleich gegen MP-1.0 nur in dieser Lückenanalyse |
-| 14 | Grok One-Prompt Production Orchestrator GODMODE | 10 | Masterprompt als Spec, BUILD_PLAN/Wellen, kleine PRs, AGENTS.md + Auftragsablauf für Grok Build (#195/#197), Freigabe-Fragen | persistente Aufgabenwarteschlange Bot↔Build mit Wiederaufnahme nachgewiesen; Zusammenführung/Test aller drei Editionen |
+| 14 | Claude One-Prompt Production Orchestrator GODMODE | 10 | Masterprompt als Spec, BUILD_PLAN/Wellen, kleine PRs, CLAUDE.md + Auftragsablauf für Claude Code (seit 23.10.2026, ADR-0009), Freigabe-Fragen | persistente Aufgabenwarteschlange Bot↔Build mit Wiederaufnahme nachgewiesen; Zusammenführung/Test aller drei Editionen |
 | 15 | Native All-in-One Integration GODMODE | 12 | einheitliche Studio-Registry, Office/PDF (LibreOffice/qpdf), Browser-Center, Medien (FFmpeg), Dev-Studio, gemeinsames Design, Blender/Unreal-Erkennung | vieles über installierte Fremdprogramme statt eingebaut (winget nach Rückfrage) → widerspricht teils 'möglichst keine Zusatzinstallationen'; Pi-/Linux-Optimierung |
 | 16 | Futureproof & Intelligent Update GODMODE | 12 | Velopack-Auto-Update aus GitHub Releases, Rückkehr zu älterer Version (PC geprüft), Release-Sicherheits-Scan | Signatur-/Herkunftsprüfung (Code-Signatur fehlt), Offline-Updates, Stable/Preview/Developer-Kanäle, Updates der mitgelieferten Programme, Datenmigrationstests, Tests nach Update |
 | 17 | Universal Studio Fusion & Project Workspace GODMODE | 12 | Projektregister, Asset-Verwaltung (X-07), Fusion (X-01), Projektversionen teilweise | geteiltes Assetregister mit Rechten, absturzsicheres Speichern nachgewiesen, Erkennung fehlender Dateien, Blender/Unreal-Assetübergabe, geräteübergreifende Projektbrücke |
@@ -109,14 +109,14 @@ Keine Verbesserung ist als eigenes Requirement in `requirements.yaml` erfasst �
 - §14 Blender/Unreal: nur Erkennung + Blender-Skriptansatz; keine nachweisbaren `.blend`-Projekte/UE5-Builds am PC.
 - §15 Architektur: 18 Ebenen; fehlen weitgehend: Betriebssystemadapter Pi, Remote-Production-Worker, Studio-SDK als eigenständiges Paket.
 - §17 120-h-Regel: Forensik-Modul vorhanden (W3/Forensics.cs, TESTED_BOX); Tests zu Neustart/Stromausfall/Backup-Ausschluss nicht nachgewiesen.
-- §21 Phase 0 (Grok Build): eingerichtet (#195/#197); erste Grok-Build-Aufgabe T-0002 läuft.
+- §21 Phase 0: seit 23.10.2026 entwickelt nur noch Claude Code (ADR-0009, `CLAUDE.md`).
 
 ## 5. Meilenstein Abschnitt 25
 Alle 11 Punkte für Edition C vorhanden (Core, Desktop, Startmenü, Dateien, Projektregister, Studio-Registry, Freigabebroker, Warteschlange, lokale KI, Build/Test, Testprotokolle). Förmliche Abnahme offen.
 
 ## 6. Konflikte mit Bestand/Entscheidungen
-1. **§2.2/§21: Code soll durch Grok Build am PC entstehen** – ~200 PRs entstanden durch Grok-Bot-Agenten in der Cloud-Box.
-2. **§2.5 Projektisolation:** „sensible Quellcodes … in kontrollierten lokalen Arbeitsbereichen, kein unkontrollierter Upload in Grok-Cloudspeicher“ – Repo liegt öffentlich auf GitHub und wird auf der Box bearbeitet (von Manuel so gewollt; Geheimnisse/Forensik nie auf der Box).
+1. **§2.2/§21: Code soll durch Claude Code am PC entstehen** – ~200 PRs entstanden durch Cloud-Agenten in der Cloud-Box.
+2. **§2.5 Projektisolation:** „sensible Quellcodes … in kontrollierten lokalen Arbeitsbereichen, kein unkontrollierter Upload in Cloud-Speicher“ – Repo liegt öffentlich auf GitHub und wird auf der Box bearbeitet (von Manuel so gewollt; Geheimnisse/Forensik nie auf der Box).
 3. **§15 Technologiewahl** nennt Rust/Qt nur als Beispiele → kein Konflikt, ADR-0005 bleibt (ADR-0008).
 4. **§1/§19 One-Setup „keine Zusatzinstallationen“** vs. bisheriges Modell „Studio prüft Werkzeug und installiert nach Rückfrage per winget“ (Manuels frühere Vorgabe) – Mitliefern vs. Nachinstallieren klären.
 5. **§12 „keine Wiedereinführung durch Umbenennung“:** Karte SPEC-07 heißt in der UI „Texte übersetzen – Texte übersetzen und **Programme eindeutschen**“ – Beschreibung geht über Basisfunktionen hinaus; Übersetzer-Agent, Recherche- und Briefübersetzung sind „eng begrenzte Übersetzung in anderen Studios“ – laut MP nur zulässig, wenn **ausdrücklich separat genehmigt**.

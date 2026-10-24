@@ -1,6 +1,6 @@
 # T-0200: 3D-Studio – eigene Objekte bauen, Blender mit einem Klick
 
-**Ausführung:** Box-Agent (nicht Grok Build). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
 
 **Ziel:** Im Studio „3D-Modelle erstellen“ kann ich ein eigenes Objekt beschreiben oder zusammenbauen, ansehen, exportieren und mit einem Klick in Blender weiterbearbeiten.
 **Branch:** box/T-0200-3d-studio

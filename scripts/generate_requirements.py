@@ -23,10 +23,10 @@ except FileNotFoundError: keep = {}
 for m in mods + bus + let:
     if m["id"] in keep: m.update({k: keep[m["id"]][k] for k in ("implementation_status", "test_status", "evidence")})
 tests = []
-for f, key in [("QA_MATRIX_GROK", "GROK_QA_MATRIX.csv"), ("BUSINESS", "BUSINESS_QA_MATRIX.csv"), ("LETTER", "LETTER_QA_MATRIX.csv")]:
+for f, key in [("BUSINESS", "BUSINESS_QA_MATRIX.csv"), ("LETTER", "LETTER_QA_MATRIX.csv")]:
     for r in rows(S / "qa" / key):
         tests.append({"id": r["test_id"], "catalog": key, "status": r.get("status") or r.get("initial_status")})
-doc = {"schema_version": 1, "source": "Trendo OS Grok Production Package v2.1 (2026-10-21)",
+doc = {"schema_version": 1, "source": "Trendo OS Production Package v2.1 (2026-10-21)",
        "note": "APPROVED_SPEC bedeutet genehmigte Spezifikation, NICHT gebaut. Alle Tests NOT_RUN bis echte Logs existieren.",
        "status_model": ["PROPOSED", "APPROVED_SPEC", "PLANNED", "IN_PROGRESS", "IMPLEMENTED", "TESTED", "ACCEPTED", "RELEASED", "FAILED", "BLOCKED"],
        "editions": ["windows-app", "linux-usb-ssd", "pi4-plus-windows"],

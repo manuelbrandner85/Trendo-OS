@@ -65,10 +65,10 @@ Reihenfolge als Empfehlung, unter Berücksichtigung aller bestätigten Studios:
 Keine nicht belastbaren Zeit- oder Kostenversprechen. Erst P0/P1 prototypisch messen, dann Ressourcen, Hardwarekosten, laufende Dienste, Größe externer SSD und Lizenzrisiken mit echten Daten schätzen. Ein Full-Studio-System mit allen Studios wird eine erhebliche mehrphasige Entwicklung sein.
 
 
-## v2.0 – Grok-Umstellung in der Produktionsreihenfolge
-- **P0-A Grok-Inventur:** Offiziell installierte lokale Grok-Build-Version, Konto, Konfiguration, Betriebssystem, Projektpfad und Git-Zugriff tatsächlich nachweisen. Cloud-Grok-Bot ist nur Projektleitung. Ohne lokalen Zugriff `BLOCKED`.
-- **P0-B Task-Übergabe:** Grok Bot erstellt scope-begrenzte Projektaufträge; zunächst manuelle `.md`-Übergabe, später nur nach realer Auth-/Safety-QA ein lokaler Taskbroker.
-- **P1-C Coding:** Windows-Core-Vertical-Slice unter Grok Build mit `AGENTS.md`; keine erfundenen Build-/Run-Ergebnisse.
+## v2.0 – Claude-Code-Umstellung in der Produktionsreihenfolge
+- **P0-A Claude-Code-Inventur:** Offiziell installierte lokale Claude-Code-Version, Konto, Konfiguration, Betriebssystem, Projektpfad und Git-Zugriff tatsächlich nachweisen. Ohne lokalen Zugriff `BLOCKED`.
+- **P0-B Task-Übergabe:** Claude Code erstellt scope-begrenzte Projektaufträge; zunächst manuelle `.md`-Übergabe, später nur nach realer Auth-/Safety-QA ein lokaler Taskbroker.
+- **P1-C Coding:** Windows-Core-Vertical-Slice unter Claude Code mit `CLAUDE.md`; keine erfundenen Build-/Run-Ergebnisse.
 - **P4-D 3D/Game:** Blender- und UE5-Adapter getrennt entwickeln und auf real installierten Programmen mit kontrollierten Testprojekten prüfen.
-- **P5-E Security:** Gemeinsame Grok-Bot-Cloud, Tool-Prompt-Injection, Default-No-Access und 120h-Forensik als Pflicht-Negativtests ergänzen.
-- **P6-F QA:** `GROK_QA_MATRIX.csv` vollständig mit tatsächlichen Nachweisen abarbeiten, sofern für jeweilige Edition relevant.
+- **P5-E Security:** Gemeinsame Cloud-Dienste, Tool-Prompt-Injection, Default-No-Access und 120h-Forensik als Pflicht-Negativtests ergänzen.
+- **P6-F QA:** `docs/claude/QA_RELEASE_MATRIX.md` vollständig mit tatsächlichen Nachweisen abarbeiten, sofern für jeweilige Edition relevant.

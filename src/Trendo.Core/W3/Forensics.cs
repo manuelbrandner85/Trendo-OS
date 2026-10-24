@@ -16,7 +16,7 @@ public sealed class EvidenceCase
 public enum CaseState { Aktiv, LaeuftBaldAb, Abgelaufen }
 
 /// <summary>SPEC-12 Cybersecurity & Forensics: Beweis-Fälle nur lokal, Kopien mit SHA-256 und lückenloser Kette (eigenes Protokoll),
-/// schreibgeschützt; Fälle werden nach höchstens 120 h gelöscht, 24 h vorher Warnung (AGENTS.md Regel 5). Dateien prüfen per Prüfsumme.</summary>
+/// schreibgeschützt; Fälle werden nach höchstens 120 h gelöscht, 24 h vorher Warnung (Forensik-Regel in CLAUDE.md). Dateien prüfen per Prüfsumme.</summary>
 public sealed class ForensicsLab
 {
     public static readonly TimeSpan MaxLife = TimeSpan.FromHours(120), WarnBefore = TimeSpan.FromHours(24);

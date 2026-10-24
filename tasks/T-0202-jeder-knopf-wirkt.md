@@ -1,6 +1,6 @@
 # T-0202: Jeder Knopf wirkt sichtbar (Erweiterung von T-0004)
 
-**Ausführung:** Box-Agent (nicht Grok Build). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
 
 **Ziel:** Kein Knopf bleibt ohne Reaktion; leere Eingaben führen zu einem klaren Hinweis statt zu nichts oder einem Absturz.
 **Branch:** box/T-0202-jeder-knopf-wirkt

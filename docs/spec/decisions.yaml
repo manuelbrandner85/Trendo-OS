@@ -290,7 +290,7 @@ items:
   decision: APPROVED
 - id: IMP-14
   kind: improvement
-  title: "Grok One-Prompt Production Orchestrator GODMODE"
+  title: "Claude One-Prompt Production Orchestrator GODMODE"
   functions: 10
   decision: APPROVED
 - id: IMP-15

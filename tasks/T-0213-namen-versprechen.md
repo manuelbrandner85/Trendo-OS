@@ -1,6 +1,6 @@
 # T-0213: Studionamen und Untertitel ehrlich machen (Vorschlagsliste, kein Code)
 
-**Ausführung:** Box-Agent (nicht Grok Build). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
 
 **Ziel:** Jeder Studioname verspricht nur, was das Studio heute kann – oder das Studio wird so erweitert, dass es stimmt.
 **Branch:** box/T-0213-namen-versprechen

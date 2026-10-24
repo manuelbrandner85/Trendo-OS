@@ -205,12 +205,18 @@ public class PromptActionTests
         var outside = Path.Combine(fx.Root, "ausserhalb.txt");
         File.WriteAllText(outside, "ausserhalb-geheim");
         var link = fx.Core.Projects.ResolveInProject(fx.Project, "verweis.txt");
-        File.CreateSymbolicLink(link, outside);
-        var leaked = fx.Wf.Start(fx.Req("SYS-02", "Text: sichtbar", [new PromptAttachment("verweis", "verweis.txt")]), fx.Ctx());
-        Assert.Equal(RunStatus.Failed, leaked.Status);
-        var raw = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, "auftraege/" + leaked.RunId + "/lauf.json"));
-        Assert.DoesNotContain("ausserhalb-geheim", raw);
-        Assert.DoesNotContain("streng-geheim-99", raw);
+        // Windows erlaubt symbolische Links nur mit Adminrecht oder Entwicklermodus; dann entfällt nur dieser Teil.
+        var linked = true;
+        try { File.CreateSymbolicLink(link, outside); }
+        catch (Exception e) when (OperatingSystem.IsWindows() && e is IOException or UnauthorizedAccessException) { linked = false; }
+        if (linked)
+        {
+            var leaked = fx.Wf.Start(fx.Req("SYS-02", "Text: sichtbar", [new PromptAttachment("verweis", "verweis.txt")]), fx.Ctx());
+            Assert.Equal(RunStatus.Failed, leaked.Status);
+            var raw = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, "auftraege/" + leaked.RunId + "/lauf.json"));
+            Assert.DoesNotContain("ausserhalb-geheim", raw);
+            Assert.DoesNotContain("streng-geheim-99", raw);
+        }
         var escape = fx.Wf.Start(fx.Req("SYS-02", "Text: noch eins", [new PromptAttachment("fremd", "../../" + other.Id + "/files/geheim.txt")], "zweit-auftrag"), fx.Ctx());
         Assert.Equal(RunStatus.Failed, escape.Status);
         Assert.False(File.ReadAllText(fx.Core.Audit.FilePath).Contains("streng-geheim-99"));

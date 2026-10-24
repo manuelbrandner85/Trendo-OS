@@ -1,6 +1,6 @@
 # T-0206: Webseite bauen – Code sehen, ändern, Vorschau
 
-**Ausführung:** Box-Agent (nicht Grok Build). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
 
 **Ziel:** Im Studio „Webseite bauen“ kann ich Inhalte und Code meiner Seite ändern und sehe sofort das Ergebnis.
 **Branch:** box/T-0206-webseite-software

@@ -1,6 +1,6 @@
 # T-0212: Schrift & Farben anpassen – Schalter wirken sofort sichtbar
 
-**Ausführung:** Box-Agent (nicht Grok Build). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
 
 **Ziel:** Einfacher Modus, Zeichen statt Farbe, Bewegung reduzieren und leichte Sprache ändern sofort sichtbar die Oberfläche.
 **Branch:** box/T-0212-barrierefreiheit

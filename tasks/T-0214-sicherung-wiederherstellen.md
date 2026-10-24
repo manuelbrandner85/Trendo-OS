@@ -1,6 +1,6 @@
 # T-0214: Sicherung wiederherstellen stürzt ab
 
-**Ausführung:** Box-Agent (nicht Grok Build). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
 
 **Ziel:** „Wiederherstellen“ bringt meine Daten aus einer Sicherung zurück, ohne Absturz.
 **Branch:** box/T-0214-sicherung-wiederherstellen

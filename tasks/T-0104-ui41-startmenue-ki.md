@@ -1,7 +1,7 @@
 # T-0104: UI41-3 Startmenü und KI-Bereich nach Referenz 02/05
 
 **Ziel:** Startmenü visuell modernisieren (angeheftet, Empfohlen/Kürzlich, Kategorien, Nutzer/Power); KI als Chat-Layout (Verlauf links, Eingabe unten, Modell & Status rechts).
-**Branch:** grok/T-0104-ui41-startmenue-ki
+**Branch:** claude/T-0104-ui41-startmenue-ki
 **Dateien/Bereich:** `MainWindow.StartMenu.cs`, KI-Ansicht in `MainWindow.axaml.cs`/KI-Dateien, Tests.
 **Vorgehen:** Suche, Win/Esc, Anheften unverändert lassen. KI-Status nur echt: Nicht verbunden / Verbindung wird geprüft / Bereit / Antwort läuft / Fehler / Offline. Vorschlagskarten dürfen nur echte Aktionen auslösen.
 **Fertig, wenn:**

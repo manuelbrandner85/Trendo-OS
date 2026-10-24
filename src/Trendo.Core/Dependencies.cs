@@ -98,10 +98,9 @@ public static class DependencyCatalog
         new("unreal", "Unreal Engine", "Game Studio", "Epic EULA (nicht weitergebbar)", DeliveryMode.Guided,
             "Nur über Epic Games Launcher mit Epic-Konto erlaubt – keine automatische Installation", null, 0, "https://www.unrealengine.com/download", ["unreal"], [@"%ProgramFiles%\Epic Games\UE_*\Engine\Binaries\Win64\UnrealEditor.exe"]),
         new("chrome", "Google Chrome (optional)", "Browser", "Google-Lizenz (proprietär)", DeliveryMode.Guided, "Proprietär – nur offizieller Download", null, 0, "https://www.google.com/chrome/"),
-        new("grokbuild", "Grok Build", "KI-Programmieragent", "Konto/Berechtigung erforderlich", DeliveryMode.Guided, "Kontogebunden – nur offizieller Zugang", null, 0, "https://x.ai"),
+        new("claudecode", "Claude Code", "KI-Programmieragent", "Konto/Berechtigung erforderlich", DeliveryMode.Guided, "Kontogebunden – nur offizieller Zugang", null, 0, "https://claude.com/claude-code"),
         new("tor", "Tor Browser", "Recherche (read-only)", "BSD-3-Clause u. a.", DeliveryMode.Guided, "Sicherheits-QA ausstehend – nur offizielle Quelle", null, 0, "https://www.torproject.org/download/"),
         new("chromium", "Chromium", "Browser (Linux-Edition)", "BSD-3-Clause", DeliveryMode.NotNeeded, "Windows: Microsoft Edge ist vorhanden; in der Linux-Edition enthalten"),
-        new("grokbot", "Grok Bot", "Cloud-Projektleitung", "Kontotarif", DeliveryMode.NotNeeded, "Optionaler Cloudbereich, nicht Teil des OS-Bundles"),
     ];
 
     public static Component Get(string id) => All.First(c => c.Id == id);

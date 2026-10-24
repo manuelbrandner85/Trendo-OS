@@ -1,6 +1,6 @@
 # T-0211: PDF-Formulare, Druckvorschau und Downloads funktionsfähig machen
 
-**Ausführung:** Box-Agent (nicht Grok Build). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
 
 **Ziel:** PDF-Formular ausfüllen, Druckvorschau und Download-Verwaltung tun, was sie sagen.
 **Branch:** box/T-0211-office-pdf-netz

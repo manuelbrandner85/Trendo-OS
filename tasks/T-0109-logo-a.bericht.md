@@ -1,7 +1,7 @@
 # T-0109 Bericht: Logo A „Obsidian-Kachel“
 
 **Auftrag:** Das alte V-Konzeptlogo überall durch Logo A ersetzen, Reste prüfen, die drei Testsuiten grün bekommen und einen Headless-Screenshot von Desktop und Taskleiste ablegen.
-**Branch:** `feat/t0109-logo-a` (der Auftrag nennt `grok/T-0109-logo-a`; gearbeitet wurde auf dem vorhandenen Branch, den der Auftraggeber genannt hat).
+**Branch:** `feat/t0109-logo-a` (der Auftrag nennt `claude/T-0109-logo-a`; gearbeitet wurde auf dem vorhandenen Branch, den der Auftraggeber genannt hat).
 
 Der Großteil lag schon auf dem Branch (und ist über PR #209 auf `main` gemergt): Vektor-Nachbau in `Logo()`, Startknopf, Fenster-Icon, `trendo.ico`, Setup-Icon, README, `LogoTests`. Dieser Abschluss prüft die Reste, ersetzt den veralteten Hinweis und legt den Screenshot neu ab.
 

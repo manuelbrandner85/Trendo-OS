@@ -1,5 +1,5 @@
 # ADR-0003: Windows-Vertical-Slice vor Linux/Pi
-**Status:** ACCEPTED (aus Spezifikation) · **Datum:** 2026-10-21 · **Quelle:** ROADMAP P1, GROK_BUILD_MASTERPROMPT §6
+**Status:** ACCEPTED (aus Spezifikation) · **Datum:** 2026-10-21 · **Quelle:** ROADMAP P1, Masterprompt §6
 
 ## Entscheidung
 Erste lauffähige Phase ist ein kleiner Windows-Slice: Core-Dienst (nur localhost), minimale UI, Projektverwaltung mit Isolation, Studio-Registry mit ehrlichem Status, Approval-Gate, Audit-Log, Secret-Adapter (Windows Credential Manager), eine echte Integration (Browser/Explorer starten nach Freigabe), Launcher, Unit-Tests.
