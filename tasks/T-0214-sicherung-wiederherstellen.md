@@ -1,9 +1,9 @@
 # T-0214: Sicherung wiederherstellen stürzt ab
 
-**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Claude Code am Windows-PC (seit 2026-10-24, ADR-0009).
 
 **Ziel:** „Wiederherstellen“ bringt meine Daten aus einer Sicherung zurück, ohne Absturz.
-**Branch:** box/T-0214-sicherung-wiederherstellen
+**Branch:** claude/T-0214-sicherung-wiederherstellen
 **Dateien/Bereich:** `src/Trendo.Core/Backup.cs`, Sicherungs-Ansicht in `src/Trendo.App/`, Tests.
 **Befund:** Klick-Audit: „Wiederherstellen“ wirft `IOException` (Sicherungsdatei existiert schon) bzw. `UnauthorizedAccessException` (schreibgeschützte `.git`-Objekte im Projektordner).
 **Fertig, wenn:**

@@ -234,7 +234,15 @@ public sealed partial class MainWindow
                 };
                 var no = new Button { Name = $"backup-restore-no-{idx}", Content = "Abbrechen", FontSize = 11 };
                 no.Click += (_, _) => { _backupConfirm = null; _backupMsg = "Abgebrochen – nichts geändert."; Show("sicherung"); };
-                row.Children.Add(P("Der aktuelle Stand wird ersetzt (vorher gesichert). Sicher?", Brush.Parse("#FACC15"), 11)); row.Children.Add(yes); row.Children.Add(no);
+                string what;
+                try
+                {
+                    var plan = Backups.Preview(file);
+                    what = $"Ersetzt {plan.Replaced} Dateien, ergänzt {plan.Added}" + (plan.Examples.Count > 0 ? $" (z. B. {string.Join(", ", plan.Examples.Take(3))})" : "") + ". Der aktuelle Stand wird vorher gesichert. Sicher?";
+                }
+                catch (Exception ex) when (ex is IOException or InvalidDataException) { what = "Sicherung nicht lesbar: " + ex.Message; }
+                var info = P(what, Brush.Parse("#FACC15"), 11); info.Name = $"backup-restore-plan-{idx}";
+                row.Children.Add(info); row.Children.Add(yes); row.Children.Add(no);
             }
             else
             {

@@ -1,9 +1,9 @@
 # T-0204: Spiele-Studio – eigenes Spiel statt drei fester Vorlagen
 
-**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Claude Code am Windows-PC (seit 2026-10-24, ADR-0009).
 
 **Ziel:** Ich kann ein eigenes kleines Spiel gestalten, nicht nur eine von drei Vorlagen (Schlange, Mauerbrecher, Hüpfspiel) kopieren.
-**Branch:** box/T-0204-spiele-studio
+**Branch:** claude/T-0204-spiele-studio
 **Dateien/Bereich:** `MainWindow.W4Game.cs`, `src/Trendo.Core/GameStudio.cs`, Tests.
 **Befund:** Name verspricht „mit der Unreal Engine“; ohne Unreal gibt es nur 3 feste Browser-Spiele ohne Einstellungen.
 **Fertig, wenn:**

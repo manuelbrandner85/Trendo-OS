@@ -1,9 +1,9 @@
 # T-0207: Fach-Studios – Auswahllisten, Bilder statt nur Text, Versprechen halten
 
-**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Claude Code am Windows-PC (seit 2026-10-24, ADR-0009).
 
 **Ziel:** Die 14 Fach-Studios sind bequem zu bedienen und halten, was ihr Name verspricht.
-**Branch:** box/T-0207-fachstudios-bedienung
+**Branch:** claude/T-0207-fachstudios-bedienung
 **Dateien/Bereich:** `src/Trendo.App/MainWindow.W6.cs`, `MainWindow.Spec*.cs`, `MainWindow.Core09.cs`, Tests.
 **Befund:** Alle Werkzeuge rechnen echt (Klick-Audit: Ergebnis erscheint), aber: feste Auswahl wird als Freitext erwartet („Standard: altbau, teilsaniert …“), Ergebnisse nur als Text, Eingaben gehen beim Schließen teils verloren, Namen versprechen mehr („Live streamen“ ohne Streaming, „Kameras & Roboter steuern“ ohne Live-Kamera, „Gegenstände einscannen“ ohne Aufnahme).
 **Fertig, wenn:**

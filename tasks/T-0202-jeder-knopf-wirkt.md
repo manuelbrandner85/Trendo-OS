@@ -1,9 +1,9 @@
 # T-0202: Jeder Knopf wirkt sichtbar (Erweiterung von T-0004)
 
-**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Claude Code am Windows-PC (seit 2026-10-24, ADR-0009).
 
 **Ziel:** Kein Knopf bleibt ohne Reaktion; leere Eingaben führen zu einem klaren Hinweis statt zu nichts oder einem Absturz.
-**Branch:** box/T-0202-jeder-knopf-wirkt
+**Branch:** claude/T-0202-jeder-knopf-wirkt
 **Dateien/Bereich:** betroffene `src/Trendo.App/MainWindow.*.cs` (Liste in `docs/audit/LOGIK_AUDIT.md`, Abschnitt „Ohne sichtbare Reaktion“ und „Absturz“), neuer Test `tests/Trendo.App.Tests/EveryButtonTests.cs`.
 **Befund:** Headless-Klick-Audit (`reports/audit/`): 6 Abstürze (Geld umrechnen, Pipette, Betrieb-Import, 3× Sicherung „Wiederherstellen“) und 36 Knöpfe ohne jede sichtbare Wirkung bei Standardeingaben; 23 Schalter (CheckBox/RadioButton) und 9 Netz-/Hintergrund-Knöpfe konnten nicht geprüft werden.
 **Fertig, wenn:**

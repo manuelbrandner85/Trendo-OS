@@ -1,9 +1,9 @@
 # T-0209: Kleine Helfer & Dateien – Abstürze und stumme Knöpfe beheben
 
-**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Claude Code am Windows-PC (seit 2026-10-24, ADR-0009).
 
 **Ziel:** Die Alltagshelfer funktionieren ohne Vorwissen.
-**Branch:** box/T-0209-alltag-helfer
+**Branch:** claude/T-0209-alltag-helfer
 **Dateien/Bereich:** `MainWindow.Sys02.cs`, `src/Trendo.Core/Utilities.cs`, Tests.
 **Befund:** „Geld umrechnen“ und „Pipette“ stürzen bei leerem Feld ab (FormatException); ohne Wirkung: Umbenennen, Speicherplatz anzeigen, Fotos ordnen, Papierkorb anzeigen/leeren, Merken (Zwischenablage), Farbe kopieren, Bild drehen/verkleinern ohne gewähltes Bild.
 **Fertig, wenn:**

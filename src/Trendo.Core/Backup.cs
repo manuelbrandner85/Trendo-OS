@@ -32,6 +32,25 @@ public sealed class Backup(string dataRoot, string backupDir, AuditLog audit)
         return zip;
     }
 
+    public sealed record RestorePlan(int Replaced, int Added, IReadOnlyList<string> Examples);
+
+    /// <summary>Was ein Wiederherstellen ändern würde: ersetzte und neue Dateien (ohne Audit, ohne Zip-Slip), nichts wird geschrieben.</summary>
+    public RestorePlan Preview(string zip)
+    {
+        if (!File.Exists(zip)) throw new FileNotFoundException(zip);
+        using var z = ZipFile.OpenRead(zip);
+        int replaced = 0, added = 0; var examples = new List<string>();
+        foreach (var e in z.Entries)
+        {
+            if (e.FullName.EndsWith('/') || e.FullName.StartsWith("audit/")) continue;
+            var dest = Path.GetFullPath(Path.Combine(dataRoot, e.FullName));
+            if (!dest.StartsWith(Path.GetFullPath(dataRoot) + Path.DirectorySeparatorChar)) continue;
+            if (File.Exists(dest)) { replaced++; if (examples.Count < 5) examples.Add(e.FullName); }
+            else added++;
+        }
+        return new(replaced, added, examples);
+    }
+
     /// <summary>Stellt eine Sicherung wieder her. Vorher wird der aktuelle Stand als eigene Sicherung gespeichert.</summary>
     public int Restore(string zip, DateTime now)
     {

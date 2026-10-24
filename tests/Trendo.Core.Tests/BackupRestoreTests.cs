@@ -23,4 +23,19 @@ public class BackupRestoreTests
         Assert.Equal(b.List().Count, b.List().Select(x => x.Name).Distinct().Count());
         Assert.True(f.Core.Audit.Verify());
     }
+
+    [Fact(DisplayName = "T-0214: Vorschau nennt ersetzte und neue Dateien, schreibt nichts")]
+    public void Preview_lists_changes_without_writing()
+    {
+        using var f = new Fixture(); var root = f.Core.DataRoot;
+        var b = new Backup(root, Path.Combine(root, "backups"), f.Core.Audit);
+        File.WriteAllText(Path.Combine(root, "a.txt"), "eins");
+        var z = b.Create(new DateTime(2026, 10, 24, 9, 0, 0));
+        File.WriteAllText(Path.Combine(root, "a.txt"), "zwei"); File.Delete(Path.Combine(root, "a.txt"));
+        var p = b.Preview(z);
+        Assert.True(p.Added >= 1);
+        Assert.False(File.Exists(Path.Combine(root, "a.txt")));
+        File.WriteAllText(Path.Combine(root, "a.txt"), "drei");
+        Assert.Contains("a.txt", b.Preview(z).Examples);
+    }
 }

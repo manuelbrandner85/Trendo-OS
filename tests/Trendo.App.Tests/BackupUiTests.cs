@@ -17,6 +17,7 @@ public class BackupUiTests
         Assert.Contains(w.GetLogicalTexts(), t => t.StartsWith("Gesichert:"));
         w.Find<Button>("backup-restore-0").Press();
         Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Sicher?"));
+        Assert.Contains("Ersetzt", w.Find<TextBlock>("backup-restore-plan-0").Text);
         w.Find<Button>("backup-restore-yes-0").Press();
         w.Find<Button>("backup-restore-0").Press();
         w.Find<Button>("backup-restore-yes-0").Press();

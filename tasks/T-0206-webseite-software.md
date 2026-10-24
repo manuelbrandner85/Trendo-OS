@@ -1,9 +1,9 @@
 # T-0206: Webseite bauen – Code sehen, ändern, Vorschau
 
-**Ausführung:** Box-Agent (nicht Claude Code). Windows-Nachweise am PC über den Integrator.
+**Ausführung:** Claude Code am Windows-PC (seit 2026-10-24, ADR-0009).
 
 **Ziel:** Im Studio „Webseite bauen“ kann ich Inhalte und Code meiner Seite ändern und sehe sofort das Ergebnis.
-**Branch:** box/T-0206-webseite-software
+**Branch:** claude/T-0206-webseite-software
 **Dateien/Bereich:** `MainWindow.W4Dev.cs`, `MainWindow.W4Builder.cs`, `src/Trendo.Core/DevStudio.cs`, Tests.
 **Befund:** Nur 4 Vorlagen anlegen, Ordner öffnen, Testen, Git-Stand; kein Editor, keine Vorschau im Studio, kein „In VS Code öffnen“.
 **Fertig, wenn:**
