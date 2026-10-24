@@ -43,4 +43,17 @@ public class OfficeNetzFeedbackTests
         w.Find<Button>("dlsort-apply").Press();
         Assert.Contains(w.GetLogicalTexts(), t => t.StartsWith("Nichts zu sortieren"));
     }
+
+    [AvaloniaFact(DisplayName = "T-0211: Druckvorschau zeigt Seitenbilder oder einen klaren Hinweis und öffnet das PDF")]
+    public void Print_preview_pages()
+    {
+        var (w, l, root) = Ui.Open();
+        var pdf = Path.Combine(root, "vorschau.pdf"); File.WriteAllText(pdf, "%PDF-1.4");
+        w.Show("doku-pdf");
+        w.Find<TextBox>("print-file").Text = pdf;
+        w.Find<Button>("print-preview").Press();
+        Assert.NotEmpty(w.Find<WrapPanel>("print-pages").Children);
+        Assert.Contains(l.Opened, o => o.Contains("vorschau.pdf"));
+        w.Close();
+    }
 }

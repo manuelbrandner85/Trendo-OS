@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Trendo.Core;
@@ -21,6 +22,27 @@ public partial class MainWindow
     }
     private Control DokuPage(string title, Control body) => W45Page(title, DokuTabs, "doku", body);
     private string? Tool(string name) => ToolPath(name) ?? Cli.Find(name);
+
+    /// <summary>T-0211: Seitenbilder der ersten (höchstens 4) Seiten für die Druckvorschau – mit Poppler (pdftoppm), sonst ein klarer Hinweis.</summary>
+    private Control PageImages(string pdf)
+    {
+        var row = new WrapPanel { Name = "print-pages" };
+        if (Tool("pdftoppm") is not { } pp) { row.Children.Add(P("Seitenbilder brauchen Poppler (pdftoppm) – die Vorschau öffnet sich im PDF-Programm.", null, 11)); return row; }
+        var dir = Path.Combine(WorkFolder("druckvorschau"), Path.GetFileNameWithoutExtension(pdf));
+        Directory.CreateDirectory(dir);
+        foreach (var old in Directory.GetFiles(dir, "s-*.png")) File.Delete(old);
+        var r = Cli.Run(pp, ["-r", "40", "-png", "-f", "1", "-l", "4", pdf, Path.Combine(dir, "s")], timeoutMs: 60000);
+        var pages = Directory.GetFiles(dir, "s-*.png").OrderBy(x => x, StringComparer.Ordinal).ToList();
+        if (!r.Ok || pages.Count == 0) { row.Children.Add(P("Seitenbilder konnten nicht erzeugt werden: " + (r.Err.Length > 0 ? r.Err : "unbekannter Fehler"), null, 11)); return row; }
+        var i = 0;
+        foreach (var png in pages)
+        {
+            using var s = File.OpenRead(png);
+            row.Children.Add(new Border { Name = $"print-page-{i++}", Margin = new Thickness(0, 6, 8, 0), BorderBrush = Edge, BorderThickness = new Thickness(1),
+                Child = new Image { Source = new Avalonia.Media.Imaging.Bitmap(s), Height = 180 } });
+        }
+        return row;
+    }
     private string DokuOut => WorkFolder("Dokumente");
 
     // ---------- PDF ----------
@@ -83,7 +105,7 @@ public partial class MainWindow
         foreach (var f in _formFields) { var t = new TextBox { Name = "form-field-" + boxes.Count, Text = f.Value, Width = 260, PlaceholderText = f.Type == "Btn" ? "ja / nein" : "" }; boxes[f.Name] = t; fields.Children.Add(Line(P(f.Name, Text), t)); }
         sp.Children.Add(Card(Section("PDF-Formular ausfüllen", "Liest die Felder eines PDF-Formulars. Ausgefüllt wird eine Kopie – das Original bleibt.",
             Line(ff, Act("form-read", "Felder lesen", () => Try(V, () => { _formFile = Need(ff, "die PDF-Datei mit dem Formular"); _formFields = PdfForm.Fields(_formFile); Say(_formFields.Count == 0 ? "Keine ausfüllbaren Felder gefunden." : $"{_formFields.Count} Felder gefunden.", V); })),
-                Act("form-save", "Ausgefüllt speichern", () => Try(V, () => { if (string.IsNullOrEmpty(_formFile) || _formFields.Count == 0) { Say("Erst „Felder lesen“ – dann ausfüllen und speichern.", V); return; } var o = PdfForm.Fill(_formFile, boxes.ToDictionary(b => b.Key, b => b.Value.Text ?? "")); _formFields = []; Say("Gespeichert: " + Path.GetFileName(o), V); }), true)), fields)));
+                Act("form-save", "Ausgefüllt speichern", () => Try(V, () => { if (string.IsNullOrEmpty(_formFile) || _formFields.Count == 0) { Say("Erst „Felder lesen“ – dann ausfüllen und speichern.", V); return; } var o = PdfForm.Fill(_formFile, boxes.ToDictionary(b => b.Key, b => b.Value.Text ?? "")); _formFields = []; Say("Gespeichert und geöffnet: " + Path.GetFileName(o), V); Launch(o); }), true)), fields)));
 
         var pf = Field("print-file", "PDF zum Drucken", 340, _printFile); var info = new StackPanel { Name = "print-info" };
         var sumatra = ToolPath("sumatra");
@@ -92,6 +114,7 @@ public partial class MainWindow
             {
                 var f = Need(pf, "die PDF-Datei für die Vorschau"); if (!File.Exists(f)) { Say("Datei nicht gefunden: " + Path.GetFileName(f), V); return; } var b = Pdf.MediaBox(f); _printFile = f; info.Children.Clear();
                 info.Children.Add(P($"{Pdf.Pages(f)} Seiten · {(b is { } x ? $"{x.W / 72 * 25.4:0} × {x.H / 72 * 25.4:0} mm" : "Format unbekannt")} · {(Pdf.IsA4(b) ? "A4 ✓" : "nicht A4")}", Text));
+                info.Children.Add(PageImages(f));
                 if (sumatra is not null) _core.Integrations.LaunchDirect(Principal.LocalOwner, sumatra, _core.Audit, f); else Launch(f);
             })), _printAsk ? Line(P("Jetzt auf dem Standarddrucker drucken?", Text), Act("print-yes", "Ja, drucken", () => Try(V, () => { PrintNow(_printFile, sumatra); _printAsk = false; Say("An den Drucker geschickt.", V); }), true), Act("print-no", "Abbrechen", () => { _printAsk = false; Show(V); }))
                             : Act("print-ask", "Drucken …", () => { _printFile = Clean(pf); if (File.Exists(_printFile)) { _printAsk = true; Show(V); } else Say("Datei nicht gefunden.", V); })), info)));
