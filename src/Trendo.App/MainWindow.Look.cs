@@ -68,7 +68,7 @@ public sealed partial class MainWindow
         {
             var w = _settings.CurrentWallpaper(DateTime.Now);
             if (w == _wallName) return;
-            _wallName = w; _wallImg.Source = _blurImg.Source = LoadWallpaper(w);
+            SetWallpaper(w);
             if (_settings.AccentFromWallpaper && CurrentView == "settings") Reopen("settings");
         };
         OwnTimer(t);
@@ -219,11 +219,11 @@ public sealed partial class MainWindow
             var on = !_settings.WallpaperByTime && _settings.Wallpaper == id;
             var b = new Button { Name = "wall-" + id, Margin = new Thickness(0, 0, 10, 10), Padding = new Thickness(3), BorderBrush = on ? Accent : Brushes.Transparent, BorderThickness = new Thickness(2), Background = Brushes.Transparent, CornerRadius = new CornerRadius(8),
                 Content = new StackPanel { Spacing = 4, Children = { new Image { Source = LoadWallpaper(id), Width = 150, Height = 84, Stretch = Stretch.UniformToFill }, new TextBlock { Text = label, Foreground = Text, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center } } } };
-            b.Click += (_, _) => { _settingsSection = "hintergrund"; _settings.Wallpaper = id; _settings.WallpaperByTime = false; SaveSettings(); _wallName = id; _wallImg.Source = _blurImg.Source = LoadWallpaper(id); if (_settings.AccentFromWallpaper) Reopen("settings"); else Show("settings"); };
+            b.Click += (_, _) => { _settingsSection = "hintergrund"; _settings.Wallpaper = id; _settings.WallpaperByTime = false; SaveSettings(); SetWallpaper(id); if (_settings.AccentFromWallpaper) Reopen("settings"); else Show("settings"); };
             walls.Children.Add(b);
         }
         var byTime = new CheckBox { Name = "wall-bytime", Content = "Hintergrund nach Tageszeit wechseln (Morgen · Wellen · Bergsee · Polarlicht)", IsChecked = _settings.WallpaperByTime, Foreground = Text };
-        byTime.IsCheckedChanged += (_, _) => { _settings.WallpaperByTime = byTime.IsChecked == true; SaveSettings(); var w = _settings.CurrentWallpaper(DateTime.Now); _wallName = w; _wallImg.Source = _blurImg.Source = LoadWallpaper(w); };
+        byTime.IsCheckedChanged += (_, _) => { _settings.WallpaperByTime = byTime.IsChecked == true; SaveSettings(); var w = _settings.CurrentWallpaper(DateTime.Now); SetWallpaper(w); };
         sections.Children.Add(Section("hintergrund", "Hintergrund", new StackPanel { Spacing = 6, Children = { walls, byTime } }));
 
         var motion = new CheckBox { Name = "reduce-motion", Content = "Bewegung reduzieren (keine Animationen)", IsChecked = _settings.ReduceMotion, Foreground = Text };

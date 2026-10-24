@@ -356,7 +356,9 @@ public sealed partial class MainWindow : Window
         if (_settings.Theme == "kontrast" || LowPower) return null;
         try
         {
-            var img = _blurImg; img.Source = LoadWallpaper(_wallName); img.Stretch = Stretch.UniformToFill; img.HorizontalAlignment = HorizontalAlignment.Center; img.VerticalAlignment = VerticalAlignment.Center; img.Effect = new BlurEffect { Radius = 36 };
+            // Glas: Unschärfe wird einmal vorab berechnet (Start/Bildwechsel), nicht mehr live pro Bild.
+            var img = _blurImg; img.Stretch = Stretch.UniformToFill; img.HorizontalAlignment = HorizontalAlignment.Center; img.VerticalAlignment = VerticalAlignment.Center;
+            if (!LowPower) img.Source = BlurredWallpaperBitmap(_wallName);
             var brush = new VisualBrush { Visual = mask, Stretch = Stretch.None, AlignmentX = AlignmentX.Left, AlignmentY = AlignmentY.Top, TileMode = TileMode.None };
             // Quelle/Ziel absolut auf die Fläche der Oberfläche festlegen – sonst verschiebt überstehender Inhalt (Glow) die Maske
             void Fit() { var b = mask.Bounds; if (b.Width > 0) brush.SourceRect = brush.DestinationRect = new RelativeRect(0, 0, b.Width, b.Height, RelativeUnit.Absolute); }
@@ -415,7 +417,13 @@ public sealed partial class MainWindow : Window
 
     /// <summary>„Di, 21. Okt. 2026“ wie in der Kopfleiste der Referenz.</summary>
     /// <summary>Sparsames Leistungsprofil (T-0107): selbst gewählt oder automatisch auf ARM (Raspberry Pi).</summary>
-    public bool LowPower => _settings.IsLowPower(System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture is System.Runtime.InteropServices.Architecture.Arm64 or System.Runtime.InteropServices.Architecture.Arm);
+    /// <summary>TRENDO_PROFILE=pi bzw. voll (#268) übersteuert die Einstellung, etwa für das Pi-Image.</summary>
+    public bool LowPower => Environment.GetEnvironmentVariable("TRENDO_PROFILE")?.Trim().ToLowerInvariant() switch
+    {
+        "pi" => true,
+        "voll" => false,
+        _ => _settings.IsLowPower(System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture is System.Runtime.InteropServices.Architecture.Arm64 or System.Runtime.InteropServices.Architecture.Arm),
+    };
     /// <summary>Keine Animationen: „Bewegung reduzieren“ oder sparsames Profil.</summary>
     private bool Motionless => _settings.ReduceMotion || LowPower;
 
