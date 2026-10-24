@@ -41,12 +41,12 @@ class AgentConfigurationTests(unittest.TestCase):
   raw={'reports/P1_TESTBERICHT.md','reports/audit/klick-rohdaten.tsv','reports/p1/acceptance/audit_selftest_explorer.jsonl',
        'reports/p1/deps/deps-before.txt','reports/p1/deps/install-python.txt','reports/p1/ki/README.md','reports/p1/ki/install-ki.txt',
        'reports/p1/v06/pull3b.txt','reports/pc-t0003/CORE-03-core.trx','reports/pc-t0003/suite-core.trx','reports/w0/sumatra-install.txt'}
-  skip=('.git/','.trendo-local/','bin/','obj/')
+  skip=('.git/','.trendo-local/','bin/','obj/','artifacts/','installer/companion/out/')  # Build-Ausgaben, per .gitignore nicht im Repo
   hits=[]
   for f in ROOT.rglob('*'):
    rel=f.relative_to(ROOT).as_posix()
    if not f.is_file() or rel in raw or any(rel.startswith(s) or ('/'+s) in ('/'+rel) for s in skip): continue
-   if f.suffix.lower() in ('.png','.jpg','.jpeg','.ico','.exe','.dll','.pdb','.zip','.iso','.xz','.blend'): continue
+   if f.suffix.lower() in ('.png','.jpg','.jpeg','.ico','.exe','.dll','.pdb','.zip','.iso','.xz','.blend','.nupkg','.gz'): continue
    if old in rel.lower(): hits.append(rel); continue
    try:
     if old in f.read_text(encoding='utf-8',errors='ignore').lower(): hits.append(rel)
