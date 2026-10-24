@@ -64,4 +64,31 @@ public static class Engineering
         if (a.Dim != b.Dim) throw new ArgumentException("Diese Einheiten passen nicht zusammen.");
         return v * a.F / b.F;
     }
+
+    /// <summary>T-0207: Balkenbild – Lagerung, Last und überhöhte Biegelinie mit den Kennwerten (SVG, 600×220).</summary>
+    public static string BeamSvg(BeamCase c, double L_m, BeamResult r)
+    {
+        static string N(double v) => v.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture);
+        double x0 = 60, x1 = 540, y = 110; var cantilever = c is BeamCase.KragarmEnde or BeamCase.KragarmStrecke;
+        var sb = new System.Text.StringBuilder("<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"600\" height=\"220\" viewBox=\"0 0 600 220\">");
+        sb.Append("<rect x=\"0\" y=\"0\" width=\"600\" height=\"220\" fill=\"#0B1730\"/>");
+        // Biegelinie (überhöht, gestrichelt)
+        var pts = new List<string>();
+        for (var i = 0; i <= 40; i++)
+        {
+            var t = i / 40.0; var w = cantilever ? t * t * (3 - t) / 2 : Math.Sin(Math.PI * t);
+            pts.Add($"{N(x0 + t * (x1 - x0))},{N(y + 30 * w)}");
+        }
+        sb.Append($"<polyline points=\"{string.Join(" ", pts)}\" fill=\"none\" stroke=\"{(r.Ok ? "#4ADE80" : "#F87171")}\" stroke-width=\"2\"/>");
+        sb.Append($"<rect x=\"{N(x0)}\" y=\"{N(y - 6)}\" width=\"{N(x1 - x0)}\" height=\"12\" fill=\"#9DB0CF\"/>");
+        if (cantilever) sb.Append($"<rect x=\"{N(x0 - 14)}\" y=\"{N(y - 40)}\" width=\"14\" height=\"80\" fill=\"#5B6B88\"/>");
+        else
+            foreach (var sx in new[] { x0, x1 }) sb.Append($"<path d=\"M{N(sx)} {N(y + 6)} L{N(sx - 12)} {N(y + 28)} L{N(sx + 12)} {N(y + 28)} Z\" fill=\"#5B6B88\"/>");
+        // Last: Einzellast als Pfeil, Streckenlast als Pfeilreihe
+        var at = c switch { BeamCase.EinfeldMitte => new[] { (x0 + x1) / 2 }, BeamCase.KragarmEnde => [x1], _ => Enumerable.Range(0, 9).Select(i => x0 + i * (x1 - x0) / 8).ToArray() };
+        foreach (var ax in at) sb.Append($"<line x1=\"{N(ax)}\" y1=\"{N(y - 60)}\" x2=\"{N(ax)}\" y2=\"{N(y - 10)}\" stroke=\"#FACC15\" stroke-width=\"3\"/><path d=\"M{N(ax - 6)} {N(y - 18)} L{N(ax + 6)} {N(y - 18)} L{N(ax)} {N(y - 8)} Z\" fill=\"#FACC15\"/>");
+        sb.Append($"<text x=\"300\" y=\"24\" fill=\"#EEF3FB\" font-size=\"14\" text-anchor=\"middle\">Länge {N(L_m)} m · Spannung {N(r.Stress_MPa)} N/mm² · Sicherheit {r.Safety.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)}</text>");
+        sb.Append($"<text x=\"300\" y=\"200\" fill=\"{(r.Ok ? "#4ADE80" : "#F87171")}\" font-size=\"13\" text-anchor=\"middle\">Durchbiegung {N(r.Deflection_mm)} mm (überhöht gezeichnet)</text></svg>");
+        return sb.ToString();
+    }
 }

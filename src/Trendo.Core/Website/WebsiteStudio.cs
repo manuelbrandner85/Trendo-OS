@@ -75,6 +75,33 @@ public static class WebsiteStudio
         return content;
     }
 
+    /// <summary>T-0206: Zeigt, was <see cref="Revise"/> ändern würde – auf einer Kopie, das Projekt bleibt unverändert.</summary>
+    public static (IReadOnlyList<string> Removed, IReadOnlyList<string> Added) PreviewRevise(string dir, string instruction)
+    {
+        var tmp = Path.Combine(Path.GetTempPath(), "trendo-web-vorschau-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            foreach (var f in Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories))
+            {
+                var rel = Path.GetRelativePath(dir, f);
+                if (rel.StartsWith("node_modules", StringComparison.OrdinalIgnoreCase)) continue;
+                Directory.CreateDirectory(Path.GetDirectoryName(Path.Combine(tmp, rel))!);
+                File.Copy(f, Path.Combine(tmp, rel));
+            }
+            Revise(tmp, instruction);
+            var removed = new List<string>(); var added = new List<string>();
+            foreach (var f in Directory.EnumerateFiles(tmp, "*.*", SearchOption.AllDirectories).Where(f => Path.GetExtension(f) is ".html" or ".css" or ".js"))
+            {
+                var orig = Path.Combine(dir, Path.GetRelativePath(tmp, f));
+                var before = File.Exists(orig) ? File.ReadAllLines(orig).Select(l => l.Trim()).Where(l => l.Length > 0).ToHashSet() : [];
+                var after = File.ReadAllLines(f).Select(l => l.Trim()).Where(l => l.Length > 0).ToHashSet();
+                removed.AddRange(before.Except(after)); added.AddRange(after.Except(before));
+            }
+            return (removed, added);
+        }
+        finally { try { Directory.Delete(tmp, true); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
+    }
+
     public static WebsiteBuildResult Revise(string dir, string instruction)
     {
         var text = instruction.Trim();

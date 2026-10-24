@@ -32,6 +32,9 @@ SZENEN = {
               "glassy lake, warm and fresh atmosphere, gentle pastel sky",
     "polarlicht": "Green and violet aurora borealis dancing over snow-covered mountains and a frozen lake, starry arctic night, "
                   "the aurora reflected on smooth ice, crisp cold air",
+    "abendrot": "Golden hour sunset over a calm alpine mountain lake, dramatic jagged snow-capped peaks glowing orange and pink, "
+                "deep blue sky with soft clouds lit from below, mirror-like reflection on dark blue water, rocky shore with pine trees "
+                "silhouetted on both sides, warm orange light on the left, cool blue tones on the right",
     "wellen": "Abstract flowing translucent glass ribbons and soft light waves, deep navy, electric blue and violet gradients, "
               "subtle glow and depth of field, elegant minimal digital art, dark background",
 }

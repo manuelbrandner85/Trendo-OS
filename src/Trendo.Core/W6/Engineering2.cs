@@ -19,6 +19,7 @@ public static class EngineeringPlus
     }
 
     // Festigkeitsklasse 8.8, µ = 0,12: Anzugsmoment (Nm), Vorspannkraft (kN) – Richtwerte (VDI 2230, gängige Tabellen)
+    public static IEnumerable<string> BoltSizes => Bolts88.Keys;
     private static readonly Dictionary<string, (double Nm, double KN)> Bolts88 = new(StringComparer.OrdinalIgnoreCase)
     { ["M3"] = (1.3, 2.3), ["M4"] = (3.0, 4.0), ["M5"] = (5.9, 6.6), ["M6"] = (10, 9.3), ["M8"] = (25, 17), ["M10"] = (49, 27), ["M12"] = (85, 40), ["M16"] = (210, 75), ["M20"] = (410, 120), ["M24"] = (710, 170) };
 

@@ -29,8 +29,8 @@ public partial class MainWindow
     /// <summary>Hängt die Leiste an. Der Startbildschirm bleibt unverändert, damit der parallele Desktop-Auftrag dort frei bleibt.</summary>
     private Control WithPromptBar(string key, Control view)
     {
-        // start: paralleler Desktop-Auftrag. 3d: die Seite füllt die Höhe; die Leiste sitzt dort im linken Rollbereich.
-        if (key is "start" or "3d") return view;
+        // start und studios haben eine eigene Eingabezeile (T-0218). 3d: die Seite füllt die Höhe; die Leiste sitzt dort im linken Rollbereich.
+        if (key is "start" or "studios" or "3d") return view;
         var studio = ModuleOf(key);
         if (studio is null || CapabilityCatalog.Find(studio) is null) return view;
         var dock = new DockPanel { LastChildFill = true, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };

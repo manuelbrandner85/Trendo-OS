@@ -59,6 +59,59 @@ public static class MediaStudio
         return (r, outp);
     }
 
+    static string Inv(double v) => v.ToString("0.###", CultureInfo.InvariantCulture);
+
+    /// <summary>T-0205: ein Vorschaubild bei Sekunde <paramref name="at"/>, 160 Pixel breit.</summary>
+    public static string[] FrameArgs(string input, double at, string output) =>
+        ["-hide_banner", "-loglevel", "error", "-y", "-ss", Inv(Math.Max(0, at)), "-i", input, "-frames:v", "1", "-vf", "scale=160:-2", output];
+
+    /// <summary>Zeitleiste: <paramref name="count"/> Vorschaubilder gleichmäßig verteilt; vorhandene Bilder werden wiederverwendet.</summary>
+    public static IReadOnlyList<string> Frames(string ffmpeg, string input, double duration, int count, string dir)
+    {
+        Directory.CreateDirectory(dir);
+        var list = new List<string>();
+        for (var i = 0; i < count; i++)
+        {
+            var at = duration <= 0 ? 0 : duration * (i + 0.5) / count;
+            var png = Path.Combine(dir, $"bild-{i:00}.png");
+            if (!File.Exists(png)) Cli.Run(ffmpeg, FrameArgs(input, at, png), dir, 30000);
+            if (File.Exists(png)) list.Add(png);
+        }
+        return list;
+    }
+
+    /// <summary>Ausschnitt von Start bis Ende (Sekunden) als neue MP4-Datei.</summary>
+    public static (Cli.Result Result, string Output) Cut(string ffmpeg, string input, double start, double end)
+    {
+        if (end <= start) return (new(-1, "", "Das Ende muss nach dem Anfang liegen."), "");
+        return Run(ffmpeg, input, "trim", start, end - start);
+    }
+
+    /// <summary>Liste für den concat-Demuxer; einfache Anführungszeichen im Pfad werden maskiert.</summary>
+    public static string ConcatList(IEnumerable<string> files) =>
+        string.Concat(files.Select(f => "file '" + Path.GetFullPath(f).Replace("\\", "/").Replace("'", "'\\''") + "'\n"));
+
+    public static string[] ConcatArgs(string listFile, string output) =>
+        ["-hide_banner", "-loglevel", "error", "-n", "-f", "concat", "-safe", "0", "-i", listFile,
+         "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p", "-c:a", "aac", output];
+
+    /// <summary>Hängt Clips aneinander (neu kodiert, damit unterschiedliche Quellen zusammenpassen).</summary>
+    public static (Cli.Result Result, string Output) Concat(string ffmpeg, IReadOnlyList<string> files, string folder)
+    {
+        if (files.Count < 2) return (new(-1, "", "Bitte mindestens zwei Clips in die Liste legen."), "");
+        if (files.FirstOrDefault(f => !File.Exists(f)) is { } missing) return (new(-1, "", "Datei nicht gefunden: " + Path.GetFileName(missing)), "");
+        Directory.CreateDirectory(folder);
+        var list = Path.Combine(folder, "clipliste.txt"); File.WriteAllText(list, ConcatList(files));
+        var o = Path.Combine(folder, "zusammen.mp4");
+        for (var i = 2; File.Exists(o); i++) o = Path.Combine(folder, $"zusammen-{i}.mp4");
+        var r = Cli.Run(ffmpeg, ConcatArgs(list, o), folder, 600000);
+        if (!r.Ok && File.Exists(o) && new FileInfo(o).Length == 0) File.Delete(o);
+        return (r, o);
+    }
+
+    public static bool IsImage(string file) => Path.GetExtension(file).ToLowerInvariant() is ".png" or ".jpg" or ".jpeg" or ".webp" or ".bmp";
+    public static bool IsAudio(string file) => Path.GetExtension(file).ToLowerInvariant() is ".mp3" or ".wav" or ".flac" or ".m4a" or ".ogg";
+
     /// <summary>Dauer in Sekunden über ffprobe (neben ffmpeg).</summary>
     public static double? Duration(string ffmpeg, string file)
     {

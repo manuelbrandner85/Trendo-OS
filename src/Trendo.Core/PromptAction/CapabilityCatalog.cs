@@ -56,7 +56,7 @@ public static class CapabilityCatalog
         P("X-06", "Projekte von GitHub holen", "Entwickeln", "OpenSource", "Nur anzeigen, nicht mergen", "Name", "Hinweis", "Kein Fachadapter registriert."),
         P("X-04", "Trendo erweitern", "Entwickeln", "ExtensionCatalog", "Erweiterung entwerfen", "Name", "Entwurf", "Kein Fachadapter registriert."),
         P("X-10", "Programme nachbauen", "Entwickeln", "CleanRoom", "Nur eigene Beschreibung", "Verhalten", "Entwurf", "Kein Fachadapter registriert."),
-        P("CORE-01", "Desktop einrichten", "System & Sicherheit", "Shell, StartMenu, Design 41", "keine zweite Oberfläche", "keine", "keine", "Desktop, Startmenü und Fenster bleiben beim laufenden Design-41-Auftrag."),
+        P("CORE-01", "Desktop einrichten", "System & Sicherheit", "Shell, StartMenu, Startseite T-0218", "keine zweite Oberfläche", "keine", "keine", "Desktop, Startmenü und Fenster richtest du unter Einstellungen → Startbildschirm ein."),
         P("SYS-01", "Startmodus wählen", "System & Sicherheit", "OsMode", "Modus nur anzeigen", "keine", "Hinweis", "Kein Fachadapter registriert."),
         P("CORE-11", "Daten schützen", "System & Sicherheit", "ApprovalGate, Secrets, Backup, Rbac", "Freigabe bleibt beim bestehenden Tor", "keine", "keine", "Kein zweites Freigabe- oder Geheimnissystem."),
         P("SPEC-12", "System auf Gefahren prüfen", "System & Sicherheit", "ForensicsLab, 120 Stunden", "Forensik unverändert lassen", "keine", "keine", "Verbesserung 34 bleibt abgelehnt. Die 120-Stunden-Regel wird nicht angetastet."),

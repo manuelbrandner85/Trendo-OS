@@ -22,7 +22,7 @@ public partial class MainWindow
                     var s = Geo.Analyse(trk);
                     lines.Add($"{Fach.F(s.DistanceKm, 2)} km · ↑ {Fach.F(s.AscentM, 0)} m · ↓ {Fach.F(s.DescentM, 0)} m · Höhe {Fach.F(s.MinEle, 0)}–{Fach.F(s.MaxEle, 0)} m · {s.Points} Punkte");
                     if (s.Duration is { } d) lines.Add($"Dauer {(int)d.TotalHours}:{d.Minutes:00} h · Schnitt {Fach.F(s.AvgKmh ?? 0, 1)} km/h");
-                    File.WriteAllText(Path.ChangeExtension(f, ".svg"), Geo.Svg(trk));
+                    File.WriteAllText(Path.ChangeExtension(f, ".svg"), Geo.Svg(trk)); lines.Add("Streckenbild: " + Path.ChangeExtension(f, ".svg"));
                 }
                 if (wpt.Count > 0) lines.Add($"{wpt.Count} Wegpunkt(e): {string.Join(", ", wpt.Take(5).Select(w => w.Name ?? "?"))}");
                 var gj = Path.ChangeExtension(f, ".geojson"); File.WriteAllText(gj, Geo.GeoJson(trk, wpt, Path.GetFileNameWithoutExtension(f)));

@@ -43,7 +43,7 @@ Erzeugt aus `CapabilityCatalog` und den wirklich registrierten Adaptern. `ready`
 | X-06 | Projekte von GitHub holen | Entwickeln | OpenSource | Nur anzeigen, nicht mergen | Name | keiner | Hinweis | not_implemented | — | Kein Fachadapter registriert. |
 | X-04 | Trendo erweitern | Entwickeln | ExtensionCatalog | Erweiterung entwerfen | Name | keiner | Entwurf | not_implemented | — | Kein Fachadapter registriert. |
 | X-10 | Programme nachbauen | Entwickeln | CleanRoom | Nur eigene Beschreibung | Verhalten | keiner | Entwurf | not_implemented | — | Kein Fachadapter registriert. |
-| CORE-01 | Desktop einrichten | System & Sicherheit | Shell, StartMenu, Design 41 | keine zweite Oberfläche | keine | keiner | keine | not_implemented | — | Desktop, Startmenü und Fenster bleiben beim laufenden Design-41-Auftrag. |
+| CORE-01 | Desktop einrichten | System & Sicherheit | Shell, StartMenu, Startseite T-0218 | keine zweite Oberfläche | keine | keiner | keine | not_implemented | — | Desktop, Startmenü und Fenster richtest du unter Einstellungen → Startbildschirm ein. |
 | SYS-01 | Startmodus wählen | System & Sicherheit | OsMode | Modus nur anzeigen | keine | keiner | Hinweis | not_implemented | — | Kein Fachadapter registriert. |
 | CORE-11 | Daten schützen | System & Sicherheit | ApprovalGate, Secrets, Backup, Rbac | Freigabe bleibt beim bestehenden Tor | keine | keiner | keine | not_implemented | — | Kein zweites Freigabe- oder Geheimnissystem. |
 | SPEC-12 | System auf Gefahren prüfen | System & Sicherheit | ForensicsLab, 120 Stunden | Forensik unverändert lassen | keine | keiner | keine | not_implemented | — | Verbesserung 34 bleibt abgelehnt. Die 120-Stunden-Regel wird nicht angetastet. |

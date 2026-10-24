@@ -43,7 +43,8 @@ public partial class MainWindow
         _winCanvas.ZIndex = 2; _winCanvas.Background = null;
         if (_center.Parent is Grid body)
         {
-            Grid.SetColumnSpan(_winCanvas, 1);
+            // Fenster dürfen über die Seitenspalten ragen wie auf einem echten Schreibtisch; das Dock bleibt frei.
+            Grid.SetColumnSpan(_winCanvas, Math.Max(1, body.ColumnDefinitions.Count));
             body.Children.Add(_winCanvas);
         }
         else _center.Children.Add(_winCanvas);

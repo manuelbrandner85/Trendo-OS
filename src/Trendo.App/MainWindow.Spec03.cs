@@ -21,11 +21,12 @@ public partial class MainWindow
         sp.Children.Add(FachTool("eng-beam", "Hält der Balken?", "Lagerung: 1 = zwei Auflager, Last Mitte · 2 = zwei Auflager, gleichmäßig · 3 = einseitig eingespannt, Last am Ende · 4 = einseitig, gleichmäßig. Last in kN (bei 2/4 in kN pro Meter). 1 kN ≈ 100 kg.",
             [("case", "Lagerung (1–4)", "1"), ("len", "Länge (m)", "2"), ("load", "Last (kN)", "1"), ("b", "Breite (mm)", "60"), ("h", "Höhe (mm)", "120"), ("mat", "Werkstoff", "Fichte")],
             v => { var m = Engineering.Mat(v("mat")); var r = Engineering.Beam(BeamFrom(v("case")), Fach.Num(v("len"), "Länge"), Fach.Num(v("load"), "Last"), Engineering.Rect(Fach.Num(v("b"), "Breite"), Fach.Num(v("h"), "Höhe")), m);
-                   return $"{(r.Ok ? "✓" : "⚠")} {r.Verdict}\nWerkstoff {m.Name} · Biegemoment {Fach.F(r.MaxMoment_kNm, 2)} kNm · Spannung {Fach.F(r.Stress_MPa, 1)} N/mm² · Sicherheit {Fach.F(r.Safety, 2)} · Durchbiegung {Fach.F(r.Deflection_mm, 1)} mm · Gewicht {Fach.F(r.Weight_kg, 1)} kg"; }, "Prüfen"));
+                   var svg = Path.Combine(WorkFolder("Statik"), "balken.svg"); File.WriteAllText(svg, Engineering.BeamSvg(BeamFrom(v("case")), Fach.Num(v("len"), "Länge"), r));
+                   return $"{(r.Ok ? "✓" : "⚠")} {r.Verdict}\nBalkenbild: {svg}\nWerkstoff {m.Name} · Biegemoment {Fach.F(r.MaxMoment_kNm, 2)} kNm · Spannung {Fach.F(r.Stress_MPa, 1)} N/mm² · Sicherheit {Fach.F(r.Safety, 2)} · Durchbiegung {Fach.F(r.Deflection_mm, 1)} mm · Gewicht {Fach.F(r.Weight_kg, 1)} kg"; }, "Prüfen"));
         sp.Children.Add(FachTool("eng-heat", "Wärmedehnung", "Wie stark wird ein Bauteil bei Erwärmung länger?",
             [("mat", "Werkstoff", "Aluminium"), ("len", "Länge (m)", "3"), ("dt", "Temperaturänderung (°C)", "40")],
             v => { var m = Engineering.Mat(v("mat")); return $"{m.Name}: {Fach.F(Engineering.ThermalExpansion(m, Fach.Num(v("len")), Fach.Num(v("dt"))), 2)} mm länger"; }));
-        sp.Children.Add(FachTool("eng-unit", "Einheiten umrechnen", "Länge (mm, m, in, ft), Kraft (N, kN, kg, lbf), Druck (bar, psi, MPa), Leistung (kW, PS).",
+        sp.Children.Add(FachTool("eng-unit", "Einheiten umrechnen", "Länge, Kraft, Druck oder Leistung umrechnen.",
             [("v", "Wert", "100"), ("from", "von", "psi"), ("to", "nach", "bar")],
             v => $"{v("v")} {v("from")} = {Fach.F(Engineering.Convert(Fach.Num(v("v")), v("from"), v("to")), 4)} {v("to")}", "Umrechnen"));
         sp.Children.Add(FachGroup("eng-parts", "Stäbe, Wellen, Profile", false,
@@ -42,7 +43,7 @@ public partial class MainWindow
                 [("t", "Drehmoment (Nm)", "50"), ("d", "Ø (mm)", "20"), ("len", "Länge (m)", "0,5")],
                 v => { var r = EngineeringPlus.Torsion(Fach.Num(v("t")), Fach.Num(v("d")), Fach.Num(v("len"))); return $"Schubspannung {Fach.F(r.Tau, 1)} N/mm² · Verdrehung {Fach.F(r.PhiDeg, 2)}°"; })));
         sp.Children.Add(FachGroup("eng-mach", "Maschinenelemente & Wärme", false,
-            FachTool("eng-bolt", "Schraube anziehen", "Richtwerte für leicht geölte Schrauben (µ = 0,12). Klassen: 8.8, 10.9, 12.9, A2-70.",
+            FachTool("eng-bolt", "Schraube anziehen", "Richtwerte für leicht geölte Schrauben (µ = 0,12).",
                 [("size", "Größe", "M8"), ("grade", "Klasse", "8.8")],
                 v => { var b = EngineeringPlus.Bolt(v("size"), v("grade")); return $"Anzugsmoment {Fach.F(b.Nm, 1)} Nm · Vorspannkraft ca. {Fach.F(b.KN, 1)} kN"; }, "Nachsehen"),
             FachTool("eng-spring", "Druckfeder", "Federstahl. Maße in mm.",

@@ -17,7 +17,7 @@ public class StartMenu_Ui
         Settle(); w.UpdateLayout(); Settle();
         var p = c.TranslatePoint(new Point(c.Bounds.Width / 2, c.Bounds.Height / 2), w) ?? throw new InvalidOperationException("nicht sichtbar: " + c.Name);
         var hit = w.InputHitTest(p) as Visual;
-        Assert.True(hit is not null && (hit == c || hit.GetVisualAncestors().Contains(c)), $"{c.Name}: an der Stelle liegt {hit?.GetType().Name} {(hit as Control)?.Name} statt des Knopfs");
+        Assert.True(hit is not null && (hit == c || hit.GetVisualAncestors().Contains(c)), $"{c.Name}: an der Stelle liegt {hit?.GetType().Name} {(hit as Control)?.Name} statt des Knopfs; Kette: " + string.Join(" < ", (hit?.GetVisualAncestors() ?? []).OfType<Control>().Take(12).Select(a => a.GetType().Name + ":" + a.Name)) + $" p={p} k={w.ClientSize}");
         w.MouseDown(p, MouseButton.Left); w.MouseUp(p, MouseButton.Left); Settle();
     }
     internal static void Settle() { for (var i = 0; i < 5; i++) { Dispatcher.UIThread.RunJobs(); AvaloniaHeadlessPlatform.ForceRenderTimerTick(); Dispatcher.UIThread.RunJobs(); } }

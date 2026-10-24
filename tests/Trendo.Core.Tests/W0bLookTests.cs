@@ -4,11 +4,11 @@ namespace Trendo.Core.Tests;
 
 public class W0b_Hintergrund_Farbe
 {
-    [Fact(DisplayName = "W0B-02/03: Bergsee ist Standard, Farbe passend zum Hintergrund, eigene Farbe bleibt erhalten")]
+    [Fact(DisplayName = "W0B-02/03: Abendrot ist Standard, Farbe passend zum Hintergrund, eigene Farbe bleibt erhalten")]
     public void Accent()
     {
         var s = new UserSettings();
-        Assert.Equal("bergsee-nacht", s.CurrentWallpaper(DateTime.Now));
+        Assert.Equal("abendrot", s.CurrentWallpaper(DateTime.Now));
         Assert.Equal("#2F86F6", s.EffectiveAccent(DateTime.Now));
         s.Accent = "#22C55E"; s.Wallpaper = "morgen";
         Assert.Equal("#22C55E", s.EffectiveAccent(DateTime.Now));

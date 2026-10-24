@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -37,7 +38,7 @@ public partial class MainWindow
         Grid.SetColumn(mid, 1); cols.Children.Add(mid);
         var user = SmUserColumn(); Grid.SetColumn(user, 2); cols.Children.Add(user);
         _startMenu.Child = new DockPanel { Children = { Top(search), cols } };
-        if (_center.Parent is Grid body) { Grid.SetColumnSpan(_startMenu, 1); Grid.SetRowSpan(_startMenu, 2); body.Children.Add(_startMenu); }
+        if (_center.Parent is Grid body) { Grid.SetColumnSpan(_startMenu, Math.Max(1, body.ColumnDefinitions.Count)); Grid.SetRowSpan(_startMenu, 2); body.Children.Add(_startMenu); }
         AddHandler(KeyDownEvent, (_, e) =>
         {
             if (e.Key is Key.LWin or Key.RWin) { ToggleStartMenu(); e.Handled = true; }
@@ -71,6 +72,9 @@ public partial class MainWindow
     {
         var b = new Button { Name = "start-button", Width = 50, Height = 50, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Content = Logo(38) };
         ToolTip.SetTip(b, "Start"); Avalonia.Automation.AutomationProperties.SetName(b, "Start");
+        // Dock liegt am unteren Rand: Hinweis über dem Knopf, nie darauf
+        ToolTip.SetPlacement(b, PlacementMode.Top); ToolTip.SetVerticalOffset(b, -6);
+        if (b.Content is Control logo) ToolTip.SetTip(logo, null);
         b.Click += (_, _) => ToggleStartMenu();
         return b;
     }

@@ -38,5 +38,13 @@
     "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
     "erzeugt": "2026-10-24",
     "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "abendrot": {
+    "datei": "src/Trendo.App/Assets/wallpapers/abendrot.jpg",
+    "seed": 47,
+    "prompt": "Golden hour sunset over a calm alpine mountain lake, dramatic jagged snow-capped peaks glowing orange and pink, deep blue sky with soft clouds lit from below, mirror-like reflection on dark blue water, rocky shore with pine trees silhouetted on both sides, warm orange light on the left, cool blue tones on the right. cinematic wide landscape photograph, 16:9, ultra detailed, photorealistic, natural light, calm balanced composition with a quiet uncluttered center, pure scenery only, no user interface, no taskbar, no icons, no buttons, no screen, no people, no animals, no text, no letters, no logo, no watermark, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
   }
 }

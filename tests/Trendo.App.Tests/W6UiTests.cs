@@ -9,7 +9,12 @@ public static class W6Ui
 {
     public static string Run(MainWindow w, string id, params (string Key, string Val)[] vals)
     {
-        foreach (var (k, v) in vals) w.Find<TextBox>($"{id}-{k}").Text = v;
+        foreach (var (k, v) in vals)
+        {
+            // T-0207: Felder mit fester Wertemenge sind Auswahllisten
+            if (w.TryFind<ComboBox>($"{id}-{k}") is { } cb) { Assert.Contains(v, cb.ItemsSource!.Cast<object>().Select(o => o.ToString())); cb.SelectedItem = v; }
+            else w.Find<TextBox>($"{id}-{k}").Text = v;
+        }
         w.Find<Button>($"{id}-run").Press(); W2Ui.Settle();
         return w.Find<SelectableTextBlock>($"{id}-out").Text ?? "";
     }
@@ -55,7 +60,7 @@ public class SPEC03_Ui
         var (w, _, _) = Ui.Open();
         w.Show(MainWindow.StudioPages["SPEC-03"]);
         Assert.Contains("Sicherheit", W6Ui.Run(w, "eng-beam"));
-        Assert.Contains("⚠", W6Ui.Run(w, "eng-beam", ("case", "9")));
+        Assert.Contains("⚠", W6Ui.Run(w, "eng-beam", ("load", "500")));
         Assert.Contains("2,76 mm", W6Ui.Run(w, "eng-heat"));
         Assert.Contains("6,8948 bar", W6Ui.Run(w, "eng-unit"));
     }

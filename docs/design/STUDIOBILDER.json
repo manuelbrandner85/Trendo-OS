@@ -1,0 +1,434 @@
+{
+  "STUDIO-LETTER-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-LETTER-01.jpg",
+    "seed": 29,
+    "prompt": "an elegant fountain pen resting on a sealed paper letter with a wax seal on a dark wooden desk. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SYS-10": {
+    "datei": "src/Trendo.App/Assets/studios/SYS-10.jpg",
+    "seed": 29,
+    "prompt": "a neat stack of printed documents and spreadsheet printouts with a pair of glasses on a dark desk. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SYS-09": {
+    "datei": "src/Trendo.App/Assets/studios/SYS-09.jpg",
+    "seed": 29,
+    "prompt": "a glowing envelope icon sculpture beside a paper desk calendar on a dark glass desk. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "X-11": {
+    "datei": "src/Trendo.App/Assets/studios/X-11.jpg",
+    "seed": 29,
+    "prompt": "a single open cardboard box with soft light coming out of it on a dark studio floor. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SYS-02": {
+    "datei": "src/Trendo.App/Assets/studios/SYS-02.jpg",
+    "seed": 29,
+    "prompt": "a vintage calculator, sticky notes and small headphones arranged on a dark desk. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "STUDIO-ONLINE-BUSINESS-01": {
+    "datei": "src/Trendo.App/Assets/studios/STUDIO-ONLINE-BUSINESS-01.jpg",
+    "seed": 29,
+    "prompt": "a small parcel box with a shopping bag and a rocket figurine on a dark display table. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SPEC-11": {
+    "datei": "src/Trendo.App/Assets/studios/SPEC-11.jpg",
+    "seed": 29,
+    "prompt": "a stack of gold coins next to a small calculator and paper receipts on a dark desk. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "CORE-08": {
+    "datei": "src/Trendo.App/Assets/studios/CORE-08.jpg",
+    "seed": 29,
+    "prompt": "a professional camera with a lens and a film reel on a dark studio table. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SPEC-15": {
+    "datei": "src/Trendo.App/Assets/studios/SPEC-15.jpg",
+    "seed": 29,
+    "prompt": "a broadcast microphone on an arm with a red on-air lamp glowing in a dark studio. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SPEC-08": {
+    "datei": "src/Trendo.App/Assets/studios/SPEC-08.jpg",
+    "seed": 29,
+    "prompt": "a fashion mannequin wearing an elegant dark dress in a moody design studio. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "X-07": {
+    "datei": "src/Trendo.App/Assets/studios/X-07.jpg",
+    "seed": 29,
+    "prompt": "a vinyl record, a paint brush and a photo print arranged on a dark table. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "CORE-12": {
+    "datei": "src/Trendo.App/Assets/studios/CORE-12.jpg",
+    "seed": 29,
+    "prompt": "a glowing quill pen writing light trails above a dark notebook. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "CORE-05": {
+    "datei": "src/Trendo.App/Assets/studios/CORE-05.jpg",
+    "seed": 29,
+    "prompt": "a translucent glowing glass cube floating above a dark reflective floor. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "CORE-06": {
+    "datei": "src/Trendo.App/Assets/studios/CORE-06.jpg",
+    "seed": 29,
+    "prompt": "a modern game controller with soft blue light on a dark reflective surface. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SPEC-04": {
+    "datei": "src/Trendo.App/Assets/studios/SPEC-04.jpg",
+    "seed": 29,
+    "prompt": "a virtual reality headset on a dark pedestal with soft blue glow. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SPEC-09": {
+    "datei": "src/Trendo.App/Assets/studios/SPEC-09.jpg",
+    "seed": 29,
+    "prompt": "a handheld 3D scanner projecting a blue light grid onto a small statue. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SPEC-01": {
+    "datei": "src/Trendo.App/Assets/studios/SPEC-01.jpg",
+    "seed": 29,
+    "prompt": "a modern apartment interior architectural model on a dark table, warm interior lights. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SPEC-02": {
+    "datei": "src/Trendo.App/Assets/studios/SPEC-02.jpg",
+    "seed": 29,
+    "prompt": "a green printed circuit board with glowing traces and electronic components, macro shot. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SPEC-03": {
+    "datei": "src/Trendo.App/Assets/studios/SPEC-03.jpg",
+    "seed": 29,
+    "prompt": "a steel I-beam and engineering calipers on a dark workbench. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SPEC-10": {
+    "datei": "src/Trendo.App/Assets/studios/SPEC-10.jpg",
+    "seed": 29,
+    "prompt": "an industrial sensor device with small status LEDs on a dark metal surface. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SPEC-13": {
+    "datei": "src/Trendo.App/Assets/studios/SPEC-13.jpg",
+    "seed": 29,
+    "prompt": "a folded paper map with a compass and a GPS device on a dark wooden table. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SPEC-14": {
+    "datei": "src/Trendo.App/Assets/studios/SPEC-14.jpg",
+    "seed": 29,
+    "prompt": "a CNC milling machine cutter carving aluminum with flying sparks, close-up. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SPEC-16": {
+    "datei": "src/Trendo.App/Assets/studios/SPEC-16.jpg",
+    "seed": 29,
+    "prompt": "a modern car dashboard at night with glowing instruments, seen from the driver seat. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "CORE-09": {
+    "datei": "src/Trendo.App/Assets/studios/CORE-09.jpg",
+    "seed": 29,
+    "prompt": "a white industrial robot arm with a small camera in a dark lab. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SPEC-05": {
+    "datei": "src/Trendo.App/Assets/studios/SPEC-05.jpg",
+    "seed": 29,
+    "prompt": "a laboratory oscilloscope with a glowing waveform in a dark lab. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SPEC-06": {
+    "datei": "src/Trendo.App/Assets/studios/SPEC-06.jpg",
+    "seed": 29,
+    "prompt": "a stack of paper flash cards and a pencil on a dark desk. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SPEC-07": {
+    "datei": "src/Trendo.App/Assets/studios/SPEC-07.jpg",
+    "seed": 29,
+    "prompt": "two open books in different scripts lying side by side under a soft desk lamp. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "CORE-10": {
+    "datei": "src/Trendo.App/Assets/studios/CORE-10.jpg",
+    "seed": 29,
+    "prompt": "a glowing glass brain sculpture on a dark pedestal. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SYS-08": {
+    "datei": "src/Trendo.App/Assets/studios/SYS-08.jpg",
+    "seed": 29,
+    "prompt": "a magnifying glass over a glowing globe on a dark desk. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "CORE-02": {
+    "datei": "src/Trendo.App/Assets/studios/CORE-02.jpg",
+    "seed": 29,
+    "prompt": "a glowing blue sphere of light with swirling energy floating in darkness. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "CORE-03": {
+    "datei": "src/Trendo.App/Assets/studios/CORE-03.jpg",
+    "seed": 29,
+    "prompt": "several small white robot figurines standing together in a circle on a dark table. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "X-05": {
+    "datei": "src/Trendo.App/Assets/studios/X-05.jpg",
+    "seed": 29,
+    "prompt": "a glowing open treasure chest with soft blue light on a dark floor. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SYS-05": {
+    "datei": "src/Trendo.App/Assets/studios/SYS-05.jpg",
+    "seed": 29,
+    "prompt": "interlocking metal gears turning with soft blue light in darkness. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "X-01": {
+    "datei": "src/Trendo.App/Assets/studios/X-01.jpg",
+    "seed": 29,
+    "prompt": "a large modern city skyline at blue hour seen from above. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "CORE-07": {
+    "datei": "src/Trendo.App/Assets/studios/CORE-07.jpg",
+    "seed": 29,
+    "prompt": "a laptop with code-like colorful light reflections on a dark desk, no readable text. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "X-03": {
+    "datei": "src/Trendo.App/Assets/studios/X-03.jpg",
+    "seed": 29,
+    "prompt": "colorful building blocks forming a small app shape on a dark table. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "X-06": {
+    "datei": "src/Trendo.App/Assets/studios/X-06.jpg",
+    "seed": 29,
+    "prompt": "a glowing octopus-shaped sculpture on a dark pedestal, cinematic. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "X-04": {
+    "datei": "src/Trendo.App/Assets/studios/X-04.jpg",
+    "seed": 29,
+    "prompt": "a puzzle piece made of glowing glass fitting into a dark puzzle. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "X-10": {
+    "datei": "src/Trendo.App/Assets/studios/X-10.jpg",
+    "seed": 29,
+    "prompt": "architectural blueprints rolled out on a dark drafting table with a ruler. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "CORE-01": {
+    "datei": "src/Trendo.App/Assets/studios/CORE-01.jpg",
+    "seed": 29,
+    "prompt": "a minimal modern computer monitor on a dark desk with a mountain lake wallpaper glow. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SYS-01": {
+    "datei": "src/Trendo.App/Assets/studios/SYS-01.jpg",
+    "seed": 29,
+    "prompt": "a power button glowing blue on a dark brushed metal surface. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "CORE-11": {
+    "datei": "src/Trendo.App/Assets/studios/CORE-11.jpg",
+    "seed": 29,
+    "prompt": "a glowing blue shield emblem made of glass on a dark pedestal. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SPEC-12": {
+    "datei": "src/Trendo.App/Assets/studios/SPEC-12.jpg",
+    "seed": 29,
+    "prompt": "a forensic magnifying lens over a hard disk drive on a dark evidence table. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SYS-03": {
+    "datei": "src/Trendo.App/Assets/studios/SYS-03.jpg",
+    "seed": 29,
+    "prompt": "a glowing download arrow made of light above a dark keyboard. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SYS-04": {
+    "datei": "src/Trendo.App/Assets/studios/SYS-04.jpg",
+    "seed": 29,
+    "prompt": "a stack of software install boxes with soft blue light on a dark shelf. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SYS-06": {
+    "datei": "src/Trendo.App/Assets/studios/SYS-06.jpg",
+    "seed": 29,
+    "prompt": "two laptops connected by a glowing blue light beam on a dark table. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SYS-07": {
+    "datei": "src/Trendo.App/Assets/studios/SYS-07.jpg",
+    "seed": 29,
+    "prompt": "a printer, a webcam and a USB stick arranged on a dark desk. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SYS-11": {
+    "datei": "src/Trendo.App/Assets/studios/SYS-11.jpg",
+    "seed": 29,
+    "prompt": "a sleek rocket launching from a dark desk with a soft blue exhaust glow. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SYS-12": {
+    "datei": "src/Trendo.App/Assets/studios/SYS-12.jpg",
+    "seed": 29,
+    "prompt": "large colorful letter tiles and a color palette on a dark table. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "SYS-13": {
+    "datei": "src/Trendo.App/Assets/studios/SYS-13.jpg",
+    "seed": 29,
+    "prompt": "a green checkmark made of glowing glass on a dark pedestal. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "X-02": {
+    "datei": "src/Trendo.App/Assets/studios/X-02.jpg",
+    "seed": 29,
+    "prompt": "a wrench and a screwdriver crossed on a dark workbench with blue light. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "X-08": {
+    "datei": "src/Trendo.App/Assets/studios/X-08.jpg",
+    "seed": 29,
+    "prompt": "a modern smartphone standing on a dark desk with a soft blue wireless glow. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "CORE-04": {
+    "datei": "src/Trendo.App/Assets/studios/CORE-04.jpg",
+    "seed": 29,
+    "prompt": "a raspberry pi single board computer, a laptop and a smartphone together on a dark desk. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "X-09": {
+    "datei": "src/Trendo.App/Assets/studios/X-09.jpg",
+    "seed": 29,
+    "prompt": "a computer processor chip glowing with blue light on a motherboard, macro shot. cinematic photograph, one clear hero subject centered, deep navy blue and teal color grading with soft cyan rim light and a warm accent, subtle glow, shallow depth of field, photorealistic, high detail, clean composition, no text, no letters, no numbers, no logo, no watermark, no user interface, no screen content, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-24",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  }
+}

@@ -16,7 +16,7 @@ public sealed partial class MainWindow
 {
     private readonly Image _wallImg = new() { Name = "wallpaper" };
     private readonly Image _blurImg = new();
-    private string _wallName = "bergsee-nacht";
+    private string _wallName = "abendrot";
     private bool _reopening;
     private readonly StackPanel _hintHost = new() { Name = "hint-host" };
 
@@ -214,7 +214,7 @@ public sealed partial class MainWindow
         sections.Children.Add(Section("farbe", "Akzentfarbe", new StackPanel { Spacing = 6, Children = { colors, auto } }));
 
         var walls = new WrapPanel();
-        foreach (var (id, label) in new[] { ("bergsee-nacht", "Bergsee"), ("polarlicht", "Polarlicht"), ("wellen", "Wellen"), ("morgen", "Morgen") })
+        foreach (var (id, label) in new[] { ("abendrot", "Abendrot"), ("bergsee-nacht", "Bergsee"), ("polarlicht", "Polarlicht"), ("wellen", "Wellen"), ("morgen", "Morgen") })
         {
             var on = !_settings.WallpaperByTime && _settings.Wallpaper == id;
             var b = new Button { Name = "wall-" + id, Margin = new Thickness(0, 0, 10, 10), Padding = new Thickness(3), BorderBrush = on ? Accent : Brushes.Transparent, BorderThickness = new Thickness(2), Background = Brushes.Transparent, CornerRadius = new CornerRadius(8),

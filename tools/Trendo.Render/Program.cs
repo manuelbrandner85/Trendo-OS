@@ -26,7 +26,7 @@ if (shot is "brief" or "fenster" or "seite")
     prepared.Save(root);
 }
 var core = new TrendoCore(root, new InMemorySecretStore(), new NoopL());
-if (args.Length > 4) new UserSettings { Theme = args[4], SetupDone = true, Wallpaper = args.Length > 5 ? args[5] : "bergsee-nacht" }.Save(root);
+if (args.Length > 4) new UserSettings { Theme = args[4], SetupDone = true, Wallpaper = args.Length > 5 ? args[5] : "abendrot" }.Save(root);
 if (Environment.GetEnvironmentVariable("TRENDO_DEMO_CASE") is not null)
 {
     var us = UserSettings.Load(root); us.SetupDone = true; us.ProjectsFolder = Path.Combine(root, "projekte"); us.Theme = args.Length > 4 ? args[4] : "dunkel"; us.Save(root);

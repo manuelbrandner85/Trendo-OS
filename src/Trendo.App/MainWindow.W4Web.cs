@@ -19,6 +19,15 @@ public partial class MainWindow
     private bool _webArmed;
     private WebsiteStyle _webStyle = WebsiteStyle.Klar;
     private string _webScore = "";
+    private string? _webEditFile;
+    private string? _webPending;
+    private (IReadOnlyList<string> Removed, IReadOnlyList<string> Added)? _webDiff;
+    public string? WebDir { get => _webDir; set => _webDir = value; }
+
+    /// <summary>VS Code, falls installiert (PATH oder Standard-Installationsort).</summary>
+    public static string? VsCodePath() => Cli.Find("code") is { } c ? c
+        : new[] { Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Microsoft VS Code", "Code.exe"),
+                  Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft VS Code", "Code.exe") }.FirstOrDefault(File.Exists);
 
     private Control WebsitePanel()
     {
@@ -75,6 +84,7 @@ public partial class MainWindow
         var root = new StackPanel { Spacing = 8 };
         root.Children.Add(Card(grid));
         root.Children.Add(Card(ToolsPane()));
+        root.Children.Add(Card(CodePane()));
         root.Children.Add(Card(QualityPane()));
         return root;
     }
@@ -121,6 +131,36 @@ public partial class MainWindow
         return sp;
     }
 
+    /// <summary>T-0206: Dateien der Seite ansehen und ändern – Editor mit Zeilennummern, Speichern baut die Vorschau neu.</summary>
+    private Control CodePane()
+    {
+        var sp = new StackPanel { Spacing = 6, Name = "web-code" };
+        sp.Children.Add(H("Code ansehen und ändern", 14));
+        if (_webDir is null || !Directory.Exists(_webDir)) { sp.Children.Add(P("Zuerst eine Seite bauen – dann erscheinen hier ihre Dateien.", null, 11)); return sp; }
+        var files = Directory.EnumerateFiles(_webDir, "*.*", SearchOption.AllDirectories)
+            .Where(f => Path.GetExtension(f) is ".html" or ".css" or ".js" or ".json" or ".md" && !f.Contains(Path.DirectorySeparatorChar + "node_modules") && !f.Contains(Path.DirectorySeparatorChar + "."))
+            .OrderBy(f => f, StringComparer.OrdinalIgnoreCase).Take(30).ToList();
+        _webEditFile ??= files.FirstOrDefault(f => Path.GetFileName(f) == "index.html") ?? files.FirstOrDefault();
+        var list = new WrapPanel { Name = "web-files" }; var n = 0;
+        foreach (var f in files) { var file = f; list.Children.Add(Act($"web-file-{n++}", (file == _webEditFile ? "● " : "") + Path.GetRelativePath(_webDir, file), () => { _webEditFile = file; Show("dev"); })); }
+        sp.Children.Add(list);
+        if (_webEditFile is null || !File.Exists(_webEditFile)) return sp;
+        var mono = new FontFamily("Consolas,Menlo,monospace");
+        var editor = new TextBox { Name = "web-editor", Text = File.ReadAllText(_webEditFile), AcceptsReturn = true, AcceptsTab = true, FontFamily = mono, FontSize = 12.5, Height = 320, TextWrapping = TextWrapping.NoWrap };
+        string Numbers(string? s) => string.Join("\n", Enumerable.Range(1, Math.Max(1, (s ?? "").Split('\n').Length)));
+        var lines = new TextBlock { Name = "web-lines", Text = Numbers(editor.Text), FontFamily = mono, FontSize = 12.5, Foreground = Muted, TextAlignment = TextAlignment.Right, Margin = new Avalonia.Thickness(0, 6, 6, 0) };
+        editor.TextChanged += (_, _) => lines.Text = Numbers(editor.Text);
+        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") };
+        grid.Children.Add(lines); Grid.SetColumn(editor, 1); grid.Children.Add(editor);
+        sp.Children.Add(grid);
+        var file0 = _webEditFile;
+        sp.Children.Add(new WrapPanel { Children = {
+            Act("web-save", "Speichern", async () => { File.WriteAllText(file0, editor.Text ?? ""); _core.Audit.Append(Principal.LocalOwner.Name, "web.edit", Path.GetFileName(file0)); await RefreshPreview(); Say("Gespeichert: " + Path.GetFileName(file0) + " – Vorschau neu aufgebaut.", "dev"); }, true),
+            Act("web-vscode", "In VS Code öffnen", () => { if (VsCodePath() is { } code) { _core.Integrations.LaunchDirect(Principal.LocalOwner, code, _core.Audit, _webDir!); Say("VS Code öffnet den Ordner der Seite.", "dev"); } else Say("VS Code ist nicht installiert. Du kannst hier im Editor weiterarbeiten.", "dev"); }),
+        } });
+        return sp;
+    }
+
     private Control QualityPane()
     {
         var change = new TextBox { Name = "web-change", PlaceholderText = "Änderung, z. B. Überschrift in Stille am See", Width = 360 };
@@ -131,9 +171,18 @@ public partial class MainWindow
             Act("web-check", "Qualität prüfen", () => { if (!Ready()) return; ShowScore(WebsiteQuality.Check(_webDir!)); Show("dev"); }),
             Act("web-fix", "Jetzt beheben", () => { if (!Ready()) return; ShowScore(WebsiteQuality.Fix(_webDir!)); Say("Was sich automatisch ändern ließ, ist geändert. Sieh die neue Note.", "dev"); }),
             change,
-            Act("web-apply", "Änderung übernehmen", async () => { if (!Ready()) return; try { var r = WebsiteStudio.Revise(_webDir!, change.Text ?? ""); ShowScore(r.Quality); await RefreshPreview(); Say(r.Message, "dev"); } catch (Exception ex) { Say(ex.Message, "dev"); } }),
+            Act("web-apply", "Änderung ansehen", () => { if (!Ready()) return; try { _webPending = change.Text ?? ""; _webDiff = WebsiteStudio.PreviewRevise(_webDir!, _webPending); Say(_webDiff.Value.Added.Count + _webDiff.Value.Removed.Count == 0 ? "Diese Änderung würde nichts verändern." : "So würde sich die Seite ändern – erst „Übernehmen“ schreibt die Dateien.", "dev"); } catch (Exception ex) when (ex is ArgumentException or IOException) { _webPending = null; _webDiff = null; Say(ex.Message, "dev"); } }),
             Act("web-pack", "Paket vorbereiten", AskPack)
         } });
+        if (_webPending is { } pend && _webDiff is { } diff)
+        {
+            var d = new StackPanel { Name = "web-diff", Spacing = 2 };
+            foreach (var l in diff.Removed.Take(12)) d.Children.Add(new TextBlock { Text = "− " + l, Foreground = Brush.Parse("#F87171"), FontFamily = new FontFamily("Consolas,Menlo,monospace"), FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis });
+            foreach (var l in diff.Added.Take(12)) d.Children.Add(new TextBlock { Text = "+ " + l, Foreground = Brush.Parse("#4ADE80"), FontFamily = new FontFamily("Consolas,Menlo,monospace"), FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis });
+            sp.Children.Add(Card(new StackPanel { Spacing = 4, Children = { P($"Vorschau der Änderung „{pend}“:", Text), d, new WrapPanel { Children = {
+                Act("web-apply-yes", "Übernehmen", async () => { try { var r = WebsiteStudio.Revise(_webDir!, pend); _webPending = null; _webDiff = null; ShowScore(r.Quality); await RefreshPreview(); Say(r.Message, "dev"); } catch (Exception ex) when (ex is ArgumentException or IOException) { Say(ex.Message, "dev"); } }, true),
+                Act("web-apply-no", "Verwerfen", () => { _webPending = null; _webDiff = null; Say("Verworfen – nichts geändert.", "dev"); }) } } } }));
+        }
         if (_webArmed) sp.Children.Add(Act("web-pack-yes", "Ja, Paket nur auf diesem PC speichern", DoPack, true));
         sp.Children.Add(P("Das Paket bleibt lokal. Trendo lädt nichts hoch.", null, 11));
         return sp;
