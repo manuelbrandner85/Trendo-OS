@@ -17,6 +17,10 @@ public sealed class UserSettings
     /// <summary>Akzentfarbe folgt dem Hintergrund (Abendrot und Bergsee → Blau, Morgen → Bernstein, Polarlicht → Türkis, Wellen → Violett).</summary>
     public bool AccentFromWallpaper { get; set; }
     public bool ReduceMotion { get; set; }
+    /// <summary>T-0107 Leistungsprofil: auto (Raspberry Pi/ARM → sparsam), hoch (alle Effekte), sparsam (ohne Unschärfe, Schatten und Animationen).</summary>
+    public string PowerProfile { get; set; } = "auto";
+    public static readonly string[] PowerProfiles = ["auto", "hoch", "sparsam"];
+    public bool IsLowPower(bool arm) => PowerProfile == "sparsam" || (PowerProfile is not "hoch" && arm);
     /// <summary>SYS-12: Mindestschriftgröße in pt (0 = wie gestaltet), Leichte Sprache, Farbblind-Symbole, leise Meldungen, einfacher Modus, Fensterplatz.</summary>
     public int FontMin { get; set; }
     public bool EasyLanguage { get; set; }

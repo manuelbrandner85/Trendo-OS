@@ -21,7 +21,7 @@ Trendo OS ist fertig, wenn alle Punkte erfüllt sind:
 | Editionen | 3 | 0 abgenommen | C am weitesten, B bootet in QEMU, A nicht begonnen |
 | Build/Tests | siehe Commit-Nachricht der Zusammenführung | – | Compiler-Warnungen beheben (A6) |
 | QA-Testfälle (`tests` in `requirements.yaml`) | 44 (BQ, LTR) | 0 | alle `NOT_RUN` |
-| Offene Aufträge in `tasks/` ohne Bericht | 9 | – | T-0100…T-0108 (gegen Ist-Stand prüfen, D3); T-0202…T-0214 und T-0218 haben Berichte |
+| Offene Aufträge in `tasks/` ohne Bericht | 0 | – | T-0100…T-0108 am 2026-10-25 gegen den Ist-Stand geprüft (Berichte); offen nur T-0101 (Tokens, zurückgestellt) und PC-Messung Start/RAM |
 | Offene Pull Requests auf GitHub | 37 | – | von früheren Agenten, siehe O |
 
 ## Arbeitspakete in Reihenfolge
@@ -41,7 +41,8 @@ Trendo OS ist fertig, wenn alle Punkte erfüllt sind:
 |---|---|---|
 | D1 | ✅ erledigt 2026-10-24: 10 Ansichten + 2 Atlanten mit Claude Code als HTML gebaut (`tools/design/views.py`, Rendern `python tools/design/build.py`), alte Bilder ersetzt, Manifest und Prüfsummen neu | – |
 | D2 | ✅ erledigt 2026-10-24: 5 Hintergründe lokal mit KI (ComfyUI + FLUX.2 klein, `tools/design/ki_hintergruende.py`), Herkunft in `docs/design/HINTERGRUENDE.json` | – |
-| D3 | Ist auf `main`: Design 41 Phase 1 (Desktop, Startmenü, Fenster, Briefe) umgesetzt, JA von Manuel, auf übrige Studios übertragen (Bericht `tasks/UI-041-PREMIUM-EXPERIENCE.bericht.md`); Logo A gewählt (T-0109). Die Aufträge T-0100…T-0108 haben keinen eigenen Bericht → gegen den Ist-Stand prüfen, Erledigtes schließen | Claude |
+| D3 | ✅ erledigt 2026-10-25: T-0100…T-0108 gegen den Ist-Stand geprüft. Erledigt: T-0104, T-0105, T-0106, T-0107 (Leistungsprofile ergänzt) und T-0108. Überholt durch T-0218: T-0100, T-0102, T-0103. Teilweise: T-0101 (Tokens als ResourceDictionary, zurückgestellt) | – |
+| D7 | Startzeit/RAM am PC belastbar messen: `--startup-log` schrieb im Setup-Build 0.9.7 keine Datei – Ursache klären (T-0100/T-0107) | Claude |
 | D4 | Ist-Stand gegen die neuen Claude-Referenzen aus D1 vergleichen (Vorher/Nachher-Bilder mit `tools/Trendo.Render`), Abweichungen als Aufträge | Claude |
 | D5 | Viewport-/DPI-Matrix, Kontrast, Tastatur (Design-41-Fkt. 19/20) am Windows-PC – Renders 1024×768, 1536×800 (hell/dunkel), 3840×2160 für Startseite geprüft (T-0218); echte DPI-Stufen offen | Claude |
 | D6 | ✅ erledigt 2026-10-24: T-0218 Startseite nach Referenzbild 1, „Alle Studios“ nach Referenzbild 2; Hintergrund „Abendrot“ und 54 Kartenbilder lokal mit FLUX.2 (`docs/design/STUDIOBILDER.json`); Hinweis bei IMP-41 in `decisions.yaml` | – |

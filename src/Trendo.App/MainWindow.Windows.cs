@@ -134,7 +134,7 @@ public partial class MainWindow
         var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,*") }; grid.Children.Add(bar); Grid.SetRow(body, 1); grid.Children.Add(body);
         var layers = new Panel { Children = { grid } };
         foreach (var h in ResizeHandles(id)) layers.Children.Add(h);
-        var frame = new DeskFrame { Name = "win-" + id, WindowTitle = w.Title, Background = GlassStrong, BorderThickness = new Thickness(1.5), CornerRadius = new CornerRadius(11), Child = layers, ClipToBounds = true, BoxShadow = WindowShadow };
+        var frame = new DeskFrame { Name = "win-" + id, WindowTitle = w.Title, Background = GlassStrong, BorderThickness = new Thickness(1.5), CornerRadius = new CornerRadius(11), Child = layers, ClipToBounds = true, BoxShadow = LowPower ? default : WindowShadow };
         // Klick ins Fenster holt es nach vorn (nach dem Klick, damit Knöpfe ihren Klick behalten)
         frame.AddHandler(PointerPressedEvent, (_, _) => { if (Windows.Active?.Id != id) Dispatcher.UIThread.Post(() => FocusWindow(id), DispatcherPriority.Background); }, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
         return (frame, body, title);
@@ -220,7 +220,7 @@ public partial class MainWindow
             var f = _frames[w.Id].Frame; f.ZIndex = ++z; f.IsVisible = !w.Minimized;
             var on = active?.Id == w.Id;
             f.BorderBrush = on ? Accent : Edge; f.Opacity = on ? 1 : 0.9;
-            f.BoxShadow = on ? BoxShadows.Parse("0 22 50 0 #BB000000, 0 0 0 1 #6651C5FF") : BoxShadows.Parse("0 8 18 0 #66000000");
+            f.BoxShadow = LowPower ? default : on ? BoxShadows.Parse("0 22 50 0 #BB000000, 0 0 0 1 #6651C5FF") : BoxShadows.Parse("0 8 18 0 #66000000");
             _frames[w.Id].Title.Foreground = on ? Text : Muted;
             if (f.Child is Panel { Children: [Grid g, ..] } && g.Children[0] is Border bar) bar.Background = on ? Brush.Parse("#55305078") : Brush.Parse("#22101830");
             if (f.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "win-close-" + w.Id) is { } close)
@@ -251,7 +251,7 @@ public partial class MainWindow
                 var (x, y, ww, hh) = Windows.Rect(w);
                 Canvas.SetLeft(fr.Frame, x); Canvas.SetTop(fr.Frame, y); fr.Frame.Width = ww; fr.Frame.Height = hh;
                 fr.Frame.CornerRadius = new CornerRadius(11);
-                fr.Frame.BoxShadow = WindowShadow;
+                fr.Frame.BoxShadow = LowPower ? default : WindowShadow;
             }
         }
         _workArea.IsHitTestVisible = Windows.Stack.Any(w => w.Maximized && !w.Minimized);

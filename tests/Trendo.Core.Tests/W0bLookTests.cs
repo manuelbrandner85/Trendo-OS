@@ -23,3 +23,18 @@ public class W0b_Hintergrund_Farbe
         Directory.Delete(d, true);
     }
 }
+
+public class T0107_Leistungsprofil
+{
+    [Fact(DisplayName = "T-0107: Leistungsprofil – automatisch auf ARM sparsam, „hoch“ und „sparsam“ gelten überall")]
+    public void Profile()
+    {
+        var s = new UserSettings();
+        Assert.Equal("auto", s.PowerProfile);
+        Assert.False(s.IsLowPower(arm: false));
+        Assert.True(s.IsLowPower(arm: true));
+        s.PowerProfile = "hoch"; Assert.False(s.IsLowPower(arm: true));
+        s.PowerProfile = "sparsam"; Assert.True(s.IsLowPower(arm: false));
+        Assert.Equal(["auto", "hoch", "sparsam"], UserSettings.PowerProfiles);
+    }
+}

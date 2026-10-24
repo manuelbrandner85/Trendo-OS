@@ -353,7 +353,7 @@ public sealed partial class MainWindow : Window
 
     private Control? BlurredWallpaper(Visual mask)
     {
-        if (_settings.Theme == "kontrast") return null;
+        if (_settings.Theme == "kontrast" || LowPower) return null;
         try
         {
             var img = _blurImg; img.Source = LoadWallpaper(_wallName); img.Stretch = Stretch.UniformToFill; img.HorizontalAlignment = HorizontalAlignment.Center; img.VerticalAlignment = VerticalAlignment.Center; img.Effect = new BlurEffect { Radius = 36 };
@@ -414,6 +414,11 @@ public sealed partial class MainWindow : Window
     }
 
     /// <summary>„Di, 21. Okt. 2026“ wie in der Kopfleiste der Referenz.</summary>
+    /// <summary>Sparsames Leistungsprofil (T-0107): selbst gewählt oder automatisch auf ARM (Raspberry Pi).</summary>
+    public bool LowPower => _settings.IsLowPower(System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture is System.Runtime.InteropServices.Architecture.Arm64 or System.Runtime.InteropServices.Architecture.Arm);
+    /// <summary>Keine Animationen: „Bewegung reduzieren“ oder sparsames Profil.</summary>
+    private bool Motionless => _settings.ReduceMotion || LowPower;
+
     private static string DateLine(DateTime d) => d.ToString("ddd", De).TrimEnd('.') + ", " + d.ToString("d. MMM yyyy", De);
 
     private void MarkTab(string key)

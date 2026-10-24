@@ -72,7 +72,7 @@ public sealed partial class MainWindow
             if (_settings.AccentFromWallpaper && CurrentView == "settings") Reopen("settings");
         };
         OwnTimer(t);
-        if (!_settings.ReduceMotion)
+        if (!Motionless)
         {
             _center.Transitions = [new DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(220), Easing = new Avalonia.Animation.Easings.CubicEaseOut() }];
             // Ruhiger Startbildschirm: Logo blendet sanft aus
@@ -93,7 +93,7 @@ public sealed partial class MainWindow
     /// <summary>Wird nach jedem Seitenwechsel aufgerufen: sanftes Einblenden und Hinweis beim ersten Öffnen.</summary>
     private void AfterShow(string key)
     {
-        if (!_settings.ReduceMotion) { _center.Opacity = 0; Dispatcher.UIThread.Post(() => _center.Opacity = 1, DispatcherPriority.Background); }
+        if (!Motionless) { _center.Opacity = 0; Dispatcher.UIThread.Post(() => _center.Opacity = 1, DispatcherPriority.Background); }
         ShowHelp(key, force: false);
         EnhancePathFields(ActivePageRoot, key);
         if (ActivePageRoot is { } c0) ApplyAccessibility(c0);
@@ -103,7 +103,7 @@ public sealed partial class MainWindow
     /// <summary>Hover-Glow für Kacheln und Dock (aus bei „Bewegung reduzieren“).</summary>
     private void Hover(Control c)
     {
-        if (_settings.ReduceMotion) return;
+        if (Motionless) return;
         c.RenderTransformOrigin = RelativePoint.Center;
         c.Transitions = [new TransformOperationsTransition { Property = RenderTransformProperty, Duration = TimeSpan.FromMilliseconds(140) }];
         c.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("scale(1)");
@@ -228,6 +228,14 @@ public sealed partial class MainWindow
 
         var motion = new CheckBox { Name = "reduce-motion", Content = "Bewegung reduzieren (keine Animationen)", IsChecked = _settings.ReduceMotion, Foreground = Text };
         motion.IsCheckedChanged += (_, _) => { _settingsSection = "bedienung"; _settings.ReduceMotion = motion.IsChecked == true; Reopen("settings"); };
+        var power = new WrapPanel();
+        foreach (var (id, label) in new[] { ("auto", "Automatisch"), ("hoch", "Volle Effekte"), ("sparsam", "Sparsam (Raspberry Pi)") })
+        {
+            var on = _settings.PowerProfile == id;
+            var b = new Button { Name = "power-" + id, Content = (on ? "✓ " : "") + label, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 8), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
+            b.Click += (_, _) => { _settingsSection = "bedienung"; _settings.PowerProfile = id; Reopen("settings"); };
+            power.Children.Add(b);
+        }
         var upd = new CheckBox { Name = "auto-update", Content = $"Updates automatisch laden ({_updateInfo})", IsChecked = _settings.AutoUpdate, Foreground = Text };
         upd.IsCheckedChanged += (_, _) => { _settings.AutoUpdate = upd.IsChecked == true; SaveSettings(); };
         var sizes = new WrapPanel();
@@ -239,6 +247,7 @@ public sealed partial class MainWindow
             sizes.Children.Add(b);
         }
         sections.Children.Add(Section("bedienung", "Bedienung", new StackPanel { Spacing = 4, Children = { motion, upd, P("Anzeigegröße (Schrift und Bedienelemente):", Text), sizes,
+            P(LowPower ? "Leistung: sparsam – ohne Unschärfe, Schatten und Animationen." : "Leistung (Sparsam: ohne Unschärfe, Schatten und Animationen):", Text), power,
             P("Tastatur: Strg+K Suche · F1 Hilfe zur Seite · Strg+1 bis 5 Hauptbereiche · Tab/Enter bedienen alles ohne Maus", null, 11) } }));
 
         var desk = new StackPanel { Spacing = 4 };

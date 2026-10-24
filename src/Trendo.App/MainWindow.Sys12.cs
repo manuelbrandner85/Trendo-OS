@@ -43,7 +43,8 @@ public partial class MainWindow
     {
         foreach (var c in root.GetLogicalDescendants().OfType<Control>().Prepend(root))
         {
-            if (_settings.ReduceMotion && c.Transitions is { Count: > 0 }) c.Transitions = null;
+            if (Motionless && c.Transitions is { Count: > 0 }) c.Transitions = null;
+            if (LowPower) { c.Effect = null; if (c is Border bd) bd.BoxShadow = default; }
             if (c is TextBlock tb) tb.FontSize = A11y.EffectiveFont(tb.FontSize, _settings.FontMin);
             if (c is TemplatedControl tc)
             {
