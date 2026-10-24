@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.LogicalTree;
@@ -16,8 +15,8 @@ public class GlassBlurTests
     {
         var (w, _, _) = Ui.Open();
         var b = w.GetLogicalDescendants().OfType<Border>().FirstOrDefault(x => x.Name == "backdrop-blur");
+        if (w.LowPower) { Assert.Null(b); return; } // Sparprofil: kein Glas
         Assert.NotNull(b);
-        if (GlassBlur.LowPower) { Assert.Null(b!.Child); Assert.NotNull(b.Background); return; }
         var img = Assert.IsType<Image>(b!.Child);
         Assert.Null(img.Effect);
         var bmp = Assert.IsType<Bitmap>(img.Source);
@@ -46,11 +45,16 @@ public class GlassBlurTests
         Assert.InRange(edge, 40, 215);
     }
 
-    [Theory(DisplayName = "Leistungsprofil Pi: ARM-Linux oder TRENDO_PROFILE=pi, voll erzwingt Glas")]
-    [InlineData(null, true, Architecture.Arm64, true)]
-    [InlineData(null, true, Architecture.X64, false)]
-    [InlineData(null, false, Architecture.Arm64, false)]
-    [InlineData("pi", false, Architecture.X64, true)]
-    [InlineData("voll", true, Architecture.Arm64, false)]
-    public void Profile_detection(string? p, bool linux, Architecture a, bool expected) => Assert.Equal(expected, GlassBlur.Detect(p, linux, a));
+    [AvaloniaFact(DisplayName = "Leistungsprofil: TRENDO_PROFILE=pi erzwingt sparsam, voll erzwingt Glas")]
+    public void Profile_override()
+    {
+        var (w, _, _) = Ui.Open();
+        var old = Environment.GetEnvironmentVariable("TRENDO_PROFILE");
+        try
+        {
+            Environment.SetEnvironmentVariable("TRENDO_PROFILE", "pi"); Assert.True(w.LowPower);
+            Environment.SetEnvironmentVariable("TRENDO_PROFILE", "voll"); Assert.False(w.LowPower);
+        }
+        finally { Environment.SetEnvironmentVariable("TRENDO_PROFILE", old); w.Close(); }
+    }
 }

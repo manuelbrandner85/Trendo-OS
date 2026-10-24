@@ -38,10 +38,34 @@ public sealed partial class ResearchDesk
         if (u.Scheme is not ("http" or "https")) return new(UrlKind.Abgelehnt, "Nur Webseiten (http/https) sind erlaubt.");
         if (u.Host.EndsWith(".onion", StringComparison.OrdinalIgnoreCase)) return new(UrlKind.NurTorBrowser, ".onion-Seiten öffnest du nur im offiziellen Tor Browser. Trendo ruft sie nicht selbst ab.", u);
         if (u.Host.EndsWith(".i2p", StringComparison.OrdinalIgnoreCase)) return new(UrlKind.Abgelehnt, "I2P wird nicht unterstützt.");
-        if (IPAddress.TryParse(u.Host.Trim('[', ']'), out var ip) && (IPAddress.IsLoopback(ip) || FolderShare.IsPrivateLan(ip) || ip.ToString().StartsWith("169.254.")) || u.Host is "localhost")
+        if (IPAddress.TryParse(u.Host.Trim('[', ']'), out var ip) ? IsInternal(ip) : IsInternalName(u.Host))
             return new(UrlKind.Abgelehnt, "Geräte im eigenen Netz werden im Lesemodus nicht abgerufen.");
         if (u.UserInfo != "") return new(UrlKind.Abgelehnt, "Adressen mit Anmeldedaten sind nicht erlaubt.");
         return new(UrlKind.Lesemodus, "Wird nur gelesen – ohne Formulare, Anmeldung oder Downloads.", u);
+    }
+
+    /// <summary>Adressen, die nie aus dem Internet erreichbar sind: Loopback, unspezifiziert, Heimnetz, Link-Local, CGNAT,
+    /// IPv6 ULA/Link-Local/Site-Local, Multicast, Broadcast – auch als IPv4-mapped IPv6 (Sicherheitsreview B1).</summary>
+    public static bool IsInternal(IPAddress ip)
+    {
+        if (ip.IsIPv4MappedToIPv6) ip = ip.MapToIPv4();
+        if (IPAddress.IsLoopback(ip) || ip.Equals(IPAddress.Any) || ip.Equals(IPAddress.IPv6Any) || ip.Equals(IPAddress.Broadcast) || ip.Equals(IPAddress.IPv6None)) return true;
+        if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+        {
+            var b = ip.GetAddressBytes();
+            return b[0] is 0 or 10 or 127 || b[0] >= 224 || b[0] == 169 && b[1] == 254 || b[0] == 172 && b[1] is >= 16 and <= 31 || b[0] == 192 && b[1] == 168 || b[0] == 100 && b[1] is >= 64 and <= 127;
+        }
+        if (ip.IsIPv6LinkLocal || ip.IsIPv6SiteLocal || ip.IsIPv6Multicast || ip.IsIPv6UniqueLocal) return true;
+        return false;
+    }
+
+    /// <summary>Namen, die nur im eigenen Netz gelten (localhost, .local, .lan, .home.arpa, .internal, .fritz.box, ein Name ohne Punkt).</summary>
+    public static bool IsInternalName(string host)
+    {
+        var h = host.Trim().TrimEnd('.').ToLowerInvariant();
+        if (h.Length == 0 || !h.Contains('.')) return true;
+        return h == "localhost" || h.EndsWith(".localhost") || h.EndsWith(".local") || h.EndsWith(".lan") || h.EndsWith(".home") || h.EndsWith(".home.arpa")
+            || h.EndsWith(".internal") || h.EndsWith(".intranet") || h.EndsWith(".corp") || h == "fritz.box" || h.EndsWith(".fritz.box");
     }
 
     [GeneratedRegex(@"<(script|style|noscript|form|iframe|svg|template|button|select|textarea|object|embed)\b.*?</\1\s*>", RegexOptions.Singleline | RegexOptions.IgnoreCase)] private static partial Regex Drop();

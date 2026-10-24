@@ -117,7 +117,9 @@ public sealed class CompanionServer : IDisposable
                     if (gate.Gate == PairGate.Locked) { _log($"Sperre {ip}"); await Send(res, 403, new { error = gate.Error }, gate.RetryAfterSeconds); return; }
                     if (pr is null) { await Send(res, 400, new { error = "Anfrage ungültig" }); return; }
                     if (token is null) { await Send(res, 403, new { error = err }, retry); return; }
-                    _log($"gekoppelt mit {pr.PcName}");
+                    // Name kommt vom Netz: ohne Steuerzeichen und gekürzt ins Protokoll (Sicherheitsreview N2)
+                    var pcName = new string((pr.PcName ?? "").Where(c => !char.IsControl(c)).Take(64).ToArray());
+                    _log($"gekoppelt mit {pcName}");
                     await Send(res, 200, new PairResponse(token, st.Name, LinuxSysInfo.Kind(LinuxSysInfo.Model(_sysRoot)), Caps(), Version)); return;
             }
             CompanionState state;

@@ -400,7 +400,7 @@ public sealed class StudioWorkflow
         }
         try
         {
-            var approval = _core.Approvals.Request(ctx.User, GateAction(adapter), Describe(state), state.IdempotencyKey!, TimeSpan.FromMinutes(10));
+            var approval = _core.Approvals.Request(ctx.User, GateAction(adapter), Describe(state, adapter), state.IdempotencyKey!, TimeSpan.FromMinutes(10));
             state.ApprovalId = approval.Id;
         }
         catch (UnauthorizedAccessException ex)
@@ -525,6 +525,13 @@ public sealed class StudioWorkflow
             return Finish(state);
         }
         var key = state.IdempotencyKey ?? "";
+        if (key.Length == 0 || Key(state) != key)
+        {
+            // Parameter wurden nach der Freigabe verändert (z. B. Auftragsdatei im Projekt): die Freigabe gilt nicht dafür
+            state.Errors.Add("Die Angaben haben sich nach der Freigabe geändert. Bitte neu freigeben.");
+            Mark(state, WorkflowPhase.Failed, "Freigabe", state.Errors[^1]);
+            return Finish(state);
+        }
         var existing = _ledger.Get(state.ProjectId, key);
         if (existing is { State: "done", Receipt: not null })
         {
@@ -756,11 +763,15 @@ public sealed class StudioWorkflow
 
     private static string GateAction(IStudioActionAdapter adapter) => "prompt:" + adapter.ActionId;
 
-    private static string Describe(RunState state)
+    /// <summary>Freigabetext: die wirkungsrelevanten Pflichtfelder des Adapters immer vollständig und zuerst,
+    /// weitere Felder nur gezählt – Füllfelder können das Ziel nicht verdrängen (Sicherheitsreview B2).</summary>
+    private static string Describe(RunState state, IStudioActionAdapter adapter)
     {
-        var bits = state.Parameters.OrderBy(kv => kv.Key, StringComparer.OrdinalIgnoreCase).Take(6)
-            .Select(kv => kv.Key + "=" + Trim(Redact(kv.Value), 40));
-        return "Einmalige Freigabe für " + state.ActionId + ". " + string.Join(", ", bits) + ". Gilt nur für diesen Vorgang.";
+        var required = adapter.RequiredFields.Where(state.Parameters.ContainsKey).ToList();
+        var bits = required.Select(k => k + "=" + Trim(Redact(state.Parameters[k]), 300));
+        var others = state.Parameters.Count - required.Count;
+        return "Einmalige Freigabe für " + state.ActionId + ". " + string.Join(", ", bits)
+            + (others > 0 ? $" (dazu {others} weitere Angaben)" : "") + ". Gilt nur für diesen Vorgang.";
     }
 
     private static void Strip(Dictionary<string, string> map)

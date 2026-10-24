@@ -1,31 +1,18 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.InteropServices;
 using Avalonia.Media.Imaging;
 using SkiaSharp;
 
 namespace Trendo.App;
 
-/// <summary>Design 41 Glas: Wallpaper wird einmal verkleinert weichgezeichnet statt live per BlurEffect (GPU-Last).</summary>
+/// <summary>Design 41 Glas: Wallpaper wird einmal verkleinert weichgezeichnet statt live per BlurEffect (GPU-Last). Ob Glas gezeigt wird, entscheidet das Leistungsprofil (MainWindow.LowPower).</summary>
 public static class GlassBlur
 {
     /// <summary>Breite der vorab berechneten Bitmap; wird per UniformToFill hochskaliert (Unschärfe verdeckt das).</summary>
     public const int TargetWidth = 480;
     /// <summary>Entspricht BlurEffect Radius 36 (Sigma ≈ 0,577·r+0,5) bei ~1440 px Breite, umgerechnet auf TargetWidth.</summary>
     public const float SigmaAt1440 = 21.3f;
-    public const string LowPowerTint = "#8C0B1526";
-
-    /// <summary>Leistungsprofil Pi: ARM unter Linux oder TRENDO_PROFILE=pi; TRENDO_PROFILE=voll erzwingt Glas.</summary>
-    public static bool LowPower => Detect(Environment.GetEnvironmentVariable("TRENDO_PROFILE"), OperatingSystem.IsLinux(), RuntimeInformation.ProcessArchitecture);
-
-    public static bool Detect(string? profile, bool linux, Architecture arch) => profile?.Trim().ToLowerInvariant() switch
-    {
-        "pi" => true,
-        "voll" => false,
-        _ => linux && arch is Architecture.Arm or Architecture.Arm64,
-    };
-
     private static readonly Dictionary<string, Bitmap?> Cache = [];
 
     public static Bitmap? Get(string key, Func<Stream?> open)

@@ -475,3 +475,33 @@ public class AuditRace
         Directory.Delete(Path.GetDirectoryName(p)!, true);
     }
 }
+
+public class SicherheitsreviewNetzTests
+{
+    [Theory(DisplayName = "Sicherheit B1: interne Adressen werden erkannt (auch mapped IPv6, CGNAT, ULA, 0.0.0.0)")]
+    [InlineData("127.0.0.1", true)] [InlineData("0.0.0.0", true)] [InlineData("10.1.2.3", true)] [InlineData("172.20.0.1", true)]
+    [InlineData("192.168.178.1", true)] [InlineData("169.254.1.1", true)] [InlineData("100.64.0.1", true)] [InlineData("::1", true)]
+    [InlineData("::ffff:127.0.0.1", true)] [InlineData("::ffff:192.168.1.1", true)] [InlineData("fd00::1", true)] [InlineData("fe80::1", true)]
+    [InlineData("93.184.216.34", false)] [InlineData("2606:2800:220:1:248:1893:25c8:1946", false)]
+    public void Internal(string ip, bool expected) => Assert.Equal(expected, Trendo.Core.ResearchDesk.IsInternal(System.Net.IPAddress.Parse(ip)));
+
+    [Theory(DisplayName = "Sicherheit B1: Lesemodus lehnt Heimnetz-Adressen und -Namen ab")]
+    [InlineData("http://[::ffff:127.0.0.1]/")] [InlineData("http://0.0.0.0/")] [InlineData("http://[fd00::1]/")] [InlineData("http://fritz.box/")]
+    [InlineData("http://nas.local/")] [InlineData("http://router/")] [InlineData("http://100.64.1.1/")]
+    public void Classify_internal(string url) => Assert.Equal(Trendo.Core.UrlKind.Abgelehnt, Trendo.Core.ResearchDesk.Classify(url).Kind);
+
+    [Fact(DisplayName = "Sicherheit B1: öffentliche Seite bleibt im Lesemodus erlaubt")]
+    public void Classify_public() => Assert.Equal(Trendo.Core.UrlKind.Lesemodus, Trendo.Core.ResearchDesk.Classify("https://example.com/").Kind);
+}
+
+public class SicherheitsreviewKopplungTests
+{
+    [Fact(DisplayName = "Sicherheit N3: Kopplungscode verlangt genau 6 Ziffern, längere Eingaben werden nicht abgeschnitten")]
+    public void Code_exakt()
+    {
+        var now = DateTime.Now; var st = new CompanionState(); var code = st.NewCode(now);
+        Assert.Null(st.TryPair(code + "xyz", "PC", now).Token);
+        Assert.Null(st.TryPair(" " + code[..5], "PC", now).Token);
+        Assert.NotNull(st.TryPair(" " + code + " ", "PC", now).Token);
+    }
+}

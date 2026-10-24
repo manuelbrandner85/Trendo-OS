@@ -32,7 +32,35 @@ public class ConnectedPromptTests
         var calls = 0;
         var wf = fx.Flow(new PromptServices { Ask = (_, _, _) => { calls++; return Task.FromResult(new KiAnswer(true, "Hello yard", "test", "lokal", [], TimeSpan.Zero)); } });
         var done = fx.Go(wf, "SPEC-07", "Text: Hof\nZiel: Englisch");
+        Assert.Equal(RunStatus.Unsupported, done.Status);
+        Assert.Empty(done.Artifacts);
+        Assert.Contains(done.Errors, e => e.Contains("nicht angeschlossen", StringComparison.OrdinalIgnoreCase));
+        Assert.Equal(0, calls);
+    }
+
+    [Fact(DisplayName = "Sicherheit B2: Freigabetext zeigt die Adresse vollständig, Füllfelder verdrängen sie nicht")]
+    public void Freigabetext_zeigt_ziel()
+    {
+        using var fx = new Box();
+        var wf = fx.Flow(new PromptServices { Offline = false, ReadBytes = (uri, _) => Task.FromResult(("text/plain", new byte[] { 1 }, uri)) });
+        var planned = wf.Los(fx.Project, wf.Start(fx.Req("SYS-03", "aa1: x\naa2: x\naa3: x\naa4: x\naa5: x\naa6: x\nLaden: ja\nAdresse: https://example.com/hof.txt", "laden-ziel"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.AwaitingApproval, planned.Status);
+        var req = fx.Core.Approvals.Pending().Single(r => planned.Approvals.Contains(r.Id));
+        Assert.Contains("adresse=https://example.com/hof.txt", req.Description);
+        Assert.Contains("weitere Angaben", req.Description);
+    }
+
+    [Fact(DisplayName = "Sicherheit B3: Auftrag installiert nie systemweit mit Administrator-Abfrage")]
+    public void Keine_systemweite_installation_per_auftrag()
+    {
+        using var fx = new Box();
+        var calls = 0;
+        var consent = Path.Combine(fx.Root, "deps-consent.txt"); File.WriteAllText(consent, "Zustimmung\n");
+        var wf = fx.Flow(new PromptServices { Runner = new ScriptRunner((_, _) => { calls++; return (0, "ok"); }), FileExists = _ => false, ConsentFile = consent });
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("SYS-04", "Installieren: ja\nProgramm: blender", "inst-admin"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.NotEqual(RunStatus.AwaitingApproval, done.Status);
         Assert.NotEqual(RunStatus.Verified, done.Status);
+        Assert.Contains(done.Errors.Concat(done.Warnings), e => e.Contains("Zusatzprogramme", StringComparison.Ordinal) || e.Contains("nicht automatisch", StringComparison.Ordinal));
         Assert.Equal(0, calls);
     }
 

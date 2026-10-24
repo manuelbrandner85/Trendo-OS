@@ -105,7 +105,9 @@ public sealed class CompanionState
     public (string? Token, string Error) TryPair(string code, string pcName, DateTime now)
     {
         if (Code is null || now > CodeExpires) return (null, "kein gültiger Code – auf dem Gerät „trendo-companion pair“ ausführen");
-        if (!CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(Code), Encoding.ASCII.GetBytes((code ?? "").Trim().PadRight(6)[..6])))
+        var given = (code ?? "").Trim();
+        // genau 6 Ziffern – längere Eingaben werden nicht abgeschnitten (Sicherheitsreview N3)
+        if (given.Length != 6 || !given.All(char.IsAsciiDigit) || !CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(Code), Encoding.ASCII.GetBytes(given)))
         { if (++FailedTries >= 5) Code = null; return (null, "Code falsch"); }
         var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
         var n = string.IsNullOrWhiteSpace(pcName) ? "PC" : pcName.Trim()[..Math.Min(40, pcName.Trim().Length)];

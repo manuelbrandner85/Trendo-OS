@@ -42,8 +42,10 @@ public partial class MainWindow
         var addresses = ShareServer.LanAddresses();
         var ip = addresses.Count > 0 ? addresses[0].Ip : IPAddress.Loopback;
         var server = new ShareServer(new FolderShare(folder, duration), ip, _core.Audit);
-        var previous = ActiveShare;
-        ActiveShare = server;
+        // Freigabe läuft im Hintergrund (Task.Run): ActiveShare nur im UI-Thread tauschen, den Timer dort liest es auch
+        ShareServer? previous = null;
+        void Swap() { previous = ActiveShare; ActiveShare = server; }
+        if (Dispatcher.UIThread.CheckAccess()) Swap(); else Dispatcher.UIThread.Invoke(Swap);
         if (previous is not null) previous.DisposeAsync().AsTask().Wait(1000);
         return "Geteilt, nur lesen, bis " + server.Share.Expires.ToString("HH:mm") + " Uhr: " + server.Url;
     }
@@ -137,6 +139,9 @@ public partial class MainWindow
             status.Text = Trendo.Core.PromptAction.StatusText.For(result);
             preview.Text = string.IsNullOrWhiteSpace(result.Preview) ? "Noch keine Vorschau." : (result.Preview.Length > 500 ? result.Preview[..500] : result.Preview);
             var lines = new List<string>();
+            // Vor der Freigabe steht genau da, was freigegeben wird (Aktion und Ziel), nicht nur die Vorschau
+            if (result.Status == RunStatus.AwaitingApproval)
+                foreach (var req in _core.Approvals.Pending().Where(r => result.Approvals.Contains(r.Id))) lines.Add("Freigabe: " + req.Description);
             lines.AddRange(result.Questions.Select(q => q.Question));
             lines.AddRange(result.Errors);
             lines.AddRange(result.Warnings);

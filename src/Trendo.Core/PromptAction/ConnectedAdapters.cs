@@ -450,7 +450,9 @@ public sealed class InstallAdapter : IStudioActionAdapter
     {
         var component = Catalog(call.Parameters);
         if (component is null) return FieldKit.Blocked("Dieses Programm steht nicht im Katalog. Es wird nichts installiert.");
-        if (component.Mode is not (DeliveryMode.AutoUser or DeliveryMode.AutoElevated))
+        if (component.Mode == DeliveryMode.AutoElevated)
+            return FieldKit.Blocked(component.Name + " braucht eine Installation für alle Benutzer mit Administrator-Abfrage. Das geht nicht über einen Auftrag – bitte unter Einstellungen → Zusatzprogramme einrichten.");
+        if (component.Mode is not DeliveryMode.AutoUser)
             return FieldKit.Blocked(component.Name + " wird nicht automatisch installiert.");
         var body = "Plan: " + component.Name + " (" + component.Id + ")\nwinget: " + component.WingetId + "\nEs wurde nichts installiert. Die Installation wartet auf die Freigabe und die bestehende Lizenz-Zustimmung.\n";
         return Connected.Text(call, FieldKit.Slot("installation", call.Version, "plan.txt"), body, "Noch nichts installiert", "programm.plan", "DependencyManager", ["Es wurde nichts installiert."]);
@@ -459,7 +461,8 @@ public sealed class InstallAdapter : IStudioActionAdapter
     {
         if (!call.SideEffectAuthorized) return FieldKit.Blocked("Die Freigabe fehlt. Es wurde nichts installiert.");
         var component = Catalog(call.Parameters);
-        if (component is null || component.Mode is not (DeliveryMode.AutoUser or DeliveryMode.AutoElevated))
+        // Sicherheitsreview B3: aus einem Auftrag nur Installationen für den eigenen Benutzer, nie systemweit mit Admin-Abfrage
+        if (component is null || component.Mode is not DeliveryMode.AutoUser)
             return FieldKit.Blocked("Es wird nichts installiert.");
         if (Connected.Svc.Runner is null || Connected.Svc.Audit is null)
             return FieldKit.Blocked("Es ist kein Installationsprogramm angeschlossen. Es wurde nichts installiert.");

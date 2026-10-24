@@ -12,6 +12,15 @@ ExecStart=%h/.local/share/trendo-companion/trendo-companion serve --port 8787
 Restart=on-failure
 NoNewPrivileges=true
 PrivateTmp=true
+# Härtung (Sicherheitsreview N1); kein MemoryDenyWriteExecute – verträgt sich nicht mit dem .NET-JIT
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/.config/trendo-companion
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+UMask=0077
 
 [Install]
 WantedBy=default.target
