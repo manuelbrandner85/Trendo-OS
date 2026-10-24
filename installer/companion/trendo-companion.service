@@ -1,8 +1,13 @@
 [Unit]
-Description=Trendo Begleiter (Heimnetz)
+Description=Trendo Begleiter (standardmäßig nur dieser Rechner)
 After=network-online.target
 
 [Service]
+# Standard: nur 127.0.0.1. Das ist Absicht (nicht das ganze Netz).
+# Heimnetz bewusst freigeben, nur im eigenen LAN, Port nicht ins Internet weiterleiten:
+#   ExecStart=%h/.local/share/trendo-companion/trendo-companion serve --port 8787 --lan
+# oder einmalig „trendo-companion netz an“ und den Dienst neu starten.
+# --local erzwingt Loopback und gewinnt gegen die gespeicherte Freigabe.
 ExecStart=%h/.local/share/trendo-companion/trendo-companion serve --port 8787
 Restart=on-failure
 NoNewPrivileges=true
