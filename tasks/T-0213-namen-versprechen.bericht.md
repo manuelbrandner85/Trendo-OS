@@ -86,6 +86,8 @@ Umgesetzt in `src/Trendo.App/StudioCatalog.cs` (nur Untertitel, kein Name geänd
 
 SPEC-07 bleibt abgelehnt. Der neue Untertitel beschreibt nur die schon vorhandene Grundfunktion, und der Prompt-Weg für SPEC-07 bleibt gesperrt.
 
+**Tests (Release, 2026-10-25):** Build 0 Warnungen, 0 Fehler · Api 15/15 · Core 672 bestanden, 1 übersprungen · App 329 bestanden, 2 übersprungen, 27 min 35 s · Paket-Tests OK.
+
 ## Entscheidung nötig (erledigt, siehe oben)
 Für jede Zeile der ersten Tabelle: **A** (Text ändern – Claude setzt es danach in `StudioCatalog.cs` um und passt die Tests an) oder **B** (Funktion ergänzen – eigener Auftrag). SPEC-07 nur A, weil der Ausbau abgelehnt ist.
 
