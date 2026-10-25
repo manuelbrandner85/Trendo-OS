@@ -92,3 +92,11 @@
 **Auf GitHub schließen (Manuel):** alle unter „Schließen“ genannten PRs. Übernommene PRs markiert GitHub selbst als gemergt, sobald ihr Stand in `main` liegt. Die gestapelten Entwürfe #244–#258 zielen auf andere Branches und müssen eventuell von Hand geschlossen werden.
 
 **Tests (Release, Windows-PC, Stand nach allen Korrekturen):** Build 0 Warnungen, 0 Fehler · Api 15/15 · Core 654 bestanden, 1 übersprungen (von 655) · App 307 bestanden, 1 übersprungen (von 308), 22 min 54 s · Paket-Tests OK.
+
+## Nachtrag: #275 und #271 (Freigabe Manuel, 2026-10-25)
+- **#275:** GRUNDSATZ-01 mit den Abnahmekriterien AK-1 bis AK-8 von Manuel bestätigt.
+  - Eingetragen in `requirements.yaml` → `principles`, zusammen mit PAKET-44 (`packages`), außerdem im Generator `scripts/generate_requirements.py` und in `CLAUDE.md`.
+  - Der PR wurde nicht gemergt, sondern sein Inhalt neu eingetragen. Auf GitHub schließen.
+- **#271 übernommen:** Fachprogramme nur bei Bedarf, kurze Versionsprüfung, Installation nur nach Zustimmung und Freigabe.
+  - Aufträge (Prompt) installieren weiterhin nur für den eigenen Benutzer (B3).
+- **Tests (Release):** Build 0 Warnungen, 0 Fehler · Api 15/15 · Core 666 bestanden, 1 übersprungen (von 667) · App 322 bestanden, 1 übersprungen (von 323), 36 min 17 s · Paket-Tests OK.
