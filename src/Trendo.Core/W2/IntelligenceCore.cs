@@ -15,7 +15,11 @@ public interface IKiBackend
     Task<string> ChatAsync(string model, IReadOnlyList<KiMessage> messages, CancellationToken ct = default);
 }
 
-public sealed record KiRequest(string Question, string? SystemPrompt = null, string? PreferredModel = null, IReadOnlyList<KiMessage>? History = null, bool UseKnowledge = true);
+/// <summary>Quelle außerhalb dieses PCs (KI-Dienst mit Schlüssel). Bekommt nie Ausschnitte aus den eigenen Dokumenten („Wissen“) – nur Frage und Verlauf.</summary>
+public interface IRemoteKiBackend : IKiBackend { }
+
+/// <param name="AllowRemote">Nur der freie Chat setzt das: dann darf ein eingeschalteter KI-Dienst außerhalb des PCs einspringen – ohne Verlauf und ohne eigene Dokumente. Abläufe, E-Mail, Agenten und Aufträge bleiben immer lokal.</param>
+public sealed record KiRequest(string Question, string? SystemPrompt = null, string? PreferredModel = null, IReadOnlyList<KiMessage>? History = null, bool UseKnowledge = true, bool AllowRemote = false);
 public sealed record KiAnswer(bool Ok, string Text, string? Backend, string? Model, IReadOnlyList<string> Sources, TimeSpan Took);
 
 /// <summary>CORE-02 Trendo Intelligence Core: ein Eingang für alle KI-Fragen in Trendo OS.
@@ -41,7 +45,8 @@ public sealed class IntelligenceCore
         var sw = System.Diagnostics.Stopwatch.StartNew();
         if (string.IsNullOrWhiteSpace(req.Question)) return new(false, "Bitte schreib zuerst eine Frage.", null, null, [], sw.Elapsed);
         var sources = new List<string>();
-        var sys = new StringBuilder(req.SystemPrompt ?? DefaultSystem);
+        var baseSystem = req.SystemPrompt ?? DefaultSystem;
+        var sys = new StringBuilder(baseSystem);
         if (req.UseKnowledge && _knowledge is not null)
         {
             var hits = _knowledge(req.Question, 3);
@@ -51,22 +56,30 @@ public sealed class IntelligenceCore
                 foreach (var (t, x) in hits) { sys.Append($"### {t}\n{(x.Length > 1500 ? x[..1500] : x)}\n"); sources.Add(t); }
             }
         }
-        var msgs = new List<KiMessage> { new("system", sys.ToString()) };
-        if (req.History is not null) msgs.AddRange(req.History.TakeLast(10));
-        msgs.Add(new("user", req.Question));
+        List<KiMessage> Messages(string system)
+        {
+            var m = new List<KiMessage> { new("system", system) };
+            if (req.History is not null) m.AddRange(req.History.TakeLast(10));
+            m.Add(new("user", req.Question));
+            return m;
+        }
+        var msgs = Messages(sys.ToString());
+        List<KiMessage> remoteMsgs = [new("system", baseSystem), new("user", req.Question)]; // ohne Verlauf und ohne eigene Dokumente
         var tried = new List<string>();
         foreach (var b in _backends())
         {
+            if (b is IRemoteKiBackend && !req.AllowRemote) continue; // nur der freie Chat darf nach außen
             if (!await b.IsUpAsync(ct)) { tried.Add($"{b.Name}: nicht erreichbar"); continue; }
             var models = await b.ModelsAsync(ct);
             var model = req.PreferredModel is { } p && models.Contains(p) ? p : models.FirstOrDefault();
             if (model is null) { tried.Add($"{b.Name}: kein Modell"); continue; }
             try
             {
-                var text = await b.ChatAsync(model, msgs, ct);
-                _audit.Append("ki", "ki.ask", $"quelle={b.Name} modell={model} frage={req.Question.Length}Z antwort={text.Length}Z wissen={sources.Count}");
+                var remote = b is IRemoteKiBackend;
+                var text = await b.ChatAsync(model, remote ? remoteMsgs : msgs, ct);
+                _audit.Append("ki", "ki.ask", $"quelle={b.Name} modell={model} frage={req.Question.Length}Z antwort={text.Length}Z wissen={(remote ? 0 : sources.Count)}{(remote ? " extern" : "")}");
                 Save(req.Question, text, b.Name, model);
-                return new(true, text, b.Name, model, sources, sw.Elapsed);
+                return new(true, text, b.Name, model, remote ? [] : sources, sw.Elapsed);
             }
             catch (Exception ex) when (ex is not OperationCanceledException) { tried.Add($"{b.Name}: {ex.Message}"); }
         }

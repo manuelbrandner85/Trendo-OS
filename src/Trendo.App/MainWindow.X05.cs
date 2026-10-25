@@ -22,6 +22,44 @@ public partial class MainWindow
         ExtraPages.Add(("KI-Quellen", "ki-quellen", ["lm studio", "llama", "jan", "modell", "kostenlos", "quelle"]));
     }
 
+    /// <summary>Vorgabe 2026-10-25: freie Modelle (Apache-2.0/MIT, passend zum Arbeitsspeicher) nach dem Start ohne Klick laden, eins nach dem anderen.
+    /// Modelle mit eigenen Lizenzbedingungen (z. B. Llama, Gemma, Qwen Research) brauchen weiter eine Bestätigung.</summary>
+    public async Task<List<string>> AutoInstallModelsAsync(Func<Task<IReadOnlyList<string>>> have, Func<string, Task<bool>> pull)
+    {
+        var loaded = new List<string>();
+        var set = KiSourceSettings.Load(_core.DataRoot);
+        if (!set.AutoModels || _core.Offline) return loaded;
+        var todo = KiCatalog.AutoModels(new HardwareInfo(TotalRam, null, 0), await have()).Where(m => set.AutoFailed.GetValueOrDefault(m.Tag) < 3).ToList();
+        foreach (var m in todo)
+        {
+            var free = FreeBytesForModels?.Invoke() ?? FreeBytes(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+            if (free < (long)((m.SizeGb + 5) * 1024 * 1024 * 1024)) { _srcMsg = $"Zu wenig Speicherplatz für {m.Name} ({m.SizeGb:0.0} GB + 5 GB Reserve) – übersprungen."; _core.Audit.Append("app", "ki.model.auto.skip", $"{m.Tag} Speicher"); continue; }
+            var req = _core.Approvals.Request(Principal.LocalOwner, "ki.pull", $"KI-Modell {m.Name} ({m.SizeGb:0.0} GB, {m.License}) automatisch laden", m.Tag);
+            _core.Approvals.Approve(req.Id, Principal.LocalOwner); // Vorgabe des Besitzers: freie Modelle automatisch
+            _core.Audit.Append("app", "ki.model.auto.start", $"{m.Tag} {m.SizeGb:0.0} GB {m.License}");
+            _srcMsg = $"Lade KI-Modell {m.Name} ({m.SizeGb:0.0} GB) …";
+            var ok = await _core.Approvals.Execute(req.Id, "ki.pull", m.Tag, () => pull(m.Tag));
+            _core.Audit.Append("app", ok ? "ki.model.auto.ok" : "ki.model.auto.fail", m.Tag);
+            var cur = KiSourceSettings.Load(_core.DataRoot);
+            if (ok) { loaded.Add(m.Tag); cur.AutoFailed.Remove(m.Tag); } else cur.AutoFailed[m.Tag] = cur.AutoFailed.GetValueOrDefault(m.Tag) + 1;
+            cur.Save(_core.DataRoot);
+            _srcMsg = ok ? $"KI-Modell {m.Name} ist da." : $"{m.Name} konnte nicht geladen werden – Trendo versucht es beim nächsten Start erneut.";
+        }
+        return loaded;
+    }
+
+    /// <summary>Für Tests: freier Speicherplatz in Bytes.</summary>
+    public Func<long>? FreeBytesForModels { get; set; }
+    private static long FreeBytes(string path) { try { return new DriveInfo(Path.GetPathRoot(Path.GetFullPath(path))!).AvailableFreeSpace; } catch (Exception e) when (e is IOException or ArgumentException or UnauthorizedAccessException) { return 0; } }
+
+    private async Task AutoModelsAfter(Task ollamaStart)
+    {
+        try { await ollamaStart; } catch (Exception ex) when (ex is not OutOfMemoryException) { return; }
+        var o = new OllamaBackend();
+        if (!await o.IsUpAsync()) return;
+        await AutoInstallModelsAsync(() => o.ModelsAsync(), tag => o.PullAsync(tag));
+    }
+
     public async Task ScanSourcesAsync()
     {
         LastScan.Clear();
@@ -39,7 +77,7 @@ public partial class MainWindow
     private Control SourcesView()
     {
         var set = KiSourceSettings.Load(_core.DataRoot);
-        var sp = new StackPanel { Spacing = 6, Children = { P("Trendo nutzt nur kostenlose KI auf diesem PC. Ist die erste Quelle aus, fragt Trendo automatisch die nächste.") } };
+        var sp = new StackPanel { Spacing = 6, Children = { P("Trendo nutzt zuerst die kostenlose KI auf diesem PC. Ist die erste Quelle aus, fragt Trendo automatisch die nächste. Freie Modelle lädt Trendo selbst; KI-Dienste mit Schlüssel trägst du unter „Dienste & Schlüssel“ ein.") } };
         var scan = new Button { Name = "src-scan", Content = "Jetzt suchen", Background = Accent };
         var srcMsg = new TextBlock { Name = "src-msg", Text = _srcMsg, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap };
         scan.Click += async (_, _) =>
@@ -68,12 +106,15 @@ public partial class MainWindow
                 Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Center, Children = { up, tg, web } }, 1) } }));
         }
         sp.Children.Add(H("Freie Modelle", 14));
+        var auto = new CheckBox { Name = "ki-auto-models", Content = "Freie Modelle (Apache-2.0, MIT) automatisch laden, passend zu diesem PC", IsChecked = set.AutoModels, Foreground = Text };
+        auto.IsCheckedChanged += (_, _) => { var cur = KiSourceSettings.Load(_core.DataRoot); cur.AutoModels = auto.IsChecked == true; cur.Save(_core.DataRoot); _core.Audit.Append(Principal.LocalOwner.Name, cur.AutoModels ? "ki.auto.on" : "ki.auto.off", ""); };
+        sp.Children.Add(auto);
         var hw = new HardwareInfo(TotalRam, null, 0);
         var have = LastScan.TryGetValue("ollama", out var ol) && ol.Up ? ol.Models : [];
         foreach (var m in KiCatalog.Models)
         {
             var fits = KiCatalog.Fits(m, hw); var got = have.Contains(m.Tag);
-            var b = new Button { Name = "model-pull-" + m.Tag.Replace(':', '-').Replace('.', '-'), Content = got ? "✓ vorhanden" : "Holen (Zustimmung)", IsEnabled = !got && fits && ol.Up && !_core.Offline, Padding = new Thickness(8, 2) };
+            var b = new Button { Name = "model-pull-" + m.Tag.Replace(':', '-').Replace('.', '-'), Content = got ? "✓ vorhanden" : KiCatalog.AutoLicense(m) ? (fits ? "Jetzt laden (sonst automatisch)" : "passt nicht") : $"Lizenz „{m.License}“ bestätigen & laden", IsEnabled = !got && fits && ol.Up && !_core.Offline, Padding = new Thickness(8, 2) };
             b.Click += async (_, _) =>
             {
                 var req = _core.Approvals.Request(Principal.LocalOwner, "ki.pull", $"KI-Modell {m.Name} ({m.SizeGb:0.0} GB) laden", m.Tag);

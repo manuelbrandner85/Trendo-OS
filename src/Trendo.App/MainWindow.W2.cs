@@ -17,7 +17,20 @@ public partial class MainWindow
     public IntelligenceCore Intel => _intel ??= new IntelligenceCore(_core.DataRoot, _core.Audit, () => KiBackendsOverride?.Invoke() ?? DefaultKiBackends(), KnowledgeLookup);
 
     private Func<string, int, IReadOnlyList<(string Title, string Text)>>? KnowledgeLookup => LookupKnowledge;
-    private IReadOnlyList<IKiBackend> DefaultKiBackends() => KiSourceSettings.Load(_core.DataRoot).Active().Select(MakeBackend).ToList();
+    /// <summary>Erst alle eingeschalteten Quellen auf diesem PC, danach eingeschaltete KI-Dienste mit gespeichertem Schlüssel (Rückfall, Text verlässt den PC).</summary>
+    private IReadOnlyList<IKiBackend> DefaultKiBackends()
+    {
+        var set = KiSourceSettings.Load(_core.DataRoot);
+        var list = set.Active().Select(MakeBackend).ToList();
+        if (_core.Offline) return list;
+        foreach (var id in set.Cloud)
+            if (KiCatalog.Cloud.FirstOrDefault(c => c.Id == id) is { } svc && _core.Secrets.Get(svc.SecretName) is { Length: > 0 } key)
+                list.Add(CloudBackendFactory?.Invoke(svc, key) ?? CloudKiBackend.For(svc, key));
+        return list;
+    }
+
+    /// <summary>Für Tests: KI-Dienst ohne Netz nachbilden.</summary>
+    public Func<KiCloudService, string, IKiBackend>? CloudBackendFactory { get; set; }
 
     private void InitWave23()
     {
@@ -55,7 +68,7 @@ public partial class MainWindow
 
     private Control AskView()
     {
-        var sp = new StackPanel { Spacing = 8, Children = { P("Stell eine Frage. Die Antwort kommt von der KI auf diesem PC – nichts geht ins Internet.") } };
+        var sp = new StackPanel { Spacing = 8, Children = { P(KiSourceSettings.Load(_core.DataRoot).Cloud.Count == 0 ? "Stell eine Frage. Die Antwort kommt von der KI auf diesem PC – nichts geht ins Internet." : "Stell eine Frage. Zuerst antwortet die KI auf diesem PC. Nur wenn sie schweigt, springt dein eingeschalteter KI-Dienst ein – dann geht nur diese eine Frage hinaus, ohne Verlauf und ohne deine Dokumente.") } };
         var log = new StackPanel { Name = "ask-log", Spacing = 6 };
         foreach (var m in _chat)
             log.Children.Add(WCard(new StackPanel { Children = { P(m.Role == "user" ? "Du" : "Trendo", m.Role == "user" ? Accent : null, 10.5), new SelectableTextBlock { Text = m.Content, Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap } } }));
@@ -69,10 +82,10 @@ public partial class MainWindow
             var q = input.Text?.Trim() ?? "";
             if (q == "") { state.Text = "Bitte schreib zuerst eine Frage."; return; }
             send.IsEnabled = false; state.Text = "Trendo denkt nach …";
-            var a = await Intel.AskAsync(new KiRequest(q, PreferredModel: KiModelName, History: _chat.ToList()));
+            var a = await Intel.AskAsync(new KiRequest(q, PreferredModel: KiModelName, History: _chat.ToList(), AllowRemote: true));
             LastAnswer = a.Text;
             if (a.Ok) { _chat.Add(new("user", q)); _chat.Add(new("assistant", a.Text)); }
-            _askState = a.Ok ? $"Antwort von {a.Model} ({a.Backend}) in {a.Took.TotalSeconds:0.0} s{(a.Sources.Count > 0 ? " · Wissen: " + string.Join(", ", a.Sources) : "")}" : a.Text;
+            _askState = a.Ok ? $"Antwort von {a.Model} ({a.Backend}{(KiCatalog.Cloud.Any(c => c.Name == a.Backend) ? ", außerhalb des PCs" : "")}) in {a.Took.TotalSeconds:0.0} s{(a.Sources.Count > 0 ? " · Wissen: " + string.Join(", ", a.Sources) : "")}" : a.Text;
             Show("ki-fragen");
         };
         sp.Children.Add(log);

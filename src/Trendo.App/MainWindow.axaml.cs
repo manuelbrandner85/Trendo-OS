@@ -275,6 +275,7 @@ public sealed partial class MainWindow : Window
         // KI-Laufzeit im Hintergrund prüfen/starten – blockiert weder Start noch Bildschirmfoto
         if (AppStartup.VelopackFirstRun && !_opt.Isolated) _ = SetupVollpaket(); // T-0222: Programme aus dem Vollpaket gleich nach dem Setup
         var ollama = EnsureOllamaRunning();
+        if (!_opt.Isolated && !_core.Offline) _ = AutoModelsAfter(ollama); // freie KI-Modelle ohne Klick nachladen
         if (_opt.KiAsk is { } q)
         {
             await ollama;
@@ -1162,6 +1163,46 @@ public sealed partial class MainWindow : Window
                 new TextBlock { Text = k.Name, Foreground = Text, FontWeight = FontWeight.SemiBold }, P(k.Note, null, 11),
                 new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { get, box, save } }, res } } });
         }
+        // KI-Dienste mit Schlüssel (Vorgabe 2026-10-25): Anbieterseite öffnen, Schlüssel eintragen, freiwillig als Ersatz-KI einschalten
+        sp.Children.Add(H("KI-Dienste mit Schlüssel", 14));
+        sp.Children.Add(P("Trendo fragt immer zuerst die kostenlose KI auf diesem PC. Ein eingeschalteter Dienst springt nur ein, wenn sie nicht antwortet – dann verlässt deine Frage den PC und geht an den Anbieter.", null, 11.5));
+        var kiSet = KiSourceSettings.Load(_core.DataRoot);
+        foreach (var c in KiCatalog.Cloud)
+        {
+            var has = _core.Secrets.Get(c.SecretName) is not null;
+            var on = kiSet.Cloud.Contains(c.Id);
+            var box = new TextBox { Name = "txt-ki-" + c.Id, PasswordChar = '•', PlaceholderText = "Schlüssel hier einfügen", Width = 300 };
+            var res = new TextBlock { Name = "ki-key-state-" + c.Id, Text = has ? "gespeichert ✓" : "kein Schlüssel", Foreground = Muted, FontSize = 11 };
+            var get = new Button { Name = "btn-ki-getkey-" + c.Id, Content = "Schlüssel holen", IsEnabled = !_core.Offline };
+            ToolTip.SetTip(get, "Öffnet die offizielle Seite: " + c.KeyUrl);
+            get.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, c.KeyUrl, _core.Audit);
+            var save = new Button { Name = "btn-ki-savekey-" + c.Id, Content = "Prüfen & speichern", IsEnabled = !_core.Offline };
+            var use = new CheckBox { Name = "ki-cloud-use-" + c.Id, Content = $"Als Ersatz-KI nutzen (Fragen gehen dann an {c.Name})", IsChecked = on, IsEnabled = has, Foreground = Text };
+            use.IsCheckedChanged += (_, _) =>
+            {
+                var cur = KiSourceSettings.Load(_core.DataRoot);
+                if (use.IsChecked == true && !cur.Cloud.Contains(c.Id))
+                {
+                    // ausdrückliche Zustimmung als Freigabe: ab jetzt dürfen Chat-Fragen im Notfall an diesen Dienst
+                    var req = _core.Approvals.Request(Principal.LocalOwner, "ki.cloud.on", $"{c.Name} als Ersatz-KI: Chat-Fragen dürfen den PC verlassen", c.Id);
+                    _core.Approvals.Approve(req.Id, Principal.LocalOwner);
+                }
+                if ((use.IsChecked == true) != cur.Cloud.Contains(c.Id)) { cur.ToggleCloud(c.Id); cur.Save(_core.DataRoot); }
+                _core.Audit.Append(Principal.LocalOwner.Name, use.IsChecked == true ? "ki.cloud.on" : "ki.cloud.off", c.Id);
+            };
+            save.Click += async (_, _) =>
+            {
+                var key = box.Text?.Trim() ?? ""; if (key.Length == 0) return;
+                res.Text = "prüfe …";
+                var ok = KeyValidatorOverride is { } f ? await f(key) : await CloudKiBackend.ValidateAsync(c, key);
+                if (ok) { _core.Secrets.Set(c.SecretName, key); box.Text = ""; use.IsEnabled = true; }
+                _core.Audit.Append(Principal.LocalOwner.Name, ok ? "key.saved" : "key.invalid", "ki-" + c.Id); // Schlüssel selbst nie im Log
+                res.Text = ok ? "gültig und gespeichert ✓" : "ungültig – nicht gespeichert";
+            };
+            sp.Children.Add(new Border { Name = "ki-cloud-" + c.Id, Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = new StackPanel { Spacing = 6, Children = {
+                new TextBlock { Text = $"{c.Name} · {(c.FreeTier ? "kostenlose Stufe" : "kostenpflichtig")}", Foreground = Text, FontWeight = FontWeight.SemiBold }, P(c.Hint, null, 11),
+                new WrapPanel { Children = { get, new Border { Width = 8 }, box, new Border { Width = 8 }, save } }, use, res } } });
+        }
         return Page("Dienste & Schlüssel", sp);
     }
 
@@ -1169,7 +1210,7 @@ public sealed partial class MainWindow : Window
     {
         try
         {
-            using var h = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+            using var h = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromSeconds(15) }; // Weiterleitung ist kein Beweis für einen gültigen Schlüssel
             using var rq = new HttpRequestMessage(HttpMethod.Get, url);
             rq.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", key);
             rq.Headers.UserAgent.ParseAdd("TrendoOS/0.4");

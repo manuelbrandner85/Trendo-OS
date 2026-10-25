@@ -53,7 +53,8 @@ public partial class MainWindow
     private bool BackendsAreLocal()
     {
         var list = KiBackendsOverride?.Invoke() ?? DefaultKiBackends();
-        return list.All(b => IntelligencePromptModel.Loopback(b.BaseUrl));
+        // KI-Dienste außerhalb des PCs fragt die Eingabeleiste nie (KiRequest.AllowRemote bleibt aus) – sie zählen hier nicht
+        return list.Where(b => b is not IRemoteKiBackend).All(b => IntelligencePromptModel.Loopback(b.BaseUrl));
     }
 
     private string? NewestProject() => _core.Projects.List().OrderByDescending(p => p.CreatedAt).ThenBy(p => p.Id).FirstOrDefault()?.Id;

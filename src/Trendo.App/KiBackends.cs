@@ -85,3 +85,63 @@ public sealed class OpenAiCompatBackend(string name, string baseUrl, HttpMessage
     }
 }
 
+
+/// <summary>KI-Dienst mit API-Schlüssel (OpenAI-Format). Bewusste Ausnahme von <see cref="LocalOnly"/>: nur HTTPS, nur genau die Adresse
+/// aus <see cref="KiCatalog.Cloud"/>, nur wenn der Besitzer den Dienst eingeschaltet und einen Schlüssel gespeichert hat. Der Text verlässt dann den PC.</summary>
+public sealed class CloudKiBackend : IRemoteKiBackend
+{
+    private readonly HttpClient _http;
+    private readonly KiCloudService _svc;
+    private readonly string _prefix;
+
+    public CloudKiBackend(KiCloudService svc, string key, HttpMessageHandler? handler = null)
+    {
+        var u = new Uri(svc.BaseUrl.TrimEnd('/') + "/");
+        if (u.Scheme != Uri.UriSchemeHttps || u.Port != 443 || KiCatalog.Cloud.All(c => c.Host != u.Host) || u.AbsolutePath.StartsWith("//", StringComparison.Ordinal))
+            throw new InvalidOperationException($"Nur die bekannten KI-Dienste über HTTPS, nicht {u.Host}.");
+        if (string.IsNullOrWhiteSpace(key)) throw new ArgumentException("Schlüssel fehlt.");
+        _svc = svc; _prefix = u.AbsolutePath;
+        _http = new HttpClient(handler ?? new HttpClientHandler { AllowAutoRedirect = false }) { BaseAddress = new Uri(u.GetLeftPart(UriPartial.Authority)), Timeout = TimeSpan.FromSeconds(120) };
+        _http.MaxResponseContentBufferSize = 8 * 1024 * 1024;
+        _http.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", key);
+        if (u.Host == "api.anthropic.com") { _http.DefaultRequestHeaders.Add("x-api-key", key); _http.DefaultRequestHeaders.Add("anthropic-version", "2023-06-01"); }
+        _http.DefaultRequestHeaders.UserAgent.ParseAdd("TrendoOS/1.0");
+    }
+
+    private static readonly Dictionary<(string, string), CloudKiBackend> Cache = [];
+    /// <summary>Eine Verbindung je Dienst und Schlüssel (nicht bei jeder Frage neu).</summary>
+    public static CloudKiBackend For(KiCloudService svc, string key) { lock (Cache) return Cache.TryGetValue((svc.Id, key), out var b) ? b : Cache[(svc.Id, key)] = new CloudKiBackend(svc, key); }
+
+    public string Name => _svc.Name;
+    public string BaseUrl => _svc.BaseUrl;
+    public async Task<bool> IsUpAsync(CancellationToken ct = default) => (await ModelsAsync(ct)).Count > 0;
+
+    /// <summary>Prüft einen Schlüssel über dieselben Grenzen (HTTPS, fester Anbieter, keine Weiterleitung): gültig, wenn der Dienst Modelle liefert.</summary>
+    public static async Task<bool> ValidateAsync(KiCloudService svc, string key) { try { return (await new CloudKiBackend(svc, key).ModelsAsync()).Count > 0; } catch (ArgumentException) { return false; } }
+
+    /// <summary>Modelle des Dienstes; das bevorzugte steht vorn (bei OpenRouter das erste kostenlose „:free“).
+    /// Kostenpflichtige Dienste nur mit ihrem festen, günstigen Modell – fehlt es, wird nicht ausgewichen.</summary>
+    public async Task<IReadOnlyList<string>> ModelsAsync(CancellationToken ct = default)
+    {
+        try
+        {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct); cts.CancelAfter(8000);
+            var doc = await _http.GetFromJsonAsync<JsonElement>(_prefix + "models", cts.Token);
+            var ids = doc.GetProperty("data").EnumerateArray().Select(m => m.GetProperty("id").GetString() ?? "").Where(n => n != "").ToList();
+            var pick = _svc.DefaultModel.StartsWith(':') ? ids.FirstOrDefault(i => i.EndsWith(_svc.DefaultModel, StringComparison.Ordinal))
+                : ids.FirstOrDefault(i => i == _svc.DefaultModel || i == "models/" + _svc.DefaultModel);
+            if (pick is null) return _svc.FreeTier ? ids : [];
+            return [pick, .. ids.Where(i => i != pick)];
+        }
+        catch { return []; }
+    }
+
+    public async Task<string> ChatAsync(string model, IReadOnlyList<KiMessage> messages, CancellationToken ct = default)
+    {
+        var body = new { model, stream = false, messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray() };
+        using var r = await _http.PostAsJsonAsync(_prefix + "chat/completions", body, ct);
+        r.EnsureSuccessStatusCode();
+        var doc = await r.Content.ReadFromJsonAsync<JsonElement>(ct);
+        return doc.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString()?.Trim() ?? "";
+    }
+}
