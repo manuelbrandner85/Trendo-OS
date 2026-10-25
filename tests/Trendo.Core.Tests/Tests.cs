@@ -552,7 +552,7 @@ public class Wave0_Setup
         Assert.Equal("wellen", UserSettings.WallpaperFor(new DateTime(2026, 1, 1, 12, 0, 0)));
         Assert.Equal("bergsee-nacht", UserSettings.WallpaperFor(new DateTime(2026, 1, 1, 19, 0, 0)));
         Assert.Equal("polarlicht", UserSettings.WallpaperFor(new DateTime(2026, 1, 1, 23, 0, 0)));
-        Assert.Equal("abendrot", new UserSettings().CurrentWallpaper(DateTime.Now));
+        Assert.Equal("orbit", new UserSettings().CurrentWallpaper(DateTime.Now));
     }
 }
 

@@ -12,9 +12,9 @@ public sealed class UserSettings
     public string ProjectsFolder { get; set; } = "";
     public string Theme { get; set; } = "dunkel";          // dunkel | hell | kontrast
     public string Accent { get; set; } = "#2F86F6";
-    public string Wallpaper { get; set; } = "abendrot";
+    public string Wallpaper { get; set; } = "orbit";
     public bool WallpaperByTime { get; set; }
-    /// <summary>Akzentfarbe folgt dem Hintergrund (Abendrot und Bergsee → Blau, Morgen → Bernstein, Polarlicht → Türkis, Wellen → Violett).</summary>
+    /// <summary>Akzentfarbe folgt dem Hintergrund (Orbit, Abendrot und Bergsee → Blau, Morgen → Bernstein, Polarlicht → Türkis, Wellen → Violett).</summary>
     public bool AccentFromWallpaper { get; set; }
     public bool ReduceMotion { get; set; }
     /// <summary>T-0107 Leistungsprofil: auto (Raspberry Pi/ARM → sparsam), hoch (alle Effekte), sparsam (ohne Unschärfe, Schatten und Animationen).</summary>
@@ -64,7 +64,7 @@ public sealed class UserSettings
     public static double ClampScale(double v) => UiScales.OrderBy(x => Math.Abs(x - v)).First();
 
     public static readonly string[] Themes = ["dunkel", "hell", "kontrast"];
-    public static readonly string[] Wallpapers = ["abendrot", "bergsee-nacht", "polarlicht", "wellen", "morgen"];
+    public static readonly string[] Wallpapers = ["orbit", "abendrot", "bergsee-nacht", "polarlicht", "wellen", "morgen"];
 
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true };
     public static string PathIn(string dataRoot) => Path.Combine(dataRoot, "settings.json");
@@ -101,5 +101,5 @@ public sealed class UserSettings
     /// <summary>Farbe, die gerade gilt: passend zum Hintergrund oder selbst gewählt.</summary>
     public string EffectiveAccent(DateTime now) => AccentFromWallpaper ? AccentFor(CurrentWallpaper(now)) : Accent;
 
-    public string CurrentWallpaper(DateTime now) => WallpaperByTime ? WallpaperFor(now) : (Wallpapers.Contains(Wallpaper) ? Wallpaper : "abendrot");
+    public string CurrentWallpaper(DateTime now) => WallpaperByTime ? WallpaperFor(now) : (Wallpapers.Contains(Wallpaper) ? Wallpaper : "orbit");
 }

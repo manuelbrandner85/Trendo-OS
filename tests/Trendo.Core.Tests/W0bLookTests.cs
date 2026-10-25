@@ -4,11 +4,11 @@ namespace Trendo.Core.Tests;
 
 public class W0b_Hintergrund_Farbe
 {
-    [Fact(DisplayName = "W0B-02/03: Abendrot ist Standard, Farbe passend zum Hintergrund, eigene Farbe bleibt erhalten")]
+    [Fact(DisplayName = "W0B-02/03: Orbit ist Standard (T-0224), Farbe passend zum Hintergrund, eigene Farbe bleibt erhalten")]
     public void Accent()
     {
         var s = new UserSettings();
-        Assert.Equal("abendrot", s.CurrentWallpaper(DateTime.Now));
+        Assert.Equal("orbit", s.CurrentWallpaper(DateTime.Now));
         Assert.Equal("#2F86F6", s.EffectiveAccent(DateTime.Now));
         s.Accent = "#22C55E"; s.Wallpaper = "morgen";
         Assert.Equal("#22C55E", s.EffectiveAccent(DateTime.Now));
@@ -131,5 +131,25 @@ public class Deinstallation_Werkzeuge
     {
         Assert.EndsWith(DataLocation.ToolsFolderName, DataLocation.ToolsRoot());
         Assert.Equal(DataLocation.ToolsRoot(), new DependencyManager(new AuditLog(Path.Combine(Path.GetTempPath(), "trendo-a-" + Guid.NewGuid().ToString("N") + ".jsonl")), new RealProcessRunner()).ToolsRoot);
+    }
+}
+
+public class T0224_Hintergrund
+{
+    [Fact(DisplayName = "T-0224: alter Standard „Abendrot“ wird einmalig zu „Orbit“, eigene andere Wahl bleibt")]
+    public void Migration()
+    {
+        var d = Path.Combine(Path.GetTempPath(), "trendo-look-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(d);
+        try
+        {
+            File.WriteAllText(UserSettings.PathIn(d), """{ "FormatVersion": 2, "Theme": "dunkel", "Wallpaper": "abendrot" }""");
+            Assert.Equal("orbit", UserSettings.Load(d).Wallpaper);
+            File.WriteAllText(UserSettings.PathIn(d), """{ "FormatVersion": 2, "Theme": "dunkel", "Wallpaper": "polarlicht" }""");
+            Assert.Equal("polarlicht", UserSettings.Load(d).Wallpaper);
+            File.WriteAllText(UserSettings.PathIn(d), """{ "FormatVersion": 3, "Theme": "dunkel", "Wallpaper": "abendrot" }""");
+            Assert.Equal("abendrot", UserSettings.Load(d).Wallpaper); // nach der Umstellung selbst gewählt: bleibt
+            Assert.Contains("orbit", UserSettings.Wallpapers);
+        }
+        finally { Directory.Delete(d, true); }
     }
 }

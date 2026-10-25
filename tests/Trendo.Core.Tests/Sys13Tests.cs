@@ -35,8 +35,8 @@ public class Sys13_Qualitaet
     {
         var d = Tmp(); File.WriteAllText(UserSettings.PathIn(d), "{\"Name\":\"Ana\",\"Theme\":\"Light\",\"UiScale\":115,\"Wallpaper\":\"default\",\"Altfeld\":1}");
         var s = UserSettings.Load(d);
-        Assert.Equal(("Ana", "hell", 1.15, "bergsee-nacht", 2), (s.Name, s.Theme, s.UiScale, s.Wallpaper, s.FormatVersion));
-        s.Save(d); Assert.Contains("\"FormatVersion\": 2", File.ReadAllText(UserSettings.PathIn(d)));
+        Assert.Equal(("Ana", "hell", 1.15, "bergsee-nacht", 3), (s.Name, s.Theme, s.UiScale, s.Wallpaper, s.FormatVersion)); // Format 3 seit T-0224
+        s.Save(d); Assert.Contains("\"FormatVersion\": 3", File.ReadAllText(UserSettings.PathIn(d)));
         File.WriteAllText(UserSettings.PathIn(d), "{\"Theme\":5}"); Assert.Equal("dunkel", UserSettings.Load(d).Theme);
     }
 

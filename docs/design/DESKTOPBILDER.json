@@ -1,0 +1,18 @@
+{
+  "erde": {
+    "datei": "src/Trendo.App/Assets/desktop/erde.jpg",
+    "seed": 41,
+    "prompt": "planet earth seen from space at night, the lower left part of the globe visible as a large sphere, glowing city lights on the continents, thin bright blue atmosphere rim light, deep black navy space background with a few faint stars, photorealistic NASA style photograph, no text, no letters, no numbers, no logo, no watermark, no user interface, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-25",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  },
+  "orbit": {
+    "datei": "src/Trendo.App/Assets/wallpapers/orbit.jpg",
+    "seed": 41,
+    "prompt": "deep navy blue night sky in space with many small stars and a faint blue nebula, the curved glowing blue horizon of planet earth at the bottom, subtle snowy mountain silhouettes far right, very dark and calm, lots of empty dark space for user interface, photorealistic, no text, no letters, no numbers, no logo, no watermark, no user interface, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-25",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, keine Fremdfotos"
+  }
+}

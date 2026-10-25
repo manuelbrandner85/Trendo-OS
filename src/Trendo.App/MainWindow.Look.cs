@@ -16,7 +16,7 @@ public sealed partial class MainWindow
 {
     private readonly Image _wallImg = new() { Name = "wallpaper" };
     private readonly Image _blurImg = new();
-    private string _wallName = "abendrot";
+    private string _wallName = "orbit";
     private bool _reopening;
     private readonly StackPanel _hintHost = new() { Name = "hint-host" };
 
@@ -24,7 +24,7 @@ public sealed partial class MainWindow
         [("#2F86F6", "Blau"), ("#22C3A6", "Türkis"), ("#8B5CF6", "Violett"), ("#F472B6", "Pink"), ("#F59E0B", "Bernstein"), ("#22C55E", "Grün")];
 
     public static readonly (string Id, string Label)[] WidgetChoices =
-        [("widget-studios", "Studios"), ("widget-ki", "KI-Assistent"), ("widget-system", "Systemstatus"), ("widget-projekte", "Aktuelle Projekte"), ("widget-tools", "Schnell-Tools")];
+        [("widget-studios", "Studios"), ("widget-module", "Systemmodule"), ("widget-projekte", "Aktuelle Projekte"), ("widget-ki", "KI-Router"), ("widget-system", "Geräte und Messwerte"), ("widget-agenten", "Agenten Live"), ("widget-studiomanager", "Studio Manager"), ("widget-github", "Open Source")];
 
     private static string _theme = "dunkel";
     private string _settingsSection = "aussehen";
@@ -98,6 +98,7 @@ public sealed partial class MainWindow
         EnhancePathFields(ActivePageRoot, key);
         if (ActivePageRoot is { } c0) ApplyAccessibility(c0);
         ApplyAccessibility(_hintHost);
+        ApplyShellAccessibility();
     }
 
     /// <summary>Hover-Glow für Kacheln und Dock (aus bei „Bewegung reduzieren“).</summary>
@@ -214,7 +215,7 @@ public sealed partial class MainWindow
         sections.Children.Add(Section("farbe", "Akzentfarbe", new StackPanel { Spacing = 6, Children = { colors, auto } }));
 
         var walls = new WrapPanel();
-        foreach (var (id, label) in new[] { ("abendrot", "Abendrot"), ("bergsee-nacht", "Bergsee"), ("polarlicht", "Polarlicht"), ("wellen", "Wellen"), ("morgen", "Morgen") })
+        foreach (var (id, label) in new[] { ("orbit", "Orbit"), ("abendrot", "Abendrot"), ("bergsee-nacht", "Bergsee"), ("polarlicht", "Polarlicht"), ("wellen", "Wellen"), ("morgen", "Morgen") })
         {
             var on = !_settings.WallpaperByTime && _settings.Wallpaper == id;
             var b = new Button { Name = "wall-" + id, Margin = new Thickness(0, 0, 10, 10), Padding = new Thickness(3), BorderBrush = on ? Accent : Brushes.Transparent, BorderThickness = new Thickness(2), Background = Brushes.Transparent, CornerRadius = new CornerRadius(8),

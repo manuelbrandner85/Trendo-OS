@@ -100,7 +100,7 @@ public sealed partial class MainWindow : Window
         _studios = req is null ? [] : StudioCatalog.Friendly(_core.Studios.Load(req, probe));
         StartupTrace.Mark("studios.loaded");
 
-        // T-0218 (Referenzbild 1): Kopfleiste | linke Spalte 192 · Mitte · rechte Spalte 322, Dock unter der Mitte. Designfläche 1536 × 800, proportional skaliert.
+        // T-0224 (Referenzbild 25.10.): Kopfleiste mit KI-Eingabe | linke Spalte 200 · Mitte · rechte Spalte 300, Dock unter der Mitte. Designfläche 1536 × 864, proportional skaliert.
         var root = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
         root.Children.Add(Wallpaper()); Grid.SetRowSpan(root.Children[^1], 2);
         var ui = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
@@ -108,7 +108,7 @@ public sealed partial class MainWindow : Window
         Grid.SetRowSpan(ui, 2); root.Children.Add(ui);
         StartupTrace.Mark("ctor.wallpaper");
         ui.Children.Add(TopBar());
-        var body = new Grid { Name = "shell", ColumnDefinitions = new ColumnDefinitions("192,*,322"), RowDefinitions = new RowDefinitions("*,Auto"), Margin = new Thickness(8, 10, 8, 4) };
+        var body = new Grid { Name = "shell", ColumnDefinitions = new ColumnDefinitions("200,*,300"), RowDefinitions = new RowDefinitions("*,Auto"), Margin = new Thickness(8, 4, 8, 4) };
         Grid.SetRow(body, 1); ui.Children.Add(body);
         var left = LeftColumn(); Grid.SetRowSpan(left, 2); body.Children.Add(left);
         Grid.SetColumn(_center, 1); _center.Margin = new Thickness(12, 0, 12, 0); body.Children.Add(_center);
@@ -204,7 +204,7 @@ public sealed partial class MainWindow : Window
         _clock.Text = now.ToString("HH:mm", De);
         _weekday.Text = now.ToString("dddd", De);
         _date.Text = DateLine(now);
-        if (_tick++ % 5 == 0) _ = RefreshKi();
+        if (_tick++ % 5 == 0) { _ = RefreshKi(); RefreshDesk(); }
         // Messung (CPU/GPU-Zähler, Dateisystem, Netzwerk) im Hintergrund, Anzeige danach im UI-Thread (#280)
         if (_sampling) return;
         _sampling = true;
@@ -238,6 +238,7 @@ public sealed partial class MainWindow : Window
         var high = vals.Count > 0 && vals.Max() >= 90;
         _sysState.Text = vals.Count == 0 ? "Messung läuft …" : high ? "Hohe Auslastung" : "Alles in Ordnung";
         _sysDot.Fill = _sysState.Foreground = high ? BrushHigh : BrushOk;
+        _ecoState.Text = _sysState.Text; _ecoState.Foreground = _sysState.Foreground;
     }
 
     private static string Rate(double bps) => bps < 1024 ? $"{bps:0} B/s" : bps < 1024 * 1024 ? $"{bps / 1024:0.0} KB/s" : $"{bps / 1024 / 1024:0.0} MB/s";

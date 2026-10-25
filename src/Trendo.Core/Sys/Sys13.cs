@@ -75,7 +75,7 @@ public static class Quality
     }
 
     // P20 Migrationen
-    public const int SettingsFormat = 2;
+    public const int SettingsFormat = 3;
     /// <summary>Hebt alte settings.json auf das aktuelle Format: v1 (ohne Nummer) kannte englische Designnamen und Prozent-Skalierung.</summary>
     public static JsonObject MigrateSettings(JsonObject o)
     {
@@ -86,6 +86,8 @@ public static class Quality
             if (o["UiScale"] is JsonValue s && s.TryGetValue<double>(out var d) && d > 10) o["UiScale"] = d / 100.0;
             if (o["Wallpaper"]?.GetValue<string>() is "default" or "") o["Wallpaper"] = "bergsee-nacht";
         }
+        // T-0224: neuer Desktop – der alte Standard „Abendrot“ wird einmalig zu „Orbit“; eine andere eigene Wahl bleibt
+        if (v < 3 && o["Wallpaper"]?.GetValue<string>() is "abendrot") o["Wallpaper"] = "orbit";
         o["FormatVersion"] = SettingsFormat; return o;
     }
 
