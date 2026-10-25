@@ -53,7 +53,7 @@ Trendo OS ist fertig, wenn alle Punkte erfüllt sind:
 | C1 | 7 IN_PROGRESS-Module abschließen; die PC-Seite fehlt für keins, offen sind vor allem Gegenstellen (Pi/Android) → mit B/A/I verzahnt | Claude |
 | C2 | BUS-001…030 am Windows-PC prüfen, Rohlog + SHA-256 in `reports/` | Claude |
 | C3 | QA-017 Narrator/Kontrast/Mehrmonitor, QA-019 echter Offline-Lauf | Claude + **Manuel am PC** |
-| C4 | Deinstallations- und Update-/Rückfalltest (T-0008, IMP-16) | Claude |
+| C4 | ✅ erledigt 2026-10-25: T-0008 am PC – Deinstallieren, Installieren 0.9.6, Update 0.9.7, Rückfall, Deinstallieren, Ausgangszustand: 18/18 bestanden, Daten byte-gleich (`reports/c4-setup/`). Offen: Update über GitHub-Release, frisches Windows, Frage „Daten beim Deinstallieren löschen?“ | – |
 | C5 | ✅ erledigt 2026-10-25: T-0005 Not-Stopp (Knopf, Pause-Taste) und Änderungsvorschau im Freigabe-Gate (IMP-19), Bericht `tasks/T-0005-notstopp.bericht.md`; offen: Fern-Not-Stopp (T-0012) | – |
 | C6 | T-0006 KI-Modell offline mitliefern, Prompt-Injection-Filter (IMP-31) | Claude, **OK** Setup-Größe |
 | C7 | Code-Signatur | **Manuel (Kauf)** |

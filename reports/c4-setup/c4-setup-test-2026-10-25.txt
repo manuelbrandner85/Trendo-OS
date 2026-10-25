@@ -1,0 +1,22 @@
+﻿C4 Setup-Test 2026-10-25 04:39:46 · Windows Microsoft Windows NT 10.0.26340.0
+Alt: TrendoOS-Setup-0.9.6.exe · Neu: TrendoOS-Setup.exe · Paket: TrendoOS-0.9.7-full.nupkg
+Ausgangslage: installiert 0.9.7 (Registry 0.9.7), Daten 37 Dateien gesichert
+PASS  1 Deinstallieren: Programmordner entfernt
+PASS  1 Deinstallieren: Registry-Eintrag entfernt
+PASS  1 Deinstallieren: Startmenü-Verknüpfung entfernt
+PASS  1 Deinstallieren: Benutzerdaten bleiben erhalten – 37 Dateien
+PASS  2 Installieren alt: Version 0.9.6 – Registry 0.9.6
+PASS  2 Installieren alt: Startmenü-Verknüpfung da
+PASS  2-alt: App startet mit den echten Daten – window.opened             12422 ms | first.frame               12427 ms
+PASS  3 Update: Version 0.9.7 – Registry 0.9.7
+PASS  3 Update: Benutzerdaten noch da
+PASS  3-update: App startet mit den echten Daten – window.opened              3728 ms | first.frame                3738 ms
+PASS  4 Rückfall: Version 0.9.6 – Registry 0.9.6
+PASS  4-rueckfall: App startet mit den echten Daten – window.opened              2468 ms | first.frame                2474 ms
+PASS  5 Deinstallieren: Programmordner entfernt
+PASS  5 Deinstallieren: Registry-Eintrag entfernt
+PASS  5 Deinstallieren: Startmenü-Verknüpfung entfernt
+PASS  5 Deinstallieren: Benutzerdaten bleiben erhalten
+PASS  6 Ausgangszustand: Version 0.9.7 installiert – Registry 0.9.7
+PASS  6 Ausgangszustand: Benutzerdaten byte-gleich wie vorher – 37 Dateien
+ERGEBNIS: ALLE BESTANDEN

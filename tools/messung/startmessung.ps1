@@ -1,4 +1,4 @@
-# D7: Startzeit und Arbeitsspeicher eines Trendo-Starts messen (nur der selbst gestartete Prozess wird beendet).
+﻿# D7: Startzeit und Arbeitsspeicher eines Trendo-Starts messen (nur der selbst gestartete Prozess wird beendet).
 # Aufruf: powershell -ExecutionPolicy Bypass -File tools/messung/startmessung.ps1 -Exe <TrendoOS.exe> -Root <leerer Temp-Ordner> -Name lauf1
 param([string]$Exe, [string]$Root, [string]$Name)
 $log = Join-Path $Root "$Name.txt"

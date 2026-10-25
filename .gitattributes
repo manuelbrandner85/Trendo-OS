@@ -1,2 +1,3 @@
 # Rohbelege mit SHA-256: Bytes unverändert lassen (keine Zeilenende-Umwandlung)
 reports/d7-startmessung/** -text
+reports/c4-setup/** -text
