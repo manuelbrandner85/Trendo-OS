@@ -100,3 +100,20 @@
 - **#271 übernommen:** Fachprogramme nur bei Bedarf, kurze Versionsprüfung, Installation nur nach Zustimmung und Freigabe.
   - Aufträge (Prompt) installieren weiterhin nur für den eigenen Benutzer (B3).
 - **Tests (Release):** Build 0 Warnungen, 0 Fehler · Api 15/15 · Core 666 bestanden, 1 übersprungen (von 667) · App 322 bestanden, 1 übersprungen (von 323), 36 min 17 s · Paket-Tests OK.
+
+## Nachtrag: Teile aus #278 (Freigabe Manuel, 2026-10-25)
+**Übernommen** (Cherry-Pick mit Herkunftsangabe):
+- SPEC-10-Schwellen: Messwerte werden eingespeist, die Grenzen 85/95 % und 1500/3000 MB sind fest geprüft.
+- SYS-03-PDF: harter Timeout, der Druck-Chrome wird beendet, abweichendes Papier wird sichtbar übersprungen.
+- Begleiter: Beim Schließen wird der Port nicht neu gebunden, dazu ein freier Port für Tests.
+
+**Anpassungen bei der Übernahme:**
+- Bei den Begleiter-Tests bleiben die Tests aus #272. Aus #278 ist nur die Produktkorrektur übernommen.
+- Der SPEC-10-Katalog nennt den neuen Live-Test.
+- Der PDF-Test sucht den Browser wie die App (unter Windows Edge). Bisher meldete er unter Windows ohne Prüfung „grün“. Jetzt erzeugt er das PDF und überspringt sichtbar, weil `pdfinfo` fehlt.
+
+**Nicht übernommen:** die übrigen Commits von #278.
+- xunit v3 ist schon auf `main`.
+- Die Umbauten der Studio-Karten-Tests sind durch T-0218 überholt.
+
+**Tests (Release):** Build 0 Warnungen, 0 Fehler · Api 15/15 · Core 666 bestanden, 1 übersprungen · App 322 bestanden, 2 übersprungen (von 324: T-0202-Klick-Audit und der PDF-Test ohne `pdfinfo`), 35 min 42 s · Paket-Tests OK.

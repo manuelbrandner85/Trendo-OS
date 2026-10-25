@@ -90,7 +90,7 @@ SBOM, Offline-Handbuch, Release-Kanal (Offene Entscheidung 10), förmliche Abnah
 Offen: **T-0213** Studionamen – Vorschlagsliste liegt vor (14 Studios mit Handlungsbedarf), Entscheidung **Manuel**. PRs früherer Agenten zu denselben Themen (#263, #264, #270) sind damit überholt → schließen (O).
 
 ### O – Offene Pull Requests der früheren Agenten (37)
-✅ 2026-10-25 geprüft (`docs/claude/PR_PRUEFUNG_2026-10-25.md`). Übernommen: #262, #268, #272, #273, #277 (mit #244–#258), #279 und #280, mit QA- und Security-Review. Danach übernommen: #271; GRUNDSATZ-01 aus #275 eingetragen. Offen: #278 (nur Teile), #248 zurückgestellt; der Rest wird auf GitHub geschlossen (Manuel).
+✅ 2026-10-25 geprüft (`docs/claude/PR_PRUEFUNG_2026-10-25.md`). Übernommen: #262, #268, #272, #273, #277 (mit #244–#258), #279 und #280, mit QA- und Security-Review. Danach übernommen: #271; GRUNDSATZ-01 aus #275 eingetragen. Teile von #278 übernommen (SPEC-10-Schwellen, PDF-Timeout, Begleiter-Port). Offen: #248 zurückgestellt; der Rest wird auf GitHub geschlossen (Manuel).
 Trendo OS wird nur noch mit Claude Code gebaut. Deshalb prüft Claude-QA jeden offenen PR einzeln: übernehmen (Merge nach **OK**) oder schließen. Danach werden die 154 Remote-Branches aufgeräumt.
 | Gruppe | PRs | Vorschlag |
 |---|---|---|
