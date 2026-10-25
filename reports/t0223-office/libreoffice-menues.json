@@ -1,0 +1,3784 @@
+{
+ "swriter": [
+  {
+   "menu": ".uno:PickList",
+   "befehle": [
+    {
+     "id": ".uno:AddDirect",
+     "de": null
+    },
+    {
+     "id": ".uno:OpenFromWriter",
+     "de": null
+    },
+    {
+     "id": ".uno:OpenRemote",
+     "de": null
+    },
+    {
+     "id": ".uno:RecentFileList",
+     "de": null
+    },
+    {
+     "id": ".uno:CloseDoc",
+     "de": null
+    },
+    {
+     "id": ".uno:AutoPilotMenu",
+     "de": null
+    },
+    {
+     "id": ".uno:OpenTemplate",
+     "de": null
+    },
+    {
+     "id": ".uno:SaveAsTemplate",
+     "de": null
+    },
+    {
+     "id": ".uno:NewDoc",
+     "de": null
+    },
+    {
+     "id": ".uno:CompareDocuments",
+     "de": null
+    },
+    {
+     "id": ".uno:MergeDocuments",
+     "de": null
+    },
+    {
+     "id": ".uno:Reload",
+     "de": null
+    },
+    {
+     "id": ".uno:VersionDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:Save",
+     "de": null
+    },
+    {
+     "id": ".uno:SaveAs",
+     "de": null
+    },
+    {
+     "id": ".uno:SaveAsRemote",
+     "de": null
+    },
+    {
+     "id": ".uno:SaveACopy",
+     "de": null
+    },
+    {
+     "id": ".uno:SaveAll",
+     "de": null
+    },
+    {
+     "id": ".uno:CheckOut",
+     "de": null
+    },
+    {
+     "id": ".uno:CancelCheckOut",
+     "de": null
+    },
+    {
+     "id": ".uno:CheckIn",
+     "de": null
+    },
+    {
+     "id": ".uno:ExportTo",
+     "de": null
+    },
+    {
+     "id": ".uno:ExportToPDF",
+     "de": null
+    },
+    {
+     "id": ".uno:ExportDirectToPDF",
+     "de": null
+    },
+    {
+     "id": ".uno:ExportToEPUB",
+     "de": null
+    },
+    {
+     "id": ".uno:ExportDirectToEPUB",
+     "de": null
+    },
+    {
+     "id": ".uno:SendMail",
+     "de": null
+    },
+    {
+     "id": ".uno:SendMailDocAsOOo",
+     "de": null
+    },
+    {
+     "id": ".uno:SendMailDocAsMS",
+     "de": null
+    },
+    {
+     "id": ".uno:SendMailDocAsPDF",
+     "de": null
+    },
+    {
+     "id": ".uno:SendViaBluetooth",
+     "de": null
+    },
+    {
+     "id": ".uno:NewGlobalDoc",
+     "de": null
+    },
+    {
+     "id": ".uno:NewHtmlDoc",
+     "de": null
+    },
+    {
+     "id": ".uno:SendOutlineToStarImpress",
+     "de": null
+    },
+    {
+     "id": ".uno:SendOutlineToClipboard",
+     "de": null
+    },
+    {
+     "id": ".uno:CreateAbstract",
+     "de": null
+    },
+    {
+     "id": ".uno:SendAbstractToStarImpress",
+     "de": null
+    },
+    {
+     "id": ".uno:WebHtml",
+     "de": null
+    },
+    {
+     "id": ".uno:PrintPreview",
+     "de": null
+    },
+    {
+     "id": ".uno:Print",
+     "de": null
+    },
+    {
+     "id": ".uno:PrinterSetup",
+     "de": null
+    },
+    {
+     "id": ".uno:SetDocumentProperties",
+     "de": null
+    },
+    {
+     "id": ".uno:Signature",
+     "de": null
+    },
+    {
+     "id": ".uno:SignPDF",
+     "de": null
+    },
+    {
+     "id": ".uno:Quit",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:EditMenu",
+   "befehle": [
+    {
+     "id": ".uno:Undo",
+     "de": null
+    },
+    {
+     "id": ".uno:Redo",
+     "de": null
+    },
+    {
+     "id": ".uno:Repeat",
+     "de": null
+    },
+    {
+     "id": ".uno:Cut",
+     "de": null
+    },
+    {
+     "id": ".uno:Copy",
+     "de": null
+    },
+    {
+     "id": ".uno:Paste",
+     "de": null
+    },
+    {
+     "id": ".uno:PasteUnformatted",
+     "de": null
+    },
+    {
+     "id": ".uno:PasteSpecial",
+     "de": null
+    },
+    {
+     "id": ".uno:PasteNestedTable",
+     "de": null
+    },
+    {
+     "id": ".uno:PasteRowsBefore",
+     "de": null
+    },
+    {
+     "id": ".uno:PasteColumnsBefore",
+     "de": null
+    },
+    {
+     "id": ".uno:SelectAll",
+     "de": null
+    },
+    {
+     "id": ".uno:SelectionModeDefault",
+     "de": null
+    },
+    {
+     "id": ".uno:SelectionModeBlock",
+     "de": null
+    },
+    {
+     "id": ".uno:SelectTextMode",
+     "de": null
+    },
+    {
+     "id": "vnd.sun.star.findbar:FocusToFindbar",
+     "de": null
+    },
+    {
+     "id": ".uno:SearchDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:GotoPage",
+     "de": null
+    },
+    {
+     "id": ".uno:TrackChanges",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowTrackedChanges",
+     "de": null
+    },
+    {
+     "id": ".uno:AcceptTrackedChanges",
+     "de": null
+    },
+    {
+     "id": ".uno:PreviousTrackedChange",
+     "de": null
+    },
+    {
+     "id": ".uno:NextTrackedChange",
+     "de": null
+    },
+    {
+     "id": ".uno:AcceptTrackedChange",
+     "de": null
+    },
+    {
+     "id": ".uno:AcceptTrackedChangeToNext",
+     "de": null
+    },
+    {
+     "id": ".uno:AcceptAllTrackedChanges",
+     "de": null
+    },
+    {
+     "id": ".uno:RejectTrackedChange",
+     "de": null
+    },
+    {
+     "id": ".uno:RejectTrackedChangeToNext",
+     "de": null
+    },
+    {
+     "id": ".uno:RejectAllTrackedChanges",
+     "de": null
+    },
+    {
+     "id": ".uno:ReinstateTrackedChange",
+     "de": null
+    },
+    {
+     "id": ".uno:ReinstateTrackedChangeToNext",
+     "de": null
+    },
+    {
+     "id": ".uno:ReinstateAllTrackedChanges",
+     "de": null
+    },
+    {
+     "id": ".uno:CommentChangeTracking",
+     "de": null
+    },
+    {
+     "id": ".uno:ProtectTraceChangeMode",
+     "de": null
+    },
+    {
+     "id": ".uno:ReplyComment",
+     "de": null
+    },
+    {
+     "id": ".uno:ResolveComment",
+     "de": null
+    },
+    {
+     "id": ".uno:ResolveCommentThread",
+     "de": null
+    },
+    {
+     "id": ".uno:PromoteComment",
+     "de": null
+    },
+    {
+     "id": ".uno:DeleteComment",
+     "de": null
+    },
+    {
+     "id": ".uno:DeleteCommentThread",
+     "de": null
+    },
+    {
+     "id": ".uno:DeleteAuthor",
+     "de": null
+    },
+    {
+     "id": ".uno:DeleteAllNotes",
+     "de": null
+    },
+    {
+     "id": ".uno:EditHyperlink",
+     "de": null
+    },
+    {
+     "id": ".uno:EditFootnote",
+     "de": null
+    },
+    {
+     "id": ".uno:IndexEntryDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:AuthoritiesEntryDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:FieldDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:LinkDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:ObjectMenue",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeDatabaseField",
+     "de": null
+    },
+    {
+     "id": ".uno:ShadowCursor",
+     "de": null
+    },
+    {
+     "id": ".uno:EditDoc",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:ViewMenu",
+   "befehle": [
+    {
+     "id": ".uno:PrintLayout",
+     "de": null
+    },
+    {
+     "id": ".uno:BrowseView",
+     "de": null
+    },
+    {
+     "id": ".uno:SinglePagePerRow",
+     "de": null
+    },
+    {
+     "id": ".uno:MultiplePagesPerRow",
+     "de": null
+    },
+    {
+     "id": ".uno:BookView",
+     "de": null
+    },
+    {
+     "id": ".uno:UIPicker",
+     "de": null
+    },
+    {
+     "id": ".uno:AvailableToolbars",
+     "de": null
+    },
+    {
+     "id": ".uno:StatusBarVisible",
+     "de": null
+    },
+    {
+     "id": ".uno:Ruler",
+     "de": null
+    },
+    {
+     "id": ".uno:VRuler",
+     "de": null
+    },
+    {
+     "id": ".uno:HScroll",
+     "de": null
+    },
+    {
+     "id": ".uno:VScroll",
+     "de": null
+    },
+    {
+     "id": ".uno:GridVisible",
+     "de": null
+    },
+    {
+     "id": ".uno:GridUse",
+     "de": null
+    },
+    {
+     "id": ".uno:HelplinesMove",
+     "de": null
+    },
+    {
+     "id": ".uno:ControlCodes",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowBoundaries",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowGraphics",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowWhitespace",
+     "de": null
+    },
+    {
+     "id": ".uno:ViewTrackChanges",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowAnnotations",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowResolvedAnnotations",
+     "de": null
+    },
+    {
+     "id": ".uno:Marks",
+     "de": null
+    },
+    {
+     "id": ".uno:Fieldnames",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowHiddenParagraphs",
+     "de": null
+    },
+    {
+     "id": ".uno:Sidebar",
+     "de": null
+    },
+    {
+     "id": ".uno:ViewSidebarStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:Gallery",
+     "de": null
+    },
+    {
+     "id": ".uno:Navigator",
+     "de": null
+    },
+    {
+     "id": ".uno:ViewDataSourceBrowser",
+     "de": null
+    },
+    {
+     "id": ".uno:FullScreen",
+     "de": null
+    },
+    {
+     "id": ".uno:ZoomPage",
+     "de": null
+    },
+    {
+     "id": ".uno:ZoomPageWidth",
+     "de": null
+    },
+    {
+     "id": ".uno:ZoomOptimal",
+     "de": null
+    },
+    {
+     "id": ".uno:Zoom50Percent",
+     "de": null
+    },
+    {
+     "id": ".uno:Zoom75Percent",
+     "de": null
+    },
+    {
+     "id": ".uno:Zoom100Percent",
+     "de": null
+    },
+    {
+     "id": ".uno:Zoom150Percent",
+     "de": null
+    },
+    {
+     "id": ".uno:Zoom200Percent",
+     "de": null
+    },
+    {
+     "id": ".uno:Zoom",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:InsertMenu",
+   "befehle": [
+    {
+     "id": ".uno:InsertPagebreak",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertLinebreak",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertColumnBreak",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertBreak",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertGraphic",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertObjectChart",
+     "de": null
+    },
+    {
+     "id": ".uno:Gallery",
+     "de": null
+    },
+    {
+     "id": ".uno:TwainSelect",
+     "de": null
+    },
+    {
+     "id": ".uno:TwainTransfer",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertAVMedia",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertObjectStarMath",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertQrCode",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertObject",
+     "de": null
+    },
+    {
+     "id": ".uno:Line",
+     "de": null
+    },
+    {
+     "id": ".uno:Freeline_Unfilled",
+     "de": null
+    },
+    {
+     "id": ".uno:Freeline",
+     "de": null
+    },
+    {
+     "id": ".uno:Bezier_Unfilled",
+     "de": null
+    },
+    {
+     "id": ".uno:BezierFill",
+     "de": null
+    },
+    {
+     "id": ".uno:Polygon_Unfilled",
+     "de": null
+    },
+    {
+     "id": ".uno:Polygon_Diagonal_Unfilled",
+     "de": null
+    },
+    {
+     "id": ".uno:Polygon_Diagonal",
+     "de": null
+    },
+    {
+     "id": ".uno:ConnectorToolbox",
+     "de": null
+    },
+    {
+     "id": ".uno:BasicShapes",
+     "de": null
+    },
+    {
+     "id": ".uno:ArrowShapes",
+     "de": null
+    },
+    {
+     "id": ".uno:SymbolShapes",
+     "de": null
+    },
+    {
+     "id": ".uno:StarShapes",
+     "de": null
+    },
+    {
+     "id": ".uno:CalloutShapes",
+     "de": null
+    },
+    {
+     "id": ".uno:FlowChartShapes",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertSection",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertDoc",
+     "de": null
+    },
+    {
+     "id": ".uno:DrawText",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertAnnotation",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertFrameInteract",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertFrame",
+     "de": null
+    },
+    {
+     "id": ".uno:FontworkGalleryFloater",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertCaptionDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:HyperlinkDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertBookmark",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertReferenceField",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertSymbol",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertNonBreakingSpace",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertHardHyphen",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertSoftHyphen",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertNarrowNobreakSpace",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertZWSP",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertWJ",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertLRM",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertRLM",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertFootnote",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertEndnote",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertFootnoteDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertMultiIndex",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertIndexesEntry",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertAuthoritiesEntry",
+     "de": null
+    },
+    {
+     "id": ".uno:PageNumberWizard",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertFieldCtrl",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertPageHeader",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertPageFooter",
+     "de": null
+    },
+    {
+     "id": ".uno:UseHeaderFooterMenu",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertEnvelope",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertSignatureLine",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:FormatMenu",
+   "befehle": [
+    {
+     "id": ".uno:Bold",
+     "de": null
+    },
+    {
+     "id": ".uno:Italic",
+     "de": null
+    },
+    {
+     "id": ".uno:UnderlineSingle",
+     "de": null
+    },
+    {
+     "id": ".uno:UnderlineDouble",
+     "de": null
+    },
+    {
+     "id": ".uno:Strikeout",
+     "de": null
+    },
+    {
+     "id": ".uno:Overline",
+     "de": null
+    },
+    {
+     "id": ".uno:SuperScript",
+     "de": null
+    },
+    {
+     "id": ".uno:SubScript",
+     "de": null
+    },
+    {
+     "id": ".uno:Shadowed",
+     "de": null
+    },
+    {
+     "id": ".uno:OutlineFont",
+     "de": null
+    },
+    {
+     "id": ".uno:Grow",
+     "de": null
+    },
+    {
+     "id": ".uno:Shrink",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToUpper",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToLower",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseRotateCase",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToSentenceCase",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToTitleCase",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToToggleCase",
+     "de": null
+    },
+    {
+     "id": ".uno:SmallCaps",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToHalfWidth",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToFullWidth",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToHiragana",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToKatakana",
+     "de": null
+    },
+    {
+     "id": ".uno:SpacePara1",
+     "de": null
+    },
+    {
+     "id": ".uno:SpacePara115",
+     "de": null
+    },
+    {
+     "id": ".uno:SpacePara15",
+     "de": null
+    },
+    {
+     "id": ".uno:SpacePara2",
+     "de": null
+    },
+    {
+     "id": ".uno:ParaspaceIncrease",
+     "de": null
+    },
+    {
+     "id": ".uno:ParaspaceDecrease",
+     "de": null
+    },
+    {
+     "id": ".uno:IncrementIndent",
+     "de": null
+    },
+    {
+     "id": ".uno:DecrementIndent",
+     "de": null
+    },
+    {
+     "id": ".uno:CommonAlignLeft",
+     "de": null
+    },
+    {
+     "id": ".uno:CommonAlignHorizontalCenter",
+     "de": null
+    },
+    {
+     "id": ".uno:CommonAlignRight",
+     "de": null
+    },
+    {
+     "id": ".uno:CommonAlignJustified",
+     "de": null
+    },
+    {
+     "id": ".uno:CommonAlignTop",
+     "de": null
+    },
+    {
+     "id": ".uno:CommonAlignVerticalCenter",
+     "de": null
+    },
+    {
+     "id": ".uno:CommonAlignBottom",
+     "de": null
+    },
+    {
+     "id": ".uno:FormatPaintbrush",
+     "de": null
+    },
+    {
+     "id": ".uno:ResetAttributes",
+     "de": null
+    },
+    {
+     "id": ".uno:HighlightCharDF",
+     "de": null
+    },
+    {
+     "id": ".uno:SpotlightParaStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:SpotlightCharStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:FontDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:ParagraphDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:RemoveBullets",
+     "de": null
+    },
+    {
+     "id": ".uno:DefaultBullet",
+     "de": null
+    },
+    {
+     "id": ".uno:DefaultNumbering",
+     "de": null
+    },
+    {
+     "id": ".uno:DecrementLevel",
+     "de": null
+    },
+    {
+     "id": ".uno:IncrementLevel",
+     "de": null
+    },
+    {
+     "id": ".uno:DecrementSubLevels",
+     "de": null
+    },
+    {
+     "id": ".uno:IncrementSubLevels",
+     "de": null
+    },
+    {
+     "id": ".uno:MoveDown",
+     "de": null
+    },
+    {
+     "id": ".uno:MoveUp",
+     "de": null
+    },
+    {
+     "id": ".uno:MoveDownSubItems",
+     "de": null
+    },
+    {
+     "id": ".uno:MoveUpSubItems",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertNeutralParagraph",
+     "de": null
+    },
+    {
+     "id": ".uno:NumberingStart",
+     "de": null
+    },
+    {
+     "id": ".uno:ContinueNumbering",
+     "de": null
+    },
+    {
+     "id": ".uno:JumpDownThisLevel",
+     "de": null
+    },
+    {
+     "id": ".uno:JumpUpThisLevel",
+     "de": null
+    },
+    {
+     "id": ".uno:OutlineBullet",
+     "de": null
+    },
+    {
+     "id": ".uno:ThemeDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:PageDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:TitlePageDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:FormatAllNotes",
+     "de": null
+    },
+    {
+     "id": ".uno:RubyDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:FormatColumns",
+     "de": null
+    },
+    {
+     "id": ".uno:Watermark",
+     "de": null
+    },
+    {
+     "id": ".uno:EditRegion",
+     "de": null
+    },
+    {
+     "id": ".uno:Crop",
+     "de": null
+    },
+    {
+     "id": ".uno:ExternalEdit",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangePicture",
+     "de": null
+    },
+    {
+     "id": ".uno:CompressGraphic",
+     "de": null
+    },
+    {
+     "id": ".uno:SaveGraphic",
+     "de": null
+    },
+    {
+     "id": ".uno:GraphicFilterSepia",
+     "de": null
+    },
+    {
+     "id": ".uno:GraphicFilterSobel",
+     "de": null
+    },
+    {
+     "id": ".uno:GraphicFilterInvert",
+     "de": null
+    },
+    {
+     "id": ".uno:GraphicFilterMosaic",
+     "de": null
+    },
+    {
+     "id": ".uno:GraphicFilterPopart",
+     "de": null
+    },
+    {
+     "id": ".uno:GraphicFilterPoster",
+     "de": null
+    },
+    {
+     "id": ".uno:GraphicFilterRelief",
+     "de": null
+    },
+    {
+     "id": ".uno:GraphicFilterRemoveNoise",
+     "de": null
+    },
+    {
+     "id": ".uno:GraphicFilterSharpen",
+     "de": null
+    },
+    {
+     "id": ".uno:GraphicFilterSmooth",
+     "de": null
+    },
+    {
+     "id": ".uno:GraphicFilterSolarize",
+     "de": null
+    },
+    {
+     "id": ".uno:ColorSettings",
+     "de": null
+    },
+    {
+     "id": ".uno:GraphicDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:GraphicSizeCheck",
+     "de": null
+    },
+    {
+     "id": ".uno:TransformDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:FormatLine",
+     "de": null
+    },
+    {
+     "id": ".uno:FormatArea",
+     "de": null
+    },
+    {
+     "id": ".uno:TextAttributes",
+     "de": null
+    },
+    {
+     "id": ".uno:FontWork",
+     "de": null
+    },
+    {
+     "id": ".uno:ChainFrames",
+     "de": null
+    },
+    {
+     "id": ".uno:UnhainFrames",
+     "de": null
+    },
+    {
+     "id": ".uno:FrameDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:NameGroup",
+     "de": null
+    },
+    {
+     "id": ".uno:ObjectTitleDescription",
+     "de": null
+    },
+    {
+     "id": ".uno:AnchorMenu",
+     "de": null
+    },
+    {
+     "id": ".uno:WrapOff",
+     "de": null
+    },
+    {
+     "id": ".uno:WrapOn",
+     "de": null
+    },
+    {
+     "id": ".uno:WrapIdeal",
+     "de": null
+    },
+    {
+     "id": ".uno:WrapLeft",
+     "de": null
+    },
+    {
+     "id": ".uno:WrapRight",
+     "de": null
+    },
+    {
+     "id": ".uno:WrapThrough",
+     "de": null
+    },
+    {
+     "id": ".uno:WrapThroughTransparencyToggle",
+     "de": null
+    },
+    {
+     "id": ".uno:WrapContour",
+     "de": null
+    },
+    {
+     "id": ".uno:ContourDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:WrapAnchorOnly",
+     "de": null
+    },
+    {
+     "id": ".uno:TextWrap",
+     "de": null
+    },
+    {
+     "id": ".uno:BringToFront",
+     "de": null
+    },
+    {
+     "id": ".uno:ObjectForwardOne",
+     "de": null
+    },
+    {
+     "id": ".uno:ObjectBackOne",
+     "de": null
+    },
+    {
+     "id": ".uno:SendToBack",
+     "de": null
+    },
+    {
+     "id": ".uno:SetObjectToForeground",
+     "de": null
+    },
+    {
+     "id": ".uno:SetObjectToBackground",
+     "de": null
+    },
+    {
+     "id": ".uno:ToggleObjectRotateMode",
+     "de": null
+    },
+    {
+     "id": ".uno:RotateLeft",
+     "de": null
+    },
+    {
+     "id": ".uno:RotateRight",
+     "de": null
+    },
+    {
+     "id": ".uno:Rotate180",
+     "de": null
+    },
+    {
+     "id": ".uno:RotateReset",
+     "de": null
+    },
+    {
+     "id": ".uno:FlipVertical",
+     "de": null
+    },
+    {
+     "id": ".uno:FlipHorizontal",
+     "de": null
+    },
+    {
+     "id": ".uno:FormatGroup",
+     "de": null
+    },
+    {
+     "id": ".uno:FormatUngroup",
+     "de": null
+    },
+    {
+     "id": ".uno:EnterGroup",
+     "de": null
+    },
+    {
+     "id": ".uno:LeaveGroup",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:FormatStylesMenu",
+   "befehle": [
+    {
+     "id": ".uno:TextBodyParaStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:TitleParaStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:SubtitleParaStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:Heading1ParaStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:Heading2ParaStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:Heading3ParaStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:QuoteParaStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:PreformattedParaStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:HorizontalLine",
+     "de": null
+    },
+    {
+     "id": ".uno:DefaultCharStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:EmphasisCharStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:StrongEmphasisCharStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:QuoteCharStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:SourceCharStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:RemoveBullets",
+     "de": null
+    },
+    {
+     "id": ".uno:BulletListStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:NumberListStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:AlphaListStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:AlphaLowListStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:RomanListStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:RomanLowListStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:EditStyle",
+     "de": null
+    },
+    {
+     "id": ".uno:StyleUpdateByExample",
+     "de": null
+    },
+    {
+     "id": ".uno:StyleNewByExample",
+     "de": null
+    },
+    {
+     "id": ".uno:LoadStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:DesignerDialog",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:TableMenu",
+   "befehle": [
+    {
+     "id": ".uno:InsertTable",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertRowsBefore",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertRowsAfter",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertRowDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertColumnsBefore",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertColumnsAfter",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertColumnDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:DeleteRows",
+     "de": null
+    },
+    {
+     "id": ".uno:DeleteColumns",
+     "de": null
+    },
+    {
+     "id": ".uno:DeleteTable",
+     "de": null
+    },
+    {
+     "id": ".uno:EntireCell",
+     "de": null
+    },
+    {
+     "id": ".uno:EntireRow",
+     "de": null
+    },
+    {
+     "id": ".uno:EntireColumn",
+     "de": null
+    },
+    {
+     "id": ".uno:SelectTable",
+     "de": null
+    },
+    {
+     "id": ".uno:SetRowHeight",
+     "de": null
+    },
+    {
+     "id": ".uno:SetMinimalRowHeight",
+     "de": null
+    },
+    {
+     "id": ".uno:SetOptimalRowHeight",
+     "de": null
+    },
+    {
+     "id": ".uno:DistributeRows",
+     "de": null
+    },
+    {
+     "id": ".uno:SetColumnWidth",
+     "de": null
+    },
+    {
+     "id": ".uno:SetMinimalColumnWidth",
+     "de": null
+    },
+    {
+     "id": ".uno:SetOptimalColumnWidth",
+     "de": null
+    },
+    {
+     "id": ".uno:DistributeColumns",
+     "de": null
+    },
+    {
+     "id": ".uno:MergeCells",
+     "de": null
+    },
+    {
+     "id": ".uno:SplitCell",
+     "de": null
+    },
+    {
+     "id": ".uno:MergeTable",
+     "de": null
+    },
+    {
+     "id": ".uno:SplitTable",
+     "de": null
+    },
+    {
+     "id": ".uno:Protect",
+     "de": null
+    },
+    {
+     "id": ".uno:UnsetCellsReadOnly",
+     "de": null
+    },
+    {
+     "id": ".uno:AutoFormat",
+     "de": null
+    },
+    {
+     "id": ".uno:TableNumberFormatDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:TableNumberRecognition",
+     "de": null
+    },
+    {
+     "id": ".uno:HeadingRowsRepeat",
+     "de": null
+    },
+    {
+     "id": ".uno:RowSplit",
+     "de": null
+    },
+    {
+     "id": ".uno:ConvertTextToTable",
+     "de": null
+    },
+    {
+     "id": ".uno:ConvertTableToText",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertFormula",
+     "de": null
+    },
+    {
+     "id": ".uno:TableSort",
+     "de": null
+    },
+    {
+     "id": ".uno:TableDialog",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:FormatFormMenu",
+   "befehle": [
+    {
+     "id": ".uno:SwitchControlDesignMode",
+     "de": null
+    },
+    {
+     "id": ".uno:UseWizards",
+     "de": null
+    },
+    {
+     "id": ".uno:Label",
+     "de": null
+    },
+    {
+     "id": ".uno:Edit",
+     "de": null
+    },
+    {
+     "id": ".uno:CheckBox",
+     "de": null
+    },
+    {
+     "id": ".uno:RadioButton",
+     "de": null
+    },
+    {
+     "id": ".uno:ListBox",
+     "de": null
+    },
+    {
+     "id": ".uno:ComboBox",
+     "de": null
+    },
+    {
+     "id": ".uno:Pushbutton",
+     "de": null
+    },
+    {
+     "id": ".uno:Imagebutton",
+     "de": null
+    },
+    {
+     "id": ".uno:FormattedField",
+     "de": null
+    },
+    {
+     "id": ".uno:DateField",
+     "de": null
+    },
+    {
+     "id": ".uno:TimeField",
+     "de": null
+    },
+    {
+     "id": ".uno:NumericField",
+     "de": null
+    },
+    {
+     "id": ".uno:CurrencyField",
+     "de": null
+    },
+    {
+     "id": ".uno:PatternField",
+     "de": null
+    },
+    {
+     "id": ".uno:GroupBox",
+     "de": null
+    },
+    {
+     "id": ".uno:ImageControl",
+     "de": null
+    },
+    {
+     "id": ".uno:FileControl",
+     "de": null
+    },
+    {
+     "id": ".uno:Grid",
+     "de": null
+    },
+    {
+     "id": ".uno:NavigationBar",
+     "de": null
+    },
+    {
+     "id": ".uno:ControlProperties",
+     "de": null
+    },
+    {
+     "id": ".uno:FormProperties",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowFmExplorer",
+     "de": null
+    },
+    {
+     "id": ".uno:TabDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:OpenReadOnly",
+     "de": null
+    },
+    {
+     "id": ".uno:AutoControlFocus",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertContentControl",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertPlainTextContentControl",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertPictureContentControl",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertCheckboxContentControl",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertComboBoxContentControl",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertDropdownContentControl",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertDateContentControl",
+     "de": null
+    },
+    {
+     "id": ".uno:ContentControlProperties",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:ToolsMenu",
+   "befehle": [
+    {
+     "id": ".uno:SpellingAndGrammarDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:SpellOnline",
+     "de": null
+    },
+    {
+     "id": ".uno:ThesaurusDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:SetLanguageSelectionMenu",
+     "de": null
+    },
+    {
+     "id": ".uno:SetLanguageParagraphMenu",
+     "de": null
+    },
+    {
+     "id": ".uno:SetLanguageAllTextMenu",
+     "de": null
+    },
+    {
+     "id": ".uno:Hyphenate",
+     "de": null
+    },
+    {
+     "id": ".uno:ChineseConversion",
+     "de": null
+    },
+    {
+     "id": ".uno:HangulHanjaConversion",
+     "de": null
+    },
+    {
+     "id": ".uno:MoreDictionaries",
+     "de": null
+    },
+    {
+     "id": ".uno:WordCountDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:AccessibilityCheck",
+     "de": null
+    },
+    {
+     "id": ".uno:AccessibilityCheckOnline",
+     "de": null
+    },
+    {
+     "id": ".uno:Translate",
+     "de": null
+    },
+    {
+     "id": ".uno:OnlineAutoFormat",
+     "de": null
+    },
+    {
+     "id": ".uno:AutoFormatApply",
+     "de": null
+    },
+    {
+     "id": ".uno:AutoFormatRedlineApply",
+     "de": null
+    },
+    {
+     "id": ".uno:AutoCorrectDlg",
+     "de": null
+    },
+    {
+     "id": ".uno:EditGlossary",
+     "de": null
+    },
+    {
+     "id": ".uno:ImageMapDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:RedactDoc",
+     "de": null
+    },
+    {
+     "id": ".uno:AutoRedactDoc",
+     "de": null
+    },
+    {
+     "id": ".uno:ChapterNumberingDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:LineNumberingDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:FootnoteDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:MailMergeWizard",
+     "de": null
+    },
+    {
+     "id": ".uno:BibliographyComponent",
+     "de": null
+    },
+    {
+     "id": ".uno:AddressBookSource",
+     "de": null
+    },
+    {
+     "id": ".uno:UpdateAll",
+     "de": null
+    },
+    {
+     "id": ".uno:Repaginate",
+     "de": null
+    },
+    {
+     "id": ".uno:UpdateSelectedField",
+     "de": null
+    },
+    {
+     "id": ".uno:ConvertSelectedField",
+     "de": null
+    },
+    {
+     "id": ".uno:UpdateFields",
+     "de": null
+    },
+    {
+     "id": ".uno:UpdateAllIndexes",
+     "de": null
+    },
+    {
+     "id": ".uno:UpdateCurIndex",
+     "de": null
+    },
+    {
+     "id": ".uno:UpdateAllLinks",
+     "de": null
+    },
+    {
+     "id": ".uno:UpdateCharts",
+     "de": null
+    },
+    {
+     "id": ".uno:ProtectFields",
+     "de": null
+    },
+    {
+     "id": ".uno:ProtectBookmarks",
+     "de": null
+    },
+    {
+     "id": ".uno:CalculateSel",
+     "de": null
+    },
+    {
+     "id": ".uno:SortDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:MacroManager",
+     "de": null
+    },
+    {
+     "id": ".uno:MacroRecorder",
+     "de": null
+    },
+    {
+     "id": ".uno:RunMacro",
+     "de": null
+    },
+    {
+     "id": ".uno:BasicIDEAppear",
+     "de": null
+    },
+    {
+     "id": ".uno:ScriptOrganizer",
+     "de": null
+    },
+    {
+     "id": ".uno:MacroSignature",
+     "de": null
+    },
+    {
+     "id": ".uno:MacroOrganizer?TabId:short=1",
+     "de": null
+    },
+    {
+     "id": ".uno:DevelopmentToolsDockingWindow",
+     "de": null
+    },
+    {
+     "id": ".uno:OpenXMLFilterSettings",
+     "de": null
+    },
+    {
+     "id": ".uno:ExtensionManager",
+     "de": null
+    },
+    {
+     "id": ".uno:ConfigureDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:OptionsTreeDialog",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:WindowList",
+   "befehle": [
+    {
+     "id": ".uno:NewWindow",
+     "de": null
+    },
+    {
+     "id": ".uno:CloseWin",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:HelpMenu",
+   "befehle": [
+    {
+     "id": ".uno:HelpIndex",
+     "de": null
+    },
+    {
+     "id": ".uno:ExtendedHelp",
+     "de": null
+    },
+    {
+     "id": ".uno:Documentation",
+     "de": null
+    },
+    {
+     "id": ".uno:TipOfTheDay",
+     "de": null
+    },
+    {
+     "id": ".uno:CommandPopup",
+     "de": null
+    },
+    {
+     "id": ".uno:QuestionAnswers",
+     "de": null
+    },
+    {
+     "id": ".uno:SendFeedback",
+     "de": null
+    },
+    {
+     "id": ".uno:SafeMode",
+     "de": null
+    },
+    {
+     "id": ".uno:GetInvolved",
+     "de": null
+    },
+    {
+     "id": ".uno:Donation",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowLicense",
+     "de": null
+    },
+    {
+     "id": ".uno:About",
+     "de": null
+    }
+   ]
+  }
+ ],
+ "scalc": [
+  {
+   "menu": ".uno:PickList",
+   "befehle": [
+    {
+     "id": ".uno:AddDirect",
+     "de": null
+    },
+    {
+     "id": ".uno:OpenFromCalc",
+     "de": null
+    },
+    {
+     "id": ".uno:OpenRemote",
+     "de": null
+    },
+    {
+     "id": ".uno:RecentFileList",
+     "de": null
+    },
+    {
+     "id": ".uno:CloseDoc",
+     "de": null
+    },
+    {
+     "id": ".uno:AutoPilotMenu",
+     "de": null
+    },
+    {
+     "id": ".uno:OpenTemplate",
+     "de": null
+    },
+    {
+     "id": ".uno:SaveAsTemplate",
+     "de": null
+    },
+    {
+     "id": ".uno:NewDoc",
+     "de": null
+    },
+    {
+     "id": ".uno:Reload",
+     "de": null
+    },
+    {
+     "id": ".uno:VersionDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:Save",
+     "de": null
+    },
+    {
+     "id": ".uno:SaveAs",
+     "de": null
+    },
+    {
+     "id": ".uno:SaveAsRemote",
+     "de": null
+    },
+    {
+     "id": ".uno:SaveACopy",
+     "de": null
+    },
+    {
+     "id": ".uno:SaveAll",
+     "de": null
+    },
+    {
+     "id": ".uno:CheckOut",
+     "de": null
+    },
+    {
+     "id": ".uno:CancelCheckOut",
+     "de": null
+    },
+    {
+     "id": ".uno:CheckIn",
+     "de": null
+    },
+    {
+     "id": ".uno:ExportTo",
+     "de": null
+    },
+    {
+     "id": ".uno:ExportToPDF",
+     "de": null
+    },
+    {
+     "id": ".uno:SendMail",
+     "de": null
+    },
+    {
+     "id": ".uno:SendMailDocAsOOo",
+     "de": null
+    },
+    {
+     "id": ".uno:SendMailDocAsMS",
+     "de": null
+    },
+    {
+     "id": ".uno:SendMailDocAsPDF",
+     "de": null
+    },
+    {
+     "id": ".uno:SendViaBluetooth",
+     "de": null
+    },
+    {
+     "id": ".uno:WebHtml",
+     "de": null
+    },
+    {
+     "id": ".uno:PrintPreview",
+     "de": null
+    },
+    {
+     "id": ".uno:Print",
+     "de": null
+    },
+    {
+     "id": ".uno:PrinterSetup",
+     "de": null
+    },
+    {
+     "id": ".uno:SetDocumentProperties",
+     "de": null
+    },
+    {
+     "id": ".uno:Signature",
+     "de": null
+    },
+    {
+     "id": ".uno:SignPDF",
+     "de": null
+    },
+    {
+     "id": ".uno:Quit",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:EditMenu",
+   "befehle": [
+    {
+     "id": ".uno:Undo",
+     "de": null
+    },
+    {
+     "id": ".uno:Redo",
+     "de": null
+    },
+    {
+     "id": ".uno:Repeat",
+     "de": null
+    },
+    {
+     "id": ".uno:Cut",
+     "de": null
+    },
+    {
+     "id": ".uno:Copy",
+     "de": null
+    },
+    {
+     "id": ".uno:Paste",
+     "de": null
+    },
+    {
+     "id": ".uno:PasteUnformatted",
+     "de": null
+    },
+    {
+     "id": ".uno:PasteOnlyText",
+     "de": null
+    },
+    {
+     "id": ".uno:PasteOnlyValue",
+     "de": null
+    },
+    {
+     "id": ".uno:PasteOnlyFormula",
+     "de": null
+    },
+    {
+     "id": ".uno:PasteTransposed",
+     "de": null
+    },
+    {
+     "id": ".uno:PasteSpecial",
+     "de": null
+    },
+    {
+     "id": ".uno:SelectAll",
+     "de": null
+    },
+    {
+     "id": ".uno:TableSelectAll",
+     "de": null
+    },
+    {
+     "id": ".uno:SelectTables",
+     "de": null
+    },
+    {
+     "id": ".uno:JumpToNextTableSel",
+     "de": null
+    },
+    {
+     "id": ".uno:JumpToPrevTableSel",
+     "de": null
+    },
+    {
+     "id": ".uno:SelectRow",
+     "de": null
+    },
+    {
+     "id": ".uno:SelectColumn",
+     "de": null
+    },
+    {
+     "id": ".uno:SelectData",
+     "de": null
+    },
+    {
+     "id": ".uno:SelectUnprotectedCells",
+     "de": null
+    },
+    {
+     "id": ".uno:SelectVisibleRows",
+     "de": null
+    },
+    {
+     "id": ".uno:SelectVisibleColumns",
+     "de": null
+    },
+    {
+     "id": "vnd.sun.star.findbar:FocusToFindbar",
+     "de": null
+    },
+    {
+     "id": ".uno:SearchDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:TraceChangeMode",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowChanges",
+     "de": null
+    },
+    {
+     "id": ".uno:AcceptChanges",
+     "de": null
+    },
+    {
+     "id": ".uno:CommentChange",
+     "de": null
+    },
+    {
+     "id": ".uno:ProtectTraceChangeMode",
+     "de": null
+    },
+    {
+     "id": ".uno:CompareDocuments",
+     "de": null
+    },
+    {
+     "id": ".uno:MergeDocuments",
+     "de": null
+    },
+    {
+     "id": ".uno:SetInputMode",
+     "de": null
+    },
+    {
+     "id": ".uno:CellProtection",
+     "de": null
+    },
+    {
+     "id": ".uno:EditLinks",
+     "de": null
+    },
+    {
+     "id": ".uno:ObjectMenue",
+     "de": null
+    },
+    {
+     "id": ".uno:EditDoc",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:ViewMenu",
+   "befehle": [
+    {
+     "id": ".uno:NormalViewMode",
+     "de": null
+    },
+    {
+     "id": ".uno:PagebreakMode",
+     "de": null
+    },
+    {
+     "id": ".uno:UIPicker",
+     "de": null
+    },
+    {
+     "id": ".uno:AvailableToolbars",
+     "de": null
+    },
+    {
+     "id": ".uno:InputLineVisible",
+     "de": null
+    },
+    {
+     "id": ".uno:StatusBarVisible",
+     "de": null
+    },
+    {
+     "id": ".uno:ViewRowColumnHeaders",
+     "de": null
+    },
+    {
+     "id": ".uno:ToggleSheetGrid",
+     "de": null
+    },
+    {
+     "id": ".uno:GridVisible",
+     "de": null
+    },
+    {
+     "id": ".uno:GridUse",
+     "de": null
+    },
+    {
+     "id": ".uno:HelplinesMove",
+     "de": null
+    },
+    {
+     "id": ".uno:ViewValueHighlighting",
+     "de": null
+    },
+    {
+     "id": ".uno:ViewColumnRowHighlighting",
+     "de": null
+    },
+    {
+     "id": ".uno:ViewHiddenColRow",
+     "de": null
+    },
+    {
+     "id": ".uno:ToggleFormula",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowAnnotations",
+     "de": null
+    },
+    {
+     "id": ".uno:SplitWindow",
+     "de": null
+    },
+    {
+     "id": ".uno:FreezePanes",
+     "de": null
+    },
+    {
+     "id": ".uno:FreezePanesColumn",
+     "de": null
+    },
+    {
+     "id": ".uno:FreezePanesRow",
+     "de": null
+    },
+    {
+     "id": ".uno:Sidebar",
+     "de": null
+    },
+    {
+     "id": ".uno:ViewSidebarStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:Gallery",
+     "de": null
+    },
+    {
+     "id": ".uno:Navigator",
+     "de": null
+    },
+    {
+     "id": ".uno:FunctionBox",
+     "de": null
+    },
+    {
+     "id": ".uno:ViewDataSourceBrowser",
+     "de": null
+    },
+    {
+     "id": ".uno:FullScreen",
+     "de": null
+    },
+    {
+     "id": ".uno:ZoomPage",
+     "de": null
+    },
+    {
+     "id": ".uno:ZoomPageWidth",
+     "de": null
+    },
+    {
+     "id": ".uno:ZoomOptimal",
+     "de": null
+    },
+    {
+     "id": ".uno:Zoom50Percent",
+     "de": null
+    },
+    {
+     "id": ".uno:Zoom75Percent",
+     "de": null
+    },
+    {
+     "id": ".uno:Zoom100Percent",
+     "de": null
+    },
+    {
+     "id": ".uno:Zoom150Percent",
+     "de": null
+    },
+    {
+     "id": ".uno:Zoom200Percent",
+     "de": null
+    },
+    {
+     "id": ".uno:Zoom",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:InsertMenu",
+   "befehle": [
+    {
+     "id": ".uno:InsertGraphic",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertObjectChart",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertSparkline",
+     "de": null
+    },
+    {
+     "id": ".uno:DataDataPilotRun",
+     "de": null
+    },
+    {
+     "id": ".uno:Gallery",
+     "de": null
+    },
+    {
+     "id": ".uno:TwainSelect",
+     "de": null
+    },
+    {
+     "id": ".uno:TwainTransfer",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertAVMedia",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertObjectStarMath",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertQrCode",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertObject",
+     "de": null
+    },
+    {
+     "id": ".uno:Line",
+     "de": null
+    },
+    {
+     "id": ".uno:Freeline_Unfilled",
+     "de": null
+    },
+    {
+     "id": ".uno:Freeline",
+     "de": null
+    },
+    {
+     "id": ".uno:Bezier_Unfilled",
+     "de": null
+    },
+    {
+     "id": ".uno:BezierFill",
+     "de": null
+    },
+    {
+     "id": ".uno:Polygon_Unfilled",
+     "de": null
+    },
+    {
+     "id": ".uno:Polygon_Diagonal_Unfilled",
+     "de": null
+    },
+    {
+     "id": ".uno:Polygon_Diagonal",
+     "de": null
+    },
+    {
+     "id": ".uno:ConnectorToolbox",
+     "de": null
+    },
+    {
+     "id": ".uno:BasicShapes",
+     "de": null
+    },
+    {
+     "id": ".uno:ArrowShapes",
+     "de": null
+    },
+    {
+     "id": ".uno:SymbolShapes",
+     "de": null
+    },
+    {
+     "id": ".uno:StarShapes",
+     "de": null
+    },
+    {
+     "id": ".uno:CalloutShapes",
+     "de": null
+    },
+    {
+     "id": ".uno:FlowChartShapes",
+     "de": null
+    },
+    {
+     "id": ".uno:FunctionDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertName",
+     "de": null
+    },
+    {
+     "id": ".uno:DrawText",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertAnnotation",
+     "de": null
+    },
+    {
+     "id": ".uno:FontworkGalleryFloater",
+     "de": null
+    },
+    {
+     "id": ".uno:HyperlinkDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertSymbol",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertNonBreakingSpace",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertHardHyphen",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertSoftHyphen",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertNarrowNobreakSpace",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertZWSP",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertWJ",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertLRM",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertRLM",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertCurrentDate",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertCurrentTime",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertFieldDateVariable",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertFieldSheet",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertFieldDocTitle",
+     "de": null
+    },
+    {
+     "id": ".uno:EditHeaderAndFooter",
+     "de": null
+    },
+    {
+     "id": ".uno:Label",
+     "de": null
+    },
+    {
+     "id": ".uno:Edit",
+     "de": null
+    },
+    {
+     "id": ".uno:CheckBox",
+     "de": null
+    },
+    {
+     "id": ".uno:RadioButton",
+     "de": null
+    },
+    {
+     "id": ".uno:ListBox",
+     "de": null
+    },
+    {
+     "id": ".uno:ComboBox",
+     "de": null
+    },
+    {
+     "id": ".uno:Pushbutton",
+     "de": null
+    },
+    {
+     "id": ".uno:Imagebutton",
+     "de": null
+    },
+    {
+     "id": ".uno:FormattedField",
+     "de": null
+    },
+    {
+     "id": ".uno:DateField",
+     "de": null
+    },
+    {
+     "id": ".uno:TimeField",
+     "de": null
+    },
+    {
+     "id": ".uno:NumericField",
+     "de": null
+    },
+    {
+     "id": ".uno:CurrencyField",
+     "de": null
+    },
+    {
+     "id": ".uno:PatternField",
+     "de": null
+    },
+    {
+     "id": ".uno:GroupBox",
+     "de": null
+    },
+    {
+     "id": ".uno:ImageControl",
+     "de": null
+    },
+    {
+     "id": ".uno:FileControl",
+     "de": null
+    },
+    {
+     "id": ".uno:Grid",
+     "de": null
+    },
+    {
+     "id": ".uno:NavigationBar",
+     "de": null
+    },
+    {
+     "id": ".uno:SpinButton",
+     "de": null
+    },
+    {
+     "id": ".uno:ScrollBar",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertSignatureLine",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:FormatMenu",
+   "befehle": [
+    {
+     "id": ".uno:Bold",
+     "de": null
+    },
+    {
+     "id": ".uno:Italic",
+     "de": null
+    },
+    {
+     "id": ".uno:UnderlineSingle",
+     "de": null
+    },
+    {
+     "id": ".uno:UnderlineDouble",
+     "de": null
+    },
+    {
+     "id": ".uno:Strikeout",
+     "de": null
+    },
+    {
+     "id": ".uno:Overline",
+     "de": null
+    },
+    {
+     "id": ".uno:SuperScript",
+     "de": null
+    },
+    {
+     "id": ".uno:SubScript",
+     "de": null
+    },
+    {
+     "id": ".uno:Shadowed",
+     "de": null
+    },
+    {
+     "id": ".uno:OutlineFont",
+     "de": null
+    },
+    {
+     "id": ".uno:WrapText",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToUpper",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToLower",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseRotateCase",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToSentenceCase",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToTitleCase",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToToggleCase",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToHalfWidth",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToFullWidth",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToHiragana",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangeCaseToKatakana",
+     "de": null
+    },
+    {
+     "id": ".uno:CommonAlignLeft",
+     "de": null
+    },
+    {
+     "id": ".uno:CommonAlignHorizontalCenter",
+     "de": null
+    },
+    {
+     "id": ".uno:CommonAlignRight",
+     "de": null
+    },
+    {
+     "id": ".uno:CommonAlignJustified",
+     "de": null
+    },
+    {
+     "id": ".uno:CommonAlignTop",
+     "de": null
+    },
+    {
+     "id": ".uno:CommonAlignVerticalCenter",
+     "de": null
+    },
+    {
+     "id": ".uno:CommonAlignBottom",
+     "de": null
+    },
+    {
+     "id": ".uno:NumberFormatStandard",
+     "de": null
+    },
+    {
+     "id": ".uno:NumberFormatDecimal",
+     "de": null
+    },
+    {
+     "id": ".uno:NumberFormatPercent",
+     "de": null
+    },
+    {
+     "id": ".uno:NumberFormatCurrency",
+     "de": null
+    },
+    {
+     "id": ".uno:NumberFormatDate",
+     "de": null
+    },
+    {
+     "id": ".uno:NumberFormatTime",
+     "de": null
+    },
+    {
+     "id": ".uno:NumberFormatScientific",
+     "de": null
+    },
+    {
+     "id": ".uno:NumberFormatThousands",
+     "de": null
+    },
+    {
+     "id": ".uno:FormatPaintbrush",
+     "de": null
+    },
+    {
+     "id": ".uno:ResetAttributes",
+     "de": null
+    },
+    {
+     "id": ".uno:FormatCellDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:RowHeight",
+     "de": null
+    },
+    {
+     "id": ".uno:SetOptimalRowHeight",
+     "de": null
+    },
+    {
+     "id": ".uno:HideRow",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowRow",
+     "de": null
+    },
+    {
+     "id": ".uno:ColumnWidth",
+     "de": null
+    },
+    {
+     "id": ".uno:SetOptimalColumnWidth",
+     "de": null
+    },
+    {
+     "id": ".uno:HideColumn",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowColumn",
+     "de": null
+    },
+    {
+     "id": ".uno:ToggleMergeCells",
+     "de": null
+    },
+    {
+     "id": ".uno:MergeCells",
+     "de": null
+    },
+    {
+     "id": ".uno:SplitCell",
+     "de": null
+    },
+    {
+     "id": ".uno:FontDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:ParagraphDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:PageFormatDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:PrintRangesMenu",
+     "de": null
+    },
+    {
+     "id": ".uno:ConditionalFormatMenu",
+     "de": null
+    },
+    {
+     "id": ".uno:AutoFormat",
+     "de": null
+    },
+    {
+     "id": ".uno:ChooseDesign",
+     "de": null
+    },
+    {
+     "id": ".uno:ThemeDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:Crop",
+     "de": null
+    },
+    {
+     "id": ".uno:OriginalSize",
+     "de": null
+    },
+    {
+     "id": ".uno:FitCellSize",
+     "de": null
+    },
+    {
+     "id": ".uno:ExternalEdit",
+     "de": null
+    },
+    {
+     "id": ".uno:ChangePicture",
+     "de": null
+    },
+    {
+     "id": ".uno:CompressGraphic",
+     "de": null
+    },
+    {
+     "id": ".uno:SaveGraphic",
+     "de": null
+    },
+    {
+     "id": ".uno:ExportAsGraphic",
+     "de": null
+    },
+    {
+     "id": ".uno:TransformDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:FormatLine",
+     "de": null
+    },
+    {
+     "id": ".uno:FormatArea",
+     "de": null
+    },
+    {
+     "id": ".uno:TextAttributes",
+     "de": null
+    },
+    {
+     "id": ".uno:ToggleObjectBezierMode",
+     "de": null
+    },
+    {
+     "id": ".uno:RenameObject",
+     "de": null
+    },
+    {
+     "id": ".uno:ObjectTitleDescription",
+     "de": null
+    },
+    {
+     "id": ".uno:AnchorMenu",
+     "de": null
+    },
+    {
+     "id": ".uno:BringToFront",
+     "de": null
+    },
+    {
+     "id": ".uno:ObjectForwardOne",
+     "de": null
+    },
+    {
+     "id": ".uno:ObjectBackOne",
+     "de": null
+    },
+    {
+     "id": ".uno:SendToBack",
+     "de": null
+    },
+    {
+     "id": ".uno:SetObjectToForeground",
+     "de": null
+    },
+    {
+     "id": ".uno:SetObjectToBackground",
+     "de": null
+    },
+    {
+     "id": ".uno:ObjectMirrorVertical",
+     "de": null
+    },
+    {
+     "id": ".uno:ObjectMirrorHorizontal",
+     "de": null
+    },
+    {
+     "id": ".uno:FormatGroup",
+     "de": null
+    },
+    {
+     "id": ".uno:FormatUngroup",
+     "de": null
+    },
+    {
+     "id": ".uno:EnterGroup",
+     "de": null
+    },
+    {
+     "id": ".uno:LeaveGroup",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:FormatStylesMenu",
+   "befehle": [
+    {
+     "id": ".uno:DefaultCellStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:Accent1CellStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:Accent2CellStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:Accent3CellStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:Heading1CellStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:Heading2CellStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:GoodCellStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:BadCellStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:NeutralCellStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:ErrorCellStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:WarningCellStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:FootnoteCellStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:NoteCellStyles",
+     "de": null
+    },
+    {
+     "id": ".uno:StyleUpdateByExample",
+     "de": null
+    },
+    {
+     "id": ".uno:StyleNewByExample",
+     "de": null
+    },
+    {
+     "id": ".uno:DesignerDialog",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:SheetMenu",
+   "befehle": [
+    {
+     "id": ".uno:InsertCell",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertRowsBefore",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertRowsAfter",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertColumnsBefore",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertColumnsAfter",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertRowBreak",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertColumnBreak",
+     "de": null
+    },
+    {
+     "id": ".uno:DeleteCell",
+     "de": null
+    },
+    {
+     "id": ".uno:DeleteRows",
+     "de": null
+    },
+    {
+     "id": ".uno:DeleteColumns",
+     "de": null
+    },
+    {
+     "id": ".uno:DeleteRowbreak",
+     "de": null
+    },
+    {
+     "id": ".uno:DeleteColumnbreak",
+     "de": null
+    },
+    {
+     "id": ".uno:Insert",
+     "de": null
+    },
+    {
+     "id": ".uno:Add",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertSheetFromFile",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertExternalDataSource",
+     "de": null
+    },
+    {
+     "id": ".uno:Remove",
+     "de": null
+    },
+    {
+     "id": ".uno:Delete",
+     "de": null
+    },
+    {
+     "id": ".uno:ToggleRelative",
+     "de": null
+    },
+    {
+     "id": ".uno:FillDown",
+     "de": null
+    },
+    {
+     "id": ".uno:FillRight",
+     "de": null
+    },
+    {
+     "id": ".uno:FillUp",
+     "de": null
+    },
+    {
+     "id": ".uno:FillLeft",
+     "de": null
+    },
+    {
+     "id": ".uno:FillTable",
+     "de": null
+    },
+    {
+     "id": ".uno:FillSeries",
+     "de": null
+    },
+    {
+     "id": ".uno:RandomNumberGeneratorDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:AddName",
+     "de": null
+    },
+    {
+     "id": ".uno:DefineName",
+     "de": null
+    },
+    {
+     "id": ".uno:SheetInsertName",
+     "de": null
+    },
+    {
+     "id": ".uno:CreateNames",
+     "de": null
+    },
+    {
+     "id": ".uno:DefineLabelRange",
+     "de": null
+    },
+    {
+     "id": ".uno:EditAnnotation",
+     "de": null
+    },
+    {
+     "id": ".uno:HideNote",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowNote",
+     "de": null
+    },
+    {
+     "id": ".uno:DeleteNote",
+     "de": null
+    },
+    {
+     "id": ".uno:DeleteAllNotes",
+     "de": null
+    },
+    {
+     "id": ".uno:RenameTable",
+     "de": null
+    },
+    {
+     "id": ".uno:Hide",
+     "de": null
+    },
+    {
+     "id": ".uno:Show",
+     "de": null
+    },
+    {
+     "id": ".uno:Move",
+     "de": null
+    },
+    {
+     "id": ".uno:DuplicateSheet",
+     "de": null
+    },
+    {
+     "id": ".uno:JumpToTable",
+     "de": null
+    },
+    {
+     "id": ".uno:JumpToPrevTable",
+     "de": null
+    },
+    {
+     "id": ".uno:JumpToNextTable",
+     "de": null
+    },
+    {
+     "id": ".uno:SetTabBgColor",
+     "de": null
+    },
+    {
+     "id": ".uno:TableEvents",
+     "de": null
+    },
+    {
+     "id": ".uno:SheetRightToLeft",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:DataMenu",
+   "befehle": [
+    {
+     "id": ".uno:DataSort",
+     "de": null
+    },
+    {
+     "id": ".uno:SortAscending",
+     "de": null
+    },
+    {
+     "id": ".uno:SortDescending",
+     "de": null
+    },
+    {
+     "id": ".uno:DataFilterAutoFilter",
+     "de": null
+    },
+    {
+     "id": ".uno:DataFilterStandardFilter",
+     "de": null
+    },
+    {
+     "id": ".uno:DataFilterSpecialFilter",
+     "de": null
+    },
+    {
+     "id": ".uno:DataFilterRemoveFilter",
+     "de": null
+    },
+    {
+     "id": ".uno:DataFilterHideAutoFilter",
+     "de": null
+    },
+    {
+     "id": ".uno:ClearAutoFilter",
+     "de": null
+    },
+    {
+     "id": ".uno:HandleDuplicateRecords",
+     "de": null
+    },
+    {
+     "id": ".uno:DefineDBName",
+     "de": null
+    },
+    {
+     "id": ".uno:SelectDB",
+     "de": null
+    },
+    {
+     "id": ".uno:DataAreaRefresh",
+     "de": null
+    },
+    {
+     "id": ".uno:InsertPivotTable",
+     "de": null
+    },
+    {
+     "id": ".uno:RecalcPivotTable",
+     "de": null
+    },
+    {
+     "id": ".uno:DeletePivotTable",
+     "de": null
+    },
+    {
+     "id": ".uno:Calculate",
+     "de": null
+    },
+    {
+     "id": ".uno:CalculateHard",
+     "de": null
+    },
+    {
+     "id": ".uno:ConvertFormulaToValue",
+     "de": null
+    },
+    {
+     "id": ".uno:AutomaticCalculation",
+     "de": null
+    },
+    {
+     "id": ".uno:Validation",
+     "de": null
+    },
+    {
+     "id": ".uno:DataSubTotals",
+     "de": null
+    },
+    {
+     "id": ".uno:DataForm",
+     "de": null
+    },
+    {
+     "id": ".uno:DataStreams",
+     "de": null
+    },
+    {
+     "id": ".uno:ManageXMLSource",
+     "de": null
+    },
+    {
+     "id": ".uno:DataProvider",
+     "de": null
+    },
+    {
+     "id": ".uno:DataProviderRefresh",
+     "de": null
+    },
+    {
+     "id": ".uno:TableOperationDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:TextToColumns",
+     "de": null
+    },
+    {
+     "id": ".uno:DataConsolidate",
+     "de": null
+    },
+    {
+     "id": ".uno:Group",
+     "de": null
+    },
+    {
+     "id": ".uno:Ungroup",
+     "de": null
+    },
+    {
+     "id": ".uno:AutoOutline",
+     "de": null
+    },
+    {
+     "id": ".uno:ClearOutline",
+     "de": null
+    },
+    {
+     "id": ".uno:HideDetail",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowDetail",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:ToolsMenu",
+   "befehle": [
+    {
+     "id": ".uno:SpellDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:SpellOnline",
+     "de": null
+    },
+    {
+     "id": ".uno:ThesaurusDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:SetLanguageAllTextMenu",
+     "de": null
+    },
+    {
+     "id": ".uno:Hyphenate",
+     "de": null
+    },
+    {
+     "id": ".uno:ChineseConversion",
+     "de": null
+    },
+    {
+     "id": ".uno:HangulHanjaConversion",
+     "de": null
+    },
+    {
+     "id": ".uno:MoreDictionaries",
+     "de": null
+    },
+    {
+     "id": ".uno:AutoCorrectDlg",
+     "de": null
+    },
+    {
+     "id": ".uno:AutoComplete",
+     "de": null
+    },
+    {
+     "id": ".uno:ImageMapDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:RedactDoc",
+     "de": null
+    },
+    {
+     "id": ".uno:AutoRedactDoc",
+     "de": null
+    },
+    {
+     "id": ".uno:GoalSeekDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:SolverDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowPrecedents",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowDependents",
+     "de": null
+    },
+    {
+     "id": ".uno:ClearArrows",
+     "de": null
+    },
+    {
+     "id": ".uno:ClearArrowPrecedents",
+     "de": null
+    },
+    {
+     "id": ".uno:ClearArrowDependents",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowErrors",
+     "de": null
+    },
+    {
+     "id": ".uno:RefreshArrows",
+     "de": null
+    },
+    {
+     "id": ".uno:AuditingFillMode",
+     "de": null
+    },
+    {
+     "id": ".uno:AutoRefreshArrows",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowInvalid",
+     "de": null
+    },
+    {
+     "id": ".uno:ScenarioManager",
+     "de": null
+    },
+    {
+     "id": ".uno:SwitchControlDesignMode",
+     "de": null
+    },
+    {
+     "id": ".uno:UseWizards",
+     "de": null
+    },
+    {
+     "id": ".uno:ControlProperties",
+     "de": null
+    },
+    {
+     "id": ".uno:FormProperties",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowFmExplorer",
+     "de": null
+    },
+    {
+     "id": ".uno:TabDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:AddField",
+     "de": null
+    },
+    {
+     "id": ".uno:OpenReadOnly",
+     "de": null
+    },
+    {
+     "id": ".uno:AutoControlFocus",
+     "de": null
+    },
+    {
+     "id": ".uno:ShareDocument",
+     "de": null
+    },
+    {
+     "id": ".uno:Protect",
+     "de": null
+    },
+    {
+     "id": ".uno:ToolProtectionDocument",
+     "de": null
+    },
+    {
+     "id": ".uno:MacroManager",
+     "de": null
+    },
+    {
+     "id": ".uno:MacroRecorder",
+     "de": null
+    },
+    {
+     "id": ".uno:RunMacro",
+     "de": null
+    },
+    {
+     "id": ".uno:BasicIDEAppear",
+     "de": null
+    },
+    {
+     "id": ".uno:ScriptOrganizer",
+     "de": null
+    },
+    {
+     "id": ".uno:MacroSignature",
+     "de": null
+    },
+    {
+     "id": ".uno:MacroOrganizer?TabId:short=1",
+     "de": null
+    },
+    {
+     "id": ".uno:DevelopmentToolsDockingWindow",
+     "de": null
+    },
+    {
+     "id": ".uno:OpenXMLFilterSettings",
+     "de": null
+    },
+    {
+     "id": ".uno:ExtensionManager",
+     "de": null
+    },
+    {
+     "id": ".uno:ConfigureDialog",
+     "de": null
+    },
+    {
+     "id": ".uno:OptionsTreeDialog",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:WindowList",
+   "befehle": [
+    {
+     "id": ".uno:NewWindow",
+     "de": null
+    },
+    {
+     "id": ".uno:CloseWin",
+     "de": null
+    }
+   ]
+  },
+  {
+   "menu": ".uno:HelpMenu",
+   "befehle": [
+    {
+     "id": ".uno:HelpIndex",
+     "de": null
+    },
+    {
+     "id": ".uno:ExtendedHelp",
+     "de": null
+    },
+    {
+     "id": ".uno:Documentation",
+     "de": null
+    },
+    {
+     "id": ".uno:TipOfTheDay",
+     "de": null
+    },
+    {
+     "id": ".uno:CommandPopup",
+     "de": null
+    },
+    {
+     "id": ".uno:QuestionAnswers",
+     "de": null
+    },
+    {
+     "id": ".uno:SendFeedback",
+     "de": null
+    },
+    {
+     "id": ".uno:SafeMode",
+     "de": null
+    },
+    {
+     "id": ".uno:GetInvolved",
+     "de": null
+    },
+    {
+     "id": ".uno:Donation",
+     "de": null
+    },
+    {
+     "id": ".uno:ShowLicense",
+     "de": null
+    },
+    {
+     "id": ".uno:About",
+     "de": null
+    }
+   ]
+  }
+ ]
+}

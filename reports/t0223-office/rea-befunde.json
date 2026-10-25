@@ -1,0 +1,25 @@
+{
+  "hinweis": "Rohbelege der REA-Analyse vom 2026-10-25 (T-0223). Pfade relativ zu artifacts/vollpaket/staging/.",
+  "befunde": [
+    {
+      "evidence_id": "ev_4e83b4287bb0a5f69b741605c471522a51c112b1185c0734bdc5e5316405ca07",
+      "operation": "inspect_pe_resources",
+      "provider": "rea-pe-resources 1",
+      "ziel": "sumatra/SumatraPDF.exe",
+      "sha256": "719f689b34f47be8ca105ce8484948474dafde0e106bab599e4a89326070c3d0",
+      "confidence": "observed",
+      "authority": "shipped-artifact",
+      "ergebnis": "46 Ressourcen, keine RT_MENU/RT_ACCELERATOR; RCDATA 2 (Offset 17897472, 1409590 Bytes, sha256 fcef2fba…0c26) = Übersetzungstabelle 'AppTranslator: SumatraPDF' mit 555 Bedientexten; RCDATA 3 (Offset 19307064, 567915 Bytes, LzSA1-komprimiert, Inhalt nicht ausgewertet)"
+    },
+    {
+      "evidence_id": "ev_a448a32d9ca69c587bf5948335d5a792ed66c47bd8d4d6be06a1a31669d2c417",
+      "operation": "search_strings (regex, Ghidra 12.1.4, statisch)",
+      "provider": "ghidra 12.1.4",
+      "ziel": "qpdf/bin/qpdf30.dll",
+      "sha256": "8812952678de93e0750308a113aa650e9161af466f9770679ea9673adeb61041",
+      "confidence": "observed",
+      "authority": "shipped-artifact",
+      "ergebnis": "37 von 38 gesuchten Optionsnamen als definierte Strings gefunden (nicht gefunden: 'json' als Einzelwort; leere Suche beweist kein Fehlen)"
+    }
+  ]
+}

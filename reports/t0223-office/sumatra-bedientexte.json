@@ -1,0 +1,2222 @@
+[
+ {
+  "en": "# File History",
+  "de": "# Dateiverlauf"
+ },
+ {
+  "en": "%s annotation. Ctrl+click to edit.",
+  "de": "%s-Anmerkung. Strg+Klick zum Bearbeiten."
+ },
+ {
+  "en": "&About",
+  "de": "&Über"
+ },
+ {
+  "en": "&Actual Size",
+  "de": "&Tatsächliche Größe"
+ },
+ {
+  "en": "&Advanced Options...",
+  "de": "&Erweiterte Optionen…"
+ },
+ {
+  "en": "&All selected pages",
+  "de": "&Alle ausgewählten Seiten"
+ },
+ {
+  "en": "&Back",
+  "de": "V&orherige Ansicht"
+ },
+ {
+  "en": "&Book View",
+  "de": "&Buchansicht"
+ },
+ {
+  "en": "&Cancel",
+  "de": "&Abbrechen"
+ },
+ {
+  "en": "&Caret",
+  "de": "&Cursor"
+ },
+ {
+  "en": "&Close",
+  "de": "&Schließen"
+ },
+ {
+  "en": "&Continue installing 32-bit version",
+  "de": "Installation der 32-Bit-Version &fortsetzen"
+ },
+ {
+  "en": "&Copy Selection",
+  "de": "Auswahl &kopieren"
+ },
+ {
+  "en": "&Copy To Clipboard",
+  "de": "&In Zwischenablage kopieren"
+ },
+ {
+  "en": "&Discard changes",
+  "de": "&Änderungen verwerfen"
+ },
+ {
+  "en": "&Don't ask me again",
+  "de": "Nicht &wieder fragen."
+ },
+ {
+  "en": "&Even pages only",
+  "de": "Nur &gerade Seiten"
+ },
+ {
+  "en": "&Facing",
+  "de": "&Doppelseite"
+ },
+ {
+  "en": "&File",
+  "de": "&Datei"
+ },
+ {
+  "en": "&Find what:",
+  "de": "&Suchen nach:"
+ },
+ {
+  "en": "&First Page",
+  "de": "&Erste Seite"
+ },
+ {
+  "en": "&Fit pages to printable area",
+  "de": "Seiten in Druckbereich &einpassen"
+ },
+ {
+  "en": "&Free Text",
+  "de": "&Freitext"
+ },
+ {
+  "en": "&Go To",
+  "de": "&Gehe zu"
+ },
+ {
+  "en": "&Go to page:",
+  "de": "&Gehe zu Seite:"
+ },
+ {
+  "en": "&Help",
+  "de": "&Hilfe"
+ },
+ {
+  "en": "&Highlight",
+  "de": "Text &hervorheben"
+ },
+ {
+  "en": "&Keyboard Shortcuts",
+  "de": "&Tastenkombinationen"
+ },
+ {
+  "en": "&Last Page",
+  "de": "&Letzte Seite"
+ },
+ {
+  "en": "&Magnification:",
+  "de": "&Vergrößerung:"
+ },
+ {
+  "en": "&Manual",
+  "de": "&Handbuch"
+ },
+ {
+  "en": "&Match case",
+  "de": "&Groß-/Kleinschreibung beachten"
+ },
+ {
+  "en": "&Next Page",
+  "de": "&Nächste Seite"
+ },
+ {
+  "en": "&No",
+  "de": "&Nein"
+ },
+ {
+  "en": "&Odd pages only",
+  "de": "Nur &ungerade Seiten"
+ },
+ {
+  "en": "&Open Document",
+  "de": "Dokument ö&ffnen"
+ },
+ {
+  "en": "&Open...",
+  "de": "&Öffnen…"
+ },
+ {
+  "en": "&Options",
+  "de": "&Optionen"
+ },
+ {
+  "en": "&Options...",
+  "de": "&Optionen…"
+ },
+ {
+  "en": "&Password:",
+  "de": "&Passwort:"
+ },
+ {
+  "en": "&Pin Document",
+  "de": "Dokument &anheften"
+ },
+ {
+  "en": "&Previous Page",
+  "de": "&Vorherige Seite"
+ },
+ {
+  "en": "&Print...",
+  "de": "&Drucken…"
+ },
+ {
+  "en": "&Print... (denied)",
+  "de": "&Drucken… (verweigert)"
+ },
+ {
+  "en": "&Remember the password for this document",
+  "de": "Passwort für dieses Dokument &merken"
+ },
+ {
+  "en": "&Remember these settings for each document",
+  "de": "Ansicht-&Einstellungen für jedes Dokument einzeln merken"
+ },
+ {
+  "en": "&Remove From History",
+  "de": "Aus Verlauf &entfernen"
+ },
+ {
+  "en": "&Save As...",
+  "de": "&Speichern unter…"
+ },
+ {
+  "en": "&Save to existing PDF",
+  "de": "In bestehende PDF-Datei &speichern"
+ },
+ {
+  "en": "&Search With Google",
+  "de": "Mit Google &suchen"
+ },
+ {
+  "en": "&Settings",
+  "de": "&Einstellungen"
+ },
+ {
+  "en": "&Shrink pages to printable area (if necessary)",
+  "de": "Seiten auf Druckbereich &verkleinern (falls nötig)"
+ },
+ {
+  "en": "&Single Page",
+  "de": "Einzel&seitenansicht"
+ },
+ {
+  "en": "&Stamp",
+  "de": "&Stempel"
+ },
+ {
+  "en": "&Strike Out",
+  "de": "&Durchstreichen"
+ },
+ {
+  "en": "&Text",
+  "de": "&Text"
+ },
+ {
+  "en": "&Theme",
+  "de": "&Design"
+ },
+ {
+  "en": "&Translate With Google",
+  "de": "Mi&t Google übersetzen"
+ },
+ {
+  "en": "&Underline",
+  "de": "&Unterstreichen"
+ },
+ {
+  "en": "&Use original page sizes",
+  "de": "Seitengröße &nicht anpassen"
+ },
+ {
+  "en": "&View",
+  "de": "&Ansicht"
+ },
+ {
+  "en": "&Window",
+  "de": "Fe&nster"
+ },
+ {
+  "en": "&Yes",
+  "de": "&Ja"
+ },
+ {
+  "en": "&Zoom",
+  "de": "&Zoom"
+ },
+ {
+  "en": "(of %d)",
+  "de": "(von %d)"
+ },
+ {
+  "en": "(page %s)",
+  "de": "(Seite %s)"
+ },
+ {
+  "en": ": Everything",
+  "de": ": Alles"
+ },
+ {
+  "en": "> Commands",
+  "de": "> Befehle"
+ },
+ {
+  "en": "@ Tabs",
+  "de": "@ Tabs"
+ },
+ {
+  "en": "About SumatraPDF",
+  "de": "Über SumatraPDF"
+ },
+ {
+  "en": "Add Favorite",
+  "de": "Favoriten hinzufügen"
+ },
+ {
+  "en": "Add page %s to favorites",
+  "de": "Seite %s zu Favoriten hinzufügen…"
+ },
+ {
+  "en": "Add page %s to favorites with (optional) name:",
+  "de": "Seite %s zu Favoriten mit (optionalem) Namen hinzufügen:"
+ },
+ {
+  "en": "Add to favorites",
+  "de": "&Zu Favoriten hinzufügen…"
+ },
+ {
+  "en": "Advanced",
+  "de": "Erweitert"
+ },
+ {
+  "en": "Advanced Options...",
+  "de": "Erweiterte Optionen…"
+ },
+ {
+  "en": "Advanced Settings...",
+  "de": "Erweiterte Einstellungen…"
+ },
+ {
+  "en": "All files",
+  "de": "Alle Dateien"
+ },
+ {
+  "en": "All supported documents",
+  "de": "Alle unterstützten Dokumente"
+ },
+ {
+  "en": "Annotations",
+  "de": "Anmerkungen"
+ },
+ {
+  "en": "Application:",
+  "de": "Anwendung:"
+ },
+ {
+  "en": "Are you sure you want to uninstall SumatraPDF?",
+  "de": "Möchten Sie SumatraPDF wirklich deinstallieren?"
+ },
+ {
+  "en": "Associate with PDF files?",
+  "de": "Mit PDF-Dateien verknüpfen?"
+ },
+ {
+  "en": "Attachment: %s",
+  "de": "Anhang: %s"
+ },
+ {
+  "en": "Author:",
+  "de": "Autor:"
+ },
+ {
+  "en": "Author: %s",
+  "de": "Autor: %s"
+ },
+ {
+  "en": "Automatic",
+  "de": "Automatisch"
+ },
+ {
+  "en": "Automatically check for &updates",
+  "de": "&Automatisch nach Updates suchen"
+ },
+ {
+  "en": "Background Color:",
+  "de": "Hintergrundfarbe:"
+ },
+ {
+  "en": "Book View",
+  "de": "Buchansicht"
+ },
+ {
+  "en": "Bookmark Shortcuts",
+  "de": "Lesezeichen-Verknüpfungen"
+ },
+ {
+  "en": "Bookmark shortcut to page %s of %s",
+  "de": "Lesezeichen-Verknüpfung zu Seite %s von %s"
+ },
+ {
+  "en": "Bookmarks",
+  "de": "Lesezeichen"
+ },
+ {
+  "en": "Border: %d",
+  "de": "Umrandung: %d"
+ },
+ {
+  "en": "Bytes",
+  "de": "Bytes"
+ },
+ {
+  "en": "CHM documents",
+  "de": "CHM-Hilfedateien"
+ },
+ {
+  "en": "Can't connect to the Internet (error %#x).",
+  "de": "Keine Verbindung zum Internet möglich (Fehler %#x)."
+ },
+ {
+  "en": "Cancel",
+  "de": "Abbrechen"
+ },
+ {
+  "en": "Cannot print this file",
+  "de": "Datei kann nicht gedruckt werden"
+ },
+ {
+  "en": "Cannot start inverse search command. Please check the command line in the settings.",
+  "de": "Fehler beim Ausführen des Befehls für die Rückwärtssuche. Bitte überprüfen Sie die Einstellung."
+ },
+ {
+  "en": "Change Language",
+  "de": "&Sprache ändern… (Change Language)"
+ },
+ {
+  "en": "Change Language...",
+  "de": "Sprache ändern…"
+ },
+ {
+  "en": "Check For Updates",
+  "de": "Nach Updates suchen"
+ },
+ {
+  "en": "Check for &Updates",
+  "de": "&Nach neuer Version suchen"
+ },
+ {
+  "en": "Checking for update...",
+  "de": "Nach Update suchen…"
+ },
+ {
+  "en": "Circle",
+  "de": "Kreis"
+ },
+ {
+  "en": "Clear History",
+  "de": "Verlauf löschen"
+ },
+ {
+  "en": "Cleared history of %d files, deleted thumbnails.",
+  "de": "Verlauf von %d Dateien gelöscht, Miniaturansichten gelöscht."
+ },
+ {
+  "en": "Clearing history...",
+  "de": "Verlauf wird gelöscht…"
+ },
+ {
+  "en": "Close",
+  "de": "Schließen"
+ },
+ {
+  "en": "Close All Tabs",
+  "de": "Alle Tabs schließen"
+ },
+ {
+  "en": "Close Current Document",
+  "de": "Aktuelles Dokument schließen"
+ },
+ {
+  "en": "Close Document",
+  "de": "Dokument schließen"
+ },
+ {
+  "en": "Close Other Tabs",
+  "de": "Andere Tabs schließen"
+ },
+ {
+  "en": "Close Tabs To The Left",
+  "de": "Tabs links schließen"
+ },
+ {
+  "en": "Close Tabs To The Right",
+  "de": "Tabs rechts schließen"
+ },
+ {
+  "en": "Collapse All",
+  "de": "Alles zuklappen"
+ },
+ {
+  "en": "Color:",
+  "de": "Farbe:"
+ },
+ {
+  "en": "Comic books",
+  "de": "Comicbücher"
+ },
+ {
+  "en": "Command Palette",
+  "de": "Befehlspalette"
+ },
+ {
+  "en": "Compatibility",
+  "de": "Kompatibilität"
+ },
+ {
+  "en": "Contents:",
+  "de": "Inhalt:"
+ },
+ {
+  "en": "Continuous",
+  "de": "Fortlaufend"
+ },
+ {
+  "en": "Continuous Book View",
+  "de": "Fortlaufende Buchansicht"
+ },
+ {
+  "en": "Continuous Facing",
+  "de": "Fortlaufende Doppelseiten"
+ },
+ {
+  "en": "Contribute Translation",
+  "de": "Übersetzung beisteuern"
+ },
+ {
+  "en": "Copy &Image",
+  "de": "&Bild kopieren"
+ },
+ {
+  "en": "Copy &Link Address",
+  "de": "&Linkadresse kopieren"
+ },
+ {
+  "en": "Copy Co&mment",
+  "de": "K&ommentar kopieren"
+ },
+ {
+  "en": "Copy Comment",
+  "de": "Kommentar kopieren"
+ },
+ {
+  "en": "Copy File Path",
+  "de": "Dateipfad kopieren"
+ },
+ {
+  "en": "Copy Image",
+  "de": "Bild kopieren"
+ },
+ {
+  "en": "Copy Link Target",
+  "de": "Linkziel kopieren"
+ },
+ {
+  "en": "Copy Selection",
+  "de": "Auswahl kopieren"
+ },
+ {
+  "en": "Copy To Clipboard",
+  "de": "In Zwischenablage kopieren"
+ },
+ {
+  "en": "Copying text was denied (copying as image only)",
+  "de": "Text kopieren verweigert (nur als Bild kopiert)"
+ },
+ {
+  "en": "Copyright:",
+  "de": "Copyright:"
+ },
+ {
+  "en": "Could not obtain Printer properties",
+  "de": "Konnte Druckereigenschaften nicht bestimmen"
+ },
+ {
+  "en": "Couldn't create the installation directory",
+  "de": "Konnte das Installationsverzeichnis nicht erstellen"
+ },
+ {
+  "en": "Couldn't get printer name",
+  "de": "Druckername konnte nicht ermittelt werden"
+ },
+ {
+  "en": "Couldn't initialize printer",
+  "de": "Der Drucker konnte nicht initialisiert werden"
+ },
+ {
+  "en": "Couldn't install PDF previewer",
+  "de": "Konnte die PDF-Vorschau nicht installieren"
+ },
+ {
+  "en": "Couldn't install PDF search filter",
+  "de": "Konnte den PDF-Suchfilter nicht installieren"
+ },
+ {
+  "en": "Couldn't render the page",
+  "de": "Diese Seite kann leider nicht angezeigt werden"
+ },
+ {
+  "en": "Couldn't uninstall PDF previewer",
+  "de": "Konnte die PDF-Vorschau nicht deinstallieren"
+ },
+ {
+  "en": "Couldn't uninstall Sumatra search filter",
+  "de": "Konnte den Sumatra-Suchfilter nicht deinstallieren"
+ },
+ {
+  "en": "Couldn't uninstall browser plugin",
+  "de": "Konnte das Browser-Plugin nicht deinstallieren"
+ },
+ {
+  "en": "Couldn't write %s to disk",
+  "de": "Konnte %s nicht schreiben"
+ },
+ {
+  "en": "Create .lnk Shortcut",
+  "de": "LNK-Verknüpfung erstellen"
+ },
+ {
+  "en": "Create Annotation &Under Cursor",
+  "de": "Anmerkung &unter dem Cursor erstellen"
+ },
+ {
+  "en": "Create Annotation From Selection",
+  "de": "Anmerkung aus Auswahl erstellen"
+ },
+ {
+  "en": "Create Caret Annotation",
+  "de": "Cursor‑Anmerkung erstellen"
+ },
+ {
+  "en": "Create Circle Annotation",
+  "de": "Kreis-Anmerkung erstellen"
+ },
+ {
+  "en": "Create File Attachment Annotation",
+  "de": "Dateianhang-Anmerkung erstellen"
+ },
+ {
+  "en": "Create Free Text Annotation",
+  "de": "Freitext-Anmerkung erstellen"
+ },
+ {
+  "en": "Create Highlight Annotation",
+  "de": "Hervorhebungsanmerkung erstellen"
+ },
+ {
+  "en": "Create Ink Annotation",
+  "de": "Freihandanmerkung erstellen"
+ },
+ {
+  "en": "Create Line Annotation",
+  "de": "Zeilenanmerkung erstellen"
+ },
+ {
+  "en": "Create Link Annotation",
+  "de": "Link-Anmerkung erstellen"
+ },
+ {
+  "en": "Create Poly Line Annotation",
+  "de": "Polylinien-Anmerkung erstellen"
+ },
+ {
+  "en": "Create Polygon Annotation",
+  "de": "Polygon-Anmerkung erstellen"
+ },
+ {
+  "en": "Create Popup Annotation",
+  "de": "Einblendbare Anmerkung erstellen"
+ },
+ {
+  "en": "Create Redact Annotation",
+  "de": "Schwärzungsanmerkung erstellen"
+ },
+ {
+  "en": "Create Square Annotation",
+  "de": "Quadratische Anmerkung erstellen"
+ },
+ {
+  "en": "Create Squiggly Annotation",
+  "de": "Geschwungene Anmerkung erstellen"
+ },
+ {
+  "en": "Create Stamp Annotation",
+  "de": "Stempelanmerkung erstellen"
+ },
+ {
+  "en": "Create Strike Out Annotation",
+  "de": "Streichungsanmerkung erstellen"
+ },
+ {
+  "en": "Create Text Annotation",
+  "de": "Textanmerkung erstellen"
+ },
+ {
+  "en": "Create Underline Annotation",
+  "de": "Unterstrichene Anmerkung erstellen"
+ },
+ {
+  "en": "Created:",
+  "de": "Erstellt am:"
+ },
+ {
+  "en": "Current file",
+  "de": "Aktuelle Datei"
+ },
+ {
+  "en": "Cursor position:",
+  "de": "Cursorposition:"
+ },
+ {
+  "en": "Custom &Zoom...",
+  "de": "Benutzerdefinierter &Zoom…"
+ },
+ {
+  "en": "Dark",
+  "de": "Dunkel"
+ },
+ {
+  "en": "Darker",
+  "de": "Dunkler"
+ },
+ {
+  "en": "Date:",
+  "de": "Datum:"
+ },
+ {
+  "en": "Debug: Corrupt Memory",
+  "de": "Debug: Beschädigter Speicher"
+ },
+ {
+  "en": "Debug: Crash Me",
+  "de": "Debug: Absturz provozieren"
+ },
+ {
+  "en": "Debug: Download Symbols",
+  "de": "Debug: Symbole herunterladen"
+ },
+ {
+  "en": "Debug: Show Notification",
+  "de": "Debug: Benachrichtigung anzeigen"
+ },
+ {
+  "en": "Debug: Start Stress Test",
+  "de": "Debug: Stresstest starten"
+ },
+ {
+  "en": "Debug: Test App",
+  "de": "Debug: App testen"
+ },
+ {
+  "en": "Debug: Toggle Predictive Rendering",
+  "de": "Debug: Vorschau-Rendering umschalten"
+ },
+ {
+  "en": "Debug: Toggle Rtl",
+  "de": "Debug: RTL umschalten"
+ },
+ {
+  "en": "Default &Layout:",
+  "de": "&Standardlayout:"
+ },
+ {
+  "en": "Default &Zoom:",
+  "de": "Standard&vergrößerung:"
+ },
+ {
+  "en": "Delete",
+  "de": "&Löschen"
+ },
+ {
+  "en": "Delete Annotation",
+  "de": "Anmerkung löschen"
+ },
+ {
+  "en": "Delete Favorite",
+  "de": "Favorit löschen"
+ },
+ {
+  "en": "Delete File",
+  "de": "Datei löschen"
+ },
+ {
+  "en": "Denied Permissions:",
+  "de": "Einschränkungen:"
+ },
+ {
+  "en": "DjVu documents",
+  "de": "DjVu-Dokumente"
+ },
+ {
+  "en": "Do nothing",
+  "de": "Nichts tun"
+ },
+ {
+  "en": "Document Properties",
+  "de": "Dokumenteigenschaften"
+ },
+ {
+  "en": "Don't install",
+  "de": "Nicht installieren"
+ },
+ {
+  "en": "Download 64-bit version",
+  "de": "64-Bit-Version herunterladen"
+ },
+ {
+  "en": "E&xit",
+  "de": "&Beenden"
+ },
+ {
+  "en": "E&xit Fullscreen",
+  "de": "&Vollbild verlassen"
+ },
+ {
+  "en": "EPUB ebooks",
+  "de": "EPUB-E-Bücher"
+ },
+ {
+  "en": "Edit %s Annotation",
+  "de": "%s-Anmerkung bearbeiten"
+ },
+ {
+  "en": "Edit Annotations",
+  "de": "Anmerkungen bearbeiten"
+ },
+ {
+  "en": "Embed...",
+  "de": "Einbetten…"
+ },
+ {
+  "en": "Enter password",
+  "de": "Bitte Passwort eingeben"
+ },
+ {
+  "en": "Enter password for %s",
+  "de": "Bitte Passwort für %s eingeben"
+ },
+ {
+  "en": "Enter the command-line to invoke when you double-click on the PDF document:",
+  "de": "Beim Doppelklick auf das PDF-Dokument wird der folgende Befehl ausgeführt:"
+ },
+ {
+  "en": "Error",
+  "de": "Fehler"
+ },
+ {
+  "en": "Error loading %s",
+  "de": "Fehler beim Öffnen von %s"
+ },
+ {
+  "en": "Execute a program",
+  "de": "Ein Programm ausführen"
+ },
+ {
+  "en": "Exit Application",
+  "de": "Anwendung beenden"
+ },
+ {
+  "en": "Expand All",
+  "de": "Alles aufklappen"
+ },
+ {
+  "en": "F&avorites",
+  "de": "&Favoriten"
+ },
+ {
+  "en": "F&orward",
+  "de": "N&ächste Ansicht"
+ },
+ {
+  "en": "F&ullscreen",
+  "de": "&Vollbild"
+ },
+ {
+  "en": "Facing",
+  "de": "Doppelseite"
+ },
+ {
+  "en": "Facing View",
+  "de": "Doppelseitenansicht"
+ },
+ {
+  "en": "Failed to delete uninstaller registry keys",
+  "de": "Fehler beim Löschen der Deinstallations-Registry-Schlüssel"
+ },
+ {
+  "en": "Failed to rename the file!",
+  "de": "Die Datei konnte nicht umbenannt werden!"
+ },
+ {
+  "en": "Failed to save a file",
+  "de": "Die Datei konnte nicht gespeichert werden!"
+ },
+ {
+  "en": "Failed to write the extended file extension information to the registry",
+  "de": "Fehler beim Schreiben der erweiterten Dateierweiterungsinformationen in die Registry"
+ },
+ {
+  "en": "Failed to write the uninstallation information to the registry",
+  "de": "Fehler beim Schreiben der Deinstallationsinformationen in die Registry"
+ },
+ {
+  "en": "Fast Web View",
+  "de": "Schnelle Webanzeige"
+ },
+ {
+  "en": "Favorites",
+  "de": "Favoriten"
+ },
+ {
+  "en": "FictionBook documents",
+  "de": "FictionBook-Dokumente"
+ },
+ {
+  "en": "File %s not found",
+  "de": "Datei %s nicht gefunden"
+ },
+ {
+  "en": "File Attachment",
+  "de": "Dateianhang"
+ },
+ {
+  "en": "File Size:",
+  "de": "Dateigröße:"
+ },
+ {
+  "en": "File path not available",
+  "de": "Dateipfad nicht verfügbar"
+ },
+ {
+  "en": "File:",
+  "de": "Datei:"
+ },
+ {
+  "en": "Fin&d...",
+  "de": "S&uchen…"
+ },
+ {
+  "en": "Find",
+  "de": "Suchen"
+ },
+ {
+  "en": "Find Next",
+  "de": "Weitersuchen"
+ },
+ {
+  "en": "Find Next Selection",
+  "de": "Nächste Auswahl suchen"
+ },
+ {
+  "en": "Find Previous",
+  "de": "Rückwärtssuchen"
+ },
+ {
+  "en": "Find Previous Selection",
+  "de": "Vorherige Auswahl suchen"
+ },
+ {
+  "en": "Find:",
+  "de": "Suchen:"
+ },
+ {
+  "en": "Find: Toggle Match Case",
+  "de": "Suchen: Groß-/Kleinschreibung umschalten"
+ },
+ {
+  "en": "First Page",
+  "de": "Erste Seite"
+ },
+ {
+  "en": "Fit &Content",
+  "de": "An &Inhalt anpassen"
+ },
+ {
+  "en": "Fit &Page",
+  "de": "An &Seite anpassen"
+ },
+ {
+  "en": "Fit &Width",
+  "de": "An Fenster&breite anpassen"
+ },
+ {
+  "en": "Fit Content",
+  "de": "An Inhalt anpassen"
+ },
+ {
+  "en": "Fit Page",
+  "de": "An Seite anpassen"
+ },
+ {
+  "en": "Fit Width",
+  "de": "An Fensterbreite anpassen"
+ },
+ {
+  "en": "Fit Width and Show Pages Continuously",
+  "de": "An Fensterbreite anpassen und Seiten fortlaufend anzeigen"
+ },
+ {
+  "en": "Fit a Single Page",
+  "de": "An eine einzelne Seite anpassen"
+ },
+ {
+  "en": "Fonts:",
+  "de": "Schriftarten:"
+ },
+ {
+  "en": "Found text at page %s",
+  "de": "Text auf Seite %s gefunden"
+ },
+ {
+  "en": "Found text at page %s (again)",
+  "de": "Text auf Seite %s gefunden (erneut)"
+ },
+ {
+  "en": "Frequently Read",
+  "de": "Häufig gelesen"
+ },
+ {
+  "en": "GB",
+  "de": "GB"
+ },
+ {
+  "en": "Get Fonts Info",
+  "de": "Schriftarten-Infos abrufen"
+ },
+ {
+  "en": "Go to Page...",
+  "de": "Gehe zu Seite…"
+ },
+ {
+  "en": "Go to page",
+  "de": "Gehe zu Seite"
+ },
+ {
+  "en": "Help: About SumatraPDF",
+  "de": "Hilfe: Über SumatraPDF"
+ },
+ {
+  "en": "Help: Keyboard Shortcuts",
+  "de": "Hilfe: Tastenkombinationen"
+ },
+ {
+  "en": "Help: Manual",
+  "de": "Hilfe: Handbuch"
+ },
+ {
+  "en": "Help: Manual On Website",
+  "de": "Hilfe: Handbuch auf der Website"
+ },
+ {
+  "en": "Help: SumatraPDF Website",
+  "de": "Hilfe: SumatraPDF-Website"
+ },
+ {
+  "en": "Hide &Options",
+  "de": "&Optionen ausblenden"
+ },
+ {
+  "en": "Hide Annotations",
+  "de": "Anmerkungen ausblenden"
+ },
+ {
+  "en": "Hide frequently read",
+  "de": "Häufig gelesene Dokumente ausblenden"
+ },
+ {
+  "en": "Hint: Use the F3 key for finding again",
+  "de": "Tipp: F3-Taste verwenden, um weiterzusuchen"
+ },
+ {
+  "en": "Home",
+  "de": "Startseite"
+ },
+ {
+  "en": "Icon:",
+  "de": "Icon:"
+ },
+ {
+  "en": "Image files (*.%s)",
+  "de": "Bilder (*.%s)"
+ },
+ {
+  "en": "Images",
+  "de": "Bilder"
+ },
+ {
+  "en": "Ink",
+  "de": "Tinte"
+ },
+ {
+  "en": "Install SumatraPDF",
+  "de": "Installieren"
+ },
+ {
+  "en": "Install SumatraPDF in &folder:",
+  "de": "&Installationsordner:"
+ },
+ {
+  "en": "Install and relaunch",
+  "de": "Installieren und neu starten"
+ },
+ {
+  "en": "Install for all users",
+  "de": "Für alle Benutzer installieren"
+ },
+ {
+  "en": "Installation failed!",
+  "de": "Die Installation ist fehlgeschlagen!"
+ },
+ {
+  "en": "Installation in progress...",
+  "de": "Die Installation wird ausgeführt…"
+ },
+ {
+  "en": "Installing 32-bit SumatraPDF on 64-bit OS",
+  "de": "32-Bit-Version von SumatraPDF auf einem 64-Bit-Betriebssystem installieren"
+ },
+ {
+  "en": "Interior Color:",
+  "de": "Innenfarbe:"
+ },
+ {
+  "en": "Invert Colors",
+  "de": "Farben umkehren"
+ },
+ {
+  "en": "Invoke Inverse Search",
+  "de": "Rückwärtssuche ausführen"
+ },
+ {
+  "en": "KB",
+  "de": "KB"
+ },
+ {
+  "en": "Last Page",
+  "de": "Letzte Seite"
+ },
+ {
+  "en": "Launch a browser or run command with selection",
+  "de": "Browser starten oder Befehl mit Auswahl ausführen"
+ },
+ {
+  "en": "Let Windows Desktop Search &search PDF documents",
+  "de": "PDF-Dokumente in Windows-&Suche einbeziehen"
+ },
+ {
+  "en": "Let Windows show &previews of PDF documents",
+  "de": "Windows soll eine &Vorschau für PDF-Dokumente anzeigen"
+ },
+ {
+  "en": "Light",
+  "de": "Hell"
+ },
+ {
+  "en": "Line",
+  "de": "Linie"
+ },
+ {
+  "en": "Line End:",
+  "de": "Zeilenende:"
+ },
+ {
+  "en": "Line Start:",
+  "de": "Zeilenstart:"
+ },
+ {
+  "en": "Loading %s ...",
+  "de": "%s wird geladen…"
+ },
+ {
+  "en": "MB",
+  "de": "MB"
+ },
+ {
+  "en": "Make SumatraPDF default application for PDF files?",
+  "de": "SumatraPDF als Standardanwendung für PDF-Dateien registrieren?"
+ },
+ {
+  "en": "Man&ga Mode",
+  "de": "Lese&richtung umkehren"
+ },
+ {
+  "en": "Manual On Website",
+  "de": "H&andbuch im Internet"
+ },
+ {
+  "en": "Mobi documents",
+  "de": "Mobi-Dokumente"
+ },
+ {
+  "en": "Modified:",
+  "de": "Geändert am:"
+ },
+ {
+  "en": "Move Frame Focus",
+  "de": "Rahmenfokus verschieben"
+ },
+ {
+  "en": "Move Tab Left",
+  "de": "Tab nach links verschieben"
+ },
+ {
+  "en": "Move Tab Right",
+  "de": "Tab nach rechts verschieben"
+ },
+ {
+  "en": "Navigate Back",
+  "de": "Zurück"
+ },
+ {
+  "en": "Navigate Forward",
+  "de": "Weiter"
+ },
+ {
+  "en": "New &window",
+  "de": "Neues &Fenster"
+ },
+ {
+  "en": "New version available",
+  "de": "Neue Version verfügbar"
+ },
+ {
+  "en": "Next Page",
+  "de": "Nächste Seite"
+ },
+ {
+  "en": "Next Tab",
+  "de": "Nächster Tab"
+ },
+ {
+  "en": "No",
+  "de": "Nein"
+ },
+ {
+  "en": "No matches were found",
+  "de": "Suchbegriff nicht gefunden"
+ },
+ {
+  "en": "No result found around line %u in file %s",
+  "de": "In der Nähe von Zeile %u in der Datei %s wurde kein Resultat gefunden"
+ },
+ {
+  "en": "No synchronization file found",
+  "de": "Synchronisationsdatei nicht gefunden"
+ },
+ {
+  "en": "No synchronization info at this position",
+  "de": "Keine Synchronisationsinformationen verfügbar"
+ },
+ {
+  "en": "Number of Pages:",
+  "de": "Anzahl der Seiten:"
+ },
+ {
+  "en": "OK",
+  "de": "OK"
+ },
+ {
+  "en": "Opacity:",
+  "de": "Deckkraft:"
+ },
+ {
+  "en": "Opacity: %d",
+  "de": "Deckkraft: %d"
+ },
+ {
+  "en": "Open",
+  "de": "Öffnen…"
+ },
+ {
+  "en": "Open &in PDF-XChange",
+  "de": "Mit PDF-&XChange Editor öffnen"
+ },
+ {
+  "en": "Open Attachment",
+  "de": "Anhang öffnen"
+ },
+ {
+  "en": "Open Current Document In New Tab",
+  "de": "Aktuelles Dokument in neuem Tab öffnen"
+ },
+ {
+  "en": "Open Current Document In New Window",
+  "de": "Aktuelles Dokument in neuem Fenster öffnen"
+ },
+ {
+  "en": "Open Directory In Directory Opus",
+  "de": "Verzeichnis in Directory Opus öffnen"
+ },
+ {
+  "en": "Open Directory In Double Commander",
+  "de": "Verzeichnis in Double Commander öffnen"
+ },
+ {
+  "en": "Open Directory In Explorer",
+  "de": "Verzeichnis im Explorer öffnen"
+ },
+ {
+  "en": "Open Directory In Total Commander",
+  "de": "Verzeichnis in Total Commander öffnen"
+ },
+ {
+  "en": "Open Directory in &Double Commander",
+  "de": "Verzeichnis in &Double Commander öffnen"
+ },
+ {
+  "en": "Open Directory in &Explorer",
+  "de": "Verzeichnis im &Explorer öffnen"
+ },
+ {
+  "en": "Open Directory in &Total Commander",
+  "de": "Verzeichnis in &Total Commander öffnen"
+ },
+ {
+  "en": "Open Directory in Directory &Opus",
+  "de": "Verzeichnis in Directory &Opus öffnen"
+ },
+ {
+  "en": "Open Embedded PDF",
+  "de": "Eingebettetes PDF öffnen"
+ },
+ {
+  "en": "Open File...",
+  "de": "Datei öffnen…"
+ },
+ {
+  "en": "Open In New Window",
+  "de": "In neuem Fenster öffnen"
+ },
+ {
+  "en": "Open New SumatraPDF Window",
+  "de": "Neues SumatraPDF-Fenster öffnen"
+ },
+ {
+  "en": "Open Next File In Folder",
+  "de": "Nächste Datei im Ordner öffnen"
+ },
+ {
+  "en": "Open Previous File In Folder",
+  "de": "Vorherige Datei im Ordner öffnen"
+ },
+ {
+  "en": "Open Selected Document",
+  "de": "Ausgewähltes Dokument öffnen"
+ },
+ {
+  "en": "Open With Pdf&Djvu Bookmarker",
+  "de": "Mit Pdf & DjVu Bookmarker öffnen"
+ },
+ {
+  "en": "Open a document...",
+  "de": "Dokument öffnen…"
+ },
+ {
+  "en": "Open in %s",
+  "de": "Mit %s öffnen"
+ },
+ {
+  "en": "Open in &Adobe Reader",
+  "de": "Mit &Adobe Reader öffnen"
+ },
+ {
+  "en": "Open in &Foxit Reader",
+  "de": "Mit F&oxit Reader öffnen"
+ },
+ {
+  "en": "Open in &Microsoft XPS-Viewer",
+  "de": "Mit &Microsoft XPS-Viewer öffnen"
+ },
+ {
+  "en": "Open in Adobe Acrobat",
+  "de": "In Adobe Acrobat öffnen"
+ },
+ {
+  "en": "Open in Foxit PhantomPDF",
+  "de": "In Foxit PhantomPDF öffnen"
+ },
+ {
+  "en": "Open in Foxit Reader",
+  "de": "In Foxit Reader öffnen"
+ },
+ {
+  "en": "Open in Microsoft &HTML Help",
+  "de": "In Microsoft &HTML Help öffnen"
+ },
+ {
+  "en": "Open in Microsoft HTML Help",
+  "de": "In Microsoft HTML Help öffnen"
+ },
+ {
+  "en": "Open in Microsoft Xps Viewer",
+  "de": "In Microsoft XPS Viewer öffnen"
+ },
+ {
+  "en": "Open in PDF-XChange",
+  "de": "In PDF-XChange Editor öffnen"
+ },
+ {
+  "en": "Options...",
+  "de": "Optionen…"
+ },
+ {
+  "en": "P&roperties",
+  "de": "Ei&genschaften"
+ },
+ {
+  "en": "PDF Document",
+  "de": "PDF-Dokument"
+ },
+ {
+  "en": "PDF Optimizations:",
+  "de": "PDF-Optimierungen:"
+ },
+ {
+  "en": "PDF Producer:",
+  "de": "PDF-Urheber:"
+ },
+ {
+  "en": "PDF Version:",
+  "de": "PDF-Version:"
+ },
+ {
+  "en": "PDF documents",
+  "de": "PDF-Dokumente"
+ },
+ {
+  "en": "Pa&ge...",
+  "de": "&Seite…"
+ },
+ {
+  "en": "Page %s",
+  "de": "Seite %s"
+ },
+ {
+  "en": "Page Size:",
+  "de": "Seitengröße:"
+ },
+ {
+  "en": "Page number %u inexistant",
+  "de": "Seite %u nicht vorhanden"
+ },
+ {
+  "en": "Page scaling",
+  "de": "Anpassen der Seitengröße"
+ },
+ {
+  "en": "Page:",
+  "de": "Seite:"
+ },
+ {
+  "en": "PalmDoc documents",
+  "de": "PalmDoc-Dokumente"
+ },
+ {
+  "en": "Pin Selected Document",
+  "de": "Ausgewähltes Dokument anheften"
+ },
+ {
+  "en": "Please close %s to proceed!",
+  "de": "Bitte schließen Sie %s vor der Installation!"
+ },
+ {
+  "en": "Please wait - loading...",
+  "de": "Bitte auf das Laden warten…"
+ },
+ {
+  "en": "Please wait - rendering...",
+  "de": "Bitte auf das Rendern warten…"
+ },
+ {
+  "en": "Poly Line",
+  "de": "Polylinie"
+ },
+ {
+  "en": "Polygon",
+  "de": "Polygon"
+ },
+ {
+  "en": "Popup: %d 0 R",
+  "de": "Pop-up: %d 0 R"
+ },
+ {
+  "en": "Postscript documents",
+  "de": "Postscript-Dokumente"
+ },
+ {
+  "en": "Pr&esentation",
+  "de": "Pr&äsentation"
+ },
+ {
+  "en": "Presentation Black Background",
+  "de": "Präsentation mit schwarzem Hintergrund"
+ },
+ {
+  "en": "Presentation White Background",
+  "de": "Präsentation mit weißem Hintergrund"
+ },
+ {
+  "en": "Previous Page",
+  "de": "Vorherige Seite"
+ },
+ {
+  "en": "Previous Tab",
+  "de": "Vorheriger Tab"
+ },
+ {
+  "en": "Print",
+  "de": "Drucken…"
+ },
+ {
+  "en": "Print Document...",
+  "de": "Dokument drucken…"
+ },
+ {
+  "en": "Print range",
+  "de": "Druckbereich"
+ },
+ {
+  "en": "Printer with given name doesn't exist",
+  "de": "Drucker mit dem angegebenen Namen nicht gefunden"
+ },
+ {
+  "en": "Printing in progress.",
+  "de": "Druckvorgang läuft."
+ },
+ {
+  "en": "Printing is still in progress. Abort and quit?",
+  "de": "Druckvorgang abbrechen und Fenster schließen?"
+ },
+ {
+  "en": "Printing is still in progress. Abort and start over?",
+  "de": "Druckvorgang abbrechen und neu starten?"
+ },
+ {
+  "en": "Printing page %d of %d...",
+  "de": "Drucke Seite %d von %d…"
+ },
+ {
+  "en": "Printing problem.",
+  "de": "Druckerproblem"
+ },
+ {
+  "en": "Properties...",
+  "de": "Eigenschaften…"
+ },
+ {
+  "en": "Re&name...",
+  "de": "Umbe&nennen…"
+ },
+ {
+  "en": "Recently Opened",
+  "de": "Kürzlich geöffnet"
+ },
+ {
+  "en": "Rect: x=%d y=%d dx=%d dy=%d",
+  "de": "Rechteck: x=%d y=%d dx=%d dy=%d"
+ },
+ {
+  "en": "Redact",
+  "de": "Zensieren"
+ },
+ {
+  "en": "Reload Document",
+  "de": "Dokument neu laden"
+ },
+ {
+  "en": "Remember &opened files",
+  "de": "Liste der &zuletzt geöffneten Dokumente anlegen"
+ },
+ {
+  "en": "Remove Selected Document From History",
+  "de": "Ausgewähltes Dokument aus dem Verlauf entfernen"
+ },
+ {
+  "en": "Remove from favorites",
+  "de": "&Aus Favoriten entfernen"
+ },
+ {
+  "en": "Remove page %s from favorites",
+  "de": "Seite %s aus Favoriten entfernen"
+ },
+ {
+  "en": "Rename File...",
+  "de": "Datei umbenennen…"
+ },
+ {
+  "en": "Rename To",
+  "de": "Umbenennen zu"
+ },
+ {
+  "en": "Reopen Last Closed",
+  "de": "Zuletzt geschlossene erneut öffnen"
+ },
+ {
+  "en": "Rotate &Left",
+  "de": "&Gegen UZS drehen"
+ },
+ {
+  "en": "Rotate &Right",
+  "de": "Im &UZS drehen"
+ },
+ {
+  "en": "Rotate Left",
+  "de": "Nach links drehen"
+ },
+ {
+  "en": "Rotate Right",
+  "de": "Nach rechts drehen"
+ },
+ {
+  "en": "S&election",
+  "de": "Aus&wahl"
+ },
+ {
+  "en": "S&quiggly",
+  "de": "&Wellig"
+ },
+ {
+  "en": "SVG documents",
+  "de": "SVG-Dokumente"
+ },
+ {
+  "en": "Save Annotations to a new PDF",
+  "de": "Anmerkungen in neuer PDF-Datei speichern"
+ },
+ {
+  "en": "Save Annotations to existing PDF",
+  "de": "Anmerkungen in bestehender PDF-Datei speichern"
+ },
+ {
+  "en": "Save Attachment...",
+  "de": "Anhang speichern…"
+ },
+ {
+  "en": "Save Embedded File...",
+  "de": "Eingebettete Datei speichern…"
+ },
+ {
+  "en": "Save File As...",
+  "de": "Datei speichern unter…"
+ },
+ {
+  "en": "Save S&hortcut...",
+  "de": "&Verknüpfung speichern…"
+ },
+ {
+  "en": "Save annotations?",
+  "de": "Anmerkungen speichern?"
+ },
+ {
+  "en": "Save changes to a new PDF",
+  "de": "Änderungen in neuer PDF-Datei speichern"
+ },
+ {
+  "en": "Save changes to existing PDF",
+  "de": "Änderungen an vorhandener PDF-Datei speichern"
+ },
+ {
+  "en": "Save to &new PDF",
+  "de": "Als &neue PDF-Datei speichern"
+ },
+ {
+  "en": "Save...",
+  "de": "Speichern…"
+ },
+ {
+  "en": "Saved annotations to '%s'",
+  "de": "Gespeicherte Anmerkungen zu '%s'"
+ },
+ {
+  "en": "Saving of '%s' failed with: '%s'",
+  "de": "Speichern von '%s' fehlgeschlagen mit: '%s'"
+ },
+ {
+  "en": "Scroll Down",
+  "de": "Nach unten scrollen"
+ },
+ {
+  "en": "Scroll Down By Half Page",
+  "de": "Eine halbe Seite nach unten scrollen"
+ },
+ {
+  "en": "Scroll Down By Page",
+  "de": "Seitenweise nach unten scrollen"
+ },
+ {
+  "en": "Scroll Left",
+  "de": "Nach links scrollen"
+ },
+ {
+  "en": "Scroll Left By Page",
+  "de": "Seitenweise nach links scrollen"
+ },
+ {
+  "en": "Scroll Right",
+  "de": "Nach rechts scrollen"
+ },
+ {
+  "en": "Scroll Right By Page",
+  "de": "Seitenweise nach rechts scrollen"
+ },
+ {
+  "en": "Scroll Up",
+  "de": "Nach oben scrollen"
+ },
+ {
+  "en": "Scroll Up By Half Page",
+  "de": "Eine halbe Seite nach oben scrollen"
+ },
+ {
+  "en": "Scroll Up By Page",
+  "de": "Seitenweise nach oben scrollen"
+ },
+ {
+  "en": "Search Selection with Bing",
+  "de": "Auswahl mit Bing suchen"
+ },
+ {
+  "en": "Search Selection with Google",
+  "de": "Auswahl mit Google suchen"
+ },
+ {
+  "en": "Search Selection with Google Scholar",
+  "de": "Auswahl mit Google Scholar suchen"
+ },
+ {
+  "en": "Search Selection with Wikipedia",
+  "de": "Auswahl mit Wikipedia suchen"
+ },
+ {
+  "en": "Search With &Bing",
+  "de": "Mit &Bing suchen"
+ },
+ {
+  "en": "Search With &Google",
+  "de": "Mit &Google suchen"
+ },
+ {
+  "en": "Search with &Google Scholar",
+  "de": "Mit &Google Scholar suchen"
+ },
+ {
+  "en": "Search with &Wikipedia",
+  "de": "Mit &Wikipedia suchen"
+ },
+ {
+  "en": "Searching %d of %d...",
+  "de": "Durchsuche Seite %d von %d…"
+ },
+ {
+  "en": "Select &All",
+  "de": "&Alles markieren\\tStrg+A"
+ },
+ {
+  "en": "Select All",
+  "de": "Alles auswählen"
+ },
+ {
+  "en": "Select content with Ctrl+left mouse button",
+  "de": "Inhalt mit Strg+linke Maustaste auswählen"
+ },
+ {
+  "en": "Select next theme",
+  "de": "Nächstes Design auswählen"
+ },
+ {
+  "en": "Select the folder where SumatraPDF should be installed:",
+  "de": "Wählen Sie den Ordner, in dem SumatraPDF installiert werden soll:"
+ },
+ {
+  "en": "Selection:",
+  "de": "Auswahl:"
+ },
+ {
+  "en": "Send Document By Email...",
+  "de": "Dokument per E-Mail senden…"
+ },
+ {
+  "en": "Send by &E-mail...",
+  "de": "Per &E-Mail versenden…"
+ },
+ {
+  "en": "Set inverse search command-line",
+  "de": "Befehlszeile für Rückwärtssuche festlegen"
+ },
+ {
+  "en": "Set theme",
+  "de": "Design festlegen"
+ },
+ {
+  "en": "Set theme '%s'",
+  "de": "Design '%s' festlegen"
+ },
+ {
+  "en": "Show &Bookmarks",
+  "de": "Lese&zeichen anzeigen"
+ },
+ {
+  "en": "Show &Favorites",
+  "de": "&Favoriten anzeigen"
+ },
+ {
+  "en": "Show &Pages Continuously",
+  "de": "Seiten &fortlaufend anzeigen"
+ },
+ {
+  "en": "Show &Scrollbars",
+  "de": "&Bildlaufleisten anzeigen"
+ },
+ {
+  "en": "Show &Toolbar",
+  "de": "&Werkzeugleiste anzeigen"
+ },
+ {
+  "en": "Show Annotations",
+  "de": "Anmerkungen anzeigen"
+ },
+ {
+  "en": "Show Book&marks",
+  "de": "&Lesezeichen anzeigen"
+ },
+ {
+  "en": "Show Document Properties...",
+  "de": "Dokumenteigenschaften anzeigen…"
+ },
+ {
+  "en": "Show Favorites",
+  "de": "Favoriten anzeigen"
+ },
+ {
+  "en": "Show File In Folder...",
+  "de": "Datei im Ordner anzeigen…"
+ },
+ {
+  "en": "Show Logs",
+  "de": "Protokolle anzeigen"
+ },
+ {
+  "en": "Show Scr&ollbars",
+  "de": "&Bildlaufleisten anzeigen"
+ },
+ {
+  "en": "Show frequently read",
+  "de": "Oft gelesene Dokumente einblenden"
+ },
+ {
+  "en": "Show in &folder",
+  "de": "Dokument-&Ordner öffnen"
+ },
+ {
+  "en": "Show in folder",
+  "de": "Im Ordner anzeigen"
+ },
+ {
+  "en": "Show the &bookmarks sidebar when available",
+  "de": "&Lesezeichen-Seitenleiste anzeigen, wenn verfügbar"
+ },
+ {
+  "en": "Single Page",
+  "de": "Einzelne Seite"
+ },
+ {
+  "en": "Single Page View",
+  "de": "Einzelseitenansicht"
+ },
+ {
+  "en": "Smart Next Tab",
+  "de": "Intelligenter nächster Tab"
+ },
+ {
+  "en": "Sorry, that shouldn't have happened!\\n\\nPlease press 'Cancel', if you want to help us fix the cause of this crash.",
+  "de": "Entschuldigung, das hätte nicht passieren dürfen!\\n\\nBitte drücken Sie 'Abbrechen', wenn Sie uns beim Beheben dieses Fehlers behilflich sein möchten."
+ },
+ {
+  "en": "Source file %s has no synchronization point",
+  "de": "Quelldatei %s hat keinen Synchronisationspunkt"
+ },
+ {
+  "en": "Square",
+  "de": "Quadrat"
+ },
+ {
+  "en": "Start SumatraPDF",
+  "de": "SumatraPDF starten"
+ },
+ {
+  "en": "Subject:",
+  "de": "Thema:"
+ },
+ {
+  "en": "SumatraPDF %s Installer",
+  "de": "SumatraPDF %s installieren"
+ },
+ {
+  "en": "SumatraPDF %s Uninstaller",
+  "de": "SumatraPDF %s deinstallieren"
+ },
+ {
+  "en": "SumatraPDF Options",
+  "de": "SumatraPDF-Optionen"
+ },
+ {
+  "en": "SumatraPDF Update",
+  "de": "SumatraPDF-Update"
+ },
+ {
+  "en": "SumatraPDF crashed",
+  "de": "SumatraPDF ist abgestürzt"
+ },
+ {
+  "en": "SumatraPDF has been uninstalled.",
+  "de": "SumatraPDF wurde deinstalliert."
+ },
+ {
+  "en": "SumatraPDF installation not found.",
+  "de": "SumatraPDF-Installation nicht gefunden."
+ },
+ {
+  "en": "Synchronization file cannot be opened",
+  "de": "Die Synchronisationsdatei kann nicht geöffnet werden"
+ },
+ {
+  "en": "Tagged PDF",
+  "de": "PDF mit Tags"
+ },
+ {
+  "en": "Text Alignment:",
+  "de": "Textausrichtung:"
+ },
+ {
+  "en": "Text Color:",
+  "de": "Textfarbe:"
+ },
+ {
+  "en": "Text Font:",
+  "de": "Schriftart:"
+ },
+ {
+  "en": "Text Size:",
+  "de": "Textgröße:"
+ },
+ {
+  "en": "Text Size: %d",
+  "de": "Textgröße: %d"
+ },
+ {
+  "en": "Text documents",
+  "de": "Textdokumente"
+ },
+ {
+  "en": "Thank you for choosing SumatraPDF!",
+  "de": "Vielen Dank dafür, dass Sie SumatraPDF verwenden!"
+ },
+ {
+  "en": "Thank you! SumatraPDF has been installed.",
+  "de": "Vielen Dank! SumatraPDF wurde erfolgreich installiert."
+ },
+ {
+  "en": "The installer has been corrupted. Please download it again.\\nSorry for the inconvenience!",
+  "de": "Das Installationsprogramm wurde beschädigt. Bitte laden Sie es erneut herunter.\\nEntschuldigen Sie bitte die Unannehmlichkeit!"
+ },
+ {
+  "en": "This document uses unsupported features (%s) and might not render properly",
+  "de": "Dieses Dokument verwendet nicht unterstützte Funktionen (%s) und wird möglicherweise nicht korrekt dargestellt"
+ },
+ {
+  "en": "Title:",
+  "de": "Titel:"
+ },
+ {
+  "en": "Toggle Anti-Alias Rendering",
+  "de": "Anti-Aliasing-Rendering umschalten"
+ },
+ {
+  "en": "Toggle Bookmarks",
+  "de": "Lesezeichen umschalten"
+ },
+ {
+  "en": "Toggle Continuous View",
+  "de": "Fortlaufende Ansicht umschalten"
+ },
+ {
+  "en": "Toggle Cursor Position",
+  "de": "Cursorposition umschalten"
+ },
+ {
+  "en": "Toggle Favorites",
+  "de": "Favoriten umschalten"
+ },
+ {
+  "en": "Toggle Frequently Read",
+  "de": "Häufig gelesene anzeigen/ausblenden"
+ },
+ {
+  "en": "Toggle Fullscreen",
+  "de": "Vollbild umschalten"
+ },
+ {
+  "en": "Toggle Inverse Search",
+  "de": "Rückwärtssuche umschalten"
+ },
+ {
+  "en": "Toggle Manga Mode",
+  "de": "Manga-Modus umschalten"
+ },
+ {
+  "en": "Toggle Match Case",
+  "de": "Groß-/Kleinschreibung umschalten"
+ },
+ {
+  "en": "Toggle Menu Bar",
+  "de": "Menüleiste umschalten"
+ },
+ {
+  "en": "Toggle Page Info",
+  "de": "Seiteninfo umschalten"
+ },
+ {
+  "en": "Toggle Scrollbars",
+  "de": "Bildlaufleisten umschalten"
+ },
+ {
+  "en": "Toggle Show Annotations",
+  "de": "Anmerkungen anzeigen/ausblenden"
+ },
+ {
+  "en": "Toggle Show Links",
+  "de": "Links anzeigen/ausblenden"
+ },
+ {
+  "en": "Toggle Table Of Contents",
+  "de": "Inhaltsverzeichnis umschalten"
+ },
+ {
+  "en": "Toggle Toolbar",
+  "de": "Werkzeugleiste umschalten"
+ },
+ {
+  "en": "Toggle Zoom",
+  "de": "Zoom umschalten"
+ },
+ {
+  "en": "Translate Selection With DeepL",
+  "de": "Auswahl mit DeepL übersetzen"
+ },
+ {
+  "en": "Translate Selection with Google",
+  "de": "Auswahl mit Google Translate übersetzen"
+ },
+ {
+  "en": "Translate with &DeepL",
+  "de": "Mit &DeepL übersetzen"
+ },
+ {
+  "en": "Uninstall SumatraPDF",
+  "de": "SumatraPDF deinstallieren"
+ },
+ {
+  "en": "Uninstallation failed",
+  "de": "Die Deinstallation ist fehlgeschlagen"
+ },
+ {
+  "en": "Uninstallation in progress...",
+  "de": "Die Deinstallation wird ausgeführt…"
+ },
+ {
+  "en": "Unknown source file (%s)",
+  "de": "Unbekannte Datei (%s)"
+ },
+ {
+  "en": "Unsaved annotations",
+  "de": "Nicht gespeicherte Anmerkungen"
+ },
+ {
+  "en": "Unsaved annotations in '%s'",
+  "de": "Nicht gespeicherte Anmerkungen in '%s'"
+ },
+ {
+  "en": "Use &tabs",
+  "de": "Dokumente in &Tabs öffnen"
+ },
+ {
+  "en": "View",
+  "de": "Ansicht"
+ },
+ {
+  "en": "View With Custom External Viewer",
+  "de": "Mit benutzerdefiniertem externen Betrachter anzeigen"
+ },
+ {
+  "en": "View: Presentation Mode",
+  "de": "Ansicht: Präsentationsmodus"
+ },
+ {
+  "en": "Visit &Website",
+  "de": "&SumatraPDF im Internet"
+ },
+ {
+  "en": "Warning",
+  "de": "Warnung"
+ },
+ {
+  "en": "XPS documents",
+  "de": "XPS-Dokumente"
+ },
+ {
+  "en": "Yes",
+  "de": "Ja"
+ },
+ {
+  "en": "You have the latest version.",
+  "de": "Sie haben die neueste Version installiert."
+ },
+ {
+  "en": "You have unsaved annotations",
+  "de": "Sie haben ungespeicherte Anmerkungen."
+ },
+ {
+  "en": "You have version '%s' and version '%s' is available.\\nDo you want to install new version?",
+  "de": "Sie haben Version '%s' und Version '%s' ist verfügbar.\\nMöchten Sie die neue Version installieren?"
+ },
+ {
+  "en": "You're installing 32-bit SumatraPDF on 64-bit OS.\\nWould you like to download\\n64-bit version?",
+  "de": "Sie installieren die 32-Bit-Version von SumatraPDF auf einem 64-Bit-Betriebssystem.\\nMöchten Sie die 64-Bit-Version herunterladen?"
+ },
+ {
+  "en": "Zoom",
+  "de": "Zoom"
+ },
+ {
+  "en": "Zoom In",
+  "de": "Vergrößern"
+ },
+ {
+  "en": "Zoom Out",
+  "de": "Verkleinern"
+ },
+ {
+  "en": "Zoom factor",
+  "de": "Zoomfaktor"
+ },
+ {
+  "en": "Zoom: 100%",
+  "de": "Zoom: 100 %"
+ },
+ {
+  "en": "Zoom: 12.5%",
+  "de": "Zoom: 12,5 %"
+ },
+ {
+  "en": "Zoom: 125%",
+  "de": "Zoom: 125 %"
+ },
+ {
+  "en": "Zoom: 150%",
+  "de": "Zoom: 150 %"
+ },
+ {
+  "en": "Zoom: 1600%",
+  "de": "Zoom: 1600 %"
+ },
+ {
+  "en": "Zoom: 200%",
+  "de": "Zoom: 200 %"
+ },
+ {
+  "en": "Zoom: 25%",
+  "de": "Zoom: 25 %"
+ },
+ {
+  "en": "Zoom: 3200%",
+  "de": "Zoom: 3200 %"
+ },
+ {
+  "en": "Zoom: 400%",
+  "de": "Zoom: 400 %"
+ },
+ {
+  "en": "Zoom: 50%",
+  "de": "Zoom: 50 %"
+ },
+ {
+  "en": "Zoom: 6400%",
+  "de": "Zoom: 6400 %"
+ },
+ {
+  "en": "Zoom: 8.33%",
+  "de": "Zoom: 8,33 %"
+ },
+ {
+  "en": "Zoom: 800%",
+  "de": "Zoom: 800 %"
+ },
+ {
+  "en": "Zoom: Actual Size",
+  "de": "Zoom: Tatsächliche Größe"
+ },
+ {
+  "en": "Zoom: Custom...",
+  "de": "Zoom: Benutzerdefiniert…"
+ },
+ {
+  "en": "Zoom: Fit Content",
+  "de": "Zoom: An Inhalt anpassen"
+ },
+ {
+  "en": "Zoom: Fit Page",
+  "de": "Zoom: An Seite anpassen"
+ },
+ {
+  "en": "Zoom: Fit Page and Single Page",
+  "de": "Zoom: Seite anpassen und Einzelseite"
+ },
+ {
+  "en": "Zoom: Fit Width",
+  "de": "Zoom: An Fensterbreite anpassen"
+ },
+ {
+  "en": "Zoom: Fit Width And Continuous",
+  "de": "Zoom: Fortlaufend an Fensterbreite anpassen"
+ },
+ {
+  "en": "[Changes detected; refreshing] %s",
+  "de": "[Datei wurde geändert; aktualisiere…] %s"
+ },
+ {
+  "en": "copying text",
+  "de": "Text kopieren"
+ },
+ {
+  "en": "don't use",
+  "de": "nicht verwenden"
+ },
+ {
+  "en": "page %d,",
+  "de": "Seite %d,"
+ },
+ {
+  "en": "printing document",
+  "de": "Dokument drucken"
+ }
+]
