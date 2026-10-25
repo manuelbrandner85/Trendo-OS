@@ -16,7 +16,10 @@ class Program
         StartupTrace.Mark("main");
         var uiArgs = AppStartup.WithoutVelopack(args);
         // Fast-Hooks (--veloapp-install usw.) beendet Velopack selbst. OnFirstRun beendet nicht: danach muss das Fenster erscheinen.
-        Velopack.VelopackApp.Build().OnFirstRun(_ => AppStartup.NoteFirstRun()).Run();
+        var velo = Velopack.VelopackApp.Build().OnFirstRun(_ => AppStartup.NoteFirstRun());
+        // Deinstallieren (nur Windows): fragen, ob auch die eigenen Daten weg sollen – Standard: behalten
+        if (OperatingSystem.IsWindows()) velo = velo.OnBeforeUninstallFastCallback(_ => UninstallPrompt.Run(UninstallPrompt.LogToTemp));
+        velo.Run();
         // Arbeitsverzeichnis aus dem Programmordner herausnehmen: gestartete Programme (winget, Ollama) würden sonst Updates blockieren
         try { Directory.SetCurrentDirectory(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)); } catch { }
         string? Arg(string n) { var i = Array.IndexOf(uiArgs, n); return i >= 0 && i + 1 < uiArgs.Length ? uiArgs[i + 1] : null; }

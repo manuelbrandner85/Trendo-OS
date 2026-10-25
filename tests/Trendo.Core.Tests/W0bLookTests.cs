@@ -38,3 +38,29 @@ public class T0107_Leistungsprofil
         Assert.Equal(["auto", "hoch", "sparsam"], UserSettings.PowerProfiles);
     }
 }
+
+public class Deinstallation_Daten
+{
+    [Fact(DisplayName = "Deinstallieren: Daten löschen nur im Trendo-Ordner, nie Benutzer-/Laufwerksordner, nie wenn Projekte darin liegen")]
+    public void RemoveUserData()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-del-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(Path.Combine(root, "audit")); File.WriteAllText(Path.Combine(root, "audit", "audit.jsonl"), "x");
+        var ro = Path.Combine(root, "nurlesen.txt"); File.WriteAllText(ro, "x"); File.SetAttributes(ro, FileAttributes.ReadOnly);
+        // Projekte im Datenordner: nichts löschen
+        Assert.False(DataLocation.RemoveUserData(root, Path.Combine(root, "Projekte")));
+        Assert.True(Directory.Exists(root));
+        // geschützte Ordner
+        Assert.False(DataLocation.RemoveUserData(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)));
+        Assert.False(DataLocation.RemoveUserData(Path.GetPathRoot(root)!));
+        Assert.False(DataLocation.RemoveUserData(Path.Combine(root, "gibt-es-nicht")));
+        Assert.False(DataLocation.RemoveUserData("C:"));          // laufwerksrelativ
+        Assert.False(DataLocation.RemoveUserData("TrendoOS"));    // relativ
+        var fremd = Path.Combine(Path.GetTempPath(), "fremd-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(fremd);
+        Assert.False(DataLocation.RemoveUserData(fremd));         // heißt nicht „Trendo…“
+        Assert.True(Directory.Exists(fremd)); Directory.Delete(fremd);
+        // normaler Fall, auch mit schreibgeschützter Datei
+        Assert.True(DataLocation.RemoveUserData(root, Path.Combine(Path.GetTempPath(), "anderswo")));
+        Assert.False(Directory.Exists(root));
+    }
+}
