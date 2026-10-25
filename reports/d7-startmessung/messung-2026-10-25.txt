@@ -1,0 +1,18 @@
+Startmessung D7 – Windows-PC, 2026-10-25 (Rohausgabe des Messskripts, Pfade entfernt)
+Hardware: AMD Ryzen 7 5700X 8-Core Processor · 31,9 GB RAM · NVIDIA GeForce RTX 5070 · Microsoft Windows 11 Pro Insider Preview
+Aufruf je Lauf: TrendoOS.exe --offline --no-first-run --data-root <temp>\data --startup-log <temp>\<lauf>.txt
+Messung: Start über PowerShell Start-Process, warten bis die Protokolldatei da ist, 8 s weiter, dann Working Set / Private Bytes, dann Stop-Process nur dieser PID.
+
+Veröffentlichter Build 0.9.7 (artifacts/publish-win-x64, self-contained, ReadyToRun = Inhalt des Setups):
+p1 RAM_working=241MB RAM_privat=584MB :: main 373 ms | avalonia.start 408 ms | app.init 1368 ms | window.opened 2328 ms | first.frame 2341 ms
+p2 RAM_working=246MB RAM_privat=551MB :: main 99 ms | avalonia.start 129 ms | app.init 646 ms | window.opened 1283 ms | first.frame 1298 ms
+p3 RAM_working=246MB RAM_privat=496MB :: main 110 ms | avalonia.start 146 ms | app.init 734 ms | window.opened 1385 ms | first.frame 1397 ms
+
+Entwickler-Build (src/Trendo.App/bin/Release, framework-dependent):
+m1 RAM_working=220MB RAM_privat=527MB :: main 111 ms | avalonia.start 149 ms | app.init 855 ms | window.opened 2321 ms | first.frame 2342 ms
+m2 RAM_working=230MB RAM_privat=549MB :: main 103 ms | avalonia.start 146 ms | app.init 793 ms | window.opened 2134 ms | first.frame 2160 ms
+m3 RAM_working=432MB RAM_privat=530MB :: main 114 ms | avalonia.start 159 ms | app.init 913 ms | window.opened 2494 ms | first.frame 2519 ms
+
+Ausreißer direkt nach einem Neubau (frisch geschriebene Programmdateien, nicht reproduzierbar beim nächsten Start):
+start.txt: main 849 ms | avalonia.start 883 ms | app.init 9572 ms | first.frame 12701 ms
+w4.txt:    main 14149 ms | avalonia.start 14187 ms | app.init 14989 ms | first.frame 16525 ms

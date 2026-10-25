@@ -171,7 +171,7 @@ public sealed partial class MainWindow : Window
             });
         }
         Opened += OnOpened;
-        Closing += (_, _) => { foreach (var t in _ownedTimers) t.Stop(); if (_reopening) return; _api?.DisposeAsync().AsTask().Wait(2000); _core.Shutdown(); };
+        Closing += (_, _) => { StartupTrace.Mark("window.closing"); StartupTrace.Flush(); foreach (var t in _ownedTimers) t.Stop(); if (_reopening) return; _api?.DisposeAsync().AsTask().Wait(2000); _core.Shutdown(); };
         InitLook(root, opt);
         StartupTrace.Mark("window.ready");
     }
@@ -262,6 +262,9 @@ public sealed partial class MainWindow : Window
     private async void OnOpened(object? s, EventArgs e)
     {
         StartupTrace.Mark("window.opened");
+        // D7: sofort schreiben – kommt kein Bild (Fenster verdeckt/minimiert), fehlte die Datei sonst ganz
+        StartupTrace.Flush();
+        DispatcherTimer.RunOnce(StartupTrace.Flush, TimeSpan.FromSeconds(5));
         Reveal();
         Dispatcher.UIThread.Post(Reveal, DispatcherPriority.Loaded);
         // erstes gezeichnetes Bild = sichtbarer Start
