@@ -29,25 +29,47 @@ public static class DataLocation
         return n;
     }
 
-    /// <summary>Beim Deinstallieren auf Wunsch: Trendo-Datenordner löschen (Einstellungen, Protokolle, Sicherungen).
-    /// Löscht nie Laufwerks- oder Benutzerordner und nie einen Ordner, in dem eigene Projekte liegen. Gibt zurück, ob gelöscht wurde.</summary>
-    public static bool RemoveUserData(string root, params string?[] keep)
+    /// <summary>Unterordner mit eigenen Projekten: bleiben beim Löschen der Daten immer erhalten.</summary>
+    public static readonly string[] ProjectFolders = ["projects", "projekte"];
+
+    /// <summary>Beim Deinstallieren auf Wunsch: Einstellungen, Protokolle, Sicherungen usw. im Trendo-Datenordner löschen.
+    /// Nie Laufwerks-, Benutzer- oder Systemordner, nie wenn der Projektordner darin liegt, nie Projekt-Unterordner,
+    /// nie über Verknüpfungen (Junction/Symlink) hinaus. Gibt die Zahl gelöschter Einträge zurück, -1 = abgelehnt.</summary>
+    public static int RemoveUserData(string root, params string?[] keep)
     {
-        if (string.IsNullOrWhiteSpace(root) || !Path.IsPathFullyQualified(root)) return false;
+        if (string.IsNullOrWhiteSpace(root) || !Path.IsPathFullyQualified(root)) return -1;
         var full = Norm(root);
         // Doppelter Schutz: nie eine Laufwerkswurzel oder einen flachen Pfad, und nur ein Ordner, der „Trendo…“ heißt
-        if (Path.GetPathRoot(full) is not { } drive || Norm(drive) == full || full.Count(c => c == Path.DirectorySeparatorChar) < 2) return false;
-        if (!Path.GetFileName(full).StartsWith("trendo", StringComparison.OrdinalIgnoreCase)) return false;
-        if (!Directory.Exists(full)) return false;
+        if (Path.GetPathRoot(full) is not { } drive || Norm(drive) == full || full.Count(c => c == Path.DirectorySeparatorChar) < 2) return -1;
+        if (!Path.GetFileName(full).StartsWith("trendo", StringComparison.OrdinalIgnoreCase)) return -1;
+        var dir = new DirectoryInfo(full);
+        if (!dir.Exists || dir.Attributes.HasFlag(FileAttributes.ReparsePoint) || dir.LinkTarget is not null) return -1;
         var forbidden = new[] { Environment.SpecialFolder.UserProfile, Environment.SpecialFolder.ApplicationData, Environment.SpecialFolder.LocalApplicationData,
             Environment.SpecialFolder.MyDocuments, Environment.SpecialFolder.Desktop, Environment.SpecialFolder.Windows, Environment.SpecialFolder.ProgramFiles }
             .Select(Environment.GetFolderPath).Where(p => p.Length > 0 && Path.IsPathFullyQualified(p)).Select(Norm);
-        if (forbidden.Any(f => string.Equals(f, full, StringComparison.OrdinalIgnoreCase))) return false;
+        if (forbidden.Any(f => string.Equals(f, full, StringComparison.OrdinalIgnoreCase))) return -1;
         foreach (var k in keep.Where(k => !string.IsNullOrWhiteSpace(k) && Path.IsPathFullyQualified(k!)).Select(k => Norm(k!)))
-            if (k.StartsWith(full + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) || string.Equals(k, full, StringComparison.OrdinalIgnoreCase)) return false;
-        foreach (var f in Directory.EnumerateFiles(full, "*", SearchOption.AllDirectories)) File.SetAttributes(f, FileAttributes.Normal);
-        Directory.Delete(full, true);
-        return true;
+            if (k.StartsWith(full + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) || string.Equals(k, full, StringComparison.OrdinalIgnoreCase)) return -1;
+        var n = 0;
+        foreach (var e in dir.EnumerateFileSystemInfos())
+        {
+            if (e is DirectoryInfo && ProjectFolders.Any(p => string.Equals(p, e.Name, StringComparison.OrdinalIgnoreCase))) continue; // Projekte bleiben
+            if (e.Attributes.HasFlag(FileAttributes.ReparsePoint)) { e.Delete(); n++; continue; } // nur die Verknüpfung, nie ihr Ziel
+            if (e is DirectoryInfo d) { ClearReadOnly(d); d.Delete(true); } else { ClearReadOnly(e); e.Delete(); }
+            n++;
+        }
+        if (!dir.EnumerateFileSystemInfos().Any()) dir.Delete();
+        return n;
+    }
+
+    /// <summary>Nur „schreibgeschützt“ entfernen, nur innerhalb des Ordners, keine Verknüpfungen verfolgen.</summary>
+    static void ClearReadOnly(FileSystemInfo e)
+    {
+        if (e.Attributes.HasFlag(FileAttributes.ReadOnly)) e.Attributes &= ~FileAttributes.ReadOnly;
+        if (e is not DirectoryInfo d) return;
+        var opt = new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint, IgnoreInaccessible = false };
+        foreach (var f in d.EnumerateFileSystemInfos("*", opt))
+            if (f.Attributes.HasFlag(FileAttributes.ReadOnly)) f.Attributes &= ~FileAttributes.ReadOnly;
     }
 
     /// <summary>Voller Pfad ohne abschließendes Trennzeichen – außer bei der Laufwerkswurzel („C:\“ bleibt „C:\“, nie „C:“).</summary>

@@ -20,6 +20,8 @@ public class UninstallPromptTests
         Assert.Contains(@"C:\Daten\TrendoOS", q);
         Assert.Contains("Projekte und Dokumente bleiben", q);
         Assert.Contains("behalten (empfohlen)", q);
-        Assert.True(UninstallPrompt.TimeoutMs < 30_000, "Velopack beendet den Hook nach 30 s");
+        Assert.Contains("projects, projekte", q);
+        // Frage (höchstens TimeoutMs ab Hook-Beginn) + Prüfung der stillen Deinstallation (2 s) bleiben unter den 30 s von Velopack
+        Assert.True(UninstallPrompt.TimeoutMs + 2_000 + 3_000 < 30_000, "Velopack beendet den Hook nach 30 s");
     }
 }

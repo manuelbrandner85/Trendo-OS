@@ -41,26 +41,55 @@ public class T0107_Leistungsprofil
 
 public class Deinstallation_Daten
 {
-    [Fact(DisplayName = "Deinstallieren: Daten löschen nur im Trendo-Ordner, nie Benutzer-/Laufwerksordner, nie wenn Projekte darin liegen")]
+    static string Tmp(string prefix) { var d = Path.Combine(Path.GetTempPath(), prefix + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(d); return d; }
+
+    [Fact(DisplayName = "Deinstallieren: Daten löschen nur im Trendo-Ordner, nie Benutzer-/Laufwerksordner, nie wenn der Projektordner darin liegt")]
     public void RemoveUserData()
     {
-        var root = Path.Combine(Path.GetTempPath(), "trendo-del-" + Guid.NewGuid().ToString("N"));
+        var root = Tmp("trendo-del-");
         Directory.CreateDirectory(Path.Combine(root, "audit")); File.WriteAllText(Path.Combine(root, "audit", "audit.jsonl"), "x");
         var ro = Path.Combine(root, "nurlesen.txt"); File.WriteAllText(ro, "x"); File.SetAttributes(ro, FileAttributes.ReadOnly);
-        // Projekte im Datenordner: nichts löschen
-        Assert.False(DataLocation.RemoveUserData(root, Path.Combine(root, "Projekte")));
-        Assert.True(Directory.Exists(root));
-        // geschützte Ordner
-        Assert.False(DataLocation.RemoveUserData(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)));
-        Assert.False(DataLocation.RemoveUserData(Path.GetPathRoot(root)!));
-        Assert.False(DataLocation.RemoveUserData(Path.Combine(root, "gibt-es-nicht")));
-        Assert.False(DataLocation.RemoveUserData("C:"));          // laufwerksrelativ
-        Assert.False(DataLocation.RemoveUserData("TrendoOS"));    // relativ
-        var fremd = Path.Combine(Path.GetTempPath(), "fremd-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(fremd);
-        Assert.False(DataLocation.RemoveUserData(fremd));         // heißt nicht „Trendo…“
-        Assert.True(Directory.Exists(fremd)); Directory.Delete(fremd);
-        // normaler Fall, auch mit schreibgeschützter Datei
-        Assert.True(DataLocation.RemoveUserData(root, Path.Combine(Path.GetTempPath(), "anderswo")));
+        Assert.Equal(-1, DataLocation.RemoveUserData(root, Path.Combine(root, "Projekte")));   // Projektordner liegt darin
+        Assert.True(File.Exists(ro));
+        Assert.Equal(-1, DataLocation.RemoveUserData(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)));
+        Assert.Equal(-1, DataLocation.RemoveUserData(Path.GetPathRoot(root)!));
+        Assert.Equal(-1, DataLocation.RemoveUserData(Path.Combine(root, "gibt-es-nicht")));
+        Assert.Equal(-1, DataLocation.RemoveUserData("C:"));           // laufwerksrelativ
+        Assert.Equal(-1, DataLocation.RemoveUserData("TrendoOS"));     // relativ
+        var fremd = Tmp("fremd-");
+        Assert.Equal(-1, DataLocation.RemoveUserData(fremd));          // heißt nicht „Trendo…“
+        Directory.Delete(fremd);
+        Assert.Equal(2, DataLocation.RemoveUserData(root, Path.Combine(Path.GetTempPath(), "anderswo")));
         Assert.False(Directory.Exists(root));
+    }
+
+    [Fact(DisplayName = "Deinstallieren: Projekt-Unterordner bleiben, Verknüpfungen werden nie verfolgt (fremde Dateien unverändert)")]
+    public void Projekte_und_Verknuepfungen()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var root = Tmp("trendo-del-");
+        Directory.CreateDirectory(Path.Combine(root, "projects", "p1")); File.WriteAllText(Path.Combine(root, "projects", "p1", "brief.docx"), "x");
+        Directory.CreateDirectory(Path.Combine(root, "projekte")); File.WriteAllText(Path.Combine(root, "projekte", "scan.ply"), "x");
+        File.WriteAllText(Path.Combine(root, "settings.json"), "{}");
+        var fremd = Tmp("fremd-"); var fremdFile = Path.Combine(fremd, "wichtig.txt"); File.WriteAllText(fremdFile, "x"); File.SetAttributes(fremdFile, FileAttributes.ReadOnly);
+        var link = Path.Combine(root, "export");
+        var mk = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /J \"{link}\" \"{fremd}\"") { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true })!;
+        mk.WaitForExit();
+        Assert.True(Directory.Exists(link), "Junction konnte nicht angelegt werden");
+        try
+        {
+            var n = DataLocation.RemoveUserData(root);
+            Assert.Equal(2, n); // settings.json und die Verknüpfung
+            Assert.True(File.Exists(Path.Combine(root, "projects", "p1", "brief.docx")));
+            Assert.True(File.Exists(Path.Combine(root, "projekte", "scan.ply")));
+            Assert.False(Directory.Exists(link));
+            Assert.True(File.Exists(fremdFile));
+            Assert.True(File.GetAttributes(fremdFile).HasFlag(FileAttributes.ReadOnly)); // Ziel der Verknüpfung unberührt
+        }
+        finally
+        {
+            File.SetAttributes(fremdFile, FileAttributes.Normal); Directory.Delete(fremd, true);
+            if (Directory.Exists(root)) Directory.Delete(root, true);
+        }
     }
 }
