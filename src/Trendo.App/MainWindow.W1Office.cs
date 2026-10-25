@@ -13,6 +13,7 @@ public partial class MainWindow
     private Control OfficeView()
     {
         var sp = new StackPanel { Spacing = 5 };
+        if (_w45Msg.Length > 0) sp.Children.Add(new Border { Name = "w45-msg", Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6), Child = P(_w45Msg, Text) });
         var msg = P(""); msg.Name = "office-msg";
         var row = new WrapPanel();
         foreach (var (file, label) in new[] { ("DIN5008-Privatbrief-FormB.docx", "Neuer Privatbrief (Vorlage)"), ("DIN5008-Geschaeftsbrief-FormB.docx", "Neuer Geschäftsbrief (Vorlage)") })
