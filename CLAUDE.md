@@ -23,6 +23,7 @@ Ablauf pro Auftrag: Auftrag in `tasks/T-<nr>-<kurz>.md` (Vorlage `tasks/VORLAGE.
 
 ## Entscheidungsregister
 - Priorität: reale Codebasis (Iststand) -> kanonische `docs/spec/` und `requirements.yaml` -> neueste ausdrückliche Nutzerfreigaben in `docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md` -> `handoff/`. Widersprüche nicht eigenmächtig in `decisions.yaml` überschreiben, sondern Decision-Delta vorlegen. `decisions.yaml` und `requirements.yaml` ändert nur Manuel oder ein ausdrücklich freigegebener Auftrag.
+- GRUNDSATZ-01 (Manuel, bestätigt 2026-10-25, `requirements.yaml` → `principles`): Jedes Fachprogramm und Tool ist installierbar – mitinstalliert, beim Setup wählbar oder in Trendo per Klick; nur nach Zustimmung, aus offiziellen Quellen, mit Audit-Log; Abnahmekriterien AK-1…AK-8.
 - Bestätigt: Verbesserungen 42–85 und 87–96. Verbesserung 86 NEIN. Vorher 23,25,34 NEIN, 35 OFFEN, Language Studio 2.0 NEIN. Verbesserung 97 OFFEN. SPEC-07 abgelehnt – nicht bauen. Logo: Entwurf A „Obsidian-Kachel“ (von Manuel am 22.10.2026 gewählt), Quelle `src/Trendo.App/Assets/logo/trendo-logo-a.svg`.
 - 120-Stunden-Forensikregel: Forensik-Kopien und Derivate höchstens 120 h, 24 h vorher Warnung, keine dauerhaften Offline-USB-Kopien, kein Browser-/Tor-READ-ONLY-Bypass, keine forensischen Beweiskopien in Cloud-Diensten. Niemals umdeuten (im Code: `ForensicsLab.MaxLife`).
 - `APPROVED_SPEC` bedeutet nicht `IMPLEMENTED`, `TESTED`, `ACCEPTED` oder `RELEASED`.
