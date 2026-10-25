@@ -56,7 +56,8 @@ Skript `tools/messung/deinstallation-datenfrage.ps1`. Die Daten waren vorher ges
   - Zweimal „Nein“: Beide Fragen erschienen (nach 5,2 s und 6,2 s). Daten und Zusatzprogramme (583 Dateien) blieben unverändert.
   - Ohne Antwort: Nach 22,4 s „Keine Antwort: Daten und Zusatzprogramme bleiben“, die zweite Frage kam nicht.
   - „Ja“ für die Zusatzprogramme ist nur mit Temp-Ordnern getestet, damit Manuels 424 MB nicht neu geladen werden müssen.
-- **Installierte Version:** Das installierte 0.9.8 enthält diese zweite Frage noch nicht. Sie kommt mit dem nächsten Setup.
+- **Tests (Release):** Api 15/15 · Core 672 bestanden, 1 übersprungen · App 329 bestanden, 2 übersprungen, 27 min 27 s · Paket-Tests OK.
+- **Installierte Version:** ab Setup 0.9.9 enthalten.
 
 ## Nicht geprüft / offen
 - Deinstallation über „Einstellungen → Apps“ von Windows: Dort läuft derselbe Befehl `Update.exe uninstall`, geprüft ist er direkt.
