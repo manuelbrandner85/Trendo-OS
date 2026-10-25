@@ -69,7 +69,24 @@
 | X-02 | Einrichten & Reparieren | Richtet Trendo automatisch ein und repariert Fehler. |
 | X-09 | Leistung anzeigen | Zeigt, was Speicher und Prozessor gerade tun. |
 
-## Entscheidung nötig
+## Entscheidung Manuel (2026-10-25): „ja alle“
+Vorher neu gegen den Stand geprüft. Sechs Zeilen der Tabelle oben waren überholt, weil die Funktion inzwischen nachgebaut ist: CORE-06 (T-0204), CORE-07 (T-0206), SPEC-15 und CORE-09 (T-0215), SPEC-09 (T-0216), X-08 (T-0217). Diese Namen bleiben.
+
+Umgesetzt in `src/Trendo.App/StudioCatalog.cs` (nur Untertitel, kein Name geändert):
+
+| ID | Untertitel vorher | Untertitel jetzt |
+|---|---|---|
+| SPEC-07 | Texte übersetzen und Programme eindeutschen. | Texte mit der lokalen KI übersetzen. |
+| SYS-06 | Dateien im Netzwerk teilen und von unterwegs zugreifen. | Ordner im Heimnetz teilen – nur mit deiner Freigabe. |
+| CORE-04 | Trendo auf PC, Raspberry Pi und Android gemeinsam nutzen. | PC mit Raspberry Pi und Handy koppeln (Gegenstellen in Arbeit). |
+| SYS-01 | Erkennt das Gerät und startet Trendo passend. | Erkennt das Gerät und startet Trendo passend (PC). |
+| CORE-05 | 3D-Modelle bauen und ansehen – mit Blender. | 3D-Modelle bauen und ansehen – Blender optional. |
+| CORE-03 | Mehrere KI-Helfer arbeiten gemeinsam an einer Aufgabe. | Mehrere KI-Helfer arbeiten gemeinsam an einer Aufgabe (lokale KI nötig). |
+| CORE-06 | Eigene Spiele bauen – mit der Unreal Engine. | Eigene Spiele bauen – auch mit der Unreal Engine. |
+
+SPEC-07 bleibt abgelehnt. Der neue Untertitel beschreibt nur die schon vorhandene Grundfunktion, und der Prompt-Weg für SPEC-07 bleibt gesperrt.
+
+## Entscheidung nötig (erledigt, siehe oben)
 Für jede Zeile der ersten Tabelle: **A** (Text ändern – Claude setzt es danach in `StudioCatalog.cs` um und passt die Tests an) oder **B** (Funktion ergänzen – eigener Auftrag). SPEC-07 nur A, weil der Ausbau abgelehnt ist.
 
 ## Nicht geprüft

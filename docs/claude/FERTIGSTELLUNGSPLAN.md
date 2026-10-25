@@ -87,7 +87,7 @@ SBOM, Offline-Handbuch, Release-Kanal (Offene Entscheidung 10), förmliche Abnah
 
 ### T – Offene Aufträge in `tasks/`
 ✅ 2026-10-24 auf `main` mit Bericht: T-0202 Jeder Knopf wirkt (Allseiten-Audit optional, Restliste stummer Knöpfe offen) · T-0204 Spiele-Studio · T-0205 Video/Foto · T-0206 Webseite · T-0207 Fach-Studios · T-0208 Business · T-0209 Kleine Helfer · T-0210 Einrichtung · T-0211 PDF/Druck/Downloads · T-0212 Schrift & Farben · T-0214 Sicherung wiederherstellen · T-0218 Referenz-Design.
-Offen: **T-0213** Studionamen – Vorschlagsliste liegt vor (14 Studios mit Handlungsbedarf), Entscheidung **Manuel**. PRs früherer Agenten zu denselben Themen (#263, #264, #270) sind damit überholt → schließen (O).
+✅ T-0213 (2026-10-25): 7 Untertitel angepasst, Entscheidung Manuel „ja alle“; 6 Zeilen waren durch T-0204…T-0217 überholt. PRs früherer Agenten zu denselben Themen (#263, #264, #270) sind damit überholt → schließen (O).
 
 ### O – Offene Pull Requests der früheren Agenten (37)
 ✅ 2026-10-25 geprüft (`docs/claude/PR_PRUEFUNG_2026-10-25.md`). Übernommen: #262, #268, #272, #273, #277 (mit #244–#258), #279 und #280, mit QA- und Security-Review. Danach übernommen: #271; GRUNDSATZ-01 aus #275 eingetragen. Teile von #278 übernommen (SPEC-10-Schwellen, PDF-Timeout, Begleiter-Port). Offen: #248 zurückgestellt; der Rest wird auf GitHub geschlossen (Manuel).
@@ -111,7 +111,6 @@ Trendo OS wird nur noch mit Claude Code gebaut. Deshalb prüft Claude-QA jeden o
 | Code-Signatur (Kauf) | C7 |
 | Hardware: Raspberry Pi 4 + SD, externe SSD, Android-Gerät, Mehrmonitor | B, A-Edition, I, C3 |
 | Offene Entscheidungen 1–14 (`docs/spec/OFFENE_ENTSCHEIDUNGEN.md`), u. a. Linux-Basis, Vorinstallation, Lizenzen, Release-Ziel | – |
-| Namen der 14 Studios aus T-0213 | `tasks/T-0213-namen-versprechen.bericht.md` |
 
 ## Empfohlene nächste Aufträge
 1. A1 Rechte-Patch (Manuel) und T-0213 Namensentscheidung (Manuel).
