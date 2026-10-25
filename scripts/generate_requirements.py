@@ -140,6 +140,11 @@ principles = [{
         "source": "Manuel im Chat (Auswahl „Mitliefern + nachbauen“, Reihenfolge „Office zuerst“, Programmliste T-0222 „alles gut“)",
         "wording": "Studio-Programme werden nicht heruntergeladen, sondern mit Trendo OS mitinstalliert (Vollpaket, ohne Internet, ohne Admin). Parallel baut Trendo eigene Programme nach, zuerst Office (Text, Tabelle, PDF); ein eigenes Programm ersetzt das Original im Studio, sobald es reicht. Nur Programme, deren Lizenz die Weitergabe verbietet (Unreal, Chrome, Claude Code, Qwen2.5 3B), bleiben verlinkt; Meshroom und Tor vorerst ebenfalls.",
         "task": "tasks/T-0222-programme-mitliefern.md",
+    }, {
+        "date": "2026-10-25",
+        "source": "Manuel im Chat („jedes Programm, jedes Studio nachgebaut mit allen Funktionen außer Blender und Unreal Engine“, „KI automatisch installiert, API: auf die Seite leiten und in Trendo OS eintragen“, „alles können, das Maximum, aber leicht verständlich“)",
+        "wording": "Jedes Studio und jedes Programm wird mit allen Funktionen des Vorbilds nachgebaut (außer Blender und Unreal Engine) – das Maximum, aber leicht verständlich: das Häufigste vorne mit klaren deutschen Wörtern, alles Weitere eine Ebene tiefer, nichts weggelassen. Lokale kostenlose KI-Modelle werden nach dem Setup automatisch geladen (passend zum Arbeitsspeicher); KI-Dienste mit API-Schlüssel führen direkt auf die Anbieterseite, der Schlüssel wird in Trendo OS eingetragen.",
+        "task": "docs/claude/NACHBAU_FAHRPLAN.md",
     }],
 }]
 doc = {"schema_version": 1, "source": "Trendo OS Production Package v2.1 (2026-10-21)",
