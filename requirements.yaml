@@ -523,240 +523,240 @@ business_requirements:
   title: Business Discovery Director
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-001.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-002
   module: STUDIO-ONLINE-BUSINESS-01
   mode: EXISTING
   title: Proven Business Model Library
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-001.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-003
   module: STUDIO-ONLINE-BUSINESS-01
   mode: EXISTING
   title: Competitor & Market Intelligence
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-003.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-004
   module: STUDIO-ONLINE-BUSINESS-01
   mode: EXISTING
   title: Customer Problem & Niche Discovery
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-003.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-005
   module: STUDIO-ONLINE-BUSINESS-01
   mode: EXISTING
   title: Realistic Opportunity & Profitability Score
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-001.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-006
   module: STUDIO-ONLINE-BUSINESS-01
   mode: INNOVATION
   title: Business Innovation Engine
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-003.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-007
   module: STUDIO-ONLINE-BUSINESS-01
   mode: INNOVATION
   title: Cross-Industry Business Fusion
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-003.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-008
   module: STUDIO-ONLINE-BUSINESS-01
   mode: INNOVATION
   title: Originality & Similarity Research
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-003.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-009
   module: STUDIO-ONLINE-BUSINESS-01
   mode: INNOVATION
   title: Market Validation & Prototype Laboratory
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-003.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-010
   module: STUDIO-ONLINE-BUSINESS-01
   mode: INNOVATION
   title: Innovation Go / No-Go Decision Brain
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-001.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-011
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Business Blueprint Architect
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-001.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-012
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Revenue, Pricing & Subscription Designer
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-001.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-013
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Brand Identity & Premium UX Director
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-013.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-014
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Business Requirements & Legal Feasibility Planner
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-001.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-015
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Customer Journey & Process Architect
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-013.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-016
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Claude Code Full-Stack Business Builder
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-016.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-017
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Accounts, Membership & Multi-Tenant Engine
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-019.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-018
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Payments, Billing & Subscription Integration
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-019.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-019
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Business Admin, CRM & Operations Center
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-019.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-020
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Product Delivery, Supplier & White-Label Engine
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-019.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-021
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: SEO, Content & Visibility Director
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-013.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-022
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Customer Acquisition & Sales Funnel Studio
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-013.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-023
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Customer Support & Service Center
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-019.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-024
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Business Analytics & Conversion Intelligence
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-019.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-025
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Finance, Cost & Profitability Dashboard
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-019.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-026
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Business Compliance, Privacy & Rights Gate
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-016.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-027
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Real Security, Payments & Business Process QA
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-016.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-028
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Hosting, Domain & Deployment Director
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-016.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-029
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Business Monitoring, Backup & Evolution Engine
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-016.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 - id: BUS-030
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
   title: Ready-to-Business Production & Handover Gate
   approval_status: APPROVED_SPEC
   implementation_status: IMPLEMENTED
-  test_status: TESTED_BOX
-  evidence: reports/w45/BUS-016.txt
+  test_status: PC_VERIFIED
+  evidence: reports/c2-business/UEBERSICHT.md
 letter_requirements:
 - id: LETTER-001
   module: STUDIO-LETTER-01

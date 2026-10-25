@@ -14,7 +14,7 @@ Trendo OS ist fertig, wenn alle Punkte erfüllt sind:
 | Bereich | Umfang | Fertig (IMPLEMENTED + PC/TESTED) | Offen |
 |---|---:|---:|---|
 | Basis-Module (`modules`) | 54 | 46 | 7 IN_PROGRESS (CORE-01, CORE-04, SYS-01, SYS-12, X-08, X-09, STUDIO-LETTER-01); SPEC-07 abgelehnt |
-| Online-Business-Studio (`BUS-001…030`) | 30 | 0 | alle nur `TESTED_BOX` (Linux-Box), PC-Nachweis fehlt |
+| Online-Business-Studio (`BUS-001…030`) | 30 | 30 | seit 2026-10-25 `PC_VERIFIED` (C2, `reports/c2-business/`) |
 | Brief-Studio (`LTR-…`) | 25 | 25 | – (Modul selbst noch IN_PROGRESS) |
 | Verbesserungen 13–41 | 25 genehmigte (≈ 340 Funktionen) | 0 abgenommen | im Register (`improvements`), 24 IN_PROGRESS (23 mit Teilfunktionen laut GAP_ANALYSIS §2, dazu Design 41) |
 | Verbesserungen 42–96 | 54 genehmigte (≈ 2 400 Funktionen) | 0 abgenommen | 42/43: gemeinsamer Kern auf `main`, Fachadapter in offenen PRs; Rest nur APPROVED_SPEC; 95/96 ohne Funktionsliste; 97 offen |
@@ -51,7 +51,7 @@ Trendo OS ist fertig, wenn alle Punkte erfüllt sind:
 | # | Auftrag | Wer/Freigabe |
 |---|---|---|
 | C1 | 7 IN_PROGRESS-Module abschließen; die PC-Seite fehlt für keins, offen sind vor allem Gegenstellen (Pi/Android) → mit B/A/I verzahnt | Claude |
-| C2 | BUS-001…030 am Windows-PC prüfen, Rohlog + SHA-256 in `reports/` | Claude |
+| C2 | ✅ erledigt 2026-10-25: T-0221 – BUS-001…030 am Windows-PC (Release) geprüft, alle 30 bestanden, `test_status: PC_VERIFIED`; Rohlog + SHA-256 in `reports/c2-business/`. 9 Nummern nur mit Core-Tests ohne Oberflächen-Test (002, 006, 007, 008, 012, 014, 024, 025, 027); externe Dienste (Zahlung, Domain, Veröffentlichen) nicht angesprochen | – |
 | C3 | QA-017 Narrator/Kontrast/Mehrmonitor, QA-019 echter Offline-Lauf | Claude + **Manuel am PC** |
 | C4 | ✅ erledigt 2026-10-25: T-0008 am PC – Deinstallieren, Installieren 0.9.6, Update 0.9.7, Rückfall, Deinstallieren, Ausgangszustand: 18/18 bestanden, Daten byte-gleich (`reports/c4-setup/`). Offen: Update über GitHub-Release, frisches Windows, Frage „Daten beim Deinstallieren löschen?“ | – |
 | C5 | ✅ erledigt 2026-10-25: T-0005 Not-Stopp (Knopf, Pause-Taste) und Änderungsvorschau im Freigabe-Gate (IMP-19), Bericht `tasks/T-0005-notstopp.bericht.md`; offen: Fern-Not-Stopp (T-0012) | – |

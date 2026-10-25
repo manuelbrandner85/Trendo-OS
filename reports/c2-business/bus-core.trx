@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="bc418019-aa1a-4bfe-b2ac-d5323403510f" name="&lt;user&gt;@&lt;pc&gt; 2026-10-25 17:02:34" runUser="&lt;pc&gt;\&lt;user&gt;" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-10-25T17:02:34.4596258+01:00" queuing="2026-10-25T17:02:34.4596261+01:00" start="2026-10-25T17:02:30.5478410+01:00" finish="2026-10-25T17:02:34.6189670+01:00" />
+  <TestSettings name="default" id="6864aef9-b429-40b0-bc29-f3b6d1062b5b">
+    <Deployment runDeploymentRoot="&lt;user&gt;_&lt;pc&gt;_2026-10-25_17_02_34" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="2f47b383-ae27-4e10-b76b-52c19b6d293c" testId="b29b3403-0fee-20a2-69bd-94190ed870c3" testName="BUS-002/011/014: 10 Modelle, Bauplan enthält Zahlen, Entscheidung und rechtliche Schritte; Ideen speichern" computerName="&lt;pc&gt;" duration="00:00:00.2011858" startTime="2026-10-25T17:02:34.2599475+01:00" endTime="2026-10-25T17:02:34.4396079+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2f47b383-ae27-4e10-b76b-52c19b6d293c" />
+    <UnitTestResult executionId="69781d7d-7d13-499e-bb26-cc4a3e95ec6d" testId="950b1a90-ed18-c455-c112-3eac778f1f1d" testName="BUS-028/029: Paket mit Anleitung und Pages-Ablauf, Domain geprüft; Sicherung behält 10, Wiederherstellen" computerName="&lt;pc&gt;" duration="00:00:00.0868340" startTime="2026-10-25T17:02:34.4647347+01:00" endTime="2026-10-25T17:02:34.5511459+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="69781d7d-7d13-499e-bb26-cc4a3e95ec6d" />
+    <UnitTestResult executionId="65d302e8-0643-426c-90d1-d4eecc1e9cf3" testId="e71a147e-b3f2-ee21-cdcc-defacf3392fa" testName="BUS-004: Nischen nach Schmerz × Häufigkeit, gleiche Nennungen zusammengefasst" computerName="&lt;pc&gt;" duration="00:00:00.0052425" startTime="2026-10-25T17:02:34.4489221+01:00" endTime="2026-10-25T17:02:34.4539863+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="65d302e8-0643-426c-90d1-d4eecc1e9cf3" />
+    <UnitTestResult executionId="229e260c-1cd9-4d9f-8ca1-0bb04b4d25d5" testId="b7e30e51-0c40-c3c0-16d5-5e0ccf6019a8" testName="BUS-010: Gute Idee → Starten; Verlust je Verkauf → Nicht starten; vage Idee → Überarbeiten" computerName="&lt;pc&gt;" duration="00:00:00.0010861" startTime="2026-10-25T17:02:34.4399521+01:00" endTime="2026-10-25T17:02:34.4407627+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="229e260c-1cd9-4d9f-8ca1-0bb04b4d25d5" />
+    <UnitTestResult executionId="9946897f-c911-4e19-9230-7de864235ddf" testId="ae074d11-a24b-bf8b-5617-10058a7b5e16" testName="BUS-006/007/008/009: Varianten, Branchen-Mix, Eigenständigkeit und Testauswertung" computerName="&lt;pc&gt;" duration="00:00:00.1915481" startTime="2026-10-25T17:02:34.2614875+01:00" endTime="2026-10-25T17:02:34.4299872+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9946897f-c911-4e19-9230-7de864235ddf" />
+    <UnitTestResult executionId="93f2dfc0-5472-4ee7-bc12-d480120e4d93" testId="8dc64913-4a41-613a-2626-17dd4799b2fd" testName="BUS-017/018: Monatsumsatz, Rechte, Teams getrennt; IBAN-Prüfung, GiroCode nach EPC, Gebühren" computerName="&lt;pc&gt;" duration="00:00:00.0098998" startTime="2026-10-25T17:02:34.3926546+01:00" endTime="2026-10-25T17:02:34.4021411+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="93f2dfc0-5472-4ee7-bc12-d480120e4d93" />
+    <UnitTestResult executionId="730d51d5-6b30-4281-a713-9a41a378e166" testId="3e2d59ac-6ba2-6f19-f286-b6b6068fad27" testName="BUS-019/020/023: Fällige Kontakte, Angebotswert, Nachbestellen, Anfragen-Fristen und FAQ" computerName="&lt;pc&gt;" duration="00:00:00.1321356" startTime="2026-10-25T17:02:34.2615355+01:00" endTime="2026-10-25T17:02:34.3808350+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="730d51d5-6b30-4281-a713-9a41a378e166" />
+    <UnitTestResult executionId="9f876499-f4dc-4f85-94f1-56f5b0d8fe78" testId="e5e89d0b-daf8-486d-ac82-79958e775b2d" testName="BUS-016/026/027: Webseite mit 5 Seiten, Pflichtangaben erfüllt, Qualität fehlerfrei; Mängel werden erkannt" computerName="&lt;pc&gt;" duration="00:00:00.0448434" startTime="2026-10-25T17:02:34.4196771+01:00" endTime="2026-10-25T17:02:34.4642196+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9f876499-f4dc-4f85-94f1-56f5b0d8fe78" />
+    <UnitTestResult executionId="eac5ffa6-f19c-4c33-ac90-d66378564c34" testId="eb0b8e9c-0e62-9e88-c04e-6ac10c4229c8" testName="BUS-013: Namensprüfung, Farbpalette (Gegenfarbe stimmt), Kontrast nach WCAG, CSS" computerName="&lt;pc&gt;" duration="00:00:00.1321613" startTime="2026-10-25T17:02:34.2615614+01:00" endTime="2026-10-25T17:02:34.3750160+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="eac5ffa6-f19c-4c33-ac90-d66378564c34" />
+    <UnitTestResult executionId="5e81c8b6-041d-4c9c-8b94-cb7e0436e2a0" testId="4980bb99-82bf-b160-3437-115c5c0e2db6" testName="BUS-015/021/022: Kundenweg mit Lücken und Ablaufdiagramm, Suchmaschinen-Prüfung, Trichter mit Engpass" computerName="&lt;pc&gt;" duration="00:00:00.0146181" startTime="2026-10-25T17:02:34.3922239+01:00" endTime="2026-10-25T17:02:34.3923786+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5e81c8b6-041d-4c9c-8b94-cb7e0436e2a0" />
+    <UnitTestResult executionId="203d3e83-cdad-45d9-8af7-8ce2afdbbfc7" testId="56bc11eb-aace-1838-1f14-451241aea456" testName="BUS-001: Idee erfassen – alle Angaben bleiben nach Speichern erhalten, Ändern ersetzt, Löschen entfernt" computerName="&lt;pc&gt;" duration="00:00:00.0704256" startTime="2026-10-25T17:02:34.4437450+01:00" endTime="2026-10-25T17:02:34.5140836+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="203d3e83-cdad-45d9-8af7-8ce2afdbbfc7" />
+    <UnitTestResult executionId="aa59ee2d-1601-42f2-8dca-62839bbb2454" testId="d1a1e9be-ea4a-29ca-20b4-df2efe46257f" testName="BUS-030: Startklar erst, wenn Bewertung, Markttest, Webseite, Recht, Qualität, Paket und Sicherung passen" computerName="&lt;pc&gt;" duration="00:00:00.1807750" startTime="2026-10-25T17:02:34.2615835+01:00" endTime="2026-10-25T17:02:34.4192520+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="aa59ee2d-1601-42f2-8dca-62839bbb2454" />
+    <UnitTestResult executionId="ece76528-beb9-4035-9b09-a0b73b44bfaf" testId="afa371e5-6cf0-c083-d8f7-00ed8fa550df" testName="BUS-024/025: Zahlen-CSV, Trend 7 gegen 7 Tage, Plan gegen echte Buchungen" computerName="&lt;pc&gt;" duration="00:00:00.0160528" startTime="2026-10-25T17:02:34.3923127+01:00" endTime="2026-10-25T17:02:34.3925289+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ece76528-beb9-4035-9b09-a0b73b44bfaf" />
+    <UnitTestResult executionId="222f1423-35e6-4e06-8d60-f1b026f16521" testId="e7d6fca2-f946-70c5-1269-2667cd9fc38e" testName="BUS-005/012: Marge, Gewinn, Gewinnschwelle und Stundenlohn richtig gerechnet" computerName="&lt;pc&gt;" duration="00:00:00.0026660" startTime="2026-10-25T17:02:34.4409701+01:00" endTime="2026-10-25T17:02:34.4435121+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="222f1423-35e6-4e06-8d60-f1b026f16521" />
+    <UnitTestResult executionId="97bc5356-3d41-4369-84b9-b10f846da129" testId="55748d8f-bc51-91b4-cbce-15ffb213ca6e" testName="BUS-003: Preisspanne, Median, eigene Position, gemeinsame Schwächen als Marktlücke" computerName="&lt;pc&gt;" duration="00:00:00.0185418" startTime="2026-10-25T17:02:34.4380123+01:00" endTime="2026-10-25T17:02:34.4486451+01:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="97bc5356-3d41-4369-84b9-b10f846da129" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="BUS-001: Idee erfassen – alle Angaben bleiben nach Speichern erhalten, Ändern ersetzt, Löschen entfernt" storage="c:\users\&lt;user&gt;\desktop\trend os-worktrees\integration\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="56bc11eb-aace-1838-1f14-451241aea456">
+      <Execution id="203d3e83-cdad-45d9-8af7-8ce2afdbbfc7" />
+      <TestMethod codeBase="C:\Users\&lt;user&gt;\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W5_Business" name="Idee_erfassen" />
+    </UnitTest>
+    <UnitTest name="BUS-019/020/023: Fällige Kontakte, Angebotswert, Nachbestellen, Anfragen-Fristen und FAQ" storage="c:\users\&lt;user&gt;\desktop\trend os-worktrees\integration\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="3e2d59ac-6ba2-6f19-f286-b6b6068fad27">
+      <Execution id="730d51d5-6b30-4281-a713-9a41a378e166" />
+      <TestMethod codeBase="C:\Users\&lt;user&gt;\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W5_Bus_Ops" name="Crm_Stock_Support" />
+    </UnitTest>
+    <UnitTest name="BUS-006/007/008/009: Varianten, Branchen-Mix, Eigenständigkeit und Testauswertung" storage="c:\users\&lt;user&gt;\desktop\trend os-worktrees\integration\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="ae074d11-a24b-bf8b-5617-10058a7b5e16">
+      <Execution id="9946897f-c911-4e19-9230-7de864235ddf" />
+      <TestMethod codeBase="C:\Users\&lt;user&gt;\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W5_Bus_Market" name="Rest" />
+    </UnitTest>
+    <UnitTest name="BUS-028/029: Paket mit Anleitung und Pages-Ablauf, Domain geprüft; Sicherung behält 10, Wiederherstellen" storage="c:\users\&lt;user&gt;\desktop\trend os-worktrees\integration\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="950b1a90-ed18-c455-c112-3eac778f1f1d">
+      <Execution id="69781d7d-7d13-499e-bb26-cc4a3e95ec6d" />
+      <TestMethod codeBase="C:\Users\&lt;user&gt;\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W5_Bus_Launch" name="Package_Backup" />
+    </UnitTest>
+    <UnitTest name="BUS-016/026/027: Webseite mit 5 Seiten, Pflichtangaben erfüllt, Qualität fehlerfrei; Mängel werden erkannt" storage="c:\users\&lt;user&gt;\desktop\trend os-worktrees\integration\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="e5e89d0b-daf8-486d-ac82-79958e775b2d">
+      <Execution id="9f876499-f4dc-4f85-94f1-56f5b0d8fe78" />
+      <TestMethod codeBase="C:\Users\&lt;user&gt;\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W5_Bus_Launch" name="Site" />
+    </UnitTest>
+    <UnitTest name="BUS-030: Startklar erst, wenn Bewertung, Markttest, Webseite, Recht, Qualität, Paket und Sicherung passen" storage="c:\users\&lt;user&gt;\desktop\trend os-worktrees\integration\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="d1a1e9be-ea4a-29ca-20b4-df2efe46257f">
+      <Execution id="aa59ee2d-1601-42f2-8dca-62839bbb2454" />
+      <TestMethod codeBase="C:\Users\&lt;user&gt;\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W5_Bus_Launch" name="Handover" />
+    </UnitTest>
+    <UnitTest name="BUS-024/025: Zahlen-CSV, Trend 7 gegen 7 Tage, Plan gegen echte Buchungen" storage="c:\users\&lt;user&gt;\desktop\trend os-worktrees\integration\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="afa371e5-6cf0-c083-d8f7-00ed8fa550df">
+      <Execution id="ece76528-beb9-4035-9b09-a0b73b44bfaf" />
+      <TestMethod codeBase="C:\Users\&lt;user&gt;\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W5_Bus_Ops" name="Analytics" />
+    </UnitTest>
+    <UnitTest name="BUS-017/018: Monatsumsatz, Rechte, Teams getrennt; IBAN-Prüfung, GiroCode nach EPC, Gebühren" storage="c:\users\&lt;user&gt;\desktop\trend os-worktrees\integration\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="8dc64913-4a41-613a-2626-17dd4799b2fd">
+      <Execution id="93f2dfc0-5472-4ee7-bc12-d480120e4d93" />
+      <TestMethod codeBase="C:\Users\&lt;user&gt;\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W5_Bus_Ops" name="Members_Pay" />
+    </UnitTest>
+    <UnitTest name="BUS-002/011/014: 10 Modelle, Bauplan enthält Zahlen, Entscheidung und rechtliche Schritte; Ideen speichern" storage="c:\users\&lt;user&gt;\desktop\trend os-worktrees\integration\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="b29b3403-0fee-20a2-69bd-94190ed870c3">
+      <Execution id="2f47b383-ae27-4e10-b76b-52c19b6d293c" />
+      <TestMethod codeBase="C:\Users\&lt;user&gt;\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W5_Business" name="Blueprint_and_store" />
+    </UnitTest>
+    <UnitTest name="BUS-003: Preisspanne, Median, eigene Position, gemeinsame Schwächen als Marktlücke" storage="c:\users\&lt;user&gt;\desktop\trend os-worktrees\integration\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="55748d8f-bc51-91b4-cbce-15ffb213ca6e">
+      <Execution id="97bc5356-3d41-4369-84b9-b10f846da129" />
+      <TestMethod codeBase="C:\Users\&lt;user&gt;\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W5_Bus_Market" name="Prices" />
+    </UnitTest>
+    <UnitTest name="BUS-005/012: Marge, Gewinn, Gewinnschwelle und Stundenlohn richtig gerechnet" storage="c:\users\&lt;user&gt;\desktop\trend os-worktrees\integration\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="e7d6fca2-f946-70c5-1269-2667cd9fc38e">
+      <Execution id="222f1423-35e6-4e06-8d60-f1b026f16521" />
+      <TestMethod codeBase="C:\Users\&lt;user&gt;\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W5_Business" name="Numbers" />
+    </UnitTest>
+    <UnitTest name="BUS-015/021/022: Kundenweg mit Lücken und Ablaufdiagramm, Suchmaschinen-Prüfung, Trichter mit Engpass" storage="c:\users\&lt;user&gt;\desktop\trend os-worktrees\integration\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="4980bb99-82bf-b160-3437-115c5c0e2db6">
+      <Execution id="5e81c8b6-041d-4c9c-8b94-cb7e0436e2a0" />
+      <TestMethod codeBase="C:\Users\&lt;user&gt;\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W5_Bus_Brand" name="Journey_Seo_Funnel" />
+    </UnitTest>
+    <UnitTest name="BUS-013: Namensprüfung, Farbpalette (Gegenfarbe stimmt), Kontrast nach WCAG, CSS" storage="c:\users\&lt;user&gt;\desktop\trend os-worktrees\integration\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="eb0b8e9c-0e62-9e88-c04e-6ac10c4229c8">
+      <Execution id="eac5ffa6-f19c-4c33-ac90-d66378564c34" />
+      <TestMethod codeBase="C:\Users\&lt;user&gt;\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W5_Bus_Brand" name="Brand" />
+    </UnitTest>
+    <UnitTest name="BUS-004: Nischen nach Schmerz × Häufigkeit, gleiche Nennungen zusammengefasst" storage="c:\users\&lt;user&gt;\desktop\trend os-worktrees\integration\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="e71a147e-b3f2-ee21-cdcc-defacf3392fa">
+      <Execution id="65d302e8-0643-426c-90d1-d4eecc1e9cf3" />
+      <TestMethod codeBase="C:\Users\&lt;user&gt;\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W5_Bus_Market" name="Niches" />
+    </UnitTest>
+    <UnitTest name="BUS-010: Gute Idee → Starten; Verlust je Verkauf → Nicht starten; vage Idee → Überarbeiten" storage="c:\users\&lt;user&gt;\desktop\trend os-worktrees\integration\tests\trendo.core.tests\bin\release\net10.0\trendo.core.tests.dll" id="b7e30e51-0c40-c3c0-16d5-5e0ccf6019a8">
+      <Execution id="229e260c-1cd9-4d9f-8ca1-0bb04b4d25d5" />
+      <TestMethod codeBase="C:\Users\&lt;user&gt;\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="W5_Business" name="Decision" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="b29b3403-0fee-20a2-69bd-94190ed870c3" executionId="2f47b383-ae27-4e10-b76b-52c19b6d293c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="950b1a90-ed18-c455-c112-3eac778f1f1d" executionId="69781d7d-7d13-499e-bb26-cc4a3e95ec6d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e71a147e-b3f2-ee21-cdcc-defacf3392fa" executionId="65d302e8-0643-426c-90d1-d4eecc1e9cf3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b7e30e51-0c40-c3c0-16d5-5e0ccf6019a8" executionId="229e260c-1cd9-4d9f-8ca1-0bb04b4d25d5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ae074d11-a24b-bf8b-5617-10058a7b5e16" executionId="9946897f-c911-4e19-9230-7de864235ddf" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="8dc64913-4a41-613a-2626-17dd4799b2fd" executionId="93f2dfc0-5472-4ee7-bc12-d480120e4d93" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3e2d59ac-6ba2-6f19-f286-b6b6068fad27" executionId="730d51d5-6b30-4281-a713-9a41a378e166" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e5e89d0b-daf8-486d-ac82-79958e775b2d" executionId="9f876499-f4dc-4f85-94f1-56f5b0d8fe78" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="eb0b8e9c-0e62-9e88-c04e-6ac10c4229c8" executionId="eac5ffa6-f19c-4c33-ac90-d66378564c34" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4980bb99-82bf-b160-3437-115c5c0e2db6" executionId="5e81c8b6-041d-4c9c-8b94-cb7e0436e2a0" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="56bc11eb-aace-1838-1f14-451241aea456" executionId="203d3e83-cdad-45d9-8af7-8ce2afdbbfc7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d1a1e9be-ea4a-29ca-20b4-df2efe46257f" executionId="aa59ee2d-1601-42f2-8dca-62839bbb2454" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="afa371e5-6cf0-c083-d8f7-00ed8fa550df" executionId="ece76528-beb9-4035-9b09-a0b73b44bfaf" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e7d6fca2-f946-70c5-1269-2667cd9fc38e" executionId="222f1423-35e6-4e06-8d60-f1b026f16521" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="55748d8f-bc51-91b4-cbce-15ffb213ca6e" executionId="97bc5356-3d41-4369-84b9-b10f846da129" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Ergebnisse nicht in einer Liste" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="Alle geladenen Ergebnisse" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="15" executed="15" passed="15" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.4+50e68bbb8b (64-bit .NET 10.0.13)&#xD;
+[xUnit.net 00:00:02.20]   Discovering: Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:02.35]   Discovered:  Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:02.39]   Starting:    Trendo.Core.Tests&#xD;
+[xUnit.net 00:00:02.74]   Finished:    Trendo.Core.Tests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

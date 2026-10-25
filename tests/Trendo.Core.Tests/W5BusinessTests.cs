@@ -40,4 +40,28 @@ public class W5_Business
         Assert.Single(s.All()); Assert.Equal(25, s.All()[0].Price);
         s.Delete(i.Id); Assert.Empty(s.All());
     }
+
+    [Fact(DisplayName = "BUS-001: Idee erfassen – alle Angaben bleiben nach Speichern erhalten, Ändern ersetzt, Löschen entfernt")]
+    public void Idee_erfassen()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-bus001-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var store = new IdeaStore(root);
+            Assert.Empty(store.All());
+            var idee = new BusinessIdea { Name = "Kaffee-Abo", Problem = "Guter Kaffee ist teuer", Audience = "Büros", Solution = "Bohnen im Monatsabo",
+                ModelId = "abo", Price = 19.9, VariableCost = 8, FixedCostMonth = 120, CustomersMonth = 40, Competitors = 3, Skill = 4, HoursWeek = 12, Capital = 1500, Notes = "Röster in der Nähe" };
+            store.Save(idee);
+            var gelesen = Assert.Single(new IdeaStore(root).All());
+            Assert.Equal((idee.Id, "Kaffee-Abo", "Guter Kaffee ist teuer", "Büros", "Bohnen im Monatsabo", "abo"), (gelesen.Id, gelesen.Name, gelesen.Problem, gelesen.Audience, gelesen.Solution, gelesen.ModelId));
+            Assert.Equal((19.9, 8.0, 120.0, 40.0, 3, 4, 12.0, 1500.0, "Röster in der Nähe"), (gelesen.Price, gelesen.VariableCost, gelesen.FixedCostMonth, gelesen.CustomersMonth, gelesen.Competitors, gelesen.Skill, gelesen.HoursWeek, gelesen.Capital, gelesen.Notes));
+            gelesen.Price = 24.9; store.Save(gelesen);
+            Assert.Equal(24.9, Assert.Single(store.All()).Price);
+            store.Save(new BusinessIdea { Name = "Zweite Idee" });
+            Assert.Equal(["Zweite Idee", "Kaffee-Abo"], store.All().Select(x => x.Name));
+            store.Delete(idee.Id);
+            Assert.Equal("Zweite Idee", Assert.Single(store.All()).Name);
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
 }

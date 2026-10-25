@@ -6,7 +6,7 @@ namespace Trendo.App.Tests;
 
 public class W5_Business_Ui
 {
-    [AvaloniaFact(DisplayName = "BUS (UI): Idee eingeben, bewerten, Bauplan speichern; Studio-Kachel öffnet Business")]
+    [AvaloniaFact(DisplayName = "BUS-001/005/010/011 (UI): Idee eingeben, bewerten, Bauplan speichern; Studio-Kachel öffnet Business")]
     public async Task Evaluate()
     {
         var (w, _, _) = Ui.Open();

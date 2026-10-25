@@ -830,6 +830,8 @@ public class PromptActionTests
     [Fact(DisplayName = "Unreal-Projektdatei ohne Editor")]
     public void Spiel_schreibt_uprojekt()
     {
+        static HashSet<int> Editors() => System.Diagnostics.Process.GetProcesses().Where(p => p.ProcessName.StartsWith("UnrealEditor", StringComparison.OrdinalIgnoreCase)).Select(p => p.Id).ToHashSet();
+        var vorher = Editors(); // ein vom Nutzer schon geöffneter Editor zählt nicht
         using var fx = new Fixture();
         var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
         var done = wf.Los(fx.Project, wf.Start(fx.Req("CORE-06", "Vorlage: Unreal\nName: Hof\nVersion: 5.4"), fx.Ctx()).RunId, fx.Ctx());
@@ -840,7 +842,7 @@ public class PromptActionTests
         Assert.Equal("5.4", doc.RootElement.GetProperty("EngineAssociation").GetString());
         Assert.Contains(done.Warnings, w => w.Contains("nicht gestartet", StringComparison.OrdinalIgnoreCase));
         // Der Adapter startet nie einen Editor – unabhängig davon, ob auf diesem PC eine Unreal Engine installiert ist.
-        Assert.DoesNotContain(System.Diagnostics.Process.GetProcesses(), p => p.ProcessName.StartsWith("UnrealEditor", StringComparison.OrdinalIgnoreCase) && p.StartTime > DateTime.Now.AddMinutes(-1));
+        Assert.Empty(Editors().Except(vorher));
     }
 
     [Fact(DisplayName = "Starten ja öffnet kein Spiel")]
