@@ -11,7 +11,7 @@ Katalog-Status: **APPROVED** – freigegeben von Manuel im Chat am 21.10.2026 um
 | F05 | Ampel | Ok/Warnung/Alarm | gebaut | `SPEC-10: Zwilling mit Sensoren, CSV-Import, Ampel, Trend und Zeit bis Alarm` |
 | F06 | Trend | Steigung der letzten 24 h | gebaut | `SPEC-10: Zwilling mit Sensoren, CSV-Import, Ampel, Trend und Zeit bis Alarm` |
 | F07 | Zeit bis Alarm | lineare Vorhersage | gebaut | `SPEC-10: Zwilling mit Sensoren, CSV-Import, Ampel, Trend und Zeit bis Alarm` |
-| F08 | Dieser PC live | Festplatte, Arbeitsspeicher | gebaut | `SPEC-10 UI: diesen PC live messen, Sensor anlegen, CSV einlesen` |
+| F08 | Dieser PC live | Festplatte, Arbeitsspeicher | gebaut | `SPEC-10 UI: Live-Messung liefert eine plausible Zahl und einen gültigen Status` |
 | F09 | Speichergrenze | älteste Werte verwerfen | gebaut | `SPEC-10 F09: Speichergrenze` |
 | F10 | Ereignisprotokoll | Wechsel der Ampel mit Zeit | gebaut | `SPEC-10 F10: Ereignisprotokoll` |
 | F11 | Hysterese | erst unter Grenze minus Band zurück auf Ok | gebaut | `SPEC-10 F11: Hysterese` |

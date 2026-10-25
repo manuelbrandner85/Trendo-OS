@@ -134,8 +134,9 @@ public class Sys03_Pdf
     }
 
     /// <summary>Dieselben Browser, die „Als PDF“ starten würde.</summary>
+    // Wie die App (MainWindow.Sys03): bekannte Installationsorte zuerst, unter Windows z. B. Edge
     static string? PdfBrowser() =>
-        Cli.Find("google-chrome") ?? Cli.Find("google-chrome-stable") ?? Cli.Find("chromium")
+        Browsers.Find().FirstOrDefault(x => x.Id is "chrome" or "edge" or "brave")?.Path ?? Cli.Find("google-chrome") ?? Cli.Find("google-chrome-stable") ?? Cli.Find("chromium")
         ?? Cli.Find("chromium-browser") ?? Cli.Find("msedge") ?? Cli.Find("microsoft-edge");
 
     /// <summary>Beendet nur den Druck-Chrome (Profil „trendo-pdf-profil“), nicht andere Browser.</summary>
