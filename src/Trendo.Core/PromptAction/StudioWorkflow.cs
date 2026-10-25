@@ -400,7 +400,7 @@ public sealed class StudioWorkflow
         }
         try
         {
-            var approval = _core.Approvals.Request(ctx.User, GateAction(adapter), Describe(state, adapter), state.IdempotencyKey!, TimeSpan.FromMinutes(10));
+            var approval = _core.Approvals.Request(ctx.User, GateAction(adapter), Describe(state, adapter), state.IdempotencyKey!, TimeSpan.FromMinutes(10), state.Preview);
             state.ApprovalId = approval.Id;
         }
         catch (UnauthorizedAccessException ex)

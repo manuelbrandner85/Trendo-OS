@@ -742,6 +742,7 @@ public sealed partial class MainWindow : Window
     private Control ApprovalsView()
     {
         var sp = new StackPanel { Spacing = 8 };
+        if (HaltBanner() is { } banner) sp.Children.Add(banner);
         var pending = _core.Approvals.Pending();
         if (pending.Count == 0) sp.Children.Add(P("Keine offenen Freigaben."));
         foreach (var r in pending)
@@ -749,6 +750,7 @@ public sealed partial class MainWindow : Window
             var live = r.Action == LiveBroadcast.Action;
             var yes = new Button { Name = "btn-approve-" + r.Id, Content = live ? "Freigeben, noch nicht senden" : "Freigeben und ausführen", Background = Accent };
             var no = new Button { Name = "btn-deny-" + r.Id, Content = "Ablehnen" };
+            if (_core.Approvals.Halted) { yes.IsEnabled = false; ToolTip.SetTip(yes, "Not-Stopp ist aktiv"); ToolTip.SetShowOnDisabled(yes, true); }
             yes.Click += (_, _) =>
             {
                 _core.Approvals.Approve(r.Id, Principal.LocalOwner);
@@ -762,7 +764,12 @@ public sealed partial class MainWindow : Window
                 Show("approvals");
             };
             sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = new StackPanel { Spacing = 6, Children = {
-                new TextBlock { Text = r.Description, Foreground = Text }, P($"Aktion {r.Action} · gültig bis {r.ExpiresAt:HH:mm}"),
+                new TextBlock { Text = r.Description, Foreground = Text, TextWrapping = TextWrapping.Wrap }, P($"Aktion {r.Action} · Ziel {r.Target} · gültig bis {r.ExpiresAt:HH:mm}"),
+                // T-0005 Änderungsvorschau: genau das, was passiert
+                r.Preview is { Length: > 0 } pv
+                    ? new Border { Name = "approval-preview-" + r.Id, Background = Brush.Parse(C("#66091428", "#F1F5FB")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6),
+                        Child = new StackPanel { Spacing = 2, Children = { new TextBlock { Text = "Was passiert:", Foreground = Muted, FontSize = 11 }, new SelectableTextBlock { Text = pv.Length > 2000 ? pv[..2000] + " …" : pv, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap } } } }
+                    : P("Keine Änderungsvorschau für diese Aktion.", null, 11),
                 new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { yes, no } } } } });
         }
         return Page("Freigaben", sp);

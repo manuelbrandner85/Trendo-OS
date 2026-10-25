@@ -29,13 +29,13 @@ public partial class MainWindow
             Children = { Logo(34, glow: true), new TextBlock { Text = "Trendo OS", Foreground = Text, FontSize = 20, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center },
                 new TextBlock { Text = "Ultimate", Foreground = Brush.Parse(C("#C9D6EA", "#3A4A66")), FontSize = 15, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(-2, 3, 0, 0) } } };
         bar.Children.Add(brand);
-        var tabs = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(26, 0, 0, 0) };
+        var tabs = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(18, 0, 0, 0) };
         foreach (var (key, name, icon, col, label) in new[] {
                      ("start", "nav-start", Mdi.Monitor, "#4FB3FF", "Desktop"), ("studios", "nav-studios", Mdi.ViewGridOutline, "#5AA9FF", "Studios"), ("apps", "nav-apps", Mdi.Apps, "#4FC3F7", "Apps"),
                      ("projects", "nav-projects", Mdi.FolderPlus, "#B388FF", "Projekte"), ("ki", "nav-ki", Mdi.Brain, "#FF6FB5", "KI"), ("system", "nav-system", Mdi.CogOutline, "#64B5F6", "System"), ("settings", "nav-settings", Mdi.Cog, "#64B5F6", "Einstellungen") })
         {
             var content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Ico(icon, 16, Brush.Parse(col)), new TextBlock { Text = label, Foreground = Text, FontSize = 13, VerticalAlignment = VerticalAlignment.Center } } };
-            var b = Flat(name, content, label); b.Padding = new Thickness(11, 6);
+            var b = Flat(name, content, label); b.Padding = new Thickness(10, 6);
             _tabs[key] = b;
             var target = key;
             b.Click += (_, _) => { if (target == "studios") { _studioFilter = null; _studioQuery = ""; } Show(target); };
@@ -45,7 +45,7 @@ public partial class MainWindow
         Detach(_search);
         _search.Background = Brushes.Transparent; _search.BorderThickness = new Thickness(0); _search.Width = double.NaN; _search.Height = 32; _search.FontSize = 13;
         _search.VerticalContentAlignment = VerticalAlignment.Center; _search.PlaceholderText = "Suchen in Trendo OS …";
-        var search = new Border { Width = 220, Height = 34, CornerRadius = new CornerRadius(9), Background = Brush.Parse(C("#990A1630", "#CCFFFFFF")), BorderBrush = Brush.Parse("#5541618F"), BorderThickness = new Thickness(1),
+        var search = new Border { Width = 176, Height = 34, CornerRadius = new CornerRadius(9), Background = Brush.Parse(C("#990A1630", "#CCFFFFFF")), BorderBrush = Brush.Parse("#5541618F"), BorderThickness = new Thickness(1),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { new Border { Margin = new Thickness(10, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Child = Ico(Mdi.Magnify, 16, Text) }, Pos(_search, 1) } } };
         Border Circle(Control c) => new() { Width = 34, Height = 34, CornerRadius = new CornerRadius(17), Background = Brush.Parse(C("#990A1630", "#CCFFFFFF")), BorderBrush = Brush.Parse("#5541618F"), BorderThickness = new Thickness(1), Child = c };
         var bell = Flat("nav-approvals", new Grid { Children = { Circle(Ico(Mdi.Bell, 17, Text)),
@@ -58,7 +58,7 @@ public partial class MainWindow
         ToolTip.SetTip(cloud, "Online-Dienste und Schlüssel"); cloud.Click += (_, _) => Show("keys");
         var user = Flat("btn-user", Circle(Ico(Mdi.AccountCircleOutline, 20, Brush.Parse("#D4E157"))), "Benutzer"); user.Padding = new Thickness(0);
         ToolTip.SetTip(user, "Lokaler Besitzer – Einstellungen"); user.Click += (_, _) => Show("settings");
-        var tools = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 30, 0), Children = { search, bell, cloud, user } };
+        var tools = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 9, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 16, 0), Children = { HaltButton(), search, bell, cloud, user } };
         Grid.SetColumn(tools, 2); bar.Children.Add(tools);
         _clock.FontSize = 20; _clock.FontWeight = FontWeight.SemiBold; _clock.HorizontalAlignment = HorizontalAlignment.Right; _clock.Foreground = Text;
         _date.FontSize = 12.5; _date.Foreground = Brush.Parse(C("#C9D6EA", "#3A4A66")); _date.HorizontalAlignment = HorizontalAlignment.Right;

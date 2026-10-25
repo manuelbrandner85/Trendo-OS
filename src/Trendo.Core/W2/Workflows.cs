@@ -82,7 +82,7 @@ public sealed class WorkflowEngine
     public void Update(Workflow w) { Save(); _audit.Append(Principal.LocalOwner.Name, "workflow.update", $"{w.Id} hash={w.Hash()}"); }
     public bool Remove(string id) { var n = _items.RemoveAll(w => w.Id == id); Save(); return n > 0; }
 
-    public ApprovalRequest RequestApproval(Workflow w) => _gate.Request(Principal.LocalOwner, "workflow.approve", $"Ablauf „{w.Name}“ darf Dateien verschieben/umbenennen", $"{w.Id}:{w.Hash()}", TimeSpan.FromHours(1));
+    public ApprovalRequest RequestApproval(Workflow w, string? preview = null) => _gate.Request(Principal.LocalOwner, "workflow.approve", $"Ablauf „{w.Name}“ darf Dateien verschieben/umbenennen", $"{w.Id}:{w.Hash()}", TimeSpan.FromHours(1), preview);
 
     public void ApplyApproval(Workflow w, string requestId)
     {
@@ -127,8 +127,11 @@ public sealed class WorkflowEngine
         var t = now ?? DateTimeOffset.Now; var lines = new List<string>(); var ok = true;
         string V(string s) => s.Replace("{datum}", t.ToString("yyyy-MM-dd")).Replace("{zeit}", t.ToString("HH-mm")).Replace("{datei}", triggerFile is null ? "" : Path.GetFileName(triggerFile));
         if (!dryRun && !w.IsApproved) { lines.Add("Gestoppt: Dieser Ablauf verschiebt oder benennt Dateien um und braucht zuerst deine Freigabe."); return Log(new(w.Id, t, dryRun, false, lines)); }
+        var halt = _gate.HaltToken;
+        if (!dryRun && _gate.Halted) { lines.Add("Gestoppt: Der Not-Stopp ist aktiv. Es wurde nichts geändert."); return Log(new(w.Id, t, dryRun, false, lines)); }
         foreach (var s in w.Steps)
         {
+            if (!dryRun && halt.IsCancellationRequested) { ok = false; lines.Add("Not-Stopp: Der Ablauf wurde angehalten. Weitere Schritte laufen nicht."); break; }
             try
             {
                 var from = V(s.From); var to = V(s.To);
@@ -144,6 +147,7 @@ public sealed class WorkflowEngine
                         if (list.Count == 0) lines.Add($"{StepLabel(s.Kind)}: keine passenden Dateien in {from}");
                         foreach (var f in list)
                         {
+                            if (!dryRun) halt.ThrowIfCancellationRequested();
                             var dest = Unique(Path.Combine(to, Path.GetFileName(f)));
                             lines.Add($"{(s.Kind == StepKind.Kopieren ? "Kopieren" : "Verschieben")}: {Path.GetFileName(f)} → {dest}");
                             if (dryRun) continue;
@@ -179,6 +183,7 @@ public sealed class WorkflowEngine
                         break;
                 }
             }
+            catch (OperationCanceledException) when (halt.IsCancellationRequested) { ok = false; lines.Add("Not-Stopp: Der Ablauf wurde angehalten. Weitere Schritte laufen nicht."); break; }
             catch (Exception ex) { ok = false; lines.Add($"Hat nicht geklappt bei „{StepLabel(s.Kind)}“: {ex.Message}"); break; }
         }
         if (!dryRun) { w.LastRun = t; Save(); }
@@ -188,6 +193,7 @@ public sealed class WorkflowEngine
     public async Task<IReadOnlyList<WfRun>> RunDueAsync(DateTimeOffset now)
     {
         var res = new List<WfRun>();
+        if (_gate.Halted) return res; // Not-Stopp: zeitgesteuerte Abläufe ruhen
         foreach (var (w, f) in Due(now)) res.Add(await RunAsync(w, false, f, now));
         return res;
     }

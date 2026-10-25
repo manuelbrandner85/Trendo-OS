@@ -276,3 +276,61 @@ public class SYS05_Workflows
         Assert.Contains(e.Due(day), x => x.W.Id == iv.Id);
     }
 }
+
+public class T0005_NotStopp
+{
+    [Fact(DisplayName = "T-0005: Not-Stopp verwirft offene und erteilte Freigaben, blockiert Ausführen und Freigeben, bricht den Halt-Token ab")]
+    public void Gate_halt()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-halt-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(root);
+        try
+        {
+            var audit = new AuditLog(Path.Combine(root, "a.jsonl"));
+            var gate = new ApprovalGate(audit);
+            var open = gate.Request(Principal.LocalOwner, "x.tun", "Test", "ziel-1", preview: "Datei a.txt → b.txt");
+            Assert.Equal("Datei a.txt → b.txt", open.Preview);
+            var approved = gate.Request(Principal.LocalOwner, "x.tun", "Test", "ziel-2"); gate.Approve(approved.Id, Principal.LocalOwner);
+            var token = gate.HaltToken;
+            var changed = 0; gate.HaltChanged += () => changed++;
+            Assert.Equal(2, gate.Halt(Principal.LocalOwner, "Test"));
+            Assert.True(gate.Halted); Assert.True(token.IsCancellationRequested); Assert.Equal(1, changed);
+            Assert.Empty(gate.Pending());
+            Assert.Throws<ApprovalException>(() => gate.Execute(approved.Id, "x.tun", "ziel-2", () => 1));
+            var neu = gate.Request(Principal.LocalOwner, "x.tun", "Test", "ziel-3");
+            Assert.Throws<ApprovalException>(() => gate.Approve(neu.Id, Principal.LocalOwner));
+            // Fortsetzen nur mit Freigaberecht; Stoppen darf jeder
+            Assert.ThrowsAny<Exception>(() => gate.Resume(new Principal("gast", Role.User)));
+            gate.Resume(Principal.LocalOwner);
+            Assert.False(gate.Halted); Assert.False(gate.HaltToken.IsCancellationRequested);
+            gate.Approve(neu.Id, Principal.LocalOwner);
+            Assert.Equal(1, gate.Execute(neu.Id, "x.tun", "ziel-3", () => 1));
+            Assert.Throws<ApprovalException>(() => gate.Execute(approved.Id, "x.tun", "ziel-2", () => 1)); // verworfen bleibt verworfen
+            gate.Halt(new Principal("gast", Role.User), "jeder darf stoppen");
+            Assert.True(gate.Halted);
+        }
+        finally { try { Directory.Delete(root, true); } catch (IOException) { } }
+    }
+
+    [Fact(DisplayName = "T-0005: Abläufe laufen beim Not-Stopp nicht, die Freigabe zeigt vorher die Änderungsvorschau")]
+    public async Task Workflow_halt_and_preview()
+    {
+        var f = new Fixture(); using var _ = f;
+        var home = Path.Combine(f.Root, "home"); Directory.CreateDirectory(Path.Combine(home, "Downloads"));
+        var e = new WorkflowEngine(f.Root, f.Core.Audit, f.Core.Approvals, [home]);
+        File.WriteAllText(Path.Combine(home, "Downloads", "a.pdf"), "x");
+        var w = e.Add(WorkflowEngine.Templates.First(t => t.Id == "pdf").Make(home));
+        var dry = await e.RunAsync(w, true);
+        var r = e.RequestApproval(w, string.Join("\n", dry.Lines));
+        Assert.Contains("a.pdf", r.Preview);
+        f.Core.Approvals.Approve(r.Id, Principal.LocalOwner); e.ApplyApproval(w, r.Id);
+        f.Core.Approvals.Halt(Principal.LocalOwner, "Test");
+        var run = await e.RunAsync(w, false);
+        Assert.False(run.Ok);
+        Assert.Contains(run.Lines, l => l.Contains("Not-Stopp"));
+        Assert.True(File.Exists(Path.Combine(home, "Downloads", "a.pdf")));
+        Assert.Empty(await e.RunDueAsync(DateTimeOffset.Now.AddDays(1)));
+        f.Core.Approvals.Resume(Principal.LocalOwner);
+        Assert.True((await e.RunAsync(w, false)).Ok);
+        Assert.True(File.Exists(Path.Combine(home, "Documents", "PDF", "a.pdf")));
+    }
+}

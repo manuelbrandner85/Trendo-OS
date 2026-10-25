@@ -63,7 +63,7 @@ public partial class MainWindow
             Button B(string name, string label, Func<Task> act) { var b = new Button { Name = $"wf-{name}-{n}", Content = label, Padding = new Thickness(8, 2), Margin = new Thickness(0, 4, 6, 0) }; b.Click += async (_, _) => { await act(); Show("ablaeufe"); }; row.Children.Add(b); return b; }
             B("dry", "Probelauf", async () => { LastWfRun = await Workflows.RunAsync(w, true); _wfMsg = ""; });
             B("run", "Jetzt ausführen", async () => { LastWfRun = await Workflows.RunAsync(w, false); _wfMsg = ""; });
-            if (!w.IsApproved) B("approve", "Freigeben …", () => { var r = Workflows.RequestApproval(w); _core.Approvals.Approve(r.Id, Principal.LocalOwner); Workflows.ApplyApproval(w, r.Id); _wfMsg = $"„{w.Name}“ ist freigegeben. Änderst du den Ablauf, fragt Trendo erneut."; return Task.CompletedTask; });
+            if (!w.IsApproved) B("approve", "Freigeben …", async () => { var dry = await Workflows.RunAsync(w, dryRun: true); var r = Workflows.RequestApproval(w, string.Join("\n", dry.Lines)); _core.Approvals.Approve(r.Id, Principal.LocalOwner); Workflows.ApplyApproval(w, r.Id); _wfMsg = $"„{w.Name}“ ist freigegeben. Änderst du den Ablauf, fragt Trendo erneut."; });
             B("toggle", w.Enabled ? "Pausieren" : "Einschalten", () => { w.Enabled = !w.Enabled; Workflows.Update(w); return Task.CompletedTask; });
             B("del", "Löschen", () => { Workflows.Remove(w.Id); return Task.CompletedTask; });
             var last = Workflows.History(w.Id, 1).FirstOrDefault();
