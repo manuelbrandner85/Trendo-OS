@@ -31,6 +31,19 @@
 ## Tests (Release, Windows-PC)
 Build 0 Warnungen, 0 Fehler · Api 15/15 · Core 670 bestanden, 1 übersprungen (von 671) · App 328 bestanden, 2 übersprungen (von 330), 17 min 15 s · Paket-Tests OK.
 
+## Echte Deinstallation mit Setup 0.9.8 (2026-10-25, Manuels PC)
+Skript `tools/messung/deinstallation-datenfrage.ps1`. Die Daten waren vorher gesichert und wurden am Ende byte-gleich zurückgeschrieben. Rohlog mit SHA-256: `reports/c4-setup/deinstallation-datenfrage-2026-10-25.txt`.
+- **Deinstallieren ohne Antwort** (`Update.exe uninstall`, nicht still): Die Frage erschien nach 2,9 s. Nach Ablauf blieben die Daten unverändert; die Deinstallation endete nach 28,8 s.
+- **Deinstallieren mit „Ja“:** Die Frage erschien nach 2,5 s, „Ja“ wurde per Fensternachricht geklickt.
+  - Gelöscht: 20 Einträge. Einstellungen, Protokolle und Sicherungen sind weg.
+  - Übrig blieb nur `projects` mit dem Testprojekt.
+- **Endzustand:** 0.9.8 installiert, Daten byte-gleich (37 Dateien).
+- **Velopack:** Das Programm zeigt eigene Aufgabendialoge mit dem Titel „Trendo OS Deinstallation“, unter anderem „Deinstallation abgeschlossen – Die Anwendung wurde erfolgreich von Ihrem Computer entfernt.“. Das Testskript bestätigt sie mit OK. Den Inhalt des ersten Dialogs (nach 0,5 s, vor der Trendo-Frage) hat das Skript nicht ausgelesen.
+- **Fehler im Testskript (behoben):**
+  - PowerShell macht aus `$null` einen leeren Klassennamen, dadurch fand `FindWindow` die Frage zunächst nicht.
+  - Typografische Anführungszeichen beenden in PowerShell 5.1 Zeichenketten.
+  - Beides betraf nur das Skript, nicht Trendo.
+
 ## Nicht geprüft / offen
-- Echte Deinstallation über „Apps & Features“ mit einem neuen Setup, das den Hook enthält: Das installierte 0.9.7 hat ihn noch nicht. Das kommt mit dem nächsten Release.
+- Deinstallation über „Einstellungen → Apps“ von Windows: Dort läuft derselbe Befehl `Update.exe uninstall`, geprüft ist er direkt.
 - Von Trendo geladene Zusatzprogramme (`%LOCALAPPDATA%\TrendoWerkzeuge`) werden nicht abgefragt und bleiben liegen.

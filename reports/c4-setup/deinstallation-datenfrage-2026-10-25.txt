@@ -1,0 +1,29 @@
+﻿Deinstallation mit Datenfrage 2026-10-25 13:56:39 · Setup TrendoOS-Setup.exe
+Ausgangslage: installiert 0.9.8, Daten 37 Dateien gesichert
+PASS  1 Update auf neue Version: Version 0.9.8 installiert
+  2 Deinstallieren ohne Antwort: Velopack meldet Deinstallation abgeschlossen nach 0.6 s – OK
+  2 Deinstallieren ohne Antwort: Frage erschienen nach 2.9 s
+  2 Deinstallieren ohne Antwort: Velopack meldet Deinstallation abgeschlossen nach 24.5 s – OK
+PASS  2 Deinstallieren ohne Antwort: Frage erschienen
+PASS  2 Deinstallieren ohne Antwort: Deinstallation beendet nach 28.8 s
+PASS  2 Deinstallieren ohne Antwort: Programmordner entfernt
+  Hook: Deinstallation: Frage nach den Daten.
+  Hook: Frage angezeigt.
+  Hook: Keine Antwort: Daten bleiben.
+PASS  2: Benutzerdaten bleiben unverändert
+PASS  3 Neu installieren: Version 0.9.8 installiert
+  4 Deinstallieren mit Ja: Velopack meldet Deinstallation abgeschlossen nach 0.5 s – OK
+  4 Deinstallieren mit Ja: Frage erschienen nach 2.5 s
+  4 Deinstallieren mit Ja: Ja geklickt
+  4 Deinstallieren mit Ja: Velopack meldet Deinstallation abgeschlossen nach 4.9 s – OK
+PASS  4 Deinstallieren mit Ja: Frage erschienen
+PASS  4 Deinstallieren mit Ja: Deinstallation beendet nach 9.2 s
+PASS  4 Deinstallieren mit Ja: Programmordner entfernt
+  Hook: Deinstallation: Frage nach den Daten.
+  Hook: Frage angezeigt.
+  Hook: Daten gelöscht (20 Einträge), Projekte behalten.
+PASS  4: Einstellungen, Protokolle, Sicherungen gelöscht - übrig: projects
+PASS  4: Projekt-Unterordner bleibt
+PASS  5 Endzustand: Version 0.9.8 installiert
+PASS  5: Benutzerdaten byte-gleich wie vorher - 37 Dateien
+ERGEBNIS: ALLE BESTANDEN
