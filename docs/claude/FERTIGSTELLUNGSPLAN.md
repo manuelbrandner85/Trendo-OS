@@ -54,7 +54,7 @@ Trendo OS ist fertig, wenn alle Punkte erfüllt sind:
 | C2 | BUS-001…030 am Windows-PC prüfen, Rohlog + SHA-256 in `reports/` | Claude |
 | C3 | QA-017 Narrator/Kontrast/Mehrmonitor, QA-019 echter Offline-Lauf | Claude + **Manuel am PC** |
 | C4 | Deinstallations- und Update-/Rückfalltest (T-0008, IMP-16) | Claude |
-| C5 | T-0005 Not-Stopp + Änderungsvorschau im Freigabe-Gate (IMP-19) | Claude |
+| C5 | ✅ erledigt 2026-10-25: T-0005 Not-Stopp (Knopf, Pause-Taste) und Änderungsvorschau im Freigabe-Gate (IMP-19), Bericht `tasks/T-0005-notstopp.bericht.md`; offen: Fern-Not-Stopp (T-0012) | – |
 | C6 | T-0006 KI-Modell offline mitliefern, Prompt-Injection-Filter (IMP-31) | Claude, **OK** Setup-Größe |
 | C7 | Code-Signatur | **Manuel (Kauf)** |
 
