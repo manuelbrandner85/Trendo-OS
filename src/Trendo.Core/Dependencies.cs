@@ -196,7 +196,7 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
     }
 
     /// <summary>Ziel für Portable-Werkzeuge (Benutzerordner, kein Admin) – bewusst außerhalb von %LOCALAPPDATA%\\TrendoOS, das Setup/Rückfall komplett ersetzt.</summary>
-    public string ToolsRoot { get; set; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TrendoWerkzeuge");
+    public string ToolsRoot { get; set; } = DataLocation.ToolsRoot();
 
     public string? ResolvePath(Component c) => c.DetectPaths?.Select(_expand).Where(_exists).Select(p => p.Contains('*') ? ResolveGlob(p) ?? (_customExists ? p : null) : p).FirstOrDefault(p => p is not null);
 

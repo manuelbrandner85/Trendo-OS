@@ -93,3 +93,43 @@ public class Deinstallation_Daten
         }
     }
 }
+
+public class Deinstallation_Werkzeuge
+{
+    [Fact(DisplayName = "Deinstallieren: Zusatzprogramme – nur ein Ordner „TrendoWerkzeuge“, Größe und Programme richtig, Verknüpfungen nie verfolgt")]
+    public void RemoveTools()
+    {
+        var parent = Path.Combine(Path.GetTempPath(), "trendo-wz-" + Guid.NewGuid().ToString("N"));
+        var tools = Path.Combine(parent, DataLocation.ToolsFolderName);
+        Directory.CreateDirectory(Path.Combine(tools, "qpdf", "bin")); File.WriteAllBytes(Path.Combine(tools, "qpdf", "bin", "qpdf.exe"), new byte[2048]);
+        Directory.CreateDirectory(Path.Combine(tools, "colmap")); File.WriteAllBytes(Path.Combine(tools, "colmap", "colmap.exe"), new byte[1024]);
+        var fremd = Path.Combine(parent, "fremd"); Directory.CreateDirectory(fremd); var fremdFile = Path.Combine(fremd, "bleibt.txt"); File.WriteAllText(fremdFile, "x");
+        try
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                var link = Path.Combine(tools, "verweis");
+                var mk = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe", $"/c mklink /J \"{link}\" \"{fremd}\"") { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true })!;
+                mk.WaitForExit();
+            }
+            var info = DataLocation.ToolsSummary(tools);
+            Assert.NotNull(info);
+            Assert.Equal(["colmap", "qpdf"], info.Value.Programs); // Verknüpfung zählt nicht als Programm
+            Assert.Equal(3072, info.Value.Bytes);
+            Assert.Equal(-1, DataLocation.RemoveTools(fremd));                       // falscher Name
+            Assert.Equal(-1, DataLocation.RemoveTools("TrendoWerkzeuge"));            // relativ
+            Assert.True(DataLocation.RemoveTools(tools) >= 2);
+            Assert.False(Directory.Exists(tools));
+            Assert.True(File.Exists(fremdFile));                                      // Ziel der Verknüpfung unberührt
+            Assert.Null(DataLocation.ToolsSummary(tools));
+        }
+        finally { Directory.Delete(parent, true); }
+    }
+
+    [Fact(DisplayName = "Zusatzprogramme: Standardordner ist %LOCALAPPDATA%/TrendoWerkzeuge, derselbe wie im DependencyManager")]
+    public void Same_root()
+    {
+        Assert.EndsWith(DataLocation.ToolsFolderName, DataLocation.ToolsRoot());
+        Assert.Equal(DataLocation.ToolsRoot(), new DependencyManager(new AuditLog(Path.Combine(Path.GetTempPath(), "trendo-a-" + Guid.NewGuid().ToString("N") + ".jsonl")), new RealProcessRunner()).ToolsRoot);
+    }
+}

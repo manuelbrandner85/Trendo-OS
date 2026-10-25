@@ -37,23 +37,54 @@ public static class DataLocation
     /// nie über Verknüpfungen (Junction/Symlink) hinaus. Gibt die Zahl gelöschter Einträge zurück, -1 = abgelehnt.</summary>
     public static int RemoveUserData(string root, params string?[] keep)
     {
-        if (string.IsNullOrWhiteSpace(root) || !Path.IsPathFullyQualified(root)) return -1;
+        if (Guard(root, n => n.StartsWith("trendo", StringComparison.OrdinalIgnoreCase)) is not { } dir) return -1;
+        var full = dir.FullName.TrimEnd(Path.DirectorySeparatorChar);
+        foreach (var k in keep.Where(k => !string.IsNullOrWhiteSpace(k) && Path.IsPathFullyQualified(k!)).Select(k => Norm(k!)))
+            if (k.StartsWith(full + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) || string.Equals(k, full, StringComparison.OrdinalIgnoreCase)) return -1;
+        return DeleteContents(dir, e => e is DirectoryInfo && ProjectFolders.Any(p => string.Equals(p, e.Name, StringComparison.OrdinalIgnoreCase))); // Projekte bleiben
+    }
+
+    /// <summary>Ordner der von Trendo geladenen Zusatzprogramme (portabel, nur für diesen Benutzer, z. B. COLMAP, qpdf).</summary>
+    public const string ToolsFolderName = "TrendoWerkzeuge";
+    public static string ToolsRoot() => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ToolsFolderName);
+
+    /// <summary>Programme (Unterordner) und Größe im Werkzeugordner, ohne Verknüpfungen zu folgen. Null, wenn nichts da ist.</summary>
+    public static (IReadOnlyList<string> Programs, long Bytes)? ToolsSummary(string root)
+    {
+        var dir = new DirectoryInfo(root);
+        if (!dir.Exists || dir.Attributes.HasFlag(FileAttributes.ReparsePoint)) return null;
+        var opt = new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = FileAttributes.ReparsePoint, IgnoreInaccessible = true };
+        var programs = dir.EnumerateDirectories("*", new EnumerationOptions { AttributesToSkip = FileAttributes.ReparsePoint }).Select(d => d.Name).OrderBy(n => n, StringComparer.OrdinalIgnoreCase).ToList();
+        var bytes = dir.EnumerateFiles("*", opt).Sum(f => f.Length);
+        return programs.Count == 0 && bytes == 0 ? null : (programs, bytes);
+    }
+
+    /// <summary>Beim Deinstallieren auf Wunsch: den Werkzeugordner löschen. Nur ein Ordner, der genau „TrendoWerkzeuge“ heißt,
+    /// mit denselben Schutzregeln wie bei den Daten; Verknüpfungen werden nur entfernt, nie verfolgt. -1 = abgelehnt.</summary>
+    public static int RemoveTools(string root) =>
+        Guard(root, n => string.Equals(n, ToolsFolderName, StringComparison.OrdinalIgnoreCase)) is { } dir ? DeleteContents(dir, _ => false) : -1;
+
+    /// <summary>Gemeinsame Schutzregeln: voll qualifiziert, keine Laufwerkswurzel, nicht zu flach, richtiger Name, keine Verknüpfung, kein Systemordner.</summary>
+    static DirectoryInfo? Guard(string root, Func<string, bool> nameOk)
+    {
+        if (string.IsNullOrWhiteSpace(root) || !Path.IsPathFullyQualified(root)) return null;
         var full = Norm(root);
-        // Doppelter Schutz: nie eine Laufwerkswurzel oder einen flachen Pfad, und nur ein Ordner, der „Trendo…“ heißt
-        if (Path.GetPathRoot(full) is not { } drive || Norm(drive) == full || full.Count(c => c == Path.DirectorySeparatorChar) < 2) return -1;
-        if (!Path.GetFileName(full).StartsWith("trendo", StringComparison.OrdinalIgnoreCase)) return -1;
+        if (Path.GetPathRoot(full) is not { } drive || Norm(drive) == full || full.Count(c => c == Path.DirectorySeparatorChar) < 2) return null;
+        if (!nameOk(Path.GetFileName(full))) return null;
         var dir = new DirectoryInfo(full);
-        if (!dir.Exists || dir.Attributes.HasFlag(FileAttributes.ReparsePoint) || dir.LinkTarget is not null) return -1;
+        if (!dir.Exists || dir.Attributes.HasFlag(FileAttributes.ReparsePoint) || dir.LinkTarget is not null) return null;
         var forbidden = new[] { Environment.SpecialFolder.UserProfile, Environment.SpecialFolder.ApplicationData, Environment.SpecialFolder.LocalApplicationData,
             Environment.SpecialFolder.MyDocuments, Environment.SpecialFolder.Desktop, Environment.SpecialFolder.Windows, Environment.SpecialFolder.ProgramFiles }
             .Select(Environment.GetFolderPath).Where(p => p.Length > 0 && Path.IsPathFullyQualified(p)).Select(Norm);
-        if (forbidden.Any(f => string.Equals(f, full, StringComparison.OrdinalIgnoreCase))) return -1;
-        foreach (var k in keep.Where(k => !string.IsNullOrWhiteSpace(k) && Path.IsPathFullyQualified(k!)).Select(k => Norm(k!)))
-            if (k.StartsWith(full + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) || string.Equals(k, full, StringComparison.OrdinalIgnoreCase)) return -1;
+        return forbidden.Any(f => string.Equals(f, full, StringComparison.OrdinalIgnoreCase)) ? null : dir;
+    }
+
+    static int DeleteContents(DirectoryInfo dir, Func<FileSystemInfo, bool> keep)
+    {
         var n = 0;
         foreach (var e in dir.EnumerateFileSystemInfos())
         {
-            if (e is DirectoryInfo && ProjectFolders.Any(p => string.Equals(p, e.Name, StringComparison.OrdinalIgnoreCase))) continue; // Projekte bleiben
+            if (keep(e)) continue;
             if (e.Attributes.HasFlag(FileAttributes.ReparsePoint)) { e.Delete(); n++; continue; } // nur die Verknüpfung, nie ihr Ziel
             if (e is DirectoryInfo d) { ClearReadOnly(d); d.Delete(true); } else { ClearReadOnly(e); e.Delete(); }
             n++;
