@@ -227,11 +227,11 @@ public class W7PhoneLinkTests
     [Fact(DisplayName = "X-08: adb und scrcpy stehen im Katalog, winget ohne --scope user, Prüfung version bzw. --version")]
     public async Task Tools()
     {
-        var adb = DependencyCatalog.Get("adb");
-        var scrcpy = DependencyCatalog.Get("scrcpy");
+        Assert.Equal(DeliveryMode.Included, DependencyCatalog.Get("adb").Mode); // T-0222: adb steckt im scrcpy-Paket des Vollpakets
+        var adb = DependencyCatalog.Get("adb") with { Mode = DeliveryMode.AutoUser };
+        var scrcpy = DependencyCatalog.Get("scrcpy") with { Mode = DeliveryMode.AutoUser };
         Assert.Equal("Google.PlatformTools", adb.WingetId);
         Assert.Equal("Genymobile.scrcpy", scrcpy.WingetId);
-        Assert.Equal(DeliveryMode.AutoUser, adb.Mode);
         Assert.Equal(("adb.exe", "version"), StudioTools.Verify["adb"]);
         Assert.Equal(("scrcpy.exe", "--version"), StudioTools.Verify["scrcpy"]);
         var root = Path.Combine(Path.GetTempPath(), "trendo-dep-" + Guid.NewGuid().ToString("N"));

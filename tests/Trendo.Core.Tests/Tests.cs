@@ -387,7 +387,7 @@ public class Dependencies_Core
     public async Task Install_flow()
     {
         var (m, r, files, f) = Make(); using var _ = f;
-        var git = DependencyCatalog.Get("git");
+        var git = DependencyCatalog.Get("git") with { Mode = DeliveryMode.AutoUser }; // allgemeiner winget-Weg; git selbst kommt seit T-0222 aus dem Vollpaket
         await Assert.ThrowsAsync<InvalidOperationException>(() => m.InstallAsync(Principal.LocalOwner, git));
         Assert.Throws<UnauthorizedAccessException>(() => m.GiveConsent(new Principal("u", Role.User)));
         m.GiveConsent(Principal.LocalOwner);
@@ -397,7 +397,7 @@ public class Dependencies_Core
         Assert.True(await m.InstallAsync(Principal.LocalOwner, git));
         Assert.Contains(f.Core.Audit.ReadAll(), e => e.Action == "deps.install.ok");
         await Assert.ThrowsAsync<InvalidOperationException>(() => m.InstallAsync(Principal.LocalOwner, DependencyCatalog.Get("unreal")));
-        var lo = DependencyCatalog.Get("libreoffice"); await m.InstallAsync(Principal.LocalOwner, lo);
+        var lo = DependencyCatalog.Get("libreoffice") with { Mode = DeliveryMode.AutoElevated }; await m.InstallAsync(Principal.LocalOwner, lo);
         Assert.DoesNotContain("--scope user", r.Calls[^1].A);
     }
 
@@ -405,7 +405,7 @@ public class Dependencies_Core
     public async Task Model_flow()
     {
         var (m, r, files, f) = Make(); using var _ = f; m.GiveConsent(Principal.LocalOwner);
-        var model = DependencyCatalog.Get("model");
+        var model = DependencyCatalog.Get("model") with { Mode = DeliveryMode.AutoUser }; // Laden per Ollama bleibt für model-3b; model selbst liegt im Vollpaket
         await Assert.ThrowsAsync<InvalidOperationException>(() => m.InstallAsync(Principal.LocalOwner, model));
         files.Add(@"L\Programs\Ollama\ollama.exe");
         r.OnRun = () => files.Add(Path.Combine("U", ".ollama", "models", "manifests", "registry.ollama.ai", "library", "qwen2.5", "0.5b"));
@@ -513,7 +513,7 @@ public class Wave0_Setup
         Assert.Equal(["sumatra", "mpv", "7zip"], none);
         var ki = SetupPacks.ComponentsFor(["ki", "dev"]).Select(c => c.Id).ToList();
         Assert.Contains("ollama", ki); Assert.Contains("git", ki); Assert.DoesNotContain("libreoffice", ki);
-        Assert.Equal(DeliveryMode.AutoUser, DependencyCatalog.Get("sumatra").Mode);
+        Assert.Equal(DeliveryMode.Included, DependencyCatalog.Get("sumatra").Mode);
     }
 
     [Fact(DisplayName = "W0-04: KI-Modell nach Hardware (32 GB + RTX → 3B, 8 GB → 0.5B)")]

@@ -37,8 +37,8 @@ public class PhotoScanUiTests
         w.Find<Button>("scan-run").Press();
         Dispatcher.UIThread.RunJobs();
         Assert.Equal("studio-deps", w.CurrentView);
-        Assert.Contains("Jetzt installieren", w.Find<TextBlock>("ask-colmap").Text);
-        Assert.False(w.Find<Button>("btn-yes-colmap").IsEnabled);
+        Assert.Contains("jetzt einrichten", w.Find<TextBlock>("ask-colmap").Text);
+        Assert.True(w.Find<Button>("btn-yes-colmap").IsEnabled); // T-0222: aus dem Vollpaket, geht auch offline
         Assert.NotNull(w.TryFind<Button>("btn-later-colmap"));
 
         w.Find<Button>("btn-later-colmap").Press();
@@ -107,7 +107,7 @@ public class PhotoScanUiTests
         Dispatcher.UIThread.RunJobs();
         Assert.Equal("studio-deps", w.CurrentView);
         Assert.Contains("FFmpeg", w.Find<TextBlock>("ask-ffmpeg").Text);
-        Assert.False(w.Find<Button>("btn-yes-ffmpeg").IsEnabled);
+        Assert.True(w.Find<Button>("btn-yes-ffmpeg").IsEnabled); // T-0222: aus dem Vollpaket, geht auch offline
     }
 
     static string NewestScan(string root)

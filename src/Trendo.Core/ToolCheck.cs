@@ -40,7 +40,9 @@ public static class DependencyChecks
         if (c.Mode == DeliveryMode.NotNeeded) return new(c, ToolState.NotNeeded, null, null, c.Reason);
         if (c.Id == "model-3b") return m.HasModel(DependencyCatalog.LargeModel) ? new(c, ToolState.Working, null, DependencyCatalog.LargeModel, "Modell vorhanden") : new(c, ToolState.Missing, null, null, "optional, nicht geladen");
         if (c.Id == "model") return m.ModelPresent ? new(c, ToolState.Working, null, DependencyCatalog.LocalModel, "Modell vorhanden") : new(c, ToolState.Missing, null, null, "Modell nicht geladen");
-        var path = m.Integrated(c.Id) is { } saved && m.Exists(saved) ? saved : m.ResolvePath(c) ?? m.FindOnSystem(c);
+        // T-0222: die mitgelieferte, geprüfte Fassung geht vor einer früher gemerkten fremden Installation
+        var path = Vollpaket.IncludedPath(m.ToolsRoot, c.Id) is { } inc && m.Exists(inc) ? inc
+            : m.Integrated(c.Id) is { } saved && m.Exists(saved) ? saved : m.ResolvePath(c) ?? m.FindOnSystem(c);
         if (path is null) return new(c, ToolState.Missing, null, null, "nicht gefunden");
         StudioTools.Verify.TryGetValue(c.Id, out var v);
         if (v.VerifyArgs is null)

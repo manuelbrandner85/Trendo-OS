@@ -83,6 +83,8 @@ public sealed partial class MainWindow : Window
         Func<string, bool>? exists = opt.Isolated ? p => Path.GetFullPath(p).StartsWith(Path.GetFullPath(core.DataRoot), StringComparison.OrdinalIgnoreCase) && File.Exists(p) : null;
         _deps = new DependencyManager(core.Audit, new RealProcessRunner(), fileExists: exists) { ConsentFile = Path.Combine(core.DataRoot, "deps-consent.txt"), ToolsFile = Path.Combine(core.DataRoot, "tools.json") };
         _deps.OllamaUp = opt.Isolated ? () => Task.FromResult(false) : _ollama.IsUpAsync;
+        if (opt.Isolated) _deps.ToolsRoot = Path.Combine(core.DataRoot, "werkzeuge"); // Tests richten nie etwas im echten Werkzeugordner ein
+        else _deps.LocateVollpaket = VollpaketStart.Find;
         StartupTrace.Mark("ctor.deps");
         _settings = UserSettings.Load(core.DataRoot); ApplyTheme(_settings);
         // Felder wurden vor ApplyTheme erzeugt: Schriftfarben nachziehen
@@ -270,6 +272,7 @@ public sealed partial class MainWindow : Window
         // erstes gezeichnetes Bild = sichtbarer Start
         RequestAnimationFrame(_ => { StartupTrace.Mark("first.frame"); StartupTrace.Flush(); });
         // KI-Laufzeit im Hintergrund prüfen/starten – blockiert weder Start noch Bildschirmfoto
+        if (AppStartup.VelopackFirstRun && !_opt.Isolated) _ = SetupVollpaket(); // T-0222: Programme aus dem Vollpaket gleich nach dem Setup
         var ollama = EnsureOllamaRunning();
         if (_opt.KiAsk is { } q)
         {
@@ -891,7 +894,9 @@ public sealed partial class MainWindow : Window
         if (ch.State != ToolState.Working || ch.Path is null) return;
         try
         {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(ch.Path, "serve") { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetDirectoryName(ch.Path)! });
+            var psi = new System.Diagnostics.ProcessStartInfo(ch.Path, "serve") { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetDirectoryName(ch.Path)! };
+            Vollpaket.ConfigureOllama(psi, _deps.ToolsRoot);
+            System.Diagnostics.Process.Start(psi);
             _core.Audit.Append("app", "ki.runtime_started", "ollama serve (127.0.0.1)");
             for (var i = 0; i < 20 && !await _ollama.IsUpAsync(); i++) await Task.Delay(500);
         }
@@ -945,7 +950,7 @@ public sealed partial class MainWindow : Window
         {
             sp.Children.Add(H(grp.Key switch
             {
-                DeliveryMode.Bundled => "Im Setup enthalten", DeliveryMode.AutoUser => "Automatisch pro Benutzer (ohne Admin)",
+                DeliveryMode.Bundled => "Im Setup enthalten", DeliveryMode.Included => "Mitgeliefert mit Trendo OS (Vollpaket, ohne Internet)", DeliveryMode.AutoUser => "Automatisch pro Benutzer (ohne Admin)",
                 DeliveryMode.AutoElevated => "Automatisch, Windows fragt nach Admin-Rechten", DeliveryMode.Guided => "Nur offizieller Herstellerweg (geführt)", _ => "Nicht erforderlich",
             }, 13));
             foreach (var c in grp)
@@ -966,7 +971,7 @@ public sealed partial class MainWindow : Window
                 }
                 else
                 {
-                    var b = new Button { Name = "btn-install-" + c.Id, Content = c.Mode == DeliveryMode.AutoElevated ? "Installieren (Admin)" : "Installieren", IsEnabled = !_depBusy && !_core.Offline };
+                    var b = new Button { Name = "btn-install-" + c.Id, Content = c.Mode switch { DeliveryMode.Included => "Aus dem Vollpaket einrichten", DeliveryMode.AutoElevated => "Installieren (Admin)", _ => "Installieren" }, IsEnabled = !_depBusy && (c.Mode == DeliveryMode.Included || !_core.Offline) };
                     b.Click += async (_, _) => await InstallOne(c);
                     right = b;
                 }
@@ -1093,7 +1098,7 @@ public sealed partial class MainWindow : Window
             if (c.Ok) continue;
             var ask = new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12) };
             var row = new StackPanel { Spacing = 6 };
-            row.Children.Add(new TextBlock { Name = "ask-" + comp.Id, Text = $"{_depStudioTitle} braucht {comp.Name}. Jetzt installieren?", Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
+            row.Children.Add(new TextBlock { Name = "ask-" + comp.Id, Text = comp.Mode == DeliveryMode.Included ? $"{_depStudioTitle} braucht {comp.Name}. Es liegt im Trendo-Vollpaket – jetzt einrichten?" : $"{_depStudioTitle} braucht {comp.Name}. Jetzt installieren?", Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
             row.Children.Add(P($"Lizenz: {comp.License} · {comp.Reason}{(comp.ApproxMb > 0 ? $" · ca. {comp.ApproxMb} MB" : "")}", null, 11));
             var btns = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
             if (comp.Mode == DeliveryMode.Guided)
@@ -1104,7 +1109,7 @@ public sealed partial class MainWindow : Window
             }
             else
             {
-                var y = new Button { Name = "btn-yes-" + comp.Id, Content = comp.Mode == DeliveryMode.AutoElevated ? "Ja, installieren (Windows fragt nach Admin)" : "Ja, installieren", Background = Accent, IsEnabled = !_depBusy && !_core.Offline };
+                var y = new Button { Name = "btn-yes-" + comp.Id, Content = comp.Mode switch { DeliveryMode.Included => "Ja, einrichten", DeliveryMode.AutoElevated => "Ja, installieren (Windows fragt nach Admin)", _ => "Ja, installieren" }, Background = Accent, IsEnabled = !_depBusy && (comp.Mode == DeliveryMode.Included || !_core.Offline) };
                 y.Click += async (_, _) =>
                 {
                     // Freigabe protokolliert über das Approval-Gate (einmalig, zielgebunden)
@@ -1173,10 +1178,26 @@ public sealed partial class MainWindow : Window
         catch { return false; }
     }
 
+    /// <summary>T-0222: nach dem Setup alle mitgelieferten Programme ohne Internet einrichten. Ohne Vollpaket passiert nichts.</summary>
+    private async Task SetupVollpaket()
+    {
+        var dir = await Task.Run(VollpaketStart.Find);
+        if (dir is null) { _core.Audit.Append("app", "vollpaket.not_found", "kein Ordner „Programme“ gefunden"); return; }
+        _deps.VollpaketDir = dir; _depBusy = true;
+        try
+        {
+            var n = await Task.Run(() => Vollpaket.InstallMissing(dir, _deps.ToolsRoot, _core.Audit, line => Dispatcher.UIThread.Post(() => _depLog.Text = line)));
+            _depLog.Text = n == 0 ? "Alle mitgelieferten Programme sind eingerichtet." : $"{n} mitgelieferte Programme eingerichtet ✓";
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or IOException or UnauthorizedAccessException) { _depLog.Text = "Vollpaket: " + ex.Message; }
+        finally { _depBusy = false; }
+        ReloadStudios();
+    }
+
     private async Task InstallAll()
     {
         if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
-        foreach (var c in DependencyCatalog.All.Where(c => c.Mode == DeliveryMode.AutoUser && !_deps.IsInstalled(c)).ToList())
+        foreach (var c in DependencyCatalog.All.Where(c => c.Mode is DeliveryMode.AutoUser or DeliveryMode.Included && !_deps.IsInstalled(c)).ToList())
             if (!await InstallOne(c, refresh: false)) break;
         ReloadStudios(); Show("components");
     }

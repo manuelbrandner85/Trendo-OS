@@ -105,7 +105,7 @@ public static class UninstallPrompt
     [DllImport("ntdll.dll")] static extern int NtQueryInformationProcess(IntPtr process, int cls, ref ProcessBasicInformation info, int size, out int returned);
     [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int MessageBoxTimeoutW(IntPtr hWnd, string text, string caption, uint type, ushort language, int milliseconds);
 
-    static int ParentId(IntPtr handle)
+    internal static int ParentId(IntPtr handle)
     {
         var info = new ProcessBasicInformation();
         return NtQueryInformationProcess(handle, 0, ref info, Marshal.SizeOf(info), out _) == 0 ? info.InheritedFromUniqueProcessId.ToInt32() : 0;

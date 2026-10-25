@@ -45,9 +45,9 @@ public partial class MainWindow
     // ---------- SYS-11: Programme – was da ist, startet mit einem Klick; was fehlt, ist einen Klick entfernt ----------
     private Control AppsView()
     {
-        var sp = new StackPanel { Spacing = 5, Children = { P("Gefundene Programme starten direkt. Fehlt etwas, installiert Trendo es nach deiner Zustimmung.") } };
+        var sp = new StackPanel { Spacing = 5, Children = { P("Gefundene Programme starten direkt. Fehlt etwas, richtet Trendo es aus dem Vollpaket ein oder installiert es nach deiner Zustimmung.") } };
         var i = 0;
-        foreach (var c in DependencyCatalog.All.Where(c => c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Guided))
+        foreach (var c in DependencyCatalog.All.Where(c => c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Guided or DeliveryMode.Included))
         {
             var path = ToolPath(c.Id);
             var exe = path is not null && (path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || File.Exists(path) && !Directory.Exists(path)) ? path : null;

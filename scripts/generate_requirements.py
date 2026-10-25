@@ -135,7 +135,12 @@ principles = [{
         "AK-6: Nach der Installation prüft Trendo OS, ob das Programm wirklich startet, und zeigt das Ergebnis an.",
         "AK-7: Der Nutzer kann jedes optionale Programm wieder entfernen oder abwählen (alles ist anpassbar).",
         "AK-8: Nachweis auf einem echten Windows-PC: Installation aus Trendo OS heraus mit Log für mindestens ein Programm je Liefer-Art.",
-    ],
+    ],    "amendments": [{
+        "date": "2026-10-25",
+        "source": "Manuel im Chat (Auswahl „Mitliefern + nachbauen“, Reihenfolge „Office zuerst“, Programmliste T-0222 „alles gut“)",
+        "wording": "Studio-Programme werden nicht heruntergeladen, sondern mit Trendo OS mitinstalliert (Vollpaket, ohne Internet, ohne Admin). Parallel baut Trendo eigene Programme nach, zuerst Office (Text, Tabelle, PDF); ein eigenes Programm ersetzt das Original im Studio, sobald es reicht. Nur Programme, deren Lizenz die Weitergabe verbietet (Unreal, Chrome, Claude Code, Qwen2.5 3B), bleiben verlinkt; Meshroom und Tor vorerst ebenfalls.",
+        "task": "tasks/T-0222-programme-mitliefern.md",
+    }],
 }]
 doc = {"schema_version": 1, "source": "Trendo OS Production Package v2.1 (2026-10-21)",
        "note": "APPROVED_SPEC bedeutet genehmigte Spezifikation, NICHT gebaut. Alle Tests NOT_RUN bis echte Logs existieren.",

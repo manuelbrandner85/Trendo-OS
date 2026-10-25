@@ -45,15 +45,28 @@ class Program
             var core = new TrendoCore(Options.DataRoot ?? TrendoCore.DefaultDataRoot(), offline: Options.Offline);
             var dm = new DependencyManager(core.Audit, new RealProcessRunner()) { ConsentFile = Path.Combine(core.DataRoot, "deps-consent.txt"), ToolsFile = Path.Combine(core.DataRoot, "tools.json") };
             dm.OllamaUp = new OllamaClient().IsUpAsync;
+            // T-0222: Vollpaket ausdrücklich angeben oder suchen lassen; --werkzeuge für Prüfläufe in einem eigenen Ordner
+            if (Arg("--werkzeuge") is { } wz) dm.ToolsRoot = Path.GetFullPath(wz);
+            if (Arg("--vollpaket") is { } vp) dm.VollpaketDir = Vollpaket.Locate([vp]) ?? throw new InvalidOperationException("Kein gültiges Vollpaket in " + vp);
+            else dm.LocateVollpaket = VollpaketStart.Find;
             var rc = 0;
-            if (Arg("--install-deps") is { } ids)
+            if (Arg("--install-deps") == "vollpaket")
+            {
+                // genau der Weg nach dem Setup (SetupVollpaket): eigene, geprüfte Kopien im Werkzeugordner, schon installierte Programme zählen nicht
+                if (dm.VollpaketDir is null && dm.LocateVollpaket?.Invoke() is { } found) dm.VollpaketDir = found;
+                if (dm.VollpaketDir is null) { Console.WriteLine("FAIL  kein Vollpaket gefunden"); return 1; }
+                try { Console.WriteLine($"PASS  {Vollpaket.InstallMissing(dm.VollpaketDir, dm.ToolsRoot, core.Audit, Console.WriteLine)} Pakete eingerichtet"); }
+                catch (InvalidOperationException e) { Console.WriteLine("FAIL  " + e.Message); rc = 1; }
+            }
+            else if (Arg("--install-deps") is { } ids)
             {
                 if (!dm.HasConsent)
                 {
                     if (!uiArgs.Contains("--accept-licenses")) { Console.WriteLine("Lizenz-Zustimmung fehlt (--accept-licenses)"); return 3; }
                     dm.GiveConsent(Principal.LocalOwner);
                 }
-                var list = ids == "auto" ? DependencyCatalog.All.Where(c => c.Mode == DeliveryMode.AutoUser).ToList() : ids.Split(',').Select(DependencyCatalog.Get).ToList();
+                var list = ids == "auto" ? DependencyCatalog.All.Where(c => c.Mode is DeliveryMode.AutoUser or DeliveryMode.Included).ToList()
+                    : ids == "vollpaket" ? DependencyCatalog.All.Where(c => c.Mode == DeliveryMode.Included).ToList() : ids.Split(',').Select(DependencyCatalog.Get).ToList();
                 foreach (var c in list)
                 {
                     var req = core.Approvals.Request(Principal.LocalOwner, "deps.install", $"{c.Name} installieren", c.Id);

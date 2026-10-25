@@ -226,7 +226,8 @@ public class SPEC15_LiveUi
         w.Find<Button>("live-ffmpeg-yes").Press();
         await Settle();
         Assert.True(File.Exists(Path.Combine(root, "deps-consent.txt")));
-        Assert.Contains(runner.Calls, c => c.A.Contains("Gyan.FFmpeg", StringComparison.Ordinal));
+        // T-0222: FFmpeg kommt aus dem Vollpaket – ohne angeschlossenes Vollpaket wird nichts aus dem Internet geladen
+        Assert.DoesNotContain(runner.Calls, c => c.A.Contains("Gyan.FFmpeg", StringComparison.Ordinal));
         Assert.Empty(factory.Args);
         w.Close();
     }

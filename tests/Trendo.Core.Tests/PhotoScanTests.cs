@@ -157,7 +157,7 @@ public class PhotoScanTests
     public void Katalog()
     {
         var c = DependencyCatalog.Get("colmap");
-        Assert.Equal(DeliveryMode.AutoUser, c.Mode);
+        Assert.Equal(DeliveryMode.Included, c.Mode); // T-0222: kommt mit dem Vollpaket
         Assert.Equal("c493d88cb4a43f21afba42cb55bf786e5434a0420e73db0ba1454c5d8b3686ae", c.PortableSha256);
         Assert.EndsWith("colmap-x64-windows-nocuda.zip", c.PortableZip);
         Assert.Contains("/usr/bin/colmap", c.DetectPaths!);

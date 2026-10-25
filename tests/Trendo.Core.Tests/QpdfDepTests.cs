@@ -23,7 +23,7 @@ public class QpdfDepTests
     public void Katalog_qpdf_portable_mit_offizieller_Pruefsumme()
     {
         var c = DependencyCatalog.Get("qpdf");
-        Assert.Equal(DeliveryMode.AutoUser, c.Mode); Assert.Null(c.WingetId);
+        Assert.Equal(DeliveryMode.Included, c.Mode); Assert.Null(c.WingetId); // T-0222: Vollpaket; die Portable-Angaben bleiben als Bauquelle
         Assert.StartsWith("https://github.com/qpdf/qpdf/releases/download/", c.PortableZip);
         // Setup und Rückfall ersetzen %LOCALAPPDATA%\TrendoOS komplett – Werkzeuge dürfen dort nicht liegen (auf dem PC so verloren gegangen)
         Assert.All(c.DetectPaths!, p => Assert.DoesNotContain(@"\TrendoOS\", p));
@@ -36,7 +36,8 @@ public class QpdfDepTests
     {
         var calls = new List<string>(); var (m, root, _, sha) = Setup(calls);
         var bin = Path.Combine(root, "werkzeuge", "qpdf", "qpdf-*", "bin", "qpdf.exe");
-        var good = DependencyCatalog.Get("qpdf") with { PortableSha256 = sha, DetectPaths = [bin] };
+        // allgemeiner Portable-Weg (für künftige Nachlade-Programme), daher ausdrücklich AutoUser
+        var good = DependencyCatalog.Get("qpdf") with { Mode = DeliveryMode.AutoUser, PortableSha256 = sha, DetectPaths = [bin] };
         var bad = good with { PortableSha256 = new string('0', 64) };
         Assert.False(await m.InstallAsync(Principal.LocalOwner, bad));
         Assert.False(Directory.Exists(Path.Combine(root, "werkzeuge", "qpdf")));

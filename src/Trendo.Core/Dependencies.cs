@@ -15,6 +15,8 @@ public enum DeliveryMode
     Guided,
     /// <summary>Auf dieser Plattform nicht nötig.</summary>
     NotNeeded,
+    /// <summary>Mitgeliefert im Trendo-Vollpaket (T-0222): beim Setup ohne Internet und ohne Admin eingerichtet.</summary>
+    Included,
 }
 
 public sealed record Component(
@@ -37,45 +39,45 @@ public static class DependencyCatalog
         new("yamldotnet", "YamlDotNet", "Spezifikation lesen", "MIT", DeliveryMode.Bundled, "NuGet-Bibliothek"),
         new("wallpaper", "Hintergrund (KI-generiert) + Trendo-Logo (eigener Entwurf)", "Desktop", "Eigenes Projekt-Asset (KI-generiert)", DeliveryMode.Bundled, "Für Trendo OS erstellt"),
         new("webview2", "Microsoft Edge WebView2", "—", "Microsoft", DeliveryMode.NotNeeded, "Trendo OS nutzt keine Web-Ansichten; nicht erforderlich"),
-        new("ollama", "Ollama (lokale KI-Laufzeit)", "Trendo KI Assistent offline", "MIT", DeliveryMode.AutoUser,
-            "Installer ~1 GB → nicht ins Setup gepackt; pro Benutzer ohne Admin installierbar",
+        new("ollama", "Ollama (lokale KI-Laufzeit)", "Trendo KI Assistent offline", "MIT", DeliveryMode.Included,
+            "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
             "Ollama.Ollama", 1100, "https://ollama.com/download", ["ollama"], [@"%LOCALAPPDATA%\Programs\Ollama\ollama.exe"]),
-        new("model", $"KI-Modell Qwen2.5 0.5B ({LocalModel})", "Lokales Sprachmodell", "Apache-2.0", DeliveryMode.AutoUser,
-            "Gewichte ~400 MB, über Ollama geladen", null, 400, "https://ollama.com/library/qwen2.5", ["model"], null, $"ollama pull {LocalModel}"),
+        new("model", $"KI-Modell Qwen2.5 0.5B ({LocalModel})", "Lokales Sprachmodell", "Apache-2.0", DeliveryMode.Included,
+            "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin", null, 400, "https://ollama.com/library/qwen2.5", ["model"], null, $"ollama pull {LocalModel}"),
         new("model-3b", $"KI-Modell Qwen2.5 3B ({LargeModel}, optional)", "Größeres lokales Sprachmodell, besseres Deutsch", "Qwen Research License (nicht-kommerziell frei)", DeliveryMode.AutoUser,
             "Gewichte ~1,9 GB, nur nach Zustimmung über Ollama geladen; empfohlen ab 16 GB RAM", null, 1900, "https://ollama.com/library/qwen2.5:3b", ["model-3b"], null, $"ollama pull {LargeModel}"),
-        new("git", "Git für Windows", "Web & App Studio, Versionierung", "GPL-2.0", DeliveryMode.AutoUser, "Pro Benutzer installierbar",
+        new("git", "Git für Windows", "Web & App Studio, Versionierung", "GPL-2.0", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
             "Git.Git", 350, "https://git-scm.com", ["git"], [@"%LOCALAPPDATA%\Programs\Git\cmd\git.exe", @"%ProgramFiles%\Git\cmd\git.exe"]),
-        new("python", "Python 3.13", "Automatisierung, Hilfswerkzeuge", "PSF-2.0", DeliveryMode.AutoUser, "Pro Benutzer installierbar",
+        new("python", "Python 3.13", "Automatisierung, Hilfswerkzeuge", "PSF-2.0", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
             "Python.Python.3.13", 120, "https://python.org", ["python"], [@"%LOCALAPPDATA%\Programs\Python\Python313\python.exe", @"%ProgramFiles%\Python313\python.exe"]),
-        new("mpv", "mpv Player", "Medien Studio – Wiedergabe", "GPL-2.0-or-later", DeliveryMode.AutoUser, "winget-Paket ohne Scope-Angabe (Inno, Standard pro Benutzer)",
+        new("mpv", "mpv Player", "Medien Studio – Wiedergabe", "GPL-2.0-or-later", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
             "shinchiro.mpv", 60, "https://mpv.io", ["mpv"], [@"%LOCALAPPDATA%\Programs\mpv\mpv.exe", @"%ProgramFiles%\MPV Player\mpv.exe", @"%ProgramFiles%\mpv\mpv.exe"]),
-        new("sumatra", "SumatraPDF", "PDF-Ansicht (Basispaket)", "GPL-3.0", DeliveryMode.AutoUser, "Pro Benutzer installierbar (winget --scope user)",
+        new("sumatra", "SumatraPDF", "PDF-Ansicht (Basispaket)", "GPL-3.0", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
             "SumatraPDF.SumatraPDF", 15, "https://www.sumatrapdfreader.org", ["sumatrapdf"], [@"%LOCALAPPDATA%\SumatraPDF\SumatraPDF.exe", @"%ProgramFiles%\SumatraPDF\SumatraPDF.exe"]),
-        new("7zip", "7-Zip", "Archive ZIP/7z (Basispaket)", "LGPL-2.1 + unRAR-Einschränkung", DeliveryMode.AutoElevated, "Nur systemweiter Installer – Windows fragt einmal nach Admin",
+        new("7zip", "7-Zip", "Archive ZIP/7z (Basispaket)", "LGPL-2.1 + unRAR-Einschränkung", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
             "7zip.7zip", 6, "https://www.7-zip.org", ["7z"], [@"%ProgramFiles%\7-Zip\7z.exe"]),
-        new("libreoffice", "LibreOffice", "Office Studio", "MPL-2.0", DeliveryMode.AutoElevated, "Nur systemweiter MSI-Installer – Windows fragt nach Admin",
+        new("libreoffice", "LibreOffice", "Office Studio", "MPL-2.0", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
             "TheDocumentFoundation.LibreOffice", 350, "https://libreoffice.org", ["libreoffice"], [@"%ProgramFiles%\LibreOffice\program\soffice.exe"]),
-        new("ffmpeg", "FFmpeg", "Medien-Studio: umwandeln, schneiden, Ton herausholen", "LGPL-2.1-or-later / GPL (Build)", DeliveryMode.AutoUser,
-            "Pro Benutzer ohne Admin über winget", "Gyan.FFmpeg", 100, "https://ffmpeg.org", ["ffmpeg"], [@"%LOCALAPPDATA%\Microsoft\WinGet\Links\ffmpeg.exe"]),
-        new("adb", "Android Platform-Tools (adb)", "Handy per Kabel oder WLAN verbinden", "Apache-2.0", DeliveryMode.AutoUser,
-            "Offizielles Werkzeug von Google. Nur nach Zustimmung. Unter Linux liegt es meist als Paket „adb“ vor.",
+        new("ffmpeg", "FFmpeg", "Medien-Studio: umwandeln, schneiden, Ton herausholen", "LGPL-2.1-or-later / GPL (Build)", DeliveryMode.Included,
+            "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin", "Gyan.FFmpeg", 100, "https://ffmpeg.org", ["ffmpeg"], [@"%LOCALAPPDATA%\Microsoft\WinGet\Links\ffmpeg.exe"]),
+        new("adb", "Android Platform-Tools (adb)", "Handy per Kabel oder WLAN verbinden", "Apache-2.0", DeliveryMode.Included,
+            "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
             "Google.PlatformTools", 15, "https://developer.android.com/tools/releases/platform-tools", ["adb"],
             [@"%LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe", @"%LOCALAPPDATA%\Microsoft\WinGet\Links\adb.exe",
              @"%LOCALAPPDATA%\Microsoft\WinGet\Packages\Google.PlatformTools*\platform-tools\adb.exe",
              @"%LOCALAPPDATA%\Microsoft\WinGet\Packages\Genymobile.scrcpy*\*\adb.exe",
              "/usr/bin/adb", "/usr/local/bin/adb", "/usr/lib/android-sdk/platform-tools/adb"]),
-        new("scrcpy", "scrcpy", "Handy-Bildschirm auf dem PC zeigen", "Apache-2.0", DeliveryMode.AutoUser,
-            "Zeigt den Handy-Bildschirm. Nur nach Zustimmung. Unter Linux liegt es meist als Paket „scrcpy“ vor.",
+        new("scrcpy", "scrcpy", "Handy-Bildschirm auf dem PC zeigen", "Apache-2.0", DeliveryMode.Included,
+            "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
             "Genymobile.scrcpy", 10, "https://github.com/Genymobile/scrcpy", ["scrcpy"],
             [@"%LOCALAPPDATA%\Microsoft\WinGet\Links\scrcpy.exe",
              @"%LOCALAPPDATA%\Microsoft\WinGet\Packages\Genymobile.scrcpy*\scrcpy.exe",
              @"%LOCALAPPDATA%\Microsoft\WinGet\Packages\Genymobile.scrcpy*\*\scrcpy.exe",
              "/usr/bin/scrcpy", "/usr/local/bin/scrcpy"]),
-        new("blender", "Blender", "3D Studio", "GPL-3.0-or-later", DeliveryMode.AutoElevated, "Nur systemweiter Installer – Windows fragt nach Admin",
+        new("blender", "Blender", "3D Studio", "GPL-3.0-or-later", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
             "BlenderFoundation.Blender", 400, "https://blender.org", ["blender"], [@"%ProgramFiles%\Blender Foundation\*\blender.exe"]),
-        new("colmap", "COLMAP", "Gegenstände aus Fotos als 3D-Modell rechnen", "BSD-3-Clause", DeliveryMode.AutoUser,
-            "Kein winget-Paket. Offizielles Windows-ZIP ohne Grafikkarte, Prüfsumme von der Herstellerseite, nur im Benutzerordner",
+        new("colmap", "COLMAP", "Gegenstände aus Fotos als 3D-Modell rechnen", "BSD-3-Clause", DeliveryMode.Included,
+            "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
             null, 122, "https://github.com/colmap/colmap/releases/tag/4.2.1", ["colmap"],
             [@"%LOCALAPPDATA%\TrendoWerkzeuge\colmap\bin\colmap.exe", @"%LOCALAPPDATA%\TrendoWerkzeuge\colmap\*\bin\colmap.exe", @"%ProgramFiles%\COLMAP\bin\colmap.exe", "/usr/bin/colmap", "/usr/local/bin/colmap"],
             null, "https://github.com/colmap/colmap/releases/download/4.2.1/colmap-x64-windows-nocuda.zip", "c493d88cb4a43f21afba42cb55bf786e5434a0420e73db0ba1454c5d8b3686ae"),
@@ -83,17 +85,17 @@ public static class DependencyCatalog
             "Kein zuverlässiges winget-Paket. Nur der offizielle Download, danach erkennt Trendo das Programm",
             null, 1500, "https://github.com/alicevision/Meshroom/releases", ["meshroom_batch"],
             [@"%LOCALAPPDATA%\Programs\Meshroom\meshroom_batch.exe", @"%ProgramFiles%\Meshroom\meshroom_batch.exe", "/usr/bin/meshroom_batch", "/usr/local/bin/meshroom_batch"]),
-        new("krita", "Krita", "Medien Studio – Grafik", "GPL-3.0", DeliveryMode.AutoElevated, "Systemweiter Installer", "KDE.Krita", 200, "https://krita.org", ["krita"], [@"%ProgramFiles%\Krita (x64)\bin\krita.exe"]),
-        new("inkscape", "Inkscape", "Medien Studio – Vektor", "GPL-2.0", DeliveryMode.AutoElevated, "Systemweiter Installer", "Inkscape.Inkscape", 200, "https://inkscape.org", ["inkscape"], [@"%ProgramFiles%\Inkscape\bin\inkscape.exe"]),
-        new("kdenlive", "Kdenlive", "Medien Studio – Video", "GPL-3.0", DeliveryMode.AutoUser, "Pro Benutzer installierbar (winget-Benutzerinstaller vorhanden)", "KDE.Kdenlive", 300, "https://kdenlive.org", ["kdenlive"], [@"%LOCALAPPDATA%\Programs\kdenlive\bin\kdenlive.exe", @"%ProgramFiles%\kdenlive\bin\kdenlive.exe"]),
-        new("audacity", "Audacity", "Medien Studio – Audio", "GPL-3.0-or-later", DeliveryMode.AutoElevated, "Systemweiter Installer", "Audacity.Audacity", 100, "https://audacityteam.org", ["audacity"], [@"%ProgramFiles%\Audacity\Audacity.exe"]),
-        new("qpdf", "qpdf", "Office – PDF zusammenfügen/teilen", "Apache-2.0", DeliveryMode.AutoUser, "Offizielles Portable-ZIP (GitHub-Release), Prüfsumme fest – ohne Admin, nur im Benutzerordner", null, 25, "https://github.com/qpdf/qpdf/releases/tag/v12.4.2", ["qpdf"],
+        new("krita", "Krita", "Medien Studio – Grafik", "GPL-3.0", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin", "KDE.Krita", 200, "https://krita.org", ["krita"], [@"%ProgramFiles%\Krita (x64)\bin\krita.exe"]),
+        new("inkscape", "Inkscape", "Medien Studio – Vektor", "GPL-2.0", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin", "Inkscape.Inkscape", 200, "https://inkscape.org", ["inkscape"], [@"%ProgramFiles%\Inkscape\bin\inkscape.exe"]),
+        new("kdenlive", "Kdenlive", "Medien Studio – Video", "GPL-3.0", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin", "KDE.Kdenlive", 300, "https://kdenlive.org", ["kdenlive"], [@"%LOCALAPPDATA%\Programs\kdenlive\bin\kdenlive.exe", @"%ProgramFiles%\kdenlive\bin\kdenlive.exe"]),
+        new("audacity", "Audacity", "Medien Studio – Audio", "GPL-3.0-or-later", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin", "Audacity.Audacity", 100, "https://audacityteam.org", ["audacity"], [@"%ProgramFiles%\Audacity\Audacity.exe"]),
+        new("qpdf", "qpdf", "Office – PDF zusammenfügen/teilen", "Apache-2.0", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin", null, 25, "https://github.com/qpdf/qpdf/releases/tag/v12.4.2", ["qpdf"],
             [@"%LOCALAPPDATA%\TrendoWerkzeuge\qpdf\qpdf-*\bin\qpdf.exe", "/usr/bin/qpdf"], null,
             "https://github.com/qpdf/qpdf/releases/download/v12.4.2/qpdf-12.4.2-msvc64.zip", "db87077e683630c1217e0e8f9a20a9749d952ab676e881c3689187763a5de25d"),
-        new("tesseract", "Tesseract OCR", "Letter Studio – Texterkennung", "Apache-2.0", DeliveryMode.AutoElevated, "Systemweiter Installer", "UB-Mannheim.TesseractOCR", 100, "https://github.com/UB-Mannheim/tesseract", ["tesseract"], [@"%ProgramFiles%\Tesseract-OCR\tesseract.exe"]),
-        new("vscode", "Visual Studio Code", "Web & App Studio – Code bearbeiten", "MIT (Quellcode) / Microsoft-Lizenz (Build)", DeliveryMode.AutoUser, "Pro Benutzer installierbar (winget --scope user)",
+        new("tesseract", "Tesseract OCR", "Letter Studio – Texterkennung", "Apache-2.0", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin", "UB-Mannheim.TesseractOCR", 100, "https://github.com/UB-Mannheim/tesseract", ["tesseract"], [@"%ProgramFiles%\Tesseract-OCR\tesseract.exe"]),
+        new("vscode", "VSCodium (freie Fassung von VS Code)", "Web & App Studio – Code bearbeiten", "MIT", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
             "Microsoft.VisualStudioCode", 100, "https://code.visualstudio.com", ["code"], [@"%LOCALAPPDATA%\Programs\Microsoft VS Code\Code.exe", @"%ProgramFiles%\Microsoft VS Code\Code.exe"]),
-        new("obs", "OBS Studio", "Sendung & Stream – aufnehmen und streamen", "GPL-2.0-or-later", DeliveryMode.AutoElevated, "Systemweiter Installer – Windows fragt nach Admin",
+        new("obs", "OBS Studio", "Sendung & Stream – aufnehmen und streamen", "GPL-2.0-or-later", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
             "OBSProject.OBSStudio", 150, "https://obsproject.com", ["obs"], [@"%ProgramFiles%\obs-studio\bin\64bit\obs64.exe"]),
         new("unreal", "Unreal Engine", "Game Studio", "Epic EULA (nicht weitergebbar)", DeliveryMode.Guided,
             "Nur über Epic Games Launcher mit Epic-Konto erlaubt – keine automatische Installation", null, 0, "https://www.unrealengine.com/download", ["unreal"], [@"%ProgramFiles%\Epic Games\UE_*\Engine\Binaries\Win64\UnrealEditor.exe"]),
@@ -181,6 +183,7 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
     {
         if (c.Mode is DeliveryMode.Bundled or DeliveryMode.NotNeeded) return true;
         if (c.Id == "model") return ModelPresent;
+        if (Vollpaket.IncludedPath(ToolsRoot, c.Id) is { } ip && _exists(ip)) return true;
         if (c.Id == "model-3b") return HasModel(DependencyCatalog.LargeModel);
         return c.DetectPaths?.Any(p => _exists(_expand(p))) == true;
     }
@@ -192,30 +195,48 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
     {
         var name = model.Split(':');
         var manifest = Path.Combine(_expand("%USERPROFILE%"), ".ollama", "models", "manifests", "registry.ollama.ai", "library", name[0], name[1]);
-        return _exists(manifest);
+        return _exists(manifest) || _exists(Path.Combine(ToolsRoot, "model", "manifests", "registry.ollama.ai", "library", name[0], name[1]));
     }
 
     /// <summary>Ziel für Portable-Werkzeuge (Benutzerordner, kein Admin) – bewusst außerhalb von %LOCALAPPDATA%\\TrendoOS, das Setup/Rückfall komplett ersetzt.</summary>
     public string ToolsRoot { get; set; } = DataLocation.ToolsRoot();
 
-    public string? ResolvePath(Component c) => c.DetectPaths?.Select(_expand).Where(_exists).Select(p => p.Contains('*') ? ResolveGlob(p) ?? (_customExists ? p : null) : p).FirstOrDefault(p => p is not null);
+    /// <summary>Ordner „Programme“ des Vollpakets, falls gefunden (siehe <see cref="Vollpaket.Locate"/>).</summary>
+    public string? VollpaketDir { get; set; }
+
+    /// <summary>Vom Host gesetzt: sucht das Vollpaket, wenn es beim Einrichten noch nicht bekannt ist. In Tests nie gesetzt.</summary>
+    public Func<string?>? LocateVollpaket { get; set; }
+
+    public string? ResolvePath(Component c) => Vollpaket.IncludedPath(ToolsRoot, c.Id) is { } ip && c.Id != "model" && _exists(ip) ? ip : c.DetectPaths?.Select(_expand).Where(_exists).Select(p => p.Contains('*') ? ResolveGlob(p) ?? (_customExists ? p : null) : p).FirstOrDefault(p => p is not null);
 
     /// <summary>Installiert automatisch (AutoUser/AutoElevated). Guided/Bundled werfen.</summary>
     public async Task<bool> InstallAsync(Principal by, Component c, Action<string>? progress = null, CancellationToken ct = default)
     {
         Rbac.Demand(by, Permission.ApproveAction);
         if (!HasConsent) throw new InvalidOperationException("Lizenz-Zustimmung fehlt");
-        if (c.Mode is not (DeliveryMode.AutoUser or DeliveryMode.AutoElevated)) throw new InvalidOperationException($"{c.Name} wird nicht automatisch installiert ({c.Mode})");
+        if (c.Mode is not (DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Included)) throw new InvalidOperationException($"{c.Name} wird nicht automatisch installiert ({c.Mode})");
         if (IsInstalled(c)) { progress?.Invoke($"{c.Name}: bereits vorhanden – nichts geändert"); return true; }
         audit.Append(by.Name, "deps.install.start", c.Id);
         (int exit, string output) r;
-        if (c.PostInstall is { } cmd)
+        if (c.Mode == DeliveryMode.Included)
+        {
+            // Mitgeliefert: nur aus dem Vollpaket, nie aus dem Internet
+            var pkg = Vollpaket.Included[c.Id].Package;
+            VollpaketDir ??= LocateVollpaket?.Invoke();
+            var entry = VollpaketDir is { } dir ? Vollpaket.Load(dir)?.FirstOrDefault(e => e.Id == pkg) : null;
+            if (entry is null) r = (1, "Vollpaket nicht gefunden – bitte den Trendo-USB-Stick oder den Ordner mit „Programme“ anschließen.");
+            else
+                try { Vollpaket.InstallPackage(VollpaketDir!, entry, ToolsRoot, audit); r = (0, ""); progress?.Invoke($"{c.Name}: aus dem Vollpaket eingerichtet"); }
+                catch (InvalidOperationException e) { r = (1, e.Message); }
+            if (r.exit != 0) progress?.Invoke(r.output);
+        }
+        else if (c.PostInstall is { } cmd)
         {
             var ollama = ResolvePath(DependencyCatalog.Get("ollama")) ?? throw new InvalidOperationException("Ollama fehlt – zuerst Ollama installieren");
             // Modell-Download braucht den lokalen Dienst: falls nicht aktiv, „ollama serve“ starten (nur 127.0.0.1)
             if (!await OllamaUp())
             {
-                try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(ollama, "serve") { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetDirectoryName(ollama)! }); audit.Append("app", "ki.runtime_started", "ollama serve"); }
+                try { var psi = new System.Diagnostics.ProcessStartInfo(ollama, "serve") { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetDirectoryName(ollama)! }; Vollpaket.ConfigureOllama(psi, ToolsRoot); System.Diagnostics.Process.Start(psi); audit.Append("app", "ki.runtime_started", "ollama serve"); }
                 catch { }
                 for (var i = 0; i < 30 && !await OllamaUp(); i++) await Task.Delay(500, ct);
             }

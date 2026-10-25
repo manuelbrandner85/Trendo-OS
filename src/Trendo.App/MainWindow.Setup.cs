@@ -121,7 +121,7 @@ public sealed partial class MainWindow
         if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
         var list = SetupPacks.ComponentsFor(_settings.StudioPacks).ToList();
         if (_settings.StudioPacks.Contains("ki") && model == DependencyCatalog.LargeModel) list.Add(DependencyCatalog.Get("model-3b"));
-        var todo = list.Where(c => !_deps.IsInstalled(c) && c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated).ToList();
+        var todo = list.Where(c => !_deps.IsInstalled(c) && c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Included).ToList();
         for (var i = 0; i < todo.Count; i++)
         {
             _depLog.Text = $"{i + 1}/{todo.Count}: {todo[i].Name} …";
@@ -173,7 +173,7 @@ public sealed partial class MainWindow
         var rows = new List<(string Name, string State, string Detail, Component? Fix)>();
         foreach (var (c, ch) in checks)
             rows.Add((c.Name, ch.State switch { ToolState.Working => "Bereit", ToolState.Broken => "Defekt", _ => "Fehlt" }, ch.Version ?? ch.Detail ?? "",
-                ch.State == ToolState.Working || c.Mode is not (DeliveryMode.AutoUser or DeliveryMode.AutoElevated) ? null : c));
+                ch.State == ToolState.Working || c.Mode is not (DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Included) ? null : c));
         rows.Add(("Benutzerdaten", Directory.Exists(_core.DataRoot) ? "Bereit" : "Fehlt", _core.DataRoot, null));
         rows.Add(("Projektordner", Directory.Exists(_settings.ProjectsFolder) ? "Bereit" : "Fehlt", _settings.ProjectsFolder, null));
         var last = Backups.List().FirstOrDefault();

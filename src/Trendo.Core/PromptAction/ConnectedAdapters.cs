@@ -452,6 +452,8 @@ public sealed class InstallAdapter : IStudioActionAdapter
         if (component is null) return FieldKit.Blocked("Dieses Programm steht nicht im Katalog. Es wird nichts installiert.");
         if (component.Mode == DeliveryMode.AutoElevated)
             return FieldKit.Blocked(component.Name + " braucht eine Installation für alle Benutzer mit Administrator-Abfrage. Das geht nicht über einen Auftrag – bitte unter Einstellungen → Zusatzprogramme einrichten.");
+        if (component.Mode == DeliveryMode.Included)
+            return FieldKit.Blocked(component.Name + " kommt mit Trendo OS aus dem Vollpaket – bitte unter Einstellungen → Zusatzprogramme einrichten.");
         if (component.Mode is not DeliveryMode.AutoUser)
             return FieldKit.Blocked(component.Name + " wird nicht automatisch installiert.");
         var body = "Plan: " + component.Name + " (" + component.Id + ")\nwinget: " + component.WingetId + "\nEs wurde nichts installiert. Die Installation wartet auf die Freigabe und die bestehende Lizenz-Zustimmung.\n";

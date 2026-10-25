@@ -249,9 +249,9 @@ public sealed class FachprogrammAdapter
             return Neu(p, _probe.TryGetValue(id, out var ok) && ok.Stand == FachprogrammStand.Erreichbar ? FachprogrammStand.Erreichbar : FachprogrammStand.GefundenNichtGeprueft,
                 "Schon vorhanden. Es wird nichts heruntergeladen.", vorhanden, null, _gebunden.Contains(id));
         var c = DependencyCatalog.Get(p.Id);
-        if (c.Mode is not (DeliveryMode.AutoUser or DeliveryMode.AutoElevated))
+        if (c.Mode is not (DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Included))
             return Neu(p, FachprogrammStand.NichtGefunden, "Das wird nicht automatisch installiert. Es wurde nichts geladen.", null, null, false);
-        if (_offline)
+        if (_offline && c.Mode != DeliveryMode.Included) // Vollpaket braucht kein Internet
             return Neu(p, FachprogrammStand.NichtGefunden, "Offline. Es wird nichts heruntergeladen.", null, null, false);
         if (!_deps.HasConsent)
             return Neu(p, FachprogrammStand.FreigabeNoetig, "Die Zustimmung fehlt. Es wurde nichts installiert.", null, null, false);

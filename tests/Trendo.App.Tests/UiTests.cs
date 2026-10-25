@@ -272,7 +272,7 @@ public class StudioDepsUi
         await w.OpenStudio("CORE-08", "Medien Studio"); Dispatcher.UIThread.RunJobs();
         if (w.CurrentView == "studios") { w.Close(); return; } // mpv auf dem Testrechner vorhanden → keine Frage nötig
         Assert.Equal("studio-deps", w.CurrentView);
-        Assert.Equal("Medien Studio braucht mpv Player. Jetzt installieren?", w.Find<TextBlock>("ask-mpv").Text);
+        Assert.Equal("Medien Studio braucht mpv Player. Es liegt im Trendo-Vollpaket – jetzt einrichten?", w.Find<TextBlock>("ask-mpv").Text);
         w.Find<Button>("btn-later-mpv").Press(); Dispatcher.UIThread.RunJobs();
         Assert.DoesNotContain(r.Calls, a => a.Contains("install"));
         Assert.Contains(w.Core.Audit.ReadAll(), e => e.Action == "deps.declined");
@@ -332,9 +332,8 @@ public class W0_SetupWizard
         w.Find<Button>("wiz-install").Press();
         for (var i = 0; i < 100 && w.TryFind<Button>("wiz-done") is null; i++) { await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }
         Assert.NotNull(w.TryFind<Button>("wiz-done"));
-        Assert.Contains(r.Calls, c => c.Contains("SumatraPDF.SumatraPDF") && c.Contains("--scope user"));
-        Assert.Contains(r.Calls, c => c.Contains("Git.Git"));
-        Assert.DoesNotContain(r.Calls, c => c.Contains("LibreOffice"));
+        // T-0222: Basis- und Studio-Programme kommen aus dem Vollpaket, nie per winget
+        Assert.DoesNotContain(r.Calls, c => c.Contains("SumatraPDF.SumatraPDF") || c.Contains("Git.Git") || c.Contains("LibreOffice"));
         Assert.True(File.Exists(Path.Combine(proj, "Vorlagen", "DIN5008-Geschaeftsbrief-FormB.docx")));
         var s = UserSettings.Load(root);
         Assert.True(s.SetupDone); Assert.Equal("Manuel", s.Name); Assert.Equal("kontrast", s.Theme); Assert.Equal(proj, s.ProjectsFolder);

@@ -175,7 +175,7 @@ public class W7_Ui
         Assert.NotNull(w.Find<Button>("phone-adb-yes"));
         Assert.DoesNotContain(run.Calls, c => c.File == "winget");
         await w.InstallPhoneToolAsync("adb");
-        Assert.Contains(run.Calls, c => c.File == "winget" && c.Args.Contains("Google.PlatformTools") && !c.Args.Contains("--scope user"));
+        Assert.DoesNotContain(run.Calls, c => c.File == "winget"); // T-0222: adb kommt mit scrcpy aus dem Vollpaket
         await w.SearchBluetoothAsync();
         Assert.Contains("Pixel", w.Find<TextBlock>("phone-bt-0").Text);
         Assert.Equal(["search"], bt.Calls);

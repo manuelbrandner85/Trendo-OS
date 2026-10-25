@@ -118,7 +118,7 @@ public class W4_Core05_Ui
         w.Find<Button>("3d-setup-blender").Press();
         await Until(() => w.CurrentView == "studio-deps");
         Assert.Equal("studio-deps", w.CurrentView);
-        Assert.Equal("3D-Modelle erstellen braucht Blender. Jetzt installieren?", w.Find<TextBlock>("ask-blender").Text);
+        Assert.Equal("3D-Modelle erstellen braucht Blender. Es liegt im Trendo-Vollpaket – jetzt einrichten?", w.Find<TextBlock>("ask-blender").Text);
         Assert.Empty(l.Opened);
         w.Find<Button>("btn-later-blender").Press();
         Assert.Equal("3d", w.CurrentView);
