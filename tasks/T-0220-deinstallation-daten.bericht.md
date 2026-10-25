@@ -26,7 +26,7 @@
 ## PC-Prüfung (2026-10-25, echter Datenordner)
 - Hook ohne Antwort: Die Frage erschien, nach 25,2 s endete der Hook mit „Keine Antwort: Daten bleiben“. Die Daten waren laut SHA-256-Vergleich unverändert.
 - Hook mit `--silent` im Aufruf: keine Frage („Stille Deinstallation: Daten bleiben“), Dauer 1,2 s.
-- Den Fall „Ja, löschen“ prüfen nur Tests mit Temp-Ordnern, nicht Manuels echte Daten.
+- Den Fall „Ja, löschen“ prüfen hier nur Tests mit Temp-Ordnern; der echte Lauf mit Setup 0.9.8 folgt unten.
 
 ## Tests (Release, Windows-PC)
 Build 0 Warnungen, 0 Fehler · Api 15/15 · Core 670 bestanden, 1 übersprungen (von 671) · App 328 bestanden, 2 übersprungen (von 330), 17 min 15 s · Paket-Tests OK.
