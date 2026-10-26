@@ -100,12 +100,12 @@ public class Sys10_Office
     public void MinutesTasks()
     {
         var d = Tmp(); var tl = new TaskList(d);
-        var t = tl.Add("Angebot schicken", new DateTime(2026, 11, 2, 9, 0, 0), "Manuel"); tl.Add("Später", null);
+        var t = tl.Add("Angebot schicken", new DateTime(2026, 11, 2, 9, 0, 0), "Erika"); tl.Add("Später", null);
         Assert.Single(tl.Overdue(new DateTime(2026, 11, 3))); tl.Toggle(t.Id); Assert.Empty(tl.Overdue(new DateTime(2026, 11, 3)));
         var ics = TaskList.ToIcs(tl.All());
         Assert.Contains("BEGIN:VTODO", ics); Assert.Contains("DUE:20261102T090000", ics); Assert.Contains("BEGIN:VALARM", ics); Assert.Contains("STATUS:COMPLETED", ics);
         var (docx, icsf) = TaskList.WriteMinutes(new("Projekt X", new DateTime(2026, 10, 21, 10, 0, 0), "A, B", "Punkt 1", tl.All()), d);
-        Assert.Contains("Angebot schicken – Manuel – bis 02.11.2026", Ooxml.DocxText(docx)); Assert.Equal(2, File.ReadAllText(icsf).Split("BEGIN:VTODO").Length - 1);
+        Assert.Contains("Angebot schicken – Erika – bis 02.11.2026", Ooxml.DocxText(docx)); Assert.Equal(2, File.ReadAllText(icsf).Split("BEGIN:VTODO").Length - 1);
         TaskList.WriteMinutes(new("Projekt X", new DateTime(2026, 10, 21, 10, 0, 0), "A", "neu", []), d); Assert.Single(DocVersions.Versions(docx)); // P19
     }
 

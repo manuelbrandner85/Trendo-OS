@@ -1,6 +1,6 @@
 #!/bin/bash
 # Legt auf einem ZIELGERÄT eine LUKS-verschlüsselte Persistenzpartition für Trendo OS an.
-# ACHTUNG: ändert Partitionen. Nur mit ausdrücklicher Freigabe von Manuel und nur auf dem externen Ziel-Medium.
+# ACHTUNG: ändert Partitionen. Nur mit ausdrücklicher Freigabe des Nutzers und nur auf dem externen Ziel-Medium.
 # Schutz: verweigert Geräte mit Windows-/BitLocker-Partitionen, interne (nicht-removable) Laufwerke ohne --allow-fixed,
 # und verlangt die Eingabe der Seriennummer-Endung zur Bestätigung. Für Tests: Image-Datei statt Gerät angeben.
 set -euo pipefail

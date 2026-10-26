@@ -1,4 +1,4 @@
-"""Logo-Vorschläge für Trendo OS (Wunsch Manuel 2026-10-26: „viel moderner und edler“) mit lokaler Bild-KI: ComfyUI + FLUX.2 klein 4B, nur 127.0.0.1.
+"""Logo-Vorschläge für Trendo OS (Vorgabe 2026-10-26: „viel moderner und edler“) mit lokaler Bild-KI: ComfyUI + FLUX.2 klein 4B, nur 127.0.0.1.
 
 Erzeugt Vorschläge nach docs/design/logo-vorschlaege/<id>.jpg (1024×1024), Herkunft in docs/design/LOGO_VORSCHLAEGE.json.
 Das gewählte Motiv wird danach als Vektor (SVG) nachgebaut – das KI-Bild ist die Vorlage, nicht das fertige Logo.

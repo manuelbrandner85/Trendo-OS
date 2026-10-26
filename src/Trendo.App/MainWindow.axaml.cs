@@ -20,7 +20,7 @@ public sealed partial class MainWindow : Window
 {
     // Farben: dunkles Blau, Glas-Panels, kühle Akzente
     private static IBrush Glass = new SolidColorBrush(Color.Parse("#B30B1730"));
-    private static IBrush GlassStrong = new SolidColorBrush(Color.Parse("#D90A1428"));
+    private static IBrush GlassStrong = new SolidColorBrush(Color.Parse("#F50A1428"));
     private static IBrush TileBg = new SolidColorBrush(Color.Parse("#99142445"));
     private static IBrush Edge = new SolidColorBrush(Color.Parse("#3355A8FF"));
     private static IBrush Accent = Brush.Parse("#3BA7FF");
@@ -119,6 +119,7 @@ public sealed partial class MainWindow : Window
         _status.IsVisible = false;
         _search.KeyDown += (_, e) => { if (e.Key == Key.Enter) { _query = _search.Text ?? ""; Show("suche"); } };
         WireKi();
+        InitSetupOverlay(root);
         var scaler = new LayoutTransformControl { Child = root };
         Content = scaler;
         void DoRescale()
@@ -353,27 +354,11 @@ public sealed partial class MainWindow : Window
     }
     private static TextBlock Glyph(string glyph, double size = 18) => new() { Text = glyph, FontSize = size, HorizontalAlignment = HorizontalAlignment.Center };
 
-    /// <summary>Trendo-Logo A „Obsidian-Kachel“ (Vektor-Nachbau von Assets/logo/trendo-logo-a.svg, viewBox 64×64).</summary>
+    /// <summary>Trendo-Logo B „Saphir-Kristall“ (<see cref="TrendoLogo"/>, Vektor, viewBox 64×64).</summary>
     internal static Control Logo(double size, bool glow = false)
     {
-        static LinearGradientBrush Lg(string a, string b, bool diag) => new()
-        {
-            StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(diag ? 1 : 0, 1, RelativeUnit.Relative),
-            GradientStops = { new GradientStop(Color.Parse(a), 0), new GradientStop(Color.Parse(b), 1) },
-        };
-        static Border R(double x, double y, double w, double h, double r, IBrush fill, IBrush? stroke = null, double st = 0)
-        {
-            var e = new Border { Width = w, Height = h, CornerRadius = new CornerRadius(r), Background = fill, BorderBrush = stroke, BorderThickness = new Thickness(st) };
-            Canvas.SetLeft(e, x); Canvas.SetTop(e, y); return e;
-        }
-        var canvas = new Canvas { Width = 64, Height = 64, Children =
-        {
-            R(1, 1, 62, 62, 16, Lg("#1B3150", "#060D1A", true), Brush.Parse("#335578"), 2),
-            R(13, 14, 38, 10, 5, Brush.Parse("#F0F6FF")),
-            R(27, 14, 10, 36, 5, Lg("#7FD8FF", "#2A7FFF", false)),
-        } };
-        var box = new Viewbox { Name = "trendo-logo", Width = size, Height = size, Stretch = Stretch.Uniform, Child = canvas };
-        if (glow) box.Effect = new DropShadowEffect { Color = Color.Parse("#2E8BFF"), BlurRadius = size * 0.35, OffsetX = 0, OffsetY = 0, Opacity = 0.8 };
+        var box = new Viewbox { Name = "trendo-logo", Width = size, Height = size, Stretch = Stretch.Uniform, Child = TrendoLogo.Build() };
+        if (glow) box.Effect = new DropShadowEffect { Color = Color.Parse(TrendoLogo.Glow), BlurRadius = size * 0.35, OffsetX = 0, OffsetY = 0, Opacity = 0.8 };
         ToolTip.SetTip(box, "Trendo-Logo");
         return box;
     }
@@ -667,13 +652,25 @@ public sealed partial class MainWindow : Window
             ShowHelp(key, force: true);
         };
         var heading = H(title, 22); heading.Name = "page-title";
-        var titleCol = new StackPanel { Spacing = 2, Children = { heading } };
+        var titleCol = new StackPanel { Spacing = 2, VerticalAlignment = VerticalAlignment.Center, Children = { heading } };
         if (StudioIdForPage(CurrentView) is { } sid && StudioCatalog.For(sid) is { } info)
         {
-            var line = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
-            if (StudioIcons.For(sid) is { } si) line.Children.Add(Chip(si.Path, si.C1, si.C2, 22, 0.62));
-            line.Children.Add(new TextBlock { Text = info.Sentence, Foreground = Muted, FontSize = 13, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center });
-            titleCol.Children.Add(line);
+            // Kopfkarte (Vorgabe 2026-10-26 „schönere, verständlichere Oberfläche“): großes Studio-Symbol, Name, ein Satz, was man hier tut
+            titleCol.Children.Add(new TextBlock { Name = "page-sentence", Text = info.Sentence, Foreground = Muted, FontSize = 13.5, TextWrapping = TextWrapping.Wrap });
+            var card = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), ColumnSpacing = 14 };
+            if (StudioIcons.For(sid) is { } si) card.Children.Add(new Border { VerticalAlignment = VerticalAlignment.Center, Child = Chip(si.Path, si.C1, si.C2, 46, 0.6) });
+            card.Children.Add(Pos(titleCol, 1)); card.Children.Add(Pos(help, 2));
+            help.VerticalAlignment = VerticalAlignment.Top;
+            return new Border
+            {
+                Name = "page-hero", Child = card, CornerRadius = new CornerRadius(14), Padding = new Thickness(14, 12), BorderBrush = Edge, BorderThickness = new Thickness(1),
+                Background = new LinearGradientBrush
+                {
+                    StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
+                    GradientStops = { new GradientStop(Color.Parse(_settings.Theme == "hell" ? "#FFE8F0FF" : _settings.Theme == "kontrast" ? "#FF000000" : "#FF13254A"), 0),
+                                      new GradientStop(Color.Parse(_settings.Theme == "hell" ? "#FFFFFFFF" : _settings.Theme == "kontrast" ? "#FF000000" : "#FF0A1428"), 1) },
+                },
+            };
         }
         var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { titleCol, Pos(help, 1) } };
         return head;
@@ -978,8 +975,10 @@ public sealed partial class MainWindow : Window
                     right = b;
                 }
                 Grid.SetColumn(right, 1); row.Children.Add(right); sp.Children.Add(row);
+                if (c.Mode == DeliveryMode.Included && IncludedExtras(c, inst) is { } extras) sp.Children.Add(extras);
             }
         }
+        AddGitHubPrograms(sp);
         var re = new Button { Name = "btn-deps-recheck", Content = "Neu prüfen" }; re.Click += (_, _) => { ReloadStudios(); Show("components"); };
         sp.Children.Add(re);
         return Page("Zusatzprogramme", sp);
@@ -1226,21 +1225,32 @@ public sealed partial class MainWindow : Window
         var dir = await Task.Run(VollpaketStart.Find);
         if (dir is null) { _core.Audit.Append("app", "vollpaket.not_found", "kein Ordner „Programme“ gefunden"); return; }
         _deps.VollpaketDir = dir; _depBusy = true;
+        var total = Vollpaket.Load(dir)?.Count ?? 0; var step = 0;
+        BeginSetupOverlay("Trendo OS richtet deine Programme ein");
         try
         {
-            var n = await Task.Run(() => Vollpaket.InstallMissing(dir, _deps.ToolsRoot, _core.Audit, line => Dispatcher.UIThread.Post(() => _depLog.Text = line)));
+            var n = await Task.Run(() => Vollpaket.InstallMissing(dir, _deps.ToolsRoot, _core.Audit, line => Dispatcher.UIThread.Post(() => { _depLog.Text = line; SetupOverlayProgress(step++, total, line); })));
             _depLog.Text = n == 0 ? "Alle mitgelieferten Programme sind eingerichtet." : $"{n} mitgelieferte Programme eingerichtet ✓";
         }
         catch (Exception ex) when (ex is InvalidOperationException or IOException or UnauthorizedAccessException) { _depLog.Text = "Vollpaket: " + ex.Message; }
-        finally { _depBusy = false; }
+        finally { _depBusy = false; EndSetupOverlay(); }
         ReloadStudios();
     }
 
     private async Task InstallAll()
     {
         if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
-        foreach (var c in DependencyCatalog.All.Where(c => c.Mode is DeliveryMode.AutoUser or DeliveryMode.Included && !_deps.IsInstalled(c)).ToList())
-            if (!await InstallOne(c, refresh: false)) break;
+        var todo = DependencyCatalog.All.Where(c => c.Mode is DeliveryMode.AutoUser or DeliveryMode.Included && !_deps.IsInstalled(c)).ToList();
+        if (todo.Count > 0) BeginSetupOverlay("Programme werden installiert");
+        try
+        {
+            for (var i = 0; i < todo.Count; i++)
+            {
+                SetupOverlayProgress(i, todo.Count, $"{todo[i].Name} wird installiert …");
+                if (!await InstallOne(todo[i], refresh: false)) break;
+            }
+        }
+        finally { EndSetupOverlay(); }
         ReloadStudios(); Show("components");
     }
 

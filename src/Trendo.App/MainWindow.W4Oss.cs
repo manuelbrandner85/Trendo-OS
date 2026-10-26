@@ -43,10 +43,16 @@ public partial class MainWindow
                 Say(res.Ok ? $"„{repo.FullName}“ liegt jetzt im Ordner „Open Source“, mit Herkunftsdatei." : "Herunterladen hat nicht geklappt: " + Short(res.Err), "oss");
             });
             get.IsEnabled = kind != OpenSource.LicenseKind.Unklar;
-            sp.Children.Add(Card(Row(new StackPanel { Children = {
-                new TextBlock { Text = $"{r.FullName}  ★ {r.Stars:N0}", Foreground = Text, FontSize = 12.5 },
-                P(r.Description, null, 11), P(OpenSource.Explain(r.LicenseId), kind == OpenSource.LicenseKind.Unklar ? Brush.Parse("#FACC15") : null, 10.5) } },
-                new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { Act($"oss-web-{i}", "Ansehen", () => Launch(repo.Url)), get } })));
+            // Vorgabe 2026-10-26: fertiges Windows-Programm direkt auf Trendo OS installieren (Klick = Zustimmung, Lizenz steht daneben)
+            var install = Act($"oss-install-{i}", "Zustimmen & installieren", () => _ = GitHubInstall(repo), true);
+            install.IsEnabled = kind != OpenSource.LicenseKind.Unklar && !_depBusy;
+            var guide = ProgramGuide.ForGitHub(r.FullName, r.Description, r.LicenseId, r.Language, r.Stars, null, "das passende Windows-Programm", null);
+            sp.Children.Add(Card(new StackPanel { Spacing = 4, Children = {
+                Row(new StackPanel { Children = {
+                    new TextBlock { Text = $"{r.FullName}  ★ {r.Stars:N0}", Foreground = Text, FontSize = 12.5 },
+                    P(r.Description, null, 11), P(OpenSource.Explain(r.LicenseId), kind == OpenSource.LicenseKind.Unklar ? Brush.Parse("#FACC15") : null, 10.5) } },
+                    new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { Act($"oss-web-{i}", "Ansehen", () => Launch(repo.Url)), get, install } }),
+                GuideBox(guide, $"oss-guide-{i}") } }));
             i++;
         }
         var local = Directory.GetDirectories(OssFolder);

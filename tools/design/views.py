@@ -34,7 +34,7 @@ S["FILES"] = {"name": "Dateien", "satz": "", "bereich": "", "c1": "#FFD36B", "c2
 S["ALL"] = dict(S["SYS-01"], name="Alle Studios", c1="#7FD8FF", c2="#2A7FFF")
 S["SETTINGS"] = {"name": "Einstellungen", "satz": "", "bereich": "", "c1": "#B6C2D9", "c2": "#5B6B88",
                  "path": "M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7m-1.6-6.5h3.2l.45 2.3q.9.3 1.7.8l1.95-1.3 2.25 2.25-1.3 1.95q.5.8.8 1.7l2.3.45v3.2l-2.3.45q-.3.9-.8 1.7l1.3 1.95-2.25 2.25-1.95-1.3q-.8.5-1.7.8L13.6 22h-3.2l-.45-2.3q-.9-.3-1.7-.8l-1.95 1.3-2.25-2.25 1.3-1.95q-.5-.8-.8-1.7L2 13.6v-3.2l2.3-.45q.3-.9.8-1.7L3.8 6.3l2.25-2.25L8 5.35q.8-.5 1.7-.8z"}
-LOGO = (ASSETS / "logo/trendo-logo-a.svg").read_text(encoding="utf-8").replace('<svg ', '<svg class="logo" ', 1)
+LOGO = (ASSETS / "logo/trendo-logo-b.svg").read_text(encoding="utf-8").replace('<svg ', '<svg class="logo" ', 1)
 
 CSS = """
 :root{--glass:rgba(11,23,48,.70);--glass2:rgba(10,20,40,.86);--tile:rgba(20,36,69,.60);--edge:rgba(85,168,255,.20);
@@ -121,7 +121,7 @@ def v02():
             f'<div style="display:flex;flex-wrap:wrap;gap:18px 10px">{grid}</div><div class="h2" style="margin:26px 0 14px">Empfohlen</div>'
             f'<div style="display:flex;flex-wrap:wrap;gap:16px 8%">{recs}</div>'
             f'<div class="row" style="margin-top:26px;padding-top:16px;border-top:1px solid var(--edge)"><div class="ico" style="width:36px;height:36px;border-radius:50%;background:#2F86F6">M</div>'
-            f'<span>Manuel</span><span class="muted small" style="margin-left:auto">Sperren · Abmelden · Ausschalten</span></div></div>')
+            f'<span>Erika Muster</span><span class="muted small" style="margin-left:auto">Sperren · Abmelden · Ausschalten</span></div></div>')
     return page(menu + dock(), label="02 · Startmenü")
 
 
@@ -152,11 +152,11 @@ def v04():
                    for a, b in [("Empfänger", "FitWelt GmbH, Hauptstraße 12, 80331 München"), ("Betreff", "Kündigung meiner Mitgliedschaft Nr. 4711"),
                                 ("Vorlage", "Kündigung – Vertrag"), ("Frist", "zum 31.12.2026 · Eingang bis 30.11.2026")])
     letter = ('<div style="background:#fff;color:#1a1a1a;width:470px;height:665px;padding:46px 50px;font-family:Arial,sans-serif;font-size:12px;line-height:1.5;box-shadow:0 20px 50px rgba(0,0,0,.5)">'
-              '<div style="font-size:9px;color:#666;border-bottom:1px solid #ccc;padding-bottom:3px">Manuel Beispiel · Lindenweg 3 · 80333 München</div>'
+              '<div style="font-size:9px;color:#666;border-bottom:1px solid #ccc;padding-bottom:3px">Erika Muster · Lindenweg 3 · 80333 München</div>'
               '<div style="margin-top:14px">FitWelt GmbH<br>Hauptstraße 12<br>80331 München</div><div style="text-align:right;margin-top:26px">München, 24.10.2026</div>'
               '<div style="font-weight:bold;margin-top:20px">Kündigung meiner Mitgliedschaft Nr. 4711</div><div style="margin-top:14px">Sehr geehrte Damen und Herren,<br><br>'
               'hiermit kündige ich meine Mitgliedschaft fristgerecht zum 31.12.2026. Bitte bestätigen Sie mir die Kündigung und das Vertragsende schriftlich.<br><br>'
-              'Mit freundlichen Grüßen<br><br><br>Manuel Beispiel</div></div>')
+              'Mit freundlichen Grüßen<br><br><br>Erika Muster</div></div>')
     inner = (f'<div style="display:flex;height:calc(100% - 44px)"><div class="col" style="width:230px;padding:18px;border-right:1px solid var(--edge)">{nav}</div>'
              f'<div class="col" style="width:520px;padding:26px;gap:16px"><div class="h2">Neuer Brief</div>{form}'
              f'<div class="row small" style="color:#86EFAC">✓ DIN 5008 · Frist geprüft · Pflichtangaben vollständig</div>'

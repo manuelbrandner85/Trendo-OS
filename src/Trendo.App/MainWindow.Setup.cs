@@ -89,7 +89,14 @@ public sealed partial class MainWindow
                 sp.Children.Add(P(comps.Count == 0 ? "Alles Ausgewählte ist schon vorhanden." :
                     $"Wird installiert: {string.Join(", ", comps.Select(c => c.Name))} (ca. {comps.Sum(c => c.ApproxMb)} MB). Mit „Zustimmen & installieren“ akzeptierst du die jeweiligen Lizenzen (siehe THIRD_PARTY.md). Programme, die nur systemweit installierbar sind, fragen einmal nach Administratorrechten.", null, 11));
                 var go = new Button { Name = "wiz-install", Content = comps.Count == 0 ? "Weiter" : "Zustimmen & installieren", Background = Accent, Padding = new Thickness(16, 6), IsEnabled = !_depBusy };
-                go.Click += async (_, _) => { _settings.StudioPacks = _wizPacks.ToList(); await RunSetupInstall(model); _wizStep = 4; Show("einrichtung"); };
+                go.Click += async (_, _) =>
+                {
+                    go.IsEnabled = false; back.IsEnabled = false; go.Content = "Wird eingerichtet …"; // ausgegraut, kein zweiter Klick
+                    _settings.StudioPacks = _wizPacks.ToList();
+                    if (comps.Count > 0) BeginSetupOverlay("Trendo OS wird eingerichtet");
+                    try { await RunSetupInstall(model); } finally { EndSetupOverlay(); }
+                    _wizStep = 4; Show("einrichtung");
+                };
                 sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { back, go } });
                 sp.Children.Add(_depProgress.Parent is null ? _depProgress : new Border()); sp.Children.Add(Detach(_depLog));
                 return Page("Ersteinrichtung", sp);
@@ -125,8 +132,10 @@ public sealed partial class MainWindow
         for (var i = 0; i < todo.Count; i++)
         {
             _depLog.Text = $"{i + 1}/{todo.Count}: {todo[i].Name} …";
+            SetupOverlayProgress(i, todo.Count, $"{todo[i].Name} wird eingerichtet …");
             await InstallOne(todo[i], refresh: false);
         }
+        SetupOverlayProgress(todo.Count, todo.Count, "Fertig ✓");
         if (_deps.HasModel(model)) KiModel.Select(_core.DataRoot, model, _core.Audit);
         ReloadStudios();
     }

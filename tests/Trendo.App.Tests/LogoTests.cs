@@ -5,12 +5,12 @@ using Xunit;
 
 namespace Trendo.App.Tests;
 
-/// <summary>T-0109: Logo A „Obsidian-Kachel“ ersetzt das V-Konzeptlogo überall.</summary>
+/// <summary>T-0109: Logo ersetzt das V-Konzeptlogo überall. Seit 26.10.2026 Logo B „Saphir-Kristall“ (TrendoLogo.cs).</summary>
 public class LogoTests
 {
     static string Root([System.Runtime.CompilerServices.CallerFilePath] string f = "") => Path.GetFullPath(Path.Combine(Path.GetDirectoryName(f)!, "..", ".."));
 
-    [Fact(DisplayName = "Logo A: kein V-Pfad und kein Konzept-Hinweis mehr im Quelltext")]
+    [Fact(DisplayName = "Logo: kein V-Pfad und kein Konzept-Hinweis mehr im Quelltext")]
     public void No_old_logo_in_source()
     {
         foreach (var f in Directory.EnumerateFiles(Path.Combine(Root(), "src"), "*.cs", SearchOption.AllDirectories))
@@ -23,7 +23,7 @@ public class LogoTests
         }
     }
 
-    [Fact(DisplayName = "Logo A: trendo.ico enthält 16, 32, 48 und 256 px")]
+    [Fact(DisplayName = "Logo: trendo.ico enthält 16, 32, 48 und 256 px")]
     public void Ico_has_sizes()
     {
         var b = File.ReadAllBytes(Path.Combine(Root(), "src", "Trendo.App", "Assets", "logo", "trendo.ico"));
@@ -33,7 +33,7 @@ public class LogoTests
         foreach (var s in new[] { 16, 32, 48, 256 }) Assert.Contains(s, sizes);
     }
 
-    [AvaloniaFact(DisplayName = "Logo A: Hauptfenster hat Icon, Startknopf zeigt das Logo")]
+    [AvaloniaFact(DisplayName = "Logo: Hauptfenster hat Icon, Startknopf zeigt das Logo")]
     public void Window_icon_and_start_button()
     {
         var (w, _, _) = Ui.Open();
@@ -42,5 +42,13 @@ public class LogoTests
         Assert.Contains(start.GetLogicalDescendants(), c => c is Viewbox { Name: "trendo-logo" });
         Assert.Contains(w.GetLogicalDescendants(), c => c is Viewbox { Name: "trendo-logo" } && !start.GetLogicalDescendants().Contains(c));
         w.Close();
+    }
+
+    [Fact(DisplayName = "Logo B: SVG im Repo entspricht der Geometrie in TrendoLogo.cs")]
+    public void Svg_matches_source()
+    {
+        var svg = File.ReadAllText(Path.Combine(Root(), "src", "Trendo.App", "Assets", "logo", "trendo-logo-b.svg")).ReplaceLineEndings("\n");
+        Assert.Equal(TrendoLogo.Svg(), svg);
+        Assert.True(TrendoLogo.Facets().Count >= 20, "Kristall braucht Facetten");
     }
 }

@@ -497,10 +497,10 @@ public class Wave0_Setup
     public void Settings_roundtrip()
     {
         using var f = new Fixture();
-        var s = new UserSettings { Name = "Manuel", Theme = "hell", StudioPacks = ["ki"], SetupDone = true };
+        var s = new UserSettings { Name = "Erika Muster", Theme = "hell", StudioPacks = ["ki"], SetupDone = true };
         s.Save(f.Core.DataRoot);
         var l = UserSettings.Load(f.Core.DataRoot);
-        Assert.Equal("Manuel", l.Name); Assert.Equal("hell", l.Theme); Assert.True(l.SetupDone); Assert.Equal(["ki"], l.StudioPacks);
+        Assert.Equal("Erika Muster", l.Name); Assert.Equal("hell", l.Theme); Assert.True(l.SetupDone); Assert.Equal(["ki"], l.StudioPacks);
         Assert.Throws<ArgumentException>(() => new UserSettings { Theme = "neon" }.Save(f.Core.DataRoot));
         File.WriteAllText(UserSettings.PathIn(f.Core.DataRoot), "{kaputt");
         Assert.False(UserSettings.Load(f.Core.DataRoot).SetupDone);

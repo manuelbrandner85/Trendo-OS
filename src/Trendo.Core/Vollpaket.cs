@@ -127,6 +127,23 @@ public static class Vollpaket
         return n;
     }
 
+    /// <summary>Ein mitgeliefertes Programm einzeln entfernen (Vorgabe 2026-10-26): löscht nur den Paketordner im Werkzeugordner.
+    /// Über das Vollpaket lässt es sich jederzeit wieder einrichten. Unbekannte Namen werden abgelehnt.</summary>
+    public static bool Uninstall(string toolsRoot, string package, AuditLog? audit = null)
+    {
+        if (!Included.Values.Any(i => i.Package == package)) return false;
+        var dir = new DirectoryInfo(Path.Combine(toolsRoot, package));
+        if (!dir.Exists) return false;
+        if (dir.Attributes.HasFlag(FileAttributes.ReparsePoint)) dir.Delete();
+        else
+        {
+            foreach (var f in dir.EnumerateFiles("*", SearchOption.AllDirectories)) if (f.IsReadOnly) f.IsReadOnly = false;
+            dir.Delete(true);
+        }
+        audit?.Append("app", "vollpaket.uninstall", package);
+        return true;
+    }
+
     /// <summary>Ollama findet das mitgelieferte Modell nur über OLLAMA_MODELS; gesetzt nur, wenn der Nutzer selbst keins im eigenen Ollama-Ordner hat.</summary>
     public static void ConfigureOllama(System.Diagnostics.ProcessStartInfo psi, string toolsRoot)
     {

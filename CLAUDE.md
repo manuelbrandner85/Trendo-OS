@@ -24,7 +24,7 @@ Ablauf pro Auftrag: Auftrag in `tasks/T-<nr>-<kurz>.md` (Vorlage `tasks/VORLAGE.
 ## Entscheidungsregister
 - Priorität: reale Codebasis (Iststand) -> kanonische `docs/spec/` und `requirements.yaml` -> neueste ausdrückliche Nutzerfreigaben in `docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md` -> `handoff/`. Widersprüche nicht eigenmächtig in `decisions.yaml` überschreiben, sondern Decision-Delta vorlegen. `decisions.yaml` und `requirements.yaml` ändert nur Manuel oder ein ausdrücklich freigegebener Auftrag.
 - GRUNDSATZ-01 (Manuel, bestätigt 2026-10-25, `requirements.yaml` → `principles`): Jedes Fachprogramm und Tool ist installierbar – mitinstalliert, beim Setup wählbar oder in Trendo per Klick; nur nach Zustimmung, aus offiziellen Quellen, mit Audit-Log; Abnahmekriterien AK-1…AK-8.
-- Bestätigt: Verbesserungen 42–85 und 87–96. Verbesserung 86 NEIN. Vorher 23,25,34 NEIN, 35 OFFEN, Language Studio 2.0 NEIN. Verbesserung 97 OFFEN. SPEC-07 abgelehnt – nicht bauen. Logo: Entwurf A „Obsidian-Kachel“ (von Manuel am 22.10.2026 gewählt), Quelle `src/Trendo.App/Assets/logo/trendo-logo-a.svg`.
+- Bestätigt: Verbesserungen 42–85 und 87–96. Verbesserung 86 NEIN. Vorher 23,25,34 NEIN, 35 OFFEN, Language Studio 2.0 NEIN. Verbesserung 97 OFFEN. SPEC-07 abgelehnt – nicht bauen. Logo: Vorschlag 2 / Logo B „Saphir-Kristall“ (von Manuel am 26.10.2026 gewählt, ersetzt Entwurf A „Obsidian-Kachel“). Geometrie `src/Trendo.App/TrendoLogo.cs`, daraus `Assets/logo/trendo-logo-b.svg`, `trendo.ico` und PNGs (`scripts/make-logo.py`).
 - 120-Stunden-Forensikregel: Forensik-Kopien und Derivate höchstens 120 h, 24 h vorher Warnung, keine dauerhaften Offline-USB-Kopien, kein Browser-/Tor-READ-ONLY-Bypass, keine forensischen Beweiskopien in Cloud-Diensten. Niemals umdeuten (im Code: `ForensicsLab.MaxLife`).
 - `APPROVED_SPEC` bedeutet nicht `IMPLEMENTED`, `TESTED`, `ACCEPTED` oder `RELEASED`.
 
@@ -34,6 +34,7 @@ Ablauf pro Auftrag: Auftrag in `tasks/T-<nr>-<kurz>.md` (Vorlage `tasks/VORLAGE.
 - W1-Issues (#14, #15, #17–#22) und W7-Issues (#64–#66) bleiben offen, bis die Module fertig sind.
 
 ## Architekturgrundsätze
+- **Für jeden Nutzer (Vorgabe 2026-10-26):** Trendo OS hat keinen festen Nutzer. Manuel ist Projektinhaber, im Produkt aber ein Nutzer wie jeder andere. Im Produkt (`src/`, `installer/`, `linux-image/`) stehen deshalb keine Personennamen. Beispieldaten nutzen neutrale Namen, z. B. „Erika Muster“. Die Prüfung übernimmt `NoFixedUserTests`.
 - Kein zweiter KI-Kern, Workflow-Scheduler, Projektregister, Agenten-Laufzeitsystem, Sicherheitsbroker, StudioCatalog oder QA-System. Bestehende Module finden, dann erweitern (`IntelligenceCore`/`Intel.AskAsync`, `PromptLibrary`, `AgentCenter`, `WorkflowEngine`, `ApprovalGate`, `Rbac`, `AuditLog`, `ProjectStore`, `StudioRegistry`, `StudioCatalog`) – vor Nutzung im Code nachweisen.
 - Ziel: ONE Workspace je Studio, deutsche, alltagsnahe Texte, höchstens zwei Navigationsebenen. Studio-Namen kommen zentral aus `src/Trendo.App/StudioCatalog.cs`. Erst echter funktionsfähiger Vertical Slice mit editierbarem Artefakt, dann UI-Politur.
 - Kette: Prompt -> validierter Auftrag -> Capability -> Rechteprüfung -> geplante Aufgaben -> Zustimmung bei sensiblen Aktionen -> echter Fachadapter -> echte Dateien -> QA -> Vorschau -> Export.

@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -94,8 +95,15 @@ public partial class MainWindow
         sp.Children.Add(H("1. Datei wählen", 14));
         var path = new TextBox { Name = "media-path", Text = _mediaFile ?? "", PlaceholderText = "Pfad zur Datei", Width = 380 };
         sp.Children.Add(new WrapPanel { Children = { path, Act("media-use", "Übernehmen", () => MediaPick(path.Text?.Trim('"', ' ') ?? "")), Act("media-folder", "Medienordner öffnen", () => Launch(MediaFolder)) } });
+        // Zuletzt benutzte Dateien als Reihe kleiner Karten statt einer langen Knopf-Säule
+        var recent = new WrapPanel { Name = "media-recent" };
         var i = 0;
-        foreach (var f in files.Take(8)) { var fp = f.FullName; sp.Children.Add(Act($"media-file-{i++}", (fp == _mediaFile ? "● " : "") + f.Name, () => MediaPick(fp))); }
+        foreach (var f in files.Take(8))
+        {
+            var fp = f.FullName; var b = Act($"media-file-{i++}", (fp == _mediaFile ? "● " : "") + f.Name, () => MediaPick(fp));
+            b.Margin = new Thickness(0, 0, 6, 6); b.MaxWidth = 260; ToolTip.SetTip(b, fp); recent.Children.Add(b);
+        }
+        if (recent.Children.Count > 0) { sp.Children.Add(P("Zuletzt benutzt:", null, 11.5)); sp.Children.Add(recent); }
         if (_mediaFile is { } mf && File.Exists(mf))
         {
             if (MediaStudio.IsImage(mf)) sp.Children.Add(ImageEditor(mf));

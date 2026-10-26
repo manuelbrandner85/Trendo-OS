@@ -64,6 +64,10 @@ public static class DataLocation
     public static int RemoveTools(string root) =>
         Guard(root, n => string.Equals(n, ToolsFolderName, StringComparison.OrdinalIgnoreCase)) is { } dir ? DeleteContents(dir, _ => false) : -1;
 
+    /// <summary>Voller Pfad des Werkzeugordners, wenn er nach denselben Schutzregeln wie <see cref="RemoveTools"/> gelöscht werden darf, sonst null.</summary>
+    public static string? RemovableTools(string root) =>
+        Guard(root, n => string.Equals(n, ToolsFolderName, StringComparison.OrdinalIgnoreCase))?.FullName;
+
     /// <summary>Gemeinsame Schutzregeln: voll qualifiziert, keine Laufwerkswurzel, nicht zu flach, richtiger Name, keine Verknüpfung, kein Systemordner.</summary>
     static DirectoryInfo? Guard(string root, Func<string, bool> nameOk)
     {

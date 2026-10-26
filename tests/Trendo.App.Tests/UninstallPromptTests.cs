@@ -25,13 +25,25 @@ public class UninstallPromptTests
         Assert.True(UninstallPrompt.TimeoutMs + 2_000 + 3_000 < 30_000, "Velopack beendet den Hook nach 30 s");
     }
 
-    [Fact(DisplayName = "Deinstallieren: zweite Frage nennt die Zusatzprogramme, ihre Größe, schützt selbst installierte Programme, empfiehlt Behalten")]
-    public void ToolsQuestion()
+    [Fact(DisplayName = "Deinstallieren: mitinstallierte Programme werden immer entfernt, selbst installierte bleiben")]
+    public void Tools_always_removed()
     {
-        var q = UninstallPrompt.ToolsQuestion(@"C:\Werkzeuge\TrendoWerkzeuge", ["colmap", "qpdf"], 424L << 20);
-        Assert.Contains("colmap, qpdf", q);
-        Assert.Contains("424 MB", q);
+        var q = UninstallPrompt.Question(@"C:\Daten\TrendoOS", null);
+        Assert.Contains("mit Trendo installierten Programme werden in jedem Fall mit entfernt", q);
         Assert.Contains("Blender, Unreal", q);
-        Assert.Contains("behalten (empfohlen)", q);
+        var args = UninstallPrompt.ToolsCleanupArguments(@"C:\Users\x\AppData\Local\TrendoWerkzeuge");
+        Assert.EndsWith(@"rd /s /q ""C:\Users\x\AppData\Local\TrendoWerkzeuge""", args);
+        Assert.Throws<ArgumentException>(() => UninstallPrompt.ToolsCleanupArguments(@"C:\a"" & del x"));
+    }
+
+    [Fact(DisplayName = "Deinstallieren: Werkzeugordner nur mit genau diesem Namen und nie eine Laufwerkswurzel")]
+    public void Tools_guard()
+    {
+        Assert.Null(Trendo.Core.DataLocation.RemovableTools(@"C:\"));
+        Assert.Null(Trendo.Core.DataLocation.RemovableTools(Path.GetTempPath()));
+        var d = Path.Combine(Path.GetTempPath(), "trendo-deinst-" + Guid.NewGuid().ToString("N"), "TrendoWerkzeuge");
+        Directory.CreateDirectory(d);
+        try { Assert.Equal(Path.GetFullPath(d).TrimEnd(Path.DirectorySeparatorChar), Trendo.Core.DataLocation.RemovableTools(d)!.TrimEnd(Path.DirectorySeparatorChar)); }
+        finally { Directory.Delete(Path.GetDirectoryName(d)!, true); }
     }
 }

@@ -12,6 +12,36 @@ var outPath = args.Length > 0 ? args[0] : "render.png";
 int w = args.Length > 1 ? int.Parse(args[1]) : 1536, h = args.Length > 2 ? int.Parse(args[2]) : 1024;
 var shot = Environment.GetEnvironmentVariable("TRENDO_SHOT");
 AppBuilder.Configure<App>().UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false }).WithInterFont().SetupWithoutStarting();
+if (Environment.GetEnvironmentVariable("TRENDO_LOGO") is { Length: > 0 } logoDir) // Logo B: SVG, PNGs und trendo.ico aus TrendoLogo erzeugen
+{
+    Directory.CreateDirectory(logoDir);
+    File.WriteAllText(Path.Combine(logoDir, "trendo-logo-b.svg"), TrendoLogo.Svg());
+    byte[] Png(int px)
+    {
+        var box = new Avalonia.Controls.Viewbox { Width = px, Height = px, Child = TrendoLogo.Build() };
+        box.Measure(new Avalonia.Size(px, px)); box.Arrange(new Avalonia.Rect(0, 0, px, px));
+        using var bmp = new Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize(px, px));
+        bmp.Render(box);
+        using var ms = new MemoryStream(); bmp.Save(ms); return ms.ToArray();
+    }
+    foreach (var px in new[] { 32, 256, 512 }) File.WriteAllBytes(Path.Combine(logoDir, $"trendo-{px}.png"), Png(px));
+    int[] icoSizes = [16, 24, 32, 48, 64, 128, 256];
+    var pngs = icoSizes.Select(Png).ToList();
+    using (var ico = new BinaryWriter(File.Create(Path.Combine(logoDir, "trendo.ico"))))
+    {
+        ico.Write((ushort)0); ico.Write((ushort)1); ico.Write((ushort)icoSizes.Length);
+        var offset = 6 + 16 * icoSizes.Length;
+        for (var i = 0; i < icoSizes.Length; i++)
+        {
+            var s = icoSizes[i] >= 256 ? (byte)0 : (byte)icoSizes[i];
+            ico.Write(s); ico.Write(s); ico.Write((byte)0); ico.Write((byte)0); ico.Write((ushort)1); ico.Write((ushort)32);
+            ico.Write(pngs[i].Length); ico.Write(offset); offset += pngs[i].Length;
+        }
+        foreach (var p in pngs) ico.Write(p);
+    }
+    Console.WriteLine("Logo geschrieben: " + logoDir);
+    return;
+}
 var root = Path.Combine(Path.GetTempPath(), "trendo-render");
 if (Directory.Exists(root)) Directory.Delete(root, true);
 if (shot is "brief" or "fenster" or "seite")
@@ -38,7 +68,8 @@ var win = new MainWindow(core, new AppOptions(root, null, 0, Page: args.Length >
 win.Show();
 if (Environment.GetEnvironmentVariable("TRENDO_PDF") is { Length: > 0 } pdf) { var copy = Path.Combine(root, Path.GetFileName(pdf)); File.Copy(pdf, copy, true); win.OpenPdf(copy); win.Show("pdf"); } // T-0223: Trendo PDF rendern
 if (Environment.GetEnvironmentVariable("TRENDO_TEXT") is { Length: > 0 } vorlage) { win.TextNew(vorlage); win.TextSelect(1, 0, 0); win.Show("text"); } // T-0223: Trendo Text mit Vorlage rendern
-if (shot == "startmenu")
+if (shot == "einrichtung") win.ShowSetupOverlay("Trendo OS richtet deine Programme ein", 12, 20, "Krita 5.2.9 wird eingerichtet …"); // Vollbild-Einrichtung
+else if (shot == "startmenu")
 {
     foreach (var id in new[] { "STUDIO-LETTER-01", "CORE-05", "CORE-08", "CORE-06", "CORE-02" }) win.PinStudio(id);
     win.Show("start"); win.OpenStartMenu();
@@ -281,5 +312,6 @@ for (var i = 0; i < 40; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(50); 
 var frame = win.CaptureRenderedFrame();
 frame!.Save(outPath);
 Console.WriteLine($"OK {outPath}");
+foreach (var crash in CrashLog.List(root).Take(1)) Console.Error.WriteLine("ABSTURZ beim Rendern:" + Environment.NewLine + File.ReadAllText(crash));
 Directory.Delete(root, true);
 sealed class NoopL : IProcessLauncher { public void Open(string t) { } }

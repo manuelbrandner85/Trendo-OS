@@ -68,7 +68,7 @@ public sealed class KiSourceSettings
     public List<string> Disabled { get; set; } = [];
     /// <summary>KI-Dienste mit Schlüssel, die als Ersatz genutzt werden dürfen (nach den lokalen Quellen, in dieser Reihenfolge).</summary>
     public List<string> Cloud { get; set; } = [];
-    /// <summary>Freie Modelle nach dem Setup automatisch laden (Vorgabe Manuel 2026-10-25).</summary>
+    /// <summary>Freie Modelle nach dem Setup automatisch laden (Vorgabe 2026-10-25).</summary>
     public bool AutoModels { get; set; } = true;
     /// <summary>Fehlversuche je Modell beim automatischen Laden; nach 3 Versuchen nur noch per Knopf.</summary>
     public Dictionary<string, int> AutoFailed { get; set; } = [];

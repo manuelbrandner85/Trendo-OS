@@ -324,7 +324,7 @@ public class W0_SetupWizard
         var r = new FakeRunner(); w.Deps.Runner = r;
         w.Show(); Dispatcher.UIThread.RunJobs();
         Assert.Equal("einrichtung", w.CurrentView);
-        w.Find<TextBox>("wiz-name").Text = "Manuel"; w.Find<Button>("wiz-next").Press();
+        w.Find<TextBox>("wiz-name").Text = "Erika Muster"; w.Find<Button>("wiz-next").Press();
         var proj = Path.Combine(root, "Projekte"); w.Find<TextBox>("wiz-folder").Text = proj; w.Find<Button>("wiz-next").Press();
         w.Find<RadioButton>("wiz-theme-kontrast").IsChecked = true; w.Find<Button>("wiz-next").Press();
         w.Find<CheckBox>("wiz-pack-office").IsChecked = false; w.Find<CheckBox>("wiz-pack-ki").IsChecked = false;
@@ -336,7 +336,7 @@ public class W0_SetupWizard
         Assert.DoesNotContain(r.Calls, c => c.Contains("SumatraPDF.SumatraPDF") || c.Contains("Git.Git") || c.Contains("LibreOffice"));
         Assert.True(File.Exists(Path.Combine(proj, "Vorlagen", "DIN5008-Geschaeftsbrief-FormB.docx")));
         var s = UserSettings.Load(root);
-        Assert.True(s.SetupDone); Assert.Equal("Manuel", s.Name); Assert.Equal("kontrast", s.Theme); Assert.Equal(proj, s.ProjectsFolder);
+        Assert.True(s.SetupDone); Assert.Equal("Erika Muster", s.Name); Assert.Equal("kontrast", s.Theme); Assert.Equal(proj, s.ProjectsFolder);
         for (var i = 0; i < 200 && w.TryFind<Button>("fix-sumatra") is null; i++) { await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }
         Assert.NotNull(w.TryFind<Button>("fix-sumatra")); // Systemcheck (im Hintergrund geprüft): fehlt → Reparieren
         Assert.Single(new Backup(root, Path.Combine(root, "backups"), core.Audit).List());

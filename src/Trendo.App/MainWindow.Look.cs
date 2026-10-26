@@ -45,7 +45,7 @@ public sealed partial class MainWindow
                 Glass = Brush.Parse("#FF000000"); GlassStrong = Brush.Parse("#FF000000"); TileBg = Brush.Parse("#FF000000");
                 Edge = Brush.Parse("#FFFFFF00"); Muted = Brush.Parse("#FFFFFFFF"); Text = Brush.Parse("#FFFFFFFF"); break;
             default:
-                Glass = Brush.Parse("#B30B1730"); GlassStrong = Brush.Parse("#D90A1428"); TileBg = Brush.Parse("#99142445");
+                Glass = Brush.Parse("#B30B1730"); GlassStrong = Brush.Parse("#F50A1428"); TileBg = Brush.Parse("#99142445");
                 Edge = Brush.Parse("#3355A8FF"); Muted = Brush.Parse("#9DB0CF"); Text = Brush.Parse("#EEF3FB"); break;
         }
         Accent = Brush.Parse(s.Theme == "kontrast" ? "#FFD400" : AccentChoices.Any(a => a.Id == s.EffectiveAccent(DateTime.Now)) ? s.EffectiveAccent(DateTime.Now) : "#2F86F6");
@@ -138,6 +138,7 @@ public sealed partial class MainWindow
         ["kreativ-medien"] = "Wähle eine Video- oder Audiodatei und was daraus werden soll. Das Original bleibt liegen, das Ergebnis landet im Medienordner.",
         ["netz-laden"] = "Dateien herunterladen, den Download-Ordner sortieren und eine Webseite zum Lesen speichern. Ohne Adresse wird nichts geladen.",
         ["produktion"] = "Ein Ablauf verbindet mehrere Studios. Du siehst zuerst den Plan und gibst ihn frei, bevor Trendo etwas ausführt.",
+        ["ki-bibliothek"] = "Kostenlose KI nach Arten: Chat, Bilder, Videos, Sprache, Vorlesen und mehr. Laden mit einem Klick, ausprobieren direkt hier.",
         ["ki-quellen"] = "Trendo sucht kostenlose KI auf diesem PC. Die Reihenfolge bestimmst du. Ein Modell wird nur geladen, wenn du zustimmst.",
         ["downloads"] = "Gib eine Adresse oder einen Suchbegriff ein und wähle den Browser. Darunter siehst du deine neuesten Downloads – Programmdateien sind markiert.",
         ["akten"] = "Eine Akte hält alles zu einer Sache zusammen: Fakten, Ablauf, Anlagen, Fristen, Quellen und Eingangspost. Lege für jede Angelegenheit eine an.",

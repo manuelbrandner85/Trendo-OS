@@ -81,7 +81,7 @@ public partial class MainWindow
         var box = new TextBox
         {
             Name = "auftrag-prompt",
-            PlaceholderText = "Was soll dieses Studio tun?",
+            PlaceholderText = "Was soll dieses Studio für dich tun? Sag es in deinen Worten – die KI zeigt dir zuerst einen Plan.",
             AcceptsReturn = true,
             TextWrapping = TextWrapping.Wrap,
             MinHeight = 32,
@@ -103,7 +103,8 @@ public partial class MainWindow
         ability.TextTrimming = TextTrimming.CharacterEllipsis;
         ability.MaxHeight = 18;
 
-        var check = new Button { Name = "auftrag-pruefen", Content = "Auftrag prüfen", Height = 32, MinWidth = 132, Background = Accent, Foreground = Brushes.White };
+        var check = new Button { Name = "auftrag-pruefen", Content = "Plan erstellen", Height = 32, MinWidth = 120, Background = Accent, Foreground = Brushes.White };
+        ToolTip.SetTip(check, "Die Trendo KI zeigt dir zuerst einen Plan. Es passiert nichts, bevor du „Los“ drückst.");
         AutomationProperties.SetName(check, "Auftrag prüfen");
         var cancel = new Button { Name = "auftrag-abbrechen", Content = "Abbrechen", Height = 32, MinWidth = 104 };
         AutomationProperties.SetName(cancel, "Auftrag abbrechen");
@@ -115,7 +116,8 @@ public partial class MainWindow
         AutomationProperties.SetName(go, "Plan ausführen");
         var undo = new Button { Name = "auftrag-rueckgaengig", Content = "Rückgängig", Height = 32, MinWidth = 110 };
         AutomationProperties.SetName(undo, "Letzte Fassung zurückholen");
-        var mode = new Button { Name = "auftrag-modus", Content = "Profi", Height = 32, MinWidth = 88 };
+        var mode = new Button { Name = "auftrag-modus", Content = "Profi", Height = 32, MinWidth = 64, Background = Brushes.Transparent, BorderThickness = new Avalonia.Thickness(0), Foreground = Muted, IsVisible = false };
+        ToolTip.SetTip(mode, "Alle Einzelheiten des Plans zeigen");
         AutomationProperties.SetName(mode, "Einfach oder Profi");
 
         void FillPro()
@@ -152,6 +154,7 @@ public partial class MainWindow
             answer.IsVisible = result.Status == RunStatus.AwaitingInput;
             go.IsVisible = result.Phase == WorkflowPhase.Planned;
             FillPro();
+            Sync();
             if (result.Artifacts.Count > 0) RefreshStudioBody();
         }
 
@@ -308,16 +311,37 @@ public partial class MainWindow
             FillPro();
         };
 
+        // Ruhige Leiste (Vorgabe 2026-10-26 „schönere, verständlichere Oberfläche“): eine Zeile mit Eingabe und „Plan erstellen“.
+        // Stand, Vorschau, Rückgängig, Abbrechen und Profi erscheinen erst, wenn es etwas dazu gibt. Die Fähigkeiten stehen im Tooltip.
+        ability.IsVisible = false;
+        ToolTip.SetTip(box, ability.Text);
+        void Sync()
+        {
+            var active = status.Text != "Noch nicht gestartet";
+            status.IsVisible = active;
+            cancel.IsVisible = (active && last is null) || _promptPhase is WorkflowPhase.Planned or WorkflowPhase.NeedsApproval or WorkflowPhase.NeedsClarification;
+            undo.IsVisible = last is not null;
+            mode.IsVisible = last is not null;
+            preview.IsVisible = preview.Text is { Length: > 0 } pv && pv != "Noch keine Vorschau.";
+        }
+        status.PropertyChanged += (_, e) => { if (e.Property == TextBlock.TextProperty) Sync(); };
+        preview.PropertyChanged += (_, e) => { if (e.Property == TextBlock.TextProperty) Sync(); };
+        Sync();
         var buttons = new StackPanel
         {
             Orientation = Orientation.Horizontal,
-            Spacing = 8,
-            Children = { check, go, answer, approve, undo, mode, cancel }
+            Spacing = 6,
+            Children = { check, go, answer, approve, undo, cancel, mode }
         };
-        var row = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), ColumnSpacing = 8 };
-        Grid.SetColumn(box, 0);
-        Grid.SetColumn(buttons, 1);
-        Grid.SetColumn(status, 2);
+        var spark = new TextBlock { Text = "✨", FontSize = 16, VerticalAlignment = VerticalAlignment.Center, Margin = new Avalonia.Thickness(4, 0, 0, 0) };
+        ToolTip.SetTip(spark, "Sag der Trendo KI in deinen Worten, was dieses Studio für dich tun soll.");
+        box.MaxHeight = 64; box.MinHeight = 34;
+        var row = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto,Auto"), ColumnSpacing = 8 };
+        Grid.SetColumn(spark, 0);
+        Grid.SetColumn(box, 1);
+        Grid.SetColumn(buttons, 2);
+        Grid.SetColumn(status, 3);
+        row.Children.Add(spark);
         row.Children.Add(box);
         row.Children.Add(buttons);
         row.Children.Add(status);
@@ -325,9 +349,11 @@ public partial class MainWindow
         {
             Name = "auftrag-leiste",
             Background = TileBg,
-            CornerRadius = new Avalonia.CornerRadius(8),
+            BorderBrush = Edge,
+            BorderThickness = new Avalonia.Thickness(1),
+            CornerRadius = new Avalonia.CornerRadius(12),
             Padding = new Avalonia.Thickness(8, 6),
-            Margin = new Avalonia.Thickness(0, 0, 0, 4),
+            Margin = new Avalonia.Thickness(0, 0, 0, 6),
             Child = new StackPanel { Spacing = 4, Children = { ability, row, preview, detail, pro } }
         };
     }

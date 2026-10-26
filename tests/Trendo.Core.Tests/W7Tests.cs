@@ -57,7 +57,7 @@ public class W7Tests
         for (var i = 0; i < 5; i++) Assert.Null(st.TryPair(code == "000000" ? "111111" : "000000", "PC", now).Token);
         Assert.Null(st.TryPair(code, "PC", now).Token); // verbrannt
         code = st.NewCode(now);
-        var (tok, _) = st.TryPair(code, "Manuels PC", now); Assert.NotNull(tok);
+        var (tok, _) = st.TryPair(code, "Erikas PC", now); Assert.NotNull(tok);
         Assert.Null(st.TryPair(code, "Zweiter", now).Token); // Einmal-Code
         st.Save(f); var txt = File.ReadAllText(f);
         Assert.DoesNotContain(tok!, txt); Assert.Contains(CompanionState.Sha(tok!), txt);
