@@ -19,6 +19,8 @@ class Program
         var velo = Velopack.VelopackApp.Build().OnFirstRun(_ => AppStartup.NoteFirstRun());
         // Deinstallieren (nur Windows): fragen, ob auch die eigenen Daten weg sollen – Standard: behalten
         if (OperatingSystem.IsWindows()) velo = velo.OnBeforeUninstallFastCallback(_ => UninstallPrompt.Run(UninstallPrompt.LogToTemp));
+        // T-0222: Ordner des Vollpakets merken, solange Setup.exe noch läuft (beim ersten Start ist es schon beendet)
+        if (OperatingSystem.IsWindows()) velo = velo.OnAfterInstallFastCallback(_ => VollpaketStart.RememberFromInstaller(log: UninstallPrompt.LogToTemp));
         velo.Run();
         // Arbeitsverzeichnis aus dem Programmordner herausnehmen: gestartete Programme (winget, Ollama) würden sonst Updates blockieren
         try { Directory.SetCurrentDirectory(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)); } catch { }

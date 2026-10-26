@@ -103,3 +103,24 @@ public class T0223_TrendoPdfUi
         w.Close();
     }
 }
+
+public class T0222_VollpaketMerken
+{
+    [Fact(DisplayName = "T-0222: Ordner des Vollpakets wird bei der Installation gemerkt und beim ersten Start gefunden")]
+    public void Remember()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-vpm-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var prog = Path.Combine(root, "medium", Trendo.Core.Vollpaket.FolderName); Directory.CreateDirectory(prog);
+            File.WriteAllText(Path.Combine(prog, Trendo.Core.Vollpaket.ManifestName), """{"programs":[{"id":"qpdf","name":"qpdf","version":"1","license":"MIT","file":"qpdf.zip","sha256":"0000000000000000000000000000000000000000000000000000000000000000","bytes":1,"exe":"bin/qpdf.exe","source_url":null}]}""");
+            var file = Path.Combine(root, "daten", "vollpaket-quelle.txt");
+            Assert.Null(VollpaketStart.RememberFromInstaller([Path.Combine(root, "anderswo")], file));
+            Assert.False(File.Exists(file));
+            Assert.Equal(Path.GetFullPath(prog), VollpaketStart.RememberFromInstaller([Path.Combine(root, "medium")], file));
+            Assert.Equal([Path.GetFullPath(prog)], VollpaketStart.Remembered(file));
+            Assert.Equal(Path.GetFullPath(prog), Trendo.Core.Vollpaket.Locate(VollpaketStart.Remembered(file)));
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+}
