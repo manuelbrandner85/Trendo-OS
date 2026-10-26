@@ -1,0 +1,34 @@
+13:11:12 Vollpaket-Setup-Test 2026-10-26 · Windows Microsoft Windows NT 10.0.26340.0
+13:11:13 Vollpaket: 20 Pakete, Setup 0.9.10
+13:11:13 Vorher installiert: 0.9.9+091cbb3ee2747aa932d6092886b393d8ae086a32
+13:11:13 1. Daten gesichert: 37 Dateien
+13:11:13    TrendoWerkzeuge vorher: (kein Ordner)
+13:11:19 2. Deinstalliert: True
+13:11:21 3. Installiert: 0.9.10+4ed4771148ba1dbed11a060d4401271f52b05ba4 nach 2 s
+13:11:21    eingerichtet bisher: 0
+13:11:51    Trendo meldet: kein Vollpaket gefunden
+13:11:51 4. Ende Einrichtung nach 32 s
+13:11:51    blender      FEHLT
+13:11:51    libreoffice  FEHLT
+13:11:51    krita        FEHLT
+13:11:51    inkscape     FEHLT
+13:11:51    kdenlive     FEHLT
+13:11:51    audacity     FEHLT
+13:11:51    obs          FEHLT
+13:11:51    ffmpeg       FEHLT
+13:11:51    mpv          FEHLT
+13:11:51    sumatra      FEHLT
+13:11:51    qpdf         FEHLT
+13:11:51    7zip         FEHLT
+13:11:51    tesseract    FEHLT
+13:11:51    colmap       FEHLT
+13:11:51    git          FEHLT
+13:11:51    python       FEHLT
+13:11:51    vscode       FEHLT
+13:11:51    scrcpy       FEHLT
+13:11:51    ollama       FEHLT
+13:11:51    model        FEHLT
+13:11:51    Audit (neu, Auszug):
+13:11:51      {"Seq":1263,"At":"2026-10-26T13:11:46.7411187+01:00","Actor":"app","Action":"vollpaket.not_found","Detail":"kein Ordner \u201EProgramme\u201C gefunden","PrevHash":"8215F83A861CA2EE90462883E08E1E534E7D1FB05E3EEAEA6FE6DA12E9A41A09","Hash":"192E137BD428A0AEF64A7DBF85228969B3890A199A1A0429B74DDBB3C7D7A598"}
+13:11:51 5. Alte Dateien: 37, davon verändert/fehlend: 3 \tools.json, \logs\selbstheilung-letzte.json, \audit\audit.jsonl
+13:11:51 Fertig. App bleibt geöffnet.

@@ -1,0 +1,2 @@
+509d3828fcbdc2dbc082bef0e74ea817cffa75e0d009240ce4bf9a352f26fd47 *TrendoOS-Setup.exe
+167c2f64516e0c9bb2387f287670e87cf7489c56bfae9bf18847b909d2f96fec *TrendoOS-win-Portable.zip

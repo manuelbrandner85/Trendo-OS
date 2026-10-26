@@ -1,0 +1,56 @@
+{
+  "obsidian-gold": {
+    "name": "Obsidian & Gold",
+    "datei": "docs/design/logo-vorschlaege/obsidian-gold.jpg",
+    "seed": 7,
+    "prompt": "a polished black obsidian glass rounded square tile with a letter T made of brushed gold with a thin bright gold edge, subtle reflections, elegant and noble. app icon logo design, a single bold capital letter T as the only symbol, centered, perfectly symmetric, premium luxury tech brand, clean vector-like shapes, studio lighting, plain dark background, high detail, no other letters, no words, no text, no watermark, no mockup, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, Vorlage für einen Vektor-Nachbau"
+  },
+  "saphir-kristall": {
+    "name": "Saphir-Kristall",
+    "datei": "docs/design/logo-vorschlaege/saphir-kristall.jpg",
+    "seed": 7,
+    "prompt": "a letter T cut from deep blue sapphire crystal with sharp facets and inner light, floating above a dark navy background, soft blue glow. app icon logo design, a single bold capital letter T as the only symbol, centered, perfectly symmetric, premium luxury tech brand, clean vector-like shapes, studio lighting, plain dark background, high detail, no other letters, no words, no text, no watermark, no mockup, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, Vorlage für einen Vektor-Nachbau"
+  },
+  "platin-squircle": {
+    "name": "Platin",
+    "datei": "docs/design/logo-vorschlaege/platin-squircle.jpg",
+    "seed": 7,
+    "prompt": "a brushed platinum metal rounded squircle app icon with an engraved minimal letter T, soft gradient from silver to graphite, very minimal, Apple-like refinement. app icon logo design, a single bold capital letter T as the only symbol, centered, perfectly symmetric, premium luxury tech brand, clean vector-like shapes, studio lighting, plain dark background, high detail, no other letters, no words, no text, no watermark, no mockup, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, Vorlage für einen Vektor-Nachbau"
+  },
+  "orbit": {
+    "name": "Orbit",
+    "datei": "docs/design/logo-vorschlaege/orbit.jpg",
+    "seed": 7,
+    "prompt": "a minimal letter T formed by glowing light lines with a thin elliptical orbit ring around it like a planet, deep navy space background, cyan and white light, futuristic and calm. app icon logo design, a single bold capital letter T as the only symbol, centered, perfectly symmetric, premium luxury tech brand, clean vector-like shapes, studio lighting, plain dark background, high detail, no other letters, no words, no text, no watermark, no mockup, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, Vorlage für einen Vektor-Nachbau"
+  },
+  "fluessiges-glas": {
+    "name": "Flüssiges Glas",
+    "datei": "docs/design/logo-vorschlaege/fluessiges-glas.jpg",
+    "seed": 7,
+    "prompt": "a letter T made of liquid frosted glass with a smooth gradient from electric blue to violet inside a rounded square, glassmorphism, soft highlights. app icon logo design, a single bold capital letter T as the only symbol, centered, perfectly symmetric, premium luxury tech brand, clean vector-like shapes, studio lighting, plain dark background, high detail, no other letters, no words, no text, no watermark, no mockup, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, Vorlage für einen Vektor-Nachbau"
+  },
+  "monogramm-linie": {
+    "name": "Monogramm",
+    "datei": "docs/design/logo-vorschlaege/monogramm-linie.jpg",
+    "seed": 7,
+    "prompt": "an elegant thin-line monogram letter T inside a circle, single continuous champagne-gold line, luxury fashion house style, black background. app icon logo design, a single bold capital letter T as the only symbol, centered, perfectly symmetric, premium luxury tech brand, clean vector-like shapes, studio lighting, plain dark background, high detail, no other letters, no words, no text, no watermark, no mockup, no frame",
+    "modell": "FLUX.2 klein 4B (flux-2-klein-4b.safetensors, qwen_3_4b, flux2-vae), 4 Schritte, euler, cfg 1.0",
+    "erzeugt": "2026-10-26",
+    "lizenz": "eigene KI-Erzeugung für Trendo OS, Vorlage für einen Vektor-Nachbau"
+  }
+}
