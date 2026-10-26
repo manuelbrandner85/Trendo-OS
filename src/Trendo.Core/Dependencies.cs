@@ -38,6 +38,7 @@ public static class DependencyCatalog
         new("velopack", "Velopack", "Installer/Updater", "MIT", DeliveryMode.Bundled, "Bestandteil von Setup.exe"),
         new("yamldotnet", "YamlDotNet", "Spezifikation lesen", "MIT", DeliveryMode.Bundled, "NuGet-Bibliothek"),
         new("pdfsharp", "PDFsharp 6.2.4", "Trendo PDF – zusammenfügen, teilen, drehen, Passwort, Anmerkungen, Formulare", "MIT", DeliveryMode.Bundled, "NuGet-Bibliothek, letzte MIT-Fassung (ab 6.5 AGPL)"),
+        new("wecantspell", "WeCantSpell.Hunspell 7.0.1", "Trendo Text – Rechtschreibprüfung (Wörterbuch aus dem LibreOffice-Paket im Vollpaket)", "MPL 1.1 / GPL 2.0 / LGPL 2.1 (genutzt unter MPL 1.1)", DeliveryMode.Bundled, "NuGet-Bibliothek, unverändert"),
         new("pdftoimage", "PDFtoImage 5.2.1 + PDFium", "Trendo PDF – Seiten anzeigen, Text suchen, Lesezeichen", "MIT / Apache-2.0", DeliveryMode.Bundled, "NuGet-Bibliothek mit PDFium (bblanchon), frei weitergebbar"),
         new("wallpaper", "Hintergrund (KI-generiert) + Trendo-Logo (eigener Entwurf)", "Desktop", "Eigenes Projekt-Asset (KI-generiert)", DeliveryMode.Bundled, "Für Trendo OS erstellt"),
         new("webview2", "Microsoft Edge WebView2", "—", "Microsoft", DeliveryMode.NotNeeded, "Trendo OS nutzt keine Web-Ansichten; nicht erforderlich"),

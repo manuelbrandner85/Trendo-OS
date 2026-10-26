@@ -40,4 +40,5 @@ Automatisch erzeugt aus project.assets.json (alle Projekte, auch indirekte Paket
 | System.Security.Cryptography.Pkcs | 10.0.14 | MIT |
 | Tmds.DBus.Protocol | 0.94.1 | MIT |
 | Velopack | 1.2.161 | MIT |
+| WeCantSpell.Hunspell | 7.0.1 | Lizenzdatei im Paket: license.txt |
 | YamlDotNet | 16.3.0 | MIT |

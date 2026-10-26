@@ -1,0 +1,2 @@
+P:Title:Left:None:Großer Titel:|P:Heading1:Left:None:Kapitel eins:|P:Text:Left:None:Dies ist fett, kursiv und H2O mit x2.:0+4=None/16,8+4=Bold/,14+6=Italic/,25+1=Sub/,34+1=Super/|P:Text:Center:None:Mittig:|P:Text:Right:None:Rechts:|P:Text:Justify:None:Blocksatz mit genug Wörtern für eine Zeile:|P:Text:Left:Bullet:Erster Punkt:|P:Text:Left:Bullet:Zweiter Punkt:|P:Text:Left:Number:Schritt eins:|P:Quote:Left:None:Ein Zitat:|T:Name,Wert;Miete,800 €|UMBRUCH|B:png:71:4,0x2,0|P:Text:Left:None:Unterstrichen und durchgestrichen
+zweite Zeile:0+13=Underline/,18+15=Strike/

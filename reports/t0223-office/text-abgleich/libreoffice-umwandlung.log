@@ -1,0 +1,6 @@
+Could not find platform independent libraries <prefix>
+convert …\probe.docx as a Writer document -> …\lo-aus-docx\probe.odt using filter : writer8
+Could not find platform independent libraries <prefix>
+convert …\probe.odt as a Writer document -> …\lo-aus-odt\probe.docx using filter : Office Open XML Text
+Could not find platform independent libraries <prefix>
+convert …\probe.docx as a Writer document -> …\probe.pdf using filter : writer_pdf_Export

@@ -65,3 +65,79 @@
 - Die Seite „pdf“ war keinem Modul zugeordnet, jetzt gehört sie zu SYS-10.
 - Das Suchwort „notiz“ hat im Startmenü den Treffer „Werkzeuge“ verdrängt, es ist entfernt.
 - Die PDF-Seite hatte keine Seitenüberschrift im Trendo-Muster, jetzt hat sie eine.
+
+---
+
+# Teil 2: Trendo Text (T1–T10)
+
+**Auftrag:** „Trendo text“ (Manuel, 2026-10-26), Stufe 1 freigegeben am 2026-10-25.
+
+## Umgesetzt
+| Nr. | Funktion | Wo |
+|---|---|---|
+| T1 | Neu, Öffnen, Speichern, Speichern unter (.docx, .odt, .txt), zuletzt geöffnete Dateien | `src/Trendo.Core/Office/DocxFormat.cs`, `OdtFormat.cs`, `TextFiles` |
+| T2 | Rückgängig/Wiederholen (80 Schritte), Ausschneiden, Kopieren, Einfügen ohne Format, Absatz markieren | `MainWindow.Text.cs` |
+| T3 | Fett, Kursiv, Unterstrichen (Knöpfe und Strg+B/I/U), Durchgestrichen, Hoch-/Tiefgestellt (schließen sich aus), Größe A+/A− in Writer-Schritten, GROSS/klein | `TextDoc.Format/Toggle/Grow/ChangeCase` |
+| T4 | Absatzarten Titel, Untertitel, Überschrift 1–3, Text, Zitat; Aufzählung, Nummerierung; links, zentriert, rechts, Blocksatz | `TextDoc`, echte Formatvorlagen in DOCX/ODT |
+| T5 | Tabelle einfügen (Zeilen × Spalten), Zellen direkt bearbeiten, Zeile/Spalte anfügen und entfernen | `Table`, `TableControl` |
+| T6 | Bild einfügen (PNG/JPG/GIF), kleiner/größer, Seitenumbruch | `Picture`, `PageBreak` |
+| T7 | Suchen & Ersetzen (auch in Tabellen, Groß/klein, ganze Wörter; Ersetzen behält das Format), Wörter/Zeichen/Absätze zählen (immer in der Statuszeile) | `TextDoc.Find/ReplaceAll/Count` |
+| T8 | Rechtschreibung Deutsch offline: rote Unterstreichung, Vorschläge, „Ins Wörterbuch“ | `Spelling.cs` |
+| T9 | Als PDF: eigener A4-Satz mit Umbruch, Formaten, Listen, Blocksatz, Tabellen, Bildern, Seitenzahlen und Lesezeichen für Überschriften. Drucken über die PDF (Druckdialog von SumatraPDF aus dem Vollpaket) | `TextPdf.cs` |
+| T10 | Vorlagen: Lebenslauf, Rechnung, Protokoll (mit Platzhaltern in [Klammern]), Privat- und Geschäftsbrief DIN 5008 | `TextTemplates.cs` |
+
+**Bedienung (Leitlinie „das Maximum, aber leicht verständlich“):**
+- Oben stehen die häufigsten Aktionen: Neu, Öffnen, Speichern, PDF, Drucken, Rückgängig, Absatzart, F/K/U, Listen, Ausrichtung, Suchen, Rechtschreibung.
+- Alles Weitere liegt unter „Mehr …“.
+- Bearbeitet wird absatzweise. Der Absatz mit dem Cursor ist ein Eingabefeld, alle anderen zeigen ihr Format. Ein Klick in einen Absatz setzt den Cursor genau an die Stelle.
+- Enter teilt den Absatz, die Rücktaste am Absatzanfang verbindet ihn mit dem vorigen, Pfeiltasten wechseln den Absatz. Formate wandern beim Tippen mit.
+
+## Bibliotheken
+- **WeCantSpell.Hunspell 7.0.1:** steht unter MPL 1.1 / GPL 2.0 / LGPL 2.1, nicht unter MIT wie in meinem Vorschlag vom 2026-10-25 behauptet. Das ist korrigiert. Trendo nutzt die Bibliothek unverändert unter MPL 1.1.
+- **Deutsches Wörterbuch „frami“ (GPL 2/3):** liegt nicht in Trendo, sondern im mitgelieferten LibreOffice-Paket des Vollpakets. Trendo Text liest es von dort; fehlt es, sagt Trendo, woher es kommt.
+- DOCX und ODT schreibt und liest Trendo selbst, ohne Fremdbibliothek.
+
+## Abgleich mit LibreOffice 26.2.4 (aus dem Vollpaket)
+`reports/t0223-office/text-abgleich/`:
+- Ein Beispieldokument mit allen Funktionen aus Stufe 1 hat Trendo als DOCX und ODT gespeichert.
+- LibreOffice hat es headless umgewandelt (DOCX→ODT, ODT→DOCX, DOCX→PDF), mit eigenem Profil im Temp-Ordner, damit das installierte LibreOffice unberührt bleibt.
+- Trendo hat die Ergebnisse wieder eingelesen. **Beide Richtungen sind gleich** (`ERGEBNIS.txt`, `SHA256SUMS`).
+
+**Der erste Abgleich fand echte Fehler, alle behoben:**
+- **Formatvorlagen im ODT:** Die deutschen Namen der Vorlagen machten bei LibreOffice „(user)“-Kopien. Jetzt verwendet Trendo die internen Namen wie LibreOffice, und beim Lesen werden „(user)“-Vorlagen erkannt.
+- **Rechtsbündig:** „end“ hat LibreOffice nicht übernommen, jetzt schreibt Trendo „right“.
+- **Listenvorlagen:** stehen bei LibreOffice in `styles.xml`.
+- **Zitat:** Die Namen „Quote“, „Quotations“ und „Blockzitat“ werden erkannt.
+- **Seitenumbruch in DOCX:** steht jetzt als „Seitenumbruch davor“ am nächsten Absatz wie in Word, ohne leeren Absatz.
+- **Leerzeichen in ODT:** Leerzeichen zwischen Formatbereichen gingen verloren (XML und ODF-Regel `<text:s/>`).
+
+Optisch: Seite 1 der PDF von Trendo und der PDF von LibreOffice sind im Render praktisch gleich. LibreOffice legte zusätzlich Lesezeichen an, die hat Trendo jetzt auch.
+
+## Tests
+- **Core `T0223_TrendoText`:** 10 Tests.
+  - Formate und Bearbeiten
+  - Suchen, Ersetzen und Zählen
+  - DOCX-, ODT- und TXT-Rundweg, DIN-Vorlage
+  - PDF mit Seiten und Lesezeichen
+  - Vorlagen, Rechtschreibung mit dem echten Wörterbuch
+  - LibreOffice-Abgleich, nur mit `TRENDO_LO_ABGLEICH`
+- **App `T0223_TrendoTextUi`:** 3 Tests.
+  - Tippen, Enter, Rücktaste, Formate per Knopf und Tastatur, Absatzart, Liste, Ausrichtung, Rückgängig/Wiederholen
+  - Tabelle, Seitenumbruch, Suchen/Ersetzen, Speichern/Öffnen, PDF, Vorlage
+  - Rechtschreibung ohne Wörterbuch
+
+## Nicht geprüft / offen
+- Zeichenformate sieht man im gerade bearbeiteten Absatz erst, wenn man ihn verlässt. Avalonia hat kein Eingabefeld für formatierten Text.
+- Kopf- und Fußzeilen, Fußnoten, Inhaltsverzeichnis, Spalten, Kommentare, Änderungsverfolgung: nicht in Stufe 1. Beim Öffnen fremder Dateien gehen sie verloren oder werden zu Text.
+- Drucken nur über die PDF mit Druckdialog von SumatraPDF, ohne eigene Druckvorschau.
+- Nicht am echten Bildschirm getestet, nur headless gerendert.
+
+## Testergebnis Teil 2
+`dotnet build Trendo.sln -c Release` → 0 Warnungen, 0 Fehler.
+
+| Projekt | Bestanden | Übersprungen | Fehler | Gesamt |
+|---|---:|---:|---:|---:|
+| Trendo.Api.Tests | 15 | 0 | 0 | 15 |
+| Trendo.Core.Tests | 699 | 1 | 0 | 700 |
+| Trendo.App.Tests | 337 | 2 | 0 | 339 (27 min 32 s, Exitcode 0) |
+| Pakettests | 8 | – | 0 | 8 |

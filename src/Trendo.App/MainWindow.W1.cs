@@ -17,7 +17,7 @@ public partial class MainWindow
     private void InitWave1()
     {
         StudioPages.TryAdd("X-09", "ressourcen"); // Speicher & Leistung
-        InitPdf();
+        InitPdf(); InitText();
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.K, KeyModifiers.Control), Command = new RelayCommand(() => { _search.Focus(); _search.SelectAll(); }) });
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.F1), Command = new RelayCommand(() => ShowHelp(CurrentView, force: true)) });
     }

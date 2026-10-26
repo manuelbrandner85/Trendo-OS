@@ -37,6 +37,7 @@ if (Environment.GetEnvironmentVariable("TRENDO_DEMO_CASE") is not null)
 var win = new MainWindow(core, new AppOptions(root, null, 0, Page: args.Length > 3 ? args[3] : null, Query: Environment.GetEnvironmentVariable("TRENDO_QUERY")), new DefaultToolProbe()) { Width = w, Height = h, WindowState = Avalonia.Controls.WindowState.Normal };
 win.Show();
 if (Environment.GetEnvironmentVariable("TRENDO_PDF") is { Length: > 0 } pdf) { var copy = Path.Combine(root, Path.GetFileName(pdf)); File.Copy(pdf, copy, true); win.OpenPdf(copy); win.Show("pdf"); } // T-0223: Trendo PDF rendern
+if (Environment.GetEnvironmentVariable("TRENDO_TEXT") is { Length: > 0 } vorlage) { win.TextNew(vorlage); win.TextSelect(1, 0, 0); win.Show("text"); } // T-0223: Trendo Text mit Vorlage rendern
 if (shot == "startmenu")
 {
     foreach (var id in new[] { "STUDIO-LETTER-01", "CORE-05", "CORE-08", "CORE-06", "CORE-02" }) win.PinStudio(id);
