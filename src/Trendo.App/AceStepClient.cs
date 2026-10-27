@@ -9,6 +9,15 @@ namespace Trendo.App;
 public sealed class AceStepClient(HttpClient http, int port = AceStepClient.DefaultPort)
 {
     public const int DefaultPort = 8001;
+    /// <summary>So viel freier Grafikspeicher reicht, damit das Lied auf der Grafikkarte fertig wird (Probelauf 27.10.2026: bei 0 GB frei lief die Fertigstellung auf dem Prozessor über eine Stunde).</summary>
+    public const double MinFreeVramGb = 4;
+
+    /// <summary>Verständlicher Hinweis, wenn die Grafikkarte zu voll ist; null, wenn genug frei ist oder nicht messbar.</summary>
+    public static string? VramAdvice((double FreeGb, double TotalGb)? mem) =>
+        mem is { } m && m.FreeGb < MinFreeVramGb
+            ? string.Create(System.Globalization.CultureInfo.GetCultureInfo("de-DE"), $"Deine Grafikkarte ist fast voll ({m.FreeGb:0.#} von {m.TotalGb:0.#} GB frei). Andere Programme wie Unreal, Blender oder Spiele belegen sie gerade. " +
+              $"Schließe sie am besten vorher – sonst rechnet der Prozessor, und ein Lied kann über eine Stunde dauern. Erneut klicken = trotzdem starten.")
+            : null;
     public Uri Base { get; } = new($"http://127.0.0.1:{port}/");
 
     /// <summary>Startbefehl im offiziellen Komplettpaket, wie start_api_server.bat, aber direkt: keine Git-Updateprüfung, keine Rückfragen,

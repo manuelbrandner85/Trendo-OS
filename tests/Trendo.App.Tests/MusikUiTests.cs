@@ -43,6 +43,7 @@ public class MusikUiTests
         Assert.True(w.KiStore.ModelReady(m));
         var fake = new FakeAce();
         w.AceClientOverride = new AceStepClient(new HttpClient(fake));
+        w.GpuMemoryProbe = () => (12, 16);
         w.KiLibraryShow(KiKind.Musik, m.Id);
         w.Find<TextBox>("kilib-prompt").Text = "fröhlicher Pop mit Klavier";
         w.Find<TextBox>("kilib-lyrics").Text = "[Verse]\nHeute ist ein schöner Tag";
@@ -55,6 +56,39 @@ public class MusikUiTests
         Assert.Equal("ID3", File.ReadAllText(song));
         Assert.Contains("ki.musik.done", File.ReadAllText(Path.Combine(root, "audit", "audit.jsonl")));
         w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Musik-KI (UI): volle Grafikkarte → erst verständlicher Hinweis, zweiter Klick startet trotzdem")]
+    public async Task Full_gpu_warns_first()
+    {
+        var (w, _, _) = Ui.Open();
+        var m = KiLibrary.Models.Single(x => x.Kind == KiKind.Musik);
+        var exe = AceStepClient.ServerCommand(w.KiStore.RuntimeDir(KiRuntime.AceStep)).File;
+        Directory.CreateDirectory(Path.GetDirectoryName(exe)!); File.WriteAllText(exe, "MZ");
+        var fake = new FakeAce();
+        w.AceClientOverride = new AceStepClient(new HttpClient(fake));
+        w.GpuMemoryProbe = () => (0.2, 16);
+        w.KiLibraryShow(KiKind.Musik, m.Id);
+        w.Find<TextBox>("kilib-prompt").Text = "ruhiger Jazz";
+        var run = w.Find<Button>("kilib-run");
+        run.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        for (var i = 0; i < 50 && run.Content as string != "Trotzdem erzeugen (langsam)"; i++) { Dispatcher.UIThread.RunJobs(); await Task.Delay(20); }
+        Assert.Equal("Trotzdem erzeugen (langsam)", run.Content);
+        Assert.Null(fake.Request);
+        run.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        for (var i = 0; i < 200 && w.TryFind<Button>("kilib-play-result") is null; i++) { Dispatcher.UIThread.RunJobs(); await Task.Delay(20); }
+        Assert.Contains("ruhiger Jazz", fake.Request);
+        w.Close();
+    }
+
+    [Fact(DisplayName = "Musik-KI: Hinweis nur bei weniger als 4 GB freiem Grafikspeicher; nvidia-smi-Ausgabe wird gelesen")]
+    public void Vram_advice()
+    {
+        Assert.Null(AceStepClient.VramAdvice(null));
+        Assert.Null(AceStepClient.VramAdvice((6, 8)));
+        Assert.Contains("0,5 von 16 GB frei", AceStepClient.VramAdvice((0.5, 16)));
+        Assert.Equal((7.5, 16), Trendo.Core.SystemMetrics.ParseGpuMemory("7680, 16384\r\n"));
+        Assert.Null(Trendo.Core.SystemMetrics.ParseGpuMemory("[N/A]"));
     }
 
     [Fact(DisplayName = "Musik-KI: Server nur auf 127.0.0.1, Start ohne Batch-Datei (keine Updateprüfung, keine Rückfragen)")]

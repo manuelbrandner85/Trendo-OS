@@ -136,6 +136,31 @@ public sealed class SystemMetrics
         return _gpu;
     }
 
+    /// <summary>Freier und gesamter Grafikspeicher in GB (NVIDIA, über nvidia-smi); null, wenn nicht messbar. Höchstens 3 s.</summary>
+    public static (double FreeGb, double TotalGb)? GpuMemory()
+    {
+        var exe = OperatingSystem.IsWindows() ? Path.Combine(Environment.SystemDirectory, "nvidia-smi.exe") : "/usr/bin/nvidia-smi";
+        if (!File.Exists(exe)) return null;
+        try
+        {
+            using var p = Process.Start(new ProcessStartInfo(exe, "--query-gpu=memory.free,memory.total --format=csv,noheader,nounits")
+            { RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true })!;
+            var read = p.StandardOutput.ReadToEndAsync();
+            if (!p.WaitForExit(2500) || !read.Wait(500)) { try { p.Kill(true); } catch (InvalidOperationException) { } return null; }
+            return ParseGpuMemory(read.Result);
+        }
+        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException or IOException) { return null; }
+    }
+
+    /// <summary>Erste Zeile „frei, gesamt“ in MiB → GB.</summary>
+    public static (double FreeGb, double TotalGb)? ParseGpuMemory(string csv)
+    {
+        var parts = csv.Split('\n')[0].Split(',');
+        if (parts.Length < 2 || !double.TryParse(parts[0].Trim(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var free)
+            || !double.TryParse(parts[1].Trim(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var total)) return null;
+        return (Math.Round(free / 1024, 1), Math.Round(total / 1024, 1));
+    }
+
     [DllImport("kernel32.dll")] private static extern bool GetSystemTimes(out ulong idle, out ulong kernel, out ulong user);
     [StructLayout(LayoutKind.Sequential)] private struct MEMORYSTATUSEX { public uint dwLength, dwMemoryLoad; public ulong a, b, c, d, e, f, g; }
     [DllImport("kernel32.dll")] private static extern bool GlobalMemoryStatusEx(ref MEMORYSTATUSEX m);

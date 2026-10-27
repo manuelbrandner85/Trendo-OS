@@ -15,6 +15,8 @@ public partial class MainWindow
     /// <summary>Für Tests: ersetzt den lokalen Server.</summary>
     public AceStepClient? AceClientOverride { get; set; }
     private AceStepClient AceClient => AceClientOverride ?? new AceStepClient(AceHttp);
+    /// <summary>Messung des Grafikspeichers (für Tests austauschbar).</summary>
+    public Func<(double FreeGb, double TotalGb)?> GpuMemoryProbe { get; set; } = SystemMetrics.GpuMemory;
 
     /// <summary>Server starten (falls nicht schon da) und warten, bis er antwortet. Beim ersten Mal lädt ACE-Step seine Modelle – das dauert.</summary>
     private async Task<bool> EnsureAceServer(Action<string> say)
@@ -59,9 +61,17 @@ public partial class MainWindow
         var len = new ComboBox { Name = "kilib-length", ItemsSource = new[] { "30 Sekunden", "1 Minute", "2 Minuten", "3 Minuten" }, SelectedIndex = 1, Width = 150 };
         var lang = new ComboBox { Name = "kilib-language", ItemsSource = new[] { "Deutsch", "Englisch" }, SelectedIndex = 0, Width = 120 };
         var go = new Button { Name = "kilib-run", Content = "Musik erzeugen", Background = Accent };
+        var warned = false;
         go.Click += async (_, _) =>
         {
             if (string.IsNullOrWhiteSpace(style.Text)) { status.Text = "Bitte zuerst den Stil beschreiben."; return; }
+            // Grafikspeicher prüfen: ist er voll, erst verständlich warnen; zweiter Klick startet trotzdem
+            if (!warned && AceStepClient.VramAdvice(await Task.Run(GpuMemoryProbe)) is { } advice)
+            {
+                warned = true; status.Text = advice; go.Content = "Trotzdem erzeugen (langsam)";
+                _core.Audit.Append(Principal.LocalOwner.Name, "ki.musik.vram", "zu wenig frei");
+                return;
+            }
             go.IsEnabled = false;
             var seconds = len.SelectedIndex switch { 0 => 30, 2 => 120, 3 => 180, _ => 60 };
             var song = new AceStepClient.Song(style.Text!, lyrics.Text ?? "", seconds, lang.SelectedIndex == 1 ? "en" : "de");
