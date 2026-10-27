@@ -17,7 +17,7 @@ public class W4_Core07_Ui
         w.Find<Button>("dev-create").Press();
         Assert.True(Directory.Exists(Path.Combine(w.DevFolder, "Hallo-Web")));
         Assert.NotNull(w.TryFind<Button>("dev-open-0"));
-        Assert.NotNull(w.TryFind<Button>("kreativ-tab-dev"));
+        Assert.True(w.TryFind<Button>("kreativ-tab-dev") is not null || w.TryFind<Panel>("tabs-none") is not null); // G3: allein im Studio ohne Reiterleiste
         w.Close();
     }
 
