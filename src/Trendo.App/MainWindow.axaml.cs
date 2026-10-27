@@ -280,6 +280,7 @@ public sealed partial class MainWindow : Window
         if (AppStartup.VelopackFirstRun && !_opt.Isolated) _ = SetupVollpaket(); // T-0222: Programme aus dem Vollpaket gleich nach dem Setup
         var ollama = EnsureOllamaRunning();
         if (!_opt.Isolated && !_core.Offline) _ = AutoModelsAfter(ollama); // freie KI-Modelle ohne Klick nachladen
+        if (!_opt.Isolated) _ = ScanKiAfter(ollama); // Befund 27.10.2026: KI-Quellen sofort kennen, sonst bleiben die Lade-Knöpfe grau
         if (_opt.KiAsk is { } q)
         {
             await ollama;
@@ -948,6 +949,23 @@ public sealed partial class MainWindow : Window
         var consent = new Button { Name = "btn-deps-consent", Content = _deps.HasConsent ? "Fehlende kostenlose Programme installieren" : "Zustimmen & fehlende kostenlose Programme installieren", IsEnabled = !_depBusy, Background = Accent };
         consent.Click += async (_, _) => await InstallAll();
         (_depProgress.Parent as Panel)?.Children.Remove(_depProgress); (_depLog.Parent as Panel)?.Children.Remove(_depLog);
+        // Befund 27.10.2026: ohne Vollpaket stand nur „fehlt“ da. Jetzt: klarer Hinweis und Ordnerwahl.
+        var vpDir = new TextBox { Name = "vollpaket-dir", PlaceholderText = "Vollpaket-Ordner (enthält „TrendoOS-Setup.exe“ und „Programme“)", Width = 420 };
+        var vpGo = new Button { Name = "vollpaket-install", Content = "Programme aus dem Vollpaket einrichten", Background = Accent, IsEnabled = !_depBusy };
+        var vpMsg = new TextBlock { Name = "vollpaket-msg", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap };
+        vpGo.Click += async (_, _) =>
+        {
+            var p = vpDir.Text?.Trim().Trim('"') ?? "";
+            if (Vollpaket.Locate([p]) is not { } found) { vpMsg.Text = "In diesem Ordner gibt es keinen gültigen Ordner „Programme“ mit manifest.json."; return; }
+            VollpaketStart.RememberFromInstaller([Path.GetDirectoryName(found) ?? found]);
+            await InstallVollpaket(found); Show("components");
+        };
+        sp.Children.Add(new Border { Name = "vollpaket-card", Background = Brush.Parse(VollpaketMissing ? "#33F59E0B" : C("#22FFFFFF", "#0F000000")), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 10), Margin = new Thickness(0, 4, 0, 4),
+            Child = new StackPanel { Spacing = 6, Children = {
+                new TextBlock { Text = VollpaketMissing ? "Die mitgelieferten Programme wurden nicht gefunden" : "Mitgelieferte Programme (Vollpaket)", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
+                P(VollpaketMissing ? "Trendo wurde ohne den Ordner „Programme“ installiert. Starte das Setup aus dem Vollpaket-Ordner – oder wähle den Ordner hier, dann richtet Trendo alles ohne Internet ein."
+                    : "Programme wie LibreOffice, Blender oder mpv kommen aus dem Vollpaket. Fehlen welche, wähle den Vollpaket-Ordner und richte sie erneut ein.", null, 12),
+                new WrapPanel { Children = { vpDir, new Border { Width = 6 }, vpGo } }, vpMsg } } });
         sp.Children.Add(consent); sp.Children.Add(_depProgress); sp.Children.Add(_depLog);
         foreach (var grp in DependencyCatalog.All.GroupBy(c => c.Mode))
         {
@@ -1227,18 +1245,51 @@ public sealed partial class MainWindow : Window
     private async Task SetupVollpaket()
     {
         var dir = await Task.Run(VollpaketStart.Find);
-        if (dir is null) { _core.Audit.Append("app", "vollpaket.not_found", "kein Ordner „Programme“ gefunden"); return; }
-        _deps.VollpaketDir = dir; _depBusy = true;
+        if (dir is null)
+        {
+            _core.Audit.Append("app", "vollpaket.not_found", "kein Ordner „Programme“ gefunden");
+            VollpaketMissing = true; // Programme-Seite zeigt den Hinweis und die Ordnerwahl
+            return;
+        }
+        await InstallVollpaket(dir);
+    }
+
+    /// <summary>Nach dem Start der KI-Laufzeit die Quellen einmal suchen und offene KI-Seiten auffrischen.</summary>
+    private async Task ScanKiAfter(Task ollamaStart)
+    {
+        try { await ollamaStart; await ScanSourcesAsync(); }
+        catch (Exception ex) when (ex is not OutOfMemoryException) { _core.Audit.Append("app", "ki.scan_failed", ex.GetType().Name); return; }
+        if (CurrentView is "ki-quellen" or "ki-bibliothek") Show(CurrentView);
+    }
+
+    /// <summary>Kein Vollpaket gefunden: die Programme-Seite erklärt es und bietet die Ordnerwahl an.</summary>
+    public bool VollpaketMissing { get; private set; }
+
+    /// <summary>Vollpaket einrichten – jedes Paket einzeln; am Ende bleibt das Ergebnis stehen, bis der Nutzer weiterklickt.</summary>
+    public async Task<Vollpaket.InstallReport?> InstallVollpaket(string dir)
+    {
+        _deps.VollpaketDir = dir; _depBusy = true; VollpaketMissing = false;
         var total = Vollpaket.Load(dir)?.Count ?? 0; var step = 0;
         BeginSetupOverlay("Trendo OS richtet deine Programme ein");
+        Vollpaket.InstallReport? r = null;
         try
         {
-            var n = await Task.Run(() => Vollpaket.InstallMissing(dir, _deps.ToolsRoot, _core.Audit, line => Dispatcher.UIThread.Post(() => { _depLog.Text = line; SetupOverlayProgress(step++, total, line); })));
-            _depLog.Text = n == 0 ? "Alle mitgelieferten Programme sind eingerichtet." : $"{n} mitgelieferte Programme eingerichtet ✓";
+            r = await Task.Run(() => Vollpaket.InstallEach(dir, _deps.ToolsRoot, _core.Audit, line => Dispatcher.UIThread.Post(() => { _depLog.Text = line; SetupOverlayProgress(++step, total, line); })));
+            var ok = r.Installed + r.Present;
+            _depLog.Text = r.Failed.Count == 0 ? $"Alle {r.Total} mitgelieferten Programme sind eingerichtet ✓" : $"{ok} von {r.Total} Programmen eingerichtet, {r.Failed.Count} nicht.";
+            FinishSetupOverlay(r.Failed.Count == 0 ? "Alles eingerichtet" : "Fast alles eingerichtet",
+                $"{ok} von {r.Total} Programmen sind bereit{(r.Installed > 0 ? $" ({r.Installed} neu eingerichtet)" : "")}.", r.Failed.Select(f => $"{f.Name}: {f.Reason}").ToList());
         }
-        catch (Exception ex) when (ex is InvalidOperationException or IOException or UnauthorizedAccessException) { _depLog.Text = "Vollpaket: " + ex.Message; }
-        finally { _depBusy = false; EndSetupOverlay(); }
+        catch (Exception ex) when (ex is InvalidOperationException or IOException or UnauthorizedAccessException)
+        {
+            _depLog.Text = "Vollpaket: " + ex.Message;
+            FinishSetupOverlay("Einrichtung nicht möglich", "Die mitgelieferten Programme konnten nicht eingerichtet werden.", [ex.Message]);
+        }
+        finally { _depBusy = false; }
         ReloadStudios();
+        // Ollama kommt aus dem Vollpaket: erst jetzt starten, suchen und freie Modelle laden
+        if (!_opt.Isolated) { var ol = EnsureOllamaRunning(); _ = ScanKiAfter(ol); if (!_core.Offline) _ = AutoModelsAfter(ol); }
+        return r;
     }
 
     private async Task InstallAll()

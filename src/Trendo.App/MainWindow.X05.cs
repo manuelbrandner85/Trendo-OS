@@ -48,6 +48,28 @@ public partial class MainWindow
         return loaded;
     }
 
+    /// <summary>Befund 27.10.2026: Ohne laufendes Ollama waren alle Lade-Knöpfe grau, ohne Erklärung. Jetzt: Grund und der nächste Schritt.</summary>
+    private Control OllamaHint(string page)
+    {
+        var msg = new TextBlock { Name = "ollama-hint-msg", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap };
+        var start = new Button { Name = "ollama-start", Content = "Ollama jetzt starten", Background = Accent, IsEnabled = !_depBusy };
+        start.Click += async (_, _) =>
+        {
+            start.IsEnabled = false; msg.Text = "Ollama wird gestartet …";
+            await EnsureOllamaRunning(); await ScanSourcesAsync();
+            msg.Text = LastScan.TryGetValue("ollama", out var r) && r.Up ? "Ollama läuft – die Modelle lassen sich jetzt laden." : "Ollama ist nicht eingerichtet. Richte es über das Vollpaket ein (Knopf daneben).";
+            Show(page);
+        };
+        var setup = new Button { Name = "ollama-setup", Content = "Programme einrichten …" };
+        setup.Click += (_, _) => Show("components");
+        return new Border { Name = "ollama-hint", Background = Brush.Parse("#33F59E0B"), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 10),
+            Child = new StackPanel { Spacing = 6, Children = {
+                new TextBlock { Text = "Zum Laden der Modelle muss Ollama laufen", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
+                P(_core.Offline ? "Trendo ist im Offline-Modus – Modelle werden dann nicht geladen. Schalte den Offline-Modus in den Einstellungen aus."
+                    : "Ollama ist das freie Programm, das die KI-Modelle auf deinem PC ausführt. Es kommt mit dem Vollpaket. Läuft es nicht, sind die Lade-Knöpfe gesperrt.", null, 12),
+                new WrapPanel { Children = { start, new Border { Width = 6 }, setup } }, msg } } };
+    }
+
     /// <summary>Für Tests: freier Speicherplatz in Bytes.</summary>
     public Func<long>? FreeBytesForModels { get; set; }
     private static long FreeBytes(string path) { try { return new DriveInfo(Path.GetPathRoot(Path.GetFullPath(path))!).AvailableFreeSpace; } catch (Exception e) when (e is IOException or ArgumentException or UnauthorizedAccessException) { return 0; } }
@@ -106,6 +128,8 @@ public partial class MainWindow
                 Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Center, Children = { up, tg, web } }, 1) } }));
         }
         sp.Children.Add(H("Freie Modelle", 14));
+        var olUp = LastScan.TryGetValue("ollama", out var ol0) && ol0.Up;
+        if (!olUp) sp.Children.Add(OllamaHint("ki-quellen"));
         var auto = new CheckBox { Name = "ki-auto-models", Content = "Freie Modelle (Apache-2.0, MIT) automatisch laden, passend zu diesem PC", IsChecked = set.AutoModels, Foreground = Text };
         auto.IsCheckedChanged += (_, _) => { var cur = KiSourceSettings.Update(_core.DataRoot, s => s.AutoModels = auto.IsChecked == true); _core.Audit.Append(Principal.LocalOwner.Name, cur.AutoModels ? "ki.auto.on" : "ki.auto.off", ""); };
         sp.Children.Add(auto);
@@ -115,6 +139,8 @@ public partial class MainWindow
         {
             var fits = KiCatalog.Fits(m, hw); var got = have.Contains(m.Tag);
             var b = new Button { Name = "model-pull-" + m.Tag.Replace(':', '-').Replace('.', '-'), Content = got ? "✓ vorhanden" : KiCatalog.AutoLicense(m) ? (fits ? "Jetzt laden (sonst automatisch)" : "passt nicht") : $"Lizenz „{m.License}“ bestätigen & laden", IsEnabled = !got && fits && ol.Up && !_core.Offline, Padding = new Thickness(8, 2) };
+            // Befund 27.10.2026: gesperrte Knöpfe sagen, warum
+            if (!b.IsEnabled && !got) ToolTip.SetTip(b, !fits ? $"Braucht {m.MinRamGb} GB Arbeitsspeicher." : _core.Offline ? "Im Offline-Modus wird nichts geladen." : "Zuerst muss Ollama laufen – siehe Hinweis oben.");
             b.Click += async (_, _) =>
             {
                 var req = _core.Approvals.Request(Principal.LocalOwner, "ki.pull", $"KI-Modell {m.Name} ({m.SizeGb:0.0} GB) laden", m.Tag);

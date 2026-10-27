@@ -36,6 +36,31 @@ public class T0222_Vollpaket
         finally { Directory.Delete(root, true); }
     }
 
+    [Fact(DisplayName = "Befund 27.10.2026: ein kaputtes Paket hält die übrigen nicht auf – Bericht nennt es mit Grund")]
+    public void InstallEach_continues()
+    {
+        var root = Tmp("trendo-vp-"); var tools = Path.Combine(root, "werkzeuge");
+        try
+        {
+            var prog = Medium(root);
+            // zweites Paket mit falscher Prüfsumme, an erster Stelle
+            var zip = Path.Combine(prog, "mpv.zip");
+            using (var z = ZipFile.Open(zip, ZipArchiveMode.Create)) using (var w = new StreamWriter(z.CreateEntry("mpv.exe").Open())) w.Write("mpv");
+            var doc = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(Path.Combine(prog, Vollpaket.ManifestName)))!;
+            var list = doc["programs"]!.AsArray();
+            list.Insert(0, new System.Text.Json.Nodes.JsonObject { ["id"] = "mpv", ["name"] = "mpv", ["version"] = "1", ["license"] = "GPL-2.0", ["file"] = "mpv.zip", ["sha256"] = new string('0', 64), ["bytes"] = new FileInfo(zip).Length, ["exe"] = "mpv.exe", ["source_url"] = "https://github.com/mpv-player/mpv" });
+            File.WriteAllText(Path.Combine(prog, Vollpaket.ManifestName), doc.ToJsonString());
+            var lines = new List<string>();
+            var r = Vollpaket.InstallEach(prog, tools, null, lines.Add);
+            Assert.Equal((1, 0, 2), (r.Installed, r.Present, r.Total));
+            Assert.Equal("mpv", Assert.Single(r.Failed).Name);
+            Assert.True(File.Exists(Path.Combine(tools, "qpdf", "bin", "qpdf.exe")));
+            Assert.Contains(lines, l => l.StartsWith("mpv: nicht eingerichtet"));
+            Assert.Equal(0, Vollpaket.InstallMissing(prog, tools)); // qpdf da, mpv weiter kaputt: kein Abbruch
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
     [Fact(DisplayName = "T-0222: falsche Prüfsumme oder Dateiname mit Pfad – nichts wird eingerichtet")]
     public void Rejects()
     {

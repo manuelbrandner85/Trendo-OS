@@ -114,17 +114,32 @@ public static class Vollpaket
     /// <summary>Alle fehlenden Pakete einrichten (beim ersten Start nach dem Setup). Vorhandene bleiben unverändert. Liefert die Zahl der eingerichteten Pakete.</summary>
     public static int InstallMissing(string programmeDir, string toolsRoot, AuditLog? audit = null, Action<string>? progress = null)
     {
+        var r = InstallEach(programmeDir, toolsRoot, audit, progress);
+        if (r.Failed.Count > 0 && r.Installed == 0 && r.Present == 0) throw new InvalidOperationException(r.Failed[0].Reason);
+        return r.Installed;
+    }
+
+    /// <summary>Ergebnis der Einrichtung: neu eingerichtet, schon vorhanden, fehlgeschlagen (mit Grund).</summary>
+    public sealed record InstallReport(int Installed, int Present, int Total, List<(string Name, string Reason)> Failed);
+
+    /// <summary>Jedes Paket einzeln einrichten – ein fehlerhaftes Paket hält die übrigen nicht auf (Befund 27.10.2026).</summary>
+    public static InstallReport InstallEach(string programmeDir, string toolsRoot, AuditLog? audit = null, Action<string>? progress = null)
+    {
         var list = Load(programmeDir) ?? throw new InvalidOperationException("Im Vollpaket fehlt ein gültiges manifest.json.");
-        var n = 0;
+        int n = 0, present = 0; var failed = new List<(string, string)>();
         foreach (var e in list)
         {
             var exe = Path.Combine(toolsRoot, e.Id, e.Exe.Replace('/', Path.DirectorySeparatorChar));
-            if (File.Exists(exe) || Directory.Exists(exe)) { progress?.Invoke($"{e.Name}: schon eingerichtet"); continue; }
+            if (File.Exists(exe) || Directory.Exists(exe)) { progress?.Invoke($"{e.Name}: schon eingerichtet"); present++; continue; }
             progress?.Invoke($"{e.Name} {e.Version} wird eingerichtet …");
-            InstallPackage(programmeDir, e, toolsRoot, audit);
-            n++;
+            try { InstallPackage(programmeDir, e, toolsRoot, audit); n++; }
+            catch (Exception ex) when (ex is IOException or InvalidOperationException or InvalidDataException or UnauthorizedAccessException or System.Security.Cryptography.CryptographicException)
+            {
+                failed.Add((e.Name, ex.Message)); audit?.Append("app", "vollpaket.failed", $"{e.Id}: {ex.Message}");
+                progress?.Invoke($"{e.Name}: nicht eingerichtet – {ex.Message}");
+            }
         }
-        return n;
+        return new(n, present, list.Count, failed);
     }
 
     /// <summary>Ein mitgeliefertes Programm einzeln entfernen (Vorgabe 2026-10-26): löscht nur den Paketordner im Werkzeugordner.

@@ -63,6 +63,7 @@ public partial class MainWindow
             sp.Children.Add(P($"Läuft mit {rt.Name} ({rt.License}): {rt.WhatItDoes} " +
                 (ready ? "✓ eingerichtet." : rt.FromVollpaket ? (rt.Id == KiRuntime.Ollama ? "Startet automatisch, sobald die Trendo KI läuft." : "Kommt aus dem Vollpaket.") : $"Wird beim ersten Laden mit eingerichtet ({rt.Bytes / (1 << 20)} MB, {(rt.Url is null ? $"offizielle GitHub-Seite {rt.Repo}" : $"offizielles Paket {new Uri(rt.Url).Host}, verlinkt auf github.com/{rt.Repo}")})."), null, 11));
         }
+        if (!ol.Up && KiLibrary.OfKind(_kiLibKind).Any(m => m.Runtime == KiRuntime.Ollama)) sp.Children.Add(OllamaHint("ki-bibliothek"));
         foreach (var m in KiLibrary.OfKind(_kiLibKind))
         {
             var fits = hw.RamBytes <= 0 || hw.RamBytes >= m.MinRamGb * 1024L * 1024 * 1024 * 0.9;
@@ -85,6 +86,7 @@ public partial class MainWindow
             {
                 var label = m.OpenLicense ? "Laden" : $"Bedingungen „{m.License}“ annehmen & laden";
                 var get = new Button { Name = "kilib-get-" + m.Id, Content = fits ? label : $"braucht {m.MinRamGb} GB Arbeitsspeicher", IsEnabled = fits && !_depBusy && !_core.Offline && (m.Runtime != KiRuntime.Ollama || ol.Up) };
+                if (!get.IsEnabled) ToolTip.SetTip(get, !fits ? $"Braucht {m.MinRamGb} GB Arbeitsspeicher." : _core.Offline ? "Im Offline-Modus wird nichts geladen." : _depBusy ? "Gerade wird etwas eingerichtet – bitte kurz warten." : "Zuerst muss Ollama laufen – siehe Hinweis oben.");
                 get.Click += async (_, _) => await KiLibraryInstall(m);
                 buttons.Children.Add(get);
             }

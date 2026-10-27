@@ -31,7 +31,7 @@ public partial class MainWindow
     public bool SetupOverlayOpen => _setupOverlay.IsVisible;
 
     /// <summary>Schließen durch den Nutzer (Alt+F4, X) wartet, bis die Einrichtung fertig ist; Trendo selbst darf schließen.</summary>
-    public bool MayClose(bool programmatic) => programmatic || !SetupOverlayOpen;
+    public bool MayClose(bool programmatic) => programmatic || !SetupOverlayOpen || SetupFinishShown;
 
     private void InitSetupOverlay(Grid root)
     {
@@ -71,12 +71,13 @@ public partial class MainWindow
         // Nichts geht durch: Zeiger und Tasten enden an der Fläche, Schließen wartet bis zum Ende.
         _setupOverlay.PointerPressed += (_, e) => e.Handled = true;
         _setupOverlay.PointerWheelChanged += (_, e) => e.Handled = true;
-        AddHandler(KeyDownEvent, (_, e) => { if (SetupOverlayOpen) e.Handled = true; }, RoutingStrategies.Tunnel, handledEventsToo: true);
+        AddHandler(KeyDownEvent, (_, e) => { if (SetupOverlayOpen && !SetupFinishShown) e.Handled = true; }, RoutingStrategies.Tunnel, handledEventsToo: true);
         Closing += (_, e) => { if (!MayClose(e.IsProgrammatic)) e.Cancel = true; };
     }
 
     private void BeginSetupOverlay(string title)
     {
+        if (_setupDoneButton is not null) { _setupDoneButton.IsVisible = false; _setupSummary!.IsVisible = false; }
         _setupTitle.Text = title; _setupStep.Text = "Vorbereitung …"; _setupBar.Value = 0; _setupBar.IsIndeterminate = true; _setupPercent.Text = "";
         _setupOverlay.IsVisible = true; _setupOverlay.Focus();
         if (WindowState != WindowState.FullScreen) { _setupPrevState = WindowState; WindowState = WindowState.FullScreen; } // echtes Vollbild
@@ -104,6 +105,30 @@ public partial class MainWindow
     }
 
     public void HideSetupOverlay() => EndSetupOverlay();
+
+    // Befund 27.10.2026: Der Einrichtungsbildschirm war zu kurz zu sehen. Am Ende bleibt er mit dem Ergebnis stehen, bis „Los geht's“ gedrückt wird.
+    private Button? _setupDoneButton;
+    private TextBlock? _setupSummary;
+    public bool SetupFinishShown => _setupDoneButton?.IsVisible == true && _setupOverlay.IsVisible;
+
+    /// <summary>Ergebnis zeigen: Fortschritt auf 100 %, Zusammenfassung und was nicht geklappt hat. Schließen per Knopf (oder Enter).</summary>
+    private void FinishSetupOverlay(string title, string summary, IReadOnlyList<string> problems)
+    {
+        if (!_setupOverlay.IsVisible) return;
+        _setupTitle.Text = title; _setupStep.Text = summary;
+        _setupBar.IsIndeterminate = false; _setupBar.Value = 1; _setupPercent.Text = problems.Count == 0 ? "Fertig · 100 %" : $"Fertig · {problems.Count} Hinweis(e)";
+        if (_setupSummary is null)
+        {
+            _setupSummary = new TextBlock { Name = "setup-overlay-problems", FontSize = 12.5, Foreground = Brush.Parse("#FFD28A"), HorizontalAlignment = HorizontalAlignment.Center, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap, MaxWidth = 620 };
+            _setupDoneButton = new Button { Name = "setup-overlay-done", Content = "Los geht's", FontSize = 15, Padding = new Thickness(28, 10), CornerRadius = new CornerRadius(12), HorizontalAlignment = HorizontalAlignment.Center,
+                Background = Brush.Parse("#3B82F6"), Foreground = Brushes.White };
+            _setupDoneButton.Click += (_, _) => { _setupDoneButton.IsVisible = false; _setupSummary.IsVisible = false; EndSetupOverlay(); };
+            if (_setupOverlay.Children.OfType<StackPanel>().FirstOrDefault() is { } col) { col.Children.Add(_setupSummary); col.Children.Add(_setupDoneButton); }
+        }
+        _setupSummary.Text = problems.Count == 0 ? "" : "Nicht eingerichtet:\n" + string.Join("\n", problems.Take(8)) + (problems.Count > 8 ? $"\n… und {problems.Count - 8} weitere" : "") + "\n\nUnter „Programme“ kannst du es später erneut versuchen.";
+        _setupSummary.IsVisible = problems.Count > 0;
+        _setupDoneButton!.IsVisible = true; _setupDoneButton.Focus();
+    }
 
     private void EndSetupOverlay()
     {
