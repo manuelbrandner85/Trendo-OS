@@ -390,11 +390,16 @@ public sealed class TextDoc
         MapMarks(p, start, length, with.Length);
         var parts = Split(p, start, length);
         var fmt = parts.FirstOrDefault(x => x.Inside);
-        var runs = new List<(string, Fmt, double?)>(); var done = false;
+        var runs = new List<(string, Fmt, double?)>(); var done = false; var pos = 0;
         foreach (var x in parts)
+        {
+            // reines Einfügen (Länge 0): an der Stelle, mit dem Format des folgenden Abschnitts
+            if (!done && length == 0 && pos == start) { runs.Add((with, x.Fmt, x.Size)); done = true; }
             if (!x.Inside) runs.Add((x.Text, x.Fmt, x.Size));
             else if (!done) { runs.Add((with, fmt.Fmt, fmt.Size)); done = true; }
-        if (!done) runs.Insert(0, (with, Fmt.None, null));
+            pos += x.Text.Length;
+        }
+        if (!done) runs.Add((with, parts.Count > 0 ? parts[^1].Fmt : Fmt.None, parts.Count > 0 ? parts[^1].Size : null)); // am Ende anhängen
         p.SetRuns(runs);
     }
 

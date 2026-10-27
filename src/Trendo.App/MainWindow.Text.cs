@@ -140,8 +140,11 @@ public partial class MainWindow
     {
         var g = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,Auto,*,Auto"), ColumnDefinitions = new ColumnDefinitions("*,Auto") };
         var head = PageHead("Trendo Text"); Grid.SetColumnSpan(head, 2); g.Children.Add(head);
-        var tools = TextToolbar(); Grid.SetRow(tools, 1); Grid.SetColumnSpan(tools, 2); g.Children.Add(tools);
-        var more = TextMoreBar(); Grid.SetRow(more, 2); Grid.SetColumnSpan(more, 2); g.Children.Add(more);
+        var ribbon = new StackPanel { Children = { TextRibbonTabs() } };
+        if (_txRibbon == "start") { ribbon.Children.Add(TextToolbar()); ribbon.Children.Add(StyleGallery()); } else ribbon.Children.Add(TextRibbonBody());
+        if (TextPromptBar() is { } prompt) ribbon.Children.Add(prompt);
+        Grid.SetRow(ribbon, 1); Grid.SetColumnSpan(ribbon, 2); g.Children.Add(ribbon);
+        var more = TextMoreBar(); more.IsVisible = _txMore && _txRibbon == "start"; Grid.SetRow(more, 2); Grid.SetColumnSpan(more, 2); g.Children.Add(more);
         var page = TextPaper(); Grid.SetRow(page, 3); g.Children.Add(page);
         var side = TextSidePanel(); if (side is not null) { Grid.SetRow(side, 3); Grid.SetColumn(side, 1); g.Children.Add(side); }
         var c = TextDocument.Count();
@@ -305,6 +308,7 @@ public partial class MainWindow
     {
         var page = new StackPanel { Name = "text-paper", Spacing = 2 };
         var number = 0;
+        _txFootNos = TextTools.NoteNumbers(TextDocument, MarkKind.Footnote); _txEndNos = TextTools.NoteNumbers(TextDocument, MarkKind.Endnote);
         for (var i = 0; i < TextDocument.Blocks.Count; i++)
         {
             var b = TextDocument.Blocks[i]; var index = i;
@@ -315,18 +319,33 @@ public partial class MainWindow
                 Table t => TableControl(t, index),
                 Picture pic => PictureControl(pic, index),
                 PageBreak => BreakControl(index),
+                TocBlock toc => TocControl(toc, index),
                 _ => new Border(),
             });
         }
-        var paper = new Border { Background = Brushes.White, Width = 700, Padding = new Thickness(64, 56), Margin = new Thickness(0, 4, 8, 8), HorizontalAlignment = HorizontalAlignment.Center,
-            BoxShadow = BoxShadows.Parse("0 6 24 0 #66000000"), Child = page, MinHeight = 900 };
-        return new ScrollViewer { Name = "text-scroll", Content = paper, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto };
+        // Blatt wie eingerichtet: Breite nach Hoch/Quer, Ränder in cm (33,3 Bildpunkte je cm), Kopf-/Fußzeile, Wasserzeichen, Seitenrand
+        var pg = TextDocument.Page; const double PxCm = 700 / 21.0;
+        var sheet = new Grid { RowDefinitions = new RowDefinitions("Auto,*,Auto") };
+        if (pg.Header.Length > 0) sheet.Children.Add(new TextBlock { Name = "text-header-view", Text = pg.Header, Foreground = Brush.Parse("#7A8591"), FontSize = 11, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 0, 0, 10) });
+        Grid.SetRow(page, 1); sheet.Children.Add(page);
+        var foot = (pg.Footer.Length > 0 ? pg.Footer : "") + (pg.PageNumbers ? (pg.Footer.Length > 0 ? "   ·   " : "") + "Seite 1 von …" : "");
+        if (foot.Length > 0) { var ft = new TextBlock { Name = "text-footer-view", Text = foot, Foreground = Brush.Parse("#7A8591"), FontSize = 11, Margin = new Thickness(0, 14, 0, 0) }; Grid.SetRow(ft, 2); sheet.Children.Add(ft); }
+        var layers = new Panel();
+        if (pg.Watermark.Length > 0)
+            layers.Children.Add(new TextBlock { Name = "text-watermark-view", Text = pg.Watermark, FontSize = 96, FontWeight = FontWeight.Bold, Foreground = new SolidColorBrush(Color.FromArgb(34, 128, 128, 128)), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 260, 0, 0), RenderTransform = new RotateTransform(-35), IsHitTestVisible = false });
+        layers.Children.Add(sheet);
+        var paper = new Border { Name = "text-sheet", Background = Brushes.White, Width = (pg.Landscape ? 29.7 : 21) * PxCm, Padding = new Thickness(pg.Left * PxCm, pg.Top * PxCm * 0.75, pg.Right * PxCm, pg.Bottom * PxCm * 0.75), Margin = new Thickness(0, 4, 8, 8), HorizontalAlignment = HorizontalAlignment.Center,
+            BoxShadow = BoxShadows.Parse("0 6 24 0 #66000000"), Child = layers, MinHeight = (pg.Landscape ? 21 : 29.7) * PxCm * 0.98,
+            BorderBrush = pg.PageBorder ? Brush.Parse("#808080") : null, BorderThickness = new Thickness(pg.PageBorder ? 1 : 0) };
+        var zoomed = new LayoutTransformControl { LayoutTransform = new ScaleTransform(_txZoom, _txZoom), Child = paper };
+        return new ScrollViewer { Name = "text-scroll", Content = zoomed, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto };
     }
 
     private static readonly IBrush Ink = new SolidColorBrush(Color.Parse("#1A1A1A"));
-    private static IBrush StyleBrush(ParaStyle s) => s switch
+    /// <summary>Farbe der Absatzart; Titel und Überschriften in der Farbe des Designs (W3).</summary>
+    private IBrush StyleBrush(ParaStyle s) => s switch
     {
-        ParaStyle.Heading1 => Brush.Parse("#1F3864"), ParaStyle.Heading2 or ParaStyle.Heading3 => Brush.Parse("#2F5496"), ParaStyle.Subtitle => Brush.Parse("#595959"), ParaStyle.Quote => Brush.Parse("#404040"), _ => Ink,
+        ParaStyle.Title or ParaStyle.Heading1 or ParaStyle.Heading2 or ParaStyle.Heading3 => Brush.Parse(TextDocument.Page.HeadingColor), ParaStyle.Subtitle => Brush.Parse("#595959"), ParaStyle.Quote => Brush.Parse("#404040"), _ => Ink,
     };
 
     /// <summary>Eingabefelder auf dem weißen Blatt: das dunkle Design färbt sie sonst beim Bearbeiten schwarz.</summary>
@@ -364,7 +383,8 @@ public partial class MainWindow
                 if (!TextDirty || _txUndo.Count == 0 || _txUndo[^1].Blocks.Count != TextDocument.Blocks.Count) Snapshot();
                 TextDoc.EditText(p, tb.Text ?? ""); TextDirty = true;
             };
-            void Track() { var a = Math.Min(tb.SelectionStart, tb.SelectionEnd); var e = Math.Max(tb.SelectionStart, tb.SelectionEnd); _txSel = a; _txSelLen = e - a; if (e == a) _txSel = tb.CaretIndex; }
+            var ready = false; // erst nach dem Wiederherstellen der Auswahl mitschreiben – sonst setzt das neue Feld sie auf 0
+            void Track() { if (!ready || _txActive != tb) return; var a = Math.Min(tb.SelectionStart, tb.SelectionEnd); var e = Math.Max(tb.SelectionStart, tb.SelectionEnd); _txSel = a; _txSelLen = e - a; if (e == a) _txSel = tb.CaretIndex; }
             tb.PropertyChanged += (_, e) => { if (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty || e.Property == TextBox.CaretIndexProperty) Track(); };
             tb.KeyDown += (_, e) =>
             {
@@ -392,6 +412,7 @@ public partial class MainWindow
                 tb.Focus();
                 var s = Math.Clamp(_txSel, 0, tb.Text?.Length ?? 0); var l = Math.Clamp(_txSelLen, 0, (tb.Text?.Length ?? 0) - s);
                 tb.SelectionStart = s; tb.SelectionEnd = s + l; tb.CaretIndex = s + l;
+                ready = true;
             });
             body = tb;
         }
@@ -406,25 +427,33 @@ public partial class MainWindow
                 // Abschnitt an Fehlergrenzen teilen, Fehler rot unterstreichen
                 var cuts = new SortedSet<int> { 0, t.Length };
                 foreach (var m in errors) { cuts.Add(Math.Clamp(m.Start - pos, 0, t.Length)); cuts.Add(Math.Clamp(m.Start + m.Length - pos, 0, t.Length)); }
+                foreach (var m in p.Marks) { cuts.Add(Math.Clamp(m.Start - pos, 0, t.Length)); cuts.Add(Math.Clamp(m.End - pos, 0, t.Length)); }
                 var list = cuts.ToList();
                 for (var k = 0; k + 1 < list.Count; k++)
                 {
                     var a = list[k]; var e2 = list[k + 1]; if (e2 <= a) continue;
                     var wrong = errors.Any(m => pos + a >= m.Start && pos + a < m.Start + m.Length);
+                    if (a == 0 && pos == 0) AddNotes(view, p, index, 0);
                     var run = new Run(t[a..e2]);
+                    bool In(MarkKind k) => p.Marks.Any(m => m.Kind == k && m.Length > 0 && pos + a >= m.Start && pos + a < m.End);
+                    var isLink = In(MarkKind.Link); var ins = In(MarkKind.Insert); var del = In(MarkKind.Delete);
+                    if (In(MarkKind.Comment)) run.Background = Brush.Parse("#66FFE680");
+                    if (isLink) run.Foreground = Brush.Parse("#0563C1"); if (ins) run.Foreground = Brush.Parse("#15803D"); if (del) run.Foreground = Brush.Parse("#B91C1C");
                     if (f.HasFlag(Fmt.Bold)) run.FontWeight = FontWeight.Bold;
                     if (f.HasFlag(Fmt.Italic)) run.FontStyle = FontStyle.Italic;
                     if (sz is { } s2) run.FontSize = s2 * 1.33;
                     if (f.HasFlag(Fmt.Super) || f.HasFlag(Fmt.Sub)) { run.FontSize = (sz ?? TextDoc.StyleSize(p.Style)) * 1.33 * 0.62; run.BaselineAlignment = f.HasFlag(Fmt.Super) ? BaselineAlignment.Superscript : BaselineAlignment.Subscript; }
                     var deco = new TextDecorationCollection();
-                    if (f.HasFlag(Fmt.Underline)) deco.Add(new TextDecoration { Location = TextDecorationLocation.Underline });
-                    if (f.HasFlag(Fmt.Strike)) deco.Add(new TextDecoration { Location = TextDecorationLocation.Strikethrough });
+                    if (f.HasFlag(Fmt.Underline) || isLink || ins) deco.Add(new TextDecoration { Location = TextDecorationLocation.Underline });
+                    if (f.HasFlag(Fmt.Strike) || del) deco.Add(new TextDecoration { Location = TextDecorationLocation.Strikethrough });
                     if (wrong) deco.Add(new TextDecoration { Location = TextDecorationLocation.Underline, Stroke = Brushes.Red, StrokeThickness = 1.6, StrokeOffset = 2 });
                     if (deco.Count > 0) run.TextDecorations = deco;
                     view.Inlines!.Add(run);
+                    AddNotes(view, p, index, pos + e2);
                 }
                 pos += t.Length;
             }
+            if (p.Text.Length == 0) AddNotes(view, p, index, 0);
             if (p.Text.Length == 0) view.Inlines!.Add(new Run(" "));
             view.PointerPressed += (_, e) =>
             {
@@ -434,6 +463,8 @@ public partial class MainWindow
             };
             body = view;
         }
+        if (p.IndentCm > 0) body.Margin = new Thickness(p.IndentCm * 33.3, 0, 0, 0);
+        if (p.SpaceAfterPt is { } sa) body.Margin = new Thickness(body.Margin.Left, 0, 0, sa * 1.33);
         if (p.List == ListKind.None) return body;
         var g = new Grid { ColumnDefinitions = new ColumnDefinitions("28,*") };
         g.Children.Add(new TextBlock { Text = p.List == ListKind.Bullet ? "•" : number + ".", FontSize = size, Foreground = Ink, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 1, 6, 0), FontFamily = new FontFamily("Arial") });
@@ -491,8 +522,44 @@ public partial class MainWindow
         img.Name = "text-picture-" + index;
         var tools = BlockTools(index,
             TB("text-img-smaller-" + index, "kleiner", () => { Snapshot(); pic.HeightCm *= Math.Max(2, pic.WidthCm - 2) / pic.WidthCm; pic.WidthCm = Math.Max(2, pic.WidthCm - 2); Changed(); }, "Bild kleiner"),
-            TB("text-img-bigger-" + index, "größer", () => { Snapshot(); var w = Math.Min(16, pic.WidthCm + 2); pic.HeightCm *= w / pic.WidthCm; pic.WidthCm = w; Changed(); }, "Bild größer"));
-        return new StackPanel { Margin = new Thickness(0, 6), HorizontalAlignment = HorizontalAlignment.Left, Children = { img, tools } };
+            TB("text-img-bigger-" + index, "größer", () => { Snapshot(); var w = Math.Min(16, pic.WidthCm + 2); pic.HeightCm *= w / pic.WidthCm; pic.WidthCm = w; Changed(); }, "Bild größer"),
+            TB("text-img-caption-" + index, "Beschriftung", () => TextAsk("text-prompt", "Bildbeschriftung („Abbildung n:“ setzt Trendo davor):", pic.Caption, v => { Snapshot(); pic.Caption = v.Trim(); Changed(); }), "Beschriftung unter dem Bild"),
+            TB("text-img-alt-" + index, "Alternativtext", () => TextAsk("text-prompt", "Was zeigt das Bild? (für Bildschirmleser):", pic.Alt, v => { Snapshot(); pic.Alt = v.Trim(); Changed(); }), "Alternativtext für Barrierefreiheit", pic.Alt.Length > 0));
+        var figNo = TextDocument.Blocks.Take(index + 1).OfType<Picture>().Count(x => x.Caption.Trim().Length > 0);
+        var stack = new StackPanel { Margin = new Thickness(0, 6), HorizontalAlignment = HorizontalAlignment.Left, Children = { img } };
+        if (pic.Caption.Trim().Length > 0) stack.Children.Add(new TextBlock { Name = "text-caption-" + index, Text = $"Abbildung {figNo}: {pic.Caption.Trim()}", FontStyle = FontStyle.Italic, FontSize = 12, Foreground = Brush.Parse("#595959"), Margin = new Thickness(0, 3, 0, 0) });
+        stack.Children.Add(tools);
+        return stack;
+    }
+
+    /// <summary>W5: Inhaltsverzeichnis im Blatt – Einträge springen zur Überschrift; Seitenzahlen stehen im PDF und in Word.</summary>
+    private Control TocControl(TocBlock toc, int index)
+    {
+        var sp = new StackPanel { Name = "text-toc-" + index, Spacing = 2, Margin = new Thickness(0, 6) };
+        sp.Children.Add(new TextBlock { Text = toc.Title, FontSize = 16 * 1.33, FontWeight = FontWeight.Bold, Foreground = Brush.Parse(TextDocument.Page.HeadingColor), FontFamily = new FontFamily("Arial") });
+        var entries = TextTools.Toc(TextDocument);
+        if (entries.Count == 0) sp.Children.Add(new TextBlock { Text = "(noch keine Überschriften – Absatzart „Überschrift 1–3“ wählen)", Foreground = Brush.Parse("#7A8591"), FontSize = 13 });
+        foreach (var e in entries)
+        {
+            var block = e.Block;
+            var tb = new TextBlock { Text = e.Text, FontSize = 13.5, FontWeight = e.Level == 1 ? FontWeight.SemiBold : FontWeight.Normal, Foreground = Ink, Margin = new Thickness((e.Level - 1) * 18, 1, 0, 1), Cursor = new Cursor(StandardCursorType.Hand), FontFamily = new FontFamily("Arial") };
+            tb.PointerPressed += (_, ev) => { ev.Handled = true; FocusPara(block, 0); };
+            sp.Children.Add(tb);
+        }
+        sp.Children.Add(BlockTools(index));
+        return sp;
+    }
+
+    /// <summary>Fuß- und Endnotenzeichen sowie Kommentarsymbole an der Stelle <paramref name="at"/> einfügen.</summary>
+    private void AddNotes(TextBlock view, Para p, int block, int at)
+    {
+        for (var i = 0; i < p.Marks.Count; i++)
+        {
+            var m = p.Marks[i]; if (m.Length != 0 || m.Start != at) continue;
+            var label = m.Kind switch { MarkKind.Footnote => _txFootNos.TryGetValue((block, i), out var n) ? n.ToString() : "*", MarkKind.Endnote => _txEndNos.TryGetValue((block, i), out var e) ? "e" + e : "e", MarkKind.Comment => "💬", _ => null };
+            if (label is null) continue;
+            view.Inlines!.Add(new Run(label) { FontSize = 10, BaselineAlignment = BaselineAlignment.Superscript, Foreground = Brush.Parse(m.Kind == MarkKind.Comment ? "#B45309" : "#2F5496") });
+        }
     }
 
     private Control BreakControl(int index) => new Grid
@@ -504,8 +571,10 @@ public partial class MainWindow
     // ---------- Seitenleiste: Suchen/Ersetzen, Rechtschreibung ----------
     private Control? TextSidePanel()
     {
-        if (!_txFind && !_txSpellOn) return null;
+        var extra = TextProPanels().ToList();
+        if (!_txFind && !_txSpellOn && extra.Count == 0) return null;
         var sp = new StackPanel { Spacing = 6, Width = 260, Margin = new Thickness(6, 4, 0, 0) };
+        foreach (var c in extra) sp.Children.Add(c);
         if (_txFind)
         {
             var q = new TextBox { Name = "text-find-q", PlaceholderText = "Suchen nach …", Text = _txFindQ };
