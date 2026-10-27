@@ -68,6 +68,12 @@ public sealed class KiSourceSettings
     public List<string> Disabled { get; set; } = [];
     /// <summary>KI-Dienste mit Schlüssel, die als Ersatz genutzt werden dürfen (nach den lokalen Quellen, in dieser Reihenfolge).</summary>
     public List<string> Cloud { get; set; } = [];
+    /// <summary>C3 (27.10.2026): wo Internet-KIs (z. B. OpenRouter kostenlos) einspringen: „chat“ = nur im KI-Chat, „ersatz“ = in allen Bereichen,
+    /// wenn die KI auf dem PC nicht antwortet, „zuerst“ = in allen Bereichen bevorzugt. Lokale KI bleibt Standard.</summary>
+    public string RemoteMode { get; set; } = "chat";
+    /// <summary>Gewählte kostenlose OpenRouter-Modelle je Bereich (leer = automatisch das beste).</summary>
+    public Dictionary<string, string> OpenRouterModels { get; set; } = [];
+    public bool RemoteEverywhere => RemoteMode is "ersatz" or "zuerst";
     /// <summary>Freie Modelle nach dem Setup automatisch laden (Vorgabe 2026-10-25).</summary>
     public bool AutoModels { get; set; } = true;
     /// <summary>Fehlversuche je Modell beim automatischen Laden; nach 3 Versuchen nur noch per Knopf.</summary>

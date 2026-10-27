@@ -14,7 +14,14 @@ public partial class MainWindow
 
     public Func<IReadOnlyList<IKiBackend>>? KiBackendsOverride { get; set; }
     private IntelligenceCore? _intel;
-    public IntelligenceCore Intel => _intel ??= new IntelligenceCore(_core.DataRoot, _core.Audit, () => KiBackendsOverride?.Invoke() ?? DefaultKiBackends(), KnowledgeLookup);
+    public IntelligenceCore Intel => _intel ??= NewIntel();
+    IntelligenceCore NewIntel()
+    {
+        var i = new IntelligenceCore(_core.DataRoot, _core.Audit, () => KiBackendsOverride?.Invoke() ?? DefaultKiBackends(), KnowledgeLookup);
+        i.RemoteEverywhere = () => KiSourceSettings.Load(_core.DataRoot).RemoteEverywhere;
+        i.RemoteUsed = name => Dispatcher.UIThread.Post(() => RemoteKiUsed(name));
+        return i;
+    }
 
     private Func<string, int, IReadOnlyList<(string Title, string Text)>>? KnowledgeLookup => LookupKnowledge;
     /// <summary>Erst alle eingeschalteten Quellen auf diesem PC, danach eingeschaltete KI-Dienste mit gespeichertem Schlüssel (Rückfall, Text verlässt den PC).</summary>
@@ -23,10 +30,12 @@ public partial class MainWindow
         var set = KiSourceSettings.Load(_core.DataRoot);
         var list = set.Active().Select(MakeBackend).ToList();
         if (_core.Offline) return list;
+        var cloud = new List<IKiBackend>();
         foreach (var id in set.Cloud)
             if (KiCatalog.Cloud.FirstOrDefault(c => c.Id == id) is { } svc && _core.Secrets.Get(svc.SecretName) is { Length: > 0 } key)
-                list.Add(CloudBackendFactory?.Invoke(svc, key) ?? CloudKiBackend.For(svc, key));
-        return list;
+                cloud.Add(CloudBackendFactory?.Invoke(svc, key) ?? CloudKiBackend.For(svc, key));
+        if (set.OpenRouterModels.TryGetValue(OpenRouterFree.Text, out var orText)) CloudKiBackend.Preferred["openrouter"] = orText; else CloudKiBackend.Preferred.TryRemove("openrouter", out _);
+        return set.RemoteMode == "zuerst" ? [.. cloud, .. list] : [.. list, .. cloud]; // „zuerst“: Internet-KI bevorzugt, sonst die KI auf dem PC
     }
 
     /// <summary>Für Tests: KI-Dienst ohne Netz nachbilden.</summary>
@@ -37,7 +46,7 @@ public partial class MainWindow
         _showMap["ki-fragen"] = AskView;
         StudioPages["CORE-02"] = "ki-fragen";
         ExtraPages.Add(("KI fragen", "ki-fragen", ["frage", "chat", "assistent", "trendo"]));
-        InitX05(); InitCore10(); InitCore12(); InitCore03(); InitSys05();
+        InitX05(); InitCore10(); InitCore12(); InitCore03(); InitSys05(); InitOpenRouter();
         InitWave3();
         InitWave6();
     }

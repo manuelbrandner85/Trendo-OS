@@ -87,9 +87,9 @@ public partial class MainWindow
 
     /// <summary>Apps für das Handy: alle Studios und Programme aus dem Startmenü, mit Bereich und Symbol.</summary>
     public IReadOnlyList<PhoneApp> PhoneApps() =>
-        SystemModules.Select(m => new PhoneApp("page:" + m.Key, m.Title, "Trendo", m.Icon))
+        SystemModules.Select(m => new PhoneApp("page:" + m.Key, m.Title, "Trendo", m.Icon, _settings.DesktopIcons.Contains("page:" + m.Key)))
             .Concat(MenuStudios().Select(s => (s.Id, s.Name, Area: StudioCatalog.For(s.Id)?.Area ?? "Weitere"))
-                .Select(s => new PhoneApp(s.Id, s.Name, s.Area, AreaIcon(s.Area)))).ToList();
+                .Select(s => new PhoneApp(s.Id, s.Name, s.Area, AreaIcon(s.Area), _settings.DesktopIcons.Contains(s.Id)))).ToList();
 
     readonly Dictionary<string, byte[]> _phoneIcons = [];
     /// <summary>App-Symbol fürs Handy: dieselbe Kachel wie auf dem Trendo-Desktop, quadratisch mit runden Ecken, scharf für Handy-Bildschirme.</summary>

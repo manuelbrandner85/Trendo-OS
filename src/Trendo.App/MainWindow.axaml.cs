@@ -281,7 +281,9 @@ public sealed partial class MainWindow : Window
         RequestAnimationFrame(_ => { StartupTrace.Mark("first.frame"); StartupTrace.Flush(); });
         // KI-Laufzeit im Hintergrund prüfen/starten – blockiert weder Start noch Bildschirmfoto
         if (AppStartup.VelopackFirstRun && !_opt.Isolated) _ = SetupVollpaket(); // T-0222: Programme aus dem Vollpaket gleich nach dem Setup
-        if (!_opt.Isolated) _ = PhoneAutoStartAsync(); // verbundene Handys erreichen Trendo gleich nach dem Start
+        LockIfNeeded(); // B2/B7: Sperrbildschirm bei PIN/Passwort oder mehreren Personen
+        if (!_opt.Isolated && _settings.PhoneAutoStart) _ = PhoneAutoStartAsync(); // verbundene Handys erreichen Trendo gleich nach dem Start
+        if (!_opt.Isolated && !_core.Offline) _ = RefreshOpenRouterAsync(); // C1: Liste der kostenlosen Internet-KIs täglich aktuell halten
         var ollama = EnsureOllamaRunning();
         if (!_opt.Isolated && !_core.Offline) _ = AutoModelsAfter(ollama); // freie KI-Modelle ohne Klick nachladen
         if (!_opt.Isolated) _ = ScanKiAfter(ollama); // Befund 27.10.2026: KI-Quellen sofort kennen, sonst bleiben die Lade-Knöpfe grau
@@ -523,7 +525,7 @@ public sealed partial class MainWindow : Window
             new("settings", Mdi.Cog, "#90A4AE", "#455A64", "Einstellungen", () => null),
             new("blender", Mdi.Blender, "#FFB74D", "#EF6C00", "Blender", () => Tool("blender")),
             new("unreal", Mdi.Unreal, "#FFFFFF", "#CFD8DC", "Unreal Engine", () => Tool("unreal")),
-            new("components", Mdi.Cart, "#4DD0E1", "#00838F", "Zusatzprogramme", () => null),
+            new("components", Mdi.Cart, "#4DD0E1", "#00838F", "Hinzufügen – Programme, KI, GitHub", () => null),
             new("code", Mdi.CodeTags, "#64B5F6", "#1565C0", "Webseite bauen", () => null),
             new("office", Mdi.FileDocument, "#ECEFF1", "#B0BEC5", "Texte & Tabellen", () => null, Brush.Parse("#37474F")),
             new("security", Mdi.ShieldCheck, "#66BB6A", "#1B5E20", "Daten schützen", () => null),
@@ -551,7 +553,7 @@ public sealed partial class MainWindow : Window
                     case "browser": Show("downloads"); break;
                     case "media": await OpenStudio("CORE-08", "Videos & Fotos bearbeiten"); break;
                     case "settings": Show("settings"); break;
-                    case "components": Show("components"); break;
+                    case "components": OpenAddHub(); break; // A1: ein Ort für alles, was man hinzufügen kann
                     case "code": await OpenStudio("CORE-07", "Webseite bauen"); break;
                     case "office": Show("office"); break;
                     case "security": await OpenStudio("CORE-11", "Daten schützen"); break;

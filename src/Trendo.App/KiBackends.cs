@@ -179,6 +179,30 @@ public sealed class CloudKiBackend : IRemoteKiBackend
     public async Task<bool> IsUpAsync(CancellationToken ct = default) => (await ModelsAsync(ct)).Count > 0;
 
     /// <summary>Prüft einen Schlüssel über dieselben Grenzen (HTTPS, fester Anbieter, keine Weiterleitung): gültig, wenn der Dienst Modelle liefert.</summary>
+    /// <summary>Vom Nutzer gewähltes Modell je Dienst (z. B. OpenRouter-Textmodell aus „Kostenlose Internet-KIs“).</summary>
+    public static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> Preferred = new();
+
+    /// <summary>C3: Frage mit Datei (Bild, Audio, Video) an ein Modell, das sie versteht. Die Datei geht dabei ins Internet.</summary>
+    public async Task<string> AskWithFileAsync(string model, string question, string file, CancellationToken ct = default)
+    {
+        var bytes = await File.ReadAllBytesAsync(file, ct);
+        if (bytes.Length > 20 * 1024 * 1024) throw new InvalidOperationException("Die Datei ist zu groß (höchstens 20 MB).");
+        var ext = Path.GetExtension(file).TrimStart('.').ToLowerInvariant();
+        var b64 = Convert.ToBase64String(bytes);
+        object part = ext switch
+        {
+            "png" or "jpg" or "jpeg" or "webp" or "gif" => new { type = "image_url", image_url = new { url = $"data:image/{(ext == "jpg" ? "jpeg" : ext)};base64,{b64}" } },
+            "wav" or "mp3" or "ogg" or "flac" or "m4a" => new { type = "input_audio", input_audio = new { data = b64, format = ext } },
+            "mp4" or "webm" or "mov" => new { type = "video_url", video_url = new { url = $"data:video/{(ext == "mov" ? "quicktime" : ext)};base64,{b64}" } },
+            _ => throw new InvalidOperationException("Dieses Dateiformat versteht die KI nicht (Bild, Audio oder Video wählen)."),
+        };
+        var body = new { model, stream = false, messages = new object[] { new { role = "user", content = new object[] { new { type = "text", text = question }, part } } } };
+        using var r = await _http.PostAsJsonAsync(_prefix + "chat/completions", body, ct);
+        r.EnsureSuccessStatusCode();
+        var doc = await r.Content.ReadFromJsonAsync<JsonElement>(ct);
+        return doc.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString()?.Trim() ?? "";
+    }
+
     public static async Task<bool> ValidateAsync(KiCloudService svc, string key) { try { return (await new CloudKiBackend(svc, key).ModelsAsync()).Count > 0; } catch (ArgumentException) { return false; } }
 
     /// <summary>Modelle des Dienstes; das bevorzugte steht vorn (bei OpenRouter das erste kostenlose „:free“).
@@ -190,6 +214,9 @@ public sealed class CloudKiBackend : IRemoteKiBackend
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct); cts.CancelAfter(8000);
             var doc = await _http.GetFromJsonAsync<JsonElement>(_prefix + "models", cts.Token);
             var ids = doc.GetProperty("data").EnumerateArray().Select(m => m.GetProperty("id").GetString() ?? "").Where(n => n != "").ToList();
+            // OpenRouter: ausschließlich kostenlose Modelle – nie versehentlich ein kostenpflichtiges
+            if (_svc.Id == "openrouter") ids = ids.Where(i => i.EndsWith(":free", StringComparison.Ordinal)).ToList();
+            if (Preferred.TryGetValue(_svc.Id, out var pref) && ids.Contains(pref)) return [pref, .. ids.Where(i => i != pref)];
             var pick = _svc.DefaultModel.StartsWith(':') ? ids.FirstOrDefault(i => i.EndsWith(_svc.DefaultModel, StringComparison.Ordinal))
                 : ids.FirstOrDefault(i => i == _svc.DefaultModel || i == "models/" + _svc.DefaultModel);
             if (pick is null) return _svc.FreeTier ? ids : [];

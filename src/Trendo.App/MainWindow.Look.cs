@@ -308,7 +308,7 @@ public sealed partial class MainWindow
 
     private static readonly List<(string Id, string Label)> DockIds =
         [("start", "Start"), ("files", "Dateien"), ("browser", "Browser"), ("mail", "E-Mail"), ("ki", "Trendo KI"), ("media", "Medien"), ("settings", "Einstellungen"),
-         ("blender", "Blender"), ("unreal", "Unreal"), ("components", "Zusatzprogramme"), ("code", "Web & App"), ("office", "Office"), ("security", "Sicherheit")];
+         ("blender", "Blender"), ("unreal", "Unreal"), ("components", "Hinzufügen"), ("code", "Web & App"), ("office", "Office"), ("security", "Sicherheit")];
 
     private Control OrderList(string prefix, List<(string Id, string Label)> items, List<string> order, Action<List<string>> set)
     {

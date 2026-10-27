@@ -14,7 +14,7 @@ public class SetupFeedbackTests
     {
         var (w, _, _) = Ui.Open();
         w.Show("einrichtung");
-        w.Find<Button>("wiz-next").Press(); w.Find<Button>("wiz-next").Press();
+        for (var i = 0; i < 3; i++) w.Find<Button>("wiz-next").Press(); // Willkommen, Anmeldung, Ordner
         w.Find<RadioButton>("wiz-theme-kontrast").IsChecked = true; Dispatcher.UIThread.RunJobs();
         Assert.Contains(w.GetLogicalTexts(), t => t == "Vorschau: Hoher Kontrast");
         Assert.Contains(w.GetLogicalTexts(), t => t.StartsWith("Gewählt: Hoher Kontrast"));
@@ -25,7 +25,7 @@ public class SetupFeedbackTests
     {
         var (w, _, _) = Ui.Open();
         w.Show("einrichtung");
-        for (var i = 0; i < 3; i++) w.Find<Button>("wiz-next").Press();
+        for (var i = 0; i < 4; i++) w.Find<Button>("wiz-next").Press();
         var cb = w.GetLogicalDescendants().OfType<CheckBox>().First(c => c.Name!.StartsWith("wiz-pack-") && c.IsChecked != true);
         cb.IsChecked = true; Dispatcher.UIThread.RunJobs();
         var summary = w.Find<TextBlock>("wiz-pack-summary").Text!;
@@ -54,7 +54,7 @@ public class SetupFeedbackTests
         var ziel = Path.Combine(root, "MeineProjekte"); Directory.CreateDirectory(ziel);
         MainWindow.PickRequest? frage = null;
         w.PickOverride = r => { frage = r; return Task.FromResult<string[]?>([ziel]); };
-        w.Show("einrichtung-1");
+        w.Show("einrichtung-2");
         w.Find<Button>("wiz-folder-pickdir").Press();
         for (var i = 0; i < 20 && w.Find<TextBox>("wiz-folder").Text != ziel; i++) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); await Task.Delay(20); }
         Assert.True(frage?.Folder);

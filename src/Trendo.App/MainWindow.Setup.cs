@@ -1,5 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
+using Avalonia.Platform.Storage;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -24,7 +26,7 @@ public sealed partial class MainWindow
         if (string.IsNullOrEmpty(_settings.ProjectsFolder)) _settings.ProjectsFolder = opt.Isolated ? Path.Combine(_core.DataRoot, "Projekte") : UserSettings.DefaultProjectsFolder();
         foreach (var p in SetupPacks.Studios.Where(p => p.Default)) _wizPacks.Add(p.Id);
         _showMap["einrichtung"] = SetupWizardView; _showMap["systemcheck"] = SystemCheckView; _showMap["sicherung"] = BackupView;
-        for (var i = 0; i < 5; i++) { var step = i; _showMap[$"einrichtung-{i}"] = () => { _wizStep = step; return SetupWizardView(); }; }
+        for (var i = 0; i < 9; i++) { var step = i; _showMap[$"einrichtung-{i}"] = () => { _wizStep = step; return SetupWizardView(); }; }
         // Geplante Sicherung beim Start (im Hintergrund, ohne Rückfrage – betrifft nur eigene Daten)
         if (_settings.SetupDone && Backups.Due(DateTime.Now, _settings.BackupEveryHours))
             _ = Task.Run(() => { try { Backups.Create(DateTime.Now); } catch (Exception ex) { _core.Audit.Append("app", "backup.failed", ex.GetType().Name); } });
@@ -33,49 +35,247 @@ public sealed partial class MainWindow
 
     private bool NeedsSetup(AppOptions opt) => opt.FirstRun && !_settings.SetupDone && opt.Page is null;
 
-    // ---------- Ersteinrichtung (5 kurze Schritte) ----------
+    // ---------- Ersteinrichtung – Wunsch 27.10.2026 (B1–B8): „wie bei Windows, aber viel besser“ ----------
+    private ProfileLock.Kind _wizLockKind = ProfileLock.Kind.None;
+    private string _wizSecret = "", _wizSecret2 = "", _wizMsg = "";
+    private string? _wizRecovery;
+    private bool _wizRecoveryNoted, _wizBookmarks = true, _wizWinFolders = true, _wizPersonChild;
+    private string _wizPersonName = "";
+    static readonly string[] AvatarEmojis = ["🙂", "🦊", "🐼", "🦁", "🐬", "🌻", "🚀", "🎨", "🎮", "🐱", "🐶", "⭐"];
+    public static readonly string[] WizardTitles = ["Willkommen", "Anmeldung", "Ordner & Daten", "Aussehen", "Wofür nutzt du Trendo?", "Datenschutz", "Handy verbinden", "Weitere Personen", "Fertig"];
+    public ProfileLock Lock => new(_core.DataRoot);
+    public string AvatarFile => Path.Combine(_core.DataRoot, "profil", "bild.png");
+
+    /// <summary>Profilbild: Foto (falls gewählt) oder Emoji im runden, gold umrandeten Kreis.</summary>
+    Control AvatarView(double size, string? avatar = null, string? root = null)
+    {
+        avatar ??= _settings.Avatar;
+        var file = Path.Combine(root ?? _core.DataRoot, "profil", "bild.png");
+        Control inner = avatar == "bild" && File.Exists(file)
+            ? new Image { Source = new Avalonia.Media.Imaging.Bitmap(file), Stretch = Stretch.UniformToFill, Width = size, Height = size }
+            : new TextBlock { Text = avatar.StartsWith("emoji:", StringComparison.Ordinal) ? avatar[6..] : "🙂", FontSize = size * 0.55, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+        return new Border { Width = size, Height = size, CornerRadius = new CornerRadius(size / 2), ClipToBounds = true, BorderBrush = Brush.Parse("#D4A84B"), BorderThickness = new Thickness(2),
+            Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#2B4C86"), 0), new GradientStop(Color.Parse("#0E1B3A"), 1) } }, Child = inner };
+    }
+
+    async Task PickAvatarPhoto()
+    {
+        var req = new PickRequest("wiz-avatar-photo", false, false, ["png", "jpg", "jpeg", "webp", "bmp"]);
+        string[]? got = PickOverride is { } f ? await f(req)
+            : (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Profilbild wählen", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.bmp"] }] }))
+                .Select(x => x.TryGetLocalPath()).OfType<string>().ToArray();
+        if (got is not { Length: > 0 }) return;
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(AvatarFile)!);
+            using (var s = File.OpenRead(got[0]))
+            {
+                using var bmp = Avalonia.Media.Imaging.Bitmap.DecodeToWidth(s, 256);
+                bmp.Save(AvatarFile, new Avalonia.Media.Imaging.PngBitmapEncoderOptions());
+            }
+            _settings.Avatar = "bild"; _settings.Save(_core.DataRoot);
+        }
+        catch (Exception e) when (e is IOException or ArgumentException or InvalidOperationException or NotSupportedException) { _wizMsg = "Das Bild ließ sich nicht öffnen: " + e.Message; }
+        Show("einrichtung");
+    }
+
     private Control SetupWizardView()
     {
-        var sp = new StackPanel { Spacing = 10, MaxWidth = 620, HorizontalAlignment = HorizontalAlignment.Left };
-        string[] titles = ["Willkommen", "Deine Ordner", "Aussehen", "Was möchtest du nutzen?", "Fertig"];
-        sp.Children.Add(P($"Schritt {_wizStep + 1} von {titles.Length} · dauert etwa 2 Minuten", null, 11));
-        sp.Children.Add(H(titles[_wizStep], 18));
-        Button Next(string label = "Weiter") { var b = new Button { Name = "wiz-next", Content = label, Background = Accent, Padding = new Thickness(16, 6) }; b.Click += (_, _) => { _wizStep++; _settings.Save(_core.DataRoot); Show("einrichtung"); }; return b; }
-        var back = new Button { Name = "wiz-back", Content = "Zurück", IsVisible = _wizStep > 0 }; back.Click += (_, _) => { _wizStep--; Show("einrichtung"); };
+        var sp = new StackPanel { Spacing = 10, MaxWidth = 680, HorizontalAlignment = HorizontalAlignment.Left };
+        var titles = WizardTitles;
+        // Fortschritt: Punkte statt nur Zahlen
+        var dots = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
+        for (var i = 0; i < titles.Length; i++)
+            dots.Children.Add(new Border { Width = i == _wizStep ? 26 : 9, Height = 9, CornerRadius = new CornerRadius(5), Background = i < _wizStep ? Brush.Parse("#4ADE80") : i == _wizStep ? Brush.Parse("#D4A84B") : Brush.Parse("#33FFFFFF") });
+        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { dots, P($"Schritt {_wizStep + 1} von {titles.Length}", null, 11) } });
+        sp.Children.Add(H(titles[_wizStep], 20));
+        Button Next(string label = "Weiter", Func<bool>? check = null)
+        {
+            var b = new Button { Name = "wiz-next", Content = label, Background = Accent, Padding = new Thickness(16, 6) };
+            b.Click += (_, _) => { if (check is not null && !check()) { Show("einrichtung"); return; } _wizMsg = ""; _wizStep++; _settings.Save(_core.DataRoot); Show("einrichtung"); };
+            return b;
+        }
+        var back = new Button { Name = "wiz-back", Content = "Zurück", IsVisible = _wizStep > 0 }; back.Click += (_, _) => { _wizMsg = ""; _wizStep--; Show("einrichtung"); };
+        Button? next = null;
         switch (_wizStep)
         {
-            case 0:
-                sp.Children.Add(P("Schön, dass du da bist! Trendo OS richtet sich jetzt in ein paar Schritten für dich ein. Du kannst alles später unter „Einstellungen“ ändern.", Text, 13));
+            case 0: // B1: Name und Profilbild
+            {
+                sp.Children.Add(P("Schön, dass du da bist! Trendo OS richtet sich jetzt in ein paar Schritten für dich ein. Alles bleibt auf diesem PC – ein Online-Konto brauchst du nicht.", Text, 13));
                 var name = new TextBox { Name = "wiz-name", Text = _settings.Name, PlaceholderText = "Wie dürfen wir dich nennen?", Width = 320, HorizontalAlignment = HorizontalAlignment.Left };
-                name.TextChanged += (_, _) => _settings.Name = name.Text?.Trim() ?? "";
+                var hello = new TextBlock { Name = "wiz-hello", Text = string.IsNullOrWhiteSpace(_settings.Name) ? "Hallo!" : $"Hallo {_settings.Name}!", Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center };
+                name.TextChanged += (_, _) => { _settings.Name = name.Text?.Trim() ?? ""; hello.Text = _settings.Name.Length == 0 ? "Hallo!" : $"Hallo {_settings.Name}!"; };
+                sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Children = { AvatarView(84), hello } });
                 sp.Children.Add(name);
-                sp.Children.Add(P("Sprache: Deutsch (weitere Sprachen folgen)", Text));
+                sp.Children.Add(P("Dein Profilbild:", Text, 12.5));
+                var row = new WrapPanel { Name = "wiz-avatars" };
+                for (var i = 0; i < AvatarEmojis.Length; i++)
+                {
+                    var e = AvatarEmojis[i]; var on = _settings.Avatar == "emoji:" + e;
+                    var b = new Button { Name = "wiz-avatar-" + i, Content = e, FontSize = 22, Width = 48, Height = 48, Margin = new Thickness(0, 0, 6, 6), CornerRadius = new CornerRadius(24), Background = on ? Accent : Brush.Parse("#22FFFFFF") };
+                    b.Click += (_, _) => { _settings.Avatar = "emoji:" + e; Show("einrichtung"); };
+                    row.Children.Add(b);
+                }
+                sp.Children.Add(row);
+                var photo = new Button { Name = "wiz-avatar-photo", Content = "📷 Eigenes Foto wählen …" };
+                photo.Click += async (_, _) => await PickAvatarPhoto();
+                var cam = new Button { Name = "wiz-avatar-camera", Content = "Mit der Kamera aufnehmen" };
+                ToolTip.SetTip(cam, "Öffnet die Windows-Kamera. Danach das Foto mit „Eigenes Foto wählen“ übernehmen (Ordner Bilder › Eigene Aufnahmen).");
+                cam.Click += (_, _) => Launch("microsoft.windows.camera:");
+                sp.Children.Add(new WrapPanel { Children = { Sp(photo), Sp(cam) } });
+                sp.Children.Add(P("Sprache: Deutsch", null, 11));
                 break;
-            case 1:
+            }
+            case 1: // B2: Anmeldung
+            {
+                sp.Children.Add(P("Wie möchtest du Trendo entsperren? Alles bleibt auf diesem PC.", Text, 13));
+                foreach (var (kind, id, label, hint) in new[] {
+                             (ProfileLock.Kind.None, "none", "Ohne Anmeldung", "Trendo startet sofort – gut, wenn nur du den PC nutzt."),
+                             (ProfileLock.Kind.Pin, "pin", "Mit PIN (empfohlen)", "4 bis 12 Ziffern – schnell und sicher."),
+                             (ProfileLock.Kind.Password, "password", "Mit Passwort", "Mindestens 8 Zeichen.") })
+                {
+                    var rb = new RadioButton { Name = "wiz-lock-" + id, GroupName = "wiz-lock", IsChecked = _wizLockKind == kind, Foreground = Text,
+                        Content = new StackPanel { Children = { new TextBlock { Text = label, Foreground = Text, FontWeight = FontWeight.SemiBold }, P(hint, null, 11) } } };
+                    var k = kind;
+                    rb.IsCheckedChanged += (_, _) => { if (rb.IsChecked == true && _wizLockKind != k) { _wizLockKind = k; _wizRecovery = null; Show("einrichtung"); } };
+                    sp.Children.Add(rb);
+                }
+                if (_wizRecovery is { } code)
+                {
+                    sp.Children.Add(H("Dein Wiederherstellungs-Code", 15));
+                    sp.Children.Add(P("Falls du die PIN einmal vergisst: Mit diesem Code setzt du sie neu. Schreib ihn auf oder speichere ihn – er wird nur jetzt gezeigt. Alternativ geht es auch mit deiner Windows-Anmeldung.", Text, 12.5));
+                    sp.Children.Add(new Border { Background = Brush.Parse("#1AD4A84B"), BorderBrush = Brush.Parse("#D4A84B"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(16, 10), HorizontalAlignment = HorizontalAlignment.Left,
+                        Child = new SelectableTextBlock { Name = "wiz-recovery-code", Text = code, FontFamily = new FontFamily("Consolas, monospace"), FontSize = 24, Foreground = Text } });
+                    var copy = new Button { Name = "wiz-recovery-copy", Content = "Kopieren" };
+                    copy.Click += async (_, _) => { if (Clipboard is { } cb) await cb.SetTextAsync(code); };
+                    var save = new Button { Name = "wiz-recovery-save", Content = "Als Datei in „Dokumente“ speichern" };
+                    save.Click += (_, _) =>
+                    {
+                        var dir = _opt.Isolated ? _core.DataRoot : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                        var f = Path.Combine(dir, "Wiederherstellungs-Code.txt");
+                        File.WriteAllText(f, $"Wiederherstellungs-Code für deine Anmeldung\r\n\r\n{code}\r\n\r\nGut aufbewahren. Damit setzt du eine vergessene PIN bzw. ein vergessenes Passwort neu.\r\n");
+                        _wizMsg = "✓ Gespeichert: " + f; _wizRecoveryNoted = true; Show("einrichtung");
+                    };
+                    var noted = new CheckBox { Name = "wiz-recovery-noted", Content = "Ich habe den Code aufgeschrieben oder gespeichert", IsChecked = _wizRecoveryNoted, Foreground = Text };
+                    noted.IsCheckedChanged += (_, _) => { _wizRecoveryNoted = noted.IsChecked == true; Show("einrichtung"); };
+                    sp.Children.Add(new WrapPanel { Children = { Sp(copy), Sp(save) } });
+                    sp.Children.Add(noted);
+                    next = Next(check: () => _wizRecoveryNoted || (_wizMsg = "Bitte bestätige, dass du den Code aufgeschrieben hast.") == "");
+                    next.IsEnabled = _wizRecoveryNoted;
+                }
+                else if (_wizLockKind != ProfileLock.Kind.None)
+                {
+                    var pin = _wizLockKind == ProfileLock.Kind.Pin;
+                    var s1 = new TextBox { Name = "wiz-secret", PasswordChar = '•', Text = _wizSecret, PlaceholderText = pin ? "PIN (4–12 Ziffern)" : "Passwort (mind. 8 Zeichen)", Width = 260, HorizontalAlignment = HorizontalAlignment.Left };
+                    var s2 = new TextBox { Name = "wiz-secret2", PasswordChar = '•', Text = _wizSecret2, PlaceholderText = pin ? "PIN wiederholen" : "Passwort wiederholen", Width = 260, HorizontalAlignment = HorizontalAlignment.Left };
+                    s1.TextChanged += (_, _) => _wizSecret = s1.Text ?? ""; s2.TextChanged += (_, _) => _wizSecret2 = s2.Text ?? "";
+                    sp.Children.Add(s1); sp.Children.Add(s2);
+                    next = Next("Festlegen", () =>
+                    {
+                        _wizSecret = s1.Text ?? ""; _wizSecret2 = s2.Text ?? "";
+                        if (ProfileLock.Problem(_wizLockKind, _wizSecret) is { } p) { _wizMsg = p; return false; }
+                        if (_wizSecret != _wizSecret2) { _wizMsg = "Die beiden Eingaben sind nicht gleich."; return false; }
+                        _wizRecovery = Lock.Set(_wizLockKind, _wizSecret); _wizSecret = _wizSecret2 = ""; _wizRecoveryNoted = false;
+                        _core.Audit.Append(Principal.LocalOwner.Name, "profile.lock.set", _wizLockKind.ToString());
+                        _wizStep--; // gleich hier den Code zeigen
+                        return true;
+                    });
+                }
+                else next = Next(check: () => { Lock.Set(ProfileLock.Kind.None); return true; });
+                break;
+            }
+            case 2: // Ordner und B8: Daten aus Windows
+            {
                 sp.Children.Add(P("Hier speichert Trendo deine Projekte, Briefe und Vorlagen. Deine Daten bleiben auf diesem PC.", Text, 13));
                 var folder = new TextBox { Name = "wiz-folder", Text = _settings.ProjectsFolder, PlaceholderText = "Ordner für Projekte", Width = 460, HorizontalAlignment = HorizontalAlignment.Left };
                 folder.TextChanged += (_, _) => _settings.ProjectsFolder = folder.Text?.Trim() ?? "";
                 sp.Children.Add(folder);
+                sp.Children.Add(H("Aus Windows übernehmen", 15));
+                var found = _opt.Isolated ? 0 : BrowserImport.BookmarkFiles(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)).Count();
+                var bm = new CheckBox { Name = "wiz-import-bookmarks", IsChecked = _wizBookmarks && found > 0, IsEnabled = found > 0, Foreground = Text, Content = found > 0 ? "Lesezeichen aus Edge und Chrome übernehmen" : "Lesezeichen übernehmen (kein Edge oder Chrome gefunden)" };
+                bm.IsCheckedChanged += (_, _) => _wizBookmarks = bm.IsChecked == true;
+                var wf = new CheckBox { Name = "wiz-import-folders", IsChecked = _wizWinFolders, Foreground = Text, Content = "Dokumente und Bilder aus Windows in der Trendo-Suche finden" };
+                wf.IsCheckedChanged += (_, _) => _wizWinFolders = wf.IsChecked == true;
+                sp.Children.Add(bm); sp.Children.Add(wf);
+                sp.Children.Add(P("Es wird nichts kopiert oder verschoben – deine Dateien bleiben, wo sie sind. Musik und Videos aus Windows zeigt Trendo ohnehin.", null, 11));
                 sp.Children.Add(P($"Einstellungen und Sicherungen liegen getrennt in {_core.DataRoot} und bleiben auch bei einer Deinstallation erhalten.", null, 11));
                 break;
-            case 2:
-                sp.Children.Add(P("Wie soll Trendo aussehen?", Text, 13));
+            }
+            case 3: // B4: Aussehen mit Live-Vorschau
+            {
+                sp.Children.Add(P("Wie soll Trendo aussehen? Die Vorschau zeigt es sofort.", Text, 13));
                 foreach (var (id, label) in new[] { ("dunkel", "Dunkel Premium (empfohlen)"), ("hell", "Hell"), ("kontrast", "Hoher Kontrast (gut lesbar)") })
                 {
                     var rb = new RadioButton { Name = "wiz-theme-" + id, Content = label, GroupName = "theme", IsChecked = _settings.Theme == id, Foreground = Text };
                     rb.IsCheckedChanged += (_, _) => { if (rb.IsChecked == true && _settings.Theme != id) { _settings.Theme = id; Show("einrichtung"); } };
                     sp.Children.Add(rb);
                 }
-                // T-0210: sichtbare Vorschau der Wahl (wird nach „Weiter“ für ganz Trendo übernommen)
+                var accents = new WrapPanel { Name = "wiz-accents" };
+                foreach (var a in new[] { "#2F86F6", "#D4A84B", "#22C55E", "#A855F7", "#EF4444", "#06B6D4" })
+                {
+                    var on = string.Equals(_settings.Accent, a, StringComparison.OrdinalIgnoreCase);
+                    var b = new Button { Name = "wiz-accent-" + a.TrimStart('#'), Width = 34, Height = 34, Margin = new Thickness(0, 0, 8, 6), CornerRadius = new CornerRadius(17), Background = Brush.Parse(a), BorderBrush = Brushes.White, BorderThickness = new Thickness(on ? 3 : 0) };
+                    var col = a; b.Click += (_, _) => { _settings.Accent = col; _settings.AccentFromWallpaper = false; Show("einrichtung"); };
+                    accents.Children.Add(b);
+                }
+                sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { new TextBlock { Text = "Farbe:", Foreground = Text, VerticalAlignment = VerticalAlignment.Center }, accents } });
+                var walls = new WrapPanel { Name = "wiz-wallpapers" };
+                foreach (var wname in UserSettings.Wallpapers)
+                {
+                    var on = _settings.Wallpaper == wname;
+                    Control thumb = LoadWallpaper(wname) is { } bmp ? new Image { Source = bmp, Stretch = Stretch.UniformToFill } : new Border { Background = Grad("#1A3A6B", "#0A1A36") };
+                    var b = new Button { Name = "wiz-wall-" + wname, Width = 96, Height = 56, Padding = new Thickness(0), Margin = new Thickness(0, 0, 8, 8), ClipToBounds = true, CornerRadius = new CornerRadius(8), BorderBrush = on ? Brush.Parse("#D4A84B") : Brush.Parse("#33FFFFFF"), BorderThickness = new Thickness(on ? 3 : 1), Content = thumb };
+                    var w = wname; b.Click += (_, _) => { _settings.Wallpaper = w; _settings.WallpaperByTime = false; Show("einrichtung"); };
+                    walls.Children.Add(b);
+                }
+                sp.Children.Add(P("Hintergrund:", Text, 12)); sp.Children.Add(walls);
+                var sizes = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
+                foreach (var (v, l) in new[] { (1.0, "Normal"), (1.15, "Größer"), (1.3, "Sehr groß") })
+                {
+                    var b = new Button { Name = "wiz-size-" + l.Replace(' ', '-').ToLowerInvariant(), Content = l, Background = Math.Abs(_settings.UiScale - v) < 0.01 ? Accent : Brushes.Transparent };
+                    var val = v; b.Click += (_, _) => { _settings.UiScale = val; Show("einrichtung"); };
+                    sizes.Children.Add(b);
+                }
+                var simple = new CheckBox { Name = "wiz-simple", Content = "Einfacher Modus (größere Knöpfe, weniger auf einmal)", IsChecked = _settings.SimpleMode, Foreground = Text };
+                simple.IsCheckedChanged += (_, _) => { _settings.SimpleMode = simple.IsChecked == true; Show("einrichtung"); };
+                sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { new TextBlock { Text = "Schriftgröße:", Foreground = Text, VerticalAlignment = VerticalAlignment.Center }, sizes } });
+                sp.Children.Add(simple);
+                // Live-Vorschau: kleiner Schreibtisch mit Hintergrund, Fenster in der gewählten Farbe und Schriftgröße
                 var (bg, fg, edge) = _settings.Theme switch { "hell" => ("#F4F7FC", "#0F1B2E", "#335C99"), "kontrast" => ("#000000", "#FFFFFF", "#FFFF00"), _ => ("#0B1730", "#E6EDF7", "#2F86F6") };
                 var themeLabel = _settings.Theme switch { "hell" => "Hell", "kontrast" => "Hoher Kontrast", _ => "Dunkel Premium" };
-                sp.Children.Add(new Border { Name = "wiz-theme-preview", Background = Brush.Parse(bg), BorderBrush = Brush.Parse(edge), BorderThickness = new Thickness(2), CornerRadius = new CornerRadius(10), Padding = new Thickness(14, 10), Width = 320, HorizontalAlignment = HorizontalAlignment.Left,
-                    Child = new StackPanel { Spacing = 4, Children = { new TextBlock { Text = "Vorschau: " + themeLabel, Foreground = Brush.Parse(fg), FontWeight = FontWeight.SemiBold }, new TextBlock { Text = "So sehen Fenster und Texte aus.", Foreground = Brush.Parse(fg), FontSize = 11 } } } });
+                var k = _settings.UiScale * (_settings.SimpleMode ? 1.15 : 1);
+                var desk = new Grid { Height = 170, Width = 320, ClipToBounds = true };
+                if (LoadWallpaper(_settings.Wallpaper) is { } wp) desk.Children.Add(new Image { Source = wp, Stretch = Stretch.UniformToFill });
+                desk.Children.Add(new Border { Name = "wiz-theme-preview", Margin = new Thickness(28, 22), Background = Brush.Parse(bg), BorderBrush = Brush.Parse(_settings.Theme == "kontrast" ? edge : _settings.Accent), BorderThickness = new Thickness(2), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8),
+                    Child = new StackPanel { Spacing = 5, Children = {
+                        new TextBlock { Text = "Vorschau: " + themeLabel, Foreground = Brush.Parse(fg), FontWeight = FontWeight.SemiBold, FontSize = 13 * k },
+                        new TextBlock { Text = "So sehen Fenster und Texte aus.", Foreground = Brush.Parse(fg), FontSize = 11 * k },
+                        new Border { Background = Brush.Parse(_settings.Accent), CornerRadius = new CornerRadius(6), Padding = new Thickness(10, 4), HorizontalAlignment = HorizontalAlignment.Left, Child = new TextBlock { Text = "Knopf", Foreground = Brushes.White, FontSize = 11 * k } } } } });
+                sp.Children.Add(new Border { CornerRadius = new CornerRadius(12), ClipToBounds = true, HorizontalAlignment = HorizontalAlignment.Left, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = desk });
                 sp.Children.Add(new TextBlock { Name = "wiz-theme-choice", Text = $"Gewählt: {themeLabel} – gilt nach „Weiter“ für ganz Trendo.", Foreground = Text, FontSize = 11 });
                 break;
-            case 3:
+            }
+            case 4: // B3: Interessen + Pakete
+            {
+                sp.Children.Add(P("Tipp an, wofür du Trendo nutzen möchtest. Trendo legt passende Studios auf deinen Desktop und aufs Handy und richtet die nötigen Programme ein.", Text, 13));
+                var chips = new WrapPanel { Name = "wiz-interests" };
+                foreach (var it in Interests.All)
+                {
+                    var on = _settings.Interests.Contains(it.Id);
+                    var b = new Button { Name = "wiz-interest-" + it.Id, Content = $"{it.Emoji}  {it.Label}", Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(14, 8), CornerRadius = new CornerRadius(18), Background = on ? Accent : Brush.Parse("#22FFFFFF") };
+                    var iid = it.Id;
+                    b.Click += (_, _) =>
+                    {
+                        if (!_settings.Interests.Remove(iid)) _settings.Interests.Add(iid);
+                        _wizPacks.Clear(); foreach (var p in SetupPacks.Studios.Where(p => p.Default)) _wizPacks.Add(p.Id);
+                        foreach (var p in Interests.PacksFor(_settings.Interests)) if (SetupPacks.Studios.Any(x => x.Id == p)) _wizPacks.Add(p);
+                        Show("einrichtung");
+                    };
+                    chips.Children.Add(b);
+                }
+                sp.Children.Add(chips);
                 var hw = HardwareProbe.Read(); var (model, why) = KiAdvisor.Choose(hw);
-                sp.Children.Add(P("Das Basispaket ist immer dabei: " + SetupPacks.Base.Description + ". Wähle zusätzlich, was du brauchst – Trendo installiert es gleich mit.", Text, 13));
+                sp.Children.Add(P("Das Basispaket ist immer dabei: " + SetupPacks.Base.Description + ". Zusätzlich:", Text, 12.5));
                 foreach (var p in SetupPacks.Studios)
                 {
                     var cb = new CheckBox { Name = "wiz-pack-" + p.Id, IsChecked = _wizPacks.Contains(p.Id), Foreground = Text,
@@ -95,20 +295,70 @@ public sealed partial class MainWindow
                     _settings.StudioPacks = _wizPacks.ToList();
                     if (comps.Count > 0) BeginSetupOverlay("Trendo OS wird eingerichtet");
                     try { await RunSetupInstall(model); } finally { EndSetupOverlay(); }
-                    _wizStep = 4; Show("einrichtung");
+                    _wizStep = 5; Show("einrichtung");
                 };
                 sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { back, go } });
                 sp.Children.Add(_depProgress.Parent is null ? _depProgress : new Border()); sp.Children.Add(Detach(_depLog));
                 return Page("Ersteinrichtung", sp);
-            case 4:
+            }
+            case 5: // B5: Datenschutz in einfachen Worten
+            {
+                sp.Children.Add(P("Trendo arbeitet auf deinem PC. Es gibt keine Werbung und keine Nutzungsdaten, die heimlich verschickt werden. Nur diese Dinge können ins Internet gehen – du entscheidest:", Text, 13));
+                var set = KiSourceSettings.Load(_core.DataRoot);
+                CheckBox Row(string name, string label, string hint, bool on, Action<bool> apply)
+                {
+                    var cb = new CheckBox { Name = name, IsChecked = on, Foreground = Text, Content = new StackPanel { Children = { new TextBlock { Text = label, Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap }, P(hint, null, 11) } } };
+                    cb.IsCheckedChanged += (_, _) => apply(cb.IsChecked == true);
+                    sp.Children.Add(cb); return cb;
+                }
+                Row("wiz-priv-updates", "Updates von Trendo automatisch laden", "Fragt GitHub nach einer neuen Version – ohne persönliche Daten.", _settings.AutoUpdate, v => _settings.AutoUpdate = v);
+                Row("wiz-priv-ki", "Internet-KI darf aushelfen", "Nur nach deiner Einrichtung (z. B. kostenlose KIs von OpenRouter). Aus = alles bleibt auf dem PC.", set.RemoteMode != "chat" && set.Cloud.Count > 0,
+                    v => KiSourceSettings.Update(_core.DataRoot, s => s.RemoteMode = v ? "ersatz" : "chat"));
+                Row("wiz-priv-phone", "Handy-Zugang beim Start einschalten", "Nur für Handys, die du selbst verbunden hast – nichts ist öffentlich.", _settings.PhoneAutoStart, v => _settings.PhoneAutoStart = v);
+                sp.Children.Add(P("Ein Klick auf „Weiter“ übernimmt diese Wahl. Alles lässt sich unter „Einstellungen“ ändern.", null, 11));
+                break;
+            }
+            case 6: // B6: Handy gleich verbinden
+            {
+                sp.Children.Add(P("Verbinde dein Handy gleich mit – dann schickst du Fotos hin und her und nutzt Trendo auch unterwegs als App. Das geht auch später unter „Handy“.", Text, 13));
+                sp.Children.Add(PhoneEasyCard());
+                next = Next("Weiter");
+                next.Content = PhoneAccess.Devices().Count > 0 ? "Weiter" : "Überspringen";
+                break;
+            }
+            case 7: // B7: Weitere Personen
+            {
+                sp.Children.Add(P("Nutzen noch andere diesen PC – Partner, Familie, Kinder? Jede Person bekommt ihr eigenes Trendo mit eigenen Projekten und eigener Anmeldung.", Text, 13));
+                var persons = new PersonStore(PersonStore.BaseOf(_core.DataRoot));
+                foreach (var p in persons.All())
+                    sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { AvatarView(36, p.Avatar, persons.RootOf(p.Id)), new TextBlock { Text = p.Name + (p.Child ? " (Kind)" : ""), Foreground = Text, VerticalAlignment = VerticalAlignment.Center } } });
+                var pname = new TextBox { Name = "wiz-person-name", Text = _wizPersonName, PlaceholderText = "Name der Person", Width = 220 };
+                pname.TextChanged += (_, _) => _wizPersonName = pname.Text ?? "";
+                var child = new CheckBox { Name = "wiz-person-child", Content = "Kind (einfache Bedienung, Installieren nur durch Erwachsene)", IsChecked = _wizPersonChild, Foreground = Text };
+                child.IsCheckedChanged += (_, _) => _wizPersonChild = child.IsChecked == true;
+                var add = new Button { Name = "wiz-person-add", Content = "＋ Person hinzufügen" };
+                add.Click += (_, _) =>
+                {
+                    _wizPersonName = pname.Text ?? ""; _wizPersonChild = child.IsChecked == true;
+                    try { var p = persons.Add(_wizPersonName, "emoji:" + AvatarEmojis[persons.All().Count % AvatarEmojis.Length], _wizPersonChild, _core.Audit); _wizMsg = $"✓ {p.Name} ist angelegt. Beim Start von Trendo wählt jede Person sich selbst."; _wizPersonName = ""; _wizPersonChild = false; }
+                    catch (ArgumentException e) { _wizMsg = e.Message; }
+                    Show("einrichtung");
+                };
+                sp.Children.Add(new WrapPanel { Children = { Sp(pname), Sp(add) } });
+                sp.Children.Add(child);
+                next = Next(persons.All().Count > 0 ? "Weiter" : "Überspringen");
+                break;
+            }
+            case 8:
                 FinishSetup();
-                sp.Children.Add(P($"Alles bereit{(string.IsNullOrEmpty(_settings.Name) ? "" : ", " + _settings.Name)}! Hier ist dein Systemcheck:", Text, 13));
+                sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 14, Children = { AvatarView(64), P($"Alles bereit{(string.IsNullOrEmpty(_settings.Name) ? "" : ", " + _settings.Name)}! Hier ist dein Systemcheck:", Text, 14) } });
                 sp.Children.Add(SystemCheckPanel());
                 var done = new Button { Name = "wiz-done", Content = "Los geht's", Background = Accent, Padding = new Thickness(16, 6) }; done.Click += (_, _) => Show("start");
                 sp.Children.Add(done);
                 return Page("Ersteinrichtung", sp);
         }
-        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { back, Next() } });
+        if (_wizMsg.Length > 0) sp.Children.Add(P(_wizMsg, _wizMsg.StartsWith('✓') ? Brush.Parse("#4ADE80") : Brush.Parse("#FACC15"), 12.5));
+        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { back, next ?? Next() } });
         return Page("Ersteinrichtung", sp);
     }
 
@@ -154,6 +404,14 @@ public sealed partial class MainWindow
             using var s = AssetLoader.Open(new Uri($"avares://TrendoOS/Assets/templates/{n}"));
             using var f = File.Create(dest); s.CopyTo(f);
         }
+        // B3: passende Studios auf Desktop (und als Vorschlag aufs Handy)
+        foreach (var id in Interests.StudiosFor(_settings.Interests)) if (!_settings.DesktopIcons.Contains(id)) _settings.DesktopIcons.Add(id);
+        // B8: Lesezeichen aus Edge/Chrome, Windows-Ordner in der Suche
+        if (_wizBookmarks && !_opt.Isolated)
+            foreach (var f in BrowserImport.BookmarkFiles(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)))
+                try { var n = BrowserImport.ImportInto(_core.DataRoot, BrowserImport.Parse(File.ReadAllText(f), f.Contains("Edge") ? "Edge" : "Chrome")); _core.Audit.Append(Principal.LocalOwner.Name, "import.bookmarks", n.ToString()); }
+                catch (Exception e) when (e is IOException or System.Text.Json.JsonException or UnauthorizedAccessException) { _core.Audit.Append("app", "import.bookmarks.failed", e.GetType().Name); }
+        _settings.SearchWindowsFolders = _wizWinFolders;
         _settings.SetupDone = true; _settings.Save(_core.DataRoot);
         _core.Audit.Append(Principal.LocalOwner.Name, "setup.done", $"Pakete: {string.Join(",", _settings.StudioPacks)}");
         try { Backups.Create(DateTime.Now); } catch { /* Sicherung später erneut */ }

@@ -333,6 +333,14 @@ public partial class MainWindow
             Spacing = 6,
             Children = { check, go, answer, approve, undo, cancel, mode }
         };
+        // A2: Studios, die Programme brauchen, bekommen „Hinzufügen …“ direkt in ihrer Leiste
+        if (StudioTools.Required.ContainsKey(studio))
+        {
+            var add = new Button { Name = "auftrag-hinzufuegen", Content = "Hinzufügen …", Height = 32 };
+            ToolTip.SetTip(add, "Programme und KI, die dieses Studio braucht, finden und installieren");
+            add.Click += (_, _) => OpenAddHubFor(studio);
+            buttons.Children.Add(add);
+        }
         var spark = new TextBlock { Text = "✨", FontSize = 16, VerticalAlignment = VerticalAlignment.Center, Margin = new Avalonia.Thickness(4, 0, 0, 0) };
         ToolTip.SetTip(spark, "Sag der Trendo KI in deinen Worten, was dieses Studio für dich tun soll.");
         box.MaxHeight = 64; box.MinHeight = 34;

@@ -67,7 +67,14 @@ public partial class MainWindow
             row.Children.Add(chip);
             tb.TextChanged += (_, _) => FilePreview(tb.Text, chip);
             FilePreview(tb.Text, chip);
-            if (ToolTip.GetTip(tb) is null) ToolTip.SetTip(tb, "Datei auswählen oder einfach hierher ziehen");
+            // Wunsch 27.10.2026: nie einen Pfad eintippen müssen – ein Klick ins Feld öffnet sofort die Auswahl (Ordner bzw. Datei)
+            tb.IsReadOnly = true; tb.Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand);
+            var pickFolder = kind == PathFields.Kind.Folder;
+            tb.AddHandler(PointerReleasedEvent, async (_, e) => { if (e.InitialPressMouseButton == Avalonia.Input.MouseButton.Left) await PickInto(tb, pickFolder); }, RoutingStrategies.Tunnel, handledEventsToo: true);
+            tb.AddHandler(KeyDownEvent, async (_, e) => { if (e.Key is Avalonia.Input.Key.Enter or Avalonia.Input.Key.Space) { e.Handled = true; await PickInto(tb, pickFolder); } }, RoutingStrategies.Tunnel);
+            if (string.IsNullOrEmpty(tb.Text) && !(tb.PlaceholderText ?? "").StartsWith("Klicken", StringComparison.Ordinal))
+                tb.PlaceholderText = (pickFolder ? "Klicken, um einen Ordner zu wählen" : "Klicken, um eine Datei zu wählen") + (string.IsNullOrEmpty(tb.PlaceholderText) ? "" : " – " + tb.PlaceholderText);
+            if (ToolTip.GetTip(tb) is null) ToolTip.SetTip(tb, pickFolder ? "Klicken öffnet die Ordnerauswahl – oder einen Ordner hierher ziehen" : "Klicken öffnet die Dateiauswahl – oder Dateien hierher ziehen");
         }
     }
 

@@ -31,6 +31,8 @@ public partial class MainWindow
     static readonly IBrush GoldEdge = new SolidColorBrush(Color.Parse("#D4A84B"));
 
     /// <summary>Wurzel der gerade sichtbaren Seite (aktives Fenster oder Startbildschirm).</summary>
+    /// <summary>Für Tests: Wurzel der gerade gezeigten Seite.</summary>
+    public Control? ActivePageRootForTests => ActivePageRoot;
     public Control? ActivePageRoot => Windows.Active is { } a && _frames.TryGetValue(a.Id, out var f) ? f.Body.Content as Control : _deskHost.Children.FirstOrDefault();
 
     public string WindowGroupOf(string key) => _windowGroups.TryGetValue(key, out var g) ? g : key;

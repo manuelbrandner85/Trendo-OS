@@ -32,6 +32,10 @@ public sealed class IntelligenceCore
     private readonly Func<IReadOnlyList<IKiBackend>> _backends;
     private readonly Func<string, int, IReadOnlyList<(string Title, string Text)>>? _knowledge;
     private readonly string _historyFile;
+    /// <summary>C3: Internet-KIs in allen Bereichen erlaubt (nicht nur im freien Chat)? Eigene Dokumente gehen trotzdem nie hinaus.</summary>
+    public Func<bool>? RemoteEverywhere { get; set; }
+    /// <summary>C4: eine Antwort kam aus dem Internet (Name der Quelle) – für Hinweis und Tageszähler.</summary>
+    public Action<string>? RemoteUsed { get; set; }
 
     public IntelligenceCore(string dataRoot, AuditLog audit, Func<IReadOnlyList<IKiBackend>> backends, Func<string, int, IReadOnlyList<(string Title, string Text)>>? knowledge = null)
     {
@@ -81,7 +85,7 @@ public sealed class IntelligenceCore
         KiActivityHub.Update(act, phase: "KI wird gesucht …");
         foreach (var b in _backends())
         {
-            if (b is IRemoteKiBackend && !req.AllowRemote) continue; // nur der freie Chat darf nach außen
+            if (b is IRemoteKiBackend && !req.AllowRemote && RemoteEverywhere?.Invoke() != true) continue; // nur der freie Chat – oder überall, wenn eingestellt
             if (!await b.IsUpAsync(ct)) { tried.Add($"{b.Name}: nicht erreichbar"); continue; }
             var models = await b.ModelsAsync(ct);
             var model = req.PreferredModel is { } p && models.Contains(p) ? p : models.FirstOrDefault();
@@ -89,12 +93,13 @@ public sealed class IntelligenceCore
             try
             {
                 var remote = b is IRemoteKiBackend;
-                KiActivityHub.Update(act, phase: $"{model} wird gestartet …", backend: b.Name, model: model);
+                KiActivityHub.Update(act, phase: remote ? $"🌐 Geht ins Internet zu {b.Name} ({model}) …" : $"{model} wird gestartet …", backend: remote ? "🌐 " + b.Name : b.Name, model: model);
                 var text = b is IStreamingKiBackend sb
                     ? await sb.ChatStreamAsync(model, remote ? remoteMsgs : msgs, d => KiActivityHub.Update(act, delta: d), ct)
                     : await b.ChatAsync(model, remote ? remoteMsgs : msgs, ct);
                 _audit.Append("ki", "ki.ask", $"quelle={b.Name} modell={model} frage={req.Question.Length}Z antwort={text.Length}Z wissen={(remote ? 0 : sources.Count)}{(remote ? " extern" : "")}");
                 Save(req.Question, text, b.Name, model);
+                if (remote) RemoteUsed?.Invoke(b.Name);
                 return new(true, text, b.Name, model, remote ? [] : sources, sw.Elapsed);
             }
             catch (Exception ex) when (ex is not OperationCanceledException) { tried.Add($"{b.Name}: {ex.Message}"); }

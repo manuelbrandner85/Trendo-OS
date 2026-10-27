@@ -31,7 +31,7 @@ public partial class MainWindow
     void InitDesktopIcons()
     {
         _showMap["desktop-symbole"] = DesktopIconsView;
-        ExtraPages.Add(("Desktop-Symbole", "desktop-symbole", ["desktop", "symbol", "symbole", "verknüpfung", "kachel", "aufräumen"]));
+        if (!ExtraPages.Any(p => p.Key == "desktop-symbole")) ExtraPages.Add(("Desktop-Symbole", "desktop-symbole", ["desktop", "symbol", "symbole", "verknüpfung", "kachel", "aufräumen"]));
     }
 
     public bool OnDesktop(string id) => _settings.DesktopIcons.Contains(id);

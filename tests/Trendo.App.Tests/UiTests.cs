@@ -325,12 +325,15 @@ public class W0_SetupWizard
         w.Show(); Dispatcher.UIThread.RunJobs();
         Assert.Equal("einrichtung", w.CurrentView);
         w.Find<TextBox>("wiz-name").Text = "Erika Muster"; w.Find<Button>("wiz-next").Press();
+        w.Find<Button>("wiz-next").Press(); // Anmeldung: ohne
         var proj = Path.Combine(root, "Projekte"); w.Find<TextBox>("wiz-folder").Text = proj; w.Find<Button>("wiz-next").Press();
         w.Find<RadioButton>("wiz-theme-kontrast").IsChecked = true; w.Find<Button>("wiz-next").Press();
         w.Find<CheckBox>("wiz-pack-office").IsChecked = false; w.Find<CheckBox>("wiz-pack-ki").IsChecked = false;
         w.Find<CheckBox>("wiz-pack-dev").IsChecked = true;
         w.Find<Button>("wiz-install").Press();
-        for (var i = 0; i < 100 && w.TryFind<Button>("wiz-done") is null; i++) { await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }
+        for (var i = 0; i < 100 && w.TryFind<Control>("wiz-hello") is null && w.Settings.StudioPacks.Count == 0; i++) { await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }
+        // Datenschutz, Handy, Personen: weiter bis „Fertig“
+        for (var i = 0; i < 100 && w.TryFind<Button>("wiz-done") is null; i++) { if (w.TryFind<Button>("wiz-next") is { } n) n.Press(); await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }
         Assert.NotNull(w.TryFind<Button>("wiz-done"));
         // T-0222: Basis- und Studio-Programme kommen aus dem Vollpaket, nie per winget
         Assert.DoesNotContain(r.Calls, c => c.Contains("SumatraPDF.SumatraPDF") || c.Contains("Git.Git") || c.Contains("LibreOffice"));

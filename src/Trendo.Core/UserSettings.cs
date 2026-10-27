@@ -8,6 +8,16 @@ public sealed class UserSettings
     /// <summary>SYS-13-P20: Dateiformat-Version; ältere Dateien werden beim Laden angehoben.</summary>
     public int FormatVersion { get; set; } = Sys.Quality.SettingsFormat;
     public string Name { get; set; } = "";
+    /// <summary>B1: Profilbild – „emoji:🦊“ oder „bild“ (liegt als profil/bild.png im Datenordner).</summary>
+    public string Avatar { get; set; } = "emoji:🙂";
+    /// <summary>B3: gewählte Interessen (siehe <see cref="Interests"/>).</summary>
+    public List<string> Interests { get; set; } = [];
+    /// <summary>B7: Kinderprofil – einfache Bedienung, Installieren nur durch Erwachsene.</summary>
+    public bool Child { get; set; }
+    /// <summary>B5: Handy-Zugang beim Start automatisch einschalten (nur wenn ein Handy verbunden ist).</summary>
+    public bool PhoneAutoStart { get; set; } = true;
+    /// <summary>B8: Dokumente und Bilder aus Windows in der Trendo-Suche finden (nichts wird kopiert).</summary>
+    public bool SearchWindowsFolders { get; set; }
     public string Language { get; set; } = "de-DE";
     public string ProjectsFolder { get; set; } = "";
     public string Theme { get; set; } = "dunkel";          // dunkel | hell | kontrast

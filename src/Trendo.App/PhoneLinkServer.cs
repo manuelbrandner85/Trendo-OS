@@ -31,7 +31,7 @@ public interface IPhoneRemote
     void Started(string device);
 }
 
-public sealed record PhoneApp(string Id, string Name, string Area, string Icon);
+public sealed record PhoneApp(string Id, string Name, string Area, string Icon, bool Home = false);
 public sealed record PhoneFrame(byte[] Png, string Title);
 /// <summary>Was ein Fingertipp getroffen hat: Knopf, Eingabefeld (mit Text), Auswahl (mit Möglichkeiten) …</summary>
 public sealed record PhoneHit(string Kind, string? Text = null, IReadOnlyList<string>? Choices = null, int Selected = -1, bool Multiline = false);
@@ -372,7 +372,7 @@ transform:translateY(110%);transition:transform .2s;z-index:9;max-height:70%;ove
 </div>
 <script>
 var $=function(i){return document.getElementById(i)},apps=[],area=null,mode='home',pc=false,busy=false,etag=null,url=null,title='Trendo',timer=null,y0=null,x0=null,t0=0,hit=null,deb=null;
-var recent=JSON.parse(localStorage.getItem('trendoRecent')||'[]'),homeIds=JSON.parse(localStorage.getItem('trendoHome')||'[]'),press=null,pressed=false;
+var recent=JSON.parse(localStorage.getItem('trendoRecent')||'[]'),homeIds=JSON.parse(localStorage.getItem('trendoHome')||'null'),press=null,pressed=false;
 function saveHome(){try{localStorage.setItem('trendoHome',JSON.stringify(homeIds));}catch(e){}}
 function post(p,d){var f=new FormData();for(var k in d)f.append(k,d[k]);return fetch(p+(pc&&p.indexOf('/api/')==0&&p!='/api/open'&&p!='/api/back'?'?pc=1':''),{method:'POST',body:f});}
 function icon(a){return '<div class="ico"><img src="/api/icon/'+encodeURIComponent(a.id)+'" alt="" loading="lazy"></div>';}
@@ -380,7 +380,7 @@ function tile(a){return '<button class="app" data-id="'+a.id+'">'+icon(a)+'<span
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function hello(){var h=new Date().getHours();$('hello').textContent=h<11?'Guten Morgen!':h<18?'Hallo!':'Guten Abend!';}
 function renderHome(){var q=$('q').value.toLowerCase();
- var list=q?apps.filter(function(a){return a.name.toLowerCase().indexOf(q)>=0;}):homeIds.map(function(id){return apps.find(function(a){return a.id==id;});}).filter(Boolean);
+ var list=q?apps.filter(function(a){return a.name.toLowerCase().indexOf(q)>=0;}):(homeIds||[]).map(function(id){return apps.find(function(a){return a.id==id;});}).filter(Boolean);
  $('homeApps').innerHTML=list.map(tile).join('');$('homeEmpty').style.display=!q&&!list.length?'block':'none';}
 function tick(){var d=new Date();$('clock').textContent=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
 function renderList(){var q=$('q2').value.toLowerCase();$('list').innerHTML=apps.filter(function(a){return !q||a.name.toLowerCase().indexOf(q)>=0||a.area.toLowerCase().indexOf(q)>=0;})
@@ -403,7 +403,7 @@ document.addEventListener('click',function(e){if(pressed){pressed=false;e.preven
 document.addEventListener('pointerdown',function(e){var b=e.target.closest('[data-id]');if(!b)return;clearTimeout(press);press=setTimeout(function(){pressed=true;if(navigator.vibrate)navigator.vibrate(20);b.classList.add('wiggle');homeSheet(b.getAttribute('data-id'),b);},480);});
 ['pointerup','pointercancel','pointermove'].forEach(function(t){document.addEventListener(t,function(e){if(t!='pointermove'||Math.abs(e.movementY)>4||Math.abs(e.movementX)>4)clearTimeout(press);});});
 document.addEventListener('contextmenu',function(e){if(e.target.closest('[data-id]'))e.preventDefault();});
-function homeSheet(id,b){var a=apps.find(function(x){return x.id==id;});if(!a)return;var on=homeIds.indexOf(id)>=0;
+function homeSheet(id,b){var a=apps.find(function(x){return x.id==id;});if(!a)return;homeIds=homeIds||[];var on=homeIds.indexOf(id)>=0;
  $('sheet').innerHTML='<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">'+icon(a)+'<b>'+esc(a.name)+'</b></div>'+
   '<button class="btn" id="hs">'+(on?'Vom Startbildschirm entfernen':'Zum Startbildschirm')+'</button><button class="btn sec" id="ho">Öffnen</button><button class="btn sec" id="hc">Abbrechen</button>';
  $('sheet').classList.add('open');var done=function(){$('sheet').classList.remove('open');b.classList.remove('wiggle');};
@@ -431,7 +431,7 @@ function choose(h){$('sheet').innerHTML=(h.choices||[]).map(function(c,i){return
  $('sheet').classList.add('open');$('ok').onclick=closeSheet;$('sheet').querySelectorAll('[data-i]').forEach(function(b){b.onclick=function(){post('/api/choose',{i:b.getAttribute('data-i')}).then(closeSheet);};});}
 document.addEventListener('visibilitychange',function(){if(!document.hidden)refresh();});
 document.addEventListener('touchstart',function f(){var d=document.documentElement;if(d.requestFullscreen&&!window.matchMedia('(display-mode: standalone)').matches)d.requestFullscreen().catch(function(){});document.removeEventListener('touchstart',f);},{passive:true});
-hello();tick();setInterval(tick,10000);fetch('/api/apps').then(function(r){return r.json();}).then(function(a){apps=a;renderHome();renderList();});
+hello();tick();setInterval(tick,10000);fetch('/api/apps').then(function(r){return r.json();}).then(function(a){apps=a;if(!homeIds)homeIds=a.filter(function(x){return x.home;}).map(function(x){return x.id;});renderHome();renderList();});
 </script></body></html>
 """;
 

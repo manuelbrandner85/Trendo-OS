@@ -68,8 +68,14 @@ public partial class MainWindow
             if (!_studios.Any(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase)))
                 gs.Add("Studio", info.Name, "studio:" + id, StudioWords(id, info.Name));
         foreach (var p in _core.Projects.List()) gs.Add("Projekt", p.Name, "project:" + p.Id, p.Id);
+        // A3: Installierbares gleich mit finden („Video schneiden“ → Kdenlive installieren)
+        foreach (var c in DependencyCatalog.All.Where(c => c.Id != "model" && !_deps.IsInstalled(c)))
+            gs.Add("Installieren", c.Name + " hinzufügen", "add:" + c.Name, [.. c.Purpose.Split([' ', ',', '/', '–', '-'], StringSplitOptions.RemoveEmptyEntries), c.Name, "installieren"]);
+        foreach (var m in KiCatalog.Models) gs.Add("Installieren", "KI-Modell " + m.Name + " hinzufügen", "add:" + m.Name, [.. m.GoodFor.Split([' ', ','], StringSplitOptions.RemoveEmptyEntries), "ki", "modell"]);
         foreach (var n in new NoteStore(_core.DataRoot).All()) gs.Add("Notiz", n.Text.Split('\n')[0], "page:werkzeuge", n.Text.Split([' ', '\n', '/', '.', '-'], StringSplitOptions.RemoveEmptyEntries)); // SYS-03-P21
         gs.AddFiles(string.IsNullOrEmpty(_settings.ProjectsFolder) ? UserSettings.DefaultProjectsFolder() : _settings.ProjectsFolder);
+        if (_settings.SearchWindowsFolders && !_opt.Isolated)
+            foreach (var f in new[] { Environment.SpecialFolder.MyDocuments, Environment.SpecialFolder.MyPictures }.Select(Environment.GetFolderPath).Where(Directory.Exists)) gs.AddFiles(f);
         return gs;
     }
 
@@ -107,6 +113,7 @@ public partial class MainWindow
             case "studio": await OpenStudio(arg, h.Title); break;
             case "filter": _studioFilter = arg; Show("studios"); break;
             case "project": Show("projects"); break;
+            case "add": OpenAddHub("alles", arg); break;
             default: _core.Integrations.LaunchDirect(Principal.LocalOwner, h.Target, _core.Audit); break;
         }
     }
