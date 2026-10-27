@@ -315,7 +315,7 @@ public partial class MainWindow
         projPanel.Name = "widget-projekte"; projPanel.IsVisible = !_settings.HiddenTiles.Contains("widget-projekte");
         RefreshProjects();
 
-        var stack = new StackPanel { Children = { chips, studiosPanel, modPanel, projPanel } };
+        var stack = new StackPanel { Children = { chips, DesktopZettel(), studiosPanel, modPanel, projPanel } };
         var g = new Grid { Children = { new ScrollViewer { Content = stack, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled } } };
         DesktopMenu(g);
         if (_deskCenter is not null) _shellParts.Remove(_deskCenter);

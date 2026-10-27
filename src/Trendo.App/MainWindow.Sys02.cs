@@ -28,6 +28,7 @@ public partial class MainWindow
         RegisterTab(AlltagTabs, "alltag-bilder", "Bilder & Medien", "SYS-02", AlltagMediaView, "bild", "drehen", "verkleinern", "screenshot", "bildschirmfoto", "schwärzen", "bildschirmaufnahme", "audio", "mediathek");
         RegisterTab(AlltagTabs, "alltag-zeit", "Zeit & Kalender", "SYS-02", AlltagTimeView, "kalender", "termin", "ics", "erinnerung", "stoppuhr", "fokus", "nicht stören", "wetter", "uhr");
         RegisterTab(AlltagTabs, "alltag-helfer", "Kleine Helfer", "SYS-02", AlltagHelperView, "zwischenablage", "einheiten", "umrechnen", "farbe", "hex", "rgb", "warnung");
+        InitHelfer();
         _remTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _remTimer.Tick += (_, _) => { CheckReminders(DateTime.Now); if ((DateTime.Now - _calLastCheck).TotalSeconds >= 30) CheckCalendarReminders(DateTime.Now); };
         _remTimer.Start();
