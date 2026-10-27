@@ -31,6 +31,7 @@ public partial class MainWindow
     private (int Row, int Col) _shActive, _shAnchor; private int _shTop, _shLeft;
     private List<(int Row, int Col, Cell Cell)>? _shClip; private (int Row, int Col) _shClipOrigin;
     private bool _shLandscape; private readonly List<SheetChartView> _shCharts = [];
+    private Button? _shListBtn; private Border? _shPrompt; private (string Name, string Label, string Initial, Action<string> Ok)? _shPending;
     private TextBox? _shFormula, _shEditor; private TextBlock? _shName, _shStats; private Canvas? _shOverlay;
 
     private void InitTabelle()
@@ -77,7 +78,7 @@ public partial class MainWindow
     }
 
     /// <summary>Zelle setzen wie durch Eintippen (mit Rückgängig).</summary>
-    public void SheetSetCell(string a1, string raw) { var (r, c) = Addr.Parse(a1); SheetSnapshot(); WriteCell(r, c, raw); SheetChanged(); }
+    public void SheetSetCell(string a1, string raw) { var (r, c) = Addr.Parse(a1); if (!CanWrite(r, c, raw)) return; SheetSnapshot(); WriteCell(r, c, raw); SheetChanged(); }
 
     /// <summary>Bereich markieren, z. B. „B2“ oder „A1:C4“.</summary>
     public void SheetSelect(string range)
@@ -217,6 +218,116 @@ public partial class MainWindow
         }
         catch (Exception ex) when (ex is IOException or System.ComponentModel.Win32Exception or InvalidOperationException) { _shMsg = "Drucken ging nicht: " + ex.Message; }
     }
+
+    // ---------- E5–E9 ----------
+    string SelRange() { var (t, l, b, r) = Sel(); return t == b && l == r ? Addr.Name(t, l) : $"{Addr.Name(t, l)}:{Addr.Name(b, r)}"; }
+
+    /// <summary>E5: Regel für die Markierung hinzufügen (Farbe nach Wert, Farbskala, Datenbalken).</summary>
+    public void SheetAddCond(CondKind kind, CondOp op = CondOp.Groesser, double v1 = 0, double v2 = 0, string? text = null)
+    {
+        SheetSnapshot();
+        var fill = kind == CondKind.Datenbalken ? "#FF63A0F0" : op switch { CondOp.Kleiner => "#FFFDE2E2", CondOp.Groesser => "#FFD1FAE5", CondOp.Enthaelt => "#FFFFF3B0", _ => "#FFDCE8FB" };
+        ActiveSheet.CondRules.Add(new CondRule(SelRange(), kind, op, v1, v2, fill, text));
+        SheetChanged(); _shMsg = $"Regel für {SelRange()} hinzugefügt.";
+    }
+
+    public void SheetClearCond()
+    {
+        SheetSnapshot(); var (t, l, b, r) = Sel();
+        var n = ActiveSheet.CondRules.RemoveAll(x => { var (a1, a2, a3, a4) = Addr.Range(x.Range.Contains(':') ? x.Range : x.Range + ":" + x.Range); return a1 <= b && a3 >= t && a2 <= r && a4 >= l; });
+        SheetChanged(); _shMsg = $"{n} Regel(n) entfernt.";
+    }
+
+    /// <summary>E6: Auswahlliste für die Markierung (Einträge mit „;“ getrennt). Leer = Liste entfernen.</summary>
+    public void SheetSetValidation(string items)
+    {
+        SheetSnapshot(); var range = SelRange();
+        ActiveSheet.Validations.RemoveAll(v => v.Range == range);
+        var list = items.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+        if (list.Count > 0) ActiveSheet.Validations.Add(new ValidationRule(range, list));
+        SheetChanged(); _shMsg = list.Count > 0 ? $"Auswahlliste für {range}: {string.Join(", ", list)}" : "Auswahlliste entfernt.";
+    }
+
+    /// <summary>E7: Markierung (oder ganze Liste) als Tabelle formatieren, optional mit Summenzeile.</summary>
+    public void SheetFormatAsTable(bool totals)
+    {
+        var (t, l, b, r) = Sel(); if (t == b) { var reg = Region(); (t, l, b, r) = (Math.Max(0, reg.Top - 1), reg.Left, reg.Bottom, reg.Right); }
+        SheetSnapshot(); var tr = SheetExtras.FormatAsTable(ActiveSheet, _shCalc, t, l, b, r, totals);
+        if (ActiveSheet.FreezeRows == 0 && t == 0) ActiveSheet.FreezeRows = 1;
+        SheetChanged(); _shMsg = tr >= 0 ? $"Als Tabelle formatiert, Summen in Zeile {tr + 1}." : "Als Tabelle formatiert.";
+    }
+
+    public int SheetRemoveDuplicates()
+    {
+        var (t, l, b, r) = Sel(); if (t == b) (t, l, b, r) = Region();
+        SheetSnapshot(); var n = SheetExtras.RemoveDuplicates(ActiveSheet, _shCalc, t, l, b, r); SheetChanged();
+        _shMsg = n == 0 ? "Keine doppelten Zeilen gefunden." : $"{n} doppelte Zeile(n) entfernt."; return n;
+    }
+
+    public void SheetTextToColumns(char sep)
+    {
+        var (t, l, b, _) = Sel(); if (t == b) { var reg = Region(); (t, b) = (reg.Top, reg.Bottom); }
+        SheetSnapshot(); var n = SheetExtras.TextToColumns(ActiveSheet, t, b, l, sep); SheetChanged();
+        _shMsg = $"Aufgeteilt auf {n} Spalte(n).";
+    }
+
+    /// <summary>E8: Blitzvorschau – Beispiel in die erste Zeile tippen, Trendo füllt den Rest der Spalte (Strg+E).</summary>
+    public int SheetFlashFill()
+    {
+        var reg = Region(); var col = _shActive.Col;
+        SheetSnapshot();
+        // erst mit der ersten Zeile als Beispiel versuchen, sonst ist sie eine Kopfzeile
+        var n = SheetExtras.FlashFill(ActiveSheet, _shCalc, 0, reg.Bottom, col);
+        if (n == 0 && reg.Top > 0) n = SheetExtras.FlashFill(ActiveSheet, _shCalc, reg.Top, reg.Bottom, col);
+        SheetChanged();
+        _shMsg = n > 0 ? $"Blitzvorschau: {n} Zelle(n) ausgefüllt." : "Blitzvorschau: Erst ein Beispiel in diese Spalte tippen (z. B. den Nachnamen aus „Erika Muster“)."; return n;
+    }
+
+    /// <summary>E9: Notiz an der aktiven Zelle (leer = entfernen).</summary>
+    public void SheetSetNote(string text)
+    {
+        SheetSnapshot(); var cell = ActiveSheet.GetOrAdd(_shActive.Row, _shActive.Col); cell.Note = text.Trim().Length == 0 ? null : text.Trim();
+        ActiveSheet.Compact(); SheetChanged(); _shMsg = cell.Note is null ? "Notiz entfernt." : $"Notiz an {Addr.Name(_shActive.Row, _shActive.Col)}.";
+    }
+
+    public void SheetToggleProtect() { SheetSnapshot(); ActiveSheet.Protected = !ActiveSheet.Protected; SheetChanged(); _shMsg = ActiveSheet.Protected ? "Blatt geschützt – nur freigegebene Zellen lassen sich ändern." : "Blattschutz aufgehoben."; }
+
+    public void SheetToggleUnlocked() { var on = !(ActiveSheet.Get(_shActive.Row, _shActive.Col)?.Unlocked ?? false); ForSelection(c => c.Unlocked = on); _shMsg = on ? "Zellen freigegeben (bleiben bei Blattschutz änderbar)." : "Freigabe aufgehoben."; }
+
+    /// <summary>Darf hier geschrieben werden? Blattschutz und Auswahlliste prüfen; sonst Meldung.</summary>
+    bool CanWrite(int r, int c, string raw)
+    {
+        if (ActiveSheet.Protected && !(ActiveSheet.Get(r, c)?.Unlocked ?? false)) { _shMsg = "Diese Zelle ist geschützt. Unter „Überprüfen“ den Blattschutz aufheben."; Toast(_shMsg); RefreshSheetChrome(); return false; }
+        var rule = SheetExtras.ValidationFor(ActiveSheet, r, c);
+        if (!SheetExtras.Allowed(rule, raw)) { _shMsg = $"Hier passt nur: {string.Join(", ", rule!.Items)}"; Toast(_shMsg); RefreshSheetChrome(); return false; }
+        return true;
+    }
+
+    /// <summary>Kleines Eingabefeld über dem Raster (für Werte, Listen, Notizen).</summary>
+    private void SheetPrompt(string name, string label, string initial, Action<string> ok) { _shPending = (name, label, initial, ok); ShowSheetPrompt(); }
+
+    /// <summary>Offenes Eingabefeld (über das Neuzeichnen der Seite hinweg) ins Raster legen.</summary>
+    private void ShowSheetPrompt()
+    {
+        if (_shOverlay is null || _shPending is not { } pending) return;
+        var (name, label, initial, ok) = pending;
+        if (_shPrompt is not null) _shOverlay.Children.Remove(_shPrompt);
+        var tb = new TextBox { Name = name, Text = initial, Width = 320 };
+        var go = new Button { Name = name + "-ok", Content = "OK", Background = Accent, Focusable = false };
+        var cancel = new Button { Content = "Abbrechen", Focusable = false };
+        Border box = null!;
+        void Close() { _shOverlay.Children.Remove(box); _shPrompt = null; _shPending = null; SheetGrid?.Focus(); }
+        void Done() { var v = tb.Text ?? ""; Close(); ok(v); Show("tabelle"); }
+        go.Click += (_, _) => Done(); cancel.Click += (_, _) => Close();
+        tb.KeyDown += (_, e) => { if (e.Key == Key.Enter) { Done(); e.Handled = true; } else if (e.Key == Key.Escape) { Close(); e.Handled = true; } };
+        box = new Border { Background = Brushes.White, BorderBrush = Brush.Parse("#FF2F86F6"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(12), BoxShadow = BoxShadows.Parse("0 6 20 0 #55000000"),
+            Child = new StackPanel { Spacing = 8, Children = { new TextBlock { Text = label, Foreground = Brushes.Black, FontSize = 13, TextWrapping = TextWrapping.Wrap, MaxWidth = 320 }, tb, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { go, cancel } } } } };
+        Canvas.SetLeft(box, 70); Canvas.SetTop(box, 36);
+        _shPrompt = box; _shOverlay.Children.Add(box);
+        Dispatcher.UIThread.Post(() => { tb.Focus(); tb.SelectAll(); });
+    }
+
+    static double ParseNum(string s) => SheetFormat.TryNumber(s.Trim(), out var d) ? d : 0;
 
     // ---------- Innenleben ----------
     private void ResetSheetState()
@@ -433,7 +544,7 @@ public partial class MainWindow
         fm.Items.Add(Mi("tabelle-m-print", "Drucken …", () => { SheetPrint(); Show("tabelle"); }));
         file.ContextMenu = fm; file.Click += (_, _) => fm.Open(file);
         tabRow.Children.Add(file);
-        foreach (var (id, label) in new[] { ("start", "Start"), ("einfuegen", "Einfügen"), ("daten", "Daten"), ("ansicht", "Ansicht") })
+        foreach (var (id, label) in new[] { ("start", "Start"), ("einfuegen", "Einfügen"), ("daten", "Daten"), ("pruefen", "Überprüfen"), ("ansicht", "Ansicht") })
         {
             var key = id;
             var b = new Button { Name = "tabelle-rib-" + id, Content = label, Focusable = false, Padding = new Thickness(12, 4), Background = _shRibbon == id ? Brush.Parse("#332F86F6") : Brushes.Transparent, FontWeight = _shRibbon == id ? FontWeight.SemiBold : FontWeight.Normal };
@@ -464,9 +575,22 @@ public partial class MainWindow
                     SB("tabelle-sort-za", "↓", "Z–A", () => SheetSort(false), "Absteigend sortieren"),
                     SB("tabelle-filter", "⏷", "Filter", SheetFilterLikeActive, "Nur Zeilen mit dem Wert der aktiven Zelle zeigen"),
                     SB("tabelle-filter-off", "⊘", "Alle zeigen", () => { ActiveSheet.ClearFilter(); _shMsg = "Filter aufgehoben."; }, "Filter aufheben", ActiveSheet.HiddenRows.Count > 0)));
+                groups.Children.Add(RibbonGroup("Datentools",
+                    SB("tabelle-validation", "☰", "Auswahlliste", () => SheetPrompt("tabelle-prompt", $"Auswahlliste für {SelRange()} – Einträge mit ; trennen (leer = entfernen):", string.Join("; ", SheetExtras.ValidationFor(ActiveSheet, _shActive.Row, _shActive.Col)?.Items ?? []), SheetSetValidation), "Nur bestimmte Einträge erlauben, mit Auswahl-Pfeil in der Zelle"),
+                    SB("tabelle-dupes", "⧉", "Duplikate", () => SheetRemoveDuplicates(), "Doppelte Zeilen entfernen"),
+                    SB("tabelle-split", "⫼", "Text teilen", () => SheetPrompt("tabelle-prompt", "Text in Spalten – Trennzeichen (z. B. ; , oder Leerzeichen):", ";", s => SheetTextToColumns(s.Length == 0 ? ' ' : s[0])), "Zelleninhalt am Trennzeichen auf mehrere Spalten verteilen"),
+                    SB("tabelle-flash", "⚡", "Blitzvorschau", () => SheetFlashFill(), "Beispiel in die erste Zeile tippen – Trendo füllt den Rest (Strg+E)")));
                 groups.Children.Add(RibbonGroup("Ausfüllen",
                     SB("tabelle-fill-down", "⬇", "Nach unten", () => SheetFill(true), "Reihe nach unten fortsetzen (1, 2, 3 … · Mo, Di … · Januar, Februar …)"),
                     SB("tabelle-fill-right", "➡", "Nach rechts", () => SheetFill(false), "Reihe nach rechts fortsetzen")));
+                break;
+            case "pruefen":
+                var note = ActiveSheet.Get(_shActive.Row, _shActive.Col)?.Note;
+                groups.Children.Add(RibbonGroup("Notizen",
+                    SB("tabelle-note", "🗒", note is null ? "Notiz" : "Notiz ändern", () => SheetPrompt("tabelle-prompt", $"Notiz zu {Addr.Name(_shActive.Row, _shActive.Col)} (leer = entfernen):", note ?? "", SheetSetNote), "Notiz an die Zelle heften – rote Ecke zeigt sie an")));
+                groups.Children.Add(RibbonGroup("Schützen",
+                    SB("tabelle-protect", "🔒", ActiveSheet.Protected ? "Schutz aus" : "Blatt schützen", SheetToggleProtect, "Blatt schützen: nur freigegebene Zellen bleiben änderbar", ActiveSheet.Protected),
+                    SB("tabelle-unlock", "🔓", "Zelle freigeben", SheetToggleUnlocked, "Markierte Zellen bleiben trotz Blattschutz änderbar (z. B. Eingabefelder)", ActiveSheet.Get(_shActive.Row, _shActive.Col)?.Unlocked == true)));
                 break;
             case "ansicht":
                 groups.Children.Add(RibbonGroup("Ansicht",
@@ -493,6 +617,8 @@ public partial class MainWindow
                 groups.Children.Add(RibbonGroup("Zahl", new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = { fmt } },
                     SB("tabelle-euro", "€", "Euro", () => ForSelection(c => c.Format = NumFmt.Euro), "Als Euro-Betrag"),
                     SB("tabelle-pct", "%", "Prozent", () => ForSelection(c => c.Format = NumFmt.Prozent), "Als Prozent")));
+                groups.Children.Add(RibbonGroup("Formatvorlagen", CondPicker(),
+                    SB("tabelle-astable", "▤", "Als Tabelle", () => SheetFormatAsTable(true), "Kopfzeile, Streifen, Rahmen und Summenzeile")));
                 groups.Children.Add(RibbonGroup("Bearbeiten",
                     SB("tabelle-sum", "Σ", "Summe", SheetAutoSum, "Summe der Zahlen darüber (wie AutoSumme)"),
                     SB("tabelle-sort", "↑", "Sortieren", () => SheetSort(true), "Liste nach der aktiven Spalte sortieren"),
@@ -501,6 +627,23 @@ public partial class MainWindow
                 break;
         }
         return new StackPanel { Children = { tabRow, groups } };
+    }
+
+    /// <summary>E5: Menü „Bedingte Formatierung“.</summary>
+    private Control CondPicker()
+    {
+        var b = SB("tabelle-cond", "◧", "Bedingt", () => { }, "Bedingte Formatierung: Zellen nach Wert färben, Farbskala, Datenbalken");
+        var menu = new ContextMenu();
+        void Add(string name, string header, Action a) { var mi = new MenuItem { Name = name, Header = header }; mi.Click += (_, _) => a(); menu.Items.Add(mi); }
+        Add("tabelle-cond-gt", "Größer als …", () => SheetPrompt("tabelle-prompt", "Zellen grün färben, wenn der Wert größer ist als:", "100", v => SheetAddCond(CondKind.Regel, CondOp.Groesser, ParseNum(v))));
+        Add("tabelle-cond-lt", "Kleiner als …", () => SheetPrompt("tabelle-prompt", "Zellen rot färben, wenn der Wert kleiner ist als:", "0", v => SheetAddCond(CondKind.Regel, CondOp.Kleiner, ParseNum(v))));
+        Add("tabelle-cond-between", "Zwischen …", () => SheetPrompt("tabelle-prompt", "Zellen blau färben zwischen (z. B. 10; 50):", "10; 50", v => { var p = v.Split(';'); SheetAddCond(CondKind.Regel, CondOp.Zwischen, ParseNum(p[0]), p.Length > 1 ? ParseNum(p[1]) : 0); }));
+        Add("tabelle-cond-text", "Text enthält …", () => SheetPrompt("tabelle-prompt", "Zellen gelb färben, wenn der Text enthält:", "", v => SheetAddCond(CondKind.Regel, CondOp.Enthaelt, text: v)));
+        Add("tabelle-cond-scale", "Farbskala Rot – Gelb – Grün", () => { SheetAddCond(CondKind.Farbskala); Show("tabelle"); });
+        Add("tabelle-cond-bar", "Datenbalken", () => { SheetAddCond(CondKind.Datenbalken); Show("tabelle"); });
+        Add("tabelle-cond-clear", "Regeln der Markierung löschen", () => { SheetClearCond(); Show("tabelle"); });
+        b.ContextMenu = menu; b.Click += (_, _) => menu.Open(b);
+        return b;
     }
 
     private Control FillPicker()
@@ -523,7 +666,7 @@ public partial class MainWindow
         _shFormula = new TextBox { Name = "tabelle-formula", FontSize = 13, PlaceholderText = "Inhalt oder Formel, z. B. =SUMME(B2:B8)", MinHeight = 30 };
         _shFormula.KeyDown += (_, e) =>
         {
-            if (e.Key == Key.Enter) { SheetSnapshot(); WriteCell(_shActive.Row, _shActive.Col, _shFormula.Text ?? ""); SheetChanged(); SheetGrid?.Focus(); e.Handled = true; }
+            if (e.Key == Key.Enter) { if (CanWrite(_shActive.Row, _shActive.Col, _shFormula.Text ?? "")) { SheetSnapshot(); WriteCell(_shActive.Row, _shActive.Col, _shFormula.Text ?? ""); SheetChanged(); } SheetGrid?.Focus(); e.Handled = true; }
             else if (e.Key == Key.Escape) { RefreshSheetChrome(); SheetGrid?.Focus(); e.Handled = true; }
         };
         var fx = new TextBlock { Text = "fx", FontStyle = FontStyle.Italic, FontSize = 14, Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 8, 0) };
@@ -548,7 +691,8 @@ public partial class MainWindow
             var ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control); e.Handled = true;
             switch (e.Key)
             {
-                case Key.Delete or Key.Back: ForSelection(c => c.Raw = ""); break;
+                case Key.Delete or Key.Back: if (CanWrite(_shActive.Row, _shActive.Col, "")) ForSelection(c => c.Raw = ""); break;
+                case Key.E when ctrl: SheetFlashFill(); Show("tabelle"); break;
                 case Key.C when ctrl: SheetCopy(false); break;
                 case Key.X when ctrl: SheetCopy(true); break;
                 case Key.V when ctrl: _ = SheetPaste(); break;
@@ -576,6 +720,16 @@ public partial class MainWindow
             charts.Children.Add(new Border { Background = Brushes.White, CornerRadius = new CornerRadius(8), BorderBrush = Brush.Parse("#FFD8DEE8"), BorderThickness = new Thickness(1), BoxShadow = BoxShadows.Parse("0 4 16 0 #40000000"), ClipToBounds = true,
                 Child = new Panel { Children = { view, del } } });
         }
+        _shListBtn = new Button { Name = "tabelle-list", Content = "▾", Focusable = false, Padding = new Thickness(4, 0), MinHeight = 0, Height = SheetGridView.RowH - 2, Background = Brush.Parse("#FFE5E7EB"), Foreground = Brushes.Black, IsVisible = false };
+        _shListBtn.Click += (_, _) =>
+        {
+            if (SheetExtras.ValidationFor(ActiveSheet, _shActive.Row, _shActive.Col) is not { } rule) return;
+            var menu = new ContextMenu();
+            foreach (var item in rule.Items) { var v = item; var mi = new MenuItem { Header = v }; mi.Click += (_, _) => { SheetSetCell(Addr.Name(_shActive.Row, _shActive.Col), v); Show("tabelle"); }; menu.Items.Add(mi); }
+            _shListBtn.ContextMenu = menu; menu.Open(_shListBtn);
+        };
+        _shOverlay.Children.Add(_shListBtn);
+        ShowSheetPrompt();
         var host = new Panel { Children = { grid, charts, _shOverlay } };
         return new Border { Child = host, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(6), ClipToBounds = true, MinHeight = 320 };
     }
@@ -606,6 +760,7 @@ public partial class MainWindow
         _shEditor = null; _shOverlay?.Children.Remove(tb);
         var text = tb.Text ?? "";
         if (text == ActiveSheet.Raw(_shActive.Row, _shActive.Col)) return;
+        if (!CanWrite(_shActive.Row, _shActive.Col, text)) return;
         SheetSnapshot(); WriteCell(_shActive.Row, _shActive.Col, text); SheetChanged();
     }
 
@@ -624,6 +779,9 @@ public partial class MainWindow
             cell.IsFormula ? (v.IsError ? $"Formel mit Fehler {v.Text}: {SheetErrorHelp(v.Text)}" : $"Formel, Ergebnis: {SheetFormat.Display(v, cell.Format)}") :
             v.IsNumber ? $"Zahl ({cell.Format})" : v.Kind == CellValue.K.Bool ? "Wahrheitswert" : "Text";
         sp.Children.Add(new TextBlock { Name = "tabelle-side-what", Text = what, Foreground = v.IsError ? Brush.Parse("#F87171") : Muted, FontSize = 12.5, TextWrapping = TextWrapping.Wrap });
+        if (cell?.Note is { } noteText) sp.Children.Add(new Border { Name = "tabelle-side-note", Background = Brush.Parse("#FFFFF7D6"), CornerRadius = new CornerRadius(6), Padding = new Thickness(8, 6), Child = new TextBlock { Text = "🗒 " + noteText, Foreground = Brushes.Black, FontSize = 12.5, TextWrapping = TextWrapping.Wrap } });
+        if (SheetExtras.ValidationFor(ActiveSheet, r, c) is { } vrule) sp.Children.Add(new TextBlock { Text = "Erlaubt: " + string.Join(", ", vrule.Items), Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap });
+        if (ActiveSheet.Protected) sp.Children.Add(new TextBlock { Text = cell?.Unlocked == true ? "🔓 Freigegeben – änderbar trotz Blattschutz." : "🔒 Blatt geschützt.", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap });
         sp.Children.Add(new TextBlock { Text = "Funktion einfügen", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 8, 0, 0) });
         var q = new TextBox { Name = "tabelle-fn-search", Text = _shFnQuery, PlaceholderText = "z. B. summe, wenn, datum" };
         var list = new StackPanel { Name = "tabelle-fn-list", Spacing = 2 };
@@ -718,6 +876,12 @@ public partial class MainWindow
         var (r, c) = _shActive; var (t, l, b, rr) = Sel();
         if (_shName is { } n) n.Text = t == b && l == rr ? Addr.Name(r, c) : $"{Addr.Name(t, l)}:{Addr.Name(b, rr)}";
         if (_shFormula is { } f && _shEditor is null) f.Text = ActiveSheet.Raw(r, c);
+        if (_shListBtn is { } lb)
+        {
+            var rect = SheetExtras.ValidationFor(ActiveSheet, r, c) is not null ? SheetGrid?.CellRect(r, c) : null;
+            lb.IsVisible = rect is not null;
+            if (rect is { } rc) { Canvas.SetLeft(lb, rc.Right + 1); Canvas.SetTop(lb, rc.Y + 1); }
+        }
         if (_shStats is { } s)
         {
             var st = SheetSelectionStats();

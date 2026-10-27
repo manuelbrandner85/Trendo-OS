@@ -55,8 +55,12 @@ public sealed class Cell
     /// <summary>Füllfarbe als #RRGGBB, null = keine.</summary>
     public string? Fill { get; set; }
     public bool Border { get; set; }
+    /// <summary>E9: Notiz zur Zelle (wie Kommentar/Notiz in Excel), null = keine.</summary>
+    public string? Note { get; set; }
+    /// <summary>E9: bleibt bei geschütztem Blatt bearbeitbar (in Excel „Gesperrt“ aus).</summary>
+    public bool Unlocked { get; set; }
     public bool IsFormula => Raw.StartsWith('=') && Raw.Length > 1;
-    public bool IsEmpty => Raw.Length == 0 && !Bold && Fill is null && !Border && Format == NumFmt.Standard;
+    public bool IsEmpty => Raw.Length == 0 && !Bold && Fill is null && !Border && Format == NumFmt.Standard && Note is null && !Unlocked;
     public Cell Clone() => (Cell)MemberwiseClone();
 }
 
@@ -72,6 +76,12 @@ public sealed class Sheet(string name)
     /// <summary>E1: fixierte Zeilen oben und Spalten links („Fenster fixieren“).</summary>
     public int FreezeRows { get; set; }
     public int FreezeCols { get; set; }
+    /// <summary>E5: bedingte Formatierung.</summary>
+    public List<CondRule> CondRules { get; } = [];
+    /// <summary>E6: Auswahllisten.</summary>
+    public List<ValidationRule> Validations { get; } = [];
+    /// <summary>E9: Blattschutz – nur Zellen mit <see cref="Cell.Unlocked"/> lassen sich ändern.</summary>
+    public bool Protected { get; set; }
 
     public IEnumerable<KeyValuePair<(int Row, int Col), Cell>> Cells => _cells;
 
@@ -82,7 +92,8 @@ public sealed class Sheet(string name)
         foreach (var (k, w) in ColWidths) s.ColWidths[k] = w;
         foreach (var r in HiddenRows) s.HiddenRows.Add(r);
         s.Charts.AddRange(Charts);
-        s.FreezeRows = FreezeRows; s.FreezeCols = FreezeCols;
+        s.FreezeRows = FreezeRows; s.FreezeCols = FreezeCols; s.Protected = Protected;
+        s.CondRules.AddRange(CondRules); s.Validations.AddRange(Validations);
         return s;
     }
     public int MaxRow => _cells.Count == 0 ? -1 : _cells.Keys.Max(k => k.Row);

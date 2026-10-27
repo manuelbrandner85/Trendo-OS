@@ -48,12 +48,14 @@ public static class SheetFiles
 
     public static void WriteXlsx(SheetDoc doc, string path)
     {
-        var styles = new List<(NumFmt F, bool B, string? Fill, bool Border)> { (NumFmt.Standard, false, null, false) };
+        var styles = new List<(NumFmt F, bool B, string? Fill, bool Border, bool U)> { (NumFmt.Standard, false, null, false, false) };
+        var dxfFills = new List<string>();
+        int Dxf(string fill) { var f = fill.ToUpperInvariant(); var i = dxfFills.IndexOf(f); if (i >= 0) return i; dxfFills.Add(f); return dxfFills.Count - 1; }
         var fills = new List<string>();
         var strings = new List<string>(); var stringIndex = new Dictionary<string, int>();
         int Style(Cell c)
         {
-            var key = (c.Format, c.Bold, c.Fill?.ToUpperInvariant(), c.Border);
+            var key = (c.Format, c.Bold, c.Fill?.ToUpperInvariant(), c.Border, c.Unlocked);
             var i = styles.IndexOf(key); if (i >= 0) return i;
             styles.Add(key); if (key.Item3 is { } f && !fills.Contains(f)) fills.Add(f); return styles.Count - 1;
         }
@@ -104,9 +106,20 @@ public static class SheetFiles
                 sb.Append("</row>");
             }
             sb.Append("</sheetData>");
+            if (sh.Protected) sb.Append("<sheetProtection sheet=\"1\" objects=\"1\" scenarios=\"1\"/>");
             if (sh.HiddenRows.Count > 0 && sh.MaxRow >= 0) sb.Append($"<autoFilter ref=\"A1:{Addr.Name(sh.MaxRow, Math.Max(0, sh.MaxCol))}\"/>");
+            var prio = 1;
+            foreach (var cr in sh.CondRules) sb.Append(CondXml(cr, prio++, Dxf));
+            if (sh.Validations.Count > 0)
+            {
+                sb.Append($"<dataValidations count=\"{sh.Validations.Count}\">");
+                foreach (var v in sh.Validations)
+                    sb.Append($"<dataValidation type=\"list\" allowBlank=\"1\" showInputMessage=\"1\" showErrorMessage=\"1\" sqref=\"{v.Range}\"><formula1>{XmlText("\"" + string.Join(',', v.Items.Select(i => i.Replace(",", " ").Replace("\"", "'"))) + "\"")}</formula1></dataValidation>");
+                sb.Append("</dataValidations>");
+            }
             sb.Append("<pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/>");
             if (sh.Charts.Count > 0) sb.Append("<drawing r:id=\"rId1\"/>");
+            if (sh.Cells.Any(kv => kv.Value.Note is { Length: > 0 })) sb.Append("<legacyDrawing r:id=\"rId3\"/>");
             sb.Append("</worksheet>");
             sheetXml.Add(sb.ToString());
         }
@@ -121,14 +134,19 @@ public static class SheetFiles
         st.Append("<border><left style=\"thin\"><color auto=\"1\"/></left><right style=\"thin\"><color auto=\"1\"/></right><top style=\"thin\"><color auto=\"1\"/></top><bottom style=\"thin\"><color auto=\"1\"/></bottom><diagonal/></border></borders>");
         st.Append("<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs>");
         st.Append($"<cellXfs count=\"{styles.Count}\">");
-        foreach (var (f, b, fill, border) in styles)
+        foreach (var (f, b, fill, border, unlocked) in styles)
         {
             var fillId = fill is null ? 0 : 2 + fills.IndexOf(fill);
-            st.Append($"<xf numFmtId=\"{NumFmtId(f)}\" fontId=\"{(b ? 1 : 0)}\" fillId=\"{fillId}\" borderId=\"{(border ? 1 : 0)}\" xfId=\"0\"{(f != NumFmt.Standard ? " applyNumberFormat=\"1\"" : "")}{(b ? " applyFont=\"1\"" : "")}{(fill is null ? "" : " applyFill=\"1\"")}{(border ? " applyBorder=\"1\"" : "")}/>");
+            st.Append($"<xf numFmtId=\"{NumFmtId(f)}\" fontId=\"{(b ? 1 : 0)}\" fillId=\"{fillId}\" borderId=\"{(border ? 1 : 0)}\" xfId=\"0\"{(f != NumFmt.Standard ? " applyNumberFormat=\"1\"" : "")}{(b ? " applyFont=\"1\"" : "")}{(fill is null ? "" : " applyFill=\"1\"")}{(border ? " applyBorder=\"1\"" : "")}");
+            st.Append(unlocked ? " applyProtection=\"1\"><protection locked=\"0\"/></xf>" : "/>");
         }
-        st.Append("</cellXfs><cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles></styleSheet>");
+        st.Append("</cellXfs><cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles>");
+        if (dxfFills.Count > 0) st.Append($"<dxfs count=\"{dxfFills.Count}\">{string.Concat(dxfFills.Select(f => $"<dxf><fill><patternFill><bgColor rgb=\"{(f.TrimStart('#').Length == 6 ? "FF" : "")}{f.TrimStart('#')}\"/></patternFill></fill></dxf>"))}</dxfs>");
+        st.Append("</styleSheet>");
 
         var chartParts = ChartParts(doc, calc);
+        chartParts.AddRange(NoteParts(doc));
+        chartParts.AddRange(SheetRels(doc));
         using var fs = File.Create(path);
         using var z = new ZipArchive(fs, ZipArchiveMode.Create);
         void Add(string name, string content) { using var w = new StreamWriter(z.CreateEntry(name, CompressionLevel.Optimal).Open(), new UTF8Encoding(false)); w.Write(content); }
@@ -136,7 +154,8 @@ public static class SheetFiles
             "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>" +
             "<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>" +
             string.Concat(doc.Sheets.Select((_, i) => $"<Override PartName=\"/xl/worksheets/sheet{i + 1}.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>")) +
-            string.Concat(chartParts.Where(p => !p.Name.Contains("_rels")).Select(p => $"<Override PartName=\"/{p.Name}\" ContentType=\"{(p.Name.Contains("/drawings/") ? "application/vnd.openxmlformats-officedocument.drawing+xml" : "application/vnd.openxmlformats-officedocument.drawingml.chart+xml")}\"/>")) +
+            "<Default Extension=\"vml\" ContentType=\"application/vnd.openxmlformats-officedocument.vmlDrawing\"/>" +
+            string.Concat(chartParts.Where(p => !p.Name.Contains("_rels") && !p.Name.EndsWith(".vml", StringComparison.Ordinal)).Select(p => $"<Override PartName=\"/{p.Name}\" ContentType=\"{(p.Name.Contains("/comments") ? "application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml" : p.Name.Contains("/drawings/") ? "application/vnd.openxmlformats-officedocument.drawing+xml" : "application/vnd.openxmlformats-officedocument.drawingml.chart+xml")}\"/>")) +
             "<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>" +
             "<Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/>" +
             "<Override PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/></Types>");
@@ -171,7 +190,6 @@ public static class SheetFiles
         {
             var sh = doc.Sheets[si]; if (sh.Charts.Count == 0) continue;
             dn++;
-            parts.Add(($"xl/worksheets/_rels/sheet{si + 1}.xml.rels", $"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"{Pr}\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing\" Target=\"../drawings/drawing{dn}.xml\"/></Relationships>"));
             var dr = new StringBuilder($"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><xdr:wsDr xmlns:xdr=\"{Xdr}\" xmlns:a=\"{A}\" xmlns:r=\"{R}\" xmlns:c=\"{C}\">");
             var drRels = new StringBuilder($"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"{Pr}\">");
             var col = Math.Max(0, sh.MaxCol) + 2;
@@ -266,6 +284,118 @@ public static class SheetFiles
         }
     }
 
+    // ---------- E5/E6/E9 in XLSX ----------
+    static string Inv(double d) => d.ToString("R", CultureInfo.InvariantCulture);
+
+    static string CondXml(CondRule r, int prio, Func<string, int> dxf)
+    {
+        var body = r.Kind switch
+        {
+            CondKind.Farbskala => $"<cfRule type=\"colorScale\" priority=\"{prio}\"><colorScale><cfvo type=\"min\"/><cfvo type=\"percentile\" val=\"50\"/><cfvo type=\"max\"/><color rgb=\"FFF8696B\"/><color rgb=\"FFFFEB84\"/><color rgb=\"FF63BE7B\"/></colorScale></cfRule>",
+            CondKind.Datenbalken => $"<cfRule type=\"dataBar\" priority=\"{prio}\"><dataBar><cfvo type=\"min\"/><cfvo type=\"max\"/><color rgb=\"{Argb(r.Fill)}\"/></dataBar></cfRule>",
+            _ when r.Op == CondOp.Enthaelt => $"<cfRule type=\"containsText\" dxfId=\"{dxf(r.Fill)}\" priority=\"{prio}\" operator=\"containsText\" text=\"{SecurityElement.Escape(r.Text ?? "")}\"><formula>NOT(ISERROR(SEARCH(\"{XmlText((r.Text ?? "").Replace("\"", "\"\""))}\",{Addr.Name(Addr.Range(r.Range.Contains(':') ? r.Range : r.Range + ":" + r.Range).Top, Addr.Range(r.Range.Contains(':') ? r.Range : r.Range + ":" + r.Range).Left)})))</formula></cfRule>",
+            _ => $"<cfRule type=\"cellIs\" dxfId=\"{dxf(r.Fill)}\" priority=\"{prio}\" operator=\"{r.Op switch { CondOp.Groesser => "greaterThan", CondOp.Kleiner => "lessThan", CondOp.Zwischen => "between", _ => "equal" }}\"><formula>{Inv(r.V1)}</formula>{(r.Op == CondOp.Zwischen ? $"<formula>{Inv(r.V2)}</formula>" : "")}</cfRule>",
+        };
+        return $"<conditionalFormatting sqref=\"{r.Range}\">{body}</conditionalFormatting>";
+    }
+
+    static string Argb(string hex) { var h = hex.TrimStart('#').ToUpperInvariant(); return h.Length == 6 ? "FF" + h : h; }
+
+    /// <summary>Notizen: comments{n}.xml (Inhalt, ohne Autorname) und vmlDrawing{n}.vml (damit Excel die Notiz-Markierung zeigt).</summary>
+    static List<(string Name, string Content)> NoteParts(SheetDoc doc)
+    {
+        var parts = new List<(string, string)>(); var n = 0;
+        for (var si = 0; si < doc.Sheets.Count; si++)
+        {
+            var notes = doc.Sheets[si].Cells.Where(kv => kv.Value.Note is { Length: > 0 }).OrderBy(kv => kv.Key.Row).ThenBy(kv => kv.Key.Col).ToList();
+            if (notes.Count == 0) continue;
+            n++;
+            var cm = new StringBuilder($"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><comments xmlns=\"{S}\"><authors><author></author></authors><commentList>");
+            foreach (var ((r, c), cell) in notes) cm.Append($"<comment ref=\"{Addr.Name(r, c)}\" authorId=\"0\"><text><r><t xml:space=\"preserve\">{SecurityElement.Escape(cell.Note)}</t></r></text></comment>");
+            cm.Append("</commentList></comments>");
+            parts.Add(($"xl/comments{n}.xml", cm.ToString()));
+            var vml = new StringBuilder("<xml xmlns:v=\"urn:schemas-microsoft-com:vml\" xmlns:o=\"urn:schemas-microsoft-com:office:office\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\">");
+            vml.Append($"<o:shapelayout v:ext=\"edit\"><o:idmap v:ext=\"edit\" data=\"{n}\"/></o:shapelayout><v:shapetype id=\"_x0000_t202\" coordsize=\"21600,21600\" o:spt=\"202\" path=\"m,l,21600r21600,l21600,xe\"><v:stroke joinstyle=\"miter\"/><v:path gradientshapeok=\"t\" o:connecttype=\"rect\"/></v:shapetype>");
+            var k = 0;
+            foreach (var ((r, c), _) in notes)
+                vml.Append($"<v:shape id=\"_x0000_s{n * 1024 + 1 + k++}\" type=\"#_x0000_t202\" style=\"position:absolute;margin-left:60pt;margin-top:2pt;width:120pt;height:60pt;z-index:{k};visibility:hidden\" fillcolor=\"#ffffe1\" o:insetmode=\"auto\"><v:fill color2=\"#ffffe1\"/><v:shadow on=\"t\" color=\"black\" obscured=\"t\"/><v:path o:connecttype=\"none\"/><v:textbox style=\"mso-direction-alt:auto\"><div style=\"text-align:left\"></div></v:textbox><x:ClientData ObjectType=\"Note\"><x:MoveWithCells/><x:SizeWithCells/><x:Anchor>{c + 1}, 15, {r}, 2, {c + 3}, 15, {r + 4}, 16</x:Anchor><x:AutoFill>False</x:AutoFill><x:Row>{r}</x:Row><x:Column>{c}</x:Column></x:ClientData></v:shape>");
+            vml.Append("</xml>");
+            parts.Add(($"xl/drawings/vmlDrawing{n}.vml", vml.ToString()));
+        }
+        return parts;
+    }
+
+    /// <summary>Beziehungen je Blatt: rId1 Diagramme, rId2 Notizen, rId3 Notiz-Zeichnung (VML).</summary>
+    static List<(string Name, string Content)> SheetRels(SheetDoc doc)
+    {
+        var parts = new List<(string, string)>(); var dn = 0; var nn = 0;
+        for (var si = 0; si < doc.Sheets.Count; si++)
+        {
+            var sh = doc.Sheets[si]; var rels = new StringBuilder();
+            if (sh.Charts.Count > 0) rels.Append($"<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing\" Target=\"../drawings/drawing{++dn}.xml\"/>");
+            if (sh.Cells.Any(kv => kv.Value.Note is { Length: > 0 }))
+            {
+                nn++;
+                rels.Append($"<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments\" Target=\"../comments{nn}.xml\"/>");
+                rels.Append($"<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing\" Target=\"../drawings/vmlDrawing{nn}.vml\"/>");
+            }
+            if (rels.Length > 0) parts.Add(($"xl/worksheets/_rels/sheet{si + 1}.xml.rels", $"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"{Pr}\">{rels}</Relationships>"));
+        }
+        return parts;
+    }
+
+    static string SheetRelsPath(string sheetPath) { var i = sheetPath.LastIndexOf('/'); return $"{sheetPath[..i]}/_rels/{sheetPath[(i + 1)..]}.rels"; }
+
+    static string ResolvePath(string baseFile, string target)
+    {
+        if (target.StartsWith('/')) return target[1..];
+        var parts = baseFile[..baseFile.LastIndexOf('/')].Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
+        foreach (var seg in target.Split('/')) { if (seg == "..") { if (parts.Count > 0) parts.RemoveAt(parts.Count - 1); } else if (seg != ".") parts.Add(seg); }
+        return string.Join('/', parts);
+    }
+
+    /// <summary>Blattschutz, bedingte Formate, Auswahllisten und Notizen lesen.</summary>
+    static void ReadExtras(ZipArchive z, string sheetPath, XElement ws, Sheet sh, List<string?> dxfFills)
+    {
+        if (ws.Element(S + "sheetProtection") is { } prot && (string?)prot.Attribute("sheet") is "1" or "true") sh.Protected = true;
+        foreach (var cf in ws.Elements(S + "conditionalFormatting"))
+        {
+            var range = ((string?)cf.Attribute("sqref") ?? "").Split(' ')[0]; if (range.Length == 0) continue;
+            foreach (var rule in cf.Elements(S + "cfRule"))
+            {
+                var type = (string?)rule.Attribute("type"); var fill = (int?)rule.Attribute("dxfId") is int di && di < dxfFills.Count ? dxfFills[di] ?? "#FFFDE2E2" : "#FFFDE2E2";
+                var formulas = rule.Elements(S + "formula").Select(f => double.TryParse(f.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var d) ? d : (double?)null).ToList();
+                switch (type)
+                {
+                    case "colorScale": sh.CondRules.Add(new CondRule(range, CondKind.Farbskala)); break;
+                    case "dataBar":
+                        var col = (string?)rule.Descendants(S + "color").FirstOrDefault()?.Attribute("rgb");
+                        sh.CondRules.Add(new CondRule(range, CondKind.Datenbalken, Fill: col is { Length: >= 6 } ? "#" + col.ToUpperInvariant() : "#FF63A0F0")); break;
+                    case "containsText": sh.CondRules.Add(new CondRule(range, CondKind.Regel, CondOp.Enthaelt, Fill: fill, Text: (string?)rule.Attribute("text"))); break;
+                    case "cellIs" when formulas.Count > 0 && formulas[0] is double v1:
+                        var op = (string?)rule.Attribute("operator") switch { "greaterThan" => CondOp.Groesser, "lessThan" => CondOp.Kleiner, "between" => CondOp.Zwischen, "equal" => CondOp.Gleich, _ => (CondOp?)null };
+                        if (op is { } o) sh.CondRules.Add(new CondRule(range, CondKind.Regel, o, v1, formulas.ElementAtOrDefault(1) ?? 0, fill));
+                        break;
+                }
+            }
+        }
+        foreach (var dv in ws.Element(S + "dataValidations")?.Elements(S + "dataValidation") ?? [])
+        {
+            var f1 = dv.Element(S + "formula1")?.Value ?? "";
+            if ((string?)dv.Attribute("type") != "list" || f1.Length < 2 || f1[0] != '"') continue;
+            foreach (var range in ((string?)dv.Attribute("sqref") ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries))
+                sh.Validations.Add(new ValidationRule(range, f1.Trim('"').Split(',').Select(x => x.Trim()).Where(x => x.Length > 0).ToList()));
+        }
+        var relsEntry = z.GetEntry(SheetRelsPath(sheetPath)); if (relsEntry is null) return;
+        XDocument rels; using (var s = relsEntry.Open()) rels = XDocument.Load(s);
+        var target = rels.Root?.Elements(Pr + "Relationship").FirstOrDefault(r => ((string?)r.Attribute("Type"))?.EndsWith("/comments", StringComparison.Ordinal) == true)?.Attribute("Target")?.Value;
+        if (target is null || z.GetEntry(ResolvePath(sheetPath, target)) is not { } ce) return;
+        XDocument cdoc; using (var s = ce.Open()) cdoc = XDocument.Load(s);
+        foreach (var cm in cdoc.Root?.Element(S + "commentList")?.Elements(S + "comment") ?? [])
+            if (Addr.TryParse((string?)cm.Attribute("ref") ?? "", out var rc))
+                sh.GetOrAdd(rc.Row, rc.Col).Note = string.Concat(cm.Descendants(S + "t").Select(x => x.Value));
+    }
+
     // ---------- XLSX lesen ----------
     static NumFmt FromNumFmt(int id, string? code)
     {
@@ -302,12 +432,13 @@ public static class SheetFiles
         var fontsBold = stDoc?.Root?.Element(S + "fonts")?.Elements(S + "font").Select(f => f.Element(S + "b") is { } b && (string?)b.Attribute("val") is null or "1" or "true").ToList() ?? [];
         var fillColors = stDoc?.Root?.Element(S + "fills")?.Elements(S + "fill").Select(f => f.Element(S + "patternFill") is { } p && (string?)p.Attribute("patternType") == "solid"
             && (string?)p.Element(S + "fgColor")?.Attribute("rgb") is { Length: >= 6 } rgb ? "#" + rgb[^6..].ToUpperInvariant() : null).ToList() ?? [];
+        var dxfFills = stDoc?.Root?.Element(S + "dxfs")?.Elements(S + "dxf").Select(d => (string?)(d.Descendants(S + "bgColor").FirstOrDefault() ?? d.Descendants(S + "fgColor").FirstOrDefault())?.Attribute("rgb") is { Length: >= 6 } rgb ? "#" + rgb.ToUpperInvariant() : null).ToList() ?? [];
         var borders = stDoc?.Root?.Element(S + "borders")?.Elements(S + "border").Select(b => b.Elements().Any(side => side.Attribute("style") is not null)).ToList() ?? [];
         var xfs = stDoc?.Root?.Element(S + "cellXfs")?.Elements(S + "xf").Select(x =>
         {
             int I(string a) => (int?)x.Attribute(a) ?? 0;
             var nf = I("numFmtId");
-            return (Fmt: FromNumFmt(nf, codes.GetValueOrDefault(nf)), Bold: fontsBold.ElementAtOrDefault(I("fontId")), Fill: fillColors.ElementAtOrDefault(I("fillId")), Border: borders.ElementAtOrDefault(I("borderId")));
+            return (Fmt: FromNumFmt(nf, codes.GetValueOrDefault(nf)), Bold: fontsBold.ElementAtOrDefault(I("fontId")), Fill: fillColors.ElementAtOrDefault(I("fillId")), Border: borders.ElementAtOrDefault(I("borderId")), Unlocked: (string?)x.Element(S + "protection")?.Attribute("locked") is "0" or "false");
         }).ToList() ?? [];
 
         var doc = new SheetDoc(); doc.Sheets.Clear();
@@ -321,6 +452,7 @@ public static class SheetFiles
             var ws = Load(target); if (ws is null) continue;
             if (ws.Root!.Element(S + "sheetViews")?.Element(S + "sheetView")?.Element(S + "pane") is { } pane && (string?)pane.Attribute("state") is "frozen" or "frozenSplit")
             { sh.FreezeRows = (int?)(double?)pane.Attribute("ySplit") ?? 0; sh.FreezeCols = (int?)(double?)pane.Attribute("xSplit") ?? 0; }
+            try { ReadExtras(z, target, ws.Root!, sh, dxfFills); } catch (Exception e) when (e is System.Xml.XmlException or InvalidDataException or ArgumentException or FormatException) { }
             try { ReadCharts(z, target, sh); } catch (Exception e) when (e is System.Xml.XmlException or InvalidDataException or ArgumentException) { } // Diagramme sind Beigabe – Zellen trotzdem lesen
             foreach (var col in ws.Root!.Element(S + "cols")?.Elements(S + "col") ?? [])
             {
@@ -347,9 +479,9 @@ public static class SheetFiles
                         "str" => Escape(v ?? ""),
                         _ => v is null ? "" : NumberRaw(double.Parse(v, CultureInfo.InvariantCulture), style.Fmt),
                     };
-                    if (raw.Length == 0 && !style.Bold && style.Fill is null && !style.Border && style.Fmt == NumFmt.Standard) continue;
+                    if (raw.Length == 0 && !style.Bold && style.Fill is null && !style.Border && style.Fmt == NumFmt.Standard && !style.Unlocked) continue;
                     var cell = sh.GetOrAdd(r, ci);
-                    cell.Raw = raw; cell.Format = style.Fmt; cell.Bold = style.Bold; cell.Fill = style.Fill; cell.Border = style.Border;
+                    cell.Raw = raw; cell.Format = style.Fmt; cell.Bold = style.Bold; cell.Fill = style.Fill; cell.Border = style.Border; cell.Unlocked = style.Unlocked;
                 }
             }
         }

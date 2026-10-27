@@ -141,6 +141,48 @@ public class T0228_TrendoTabelleUi
         w.Close();
     }
 
+    [AvaloniaFact(DisplayName = "T-0228 E5–E9: Bedingt über Eingabefeld, Auswahlliste mit Pfeil und Prüfung, Als Tabelle, Blitzvorschau Strg+E, Notiz, Blattschutz")]
+    public void Extras_ui()
+    {
+        var (w, _, _) = Ui.Open();
+        w.SheetNew("haushalt"); w.Show("tabelle"); Pump();
+        // E5: Größer als … über das Eingabefeld
+        w.SheetSelect("C2:C7");
+        w.Find<Button>("tabelle-cond").ContextMenu!.Items.Cast<MenuItem>().First(m => m.Name == "tabelle-cond-gt").RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(MenuItem.ClickEvent)); Pump();
+        w.Find<TextBox>("tabelle-prompt").Text = "500"; w.Find<Button>("tabelle-prompt-ok").Press(); Pump();
+        var rule = Assert.Single(w.ActiveSheet.CondRules);
+        Assert.Equal((CondOp.Groesser, 500.0, "C2:C7"), (rule.Op, rule.V1, rule.Range));
+        // E6: Auswahlliste
+        w.SheetSelect("B2:B7"); w.SheetSetValidation("Einnahme; Ausgabe"); w.SheetSelect("B3"); Pump();
+        Assert.True(w.Find<Button>("tabelle-list").IsVisible);
+        w.SheetSetCell("B3", "Quatsch");
+        Assert.Equal("Ausgabe", w.ActiveSheet.Raw(2, 1));
+        Assert.Contains("Hier passt nur", w.Find<TextBlock>("tabelle-status").Text);
+        w.SheetSetCell("B3", "Einnahme"); Assert.Equal("Einnahme", w.ActiveSheet.Raw(2, 1));
+        // E8: Blitzvorschau
+        w.SheetNew(); w.Show("tabelle"); Pump();
+        foreach (var (a1, v) in new[] { ("A1", "Erika Muster"), ("A2", "Max Mustermann"), ("A3", "Lena Beispiel"), ("B1", "Erika") }) w.SheetSetCell(a1, v);
+        w.SheetSelect("B1");
+        Key(w.Find<SheetGridView>("tabelle-grid"), Avalonia.Input.Key.E, KeyModifiers.Control); Pump();
+        Assert.Equal(["Erika", "Max", "Lena"], Enumerable.Range(0, 3).Select(r => w.ActiveSheet.Raw(r, 1)));
+        // E7: Als Tabelle mit Summenzeile
+        w.SheetSetCell("C1", "Wert"); w.SheetSetCell("C2", "3"); w.SheetSetCell("C3", "4");
+        w.SheetSelect("A1:C3"); w.Find<Button>("tabelle-astable").Press(); Pump();
+        Assert.Equal("=SUMME(C2:C3)", w.ActiveSheet.Raw(3, 2));
+        // E9: Notiz und Blattschutz
+        w.Find<Button>("tabelle-rib-pruefen").Press(); Pump();
+        w.SheetSelect("A1"); w.Find<Button>("tabelle-note").Press(); Pump();
+        w.Find<TextBox>("tabelle-prompt").Text = "Bitte Vornamen prüfen"; w.Find<Button>("tabelle-prompt-ok").Press(); Pump();
+        Assert.Equal("Bitte Vornamen prüfen", w.ActiveSheet.Get(0, 0)!.Note);
+        Assert.NotNull(w.TryFind<Border>("tabelle-side-note"));
+        w.SheetSelect("C2"); w.Find<Button>("tabelle-unlock").Press(); Pump();
+        w.Find<Button>("tabelle-protect").Press(); Pump();
+        Assert.True(w.ActiveSheet.Protected);
+        w.SheetSetCell("A2", "geändert"); Assert.Equal("Max Mustermann", w.ActiveSheet.Raw(1, 0));
+        w.SheetSetCell("C2", "9"); Assert.Equal("9", w.ActiveSheet.Raw(1, 2));
+        w.Close();
+    }
+
     [AvaloniaFact(DisplayName = "T-0228: Speichern als XLSX und wieder öffnen; erscheint unter „Zuletzt geöffnet“")]
     public void Save_and_reopen()
     {

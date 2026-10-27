@@ -210,18 +210,22 @@ public sealed class SheetGridView : Control
         // Spaltenköpfe
         var colX = ColLayout(); var rowY = RowLayout();
         // Zellen
+        var hasRules = Sheet.CondRules.Count > 0; var noteBrush = new SolidColorBrush(Color.Parse("#FFE11D48"));
         foreach (var (r, ry) in rowY)
             foreach (var (c, cx, cw) in colX)
             {
                 var cell = Sheet.Get(r, c);
                 var rect = new Rect(cx, ry, cw, RowH);
-                if (cell?.Fill is { } fill && Color.TryParse(fill, out var fc)) ctx.FillRectangle(new SolidColorBrush(fc), rect);
+                var look = hasRules ? SheetExtras.Look(Sheet, Calc, r, c) : default;
+                if ((look.Fill ?? cell?.Fill) is { } fill && Color.TryParse(fill, out var fc)) ctx.FillRectangle(new SolidColorBrush(fc), rect);
+                if (look.Bar is { } bar && bar > 0 && Color.TryParse(look.BarColor, out var bc)) ctx.FillRectangle(new SolidColorBrush(bc, 0.55), new Rect(cx + 2, ry + 3, Math.Max(1, (cw - 4) * bar), RowH - 6));
+                if (cell?.Note is { Length: > 0 }) ctx.DrawGeometry(noteBrush, null, new PolylineGeometry([new Point(cx + cw - 7, ry), new Point(cx + cw, ry), new Point(cx + cw, ry + 7)], true));
                 if (r >= sTop && r <= sBottom && c >= sLeft && c <= sRight && (sTop != sBottom || sLeft != sRight)) ctx.FillRectangle(new SolidColorBrush(accent, 0.18), rect);
                 ctx.DrawLine(line, rect.BottomLeft, rect.BottomRight); ctx.DrawLine(line, rect.TopRight, rect.BottomRight);
                 if (cell is null || cell.Raw.Length == 0) { if (cell?.Border == true) ctx.DrawRectangle(new Pen(fg, 1), rect.Deflate(0.5)); continue; }
                 var v = Calc.Value(Sheet, r, c);
                 var text = SheetFormat.Display(v, cell.Format);
-                var brush = v.IsError ? err : cell.Fill is not null && !Dark ? new SolidColorBrush(Color.Parse("#FF101828")) : cell.Fill is not null ? new SolidColorBrush(Color.Parse("#FF101828")) : fg;
+                var brush = v.IsError ? err : (look.Fill ?? cell.Fill) is not null ? new SolidColorBrush(Color.Parse("#FF101828")) : fg;
                 var ft = new FormattedText(text, CultureInfo.GetCultureInfo("de-DE"), FlowDirection.LeftToRight, cell.Bold ? bold : face, 13, brush) { MaxTextWidth = Math.Max(1, cw - 8), MaxLineCount = 1, Trimming = TextTrimming.CharacterEllipsis };
                 var rightAlign = v.IsNumber || v.Kind == CellValue.K.Bool;
                 var tx = rightAlign ? cx + cw - 4 - ft.Width : cx + 4;
