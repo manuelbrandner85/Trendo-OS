@@ -179,7 +179,8 @@ public partial class MainWindow
     internal static bool KiHostAllowed(Uri u) =>
         u.Scheme == Uri.UriSchemeHttps && u.Port == 443 &&
         (GitHubHosts.Contains(u.Host, StringComparer.OrdinalIgnoreCase) || u.Host.Equals("huggingface.co", StringComparison.OrdinalIgnoreCase) || u.Host.EndsWith(".hf.co", StringComparison.OrdinalIgnoreCase)
-         || u.Host.Equals("files.acemusic.ai", StringComparison.OrdinalIgnoreCase)); // offizielles ACE-Step-Paket, im README des Projekts verlinkt
+         || u.Host.Equals("files.acemusic.ai", StringComparison.OrdinalIgnoreCase) // offizielles ACE-Step-Paket, im README des Projekts verlinkt
+         || KiSourceSetups.VendorHosts.Contains(u.Host, StringComparer.OrdinalIgnoreCase)); // offizielle Installer der Hersteller (z. B. LM Studio)
 
     /// <summary>7z mit dem mitgelieferten 7-Zip entpacken (ohne Shell, Ausgabe nur in den Zielordner).</summary>
     private void Extract7z(string archive, string target)

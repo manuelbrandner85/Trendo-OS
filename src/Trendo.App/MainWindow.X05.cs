@@ -124,7 +124,7 @@ public partial class MainWindow
             var web = new Button { Name = "src-web-" + id, Content = "Herstellerseite", Padding = new Thickness(8, 2), IsEnabled = !_core.Offline };
             web.Click += (_, _) => Launch(s.OfficialUrl);
             sp.Children.Add(WCard(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {
-                new StackPanel { Children = { new TextBlock { Text = $"{pos + 1}. {s.Name}{(off ? " (aus)" : "")}", Foreground = Text, FontSize = 13 }, P($"{state} · Lizenz: {s.License}", null, 10.5), P(s.Hint, null, 10.5) } },
+                new StackPanel { Children = { new TextBlock { Text = $"{pos + 1}. {s.Name}{(off ? " (aus)" : "")}", Foreground = Text, FontSize = 13 }, P($"{state} · Lizenz: {s.License}", null, 10.5), P(s.Hint, null, 10.5), new Border { Margin = new Thickness(0, 4, 0, 0), Child = KiSourceButtons(s) } } },
                 Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Center, Children = { up, tg, web } }, 1) } }));
         }
         sp.Children.Add(H("Freie Modelle", 14));
