@@ -210,7 +210,7 @@ public static class FileShelf
 
     public static string Kind(string path) => Path.GetExtension(path).ToLowerInvariant() switch
     {
-        ".docx" or ".doc" or ".odt" or ".rtf" => "Text", ".xlsx" or ".xls" or ".ods" or ".csv" => "Tabelle", ".pptx" or ".odp" => "Präsentation", ".pdf" => "PDF",
+        ".docx" or ".doc" or ".odt" or ".rtf" or ".txt" or ".md" => "Text", ".xlsx" or ".xls" or ".ods" or ".csv" => "Tabelle", ".pptx" or ".odp" => "Präsentation", ".pdf" => "PDF",
         ".mp3" or ".m4a" or ".flac" or ".wav" or ".ogg" => "Musik", ".mp4" or ".mkv" or ".mov" or ".avi" or ".webm" => "Video",
         ".exe" or ".msi" => "Programm", ".zip" or ".7z" or ".rar" => "Archiv", ".jpg" or ".jpeg" or ".png" or ".webp" or ".gif" => "Bild", _ => "Datei",
     };

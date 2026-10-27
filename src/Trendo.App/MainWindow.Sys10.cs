@@ -16,6 +16,7 @@ public partial class MainWindow
 
     private void InitSys10()
     {
+        RegisterTab(DokuTabs, "doku-start", "Start", "SYS-10", DokuStartView, "dokumente", "vorlagen", "zuletzt", "office", "texte und tabellen");
         RegisterTab(DokuTabs, "doku-pdf", "PDF", "SYS-10", DokuPdfView, "pdf zusammenfügen", "pdf teilen", "seiten", "scan", "ocr", "texterkennung", "metadaten", "formular", "drucken", "barrierefrei");
         RegisterTab(DokuTabs, "doku-schreiben", "Schreiben", "SYS-10", DokuWriteView, "neues dokument", "vorlage", "serienbrief", "rechtschreibung", "wörter zählen", "lesbarkeit", "vergleichen", "unterschrift", "export");
         RegisterTab(DokuTabs, "doku-ordnen", "Ordnen", "SYS-10", DokuOrderView, "tabelle", "csv", "xlsx", "protokoll", "besprechung", "aufgaben", "to-do", "suche in dokumenten", "volltext");

@@ -24,6 +24,8 @@ public partial class MainWindow
     private string _pimMsg = "", _pwDraft = "";
     private MailDraft _sendDraft = new("", "", "");
     private DateTime _calLastCheck = DateTime.Now;
+    private string? _inboxFolder; private bool _composeOpen;
+    public long? InboxOpenUid { get; private set; }
     public Func<Task<Stream>>? ImapStreamOverride { get; set; }
     public Func<MailDraft, Task>? SendOverride { get; set; }
 
@@ -123,7 +125,7 @@ public partial class MainWindow
             else await MailNet.SendAsync(a, _core.Secrets.Get(a.SecretKey) ?? throw new InvalidOperationException("Das Passwort fehlt."), _sendDraft);
             _pimMsg = $"Gesendet an {_sendDraft.To}.";
             _core.Audit.Append(Principal.LocalOwner.Name, "post.gesendet", $"{_sendDraft.To} · {_sendDraft.Subject}");
-            _sendDraft = new("", "", "");
+            _sendDraft = new("", "", ""); _composeOpen = false;
         }
         catch (Exception ex) when (ex is IOException or InvalidOperationException or System.Net.Sockets.SocketException or System.Security.Authentication.AuthenticationException) { _pimMsg = "Senden ging nicht: " + ex.Message; }
     }
@@ -153,48 +155,101 @@ public partial class MainWindow
         fetch.Click += async (_, _) => { await FetchInbox(); Show("posteingang"); };
         sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { H("Konto", 14), new WrapPanel { Children = { email, new Border { Width = 4 }, name, new Border { Width = 4 }, pw, new Border { Width = 4 }, save, new Border { Width = 4 }, fetch } },
             P("Trendo liest nur – auf dem Server wird nichts gelöscht oder als gelesen markiert. Bei Gmail, iCloud und Yahoo brauchst du ein App-Passwort. Das Passwort wird geschützt gespeichert.", null, 12) } }));
-        // Liste und Nachricht
-        var list = new StackPanel { Name = "inbox-list", Spacing = 2, Width = 460 };
+        // U1: drei Spalten – Ordner · Liste · Lesebereich
         var active = MailRules.Where(r => r.Active).ToList();
+        var folders = new StackPanel { Name = "inbox-folders", Spacing = 2 };
+        Button Folder(string name, string label, bool on, Action go)
+        {
+            var b = new Button { Name = name, Content = label, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(6),
+                Background = on ? Accent : Brushes.Transparent, Foreground = Text, FontSize = 12.5 };
+            b.Click += (_, _) => { go(); Show("posteingang"); }; return b;
+        }
+        folders.Children.Add(Folder("inbox-folder-alle", $"Posteingang ({Inbox.Count})", _inboxFolder is null, () => _inboxFolder = null));
+        folders.Children.Add(Folder("inbox-folder-ungelesen", $"Ungelesen ({Inbox.Count(h => !h.Seen)})", _inboxFolder == "\u0001", () => _inboxFolder = "\u0001"));
+        foreach (var (cat, k) in active.Select(r => r.Category).Distinct().Select((c, k) => (c, k)))
+            folders.Children.Add(Folder($"inbox-folder-{k}", $"{cat} ({Inbox.Count(h => active.FirstOrDefault(r => r.Matches(h))?.Category == cat)})", _inboxFolder == cat, () => _inboxFolder = cat));
+        folders.Children.Add(new Border { Height = 10 });
+        var compose = new Button { Name = "inbox-new", Content = "✉ Neue Nachricht", Background = Accent, IsEnabled = a is not null, HorizontalAlignment = HorizontalAlignment.Stretch };
+        compose.Click += (_, _) => { _sendDraft = new("", "", ""); _composeOpen = true; Show("posteingang"); };
+        folders.Children.Add(compose);
+        folders.Children.Add(Folder("inbox-go-kalender", "📅 Kalender", false, () => { }));
+        ((Button)folders.Children[^1]).Click += (_, _) => Show("kalender");
+        folders.Children.Add(Folder("inbox-go-aufgaben", "☑ Aufgaben", false, () => { }));
+        ((Button)folders.Children[^1]).Click += (_, _) => Show("aufgaben");
+
+        var list = new StackPanel { Name = "inbox-list", Spacing = 2 };
+        var shown = 0;
         for (var i = 0; i < Inbox.Count; i++)
         {
             var h = Inbox[i]; var uid = h.Uid;
             var cat = active.FirstOrDefault(r => r.Matches(h))?.Category;
-            var b = new Button { Name = $"inbox-item-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 5), Background = Brushes.Transparent,
+            if (_inboxFolder == "\u0001" ? h.Seen : _inboxFolder is not null && cat != _inboxFolder) continue;
+            shown++;
+            var b = new Button { Name = $"inbox-item-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 5), Background = InboxOpenUid == uid ? Accent : Brushes.Transparent,
                 Content = new StackPanel { Children = {
                     new TextBlock { Text = h.Subject.Length > 0 ? h.Subject : "(ohne Betreff)", Foreground = Text, FontWeight = h.Seen ? FontWeight.Normal : FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
                     new TextBlock { Text = $"{h.From} · {(h.Date is { } d ? d.LocalDateTime.ToString("dd.MM. HH:mm", De) : "")}{(cat is null ? "" : $"  [{cat}]")}", Foreground = Muted, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis } } } };
-            b.Click += async (_, _) => { await OpenInboxMail(uid); Show("posteingang"); };
+            b.Click += async (_, _) => { await OpenInboxMail(uid); InboxOpenUid = uid; _composeOpen = false; Show("posteingang"); };
             list.Children.Add(b);
         }
         if (Inbox.Count == 0) list.Children.Add(EmptyState("inbox-empty", "📬", "Noch keine Nachrichten geladen", "Konto eintragen und „Abrufen“ drücken."));
+        else if (shown == 0) list.Children.Add(P("In diesem Ordner ist nichts.", Text));
+
         var read = new StackPanel { Spacing = 6 };
-        if (InboxOpen is { } m)
+        if (InboxOpen is { } m && !_composeOpen && !SendConfirmOpen)
         {
             read.Children.Add(new TextBlock { Name = "inbox-subject", Text = m.Subject, Foreground = Text, FontSize = 16, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
             read.Children.Add(P($"Von {m.From} · {m.Date}", null, 12));
+            // F2: Termin aus dem Text erkennen
+            var reference = DateTimeOffset.TryParse(m.Date, CultureInfo.InvariantCulture, DateTimeStyles.None, out var md) ? md.LocalDateTime : DateTime.Now;
+            var hints = MailDates.Find(m.Subject + "\n" + m.Body, reference).Take(3).ToList();
+            if (hints.Count > 0)
+            {
+                var hw = new WrapPanel { Name = "inbox-dates" };
+                for (var k = 0; k < hints.Count; k++)
+                {
+                    var hint = hints[k];
+                    var hb = new Button { Name = $"inbox-cal-{k}", Content = $"📅 {(hint.HasTime ? hint.Start.ToString("ddd dd.MM.yyyy, HH:mm", De) : hint.Start.ToString("ddd dd.MM.yyyy", De))} als Termin", FontSize = 12, Margin = new Thickness(0, 0, 6, 4) };
+                    ToolTip.SetTip(hb, $"Gefunden: „{hint.Text}“");
+                    hb.Click += (_, _) =>
+                    {
+                        Cal.Add(new CalEvent(Guid.NewGuid().ToString("N"), hint.Start, hint.HasTime ? hint.Start.AddHours(1) : hint.Start.AddDays(1), m.Subject.Length > 0 ? m.Subject : "Termin", "", "Aus der E-Mail von " + m.From, AllDay: !hint.HasTime));
+                        _pimMsg = $"Termin eingetragen: {hint.Start.ToString(hint.HasTime ? "dddd, dd.MM. HH:mm" : "dddd, dd.MM.", De)}."; Show("posteingang");
+                    };
+                    hw.Children.Add(hb);
+                }
+                read.Children.Add(new Border { Background = Brush.Parse("#222F86F6"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6), Child = new StackPanel { Spacing = 4, Children = { P("Termin in dieser Nachricht gefunden – bitte prüfen:", Text, 12), hw } } });
+            }
             read.Children.Add(new SelectableTextBlock { Name = "inbox-body", Text = m.Body, Foreground = Text, TextWrapping = TextWrapping.Wrap, FontSize = 13 });
-            var reply = new Button { Name = "inbox-reply", Content = "Antworten" };
+            var reply = new Button { Name = "inbox-reply", Content = "Antworten", Background = Accent };
             var from = System.Text.RegularExpressions.Regex.Match(m.From, @"<([^>]+)>") is { Success: true } mm ? mm.Groups[1].Value : m.From;
-            reply.Click += (_, _) => { _sendDraft = new MailDraft(from, m.Subject.StartsWith("Re:", StringComparison.OrdinalIgnoreCase) ? m.Subject : "Re: " + m.Subject, "\n\n> " + m.Body.Replace("\n", "\n> ")); Show("posteingang"); };
+            reply.Click += (_, _) => { _sendDraft = new MailDraft(from, m.Subject.StartsWith("Re:", StringComparison.OrdinalIgnoreCase) ? m.Subject : "Re: " + m.Subject, "\n\n> " + m.Body.Replace("\n", "\n> ")); _composeOpen = true; Show("posteingang"); };
             read.Children.Add(reply);
         }
-        // Schreiben mit Bestätigung
-        var to = new TextBox { Name = "send-to", Text = _sendDraft.To, PlaceholderText = "An" };
-        var subj = new TextBox { Name = "send-subject", Text = _sendDraft.Subject, PlaceholderText = "Betreff" };
-        var body = new TextBox { Name = "send-body", Text = _sendDraft.Body, PlaceholderText = "Nachricht", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 90 };
-        var send = new Button { Name = "send-ask", Content = "Senden …", Background = Accent, IsEnabled = a is not null };
-        send.Click += (_, _) => { AskSend(new MailDraft(to.Text ?? "", subj.Text ?? "", body.Text ?? "")); Show("posteingang"); };
-        read.Children.Add(H("Neue Nachricht", 14)); read.Children.Add(to); read.Children.Add(subj); read.Children.Add(body); read.Children.Add(send);
-        if (SendConfirmOpen)
+        else if (_composeOpen || SendConfirmOpen)
         {
-            var yes = new Button { Name = "send-confirm-yes", Content = "Ja, jetzt senden", Background = Accent }; yes.Click += async (_, _) => { await ConfirmSend(true); Show("posteingang"); };
-            var no = new Button { Name = "send-confirm-no", Content = "Abbrechen" }; no.Click += async (_, _) => { await ConfirmSend(false); Show("posteingang"); };
-            read.Children.Add(new Border { Name = "send-confirm", Background = Brush.Parse("#33F59E0B"), CornerRadius = new CornerRadius(8), Padding = new Thickness(10), Child = new StackPanel { Spacing = 6, Children = {
-                new TextBlock { Text = $"An {_sendDraft.To}: „{_sendDraft.Subject}“ jetzt wirklich senden?", Foreground = Text, TextWrapping = TextWrapping.Wrap, FontWeight = FontWeight.SemiBold },
-                new WrapPanel { Children = { yes, new Border { Width = 6 }, no } } } } });
+            // Schreiben mit Bestätigung
+            var to = new TextBox { Name = "send-to", Text = _sendDraft.To, PlaceholderText = "An" };
+            var subj = new TextBox { Name = "send-subject", Text = _sendDraft.Subject, PlaceholderText = "Betreff" };
+            var body = new TextBox { Name = "send-body", Text = _sendDraft.Body, PlaceholderText = "Nachricht", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 180 };
+            var send = new Button { Name = "send-ask", Content = "Senden …", Background = Accent, IsEnabled = a is not null };
+            send.Click += (_, _) => { AskSend(new MailDraft(to.Text ?? "", subj.Text ?? "", body.Text ?? "")); Show("posteingang"); };
+            var cancel = new Button { Name = "send-discard", Content = "Verwerfen" };
+            cancel.Click += (_, _) => { _composeOpen = false; _sendDraft = new("", "", ""); Show("posteingang"); };
+            read.Children.Add(H("Neue Nachricht", 15)); read.Children.Add(to); read.Children.Add(subj); read.Children.Add(body);
+            read.Children.Add(new WrapPanel { Children = { send, new Border { Width = 6 }, cancel } });
+            if (SendConfirmOpen)
+            {
+                var yes = new Button { Name = "send-confirm-yes", Content = "Ja, jetzt senden", Background = Accent }; yes.Click += async (_, _) => { await ConfirmSend(true); Show("posteingang"); };
+                var no = new Button { Name = "send-confirm-no", Content = "Abbrechen" }; no.Click += async (_, _) => { await ConfirmSend(false); Show("posteingang"); };
+                read.Children.Add(new Border { Name = "send-confirm", Background = Brush.Parse("#33F59E0B"), CornerRadius = new CornerRadius(8), Padding = new Thickness(10), Child = new StackPanel { Spacing = 6, Children = {
+                    new TextBlock { Text = $"An {_sendDraft.To}: „{_sendDraft.Subject}“ jetzt wirklich senden?", Foreground = Text, TextWrapping = TextWrapping.Wrap, FontWeight = FontWeight.SemiBold },
+                    new WrapPanel { Children = { yes, new Border { Width = 6 }, no } } } } });
+            }
         }
-        sp.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { new ScrollViewer { Content = list, MaxHeight = 520 }, Pos(Card(read), 1) } });
+        else read.Children.Add(EmptyState("inbox-read-empty", "✉", "Keine Nachricht ausgewählt", "Links eine Nachricht anklicken oder eine neue schreiben."));
+        sp.Children.Add(new Grid { Name = "inbox-columns", ColumnDefinitions = new ColumnDefinitions("200,8,380,8,*"), Children = {
+            Card(folders), Pos(Card(new ScrollViewer { Content = list, MaxHeight = 560 }), 2), Pos(Card(new ScrollViewer { Content = read, MaxHeight = 560 }), 4) } });
         // O6 Regelvorschläge
         var rules = new StackPanel { Name = "inbox-rules", Spacing = 4, Children = { H("Sortier-Regeln (Vorschläge)", 14), P("Regeln sortieren nur in Trendos Ansicht, nie auf dem Server – und erst, wenn du sie freigibst.", null, 12) } };
         var suggestBtn = new Button { Name = "inbox-suggest", Content = "Vorschläge aus dem Posteingang", IsEnabled = Inbox.Count > 0 };
