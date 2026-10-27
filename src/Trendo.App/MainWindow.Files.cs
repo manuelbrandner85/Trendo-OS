@@ -62,8 +62,42 @@ public partial class MainWindow
             ToolTip.SetTip(recent, "Zuletzt benutzte Dateien");
             recent.Click += (_, _) => ShowRecent(tb, recent);
             info.Recent = recent; row.Children.Add(recent); UpdateRecent(tb);
+            // G6: Vorschau der gewählten Datei (Symbol, Name, Größe; bei Bildern ein Miniaturbild) statt nur eines langen Pfads
+            var chip = new Border { Name = $"{id}-preview", IsVisible = false, VerticalAlignment = VerticalAlignment.Bottom, Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 3), Margin = new Thickness(4, 0, 0, 0) };
+            row.Children.Add(chip);
+            tb.TextChanged += (_, _) => FilePreview(tb.Text, chip);
+            FilePreview(tb.Text, chip);
+            if (ToolTip.GetTip(tb) is null) ToolTip.SetTip(tb, "Datei auswählen oder einfach hierher ziehen");
         }
     }
+
+    /// <summary>G6: kleine Karte zur gewählten Datei. Mehrere Dateien: Anzahl. Nicht vorhanden: ausgeblendet.</summary>
+    private static void FilePreview(string? text, Border chip)
+    {
+        var paths = (text ?? "").Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(p => p.Trim('"')).Where(p => File.Exists(p) || Directory.Exists(p)).ToList();
+        if (paths.Count == 0) { chip.IsVisible = false; chip.Child = null; return; }
+        var first = paths[0]; var isDir = Directory.Exists(first);
+        var ext = Path.GetExtension(first).ToLowerInvariant();
+        var icon = isDir ? "📁" : ext switch
+        {
+            ".pdf" => "📕", ".docx" or ".odt" or ".txt" or ".md" => "📄", ".xlsx" or ".ods" or ".csv" => "📊", ".pptx" or ".odp" => "📽",
+            ".png" or ".jpg" or ".jpeg" or ".webp" or ".gif" or ".bmp" => "🖼", ".mp4" or ".mkv" or ".mov" or ".webm" or ".avi" => "🎬",
+            ".mp3" or ".wav" or ".flac" or ".ogg" or ".m4a" => "🎵", ".zip" or ".7z" or ".rar" => "🗜", ".stl" or ".obj" or ".glb" or ".gltf" or ".fbx" or ".blend" or ".3mf" => "🧊", _ => "📎",
+        };
+        var size = isDir ? "Ordner" : FileSize(new FileInfo(first).Length);
+        var line = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center };
+        if (!isDir && ext is ".png" or ".jpg" or ".jpeg" or ".webp" or ".bmp" && new FileInfo(first).Length < 30_000_000)
+            try { using var s = File.OpenRead(first); line.Children.Add(new Image { Source = Avalonia.Media.Imaging.Bitmap.DecodeToHeight(s, 28), Height = 28, MaxWidth = 48 }); }
+            catch (Exception e) when (e is IOException or ArgumentException or InvalidOperationException or NotSupportedException) { line.Children.Add(new TextBlock { Text = icon, FontSize = 16 }); }
+        else line.Children.Add(new TextBlock { Text = icon, FontSize = 16, VerticalAlignment = VerticalAlignment.Center });
+        var name = Path.GetFileName(first.TrimEnd(Path.DirectorySeparatorChar));
+        line.Children.Add(new TextBlock { Text = paths.Count > 1 ? $"{name} und {paths.Count - 1} weitere" : name, Foreground = Text, FontSize = 12, MaxWidth = 220, TextTrimming = Avalonia.Media.TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center });
+        line.Children.Add(new TextBlock { Text = size, Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center });
+        chip.Child = line; chip.IsVisible = true;
+        ToolTip.SetTip(chip, string.Join("\n", paths));
+    }
+
+    static string FileSize(long b) => b >= 1L << 30 ? $"{b / (double)(1L << 30):0.0} GB" : b >= 1L << 20 ? $"{b / (double)(1L << 20):0.0} MB" : $"{Math.Max(1, b / 1024)} KB";
 
     /// <summary>Setzt die Zeile [Feld | Knöpfe] an die Stelle des Feldes, Layout-Angaben gehen mit.</summary>
     private static bool Wrap(TextBox tb, StackPanel row)

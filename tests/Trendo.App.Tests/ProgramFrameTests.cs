@@ -64,4 +64,21 @@ public class ProgramFrameTests
         Assert.False(w.FocusMode);
         w.Close();
     }
+
+    [AvaloniaFact(DisplayName = "G6: Dateifeld zeigt Vorschau der gewählten Datei (Name, Größe)")]
+    public void File_preview()
+    {
+        var (w, _, root) = Ui.Open();
+        var f = Path.Combine(root, "urlaub.mp4"); Directory.CreateDirectory(root); File.WriteAllBytes(f, new byte[2048]);
+        w.Show("kreativ-medien"); Pump();
+        var tb = w.Find<TextBox>("media-path");
+        var chip = w.Find<Border>("media-path-preview");
+        Assert.False(chip.IsVisible);
+        tb.Text = f; Pump();
+        Assert.True(chip.IsVisible);
+        var texts = chip.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text).ToList();
+        Assert.Contains("urlaub.mp4", texts);
+        Assert.Contains("2 KB", texts);
+        w.Close();
+    }
 }

@@ -421,7 +421,9 @@ Jeder Vorschlag hat eine Nummer. **F** = Funktion, **U** = Oberfläche.
 
 ---
 
-## Teil 6: Mit Tailscale möglich (Vorschläge 27.10.2026, Antwort steht aus)
+## Teil 6: Mit Tailscale möglich (Vorschläge 27.10.2026)
+
+**Entscheidung (27.10.2026): „alles außer T11“, also T1–T10 und T12–T14 ja, T11 nein.** Umsetzung nach dem Office-Trio und CAD/3D-Druck.
 Alles läuft nur im privaten, verschlüsselten Tailscale-Netz des Nutzers. Nichts ist öffentlich, kein Port im Router.
 
 | Nr. | Vorschlag |
@@ -436,7 +438,7 @@ Alles läuft nur im privaten, verschlüsselten Tailscale-Netz des Nutzers. Nicht
 | T8 | Kameras und 3D-Druck (Bambu Lab) unterwegs ansehen |
 | T9 | Not-Stopp vom Handy |
 | T10 | Fernwartung: Leistung, Fehler, Sicherung, Updates, Neustart |
-| T11 | PC aus der Ferne aufwecken (Wake-on-LAN). Braucht ein Gerät, das zuhause immer läuft, z. B. einen Raspberry Pi. |
+| ~~T11~~ (nein) | PC aus der Ferne aufwecken (Wake-on-LAN). Braucht ein Gerät, das zuhause immer läuft, z. B. einen Raspberry Pi. |
 | T12 | Geräteverbund über Tailscale (Pi, Laptop, zweiter PC) auch außer Haus |
 | T13 | HTTPS mit eigener Tailscale-Adresse; Trendo als App auf dem Startbildschirm |
 | T14 | Ordner oder Funktionen mit der Familie teilen (eigene Tailscale-Konten) |
