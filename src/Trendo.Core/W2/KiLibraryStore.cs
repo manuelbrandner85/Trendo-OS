@@ -28,7 +28,7 @@ public sealed class KiLibraryStore(string toolsRoot)
         m.Runtime != KiRuntime.Ollama && (m.Files.Count == 0 ? RuntimeReady(m.Runtime) : m.Files.All(f => new FileInfo(ModelFile(m, f)) is { Exists: true } fi && fi.Length == f.Bytes));
 
     /// <summary>Heruntergeladenes Laufzeit-ZIP prüfen (Größe, SHA-256) und sicher entpacken.</summary>
-    public void InstallRuntime(KiRuntime r, string zip, AuditLog? audit = null)
+    public void InstallRuntime(KiRuntime r, string zip, AuditLog? audit = null, Action<string, string>? extract7z = null)
     {
         var info = KiLibrary.RuntimeInfo(r);
         if (info.FromVollpaket) throw new InvalidOperationException($"{info.Name} kommt aus dem Vollpaket.");
@@ -40,7 +40,17 @@ public sealed class KiLibraryStore(string toolsRoot)
         Directory.CreateDirectory(tmp);
         try
         {
-            GitHubApps.ExtractSafe(zip, tmp);
+            if (info.Is7z)
+            {
+                if (extract7z is null) throw new InvalidOperationException("Zum Entpacken wird 7-Zip aus dem Vollpaket gebraucht.");
+                extract7z(zip, tmp);
+                // Wie bei ZIP: nichts darf außerhalb landen oder auf fremde Orte verweisen
+                var rootFull = Path.GetFullPath(tmp).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+                foreach (var e in new DirectoryInfo(tmp).EnumerateFileSystemInfos("*", new EnumerationOptions { RecurseSubdirectories = true, AttributesToSkip = 0 }))
+                    if (e.Attributes.HasFlag(FileAttributes.ReparsePoint) || !Path.GetFullPath(e.FullName).StartsWith(rootFull, StringComparison.OrdinalIgnoreCase))
+                        throw new InvalidOperationException("Unsicherer Eintrag im Paket: " + e.Name);
+            }
+            else GitHubApps.ExtractSafe(zip, tmp);
             if (!File.Exists(Path.Combine(tmp, info.Exe.Replace('/', Path.DirectorySeparatorChar))))
             {
                 // Manche ZIPs haben einen Oberordner: dann diesen nehmen

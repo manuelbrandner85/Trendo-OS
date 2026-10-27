@@ -123,8 +123,14 @@ public sealed class SystemMetrics
         {
             using var p = Process.Start(new ProcessStartInfo(exe, "--query-gpu=utilization.gpu --format=csv,noheader,nounits")
             { RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true })!;
-            var o = p.StandardOutput.ReadToEnd(); p.WaitForExit(2000);
-            _gpu = double.TryParse(o.Split('\n')[0].Trim(), out var v) ? v : null; _gpuSrc = "nvidia-smi";
+            // Erst mit Zeitlimit warten, dann lesen: ein hängendes nvidia-smi (Treiber unter Last) darf die Oberfläche nie blockieren
+            var read = p.StandardOutput.ReadToEndAsync();
+            if (!p.WaitForExit(2000) || !read.Wait(500))
+            {
+                try { p.Kill(true); } catch (InvalidOperationException) { }
+                _gpu = null; _gpuSrc = "Messung zu langsam"; return null;
+            }
+            _gpu = double.TryParse(read.Result.Split('\n')[0].Trim(), out var v) ? v : null; _gpuSrc = "nvidia-smi";
         }
         catch { _gpu = null; _gpuSrc = "Messung fehlgeschlagen"; }
         return _gpu;

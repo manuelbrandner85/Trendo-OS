@@ -61,7 +61,7 @@ public partial class MainWindow
         {
             var ready = rt.Id == KiRuntime.Ollama ? ol.Up : store.RuntimeReady(rt.Id);
             sp.Children.Add(P($"Läuft mit {rt.Name} ({rt.License}): {rt.WhatItDoes} " +
-                (ready ? "✓ eingerichtet." : rt.FromVollpaket ? (rt.Id == KiRuntime.Ollama ? "Startet automatisch, sobald die Trendo KI läuft." : "Kommt aus dem Vollpaket.") : $"Wird beim ersten Laden mit eingerichtet ({rt.Bytes / (1 << 20)} MB, offizielle GitHub-Seite {rt.Repo})."), null, 11));
+                (ready ? "✓ eingerichtet." : rt.FromVollpaket ? (rt.Id == KiRuntime.Ollama ? "Startet automatisch, sobald die Trendo KI läuft." : "Kommt aus dem Vollpaket.") : $"Wird beim ersten Laden mit eingerichtet ({rt.Bytes / (1 << 20)} MB, {(rt.Url is null ? $"offizielle GitHub-Seite {rt.Repo}" : $"offizielles Paket {new Uri(rt.Url).Host}, verlinkt auf github.com/{rt.Repo}")})."), null, 11));
         }
         foreach (var m in KiLibrary.OfKind(_kiLibKind))
         {
@@ -143,7 +143,8 @@ public partial class MainWindow
             {
                 SetupOverlayProgress(step, steps, $"{rt.Name} wird geladen …");
                 var (zip, _) = await KiDownload(rt.DownloadUrl, rt.Asset, rt.Bytes, step, steps);
-                try { await Task.Run(() => store.InstallRuntime(m.Runtime, zip, _core.Audit)); } finally { TryDelete(zip); }
+                SetupOverlayProgress(step, steps, $"{rt.Name} wird entpackt …");
+                try { await Task.Run(() => store.InstallRuntime(m.Runtime, zip, _core.Audit, Extract7z)); } finally { TryDelete(zip); }
                 step++;
             }
             else if (rt.FromVollpaket && !store.RuntimeReady(m.Runtime)) throw new InvalidOperationException($"{rt.Name} fehlt noch – bitte unter „Programme“ aus dem Vollpaket einrichten.");
@@ -173,7 +174,17 @@ public partial class MainWindow
     /// <summary>Erlaubte Download-Server: GitHub und Hugging Face (inkl. deren Download-Spiegel), nur HTTPS auf Port 443.</summary>
     internal static bool KiHostAllowed(Uri u) =>
         u.Scheme == Uri.UriSchemeHttps && u.Port == 443 &&
-        (GitHubHosts.Contains(u.Host, StringComparer.OrdinalIgnoreCase) || u.Host.Equals("huggingface.co", StringComparison.OrdinalIgnoreCase) || u.Host.EndsWith(".hf.co", StringComparison.OrdinalIgnoreCase));
+        (GitHubHosts.Contains(u.Host, StringComparer.OrdinalIgnoreCase) || u.Host.Equals("huggingface.co", StringComparison.OrdinalIgnoreCase) || u.Host.EndsWith(".hf.co", StringComparison.OrdinalIgnoreCase)
+         || u.Host.Equals("files.acemusic.ai", StringComparison.OrdinalIgnoreCase)); // offizielles ACE-Step-Paket, im README des Projekts verlinkt
+
+    /// <summary>7z mit dem mitgelieferten 7-Zip entpacken (ohne Shell, Ausgabe nur in den Zielordner).</summary>
+    private void Extract7z(string archive, string target)
+    {
+        var seven = Path.Combine(_deps.ToolsRoot, "7zip", "7z.exe");
+        if (!File.Exists(seven)) throw new InvalidOperationException("7-Zip fehlt – bitte unter „Programme“ aus dem Vollpaket einrichten.");
+        var r = Cli.Run(seven, ["x", archive, "-o" + target, "-y", "-bso0", "-bsp0", "-snl-"], timeoutMs: 3_600_000);
+        if (!r.Ok) throw new InvalidOperationException("Entpacken fehlgeschlagen: " + Short(r.Err.Length > 0 ? r.Err : r.Out));
+    }
 
     /// <summary>Lädt eine Datei mit eigenen Weiterleitungen (nur erlaubte Server), Größenkontrolle und Fortschritt. Hugging Face nennt bei großen
     /// Dateien die SHA-256 im Kopf „X-Linked-Etag“ – die wird zurückgegeben und danach geprüft.</summary>
@@ -305,6 +316,9 @@ public partial class MainWindow
                 sp.Children.Add(go);
                 break;
             }
+            case KiKind.Musik:
+                sp.Children.Add(MusicTryPanel(m, status));
+                break;
             case KiKind.TextZuSprache:
             {
                 var p = Prompt("Text zum Vorlesen eingeben");
@@ -323,6 +337,11 @@ public partial class MainWindow
         sp.Children.Add(status);
         if (_kiResult is { } res && File.Exists(res))
         {
+            if (res.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase) || res.EndsWith(".wav", StringComparison.OrdinalIgnoreCase))
+            {
+                var play = new Button { Name = "kilib-play-result", Content = "▶ Anhören", Background = Accent }; play.Click += (_, _) => Launch(res);
+                sp.Children.Add(play);
+            }
             if (res.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
                 try { sp.Children.Add(new Image { Name = "kilib-image-result", Source = new Bitmap(res), MaxHeight = 360, HorizontalAlignment = HorizontalAlignment.Left }); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException) { }
             else if (res.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))

@@ -95,7 +95,9 @@ public class CORE09_CameraRobotUi
         w.Find<Button>("cam-live").Press();
         await Until(() => !w.Bench.Live);
         w.Find<Button>("cam-snap").Press();
-        await Until(() => Directory.Exists(Path.Combine(root, "fach", "roboter")) && Directory.GetFiles(Path.Combine(root, "fach", "roboter"), "foto-*").Length > 0);
+        // Die Datei existiert schon während des Schreibens; fertig ist das Foto erst, wenn der Status es meldet
+        await Until(() => (w.Find<TextBlock>("cam-status").Text ?? "").Contains("Foto gespeichert"));
+        Assert.NotEmpty(Directory.GetFiles(Path.Combine(root, "fach", "roboter"), "foto-*"));
         Assert.Contains("Foto gespeichert", w.Find<TextBlock>("cam-status").Text);
         w.Find<Button>("cam-rec").Press();
         Assert.Contains("Aufnahme läuft", w.Find<TextBlock>("cam-status").Text);
@@ -113,6 +115,7 @@ public class CORE09_CameraRobotUi
         Assert.Contains("10.0.0.8", w.Find<Button>("cam-pick-1").Content?.ToString());
         w.Find<Button>("cam-add").Press();
         Assert.Contains("schon in der Liste", w.Find<TextBlock>("cam-status").Text);
+        w.Close(); // Fenster mit Kamera nicht offen lassen – sonst läuft es in späteren Tests weiter
     }
 
     [AvaloniaFact(DisplayName = "CORE-09 UI: ONVIF trägt eine Kamera ein, FFmpeg wird geprüft")]

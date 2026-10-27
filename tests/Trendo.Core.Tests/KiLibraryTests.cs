@@ -32,7 +32,9 @@ public class KiLibraryTests
         foreach (var r in KiLibrary.Runtimes.Where(r => !r.FromVollpaket))
         {
             Assert.Matches("^[0-9a-f]{64}$", r.Sha256);
-            Assert.StartsWith("https://github.com/" + r.Repo + "/releases/download/", r.DownloadUrl);
+            if (r.Url is null) Assert.StartsWith("https://github.com/" + r.Repo + "/releases/download/", r.DownloadUrl);
+            else Assert.Equal("https://files.acemusic.ai/acemusic/win/ACE-Step-1.5.7z", r.DownloadUrl); // einzige Ausnahme: im offiziellen README verlinkt
+            Assert.True(r.Bytes > 0 && r.Exe.Length > 0, r.Name);
         }
     }
 

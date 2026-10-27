@@ -54,5 +54,5 @@
 - Piper für Vorlesen
 - Real-ESRGAN für Bilder verbessern
 
-Offen ist die Musik-KI ACE-Step (Stufe 2, braucht Python mit PyTorch).
+Musik-KI: ACE-Step 1.5 ist eingebaut (Stufe 2, offizielles Komplettpaket mit lokalem Server). Der Probelauf am PC steht noch aus.
 - **KI-Dienste mit API-Schlüssel:** Die Seite „Dienste & Schlüssel“ listet jeden Anbieter. „Schlüssel holen“ öffnet die offizielle Seite des Anbieters, der Schlüssel wird in Trendo eingetragen, geprüft und im Windows-Anmeldeinformationsspeicher abgelegt. Kostenpflichtige Dienste bleiben freiwillig, Trendo funktioniert immer ohne sie.

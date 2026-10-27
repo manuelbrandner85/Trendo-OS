@@ -43,7 +43,10 @@ public class Sys02_Alltag_Ui
 
         w.Show("alltag-zeit");
         w.Find<TextBox>("rem-when").Text = "0"; w.Find<TextBox>("rem-text").Text = "Pause machen"; w.Find<Button>("rem-add").Press();
-        Assert.Single(w.CheckReminders(DateTime.Now));
+        // Der 1-Sekunden-Timer kann die fällige Erinnerung schon abgeholt haben (unter Last); gemeldet wird sie in beiden Fällen
+        var due = w.CheckReminders(DateTime.Now);
+        if (due.Count == 0) Assert.Contains("Pause machen", File.ReadAllText(Path.Combine(root, "audit", "audit.jsonl")));
+        else Assert.Single(due);
         w.Find<Button>("focus-25").Press(); Assert.NotNull(w.Focus.Until(DateTime.Now)); w.Find<Button>("focus-stop").Press(); Assert.Null(w.Focus.Until(DateTime.Now));
 
         w.Show("alltag-helfer");

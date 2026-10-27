@@ -4,14 +4,17 @@ namespace Trendo.Core;
 public enum KiKind { Chat, Denken, Code, BildVerstehen, Uebersetzen, Wissen, BildErzeugen, BildVerbessern, Video, SpracheZuText, TextZuSprache, Musik }
 
 /// <summary>Womit Trendo ein Modell ausführt. Jede Laufzeit ist ein freies Programm, das Trendo selbst in „TrendoWerkzeuge“ einrichtet.</summary>
-public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python }
+public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep }
 
 /// <summary>Eine Laufzeit: offizielles GitHub-Projekt mit fest gewählter Veröffentlichung (Tag, Datei, SHA-256, Größe), Hauptprogramm im ZIP.
 /// Ollama und Python kommen aus dem Vollpaket (<see cref="Tag"/> leer).</summary>
-public sealed record KiRuntimeInfo(KiRuntime Id, string Name, string Repo, string License, string WhatItDoes, string Tag, string Asset, string Sha256, long Bytes, string Exe)
+public sealed record KiRuntimeInfo(KiRuntime Id, string Name, string Repo, string License, string WhatItDoes, string Tag, string Asset, string Sha256, long Bytes, string Exe, string? Url = null)
 {
     public bool FromVollpaket => Tag.Length == 0;
-    public string DownloadUrl => $"https://github.com/{Repo}/releases/download/{Tag}/{Asset}";
+    /// <summary>GitHub-Veröffentlichung, oder die im offiziellen README des Projekts verlinkte Adresse (<see cref="Url"/>).</summary>
+    public string DownloadUrl => Url ?? $"https://github.com/{Repo}/releases/download/{Tag}/{Asset}";
+    /// <summary>7z-Pakete entpackt Trendo mit dem mitgelieferten 7-Zip, ZIP selbst.</summary>
+    public bool Is7z => Asset.EndsWith(".7z", StringComparison.OrdinalIgnoreCase);
 }
 
 /// <summary>Eine herunterladbare Datei eines Modells (offizielle Quelle, Größe in Bytes laut Anbieter).</summary>
@@ -58,6 +61,10 @@ public static class KiLibrary
         new(KiRuntime.RealEsrgan, "Real-ESRGAN (ncnn)", "xinntao/Real-ESRGAN", "BSD-3-Clause", "Vergrößert Bilder 4-fach mit KI, Modelle sind enthalten.",
             "v0.2.5.0", "realesrgan-ncnn-vulkan-20220424-windows.zip", "abc02804e17982a3be33675e4d471e91ea374e65b70167abc09e31acb412802d", 45_474_481, "realesrgan-ncnn-vulkan.exe"),
         new(KiRuntime.Python, "Python", "python/cpython", "PSF-2.0", "Laufzeit für große Modelle wie Musik-KI (im Vollpaket).", "", "", "", 0, "python/python.exe"),
+        // Offizielles Windows-Komplettpaket von ACE-Step 1.5 (verlinkt im README von github.com/ace-step/ACE-Step-1.5): Python, PyTorch und CUDA sind dabei,
+        // die Modelle (ca. 10 GB) lädt ACE-Step beim ersten Start selbst von Hugging Face. Trendo spricht mit dem lokalen Server über die REST-API.
+        new(KiRuntime.AceStep, "ACE-Step 1.5", "ace-step/ACE-Step-1.5", "MIT", "Erzeugt ganze Lieder mit Gesang aus Stil und Liedtext, auf deinem PC.",
+            "portable-2026-02-17", "ACE-Step-1.5.7z", "25402adb2a852a8792d0b562af7e9c7c5f84f35503542e0586fb6c033193e486", 2_403_883_448, "python_embeded/python.exe", "https://files.acemusic.ai/acemusic/win/ACE-Step-1.5.7z"),
     ];
 
     const string Hf = "https://huggingface.co/";
@@ -126,8 +133,9 @@ public static class KiLibrary
             [new(Hf + "rhasspy/piper-voices/resolve/main/de/de_DE/eva_k/x_low/de_DE-eva_k-x_low.onnx", "de_DE-eva_k-x_low.onnx", 20_628_813),
              new(Hf + "rhasspy/piper-voices/resolve/main/de/de_DE/eva_k/x_low/de_DE-eva_k-x_low.onnx.json", "de_DE-eva_k-x_low.onnx.json", 4_158)]),
         // Musik
-        new("ace-step", KiKind.Musik, KiRuntime.Python, "ACE-Step (Musik aus Text)", "", 8.0, 16, "Apache-2.0",
-            "Lieder mit Gesang aus Stil und Liedtext", "Stil und Liedtext eingeben, „Musik erzeugen“. Braucht eine Grafikkarte mit mind. 8 GB.", [], Ready: false),
+        new("ace-step", KiKind.Musik, KiRuntime.AceStep, "ACE-Step 1.5 (Lieder mit Gesang)", "", 12.0, 16, "MIT",
+            "ganze Lieder mit Gesang, 10 s bis 10 min, viele Stile und Sprachen",
+            "Stil beschreiben (z. B. „fröhlicher Pop mit Klavier“), auf Wunsch Liedtext eingeben, Länge wählen, „Musik erzeugen“. Beim ersten Mal lädt ACE-Step seine Modelle (ca. 10 GB). Am besten mit einer NVIDIA-Grafikkarte ab 6 GB.", []),
     ];
 
     public static IEnumerable<KiLibraryModel> OfKind(KiKind k) => Models.Where(m => m.Kind == k);
