@@ -165,7 +165,23 @@ public static class CadExport
                 if (!edges.TryGetValue(key, out var e)) edges[key] = e = (a, b, []);
                 e.Normals.Add(p.Plane.Normal);
             }
-        return edges.Values.Where(e => e.Normals.Count == 1 || e.Normals.Any(n => Vec3.Dot(n, e.Normals[0]) < 0.97)).Select(e => (e.A, e.B)).ToList();
+        // Kanten mit nur einer Fläche: auf einem geschlossenen Körper meist „T-Stellen“ mitten in einer ebenen Fläche – dann keine echte Kante
+        var byPlane = s.Polys.GroupBy(p => ((long)Math.Round(p.Plane.Normal.X * 1e3), (long)Math.Round(p.Plane.Normal.Y * 1e3), (long)Math.Round(p.Plane.Normal.Z * 1e3), (long)Math.Round(p.Plane.W * 1e2))).ToDictionary(g => g.Key, g => g.ToList());
+        bool Inner(Vec3 a, Vec3 b, Vec3 n)
+        {
+            var m = (a + b) * 0.5; var w = Vec3.Dot(n, m);
+            if (!byPlane.TryGetValue(((long)Math.Round(n.X * 1e3), (long)Math.Round(n.Y * 1e3), (long)Math.Round(n.Z * 1e3), (long)Math.Round(w * 1e2)), out var same)) return false;
+            var hits = 0;
+            foreach (var p in same)
+                for (var i = 0; i < p.Verts.Count; i++)
+                {
+                    var pa = p.Verts[i]; var pb = p.Verts[(i + 1) % p.Verts.Count]; var d = pb - pa; var l2 = Vec3.Dot(d, d); if (l2 < 1e-12) continue;
+                    var tt = Math.Clamp(Vec3.Dot(m - pa, d) / l2, 0, 1); var off = pa + d * tt - m;
+                    if (Vec3.Dot(off, off) < 1e-8 && ++hits >= 2) return true; // die eigene Fläche und eine Nachbarfläche derselben Ebene
+                }
+            return false;
+        }
+        return edges.Values.Where(e => e.Normals.Count == 1 ? !Inner(e.A, e.B, e.Normals[0]) : e.Normals.Any(n => Vec3.Dot(n, e.Normals[0]) < 0.97)).Select(e => (e.A, e.B)).ToList();
     }
 
     /// <summary>Technische Zeichnung A4 quer: Vorderansicht, Draufsicht, Seitenansicht und Schrägbild, Hauptmaße, Schriftfeld.</summary>
