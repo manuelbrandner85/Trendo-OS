@@ -95,7 +95,7 @@ public partial class MainWindow
         return Page(title, sp);
     }
 
-    private Border Card(Control child) => new() { Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 8), Child = child };
+    private Border Card(Control child) => new() { Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(14, 10), Child = child, BoxShadow = CardShadow, Margin = new Thickness(0, 0, 0, 2) };
 
     private Grid Row(Control left, Control right) => new() { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { left, Pos(right, 1) } };
 

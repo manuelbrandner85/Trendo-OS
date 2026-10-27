@@ -15,12 +15,17 @@ public sealed class BarChart : Control
     public override void Render(DrawingContext g)
     {
         var b = Bounds; if (Series.Count == 0 || Labels.Length == 0) return;
-        var max = Math.Max(1e-9, Series.SelectMany(s => s.Values).DefaultIfEmpty(0).Max());
+        var tf = new Typeface("Segoe UI, Inter, DejaVu Sans");
+        var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+        var max = Series.SelectMany(s => s.Values).DefaultIfEmpty(0).Max();
+        if (max <= 0)
+        {
+            var empty = new FormattedText("Noch keine Werte für dieses Jahr", de, FlowDirection.LeftToRight, tf, 13, Foreground);
+            g.DrawText(empty, new Point((b.Width - empty.Width) / 2, (b.Height - empty.Height) / 2)); return;
+        }
         var step = Nice(max / 4); max = Math.Ceiling(max / step) * step;
         const double left = 52, bottom = 22, top = 8;
         double W = Math.Max(1, b.Width - left - 6), H = Math.Max(1, b.Height - bottom - top);
-        var tf = new Typeface("Segoe UI, Inter, DejaVu Sans");
-        var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
         for (var v = 0.0; v <= max + 1e-9; v += step)
         {
             var y = top + H - v / max * H;

@@ -59,7 +59,7 @@ public partial class MainWindow
 
     private Control KiPage(string title, Control body) => Page(title, new StackPanel { Spacing = 8, Children = { KiNav(), body } });
 
-    private static Border WCard(Control child) => new() { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8), Child = child };
+    private static Border WCard(Control child) => new() { Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 8), Child = child, BoxShadow = CardShadow };
 
     // ---------- CORE-02: Fragen an die KI auf diesem PC ----------
     private readonly List<KiMessage> _chat = [];

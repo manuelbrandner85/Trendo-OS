@@ -49,7 +49,21 @@ public sealed partial class MainWindow
                 Edge = Brush.Parse("#3355A8FF"); Muted = Brush.Parse("#9DB0CF"); Text = Brush.Parse("#EEF3FB"); break;
         }
         Accent = Brush.Parse(s.Theme == "kontrast" ? "#FFD400" : AccentChoices.Any(a => a.Id == s.EffectiveAccent(DateTime.Now)) ? s.EffectiveAccent(DateTime.Now) : "#2F86F6");
+        // Vorgabe 27.10.2026: hochwertig statt flach – Flächen mit Verlauf, Kanten mit Lichtkante oben, weiche Schatten (nicht im Kontrast-Design)
+        if (s.Theme == "kontrast") { EdgeLit = Edge; CardShadow = default; return; }
+        var light = s.Theme == "hell";
+        TileBg = Vertical(light ? "#F7FFFFFF" : "#B2213A6B", light ? "#E0E9F0FA" : "#A00F1C3A");
+        EdgeLit = Vertical(light ? "#FFFFFFFF" : "#5590C2FF", light ? "#40335C99" : "#2255A8FF");
+        CardShadow = BoxShadows.Parse(light ? "0 8 22 -10 #40223355" : "0 10 26 -10 #99000614");
     }
+
+    private static IBrush EdgeLit = new SolidColorBrush(Color.Parse("#3355A8FF"));
+    private static BoxShadows CardShadow = BoxShadows.Parse("0 10 26 -10 #99000614");
+    private static LinearGradientBrush Vertical(string top, string bottom) => new()
+    {
+        StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
+        GradientStops = { new GradientStop(Color.Parse(top), 0), new GradientStop(Color.Parse(bottom), 1) },
+    };
 
     private static Bitmap? LoadWallpaper(string name)
     {
