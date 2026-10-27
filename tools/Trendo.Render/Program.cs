@@ -98,7 +98,7 @@ else if (shot == "fenster")
 }
 else if (shot == "seite")
 {
-    var page = args.Length > 3 ? args[3] : "studios";
+    var page = Environment.GetEnvironmentVariable("TRENDO_STUDIO") is { Length: > 0 } sid ? win.PageForStudio(sid) ?? "studios" : args.Length > 3 ? args[3] : "studios"; // Studio per Katalog-Id
     win.Show(page);
     if (win.Windows.Active is { Maximized: false } pageWin) win.Windows.ToggleMaximize(pageWin.Id);
     win.Show(page);

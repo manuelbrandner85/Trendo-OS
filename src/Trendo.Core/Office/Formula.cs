@@ -141,6 +141,8 @@ public static class Formula
         a = (r - 1, c, ar, ac); return true;
     }
 
+    static bool? BoolFn(string name) => name.ToUpperInvariant() switch { "TRUE" or "WAHR" => true, "FALSE" or "FALSCH" => false, _ => null };
+
     // ---------- Lesen (Vorrang wie Calc/Excel) ----------
     public static Node Parse(string formula, Dialect d)
     {
@@ -189,6 +191,7 @@ public static class Formula
                             break;
                         }
                     if (Next().Kind != T.RParen) throw new FormulaError("#WERT!");
+                    if (args.Count == 0 && BoolFn(t.Text) is bool bv) return new Bool(bv); // LibreOffice schreibt FALSE() / TRUE()
                     return new Call(Canonical(t.Text), args);
                 }
                 default: throw new FormulaError("#WERT!");
@@ -221,6 +224,27 @@ public static class Formula
     /// <summary>Aus XLSX (englisch, ohne „=“) → deutsch.</summary>
     public static string FromExcel(string en) => Rewrite(en, Dialect.En, Dialect.De, null);
 
+    /// <summary>Wie <see cref="ToExcel"/>, aber eine nicht lesbare Formel bleibt unverändert (sie zeigt dann ihren Fehler).</summary>
+    public static string ToExcelSafe(string de) { try { return ToExcel(de); } catch (FormulaError) { return de; } }
+    public static string FromExcelSafe(string en) { try { return FromExcel(en); } catch (FormulaError) { return en; } }
+
+    /// <summary>Fehlerwert deutsch → wie in XLSX gespeichert (#BEZUG! → #REF! …). #ZIRKEL! gibt es dort nicht und wird #REF!.</summary>
+    public static string ErrorToExcel(string de) => de == "#ZIRKEL!" ? "#REF!" : ErrDeEn.GetValueOrDefault(de, de);
+
+    /// <summary>ODS-Formel („of:=SUM([.A1:.A3];[Kosten.B2])“) → deutsch („SUMME(A1:A3;Kosten!B2)“). Null, wenn sie nicht lesbar ist.</summary>
+    public static string? FromOds(string ods)
+    {
+        var s = ods.StartsWith("of:", StringComparison.OrdinalIgnoreCase) ? ods[3..] : ods;
+        if (s.StartsWith('=')) s = s[1..];
+        static string Sheet(string? name) => string.IsNullOrEmpty(name) ? "" : (name.Trim('$').Trim('\'') is var n && n.Any(ch => !char.IsLetterOrDigit(ch)) ? "'" + n.Replace("'", "''") + "'" : n) + "!";
+        s = System.Text.RegularExpressions.Regex.Replace(s, @"\[(\$?'?[^\]\.']*'?)?\.(\$?[A-Za-z]{1,3}\$?\d+)(?::(\$?'?[^\]\.']*'?)?\.(\$?[A-Za-z]{1,3}\$?\d+))?\]",
+            m => Sheet(m.Groups[1].Value) + m.Groups[2].Value + (m.Groups[4].Success ? ":" + m.Groups[4].Value : ""));
+        // ODF trennt Argumente mit „;“ und schreibt Dezimalpunkte – außerhalb von Texten auf die XLSX-Schreibweise bringen
+        var sb = new StringBuilder(); var inStr = false;
+        foreach (var ch in s) { if (ch == '"') inStr = !inStr; sb.Append(!inStr && ch == ';' ? ',' : ch); }
+        try { return FromExcel(sb.ToString()); } catch (FormulaError) { return null; }
+    }
+
     /// <summary>Formel (mit „=“) nach Einfügen/Löschen von Zeilen oder Spalten anpassen. Bezüge in gelöschte Zellen werden #BEZUG!.
     /// <paramref name="onlyRow"/>: nur Bezüge auf genau diese Zeile verschieben (beim Sortieren).</summary>
     public static string ShiftRefs(string raw, string sheet, int rowAt, int rowDelta, int colAt, int colDelta, int? onlyRow = null)
@@ -236,9 +260,16 @@ public static class Formula
     {
         var toks = Lex(s, from);
         var sb = new StringBuilder(); var pos = 0;
-        foreach (var t in toks)
+        for (var k = 0; k < toks.Count; k++)
         {
+            var t = toks[k];
             if (t.Kind == T.End) break;
+            if (t.Kind == T.Func && BoolFn(t.Text) is bool bv && k + 2 < toks.Count && toks[k + 1].Kind == T.LParen && toks[k + 2].Kind == T.RParen)
+            {
+                sb.Append(s, pos, t.Start - pos);
+                sb.Append(to == Dialect.De ? (bv ? "WAHR" : "FALSCH") : (bv ? "TRUE" : "FALSE"));
+                pos = toks[k + 2].Start + 1; k += 2; continue;
+            }
             sb.Append(s, pos, t.Start - pos);
             sb.Append(t.Kind switch
             {
