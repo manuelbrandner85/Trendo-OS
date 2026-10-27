@@ -6,7 +6,7 @@ namespace Trendo.App;
 /// <summary>SPEC-08: Mode & Produkt.</summary>
 public partial class MainWindow
 {
-    private void InitSpec08() => RegisterTab(FachTabs, "mode", "Mode & Produkt", "SPEC-08", FashionView, "mode", "kleidung", "größe", "schuhgröße", "nähen", "stoff", "produkt", "sku", "variante", "kalkulation", "preis");
+    private void InitSpec08() { InitProgMode(); RegisterTab(FachTabs, "mode", "Rechner", "SPEC-08", FashionView, "mode", "kleidung", "größe", "schuhgröße", "nähen", "stoff", "produkt", "sku", "variante", "kalkulation", "preis"); }
 
     private Control FashionView()
     {

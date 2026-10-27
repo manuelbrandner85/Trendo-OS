@@ -45,7 +45,7 @@ public partial class MainWindow
 
     private void RegisterTab(List<(string, string, string)> tabs, string key, string label, string module, Func<Control> view, params string[] words)
     {
-        if (ReferenceEquals(tabs, FachTabs) && StudioCatalog.For(module) is { } info) label = info.Name; // ein Reiter je Studio: alltagsnaher Name
+        if (ReferenceEquals(tabs, FachTabs) && StudioCatalog.For(module) is { } info && !tabs.Any(t => t.Item3 == module)) label = info.Name; // ein Reiter je Studio: alltagsnaher Name; weitere Reiter desselben Studios behalten ihren Namen (T-0231)
         if (!tabs.Any(t => t.Item1 == key)) tabs.Add((key, label, module));
         // Ein Fenster je Studio, nicht je Welle: Reiter desselben Moduls teilen sich das Fenster, andere Studios nicht.
         string group = key;

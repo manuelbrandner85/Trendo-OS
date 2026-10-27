@@ -136,7 +136,7 @@ public class SPEC08_Ui
     public void Fashion()
     {
         var (w, _, root) = Ui.Open();
-        w.Show(MainWindow.StudioPages["SPEC-08"]);
+        w.Show("mode"); // T-0231: das Studio startet als Programm, die Rechner liegen im Reiter „Rechner“
         Assert.Contains("EU 40", W6Ui.Run(w, "fa-body"));
         Assert.Contains("UK 8", W6Ui.Run(w, "fa-shoe"));
         Assert.Contains("EU 42", W6Ui.Run(w, "fa-shoe", ("eu", "26,5 cm")));
