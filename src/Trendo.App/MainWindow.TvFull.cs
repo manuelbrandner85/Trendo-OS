@@ -44,12 +44,14 @@ public partial class MainWindow
             WindowState = WindowState.FullScreen;
             TvShowBar();
             Focus();
+            TvWatchStart();
             _core.Audit.Append("app", "tv.fullscreen", "an");
         }
         else
         {
             if (!TvIsFullscreen) return;
             _tvFullHide?.Stop();
+            TvWatchStop();
             _tvFullLayer!.Children.Clear();
             _tvFullLayer.IsVisible = false;
             WindowState = _tvPrevState;
@@ -114,4 +116,84 @@ public partial class MainWindow
             e.Handled = true;
         }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
     }
+
+    // Wunsch 27.10.2026: Das Videobild (mpv) ist ein eigenes Windows-Fenster und fängt Maus und Esc ab. Deshalb im Vollbild
+    // Maus und Esc direkt bei Windows abfragen und ein kleines Fenster „Verkleinern“ zeigen, das immer über dem Bild liegt.
+    DispatcherTimer? _tvWatch;
+    PixelPoint _tvLastCursor;
+    bool _tvEscDown;
+    Window? _tvMini;
+    bool _tvMiniHooked;
+    DateTime _tvMiniUntil;
+    public bool TvMiniVisible => _tvMini is { IsVisible: true };
+
+    void TvWatchStart()
+    {
+        _tvLastCursor = CursorNow();
+        _tvEscDown = true; // eine noch gedrückte Taste vom Einschalten nicht als Esc werten
+        _tvWatch ??= new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(120) };
+        _tvWatch.Tick -= TvWatchTick; _tvWatch.Tick += TvWatchTick;
+        _tvWatch.Start();
+        TvShowMini();
+    }
+
+    void TvWatchStop() { _tvWatch?.Stop(); _tvMini?.Close(); _tvMini = null; }
+
+    void TvWatchTick(object? s, EventArgs e)
+    {
+        if (!TvIsFullscreen) { TvWatchStop(); return; }
+        var c = CursorNow();
+        if (c != _tvLastCursor) { _tvLastCursor = c; TvPointerMoved(); }
+        var esc = OperatingSystem.IsWindows() && OurWindowActive() && (GetAsyncKeyState(0x1B) & 0x8000) != 0;
+        if (esc && !_tvEscDown) { _tvEscDown = true; TvFullscreen(false); return; }
+        _tvEscDown = esc;
+        if (TvMiniVisible && DateTime.UtcNow > _tvMiniUntil) TvHideMini();
+    }
+
+    /// <summary>Maus bewegt: Steuerleiste und das kleine Fenster „Verkleinern“ für 3 Sekunden zeigen.</summary>
+    public void TvPointerMoved() { if (!TvIsFullscreen) return; TvShowBar(); TvShowMini(); }
+
+    void TvShowMini()
+    {
+        _tvMiniUntil = DateTime.UtcNow.AddSeconds(3);
+        if (_tvMini is null)
+        {
+            var btn = new Button { Name = "tv-mini-exit", Content = "⤡  Verkleinern", Foreground = Brush.Parse("#1B1406"), FontSize = 15, FontWeight = FontWeight.SemiBold, Padding = new Thickness(16, 8), CornerRadius = new CornerRadius(12),
+                Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#FFF1C870"), 0), new GradientStop(Color.Parse("#FFD4A84B"), 1) } } };
+            btn.Click += (_, _) => TvFullscreen(false);
+            if (!_tvMiniHooked) { _tvMiniHooked = true; Closed += (_, _) => { _tvWatch?.Stop(); _tvMini?.Close(); _tvMini = null; }; } // mit Trendo schließen, nicht nur verstecken
+            _tvMini = new Window
+            {
+                Title = "Verkleinern", WindowDecorations = Avalonia.Controls.WindowDecorations.None, Topmost = true, ShowInTaskbar = false, CanResize = false, SizeToContent = SizeToContent.WidthAndHeight,
+                Background = Brush.Parse("#E6081226"), TransparencyLevelHint = [WindowTransparencyLevel.Transparent], ShowActivated = false,
+                Content = new Border { Padding = new Thickness(8), CornerRadius = new CornerRadius(14), BorderBrush = Brush.Parse("#88D4A84B"), BorderThickness = new Thickness(1), Child = btn },
+            };
+        }
+        if (!_tvMini.IsVisible)
+        {
+            var screen = Screens.ScreenFromWindow(this) ?? Screens.Primary;
+            var area = screen?.Bounds ?? new PixelRect(0, 0, 1920, 1080);
+            var scale = screen?.Scaling ?? 1;
+            _tvMini.Position = new PixelPoint(area.Right - (int)(210 * scale), area.Y + (int)(24 * scale));
+            _tvMini.Show();
+        }
+    }
+
+    void TvHideMini() { if (_tvMini is { IsVisible: true }) _tvMini.Hide(); }
+
+    PixelPoint CursorNow() => OperatingSystem.IsWindows() && GetCursorPos(out var p) ? new PixelPoint(p.X, p.Y) : _tvLastCursor;
+
+    bool OurWindowActive()
+    {
+        var fg = GetForegroundWindow();
+        if (fg == IntPtr.Zero) return false;
+        GetWindowThreadProcessId(fg, out var pid);
+        return pid == (uint)Environment.ProcessId || IsActive;
+    }
+
+    [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)] struct NativePoint { public int X, Y; }
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern bool GetCursorPos(out NativePoint p);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern short GetAsyncKeyState(int key);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
+    [System.Runtime.InteropServices.DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint pid);
 }

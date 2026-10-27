@@ -47,6 +47,8 @@ public partial class MainWindow
 
     (string Title, string Sub)? DeskIconInfo(string id)
     {
+        if (id.StartsWith("app:", StringComparison.Ordinal))
+            return WebApps.Get(id[4..]) is { } wa && WebAppInstalled(wa.Id) ? (wa.Name, "App") : null;
         if (id.StartsWith("page:", StringComparison.Ordinal))
             return SystemModules.FirstOrDefault(m => "page:" + m.Key == id) is { Title: not null } m ? (m.Title, m.Sub) : null;
         if (FeaturedStudios.FirstOrDefault(f => f.Id == id) is { Id: not null } f) return (StudioCatalog.NameOf(f.Id, f.Title), f.Sub);
@@ -56,6 +58,7 @@ public partial class MainWindow
     /// <summary>Aussehen eines Symbols wie auf dem Desktop: Studios als Bildkachel (Bild, Verlauf), Module mit Farbsymbol.</summary>
     Control DeskIconFace(string id, bool label, double iconSize = 30)
     {
+        if (id.StartsWith("app:", StringComparison.Ordinal) && WebApps.Get(id[4..]) is { } wa) return WebAppFace(wa, iconSize * 1.3);
         if (id.StartsWith("page:", StringComparison.Ordinal) && SystemModules.FirstOrDefault(m => "page:" + m.Key == id) is { Key: not null } m)
             return new Border { Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#2B4C86"), 0), new GradientStop(Color.Parse("#0E1B3A"), 1) } },
                 Child = new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Spacing = 4, Children = { Chip(m.Icon, m.C1, m.C2, iconSize * 1.4, 0.58) } } };
@@ -93,12 +96,13 @@ public partial class MainWindow
             face.Children.Add(new StackPanel { VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(8, 0, 6, 6), Children = {
                 new TextBlock { Text = title, Foreground = Brushes.White, FontSize = 11.5, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
                 new TextBlock { Text = sub, Foreground = Brush.Parse("#C9D6EA"), FontSize = 9.5, TextTrimming = TextTrimming.CharacterEllipsis } } });
-            var t = new Button { Name = module ? "module-" + id[5..] : "tile-" + id, Width = 150, Height = 84, Margin = new Thickness(4), Padding = new Thickness(0),
+            var webApp = id.StartsWith("app:", StringComparison.Ordinal);
+            var t = new Button { Name = module ? "module-" + id[5..] : webApp ? "app-" + id[4..] : "tile-" + id, Width = 150, Height = 84, Margin = new Thickness(4), Padding = new Thickness(0),
                 HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Stretch, CornerRadius = new CornerRadius(10), ClipToBounds = true,
                 Background = Brushes.Transparent, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Content = face };
             Avalonia.Automation.AutomationProperties.SetName(t, title); ToolTip.SetTip(t, sub.Length > 0 ? $"{title} – {sub}" : title);
             var sid = id;
-            t.Click += async (_, _) => { if (sid.StartsWith("page:", StringComparison.Ordinal)) Show(sid[5..]); else await OpenStudio(sid, title); };
+            t.Click += async (_, _) => { if (sid.StartsWith("page:", StringComparison.Ordinal)) Show(sid[5..]); else if (sid.StartsWith("app:", StringComparison.Ordinal)) OpenWebApp(sid[4..]); else await OpenStudio(sid, title); };
             var rm = new MenuItem { Name = "desk-remove-" + id.Replace(':', '-'), Header = "Vom Desktop entfernen" };
             rm.Click += (_, _) => SetOnDesktop(sid, false);
             t.ContextMenu = new ContextMenu { Items = { rm } };

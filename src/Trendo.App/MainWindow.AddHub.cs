@@ -17,7 +17,7 @@ public partial class MainWindow
     string _hubTab = "alles", _hubQuery = "", _hubMsg = "", _hubAsk = "";
     IReadOnlyList<string> _hubOllama = [];
     DateTime _hubOllamaAt;
-    public static readonly (string Id, string Label)[] HubTabs = [("alles", "Alles"), ("programme", "Programme"), ("ki", "KI"), ("github", "GitHub"), ("erweiterungen", "Erweiterungen"), ("meine", "Meine Installationen")];
+    public static readonly (string Id, string Label)[] HubTabs = [("alles", "Alles"), ("apps", "Apps"), ("programme", "Programme"), ("ki", "KI"), ("github", "GitHub"), ("erweiterungen", "Erweiterungen"), ("meine", "Meine Installationen")];
 
     void InitAddHub()
     {
@@ -40,6 +40,8 @@ public partial class MainWindow
     public List<AddItem> AddItems()
     {
         var items = new List<AddItem>();
+        // Apps: WhatsApp, Telegram, TikTok, Instagram, Facebook (Wunsch 27.10.2026)
+        items.AddRange(WebAppItems());
         // Programme (Vollpaket und freie Programme mit offiziellem Installer)
         foreach (var c in DependencyCatalog.All.Where(c => c.Id != "model"))
         {

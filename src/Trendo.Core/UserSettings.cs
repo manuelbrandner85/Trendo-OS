@@ -71,6 +71,10 @@ public sealed class UserSettings
     public string LastSeenVersion { get; set; } = "";
     public int BackupEveryHours { get; set; } = 24;
     public bool SetupDone { get; set; }
+    /// <summary>Bis zu welchem Schritt die Ersteinrichtung erledigt ist – nach einem Neustart geht es dort weiter, statt alles neu zu fragen.</summary>
+    public int SetupStep { get; set; }
+    /// <summary>Beim Start von Trendo nach PIN/Passwort fragen (abschaltbar unter „Personen“; bei mehreren Personen wird immer gewählt).</summary>
+    public bool LockOnStart { get; set; } = true;
     /// <summary>SYS-12: Anzeigegröße (1,0 = normal; 1,15 = groß; 1,3 = sehr groß).</summary>
     /// <summary>STUDIO-LETTER-01: Absender wird für den nächsten Brief gemerkt.</summary>
     public string SenderStreet { get; set; } = "";

@@ -202,7 +202,8 @@ public partial class MainWindow
         (GitHubHosts.Contains(u.Host, StringComparer.OrdinalIgnoreCase) || u.Host.Equals("huggingface.co", StringComparison.OrdinalIgnoreCase) || u.Host.EndsWith(".hf.co", StringComparison.OrdinalIgnoreCase)
          || u.Host.Equals("files.acemusic.ai", StringComparison.OrdinalIgnoreCase) // offizielles ACE-Step-Paket, im README des Projekts verlinkt
          || KiSourceSetups.VendorHosts.Contains(u.Host, StringComparer.OrdinalIgnoreCase) // offizielle Installer der Hersteller (z. B. LM Studio)
-         || u.Host.Equals("pkgs.tailscale.com", StringComparison.OrdinalIgnoreCase)); // offizielles Tailscale-Setup für den Handy-Zugang unterwegs
+         || u.Host.Equals("pkgs.tailscale.com", StringComparison.OrdinalIgnoreCase) // offizielles Tailscale-Setup für den Handy-Zugang unterwegs
+         || WebApps.TelegramHosts.Contains(u.Host, StringComparer.OrdinalIgnoreCase)); // offizielles Telegram-Setup (telegram.org leitet auf updates.tdesktop.com)
 
     /// <summary>7z mit dem mitgelieferten 7-Zip entpacken (ohne Shell, Ausgabe nur in den Zielordner).</summary>
     private void Extract7z(string archive, string target)

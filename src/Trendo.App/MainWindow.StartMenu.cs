@@ -214,6 +214,7 @@ public partial class MainWindow
             if (rec.Count == 0) _smBody.Children.Add(P("Hier erscheint, was du zuletzt geöffnet hast.", Muted, 12));
             foreach (var k in rec) _smBody.Children.Add(SmItem("sm-recent-" + k, PageTitle(k), null, () => { Show(k); return Task.CompletedTask; }, ModuleOf(k)));
         }
+        if (_smFilter == "alle") _smBody.Children.Add(StartMenuApps());
         if (!showAz) return;
         IEnumerable<(string Id, string Name)> az = studios;
         if (_smFilter.StartsWith("area:", StringComparison.Ordinal))

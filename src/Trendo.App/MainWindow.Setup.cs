@@ -16,6 +16,7 @@ public sealed partial class MainWindow
 {
     private UserSettings _settings = new();
     private int _wizStep;
+    private bool _wizChangeLock;
     private readonly HashSet<string> _wizPacks = [];
     private string _updateInfo = "Noch nicht geprüft";
 
@@ -92,7 +93,7 @@ public sealed partial class MainWindow
         Button Next(string label = "Weiter", Func<bool>? check = null)
         {
             var b = new Button { Name = "wiz-next", Content = label, Background = Accent, Padding = new Thickness(16, 6) };
-            b.Click += (_, _) => { if (check is not null && !check()) { Show("einrichtung"); return; } _wizMsg = ""; _wizStep++; _settings.Save(_core.DataRoot); Show("einrichtung"); };
+            b.Click += (_, _) => { if (check is not null && !check()) { Show("einrichtung"); return; } _wizMsg = ""; _wizChangeLock = false; _wizStep++; _settings.SetupStep = Math.Max(_settings.SetupStep, _wizStep); _settings.Save(_core.DataRoot); Show("einrichtung"); };
             return b;
         }
         var back = new Button { Name = "wiz-back", Content = "Zurück", IsVisible = _wizStep > 0 }; back.Click += (_, _) => { _wizMsg = ""; _wizStep--; Show("einrichtung"); };
@@ -140,7 +141,16 @@ public sealed partial class MainWindow
                     rb.IsCheckedChanged += (_, _) => { if (rb.IsChecked == true && _wizLockKind != k) { _wizLockKind = k; _wizRecovery = null; Show("einrichtung"); } };
                     sp.Children.Add(rb);
                 }
-                if (_wizRecovery is { } code)
+                if (Lock.Enabled && !_wizChangeLock && _wizRecovery is null)
+                {
+                    // Schon eingerichtet (z. B. nach einem Neustart mitten in der Einrichtung): nicht noch einmal fragen
+                    sp.Children.Add(P($"✓ Deine Anmeldung ist eingerichtet ({(Lock.Current == ProfileLock.Kind.Pin ? "PIN" : "Passwort")}).", Brush.Parse("#4ADE80"), 13));
+                    var redo = new Button { Name = "wiz-lock-change", Content = "Anders festlegen" };
+                    redo.Click += (_, _) => { _wizChangeLock = true; Show("einrichtung"); };
+                    sp.Children.Add(redo);
+                    next = Next();
+                }
+                else if (_wizRecovery is { } code)
                 {
                     sp.Children.Add(H("Dein Wiederherstellungs-Code", 15));
                     sp.Children.Add(P("Falls du die PIN einmal vergisst: Mit diesem Code setzt du sie neu. Schreib ihn auf oder speichere ihn – er wird nur jetzt gezeigt. Alternativ geht es auch mit deiner Windows-Anmeldung.", Text, 12.5));

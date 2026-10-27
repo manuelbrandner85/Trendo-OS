@@ -23,7 +23,7 @@ public partial class MainWindow
     PersonStore Persons => new(PersonStore.BaseOf(_core.DataRoot));
 
     /// <summary>Beim Start: sperren, wenn eine Anmeldung eingerichtet ist oder mehrere Personen den PC nutzen.</summary>
-    public void LockIfNeeded() { if (Lock.Enabled || Persons.All().Count > 0) LockNow(); }
+    public void LockIfNeeded() { if ((Lock.Enabled && _settings.LockOnStart) || Persons.All().Count > 0) LockNow(); }
 
     public void LockNow()
     {
@@ -217,8 +217,11 @@ public partial class MainWindow
         var lockNow = new Button { Name = "person-lock-now", Content = "Jetzt sperren", IsEnabled = Lock.Enabled || Persons.All().Count > 0 };
         lockNow.Click += (_, _) => LockNow();
         var change = new Button { Name = "person-change-lock", Content = "Anmeldung ändern" };
-        change.Click += (_, _) => { _wizStep = 1; _wizRecovery = null; Show("einrichtung"); };
+        change.Click += (_, _) => { _wizStep = 1; _wizRecovery = null; _wizChangeLock = true; Show("einrichtung"); };
         mine.Children.Add(new WrapPanel { Children = { Sp(lockNow), Sp(change) } });
+        var atStart = new CheckBox { Name = "person-lock-at-start", Content = "Beim Start von Trendo nach PIN/Passwort fragen", IsChecked = _settings.LockOnStart, IsEnabled = Lock.Enabled, Foreground = Text };
+        atStart.IsCheckedChanged += (_, _) => { _settings.LockOnStart = atStart.IsChecked == true; SaveSettings(); };
+        mine.Children.Add(atStart);
         sp.Children.Add(WCard(mine));
 
         var store = Persons;
