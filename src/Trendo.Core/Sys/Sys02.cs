@@ -271,63 +271,140 @@ public sealed class FocusMode(string dataRoot)
     }
 }
 
-// P16 Kalender + ICS
-public sealed record CalEvent(string Uid, DateTime Start, DateTime End, string Title, string Location = "", string Notes = "");
+// P16 Kalender + ICS; O3/O5 (27.10.2026): Wiederholungen, ganztägige Termine, Erinnerungen, Aufgaben (VTODO)
+public enum Repeat { Keine, Taeglich, Woechentlich, Monatlich, Jaehrlich }
+public sealed record CalEvent(string Uid, DateTime Start, DateTime End, string Title, string Location = "", string Notes = "", bool AllDay = false, int RemindMin = 15, Repeat Repeat = Repeat.Keine);
+/// <summary>O5/N19: Aufgabe mit Fälligkeit, Priorität (1 hoch, 2 normal, 3 niedrig) und Liste.</summary>
+public sealed record TodoItem(string Uid, string Title, DateTime? Due = null, bool Done = false, int Priority = 2, string List = "Allgemein");
+
 public static class Ics
 {
     static string Esc(string s) => s.Replace("\\", "\\\\").Replace(";", "\\;").Replace(",", "\\,").Replace("\r\n", "\\n").Replace("\n", "\\n");
     static string Unesc(string s) => Regex.Replace(s, @"\\([\\;,nN])", m => m.Groups[1].Value is "n" or "N" ? "\n" : m.Groups[1].Value);
-    public static string Export(IEnumerable<CalEvent> events)
+    static string Dt(DateTime d) => d.ToString("yyyyMMdd'T'HHmmss", CultureInfo.InvariantCulture);
+    static string Day(DateTime d) => d.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
+
+    public static string Export(IEnumerable<CalEvent> events, IEnumerable<TodoItem>? todos = null)
     {
-        var sb = new StringBuilder("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Trendo OS//DE\r\n");
+        var sb = new StringBuilder("BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Kalender//DE\r\n"); // ohne Programmname (Vorgabe 2026-10-27)
         foreach (var e in events)
         {
-            sb.Append("BEGIN:VEVENT\r\nUID:").Append(e.Uid).Append("\r\nDTSTAMP:").Append(DateTime.UtcNow.ToString("yyyyMMdd'T'HHmmss'Z'")).Append("\r\n");
-            sb.Append("DTSTART:").Append(e.Start.ToString("yyyyMMdd'T'HHmmss")).Append("\r\nDTEND:").Append(e.End.ToString("yyyyMMdd'T'HHmmss")).Append("\r\n");
+            sb.Append("BEGIN:VEVENT\r\nUID:").Append(e.Uid).Append("\r\nDTSTAMP:").Append(DateTime.UtcNow.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture)).Append("\r\n");
+            if (e.AllDay) sb.Append("DTSTART;VALUE=DATE:").Append(Day(e.Start)).Append("\r\nDTEND;VALUE=DATE:").Append(Day(e.End)).Append("\r\n");
+            else sb.Append("DTSTART:").Append(Dt(e.Start)).Append("\r\nDTEND:").Append(Dt(e.End)).Append("\r\n");
             sb.Append("SUMMARY:").Append(Esc(e.Title)).Append("\r\n");
             if (e.Location.Length > 0) sb.Append("LOCATION:").Append(Esc(e.Location)).Append("\r\n");
             if (e.Notes.Length > 0) sb.Append("DESCRIPTION:").Append(Esc(e.Notes)).Append("\r\n");
+            if (e.Repeat != Repeat.Keine) sb.Append("RRULE:FREQ=").Append(e.Repeat switch { Repeat.Taeglich => "DAILY", Repeat.Woechentlich => "WEEKLY", Repeat.Monatlich => "MONTHLY", _ => "YEARLY" }).Append("\r\n");
+            if (e.RemindMin >= 0) sb.Append("BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:").Append(Esc(e.Title)).Append("\r\nTRIGGER:-PT").Append(e.RemindMin).Append("M\r\nEND:VALARM\r\n");
             sb.Append("END:VEVENT\r\n");
+        }
+        foreach (var t in todos ?? [])
+        {
+            sb.Append("BEGIN:VTODO\r\nUID:").Append(t.Uid).Append("\r\nDTSTAMP:").Append(DateTime.UtcNow.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture)).Append("\r\nSUMMARY:").Append(Esc(t.Title)).Append("\r\n");
+            sb.Append("PRIORITY:").Append(t.Priority switch { 1 => 1, 3 => 9, _ => 5 }).Append("\r\nSTATUS:").Append(t.Done ? "COMPLETED" : "NEEDS-ACTION").Append("\r\nCATEGORIES:").Append(Esc(t.List)).Append("\r\n");
+            if (t.Due is { } d) sb.Append("DUE;VALUE=DATE:").Append(Day(d)).Append("\r\n");
+            sb.Append("END:VTODO\r\n");
         }
         return sb.Append("END:VCALENDAR\r\n").ToString();
     }
+
     static DateTime ParseDt(string v)
     {
         var utc = v.EndsWith('Z'); v = v.TrimEnd('Z');
-        var d = DateTime.ParseExact(v, v.Length == 8 ? "yyyyMMdd" : "yyyyMMdd'T'HHmmss", CultureInfo.InvariantCulture);
+        var d = DateTime.ParseExact(v, v.Length == 8 ? "yyyyMMdd" : v.Length == 13 ? "yyyyMMdd'T'HHmm" : "yyyyMMdd'T'HHmmss", CultureInfo.InvariantCulture);
         return utc ? DateTime.SpecifyKind(d, DateTimeKind.Utc).ToLocalTime() : d;
     }
-    public static List<CalEvent> Import(string text)
+
+    static List<(string Kind, Dictionary<string, string> Props)> Blocks(string text)
     {
         var lines = Regex.Replace(text, @"\r?\n[ \t]", "").Split('\n').Select(l => l.TrimEnd('\r'));
-        var res = new List<CalEvent>(); Dictionary<string, string>? cur = null;
+        var res = new List<(string, Dictionary<string, string>)>(); Dictionary<string, string>? cur = null; string? kind = null; var alarm = false;
         foreach (var l in lines)
         {
-            if (l == "BEGIN:VEVENT") { cur = []; continue; }
-            if (l == "END:VEVENT" && cur is not null)
-            {
-                if (cur.TryGetValue("DTSTART", out var s))
-                {
-                    var st = ParseDt(s); var en = cur.TryGetValue("DTEND", out var e) ? ParseDt(e) : st.AddHours(1);
-                    res.Add(new(cur.GetValueOrDefault("UID") ?? Guid.NewGuid().ToString("N"), st, en, Unesc(cur.GetValueOrDefault("SUMMARY") ?? ""), Unesc(cur.GetValueOrDefault("LOCATION") ?? ""), Unesc(cur.GetValueOrDefault("DESCRIPTION") ?? "")));
-                }
-                cur = null; continue;
-            }
+            if (l is "BEGIN:VEVENT" or "BEGIN:VTODO") { cur = []; kind = l[6..]; continue; }
+            if (l == "BEGIN:VALARM") { alarm = true; continue; }
+            if (l == "END:VALARM") { alarm = false; continue; }
+            if ((l == "END:VEVENT" || l == "END:VTODO") && cur is not null) { res.Add((kind!, cur)); cur = null; continue; }
             if (cur is null) continue;
             var i = l.IndexOf(':'); if (i < 0) continue;
-            var key = l[..i].Split(';')[0].ToUpperInvariant(); cur[key] = l[(i + 1)..];
+            var key = l[..i].Split(';')[0].ToUpperInvariant();
+            if (alarm) { if (key == "TRIGGER") cur["TRIGGER"] = l[(i + 1)..]; continue; }
+            cur[key] = l[(i + 1)..];
         }
         return res;
     }
+
+    public static List<CalEvent> Import(string text)
+    {
+        var res = new List<CalEvent>();
+        foreach (var (kind, cur) in Blocks(text))
+        {
+            if (kind != "VEVENT" || !cur.TryGetValue("DTSTART", out var s)) continue;
+            var allDay = s.Length == 8;
+            var st = ParseDt(s); var en = cur.TryGetValue("DTEND", out var e) ? ParseDt(e) : allDay ? st.AddDays(1) : st.AddHours(1);
+            var rr = cur.GetValueOrDefault("RRULE") ?? "";
+            var rep = rr.Contains("FREQ=DAILY") ? Repeat.Taeglich : rr.Contains("FREQ=WEEKLY") ? Repeat.Woechentlich : rr.Contains("FREQ=MONTHLY") ? Repeat.Monatlich : rr.Contains("FREQ=YEARLY") ? Repeat.Jaehrlich : Repeat.Keine;
+            var remind = cur.TryGetValue("TRIGGER", out var tr) && Regex.Match(tr, @"^-P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?)?") is { Success: true } m && (m.Groups[1].Success || m.Groups[2].Success || m.Groups[3].Success)
+                ? (m.Groups[1].Success ? int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture) * 1440 : 0) + (m.Groups[2].Success ? int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture) * 60 : 0) + (m.Groups[3].Success ? int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture) : 0)
+                : cur.ContainsKey("TRIGGER") ? 0 : 15;
+            res.Add(new(cur.GetValueOrDefault("UID") ?? Guid.NewGuid().ToString("N"), st, en, Unesc(cur.GetValueOrDefault("SUMMARY") ?? ""), Unesc(cur.GetValueOrDefault("LOCATION") ?? ""), Unesc(cur.GetValueOrDefault("DESCRIPTION") ?? ""), allDay, remind, rep));
+        }
+        return res;
+    }
+
+    public static List<TodoItem> ImportTodos(string text) =>
+        Blocks(text).Where(b => b.Kind == "VTODO").Select(b =>
+        {
+            var c = b.Props; var pr = int.TryParse(c.GetValueOrDefault("PRIORITY"), out var p) && p > 0 ? p <= 4 ? 1 : p >= 6 ? 3 : 2 : 2;
+            return new TodoItem(c.GetValueOrDefault("UID") ?? Guid.NewGuid().ToString("N"), Unesc(c.GetValueOrDefault("SUMMARY") ?? ""), c.TryGetValue("DUE", out var d) ? ParseDt(d) : null, c.GetValueOrDefault("STATUS") == "COMPLETED", pr, Unesc(c.GetValueOrDefault("CATEGORIES") ?? "Allgemein"));
+        }).ToList();
 }
+
 public sealed class Calendar(string dataRoot)
 {
     string F => Path.Combine(dataRoot, "werkzeuge", "kalender.json");
+    string T => Path.Combine(dataRoot, "werkzeuge", "aufgaben.json");
     public List<CalEvent> All() => J.Load<CalEvent>(F).OrderBy(e => e.Start).ToList();
     public void Add(CalEvent e) { var l = J.Load<CalEvent>(F); l.RemoveAll(x => x.Uid == e.Uid); l.Add(e); J.Save(F, l); }
     public void Delete(string uid) { var l = J.Load<CalEvent>(F); l.RemoveAll(x => x.Uid == uid); J.Save(F, l); }
-    public int ImportFile(string ics) { var n = 0; foreach (var e in Ics.Import(File.ReadAllText(ics))) { Add(e); n++; } return n; }
-    public void ExportFile(string ics) => File.WriteAllText(ics, Ics.Export(All()));
+    public int ImportFile(string ics) => ImportText(File.ReadAllText(ics)).Events;
+    public void ExportFile(string ics) => File.WriteAllText(ics, Ics.Export(All(), Todos()));
+
+    /// <summary>Termine und Aufgaben aus ICS übernehmen (gleiche UID wird ersetzt).</summary>
+    public (int Events, int Todos) ImportText(string ics)
+    {
+        var ev = Ics.Import(ics); foreach (var e in ev) Add(e);
+        var td = Ics.ImportTodos(ics); foreach (var t in td) AddTodo(t);
+        return (ev.Count, td.Count);
+    }
+
+    // O5/N19 Aufgaben
+    public List<TodoItem> Todos() => J.Load<TodoItem>(T).OrderBy(t => t.Done).ThenBy(t => t.Priority).ThenBy(t => t.Due ?? DateTime.MaxValue).ToList();
+    public void AddTodo(TodoItem t) { var l = J.Load<TodoItem>(T); l.RemoveAll(x => x.Uid == t.Uid); l.Add(t); J.Save(T, l); }
+    public void DeleteTodo(string uid) { var l = J.Load<TodoItem>(T); l.RemoveAll(x => x.Uid == uid); J.Save(T, l); }
+    public void SetDone(string uid, bool done) { var l = J.Load<TodoItem>(T); var i = l.FindIndex(x => x.Uid == uid); if (i >= 0) { l[i] = l[i] with { Done = done }; J.Save(T, l); } }
+
+    /// <summary>O3: alle Vorkommen im Zeitraum (Wiederholungen aufgelöst), nach Beginn sortiert.</summary>
+    public List<(CalEvent Event, DateTime Start, DateTime End)> Occurrences(DateTime from, DateTime to)
+    {
+        var res = new List<(CalEvent, DateTime, DateTime)>();
+        foreach (var e in All())
+        {
+            var len = e.End - e.Start; var start = e.Start;
+            for (var k = 0; k < 5000 && start < to; k++)
+            {
+                if (start + len > from) res.Add((e, start, start + len));
+                if (e.Repeat == Repeat.Keine) break;
+                start = e.Repeat switch { Repeat.Taeglich => e.Start.AddDays(k + 1), Repeat.Woechentlich => e.Start.AddDays(7 * (k + 1)), Repeat.Monatlich => e.Start.AddMonths(k + 1), _ => e.Start.AddYears(k + 1) };
+            }
+        }
+        return res.OrderBy(x => x.Item2).ToList();
+    }
+
+    /// <summary>O3: Erinnerungen, die zwischen <paramref name="since"/> und <paramref name="now"/> fällig wurden.</summary>
+    public List<(CalEvent Event, DateTime Start)> DueReminders(DateTime since, DateTime now) =>
+        Occurrences(since.AddDays(-1), now.AddDays(8)).Where(o => o.Event.RemindMin >= 0 && o.Start.AddMinutes(-o.Event.RemindMin) > since && o.Start.AddMinutes(-o.Event.RemindMin) <= now).Select(o => (o.Event, o.Start)).ToList();
 }
 
 // P17 Einheiten
