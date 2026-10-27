@@ -8,21 +8,32 @@ using Trendo.Core;
 
 namespace Trendo.App;
 
-/// <summary>Wunsch 27.10.2026 („das Betriebssystem auf dem Handy voll nutzen“): Trendo vom Handy aus bedienen – Bildschirm sehen, antippen, schreiben, scrollen.
-/// Nur für Handys, denen der PC-Nutzer das ausdrücklich erlaubt hat.</summary>
+/// <summary>Wunsch 27.10.2026 („das Betriebssystem auf dem Handy voll nutzen“, „wie eine Handy-App“): Trendo als App auf dem Handy.
+/// Die Programme rechnet der PC in Handy-Größe (Hochformat, Breite des Handys) – kein verkleinerter PC-Bildschirm. Das Handy zeigt das Bild,
+/// tippt, schreibt, wählt und wischt darin. Nur für Handys, die der PC-Nutzer dafür freigegeben hat.</summary>
 public interface IPhoneRemote
 {
-    Task<byte[]?> ScreenAsync(int maxWidth);
-    Task<string> TapAsync(double fx, double fy);
-    Task TypeAsync(string text);
+    IReadOnlyList<PhoneApp> Apps();
+    /// <summary>App/Studio auf dem Handy öffnen; liefert den Titel.</summary>
+    Task<string?> OpenAsync(string id);
+    /// <summary>Zurück; null = wieder auf dem Handy-Startbildschirm.</summary>
+    Task<string?> BackAsync();
+    /// <summary>Bild der Handy-Ansicht (<paramref name="desktop"/>: der ganze PC-Bildschirm). Null, wenn gerade nichts offen ist.</summary>
+    Task<PhoneFrame?> ScreenAsync(int width, int height, double scale, bool desktop);
+    Task<PhoneHit> TapAsync(double fx, double fy, bool desktop);
+    Task SetTextAsync(string text);
+    Task ChooseAsync(int index);
     Task KeyAsync(string key);
-    Task ScrollAsync(double fx, double fy, double dy);
+    Task ScrollAsync(double fx, double fy, double dy, bool desktop);
+    byte[]? Icon();
     void Started(string device);
 }
 
-/// <summary>Handy-Zugang (Vorgabe 27.10.2026, „viel einfacher, auch unterwegs“): kleiner Webserver nur im Heimnetz und im Tailscale-Netz.
-/// Das Handy öffnet die Seite per QR-Code im normalen Browser – ohne App und ohne Entwicklermodus. Es kann Fotos und Dateien an den PC
-/// schicken, Text und Links übergeben und Dateien aus „Zum Handy“ laden. Nichts öffentlich, kein Port im Router, jedes Gerät mit eigenem Schlüssel.</summary>
+public sealed record PhoneApp(string Id, string Name, string Area, string Icon);
+public sealed record PhoneFrame(byte[] Png, string Title);
+/// <summary>Was ein Fingertipp getroffen hat: Knopf, Eingabefeld (mit Text), Auswahl (mit Möglichkeiten) …</summary>
+public sealed record PhoneHit(string Kind, string? Text = null, IReadOnlyList<string>? Choices = null, int Selected = -1, bool Multiline = false);
+
 public sealed class PhoneLinkServer : IAsyncDisposable
 {
     public const string Cookie = "trendo_handy";
@@ -153,7 +164,7 @@ public sealed class PhoneLinkServer : IAsyncDisposable
             return Results.Redirect("/?unterwegs=1");
         });
 
-        // Trendo vom Handy bedienen – nur mit Erlaubnis am PC
+        // Trendo als Handy-App – nur mit Erlaubnis am PC
         IResult? Denied(HttpContext c, out PhoneAccess.Device? d)
         {
             d = Who(c);
@@ -162,18 +173,38 @@ public sealed class PhoneLinkServer : IAsyncDisposable
             return null;
         }
         static double Num(string? v) => double.TryParse(v, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var x) && double.IsFinite(x) ? x : -1;
-        app.MapGet("/fern", (HttpContext c) =>
+        static bool Desk(HttpContext c) => c.Request.Query["pc"] == "1";
+        app.MapGet("/fern", () => Results.Redirect("/app"));
+        app.MapGet("/app", (HttpContext c) =>
         {
-            if (Denied(c, out var d) is { } no) return no;
+            if (Denied(c, out var d) is { } no) return no is Microsoft.AspNetCore.Http.HttpResults.UnauthorizedHttpResult ? Results.Redirect("/") : no;
             remote!.Started(d!.Name);
             audit.Append("handy", "phonelink.remote.open", d.Name);
-            return Results.Content(PhoneLinkPages.Remote(), "text/html; charset=utf-8");
+            return Results.Content(PhoneLinkPages.MobileApp(d.Name), "text/html; charset=utf-8");
         });
+        app.MapGet("/manifest.webmanifest", () => Results.Text(PhoneLinkPages.Manifest, "application/manifest+json; charset=utf-8"));
+        app.MapGet("/icon.png", () => remote?.Icon() is { } png ? Results.File(png, "image/png") : Results.NotFound());
+        app.MapGet("/api/apps", (HttpContext c) => Denied(c, out _) is { } no ? no : Results.Ok(remote!.Apps()));
+        app.MapPost("/api/open", async (HttpContext c) =>
+        {
+            if (Denied(c, out _) is { } no) return no;
+            var id = (await c.Request.ReadFormAsync())["id"].ToString();
+            if (!remote!.Apps().Any(a => a.Id == id)) return Results.NotFound();
+            return Results.Ok(new { title = await remote.OpenAsync(id) });
+        });
+        app.MapPost("/api/back", async (HttpContext c) => Denied(c, out _) is { } no ? no : Results.Ok(new { title = await remote!.BackAsync() }));
         app.MapGet("/api/screen", async (HttpContext c) =>
         {
             if (Denied(c, out _) is { } no) return no;
-            var w = (int)Math.Clamp(Num(c.Request.Query["w"]), 320, 1600);
-            return await remote!.ScreenAsync(w) is { } png ? Results.File(png, "image/png") : Results.StatusCode(503);
+            var w = (int)Math.Clamp(Num(c.Request.Query["w"]), 280, 1600);
+            var h = (int)Math.Clamp(Num(c.Request.Query["h"]), 300, 2400);
+            var sc = Math.Clamp(Num(c.Request.Query["s"]), 1, 2.5);
+            if (await remote!.ScreenAsync(w, h, sc, Desk(c)) is not { } f) return Results.NoContent();
+            var tag = "\"" + Convert.ToHexStringLower(System.Security.Cryptography.SHA1.HashData(f.Png)) + "\"";
+            c.Response.Headers["X-Trendo-Title"] = Uri.EscapeDataString(f.Title);
+            c.Response.Headers.ETag = tag;
+            if (c.Request.Headers.IfNoneMatch == tag) return Results.StatusCode(304); // unverändert: nichts übertragen
+            return Results.File(f.Png, "image/png");
         });
         app.MapPost("/api/tap", async (HttpContext c) =>
         {
@@ -181,14 +212,28 @@ public sealed class PhoneLinkServer : IAsyncDisposable
             var f = await c.Request.ReadFormAsync();
             double x = Num(f["x"]), y = Num(f["y"]);
             if (x is < 0 or > 1 || y is < 0 or > 1) return Results.BadRequest();
-            return Results.Ok(new { hit = await remote!.TapAsync(x, y) });
+            return Results.Ok(await remote!.TapAsync(x, y, Desk(c)));
+        });
+        app.MapPost("/api/settext", async (HttpContext c) =>
+        {
+            if (Denied(c, out _) is { } no) return no;
+            var t = (await c.Request.ReadFormAsync())["text"].ToString();
+            if (t.Length > 100_000) return Results.BadRequest();
+            await remote!.SetTextAsync(t); return Results.Ok();
         });
         app.MapPost("/api/type", async (HttpContext c) =>
         {
             if (Denied(c, out _) is { } no) return no;
             var t = (await c.Request.ReadFormAsync())["text"].ToString();
             if (t.Length is 0 or > 5000) return Results.BadRequest();
-            await remote!.TypeAsync(t); return Results.Ok();
+            await remote!.SetTextAsync("\u0001" + t); return Results.Ok(); // anhängen
+        });
+        app.MapPost("/api/choose", async (HttpContext c) =>
+        {
+            if (Denied(c, out _) is { } no) return no;
+            var i = (int)Num((await c.Request.ReadFormAsync())["i"]);
+            if (i < 0) return Results.BadRequest();
+            await remote!.ChooseAsync(i); return Results.Ok();
         });
         app.MapPost("/api/key", async (HttpContext c) =>
         {
@@ -204,7 +249,7 @@ public sealed class PhoneLinkServer : IAsyncDisposable
             double x = Num(f["x"]), y = Num(f["y"]);
             var dy = double.TryParse(f["dy"], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) && double.IsFinite(v) ? Math.Clamp(v, -3, 3) : 0;
             if (x is < 0 or > 1 || y is < 0 or > 1) return Results.BadRequest();
-            await remote!.ScrollAsync(x, y, dy); return Results.Ok();
+            await remote!.ScrollAsync(x, y, dy, Desk(c)); return Results.Ok();
         });
 
         await app.StartAsync();
@@ -247,32 +292,129 @@ static class PhoneLinkPages
         "<input type=\"submit\" value=\"Verbinden\"></form><p>Nur verbinden, wenn du gerade selbst vor deinem PC den Code gescannt hast.</p>" +
         "<script>var u=navigator.userAgent,m=u.match(/;\\s*([^;)]+)\\s+Build/);if(m)document.getElementById('n').value=m[1].slice(0,40);else if(/iPhone/.test(u))document.getElementById('n').value='iPhone';</script>" + Foot;
 
-    /// <summary>Fernbedienung: Bildschirmbild antippen = dort klicken; wischen = scrollen; unten Tastatur.</summary>
-    public static string Remote() => Head.Replace("<main>", "<main style=\"max-width:none;padding:6px\">") +
-        "<div style=\"display:flex;gap:6px;align-items:center\"><a href=\"/\" style=\"color:#7CB8FF;text-decoration:none\">← Zurück</a><span id=\"st\" style=\"color:#9FB1CF;font-size:13px;margin-left:auto\">Verbinde …</span></div>" +
-        "<img id=\"s\" alt=\"Trendo-Bildschirm\" style=\"width:100%;border-radius:10px;margin-top:6px;touch-action:none;background:#0E1B3A;min-height:200px\">" +
-        "<div style=\"display:flex;gap:6px;margin-top:6px\"><input type=\"text\" id=\"k\" placeholder=\"Hier schreiben – geht ins angetippte Feld\" style=\"flex:1\">" +
-        "<button style=\"width:auto;margin:0;padding:12px\" onclick=\"send()\">Senden</button></div>" +
-        "<div style=\"display:flex;gap:6px\"><button class=\"sec\" onclick=\"key('back')\">⌫</button><button class=\"sec\" onclick=\"key('enter')\">⏎</button><button class=\"sec\" onclick=\"key('tab')\">⇥</button><button class=\"sec\" onclick=\"key('esc')\">Esc</button></div>" +
-        "<script>" +
-        "var s=document.getElementById('s'),st=document.getElementById('st'),busy=false,url=null,y0=null,x0=null;" +
-        "function post(p,d){var f=new FormData();for(var k in d)f.append(k,d[k]);return fetch(p,{method:'POST',body:f});}" +
-        "function load(){if(busy||document.hidden)return;busy=true;fetch('/api/screen?w='+Math.min(1600,Math.round(s.clientWidth*(window.devicePixelRatio||1)))).then(function(r){if(!r.ok)throw r.status;return r.blob();})" +
-        ".then(function(b){var u=URL.createObjectURL(b);s.onload=function(){if(url)URL.revokeObjectURL(url);url=u;};s.src=u;st.textContent='● Live';busy=false;}).catch(function(e){st.textContent=e==403?'Am PC nicht erlaubt':'Keine Verbindung';busy=false;});}" +
-        "function pos(e){var r=s.getBoundingClientRect();return {x:((e.clientX-r.left)/r.width).toFixed(4),y:((e.clientY-r.top)/r.height).toFixed(4)};}" +
-        "s.addEventListener('pointerdown',function(e){y0=e.clientY;x0=e.clientX;});" +
-        "s.addEventListener('pointerup',function(e){if(y0===null)return;var dy=e.clientY-y0,p=pos(e);" +
-        "if(Math.abs(dy)>25){var q=pos({clientX:x0,clientY:y0});post('/api/scroll',{x:q.x,y:q.y,dy:(-dy/s.getBoundingClientRect().height*2).toFixed(3)}).then(load);}" +
-        "else post('/api/tap',p).then(function(r){return r.json();}).then(function(j){if(j.hit=='Eingabefeld')document.getElementById('k').focus();setTimeout(load,150);});y0=null;});" +
-        "function send(){var k=document.getElementById('k');if(!k.value)return;post('/api/type',{text:k.value}).then(function(){k.value='';load();});}" +
-        "document.getElementById('k').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();if(this.value)send();else key('enter');}});" +
-        "function key(k){post('/api/key',{key:k}).then(load);}" +
-        "load();setInterval(load,700);" +
-        "</script>" + Foot;
+    public const string Manifest = """
+        {"name":"Trendo","short_name":"Trendo","start_url":"/app","scope":"/","display":"standalone","orientation":"portrait",
+         "background_color":"#050B18","theme_color":"#0A1428","icons":[{"src":"/icon.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}
+        """;
+
+    /// <summary>Trendo als Handy-App: Startseite, alle Apps, offene App bildschirmfüllend, Leiste unten. Fühlt sich an wie eine echte App –
+    /// zum Startbildschirm hinzugefügt sogar ohne Browserleisten.</summary>
+    public static string MobileApp(string device) => MobileHtml.Replace("{{DEVICE}}", E(device));
+
+    const string MobileHtml = """
+<!doctype html><html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0A1428"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Trendo">
+<link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/icon.png"><link rel="apple-touch-icon" href="/icon.png"><title>Trendo</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;height:100%;overflow:hidden;background:#050B18;color:#E6EDF7;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overscroll-behavior:none}
+#top{position:fixed;left:0;right:0;top:0;height:calc(52px + env(safe-area-inset-top));padding:env(safe-area-inset-top) 10px 0;display:flex;align-items:center;gap:8px;
+background:linear-gradient(180deg,#0E1B3A,#0A1428);border-bottom:1px solid #F5C45133;z-index:5}
+#back{width:40px;height:40px;border:0;border-radius:12px;background:#ffffff14;color:#F5C451;font-size:24px;display:none}
+#title{font-size:18px;font-weight:650;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#dot{width:9px;height:9px;border-radius:50%;background:#4ADE80;box-shadow:0 0 8px #4ADE80}
+#main{position:fixed;left:0;right:0;top:calc(52px + env(safe-area-inset-top));bottom:calc(64px + env(safe-area-inset-bottom));overflow:hidden}
+.pane{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 14px 24px}
+#view{padding:0;overflow:hidden;display:none;background:#0A1428}#view img{display:block;width:100%;height:100%;touch-action:none;user-select:none;-webkit-user-select:none}
+#tabs{position:fixed;left:0;right:0;bottom:0;height:calc(64px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:flex;
+background:linear-gradient(0deg,#050B18,#0E1B3A);border-top:1px solid #F5C45133;z-index:5}
+#tabs button{flex:1;border:0;background:none;color:#9FB1CF;font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+#tabs button.on{color:#F5C451}#tabs svg{width:24px;height:24px;fill:currentColor}
+h2{font-size:15px;color:#9FB1CF;font-weight:600;margin:18px 4px 8px}.hello{font-size:26px;font-weight:700;margin:4px 4px 2px;background:linear-gradient(90deg,#FFF1B8,#F5C451,#3B82F6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:#9FB1CF;margin:0 4px 6px;font-size:14px}
+input.search{width:100%;padding:13px 16px;border-radius:14px;border:1px solid #29436F;background:#0E1B3A;color:#E6EDF7;font-size:16px;margin-top:10px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 8px}
+.app{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;color:#E6EDF7;font-size:11.5px;text-align:center;line-height:1.2;padding:0}
+.ico{width:58px;height:58px;border-radius:17px;display:flex;align-items:center;justify-content:center;
+background:radial-gradient(120% 120% at 30% 15%,#2B4C86 0%,#0E1B3A 70%);border:1px solid #F5C45155;box-shadow:0 6px 16px #0008,inset 0 1px 0 #ffffff22}
+.ico svg{width:30px;height:30px;fill:url(#gold)}.app:active .ico{transform:scale(.92)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px}.chip{flex:none;border:1px solid #29436F;background:#0E1B3A;color:#E6EDF7;border-radius:20px;padding:8px 13px;font-size:13px}
+.chip.on{background:#2F86F6;border-color:#2F86F6}
+.row{display:flex;align-items:center;gap:12px;padding:10px 6px;border-bottom:1px solid #ffffff10;background:none;border-left:0;border-right:0;border-top:0;color:#E6EDF7;width:100%;text-align:left;font-size:15px}
+.row .ico{width:42px;height:42px;border-radius:12px}.row .ico svg{width:22px;height:22px}
+#sheet{position:fixed;left:0;right:0;bottom:0;background:#0E1B3A;border-radius:20px 20px 0 0;border-top:1px solid #F5C45155;padding:14px 14px calc(14px + env(safe-area-inset-bottom));
+transform:translateY(110%);transition:transform .2s;z-index:9;max-height:70%;overflow:auto;box-shadow:0 -10px 30px #000a}#sheet.open{transform:none}
+#sheet textarea,#sheet input{width:100%;font-size:17px;padding:12px;border-radius:12px;border:1px solid #29436F;background:#081226;color:#E6EDF7}
+.btn{display:block;width:100%;border:0;border-radius:12px;padding:14px;font-size:16px;font-weight:600;background:#2F86F6;color:#fff;margin-top:10px}
+.sec{background:#1A2B4D}.opt{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid #ffffff10;background:none;color:#E6EDF7;font-size:16px;padding:14px 6px}.opt.on{color:#F5C451}
+#busy{position:fixed;top:calc(56px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:#0E1B3Aee;border:1px solid #29436F;border-radius:20px;padding:6px 14px;font-size:13px;display:none;z-index:8}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><defs><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF1B8"/><stop offset=".5" stop-color="#F5C451"/><stop offset="1" stop-color="#3B82F6"/></linearGradient></defs></svg>
+<div id="top"><button id="back" aria-label="Zurück">‹</button><div id="title">Trendo</div><div id="dot" title="verbunden"></div></div>
+<div id="main">
+ <div class="pane" id="home"><div class="hello" id="hello">Hallo!</div><div class="sub">{{DEVICE}} · verbunden mit deinem PC</div>
+  <input class="search" id="q" type="search" placeholder="Apps suchen …"><h2 id="recentH">Zuletzt</h2><div class="grid" id="recent"></div><h2>Alle Bereiche</h2><div class="chips" id="areas"></div><div class="grid" id="homeApps"></div></div>
+ <div class="pane" id="apps" style="display:none"><input class="search" id="q2" type="search" placeholder="Suchen …"><div id="list"></div></div>
+ <div class="pane" id="view"><img id="img" alt="Trendo"></div>
+</div>
+<div id="busy">Lädt …</div>
+<div id="sheet"></div>
+<div id="tabs">
+ <button id="tHome" class="on"><svg viewBox="0 0 24 24"><path d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"/></svg>Start</button>
+ <button id="tApps"><svg viewBox="0 0 24 24"><path d="M16,20H20V16H16M16,14H20V10H16M10,8H14V4H10M16,8H20V4H16M10,14H14V10H10M4,14H8V10H4M4,20H8V16H4M10,20H14V16H10M4,8H8V4H4V8Z"/></svg>Apps</button>
+ <button id="tOpen"><svg viewBox="0 0 24 24"><path d="M4,4H20A2,2 0 0,1 22,6V18A2,2 0 0,1 20,20H4A2,2 0 0,1 2,18V6A2,2 0 0,1 4,4M4,8V18H20V8H4Z"/></svg>Offen</button>
+ <button id="tPc"><svg viewBox="0 0 24 24"><path d="M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z"/></svg>PC</button>
+ <button id="tFiles"><svg viewBox="0 0 24 24"><path d="M9,16V10H5L12,3L19,10H15V16H9M5,20V18H19V20H5Z"/></svg>Senden</button>
+</div>
+<script>
+var $=function(i){return document.getElementById(i)},apps=[],area=null,mode='home',pc=false,busy=false,etag=null,url=null,title='Trendo',timer=null,y0=null,x0=null,t0=0,hit=null,deb=null;
+var recent=JSON.parse(localStorage.getItem('trendoRecent')||'[]');
+function post(p,d){var f=new FormData();for(var k in d)f.append(k,d[k]);return fetch(p+(pc&&p.indexOf('/api/')==0&&p!='/api/open'&&p!='/api/back'?'?pc=1':''),{method:'POST',body:f});}
+function icon(a){return '<div class="ico"><svg viewBox="0 0 24 24"><path d="'+a.icon+'"/></svg></div>';}
+function tile(a){return '<button class="app" data-id="'+a.id+'">'+icon(a)+'<span>'+esc(a.name)+'</span></button>';}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function hello(){var h=new Date().getHours();$('hello').textContent=h<11?'Guten Morgen!':h<18?'Hallo!':'Guten Abend!';}
+function renderHome(){var q=$('q').value.toLowerCase();var r=recent.map(function(id){return apps.find(function(a){return a.id==id;});}).filter(Boolean).slice(0,8);
+ $('recent').innerHTML=r.map(tile).join('');$('recentH').style.display=r.length&&!q?'':'none';$('recent').style.display=r.length&&!q?'':'none';
+ var areas=[];apps.forEach(function(a){if(areas.indexOf(a.area)<0)areas.push(a.area);});
+ $('areas').innerHTML=areas.map(function(x){return '<button class="chip'+(x==area?' on':'')+'" data-a="'+esc(x)+'">'+esc(x)+'</button>';}).join('');
+ $('homeApps').innerHTML=apps.filter(function(a){return (!area||a.area==area)&&(!q||a.name.toLowerCase().indexOf(q)>=0);}).map(tile).join('');}
+function renderList(){var q=$('q2').value.toLowerCase();$('list').innerHTML=apps.filter(function(a){return !q||a.name.toLowerCase().indexOf(q)>=0||a.area.toLowerCase().indexOf(q)>=0;})
+ .sort(function(a,b){return a.name.localeCompare(b.name,'de');}).map(function(a){return '<button class="row app" data-id="'+a.id+'" style="flex-direction:row">'+icon(a)+'<div><div>'+esc(a.name)+'</div><div style="color:#9FB1CF;font-size:12px">'+esc(a.area)+'</div></div></button>';}).join('');}
+function show(m){mode=m;['home','apps','view'].forEach(function(p){$(p).style.display=(p==m||(m=='pc'&&p=='view'))?'block':'none';});
+ ['tHome','tApps','tOpen','tPc'].forEach(function(t){$(t).classList.remove('on');});$({home:'tHome',apps:'tApps',view:'tOpen',pc:'tPc'}[m]).classList.add('on');
+ pc=m=='pc';$('back').style.display=m=='view'?'block':'none';$('title').textContent=m=='home'?'Trendo':m=='apps'?'Alle Apps':m=='pc'?'PC-Bildschirm':title;
+ etag=null;clearInterval(timer);if(m=='view'||m=='pc'){load();timer=setInterval(load,600);}}
+function size(){var v=$('view');return {w:Math.round(v.clientWidth),h:Math.round(v.clientHeight),s:Math.min(2.5,Math.max(1,window.devicePixelRatio||1)).toFixed(2)};}
+function load(){if(busy||document.hidden)return;busy=true;var z=size();
+ fetch('/api/screen?w='+z.w+'&h='+z.h+'&s='+z.s+(pc?'&pc=1':''),{headers:etag?{'If-None-Match':etag}:{}}).then(function(r){
+  if(r.status==204){busy=false;if(!pc){show('home');}return null;}if(r.status==304){busy=false;return null;}if(!r.ok)throw r.status;
+  etag=r.headers.get('ETag');var t=r.headers.get('X-Trendo-Title');if(t&&!pc){title=decodeURIComponent(t);$('title').textContent=title;}return r.blob();})
+ .then(function(b){if(!b)return;var u=URL.createObjectURL(b);var i=$('img');i.onload=function(){if(url)URL.revokeObjectURL(url);url=u;};i.src=u;busy=false;$('dot').style.background='#4ADE80';})
+ .catch(function(e){busy=false;$('dot').style.background=e==403?'#FACC15':'#EF4444';});}
+function refresh(ms){etag=null;setTimeout(load,ms||120);}
+function open(id){$('busy').style.display='block';recent=[id].concat(recent.filter(function(x){return x!=id;})).slice(0,12);try{localStorage.setItem('trendoRecent',JSON.stringify(recent));}catch(e){}
+ post('/api/open',{id:id}).then(function(r){return r.json();}).then(function(j){title=j.title||'Trendo';$('busy').style.display='none';show('view');}).catch(function(){$('busy').style.display='none';});}
+document.addEventListener('click',function(e){var b=e.target.closest('[data-id]');if(b){open(b.getAttribute('data-id'));return;}var c=e.target.closest('[data-a]');if(c){var a=c.getAttribute('data-a');area=area==a?null:a;renderHome();}});
+$('q').oninput=renderHome;$('q2').oninput=renderList;
+$('tHome').onclick=function(){show('home');};$('tApps').onclick=function(){renderList();show('apps');};$('tOpen').onclick=function(){show('view');};$('tPc').onclick=function(){show('pc');};
+$('tFiles').onclick=function(){location.href='/';};
+$('back').onclick=function(){post('/api/back',{}).then(function(r){return r.json();}).then(function(j){if(!j.title)show('home');else{title=j.title;$('title').textContent=title;refresh();}});};
+function pos(e){var r=$('img').getBoundingClientRect();return {x:Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)).toFixed(4),y:Math.min(1,Math.max(0,(e.clientY-r.top)/r.height)).toFixed(4)};}
+var img=$('img');
+img.addEventListener('pointerdown',function(e){y0=e.clientY;x0=e.clientX;t0=Date.now();});
+img.addEventListener('pointerup',function(e){if(y0===null)return;var dy=e.clientY-y0,p=pos(e);
+ if(Math.abs(dy)>18){var q=pos({clientX:x0,clientY:y0});var v=-dy/img.getBoundingClientRect().height*(Date.now()-t0<250?2.2:1.2);post('/api/scroll',{x:q.x,y:q.y,dy:v.toFixed(3)}).then(function(){refresh(60);});}
+ else{if(navigator.vibrate)navigator.vibrate(8);post('/api/tap',p).then(function(r){return r.json();}).then(function(h){hit=h;if(h.kind=='Eingabefeld')edit(h);else if(h.kind=='Auswahl')choose(h);refresh(150);setTimeout(load,700);});}
+ y0=null;});
+function closeSheet(){$('sheet').classList.remove('open');$('sheet').innerHTML='';refresh();}
+function edit(h){var multi=h.multiline;$('sheet').innerHTML=(multi?'<textarea id="ed" rows="6"></textarea>':'<input id="ed" type="text" enterkeyhint="go">')+
+ '<button class="btn" id="ok">Fertig</button>';var ed=$('ed');ed.value=h.text||'';$('sheet').classList.add('open');setTimeout(function(){ed.focus();},60);
+ ed.oninput=function(){clearTimeout(deb);deb=setTimeout(function(){post('/api/settext',{text:ed.value}).then(function(){refresh(50);});},220);};
+ ed.onkeydown=function(e){if(e.key==='Enter'&&!multi){e.preventDefault();post('/api/settext',{text:ed.value}).then(function(){return post('/api/key',{key:'enter'});}).then(closeSheet);}};
+ $('ok').onclick=function(){post('/api/settext',{text:ed.value}).then(closeSheet);};}
+function choose(h){$('sheet').innerHTML=(h.choices||[]).map(function(c,i){return '<button class="opt'+(i==h.selected?' on':'')+'" data-i="'+i+'">'+(i==h.selected?'✓ ':'')+esc(c)+'</button>';}).join('')+'<button class="btn sec" id="ok">Abbrechen</button>';
+ $('sheet').classList.add('open');$('ok').onclick=closeSheet;$('sheet').querySelectorAll('[data-i]').forEach(function(b){b.onclick=function(){post('/api/choose',{i:b.getAttribute('data-i')}).then(closeSheet);};});}
+document.addEventListener('visibilitychange',function(){if(!document.hidden)refresh();});
+document.addEventListener('touchstart',function f(){var d=document.documentElement;if(d.requestFullscreen&&!window.matchMedia('(display-mode: standalone)').matches)d.requestFullscreen().catch(function(){});document.removeEventListener('touchstart',f);},{passive:true});
+hello();fetch('/api/apps').then(function(r){return r.json();}).then(function(a){apps=a;renderHome();renderList();});
+</script></body></html>
+""";
 
     public static string App(string device, string pc, bool remote = false, bool canAway = false) => Head +
         $"<h1>Verbunden mit {E(pc)}</h1><p class=\"ok\">✓ {E(device)} ist mit Trendo verbunden.</p>" +
-        (remote ? "<div class=\"card\"><b>Trendo bedienen</b><p>Den PC-Bildschirm sehen und Trendo mit dem Finger bedienen – wie am PC.</p><a class=\"btn\" id=\"fern\" href=\"/fern\">Trendo öffnen</a></div>"
+        (remote ? "<div class=\"card\"><b>Trendo bedienen</b><p>Trendo als App auf dem Handy: alle Programme und Studios, in Handy-Größe, mit dem Finger bedienen.</p><a class=\"btn\" id=\"fern\" href=\"/app\">Trendo öffnen</a></div>"
                 : "<div class=\"card\"><b>Trendo bedienen</b><p>Möchtest du Trendo komplett vom Handy aus bedienen? Am PC unter „Handy“ bei diesem Handy „Trendo bedienen erlauben“ antippen.</p></div>") +
         (canAway ? "<div class=\"card\"><b>Auch unterwegs</b><p>Einmal hier antippen, solange du zuhause bist. Danach erreichst du den PC überall, wenn am Handy Tailscale an ist. Speichere die neue Seite als Lesezeichen oder auf dem Startbildschirm.</p>" +
                    "<button class=\"sec\" id=\"away\" onclick=\"fetch('/api/away',{method:'POST'}).then(function(r){return r.json();}).then(function(j){location.href=j.url;}).catch(function(){document.getElementById('away').textContent='Hat nicht geklappt – ist Tailscale am Handy an?';});\">Unterwegs-Zugang einrichten</button></div>" : "") +

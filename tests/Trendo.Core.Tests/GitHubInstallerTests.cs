@@ -67,6 +67,27 @@ public class GitHubInstallerTests
         finally { Directory.Delete(d, true); }
     }
 
+    [Fact(DisplayName = "GitHub (Befund „braucht ewig“): nach dem Installer nur neue bzw. passend benannte Ordner durchsuchen – nie Temp, Packages, Browser")]
+    public void Fresh_dirs_skip_noise()
+    {
+        var t0 = new DateTime(2026, 10, 27, 12, 0, 0, DateTimeKind.Utc);
+        var root = @"C:\L";
+        string D(string n) => Path.Combine(root, n);
+        var before = new Dictionary<string, DateTime> { [D("Temp")] = t0.AddDays(-1), [D("Google")] = t0.AddDays(-1), [D("Packages")] = t0.AddDays(-1), [D("youtube-music")] = t0.AddDays(-9), [D("OldApp")] = t0.AddDays(-3) };
+        var now = new[] { D("Temp"), D("Google"), D("Packages"), D("youtube-music"), D("OldApp"), D("brand-new"), D("Temp2") };
+        var fresh = GitHubApps.FreshDirs(now, before, _ => t0.AddMinutes(1), t0, "pear-devs/pear-desktop", "YouTube-Music-3.12.0.exe");
+        Assert.Equal([D("youtube-music"), D("brand-new"), D("Temp2")], fresh);
+        // tief verschachtelte Ordner werden nicht bis ganz unten durchsucht
+        var d = Tmp();
+        try
+        {
+            var deep = Path.Combine(d, "a", "b", "c", "d", "e", "f"); Directory.CreateDirectory(deep); File.WriteAllText(Path.Combine(deep, "versteckt.exe"), "x");
+            File.WriteAllText(Path.Combine(d, "a", "App.exe"), "x");
+            Assert.Equal("App.exe", Path.GetFileName(GitHubApps.MainExe(d, "o/app")));
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
     [Fact(DisplayName = "GitHub: README – Einleitung ohne Abzeichen/HTML/Überschriften, Funktionen aus „Features“; Beschreibung nutzt beides")]
     public void Readme()
     {

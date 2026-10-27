@@ -24,6 +24,8 @@ public class GitHubProgramsUiTests
         await w.OssSearch("werkzeug");
         Assert.NotNull(w.Find<Expander>("oss-guide-0"));
         await w.GitHubInstall(new OssRepo("a/b", "Ein kleines Werkzeug", "https://github.com/a/b", "https://github.com/a/b.git", 5, "MIT", "C#", DateTimeOffset.Now));
+        Assert.True(w.SetupFinishShown); // Abschluss mit „Los geht's“, danach zu
+        w.Find<Button>("setup-overlay-done").RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
         Assert.False(w.SetupOverlayOpen);
         Assert.True(File.Exists(Path.Combine(tools, "gh-a-b", "b", "b.exe")));
         w.Show("components");

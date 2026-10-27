@@ -190,6 +190,7 @@ public partial class MainWindow
         var roots = GitHubInstallRootsOverride ?? [Path.Combine(LocalAppDataDir, "Programs"), LocalAppDataDir];
         var before = roots.Where(Directory.Exists).SelectMany(Directory.GetDirectories).ToDictionary(d => d, Directory.GetLastWriteTimeUtc, StringComparer.OrdinalIgnoreCase);
         var started = DateTime.UtcNow.AddSeconds(-2);
+        var uninstBefore = UninstallKeys();
         var args = GitHubApps.SilentArgs(io.Kind);
         if (GitHubInstallerRunOverride is { } run) await run(io.File, args);
         else
@@ -198,15 +199,19 @@ public partial class MainWindow
             foreach (var a in args) psi.ArgumentList.Add(a);
             using var p = System.Diagnostics.Process.Start(psi) ?? throw new InvalidOperationException("Der Installer ließ sich nicht starten.");
             using var timeout = CancellationTokenSource.CreateLinkedTokenSource(SetupToken); timeout.CancelAfter(TimeSpan.FromMinutes(15));
-            await p.WaitForExitAsync(timeout.Token);
+            // Sichtbar, dass es weitergeht: Sekunden mitzählen
+            var t0 = DateTime.UtcNow;
+            var tick = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            tick.Tick += (_, _) => SetupOverlayProgress(3, 4, $"Installer läuft still für dich ({io.Kind}) … {(int)(DateTime.UtcNow - t0).TotalSeconds} s");
+            tick.Start();
+            try { await p.WaitForExitAsync(timeout.Token); } finally { tick.Stop(); }
             if (io.Kind == GitHubApps.InstallerKind.Squirrel) await Task.Delay(3000, SetupToken); // Squirrel richtet nach dem Ende noch kurz ein
         }
-        var name = repo.FullName.Split('/')[1].ToLowerInvariant();
-        var stem = System.Text.RegularExpressions.Regex.Replace(Path.GetFileNameWithoutExtension(asset.Name).ToLowerInvariant(), @"[-_. ]?(setup|installer|x64|win(64)?|\d+(\.\d+)*)", "").Trim('-', '_', ' ');
-        var fresh = roots.Where(Directory.Exists).SelectMany(Directory.GetDirectories)
-            .Where(d => !before.TryGetValue(d, out var t) || Directory.GetLastWriteTimeUtc(d) > t || Directory.GetLastWriteTimeUtc(d) >= started)
-            .OrderByDescending(d => Path.GetFileName(d).ToLowerInvariant().Replace(" ", "-") is var n && (n.Contains(name) || stem.Length > 2 && n.Contains(stem)) ? 1 : 0).ToList();
-        var exe = fresh.Select(d => GitHubApps.MainExe(d, repo.FullName)).FirstOrDefault(e => e is not null)
+        SetupOverlayProgress(3, 4, "Programm wird gesucht …");
+        // 1. Was der Installer bei Windows eingetragen hat (genau und sofort), 2. sonst nur neu angelegte bzw. passend benannte Ordner
+        var exe = (GitHubInstallRootsOverride is null ? NewUninstallExe(uninstBefore, repo.FullName) : null)
+            ?? await Task.Run(() => GitHubApps.FreshDirs(roots.Where(Directory.Exists).SelectMany(Directory.GetDirectories), before, Directory.GetLastWriteTimeUtc, started, repo.FullName, asset.Name)
+                .Select(d => GitHubApps.MainExe(d, repo.FullName)).FirstOrDefault(e => e is not null))
             ?? throw new InvalidOperationException("Der Installer ist durchgelaufen, aber Trendo findet das Programm nicht. Schau im Startmenü von Windows nach.");
         var sha = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(io.File)));
         GitHubApps.Register(_deps.ToolsRoot, repo.FullName, rel, asset, exe, sha, repo.LicenseId, repo.Description, _core.Audit);
@@ -265,6 +270,30 @@ public partial class MainWindow
         return GitHubApps.ParseRelease(await res.Content.ReadAsStringAsync());
     }
 
+    /// <summary>Programme, die Windows unter „Apps“ für diesen Benutzer kennt (nur lesen).</summary>
+    static HashSet<string> UninstallKeys()
+    {
+        if (!OperatingSystem.IsWindows()) return [];
+        using var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
+        return k is null ? [] : [.. k.GetSubKeyNames()];
+    }
+
+    /// <summary>Neuer Eintrag des Installers bei Windows → Programm aus „DisplayIcon“ oder dem Installationsordner.</summary>
+    static string? NewUninstallExe(HashSet<string> before, string repo)
+    {
+        if (!OperatingSystem.IsWindows()) return null;
+        using var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
+        if (k is null) return null;
+        foreach (var n in k.GetSubKeyNames().Where(n => !before.Contains(n)))
+        {
+            using var e = k.OpenSubKey(n);
+            if (e?.GetValue("DisplayIcon") is string icon && icon.Split(',')[0].Trim('"') is var ico && ico.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && File.Exists(ico)
+                && !Path.GetFileName(ico).StartsWith("unins", StringComparison.OrdinalIgnoreCase)) return ico;
+            if (e?.GetValue("InstallLocation") is string dir && Directory.Exists(dir.Trim('"')) && GitHubApps.MainExe(dir.Trim('"'), repo) is { } exe) return exe;
+        }
+        return null;
+    }
+
     async Task<string> GitHubDownload(GitHubApps.Asset asset)
     {
         var file = Path.Combine(Path.GetTempPath(), "trendo-gh-" + Guid.NewGuid().ToString("N") + Path.GetExtension(asset.Name));
@@ -273,7 +302,7 @@ public partial class MainWindow
         if (total > GitHubApps.MaxBytes) throw new InvalidOperationException("Die Datei ist zu groß.");
         await using var src = await res.Content.ReadAsStreamAsync();
         await using var dst = File.Create(file);
-        var buf = new byte[1 << 16]; long done = 0; int n; var last = DateTime.UtcNow;
+        var buf = new byte[1 << 20]; long done = 0; int n; var last = DateTime.UtcNow; var t0 = DateTime.UtcNow;
         while ((n = await src.ReadAsync(buf, SetupToken)) > 0)
         {
             done += n;
@@ -282,7 +311,8 @@ public partial class MainWindow
             if ((DateTime.UtcNow - last).TotalMilliseconds > 250 && total > 0)
             {
                 last = DateTime.UtcNow; var d = done;
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => SetupOverlayProgress(1, 3, $"{asset.Name}: {d / (1 << 20)} von {total / (1 << 20)} MB"));
+                var speed = d / Math.Max(0.5, (DateTime.UtcNow - t0).TotalSeconds) / (1 << 20);
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => SetupOverlayProgress(1, 4, $"{asset.Name}: {d / (1 << 20)} von {total / (1 << 20)} MB · {speed:0.0} MB/s"));
             }
         }
         return file;

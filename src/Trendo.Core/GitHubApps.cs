@@ -170,11 +170,28 @@ public static partial class GitHubApps
     {
         var name = repo.Split('/')[1].ToLowerInvariant();
         string[] helpers = ["unins", "uninstall", "update", "crashpad", "crash", "helper", "elevate", "vc_redist", "setup"];
-        var exes = Directory.EnumerateFiles(dir, "*.exe", SearchOption.AllDirectories)
-            .Where(f => !helpers.Any(h => Path.GetFileName(f).ToLowerInvariant().Contains(h))).ToList();
+        // Befund 27.10.2026 („braucht ewig“): nur bis Tiefe 4, ohne Verknüpfungen und gesperrte Ordner – Programme liegen nie tiefer
+        var opt = new EnumerationOptions { RecurseSubdirectories = true, MaxRecursionDepth = 4, IgnoreInaccessible = true, AttributesToSkip = FileAttributes.ReparsePoint | FileAttributes.System };
+        var exes = Directory.EnumerateFiles(dir, "*.exe", opt)
+            .Where(f => !helpers.Any(h => Path.GetFileName(f).ToLowerInvariant().Contains(h))).Take(400).ToList();
         return exes.FirstOrDefault(f => Path.GetFileNameWithoutExtension(f).Equals(name, StringComparison.OrdinalIgnoreCase))
             ?? exes.FirstOrDefault(f => Path.GetFileNameWithoutExtension(f).ToLowerInvariant().Contains(name))
             ?? exes.OrderByDescending(f => new FileInfo(f).Length).FirstOrDefault();
+    }
+
+    /// <summary>Ordner unter %LOCALAPPDATA%, die ständig von anderen Programmen beschrieben werden – dort liegt nie ein frisch installiertes Programm.</summary>
+    public static readonly string[] NoisyDirs = ["Temp", "Packages", "Microsoft", "Google", "Mozilla", "NVIDIA", "NVIDIA Corporation", "D3DSCache", "CrashDumps", "Comms",
+        "ConnectedDevicesPlatform", "Application Data", "History", "Temporary Internet Files", "PlaceholderTileLogoFolder", "Publishers", "IsolatedStorage", "pip", "npm-cache", "Steam", "Discord", "Spotify", "Trendo", "TrendoOS"];
+
+    /// <summary>Welche Ordner hat der Installer angelegt? Neue Ordner immer; geänderte nur, wenn der Name zum Projekt passt; laute Systemordner nie.</summary>
+    public static List<string> FreshDirs(IEnumerable<string> now, IReadOnlyDictionary<string, DateTime> before, Func<string, DateTime> lastWrite, DateTime started, string repo, string assetName)
+    {
+        var name = repo.Split('/')[1].ToLowerInvariant();
+        var stem = System.Text.RegularExpressions.Regex.Replace(Path.GetFileNameWithoutExtension(assetName).ToLowerInvariant(), @"[-_. ]?(setup|installer|x64|win(64)?|\d+(\.\d+)*)", "").Trim('-', '_', ' ');
+        bool Fits(string d) { var n = Path.GetFileName(d).ToLowerInvariant().Replace(' ', '-'); return n.Contains(name) || (stem.Length > 2 && n.Contains(stem)); }
+        return now.Where(d => !NoisyDirs.Contains(Path.GetFileName(d), StringComparer.OrdinalIgnoreCase))
+            .Where(d => !before.ContainsKey(d) || (Fits(d) && lastWrite(d) >= started))
+            .OrderByDescending(Fits).ThenByDescending(d => !before.ContainsKey(d)).ToList();
     }
 
     /// <summary>Entfernt ein Programm von GitHub: nur Ordner „gh-…“ direkt im Werkzeugordner, die in der Liste stehen.</summary>

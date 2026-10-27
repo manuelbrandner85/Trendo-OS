@@ -123,6 +123,7 @@ public sealed partial class MainWindow : Window
         InitSetupOverlay(root);
         InitToasts(root);
         InitKiProgress(root);
+        InitPhoneSurface(root);
         InitCommandPalette(root);
         var scaler = new LayoutTransformControl { Child = root };
         Content = scaler;
@@ -193,6 +194,7 @@ public sealed partial class MainWindow : Window
     public void Show(string key)
     {
         var sw = System.Diagnostics.Stopwatch.StartNew();
+        if (PhoneTakes(key)) { PresentPhone(key); return; } // vom Handy ausgelöst: auf der Handy-Fläche öffnen, nicht am PC
         CurrentView = key;
         MarkTab(key); MarkSide(key);
         PresentPage(key);

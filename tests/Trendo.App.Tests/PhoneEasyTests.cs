@@ -70,11 +70,17 @@ public class PhoneEasyTests
     sealed class FakeRemote : IPhoneRemote
     {
         public readonly List<string> Calls = [];
-        public Task<byte[]?> ScreenAsync(int maxWidth) { Calls.Add("screen " + maxWidth); return Task.FromResult<byte[]?>([0x89, 0x50, 0x4E, 0x47]); }
-        public Task<string> TapAsync(double fx, double fy) { Calls.Add(FormattableString.Invariant($"tap {fx:0.00} {fy:0.00}")); return Task.FromResult("Knopf"); }
-        public Task TypeAsync(string text) { Calls.Add("type " + text); return Task.CompletedTask; }
+        public IReadOnlyList<PhoneApp> Apps() => [new("W3-TEXT", "Texte & Tabellen", "Arbeiten & Büro", "M0,0H24V24H0Z")];
+        public Task<string?> OpenAsync(string id) { Calls.Add("open " + id); return Task.FromResult<string?>("Texte"); }
+        public Task<string?> BackAsync() { Calls.Add("back"); return Task.FromResult<string?>(null); }
+        public Task<PhoneFrame?> ScreenAsync(int width, int height, double scale, bool desktop)
+        { Calls.Add(FormattableString.Invariant($"screen {width}x{height}@{scale:0.0}{(desktop ? " pc" : "")}")); return Task.FromResult<PhoneFrame?>(new([0x89, 0x50, 0x4E, 0x47], "Texte & Tabellen")); }
+        public Task<PhoneHit> TapAsync(double fx, double fy, bool desktop) { Calls.Add(FormattableString.Invariant($"tap {fx:0.00} {fy:0.00}")); return Task.FromResult(new PhoneHit("Eingabefeld", "alt")); }
+        public Task SetTextAsync(string text) { Calls.Add("text " + text.Replace('', '+')); return Task.CompletedTask; }
+        public Task ChooseAsync(int index) { Calls.Add("choose " + index); return Task.CompletedTask; }
         public Task KeyAsync(string key) { Calls.Add("key " + key); return Task.CompletedTask; }
-        public Task ScrollAsync(double fx, double fy, double dy) { Calls.Add(FormattableString.Invariant($"scroll {dy:0.0}")); return Task.CompletedTask; }
+        public Task ScrollAsync(double fx, double fy, double dy, bool desktop) { Calls.Add(FormattableString.Invariant($"scroll {dy:0.0}")); return Task.CompletedTask; }
+        public byte[]? Icon() => [1, 2, 3];
         public void Started(string device) => Calls.Add("start " + device);
     }
 
@@ -104,17 +110,31 @@ public class PhoneEasyTests
         var again = await phone.GetAsync("/", ct); // dauerhaft: jeder Besuch verlängert den Schlüssel im Handy
         Assert.Contains(again.Headers.GetValues("Set-Cookie"), c => c.StartsWith(PhoneLinkServer.Cookie + "=") && c.Contains("max-age=31536000"));
         access.SetRemote(dev.Id, true);
-        Assert.Contains("/fern", await phone.GetStringAsync("/", ct));
-        Assert.Contains("Trendo-Bildschirm", await phone.GetStringAsync("/fern", ct));
-        var png = await phone.GetAsync("/api/screen?w=800", ct);
+        Assert.Contains("/app", await phone.GetStringAsync("/", ct));
+        var shell = await phone.GetStringAsync("/fern", ct); // alter Link führt zur App
+        Assert.Contains("manifest.webmanifest", shell); Assert.Contains("Testhandy", shell); Assert.Contains("id=\"tabs\"", shell);
+        Assert.Contains("standalone", await phone.GetStringAsync("/manifest.webmanifest", ct));
+        Assert.Equal([1, 2, 3], await phone.GetByteArrayAsync("/icon.png", ct));
+        Assert.Contains("Texte & Tabellen", await phone.GetStringAsync("/api/apps", ct));
+        Assert.Equal(HttpStatusCode.NotFound, (await phone.PostAsync("/api/open", Form(("id", "GIBT-ES-NICHT")), ct)).StatusCode);
+        Assert.Contains("Texte", await (await phone.PostAsync("/api/open", Form(("id", "W3-TEXT")), ct)).Content.ReadAsStringAsync(ct));
+        var png = await phone.GetAsync("/api/screen?w=412&h=780&s=2.6", ct);
         Assert.Equal("image/png", png.Content.Headers.ContentType?.MediaType);
-        Assert.Contains("Knopf", await (await phone.PostAsync("/api/tap", Form(("x", "0.25"), ("y", "0.75")), ct)).Content.ReadAsStringAsync(ct));
+        Assert.Equal("Texte%20%26%20Tabellen", png.Headers.GetValues("X-Trendo-Title").Single());
+        var same = new HttpRequestMessage(HttpMethod.Get, "/api/screen?w=412&h=780&s=2.6"); same.Headers.TryAddWithoutValidation("If-None-Match", png.Headers.ETag!.ToString());
+        Assert.Equal(HttpStatusCode.NotModified, (await phone.SendAsync(same, ct)).StatusCode); // unverändert: kein neues Bild
+        var tap = await (await phone.PostAsync("/api/tap", Form(("x", "0.25"), ("y", "0.75")), ct)).Content.ReadAsStringAsync(ct);
+        Assert.Contains("\"kind\":\"Eingabefeld\"", tap); Assert.Contains("\"text\":\"alt\"", tap);
         Assert.Equal(HttpStatusCode.BadRequest, (await phone.PostAsync("/api/tap", Form(("x", "2"), ("y", "0.5")), ct)).StatusCode);
-        Assert.Equal(HttpStatusCode.OK, (await phone.PostAsync("/api/type", Form(("text", "Hallo")), ct)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await phone.PostAsync("/api/settext", Form(("text", "Hallo Welt")), ct)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await phone.PostAsync("/api/type", Form(("text", "!")), ct)).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await phone.PostAsync("/api/choose", Form(("i", "2")), ct)).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await phone.PostAsync("/api/key", Form(("key", "enter")), ct)).StatusCode);
         Assert.Equal(HttpStatusCode.BadRequest, (await phone.PostAsync("/api/key", Form(("key", "alt+f4")), ct)).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await phone.PostAsync("/api/scroll", Form(("x", "0.5"), ("y", "0.5"), ("dy", "9")), ct)).StatusCode);
-        Assert.Equal(["start Testhandy", "screen 800", "tap 0.25 0.75", "type Hallo", "key enter", "scroll 3.0"], remote.Calls);
+        Assert.Equal(HttpStatusCode.OK, (await phone.PostAsync("/api/back", null, ct)).StatusCode);
+        await phone.GetAsync("/api/screen?w=412&h=780&s=1&pc=1", ct);
+        Assert.Equal(["start Testhandy", "open W3-TEXT", "screen 412x780@2.5", "screen 412x780@2.5", "tap 0.25 0.75", "text Hallo Welt", "text +!", "choose 2", "key enter", "scroll 3.0", "back", "screen 412x780@1.0 pc"], remote.Calls);
 
         // Ohne Tailscale-Adresse gibt es keinen Unterwegs-Link; der Übergabe-Link selbst meldet ein zweites Mal an
         Assert.Equal(HttpStatusCode.NotFound, (await phone.PostAsync("/api/away", null, ct)).StatusCode);
@@ -221,6 +241,43 @@ public class PhoneEasyTests
         w.PhoneType("Musik!"); w.PhoneKey("back");
         Assert.EndsWith("Musik", box.Text);
         w.PhoneScroll(0.5, 0.5, 1);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Handy-App: Apps-Liste, App öffnet in Handy-Größe auf dem Handy (nicht am PC), Navigation bleibt auf dem Handy, Zurück zum Start")]
+    public async Task Phone_app_surface()
+    {
+        var (w, _, _) = Ui.Open();
+        var apps = w.PhoneApps();
+        Assert.True(apps.Count > 20);
+        Assert.All(apps, a => Assert.False(string.IsNullOrEmpty(a.Icon)));
+        var pcWindows = w.Windows.Stack.Count;
+        var title = await w.PhoneOpen("SYS-10");
+        Assert.NotNull(w.PhonePage);
+        Assert.Equal(pcWindows, w.Windows.Stack.Count); // am PC öffnet sich nichts
+        var f = w.PhoneScreen(412, 800, 1, false);
+        Assert.NotNull(f); Assert.Equal(title, f!.Title);
+        var surface = w.Find<Border>("phone-surface");
+        Assert.Equal(412, surface.Bounds.Width); // in Handy-Breite aufgebaut
+        // Tipp auf dem Handy: was danach aufgerufen wird, öffnet auf dem Handy
+        w.PhoneTapAt(0.99, 0.99, false);
+        w.Show("handy");
+        Assert.Equal("handy", w.PhonePage);
+        Assert.DoesNotContain(w.Windows.Stack, x => x.Page == "handy");
+        Assert.NotNull(w.PhoneScreen(412, 800, 1, false));
+        // Eingabe auf der Handy-Fläche: Feld antippen, Text setzen
+        w.PresentPhoneForTests("oss");
+        w.PhoneScreen(412, 800, 1, false);
+        var box = surface.GetVisualDescendants().OfType<TextBox>().First(t => t.IsEffectivelyVisible && t.IsEffectivelyEnabled && !t.IsReadOnly);
+        var c = box.TranslatePoint(new Point(box.Bounds.Width / 2, box.Bounds.Height / 2), surface)!.Value;
+        var hit = w.PhoneTapAt(c.X / 412, c.Y / 800, false);
+        Assert.True(hit.Kind == "Eingabefeld", $"{hit.Kind}: {w.PhoneLastHit} bei {c} Box {box.Name} {box.Bounds}");
+        w.PhoneSetText("Musik"); Assert.Equal("Musik", box.Text);
+        w.PhoneSetText(" laut"); Assert.Equal("Musik laut", box.Text);
+        // Zurück bis zum Handy-Start
+        while (w.PhoneBack() is not null) { }
+        Assert.Null(w.PhonePage);
+        Assert.Null(w.PhoneScreen(412, 800, 1, false));
         w.Close();
     }
 }
