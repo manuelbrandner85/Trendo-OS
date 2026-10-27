@@ -173,7 +173,7 @@ public partial class MainWindow
         improve.Click += async (_, _) =>
         {
             improve.IsEnabled = false; suggestion.Children.Clear(); suggestion.Children.Add(P("Die KI schreibt …"));
-            var ans = await _ollama.ChatAsync(KiModelName, "Verbessere diesen Brieftext für einen deutschen Brief nach DIN 5008: klar, höflich, sachlich. Ändere keine Fakten, Zahlen, Daten oder Namen. Lass Platzhalter in eckigen Klammern stehen. Gib nur den verbesserten Text ohne Anrede und Gruß zurück.\n\nBetreff: " + d.Subject + "\n\n" + d.Body);
+            using var kiLabel = Trendo.Core.KiActivityHub.Label("Brief verbessern"); var ans = await _ollama.ChatAsync(KiModelName, "Verbessere diesen Brieftext für einen deutschen Brief nach DIN 5008: klar, höflich, sachlich. Ändere keine Fakten, Zahlen, Daten oder Namen. Lass Platzhalter in eckigen Klammern stehen. Gib nur den verbesserten Text ohne Anrede und Gruß zurück.\n\nBetreff: " + d.Subject + "\n\n" + d.Body);
             suggestion.Children.Clear();
             var take = new Button { Name = "letter-ki-take", Content = "Vorschlag übernehmen", Background = Accent };
             take.Click += (_, _) => { d.Body = ans; _core.Audit.Append(Principal.LocalOwner.Name, "letter.ki_accept", d.Subject); Show("brief"); };

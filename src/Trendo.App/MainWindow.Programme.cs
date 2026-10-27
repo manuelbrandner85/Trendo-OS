@@ -121,6 +121,7 @@ public partial class MainWindow
             SetupOverlayProgress(3, 3, "Fertig ✓");
             Say($"„{repo.FullName}“ {entry.Version} ist installiert. Du findest es unter „Programme“.", "oss");
         }
+        catch (OperationCanceledException) when (SetupCancelRequested) { Say($"Installation von „{repo.FullName}“ abgebrochen.", "oss"); }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or IOException or UnauthorizedAccessException or TaskCanceledException or System.Text.Json.JsonException or InvalidDataException)
         {
             _core.Audit.Append(Principal.LocalOwner.Name, "github.install.failed", $"{repo.FullName}: {ex.Message}");
@@ -175,7 +176,7 @@ public partial class MainWindow
         await using var src = await res.Content.ReadAsStreamAsync();
         await using var dst = File.Create(file);
         var buf = new byte[1 << 16]; long done = 0; int n; var last = DateTime.UtcNow;
-        while ((n = await src.ReadAsync(buf)) > 0)
+        while ((n = await src.ReadAsync(buf, SetupToken)) > 0)
         {
             done += n;
             if (done > GitHubApps.MaxBytes) throw new InvalidOperationException("Die Datei ist größer als angegeben.");

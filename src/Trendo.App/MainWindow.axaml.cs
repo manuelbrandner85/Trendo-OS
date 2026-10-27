@@ -122,6 +122,7 @@ public sealed partial class MainWindow : Window
         WireKi();
         InitSetupOverlay(root);
         InitToasts(root);
+        InitKiProgress(root);
         InitCommandPalette(root);
         var scaler = new LayoutTransformControl { Child = root };
         Content = scaler;
@@ -358,10 +359,10 @@ public sealed partial class MainWindow : Window
     }
     private static TextBlock Glyph(string glyph, double size = 18) => new() { Text = glyph, FontSize = size, HorizontalAlignment = HorizontalAlignment.Center };
 
-    /// <summary>Trendo-Logo B „Saphir-Kristall“ (<see cref="TrendoLogo"/>, Vektor, viewBox 64×64).</summary>
-    internal static Control Logo(double size, bool glow = false)
+    /// <summary>Trendo-Logo C „Gold-Orbit“ (<see cref="TrendoLogo"/>, fotorealistisches Emblem auf Kachel, 64×64).</summary>
+    internal static Control Logo(double size, bool glow = false, bool tile = true)
     {
-        var box = new Viewbox { Name = "trendo-logo", Width = size, Height = size, Stretch = Stretch.Uniform, Child = TrendoLogo.Build() };
+        var box = new Viewbox { Name = "trendo-logo", Width = size, Height = size, Stretch = Stretch.Uniform, Child = TrendoLogo.Build(tile) };
         if (glow) box.Effect = new DropShadowEffect { Color = Color.Parse(TrendoLogo.Glow), BlurRadius = size * 0.35, OffsetX = 0, OffsetY = 0, Opacity = 0.8 };
         ToolTip.SetTip(box, "Trendo-Logo");
         return box;
@@ -937,7 +938,7 @@ public sealed partial class MainWindow : Window
     {
         _kiInput.Text = ""; _kiInput.IsEnabled = false; _kiText.Text = $"Du: {q}\n\nTrendo KI denkt …";
         _core.Audit.Append(Principal.LocalOwner.Name, "ki.ask", $"{q.Length} Zeichen");
-        var a = KiChatOverride is { } o ? await o(q) : await _ollama.ChatAsync(KiModelName, q);
+        using var kiLabel = Trendo.Core.KiActivityHub.Label("Trendo KI"); var a = KiChatOverride is { } o ? await o(q) : await _ollama.ChatAsync(KiModelName, q);
         _kiText.Text = $"Du: {q}\n\nTrendo KI: {a}"; _kiInput.IsEnabled = true;
     }
 
@@ -955,7 +956,7 @@ public sealed partial class MainWindow : Window
         var vpMsg = new TextBlock { Name = "vollpaket-msg", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap };
         vpGo.Click += async (_, _) =>
         {
-            var p = vpDir.Text?.Trim().Trim('"') ?? "";
+            var p = Clean(vpDir);
             if (Vollpaket.Locate([p]) is not { } found) { vpMsg.Text = "In diesem Ordner gibt es keinen gültigen Ordner „Programme“ mit manifest.json."; return; }
             VollpaketStart.RememberFromInstaller([Path.GetDirectoryName(found) ?? found]);
             await InstallVollpaket(found); Show("components");
@@ -1274,7 +1275,9 @@ public sealed partial class MainWindow : Window
         Vollpaket.InstallReport? r = null;
         try
         {
-            r = await Task.Run(() => Vollpaket.InstallEach(dir, _deps.ToolsRoot, _core.Audit, line => Dispatcher.UIThread.Post(() => { _depLog.Text = line; SetupOverlayProgress(++step, total, line); })));
+            var ct = SetupToken;
+            r = await Task.Run(() => Vollpaket.InstallEach(dir, _deps.ToolsRoot, _core.Audit, line => Dispatcher.UIThread.Post(() => { _depLog.Text = line; SetupOverlayProgress(++step, total, line); }), ct));
+            if (r.Canceled) { _depLog.Text = $"Abgebrochen – {r.Installed + r.Present} von {r.Total} Programmen sind eingerichtet."; return r; }
             var ok = r.Installed + r.Present;
             _depLog.Text = r.Failed.Count == 0 ? $"Alle {r.Total} mitgelieferten Programme sind eingerichtet ✓" : $"{ok} von {r.Total} Programmen eingerichtet, {r.Failed.Count} nicht.";
             FinishSetupOverlay(r.Failed.Count == 0 ? "Alles eingerichtet" : "Fast alles eingerichtet",
@@ -1301,6 +1304,7 @@ public sealed partial class MainWindow : Window
         {
             for (var i = 0; i < todo.Count; i++)
             {
+                if (SetupCancelRequested) break;
                 SetupOverlayProgress(i, todo.Count, $"{todo[i].Name} wird installiert …");
                 if (!await InstallOne(todo[i], refresh: false)) break;
             }

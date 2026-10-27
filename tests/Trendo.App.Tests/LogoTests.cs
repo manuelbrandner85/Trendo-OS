@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Trendo.App.Tests;
 
-/// <summary>T-0109: Logo ersetzt das V-Konzeptlogo überall. Seit 26.10.2026 Logo B „Saphir-Kristall“ (TrendoLogo.cs).</summary>
+/// <summary>T-0109: Logo ersetzt das V-Konzeptlogo überall. Seit 27.10.2026 Logo C „Gold-Orbit“ (TrendoLogo.cs), vorher Logo B „Saphir-Kristall“.</summary>
 public class LogoTests
 {
     static string Root([System.Runtime.CompilerServices.CallerFilePath] string f = "") => Path.GetFullPath(Path.Combine(Path.GetDirectoryName(f)!, "..", ".."));
@@ -44,11 +44,16 @@ public class LogoTests
         w.Close();
     }
 
-    [Fact(DisplayName = "Logo B: SVG im Repo entspricht der Geometrie in TrendoLogo.cs")]
-    public void Svg_matches_source()
+    [Fact(DisplayName = "Logo C „Gold-Orbit“: fotorealistisches Emblem aus der Vorlage liegt bei, PNGs in allen Größen")]
+    public void Emblem_and_pngs()
     {
-        var svg = File.ReadAllText(Path.Combine(Root(), "src", "Trendo.App", "Assets", "logo", "trendo-logo-b.svg")).ReplaceLineEndings("\n");
-        Assert.Equal(TrendoLogo.Svg(), svg);
-        Assert.True(TrendoLogo.Facets().Count >= 20, "Kristall braucht Facetten");
+        var dir = Path.Combine(Root(), "src", "Trendo.App", "Assets", "logo");
+        Assert.True(File.Exists(Path.Combine(Root(), "docs", "design", "logo-vorschlaege", "gold-orbit-vorlage.png")), "Vorlage fehlt");
+        foreach (var f in new[] { "trendo-emblem.png", "trendo-32.png", "trendo-256.png", "trendo-512.png" })
+        {
+            var b = File.ReadAllBytes(Path.Combine(dir, f));
+            Assert.True(b.Length > 1000 && b[0] == 0x89 && b[1] == (byte)'P', f + " ist kein PNG");
+        }
+        Assert.False(File.Exists(Path.Combine(dir, "trendo-logo-b.svg")), "altes Logo B liegt noch bei");
     }
 }

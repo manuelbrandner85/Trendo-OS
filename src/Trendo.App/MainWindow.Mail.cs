@@ -48,7 +48,7 @@ public partial class MainWindow
         {
             var d = D(); if (string.IsNullOrWhiteSpace(d.Body)) { _mailMsg = "Schreib zuerst etwas."; Show("post"); return; }
             ki.IsEnabled = false;
-            var a = await Intel.AskAsync(new KiRequest("Formuliere diese E-Mail freundlicher und klarer, ohne Inhalt zu ändern. Gib nur den neuen Text aus:\n\n" + d.Body, PreferredModel: KiModelName, UseKnowledge: false));
+            using var kiLabel = Trendo.Core.KiActivityHub.Label("E-Mail verbessern"); var a = await Intel.AskAsync(new KiRequest("Formuliere diese E-Mail freundlicher und klarer, ohne Inhalt zu ändern. Gib nur den neuen Text aus:\n\n" + d.Body, PreferredModel: KiModelName, UseKnowledge: false));
             if (a.Ok) { _mailBody = a.Text; _mailMsg = "Vorschlag der KI eingesetzt – bitte lesen, bevor du sendest."; } else _mailMsg = a.Text;
             Show("post");
         };

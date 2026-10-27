@@ -149,7 +149,7 @@ step();
         File.WriteAllText(Path.Combine(dir, "game.js"), Common + Js[t.Id].TrimStart(), new UTF8Encoding(false));
         File.WriteAllText(Path.Combine(dir, "vorlage.txt"), t.Id);
         Save(dir, settings ?? new GameSettings { Level = t.Id == "breakout" ? DefaultBreakout : t.Id == "jump" ? DefaultJump : [] });
-        File.WriteAllText(Path.Combine(dir, "README.md"), $"# {name}\n\nVorlage „{t.Label}“ aus Trendo OS. Öffne index.html im Browser. Regeln, Farben und Level stehen in config.js (im Spiele-Studio einstellbar).\n");
+        File.WriteAllText(Path.Combine(dir, "README.md"), $"# {name}\n\nVorlage „{t.Label}“. Öffne index.html im Browser. Regeln, Farben und Level stehen in config.js (einstellbar im Spiele-Studio).\n");
         return dir;
     }
 

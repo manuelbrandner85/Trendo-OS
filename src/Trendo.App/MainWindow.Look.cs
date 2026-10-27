@@ -53,7 +53,7 @@ public sealed partial class MainWindow
         if (s.Theme == "kontrast") { EdgeLit = Edge; CardShadow = default; return; }
         var light = s.Theme == "hell";
         TileBg = Vertical(light ? "#F7FFFFFF" : "#B2213A6B", light ? "#E0E9F0FA" : "#A00F1C3A");
-        EdgeLit = Vertical(light ? "#FFFFFFFF" : "#5590C2FF", light ? "#40335C99" : "#2255A8FF");
+        EdgeLit = Vertical(light ? "#CCE8C77A" : "#80F5C451", light ? "#403B82F6" : "#333B82F6"); // Gold oben, Blau unten (Logo C, 27.10.2026)
         CardShadow = BoxShadows.Parse(light ? "0 8 22 -10 #40223355" : "0 10 26 -10 #99000614");
     }
 
@@ -67,7 +67,7 @@ public sealed partial class MainWindow
 
     private static Bitmap? LoadWallpaper(string name)
     {
-        foreach (var uri in new[] { $"avares://TrendoOS/Assets/wallpapers/{name}.jpg", "avares://TrendoOS/Assets/wallpaper.jpg" })
+        foreach (var uri in new[] { $"avares://TrendoOS/Assets/wallpapers/{name}.jpg", $"avares://TrendoOS/Assets/wallpapers/{name}.png", "avares://TrendoOS/Assets/wallpaper.jpg" })
             try { using var st = AssetLoader.Open(new Uri(uri)); return new Bitmap(st); } catch { }
         return null;
     }
@@ -230,7 +230,7 @@ public sealed partial class MainWindow
         sections.Children.Add(Section("farbe", "Akzentfarbe", new StackPanel { Spacing = 6, Children = { colors, auto } }));
 
         var walls = new WrapPanel();
-        foreach (var (id, label) in new[] { ("orbit", "Orbit"), ("abendrot", "Abendrot"), ("bergsee-nacht", "Bergsee"), ("polarlicht", "Polarlicht"), ("wellen", "Wellen"), ("morgen", "Morgen") })
+        foreach (var (id, label) in new[] { ("gold-orbit", "Gold-Orbit"), ("orbit", "Orbit"), ("abendrot", "Abendrot"), ("bergsee-nacht", "Bergsee"), ("polarlicht", "Polarlicht"), ("wellen", "Wellen"), ("morgen", "Morgen") })
         {
             var on = !_settings.WallpaperByTime && _settings.Wallpaper == id;
             var b = new Button { Name = "wall-" + id, Margin = new Thickness(0, 0, 10, 10), Padding = new Thickness(3), BorderBrush = on ? Accent : Brushes.Transparent, BorderThickness = new Thickness(2), Background = Brushes.Transparent, CornerRadius = new CornerRadius(8),

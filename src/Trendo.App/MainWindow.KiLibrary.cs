@@ -152,6 +152,7 @@ public partial class MainWindow
             else if (rt.FromVollpaket && !store.RuntimeReady(m.Runtime)) throw new InvalidOperationException($"{rt.Name} fehlt noch – bitte unter „Programme“ aus dem Vollpaket einrichten.");
             foreach (var f in m.Files)
             {
+                SetupToken.ThrowIfCancellationRequested();
                 if (new FileInfo(store.ModelFile(m, f)) is { Exists: true } fi && fi.Length == f.Bytes) { step++; continue; }
                 SetupOverlayProgress(step, steps, $"{f.FileName} wird geladen …");
                 var (file, sha) = await KiDownload(f.Url, f.FileName, f.Bytes, step, steps);
@@ -162,6 +163,7 @@ public partial class MainWindow
             _core.Audit.Append(Principal.LocalOwner.Name, "ki.library.install", $"{m.Id} {m.License}");
             _kiLibMsg = $"{m.Name} ist eingerichtet. Mit „Ausprobieren“ kannst du es gleich testen."; _kiTry = m.Id;
         }
+        catch (OperationCanceledException) when (SetupCancelRequested) { _kiLibMsg = $"{m.Name}: Laden abgebrochen."; }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or IOException or UnauthorizedAccessException or TaskCanceledException or InvalidDataException)
         {
             _core.Audit.Append(Principal.LocalOwner.Name, "ki.library.failed", $"{m.Id}: {ex.Message}");
@@ -190,6 +192,13 @@ public partial class MainWindow
 
     /// <summary>Lädt eine Datei mit eigenen Weiterleitungen (nur erlaubte Server), Größenkontrolle und Fortschritt. Hugging Face nennt bei großen
     /// Dateien die SHA-256 im Kopf „X-Linked-Etag“ – die wird zurückgegeben und danach geprüft.</summary>
+    /// <summary>Lesen mit Abbruch: bei „Abbrechen“ wird die halbe Datei gelöscht.</summary>
+    static async Task<int> ReadOrDelete(Stream src, byte[] buf, CancellationToken ct, string partial)
+    {
+        try { return await src.ReadAsync(buf, ct); }
+        catch (OperationCanceledException) { try { File.Delete(partial); } catch (IOException) { } throw; }
+    }
+
     private async Task<(string File, string? Sha256)> KiDownload(string url, string fileName, long bytes, int step, int steps)
     {
         if (KiDownloadOverride is not null) return await KiDownloadOverride(url, fileName);
@@ -215,7 +224,8 @@ public partial class MainWindow
             await using (var dst = File.Create(file))
             {
                 var buf = new byte[1 << 20]; long done = 0; int n; var last = DateTime.UtcNow;
-                while ((n = await src.ReadAsync(buf)) > 0)
+                var ct = SetupToken;
+                while ((n = await ReadOrDelete(src, buf, ct, file)) > 0)
                 {
                     done += n;
                     if (done > bytes) throw new InvalidOperationException($"{fileName} ist größer als angegeben.");

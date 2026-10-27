@@ -82,7 +82,7 @@ public partial class MainWindow
             var q = input.Text?.Trim() ?? "";
             if (q == "") { state.Text = "Bitte schreib zuerst eine Frage."; return; }
             send.IsEnabled = false; state.Text = "Trendo denkt nach …";
-            var a = await Intel.AskAsync(new KiRequest(q, PreferredModel: KiModelName, History: _chat.ToList(), AllowRemote: true));
+            using var kiLabel = Trendo.Core.KiActivityHub.Label("Trendo KI"); var a = await Intel.AskAsync(new KiRequest(q, PreferredModel: KiModelName, History: _chat.ToList(), AllowRemote: true));
             LastAnswer = a.Text;
             if (a.Ok) { _chat.Add(new("user", q)); _chat.Add(new("assistant", a.Text)); }
             _askState = a.Ok ? $"Antwort von {a.Model} ({a.Backend}{(KiCatalog.Cloud.Any(c => c.Name == a.Backend) ? ", außerhalb des PCs" : "")}) in {a.Took.TotalSeconds:0.0} s{(a.Sources.Count > 0 ? " · Wissen: " + string.Join(", ", a.Sources) : "")}" : a.Text;

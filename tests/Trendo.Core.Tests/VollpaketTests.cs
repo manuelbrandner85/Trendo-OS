@@ -57,6 +57,9 @@ public class T0222_Vollpaket
             Assert.True(File.Exists(Path.Combine(tools, "qpdf", "bin", "qpdf.exe")));
             Assert.Contains(lines, l => l.StartsWith("mpv: nicht eingerichtet"));
             Assert.Equal(0, Vollpaket.InstallMissing(prog, tools)); // qpdf da, mpv weiter kaputt: kein Abbruch
+            using var cts = new CancellationTokenSource(); cts.Cancel();
+            var c = Vollpaket.InstallEach(prog, Path.Combine(root, "leer"), null, null, cts.Token);
+            Assert.True(c.Canceled); Assert.Equal(0, c.Installed);
         }
         finally { Directory.Delete(root, true); }
     }

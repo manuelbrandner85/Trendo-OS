@@ -63,7 +63,7 @@ public partial class MainWindow
         if (ReaderShown is { } p)
         {
             var tr = new Button { Name = "rs-translate", Content = "Auf Deutsch (KI auf diesem PC)" };
-            tr.Click += async (_, _) => { tr.IsEnabled = false; var a = await Intel.AskAsync(new KiRequest("Übersetze ins Deutsche. Gib nur die Übersetzung aus:\n\n" + (p.Text.Length > 4000 ? p.Text[..4000] : p.Text), PreferredModel: KiModelName, UseKnowledge: false)); _rsTrans = a.Text; Show("recherche"); };
+            tr.Click += async (_, _) => { tr.IsEnabled = false; using var kiLabel = Trendo.Core.KiActivityHub.Label("Recherche"); var a = await Intel.AskAsync(new KiRequest("Übersetze ins Deutsche. Gib nur die Übersetzung aus:\n\n" + (p.Text.Length > 4000 ? p.Text[..4000] : p.Text), PreferredModel: KiModelName, UseKnowledge: false)); _rsTrans = a.Text; Show("recherche"); };
             var body = new StackPanel { Spacing = 4, Children = { H(p.Title, 15), tr } };
             if (_rsTrans != "") body.Children.Add(new SelectableTextBlock { Name = "rs-trans", Text = _rsTrans, Foreground = Text, TextWrapping = TextWrapping.Wrap });
             body.Children.Add(new SelectableTextBlock { Name = "rs-text", Text = p.Text.Length > 20000 ? p.Text[..20000] + "\n…" : p.Text, Foreground = Text, TextWrapping = TextWrapping.Wrap, FontSize = 12.5 });

@@ -16,7 +16,7 @@ public static class LocalOnly
     }
 }
 
-public sealed class OllamaBackend(string baseUrl = "http://127.0.0.1:11434", HttpMessageHandler? handler = null) : IKiBackend
+public sealed class OllamaBackend(string baseUrl = "http://127.0.0.1:11434", HttpMessageHandler? handler = null) : IStreamingKiBackend
 {
     private readonly HttpClient _http = new(handler ?? new HttpClientHandler()) { BaseAddress = LocalOnly.Require(baseUrl), Timeout = TimeSpan.FromMinutes(30) };
     public string Name => "Ollama";
@@ -54,10 +54,51 @@ public sealed class OllamaBackend(string baseUrl = "http://127.0.0.1:11434", Htt
         var doc = await r.Content.ReadFromJsonAsync<JsonElement>(ct);
         return doc.GetProperty("message").GetProperty("content").GetString()?.Trim() ?? "";
     }
+
+    /// <summary>Antwort Stück für Stück (NDJSON von /api/chat mit stream=true) – für die Fortschrittsanzeige.</summary>
+    public async Task<string> ChatStreamAsync(string model, IReadOnlyList<KiMessage> messages, Action<string> onDelta, CancellationToken ct = default)
+    {
+        var body = new { model, stream = true, messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray() };
+        using var req = new HttpRequestMessage(HttpMethod.Post, "/api/chat") { Content = JsonContent.Create(body) };
+        using var r = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
+        r.EnsureSuccessStatusCode();
+        return await KiStream.ReadNdjson(await r.Content.ReadAsStreamAsync(ct), onDelta, ct);
+    }
+}
+
+/// <summary>Gestreamte Antworten lesen: Ollama (NDJSON) und OpenAI-Format (Server-Sent Events).</summary>
+public static class KiStream
+{
+    public static async Task<string> ReadNdjson(Stream s, Action<string> onDelta, CancellationToken ct)
+    {
+        var sb = new System.Text.StringBuilder(); using var rd = new StreamReader(s);
+        while (await rd.ReadLineAsync(ct) is { } line)
+        {
+            if (line.Length == 0) continue;
+            using var doc = JsonDocument.Parse(line);
+            if (doc.RootElement.TryGetProperty("error", out var err)) throw new InvalidOperationException(err.GetString());
+            if (doc.RootElement.TryGetProperty("message", out var m) && m.TryGetProperty("content", out var c) && c.GetString() is { Length: > 0 } t) { sb.Append(t); onDelta(t); }
+            if (doc.RootElement.TryGetProperty("done", out var done) && done.GetBoolean()) break;
+        }
+        return sb.ToString().Trim();
+    }
+
+    public static async Task<string> ReadSse(Stream s, Action<string> onDelta, CancellationToken ct)
+    {
+        var sb = new System.Text.StringBuilder(); using var rd = new StreamReader(s);
+        while (await rd.ReadLineAsync(ct) is { } line)
+        {
+            if (!line.StartsWith("data:", StringComparison.Ordinal)) continue;
+            var data = line[5..].Trim(); if (data == "[DONE]") break;
+            using var doc = JsonDocument.Parse(data);
+            if (doc.RootElement.TryGetProperty("choices", out var ch) && ch.GetArrayLength() > 0 && ch[0].TryGetProperty("delta", out var d) && d.TryGetProperty("content", out var c) && c.GetString() is { Length: > 0 } t) { sb.Append(t); onDelta(t); }
+        }
+        return sb.ToString().Trim();
+    }
 }
 
 /// <summary>LM Studio, llama.cpp-Server, Jan, KoboldCpp … sprechen das OpenAI-Format unter /v1 – hier nur lokal.</summary>
-public sealed class OpenAiCompatBackend(string name, string baseUrl, HttpMessageHandler? handler = null) : IKiBackend
+public sealed class OpenAiCompatBackend(string name, string baseUrl, HttpMessageHandler? handler = null) : IStreamingKiBackend
 {
     private readonly HttpClient _http = new(handler ?? new HttpClientHandler()) { BaseAddress = LocalOnly.Require(baseUrl), Timeout = TimeSpan.FromSeconds(180) };
     public string Name => name;
@@ -82,6 +123,16 @@ public sealed class OpenAiCompatBackend(string name, string baseUrl, HttpMessage
         r.EnsureSuccessStatusCode();
         var doc = await r.Content.ReadFromJsonAsync<JsonElement>(ct);
         return doc.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString()?.Trim() ?? "";
+    }
+
+    /// <summary>Antwort Stück für Stück (Server-Sent Events) – für die Fortschrittsanzeige.</summary>
+    public async Task<string> ChatStreamAsync(string model, IReadOnlyList<KiMessage> messages, Action<string> onDelta, CancellationToken ct = default)
+    {
+        var body = new { model, stream = true, messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray() };
+        using var req = new HttpRequestMessage(HttpMethod.Post, "/v1/chat/completions") { Content = JsonContent.Create(body) };
+        using var r = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
+        r.EnsureSuccessStatusCode();
+        return await KiStream.ReadSse(await r.Content.ReadAsStreamAsync(ct), onDelta, ct);
     }
 }
 

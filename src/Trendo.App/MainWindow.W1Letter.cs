@@ -298,7 +298,7 @@ public partial class MainWindow
             b.Click += async (_, _) =>
             {
                 b.IsEnabled = false;
-                var ans = await _ollama.ChatAsync(KiModelName, $"Übersetze den folgenden deutschen Brieftext ins {name}. Ändere keine Zahlen, Daten, Beträge, Aktenzeichen oder Namen. Gib nur die Übersetzung aus.\n\n" + LetterKit.FenceUntrusted(d.Body));
+                using var kiLabel = Trendo.Core.KiActivityHub.Label("Brief übersetzen"); var ans = await _ollama.ChatAsync(KiModelName, $"Übersetze den folgenden deutschen Brieftext ins {name}. Ändere keine Zahlen, Daten, Beträge, Aktenzeichen oder Namen. Gib nur die Übersetzung aus.\n\n" + LetterKit.FenceUntrusted(d.Body));
                 c.Translations.RemoveAll(t => t.Language == code); c.Translations.Add(new(code, ans, DateTime.Now, LetterKit.ShaText(d.Body))); SaveCase("Übersetzung " + code); Show("ausgabe");
             };
             langs.Children.Add(b);

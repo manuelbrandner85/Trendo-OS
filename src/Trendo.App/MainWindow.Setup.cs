@@ -131,6 +131,7 @@ public sealed partial class MainWindow
         var todo = list.Where(c => !_deps.IsInstalled(c) && c.Mode is DeliveryMode.AutoUser or DeliveryMode.AutoElevated or DeliveryMode.Included).ToList();
         for (var i = 0; i < todo.Count; i++)
         {
+            if (SetupCancelRequested) { _depLog.Text = "Einrichtung abgebrochen."; break; }
             _depLog.Text = $"{i + 1}/{todo.Count}: {todo[i].Name} …";
             SetupOverlayProgress(i, todo.Count, $"{todo[i].Name} wird eingerichtet …");
             await InstallOne(todo[i], refresh: false);

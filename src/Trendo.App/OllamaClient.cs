@@ -44,18 +44,25 @@ public sealed class OllamaClient
         catch { return false; }
     }
 
+    /// <summary>Frage an die lokale KI – Antwort Stück für Stück, damit die Fortschrittsanzeige Phase und Wörter zeigt (Wunsch 27.10.2026).</summary>
     public async Task<string> ChatAsync(string model, string question)
     {
+        var act = Trendo.Core.KiActivityHub.Begin();
+        var text = "";
         try
         {
-            var body = new { model, stream = false, messages = new object[] {
+            Trendo.Core.KiActivityHub.Update(act, phase: $"{model} wird gestartet …", backend: "Ollama", model: model);
+            var body = new { model, stream = true, messages = new object[] {
                 new { role = "system", content = "Du bist Trendo KI, ein hilfreicher Assistent in Trendo OS. Antworte kurz und auf Deutsch." },
                 new { role = "user", content = question } } };
-            using var r = await _http.PostAsJsonAsync("/api/chat", body);
+            using var req = new HttpRequestMessage(HttpMethod.Post, "/api/chat") { Content = JsonContent.Create(body) };
+            using var r = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, act.Token);
             r.EnsureSuccessStatusCode();
-            var doc = await r.Content.ReadFromJsonAsync<JsonElement>();
-            return doc.GetProperty("message").GetProperty("content").GetString()?.Trim() ?? "(leere Antwort)";
+            text = await KiStream.ReadNdjson(await r.Content.ReadAsStreamAsync(act.Token), d => Trendo.Core.KiActivityHub.Update(act, delta: d), act.Token);
+            return text.Length > 0 ? text : "(leere Antwort)";
         }
+        catch (OperationCanceledException) when (act.Token.IsCancellationRequested) { return "Abgebrochen."; }
         catch (Exception ex) { return $"Fehler bei der lokalen KI: {ex.Message}"; }
+        finally { Trendo.Core.KiActivityHub.End(act, text.Length > 0, text.Length); }
     }
 }

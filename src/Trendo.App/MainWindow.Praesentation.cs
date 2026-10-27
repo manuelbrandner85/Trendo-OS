@@ -325,7 +325,7 @@ public partial class MainWindow
             ai.IsEnabled = false; ai.Content = "Die KI entwirft …";
             try
             {
-                var a = await Intel.AskAsync(new KiRequest(SlideOutline.Prompt(topic.Text!, 6), PreferredModel: KiModelName, UseKnowledge: false));
+                using var kiLabel = Trendo.Core.KiActivityHub.Label("Folien entwerfen"); var a = await Intel.AskAsync(new KiRequest(SlideOutline.Prompt(topic.Text!, 6), PreferredModel: KiModelName, UseKnowledge: false));
                 if (string.IsNullOrWhiteSpace(a.Text)) _dkMsg = "Die KI hat nichts geliefert. Ist ein Sprachmodell in der KI-Bibliothek geladen?";
                 else { _dkOutline = a.Text.Trim(); DeckFromOutline(_dkOutline); _dkMsg = $"Die KI hat {Deck.Slides.Count} Folien entworfen – bitte prüfen und anpassen."; }
             }

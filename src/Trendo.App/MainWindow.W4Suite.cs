@@ -218,7 +218,7 @@ public partial class MainWindow
         var src = new TextBox { Name = "suite-file-add", PlaceholderText = "Datei zum Vorhaben hinzufügen (wird kopiert)", Width = 320 };
         sp.Children.Add(new WrapPanel { Margin = new Thickness(0, 6, 0, 0), Children = { src, new Border { Width = 6 }, Act("suite-file-copy", "Hinzufügen", () => Try(V, () =>
         {
-            var f = src.Text?.Trim().Trim('"') ?? ""; if (!File.Exists(f)) throw new ArgumentException("Diese Datei gibt es nicht.");
+            var f = Clean(src); if (!File.Exists(f)) throw new ArgumentException("Diese Datei gibt es nicht.");
             File.Copy(f, Path.Combine(open, Path.GetFileName(f)), false); Say("Hinzugefügt: " + Path.GetFileName(f), V);
         })) } });
         return sp;

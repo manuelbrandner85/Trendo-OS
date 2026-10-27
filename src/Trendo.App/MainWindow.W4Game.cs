@@ -15,7 +15,7 @@ public partial class MainWindow
     private string _gamePreviewNote = "";
     public string? GameEditing { get => _gameEdit; set => _gameEdit = value; }
 
-    private void InitW4Game() => RegisterTab(KreativTabs, "spiele", "Spiele", "CORE-06", GameView, "spiel", "game", "unreal", "snake");
+    private void InitW4Game() { InitProgGame(); RegisterTab(KreativTabs, "spiele", "Werkstatt", "CORE-06", GameView, "spiel", "game", "unreal", "snake"); }
 
     private Control GameView()
     {

@@ -105,7 +105,7 @@ public partial class MainWindow
             Section("Logo auf Rechnungen", "Dein Logo erscheint oben rechts auf jeder neuen Rechnung.",
                 Line(logo, Act("inv-logo-set", "Übernehmen", () => Try(V, () =>
                 {
-                    var f = logo.Text?.Trim().Trim('"') ?? "";
+                    var f = Clean(logo);
                     if (f.Length > 0 && (!File.Exists(f) || Path.GetExtension(f).ToLowerInvariant() is not (".png" or ".jpg" or ".jpeg" or ".svg" or ".webp"))) throw new ArgumentException("Bitte eine Bilddatei (PNG, JPG, SVG) wählen.");
                     _settings.InvoiceLogo = f; SaveSettings(); Say(f.Length > 0 ? "Logo wird auf Rechnungen gesetzt." : "Rechnungen ohne Logo.", V);
                 })))),

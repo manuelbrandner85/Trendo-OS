@@ -27,6 +27,8 @@ public partial class MainWindow
     private readonly Dictionary<string, string> _windowStudio = new(StringComparer.OrdinalIgnoreCase);
     private bool _windowsReady;
     static readonly BoxShadows WindowShadow = BoxShadows.Parse("0 10 30 0 #66000000");
+    /// <summary>Gold-Blau-Stil (Logo C): Rahmen des aktiven Fensters in Gold.</summary>
+    static readonly IBrush GoldEdge = new SolidColorBrush(Color.Parse("#D4A84B"));
 
     /// <summary>Wurzel der gerade sichtbaren Seite (aktives Fenster oder Startbildschirm).</summary>
     public Control? ActivePageRoot => Windows.Active is { } a && _frames.TryGetValue(a.Id, out var f) ? f.Body.Content as Control : _deskHost.Children.FirstOrDefault();
@@ -241,8 +243,8 @@ public partial class MainWindow
         {
             var f = _frames[w.Id].Frame; f.ZIndex = ++z; f.IsVisible = !w.Minimized;
             var on = active?.Id == w.Id;
-            f.BorderBrush = on ? Accent : Edge; f.Opacity = on ? 1 : 0.9;
-            f.BoxShadow = LowPower ? default : on ? BoxShadows.Parse("0 22 50 0 #BB000000, 0 0 0 1 #6651C5FF") : BoxShadows.Parse("0 8 18 0 #66000000");
+            f.BorderBrush = on ? GoldEdge : Edge; f.Opacity = on ? 1 : 0.9;
+            f.BoxShadow = LowPower ? default : on ? BoxShadows.Parse("0 22 50 0 #BB000000, 0 0 0 1 #66F5C451, 0 0 24 0 #333B82F6") : BoxShadows.Parse("0 8 18 0 #66000000");
             _frames[w.Id].Title.Foreground = on ? Text : Muted;
             if (f.Child is Panel { Children: [Grid g, ..] } && g.Children[0] is Border bar) bar.Background = on ? Brush.Parse("#55305078") : Brush.Parse("#22101830");
             if (f.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "win-close-" + w.Id) is { } close)

@@ -507,7 +507,7 @@ public partial class MainWindow
         if (text.Length < 3) { Say("Schreib einen Satz, zum Beispiel: ein Tisch, 120 mal 80 cm, mit vier Beinen.", "3d"); return; }
         Say("Die KI liest den Satz …", "3d");
         string raw;
-        try { raw = SceneAi is { } local ? await local(text) : await _ollama.ChatAsync(KiModelName, ScenePlan.Prompt(text)); }
+        try { using var kiLabel = Trendo.Core.KiActivityHub.Label("3D-Szene planen"); raw = SceneAi is { } local ? await local(text) : await _ollama.ChatAsync(KiModelName, ScenePlan.Prompt(text)); }
         catch (Exception ex) { _aiParts = null; Say("Die lokale KI antwortet nicht: " + ex.Message, "3d"); return; }
         if (!ScenePlan.TryRead(raw, out var parts, out var err)) { _aiParts = null; Say(err, "3d"); return; }
         _aiParts = parts;

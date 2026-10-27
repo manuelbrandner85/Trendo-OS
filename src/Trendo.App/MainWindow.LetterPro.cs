@@ -96,7 +96,7 @@ public partial class MainWindow
         var serial = Box("Serienbrief", "Ein Brief je Zeile der Tabelle. Felder wie {Name} oder «Name» im Text werden ersetzt. Bleibt der Empfänger leer, setzt Trendo die Anschrift aus den Spalten Firma, Name (oder Vorname/Nachname), Straße, PLZ und Ort zusammen.",
             Row(sf, B("letter-serial-run", "Serienbrief erstellen", () => LetterTry(() =>
             {
-                var file = sf.Text?.Trim().Trim('"') ?? "";
+                var file = Clean(sf);
                 if (!File.Exists(file)) throw new ArgumentException("Bitte eine vorhandene Tabelle wählen.");
                 var doc = SheetFiles.Open(file); var s = doc.Sheets[0]; var calc = new SheetCalc(doc);
                 var cols = Math.Max(0, s.MaxCol) + 1;
@@ -124,7 +124,7 @@ public partial class MainWindow
         var sign = Box("Unterschrift", "Ein Foto oder Scan deiner Unterschrift wird unter den Gruß gesetzt. Das ist keine qualifizierte elektronische Signatur.",
             Row(sig, B("letter-signature-set", "Übernehmen", () => LetterTry(() =>
                 {
-                    var f = sig.Text?.Trim().Trim('"') ?? "";
+                    var f = Clean(sig);
                     if (!File.Exists(f) || XrPlus.ImageSize(File.ReadAllBytes(f)) is (0, _) or (_, 0)) throw new ArgumentException("Bitte ein PNG- oder JPG-Bild wählen.");
                     _settings.LetterSignature = d.SignatureFile = f; SaveSettings(); _letterMsg = "Unterschrift wird unter den Gruß gesetzt."; Show(V);
                 })),

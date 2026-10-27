@@ -139,7 +139,7 @@ public partial class MainWindow
         _txMsg = "Die KI schreibt …"; Show("text");
         try
         {
-            var a = await Intel.AskAsync(new KiRequest($"{task} Antworte nur mit dem neuen Text, auf Deutsch, ohne Anführungszeichen:\n\n{src}", PreferredModel: KiModelName, UseKnowledge: false));
+            using var kiLabel = Trendo.Core.KiActivityHub.Label("Text bearbeiten"); var a = await Intel.AskAsync(new KiRequest($"{task} Antworte nur mit dem neuen Text, auf Deutsch, ohne Anführungszeichen:\n\n{src}", PreferredModel: KiModelName, UseKnowledge: false));
             var neu = (a.Text ?? "").Trim().Trim('"', '„', '“');
             if (neu.Length == 0) { _txMsg = "Die KI hat nichts geliefert. Ist ein Sprachmodell in der KI-Bibliothek geladen?"; }
             else { Snapshot(); TextDoc.ReplaceAt(p, start, len, neu); _txSel = start; _txSelLen = neu.Length; Changed(); _txMsg = "Von der KI umformuliert – mit „Zurück“ rückgängig machen."; }

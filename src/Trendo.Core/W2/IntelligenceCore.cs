@@ -42,8 +42,20 @@ public sealed class IntelligenceCore
 
     public async Task<KiAnswer> AskAsync(KiRequest req, CancellationToken ct = default)
     {
+        if (string.IsNullOrWhiteSpace(req.Question)) return new(false, "Bitte schreib zuerst eine Frage.", null, null, [], TimeSpan.Zero);
+        // Fortschritt für die Oberfläche (Wunsch 27.10.2026): Phase, Wörter, Zeit, Abbruch
+        var act = KiActivityHub.Begin(outer: ct);
+        KiAnswer? res = null;
+        try { res = await AskCoreAsync(req, act); return res; }
+        catch (OperationCanceledException) when (act.Token.IsCancellationRequested && !ct.IsCancellationRequested) { res = new(false, "Abgebrochen.", null, null, [], act.Elapsed); return res; }
+        finally { KiActivityHub.End(act, res?.Ok == true, res?.Text.Length ?? 0); }
+    }
+
+    private async Task<KiAnswer> AskCoreAsync(KiRequest req, KiActivity act)
+    {
+        var ct = act.Token;
         var sw = System.Diagnostics.Stopwatch.StartNew();
-        if (string.IsNullOrWhiteSpace(req.Question)) return new(false, "Bitte schreib zuerst eine Frage.", null, null, [], sw.Elapsed);
+        KiActivityHub.Update(act, phase: "Wissen wird durchsucht …");
         var sources = new List<string>();
         var baseSystem = req.SystemPrompt ?? DefaultSystem;
         var sys = new StringBuilder(baseSystem);
@@ -66,6 +78,7 @@ public sealed class IntelligenceCore
         var msgs = Messages(sys.ToString());
         List<KiMessage> remoteMsgs = [new("system", baseSystem), new("user", req.Question)]; // ohne Verlauf und ohne eigene Dokumente
         var tried = new List<string>();
+        KiActivityHub.Update(act, phase: "KI wird gesucht …");
         foreach (var b in _backends())
         {
             if (b is IRemoteKiBackend && !req.AllowRemote) continue; // nur der freie Chat darf nach außen
@@ -76,7 +89,10 @@ public sealed class IntelligenceCore
             try
             {
                 var remote = b is IRemoteKiBackend;
-                var text = await b.ChatAsync(model, remote ? remoteMsgs : msgs, ct);
+                KiActivityHub.Update(act, phase: $"{model} wird gestartet …", backend: b.Name, model: model);
+                var text = b is IStreamingKiBackend sb
+                    ? await sb.ChatStreamAsync(model, remote ? remoteMsgs : msgs, d => KiActivityHub.Update(act, delta: d), ct)
+                    : await b.ChatAsync(model, remote ? remoteMsgs : msgs, ct);
                 _audit.Append("ki", "ki.ask", $"quelle={b.Name} modell={model} frage={req.Question.Length}Z antwort={text.Length}Z wissen={(remote ? 0 : sources.Count)}{(remote ? " extern" : "")}");
                 Save(req.Question, text, b.Name, model);
                 return new(true, text, b.Name, model, remote ? [] : sources, sw.Elapsed);

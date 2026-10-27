@@ -75,7 +75,7 @@ public partial class MainWindow
             Grab(); var (text, missing) = PromptLibrary.Fill(t.Text, _promptVals);
             if (missing.Count > 0) { _promptMsg = "Bitte noch ausfüllen: " + string.Join(", ", missing); Show("ki-vorlagen"); return; }
             send.IsEnabled = false;
-            var a = await Intel.AskAsync(new KiRequest(text, PreferredModel: KiModelName, UseKnowledge: false));
+            using var kiLabel = Trendo.Core.KiActivityHub.Label("KI-Anweisung testen"); var a = await Intel.AskAsync(new KiRequest(text, PreferredModel: KiModelName, UseKnowledge: false));
             LastPromptOutput = a.Ok ? a.Text : ""; _promptMsg = a.Ok ? $"Antwort von {a.Model}" : a.Text; Show("ki-vorlagen");
         };
         var copy = new Button { Name = "prompt-copy", Content = "Text kopieren" };

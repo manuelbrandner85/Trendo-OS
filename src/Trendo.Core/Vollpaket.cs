@@ -120,15 +120,16 @@ public static class Vollpaket
     }
 
     /// <summary>Ergebnis der Einrichtung: neu eingerichtet, schon vorhanden, fehlgeschlagen (mit Grund).</summary>
-    public sealed record InstallReport(int Installed, int Present, int Total, List<(string Name, string Reason)> Failed);
+    public sealed record InstallReport(int Installed, int Present, int Total, List<(string Name, string Reason)> Failed, bool Canceled = false);
 
     /// <summary>Jedes Paket einzeln einrichten – ein fehlerhaftes Paket hält die übrigen nicht auf (Befund 27.10.2026).</summary>
-    public static InstallReport InstallEach(string programmeDir, string toolsRoot, AuditLog? audit = null, Action<string>? progress = null)
+    public static InstallReport InstallEach(string programmeDir, string toolsRoot, AuditLog? audit = null, Action<string>? progress = null, CancellationToken ct = default)
     {
         var list = Load(programmeDir) ?? throw new InvalidOperationException("Im Vollpaket fehlt ein gültiges manifest.json.");
         int n = 0, present = 0; var failed = new List<(string, string)>();
         foreach (var e in list)
         {
+            if (ct.IsCancellationRequested) { audit?.Append("app", "vollpaket.canceled", $"nach {n} von {list.Count}"); return new(n, present, list.Count, failed, true); }
             var exe = Path.Combine(toolsRoot, e.Id, e.Exe.Replace('/', Path.DirectorySeparatorChar));
             if (File.Exists(exe) || Directory.Exists(exe)) { progress?.Invoke($"{e.Name}: schon eingerichtet"); present++; continue; }
             progress?.Invoke($"{e.Name} {e.Version} wird eingerichtet …");

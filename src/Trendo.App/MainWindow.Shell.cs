@@ -65,7 +65,7 @@ public partial class MainWindow
         var bar = new Grid { Name = "top-bar", ColumnDefinitions = new ColumnDefinitions("212,*,Auto"), Height = 68, Background = Brushes.Transparent };
         var brand = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Margin = new Thickness(16, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center,
             Children = { Logo(38, glow: true), new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = {
-                new TextBlock { Text = "Trendo OS", Foreground = Text, FontSize = 21, FontWeight = FontWeight.SemiBold, LetterSpacing = 0.6 },
+                new TextBlock { Text = "Trendo OS", Foreground = _theme == "kontrast" ? Text : GoldText(), FontSize = 21, FontWeight = FontWeight.Bold, LetterSpacing = 1.2 },
                 new TextBlock { Text = "DEIN SYSTEM. DEINE IDEEN.", Foreground = Brush.Parse(C("#9FB4D6", "#3A4A66")), FontSize = 7.5, LetterSpacing = 1.2 } } } } };
         bar.Children.Add(brand);
 

@@ -12,13 +12,23 @@ var outPath = args.Length > 0 ? args[0] : "render.png";
 int w = args.Length > 1 ? int.Parse(args[1]) : 1536, h = args.Length > 2 ? int.Parse(args[2]) : 1024;
 var shot = Environment.GetEnvironmentVariable("TRENDO_SHOT");
 AppBuilder.Configure<App>().UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false }).WithInterFont().SetupWithoutStarting();
-if (Environment.GetEnvironmentVariable("TRENDO_LOGO") is { Length: > 0 } logoDir) // Logo B: SVG, PNGs und trendo.ico aus TrendoLogo erzeugen
+if (Environment.GetEnvironmentVariable("TRENDO_LOGO") is { Length: > 0 } logoDir) // Logo C „Gold-Orbit“: Emblem aus der Vorlage, PNGs und trendo.ico
 {
     Directory.CreateDirectory(logoDir);
-    File.WriteAllText(Path.Combine(logoDir, "trendo-logo-b.svg"), TrendoLogo.Svg());
+    var emblemFile = Path.Combine(logoDir, "trendo-emblem.png");
+    // 1. Emblem aus der fotorealistischen Vorlage ausschneiden (TRENDO_LOGO_SRC, sonst die Vorlage im Repo)
+    var src = Environment.GetEnvironmentVariable("TRENDO_LOGO_SRC") is { Length: > 0 } s0 ? s0 : Path.Combine(logoDir, "..", "..", "..", "..", "docs", "design", "logo-vorschlaege", "gold-orbit-vorlage.png");
+    if (File.Exists(src))
+    {
+        using var source = new Avalonia.Media.Imaging.Bitmap(src);
+        var cut = TrendoLogo.EmblemFrom(source); var cw = TrendoLogo.SourceCrop.Width; var chh = TrendoLogo.SourceCrop.Height;
+        cut.Measure(new Avalonia.Size(cw, chh)); cut.Arrange(new Avalonia.Rect(0, 0, cw, chh));
+        using var eb = new Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize(cw, chh)); eb.Render(cut); eb.Save(emblemFile);
+    }
+    using var emblem = File.Exists(emblemFile) ? new Avalonia.Media.Imaging.Bitmap(emblemFile) : null;
     byte[] Png(int px)
     {
-        var box = new Avalonia.Controls.Viewbox { Width = px, Height = px, Child = TrendoLogo.Build() };
+        var box = new Avalonia.Controls.Viewbox { Width = px, Height = px, Child = TrendoLogo.Build(emblem: emblem) };
         box.Measure(new Avalonia.Size(px, px)); box.Arrange(new Avalonia.Rect(0, 0, px, px));
         using var bmp = new Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize(px, px));
         bmp.Render(box);
