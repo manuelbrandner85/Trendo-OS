@@ -20,6 +20,14 @@ public sealed class SheetDoc
         var s = new Sheet(name); Sheets.Add(s); return s;
     }
 
+    /// <summary>Tiefe Kopie für Rückgängig/Wiederholen.</summary>
+    public SheetDoc Clone()
+    {
+        var d = new SheetDoc(); d.Sheets.Clear();
+        foreach (var s in Sheets) d.Sheets.Add(s.Clone());
+        return d;
+    }
+
     public void RemoveSheet(Sheet s)
     {
         if (Sheets.Count == 1) throw new InvalidOperationException("Eine Mappe braucht mindestens ein Blatt.");
@@ -63,6 +71,16 @@ public sealed class Sheet(string name)
     public List<SheetChart> Charts { get; } = [];
 
     public IEnumerable<KeyValuePair<(int Row, int Col), Cell>> Cells => _cells;
+
+    public Sheet Clone()
+    {
+        var s = new Sheet(Name);
+        foreach (var (k, c) in _cells) s._cells[k] = c.Clone();
+        foreach (var (k, w) in ColWidths) s.ColWidths[k] = w;
+        foreach (var r in HiddenRows) s.HiddenRows.Add(r);
+        s.Charts.AddRange(Charts);
+        return s;
+    }
     public int MaxRow => _cells.Count == 0 ? -1 : _cells.Keys.Max(k => k.Row);
     public int MaxCol => _cells.Count == 0 ? -1 : _cells.Keys.Max(k => k.Col);
 
