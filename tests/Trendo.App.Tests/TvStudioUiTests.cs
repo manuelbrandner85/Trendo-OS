@@ -75,13 +75,22 @@ public class TvStudioUiTests
         var played = new List<(string Slot, string Url)>();
         w.TvPlayOverride = (s, u) => played.Add((s, u));
         w.TvFetchOverride = u => Task.FromResult(Encoding.UTF8.GetBytes(
-            u.Contains("get_vod_categories") ? """[{"category_id":"1","category_name":"Action"},{"category_id":"2","category_name":"Familie"}]"""
+            u.Contains("player_api") && !u.Contains("action") ? """{"user_info":{"auth":1,"status":"Active"}}"""
+            : u.Contains("get_live_categories") ? """[{"category_id":"9","category_name":"Deutschland"}]"""
+            : u.Contains("get_live_streams") ? """[{"num":1,"name":"Eins","stream_id":1,"category_id":"9","epg_channel_id":"eins.de","tv_archive":1,"tv_archive_duration":3},{"num":2,"name":"Zwei","stream_id":2,"category_id":"9"},{"num":3,"name":"Drei","stream_id":3,"category_id":"9"}]"""
+            : u.Contains("get_vod_categories") ? """[{"category_id":"1","category_name":"Action"},{"category_id":"2","category_name":"Familie"}]"""
             : u.Contains("get_vod_streams") ? """[{"stream_id":7,"name":"Großes Abenteuer","category_id":"1","container_extension":"mkv","rating":"8"},{"stream_id":8,"name":"Kleiner Bär","category_id":"2"}]"""
             : u.Contains("get_series_categories") ? """[{"category_id":"5","category_name":"Krimi"}]"""
             : u.Contains("get_series_info") ? """{"episodes":{"1":[{"id":"101","episode_num":1,"title":"Anfang","container_extension":"mp4"}],"2":[{"id":"201","episode_num":1,"title":"Neue Staffel"}]}}"""
             : u.Contains("get_series") ? """[{"series_id":11,"name":"Kommissarin","category_id":"5","plot":"Spannend"}]"""
             : u.Contains("xmltv") ? "<tv/>" : M3U));
-        Assert.Equal(3, await w.TvAddSource("Anbieter", "xtream", "srv.example:8080", null, "u", "p"));
+        // eine eingefügte get.php-Adresse wird als Xtream-Zugang erkannt; Sender kommen über die Schnittstelle (mit Catch-up)
+        var n = await w.TvAddSource("", "url", "http://srv.example:8080/get.php?username=u&password=p&type=m3u_plus&output=ts");
+        w.Show("tv"); Pump();
+        Assert.True(n == 3, string.Join(" | ", w.GetLogicalTexts().Where(t => t.Contains("✗") || t.Contains("✓") || t.Contains("laden"))));
+        Assert.Equal("xtream", w.Tv.Sources[0].Kind);
+        Assert.Equal("http://srv.example:8080/live/u/p/1.ts", w.Tv.Channels()[0].Url);
+        Assert.Equal(3, w.Tv.Channels()[0].CatchupDays);
         w.Show("tv"); Pump();
         w.Find<Button>("tv-tab-film").Press();
         Assert.NotNull(w.TryFind<Button>("tv-film-chip-Action"));
@@ -103,6 +112,23 @@ public class TvStudioUiTests
         w.Find<Button>("tv-season-2").Press();
         w.Find<Button>("tv-ep-2-1").Press();
         Assert.Equal("http://srv.example:8080/series/u/p/201.mkv", played[^1].Url);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "TV & Live: Xtream-Zugang abgelehnt → klare Meldung ohne Passwort; Server nicht erreichbar → verständlich")]
+    public async Task Clear_errors()
+    {
+        var (w, _, _) = Ui.Open();
+        w.TvFetchOverride = u => Task.FromResult(Encoding.UTF8.GetBytes("""{"user_info":{"auth":0}}"""));
+        Assert.Equal(0, await w.TvAddSource("", "url", "http://srv.example:8080/get.php?username=u&password=geheim123&type=m3u_plus&output=ts"));
+        w.Show("tv"); Pump();
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Benutzername oder Passwort stimmt nicht"));
+        Assert.DoesNotContain(w.GetLogicalTexts(), t => t.Contains("geheim123"));
+        w.TvFetchOverride = u => Task.FromException<byte[]>(new HttpRequestException("x", new System.Net.Sockets.SocketException(11001)));
+        Assert.Equal(0, await w.TvAddSource("Liste", "url", "http://gibt-es-nicht.example/liste.m3u"));
+        w.Show("tv"); Pump();
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Der Server ist nicht erreichbar"));
+        Assert.Equal("http://s/live/u/•••/1.ts", Trendo.Core.Tv.Xtream.Mask("http://s/live/u/geheim/1.ts"));
         w.Close();
     }
 

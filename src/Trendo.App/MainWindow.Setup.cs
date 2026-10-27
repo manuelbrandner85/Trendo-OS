@@ -30,7 +30,7 @@ public sealed partial class MainWindow
         // Geplante Sicherung beim Start (im Hintergrund, ohne Rückfrage – betrifft nur eigene Daten)
         if (_settings.SetupDone && Backups.Due(DateTime.Now, _settings.BackupEveryHours))
             _ = Task.Run(() => { try { Backups.Create(DateTime.Now); } catch (Exception ex) { _core.Audit.Append("app", "backup.failed", ex.GetType().Name); } });
-        if (_settings.AutoUpdate && !_core.Offline) _ = CheckUpdatesAsync(apply: true);
+        // Updates (U1–U6): siehe MainWindow.Updates.cs – startet nach dem Öffnen des Fensters
     }
 
     private bool NeedsSetup(AppOptions opt) => opt.FirstRun && !_settings.SetupDone && opt.Page is null;
@@ -524,23 +524,7 @@ public sealed partial class MainWindow
         return Page("Sicherung", sp);
     }
 
-    // ---------- Auto-Updates über GitHub Releases (Velopack) ----------
-    private async Task CheckUpdatesAsync(bool apply)
-    {
-        try
-        {
-            var um = new Velopack.UpdateManager(new Velopack.Sources.GithubSource("https://github.com/manuelbrandner85/Trendo-OS", null, true));
-            if (!um.IsInstalled) { _updateInfo = "Nur in der installierten Version"; return; }
-            var u = await um.CheckForUpdatesAsync();
-            if (u is null) { _updateInfo = $"Aktuell (v{um.CurrentVersion})"; return; }
-            _updateInfo = $"Update {u.TargetFullRelease.Version} wird geladen …";
-            await um.DownloadUpdatesAsync(u);
-            _core.Audit.Append("app", "update.downloaded", u.TargetFullRelease.Version.ToString());
-            _updateInfo = $"Update {u.TargetFullRelease.Version} bereit – wird beim Beenden installiert";
-            if (apply) um.WaitExitThenApplyUpdates(u.TargetFullRelease, silent: true, restart: false);
-        }
-        catch (Exception ex) { _updateInfo = ex is InvalidOperationException ? "Nur in der installierten Version" : "Gerade nicht erreichbar – später erneut"; }
-    }
+    // Auto-Updates über GitHub Releases (Velopack): siehe MainWindow.Updates.cs (U1–U6)
 }
 
 /// <summary>Liest RAM und Grafikkarte (nur lesend; Windows-Registry bzw. /proc).</summary>

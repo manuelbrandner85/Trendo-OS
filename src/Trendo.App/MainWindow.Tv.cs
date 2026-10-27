@@ -59,7 +59,7 @@ public sealed class MpvView : NativeControlHost
         Kill();
         if (_hwnd == IntPtr.Zero || MpvPath is null || !File.Exists(MpvPath)) return;
         var psi = new ProcessStartInfo(MpvPath) { UseShellExecute = false, CreateNoWindow = true };
-        foreach (var a in new[] { $"--wid={_hwnd}", "--no-terminal", "--force-window=yes", "--keep-open=yes", "--idle=yes", "--osc=yes", "--input-vo-keyboard=no", "--cache=yes",
+        foreach (var a in new[] { $"--wid={_hwnd}", "--no-terminal", "--force-window=yes", "--keep-open=yes", "--idle=yes", "--osc=yes", "--input-vo-keyboard=no", $"--user-agent={Xtream.UserAgent}", "--cache=yes",
                      "--demuxer-max-back-bytes=1GiB", "--demuxer-max-bytes=150MiB", "--hwdec=auto-safe", $"--input-ipc-server=\\\\.\\pipe\\{Pipe}", Muted ? "--mute=yes" : "--mute=no", url })
             psi.ArgumentList.Add(a);
         try { _proc = Process.Start(psi); } catch (System.ComponentModel.Win32Exception) { _proc = null; }
@@ -135,7 +135,8 @@ public partial class MainWindow
         if (TvFetchOverride is { } o) return await o(url);
         if (!Uri.TryCreate(url, UriKind.Absolute, out var u) || u.Scheme is not ("http" or "https")) throw new InvalidOperationException("Bitte eine Adresse mit http:// oder https:// angeben.");
         using var req = new HttpRequestMessage(HttpMethod.Get, u);
-        req.Headers.UserAgent.ParseAdd("TrendoOS/1.0");
+        req.Headers.TryAddWithoutValidation("User-Agent", Xtream.UserAgent); // viele Anbieter lehnen unbekannte Programme ab
+        req.Headers.TryAddWithoutValidation("Accept", "*/*");
         using var res = await TvHttp.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
         res.EnsureSuccessStatusCode();
         if (res.Content.Headers.ContentLength > 400L << 20) throw new InvalidOperationException("Die Datei ist zu groß.");
@@ -146,18 +147,25 @@ public partial class MainWindow
     public async Task<int> TvAddSource(string name, string kind, string urlOrFile, string? epg = null, string? user = null, string? pass = null)
     {
         if (_core.Offline && kind != "datei") { _tvMsg = "Trendo ist offline – zum Laden braucht es Internet."; return 0; }
+        // Eine eingefügte get.php-Adresse ist ein Xtream-Zugang: dann Sender, Filme, Serien und Programmführer über die Schnittstelle des Anbieters
+        if (kind == "url" && Xtream.FromPlaylistUrl(urlOrFile.Trim()) is { } xt) { kind = "xtream"; urlOrFile = xt.Server; user = xt.User; pass = xt.Pass; if (string.IsNullOrWhiteSpace(name)) name = new Uri(xt.Server).Host; }
+        if (kind == "xtream" && (string.IsNullOrWhiteSpace(urlOrFile) || string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass))) { _tvMsg = "Für Xtream bitte Server, Benutzername und Passwort angeben."; return 0; }
         var url = kind == "xtream" ? Xtream.PlaylistUrl(urlOrFile, user ?? "", pass ?? "") : urlOrFile.Trim();
         if (kind == "xtream") epg ??= Xtream.EpgUrl(urlOrFile, user ?? "", pass ?? "");
         var src = Tv.AddSource(name, kind, kind == "datei" ? Path.GetFullPath(url) : url, string.IsNullOrWhiteSpace(epg) ? null : epg.Trim(), user);
-        _core.Audit.Append(Principal.LocalOwner.Name, "tv.source.add", $"{kind} {src.Name}");
+        _core.Audit.Append(Principal.LocalOwner.Name, "tv.source.add", $"{kind} {src.Name}"); // ohne Adresse und Passwort
         return await TvRefreshSource(src);
     }
 
     public async Task<int> TvRefreshSource(TvSource src)
     {
+        _tvMsg = "";
         try
         {
-            var text = src.Kind == "datei" ? await File.ReadAllTextAsync(src.Url) : Encoding.UTF8.GetString(await TvFetch(src.Url));
+            string text;
+            if (src.Kind == "xtream" && Xtream.FromPlaylistUrl(src.Url) is { } x && await TvXtreamLive(src, x) is { } fromApi) text = fromApi;
+            else if (src.Kind == "xtream" && _tvMsg.StartsWith('✗')) return 0; // Konto abgelehnt: klare Meldung steht schon da
+            else text = src.Kind == "datei" ? await File.ReadAllTextAsync(src.Url) : Encoding.UTF8.GetString(await TvFetch(src.Url));
             var (ch, epgHead) = M3u.Parse(text, src.Id);
             var films = ch.Count(c => c.Kind == "film"); var series = ch.Count(c => c.Kind == "serie");
             if (ch.Count == 0) { _tvMsg = $"In „{src.Name}“ wurden keine Sender gefunden. Ist es eine M3U-Wiedergabeliste?"; return 0; }
@@ -172,9 +180,38 @@ public partial class MainWindow
         }
         catch (Exception e) when (e is HttpRequestException or IOException or InvalidOperationException or TaskCanceledException or UnauthorizedAccessException)
         {
-            _tvMsg = $"„{src.Name}“ ließ sich nicht laden: {e.Message}";
+            _tvMsg = $"✗ „{src.Name}“ ließ sich nicht laden: {TvWhy(e)}";
             return 0;
         }
+    }
+
+    /// <summary>Verständlicher Grund statt technischer Meldung (und nie mit Passwort).</summary>
+    static string TvWhy(Exception e) => e switch
+    {
+        HttpRequestException { StatusCode: System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden } => "Der Anbieter lehnt den Zugang ab – Benutzername, Passwort oder Konto prüfen.",
+        HttpRequestException { StatusCode: System.Net.HttpStatusCode.NotFound } => "Die Adresse gibt es beim Anbieter nicht – bitte genau prüfen.",
+        HttpRequestException { StatusCode: { } c } when (int)c >= 500 => "Der Server des Anbieters hat gerade ein Problem – später erneut versuchen.",
+        HttpRequestException { InnerException: System.Net.Sockets.SocketException } => "Der Server ist nicht erreichbar – Adresse prüfen oder später erneut versuchen.",
+        HttpRequestException => "Keine Verbindung zum Anbieter – Internet und Adresse prüfen.",
+        TaskCanceledException => "Der Anbieter antwortet nicht (Zeitüberschreitung).",
+        _ => Xtream.Mask(e.Message),
+    };
+
+    /// <summary>Xtream: Konto prüfen, dann Live-Sender über die Schnittstelle (schneller und zuverlässiger als die große Liste). null = Liste stattdessen laden.</summary>
+    async Task<string?> TvXtreamLive(TvSource src, (string Server, string User, string Pass) x)
+    {
+        string Api(string action) => Xtream.Api(x.Server, x.User, x.Pass, action);
+        string info;
+        try { info = Encoding.UTF8.GetString(await TvFetch(Xtream.Api(x.Server, x.User, x.Pass, "").Replace("&action=", ""))); }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or InvalidOperationException) { _tvMsg = "✗ " + TvWhy(e); return null; }
+        if (Xtream.AccountProblem(info) is { } problem) { _tvMsg = "✗ " + problem; return null; }
+        try
+        {
+            var live = Xtream.ParseLive(Encoding.UTF8.GetString(await TvFetch(Api("get_live_streams"))), Encoding.UTF8.GetString(await TvFetch(Api("get_live_categories"))), x.Server, x.User, x.Pass, src.Id);
+            if (live.Count == 0) return null;
+            return M3u.Write(live, src.EpgUrl);
+        }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException or InvalidOperationException) { return null; }
     }
 
     public async Task TvRefreshEpg(TvSource src)
@@ -289,7 +326,7 @@ public partial class MainWindow
             if (TvRecordOverride is { } o) { o(c.Url, file, secs); Tv.UpdateRecording(r.Id, "läuft", file); continue; }
             if (FfmpegExe is null) { Tv.UpdateRecording(r.Id, "ffmpeg fehlt"); continue; }
             var psi = new ProcessStartInfo(FfmpegExe) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = false };
-            foreach (var a in new[] { "-hide_banner", "-loglevel", "error", "-y", "-i", c.Url, "-c", "copy", "-t", secs.ToString(), file }) psi.ArgumentList.Add(a);
+            foreach (var a in new[] { "-hide_banner", "-loglevel", "error", "-y", "-user_agent", Xtream.UserAgent, "-i", c.Url, "-c", "copy", "-t", secs.ToString(), file }) psi.ArgumentList.Add(a);
             try
             {
                 var p = Process.Start(psi)!; p.EnableRaisingEvents = true;
@@ -597,7 +634,7 @@ public partial class MainWindow
                 ConfirmRemoveButton("tvsrc:" + src.Id, "tv-src-remove-" + src.Id, "tv", () => { Tv.RemoveSource(s.Id); TvReload(); return Task.CompletedTask; }) } };
             sp.Children.Add(WCard(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {
                 new StackPanel { Children = { new TextBlock { Text = src.Name, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
-                    P($"{count} Sender · {(src.Kind == "xtream" ? "Xtream" : src.Kind == "datei" ? "Datei" : "M3U-Adresse")}{(src.EpgUrl is null ? " · ohne Programmführer" : " · mit Programmführer")}", null, 11.5) } },
+                    P($"{count} Sender · {(src.Kind == "xtream" ? "Xtream · " + (Xtream.FromPlaylistUrl(src.Url)?.Server ?? "") : src.Kind == "datei" ? "Datei" : Xtream.Mask(src.Url))}{(src.EpgUrl is null ? " · ohne Programmführer" : " · mit Programmführer")}", null, 11.5) } },
                 Pos(acts, 1) } }));
         }
         // Gruppen: ausblenden, sperren

@@ -281,6 +281,7 @@ public sealed partial class MainWindow : Window
         RequestAnimationFrame(_ => { StartupTrace.Mark("first.frame"); StartupTrace.Flush(); });
         // KI-Laufzeit im Hintergrund prüfen/starten – blockiert weder Start noch Bildschirmfoto
         if (AppStartup.VelopackFirstRun && !_opt.Isolated) _ = SetupVollpaket(); // T-0222: Programme aus dem Vollpaket gleich nach dem Setup
+        UpdatesOnStart(); // U1–U6: Fenster nach einem Update zurück, „Was ist neu?“, Startwächter, Suche im Hintergrund
         LockIfNeeded(); // B2/B7: Sperrbildschirm bei PIN/Passwort oder mehreren Personen
         if (!_opt.Isolated && _settings.PhoneAutoStart) _ = PhoneAutoStartAsync(); // verbundene Handys erreichen Trendo gleich nach dem Start
         if (!_opt.Isolated && !_core.Offline) _ = RefreshOpenRouterAsync(); // C1: Liste der kostenlosen Internet-KIs täglich aktuell halten

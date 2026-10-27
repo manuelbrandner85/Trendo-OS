@@ -64,6 +64,11 @@ public sealed class UserSettings
     }
     public List<string> SeenHints { get; set; } = [];
     public bool AutoUpdate { get; set; } = true;
+    /// <summary>U3: wann ein geladenes Update installiert wird – „sofort“, „start“ (beim nächsten Start) oder „nacht“.</summary>
+    public string UpdateWhen { get; set; } = "nacht";
+    public int UpdateHour { get; set; } = 3;
+    /// <summary>U4: zuletzt gesehene Version (für „Was ist neu?“).</summary>
+    public string LastSeenVersion { get; set; } = "";
     public int BackupEveryHours { get; set; } = 24;
     public bool SetupDone { get; set; }
     /// <summary>SYS-12: Anzeigegröße (1,0 = normal; 1,15 = groß; 1,3 = sehr groß).</summary>

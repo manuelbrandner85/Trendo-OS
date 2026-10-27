@@ -34,6 +34,17 @@ class Program
             FirstRun: !uiArgs.Contains("--no-first-run"), Page: Arg("--page"), KiAsk: Arg("--ki-ask"), Query: Arg("--query"));
 
         var crashRoot = Options.DataRoot ?? TrendoCore.DefaultDataRoot();
+        // U5: Startwächter – startet eine neue Version dreimal nicht richtig, zurück zur letzten guten (Sicherung vom Update)
+        if (OperatingSystem.IsWindows() && uiArgs.Length == 0 || uiArgs.Contains("--nach-update"))
+        {
+            try
+            {
+                var guard = new BootGuard(crashRoot);
+                var updater = new VelopackUpdater();
+                if (updater.IsInstalled && guard.Begin(updater.Current) is { } good && updater.RollbackTo(guard.BackupDir, good)) return 0;
+            }
+            catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException) { try { CrashLog.Write(crashRoot, ex, "Rückkehr zur alten Version"); } catch { } }
+        }
         AppDomain.CurrentDomain.UnhandledException += (_, e) => { if (e.ExceptionObject is Exception ex) try { CrashLog.Write(crashRoot, ex, "Programm"); } catch { } };
         TaskScheduler.UnobservedTaskException += (_, e) => { try { CrashLog.Write(crashRoot, e.Exception, "Hintergrundaufgabe"); } catch { } e.SetObserved(); };
         if (uiArgs.Contains("--selftest-crashlog")) { Console.WriteLine(CrashLog.Write(crashRoot, new InvalidOperationException("Selbsttest Absturzprotokoll"), "Selbsttest")); return 0; }

@@ -112,7 +112,10 @@ public static partial class M3u
     {
         var sb = new System.Text.StringBuilder(epgUrl is null ? "#EXTM3U\n" : $"#EXTM3U x-tvg-url=\"{epgUrl}\"\n");
         foreach (var c in channels)
-            sb.Append($"#EXTINF:-1 tvg-id=\"{c.EpgId}\" tvg-name=\"{c.Name}\" tvg-logo=\"{c.Logo}\" tvg-chno=\"{c.Number}\" group-title=\"{c.Group}\",{c.Name}\n{c.Url}\n");
+            sb.Append($"#EXTINF:-1 tvg-id=\"{c.EpgId}\" tvg-name=\"{c.Name}\" tvg-logo=\"{c.Logo}\" tvg-chno=\"{c.Number}\" group-title=\"{c.Group}\"")
+              .Append(c.Catchup is null ? "" : $" catchup=\"{c.Catchup}\" catchup-days=\"{c.CatchupDays}\"")
+              .Append(c.CatchupSource is null ? "" : $" catchup-source=\"{c.CatchupSource}\"")
+              .Append($",{c.Name}\n{c.Url}\n");
         return sb.ToString();
     }
 }
@@ -153,6 +156,52 @@ public static class Xtream
 
     static string Str(JsonElement e, string key) => e.TryGetProperty(key, out var v) ? v.ValueKind switch { JsonValueKind.String => v.GetString() ?? "", JsonValueKind.Number => v.GetRawText(), _ => "" } : "";
     static string? Opt(JsonElement e, string key) => Str(e, key) is { Length: > 0 } s ? s : null;
+
+    /// <summary>Üblicher Player-Name: viele Anbieter lehnen unbekannte Programme ab.</summary>
+    public const string UserAgent = "VLC/3.0.21 LibVLC/3.0.21";
+
+    /// <summary>Konto prüfen (player_api.php ohne action). null = in Ordnung, sonst verständlicher Grund.</summary>
+    public static string? AccountProblem(string json)
+    {
+        try
+        {
+            using var d = JsonDocument.Parse(json);
+            if (!d.RootElement.TryGetProperty("user_info", out var ui) || ui.ValueKind != JsonValueKind.Object) return "Der Server antwortet nicht wie ein Xtream-Anbieter. Ist die Adresse richtig?";
+            if (Str(ui, "auth") is "0") return "Benutzername oder Passwort stimmt nicht.";
+            var status = Str(ui, "status");
+            if (status.Equals("Expired", StringComparison.OrdinalIgnoreCase)) return "Dein Zugang beim Anbieter ist abgelaufen.";
+            if (status.Equals("Banned", StringComparison.OrdinalIgnoreCase) || status.Equals("Disabled", StringComparison.OrdinalIgnoreCase)) return "Dein Zugang ist beim Anbieter gesperrt.";
+            return null;
+        }
+        catch (JsonException) { return "Der Server antwortet nicht wie ein Xtream-Anbieter (keine gültige Antwort)."; }
+    }
+
+    /// <summary>Live-Sender aus get_live_streams (+ get_live_categories). Catch-up über die Timeshift-Adresse des Anbieters.</summary>
+    public static List<TvChannel> ParseLive(string streams, string categories, string server, string user, string pass, string sourceId)
+    {
+        var cats = Categories(categories); var list = new List<TvChannel>();
+        using var d = JsonDocument.Parse(streams);
+        if (d.RootElement.ValueKind != JsonValueKind.Array) return list;
+        var s = Normalize(server); var u = Uri.EscapeDataString(user); var p = Uri.EscapeDataString(pass);
+        foreach (var v in d.RootElement.EnumerateArray())
+        {
+            var id = Str(v, "stream_id"); if (id.Length == 0) continue;
+            var num = int.TryParse(Str(v, "num"), out var n) ? n : list.Count + 1;
+            var archive = Str(v, "tv_archive") == "1";
+            var days = int.TryParse(Str(v, "tv_archive_duration"), out var ad) ? ad : 0;
+            list.Add(new TvChannel($"{sourceId}:{list.Count}", Str(v, "name"), $"{s}/live/{u}/{p}/{id}.ts", cats.GetValueOrDefault(Str(v, "category_id")) ?? "Sender",
+                Opt(v, "stream_icon"), Opt(v, "epg_channel_id"), num, archive ? "default" : null,
+                archive ? $"{s}/timeshift/{u}/{p}/{{durmin}}/{{Y}}-{{m}}-{{d}}:{{H}}-{{M}}/{id}.ts" : null, archive ? Math.Max(1, days) : 0));
+        }
+        return list;
+    }
+
+    /// <summary>Adresse ohne Passwort (für Anzeige und Protokoll).</summary>
+    public static string Mask(string url)
+    {
+        var m = System.Text.RegularExpressions.Regex.Replace(url, @"(password=)[^&]*", "$1•••", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        return System.Text.RegularExpressions.Regex.Replace(m, @"/(live|movie|series|timeshift)/([^/]+)/[^/]+/", "/$1/$2/•••/");
+    }
 
     /// <summary>Filme aus get_vod_streams (+ get_vod_categories für die Kategorienamen).</summary>
     public static List<TvVod> ParseVod(string streams, string categories, string server, string user, string pass, string sourceId)
@@ -280,7 +329,7 @@ public static class Catchup
             };
         var url = tpl.Replace("${start}", start.ToString()).Replace("{utc}", start.ToString()).Replace("{start}", start.ToString())
             .Replace("{lutc}", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()).Replace("${timestamp}", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString())
-            .Replace("{duration}", dur.ToString()).Replace("${duration}", dur.ToString())
+            .Replace("{duration}", dur.ToString()).Replace("${duration}", dur.ToString()).Replace("{durmin}", Math.Max(1, dur / 60).ToString())
             .Replace("{Y}", p.Start.ToString("yyyy")).Replace("{m}", p.Start.ToString("MM")).Replace("{d}", p.Start.ToString("dd")).Replace("{H}", p.Start.ToString("HH")).Replace("{M}", p.Start.ToString("mm"));
         return c.Catchup == "append" ? c.Url + url : url;
     }
