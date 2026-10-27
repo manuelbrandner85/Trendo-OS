@@ -10,7 +10,7 @@ public static class Formula
     public enum Dialect { De, En }
 
     /// <summary>Englischer Name (wie in XLSX gespeichert) → deutscher Name (wie in Calc/Excel auf Deutsch).</summary>
-    public static readonly IReadOnlyDictionary<string, string> German = new Dictionary<string, string>
+    static readonly Dictionary<string, string> BaseNames = new()
     {
         ["SUM"] = "SUMME", ["AVERAGE"] = "MITTELWERT", ["MIN"] = "MIN", ["MAX"] = "MAX", ["COUNT"] = "ANZAHL", ["COUNTA"] = "ANZAHL2",
         ["COUNTBLANK"] = "ANZAHLLEEREZELLEN", ["PRODUCT"] = "PRODUKT", ["MEDIAN"] = "MEDIAN", ["IF"] = "WENN", ["IFERROR"] = "WENNFEHLER",
@@ -21,6 +21,9 @@ public static class Formula
         ["LOWER"] = "KLEIN", ["TRIM"] = "GLÄTTEN", ["ISBLANK"] = "ISTLEER", ["ISNUMBER"] = "ISTZAHL", ["ISERROR"] = "ISTFEHLER",
         ["SUMIF"] = "SUMMEWENN", ["COUNTIF"] = "ZÄHLENWENN", ["AVERAGEIF"] = "MITTELWERTWENN", ["VLOOKUP"] = "SVERWEIS",
     };
+
+    /// <summary>Englisch → Deutsch: Grundfunktionen plus E4 (SheetFunctionNames.Extra).</summary>
+    public static readonly IReadOnlyDictionary<string, string> German = new Dictionary<string, string>(BaseNames.Concat(SheetFunctionNames.Extra));
     static readonly Dictionary<string, string> English = German.ToDictionary(kv => kv.Value, kv => kv.Key, StringComparer.OrdinalIgnoreCase);
     static readonly Dictionary<string, string> ErrDeEn = new() { ["#BEZUG!"] = "#REF!", ["#WERT!"] = "#VALUE!", ["#NV"] = "#N/A", ["#ZAHL!"] = "#NUM!", ["#DIV/0!"] = "#DIV/0!", ["#NAME?"] = "#NAME?" };
 
@@ -28,6 +31,8 @@ public static class Formula
     public static string Canonical(string name)
     {
         var u = name.ToUpperInvariant();
+        if (u.StartsWith("_XLFN.", StringComparison.Ordinal)) { u = u[6..]; name = name[6..]; }
+        if (u.StartsWith("_XLWS.", StringComparison.Ordinal)) { u = u[6..]; name = name[6..]; }
         return German.ContainsKey(u) ? u : English.TryGetValue(name, out var en) ? en : u;
     }
 
@@ -275,7 +280,7 @@ public static class Formula
             {
                 T.Num when from != to => to == Dialect.En ? t.Text.Replace(',', '.') : t.Text.Replace('.', ','),
                 T.Sep => to == Dialect.De ? ";" : ",",
-                T.Func => to == Dialect.De ? (German.TryGetValue(Canonical(t.Text), out var de) ? de : t.Text) : Canonical(t.Text),
+                T.Func => to == Dialect.De ? (German.TryGetValue(Canonical(t.Text), out var de) ? de : t.Text) : SheetFunctionNames.XlFn.Contains(Canonical(t.Text)) ? "_xlfn." + Canonical(t.Text) : Canonical(t.Text),
                 T.Bool when from != to => to == Dialect.De ? (t.Text == "1" ? "WAHR" : "FALSCH") : (t.Text == "1" ? "TRUE" : "FALSE"),
                 T.Err when from != to => to == Dialect.En ? ErrDeEn.GetValueOrDefault(t.Text, t.Text) : ErrDeEn.FirstOrDefault(kv => kv.Value == t.Text).Key ?? t.Text,
                 T.Str => "\"" + t.Text.Replace("\"", "\"\"") + "\"",

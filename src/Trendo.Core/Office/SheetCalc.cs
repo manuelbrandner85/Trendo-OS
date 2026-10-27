@@ -19,7 +19,7 @@ public readonly record struct CellValue(CellValue.K Kind, double Number, string 
 }
 
 /// <summary>Rechnet Zellen einer Mappe aus (C3). Ergebnisse werden je Berechnung zwischengespeichert; Zirkelbezüge ergeben #ZIRKEL!.</summary>
-public sealed class SheetCalc(SheetDoc doc)
+public sealed partial class SheetCalc(SheetDoc doc)
 {
     readonly Dictionary<(Sheet, int, int), CellValue> _memo = [];
     readonly HashSet<(Sheet, int, int)> _busy = [];
@@ -42,7 +42,7 @@ public sealed class SheetCalc(SheetDoc doc)
         try
         {
             CellValue result;
-            try { result = new Evaluator(this, s).Eval(Formula.Parse(cell.Raw[1..], Formula.Dialect.De)); }
+            try { result = new Evaluator(this, s) { Row = row, Col = col }.Eval(Formula.Parse(cell.Raw[1..], Formula.Dialect.De)); }
             catch (FormulaError e) { result = CellValue.Err(e.Code); }
             return _memo[key] = result.Kind == CellValue.K.Empty ? CellValue.Num(0) : result;
         }
@@ -70,7 +70,7 @@ public sealed class SheetCalc(SheetDoc doc)
         return (CellValue.Str(raw), null);
     }
 
-    sealed class Evaluator(SheetCalc calc, Sheet sheet)
+    sealed partial class Evaluator(SheetCalc calc, Sheet sheet)
     {
         public CellValue Eval(Formula.Node n) => n switch
         {
@@ -230,7 +230,7 @@ public sealed class SheetCalc(SheetDoc doc)
                 case "ISERROR": Need(1, 1); return CellValue.Bool(Eval(a[0]).IsError);
                 case "SUMIF": case "COUNTIF": case "AVERAGEIF": return CondAgg(f.Name, a);
                 case "VLOOKUP": return VLookup(a);
-                default: throw new FormulaError("#NAME?");
+                default: return Extra(f.Name, a) ?? throw new FormulaError("#NAME?");
             }
         }
 
