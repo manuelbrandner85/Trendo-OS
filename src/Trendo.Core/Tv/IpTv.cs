@@ -350,8 +350,56 @@ public sealed class TvLibrary(string dataRoot)
         public string? LastChannel { get; set; }
     }
     static readonly JsonSerializerOptions J = new() { WriteIndented = false };
-    State Load() { try { return File.Exists(Path.Combine(Dir, "tv.json")) ? JsonSerializer.Deserialize<State>(File.ReadAllText(Path.Combine(Dir, "tv.json"))) ?? new() : new(); } catch (Exception e) when (e is IOException or JsonException) { return new(); } }
-    void Save(State s) { Directory.CreateDirectory(Dir); var f = Path.Combine(Dir, "tv.json"); File.WriteAllText(f + ".tmp", JsonSerializer.Serialize(s, J)); File.Move(f + ".tmp", f, true); }
+    // Zwischenspeicher (Absturzbericht 27.10.2026: Listen mit 300 000+ Einträgen ließen Trendo hängen): Zustand und gelesene Listen
+    // nur neu lesen, wenn sich die Datei geändert hat.
+    static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (long Stamp, State S)> StateCache = new();
+    static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (long Stamp, Parsed P)> ParseCache = new();
+    static long Stamp(FileInfo f) => f.LastWriteTimeUtc.Ticks ^ (f.Length << 20);
+    sealed class Parsed { public required List<TvChannel> All; public List<TvSeries>? Series; public Dictionary<string, List<TvEpisode>>? Episodes; }
+
+    State Load()
+    {
+        var f = new FileInfo(Path.Combine(Dir, "tv.json"));
+        if (!f.Exists) return new();
+        try
+        {
+            if (StateCache.TryGetValue(f.FullName, out var c) && c.Stamp == Stamp(f)) return JsonSerializer.Deserialize<State>(JsonSerializer.Serialize(c.S, J))!; // Kopie, damit Änderungen nicht durchschlagen
+            var s = JsonSerializer.Deserialize<State>(File.ReadAllText(f.FullName)) ?? new();
+            f.Refresh(); StateCache[f.FullName] = (Stamp(f), s);
+            return JsonSerializer.Deserialize<State>(JsonSerializer.Serialize(s, J))!;
+        }
+        catch (Exception e) when (e is IOException or JsonException) { return new(); }
+    }
+
+    /// <summary>Wiedergabeliste einer Quelle – nur einmal gelesen, solange sich die Datei nicht ändert.</summary>
+    Parsed ParsedOf(string srcId)
+    {
+        var f = new FileInfo(Path.Combine(Dir, $"{srcId}.m3u"));
+        if (!f.Exists) return new Parsed { All = [] };
+        if (ParseCache.TryGetValue(f.FullName, out var c) && c.Stamp == Stamp(f)) return c.P;
+        var p = new Parsed { All = M3u.Parse(File.ReadAllText(f.FullName), srcId).Channels };
+        ParseCache[f.FullName] = (Stamp(f), p);
+        return p;
+    }
+
+    /// <summary>Serien und Folgen aus der Liste – in einem Durchgang (vorher wurde die Liste je Serie neu gelesen).</summary>
+    Parsed SeriesOf(string srcId)
+    {
+        var p = ParsedOf(srcId);
+        if (p.Series is not null) return p;
+        var eps = new Dictionary<string, List<TvEpisode>>(); var series = new List<TvSeries>(); var n = 0;
+        foreach (var c in p.All)
+        {
+            if (c.Kind != "serie") continue;
+            var (name, season, ep) = M3u.SplitEpisode(c.Name);
+            var key = $"{srcId}:s-" + name.ToLowerInvariant();
+            if (!eps.TryGetValue(key, out var l)) { eps[key] = l = []; series.Add(new TvSeries(key, name, c.Group, c.Logo)); }
+            l.Add(new TvEpisode(key, season, ep == 0 ? ++n : ep, c.Name, c.Url));
+        }
+        p.Episodes = eps; p.Series = series;
+        return p;
+    }
+    void Save(State s) { Directory.CreateDirectory(Dir); var f = Path.Combine(Dir, "tv.json"); File.WriteAllText(f + ".tmp", JsonSerializer.Serialize(s, J)); File.Move(f + ".tmp", f, true); StateCache.TryRemove(new FileInfo(f).FullName, out _); }
     void Change(Action<State> a) { var s = Load(); a(s); Save(s); }
 
     public IReadOnlyList<TvSource> Sources => Load().Sources;
@@ -380,7 +428,7 @@ public sealed class TvLibrary(string dataRoot)
     public void SetEpgUrl(string id, string? url) => Change(s => { var i = s.Sources.FindIndex(x => x.Id == id); if (i >= 0) s.Sources[i] = s.Sources[i] with { EpgUrl = url }; });
 
     /// <summary>Geladene Wiedergabeliste ablegen (die App lädt sie herunter oder liest die Datei).</summary>
-    public void StorePlaylist(string id, string m3u) { Directory.CreateDirectory(Dir); File.WriteAllText(Path.Combine(Dir, $"{id}.m3u"), m3u); }
+    public void StorePlaylist(string id, string m3u) { Directory.CreateDirectory(Dir); var f = Path.Combine(Dir, $"{id}.m3u"); File.WriteAllText(f, m3u); ParseCache.TryRemove(new FileInfo(f).FullName, out _); }
     public void StoreEpg(string id, IReadOnlyList<TvProgramme> programmes) { Directory.CreateDirectory(Dir); File.WriteAllText(Path.Combine(Dir, $"{id}.epg.json"), JsonSerializer.Serialize(programmes, J)); }
 
     /// <summary>Alle Sender aller Quellen (mit Quellen-Kennung), Nummern fortlaufend.</summary>
@@ -389,10 +437,8 @@ public sealed class TvLibrary(string dataRoot)
         var all = new List<TvChannel>();
         foreach (var src in Sources)
         {
-            var f = Path.Combine(Dir, $"{src.Id}.m3u");
-            if (!File.Exists(f)) continue;
-            var (parsed, _) = M3u.Parse(File.ReadAllText(f), src.Id);
-            var ch = parsed.Where(c => c.Kind == "live").ToList();
+            var ch = ParsedOf(src.Id).All.Where(c => c.Kind == "live").ToList();
+            if (ch.Count == 0) continue;
             var offset = all.Count == 0 ? 0 : all.Max(c => c.Number);
             all.AddRange(all.Count == 0 ? ch : ch.Select(c => c with { Number = c.Number + offset }));
         }
@@ -407,8 +453,7 @@ public sealed class TvLibrary(string dataRoot)
         {
             var api = Path.Combine(Dir, $"{src.Id}.vod.json");
             if (File.Exists(api)) { try { all.AddRange(JsonSerializer.Deserialize<List<TvVod>>(File.ReadAllText(api)) ?? []); continue; } catch (JsonException) { } }
-            var f = Path.Combine(Dir, $"{src.Id}.m3u");
-            if (File.Exists(f)) all.AddRange(M3u.Parse(File.ReadAllText(f), src.Id).Channels.Where(c => c.Kind == "film").Select(c => new TvVod(c.Id, c.Name, c.Group, c.Url, c.Logo)));
+            all.AddRange(ParsedOf(src.Id).All.Where(c => c.Kind == "film").Select(c => new TvVod(c.Id, c.Name, c.Group, c.Url, c.Logo)));
         }
         return all;
     }
@@ -421,31 +466,9 @@ public sealed class TvLibrary(string dataRoot)
         {
             var api = Path.Combine(Dir, $"{src.Id}.series.json");
             if (File.Exists(api)) { try { all.AddRange(JsonSerializer.Deserialize<List<TvSeries>>(File.ReadAllText(api)) ?? []); continue; } catch (JsonException) { } }
-            foreach (var g in PlaylistEpisodes(src.Id).GroupBy(e => e.SeriesId))
-            {
-                var first = M3uEntries(src.Id).First(c => c.Kind == "serie" && SeriesKey(src.Id, c) == g.Key);
-                all.Add(new TvSeries(g.Key, M3u.SplitEpisode(first.Name).Series, first.Group, first.Logo));
-            }
+            all.AddRange(SeriesOf(src.Id).Series!);
         }
         return all;
-    }
-
-    IEnumerable<TvChannel> M3uEntries(string srcId)
-    {
-        var f = Path.Combine(Dir, $"{srcId}.m3u");
-        return File.Exists(f) ? M3u.Parse(File.ReadAllText(f), srcId).Channels : [];
-    }
-
-    static string SeriesKey(string srcId, TvChannel c) => $"{srcId}:s-" + M3u.SplitEpisode(c.Name).Series.ToLowerInvariant();
-
-    List<TvEpisode> PlaylistEpisodes(string srcId)
-    {
-        var n = 0;
-        return M3uEntries(srcId).Where(c => c.Kind == "serie").Select(c =>
-        {
-            var (_, s, e) = M3u.SplitEpisode(c.Name);
-            return new TvEpisode(SeriesKey(srcId, c), s, e == 0 ? ++n : e, c.Name, c.Url);
-        }).ToList();
     }
 
     /// <summary>Folgen einer Serie (aus der Liste oder zwischengespeichert vom Anbieter).</summary>
@@ -454,7 +477,7 @@ public sealed class TvLibrary(string dataRoot)
         var srcId = seriesId.Split(':')[0];
         var cache = Path.Combine(Dir, "folgen", seriesId.Replace(':', '_') + ".json");
         if (File.Exists(cache)) { try { return JsonSerializer.Deserialize<List<TvEpisode>>(File.ReadAllText(cache)) ?? []; } catch (JsonException) { } }
-        return PlaylistEpisodes(srcId).Where(e => e.SeriesId == seriesId).OrderBy(e => e.Season).ThenBy(e => e.Episode).ToList();
+        return SeriesOf(srcId).Episodes!.TryGetValue(seriesId, out var l) ? l.OrderBy(e => e.Season).ThenBy(e => e.Episode).ToList() : [];
     }
 
     public void StoreVod(string srcId, IReadOnlyList<TvVod> vod) { Directory.CreateDirectory(Dir); File.WriteAllText(Path.Combine(Dir, $"{srcId}.vod.json"), JsonSerializer.Serialize(vod, J)); }
@@ -485,6 +508,8 @@ public sealed class TvLibrary(string dataRoot)
     }
 
     public void Watched(string channelId) => Change(s => { s.Recent.Remove(channelId); s.Recent.Insert(0, channelId); if (s.Recent.Count > 20) s.Recent.RemoveAt(20); s.LastChannel = channelId; });
+    public void SetHiddenGroups(IEnumerable<string> groups) => Change(s => s.HiddenGroups = groups.Distinct().ToList());
+    public void SetLockedGroups(IEnumerable<string> groups) => Change(s => s.LockedGroups = groups.Distinct().ToList());
     public void ToggleHiddenGroup(string g) => Change(s => { if (!s.HiddenGroups.Remove(g)) s.HiddenGroups.Add(g); });
     public void ToggleLockedGroup(string g) => Change(s => { if (!s.LockedGroups.Remove(g)) s.LockedGroups.Add(g); });
 

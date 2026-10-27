@@ -16,6 +16,48 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     string _tvVodCat = "Alle", _tvSerCat = "Alle", _tvVodQuery = "", _tvSerQuery = "";
+    // Wunsch 27.10.2026: Filme/Serien nach Anbieter (Netflix, Disney+, Amazon …) und Sprache wählen
+    string _tvVodProv = "Alle", _tvVodLang = "Alle", _tvSerProv = "Alle", _tvSerLang = "Alle";
+
+    /// <summary>Kategorien, die zu Anbieter und Sprache passen und nicht ausgeblendet sind.</summary>
+    HashSet<string> TvCatsFor(IEnumerable<string> cats, string prov, string lang)
+    {
+        var hidden = Tv.HiddenGroups.ToHashSet();
+        var locked = _tvUnlocked ? [] : Tv.LockedGroups.ToHashSet();
+        return cats.Distinct().Where(c => !hidden.Contains(c) && !locked.Contains(c) && (prov == "Alle" || TvCommands.HasProvider(c, prov)) && (lang == "Alle" || TvCommands.CountryOf(c) == lang)).ToHashSet();
+    }
+
+    Button TvChip(string name, string label, bool on, Action click)
+    {
+        var chip = new Button { Name = name, Content = new TextBlock { Text = label, Foreground = on ? Brush.Parse("#1B1406") : Text, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal, FontSize = 12 },
+            Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(11, 4), CornerRadius = new CornerRadius(14), BorderBrush = Brush.Parse("#33D4A84B"), BorderThickness = new Thickness(on ? 0 : 1),
+            Background = on ? new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#FFF1C870"), 0), new GradientStop(Color.Parse("#FFD4A84B"), 1) } } : Brush.Parse("#14FFFFFF") };
+        chip.Click += (_, _) => click();
+        return chip;
+    }
+
+    /// <summary>Schnellwahl „Anbieter“ (Netflix, Amazon Prime, Disney+ …) und „Sprache“ (Deutsch, Türkisch …) – nur was in der Liste vorkommt.</summary>
+    Control TvFacets(string name, IReadOnlyCollection<string> cats, string prov, string lang, Action<string> setProv, Action<string> setLang)
+    {
+        var sp = new StackPanel { Spacing = 2 };
+        var provs = TvCommands.ProvidersIn(cats);
+        if (provs.Count > 0)
+        {
+            var w = new WrapPanel { Name = name + "-providers" };
+            w.Children.Add(new TextBlock { Text = "Anbieter", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 6), Width = 64 });
+            foreach (var p in new[] { "Alle" }.Concat(provs)) { var pp = p; w.Children.Add(TvChip($"{name}-prov-{Safe(p)}", p, p == prov, () => setProv(pp))); }
+            sp.Children.Add(w);
+        }
+        var langs = cats.Select(TvCommands.CountryOf).OfType<string>().GroupBy(x => x).OrderByDescending(g => g.Count()).Take(10).Select(g => g.Key).ToList();
+        if (langs.Count > 1)
+        {
+            var w = new WrapPanel { Name = name + "-langs" };
+            w.Children.Add(new TextBlock { Text = "Sprache", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 6), Width = 64 });
+            foreach (var l in new[] { "Alle" }.Concat(langs)) { var ll = l; w.Children.Add(TvChip($"{name}-lang-{l}", l == "Alle" ? "Alle" : TvCommands.LanguageLabel(l), l == lang, () => setLang(ll))); }
+            sp.Children.Add(w);
+        }
+        return sp;
+    }
     string? _tvVodSel, _tvSerSel, _tvPlayingTitle;
     int _tvSeason;
     List<TvVod>? _tvVod;
@@ -25,6 +67,8 @@ public partial class MainWindow
     public List<TvVod> TvVodList() => _tvVod ??= Tv.Vod();
     /// <summary>Für Tests: gerade gezeigter Bereich.</summary>
     public string CurrentTvTab => _tvTab;
+    /// <summary>Für Tests und das Render-Werkzeug: Bereich vorwählen.</summary>
+    public string TvTabForTests { set => _tvTab = value; }
     public List<TvSeries> TvSeriesList() => _tvSeries ??= Tv.Series();
 
     /// <summary>Xtream: Filme und Serien direkt vom Anbieter holen (mit Cover und Beschreibung).</summary>
@@ -94,7 +138,7 @@ public partial class MainWindow
                 using var ms = new MemoryStream(bytes);
                 bmp = Bitmap.DecodeToWidth(ms, 240);
             }
-            catch (Exception e) when (e is HttpRequestException or IOException or InvalidOperationException or ArgumentException or NotSupportedException or TaskCanceledException) { }
+            catch (Exception) { bmp = null; } // kaputtes oder fremdes Bild: Kachel ohne Bild (vorher Absturz im Hintergrund)
             finally { TvImageGate.Release(); }
             Dispatcher.UIThread.Post(() => { TvImages[url] = bmp; target.Source = bmp; });
         });
@@ -104,15 +148,16 @@ public partial class MainWindow
     {
         var img = new Image { Stretch = Stretch.UniformToFill };
         TvImage(img, cover);
-        var face = new Grid { Height = 210, Width = 140, ClipToBounds = true, Children = {
+        var face = new Grid { Height = 234, Width = 156, ClipToBounds = true, Children = {
             new Border { Background = Grad("#1A3A6B", "#0A1A36"), Child = new TextBlock { Text = "🎬", FontSize = 40, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Opacity = 0.5 } },
             img,
             new Border { VerticalAlignment = VerticalAlignment.Bottom, Padding = new Thickness(8, 18, 8, 6), Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
                 GradientStops = { new GradientStop(Color.Parse("#00040A18"), 0), new GradientStop(Color.Parse("#F0040A18"), 1) } },
                 Child = new StackPanel { Children = { new TextBlock { Text = title, Foreground = Brushes.White, FontSize = 12, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, MaxHeight = 34 },
                     new TextBlock { Text = sub ?? "", Foreground = Brush.Parse("#C9D6EA"), FontSize = 10.5, IsVisible = !string.IsNullOrEmpty(sub) } } } } } };
-        var b = new Button { Name = name, Content = face, Padding = new Thickness(0), Margin = new Thickness(0, 0, 10, 10), CornerRadius = new CornerRadius(10), ClipToBounds = true,
-            BorderBrush = selected ? Brush.Parse("#D4A84B") : EdgeLit, BorderThickness = new Thickness(selected ? 2 : 1), Background = Brushes.Transparent };
+        var b = new Button { Name = name, Content = face, Padding = new Thickness(0), Margin = new Thickness(0, 0, 14, 16), CornerRadius = new CornerRadius(14), ClipToBounds = true,
+            BorderBrush = selected ? Brush.Parse("#F1C870") : Brush.Parse("#33D4A84B"), BorderThickness = new Thickness(selected ? 2 : 1), Background = Brushes.Transparent };
+        b.Effect = new DropShadowEffect { BlurRadius = 18, OffsetY = 8, Opacity = 0.55, Color = Colors.Black };
         ToolTip.SetTip(b, title);
         b.Click += (_, _) => click();
         Hover(b);
@@ -133,7 +178,9 @@ public partial class MainWindow
         foreach (var c in all.Take(9))
         {
             var on = c == current;
-            var chip = new Button { Name = $"{name}-chip-{Safe(c)}", Content = c, Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(10, 4), CornerRadius = new CornerRadius(12), Background = on ? Accent : Brush.Parse("#1AFFFFFF") };
+            var chip = new Button { Name = $"{name}-chip-{Safe(c)}", Content = new TextBlock { Text = c, Foreground = on ? Brush.Parse("#1B1406") : Text, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal },
+                Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(12, 5), CornerRadius = new CornerRadius(14), BorderBrush = Brush.Parse("#33D4A84B"), BorderThickness = new Thickness(on ? 0 : 1),
+                Background = on ? new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#FFF1C870"), 0), new GradientStop(Color.Parse("#FFD4A84B"), 1) } } : Brush.Parse("#14FFFFFF") };
             var cc = c; chip.Click += (_, _) => pick(cc);
             chips.Children.Add(chip);
         }
@@ -146,11 +193,13 @@ public partial class MainWindow
         var all = TvVodList();
         if (all.Count == 0) { sp.Children.Add(P("Keine Filme gefunden. Filme kommen aus deiner Senderliste (Einträge wie „/movie/…“ oder Videodateien) oder vom Xtream-Zugang.", Text, 12.5)); return sp; }
         var grid = new WrapPanel { Name = "tv-film-grid" };
+        var allCats = all.Select(v => v.Category).Distinct().ToList();
+        var ok = TvCatsFor(allCats, _tvVodProv, _tvVodLang);
         void Fill()
         {
             grid.Children.Clear();
             var q = _tvVodQuery.Trim();
-            foreach (var v in all.Where(v => (_tvVodCat == "Alle" || v.Category == _tvVodCat) && (q.Length == 0 || v.Name.Contains(q, StringComparison.OrdinalIgnoreCase))).Take(240))
+            foreach (var v in all.Where(v => ok.Contains(v.Category) && (_tvVodCat == "Alle" || v.Category == _tvVodCat) && (q.Length == 0 || v.Name.Contains(q, StringComparison.OrdinalIgnoreCase))).Take(240))
             {
                 var vv = v;
                 grid.Children.Add(TvPoster("tv-film-item-" + Safe(v.Id), v.Name, string.Join(" · ", new[] { v.Year, v.Rating is { Length: > 0 } r ? "★ " + r : null }.Where(x => !string.IsNullOrEmpty(x))), v.Cover,
@@ -158,7 +207,8 @@ public partial class MainWindow
             }
             if (grid.Children.Count == 0) grid.Children.Add(P("Nichts gefunden.", null, 12));
         }
-        sp.Children.Add(TvCategoryBar("tv-film", all.Select(v => v.Category), _tvVodCat, c => { _tvVodCat = c; Show("tv"); }, _tvVodQuery, q => { _tvVodQuery = q; Fill(); }));
+        sp.Children.Add(TvFacets("tv-film", allCats, _tvVodProv, _tvVodLang, p => { _tvVodProv = p; _tvVodCat = "Alle"; Show("tv"); }, l => { _tvVodLang = l; _tvVodCat = "Alle"; Show("tv"); }));
+        sp.Children.Add(TvCategoryBar("tv-film", ok, _tvVodCat, c => { _tvVodCat = c; Show("tv"); }, _tvVodQuery, q => { _tvVodQuery = q; Fill(); }));
         if (_tvVodSel is { } sel && all.FirstOrDefault(v => v.Id == sel) is { } film)
         {
             var img = new Image { Width = 160, Height = 240, Stretch = Stretch.UniformToFill }; TvImage(img, film.Cover);
@@ -219,11 +269,13 @@ public partial class MainWindow
             return sp;
         }
         var grid = new WrapPanel { Name = "tv-series-grid" };
+        var allCats = all.Select(s => s.Category).Distinct().ToList();
+        var ok = TvCatsFor(allCats, _tvSerProv, _tvSerLang);
         void Fill()
         {
             grid.Children.Clear();
             var q = _tvSerQuery.Trim();
-            foreach (var s in all.Where(s => (_tvSerCat == "Alle" || s.Category == _tvSerCat) && (q.Length == 0 || s.Name.Contains(q, StringComparison.OrdinalIgnoreCase))).Take(240))
+            foreach (var s in all.Where(s => ok.Contains(s.Category) && (_tvSerCat == "Alle" || s.Category == _tvSerCat) && (q.Length == 0 || s.Name.Contains(q, StringComparison.OrdinalIgnoreCase))).Take(240))
             {
                 var ss = s;
                 grid.Children.Add(TvPoster("tv-serie-item-" + Safe(s.Id), s.Name, string.Join(" · ", new[] { s.Year, s.Rating is { Length: > 0 } r ? "★ " + r : null }.Where(x => !string.IsNullOrEmpty(x))), s.Cover,
@@ -231,7 +283,8 @@ public partial class MainWindow
             }
             if (grid.Children.Count == 0) grid.Children.Add(P("Nichts gefunden.", null, 12));
         }
-        sp.Children.Add(TvCategoryBar("tv-serie", all.Select(s => s.Category), _tvSerCat, c => { _tvSerCat = c; Show("tv"); }, _tvSerQuery, q => { _tvSerQuery = q; Fill(); }));
+        sp.Children.Add(TvFacets("tv-serie", allCats, _tvSerProv, _tvSerLang, p => { _tvSerProv = p; _tvSerCat = "Alle"; Show("tv"); }, l => { _tvSerLang = l; _tvSerCat = "Alle"; Show("tv"); }));
+        sp.Children.Add(TvCategoryBar("tv-serie", ok, _tvSerCat, c => { _tvSerCat = c; Show("tv"); }, _tvSerQuery, q => { _tvSerQuery = q; Fill(); }));
         Fill();
         sp.Children.Add(grid);
         return sp;

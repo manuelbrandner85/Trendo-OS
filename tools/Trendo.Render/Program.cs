@@ -74,7 +74,25 @@ if (Environment.GetEnvironmentVariable("TRENDO_DEMO_CASE") is not null)
 {
     var us = UserSettings.Load(root); us.SetupDone = true; us.ProjectsFolder = Path.Combine(root, "projekte"); us.Theme = args.Length > 4 ? args[4] : "dunkel"; us.Save(root);
 }
+if (Environment.GetEnvironmentVariable("TRENDO_TV_DEMO") is { Length: > 0 }) // TV & Live mit erfundenen Beispiel-Sendern rendern
+{
+    var lib = new Trendo.Core.Tv.TvLibrary(root);
+    var src = lib.AddSource("Beispiel", "url", "https://tv.example/liste.m3u");
+    var sb = new System.Text.StringBuilder("#EXTM3U\n");
+    string[] groups = ["Nachrichten", "Unterhaltung", "Sport", "Kinder", "Doku"];
+    for (var i = 1; i <= 24; i++) sb.Append($"#EXTINF:-1 tvg-id=\"k{i}\" tvg-chno=\"{i}\" group-title=\"{groups[i % 5]}\",Kanal {i} {groups[i % 5]}\nhttps://tv.example/{i}.m3u8\n");
+    foreach (var (f, g) in new[] { ("Der lange Weg", "Abenteuer"), ("Sternenstaub", "Science-Fiction"), ("Kleine Freunde", "Familie"), ("Nordlicht", "Drama"), ("Die Brücke", "Thriller"), ("Sommerwind", "Komödie"), ("Tiefsee", "Doku"), ("Gipfelsturm", "Abenteuer") })
+        sb.Append($"#EXTINF:-1 group-title=\"{g}\",{f}\nhttps://tv.example/movie/u/p/{f.Length}.mkv\n");
+    foreach (var s in new[] { "Hafenkommissarin", "Bergdoktorin", "Zeitreisende" }) for (var st = 1; st <= 2; st++) for (var e = 1; e <= 4; e++)
+        sb.Append($"#EXTINF:-1 group-title=\"Serien\",{s} S0{st} E0{e}\nhttps://tv.example/series/u/p/{s.Length}{st}{e}.mkv\n");
+    lib.StorePlaylist(src.Id, sb.ToString());
+    var now = DateTime.UtcNow; var progs = new List<Trendo.Core.Tv.TvProgramme>();
+    string[] titles = ["Tagesbericht", "Quizabend", "Fußball live", "Abenteuer im Wald", "Wildes Afrika", "Wetter", "Talk um acht", "Spätnachrichten"];
+    for (var i = 1; i <= 24; i++) { var t = now.Date.AddHours(now.Hour - 1).AddMinutes(-(i * 7 % 30)); for (var k = 0; k < 6; k++) { progs.Add(new($"k{i}", t, t.AddMinutes(45 + i % 4 * 15), titles[(i + k) % titles.Length], "Beispielsendung")); t = t.AddMinutes(45 + i % 4 * 15); } }
+    lib.StoreEpg(src.Id, progs);
+}
 var win = new MainWindow(core, new AppOptions(root, null, 0, Page: args.Length > 3 ? args[3] : null, Query: Environment.GetEnvironmentVariable("TRENDO_QUERY")), new DefaultToolProbe()) { Width = w, Height = h, WindowState = Avalonia.Controls.WindowState.Normal };
+if (Environment.GetEnvironmentVariable("TRENDO_TV_TAB") is { Length: > 0 } tvTab) { win.TvTabForTests = tvTab; win.Show("tv"); }
 win.Show();
 if (Environment.GetEnvironmentVariable("TRENDO_PDF") is { Length: > 0 } pdf) { var copy = Path.Combine(root, Path.GetFileName(pdf)); File.Copy(pdf, copy, true); win.OpenPdf(copy); win.Show("pdf"); } // T-0223: Trendo PDF rendern
 if (Environment.GetEnvironmentVariable("TRENDO_SHEET") is { Length: > 0 } mappe) { win.SheetNew(mappe); if (Enum.TryParse<Trendo.Core.Office.ChartKind>(Environment.GetEnvironmentVariable("TRENDO_SHEET_CHART"), out var chartKind)) { win.SheetSelect("A1:C7"); win.SheetInsertChart(chartKind); } if (Environment.GetEnvironmentVariable("TRENDO_SHEET_EXTRAS") == "1") { win.SheetSelect("C2:C7"); win.SheetAddCond(Trendo.Core.Office.CondKind.Datenbalken); win.SheetSelect("C9:C11"); win.SheetAddCond(Trendo.Core.Office.CondKind.Farbskala); win.SheetSelect("B2:B7"); win.SheetAddCond(Trendo.Core.Office.CondKind.Regel, Trendo.Core.Office.CondOp.Enthaelt, text: "Einnahme"); win.SheetSetValidation("Einnahme; Ausgabe"); win.SheetSelect("A2"); win.SheetSetNote("Netto, ohne Weihnachtsgeld"); } win.SheetSelect("C2:C7"); if (Environment.GetEnvironmentVariable("TRENDO_SHEET_PDF") is { Length: > 0 } sheetPdf) win.SheetExportPdf(sheetPdf); win.Show("tabelle"); } // T-0228: Trendo Tabelle mit Vorlage rendern

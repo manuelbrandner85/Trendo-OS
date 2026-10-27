@@ -50,8 +50,8 @@ public class ProgramFrameTests
         Assert.False(w.CommandPaletteOpen);
         Assert.Equal("handy", w.CurrentView);
         // Knopf der offenen Seite über die Suche auslösen
-        w.OpenPalette("QR-Code zum Verbinden"); Pump();
-        Assert.Contains(w.PaletteResults, r => r.Kind == "Auf dieser Seite" && r.Label.Contains("QR-Code"));
+        w.OpenPalette("Zuhause"); Pump(); // erster Schritt des Handy-Assistenten: „Zuhause (im selben WLAN)“
+        Assert.Contains(w.PaletteResults, r => r.Kind == "Auf dieser Seite" && r.Label.Contains("Zuhause"));
         w.ClosePalette();
 
         Assert.NotNull(w.TryFind<Border>("auftrag-leiste"));

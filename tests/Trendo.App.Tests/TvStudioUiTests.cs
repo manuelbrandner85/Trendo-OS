@@ -175,4 +175,41 @@ public class TvStudioUiTests
         Assert.Empty(w.Tv.Sources);
         w.Close();
     }
+
+    const string Mixed = "#EXTM3U\n#EXTINF:-1 group-title=\"DE • SPORT\",Sport Eins\nhttps://tv.example/live/1.ts\n#EXTINF:-1 group-title=\"TR • HABER\",Haber\nhttps://tv.example/live/2.ts\n"
+        + "#EXTINF:-1 group-title=\"DE • NETFLIX FILME\",Deutscher Film\nhttps://tv.example/movie/u/p/1.mkv\n#EXTINF:-1 group-title=\"TR • DISNEY PLUS FILMLER\",Türk Film\nhttps://tv.example/movie/u/p/2.mkv\n"
+        + "#EXTINF:-1 group-title=\"DE • NETFLIX SERIEN\",Kommissarin S01 E01\nhttps://tv.example/series/u/p/1.mkv\n#EXTINF:-1 group-title=\"DE • AMAZON PRIME SERIEN\",Hafenkante S01 E01\nhttps://tv.example/series/u/p/2.mkv\n";
+
+    [AvaloniaFact(DisplayName = "TV & Live: KI-Assistent („Behalte nur deutsche Sender“, „Zeig Netflix-Serien“) und Anbieter-/Sprachwahl bei Filmen und Serien")]
+    public async Task Assistant_and_providers()
+    {
+        var (w, _, _) = Ui.Open();
+        w.TvFetchOverride = _ => Task.FromResult(Encoding.UTF8.GetBytes(Mixed));
+        Assert.Equal(6, await w.TvAddSource("Liste", "url", "https://tv.example/liste.m3u"));
+        w.Show("tv"); Pump();
+        Assert.NotNull(w.TryFind<TextBox>("tv-ki"));
+        var msg = await w.TvDo("Blende mir alle Sender aus und behalte nur deutsche"); Pump();
+        Assert.StartsWith("✓", msg);
+        Assert.Contains("TR • HABER", w.Tv.HiddenGroups);
+        Assert.DoesNotContain("DE • SPORT", w.Tv.HiddenGroups);
+        Assert.DoesNotContain("TR • DISNEY PLUS FILMLER", w.Tv.HiddenGroups); // nur Sender gemeint
+
+        Assert.StartsWith("✓", await w.TvDo("Zeig Netflix-Serien")); Pump();
+        Assert.Equal("serie", w.CurrentTvTab);
+        Assert.NotNull(w.TryFind<Button>("tv-serie-prov-Netflix"));
+        Assert.Contains(w.GetLogicalTexts(), t => t == "Kommissarin");
+        Assert.DoesNotContain(w.GetLogicalTexts(), t => t == "Hafenkante");
+        w.Find<Button>("tv-serie-prov-Amazon-Prime").Press(); Pump();
+        Assert.Contains(w.GetLogicalTexts(), t => t == "Hafenkante");
+
+        Assert.StartsWith("✓", await w.TvDo("Behalte nur deutsche Filme")); Pump();
+        Assert.Equal("film", w.CurrentTvTab);
+        Assert.Contains("TR • DISNEY PLUS FILMLER", w.Tv.HiddenGroups);
+        Assert.Contains(w.GetLogicalTexts(), t => t == "Deutscher Film");
+        Assert.DoesNotContain(w.GetLogicalTexts(), t => t == "Türk Film");
+        Assert.NotNull(w.TryFind<Button>("tv-film-lang-de") ?? w.TryFind<Button>("tv-film-prov-Netflix"));
+
+        Assert.StartsWith("✓", await w.TvDo("Zeig wieder alles"));
+        Assert.Empty(w.Tv.HiddenGroups);
+    }
 }

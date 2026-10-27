@@ -49,7 +49,7 @@ public partial class MainWindow
     {
         ["start"] = "CORE-01", ["studios"] = "CORE-01", ["suche"] = "CORE-01", ["einrichtung"] = "CORE-01", ["projects"] = "CORE-01", ["approvals"] = "CORE-11",
         ["system"] = "SYS-13", ["systemcheck"] = "SYS-13", ["notbuilt"] = "SYS-13", ["fortschritt"] = "SYS-13", ["sicherung"] = "CORE-11", ["ressourcen"] = "SYS-07",
-        ["ki"] = "CORE-02", ["keys"] = "CORE-02", ["settings"] = "SYS-12", ["apps"] = "SYS-11", ["components"] = "SYS-11", ["studio-deps"] = "SYS-11",
+        ["ki"] = "CORE-02", ["keys"] = "CORE-02", ["settings"] = "SYS-12", ["updates"] = "SYS-12", ["neu"] = "SYS-12", ["personen"] = "SYS-12", ["desktop-symbole"] = "CORE-01", ["hinzufuegen"] = "SYS-11", ["ki-internet"] = "X-05", ["apps"] = "SYS-11", ["components"] = "SYS-11", ["studio-deps"] = "SYS-11",
         ["werkzeuge"] = "SYS-02", ["medien"] = "SYS-02", ["office"] = "SYS-10", ["downloads"] = "SYS-03",
         ["brief"] = "STUDIO-LETTER-01", ["akten"] = "STUDIO-LETTER-01", ["akte"] = "STUDIO-LETTER-01", ["ausgabe"] = "STUDIO-LETTER-01", ["briefkoepfe"] = "STUDIO-LETTER-01",
     };
