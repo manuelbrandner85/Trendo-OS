@@ -66,6 +66,8 @@ public static class SheetFiles
             var sb = new StringBuilder();
             sb.Append($"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><worksheet xmlns=\"{S}\" xmlns:r=\"{R}\">");
             if (sh.MaxRow >= 0) sb.Append($"<dimension ref=\"A1:{Addr.Name(sh.MaxRow, Math.Max(0, sh.MaxCol))}\"/>");
+            if (sh.FreezeRows > 0 || sh.FreezeCols > 0)
+                sb.Append($"<sheetViews><sheetView workbookViewId=\"0\"><pane{(sh.FreezeCols > 0 ? $" xSplit=\"{sh.FreezeCols}\"" : "")}{(sh.FreezeRows > 0 ? $" ySplit=\"{sh.FreezeRows}\"" : "")} topLeftCell=\"{Addr.Name(sh.FreezeRows, sh.FreezeCols)}\" activePane=\"{(sh.FreezeRows > 0 && sh.FreezeCols > 0 ? "bottomRight" : sh.FreezeRows > 0 ? "bottomLeft" : "topRight")}\" state=\"frozen\"/></sheetView></sheetViews>");
             if (sh.ColWidths.Count > 0)
             {
                 sb.Append("<cols>");
@@ -317,6 +319,8 @@ public static class SheetFiles
             target = target.StartsWith('/') ? target[1..] : "xl/" + target;
             var sh = new Sheet(name); doc.Sheets.Add(sh);
             var ws = Load(target); if (ws is null) continue;
+            if (ws.Root!.Element(S + "sheetViews")?.Element(S + "sheetView")?.Element(S + "pane") is { } pane && (string?)pane.Attribute("state") is "frozen" or "frozenSplit")
+            { sh.FreezeRows = (int?)(double?)pane.Attribute("ySplit") ?? 0; sh.FreezeCols = (int?)(double?)pane.Attribute("xSplit") ?? 0; }
             try { ReadCharts(z, target, sh); } catch (Exception e) when (e is System.Xml.XmlException or InvalidDataException or ArgumentException) { } // Diagramme sind Beigabe – Zellen trotzdem lesen
             foreach (var col in ws.Root!.Element(S + "cols")?.Elements(S + "col") ?? [])
             {

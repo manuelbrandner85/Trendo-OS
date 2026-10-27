@@ -65,6 +65,17 @@ public partial class MainWindow
 
     public void SheetShowStart() => SheetStartVisible = true;
 
+    /// <summary>E1: Fenster fixieren – Zeilen oberhalb/Spalten links der aktiven Zelle bleiben stehen.</summary>
+    public void SheetToggleFreeze()
+    {
+        SheetSnapshot();
+        if (SheetGrid is { } g) g.ToggleFreeze();
+        else if (ActiveSheet.FreezeRows > 0 || ActiveSheet.FreezeCols > 0) ActiveSheet.FreezeRows = ActiveSheet.FreezeCols = 0;
+        else { ActiveSheet.FreezeRows = Math.Max(1, _shActive.Row); ActiveSheet.FreezeCols = _shActive.Col; }
+        SheetDirty = true;
+        _shMsg = ActiveSheet.FreezeRows + ActiveSheet.FreezeCols > 0 ? $"Fixiert: {ActiveSheet.FreezeRows} Zeile(n), {ActiveSheet.FreezeCols} Spalte(n)." : "Fixierung aufgehoben.";
+    }
+
     /// <summary>Zelle setzen wie durch Eintippen (mit Rückgängig).</summary>
     public void SheetSetCell(string a1, string raw) { var (r, c) = Addr.Parse(a1); SheetSnapshot(); WriteCell(r, c, raw); SheetChanged(); }
 
@@ -460,6 +471,7 @@ public partial class MainWindow
             case "ansicht":
                 groups.Children.Add(RibbonGroup("Ansicht",
                     SB("tabelle-focus", "⛶", "Vollbild", ToggleFocusMode, "Vollbild/Fokusmodus (F11)"),
+                    SB("tabelle-freeze", "❄", "Fixieren", SheetToggleFreeze, "Zeilen oberhalb und Spalten links der aktiven Zelle beim Blättern stehen lassen (erneut = aufheben)", ActiveSheet.FreezeRows > 0 || ActiveSheet.FreezeCols > 0),
                     SB("tabelle-gotoA1", "⌂", "Zu A1", () => { _shActive = _shAnchor = (0, 0); _shTop = _shLeft = 0; }, "Zum Anfang (Strg+Pos1)")));
                 groups.Children.Add(RibbonGroup("Drucken",
                     SB("tabelle-landscape", "▭", "Querformat", () => _shLandscape = !_shLandscape, "Seite quer statt hoch (für breite Tabellen)", _shLandscape),

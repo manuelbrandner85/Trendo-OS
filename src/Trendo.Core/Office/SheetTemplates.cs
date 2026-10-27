@@ -22,6 +22,7 @@ public static class SheetTemplates
         void Head(params string[] t) { for (var c = 0; c < t.Length; c++) { var cell = s.GetOrAdd(0, c); cell.Raw = t[c]; cell.Bold = true; cell.Fill = "#FFDCE8FB"; } }
         void Row(int r, params string[] t) { for (var c = 0; c < t.Length; c++) if (t[c].Length > 0) s.Set(r, c, t[c]); }
         void Fmt(NumFmt f, int col, int from, int to) { for (var r = from; r <= to; r++) s.GetOrAdd(r, col).Format = f; }
+        if (id != "leer") s.FreezeRows = 1; // Kopfzeile bleibt beim Blättern stehen
         switch (id)
         {
             case "haushalt":

@@ -118,6 +118,29 @@ public class T0228_TrendoTabelleUi
         w.Close();
     }
 
+    [AvaloniaFact(DisplayName = "T-0228 E1: Fenster fixieren – Kopfzeile bleibt beim Blättern sichtbar, wird in XLSX gespeichert")]
+    public void Freeze_panes()
+    {
+        var (w, _, root) = Ui.Open();
+        w.SheetNew(); w.Show("tabelle"); Pump();
+        for (var r = 0; r < 100; r++) w.ActiveSheet.Set(r, 0, r == 0 ? "Kopf" : r.ToString());
+        w.SheetSelect("A2");
+        w.Find<Button>("tabelle-rib-ansicht").Press(); Pump();
+        w.Find<Button>("tabelle-freeze").Press(); Pump();
+        Assert.Equal(1, w.ActiveSheet.FreezeRows);
+        var grid = w.Find<SheetGridView>("tabelle-grid");
+        grid.Select(80, 0); Pump();
+        Assert.True(grid.TopRow > 1);
+        Assert.NotNull(grid.CellRect(0, 0));   // Kopfzeile sichtbar
+        Assert.Null(grid.CellRect(5, 0));      // gescrollte Zeile nicht
+        Assert.NotNull(grid.CellRect(80, 0));
+        var f = Path.Combine(root, "fix.xlsx"); w.SheetSaveAs(f);
+        Assert.Equal(1, SheetFiles.Open(f).Sheets[0].FreezeRows);
+        w.Find<Button>("tabelle-freeze").Press(); Pump();
+        Assert.Equal(0, w.ActiveSheet.FreezeRows);
+        w.Close();
+    }
+
     [AvaloniaFact(DisplayName = "T-0228: Speichern als XLSX und wieder öffnen; erscheint unter „Zuletzt geöffnet“")]
     public void Save_and_reopen()
     {

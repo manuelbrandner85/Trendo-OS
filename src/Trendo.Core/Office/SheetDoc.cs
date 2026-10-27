@@ -69,6 +69,9 @@ public sealed class Sheet(string name)
     /// <summary>Durch den Filter ausgeblendete Zeilen (C4).</summary>
     public HashSet<int> HiddenRows { get; } = [];
     public List<SheetChart> Charts { get; } = [];
+    /// <summary>E1: fixierte Zeilen oben und Spalten links („Fenster fixieren“).</summary>
+    public int FreezeRows { get; set; }
+    public int FreezeCols { get; set; }
 
     public IEnumerable<KeyValuePair<(int Row, int Col), Cell>> Cells => _cells;
 
@@ -79,6 +82,7 @@ public sealed class Sheet(string name)
         foreach (var (k, w) in ColWidths) s.ColWidths[k] = w;
         foreach (var r in HiddenRows) s.HiddenRows.Add(r);
         s.Charts.AddRange(Charts);
+        s.FreezeRows = FreezeRows; s.FreezeCols = FreezeCols;
         return s;
     }
     public int MaxRow => _cells.Count == 0 ? -1 : _cells.Keys.Max(k => k.Row);
