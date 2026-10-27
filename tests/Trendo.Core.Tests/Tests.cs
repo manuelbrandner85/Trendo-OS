@@ -198,11 +198,11 @@ public class QA015_StudioStatus
         File.WriteAllText(f, "modules:\n" + mods); return f;
     }
 
-    [Fact(DisplayName = "QA-015: Fehlendes Programm → Blockiert, auch wenn gebaut; echte Liste hat 54 Module")]
+    [Fact(DisplayName = "QA-015: Fehlendes Programm → Blockiert, auch wenn gebaut; echte Liste hat 55 Module")]
     public void Missing_tool_blocked()
     {
         var list = new StudioRegistry().Load(Req, new Probe());
-        Assert.Equal(54, list.Count);
+        Assert.Equal(55, list.Count); // + TV & Live (27.10.2026)
         Assert.Equal(Capability.Blocked, list.Single(s => s.Id == "CORE-05").Capability);
         Assert.All(list.Where(s => StudioRegistry.RequiredTools.ContainsKey(s.Id)), s => Assert.NotEqual(Capability.Ready, s.Capability));
     }

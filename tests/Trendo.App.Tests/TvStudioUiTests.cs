@@ -1,0 +1,152 @@
+using System.Text;
+using Avalonia.Controls;
+using Avalonia.Headless.XUnit;
+using Trendo.App;
+using Trendo.Core;
+using Trendo.Core.Tv;
+using Xunit;
+
+namespace Trendo.App.Tests;
+
+/// <summary>Studio „TV & Live“ (27.10.2026): Quellen hinzufügen, Sender schauen, umschalten, Favoriten, gesperrte Gruppen, Programmführer,
+/// Aufnehmen, Mehrfachansicht – ohne Netz und ohne mpv (nachgebildet).</summary>
+public class TvStudioUiTests
+{
+    static void Pump() { for (var i = 0; i < 5; i++) Avalonia.Threading.Dispatcher.UIThread.RunJobs(); }
+
+    static string Xml()
+    {
+        string T(DateTime t) => t.ToString("yyyyMMddHHmmss") + " +0000";
+        var n = DateTime.UtcNow; var s = n.AddMinutes(-20); var e = n.AddMinutes(40);
+        return $"""<tv><programme start="{T(s)}" stop="{T(e)}" channel="eins.de"><title>Jetzt-Sendung</title><desc>Läuft gerade</desc></programme><programme start="{T(e)}" stop="{T(e.AddHours(1))}" channel="eins.de"><title>Spätere Sendung</title></programme></tv>""";
+    }
+
+    const string M3U = "#EXTM3U\n#EXTINF:-1 tvg-id=\"eins.de\" group-title=\"Deutschland\",Eins\nhttps://tv.example/eins.m3u8\n#EXTINF:-1 group-title=\"Deutschland\",Zwei\nhttps://tv.example/zwei.m3u8\n#EXTINF:-1 group-title=\"Kinder\",Kinderkanal\nhttps://tv.example/kika.m3u8\n";
+
+    [AvaloniaFact(DisplayName = "TV & Live: Quelle mit Programmführer laden, Sender schauen und umschalten, Favorit, gesperrte Gruppe nur mit PIN")]
+    public async Task Watch_and_lock()
+    {
+        var (w, _, root) = Ui.Open();
+        var played = new List<(string Slot, string Url)>();
+        w.TvPlayOverride = (s, u) => played.Add((s, u));
+        w.TvFetchOverride = u => Task.FromResult(Encoding.UTF8.GetBytes(u.Contains("epg") ? Xml() : M3U));
+        w.Show("tv"); Pump();
+        Assert.Equal("TV & Live", StudioCatalog.ById[MainWindow.TvStudio].Name);
+        Assert.NotNull(w.TryFind<Button>("tv-start-sources"));
+        w.Find<Button>("tv-start-sources").Press();
+        Assert.False(w.Find<TextBox>("tv-src-url").IsReadOnly); // Adresse eintippen, nicht nur auswählen
+        Assert.False(w.Find<TextBox>("tv-x-server").IsReadOnly);
+        Assert.Equal(3, await w.TvAddSource("Mein Anbieter", "url", "https://tv.example/liste.m3u", "https://tv.example/epg.xml"));
+        w.Show("tv"); w.Find<Button>("tv-tab-live").Press(); Pump();
+        Assert.NotNull(w.TryFind<Button>("tv-ch-"));
+        var first = w.Tv.Channels()[0];
+        w.Find<Button>("tv-ch-" + first.Id.Replace(':', '-')).Press();
+        Assert.Equal(("main", "https://tv.example/eins.m3u8"), played[^1]);
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Jetzt: Jetzt-Sendung"));
+        w.Find<Button>("tv-next").Press();
+        Assert.Equal("https://tv.example/zwei.m3u8", played[^1].Url);
+        w.Find<Button>("tv-fav").Press();
+        Assert.Contains(w.TvCurrent!, w.Tv.Favorites);
+
+        // Vollbild über ganz Trendo, Esc verkleinert wieder
+        w.Find<Button>("tv-full").Press();
+        Assert.True(w.TvIsFullscreen);
+        Assert.Equal(Avalonia.Controls.WindowState.FullScreen, w.WindowState);
+        Assert.NotNull(w.TryFind<Button>("tv-full-exit"));
+        w.RaiseEvent(new Avalonia.Input.KeyEventArgs { RoutedEvent = Avalonia.Input.InputElement.KeyDownEvent, Key = Avalonia.Input.Key.Escape }); Pump();
+        Assert.False(w.TvIsFullscreen);
+        Assert.NotEqual(Avalonia.Controls.WindowState.FullScreen, w.WindowState);
+
+        // Gruppe „Kinder“ sperren → nur mit PIN
+        new ProfileLock(root).Set(ProfileLock.Kind.Pin, "4711");
+        w.Tv.ToggleLockedGroup("Kinder");
+        var kika = w.Tv.Channels().First(c => c.Group == "Kinder");
+        Assert.False(w.TvPlay(kika.Id));
+        w.Show("tv"); w.Find<Button>("tv-tab-quellen").Press();
+        w.Find<TextBox>("tv-unlock-pin").Text = "4711"; w.Find<Button>("tv-unlock").Press();
+        Assert.True(w.TvPlay(kika.Id));
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "TV & Live: Filme und Serien kategorisiert wählbar (Xtream) – Kategorie, Suche, Film abspielen, Serie → Staffel → Folge")]
+    public async Task Films_and_series()
+    {
+        var (w, _, _) = Ui.Open();
+        var played = new List<(string Slot, string Url)>();
+        w.TvPlayOverride = (s, u) => played.Add((s, u));
+        w.TvFetchOverride = u => Task.FromResult(Encoding.UTF8.GetBytes(
+            u.Contains("get_vod_categories") ? """[{"category_id":"1","category_name":"Action"},{"category_id":"2","category_name":"Familie"}]"""
+            : u.Contains("get_vod_streams") ? """[{"stream_id":7,"name":"Großes Abenteuer","category_id":"1","container_extension":"mkv","rating":"8"},{"stream_id":8,"name":"Kleiner Bär","category_id":"2"}]"""
+            : u.Contains("get_series_categories") ? """[{"category_id":"5","category_name":"Krimi"}]"""
+            : u.Contains("get_series_info") ? """{"episodes":{"1":[{"id":"101","episode_num":1,"title":"Anfang","container_extension":"mp4"}],"2":[{"id":"201","episode_num":1,"title":"Neue Staffel"}]}}"""
+            : u.Contains("get_series") ? """[{"series_id":11,"name":"Kommissarin","category_id":"5","plot":"Spannend"}]"""
+            : u.Contains("xmltv") ? "<tv/>" : M3U));
+        Assert.Equal(3, await w.TvAddSource("Anbieter", "xtream", "srv.example:8080", null, "u", "p"));
+        w.Show("tv"); Pump();
+        w.Find<Button>("tv-tab-film").Press();
+        Assert.NotNull(w.TryFind<Button>("tv-film-chip-Action"));
+        w.Find<Button>("tv-film-chip-Familie").Press();
+        Assert.Contains(w.GetLogicalTexts(), t => t == "Kleiner Bär");
+        Assert.DoesNotContain(w.GetLogicalTexts(), t => t == "Großes Abenteuer");
+        w.Find<Button>("tv-film-chip-Alle").Press();
+        w.Find<TextBox>("tv-film-search").Text = "Abenteuer"; Pump();
+        w.TryFind<Button>("tv-film-item-")!.Press();
+        Assert.Contains(w.GetLogicalTexts(), t => t == "Großes Abenteuer");
+        w.Find<Button>("tv-film-play").Press();
+        Assert.Equal("http://srv.example:8080/movie/u/p/7.mkv", played[^1].Url);
+        Assert.Equal("live", w.CurrentTvTab);
+        // Serien
+        w.Find<Button>("tv-tab-serie").Press();
+        w.TryFind<Button>("tv-serie-item-")!.Press();
+        for (var i = 0; i < 50 && w.TryFind<Button>("tv-ep-1-1") is null; i++) { await Task.Delay(20); Pump(); }
+        Assert.NotNull(w.TryFind<Button>("tv-season-2"));
+        w.Find<Button>("tv-season-2").Press();
+        w.Find<Button>("tv-ep-2-1").Press();
+        Assert.Equal("http://srv.example:8080/series/u/p/201.mkv", played[^1].Url);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "TV & Live: Programmführer zeigt Sendungen, Aufnahme planen und starten, Mehrfachansicht, Quelle entfernen")]
+    public async Task Guide_record_multi()
+    {
+        var (w, _, root) = Ui.Open();
+        var played = new List<(string Slot, string Url)>(); var recorded = new List<string>();
+        w.TvPlayOverride = (s, u) => played.Add((s, u));
+        w.TvRecordOverride = (u, f, secs) => recorded.Add($"{u}|{secs > 0}");
+        w.TvFetchOverride = u => Task.FromResult(Encoding.UTF8.GetBytes(u.Contains("epg") ? Xml() : M3U));
+        var file = Path.Combine(root, "liste.m3u"); File.WriteAllText(file, M3U);
+        w.PickOverride = _ => Task.FromResult<string[]?>([file]);
+        w.Show("tv"); Pump();
+        w.Find<Button>("tv-start-sources").Press();
+        w.Find<Button>("tv-src-file").Press();
+        for (var i = 0; i < 50 && w.Tv.Sources.Count == 0; i++) { await Task.Delay(20); Pump(); }
+        Assert.Single(w.Tv.Sources);
+        Assert.Equal("datei", w.Tv.Sources[0].Kind);
+        // Programmführer nachladen (EPG-Adresse setzen)
+        w.Tv.SetEpgUrl(w.Tv.Sources[0].Id, "https://tv.example/epg.xml");
+        await w.TvRefreshEpg(w.Tv.Sources[0]);
+        w.Show("tv"); w.Find<Button>("tv-tab-guide").Press();
+        Assert.Contains(w.GetLogicalTexts(), t => t == "Jetzt-Sendung");
+        var later = w.TryFind<Button>("tv-prog-" + w.Tv.Channels()[0].Id.Replace(':', '-') + "-" + w.Tv.Programmes()[1].Start.ToString("HHmm"))!;
+        later.Press();
+        w.Find<Button>("tv-prog-rec").Press();
+        Assert.Single(w.Tv.Recordings);
+        // „Jetzt aufnehmen“ im Live-Bild startet sofort
+        w.Find<Button>("tv-tab-live").Press();
+        w.TvPlay(w.Tv.Channels()[0].Id); w.Show("tv");
+        w.Find<Button>("tv-rec-now").Press();
+        Assert.Contains("https://tv.example/eins.m3u8|True", recorded);
+        Assert.Contains(w.Tv.Recordings, r => r.State == "läuft");
+        // Mehrfachansicht
+        w.Find<Button>("tv-tab-multi").Press();
+        w.Find<ComboBox>("tv-multi-pick-1").SelectedIndex = 1; Pump();
+        Assert.Contains(("m1", "https://tv.example/zwei.m3u8"), played);
+        w.Find<Button>("tv-multi-sound-1").Press();
+        // Quelle entfernen (mit Rückfrage)
+        w.Find<Button>("tv-tab-quellen").Press();
+        var rm = w.TryFind<Button>("tv-src-remove-")!; var name = rm.Name!;
+        rm.Press(); w.Find<Button>(name).Press();
+        Assert.Empty(w.Tv.Sources);
+        w.Close();
+    }
+}

@@ -426,6 +426,13 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+- id: STUDIO-TV-01
+  name: TV & Live (IPTV) Studio
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: tests/Trendo.Core.Tests/IpTvTests.cs (Auftrag im Chat 27.10.2026)
 - id: SPEC-16
   name: Transport & Vehicle 2.0
   approved_expansion_functions: '20'

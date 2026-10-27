@@ -1615,7 +1615,7 @@ public class PromptActionTests
         var adapters = PromptActions.CreateDefault();
         var registered = adapters.Select(a => a.StudioId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         Assert.Equal(ids.Count, registered.Count);
-        Assert.Equal(81, adapters.Count); // SPEC-07 abgelehnt: nur die Sperre, kein Übersetzungsadapter
+        Assert.Equal(82, adapters.Count); // + TV & Live (27.10.2026); SPEC-07 abgelehnt: nur die Sperre, kein Übersetzungsadapter
         Assert.Equal(adapters.Count, adapters.Select(a => a.ActionId).Distinct(StringComparer.OrdinalIgnoreCase).Count());
         Assert.All(adapters, a => Assert.NotNull(CapabilityCatalog.Find(a.StudioId)));
         Assert.Contains(registered, id => id == "STUDIO-LETTER-01");
@@ -1642,11 +1642,13 @@ public class PromptActionTests
             Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level(id, adapters));
         }
         Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level("SPEC-07", adapters));
-        Assert.Equal(51, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Partial));
+        Assert.Equal(52, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Partial)); // + TV & Live
         Assert.Equal(3, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Blocked));
         Assert.DoesNotContain(ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.NotImplemented);
         Assert.DoesNotContain(ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Ready);
         var markdown = CapabilityCatalog.Markdown(adapters);
+        // Neues Studio: Matrix-Dokument mit TRENDO_UPDATE_MATRIX=1 neu schreiben, danach prüfen
+        if (Environment.GetEnvironmentVariable("TRENDO_UPDATE_MATRIX") == "1") File.WriteAllText(Repo("docs/improvement-42/studio-capability-matrix.md"), markdown);
         Assert.Equal(Normalize(markdown), Normalize(File.ReadAllText(Repo("docs/improvement-42/studio-capability-matrix.md"))));
     }
 

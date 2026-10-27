@@ -133,6 +133,6 @@ public class PromptBarTests
             Assert.Equal(info.Name, profile.Title);
             Assert.Equal(info.Area, profile.Area);
         }
-        Assert.Equal(54, StudioCatalog.ById.Count);
+        Assert.Equal(55, StudioCatalog.ById.Count); // + TV & Live (27.10.2026)
     }
 }

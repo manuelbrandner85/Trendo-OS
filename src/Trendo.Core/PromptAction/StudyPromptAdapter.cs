@@ -90,6 +90,39 @@ public sealed class FashionSizeAdapter : IStudioActionAdapter
     public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Es wird nichts bestellt.");
 }
 
+/// <summary>STUDIO-TV-01: Senderliste (M3U) prüfen und ordnen – Sender, Filme, Serien je Gruppe. Abspielen und Aufnehmen macht das Studio selbst.</summary>
+public sealed class TvListAdapter : IStudioActionAdapter
+{
+    public string StudioId => "STUDIO-TV-01";
+    public string ActionId => "tv.liste.pruefen";
+    public string Label => "Senderliste prüfen";
+    public SideEffectClass Effect => SideEffectClass.None;
+    public CapabilityLevel DeclaredLevel => CapabilityLevel.Partial;
+    public string Evidence => "IpTvTests.Parse_m3u";
+    public bool CanPerformSideEffect => false;
+    public IReadOnlyList<string> RequiredFields => ["liste"];
+    public IReadOnlyList<string> OutputKinds => ["txt"];
+    public ActionDraft? TryParse(string prompt, IReadOnlyDictionary<string, string> known) => new ActionDraft(ActionId, FieldKit.Read(prompt, known));
+    public IReadOnlyList<ClarificationQuestion> Missing(IReadOnlyDictionary<string, string> parameters) =>
+        FieldKit.Has(parameters, "liste") ? [] : [new("liste", "liste", "Senderliste fehlt. Füge den Inhalt der M3U-Datei als „Liste: …“ ein – oder öffne das Studio und füge sie unter „Quellen“ hinzu.", true)];
+    public IReadOnlyList<ValidationFinding> Validate(IReadOnlyDictionary<string, string> parameters) =>
+        Trendo.Core.Tv.M3u.Parse(FieldKit.Text(parameters, "liste")).Channels.Count == 0 ? [new("liste", "In der Liste steht kein Sender (#EXTINF und Adresse).", true)] : [];
+    public AdapterOutcome Produce(AdapterCall call)
+    {
+        var (ch, epg) = Trendo.Core.Tv.M3u.Parse(FieldKit.Text(call.Parameters, "liste"));
+        var sb = new System.Text.StringBuilder($"Senderliste: {ch.Count(c => c.Kind == "live")} Sender, {ch.Count(c => c.Kind == "film")} Filme, {ch.Count(c => c.Kind == "serie")} Serienfolgen" + Environment.NewLine);
+        if (epg is not null) sb.Append("Programmführer: ").AppendLine(epg);
+        foreach (var g in ch.GroupBy(c => (c.Kind, c.Group)).OrderBy(g => g.Key.Kind).ThenBy(g => g.Key.Group))
+        {
+            sb.AppendLine().AppendLine($"[{(g.Key.Kind == "live" ? "Sender" : g.Key.Kind == "film" ? "Filme" : "Serien")}] {g.Key.Group} ({g.Count()})");
+            foreach (var c in g.Take(50)) sb.AppendLine("  " + c.Name);
+        }
+        var qa = new QaResult("tv.liste", ch.Count > 0, "Liste gelesen.", null, $"{ch.Count} Einträge", "M3u");
+        return FieldKit.Save(call, FieldKit.Slot("tv", call.Version, "senderliste.txt"), sb.ToString(), $"{ch.Count} Einträge", qa);
+    }
+    public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Abspielen und Aufnehmen gehen im Studio „TV & Live“.");
+}
+
 /// <summary>SPEC-15: Senden und Stream bleiben aus. LiveBroadcast.Go wird nicht gerufen.</summary>
 public sealed class StreamSendAdapter : IStudioActionAdapter
 {
