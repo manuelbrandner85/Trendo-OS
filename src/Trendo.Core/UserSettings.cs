@@ -59,6 +59,8 @@ public sealed class UserSettings
     public string SenderStreet { get; set; } = "";
     public string SenderCity { get; set; } = "";
     public string SenderContact { get; set; } = "";
+    /// <summary>Briefe F4: Bild der eigenen Unterschrift (PNG/JPEG), wird unter den Gruß gesetzt.</summary>
+    public string LetterSignature { get; set; } = "";
     public double UiScale { get; set; } = 1.0;
     public static readonly double[] UiScales = [1.0, 1.15, 1.3];
     public static double ClampScale(double v) => UiScales.OrderBy(x => Math.Abs(x - v)).First();

@@ -62,7 +62,7 @@ public partial class MainWindow
     private string _letterMsg = "";
 
     private LetterDraft NewLetter() => new() { SenderName = _settings.Name, SenderStreet = _settings.SenderStreet, SenderCity = _settings.SenderCity, SenderContact = _settings.SenderContact,
-        Place = System.Text.RegularExpressions.Regex.Replace(_settings.SenderCity, @"^\s*\d{4,5}\s*", "") };
+        Place = System.Text.RegularExpressions.Regex.Replace(_settings.SenderCity, @"^\s*\d{4,5}\s*", ""), SignatureFile = _settings.LetterSignature };
 
     private Control LetterView()
     {
@@ -81,20 +81,11 @@ public partial class MainWindow
             hiddenCats.Children.Add(b);
         }
         form.Children.Add(hiddenCats);
-        var labels = Letters.Categories.Select(c => c.Label).ToList();
-        var selected = Array.FindIndex(Letters.Categories, c => c.Id == d.Category);
-        var combo = new ComboBox { Name = "letter-template", ItemsSource = labels, SelectedIndex = Math.Max(0, selected), HorizontalAlignment = HorizontalAlignment.Stretch };
-        combo.SelectionChanged += (_, _) =>
-        {
-            if (combo.SelectedIndex < 0 || combo.SelectedIndex >= Letters.Categories.Length) return;
-            var id = Letters.Categories[combo.SelectedIndex].Id;
-            if (id == d.Category) return;
-            Letters.ApplyTemplate(d, id);
-            var lbl = Letters.Categories[combo.SelectedIndex].Label;
-            _letterMsg = id == "frei" ? "Freier Brief: ohne Vorlage. Betreff und Text schreibst du selbst." : $"Vorlage „{lbl}“ eingesetzt. Passe die eckigen Klammern an.";
-            Show("brief");
-        };
-        form.Children.Add(FieldLabel("Vorlage")); form.Children.Add(combo);
+        var galleryOpen = LetterGalleryOpen(d);
+        var galleryToggle = new Button { Name = "letter-gallery-toggle", Content = galleryOpen ? "Vorlagen ausblenden" : $"Vorlage: {Letters.Category(d.Category).Label} – andere wählen …", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left };
+        galleryToggle.Click += (_, _) => { _letterGallery = !galleryOpen; Show("brief"); };
+        form.Children.Add(FieldLabel("Vorlage")); form.Children.Add(galleryToggle);
+        if (galleryOpen) form.Children.Add(LetterGallery(d));
         if (Letters.Category(d.Category).Legal)
             form.Children.Add(P("Hinweis: Trendo hilft beim Formulieren, ersetzt aber keine Rechtsberatung. Fristen und Ansprüche bitte selbst prüfen oder beraten lassen.", Brush.Parse("#FACC15"), 11));
 
@@ -146,6 +137,7 @@ public partial class MainWindow
             if (string.IsNullOrWhiteSpace(_settings.Name)) _settings.Name = d.SenderName;
             SaveSettings();
             var (docx, _, v) = new LetterArchive(ProjectsRoot).Save(d);
+            _letterSaved = true; _letterStepSync?.Invoke();
             _core.Audit.Append(Principal.LocalOwner.Name, "letter.save", $"{Path.GetFileName(docx)} v{v}");
             msg.Text = _letterMsg = $"{verb}: {Path.GetFileName(docx)}{(v > 1 ? $" (Version {v})" : "")}";
             if (asPdf && ToolPath("libreoffice") is { } so)
@@ -188,9 +180,10 @@ public partial class MainWindow
             suggestion.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10), Child = new StackPanel { Spacing = 6, Children = { P("Vorschlag der KI (bitte prüfen):", null, 11), P(ans, Text, 12), take } } });
             improve.IsEnabled = true;
         };
-        var reset = new Button { Name = "letter-new", Content = "Neuer Brief" }; reset.Click += (_, _) => { _letter = NewLetter(); _letterMsg = "Neuer Brief. Betreff und Text schreibst du selbst."; _letterPreview = true; Show("brief"); };
+        var reset = new Button { Name = "letter-new", Content = "Neuer Brief" }; reset.Click += (_, _) => { _letter = NewLetter(); _letterGallery = null; _letterSaved = false; _letterMsg = "Neuer Brief. Betreff und Text schreibst du selbst."; _letterPreview = true; Show("brief"); };
         form.Children.Add(new WrapPanel { Margin = new Thickness(0, 8, 0, 0), Children = { check, Sp(improve), Sp(reset) } });
         form.Children.Add(msg); form.Children.Add(issues); form.Children.Add(suggestion);
+        form.Children.Add(FieldLabel("Mehr")); form.Children.Add(LetterTools(d));
         var arch = new LetterArchive(ProjectsRoot).List().Take(8).ToList();
         if (arch.Count > 0)
         {
@@ -225,46 +218,14 @@ public partial class MainWindow
         toggle.Click += (_, _) => { _letterPreview = !_letterPreview; ApplyNarrow(grid.Bounds.Width); };
         grid.SizeChanged += (_, e) => ApplyNarrow(e.NewSize.Width);
         var actions = new WrapPanel { Orientation = Orientation.Horizontal, Children = { save, Sp(export), Sp(pdf), Sp(send) } };
-        var stack = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
-        stack.Children.Add(toggle); Grid.SetRow(grid, 1); stack.Children.Add(grid);
+        var stack = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,*") };
+        var steps = LetterSteps(d);
+        stack.Children.Add(steps); Grid.SetRow(toggle, 1); stack.Children.Add(toggle); Grid.SetRow(grid, 2); stack.Children.Add(grid);
         return LetterShell(stack, actions);
     }
 
     private static TextBlock FieldLabel(string text) => new() { Text = text, Foreground = Muted, FontSize = 12, Margin = new Thickness(0, 8, 0, 2) };
 
-    private Control LetterPreview(LetterDraft d)
-    {
-        var sender = new TextBlock { Name = "letter-preview-sender", FontSize = 10, Foreground = Brush.Parse("#5C6B7A"), TextWrapping = TextWrapping.Wrap };
-        var recip = new TextBlock { Name = "letter-preview-recipient", FontSize = 12, Foreground = Brushes.Black, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 22, 80, 0) };
-        var date = new TextBlock { Name = "letter-preview-date", FontSize = 12, Foreground = Brushes.Black, HorizontalAlignment = HorizontalAlignment.Right };
-        var subject = new TextBlock { Name = "letter-preview-subject", FontSize = 13, FontWeight = FontWeight.Bold, Foreground = Brushes.Black, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 16, 0, 8) };
-        var sal = new TextBlock { Name = "letter-preview-salutation", FontSize = 12, Foreground = Brushes.Black, TextWrapping = TextWrapping.Wrap };
-        var body = new TextBlock { Name = "letter-preview-body", FontSize = 12, Foreground = Brushes.Black, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 8, 0, 8) };
-        var closing = new TextBlock { Name = "letter-preview-closing", FontSize = 12, Foreground = Brushes.Black, TextWrapping = TextWrapping.Wrap };
-        void Sync()
-        {
-            var lines = new[] { d.SenderName, d.SenderStreet, d.SenderCity, d.SenderContact }.Where(s => !string.IsNullOrWhiteSpace(s));
-            sender.Text = string.Join("\n", lines);
-            recip.Text = d.Recipient;
-            date.Text = (string.IsNullOrWhiteSpace(d.Place) ? "" : d.Place + ", ") + d.Date.ToString("d. MMMM yyyy", De);
-            subject.Text = d.Subject;
-            sal.Text = d.Salutation;
-            body.Text = d.Body;
-            closing.Text = d.Closing + (string.IsNullOrWhiteSpace(d.SenderName) ? "" : "\n\n" + d.SenderName);
-            if (!string.IsNullOrWhiteSpace(d.Attachments)) closing.Text += "\n\nAnlagen\n" + d.Attachments.Trim();
-        }
-        _letterSync = Sync; Sync();
-        sender.TextAlignment = TextAlignment.Right; sender.HorizontalAlignment = HorizontalAlignment.Right;
-        // Vorgabe 2026-10-27: Im Brief steht nur, was der Nutzer selbst angibt – kein Trendo-Logo, kein „Trendo OS“ im Briefkopf
-        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,*"), Margin = new Thickness(0, 0, 0, 8), Children = { sender } };
-        Grid.SetColumn(sender, 1);
-        var page = new StackPanel { Children = { head, recip, date, subject, sal, body, closing } };
-        var sheet = new Border { Name = "letter-preview", Background = Brushes.White, CornerRadius = new CornerRadius(8), Padding = new Thickness(18), Child = new ScrollViewer { Content = page }, MinWidth = 180, VerticalAlignment = VerticalAlignment.Stretch };
-        var wrap = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
-        wrap.Children.Add(new TextBlock { Text = "Vorschau", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 0, 0, 6) });
-        Grid.SetRow(sheet, 1); wrap.Children.Add(sheet);
-        return wrap;
-    }
     private static Control Sp(Control c) { c.Margin = new Thickness(6, 0, 0, 6); return c; }
     /// <summary>T-0203: zuletzt angelegtes Dokument im Ordner „Dokumente“.</summary>
     private string? LatestOfficeDoc()

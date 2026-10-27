@@ -23,9 +23,12 @@ public sealed class LetterDraft
     public string Body { get; set; } = "";
     public string Closing { get; set; } = "Mit freundlichen Grüßen";
     public string Attachments { get; set; } = "";
+    /// <summary>F4: Bild der Unterschrift (PNG/JPEG). Ausdrücklich keine qualifizierte elektronische Signatur.</summary>
+    public string SignatureFile { get; set; } = "";
+    public LetterDraft Copy() => (LetterDraft)MemberwiseClone();
 }
 
-public sealed record LetterCategory(string Id, string Label, string Subject, string Body, bool Legal = false);
+public sealed record LetterCategory(string Id, string Label, string Subject, string Body, bool Legal = false, string Group = "Allgemein");
 public sealed record LetterIssue(string Field, string Message, bool Blocking);
 
 public static class Letters
@@ -45,8 +48,70 @@ public static class Letters
         new("beschwerde", "Beschwerde / Reklamation", "Reklamation: [Produkt], Bestellung [Nummer]",
             "am [Datum] habe ich bei Ihnen [Produkt] gekauft. Leider [Mangel beschreiben].\n\nIch bitte Sie, den Mangel bis zum [Datum] zu beheben oder mir Ersatz zu liefern.", Legal: true),
         new("bewerbung", "Bewerbung", "Bewerbung als [Stelle]",
-            "mit großem Interesse habe ich Ihre Stellenanzeige gelesen und bewerbe mich hiermit als [Stelle].\n\n[Warum passe ich gut?]\n\nÜber eine Einladung zu einem persönlichen Gespräch freue ich mich."),
+            "mit großem Interesse habe ich Ihre Stellenanzeige gelesen und bewerbe mich hiermit als [Stelle].\n\n[Warum passe ich gut?]\n\nÜber eine Einladung zu einem persönlichen Gespräch freue ich mich.", Group: "Beruf"),
+        new("widerruf", "Widerruf (Kauf im Internet)", "Widerruf meiner Bestellung [Nummer] vom [Datum]",
+            "hiermit widerrufe ich den von mir abgeschlossenen Vertrag über den Kauf der folgenden Waren: [Artikel].\n\nBestellt am [Datum], erhalten am [Datum].\n\nBitte erstatten Sie mir den Kaufpreis auf das bekannte Konto.", Legal: true, Group: "Verträge & Ämter"),
+        new("umzug", "Adressänderung", "Neue Anschrift ab [Datum], Kundennummer [Nummer]",
+            "ab dem [Datum] wohne ich unter folgender Anschrift:\n\n[Straße Hausnummer]\n[PLZ Ort]\n\nBitte ändern Sie meine Daten entsprechend.", Group: "Verträge & Ämter"),
     ];
+
+    /// <summary>F1: Gruppen für die Vorlagen-Galerie (Reihenfolge der Anzeige).</summary>
+    public static readonly string[] Groups = ["Allgemein", "Verträge & Ämter", "Geld & Einkauf", "Beruf"];
+    public static string GroupOf(LetterCategory c) => c.Id switch { "kuendigung" or "widerspruch" => "Verträge & Ämter", "mahnung" or "anfrage" or "beschwerde" => "Geld & Einkauf", _ => c.Group };
+
+    /// <summary>F2 Fristenrechner: Frist ab einem Tag in Tagen, Wochen oder Monaten. Endet sie auf Samstag/Sonntag, gilt der nächste Werktag
+    /// (wie § 193 BGB; Feiertage kennt Trendo nicht – bitte selbst prüfen).</summary>
+    public static (DateTime Date, bool Shifted) Deadline(DateTime start, int amount, string unit)
+    {
+        var d = (unit switch { "Wochen" => start.AddDays(7 * amount), "Monate" => start.AddMonths(amount), _ => start.AddDays(amount) }).Date;
+        var shifted = false;
+        while (d.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday) { d = d.AddDays(1); shifted = true; }
+        return (d, shifted);
+    }
+
+    /// <summary>Ersetzt den ersten Platzhalter „[Datum]“ (Text, dann Betreff). Liefert false, wenn keiner da ist.</summary>
+    public static bool FillDate(LetterDraft d, DateTime date)
+    {
+        var t = date.ToString("dd.MM.yyyy", System.Globalization.CultureInfo.GetCultureInfo("de-DE"));
+        var i = d.Body.IndexOf("[Datum]", StringComparison.Ordinal);
+        if (i >= 0) { d.Body = d.Body[..i] + t + d.Body[(i + 7)..]; return true; }
+        i = d.Subject.IndexOf("[Datum]", StringComparison.Ordinal);
+        if (i >= 0) { d.Subject = d.Subject[..i] + t + d.Subject[(i + 7)..]; return true; }
+        return false;
+    }
+
+    // ---------- F3 Serienbrief: Felder «Spalte» oder {Spalte}; Anschrift aus den Spalten, wenn das Empfängerfeld leer ist ----------
+    private static readonly Regex SerialField = new(@"«([^»\n]{1,40})»|\{\{?([^{}\n]{1,40})\}?\}");
+
+    public static List<string> SerialFields(LetterDraft d) =>
+        new[] { d.Recipient, d.Subject, d.Salutation, d.Body }.SelectMany(t => SerialField.Matches(t).Select(m => (m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value).Trim())).Distinct(StringComparer.CurrentCultureIgnoreCase).ToList();
+
+    public static List<LetterDraft> Serial(LetterDraft tpl, IReadOnlyList<string> headers, IEnumerable<IReadOnlyList<string>> rows)
+    {
+        var res = new List<LetterDraft>();
+        foreach (var row in rows)
+        {
+            if (row.All(c => c.Trim().Length == 0)) continue;
+            string V(params string[] names) { foreach (var n in names) { var i = headers.ToList().FindIndex(h => h.Trim().Equals(n, StringComparison.CurrentCultureIgnoreCase)); if (i >= 0 && i < row.Count && row[i].Trim().Length > 0) return row[i].Trim(); } return ""; }
+            string Fill(string t) => SerialField.Replace(t, m => V((m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value).Trim()));
+            var d = tpl.Copy();
+            d.Subject = Fill(d.Subject); d.Salutation = Fill(d.Salutation); d.Body = Fill(d.Body);
+            if (d.Recipient.Trim().Length > 0) d.Recipient = Fill(d.Recipient);
+            else
+            {
+                var addr = V("Anschrift", "Adresse");
+                if (addr.Length > 0) d.Recipient = addr.Replace("\r", "");
+                else
+                {
+                    var name = V("Name") is { Length: > 0 } n ? n : string.Join(' ', new[] { V("Vorname"), V("Nachname") }.Where(x => x.Length > 0));
+                    var plzOrt = (V("PLZ", "Postleitzahl") + " " + V("Ort", "Stadt")).Trim();
+                    d.Recipient = string.Join("\n", new[] { V("Firma"), name, V("Straße", "Strasse"), plzOrt }.Where(x => x.Length > 0));
+                }
+            }
+            res.Add(d);
+        }
+        return res;
+    }
 
     public static LetterCategory Category(string id) => Categories.FirstOrDefault(c => c.Id == id) ?? Categories[0];
 
@@ -116,11 +181,20 @@ public static class Letters
         Para(d.Salutation, after: 240);
         foreach (var block in d.Body.Replace("\r", "").Split("\n\n")) { Lines(block); Para("", after: 0); }
         Para(d.Closing, before: 0);
-        Para(d.SenderName, before: 720);
+        byte[]? sig = d.SignatureFile.Length > 0 && File.Exists(d.SignatureFile) ? File.ReadAllBytes(d.SignatureFile) : null;
+        var (sw, sh) = sig is null ? (0, 0) : XrPlus.ImageSize(sig);
+        var sigExt = sig is not null && sig[0] == 0x89 ? "png" : "jpeg";
+        if (sig is not null && sw > 0 && sh > 0)
+        {
+            const long cx = 45L * 36000; var cy = cx * sh / sw; // 4,5 cm breit
+            body.Append($"<w:p><w:pPr><w:spacing w:before=\"120\" w:after=\"0\"/></w:pPr><w:r><w:drawing><wp:inline><wp:extent cx=\"{cx}\" cy=\"{cy}\"/><wp:docPr id=\"1\" name=\"Unterschrift\" descr=\"Unterschrift\"/><a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:pic><pic:nvPicPr><pic:cNvPr id=\"1\" name=\"unterschrift.{sigExt}\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed=\"rIdSig\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"{cx}\" cy=\"{cy}\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>");
+            Para(d.SenderName);
+        }
+        else { sig = null; Para(d.SenderName, before: 720); }
         if (d.Attachments.Trim().Length > 0) { Para("Anlagen", bold: true, before: 360); Lines(d.Attachments.Trim()); }
         if (d.SenderContact.Trim().Length > 0) Para(d.SenderContact.Trim(), size: 16, before: 480);
 
-        var doc = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"><w:body>" + body +
+        var doc = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><w:body>" + body +
                   "<w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/><w:pgMar w:top=\"1134\" w:right=\"1134\" w:bottom=\"1134\" w:left=\"1418\" w:header=\"709\" w:footer=\"709\" w:gutter=\"0\"/></w:sectPr></w:body></w:document>";
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
         var tmp = path + ".tmp";
@@ -128,9 +202,14 @@ public static class Letters
         using (var zip = new ZipArchive(fs, ZipArchiveMode.Create))
         {
             void Add(string n, string c) { using var w = new StreamWriter(zip.CreateEntry(n).Open(), new UTF8Encoding(false)); w.Write(c); }
-            Add("[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/><Override PartName=\"/word/document.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/></Types>");
+            Add("[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>" + (sig is null ? "" : $"<Default Extension=\"{sigExt}\" ContentType=\"image/{sigExt}\"/>") + "<Override PartName=\"/word/document.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/></Types>");
             Add("_rels/.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"word/document.xml\"/></Relationships>");
             Add("word/document.xml", doc);
+            if (sig is not null)
+            {
+                Add("word/_rels/document.xml.rels", $"<?xml version=\"1.0\" encoding=\"UTF-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rIdSig\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/image\" Target=\"media/unterschrift.{sigExt}\"/></Relationships>");
+                using var st = zip.CreateEntry($"word/media/unterschrift.{sigExt}").Open(); st.Write(sig);
+            }
         }
         File.Move(tmp, path, true);
     }
