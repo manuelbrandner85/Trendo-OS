@@ -418,3 +418,25 @@ Jeder Vorschlag hat eine Nummer. **F** = Funktion, **U** = Oberfläche.
 4a. **Trendo CAD** (N23) und **3D-Druck mit Bambu Lab** (N24).
 4. **Trendo Post & Kalender** (O1–O6), **Notizbuch** (N5), **Editor/Rechner/Uhr/Zettel** (N9, N11, N18, N20).
 5. Die Studio-Vorschläge aus Teil 4 nach Bereich.
+
+---
+
+## Teil 6: Mit Tailscale möglich (Vorschläge 27.10.2026, Antwort steht aus)
+Alles läuft nur im privaten, verschlüsselten Tailscale-Netz des Nutzers. Nichts ist öffentlich, kein Port im Router.
+
+| Nr. | Vorschlag |
+|---|---|
+| T1 | Trendo komplett auf dem Handy spiegeln: PC-Bildschirm live im Browser, Tippen = Klicken, Tastatur, Zoom. Beim ersten Mal bestätigt man am PC; „Trennen“ und Not-Aus gibt es immer. |
+| T2 | Trendo-Handy-Ansicht: eigene Oberfläche fürs Handy (KI fragen, Aufträge an Studios, Ergebnisse, Projekte) |
+| T3 | Freigaben unterwegs bestätigen (Versenden, Installieren, 3D-Druck starten …) |
+| T4 | Trendo KI unterwegs: rechnet auf der Grafikkarte des PCs, dazu Spracheingabe (Whisper) und Vorlesen (Piper) |
+| T5 | Alle Projekte und Dokumente am Handy ansehen und laden; Hochladen und Ändern nur mit Bestätigung |
+| T6 | Musik und Videos vom PC streamen (Trendo Player im Browser) |
+| T7 | Handy-Kamera als Scanner (Texterkennung → PDF) und als Kamera-Quelle |
+| T8 | Kameras und 3D-Druck (Bambu Lab) unterwegs ansehen |
+| T9 | Not-Stopp vom Handy |
+| T10 | Fernwartung: Leistung, Fehler, Sicherung, Updates, Neustart |
+| T11 | PC aus der Ferne aufwecken (Wake-on-LAN). Braucht ein Gerät, das zuhause immer läuft, z. B. einen Raspberry Pi. |
+| T12 | Geräteverbund über Tailscale (Pi, Laptop, zweiter PC) auch außer Haus |
+| T13 | HTTPS mit eigener Tailscale-Adresse; Trendo als App auf dem Startbildschirm |
+| T14 | Ordner oder Funktionen mit der Familie teilen (eigene Tailscale-Konten) |

@@ -1,10 +1,12 @@
 using System.Text.RegularExpressions;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Trendo.Core;
 using Avalonia.LogicalTree;
 
 namespace Trendo.App;
@@ -103,5 +105,143 @@ public partial class MainWindow
         string? folder = Directory.Exists(path) ? path : File.Exists(path) ? Path.GetDirectoryName(path) : null;
         if (folder is null) return;
         Toast(Path.GetFileName(path) is { Length: > 0 } n ? $"Fertig: {n}" : "Fertig.", ("Ordner öffnen", new Action(() => Launch(folder))));
+    }
+
+    // ---------- G8: Befehlssuche „Was möchtest du tun?“ (Strg+Q) · G9: Tastenkürzel · G13: Fokusmodus ----------
+    private readonly Grid _palette = new() { Name = "command-palette", IsVisible = false, ZIndex = 4500, Background = Brush.Parse("#99000000") };
+    private readonly TextBox _paletteBox = new() { Name = "command-search", PlaceholderText = "Was möchtest du tun? z. B. „PDF zusammenfügen“, „Handy verbinden“, „Rechnung“", FontSize = 16, Height = 44 };
+    private readonly StackPanel _paletteList = new() { Name = "command-results", Spacing = 2 };
+    private List<(string Label, string Kind, Action Run)> _paletteHits = [];
+    private int _paletteSel;
+    WindowState _beforeFocus = WindowState.Normal;
+    public bool FocusMode { get; private set; }
+    public bool CommandPaletteOpen => _palette.IsVisible;
+
+    private void InitCommandPalette(Grid root)
+    {
+        Grid.SetRowSpan(_palette, 2); root.Children.Add(_palette);
+        var card = new Border
+        {
+            Width = 720, MaxHeight = 560, Margin = new Thickness(0, 90, 0, 0), VerticalAlignment = VerticalAlignment.Top, HorizontalAlignment = HorizontalAlignment.Center,
+            Background = GlassStrong, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(16), Padding = new Thickness(14),
+            BoxShadow = BoxShadows.Parse("0 24 60 0 #88000000"),
+            Child = new DockPanel { Children = { Dock(_paletteBox), new ScrollViewer { Content = _paletteList, Margin = new Thickness(0, 10, 0, 0) } } },
+        };
+        _palette.Children.Add(card);
+        _palette.PointerPressed += (_, e) => { if (e.Source == _palette) ClosePalette(); };
+        _paletteBox.TextChanged += (_, _) => FillPalette();
+        _paletteBox.KeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Escape) { ClosePalette(); e.Handled = true; }
+            else if (e.Key == Key.Down) { _paletteSel = Math.Min(_paletteSel + 1, _paletteHits.Count - 1); PaintPalette(); e.Handled = true; }
+            else if (e.Key == Key.Up) { _paletteSel = Math.Max(_paletteSel - 1, 0); PaintPalette(); e.Handled = true; }
+            else if (e.Key == Key.Enter && _paletteHits.Count > 0) { RunPalette(_paletteSel); e.Handled = true; }
+        };
+        AddHandler(KeyDownEvent, (_, e) =>
+        {
+            if (SetupOverlayOpen) return;
+            var ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
+            if (ctrl && e.Key == Key.Q) { OpenPalette(); e.Handled = true; }
+            else if (ctrl && e.Key == Key.K) { ShowShortcuts(); e.Handled = true; }
+            else if (e.Key == Key.F11) { ToggleFocusMode(); e.Handled = true; }
+            else if (e.Key == Key.F1 && CurrentView.Length > 0) { ShowHelp(CurrentView, force: true); e.Handled = true; }
+        }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+        static Control Dock(Control c) { DockPanel.SetDock(c, Avalonia.Controls.Dock.Top); return c; }
+    }
+
+    public void OpenPalette(string text = "")
+    {
+        _paletteBox.Text = text; _palette.IsVisible = true; FillPalette();
+        Dispatcher.UIThread.Post(() => _paletteBox.Focus());
+    }
+
+    public void ClosePalette() => _palette.IsVisible = false;
+
+    /// <summary>Treffer: Knöpfe der offenen Seite (auch versteckte Profi-Befehle), Studios, Seiten; zuletzt „Die KI fragen“.</summary>
+    public IReadOnlyList<(string Label, string Kind)> PaletteResults => _paletteHits.Select(h => (h.Label, h.Kind)).ToList();
+
+    void FillPalette()
+    {
+        var q = (_paletteBox.Text ?? "").Trim();
+        var hits = new List<(string, string, Action, int)>();
+        static int Score(string label, string q)
+        {
+            if (q.Length == 0) return 1;
+            var l = label.ToLowerInvariant(); var words = q.ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (!words.All(l.Contains)) return 0;
+            return l.StartsWith(words[0]) ? 3 : 2;
+        }
+        // 1) Befehle der offenen Seite
+        if (ActivePageRoot is { } page)
+            foreach (var b in page.GetLogicalDescendants().OfType<Button>().Where(b => b.IsEffectivelyEnabled && b.Name is not ("btn-help" or "result-copy")))
+            {
+                var label = ButtonText(b);
+                if (label.Length < 2 || label.Length > 60) continue;
+                var s = Score(label, q); if (s == 0) continue;
+                var btn = b;
+                hits.Add((label, "Auf dieser Seite", () => btn.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent)), s + 1));
+            }
+        // 2) Studios und Seiten
+        foreach (var (id, info) in StudioCatalog.ById)
+        {
+            if (PageForStudio(id) is not { } key) continue;
+            var s = Score(info.Name + " " + info.Sentence, q); if (s == 0) continue;
+            hits.Add((info.Name, "Studio öffnen", () => Show(key), s));
+        }
+        foreach (var (title, key, words) in ExtraPages)
+        {
+            if (!_showMap.ContainsKey(key)) continue;
+            var s = Math.Max(Score(title, q), words.Any(w => Score(w, q) > 0) && q.Length > 0 ? 2 : 0); if (s == 0) continue;
+            hits.Add((title, "Seite öffnen", () => Show(key), s));
+        }
+        var list = hits.GroupBy(h => h.Item1 + "|" + h.Item2).Select(g => g.First()).OrderByDescending(h => h.Item4).ThenBy(h => h.Item1, StringComparer.CurrentCultureIgnoreCase).Take(q.Length == 0 ? 12 : 30)
+            .Select(h => (h.Item1, h.Item2, h.Item3)).ToList();
+        if (q.Length > 0) { var ask = q; list.Add(($"„{q}“ – die Trendo KI fragen", "KI", () => { Show("ki-fragen"); _ = AskKi(ask); })); }
+        _paletteHits = list; _paletteSel = 0; PaintPalette();
+    }
+
+    static string ButtonText(Button b) => b.Content switch
+    {
+        string s => s,
+        TextBlock t => t.Text ?? "",
+        Control c => string.Join(" ", c.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text).Where(x => !string.IsNullOrWhiteSpace(x))),
+        _ => "",
+    };
+
+    void PaintPalette()
+    {
+        _paletteList.Children.Clear();
+        for (var i = 0; i < _paletteHits.Count; i++)
+        {
+            var (label, kind, _) = _paletteHits[i]; var idx = i;
+            var row = new Button
+            {
+                Name = "command-hit-" + i, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(12, 8),
+                Background = i == _paletteSel ? Accent : Brushes.Transparent, BorderThickness = new Thickness(0), CornerRadius = new CornerRadius(8),
+                Content = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = label, Foreground = Text, FontSize = 14 }, Pos(new TextBlock { Text = kind, Foreground = Muted, FontSize = 12 }, 1) } },
+            };
+            row.Click += (_, _) => RunPalette(idx);
+            _paletteList.Children.Add(row);
+        }
+    }
+
+    void RunPalette(int i)
+    {
+        if (i < 0 || i >= _paletteHits.Count) return;
+        var run = _paletteHits[i].Run; ClosePalette();
+        _core.Audit.Append(Principal.LocalOwner.Name, "palette.run", _paletteHits[i].Label);
+        run();
+    }
+
+    /// <summary>G9: Übersicht der Tastenkürzel (Strg+K).</summary>
+    public void ShowShortcuts() => Toast("Tastenkürzel: Strg+Q Was möchtest du tun? · F1 Hilfe · F11 Fokusmodus · Strg+K diese Übersicht · Strg+1…5 Start, Studios, Projekte, Freigaben, System · Strg+Tab Fenster wechseln · Win Startmenü · Strg+S Speichern · Strg+Z/Y Rückgängig/Wiederholen · Strg+F Suchen");
+
+    /// <summary>G13: Fokusmodus – Vollbild, ohne Kopfkarte und KI-Zeile, nur der Inhalt. F11 schaltet zurück.</summary>
+    public void ToggleFocusMode()
+    {
+        FocusMode = !FocusMode;
+        if (FocusMode) { _beforeFocus = WindowState; WindowState = WindowState.FullScreen; Toast("Fokusmodus an – F11 beendet ihn."); }
+        else if (WindowState == WindowState.FullScreen) WindowState = _beforeFocus;
+        if (CurrentView.Length > 0) Show(CurrentView);
     }
 }

@@ -63,7 +63,7 @@ public partial class MainWindow
     private Control WithPromptBar(string key, Control view)
     {
         // start und studios haben eine eigene Eingabezeile (T-0218). 3d: die Seite füllt die Höhe; die Leiste sitzt dort im linken Rollbereich.
-        if (key is "start" or "studios" or "3d") return view;
+        if (key is "start" or "studios" or "3d" || FocusMode) return view; // G13: Fokusmodus ohne KI-Zeile
         var studio = ModuleOf(key);
         if (studio is null || CapabilityCatalog.Find(studio) is null) return view;
         var dock = new DockPanel { LastChildFill = true, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };

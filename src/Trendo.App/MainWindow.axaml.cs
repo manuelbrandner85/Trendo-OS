@@ -121,6 +121,7 @@ public sealed partial class MainWindow : Window
         WireKi();
         InitSetupOverlay(root);
         InitToasts(root);
+        InitCommandPalette(root);
         var scaler = new LayoutTransformControl { Child = root };
         Content = scaler;
         void DoRescale()
@@ -620,7 +621,7 @@ public sealed partial class MainWindow : Window
 
     private Control Page(string title, Control content, Control? dock = null)
     {
-        var sp = new StackPanel { Spacing = 8, Children = { PageHead(title), Readable(content) } };
+        var sp = new StackPanel { Spacing = 8, Children = { FocusMode ? new Panel() : PageHead(title), Readable(content) } };
         Detach(_hintHost); sp.Children.Insert(1, _hintHost);
         var scroll = new ScrollViewer { Content = sp };
         if (dock is null) return Panel(scroll, 18);
@@ -634,7 +635,7 @@ public sealed partial class MainWindow : Window
     private Control FitPage(string title, Control header, Control fill)
     {
         var root = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,Auto,*"), MinHeight = 0, VerticalAlignment = VerticalAlignment.Stretch };
-        root.Children.Add(PageHead(title));
+        root.Children.Add(FocusMode ? new Panel() : PageHead(title));
         var hint = Detach(_hintHost); Grid.SetRow(hint, 1); root.Children.Add(hint);
         Grid.SetRow(header, 2); root.Children.Add(Readable(header));
         Readable(fill);
