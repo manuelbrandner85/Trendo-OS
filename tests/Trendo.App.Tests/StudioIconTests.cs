@@ -46,9 +46,9 @@ public class StudioIconTests
             var id = c.Name!["studio-card-".Length..];
             Assert.Contains(c.GetLogicalDescendants().OfType<Border>(), b => b.Name == "studio-icon-" + id);
         }
+        // G3: Fachstudios zeigen keine Reiterleiste mehr mit allen anderen Fachstudios – ihre Symbole stehen auf den Karten oben
         w.Show(MainWindow.StudioPages["SPEC-16"]);
-        foreach (var (k, _, _) in MainWindow.FachTabs)
-            Assert.NotNull(w.Find<Border>("fach-tabicon-" + k));
+        Assert.Null(w.TryFind<Border>("fach-tabicon-"));
         w.Close();
     }
 

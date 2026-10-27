@@ -48,8 +48,7 @@ public class SPEC02_Ui
         Assert.Contains("150", W6Ui.Run(w, "el-led"));
         Assert.Contains("⚠", W6Ui.Run(w, "el-ohm", ("i", "1")));
         Assert.Contains("Gespeichert", W6Ui.Run(w, "el-bom"));
-        w.Find<Button>("fach-tab-architektur").Press();
-        Assert.Equal("architektur", w.CurrentView);
+        Assert.Null(w.TryFind<Button>("fach-tab-architektur")); // G3: ein Studio allein zeigt keine Reiter anderer Studios
     }
 }
 

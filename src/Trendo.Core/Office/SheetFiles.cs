@@ -386,8 +386,8 @@ public static class SheetFiles
             foreach (var range in ((string?)dv.Attribute("sqref") ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries))
                 sh.Validations.Add(new ValidationRule(range, f1.Trim('"').Split(',').Select(x => x.Trim()).Where(x => x.Length > 0).ToList()));
         }
-        var relsEntry = z.GetEntry(SheetRelsPath(sheetPath)); if (relsEntry is null) return;
-        XDocument rels; using (var s = relsEntry.Open()) rels = XDocument.Load(s);
+        var relEntry = z.GetEntry(SheetRelsPath(sheetPath)); if (relEntry is null) return;
+        XDocument rels; using (var s = relEntry.Open()) rels = XDocument.Load(s);
         var target = rels.Root?.Elements(Pr + "Relationship").FirstOrDefault(r => ((string?)r.Attribute("Type"))?.EndsWith("/comments", StringComparison.Ordinal) == true)?.Attribute("Target")?.Value;
         if (target is null || z.GetEntry(ResolvePath(sheetPath, target)) is not { } ce) return;
         XDocument cdoc; using (var s = ce.Open()) cdoc = XDocument.Load(s);

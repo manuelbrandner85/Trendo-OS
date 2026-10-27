@@ -94,7 +94,7 @@ public partial class MainWindow
         // F3 Serienbrief
         var sf = new TextBox { Name = "letter-serial-file", PlaceholderText = "Tabelle mit Empfängern (XLSX, ODS oder CSV)", MinWidth = 260 };
         var serial = Box("Serienbrief", "Ein Brief je Zeile der Tabelle. Felder wie {Name} oder «Name» im Text werden ersetzt. Bleibt der Empfänger leer, setzt Trendo die Anschrift aus den Spalten Firma, Name (oder Vorname/Nachname), Straße, PLZ und Ort zusammen.",
-            Row(sf, B("letter-serial-run", "Serienbrief erstellen", () => Try(V, () =>
+            Row(sf, B("letter-serial-run", "Serienbrief erstellen", () => LetterTry(() =>
             {
                 var file = sf.Text?.Trim().Trim('"') ?? "";
                 if (!File.Exists(file)) throw new ArgumentException("Bitte eine vorhandene Tabelle wählen.");
@@ -122,7 +122,7 @@ public partial class MainWindow
         // F4 Unterschrift
         var sig = new TextBox { Name = "letter-signature", Text = _settings.LetterSignature, PlaceholderText = "Bild deiner Unterschrift (PNG oder JPG)", MinWidth = 260 };
         var sign = Box("Unterschrift", "Ein Foto oder Scan deiner Unterschrift wird unter den Gruß gesetzt. Das ist keine qualifizierte elektronische Signatur.",
-            Row(sig, B("letter-signature-set", "Übernehmen", () => Try(V, () =>
+            Row(sig, B("letter-signature-set", "Übernehmen", () => LetterTry(() =>
                 {
                     var f = sig.Text?.Trim().Trim('"') ?? "";
                     if (!File.Exists(f) || XrPlus.ImageSize(File.ReadAllBytes(f)) is (0, _) or (_, 0)) throw new ArgumentException("Bitte ein PNG- oder JPG-Bild wählen.");
@@ -138,9 +138,9 @@ public partial class MainWindow
         var row = new StackPanel { Name = "letter-steps", Orientation = Orientation.Horizontal, Spacing = 4, Margin = new Thickness(0, 0, 0, 8) };
         var steps = new (string Label, Func<bool> Done, Action Go)[]
         {
-            ("Absender", () => d.SenderName.Trim().Length > 0 && d.SenderStreet.Trim().Length > 0 && d.SenderCity.Trim().Length > 0, () => FocusLetterField("letter-sender-name")),
-            ("Empfänger", () => d.Recipient.Replace("\r", "").Split('\n', StringSplitOptions.RemoveEmptyEntries).Length >= 3, () => FocusLetterField("letter-recipient")),
-            ("Inhalt", () => d.Subject.Trim().Length > 0 && d.Body.Trim().Length > 0 && !d.Subject.Contains('[') && !d.Body.Contains('['), () => FocusLetterField("letter-subject")),
+            ("Absender", () => d.SenderName.Trim().Length > 0 && d.SenderStreet.Trim().Length > 0 && d.SenderCity.Trim().Length > 0, () => LetterGo("letter-sender-name", "Trag hier deinen Namen und deine Anschrift ein.")),
+            ("Empfänger", () => d.Recipient.Replace("\r", "").Split('\n', StringSplitOptions.RemoveEmptyEntries).Length >= 3, () => LetterGo("letter-recipient", "Trag die Anschrift des Empfängers ein: Name, Straße, PLZ Ort.")),
+            ("Inhalt", () => d.Subject.Trim().Length > 0 && d.Body.Trim().Length > 0 && !d.Subject.Contains('[') && !d.Body.Contains('['), () => LetterGo("letter-subject", "Schreib Betreff und Text. Eckige Klammern [ ] noch ausfüllen.")),
             ("Prüfen", () => !Letters.Validate(d).Any(x => x.Blocking), () => ClickLetter("letter-check")),
             ("Fertig", () => _letterSaved, () => ClickLetter("letter-save")),
         };
@@ -165,6 +165,19 @@ public partial class MainWindow
         }
         _letterStepSync = Sync; Sync();
         return row;
+    }
+
+    /// <summary>Meldungen der Zusatzwerkzeuge erscheinen in der Briefzeile („letter-msg“), nicht in einer unsichtbaren Sammelmeldung.</summary>
+    private void LetterTry(Action a)
+    {
+        try { a(); }
+        catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException or InvalidDataException or FormatException) { _letterMsg = ex.Message; Show("brief"); }
+    }
+
+    private void LetterGo(string field, string hint)
+    {
+        if (this.GetLogicalDescendants().OfType<TextBlock>().FirstOrDefault(t => t.Name == "letter-msg") is { } m) m.Text = hint;
+        FocusLetterField(field);
     }
 
     private void FocusLetterField(string name)

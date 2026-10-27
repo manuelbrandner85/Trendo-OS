@@ -115,7 +115,8 @@ public sealed partial class MainWindow : Window
         var dock = Dock(); Grid.SetColumn(dock, 1); Grid.SetRow(dock, 1); dock.ZIndex = 5; body.Children.Add(dock);
         var right = RightColumn(); Grid.SetColumn(right, 2); Grid.SetRowSpan(right, 2); body.Children.Add(right);
         StartupTrace.Mark("ctor.left+dock");
-        Grid.SetColumnSpan(_workArea, 3); Grid.SetRowSpan(_workArea, 2); _workArea.ZIndex = 30; body.Children.Add(_workArea);
+        // Maximiert: ganze Fläche bis an die Ränder (Rand der Arbeitsfläche ausgeglichen), die Leiste unten mit Dock und Taskleiste bleibt sichtbar – wie bei Windows
+        Grid.SetColumnSpan(_workArea, 3); _workArea.ZIndex = 30; _workArea.Margin = new Thickness(-8, -4, -8, 0); body.Children.Add(_workArea);
         _status.IsVisible = false;
         _search.KeyDown += (_, e) => { if (e.Key == Key.Enter) { _query = _search.Text ?? ""; Show("suche"); } };
         WireKi();

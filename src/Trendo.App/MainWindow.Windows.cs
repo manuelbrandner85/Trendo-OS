@@ -4,6 +4,7 @@ using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Layout;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -35,6 +36,10 @@ public partial class MainWindow
     private void EnsureWindowLayer()
     {
         if (_windowsReady) return; _windowsReady = true;
+        // Klick oder Taste außerhalb eines Fensters (Startmenü, Dock, Taskleiste, Startseite): das nächste Ziel öffnet in seinem eigenen Fenster.
+        // Tunnel: läuft vor dem Handler des Fensterrahmens, der die Merkung für Klicks im Fenster wieder setzt.
+        AddHandler(PointerPressedEvent, (_, _) => _navWindow = null, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
+        AddHandler(KeyDownEvent, (_, _) => _navWindow = null, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
         _center.Children.Clear();
         _deskHost.ZIndex = 0;
         _center.Children.Add(_deskHost);
@@ -63,12 +68,28 @@ public partial class MainWindow
         }
         if (_deskHost.Children.Count == 0) _deskHost.Children.Add(SafeView("start"));
         var content = SafeView(key);
-        var (win, closed) = Windows.Open(PresentGroup(key), key, PresentTitle(key));
+        var (win, closed) = Windows.Open(TargetWindow(key), key, PresentTitle(key));
         if (closed is not null && _frames.Remove(closed.Id, out var old)) { DetachFrame(old.Frame); _windowStudio.Remove(closed.Id); }
         if (StudioKeyFor(key) is { } sid) _windowStudio[win.Id] = sid;
         if (!_frames.TryGetValue(win.Id, out var fr)) { fr = MakeFrame(win); _frames[win.Id] = fr; _winCanvas.Children.Add(fr.Frame); }
         fr.Title.Text = win.Title; ((DeskFrame)fr.Frame).WindowTitle = win.Title; fr.Body.Content = content;
+        if (fr.Frame.GetLogicalDescendants().OfType<ContentControl>().FirstOrDefault(c => c.Name == "win-icon-" + win.Id) is { } icon)
+            icon.Content = IconFor(_windowStudio.TryGetValue(win.Id, out var ws) ? ws : ModuleOf(key), 16);
         RenderWindows();
+    }
+
+    // Vorgabe 27.10.2026: Ein Klick innerhalb eines Fensters öffnet das Ziel in demselben Fenster – nicht in einem neuen.
+    private string? _navWindow; private DateTime _navAt;
+
+    /// <summary>Welches Fenster zeigt die Seite? 1. ein Fenster, das genau diese Seite schon zeigt; 2. nach einem Klick in einem Fenster dieses Fenster
+    /// (außer die Seite hat schon ihr eigenes offenes Fenster); 3. sonst das Fenster ihres Studios.</summary>
+    private string TargetWindow(string key)
+    {
+        if (Windows.Stack.FirstOrDefault(w => w.Page == key) is { } showing) return showing.Id;
+        var own = PresentGroup(key);
+        if (_navWindow is { } nw && (DateTime.UtcNow - _navAt).TotalSeconds < 3 && Windows.Get(nw) is { Minimized: false } && Windows.Get(own) is null)
+            return nw;
+        return own;
     }
 
     /// <summary>Programm-Fragen liegen im Fenster des Studios, das sie ausgelöst hat – nicht in einem gemeinsamen Fenster, das andere Studios verdrängt.</summary>
@@ -136,7 +157,8 @@ public partial class MainWindow
         foreach (var h in ResizeHandles(id)) layers.Children.Add(h);
         var frame = new DeskFrame { Name = "win-" + id, WindowTitle = w.Title, Background = GlassStrong, BorderThickness = new Thickness(1.5), CornerRadius = new CornerRadius(11), Child = layers, ClipToBounds = true, BoxShadow = LowPower ? default : WindowShadow };
         // Klick ins Fenster holt es nach vorn (nach dem Klick, damit Knöpfe ihren Klick behalten)
-        frame.AddHandler(PointerPressedEvent, (_, _) => { if (Windows.Active?.Id != id) Dispatcher.UIThread.Post(() => FocusWindow(id), DispatcherPriority.Background); }, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
+        frame.AddHandler(PointerPressedEvent, (_, _) => { _navWindow = id; _navAt = DateTime.UtcNow; if (Windows.Active?.Id != id) Dispatcher.UIThread.Post(() => FocusWindow(id), DispatcherPriority.Background); }, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
+        frame.AddHandler(KeyDownEvent, (_, _) => { _navWindow = id; _navAt = DateTime.UtcNow; }, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
         return (frame, body, title);
     }
 
@@ -243,14 +265,14 @@ public partial class MainWindow
                 // Schatten würde über die maximierte Fläche (und damit aus dem Windows-Fenster) hinausragen. Das UIA-Rechteck wird dann ungültig und die ganze Baumabfrage bricht mit E_FAIL ab.
                 fr.Frame.Width = double.NaN; fr.Frame.Height = double.NaN;
                 fr.Frame.HorizontalAlignment = HorizontalAlignment.Stretch; fr.Frame.VerticalAlignment = VerticalAlignment.Stretch;
-                fr.Frame.CornerRadius = new CornerRadius(4);
+                fr.Frame.CornerRadius = new CornerRadius(0); fr.Frame.BorderThickness = new Thickness(0); // bis an den Bildschirmrand wie bei Windows
                 fr.Frame.BoxShadow = default;
             }
             else
             {
                 var (x, y, ww, hh) = Windows.Rect(w);
                 Canvas.SetLeft(fr.Frame, x); Canvas.SetTop(fr.Frame, y); fr.Frame.Width = ww; fr.Frame.Height = hh;
-                fr.Frame.CornerRadius = new CornerRadius(11);
+                fr.Frame.CornerRadius = new CornerRadius(11); fr.Frame.BorderThickness = new Thickness(1.5);
                 fr.Frame.BoxShadow = LowPower ? default : WindowShadow;
             }
         }

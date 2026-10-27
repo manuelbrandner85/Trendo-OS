@@ -41,7 +41,8 @@ public class X02_Ui
         w.Show("heilung");
         Assert.NotEqual("Noch nicht geprüft.", w.Find<TextBlock>("heal-summary").Text);
         w.Find<Button>("heal-run").Press();
-        Assert.NotNull(w.TryFind<Button>("sys-tab-schutz"));
+        Assert.Equal("heilung", w.CurrentView); // G3: eigene Seite ohne fremde Systemreiter
+        Assert.NotEqual("Noch nicht geprüft.", w.Find<TextBlock>("heal-summary").Text);
     }
 }
 
