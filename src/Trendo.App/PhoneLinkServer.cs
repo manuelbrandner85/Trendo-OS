@@ -60,6 +60,12 @@ public sealed class PhoneLinkServer : IAsyncDisposable
         });
 
         PhoneAccess.Device? Who(HttpContext c) => link.Verify(c.Request.Cookies[Cookie]);
+        // Dauerhaft verbunden: bei jedem Öffnen gilt der Schlüssel im Handy wieder ein volles Jahr
+        bool Keep(HttpContext c)
+        {
+            c.Response.Cookies.Append(Cookie, c.Request.Cookies[Cookie]!, new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Strict, Path = "/", MaxAge = TimeSpan.FromDays(365), IsEssential = true });
+            return true;
+        }
 
         app.MapGet("/p/{secret}", (HttpContext c, string secret) =>
         {
@@ -81,7 +87,7 @@ public sealed class PhoneLinkServer : IAsyncDisposable
         });
 
         var away = bind.FirstOrDefault(PhoneAccess.IsTailscale);
-        app.MapGet("/", (HttpContext c) => Who(c) is { } d
+        app.MapGet("/", (HttpContext c) => Who(c) is { } d && Keep(c)
             ? Results.Content(PhoneLinkPages.App(d.Name, Environment.MachineName, remote is not null && d.Remote, away is not null && !PhoneAccess.IsTailscale(c.Connection.LocalIpAddress ?? IPAddress.Loopback)), "text/html; charset=utf-8")
             : Results.Content(PhoneLinkPages.Message("Noch nicht verbunden", "Öffne am PC in Trendo „Handy verbinden“ und scanne den QR-Code mit der Kamera."), "text/html; charset=utf-8", Encoding.UTF8, 401));
 

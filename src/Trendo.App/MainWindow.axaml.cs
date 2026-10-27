@@ -279,6 +279,7 @@ public sealed partial class MainWindow : Window
         RequestAnimationFrame(_ => { StartupTrace.Mark("first.frame"); StartupTrace.Flush(); });
         // KI-Laufzeit im Hintergrund prüfen/starten – blockiert weder Start noch Bildschirmfoto
         if (AppStartup.VelopackFirstRun && !_opt.Isolated) _ = SetupVollpaket(); // T-0222: Programme aus dem Vollpaket gleich nach dem Setup
+        if (!_opt.Isolated) _ = PhoneAutoStartAsync(); // verbundene Handys erreichen Trendo gleich nach dem Start
         var ollama = EnsureOllamaRunning();
         if (!_opt.Isolated && !_core.Offline) _ = AutoModelsAfter(ollama); // freie KI-Modelle ohne Klick nachladen
         if (!_opt.Isolated) _ = ScanKiAfter(ollama); // Befund 27.10.2026: KI-Quellen sofort kennen, sonst bleiben die Lade-Knöpfe grau

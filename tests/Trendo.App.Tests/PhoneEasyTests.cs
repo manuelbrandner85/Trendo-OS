@@ -101,6 +101,8 @@ public class PhoneEasyTests
         Assert.Empty(remote.Calls);
 
         var dev = Assert.Single(access.Devices());
+        var again = await phone.GetAsync("/", ct); // dauerhaft: jeder Besuch verlängert den Schlüssel im Handy
+        Assert.Contains(again.Headers.GetValues("Set-Cookie"), c => c.StartsWith(PhoneLinkServer.Cookie + "=") && c.Contains("max-age=31536000"));
         access.SetRemote(dev.Id, true);
         Assert.Contains("/fern", await phone.GetStringAsync("/", ct));
         Assert.Contains("Trendo-Bildschirm", await phone.GetStringAsync("/fern", ct));
@@ -151,6 +153,12 @@ public class PhoneEasyTests
         w.Find<Button>("phone-firewall").Press();
         await Until(w, () => fw is not null);
         Assert.Contains("localport=" + PhoneAccess.DefaultPort, fw!);
+
+        // Code nach 10 Minuten abgelaufen → der Assistent zeigt von selbst einen neuen
+        w.PhoneAccess.NewOffer(DateTime.UtcNow.AddMinutes(-11)); Assert.Null(w.PhoneAccess.CurrentOffer());
+        w.PhoneRenewOffer();
+        Assert.NotNull(w.PhoneAccess.CurrentOffer());
+        Assert.NotNull(w.TryFind<Border>("phone-easy-qr"));
 
         // Handy öffnet den Code → „Verbinden tippen“; Handy tippt → Fertig mit Frage nach dem Bedienen
         w.PhoneAccess.MarkReached(IPAddress.Loopback); w.Show("handy");

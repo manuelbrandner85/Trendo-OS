@@ -104,6 +104,19 @@ public partial class MainWindow
 
     readonly List<(string Device, string Text)> _phoneTexts = [];
 
+    /// <summary>Wunsch 27.10.2026 („dauerhaft an, wenn man gescannt hat“): Ist schon ein Handy verbunden, startet der Handy-Zugang mit Trendo –
+    /// das Handy braucht danach nie wieder einen QR-Code. Der Code ist nur für das erste Koppeln da.</summary>
+    public async Task PhoneAutoStartAsync()
+    {
+        if (PhoneAccess.Devices().Count == 0) return;
+        await EnsurePhoneServerAsync();
+        // Netz wechselt (Tailscale meldet sich später an, anderes WLAN): alle 30 Sekunden prüfen und neue Adressen dazunehmen
+        var t = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
+        t.Tick += async (_, _) => { if (_phoneServer is not null && PhoneAccess.Devices().Count > 0) await EnsurePhoneServerAsync(); };
+        t.Start();
+        Closed += (_, _) => t.Stop();
+    }
+
     /// <summary>Neuen QR-Code zeigen (startet den Handy-Zugang, falls nötig). Ohne Wahl gilt „zuhause im WLAN“.</summary>
     public async Task ShowPhoneQrAsync()
     {
@@ -159,10 +172,21 @@ public partial class MainWindow
             _phoneTimer.Tick += (_, _) =>
             {
                 if (CurrentView != "handy") { _phoneTimer!.Stop(); return; }
+                PhoneRenewOffer();
                 if (PhoneSignature() != _phoneSig) Show("handy");
             };
         }
         if (!_phoneTimer.IsEnabled) _phoneTimer.Start();
+    }
+
+    /// <summary>Wartet der Assistent noch auf das Handy und ist der Code abgelaufen, zeigt er von selbst einen neuen – niemand muss klicken.</summary>
+    public void PhoneRenewOffer()
+    {
+        if (_phoneServer is null || _phoneQrAt == default || _phoneNewDevice is not null || PhoneAccess.CurrentOffer() is not null) return;
+        if (_phoneWhere is null || PhoneStep() != "qr-start") return;
+        PhoneAccess.NewOffer();
+        _core.Audit.Append(Principal.LocalOwner.Name, "phonelink.offer", "QR-Code von selbst erneuert");
+        Show("handy");
     }
 
     string PhoneSignature()
@@ -329,6 +353,7 @@ public partial class MainWindow
             new TextBlock { Text = "1. Handy-Kamera öffnen", Foreground = Text, FontSize = 16, FontWeight = FontWeight.SemiBold },
             new TextBlock { Text = "2. Auf diesen Code richten und den Link antippen", Foreground = Text, FontSize = 16, FontWeight = FontWeight.SemiBold },
             new TextBlock { Text = "3. Trendo wartet, bis dein Handy da ist …", Foreground = Muted, FontSize = 14 },
+            P("Der Code ist nur zum ersten Verbinden da und erneuert sich von selbst. Danach bleibt das Handy dauerhaft verbunden.", null, 12.5),
             P(away ? "Am Handy muss Tailscale an sein." : $"Das Handy muss im selben WLAN sein wie der PC{(_phoneSsid is { Length: > 0 } w ? $" („{w}“)" : "")} – mobile Daten dürfen an bleiben.", null, 12.5),
             new TextBlock { Name = "phone-easy-url", Text = url, Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap },
         } };
@@ -373,7 +398,7 @@ public partial class MainWindow
         body.Children.Add(P(dev?.Remote == true
             ? "Auf dem Handy „Trendo öffnen“ antippen – dann bedienst du Trendo mit dem Finger. Fotos und Dateien schickst du über die Handy-Seite; sie landen im Ordner „Vom Handy“."
             : "Auf dem Handy kannst du jetzt Fotos, Dateien, Texte und Links an den PC schicken; sie landen im Ordner „Vom Handy“.", Text, 13));
-        body.Children.Add(P("Tipp: Auf dem Handy im Browser-Menü „Zum Startbildschirm hinzufügen“ – dann ist Trendo wie eine App da.", null, 12.5));
+        body.Children.Add(P("Die Verbindung bleibt dauerhaft – auch nach einem Neustart von PC oder Handy. Den QR-Code brauchst du nie wieder. Tipp: Auf dem Handy im Browser-Menü „Zum Startbildschirm hinzufügen“ – dann ist Trendo wie eine App da.", null, 12.5));
         if (_phoneWhere == "home")
             body.Children.Add(P(TailscaleAddress() is not null ? "Für unterwegs: auf der Handy-Seite einmal „Unterwegs-Zugang einrichten“ tippen, solange du zuhause bist."
                 : "Auch unterwegs nutzen? Unten bei „Auch unterwegs“ einrichten.", null, 12.5));
