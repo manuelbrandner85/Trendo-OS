@@ -8,6 +8,18 @@ using Trendo.Core;
 
 namespace Trendo.App;
 
+/// <summary>Wunsch 27.10.2026 („das Betriebssystem auf dem Handy voll nutzen“): Trendo vom Handy aus bedienen – Bildschirm sehen, antippen, schreiben, scrollen.
+/// Nur für Handys, denen der PC-Nutzer das ausdrücklich erlaubt hat.</summary>
+public interface IPhoneRemote
+{
+    Task<byte[]?> ScreenAsync(int maxWidth);
+    Task<string> TapAsync(double fx, double fy);
+    Task TypeAsync(string text);
+    Task KeyAsync(string key);
+    Task ScrollAsync(double fx, double fy, double dy);
+    void Started(string device);
+}
+
 /// <summary>Handy-Zugang (Vorgabe 27.10.2026, „viel einfacher, auch unterwegs“): kleiner Webserver nur im Heimnetz und im Tailscale-Netz.
 /// Das Handy öffnet die Seite per QR-Code im normalen Browser – ohne App und ohne Entwicklermodus. Es kann Fotos und Dateien an den PC
 /// schicken, Text und Links übergeben und Dateien aus „Zum Handy“ laden. Nichts öffentlich, kein Port im Router, jedes Gerät mit eigenem Schlüssel.</summary>
@@ -24,7 +36,7 @@ public sealed class PhoneLinkServer : IAsyncDisposable
     /// <summary>Startet auf den angegebenen Adressen (nur Heimnetz/Tailscale/Loopback). <paramref name="onFile"/> und <paramref name="onText"/>
     /// melden Empfangenes an Trendo (Benachrichtigung, Protokoll).</summary>
     public static async Task<PhoneLinkServer> StartAsync(PhoneAccess link, IReadOnlyList<IPAddress> addresses, int port, string inbox, string outbox, AuditLog audit,
-        Action<string, string> onFile, Action<string, string> onText)
+        Action<string, string> onFile, Action<string, string> onText, IPhoneRemote? remote = null)
     {
         var bind = addresses.Where(PhoneAccess.AllowedAddress).Distinct().ToList();
         if (bind.Count == 0) throw new InvalidOperationException("Kein Heimnetz gefunden. Ist der PC mit dem WLAN oder LAN verbunden?");
@@ -43,16 +55,19 @@ public sealed class PhoneLinkServer : IAsyncDisposable
             ctx.Response.Headers["Cache-Control"] = "no-store";
             ctx.Response.Headers["X-Content-Type-Options"] = "nosniff";
             ctx.Response.Headers["Referrer-Policy"] = "no-referrer";
-            ctx.Response.Headers["Content-Security-Policy"] = "default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data:";
+            ctx.Response.Headers["Content-Security-Policy"] = "default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data: blob:";
             await next();
         });
 
         PhoneAccess.Device? Who(HttpContext c) => link.Verify(c.Request.Cookies[Cookie]);
 
-        app.MapGet("/p/{secret}", (string secret) =>
-            link.CurrentOffer() is { } o && o.Secret == secret
+        app.MapGet("/p/{secret}", (HttpContext c, string secret) =>
+        {
+            if (c.Connection.RemoteIpAddress is { } from) link.MarkReached(from); // Assistent: „Handy hat den PC erreicht“
+            return link.CurrentOffer() is { } o && o.Secret == secret
                 ? Results.Content(PhoneLinkPages.Pair(secret), "text/html; charset=utf-8")
-                : Results.Content(PhoneLinkPages.Message("Dieser QR-Code ist abgelaufen", "Öffne in Trendo „Handy verbinden“ und scanne den neuen Code."), "text/html; charset=utf-8", Encoding.UTF8, 410));
+                : Results.Content(PhoneLinkPages.Message("Dieser QR-Code ist abgelaufen", "Öffne in Trendo „Handy verbinden“ und scanne den neuen Code."), "text/html; charset=utf-8", Encoding.UTF8, 410);
+        });
 
         app.MapPost("/p/{secret}", async (HttpContext c, string secret) =>
         {
@@ -65,8 +80,9 @@ public sealed class PhoneLinkServer : IAsyncDisposable
             return Results.Redirect("/");
         });
 
+        var away = bind.FirstOrDefault(PhoneAccess.IsTailscale);
         app.MapGet("/", (HttpContext c) => Who(c) is { } d
-            ? Results.Content(PhoneLinkPages.App(d.Name, Environment.MachineName), "text/html; charset=utf-8")
+            ? Results.Content(PhoneLinkPages.App(d.Name, Environment.MachineName, remote is not null && d.Remote, away is not null && !PhoneAccess.IsTailscale(c.Connection.LocalIpAddress ?? IPAddress.Loopback)), "text/html; charset=utf-8")
             : Results.Content(PhoneLinkPages.Message("Noch nicht verbunden", "Öffne am PC in Trendo „Handy verbinden“ und scanne den QR-Code mit der Kamera."), "text/html; charset=utf-8", Encoding.UTF8, 401));
 
         app.MapPost("/api/upload", async (HttpContext c) =>
@@ -114,6 +130,77 @@ public sealed class PhoneLinkServer : IAsyncDisposable
             return Results.File(path, "application/octet-stream", name);
         });
 
+        // Unterwegs-Zugang: das verbundene Handy bekommt einen Link auf die Tailscale-Adresse (eigener Schlüssel dort)
+        app.MapPost("/api/away", (HttpContext c) =>
+        {
+            if (Who(c) is not { } d) return Results.Unauthorized();
+            if (away is null) return Results.NotFound();
+            audit.Append("handy", "phonelink.away", d.Name);
+            return Results.Ok(new { url = $"http://{away}:{port}/t/{link.NewTransfer(d.Id)}" });
+        });
+        app.MapGet("/t/{code}", (HttpContext c, string code) =>
+        {
+            if (link.RedeemTransfer(code) is not { } r)
+                return Results.Content(PhoneLinkPages.Message("Link abgelaufen", "Öffne Trendo zuhause im WLAN und tippe noch einmal auf „Unterwegs-Zugang einrichten“."), "text/html; charset=utf-8", Encoding.UTF8, 410);
+            c.Response.Cookies.Append(Cookie, r.Token, new CookieOptions { HttpOnly = true, SameSite = SameSiteMode.Strict, Path = "/", MaxAge = TimeSpan.FromDays(365), IsEssential = true });
+            audit.Append("handy", "phonelink.away.ok", r.Device.Name);
+            return Results.Redirect("/?unterwegs=1");
+        });
+
+        // Trendo vom Handy bedienen – nur mit Erlaubnis am PC
+        IResult? Denied(HttpContext c, out PhoneAccess.Device? d)
+        {
+            d = Who(c);
+            if (d is null) return Results.Unauthorized();
+            if (remote is null || !d.Remote) return Results.Content("Am PC in Trendo unter „Handy“ erlauben, dass dieses Handy Trendo bedienen darf.", "text/plain; charset=utf-8", Encoding.UTF8, 403);
+            return null;
+        }
+        static double Num(string? v) => double.TryParse(v, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var x) && double.IsFinite(x) ? x : -1;
+        app.MapGet("/fern", (HttpContext c) =>
+        {
+            if (Denied(c, out var d) is { } no) return no;
+            remote!.Started(d!.Name);
+            audit.Append("handy", "phonelink.remote.open", d.Name);
+            return Results.Content(PhoneLinkPages.Remote(), "text/html; charset=utf-8");
+        });
+        app.MapGet("/api/screen", async (HttpContext c) =>
+        {
+            if (Denied(c, out _) is { } no) return no;
+            var w = (int)Math.Clamp(Num(c.Request.Query["w"]), 320, 1600);
+            return await remote!.ScreenAsync(w) is { } png ? Results.File(png, "image/png") : Results.StatusCode(503);
+        });
+        app.MapPost("/api/tap", async (HttpContext c) =>
+        {
+            if (Denied(c, out _) is { } no) return no;
+            var f = await c.Request.ReadFormAsync();
+            double x = Num(f["x"]), y = Num(f["y"]);
+            if (x is < 0 or > 1 || y is < 0 or > 1) return Results.BadRequest();
+            return Results.Ok(new { hit = await remote!.TapAsync(x, y) });
+        });
+        app.MapPost("/api/type", async (HttpContext c) =>
+        {
+            if (Denied(c, out _) is { } no) return no;
+            var t = (await c.Request.ReadFormAsync())["text"].ToString();
+            if (t.Length is 0 or > 5000) return Results.BadRequest();
+            await remote!.TypeAsync(t); return Results.Ok();
+        });
+        app.MapPost("/api/key", async (HttpContext c) =>
+        {
+            if (Denied(c, out _) is { } no) return no;
+            var k = (await c.Request.ReadFormAsync())["key"].ToString();
+            if (k is not ("enter" or "back" or "esc" or "tab")) return Results.BadRequest();
+            await remote!.KeyAsync(k); return Results.Ok();
+        });
+        app.MapPost("/api/scroll", async (HttpContext c) =>
+        {
+            if (Denied(c, out _) is { } no) return no;
+            var f = await c.Request.ReadFormAsync();
+            double x = Num(f["x"]), y = Num(f["y"]);
+            var dy = double.TryParse(f["dy"], System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) && double.IsFinite(v) ? Math.Clamp(v, -3, 3) : 0;
+            if (x is < 0 or > 1 || y is < 0 or > 1) return Results.BadRequest();
+            await remote!.ScrollAsync(x, y, dy); return Results.Ok();
+        });
+
         await app.StartAsync();
         audit.Append("handy", "phonelink.start", string.Join(", ", bind) + ":" + port);
         return new PhoneLinkServer(app, bind, port);
@@ -154,8 +241,35 @@ static class PhoneLinkPages
         "<input type=\"submit\" value=\"Verbinden\"></form><p>Nur verbinden, wenn du gerade selbst vor deinem PC den Code gescannt hast.</p>" +
         "<script>var u=navigator.userAgent,m=u.match(/;\\s*([^;)]+)\\s+Build/);if(m)document.getElementById('n').value=m[1].slice(0,40);else if(/iPhone/.test(u))document.getElementById('n').value='iPhone';</script>" + Foot;
 
-    public static string App(string device, string pc) => Head +
+    /// <summary>Fernbedienung: Bildschirmbild antippen = dort klicken; wischen = scrollen; unten Tastatur.</summary>
+    public static string Remote() => Head.Replace("<main>", "<main style=\"max-width:none;padding:6px\">") +
+        "<div style=\"display:flex;gap:6px;align-items:center\"><a href=\"/\" style=\"color:#7CB8FF;text-decoration:none\">← Zurück</a><span id=\"st\" style=\"color:#9FB1CF;font-size:13px;margin-left:auto\">Verbinde …</span></div>" +
+        "<img id=\"s\" alt=\"Trendo-Bildschirm\" style=\"width:100%;border-radius:10px;margin-top:6px;touch-action:none;background:#0E1B3A;min-height:200px\">" +
+        "<div style=\"display:flex;gap:6px;margin-top:6px\"><input type=\"text\" id=\"k\" placeholder=\"Hier schreiben – geht ins angetippte Feld\" style=\"flex:1\">" +
+        "<button style=\"width:auto;margin:0;padding:12px\" onclick=\"send()\">Senden</button></div>" +
+        "<div style=\"display:flex;gap:6px\"><button class=\"sec\" onclick=\"key('back')\">⌫</button><button class=\"sec\" onclick=\"key('enter')\">⏎</button><button class=\"sec\" onclick=\"key('tab')\">⇥</button><button class=\"sec\" onclick=\"key('esc')\">Esc</button></div>" +
+        "<script>" +
+        "var s=document.getElementById('s'),st=document.getElementById('st'),busy=false,url=null,y0=null,x0=null;" +
+        "function post(p,d){var f=new FormData();for(var k in d)f.append(k,d[k]);return fetch(p,{method:'POST',body:f});}" +
+        "function load(){if(busy||document.hidden)return;busy=true;fetch('/api/screen?w='+Math.min(1600,Math.round(s.clientWidth*(window.devicePixelRatio||1)))).then(function(r){if(!r.ok)throw r.status;return r.blob();})" +
+        ".then(function(b){var u=URL.createObjectURL(b);s.onload=function(){if(url)URL.revokeObjectURL(url);url=u;};s.src=u;st.textContent='● Live';busy=false;}).catch(function(e){st.textContent=e==403?'Am PC nicht erlaubt':'Keine Verbindung';busy=false;});}" +
+        "function pos(e){var r=s.getBoundingClientRect();return {x:((e.clientX-r.left)/r.width).toFixed(4),y:((e.clientY-r.top)/r.height).toFixed(4)};}" +
+        "s.addEventListener('pointerdown',function(e){y0=e.clientY;x0=e.clientX;});" +
+        "s.addEventListener('pointerup',function(e){if(y0===null)return;var dy=e.clientY-y0,p=pos(e);" +
+        "if(Math.abs(dy)>25){var q=pos({clientX:x0,clientY:y0});post('/api/scroll',{x:q.x,y:q.y,dy:(-dy/s.getBoundingClientRect().height*2).toFixed(3)}).then(load);}" +
+        "else post('/api/tap',p).then(function(r){return r.json();}).then(function(j){if(j.hit=='Eingabefeld')document.getElementById('k').focus();setTimeout(load,150);});y0=null;});" +
+        "function send(){var k=document.getElementById('k');if(!k.value)return;post('/api/type',{text:k.value}).then(function(){k.value='';load();});}" +
+        "document.getElementById('k').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();if(this.value)send();else key('enter');}});" +
+        "function key(k){post('/api/key',{key:k}).then(load);}" +
+        "load();setInterval(load,700);" +
+        "</script>" + Foot;
+
+    public static string App(string device, string pc, bool remote = false, bool canAway = false) => Head +
         $"<h1>Verbunden mit {E(pc)}</h1><p class=\"ok\">✓ {E(device)} ist mit Trendo verbunden.</p>" +
+        (remote ? "<div class=\"card\"><b>Trendo bedienen</b><p>Den PC-Bildschirm sehen und Trendo mit dem Finger bedienen – wie am PC.</p><a class=\"btn\" id=\"fern\" href=\"/fern\">Trendo öffnen</a></div>"
+                : "<div class=\"card\"><b>Trendo bedienen</b><p>Möchtest du Trendo komplett vom Handy aus bedienen? Am PC unter „Handy“ bei diesem Handy „Trendo bedienen erlauben“ antippen.</p></div>") +
+        (canAway ? "<div class=\"card\"><b>Auch unterwegs</b><p>Einmal hier antippen, solange du zuhause bist. Danach erreichst du den PC überall, wenn am Handy Tailscale an ist. Speichere die neue Seite als Lesezeichen oder auf dem Startbildschirm.</p>" +
+                   "<button class=\"sec\" id=\"away\" onclick=\"fetch('/api/away',{method:'POST'}).then(function(r){return r.json();}).then(function(j){location.href=j.url;}).catch(function(){document.getElementById('away').textContent='Hat nicht geklappt – ist Tailscale am Handy an?';});\">Unterwegs-Zugang einrichten</button></div>" : "") +
         "<div class=\"card\"><b>Fotos &amp; Dateien an den PC</b><p>Landen am PC im Ordner „Vom Handy“.</p><input type=\"file\" id=\"f\" multiple style=\"display:none\">" +
         "<button onclick=\"document.getElementById('f').click()\">Fotos oder Dateien auswählen</button><p id=\"st\"></p></div>" +
         "<div class=\"card\"><b>Text oder Link an den PC</b><textarea id=\"t\" rows=\"3\" placeholder=\"z. B. eine Adresse oder Notiz\"></textarea><button class=\"sec\" onclick=\"sendText()\">An den PC schicken</button><p id=\"tst\"></p></div>" +

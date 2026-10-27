@@ -14,10 +14,20 @@ public sealed class PhoneAccess(string dataRoot)
     public const int DefaultPort = 47_823;
 
     public sealed record Offer(string Secret, DateTime Expires);
-    public sealed record Device(string Id, string Name, string TokenHash, DateTime Paired, DateTime LastSeen);
+    /// <summary>Gekoppeltes Handy. <paramref name="Remote"/>: darf Trendo vollständig bedienen (nur wenn am PC erlaubt).
+    /// <paramref name="More"/>: weitere Schlüssel desselben Handys (z. B. für die Unterwegs-Adresse über Tailscale).</summary>
+    public sealed record Device(string Id, string Name, string TokenHash, DateTime Paired, DateTime LastSeen, bool Remote = false, List<string>? More = null);
+
+    /// <summary>Netzwerkkarte des PCs für die Adresswahl im QR-Code.</summary>
+    public sealed record Nic(IPAddress Ip, string Name, bool Gateway, bool Virtual, bool Wireless);
 
     readonly object _lock = new();
     Offer? _offer;
+    readonly Dictionary<string, (string DeviceId, DateTime Expires)> _transfers = [];
+
+    /// <summary>Zuletzt hat ein Handy die Kopplungsseite geöffnet (für den Assistenten: „Handy hat den PC erreicht“).</summary>
+    public (DateTime At, IPAddress From)? LastReach { get; private set; }
+    public void MarkReached(IPAddress from, DateTime? now = null) { lock (_lock) LastReach = (now ?? DateTime.UtcNow, from); }
     string FilePath => Path.Combine(dataRoot, "handy", "verbundene-geraete.json");
     static readonly JsonSerializerOptions J = new() { WriteIndented = true };
 
@@ -56,7 +66,7 @@ public sealed class PhoneAccess(string dataRoot)
         lock (_lock)
         {
             var all = Devices();
-            var i = all.FindIndex(d => CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(d.TokenHash), Encoding.ASCII.GetBytes(h)));
+            var i = all.FindIndex(d => Same(d.TokenHash, h) || (d.More?.Any(m => Same(m, h)) ?? false));
             if (i < 0) return null;
             var seen = now ?? DateTime.UtcNow;
             if (seen - all[i].LastSeen > TimeSpan.FromMinutes(1)) { all[i] = all[i] with { LastSeen = seen }; Save(all); }
@@ -85,6 +95,64 @@ public sealed class PhoneAccess(string dataRoot)
         File.WriteAllText(tmp, JsonSerializer.Serialize(all, J));
         File.Move(tmp, FilePath, true);
     }
+
+    static bool Same(string a, string b) => CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(a), Encoding.ASCII.GetBytes(b));
+
+    /// <summary>Darf das Handy Trendo vollständig bedienen (Bildschirm sehen, tippen, schreiben)? Nur der PC-Nutzer schaltet das ein.</summary>
+    public bool SetRemote(string id, bool on)
+    {
+        lock (_lock)
+        {
+            var all = Devices(); var i = all.FindIndex(d => d.Id == id);
+            if (i < 0) return false;
+            all[i] = all[i] with { Remote = on }; Save(all); return true;
+        }
+    }
+
+    /// <summary>Unterwegs-Zugang: ein bereits verbundenes Handy holt sich einen Übergabe-Code (2 Minuten, einmalig) für die Tailscale-Adresse.
+    /// Dort ist es eine andere Web-Adresse, deshalb bekommt das Handy dafür einen zweiten eigenen Schlüssel.</summary>
+    public string NewTransfer(string deviceId, DateTime? now = null)
+    {
+        var code = Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(16));
+        lock (_lock)
+        {
+            var t = now ?? DateTime.UtcNow;
+            foreach (var k in _transfers.Where(x => x.Value.Expires <= t).Select(x => x.Key).ToList()) _transfers.Remove(k);
+            _transfers[code] = (deviceId, t + TimeSpan.FromMinutes(2));
+        }
+        return code;
+    }
+
+    public (Device Device, string Token)? RedeemTransfer(string code, DateTime? now = null)
+    {
+        lock (_lock)
+        {
+            if (code is null || !_transfers.Remove(code, out var tr) || tr.Expires <= (now ?? DateTime.UtcNow)) return null;
+            var all = Devices(); var i = all.FindIndex(d => d.Id == tr.DeviceId);
+            if (i < 0) return null;
+            var token = Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(32));
+            all[i] = all[i] with { More = [.. (all[i].More ?? []).TakeLast(3), Hash(token)] };
+            Save(all);
+            return (all[i], token);
+        }
+    }
+
+    /// <summary>Beste Heimnetz-Adressen für den QR-Code: echte WLAN-/LAN-Karte mit Router zuerst; virtuelle Karten (Hyper-V, WSL, VPN) und Tailscale zuletzt.
+    /// Befund 27.10.2026: Der Code zeigte manchmal die Adresse einer virtuellen Karte oder Tailscale – das Handy im WLAN kam dann nie an.</summary>
+    public static IReadOnlyList<IPAddress> HomeAddresses(IEnumerable<Nic> nics) =>
+        nics.Where(n => !IsTailscale(n.Ip) && !IPAddress.IsLoopback(n.Ip) && AllowedAddress(n.Ip))
+            .OrderBy(n => n.Virtual).ThenByDescending(n => n.Gateway).ThenByDescending(n => n.Wireless)
+            .ThenByDescending(n => n.Ip.GetAddressBytes()[0] == 192).Select(n => n.Ip).Distinct().ToList();
+
+    /// <summary>Virtuelle Netzwerkkarten (vom Namen her), die ein Handy nie erreicht.</summary>
+    public static bool LooksVirtual(string description) =>
+        new[] { "Hyper-V", "vEthernet", "Virtual", "VMware", "VirtualBox", "WSL", "TAP-", "Npcap", "Loopback", "Bluetooth", "Docker", "WireGuard", "Wintun" }
+            .Any(v => description.Contains(v, StringComparison.OrdinalIgnoreCase));
+
+    /// <summary>Windows-Freigabe für den Handy-Zugang (eine Regel, nur dieser Anschluss, nur Heimnetz und Tailscale – auch wenn Windows das WLAN „Öffentlich“ nennt).</summary>
+    public static string[] FirewallArgs(int port) =>
+        ["advfirewall", "firewall", "add", "rule", "name=Trendo Handy", "dir=in", "action=allow", "protocol=TCP", $"localport={port}", "profile=any",
+         "remoteip=localsubnet,100.64.0.0/10"];
 
     static string Hash(string token) => Convert.ToHexStringLower(SHA256.HashData(Encoding.ASCII.GetBytes(token)));
 
