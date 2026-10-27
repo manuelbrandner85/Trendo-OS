@@ -81,6 +81,7 @@ public class PhoneEasyTests
         public Task KeyAsync(string key) { Calls.Add("key " + key); return Task.CompletedTask; }
         public Task ScrollAsync(double fx, double fy, double dy, bool desktop) { Calls.Add(FormattableString.Invariant($"scroll {dy:0.0}")); return Task.CompletedTask; }
         public byte[]? Icon() => [1, 2, 3];
+        public Task<byte[]?> AppIconAsync(string id) => Task.FromResult<byte[]?>([4, 5, id.Length > 0 ? (byte)6 : (byte)0]);
         public void Started(string device) => Calls.Add("start " + device);
     }
 
@@ -116,6 +117,8 @@ public class PhoneEasyTests
         Assert.Contains("standalone", await phone.GetStringAsync("/manifest.webmanifest", ct));
         Assert.Equal([1, 2, 3], await phone.GetByteArrayAsync("/icon.png", ct));
         Assert.Contains("Texte & Tabellen", await phone.GetStringAsync("/api/apps", ct));
+        Assert.Equal([4, 5, 6], await phone.GetByteArrayAsync("/api/icon/W3-TEXT", ct)); // Symbol wie auf dem Desktop
+        Assert.Equal(HttpStatusCode.NotFound, (await phone.GetAsync("/api/icon/UNBEKANNT", ct)).StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, (await phone.PostAsync("/api/open", Form(("id", "GIBT-ES-NICHT")), ct)).StatusCode);
         Assert.Contains("Texte", await (await phone.PostAsync("/api/open", Form(("id", "W3-TEXT")), ct)).Content.ReadAsStringAsync(ct));
         var png = await phone.GetAsync("/api/screen?w=412&h=780&s=2.6", ct);
@@ -251,6 +254,9 @@ public class PhoneEasyTests
         var apps = w.PhoneApps();
         Assert.True(apps.Count > 20);
         Assert.All(apps, a => Assert.False(string.IsNullOrEmpty(a.Icon)));
+        Assert.Contains(apps, a => a.Id == "page:ki"); // Trendo KI, Programme, Handy … wie auf dem Desktop
+        Assert.NotNull(w.PhoneAppIcon("CORE-05")); Assert.NotNull(w.PhoneAppIcon("page:ki")); // ohne Grafikkarte im Test leer, in Trendo ein PNG
+        Assert.Equal("Trendo KI", await w.PhoneOpen("page:ki")); Assert.Equal("ki", w.PhonePage);
         var pcWindows = w.Windows.Stack.Count;
         var title = await w.PhoneOpen("SYS-10");
         Assert.NotNull(w.PhonePage);

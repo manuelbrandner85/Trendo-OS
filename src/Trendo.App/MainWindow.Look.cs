@@ -24,7 +24,7 @@ public sealed partial class MainWindow
         [("#2F86F6", "Blau"), ("#22C3A6", "Türkis"), ("#8B5CF6", "Violett"), ("#F472B6", "Pink"), ("#F59E0B", "Bernstein"), ("#22C55E", "Grün")];
 
     public static readonly (string Id, string Label)[] WidgetChoices =
-        [("widget-studios", "Studios"), ("widget-module", "Systemmodule"), ("widget-projekte", "Aktuelle Projekte"), ("widget-ki", "KI-Router"), ("widget-system", "Geräte und Messwerte"), ("widget-agenten", "Agenten Live"), ("widget-studiomanager", "Studio Manager"), ("widget-github", "Open Source")];
+        [("widget-projekte", "Aktuelle Projekte"), ("widget-ki", "KI-Router"), ("widget-system", "Geräte und Messwerte"), ("widget-agenten", "Agenten Live"), ("widget-studiomanager", "Studio Manager"), ("widget-github", "Open Source")];
 
     private static string _theme = "dunkel";
     private string _settingsSection = "aussehen";

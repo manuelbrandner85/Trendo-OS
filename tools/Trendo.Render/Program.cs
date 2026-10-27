@@ -321,6 +321,45 @@ if (Environment.GetEnvironmentVariable("TRENDO_BRIEF_PROMPT") == "1")
     if (Find<TextBlock>("auftrag-status").Text != "QA bestanden")
         throw new InvalidOperationException("Briefvorschau steht auf " + Find<TextBlock>("auftrag-status").Text);
 }
+if (Environment.GetEnvironmentVariable("TRENDO_PHONE_AUDIT_ALL") == "1") // jede App auf schmalem und großem Handy prüfen (echte Schrift)
+{
+    for (var i = 0; i < 10; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(30); }
+    var lines = new List<string>();
+    foreach (var app in win.PhoneApps())
+    {
+        var pg = app.Id.StartsWith("page:") ? app.Id[5..] : win.StudioLaunchPage(app.Id);
+        foreach (var pw in new[] { 360, 430 })
+        {
+            win.PresentPhoneForTests(pg);
+            for (var i = 0; i < 3; i++) { Dispatcher.UIThread.RunJobs(); win.PhoneScreen(pw, 780, 1, false); }
+            foreach (var b in win.PhoneOverflow(pw).Distinct().Take(5)) lines.Add($"{app.Name} [{pg}] @{pw}: {b}");
+        }
+    }
+    File.WriteAllLines(outPath, lines);
+    Console.WriteLine($"OK {lines.Count} Stellen → {outPath}");
+    Directory.Delete(root, true);
+    return;
+}
+if (Environment.GetEnvironmentVariable("TRENDO_PHONE") is { Length: > 0 } phoneApp) // Handy-App: genau das Bild, das das Handy bekommt (412 × 780, 2,6-fach)
+{
+    for (var i = 0; i < 10; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(30); }
+    win.PresentPhoneForTests(phoneApp); // Seitenschlüssel, z. B. „brief“
+    for (var i = 0; i < 20; i++) { Dispatcher.UIThread.RunJobs(); win.PhoneScreen(412, 780, 2.6, false); Thread.Sleep(30); }
+    File.WriteAllBytes(outPath, win.PhoneScreen(412, 780, double.TryParse(Environment.GetEnvironmentVariable("TRENDO_PHONE_SCALE"), System.Globalization.CultureInfo.InvariantCulture, out var psc) ? psc : 2.6, false)!.Png);
+    if (Environment.GetEnvironmentVariable("TRENDO_PHONE_AUDIT") == "1") foreach (var b in win.PhoneOverflow(412)) Console.WriteLine("ÜBERLAUF " + b);
+    if (Environment.GetEnvironmentVariable("TRENDO_PHONE_DEBUG") is { Length: > 0 } dbg)
+    {
+        var surf = win.GetLogicalDescendants().OfType<Control>().First(c => c.Name == "phone-surface");
+        var target = Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(surf).OfType<Control>().First(c => c.Name == dbg);
+        foreach (var v in Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(target).OfType<Control>())
+            Console.WriteLine($"  KIND {v.GetType().Name} {v.Name} {v.Bounds} {(v is TextBlock tt ? tt.Text + " natural=" + MainWindow.NaturalWidth(tt) + " wrap=" + tt.TextWrapping + " trim=" + tt.TextTrimming + " desired=" + tt.DesiredSize : "")}");
+        foreach (var v in Avalonia.VisualTree.VisualExtensions.GetSelfAndVisualAncestors(target).OfType<Control>().TakeWhile(c => c != surf))
+            Console.WriteLine($"{v.GetType().Name} {v.Name} {v.Bounds} RT={v.RenderTransform} {(v is LayoutTransformControl l ? "LT=" + l.LayoutTransform : "")}");
+    }
+    Console.WriteLine($"OK {outPath}");
+    Directory.Delete(root, true);
+    return;
+}
 for (var i = 0; i < 40; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(50); }
 var frame = win.CaptureRenderedFrame();
 frame!.Save(outPath);

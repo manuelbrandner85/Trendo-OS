@@ -26,6 +26,8 @@ public interface IPhoneRemote
     Task KeyAsync(string key);
     Task ScrollAsync(double fx, double fy, double dy, bool desktop);
     byte[]? Icon();
+    /// <summary>Symbol einer App – dieselbe Kachel wie auf dem Trendo-Desktop (PNG).</summary>
+    Task<byte[]?> AppIconAsync(string id);
     void Started(string device);
 }
 
@@ -184,6 +186,13 @@ public sealed class PhoneLinkServer : IAsyncDisposable
         });
         app.MapGet("/manifest.webmanifest", () => Results.Text(PhoneLinkPages.Manifest, "application/manifest+json; charset=utf-8"));
         app.MapGet("/icon.png", () => remote?.Icon() is { } png ? Results.File(png, "image/png") : Results.NotFound());
+        app.MapGet("/api/icon/{id}", async (HttpContext c, string id) =>
+        {
+            if (Denied(c, out _) is { } no) return no;
+            if (!remote!.Apps().Any(a => a.Id == id)) return Results.NotFound();
+            c.Response.Headers.CacheControl = "private, max-age=86400";
+            return await remote.AppIconAsync(id) is { } png ? Results.File(png, "image/png") : Results.NotFound();
+        });
         app.MapGet("/api/apps", (HttpContext c) => Denied(c, out _) is { } no ? no : Results.Ok(remote!.Apps()));
         app.MapPost("/api/open", async (HttpContext c) =>
         {
@@ -328,7 +337,7 @@ input.search{width:100%;padding:13px 16px;border-radius:14px;border:1px solid #2
 .app{display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;color:#E6EDF7;font-size:11.5px;text-align:center;line-height:1.2;padding:0}
 .ico{width:58px;height:58px;border-radius:17px;display:flex;align-items:center;justify-content:center;
 background:radial-gradient(120% 120% at 30% 15%,#2B4C86 0%,#0E1B3A 70%);border:1px solid #F5C45155;box-shadow:0 6px 16px #0008,inset 0 1px 0 #ffffff22}
-.ico svg{width:30px;height:30px;fill:url(#gold)}.app:active .ico{transform:scale(.92)}
+.ico svg{width:30px;height:30px;fill:url(#gold)}.ico img{width:100%;height:100%;border-radius:inherit;display:block}.ico{overflow:hidden;padding:0}.app:active .ico{transform:scale(.92)}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px}.chip{flex:none;border:1px solid #29436F;background:#0E1B3A;color:#E6EDF7;border-radius:20px;padding:8px 13px;font-size:13px}
 .chip.on{background:#2F86F6;border-color:#2F86F6}
 .row{display:flex;align-items:center;gap:12px;padding:10px 6px;border-bottom:1px solid #ffffff10;background:none;border-left:0;border-right:0;border-top:0;color:#E6EDF7;width:100%;text-align:left;font-size:15px}
@@ -338,13 +347,17 @@ transform:translateY(110%);transition:transform .2s;z-index:9;max-height:70%;ove
 #sheet textarea,#sheet input{width:100%;font-size:17px;padding:12px;border-radius:12px;border:1px solid #29436F;background:#081226;color:#E6EDF7}
 .btn{display:block;width:100%;border:0;border-radius:12px;padding:14px;font-size:16px;font-weight:600;background:#2F86F6;color:#fff;margin-top:10px}
 .sec{background:#1A2B4D}.opt{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid #ffffff10;background:none;color:#E6EDF7;font-size:16px;padding:14px 6px}.opt.on{color:#F5C451}
+.clock{font-size:54px;font-weight:200;letter-spacing:1px;margin:6px 4px 0;color:#E6EDF7;text-shadow:0 2px 18px #3B82F655}
+.empty{color:#9FB1CF;text-align:center;margin:40px 10px;line-height:1.5;font-size:14px}.empty .btn{max-width:240px;margin:16px auto 0}
+.app.wiggle .ico{animation:wig .25s infinite alternate}@keyframes wig{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
 #busy{position:fixed;top:calc(56px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);background:#0E1B3Aee;border:1px solid #29436F;border-radius:20px;padding:6px 14px;font-size:13px;display:none;z-index:8}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF1B8"/><stop offset=".5" stop-color="#F5C451"/><stop offset="1" stop-color="#3B82F6"/></linearGradient></defs></svg>
 <div id="top"><button id="back" aria-label="Zurück">‹</button><div id="title">Trendo</div><div id="dot" title="verbunden"></div></div>
 <div id="main">
- <div class="pane" id="home"><div class="hello" id="hello">Hallo!</div><div class="sub">{{DEVICE}} · verbunden mit deinem PC</div>
-  <input class="search" id="q" type="search" placeholder="Apps suchen …"><h2 id="recentH">Zuletzt</h2><div class="grid" id="recent"></div><h2>Alle Bereiche</h2><div class="chips" id="areas"></div><div class="grid" id="homeApps"></div></div>
+ <div class="pane" id="home"><div class="clock" id="clock">--:--</div><div class="hello" id="hello">Hallo!</div><div class="sub">{{DEVICE}} · verbunden mit deinem PC</div>
+  <input class="search" id="q" type="search" placeholder="Apps suchen …"><div class="grid" id="homeApps" style="margin-top:18px"></div>
+  <div id="homeEmpty" class="empty">Dein Startbildschirm ist aufgeräumt.<br>Unter <b>Apps</b> eine App <b>lange gedrückt halten</b> → „Zum Startbildschirm“.<button class="btn sec" id="goApps">Apps ansehen</button></div></div>
  <div class="pane" id="apps" style="display:none"><input class="search" id="q2" type="search" placeholder="Suchen …"><div id="list"></div></div>
  <div class="pane" id="view"><img id="img" alt="Trendo"></div>
 </div>
@@ -359,17 +372,17 @@ transform:translateY(110%);transition:transform .2s;z-index:9;max-height:70%;ove
 </div>
 <script>
 var $=function(i){return document.getElementById(i)},apps=[],area=null,mode='home',pc=false,busy=false,etag=null,url=null,title='Trendo',timer=null,y0=null,x0=null,t0=0,hit=null,deb=null;
-var recent=JSON.parse(localStorage.getItem('trendoRecent')||'[]');
+var recent=JSON.parse(localStorage.getItem('trendoRecent')||'[]'),homeIds=JSON.parse(localStorage.getItem('trendoHome')||'[]'),press=null,pressed=false;
+function saveHome(){try{localStorage.setItem('trendoHome',JSON.stringify(homeIds));}catch(e){}}
 function post(p,d){var f=new FormData();for(var k in d)f.append(k,d[k]);return fetch(p+(pc&&p.indexOf('/api/')==0&&p!='/api/open'&&p!='/api/back'?'?pc=1':''),{method:'POST',body:f});}
-function icon(a){return '<div class="ico"><svg viewBox="0 0 24 24"><path d="'+a.icon+'"/></svg></div>';}
+function icon(a){return '<div class="ico"><img src="/api/icon/'+encodeURIComponent(a.id)+'" alt="" loading="lazy"></div>';}
 function tile(a){return '<button class="app" data-id="'+a.id+'">'+icon(a)+'<span>'+esc(a.name)+'</span></button>';}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function hello(){var h=new Date().getHours();$('hello').textContent=h<11?'Guten Morgen!':h<18?'Hallo!':'Guten Abend!';}
-function renderHome(){var q=$('q').value.toLowerCase();var r=recent.map(function(id){return apps.find(function(a){return a.id==id;});}).filter(Boolean).slice(0,8);
- $('recent').innerHTML=r.map(tile).join('');$('recentH').style.display=r.length&&!q?'':'none';$('recent').style.display=r.length&&!q?'':'none';
- var areas=[];apps.forEach(function(a){if(areas.indexOf(a.area)<0)areas.push(a.area);});
- $('areas').innerHTML=areas.map(function(x){return '<button class="chip'+(x==area?' on':'')+'" data-a="'+esc(x)+'">'+esc(x)+'</button>';}).join('');
- $('homeApps').innerHTML=apps.filter(function(a){return (!area||a.area==area)&&(!q||a.name.toLowerCase().indexOf(q)>=0);}).map(tile).join('');}
+function renderHome(){var q=$('q').value.toLowerCase();
+ var list=q?apps.filter(function(a){return a.name.toLowerCase().indexOf(q)>=0;}):homeIds.map(function(id){return apps.find(function(a){return a.id==id;});}).filter(Boolean);
+ $('homeApps').innerHTML=list.map(tile).join('');$('homeEmpty').style.display=!q&&!list.length?'block':'none';}
+function tick(){var d=new Date();$('clock').textContent=('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
 function renderList(){var q=$('q2').value.toLowerCase();$('list').innerHTML=apps.filter(function(a){return !q||a.name.toLowerCase().indexOf(q)>=0||a.area.toLowerCase().indexOf(q)>=0;})
  .sort(function(a,b){return a.name.localeCompare(b.name,'de');}).map(function(a){return '<button class="row app" data-id="'+a.id+'" style="flex-direction:row">'+icon(a)+'<div><div>'+esc(a.name)+'</div><div style="color:#9FB1CF;font-size:12px">'+esc(a.area)+'</div></div></button>';}).join('');}
 function show(m){mode=m;['home','apps','view'].forEach(function(p){$(p).style.display=(p==m||(m=='pc'&&p=='view'))?'block':'none';});
@@ -386,7 +399,17 @@ function load(){if(busy||document.hidden)return;busy=true;var z=size();
 function refresh(ms){etag=null;setTimeout(load,ms||120);}
 function open(id){$('busy').style.display='block';recent=[id].concat(recent.filter(function(x){return x!=id;})).slice(0,12);try{localStorage.setItem('trendoRecent',JSON.stringify(recent));}catch(e){}
  post('/api/open',{id:id}).then(function(r){return r.json();}).then(function(j){title=j.title||'Trendo';$('busy').style.display='none';show('view');}).catch(function(){$('busy').style.display='none';});}
-document.addEventListener('click',function(e){var b=e.target.closest('[data-id]');if(b){open(b.getAttribute('data-id'));return;}var c=e.target.closest('[data-a]');if(c){var a=c.getAttribute('data-a');area=area==a?null:a;renderHome();}});
+document.addEventListener('click',function(e){if(pressed){pressed=false;e.preventDefault();return;}var b=e.target.closest('[data-id]');if(b){open(b.getAttribute('data-id'));return;}});
+document.addEventListener('pointerdown',function(e){var b=e.target.closest('[data-id]');if(!b)return;clearTimeout(press);press=setTimeout(function(){pressed=true;if(navigator.vibrate)navigator.vibrate(20);b.classList.add('wiggle');homeSheet(b.getAttribute('data-id'),b);},480);});
+['pointerup','pointercancel','pointermove'].forEach(function(t){document.addEventListener(t,function(e){if(t!='pointermove'||Math.abs(e.movementY)>4||Math.abs(e.movementX)>4)clearTimeout(press);});});
+document.addEventListener('contextmenu',function(e){if(e.target.closest('[data-id]'))e.preventDefault();});
+function homeSheet(id,b){var a=apps.find(function(x){return x.id==id;});if(!a)return;var on=homeIds.indexOf(id)>=0;
+ $('sheet').innerHTML='<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">'+icon(a)+'<b>'+esc(a.name)+'</b></div>'+
+  '<button class="btn" id="hs">'+(on?'Vom Startbildschirm entfernen':'Zum Startbildschirm')+'</button><button class="btn sec" id="ho">Öffnen</button><button class="btn sec" id="hc">Abbrechen</button>';
+ $('sheet').classList.add('open');var done=function(){$('sheet').classList.remove('open');b.classList.remove('wiggle');};
+ $('hs').onclick=function(){if(on)homeIds=homeIds.filter(function(x){return x!=id;});else homeIds.push(id);saveHome();renderHome();done();};
+ $('ho').onclick=function(){done();open(id);};$('hc').onclick=done;}
+$('goApps').onclick=function(){renderList();show('apps');};
 $('q').oninput=renderHome;$('q2').oninput=renderList;
 $('tHome').onclick=function(){show('home');};$('tApps').onclick=function(){renderList();show('apps');};$('tOpen').onclick=function(){show('view');};$('tPc').onclick=function(){show('pc');};
 $('tFiles').onclick=function(){location.href='/';};
@@ -408,7 +431,7 @@ function choose(h){$('sheet').innerHTML=(h.choices||[]).map(function(c,i){return
  $('sheet').classList.add('open');$('ok').onclick=closeSheet;$('sheet').querySelectorAll('[data-i]').forEach(function(b){b.onclick=function(){post('/api/choose',{i:b.getAttribute('data-i')}).then(closeSheet);};});}
 document.addEventListener('visibilitychange',function(){if(!document.hidden)refresh();});
 document.addEventListener('touchstart',function f(){var d=document.documentElement;if(d.requestFullscreen&&!window.matchMedia('(display-mode: standalone)').matches)d.requestFullscreen().catch(function(){});document.removeEventListener('touchstart',f);},{passive:true});
-hello();fetch('/api/apps').then(function(r){return r.json();}).then(function(a){apps=a;renderHome();renderList();});
+hello();tick();setInterval(tick,10000);fetch('/api/apps').then(function(r){return r.json();}).then(function(a){apps=a;renderHome();renderList();});
 </script></body></html>
 """;
 

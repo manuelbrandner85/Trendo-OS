@@ -13,6 +13,8 @@ public partial class MainWindow
         item.Click += (_, _) => Show("settings");
         var items = new MenuItem { Name = "menu-desktop-tiles", Header = "Startbildschirm anpassen" };
         items.Click += (_, _) => Show("settings");
-        g.ContextMenu = new ContextMenu { Name = "desktop-menu", Items = { item, items } };
+        var add = new MenuItem { Name = "menu-desktop-add", Header = "Symbol hinzufügen …" };
+        add.Click += (_, _) => Show("desktop-symbole");
+        g.ContextMenu = new ContextMenu { Name = "desktop-menu", Items = { add, item, items } };
     }
 }

@@ -233,8 +233,12 @@ public partial class MainWindow
                 var pin = new Button { Name = "sm-pintoggle-" + s.Id, Content = pinned ? "Lösen" : "Anheften", FontSize = 10.5, Padding = new Thickness(6, 2), VerticalAlignment = VerticalAlignment.Center };
                 Avalonia.Automation.AutomationProperties.SetName(pin, s.Name + (pinned ? " lösen" : " anheften"));
                 var sid = s.Id; var sname = s.Name; pin.Click += (_, _) => { if (StartMenu.IsPinned(_settings.PinnedStudios, sid)) UnpinStudio(sid); else PinStudio(sid); };
-                var g = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto") };
-                g.Children.Add(SmItem("sm-az-" + s.Id, s.Name, UnavailableHint(s.Id), () => ActivateOrOpenStudio(sid, sname), s.Id)); g.Children.Add(Pos(pin, 1));
+                var onDesk = OnDesktop(s.Id);
+                var desk = new Button { Name = "sm-desk-" + s.Id, Content = onDesk ? "Vom Desktop" : "Auf den Desktop", FontSize = 10.5, Padding = new Thickness(6, 2), Margin = new Thickness(4, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
+                Avalonia.Automation.AutomationProperties.SetName(desk, s.Name + (onDesk ? " vom Desktop nehmen" : " auf den Desktop legen"));
+                desk.Click += (_, _) => { SetOnDesktop(sid, !OnDesktop(sid)); FillStartMenu(); };
+                var g = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto") };
+                g.Children.Add(SmItem("sm-az-" + s.Id, s.Name, UnavailableHint(s.Id), () => ActivateOrOpenStudio(sid, sname), s.Id)); g.Children.Add(Pos(pin, 1)); g.Children.Add(Pos(desk, 2));
                 _smBody.Children.Add(g);
             }
         }

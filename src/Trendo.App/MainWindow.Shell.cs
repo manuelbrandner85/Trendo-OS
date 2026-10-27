@@ -250,62 +250,8 @@ public partial class MainWindow
             Hover(b); chips.Children.Add(b);
         }
 
-        // Studios als Bildkacheln (6 × 4)
-        var tiles = new UniformGrid { Columns = 6 };
-        foreach (var (id, title, sub) in DesktopStudios().Where(s => !_settings.SimpleMode || Trendo.Core.Sys.A11y.SimpleTiles.Contains(s.Id)).Take(24))
-        {
-            var st = _studios.FirstOrDefault(s => s.Id == id);
-            var badge = Badge(st);
-            var pic = StudioPicture(id);
-            var face = new Grid { ClipToBounds = true };
-            if (pic is not null) face.Children.Add(new Image { Source = pic, Stretch = Stretch.UniformToFill });
-            else face.Children.Add(new Border { Background = Grad("#1A3A6B", "#0A1A36") });
-            face.Children.Add(new Border { Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0.35, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
-                GradientStops = { new GradientStop(Color.Parse("#00040A18"), 0), new GradientStop(Color.Parse("#E6040A18"), 1) } } });
-            face.Children.Add(new StackPanel { VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(8, 0, 6, 6), Children = {
-                new TextBlock { Text = title, Foreground = Brushes.White, FontSize = 11.5, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
-                new TextBlock { Text = sub, Foreground = Brush.Parse("#C9D6EA"), FontSize = 9.5, TextTrimming = TextTrimming.CharacterEllipsis } } });
-            var t = new Button { Name = "tile-" + id, Height = 78, Margin = new Thickness(3), Padding = new Thickness(0), HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch,
-                HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Stretch, CornerRadius = new CornerRadius(8), ClipToBounds = true,
-                Background = Brushes.Transparent, BorderBrush = Brush.Parse("#553F7FD0"), BorderThickness = new Thickness(1), Content = face };
-            Avalonia.Automation.AutomationProperties.SetName(t, badge.Text is { Length: > 0 } ? $"{title}: {badge.Text}" : title);
-            ToolTip.SetTip(t, st is null ? title : $"{title} – {badge.Text}");
-            var sid = id;
-            t.Click += async (_, _) => await OpenStudio(sid, title);
-            Hover(t); tiles.Children.Add(t);
-        }
-        var all = SmallOutline("btn-all-studios", "Alle anzeigen");
-        all.Click += (_, _) => { _studioFilter = null; _studioQuery = ""; Show("studios"); };
-        var studiosPanel = Glass2(new StackPanel { Children = { Head("Studios", "Alle kreativen und technischen Studios auf einen Blick", all, Mdi.ViewGridOutline), tiles } }, 10);
-        studiosPanel.Name = "widget-studios"; studiosPanel.IsVisible = !_settings.HiddenTiles.Contains("widget-studios");
-
-        // Systemmodule: Kernfunktionen von Trendo OS
-        var mods = new UniformGrid { Columns = 5 };
-        foreach (var (key, title, sub, icon, c1, c2) in new[] {
-                     ("ki", "Trendo KI", "Verstehen, planen, erstellen", Mdi.StarFourPoints, "#8FD8FF", "#2F86F6"),
-                     ("ki-rollen", "Agenten-Zentrale", "12 Rollen, Teams, Aufgaben", Mdi.RobotHappy, "#9CF5A8", "#22B35E"),
-                     ("ablaeufe", "Abläufe", "Schritte automatisch ausführen", Mdi.Tools, "#FFD39A", "#F08A3C"),
-                     ("ki-wissen", "Wissen & Gedächtnis", "Eigene Dokumente, Kontext", Mdi.Brain, "#C7A6FF", "#7C4DFF"),
-                     ("components", "Programme", "Vollpaket, ohne Download", Mdi.Apps, "#7FD3FF", "#3F6BFF"),
-                     ("ki-quellen", "Freie Quellen", "Kostenlose Modelle & Assets", Mdi.Magnify, "#8FB8FF", "#3D5BFF"),
-                     ("dev", "Code & GitHub", "Projekte, Versionen", Mdi.CodeTags, "#ECEFF1", "#90A4AE"),
-                     ("approvals", "Freigaben", "Du entscheidest vorher", Mdi.ShieldCheck, "#9CF5A8", "#15803D"),
-                     ("ressourcen", "Ressourcen", "Leistung gezielt verteilen", Mdi.ChartLine, "#FF8A80", "#E53935"),
-                     ("handy", "Handy-Verbindung", "Dateien, Bildschirm, Benachrichtigungen", Mdi.Cellphone, "#80DEEA", "#00838F") })
-        {
-            var content = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { Chip(icon, c1, c2, 30, 0.58),
-                Pos(new StackPanel { Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Children = {
-                    new TextBlock { Text = title, Foreground = Text, FontSize = 11.5, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
-                    new TextBlock { Text = sub, Foreground = Muted, FontSize = 9.5, TextTrimming = TextTrimming.CharacterEllipsis } } }, 1) } };
-            var b = new Button { Name = "module-" + key, Height = 46, Margin = new Thickness(3), Padding = new Thickness(8, 4), HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                VerticalContentAlignment = VerticalAlignment.Center, CornerRadius = new CornerRadius(8), Background = Brush.Parse(C("#80102347", "#CCFFFFFF")), BorderBrush = Brush.Parse("#403F7FD0"), BorderThickness = new Thickness(1), Content = content };
-            Avalonia.Automation.AutomationProperties.SetName(b, title); ToolTip.SetTip(b, $"{title} – {sub}");
-            var target = key;
-            b.Click += (_, _) => Show(target);
-            Hover(b); mods.Children.Add(b);
-        }
-        var modPanel = Glass2(new StackPanel { Children = { Head("Systemmodule", "Kernfunktionen von Trendo OS", null, Mdi.CubeOutline), mods } }, 10);
-        modPanel.Name = "widget-module"; modPanel.IsVisible = !_settings.HiddenTiles.Contains("widget-module");
+        // Wunsch 27.10.2026: standardmäßig keine Symbole – nur, was der Nutzer selbst auf den Desktop gelegt hat
+        var icons = DesktopIconsPanel();
 
         // Aktuelle Projekte: echte Projekte als Bildkarten
         var allP = SmallOutline("btn-all-projects", "Alle Projekte anzeigen"); allP.Click += (_, _) => Show("projects");
@@ -315,7 +261,7 @@ public partial class MainWindow
         projPanel.Name = "widget-projekte"; projPanel.IsVisible = !_settings.HiddenTiles.Contains("widget-projekte");
         RefreshProjects();
 
-        var stack = new StackPanel { Children = { chips, DesktopZettel(), studiosPanel, modPanel, projPanel } };
+        var stack = new StackPanel { Children = { chips, DesktopZettel(), icons, projPanel } };
         var g = new Grid { Children = { new ScrollViewer { Content = stack, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled } } };
         DesktopMenu(g);
         if (_deskCenter is not null) _shellParts.Remove(_deskCenter);
@@ -373,18 +319,15 @@ public partial class MainWindow
         var agentsHead = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { Head("Agenten Live", null, null, Mdi.RobotHappy), Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { _agentsCount, allA } }, 1) } };
         Add(Glass2(new StackPanel { Children = { agentsHead, _agentRows } }, 10), "widget-agenten");
 
-        // Studio Manager: Studios auf dem Desktop zeigen oder ausblenden (gespeichert)
-        var mgr = new StackPanel { Children = { Head("Studio Manager", "Was der Desktop zeigt", null, Mdi.CogOutline) } };
+        // Studio Manager: Studios auf den Desktop legen oder wegnehmen (gespeichert)
+        var mgrAll = SmallOutline("btn-desk-icons", "Alle"); mgrAll.Click += (_, _) => Show("desktop-symbole");
+        var mgr = new StackPanel { Children = { Head("Studio Manager", "Was auf dem Desktop liegt", mgrAll, Mdi.CogOutline) } };
         foreach (var f in FeaturedStudios.Take(4))
         {
-            var key = "tile-" + f.Id; var name = StudioCatalog.NameOf(f.Id, f.Title);
-            var sw = new ToggleSwitch { Name = "mgr-" + f.Id, IsChecked = !_settings.HiddenTiles.Contains(key), OnContent = "", OffContent = "", MinWidth = 0, Margin = new Thickness(0, -6, -8, -6), VerticalAlignment = VerticalAlignment.Center };
+            var name = StudioCatalog.NameOf(f.Id, f.Title); var fid = f.Id;
+            var sw = new ToggleSwitch { Name = "mgr-" + f.Id, IsChecked = OnDesktop(f.Id), OnContent = "", OffContent = "", MinWidth = 0, Margin = new Thickness(0, -6, -8, -6), VerticalAlignment = VerticalAlignment.Center };
             Avalonia.Automation.AutomationProperties.SetName(sw, $"{name} auf dem Desktop zeigen");
-            sw.IsCheckedChanged += (_, _) =>
-            {
-                if (sw.IsChecked == true) _settings.HiddenTiles.Remove(key); else if (!_settings.HiddenTiles.Contains(key)) _settings.HiddenTiles.Add(key);
-                SaveSettings(); if (CurrentView == "start") Show("start");
-            };
+            sw.IsCheckedChanged += (_, _) => SetOnDesktop(fid, sw.IsChecked == true);
             mgr.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Margin = new Thickness(0, 0, 0, 2), Children = {
                 new Ellipse { Width = 7, Height = 7, Fill = Brush.Parse(sw.IsChecked == true ? "#4ADE80" : "#64748B"), VerticalAlignment = VerticalAlignment.Center },
                 Pos(new TextBlock { Text = name, Foreground = Text, FontSize = 11, Margin = new Thickness(9, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis }, 1), Pos(sw, 2) } });
