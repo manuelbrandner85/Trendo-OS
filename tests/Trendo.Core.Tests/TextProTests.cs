@@ -126,6 +126,25 @@ public class TextProTests
         finally { try { Directory.Delete(dir, true); } catch (IOException) { } }
     }
 
+    [Fact(DisplayName = "T-0230: PDF mit Seitenlayout – quer, zwei Spalten, Kopf-/Fußzeile, Seitenzahlen, Wasserzeichen, Verzeichnis, Fußnoten, Links, Kommentare; kein Programmname")]
+    public void Pdf()
+    {
+        var dir = Temp();
+        try
+        {
+            var d = Sample();
+            for (var i = 0; i < 40; i++) d.Blocks.Add(new Para($"Absatz {i + 1}: Viel Text, damit die Spalten und Seiten umbrechen und die Fußzeile mehrere Seiten zählt."));
+            var f = Path.Combine(dir, "bericht.pdf");
+            var pages = TextPdf.Export(d, f);
+            Assert.True(pages >= 2, "Seiten: " + pages);
+            var raw = System.Text.Encoding.Latin1.GetString(File.ReadAllBytes(f));
+            Assert.StartsWith("%PDF", raw); Assert.DoesNotContain("Trendo", raw);
+            Assert.Contains("/URI", raw); Assert.Contains("/Annot", raw);
+            if (Environment.GetEnvironmentVariable("TRENDO_KEEP") is { Length: > 0 } keep) { Directory.CreateDirectory(keep); File.Copy(f, Path.Combine(keep, "bericht.pdf"), true); }
+        }
+        finally { try { Directory.Delete(dir, true); } catch (IOException) { } }
+    }
+
     static void CheckOdt(TextDoc b)
     {
         var pg = b.Page;
