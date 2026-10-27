@@ -33,6 +33,40 @@ public partial class MainWindow
         _uhrTick.Start();
     }
 
+    // Eigene, schlichte Symbole (Rechner, Uhr, Zettel, Notizbuch); gerade Linien und Kreise, keine fremden Vorlagen.
+    private const string IcoCalc = "F1 M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2Z M7,4V9H17V4Z M7,11V13H9V11Z M11,11V13H13V11Z M15,11V13H17V11Z M7,15V17H9V15Z M11,15V17H13V15Z M15,15V20H17V15Z M7,18V20H9V18Z M11,18V20H13V18Z";
+    private const string IcoClock = "F1 M12,2A10,10 0 1,0 12,22A10,10 0 1,0 12,2Z M12,4A8,8 0 1,1 12,20A8,8 0 1,1 12,4Z M11,6H13V11.4L16.6,13.5L15.6,15.2L11,12.6Z";
+    private const string IcoNote = "F1 M4,3H20V14H15A1,1 0 0,0 14,15V20H4Z M16,16H19.5L16,19.5Z";
+    private const string IcoBook = "F1 M6,2H19A1,1 0 0,1 20,3V21A1,1 0 0,1 19,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2Z M8,4V20H18V4Z M2,6H4V8H2Z M2,11H4V13H2Z M2,16H4V18H2Z M10,7H16V9H10Z M10,11H16V13H10Z";
+
+    /// <summary>SYS-02 U1: Werkzeugkasten – alle kleinen Programme als große Kacheln.</summary>
+    private Control AlltagStartView()
+    {
+        var grid = new UniformGrid { Name = "alltag-apps", Columns = 4 };
+        foreach (var (key, name, sub, icon, c1, c2) in new[] {
+                     ("notizbuch", "Notizbuch", "Abschnitte, Seiten, Schlagworte", IcoBook, "#C7A6FF", "#7C4DFF"),
+                     ("editor", "Editor", "Textdateien mit jeder Kodierung", Mdi.FileDocumentEdit, "#9FD3FF", "#2F86F6"),
+                     ("rechner", "Rechner", "Standard, wissenschaftlich, Grafik", IcoCalc, "#9CF5A8", "#22B35E"),
+                     ("uhr", "Uhr & Wecker", "Wecker, Timer, Stoppuhr, Weltuhr", IcoClock, "#FFD39A", "#F08A3C"),
+                     ("zettel", "Zettel", "Haftnotizen für die Startseite", IcoNote, "#FFF3A6", "#E0B400"),
+                     ("alltag-bilder", "Bilder & Bildschirmfoto", "Drehen, verkleinern, Bildschirmfoto", Mdi.Image, "#FFB3C7", "#E5484D"),
+                     ("medien", "Musik & Videos", "Abspielen aus deinen Ordnern", Mdi.Palette, "#80DEEA", "#00838F"),
+                     ("alltag-dateien", "Dateien", "Umbenennen, Duplikate, ZIP", Mdi.Folder, "#FFE29A", "#D4A017"),
+                     ("alltag-zeit", "Zeit & Kalender", "Termine, Erinnerungen, Fokus", Mdi.CalendarMonth, "#8FB8FF", "#3D5BFF"),
+                     ("alltag-helfer", "Kleine Helfer", "Zwischenablage, Einheiten, Farben", Mdi.Tools, "#ECEFF1", "#90A4AE") })
+        {
+            if (!_showMap.ContainsKey(key)) continue;
+            var k = key; var chip = Chip(icon, c1, c2, 44, 0.58); chip.HorizontalAlignment = HorizontalAlignment.Left;
+            var b = new Button { Name = "alltag-app-" + key, Height = 112, Margin = new Thickness(5), Padding = new Thickness(12), HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1),
+                Content = new StackPanel { Spacing = 6, Children = { chip, new TextBlock { Text = name, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold }, new TextBlock { Text = sub, Foreground = Muted, FontSize = 11.5, TextTrimming = TextTrimming.CharacterEllipsis } } } };
+            Avalonia.Automation.AutomationProperties.SetName(b, $"{name}: {sub}");
+            b.Click += (_, _) => { _w45Msg = ""; Show(k); };
+            grid.Children.Add(b);
+        }
+        return AlltagPage("Werkzeugkasten", new StackPanel { Spacing = 8, Children = { P("Alle kleinen Programme für jeden Tag. Alles bleibt auf deinem PC.", null, 12), grid } });
+    }
+
     // =====================================================================
     // N9 Editor
     // =====================================================================

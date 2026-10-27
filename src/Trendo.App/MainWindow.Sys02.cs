@@ -24,6 +24,7 @@ public partial class MainWindow
 
     private void InitSys02()
     {
+        RegisterTab(AlltagTabs, "alltag-start", "Übersicht", "SYS-02", AlltagStartView, "werkzeugkasten", "kleine helfer", "alltag", "übersicht");
         RegisterTab(AlltagTabs, "alltag-dateien", "Dateien", "SYS-02", AlltagFilesView, "umbenennen", "doppelte dateien", "duplikate", "speicherplatz", "zip", "entpacken", "archiv", "fotos ordnen", "papierkorb");
         RegisterTab(AlltagTabs, "alltag-bilder", "Bilder & Medien", "SYS-02", AlltagMediaView, "bild", "drehen", "verkleinern", "screenshot", "bildschirmfoto", "schwärzen", "bildschirmaufnahme", "audio", "mediathek");
         RegisterTab(AlltagTabs, "alltag-zeit", "Zeit & Kalender", "SYS-02", AlltagTimeView, "kalender", "termin", "ics", "erinnerung", "stoppuhr", "fokus", "nicht stören", "wetter", "uhr");

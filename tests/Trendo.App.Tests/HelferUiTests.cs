@@ -58,7 +58,10 @@ public class N5N20_HelferUi
     public void Rechner()
     {
         var (w, _, _) = Ui.Open();
-        w.Show("rechner"); Pump();
+        w.Show("alltag-start"); Pump(); // SYS-02 U1: Werkzeugkasten
+        Assert.Equal(10, w.Find<Avalonia.Controls.Primitives.UniformGrid>("alltag-apps").Children.Count);
+        w.Find<Button>("alltag-app-rechner").Press(); Pump();
+        Assert.Equal("rechner", w.CurrentView);
         foreach (var k in new[] { "7", "mal", "6" }) w.Find<Button>("rc-key-" + k).Press();
         w.Find<Button>("rc-key-gleich").Press(); Pump();
         Assert.Equal("= 42", w.Find<TextBlock>("rc-result").Text);
