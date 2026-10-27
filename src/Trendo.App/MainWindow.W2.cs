@@ -46,7 +46,7 @@ public partial class MainWindow
     private Control KiNav(bool vertical = false)
     {
         Panel row = vertical ? new StackPanel { Spacing = 4 } : new WrapPanel();
-        foreach (var (k, l) in KiTabs.GroupBy(t => t.Key).Select(g => g.First()).Where(t => _showMap.ContainsKey(t.Key)))
+        foreach (var (k, l) in KiTabs.GroupBy(t => t.Key).Select(g => g.First()).Where(t => _showMap.ContainsKey(t.Key) && OwnTab(t.Key)))
         {
             var on = CurrentView == k;
             var b = new Button { Name = "ki-tab-" + k, Content = l, Padding = new Thickness(10, vertical ? 8 : 6), CornerRadius = new CornerRadius(10), Background = on ? Accent : Brushes.Transparent, Foreground = Text, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
@@ -54,7 +54,7 @@ public partial class MainWindow
             else b.Margin = new Thickness(0, 0, 6, 6);
             b.Click += (_, _) => Show(k); row.Children.Add(b);
         }
-        return row;
+        return TabsOrNothing(row);
     }
 
     private Control KiPage(string title, Control body) => Page(title, new StackPanel { Spacing = 8, Children = { KiNav(), body } });

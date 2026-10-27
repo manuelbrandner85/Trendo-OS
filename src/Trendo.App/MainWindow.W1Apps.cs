@@ -16,12 +16,12 @@ public partial class MainWindow
     private Control AppsNav()
     {
         var row = new WrapPanel();
-        foreach (var (k, l) in AppsTabs.Where(t => _showMap.ContainsKey(t.Key)))
+        foreach (var (k, l) in AppsTabs.Where(t => _showMap.ContainsKey(t.Key) && OwnTab(t.Key)))
         {
             var b = new Button { Name = "apps-tab-" + k, Content = l, Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(10), Foreground = Text, Background = CurrentView == k ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(CurrentView == k ? 0 : 1) };
             b.Click += (_, _) => Show(k); row.Children.Add(b);
         }
-        return row;
+        return TabsOrNothing(row);
     }
 
     private Control AppsPage(string title, Control body) => Page(title, new StackPanel { Spacing = 8, Children = { AppsNav(), body } });

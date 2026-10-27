@@ -60,7 +60,7 @@ public partial class MainWindow
     private Control TabNav(List<(string Key, string Label, string Module)> tabs, string prefix, bool compact = false)
     {
         var row = new WrapPanel();
-        foreach (var (k, l, m) in tabs)
+        foreach (var (k, l, m) in tabs.Where(t => OwnTab(t.Key, t.Module)))
         {
             object content = l;
             if (StudioIcons.For(m) is { } si)
@@ -72,7 +72,7 @@ public partial class MainWindow
             if (compact) b.FontSize = 12;
             b.Click += (_, _) => { _w45Msg = ""; Show(k); }; row.Children.Add(b);
         }
-        return row;
+        return TabsOrNothing(row);
     }
 
     private Control KreativPage(string title, Control body) => W45Page(title, KreativTabs, "kreativ", body);
@@ -81,7 +81,7 @@ public partial class MainWindow
     private Control FitKreativPage(string title, Control header, Control fill)
     {
         var head = new StackPanel { Spacing = 6, Children = { TabNav(KreativTabs, "kreativ", compact: true) } };
-        if (_w45Msg.Length > 0) head.Children.Add(new Border { Name = "w45-msg", Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6), Child = P(_w45Msg, Text) });
+        if (_w45Msg.Length > 0) head.Children.Add(ResultCard(_w45Msg));
         head.Children.Add(header);
         return FitPage(title, head, fill);
     }
@@ -90,7 +90,7 @@ public partial class MainWindow
     private Control W45Page(string title, List<(string, string, string)> tabs, string prefix, Control body)
     {
         var sp = new StackPanel { Spacing = 8, Children = { TabNav(tabs, prefix) } };
-        if (_w45Msg.Length > 0) sp.Children.Add(new Border { Name = "w45-msg", Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6), Child = P(_w45Msg, Text) });
+        if (_w45Msg.Length > 0) sp.Children.Add(ResultCard(_w45Msg));
         sp.Children.Add(body);
         return Page(title, sp);
     }
@@ -112,5 +112,5 @@ public partial class MainWindow
         var d = Path.Combine(root, sub); Directory.CreateDirectory(d); return d;
     }
 
-    private void Say(string msg, string view) { _w45Msg = msg; Show(view); }
+    private void Say(string msg, string view) { _w45Msg = msg; Show(view); NotifyFileResult(msg); }
 }

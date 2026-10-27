@@ -46,13 +46,12 @@ public class StudioHeadingTests
         w.Show("ki"); Assert.Equal("KI", Heading(w));
         w.Show("apps"); Assert.Equal("Apps", Heading(w));
         w.Show("biz-markt"); Assert.Equal("Markt", Heading(w));
-        w.Show("3d");
-        var tab = w.Find<Button>("kreativ-tab-3d").GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text).ToList();
-        Assert.Contains("3D", tab);
-        Assert.DoesNotContain("3D-Modelle erstellen", tab);
+        // G3 (27.10.2026): Fachstudios zeigen keine Reiter-Wolke aller anderen Studios mehr
         w.Show("architektur");
-        var fach = w.Find<Button>("fach-tab-architektur").GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text).ToList();
-        Assert.Contains(StudioCatalog.ById["SPEC-01"].Name, fach);
+        Assert.Null(w.TryFind<Button>("fach-tab-elektronik"));
+        Assert.Null(w.TryFind<Button>("fach-tab-technik"));
+        w.Show("3d");
+        Assert.Null(w.TryFind<Button>("kreativ-tab-oss"));
         w.Close();
     }
 

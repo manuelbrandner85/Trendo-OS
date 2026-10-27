@@ -463,11 +463,11 @@ public class W1_Apps
         var (w, _, _) = Ui.Open();
         w.Show("apps");
         Assert.NotNull(w.TryFind<Button>("app-"));
-        w.Find<Button>("apps-tab-ressourcen").Press();
+        // G3 (27.10.2026): nur Reiter des eigenen Studios – „Speicher & Leistung“ gehört zu X-09 und ist hier kein Reiter mehr
+        Assert.Null(w.TryFind<Button>("apps-tab-ressourcen"));
+        w.Show("ressourcen");
         Assert.Equal("ressourcen", w.CurrentView);
-        Assert.NotNull(w.TryFind<Button>("apps-tab-apps"));
-        w.Find<Button>("apps-tab-medien").Press();
-        Assert.Equal("medien", w.CurrentView);
+        Assert.Null(w.TryFind<Button>("apps-tab-apps"));
     }
 }
 

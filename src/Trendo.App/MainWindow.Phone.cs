@@ -115,14 +115,45 @@ public partial class MainWindow
     {
         if (!consent) { W7Say("Erst zustimmen. Setze den Haken und tippe dann auf „Per WLAN verbinden“.", "handy"); return; }
         WlanSession = WirelessAdb.CreateSession();
-        W7Say("QR-Code ist bereit. Am Handy „Gerät mit QR-Code koppeln“ öffnen und den Code scannen. Danach „Kopplung abschließen“. Ein neuer Code ersetzt den vorigen.", "handy");
+        W7Say("QR-Code ist bereit. Am Handy „Gerät mit QR-Code koppeln“ öffnen und den Code scannen – Trendo koppelt dann von selbst. Ein neuer Code ersetzt den vorigen.", "handy");
+        _ = AutoPairWlanAsync(WlanSession);
+    }
+
+    /// <summary>Vorher musste man nach dem Scannen „Kopplung abschließen“ drücken; bis dahin hatte das Handy oft schon aufgegeben.
+    /// Jetzt sucht Trendo jede Sekunde (bis 3 Minuten) nach dem Handy und koppelt automatisch.</summary>
+    async Task AutoPairWlanAsync(WlanPairing session)
+    {
+        var adb = await ResolveAdbAsync(true);
+        if (adb is null) return;
+        var end = DateTime.UtcNow.AddMinutes(3);
+        while (DateTime.UtcNow < end && ReferenceEquals(WlanSession, session))
+        {
+            var (e, o) = await Runner.RunAsync(adb, "mdns services");
+            if (e == 0 && !_wlanBusy && WirelessAdb.ParseMdns(o).Any(s => s.Type == WirelessAdb.PairingType && s.Name == session.ServiceName))
+            {
+                await FinishWlanAsync(true);
+                return;
+            }
+            await Task.Delay(1000);
+        }
+        if (ReferenceEquals(WlanSession, session))
+            W7Say("Das Handy hat sich nicht gemeldet. Gleiches WLAN? Am Handy „Gerät mit QR-Code koppeln“ öffnen und den neuen Code scannen.", "handy");
     }
 
     public async Task FinishWlanAsync(bool consent)
     {
         if (!consent) { W7Say("Erst zustimmen.", "handy"); return; }
         if (WlanSession is null) { W7Say("Zuerst „Per WLAN verbinden“ tippen, damit der QR-Code da ist.", "handy"); return; }
-        var session = WlanSession;
+        if (_wlanBusy) return; // automatische Suche und Klick nicht doppelt
+        _wlanBusy = true;
+        try { await FinishWlanCoreAsync(); } finally { _wlanBusy = false; }
+    }
+
+    bool _wlanBusy;
+
+    async Task FinishWlanCoreAsync()
+    {
+        var session = WlanSession!;
         var adb = await ResolveAdbAsync(true);
         if (adb is null) { W7Say("Android-Werkzeug (adb) fehlt. Trendo installiert es nur, wenn du zustimmst.", "handy"); return; }
         MdnsService? pairing = null;
@@ -353,7 +384,9 @@ public partial class MainWindow
             Spacing = 8,
             Children =
             {
-                P("Verbinde dein Android-Handy per Kabel oder WLAN. Dateien, Bildschirm, Apps und Benachrichtigungen gehen nur, wenn du es hier erlaubst. Nichts startet von allein."),
+                PhoneEasyCard(),
+                H("Profi: Bildschirm und Apps steuern (Android, Entwicklermodus)", 15),
+                P("Für Bildschirm spiegeln, Apps und Benachrichtigungen: Android per Kabel oder „Drahtloses Debuggen“. Dateien, Bildschirm, Apps und Benachrichtigungen gehen nur, wenn du es hier erlaubst. Nichts startet von allein."),
             },
         };
         W7Msgs(sp);

@@ -87,6 +87,8 @@ Ein einheitlicher **Trendo-Programmrahmen**, damit jedes Studio wie ein echtes P
 | **N20** | Uhr (Wecker, Timer, Stoppuhr, Fokus) | **Trendo Uhr** | Kleine Helfer (Zeit) | 🟡 Fokus/Erinnerung vorhanden |
 | **N21** | Edge | **Trendo Browser** (Lesemodus, Sammlungen, PDF, Werbeblocker) | Surfen & Herunterladen | 🟡 Lesemodus |
 | **N22** | Explorer | **Trendo Dateien** (Doppelfenster, Vorschau, Tags, Suche) | Desktop; Kleine Helfer | 🟡 |
+| **N23** | FreeCAD (LGPL) | **Trendo CAD**: parametrische Teile mit Skizzen, Maßen und Bedingungen, Extrudieren und Drehen, Bohrungen, Rundungen, Baugruppen, technische Zeichnung, STEP, STL und 3MF | 3D-Modelle erstellen | ⬜ (Vorgabe 27.10.: „für 3D FreeCAD oder anderes hochwertiges 3D-Programm nachbauen“) |
+| **N24** | Bambu Studio (AGPL) und Bambu-Lab-Drucker | **Trendo 3D-Druck**: Bambu Studio im Vollpaket; Trendo-Bedienung mit Slicen, Schichtvorschau, Druckzeit und Filament; Drucker im Heimnetz (LAN-Modus) mit Status, Kamera und Fortschritt; Druckstart nur nach Bestätigung | 3D-Modelle erstellen; Fräsen & Fertigen | ⬜ (Vorgabe 27.10.: „für 3D-Druck soll Bambu Lab genutzt und in Trendo OS eingebunden werden“) |
 
 ### Funktionsumfang der Office-Nachbauten (aus der Microsoft-Dokumentation, Stufen)
 
@@ -413,5 +415,6 @@ Jeder Vorschlag hat eine Nummer. **F** = Funktion, **U** = Oberfläche.
 1. **G1–G14** (gemeinsamer Programmrahmen): Davon profitieren alle 53 Studios auf einen Schlag.
 2. **Trendo Tabelle fertig** (E1–E3, dann E4–E9). Kern und Dateien sind seit heute fertig.
 3. **Trendo Präsentation** (P1–P7) und Ausbau **Trendo Text** (W1–W9). Damit ist das Office-Trio komplett.
+4a. **Trendo CAD** (N23) und **3D-Druck mit Bambu Lab** (N24).
 4. **Trendo Post & Kalender** (O1–O6), **Notizbuch** (N5), **Editor/Rechner/Uhr/Zettel** (N9, N11, N18, N20).
 5. Die Studio-Vorschläge aus Teil 4 nach Bereich.

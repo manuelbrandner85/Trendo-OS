@@ -94,7 +94,7 @@ public class W7_Ui
         Assert.Matches(@"^WIFI:T:ADB;S:studio-[A-Za-z0-9]{8,16};P:\d{10};;$", session.QrPayload);
         Assert.NotNull(w.Find<Canvas>("phone-qr"));
         Assert.DoesNotContain(session.Password, string.Join("\n", w.GetLogicalTexts()));
-        Assert.DoesNotContain(run.Calls, c => c.Args.Contains("pair") || c.Args.Contains("mdns"));
+        Assert.DoesNotContain(run.Calls, c => c.Args.StartsWith("pair")); // Suchen („mdns“) läuft seit 27.10. automatisch, gekoppelt wird erst nach dem Scannen
         run.Handle = (_, args) =>
         {
             if (args == "mdns services") return (0, $"{session.ServiceName} _adb-tls-pairing._tcp 192.168.1.20:37123\nadb-0123456789ABCDEF _adb-tls-connect._tcp 192.168.1.20:44000\n");
