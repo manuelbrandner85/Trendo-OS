@@ -106,6 +106,11 @@ public class T0229_TrendoPraesentationUi
         Assert.Contains(w.Deck.Slides[1].Shapes, s => s.Kind == ShapeKind.Diagramm);
         var pdf = w.DeckExportPdf();
         Assert.True(File.Exists(pdf));
+        var dir = w.DeckExportImages();
+        var pngs = Directory.GetFiles(dir, "Folie-*.png"); Assert.Equal(5, pngs.Length);
+        // Pixelgröße prüft das Render-Werkzeug mit Skia; die Testumgebung zeichnet ohne Grafik
+        var args = MainWindow.VideoArgs(Path.Combine(root, "bilder"), Path.Combine(root, "v.mp4"), 5);
+        Assert.Contains("-framerate 1/5", args); Assert.Contains("Folie-%02d.png", args); Assert.Contains("libx264", args);
         w.Find<Button>("praesentation-file").ContextMenu!.Items.Cast<MenuItem>().First(m => m.Name == "praesentation-m-start").RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(MenuItem.ClickEvent)); Pump();
         Assert.NotNull(w.TryFind<Button>("praesentation-recent-0"));
         w.Close();

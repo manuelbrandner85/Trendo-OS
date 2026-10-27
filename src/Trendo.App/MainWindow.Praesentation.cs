@@ -252,6 +252,46 @@ public partial class MainWindow
         return f;
     }
 
+    /// <summary>P6: jede Folie als PNG (1920 × 1080) in einen Ordner neben den Präsentationen.</summary>
+    public string DeckExportImages(string? folder = null)
+    {
+        var dir = folder ?? DefaultDeckName(" – Bilder"); Directory.CreateDirectory(dir);
+        for (var i = 0; i < Deck.Slides.Count; i++) RenderSlidePng(Deck.Slides[i], Path.Combine(dir, $"Folie-{i + 1:00}.png"));
+        _dkMsg = $"{Deck.Slides.Count} Bilder gespeichert: {Path.GetFileName(dir)}";
+        _core.Audit.Append(Principal.LocalOwner.Name, "praesentation.bilder", $"{Deck.Slides.Count}");
+        return dir;
+    }
+
+    void RenderSlidePng(Slide s, string path, int w = 1920, int h = 1080)
+    {
+        using var bmp = new Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize(w, h), new Vector(96, 96));
+        using (var ctx = bmp.CreateDrawingContext()) SlideView.Paint(ctx, Deck, s, new Rect(0, 0, w, h), w / SlideDoc.WidthCm);
+        bmp.Save(path, new Avalonia.Media.Imaging.PngBitmapEncoderOptions());
+    }
+
+    /// <summary>FFmpeg-Aufruf: Bilder Folie-01.png … als Video, je Folie <paramref name="seconds"/> Sekunden, H.264 für alle Player.</summary>
+    public static string VideoArgs(string folder, string output, int seconds) =>
+        $"-y -framerate 1/{Math.Clamp(seconds, 1, 60)} -i \"{Path.Combine(folder, "Folie-%02d.png")}\" -c:v libx264 -r 30 -pix_fmt yuv420p \"{output}\"";
+
+    /// <summary>P6: Video (MP4) aus den Folien – braucht FFmpeg (unter „Programme“ mit einem Klick installierbar).</summary>
+    public async Task<string?> DeckExportVideo(int seconds = 5)
+    {
+        var ffmpeg = ToolPath("ffmpeg") ?? Cli.Find("ffmpeg");
+        if (ffmpeg is null || !File.Exists(ffmpeg)) { _dkMsg = "Für Videos braucht Trendo FFmpeg. Unter „Programme“ kannst du es mit einem Klick installieren."; return null; }
+        var tmp = Path.Combine(Path.GetTempPath(), "trendo-video-" + Guid.NewGuid().ToString("N")[..8]);
+        DeckExportImages(tmp);
+        var outFile = DefaultDeckName(".mp4");
+        _dkMsg = "Video wird erstellt …"; Show("praesentation");
+        var (exit, output) = await new RealProcessRunner().RunAsync(ffmpeg, VideoArgs(tmp, outFile, seconds));
+        try { Directory.Delete(tmp, true); } catch (IOException) { }
+        if (exit != 0 || !File.Exists(outFile)) { _dkMsg = "Video ging nicht: " + output.Split('\n').LastOrDefault(l => l.Trim().Length > 0); Show("praesentation"); return null; }
+        _dkMsg = $"Video gespeichert: {Path.GetFileName(outFile)}";
+        _core.Audit.Append(Principal.LocalOwner.Name, "praesentation.video", Path.GetFileName(outFile));
+        Toast(_dkMsg, ("Abspielen", new Action(() => Launch(outFile))), ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(outFile)!))));
+        Show("praesentation");
+        return outFile;
+    }
+
     // ---------- Oberfläche ----------
     Control DeckPageView() => new Border { Name = "praesentation-page-root", Background = Brush.Parse(C("#F2081329", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = DeckStartVisible ? DeckStartPage() : DeckShell() };
 
@@ -347,6 +387,8 @@ public partial class MainWindow
         fm.Items.Add(Mi("praesentation-m-saveas", "Speichern unter … (PowerPoint)", () => _ = DeckSaveClick(true)));
         fm.Items.Add(Mi("praesentation-m-pdf", "Als PDF", () => { DeckExportPdf(); Show("praesentation"); }));
         fm.Items.Add(Mi("praesentation-m-handout", "Handzettel mit Notizen (PDF)", () => { DeckExportPdf(true); Show("praesentation"); }));
+        fm.Items.Add(Mi("praesentation-m-images", "Als Bilder (PNG, 1920 × 1080)", () => { var d = DeckExportImages(); Toast(_dkMsg, ("Ordner öffnen", new Action(() => Launch(d)))); Show("praesentation"); }));
+        fm.Items.Add(Mi("praesentation-m-video", "Als Video (MP4, 5 s je Folie)", () => _ = DeckExportVideo()));
         file.ContextMenu = fm; file.Click += (_, _) => fm.Open(file);
         tabRow.Children.Add(file);
         foreach (var (id, label) in new[] { ("start", "Start"), ("einfuegen", "Einfügen"), ("entwurf", "Entwurf"), ("uebergaenge", "Übergänge"), ("animationen", "Animationen"), ("vorfuehren", "Vorführen") })
