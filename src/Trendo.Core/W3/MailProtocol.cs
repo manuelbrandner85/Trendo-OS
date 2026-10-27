@@ -153,7 +153,9 @@ public sealed class SmtpSession(Stream stream, Func<Stream, Task<Stream>>? upgra
     {
         var hello = await Reply(ct); if (hello.Code != 220) throw new InvalidOperationException("Kein SMTP-Server: " + hello.Text);
         var ehlo = await Cmd("EHLO trendo.local", ct, 250);
-        if (upgrade is not null && ehlo.Text.Contains("STARTTLS", StringComparison.OrdinalIgnoreCase))
+        if (upgrade is not null && !ehlo.Text.Contains("STARTTLS", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Der Server bietet keine Verschlüsselung an – Trendo sendet das Passwort nicht ungeschützt. Bitte Port 465 (SSL) versuchen.");
+        if (upgrade is not null)
         {
             await Cmd("STARTTLS", ct, 220);
             s = await upgrade(s); r = null;
