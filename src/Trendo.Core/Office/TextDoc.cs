@@ -18,7 +18,56 @@ public sealed record Span(int Start, int Length, Fmt Fmt, double? Size = null)
     public int End => Start + Length;
 }
 
+/// <summary>W2/W5/W7: Markierung über einem Textbereich – Link, Kommentar, Fußnote/Endnote (Länge 0, steht hinter der Stelle), eingefügt/gelöscht (Änderungen).</summary>
+public enum MarkKind { Link, Comment, Footnote, Endnote, Insert, Delete }
+
+public sealed record Mark(int Start, int Length, MarkKind Kind, string Value = "")
+{
+    public int End => Start + Length;
+}
+
 public abstract class Block { public abstract Block Copy(); }
+
+/// <summary>W5: automatisches Inhaltsverzeichnis an dieser Stelle (aus den Überschriften 1–3).</summary>
+public sealed class TocBlock : Block
+{
+    public string Title { get; set; } = "Inhalt";
+    public override Block Copy() => new TocBlock { Title = Title };
+}
+
+/// <summary>W3/W4: Seite einrichten und Design – Ränder, Hoch/Quer, Spalten, Kopf-/Fußzeile, Seitenzahlen, Wasserzeichen, Seitenrand-Linie, Schrift und Überschriftenfarbe.</summary>
+public sealed class PageSetup
+{
+    public double Top { get; set; } = 2.5;
+    public double Bottom { get; set; } = 2;
+    public double Left { get; set; } = 2.5;
+    public double Right { get; set; } = 2.5;
+    public bool Landscape { get; set; }
+    public int Columns { get; set; } = 1;
+    public string Header { get; set; } = "";
+    public string Footer { get; set; } = "";
+    public bool PageNumbers { get; set; }
+    public string Watermark { get; set; } = "";
+    public bool PageBorder { get; set; }
+    public bool Hyphenate { get; set; }
+    public string Design { get; set; } = "standard";
+    public string Font => Designs.FirstOrDefault(d => d.Id == Design).Font ?? "Arial";
+    public string HeadingColor => Designs.FirstOrDefault(d => d.Id == Design).Color ?? "#1F3864";
+    public PageSetup Copy() => (PageSetup)MemberwiseClone();
+
+    public static readonly IReadOnlyList<(string Id, string Name, double Top, double Bottom, double Left, double Right)> Margins =
+    [
+        ("normal", "Normal", 2.5, 2, 2.5, 2.5), ("schmal", "Schmal", 1.27, 1.27, 1.27, 1.27), ("mittel", "Mittel", 2.54, 2.54, 1.91, 1.91), ("breit", "Breit", 2.54, 2.54, 5.08, 5.08),
+    ];
+
+    public static readonly IReadOnlyList<(string Id, string Name, string Font, string Color)> Designs =
+    [
+        ("standard", "Standard", "Arial", "#1F3864"), ("klassisch", "Klassisch", "Georgia", "#7F1D1D"), ("modern", "Modern", "Segoe UI", "#0F766E"),
+        ("freundlich", "Freundlich", "Verdana", "#B45309"), ("seriös", "Seriös", "Times New Roman", "#111827"), ("frisch", "Frisch", "Trebuchet MS", "#2563EB"),
+    ];
+
+    public void SetMargins(string id) { var m = Margins.FirstOrDefault(x => x.Id == id); if (m.Id is null) return; (Top, Bottom, Left, Right) = (m.Top, m.Bottom, m.Left, m.Right); }
+}
 
 public sealed class Para : Block
 {
@@ -27,9 +76,15 @@ public sealed class Para : Block
     public Align Align { get; set; }
     public ListKind List { get; set; }
     public List<Span> Spans { get; set; } = [];
+    /// <summary>W4: Einzug links in cm.</summary>
+    public double IndentCm { get; set; }
+    /// <summary>W4: Abstand nach dem Absatz in Punkt (null = Standard).</summary>
+    public double? SpaceAfterPt { get; set; }
+    /// <summary>W2/W5/W7: Links, Kommentare, Fuß-/Endnoten, Änderungen.</summary>
+    public List<Mark> Marks { get; set; } = [];
     public Para() { }
     public Para(string text, ParaStyle style = ParaStyle.Text) { Text = text; Style = style; }
-    public override Block Copy() => new Para { Text = Text, Style = Style, Align = Align, List = List, Spans = [.. Spans] };
+    public override Block Copy() => new Para { Text = Text, Style = Style, Align = Align, List = List, Spans = [.. Spans], IndentCm = IndentCm, SpaceAfterPt = SpaceAfterPt, Marks = [.. Marks] };
 
     /// <summary>Format und Größe an einer Zeichenposition.</summary>
     public (Fmt Fmt, double? Size) At(int i)
@@ -83,7 +138,11 @@ public sealed class Picture : Block
     public string Ext { get; set; } = "png";
     public double WidthCm { get; set; } = 12;
     public double HeightCm { get; set; } = 8;
-    public override Block Copy() => new Picture { Data = Data, Ext = Ext, WidthCm = WidthCm, HeightCm = HeightCm };
+    /// <summary>W5: Beschriftung („Abbildung 1: …“ wird automatisch nummeriert).</summary>
+    public string Caption { get; set; } = "";
+    /// <summary>W7: Alternativtext für Bildschirmleser (Barrierefreiheit).</summary>
+    public string Alt { get; set; } = "";
+    public override Block Copy() => new Picture { Data = Data, Ext = Ext, WidthCm = WidthCm, HeightCm = HeightCm, Caption = Caption, Alt = Alt };
 }
 
 public sealed class PageBreak : Block { public override Block Copy() => new PageBreak(); }
@@ -94,9 +153,10 @@ public sealed class TextDoc
 {
     public List<Block> Blocks { get; set; } = [];
     public string? Title { get; set; }
+    public PageSetup Page { get; set; } = new();
 
     public static TextDoc Empty() => new() { Blocks = [new Para()] };
-    public TextDoc Copy() => new() { Blocks = Blocks.Select(b => b.Copy()).ToList(), Title = Title };
+    public TextDoc Copy() => new() { Blocks = Blocks.Select(b => b.Copy()).ToList(), Title = Title, Page = Page.Copy() };
     public IEnumerable<Para> Paras => Blocks.OfType<Para>();
 
     /// <summary>Ganzer Text (Absätze, Tabellenzellen mit Tab, Zeilen) – für TXT, Suche und Zählen.</summary>
@@ -206,7 +266,36 @@ public sealed class TextDoc
         }
         p.Text = text; p.Spans = spans;
         p.SetRuns(p.Runs().ToList()); // normalisieren
+        MapMarks(p, pre, removed, inserted);
     }
+
+    /// <summary>Markierungen an eine Textänderung anpassen (ab <paramref name="pre"/> wurden <paramref name="removed"/> Zeichen durch <paramref name="inserted"/> ersetzt).</summary>
+    static void MapMarks(Para p, int pre, int removed, int inserted)
+    {
+        if (p.Marks.Count == 0) return;
+        var res = new List<Mark>();
+        foreach (var m in p.Marks)
+        {
+            int Map(int i) => i <= pre ? i : i >= pre + removed ? i - removed + inserted : pre;
+            var a = Map(m.Start); var b = Map(m.End);
+            if (m.Length > 0 && m.Start < pre && m.End >= pre && m.End <= pre + removed && inserted > 0 && m.Kind is MarkKind.Link or MarkKind.Insert) b = pre + inserted;
+            if (m.Length == 0) { if (m.Start > pre && m.Start < pre + removed) continue; res.Add(m with { Start = a }); }   // Fußnote im gelöschten Text fällt weg
+            else if (b > a) res.Add(m with { Start = a, Length = b - a });
+        }
+        p.Marks = res;
+    }
+
+    /// <summary>Markierung hinzufügen (Link, Kommentar, Fuß-/Endnote).</summary>
+    public static void AddMark(Para p, int start, int length, MarkKind kind, string value)
+    {
+        (start, length) = Clamp(p, start, length);
+        if (kind is MarkKind.Footnote or MarkKind.Endnote) { start += length; length = 0; }
+        p.Marks.Add(new Mark(start, length, kind, value));
+        p.Marks.Sort((x, y) => x.Start.CompareTo(y.Start));
+    }
+
+    public static void RemoveMarks(Para p, int start, int length, MarkKind kind) =>
+        p.Marks.RemoveAll(m => m.Kind == kind && (length == 0 ? m.Start <= start && m.End >= start : m.Start < start + length && m.End > start));
 
     /// <summary>Enter: Absatz an der Stelle teilen. Der neue Absatz bekommt den Rest samt Formaten; nach Überschriften geht es mit „Text“ weiter, Listen laufen weiter.</summary>
     public Para SplitAt(int block, int at)
@@ -217,6 +306,9 @@ public sealed class TextDoc
         var next = new Para { Style = p.Style is ParaStyle.Text or ParaStyle.Quote ? p.Style : ParaStyle.Text, Align = p.Align, List = p.List };
         next.SetRuns(parts.Where(x => x.Inside).Select(x => (x.Text, x.Fmt, x.Size)));
         p.SetRuns(parts.Where(x => !x.Inside).Select(x => (x.Text, x.Fmt, x.Size)));
+        next.IndentCm = p.IndentCm; next.SpaceAfterPt = p.SpaceAfterPt;
+        next.Marks = p.Marks.Where(m => m.Start >= at && (m.Length > 0 || m.Start > at)).Select(m => m with { Start = m.Start - at }).ToList();
+        p.Marks = p.Marks.Where(m => m.Start < at || m.Length == 0 && m.Start == at).Select(m => m.End > at && m.Length > 0 ? m with { Length = at - m.Start } : m).ToList();
         if (p.Text.Length == 0 && p.List != ListKind.None && next.Text.Length == 0) { p.List = ListKind.None; } // leerer Listenpunkt + Enter beendet die Liste
         Blocks.Insert(block + 1, next);
         return next;
@@ -233,6 +325,7 @@ public sealed class TextDoc
         }
         var at = prev.Text.Length;
         prev.SetRuns(prev.Runs().Concat(p.Runs()).ToList());
+        prev.Marks.AddRange(p.Marks.Select(m => m with { Start = m.Start + at }));
         Blocks.RemoveAt(block);
         return at;
     }
@@ -293,6 +386,8 @@ public sealed class TextDoc
 
     public static void ReplaceAt(Para p, int start, int length, string with)
     {
+        (start, length) = Clamp(p, start, length);
+        MapMarks(p, start, length, with.Length);
         var parts = Split(p, start, length);
         var fmt = parts.FirstOrDefault(x => x.Inside);
         var runs = new List<(string, Fmt, double?)>(); var done = false;
