@@ -35,7 +35,7 @@ public static partial class Mesh3D
     {
         using var fs = File.Create(path);
         using var w = new BinaryWriter(fs);
-        w.Write(Encoding.ASCII.GetBytes("Trendo OS STL Millimeter".PadRight(80, ' ')[..80]));
+        w.Write(Encoding.ASCII.GetBytes("binary STL, units: mm".PadRight(80, ' ')[..80])); // ohne Programmname (Vorgabe 2026-10-27)
         w.Write(mesh.Triangles);
         for (var t = 0; t < mesh.Triangles; t++)
         {
