@@ -30,6 +30,7 @@ public partial class MainWindow
     private string _shMsg = "", _shRibbon = "start", _shFnQuery = "";
     private (int Row, int Col) _shActive, _shAnchor; private int _shTop, _shLeft;
     private List<(int Row, int Col, Cell Cell)>? _shClip; private (int Row, int Col) _shClipOrigin;
+    private bool _shLandscape; private readonly List<SheetChartView> _shCharts = [];
     private TextBox? _shFormula, _shEditor; private TextBlock? _shName, _shStats; private Canvas? _shOverlay;
 
     private void InitTabelle()
@@ -160,6 +161,52 @@ public partial class MainWindow
         SheetChanged(); _shMsg = "Ausgefüllt.";
     }
 
+    /// <summary>E2: Diagramm aus der Markierung (oder der ganzen Liste) einfügen.</summary>
+    public SheetChart SheetInsertChart(ChartKind kind)
+    {
+        var (t, l, b, r) = Sel();
+        if (t == b && l == r) { var reg = Region(); (t, l, b, r) = (Math.Max(0, reg.Top - 1), reg.Left, reg.Bottom, reg.Right); }
+        var range = $"{Addr.Name(t, l)}:{Addr.Name(b, r)}";
+        var d = ChartData.From(ActiveSheet, _shCalc, range);
+        var title = d.Series.Count == 1 && !d.Series[0].Name.StartsWith("Reihe ", StringComparison.Ordinal) ? d.Series[0].Name : kind switch { ChartKind.Kreis => "Anteile", ChartKind.Linie => "Verlauf", _ => "Vergleich" };
+        var ch = new SheetChart(kind, range, title);
+        SheetSnapshot(); ActiveSheet.Charts.Add(ch); SheetDirty = true;
+        _shMsg = $"Diagramm „{title}“ aus {range} eingefügt – es rechnet mit, wenn du Zahlen änderst.";
+        return ch;
+    }
+
+    /// <summary>E3: als PDF speichern (A4, auf Seitenbreite angepasst, Kopfzeile wiederholt, Diagramme dabei).</summary>
+    public int SheetExportPdf(string path) => SheetPdf.Export(SheetDocument, ActiveSheet, path, new SheetPdf.Options(Landscape: _shLandscape));
+
+    public void SheetSetLandscape(bool on) => _shLandscape = on;
+
+    private void SheetPdfClick()
+    {
+        try
+        {
+            var f = DefaultSheetName(".pdf"); var n = SheetExportPdf(f);
+            _shMsg = $"PDF gespeichert: {Path.GetFileName(f)} ({n} Seite{(n == 1 ? "" : "n")})";
+            Toast($"PDF gespeichert: {Path.GetFileName(f)}", ("Öffnen", new Action(() => Launch(f))), ("Ordner öffnen", new Action(() => Launch(Path.GetDirectoryName(f)!))));
+            _core.Audit.Append(Principal.LocalOwner.Name, "tabelle.pdf", Path.GetFileName(f));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException) { _shMsg = "PDF ging nicht: " + ex.Message; }
+    }
+
+    private void SheetPrint()
+    {
+        try
+        {
+            var f = Path.Combine(Path.GetTempPath(), $"trendo-druck-{DateTime.Now:yyyyMMdd-HHmmss}.pdf");
+            SheetExportPdf(f);
+            var sumatra = ToolPath("sumatra");
+            if (sumatra is not null && !_opt.Isolated) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(sumatra, $"-print-dialog \"{f}\"") { UseShellExecute = false });
+            else Launch(f);
+            _shMsg = "Druckansicht geöffnet – dort Drucker wählen.";
+            _core.Audit.Append(Principal.LocalOwner.Name, "tabelle.print", Path.GetFileName(f));
+        }
+        catch (Exception ex) when (ex is IOException or System.ComponentModel.Win32Exception or InvalidOperationException) { _shMsg = "Drucken ging nicht: " + ex.Message; }
+    }
+
     // ---------- Innenleben ----------
     private void ResetSheetState()
     {
@@ -171,7 +218,7 @@ public partial class MainWindow
 
     private void SheetSnapshot() { _shUndo.Add(SheetDocument.Clone()); if (_shUndo.Count > 100) _shUndo.RemoveAt(0); _shRedo.Clear(); }
 
-    private void SheetChanged() { SheetDirty = true; _shCalc.Invalidate(); SheetGrid?.InvalidateVisual(); RefreshSheetChrome(); }
+    private void SheetChanged() { SheetDirty = true; _shCalc.Invalidate(); SheetGrid?.InvalidateVisual(); foreach (var c in _shCharts) c.InvalidateVisual(); RefreshSheetChrome(); }
 
     /// <summary>Eingabe deuten (deutsche Zahl, Euro, Prozent, Datum) und das passende Format vorschlagen.</summary>
     private void WriteCell(int r, int c, string raw)
@@ -371,6 +418,8 @@ public partial class MainWindow
         fm.Items.Add(Mi("tabelle-m-open", "Öffnen …", () => _ = SheetOpenClick()));
         fm.Items.Add(Mi("tabelle-m-save", "Speichern  (Strg+S)", () => _ = SheetSaveClick(false)));
         fm.Items.Add(Mi("tabelle-m-saveas", "Speichern unter … (XLSX, CSV)", () => _ = SheetSaveClick(true)));
+        fm.Items.Add(Mi("tabelle-m-pdf", "Als PDF speichern", () => { SheetPdfClick(); Show("tabelle"); }));
+        fm.Items.Add(Mi("tabelle-m-print", "Drucken …", () => { SheetPrint(); Show("tabelle"); }));
         file.ContextMenu = fm; file.Click += (_, _) => fm.Open(file);
         tabRow.Children.Add(file);
         foreach (var (id, label) in new[] { ("start", "Start"), ("einfuegen", "Einfügen"), ("daten", "Daten"), ("ansicht", "Ansicht") })
@@ -390,6 +439,10 @@ public partial class MainWindow
                     SB("tabelle-col-ins", "⇥", "Spalte", () => { SheetSnapshot(); ActiveSheet.InsertCols(Sel().Left, Sel().Right - Sel().Left + 1); SheetChanged(); }, "Spalte(n) links einfügen"),
                     SB("tabelle-row-del", "✕", "Zeile weg", () => { SheetSnapshot(); ActiveSheet.DeleteRows(Sel().Top, Sel().Bottom - Sel().Top + 1); SheetChanged(); }, "Markierte Zeile(n) löschen"),
                     SB("tabelle-col-del", "✕", "Spalte weg", () => { SheetSnapshot(); ActiveSheet.DeleteCols(Sel().Left, Sel().Right - Sel().Left + 1); SheetChanged(); }, "Markierte Spalte(n) löschen")));
+                groups.Children.Add(RibbonGroup("Diagramm",
+                    SB("tabelle-chart-balken", "▮▮", "Säulen", () => SheetInsertChart(ChartKind.Balken), "Säulendiagramm aus der Markierung"),
+                    SB("tabelle-chart-linie", "📈", "Linie", () => SheetInsertChart(ChartKind.Linie), "Liniendiagramm (Verlauf)"),
+                    SB("tabelle-chart-kreis", "◔", "Kreis", () => SheetInsertChart(ChartKind.Kreis), "Kreisdiagramm (Anteile)")));
                 groups.Children.Add(RibbonGroup("Formeln",
                     SB("tabelle-sum2", "Σ", "Summe", SheetAutoSum, "Summe der Zahlen darüber"),
                     SB("tabelle-today", "📅", "Heute", () => SheetSetCell(Addr.Name(_shActive.Row, _shActive.Col), DateTime.Today.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture)), "Heutiges Datum eintragen")));
@@ -408,6 +461,10 @@ public partial class MainWindow
                 groups.Children.Add(RibbonGroup("Ansicht",
                     SB("tabelle-focus", "⛶", "Vollbild", ToggleFocusMode, "Vollbild/Fokusmodus (F11)"),
                     SB("tabelle-gotoA1", "⌂", "Zu A1", () => { _shActive = _shAnchor = (0, 0); _shTop = _shLeft = 0; }, "Zum Anfang (Strg+Pos1)")));
+                groups.Children.Add(RibbonGroup("Drucken",
+                    SB("tabelle-landscape", "▭", "Querformat", () => _shLandscape = !_shLandscape, "Seite quer statt hoch (für breite Tabellen)", _shLandscape),
+                    SB("tabelle-pdf", "📄", "Als PDF", SheetPdfClick, "Als PDF speichern – auf Seitenbreite angepasst, mit Diagrammen"),
+                    SB("tabelle-print", "🖨", "Drucken", SheetPrint, "Drucken (Strg+P)")));
                 break;
             default:
                 groups.Children.Add(RibbonGroup("Zwischenablage",
@@ -489,11 +546,25 @@ public partial class MainWindow
                 case Key.S when ctrl: _ = SheetSaveClick(false); break;
                 case Key.A when ctrl: grid.SelectRange(0, 0, Math.Max(0, ActiveSheet.MaxRow), Math.Max(0, ActiveSheet.MaxCol)); break;
                 case Key.D when ctrl: SheetFill(true); break;
+                case Key.P when ctrl: SheetPrint(); break;
                 default: e.Handled = false; break;
             }
         };
         Dispatcher.UIThread.Post(() => grid.Focus());
-        var host = new Panel { Children = { grid, _shOverlay } };
+        var charts = new StackPanel { Name = "tabelle-charts", Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 30, 14, 0) };
+        _shCharts.Clear();
+        for (var i = 0; i < ActiveSheet.Charts.Count; i++)
+        {
+            var ch = ActiveSheet.Charts[i]; var idx = i;
+            var view = new SheetChartView(ch, () => ChartData.From(ActiveSheet, _shCalc, ch.Range)) { Name = $"tabelle-chart-{i}", Width = 400, Height = 250 };
+            _shCharts.Add(view);
+            var del = new Button { Name = $"tabelle-chart-del-{i}", Content = "✕", Focusable = false, Padding = new Thickness(6, 0), Background = Brushes.Transparent, Foreground = Brush.Parse("#5B6B82"), HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top };
+            ToolTip.SetTip(del, "Diagramm entfernen");
+            del.Click += (_, _) => { SheetSnapshot(); ActiveSheet.Charts.RemoveAt(idx); SheetDirty = true; Show("tabelle"); };
+            charts.Children.Add(new Border { Background = Brushes.White, CornerRadius = new CornerRadius(8), BorderBrush = Brush.Parse("#FFD8DEE8"), BorderThickness = new Thickness(1), BoxShadow = BoxShadows.Parse("0 4 16 0 #40000000"), ClipToBounds = true,
+                Child = new Panel { Children = { view, del } } });
+        }
+        var host = new Panel { Children = { grid, charts, _shOverlay } };
         return new Border { Child = host, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(6), ClipToBounds = true, MinHeight = 320 };
     }
 

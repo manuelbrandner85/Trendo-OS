@@ -93,6 +93,31 @@ public class T0228_TrendoTabelleUi
         w.Close();
     }
 
+    [AvaloniaFact(DisplayName = "T-0228 E2/E3: Diagramm über Einfügen → Säulen, rechnet live mit, Entfernen; Als PDF legt Datei unter Tabellen ab")]
+    public void Chart_and_pdf()
+    {
+        var (w, _, _) = Ui.Open();
+        w.SheetNew("einkauf"); w.Show("tabelle"); Pump();
+        w.Find<Button>("tabelle-rib-einfuegen").Press(); Pump();
+        w.SheetSelect("A1:D5");
+        w.Find<Button>("tabelle-chart-balken").Press(); Pump();
+        var ch = Assert.Single(w.ActiveSheet.Charts);
+        Assert.Equal("A1:D5", ch.Range);
+        Assert.NotNull(w.TryFind<SheetChartView>("tabelle-chart-0"));
+        w.SheetSetCell("B2", "5");
+        Assert.Equal(5, ChartData.From(w.ActiveSheet, new SheetCalc(w.SheetDocument), ch.Range).Series[0].Values[0]);
+        w.Find<Button>("tabelle-chart-del-0").Press(); Pump();
+        Assert.Empty(w.ActiveSheet.Charts);
+        w.Find<Button>("tabelle-rib-start").Press(); Pump(); w.Find<Button>("tabelle-undo").Press(); Pump();
+        Assert.Single(w.ActiveSheet.Charts);
+        w.Find<Button>("tabelle-rib-ansicht").Press(); Pump();
+        w.Find<Button>("tabelle-pdf").Press(); Pump();
+        var pdf = Directory.GetFiles(Path.Combine(w.ProjectsRootForTests, "Tabellen"), "*.pdf");
+        Assert.Single(pdf);
+        Assert.Contains("PDF gespeichert", w.Find<TextBlock>("tabelle-status").Text);
+        w.Close();
+    }
+
     [AvaloniaFact(DisplayName = "T-0228: Speichern als XLSX und wieder öffnen; erscheint unter „Zuletzt geöffnet“")]
     public void Save_and_reopen()
     {

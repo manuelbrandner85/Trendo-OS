@@ -103,7 +103,9 @@ public static class SheetFiles
             }
             sb.Append("</sheetData>");
             if (sh.HiddenRows.Count > 0 && sh.MaxRow >= 0) sb.Append($"<autoFilter ref=\"A1:{Addr.Name(sh.MaxRow, Math.Max(0, sh.MaxCol))}\"/>");
-            sb.Append("<pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/></worksheet>");
+            sb.Append("<pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/>");
+            if (sh.Charts.Count > 0) sb.Append("<drawing r:id=\"rId1\"/>");
+            sb.Append("</worksheet>");
             sheetXml.Add(sb.ToString());
         }
 
@@ -124,6 +126,7 @@ public static class SheetFiles
         }
         st.Append("</cellXfs><cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles></styleSheet>");
 
+        var chartParts = ChartParts(doc, calc);
         using var fs = File.Create(path);
         using var z = new ZipArchive(fs, ZipArchiveMode.Create);
         void Add(string name, string content) { using var w = new StreamWriter(z.CreateEntry(name, CompressionLevel.Optimal).Open(), new UTF8Encoding(false)); w.Write(content); }
@@ -131,6 +134,7 @@ public static class SheetFiles
             "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>" +
             "<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>" +
             string.Concat(doc.Sheets.Select((_, i) => $"<Override PartName=\"/xl/worksheets/sheet{i + 1}.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>")) +
+            string.Concat(chartParts.Where(p => !p.Name.Contains("_rels")).Select(p => $"<Override PartName=\"/{p.Name}\" ContentType=\"{(p.Name.Contains("/drawings/") ? "application/vnd.openxmlformats-officedocument.drawing+xml" : "application/vnd.openxmlformats-officedocument.drawingml.chart+xml")}\"/>")) +
             "<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>" +
             "<Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/>" +
             "<Override PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/></Types>");
@@ -144,9 +148,120 @@ public static class SheetFiles
             $"<Relationship Id=\"rId{doc.Sheets.Count + 1}\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>" +
             $"<Relationship Id=\"rId{doc.Sheets.Count + 2}\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\" Target=\"sharedStrings.xml\"/></Relationships>");
         for (var i = 0; i < sheetXml.Count; i++) Add($"xl/worksheets/sheet{i + 1}.xml", sheetXml[i]);
+        foreach (var (name, content) in chartParts) Add(name, content);
         Add("xl/styles.xml", st.ToString());
         Add("xl/sharedStrings.xml", $"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><sst xmlns=\"{S}\" count=\"{strings.Count}\" uniqueCount=\"{strings.Count}\">" +
             string.Concat(strings.Select(s => $"<si><t xml:space=\"preserve\">{SecurityElement.Escape(s)}</t></si>")) + "</sst>");
+    }
+
+    // ---------- Diagramme in XLSX (E2): echte DrawingML-Diagramme, die Excel und LibreOffice anzeigen ----------
+    const string C = "http://schemas.openxmlformats.org/drawingml/2006/chart", A = "http://schemas.openxmlformats.org/drawingml/2006/main", Xdr = "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing";
+
+    static string XmlText(string s) => s.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;");
+
+    static string Ref(Sheet s, int r1, int c1, int r2, int c2) =>
+        $"'{s.Name.Replace("'", "''")}'!${Addr.Col(c1)}${r1 + 1}" + (r1 == r2 && c1 == c2 ? "" : $":${Addr.Col(c2)}${r2 + 1}");
+
+    static List<(string Name, string Content)> ChartParts(SheetDoc doc, SheetCalc calc)
+    {
+        var parts = new List<(string, string)>(); var dn = 0; var cn = 0;
+        for (var si = 0; si < doc.Sheets.Count; si++)
+        {
+            var sh = doc.Sheets[si]; if (sh.Charts.Count == 0) continue;
+            dn++;
+            parts.Add(($"xl/worksheets/_rels/sheet{si + 1}.xml.rels", $"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"{Pr}\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing\" Target=\"../drawings/drawing{dn}.xml\"/></Relationships>"));
+            var dr = new StringBuilder($"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><xdr:wsDr xmlns:xdr=\"{Xdr}\" xmlns:a=\"{A}\" xmlns:r=\"{R}\" xmlns:c=\"{C}\">");
+            var drRels = new StringBuilder($"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><Relationships xmlns=\"{Pr}\">");
+            var col = Math.Max(0, sh.MaxCol) + 2;
+            for (var k = 0; k < sh.Charts.Count; k++)
+            {
+                var ch = sh.Charts[k]; cn++;
+                var row = 1 + k * 17;
+                dr.Append($"<xdr:twoCellAnchor><xdr:from><xdr:col>{col}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>{row}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from><xdr:to><xdr:col>{col + 8}</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>{row + 15}</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to>");
+                dr.Append($"<xdr:graphicFrame macro=\"\"><xdr:nvGraphicFramePr><xdr:cNvPr id=\"{k + 2}\" name=\"{SecurityElement.Escape(ch.Title)}\"/><xdr:cNvGraphicFramePr/></xdr:nvGraphicFramePr><xdr:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"0\" cy=\"0\"/></xdr:xfrm>");
+                dr.Append($"<a:graphic><a:graphicData uri=\"{C}\"><c:chart r:id=\"rId{k + 1}\"/></a:graphicData></a:graphic></xdr:graphicFrame><xdr:clientData/></xdr:twoCellAnchor>");
+                drRels.Append($"<Relationship Id=\"rId{k + 1}\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart\" Target=\"../charts/chart{cn}.xml\"/>");
+                parts.Add(($"xl/charts/chart{cn}.xml", ChartXml(sh, calc, ch)));
+            }
+            dr.Append("</xdr:wsDr>"); drRels.Append("</Relationships>");
+            parts.Add(($"xl/drawings/drawing{dn}.xml", dr.ToString()));
+            parts.Add(($"xl/drawings/_rels/drawing{dn}.xml.rels", drRels.ToString()));
+        }
+        return parts;
+    }
+
+    static string ChartXml(Sheet sh, SheetCalc calc, SheetChart ch)
+    {
+        var lay = ChartData.Analyze(sh, calc, ch.Range);
+        var sb = new StringBuilder($"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><c:chartSpace xmlns:c=\"{C}\" xmlns:a=\"{A}\" xmlns:r=\"{R}\"><c:chart>");
+        sb.Append($"<c:title><c:tx><c:rich><a:bodyPr/><a:p><a:r><a:t>{SecurityElement.Escape(ch.Title)}</a:t></a:r></a:p></c:rich></c:tx><c:overlay val=\"0\"/></c:title><c:autoTitleDeleted val=\"0\"/><c:plotArea><c:layout/>");
+        sb.Append(ch.Kind switch
+        {
+            ChartKind.Kreis => "<c:pieChart><c:varyColors val=\"1\"/>",
+            ChartKind.Linie => "<c:lineChart><c:grouping val=\"standard\"/><c:varyColors val=\"0\"/>",
+            _ => "<c:barChart><c:barDir val=\"col\"/><c:grouping val=\"clustered\"/><c:varyColors val=\"0\"/>",
+        });
+        var cols = ch.Kind == ChartKind.Kreis ? lay.SeriesCols.Take(1) : lay.SeriesCols;
+        var i = 0;
+        foreach (var c in cols)
+        {
+            sb.Append($"<c:ser><c:idx val=\"{i}\"/><c:order val=\"{i}\"/>");
+            sb.Append(lay.Header ? $"<c:tx><c:strRef><c:f>{XmlText(Ref(sh, lay.Top, c, lay.Top, c))}</c:f></c:strRef></c:tx>" : $"<c:tx><c:v>Reihe {Addr.Col(c)}</c:v></c:tx>");
+            if (ch.Kind == ChartKind.Linie) sb.Append("<c:marker><c:symbol val=\"circle\"/></c:marker>");
+            if (lay.LabelCol) sb.Append($"<c:cat><c:strRef><c:f>{XmlText(Ref(sh, lay.First, lay.Left, lay.Bottom, lay.Left))}</c:f></c:strRef></c:cat>");
+            sb.Append($"<c:val><c:numRef><c:f>{XmlText(Ref(sh, lay.First, c, lay.Bottom, c))}</c:f></c:numRef></c:val>");
+            if (ch.Kind == ChartKind.Linie) sb.Append("<c:smooth val=\"0\"/>");
+            sb.Append("</c:ser>"); i++;
+        }
+        if (ch.Kind == ChartKind.Kreis) sb.Append("<c:firstSliceAng val=\"0\"/></c:pieChart>");
+        else
+        {
+            sb.Append(ch.Kind == ChartKind.Linie ? "<c:marker val=\"1\"/><c:axId val=\"1001\"/><c:axId val=\"1002\"/></c:lineChart>" : "<c:axId val=\"1001\"/><c:axId val=\"1002\"/></c:barChart>");
+            sb.Append("<c:catAx><c:axId val=\"1001\"/><c:scaling><c:orientation val=\"minMax\"/></c:scaling><c:delete val=\"0\"/><c:axPos val=\"b\"/><c:crossAx val=\"1002\"/></c:catAx>");
+            sb.Append("<c:valAx><c:axId val=\"1002\"/><c:scaling><c:orientation val=\"minMax\"/></c:scaling><c:delete val=\"0\"/><c:axPos val=\"l\"/><c:majorGridlines/><c:crossAx val=\"1001\"/></c:valAx>");
+        }
+        sb.Append("</c:plotArea><c:legend><c:legendPos val=\"b\"/><c:overlay val=\"0\"/></c:legend><c:plotVisOnly val=\"1\"/></c:chart></c:chartSpace>");
+        return sb.ToString();
+    }
+
+    /// <summary>Diagramme eines Blatts lesen: Art, Titel und den Bereich aus allen Bezügen (Kopf, Beschriftung, Werte).</summary>
+    static void ReadCharts(ZipArchive z, string sheetPath, Sheet sh)
+    {
+        XDocument? Load(string name) { var e = z.GetEntry(name); if (e is null) return null; using var s = e.Open(); return XDocument.Load(s); }
+        static string Dir(string file) { var i = file.LastIndexOf('/'); return i < 0 ? "" : file[..i]; }
+        static string Resolve(string baseFile, string target)
+        {
+            if (target.StartsWith('/')) return target[1..];
+            var parts = Dir(baseFile).Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
+            foreach (var seg in target.Split('/')) { if (seg == "..") { if (parts.Count > 0) parts.RemoveAt(parts.Count - 1); } else if (seg != ".") parts.Add(seg); }
+            return string.Join('/', parts);
+        }
+        static string RelsOf(string file) => $"{Dir(file)}/_rels/{file[(file.LastIndexOf('/') + 1)..]}.rels";
+        XNamespace c = C, a = A;
+        var ws = Load(sheetPath); var did = (string?)ws?.Root?.Element(S + "drawing")?.Attribute(R + "id"); if (did is null) return;
+        var drTarget = Load(RelsOf(sheetPath))?.Root?.Elements(Pr + "Relationship").FirstOrDefault(r => (string?)r.Attribute("Id") == did)?.Attribute("Target")?.Value; if (drTarget is null) return;
+        var drPath = Resolve(sheetPath, drTarget); var drawing = Load(drPath); if (drawing is null) return;
+        var drRels = Load(RelsOf(drPath));
+        foreach (var chartEl in drawing.Descendants(c + "chart"))
+        {
+            var cid = (string?)chartEl.Attribute(R + "id");
+            var target = drRels?.Root?.Elements(Pr + "Relationship").FirstOrDefault(r => (string?)r.Attribute("Id") == cid)?.Attribute("Target")?.Value; if (target is null) continue;
+            var chart = Load(Resolve(drPath, target)); if (chart?.Root is null) continue;
+            var plot = chart.Root.Descendants(c + "plotArea").FirstOrDefault(); if (plot is null) continue;
+            var kind = plot.Elements().Any(e => e.Name.LocalName is "pieChart" or "pie3DChart" or "doughnutChart") ? ChartKind.Kreis
+                : plot.Elements().Any(e => e.Name.LocalName is "lineChart" or "line3DChart" or "scatterChart" or "areaChart") ? ChartKind.Linie : ChartKind.Balken;
+            int t = int.MaxValue, l = int.MaxValue, b = -1, rr = -1;
+            foreach (var f in plot.Descendants(c + "f").Select(x => x.Value))
+            {
+                var bang = f.LastIndexOf('!'); var body = (bang >= 0 ? f[(bang + 1)..] : f).Replace("$", "").Trim('(', ')');
+                var ends = body.Split(':');
+                if (!Addr.TryParse(ends[0], out var p1) || !Addr.TryParse(ends[^1], out var p2)) continue;
+                t = Math.Min(t, Math.Min(p1.Row, p2.Row)); l = Math.Min(l, Math.Min(p1.Col, p2.Col)); b = Math.Max(b, Math.Max(p1.Row, p2.Row)); rr = Math.Max(rr, Math.Max(p1.Col, p2.Col));
+            }
+            if (b < 0) continue;
+            var title = string.Concat(chart.Root.Element(c + "chart")?.Element(c + "title")?.Descendants(a + "t").Select(x => x.Value) ?? []);
+            sh.Charts.Add(new SheetChart(kind, $"{Addr.Name(t, l)}:{Addr.Name(b, rr)}", title.Length > 0 ? title : "Diagramm"));
+        }
     }
 
     // ---------- XLSX lesen ----------
@@ -202,6 +317,7 @@ public static class SheetFiles
             target = target.StartsWith('/') ? target[1..] : "xl/" + target;
             var sh = new Sheet(name); doc.Sheets.Add(sh);
             var ws = Load(target); if (ws is null) continue;
+            try { ReadCharts(z, target, sh); } catch (Exception e) when (e is System.Xml.XmlException or InvalidDataException or ArgumentException) { } // Diagramme sind Beigabe – Zellen trotzdem lesen
             foreach (var col in ws.Root!.Element(S + "cols")?.Elements(S + "col") ?? [])
             {
                 var min = (int)col.Attribute("min")! - 1; var max = Math.Min((int)col.Attribute("max")! - 1, min + 200);
