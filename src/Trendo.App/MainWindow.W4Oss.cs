@@ -32,6 +32,11 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 8, Children = { P("Finde freie Projekte auf GitHub. Trendo zeigt dir zu jedem Projekt, was du damit machen darfst.") } };
         var q = new TextBox { Name = "oss-query", Text = _ossQuery, PlaceholderText = "z. B. markdown editor", Width = 300 };
         sp.Children.Add(new WrapPanel { Children = { q, Act("oss-search", "Suchen", () => _ = OssSearch(q.Text ?? ""), true) } });
+        if (_ossHits.Count == 0 && _ossQuery.Length == 0)
+            sp.Children.Add(EmptyState("oss-empty", "🐙", "Freie Programme von GitHub", "Suche nach einem Thema – Trendo zeigt Sterne, Lizenz und eine verständliche Beschreibung. Fertige Windows-Programme installierst du mit einem Klick.",
+                Chip("oss-ex-0", "Notizen", () => _ = OssSearch("notes app")), Chip("oss-ex-1", "Bildbearbeitung", () => _ = OssSearch("image editor")),
+                Chip("oss-ex-2", "Passwort-Manager", () => _ = OssSearch("password manager")), Chip("oss-ex-3", "Musik", () => _ = OssSearch("music player")),
+                Chip("oss-ex-4", "PDF", () => _ = OssSearch("pdf tool")), Chip("oss-ex-5", "Spiele", () => _ = OssSearch("open source game"))));
         var i = 0;
         foreach (var r in _ossHits)
         {

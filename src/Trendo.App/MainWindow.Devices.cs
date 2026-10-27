@@ -34,7 +34,8 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 6, Children = { P("Alles, was an deinem PC hängt. Trendo liest nur – es ändert keine Treiber.") } };
         var go = new Button { Name = "dev-scan", Content = Devices.Count == 0 ? "Geräte suchen" : "Neu suchen", Background = Accent };
         go.Click += async (_, _) => { go.IsEnabled = false; go.Content = "Suche …"; await ScanDevicesAsync(); Show("geraete"); };
-        sp.Children.Add(go);
+        if (Devices.Count == 0 && _devMsg.Length == 0) { go.Padding = new Thickness(18, 10); sp.Children.Add(EmptyState("dev-empty", "🖨", "Welche Geräte hängen an deinem PC?", "Drucker, Kameras, USB-Sticks, Mikrofone, Bluetooth-Geräte und Bildschirme – Trendo zeigt sie dir mit Zustand und hilft, wenn etwas fehlt. Es wird nichts verändert.", go)); }
+        else sp.Children.Add(go);
         sp.Children.Add(new TextBlock { Name = "dev-msg", Text = _devMsg, Foreground = Text });
         if (_devAdded.Count > 0 && _devAdded.Count < Devices.Count) sp.Children.Add(P("Neu seit dem letzten Mal: " + string.Join(", ", _devAdded.Select(d => d.Name)), Brush.Parse("#4ADE80")));
         if (_devRemoved.Count > 0) sp.Children.Add(P("Nicht mehr da: " + string.Join(", ", _devRemoved.Select(d => d.Name)), Brush.Parse("#FACC15")));

@@ -244,4 +244,31 @@ public partial class MainWindow
         else if (WindowState == WindowState.FullScreen) WindowState = _beforeFocus;
         if (CurrentView.Length > 0) Show(CurrentView);
     }
+
+    // ---------- G11: leere Zustände mit Beispiel statt leerer Fläche ----------
+    /// <summary>G11: großes Symbol, kurzer Satz, was hier passiert, und die erste Aktion bzw. Beispiele zum Antippen.</summary>
+    internal Control EmptyState(string name, string icon, string title, string text, params Control[] actions)
+    {
+        var row = new WrapPanel { HorizontalAlignment = HorizontalAlignment.Center };
+        foreach (var a in actions) { a.Margin = new Thickness(4); row.Children.Add(a); }
+        return new Border
+        {
+            Name = name, Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(16), Padding = new Thickness(24, 28), Margin = new Thickness(0, 6, 0, 6),
+            Child = new StackPanel { Spacing = 10, HorizontalAlignment = HorizontalAlignment.Center, Children =
+            {
+                new TextBlock { Text = icon, FontSize = 46, HorizontalAlignment = HorizontalAlignment.Center },
+                new TextBlock { Text = title, Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center },
+                new TextBlock { Text = text, Foreground = Muted, FontSize = 13, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center, MaxWidth = 560, HorizontalAlignment = HorizontalAlignment.Center },
+                row,
+            } },
+        };
+    }
+
+    /// <summary>Kleiner Vorschlags-Knopf („Chip“) für leere Zustände.</summary>
+    internal Button Chip(string name, string label, Action run)
+    {
+        var b = new Button { Name = name, Content = label, Padding = new Thickness(12, 6), CornerRadius = new CornerRadius(16), Background = Brush.Parse("#22FFFFFF") };
+        b.Click += (_, _) => run();
+        return b;
+    }
 }

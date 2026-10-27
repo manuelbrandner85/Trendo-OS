@@ -88,6 +88,13 @@ public partial class MainWindow
             _askState = a.Ok ? $"Antwort von {a.Model} ({a.Backend}{(KiCatalog.Cloud.Any(c => c.Name == a.Backend) ? ", außerhalb des PCs" : "")}) in {a.Took.TotalSeconds:0.0} s{(a.Sources.Count > 0 ? " · Wissen: " + string.Join(", ", a.Sources) : "")}" : a.Text;
             Show("ki-fragen");
         };
+        if (_chat.Count == 0)
+        {
+            Button Ask(string n, string q) => Chip(n, q, () => { input.Text = q; send.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent)); });
+            sp.Children.Add(EmptyState("ask-empty", "💬", "Frag mich etwas", "Die Trendo KI läuft auf deinem PC. Tippe unten deine Frage – oder probier ein Beispiel:",
+                Ask("ask-ex-0", "Schreib eine freundliche Absage für einen Termin"), Ask("ask-ex-1", "Erkläre mir kurz, was eine Firewall macht"),
+                Ask("ask-ex-2", "Plane mir ein Abendessen für 4 Personen"), Ask("ask-ex-3", "Fasse die Vorteile von Open Source in 3 Punkten zusammen")));
+        }
         sp.Children.Add(log);
         sp.Children.Add(input);
         sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { send, clear } });
