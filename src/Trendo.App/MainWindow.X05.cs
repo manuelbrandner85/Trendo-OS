@@ -150,9 +150,21 @@ public partial class MainWindow
                 _srcMsg = ok ? $"{m.Name} ist jetzt da." : $"{m.Name} konnte nicht geladen werden – Internet prüfen und erneut versuchen.";
                 await ScanSourcesAsync(); Show("ki-quellen");
             };
+            Control right = b;
+            if (got)
+            {
+                var tag = m.Tag;
+                right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { b, ConfirmRemoveButton("ollama:" + tag, "model-remove-" + tag.Replace(':', '-').Replace('.', '-'), "ki-quellen", async () =>
+                {
+                    var ok = await new OllamaBackend().DeleteAsync(tag);
+                    _core.Audit.Append(Principal.LocalOwner.Name, ok ? "ki.model.remove" : "ki.model.remove.failed", tag);
+                    _srcMsg = ok ? $"{m.Name} wurde entfernt – der Speicherplatz ist frei." : $"{m.Name} ließ sich nicht entfernen (läuft Ollama?).";
+                    await ScanSourcesAsync();
+                }) } };
+            }
             sp.Children.Add(WCard(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {
                 new StackPanel { Children = { new TextBlock { Text = m.Name, Foreground = Text, FontSize = 13 }, P($"{m.GoodFor} · {m.SizeGb:0.0} GB · {(fits ? "passt zu deinem PC" : $"braucht {m.MinRamGb} GB Arbeitsspeicher")} · Lizenz: {m.License}", fits ? null : Brush.Parse("#FACC15"), 10.5) } },
-                Pos(b, 1) } }));
+                Pos(right, 1) } }));
         }
         return KiPage("KI-Quellen", sp);
     }

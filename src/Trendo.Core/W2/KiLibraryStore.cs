@@ -91,6 +91,17 @@ public sealed class KiLibraryStore(string toolsRoot)
         return true;
     }
 
+    /// <summary>Wunsch 27.10.2026 („alles wieder deinstallierbar“): KI-Laufzeit entfernen (nur ihr Ordner unter „ki/laufzeit“).</summary>
+    public bool RemoveRuntime(KiRuntime r, AuditLog? audit = null)
+    {
+        var d = new DirectoryInfo(RuntimeDir(r));
+        if (!d.Exists) return false;
+        foreach (var f in d.EnumerateFiles("*", SearchOption.AllDirectories)) if (f.IsReadOnly) f.IsReadOnly = false;
+        if (d.Attributes.HasFlag(FileAttributes.ReparsePoint)) d.Delete(); else d.Delete(true);
+        audit?.Append("app", "ki.runtime.remove", r.ToString());
+        return true;
+    }
+
     static string Sha256(string file)
     {
         using var s = File.OpenRead(file);

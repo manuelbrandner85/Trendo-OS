@@ -107,6 +107,21 @@ public partial class MainWindow
         return true;
     }
 
+    /// <summary>Wunsch 27.10.2026: KI-Programm wieder entfernen – portable aus dem Werkzeugordner, Installer über ihren Deinstaller.</summary>
+    public bool KiSourceRemove(string id)
+    {
+        if (KiSourceSetups.For(id) is not { } s) return false;
+        if (s.Portable)
+        {
+            var e = GitHubApps.List(_deps.ToolsRoot).FirstOrDefault(i => string.Equals(i.Repo, s.Repo, StringComparison.OrdinalIgnoreCase));
+            return e is not null && GitHubApps.Uninstall(_deps.ToolsRoot, e.Id, _core.Audit);
+        }
+        if (KiSourceExe(id) is not { } exe) return false;
+        GitHubRunUninstaller(exe);
+        _core.Audit.Append(Principal.LocalOwner.Name, "ki.source.remove", id);
+        return true;
+    }
+
     /// <summary>Knöpfe je Quelle: „Herunterladen & einrichten“ (mit Bestätigung), danach „Starten“ und „Neu laden“.</summary>
     private Control KiSourceButtons(KiSourceInfo src)
     {
@@ -137,6 +152,12 @@ public partial class MainWindow
                 Show("ki-quellen"); await Task.Delay(_opt.Isolated ? 0 : 3000); await ScanSourcesAsync(); Show("ki-quellen");
             };
             sp.Children.Add(start);
+            sp.Children.Add(ConfirmRemoveButton("src:" + src.Id, "src-remove-" + src.Id, "ki-quellen", () =>
+            {
+                try { _srcMsg = KiSourceRemove(src.Id) ? $"{src.Name} wurde entfernt." : $"{src.Name} war nicht eingerichtet."; }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.ComponentModel.Win32Exception) { _srcMsg = $"{src.Name} läuft noch oder ist gesperrt – bitte schließen und erneut versuchen. ({ex.Message})"; }
+                return Task.CompletedTask;
+            }));
         }
         return sp;
     }

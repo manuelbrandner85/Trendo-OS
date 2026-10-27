@@ -39,6 +39,17 @@ public sealed class OllamaBackend(string baseUrl = "http://127.0.0.1:11434", Htt
         catch { return []; }
     }
 
+    /// <summary>Modell aus Ollama entfernen (DELETE /api/delete) – gibt den Speicherplatz frei.</summary>
+    public async Task<bool> DeleteAsync(string model, CancellationToken ct = default)
+    {
+        try
+        {
+            using var req = new HttpRequestMessage(HttpMethod.Delete, "/api/delete") { Content = JsonContent.Create(new { model }) };
+            using var r = await _http.SendAsync(req, ct); return r.IsSuccessStatusCode;
+        }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException) { return false; }
+    }
+
     /// <summary>X-05: freies Modell über Ollama laden (wartet bis fertig).</summary>
     public async Task<bool> PullAsync(string model, CancellationToken ct = default)
     {

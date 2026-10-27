@@ -63,18 +63,19 @@ public static partial class GitHubApps
 
     /// <summary>Wählt das passende Windows-Programm: ZIP oder einzelne .exe für diese Prozessorart; Installer (MSI, Setup) nie, weil sie Admin-Rechte
     /// und systemweite Änderungen brauchen. Null, wenn es kein passendes gibt.</summary>
-    public static Asset? PickWindows(IEnumerable<Asset> assets, bool arm64 = false)
+    public static Asset? PickWindows(IEnumerable<Asset> assets, bool arm64 = false, bool allow7z = false)
     {
         int Score(Asset a)
         {
             var n = a.Name.ToLowerInvariant();
             if (a.Size <= 0 || a.Size > MaxBytes || !a.Url.StartsWith("https://github.com/", StringComparison.Ordinal)) return -1;
             if (Skip.Any(n.Contains) || n.EndsWith(".msi") || n.EndsWith(".msix") || n.Contains("setup") || n.Contains("installer")) return -1;
-            var zip = n.EndsWith(".zip"); var exe = n.EndsWith(".exe");
-            if (!zip && !exe) return -1;
+            var zip = n.EndsWith(".zip"); var exe = n.EndsWith(".exe"); var sz = allow7z && n.EndsWith(".7z");
+            if (!zip && !exe && !sz) return -1;
             var score = 0;
-            if (n.Contains("win") || n.Contains("windows")) score += 10;
-            else if (zip) return -1; // ZIP ohne Windows-Hinweis: wahrscheinlich etwas anderes
+            if (n.Contains("win") || n.Contains("windows") || sz && n.Contains(".nsis.")) score += 10; // *.nsis.7z: reines Programmpaket von Electron-Programmen
+            else if (zip || sz) return -1; // Archiv ohne Windows-Hinweis: wahrscheinlich etwas anderes
+            if (sz) score += 3;
             var isArm = n.Contains("arm64") || n.Contains("aarch64");
             var isX64 = n.Contains("x64") || n.Contains("amd64") || n.Contains("x86_64") || n.Contains("win64");
             if (arm64 ? isArm : isX64) score += 6; else if (arm64 ? isX64 : isArm) score -= 8;
@@ -103,7 +104,7 @@ public static partial class GitHubApps
 
     /// <summary>Installiert eine heruntergeladene Datei: Prüfsumme prüfen (wenn GitHub eine nennt), ZIP sicher entpacken oder .exe ablegen,
     /// Hauptprogramm finden, in die Liste eintragen. Ein vorhandener Stand desselben Projekts wird ersetzt.</summary>
-    public static Installed Install(string toolsRoot, string repo, Release release, Asset asset, string downloadedFile, string license, string description, AuditLog? audit = null)
+    public static Installed Install(string toolsRoot, string repo, Release release, Asset asset, string downloadedFile, string license, string description, AuditLog? audit = null, Action<string, string>? extract7z = null, bool arm64 = false)
     {
         if (!ValidRepo(repo)) throw new ArgumentException("Ungültiger Projektname.", nameof(repo));
         var sha = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(downloadedFile)));
@@ -117,6 +118,23 @@ public static partial class GitHubApps
         try
         {
             if (asset.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)) ExtractSafe(downloadedFile, tmp);
+            else if (asset.Name.EndsWith(".7z", StringComparison.OrdinalIgnoreCase))
+                (extract7z ?? throw new InvalidOperationException("7-Zip fehlt – bitte unter „Programme“ aus dem Vollpaket einrichten."))(downloadedFile, tmp);
+            else if (DetectInstaller(downloadedFile) is var kind && kind != InstallerKind.None)
+            {
+                // Installer statt Programm: NSIS mit 7-Zip auspacken (Electron: darin app-64.7z), sonst still installieren lassen (App)
+                if (kind != InstallerKind.Nsis || extract7z is null) throw new InstallerOnlyException(kind, downloadedFile);
+                var raw = tmp + ".roh"; if (Directory.Exists(raw)) Directory.Delete(raw, true); Directory.CreateDirectory(raw);
+                try
+                {
+                    extract7z(downloadedFile, raw);
+                    if (NsisPayload(raw, arm64) is { } payload) extract7z(payload, tmp);
+                    else foreach (var f in Directory.EnumerateFiles(raw, "*", SearchOption.AllDirectories).Where(f => !f.Contains("$PLUGINSDIR", StringComparison.Ordinal)))
+                    { var dst = Path.Combine(tmp, Path.GetRelativePath(raw, f)); Directory.CreateDirectory(Path.GetDirectoryName(dst)!); File.Copy(f, dst, true); }
+                }
+                finally { if (Directory.Exists(raw)) Directory.Delete(raw, true); }
+                if (MainExe(tmp, repo) is null) throw new InstallerOnlyException(kind, downloadedFile);
+            }
             else File.Copy(downloadedFile, Path.Combine(tmp, Path.GetFileName(asset.Name)));
             var exe = MainExe(tmp, repo) ?? throw new InvalidOperationException("Im Paket ist kein Windows-Programm (.exe).");
             if (Directory.Exists(dir)) Directory.Delete(dir, true);

@@ -125,20 +125,32 @@ public static class ProgramGuide
     }.ToDictionary(g => g.Id);
 
     /// <summary>Beschreibung für ein Programm von GitHub aus den Angaben des Projekts. Ohne eigene Erfindungen: Unbekanntes wird so benannt.</summary>
-    public static Guide ForGitHub(string repo, string? description, string licenseId, string? language, int stars, string? version, string? assetName, long? bytes, string? readmeIntro = null)
+    /// <summary>Ausführliche Beschreibung eines GitHub-Programms (Wunsch 27.10.2026): Was ist das (Kurzbeschreibung und README-Einleitung, auf Wunsch
+    /// von der KI auf Deutsch erklärt), wofür, so nutzt du es, die Funktionen aus der README, Herkunft/Lizenz und Entfernen.</summary>
+    public static Guide ForGitHub(string repo, string? description, string licenseId, string? language, int stars, string? version, string? assetName, long? bytes, string? readmeIntro = null,
+        IReadOnlyList<string>? readmeFeatures = null, string? germanSummary = null)
     {
-        var what = string.IsNullOrWhiteSpace(description) ? "Das Projekt beschreibt sich auf GitHub nicht selbst. Schau auf der Projektseite nach, was es tut." : description.Trim();
-        var use = string.IsNullOrWhiteSpace(readmeIntro) ? $"So beschreibt es das Projekt: {what}" : readmeIntro.Trim();
+        var name = repo.Split('/')[1];
+        var what = string.IsNullOrWhiteSpace(description) ? "Das Projekt beschreibt sich auf GitHub nicht selbst." : description.Trim();
+        if (!string.IsNullOrWhiteSpace(germanSummary)) what = germanSummary.Trim();
+        else if (!string.IsNullOrWhiteSpace(readmeIntro)) what += "\n\nAus der Projektbeschreibung (README): " + readmeIntro.Trim();
+        var use = string.IsNullOrWhiteSpace(germanSummary)
+            ? $"„{name}“ ist ein freies Programm aus der Open-Source-Gemeinschaft. Es läuft auf deinem PC, ohne Konto und ohne Abo. Was es genau kann, steht oben und unter „Das kann es alles“. Mit „Auf Deutsch erklären“ fasst die KI die Projektbeschreibung für dich zusammen."
+            : "Die Zusammenfassung oben hat die KI aus der Projektbeschreibung erstellt – bitte bei wichtigen Dingen auf der Projektseite nachlesen.";
         var size = bytes is > 0 ? $", Download {(bytes.Value >= 1L << 20 ? $"{bytes.Value / (double)(1L << 20):0.#} MB" : $"{Math.Max(1, bytes.Value / 1024)} KB")}" : "";
         string[] how = assetName is null
-            ? ["Für dieses Projekt gibt es kein fertiges Windows-Programm zum Installieren.", "Du kannst den Quellcode mit „Herunterladen“ in deinen Ordner „Open Source“ holen."]
-            : [$"Klick auf „Installieren“. Trendo lädt „{assetName}“ von der offiziellen GitHub-Seite des Projekts.", "Trendo prüft die Datei (mit Prüfsumme, wenn GitHub eine angibt) und richtet sie in einem eigenen Ordner ein, ohne Admin und ohne Systemänderung.", "Danach findest du das Programm unter „Programme“ und im Startmenü und startest es mit einem Klick."];
-        var can = new List<string> { $"Beliebtheit: {stars:N0} Sterne auf GitHub" };
+            ? ["Für dieses Projekt gibt es kein fertiges Windows-Programm zum Installieren.", "Mit „Quellcode holen“ landet das Projekt in deinem Ordner „Open Source“ – für Programmierer zum Selbstbauen."]
+            : [$"Klick auf „Installieren & starten“. Trendo lädt „{assetName}“ von der offiziellen GitHub-Seite des Projekts.",
+               "Trendo prüft die Datei (Prüfsumme, wenn GitHub eine nennt). Ist es ein Installer, packt Trendo das Programm aus oder installiert es still nur für dich – ohne Admin.",
+               "Danach startet das Programm sofort. Später findest du es unter „Programme“ und im Startmenü."];
+        var can = new List<string>();
+        if (readmeFeatures is { Count: > 0 }) can.AddRange(readmeFeatures);
+        can.Add($"Beliebtheit: {stars:N0} Sterne auf GitHub");
         if (!string.IsNullOrWhiteSpace(language)) can.Add("Programmiersprache: " + language);
         if (!string.IsNullOrWhiteSpace(version)) can.Add("Neueste Version: " + version);
-        can.Add("Alle Funktionen stehen auf der Projektseite. Trendo zeigt nur, was das Projekt selbst angibt.");
+        if (readmeFeatures is not { Count: > 0 }) can.Add("Alle Funktionen stehen auf der Projektseite (Knopf „Ansehen“).");
         return new Guide(Trendo.Core.GitHubApps.IdFor(repo), repo, what, use, how, can,
             $"GitHub-Projekt {repo}{size}. {Trendo.Core.OpenSource.Explain(licenseId)}",
-            "In Trendo unter „Programme“ auf „Entfernen“ klicken. Trendo löscht genau den Ordner dieses Programms. Bei der Deinstallation von Trendo OS wird es automatisch mit entfernt.");
+            "In Trendo unter „Programme“ auf „Entfernen“ klicken. Trendo löscht genau den Ordner dieses Programms bzw. ruft den Deinstaller auf. Bei der Deinstallation von Trendo OS wird es automatisch mit entfernt.");
     }
 }

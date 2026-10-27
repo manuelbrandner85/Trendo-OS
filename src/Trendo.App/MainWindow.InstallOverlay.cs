@@ -137,7 +137,7 @@ public partial class MainWindow
         _setupScene.Children.Add(front);
         _setupSpark = new Ellipse { Width = 9, Height = 9, Fill = Brushes.White, IsHitTestVisible = false, Effect = new DropShadowEffect { Color = Color.Parse("#F5C451"), BlurRadius = 14, OffsetX = 0, OffsetY = 0, Opacity = 1 } };
         _setupScene.Children.Add(_setupSpark);
-        _setupCancel = new Button { Name = "setup-overlay-cancel", Content = "Abbrechen", FontSize = 13, Padding = new Thickness(22, 7), CornerRadius = new CornerRadius(10), HorizontalAlignment = HorizontalAlignment.Center,
+        _setupCancel = new Button { Name = "setup-overlay-cancel", Content = "Abbrechen", FontSize = 15, Padding = new Thickness(22, 7), CornerRadius = new CornerRadius(10), HorizontalAlignment = HorizontalAlignment.Center,
             Background = Brush.Parse("#22FFFFFF"), Foreground = Brush.Parse("#E6EDF7"), BorderBrush = Brush.Parse("#66F5C451"), BorderThickness = new Thickness(1) };
         ToolTip.SetTip(_setupCancel, "Laufende Installation abbrechen – schon Eingerichtetes bleibt");
         _setupCancel.Click += (_, _) => CancelSetup();

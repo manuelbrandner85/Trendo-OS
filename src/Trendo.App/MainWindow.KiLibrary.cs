@@ -60,6 +60,16 @@ public partial class MainWindow
         foreach (var rt in runtimes)
         {
             var ready = rt.Id == KiRuntime.Ollama ? ol.Up : store.RuntimeReady(rt.Id);
+            if (ready && rt.Id != KiRuntime.Ollama && !rt.FromVollpaket)
+            {
+                var rid = rt.Id;
+                sp.Children.Add(Row(P($"{rt.Name} ist eingerichtet ({store.RuntimeDir(rid)}).", Text, 11), ConfirmRemoveButton("rt:" + rid, "kilib-rt-remove-" + rid.ToString().ToLowerInvariant(), "ki-bibliothek", () =>
+                {
+                    try { _kiLibMsg = store.RemoveRuntime(rid, _core.Audit) ? $"{rt.Name} wurde entfernt. Modelle, die es brauchen, laden es beim nächsten Mal neu." : $"{rt.Name} war nicht eingerichtet."; }
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _kiLibMsg = $"{rt.Name} ist gerade in Benutzung: {ex.Message}"; }
+                    return Task.CompletedTask;
+                })));
+            }
             sp.Children.Add(P($"Läuft mit {rt.Name} ({rt.License}): {rt.WhatItDoes} " +
                 (ready ? "✓ eingerichtet." : rt.FromVollpaket ? (rt.Id == KiRuntime.Ollama ? "Startet automatisch, sobald die Trendo KI läuft." : "Kommt aus dem Vollpaket.") : $"Wird beim ersten Laden mit eingerichtet ({rt.Bytes / (1 << 20)} MB, {(rt.Url is null ? $"offizielle GitHub-Seite {rt.Repo}" : $"offizielles Paket {new Uri(rt.Url).Host}, verlinkt auf github.com/{rt.Repo}")})."), null, 11));
         }
@@ -75,7 +85,18 @@ public partial class MainWindow
             }
             else if (got)
             {
-                if (m.Runtime == KiRuntime.Ollama) { var open = new Button { Name = "kilib-use-" + m.Id, Content = "In der Trendo KI nutzen" }; open.Click += (_, _) => Show("ki"); buttons.Children.Add(open); }
+                if (m.Runtime == KiRuntime.Ollama)
+                {
+                    var open = new Button { Name = "kilib-use-" + m.Id, Content = "In der Trendo KI nutzen" }; open.Click += (_, _) => Show("ki"); buttons.Children.Add(open);
+                    var tag = m.Tag;
+                    buttons.Children.Add(ConfirmRemoveButton("ollama:" + tag, "kilib-remove-" + m.Id, "ki-bibliothek", async () =>
+                    {
+                        var ok = await new OllamaBackend().DeleteAsync(tag);
+                        _core.Audit.Append(Principal.LocalOwner.Name, ok ? "ki.model.remove" : "ki.model.remove.failed", tag);
+                        _kiLibMsg = ok ? $"{m.Name} wurde entfernt." : $"{m.Name} ließ sich nicht entfernen (läuft Ollama?).";
+                        await ScanSourcesAsync();
+                    }));
+                }
                 else
                 {
                     var t = new Button { Name = "kilib-try-" + m.Id, Content = "Ausprobieren", Background = Accent }; t.Click += (_, _) => KiLibraryShow(m.Kind, m.Id); buttons.Children.Add(t);
@@ -217,6 +238,8 @@ public partial class MainWindow
             break;
         }
         if (res is null) throw new InvalidOperationException("Zu viele Weiterleitungen.");
+        // Herstellerseiten nennen die Größe vorher nicht: dann gilt die Angabe des Servers (höchstens 8 GB)
+        if (bytes <= 0) bytes = res.Content.Headers.ContentLength is long len and > 0 ? len : 8L << 30;
         using (res)
         {
             var file = Path.Combine(_deps.ToolsRoot, "ki", ".laden", Guid.NewGuid().ToString("N") + "-" + Path.GetFileName(fileName));
