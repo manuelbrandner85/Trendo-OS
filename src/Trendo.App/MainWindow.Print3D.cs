@@ -62,7 +62,7 @@ public partial class MainWindow
         await DisconnectPrinter();
         try
         {
-            var stream = openStream is not null ? await openStream() : await BambuClient.OpenTls(p.Ip, 8883, () => Thumb(p), t => RememberThumb(p, t), CancellationToken.None);
+            var stream = openStream is not null ? await openStream() : await BambuNet.OpenTls(p.Ip, 8883, () => Thumb(p), t => RememberThumb(p, t), CancellationToken.None);
             var c = new BambuClient(p, code);
             c.Changed += _ => Dispatcher.UIThread.Post(() => { if (CurrentView == "3d-druck" && DateTime.UtcNow - _prLastDraw > TimeSpan.FromSeconds(1)) { _prLastDraw = DateTime.UtcNow; Show("3d-druck"); } });
             await c.ConnectAsync(stream);
@@ -115,7 +115,7 @@ public partial class MainWindow
     async Task CameraSnapshot()
     {
         if (Printer is not { } p || _core.Secrets.Get(p.SecretKey) is not { } code) return;
-        try { _prCamera = await BambuCamera.SnapshotAsync(p.Ip, code, () => Thumb(p), t => RememberThumb(p, t)); _prMsg = "Kamerabild aktualisiert."; }
+        try { _prCamera = await BambuCameraNet.SnapshotAsync(p.Ip, code, () => Thumb(p), t => RememberThumb(p, t)); _prMsg = "Kamerabild aktualisiert."; }
         catch (Exception ex) when (ex is IOException or System.Net.Sockets.SocketException or System.Security.Authentication.AuthenticationException)
         {
             // X1-Drucker: Kamera über RTSPS mit FFmpeg
