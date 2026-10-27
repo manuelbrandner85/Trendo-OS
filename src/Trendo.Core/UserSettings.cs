@@ -61,6 +61,10 @@ public sealed class UserSettings
     public string SenderContact { get; set; } = "";
     /// <summary>Briefe F4: Bild der eigenen Unterschrift (PNG/JPEG), wird unter den Gruß gesetzt.</summary>
     public string LetterSignature { get; set; } = "";
+    /// <summary>Geld F3: eigenes Logo (PNG/JPG/SVG) oben rechts auf Rechnungen.</summary>
+    public string InvoiceLogo { get; set; } = "";
+    /// <summary>Kleinunternehmer nach § 19 UStG (Rechnungen ohne MwSt, Shop-Preise ohne MwSt).</summary>
+    public bool SmallBusiness { get; set; } = true;
     public double UiScale { get; set; } = 1.0;
     public static readonly double[] UiScales = [1.0, 1.15, 1.3];
     public static double ClampScale(double v) => UiScales.OrderBy(x => Math.Abs(x - v)).First();

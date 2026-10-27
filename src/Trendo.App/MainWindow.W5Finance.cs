@@ -16,26 +16,26 @@ public partial class MainWindow
 
     public int FinanceImport(string path)
     {
-        try { var n = Money.Import(Finance.ImportCsv(File.ReadAllText(path))); _core.Audit.Append(Principal.LocalOwner.Name, "finance.import", $"{n} neu"); Say($"{n} Buchungen übernommen (doppelte übersprungen).", "finanzen"); return n; }
+        try { var n = Money.Import(FinanceExtra.Categorize(Finance.ImportCsv(File.ReadAllText(path)), MoneyMemory)); BudgetWarn(); _core.Audit.Append(Principal.LocalOwner.Name, "finance.import", $"{n} neu"); Say($"{n} Buchungen übernommen (doppelte übersprungen).", "finanzen"); return n; }
         catch (Exception ex) { Say("Import hat nicht geklappt: " + ex.Message, "finanzen"); return -1; }
     }
 
     private Control FinanceView()
     {
         var all = Money.All();
-        var sp = new StackPanel { Spacing = 8, Children = { P("Behalte Einnahmen und Ausgaben im Blick. Alles bleibt auf diesem PC. Ersetzt keine Steuerberatung.") } };
+        var sp = new StackPanel { Spacing = 8, Children = { P("Behalte Einnahmen und Ausgaben im Blick – privat wie geschäftlich. Alles bleibt auf diesem PC. Ersetzt keine Steuerberatung."), FinanceOverview(all) } };
         var date = new TextBox { Name = "fin-date", Text = DateTime.Today.ToString("dd.MM.yyyy"), Width = 110 };
         var text = new TextBox { Name = "fin-text", PlaceholderText = "Wofür?", Width = 220 };
         var amount = new TextBox { Name = "fin-amount", PlaceholderText = "Betrag, z. B. -12,50", Width = 140 };
-        var cat = new ComboBox { Name = "fin-cat", ItemsSource = Finance.Categories, SelectedIndex = 0, Width = 130 };
+        var cat = new ComboBox { Name = "fin-cat", ItemsSource = FinanceExtra.AllCategories, SelectedIndex = 0, Width = 150 };
         var vat = new ComboBox { Name = "fin-vat", ItemsSource = new[] { "ohne MwSt", "7 %", "19 %" }, SelectedIndex = 0, Width = 110 };
         var add = Act("fin-add", "Eintragen", () =>
         {
             try
             {
                 var d = DateOnly.Parse(date.Text ?? "", System.Globalization.CultureInfo.GetCultureInfo("de-DE"));
-                Money.Add(new(d, text.Text ?? "", Finance.ParseAmount(amount.Text ?? ""), Finance.Categories[Math.Max(0, cat.SelectedIndex)], vat.SelectedIndex switch { 1 => LegalRates.VatReduced, 2 => LegalRates.VatStandard, _ => 0m }));
-                Say("Eingetragen.", "finanzen");
+                Money.Add(new(d, text.Text ?? "", Finance.ParseAmount(amount.Text ?? ""), FinanceExtra.AllCategories[Math.Max(0, cat.SelectedIndex)], vat.SelectedIndex switch { 1 => LegalRates.VatReduced, 2 => LegalRates.VatStandard, _ => 0m }));
+                Say("Eingetragen.", "finanzen"); BudgetWarn();
             }
             catch (FormatException) { Say("Bitte Datum (TT.MM.JJJJ) und Betrag prüfen. Ausgaben mit Minus.", "finanzen"); }
         }, true);
@@ -55,7 +55,8 @@ public partial class MainWindow
         var seller = new TextBox { Name = "inv-seller", PlaceholderText = "Dein Name und Adresse", AcceptsReturn = true, Width = 260, Height = 60 };
         var buyer = new TextBox { Name = "inv-buyer", PlaceholderText = "Kunde: Name und Adresse", AcceptsReturn = true, Width = 260, Height = 60 };
         var item = new TextBox { Name = "inv-item", PlaceholderText = "Leistung", Width = 220 }; var qty = new TextBox { Name = "inv-qty", Text = "1", Width = 60 }; var unit = new TextBox { Name = "inv-unit", PlaceholderText = "Preis netto", Width = 110 };
-        var small = new CheckBox { Name = "inv-small", Content = new TextBlock { Text = "Kleinunternehmer (keine MwSt)", Foreground = Text }, IsChecked = true };
+        var small = new CheckBox { Name = "inv-small", Content = new TextBlock { Text = "Kleinunternehmer (keine MwSt)", Foreground = Text }, IsChecked = _settings.SmallBusiness };
+        small.IsCheckedChanged += (_, _) => { _settings.SmallBusiness = small.IsChecked == true; SaveSettings(); };
         var make = Act("inv-create", "Rechnung erstellen", () =>
         {
             try
@@ -63,6 +64,7 @@ public partial class MainWindow
                 var inv = new Invoice(Finance.NextInvoiceNumber(Money.InvoiceNumbers(), DateOnly.FromDateTime(DateTime.Today)), DateOnly.FromDateTime(DateTime.Today), seller.Text ?? "", buyer.Text ?? "",
                     [new(item.Text ?? "", Finance.ParseAmount(qty.Text ?? "1"), Finance.ParseAmount(unit.Text ?? ""))], LegalRates.VatStandard, small.IsChecked == true);
                 var p = Money.WriteInvoice(inv);
+                if (_settings.InvoiceLogo.Length > 0) File.WriteAllText(p, FinanceExtra.WithLogo(File.ReadAllText(p), _settings.InvoiceLogo));
                 Money.Add(new(inv.Date, $"Rechnung {inv.Number}", Finance.Totals(inv).Gross, "Einnahmen", inv.SmallBusiness ? 0 : LegalRates.VatStandard));
                 _core.Audit.Append(Principal.LocalOwner.Name, "finance.invoice", inv.Number);
                 Launch(p); Say($"Rechnung {inv.Number} erstellt und als Einnahme eingetragen.", "finanzen");
@@ -72,16 +74,8 @@ public partial class MainWindow
         sp.Children.Add(Card(new StackPanel { Spacing = 5, Children = { H("Rechnung schreiben", 14), new WrapPanel { Children = { seller, buyer } }, new WrapPanel { Children = { item, qty, unit } }, small, make } }));
 
         sp.Children.Add(SmallBizCheck("fin-ku"));
-        sp.Children.Add(H("Letzte Buchungen", 14));
-        var k = 0;
-        foreach (var e in all.Take(25))
-        {
-            var idx = k;
-            sp.Children.Add(Card(Row(P($"{e.Date:dd.MM.yyyy} · {e.Text} · {e.Category}", Text, 11.5), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = {
-                new TextBlock { Text = $"{Eu(e.Amount)} €", Foreground = e.Amount < 0 ? Brush.Parse("#F97316") : Brush.Parse("#22C55E"), VerticalAlignment = VerticalAlignment.Center },
-                Act($"fin-del-{k}", "Löschen", () => { Money.RemoveAt(idx); Show("finanzen"); }) } })));
-            k++;
-        }
+        sp.Children.Add(FinanceTable(all));
+        sp.Children.Add(FinanceExtras());
         return BusinessPage("Geld", sp);
     }
 }

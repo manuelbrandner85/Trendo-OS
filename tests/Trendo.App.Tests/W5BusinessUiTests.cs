@@ -11,7 +11,8 @@ public class W5_Business_Ui
     {
         var (w, _, _) = Ui.Open();
         await w.OpenStudio("STUDIO-ONLINE-BUSINESS-01", "Business");
-        Assert.Equal("business", w.CurrentView);
+        Assert.Equal("verkaufen", w.CurrentView); // Teil 4 U1: das Studio startet mit der Übersicht
+        w.Show("business");
         w.Find<TextBox>("biz-name").Text = "Kaffee-Abo";
         w.Find<NumericUpDown>("biz-price").Value = 15; w.Find<NumericUpDown>("biz-varcost").Value = 20;
         w.Find<Button>("biz-evaluate").Press();

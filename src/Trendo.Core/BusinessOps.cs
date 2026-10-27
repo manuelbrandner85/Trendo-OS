@@ -6,7 +6,7 @@ namespace Trendo.Core;
 
 public sealed record Member(string Name, string Email, string Plan, string Team, string Role, DateOnly Since, bool Active = true);
 public sealed record PlanTier(string Name, double PriceMonth);
-public sealed record BizContact(string Name, string Company, string Email, string Stage, DateOnly? Next, double Value, string Notes = "");
+public sealed record BizContact(string Name, string Company, string Email, string Stage, DateOnly? Next, double Value, string Notes = "", string Address = "");
 public sealed record Product(string Name, string Supplier, double Cost, double Price, int Stock, int LeadDays, double DailySales);
 public sealed record Ticket(string Title, string Customer, string Priority, DateTimeOffset Created, string State = "offen", string Answer = "");
 public sealed record DayStats(DateOnly Date, int Visits, int Signups, int Sales);

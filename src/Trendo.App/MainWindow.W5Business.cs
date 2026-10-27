@@ -12,7 +12,11 @@ public partial class MainWindow
     public BusinessIdea? CurrentIdea;
     public string BusinessFolder => WorkFolder("Business");
 
-    private void InitW5Business() => RegisterTab(BusinessTabs, "business", "Geschäftsidee", "STUDIO-ONLINE-BUSINESS-01", BusinessView, "business", "geschaeft", "idee", "gruenden", "selbststaendig", "bauplan");
+    private void InitW5Business()
+    {
+        RegisterTab(BusinessTabs, "verkaufen", "Verkaufen", "STUDIO-ONLINE-BUSINESS-01", SellView, "verkaufen", "umsatz", "bestellung", "webshop", "shop", "artikel", "kunden");
+        RegisterTab(BusinessTabs, "business", "Geschäftsidee", "STUDIO-ONLINE-BUSINESS-01", BusinessView, "business", "geschaeft", "idee", "gruenden", "selbststaendig", "bauplan");
+    }
 
     private Control BusinessView()
     {
@@ -56,13 +60,37 @@ public partial class MainWindow
 
         var v = BusinessStudio.Evaluate(i);
         var col = v.Decision switch { "Starten" => "#22C55E", "Erst testen" => "#FACC15", _ => "#F97316" };
-        var res = new StackPanel { Spacing = 3, Children = { new TextBlock { Name = "biz-verdict", Text = $"{v.Score} von 100 · {v.Decision}", FontSize = 20, FontWeight = FontWeight.SemiBold, Foreground = Brush.Parse(col) } } };
+        // U2: Score als Ring mit Ampel
+        var lamp = new StackPanel { Name = "biz-lamp", Spacing = 4, VerticalAlignment = VerticalAlignment.Center };
+        foreach (var (d, c) in new[] { ("Nicht starten", "#F0644B"), ("Erst testen", "#F5C524"), ("Starten", "#2FBF71") })
+            lamp.Children.Add(new Avalonia.Controls.Shapes.Ellipse { Width = 16, Height = 16, Fill = Brush.Parse(v.Decision == d ? c : "#33808080"), Stroke = Brush.Parse("#33FFFFFF"), StrokeThickness = 1 });
+        var ring = new Grid { Width = 92, Height = 92, Children = {
+            new Avalonia.Controls.Shapes.Ellipse { Width = 92, Height = 92, Stroke = Edge, StrokeThickness = 9 },
+            new Avalonia.Controls.Shapes.Arc { Name = "biz-ring", Width = 92, Height = 92, StrokeThickness = 9, StartAngle = -90, SweepAngle = 3.6 * v.Score, StrokeLineCap = PenLineCap.Round, Stroke = Brush.Parse(col) },
+            new TextBlock { Text = v.Score.ToString(), FontSize = 26, FontWeight = FontWeight.Bold, Foreground = Text, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } } };
+        var res = new StackPanel { Spacing = 3, Children = {
+            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 14, Margin = new Avalonia.Thickness(0, 4, 0, 6), Children = { ring, lamp,
+                new TextBlock { Name = "biz-verdict", Text = $"{v.Score} von 100 · {v.Decision}", FontSize = 20, FontWeight = FontWeight.SemiBold, Foreground = Brush.Parse(col), VerticalAlignment = VerticalAlignment.Center } } } } };
         var be = BusinessStudio.BreakEven(i);
         res.Children.Add(P($"Gewinn pro Monat: {BusinessStudio.ProfitMonth(i):N0} € · Gewinnschwelle: {(be is null ? "nicht erreichbar" : be + " Verkäufe")} · Stundenlohn: {BusinessStudio.HourlyWage(i):N2} €", Text));
         foreach (var b in v.Blockers) res.Children.Add(P("⚠ " + b, Brush.Parse("#F97316")));
         foreach (var p in v.Parts) res.Children.Add(P($"{p.Label}: {p.Points}/{p.Max} – {p.Why}", null, 11));
         res.Children.Add(P("Das ist eine Schätzung aus deinen Zahlen, keine Garantie.", null, 10));
         sp.Children.Add(Card(new StackPanel { Children = { H("3. Ergebnis", 14), res } }));
+
+        // U3: Schritte der Gründung als Fortschrittsleiste
+        var fs = new FoundingSteps(_core.DataRoot); var done = fs.Done(i.Id);
+        var steps = new WrapPanel { Name = "biz-steps" };
+        for (var k = 0; k < FoundingSteps.Steps.Length; k++)
+        {
+            var step = k; var on = done.Contains(k);
+            var b = new Button { Name = $"biz-step-{k}", Content = (on ? "✓ " : $"{k + 1}. ") + FoundingSteps.Steps[k], FontSize = 12, Padding = new Avalonia.Thickness(12, 5), Margin = new Avalonia.Thickness(0, 0, 6, 6), CornerRadius = new Avalonia.CornerRadius(14),
+                Background = on ? Brush.Parse("#2FBF71") : Brushes.Transparent, Foreground = on ? Brushes.White : Text, BorderBrush = Edge, BorderThickness = new Avalonia.Thickness(on ? 0 : 1) };
+            b.Click += (_, _) => { fs.Toggle(i.Id, step); Show("business"); };
+            steps.Children.Add(b);
+        }
+        sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { Row(H("4. Gründung Schritt für Schritt", 14), P($"{fs.Percent(i.Id)} % geschafft", Text, 12)),
+            new ProgressBar { Name = "biz-steps-progress", Value = fs.Percent(i.Id), Maximum = 100, Height = 8 }, steps } }));
         sp.Children.Add(SmallBizCheck("biz-ku"));
         return BusinessPage("Business-Studio", sp);
     }

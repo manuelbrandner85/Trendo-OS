@@ -143,6 +143,8 @@ public sealed class Ledger(string dataRoot)
         Save(a); return n;
     }
     public void RemoveAt(int i) { var a = All(); if (i >= 0 && i < a.Count) { a.RemoveAt(i); Save(a); } }
+    /// <summary>Kategorie einer Buchung ändern (Index wie in <see cref="All"/>).</summary>
+    public void SetCategory(int i, string category) { var a = All(); if (i >= 0 && i < a.Count) { a[i] = a[i] with { Category = category }; Save(a); } }
     public IEnumerable<string> InvoiceNumbers() => Directory.Exists(InvoiceDir) ? Directory.GetFiles(InvoiceDir, "RE-*.html").Select(f => Path.GetFileNameWithoutExtension(f)) : [];
     public string WriteInvoice(Invoice i) { Directory.CreateDirectory(InvoiceDir); var p = Path.Combine(InvoiceDir, i.Number + ".html"); if (File.Exists(p)) throw new IOException("Diese Rechnungsnummer gibt es schon."); File.WriteAllText(p, Finance.InvoiceHtml(i)); return p; }
 }
