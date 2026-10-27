@@ -11,11 +11,13 @@ public sealed class SheetChartView(SheetChart chart, Func<ChartData> data) : Con
 {
     public SheetChart Chart { get; } = chart;
 
-    public override void Render(DrawingContext g)
+    public override void Render(DrawingContext g) => Paint(g, Bounds.Size, Chart, data());
+
+    /// <summary>Diagramm in ein Rechteck der Größe <paramref name="size"/> zeichnen (auch für Folien in Trendo Präsentation).</summary>
+    public static void Paint(DrawingContext g, Size box, SheetChart Chart, ChartData d, bool background = true)
     {
-        var area = new Rect(Bounds.Size);
-        g.FillRectangle(Brushes.White, area);
-        var d = data();
+        var area = new Rect(box);
+        if (background) g.FillRectangle(Brushes.White, area);
         var face = new Typeface("Inter"); var bold = new Typeface("Inter", FontStyle.Normal, FontWeight.SemiBold);
         FormattedText T(string s, double size, IBrush b, bool strong = false) => new(s, CultureInfo.GetCultureInfo("de-DE"), FlowDirection.LeftToRight, strong ? bold : face, size, b);
         var title = T(Chart.Title, 14, Brushes.Black, true);

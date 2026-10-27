@@ -511,13 +511,13 @@ public partial class MainWindow
     }
 
     /// <summary>Knopf im Menüband (nimmt dem Raster den Fokus nicht weg).</summary>
-    private Button SB(string name, string icon, string label, Action go, string tip, bool on = false)
+    private Button SB(string name, string icon, string label, Action go, string tip, bool on = false, string page = "tabelle")
     {
         var b = new Button { Name = name, Focusable = false, Margin = new Thickness(0, 0, 4, 0), Padding = new Thickness(8, 4), MinWidth = 54, HorizontalContentAlignment = HorizontalAlignment.Center,
             Content = new StackPanel { Spacing = 1, Children = { new TextBlock { Text = icon, FontSize = 17, HorizontalAlignment = HorizontalAlignment.Center }, new TextBlock { Text = label, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Center } } } };
         if (on) b.Background = Accent;
         ToolTip.SetTip(b, tip); Avalonia.Automation.AutomationProperties.SetName(b, label);
-        b.Click += (_, _) => { go(); Show("tabelle"); };
+        b.Click += (_, _) => { go(); Show(page); };
         return b;
     }
 
