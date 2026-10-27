@@ -126,6 +126,41 @@ public class TextProTests
         finally { try { Directory.Delete(dir, true); } catch (IOException) { } }
     }
 
+    static void CheckOdt(TextDoc b)
+    {
+        var pg = b.Page;
+        Assert.True(pg.Landscape); Assert.Equal(2, pg.Columns); Assert.InRange(pg.Left, 1.2, 1.35); Assert.True(pg.PageBorder);
+        Assert.Equal("Erika Muster GmbH", pg.Header); Assert.True(pg.PageNumbers); Assert.Contains("Vertraulich", pg.Footer);
+        Assert.Single(b.Blocks.OfType<TocBlock>());
+        var p = b.Paras.First(x => x.Text.StartsWith("Mehr Infos", StringComparison.Ordinal));
+        Assert.Equal("https://example.org/stadtwerke", p.Marks.Single(m => m.Kind == MarkKind.Link).Value);
+        Assert.Equal("Bitte prüfen", p.Marks.Single(m => m.Kind == MarkKind.Comment).Value);
+        Assert.Equal("Stand Oktober", p.Marks.Single(m => m.Kind == MarkKind.Footnote).Value);
+        Assert.Equal("Quelle: eigene Erhebung", p.Marks.Single(m => m.Kind == MarkKind.Endnote).Value);
+        Assert.DoesNotContain("Stand Oktober", p.Text);
+        var pic = b.Blocks.OfType<Picture>().Single(); Assert.Equal("Balken steigen von links nach rechts", pic.Alt); Assert.Equal("Umsatz", pic.Caption);
+        Assert.Contains(b.Paras, x => x.Text == "und neu"); // Änderungen werden in ODT als angenommen gespeichert
+    }
+
+    [Fact(DisplayName = "T-0230: ODT speichern und lesen, auch nach LibreOffice Writer – Seite, Kopf-/Fußzeile, Links, Kommentare, Fuß-/Endnoten, Verzeichnis, Beschriftung, Alternativtext")]
+    public void Odt_roundtrip()
+    {
+        var dir = Temp();
+        try
+        {
+            var f = Path.Combine(dir, "bericht.odt"); OdtFormat.Write(Sample(), f);
+            using (var z = ZipFile.OpenRead(f)) Assert.DoesNotContain("Trendo", string.Concat(z.Entries.Where(e => e.Name.EndsWith(".xml", StringComparison.Ordinal)).Select(e => new StreamReader(e.Open()).ReadToEnd())));
+            CheckOdt(OdtFormat.Read(f));
+            if (Soffice() is not { } soffice) return;
+            var outDir = Path.Combine(dir, "out"); Directory.CreateDirectory(outDir);
+            var psi = new ProcessStartInfo(soffice) { UseShellExecute = false, CreateNoWindow = true };
+            foreach (var x in new[] { "-env:UserInstallation=" + new Uri(Path.Combine(dir, "profil")).AbsoluteUri, "--headless", "--norestore", "--convert-to", "odt", "--outdir", outDir, f }) psi.ArgumentList.Add(x);
+            using (var p = Process.Start(psi)!) Assert.True(p.WaitForExit(180_000), "LibreOffice antwortet nicht");
+            CheckOdt(OdtFormat.Read(Path.Combine(outDir, "bericht.odt")));
+        }
+        finally { try { Directory.Delete(dir, true); } catch (IOException) { } }
+    }
+
     static string? Soffice()
     {
         foreach (var root in new[] { Environment.GetEnvironmentVariable("TRENDO_WERKZEUGE"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TrendoWerkzeuge") })
