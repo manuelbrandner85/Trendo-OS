@@ -97,7 +97,7 @@ public static class BusinessStudio
     {
         var c = CultureInfo.GetCultureInfo("de-DE"); var v = Evaluate(i); var m = Model(i.ModelId);
         var sb = new StringBuilder();
-        sb.AppendLine($"# Bauplan: {i.Name}").AppendLine().AppendLine("_Erstellt mit Trendo OS. Alle Zahlen sind deine Schätzungen – keine Garantie._").AppendLine();
+        sb.AppendLine($"# Bauplan: {i.Name}").AppendLine().AppendLine("_Alle Zahlen sind deine Schätzungen – keine Garantie._").AppendLine();
         sb.AppendLine("## Idee").AppendLine($"- Problem: {i.Problem}").AppendLine($"- Für wen: {i.Audience}").AppendLine($"- Lösung: {i.Solution}").AppendLine($"- Modell: {m.Name} – {m.How}").AppendLine();
         sb.AppendLine("## Zahlen pro Monat");
         sb.AppendLine(string.Create(c, $"- Preis: {i.Price:C} · Kosten je Verkauf: {i.VariableCost:C} · Feste Kosten: {i.FixedCostMonth:C}"));

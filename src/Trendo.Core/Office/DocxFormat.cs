@@ -89,7 +89,7 @@ public static class DocxFormat
             Add(z, "word/document.xml", docXml);
             Add(z, "word/styles.xml", Styles);
             Add(z, "word/numbering.xml", Numbering);
-            Add(z, "docProps/core.xml", $"<?xml version=\"1.0\" encoding=\"UTF-8\"?><cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><dc:title>{Esc(doc.Title ?? "")}</dc:title><dc:creator>Trendo Text</dc:creator></cp:coreProperties>");
+            Add(z, "docProps/core.xml", $"<?xml version=\"1.0\" encoding=\"UTF-8\"?><cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><dc:title>{Esc(doc.Title ?? "")}</dc:title><dc:creator></dc:creator></cp:coreProperties>");
             foreach (var (n, data) in media) { using var s = z.CreateEntry("word/media/" + n).Open(); s.Write(data); }
         }
         File.Move(tmp, path, true);

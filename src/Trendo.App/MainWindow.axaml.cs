@@ -1186,7 +1186,7 @@ public sealed partial class MainWindow : Window
                     var req = _core.Approvals.Request(Principal.LocalOwner, "ki.cloud.on", $"{c.Name} als Ersatz-KI: Chat-Fragen dürfen den PC verlassen", c.Id);
                     _core.Approvals.Approve(req.Id, Principal.LocalOwner);
                 }
-                if ((use.IsChecked == true) != cur.Cloud.Contains(c.Id)) { cur.ToggleCloud(c.Id); cur.Save(_core.DataRoot); }
+                if ((use.IsChecked == true) != cur.Cloud.Contains(c.Id)) KiSourceSettings.Update(_core.DataRoot, s => { if ((use.IsChecked == true) != s.Cloud.Contains(c.Id)) s.ToggleCloud(c.Id); });
                 _core.Audit.Append(Principal.LocalOwner.Name, use.IsChecked == true ? "ki.cloud.on" : "ki.cloud.off", c.Id);
             };
             save.Click += async (_, _) =>

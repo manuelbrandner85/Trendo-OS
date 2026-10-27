@@ -75,7 +75,15 @@ public sealed class KiSourceSettings
 
     static string FileOf(string root) => Path.Combine(root, "ki", "quellen.json");
 
+    /// <summary>Eine Sperre für Lesen und Schreiben: Hintergrund (automatisches Modell-Laden) und Klicks dürfen sich nicht überschreiben.</summary>
+    static readonly object FileLock = new();
+
     public static KiSourceSettings Load(string root)
+    {
+        lock (FileLock) return LoadUnlocked(root);
+    }
+
+    static KiSourceSettings LoadUnlocked(string root)
     {
         try
         {
@@ -88,7 +96,30 @@ public sealed class KiSourceSettings
         catch { return new(); }
     }
 
-    public void Save(string root) { Directory.CreateDirectory(Path.GetDirectoryName(FileOf(root))!); File.WriteAllText(FileOf(root), JsonSerializer.Serialize(this)); }
+    /// <summary>Atomar speichern: erst in eine Temp-Datei, dann umbenennen. So liest nie jemand eine halbe Datei (die sonst still auf Standard zurückfiele).</summary>
+    public void Save(string root)
+    {
+        lock (FileLock)
+        {
+            var f = FileOf(root);
+            Directory.CreateDirectory(Path.GetDirectoryName(f)!);
+            var tmp = f + "." + Environment.ProcessId + ".tmp";
+            File.WriteAllText(tmp, JsonSerializer.Serialize(this));
+            File.Move(tmp, f, overwrite: true);
+        }
+    }
+
+    /// <summary>Laden, ändern, speichern unter einer Sperre – keine verlorenen Änderungen bei gleichzeitigen Zugriffen.</summary>
+    public static KiSourceSettings Update(string root, Action<KiSourceSettings> change)
+    {
+        lock (FileLock)
+        {
+            var s = LoadUnlocked(root);
+            change(s);
+            s.Save(root);
+            return s;
+        }
+    }
 
     public void Move(string id, int delta)
     {

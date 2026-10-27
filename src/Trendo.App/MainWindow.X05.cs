@@ -41,9 +41,8 @@ public partial class MainWindow
             _srcMsg = $"Lade KI-Modell {m.Name} ({m.SizeGb:0.0} GB) …";
             var ok = await _core.Approvals.Execute(req.Id, "ki.pull", m.Tag, () => pull(m.Tag));
             _core.Audit.Append("app", ok ? "ki.model.auto.ok" : "ki.model.auto.fail", m.Tag);
-            var cur = KiSourceSettings.Load(_core.DataRoot);
-            if (ok) { loaded.Add(m.Tag); cur.AutoFailed.Remove(m.Tag); } else cur.AutoFailed[m.Tag] = cur.AutoFailed.GetValueOrDefault(m.Tag) + 1;
-            cur.Save(_core.DataRoot);
+            if (ok) loaded.Add(m.Tag);
+            KiSourceSettings.Update(_core.DataRoot, cur => { if (ok) cur.AutoFailed.Remove(m.Tag); else cur.AutoFailed[m.Tag] = cur.AutoFailed.GetValueOrDefault(m.Tag) + 1; });
             _srcMsg = ok ? $"KI-Modell {m.Name} ist da." : $"{m.Name} konnte nicht geladen werden – Trendo versucht es beim nächsten Start erneut.";
         }
         return loaded;
@@ -97,9 +96,9 @@ public partial class MainWindow
             var off = set.Disabled.Contains(id);
             var state = LastScan.TryGetValue(id, out var r) ? r.Up ? $"✓ läuft · {r.Models.Count} Modell(e){(r.Models.Count > 0 ? ": " + string.Join(", ", r.Models.Take(3)) : "")}" : "nicht gefunden" : "noch nicht gesucht";
             var up = new Button { Name = "src-up-" + id, Content = "▲", IsEnabled = pos > 0, Padding = new Thickness(8, 2) };
-            up.Click += (_, _) => { set.Move(id, -1); set.Save(_core.DataRoot); Show("ki-quellen"); };
+            up.Click += (_, _) => { KiSourceSettings.Update(_core.DataRoot, s => s.Move(id, -1)); Show("ki-quellen"); };
             var tg = new Button { Name = "src-toggle-" + id, Content = off ? "Einschalten" : "Ausschalten", Padding = new Thickness(8, 2) };
-            tg.Click += (_, _) => { set.Toggle(id); set.Save(_core.DataRoot); Show("ki-quellen"); };
+            tg.Click += (_, _) => { KiSourceSettings.Update(_core.DataRoot, s => s.Toggle(id)); Show("ki-quellen"); };
             var web = new Button { Name = "src-web-" + id, Content = "Herstellerseite", Padding = new Thickness(8, 2), IsEnabled = !_core.Offline };
             web.Click += (_, _) => Launch(s.OfficialUrl);
             sp.Children.Add(WCard(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {
@@ -108,7 +107,7 @@ public partial class MainWindow
         }
         sp.Children.Add(H("Freie Modelle", 14));
         var auto = new CheckBox { Name = "ki-auto-models", Content = "Freie Modelle (Apache-2.0, MIT) automatisch laden, passend zu diesem PC", IsChecked = set.AutoModels, Foreground = Text };
-        auto.IsCheckedChanged += (_, _) => { var cur = KiSourceSettings.Load(_core.DataRoot); cur.AutoModels = auto.IsChecked == true; cur.Save(_core.DataRoot); _core.Audit.Append(Principal.LocalOwner.Name, cur.AutoModels ? "ki.auto.on" : "ki.auto.off", ""); };
+        auto.IsCheckedChanged += (_, _) => { var cur = KiSourceSettings.Update(_core.DataRoot, s => s.AutoModels = auto.IsChecked == true); _core.Audit.Append(Principal.LocalOwner.Name, cur.AutoModels ? "ki.auto.on" : "ki.auto.off", ""); };
         sp.Children.Add(auto);
         var hw = new HardwareInfo(TotalRam, null, 0);
         var have = LastScan.TryGetValue("ollama", out var ol) && ol.Up ? ol.Models : [];

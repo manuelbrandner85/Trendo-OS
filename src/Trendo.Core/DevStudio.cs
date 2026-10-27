@@ -31,7 +31,7 @@ public static class DevStudio
         if (Directory.Exists(dir)) throw new IOException($"Den Ordner „{safe}“ gibt es schon.");
         Directory.CreateDirectory(dir);
         void W(string rel, string text) { var p = Path.Combine(dir, rel); Directory.CreateDirectory(Path.GetDirectoryName(p)!); File.WriteAllText(p, text.Replace("\r\n", "\n"), new UTF8Encoding(false)); }
-        W("README.md", $"# {name}\n\nAngelegt mit Trendo OS ({t.Name}).\n");
+        W("README.md", $"# {name}\n\nVorlage: {t.Name}.\n");
         W(".gitignore", "bin/\nobj/\nnode_modules/\n__pycache__/\n*.pyc\n");
         switch (t.Id)
         {
@@ -74,7 +74,7 @@ public static class DevStudio
         var r = Cli.Run("git", ["init", "-q", "-b", "main"], dir);
         if (!r.Ok) return r;
         Cli.Run("git", ["add", "-A"], dir);
-        return Cli.Run("git", ["-c", "user.name=Trendo", "-c", "user.email=trendo@localhost", "commit", "-q", "-m", "Start mit Trendo OS"], dir);
+        return Cli.Run("git", ["-c", "user.name=Trendo", "-c", "user.email=trendo@localhost", "commit", "-q", "-m", "Erster Stand"], dir);
     }
 
     public static GitState Git(string dir)

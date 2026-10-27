@@ -255,8 +255,8 @@ public partial class MainWindow
         }
         _letterSync = Sync; Sync();
         sender.TextAlignment = TextAlignment.Right; sender.HorizontalAlignment = HorizontalAlignment.Right;
-        var brand = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Children = { Logo(22), new TextBlock { Text = "Trendo OS", Foreground = Brushes.Black, FontWeight = FontWeight.SemiBold, FontSize = 16, VerticalAlignment = VerticalAlignment.Center } } };
-        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,*"), Margin = new Thickness(0, 0, 0, 8), Children = { brand, sender } };
+        // Vorgabe 2026-10-27: Im Brief steht nur, was der Nutzer selbst angibt – kein Trendo-Logo, kein „Trendo OS“ im Briefkopf
+        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,*"), Margin = new Thickness(0, 0, 0, 8), Children = { sender } };
         Grid.SetColumn(sender, 1);
         var page = new StackPanel { Children = { head, recip, date, subject, sal, body, closing } };
         var sheet = new Border { Name = "letter-preview", Background = Brushes.White, CornerRadius = new CornerRadius(8), Padding = new Thickness(18), Child = new ScrollViewer { Content = page }, MinWidth = 180, VerticalAlignment = VerticalAlignment.Stretch };

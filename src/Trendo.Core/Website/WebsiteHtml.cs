@@ -129,7 +129,7 @@ textarea { min-height: 8rem; }
         if (c.Frames.Count > 0 && c.Technique != "video") sb.Append(FrameBlock(c, "abschnitt schmal"));
         if (c.PixelStreaming)
             sb.Append("<section class=\"abschnitt schmal\" id=\"pixel\"><h2>Pixel Streaming</h2><p>Pixel Streaming ist nur eine Option und hier nicht verbunden. Dafür brauchst du einen eigenen Server. Trendo startet keinen.</p><p>Die Notiz dazu liegt in PIXEL-STREAMING.md im Projektordner.</p></section>\n");
-        sb.Append("</main>\n<footer class=\"fuss\"><p>Erstellt mit Trendo OS. Die Seite ist nicht veröffentlicht.</p><p><a href=\"impressum.html\">Impressum</a> · <a href=\"assets/vendor/LIZENZEN.txt\">Lizenzen</a></p></footer>\n");
+        sb.Append("</main>\n<footer class=\"fuss\"><p><a href=\"impressum.html\">Impressum</a> · <a href=\"assets/vendor/LIZENZEN.txt\">Lizenzen</a></p></footer>\n");
         if (!string.IsNullOrEmpty(b64)) sb.Append("<script id=\"modell-daten\" type=\"text/plain\">").Append(b64).Append("</script>\n");
         sb.Append(Scripts(c));
         sb.Append("</body></html>\n");
