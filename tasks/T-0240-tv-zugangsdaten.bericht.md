@@ -14,7 +14,7 @@
 ## Kommandos und Ergebnisse
 - `dotnet test Trendo.sln -c Release` → Exit 0: Api 15/15, Core 847 bestanden/1 übersprungen, App 434 bestanden/3 übersprungen
 - `python -m unittest discover -s tests/claude_handoff` → 8 Tests OK
-- Rohlog: `reports/T-0240/volltest.log`, SHA-256 `\a4bea3ef513ce32573ec03051cb27feeffbcae5ef07ca541db01d5d29fd0b704`
+- Rohlog: `reports/T-0240/volltest.log`, SHA-256 `4b4febb3a7b42f7a309336973b8b699ab303a5935aa150c57cf394de617a9c89`
 - Probelauf ohne Änderung an echten Daten: Ersetzung erfasst alle 14 164 Passwortstellen einer vorhandenen Senderliste, 0 übrig (nur gezählt, nichts ausgegeben).
 
 ## Offene Punkte / Risiken
