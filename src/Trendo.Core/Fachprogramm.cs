@@ -258,7 +258,10 @@ public sealed class FachprogrammAdapter
         Rbac.Demand(by, Permission.ApproveAction, _audit);
         try
         {
-            var geschafft = await _gate.Execute(approvalId, InstallAktion, id, () => _deps.InstallAsync(by, c, null, ct));
+            var warOffline = _deps.Offline; _deps.Offline |= _offline; // offline: Mitgeliefertes nur aus dem Vollpaket
+            bool geschafft;
+            try { geschafft = await _gate.Execute(approvalId, InstallAktion, id, () => _deps.InstallAsync(by, c, null, ct)); }
+            finally { _deps.Offline = warOffline; }
             if (!geschafft || Finde(p) is null)
                 return Neu(p, FachprogrammStand.NichtGefunden, "Die Installation hat nicht geklappt. Das Programm ist nicht da.", null, null, false);
             return Erkennen(id);

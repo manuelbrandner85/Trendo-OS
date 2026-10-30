@@ -125,6 +125,17 @@ public partial class MainWindow
     }
 
     List<TvChannel> TvChannels() => _tvChannels ??= Tv.Channels();
+
+    /// <summary>Player mpv einrichten: aus dem Vollpaket – oder ohne Vollpaket aus der offiziellen Quelle (der Klick ist die Zustimmung).</summary>
+    async Task TvSetupPlayer()
+    {
+        var mpv = DependencyCatalog.Get("mpv");
+        if (!_deps.HasConsent) _deps.GiveConsent(Principal.LocalOwner);
+        _tvMsg = "Player wird eingerichtet …"; Show("tv");
+        await InstallOne(mpv);
+        _tvMsg = MpvExe is not null ? "✓ Player ist eingerichtet – Sender antippen und los." : "✗ Der Player ließ sich nicht einrichten. Ist Internet da? Sonst das Trendo-Vollpaket anschließen.";
+        Show("tv");
+    }
     List<TvProgramme> TvProgs() => _tvProgs ??= Tv.Programmes();
     void TvReload() { _tvChannels = null; _tvProgs = null; _tvVod = null; _tvSeries = null; }
     Task? _tvWarm;
@@ -275,7 +286,7 @@ public partial class MainWindow
     {
         if (slot == "main") { _tvChannel = c?.Id ?? _tvChannel; if (c is not null) { Tv.Watched(c.Id); _tvPlayingTitle = null; } }
         if (TvPlayOverride is { } o) { o(slot, url); TvUpdateNow(); return true; }
-        if (MpvExe is null) { _tvMsg = "Zum Abspielen braucht Trendo den Player mpv (im Vollpaket enthalten). Unten „mpv hinzufügen“."; return false; }
+        if (MpvExe is null) { _tvMsg = "Zum Abspielen braucht Trendo den freien Player mpv – einmal „Player jetzt einrichten“ klicken."; return false; }
         var view = slot == "main" ? _tvPlayer : _tvMulti[int.Parse(slot[1..])];
         if (view is null) return false;
         view.MpvPath = MpvExe;
@@ -541,8 +552,8 @@ public partial class MainWindow
         };
         if (MpvExe is null && TvPlayOverride is null)
             screen.Child = new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Spacing = 8, Children = {
-                P("Für das Bild braucht Trendo den freien Player mpv (im Vollpaket enthalten).", Brushes.White, 13),
-                TvButton("tv-get-mpv", "mpv hinzufügen", () => OpenAddHub("alles", "mpv"), true) } };
+                P("Für das Bild braucht Trendo den freien Player mpv – einmal einrichten, dann läuft alles.", Brushes.White, 13),
+                TvButton("tv-get-mpv", "▶ Player jetzt einrichten", () => _ = TvSetupPlayer(), true) } };
         right.Children.Add(screen);
         var vol = new Slider { Name = "tv-volume", Minimum = 0, Maximum = 130, Value = 100, Width = 130, VerticalAlignment = VerticalAlignment.Center };
         vol.ValueChanged += (_, _) => _tvPlayer?.Send("set_property", "volume", Math.Round(vol.Value));

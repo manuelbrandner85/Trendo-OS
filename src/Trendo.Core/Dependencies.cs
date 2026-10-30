@@ -188,7 +188,7 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
         if (c.Id == "model") return ModelPresent;
         if (Vollpaket.IncludedPath(ToolsRoot, c.Id) is { } ip && _exists(ip)) return true;
         if (c.Id == "model-3b") return HasModel(DependencyCatalog.LargeModel);
-        return c.DetectPaths?.Any(p => _exists(_expand(p))) == true;
+        return Detect(c).Any(p => _exists(_expand(p)));
     }
 
     /// <summary>Modell vorhanden, wenn Ollama-Manifest existiert (echte Prüfung im Dateisystem).</summary>
@@ -206,11 +206,27 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
 
     /// <summary>Ordner „Programme“ des Vollpakets, falls gefunden (siehe <see cref="Vollpaket.Locate"/>).</summary>
     public string? VollpaketDir { get; set; }
+    /// <summary>Offline: mitgelieferte Programme nur aus dem Vollpaket, nie aus dem Internet.</summary>
+    public bool Offline { get; set; }
 
     /// <summary>Vom Host gesetzt: sucht das Vollpaket, wenn es beim Einrichten noch nicht bekannt ist. In Tests nie gesetzt.</summary>
     public Func<string?>? LocateVollpaket { get; set; }
 
-    public string? ResolvePath(Component c) => Vollpaket.IncludedPath(ToolsRoot, c.Id) is { } ip && c.Id != "model" && _exists(ip) ? ip : c.DetectPaths?.Select(_expand).Where(_exists).Select(p => p.Contains('*') ? ResolveGlob(p) ?? (_customExists ? p : null) : p).FirstOrDefault(p => p is not null);
+    public string? ResolvePath(Component c) => Vollpaket.IncludedPath(ToolsRoot, c.Id) is { } ip && c.Id != "model" && _exists(ip) ? ip : Detect(c).Select(_expand).Where(_exists).Select(p => p.Contains('*') ? ResolveGlob(p) ?? (_customExists ? p : null) : p).FirstOrDefault(p => p is not null);
+
+    /// <summary>Bekannte Orte plus die Ablage von winget im Benutzerordner (Links und Pakete) – dort landen Programme, die ohne Vollpaket
+    /// aus der offiziellen Quelle nachgeladen wurden.</summary>
+    static IEnumerable<string> Detect(Component c)
+    {
+        foreach (var p in c.DetectPaths ?? []) yield return p;
+        if (c.WingetId is null || c.Tools is null) yield break;
+        foreach (var t in c.Tools)
+        {
+            yield return $@"%LOCALAPPDATA%\Microsoft\WinGet\Links\{t}.exe";
+            yield return $@"%LOCALAPPDATA%\Microsoft\WinGet\Packages\{c.WingetId}_*\{t}.exe";
+            yield return $@"%LOCALAPPDATA%\Microsoft\WinGet\Packages\{c.WingetId}_*\*\{t}.exe";
+        }
+    }
 
     /// <summary>Installiert automatisch (AutoUser/AutoElevated). Guided/Bundled werfen.</summary>
     public async Task<bool> InstallAsync(Principal by, Component c, Action<string>? progress = null, CancellationToken ct = default)
@@ -227,7 +243,15 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
             var pkg = Vollpaket.Included[c.Id].Package;
             VollpaketDir ??= LocateVollpaket?.Invoke();
             var entry = VollpaketDir is { } dir ? Vollpaket.Load(dir)?.FirstOrDefault(e => e.Id == pkg) : null;
-            if (entry is null) r = (1, "Vollpaket nicht gefunden – bitte den Trendo-USB-Stick oder den Ordner mit „Programme“ anschließen.");
+            if (entry is null && c.WingetId is { } wid && !Offline)
+            {
+                // Ohne Vollpaket (nur die Setup-Datei bekommen): aus der offiziellen Quelle über winget nachladen – nach Zustimmung, mit Protokoll
+                progress?.Invoke($"Kein Vollpaket gefunden – {c.Name} wird aus der offiziellen Quelle geladen …");
+                audit.Append(by.Name, "deps.install.online", c.Id);
+                r = await Runner.RunAsync("winget", $"install --id {wid} -e --silent --accept-package-agreements --accept-source-agreements --disable-interactivity", progress, ct);
+                if (r.exit != 0) r = (r.exit, $"{c.Name} ließ sich nicht laden ({r.output.Trim()}). Mit Internet erneut versuchen – oder das Trendo-Vollpaket (Ordner „Programme“) anschließen.");
+            }
+            else if (entry is null) r = (1, "Vollpaket nicht gefunden – bitte den Trendo-USB-Stick oder den Ordner mit „Programme“ anschließen.");
             else
                 try { Vollpaket.InstallPackage(VollpaketDir!, entry, ToolsRoot, audit); r = (0, ""); progress?.Invoke($"{c.Name}: aus dem Vollpaket eingerichtet"); }
                 catch (InvalidOperationException e) { r = (1, e.Message); }

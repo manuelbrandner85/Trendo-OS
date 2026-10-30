@@ -81,7 +81,7 @@ public sealed partial class MainWindow : Window
         _opt = opt; _core = core; _probe = probe;
         // Isolated: nichts außerhalb des Datenordners erkennen (Tests sind unabhängig von installierten Programmen/laufendem Ollama)
         Func<string, bool>? exists = opt.Isolated ? p => Path.GetFullPath(p).StartsWith(Path.GetFullPath(core.DataRoot), StringComparison.OrdinalIgnoreCase) && File.Exists(p) : null;
-        _deps = new DependencyManager(core.Audit, new RealProcessRunner(), fileExists: exists) { ConsentFile = Path.Combine(core.DataRoot, "deps-consent.txt"), ToolsFile = Path.Combine(core.DataRoot, "tools.json") };
+        _deps = new DependencyManager(core.Audit, new RealProcessRunner(), fileExists: exists) { ConsentFile = Path.Combine(core.DataRoot, "deps-consent.txt"), ToolsFile = Path.Combine(core.DataRoot, "tools.json"), Offline = core.Offline || opt.Isolated }; // Tests laden nie etwas aus dem Internet
         _deps.OllamaUp = opt.Isolated ? () => Task.FromResult(false) : _ollama.IsUpAsync;
         if (opt.Isolated) _deps.ToolsRoot = Path.Combine(core.DataRoot, "werkzeuge"); // Tests richten nie etwas im echten Werkzeugordner ein
         else _deps.LocateVollpaket = VollpaketStart.Find;
@@ -1000,7 +1000,7 @@ public sealed partial class MainWindow : Window
                 }
                 else
                 {
-                    var b = new Button { Name = "btn-install-" + c.Id, Content = c.Mode switch { DeliveryMode.Included => "Aus dem Vollpaket einrichten", DeliveryMode.AutoElevated => "Installieren (Admin)", _ => "Installieren" }, IsEnabled = !_depBusy && (c.Mode == DeliveryMode.Included || !_core.Offline) };
+                    var b = new Button { Name = "btn-install-" + c.Id, Content = c.Mode switch { DeliveryMode.Included => VollpaketHere || _deps.Offline ? "Aus dem Vollpaket einrichten" : "Installieren (offizielle Quelle)", DeliveryMode.AutoElevated => "Installieren (Admin)", _ => "Installieren" }, IsEnabled = !_depBusy && (c.Mode == DeliveryMode.Included || !_core.Offline) };
                     b.Click += async (_, _) => await InstallOne(c);
                     right = b;
                 }
@@ -1129,7 +1129,7 @@ public sealed partial class MainWindow : Window
             if (c.Ok) continue;
             var ask = new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12) };
             var row = new StackPanel { Spacing = 6 };
-            row.Children.Add(new TextBlock { Name = "ask-" + comp.Id, Text = comp.Mode == DeliveryMode.Included ? $"{_depStudioTitle} braucht {comp.Name}. Es liegt im Trendo-Vollpaket – jetzt einrichten?" : $"{_depStudioTitle} braucht {comp.Name}. Jetzt installieren?", Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
+            row.Children.Add(new TextBlock { Name = "ask-" + comp.Id, Text = comp.Mode == DeliveryMode.Included ? $"{_depStudioTitle} braucht {comp.Name}. {(VollpaketHere || _deps.Offline ? "Es liegt im Trendo-Vollpaket" : "Trendo lädt es aus der offiziellen Quelle")} – jetzt einrichten?" : $"{_depStudioTitle} braucht {comp.Name}. Jetzt installieren?", Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
             row.Children.Add(P($"Lizenz: {comp.License} · {comp.Reason}{(comp.ApproxMb > 0 ? $" · ca. {comp.ApproxMb} MB" : "")}", null, 11));
             var btns = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
             if (comp.Mode == DeliveryMode.Guided)
@@ -1319,6 +1319,19 @@ public sealed partial class MainWindow : Window
         finally { EndSetupOverlay(); }
         ReloadStudios(); Show("components");
     }
+
+    /// <summary>Liegt ein Vollpaket (Ordner „Programme“) bereit? Sonst lädt Trendo mitgelieferte Programme aus der offiziellen Quelle.</summary>
+    bool VollpaketHere
+    {
+        get
+        {
+            if (_deps.VollpaketDir is not null) return true;
+            if (DateTime.UtcNow - _vpCheckedAt < TimeSpan.FromMinutes(1)) return false; // Suche (Laufwerke, Downloads) nicht bei jeder Zeile wiederholen
+            _vpCheckedAt = DateTime.UtcNow;
+            return (_deps.VollpaketDir = _deps.LocateVollpaket?.Invoke()) is not null;
+        }
+    }
+    DateTime _vpCheckedAt;
 
     private async Task<bool> InstallOne(Component c, bool refresh = true)
     {

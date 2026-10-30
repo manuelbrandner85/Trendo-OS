@@ -293,7 +293,7 @@ public class Paket44_Fachprogramme
         Assert.Empty(runner.Calls);
         Assert.Empty(f.Launcher.Opened);
 
-        // T-0222: Mitgeliefertes kommt nur aus dem Vollpaket – auch offline, nie per winget aus dem Internet
+        // T-0222: Offline kommt Mitgeliefertes nur aus dem Vollpaket, nie per winget aus dem Internet
         var offline = new FachprogrammAdapter(deps, f.Core.Approvals, secrets, f.Core.Audit, f.Launcher, offline: true);
         var weg = await offline.InstallierenAsync(Principal.LocalOwner, Frei(f, FachprogrammAdapter.InstallAktion, "blender"), "blender");
         Assert.NotEqual(FachprogrammStand.Erreichbar, weg.Stand);
@@ -302,7 +302,8 @@ public class Paket44_Fachprogramme
         var ja = Frei(f, FachprogrammAdapter.InstallAktion, "inkscape");
         var versuch = await mit.InstallierenAsync(Principal.LocalOwner, ja, "inkscape");
         Assert.Equal(FachprogrammStand.NichtGefunden, versuch.Stand);
-        Assert.Empty(runner.Calls); // kein Vollpaket angeschlossen: nichts geladen
+        // 27.10.2026: ohne Vollpaket kommt es nach Freigabe aus der offiziellen Quelle (hier nachgebildet, danach nicht gefunden)
+        Assert.Contains(runner.Calls, c => c.File == "winget" && c.Args.StartsWith("install --id Inkscape.Inkscape -e"));
         Assert.DoesNotContain(f.Core.Audit.ReadAll(), e => e.Detail.Contains("Inkscape.Inkscape") && e.Detail.Contains("geheim"));
     }
 
