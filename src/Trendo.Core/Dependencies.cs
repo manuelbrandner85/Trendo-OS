@@ -206,6 +206,8 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
 
     /// <summary>Ordner „Programme“ des Vollpakets, falls gefunden (siehe <see cref="Vollpaket.Locate"/>).</summary>
     public string? VollpaketDir { get; set; }
+    /// <summary>Vom Host gesetzt: lädt ein Paket des Online-Vollpakets (Paket-Id, Fortschritt) und liefert den Ordner mit manifest.json und Paket – oder null.</summary>
+    public Func<string, Action<string>?, CancellationToken, Task<string?>>? FetchVollpaketPackage { get; set; }
     /// <summary>Offline: mitgelieferte Programme nur aus dem Vollpaket, nie aus dem Internet.</summary>
     public bool Offline { get; set; }
 
@@ -239,10 +241,22 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
         (int exit, string output) r;
         if (c.Mode == DeliveryMode.Included)
         {
-            // Mitgeliefert: nur aus dem Vollpaket, nie aus dem Internet
+            // Mitgeliefert: aus dem Vollpaket (USB/Ordner) – sonst dasselbe geprüfte Paket aus dem Online-Vollpaket, zuletzt aus der offiziellen Quelle
             var pkg = Vollpaket.Included[c.Id].Package;
             VollpaketDir ??= LocateVollpaket?.Invoke();
             var entry = VollpaketDir is { } dir ? Vollpaket.Load(dir)?.FirstOrDefault(e => e.Id == pkg) : null;
+            var srcDir = VollpaketDir;
+            string? onlineDir = null;
+            if (entry is null && !Offline && FetchVollpaketPackage is { } fetch)
+            {
+                progress?.Invoke($"{c.Name} wird aus dem Trendo-Vollpaket im Internet geladen …");
+                onlineDir = await fetch(pkg, progress, ct);
+                if (onlineDir is not null && Vollpaket.Load(onlineDir)?.FirstOrDefault(e => e.Id == pkg) is { } oe)
+                {
+                    entry = oe; srcDir = onlineDir;
+                    audit.Append(by.Name, "deps.install.vollpaket-online", c.Id);
+                }
+            }
             if (entry is null && c.WingetId is { } wid && !Offline)
             {
                 // Ohne Vollpaket (nur die Setup-Datei bekommen): aus der offiziellen Quelle über winget nachladen – nach Zustimmung, mit Protokoll
@@ -253,8 +267,9 @@ public sealed class DependencyManager(AuditLog audit, IProcessRunner runner, Fun
             }
             else if (entry is null) r = (1, "Vollpaket nicht gefunden – bitte den Trendo-USB-Stick oder den Ordner mit „Programme“ anschließen.");
             else
-                try { Vollpaket.InstallPackage(VollpaketDir!, entry, ToolsRoot, audit); r = (0, ""); progress?.Invoke($"{c.Name}: aus dem Vollpaket eingerichtet"); }
-                catch (InvalidOperationException e) { r = (1, e.Message); }
+                try { Vollpaket.InstallPackage(srcDir!, entry, ToolsRoot, audit); r = (0, ""); progress?.Invoke($"{c.Name}: aus dem Vollpaket eingerichtet"); }
+                catch (Exception e) when (e is InvalidOperationException or IOException or InvalidDataException or UnauthorizedAccessException) { r = (1, e.Message); }
+                finally { if (onlineDir is not null) try { File.Delete(Path.Combine(onlineDir, entry.File)); } catch (IOException) { } } // geladenes Paket nicht liegen lassen
             if (r.exit != 0) progress?.Invoke(r.output);
         }
         else if (c.PostInstall is { } cmd)

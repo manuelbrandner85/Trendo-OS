@@ -85,6 +85,7 @@ public sealed partial class MainWindow : Window
         _deps.OllamaUp = opt.Isolated ? () => Task.FromResult(false) : _ollama.IsUpAsync;
         if (opt.Isolated) _deps.ToolsRoot = Path.Combine(core.DataRoot, "werkzeuge"); // Tests richten nie etwas im echten Werkzeugordner ein
         else _deps.LocateVollpaket = VollpaketStart.Find;
+        InitVollpaketOnline(); // ohne Vollpaket: dieselben Pakete vom GitHub-Release
         StartupTrace.Mark("ctor.deps");
         _settings = UserSettings.Load(core.DataRoot); ApplyTheme(_settings);
         // Felder wurden vor ApplyTheme erzeugt: Schriftfarben nachziehen

@@ -9,6 +9,9 @@ public static class Vollpaket
 {
     public const string FolderName = "Programme";
     public const string ManifestName = "manifest.json";
+    /// <summary>Online-Vollpaket (Wunsch 27.10.2026: „alles soll direkt vom Setup aus funktionieren“): dieselben geprüften Pakete samt Manifest
+    /// liegen am GitHub-Release v0.9.15. Ohne Vollpaket lädt Trendo nur das benötigte Paket von dort – Prüfsumme wie beim USB-Stick.</summary>
+    public const string OnlineBase = "https://github.com/manuelbrandner85/Trendo-OS/releases/download/v0.9.15/";
 
     public sealed record Entry(
         [property: JsonPropertyName("id")] string Id,
