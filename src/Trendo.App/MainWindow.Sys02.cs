@@ -59,6 +59,8 @@ public partial class MainWindow
     }
     private WrapPanel Line(params Control[] c) { var w = new WrapPanel(); foreach (var x in c) { x.Margin = new Avalonia.Thickness(0, 0, 6, 6); x.VerticalAlignment = VerticalAlignment.Center; w.Children.Add(x); } return w; }
 
+    private string? _zipSrc, _zipFile;
+
     private void Try(string view, Action a)
     {
         try { a(); }
@@ -98,10 +100,36 @@ public partial class MainWindow
                 foreach (var u in top) duOut.Children.Add(P($"{(u.IsFolder ? "📁" : "📄")} {Path.GetFileName(u.Path)} – {ResourceMonitor.Size(u.Bytes)}", null, 11));
             }))), duOut)));
 
-        var zs = Field("zip-src", "Ordner oder Datei zum Packen"); var zu = Field("zip-file", "ZIP-Datei zum Entpacken");
+        // Gewählte Pfade bleiben nach einer Meldung stehen (die Seite wird dabei neu aufgebaut)
+        var zs = Field("zip-src", "Ordner oder Datei zum Packen", text: _zipSrc); var zu = Field("zip-file", "ZIP-Datei zum Entpacken", text: _zipFile);
+        zs.TextChanged += (_, _) => _zipSrc = zs.Text; zu.TextChanged += (_, _) => _zipFile = zu.Text;
+        var zipAsk = new StackPanel { Name = "zip-conflict", Spacing = 6 };
+        // T-0243: Gibt es Dateien schon, fragt Trendo, statt still zu überschreiben
+        void ZipAsk(ArchiveConflictException ex, Func<ArchiveConflict, string> run)
+        {
+            zipAsk.Children.Clear();
+            zipAsk.Children.Add(P("⚠ " + ex.Message + (ex.Names.Count > 1 ? " " + string.Join(", ", ex.Names.Take(5).Select(Path.GetFileName)) + (ex.Names.Count > 5 ? " …" : "") : "") + " Was soll passieren?", Text, 12.5));
+            var row = new WrapPanel();
+            foreach (var (mode, id, label) in new[] { (ArchiveConflict.KeepBoth, "keep", "Beide behalten"), (ArchiveConflict.Skip, "skip", "Vorhandene behalten"), (ArchiveConflict.Overwrite, "replace", "Ersetzen") })
+            {
+                var m = mode;
+                row.Children.Add(Sp(Act("zip-conflict-" + id, label, () => Try(V, () => { zipAsk.Children.Clear(); Say(run(m), V); }), m == ArchiveConflict.KeepBoth)));
+            }
+            row.Children.Add(Sp(Act("zip-conflict-cancel", "Abbrechen", () => { zipAsk.Children.Clear(); Say("Abgebrochen – nichts verändert.", V); })));
+            zipAsk.Children.Add(row);
+        }
+        string DoPack(ArchiveConflict mode) { _zipSrc = zs.Text; var s = Clean(zs).TrimEnd('/', '\\'); var z = Archives.Pack([s], s + ".zip", mode); return "Gepackt: " + Path.GetFileName(z); }
+        string DoUnpack(ArchiveConflict mode)
+        {
+            _zipFile = zu.Text;
+            var z = Clean(zu); var d = Path.Combine(Path.GetDirectoryName(z)!, Path.GetFileNameWithoutExtension(z));
+            var n = Archives.Unpack(z, d, mode);
+            _core.Audit.Append(Principal.LocalOwner.Name, "zip.unpack", $"{Path.GetFileName(z)} {mode} {n}");
+            return $"{n} Dateien entpackt nach {Path.GetFileName(d)}.";
+        }
         sp.Children.Add(Card(Section("ZIP packen und entpacken", "Gepackt wird neben das Original. Unsichere Archive (die Dateien außerhalb des Zielordners ablegen wollen) werden abgelehnt.",
-            Line(zs, Act("zip-pack", "Packen", () => Try(V, () => { var s = Clean(zs).TrimEnd('/', '\\'); var z = s + ".zip"; Archives.Pack([s], z); Say("Gepackt: " + Path.GetFileName(z), V); }))),
-            Line(zu, Act("zip-unpack", "Entpacken", () => Try(V, () => { var z = Clean(zu); var d = Path.Combine(Path.GetDirectoryName(z)!, Path.GetFileNameWithoutExtension(z)); var n = Archives.Unpack(z, d); Say($"{n} Dateien entpackt nach {Path.GetFileName(d)}.", V); }))))));
+            Line(zs, Act("zip-pack", "Packen", () => Try(V, () => { try { zipAsk.Children.Clear(); Say(DoPack(ArchiveConflict.Ask), V); } catch (ArchiveConflictException ex) { ZipAsk(ex, DoPack); } }))),
+            Line(zu, Act("zip-unpack", "Entpacken", () => Try(V, () => { try { zipAsk.Children.Clear(); Say(DoUnpack(ArchiveConflict.Ask), V); } catch (ArchiveConflictException ex) { ZipAsk(ex, DoUnpack); } }))), zipAsk)));
 
         var pf = Field("photo-folder", "Ordner mit Fotos"); var pOut = new StackPanel { Name = "photo-preview" };
         sp.Children.Add(Card(Section("Fotos nach Datum ordnen", "Sortiert nach Aufnahmedatum in Ordner wie 2026/2026-10. Erst Probelauf, dann ausführen – rückgängig machbar.",

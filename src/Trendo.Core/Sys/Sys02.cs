@@ -212,29 +212,71 @@ public static class FileAnalysis
     }
 }
 
-// P14 Archive
+// P14 Archive. T-0243 (V107-09): Vorhandenes wird nie still überschrieben – ohne ausdrückliche Wahl gibt es eine Rückfrage.
+/// <summary>Was mit Dateien geschieht, die es am Ziel schon gibt.</summary>
+public enum ArchiveConflict { Ask, Skip, KeepBoth, Overwrite }
+
+/// <summary>Am Ziel gibt es schon Dateien – nichts wurde verändert. <see cref="Names"/> nennt sie (relativ zum Ziel).</summary>
+public sealed class ArchiveConflictException(IReadOnlyList<string> names)
+    : IOException(names.Count == 1 ? $"„{names[0]}“ gibt es schon." : $"{names.Count} Dateien gibt es schon, z. B. „{names[0]}“.")
+{
+    public IReadOnlyList<string> Names { get; } = names;
+}
+
 public static class Archives
 {
-    public static void Pack(IEnumerable<string> paths, string zip)
+    /// <summary>Freier Name „Datei (2).ext“, „Datei (3).ext“ … neben dem vorhandenen.</summary>
+    public static string FreeName(string path)
     {
-        if (File.Exists(zip)) File.Delete(zip);
+        if (!File.Exists(path) && !Directory.Exists(path)) return path;
+        var dir = Path.GetDirectoryName(path)!; var name = Path.GetFileNameWithoutExtension(path); var ext = Path.GetExtension(path);
+        for (var i = 2; ; i++) { var p = Path.Combine(dir, $"{name} ({i}){ext}"); if (!File.Exists(p) && !Directory.Exists(p)) return p; }
+    }
+
+    /// <summary>Packt. Gibt es die ZIP-Datei schon, entscheidet <paramref name="mode"/>; liefert den tatsächlich geschriebenen Pfad.</summary>
+    public static string Pack(IEnumerable<string> paths, string zip, ArchiveConflict mode = ArchiveConflict.Ask)
+    {
+        if (File.Exists(zip))
+            switch (mode)
+            {
+                case ArchiveConflict.Ask: throw new ArchiveConflictException([Path.GetFileName(zip)]);
+                case ArchiveConflict.Skip: return zip;
+                case ArchiveConflict.KeepBoth: zip = FreeName(zip); break;
+                case ArchiveConflict.Overwrite: File.Delete(zip); break;
+            }
         using var z = ZipFile.Open(zip, ZipArchiveMode.Create);
         foreach (var p in paths)
             if (Directory.Exists(p)) { var root = Path.GetDirectoryName(Path.GetFullPath(p).TrimEnd(Path.DirectorySeparatorChar))!; foreach (var f in Directory.EnumerateFiles(p, "*", SearchOption.AllDirectories)) z.CreateEntryFromFile(f, Path.GetRelativePath(root, f).Replace('\\', '/')); }
             else if (File.Exists(p)) z.CreateEntryFromFile(p, Path.GetFileName(p));
+        return zip;
     }
-    /// <summary>Entpackt; Einträge, die aus dem Zielordner ausbrechen (Zip-Slip), werden abgewiesen – dann wird gar nichts entpackt.</summary>
-    public static int Unpack(string zip, string dest)
+
+    /// <summary>Einträge des Archivs, die am Ziel schon als Datei existieren (relativ, höchstens <paramref name="max"/>).</summary>
+    public static List<string> UnpackConflicts(string zip, string dest, int max = int.MaxValue)
+    {
+        using var z = ZipFile.OpenRead(zip);
+        return z.Entries.Where(e => !e.FullName.EndsWith('/') && File.Exists(Path.Combine(dest, e.FullName))).Select(e => e.FullName).Take(max).ToList();
+    }
+    /// <summary>Entpackt; Einträge, die aus dem Zielordner ausbrechen (Zip-Slip), werden abgewiesen – dann wird gar nichts entpackt.
+    /// Vorhandene Dateien: <see cref="ArchiveConflict.Ask"/> (Standard) bricht vorher ab und nennt sie; Skip lässt sie stehen,
+    /// KeepBoth legt „Name (2).ext“ daneben, Overwrite ersetzt sie (nur nach ausdrücklicher Wahl).</summary>
+    public static int Unpack(string zip, string dest, ArchiveConflict mode = ArchiveConflict.Ask)
     {
         var full = Path.GetFullPath(dest) + Path.DirectorySeparatorChar;
         using var z = ZipFile.OpenRead(zip);
         foreach (var e in z.Entries) { var t = Path.GetFullPath(Path.Combine(dest, e.FullName)); if (!t.StartsWith(full, StringComparison.Ordinal) && t + Path.DirectorySeparatorChar != full) throw new IOException("Unsicherer Pfad im Archiv: " + e.FullName); }
+        if (mode == ArchiveConflict.Ask && UnpackConflicts(zip, dest, 50) is { Count: > 0 } clash) throw new ArchiveConflictException(clash);
         var n = 0;
         foreach (var e in z.Entries)
         {
             var t = Path.GetFullPath(Path.Combine(dest, e.FullName));
             if (e.FullName.EndsWith('/')) { Directory.CreateDirectory(t); continue; }
-            Directory.CreateDirectory(Path.GetDirectoryName(t)!); e.ExtractToFile(t, true); n++;
+            if (File.Exists(t))
+            {
+                if (mode == ArchiveConflict.Skip) continue;
+                if (mode == ArchiveConflict.KeepBoth) t = FreeName(t);
+            }
+            Directory.CreateDirectory(Path.GetDirectoryName(t)!); e.ExtractToFile(t, mode == ArchiveConflict.Overwrite); n++;
         }
         return n;
     }

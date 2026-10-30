@@ -94,6 +94,38 @@ public class Sys02_Alltag
         Assert.False(File.Exists(Path.Combine(d, "ziel", "ok.txt"))); Assert.False(File.Exists(Path.Combine(d, "ausbruch.txt")));
     }
 
+    [Fact(DisplayName = "T-0243: Entpacken/Packen überschreibt nie still – Rückfrage nennt die Dateien, dann Überspringen, Beide behalten oder Ersetzen")]
+    public void Zip_conflicts()
+    {
+        var d = Tmp(); var src = Path.Combine(d, "ordner"); Directory.CreateDirectory(src);
+        File.WriteAllText(Path.Combine(src, "a.txt"), "neu"); File.WriteAllText(Path.Combine(src, "b.txt"), "B");
+        var zip = Archives.Pack([src], Path.Combine(d, "o.zip"));
+        var dest = Path.Combine(d, "aus"); Directory.CreateDirectory(Path.Combine(dest, "ordner"));
+        File.WriteAllText(Path.Combine(dest, "ordner", "a.txt"), "meins");
+        // Standard: Rückfrage, nichts verändert (auch b.txt nicht angelegt)
+        var ex = Assert.Throws<ArchiveConflictException>(() => Archives.Unpack(zip, dest));
+        Assert.Equal(["ordner/a.txt"], ex.Names);
+        Assert.Equal("meins", File.ReadAllText(Path.Combine(dest, "ordner", "a.txt")));
+        Assert.False(File.Exists(Path.Combine(dest, "ordner", "b.txt")));
+        // Vorhandene behalten
+        Assert.Equal(1, Archives.Unpack(zip, dest, ArchiveConflict.Skip));
+        Assert.Equal("meins", File.ReadAllText(Path.Combine(dest, "ordner", "a.txt")));
+        // Beide behalten
+        Assert.Equal(2, Archives.Unpack(zip, dest, ArchiveConflict.KeepBoth));
+        Assert.Equal("neu", File.ReadAllText(Path.Combine(dest, "ordner", "a (2).txt")));
+        Assert.Equal("B", File.ReadAllText(Path.Combine(dest, "ordner", "b (2).txt")));
+        Assert.Equal("meins", File.ReadAllText(Path.Combine(dest, "ordner", "a.txt")));
+        // Ersetzen nur ausdrücklich
+        Archives.Unpack(zip, dest, ArchiveConflict.Overwrite);
+        Assert.Equal("neu", File.ReadAllText(Path.Combine(dest, "ordner", "a.txt")));
+        // Packen: vorhandene ZIP-Datei bleibt, außer bei ausdrücklicher Wahl
+        var before = File.ReadAllBytes(zip);
+        Assert.Throws<ArchiveConflictException>(() => Archives.Pack([src], zip));
+        Assert.Equal(before, File.ReadAllBytes(zip));
+        Assert.Equal(Path.Combine(d, "o (2).zip"), Archives.Pack([src], zip, ArchiveConflict.KeepBoth));
+        Assert.Equal(zip, Archives.Pack([src], zip, ArchiveConflict.Overwrite));
+    }
+
     [Fact(DisplayName = "SYS-02-P15/P19: Erinnerung fällig ±2 s, nur einmal; Fokus endet automatisch")]
     public void Time()
     {

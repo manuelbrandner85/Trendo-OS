@@ -1,0 +1,12 @@
+Bestanden!   : Fehler:     0, erfolgreich:    15, übersprungen:     0, gesamt:    15, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+
+Bestanden!   : Fehler:     0, erfolgreich:   849, übersprungen:     1, gesamt:   850, Dauer: 22 s - Trendo.Core.Tests.dll (net10.0)
+[xUnit.net 00:01:35.64]     T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+  Übersprungen T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [1 ms]
+[xUnit.net 00:01:54.87]     Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [SKIP]
+--
+Bestanden!   : Fehler:     0, erfolgreich:   435, übersprungen:     3, gesamt:   438, Dauer: 19 m 40 s - Trendo.App.Tests.dll (net10.0)
+dotnet-exit 0
+Ran 8 tests in 8.050s
+
+OK
