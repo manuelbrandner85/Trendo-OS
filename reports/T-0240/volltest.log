@@ -1,0 +1,15 @@
+Bestanden!   : Fehler:     0, erfolgreich:    15, übersprungen:     0, gesamt:    15, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+  Trendo.App -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\bin\Release\net10.0\TrendoOS.dll
+  Trendo.App.Tests -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll
+Testlauf für "C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" (.NETCoreApp,Version=v10.0)
+--
+Bestanden!   : Fehler:     0, erfolgreich:   847, übersprungen:     1, gesamt:   848, Dauer: 24 s - Trendo.Core.Tests.dll (net10.0)
+[xUnit.net 00:00:57.66]     Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [SKIP]
+  Übersprungen Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [1 ms]
+[xUnit.net 00:04:06.52]     SYS-03-P14: Seite als PDF – A4, Prüfsumme im Protokoll (nur wenn Chrome/Edge da) [SKIP]
+--
+Bestanden!   : Fehler:     0, erfolgreich:   434, übersprungen:     3, gesamt:   437, Dauer: 16 m 38 s - Trendo.App.Tests.dll (net10.0)
+dotnet-exit 0
+Ran 8 tests in 14.979s
+
+OK

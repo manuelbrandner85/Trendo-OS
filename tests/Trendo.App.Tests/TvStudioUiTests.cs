@@ -71,7 +71,7 @@ public class TvStudioUiTests
     [AvaloniaFact(DisplayName = "TV & Live: Filme und Serien kategorisiert wählbar (Xtream) – Kategorie, Suche, Film abspielen, Serie → Staffel → Folge")]
     public async Task Films_and_series()
     {
-        var (w, _, _) = Ui.Open();
+        var (w, _, root) = Ui.Open();
         var played = new List<(string Slot, string Url)>();
         w.TvPlayOverride = (s, u) => played.Add((s, u));
         w.TvFetchOverride = u => Task.FromResult(Encoding.UTF8.GetBytes(
@@ -89,7 +89,15 @@ public class TvStudioUiTests
         w.Show("tv"); Pump();
         Assert.True(n == 3, string.Join(" | ", w.GetLogicalTexts().Where(t => t.Contains("✗") || t.Contains("✓") || t.Contains("laden"))));
         Assert.Equal("xtream", w.Tv.Sources[0].Kind);
-        Assert.Equal("http://srv.example:8080/live/u/p/1.ts", w.Tv.Channels()[0].Url);
+        // T-0240: gespeichert wird ein Platzhalter, eingesetzt wird das Passwort erst beim Abspielen
+        Assert.Equal("http://srv.example:8080/live/u/p/1.ts", w.Tv.Reveal(w.Tv.Channels()[0].Url));
+        Assert.True(TvCredentials.HasToken(w.Tv.Channels()[0].Url));
+        foreach (var f in Directory.GetFiles(Path.Combine(root, "tv"), "*", SearchOption.AllDirectories))
+        {
+            var t = File.ReadAllText(f);
+            Assert.DoesNotContain("password=p", t);
+            Assert.DoesNotContain("/u/p/", t);
+        }
         Assert.Equal(3, w.Tv.Channels()[0].CatchupDays);
         w.Show("tv"); Pump();
         w.Find<Button>("tv-tab-film").Press();
@@ -118,11 +126,12 @@ public class TvStudioUiTests
     [AvaloniaFact(DisplayName = "TV & Live: Xtream-Zugang abgelehnt → klare Meldung ohne Passwort; Server nicht erreichbar → verständlich")]
     public async Task Clear_errors()
     {
-        var (w, _, _) = Ui.Open();
+        var (w, _, root) = Ui.Open();
         w.TvFetchOverride = u => Task.FromResult(Encoding.UTF8.GetBytes("""{"user_info":{"auth":0}}"""));
         Assert.Equal(0, await w.TvAddSource("", "url", "http://srv.example:8080/get.php?username=u&password=geheim123&type=m3u_plus&output=ts"));
         w.Show("tv"); Pump();
         Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Benutzername oder Passwort stimmt nicht"));
+        Assert.DoesNotContain("geheim123", File.ReadAllText(Path.Combine(root, "tv", "tv.json"))); // T-0240: nie im Klartext
         Assert.DoesNotContain(w.GetLogicalTexts(), t => t.Contains("geheim123"));
         w.TvFetchOverride = u => Task.FromException<byte[]>(new HttpRequestException("x", new System.Net.Sockets.SocketException(11001)));
         Assert.Equal(0, await w.TvAddSource("Liste", "url", "http://gibt-es-nicht.example/liste.m3u"));

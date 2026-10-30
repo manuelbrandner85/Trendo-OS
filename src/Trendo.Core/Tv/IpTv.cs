@@ -120,6 +120,51 @@ public static partial class M3u
     }
 }
 
+/// <summary>T-0240: Zugangspasswörter gehören in den sicheren Speicher, nicht in Dateien. Gespeicherte Adressen tragen an der Stelle des
+/// Passworts einen Platzhalter; eingesetzt wird es erst beim Abruf. Ersetzt wird nur an den bekannten Stellen von Xtream-Adressen
+/// (Pfad /live|movie|series|timeshift/&lt;benutzer&gt;/&lt;passwort&gt;/ und password=), nie irgendwo im Text.</summary>
+public static partial class TvCredentials
+{
+    public static string Key(string sourceId) => "tv:" + sourceId;
+    public static string Token(string sourceId) => "{trendo-pass:" + sourceId + "}";
+    [GeneratedRegex(@"\{trendo-pass:([A-Za-z0-9]+)\}")] private static partial Regex TokenRx();
+
+    public static bool HasToken(string? text) => text is not null && text.Contains("{trendo-pass:", StringComparison.Ordinal);
+
+    /// <summary>Passwort (roh und URL-kodiert) an den bekannten Stellen durch den Platzhalter der Quelle ersetzen.</summary>
+    public static string Scrub(string text, string sourceId, string? pass, string? user = null)
+    {
+        if (string.IsNullOrEmpty(pass) || string.IsNullOrEmpty(text)) return text;
+        var tok = Token(sourceId).Replace("$", "$$");
+        // Pfadteil „/<benutzer>/<passwort>/“ – deckt /live/…, /movie/…, /series/…, /timeshift/… und die Kurzform server/benutzer/passwort/nummer ab
+        var users = string.IsNullOrEmpty(user) ? null : string.Join("|", new[] { Uri.EscapeDataString(user), user }.Distinct().Select(Regex.Escape));
+        foreach (var p in new[] { Uri.EscapeDataString(pass), pass }.Distinct())
+        {
+            var e = Regex.Escape(p);
+            text = users is null
+                ? Regex.Replace(text, $@"(/(?:live|movie|series|timeshift)/[^/\s""]+/){e}(?=/)", "${1}" + tok)
+                : Regex.Replace(text, $@"(/(?:{users})/){e}(?=/)", "${1}" + tok);
+            text = Regex.Replace(text, $@"([?&]password=){e}(?=[&\s""<]|$)", "${1}" + tok);
+        }
+        return text;
+    }
+
+    /// <summary>Platzhalter durch das (URL-kodierte) Passwort ersetzen. null, wenn ein Passwort im Speicher fehlt.</summary>
+    public static string? Reveal(string? text, Func<string, string?> passOf)
+    {
+        if (text is null) return null;
+        if (!HasToken(text)) return text;
+        var missing = false;
+        var r = TokenRx().Replace(text, m =>
+        {
+            if (passOf(m.Groups[1].Value) is { } p) return Uri.EscapeDataString(p);
+            missing = true;
+            return m.Value;
+        });
+        return missing ? null : r;
+    }
+}
+
 /// <summary>Xtream-Zugang (Server, Benutzer, Passwort) → Standard-Adressen für Wiedergabeliste und Programmführer.</summary>
 public static class Xtream
 {
@@ -336,8 +381,52 @@ public static class Catchup
 }
 
 /// <summary>Bibliothek: Quellen, Sender, Favoriten, Zuletzt gesehen, ausgeblendete Gruppen, Kindersicherung, Programmführer, Aufnahmen.</summary>
-public sealed class TvLibrary(string dataRoot)
+public sealed class TvLibrary(string dataRoot, ISecretStore? secrets = null)
 {
+    /// <summary>T-0240: Passwort einer Quelle im sicheren Speicher (null ohne Speicher oder wenn keines hinterlegt ist).</summary>
+    public string? PasswordOf(string sourceId) => secrets?.Get(TvCredentials.Key(sourceId));
+    public void SetPassword(string sourceId, string pass) => secrets?.Set(TvCredentials.Key(sourceId), pass);
+    /// <summary>Gespeicherte Adresse mit eingesetztem Passwort – null, wenn das Passwort fehlt (dann neu eingeben).</summary>
+    public string? Reveal(string? text) => TvCredentials.Reveal(text, PasswordOf);
+    string Scrub(string text, string sourceId) => secrets is null ? text : TvCredentials.Scrub(text, sourceId, PasswordOf(sourceId), UserOf(sourceId));
+    string? UserOf(string sourceId) => Load().Sources.FirstOrDefault(s => s.Id == sourceId) is { } s ? s.User ?? Xtream.FromPlaylistUrl(s.Url)?.User : null;
+
+    /// <summary>T-0240: Alte Einträge mit Passwort in der Adresse umziehen – Passwort in den Speicher, Dateien bereinigen.
+    /// Vorher wird tv.json einmal als tv.json.vor-0240 gesichert. Liefert die Zahl der umgezogenen Quellen.</summary>
+    public int MigrateSecrets(AuditLog? audit = null)
+    {
+        if (secrets is null) return 0;
+        var todo = Load().Sources.Where(s => !TvCredentials.HasToken(s.Url) && Xtream.FromPlaylistUrl(s.Url) is { Pass.Length: > 0 }).ToList();
+        if (todo.Count == 0) return 0;
+        var json = Path.Combine(Dir, "tv.json");
+        var backup = json + ".vor-0240";
+        if (File.Exists(json) && !File.Exists(backup)) File.Copy(json, backup);
+        foreach (var s in todo)
+        {
+            var pass = Xtream.FromPlaylistUrl(s.Url)!.Value.Pass;
+            SetPassword(s.Id, pass);
+            if (PasswordOf(s.Id) != pass) continue; // Speicher nimmt nichts an: lieber nichts verändern
+            var user = s.User ?? Xtream.FromPlaylistUrl(s.Url)!.Value.User;
+            Change(st => { var i = st.Sources.FindIndex(x => x.Id == s.Id); if (i >= 0) st.Sources[i] = st.Sources[i] with { User = user, Url = TvCredentials.Scrub(s.Url, s.Id, pass, user), EpgUrl = s.EpgUrl is null ? null : TvCredentials.Scrub(s.EpgUrl, s.Id, pass, user) }; });
+            foreach (var f in new[] { $"{s.Id}.m3u", $"{s.Id}.vod.json", $"{s.Id}.series.json" }.Select(n => Path.Combine(Dir, n))
+                         .Concat(Directory.Exists(Path.Combine(Dir, "folgen")) ? Directory.GetFiles(Path.Combine(Dir, "folgen"), s.Id + "_*.json") : []))
+            {
+                if (!File.Exists(f)) continue;
+                var text = File.ReadAllText(f);
+                var clean = Scrub(text, s.Id);
+                if (clean != text) { File.WriteAllText(f + ".tmp", clean); File.Move(f + ".tmp", f, true); }
+                ParseCache.TryRemove(new FileInfo(f).FullName, out _);
+            }
+            audit?.Append("app", "tv.secrets.migrated", s.Id); // ohne Passwort
+        }
+        if (File.Exists(backup) && File.ReadAllText(backup).Contains("password=", StringComparison.OrdinalIgnoreCase))
+        {
+            // Die Sicherung selbst darf das Passwort nicht weiter enthalten
+            File.WriteAllText(backup, todo.Aggregate(File.ReadAllText(backup), (t, s) => TvCredentials.Scrub(t, s.Id, PasswordOf(s.Id), s.User ?? Xtream.FromPlaylistUrl(s.Url)?.User)));
+        }
+        return todo.Count;
+    }
+
     string Dir => Path.Combine(dataRoot, "tv");
     sealed class State
     {
@@ -410,25 +499,28 @@ public sealed class TvLibrary(string dataRoot)
     public IReadOnlyList<TvRecording> Recordings => Load().Recordings;
     public string? LastChannel => Load().LastChannel;
 
-    public TvSource AddSource(string name, string kind, string url, string? epg = null, string? user = null)
+    public TvSource AddSource(string name, string kind, string url, string? epg = null, string? user = null, string? pass = null)
     {
-        var src = new TvSource(Guid.NewGuid().ToString("N")[..8], string.IsNullOrWhiteSpace(name) ? "Meine Sender" : name.Trim(), kind, url, epg, user, DateTime.UtcNow);
+        var id = Guid.NewGuid().ToString("N")[..8];
+        if (!string.IsNullOrEmpty(pass) && secrets is not null) { SetPassword(id, pass); url = TvCredentials.Scrub(url, id, pass, user); epg = epg is null ? null : TvCredentials.Scrub(epg, id, pass, user); }
+        var src = new TvSource(id, string.IsNullOrWhiteSpace(name) ? "Meine Sender" : name.Trim(), kind, url, epg, user, DateTime.UtcNow);
         Change(s => s.Sources.Add(src));
         return src;
     }
 
     public void RemoveSource(string id)
     {
+        secrets?.Delete(TvCredentials.Key(id));
         Change(s => { s.Sources.RemoveAll(x => x.Id == id); s.Favorites.RemoveAll(f => f.StartsWith(id + ":")); s.Recent.RemoveAll(f => f.StartsWith(id + ":")); });
         foreach (var f in new[] { $"{id}.m3u", $"{id}.epg.json", $"{id}.vod.json", $"{id}.series.json" }) { var p = Path.Combine(Dir, f); if (File.Exists(p)) File.Delete(p); }
         var fd = Path.Combine(Dir, "folgen");
         if (Directory.Exists(fd)) foreach (var f in Directory.GetFiles(fd, id + "_*.json")) File.Delete(f);
     }
 
-    public void SetEpgUrl(string id, string? url) => Change(s => { var i = s.Sources.FindIndex(x => x.Id == id); if (i >= 0) s.Sources[i] = s.Sources[i] with { EpgUrl = url }; });
+    public void SetEpgUrl(string id, string? url) => Change(s => { var i = s.Sources.FindIndex(x => x.Id == id); if (i >= 0) s.Sources[i] = s.Sources[i] with { EpgUrl = url is null ? null : Scrub(url, id) }; });
 
     /// <summary>Geladene Wiedergabeliste ablegen (die App lädt sie herunter oder liest die Datei).</summary>
-    public void StorePlaylist(string id, string m3u) { Directory.CreateDirectory(Dir); var f = Path.Combine(Dir, $"{id}.m3u"); File.WriteAllText(f, m3u); ParseCache.TryRemove(new FileInfo(f).FullName, out _); }
+    public void StorePlaylist(string id, string m3u) { Directory.CreateDirectory(Dir); var f = Path.Combine(Dir, $"{id}.m3u"); File.WriteAllText(f, Scrub(m3u, id)); ParseCache.TryRemove(new FileInfo(f).FullName, out _); }
     public void StoreEpg(string id, IReadOnlyList<TvProgramme> programmes) { Directory.CreateDirectory(Dir); File.WriteAllText(Path.Combine(Dir, $"{id}.epg.json"), JsonSerializer.Serialize(programmes, J)); }
 
     /// <summary>Alle Sender aller Quellen (mit Quellen-Kennung), Nummern fortlaufend.</summary>
@@ -480,12 +572,12 @@ public sealed class TvLibrary(string dataRoot)
         return SeriesOf(srcId).Episodes!.TryGetValue(seriesId, out var l) ? l.OrderBy(e => e.Season).ThenBy(e => e.Episode).ToList() : [];
     }
 
-    public void StoreVod(string srcId, IReadOnlyList<TvVod> vod) { Directory.CreateDirectory(Dir); File.WriteAllText(Path.Combine(Dir, $"{srcId}.vod.json"), JsonSerializer.Serialize(vod, J)); }
-    public void StoreSeries(string srcId, IReadOnlyList<TvSeries> s) { Directory.CreateDirectory(Dir); File.WriteAllText(Path.Combine(Dir, $"{srcId}.series.json"), JsonSerializer.Serialize(s, J)); }
+    public void StoreVod(string srcId, IReadOnlyList<TvVod> vod) { Directory.CreateDirectory(Dir); File.WriteAllText(Path.Combine(Dir, $"{srcId}.vod.json"), Scrub(JsonSerializer.Serialize(vod, J), srcId)); }
+    public void StoreSeries(string srcId, IReadOnlyList<TvSeries> s) { Directory.CreateDirectory(Dir); File.WriteAllText(Path.Combine(Dir, $"{srcId}.series.json"), Scrub(JsonSerializer.Serialize(s, J), srcId)); }
     public void StoreEpisodes(string seriesId, IReadOnlyList<TvEpisode> eps)
     {
         var d = Path.Combine(Dir, "folgen"); Directory.CreateDirectory(d);
-        File.WriteAllText(Path.Combine(d, seriesId.Replace(':', '_') + ".json"), JsonSerializer.Serialize(eps, J));
+        File.WriteAllText(Path.Combine(d, seriesId.Replace(':', '_') + ".json"), Scrub(JsonSerializer.Serialize(eps, J), seriesId.Split(':')[0]));
     }
 
     public List<TvProgramme> Programmes()

@@ -74,7 +74,7 @@ public partial class MainWindow
     /// <summary>Xtream: Filme und Serien direkt vom Anbieter holen (mit Cover und Beschreibung).</summary>
     async Task TvRefreshXtreamVod(TvSource src)
     {
-        if (Xtream.FromPlaylistUrl(src.Url) is not { } x) return;
+        if (Xtream.FromPlaylistUrl(Tv.Reveal(src.Url) ?? "") is not { } x) return;
         try
         {
             async Task<string> Get(string action) => System.Text.Encoding.UTF8.GetString(await TvFetch(Xtream.Api(x.Server, x.User, x.Pass, action)));
@@ -97,7 +97,7 @@ public partial class MainWindow
         var eps = Tv.Episodes(s.Id);
         if (eps.Count > 0 || s.XtreamId is null) return eps;
         var src = Tv.Sources.FirstOrDefault(x => s.Id.StartsWith(x.Id + ":"));
-        if (src is null || Xtream.FromPlaylistUrl(src.Url) is not { } x) return eps;
+        if (src is null || Xtream.FromPlaylistUrl(Tv.Reveal(src.Url) ?? "") is not { } x) return eps;
         try
         {
             var json = System.Text.Encoding.UTF8.GetString(await TvFetch(Xtream.Api(x.Server, x.User, x.Pass, "get_series_info", "&series_id=" + Uri.EscapeDataString(s.XtreamId))));

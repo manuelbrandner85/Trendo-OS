@@ -115,13 +115,26 @@ public partial class MainWindow
     public Func<string, Task<byte[]>>? TvFetchOverride { get; set; }
     /// <summary>Für Tests: Aufnahme starten (Adresse, Datei, Sekunden) statt ffmpeg.</summary>
     public Action<string, string, int>? TvRecordOverride { get; set; }
-    public TvLibrary Tv => new(_core.DataRoot);
+    public TvLibrary Tv => new(_core.DataRoot, _core.Secrets); // T-0240: Passwörter im sicheren Speicher
+    Task? _tvMigrate;
+    /// <summary>Für Tests: Umzug alter Zugangsdaten (läuft beim Start im Hintergrund).</summary>
+    public Task TvMigration => _tvMigrate ?? Task.CompletedTask;
+    /// <summary>Für Tests: letzte Meldung im Studio.</summary>
+    public string TvMessage => _tvMsg;
     public string? TvCurrent => _tvChannel;
 
     void InitTv()
     {
         RegisterTab(FachTabs, "tv", "TV & Live", TvStudio, TvView, "iptv", "fernsehen", "tv", "sender", "live tv", "m3u", "xtream", "epg", "programmführer", "aufnahme", "playlist");
         if (Tv.Recordings.Any(r => r.State == "geplant")) TvRecWatch();
+        // T-0240: Passwörter aus alten Einträgen (Adresse mit password=) in den sicheren Speicher umziehen – ohne das Fenster aufzuhalten
+        var lib = Tv;
+        if (!lib.Sources.Any(x => !TvCredentials.HasToken(x.Url) && Xtream.FromPlaylistUrl(x.Url) is { Pass.Length: > 0 })) return; // nichts umzuziehen
+        _tvMigrate = Task.Run(() =>
+        {
+            try { if (lib.MigrateSecrets(_core.Audit) > 0) Dispatcher.UIThread.Post(() => { TvReload(); if (CurrentView == "tv") Show("tv"); }); }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Text.Json.JsonException) { _core.Audit.Append("app", "tv.secrets.migrate_failed", e.GetType().Name); }
+        });
     }
 
     List<TvChannel> TvChannels() => _tvChannels ??= Tv.Channels();
@@ -144,6 +157,13 @@ public partial class MainWindow
     /// Kleine Listen (unter 4 MB) werden wie bisher sofort gelesen.</summary>
     Control? TvLoading()
     {
+        if (_tvMigrate is { IsCompleted: false } mig)
+        {
+            mig.ContinueWith(_ => Dispatcher.UIThread.Post(() => { if (CurrentView == "tv") Show("tv"); }), TaskScheduler.Default);
+            return Glass2(new StackPanel { Spacing = 10, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 60), Children = {
+                new TextBlock { Name = "tv-migrating", Text = "Zugangsdaten werden sicher abgelegt …", FontSize = 18, FontWeight = FontWeight.SemiBold, Foreground = GoldText(), HorizontalAlignment = HorizontalAlignment.Center },
+                new ProgressBar { IsIndeterminate = true, Width = 260, HorizontalAlignment = HorizontalAlignment.Center } } }, 24);
+        }
         if (_tvChannels is not null && _tvVod is not null && _tvSeries is not null && _tvProgs is not null) return null;
         var dir = Path.Combine(_core.DataRoot, "tv");
         long size = 0;
@@ -151,7 +171,7 @@ public partial class MainWindow
         if (size < 4_000_000) return null;
         _tvWarm ??= Task.Run(() =>
         {
-            var lib = new TvLibrary(_core.DataRoot);
+            var lib = new TvLibrary(_core.DataRoot, _core.Secrets);
             var ch = lib.Channels(); var vod = lib.Vod(); var ser = lib.Series(); var pr = lib.Programmes();
             Dispatcher.UIThread.Post(() => { _tvChannels = ch; _tvVod = vod; _tvSeries = ser; _tvProgs = pr; _tvWarm = null; if (CurrentView == "tv") Show("tv"); });
         });
@@ -166,6 +186,8 @@ public partial class MainWindow
 
     async Task<byte[]> TvFetch(string url)
     {
+        // T-0240: gespeicherte Adressen tragen statt des Passworts einen Platzhalter – erst hier einsetzen
+        url = Tv.Reveal(url) ?? throw new InvalidOperationException("Das Passwort für diese Quelle fehlt im sicheren Speicher – bitte die Quelle unter „Quellen“ entfernen und neu anlegen.");
         if (TvFetchOverride is { } o) return await o(url);
         if (!Uri.TryCreate(url, UriKind.Absolute, out var u) || u.Scheme is not ("http" or "https")) throw new InvalidOperationException("Bitte eine Adresse mit http:// oder https:// angeben.");
         using var req = new HttpRequestMessage(HttpMethod.Get, u);
@@ -186,7 +208,7 @@ public partial class MainWindow
         if (kind == "xtream" && (string.IsNullOrWhiteSpace(urlOrFile) || string.IsNullOrWhiteSpace(user) || string.IsNullOrWhiteSpace(pass))) { _tvMsg = "Für Xtream bitte Server, Benutzername und Passwort angeben."; return 0; }
         var url = kind == "xtream" ? Xtream.PlaylistUrl(urlOrFile, user ?? "", pass ?? "") : urlOrFile.Trim();
         if (kind == "xtream") epg ??= Xtream.EpgUrl(urlOrFile, user ?? "", pass ?? "");
-        var src = Tv.AddSource(name, kind, kind == "datei" ? Path.GetFullPath(url) : url, string.IsNullOrWhiteSpace(epg) ? null : epg.Trim(), user);
+        var src = Tv.AddSource(name, kind, kind == "datei" ? Path.GetFullPath(url) : url, string.IsNullOrWhiteSpace(epg) ? null : epg.Trim(), user, kind == "xtream" ? pass : null);
         _core.Audit.Append(Principal.LocalOwner.Name, "tv.source.add", $"{kind} {src.Name}"); // ohne Adresse und Passwort
         return await TvRefreshSource(src);
     }
@@ -198,7 +220,8 @@ public partial class MainWindow
         {
             string text;
             // Auch eine früher als Adresse gespeicherte get.php-Quelle ist ein Xtream-Zugang (schneller: Sender über die Schnittstelle)
-            var xt = src.Kind is "xtream" or "url" ? Xtream.FromPlaylistUrl(src.Url) : null;
+            if (Tv.Reveal(src.Url) is not { } realUrl) { _tvMsg = "✗ Das Passwort für diese Quelle fehlt im sicheren Speicher – bitte die Quelle unter „Quellen“ entfernen und neu anlegen."; return 0; }
+            var xt = src.Kind is "xtream" or "url" ? Xtream.FromPlaylistUrl(realUrl) : null;
             if (xt is { } x && await TvXtreamLive(src, x) is { } fromApi) text = fromApi;
             else if (src.Kind == "xtream" && _tvMsg.StartsWith('✗')) return 0; // Konto abgelehnt: klare Meldung steht schon da
             else text = src.Kind == "datei" ? await File.ReadAllTextAsync(src.Url) : Encoding.UTF8.GetString(await TvFetch(src.Url));
@@ -285,6 +308,8 @@ public partial class MainWindow
     bool TvPlayUrl(string url, string slot, TvChannel? c = null)
     {
         if (slot == "main") { _tvChannel = c?.Id ?? _tvChannel; if (c is not null) { Tv.Watched(c.Id); _tvPlayingTitle = null; } }
+        if (Tv.Reveal(url) is not { } real) { _tvMsg = "✗ Das Passwort für diese Quelle fehlt im sicheren Speicher – bitte die Quelle unter „Quellen“ entfernen und neu anlegen."; return false; }
+        url = real;
         if (TvPlayOverride is { } o) { o(slot, url); TvUpdateNow(); return true; }
         if (MpvExe is null) { _tvMsg = "Zum Abspielen braucht Trendo den freien Player mpv – einmal „Player jetzt einrichten“ klicken."; return false; }
         var view = slot == "main" ? _tvPlayer : _tvMulti[int.Parse(slot[1..])];
@@ -361,10 +386,11 @@ public partial class MainWindow
             var folder = WorkFolder("TV-Aufnahmen"); Directory.CreateDirectory(folder);
             var file = TvLibrary.RecordingFile(folder, r);
             var secs = (int)Math.Max(10, (r.Stop - DateTime.UtcNow).TotalSeconds);
-            if (TvRecordOverride is { } o) { o(c.Url, file, secs); Tv.UpdateRecording(r.Id, "läuft", file); continue; }
+            if (Tv.Reveal(c.Url) is not { } recUrl) { Tv.UpdateRecording(r.Id, "Passwort fehlt"); continue; }
+            if (TvRecordOverride is { } o) { o(recUrl, file, secs); Tv.UpdateRecording(r.Id, "läuft", file); continue; }
             if (FfmpegExe is null) { Tv.UpdateRecording(r.Id, "ffmpeg fehlt"); continue; }
             var psi = new ProcessStartInfo(FfmpegExe) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardError = false };
-            foreach (var a in new[] { "-hide_banner", "-loglevel", "error", "-y", "-user_agent", Xtream.UserAgent, "-i", c.Url, "-c", "copy", "-t", secs.ToString(), file }) psi.ArgumentList.Add(a);
+            foreach (var a in new[] { "-hide_banner", "-loglevel", "error", "-y", "-user_agent", Xtream.UserAgent, "-i", recUrl, "-c", "copy", "-t", secs.ToString(), file }) psi.ArgumentList.Add(a);
             try
             {
                 var p = Process.Start(psi)!; p.EnableRaisingEvents = true;

@@ -139,4 +139,46 @@ public class IpTvTests
         }
         finally { Directory.Delete(d, true); }
     }
+
+    [Fact(DisplayName = "T-0240: Passwort nur an bekannten Stellen durch Platzhalter ersetzt, beim Abruf wieder eingesetzt; ohne Speicher-Eintrag kein Abruf")]
+    public void Credentials_tokens()
+    {
+        const string pass = "1"; // kurz: darf nur an den Xtream-Stellen ersetzt werden, nicht in Sendernummern
+        var text = "#EXTINF:-1 tvg-chno=\"1\",Sender 1\nhttp://s.example/live/erika/1/1.ts\nhttp://s.example/get.php?username=erika&password=1&type=m3u_plus\nhttp://s.example/timeshift/erika/1/{durmin}/x/1.ts";
+        var clean = TvCredentials.Scrub(text, "q1", pass);
+        Assert.Contains("tvg-chno=\"1\",Sender 1", clean);
+        Assert.Contains("/live/erika/{trendo-pass:q1}/1.ts", clean);
+        Assert.Contains("password={trendo-pass:q1}&", clean);
+        Assert.Contains("/timeshift/erika/{trendo-pass:q1}/{durmin}/", clean);
+        Assert.Equal(text, TvCredentials.Reveal(clean, id => id == "q1" ? pass : null));
+        Assert.Null(TvCredentials.Reveal(clean, _ => null));
+        Assert.Equal("http://ohne.example/x.m3u8", TvCredentials.Reveal("http://ohne.example/x.m3u8", _ => null));
+        // Sonderzeichen: URL-kodiert gespeichert und eingesetzt
+        var sp = TvCredentials.Scrub("http://s.example/get.php?username=e&password=a%2Bb%26c", "q2", "a+b&c");
+        Assert.Equal("http://s.example/get.php?username=e&password={trendo-pass:q2}", sp);
+        Assert.Equal(("http://s.example", "e", "a+b&c"), Xtream.FromPlaylistUrl(TvCredentials.Reveal(sp, _ => "a+b&c")!));
+    }
+
+    [Fact(DisplayName = "T-0240: Bibliothek mit Speicher schreibt keine Passwörter in tv.json, Listen, Filme und Folgen; Entfernen löscht das Passwort")]
+    public void Library_keeps_secret_out_of_files()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-tvsec-" + Guid.NewGuid().ToString("N")[..8]);
+        try
+        {
+            var store = new Trendo.Core.InMemorySecretStore();
+            var lib = new TvLibrary(root, store);
+            var src = lib.AddSource("A", "xtream", Xtream.PlaylistUrl("http://s.example", "erika", "Pw9!"), Xtream.EpgUrl("http://s.example", "erika", "Pw9!"), "erika", "Pw9!");
+            lib.StorePlaylist(src.Id, "#EXTM3U\n#EXTINF:-1,Eins\nhttp://s.example/live/erika/Pw9%21/1.ts\n");
+            lib.StoreVod(src.Id, [new TvVod(src.Id + ":v1", "Film", "Kat", "http://s.example/movie/erika/Pw9%21/7.mkv")]);
+            lib.StoreEpisodes(src.Id + ":s-x", [new TvEpisode(src.Id + ":s-x", 1, 1, "F1", "http://s.example/series/erika/Pw9%21/9.mkv")]);
+            foreach (var f in Directory.GetFiles(Path.Combine(root, "tv"), "*", SearchOption.AllDirectories))
+                Assert.DoesNotContain("Pw9", File.ReadAllText(f));
+            Assert.Equal("Pw9!", lib.PasswordOf(src.Id));
+            Assert.Equal("http://s.example/live/erika/Pw9%21/1.ts", lib.Reveal(lib.Channels()[0].Url));
+            Assert.Equal("http://s.example/movie/erika/Pw9%21/7.mkv", lib.Reveal(lib.Vod()[0].Url));
+            lib.RemoveSource(src.Id);
+            Assert.Null(store.Get(TvCredentials.Key(src.Id)));
+        }
+        finally { try { Directory.Delete(root, true); } catch (IOException) { } }
+    }
 }
