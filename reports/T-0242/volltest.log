@@ -1,0 +1,15 @@
+Bestanden!   : Fehler:     0, erfolgreich:    15, übersprungen:     0, gesamt:    15, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+  Trendo.App -> C:\Users\manue\Desktop\Trend Os-worktrees\integration\src\Trendo.App\bin\Release\net10.0\TrendoOS.dll
+  Trendo.App.Tests -> C:\Users\manue\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll
+Testlauf für "C:\Users\manue\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" (.NETCoreApp,Version=v10.0)
+--
+Bestanden!   : Fehler:     0, erfolgreich:   848, übersprungen:     1, gesamt:   849, Dauer: 21 s - Trendo.Core.Tests.dll (net10.0)
+[xUnit.net 00:00:18.34]     Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [SKIP]
+  Übersprungen Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [1 ms]
+[xUnit.net 00:04:04.59]     T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+--
+Bestanden!   : Fehler:     0, erfolgreich:   434, übersprungen:     3, gesamt:   437, Dauer: 18 m 7 s - Trendo.App.Tests.dll (net10.0)
+dotnet-exit 0
+Ran 8 tests in 12.846s
+
+OK

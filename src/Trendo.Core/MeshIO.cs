@@ -73,11 +73,11 @@ public static partial class Mesh3D
             foreach (var ti in tris)
             {
                 var a = mesh.I[ti * 3]; var b = mesh.I[ti * 3 + 1]; var c = mesh.I[ti * 3 + 2];
-                var n = Vec3.Cross(mesh.V[b] - mesh.V[a], mesh.V[c] - mesh.V[a]).Norm();
+                var n = ToGltf(Vec3.Cross(mesh.V[b] - mesh.V[a], mesh.V[c] - mesh.V[a]).Norm());
                 int Map(int i)
                 {
                     var slot = pos.Count / 3;
-                    var p = mesh.V[i] * 0.01;
+                    var p = ToGltf(mesh.V[i] * 0.01);
                     pos.Add((float)p.X); pos.Add((float)p.Y); pos.Add((float)p.Z);
                     norm.Add((float)n.X); norm.Add((float)n.Y); norm.Add((float)n.Z);
                     return slot;
@@ -459,7 +459,7 @@ public static partial class Mesh3D
                 if (posComp != 5126) throw new InvalidOperationException("Die Punkte in der Datei sind in einem Format, das Trendo nicht liest.");
                 var pos = new Vec3[posCount];
                 for (var i = 0; i < posCount; i++)
-                    pos[i] = Transform(new(BitConverter.ToSingle(posRaw, i * 12), BitConverter.ToSingle(posRaw, i * 12 + 4), BitConverter.ToSingle(posRaw, i * 12 + 8)), matrix) * 100;
+                    pos[i] = FromGltf(Transform(new(BitConverter.ToSingle(posRaw, i * 12), BitConverter.ToSingle(posRaw, i * 12 + 4), BitConverter.ToSingle(posRaw, i * 12 + 8)), matrix) * 100);
                 int[] indices;
                 if (prim.TryGetProperty("indices", out var ind))
                 {
@@ -527,6 +527,11 @@ public static partial class Mesh3D
         }
         catch { return (0xB7, 0xBC, 0xC4); }
     }
+
+    // T-0242: Trendo arbeitet mit Z oben (Zentimeter), glTF verlangt Y oben (Meter) – sonst liegen Modelle in Blender, Unreal und im Web gekippt.
+    // Drehung um die X-Achse (Determinante +1): Umlaufsinn der Dreiecke und Normalen bleiben richtig.
+    static Vec3 ToGltf(Vec3 v) => new(v.X, v.Z, -v.Y);
+    static Vec3 FromGltf(Vec3 v) => new(v.X, -v.Z, v.Y);
 
     static Vec3 Transform(Vec3 v, double[]? matrix)
     {

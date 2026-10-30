@@ -138,4 +138,36 @@ public class Scene3D_Teile
         Assert.NotEqual(front, angle);
         Assert.Null(Mesh3D.RenderPng(new Scene3D(), "front", 80, 60));
     }
+
+    [Fact(DisplayName = "T-0242: glTF mit Y oben in Metern – ein 10×20×40-cm-Quader (40 cm hoch) steht im GLB 0,4 m hoch und kommt unverändert zurück")]
+    public void Gltf_axes()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "trendo-gltf-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        try
+        {
+            // Asymmetrisch: Breite X 10 cm, Tiefe Y 20 cm, Höhe Z 40 cm (Trendo: Z oben)
+            var box = Mesh3D.BuildWorld(new Part3D { Name = "Quader", Shape = "cube", Sx = 10, Sy = 20, Sz = 40, Color = "#2F86F6" });
+            var file = Path.Combine(dir, "q.glb");
+            Mesh3D.WriteGlb(box, file);
+            if (Environment.GetEnvironmentVariable("TRENDO_GLTF_OUT") is { Length: > 0 } outFile) File.Copy(file, outFile, true); // für die Gegenprobe in Blender
+            // GLB-JSON lesen: Ausdehnung der Positionen je Achse (glTF: X rechts, Y oben, Z nach vorn)
+            var bytes = File.ReadAllBytes(file);
+            var len = BitConverter.ToInt32(bytes, 12);
+            using var doc = System.Text.Json.JsonDocument.Parse(System.Text.Encoding.UTF8.GetString(bytes, 20, len));
+            var acc = doc.RootElement.GetProperty("accessors")[0];
+            double Ext(int k) => acc.GetProperty("max")[k].GetDouble() - acc.GetProperty("min")[k].GetDouble();
+            Assert.InRange(Ext(0), 0.099, 0.101); // Breite
+            Assert.InRange(Ext(1), 0.399, 0.401); // Höhe → glTF Y
+            Assert.InRange(Ext(2), 0.199, 0.201); // Tiefe → glTF Z
+            // Rundreise: Maße und Höhe bleiben, nichts gespiegelt
+            var back = Mesh3D.Import(file);
+            Assert.InRange(back.Sx, 9.9, 10.1);
+            Assert.InRange(back.Sy, 19.9, 20.1);
+            Assert.InRange(back.Sz, 39.9, 40.1);
+            var m = Mesh3D.FromStored(back);
+            Assert.Equal(box.Triangles, m.Triangles);
+        }
+        finally { try { Directory.Delete(dir, true); } catch (IOException) { } }
+    }
 }
