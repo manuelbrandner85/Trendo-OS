@@ -159,6 +159,7 @@ public partial class MainWindow
         var fromCad = new Button { Name = "print-from-cad", Content = "Aus Trendo CAD" }; fromCad.Click += (_, _) => { try { Open3dPrint(CadExportAs("3mf")); } catch (Trendo.Core.Cad.CadError ex) { _prMsg = ex.Message; Show("3d-druck"); } };
         file.Children.Add(new WrapPanel { Children = { pick, new Border { Width = 6 }, fromCad } });
         sp.Children.Add(Card(file));
+        if (PrintPreviewCard() is { } preview) sp.Children.Add(Card(preview));
         // 2) Vorbereiten in Bambu Studio
         var slicer = new StackPanel { Spacing = 6, Children = { H("2 · Vorbereiten (Slicen) in Bambu Studio", 15),
             P("Bambu Studio rechnet aus dem Modell die Bahnen für den Drucker: Drucker und Filament wählen, „Slice“, dann „Drucken“ oder „Exportieren“ als .gcode.3mf.", null, 13) } };

@@ -202,6 +202,12 @@ else if (shot == "seite")
         });
         win.Show("bild");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_DRUCK") is { Length: > 0 }) // 3D-Druck-Vorschau mit T-Stück (Überhang)
+    {
+        var tm = new Mesh(); Mesh3D.AddBox(tm, -1, 1, -1, 1, 0, 6); Mesh3D.AddBox(tm, -4.5, 4.5, -1, 1, 6, 7.5); // cm – STL wird in mm geschrieben
+        var stl = Path.Combine(root, "t-stueck.stl"); Mesh3D.WriteStl(tm, stl);
+        win.Open3dPrint(stl); if (Environment.GetEnvironmentVariable("TRENDO_DRUCK") == "auf") win.PrintAutoOrient(); win.Show("3d-druck");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_3D") is { Length: > 0 }) { win.Show("3d"); foreach (var sh in new[] { "cube", "sphere", "cylinder", "torus" }) win.Studio3DAddShape(sh); win.Studio3DSelect(1); } // 3D-Modelle erstellen mit Arbeitsfläche
     if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lv)); win.ProgramNew(page, tpl); if (Environment.GetEnvironmentVariable("TRENDO_GAMESEC") is { Length: > 0 } gs) win.GameSection = gs; win.Show(page); } // Programm mit Vorlage öffnen
     if (page == "architektur" && Environment.GetEnvironmentVariable("TRENDO_ARCH") is { Length: > 0 } arch) // Grundriss: Auswahl/3D/Werkzeug zeigen
