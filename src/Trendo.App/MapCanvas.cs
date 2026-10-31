@@ -29,12 +29,20 @@ public sealed class TileCache(string dir, bool online)
     readonly SemaphoreSlim _gate = new(2);
     public bool Online { get; set; } = online;
     public event Action? Loaded;
+    /// <summary>T-0274b: Offline-Kartenpaket des Nutzers – hat Vorrang vor Zwischenspeicher und Internet.</summary>
+    public Trendo.Core.Karten.TilePack? Pack { get => _pack; set { _pack?.Dispose(); _pack = value; _mem.Clear(); } }
+    Trendo.Core.Karten.TilePack? _pack;
 
     public Bitmap? Get(int z, int x, int y)
     {
         var n = 1 << z; if (y < 0 || y >= n) return null; x = ((x % n) + n) % n;
         var key = (z, x, y);
         if (_mem.TryGetValue(key, out var b)) return b;
+        if (_pack?.Get(z, x, y) is { } packed)
+        {
+            try { using var ms = new MemoryStream(packed); b = new Bitmap(ms); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or NotSupportedException) { b = null; }
+            Remember(key, b); return b;
+        }
         var file = Path.Combine(dir, z.ToString(), x.ToString(), y + ".png");
         if (File.Exists(file) && (DateTime.UtcNow - File.GetLastWriteTimeUtc(file)).TotalDays < 30 || File.Exists(file) && !Online)
         {

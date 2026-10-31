@@ -128,3 +128,29 @@ public class SPEC13_UiNet
         w.Close();
     }
 }
+
+/// <summary>T-0274b: Offline-Kartenpaket über die Oberfläche laden.</summary>
+public class SPEC13_UiPack
+{
+    const string MK = "karten";
+    static T Get<T>(MainWindow w, string name) where T : Control { Settle(); return w.GetVisualDescendants().OfType<T>().Last(c => c.Name == name && c.IsEffectivelyVisible && c.Bounds.Width > 0); }
+    static void Press(MainWindow w, string name) { var b = Get<Button>(w, name); b.BringIntoView(); Settle(); RealClick(w, Get<Button>(w, name)); }
+
+    [AvaloniaFact(DisplayName = "SPEC-13 UI: Kachel-Ordner als Offline-Paket laden – Karte springt hin, Info zeigt Kacheln und Zoom, bleibt nach Neustart gemerkt")]
+    public void Load_pack()
+    {
+        var (w, _, root) = Ui.Open();
+        var png = Trendo.Core.VisionPlus.EncodePng(new Trendo.Core.RgbImage(256, 256, Enumerable.Repeat((byte)180, 256 * 256 * 3).ToArray()));
+        var tiles = Path.Combine(root, "paket");
+        foreach (var (x, y) in new[] { (8711, 5683), (8712, 5683) }) { var f = Path.Combine(tiles, "14", x.ToString(), y + ".png"); Directory.CreateDirectory(Path.GetDirectoryName(f)!); File.WriteAllBytes(f, png); }
+        w.Show(MK); Settle(); RealClick(w, Get<Button>(w, "prog-tpl-leer")); w.MapSelect(null);
+        Get<TextBox>(w, "mk-pack-path").Text = tiles; Press(w, "mk-pack-load");
+        Assert.Contains("2 Kacheln, Zoom 14–14", Get<TextBlock>(w, "mk-pack-info").Text);
+        Assert.Equal(14, w.MapState.Zoom); Assert.InRange(w.MapState.Lat, 48.1, 48.2);
+        Assert.Equal(tiles, w.MapPackPath);
+        Get<TextBox>(w, "mk-pack-path").Text = Path.Combine(root, "leer"); Directory.CreateDirectory(Path.Combine(root, "leer")); Press(w, "mk-pack-load");
+        Assert.StartsWith("⚠", Get<TextBlock>(w, "mk-net-msg").Text);
+        Press(w, "mk-pack-off"); Assert.Equal("", w.MapPackPath);
+        w.Close();
+    }
+}

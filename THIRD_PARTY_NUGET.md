@@ -27,6 +27,8 @@ Automatisch erzeugt aus project.assets.json (alle Projekte, auch indirekte Paket
 | HarfBuzzSharp.NativeAssets.WebAssembly | 8.3.1.3 | MIT |
 | HarfBuzzSharp.NativeAssets.Win32 | 8.3.1.3 | MIT |
 | MicroCom.Runtime | 0.11.6 | MIT |
+| Microsoft.Data.Sqlite | 10.0.14 | MIT |
+| Microsoft.Data.Sqlite.Core | 10.0.14 | MIT |
 | Microsoft.Extensions.DependencyInjection.Abstractions | 8.0.2 | MIT |
 | Microsoft.Extensions.Logging.Abstractions | 8.0.3 | MIT |
 | PDFsharp | 6.2.4 | MIT |
@@ -37,6 +39,10 @@ Automatisch erzeugt aus project.assets.json (alle Projekte, auch indirekte Paket
 | SkiaSharp.NativeAssets.macOS | 3.119.4 | MIT |
 | SkiaSharp.NativeAssets.WebAssembly | 3.119.4 | MIT |
 | SkiaSharp.NativeAssets.Win32 | 3.119.4 | MIT |
+| SQLitePCLRaw.bundle_e_sqlite3 | 2.1.13 | Apache-2.0 |
+| SQLitePCLRaw.core | 2.1.13 | Apache-2.0 |
+| SQLitePCLRaw.lib.e_sqlite3 | 2.1.13 | Apache-2.0 |
+| SQLitePCLRaw.provider.e_sqlite3 | 2.1.13 | Apache-2.0 |
 | System.Security.Cryptography.Pkcs | 10.0.14 | MIT |
 | Tmds.DBus.Protocol | 0.94.1 | MIT |
 | Velopack | 1.2.161 | MIT |

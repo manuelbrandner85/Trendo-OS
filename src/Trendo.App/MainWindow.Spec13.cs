@@ -18,7 +18,13 @@ public partial class MainWindow
     public readonly MapViewState MapState = new();
     private TileCache? _tileCache;
     // Kacheln nur online und nicht im abgeschotteten Testbetrieb; das Screenshot-Werkzeug darf sie mit TRENDO_TILES=1 laden
-    TileCache Tiles => _tileCache ??= new TileCache(Path.Combine(_core.DataRoot, "karten", "kacheln"), !_core.Offline && (!_opt.Isolated || Environment.GetEnvironmentVariable("TRENDO_TILES") == "1"));
+    TileCache Tiles => _tileCache ??= MakeTiles();
+    TileCache MakeTiles()
+    {
+        var t = new TileCache(Path.Combine(_core.DataRoot, "karten", "kacheln"), !_core.Offline && (!_opt.Isolated || Environment.GetEnvironmentVariable("TRENDO_TILES") == "1"));
+        if (MapPackPath is { Length: > 0 } pp) try { t.Pack = new TilePack(pp); } catch (Exception ex) when (ex is ArgumentException or InvalidDataException or IOException or UnauthorizedAccessException) { } // Paket fehlt inzwischen
+        return t;
+    }
     static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
     static readonly string[] MapColors = ["#F97316", "#3B82F6", "#22C55E", "#E11D48", "#A855F7", "#14B8A6", "#EAB308"];
 
@@ -176,6 +182,14 @@ public partial class MainWindow
                 v => { var t = GeoPlus.HikingTime(Fach.Num(v("km")), Fach.Num(v("up")), Fach.Num(v("down"))); return $"Gehzeit ca. {(int)t.TotalHours}:{t.Minutes:00} h (ohne Pausen)"; });
             sp.Children.Add(new Expander { Name = "mk-calcs", Header = "Rechner (Koordinaten, UTM, Wanderzeit …)", IsExpanded = false, Content = calcs });
             sp.Children.Add(P(Tiles.Online ? "Kartendaten © OpenStreetMap-Mitwirkende (ODbL). Kacheln werden zwischengespeichert." : "Offline: Karte aus dem Zwischenspeicher, sonst Gitter.", null, 11));
+            // T-0274b: Offline-Kartenpaket (Ordner oder ZIP mit z/x/y.png)
+            sp.Children.Add(H("Offline-Kartenpaket", 12));
+            var pack = Field("mk-pack-path", "Kartenpaket (.mbtiles, .zip) oder Kachel-Ordner", 150, MapPackPath); sp.Children.Add(pack);
+            sp.Children.Add(new WrapPanel { Children = {
+                Act2("mk-pack-load", "Laden", () => { try { MapLoadPack(Need(pack, "das Kartenpaket")); } catch (Exception ex) when (ex is ArgumentException or InvalidDataException or IOException or UnauthorizedAccessException) { _mapNetMsg = "⚠ " + ex.Message; Show(MK); } }),
+                Act2("mk-pack-off", "Entfernen", () => { MapPackPath = ""; Tiles.Pack = null; _mapNetMsg = "Kartenpaket entfernt."; Show(MK); }) } });
+            if (Tiles.Pack is { } tp) sp.Children.Add(new TextBlock { Name = "mk-pack-info", Text = $"{tp.Count} Kacheln, Zoom {tp.MinZoom}–{tp.MaxZoom} · {Path.GetFileName(tp.Source.TrimEnd('/', '\\'))}", Foreground = Brush.Parse("#7FD3FF"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            if (_mapNetMsg.Length > 0 && sel is null) sp.Children.Add(new TextBlock { Name = "mk-net-msg", Text = _mapNetMsg, FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = Brush.Parse(_mapNetMsg.StartsWith('⚠') ? "#F87171" : "#7FD3FF") });
         }
         return sp;
     }
@@ -248,5 +262,16 @@ public partial class MainWindow
         }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or ArgumentException or TaskCanceledException or System.Text.Json.JsonException or KeyNotFoundException) { _mapNetMsg = "⚠ " + ex.Message; }
         Show(MK);
+    }
+
+    string PackFile => Path.Combine(_core.DataRoot, "karten", "paket.txt");
+    public string MapPackPath { get => File.Exists(PackFile) ? File.ReadAllText(PackFile).Trim() : ""; set { Directory.CreateDirectory(Path.GetDirectoryName(PackFile)!); File.WriteAllText(PackFile, value.Trim()); } }
+
+    /// <summary>Offline-Kartenpaket laden, merken und die Karte auf sein Gebiet setzen.</summary>
+    public void MapLoadPack(string path)
+    {
+        var p = new TilePack(path); Tiles.Pack = p; MapPackPath = path;
+        var (s, w, n, e) = p.Bounds(); MapState.Lat = (s + n) / 2; MapState.Lon = (w + e) / 2; MapState.Zoom = p.MaxZoom; MapState.Tiles = true;
+        _mapNetMsg = $"✓ Kartenpaket geladen: {p.Count} Kacheln, Zoom {p.MinZoom}–{p.MaxZoom}."; Show(MK);
     }
 }
