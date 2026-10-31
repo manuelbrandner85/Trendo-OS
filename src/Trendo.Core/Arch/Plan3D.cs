@@ -6,12 +6,16 @@ namespace Trendo.Core.Arch;
 /// Böden je Belag eingefärbt, Möbel als Körper in üblicher Höhe. Für die 3D-Ansicht (CadView) und den Export.</summary>
 public static class Plan3D
 {
+    /// <summary>Alle Geschosse übereinander (jedes auf seiner Höhenlage).</summary>
+    public static List<(string Color, Solid Solid, string? Id)> BuildAll(IReadOnlyList<FloorPlan> levels) => levels.SelectMany(Build).ToList();
+
     public static List<(string Color, Solid Solid, string? Id)> Build(FloorPlan p)
     {
+        var z = p.Elevation;
         var res = new List<(string, Solid, string?)>();
         foreach (var r in p.Rooms.Where(r => r.Points.Count >= 3))
             res.Add((r.Floor switch { "parkett" => "#A9774A", "fliesen" => "#9DB3C6", "vinyl" => "#8E9C86", "teppich" => "#8A7BAE", _ => "#C29A63" },
-                Slab(r.Points.Select(q => (q.X, q.Y)).ToList(), -2, 2), r.Id));
+                Slab(r.Points.Select(q => (q.X, q.Y)).ToList(), z - 2, z + 2), r.Id));
         foreach (var w in p.Walls)
         {
             var len = w.Length; if (len < 1) continue;
@@ -19,17 +23,17 @@ public static class Plan3D
             var pos = 0.0;
             foreach (var c in cuts)
             {
-                if (c.S > pos) res.Add(("#E9EDF3", Piece(w, pos, c.S, 0, w.Height), w.Id));
-                if (c.Sill > 0) res.Add(("#E9EDF3", Piece(w, c.S, c.E, 0, c.Sill), w.Id));
-                if (c.Top < w.Height) res.Add(("#E9EDF3", Piece(w, c.S, c.E, Math.Min(c.Top, w.Height), w.Height), w.Id));
+                if (c.S > pos) res.Add(("#E9EDF3", Piece(w, pos, c.S, z, z + w.Height), w.Id));
+                if (c.Sill > 0) res.Add(("#E9EDF3", Piece(w, c.S, c.E, z, z + c.Sill), w.Id));
+                if (c.Top < w.Height) res.Add(("#E9EDF3", Piece(w, c.S, c.E, z + Math.Min(c.Top, w.Height), z + w.Height), w.Id));
                 pos = Math.Max(pos, c.E);
             }
-            if (len > pos) res.Add(("#E9EDF3", Piece(w, pos, len, 0, w.Height), w.Id));
+            if (len > pos) res.Add(("#E9EDF3", Piece(w, pos, len, z, z + w.Height), w.Id));
         }
         foreach (var i in p.Items)
         {
             var h = FurnitureCatalog.Get(i.Type)?.H ?? 60;
-            res.Add((i.Type switch { "teppich" => "#7C6FA8", "pflanze" => "#3FA34D", "sofa" or "sessel" => "#55708F", "bett" or "doppelbett" => "#D9DEE7", _ => "#8C7A66" }, Slab(i.Corners(), 0, Math.Max(1, h)), i.Id));
+            res.Add((i.Type switch { "teppich" => "#7C6FA8", "pflanze" => "#3FA34D", "sofa" or "sessel" => "#55708F", "bett" or "doppelbett" => "#D9DEE7", _ => "#8C7A66" }, Slab(i.Corners(), z, z + Math.Max(1, h)), i.Id));
         }
         return res;
     }

@@ -30,6 +30,8 @@ public class SPEC01_Ui
     /// <summary>Die sichtbare Zeichenfläche (eine abgelöste ältere Seite kann kurz noch im Baum hängen).</summary>
     static FloorPlanView Canvas(MainWindow w) => w.GetVisualDescendants().OfType<FloorPlanView>().First(c => c.Name == "arch-canvas" && c.IsEffectivelyVisible && c.Bounds.Width > 0);
 
+    static void Press(MainWindow w, string name) { var b = Get<Button>(w, name); b.BringIntoView(); Settle(); RealClick(w, Get<Button>(w, name)); }
+
     static void Drag(MainWindow w, Point a, Point b)
     {
         w.MouseDown(a, MouseButton.Left); Settle();
@@ -75,7 +77,7 @@ public class SPEC01_Ui
 
         // Möbel aus dem Katalog stellen und mit der Maus verschieben
         RealClick(w, Get<Button>(w, "arch-tool-moebel"));
-        RealClick(w, Get<Button>(w, "arch-item-sessel"));
+        Press(w, "arch-item-sessel");
         Click(w, At(w, 100, 100));
         var item = Assert.Single(Plan(w).Items);
         Assert.Equal("sessel", item.Type); Assert.Equal(100, item.X, 0); Assert.Equal(100, item.Y, 0);
@@ -86,7 +88,7 @@ public class SPEC01_Ui
         Assert.Equal(item.Id, w.ArchState.Selected);
 
         // Eigenschaften: Drehen per Knopf, Löschen per Entf, Rückgängig per Knopf
-        RealClick(w, Get<Button>(w, "arch-rotate"));
+        Press(w, "arch-rotate");
         Assert.Equal(90, Plan(w).Items[0].Rot);
         Canvas(w).Focus(); Settle();
         w.KeyPress(Key.Delete, RawInputModifiers.None, PhysicalKey.Delete, null); w.KeyRelease(Key.Delete, RawInputModifiers.None, PhysicalKey.Delete, null); Settle();
@@ -105,7 +107,7 @@ public class SPEC01_Ui
         Assert.Contains("Wohnfläche", Get<TextBlock>(w, "prog-status-text").Text);
 
         // Raum über die Projektliste auswählen, umbenennen, Boden auf Fliesen
-        RealClick(w, Get<Button>(w, "arch-room-2"));
+        Press(w, "arch-room-2");
         Type(w, "arch-p-name", "Wohnküche");
         Assert.Contains(Plan(w).Rooms, r => r.Name == "Wohnküche");
         Get<ComboBox>(w, "arch-p-floor").SelectedIndex = Array.IndexOf(PlanDrawing.Floors, "fliesen"); Settle();
@@ -124,7 +126,7 @@ public class SPEC01_Ui
         // Prüfen: Treffer anklicken wählt das Element aus
         RealClick(w, Get<Button>(w, "prog-cmd-arch-check"));
         Assert.Contains("Prüfung", string.Join(" ", w.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text)));
-        RealClick(w, Get<Button>(w, "arch-issue-0"));
+        Press(w, "arch-issue-0");
         Assert.NotNull(w.ArchState.Selected);
 
         // 3D und zurück
@@ -185,7 +187,7 @@ public class SPEC01_Ui
         RealClick(w, Get<Button>(w, "prog-tpl-wohnung"));
         string Texts() => string.Join(" ", w.GetVisualDescendants().OfType<TextBlock>().Where(t => t.IsEffectivelyVisible).Select(t => t.Text));
         Assert.Contains("Wohnfläche (WoFlV)", Texts());
-        RealClick(w, Get<Button>(w, "arch-room-0"));
+        Press(w, "arch-room-0");
         Get<ComboBox>(w, "arch-p-finish").SelectedIndex = Array.IndexOf(PlanDrawing.Finishes, "tapete"); Settle();
         var t = Texts();
         Assert.Contains("Rollen", t); Assert.Contains("Heizleistung", t); Assert.Contains("LED à 806 lm", t); Assert.Contains("Pakete à 2,2 m²", t);
@@ -195,6 +197,78 @@ public class SPEC01_Ui
         w.ArchState.UserView = true;
         Click(w, At(w, 250, 250));
         Assert.Contains("Steigungen", Texts());
+        w.Close();
+    }
+
+    static void Key1(MainWindow w, Key k, PhysicalKey ph) { w.KeyPress(k, RawInputModifiers.None, ph, null); w.KeyRelease(k, RawInputModifiers.None, ph, null); Settle(); }
+
+    [AvaloniaFact(DisplayName = "T-0257 UI: Doppelklick erkennt Raum, Raum Punkt für Punkt (Enter), Bemaßen mit drei Klicks, Text setzen und ändern")]
+    public void Detect_polygon_dimension_text()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show(MainWindow.StudioPages["SPEC-01"]); Settle();
+        RealClick(w, Get<Button>(w, "prog-tpl-leer"));
+        w.ArchEdit("Wände", pl => { pl.AddWall(0, 0, 500, 0); pl.AddWall(500, 0, 500, 400); pl.AddWall(500, 400, 0, 400); pl.AddWall(0, 400, 0, 0); });
+        RealClick(w, Get<Button>(w, "arch-tool-raum"));
+        w.ArchState.UserView = true;
+        // echter Doppelklick in die umschlossene Fläche
+        var mid = At(w, 250, 200);
+        w.MouseMove(mid); w.MouseDown(mid, MouseButton.Left); w.MouseUp(mid, MouseButton.Left); w.MouseDown(mid, MouseButton.Left); w.MouseUp(mid, MouseButton.Left); Settle();
+        var r = Assert.Single(Plan(w).Rooms);
+        Assert.InRange(r.Area / 10000, 17.6, 18.2); // lichte Fläche 4,76 × 3,76 m = 17,90 m² (Wandachsen 5 × 4 m, Stärke 24 cm)
+
+        // Raum Punkt für Punkt außerhalb: 4 Klicks, Enter
+        foreach (var (x, y) in new[] { (700.0, 0.0), (1000.0, 0.0), (1000.0, 200.0), (700.0, 200.0) }) Click(w, At(w, x, y));
+        Canvas(w).Focus(); Settle(); Key1(w, Key.Enter, PhysicalKey.Enter);
+        Assert.Equal(2, Plan(w).Rooms.Count);
+        Assert.Equal(6.0, Plan(w).Rooms[1].Area / 10000, 1);
+
+        // Bemaßen: Anfang, Ende, Abstand
+        RealClick(w, Get<Button>(w, "arch-tool-mass"));
+        Click(w, At(w, 0, 0)); Click(w, At(w, 500, 0)); Click(w, At(w, 250, -80));
+        var dim = Assert.Single(Plan(w).Dimensions);
+        Assert.Equal(500, dim.Length, 0); Assert.InRange(dim.Offset, -90, -70);
+
+        // Text setzen und rechts ändern
+        RealClick(w, Get<Button>(w, "arch-tool-text"));
+        Click(w, At(w, 250, 300));
+        Assert.Single(Plan(w).Labels);
+        Type(w, "arch-p-text", "Hier kommt das Sofa hin");
+        Assert.Equal("Hier kommt das Sofa hin", Plan(w).Labels[0].Text);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "T-0257 UI: Geschoss anlegen und wechseln, Vorlage-Bild laden und Maßstab über zwei Klicks festlegen, OBJ-Export")]
+    public void Levels_background_obj()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        w.Show(MainWindow.StudioPages["SPEC-01"]); Settle();
+        RealClick(w, Get<Button>(w, "prog-tpl-bad"));
+        RealClick(w, Get<Button>(w, "arch-level-add"));
+        Assert.Equal(2, FloorPlan.Levels(w.ProgramActive(AK)!.Data).Count);
+        Assert.Equal("Obergeschoss", Plan(w).LevelName); Assert.Empty(Plan(w).Rooms);
+        RealClick(w, Get<Button>(w, "arch-level-0"));
+        Assert.Equal("Erdgeschoss", Plan(w).LevelName); Assert.NotEmpty(Plan(w).Rooms);
+        RealClick(w, Get<Button>(w, "arch-level-1"));
+
+        // Vorlage-Bild: 400 × 300 Pixel, darin eine 200 Pixel lange Strecke = 5 m
+        var png = Img.Png(root, 400, 300, (100, 100, 299, 110));
+        Get<TextBox>(w, "arch-bg-path").BringIntoView(); Get<TextBox>(w, "arch-bg-path").Text = png; Settle();
+        Press(w, "arch-bg-load");
+        var bg = Plan(w).Background!; Assert.Equal(400, bg.PxW);
+        Press(w, "arch-cal");
+        Assert.Equal("kalib", w.ArchState.Tool);
+        w.ArchState.UserView = true;
+        double Wx(int px) => bg.X + px * bg.CmPerPx; double Wy(int px) => bg.Y + px * bg.CmPerPx;
+        Click(w, At(w, Wx(100), Wy(105))); Click(w, At(w, Wx(300), Wy(105)));
+        Type(w, "arch-p-callen", "500");
+        Assert.Equal(2.5, Plan(w).Background!.CmPerPx, 1);
+        Assert.Equal("auswahl", w.ArchState.Tool);
+
+        RealClick(w, Get<Button>(w, "prog-export-obj"));
+        var file = w.ProgramMessage(AK)["Exportiert: ".Length..].Trim();
+        Assert.True(File.Exists(file) && File.Exists(Path.ChangeExtension(file, ".mtl")));
+        Assert.Contains("usemtl", File.ReadAllText(file));
         w.Close();
     }
 }

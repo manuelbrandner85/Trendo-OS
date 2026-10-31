@@ -18,6 +18,9 @@ public sealed class PlanViewState
     public (double X, double Y)? Chain;
     public double WallThickness = 24;
     public string Hint = "";
+    /// <summary>T-0257: angefangener Vieleck-Raum, Bemaßung (Start/Ende) und Kalibrier-Punkte des Vorlage-Bilds.</summary>
+    public List<(double X, double Y)> RoomPts = [];
+    public (double X, double Y)? DimA, DimB, CalA, CalB;
 }
 
 /// <summary>T-0256: Die Zeichenfläche des Grundriss-Programms. Ziehen, Klicken, Doppelklick wie in einem Planungsprogramm:
@@ -30,15 +33,16 @@ public sealed class FloorPlanView : Control
     readonly PlanViewState _s;
     readonly Action<string, Action<FloorPlan>> _commit;
     readonly Action<string?> _select;
+    readonly FloorPlan? _below;
     FloorPlan? _work; string _workLabel = "";
     (double X, double Y) _mouse; (double X, double Y)? _press; (double X, double Y) _snap; bool _snapped;
     Point? _panFrom; bool _space;
     string? _dragKind; int _dragHandle = -1;
     string _typed = "";
 
-    public FloorPlanView(FloorPlan plan, PlanViewState state, Action<string, Action<FloorPlan>> commit, Action<string?> select)
+    public FloorPlanView(FloorPlan plan, PlanViewState state, Action<string, Action<FloorPlan>> commit, Action<string?> select, FloorPlan? below = null)
     {
-        _plan = plan; _s = state; _commit = commit; _select = select;
+        _plan = plan; _s = state; _commit = commit; _select = select; _below = below;
         ClipToBounds = true; Focusable = true; Cursor = new Cursor(StandardCursorType.Cross);
     }
 
@@ -101,10 +105,36 @@ public sealed class FloorPlanView : Control
                 }
                 else _s.Chain = _snap;
                 InvalidateVisual(); return;
+            case "mass":
+                if (_s.DimA is null) _s.DimA = _snap;
+                else if (_s.DimB is null) { if (Dist(_s.DimA.Value, _snap) >= 1) _s.DimB = _snap; }
+                else
+                {
+                    var (a1, b1) = (_s.DimA.Value, _s.DimB.Value); var off = DimLine.OffsetFor(a1.X, a1.Y, b1.X, b1.Y, w.X, w.Y);
+                    _s.DimA = _s.DimB = null;
+                    Commit("Bemaßung", pl => _s.Selected = pl.AddDimension(a1.X, a1.Y, b1.X, b1.Y, off).Id);
+                    return;
+                }
+                InvalidateVisual(); return;
+            case "text":
+                var (lx, ly) = _snap;
+                Commit("Text", pl => _s.Selected = pl.AddLabel(lx, ly, "Text").Id);
+                return;
+            case "kalib":
+                if (_s.CalA is null || _s.CalB is not null) { _s.CalA = w; _s.CalB = null; }
+                else { _s.CalB = w; _select(_s.Selected); } // Eigenschaften zeigen jetzt das Längenfeld
+                InvalidateVisual(); return;
             case "raum":
+                if (dbl && _s.RoomPts.Count >= 2)
+                {
+                    // Vieleck schließen (der Doppelklick hat schon einen Punkt gesetzt)
+                    var pts = _s.RoomPts.ToList(); _s.RoomPts.Clear(); var nm = NextRoomName();
+                    Commit("Raum zeichnen", pl => _s.Selected = pl.AddPolygonRoom(pts, nm).Id);
+                    return;
+                }
                 if (dbl)
                 {
-                    _press = null;
+                    _press = null; _s.RoomPts.Clear();
                     var name = NextRoomName(); var hit = false;
                     Commit("Raum erkennen", pl => hit = pl.DetectRoom(w.X, w.Y, name) is not null);
                     if (!hit) Hint("Hier ist keine geschlossene Fläche – Wände müssen den Raum ganz umschließen. Oder ein Rechteck aufziehen.");
@@ -150,6 +180,8 @@ public sealed class FloorPlanView : Control
                     var op = _work.Openings.First(o => o.Id == sel); var wall = _work.WallOf(op.WallId)!;
                     op.At = Math.Clamp(Math.Round(wall.Project(w.X, w.Y).T), op.Width / 2 + 5, wall.Length - op.Width / 2 - 5); _workLabel = "Öffnung verschieben"; break;
                 case "wall": _work.MoveWall(sel, dx, dy); _workLabel = "Wand verschieben"; break;
+                case "label": { var l = _work.Labels.First(x => x.Id == sel); var l0 = _plan.Labels.First(x => x.Id == sel); l.X = l0.X + dx; l.Y = l0.Y + dy; _workLabel = "Text verschieben"; break; }
+                case "dim": { var m = _work.Dimensions.First(x => x.Id == sel); var m0 = _plan.Dimensions.First(x => x.Id == sel); m.X1 = m0.X1 + dx; m.Y1 = m0.Y1 + dy; m.X2 = m0.X2 + dx; m.Y2 = m0.Y2 + dy; _workLabel = "Bemaßung verschieben"; break; }
                 case "room":
                     var r = _work.Rooms.First(x => x.Id == sel); var r0 = _plan.Rooms.First(x => x.Id == sel);
                     r.Points = r0.Points.Select(q => new PlanPoint(q.X + dx, q.Y + dy)).ToList(); _workLabel = "Raum verschieben"; break;
@@ -166,7 +198,8 @@ public sealed class FloorPlanView : Control
         if (_s.Tool == "raum" && _press is { } a)
         {
             _press = null; var (bx, by) = _snap;
-            if (Math.Abs(bx - a.X) * _s.Zoom < 4 && Math.Abs(by - a.Y) * _s.Zoom < 4) { InvalidateVisual(); return; }
+            if (Math.Abs(bx - a.X) * _s.Zoom < 4 && Math.Abs(by - a.Y) * _s.Zoom < 4) { _s.RoomPts.Add(a); InvalidateVisual(); return; } // Klick: Punkt eines Vieleck-Raums
+            if (_s.RoomPts.Count > 0) { _s.RoomPts.Add((bx, by)); InvalidateVisual(); return; } // Vieleck läuft: Ziehen zählt als Punkt
             var name = NextRoomName(); var t = _s.WallThickness;
             Commit("Raum aufziehen", pl => _s.Selected = pl.AddRectRoom(a.X, a.Y, bx, by, name, "wohnen", t).Id);
             return;
@@ -175,7 +208,7 @@ public sealed class FloorPlanView : Control
         if (_work is { } done)
         {
             _work = null;
-            Commit(_workLabel, pl => { pl.Walls = done.Walls; pl.Rooms = done.Rooms; pl.Items = done.Items; pl.Openings = done.Openings; });
+            Commit(_workLabel, pl => { pl.Walls = done.Walls; pl.Rooms = done.Rooms; pl.Items = done.Items; pl.Openings = done.Openings; pl.Labels = done.Labels; pl.Dimensions = done.Dimensions; });
         }
     }
 
@@ -183,7 +216,18 @@ public sealed class FloorPlanView : Control
     {
         base.OnKeyDown(e);
         if (e.Key == Key.Space) { _space = true; e.Handled = true; return; }
-        if (e.Key == Key.Escape) { if (_s.Chain is not null) EndChain(); else { _s.Tool = "auswahl"; _s.Selected = null; _select(null); } e.Handled = true; return; }
+        if (e.Key == Key.Escape)
+        {
+            if (_s.Chain is not null) EndChain();
+            else if (_s.RoomPts.Count > 0 || _s.DimA is not null || _s.CalA is not null) { _s.RoomPts.Clear(); _s.DimA = _s.DimB = _s.CalA = _s.CalB = null; InvalidateVisual(); }
+            else { _s.Tool = "auswahl"; _s.Selected = null; _select(null); }
+            e.Handled = true; return;
+        }
+        if (e.Key == Key.Enter && _s.Tool == "raum" && _s.RoomPts.Count >= 3)
+        {
+            var pts = _s.RoomPts.ToList(); _s.RoomPts.Clear(); var nm = NextRoomName();
+            Commit("Raum zeichnen", pl => _s.Selected = pl.AddPolygonRoom(pts, nm).Id); e.Handled = true; return;
+        }
         // Längeneingabe beim Wandzeichnen: Zahl tippen (cm, oder m mit Komma), Enter
         if (_s.Tool == "wand" && _s.Chain is { } c)
         {
@@ -226,7 +270,9 @@ public sealed class FloorPlanView : Control
         _mouse = w; _moved = true;
         var grid = _s.Grid ? 10 : 0;
         var (x, y, snapped) = _plan.Snap(w.X, w.Y, grid, 10 / _s.Zoom + 3);
-        if (_s.Tool == "wand" && _s.Chain is { } c && !snapped && !mods.HasFlag(KeyModifiers.Shift)) (x, y) = FloorPlan.AxisLock(c.X, c.Y, x, y);
+        // Winkel in 15°-Schritten (wie üblich in Planungsprogrammen); Umschalt zeichnet frei
+        (double X, double Y)? from = _s.Tool == "wand" ? _s.Chain : _s.Tool == "raum" && _s.RoomPts.Count > 0 ? _s.RoomPts[^1] : _s.Tool == "mass" && _s.DimB is null ? _s.DimA : null;
+        if (from is { } c && !snapped && !mods.HasFlag(KeyModifiers.Shift)) (x, y) = FloorPlan.AngleSnap(c.X, c.Y, x, y);
         _snap = (x, y); _snapped = snapped;
     }
 
@@ -235,6 +281,7 @@ public sealed class FloorPlanView : Control
     {
         if (p.WallOf(id) is { } w) return [(w.X1, w.Y1), (w.X2, w.Y2)];
         if (p.Rooms.FirstOrDefault(r => r.Id == id) is { } r) return r.Points.Select(q => (q.X, q.Y)).ToList();
+        if (p.Dimensions.FirstOrDefault(d => d.Id == id) is { } d) return [(d.X1, d.Y1), (d.X2, d.Y2)];
         return [];
     }
 
@@ -243,6 +290,7 @@ public sealed class FloorPlanView : Control
         var (x, y) = _snap;
         if (p.WallOf(id) is not null) p.MoveWallEnd(id, k == 0, x, y);
         else if (p.Rooms.FirstOrDefault(r => r.Id == id) is { } r && k < r.Points.Count) r.Points[k] = new PlanPoint(x, y);
+        else if (p.Dimensions.FirstOrDefault(d => d.Id == id) is { } d) { if (k == 0) { d.X1 = x; d.Y1 = y; } else { d.X2 = x; d.Y2 = y; } }
     }
 
     // ---------- Zeichnen ----------
@@ -255,8 +303,11 @@ public sealed class FloorPlanView : Control
         var t = PlanTheme.Screen;
         ctx.FillRectangle(new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
             GradientStops = { new GradientStop(Color.Parse("#FF102038"), 0), new GradientStop(Color.Parse("#FF0A1628"), 1) } }, new Rect(size));
-        if (_s.Grid) DrawGrid(ctx, size);
         var plan = Shown;
+        DrawBackground(ctx, plan);
+        if (_s.Grid) DrawGrid(ctx, size);
+        if (_below is { } lower) // Geschoss darunter blass als Zeichenhilfe
+            foreach (var w in lower.Walls) ctx.DrawGeometry(B("#9FB4D3", 40), new Pen(B("#9FB4D3", 90), 1, new DashStyle([4, 3], 0)), new PolylineGeometry(w.Outline().Select(v => Screen(v.X, v.Y)).ToList(), true));
         foreach (var sh in PlanDrawing.Build(plan, t, _s.Dims)) Draw(ctx, sh, sh.Layer == "RAEUME" ? (byte)200 : (byte)255);
         // Auswahl
         if (_s.Selected is { } sel) DrawSelection(ctx, plan, sel);
@@ -281,10 +332,31 @@ public sealed class FloorPlanView : Control
         }
     }
 
+    static readonly Dictionary<string, Avalonia.Media.Imaging.Bitmap?> Images = [];
+    /// <summary>Vorlage-Bild laden (einmal je Datei) – fehlt die Datei, bleibt die Fläche leer und die Eigenschaften sagen es.</summary>
+    public static Avalonia.Media.Imaging.Bitmap? Image(string path)
+    {
+        if (Images.TryGetValue(path, out var b)) return b;
+        try { b = File.Exists(path) ? new Avalonia.Media.Imaging.Bitmap(path) : null; } catch (Exception ex) when (ex is IOException or ArgumentException or NotSupportedException or InvalidOperationException) { b = null; }
+        if (Images.Count > 8) Images.Clear();
+        return Images[path] = b;
+    }
+
+    void DrawBackground(DrawingContext ctx, FloorPlan plan)
+    {
+        if (plan.Background is not { Visible: true } bg || Image(bg.Path) is not { } bmp) return;
+        var a = Screen(bg.X, bg.Y); var b = Screen(bg.X + bg.PxW * bg.CmPerPx, bg.Y + bg.PxH * bg.CmPerPx);
+        using (ctx.PushOpacity(Math.Clamp(bg.Opacity, 0.1, 1)))
+            ctx.DrawImage(bmp, new Rect(a, b));
+    }
+
     string ToolHint() => _s.Tool switch
     {
+        "mass" => _s.DimA is null ? "Bemaßen: Anfangspunkt klicken." : _s.DimB is null ? "Endpunkt klicken (15°-Fang, Umschalt frei)." : "Abstand der Maßlinie mit der Maus wählen und klicken · Esc bricht ab",
+        "text" => "Text: an die Stelle klicken – den Text rechts eintippen",
+        "kalib" => _s.CalA is null ? "Maßstab: im Vorlage-Bild den Anfang einer bekannten Strecke klicken (z. B. eine bemaßte Wand)." : _s.CalB is null ? "Jetzt das Ende der Strecke klicken." : "Rechts die echte Länge eintragen und übernehmen.",
         "wand" => _s.Chain is null ? "Wand: Startpunkt klicken (fängt an Ecken und am 10-cm-Raster)." : $"Nächster Punkt klicken · Länge tippen + Enter{(_typed.Length > 0 ? $": {_typed}" : "")} · Doppelklick, Esc oder rechte Maustaste beendet · Umschalt: freier Winkel",
-        "raum" => "Raum: Rechteck aufziehen (lichtes Innenmaß, Wände entstehen außen) · Doppelklick in umschlossene Fläche erkennt den Raum",
+        "raum" => _s.RoomPts.Count > 0 ? $"Raum Punkt für Punkt: {_s.RoomPts.Count} Punkt(e) · Doppelklick oder Enter schließt · Esc bricht ab" : "Raum: Rechteck aufziehen (Wände entstehen außen) · einzelne Klicks zeichnen ein Vieleck · Doppelklick in umschlossene Fläche erkennt den Raum",
         "tuer" => "Tür: auf eine Wand klicken – Breite, Anschlag und Richtung rechts einstellen",
         "fenster" => "Fenster: auf eine Wand klicken – Maße rechts einstellen",
         "moebel" => $"Möbel: „{FurnitureCatalog.Get(_s.ItemType)?.Name}“ hinklicken · R dreht, Pfeiltasten schieben",
@@ -373,6 +445,24 @@ public sealed class FloorPlanView : Control
                     var (ax, ay, ex, ey) = (cx - ux * width / 2, cy - uy * width / 2, cx + ux * width / 2, cy + uy * width / 2);
                     ctx.DrawGeometry(B("#F5A524", 90), gold, new PolylineGeometry(new[] { (ax + nx, ay + ny), (ex + nx, ey + ny), (ex - nx, ey - ny), (ax - nx, ay - ny) }.Select(v => Screen(v.Item1, v.Item2)).ToList(), true));
                 }
+                break;
+            case "raum" when _s.RoomPts.Count > 0:
+                var poly = _s.RoomPts.Append(_snap).Select(v => Screen(v.X, v.Y)).ToList();
+                ctx.DrawGeometry(B("#7FD3FF", 40), gold, new PolylineGeometry(poly, true));
+                foreach (var q in _s.RoomPts) { var sq = Screen(q.X, q.Y); ctx.DrawRectangle(Brushes.White, new Pen(B("#F5A524"), 1.5), new Rect(sq.X - 4, sq.Y - 4, 8, 8)); }
+                var area = Math.Abs(Trendo.Core.Arch.Geo.SignedArea(_s.RoomPts.Append(_snap).ToList())) / 10000;
+                Label(ctx, $"{area:0.00} m²", Screen(_snap.X, _snap.Y) + new Point(12, 10), "#0A1628", 12, "#F5A524");
+                break;
+            case "mass" when _s.DimA is { } da:
+                var db = _s.DimB ?? _snap; var off = _s.DimB is null ? 0 : DimLine.OffsetFor(da.X, da.Y, db.X, db.Y, _mouse.X, _mouse.Y);
+                var tmp = new FloorPlan(); if (Dist(da, db) >= 1) tmp.AddDimension(da.X, da.Y, db.X, db.Y, off);
+                foreach (var sh in PlanDrawing.Build(tmp, PlanTheme.Screen, false)) Draw(ctx, sh);
+                break;
+            case "kalib" when _s.CalA is { } ca:
+                var cb = _s.CalB ?? _mouse; var pa = Screen(ca.X, ca.Y); var pb = Screen(cb.X, cb.Y);
+                ctx.DrawLine(new Pen(B("#EF4444"), 2.5), pa, pb);
+                foreach (var q in new[] { pa, pb }) ctx.DrawEllipse(Brushes.White, new Pen(B("#EF4444"), 2), q, 5, 5);
+                Label(ctx, $"im Bild {Dist(ca, cb) / 100:0.00} m", pb + new Point(12, 10), "#FFFFFF", 12, "#EF4444");
                 break;
             case "moebel" when FurnitureCatalog.Get(_s.ItemType) is { } f:
                 var ghost = new Item { Type = f.Type, Name = f.Name, X = Math.Round(_mouse.X / 5) * 5, Y = Math.Round(_mouse.Y / 5) * 5, W = f.W, D = f.D };

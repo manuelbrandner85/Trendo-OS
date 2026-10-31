@@ -29,6 +29,8 @@ public partial class MainWindow
         ("tuer", "Tür", "M4,20 L4,4 L12,4 L12,20 M12,20 A8,8 0 0 0 4,12", "Tür in eine Wand setzen"),
         ("fenster", "Fenster", "M3,9 L21,9 L21,15 L3,15 Z M3,12 L21,12", "Fenster in eine Wand setzen"),
         ("moebel", "Möbel", "M3,12 L21,12 L21,19 L3,19 Z M5,7 L19,7 L19,12 L5,12 Z", "Möbel aus dem Katalog stellen"),
+        ("mass", "Maß", "M3,12 L21,12 M3,8 L3,16 M21,8 L21,16 M6,10 L4,12 L6,14 M18,10 L20,12 L18,14", "Bemaßen: Anfang, Ende, dann Abstand klicken"),
+        ("text", "Text", "M5,5 L19,5 M12,5 L12,20 M9,20 L15,20", "Text in den Plan setzen"),
     ];
 
     private void InitSpec01() => RegisterProgram(FachTabs, new ProgramSpec(AK, "SPEC-01", "Grundriss & Wohnen")
@@ -58,15 +60,16 @@ public partial class MainWindow
         ],
         Exports =
         [
-            new("pdf", "PDF (Plan)", ".pdf", (d, f) => PlanDrawing.Pdf(FloorPlan.From(d.Data), f)),
+            new("pdf", "PDF (Plan)", ".pdf", (d, f) => PlanDrawing.Pdf(FloorPlan.Levels(d.Data), f)),
             new("svg", "SVG", ".svg", (d, f) => { File.WriteAllText(f, PlanDrawing.Svg(FloorPlan.From(d.Data))); return f; }),
             new("dxf", "DXF (CAD)", ".dxf", (d, f) => { File.WriteAllText(f, PlanDrawing.Dxf(FloorPlan.From(d.Data))); return f; }),
-            new("raumbuch", "Raumbuch (CSV)", ".csv", (d, f) => { File.WriteAllText(f, PlanDrawing.RoomBookCsv(FloorPlan.From(d.Data)), new System.Text.UTF8Encoding(true)); return f; }),
+            new("raumbuch", "Raumbuch (CSV)", ".csv", (d, f) => { File.WriteAllText(f, PlanDrawing.RoomBookCsv(FloorPlan.Levels(d.Data)), new System.Text.UTF8Encoding(true)); return f; }),
+            new("obj", "3D (OBJ)", ".obj", (d, f) => { var mtl = Path.ChangeExtension(f, ".mtl"); var (obj, m) = PlanDrawing.Obj(FloorPlan.Levels(d.Data), Path.GetFileName(mtl)); File.WriteAllText(mtl, m); File.WriteAllText(f, obj); return f; }),
             new("material", "Materialliste", ".md", (d, f) => { File.WriteAllText(f, PlanDrawing.MaterialList(FloorPlan.From(d.Data))); return f; }),
         ],
         Workspace = ArchWorkspace,
         Properties = ArchProperties,
-        Status = d => { var p = FloorPlan.From(d.Data); return $"{ArchTools.First(t => t.Id == ArchState.Tool).Label} · {p.Rooms.Count} Räume · Wohnfläche {p.LivingArea():0.00} m² · {p.Walls.Count} Wände · {p.Openings.Count(o => o.Kind == "tuer")} Türen · {p.Openings.Count(o => o.Kind == "fenster")} Fenster · {p.Items.Count} Möbel"; },
+        Status = d => { var p = FloorPlan.From(d.Data); var lv = FloorPlan.Levels(d.Data); return $"{ArchTools.FirstOrDefault(t => t.Id == ArchState.Tool).Label ?? "Maßstab"} · {(lv.Count > 1 ? p.LevelName + " · " : "")}{p.Rooms.Count} Räume · Wohnfläche {p.LivingArea():0.00} m²{(lv.Count > 1 ? $" (gesamt {FloorPlan.LivingAreaAll(d.Data):0.00} m²)" : "")} · {p.Walls.Count} Wände · {p.Openings.Count(o => o.Kind == "tuer")} Türen · {p.Openings.Count(o => o.Kind == "fenster")} Fenster · {p.Items.Count} Möbel"; },
         Help = "Links das Werkzeug wählen. Raum: Rechteck aufziehen – die Wände entstehen außen herum. Wand: Punkt für Punkt klicken, Länge tippen und Enter. Tür/Fenster: auf eine Wand klicken. "
              + "Auswahl: anklicken und ziehen, Ecken an den weißen Griffen. Entf löscht, R dreht Möbel, Strg+Z nimmt zurück. Mausrad zoomt, mittlere Maustaste oder Leertaste + Ziehen verschiebt.",
     }, "architektur", "raum", "wohnung", "grundriss", "farbe", "streichen", "boden", "laminat", "innenraum", "haus", "möbel", "einrichten", "wand", "tür", "fenster");
@@ -81,46 +84,95 @@ public partial class MainWindow
         ProgramRun(AK, () => d.Edit(label, x => { var p = FloorPlan.From(x); change(p); p.WriteTo(x); }));
     }
 
-    public void ArchTool(string tool) { ArchState.Tool = tool; ArchState.Chain = null; ArchState.Hint = ""; if (tool != "auswahl") ArchState.Selected = null; Show(AK); }
+    public void ArchTool(string tool) { ArchState.Tool = tool; ArchState.Chain = null; ArchState.Hint = ""; ArchState.RoomPts.Clear(); ArchState.DimA = ArchState.DimB = null; if (tool != "kalib") ArchState.CalA = ArchState.CalB = null; if (tool != "auswahl") ArchState.Selected = null; Show(AK); }
     public void ArchSelect(string? id) { ArchState.Selected = id; Show(AK); }
     public void ArchToggle3D() { _arch3D = !_arch3D; Show(AK); }
+
+    /// <summary>T-0257: Geschoss wählen (ohne Rückgängig-Schritt – es ändert nur die Ansicht).</summary>
+    public void ArchLevel(int index)
+    {
+        var d = ProgramActive(AK) ?? throw new InvalidOperationException("Es ist kein Grundriss offen.");
+        FloorPlan.SetActiveLevel(d.Data, index); ArchState.Selected = null; ArchState.Chain = null; ArchState.RoomPts.Clear(); Show(AK);
+    }
+
+    public void ArchAddLevel(bool below)
+    {
+        var d = ProgramActive(AK) ?? throw new InvalidOperationException("Es ist kein Grundriss offen.");
+        ArchState.Selected = null;
+        ProgramRun(AK, () => d.Edit(below ? "Keller anlegen" : "Geschoss anlegen", x => FloorPlan.AddLevel(x, below)));
+    }
+
+    /// <summary>Vorlage-Bild laden: liegt mittig unter dem Plan, anfangs so breit wie der Plan (sonst 10 m) – danach Maßstab über zwei Punkte festlegen.</summary>
+    public void ArchLoadImage(string path)
+    {
+        if (!File.Exists(path)) throw new FileNotFoundException("Diese Bilddatei gibt es nicht.");
+        var (pw, ph) = PlanImage.ReadSize(path) ?? throw new InvalidDataException("Das Bild lässt sich nicht lesen (PNG, JPG oder BMP).");
+        ArchEdit("Vorlage-Bild", pl =>
+        {
+            var b = pl.Bounds(); var width = b is { } bb ? Math.Max(300, bb.MaxX - bb.MinX) : 1000;
+            var cm = width / pw;
+            pl.Background = new PlanImage { Path = Path.GetFullPath(path), PxW = pw, PxH = ph, CmPerPx = cm, X = b?.MinX ?? 0, Y = b?.MinY ?? 0 };
+        });
+        _progMsg[AK] = "Vorlage-Bild geladen – jetzt „Maßstab festlegen“ und eine bekannte Strecke anklicken.";
+    }
     public bool Arch3D => _arch3D;
 
     private Control ArchWorkspace(ProgramDocument d)
     {
         var plan = FloorPlan.From(d.Data);
         // Werkzeugleiste links
-        var tools = new StackPanel { Name = "arch-tools", Spacing = 3, Width = 66 };
+        var tools = new StackPanel { Name = "arch-tools", Spacing = 3, Width = 112 };
+        var toolGrid = new WrapPanel { Width = 112 }; tools.Children.Add(toolGrid); // zwei Spalten: passt auch in kleine Fenster
         foreach (var (id, label, glyph, tip) in ArchTools)
         {
             var on = ArchState.Tool == id; var tid = id;
-            var b = new Button { Name = "arch-tool-" + id, Width = 62, Height = 48, Padding = new Thickness(2), CornerRadius = new CornerRadius(10), Focusable = false,
+            var b = new Button { Name = "arch-tool-" + id, Width = 53, Height = 46, Padding = new Thickness(1), Margin = new Thickness(0, 0, 3, 3), CornerRadius = new CornerRadius(10), Focusable = false,
                 Background = on ? Accent : Brush.Parse(C("#1AFFFFFF", "#0D000000")), BorderBrush = on ? Brush.Parse("#F5A524") : Edge, BorderThickness = new Thickness(on ? 1.5 : 1),
                 Content = new StackPanel { Spacing = 2, HorizontalAlignment = HorizontalAlignment.Center, Children = {
                     new Avalonia.Controls.Shapes.Path { Data = Geometry.Parse(glyph), Stroke = on ? Brushes.White : Text, StrokeThickness = 1.6, Fill = Brushes.Transparent, Stretch = Stretch.Uniform, Width = 18, Height = 18, HorizontalAlignment = HorizontalAlignment.Center },
-                    new TextBlock { Text = label, FontSize = 11, Foreground = on ? Brushes.White : Text, HorizontalAlignment = HorizontalAlignment.Center } } } };
+                    new TextBlock { Text = label, FontSize = 10, Foreground = on ? Brushes.White : Text, HorizontalAlignment = HorizontalAlignment.Center, TextTrimming = TextTrimming.None } } } };
             ToolTip.SetTip(b, tip);
             b.Click += (_, _) => ArchTool(tid);
-            tools.Children.Add(b);
+            toolGrid.Children.Add(b);
         }
         var toolScroll = new ScrollViewer { Content = tools, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto };
-        var thick = new ComboBox { Name = "arch-thickness", Width = 62, FontSize = 11, ItemsSource = new[] { "11,5", "17,5", "24", "30", "36,5" }, SelectedItem = ArchState.WallThickness.ToString("0.#", De) };
+        var thick = new ComboBox { Name = "arch-thickness", Width = 109, FontSize = 11, ItemsSource = new[] { "11,5", "17,5", "24", "30", "36,5" }, SelectedItem = ArchState.WallThickness.ToString("0.#", De) };
         thick.SelectionChanged += (_, _) => { if (thick.SelectedItem is string s && double.TryParse(s, System.Globalization.NumberStyles.Float, De, out var v)) ArchState.WallThickness = v; };
         ToolTip.SetTip(thick, "Wandstärke für neue Wände (cm)");
         tools.Children.Add(new TextBlock { Text = "Wand cm", FontSize = 10, Foreground = Muted, Margin = new Thickness(2, 4, 0, 0) });
         tools.Children.Add(thick);
 
+        var levels = FloorPlan.Levels(d.Data); var active = FloorPlan.ActiveLevel(d.Data);
         Control view;
         if (_arch3D)
-            view = new CadView { Name = "arch-3d", MinHeight = 320, Parts = Plan3D.Build(plan).Select(x => (x.Color, x.Solid, x.Id is not null && x.Id == ArchState.Selected)).ToList() };
+            view = new CadView { Name = "arch-3d", MinHeight = 160, Parts = Plan3D.BuildAll(levels).Select(x => (x.Color, x.Solid, x.Id is not null && x.Id == ArchState.Selected)).ToList() };
         else
         {
-            var fv = new FloorPlanView(plan, ArchState, ArchEdit, ArchSelect) { Name = "arch-canvas", MinHeight = 320 };
+            var below = levels.Where(l => l.Elevation < plan.Elevation).OrderByDescending(l => l.Elevation).FirstOrDefault();
+            var fv = new FloorPlanView(plan, ArchState, ArchEdit, ArchSelect, below) { Name = "arch-canvas", MinHeight = 160 }; // schrumpft lieber, als unter die Geschoss-Leiste zu rutschen
             if (!ArchState.Fitted) fv.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (fv.Bounds.Width > 10) { fv.Fit(); ArchState.Fitted = true; } });
             view = fv;
         }
         var frame = new Border { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = view };
-        return new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,10,*"), Children = { toolScroll, Pos(frame, 2) } };
+        // Geschoss-Reiter über der Zeichenfläche (oben = höchstes Geschoss steht rechts)
+        var tabs = new WrapPanel { Name = "arch-levels", Margin = new Thickness(0, 0, 0, 6) };
+        for (var k = 0; k < levels.Count; k++)
+        {
+            var idx = k; var on = k == active;
+            var b = new Button { Name = $"arch-level-{k}", Content = levels[k].LevelName, FontSize = 12, Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 4, 0), CornerRadius = new CornerRadius(8), Focusable = false,
+                Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text, BorderBrush = Edge, BorderThickness = new Thickness(1) };
+            ToolTip.SetTip(b, $"Höhenlage {levels[k].Elevation / 100:0.00} m · {levels[k].Rooms.Count} Räume");
+            b.Click += (_, _) => ArchLevel(idx);
+            tabs.Children.Add(b);
+        }
+        var up = new Button { Name = "arch-level-add", Content = "＋ Geschoss", FontSize = 12, Padding = new Thickness(10, 4), Margin = new Thickness(6, 0, 4, 0), Focusable = false };
+        up.Click += (_, _) => ArchAddLevel(false); ToolTip.SetTip(up, "Geschoss darüber anlegen – das untere wird blass als Vorlage gezeigt");
+        var down = new Button { Name = "arch-level-add-below", Content = "＋ Keller", FontSize = 12, Padding = new Thickness(10, 4), Focusable = false };
+        down.Click += (_, _) => ArchAddLevel(true);
+        tabs.Children.Add(up); tabs.Children.Add(down);
+        DockPanel.SetDock(tabs, Avalonia.Controls.Dock.Top);
+        var center = new DockPanel { Children = { tabs, frame } };
+        return new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,10,*"), Children = { toolScroll, Pos(center, 2) } };
     }
 
     private Control ArchProperties(ProgramDocument d)
@@ -143,14 +195,49 @@ public partial class MainWindow
         Button Act2(string name, string label, Action go) { var b = new Button { Name = name, Content = label, Padding = new Thickness(10, 4), Margin = new Thickness(0, 4, 4, 0) }; b.Click += (_, _) => go(); return b; }
         void Fact(string label, string value) => sp.Children.Add(Row(P(label, null, 12), new TextBlock { Text = value, Foreground = Text, FontSize = 12, FontWeight = FontWeight.SemiBold }));
 
-        if (sel is not null && p.WallOf(sel) is { } w)
+        if (ArchState.Tool == "kalib" && ArchState.CalA is { } ca && ArchState.CalB is { } cb)
+        {
+            sp.Children.Add(H("Maßstab festlegen", 13));
+            sp.Children.Add(P($"Strecke im Bild: {Math.Sqrt((cb.X - ca.X) * (cb.X - ca.X) + (cb.Y - ca.Y) * (cb.Y - ca.Y)) / 100:0.00} m (bisheriger Maßstab). Wie lang ist sie wirklich?", null, 12));
+            var real = new TextBox { Name = "arch-p-callen", Text = "", PlaceholderText = "z. B. 450", Width = 90 };
+            void Apply()
+            {
+                if (!double.TryParse(real.Text, System.Globalization.NumberStyles.Float, De, out var v)) { _progMsg[AK] = "Bitte die Länge in cm als Zahl eintragen."; Show(AK); return; }
+                ArchState.Tool = "auswahl"; ArchState.CalA = ArchState.CalB = null;
+                ArchEdit("Maßstab festlegen", pl => pl.CalibrateBackground(ca.X, ca.Y, cb.X, cb.Y, v));
+                _progMsg[AK] = $"Maßstab übernommen: Die Strecke ist jetzt {v / 100:0.00} m lang.";
+            }
+            OnEnter(real, Apply);
+            sp.Children.Add(Row(P("Echte Länge (cm)", Text, 12), real));
+            sp.Children.Add(Act2("arch-cal-apply", "Übernehmen", Apply));
+        }
+        else if (sel is not null && p.Dimensions.FirstOrDefault(x => x.Id == sel) is { } dim)
+        {
+            sp.Children.Add(H("Bemaßung", 13));
+            Fact("Länge", $"{dim.Length / 100:0.00} m");
+            Num("dimoff", "Abstand der Maßlinie", dim.Offset, (pl, v) => pl.Dimensions.First(x => x.Id == sel).Offset = Math.Clamp(v, -500, 500));
+            sp.Children.Add(Act2("arch-del", "Bemaßung löschen", () => { ArchState.Selected = null; ArchEdit("Bemaßung löschen", pl => pl.Remove(sel)); }));
+        }
+        else if (sel is not null && p.Labels.FirstOrDefault(x => x.Id == sel) is { } lab)
+        {
+            sp.Children.Add(H("Text", 13));
+            var txt = new TextBox { Name = "arch-p-text", Text = lab.Text };
+            void SetText() { if (!string.IsNullOrWhiteSpace(txt.Text) && txt.Text != lab.Text) ArchEdit("Text ändern", pl => pl.Labels.First(x => x.Id == sel).Text = txt.Text!.Trim()); }
+            txt.LostFocus += (_, _) => SetText(); OnEnter(txt, SetText); sp.Children.Add(txt);
+            Num("tsize", "Größe", lab.Size, (pl, v) => pl.Labels.First(x => x.Id == sel).Size = Math.Clamp(v, 5, 200));
+            Num("trot", "Drehung", lab.Rot, (pl, v) => pl.Labels.First(x => x.Id == sel).Rot = ((v % 360) + 360) % 360, "°");
+            sp.Children.Add(Act2("arch-del", "Text löschen", () => { ArchState.Selected = null; ArchEdit("Text löschen", pl => pl.Remove(sel)); }));
+        }
+        else if (sel is not null && p.WallOf(sel) is { } w)
         {
             sp.Children.Add(H("Wand", 13));
             Num("length", "Länge", Math.Round(w.Length, 1), (pl, v) => pl.SetWallLength(sel, v));
             Num("thickness", "Stärke", w.Thickness, (pl, v) => { if (v is < 5 or > 100) throw new ArgumentException("Die Wandstärke muss zwischen 5 und 100 cm liegen."); pl.WallOf(sel)!.Thickness = v; });
             Num("height", "Höhe", w.Height, (pl, v) => pl.WallOf(sel)!.Height = Math.Clamp(v, 50, 600));
             Fact("Fläche je Seite", $"{w.Length * w.Height / 10000:0.00} m²");
-            sp.Children.Add(Act2("arch-del", "Wand löschen", () => { ArchState.Selected = null; ArchEdit("Wand löschen", pl => pl.Remove(sel)); }));
+            sp.Children.Add(new WrapPanel { Children = {
+                Act2("arch-split", "Wand teilen", () => ArchEdit("Wand teilen", pl => pl.SplitWall(sel))),
+                Act2("arch-del", "Wand löschen", () => { ArchState.Selected = null; ArchEdit("Wand löschen", pl => pl.Remove(sel)); }) } });
         }
         else if (sel is not null && p.Openings.FirstOrDefault(o => o.Id == sel) is { } o)
         {
@@ -185,6 +272,7 @@ public partial class MainWindow
             }
             sp.Children.Add(new WrapPanel { Children = {
                 Act2("arch-rotate", "↻ 90°", () => ArchEdit("Drehen", pl => { var x = pl.Items.First(y => y.Id == sel); x.Rot = (x.Rot + 90) % 360; })),
+                Act2("arch-mirror", it.Mirror ? "Spiegeln ⇄ (an)" : "Spiegeln ⇄", () => ArchEdit("Spiegeln", pl => { var x = pl.Items.First(y => y.Id == sel); x.Mirror = !x.Mirror; })),
                 Act2("arch-dup", "Duplizieren", () => ArchEdit("Duplizieren", pl => { var x = pl.Items.First(y => y.Id == sel); var c = new Item { Type = x.Type, Name = x.Name, X = x.X + 30, Y = x.Y + 30, W = x.W, D = x.D, Rot = x.Rot }; pl.Items.Add(c); ArchState.Selected = c.Id; })),
                 Act2("arch-del", "Löschen", () => { ArchState.Selected = null; ArchEdit("Möbel löschen", pl => pl.Remove(sel)); }) } });
         }
@@ -199,8 +287,16 @@ public partial class MainWindow
             Pick("floor", "Boden", r.Floor, PlanDrawing.Floors, PlanDrawing.FloorName, (pl, v) => pl.Rooms.First(x => x.Id == sel).Floor = v);
             Pick("finish", "Wände", r.WallFinish, PlanDrawing.Finishes, PlanDrawing.FinishName, (pl, v) => pl.Rooms.First(x => x.Id == sel).WallFinish = v);
             Num("rheight", "Raumhöhe", r.Height, (pl, v) => pl.Rooms.First(x => x.Id == sel).Height = Math.Clamp(v, 50, 600));
+            Pick("slope", "Dachschräge", r.SlopeSides.ToString(), ["0", "1", "2"], v => v switch { "1" => "einseitig", "2" => "beidseitig", _ => "keine" }, (pl, v) => pl.Rooms.First(x => x.Id == sel).SlopeSides = int.Parse(v));
+            if (r.SlopeSides > 0)
+            {
+                Num("knee", "Kniestock", r.Knee, (pl, v) => pl.Rooms.First(x => x.Id == sel).Knee = Math.Clamp(v, 0, 300));
+                Num("sdepth", "Tiefe der Schräge", r.SlopeDepth, (pl, v) => pl.Rooms.First(x => x.Id == sel).SlopeDepth = Math.Clamp(v, 0, 1500));
+                var (z0, z1) = FloorPlan.SlopeZones(r);
+                Fact("unter 1 m (zählt nicht)", $"{z0:0.00} m²"); Fact("1–2 m (zählt halb)", $"{z1:0.00} m²");
+            }
             sp.Children.Add(H("Kennzahlen", 12));
-            Fact("Fläche", $"{f.Area:0.00} m²"); Fact("Umfang", $"{f.Perimeter:0.00} m"); Fact("Wandfläche netto", $"{f.WallNet:0.00} m²");
+            Fact("Fläche", $"{f.Area:0.00} m²"); Fact("Wohnfläche (WoFlV)", $"{p.RoomLivingArea(r):0.00} m²"); Fact("Umfang", $"{f.Perimeter:0.00} m"); Fact("Wandfläche netto", $"{f.WallNet:0.00} m²");
             Fact("Fenster", $"{f.Windows} · {f.WindowArea:0.00} m² ({(f.Area > 0 ? f.WindowArea / f.Area * 100 : 0):0} % der Fläche)"); Fact("Türen", f.Doors.ToString());
             sp.Children.Add(H("Material", 12));
             if (r.Floor == "fliesen") { var (tiles, packs, grout) = Interior.Tiles(f.Area, 30, 60, 3, 10, 1.44); Fact("Fliesen 30 × 60", $"{tiles} St. = {packs} Pakete"); Fact("Fugenmörtel", $"ca. {grout:0.0} kg"); }
@@ -234,14 +330,42 @@ public partial class MainWindow
         else
         {
             var n = p.Need();
+            var lvls = FloorPlan.Levels(d.Data); var act = FloorPlan.ActiveLevel(d.Data);
             sp.Children.Add(H("Projekt", 13));
-            Fact("Wohnfläche (WoFlV)", $"{p.LivingArea():0.00} m²"); Fact("Räume", p.Rooms.Count.ToString());
+            if (lvls.Count > 1) Fact("Wohnfläche gesamt", $"{FloorPlan.LivingAreaAll(d.Data):0.00} m²");
+            Fact(lvls.Count > 1 ? $"Wohnfläche {p.LevelName}" : "Wohnfläche (WoFlV)", $"{p.LivingArea():0.00} m²"); Fact("Räume", p.Rooms.Count.ToString());
             foreach (var room in p.Rooms) { var rr = room; var b = new Button { Name = "arch-room-" + p.Rooms.IndexOf(room), HorizontalAlignment = HorizontalAlignment.Stretch, Background = Brushes.Transparent, Padding = new Thickness(6, 3),
                 Content = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = room.Name, Foreground = Text, FontSize = 12 }, Pos(P($"{room.Area / 10000:0.00} m²", null, 11), 1) } } };
                 b.Click += (_, _) => ArchSelect(rr.Id); sp.Children.Add(b); }
             sp.Children.Add(H("Material gesamt", 12));
             Fact("Boden", $"{n.Floor:0.00} m² → {n.FloorPacks} Pakete"); Fact("Farbe", $"{n.PaintLiters:0.0} l = {n.PaintBuckets} Eimer"); Fact("Sockelleisten", $"{n.SkirtingMeters:0.00} m");
             sp.Children.Add(P("Tipp: Element anklicken, um es zu bearbeiten. Export über das Menüband.", null, 11));
+            // Geschoss
+            sp.Children.Add(H("Geschoss", 12));
+            var lname = new TextBox { Name = "arch-p-levelname", Text = p.LevelName };
+            void RenameLevel() { if (!string.IsNullOrWhiteSpace(lname.Text) && lname.Text != p.LevelName) ArchEdit("Geschoss umbenennen", pl => pl.LevelName = lname.Text!.Trim()); }
+            lname.LostFocus += (_, _) => RenameLevel(); OnEnter(lname, RenameLevel); sp.Children.Add(lname);
+            Num("elev", "Höhenlage", p.Elevation, (pl, v) => pl.Elevation = Math.Clamp(v, -2000, 10000));
+            if (lvls.Count > 1) sp.Children.Add(Act2("arch-level-del", "Geschoss löschen", () => { ArchState.Selected = null; ProgramRun(AK, () => d.Edit("Geschoss löschen", x => FloorPlan.RemoveLevel(x, act))); }));
+            // Vorlage-Bild
+            sp.Children.Add(H("Vorlage-Bild", 12));
+            if (p.Background is { } bgi)
+            {
+                sp.Children.Add(P((FloorPlanView.Image(bgi.Path) is null ? "⚠ Datei fehlt: " : "") + Path.GetFileName(bgi.Path) + $" · {bgi.PxW * bgi.CmPerPx / 100:0.00} × {bgi.PxH * bgi.CmPerPx / 100:0.00} m", null, 11));
+                sp.Children.Add(new WrapPanel { Children = {
+                    Act2("arch-cal", "Maßstab festlegen", () => { ArchState.CalA = ArchState.CalB = null; ArchTool("kalib"); }),
+                    Act2("arch-bg-toggle", bgi.Visible ? "Ausblenden" : "Einblenden", () => ArchEdit("Vorlage-Bild zeigen", pl => pl.Background!.Visible = !pl.Background!.Visible)),
+                    Act2("arch-bg-del", "Entfernen", () => ArchEdit("Vorlage-Bild entfernen", pl => pl.Background = null)) } });
+                Num("bgop", "Deckkraft", Math.Round(bgi.Opacity * 100), (pl, v) => pl.Background!.Opacity = Math.Clamp(v, 10, 100) / 100, "%");
+                Num("bgx", "Lage x", Math.Round(bgi.X), (pl, v) => pl.Background!.X = v); Num("bgy", "Lage y", Math.Round(bgi.Y), (pl, v) => pl.Background!.Y = v);
+            }
+            else
+            {
+                sp.Children.Add(P("Eingescannten Grundriss oder Foto unterlegen und nachzeichnen.", null, 11));
+                var img = Field("arch-bg-path", "Bilddatei (PNG, JPG)", 250);
+                sp.Children.Add(img);
+                sp.Children.Add(Act2("arch-bg-load", "Bild laden", () => ProgramRun(AK, () => ArchLoadImage(Need(img, "die Bilddatei")))));
+            }
         }
         // Prüfergebnis oben, damit es nach „Plan prüfen“ sofort zu sehen ist
         if (_archIssues is { Count: > 0 } issues)

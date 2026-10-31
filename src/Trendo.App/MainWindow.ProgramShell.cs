@@ -312,7 +312,7 @@ public partial class MainWindow
         }
 
         // Arbeitsfläche und Eigenschaften
-        var work = new Border { Name = "prog-workspace", CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(spec.FillHeight ? 8 : 12), MinHeight = spec.FillHeight ? 300 : 420, Child = spec.Workspace(d) };
+        var work = new Border { Name = "prog-workspace", CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(spec.FillHeight ? 8 : 12), MinHeight = spec.FillHeight ? 220 : 420, Child = spec.Workspace(d) };
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions(spec.Properties is null ? "*" : "*,12,300"), Children = { work } };
         if (spec.Properties is { } props)
             grid.Children.Add(Pos(new Border { Name = "prog-properties", CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(12),

@@ -968,13 +968,18 @@ public class PromptActionTests
         Assert.Equal(RunStatus.Verified, done.Status);
         var room = new Room("Wohnzimmer", 4, 3);
         Assert.Equal(12, room.Floor);
-        var path = fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single().RelativePath);
+        var path = fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith(".svg")).RelativePath);
         var svg = File.ReadAllText(path);
         Assert.Equal(RoomPlanner.Svg([room]), svg);
+        // T-0257: zusätzlich ein echter Grundriss für das Programm
+        var tdoc = fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith(".tdoc")).RelativePath);
+        var plan = Trendo.Core.Arch.FloorPlan.From(Trendo.Core.Programs.ProgramDocument.Load(tdoc, "SPEC-01").Data);
+        Assert.Equal(12.0, Assert.Single(plan.Rooms).Area / 10000, 6);
+        Assert.Equal(4, plan.Walls.Count); Assert.Equal(1, plan.Figures(plan.Rooms[0]).Doors); Assert.Equal(1, plan.Figures(plan.Rooms[0]).Windows);
         Assert.Contains(Fach.F(room.Floor), svg);
         Assert.Equal("Wohnzimmer · " + Fach.F(room.Floor) + " m²", done.Preview);
         var next = wf.Los(fx.Project, wf.Revise(fx.Project, done.RunId, "Name: Wohnzimmer\nLaenge: 4\nBreite: 5", fx.Ctx()).RunId, fx.Ctx());
-        var second = fx.Core.Projects.ResolveInProject(fx.Project, next.Artifacts.Single(a => a.Version == 2).RelativePath);
+        var second = fx.Core.Projects.ResolveInProject(fx.Project, next.Artifacts.Single(a => a.Version == 2 && a.RelativePath.EndsWith(".svg")).RelativePath);
         Assert.Equal(RoomPlanner.Svg([new Room("Wohnzimmer", 4, 5)]), File.ReadAllText(second));
         Assert.Equal(svg, File.ReadAllText(path));
         var bad = wf.Start(fx.Req("SPEC-01", "Name: Kammer\nLaenge: 0\nBreite: 3", id: "null-1"), fx.Ctx());

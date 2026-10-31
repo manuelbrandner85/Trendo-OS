@@ -67,7 +67,7 @@ public sealed class RoomPlanAdapter : IStudioActionAdapter
     public string Evidence => "PromptActionTests.Wohnung_rechnet_flaeche";
     public bool CanPerformSideEffect => false;
     public IReadOnlyList<string> RequiredFields => ["name", "laenge", "breite"];
-    public IReadOnlyList<string> OutputKinds => ["svg"];
+    public IReadOnlyList<string> OutputKinds => ["svg", "tdoc"];
 
     public ActionDraft? TryParse(string prompt, IReadOnlyDictionary<string, string> known) =>
         new(ActionId, FieldKit.Read(prompt, known));
@@ -427,9 +427,29 @@ static class RoomFields
             var need = RoomPlanner.Need([room]);
             var preview = room.Name + " · " + Fach.F(room.Floor) + " m²";
             var qa = new QaResult("wohnung.flaeche", svg.Contains(Fach.F(room.Floor), StringComparison.Ordinal) && need.Floor == Math.Round(room.Floor, 2), "Grundriss gelesen.", "m²", Fach.F(room.Floor), "RoomPlanner");
-            return FieldKit.Save(call, FieldKit.Slot("wohnung", call.Version, "grundriss.svg"), svg, preview, qa, ["Nur Fläche, Bedarf und Grundriss."]);
+            var outcome = FieldKit.Save(call, FieldKit.Slot("wohnung", call.Version, "grundriss.svg"), svg, preview, qa, ["Nur Fläche, Bedarf und Grundriss."]);
+            // T-0257: derselbe Raum als echter Grundriss (.tdoc) für das Programm „Grundriss & Wohnen“ – erscheint dort unter „Zuletzt“
+            var plan = Plan(room);
+            var doc = new Trendo.Core.Programs.ProgramDocument("SPEC-01", room.Name);
+            plan.WriteTo(doc.Data);
+            var rel = FieldKit.Slot("wohnung", call.Version, "grundriss" + Trendo.Core.Programs.ProgramDocument.Extension);
+            call.Projects.WriteFile(call.ProjectId, rel, doc.Serialize());
+            try { new Trendo.Core.Programs.ProgramRecent(FieldKit.DataRoot(call)).Add("SPEC-01", call.Projects.ResolveInProject(call.ProjectId, rel)); }
+            catch (IOException) { } // „Zuletzt“ ist nur eine Bequemlichkeit
+            return outcome with { Files = [.. outcome.Files, new ProducedFile(rel, "tdoc", true)] };
         }
         catch (Exception ex) when (ex is ArgumentException or FormatException) { return FieldKit.Fail(ex.Message); }
+    }
+
+    /// <summary>Rechteckraum mit Wänden; Türen unten, Fenster oben, gleichmäßig verteilt.</summary>
+    public static Trendo.Core.Arch.FloorPlan Plan(Room room)
+    {
+        var p = new Trendo.Core.Arch.FloorPlan { Name = room.Name };
+        double l = room.Length * 100, w = room.Width * 100;
+        p.AddRectRoom(0, 0, l, w, room.Name, "wohnen", 24, room.Height * 100);
+        for (var i = 0; i < room.Doors; i++) try { p.AddOpening("tuer", l * (i + 1) / (room.Doors + 1), w + 12); } catch (ArgumentException) { }
+        for (var i = 0; i < room.Windows; i++) try { p.AddOpening("fenster", l * (i + 1) / (room.Windows + 1), -12); } catch (ArgumentException) { }
+        return p;
     }
 
     public static Room Build(IReadOnlyDictionary<string, string> parameters)

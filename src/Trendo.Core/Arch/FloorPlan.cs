@@ -16,14 +16,71 @@ public sealed class FloorPlan
     public List<Opening> Openings { get; set; } = [];
     public List<PlanRoom> Rooms { get; set; } = [];
     public List<Item> Items { get; set; } = [];
+    /// <summary>T-0257: Geschoss – Name und Höhenlage (Oberkante Rohfußboden in cm über dem Erdgeschoss).</summary>
+    public string LevelName { get; set; } = "Erdgeschoss";
+    public double Elevation { get; set; }
+    public List<DimLine> Dimensions { get; set; } = [];
+    public List<PlanLabel> Labels { get; set; } = [];
+    public PlanImage? Background { get; set; }
 
     static readonly JsonSerializerOptions Opt = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, DefaultIgnoreCondition = JsonIgnoreCondition.Never };
     public static string NewId() => Guid.NewGuid().ToString("N")[..8];
 
     // ---------- Speichern im Programmdokument ----------
-    public static FloorPlan From(JsonObject data) =>
-        data["plan"] is JsonObject o ? Migrate(o.Deserialize<FloorPlan>(Opt) ?? new()) : new();
-    public void WriteTo(JsonObject data) => data["plan"] = JsonSerializer.SerializeToNode(this, Opt);
+    /// <summary>Das aktive Geschoss des Dokuments (bei nur einem Geschoss steht es unter „plan“, sonst unter „levels“ + „level“).</summary>
+    public static FloorPlan From(JsonObject data)
+    {
+        if (data["levels"] is JsonArray { Count: > 0 } a)
+        {
+            var i = Math.Clamp(ActiveIndex(data), 0, a.Count - 1);
+            return a[i] is JsonObject lo ? Migrate(lo.Deserialize<FloorPlan>(Opt) ?? new()) : new();
+        }
+        return data["plan"] is JsonObject o ? Migrate(o.Deserialize<FloorPlan>(Opt) ?? new()) : new();
+    }
+    public void WriteTo(JsonObject data)
+    {
+        if (data["levels"] is JsonArray { Count: > 0 } a) a[Math.Clamp(ActiveIndex(data), 0, a.Count - 1)] = JsonSerializer.SerializeToNode(this, Opt);
+        else data["plan"] = JsonSerializer.SerializeToNode(this, Opt);
+    }
+    static int ActiveIndex(JsonObject data) => data["level"] is JsonValue v && v.TryGetValue<int>(out var i) ? i : 0;
+
+    // ---------- Geschosse ----------
+    public static List<FloorPlan> Levels(JsonObject data) =>
+        data["levels"] is JsonArray { Count: > 0 } a ? a.OfType<JsonObject>().Select(o => Migrate(o.Deserialize<FloorPlan>(Opt) ?? new())).ToList() : [From(data)];
+    public static int ActiveLevel(JsonObject data) => data["levels"] is JsonArray { Count: > 0 } a ? Math.Clamp(ActiveIndex(data), 0, a.Count - 1) : 0;
+    public static void SetActiveLevel(JsonObject data, int i) { if (data["levels"] is JsonArray a) data["level"] = Math.Clamp(i, 0, a.Count - 1); }
+
+    static void WriteLevels(JsonObject data, List<FloorPlan> levels, int active)
+    {
+        data.Remove("plan");
+        data["levels"] = new JsonArray([.. levels.Select(l => JsonSerializer.SerializeToNode(l, Opt))]);
+        data["level"] = Math.Clamp(active, 0, levels.Count - 1);
+    }
+
+    /// <summary>Geschoss darüber (auf Wandhöhe + 20 cm Decke) oder Keller darunter anlegen; die Umrisse des Nachbargeschosses dienen als Vorlage.</summary>
+    public static FloorPlan AddLevel(JsonObject data, bool below = false)
+    {
+        var levels = Levels(data).OrderBy(l => l.Elevation).ToList();
+        var top = levels[^1]; var bottom = levels[0];
+        var height = (below ? bottom : top).Walls.Count > 0 ? (below ? bottom : top).Walls.Max(w => w.Height) : 250;
+        var n = new FloorPlan { Name = top.Name };
+        if (below) { n.Elevation = bottom.Elevation - height - 20; n.LevelName = levels.Count(l => l.Elevation < 0) == 0 ? "Keller" : $"{levels.Count(l => l.Elevation < 0) + 1}. Untergeschoss"; levels.Insert(0, n); }
+        else { n.Elevation = top.Elevation + height + 20; var up = levels.Count(l => l.Elevation > 0) + 1; n.LevelName = up == 1 ? "Obergeschoss" : up == 2 ? "Dachgeschoss" : $"{up}. Obergeschoss"; levels.Add(n); }
+        WriteLevels(data, levels, levels.IndexOf(n));
+        return n;
+    }
+
+    public static void RemoveLevel(JsonObject data, int index)
+    {
+        var levels = Levels(data);
+        if (levels.Count < 2) throw new InvalidOperationException("Das letzte Geschoss kann nicht gelöscht werden.");
+        levels.RemoveAt(Math.Clamp(index, 0, levels.Count - 1));
+        if (levels.Count == 1) { data.Remove("levels"); data.Remove("level"); levels[0].WriteTo(data); }
+        else WriteLevels(data, levels, Math.Min(index, levels.Count - 1));
+    }
+
+    /// <summary>Wohnfläche aller Geschosse.</summary>
+    public static double LivingAreaAll(JsonObject data) => Levels(data).Sum(l => l.LivingArea());
     public FloorPlan Clone() => JsonSerializer.Deserialize<FloorPlan>(JsonSerializer.Serialize(this, Opt), Opt)!;
 
     /// <summary>Ältere oder fremde Stände in die aktuelle Form bringen (fehlende Ids, unsinnige Werte, Türen ohne Wand).</summary>
@@ -33,6 +90,8 @@ public sealed class FloorPlan
         foreach (var r in p.Rooms) { if (string.IsNullOrEmpty(r.Id)) r.Id = NewId(); if (r.Height <= 0) r.Height = 250; }
         foreach (var i in p.Items) if (string.IsNullOrEmpty(i.Id)) i.Id = NewId();
         p.Openings.RemoveAll(o => p.Walls.All(w => w.Id != o.WallId));
+        p.Dimensions ??= []; p.Labels ??= [];
+        if (p.Background is { } bg && (string.IsNullOrWhiteSpace(bg.Path) || bg.CmPerPx <= 0)) p.Background = null;
         p.Version = FormatVersion;
         return p;
     }
@@ -41,7 +100,8 @@ public sealed class FloorPlan
 
     public bool Remove(string id)
     {
-        var n = Walls.RemoveAll(w => w.Id == id) + Rooms.RemoveAll(r => r.Id == id) + Items.RemoveAll(i => i.Id == id) + Openings.RemoveAll(o => o.Id == id);
+        var n = Walls.RemoveAll(w => w.Id == id) + Rooms.RemoveAll(r => r.Id == id) + Items.RemoveAll(i => i.Id == id) + Openings.RemoveAll(o => o.Id == id)
+            + Dimensions.RemoveAll(d => d.Id == id) + Labels.RemoveAll(l => l.Id == id);
         Openings.RemoveAll(o => Walls.All(w => w.Id != o.WallId));
         return n > 0;
     }
@@ -57,6 +117,14 @@ public sealed class FloorPlan
         foreach (var r in Rooms) foreach (var p in r.Points) Try(p.X, p.Y);
         if (best.D < tol) return (best.X, best.Y, true);
         return grid > 0 ? (Math.Round(x / grid) * grid, Math.Round(y / grid) * grid, false) : (x, y, false);
+    }
+
+    /// <summary>T-0257: Winkel in festen Schritten (Standard 15°) einrasten, Länge bleibt.</summary>
+    public static (double X, double Y) AngleSnap(double x0, double y0, double x, double y, double stepDeg = 15)
+    {
+        var len = Math.Sqrt((x - x0) * (x - x0) + (y - y0) * (y - y0)); if (len < 1e-9) return (x, y);
+        var a = Math.Round(Math.Atan2(y - y0, x - x0) * 180 / Math.PI / stepDeg) * stepDeg * Math.PI / 180;
+        return (Math.Round(x0 + Math.Cos(a) * len, 1), Math.Round(y0 + Math.Sin(a) * len, 1));
     }
 
     /// <summary>Beim Zeichnen nahe waagrecht/senkrecht einrasten (wie in jedem CAD).</summary>
@@ -158,6 +226,57 @@ public sealed class FloorPlan
         Rooms.Add(room); return room;
     }
 
+    /// <summary>T-0257: Raum Punkt für Punkt (ohne Wände, wie ein Bodenbelag oder Bereich).</summary>
+    public PlanRoom AddPolygonRoom(IReadOnlyList<(double X, double Y)> pts, string name = "Raum", string kind = "wohnen")
+    {
+        var clean = pts.Where((q, i) => i == 0 || Math.Abs(q.X - pts[i - 1].X) + Math.Abs(q.Y - pts[i - 1].Y) > 0.5).ToList();
+        if (clean.Count > 2 && Math.Abs(clean[0].X - clean[^1].X) + Math.Abs(clean[0].Y - clean[^1].Y) < 0.5) clean.RemoveAt(clean.Count - 1);
+        if (clean.Count < 3 || Math.Abs(Geo.SignedArea(clean)) < 2500) throw new ArgumentException("Ein Raum braucht mindestens 3 Punkte und 0,25 m² Fläche.");
+        var room = new PlanRoom { Name = name, Kind = kind, Points = clean.Select(q => new PlanPoint(q.X, q.Y)).ToList(), Height = Walls.Count > 0 ? Walls.Max(w => w.Height) : 250 };
+        Rooms.Add(room); return room;
+    }
+
+    /// <summary>Wand in der Mitte (oder bei <paramref name="at"/> cm) teilen; Türen und Fenster bleiben an ihrer Stelle.</summary>
+    public Wall SplitWall(string wallId, double? at = null)
+    {
+        var w = WallOf(wallId) ?? throw new KeyNotFoundException("Die Wand gibt es nicht mehr.");
+        var t = at ?? w.Length / 2;
+        if (t < 5 || t > w.Length - 5) throw new ArgumentException("So nah am Ende lässt sich die Wand nicht teilen.");
+        foreach (var o in Openings.Where(o => o.WallId == wallId && o.At - o.Width / 2 < t && o.At + o.Width / 2 > t)) t = o.At + o.Width / 2 + 1; // nie durch eine Öffnung
+        if (t > w.Length - 5) throw new ArgumentException("An dieser Stelle sitzt eine Tür oder ein Fenster.");
+        var (mx, my) = w.PointAt(t);
+        var b = new Wall { X1 = mx, Y1 = my, X2 = w.X2, Y2 = w.Y2, Thickness = w.Thickness, Height = w.Height };
+        w.X2 = mx; w.Y2 = my;
+        Walls.Insert(Walls.IndexOf(w) + 1, b);
+        foreach (var o in Openings.Where(o => o.WallId == wallId && o.At > t)) { o.WallId = b.Id; o.At -= t; }
+        return b;
+    }
+
+    public DimLine AddDimension(double x1, double y1, double x2, double y2, double offset)
+    {
+        if (Math.Sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)) < 1) throw new ArgumentException("Die Bemaßung ist zu kurz.");
+        var d = new DimLine { X1 = x1, Y1 = y1, X2 = x2, Y2 = y2, Offset = Math.Round(offset, 1) };
+        Dimensions.Add(d); return d;
+    }
+
+    public PlanLabel AddLabel(double x, double y, string text = "Text")
+    {
+        var l = new PlanLabel { X = x, Y = y, Text = string.IsNullOrWhiteSpace(text) ? "Text" : text.Trim() };
+        Labels.Add(l); return l;
+    }
+
+    /// <summary>Vorlage-Bild maßstäblich machen: zwei Punkte im Bild (Weltkoordinaten) haben in Wirklichkeit <paramref name="realCm"/> Abstand.
+    /// Der erste Punkt bleibt liegen, das Bild wird um ihn skaliert.</summary>
+    public void CalibrateBackground(double ax, double ay, double bx, double by, double realCm)
+    {
+        var bg = Background ?? throw new InvalidOperationException("Es ist kein Vorlage-Bild geladen.");
+        var measured = Math.Sqrt((bx - ax) * (bx - ax) + (by - ay) * (by - ay));
+        if (measured < 1) throw new ArgumentException("Die beiden Punkte liegen zu dicht beieinander.");
+        if (realCm is <= 0 or > 100000) throw new ArgumentException("Bitte die echte Länge in cm angeben (größer als 0).");
+        var f = realCm / measured;
+        bg.CmPerPx *= f; bg.X = ax + (bg.X - ax) * f; bg.Y = ay + (bg.Y - ay) * f;
+    }
+
     /// <summary>Tür oder Fenster an der nächstgelegenen Wand einsetzen (mittig an der Mausposition, innerhalb der Wand).</summary>
     public Opening? AddOpening(string kind, double x, double y, double? width = null, double maxDist = 60)
     {
@@ -235,6 +354,8 @@ public sealed class FloorPlan
     {
         foreach (var o in Openings)
             if (WallOf(o.WallId) is { } w && w.Project(x, y) is var p && p.Dist <= w.Thickness / 2 + tol && Math.Abs(p.T - o.At) <= o.Width / 2) return ("opening", o.Id);
+        foreach (var l in Labels.AsEnumerable().Reverse()) if (Math.Abs(l.X - x) <= Math.Max(tol, l.Size * l.Text.Length * 0.3) && Math.Abs(l.Y - y) <= Math.Max(tol, l.Size * 0.7)) return ("label", l.Id);
+        foreach (var d in Dimensions) { var (ax, ay, bx, by) = d.Line(); if (Geo.SegDist(x, y, ax, ay, bx, by) <= tol + 4) return ("dim", d.Id); }
         foreach (var i in Items.AsEnumerable().Reverse()) if (Geo.Inside(i.Corners(), x, y)) return ("item", i.Id);
         foreach (var w in Walls) if (w.Project(x, y) is var p && p.T >= -tol && p.T <= w.Length + tol && p.Dist <= w.Thickness / 2 + tol) return ("wall", w.Id);
         foreach (var r in Rooms.AsEnumerable().Reverse()) if (Geo.Inside(r.Points.Select(p => (p.X, p.Y)).ToList(), x, y)) return ("room", r.Id);
@@ -243,7 +364,8 @@ public sealed class FloorPlan
 
     public (double MinX, double MinY, double MaxX, double MaxY)? Bounds()
     {
-        var pts = Walls.SelectMany(w => w.Outline()).Concat(Rooms.SelectMany(r => r.Points.Select(p => (p.X, p.Y)))).Concat(Items.SelectMany(i => i.Corners())).ToList();
+        List<(double X, double Y)> pts = Walls.SelectMany(w => w.Outline()).Concat(Rooms.SelectMany(r => r.Points.Select(p => (p.X, p.Y)))).Concat(Items.SelectMany(i => i.Corners()))
+            .Concat(Dimensions.SelectMany(d => new[] { (d.X1, d.Y1), (d.X2, d.Y2) })).Concat(Labels.Select(l => (l.X, l.Y))).ToList();
         return pts.Count == 0 ? null : (pts.Min(p => p.X), pts.Min(p => p.Y), pts.Max(p => p.X), pts.Max(p => p.Y));
     }
 
@@ -285,11 +407,32 @@ public sealed class FloorPlan
     }
 
     /// <summary>Wohnfläche nach WoFlV: ab 2 m Raumhöhe voll, 1–2 m zur Hälfte, darunter nicht; Balkon/Terrasse zu 25 %; Keller zählt nicht.</summary>
-    public double LivingArea() => Rooms.Sum(r =>
+    public double LivingArea() => Rooms.Sum(RoomLivingArea);
+
+    /// <summary>Wohnfläche eines Raums; mit Dachschräge (T-0257): Kniestock k, Raumhöhe H, Schrägentiefe d auf 1–2 Seiten der längsten Wand –
+    /// Streifen unter 1 m zählen nicht, zwischen 1 und 2 m zur Hälfte.</summary>
+    public double RoomLivingArea(PlanRoom r)
     {
         var a = r.Area / 10000;
-        return r.Kind switch { "balkon" => a * 0.25, "keller" => 0, _ => r.Height >= 200 ? a : r.Height >= 100 ? a / 2 : 0 };
-    });
+        if (r.Kind == "balkon") return a * 0.25;
+        if (r.Kind == "keller") return 0;
+        if (r.SlopeSides is 0 || r.SlopeDepth <= 0 || r.Height <= r.Knee) return r.Height >= 200 ? a : r.Height >= 100 ? a / 2 : 0;
+        var (zero, half) = SlopeZones(r);
+        return Math.Max(0, a - zero - half / 2);
+    }
+
+    /// <summary>Flächen unter 1 m und zwischen 1 und 2 m Höhe (m²) bei Dachschräge.</summary>
+    public static (double Under1m, double From1to2m) SlopeZones(PlanRoom r)
+    {
+        if (r.SlopeSides is 0 || r.SlopeDepth <= 0 || r.Height <= r.Knee) return (0, 0);
+        var pts = r.Points; var len = pts.Count < 2 ? 0 : pts.Select((q, i) => { var n = pts[(i + 1) % pts.Count]; return Math.Sqrt((n.X - q.X) * (n.X - q.X) + (n.Y - q.Y) * (n.Y - q.Y)); }).Max();
+        double Width(double h) => r.Knee >= h ? 0 : Math.Min(r.SlopeDepth, (h - r.Knee) / (r.Height - r.Knee) * r.SlopeDepth);
+        var sides = Math.Clamp(r.SlopeSides, 0, 2); var area = r.Area / 10000;
+        var w1 = Width(100); var w2 = Width(200);
+        var zero = Math.Min(area, sides * len * w1 / 10000);
+        var half = Math.Min(area - zero, sides * len * (w2 - w1) / 10000);
+        return (zero, half);
+    }
 
     public MaterialNeed Need(double packM2 = 2.2, double coats = 2, double m2PerLiter = 10, double bucket = 10)
     {
@@ -406,6 +549,80 @@ public sealed class FloorPlan
 
 public readonly record struct PlanPoint(double X, double Y);
 
+/// <summary>T-0257: freie Bemaßung zwischen zwei Punkten, um <see cref="Offset"/> cm seitlich versetzt.</summary>
+public sealed class DimLine
+{
+    public string Id { get; set; } = FloorPlan.NewId();
+    public double X1 { get; set; }
+    public double Y1 { get; set; }
+    public double X2 { get; set; }
+    public double Y2 { get; set; }
+    public double Offset { get; set; }
+    [JsonIgnore] public double Length => Math.Sqrt((X2 - X1) * (X2 - X1) + (Y2 - Y1) * (Y2 - Y1));
+    /// <summary>Lage der Maßlinie (versetzt).</summary>
+    public (double X1, double Y1, double X2, double Y2) Line()
+    {
+        var l = Math.Max(Length, 1e-9); var nx = -(Y2 - Y1) / l; var ny = (X2 - X1) / l;
+        return (X1 + nx * Offset, Y1 + ny * Offset, X2 + nx * Offset, Y2 + ny * Offset);
+    }
+    /// <summary>Versatz für einen Punkt (Abstand zur Linie mit Vorzeichen).</summary>
+    public static double OffsetFor(double x1, double y1, double x2, double y2, double x, double y)
+    {
+        var l = Math.Sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)); if (l < 1e-9) return 0;
+        return ((x - x1) * -(y2 - y1) + (y - y1) * (x2 - x1)) / l;
+    }
+}
+
+/// <summary>T-0257: Text im Plan (Größe in cm wie auf dem Papier 1:50 → 20 cm ≈ 4 mm).</summary>
+public sealed class PlanLabel
+{
+    public string Id { get; set; } = FloorPlan.NewId();
+    public double X { get; set; }
+    public double Y { get; set; }
+    public string Text { get; set; } = "Text";
+    public double Size { get; set; } = 20;
+    public double Rot { get; set; }
+}
+
+/// <summary>T-0257: Vorlage-Bild (eingescannter Plan, Foto) unter dem Grundriss – Lage der linken oberen Ecke und Maßstab cm je Bildpunkt.</summary>
+public sealed class PlanImage
+{
+    public string Path { get; set; } = "";
+    public double X { get; set; }
+    public double Y { get; set; }
+    public double CmPerPx { get; set; } = 1;
+    public int PxW { get; set; }
+    public int PxH { get; set; }
+    public double Opacity { get; set; } = 0.5;
+    public bool Visible { get; set; } = true;
+
+    /// <summary>Bildgröße in Pixeln direkt aus dem Dateikopf (PNG, JPEG, BMP) – ohne das Bild zu dekodieren.</summary>
+    public static (int W, int H)? ReadSize(string path)
+    {
+        try
+        {
+            using var f = File.OpenRead(path); var h = new byte[26]; if (f.Read(h, 0, 26) < 24) return null;
+            if (h[0] == 0x89 && h[1] == 'P' && h[2] == 'N' && h[3] == 'G') return (h[16] << 24 | h[17] << 16 | h[18] << 8 | h[19], h[20] << 24 | h[21] << 16 | h[22] << 8 | h[23]);
+            if (h[0] == 'B' && h[1] == 'M') return (BitConverter.ToInt32(h, 18), Math.Abs(BitConverter.ToInt32(h, 22)));
+            if (h[0] == 0xFF && h[1] == 0xD8)
+            {
+                f.Position = 2;
+                while (f.Position < f.Length)
+                {
+                    if (f.ReadByte() != 0xFF) continue;
+                    var m = f.ReadByte(); if (m is 0xD8 or 0x01 or (>= 0xD0 and <= 0xD7)) continue;
+                    var len = f.ReadByte() << 8 | f.ReadByte();
+                    if (m is >= 0xC0 and <= 0xCF and not (0xC4 or 0xC8 or 0xCC)) { f.ReadByte(); var hh = f.ReadByte() << 8 | f.ReadByte(); var ww = f.ReadByte() << 8 | f.ReadByte(); return ww > 0 && hh > 0 ? (ww, hh) : null; }
+                    f.Position += len - 2;
+                }
+            }
+        }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+        return null;
+    }
+}
+
 public sealed class Wall
 {
     public string Id { get; set; } = FloorPlan.NewId();
@@ -463,6 +680,10 @@ public sealed class PlanRoom
     /// <summary>farbe, tapete, fliesen.</summary>
     public string WallFinish { get; set; } = "farbe";
     public double Height { get; set; } = 250;
+    /// <summary>T-0257 Dachschräge: 0 = keine, 1 = einseitig, 2 = beidseitig (an den längsten Wänden); Kniestock und Tiefe der Schräge in cm.</summary>
+    public int SlopeSides { get; set; }
+    public double Knee { get; set; } = 100;
+    public double SlopeDepth { get; set; } = 200;
 
     [JsonIgnore] public double Area => Math.Abs(Geo.SignedArea(Points.Select(p => (p.X, p.Y)).ToList()));
     [JsonIgnore] public double Perimeter => Points.Count < 2 ? 0 : Points.Select((p, i) => { var q = Points[(i + 1) % Points.Count]; return Math.Sqrt((q.X - p.X) * (q.X - p.X) + (q.Y - p.Y) * (q.Y - p.Y)); }).Sum();
@@ -480,6 +701,8 @@ public sealed class Item
     public double W { get; set; }
     public double D { get; set; }
     public double Rot { get; set; }
+    /// <summary>T-0257: gespiegelt (z. B. Tür-Anschlag des Möbels, Ecksofa links/rechts).</summary>
+    public bool Mirror { get; set; }
 
     public List<(double X, double Y)> Corners()
     {

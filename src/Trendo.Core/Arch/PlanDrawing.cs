@@ -87,6 +87,10 @@ public static class PlanDrawing
             s.Add(new DText(cx, cy, r.Name, size, t.Text, "TEXT", true, 0, -1));
             s.Add(new DText(cx, cy, area.ToString("0.00", De) + " m²", size * 0.8, t.Text, "TEXT", false, 0, 1));
         }
+        // T-0257: freie Bemaßungen
+        foreach (var d in p.Dimensions) Dim(s, d.X1, d.Y1, d.X2, d.Y2, d.Offset, t);
+        // T-0257: Texte
+        foreach (var l in p.Labels) s.Add(new DText(l.X, l.Y, l.Text, l.Size, t.Text, "TEXT", false, l.Rot));
         // Bemaßung: Wandlängen außen neben der Wand
         if (dims && p.Bounds() is { } bb)
         {
@@ -114,11 +118,28 @@ public static class PlanDrawing
         return s;
     }
 
+    /// <summary>Maßkette zwischen zwei Punkten, um <paramref name="offset"/> versetzt: Hilfslinien, Schrägstriche, Länge in m.</summary>
+    static void Dim(List<Shape> s, double x1, double y1, double x2, double y2, double offset, PlanTheme t)
+    {
+        var len = Math.Sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)); if (len < 1) return;
+        var ux = (x2 - x1) / len; var uy = (y2 - y1) / len; var nx = -uy; var ny = ux;
+        double ax = x1 + nx * offset, ay = y1 + ny * offset, bx = x2 + nx * offset, by = y2 + ny * offset;
+        var sg = offset >= 0 ? 1 : -1;
+        s.Add(new DLine(ax, ay, bx, by, t.Dim, 0.8, "MASSE"));
+        foreach (var (px, py, qx, qy) in new[] { (x1, y1, ax, ay), (x2, y2, bx, by) })
+        {
+            if (Math.Abs(offset) > 2) s.Add(new DLine(px + nx * sg * 4, py + ny * sg * 4, qx + nx * sg * 6, qy + ny * sg * 6, t.Dim, 0.6, "MASSE"));
+            s.Add(new DLine(qx - (ux + nx) * 5, qy - (uy + ny) * 5, qx + (ux + nx) * 5, qy + (uy + ny) * 5, t.Dim, 1.2, "MASSE"));
+        }
+        var ang = Math.Atan2(uy, ux) * 180 / Math.PI; if (ang > 90 || ang < -90) ang += 180;
+        s.Add(new DText((ax + bx) / 2 + nx * sg * 9, (ay + by) / 2 + ny * sg * 9, (len / 100).ToString("0.00", De), 10, t.Dim, "MASSE", false, ang));
+    }
+
     /// <summary>Einfache Grundriss-Symbole, damit man Möbel erkennt (Kissen am Bett, Becken am WC …).</summary>
     static void Symbol(List<Shape> s, Item i, PlanTheme t)
     {
-        var a = i.Rot * Math.PI / 180; var c = Math.Cos(a); var sn = Math.Sin(a);
-        (double, double) P(double dx, double dy) => (i.X + dx * c - dy * sn, i.Y + dx * sn + dy * c);
+        var a = i.Rot * Math.PI / 180; var c = Math.Cos(a); var sn = Math.Sin(a); var m = i.Mirror ? -1 : 1;
+        (double, double) P(double dx, double dy) { dx *= m; return (i.X + dx * c - dy * sn, i.Y + dx * sn + dy * c); }
         void L(double x1, double y1, double x2, double y2) { var p = P(x1, y1); var q = P(x2, y2); s.Add(new DLine(p.Item1, p.Item2, q.Item1, q.Item2, t.FurnitureEdge, 0.8, "MOEBEL")); }
         void R(double x1, double y1, double x2, double y2) => s.Add(new DPoly([P(x1, y1), P(x2, y1), P(x2, y2), P(x1, y2)], null, t.FurnitureEdge, 0.8, "MOEBEL"));
         double w = i.W / 2, d = i.D / 2;
@@ -176,7 +197,7 @@ public static class PlanDrawing
             }
         // Plankopf: Name, Fläche, Maßstabsleiste 1 m
         var fy = maxY + pad - 10;
-        sb.Append($"<text x=\"{N(minX)}\" y=\"{N(fy)}\" font-size=\"16\" font-weight=\"700\" fill=\"#1A1A1A\">{System.Security.SecurityElement.Escape(p.Name)}</text>\n");
+        sb.Append($"<text x=\"{N(minX)}\" y=\"{N(fy)}\" font-size=\"16\" font-weight=\"700\" fill=\"#1A1A1A\">{System.Security.SecurityElement.Escape(p.LevelName == "Erdgeschoss" ? p.Name : p.Name + " – " + p.LevelName)}</text>\n");
         sb.Append($"<text x=\"{N(minX)}\" y=\"{N(fy + 22)}\" font-size=\"11\" fill=\"#444\">Wohnfläche (WoFlV) {p.LivingArea().ToString("0.00", De)} m² · {p.Rooms.Count} Räume · Maße in m · {DateTime.Now.ToString("dd.MM.yyyy", De)} · Trendo Grundriss</text>\n");
         sb.Append($"<rect x=\"{N(maxX - 100)}\" y=\"{N(fy - 6)}\" width=\"50\" height=\"6\" fill=\"#1A1A1A\"/><rect x=\"{N(maxX - 50)}\" y=\"{N(fy - 6)}\" width=\"50\" height=\"6\" fill=\"#FFF\" stroke=\"#1A1A1A\"/>");
         sb.Append($"<text x=\"{N(maxX - 50)}\" y=\"{N(fy + 12)}\" font-size=\"10\" text-anchor=\"middle\" fill=\"#1A1A1A\">1 m</text>\n</svg>\n");
@@ -233,10 +254,16 @@ public static class PlanDrawing
     }
 
     // ---------- PDF (A4 oder A3 quer, Maßstab 1:50 oder 1:100) ----------
-    public static string Pdf(FloorPlan p, string path)
+    public static string Pdf(FloorPlan p, string path) => Pdf([p], path);
+
+    /// <summary>T-0257: eine Seite je Geschoss, gleicher Maßstab für alle.</summary>
+    public static string Pdf(IReadOnlyList<FloorPlan> levels, string path)
     {
-        var t = PlanTheme.Paper; var shapes = Build(p, t);
-        var (minX, minY, maxX, maxY) = p.Bounds() ?? (0, 0, 100, 100);
+        if (levels.Count == 0) throw new ArgumentException("Es gibt kein Geschoss.");
+        var p = levels[0];
+        var all = levels.Select(l => l.Bounds()).Where(b => b is not null).Select(b => b!.Value).ToList();
+        var (minX, minY, maxX, maxY) = all.Count == 0 ? (0.0, 0.0, 100.0, 100.0) : (all.Min(b => b.MinX), all.Min(b => b.MinY), all.Max(b => b.MaxX), all.Max(b => b.MaxY));
+        var t = PlanTheme.Paper;
         const double mm = 72 / 25.4;
         var (pw, ph) = (297.0, 210.0); var area = (W: pw - 30, H: ph - 40);
         var scale = new[] { 50, 100, 200 }.First(sc => (maxX - minX + 160) * 10 / sc <= area.W && (maxY - minY + 160) * 10 / sc <= area.H || sc == 200);
@@ -248,6 +275,10 @@ public static class PlanDrawing
         static XColor C(string hex) { var c = hex.TrimStart('#'); return XColor.FromArgb(Convert.ToInt32(c[..2], 16), Convert.ToInt32(c[2..4], 16), Convert.ToInt32(c[4..6], 16)); }
         Trendo.Core.Sys.PdfTools.Fonts.Ensure();
         using var pdf = new PdfDocument(); pdf.Info.Title = p.Name; pdf.Info.Creator = "Trendo Grundriss";
+        var living = levels.Sum(l => l.LivingArea());
+        foreach (var level in levels)
+        {
+        p = level; var shapes = Build(p, t);
         var page = pdf.AddPage(); page.Width = PdfSharp.Drawing.XUnit.FromMillimeter(pw); page.Height = PdfSharp.Drawing.XUnit.FromMillimeter(ph);
         using (var g = XGraphics.FromPdfPage(page))
         {
@@ -272,26 +303,55 @@ public static class PlanDrawing
                 }
             var foot = ph * mm - 14 * mm;
             g.DrawLine(new XPen(XColors.Black, 0.6), 15 * mm, foot - 4 * mm, (pw - 15) * mm, foot - 4 * mm);
-            g.DrawString(p.Name, new XFont("Arial", 11, XFontStyleEx.Bold), XBrushes.Black, 15 * mm, foot + 1 * mm);
-            g.DrawString($"Wohnfläche (WoFlV) {p.LivingArea().ToString("0.00", De)} m² · {p.Rooms.Count} Räume · Maßstab 1:{scale} · Maße in m · {DateTime.Now.ToString("dd.MM.yyyy", De)}", new XFont("Arial", 8), XBrushes.DimGray, 15 * mm, foot + 6 * mm);
+            g.DrawString(levels.Count > 1 ? $"{p.Name} – {p.LevelName}" : p.Name, new XFont("Arial", 11, XFontStyleEx.Bold), XBrushes.Black, 15 * mm, foot + 1 * mm);
+            g.DrawString($"Wohnfläche (WoFlV) {p.LivingArea().ToString("0.00", De)} m²{(levels.Count > 1 ? $" (gesamt {living.ToString("0.00", De)} m²)" : "")} · {p.Rooms.Count} Räume · Maßstab 1:{scale} · Maße in m · {DateTime.Now.ToString("dd.MM.yyyy", De)}", new XFont("Arial", 8), XBrushes.DimGray, 15 * mm, foot + 6 * mm);
             var bar = 100 * k; var bx = (pw - 15) * mm - bar;
             g.DrawRectangle(XBrushes.Black, bx, foot - 1 * mm, bar / 2, 1.5 * mm); g.DrawRectangle(new XPen(XColors.Black, 0.4), bx + bar / 2, foot - 1 * mm, bar / 2, 1.5 * mm);
             g.DrawString("1 m", new XFont("Arial", 7), XBrushes.Black, new XRect(bx, foot + 1 * mm, bar, 10), XStringFormats.TopCenter);
+        }
         }
         pdf.Save(path);
         return path;
     }
 
-    // ---------- Raumbuch und Materialliste ----------
-    public static string RoomBookCsv(FloorPlan p)
+    // ---------- OBJ (3D-Modell für Blender, SketchUp & Co.) ----------
+    /// <summary>T-0257: alle Geschosse als OBJ mit Materialdatei (Farben); Einheit Meter, z nach oben wird y (OBJ-Konvention).</summary>
+    public static (string Obj, string Mtl) Obj(IReadOnlyList<FloorPlan> levels, string mtlName)
     {
-        var sb = new StringBuilder("Raum;Art;Fläche m²;Umfang m;Höhe m;Wandfläche netto m²;Fenster m²;Türen;Fenster;Boden;Wände\n");
-        foreach (var r in p.Rooms)
+        var obj = new StringBuilder($"# Trendo Grundriss\nmtllib {mtlName}\n"); var mtl = new StringBuilder("# Trendo Grundriss\n");
+        var colors = new Dictionary<string, string>(); var v = 0; var part = 0;
+        foreach (var (color, solid, _) in Plan3D.BuildAll(levels))
         {
-            var f = p.Figures(r);
-            sb.Append(string.Join(';', Csv(r.Name), KindName(r.Kind), F(f.Area), F(f.Perimeter), F(f.Height), F(f.WallNet), F(f.WindowArea), f.Doors, f.Windows, FloorName(r.Floor), FinishName(r.WallFinish))).Append('\n');
+            if (!colors.TryGetValue(color, out var mat))
+            {
+                mat = "farbe_" + color.TrimStart('#'); colors[color] = mat;
+                var c = color.TrimStart('#'); double R(int i) => Convert.ToInt32(c.Substring(i, 2), 16) / 255.0;
+                mtl.Append($"newmtl {mat}\nKd {R(0).ToString("0.###", Inv)} {R(2).ToString("0.###", Inv)} {R(4).ToString("0.###", Inv)}\nd 1\n\n");
+            }
+            obj.Append($"o teil_{++part}\nusemtl {mat}\n");
+            foreach (var poly in solid.Polys)
+            {
+                foreach (var q in poly.Verts) obj.Append($"v {(q.X / 100).ToString("0.####", Inv)} {(q.Z / 100).ToString("0.####", Inv)} {(-q.Y / 100).ToString("0.####", Inv)}\n");
+                obj.Append('f'); for (var k = 1; k <= poly.Verts.Count; k++) obj.Append(' ').Append(v + k); obj.Append('\n');
+                v += poly.Verts.Count;
+            }
         }
-        sb.Append($"Summe;;{F(p.Rooms.Sum(r => p.Figures(r).Area))};;;;;;;;\nWohnfläche (WoFlV);;{F(p.LivingArea())};;;;;;;;\n");
+        return (obj.ToString(), mtl.ToString());
+    }
+
+    // ---------- Raumbuch und Materialliste ----------
+    public static string RoomBookCsv(FloorPlan p) => RoomBookCsv([p]);
+
+    public static string RoomBookCsv(IReadOnlyList<FloorPlan> levels)
+    {
+        var sb = new StringBuilder("Raum;Art;Fläche m²;Umfang m;Höhe m;Wandfläche netto m²;Fenster m²;Türen;Fenster;Boden;Wände;Geschoss;Wohnfläche m²\n");
+        foreach (var p in levels)
+            foreach (var r in p.Rooms)
+            {
+                var f = p.Figures(r);
+                sb.Append(string.Join(';', Csv(r.Name), KindName(r.Kind), F(f.Area), F(f.Perimeter), F(f.Height), F(f.WallNet), F(f.WindowArea), f.Doors, f.Windows, FloorName(r.Floor), FinishName(r.WallFinish), Csv(p.LevelName), F(p.RoomLivingArea(r)))).Append('\n');
+            }
+        sb.Append($"Summe;;{F(levels.Sum(p => p.Rooms.Sum(r => p.Figures(r).Area)))};;;;;;;;;;\nWohnfläche (WoFlV);;{F(levels.Sum(p => p.LivingArea()))};;;;;;;;;;\n");
         return sb.ToString();
         static string F(double v) => v.ToString("0.00", De);
         static string Csv(string s) => s.Contains(';') || s.Contains('"') ? "\"" + s.Replace("\"", "\"\"") + "\"" : s;

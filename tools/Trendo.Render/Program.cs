@@ -138,6 +138,7 @@ else if (shot == "seite")
         var plan = Trendo.Core.Arch.FloorPlan.From(win.ProgramActive(page)!.Data);
         if (arch.Contains("raum")) win.ArchState.Selected = plan.Rooms[0].Id;
         if (arch.Contains("moebel")) win.ArchState.Tool = "moebel";
+        if (arch.Contains("plus")) win.ArchEdit("Beispiel", pl => { pl.AddDimension(-12, 736, 884, 736, 70); pl.AddLabel(250, 300, "Fernsehecke"); });
         if (arch.Contains("3d")) win.ArchToggle3D();
         win.Show(page);
     }
