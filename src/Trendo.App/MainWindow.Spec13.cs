@@ -160,7 +160,7 @@ public partial class MainWindow
             foreach (var w in m.Waypoints) { var id = w.Id; var b = new Button { Name = $"mk-wpt-{k++}", HorizontalAlignment = HorizontalAlignment.Stretch, Background = Brushes.Transparent, Padding = new Thickness(6, 3), Content = new TextBlock { Text = "📍 " + w.Name, Foreground = Text, FontSize = 12 } }; b.Click += (_, _) => MapSelect(id); sp.Children.Add(b); }
             if (m.Tracks.Count + m.Waypoints.Count == 0) sp.Children.Add(P("Noch leer – Route zeichnen, Wegpunkt setzen oder eine GPX-Datei laden.", null, 11));
             sp.Children.Add(H("GPX laden", 12));
-            var gpx = Field("mk-gpx-path", "GPX-Datei (Uhr, Handy, Navi)", 250); sp.Children.Add(gpx);
+            var gpx = Field("mk-gpx-path", "GPX-Datei (Uhr, Handy, Navi)", 140); sp.Children.Add(gpx);
             sp.Children.Add(Act2("mk-gpx-load", "Laden", () => ProgramRun(MK, () => MapImportGpx(Need(gpx, "die GPX-Datei")))));
             var calcs = new StackPanel { Spacing = 10 };
             LiveCalc(calcs, "geo-coord", "Koordinaten umrechnen", [("c", "Koordinate", "48,1372 11,5756", null)],

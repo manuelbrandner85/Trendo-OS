@@ -53,22 +53,6 @@ public static class Glb
 }
 
 
-public class SPEC05_Ui
-{
-    [AvaloniaFact(DisplayName = "SPEC-05 UI: CSV auswerten, Regression, Gruppenvergleich")]
-    public void Science()
-    {
-        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
-        var f = Path.Combine(root, "mess.csv"); File.WriteAllText(f, "x;y\n1;2,1\n2;3,9\n3;6,2\n4;7,8\n5;10,1\n");
-        w.Show(MainWindow.StudioPages["SPEC-05"]);
-        Assert.Contains("n = 5", W6Ui.Run(w, "sci-desc", ("file", f)));
-        Assert.True(File.Exists(Path.Combine(root, "mess.auswertung.md")));
-        Assert.Contains("starker", W6Ui.Run(w, "sci-fit", ("file", f)));
-        Assert.Contains("signifikant", W6Ui.Run(w, "sci-t", ("file", f)));
-        Assert.Contains("⚠", W6Ui.Run(w, "sci-fit", ("x", "zz")));
-    }
-}
-
 public class SPEC06_Ui
 {
     [AvaloniaFact(DisplayName = "SPEC-06 UI: Karten anlegen, lernen, bewerten")]
@@ -297,27 +281,6 @@ public class SPEC04_UiPlus
         Assert.Contains("Stufe 3", W6Ui.Run(w, "xr-lod"));
         Assert.Contains("1.024 Pixel", W6Ui.Run(w, "xr-texel"));
         Assert.Contains("Komfort", W6Ui.Run(w, "xr-move"));
-    }
-}
-
-public class SPEC05_UiPlus
-{
-    [AvaloniaFact(DisplayName = "SPEC-05 UI Ausbau: Tests, Darstellung, Aufbereitung")]
-    public void Plus()
-    {
-        var (w, l, root) = Ui.Open(); Directory.CreateDirectory(root);
-        var f = Path.Combine(root, "m.csv"); File.WriteAllText(f, "vor;nach\n10;12\n12;14\n9;10\n11;13\n13;16\n");
-        w.Show("wissenschaft");
-        Assert.Contains("sehr wahrscheinlich echt", W6Ui.Run(w, "sci-paired", ("file", f)));
-        Assert.Contains("hängen zusammen", W6Ui.Run(w, "sci-chi"));
-        Assert.Contains("95 % Sicherheit", W6Ui.Run(w, "sci-ci", ("file", f)));
-        Assert.Contains("97 Messungen", W6Ui.Run(w, "sci-n"));
-        Assert.Contains("Ergebnis", W6Ui.Run(w, "sci-err"));
-        Assert.Contains("Median", W6Ui.Run(w, "sci-quart", ("file", f)));
-        Assert.True(File.Exists(Path.Combine(root, "m.histogramm.svg")));
-        W6Ui.Run(w, "sci-scatter", ("file", f)); Assert.Contains(l.Opened, x => x.EndsWith("m.streudiagramm.svg"));
-        W6Ui.Run(w, "sci-smooth", ("file", f));
-        Assert.Contains("nach_geglaettet;nach_z", File.ReadAllText(Path.Combine(root, "m.aufbereitet.csv")));
     }
 }
 

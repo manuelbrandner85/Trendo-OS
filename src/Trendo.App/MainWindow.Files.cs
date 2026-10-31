@@ -51,7 +51,8 @@ public partial class MainWindow
             var info = new PathInfo { Page = page, Kind = kind, Multi = PathFields.Multiple(tb.Name, hint), Ext = PathFields.Extensions(hint) };
             _pathFields.Add(tb, info);
             DragDrop.SetAllowDrop(tb, true);
-            var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, Name = (tb.Name ?? "pfad") + "-row" };
+            // T-0261: WrapPanel – in schmalen Spalten (Eigenschaften) rutschen die Knöpfe unter das Feld statt aus dem Fenster
+            var row = new WrapPanel { Orientation = Orientation.Horizontal, ItemSpacing = 4, LineSpacing = 4, Name = (tb.Name ?? "pfad") + "-row" };
             if (!Wrap(tb, row)) continue;
             var id = tb.Name ?? "pfad";
             if (kind is PathFields.Kind.File or PathFields.Kind.FileOrFolder)
@@ -107,7 +108,7 @@ public partial class MainWindow
     static string FileSize(long b) => b >= 1L << 30 ? $"{b / (double)(1L << 30):0.0} GB" : b >= 1L << 20 ? $"{b / (double)(1L << 20):0.0} MB" : $"{Math.Max(1, b / 1024)} KB";
 
     /// <summary>Setzt die Zeile [Feld | Knöpfe] an die Stelle des Feldes, Layout-Angaben gehen mit.</summary>
-    private static bool Wrap(TextBox tb, StackPanel row)
+    private static bool Wrap(TextBox tb, Panel row)
     {
         var parent = tb.Parent;
         row.HorizontalAlignment = tb.HorizontalAlignment; row.VerticalAlignment = tb.VerticalAlignment; row.Margin = tb.Margin; tb.Margin = default;

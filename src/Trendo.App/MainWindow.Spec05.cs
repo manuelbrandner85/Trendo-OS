@@ -1,54 +1,157 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Media;
 using Trendo.Core;
+using Trendo.Core.Messdaten;
+using Trendo.Core.Programs;
 
 namespace Trendo.App;
 
-/// <summary>SPEC-05: Wissenschaft & Forschung – Messreihen auswerten.</summary>
+/// <summary>SPEC-05 / T-0261: Wissenschaft & Forschung als echtes Programm „Messdaten & Auswertung“ – Datentabelle zum Eintippen,
+/// Diagramm (Streu, Linie, Balken, Histogramm, Boxplot) mit Ausgleichskurve und R², Statistik und Tests zur gewählten Spalte.
+/// Die früheren Rechner (Chi², Stichprobengröße, Messunsicherheit) rechnen live. Ersetzt die Formularseite.</summary>
 public partial class MainWindow
 {
-    private void InitSpec05() => RegisterTab(FachTabs, "wissenschaft", "Messdaten", "SPEC-05", ScienceView, "wissenschaft", "forschung", "statistik", "messwerte", "csv", "mittelwert", "regression", "t-test", "signifikant");
+    const string SK = "wissenschaft";
+    private int _msCol, _msRow;
 
-    private static string StatLine(ColumnStats s) => $"{s.Name}: n = {s.N}, Mittelwert {Fach.F(s.Mean, 3)}, Median {Fach.F(s.Median, 3)}, Streuung ± {Fach.F(s.StdDev, 3)}, von {Fach.F(s.Min, 3)} bis {Fach.F(s.Max, 3)}";
-
-    private Control ScienceView()
+    private void InitSpec05() => RegisterProgram(FachTabs, new ProgramSpec(SK, "SPEC-05", "Messdaten & Auswertung")
     {
-        var sp = new StackPanel { Spacing = 8 };
-        sp.Children.Add(P("Werte deine Messreihen aus: eine CSV-Datei (aus Excel, LibreOffice oder einem Messgerät) mit Kopfzeile. Deutsche Kommazahlen gehen.", Text));
-        sp.Children.Add(FachTool("sci-desc", "Überblick", "Kennzahlen jeder Spalte; der Bericht wird als Markdown neben der Datei gespeichert.",
-            [("file", "CSV-Datei", "")],
-            v => { var f = v("file").Trim().Trim('"'); var t = DataTable.Load(f); var rep = Path.ChangeExtension(f, ".auswertung.md"); File.WriteAllText(rep, Stats.Report(t, Path.GetFileName(f))); return string.Join("\n", t.Describe().Select(StatLine)) + $"\n\nBericht: {rep}"; }, "Auswerten"));
-        sp.Children.Add(FachTool("sci-fit", "Zusammenhang zweier Spalten", "Gerade durch die Punkte (lineare Regression) und wie eng der Zusammenhang ist.",
-            [("file", "CSV-Datei", ""), ("x", "Spalte x", "1"), ("y", "Spalte y", "2")],
-            v => { var r = DataTable.Load(v("file").Trim().Trim('"')).Fit(v("x"), v("y")); var a = Math.Abs(r.R); return $"y = {Fach.F(r.Slope, 4)} · x + {Fach.F(r.Intercept, 4)}\nr = {Fach.F(r.R, 3)}, R² = {Fach.F(r.R2, 3)} ({r.N} Paare) → {StatsPlus.Describe(r.R)}"; }));
-        sp.Children.Add(FachTool("sci-t", "Zwei Gruppen vergleichen", "Unterscheiden sich zwei Spalten wirklich oder nur zufällig? (Welch-t-Test, 5 %)",
-            [("file", "CSV-Datei", ""), ("a", "Gruppe A", "1"), ("b", "Gruppe B", "2")],
-            v => { var t = DataTable.Load(v("file").Trim().Trim('"')); var r = Stats.Welch(t.Values(v("a")), t.Values(v("b"))); return $"Mittelwerte {Fach.F(r.MeanA, 3)} gegen {Fach.F(r.MeanB, 3)} · t = {Fach.F(r.T, 3)}, p = {Fach.F(r.P, 4)}\n{(r.Significant ? "✓ Der Unterschied ist sehr wahrscheinlich echt (signifikant)." : "Der Unterschied kann gut Zufall sein (nicht signifikant).")}"; }, "Vergleichen"));
-        sp.Children.Add(FachGroup("sci-tests", "Vergleichen & testen", false,
-            FachTool("sci-paired", "Vorher / nachher", "Dieselben Personen oder Proben zweimal gemessen (gepaarter t-Test).",
-                [("file", "CSV-Datei", ""), ("a", "Vorher", "1"), ("b", "Nachher", "2")],
-                v => { var t = DataTable.Load(v("file").Trim().Trim('"')); var r = StatsPlus.Paired(t.Values(v("a")), t.Values(v("b"))); return $"Mittel vorher {Fach.F(r.MeanA, 3)}, nachher {Fach.F(r.MeanB, 3)} · t = {Fach.F(r.T, 3)}, p = {Fach.F(r.P, 4)}\n{(r.Significant ? "✓ Die Veränderung ist sehr wahrscheinlich echt." : "Die Veränderung kann Zufall sein.")}"; }, "Vergleichen"),
-            FachTool("sci-chi", "Häufigkeiten vergleichen (Chi²)", "Kreuztabelle: Zeilen mit | trennen, Zahlen mit Leerzeichen. Beispiel: Raucher ja/nein × krank ja/nein.",
-                [("tab", "Tabelle", "20 30 | 40 10")],
-                v => { var t = v("tab").Split('|').Select(r => r.Split([' ', ';'], StringSplitOptions.RemoveEmptyEntries).Select(x => Fach.Num(x)).ToArray()).ToArray(); var r = StatsPlus.ChiSquare(t); return $"χ² = {Fach.F(r.Chi2, 3)}, Freiheitsgrade {r.Df}, p = {Fach.F(r.P, 4)}\n{(r.Significant ? "✓ Die Merkmale hängen zusammen." : "Kein Zusammenhang nachweisbar.")}{(r.LowExpected ? "\n⚠ Einige erwartete Werte unter 5 – Ergebnis unsicher." : "")}"; }, "Testen"),
-            FachTool("sci-ci", "Wie genau ist der Mittelwert?", "95 %-Vertrauensbereich einer Spalte.",
-                [("file", "CSV-Datei", ""), ("col", "Spalte", "1")],
-                v => { var c = StatsPlus.Confidence(DataTable.Load(v("file").Trim().Trim('"')).Values(v("col"))); return $"Mittelwert {Fach.F(c.Mean, 3)} ± {Fach.F(c.Half, 3)} → mit 95 % Sicherheit zwischen {Fach.F(c.Low, 3)} und {Fach.F(c.High, 3)}"; }),
-            FachTool("sci-n", "Wie viele Messungen brauche ich?", "Streuung aus einer Vorstudie, gewünschte Genauigkeit (±).",
-                [("sd", "Streuung", "10"), ("e", "Genauigkeit ±", "2"), ("c", "Sicherheit (90/95/99)", "95")],
-                v => $"Mindestens {StatsPlus.SampleSize(Fach.Num(v("sd")), Fach.Num(v("e")), Fach.Num(v("c")) / 100)} Messungen", "Rechnen"),
-            FachTool("sci-err", "Messunsicherheit weiterrechnen", "Zwei Messwerte mit Unsicherheit, Rechenart + − * /.",
-                [("a", "Wert A", "12,3"), ("ua", "± A", "0,2"), ("op", "Rechenart", "*"), ("b", "Wert B", "4,1"), ("ub", "± B", "0,1")],
-                v => { var r = StatsPlus.Propagate(v("op").Trim().Replace("×", "*").Replace("÷", "/").Replace("−", "-").FirstOrDefault(), (Fach.Num(v("a")), Fach.Num(v("ua"))), (Fach.Num(v("b")), Fach.Num(v("ub")))); return $"Ergebnis: {Fach.F(r.Value, 4)} ± {Fach.F(r.Uncertainty, 4)} ({Fach.F(r.Uncertainty / Math.Abs(r.Value) * 100, 2)} %)"; })));
-        sp.Children.Add(FachGroup("sci-view", "Darstellen & aufbereiten", false,
-            FachTool("sci-quart", "Verteilung & Ausreißer", "Quartile wie in Excel (QUARTILE.INKL), Ausreißer nach der 1,5-IQR-Regel. Speichert ein Histogramm als SVG.",
-                [("file", "CSV-Datei", ""), ("col", "Spalte", "1")],
-                v => { var f = v("file").Trim().Trim('"'); var t = DataTable.Load(f); var x = t.Values(v("col")); var q = StatsPlus.Quartiles(x); var svg = Path.ChangeExtension(f, ".histogramm.svg"); File.WriteAllText(svg, StatsPlus.HistogramSvg(StatsPlus.Histogram(x), t.Columns[t.Index(v("col"))])); return $"Q1 {Fach.F(q.Q1, 3)} · Median {Fach.F(q.Q2, 3)} · Q3 {Fach.F(q.Q3, 3)} · IQR {Fach.F(q.Iqr, 3)}\nAusreißer: {(q.Outliers.Count == 0 ? "keine" : string.Join(", ", q.Outliers.Select(o => Fach.F(o, 3))))}\nHistogramm: {svg}"; }, "Ansehen"),
-            FachTool("sci-scatter", "Streudiagramm", "Punkte mit Ausgleichsgerade als SVG.",
-                [("file", "CSV-Datei", ""), ("x", "Spalte x", "1"), ("y", "Spalte y", "2")],
-                v => { var f = v("file").Trim().Trim('"'); var t = DataTable.Load(f); int xi = t.Index(v("x")), yi = t.Index(v("y")); var pts = t.Rows.Where(r => r[xi].HasValue && r[yi].HasValue).ToList(); var svg = Path.ChangeExtension(f, ".streudiagramm.svg"); File.WriteAllText(svg, StatsPlus.ScatterSvg(pts.Select(r => r[xi]!.Value).ToArray(), pts.Select(r => r[yi]!.Value).ToArray(), $"{t.Columns[yi]} über {t.Columns[xi]}")); Launch(svg); return "Gespeichert: " + svg; }, "Zeichnen"),
-            FachTool("sci-smooth", "Glätten & standardisieren", "Hängt zwei Spalten an eine Kopie der Datei: gleitender Mittelwert und z-Wert.",
-                [("file", "CSV-Datei", ""), ("col", "Spalte", "2"), ("win", "Fenster (ungerade)", "3")],
-                v => { var f = v("file").Trim().Trim('"'); var t = DataTable.Load(f); var i = t.Index(v("col")); var x = t.Values(v("col")); var csv = File.ReadAllText(f); csv = StatsPlus.AppendColumn(csv, t.Columns[i] + "_geglaettet", StatsPlus.MovingAverage(x, (int)Fach.Num(v("win"))), i); csv = StatsPlus.AppendColumn(csv, t.Columns[i] + "_z", StatsPlus.ZScores(x).Select(z => (double?)z).ToList(), i); var o = Path.ChangeExtension(f, ".aufbereitet.csv"); File.WriteAllText(o, csv); return "Gespeichert: " + o; }, "Aufbereiten")));
-        return FachPage("Messdaten", sp);
+        Sentence = "Messwerte eintippen oder laden – Diagramm, Ausgleichskurve, Kennzahlen und Tests sofort.",
+        Folder = "Messdaten",
+        FillHeight = true,
+        Templates =
+        [
+            new("leer", "Leere Messreihe", "Zwei Spalten x und y zum Eintippen", () => SheetDoc(MeasureSheet.Template("leer"))),
+            new("pendel", "Fadenpendel", "Länge und Schwingungsdauer – Potenzgesetz T ~ √L", () => SheetDoc(MeasureSheet.Template("pendel"))),
+            new("abkuehlen", "Abkühlung", "Tee kühlt ab – exponentieller Verlauf", () => SheetDoc(MeasureSheet.Template("abkuehlen"))),
+            new("duenger", "Zwei Gruppen vergleichen", "Pflanzenhöhe mit Dünger A und B – Boxplot und t-Test", () => SheetDoc(MeasureSheet.Template("duenger"))),
+        ],
+        Ribbon =
+        [
+            ("Daten", [
+                new ProgramCmd("ms-addcol", "Spalte +", d => SheetEdit("Spalte hinzufügen", s => { s.AddColumn("Spalte"); _msCol = s.Columns.Count - 1; })),
+                new ProgramCmd("ms-addrow", "Zeile +", d => SheetEdit("Zeile hinzufügen", s => { foreach (var c in s.Columns) c.Values.Insert(Math.Min(_msRow + 1, c.Values.Count), null); })),
+            ]),
+            ("Diagramm", [
+                new ProgramCmd("ms-k-streu", "Punkte", _ => SheetEdit("Diagramm", s => s.Chart.Kind = "streu")),
+                new ProgramCmd("ms-k-linie", "Linie", _ => SheetEdit("Diagramm", s => s.Chart.Kind = "linie")),
+                new ProgramCmd("ms-k-balken", "Balken", _ => SheetEdit("Diagramm", s => s.Chart.Kind = "balken")),
+                new ProgramCmd("ms-k-histogramm", "Histogramm", _ => SheetEdit("Diagramm", s => s.Chart.Kind = "histogramm")),
+                new ProgramCmd("ms-k-box", "Boxplot", _ => SheetEdit("Diagramm", s => s.Chart.Kind = "box")),
+            ]),
+            ("Ausgleich", [
+                new ProgramCmd("ms-f-keine", "keine", _ => SheetEdit("Ausgleich", s => s.Chart.Fit = "keine")),
+                new ProgramCmd("ms-f-linear", "Gerade", _ => SheetEdit("Ausgleich", s => s.Chart.Fit = "linear")),
+                new ProgramCmd("ms-f-quadratisch", "Parabel", _ => SheetEdit("Ausgleich", s => s.Chart.Fit = "quadratisch")),
+                new ProgramCmd("ms-f-exp", "Exponential", _ => SheetEdit("Ausgleich", s => s.Chart.Fit = "exp")),
+                new ProgramCmd("ms-f-potenz", "Potenz", _ => SheetEdit("Ausgleich", s => s.Chart.Fit = "potenz")),
+            ]),
+        ],
+        Exports =
+        [
+            new("csv", "CSV (Excel)", ".csv", (d, f) => { File.WriteAllText(f, MeasureSheet.From(d.Data).ToCsv(), new System.Text.UTF8Encoding(true)); return f; }),
+            new("report", "Auswertung", ".md", (d, f) => { File.WriteAllText(f, MeasureSheet.From(d.Data).Report()); return f; }),
+            new("svg", "Diagramm (SVG)", ".svg", (d, f) => { File.WriteAllText(f, ChartDrawing.Svg(MeasureSheet.From(d.Data))); return f; }),
+        ],
+        Workspace = SheetWorkspace,
+        Properties = SheetProperties,
+        Status = d => { var s = MeasureSheet.From(d.Data); return $"{s.Columns.Count} Spalten · {s.Rows} Zeilen · Diagramm: {s.Chart.Kind} · Ausgleich: {s.Chart.Fit}"; },
+        Help = "Links in die Tabelle tippen (Enter = nächste Zeile, Tab = nächste Spalte, Entf leert). Klick auf einen Spaltenkopf wählt die Spalte – rechts stehen Kennzahlen und Tests, dort legst du auch fest, was ins Diagramm kommt.",
+    }, "wissenschaft", "forschung", "statistik", "messwerte", "csv", "mittelwert", "regression", "t-test", "signifikant", "diagramm", "messdaten");
+
+    static System.Text.Json.Nodes.JsonObject SheetDoc(MeasureSheet s) { var o = new System.Text.Json.Nodes.JsonObject(); s.WriteTo(o); return o; }
+
+    public void SheetEdit(string label, Action<MeasureSheet> change)
+    {
+        var d = ProgramActive(SK) ?? throw new InvalidOperationException("Es ist keine Messreihe offen.");
+        ProgramRun(SK, () => d.Edit(label, x => { var s = MeasureSheet.From(x); change(s); s.WriteTo(x); }));
+    }
+
+    public void SheetCell(int col, int row, string text) => SheetEdit("Wert", s => s.Set(col, row, MeasureSheet.Parse(text)));
+    public (int Col, int Row) SheetCursor => (_msCol, _msRow);
+
+    private Control SheetWorkspace(ProgramDocument d)
+    {
+        var s = MeasureSheet.From(d.Data); _msCol = Math.Clamp(_msCol, 0, Math.Max(0, s.Columns.Count - 1));
+        var grid = new MeasureGrid(s, _msCol, Math.Max(0, _msRow), (c, r, t) => { _msCol = c; _msRow = r + 1; SheetCell(c, r, t); }, (c, r) => { var changed = c != _msCol || r < 0 != _msRow < 0; _msCol = c; _msRow = r; if (changed) Show(SK); }) { Name = "ms-grid", Top = Math.Max(0, _msRow - 12) };
+        grid.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (grid.IsAttached()) grid.Focus(); }, Avalonia.Threading.DispatcherPriority.Input);
+        var chart = new ShapeView((w, h) => ChartDrawing.Build(s, w, h)) { Name = "ms-chart" };
+        Border Box(Control c) => new() { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = c };
+        return new Grid { ColumnDefinitions = new ColumnDefinitions("5*,10,6*"), Children = { Box(grid), Pos(Box(chart), 2) } };
+    }
+
+    private Control SheetProperties(ProgramDocument d)
+    {
+        var s = MeasureSheet.From(d.Data); var sp = new StackPanel { Spacing = 5 };
+        Button Act2(string name, string label, Action go) { var b = new Button { Name = name, Content = label, Padding = new Thickness(10, 4), Margin = new Thickness(0, 4, 4, 0) }; b.Click += (_, _) => go(); return b; }
+        void Fact(string label, string value, IBrush? c = null) => sp.Children.Add(Row(P(label, null, 12), new TextBlock { Text = value, Foreground = c ?? Text, FontSize = 12, FontWeight = FontWeight.SemiBold }));
+        string F(double v) => Fach.F(v, Math.Abs(v) >= 100 ? 1 : 3);
+        if (s.Columns.Count == 0) { sp.Children.Add(P("Keine Spalten.", null, 12)); return sp; }
+        var ci = Math.Clamp(_msCol, 0, s.Columns.Count - 1); var col = s.Columns[ci];
+        sp.Children.Add(H("Spalte", 13));
+        var name = new TextBox { Name = "ms-p-name", Text = col.Name }; var unit = new TextBox { Name = "ms-p-unit", Text = col.Unit, Width = 90 };
+        void Rename() { if (!string.IsNullOrWhiteSpace(name.Text) && (name.Text != col.Name || unit.Text != col.Unit)) SheetEdit("Spalte benennen", x => { x.Columns[ci].Name = name.Text!.Trim(); x.Columns[ci].Unit = unit.Text?.Trim() ?? ""; }); }
+        name.LostFocus += (_, _) => Rename(); OnEnter(name, Rename); unit.LostFocus += (_, _) => Rename(); OnEnter(unit, Rename);
+        sp.Children.Add(name); sp.Children.Add(Row(P("Einheit", Text, 12), unit));
+        sp.Children.Add(new WrapPanel { Children = {
+            Act2("ms-as-x", s.Chart.X == ci ? "✓ ist x-Achse" : "als x-Achse", () => SheetEdit("x-Achse", x => { x.Chart.X = ci; x.Chart.Ys.Remove(ci); })),
+            Act2("ms-as-y", s.Chart.Ys.Contains(ci) ? "✓ im Diagramm" : "ins Diagramm", () => SheetEdit("Diagramm", x => { if (!x.Chart.Ys.Remove(ci)) { x.Chart.Ys.Add(ci); if (x.Chart.X == ci) x.Chart.X = -1; } })),
+            Act2("ms-delcol", "Spalte löschen", () => { SheetEdit("Spalte löschen", x => { x.Columns.RemoveAt(ci); x.Chart.Ys = x.Chart.Ys.Where(i => i != ci).Select(i => i > ci ? i - 1 : i).ToList(); x.Chart.X = x.Chart.X == ci ? -1 : x.Chart.X > ci ? x.Chart.X - 1 : x.Chart.X; }); _msCol = Math.Max(0, ci - 1); }) } });
+        var v = s.Values(ci);
+        if (v.Length > 0)
+        {
+            var st = Stats.Describe(col.Name, v);
+            sp.Children.Add(H("Kennzahlen", 12));
+            Fact("Anzahl n", st.N.ToString()); Fact("Mittelwert", F(st.Mean)); Fact("Median", F(st.Median)); Fact("Streuung (s)", F(st.StdDev)); Fact("Bereich", $"{F(st.Min)} … {F(st.Max)}");
+            if (v.Length >= 2) { var cf = StatsPlus.Confidence(v); Fact("95 %-Bereich des Mittelwerts", $"{F(cf.Low)} … {F(cf.High)}"); }
+            if (v.Length >= 4) { var q = StatsPlus.Quartiles(v); Fact("Quartile", $"{F(q.Q1)} · {F(q.Q2)} · {F(q.Q3)}"); Fact("Ausreißer (1,5·IQR)", q.Outliers.Count == 0 ? "keine" : string.Join(", ", q.Outliers.Select(F))); }
+            // Vergleich mit einer anderen Spalte
+            var others = s.Columns.Select((c, i) => (c, i)).Where(x => x.i != ci && s.Values(x.i).Length >= 2).ToList();
+            if (others.Count > 0 && v.Length >= 2)
+            {
+                sp.Children.Add(H("Vergleich", 12));
+                var pick = new ComboBox { Name = "ms-cmp", Width = 150, ItemsSource = others.Select(o => o.c.Name).ToList(), SelectedIndex = Math.Max(0, others.FindIndex(o => o.i == (s.Chart.X == ci ? -1 : s.Chart.X))) };
+                var res = new StackPanel { Name = "ms-cmp-res", Spacing = 3 };
+                void Run()
+                {
+                    res.Children.Clear(); if (pick.SelectedIndex < 0) return; var oi = others[pick.SelectedIndex].i; var w = s.Values(oi);
+                    var welch = Stats.Welch(v, w);
+                    res.Children.Add(new TextBlock { Text = $"Gruppen (Welch-t-Test): t = {Fach.F(welch.T, 2)}, p = {Fach.F(welch.P, 4)} → {(welch.Significant ? "✓ Unterschied ist signifikant (5 %)" : "kein gesicherter Unterschied")}", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
+                    var (x, y) = s.Pairs(oi, ci);
+                    if (x.Length >= 3)
+                    {
+                        var r = Stats.Linear(x, y);
+                        res.Children.Add(new TextBlock { Text = $"Zusammenhang mit „{s.Columns[oi].Name}“: r = {Fach.F(r.R, 3)} ({StatsPlus.Describe(r.R)}), R² = {Fach.F(r.R2, 3)}", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
+                        var pt = StatsPlus.Paired(x, y);
+                        res.Children.Add(new TextBlock { Text = $"Vorher/nachher (gepaart, n = {x.Length}): p = {Fach.F(pt.P, 4)} → {(pt.Significant ? "✓ signifikant" : "nicht signifikant")}", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+                    }
+                }
+                pick.SelectionChanged += (_, _) => Run(); Run();
+                sp.Children.Add(Row(P("mit", Text, 12), pick)); sp.Children.Add(res);
+            }
+            sp.Children.Add(H("Daraus neue Spalte", 12));
+            sp.Children.Add(new WrapPanel { Children = {
+                Act2("ms-smooth", "Gleitender Mittelwert (3)", () => SheetEdit("Glätten", x => { var src = x.Columns[ci]; var vals = src.Values.Select(q => q ?? double.NaN).ToArray(); var nc = x.AddColumn(src.Name + " geglättet", src.Unit); for (var i = 0; i < vals.Length; i++) { var win = Enumerable.Range(i - 1, 3).Where(k => k >= 0 && k < vals.Length && !double.IsNaN(vals[k])).Select(k => vals[k]).ToList(); nc.Values[i] = win.Count == 3 ? win.Average() : null; } })),
+                Act2("ms-z", "z-Werte", () => SheetEdit("z-Werte", x => { var src = x.Columns[ci]; var stt = Stats.Describe(src.Name, x.Values(ci)); if (stt.StdDev == 0) throw new ArgumentException("Alle Werte gleich – keine z-Werte."); var nc = x.AddColumn(src.Name + " (z)"); for (var i = 0; i < src.Values.Count; i++) nc.Values[i] = src.Values[i] is { } q ? (q - stt.Mean) / stt.StdDev : null; })) } });
+        }
+        // Ausgleichskurve
+        if (s.Chart.X >= 0 && s.Chart.X < s.Columns.Count && s.Chart.Fit != "keine")
+            foreach (var y in s.Chart.Ys.Where(y => y < s.Columns.Count))
+                if (Fitting.Fit(s, s.Chart.X, y, s.Chart.Fit) is { } f) { sp.Children.Add(H("Ausgleich", 12)); sp.Children.Add(new SelectableTextBlock { Name = "ms-fit", Text = $"{s.Columns[y].Name}: {f.Formula}\nR² = {Fach.F(f.R2, 4)}", Foreground = Brush.Parse("#7FD3FF"), FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap }); }
+        // Import + Rechner
+        sp.Children.Add(H("CSV laden", 12));
+        var csv = Field("ms-csv-path", "CSV-Datei (Excel, Messgerät)", 140); sp.Children.Add(csv);
+        sp.Children.Add(Act2("ms-csv-load", "Laden", () => ProgramRun(SK, () => { var p = Need(csv, "die CSV-Datei"); if (!File.Exists(p)) throw new FileNotFoundException("Diese Datei gibt es nicht."); var ns = MeasureSheet.FromCsv(File.ReadAllText(p), Path.GetFileNameWithoutExtension(p)); SheetEdit("CSV laden", x => { x.Columns = ns.Columns; x.Chart = ns.Chart; x.Name = ns.Name; }); _msCol = 0; _msRow = 0; _progMsg[SK] = $"„{Path.GetFileName(p)}“ geladen – {ns.Columns.Count} Spalten, {ns.Rows} Zeilen."; })));
+        var calcs = new StackPanel { Spacing = 10 };
+        LiveCalc(calcs, "sci-chi", "Häufigkeiten vergleichen (Chi²)", [("t", "Kreuztabelle (Zeilen mit |)", "20 30 | 40 10", null)],
+            v2 => { var rows = v2("t").Split('|').Select(r => r.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => Fach.Num(x)).ToArray()).ToArray(); var c = StatsPlus.ChiSquare(rows); return $"χ² = {Fach.F(c.Chi2, 3)}, df = {c.Df}, p = {Fach.F(c.P, 4)} → {(c.Significant ? "✓ Zusammenhang signifikant" : "kein gesicherter Zusammenhang")}{(c.LowExpected ? " ⚠ erwartete Häufigkeit < 5" : "")}"; });
+        LiveCalc(calcs, "sci-n", "Wie viele Messungen brauche ich?", [("s", "Streuung (Vorstudie)", "2,5", null), ("m", "Genauigkeit ±", "0,5", null), ("c", "Sicherheit", "95", ["90", "95", "99"])],
+            v2 => $"mindestens {StatsPlus.SampleSize(Fach.Num(v2("s")), Fach.Num(v2("m")), Fach.Num(v2("c")) / 100)} Messungen");
+        LiveCalc(calcs, "sci-err", "Messunsicherheit weiterrechnen", [("a", "Wert a ± u", "12,3 0,2", null), ("op", "Rechenart", "*", ["+", "-", "*", "/"]), ("b", "Wert b ± u", "4,1 0,1", null)],
+            v2 => { var a = v2("a").Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => Fach.Num(x)).ToArray(); var b = v2("b").Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => Fach.Num(x)).ToArray(); if (a.Length < 2 || b.Length < 2) throw new FormatException("Bitte „Wert Unsicherheit“, z. B. „12,3 0,2“."); var r = StatsPlus.Propagate(v2("op")[0], (a[0], a[1]), (b[0], b[1])); return $"Ergebnis {Fach.F(r.Value, 4)} ± {Fach.F(r.Uncertainty, 4)}"; });
+        sp.Children.Add(new Expander { Name = "ms-calcs", Header = "Rechner (Chi², Stichprobe, Unsicherheit)", IsExpanded = false, Content = calcs });
+        return sp;
     }
 }

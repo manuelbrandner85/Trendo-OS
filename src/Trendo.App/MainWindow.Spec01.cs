@@ -362,7 +362,7 @@ public partial class MainWindow
             else
             {
                 sp.Children.Add(P("Eingescannten Grundriss oder Foto unterlegen und nachzeichnen.", null, 11));
-                var img = Field("arch-bg-path", "Bilddatei (PNG, JPG)", 250);
+                var img = Field("arch-bg-path", "Bilddatei (PNG, JPG)", 140);
                 sp.Children.Add(img);
                 sp.Children.Add(Act2("arch-bg-load", "Bild laden", () => ProgramRun(AK, () => ArchLoadImage(Need(img, "die Bilddatei")))));
             }

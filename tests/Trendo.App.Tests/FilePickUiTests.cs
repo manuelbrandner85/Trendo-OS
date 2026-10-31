@@ -74,15 +74,19 @@ public class T0201_Dateiauswahl_Ui
         var f = Path.Combine(root, "messung.csv"); File.WriteAllText(f, "a;b\n1;2\n");
         MainWindow.PickRequest? asked = null;
         w.PickOverride = r => { asked = r; return Task.FromResult<string[]?>([f]); };
+        // T-0261: Messdaten sind ein Programm – das CSV-Feld steht in den Eigenschaften
+        w.Show("wissenschaft"); w.ProgramNew("wissenschaft", "leer"); w.Show("wissenschaft");
+        if (w.Windows.Active is { Maximized: false } pw) w.Windows.ToggleMaximize(pw.Id); // Programmfenster groß wie im Alltag
         w.Show("wissenschaft"); Settle();
-        var tb = V<TextBox>(w, "sci-t-file");
-        Assert.False(V<Button>(w, "sci-t-file-pick").GetVisualParent()!.GetVisualChildren().OfType<Button>().First(b => b.Name == "sci-t-file-recent").IsVisible);
-        var pick = V<Button>(w, "sci-t-file-pick"); pick.BringIntoView(); Settle();
+        var tb = V<TextBox>(w, "ms-csv-path"); tb.BringIntoView(); Settle();
+        Assert.False(V<Button>(w, "ms-csv-path-pick").GetVisualParent()!.GetVisualChildren().OfType<Button>().First(b => b.Name == "ms-csv-path-recent").IsVisible);
+        var pick = V<Button>(w, "ms-csv-path-pick"); pick.BringIntoView(); Settle();
         RealClick(w, pick);
         Assert.Equal(f, tb.Text);
         Assert.NotNull(asked); Assert.False(asked!.Folder); Assert.Contains("csv", asked.Extensions);
-        Assert.True(w.GetLogicalDescendants().OfType<Button>().First(b => b.Name == "sci-desc-file-recent").IsVisible);
-        tb.Text = "/eigener/pfad.csv"; Assert.Equal("/eigener/pfad.csv", tb.Text);
+        w.Show("wissenschaft"); Settle();
+        Assert.True(w.GetLogicalDescendants().OfType<Button>().First(b => b.Name == "ms-csv-path-recent").IsVisible);
+        tb = V<TextBox>(w, "ms-csv-path"); tb.Text = "/eigener/pfad.csv"; Assert.Equal("/eigener/pfad.csv", tb.Text);
     }
 
     [AvaloniaFact(DisplayName = "T-0201: Ordnerfeld öffnet den Ordner-Dialog")]
@@ -100,10 +104,9 @@ public class T0201_Dateiauswahl_Ui
     {
         var (w, _, root) = Ui.Open();
         var a = Path.Combine(root, "a.csv"); var b = Path.Combine(root, "b.csv"); File.WriteAllText(a, ""); File.WriteAllText(b, "");
-        w.Show("wissenschaft"); Settle();
-        var fit = V<TextBox>(w, "sci-fit-file");
+        w.Show("wissenschaft"); w.ProgramNew("wissenschaft", "leer"); w.Show("wissenschaft"); Settle();
+        var fit = V<TextBox>(w, "ms-csv-path");
         Assert.True(w.DropPaths(fit, [a])); Assert.Equal(a, fit.Text);
-        var desc = V<TextBox>(w, "sci-desc-file");
         Assert.True(w.DropPaths(w.ActivePageRoot!, [b]));
         Assert.Equal(b, w.PathFieldsIn(w.ActivePageRoot!).First().Text);
         w.Show("alltag-dateien"); Settle();
