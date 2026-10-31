@@ -28,6 +28,7 @@ phases:
   accepted_by: Manuel
   accepted_at: 2026-10-21T14:57+02:00
   evidence: reports/P1_TESTBERICHT.md
+  evidence_sha256: c302d96dbd2396db29e3c9629dd60f706d9b5acf4fe989633900729d916224cc
   open_items:
   - QA-017 Narrator/Kontrast/Multi-Monitor NOT_RUN
   - QA-019 realer Offline-Lauf NOT_RUN
@@ -146,6 +147,7 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: PC_VERIFIED
   evidence: reports/w1/pc/README.md
+  evidence_sha256: dbe0bcb5284792b6d1cde88ba38aae28593158dbfb704f28a04b3d143eadffc8
 - id: CORE-02
   name: Trendo Intelligence Core
   approved_expansion_functions: BASE
@@ -153,6 +155,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: CORE-03
   name: AI Agent Command Center – 12 roles
   approved_expansion_functions: BASE
@@ -160,10 +163,12 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: CORE-04
   implementation_status: IN_PROGRESS
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.1/tests-pc-7092ce1.txt
+  evidence_sha256: 2e2b64232a650dcd8ac2ca8ff155a476ee74b3b8d692a41a4acb27596e2ee899
   note: "PC-Seite PC_VERIFIED; Begleiter (Linux/Pi) und Android-adb-Seite gebaut, Box + QEMU arm64 getestet; echte Pi-/Android-Hardware fehlt"
   name: Pi/PC/Android Fusion Engine
   approved_expansion_functions: BASE
@@ -175,6 +180,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: CORE-06
   name: Ultimate Game Development Studio 2.0
   approved_expansion_functions: '20'
@@ -182,6 +188,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: CORE-07
   name: Ultimate App & Software Development Studio 2.0
   approved_expansion_functions: '20'
@@ -189,6 +196,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: CORE-08
   name: Ultimate Creative & Media Studio 2.0
   approved_expansion_functions: '20'
@@ -196,6 +204,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: CORE-09
   name: Vision & Robotics Control Studio 2.0
   approved_expansion_functions: '20'
@@ -203,6 +212,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: CORE-10
   name: Knowledge Memory & Self Improvement Core 2.0
   approved_expansion_functions: '20'
@@ -210,6 +220,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: CORE-11
   name: Security Privacy Recovery Fortress
   approved_expansion_functions: '16'
@@ -217,6 +228,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: CORE-12
   name: Ultimate Prompt & Masterprompt Studio 2.0
   approved_expansion_functions: '50'
@@ -224,10 +236,12 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: SYS-01
   implementation_status: IN_PROGRESS
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.1/tests-pc-7092ce1.txt
+  evidence_sha256: 2e2b64232a650dcd8ac2ca8ff155a476ee74b3b8d692a41a4acb27596e2ee899
   note: "PC-Seite fertig; Gegenstelle auf Pi/Android (Kopplung, /health) noch nicht gebaut"
   name: Triple Mode OS GODMODE
   approved_expansion_functions: '20'
@@ -239,6 +253,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.3/README.md
+  evidence_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
   note: 'Alle 25 Funktionen gebaut; PC 0.9.3: echter Papierkorb ($I gelesen, Testdatei gefunden), volle Testsuite grün'
 - id: SYS-03
   name: Ultimate Browser Internet & Download Center
@@ -247,6 +262,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.3/README.md
+  evidence_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
   note: 'Alle 25 Funktionen gebaut; PC 0.9.3: Defender-Scan (exit 0, ohne Admin), Druck als PDF über Chrome, Drucker nur gelistet'
 - id: SYS-04
   name: Ultimate App Installation & System Control Center
@@ -255,6 +271,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: SYS-05
   name: Universal Automation & Workflow Engine
   approved_expansion_functions: '20'
@@ -262,6 +279,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: SYS-06
   name: Ultimate Network File Sharing & Remote Workspace
   approved_expansion_functions: '25'
@@ -269,6 +287,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: SYS-07
   name: Ultimate Hardware & Device Recognition
   approved_expansion_functions: '20'
@@ -276,6 +295,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: SYS-08
   name: Deep Web & Dark Web READ-ONLY Research Studio
   approved_expansion_functions: '20'
@@ -283,6 +303,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: SYS-09
   name: Communication Mail & Collaboration Center
   approved_expansion_functions: '25'
@@ -290,6 +311,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: SYS-10
   name: Office Documents & Productivity Center
   approved_expansion_functions: '25'
@@ -297,6 +319,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.3/README.md
+  evidence_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
   note: 'Alle 25 Funktionen gebaut; PC 0.9.3: qpdf 12.4.2 verwaltet installiert, echt zusammengefügt (2 Seiten) und geteilt (1 Seite)'
 - id: SYS-11
   name: Ready-to-Run & Software Integration
@@ -305,6 +328,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.3/README.md
+  evidence_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
   note: 'Alle 25 Funktionen gebaut; PC 0.9.3: Autostart (Ordner + HKCU-Run nur gelesen, Umschalten im Temp), Dateizuordnungen gelesen, winget export 47 Pakete → ImportIds'
 - id: SYS-12
   name: Adaptive Interface Accessibility & Personalization
@@ -313,6 +337,7 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.3/README.md
+  evidence_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
   note: 'Alle 25 Funktionen gebaut; PC 0.9.3: SAPI-Vorlesen (de-DE) in WAV geprüft, Fensterposition mit echtem Bildschirm. OFFEN: Narrator-Bedienung nur manuell prüfbar, Mehrschirm nur mit 1 Bildschirm getestet'
 - id: SYS-13
   name: System Architecture Integration & Release Quality
@@ -321,6 +346,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.3/README.md
+  evidence_sha256: dbc3edbe5fed3fdd7bc808c11431b350b91ba8dbd8e863a899504a8319bc2f15
   note: 'Alle 25 Funktionen gebaut; PC: Rückfall 0.9.3→0.9.2→0.9.3 echt; Start 0.9.4 bis erstes Bild 0,81–0,84 s (erster Start neuer Dateien ~2 s), Seiten 6–70 ms (reports/pc-0.9.4). Codesignatur bleibt offen'
 - id: SPEC-01
   name: Architecture & Interior 2.0
@@ -329,6 +355,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: SPEC-02
   name: Electronics & PCB 2.0
   approved_expansion_functions: '16'
@@ -336,6 +363,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: SPEC-03
   name: Engineering & Simulation 2.0
   approved_expansion_functions: '16'
@@ -343,6 +371,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: SPEC-04
   name: VR/AR/MR 2.0
   approved_expansion_functions: '16'
@@ -350,6 +379,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: SPEC-05
   name: Science & Research 2.0
   approved_expansion_functions: '16'
@@ -357,6 +387,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: SPEC-06
   name: Education & Training 2.0
   approved_expansion_functions: '16'
@@ -364,6 +395,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: SPEC-07
   name: Language & Localization Studio 2.0
   approved_expansion_functions: '16'
@@ -377,6 +409,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: SPEC-09
   name: 3D Scanning & Reconstruction 2.0
   approved_expansion_functions: '20'
@@ -384,6 +417,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: SPEC-10
   name: Digital Twin 2.0
   approved_expansion_functions: '20'
@@ -391,6 +425,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: SPEC-11
   name: Business & Finance 2.0
   approved_expansion_functions: '20'
@@ -398,6 +433,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: SPEC-12
   name: Cybersecurity & Forensics 2.0
   approved_expansion_functions: '20'
@@ -405,6 +441,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: SPEC-13
   name: Maps & Geospatial 2.0
   approved_expansion_functions: '20'
@@ -412,6 +449,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: SPEC-14
   name: Manufacturing & CNC 2.0
   approved_expansion_functions: '20'
@@ -419,6 +457,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: SPEC-15
   name: Broadcast & Streaming 2.0
   approved_expansion_functions: '20'
@@ -426,6 +465,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: STUDIO-TV-01
   name: TV & Live (IPTV) Studio
   approved_expansion_functions: '0'
@@ -440,6 +480,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: X-01
   name: Universal Studio Fusion & Autonomous Production
   approved_expansion_functions: '18'
@@ -447,6 +488,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: X-02
   name: Zero Touch Setup & Self Healing
   approved_expansion_functions: '20'
@@ -454,6 +496,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: X-03
   name: Visual Builder & No-Code
   approved_expansion_functions: '20'
@@ -461,6 +504,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: X-04
   name: Extension Marketplace & Studio Evolution
   approved_expansion_functions: '20'
@@ -468,6 +512,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: X-05
   name: Free AI Discovery & Fallback
   approved_expansion_functions: BASE
@@ -475,6 +520,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
+  evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
 - id: X-06
   name: GitHub Open-Source Integration
   approved_expansion_functions: BASE
@@ -482,6 +528,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: X-07
   name: Global Free Asset Discovery
   approved_expansion_functions: BASE
@@ -489,10 +536,12 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: X-08
   implementation_status: IN_PROGRESS
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.1/tests-pc-7092ce1.txt
+  evidence_sha256: 2e2b64232a650dcd8ac2ca8ff155a476ee74b3b8d692a41a4acb27596e2ee899
   note: "Kabel und WLAN (Koppeln, QR, mDNS, Dateien, scrcpy, Apps, Benachrichtigungen) sowie Bluetooth (Suche, Koppeln, OBEX, Akku) sind gebaut. Tests mit nachgebautem adb und Bluetooth. Kein echtes Handy, kein echtes WLAN-Koppeln, kein echtes Bluetooth-Gerät."
   name: Mobile OS Bridge
   approved_expansion_functions: BASE
@@ -504,6 +553,7 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: PC_VERIFIED
   evidence: reports/w1/pc/README.md
+  evidence_sha256: dbe0bcb5284792b6d1cde88ba38aae28593158dbfb704f28a04b3d143eadffc8
 - id: X-10
   name: Legal Clean-Room Software Reconstruction
   approved_expansion_functions: BASE
@@ -511,6 +561,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: X-11
   name: Universal Creation & Productivity Suite
   approved_expansion_functions: BASE
@@ -518,6 +569,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: STUDIO-ONLINE-BUSINESS-01
   name: Ultimate Online Business Creation & Innovation Studio GODMODE (both modes)
   approved_expansion_functions: '30'
@@ -525,6 +577,7 @@ modules:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/pc-0.9.2/tests-pc-4e6b81d.txt
+  evidence_sha256: c8433274d45b85f0b697a0f53187bbffd4bc06c8bec9c6c0024590ea43934fb0
 - id: STUDIO-LETTER-01
   name: Ultimate Letter Business & Legal Correspondence Studio GODMODE
   approved_expansion_functions: '25'
@@ -532,6 +585,7 @@ modules:
   implementation_status: IN_PROGRESS
   test_status: PC_VERIFIED
   evidence: reports/w1/pc/README.md
+  evidence_sha256: dbe0bcb5284792b6d1cde88ba38aae28593158dbfb704f28a04b3d143eadffc8
 business_requirements:
 - id: BUS-001
   module: STUDIO-ONLINE-BUSINESS-01
@@ -541,6 +595,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-002
   module: STUDIO-ONLINE-BUSINESS-01
   mode: EXISTING
@@ -549,6 +604,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-003
   module: STUDIO-ONLINE-BUSINESS-01
   mode: EXISTING
@@ -557,6 +613,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-004
   module: STUDIO-ONLINE-BUSINESS-01
   mode: EXISTING
@@ -565,6 +622,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-005
   module: STUDIO-ONLINE-BUSINESS-01
   mode: EXISTING
@@ -573,6 +631,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-006
   module: STUDIO-ONLINE-BUSINESS-01
   mode: INNOVATION
@@ -581,6 +640,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-007
   module: STUDIO-ONLINE-BUSINESS-01
   mode: INNOVATION
@@ -589,6 +649,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-008
   module: STUDIO-ONLINE-BUSINESS-01
   mode: INNOVATION
@@ -597,6 +658,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-009
   module: STUDIO-ONLINE-BUSINESS-01
   mode: INNOVATION
@@ -605,6 +667,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-010
   module: STUDIO-ONLINE-BUSINESS-01
   mode: INNOVATION
@@ -613,6 +676,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-011
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -621,6 +685,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-012
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -629,6 +694,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-013
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -637,6 +703,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-014
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -645,6 +712,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-015
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -653,6 +721,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-016
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -661,6 +730,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-017
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -669,6 +739,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-018
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -677,6 +748,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-019
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -685,6 +757,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-020
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -693,6 +766,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-021
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -701,6 +775,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-022
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -709,6 +784,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-023
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -717,6 +793,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-024
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -725,6 +802,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-025
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -733,6 +811,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-026
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -741,6 +820,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-027
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -749,6 +829,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-028
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -757,6 +838,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-029
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -765,6 +847,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 - id: BUS-030
   module: STUDIO-ONLINE-BUSINESS-01
   mode: BOTH
@@ -773,6 +856,7 @@ business_requirements:
   implementation_status: IMPLEMENTED
   test_status: PC_VERIFIED
   evidence: reports/c2-business/UEBERSICHT.md
+  evidence_sha256: 2546dae0f243a4de3b05b881b26f005b57376b8b60037edd61b919b32698cc65
 letter_requirements:
 - id: LETTER-001
   module: STUDIO-LETTER-01
@@ -781,6 +865,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
   note: "LTR-QA-018 (Linux-USB/Pi) NOT_RUN – Hardware fehlt"
 - id: LETTER-002
   module: STUDIO-LETTER-01
@@ -789,6 +874,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-003
   module: STUDIO-LETTER-01
   title: DIN-5008-orientierter Letter Designer
@@ -796,6 +882,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-004
   module: STUDIO-LETTER-01
   title: Professional Template Library
@@ -803,6 +890,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-005
   module: STUDIO-LETTER-01
   title: Intelligent Tone & Writing Director
@@ -810,6 +898,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-006
   module: STUDIO-LETTER-01
   title: Government & Authority Letter Center
@@ -817,6 +906,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-007
   module: STUDIO-LETTER-01
   title: Court Correspondence & Pleading Assistant
@@ -824,6 +914,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-008
   module: STUDIO-LETTER-01
   title: Lawyer Communication Director
@@ -831,6 +922,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-009
   module: STUDIO-LETTER-01
   title: Insurance & Claims Correspondence Studio
@@ -838,6 +930,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-010
   module: STUDIO-LETTER-01
   title: Business Dispute & Contract Letter Center
@@ -845,6 +938,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-011
   module: STUDIO-LETTER-01
   title: Letter Intake & Fact Questionnaire
@@ -852,6 +946,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-012
   module: STUDIO-LETTER-01
   title: Document Scan OCR & Incoming Letter Reader
@@ -859,6 +954,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-013
   module: STUDIO-LETTER-01
   title: Case Timeline Evidence & Attachment Organizer
@@ -866,6 +962,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-014
   module: STUDIO-LETTER-01
   title: Verified Legal Sources & Deadline Inspector
@@ -873,6 +970,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-015
   module: STUDIO-LETTER-01
   title: German-First Cross-Border Letter Composer
@@ -880,6 +978,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-016
   module: STUDIO-LETTER-01
   title: DOCX ODT PDF Print Production Engine
@@ -887,6 +986,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
   note: "LTR-QA-018 (Linux-USB/Pi) NOT_RUN – Hardware fehlt"
 - id: LETTER-017
   module: STUDIO-LETTER-01
@@ -895,6 +995,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-018
   module: STUDIO-LETTER-01
   title: Missing Information & Consistency Validator
@@ -902,6 +1003,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-019
   module: STUDIO-LETTER-01
   title: Deadline Reply & Follow-Up Planner
@@ -909,6 +1011,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-020
   module: STUDIO-LETTER-01
   title: Document Preview Proofreading & QA Review
@@ -916,6 +1019,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-021
   module: STUDIO-LETTER-01
   title: Incoming Letter Analysis & Reply Builder
@@ -923,6 +1027,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-022
   module: STUDIO-LETTER-01
   title: Correspondence Case Archive & Version History
@@ -930,6 +1035,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-023
   module: STUDIO-LETTER-01
   title: Official Delivery Channel Preparation
@@ -937,6 +1043,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-024
   module: STUDIO-LETTER-01
   title: Human Approval Privacy & Legal Review Gate
@@ -944,6 +1051,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
 - id: LETTER-025
   module: STUDIO-LETTER-01
   title: Real Letter Production & Submission QA
@@ -951,6 +1059,7 @@ letter_requirements:
   implementation_status: IMPLEMENTED
   test_status: TESTED
   evidence: reports/pc-0.9.0/tests-pc-lauf2-4180fd0.txt
+  evidence_sha256: 8c6919451adb1b5f9041abaaf9456b2c7cbac5440a394a47f819f790d3798f39
   note: "LTR-QA-018 (Linux-USB/Pi) NOT_RUN – Hardware fehlt"
 improvements:
 - id: IMP-13
@@ -960,6 +1069,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-14
   title: Claude One-Prompt Production Orchestrator GODMODE
@@ -968,6 +1078,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-15
   title: Native All-in-One Integration GODMODE
@@ -976,6 +1087,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-16
   title: Futureproof & Intelligent Update GODMODE
@@ -984,6 +1096,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-17
   title: Universal Studio Fusion & Project Workspace GODMODE
@@ -992,6 +1105,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-18
   title: Autonomous Everything GODMODE
@@ -1000,6 +1114,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-19
   title: Autonomous Sandbox & Intelligent Approval GODMODE
@@ -1008,6 +1123,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-20
   title: Teach & Automate GODMODE
@@ -1016,6 +1132,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-21
   title: Hybrid Power & Seamless Studio Execution GODMODE
@@ -1024,6 +1141,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-22
   title: Native Software Reconstruction & One-Setup GODMODE
@@ -1032,6 +1150,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-23
   title: Ultimate Multi-User & Secure Identity GODMODE
@@ -1047,6 +1166,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-25
   title: Ultimate Smart Migration & Data Freedom GODMODE
@@ -1062,6 +1182,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-27
   title: Mobile Command & Remote Production GODMODE
@@ -1070,6 +1191,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-28
   title: Global Release & Trusted Distribution GODMODE
@@ -1078,6 +1200,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-29
   title: HyperPerformance & Zero-Bloat GODMODE
@@ -1086,6 +1209,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-30
   title: Professional File & Studio Compatibility GODMODE
@@ -1094,6 +1218,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-31
   title: Independent AI & Offline Intelligence GODMODE
@@ -1102,6 +1227,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-32
   title: True Operating System Foundation GODMODE
@@ -1110,6 +1236,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-33
   title: Plug & Play Hardware GODMODE
@@ -1118,6 +1245,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-34
   title: Ultimate Native Antivirus & Cyber Protection GODMODE
@@ -1140,6 +1268,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-37
   title: Universal Software & Gaming Compatibility GODMODE
@@ -1148,6 +1277,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-38
   title: Dual-Boot & Install Anywhere GODMODE
@@ -1156,6 +1286,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-39
   title: Remote App Fusion & Desktop Streaming GODMODE
@@ -1170,6 +1301,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: docs/spec/GAP_ANALYSIS.md
+  evidence_sha256: 6f1212d26c96224a740fac9ba349ac65d33e09a685b0bb450134b96d40dc0a55
   note: Teilfunktionen vorhanden laut GAP_ANALYSIS §2, Rest offen
 - id: IMP-41
   title: Ultimate HyperRealistic Premium Experience GODMODE (Design 41)
@@ -1178,6 +1310,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: tasks/UI-041-PREMIUM-EXPERIENCE.bericht.md
+  evidence_sha256: 469cb13093adafd2f6caec37f20ff721e971528b8166b9d0e98971909ed8f38d
   note: Teilumsetzung laut Bericht; nicht vollständig, nicht abgenommen
 - id: IMP-42
   title: Universal Studio Prompt-to-Action GODMODE
@@ -1186,6 +1319,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: tasks/T-0042-prompt-action.bericht.md
+  evidence_sha256: ec7fd13afbf44961cb4113ab82f519b130f59984e7f2bbf28fc35d0a9071eadc
   note: Teilumsetzung laut Bericht; nicht vollständig, nicht abgenommen
 - id: IMP-43
   title: Trendo ONE Workspace GODMODE
@@ -1194,6 +1328,7 @@ improvements:
   implementation_status: IN_PROGRESS
   test_status: NOT_RUN
   evidence: tasks/T-0043-erlebnis.bericht.md
+  evidence_sha256: 6351c1f78b5d845e9716c2f67fe60aa2814ae20eb7108f4a13ce38250000f603
   note: Teilumsetzung laut Bericht; nicht vollständig, nicht abgenommen
 - id: IMP-44
   title: Universal Professional Studio Fusion

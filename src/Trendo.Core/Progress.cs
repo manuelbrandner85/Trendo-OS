@@ -4,7 +4,53 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace Trendo.Core;
 
-public sealed record ProgressItem(string Id, string Name, string Impl, string Test);
+/// <summary>T-0245 (V111): Beleg eines Status – Pfad im Projekt, Prüfsumme und optional der geprüfte Stand.</summary>
+public sealed record EvidenceInfo(string? Path, string? Sha256, string? Commit);
+
+/// <summary>Wie belastbar ein Beleg ist: geprüft (Datei da, Prüfsumme stimmt), erfasst (Prüfsumme bekannt, Datei nicht auf diesem PC),
+/// nur Pfad (ohne Prüfsumme), verändert (Prüfsumme stimmt nicht) oder keiner.</summary>
+public enum EvidenceState { None, PathOnly, Recorded, Verified, Invalid }
+
+public static class Evidence
+{
+    public static EvidenceState Check(EvidenceInfo? e, string? repoRoot)
+    {
+        if (e?.Path is not { Length: > 0 } rel) return EvidenceState.None;
+        var file = repoRoot is null ? null : System.IO.Path.Combine(repoRoot, rel.Replace('/', System.IO.Path.DirectorySeparatorChar));
+        var exists = file is not null && File.Exists(file);
+        if (e.Sha256 is not { Length: 64 } sha) return exists || repoRoot is null ? EvidenceState.PathOnly : EvidenceState.Invalid;
+        if (!exists) return EvidenceState.Recorded;
+        using var s = File.OpenRead(file!);
+        // Zeilenenden wie in Git (LF) vergleichen, damit ein Auschecken unter Windows (CRLF) keinen Fehlalarm auslöst
+        var bytes = new MemoryStream(); s.CopyTo(bytes); var raw = bytes.ToArray();
+        var lf = raw.Length > 0 && !raw.Contains((byte)0) ? System.Text.Encoding.UTF8.GetBytes(System.Text.Encoding.UTF8.GetString(raw).Replace("\r\n", "\n")) : raw;
+        var h = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(lf));
+        return string.Equals(h, sha, StringComparison.OrdinalIgnoreCase) ? EvidenceState.Verified : EvidenceState.Invalid;
+    }
+
+    public static string Label(EvidenceState s) => s switch
+    {
+        EvidenceState.Verified => "Beleg geprüft",
+        EvidenceState.Recorded => "Beleg erfasst (nicht auf diesem PC)",
+        EvidenceState.PathOnly => "Beleg ohne Prüfsumme",
+        EvidenceState.Invalid => "Beleg fehlt oder verändert",
+        _ => "kein Beleg",
+    };
+
+    /// <summary>Projektordner (mit Trendo.sln) ab einem Startordner – null im installierten Trendo.</summary>
+    public static string? RepoRoot(string start)
+    {
+        for (var d = new DirectoryInfo(start); d is not null; d = d.Parent)
+            if (File.Exists(System.IO.Path.Combine(d.FullName, "Trendo.sln"))) return d.FullName;
+        return null;
+    }
+}
+
+public sealed record ProgressItem(string Id, string Name, string Impl, string Test, EvidenceInfo? Evidence = null)
+{
+    /// <summary>„Getestet“ zählt als belegt nur mit geprüftem oder erfasstem Beleg.</summary>
+    public bool TestedWithEvidence(string? repoRoot) => StatusRules.Tested(Test) && Trendo.Core.Evidence.Check(Evidence, repoRoot) is EvidenceState.Verified or EvidenceState.Recorded;
+}
 public sealed record ProgressModule(string Wave, string WaveName, int Order, ProgressItem Module, IReadOnlyList<ProgressItem> Subs)
 {
     public bool Done => StatusRules.Done(Module.Impl, Module.Test);
@@ -28,7 +74,8 @@ public static class Progress
             .Deserialize<Doc>(File.ReadAllText(requirementsYaml));
         static string S(Dictionary<string, object> m, string k) => m.TryGetValue(k, out var v) ? v?.ToString() ?? "" : "";
         var all = doc.Modules.Concat(doc.BusinessRequirements).Concat(doc.LetterRequirements)
-            .ToDictionary(m => S(m, "id"), m => new ProgressItem(S(m, "id"), S(m, "name") is { Length: > 0 } n ? n : S(m, "title"), S(m, "implementation_status"), S(m, "test_status")));
+            .ToDictionary(m => S(m, "id"), m => new ProgressItem(S(m, "id"), S(m, "name") is { Length: > 0 } n ? n : S(m, "title"), S(m, "implementation_status"), S(m, "test_status"),
+                S(m, "evidence") is { Length: > 0 } ev ? new EvidenceInfo(ev, S(m, "evidence_sha256") is { Length: > 0 } sh ? sh : null, S(m, "evidence_commit") is { Length: > 0 } co ? co : null) : null));
         var plan = JsonSerializer.Deserialize<List<PlanEntry>>(File.ReadAllText(planJson)) ?? [];
         // Welle 0 (Setup) steht nicht in requirements.yaml: Status aus docs/wave0.yaml (über buildplan.json)
         foreach (var p in plan.Where(p => p.local && !all.ContainsKey(p.id))) all[p.id] = new ProgressItem(p.id, p.name, p.impl, p.test);

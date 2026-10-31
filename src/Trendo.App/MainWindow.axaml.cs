@@ -801,6 +801,13 @@ public sealed partial class MainWindow : Window
         var mods = Progress.Load(req!, plan);
         var done = mods.Count(m => m.Done); var subs = mods.SelectMany(m => m.Subs).ToList();
         sp.Children.Add(P($"{done} von {mods.Count} Modulen fertig und getestet · Teilanforderungen (Brief/Business): {subs.Count(x => Progress.GermanStatus(x) == "Fertig & getestet")} von {subs.Count}. Quelle: requirements.yaml (keine geschönten Angaben).", Text));
+        // T-0245: „getestet“ nur mit Beleg – getrennt gezählt
+        var root = Evidence.RepoRoot(AppContext.BaseDirectory);
+        var tested = mods.Select(m => m.Module).Concat(subs).Where(x => StatusRules.Tested(x.Test)).ToList();
+        var byState = tested.GroupBy(x => Evidence.Check(x.Evidence, root)).ToDictionary(g => g.Key, g => g.Count());
+        int N(EvidenceState s) => byState.GetValueOrDefault(s);
+        sp.Children.Add(new TextBlock { Name = "progress-evidence", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap,
+            Text = tested.Count == 0 ? "Belege: keine Daten." : $"Belege zu {tested.Count} als getestet gemeldeten Einträgen: {N(EvidenceState.Verified)} geprüft · {N(EvidenceState.Recorded)} erfasst (Datei nicht auf diesem PC) · {N(EvidenceState.PathOnly)} ohne Prüfsumme · {N(EvidenceState.None)} ohne Beleg · {N(EvidenceState.Invalid)} fehlend oder verändert." });
         foreach (var w in mods.GroupBy(m => m.Wave))
         {
             var list = w.ToList();
@@ -811,7 +818,8 @@ public sealed partial class MainWindow : Window
             {
                 grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
                 var st = Progress.GermanStatus(m.Module);
-                var cells = new Control[] { P(m.Module.Id, null, 11), P(m.Module.Name + (m.Subs.Count > 0 ? $"  ·  {m.Subs.Count} Teilanforderungen" : ""), Text, 12),
+                var ev = StatusRules.Tested(m.Module.Test) ? Evidence.Check(m.Module.Evidence, root) : (EvidenceState?)null;
+                var cells = new Control[] { P(m.Module.Id, null, 11), P(m.Module.Name + (m.Subs.Count > 0 ? $"  ·  {m.Subs.Count} Teilanforderungen" : "") + (ev is { } e ? "  ·  " + Evidence.Label(e) : ""), ev is EvidenceState.Invalid ? Brush.Parse("#F87171") : Text, 12),
                     new Border { CornerRadius = new CornerRadius(6), Padding = new Thickness(6, 1), Margin = new Thickness(0, 1), HorizontalAlignment = HorizontalAlignment.Left,
                         Background = Brush.Parse(st switch { "Fertig & getestet" => "#3322C55E", "In Arbeit" or "Gebaut, Test offen" => "#33FACC15", _ => "#22FFFFFF" }),
                         Child = P(st, Text, 11) } };
