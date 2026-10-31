@@ -25,12 +25,12 @@ public class FachBedienungTests
             var hints = w.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text ?? "").Where(s => aufzaehlung.IsMatch(s)).ToList();
             Assert.True(hints.Count == 0, page + ": Aufzählung im Hinweis – " + string.Join(" | ", hints));
         }
-        w.Show(MainWindow.StudioPages["SPEC-01"]);
+        // SPEC-01 ist seit T-0256 ein Zeichenprogramm ohne Formular – Wahlfelder hier am Beispiel Technik
+        w.Show(MainWindow.StudioPages["SPEC-03"]);
         foreach (var ex in w.GetLogicalDescendants().OfType<Expander>().ToList()) ex.IsExpanded = true;
         Dispatcher.UIThread.RunJobs();
-        var std = w.Find<ComboBox>("arch-heat-std");
-        Assert.Contains("passivhaus", std.ItemsSource!.Cast<string>());
-        Assert.Equal("teilsaniert", std.SelectedItem);
+        var grade = w.Find<ComboBox>("eng-bolt-grade");
+        Assert.Contains("10.9", grade.ItemsSource!.Cast<string>());
         w.Close();
     }
 

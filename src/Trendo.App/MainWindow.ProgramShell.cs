@@ -30,6 +30,8 @@ public sealed class ProgramSpec(string key, string studio, string title)
     public Func<ProgramDocument, Control>? Properties { get; init; }
     public Func<ProgramDocument, string>? Status { get; init; }
     public string Help { get; init; } = "";
+    /// <summary>T-0256: Arbeitsfläche füllt die Fensterhöhe (Zeichenprogramme) statt mitzuscrollen.</summary>
+    public bool FillHeight { get; init; }
 }
 
 public partial class MainWindow
@@ -140,14 +142,31 @@ public partial class MainWindow
                 new Border { Width = 46, Height = 46, CornerRadius = new CornerRadius(12), Background = Brush.Parse("#33FFFFFF"), Child = icon is null ? null : Ico(icon.Path, 26, Brushes.White) },
                 Pos(new StackPanel { Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Children = {
                     new TextBlock { Text = spec.Title, Foreground = Brushes.White, FontSize = 18, FontWeight = FontWeight.Bold },
-                    new TextBlock { Text = spec.Sentence, Foreground = Brush.Parse("#E6FFFFFF"), FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis } } }, 1),
+                    spec.FillHeight && d is not null && _progMsg.GetValueOrDefault(key) is { Length: > 0 } bm
+                        ? new SelectableTextBlock { Name = "prog-msg", Text = "➜ " + bm, Foreground = Brushes.White, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, MaxHeight = 40 }
+                        : new TextBlock { Text = spec.Sentence, Foreground = Brush.Parse("#E6FFFFFF"), FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis } } }, 1),
                 Pos(title is null ? new Panel() : new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Children = {
                     title, new TextBlock { Name = "prog-dirty", Text = d!.Dirty ? "● geändert" : d.Path is null ? "nicht gespeichert" : "✓ gespeichert", Foreground = Brushes.White, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } }, 2) } },
         };
 
-        Control body = d is null ? ProgramStart(spec) : ProgramWork(spec, d, docs);
-        var root = new StackPanel { Name = "prog-root", Spacing = 10, Children = { band, body } };
-        if (_progMsg.GetValueOrDefault(key) is { Length: > 0 } msg) root.Children.Insert(1, ResultCard(msg));
+        Panel root;
+        if (spec.FillHeight && d is not null)
+        {
+            // Kopf (Band, Meldung, Reiter, Menüband) fest, darunter Arbeitsfläche + Eigenschaften in voller Höhe, Statusleiste unten
+            var (top, grid, status) = ProgramWorkParts(spec, d, docs);
+            band.Padding = new Thickness(14, 8);
+            var head = new StackPanel { Spacing = 6, Children = { band, top } };
+            // DockPanel: Kopf und Statusleiste bekommen die echte Breite (Menüband bricht richtig um), die Arbeitsfläche den Rest
+            head.Margin = new Thickness(0, 0, 0, 8); status.Margin = new Thickness(0, 8, 0, 0);
+            DockPanel.SetDock(head, Avalonia.Controls.Dock.Top); DockPanel.SetDock(status, Avalonia.Controls.Dock.Bottom);
+            root = new DockPanel { Name = "prog-root", LastChildFill = true, Children = { head, status, grid } };
+        }
+        else
+        {
+            Control body = d is null ? ProgramStart(spec) : ProgramWork(spec, d, docs);
+            root = new StackPanel { Name = "prog-root", Spacing = 10, Children = { band, body } };
+            if (_progMsg.GetValueOrDefault(key) is { Length: > 0 } msg) root.Children.Insert(1, ResultCard(msg));
+        }
         root.KeyDown += (_, e) =>
         {
             if (e.KeyModifiers != KeyModifiers.Control) return;
@@ -160,7 +179,7 @@ public partial class MainWindow
                 case Key.W when d is not null: ProgramRun(key, () => ProgramClose(key, _progActive.GetValueOrDefault(key))); e.Handled = true; break;
             }
         };
-        return Page(spec.Title, root);
+        return spec.FillHeight && d is not null ? FitPage(spec.Title, new Panel(), root, pageHead: false) : Page(spec.Title, root);
     }
 
     /// <summary>G1/V2: Startseite des Programms.</summary>
@@ -217,6 +236,13 @@ public partial class MainWindow
     /// <summary>V2/V9: Reiter, Menüband, Arbeitsfläche, Eigenschaften, Statusleiste.</summary>
     private Control ProgramWork(ProgramSpec spec, ProgramDocument d, List<ProgramDocument> docs)
     {
+        var (top, grid, status) = ProgramWorkParts(spec, d, docs);
+        var inner = (StackPanel)((StackPanel)top).Children[1]; inner.Children.Add(grid); inner.Children.Add(status);
+        return top;
+    }
+
+    private (Control Top, Control Grid, Control Status) ProgramWorkParts(ProgramSpec spec, ProgramDocument d, List<ProgramDocument> docs)
+    {
         var key = spec.Key;
         // V9: Reiter der offenen Dokumente
         var tabs = new WrapPanel { Name = "prog-tabs" };
@@ -237,12 +263,22 @@ public partial class MainWindow
 
         // Menüband
         var saveAs = Field("prog-saveas-path", "Speichern unter: Ordner\\Name", 240);
+        // Zeichenprogramme: „Speichern unter …“ klappt das Feld auf, statt Platz im Menüband zu belegen
+        List<Control> SaveAsControls()
+        {
+            var go = RBtn("prog-saveas", "Speichern unter", () => ProgramRun(key, () => ProgramSave(key, Need(saveAs, "Ordner und Namen"))));
+            if (!spec.FillHeight) return [saveAs, go];
+            var open = RBtn("prog-saveas-open", "Speichern unter …", () => { });
+            go.Margin = new Thickness(0, 6, 0, 0);
+            open.Flyout = new Flyout { Content = new StackPanel { Width = 380, Spacing = 4, Children = { P("Ordner und Dateiname", null, 12), saveAs, go } } };
+            return [open];
+        }
         var groups = new List<(string, List<Control>)>
         {
             ("Datei", [
                 RBtn("prog-new", "Neu", () => ProgramRun(key, () => ProgramNew(key))),
                 RBtn("prog-save", "Speichern", () => ProgramRun(key, () => ProgramSave(key)), true),
-                saveAs, RBtn("prog-saveas", "Speichern unter", () => ProgramRun(key, () => ProgramSave(key, Need(saveAs, "Ordner und Namen")))),
+                .. SaveAsControls(),
                 RBtn("prog-close", "Schließen", () => ProgramRun(key, () => { if (d.Dirty) d.Autosave(ProgBackup); ProgramClose(key, _progActive.GetValueOrDefault(key)); })),
             ]),
             ("Bearbeiten", [
@@ -265,23 +301,29 @@ public partial class MainWindow
         foreach (var (g, items) in groups)
         {
             var row = new WrapPanel(); foreach (var it in items) { it.Margin = new Thickness(0, 0, 4, 4); it.VerticalAlignment = VerticalAlignment.Center; row.Children.Add(it); }
+            if (spec.FillHeight)
+            {
+                var grp = new Border { Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(6, 4, 6, 0), CornerRadius = new CornerRadius(10), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = row };
+                ToolTip.SetTip(grp, g); ribbon.Children.Add(grp);
+            }
+            else
             ribbon.Children.Add(new Border { Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(10, 6, 10, 4), CornerRadius = new CornerRadius(12), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1),
                 Child = new StackPanel { Spacing = 2, Children = { row, new TextBlock { Text = g, Foreground = Muted, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center } } } });
         }
 
         // Arbeitsfläche und Eigenschaften
-        var work = new Border { Name = "prog-workspace", CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(12), MinHeight = 420, Child = spec.Workspace(d) };
+        var work = new Border { Name = "prog-workspace", CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(spec.FillHeight ? 8 : 12), MinHeight = spec.FillHeight ? 300 : 420, Child = spec.Workspace(d) };
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions(spec.Properties is null ? "*" : "*,12,300"), Children = { work } };
         if (spec.Properties is { } props)
             grid.Children.Add(Pos(new Border { Name = "prog-properties", CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(12),
-                Child = new StackPanel { Spacing = 6, Children = { H("Eigenschaften", 13), props(d) } } }, 2));
+                Child = spec.FillHeight ? new ScrollViewer { Content = new StackPanel { Spacing = 6, Margin = new Thickness(0, 0, 8, 0), Children = { H("Eigenschaften", 13), props(d) } } } : new StackPanel { Spacing = 6, Children = { H("Eigenschaften", 13), props(d) } } }, 2));
 
         // Statusleiste
         var status = new Border { Name = "prog-status", CornerRadius = new CornerRadius(10), Background = Brush.Parse(C("#33081329", "#14000000")), Padding = new Thickness(12, 5),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {
                 new TextBlock { Name = "prog-status-text", Text = spec.Status?.Invoke(d) ?? "", Foreground = Muted, FontSize = 12 },
                 Pos(new TextBlock { Text = (d.Path is null ? "Noch nicht gespeichert" : Path.GetFileName(d.Path)) + (d.Dirty ? " · geändert, wird automatisch gesichert" : "") + $" · {d.Changed:HH:mm}", Foreground = Muted, FontSize = 12 }, 1) } } };
-        return new StackPanel { Spacing = 0, Children = { tabs, new StackPanel { Spacing = 8, Children = { ribbon, grid, status } } } };
+        return (new StackPanel { Spacing = 0, Children = { tabs, new StackPanel { Spacing = 8, Children = { ribbon } } } }, grid, status);
 
         Button RBtn(string name, string label, Action go, bool primary = false, string? tip = null)
         {

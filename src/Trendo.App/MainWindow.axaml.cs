@@ -643,10 +643,10 @@ public sealed partial class MainWindow : Window
     }
 
     /// <summary>Seite ohne äußeres Scrollen: Kopf bleibt stehen, <paramref name="fill"/> füllt die restliche Höhe.</summary>
-    private Control FitPage(string title, Control header, Control fill)
+    private Control FitPage(string title, Control header, Control fill, bool pageHead = true)
     {
         var root = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,Auto,*"), MinHeight = 0, VerticalAlignment = VerticalAlignment.Stretch };
-        root.Children.Add(FocusMode ? new Panel() : PageHead(title));
+        root.Children.Add(FocusMode || !pageHead ? new Panel() : PageHead(title));
         var hint = Detach(_hintHost); Grid.SetRow(hint, 1); root.Children.Add(hint);
         Grid.SetRow(header, 2); root.Children.Add(Readable(header));
         Readable(fill);

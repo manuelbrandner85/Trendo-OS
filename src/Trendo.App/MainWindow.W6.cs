@@ -17,8 +17,6 @@ public partial class MainWindow
     /// <summary>T-0207: Felder mit fester Wertemenge werden Auswahllisten. Schlüssel „werkzeug-feld“; dazu Ja/Nein-Felder über die Beschriftung.</summary>
     public static readonly Dictionary<string, string[]> FachChoices = new()
     {
-        ["arch-heat-std"] = ["altbau", "teilsaniert", "neubau", "kfw", "passivhaus"],
-        ["arch-light-kind"] = ["wohnzimmer", "schlafzimmer", "küche", "bad", "büro", "flur", "kinderzimmer", "werkstatt"],
         ["scan-scale-from"] = ["mm", "cm", "m", "in", "ft"], ["scan-scale-to"] = ["mm", "cm", "m", "in", "ft"],
         ["eng-unit-from"] = ["mm", "m", "in", "ft", "N", "kN", "kg", "lbf", "bar", "psi", "MPa", "kW", "PS"],
         ["eng-unit-to"] = ["mm", "m", "in", "ft", "N", "kN", "kg", "lbf", "bar", "psi", "MPa", "kW", "PS"],

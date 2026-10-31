@@ -21,22 +21,6 @@ public static class W6Ui
     }
 }
 
-public class SPEC01_Ui
-{
-    [AvaloniaFact(DisplayName = "SPEC-01 UI: Studio-Kachel öffnet Räume, Raum anlegen, Bedarf, Grundriss")]
-    public void Rooms()
-    {
-        var (w, l, _) = Ui.Open();
-        w.Show(MainWindow.StudioPages["SPEC-01"]);
-        W6Ui.Run(w, "arch-add", ("name", "Küche"), ("l", "3,5"), ("w", "3"));
-        Assert.Single(w.Rooms.Project.Rooms);
-        Assert.Contains("Pakete", W6Ui.Run(w, "arch-need"));
-        Assert.Contains("⚠", W6Ui.Run(w, "arch-add", ("l", "abc")));
-        w.Find<Button>("arch-svg").Press();
-        Assert.Contains(l.Opened, x => x.EndsWith("grundriss.svg"));
-    }
-}
-
 public class SPEC02_Ui
 {
     [AvaloniaFact(DisplayName = "SPEC-02 UI: Elektronik-Rechner und Stückliste")]
@@ -323,27 +307,6 @@ public class CORE09_Ui
         Assert.Contains("Kontrolle: Greifer landet bei 150,0 / 50,0 / 40,0", W6Ui.Run(w, "rob-ik"));
         Assert.Contains("⚠", W6Ui.Run(w, "rob-ik", ("x", "900")));
         Assert.Contains("Gespeichert", W6Ui.Run(w, "rob-prog"));
-    }
-}
-
-public class SPEC01_UiPlus
-{
-    [AvaloniaFact(DisplayName = "SPEC-01 UI Ausbau: Gruppen Material & Planen")]
-    public void Plus()
-    {
-        var (w, _, _) = Ui.Open();
-        w.Show("architektur");
-        Assert.Contains("⚠", W6Ui.Run(w, "arch-furn"));
-        W6Ui.Run(w, "arch-add", ("name", "Wohnzimmer"), ("l", "5"), ("w", "4"));
-        Assert.Contains("✓", W6Ui.Run(w, "arch-furn"));
-        Assert.Contains("Fliesen", W6Ui.Run(w, "arch-tile"));
-        Assert.Contains("Rollen", W6Ui.Run(w, "arch-wall"));
-        Assert.Contains("gesamt", W6Ui.Run(w, "arch-cost"));
-        Assert.Contains("Gespeichert", W6Ui.Run(w, "arch-csv"));
-        Assert.Contains("W Heizleistung", W6Ui.Run(w, "arch-heat"));
-        Assert.Contains("lm", W6Ui.Run(w, "arch-light"));
-        Assert.Contains("Steigungen", W6Ui.Run(w, "arch-stair"));
-        Assert.Contains("67,00 m²", W6Ui.Run(w, "arch-wofl"));
     }
 }
 

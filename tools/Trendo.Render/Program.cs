@@ -132,6 +132,15 @@ else if (shot == "seite")
     win.Show(page);
     if (win.Windows.Active is { Maximized: false } pageWin) win.Windows.ToggleMaximize(pageWin.Id);
     win.Show(page);
+    if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { win.ProgramNew(page, tpl); win.Show(page); } // Programm mit Vorlage öffnen
+    if (page == "architektur" && Environment.GetEnvironmentVariable("TRENDO_ARCH") is { Length: > 0 } arch) // Grundriss: Auswahl/3D/Werkzeug zeigen
+    {
+        var plan = Trendo.Core.Arch.FloorPlan.From(win.ProgramActive(page)!.Data);
+        if (arch.Contains("raum")) win.ArchState.Selected = plan.Rooms[0].Id;
+        if (arch.Contains("moebel")) win.ArchState.Tool = "moebel";
+        if (arch.Contains("3d")) win.ArchToggle3D();
+        win.Show(page);
+    }
     if (page == "ki-bibliothek" && Enum.TryParse<KiKind>(Environment.GetEnvironmentVariable("TRENDO_KIKIND"), out var kind)) win.KiLibraryShow(kind); // Art der KI-Bibliothek
 }
 else if (shot == "brief")
@@ -380,6 +389,9 @@ if (Environment.GetEnvironmentVariable("TRENDO_PHONE") is { Length: > 0 } phoneA
 }
 for (var i = 0; i < 40; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(50); }
 var frame = win.CaptureRenderedFrame();
+if (Environment.GetEnvironmentVariable("TRENDO_DUMP") is { Length: > 0 } dump) // Lage benannter Bausteine ausgeben (Layout-Fehlersuche)
+    foreach (var c in Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(win).OfType<Control>().Where(c => c.Name is { } n && dump.Split(',').Any(n.StartsWith)))
+        Console.WriteLine($"{c.Name}: {c.Bounds} desired={c.DesiredSize} @ {c.TranslatePoint(new Point(0, 0), win)}");
 frame!.Save(outPath);
 Console.WriteLine($"OK {outPath}");
 foreach (var crash in CrashLog.List(root).Take(1)) Console.Error.WriteLine("ABSTURZ beim Rendern:" + Environment.NewLine + File.ReadAllText(crash));
