@@ -126,7 +126,7 @@ public partial class MainWindow
     void InitTv()
     {
         RegisterTab(FachTabs, "tv", "TV & Live", TvStudio, TvView, "iptv", "fernsehen", "tv", "sender", "live tv", "m3u", "xtream", "epg", "programmführer", "aufnahme", "playlist");
-        if (Tv.Recordings.Any(r => r.State == "geplant")) TvRecWatch();
+        if (Tv.Recordings.Any(r => r.State == "geplant") || Tv.Reminders.Any(r => !r.Shown)) TvRecWatch();
         // T-0240: Passwörter aus alten Einträgen (Adresse mit password=) in den sicheren Speicher umziehen – ohne das Fenster aufzuhalten
         var lib = Tv;
         if (!lib.Sources.Any(x => !TvCredentials.HasToken(x.Url) && Xtream.FromPlaylistUrl(x.Url) is { Pass.Length: > 0 })) return; // nichts umzuziehen
@@ -380,6 +380,7 @@ public partial class MainWindow
     /// <summary>Prüft, ob eine geplante Aufnahme starten soll, und startet sie (ffmpeg kopiert den Stream ohne Umrechnen).</summary>
     public void TvRecTick()
     {
+        TvReminderTick();
         foreach (var r in Tv.Due(DateTime.UtcNow))
         {
             if (TvChannels().FirstOrDefault(c => c.Id == r.ChannelId) is not { } c) { Tv.UpdateRecording(r.Id, "Sender fehlt"); continue; }
@@ -622,65 +623,6 @@ public partial class MainWindow
         TvUpdateNow();
         grid.KeyDown += (_, e) => { if (e.Key is Key.Up or Key.PageUp) { TvZap(-1); e.Handled = true; } else if (e.Key is Key.Down or Key.PageDown) { TvZap(1); e.Handled = true; } };
         return grid;
-    }
-
-    Control TvGuide()
-    {
-        var sp = new StackPanel { Spacing = 8, Name = "tv-guide" };
-        var now = DateTime.UtcNow; var from = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute < 30 ? 0 : 30, 0, DateTimeKind.Utc); var to = from.AddHours(4);
-        const double perMin = 4.5;
-        var progs = TvProgs();
-        if (progs.Count == 0) sp.Children.Add(P("Noch kein Programmführer geladen. Unter „Quellen“ eine EPG-Adresse (XMLTV) eintragen – bei Xtream-Zugängen geht das von selbst.", Text, 12.5));
-        var rows = new StackPanel { Spacing = 3 };
-        var ruler = new Canvas { Height = 22, Width = 160 + (to - from).TotalMinutes * perMin };
-        for (var t = from; t < to; t = t.AddMinutes(30))
-        {
-            var tb = new TextBlock { Text = t.ToLocalTime().ToString("HH:mm"), Foreground = Muted, FontSize = 11 };
-            Canvas.SetLeft(tb, 160 + (t - from).TotalMinutes * perMin); ruler.Children.Add(tb);
-        }
-        var nowLine = new Border { Width = 2, Background = Brush.Parse("#D4A84B"), Height = 22 };
-        Canvas.SetLeft(nowLine, 160 + (now - from).TotalMinutes * perMin); ruler.Children.Add(nowLine);
-        rows.Children.Add(ruler);
-        foreach (var c in TvFiltered().Where(c => c.EpgId is not null).Take(60))
-        {
-            var row = new Canvas { Height = 40, Width = ruler.Width };
-            var name = new TextBlock { Text = $"{c.Number} {c.Name}", Foreground = Text, FontSize = 12, Width = 150, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center };
-            Canvas.SetTop(name, 11); row.Children.Add(name);
-            foreach (var p in progs.Where(p => string.Equals(p.Channel, c.EpgId, StringComparison.OrdinalIgnoreCase) && p.Stop > from && p.Start < to))
-            {
-                var s = p.Start < from ? from : p.Start; var e = p.Stop > to ? to : p.Stop;
-                var on = p.IsOn(now);
-                var b = new Button { Name = "tv-prog-" + c.Id.Replace(':', '-') + "-" + p.Start.ToString("HHmm"), Width = Math.Max(8, (e - s).TotalMinutes * perMin - 2), Height = 36, Padding = new Thickness(6, 2), CornerRadius = new CornerRadius(6),
-                    Background = on ? Brush.Parse("#402F86F6") : Brush.Parse("#1AFFFFFF"), BorderBrush = _tvProgSel == $"{c.Id}|{p.Start:O}" ? Brush.Parse("#D4A84B") : Brushes.Transparent, BorderThickness = new Thickness(1),
-                    Content = new TextBlock { Text = p.Title, Foreground = Text, FontSize = 11.5, TextTrimming = TextTrimming.CharacterEllipsis } };
-                ToolTip.SetTip(b, $"{p.Title}\n{p.Start.ToLocalTime():HH:mm}–{p.Stop.ToLocalTime():HH:mm}");
-                var key = $"{c.Id}|{p.Start:O}";
-                b.Click += (_, _) => { _tvProgSel = key; Show("tv"); };
-                Canvas.SetLeft(b, 160 + (s - from).TotalMinutes * perMin); Canvas.SetTop(b, 2); row.Children.Add(b);
-            }
-            rows.Children.Add(row);
-        }
-        sp.Children.Add(new ScrollViewer { Content = rows, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, MaxHeight = 520 });
-        // Details zur gewählten Sendung
-        if (_tvProgSel?.Split('|') is [var cid, var st] && TvChannels().FirstOrDefault(x => x.Id == cid) is { } ch
-            && progs.FirstOrDefault(p => string.Equals(p.Channel, ch.EpgId, StringComparison.OrdinalIgnoreCase) && p.Start.ToString("O") == st) is { } sel)
-        {
-            var d = new StackPanel { Name = "tv-prog-detail", Spacing = 4 };
-            d.Children.Add(H(sel.Title, 15));
-            d.Children.Add(P($"{ch.Name} · {sel.Start.ToLocalTime():ddd dd.MM. HH:mm}–{sel.Stop.ToLocalTime():HH:mm}{(sel.Category.Length > 0 ? " · " + sel.Category : "")}", null, 12));
-            if (sel.Description.Length > 0) d.Children.Add(P(sel.Description, Text, 12.5));
-            var acts = new WrapPanel();
-            if (sel.IsOn(now)) acts.Children.Add(TvButton("tv-prog-watch", "▶ Ansehen", () => { _tvTab = "live"; TvPlay(ch.Id); Show("tv"); }, true));
-            if (sel.Stop > now) acts.Children.Add(TvButton("tv-prog-rec", "⏺ Aufnehmen", () => { TvPlanRecording(ch, sel.Title, sel.Start, sel.Stop); _tvMsg = $"✓ Aufnahme geplant: {sel.Title} ({sel.Start.ToLocalTime():dd.MM. HH:mm})."; Show("tv"); }));
-            if (sel.Stop <= now)
-            {
-                if (Catchup.UrlFor(ch, sel) is { } cu) acts.Children.Add(TvButton("tv-prog-catchup", "⟲ Zeitversetzt ansehen", () => { _tvTab = "live"; Show("tv"); TvPlayUrl(cu, "main", ch); }, true));
-                else acts.Children.Add(P("Diese Sendung ist vorbei. Dein Anbieter bietet für diesen Sender kein Nachschauen an.", null, 11.5));
-            }
-            d.Children.Add(acts);
-            sp.Children.Add(WCard(d));
-        }
-        return sp;
     }
 
     Control TvRecordings()

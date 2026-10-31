@@ -20,6 +20,8 @@ public class T0201_PathFields
     [InlineData("txt-search", "Studios, Dateien und Einstellungen suchen", K.None)]
     [InlineData("startmenu-search", "Programme, Studios, Dateien und Einstellungen suchen", K.None)]
     [InlineData("txt-studio-search", "Studio suchen", K.None)]
+    [InlineData("backup-search", "🔎  Datei suchen …", K.None)]
+    [InlineData("dok-suche", "Dokument suchen", K.None)]
     [InlineData("wissen-folder", "Ordner oder Datei (.txt, .md, .csv)", K.FileOrFolder)]
     [InlineData("ext-path", "Ordner oder ZIP der Erweiterung", K.FileOrFolder)]
     [InlineData("sec-folder", "", K.Folder)]

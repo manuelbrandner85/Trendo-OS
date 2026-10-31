@@ -214,6 +214,30 @@ else if (shot == "seite")
         if (win.DiskAt?.Children.FirstOrDefault(c => c.IsDir) is { } firstDir) win.DiskSelect(firstDir);
         win.Show("ressourcen");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_TV") is { Length: > 0 }) // Programmführer als Raster mit Beispielsendern
+    {
+        var src = win.Tv.AddSource("Beispiel", "datei", "beispiel.m3u");
+        string[] names = ["Trendo Eins", "Trendo Zwei", "Kino Plus", "Sport Live", "Kinderwelt", "Wissen TV", "Nachrichten 24", "Show Kanal"];
+        win.Tv.StorePlaylist(src.Id, "#EXTM3U\n" + string.Concat(names.Select((n, i) => $"#EXTINF:-1 tvg-id=\"k{i}\" tvg-chno=\"{i + 1}\" group-title=\"Beispiel\",{n}\nhttps://example.invalid/{i}.ts\n")));
+        var t0 = Trendo.Core.Tv.TvGuide.Start(DateTime.UtcNow, 0).AddHours(-1); var rnd = new Random(7); var progs = new List<Trendo.Core.Tv.TvProgramme>();
+        string[][] shows = [["Morgenmagazin", "Nachrichten"], ["Der Fall Muster", "Krimi"], ["Abenteuer Alpen", "Dokumentation"], ["Großes Kino", "Spielfilm"], ["Bundesliga live", "Sport"], ["Sandmann", "Kinder"], ["Quiz am Abend", "Quiz"], ["Tagesschau", "Nachrichten"], ["Familie Muster", "Serie"], ["Talk um acht", "Talk"]];
+        for (var i = 0; i < names.Length; i++) for (var t = t0.AddMinutes(-rnd.Next(0, 40)); t < t0.AddHours(30);) { var s = shows[rnd.Next(shows.Length)]; var len = new[] { 15, 30, 45, 60, 90, 105 }[rnd.Next(6)]; progs.Add(new($"k{i}", t, t.AddMinutes(len), s[0], "Beispielsendung mit Erika Muster.", s[1])); t = t.AddMinutes(len); }
+        win.Tv.StoreEpg(src.Id, progs);
+        var ch = win.Tv.Channels(); var pick = progs.First(p => p.Channel == "k1" && p.Start > DateTime.UtcNow);
+        win.TvPlanRecording(ch[1], pick.Title, pick.Start, pick.Stop);
+        win.TvReloadData(); win.TvTab = "guide"; win.Show("tv");
+    }
+    if (Environment.GetEnvironmentVariable("TRENDO_BACKUPDEMO") is { Length: > 0 }) // Sicherung mit Zeitleiste
+    {
+        var b = win.BackupStore; var broot = Path.GetDirectoryName(b.Folder)!; Directory.CreateDirectory(Path.Combine(broot, "Projekte"));
+        File.WriteAllText(Path.Combine(broot, "Projekte", "Brief an Erika Muster.txt"), "Liebe Erika,\nhier die erste Fassung.");
+        File.WriteAllText(Path.Combine(broot, "Projekte", "Einkauf.txt"), "Milch, Brot");
+        string Mk(DateTime t) { var f = b.Create(t); File.SetLastWriteTime(f, t); return f; }
+        Mk(DateTime.Now.AddDays(-3)); Mk(DateTime.Now.AddDays(-1)); var z = Mk(DateTime.Now.AddHours(-2));
+        File.WriteAllText(Path.Combine(broot, "Projekte", "Brief an Erika Muster.txt"), "Liebe Erika,\nhier die überarbeitete Fassung.");
+        File.Delete(Path.Combine(broot, "Projekte", "Einkauf.txt")); File.WriteAllText(Path.Combine(broot, "Projekte", "Neu.txt"), "neu");
+        win.BackupSelected = z; win.BackupFile = "Projekte/Brief an Erika Muster.txt"; win.Show("sicherung");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_3D") is { Length: > 0 }) { win.Show("3d"); foreach (var sh in new[] { "cube", "sphere", "cylinder", "torus" }) win.Studio3DAddShape(sh); win.Studio3DSelect(1); } // 3D-Modelle erstellen mit Arbeitsfläche
     if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lv)); win.ProgramNew(page, tpl); if (Environment.GetEnvironmentVariable("TRENDO_GAMESEC") is { Length: > 0 } gs) win.GameSection = gs; win.Show(page); } // Programm mit Vorlage öffnen
     if (page == "architektur" && Environment.GetEnvironmentVariable("TRENDO_ARCH") is { Length: > 0 } arch) // Grundriss: Auswahl/3D/Werkzeug zeigen

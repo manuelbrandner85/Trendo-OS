@@ -436,6 +436,7 @@ public sealed class TvLibrary(string dataRoot, ISecretStore? secrets = null)
         public List<string> HiddenGroups { get; set; } = [];
         public List<string> LockedGroups { get; set; } = [];
         public List<TvRecording> Recordings { get; set; } = [];
+        public List<TvReminder> Reminders { get; set; } = [];
         public string? LastChannel { get; set; }
     }
     static readonly JsonSerializerOptions J = new() { WriteIndented = false };
@@ -617,6 +618,21 @@ public sealed class TvLibrary(string dataRoot, ISecretStore? secrets = null)
         Change(s => { var i = s.Recordings.FindIndex(r => r.Id == id); if (i >= 0) s.Recordings[i] = s.Recordings[i] with { State = state, File = file ?? s.Recordings[i].File }; });
 
     public void RemoveRecording(string id) => Change(s => s.Recordings.RemoveAll(r => r.Id == id));
+
+    // Erinnerungen an Sendungen (Programmführer); alte werden beim Ändern aufgeräumt
+    public IReadOnlyList<TvReminder> Reminders => Load().Reminders;
+    public bool HasReminder(string channelId, DateTime start) => Reminders.Any(r => r.ChannelId == channelId && r.Start == start);
+    public bool ToggleReminder(TvChannel c, TvProgramme p)
+    {
+        var on = false;
+        Change(s =>
+        {
+            s.Reminders.RemoveAll(r => r.Start < DateTime.UtcNow.AddDays(-1));
+            if (s.Reminders.RemoveAll(r => r.ChannelId == c.Id && r.Start == p.Start) == 0) { s.Reminders.Add(new(c.Id, c.Name, p.Title, p.Start)); on = true; }
+        });
+        return on;
+    }
+    public void ReminderShown(string channelId, DateTime start) => Change(s => { var i = s.Reminders.FindIndex(r => r.ChannelId == channelId && r.Start == start); if (i >= 0) s.Reminders[i] = s.Reminders[i] with { Shown = true }; });
 
     /// <summary>Aufnahmen, die jetzt starten sollen (geplant, Startzeit erreicht, Ende noch nicht vorbei).</summary>
     public IReadOnlyList<TvRecording> Due(DateTime nowUtc) => Recordings.Where(r => r.State == "geplant" && r.Start <= nowUtc && r.Stop > nowUtc).ToList();

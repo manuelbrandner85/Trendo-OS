@@ -22,7 +22,7 @@ public static class PathFields
         if (nl is "txt-search" or "startmenu-search" or "ki-input" or "txt-studio-search") return Kind.None;
         if (nl is "bm-folder" or "sc-args" or "wfe-pattern" or "ren-pattern" or "attachments" or "letter-attachments" or "wfe-text") return Kind.None;
         if (nl.Contains("attachment")) return Kind.None;
-        if (h.Contains("prüfsumme") || h.Contains("pruefsumme") || h.Contains("muster") || h.Contains("parameter") || h.Contains("ordner (optional)")) return Kind.None;
+        if (Word(h, "suchen") || nl.EndsWith("-search") || nl.EndsWith("-suche") || h.Contains("prüfsumme") || h.Contains("pruefsumme") || h.Contains("muster") || h.Contains("parameter") || h.Contains("ordner (optional)")) return Kind.None;
         var image = h.Contains("bilddatei") || h.Contains("bild für") || h.Contains("bild der") || h.Contains("bild zum") || h.Contains("oder bild") || h.Contains("vorhandenes bild");
         if (!image && (NotPath.IsMatch(n) || h.Contains("http") || h.StartsWith("adresse", StringComparison.Ordinal))) return Kind.None;
         if (image && (h.Contains("http") || nl.Contains("url"))) return Kind.File;
