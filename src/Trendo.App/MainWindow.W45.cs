@@ -19,7 +19,7 @@ public partial class MainWindow
     {
         InitW4Dev();
         InitW4Oss();
-        InitW4Media(); InitVideoSchnitt();
+        InitW4Media(); InitVideoSchnitt(); InitBildbearbeitung();
         InitW4Studio3D();
         InitW4Game();
         InitW4Assets();

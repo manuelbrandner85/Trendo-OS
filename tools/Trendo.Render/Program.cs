@@ -188,6 +188,20 @@ else if (shot == "seite")
         var wfl = win.Workflows.Add(WorkflowEngine.Templates[0].Make(MainWindow.WorkflowHome)); wfl.Steps.Add(new WfStep { Kind = StepKind.Zippen, From = Path.Combine(MainWindow.WorkflowHome, "Downloads"), To = Path.Combine(MainWindow.WorkflowHome, "archiv-{datum}.zip") }); win.Workflows.Update(wfl);
         win.WfSelected = wfl.Id; win.WfNode = 0; win.Show("ablaeufe");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_BILD") is { Length: > 0 } bildSrc && File.Exists(bildSrc)) // Bildbearbeitung mit Ebenen
+    {
+        win.ProgramNew("bild", "quadrat"); win.ImgAddImage(bildSrc);
+        var bd = win.ProgramActive("bild")!; var bw = bd.Number("width"); var bh = bd.Number("height");
+        bd.Edit("Beispiel", x =>
+        {
+            Trendo.Core.Media.ImageDoc.AddShape(x, "rect", bw * 0.06, bh * 0.74, bw * 0.88, bh * 0.18, "#CC0B1424");
+            Trendo.Core.Media.ImageDoc.AddText(x, "Trendo OS 0.9.28", bw * 0.1, bh * 0.76, bh / 14, "#FACC15");
+            var pl = Trendo.Core.Media.ImageDoc.AddPaint(x);
+            Trendo.Core.Media.ImageDoc.AddStroke(pl, [.. Enumerable.Range(0, 40).Select(i => (bw * (0.1 + i * 0.02), bh * (0.12 + 0.03 * Math.Sin(i / 4.0))))], "#22C55E", bh / 90, false);
+            x["selected"] = (string?)((System.Text.Json.Nodes.JsonObject)Trendo.Core.Media.ImageDoc.Layers(x)[0]!)["id"];
+        });
+        win.Show("bild");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_3D") is { Length: > 0 }) { win.Show("3d"); foreach (var sh in new[] { "cube", "sphere", "cylinder", "torus" }) win.Studio3DAddShape(sh); win.Studio3DSelect(1); } // 3D-Modelle erstellen mit Arbeitsfläche
     if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lv)); win.ProgramNew(page, tpl); if (Environment.GetEnvironmentVariable("TRENDO_GAMESEC") is { Length: > 0 } gs) win.GameSection = gs; win.Show(page); } // Programm mit Vorlage öffnen
     if (page == "architektur" && Environment.GetEnvironmentVariable("TRENDO_ARCH") is { Length: > 0 } arch) // Grundriss: Auswahl/3D/Werkzeug zeigen
