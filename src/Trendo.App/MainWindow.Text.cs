@@ -220,6 +220,7 @@ public partial class MainWindow
             bar.Children.Add(TB("text-align-" + a.ToString().ToLowerInvariant(), label, () => { if (CurPara() is { } cp) { Snapshot(); cp.Align = a; Changed(); } }, tip, p?.Align == a));
         bar.Children.Add(new Border { Width = 10 });
         bar.Children.Add(TB("text-find", "Suchen", () => _txFind = !_txFind, "Suchen und Ersetzen (Strg+F)", _txFind));
+        bar.Children.Add(TB("text-assist", "✨ Schreibhilfe", () => _txAssistOn = !_txAssistOn, "Trendo schlägt Verbesserungen vor – du sagst Ja oder Nein", _txAssistOn));
         bar.Children.Add(TB("text-spell", "Rechtschreibung", () => { _txSpellOn = !_txSpellOn; if (_txSpellOn) RunSpelling(); else _txMistakes = []; }, "Rechtschreibung prüfen", _txSpellOn));
         bar.Children.Add(TB("text-more", _txMore ? "Weniger" : "Mehr …", () => _txMore = !_txMore, "Alle weiteren Funktionen"));
         return bar;
@@ -574,9 +575,10 @@ public partial class MainWindow
     private Control? TextSidePanel()
     {
         var extra = TextProPanels().ToList();
-        if (!_txFind && !_txSpellOn && extra.Count == 0) return null;
+        if (!_txFind && !_txSpellOn && !_txAssistOn && extra.Count == 0) return null;
         var sp = new StackPanel { Spacing = 6, Width = 260, Margin = new Thickness(6, 4, 0, 0) };
         foreach (var c in extra) sp.Children.Add(c);
+        if (_txAssistOn) sp.Children.Add(Glass2(TextAssistPanel(), 10));
         if (_txFind)
         {
             var q = new TextBox { Name = "text-find-q", PlaceholderText = "Suchen nach …", Text = _txFindQ };
@@ -638,4 +640,30 @@ public partial class MainWindow
     }
 
     private string _txFindQ = "", _txFindR = ""; private bool _txFindCase, _txFindWord;
+
+    // ---------- Schreibhilfe (Masterprompt 131): Vorschläge mit Ja/Nein ----------
+    private bool _txAssistOn;
+    public bool TextAssistOn { get => _txAssistOn; set => _txAssistOn = value; }
+    /// <summary>Offene Hinweise der Schreibhilfe (ohne die mit „Nein“ beantworteten).</summary>
+    public List<WritingHint> TextHints()
+    {
+        if (!_spellTried) { _spellTried = true; _spelling = Spelling.Load(Spelling.Candidates(_deps.ToolsRoot), Path.Combine(_core.DataRoot, "text", "eigene-woerter.txt")); }
+        return WritingAid.Check(TextDocument, _spelling).Where(h => !SuggestionDismissed(h.Key)).ToList();
+    }
+
+    private Control TextAssistPanel()
+    {
+        var hints = TextHints();
+        var box = new StackPanel { Name = "text-assist-panel", Spacing = 6, Children = { H("Schreibhilfe", 13) } };
+        if (hints.Count == 0) { box.Children.Add(P("Keine Vorschläge – der Text sieht gut aus ✓", Brush.Parse("#4ADE80"), 12)); return box; }
+        box.Children.Add(P($"{hints.Count} Vorschläge · „Ja“ ändert die Stelle (Rückgängig mit Strg+Z), „Nein“ wird gemerkt.", Muted, 11));
+        var items = hints.Select(h => (new Trendo.Core.Assist.Suggestion(h.Key, h.Title, h.Detail, h.Kind switch { "rechtschreibung" => "ABC", "lang" => "📏", "fuellwort" => "✂", "anfuehrung" => "„“", _ => "✎" }),
+            (Action)(() =>
+            {
+                if (h.Replacement is null) { TextSelect(h.Block, h.Start, h.Length); _txMsg = "Langer Satz markiert – teile ihn an einer passenden Stelle."; return; }
+                Snapshot(); if (WritingAid.Apply(TextDocument, h)) { Changed(); _txMsg = "Geändert: " + h.Title; } else _txMsg = "Die Stelle hat sich inzwischen geändert.";
+            })));
+        if (SuggestionCard("text", items) is { } card) box.Children.Add(card);
+        return box;
+    }
 }
