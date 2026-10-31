@@ -1,0 +1,12 @@
+X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku [SKIP]
+  Übersprungen X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku [1 ms]
+SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt [SKIP]
+SYS-10-P08 (T-0244 getrennt): Scan → durchsuchbares PDF mit Tesseract [SKIP]
+  Übersprungen SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt [1 ms]
+  Übersprungen SYS-10-P08 (T-0244 getrennt): Scan → durchsuchbares PDF mit Tesseract [1 ms]
+--
+Bestanden!   : Fehler:     0, erfolgreich:   855, übersprungen:     3, gesamt:   858, Dauer: 45 s - Trendo.Core.Tests.dll (net10.0)
+  Wiederherzustellende Projekte werden ermittelt...
+  Alle Projekte sind für die Wiederherstellung auf dem neuesten Stand.
+--
+Bestanden!   : Fehler:     0, erfolgreich:    15, übersprungen:     0, gesamt:    15, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)

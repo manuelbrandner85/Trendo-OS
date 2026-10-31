@@ -8,7 +8,7 @@ namespace Trendo.Core.Tests;
 public class Sys10_Office
 {
     static string Tmp() { var d = Path.Combine(Path.GetTempPath(), "trendo-s10-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(d); return d; }
-    static string? Lo => Cli.Find("soffice") ?? Cli.Find("libreoffice");
+    static string? Lo => NeedsFactAttribute.Tool("libreoffice"); // wie Trendo suchen (PATH, Programme, Werkzeugordner)
     static string ToPdf(string docx)
     {
         var prof = Path.Combine(Path.GetTempPath(), "trendo-lo-" + Guid.NewGuid().ToString("N"));
@@ -55,14 +55,14 @@ public class Sys10_Office
         Assert.Equal(["d0.docx", "d1.docx", "d2.docx"], FileShelf.Recent([d], FileShelf.Office).Select(f => f.Name));
     }
 
-    [NeedsFact("soffice|libreoffice", DisplayName = "SYS-10-P01 (T-0244 getrennt): LibreOffice öffnet ein von Trendo erzeugtes DOCX")]
+    [NeedsFact("dep:libreoffice", DisplayName = "SYS-10-P01 (T-0244 getrennt): LibreOffice öffnet ein von Trendo erzeugtes DOCX")]
     public void NewAndRead_real()
     {
         var d = Tmp(); var docx = Path.Combine(d, "a.docx"); Ooxml.NewDocx(docx, "Titel <&>", ["Absatz 1", "Absatz 2"]);
         Assert.True(File.Exists(ToPdf(docx))); // LibreOffice öffnet die Datei
     }
 
-    [NeedsFact("soffice|libreoffice", DisplayName = "SYS-10-P05/P06: Seitenzahl und A4 eines echten LibreOffice-PDFs")]
+    [NeedsFact("dep:libreoffice", DisplayName = "SYS-10-P05/P06: Seitenzahl und A4 eines echten LibreOffice-PDFs")]
     public void PdfPages()
     {
         if (Lo is null) return;
@@ -71,7 +71,7 @@ public class Sys10_Office
         var na = Pdf.Pages(pa); Assert.True(na >= 2); Assert.Equal(1, Pdf.Pages(pb)); Assert.True(Pdf.IsA4(Pdf.MediaBox(pa)));
     }
 
-    [NeedsFact("soffice|libreoffice", "pdftotext", DisplayName = "SYS-10-P07: Text aus einem echten PDF")]
+    [NeedsFact("dep:libreoffice", "pdftotext", DisplayName = "SYS-10-P07: Text aus einem echten PDF")]
     public void Text()
     {
         if (Lo is null || Cli.Find("pdftotext") is null) return;
@@ -79,13 +79,13 @@ public class Sys10_Office
         var (ok, t, _) = PdfText.Extract(pdf, Cli.Find("pdftotext"), null, null); Assert.True(ok); Assert.Contains("4711", t);
     }
 
-    [NeedsFact("soffice|libreoffice", "qpdf|pdfunite", DisplayName = "SYS-10-P17 (T-0244 getrennt): PDF zusammenfügen = Summe der Seiten, Teilen stimmt")]
+    [NeedsFact("dep:libreoffice", "dep:qpdf|pdfunite", DisplayName = "SYS-10-P17 (T-0244 getrennt): PDF zusammenfügen = Summe der Seiten, Teilen stimmt")]
     public void PdfMergeSplit()
     {
         var d = Tmp(); var a = Path.Combine(d, "a.docx"); Ooxml.NewDocx(a, "A", Enumerable.Range(0, 120).Select(i => "Zeile " + i)); var pa = ToPdf(a);
         var b = Path.Combine(d, "b.docx"); Ooxml.NewDocx(b, "B", ["x"]); var pb = ToPdf(b);
         var na = Pdf.Pages(pa);
-        var unite = Cli.Find("pdfunite"); var sep = Cli.Find("pdfseparate"); var qpdf = Cli.Find("qpdf");
+        var unite = Cli.Find("pdfunite"); var sep = Cli.Find("pdfseparate"); var qpdf = NeedsFactAttribute.Tool("qpdf");
         var o = Path.Combine(d, "m.pdf"); var (exe, args) = Pdf.MergeCmd(qpdf, unite, [pa, pb], o); Cli.Run(exe, args);
         Assert.Equal(na + 1, Pdf.Pages(o));
         var s = Path.Combine(d, "s.pdf"); (exe, args) = Pdf.ExtractCmd(qpdf, sep, o, 2, 2, s); Cli.Run(exe, args);
@@ -93,11 +93,11 @@ public class Sys10_Office
         Assert.Throws<InvalidOperationException>(() => Pdf.MergeCmd(null, null, [pa], o)); Assert.Equal((2, 5), Pdf.ParseRange("2-5")); Assert.Throws<ArgumentException>(() => Pdf.ParseRange("x"));
     }
 
-    [NeedsFact("soffice|libreoffice", "pdftotext", "tesseract", "pdftoppm", DisplayName = "SYS-10-P08 (T-0244 getrennt): Scan → durchsuchbares PDF mit Tesseract")]
+    [NeedsFact("dep:libreoffice", "pdftotext", "dep:tesseract", "pdftoppm", DisplayName = "SYS-10-P08 (T-0244 getrennt): Scan → durchsuchbares PDF mit Tesseract")]
     public void ScanOcr()
     {
         var d = Tmp(); var a = Path.Combine(d, "a.docx"); Ooxml.NewDocx(a, "Rechnung Nummer 4711", ["Betrag 12,50 Euro"]); var pdf = ToPdf(a);
-        var tess = Cli.Find("tesseract")!; var ppm = Cli.Find("pdftoppm")!;
+        var tess = NeedsFactAttribute.Tool("tesseract")!; var ppm = Cli.Find("pdftoppm")!;
         Cli.Run(ppm, ["-r", "150", "-png", "-singlefile", pdf, Path.Combine(d, "scan")]);
         var ob = Path.Combine(d, "scan-durchsuchbar"); Cli.Run(tess, PdfText.ScanToPdfArgs(Path.Combine(d, "scan.png"), ob, "eng", null), timeoutMs: 120000);
         Assert.Contains("4711", PdfText.Extract(ob + ".pdf", Cli.Find("pdftotext"), null, null).Text);
@@ -176,7 +176,7 @@ public class Sys10_Office
         var t = Assert.Single(DocVersions.Templates(d)); Assert.Equal(2, t.Version); Assert.EndsWith("Rechnung-v002.txt", t.File);
     }
 
-    [NeedsFact("soffice|libreoffice", "pdfinfo", DisplayName = "SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt")]
+    [NeedsFact("dep:libreoffice", "pdfinfo", DisplayName = "SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt")]
     public void StripMeta_real()
     {
         var d = Tmp();

@@ -18,3 +18,9 @@
 - **Blender (geklärt):** Der Test suchte Blender nur im PATH; dort ist Blender auf dem Test-PC nicht eingetragen. Vor T-0244 „bestand“ er deshalb immer still, ohne Blender zu starten. Die gegenteilige Beobachtung im ersten Bericht war ein Fehler meiner gezielten Prüfung (Filter traf die Testklasse nicht). Behoben: `NeedsFact("dep:blender")` und der Test suchen jetzt wie Trendo (PATH, `%ProgramFiles%\Blender Foundation\*`, Werkzeugordner). Ergebnis: Test läuft mit echtem Blender 5.2 und ist grün – `reports/T-0244/blender-echt.log`, SHA-256 `411872c3d5b1cdc8e98afef3368f58becda5a13dcedb0efc5a6864f950888f69`.
 - LibreOffice/Tesseract-Tests suchen weiterhin nur im PATH; Trendo selbst findet die Programme auch im Werkzeugordner. Gleiche Umstellung möglich (eigener Schritt).
 - Weitere stille Abbrüche mit anderem Muster (z. B. `if (!ok) return;`) wurden nicht gesucht.
+
+## Nachtrag 31.10.2026 – LibreOffice/Tesseract/qpdf wie Trendo suchen
+- `Sys10Tests` und `LetterQaTests` nutzen `NeedsFact("dep:…")` und `NeedsFactAttribute.Tool(…)` für LibreOffice, Tesseract und qpdf (PATH, Programme, Trendo-Werkzeugordner).
+- Ergebnis: Core 855 bestanden / 3 übersprungen (vorher 848 / 10), Api 15/15 – `reports/T-0244/core-api-nach-umstellung.log`, SHA-256 `faecd2dc8b0b68e5a0b4cfe466f983f8cb53701e91a6767cc24f10d976021af9`. Die LibreOffice-, qpdf- und Tesseract-Tests laufen jetzt mit den Programmen aus dem Werkzeugordner und sind grün.
+- Weiter übersprungen: BlueZ (nur Linux), zwei Tests mit Poppler-Werkzeugen (`pdfinfo`, `pdftoppm`), die nicht zu Trendo gehören.
+- App-Tests wurden für diesen Nachtrag nicht erneut ausgeführt (keine App-Tests geändert).

@@ -69,10 +69,10 @@ public class LetterQa : IDisposable
         Assert.Contains("150,00 €", lost); Assert.Contains("31.12.2026", lost);
     }
 
-    [NeedsFact("/usr/bin/soffice|C:\\Program Files\\LibreOffice\\program\\soffice.exe", DisplayName = "LTR-QA-002/004 / LETTER-003/016: DOCX real mit LibreOffice zu PDF und ODT; A4, 1 Seite, Hash im Protokoll")]
+    [NeedsFact("dep:libreoffice", DisplayName = "LTR-QA-002/004 / LETTER-003/016: DOCX real mit LibreOffice zu PDF und ODT; A4, 1 Seite, Hash im Protokoll")]
     public async Task Qa002_004()
     {
-        var soffice = new[] { "/usr/bin/soffice", @"C:\Program Files\LibreOffice\program\soffice.exe" }.FirstOrDefault(File.Exists);
+        var soffice = NeedsFactAttribute.Tool("libreoffice");
         if (soffice is null) return; // auf Rechnern ohne LibreOffice: wird im PC-Lauf belegt
         var c = Ready(); var docx = Path.Combine(_store.Dir(c.Id), "brief.docx");
         Letters.WriteDocx(c.Draft, docx);
@@ -255,11 +255,11 @@ public class LetterQa : IDisposable
 
 public class LetterOcrReal
 {
-    [NeedsFact("/usr/bin/tesseract|C:\\Program Files\\Tesseract-OCR\\tesseract.exe", "/usr/bin/soffice|C:\\Program Files\\LibreOffice\\program\\soffice.exe", DisplayName = "LETTER-012: Echte Tesseract-Texterkennung eines gerenderten Briefs (deu), unsichere Wörter markiert, Sprachpaket per Hash geprüft")]
+    [NeedsFact("dep:tesseract", "dep:libreoffice", DisplayName = "LETTER-012: Echte Tesseract-Texterkennung eines gerenderten Briefs (deu), unsichere Wörter markiert, Sprachpaket per Hash geprüft")]
     public async Task Real_ocr()
     {
-        var tess = new[] { "/usr/bin/tesseract", @"C:\Program Files\Tesseract-OCR\tesseract.exe" }.FirstOrDefault(File.Exists);
-        var soffice = new[] { "/usr/bin/soffice", @"C:\Program Files\LibreOffice\program\soffice.exe" }.FirstOrDefault(File.Exists);
+        var tess = NeedsFactAttribute.Tool("tesseract");
+        var soffice = NeedsFactAttribute.Tool("libreoffice");
         if (tess is null || soffice is null) return;
         var root = Path.Combine(Path.GetTempPath(), "trendo-ocr-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(root);
         var audit = new AuditLog(Path.Combine(root, "a.jsonl"));
