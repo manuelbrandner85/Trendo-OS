@@ -179,7 +179,11 @@ public partial class MainWindow
         bar.Children.Add(B("pdf-double", _pdfDouble ? "Einzelseite" : "Doppelseite", () => _pdfDouble = !_pdfDouble));
         bar.Children.Add(B("pdf-rotate-view", "Ansicht drehen ⟳", () => _pdfRot = (_pdfRot + 90) % 360));
         bar.Children.Add(B("pdf-fullscreen", WindowState == WindowState.FullScreen ? "Vollbild aus" : "Vollbild", () => WindowState = WindowState == WindowState.FullScreen ? WindowState.Normal : WindowState.FullScreen));
+        var org = B("pdf-organize-start", _pdfOrg is null ? "▦ Seiten ordnen" : "▦ Ordnen beenden", () => { if (_pdfOrg is null) PdfOrgStart(); else { _pdfOrg = null; _pdfOrgSel.Clear(); } }); if (_pdfOrg is not null) org.Background = Accent;
+        if (_pdfOrg is not null) bar.Children.Clear(); // beim Ordnen zählen nur die Ordnen-Werkzeuge
+        bar.Children.Insert(0, org);
         Grid.SetRow(bar, 1); Grid.SetColumnSpan(bar, 2); root.Children.Add(bar);
+        if (_pdfOrg is not null) { var ov = PdfOrganizeView(); Grid.SetRow(ov, 2); Grid.SetColumnSpan(ov, 2); root.Children.Add(ov); return root; }
 
         // Seitenleiste: Suche, Lesezeichen, Markieren, Werkzeuge, Formular
         var side = new StackPanel { Spacing = 6, Margin = new Thickness(0, 0, 10, 0) };
@@ -338,7 +342,8 @@ public partial class MainWindow
             pagesRow.Children.Add(new Border { BoxShadow = BoxShadows.Parse("0 4 18 0 #66000000"), Child = new Grid { Children = { img, canvas } } });
         }
         var view = new ScrollViewer { Name = "pdf-view", Content = pagesRow, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
-        Grid.SetRow(view, 2); Grid.SetColumn(view, 1); root.Children.Add(view);
+        var viewGrid = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { PdfThumbStrip(), Pos(view, 1) } };
+        Grid.SetRow(viewGrid, 2); Grid.SetColumn(viewGrid, 1); root.Children.Add(viewGrid);
         return root;
     }
 
