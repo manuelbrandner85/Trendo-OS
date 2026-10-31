@@ -1,6 +1,6 @@
 # Übersicht – Architektur
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.28 (Stand c3fd776)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.28 (Stand c95b269)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Helfer.cs`
@@ -24,14 +24,14 @@ Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `a
 ## Fach-Engine (Trendo.Core)
 - `ProgCalc`
 - `TextFileCodec`
+- `Notebook`
 - `Calc`
 - `Zettel`
 - `ArchiveConflict`
+- `NoteText`
 - `FfmpegJobs`
 - `ResourceMonitor`
-- `Notebook`
 - `Renamer`
-- `WorldClock`
 
 ## Dateiformate (im Code belegt)
 - .csv
