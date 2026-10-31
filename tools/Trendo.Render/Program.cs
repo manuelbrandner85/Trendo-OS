@@ -142,6 +142,13 @@ else if (shot == "seite")
         if (arch.Contains("3d")) win.ArchToggle3D();
         win.Show(page);
     }
+    if (page == "elektronik" && Environment.GetEnvironmentVariable("TRENDO_EK") is { Length: > 0 } ek) // Schaltung: Bauteil wählen, Simulation laufen lassen
+    {
+        var circ = Trendo.Core.Elektro.Circuit.From(win.ProgramActive(page)!.Data);
+        win.CircuitState.Selected = circ.Parts.FirstOrDefault(x => x.Kind == ek)?.Id;
+        for (var k = 0; k < 10; k++) win.CircuitAdvance(0.02);
+        win.Show(page);
+    }
     if (page == "ki-bibliothek" && Enum.TryParse<KiKind>(Environment.GetEnvironmentVariable("TRENDO_KIKIND"), out var kind)) win.KiLibraryShow(kind); // Art der KI-Bibliothek
 }
 else if (shot == "brief")

@@ -15,7 +15,6 @@ public partial class MainWindow
 {
     const string TK = "technik";
     public readonly FrameViewState FrameState = new();
-    private readonly Dictionary<string, string> _calcIn = [];
 
     static readonly (string Id, string Label, string Glyph, string Tip)[] FrameTools =
     [
@@ -243,38 +242,21 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 10 };
         var mats = Engineering.Materials.Select(x => x.Name).ToArray();
-        void Calc(string id, string title, (string Key, string Label, string Def, string[]? Options)[] fields, Func<Func<string, string>, string> run)
-        {
-            var box = new StackPanel { Spacing = 3 };
-            box.Children.Add(new TextBlock { Text = title, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold });
-            var output = new SelectableTextBlock { Name = id + "-out", Foreground = Brush.Parse("#7FD3FF"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
-            string V(string k) => _calcIn.TryGetValue(id + "-" + k, out var v) ? v : fields.First(f => f.Key == k).Def;
-            void Update() { try { output.Text = run(V); } catch (Exception ex) when (ex is ArgumentException or FormatException or InvalidOperationException or KeyNotFoundException or DivideByZeroException) { output.Text = "⚠ " + ex.Message; } }
-            foreach (var (key, label, def, options) in fields)
-            {
-                var k = id + "-" + key; Control input;
-                if (options is not null) { var c = new ComboBox { Name = k, ItemsSource = options, SelectedItem = options.FirstOrDefault(o => o == V(key)) ?? options.FirstOrDefault(o => o.Contains(V(key), StringComparison.OrdinalIgnoreCase)), Width = 150 }; c.SelectionChanged += (_, _) => { if (c.SelectedItem is string s) { _calcIn[k] = s; Update(); } }; input = c; }
-                else { var t = new TextBox { Name = k, Text = V(key), Width = 150 }; t.TextChanged += (_, _) => { _calcIn[k] = t.Text ?? ""; Update(); }; input = t; }
-                box.Children.Add(Row(P(label, null, 11), input));
-            }
-            box.Children.Add(output); Update();
-            sp.Children.Add(new Border { Name = id, Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(8), BorderBrush = Edge, BorderThickness = new Thickness(1), Child = box });
-        }
-        Calc("eng-heat", "Wärmedehnung", [("mat", "Werkstoff", "Aluminium 6060", mats), ("len", "Länge (m)", "3", null), ("dt", "Erwärmung (°C)", "40", null)],
+        LiveCalc(sp, "eng-heat", "Wärmedehnung", [("mat", "Werkstoff", "Aluminium 6060", mats), ("len", "Länge (m)", "3", null), ("dt", "Erwärmung (°C)", "40", null)],
             v => { var m = Engineering.Mat(v("mat")); return $"{Fach.F(Engineering.ThermalExpansion(m, Fach.Num(v("len")), Fach.Num(v("dt"))), 2)} mm länger"; });
-        Calc("eng-unit", "Einheiten umrechnen", [("v", "Wert", "100", null), ("from", "von", "psi", MainWindow.FachChoices["eng-unit-from"]), ("to", "nach", "bar", MainWindow.FachChoices["eng-unit-to"])],
+        LiveCalc(sp, "eng-unit", "Einheiten umrechnen", [("v", "Wert", "100", null), ("from", "von", "psi", MainWindow.FachChoices["eng-unit-from"]), ("to", "nach", "bar", MainWindow.FachChoices["eng-unit-to"])],
             v => $"{v("v")} {v("from")} = {Fach.F(Engineering.Convert(Fach.Num(v("v")), v("from"), v("to")), 4)} {v("to")}");
-        Calc("eng-bolt", "Schraube anziehen", [("size", "Größe", "M8", MainWindow.FachChoices["eng-bolt-size"]), ("grade", "Klasse", "8.8", MainWindow.FachChoices["eng-bolt-grade"])],
+        LiveCalc(sp, "eng-bolt", "Schraube anziehen", [("size", "Größe", "M8", MainWindow.FachChoices["eng-bolt-size"]), ("grade", "Klasse", "8.8", MainWindow.FachChoices["eng-bolt-grade"])],
             v => { var b = EngineeringPlus.Bolt(v("size"), v("grade")); return $"Anzugsmoment {Fach.F(b.Nm, 1)} Nm · Vorspannkraft ca. {Fach.F(b.KN, 1)} kN"; });
-        Calc("eng-spring", "Druckfeder (mm, N)", [("d", "Draht-Ø", "2", null), ("dm", "mittlerer Ø", "20", null), ("n", "Windungen", "8", null), ("f", "Kraft (N)", "50", null)],
+        LiveCalc(sp, "eng-spring", "Druckfeder (mm, N)", [("d", "Draht-Ø", "2", null), ("dm", "mittlerer Ø", "20", null), ("n", "Windungen", "8", null), ("f", "Kraft (N)", "50", null)],
             v => { var r = EngineeringPlus.Spring(Fach.Num(v("d")), Fach.Num(v("dm")), Fach.Num(v("n")), Fach.Num(v("f"))); return $"Federrate {Fach.F(r.RateNmm, 2)} N/mm → Weg {Fach.F(r.TravelMm, 1)} mm"; });
-        Calc("eng-gear", "Zahnräder", [("z1", "Zähne Antrieb", "12", null), ("z2", "Zähne Abtrieb", "36", null), ("n", "Drehzahl (U/min)", "1500", null), ("m", "Drehmoment (Nm)", "2", null)],
+        LiveCalc(sp, "eng-gear", "Zahnräder", [("z1", "Zähne Antrieb", "12", null), ("z2", "Zähne Abtrieb", "36", null), ("n", "Drehzahl (U/min)", "1500", null), ("m", "Drehmoment (Nm)", "2", null)],
             v => { var g = EngineeringPlus.Gears((int)Fach.Num(v("z1")), (int)Fach.Num(v("z2")), Fach.Num(v("n")), Fach.Num(v("m"))); return $"Übersetzung {Fach.F(g.Ratio, 2)} : 1 → {Fach.F(g.Rpm2, 0)} U/min, {Fach.F(g.Torque2, 2)} Nm"; });
-        Calc("eng-torsion", "Welle verdrehen (Stahl)", [("t", "Drehmoment (Nm)", "50", null), ("d", "Ø (mm)", "20", null), ("len", "Länge (m)", "0,5", null)],
+        LiveCalc(sp, "eng-torsion", "Welle verdrehen (Stahl)", [("t", "Drehmoment (Nm)", "50", null), ("d", "Ø (mm)", "20", null), ("len", "Länge (m)", "0,5", null)],
             v => { var r = EngineeringPlus.Torsion(Fach.Num(v("t")), Fach.Num(v("d")), Fach.Num(v("len"))); return $"Schubspannung {Fach.F(r.Tau, 1)} N/mm² · Verdrehung {Fach.F(r.PhiDeg, 2)}°"; });
-        Calc("eng-u", "Wärmeverlust einer Wand", [("layers", "Schichten (m×λ | …)", "0,015x0,7 | 0,24x0,5 | 0,12x0,035", null), ("a", "Fläche (m²)", "10", null), ("dt", "Temperaturunterschied (K)", "30", null)],
+        LiveCalc(sp, "eng-u", "Wärmeverlust einer Wand", [("layers", "Schichten (m×λ | …)", "0,015x0,7 | 0,24x0,5 | 0,12x0,035", null), ("a", "Fläche (m²)", "10", null), ("dt", "Temperaturunterschied (K)", "30", null)],
             v => { var l = v("layers").Split('|').Select(x => x.ToLowerInvariant().Replace('×', 'x').Split('x')).Select(x => x.Length == 2 ? (Fach.Num(x[0], "Dicke"), Fach.Num(x[1], "λ")) : throw new FormatException("Schicht bitte als „0,24x0,5“.")); var r = EngineeringPlus.UValue(l, Fach.Num(v("a")), Fach.Num(v("dt"))); return $"U-Wert {Fach.F(r.U, 3)} W/(m²K) → {Fach.F(r.Watt, 0)} W{(r.U <= 0.24 ? " ✓ Neubau-Niveau" : "")}"; });
-        Calc("eng-mass", "Wie schwer? (Quader, mm)", [("x", "Länge", "1000", null), ("y", "Breite", "100", null), ("z", "Dicke", "10", null), ("mat", "Werkstoff", "Aluminium 6060", mats)],
+        LiveCalc(sp, "eng-mass", "Wie schwer? (Quader, mm)", [("x", "Länge", "1000", null), ("y", "Breite", "100", null), ("z", "Dicke", "10", null), ("mat", "Werkstoff", "Aluminium 6060", mats)],
             v => $"{Fach.F(EngineeringPlus.MassKg(Engineering.Mat(v("mat")), Fach.Num(v("x")) * Fach.Num(v("y")) * Fach.Num(v("z"))), 2)} kg");
         return sp;
     }

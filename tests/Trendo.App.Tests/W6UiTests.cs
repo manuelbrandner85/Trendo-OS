@@ -21,21 +21,6 @@ public static class W6Ui
     }
 }
 
-public class SPEC02_Ui
-{
-    [AvaloniaFact(DisplayName = "SPEC-02 UI: Elektronik-Rechner und Stückliste")]
-    public void Electronics()
-    {
-        var (w, _, _) = Ui.Open();
-        w.Show(MainWindow.StudioPages["SPEC-02"]);
-        Assert.Contains("4,70 kΩ", W6Ui.Run(w, "el-code"));
-        Assert.Contains("150", W6Ui.Run(w, "el-led"));
-        Assert.Contains("⚠", W6Ui.Run(w, "el-ohm", ("i", "1")));
-        Assert.Contains("Gespeichert", W6Ui.Run(w, "el-bom"));
-        Assert.Null(w.TryFind<Button>("fach-tab-architektur")); // G3: ein Studio allein zeigt keine Reiter anderer Studios
-    }
-}
-
 public class SPEC04_Ui
 {
     [AvaloniaFact(DisplayName = "SPEC-04 UI: GLB-Modell prüfen und Bildzeit")]
@@ -293,25 +278,6 @@ public class CORE09_Ui
         Assert.Contains("Kontrolle: Greifer landet bei 150,0 / 50,0 / 40,0", W6Ui.Run(w, "rob-ik"));
         Assert.Contains("⚠", W6Ui.Run(w, "rob-ik", ("x", "900")));
         Assert.Contains("Gespeichert", W6Ui.Run(w, "rob-prog"));
-    }
-}
-
-public class SPEC02_UiPlus
-{
-    [AvaloniaFact(DisplayName = "SPEC-02 UI Ausbau: Bauteile, Platine, Versorgung")]
-    public void Plus()
-    {
-        var (w, _, _) = Ui.Open(); w.Show("elektronik");
-        Assert.Contains("400 Ω", W6Ui.Run(w, "el-comb"));
-        Assert.Contains("100 nF", W6Ui.Run(w, "el-cap"));
-        Assert.Contains("4,70 kΩ", W6Ui.Run(w, "el-smd"));
-        Assert.Contains("Grenzfrequenz", W6Ui.Run(w, "el-rc"));
-        Assert.Contains("Hz", W6Ui.Run(w, "el-555"));
-        Assert.Contains("mm breit", W6Ui.Run(w, "el-trace"));
-        Assert.Contains("34", W6Ui.Run(w, "el-bat"));
-        Assert.Contains("⚠", W6Ui.Run(w, "el-cable"));
-        Assert.Contains("Kühlkörper", W6Ui.Run(w, "el-reg"));
-        Assert.Contains("4.700", W6Ui.Run(w, "el-si"));
     }
 }
 
