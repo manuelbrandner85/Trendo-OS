@@ -1,0 +1,2 @@
+e936dcbd7639f1a7058d0cfab6157ff95fc7794646b1d454fb82e2afccf04bc3 *dotnet.log
+68693e4ccfc9bb668458d51a4ead8fba3280abb46291ec8cda5a3debbf992cfd *py.log
