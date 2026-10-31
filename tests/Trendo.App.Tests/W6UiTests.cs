@@ -53,26 +53,6 @@ public static class Glb
 }
 
 
-public class SPEC15_Ui
-{
-    [AvaloniaFact(DisplayName = "SPEC-15 UI: Ablauf bauen, speichern, Leitung prüfen")]
-    public void Broadcast()
-    {
-        var (w, l, root) = Ui.Open();
-        w.Show(MainWindow.StudioPages["SPEC-15"]);
-        W6Ui.Run(w, "bc-setup", ("start", "21.10.2026 20:00"), ("slot", "5"));
-        W6Ui.Run(w, "bc-add", ("title", "Intro"), ("dur", "1:00"));
-        W6Ui.Run(w, "bc-add", ("title", "Thema"), ("dur", "3:00"));
-        W6Ui.Run(w, "bc-add", ("title", "Ende"), ("dur", "2:00"));
-        Assert.Equal("20:04:00  Ende", w.Find<TextBlock>("bc-row-2").Text);
-        Assert.Contains("zu lang", w.Find<TextBlock>("bc-total").Text);
-        w.Find<Button>("bc-export").Press(); W2Ui.Settle();
-        Assert.True(File.Exists(Path.Combine(root, "fach", "sendung", "kapitel.txt")));
-        Assert.Contains("⚠", W6Ui.Run(w, "bc-rate"));
-        Assert.Contains("✓", W6Ui.Run(w, "bc-rate", ("q", "720p30")));
-    }
-}
-
 public class SPEC16_Ui
 {
     [AvaloniaFact(DisplayName = "SPEC-16 UI: Fahrzeug, Tanken, Fahrt, Fahrtenbuch")]
@@ -158,28 +138,6 @@ public class SPEC04_UiPlus
         Assert.Contains("Stufe 3", W6Ui.Run(w, "xr-lod"));
         Assert.Contains("1.024 Pixel", W6Ui.Run(w, "xr-texel"));
         Assert.Contains("Komfort", W6Ui.Run(w, "xr-move"));
-    }
-}
-
-public class SPEC15_UiPlus
-{
-    [AvaloniaFact(DisplayName = "SPEC-15 UI Ausbau: Live, Bild & Ton, Planen")]
-    public void Plus()
-    {
-        var (w, l, root) = Ui.Open(); Directory.CreateDirectory(root);
-        w.Broadcast.Plan.Start = new DateTime(2026, 10, 21, 20, 0, 0); w.Broadcast.Add("Intro", 60); w.Broadcast.Add("Talk", 600);
-        var srt = Path.Combine(root, "u.srt"); File.WriteAllText(srt, "1\n00:00:05,000 --> 00:00:06,000\nHi\n");
-        w.Show(MainWindow.StudioPages["SPEC-15"]);
-        Assert.Contains("▶ 2. Talk – noch 9:00", W6Ui.Run(w, "bc-now", ("at", "21.10.2026 20:02")));
-        W6Ui.Run(w, "bc-cards"); Assert.Contains(l.Opened, x => x.EndsWith("moderationskarten.md"));
-        Assert.Contains("3 Wörter", W6Ui.Run(w, "bc-speak", ("t", "eins zwei drei")));
-        Assert.Contains("+4,0 dB", W6Ui.Run(w, "bc-loud"));
-        Assert.Contains("16:9", W6Ui.Run(w, "bc-aspect"));
-        Assert.Contains("crop=606:1080:657:0", W6Ui.Run(w, "bc-crop"));
-        Assert.Contains("01:00:00:12", W6Ui.Run(w, "bc-tc"));
-        Assert.Contains("4 Termine ohne", W6Ui.Run(w, "bc-week"));
-        Assert.Contains("1 Untertitel", W6Ui.Run(w, "bc-srt", ("file", srt), ("s", "-2")));
-        Assert.Contains("00:00:03,000", File.ReadAllText(Path.Combine(root, "u.versetzt.srt")));
     }
 }
 

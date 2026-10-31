@@ -158,6 +158,12 @@ else if (shot == "seite")
         win.Learn.Import("Englisch", "Hund;dog\nKatze;cat\nHaus;house\nBaum;tree\nApfel;apple\nBuch;book"); win.LearnMode = lm == "auf" ? "lernen" : lm; win.LearnDeck = "Englisch";
         if (lm == "auf") win.LearnReveal(); else win.Show(page);
     }
+    if (page == "sendung" && Environment.GetEnvironmentVariable("TRENDO_BC") is { Length: > 0 } bcMode) // Sendeablauf mit Beispielablauf
+    {
+        win.Broadcast.Plan.Show = "Abendmagazin"; win.Broadcast.Plan.Start = DateTime.Now.AddMinutes(-3); win.Broadcast.Plan.SlotMinutes = 30;
+        foreach (var (t, sec, n) in new[] { ("Begrüßung", 90, "Kamera 1"), ("Nachrichten", 300, "Einspieler"), ("Gast im Studio: Erika Muster", 600, "Kamera 2, Ansteckmikro"), ("Musik", 240, ""), ("Wetter", 120, "Grafik"), ("Verabschiedung", 60, "") }) win.Broadcast.Add(t, sec, n);
+        win.BcMode = bcMode; win.Show(page);
+    }
     if (page == "zwilling" && Environment.GetEnvironmentVariable("TRENDO_TWIN") is { Length: > 0 }) // Anlagen-Monitor mit Beispielanlagen
     {
         Trendo.Core.TwinDemo.Seed(win.Twin, DateTime.Now); win.TwinSelect("Kühlraum", "Temperatur");

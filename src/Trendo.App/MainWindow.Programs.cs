@@ -72,7 +72,7 @@ public partial class MainWindow
             Say(ok && AppPath(appId) is not null ? $"{a.Name} ist eingerichtet – „In {a.Name} öffnen“ geht jetzt." : $"{a.Name} konnte nicht eingerichtet werden. Unter „Programme“ kannst du es erneut versuchen.", page);
         }, true);
         var no = Act($"setup-no-{id}", "Abbrechen", () => { _appAsk.Remove(id); _core.Audit.Append(Principal.LocalOwner.Name, "deps.declined", c?.Id ?? appId); Show(page); });
-        return new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { q, yes, no } };
+        return new WrapPanel { ItemSpacing = 6, LineSpacing = 4, Children = { q, yes, no } };
     }
 
     /// <summary>Prüfung zuerst. Erst danach die einmalige Freigabe. Ohne bestandene Prüfung kein Start und kein Download.</summary>
@@ -102,7 +102,7 @@ public partial class MainWindow
                 }
                 Say(MitFreigabeOeffnen(appId, a.Name, args).Hinweis, page);
             });
-            return new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { probe, open } };
+            return new WrapPanel { ItemSpacing = 6, LineSpacing = 4, Children = { probe, open } }; // T-0267: bricht in schmalen Spalten um
         }
         if (!_appAsk.Contains(id))
             return Act($"setup-{id}", $"{a.Name} einrichten …", () => { _appAsk.Add(id); Show(page); });
@@ -114,7 +114,7 @@ public partial class MainWindow
             Say(Gesperrt("Zuerst „Verbindung prüfen“. Es ist nichts installiert."), page);
         }, true);
         var no = Act($"setup-no-{id}", "Abbrechen", () => { _appAsk.Remove(id); _core.Audit.Append(Principal.LocalOwner.Name, "deps.declined", c?.Id ?? appId); Show(page); });
-        return new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { q, yes, no } };
+        return new WrapPanel { ItemSpacing = 6, LineSpacing = 4, Children = { q, yes, no } };
     }
 
     private static string Gesperrt(string hinweis) => hinweis + " Nichts geöffnet, nichts heruntergeladen.";

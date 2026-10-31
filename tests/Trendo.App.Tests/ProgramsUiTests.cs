@@ -103,7 +103,7 @@ public class T0203_Programme_Ui
         w.ObsPruefungWieWindows = false;
         w.AppPathOverride = id => "/fake/" + id; w.ObsDirOverride = Path.Combine(root, "obs");
         w.Show("sendung"); Settle();
-        RealClick(w, B(w, "bc-add-run"));
+        w.Broadcast.Add("Begrüßung", 120); w.Show("sendung"); Settle(); // T-0267: Ablauf als Tabelle
         var n = l.Opened.Count;
         RealClick(w, B(w, "probe-obs-sendung"));
         Settle();
@@ -128,7 +128,7 @@ public class T0203_Programme_Ui
         w.AppPathOverride = id => "/fake/" + id;
         w.ObsDirOverride = Path.Combine(root, "obs");
         w.Show("sendung"); Settle();
-        RealClick(w, B(w, "bc-add-run"));
+        w.Broadcast.Add("Begrüßung", 120); w.Show("sendung"); Settle(); // T-0267: Ablauf als Tabelle
         RealClick(w, B(w, "probe-obs-sendung"));
         Settle();
         Assert.Empty(runner.Calls);
@@ -149,7 +149,7 @@ public class T0203_Programme_Ui
         w.AppPathOverride = id => "/fake/" + id;
         w.ObsDirOverride = Path.Combine(root, "obs");
         w.Show("sendung"); Settle();
-        RealClick(w, B(w, "bc-add-run"));
+        w.Broadcast.Add("Begrüßung", 120); w.Show("sendung"); Settle(); // T-0267: Ablauf als Tabelle
         var n = l.Opened.Count;
         RealClick(w, B(w, "probe-obs-sendung"));
         Settle();
