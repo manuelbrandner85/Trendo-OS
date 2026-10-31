@@ -38,7 +38,7 @@ public partial class MainWindow
         var roles = new WrapPanel();
         foreach (var r in AgentCenter.Roles)
         {
-            var b = new Button { Name = "role-" + r.Id, Content = r.Name, Margin = new Thickness(0, 0, 6, 6), Background = _agentRole == r.Id ? Accent : null };
+            var b = new Button { Name = "role-" + r.Id, Content = r.Name, Margin = new Thickness(0, 0, 6, 6), Background = _agentRole == r.Id ? Accent : Brushes.Transparent };
             ToolTip.SetTip(b, r.Does);
             b.Click += (_, _) => { _agentRole = r.Id; Show("ki-rollen"); };
             roles.Children.Add(b);

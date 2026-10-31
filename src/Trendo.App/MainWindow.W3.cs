@@ -26,7 +26,7 @@ public partial class MainWindow
         var row = new WrapPanel();
         foreach (var (k, l) in SysTabs.Where(t => _showMap.ContainsKey(t.Key) && OwnTab(t.Key)))
         {
-            var b = new Button { Name = "sys-tab-" + k, Content = l, Margin = new Thickness(0, 0, 6, 6), Background = CurrentView == k ? Accent : null };
+            var b = new Button { Name = "sys-tab-" + k, Content = l, Margin = new Thickness(0, 0, 6, 6), Background = CurrentView == k ? Accent : Brushes.Transparent };
             b.Click += (_, _) => Show(k); row.Children.Add(b);
         }
         return TabsOrNothing(row);

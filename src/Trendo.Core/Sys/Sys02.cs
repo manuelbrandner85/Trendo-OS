@@ -411,6 +411,22 @@ public sealed class Calendar(string dataRoot)
     public void Add(CalEvent e) { var l = J.Load<CalEvent>(F); l.RemoveAll(x => x.Uid == e.Uid); l.Add(e); J.Save(F, l); }
     public void Delete(string uid) { var l = J.Load<CalEvent>(F); l.RemoveAll(x => x.Uid == uid); J.Save(F, l); }
     public int ImportFile(string ics) => ImportText(File.ReadAllText(ics)).Events;
+    public CalEvent? Get(string uid) => J.Load<CalEvent>(F).FirstOrDefault(e => e.Uid == uid);
+    /// <summary>Auf ein Raster runden (Standard 15 Minuten).</summary>
+    public static DateTime Snap(DateTime t, int minutes = 15) => new(t.Ticks / TimeSpan.TicksPerMinute / minutes * minutes * TimeSpan.TicksPerMinute + (t.Ticks / TimeSpan.TicksPerMinute % minutes * 2 >= minutes ? minutes * TimeSpan.TicksPerMinute : 0));
+    /// <summary>Termin verschieben (bei Wiederholungen die ganze Reihe), Dauer bleibt.</summary>
+    public CalEvent Shift(string uid, TimeSpan by)
+    {
+        var e = Get(uid) ?? throw new InvalidOperationException("Diesen Termin gibt es nicht mehr.");
+        var n = e with { Start = e.Start + by, End = e.End + by }; Add(n); return n;
+    }
+    /// <summary>Ende setzen – mindestens 15 Minuten nach dem Beginn.</summary>
+    public CalEvent SetEnd(string uid, DateTime end)
+    {
+        var e = Get(uid) ?? throw new InvalidOperationException("Diesen Termin gibt es nicht mehr.");
+        if (end < e.Start.AddMinutes(15)) end = e.Start.AddMinutes(15);
+        var n = e with { End = end }; Add(n); return n;
+    }
     public void ExportFile(string ics) => File.WriteAllText(ics, Ics.Export(All(), Todos()));
 
     /// <summary>Termine und Aufgaben aus ICS übernehmen (gleiche UID wird ersetzt).</summary>

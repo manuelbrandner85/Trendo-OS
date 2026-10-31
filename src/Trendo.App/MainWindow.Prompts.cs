@@ -29,7 +29,7 @@ public partial class MainWindow
         var row = new WrapPanel();
         foreach (var t in Prompts.All())
         {
-            var b = new Button { Name = "prompt-" + t.Id, Content = t.Name, Margin = new Thickness(0, 0, 6, 6), Background = _promptSel == t.Id ? Accent : null };
+            var b = new Button { Name = "prompt-" + t.Id, Content = t.Name, Margin = new Thickness(0, 0, 6, 6), Background = _promptSel == t.Id ? Accent : Brushes.Transparent };
             ToolTip.SetTip(b, t.Category);
             b.Click += (_, _) => { _promptSel = t.Id; _promptEdit = false; _promptVals.Clear(); _promptMsg = ""; Show("ki-vorlagen"); };
             row.Children.Add(b);

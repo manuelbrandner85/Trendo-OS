@@ -188,7 +188,7 @@ public partial class MainWindow
         save.Click += (_, _) => { try { SavePrinter(name.Text ?? "", ip.Text ?? "", serial.Text ?? "", _prCodeDraft); _prCodeDraft = ""; _prMsg = "Drucker gespeichert."; } catch (ArgumentException ex) { _prMsg = ex.Message; } Show("3d-druck"); };
         pr.Children.Add(new WrapPanel { Children = { name, new Border { Width = 4 }, ip, new Border { Width = 4 }, serial, new Border { Width = 4 }, code, new Border { Width = 4 }, save } });
         pr.Children.Add(P("So findest du die Angaben: am Drucker Einstellungen → Netzwerk → „LAN-Modus“ einschalten; dort stehen IP-Adresse und Zugangscode. Die Seriennummer steht unter Einstellungen → Gerät. Der Zugangscode wird geschützt gespeichert.", null, 12));
-        var connect = new Button { Name = "print-connect", Content = _bambu is null ? "Verbinden" : "Trennen", Background = _bambu is null ? Accent : null, IsEnabled = Printer is not null };
+        var connect = new Button { Name = "print-connect", Content = _bambu is null ? "Verbinden" : "Trennen", Background = _bambu is null ? Accent : Brushes.Transparent, IsEnabled = Printer is not null };
         connect.Click += async (_, _) => { if (_bambu is null) await ConnectPrinter(); else { await DisconnectPrinter(); _prMsg = "Getrennt."; } Show("3d-druck"); };
         pr.Children.Add(connect);
         if (_bambu?.Status is { } st)

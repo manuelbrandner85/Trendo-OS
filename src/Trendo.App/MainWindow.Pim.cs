@@ -273,16 +273,22 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 8 };
         var nav = new WrapPanel();
-        void Btn(string name, string label, Action a, bool on = false) { var b = new Button { Name = name, Content = label, Background = on ? Accent : null, Margin = new Thickness(0, 0, 4, 0) }; b.Click += (_, _) => { a(); Show("kalender"); }; nav.Children.Add(b); }
+        void Btn(string name, string label, Action a, bool on = false) { var b = new Button { Name = name, Content = label, Margin = new Thickness(0, 0, 4, 0) }; if (on) b.Background = Accent; /* ohne eigenen Hintergrund (null) wäre der Knopf nur auf der Schrift anklickbar */ b.Click += (_, _) => { a(); Show("kalender"); }; nav.Children.Add(b); }
         Btn("cal-prev", "◀", () => CalDay = CalMode switch { "tag" => CalDay.AddDays(-1), "woche" => CalDay.AddDays(-7), _ => CalDay.AddMonths(-1) });
         Btn("cal-today", "Heute", () => CalDay = DateTime.Today);
         Btn("cal-next", "▶", () => CalDay = CalMode switch { "tag" => CalDay.AddDays(1), "woche" => CalDay.AddDays(7), _ => CalDay.AddMonths(1) });
         foreach (var (m, l) in new[] { ("tag", "Tag"), ("woche", "Woche"), ("monat", "Monat") }) { var mm = m; Btn("cal-mode-" + m, l, () => CalMode = mm, CalMode == m); }
+        Btn("cal-undo", "↶ Rückgängig", CalUndo);
+        if (_calUndo.Count == 0) ((Button)nav.Children[^1]).IsEnabled = false;
         var title = CalMode switch { "tag" => CalDay.ToString("dddd, d. MMMM yyyy", De), "woche" => $"Woche {ISOWeek.GetWeekOfYear(CalDay)} · {Monday(CalDay):d. MMM} – {Monday(CalDay).AddDays(6):d. MMM yyyy}", _ => CalDay.ToString("MMMM yyyy", De) };
         sp.Children.Add(new DockPanel { Children = { nav, new TextBlock { Name = "cal-title", Text = title, Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0) } } });
-        sp.Children.Add(CalMode switch { "tag" => CalDayView(CalDay), "woche" => CalWeekView(), _ => CalMonthView() });
-        sp.Children.Add(CalAddForm());
-        if (_pimMsg.Length > 0) sp.Children.Add(new TextBlock { Text = _pimMsg, Foreground = Muted, FontSize = 13, TextWrapping = TextWrapping.Wrap });
+        if (_pimMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "cal-msg", Text = _pimMsg, Foreground = Muted, FontSize = 13, TextWrapping = TextWrapping.Wrap });
+        var view = CalMode switch { "tag" => CalDayView(CalDay), "woche" => CalWeekView(), _ => CalMonthView() };
+        var side = new StackPanel { Spacing = 8, Children = { CalSelected is { } uid && Cal.Get(uid) is { } sel ? CalEditPanel(sel) : CalAddForm() } };
+        var split = new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,330") };
+        split.Children.Add(view); Grid.SetColumn(side, 2); split.Children.Add(side);
+        sp.Children.Add(split);
+        sp.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Z && e.KeyModifiers == Avalonia.Input.KeyModifiers.Control) { CalUndo(); Show("kalender"); e.Handled = true; } }; // Strg+Z
         return SysPage("Kalender", sp);
     }
 
@@ -295,7 +301,19 @@ public partial class MainWindow
             Content = new TextBlock { Text = (e.AllDay ? "" : o.Start.ToString("HH:mm ", De)) + e.Title + (e.Repeat != Repeat.Keine ? " ↻" : ""), FontSize = 12, Foreground = Text, TextTrimming = TextTrimming.CharacterEllipsis } };
         ToolTip.SetTip(b, $"{e.Title}\n{(e.AllDay ? "ganztägig" : $"{o.Start:HH:mm}–{o.End:HH:mm}")}{(e.Location.Length > 0 ? "\n" + e.Location : "")}{(e.Notes.Length > 0 ? "\n" + e.Notes : "")}");
         var menu = new ContextMenu(); var del = new MenuItem { Header = "Termin löschen" }; del.Click += (_, _) => { Cal.Delete(e.Uid); _pimMsg = $"„{e.Title}“ gelöscht."; Show("kalender"); }; menu.Items.Add(del); b.ContextMenu = menu;
-        b.Click += (_, _) => { CalDay = o.Start.Date; CalMode = "tag"; Show("kalender"); };
+        b.Click += (_, _) => { if (_calDragged) { _calDragged = false; return; } CalSelected = e.Uid; Show("kalender"); };
+        // im Monat auf einen anderen Tag ziehen
+        Point? from = null;
+        b.AddHandler(PointerPressedEvent, (_, ev) => { from = ev.GetPosition(this); _calDragged = false; }, Avalonia.Interactivity.RoutingStrategies.Tunnel | Avalonia.Interactivity.RoutingStrategies.Bubble, true);
+        b.AddHandler(PointerMovedEvent, (_, ev) => { if (from is { } f && (Math.Abs(ev.GetPosition(this).X - f.X) + Math.Abs(ev.GetPosition(this).Y - f.Y)) > 8) _calDragged = true; }, Avalonia.Interactivity.RoutingStrategies.Bubble, true);
+        b.AddHandler(PointerReleasedEvent, (_, ev) =>
+        {
+            if (from is null || !_calDragged) { from = null; return; }
+            from = null;
+            var hit = Avalonia.Input.InputExtensions.InputHitTest(this, ev.GetPosition(this)) as Visual;
+            while (hit is not null && !(hit is Border { Tag: DateTime })) hit = Avalonia.VisualTree.VisualExtensions.GetVisualParent(hit);
+            if (hit is Border { Tag: DateTime day } && day != o.Start.Date) CalChange(e.Uid, () => Cal.Shift(e.Uid, day - o.Start.Date), $"„{e.Title}“ auf {day:dddd, d. MMMM} verschoben.");
+        }, Avalonia.Interactivity.RoutingStrategies.Bubble, true);
         return b;
     }
 
@@ -313,34 +331,119 @@ public partial class MainWindow
             var cell = new StackPanel { Spacing = 1, Children = { new TextBlock { Text = d.Day.ToString(De), FontSize = 12, FontWeight = d == DateTime.Today ? FontWeight.Bold : FontWeight.Normal, Foreground = d.Month == CalDay.Month ? Text : Muted } } };
             foreach (var o in occ.Where(o => o.Start.Date <= d && o.End > d).Take(3)) cell.Children.Add(EventChip(o, k++));
             var more = occ.Count(o => o.Start.Date <= d && o.End > d) - 3; if (more > 0) cell.Children.Add(new TextBlock { Text = $"+{more} weitere", FontSize = 11, Foreground = Muted });
-            var border = new Border { Child = cell, MinHeight = 86, Padding = new Thickness(4), BorderBrush = Edge, BorderThickness = new Thickness(0.5), Background = d == DateTime.Today ? Brush.Parse("#222F86F6") : Brushes.Transparent };
+            var border = new Border { Name = $"cal-cell-{i}", Tag = d, Child = cell, MinHeight = 86, Padding = new Thickness(4), BorderBrush = Edge, BorderThickness = new Thickness(0.5), Background = d == DateTime.Today ? Brush.Parse("#222F86F6") : Brushes.Transparent };
             var day = d; border.PointerPressed += (_, ev) => { if (ev.ClickCount == 2) { CalDay = day; CalMode = "tag"; Show("kalender"); } };
             Grid.SetRow(border, 1 + i / 7); Grid.SetColumn(border, i % 7); g.Children.Add(border);
         }
         return g;
     }
 
-    Control CalWeekView()
+    // ---------- Zeitachse (Woche, Tag): ziehen, Dauer ändern, neu anlegen ----------
+    public string? CalSelected { get; set; }
+    private bool _calDragged;
+    private readonly List<(string Uid, CalEvent? Before)> _calUndo = [];
+    public CalTimeGrid? CalGridForTests { get; private set; }
+
+    /// <summary>Kalender-Änderung mit Rückgängig: vorher merken, ändern, melden.</summary>
+    void CalChange(string uid, Func<CalEvent> change, string msg)
     {
-        var mon = Monday(CalDay); var occ = Cal.Occurrences(mon, mon.AddDays(7));
-        var g = new Grid { Name = "cal-week", ColumnDefinitions = new ColumnDefinitions("*,*,*,*,*,*,*") }; var k = 0;
-        for (var c = 0; c < 7; c++)
-        {
-            var d = mon.AddDays(c);
-            var col = new StackPanel { Spacing = 2, Margin = new Thickness(2), Children = { new TextBlock { Text = d.ToString("ddd d.M.", De), Foreground = d == DateTime.Today ? Brush.Parse("#60A5FA") : Text, FontWeight = FontWeight.SemiBold } } };
-            foreach (var o in occ.Where(o => o.Start.Date <= d && o.End > d)) col.Children.Add(EventChip(o, k++));
-            var b = new Border { Child = col, MinHeight = 260, BorderBrush = Edge, BorderThickness = new Thickness(0.5), Padding = new Thickness(4) };
-            Grid.SetColumn(b, c); g.Children.Add(b);
-        }
-        return g;
+        var before = Cal.Get(uid);
+        try { var n = change(); _calUndo.Add((n.Uid, before)); if (_calUndo.Count > 50) _calUndo.RemoveAt(0); CalSelected = n.Uid; _pimMsg = msg; }
+        catch (InvalidOperationException ex) { _pimMsg = ex.Message; }
+        Show("kalender");
     }
+
+    public void CalUndo()
+    {
+        if (_calUndo.Count == 0) { _pimMsg = "Es gibt nichts rückgängig zu machen."; return; }
+        var (uid, before) = _calUndo[^1]; _calUndo.RemoveAt(_calUndo.Count - 1);
+        if (before is null) { Cal.Delete(uid); CalSelected = null; } else { Cal.Add(before); CalSelected = uid; }
+        _pimMsg = "Rückgängig gemacht.";
+    }
+
+    Control CalTimeView(DateTime first, int days, string name)
+    {
+        var occ = Cal.Occurrences(first, first.AddDays(days));
+        var grid = new CalTimeGrid { Name = "cal-grid", FirstDay = first, Days = days, Items = occ, SelectedUid = CalSelected };
+        CalGridForTests = grid;
+        grid.EventClicked = uid => { CalSelected = uid; Show("kalender"); };
+        grid.EventMoved = (uid, by) => { var ev = Cal.Get(uid); CalChange(uid, () => Cal.Shift(uid, by), $"„{ev?.Title}“ verschoben auf {(ev is null ? "" : (ev.Start + by).ToString("ddd d.M. HH:mm", De))}."); };
+        grid.EventResized = (uid, end) => CalChange(uid, () => Cal.SetEnd(uid, end), $"Dauer geändert – endet {end:HH:mm} Uhr.");
+        grid.RangeCreated = (a, b) =>
+        {
+            var e = new CalEvent(Guid.NewGuid().ToString("N"), a, b, "Neuer Termin");
+            CalChange(e.Uid, () => { Cal.Add(e); return e; }, $"Neuer Termin {a:ddd d.M.} {a:HH:mm}–{b:HH:mm} – rechts benennen.");
+        };
+        // Kopf: Wochentage und ganztägige Termine
+        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("52," + string.Join(",", Enumerable.Repeat("*", days))) };
+        var k = 0;
+        for (var c = 0; c < days; c++)
+        {
+            var d = first.AddDays(c);
+            var col = new StackPanel { Spacing = 1, Margin = new Thickness(2, 0, 2, 4), Children = { new TextBlock { Text = d.ToString(days == 1 ? "dddd, d. MMMM" : "ddd d.M.", De), Foreground = d == DateTime.Today ? Brush.Parse("#60A5FA") : Text, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center } } };
+            foreach (var o in occ.Where(o => o.Event.AllDay && o.Start.Date <= d && o.End > d)) col.Children.Add(EventChip(o, k++));
+            Grid.SetColumn(col, c + 1); head.Children.Add(col);
+        }
+        var scroll = new ScrollViewer { Name = "cal-scroll", Content = grid, Height = 560, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto };
+        var startHour = first <= DateTime.Today && DateTime.Today < first.AddDays(days) ? Math.Clamp(DateTime.Now.Hour - 2, 0, 14) : 7; // heute: kurz vor jetzt, sonst ab 7 Uhr
+        scroll.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => scroll.Offset = new Vector(0, startHour * grid.HourHeight));
+        var hint = new TextBlock { Text = "Termin ziehen verschiebt ihn · Unterkante ziehen ändert die Dauer · in freie Zeit ziehen legt einen neuen an · Klick wählt aus", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 0) };
+        var g = new Grid { Name = name, RowDefinitions = new RowDefinitions("Auto,*,Auto") };
+        g.Children.Add(head); Grid.SetRow(scroll, 1); g.Children.Add(scroll); Grid.SetRow(hint, 2); g.Children.Add(hint);
+        return new Border { CornerRadius = new CornerRadius(12), BorderBrush = Edge, BorderThickness = new Thickness(1), Padding = new Thickness(6), Background = TileBg, Child = g };
+    }
+
+    Control CalWeekView() => CalTimeView(Monday(CalDay), 7, "cal-week");
 
     Control CalDayView(DateTime day)
     {
-        var occ = Cal.Occurrences(day, day.AddDays(1)); var sp = new StackPanel { Name = "cal-day", Spacing = 3 }; var k = 0;
-        if (occ.Count == 0) sp.Children.Add(EmptyState("cal-day-empty", "📅", "Keine Termine", "Unten einen Termin eintragen."));
-        foreach (var o in occ) sp.Children.Add(Row(EventChip(o, k++), new TextBlock { Text = (o.Event.AllDay ? "ganztägig" : $"{o.Start:HH:mm}–{o.End:HH:mm}") + (o.Event.Location.Length > 0 ? " · " + o.Event.Location : "") + (o.Event.RemindMin >= 0 ? $" · Erinnerung {o.Event.RemindMin} min vorher" : ""), Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }));
+        var sp = new StackPanel { Name = "cal-day", Spacing = 6 };
+        sp.Children.Add(CalTimeView(day.Date, 1, "cal-day-grid"));
+        if (Cal.Occurrences(day, day.AddDays(1)).Count == 0) sp.Children.Add(new TextBlock { Name = "cal-day-empty", Text = "Keine Termine – in die Zeitachse ziehen oder rechts eintragen.", Foreground = Muted, FontSize = 12 });
         return sp;
+    }
+
+    /// <summary>Gewählten Termin bearbeiten – alle Felder, Übernehmen ist ein Schritt im Rückgängig.</summary>
+    Control CalEditPanel(CalEvent e)
+    {
+        var t = new TextBox { Name = "cal-edit-title", Text = e.Title };
+        var date = new TextBox { Name = "cal-edit-date", Text = e.Start.ToString("dd.MM.yyyy", De), Width = 105 };
+        var from = new TextBox { Name = "cal-edit-start", Text = e.Start.ToString("HH:mm", De), Width = 64, IsEnabled = !e.AllDay };
+        var to = new TextBox { Name = "cal-edit-end", Text = e.End.ToString("HH:mm", De), Width = 64, IsEnabled = !e.AllDay };
+        var allDay = new CheckBox { Name = "cal-edit-allday", Content = "ganztägig", IsChecked = e.AllDay, Foreground = Text };
+        allDay.IsCheckedChanged += (_, _) => { from.IsEnabled = to.IsEnabled = allDay.IsChecked != true; };
+        var loc = new TextBox { Name = "cal-edit-loc", Text = e.Location, PlaceholderText = "Ort" };
+        var notes = new TextBox { Name = "cal-edit-notes", Text = e.Notes, PlaceholderText = "Notizen", AcceptsReturn = true, MinHeight = 60, TextWrapping = TextWrapping.Wrap };
+        int[] remindVals = [-1, 5, 15, 60, 1440];
+        var remind = new ComboBox { Name = "cal-edit-remind", ItemsSource = new[] { "keine Erinnerung", "5 min vorher", "15 min vorher", "1 Stunde vorher", "1 Tag vorher" }, SelectedIndex = Math.Max(0, Array.IndexOf(remindVals, e.RemindMin)), HorizontalAlignment = HorizontalAlignment.Stretch };
+        var rep = new ComboBox { Name = "cal-edit-repeat", ItemsSource = new[] { "einmalig", "täglich", "wöchentlich", "monatlich", "jährlich" }, SelectedIndex = (int)e.Repeat, HorizontalAlignment = HorizontalAlignment.Stretch };
+        var save = new Button { Name = "cal-edit-save", Content = "Übernehmen", Background = Accent, Foreground = Brushes.White };
+        save.Click += (_, _) =>
+        {
+            if ((t.Text ?? "").Trim().Length == 0) { _pimMsg = "Bitte einen Titel eingeben."; Show("kalender"); return; }
+            if (!DateTime.TryParseExact((date.Text ?? "").Trim(), ["d.M.yyyy", "dd.MM.yyyy", "d.M.yy"], De, DateTimeStyles.None, out var d)) { _pimMsg = "Datum bitte als TT.MM.JJJJ."; Show("kalender"); return; }
+            var all = allDay.IsChecked == true;
+            DateTime s0, e0;
+            if (all) { s0 = d; e0 = d.AddDays(Math.Max(1, (e.End.Date - e.Start.Date).Days)); }
+            else
+            {
+                if (!TimeSpan.TryParse((from.Text ?? "").Trim(), De, out var a) || !TimeSpan.TryParse((to.Text ?? "").Trim(), De, out var b)) { _pimMsg = "Uhrzeit bitte als HH:MM."; Show("kalender"); return; }
+                s0 = d + a; e0 = d + b; if (e0 <= s0) e0 = e0.AddDays(1); // über Mitternacht
+            }
+            var n = e with { Title = t.Text!.Trim(), Start = s0, End = e0, AllDay = all, Location = loc.Text?.Trim() ?? "", Notes = notes.Text?.Trim() ?? "", RemindMin = remindVals[Math.Max(0, remind.SelectedIndex)], Repeat = (Repeat)Math.Max(0, rep.SelectedIndex) };
+            CalDay = s0.Date; CalChange(e.Uid, () => { Cal.Add(n); return n; }, $"„{n.Title}“ gespeichert.");
+        };
+        var del = new Button { Name = "cal-edit-delete", Content = "Löschen" };
+        del.Click += (_, _) => { var before = Cal.Get(e.Uid); Cal.Delete(e.Uid); if (before is not null) _calUndo.Add((e.Uid, before)); CalSelected = null; _pimMsg = $"„{e.Title}“ gelöscht – Rückgängig holt ihn zurück."; Show("kalender"); };
+        var close = new Button { Name = "cal-edit-close", Content = "Fertig" };
+        close.Click += (_, _) => { CalSelected = null; Show("kalender"); };
+        Control L(string label, Control c) => new StackPanel { Spacing = 2, Children = { new TextBlock { Text = label, Foreground = Muted, FontSize = 11.5 }, c } };
+        return Card(new StackPanel { Name = "cal-edit", Spacing = 8, Children = {
+            H("Termin", 14), L("Titel", t),
+            new WrapPanel { Children = { L("Datum", date), new Border { Width = 6 }, L("Beginn", from), new Border { Width = 6 }, L("Ende", to) } }, allDay,
+            L("Ort", loc), L("Erinnerung", remind), L("Wiederholung", rep), L("Notizen", notes),
+            new WrapPanel { Children = { save, new Border { Width = 6 }, del, new Border { Width = 6 }, close } },
+            new TextBlock { Text = e.Repeat != Repeat.Keine ? "Wiederholung: Verschieben und Ändern gelten für die ganze Reihe." : "Ziehen in der Zeitachse ändert Beginn und Dauer direkt.", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap } } });
     }
 
     Control CalAddForm()

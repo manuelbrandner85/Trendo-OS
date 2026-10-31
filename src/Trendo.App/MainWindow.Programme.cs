@@ -53,7 +53,7 @@ public partial class MainWindow
     private Button RemoveButton(string key, string name, Action remove)
     {
         var armed = _confirmRemove.Contains(key);
-        var b = new Button { Name = name, Content = armed ? "Wirklich entfernen?" : "Entfernen", IsEnabled = !_depBusy, Background = armed ? Brush.Parse("#B91C1C") : null };
+        var b = new Button { Name = name, Content = armed ? "Wirklich entfernen?" : "Entfernen", IsEnabled = !_depBusy, Background = armed ? Brush.Parse("#B91C1C") : Brushes.Transparent };
         b.Click += (_, _) =>
         {
             if (!_confirmRemove.Remove(key)) { _confirmRemove.Add(key); Show("components"); return; }

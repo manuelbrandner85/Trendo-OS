@@ -155,6 +155,14 @@ else if (shot == "seite")
     win.Show(page);
     if (win.Windows.Active is { Maximized: false } pageWin) win.Windows.ToggleMaximize(pageWin.Id);
     win.Show(page);
+    if (Environment.GetEnvironmentVariable("TRENDO_CAL") is { Length: > 0 }) // Kalender-Woche mit erfundenen Beispielterminen
+    {
+        var mo = new DateTime(2026, 11, 2);
+        foreach (var (d, hr, len, t, loc) in new[] { (0, 9.0, 1.0, "Teambesprechung", "Raum 2"), (0, 12.5, 1.0, "Mittagessen mit Erika", ""), (1, 10.0, 1.5, "Zahnarzt", "Praxis Muster"), (2, 8.5, 0.5, "Telefonat Vermieter", ""), (2, 14.0, 2.0, "Projekt-Workshop", "Online"), (2, 15.0, 1.0, "Paket abholen", "Post"), (3, 18.0, 1.5, "Sport", "Halle"), (4, 16.0, 1.0, "Kinder abholen", "Schule") })
+            win.Cal.Add(new Trendo.Core.Sys.CalEvent(Guid.NewGuid().ToString("N"), mo.AddDays(d).AddHours(hr), mo.AddDays(d).AddHours(hr + len), t, loc));
+        win.Cal.Add(new Trendo.Core.Sys.CalEvent("ganz", mo.AddDays(5), mo.AddDays(6), "Ausflug", AllDay: true));
+        win.CalDay = mo; win.CalMode = "woche"; win.CalSelected = win.Cal.All().First(e => e.Title == "Zahnarzt").Uid; win.Show("kalender");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_3D") is { Length: > 0 }) { win.Show("3d"); foreach (var sh in new[] { "cube", "sphere", "cylinder", "torus" }) win.Studio3DAddShape(sh); win.Studio3DSelect(1); } // 3D-Modelle erstellen mit Arbeitsfläche
     if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lv)); win.ProgramNew(page, tpl); win.Show(page); } // Programm mit Vorlage öffnen
     if (page == "architektur" && Environment.GetEnvironmentVariable("TRENDO_ARCH") is { Length: > 0 } arch) // Grundriss: Auswahl/3D/Werkzeug zeigen
