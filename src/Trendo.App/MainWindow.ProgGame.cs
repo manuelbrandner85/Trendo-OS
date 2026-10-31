@@ -78,7 +78,9 @@ public partial class MainWindow
 
     private Control GameWorkspace(ProgramDocument d)
     {
-        var sections = new[] { "Übersicht", "Spielbibel", "Figuren", "Welt", "Missionen", "Produktion", "Bauen" };
+        var sections = new List<string> { "Übersicht", "Spielbibel", "Figuren", "Welt", "Missionen", "Produktion", "Bauen" };
+        if (d.Text("browser") is "plattform" or "jump" or "breakout") sections.Insert(4, "Level");
+        if (_gameSection == "Level" && !sections.Contains("Level")) _gameSection = "Übersicht";
         var bar = new WrapPanel { Name = "game-sections" };
         foreach (var s in sections)
         {
@@ -95,6 +97,7 @@ public partial class MainWindow
             "Welt" => GameWorld(d),
             "Missionen" => GameList(d, "quests", "Missionen", [("title", "Titel", 170), ("kind", "Art", 0), ("goal", "Ziel", 240), ("needs", "braucht", 130), ("gives", "gibt", 130), ("giver", "Auftraggeber", 120)]),
             "Produktion" => GameProduction(d),
+            "Level" => GameLevel(d),
             "Bauen" => GameBuildView(d),
             _ => GameOverview(d),
         };
@@ -274,14 +277,60 @@ public partial class MainWindow
         sp.Children.Add(P(GameDesign.ScaleOf(d.Text("scale")).Hint, null, 11));
         if (GameDesign.ScaleOf(d.Text("scale")).Engine == "browser")
         {
-            var kinds = new (string Id, string Name)[] { ("jump", "Hüpfspiel"), ("breakout", "Mauerbrecher"), ("snake", "Schlange") };
+            var kinds = new (string Id, string Name)[] { ("jump", "Hüpfspiel"), ("breakout", "Mauerbrecher"), ("snake", "Schlange"), ("plattform", "Plattformer") };
             var kind = new ComboBox { Name = "game-p-browser", ItemsSource = kinds.Select(k => k.Name).ToList(), SelectedIndex = Array.FindIndex(kinds, k => k.Id == d.Text("browser")), HorizontalAlignment = HorizontalAlignment.Stretch };
-            kind.SelectionChanged += (_, _) => { if (kind.SelectedIndex >= 0 && kinds[kind.SelectedIndex].Id != d.Text("browser")) { var id = kinds[kind.SelectedIndex].Id; d.Edit("Spielart", x => { x["browser"] = id; x["level"] = new JsonArray([.. (id == "jump" ? GameStudio.DefaultJump : id == "breakout" ? GameStudio.DefaultBreakout : []).Select(r => (JsonNode)r)]); }); Show(GK); } };
+            kind.SelectionChanged += (_, _) => { if (kind.SelectedIndex >= 0 && kinds[kind.SelectedIndex].Id != d.Text("browser")) { var id = kinds[kind.SelectedIndex].Id; d.Edit("Spielart", x => { x["browser"] = id; x["level"] = new JsonArray([.. (id == "jump" ? GameStudio.DefaultJump : id == "breakout" ? GameStudio.DefaultBreakout : id == "plattform" ? GameStudio.DefaultPlatform : []).Select(r => (JsonNode)r)]); }); Show(GK); } };
             sp.Children.Add(P("Spielart", null, 11.5)); sp.Children.Add(kind);
         }
         var comp = GameDesign.Completeness(d.Data);
         sp.Children.Add(H("Stand", 12));
         foreach (var (k, v) in comp) sp.Children.Add(new StackPanel { Spacing = 1, Children = { Row(P(k, Text, 11.5), P(v + " %", null, 11)), new ProgressBar { Value = v, Maximum = 100, Height = 5 } } });
         return sp;
+    }
+
+    // ---------- Level-Editor (Masterprompt 131: Spiele-Werkstatt mit Arbeitsfläche) ----------
+    public char GameTile { get; set; } = '#';
+    public LevelCanvas? GameLevelForTests { get; private set; }
+
+    private Control GameLevel(ProgramDocument d)
+    {
+        var rows = d.List("level").Select(x => x?.GetValue<string>() ?? "").Where(x => x.Length > 0).ToList();
+        var kind = d.Text("browser");
+        if (rows.Count == 0) rows = [.. kind == "plattform" ? GameStudio.DefaultPlatform : kind == "breakout" ? GameStudio.DefaultBreakout : GameStudio.DefaultJump];
+        var tiles = kind == "plattform"
+            ? new (char Ch, string Id, string Label)[] { ('#', "boden", "Boden"), ('o', "muenze", "Münze"), ('E', "gegner", "Gegner"), ('^', "stacheln", "Stacheln"), ('S', "start", "Start"), ('Z', "ziel", "Ziel"), ('.', "radierer", "Radierer") }
+            : [('#', "boden", kind == "breakout" ? "Stein" : "Hindernis"), ('.', "radierer", "Radierer")];
+        if (!tiles.Any(t => t.Ch == GameTile)) GameTile = '#';
+        var canvas = new LevelCanvas { Name = "game-level", Rows = rows, Tile = GameTile, Cell = kind == "jump" ? 18 : 22 };
+        GameLevelForTests = canvas;
+        canvas.LevelChanged = l => ProgramRun(GK, () => d.Set("level", new JsonArray([.. l.Select(x => (JsonNode)x)]), "Level malen"));
+        var palette = new WrapPanel { Name = "game-tiles" };
+        foreach (var (ch, id, label) in tiles)
+        {
+            var c = ch; var on = GameTile == ch;
+            var b = new Button { Name = "game-tile-" + id, Content = label, FontSize = 12, Padding = new Thickness(10, 4), Margin = new Thickness(0, 0, 4, 4) };
+            if (on) { b.Background = Accent; b.Foreground = Brushes.White; }
+            b.Click += (_, _) => { GameTile = c; Show(GK); };
+            palette.Children.Add(b);
+        }
+        void Resize(int by) => ProgramRun(GK, () =>
+        {
+            var cols = Math.Clamp(rows.Max(x => x.Length) + by, 8, 200);
+            d.Set("level", new JsonArray([.. rows.Select(x => (JsonNode)(x.Length >= cols ? x[..cols] : x.PadRight(cols, '.')))]), by > 0 ? "Level verlängern" : "Level kürzen");
+        });
+        var more = new Button { Name = "game-level-wider", Content = "＋ 10 Spalten" }; more.Click += (_, _) => Resize(10);
+        var less = new Button { Name = "game-level-narrower", Content = "－ 10 Spalten" }; less.Click += (_, _) => Resize(-10);
+        var test = new Button { Name = "game-level-test", Content = "▶ Testen", Background = Accent, Foreground = Brushes.White };
+        test.Click += (_, _) => ProgramRun(GK, () => { if (d.List("level").Count == 0) d.Set("level", new JsonArray([.. rows.Select(x => (JsonNode)x)]), "Level"); GameBuild(d); GamePlay(d); });
+        var hints = new StackPanel { Name = "game-level-hints", Spacing = 2 };
+        foreach (var h in kind == "plattform" ? GameStudio.CheckPlatform(rows) : []) hints.Children.Add(P("⚠ " + h, Brush.Parse("#F5A524"), 12));
+        if (hints.Children.Count == 0 && kind == "plattform") hints.Children.Add(P("✓ Start, Ziel und Boden sind da – „Testen“ baut das Spiel und startet es.", Brush.Parse("#2FBF71"), 12));
+        var stats = string.Concat(rows);
+        var info = P(kind == "plattform" ? $"{rows.Max(x => x.Length)} × {rows.Count} Kacheln · {stats.Count(ch => ch == 'o')} Münzen · {stats.Count(ch => ch == 'E')} Gegner · {stats.Count(ch => ch == '^')} Stacheln" : $"{rows.Max(x => x.Length)} × {rows.Count} Kacheln", Muted, 12);
+        return new StackPanel { Spacing = 8, Children = {
+            new WrapPanel { Children = { palette, new Border { Width = 12 }, more, new Border { Width = 4 }, less, new Border { Width = 12 }, test } },
+            new TextBlock { Text = "Linke Maustaste malt (auch ziehen), rechte radiert. Jeder Strich ist ein Schritt im Rückgängig.", Foreground = Muted, FontSize = 11.5 },
+            new ScrollViewer { Content = canvas, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Disabled, MaxHeight = 16 * 22 + 20 },
+            info, hints } };
     }
 }

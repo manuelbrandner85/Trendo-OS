@@ -47,7 +47,7 @@ public static class GameDesign
             ["quests"] = new JsonArray([.. quests.Select(q => (JsonNode)new JsonObject { ["title"] = q.Title, ["kind"] = q.Kind, ["goal"] = q.Goal, ["needs"] = q.Needs, ["gives"] = q.Gives, ["giver"] = q.Giver })]),
             ["milestones"] = new JsonArray([.. Milestones(scale).Select(m => (JsonNode)new JsonObject { ["name"] = m, ["done"] = false })]),
             ["browser"] = browser,
-            ["level"] = new JsonArray([.. (browser == "jump" ? GameStudio.DefaultJump : browser == "breakout" ? GameStudio.DefaultBreakout : []).Select(r => (JsonNode)r)]),
+            ["level"] = new JsonArray([.. (browser == "jump" ? GameStudio.DefaultJump : browser == "breakout" ? GameStudio.DefaultBreakout : browser == "plattform" ? GameStudio.DefaultPlatform : []).Select(r => (JsonNode)r)]),
         };
         return d;
     }
@@ -59,6 +59,10 @@ public static class GameDesign
             "Ein mutiger Pixelheld springt über Hindernisse, um den Schatz am Ende der Welt zu finden.", "Laufen → Springen → Ausweichen → Punkte sammeln → nächstes Level",
             ["Springen", "Ausweichen", "Punkte sammeln"], "Leertaste: Springen", "Pixel-Grafik, 16 Farben, Chiptune",
             [("Pixel", "Held", "Kleiner Abenteurer mit roter Mütze", 0)], [("Wiesenwelt", "Grüne Hügel, einfache Hindernisse")], [("Ins Ziel", "Haupt", "Erreiche das Ende des Levels", "", "", "")], "jump")),
+        new("retro-plattform", "Retro-Plattformer", "Level selbst malen: Boden, Münzen, Gegner, Stacheln, Ziel", "retro", "Plattformer", "plattform", () => Doc("Münzjäger", "retro", "Plattformer",
+            "Ein flinker Held sammelt Münzen über Abgründe hinweg und erreicht die Flagge.", "Laufen → Springen → Münzen sammeln → Gegnern ausweichen → Ziel",
+            ["Laufen", "Springen", "Sammeln", "Gegner besiegen"], "Pfeiltasten laufen, Leertaste springt, auf Gegner springen besiegt sie", "Pixel-Grafik, kräftige Farben",
+            [("Flink", "Held", "Schneller Läufer mit Sprungschuhen", 0)], [("Grasland", "Hügel, Abgründe, Stachelgruben")], [("Zur Flagge", "Haupt", "Erreiche die Flagge am Ende", "", "", "")], "plattform")),
         new("retro-breakout", "Retro-Mauerbrecher", "Klassiker mit eigenem Steinmuster", "retro", "Arcade", "breakout", () => Doc("Steinbrecher", "retro", "Arcade",
             "Zerstöre mit Ball und Schläger jede Mauer.", "Ball abprallen lassen → Steine treffen → Mauer leeren", ["Abprallen", "Zielen"], "Maus oder Pfeiltasten", "Neon-Pixel",
             [], [("Mauerhalle", "Jede Halle hat ein neues Steinmuster")], [("Halle leeren", "Haupt", "Alle Steine zerstören", "", "", "")], "breakout")),
@@ -124,9 +128,10 @@ public static class GameDesign
             w.Add($"Mission „{S(q["title"])}“: Auftraggeber „{S(q["giver"])}“ gibt es nicht unter den Figuren.");
         if (!quests.Any(q => S(q["kind"]) == "Haupt")) w.Add("Es gibt noch keine Hauptmission.");
         var scale = ScaleOf(S(d["scale"]));
-        if (scale.Engine == "browser" && S(d["browser"]).Length == 0) w.Add("Für ein Browser-Spiel bitte eine Spielart wählen (Hüpfspiel, Mauerbrecher oder Schlange) – oder Unreal-Umfang wählen.");
+        if (scale.Engine == "browser" && S(d["browser"]).Length == 0) w.Add("Für ein Browser-Spiel bitte eine Spielart wählen (Hüpfspiel, Mauerbrecher, Schlange oder Plattformer) – oder Unreal-Umfang wählen.");
         if (scale.Id == "aaa" && Objs(d, "world").Count() < 3) w.Add("AAA+: Plane mindestens drei Regionen – die Welt trägt das Spiel.");
-        if (d["level"] is JsonArray lv && lv.Select(x => S(x)).Any(r => r.Any(ch => ch is not ('#' or '.')))) w.Add("Im Level nur # (Stein/Hindernis) und . (frei).");
+        if (d["level"] is JsonArray lv && lv.Select(x => S(x)).Any(r => r.Any(ch => !GameStudio.Tiles.Contains(ch)))) w.Add("Im Level nur # . o E ^ S Z.");
+        if (S(d["browser"]) == "plattform") w.AddRange(GameStudio.CheckPlatform((d["level"] as JsonArray ?? []).Select(S).ToList()));
         return w;
     }
 
@@ -150,7 +155,7 @@ public static class GameDesign
     /// <summary>Bauen: Retro/Indie 2D als spielbares Browser-Spiel (mit Level aus dem Projekt).</summary>
     public static string BuildBrowser(JsonObject d, string parent)
     {
-        var t = S(d["browser"]); if (t.Length == 0) throw new InvalidOperationException("Bitte zuerst die Spielart wählen (Hüpfspiel, Mauerbrecher oder Schlange).");
+        var t = S(d["browser"]); if (t.Length == 0) throw new InvalidOperationException("Bitte zuerst die Spielart wählen (Hüpfspiel, Mauerbrecher, Schlange oder Plattformer).");
         var level = (d["level"] as JsonArray ?? []).Select(S).Where(r => r.Length > 0).ToArray();
         var dir = Path.Combine(parent, DevStudio.SafeName(S(d["title"])));
         var settings = GameStudio.Validate(new GameStudio.GameSettings { Level = level });

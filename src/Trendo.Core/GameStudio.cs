@@ -11,6 +11,25 @@ public static class GameStudio
         ("snake", "Schlange", "Pfeiltasten. Friss die Punkte, werde länger."),
         ("breakout", "Mauerbrecher", "Maus oder Pfeiltasten. Zerstöre alle Steine."),
         ("jump", "Hüpfspiel", "Leertaste zum Springen. Weiche den Hindernissen aus."),
+        ("plattform", "Plattformer", "Pfeiltasten laufen, Leertaste springt. Sammle Münzen, weiche Gegnern und Stacheln aus, erreiche die Flagge."),
+    ];
+
+    /// <summary>Kacheln des Level-Editors: # Boden/Wand, o Münze, E Gegner (läuft hin und her), ^ Stacheln, S Start, Z Ziel-Flagge, . frei.</summary>
+    public const string Tiles = "#.oE^SZ";
+    public static readonly string[] DefaultPlatform =
+    [
+        "............................................................",
+        "............................................................",
+        "............................................................",
+        "............................................................",
+        "...................ooo...............................o.o....",
+        "..................#####............ooo..............#####...",
+        "..........ooo.......................####....................",
+        ".........#####.................................ooo.......Z..",
+        "S.................E.........o.o.....E........#######.....#..",
+        "#########..##########...#########..######...........#######.",
+        "#########..##########^^^#########..######^^^^^^^^^^^########",
+        "############################################################",
     ];
 
     /// <summary>T-0204: Spielregeln und Aussehen. Wird als config.js neben das Spiel geschrieben; game.js liest nur diese Werte.</summary>
@@ -34,11 +53,23 @@ public static class GameStudio
 
     static bool Hex(string s) => System.Text.RegularExpressions.Regex.IsMatch(s, "^#[0-9A-Fa-f]{6}$");
 
+    /// <summary>Hinweise zum Plattformer-Level: genau ein Start, mindestens ein Ziel, Boden unter dem Start.</summary>
+    public static List<string> CheckPlatform(IReadOnlyList<string> level)
+    {
+        var w = new List<string>(); var all = string.Concat(level);
+        var starts = all.Count(ch => ch == 'S');
+        if (starts == 0) w.Add("Kein Start (S) im Level – die Figur weiß nicht, wo sie beginnt.");
+        if (starts > 1) w.Add($"{starts} Startpunkte (S) – es zählt nur einer.");
+        if (!all.Contains('Z')) w.Add("Kein Ziel (Z) im Level – man kann das Level nicht schaffen.");
+        for (var y = 0; y < level.Count; y++) { var x = level[y].IndexOf('S'); if (x < 0) continue; if (!level.Skip(y + 1).Any(r => x < r.Length && r[x] == '#')) w.Add("Unter dem Start ist kein Boden – die Figur fällt sofort."); }
+        return w;
+    }
+
     public static GameSettings Validate(GameSettings s)
     {
         if (!Hex(s.Player) || !Hex(s.Accent) || !Hex(s.Background)) throw new ArgumentException("Farben bitte als # und sechs Zeichen, zum Beispiel #4FB3FF.");
-        if (s.Level.Any(r => r.Any(ch => ch is not ('#' or '.')))) throw new ArgumentException("Im Level nur # (Stein/Hindernis) und . (frei).");
-        if (s.Level.Length > 12 || s.Level.Any(r => r.Length > 60)) throw new ArgumentException("Level höchstens 12 Zeilen und 60 Spalten.");
+        if (s.Level.Any(r => r.Any(ch => !Tiles.Contains(ch)))) throw new ArgumentException("Im Level nur # (Boden), . (frei), o (Münze), E (Gegner), ^ (Stacheln), S (Start) und Z (Ziel).");
+        if (s.Level.Length > 16 || s.Level.Any(r => r.Length > 200)) throw new ArgumentException("Level höchstens 16 Zeilen und 200 Spalten.");
         return s with { Speed = Math.Clamp(s.Speed, 1, 10), Lives = Math.Clamp(s.Lives, 1, 9), WinScore = Math.Clamp(s.WinScore, 0, 9999) };
     }
 
@@ -127,6 +158,36 @@ br.forEach(q=>{if(q.a&&b.x>q.x&&b.x<q.x+bw&&b.y>q.y&&b.y<q.y+bh){q.a=0;b.dy*=-1;
 bg();me(px,c.height-14,80,8);x.fillStyle=CFG.accent;x.beginPath();x.arc(b.x,b.y,6,0,7);x.fill();x.fillStyle='#7C4DFF';br.forEach(q=>{if(q.a)x.fillRect(q.x,q.y,bw,bh);});status(p);requestAnimationFrame(step);}
 step();
 """,
+        ["plattform"] = """
+const T=32,L=(CFG.level&&CFG.level.length?CFG.level:['S.....Z','#######']),R=L.length,C=Math.max(...L.map(r=>r.length));
+const at=(cx,cy)=>cy<0||cx<0||cx>=C?'#':cy>=R?'.':(L[cy][cx]||'.');const solid=(cx,cy)=>at(cx,cy)==='#';
+let sx=0,sy=0;L.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='S'){sx=x;sy=y;}}));
+let pl,coins,foes,p=0,k={},cam=0,flash=0;
+function reset(full){pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;if(full){p=0;coins=[];foes=[];L.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='o')coins.push({x:x*T+16,y:y*T+16,a:1});if(ch==='E')foes.push({x:x*T+4,y:y*T+6,d:1,a:1});}));}}
+reset(true);
+addEventListener('keydown',e=>{k[e.code]=1;if(e.code==='Space'){e.preventDefault();if(over){lives=CFG.lives;over=false;reset(true);}else if(pl.on){pl.vy=-11.5;beep(660);}}});addEventListener('keyup',e=>k[e.code]=0);
+function hit(){lives--;beep(160);flash=20;if(lives<=0)over=true;else reset(false);}
+function move(o,dx,dy){o.x+=dx;let l=Math.floor(o.x/T),r=Math.floor((o.x+o.w-1)/T),t=Math.floor(o.y/T),b=Math.floor((o.y+o.h-1)/T);
+for(let cy=t;cy<=b;cy++)for(let cx=l;cx<=r;cx++)if(solid(cx,cy)){if(dx>0)o.x=cx*T-o.w;if(dx<0)o.x=(cx+1)*T;}
+o.y+=dy;o.on=false;l=Math.floor(o.x/T);r=Math.floor((o.x+o.w-1)/T);t=Math.floor(o.y/T);b=Math.floor((o.y+o.h-1)/T);
+for(let cy=t;cy<=b;cy++)for(let cx=l;cx<=r;cx++)if(solid(cx,cy)){if(dy>0){o.y=cy*T-o.h;o.vy=0;o.on=true;}if(dy<0){o.y=(cy+1)*T;o.vy=0;}}}
+function step(){if(!over){const sp=2.2+CFG.speed*.35;pl.vx=(k.ArrowRight?sp:0)-(k.ArrowLeft?sp:0);pl.vy=Math.min(14,pl.vy+.6);move(pl,pl.vx,0);move(pl,0,pl.vy);
+if(pl.y>R*T+60)hit();const cx=Math.floor((pl.x+12)/T),cy=Math.floor((pl.y+15)/T),cb=Math.floor((pl.y+29)/T);
+if(at(cx,cb)==='^'||at(cx,cy)==='^')hit();if(at(cx,cy)==='Z'||at(cx,cb)==='Z'){p+=10;beep(990);over=true;}
+coins.forEach(q=>{if(q.a&&Math.abs(q.x-(pl.x+12))<18&&Math.abs(q.y-(pl.y+15))<20){q.a=0;p++;beep(880);if(won(p))over=true;}});
+foes.forEach(f=>{if(!f.a)return;const nx=f.x+f.d*1.2,cxx=Math.floor((f.d>0?nx+24:nx)/T),cyy=Math.floor((f.y+20)/T);if(solid(cxx,cyy)||!solid(cxx,cyy+1))f.d*=-1;else f.x=nx;
+if(Math.abs(f.x-pl.x)<24&&Math.abs(f.y-pl.y)<26){if(pl.vy>1&&pl.y<f.y-8){f.a=0;pl.vy=-8;p+=2;beep(520);}else hit();}});
+cam=Math.max(0,Math.min(C*T-c.width,pl.x-c.width/3));}
+bg();x.save();x.translate(-cam,Math.min(0,c.height-R*T));
+for(let y=0;y<R;y++)for(let xx=Math.floor(cam/T);xx<=Math.floor((cam+c.width)/T)&&xx<C;xx++){const ch=at(xx,y);
+if(ch==='#'){x.fillStyle='#5B3A1E';x.fillRect(xx*T,y*T,T,T);if(at(xx,y-1)!=='#'){x.fillStyle='#3FBF5A';x.fillRect(xx*T,y*T,T,7);}}
+if(ch==='^'){x.fillStyle='#C9CED6';for(let i=0;i<4;i++){x.beginPath();x.moveTo(xx*T+i*8,y*T+T);x.lineTo(xx*T+i*8+4,y*T+T-14);x.lineTo(xx*T+i*8+8,y*T+T);x.fill();}}
+if(ch==='Z'){x.fillStyle='#EEE';x.fillRect(xx*T+6,y*T-T,4,2*T);x.fillStyle=CFG.accent;x.beginPath();x.moveTo(xx*T+10,y*T-T);x.lineTo(xx*T+30,y*T-T+9);x.lineTo(xx*T+10,y*T-T+18);x.fill();}}
+x.fillStyle=CFG.accent;coins.forEach(q=>{if(q.a){x.beginPath();x.arc(q.x,q.y,7,0,7);x.fill();}});
+x.fillStyle='#E0475B';foes.forEach(f=>{if(f.a){x.fillRect(f.x,f.y,24,26);x.fillStyle='#FFF';x.fillRect(f.x+(f.d>0?14:4),f.y+6,6,6);x.fillStyle='#E0475B';}});
+if(!(flash>0&&flash--%4<2))me(pl.x,pl.y,pl.w,pl.h);x.restore();status(p);requestAnimationFrame(step);}
+step();
+""",
         ["jump"] = """
 const L=(CFG.level&&CFG.level.length?CFG.level[0]:'...#....#...##.....#..#...#.....##....');let y=300,vy=0,o=[],t=0,p=0,i=0;const sp=2+CFG.speed*.6;
 addEventListener('keydown',e=>{if(e.code==='Space'){if(over){lives=CFG.lives;over=false;p=0;o=[];}else if(y>=300){vy=-11;beep(660);}}});
@@ -148,7 +209,7 @@ step();
         File.WriteAllText(Path.Combine(dir, "index.html"), Shell.Replace("{{TITLE}}", enc).Replace("{{HELP}}", t.Help), new UTF8Encoding(false));
         File.WriteAllText(Path.Combine(dir, "game.js"), Common + Js[t.Id].TrimStart(), new UTF8Encoding(false));
         File.WriteAllText(Path.Combine(dir, "vorlage.txt"), t.Id);
-        Save(dir, settings ?? new GameSettings { Level = t.Id == "breakout" ? DefaultBreakout : t.Id == "jump" ? DefaultJump : [] });
+        Save(dir, settings ?? new GameSettings { Level = t.Id == "breakout" ? DefaultBreakout : t.Id == "jump" ? DefaultJump : t.Id == "plattform" ? DefaultPlatform : [] });
         File.WriteAllText(Path.Combine(dir, "README.md"), $"# {name}\n\nVorlage „{t.Label}“. Öffne index.html im Browser. Regeln, Farben und Level stehen in config.js (einstellbar im Spiele-Studio).\n");
         return dir;
     }
