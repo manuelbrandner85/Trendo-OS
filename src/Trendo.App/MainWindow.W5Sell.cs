@@ -11,6 +11,7 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     public Shop BizShop => new(_core.DataRoot, BizIdea.Id);
+    private string? _sellPayFor; // Bestellung, für die gerade eine Zahlung erfasst wird
     private static readonly string[] MonthShort = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
     /// <summary>Kennzahl-Karte mit Verlauf, Lichtkante und Schatten.</summary>
@@ -35,10 +36,11 @@ public partial class MainWindow
         var y = Finance.Year(Money.All(), today.Year);
         var sp = new StackPanel { Spacing = 10, Children = { IdeaHeader(V) } };
         sp.Children.Add(new WrapPanel { Name = "sell-kpis", Children = {
-            Kpi("sell-kpi-month", "Umsatz " + MonthShort[today.Month - 1], Eu(month) + " €", "netto, aus Bestellungen", "#3D8BFF", "#1E4FD8"),
+            Kpi("sell-kpi-month", "Umsatz " + MonthShort[today.Month - 1], Eu(month) + " €", "netto, nach Zahlungseingang", "#3D8BFF", "#1E4FD8"),
             Kpi("sell-kpi-year", "Umsatz " + today.Year, Eu(year) + " €", "netto", "#7C4DFF", "#4B2BC2"),
             Kpi("sell-kpi-profit", "Gewinn " + today.Year, Eu(y.IncomeNet + y.ExpenseNet) + " €", "aus „Geld“, netto", y.IncomeNet + y.ExpenseNet >= 0 ? "#2FBF71" : "#F0644B", y.IncomeNet + y.ExpenseNet >= 0 ? "#167A45" : "#B2361F"),
-            Kpi("sell-kpi-customers", "Kunden", customers.ToString(), $"{open} Bestellung(en) offen", "#F5A524", "#C46A0A") } });
+            Kpi("sell-kpi-customers", "Kunden", customers.ToString(), $"{open} Bestellung(en) offen", "#F5A524", "#C46A0A"),
+            Kpi("sell-kpi-open", "Offene Rechnungen", Eu(shop.OpenReceivables()) + " €", "brutto, noch nicht bezahlt", "#5BC0EB", "#1D7FA8") } });
         var chart = new BarChart { Name = "sell-chart", Height = 200, Labels = MonthShort, Foreground = Muted };
         chart.Series.Add(("Umsatz", "#3D8BFF", shop.MonthRevenue(today.Year).Select(d => (double)d).ToArray()));
         sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { H($"Umsatz je Monat {today.Year}", 14), chart } }));
@@ -55,21 +57,42 @@ public partial class MainWindow
             var oid = o.Id;
             var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
                 new TextBlock { Text = Eu(o.Net) + " €", Foreground = Text, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center },
-                new Border { CornerRadius = new CornerRadius(10), Padding = new Thickness(8, 2), VerticalAlignment = VerticalAlignment.Center, Background = Brush.Parse(o.Status switch { "offen" => "#33F5A524", "bezahlt" => "#332FBF71", _ => "#333D8BFF" }),
+                new Border { CornerRadius = new CornerRadius(10), Padding = new Thickness(8, 2), VerticalAlignment = VerticalAlignment.Center, Background = Brush.Parse(o.Status switch { "offen" => "#33F5A524", "bezahlt" => "#332FBF71", "storniert" => "#33F0644B", _ => "#333D8BFF" }),
                     Child = new TextBlock { Text = o.Status, Foreground = Text, FontSize = 11 } } } };
-            if (o.InvoiceNumber.Length == 0) right.Children.Add(Act($"sell-invoice-{i}", "Rechnung", () => Try(V, () =>
+            var live = o.Status != "storniert";
+            // 105 (Entscheidung 31.10.2026): Bestand sinkt erst bei „Geliefert“
+            if (live && o.StockOut == false) right.Children.Add(Act($"sell-deliver-{i}", "Geliefert", () => Try(V, () => { shop.Deliver(oid, today); _core.Audit.Append(Principal.LocalOwner.Name, "shop.deliver", oid); Say("Als geliefert eingetragen – der Bestand ist gesunken.", V); })));
+            if (live && o.InvoiceNumber.Length == 0) right.Children.Add(Act($"sell-invoice-{i}", "Rechnung", () => Try(V, () =>
             {
                 var (inv, file) = shop.Invoice(oid, Money, _settings.Name.Trim().Length > 0 ? _settings.Name + "\n" + _settings.SenderStreet + "\n" + _settings.SenderCity : "Dein Name und Adresse", _settings.SmallBusiness, _settings.InvoiceLogo);
-                _core.Audit.Append(Principal.LocalOwner.Name, "shop.invoice", inv.Number); Launch(file); Say($"Rechnung {inv.Number} erstellt und unter „Geld“ als Einnahme gebucht.", V);
+                _core.Audit.Append(Principal.LocalOwner.Name, "shop.invoice", inv.Number); Launch(file); Say($"Rechnung {inv.Number} erstellt. Die Einnahme wird gebucht, sobald du die Zahlung erfasst.", V);
             }), true));
-            else right.Children.Add(P(o.InvoiceNumber, null, 11));
-            if (o.Status != "bezahlt") right.Children.Add(Act($"sell-paid-{i}", "Bezahlt", () => { shop.SetStatus(oid, "bezahlt"); Show(V); }));
+            else if (o.InvoiceNumber.Length > 0) right.Children.Add(P(o.InvoiceNumber + (o.Open > 0 ? $" · offen {Eu(o.Open)} €" : ""), null, 11));
+            // Umsatz zählt erst bei Zahlung (105-05): Betrag und Referenz, gleiche Referenz bucht nichts doppelt
+            if (live && o.Payments is not null && o.InvoiceNumber.Length > 0 && o.Open > 0)
+            {
+                if (_sellPayFor == oid)
+                {
+                    var amt = Field("sell-pay-amount", "Betrag €", 90, o.Open.ToString("0.00", System.Globalization.CultureInfo.GetCultureInfo("de-DE")));
+                    var refBox = Field("sell-pay-ref", "Referenz (Kontoauszug)", 170, $"{o.InvoiceNumber}-{o.Payments.Count + 1}");
+                    right.Children.Add(amt); right.Children.Add(refBox);
+                    right.Children.Add(Act($"sell-pay-book-{i}", "Buchen", () => Try(V, () =>
+                    {
+                        var after = shop.Pay(oid, Finance.ParseAmount(Need(amt, "den Betrag")), today, Need(refBox, "die Referenz"), Money, _settings.SmallBusiness);
+                        _sellPayFor = null; _core.Audit.Append(Principal.LocalOwner.Name, "shop.payment", $"{o.InvoiceNumber} {after.Paid:0.00}");
+                        Say(after.Open > 0 ? $"Zahlung gebucht – noch offen {Eu(after.Open)} €." : "Zahlung gebucht – Rechnung vollständig bezahlt.", V);
+                    }), true));
+                }
+                else right.Children.Add(Act($"sell-pay-{i}", "Zahlung erfassen", () => { _sellPayFor = oid; Show(V); }));
+            }
+            if (o.Payments is null && o.Status != "bezahlt") right.Children.Add(Act($"sell-paid-{i}", "Bezahlt", () => { shop.SetStatus(oid, "bezahlt"); Show(V); })); // Altdaten
+            if (live && o.Paid == 0 && o.Status != "bezahlt") right.Children.Add(Act($"sell-cancel-{i}", "Stornieren", () => Try(V, () => { shop.Cancel(oid, today); _core.Audit.Append(Principal.LocalOwner.Name, "shop.cancel", oid); Say("Bestellung storniert.", V); })));
             orders.Children.Add(Card(Row(new StackPanel { Children = { new TextBlock { Text = o.Customer, Foreground = Text, FontWeight = FontWeight.SemiBold },
                 P($"{o.Date:dd.MM.yyyy} · {string.Join(", ", o.Lines.Select(l => $"{l.Qty:0.##} × {l.Product}"))}", null, 11) } }, right)));
             i++;
         }
         if (i == 0) orders.Children.Add(P("Noch keine Bestellungen.", Text));
-        sp.Children.Add(Card(Section("Bestellungen", "Bestellung eintragen, dann mit einem Klick die Rechnung schreiben – sie wird automatisch als Einnahme gebucht.",
+        sp.Children.Add(Card(Section("Bestellungen", "Bestellung eintragen (die Ware wird vorgemerkt), bei Versand „Geliefert“ (der Bestand sinkt), Rechnung schreiben und bei Eingang die Zahlung erfassen – erst dann zählt sie als Einnahme.",
             Line(cust, prod, qty, Act("sell-order-add", "Bestellung eintragen", () => Try(V, () =>
             {
                 if (cust.SelectedItem is not string c) throw new ArgumentException("Bitte einen Kunden wählen (oder unten anlegen).");
@@ -95,7 +118,7 @@ public partial class MainWindow
                 Child = new StackPanel { Spacing = 4, Children = {
                     new TextBlock { Text = p.Name, Foreground = Brush.Parse("#1F2933"), FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
                     new TextBlock { Text = Eu(_settings.SmallBusiness ? (decimal)p.Price : Math.Round((decimal)p.Price * (1 + LegalRates.VatStandard / 100m), 2)) + " €", Foreground = Brush.Parse("#1E4FD8"), FontSize = 18, FontWeight = FontWeight.Bold },
-                    new TextBlock { Text = p.Stock > 0 ? $"{p.Stock} vorrätig" : "nicht vorrätig", Foreground = Brush.Parse(p.Stock > 0 ? "#167A45" : "#B2361F"), FontSize = 11 } } } });
+                    new TextBlock { Text = (p.Stock > 0 ? $"{p.Stock} vorrätig" : "nicht vorrätig") + (shop.Reserved(p.Name) is var rs && rs > 0 ? $" · {rs:0.##} vorgemerkt" : ""), Foreground = Brush.Parse(p.Stock > 0 ? "#167A45" : "#B2361F"), FontSize = 11 } } } });
         if (products.Count == 0) shopGrid.Children.Add(P("Noch keine Artikel.", Text));
         sp.Children.Add(Card(Section("Artikel und Webshop-Vorschau", "So sähe dein Shop aus. „Als Webseite speichern“ legt eine HTML-Seite an – ohne Bezahlfunktion und ohne fremde Dienste.",
             Line(pn, pp, ps, Act("sell-prod-add", "Artikel anlegen", () => Try(V, () =>

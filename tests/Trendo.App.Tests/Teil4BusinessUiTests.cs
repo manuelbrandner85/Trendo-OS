@@ -26,10 +26,19 @@ public class Teil4BusinessUiTests
         w.Find<ComboBox>("sell-order-customer").SelectedItem = "Erika Muster"; w.Find<ComboBox>("sell-order-product").SelectedItem = "Kaffee";
         w.Find<TextBox>("sell-order-qty").Text = "2";
         w.Find<Button>("sell-order-add").Press(); Pump();
-        Assert.Equal("20,00 €", w.Find<TextBlock>("sell-kpi-month").Text);
+        // 105 (Entscheidung 31.10.2026): Umsatz erst bei Zahlung, Bestand erst bei Lieferung
+        Assert.Equal("0,00 €", w.Find<TextBlock>("sell-kpi-month").Text);
+        Assert.Equal(5, w.BizShop.Products.All()[0].Stock);
+        w.Find<Button>("sell-deliver-0").Press(); Pump();
+        Assert.Equal(3, w.BizShop.Products.All()[0].Stock);
         w.Find<Button>("sell-invoice-0").Press(); Pump();
-        Assert.Equal(20m, Assert.Single(w.Money.All()).Amount);
+        Assert.Empty(w.Money.All());
         Assert.Null(w.TryFind<Button>("sell-invoice-0"));
+        w.Find<Button>("sell-pay-0").Press(); Pump();
+        w.Find<Button>("sell-pay-book-0").Press(); Pump();
+        Assert.Equal(20m, Assert.Single(w.Money.All()).Amount);
+        Assert.Equal("20,00 €", w.Find<TextBlock>("sell-kpi-month").Text);
+        Assert.Null(w.TryFind<Button>("sell-pay-0"));
         // dieselben Kunden wie unter „Betrieb“
         Assert.Equal("Erika Muster", Assert.Single(w.BizContacts.All()).Name);
         w.Close();

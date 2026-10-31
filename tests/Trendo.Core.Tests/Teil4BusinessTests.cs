@@ -70,7 +70,8 @@ public class Teil4BusinessTests
         finally { Directory.Delete(d, true); }
     }
 
-    [Fact(DisplayName = "Online verkaufen F1/F2/U1/F3: Bestellung (Bestand sinkt, Interessent wird Kunde), Rechnung aus Bestellung bucht Einnahme, Kennzahlen, Shop-Seite")]
+    // 105 (Entscheidung Manuel 31.10.2026): Bestand sinkt erst bei Lieferung, Einnahme erst bei Zahlung – Test bewusst angepasst
+    [Fact(DisplayName = "Online verkaufen F1/F2/U1/F3 + 105: Bestellung merkt vor, Lieferung senkt Bestand, Rechnung ohne Buchung, Zahlung bucht Einnahme, Kennzahlen, Shop-Seite")]
     public void Shop_flow()
     {
         var d = Tmp();
@@ -81,21 +82,90 @@ public class Teil4BusinessTests
             s.Products.Add(new Product("Kaffee 500 g", "", 4, 9.5, 10, 0, 0));
             var o = s.AddOrder("Erika Muster", new DateOnly(2026, 10, 27), ("Kaffee 500 g", 3));
             Assert.Equal(28.5m, o.Net);
-            Assert.Equal(7, s.Products.All()[0].Stock);
+            Assert.Equal(10, s.Products.All()[0].Stock); // nur vorgemerkt
+            Assert.Equal(3m, s.Reserved("Kaffee 500 g")); Assert.Equal(7m, s.Available("Kaffee 500 g"));
             Assert.Equal("Kunde", s.Customers.All()[0].Stage);
             Assert.Throws<ArgumentException>(() => s.AddOrder("Niemand", new DateOnly(2026, 10, 27), ("Kaffee 500 g", 1)));
+            s.Deliver(o.Id, new DateOnly(2026, 10, 28));
+            Assert.Equal(7, s.Products.All()[0].Stock); Assert.Equal(0m, s.Reserved("Kaffee 500 g"));
+            Assert.Equal(-3m, Assert.Single(s.Moves.All()).Qty);
+            Assert.Throws<InvalidOperationException>(() => s.Deliver(o.Id, new DateOnly(2026, 10, 28)));
             var ledger = new Ledger(d);
             var (inv, file) = s.Invoice(o.Id, ledger, "Muster Kaffee\nWeg 1\n12345 Ort", smallBusiness: true);
             Assert.Equal("RE-2026-001", inv.Number);
             Assert.Contains("10115 Berlin", File.ReadAllText(file));
-            Assert.Equal(28.5m, Assert.Single(ledger.All()).Amount);
-            Assert.Equal("berechnet", s.Orders()[0].Status);
+            Assert.Empty(ledger.All()); // Rechnung ist noch keine Einnahme
+            Assert.Equal("berechnet", s.Orders()[0].Status); Assert.Equal(28.5m, s.Orders()[0].Open);
             Assert.Throws<InvalidOperationException>(() => s.Invoice(o.Id, ledger, "x", true));
+            Assert.Equal((0m, 0m, 1, 0), s.Figures(new DateOnly(2026, 10, 30)));
+            s.Pay(o.Id, 28.5m, new DateOnly(2026, 10, 29), "Konto 29.10.", ledger, smallBusiness: true);
+            Assert.Equal(28.5m, Assert.Single(ledger.All()).Amount);
+            Assert.Equal("bezahlt", s.Orders()[0].Status);
             var f = s.Figures(new DateOnly(2026, 10, 30));
             Assert.Equal((28.5m, 28.5m, 1, 0), f);
             Assert.Equal(28.5m, s.MonthRevenue(2026)[9]);
             var html = Shop.ShopHtml("Muster Kaffee", s.Products.All(), smallBusiness: false);
             Assert.Contains("11,31 €", html); Assert.Contains("7 vorrätig", html); Assert.DoesNotContain("Trendo", html);
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "105-05/105-22: Rechnung 100 €, Zahlung 60 € → offen 40 €; gleiche Zahlung nochmal ändert nichts; Storno vor Lieferung ohne Bestand, nach Lieferung mit Gegenbuchung")]
+    public void Payments_and_stock()
+    {
+        var d = Tmp();
+        try
+        {
+            var s = new Shop(d, "idee1");
+            s.Customers.Add(new BizContact("Erika Muster", "", "", "Kunde", null, 0, "", "Weg 1, 12345 Ort"));
+            s.Products.Add(new Product("Tasche", "", 0, 100, 4, 0, 0));
+            var ledger = new Ledger(d);
+            var o = s.AddOrder("Erika Muster", new DateOnly(2026, 11, 2), ("Tasche", 1));
+            s.Invoice(o.Id, ledger, "Händler", smallBusiness: true);
+            s.Pay(o.Id, 60m, new DateOnly(2026, 11, 3), "Bank-001", ledger, true);
+            Assert.Equal(40m, s.Orders().Single(x => x.Id == o.Id).Open);
+            Assert.Equal("teilbezahlt", s.Orders().Single(x => x.Id == o.Id).Status);
+            s.Pay(o.Id, 60m, new DateOnly(2026, 11, 3), "Bank-001", ledger, true); // gleicher Import nochmal
+            Assert.Equal(40m, s.Orders().Single(x => x.Id == o.Id).Open);
+            Assert.Single(ledger.All());
+            Assert.Throws<ArgumentException>(() => s.Pay(o.Id, 50m, new DateOnly(2026, 11, 4), "Bank-002", ledger, true)); // mehr als offen
+            Assert.Throws<InvalidOperationException>(() => s.Cancel(o.Id, new DateOnly(2026, 11, 4))); // schon Geld eingegangen
+            Assert.Equal(40m, s.OpenReceivables());
+
+            // Storno vor Lieferung: Bestand bleibt, Vormerkung weg
+            var a = s.AddOrder("Erika Muster", new DateOnly(2026, 11, 5), ("Tasche", 2));
+            Assert.Equal(3m, s.Reserved("Tasche"));
+            s.Cancel(a.Id, new DateOnly(2026, 11, 5));
+            Assert.Equal(4, s.Products.All()[0].Stock); Assert.Equal(1m, s.Reserved("Tasche"));
+            Assert.Throws<InvalidOperationException>(() => s.Deliver(a.Id, new DateOnly(2026, 11, 6)));
+            // Storno nach Lieferung: Gegenbewegung, Bestand wieder da
+            var b = s.AddOrder("Erika Muster", new DateOnly(2026, 11, 6), ("Tasche", 2));
+            s.Deliver(b.Id, new DateOnly(2026, 11, 6));
+            Assert.Equal(2, s.Products.All()[0].Stock);
+            s.Cancel(b.Id, new DateOnly(2026, 11, 7));
+            Assert.Equal(4, s.Products.All()[0].Stock);
+            Assert.Equal(0m, s.Moves.All().Where(m => m.OrderId == b.Id).Sum(m => m.Qty)); // ausgeglichen
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "105: Bestellungen aus älteren Versionen (Bestand schon gesenkt, Einnahme schon gebucht) werden nicht doppelt gebucht")]
+    public void Legacy_orders()
+    {
+        var d = Tmp();
+        try
+        {
+            var s = new Shop(d, "idee1");
+            s.Customers.Add(new BizContact("Erika Muster", "", "", "Kunde", null, 0, "", ""));
+            s.Products.Add(new Product("Tasche", "", 0, 10, 3, 0, 0));
+            s.OrderList.Add(new ShopOrder("alt1", new DateOnly(2026, 10, 1), "Erika Muster", [new("Tasche", 1, 10)], "berechnet", "RE-2026-009"));
+            var ledger = new Ledger(d);
+            Assert.Throws<InvalidOperationException>(() => s.Deliver("alt1", new DateOnly(2026, 10, 2)));
+            Assert.Throws<InvalidOperationException>(() => s.Pay("alt1", 10m, new DateOnly(2026, 10, 2), "x", ledger, true));
+            Assert.Equal(3, s.Products.All()[0].Stock);
+            Assert.Empty(ledger.All());
+            Assert.Equal(0m, s.Reserved("Tasche"));
+            Assert.Equal(10m, s.Figures(new DateOnly(2026, 10, 15)).Month); // Umsatz wie bisher zum Bestelldatum
         }
         finally { Directory.Delete(d, true); }
     }

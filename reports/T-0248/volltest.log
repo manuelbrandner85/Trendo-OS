@@ -1,0 +1,13 @@
+Bestanden!   : Fehler:     0, erfolgreich:    15, übersprungen:     0, gesamt:    15, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+[xUnit.net 00:00:06.38]     SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt [SKIP]
+  Übersprungen SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt [1 ms]
+--
+Bestanden!   : Fehler:     0, erfolgreich:   858, übersprungen:     3, gesamt:   861, Dauer: 52 s - Trendo.Core.Tests.dll (net10.0)
+[xUnit.net 00:02:55.98]     T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+  Übersprungen T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [1 ms]
+--
+Bestanden!   : Fehler:     0, erfolgreich:   437, übersprungen:     3, gesamt:   440, Dauer: 19 m 16 s - Trendo.App.Tests.dll (net10.0)
+dotnet-exit 0
+Ran 8 tests in 11.146s
+
+OK
