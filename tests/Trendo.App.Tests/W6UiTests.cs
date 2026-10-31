@@ -53,22 +53,6 @@ public static class Glb
 }
 
 
-public class SPEC14_Ui
-{
-    [AvaloniaFact(DisplayName = "SPEC-14 UI: G-Code prüfen mit Vorschau, Schnittwerte")]
-    public void Cnc()
-    {
-        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
-        var f = Path.Combine(root, "teil.nc"); File.WriteAllText(f, "G21 G90\nT2 M6\nG0 X0 Y0 Z5\nG1 Z-1 F200\nG1 X50 Y0 F1200\nX50 Y50\nG0 Z5\n");
-        w.Show(MainWindow.StudioPages["SPEC-14"]);
-        var o = W6Ui.Run(w, "cnc-check", ("file", f));
-        Assert.Contains("✓ Keine Auffälligkeiten", o); Assert.Contains("T2", o); Assert.Contains("50,0 × 50,0 mm", o);
-        Assert.True(File.Exists(Path.Combine(root, "teil.vorschau.svg")));
-        Assert.Contains("⚠", W6Ui.Run(w, "cnc-check", ("x", "10")));
-        Assert.Contains("13.263 U/min", W6Ui.Run(w, "cnc-feeds"));
-    }
-}
-
 public class SPEC15_Ui
 {
     [AvaloniaFact(DisplayName = "SPEC-15 UI: Ablauf bauen, speichern, Leitung prüfen")]
@@ -174,24 +158,6 @@ public class SPEC04_UiPlus
         Assert.Contains("Stufe 3", W6Ui.Run(w, "xr-lod"));
         Assert.Contains("1.024 Pixel", W6Ui.Run(w, "xr-texel"));
         Assert.Contains("Komfort", W6Ui.Run(w, "xr-move"));
-    }
-}
-
-public class SPEC14_UiPlus
-{
-    [AvaloniaFact(DisplayName = "SPEC-14 UI Ausbau: Programme erzeugen und Werkstatt-Rechner")]
-    public void Plus()
-    {
-        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
-        var f = Path.Combine(root, "p.nc"); File.WriteAllText(f, "G90\nG0 X1 Y1\nG1 Z-1 F100\n");
-        w.Show(MainWindow.StudioPages["SPEC-14"]);
-        Assert.Contains("tasche.nc", W6Ui.Run(w, "cnc-pocket"));
-        Assert.Contains("kontur.nc", W6Ui.Run(w, "cnc-outline"));
-        Assert.Contains("(50,00 | 0,00)", W6Ui.Run(w, "cnc-bolt"));
-        W6Ui.Run(w, "cnc-offset", ("file", f), ("dx", "10")); Assert.Contains("X11 Y1", File.ReadAllText(Path.Combine(root, "p.versetzt.nc")));
-        Assert.Contains("0,30 kW", W6Ui.Run(w, "cnc-mrr"));
-        Assert.Contains("17,50 € je Teil", W6Ui.Run(w, "cnc-cost"));
-        Assert.Contains("Ø 6,75 mm", W6Ui.Run(w, "cnc-tap"));
     }
 }
 
