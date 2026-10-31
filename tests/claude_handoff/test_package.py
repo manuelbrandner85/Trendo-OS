@@ -86,6 +86,38 @@ class DatabaseTests(unittest.TestCase):
     # Windows: offene SQLite-Handles verhindern das Löschen des Temp-Ordners.
     for x in conns:x.close()
     t.ROOT,t.LOCAL,t.DB=old
+class JobLimitTests(unittest.TestCase):
+ """T-0249: Pfadliste Pflicht, höchstens 3 gleichzeitig, keine zwei Aufträge auf denselben Dateien, abgebrochene erkannt, Geheimnisse maskiert."""
+ def test_limits(self):
+  t=mod('trendo_ops_limit','tools/trendo_ops.py')
+  with tempfile.TemporaryDirectory() as d:
+   old=(t.ROOT,t.LOCAL,t.DB);t.ROOT=pathlib.Path(d);t.LOCAL=t.ROOT/'.trendo-local';t.DB=t.LOCAL/'jobs.sqlite3'
+   c=None
+   try:
+    c=t.connect()
+    def add(jid,paths,status='READY',pid=None):
+     at=t.now();c.execute('INSERT INTO jobs(id,title,prompt,status,created,updated,paths,pid) VALUES(?,?,?,?,?,?,?,?)',(jid,jid,'p',status,at,at,json.dumps(paths),pid))
+     return t.get(c,jid)
+    self.assertEqual('BLOCKED',t.check_start(c,add('T-ohne',[]))[0])
+    me=os.getpid()
+    for i in range(3):add(f'T-lauf{i}',[f'src/a{i}.cs'],'RUNNING',me)
+    self.assertEqual('WAIT',t.check_start(c,add('T-viert',['src/neu.cs']))[0])
+    c.execute("UPDATE jobs SET status='SUCCEEDED' WHERE id='T-lauf2'")
+    self.assertEqual('WAIT',t.check_start(c,add('T-gleich',['src/a0.cs']))[0])
+    self.assertEqual('WAIT',t.check_start(c,add('T-ordner',['src']))[0])
+    self.assertEqual('OK',t.check_start(c,add('T-frei',['tests/x.cs']))[0])
+    # abgebrochene RUNNING-Aufträge (Prozess weg) werden INTERRUPTED, laufende bleiben
+    add('T-tot',['docs/a.md'],'RUNNING',999999)
+    self.assertEqual(1,t.recover(c))
+    self.assertEqual('INTERRUPTED',t.get(c,'T-tot')['status'])
+    self.assertEqual('RUNNING',t.get(c,'T-lauf0')['status'])
+    # Geheimnisse landen nie im Ereignisprotokoll
+    t.event('test','T-x','password=geheim123 token: abc api_key=xyz')
+    ev=(t.LOCAL/'events.jsonl').read_text(encoding='utf-8')
+    for secret in ['geheim123','abc','xyz']:self.assertNotIn(secret,ev)
+   finally:
+    if c:c.close()
+    t.ROOT,t.LOCAL,t.DB=old
 class MCPTests(unittest.TestCase):
  def test_protocol(self):
   p=ROOT/'tools/trendo_mcp.py'
