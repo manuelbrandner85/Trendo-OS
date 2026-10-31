@@ -123,11 +123,50 @@ public partial class MainWindow
         _txMsg = $"Umschläge (DIN lang) gespeichert: {Path.GetFileName(f)} ({n} Stück)."; return f;
     }
 
-    /// <summary>W9: Absatz bzw. Auswahl von der KI umschreiben lassen (Umschreiben, Kürzen, Freundlicher, Förmlicher).</summary>
+    /// <summary>108-49 (Entscheidung 31.10.2026): Vorschlag der KI – erst zeigen, dann auf Wunsch übernehmen. Absatz als Index, weil „Zurück“ das Dokument austauscht.</summary>
+    private (int Block, int Start, int Len, string Old, string New)? _txAiProp;
+    public bool TextAiHasProposal => _txAiProp is not null;
+
+    /// <summary>Vorschlag übernehmen (nur wenn der Text an der Stelle noch derselbe ist) oder verwerfen.</summary>
+    public void TextAiDecide(bool accept)
+    {
+        if (_txAiProp is not { } pr) return;
+        _txAiProp = null;
+        if (!accept) { _txMsg = "Vorschlag verworfen – dein Text bleibt unverändert."; return; }
+        if (pr.Block >= TextDocument.Blocks.Count || TextDocument.Blocks[pr.Block] is not Para p || pr.Start + pr.Len > p.Text.Length || p.Text.Substring(pr.Start, pr.Len) != pr.Old)
+        { _txMsg = "Der Text hat sich inzwischen geändert – Vorschlag nicht übernommen."; return; }
+        Snapshot(); TextDoc.ReplaceAt(p, pr.Start, pr.Len, pr.New); TextFocusBlock = pr.Block; _txSel = pr.Start; _txSelLen = pr.New.Length; Changed();
+        _txMsg = "Vorschlag übernommen – mit „Zurück“ rückgängig machen.";
+    }
+
+    /// <summary>Vorschlag mit markierten Änderungen (entfernt durchgestrichen, neu hervorgehoben) und „Übernehmen“/„Verwerfen“.</summary>
+    private Control? TextAiProposalCard()
+    {
+        if (_txAiProp is not { } pr) return null;
+        var tb = new SelectableTextBlock { Name = "text-ai-proposal", TextWrapping = TextWrapping.Wrap, Foreground = Text, FontSize = 13 };
+        foreach (var (t, k) in TextTools.DiffWords(pr.Old, pr.New))
+        {
+            var run = new Avalonia.Controls.Documents.Run(t);
+            if (k < 0) { run.Foreground = Brush.Parse("#F87171"); run.TextDecorations = TextDecorations.Strikethrough; }
+            else if (k > 0) { run.Foreground = Brush.Parse("#4ADE80"); run.FontWeight = FontWeight.SemiBold; }
+            tb.Inlines!.Add(run);
+        }
+        var accept = new Button { Name = "text-ai-accept", Content = "Übernehmen", Background = Accent, Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 6, 0), Focusable = false };
+        accept.Click += (_, _) => { TextAiDecide(true); Show("text"); };
+        var reject = new Button { Name = "text-ai-reject", Content = "Verwerfen", Padding = new Thickness(12, 4), Focusable = false };
+        reject.Click += (_, _) => { TextAiDecide(false); Show("text"); };
+        return new Border { Name = "text-ai-card", Background = Brush.Parse("#1A2F86F6"), BorderBrush = Brush.Parse("#552F86F6"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8), Margin = new Thickness(0, 4, 0, 4),
+            Child = new StackPanel { Spacing = 6, Children = {
+                new TextBlock { Text = "✨ Vorschlag der KI – noch nichts geändert", Foreground = Text, FontWeight = FontWeight.SemiBold },
+                tb, new StackPanel { Orientation = Orientation.Horizontal, Children = { accept, reject } } } } };
+    }
+
+    /// <summary>W9: Absatz bzw. Auswahl von der KI umschreiben lassen (Umschreiben, Kürzen, Freundlicher, Förmlicher) – als Vorschlag.</summary>
     public async Task TextAiRewrite(string how)
     {
         if (CurPara() is not { } p || p.Text.Trim().Length == 0) { _txMsg = "Erst in einen Absatz mit Text klicken."; return; }
-        var (start, len) = _txSelLen > 0 ? (_txSel, _txSelLen) : (0, p.Text.Length);
+        // Markierung kann nach „Zurück“ über das Absatzende zeigen – dann den ganzen Absatz nehmen
+        var (start, len) = _txSelLen > 0 && _txSel >= 0 && _txSel + _txSelLen <= p.Text.Length ? (_txSel, _txSelLen) : (0, p.Text.Length);
         var src = p.Text.Substring(start, len);
         var task = how switch
         {
@@ -142,7 +181,8 @@ public partial class MainWindow
             using var kiLabel = Trendo.Core.KiActivityHub.Label("Text bearbeiten"); var a = await Intel.AskAsync(new KiRequest($"{task} Antworte nur mit dem neuen Text, auf Deutsch, ohne Anführungszeichen:\n\n{src}", PreferredModel: KiModelName, UseKnowledge: false));
             var neu = (a.Text ?? "").Trim().Trim('"', '„', '“');
             if (neu.Length == 0) { _txMsg = "Die KI hat nichts geliefert. Ist ein Sprachmodell in der KI-Bibliothek geladen?"; }
-            else { Snapshot(); TextDoc.ReplaceAt(p, start, len, neu); _txSel = start; _txSelLen = neu.Length; Changed(); _txMsg = "Von der KI umformuliert – mit „Zurück“ rückgängig machen."; }
+            else if (neu == src) _txMsg = "Die KI hat nichts zu verbessern gefunden.";
+            else { _txAiProp = (TextFocusBlock, start, len, src, neu); _txMsg = "Vorschlag der KI – erst prüfen, dann „Übernehmen“ oder „Verwerfen“."; }
         }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or TaskCanceledException) { _txMsg = "Die KI ist gerade nicht erreichbar: " + ex.Message; }
         Show("text");

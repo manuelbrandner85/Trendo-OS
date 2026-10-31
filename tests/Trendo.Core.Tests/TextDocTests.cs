@@ -226,4 +226,15 @@ public class T0223_TrendoText
         }
         finally { Directory.Delete(d, true); }
     }
+
+    [Fact(DisplayName = "108-49: Wortvergleich für den KI-Vorschlag – entfernt, neu, gleich; Zusammensetzen ergibt beide Fassungen")]
+    public void Diff_words()
+    {
+        var d = Trendo.Core.Office.TextTools.DiffWords("Wir freuen uns auf Sie.", "Wir freuen uns sehr auf Ihren Besuch.");
+        Assert.Equal("Wir freuen uns auf Sie.", string.Concat(d.Where(x => x.Kind <= 0).Select(x => x.Text)));
+        Assert.Equal("Wir freuen uns sehr auf Ihren Besuch.", string.Concat(d.Where(x => x.Kind >= 0).Select(x => x.Text)));
+        Assert.Contains(d, x => x.Kind == 1 && x.Text.Contains("sehr"));
+        Assert.Contains(d, x => x.Kind == -1 && x.Text.Contains("Sie."));
+        Assert.All(Trendo.Core.Office.TextTools.DiffWords("gleich bleibt", "gleich bleibt"), x => Assert.Equal(0, x.Kind));
+    }
 }

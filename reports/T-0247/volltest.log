@@ -1,0 +1,13 @@
+Bestanden!   : Fehler:     0, erfolgreich:    15, übersprungen:     0, gesamt:    15, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+  Trendo.App -> C:\Users\manue\Desktop\Trend Os-worktrees\integration\src\Trendo.App\bin\Release\net10.0\TrendoOS.dll
+  Trendo.App.Tests -> C:\Users\manue\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll
+--
+Bestanden!   : Fehler:     0, erfolgreich:   856, übersprungen:     3, gesamt:   859, Dauer: 52 s - Trendo.Core.Tests.dll (net10.0)
+[xUnit.net 00:08:45.39]     Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [SKIP]
+  Übersprungen Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [1 ms]
+--
+Bestanden!   : Fehler:     0, erfolgreich:   437, übersprungen:     3, gesamt:   440, Dauer: 17 m 7 s - Trendo.App.Tests.dll (net10.0)
+dotnet-exit 0
+Ran 8 tests in 19.591s
+
+OK

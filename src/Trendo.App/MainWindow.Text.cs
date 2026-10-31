@@ -143,6 +143,7 @@ public partial class MainWindow
         var ribbon = new StackPanel { Children = { TextRibbonTabs() } };
         if (_txRibbon == "start") { ribbon.Children.Add(TextToolbar()); ribbon.Children.Add(StyleGallery()); } else ribbon.Children.Add(TextRibbonBody());
         if (TextPromptBar() is { } prompt) ribbon.Children.Add(prompt);
+        if (TextAiProposalCard() is { } proposal) ribbon.Children.Add(proposal); // 108-49: Vorschlag statt sofort ersetzen
         Grid.SetRow(ribbon, 1); Grid.SetColumnSpan(ribbon, 2); g.Children.Add(ribbon);
         var more = TextMoreBar(); more.IsVisible = _txMore && _txRibbon == "start"; Grid.SetRow(more, 2); Grid.SetColumnSpan(more, 2); g.Children.Add(more);
         var page = TextPaper(); Grid.SetRow(page, 3); g.Children.Add(page);

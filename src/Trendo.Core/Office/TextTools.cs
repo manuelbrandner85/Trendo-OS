@@ -126,6 +126,23 @@ public static partial class TextTools
 
     static List<string> Tokens(string s) => Regex.Matches(s, @"\s+|[^\s]+").Select(m => m.Value).ToList();
 
+    /// <summary>108-49: Wortweiser Unterschied für einen Vorschlag – (Text, Art) mit Art 0 gleich, −1 entfernt, +1 neu.</summary>
+    public static List<(string Text, int Kind)> DiffWords(string oldText, string newText)
+    {
+        var wa = Tokens(oldText); var wb = Tokens(newText); var res = new List<(string, int)>();
+        int ia = 0, ib = 0;
+        void Add(string t, int k) { if (res.Count > 0 && res[^1].Item2 == k) res[^1] = (res[^1].Item1 + t, k); else res.Add((t, k)); }
+        foreach (var (ca, cb) in Lcs(wa, wb))
+        {
+            while (ia < ca) Add(wa[ia++], -1);
+            while (ib < cb) Add(wb[ib++], 1);
+            Add(wb[cb], 0); ia = ca + 1; ib = cb + 1;
+        }
+        while (ia < wa.Count) Add(wa[ia++], -1);
+        while (ib < wb.Count) Add(wb[ib++], 1);
+        return res;
+    }
+
     /// <summary>Längste gemeinsame Teilfolge als Indexpaare (A in der alten, B in der neuen Liste).</summary>
     static List<(int A, int B)> Lcs(List<string> a, List<string> b)
     {
