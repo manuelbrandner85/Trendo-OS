@@ -47,7 +47,16 @@ public static class XrPlus
         }
         List<string> Strs(string k) => r.TryGetProperty(k, out var a) && a.ValueKind == JsonValueKind.Array ? a.EnumerateArray().Select(x => x.GetString() ?? "").ToList() : [];
         var has = mn[0] != double.MaxValue;
-        return new(info, has ? mx[0] - mn[0] : 0, has ? mx[1] - mn[1] : 0, has ? mx[2] - mn[2] : 0, Arr("nodes").Select((n, i) => Nm(n, $"Knoten {i + 1}")).ToList(), Arr("meshes").Select((n, i) => Nm(n, $"Mesh {i + 1}")).ToList(),
+        double sx = has ? mx[0] - mn[0] : 0, sy = has ? mx[1] - mn[1] : 0, sz = has ? mx[2] - mn[2] : 0;
+        // T-0281: Größe aus dem zusammengesetzten Modell (Knoten mit Verschiebung/Drehung/Skalierung) – die Rohgrenzen der Teile allein
+        // ergeben bei mehrteiligen Modellen falsche Maße. Trendo-Netz: Zentimeter, Z oben → glTF-Reihenfolge Breite, Höhe, Tiefe in Metern.
+        try
+        {
+            var mesh = Mesh3D.ReadMeshFile(path);
+            if (mesh.V.Count > 0) (sx, sy, sz) = ((mesh.V.Max(v => v.X) - mesh.V.Min(v => v.X)) / 100, (mesh.V.Max(v => v.Z) - mesh.V.Min(v => v.Z)) / 100, (mesh.V.Max(v => v.Y) - mesh.V.Min(v => v.Y)) / 100);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or InvalidDataException or IOException or JsonException or FormatException or ArgumentException or IndexOutOfRangeException) { } // zu groß/unlesbar: Rohgrenzen
+        return new(info, sx, sy, sz, Arr("nodes").Select((n, i) => Nm(n, $"Knoten {i + 1}")).ToList(), Arr("meshes").Select((n, i) => Nm(n, $"Mesh {i + 1}")).ToList(),
             Arr("animations").Select((n, i) => Nm(n, $"Animation {i + 1}")).ToList(), tex, draws, Strs("extensionsUsed"), Strs("extensionsRequired"));
     }
 

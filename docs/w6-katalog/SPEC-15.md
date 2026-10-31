@@ -4,7 +4,7 @@ Katalog-Status: **APPROVED** – freigegeben von Manuel im Chat am 21.10.2026 um
 
 | Nr | Funktion | Beschreibung | Stand | Test |
 |---|---|---|---|---|
-| F01 | Sendung | Name, Beginn, Sendeplatz | gebaut | `SPEC-15 UI: Ablauf bauen, speichern, Leitung prüfen` |
+| F01 | Sendung | Name, Beginn, Sendeplatz | gebaut | `SPEC-15 UI: Programmpunkte eintippen (Enter), Dauer und Titel in der Tabelle ändern, verschieben, entfernen; Sendeplatz zu kurz wird rot` |
 | F02 | Programmpunkte | hinzufügen/entfernen | gebaut | `SPEC-15: Sendeablauf mit Zeiten, Überziehung, Kapitelmarken, Bitrate, Speicher` |
 | F03 | Dauer-Eingabe | s, m:ss, h:mm:ss | gebaut | `SPEC-15: Sendeablauf mit Zeiten, Überziehung, Kapitelmarken, Bitrate, Speicher` |
 | F04 | Zeiten | Beginn/Ende je Punkt | gebaut | `SPEC-15: Sendeablauf mit Zeiten, Überziehung, Kapitelmarken, Bitrate, Speicher` |
@@ -12,7 +12,7 @@ Katalog-Status: **APPROVED** – freigegeben von Manuel im Chat am 21.10.2026 um
 | F06 | Reihenfolge | verschieben | gebaut | `SPEC-15: Sendeablauf mit Zeiten, Überziehung, Kapitelmarken, Bitrate, Speicher` |
 | F07 | Ablaufplan | CSV | gebaut | `SPEC-15: Sendeablauf mit Zeiten, Überziehung, Kapitelmarken, Bitrate, Speicher` |
 | F08 | Kapitelmarken | YouTube | gebaut | `SPEC-15: Sendeablauf mit Zeiten, Überziehung, Kapitelmarken, Bitrate, Speicher` |
-| F09 | Zwischenablage | Kapitel kopieren | gebaut | `SPEC-15 UI: Ablauf bauen, speichern, Leitung prüfen` |
+| F09 | Zwischenablage | Kapitel kopieren | gebaut | `SPEC-15 UI: On-Air-Uhr zeigt laufenden Punkt mit Countdown und Nächstes; Weitergabe CSV/Kapitel/Karten; Rechner sofort` |
 | F10 | Bitraten-Planer | Plattform, Qualität, Upload | gebaut | `SPEC-15: Sendeablauf mit Zeiten, Überziehung, Kapitelmarken, Bitrate, Speicher` |
 | F11 | Speicherbedarf | GB je Aufnahme | gebaut | `SPEC-15: Sendeablauf mit Zeiten, Überziehung, Kapitelmarken, Bitrate, Speicher` |
 | F12 | Was läuft gerade | aktueller Punkt und Restzeit | gebaut | `SPEC-15 F12: Was läuft gerade` |

@@ -9,7 +9,7 @@ Katalog-Status: **APPROVED** – freigegeben von Manuel im Chat am 21.10.2026 um
 | F03 | Liste importieren | „Frage;Antwort“, Tab, Anki-Export | gebaut | `SPEC-06: Karteikarten mit SM-2-Abständen, Import, Fortschritt, dauerhaft gespeichert` |
 | F04 | Wiederholung SM-2 | wachsende Abstände | gebaut | `SPEC-06: Karteikarten mit SM-2-Abständen, Import, Fortschritt, dauerhaft gespeichert` |
 | F05 | Fortschritt | gesamt, fällig, sicher, schwer | gebaut | `SPEC-06: Karteikarten mit SM-2-Abständen, Import, Fortschritt, dauerhaft gespeichert` |
-| F06 | Lernsitzung | Karte zeigen, aufdecken, bewerten | gebaut | `SPEC-06 UI: Karten anlegen, lernen, bewerten` |
+| F06 | Lernsitzung | Karte zeigen, aufdecken, bewerten | gebaut | `SPEC-06 UI: Karten eintippen, mit Leertaste aufdecken, mit Taste 3 bewerten – Abstand-Vorschau auf den Knöpfen, Statistik zählt mit` |
 | F07 | Export | Stapel als CSV | gebaut | `SPEC-06 F07: Export` |
 | F08 | Bearbeiten & löschen | Karte ändern | gebaut | `SPEC-06 F08: Bearbeiten & löschen` |
 | F09 | Quiz mit Auswahl | Multiple Choice aus anderen Karten | gebaut | `SPEC-06 F09: Quiz mit Auswahl` |

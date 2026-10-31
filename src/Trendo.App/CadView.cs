@@ -69,7 +69,8 @@ public sealed class CadView : Control
             var y2 = z1 * cp + y1 * sp; var d = -y1 * cp + z1 * sp;
             return (w / 2 + x1 * k, h / 2 - y2 * k, d);
         }
-        var light = new Vec3(0.4, -0.6, 0.7).Norm();
+        var view = new Vec3(-sy * cp, -cy * cp, sp).Norm(); // Richtung zur Kamera
+        var reach = Math.Max(1, (max.Z - min.Z) * 0.25); var groundTol = Math.Max(0.5, size * 0.004);
         // Boden-Raster bei min.Z
         var gridPen = new Pen(new SolidColorBrush(Color.Parse("#22FFFFFF")), 1);
         var step = Math.Pow(10, Math.Floor(Math.Log10(size / 2)));
@@ -81,8 +82,10 @@ public sealed class CadView : Control
             a = Proj(new Vec3(gx0, gy0 + i * step, min.Z)); b = Proj(new Vec3(gx0 + 2 * size, gy0 + i * step, min.Z));
             ctx.DrawLine(gridPen, new Point(a.X, a.Y), new Point(b.X, b.Y));
         }
-        // Flächen nach Tiefe sortiert
+        // Flächen nach Tiefe sortiert; Bodenflächen (waagrecht, ganz unten) zuerst, darauf die Schatten, dann der Rest
         var faces = new List<(double D, Point[] Pts, IBrush Fill, bool Sel, List<(Point, Point)> Edges)>();
+        var ground = new List<(double D, Point[] Pts, IBrush Fill, bool Sel, List<(Point, Point)> Edges)>();
+        var casters = new List<Poly>(); var groundZ = min.Z;
         foreach (var (color, solid, sel) in Parts)
         {
             var sharp = solid.Smooth ? [] : SharpEdges(solid);
@@ -95,14 +98,33 @@ public sealed class CadView : Control
                 var a = pts[0]; var b = pts[1]; var c = pts[2];
                 var cross = (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
                 if (cross > 0) continue; // Bildschirm-y zeigt nach unten: Vorderseite hat negatives Kreuzprodukt
-                var shade = 0.35 + 0.65 * Math.Max(0, Vec3.Dot(n, light));
-                var col = Color.FromRgb((byte)Math.Min(255, baseCol.R * shade + 18), (byte)Math.Min(255, baseCol.G * shade + 18), (byte)Math.Min(255, baseCol.B * shade + 18));
+                var zMax = poly.Verts.Max(v => v.Z); var isGround = n.Z > 0.9 && zMax <= min.Z + groundTol * 8;
+                var col = Shading.Shade(baseCol, n, view, isGround ? 1 : Shading.GroundAo(poly.Verts.Average(v => v.Z) - min.Z, reach), solid.Smooth ? 0.35 : 0.2);
                 var edges = new List<(Point, Point)>();
                 for (var i = 0; i < poly.Verts.Count; i++) if (sharp.Contains(EdgeKey(poly.Verts[i], poly.Verts[(i + 1) % poly.Verts.Count]))) edges.Add((new Point(pts[i].X, pts[i].Y), new Point(pts[(i + 1) % pts.Count].X, pts[(i + 1) % pts.Count].Y)));
-                faces.Add((pts.Average(x => x.D), pts.Select(x => new Point(x.X, x.Y)).ToArray(), new SolidColorBrush(col), sel, edges));
+                (isGround ? ground : faces).Add((pts.Average(x => x.D), pts.Select(x => new Point(x.X, x.Y)).ToArray(), new SolidColorBrush(col), sel, edges));
+                if (isGround) groundZ = Math.Max(groundZ, zMax);
             }
+            foreach (var poly in solid.Polys) if (poly.Verts.Max(v => v.Z) > min.Z + groundTol * 8) casters.Add(poly);
         }
         var edge = new Pen(new SolidColorBrush(Color.Parse("#B0101826")), 1); var selEdge = new Pen(new SolidColorBrush(Color.Parse("#FFFACC15")), 1.4);
+        void DrawFace((double D, Point[] Pts, IBrush Fill, bool Sel, List<(Point, Point)> Edges) f, Pen edgePen, Pen selPen)
+        {
+            ctx.DrawGeometry(f.Fill, new Pen(f.Fill, 0.8), new PolylineGeometry(f.Pts, true));
+            foreach (var (a, b) in f.Edges) ctx.DrawLine(f.Sel ? selPen : edgePen, a, b);
+        }
+        foreach (var f in ground.OrderBy(f => f.D)) DrawFace(f, edge, selEdge);
+        // Schlagschatten aller Körper auf den Boden (deckend in einer Deckkraft-Ebene – gleichmäßig dicht, auch wo Teile sich überlappen)
+        if (casters.Count > 0)
+        {
+            var shadeBrush = new SolidColorBrush(Color.FromRgb(6, 10, 18));
+            using (ctx.PushOpacity(0.32))
+                foreach (var poly in casters)
+                {
+                    var pts = poly.Verts.Select(v => { var g = Proj(Shading.OnGround(v, groundZ)); return new Point(g.X, g.Y); }).ToArray();
+                    ctx.DrawGeometry(shadeBrush, new Pen(shadeBrush, 0.8), new PolylineGeometry(pts, true));
+                }
+        }
         foreach (var f in faces.OrderBy(f => f.D))
         {
             ctx.DrawGeometry(f.Fill, new Pen(f.Fill, 0.8), new PolylineGeometry(f.Pts, true)); // Fläche ohne Fugen

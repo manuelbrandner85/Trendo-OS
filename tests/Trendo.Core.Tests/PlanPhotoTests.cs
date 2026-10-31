@@ -72,3 +72,15 @@ public class T0280_PlanModels
         Assert.Equal((38.0, 41.0, "Hocker"), (i.W, i.D, i.Name));
     }
 }
+
+/// <summary>T-0281: Modell-Prüfer misst mehrteilige Modelle richtig (Knoten-Verschiebungen eingerechnet).</summary>
+public class T0281_XrSize
+{
+    [Fact(DisplayName = "T-0281: Größe eines mehrteiligen Blender-Modells (Sofa 220 × 90 × 85 cm) stimmt – glTF-Reihenfolge Breite, Höhe, Tiefe in m")]
+    public void Sofa_size()
+    {
+        var d = AppContext.BaseDirectory; while (!File.Exists(Path.Combine(d, "Trendo.sln"))) d = Path.GetDirectoryName(d)!;
+        var det = XrPlus.Detail(Path.Combine(d, "src", "Trendo.App", "Assets", "moebel", "sofa.glb"));
+        Assert.InRange(det.SizeX, 2.15, 2.30); Assert.InRange(det.SizeY, 0.80, 0.92); Assert.InRange(det.SizeZ, 0.85, 0.98);
+    }
+}
