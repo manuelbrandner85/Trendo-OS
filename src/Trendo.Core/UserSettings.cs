@@ -41,6 +41,8 @@ public sealed class UserSettings
     public string Level { get; set; } = "erweitert";
     /// <summary>Vorschläge, zu denen „Nein“ gesagt wurde (oder die erledigt sind) – erscheinen nicht wieder.</summary>
     public List<string> DismissedSuggestions { get; set; } = [];
+    /// <summary>Posteingang: lokal gemerkte Nachrichten (IMAP-UID) – auf dem Server ändert sich nichts.</summary>
+    public List<long> MailFlagged { get; set; } = [];
     public int[]? WindowRect { get; set; }
     /// <summary>Startmenü: angeheftete Studios (IDs) und zuletzt benutzte Seiten (neueste zuerst).</summary>
     public List<string> PinnedStudios { get; set; } = [];

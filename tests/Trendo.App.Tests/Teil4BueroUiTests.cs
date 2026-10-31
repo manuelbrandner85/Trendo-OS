@@ -71,6 +71,13 @@ public class Teil4BueroUiTests
         var ev = Assert.Single(w.Cal.All());
         Assert.Equal(new DateTime(2026, 11, 5, 19, 30, 0), ev.Start);
         Assert.Equal("Chorprobe", ev.Title);
+        // Merken, Als Aufgabe (mit Datum aus dem Text), Weiterleiten
+        w.Find<Button>("inbox-flag").Press(); Pump(); Assert.Contains(7L, w.Settings.MailFlagged);
+        w.Find<Button>("inbox-task").Press(); Pump();
+        var todo = Assert.Single(w.Cal.Todos()); Assert.Equal(("Chorprobe", new DateTime(2026, 11, 5), "E-Mail"), (todo.Title, todo.Due!.Value, todo.List));
+        w.Find<Button>("inbox-forward").Press(); Pump();
+        Assert.Equal("WG: Chorprobe", w.Find<TextBox>("send-subject").Text); Assert.Contains("Weitergeleitete Nachricht", w.Find<TextBox>("send-body").Text);
+        w.Find<Button>("send-discard").Press(); Pump();
         w.Find<Button>("inbox-new").Press(); Pump();
         Assert.NotNull(w.TryFind<TextBox>("send-to"));
         w.Find<Button>("send-discard").Press(); Pump();
