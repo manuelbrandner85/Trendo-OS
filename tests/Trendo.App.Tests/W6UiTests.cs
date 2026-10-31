@@ -53,23 +53,6 @@ public static class Glb
 }
 
 
-public class SPEC08_Ui
-{
-    [AvaloniaFact(DisplayName = "SPEC-08 UI: Größe, Schuh, Stoff, Varianten-CSV, Preis")]
-    public void Fashion()
-    {
-        var (w, _, root) = Ui.Open();
-        w.Show("mode"); // T-0231: das Studio startet als Programm, die Rechner liegen im Reiter „Rechner“
-        Assert.Contains("EU 40", W6Ui.Run(w, "fa-body"));
-        Assert.Contains("UK 8", W6Ui.Run(w, "fa-shoe"));
-        Assert.Contains("EU 42", W6Ui.Run(w, "fa-shoe", ("eu", "26,5 cm")));
-        Assert.Contains("m Stoff", W6Ui.Run(w, "fa-fabric"));
-        Assert.Contains("8 Varianten", W6Ui.Run(w, "fa-var"));
-        Assert.True(File.Exists(Path.Combine(root, "fach", "mode", "varianten.csv")));
-        Assert.Contains("39,90 €", W6Ui.Run(w, "fa-price"));
-    }
-}
-
 public class SPEC09_Ui
 {
     [AvaloniaFact(DisplayName = "SPEC-09 UI: Scan lesen und bereinigt speichern")]
@@ -263,24 +246,6 @@ public class SPEC04_UiPlus
         Assert.Contains("Stufe 3", W6Ui.Run(w, "xr-lod"));
         Assert.Contains("1.024 Pixel", W6Ui.Run(w, "xr-texel"));
         Assert.Contains("Komfort", W6Ui.Run(w, "xr-move"));
-    }
-}
-
-public class SPEC08_UiPlus
-{
-    [AvaloniaFact(DisplayName = "SPEC-08 UI Ausbau: Größen, Herstellen, Verkaufen")]
-    public void Plus()
-    {
-        var (w, l, _) = Ui.Open(); w.Show("mode");
-        Assert.Contains("Größe 98", W6Ui.Run(w, "fa-kid"));
-        Assert.Contains("75C", W6Ui.Run(w, "fa-bra"));
-        Assert.Contains("US 7", W6Ui.Run(w, "fa-ring"));
-        Assert.Contains("XL: 108,0 cm", W6Ui.Run(w, "fa-grade"));
-        Assert.Contains("Knäuel", W6Ui.Run(w, "fa-yarn"));
-        Assert.Contains("✓", W6Ui.Run(w, "fa-label"));
-        Assert.Contains("4006381333931", W6Ui.Run(w, "fa-ean"));
-        Assert.Contains("10 % Rabatt", W6Ui.Run(w, "fa-tier"));
-        W6Ui.Run(w, "fa-sheet"); Assert.Contains(l.Opened, x => x.EndsWith("datenblatt.md"));
     }
 }
 

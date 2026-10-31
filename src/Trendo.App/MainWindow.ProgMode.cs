@@ -26,6 +26,7 @@ public partial class MainWindow
     private void InitProgMode() => RegisterProgram(FachTabs, new ProgramSpec("mode-programm", "SPEC-08", "Kleidung & Produkte")
     {
         Sentence = "Ein Produkt von der Figur bis zum Datenblatt – mit Größen, Varianten, Stoff und Preis.",
+        FillHeight = true,
         Folder = "Produkte",
         Templates =
         [
@@ -54,7 +55,7 @@ public partial class MainWindow
         Properties = ModeProperties,
         Status = d => { var (m, rows) = ModeFabric(d); return $"{ModeVariants(d).Count} Varianten · Stoff {m:0.##} m bei {d.Number("fabricWidth", 140):0} cm Breite · Preis {ModePrice(d).Gross:0.00} € brutto"; },
         Help = "Links die Figur mit deinen Maßen, in der Mitte Größen, Varianten und Zuschnitt. Rechts trägst du Werte ein – jede Änderung lässt sich mit Strg+Z zurücknehmen.",
-    }, "kleidung", "produkt", "schnitt", "datenblatt", "varianten", "nähen");
+    }, "kleidung", "produkt", "schnitt", "datenblatt", "varianten", "nähen", "mode", "größe", "schuhgröße", "stoff", "sku", "variante", "kalkulation", "preis", "ean", "etikett");
 
     static List<string> Strings(ProgramDocument d, string key) => d.List(key).Select(x => x?.GetValue<string>() ?? "").Where(x => x.Length > 0).ToList();
     static IReadOnlyList<ProductVariant> ModeVariants(ProgramDocument d) => Fashion.Variants(d.Text("sku"), Strings(d, "sizes"), Strings(d, "colors"), d.Text("material"));
@@ -93,7 +94,8 @@ public partial class MainWindow
         {
             Cell(sizes[i], 0, i + 1, true);
             var k = i - baseIdx;
-            Cell(d.Number("chest") > 0 ? $"{d.Number("chest") + 4 * k:0}" : "–", 1, i + 1); Cell(d.Number("waist") > 0 ? $"{d.Number("waist") + 4 * k:0}" : "–", 2, i + 1); Cell(d.Number("hip") > 0 ? $"{d.Number("hip") + 4 * k:0}" : "–", 3, i + 1);
+            var st = d.Number("gradeStep", 4);
+            Cell(d.Number("chest") > 0 ? $"{d.Number("chest") + st * k:0}" : "–", 1, i + 1); Cell(d.Number("waist") > 0 ? $"{d.Number("waist") + st * k:0}" : "–", 2, i + 1); Cell(d.Number("hip") > 0 ? $"{d.Number("hip") + st * k:0}" : "–", 3, i + 1);
         }
         var variants = new WrapPanel { Name = "mode-variants" };
         string Swatch(string c) => c.ToLowerInvariant() switch { "schwarz" => "#1F1F1F", "weiß" or "weiss" => "#F5F5F5", "navy" => "#1E2F5C", "grau" => "#8A8F98", "bordeaux" => "#6E1A2D", "natur" => "#E8DCC4", "grün" => "#3C7D4A", "rot" => "#C0392B", "blau" => "#2F6BF6", _ => "#B0B6C0" };
@@ -119,16 +121,16 @@ public partial class MainWindow
         var layout = new StackPanel { Spacing = 4, Children = { H($"Zuschnitt · {meters:0.##} m Stoff", 13), new ScrollViewer { HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, MaxHeight = 320, Content = new Viewbox { MaxWidth = 520, Stretch = Stretch.Uniform, Child = cut } } } };
 
         var price = ModePrice(d);
-        var card = new Border { CornerRadius = new CornerRadius(14), Padding = new Thickness(14), Background = Brushes.White, BoxShadow = BoxShadows.Parse("0 6 18 -6 #55000000"),
+        var card = new Border { CornerRadius = new CornerRadius(14), Padding = new Thickness(14), Background = Brushes.White, MaxWidth = 380, HorizontalAlignment = HorizontalAlignment.Left, BoxShadow = BoxShadows.Parse("0 6 18 -6 #55000000"),
             Child = new StackPanel { Spacing = 3, Children = {
                 new TextBlock { Name = "mode-card-name", Text = d.Text("name"), Foreground = Brush.Parse("#1F2933"), FontSize = 17, FontWeight = FontWeight.Bold },
                 new TextBlock { Text = d.Text("material"), Foreground = Brush.Parse("#5C6B7A"), FontSize = 12 },
                 new TextBlock { Name = "mode-card-price", Text = $"{price.Gross:0.00} €", Foreground = Brush.Parse("#1E4FD8"), FontSize = 22, FontWeight = FontWeight.Bold },
                 new TextBlock { Text = $"Marge {price.MarginPct:0} % · netto {price.Net:0.00} €", Foreground = Brush.Parse("#5C6B7A"), FontSize = 11 } } } };
 
-        return new Grid { ColumnDefinitions = new ColumnDefinitions("240,16,*"), Children = {
+        return new ScrollViewer { Name = "mode-scroll", Content = new Grid { ColumnDefinitions = new ColumnDefinitions("240,16,*"), Margin = new Thickness(4, 4, 10, 4), Children = {
             figure,
-            Pos(new StackPanel { Spacing = 12, Children = { card, H("Größentabelle", 13), table, H($"Varianten ({ModeVariants(d).Count})", 13), variants, layout } }, 2) } };
+            Pos(new StackPanel { Spacing = 12, Children = { card, H("Größentabelle", 13), table, H($"Varianten ({ModeVariants(d).Count})", 13), variants, layout } }, 2) } } };
     }
 
     private Control ModeProperties(ProgramDocument d)
@@ -155,14 +157,59 @@ public partial class MainWindow
             t.LostFocus += (_, _) => Commit(); OnEnter(t, Commit);
             sp.Children.Add(P(label, null, 11)); sp.Children.Add(t);
         }
-        Txt("name", "Name"); Txt("sku", "Artikelnummer"); Txt("material", "Material"); Txt("description", "Beschreibung", true); Txt("care", "Pflege");
+        Txt("name", "Name"); Txt("sku", "Artikelnummer"); Txt("material", "Material");
+        if (d.Text("material").Contains('%')) // Textiletikett sofort prüfen (EU-Textilverordnung)
+        {
+            var lab = FashionPlus.TextileLabel(d.Text("material"));
+            sp.Children.Add(new TextBlock { Name = "mode-label-check", Text = lab.Ok ? "✓ Etikett zulässig" : "⚠ " + string.Join(" · ", lab.Problems) + (lab.Label == "" ? "" : $" – Vorschlag: {lab.Label}"), FontSize = 11, TextWrapping = TextWrapping.Wrap, Foreground = Brush.Parse(lab.Ok ? "#4ADE80" : "#F5A524") });
+        }
+        Txt("description", "Beschreibung", true); Txt("care", "Pflege");
         Csv("sizes", "Größen (mit Komma)"); Csv("colors", "Farben (mit Komma)");
         var women = new CheckBox { Name = "mode-p-women", Content = "Damengrößen", IsChecked = d.Flag("women") };
         women.IsCheckedChanged += (_, _) => { if ((women.IsChecked == true) != d.Flag("women")) { d.Set("women", women.IsChecked == true, "Damen/Herren"); Show("mode-programm"); } };
         sp.Children.Add(H("Maße", 12)); sp.Children.Add(women);
-        Num("chest", "Brust cm"); Num("waist", "Taille cm"); Num("hip", "Hüfte cm"); Num("fabricWidth", "Stoffbreite cm");
+        Num("chest", "Brust cm"); Num("waist", "Taille cm"); Num("hip", "Hüfte cm"); Num("gradeStep", "Sprung je Größe cm"); Num("fabricWidth", "Stoffbreite cm");
+        // Schnittteile direkt bearbeiten: Name, Breite × Höhe × Anzahl
+        sp.Children.Add(H("Schnittteile", 12));
+        var pieces = d.List("pieces").OfType<JsonObject>().ToList();
+        for (var i = 0; i < pieces.Count; i++)
+        {
+            var idx = i; var pc = pieces[i];
+            TextBox F(string key, string val, double width) => new() { Name = $"mode-pc-{key}-{idx}", Text = val, Width = width, Padding = new Thickness(4, 2), FontSize = 12 };
+            var n = F("name", (string?)pc["name"] ?? "", 86); var w = F("w", ProgramDocument.ToNumber(pc["w"]).ToString("0.#", De), 40); var h = F("h", ProgramDocument.ToNumber(pc["h"]).ToString("0.#", De), 40); var q = F("qty", ProgramDocument.ToNumber(pc["qty"], 1).ToString("0", De), 30);
+            void Commit()
+            {
+                double Val(TextBox t, double old) => double.TryParse(t.Text, System.Globalization.NumberStyles.Float, De, out var v) && v > 0 ? v : old;
+                var cur = d.List("pieces").OfType<JsonObject>().ElementAtOrDefault(idx); if (cur is null) return;
+                var nn = n.Text?.Trim() is { Length: > 0 } s ? s : (string?)cur["name"] ?? "Teil";
+                var (nw, nh, nq) = (Val(w, ProgramDocument.ToNumber(cur["w"])), Val(h, ProgramDocument.ToNumber(cur["h"])), (int)Val(q, ProgramDocument.ToNumber(cur["qty"], 1)));
+                if (nn == (string?)cur["name"] && nw == ProgramDocument.ToNumber(cur["w"]) && nh == ProgramDocument.ToNumber(cur["h"]) && nq == (int)ProgramDocument.ToNumber(cur["qty"], 1)) return;
+                d.Edit("Schnittteil ändern", x => { if (x["pieces"] is JsonArray l && l[idx] is JsonObject o) { o["name"] = nn; o["w"] = nw; o["h"] = nh; o["qty"] = nq; } }); Show("mode-programm");
+            }
+            foreach (var t in new[] { n, w, h, q }) { t.LostFocus += (_, _) => Commit(); OnEnter(t, Commit); }
+            var del = new Button { Name = $"mode-pc-del-{idx}", Content = "✕", Padding = new Thickness(5, 1) }; ToolTip.SetTip(del, "Teil entfernen");
+            del.Click += (_, _) => { d.Edit("Teil entfernen", x => { if (x["pieces"] is JsonArray l && idx < l.Count) l.RemoveAt(idx); }); Show("mode-programm"); };
+            TextBlock X() => new() { Text = "×", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(2, 0) };
+            sp.Children.Add(new WrapPanel { Children = { n, w, X(), h, X(), q, del } });
+        }
         sp.Children.Add(H("Kalkulation", 12));
         Num("matCost", "Material €"); Num("labour", "Arbeit €"); Num("overhead", "Gemeinkosten %"); Num("profit", "Gewinn %");
+        // Rechner, die sofort bei der Eingabe rechnen (ersetzen die frühere Formularseite „Rechner“)
+        var calcs = new StackPanel { Spacing = 6 };
+        LiveCalc(calcs, "mode-c-shoe", "Schuhgröße", [("eu", "EU-Größe oder Fußlänge (z. B. 26 cm)", "42", null)],
+            v => { var s = v("eu"); var eu = s.Contains("cm", StringComparison.OrdinalIgnoreCase) ? Fashion.ShoeFromFoot(Fach.Num(s.ToLowerInvariant().Replace("cm", ""), "Fußlänge")) : Fach.Num(s, "Größe"); var x = Fashion.Shoe(eu); return $"EU {Fach.F(x.Eu, 1)} · Fuß {Fach.F(x.Cm, 1)} cm · UK {Fach.F(x.Uk, 1)} · US Herren {Fach.F(x.UsMen, 1)} · US Damen {Fach.F(x.UsWomen, 1)}"; });
+        LiveCalc(calcs, "mode-c-kid", "Kindergröße", [("h", "Körpergröße (cm)", "95", null)], v => { var k = FashionPlus.KidSize(Fach.Num(v("h"))); return $"Größe {k.Size} (etwa {k.Age})"; });
+        LiveCalc(calcs, "mode-c-bra", "BH-Größe", [("ub", "Unterbrust (cm)", "75", null), ("b", "Brust (cm)", "91", null)], v => $"Größe {FashionPlus.BraSize(Fach.Num(v("ub")), Fach.Num(v("b")))} (EU)");
+        LiveCalc(calcs, "mode-c-ring", "Ringgröße", [("c", "Innenumfang (mm)", "54", null)], v => { var r = FashionPlus.Ring(Fach.Num(v("c"))); return $"EU {Fach.F(r.Eu, 0)} · Ø {Fach.F(r.DiameterMm, 1)} mm · US {Fach.F(r.Us, 1)}"; });
+        LiveCalc(calcs, "mode-c-grade", "Maß gradieren", [("val", "Maß der Basisgröße (cm)", "100", null), ("step", "Sprung (cm)", d.Number("gradeStep", 4).ToString("0.#", De), null)],
+            v => { var sz = Strings(d, "sizes"); if (sz.Count == 0) throw new ArgumentException("Erst Größen eintragen."); return string.Join(" · ", FashionPlus.Grade(sz, sz[sz.Count / 2], Fach.Num(v("val")), Fach.Num(v("step"))).Select(g => $"{g.Size}: {Fach.F(g.Value, 1)} cm")); });
+        LiveCalc(calcs, "mode-c-yarn", "Garnbedarf (Stricken)", [("w", "Breite (cm)", "50", null), ("h", "Länge (cm)", "60", null), ("s", "Maschen / 10 cm", "22", null), ("r", "Reihen / 10 cm", "30", null), ("m", "m je Knäuel", "125", null)],
+            v => { var y = FashionPlus.Yarn(Fach.Num(v("w")), Fach.Num(v("h")), Fach.Num(v("s")), Fach.Num(v("r")), Fach.Num(v("m"))); return $"{y.Stitches} Maschen × {y.Rows} Reihen · ca. {Fach.F(y.Meters, 0)} m → {y.Balls} Knäuel"; });
+        LiveCalc(calcs, "mode-c-ean", "EAN-Strichcode", [("e", "12 Ziffern oder EAN-13", "400638133393", null)],
+            v => { var dg = new string(v("e").Where(char.IsDigit).ToArray()); return dg.Length == 13 ? (FashionPlus.EanValid(dg) ? "✓ Gültige EAN-13." : $"⚠ Prüfziffer falsch – richtig wäre {FashionPlus.EanCheckDigit(dg[..12])}.") : $"Vollständige EAN: {dg}{FashionPlus.EanCheckDigit(dg)}"; });
+        LiveCalc(calcs, "mode-c-tier", "Staffelpreise (vom Ladenpreis)", [("q", "Menge", "50", null), ("t", "Stufen „ab Menge:Rabatt %“", "10:5 25:10 100:15", null)],
+            v => { var tiers = v("t").Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x.Split(':')).Select(x => x.Length == 2 ? ((int)Fach.Num(x[0]), Fach.Num(x[1])) : throw new FormatException("Stufe bitte als „10:5“.")); var r = FashionPlus.Tier(ModePrice(d).Gross, (int)Fach.Num(v("q")), tiers); return $"{Fach.F(r.DiscountPct, 0)} % Rabatt → {Fach.F(r.Unit)} € je Stück, zusammen {Fach.F(r.Total)} €"; });
+        sp.Children.Add(new Expander { Name = "mode-calcs", Header = "Rechner (Schuh, Kind, BH, Ring, Garn, EAN, Staffel)", IsExpanded = false, Content = calcs, Margin = new Thickness(0, 8, 0, 0) });
         return sp;
     }
 }
