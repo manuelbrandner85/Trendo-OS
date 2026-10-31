@@ -1,6 +1,6 @@
 # Zusatzprogramme – Funktionsmatrix
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.28 (Stand c95b269)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.28 (Stand 4ec46e4)
 
 Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 
@@ -34,6 +34,7 @@ Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Plan erstellen
+- Verstanden
 - Ordner wählen …
 - Programme aus dem Vollpaket einrichten
 - Zustimmen & fehlende kostenlose Programme installieren

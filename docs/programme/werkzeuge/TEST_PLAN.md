@@ -1,6 +1,6 @@
 # Werkzeuge: Notizen, Rechner, Wecker – Testplan
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.28 (Stand c95b269)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.28 (Stand 4ec46e4)
 
 31 Tests sprechen dieses Programm an.
 

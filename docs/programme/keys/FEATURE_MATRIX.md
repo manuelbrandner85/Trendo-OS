@@ -1,12 +1,13 @@
 # Online-Dienste – Funktionsmatrix
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.28 (Stand c95b269)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.28 (Stand 4ec46e4)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Plan erstellen
 - Hinzufügen …
+- Verstanden
 - Schlüssel holen
 - Prüfen & speichern
 - Als Ersatz-KI nutzen (Fragen gehen dann an OpenRouter)

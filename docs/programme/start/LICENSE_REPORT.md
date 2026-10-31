@@ -1,6 +1,6 @@
 # Startbildschirm – Lizenzen
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.28 (Stand c95b269)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.28 (Stand 4ec46e4)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

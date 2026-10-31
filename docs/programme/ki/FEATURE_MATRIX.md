@@ -1,12 +1,13 @@
 # KI – Funktionsmatrix
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.28 (Stand c95b269)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.28 (Stand 4ec46e4)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Plan erstellen
 - Hinzufügen …
+- Verstanden
 - Modell
 - Fragen
 - Qwen2.5 0.5B (klein, schnell) verwenden

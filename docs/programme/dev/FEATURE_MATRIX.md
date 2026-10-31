@@ -1,12 +1,13 @@
 # Software – Funktionsmatrix
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.28 (Stand c95b269)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.28 (Stand 4ec46e4)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Plan erstellen
 - Hinzufügen …
+- Verstanden
 - Klar
 - Verspielt
 - Luxuriös

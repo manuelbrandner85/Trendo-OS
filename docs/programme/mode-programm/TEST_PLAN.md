@@ -1,8 +1,8 @@
 # Kleidung & Produkte – Testplan
 
-Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.28 (Stand c95b269)
+Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.28 (Stand 4ec46e4)
 
-16 Tests sprechen dieses Programm an.
+18 Tests sprechen dieses Programm an.
 
 - Bedienstufen: Einfach blendet Fachwerkzeuge aus, Erweitert zeigt alle, Wechsel lässt das Dokument unverändert; Einstellung bleibt gespeichert
 - Profi-Stufe: Befehlssuche führt Befehle aus, Verlauf springt zurück, Projektdaten – falsches JSON wird abgelehnt, richtiges übernommen und rückgängig machbar
@@ -20,3 +20,5 @@ Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · 
 - SPEC-08 UI: Etikett sofort geprüft, Größensprung ändert die Größentabelle, Rechner (Schuh, Kind, BH, Ring, EAN, Staffel vom Ladenpreis) rechnen beim Tippen
 - SPEC-08 UI: kein Rechner-Formular mehr; Schnittteil umbenennen/vergrößern/entfernen ändert Zuschnitt und Stoffbedarf; Rückgängig
 - SPEC-08: Größen aus Maßen, Schuhgrößen, Stoffbedarf, Varianten, Preiskalkulation
+- Schnittlage UI: Teil ziehen speichert die Lage (Rückgängig), Doppelklick dreht, Überlappung wird gemeldet, automatisch legen räumt auf, PDF
+- Schnittlage-Kern: automatisch ohne Überlappung im Stoff, mindestens so sparsam wie das alte Reihenlegen, Ausnutzung, zu breit = Fehler, PDF

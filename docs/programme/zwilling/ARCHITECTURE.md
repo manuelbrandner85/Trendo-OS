@@ -1,6 +1,6 @@
 # Geräte überwachen – Architektur
 
-Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.28 (Stand c95b269)
+Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.28 (Stand 4ec46e4)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec10.cs`

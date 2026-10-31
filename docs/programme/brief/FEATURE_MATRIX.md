@@ -1,6 +1,6 @@
 # Briefe schreiben – Funktionsmatrix
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.28 (Stand c95b269)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.28 (Stand 4ec46e4)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -11,6 +11,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Exportieren
 - Als PDF
 - Senden
+- Verstanden
 - 1 Absender
 - 2 Empfänger
 - 3 Inhalt

@@ -1,6 +1,6 @@
 # Trendo CAD – Produktionspaket
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.28 (Stand c95b269)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.28 (Stand 4ec46e4)
 
 Arbeitsfläche: CAD-/3D-Zeichenfläche  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

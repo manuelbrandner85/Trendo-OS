@@ -1,6 +1,6 @@
 # Karten & Touren – Produktionspaket
 
-Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.28 (Stand c95b269)
+Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.28 (Stand 4ec46e4)
 
 Arbeitsfläche: Karte  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

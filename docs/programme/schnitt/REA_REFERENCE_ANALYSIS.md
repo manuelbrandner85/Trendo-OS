@@ -1,5 +1,5 @@
 # Videoschnitt – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.28 (Stand c95b269)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.28 (Stand 4ec46e4)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

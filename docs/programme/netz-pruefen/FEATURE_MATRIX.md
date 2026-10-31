@@ -1,6 +1,6 @@
 # Sicher prüfen – Funktionsmatrix
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.28 (Stand c95b269)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.28 (Stand 4ec46e4)
 
 Quelle: `docs/spec/kataloge/SYS-03_KATALOG.md`
 

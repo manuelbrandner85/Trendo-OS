@@ -1,6 +1,6 @@
 # Kleidung & Produkte – Architektur
 
-Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.28 (Stand c95b269)
+Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.28 (Stand 4ec46e4)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.ProgMode.cs`
@@ -13,15 +13,17 @@ Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · 
 
 ## Fach-Engine (Trendo.Core)
 - `FashionPlus`
+- `Marker`
 - `Fashion`
 
 ## Dateiformate (im Code belegt)
 - .csv
 - .md
+- .pdf
 - .tdoc
 
 ## Externe Programme und Dienste
-– keine
+- PDFsharp (MIT)
 
 ## Bausteine (Masterprompt 131 / 5)
 A Programmfenster mit Menüband und Kürzeln · B Arbeitsfläche · C Werkzeuge ändern das Dokument · D .tdoc-Projektdatei mit Autosave/Wiederherstellen · E Rückgängig/Wiederholen und Verlauf · I Prüfungen · J Startmenü, Suche, Ordner, Bedienstufen

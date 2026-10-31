@@ -1,6 +1,6 @@
 # Spiele bauen – Architektur
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.28 (Stand c95b269)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.28 (Stand 4ec46e4)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.ProgGame.cs`

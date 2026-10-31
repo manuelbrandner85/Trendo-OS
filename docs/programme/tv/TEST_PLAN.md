@@ -1,12 +1,13 @@
 # TV & Live – Testplan
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.28 (Stand c95b269)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.28 (Stand 4ec46e4)
 
-11 Tests sprechen dieses Programm an.
+12 Tests sprechen dieses Programm an.
 
 - Anmeldung: „Beim Start nach PIN fragen“ lässt sich abschalten
 - Apps: WhatsApp installieren → Desktop und Startmenü, öffnet als App-Fenster mit eigenem Speicher, Entfernen löscht die Anmeldung
 - Ersteinrichtung: nach Neustart geht es beim letzten Schritt weiter, eine schon festgelegte PIN wird nicht erneut abgefragt
+- T-0300: Raster mit Jetzt-Linie, Tage und 20:15, Sparten-Filter, Suche springt zur Sendung, Aufnahme meldet Überschneidung, Erinnerung zeigt Hinweis
 - TV & Live: Filme und Serien kategorisiert wählbar (Xtream) – Kategorie, Suche, Film abspielen, Serie → Staffel → Folge
 - TV & Live: KI-Assistent („Behalte nur deutsche Sender“, „Zeig Netflix-Serien“) und Anbieter-/Sprachwahl bei Filmen und Serien
 - TV & Live: Programmführer zeigt Sendungen, Aufnahme planen und starten, Mehrfachansicht, Quelle entfernen

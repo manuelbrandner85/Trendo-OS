@@ -1,6 +1,6 @@
 # Sicherheits-Werkzeuge & Beweise – Arbeitsabläufe
 
-Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.28 (Stand c95b269)
+Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.28 (Stand 4ec46e4)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 

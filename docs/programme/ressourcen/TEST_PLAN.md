@@ -1,8 +1,8 @@
 # Speicher & Leistung – Testplan
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.28 (Stand c95b269)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.28 (Stand 4ec46e4)
 
-29 Tests sprechen dieses Programm an.
+31 Tests sprechen dieses Programm an.
 
 - CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+K fokussiert die Suche
 - Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt
@@ -10,6 +10,7 @@ Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ress
 - Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert
 - Design: Systemstatus zeigt Messwert in % oder 'n. v.', nie Mockup-Werte ohne Messung
 - Design: die neun bekannten Studios zeigen auf der Studios-Seite den echten Status aus requirements.yaml
+- Kachelkarte: Flächen proportional, lückenlos in der Fläche, Einlesen zählt Größen, Entfernen zieht Eltern nach
 - Komponenten: Lizenzliste, Unreal nur geführt (offizieller Link), Zustimmung wird gespeichert
 - LETTER-UI: Briefkopf → Akte (Behörde) → Fakt, Chronik, Eingang → Frist UNGEPRÜFT → Quelle fehlt → Export gesperrt → beheben → DOCX → Freigabe → Versand BLOCKED
 - LETTER-UI: Briefstudio hat genau eine Unterebene; Akte/Ausgabe erst mit offener Akte
@@ -26,6 +27,7 @@ Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ress
 - SYS-11/X-09: Apps hat genau eine Unterebene; Programme und Speicher-Seite öffnen
 - SYS-12: Anzeigegröße „Sehr groß“ wird gespeichert; F1 zeigt die Hilfe
 - Schlüssel: ungültig wird nicht gespeichert, gültig landet im Secret-Store, nie im Audit
+- Speicherplatz-Karte UI: Ordner einlesen, Kachel anklicken wählt, zweiter Klick geht hinein, Papierkorb erst nach Ja
 - Studio-Klick: Unreal nur geführt – kein Installieren-Knopf, offizieller Installer-Link
 - Studio-Klick: fehlendes Programm → genau eine Frage 'Studio braucht X. Jetzt installieren?', 'Später' installiert nichts
 - W0-01/03/06: Assistent – Name, Ordner, Design, Pakete, Installation über Zustimmung, Vorlagen, Systemcheck

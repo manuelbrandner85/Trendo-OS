@@ -1,6 +1,6 @@
 # Online-Dienste – Leistung
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.28 (Stand c95b269)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.28 (Stand 4ec46e4)
 
 Kein eigener Leistungsmesslauf für dieses Programm. Zielhardware und Budgets sind noch nicht festgelegt – Messung offen.
 

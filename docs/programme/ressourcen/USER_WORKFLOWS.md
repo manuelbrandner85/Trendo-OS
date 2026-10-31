@@ -1,6 +1,6 @@
 # Speicher & Leistung – Arbeitsabläufe
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.28 (Stand c95b269)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.28 (Stand 4ec46e4)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 
@@ -9,3 +9,4 @@ Die Abläufe unten sind die Oberflächentests, die das Programm über den echten
 - QA-004 UI: Browser-Aktion abgelehnt → nichts geöffnet
 - QA-004 UI: Browser-Aktion freigegeben → genau einmal geöffnet
 - QA-004 UI: Explorer-Aktion → Freigabe-Ansicht; Ausführung erst nach Klick auf Freigeben
+- Speicherplatz-Karte UI: Ordner einlesen, Kachel anklicken wählt, zweiter Klick geht hinein, Papierkorb erst nach Ja

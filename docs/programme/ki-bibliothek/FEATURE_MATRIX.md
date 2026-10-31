@@ -1,11 +1,12 @@
 # KI-Bibliothek – Funktionsmatrix
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.28 (Stand c95b269)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.28 (Stand 4ec46e4)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Plan erstellen
+- Verstanden
 - KI-Quellen
 - KI-Bibliothek
 - Kostenlose Internet-KIs

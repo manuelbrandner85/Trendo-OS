@@ -24,9 +24,9 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Verkaufen | Online verkaufen (STUDIO-ONLINE-BUSINESS-01) | Business & Geld | Diagramm | – | 3 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](verkaufen/README.md) |
 | Freie Assets | Freie Bilder & Klänge finden (X-07) | Kreativ & Medien | keine eigene erkannt | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](assets/README.md) |
 | KI-Vorlagen | KI-Anweisungen schreiben (CORE-12) | Kreativ & Medien | keine eigene erkannt | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-vorlagen/README.md) |
-| Kleidung & Produkte | Kleidung & Produkte entwerfen (SPEC-08) | Kreativ & Medien | keine eigene erkannt | 18 | 16 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](mode-programm/README.md) |
+| Kleidung & Produkte | Kleidung & Produkte entwerfen (SPEC-08) | Kreativ & Medien | keine eigene erkannt | 18 | 18 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](mode-programm/README.md) |
 | Live streamen | Live streamen (SPEC-15) | Kreativ & Medien | Bildansicht, Diagramm/Zeichnung | 20 | 39 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](sendung/README.md) |
-| TV & Live | TV & Live (STUDIO-TV-01) | Kreativ & Medien | keine eigene erkannt | – | 11 | – | IN_PROGRESS / Test NOT_RUN | [Paket](tv/README.md) |
+| TV & Live | TV & Live (STUDIO-TV-01) | Kreativ & Medien | keine eigene erkannt | – | 12 | – | IN_PROGRESS / Test NOT_RUN | [Paket](tv/README.md) |
 | Bildbearbeitung | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Bild-Arbeitsfläche (Ebenen) | – | 3 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](bild/README.md) |
 | Medien bearbeiten | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | keine eigene erkannt | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](kreativ-medien/README.md) |
 | Videoschnitt | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Video-Zeitleiste | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](schnitt/README.md) |
@@ -67,7 +67,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Ordner im Heimnetz teilen | Dateien teilen (SYS-06) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](teilen/README.md) |
 | Freigaben | Daten schützen (CORE-11) | System & Sicherheit | keine eigene erkannt | – | 10 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](approvals/README.md) |
 | Schutz & Datenschutz | Daten schützen (CORE-11) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](schutz/README.md) |
-| Sicherung | Daten schützen (CORE-11) | System & Sicherheit | keine eigene erkannt | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](sicherung/README.md) |
+| Sicherung | Daten schützen (CORE-11) | System & Sicherheit | keine eigene erkannt | – | 5 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](sicherung/README.md) |
 | Alle Studios | Desktop einrichten (CORE-01) | System & Sicherheit | Bildansicht | – | 41 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](studios/README.md) |
 | Desktop-Symbole | Desktop einrichten (CORE-01) | System & Sicherheit | Bildansicht | – | 4 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](desktop-symbole/README.md) |
 | Ersteinrichtung | Desktop einrichten (CORE-01) | System & Sicherheit | keine eigene erkannt | – | 12 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](einrichtung/README.md) |
@@ -76,7 +76,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Selbstheilung | Einrichten & Reparieren (X-02) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](heilung/README.md) |
 | Geräte & Laufwerke | Geräte erkennen (SYS-07) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](geraete/README.md) |
 | Handy verbinden | Handy verbinden (X-08) | System & Sicherheit | keine eigene erkannt | – | 23 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](handy/README.md) |
-| Speicher & Leistung | Leistung anzeigen (X-09) | System & Sicherheit | keine eigene erkannt | – | 29 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](ressourcen/README.md) |
+| Speicher & Leistung | Leistung anzeigen (X-09) | System & Sicherheit | keine eigene erkannt | – | 31 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](ressourcen/README.md) |
 | Geräteverbund (PC, Pi, Android) | PC, Pi & Handy verbinden (CORE-04) | System & Sicherheit | keine eigene erkannt | – | 19 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](verbund/README.md) |
 | Programme verwalten | Programme installieren (SYS-04) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](appcenter/README.md) |
 | Apps | Programme starten (SYS-11) | System & Sicherheit | keine eigene erkannt | 25 | 41 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](apps/README.md) |

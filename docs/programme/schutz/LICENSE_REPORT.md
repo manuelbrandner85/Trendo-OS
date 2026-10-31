@@ -1,6 +1,6 @@
 # Schutz & Datenschutz – Lizenzen
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.28 (Stand c95b269)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.28 (Stand 4ec46e4)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

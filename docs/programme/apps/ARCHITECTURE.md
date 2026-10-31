@@ -1,6 +1,6 @@
 # Apps – Architektur
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `apps` · Stand: 0.9.28 (Stand c95b269)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `apps` · Stand: 0.9.28 (Stand 4ec46e4)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys11.cs`
