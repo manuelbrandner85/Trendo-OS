@@ -13,6 +13,8 @@ public sealed class Circuit
     public int Version { get; set; } = FormatVersion;
     public string Name { get; set; } = "Schaltung";
     public List<Part> Parts { get; set; } = [];
+    /// <summary>T-0277: Platinen-Layout (Lage der Bauteile, Leiterbahnen).</summary>
+    public PcbLayout Pcb { get; set; } = new();
 
     static readonly JsonSerializerOptions Opt = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     public static string NewId() => Guid.NewGuid().ToString("N")[..8];

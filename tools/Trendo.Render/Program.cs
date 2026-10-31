@@ -148,6 +148,7 @@ else if (shot == "seite")
         var circ = Trendo.Core.Elektro.Circuit.From(win.ProgramActive(page)!.Data);
         win.CircuitState.Selected = circ.Parts.FirstOrDefault(x => x.Kind == ek)?.Id;
         for (var k = 0; k < 10; k++) win.CircuitAdvance(0.02);
+        if (ek == "pcb") { win.CircuitState.Pcb = true; win.CircuitEdit("Platine", x => { Trendo.Core.Elektro.Pcb.AutoPlace(x); Trendo.Core.Elektro.Pcb.AutoRoute(x); }); }
         win.Show(page);
     }
     if (page == "karten" && Environment.GetEnvironmentVariable("TRENDO_MK") is { Length: > 0 }) // Karte: erste Spur auswählen

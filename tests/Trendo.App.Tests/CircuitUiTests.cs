@@ -139,3 +139,36 @@ public class SPEC02_UiPlus
         w.Close();
     }
 }
+
+/// <summary>T-0277: Platinen-Layout über die Oberfläche – umschalten, verlegen, Bauteil ziehen und drehen, Fertigungsdaten.</summary>
+public class SPEC02_UiPcb
+{
+    const string EK = "elektronik";
+    static Trendo.Core.Elektro.Circuit Model(MainWindow w) => Trendo.Core.Elektro.Circuit.From(w.ProgramActive(EK)!.Data);
+    static T Get<T>(MainWindow w, string name) where T : Control { Settle(); return w.GetVisualDescendants().OfType<T>().Last(c => c.Name == name && c.IsEffectivelyVisible && c.Bounds.Width > 0); }
+    static void Press(MainWindow w, string name) { var b = Get<Button>(w, name); b.BringIntoView(); Settle(); RealClick(w, Get<Button>(w, name)); }
+
+    [AvaloniaFact(DisplayName = "SPEC-02 UI: Platine – Umschalten platziert automatisch, Leiterbahnen verlegen ohne Konflikt, Bauteil mit der Maus ziehen (Rückgängig), R dreht, Gerber-ZIP")]
+    public void Pcb_flow()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show(EK); Settle(); RealClick(w, Get<Button>(w, "prog-tpl-transistor"));
+        Press(w, "prog-cmd-ek-pcb");
+        Assert.True(w.CircuitState.Pcb); Assert.Equal(6, Model(w).Pcb.Places.Count); // Batterie, 2 Widerstände, LED, Transistor, Schalter
+        Assert.Contains("noch nicht verlegt", Get<TextBlock>(w, "ek-pcb-info").Text);
+        Press(w, "prog-cmd-ek-route");
+        Assert.Contains("✓ Prüfung: keine Konflikte", Get<TextBlock>(w, "ek-pcb-info").Text);
+        var led = Model(w).Parts.Single(p => p.Kind == "led"); var pl = Model(w).Pcb.Places[led.Id];
+        var cv = Get<PcbCanvas>(w, "ek-pcb-canvas"); var from = cv.TranslatePoint(cv.ToScreen(pl.X, pl.Y), w)!.Value; var dx = 10 * cv.Scale;
+        w.MouseDown(from, MouseButton.Left); w.MouseMove(from + new Point(dx / 2, 0)); w.MouseMove(from + new Point(dx, 0)); w.MouseUp(from + new Point(dx, 0), MouseButton.Left); Settle();
+        Assert.InRange(Model(w).Pcb.Places[led.Id].X - pl.X, 8.8, 11.2); // ≈ 10 mm im Raster 1,27
+        w.KeyPress(Key.R, RawInputModifiers.None, PhysicalKey.R, "r"); w.KeyRelease(Key.R, RawInputModifiers.None, PhysicalKey.R, "r"); Settle();
+        Assert.Equal(90, Model(w).Pcb.Places[led.Id].Rot);
+        Press(w, "prog-undo"); Press(w, "prog-undo"); Assert.Equal(pl.X, Model(w).Pcb.Places[led.Id].X, 6);
+        Press(w, "prog-export-fab");
+        var zip = w.ProgramMessage(EK)["Exportiert: ".Length..].Trim();
+        using (var z = System.IO.Compression.ZipFile.OpenRead(zip)) Assert.Equal(5, z.Entries.Count);
+        Press(w, "prog-cmd-ek-pcb"); Assert.False(w.CircuitState.Pcb); Assert.NotNull(Get<CircuitCanvas>(w, "ek-canvas"));
+        w.Close();
+    }
+}

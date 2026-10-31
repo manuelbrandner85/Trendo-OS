@@ -16,6 +16,8 @@ public sealed class CircuitViewState
     public double Zoom = 1.2, PanX = -60, PanY = -60;
     public bool Fitted, UserView, Focus;
     public bool Running = true;
+    /// <summary>T-0277: Platinen-Ansicht statt Schaltplan.</summary>
+    public bool Pcb;
     public double Speed = 1; // 1 = Echtzeit, 0,1 = zehnfach langsamer …
     public readonly Dictionary<string, double> Phase = [];
     public readonly List<(double T, double V, double I)> Scope = [];

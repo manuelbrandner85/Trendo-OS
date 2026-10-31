@@ -62,10 +62,17 @@ public partial class MainWindow
                 new ProgramCmd("ek-reset", "Neu starten", _ => _simKey = "", false, "Alle Kondensatoren entladen, Zeit auf 0"),
                 new ProgramCmd("ek-speed", "Tempo", _ => CircuitState.Speed = CircuitState.Speed >= 1 ? 0.1 : CircuitState.Speed >= 0.1 ? 0.01 : 1, false, "Echtzeit → 10× → 100× langsamer"),
             ]),
-            ("Ansicht", [new ProgramCmd("ek-fit", "Einpassen", _ => { CircuitState.Fitted = false; CircuitState.UserView = false; })]),
+            ("Ansicht", [new ProgramCmd("ek-fit", "Einpassen", _ => { CircuitState.Fitted = false; CircuitState.UserView = false; }),
+                new ProgramCmd("ek-pcb", "Schaltplan / Platine", d => { CircuitState.Pcb = !CircuitState.Pcb; if (CircuitState.Pcb && Circuit.From(d.Data).Pcb.Places.Count == 0) CircuitEdit("Platine anlegen", x => Pcb.AutoPlace(x)); }, false, "Zwischen Schaltplan und Platinen-Layout wechseln")]),
+            ("Platine", [
+                new ProgramCmd("ek-place", "Automatisch platzieren", _ => CircuitEdit("Bauteile platzieren", x => Pcb.AutoPlace(x))),
+                new ProgramCmd("ek-route", "Leiterbahnen verlegen", _ => CircuitEdit("Leiterbahnen verlegen", x => { var (ok, open) = Pcb.AutoRoute(x); _pcbMsg = open == 0 ? $"✓ {ok} Verbindungen verlegt." : $"⚠ {ok} verlegt, {open} ohne freien Weg – Bauteile anders anordnen und erneut verlegen."; }), true),
+                new ProgramCmd("ek-unroute", "Bahnen löschen", _ => CircuitEdit("Bahnen löschen", x => x.Pcb.Traces.Clear())),
+            ]),
         ],
         Exports =
         [
+            new("fab", "Fertigungsdaten (Gerber, ZIP)", ".zip", (d, f) => { var c = Circuit.From(d.Data); if (c.Pcb.Places.Count == 0) Pcb.AutoPlace(c); Pcb.WriteFabZip(c, f); return f; }),
             new("spice", "SPICE-Netzliste", ".cir", (d, f) => { File.WriteAllText(f, Circuit.From(d.Data).Spice()); return f; }),
             new("bom", "Stückliste (CSV)", ".csv", (d, f) => { File.WriteAllText(f, Circuit.From(d.Data).BomCsv(), new System.Text.UTF8Encoding(true)); return f; }),
             new("svg", "Schaltplan (SVG)", ".svg", (d, f) => { File.WriteAllText(f, CircuitDrawing.Svg(Circuit.From(d.Data))); return f; }),
@@ -132,8 +139,25 @@ public partial class MainWindow
     }
     private TextBlock? _simLive;
 
+    private string _pcbMsg = "";
+
     private Control CircuitWorkspace(ProgramDocument d)
     {
+        if (CircuitState.Pcb)
+        {   // T-0277: Platinen-Layout
+            var pc = Circuit.From(d.Data);
+            var cv = new PcbCanvas { Name = "ek-pcb-canvas", Model = pc, Selected = CircuitState.Selected };
+            cv.Select = id => { CircuitState.Selected = id; };
+            cv.AttachedToVisualTree += (_, _) => { if (cv.Selected is not null) Avalonia.Threading.Dispatcher.UIThread.Post(() => cv.Focus(), Avalonia.Threading.DispatcherPriority.Input); }; // nach Ziehen/Drehen gleich weiter mit R
+            cv.Moved = (id, x, y) => CircuitEdit("Bauteil verschieben", c => { var pl = c.Pcb.Places[id]; pl.X = x; pl.Y = y; });
+            cv.Rotate = id => CircuitEdit("Bauteil drehen", c => { var pl = c.Pcb.Places[id]; pl.Rot = (pl.Rot + 90) % 360; });
+            var issues = Pcb.Check(pc);
+            var info = new TextBlock { Name = "ek-pcb-info", Margin = new Thickness(0, 6, 0, 0), FontSize = 12, TextWrapping = TextWrapping.Wrap,
+                Text = (_pcbMsg.Length > 0 ? _pcbMsg + " · " : "") + (issues.Count == 0 ? "✓ Prüfung: keine Konflikte, alles verlegt" : "⚠ " + string.Join(" · ", issues.Take(4))) + $" · Platine {pc.Pcb.W:0} × {pc.Pcb.H:0} mm, 2 Lagen · ziehen verschiebt, R dreht",
+                Foreground = Brush.Parse(issues.Count == 0 ? "#4ADE80" : "#FACC15") };
+            var dp = new DockPanel(); DockPanel.SetDock(info, Avalonia.Controls.Dock.Bottom); dp.Children.Add(info); dp.Children.Add(new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = cv });
+            return dp;
+        }
         EnsureSimTimer();
         var c = Circuit.From(d.Data); var sim = CircuitSim();
         var tools = new WrapPanel { Name = "ek-tools", Width = 112 };
