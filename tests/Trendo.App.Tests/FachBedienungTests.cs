@@ -25,12 +25,12 @@ public class FachBedienungTests
             var hints = w.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text ?? "").Where(s => aufzaehlung.IsMatch(s)).ToList();
             Assert.True(hints.Count == 0, page + ": Aufzählung im Hinweis – " + string.Join(" | ", hints));
         }
-        // SPEC-01/03/14/16 sind seit T-0256/T-0258/T-0266/T-0268 Programme ohne Formular – Wahlfelder hier am Beispiel VR & AR
-        w.Show(MainWindow.StudioPages["SPEC-04"]);
+        // SPEC-01/03/04/14/16 sind seit T-0256…T-0269 Programme ohne Formular – Wahlfelder hier am Beispiel Kameras & Roboter
+        w.Show(MainWindow.StudioPages["CORE-09"]);
         foreach (var ex in w.GetLogicalDescendants().OfType<Expander>().ToList()) ex.IsExpanded = true;
         Dispatcher.UIThread.RunJobs();
-        var vig = w.Find<ComboBox>("xr-move-vig");
-        Assert.Equal(["j", "n"], vig.ItemsSource!.Cast<string>());
+        var col = w.Find<ComboBox>("rob-count-color");
+        Assert.Contains("rot", col.ItemsSource!.Cast<string>());
         w.Close();
     }
 
@@ -49,25 +49,25 @@ public class FachBedienungTests
     public void Number_check_and_state_survives()
     {
         var (w, l, root) = Ui.Open();
-        w.Show(MainWindow.StudioPages["SPEC-04"]);
+        w.Show(MainWindow.StudioPages["CORE-09"]);
         foreach (var ex in w.GetLogicalDescendants().OfType<Expander>().ToList()) ex.IsExpanded = true;
         Dispatcher.UIThread.RunJobs();
-        var v = w.Find<TextBox>("xr-move-move");
+        var v = w.Find<TextBox>("rob-count-min");
         v.Text = "zwölf"; Dispatcher.UIThread.RunJobs(); Assert.NotNull(ToolTip.GetTip(v));
-        v.Text = "1,5"; Dispatcher.UIThread.RunJobs(); Assert.Null(ToolTip.GetTip(v));
-        w.Find<ComboBox>("xr-move-vig").SelectedItem = "j";
-        w.Find<Button>("xr-move-run").Press();
-        var res = w.Find<SelectableTextBlock>("xr-move-out").Text;
+        v.Text = "25"; Dispatcher.UIThread.RunJobs(); Assert.Null(ToolTip.GetTip(v));
+        var other = w.Find<ComboBox>("rob-count-color").ItemsSource!.Cast<string>().First(x => x != "rot"); w.Find<ComboBox>("rob-count-color").SelectedItem = other;
+        w.Find<Button>("rob-count-run").Press();
+        var res = w.Find<SelectableTextBlock>("rob-count-out").Text;
         Assert.False(string.IsNullOrWhiteSpace(res));
         w.Close();
         // gleicher Datenordner, neues Fenster: Stand ist wieder da
         var core = new TrendoCore(root, new InMemorySecretStore(), l);
         var w2 = new MainWindow(core, new AppOptions(root, null, 0, false, Isolated: true), new Probe("browser")); w2.Show(); Dispatcher.UIThread.RunJobs();
-        w2.Show(MainWindow.StudioPages["SPEC-04"]);
+        w2.Show(MainWindow.StudioPages["CORE-09"]);
         foreach (var ex in w2.GetLogicalDescendants().OfType<Expander>().ToList()) ex.IsExpanded = true;
         Dispatcher.UIThread.RunJobs();
-        Assert.Equal("j", w2.Find<ComboBox>("xr-move-vig").SelectedItem);
-        Assert.Equal(res, w2.Find<SelectableTextBlock>("xr-move-out").Text);
+        Assert.Equal(other, w2.Find<ComboBox>("rob-count-color").SelectedItem);
+        Assert.Equal(res, w2.Find<SelectableTextBlock>("rob-count-out").Text);
         w2.Close();
     }
 

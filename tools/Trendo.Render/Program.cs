@@ -168,6 +168,10 @@ else if (shot == "seite")
     {
         var demo = Trendo.Core.VehiclePlus.SeedDemo(win.Cars, DateTime.Today); win.CarSel = demo.Name; win.CarTab = carTab; win.Show(page);
     }
+    if (page == "xr" && Environment.GetEnvironmentVariable("TRENDO_XR") is { Length: > 0 }) // Modell-Prüfer mit Beispielmodell
+    {
+        win.XrFile = Trendo.Core.XrSample.Write(Path.Combine(root, "beispiel-sessel.glb")); win.Show(page);
+    }
     if (page == "zwilling" && Environment.GetEnvironmentVariable("TRENDO_TWIN") is { Length: > 0 }) // Anlagen-Monitor mit Beispielanlagen
     {
         Trendo.Core.TwinDemo.Seed(win.Twin, DateTime.Now); win.TwinSelect("Kühlraum", "Temperatur");

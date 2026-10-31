@@ -23,9 +23,9 @@ public partial class MainWindow
             if (options is not null)
             {
                 var c = new ComboBox { Name = k, ItemsSource = options, SelectedItem = options.FirstOrDefault(o => o == V(key)) ?? options.FirstOrDefault(o => o.Contains(V(key), StringComparison.OrdinalIgnoreCase)), Width = 150 };
-                c.SelectionChanged += (_, _) => { if (c.SelectedItem is string s) { _calcIn[k] = s; Update(); } }; input = c;
+                var first = c.SelectedItem as string; c.SelectionChanged += (_, _) => { if (c.SelectedItem is string s) { if (s != first || _calcIn.ContainsKey(k)) _calcIn[k] = s; Update(); } }; input = c; // nur echte Auswahl merken, sonst bleibt eine Vorbelegung hängen
             }
-            else { var t = new TextBox { Name = k, Text = V(key), Width = 150 }; t.TextChanged += (_, _) => { _calcIn[k] = t.Text ?? ""; Update(); }; input = t; }
+            else { var first = V(key); var t = new TextBox { Name = k, Text = first, Width = 150 }; t.TextChanged += (_, _) => { if ((t.Text ?? "") != first || _calcIn.ContainsKey(k)) _calcIn[k] = t.Text ?? ""; Update(); }; input = t; }
             box.Children.Add(Row(P(label, null, 11), input));
         }
         box.Children.Add(output); Update();

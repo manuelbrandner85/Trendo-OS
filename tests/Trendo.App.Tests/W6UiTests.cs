@@ -21,22 +21,6 @@ public static class W6Ui
     }
 }
 
-public class SPEC04_Ui
-{
-    [AvaloniaFact(DisplayName = "SPEC-04 UI: GLB-Modell prüfen und Bildzeit")]
-    public void Xr()
-    {
-        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
-        w.Show(MainWindow.StudioPages["SPEC-04"]);
-        var o = W6Ui.Run(w, "xr-check", ("file", Glb.Write(root, 500_000)));
-        Assert.Contains("500.000 Dreiecke", o); Assert.Contains("⚠ Meta Quest 2", o); Assert.Contains("✓ PC-VR", o);
-        Assert.Contains("⚠", W6Ui.Run(w, "xr-check", ("file", "/gibtsnicht.glb")));
-        Assert.Contains("Laut deiner Messung zu langsam", W6Ui.Run(w, "xr-frame", ("ms", "20"))); // T-0244: Trendo misst nicht selbst
-        Assert.Contains("auf dem Gerät nicht geprüft", o);
-        Assert.DoesNotContain("läuft flüssig", o);
-    }
-}
-
 public static class Glb
 {
     /// <summary>Echte, minimale GLB-Datei mit einem Dreiecksnetz (tris Dreiecke).</summary>
@@ -106,21 +90,6 @@ public static class Gltf
     }
 }
 
-
-public class SPEC04_UiPlus
-{
-    [AvaloniaFact(DisplayName = "SPEC-04 UI Ausbau: Details, LOD, Texel, Komfort")]
-    public void Plus()
-    {
-        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root); w.Show("xr");
-        var o = W6Ui.Run(w, "xr-detail", ("file", Gltf.Write(root)));
-        Assert.Contains("Maßstab plausibel", o); Assert.Contains("Stuhl", o); Assert.Contains("1024 × 512", o); Assert.Contains("Draco", o);
-        Assert.True(File.Exists(Path.Combine(root, "szene.pruefbericht.md")));
-        Assert.Contains("Stufe 3", W6Ui.Run(w, "xr-lod"));
-        Assert.Contains("1.024 Pixel", W6Ui.Run(w, "xr-texel"));
-        Assert.Contains("Komfort", W6Ui.Run(w, "xr-move"));
-    }
-}
 
 public class CORE09_UiPlus
 {
