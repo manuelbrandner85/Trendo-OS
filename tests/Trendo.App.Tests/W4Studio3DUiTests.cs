@@ -28,7 +28,7 @@ public class W4_Core05_Ui
         Assert.False(w.Find<Button>("3d-ai").IsEnabled);
         w.Find<Button>("3d-add").Press();
         Assert.Contains("ist dabei", Msg(w));
-        Assert.NotNull(w.TryFind<Image>("3d-preview-image"));
+        Assert.NotNull(w.TryFind<CadView>("3d-viewport")); Assert.Single(w.Find<CadView>("3d-viewport").Parts);
         Assert.Equal(new byte[] { 137, 80, 78, 71 }, w.CurrentPreview![..4]);
         w.Find<TextBox>("3d-sx").Text = "30";
         w.Find<Button>("3d-apply").Press();
@@ -170,9 +170,9 @@ public class W4_Core05_Ui
         Inside(w.Find<Button>("3d-export-glb"));
         Inside(w.Find<Button>("3d-open-blender"));
         Inside(w.Find<Button>("3d-view-front"));
-        var img = w.Find<Image>("3d-preview-image");
-        Inside(img);
-        Assert.True(img.Bounds.Height >= 48, $"Vorschau nur {img.Bounds.Height} px hoch");
+        var vp = w.Find<CadView>("3d-viewport");
+        Inside(vp);
+        Assert.True(vp.Bounds.Height >= 200 && vp.Bounds.Width >= 400, $"Arbeitsfläche nur {vp.Bounds.Width}×{vp.Bounds.Height} px");
         w.Close();
     }
 }

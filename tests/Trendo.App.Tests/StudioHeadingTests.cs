@@ -33,6 +33,7 @@ public class StudioHeadingTests
 
         Assert.True(pages.Count >= 50, $"nur {pages.Count} Studio-Seiten");
         Assert.Equal("CORE-05", pages["3d"]);
+        pages.Remove("programmkatalog"); // Systemseite über alle Programme, eigener Titel (Masterprompt 131)
         foreach (var (key, id) in pages)
         {
             w.Show(key);

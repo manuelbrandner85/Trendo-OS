@@ -23,7 +23,7 @@ public partial class MainWindow
 
     private Scene3D _scene = new();
     private string? _selId;
-    private string _view3d = "front";
+    private string _view3d = "angle";
     private readonly List<string> _undo3d = [];
     private List<Part3D>? _aiParts;
     private List<(Part3D Part, TextBox Sx, TextBox Sy, TextBox Sz, TextBox X, TextBox Y, TextBox Z)>? _aiFields;
@@ -65,45 +65,26 @@ public partial class MainWindow
                 FileBlock(objName),
             },
         };
-        var editor = new StackPanel
+        // Masterprompt 131: links Teile und Objekt, Mitte die 3D-Arbeitsfläche, rechts die Werte des gewählten Teils und Werkzeuge
+        Control Side(string name, params Control[] cards)
         {
-            Spacing = 8,
-            Children =
-            {
-                BuildPromptBar("CORE-05"),
-                Card(new StackPanel
-                {
-                    Spacing = 8,
-                    Children =
-                    {
-                        H("Objekt", 14),
-                        new WrapPanel { Children = { Labeled("Name", objName), Act("3d-save", "Speichern", () => SaveScene(objName)), Act("3d-new", "Neues Objekt", () => NewScene(objName)), Act("3d-undo", "Rückgängig", UndoScene) } },
-                        H("Teile", 14),
-                        PartsList(objName),
-                        H("Teil", 14),
-                        PartForm(objName),
-                    },
-                }),
-                Card(AiBlock(aiOn, objName)),
-                Card(SavedBlock()),
-            },
-        };
-        var left = new ScrollViewer
-        {
-            Name = "3d-editor-scroll",
-            Content = editor,
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            VerticalAlignment = VerticalAlignment.Stretch,
-        };
-        var split = new Grid { ColumnDefinitions = new ColumnDefinitions("*,260"), MinHeight = 0, VerticalAlignment = VerticalAlignment.Stretch };
-        split.Children.Add(left);
-        var preview = Card(PreviewBlock());
-        preview.VerticalAlignment = VerticalAlignment.Stretch;
-        preview.Margin = new Thickness(8, 0, 0, 0);
-        Grid.SetColumn(preview, 1);
-        split.Children.Add(preview);
+            var sp = new StackPanel { Spacing = 8 }; foreach (var c in cards) sp.Children.Add(c);
+            return new ScrollViewer { Name = name, Content = sp, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
+        }
+        var left = Side("3d-left",
+            Card(new StackPanel { Spacing = 8, Children = {
+                H("Objekt", 14),
+                new WrapPanel { Children = { Labeled("Name", objName), Act("3d-save", "Speichern", () => SaveScene(objName)), Act("3d-new", "Neues Objekt", () => NewScene(objName)), Act("3d-undo", "Rückgängig", UndoScene) } },
+                H("Teile", 14), PartsList(objName) } }),
+            Card(SavedBlock()));
+        var right = Side("3d-editor-scroll",
+            Card(new StackPanel { Spacing = 8, Children = { H(Selected is { } sp0 ? "Teil: " + sp0.Name : "Neues Teil", 14), PartForm(objName) } }),
+            BuildPromptBar("CORE-05"),
+            Card(AiBlock(aiOn, objName)));
+        var center = Card(Viewport3D()); center.Name = "3d-stage"; center.VerticalAlignment = VerticalAlignment.Stretch; center.Margin = new Thickness(8, 0);
+        var split = new Grid { ColumnDefinitions = new ColumnDefinitions("250,*,330"), MinHeight = 0, VerticalAlignment = VerticalAlignment.Stretch };
+        split.Children.Add(left); Grid.SetColumn(center, 1); split.Children.Add(center);
+        Grid.SetColumn(right, 2); split.Children.Add(right);
         return FitKreativPage("3D-Modelle erstellen", header, split);
     }
 
@@ -232,42 +213,6 @@ public partial class MainWindow
         }
         else _aiFields = null;
         return box;
-    }
-
-    private Control PreviewBlock()
-    {
-        var box = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,*"), VerticalAlignment = VerticalAlignment.Stretch, MinHeight = 0 };
-        box.Children.Add(H("Vorschau", 14));
-        var views = new Avalonia.Controls.Primitives.UniformGrid
-        {
-            Columns = 3,
-            Children =
-            {
-                ViewBtn("front", "Vorne", "Ansicht von vorn."),
-                ViewBtn("back", "Hinten", "Ansicht von hinten."),
-                ViewBtn("left", "Links", "Ansicht von links."),
-                ViewBtn("right", "Rechts", "Ansicht von rechts."),
-                ViewBtn("top", "Oben", "Ansicht von oben."),
-                ViewBtn("angle", "Schräg", "Schräge Ansicht."),
-            },
-        };
-        Grid.SetRow(views, 1); box.Children.Add(views);
-        Control view = _previewError is { Length: > 0 }
-            ? P(_previewError, Brush.Parse("#FACC15"))
-            : _png3d is { Length: > 0 }
-                ? new Image { Name = "3d-preview-image", Source = new Bitmap(new MemoryStream(_png3d)), Stretch = Stretch.Uniform, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch }
-                : P("Die Vorschau erscheint, sobald ein Teil da ist.");
-        Grid.SetRow(view, 2); box.Children.Add(view);
-        return box;
-    }
-
-    private Button ViewBtn(string id, string label, string msg)
-    {
-        var b = Act("3d-view-" + id, label, () => SetView(id, msg));
-        b.Padding = new Thickness(4, 2); b.Margin = new Thickness(1); b.MinWidth = 0; b.FontSize = 12;
-        b.HorizontalAlignment = HorizontalAlignment.Stretch; b.HorizontalContentAlignment = HorizontalAlignment.Center;
-        if (_view3d == id) b.Background = Accent;
-        return b;
     }
 
     private Control FileBlock(TextBox objName)

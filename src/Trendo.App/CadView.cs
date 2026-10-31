@@ -17,18 +17,81 @@ public sealed class CadView : Control
     public double Zoom { get; set; } = 1;
     Point? _drag;
 
+    // ---------- Bearbeiten (3D-Modelle erstellen): Teil anklicken, ausgewähltes Teil mit der Maus verschieben ----------
+    /// <summary>Klick auf ein Teil (Index in <see cref="Parts"/>) oder ins Leere (−1).</summary>
+    public Action<int>? PartClicked { get; set; }
+    /// <summary>Ziehen des ausgewählten Teils beendet: Verschiebung in Weltkoordinaten (cm).</summary>
+    public Action<int, Vec3>? PartMoved { get; set; }
+    /// <summary>Raster für das Verschieben (cm, 0 = frei).</summary>
+    public double Snap { get; set; } = 0.5;
+    /// <summary>Feste Bildmitte und Größe (sonst aus den Teilen) – beim Bearbeiten springt die Ansicht so nicht mit.</summary>
+    public (Vec3 Center, double Size)? Frame { get; set; }
+    public Vec3 DragOffset { get; private set; }
+    int _moving = -1; bool _dragged;
+    readonly List<(int Part, double D, Point[] Pts)> _hit = [];
+    (Vec3 Center, double K, double Cy, double Sy, double Cp, double Sp, double W, double H) _cam;
+
+    /// <summary>Oberstes Teil unter einem Bildpunkt (nach der letzten Darstellung) oder −1.</summary>
+    public int PickAt(Point p)
+    {
+        foreach (var (part, _, pts) in _hit.OrderByDescending(x => x.D)) if (Inside(pts, p)) return part;
+        return -1;
+    }
+    /// <summary>Bildpunkt in der Mitte der sichtbaren Flächen eines Teils (nach der letzten Darstellung).</summary>
+    public Point? ScreenOf(int part)
+    {
+        var top = _hit.Where(x => x.Part == part).ToList(); if (top.Count == 0) return null;
+        foreach (var (_, _, pts) in top.OrderByDescending(x => x.D)) { var c = new Point(pts.Average(q => q.X), pts.Average(q => q.Y)); if (PickAt(c) == part) return c; }
+        return null;
+    }
+    static bool Inside(Point[] poly, Point p)
+    {
+        var inside = false;
+        for (int i = 0, j = poly.Length - 1; i < poly.Length; j = i++)
+            if ((poly[i].Y > p.Y) != (poly[j].Y > p.Y) && p.X < (poly[j].X - poly[i].X) * (p.Y - poly[i].Y) / (poly[j].Y - poly[i].Y) + poly[i].X) inside = !inside;
+        return inside;
+    }
+    /// <summary>Bildschirm-Verschiebung → Welt: in der Bodenebene; bei fast waagrechtem Blick hoch/runter statt vor/zurück.</summary>
+    public Vec3 ScreenToWorld(double dx, double dy)
+    {
+        var c = _cam; if (c.K <= 0) return new(0, 0, 0);
+        var a = dx / c.K;
+        if (Math.Abs(c.Sp) < 0.35) return new(a * c.Cy, -a * c.Sy, -dy / (Math.Max(0.2, c.Cp) * c.K));
+        var b = -dy / (c.Sp * c.K);
+        return new(a * c.Cy + b * c.Sy, -a * c.Sy + b * c.Cy, 0);
+    }
+    Vec3 Snapped(Vec3 v) => Snap <= 0 ? v : new(Math.Round(v.X / Snap) * Snap, Math.Round(v.Y / Snap) * Snap, Math.Round(v.Z / Snap) * Snap);
+
     public CadView() { ClipToBounds = true; Focusable = true; }
 
     public void SetView(string v) { (Yaw, Pitch) = v switch { "vorne" => (0, 0), "oben" => (0, 90), "rechts" => (-90, 0), _ => (-35, 28) }; Zoom = 1; InvalidateVisual(); }
 
-    protected override void OnPointerPressed(PointerPressedEventArgs e) { base.OnPointerPressed(e); _drag = e.GetPosition(this); if (e.ClickCount == 2) SetView("iso"); e.Pointer.Capture(this); }
-    protected override void OnPointerReleased(PointerReleasedEventArgs e) { base.OnPointerReleased(e); _drag = null; e.Pointer.Capture(null); }
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e); Focus();
+        var pos = e.GetPosition(this); _drag = pos; _dragged = false; _moving = -1; DragOffset = new(0, 0, 0);
+        if (e.ClickCount == 2 && PickAt(pos) < 0) { SetView("iso"); return; } // Doppelklick ins Leere: Ansicht zurück; auf einem Teil zählt er als neuer Griff
+        // linke Taste auf dem ausgewählten Teil: verschieben; sonst drehen
+        if (PartMoved is not null && !e.GetCurrentPoint(this).Properties.IsRightButtonPressed && PickAt(pos) is var hit and >= 0 && Parts[hit].Selected) _moving = hit;
+        e.Pointer.Capture(this);
+    }
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e); e.Pointer.Capture(null);
+        var pos = e.GetPosition(this);
+        if (_moving >= 0 && _dragged) { var off = Snapped(DragOffset); var i = _moving; _moving = -1; DragOffset = new(0, 0, 0); PartMoved?.Invoke(i, off); }
+        else if (!_dragged && e.InitialPressMouseButton == MouseButton.Left) PartClicked?.Invoke(PickAt(pos));
+        _moving = -1; _drag = null; DragOffset = new(0, 0, 0); InvalidateVisual();
+    }
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
         if (_drag is not { } d) return;
         var p = e.GetPosition(this);
-        Yaw += (p.X - d.X) * 0.5; Pitch = Math.Clamp(Pitch + (p.Y - d.Y) * 0.5, -89, 89);
+        if (!_dragged && Math.Abs(p.X - d.X) + Math.Abs(p.Y - d.Y) < 4) return;
+        _dragged = true;
+        if (_moving >= 0) DragOffset += ScreenToWorld(p.X - d.X, p.Y - d.Y);
+        else { Yaw += (p.X - d.X) * 0.5; Pitch = Math.Clamp(Pitch + (p.Y - d.Y) * 0.5, -89, 89); }
         _drag = p; InvalidateVisual();
     }
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e) { base.OnPointerWheelChanged(e); Zoom = Math.Clamp(Zoom * (e.Delta.Y > 0 ? 1.12 : 1 / 1.12), 0.1, 20); InvalidateVisual(); e.Handled = true; }
@@ -59,8 +122,10 @@ public sealed class CadView : Control
         Vec3 min = boxes.Count == 0 ? new(-20, -20, 0) : new(boxes.Min(b => b.Min.X), boxes.Min(b => b.Min.Y), boxes.Min(b => b.Min.Z));
         Vec3 max = boxes.Count == 0 ? new(20, 20, 20) : new(boxes.Max(b => b.Max.X), boxes.Max(b => b.Max.Y), boxes.Max(b => b.Max.Z));
         var center = (min + max) * 0.5; var size = Math.Max(10, (max - min).Len);
+        if (Frame is { } fr) { center = fr.Center; size = Math.Max(10, fr.Size); min = new(min.X, min.Y, Math.Min(min.Z, 0)); }
         var k = Math.Min(w, h) / size * 0.8 * Zoom;
         double cy = Math.Cos(Yaw * Math.PI / 180), sy = Math.Sin(Yaw * Math.PI / 180), cp = Math.Cos(Pitch * Math.PI / 180), sp = Math.Sin(Pitch * Math.PI / 180);
+        _cam = (center, k, cy, sy, cp, sp, w, h); _hit.Clear();
         // Kamera: um Z drehen (Yaw), dann um X kippen (Pitch); Bildschirm: x nach rechts, y nach oben, Tiefe zum Betrachter
         (double X, double Y, double D) Proj(Vec3 p)
         {
@@ -86,13 +151,15 @@ public sealed class CadView : Control
         var faces = new List<(double D, Point[] Pts, IBrush Fill, bool Sel, List<(Point, Point)> Edges)>();
         var ground = new List<(double D, Point[] Pts, IBrush Fill, bool Sel, List<(Point, Point)> Edges)>();
         var casters = new List<Poly>(); var groundZ = min.Z;
-        foreach (var (color, solid, sel) in Parts)
+        for (var pi = 0; pi < Parts.Count; pi++)
         {
+            var (color, solid, sel) = Parts[pi];
             var sharp = solid.Smooth ? [] : SharpEdges(solid);
             var baseCol = Color.TryParse(color, out var bc) ? bc : Color.Parse("#2F86F6");
+            var off = pi == _moving ? Snapped(DragOffset) : new Vec3(0, 0, 0);
             foreach (var poly in solid.Polys)
             {
-                var pts = poly.Verts.Select(Proj).ToList();
+                var pts = poly.Verts.Select(v => Proj(v + off)).ToList();
                 var n = poly.Plane.Normal;
                 // nach hinten zeigende Flächen weglassen
                 var a = pts[0]; var b = pts[1]; var c = pts[2];
@@ -100,9 +167,12 @@ public sealed class CadView : Control
                 if (cross > 0) continue; // Bildschirm-y zeigt nach unten: Vorderseite hat negatives Kreuzprodukt
                 var zMax = poly.Verts.Max(v => v.Z); var isGround = n.Z > 0.9 && zMax <= min.Z + groundTol * 8;
                 var col = Shading.Shade(baseCol, n, view, isGround ? 1 : Shading.GroundAo(poly.Verts.Average(v => v.Z) - min.Z, reach), solid.Smooth ? 0.35 : 0.2);
+                if (sel && PartClicked is not null) col = Color.FromRgb((byte)(col.R * 0.72 + 250 * 0.28), (byte)(col.G * 0.72 + 204 * 0.28), (byte)(col.B * 0.72 + 21 * 0.28)); // Auswahl beim Bearbeiten sichtbar, auch an runden Teilen
                 var edges = new List<(Point, Point)>();
                 for (var i = 0; i < poly.Verts.Count; i++) if (sharp.Contains(EdgeKey(poly.Verts[i], poly.Verts[(i + 1) % poly.Verts.Count]))) edges.Add((new Point(pts[i].X, pts[i].Y), new Point(pts[(i + 1) % pts.Count].X, pts[(i + 1) % pts.Count].Y)));
-                (isGround ? ground : faces).Add((pts.Average(x => x.D), pts.Select(x => new Point(x.X, x.Y)).ToArray(), new SolidColorBrush(col), sel, edges));
+                var screen = pts.Select(x => new Point(x.X, x.Y)).ToArray();
+                (isGround ? ground : faces).Add((pts.Average(x => x.D), screen, new SolidColorBrush(col), sel, edges));
+                _hit.Add((pi, pts.Average(x => x.D), screen));
                 if (isGround) groundZ = Math.Max(groundZ, zMax);
             }
             foreach (var poly in solid.Polys) if (poly.Verts.Max(v => v.Z) > min.Z + groundTol * 8) casters.Add(poly);

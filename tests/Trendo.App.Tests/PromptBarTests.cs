@@ -106,7 +106,7 @@ public class PromptBarTests
         w.Close();
     }
 
-    [AvaloniaFact(DisplayName = "3D-Seite zeigt die Auftragsleiste, ohne die Vorschau zu verkleinern")]
+    [AvaloniaFact(DisplayName = "3D-Seite zeigt die Auftragsleiste, ohne die 3D-Arbeitsfläche zu verkleinern")]
     public void Drei_d_leiste_bleibt_in_der_seite()
     {
         var (w, _, _) = Ui.Open();
@@ -117,8 +117,8 @@ public class PromptBarTests
         Dispatcher.UIThread.RunJobs();
         Assert.NotNull(w.TryFind<TextBox>("auftrag-prompt"));
         w.Find<Button>("3d-add").Press();
-        var img = w.Find<Image>("3d-preview-image");
-        Assert.True(img.Bounds.Height >= 48, $"Vorschau nur {img.Bounds.Height} px hoch");
+        var vp = w.Find<CadView>("3d-viewport");
+        Assert.True(vp.Bounds.Height >= 150, $"3D-Arbeitsfläche nur {vp.Bounds.Height} px hoch");
         w.Close();
     }
 
