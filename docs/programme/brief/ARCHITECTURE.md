@@ -1,0 +1,26 @@
+# Briefe schreiben – Architektur
+
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.28 (Stand 99a5092)
+
+## Präsentation (Trendo.App)
+– (nicht erfasst)
+
+## Bedienelemente der Arbeitsfläche
+- Texteditor
+
+## Reiter
+- Briefe schreiben
+- Akten
+- Briefköpfe
+
+## Fach-Engine (Trendo.Core)
+– (nicht erfasst)
+
+## Dateiformate (im Code belegt)
+– (nicht erfasst)
+
+## Externe Programme und Dienste
+– keine
+
+## Bausteine (Masterprompt 131 / 5)
+Eigene Arbeitsseite ohne die gemeinsame Programm-Hülle – Dokumentmodell, Rückgängig und Bedienstufen sind hier nicht einheitlich.

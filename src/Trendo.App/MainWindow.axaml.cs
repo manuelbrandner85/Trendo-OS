@@ -609,6 +609,7 @@ public sealed partial class MainWindow : Window
     /// <summary>Modul einer Studio-Seite: PageModules (RegisterTab), sonst StudioPages. Brief und Dokumente sind die Einstiege aus PageForStudio.</summary>
     private string? StudioIdForPage(string key)
     {
+        if (string.Equals(key, "programmkatalog", StringComparison.OrdinalIgnoreCase)) return null; // eigene Systemseite, kein Studio-Kopf
         if (PageModules.TryGetValue(key, out var fromPage)) return fromPage;
         foreach (var (id, page) in StudioPages)
             if (string.Equals(page, key, StringComparison.OrdinalIgnoreCase)) return id;

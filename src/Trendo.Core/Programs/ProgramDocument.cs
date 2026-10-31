@@ -31,6 +31,17 @@ public sealed class ProgramDocument
     public bool CanUndo => _undo.Count > 0;
     public bool CanRedo => _redo.Count > 0;
     public string? UndoLabel => _undo.Count > 0 ? _undo.Peek().Label : null;
+    /// <summary>Änderungsverlauf, neueste zuerst (für den Verlauf in der Profi-Stufe).</summary>
+    public IReadOnlyList<string> History => _undo.Select(u => u.Label).ToList();
+
+    /// <summary>Profi-Stufe: Projektdaten als Ganzes ersetzen – nur ein JSON-Objekt, als ein Schritt rückgängig machbar.</summary>
+    public void ReplaceData(string json)
+    {
+        JsonNode? n;
+        try { n = JsonNode.Parse(json); } catch (JsonException ex) { throw new InvalidDataException("Die Projektdaten sind kein gültiges JSON: " + ex.Message); }
+        if (n is not JsonObject o) throw new InvalidDataException("Die Projektdaten müssen ein JSON-Objekt { … } sein.");
+        Edit("Projektdaten bearbeitet", d => { d.Clear(); foreach (var (k, v) in o.ToList()) { o.Remove(k); d[k] = v; } });
+    }
 
     /// <summary>Jede Änderung läuft hierüber: vorher Schnappschuss, danach „geändert“.</summary>
     public void Edit(string label, Action<JsonObject> change)

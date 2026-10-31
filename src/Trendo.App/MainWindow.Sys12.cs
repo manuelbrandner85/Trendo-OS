@@ -81,6 +81,9 @@ public partial class MainWindow
         sp.Children.Add(Card(Section("Schriftgröße", "Unabhängig von der Anzeigegröße: kleine Schrift wird auf diese Mindestgröße angehoben.", fonts)));
         sp.Children.Add(Card(Section("Einfacher Modus", "Nur die wichtigsten Kacheln auf dem Startbildschirm und größere Knöpfe.",
             Opt("simple-mode", "Einfachen Modus einschalten", _settings.SimpleMode, v => _settings.SimpleMode = v, V))));
+        var levels = Line(); for (var i = 0; i < 3; i++)
+        { var lv = i; var on = ProgramLevel == lv; levels.Children.Add(Act("level-" + Trendo.Core.Programs.UserLevel.Ids[i], (on ? "✓ " : "") + Trendo.Core.Programs.UserLevel.Names[i], () => ProgramSetLevel(lv, V), on)); }
+        sp.Children.Add(Card(Section("Bedienstufe der Programme", "Einfach: nur das Wichtigste. Erweitert: alle Fachwerkzeuge. Professionell: zusätzlich Befehlssuche, Verlauf und Projektdaten. Deine Dokumente bleiben beim Wechsel unverändert.", levels)));
         sp.Children.Add(Card(Section("Farben und Bewegung", "Status zusätzlich mit Zeichen (✓ ⚠ ✕), damit man ihn auch ohne Farben erkennt.",
             Opt("color-blind", "Status mit Zeichen statt nur Farbe", _settings.ColorBlind, v => _settings.ColorBlind = v, V),
             Opt("a11y-motion", "Bewegung reduzieren (keine Animationen)", _settings.ReduceMotion, v => _settings.ReduceMotion = v, V),

@@ -117,7 +117,7 @@ public sealed class PersonStore(string baseRoot)
         var root = RootOf(p.Id); Directory.CreateDirectory(root);
         // Kinder: einfache Bedienung und leichte Sprache von Anfang an
         var s = UserSettings.Load(root); s.Name = name; s.Avatar = avatar; s.Child = child;
-        if (child) { s.SimpleMode = true; s.EasyLanguage = true; }
+        if (child) { s.SimpleMode = true; s.EasyLanguage = true; s.Level = "einfach"; }
         s.Save(root);
         audit?.Append("app", "person.add", child ? "Kind" : "Erwachsen");
         return p;

@@ -27,6 +27,7 @@ public partial class MainWindow
 
     private void InitSpec03() => RegisterProgram(FachTabs, new ProgramSpec(TK, "SPEC-03", "Tragwerk & Mechanik")
     {
+        CmdLevels = new() { ["tk-n"] = 1, ["tk-react"] = 1, ["tk-self"] = 1, ["tk-grid"] = 1, ["tk-ec"] = 1 },
         Sentence = "Träger, Rahmen und Fachwerke zeichnen – Schnittkräfte, Durchbiegung und Nachweis rechnen sofort mit.",
         Folder = "Statik",
         FillHeight = true,

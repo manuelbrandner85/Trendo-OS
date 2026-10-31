@@ -94,6 +94,29 @@ if (Environment.GetEnvironmentVariable("TRENDO_TV_DEMO") is { Length: > 0 }) // 
 var win = new MainWindow(core, new AppOptions(root, null, 0, Page: args.Length > 3 ? args[3] : null, Query: Environment.GetEnvironmentVariable("TRENDO_QUERY")), new DefaultToolProbe()) { Width = w, Height = h, WindowState = Avalonia.Controls.WindowState.Normal };
 if (Environment.GetEnvironmentVariable("TRENDO_TV_TAB") is { Length: > 0 } tvTab) { win.TvTabForTests = tvTab; win.Show("tv"); }
 win.Show();
+if (Environment.GetEnvironmentVariable("TRENDO_KATALOG") is { Length: > 0 } repoArg) // Masterprompt 131: Programmkatalog und Produktionspakete aus dem Repository erzeugen
+{
+    var repo = Path.GetFullPath(repoArg); var outDir = Path.Combine(repo, "docs", "programme");
+    var trxDir = Environment.GetEnvironmentVariable("TRENDO_KATALOG_TRX");
+    var trx = trxDir is { Length: > 0 } && Directory.Exists(trxDir) ? Directory.GetFiles(trxDir, "*.trx", SearchOption.AllDirectories) : [];
+    var outcomes = trx.Length > 0 ? Trendo.Core.Programs.ProgramCatalog.ReadTrx(trx) : null;
+    var req = File.ReadAllLines(Path.Combine(repo, "requirements.yaml")); var types = Trendo.Core.Programs.ProgramCatalog.CoreTypes(repo);
+    var entries = new List<Trendo.Core.Programs.ProgramEntry>();
+    foreach (var e in win.ProgramCatalogRuntime())
+    {
+        var (ui, tools) = win.ProgramCatalogInspect(e.Id);
+        var full = Trendo.Core.Programs.ProgramCatalog.Enrich(e with { Type = ui, Tools = e.Tools.Count > 0 ? e.Tools : tools, Ui = ui.Concat(e.Shell ? ["Menüband", "Eigenschaften", "Statusleiste", "Dokument-Reiter"] : []).ToList() }, repo, req, types);
+        entries.Add(full);
+        var dir = Path.Combine(outDir, full.Id); Directory.CreateDirectory(dir);
+        foreach (var (name, text) in Trendo.Core.Programs.ProgramCatalog.Docs(full, outcomes, trx.Length > 0 ? string.Join(", ", trx.Select(t => Path.GetRelativePath(repo, t).Replace('\\', '/'))) : null))
+            File.WriteAllText(Path.Combine(dir, name), text.Replace("\r\n", "\n"));
+    }
+    foreach (var stale in Directory.GetDirectories(outDir).Where(d => !entries.Any(x => x.Id == Path.GetFileName(d)))) Directory.Delete(stale, true);
+    File.WriteAllText(Path.Combine(outDir, "katalog.json"), Trendo.Core.Programs.ProgramCatalog.ToJson(entries));
+    File.WriteAllText(Path.Combine(outDir, "KATALOG.md"), Trendo.Core.Programs.ProgramCatalog.Markdown(entries));
+    Console.WriteLine($"Programmkatalog: {entries.Count} Programme → {outDir}" + (outcomes is null ? "" : $" ({outcomes.Count} Testergebnisse)"));
+    return;
+}
 if (Environment.GetEnvironmentVariable("TRENDO_PDF") is { Length: > 0 } pdf) { var copy = Path.Combine(root, Path.GetFileName(pdf)); File.Copy(pdf, copy, true); win.OpenPdf(copy); win.Show("pdf"); } // T-0223: Trendo PDF rendern
 if (Environment.GetEnvironmentVariable("TRENDO_SHEET") is { Length: > 0 } mappe) { win.SheetNew(mappe); if (Enum.TryParse<Trendo.Core.Office.ChartKind>(Environment.GetEnvironmentVariable("TRENDO_SHEET_CHART"), out var chartKind)) { win.SheetSelect("A1:C7"); win.SheetInsertChart(chartKind); } if (Environment.GetEnvironmentVariable("TRENDO_SHEET_EXTRAS") == "1") { win.SheetSelect("C2:C7"); win.SheetAddCond(Trendo.Core.Office.CondKind.Datenbalken); win.SheetSelect("C9:C11"); win.SheetAddCond(Trendo.Core.Office.CondKind.Farbskala); win.SheetSelect("B2:B7"); win.SheetAddCond(Trendo.Core.Office.CondKind.Regel, Trendo.Core.Office.CondOp.Enthaelt, text: "Einnahme"); win.SheetSetValidation("Einnahme; Ausgabe"); win.SheetSelect("A2"); win.SheetSetNote("Netto, ohne Weihnachtsgeld"); } win.SheetSelect("C2:C7"); if (Environment.GetEnvironmentVariable("TRENDO_SHEET_PDF") is { Length: > 0 } sheetPdf) win.SheetExportPdf(sheetPdf); win.Show("tabelle"); } // T-0228: Trendo Tabelle mit Vorlage rendern
 if (Environment.GetEnvironmentVariable("TRENDO_DECK") is { Length: > 0 } deck) { win.DeckNew(deck); if (Environment.GetEnvironmentVariable("TRENDO_DECK_SLIDE") is { } ds && int.TryParse(ds, out var dsi)) win.DeckGo(dsi); if (Environment.GetEnvironmentVariable("TRENDO_DECK_PNG") is { Length: > 0 } pngDir) win.DeckExportImages(pngDir); win.Show("praesentation"); } // T-0229: Trendo Präsentation mit Vorlage rendern
@@ -132,7 +155,7 @@ else if (shot == "seite")
     win.Show(page);
     if (win.Windows.Active is { Maximized: false } pageWin) win.Windows.ToggleMaximize(pageWin.Id);
     win.Show(page);
-    if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { win.ProgramNew(page, tpl); win.Show(page); } // Programm mit Vorlage öffnen
+    if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lv)); win.ProgramNew(page, tpl); win.Show(page); } // Programm mit Vorlage öffnen
     if (page == "architektur" && Environment.GetEnvironmentVariable("TRENDO_ARCH") is { Length: > 0 } arch) // Grundriss: Auswahl/3D/Werkzeug zeigen
     {
         var plan = Trendo.Core.Arch.FloorPlan.From(win.ProgramActive(page)!.Data);

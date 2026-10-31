@@ -25,6 +25,7 @@ public partial class MainWindow
 
     private void InitSpec14() => RegisterProgram(FachTabs, new ProgramSpec(CK, "SPEC-14", "CNC-Werkstatt")
     {
+        GroupLevels = new() { ["Erzeugen"] = 1 },
         Sentence = "G-Code schreiben, erzeugen und prüfen – mit Vorschau und Simulation, bevor die Maschine läuft.",
         Folder = "CNC",
         FillHeight = true,

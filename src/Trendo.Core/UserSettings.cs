@@ -37,6 +37,8 @@ public sealed class UserSettings
     public bool ColorBlind { get; set; }
     public string NotifyStyle { get; set; } = "normal";
     public bool SimpleMode { get; set; }
+    /// <summary>Masterprompt 131: Bedienstufe der Programme – einfach | erweitert | profi (siehe <see cref="Programs.UserLevel"/>).</summary>
+    public string Level { get; set; } = "erweitert";
     public int[]? WindowRect { get; set; }
     /// <summary>Startmenü: angeheftete Studios (IDs) und zuletzt benutzte Seiten (neueste zuerst).</summary>
     public List<string> PinnedStudios { get; set; } = [];

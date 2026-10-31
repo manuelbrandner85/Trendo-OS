@@ -1,0 +1,83 @@
+# Startbildschirm – Testplan
+
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.28 (Stand 99a5092)
+
+77 Tests sprechen dieses Programm an.
+
+- 3D-Seite zeigt die Auftragsleiste, ohne die Vorschau zu verkleinern
+- Abdeckung und StudioCatalog nennen dieselben Kennungen, Titel und Bereiche
+- Alle Studios + Bereiche: jede Karte ist klickbar und führt aus der Liste heraus
+- Anmeldung: „Beim Start nach PIN fragen“ lässt sich abschalten
+- Apps: WhatsApp installieren → Desktop und Startmenü, öffnet als App-Fenster mit eigenem Speicher, Entfernen löscht die Anmeldung
+- Ausnahmen bleiben eine kleine begründete Liste
+- Baukasten übernimmt die neue Seite ins Formular
+- Briefseite zeigt den echten Brieftext in der Vorschau
+- Briefseite zeigt die Auftragsleiste und meldet ehrlich, wenn nichts eingebaut ist
+- CORE-01: Dateisuche begrenzt Tiefe und Anzahl
+- CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte
+- CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+K fokussiert die Suche
+- Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt
+- Design: Dock-Klick auf Dateien startet direkt (nur Owner) und wird auditiert; Browser offline deaktiviert
+- Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert
+- Design: Systemstatus zeigt Messwert in % oder 'n. v.', nie Mockup-Werte ohne Messung
+- Design: die neun bekannten Studios zeigen auf der Studios-Seite den echten Status aus requirements.yaml
+- Desktop: anfangs keine Symbole; über Startmenü, Seite „Desktop-Symbole“ und Studio Manager hinzufügen; Rechtsklick entfernt; bleibt gespeichert
+- Drei Studios gleichzeitig bei 1366×768: Briefe, Spiele, 3D – Taskleiste, Snap, Eingabe bleibt
+- Ersteinrichtung: nach Neustart geht es beim letzten Schritt weiter, eine schon festgelegte PIN wird nicht erneut abgefragt
+- Fenster: Einstellung übernehmen (Design-Knopf per Mausklick) schließt keine Fenster – alle kommen mit Lage und Zustand zurück
+- Fenster: Größe an Ecke und Rand per Maus ziehen; an linken/rechten Rand ziehen rastet auf halbe Fläche ein
+- Fenster: Startmenü öffnet Dokumente mit Taskleisten-Eintrag, Startbildschirm bleibt dahinter
+- Fenster: Ziehen an der Titelleiste verschiebt; Klick ins hintere Fenster holt es nach vorn; Reiter teilen ein Fenster
+- Fenster: wechseln per Taskleiste, aktives hervorgehoben, maximieren, schließen
+- G3: Fachstudio zeigt keine Reiter fremder Studios; G10: keine Schrift unter 12 pt auf der Seite
+- G6: Dateifeld zeigt Vorschau der gewählten Datei (Name, Größe)
+- G7: Ergebnis-Karte mit Kopieren und Verlauf früherer Ergebnisse; G12: Benachrichtigung erscheint
+- G8: Strg+Q öffnet „Was möchtest du tun?“, findet Studios und Knöpfe der Seite und führt sie aus; G9/G13: F11 Fokusmodus
+- Jedes Studio mit Status IMPLEMENTED hat einen eigenen Bereich (keine Sackgasse)
+- Komponenten: Lizenzliste, Unreal nur geführt (offizieller Link), Zustimmung wird gespeichert
+- LETTER-UI: Briefkopf → Akte (Behörde) → Fakt, Chronik, Eingang → Frist UNGEPRÜFT → Quelle fehlt → Export gesperrt → beheben → DOCX → Freigabe → Versand BLOCKED
+- LETTER-UI: Briefstudio hat genau eine Unterebene; Akte/Ausgabe erst mit offener Akte
+- N11: Rechner – Tasten, wissenschaftlich, Programmierer, Grafik, Datum, Verlauf
+- N18: Zettel anlegen, Farbe wählen, auf der Startseite anheften und lösen
+- N20: Wecker stellen und klingeln (Benachrichtigung mit Schlummern), Timer läuft ab, Stoppuhr-Runden, Weltuhr
+- N5: Notizbuch – Abschnitt und Seite anlegen, schreiben (speichert), Schlagworte, Suche, der KI als Wissen geben
+- N9: Editor öffnet ANSI/CRLF, sucht, ersetzt, speichert in gleicher Kodierung; Kodierung umstellbar
+- QA-004 UI: Browser-Aktion abgelehnt → nichts geöffnet
+- QA-004 UI: Browser-Aktion freigegeben → genau einmal geöffnet
+- QA-004 UI: Explorer-Aktion → Freigabe-Ansicht; Ausführung erst nach Klick auf Freigeben
+- QA-017: Navigationsschaltflächen haben zugängliche Namen
+- QA-017: Strg+1..5 schaltet alle Hauptbereiche per Tastatur
+- QA-017: Tab bewegt Fokus durch die Navigation, Enter aktiviert
+- QA-019 (simuliert): Offline-Modus – Browser-Aktion deaktiviert, lokale Funktionen laufen
+- STUDIO-LETTER-01: Schnellzugriff „Neuer Brief“ → Kündigung → ausfüllen → prüfen → speichern; Absender gemerkt
+- SYS-02: Notiz-Schnelltool öffnet Werkzeuge; Notiz wird gespeichert; Rechner rechnet bei Enter
+- SYS-03: Dock-Browser öffnet Browser & Downloads; Adresse wird geöffnet, javascript: abgelehnt; offline gesperrt
+- SYS-11/X-09: Apps hat genau eine Unterebene; Programme und Speicher-Seite öffnen
+- SYS-12 (UI): Bericht über alle Seiten; keine Seite tiefer als 2 Ebenen; Prüfseite hat keine unbenannten Knöpfe
+- SYS-12 (UI): Leise Benachrichtigung; Einstellung bleibt gespeichert; einfacher Modus zeigt weniger Kacheln
+- SYS-12 (UI): Mindestschrift greift; Knöpfe haben Namen und sind per Tab erreichbar; Bewegung aus = keine Übergänge
+- SYS-12: Anzeigegröße „Sehr groß“ wird gespeichert; F1 zeigt die Hilfe
+- Schlüssel: ungültig wird nicht gespeichert, gültig landet im Secret-Store, nie im Audit
+- Start: das Hauptfenster ist sichtbar und kommt aus dem minimierten Zustand zurück
+- Startbildschirm bekommt keine Auftragsleiste
+- Startmenü: Anheften bleibt nach erneutem Öffnen, angeheftetes Studio sitzt in der Taskleiste
+- Startmenü: Klick auf Startknopf öffnet, Klick daneben und Esc schließen, Windows-Taste schaltet um
+- Startmenü: Studio aus A–Z anheften, angeheftet öffnen, lösen; Zuletzt benutzt
+- Startmenü: Suche findet Studio/Seite, Ergebnis per Mausklick öffnet
+- Startmenü: Suche und Enter starten das Studio, nicht die Übersicht
+- Startmenü: jedes Katalog-Studio öffnet das eigene Fenster, Taskleiste, Minimieren, Wiederherstellen, Schließen
+- Startseite, Alle Studios und jede Studio-Seite: keine sichtbare Taste ohne Wirkung
+- Startseite: die neun bekannten Studios öffnen aus dem Startmenü per echtem Mausklick eine eigene Seite
+- Studio-Abnahme: Seite öffnet, Überschrift ist der Katalogname, keine tote Taste, eine Hauptaktion ist bedienbar
+- Studio-Klick: Unreal nur geführt – kein Installieren-Knopf, offizieller Installer-Link
+- Studio-Klick: fehlendes Programm → genau eine Frage 'Studio braucht X. Jetzt installieren?', 'Später' installiert nichts
+- T-0107: Sparsam – keine Hintergrund-Unschärfe, keine Schatten und Effekte, keine Übergänge; Auswahl in den Einstellungen
+- T-0212: Einfacher Modus vergrößert Knöpfe
+- T-0212: Schalter zeigt Zustand; „Status mit Zeichen“ setzt ✓ ⚠ ✕ an echte Statuspunkte
+- TV-Vollbild: kleines Fenster „Verkleinern“ beim Start und bei Mausbewegung, ein Klick verkleinert
+- Viele Studiofenster: das erste bleibt, Hinweis statt stillem Schließen
+- W0-01/03/06: Assistent – Name, Ordner, Design, Pakete, Installation über Zustimmung, Vorlagen, Systemcheck
+- W0B-02/03 (UI): Rechtsklick-Menü öffnet Einstellungen; Hintergrund wählen, Farbe passend zum Hintergrund
+- W0b-01: Keine Fachwörter in Oberflächentexten (docs/SPRACHE.md)
+- W0b-02/04/05: Widgets ausblenden, Dock sortieren, Bewegung reduzieren, Hinweis einmalig – alles gespeichert
+- W0b-06: Design wechseln (Hell/Kontrast) baut das Fenster neu auf und speichert

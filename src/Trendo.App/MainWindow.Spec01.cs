@@ -36,6 +36,7 @@ public partial class MainWindow
 
     private void InitSpec01() => RegisterProgram(FachTabs, new ProgramSpec(AK, "SPEC-01", "Grundriss & Wohnen")
     {
+        CmdLevels = new() { ["arch-grid"] = 1, ["arch-dims"] = 1 },
         Sentence = "Wohnung oder Haus planen: Wände, Räume, Türen, Fenster und Möbel – mit Maßen, 3D und Materialliste.",
         Folder = "Grundrisse",
         FillHeight = true,

@@ -25,6 +25,7 @@ public partial class MainWindow
 
     private void InitProgMode() => RegisterProgram(FachTabs, new ProgramSpec("mode-programm", "SPEC-08", "Kleidung & Produkte")
     {
+        GroupLevels = new() { ["Schnittteile"] = 1 },
         Sentence = "Ein Produkt von der Figur bis zum Datenblatt – mit Größen, Varianten, Stoff und Preis.",
         FillHeight = true,
         Folder = "Produkte",

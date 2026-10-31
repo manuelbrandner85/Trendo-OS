@@ -18,6 +18,7 @@ public partial class MainWindow
 
     private void InitSpec05() => RegisterProgram(FachTabs, new ProgramSpec(SK, "SPEC-05", "Messdaten & Auswertung")
     {
+        GroupLevels = new() { ["Ausgleich"] = 1 }, CmdLevels = new() { ["ms-k-histogramm"] = 1, ["ms-k-box"] = 1, ["ms-f-exp"] = 1, ["ms-f-potenz"] = 1 },
         Sentence = "Messwerte eintippen oder laden – Diagramm, Ausgleichskurve, Kennzahlen und Tests sofort.",
         Folder = "Messdaten",
         FillHeight = true,

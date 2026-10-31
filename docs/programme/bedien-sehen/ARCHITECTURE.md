@@ -1,0 +1,26 @@
+# Sehen – Architektur
+
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.28 (Stand 99a5092)
+
+## Präsentation (Trendo.App)
+- `src/Trendo.App/MainWindow.Sys12.cs`
+
+## Bedienelemente der Arbeitsfläche
+– (nicht erfasst)
+
+## Reiter
+- Sehen
+- Hilfen
+- Prüfen
+
+## Fach-Engine (Trendo.Core)
+- `A11y`
+
+## Dateiformate (im Code belegt)
+– (nicht erfasst)
+
+## Externe Programme und Dienste
+– keine
+
+## Bausteine (Masterprompt 131 / 5)
+Eigene Arbeitsseite ohne die gemeinsame Programm-Hülle – Dokumentmodell, Rückgängig und Bedienstufen sind hier nicht einheitlich.

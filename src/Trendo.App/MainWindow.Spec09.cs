@@ -24,6 +24,7 @@ public partial class MainWindow
     {
         RegisterProgram(FachTabs, new ProgramSpec(PK, "SPEC-09", "Punktwolke")
         {
+            GroupLevels = new() { ["Umformen"] = 1 }, CmdLevels = new() { ["pc-thin"] = 1, ["pc-scale"] = 1, ["pc-color"] = 1 },
             Sentence = "Scan öffnen, von allen Seiten ansehen, aufräumen, messen und als PLY oder XYZ weitergeben.",
             Folder = "Punktwolken",
             FillHeight = true,

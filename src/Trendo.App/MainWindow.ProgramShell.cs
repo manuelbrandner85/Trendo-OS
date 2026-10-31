@@ -13,7 +13,8 @@ namespace Trendo.App;
 /// <summary>T-0231 V2/V3/V6/V9: Vorlage eines Studio-Programms – Startseite (Neu · Vorlagen · Zuletzt · Wiederherstellen), Reiter für mehrere Dokumente,
 /// Menüband (Datei, Bearbeiten, Studio-Gruppen, Export), Arbeitsfläche, Eigenschaften rechts, Statusleiste, Tastenkürzel, automatisches Sichern.</summary>
 public sealed record ProgramTemplate(string Id, string Name, string Hint, Func<JsonObject> Create);
-public sealed record ProgramCmd(string Name, string Label, Action<ProgramDocument> Run, bool Primary = false, string? Tip = null);
+/// <summary><paramref name="Level"/>: ab welcher Bedienstufe das Werkzeug erscheint (0 Einfach, 1 Erweitert, 2 Profi – siehe <see cref="UserLevel"/>).</summary>
+public sealed record ProgramCmd(string Name, string Label, Action<ProgramDocument> Run, bool Primary = false, string? Tip = null, int Level = 0);
 public sealed record ProgramExport(string Name, string Label, string Extension, Func<ProgramDocument, string, string> Write);
 
 public sealed class ProgramSpec(string key, string studio, string title)
@@ -32,6 +33,10 @@ public sealed class ProgramSpec(string key, string studio, string title)
     public string Help { get; init; } = "";
     /// <summary>T-0256: Arbeitsfläche füllt die Fensterhöhe (Zeichenprogramme) statt mitzuscrollen.</summary>
     public bool FillHeight { get; init; }
+    /// <summary>Masterprompt 131: Bedienstufe je Menüband-Gruppe (fehlt = Einfach); Befehle können zusätzlich eine eigene Stufe haben.</summary>
+    public Dictionary<string, int> GroupLevels { get; init; } = [];
+    public Dictionary<string, int> CmdLevels { get; init; } = [];
+    public int LevelOf(ProgramCmd c) => Math.Max(c.Level, CmdLevels.GetValueOrDefault(c.Name));
 }
 
 public partial class MainWindow
@@ -154,8 +159,8 @@ public partial class MainWindow
                     spec.FillHeight && d is not null && _progMsg.GetValueOrDefault(key) is { Length: > 0 } bm
                         ? new SelectableTextBlock { Name = "prog-msg", Text = "➜ " + bm, Foreground = Brushes.White, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, MaxHeight = 40 }
                         : new TextBlock { Text = spec.Sentence, Foreground = Brush.Parse("#E6FFFFFF"), FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis } } }, 1),
-                Pos(title is null ? new Panel() : new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Children = {
-                    title, new TextBlock { Name = "prog-dirty", Text = d!.Dirty ? "● geändert" : d.Path is null ? "nicht gespeichert" : "✓ gespeichert", Foreground = Brushes.White, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } }, 2) } },
+                Pos(title is null ? LevelSwitch(key) : new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center, Children = {
+                    LevelSwitch(key), title, new TextBlock { Name = "prog-dirty", Text = d!.Dirty ? "● geändert" : d.Path is null ? "nicht gespeichert" : "✓ gespeichert", Foreground = Brushes.White, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } }, 2) } },
         };
 
         Panel root;
@@ -295,16 +300,22 @@ public partial class MainWindow
                 RBtn("prog-redo", "↷ Wiederholen", () => ProgramRun(key, () => { if (!d.Redo()) throw new InvalidOperationException("Es gibt nichts zu wiederholen."); })),
             ]),
         };
+        var level = ProgramLevel;
         foreach (var (g, cmds) in spec.Ribbon)
-            groups.Add((g, cmds.Select(c => (Control)RBtn("prog-cmd-" + c.Name, c.Label, () => ProgramRun(key, () => c.Run(d)), c.Primary, c.Tip)).ToList()));
+        {
+            if (!UserLevel.Shows(level, spec.GroupLevels.GetValueOrDefault(g))) continue;
+            var shown = cmds.Where(c => UserLevel.Shows(level, spec.LevelOf(c))).Select(c => (Control)RBtn("prog-cmd-" + c.Name, c.Label, () => ProgramRun(key, () => c.Run(d)), c.Primary, c.Tip)).ToList();
+            if (shown.Count > 0) groups.Add((g, shown));
+        }
         if (spec.Exports.Count > 0)
-            groups.Add(("Exportieren", spec.Exports.Select(x => (Control)RBtn("prog-export-" + x.Name, x.Label, () => ProgramRun(key, () =>
+            groups.Add(("Exportieren", spec.Exports.Take(level == UserLevel.Einfach ? 1 : int.MaxValue).Select(x => (Control)RBtn("prog-export-" + x.Name, x.Label, () => ProgramRun(key, () =>
             {
                 var file = Path.Combine(WorkFolder(spec.Folder), DevStudio.SafeName(d.Title) + x.Extension);
                 var res = x.Write(d, file);
                 _core.Audit.Append(Principal.LocalOwner.Name, "program.export", $"{spec.Studio} {Path.GetFileName(res)}");
                 _progMsg[key] = "Exportiert: " + res; NotifyFileResult(_progMsg[key]);
             }))).ToList()));
+        if (level == UserLevel.Profi) groups.Add(("Profi", ProTools(spec, d)));
         if (spec.Help.Length > 0) groups.Add(("Hilfe", [RBtn("prog-help", "? Hilfe", () => Toast(spec.Help))]));
         var ribbon = new WrapPanel { Name = "prog-ribbon" };
         foreach (var (g, items) in groups)
@@ -341,5 +352,92 @@ public partial class MainWindow
             if (tip is not null) ToolTip.SetTip(b, tip);
             b.Click += (_, _) => go(); return b;
         }
+    }
+
+    // ---------- Masterprompt 131: Bedienstufen ----------
+    public int ProgramLevel => UserLevel.Of(_settings.Level);
+
+    /// <summary>Bedienstufe wechseln – nur die Werkzeugauswahl ändert sich, Dokumente bleiben unberührt.</summary>
+    public void ProgramSetLevel(int level, string? reopen = null)
+    {
+        _settings.Level = UserLevel.Id(level); SaveSettings();
+        _core.Audit.Append(Principal.LocalOwner.Name, "program.level", _settings.Level);
+        if (reopen is not null) Show(reopen);
+    }
+
+    private Control LevelSwitch(string key)
+    {
+        var bar = new StackPanel { Name = "prog-level", Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
+        for (var i = 0; i < 3; i++)
+        {
+            var lv = i; var on = ProgramLevel == lv;
+            var b = new Button { Name = "prog-level-" + UserLevel.Ids[i], Content = UserLevel.Names[i], FontSize = 11.5, Padding = new Thickness(9, 3), Margin = new Thickness(0),
+                CornerRadius = i == 0 ? new CornerRadius(8, 0, 0, 8) : i == 2 ? new CornerRadius(0, 8, 8, 0) : new CornerRadius(0),
+                Background = on ? Brushes.White : Brush.Parse("#26FFFFFF"), Foreground = on ? Brush.Parse("#0B1424") : Brushes.White, BorderThickness = new Thickness(0) };
+            ToolTip.SetTip(b, lv switch
+            {
+                UserLevel.Einfach => "Einfach: nur das Wichtigste, große Schritte",
+                UserLevel.Erweitert => "Erweitert: alle Fachwerkzeuge",
+                _ => "Professionell: zusätzlich Befehlssuche, Verlauf und Projektdaten",
+            });
+            b.Click += (_, _) => ProgramSetLevel(lv, key);
+            bar.Children.Add(b);
+        }
+        return bar;
+    }
+
+    /// <summary>Profi-Werkzeuge: alle Befehle durchsuchen (auch die der Stufe verborgenen), Verlauf mit Sprung zurück, Projektdaten direkt bearbeiten.</summary>
+    private List<Control> ProTools(ProgramSpec spec, ProgramDocument d)
+    {
+        var key = spec.Key;
+        Button Tool(string name, string label, string tip, Control content)
+        {
+            var b = new Button { Name = name, Content = label, FontSize = 12.5, Padding = new Thickness(12, 6), CornerRadius = new CornerRadius(8), Background = Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1),
+                Flyout = new Flyout { Content = content } };
+            ToolTip.SetTip(b, tip); return b;
+        }
+        // Befehlssuche
+        var all = spec.Ribbon.SelectMany(g => g.Cmds.Select(c => (g.Group, Cmd: c))).ToList();
+        var q = new TextBox { Name = "prog-palette-q", PlaceholderText = "Befehl suchen …", Width = 300 };
+        var hits = new StackPanel { Name = "prog-palette-list", Spacing = 2 };
+        void Fill()
+        {
+            hits.Children.Clear(); var t = (q.Text ?? "").Trim(); var k = 0;
+            foreach (var (g, c) in all.Where(x => t.Length == 0 || x.Cmd.Label.Contains(t, StringComparison.OrdinalIgnoreCase) || x.Group.Contains(t, StringComparison.OrdinalIgnoreCase) || (x.Cmd.Tip ?? "").Contains(t, StringComparison.OrdinalIgnoreCase)).Take(12))
+            {
+                var cmd = c;
+                var b = new Button { Name = $"prog-palette-{k++}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = Brushes.Transparent, Padding = new Thickness(8, 4),
+                    Content = new TextBlock { Text = $"{cmd.Label}  ·  {g}", Foreground = Text, FontSize = 12.5 } };
+                b.Click += (_, _) => ProgramRun(key, () => cmd.Run(d));
+                hits.Children.Add(b);
+            }
+            if (k == 0) hits.Children.Add(P("Kein Befehl gefunden.", null, 12));
+        }
+        q.TextChanged += (_, _) => Fill(); Fill();
+
+        // Verlauf
+        var hist = new StackPanel { Name = "prog-history-list", Spacing = 2 };
+        var steps = d.History;
+        if (steps.Count == 0) hist.Children.Add(P("Noch keine Änderung.", null, 12));
+        for (var i = 0; i < Math.Min(steps.Count, 25); i++)
+        {
+            var back = i + 1;
+            var b = new Button { Name = $"prog-history-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = Brushes.Transparent, Padding = new Thickness(8, 3),
+                Content = new TextBlock { Text = steps[i], Foreground = Text, FontSize = 12.5 } };
+            ToolTip.SetTip(b, back == 1 ? "Diesen Schritt rückgängig machen" : $"Bis vor diesen Schritt zurück ({back} Schritte)");
+            b.Click += (_, _) => ProgramRun(key, () => { for (var n = 0; n < back; n++) d.Undo(); _progMsg[key] = $"{back} Schritt(e) zurück – „Wiederholen“ holt sie zurück."; });
+            hist.Children.Add(b);
+        }
+
+        // Projektdaten
+        var json = new TextBox { Name = "prog-data-text", Text = d.Data.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }), AcceptsReturn = true, FontFamily = new FontFamily("Consolas, Cascadia Mono, monospace"), FontSize = 12, Width = 560, Height = 380, TextWrapping = TextWrapping.NoWrap };
+        var apply = new Button { Name = "prog-data-apply", Content = "Übernehmen", Background = Accent, Foreground = Brushes.White, Padding = new Thickness(12, 6) };
+        apply.Click += (_, _) => ProgramRun(key, () => { d.ReplaceData(json.Text ?? ""); _progMsg[key] = "Projektdaten übernommen – „Rückgängig“ stellt den alten Stand her."; });
+
+        return [
+            Tool("prog-palette", "Befehle suchen", "Alle Befehle des Programms durchsuchen und ausführen", new StackPanel { Spacing = 6, Children = { q, hits } }),
+            Tool("prog-history", $"Verlauf ({steps.Count})", "Änderungen ansehen und zu einem früheren Stand zurückspringen", new ScrollViewer { MaxHeight = 360, Width = 320, Content = hist }),
+            Tool("prog-data", "{ } Projektdaten", "Die gespeicherten Daten des Dokuments direkt bearbeiten", new StackPanel { Spacing = 6, Children = { P("Genau das, was gespeichert wird. Übernehmen ist ein Schritt im Verlauf.", null, 12), json, apply } }),
+        ];
     }
 }

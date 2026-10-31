@@ -41,6 +41,7 @@ public partial class MainWindow
 
     private void InitSpec02() => RegisterProgram(FachTabs, new ProgramSpec(EK, "SPEC-02", "Schaltung & Simulation")
     {
+        GroupLevels = new() { ["Platine"] = 1 }, CmdLevels = new() { ["ek-speed"] = 1 },
         Sentence = "Schaltplan zeichnen und live simulieren – Spannungen, Ströme, Oszilloskop, Prüfung und Stückliste.",
         Folder = "Schaltungen",
         FillHeight = true,
