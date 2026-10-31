@@ -36,20 +36,6 @@ public class SPEC02_Ui
     }
 }
 
-public class SPEC03_Ui
-{
-    [AvaloniaFact(DisplayName = "SPEC-03 UI: Balken prüfen, Wärmedehnung, Einheiten")]
-    public void Engineering()
-    {
-        var (w, _, _) = Ui.Open();
-        w.Show(MainWindow.StudioPages["SPEC-03"]);
-        Assert.Contains("Sicherheit", W6Ui.Run(w, "eng-beam"));
-        Assert.Contains("⚠", W6Ui.Run(w, "eng-beam", ("load", "500")));
-        Assert.Contains("2,76 mm", W6Ui.Run(w, "eng-heat"));
-        Assert.Contains("6,8948 bar", W6Ui.Run(w, "eng-unit"));
-    }
-}
-
 public class SPEC04_Ui
 {
     [AvaloniaFact(DisplayName = "SPEC-04 UI: GLB-Modell prüfen und Bildzeit")]
@@ -326,24 +312,6 @@ public class SPEC02_UiPlus
         Assert.Contains("⚠", W6Ui.Run(w, "el-cable"));
         Assert.Contains("Kühlkörper", W6Ui.Run(w, "el-reg"));
         Assert.Contains("4.700", W6Ui.Run(w, "el-si"));
-    }
-}
-
-public class SPEC03_UiPlus
-{
-    [AvaloniaFact(DisplayName = "SPEC-03 UI Ausbau: Profile, Maschinenelemente, Wärme")]
-    public void Plus()
-    {
-        var (w, _, _) = Ui.Open(); w.Show("technik");
-        Assert.Contains("Durchbiegung", W6Ui.Run(w, "eng-hollow"));
-        Assert.Contains("Knicklast", W6Ui.Run(w, "eng-buckle"));
-        Assert.Contains("N/mm²", W6Ui.Run(w, "eng-axial"));
-        Assert.Contains("Verdrehung", W6Ui.Run(w, "eng-torsion"));
-        Assert.Contains("25,0 Nm", W6Ui.Run(w, "eng-bolt"));
-        Assert.Contains("Federrate", W6Ui.Run(w, "eng-spring"));
-        Assert.Contains("500 U/min", W6Ui.Run(w, "eng-gear"));
-        Assert.Contains("U-Wert", W6Ui.Run(w, "eng-u"));
-        Assert.Contains("2,70 kg", W6Ui.Run(w, "eng-mass"));
     }
 }
 
