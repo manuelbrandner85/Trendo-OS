@@ -549,6 +549,91 @@ public partial class MainWindow
     // N5 Notizbuch
     // =====================================================================
     private string? _nbSec, _nbPage;
+    /// <summary>Lese-Ansicht des Notizbuchs: Checklisten zum Abhaken, Verknüpfungen, Bilder.</summary>
+    public bool NoteReadMode { get; set; }
+    public (string? Section, string? Page) NotebookOpen { get => (_nbSec, _nbPage); set => (_nbSec, _nbPage) = value; }
+
+    List<(string Section, string Page, string Text)> NbAllPages(Notebook nb) => [.. nb.Sections().SelectMany(sc => nb.Pages(sc).Select(pg => (sc, pg, nb.Read(sc, pg))))];
+
+    /// <summary>Werkzeugzeile: Lesen/Bearbeiten, Checkliste, Verknüpfen, Bild, PDF.</summary>
+    Control NbTools(Notebook nb, string sec, string page, TextBox text)
+    {
+        const string V = "notizbuch";
+        void Insert(string add) { var t = text.Text ?? ""; var at = Math.Clamp(text.CaretIndex, 0, t.Length); t = t.Insert(at, add); text.Text = t; nb.Write(sec, page, t); NoteReadMode = false; Show(V); }
+        var bar = new WrapPanel { Name = "nb-tools" };
+        void B(string name, string label, Action a, bool on = false) { var b = Act(name, label, a, on); b.Margin = new Thickness(0, 0, 4, 4); bar.Children.Add(b); }
+        B("nb-read", NoteReadMode ? "✎ Bearbeiten" : "👁 Lesen", () => { nb.Write(sec, page, NoteReadMode ? nb.Read(sec, page) : text.Text ?? ""); NoteReadMode = !NoteReadMode; Show(V); }, NoteReadMode);
+        B("nb-ins-check", "☐ Checkliste", () => Insert("\n- [ ] "));
+        B("nb-ins-link", "[[ ]] Verknüpfen", () => Insert("[[Seitenname]]"));
+        var img = Field("nb-image-path", "Bilddatei", 170); img.Margin = new Thickness(0, 0, 4, 4); bar.Children.Add(img);
+        B("nb-ins-image", "🖼 Bild", () => Try(V, () => { var f = Need(img, "eine Bilddatei"); if (!File.Exists(f)) throw new FileNotFoundException("Bild nicht gefunden."); Insert($"\n![]({f})\n"); }));
+        B("nb-pdf", "Als PDF", () => Try(V, () => { nb.Write(sec, page, NoteReadMode ? nb.Read(sec, page) : text.Text ?? ""); var f = Path.Combine(WorkFolder("Notizen"), Notebook.SafeName(page) + ".pdf"); Trendo.Core.Office.TextPdf.Export(NoteText.ToDoc(page, nb.Read(sec, page)), f); Say("Gespeichert: " + f, V); }));
+        return bar;
+    }
+
+    /// <summary>Lese-Ansicht: Überschriften, Checklisten zum Abhaken (wird sofort gespeichert), [[Verknüpfungen]] als Knöpfe (fehlende Seite wird angelegt), Bilder.</summary>
+    Control NbReader(Notebook nb, string sec, string page)
+    {
+        const string V = "notizbuch";
+        var sp = new StackPanel { Name = "nb-reader", Spacing = 4 };
+        var lines = nb.Read(sec, page).Replace("\r", "").Split('\n'); var check = 0; var all = NbAllPages(nb);
+        for (var i = 0; i < lines.Length; i++)
+        {
+            var line = lines[i]; var li = i;
+            var cm = System.Text.RegularExpressions.Regex.Match(line, @"^(\s*)- \[( |x|X)\] (.*)$");
+            if (cm.Success)
+            {
+                var done = cm.Groups[2].Value != " ";
+                var cb = new CheckBox { Name = $"nb-check-{check++}", IsChecked = done, Margin = new Thickness(cm.Groups[1].Value.Length * 8, 0, 0, 0),
+                    Content = new TextBlock { Text = cm.Groups[3].Value, Foreground = done ? Muted : Text, TextDecorations = done ? TextDecorations.Strikethrough : null, TextWrapping = TextWrapping.Wrap } };
+                cb.IsCheckedChanged += (_, _) => { nb.Write(sec, page, NoteText.Toggle(nb.Read(sec, page), li)); Show(V); };
+                sp.Children.Add(cb); continue;
+            }
+            if (NoteText.Images(line) is [var im, ..] && File.Exists(im))
+            {
+                try { using var st = File.OpenRead(im); sp.Children.Add(new Image { Name = "nb-image", Source = Avalonia.Media.Imaging.Bitmap.DecodeToWidth(st, 600), MaxHeight = 320, HorizontalAlignment = HorizontalAlignment.Left, Stretch = Stretch.Uniform }); continue; }
+                catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException) { }
+            }
+            var links = NoteText.Links(line);
+            if (links.Count > 0)
+            {
+                var wp = new WrapPanel(); var rest = line; var k = 0;
+                foreach (var l in links)
+                {
+                    var at = rest.IndexOf("[[" + l + "]]", StringComparison.Ordinal); if (at < 0) continue;
+                    if (at > 0) wp.Children.Add(new TextBlock { Text = rest[..at], Foreground = Text, FontSize = 13.5, VerticalAlignment = VerticalAlignment.Center });
+                    var target = all.FirstOrDefault(x => string.Equals(x.Page, Notebook.SafeName(l), StringComparison.OrdinalIgnoreCase)); var name = l;
+                    var b = new Button { Name = $"nb-goto-{i}-{k++}", Content = (target.Page is null ? "＋ " : "↗ ") + l, FontSize = 13, Padding = new Thickness(6, 1), Foreground = Brush.Parse("#7FD3FF"), Background = Brushes.Transparent };
+                    ToolTip.SetTip(b, target.Page is null ? "Diese Seite gibt es noch nicht – Klick legt sie in diesem Abschnitt an" : $"Öffnen ({target.Section})");
+                    b.Click += (_, _) =>
+                    {
+                        var t = NbAllPages(nb).FirstOrDefault(x => string.Equals(x.Page, Notebook.SafeName(name), StringComparison.OrdinalIgnoreCase));
+                        if (t.Page is null) { nb.Write(sec, Notebook.SafeName(name), ""); _nbPage = Notebook.SafeName(name); NoteReadMode = false; }
+                        else { _nbSec = t.Section; _nbPage = t.Page; }
+                        Show(V);
+                    };
+                    wp.Children.Add(b); rest = rest[(at + l.Length + 4)..];
+                }
+                if (rest.Length > 0) wp.Children.Add(new TextBlock { Text = rest, Foreground = Text, FontSize = 13.5, VerticalAlignment = VerticalAlignment.Center });
+                sp.Children.Add(wp); continue;
+            }
+            var h = line.StartsWith('#') && !line.StartsWith("#!") && (line.StartsWith("# ") || line.StartsWith("## ") || line.StartsWith("### "));
+            sp.Children.Add(new SelectableTextBlock { Text = h ? line.TrimStart('#', ' ') : line.Length == 0 ? " " : line, Foreground = Text, FontSize = h ? (line.StartsWith("# ") ? 20 : 16) : 13.5, FontWeight = h ? FontWeight.SemiBold : FontWeight.Normal, TextWrapping = TextWrapping.Wrap });
+        }
+        var (d0, t0) = NoteText.Checklist(nb.Read(sec, page));
+        if (t0 > 0) sp.Children.Insert(0, new StackPanel { Spacing = 2, Children = { new ProgressBar { Name = "nb-progress", Minimum = 0, Maximum = t0, Value = d0, Height = 6 }, P($"{d0} von {t0} erledigt", Muted, 11) } });
+        return new Border { MinHeight = 380, Padding = new Thickness(4), Child = sp };
+    }
+
+    /// <summary>„Verweist hierher“: Seiten mit [[diese Seite]].</summary>
+    Control NbBacklinks(Notebook nb, string page)
+    {
+        var back = NoteText.Backlinks(NbAllPages(nb), page);
+        var sp = new StackPanel { Name = "nb-backlinks", Spacing = 2, Children = { new TextBlock { Text = "Verweist hierher", Foreground = Muted, FontSize = 11.5, FontWeight = FontWeight.SemiBold } } };
+        if (back.Count == 0) { sp.Children.Add(P($"Noch keine Seite verweist hierher – schreib [[{page}]] in eine andere Seite.", Muted, 11)); return sp; }
+        for (var i = 0; i < back.Count; i++) { var (bs, bp) = back[i]; var b = Act($"nb-back-{i}", $"↩ {bs} › {bp}", () => { _nbSec = bs; _nbPage = bp; Show("notizbuch"); }); b.Margin = new Thickness(0, 0, 0, 2); sp.Children.Add(b); }
+        return sp;
+    }
     private string _nbQuery = "";
 
     private Control NotebookView()
@@ -612,7 +697,7 @@ public partial class MainWindow
                     Act("nb-rename", "Umbenennen", () => Try(V, () => { var to = Notebook.SafeName(title.Text ?? ""); if (to != page) { nb.Write(sec, page, text.Text ?? ""); nb.RenamePage(sec, page, to); _nbPage = to; } Show(V); })),
                     Act("nb-to-ki", "Der KI als Wissen geben", () => { nb.Write(sec, page, text.Text ?? ""); Wissen.Add(page, text.Text ?? ""); Say($"„{page}“ ist jetzt Wissen für die KI.", V); }),
                     Act("nb-del", "Löschen", () => { nb.DeletePage(sec, page); _nbPage = null; Say($"„{page}“ liegt im Papierkorb des Notizbuchs.", V); }) } }),
-                P($"{sec} · zuletzt geändert {File.GetLastWriteTime(Path.Combine(nb.Root, sec, page + ".md")):dd.MM.yyyy HH:mm}", null, 10.5), tags, text, state } };
+                P($"{sec} · zuletzt geändert {File.GetLastWriteTime(Path.Combine(nb.Root, sec, page + ".md")):dd.MM.yyyy HH:mm}", null, 10.5), tags, NbTools(nb, sec, page, text), NoteReadMode ? NbReader(nb, sec, page) : text, state, NbBacklinks(nb, page) } };
             text.KeyDown += (_, e) => { if (e.Key == Key.S && e.KeyModifiers == KeyModifiers.Control) { nb.Write(sec, page, text.Text ?? ""); state.Text = "Gespeichert."; Tags(); e.Handled = true; } };
         }
 

@@ -85,7 +85,8 @@ public partial class MainWindow
                 Children = { new StackPanel { Children = { P(note.Text, Text, 12.5), P(note.Changed.ToString("dd.MM.yyyy HH:mm", De), null, 10) } }, Pos(del, 1) } } });
         }
         if (n == 0) list.Children.Add(P("Noch keine Notizen."));
-        sp.Children.Add(new StackPanel { Spacing = 6, Children = { H("Notizen", 15), input, add, list } });
+        var nb = new Button { Name = "note-notebook", Content = "Zum Notizbuch →" }; nb.Click += (_, _) => Show("notizbuch");
+        sp.Children.Add(new StackPanel { Spacing = 6, Children = { H("Notizen", 15), input, new WrapPanel { Children = { add, new Border { Width = 6 }, nb } }, list } });
 
         // Taschenrechner
         var calc = new TextBox { Name = "calc-input", PlaceholderText = "z. B. (12,5 + 7) × 3 oder 19 % × 250", Width = 320 };
