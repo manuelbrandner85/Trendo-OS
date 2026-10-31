@@ -161,6 +161,7 @@ else if (shot == "seite")
         foreach (var (d, hr, len, t, loc) in new[] { (0, 9.0, 1.0, "Teambesprechung", "Raum 2"), (0, 12.5, 1.0, "Mittagessen mit Erika", ""), (1, 10.0, 1.5, "Zahnarzt", "Praxis Muster"), (2, 8.5, 0.5, "Telefonat Vermieter", ""), (2, 14.0, 2.0, "Projekt-Workshop", "Online"), (2, 15.0, 1.0, "Paket abholen", "Post"), (3, 18.0, 1.5, "Sport", "Halle"), (4, 16.0, 1.0, "Kinder abholen", "Schule") })
             win.Cal.Add(new Trendo.Core.Sys.CalEvent(Guid.NewGuid().ToString("N"), mo.AddDays(d).AddHours(hr), mo.AddDays(d).AddHours(hr + len), t, loc));
         win.Cal.Add(new Trendo.Core.Sys.CalEvent("ganz", mo.AddDays(5), mo.AddDays(6), "Ausflug", AllDay: true));
+        win.Cal.AddTodo(new Trendo.Core.Sys.TodoItem("st", "Steuererklärung abgeben", mo.AddDays(3), Priority: 1)); win.SuggestNow = () => mo.AddHours(8);
         win.CalDay = mo; win.CalMode = "woche"; win.CalSelected = win.Cal.All().First(e => e.Title == "Zahnarzt").Uid; win.Show("kalender");
     }
     if (Environment.GetEnvironmentVariable("TRENDO_TODO") is { Length: > 0 }) // Aufgaben-Tafel mit erfundenen Beispielaufgaben

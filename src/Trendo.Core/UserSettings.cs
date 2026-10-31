@@ -39,6 +39,8 @@ public sealed class UserSettings
     public bool SimpleMode { get; set; }
     /// <summary>Masterprompt 131: Bedienstufe der Programme – einfach | erweitert | profi (siehe <see cref="Programs.UserLevel"/>).</summary>
     public string Level { get; set; } = "erweitert";
+    /// <summary>Vorschläge, zu denen „Nein“ gesagt wurde (oder die erledigt sind) – erscheinen nicht wieder.</summary>
+    public List<string> DismissedSuggestions { get; set; } = [];
     public int[]? WindowRect { get; set; }
     /// <summary>Startmenü: angeheftete Studios (IDs) und zuletzt benutzte Seiten (neueste zuerst).</summary>
     public List<string> PinnedStudios { get; set; } = [];

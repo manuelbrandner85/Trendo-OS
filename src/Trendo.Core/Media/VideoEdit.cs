@@ -73,6 +73,22 @@ public static class VideoEdit
         l[index] = c with { In = newIn, Out = newOut }; Store(p, l, track);
     }
 
+    /// <summary>Abschnitte (Quellzeit) aus einem Stück herausschneiden – das Stück zerfällt in die Teile dazwischen (z. B. Stille entfernen).</summary>
+    public static int CutOut(JsonObject p, int index, IEnumerable<(double Start, double End)> ranges)
+    {
+        var l = Clips(p); if (index < 0 || index >= l.Count) return 0;
+        var c = l[index]; var parts = new List<EditClip>(); var t = c.In; var removed = 0;
+        foreach (var (a0, b0) in ranges.OrderBy(r => r.Start))
+        {
+            var a = Math.Max(a0, c.In); var b = Math.Min(b0, c.Out); if (b - a < MinLength) continue;
+            if (a - t >= MinLength) parts.Add(c with { Id = parts.Count == 0 ? c.Id : Guid.NewGuid().ToString("N")[..8], In = t, Out = a });
+            t = b; removed++;
+        }
+        if (removed == 0) return 0;
+        if (c.Out - t >= MinLength) parts.Add(c with { Id = parts.Count == 0 ? c.Id : Guid.NewGuid().ToString("N")[..8], In = t });
+        l.RemoveAt(index); l.InsertRange(index, parts); Store(p, l); return removed;
+    }
+
     public static void Move(JsonObject p, int from, int to)
     {
         var l = Clips(p); if (from < 0 || from >= l.Count) return;

@@ -15,7 +15,7 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     public MailAccount? MailAccountCfg { get; private set; }
-    public List<MailHeader> Inbox { get; private set; } = [];
+    public List<MailHeader> Inbox { get; set; } = [];
     public ParsedMail? InboxOpen { get; private set; }
     public List<MailRule> MailRules { get; private set; } = [];
     public bool SendConfirmOpen { get; private set; }
@@ -285,6 +285,7 @@ public partial class MainWindow
         if (_pimMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "cal-msg", Text = _pimMsg, Foreground = Muted, FontSize = 13, TextWrapping = TextWrapping.Wrap });
         var view = CalMode switch { "tag" => CalDayView(CalDay), "woche" => CalWeekView(), _ => CalMonthView() };
         var side = new StackPanel { Spacing = 8, Children = { CalSelected is { } uid && Cal.Get(uid) is { } sel ? CalEditPanel(sel) : CalAddForm() } };
+        if (SuggestionCard("kalender", CalendarSuggestions()) is { } sugg) side.Children.Insert(0, Card(sugg));
         var split = new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,330") };
         split.Children.Add(view); Grid.SetColumn(side, 2); split.Children.Add(side);
         sp.Children.Add(split);
@@ -522,6 +523,7 @@ public partial class MainWindow
         undo.Click += (_, _) => { TodoUndo(); Show("aufgaben"); };
         sp.Children.Add(Card(new WrapPanel { Children = { title, new Border { Width = 4 }, due, new Border { Width = 4 }, prio, new Border { Width = 4 }, list, new Border { Width = 4 }, add, new Border { Width = 12 }, undo } }));
 
+        if (SuggestionCard("aufgaben", TodoSuggestions()) is { } sugg) sp.Children.Add(Card(sugg));
         var todos = Cal.Todos();
         // Listen als Filter
         var lists = todos.Select(t => t.List).Distinct().OrderBy(x => x, StringComparer.CurrentCulture).ToList();

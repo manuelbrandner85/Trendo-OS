@@ -49,6 +49,7 @@ public partial class MainWindow
         nb.Click += (_, _) => { _wfNew = !_wfNew; _wfDraft.Clear(); Show("ablaeufe"); };
         tpl.Children.Add(nb);
         left.Children.Add(tpl);
+        if (SuggestionCard("ablaeufe", WorkflowSuggestions()) is { } sugg) left.Children.Add(WCard(sugg));
         var all = Workflows.All();
         if (WfSelected is null || all.All(x => x.Id != WfSelected)) { WfSelected = all.FirstOrDefault()?.Id; WfNode = -1; }
         var i = 0;

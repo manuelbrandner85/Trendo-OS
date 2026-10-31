@@ -40,6 +40,7 @@ public partial class MainWindow
             ("Schneiden", [
                 new ProgramCmd("ve-split", "Teilen (S)", d => d.Edit("Teilen", x => { if (!VideoEdit.Split(x, d.Number("playhead"))) throw new InvalidOperationException("Am Abspielkopf liegt kein Stück – oder er steht zu nah an einer Schnittkante."); }), true, "Stück am Abspielkopf in zwei teilen"),
                 new ProgramCmd("ve-delete", "Löschen (Entf)", d => EditDelete(d), false, "Ausgewähltes Stück entfernen"),
+                new ProgramCmd("ve-silence", "✨ Stille finden", d => EditFindSilences(d), false, "Stille Stellen (mind. 1 s) in Videos mit Ton suchen – Trendo schlägt vor, sie herauszuschneiden", Level: 1),
                 new ProgramCmd("ve-left", "◀ Nach vorn", d => EditShift(d, -1), false, "Ausgewähltes Stück eine Stelle nach vorn"),
                 new ProgramCmd("ve-right", "Nach hinten ▶", d => EditShift(d, 1), false, "Ausgewähltes Stück eine Stelle nach hinten"),
             ]),
@@ -190,7 +191,7 @@ public partial class MainWindow
         var tlBox = new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, BorderBrush = Edge, BorderThickness = new Thickness(1), Child = scroll };
         var hint = new TextBlock { Text = "Stück ziehen: umordnen · Kanten ziehen: kürzen · Lineal: Abspielkopf · S teilen · Entf löschen · ←/→ Bild für Bild (Umschalt: Sekunde)", Foreground = Muted, FontSize = 11.5, Margin = new Thickness(2, 4, 0, 0), TextWrapping = TextWrapping.Wrap };
         var g = new Grid { RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto") };
-        g.Children.Add(new Border { Background = Brush.Parse("#05070C"), CornerRadius = new CornerRadius(10), Padding = new Thickness(6), Child = view, MinHeight = 160 });
+        g.Children.Add(new Border { Background = Brush.Parse("#05070C"), CornerRadius = new CornerRadius(10), Padding = new Thickness(6), Child = view, MinHeight = 90 });
         Grid.SetRow(time, 1); g.Children.Add(time); Grid.SetRow(tlBox, 2); g.Children.Add(tlBox); Grid.SetRow(hint, 3); g.Children.Add(hint);
         return g;
     }
@@ -200,6 +201,7 @@ public partial class MainWindow
     private Control EditProperties(ProgramDocument d)
     {
         var sp = new StackPanel { Spacing = 8 };
+        if (SuggestionCard(VK, EditSuggestions(d)) is { } sugg) sp.Children.Add(sugg);
         // Medien hinzufügen
         var path = new TextBox { Name = "ve-file", PlaceholderText = "Video-, Bild- oder Tondatei", HorizontalAlignment = HorizontalAlignment.Stretch };
         Button B(string name, string label, Action a, bool primary = false) { var b = new Button { Name = name, Content = label, Margin = new Thickness(0, 0, 4, 4), FontSize = 12 }; if (primary) { b.Background = Accent; b.Foreground = Brushes.White; } b.Click += (_, _) => ProgramRun(VK, a); return b; }
