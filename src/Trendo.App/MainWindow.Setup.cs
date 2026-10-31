@@ -495,6 +495,15 @@ public sealed partial class MainWindow
         now.Click += (_, _) => { try { _backupMsg = "Gesichert: " + Path.GetFileName(Backups.Create(DateTime.Now)); } catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { _backupMsg = "Sichern hat nicht geklappt: " + ex.Message; } Show("sicherung"); };
         sp.Children.Add(now);
         if (_backupMsg.Length > 0) sp.Children.Add(P(_backupMsg, Brush.Parse("#4ADE80")));
+        var all = Backups.List();
+        if (all.Count > 0)
+        {
+            if (BackupSelected is null || !all.Any(f => f.FullName == BackupSelected)) BackupSelected = all[0].FullName;
+            sp.Children.Add(H("Zeitleiste", 13));
+            sp.Children.Add(BackupTimeline(all.OrderBy(f => f.LastWriteTime).ToList()));
+            sp.Children.Add(BackupBrowser());
+            sp.Children.Add(H("Alles wiederherstellen", 13));
+        }
         var bi = 0;
         foreach (var f in Backups.List())
         {
