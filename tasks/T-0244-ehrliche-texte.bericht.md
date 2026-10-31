@@ -15,5 +15,6 @@
 - Übersprungen auf diesem PC (mit Grund im Log): 6× LibreOffice/Tesseract (Sys10), 2× LetterQa, BlueZ (Linux), Blender.
 
 ## Auffällig / offen
-- Der Blender-Test lief bei der gezielten Ausführung (Blender gefunden), im Volltest meldete er sich als übersprungen. `Cli.Find("blender")` liefert also je nach Testlauf unterschiedliche Ergebnisse – Ursache noch nicht geklärt.
+- **Blender (geklärt):** Der Test suchte Blender nur im PATH; dort ist Blender auf dem Test-PC nicht eingetragen. Vor T-0244 „bestand“ er deshalb immer still, ohne Blender zu starten. Die gegenteilige Beobachtung im ersten Bericht war ein Fehler meiner gezielten Prüfung (Filter traf die Testklasse nicht). Behoben: `NeedsFact("dep:blender")` und der Test suchen jetzt wie Trendo (PATH, `%ProgramFiles%\Blender Foundation\*`, Werkzeugordner). Ergebnis: Test läuft mit echtem Blender 5.2 und ist grün – `reports/T-0244/blender-echt.log`, SHA-256 `411872c3d5b1cdc8e98afef3368f58becda5a13dcedb0efc5a6864f950888f69`.
+- LibreOffice/Tesseract-Tests suchen weiterhin nur im PATH; Trendo selbst findet die Programme auch im Werkzeugordner. Gleiche Umstellung möglich (eigener Schritt).
 - Weitere stille Abbrüche mit anderem Muster (z. B. `if (!ok) return;`) wurden nicht gesucht.

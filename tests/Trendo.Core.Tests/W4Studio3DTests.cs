@@ -3,10 +3,10 @@ using Xunit;
 
 public class W4_Core05_3D
 {
-    [NeedsFact("blender", DisplayName = "CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen")]
+    [NeedsFact("dep:blender", DisplayName = "CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen")]
     public void Blender_roundtrip()
     {
-        var bl = Cli.Find("blender"); if (bl is null) return;
+        var bl = NeedsFactAttribute.Tool("blender")!; // T-0244: wie Trendo suchen, nicht nur im PATH
         var dir = Path.Combine(Path.GetTempPath(), "trendo-3d-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(dir);
         var (r, blend) = Studio3D.Create(bl, dir, "monkey", "Affe");
         Assert.True(r.Ok, r.Err + r.Out); Assert.True(File.Exists(blend));
