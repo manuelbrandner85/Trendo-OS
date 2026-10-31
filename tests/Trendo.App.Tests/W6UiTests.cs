@@ -315,7 +315,9 @@ public class CORE09_Ui
     {
         var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
         w.Show(MainWindow.StudioPages["CORE-09"]);
-        var o = W6Ui.Run(w, "rob-see", ("file", Img.Png(root, 100, 100, (60, 60, 79, 79))));
+        // T-0251: Bild im Seitenverhältnis des Tischs (400 × 300 mm → 4:3); ein quadratisches Bild wird als falsche Kalibrierung abgelehnt
+        Assert.Contains("Kalibrierung passt nicht", W6Ui.Run(w, "rob-see", ("file", Img.Png(root, 100, 100, (60, 60, 79, 79)))));
+        var o = W6Ui.Run(w, "rob-see", ("file", Img.Png(root, 100, 75, (60, 50, 79, 69))));
         Assert.Contains("x = 278,0 mm", o);
         Assert.Contains("Kein", W6Ui.Run(w, "rob-see", ("color", "grün")));
         Assert.Contains("Kontrolle: Greifer landet bei 150,0 / 50,0 / 40,0", W6Ui.Run(w, "rob-ik"));

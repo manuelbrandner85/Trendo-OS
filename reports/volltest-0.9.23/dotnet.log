@@ -1,0 +1,45 @@
+  Wiederherzustellende Projekte werden ermittelt...
+  Alle Projekte sind für die Wiederherstellung auf dem neuesten Stand.
+  Trendo.Core -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Api -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.Api\bin\Release\net10.0\Trendo.Api.dll
+  Trendo.Api.Tests -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll
+Testlauf für "C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+  Trendo.Companion -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+  Trendo.Core.Tests -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf für "C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+  Trendo.App -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\bin\Release\net10.0\TrendoOS.dll
+
+Bestanden!   : Fehler:     0, erfolgreich:    15, übersprungen:     0, gesamt:    15, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+  Trendo.App.Tests -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll
+Testlauf für "C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster überein.
+[xUnit.net 00:00:10.25]     X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku [SKIP]
+  Übersprungen X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku [1 ms]
+[xUnit.net 00:00:16.53]     SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt [SKIP]
+[xUnit.net 00:00:16.53]     SYS-10-P08 (T-0244 getrennt): Scan → durchsuchbares PDF mit Tesseract [SKIP]
+  Übersprungen SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt [1 ms]
+  Übersprungen SYS-10-P08 (T-0244 getrennt): Scan → durchsuchbares PDF mit Tesseract [1 ms]
+
+Bestanden!   : Fehler:     0, erfolgreich:   864, übersprungen:     3, gesamt:   867, Dauer: 46 s - Trendo.Core.Tests.dll (net10.0)
+[xUnit.net 00:01:31.47]     Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [SKIP]
+  Übersprungen Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [1 ms]
+[xUnit.net 00:04:53.55]     T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+  Übersprungen T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [1 ms]
+[xUnit.net 00:06:20.03]     CORE-09 UI: Objekt im Bild finden, Arm rechnen, Programm speichern [FAIL]
+  Fehler CORE-09 UI: Objekt im Bild finden, Arm rechnen, Programm speichern [229 ms]
+  Fehlermeldung:
+   Assert.Contains() Failure: Sub-string not found
+String:    "⚠ Kalibrierung passt nicht: Bild 100 × 100 Pixel ("···
+Not found: "x = 278,0 mm"
+  Stapelverfolgung:
+     at Trendo.App.Tests.CORE09_Ui.Robot() in C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\W6UiTests.cs:line 319
+   at System.RuntimeMethodHandle.InvokeMethod(ObjectHandleOnStack target, Void** arguments, ObjectHandleOnStack sig, BOOL isConstructor, ObjectHandleOnStack result)
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.RuntimeMethodInfo.Invoke(Object obj, BindingFlags invokeAttr, Binder binder, Object[] parameters, CultureInfo culture)
+[xUnit.net 00:06:23.36]     SYS-03-P14: Seite als PDF – A4, Prüfsumme im Protokoll (nur wenn Chrome/Edge da) [SKIP]
+  Übersprungen SYS-03-P14: Seite als PDF – A4, Prüfsumme im Protokoll (nur wenn Chrome/Edge da) [1 ms]
+
+Fehler!      : Fehler:     1, erfolgreich:   438, übersprungen:     3, gesamt:   442, Dauer: 19 m 21 s - Trendo.App.Tests.dll (net10.0)
+EXIT dotnet=1
