@@ -261,6 +261,24 @@ public sealed class Shop(string dataRoot, string ideaId)
         return (inv, file);
     }
 
+    /// <summary>T-0252 (105-05): Erstattung – bucht den Betrag als negative Einnahme, höchstens so viel wie gezahlt wurde.
+    /// Gleiche Referenz zweimal ändert nichts. Danach ist (bei voller Erstattung) ein Storno möglich.</summary>
+    public ShopOrder Refund(string orderId, decimal amount, DateOnly date, string reference, Ledger ledger, bool smallBusiness)
+    {
+        var o = Get(orderId);
+        if (o.Payments is null) throw new InvalidOperationException("Diese Bestellung stammt aus einer älteren Version – bitte unter „Geld“ direkt korrigieren.");
+        if (string.IsNullOrWhiteSpace(reference)) throw new ArgumentException("Bitte eine Referenz angeben (z. B. Überweisung an den Kunden).");
+        var r = "Erstattung:" + reference.Trim();
+        if (o.Payments.Any(p => p.Ref == r)) return o;
+        if (amount <= 0) throw new ArgumentException("Der Betrag muss größer als 0 sein.");
+        if (amount > o.Paid) throw new ArgumentException($"Gezahlt wurden nur {o.Paid:0.00} € – mehr kann nicht erstattet werden.");
+        ledger.Add(new(date, $"Erstattung zu Rechnung {o.InvoiceNumber}", -amount, "Einnahmen", smallBusiness ? 0 : LegalRates.VatStandard));
+        var pays = new List<ShopPayment>(o.Payments) { new(r, date, -amount) };
+        var paid = pays.Sum(p => p.Amount);
+        var done = o with { Payments = pays, Status = paid <= 0 ? "erstattet" : paid >= o.InvoiceGross ? "bezahlt" : "teilbezahlt" };
+        Set(done); return done;
+    }
+
     /// <summary>Umsatz netto nach Zahlungseingang (Datum der Zahlung, anteilig netto); Altdaten wie bisher zum Bestelldatum.</summary>
     IEnumerable<(DateOnly Date, decimal Net)> Received() =>
         Orders().Where(o => o.Status != "storniert").SelectMany(o => o.Payments is null

@@ -143,6 +143,24 @@ public sealed class Ledger(string dataRoot)
         Save(a); return n;
     }
     public void RemoveAt(int i) { var a = All(); if (i >= 0 && i < a.Count) { a.RemoveAt(i); Save(a); } }
+
+    public const string ReversalPrefix = "Storno: ";
+    /// <summary>T-0253 (105): Buchung stornieren statt löschen – eine Gegenbuchung mit umgekehrtem Betrag, die ursprüngliche bleibt nachvollziehbar.
+    /// Eine schon stornierte Buchung und eine Storno-Buchung selbst lassen sich nicht noch einmal stornieren.</summary>
+    public Entry Reverse(int i, DateOnly date)
+    {
+        var a = All();
+        if (i < 0 || i >= a.Count) throw new ArgumentException("Diese Buchung gibt es nicht.");
+        var e = a[i];
+        if (e.Text.StartsWith(ReversalPrefix, StringComparison.Ordinal)) throw new InvalidOperationException("Das ist schon eine Storno-Buchung.");
+        if (IsReversed(a, e)) throw new InvalidOperationException("Diese Buchung ist schon storniert.");
+        var r = new Entry(date, ReversalPrefix + e.Text + $" (vom {e.Date:dd.MM.yyyy})", -e.Amount, e.Category, e.VatRate);
+        a.Add(r); Save(a); return r;
+    }
+
+    /// <summary>Gibt es zu dieser Buchung schon eine Gegenbuchung?</summary>
+    public static bool IsReversed(IEnumerable<Entry> all, Entry e) =>
+        all.Any(x => x.Text == ReversalPrefix + e.Text + $" (vom {e.Date:dd.MM.yyyy})" && x.Amount == -e.Amount);
     /// <summary>Kategorie einer Buchung ändern (Index wie in <see cref="All"/>).</summary>
     public void SetCategory(int i, string category) { var a = All(); if (i >= 0 && i < a.Count) { a[i] = a[i] with { Category = category }; Save(a); } }
     public IEnumerable<string> InvoiceNumbers() => Directory.Exists(InvoiceDir) ? Directory.GetFiles(InvoiceDir, "RE-*.html").Select(f => Path.GetFileNameWithoutExtension(f)) : [];

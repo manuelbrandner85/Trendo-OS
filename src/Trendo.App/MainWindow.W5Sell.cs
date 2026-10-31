@@ -12,6 +12,7 @@ public partial class MainWindow
 {
     public Shop BizShop => new(_core.DataRoot, BizIdea.Id);
     private string? _sellPayFor; // Bestellung, für die gerade eine Zahlung erfasst wird
+    private string? _sellRefundFor; // Bestellung, für die gerade eine Erstattung erfasst wird
     private static readonly string[] MonthShort = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 
     /// <summary>Kennzahl-Karte mit Verlauf, Lichtkante und Schatten.</summary>
@@ -84,6 +85,23 @@ public partial class MainWindow
                     }), true));
                 }
                 else right.Children.Add(Act($"sell-pay-{i}", "Zahlung erfassen", () => { _sellPayFor = oid; Show(V); }));
+            }
+            // T-0252: Erstatten (höchstens das Gezahlte), danach ist ein Storno möglich
+            if (live && o.Payments is not null && o.Paid > 0)
+            {
+                if (_sellRefundFor == oid)
+                {
+                    var amt = Field("sell-refund-amount", "Betrag €", 90, o.Paid.ToString("0.00", System.Globalization.CultureInfo.GetCultureInfo("de-DE")));
+                    var refBox = Field("sell-refund-ref", "Referenz", 150, $"{o.InvoiceNumber}-E{o.Payments.Count(p => p.Amount < 0) + 1}");
+                    right.Children.Add(amt); right.Children.Add(refBox);
+                    right.Children.Add(Act($"sell-refund-book-{i}", "Erstattung buchen", () => Try(V, () =>
+                    {
+                        var after = shop.Refund(oid, Finance.ParseAmount(Need(amt, "den Betrag")), today, Need(refBox, "die Referenz"), Money, _settings.SmallBusiness);
+                        _sellRefundFor = null; _core.Audit.Append(Principal.LocalOwner.Name, "shop.refund", $"{o.InvoiceNumber} {after.Paid:0.00}");
+                        Say(after.Paid > 0 ? $"Erstattung gebucht – noch {Eu(after.Paid)} € bezahlt." : "Erstattung gebucht – die Bestellung kann jetzt storniert werden.", V);
+                    })));
+                }
+                else right.Children.Add(Act($"sell-refund-{i}", "Erstatten", () => { _sellRefundFor = oid; Show(V); }));
             }
             if (o.Payments is null && o.Status != "bezahlt") right.Children.Add(Act($"sell-paid-{i}", "Bezahlt", () => { shop.SetStatus(oid, "bezahlt"); Show(V); })); // Altdaten
             if (live && o.Paid == 0 && o.Status != "bezahlt") right.Children.Add(Act($"sell-cancel-{i}", "Stornieren", () => Try(V, () => { shop.Cancel(oid, today); _core.Audit.Append(Principal.LocalOwner.Name, "shop.cancel", oid); Say("Bestellung storniert.", V); })));

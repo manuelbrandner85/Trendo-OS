@@ -131,12 +131,20 @@ public class Teil4BusinessTests
             Assert.Throws<ArgumentException>(() => s.Pay(o.Id, 50m, new DateOnly(2026, 11, 4), "Bank-002", ledger, true)); // mehr als offen
             Assert.Throws<InvalidOperationException>(() => s.Cancel(o.Id, new DateOnly(2026, 11, 4))); // schon Geld eingegangen
             Assert.Equal(40m, s.OpenReceivables());
+            // T-0252: Erstattung – höchstens das Gezahlte, idempotent, danach Storno möglich
+            Assert.Throws<ArgumentException>(() => s.Refund(o.Id, 70m, new DateOnly(2026, 11, 4), "Rück-1", ledger, true));
+            s.Refund(o.Id, 60m, new DateOnly(2026, 11, 4), "Rück-1", ledger, true);
+            s.Refund(o.Id, 60m, new DateOnly(2026, 11, 4), "Rück-1", ledger, true); // gleiche Referenz nochmal
+            Assert.Equal(0m, s.Orders().Single(x => x.Id == o.Id).Paid);
+            Assert.Equal("erstattet", s.Orders().Single(x => x.Id == o.Id).Status);
+            Assert.Equal(0m, ledger.All().Sum(x => x.Amount));
+            Assert.Equal("storniert", s.Cancel(o.Id, new DateOnly(2026, 11, 4)).Status);
 
             // Storno vor Lieferung: Bestand bleibt, Vormerkung weg
             var a = s.AddOrder("Erika Muster", new DateOnly(2026, 11, 5), ("Tasche", 2));
-            Assert.Equal(3m, s.Reserved("Tasche"));
+            Assert.Equal(2m, s.Reserved("Tasche")); // erste Bestellung ist inzwischen erstattet und storniert
             s.Cancel(a.Id, new DateOnly(2026, 11, 5));
-            Assert.Equal(4, s.Products.All()[0].Stock); Assert.Equal(1m, s.Reserved("Tasche"));
+            Assert.Equal(4, s.Products.All()[0].Stock); Assert.Equal(0m, s.Reserved("Tasche"));
             Assert.Throws<InvalidOperationException>(() => s.Deliver(a.Id, new DateOnly(2026, 11, 6)));
             // Storno nach Lieferung: Gegenbewegung, Bestand wieder da
             var b = s.AddOrder("Erika Muster", new DateOnly(2026, 11, 6), ("Tasche", 2));
@@ -166,6 +174,25 @@ public class Teil4BusinessTests
             Assert.Empty(ledger.All());
             Assert.Equal(0m, s.Reserved("Tasche"));
             Assert.Equal(10m, s.Figures(new DateOnly(2026, 10, 15)).Month); // Umsatz wie bisher zum Bestelldatum
+        }
+        finally { Directory.Delete(d, true); }
+    }
+
+    [Fact(DisplayName = "T-0253 (105): Buchung stornieren statt löschen – Gegenbuchung, Summe 0, kein doppeltes Storno")]
+    public void Ledger_reverse()
+    {
+        var d = Tmp();
+        try
+        {
+            var l = new Ledger(d);
+            l.Add(new(new DateOnly(2026, 10, 2), "Büromaterial", -24.90m, "Bürobedarf", 19));
+            var r = l.Reverse(0, new DateOnly(2026, 10, 5));
+            Assert.Equal(24.90m, r.Amount); Assert.StartsWith(Ledger.ReversalPrefix, r.Text);
+            Assert.Equal(2, l.All().Count); Assert.Equal(0m, l.All().Sum(x => x.Amount));
+            var orig = l.All().FindIndex(x => x.Text == "Büromaterial");
+            Assert.Throws<InvalidOperationException>(() => l.Reverse(orig, new DateOnly(2026, 10, 6)));
+            Assert.Throws<InvalidOperationException>(() => l.Reverse(l.All().FindIndex(x => x.Text.StartsWith(Ledger.ReversalPrefix)), new DateOnly(2026, 10, 6)));
+            Assert.Throws<ArgumentException>(() => l.Reverse(9, new DateOnly(2026, 10, 6)));
         }
         finally { Directory.Delete(d, true); }
     }

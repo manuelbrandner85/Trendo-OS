@@ -83,7 +83,11 @@ public partial class MainWindow
             cb.SelectionChanged += (_, _) => { if (cb.SelectedItem is string s && s != e.Category) { Money.SetCategory(idx, s); MoneyMemory.Learn(text, s); Show("finanzen"); } };
             Cell(cb, r, 2);
             Cell(new TextBlock { Text = Eu(e.Amount) + " €", Foreground = Brush.Parse(e.Amount < 0 ? "#F0644B" : "#2FBF71"), FontSize = 12.5, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center }, r, 3);
-            Cell(Act($"fin-del-{k}", "Löschen", () => { Money.RemoveAt(idx); Show("finanzen"); }), r, 4);
+            // T-0253: stornieren statt löschen – die Buchung bleibt sichtbar, eine Gegenbuchung gleicht sie aus
+            var reversed = e.Text.StartsWith(Ledger.ReversalPrefix, StringComparison.Ordinal) || Ledger.IsReversed(all, e);
+            var rev = Act($"fin-del-{k}", reversed ? "Storniert" : "Stornieren", () => Try("finanzen", () => { Money.Reverse(idx, DateOnly.FromDateTime(DateTime.Today)); _core.Audit.Append(Principal.LocalOwner.Name, "finance.reverse", text); Say("Gegenbuchung angelegt – die ursprüngliche Buchung bleibt sichtbar.", "finanzen"); }));
+            rev.IsEnabled = !reversed;
+            Cell(rev, r, 4);
             k++;
         }
         var open = Act("fin-to-sheet", "In Trendo Tabelle öffnen", () => Try("finanzen", () =>
