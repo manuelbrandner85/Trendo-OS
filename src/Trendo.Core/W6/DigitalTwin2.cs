@@ -45,10 +45,28 @@ public static class TwinPlus
         return new(v.Count, v.Min(), v.Max(), v.Average());
     }
 
-    /// <summary>F13: Stunden, in denen der Wert ≥ Schwelle war (jeder Wert gilt bis zum nächsten).</summary>
-    public static double HoursAbove(IReadOnlyList<Reading> rs, double threshold)
+    /// <summary>T-0251 (V109, QA-017/035): Größter Abstand zwischen zwei Messwerten, der noch als lückenlos gilt –
+    /// ohne Angabe das Dreifache des üblichen (mittleren) Abstands. Größere Abstände sind Datenlücken und werden nicht hochgerechnet.</summary>
+    public static TimeSpan GapLimit(IReadOnlyList<Reading> rs, TimeSpan? maxGap = null)
     {
-        var h = 0.0; for (var i = 0; i + 1 < rs.Count; i++) if (rs[i].Value >= threshold) h += (rs[i + 1].Time - rs[i].Time).TotalHours; return h;
+        if (maxGap is { } g) return g;
+        var d = Enumerable.Range(0, Math.Max(0, rs.Count - 1)).Select(i => (rs[i + 1].Time - rs[i].Time).Ticks).Where(t => t > 0).OrderBy(t => t).ToList();
+        return d.Count == 0 ? TimeSpan.Zero : TimeSpan.FromTicks(d[d.Count / 2] * 3);
+    }
+
+    /// <summary>Summe der Datenlücken (Stunden), die bei Betriebsstunden und Energie ausgelassen werden.</summary>
+    public static double GapHours(IReadOnlyList<Reading> rs, TimeSpan? maxGap = null)
+    {
+        var lim = GapLimit(rs, maxGap); var h = 0.0;
+        for (var i = 0; i + 1 < rs.Count; i++) { var dt = rs[i + 1].Time - rs[i].Time; if (dt > lim) h += dt.TotalHours; }
+        return h;
+    }
+
+    /// <summary>F13: Stunden, in denen der Wert ≥ Schwelle war (jeder Wert gilt bis zum nächsten – aber nicht über eine Datenlücke hinweg).</summary>
+    public static double HoursAbove(IReadOnlyList<Reading> rs, double threshold, TimeSpan? maxGap = null)
+    {
+        var lim = GapLimit(rs, maxGap);
+        var h = 0.0; for (var i = 0; i + 1 < rs.Count; i++) { var dt = rs[i + 1].Time - rs[i].Time; if (rs[i].Value >= threshold && dt <= lim) h += dt.TotalHours; } return h;
     }
 
     /// <summary>F14: Sensoren ohne Wert seit <paramref name="minutes"/> Minuten.</summary>
@@ -116,9 +134,10 @@ public static class TwinPlus
         return reg.Slope * ((last.Time - t0).TotalHours + hours) + reg.Intercept;
     }
 
-    /// <summary>F20: Leistung (kW) über die Zeit → Energie (kWh), Trapezregel.</summary>
-    public static double EnergyKwh(IReadOnlyList<Reading> rs)
+    /// <summary>F20: Leistung (kW) über die Zeit → Energie (kWh), Trapezregel – Datenlücken werden nicht überbrückt.</summary>
+    public static double EnergyKwh(IReadOnlyList<Reading> rs, TimeSpan? maxGap = null)
     {
-        var e = 0.0; for (var i = 0; i + 1 < rs.Count; i++) e += (rs[i].Value + rs[i + 1].Value) / 2 * (rs[i + 1].Time - rs[i].Time).TotalHours; return e;
+        var lim = GapLimit(rs, maxGap);
+        var e = 0.0; for (var i = 0; i + 1 < rs.Count; i++) { var dt = rs[i + 1].Time - rs[i].Time; if (dt <= lim) e += (rs[i].Value + rs[i + 1].Value) / 2 * dt.TotalHours; } return e;
     }
 }

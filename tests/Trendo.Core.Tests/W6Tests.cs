@@ -506,6 +506,29 @@ public class SPEC10_Plus
     [Fact(DisplayName = "SPEC-10 F17: Sensor löschen/umbenennen")] public void F17() { using var f = new Fixture(); var h = Hub(f, 1, 2); TwinPlus.Rename(h, "Heizung", "Vorlauf", "VL"); Assert.Equal(2, TwinPlus.Series(h.Model, "Heizung", "VL").Count); Assert.Equal(2, TwinPlus.Delete(h, "Heizung", "VL")); Assert.Empty(new TwinHub(f.Root).Model.Assets); Assert.Throws<ArgumentException>(() => TwinPlus.Delete(h, "Heizung", "VL")); }
     [Fact(DisplayName = "SPEC-10 F18: Wartungsplan")] public void F18() { Assert.Equal((1500.0, 300.0, false), TwinPlus.Maintenance(1200, 500, 1000)); Assert.True(TwinPlus.Maintenance(600, 500).Due); }
     [Fact(DisplayName = "SPEC-10 F19: Was-wäre-wenn")] public void F19() { using var f = new Fixture(); var h = Hub(f, 60, 62, 64); Assert.Equal(112, TwinPlus.Forecast(TwinPlus.Series(h.Model, "Heizung", "Vorlauf"), 24), 6); }
+    [Fact(DisplayName = "T-0251 (QA-017/035): Betriebsstunden und Energie überbrücken keine Datenlücke; Lücke wird ausgewiesen")]
+    public void Gaps()
+    {
+        using var f = new Fixture(); var h = new TwinHub(f.Root); h.Define("Heizung", "Leistung", "kW");
+        foreach (var hr in new[] { 0, 1, 2, 12, 13 }) h.Record(T.AddHours(hr), "Heizung", "Leistung", 2, false); // 10 Stunden ohne Werte
+        h.Save();
+        var s = TwinPlus.Series(h.Model, "Heizung", "Leistung");
+        Assert.Equal(3, TwinPlus.HoursAbove(s, 1), 9);          // 0–2 und 12–13, nicht 2–12
+        Assert.Equal(6, TwinPlus.EnergyKwh(s), 9);             // 3 h × 2 kW
+        Assert.Equal(10, TwinPlus.GapHours(s), 9);
+        Assert.Equal(26, TwinPlus.EnergyKwh(s, TimeSpan.FromHours(24)), 9); // ausdrücklich erlaubte große Lücke
+    }
+
+    [Fact(DisplayName = "T-0251 (V109): Kamera-Maße nur mit passender Kalibrierung")]
+    public void Calibration()
+    {
+        Assert.Null(Vision.CalibrationProblem(80, 60, 400, 300));
+        Assert.NotNull(Vision.CalibrationProblem(80, 60, 400, 100));   // Seitenverhältnis passt nicht
+        Assert.NotNull(Vision.CalibrationProblem(80, 60, 0, 300));
+        Assert.Throws<ArgumentException>(() => Vision.PixelToTable(40, 30, 80, 60, 400, 100));
+        Assert.Equal((200, 150), Vision.PixelToTable(40, 30, 80, 60, 400, 300));
+    }
+
     [Fact(DisplayName = "SPEC-10 F20: Energie")] public void F20() { using var f = new Fixture(); var h = Hub(f, 2, 4, 4); Assert.Equal(7, TwinPlus.EnergyKwh(TwinPlus.Series(h.Model, "Heizung", "Vorlauf")), 9); }
 }
 

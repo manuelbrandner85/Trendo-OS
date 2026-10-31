@@ -109,7 +109,24 @@ public static class Vision
     }
 
     /// <summary>Bildpunkt → Tischkoordinate (mm) über zwei bekannte Ecken (Kamera senkrecht von oben).</summary>
-    public static (double X, double Y) PixelToTable(double px, double py, int w, int h, double tableW, double tableH) => (Math.Round(px / w * tableW, 1), Math.Round((1 - py / h) * tableH, 1));
+    /// <summary>Pixel → Tisch-mm. Annahme (Kalibrierung): das Bild zeigt genau die Tischfläche, Kamera senkrecht. T-0251 (V109): Ohne
+    /// gültige Kalibrierung keine mm-Werte – Maße müssen positiv sein und das Seitenverhältnis von Bild und Tisch darf höchstens 10 % abweichen.</summary>
+    public static (double X, double Y) PixelToTable(double px, double py, int w, int h, double tableW, double tableH)
+    {
+        if (CalibrationProblem(w, h, tableW, tableH) is { } why) throw new ArgumentException(why);
+        return (Math.Round(px / w * tableW, 1), Math.Round((1 - py / h) * tableH, 1));
+    }
+
+    /// <summary>Grund, warum die Kalibrierung nicht passt – oder null.</summary>
+    public static string? CalibrationProblem(int w, int h, double tableW, double tableH)
+    {
+        if (w <= 0 || h <= 0) return "Das Bild hat keine gültige Größe.";
+        if (tableW <= 0 || tableH <= 0) return "Bitte die Tischmaße (mm) größer als 0 angeben – ohne Kalibrierung gibt es keine mm-Werte.";
+        var ri = (double)w / h; var rt = tableW / tableH;
+        return Math.Abs(ri - rt) / rt > 0.10
+            ? $"Kalibrierung passt nicht: Bild {w} × {h} Pixel (Seitenverhältnis {ri:0.00}), Tisch {tableW:0} × {tableH:0} mm ({rt:0.00}). Zeigt das Bild genau die Tischfläche, von oben?"
+            : null;
+    }
 }
 
 public static class RobotArm

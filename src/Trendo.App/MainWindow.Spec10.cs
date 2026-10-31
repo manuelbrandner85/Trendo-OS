@@ -66,11 +66,11 @@ public partial class MainWindow
             FachTool("twin-span", "Kennzahlen", "Zeitraum als „TT.MM.JJJJ“; leer = alles.", [.. AS, ("from", "Von", ""), ("to", "Bis", "")],
                 v => { DateTime? D(string k, bool end) => v(k).Trim() == "" ? null : DateTime.Parse(v(k).Trim(), Fach.De) is var d && end && d.TimeOfDay == TimeSpan.Zero ? d.AddDays(1).AddTicks(-1) : DateTime.Parse(v(k).Trim(), Fach.De); var s = TwinPlus.Span(Ser(v), D("from", false), D("to", true)); return $"{s.Count} Werte · min {Fach.F(s.Min, 2)} · max {Fach.F(s.Max, 2)} · Mittel {Fach.F(s.Mean, 2)}"; }, "Berechnen"),
             FachTool("twin-hours", "Betriebsstunden", "Wie lange lag der Wert auf oder über der Schwelle (z. B. Leistung > 0 = läuft)?", [.. AS, ("thr", "Schwelle", "1")],
-                v => $"{Fach.F(TwinPlus.HoursAbove(Ser(v), Fach.Num(v("thr"))), 1)} Stunden in Betrieb", "Zählen"),
+                v => { var s = Ser(v); var gap = TwinPlus.GapHours(s); return $"{Fach.F(TwinPlus.HoursAbove(s, Fach.Num(v("thr"))), 1)} Stunden in Betrieb" + (gap > 0 ? $" · {Fach.F(gap, 1)} Stunden Datenlücke nicht mitgerechnet" : ""); }, "Zählen"),
             FachTool("twin-fc", "Was-wäre-wenn", "Trend der letzten 24 h fortschreiben.", [.. AS, ("h", "Stunden voraus", "24")],
                 v => $"In {Fach.F(Fach.Num(v("h")), 0)} h etwa {Fach.F(TwinPlus.Forecast(Ser(v), Fach.Num(v("h"))), 2)} – nur eine Schätzung, wenn alles so weiterläuft.", "Schätzen"),
             FachTool("twin-kwh", "Energie", "Sensor misst Leistung in kW → verbrauchte oder erzeugte kWh.", [("asset", "Anlage", "Solar"), ("sensor", "Sensor", "Leistung")],
-                v => $"{Fach.F(TwinPlus.EnergyKwh(Ser(v)), 2)} kWh im erfassten Zeitraum", "Berechnen")));
+                v => { var s = Ser(v); var gap = TwinPlus.GapHours(s); return $"{Fach.F(TwinPlus.EnergyKwh(s), 2)} kWh im erfassten Zeitraum" + (gap > 0 ? $" · {Fach.F(gap, 1)} Stunden Datenlücke nicht hochgerechnet" : ""); }, "Berechnen")));
         sp.Children.Add(FachGroup("twin-manage", "Verwalten", false,
             FachTool("twin-stale", "Stille Sensoren", "Welche Sensoren haben länger nichts geliefert?", [("min", "Minuten", "60")],
                 v => { var s = TwinPlus.Stale(Twin.Model, DateTime.Now, Fach.Num(v("min"))); return s.Count == 0 ? "✓ Alle Sensoren sind aktuell." : string.Join("\n", s.Select(x => $"⚠ {x.Asset} – {x.Sensor}: {(x.Last is { } t ? $"zuletzt {t:dd.MM. HH:mm}" : "noch nie")}")); }, "Prüfen"),
