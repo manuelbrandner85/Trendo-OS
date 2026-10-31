@@ -138,3 +138,30 @@ public class SPEC03_UiPlus
         w.Close();
     }
 }
+
+/// <summary>T-0275: Eurocode-Nachweis über die Oberfläche.</summary>
+public class SPEC03_UiEc
+{
+    const string TK = "technik";
+    static FrameModel Model(MainWindow w) => FrameModel.From(w.ProgramActive(TK)!.Data);
+    static T Get<T>(MainWindow w, string name) where T : Control { Settle(); return w.GetVisualDescendants().OfType<T>().Last(c => c.Name == name && c.IsEffectivelyVisible && c.Bounds.Width > 0); }
+    static void Press(MainWindow w, string name) { var b = Get<Button>(w, name); b.BringIntoView(); Settle(); RealClick(w, Get<Button>(w, name)); }
+
+    [AvaloniaFact(DisplayName = "SPEC-03 UI: Eurocode einschalten – Ausnutzung am Stab, Last als ständig markieren senkt η, Nachweis als Bericht")]
+    public void Eurocode_toggle()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show(TK); Settle(); RealClick(w, Get<Button>(w, "prog-tpl-einfeld"));
+        var m = Model(w); var mem = m.Members.Single(); var load = m.Loads.Single(l => l.Kind == "strecke");
+        Press(w, "prog-cmd-tk-ec"); Assert.True(w.FrameState.Eurocode);
+        w.FrameSelect(mem.Id);
+        Assert.Contains("EC 3", Get<TextBlock>(w, "tk-ec-verdict").Text);
+        var q = Eurocode.Check(Model(w)).Of(mem.Id)!.EtaStress;
+        w.FrameSelect(load.Id); RealClick(w, Get<CheckBox>(w, "tk-p-permanent"));
+        Assert.True(Model(w).Loads.Single(l => l.Kind == "strecke").Permanent);
+        Assert.Equal(q * 1.35 / 1.5, Eurocode.Check(Model(w)).Of(mem.Id)!.EtaStress, 3);
+        Press(w, "prog-export-ec");
+        var file = w.ProgramMessage(TK)["Exportiert: ".Length..].Trim(); Assert.Contains("Nachweis nach Eurocode", File.ReadAllText(file));
+        w.Close();
+    }
+}

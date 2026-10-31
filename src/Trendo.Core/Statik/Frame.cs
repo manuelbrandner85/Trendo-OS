@@ -13,6 +13,8 @@ public sealed class FrameModel
     public int Version { get; set; } = FormatVersion;
     public string Name { get; set; } = "Tragwerk";
     public bool SelfWeight { get; set; }
+    /// <summary>T-0275: Teilsicherheitsbeiwert auf das Eigengewicht (nur für die Bemessungsrechnung, sonst 1).</summary>
+    [System.Text.Json.Serialization.JsonIgnore] public double SelfWeightFactor { get; set; } = 1;
     public List<FNode> Nodes { get; set; } = [];
     public List<FMember> Members { get; set; } = [];
     public List<FLoad> Loads { get; set; } = [];
@@ -156,6 +158,8 @@ public sealed class FLoad
     public double At { get; set; } = 0.5;
     /// <summary>T-0271: Streckenlast am Stabende (kN/m) – ergibt eine Trapez- oder Dreieckslast; null = gleichmäßig wie Value.</summary>
     public double? Value2 { get; set; }
+    /// <summary>T-0275: ständige Last (G, z. B. Ausbau, Dach) statt veränderlicher Last (Q, z. B. Nutzlast, Schnee, Wind).</summary>
+    public bool Permanent { get; set; }
     /// <summary>T-0271: "temperatur": Value = gleichmäßige Erwärmung (K), M = Temperaturunterschied unten − oben (K).</summary>
     public double DeltaT => Value;
 }
@@ -346,7 +350,7 @@ public static class FrameSolver
     /// <summary>Streckenlast am Anfang und Ende (kN/m, nach unten) – Summe aller gleichmäßigen und trapezförmigen Lasten plus Eigengewicht.</summary>
     static (double A, double B) LineLoad(FrameModel f, string member, Material mat, SectionInfo sec)
     {
-        var own = f.SelfWeight ? mat.Density * sec.A_mm2 * 1e-6 * G / 1000 : 0;
+        var own = f.SelfWeight ? mat.Density * sec.A_mm2 * 1e-6 * G / 1000 * f.SelfWeightFactor : 0;
         var ls = f.Loads.Where(l => l.Kind == "strecke" && l.Target == member).ToList();
         return (ls.Sum(l => l.Value) + own, ls.Sum(l => l.Value2 ?? l.Value) + own);
     }

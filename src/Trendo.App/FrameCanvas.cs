@@ -13,6 +13,8 @@ public sealed class FrameViewState
 {
     public string Tool = "auswahl";
     public string? Selected;
+    /// <summary>T-0275: Nachweis nach Eurocode statt einfacher Sicherheitsprüfung.</summary>
+    public bool Eurocode;
     public string SupportType = "fest";
     public string LoadKind = "strecke";
     public double LoadValue = 10;

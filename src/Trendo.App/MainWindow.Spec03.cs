@@ -50,6 +50,7 @@ public partial class MainWindow
             ]),
             ("Ansicht", [
                 new ProgramCmd("tk-fit", "Einpassen", _ => { FrameState.Fitted = false; FrameState.UserView = false; }),
+                new ProgramCmd("tk-ec", "Eurocode", _ => FrameState.Eurocode = !FrameState.Eurocode, false, "Nachweis nach Eurocode (1,35·G + 1,5·Q, EC 3 / EC 5) an/aus"),
                 new ProgramCmd("tk-grid", "Raster", _ => FrameState.Grid = !FrameState.Grid, false, "10-cm-Raster und Fang an/aus"),
                 new ProgramCmd("tk-self", "Eigengewicht", d => d.Edit("Eigengewicht", x => { var f = FrameModel.From(x); f.SelfWeight = !f.SelfWeight; f.WriteTo(x); }), false, "Gewicht der Stäbe mitrechnen"),
             ]),
@@ -57,6 +58,7 @@ public partial class MainWindow
         Exports =
         [
             new("pdf", "PDF-Bericht", ".pdf", (d, f) => { var m = FrameModel.From(d.Data); return FrameDrawing.Pdf(m, FrameSolver.Solve(m), f); }),
+            new("ec", "Eurocode-Nachweis", ".md", (d, f) => { var m = FrameModel.From(d.Data); File.WriteAllText(f, Eurocode.Report(m, Eurocode.Check(m))); return f; }),
             new("svg", "SVG (Bild)", ".svg", (d, f) => { var m = FrameModel.From(d.Data); File.WriteAllText(f, FrameDrawing.Svg(m, FrameSolver.Solve(m), FrameState.Show)); return f; }),
             new("csv", "Ergebnisse (CSV)", ".csv", (d, f) => { var m = FrameModel.From(d.Data); File.WriteAllText(f, FrameDrawing.Csv(m, FrameSolver.Solve(m)), new System.Text.UTF8Encoding(true)); return f; }),
         ],
@@ -193,6 +195,21 @@ public partial class MainWindow
                 Fact("max. Moment", $"{x.MaxM:0.##} kNm"); Fact("max. Querkraft", $"{x.MaxV:0.##} kN"); Fact("Normalkraft", $"{x.MaxN:0.##} kN" + (x.MaxN < 0 ? " (Druck)" : x.MaxN > 0 ? " (Zug)" : ""));
                 Fact("Spannung", $"{x.Stress_MPa:0.#} N/mm²"); Fact("Sicherheit", $"{x.Safety:0.##}", Brush.Parse(x.Safety >= 1.5 ? "#4ADE80" : "#F87171"));
                 Fact("Durchbiegung", $"{x.MaxDefl_mm:0.#} mm (L/300 = {x.L * 1000 / 300:0.#} mm)", Brush.Parse(x.MaxDefl_mm <= x.L * 1000 / 300 ? "#4ADE80" : "#F87171"));
+                if (FrameState.Eurocode)
+                {
+                    try
+                    {
+                        var ec = Eurocode.Check(m).Of(mem.Id)!;
+                        sp.Children.Add(H("Eurocode (1,35·G + 1,5·Q)", 12));
+                        sp.Children.Add(new TextBlock { Name = "tk-ec-verdict", Text = ec.Text, Foreground = Brush.Parse(ec.Ok ? "#4ADE80" : "#F87171"), FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
+                        void Eta(string name, string label, double v) { sp.Children.Add(new StackPanel { Name = name, Spacing = 2, Children = { new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = label, Foreground = Text, FontSize = 12 }, Pos(new TextBlock { Text = $"{v * 100:0} %", Foreground = Brush.Parse(v <= 1 ? "#4ADE80" : "#F87171"), FontSize = 12, FontWeight = FontWeight.SemiBold }, 1) } }, new ProgressBar { Minimum = 0, Maximum = 100, Value = Math.Min(100, v * 100), Height = 6, Foreground = Brush.Parse(v <= 0.8 ? "#4ADE80" : v <= 1 ? "#FACC15" : "#F87171") } } }); }
+                        if (!double.IsNaN(ec.EtaStress)) Eta("tk-ec-eta", "Ausnutzung Querschnitt η", ec.EtaStress);
+                        if (ec.EtaBuckle is { } eb) Eta("tk-ec-buckle", $"Ausnutzung Knicken (χ = {ec.Chi:0.00})", eb);
+                        Fact("N_Ed / M_Ed", $"{ec.NEd:0.##} kN · {ec.MEd:0.##} kNm"); Fact("f_d", $"{ec.FdMPa:0.#} N/mm²");
+                        sp.Children.Add(P("Vereinfachter Nachweis zur Vorbemessung – ersetzt keine geprüfte Statik.", null, 10.5));
+                    }
+                    catch (InvalidOperationException) { }
+                }
                 if (x.BuckleSafety is { } bk) Fact("Knicksicherheit", $"{bk:0.##}", Brush.Parse(bk >= 2 ? "#4ADE80" : "#F87171"));
                 // Vorschlag: kleinstes IPE, das hält
                 if (!x.Ok && mem.Section.StartsWith("IPE", StringComparison.OrdinalIgnoreCase))
@@ -216,6 +233,9 @@ public partial class MainWindow
                 Num("grad", "Unterschied unten − oben", ld.M, (f, v) => f.Loads.First(x => x.Id == sel).M = v, "K");
             }
             else Num("value", ld.Kind == "strecke" ? "Last am Anfang" : "Kraft nach unten", ld.Value, (f, v) => f.Loads.First(x => x.Id == sel).Value = v, ld.Kind == "strecke" ? "kN/m" : "kN");
+            var perm = new CheckBox { Name = "tk-p-permanent", Content = "ständige Last (G) – sonst veränderlich (Q)", IsChecked = ld.Permanent };
+            perm.IsCheckedChanged += (_, _) => { if ((perm.IsChecked == true) != ld.Permanent) FrameEdit("Lastart", f => f.Loads.First(x => x.Id == sel).Permanent = perm.IsChecked == true); };
+            sp.Children.Add(perm);
             if (ld.Kind == "strecke") Num("value2", "Last am Ende (Trapez)", ld.Value2 ?? ld.Value, (f, v) => { var l = f.Loads.First(x => x.Id == sel); l.Value2 = Math.Abs(v - l.Value) < 1e-12 ? null : v; }, "kN/m");
             if (ld.Kind == "einzel") Num("at", "Lage", ld.At * 100, (f, v) => f.Loads.First(x => x.Id == sel).At = Math.Clamp(v / 100, 0, 1), "% der Länge");
             if (ld.Kind == "knoten") { Num("fx", "Kraft nach rechts", ld.Fx, (f, v) => f.Loads.First(x => x.Id == sel).Fx = v, "kN"); Num("m", "Moment", ld.M, (f, v) => f.Loads.First(x => x.Id == sel).M = v, "kNm"); }
