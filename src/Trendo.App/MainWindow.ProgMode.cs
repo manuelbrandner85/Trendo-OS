@@ -26,6 +26,7 @@ public partial class MainWindow
     private void InitProgMode() => RegisterProgram(FachTabs, new ProgramSpec("mode-programm", "SPEC-08", "Kleidung & Produkte")
     {
         GroupLevels = new() { ["Schnittteile"] = 1 },
+        ScrollWorkspace = true,
         Sentence = "Ein Produkt von der Figur bis zum Datenblatt – mit Größen, Varianten, Stoff und Preis.",
         FillHeight = true,
         Folder = "Produkte",
@@ -104,23 +105,9 @@ public partial class MainWindow
             variants.Children.Add(new Border { Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(8, 4), CornerRadius = new CornerRadius(8), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1),
                 Child = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new Ellipse { Width = 12, Height = 12, Fill = Brush.Parse(Swatch(v.Color)), Stroke = Edge }, new TextBlock { Text = $"{v.Size} · {v.Color}", Foreground = Text, FontSize = 12 } } } });
 
-        // Zuschnitt auf der Stoffbahn (V4: Leinwand)
-        var width = d.Number("fabricWidth", 140); var (meters, _) = ModeFabric(d);
-        var scale = 3.0; var cut = new Canvas { Name = "mode-layout", Width = width * scale, Height = Math.Max(60, meters * 100 * scale), Background = Brush.Parse(C("#22FFFFFF", "#11000000")) };
-        double x = 0, y = 0, rowH = 0; var colorsCut = new[] { "#2F86F6", "#22B35E", "#F08A3C", "#7C4DFF", "#E5484D" }; var ci = 0;
-        foreach (var p in ModePieces(d))
-            for (var q = 0; q < p.Q; q++)
-            {
-                double w = p.W + 3, h = p.H + 3;
-                if (x + w > width) { x = 0; y += rowH; rowH = 0; }
-                var rect = new Border { Width = w * scale - 2, Height = h * scale - 2, CornerRadius = new CornerRadius(3), Background = Brush.Parse(colorsCut[ci % colorsCut.Length]), Opacity = 0.8,
-                    Child = new TextBlock { Text = p.Name, Foreground = Brushes.White, FontSize = 10, Margin = new Thickness(3) } };
-                Canvas.SetLeft(rect, x * scale); Canvas.SetTop(rect, y * scale); cut.Children.Add(rect);
-                x += w; rowH = Math.Max(rowH, h);
-                if (q == p.Q - 1) ci++;
-            }
-        var layout = new StackPanel { Spacing = 4, Children = { H($"Zuschnitt · {meters:0.##} m Stoff", 13), new ScrollViewer { HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, MaxHeight = 320, Content = new Viewbox { MaxWidth = 520, Stretch = Stretch.Uniform, Child = cut } } } };
-
+        // Schnittlagebild (Masterprompt 131): Teile ziehen, drehen, automatisch legen
+        var width = d.Number("fabricWidth", 140);
+        var layout = ModeMarker(d, width);
         var price = ModePrice(d);
         var card = new Border { CornerRadius = new CornerRadius(14), Padding = new Thickness(14), Background = Brushes.White, MaxWidth = 380, HorizontalAlignment = HorizontalAlignment.Left, BoxShadow = BoxShadows.Parse("0 6 18 -6 #55000000"),
             Child = new StackPanel { Spacing = 3, Children = {
@@ -212,5 +199,42 @@ public partial class MainWindow
             v => { var tiers = v("t").Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(x => x.Split(':')).Select(x => x.Length == 2 ? ((int)Fach.Num(x[0]), Fach.Num(x[1])) : throw new FormatException("Stufe bitte als „10:5“.")); var r = FashionPlus.Tier(ModePrice(d).Gross, (int)Fach.Num(v("q")), tiers); return $"{Fach.F(r.DiscountPct, 0)} % Rabatt → {Fach.F(r.Unit)} € je Stück, zusammen {Fach.F(r.Total)} €"; });
         sp.Children.Add(new Expander { Name = "mode-calcs", Header = "Rechner (Schuh, Kind, BH, Ring, Garn, EAN, Staffel)", IsExpanded = false, Content = calcs, Margin = new Thickness(0, 8, 0, 0) });
         return sp;
+    }
+
+    // ---------- Schnittlagebild ----------
+    public int MarkerSelected { get; set; } = -1;
+    public MarkerCanvas? MarkerForTests { get; private set; }
+    static List<Marker.Piece> MarkerPieces(ProgramDocument d) => ModePieces(d).Select(p => new Marker.Piece(p.Name, p.W, p.H, p.Q)).ToList();
+
+    /// <summary>Gespeicherte Lage, wenn sie zu den Teilen passt – sonst automatisch gelegt (noch nicht gespeichert).</summary>
+    public static List<Marker.Placed> MarkerLayout(ProgramDocument d, double width)
+    {
+        var pieces = MarkerPieces(d);
+        var saved = d.List("layout").OfType<JsonObject>().Select(o => new Marker.Placed((int)ProgramDocument.ToNumber(o["p"]), (int)ProgramDocument.ToNumber(o["c"]), ProgramDocument.ToNumber(o["x"]), ProgramDocument.ToNumber(o["y"]), o["r"]?.GetValue<bool>() == true)).ToList();
+        var want = pieces.SelectMany((p, i) => Enumerable.Range(0, p.Qty).Select(c => (i, c))).ToHashSet();
+        if (saved.Count == want.Count && saved.All(x => want.Contains((x.Piece, x.Copy)))) return saved;
+        try { return Marker.AutoLayout(pieces, width); } catch (ArgumentException) { return []; }
+    }
+    static JsonArray MarkerJson(IEnumerable<Marker.Placed> l) => new([.. l.Select(x => (JsonNode)new JsonObject { ["p"] = x.Piece, ["c"] = x.Copy, ["x"] = x.X, ["y"] = x.Y, ["r"] = x.Rot })]);
+
+    private Control ModeMarker(ProgramDocument d, double width)
+    {
+        const string K = "mode-programm";
+        var pieces = MarkerPieces(d); var lay = MarkerLayout(d, width);
+        var canvas = new MarkerCanvas { Name = "mode-marker", Pieces = pieces, Layout = lay, FabricW = width, Scale = 3, Selected = MarkerSelected };
+        MarkerForTests = canvas;
+        canvas.Moved = (i, dx, dy) => ProgramRun(K, () => { var l = MarkerLayout(d, width); l[i] = l[i] with { X = Math.Round(l[i].X + dx), Y = Math.Max(0, Math.Round(l[i].Y + dy)) }; d.Set("layout", MarkerJson(l), "Teil verschieben"); MarkerSelected = i; });
+        canvas.Rotated = i => ProgramRun(K, () => { var l = MarkerLayout(d, width); l[i] = l[i] with { Rot = !l[i].Rot }; d.Set("layout", MarkerJson(l), "Teil drehen"); MarkerSelected = i; });
+        canvas.Clicked = i => { MarkerSelected = i; canvas.Selected = i; canvas.InvalidateVisual(); }; // nicht neu aufbauen – sonst kommt ein Doppelklick nie an
+        var len = Marker.Length(pieces, lay); var eff = Marker.Efficiency(pieces, lay, width); var bad = Marker.Problems(pieces, lay, width);
+        Button B(string name, string label, Action a, bool primary = false) { var b = new Button { Name = name, Content = label, FontSize = 12, Margin = new Thickness(0, 0, 4, 4) }; if (primary) { b.Background = Accent; b.Foreground = Brushes.White; } b.Click += (_, _) => ProgramRun(K, a); return b; }
+        var bar = new WrapPanel { Children = {
+            B("mode-marker-auto", "Automatisch legen", () => { d.Set("layout", MarkerJson(Marker.AutoLayout(pieces, width)), "Automatisch legen"); MarkerSelected = -1; }, true),
+            B("mode-marker-rotate", "↻ Drehen", () => { if (MarkerSelected < 0 || MarkerSelected >= lay.Count) throw new InvalidOperationException("Erst ein Teil anklicken."); canvas.Rotated!(MarkerSelected); }),
+            B("mode-marker-pdf", "Als PDF", () => { var f = Path.Combine(WorkFolder("Produkte"), DevStudio.SafeName(d.Text("name")) + " – Schnittlage.pdf"); Marker.Pdf(f, d.Text("name"), pieces, lay, width); _progMsg[K] = "Gespeichert: " + f; NotifyFileResult(_progMsg[K]); }) } };
+        var facts = new TextBlock { Name = "mode-marker-facts", Text = $"Verbrauch {len / 100:0.00} m bei {width:0} cm Breite · Ausnutzung {eff * 100:0} % · Verschnitt {100 - eff * 100:0} %" + (bad.Count > 0 ? $" · ⚠ {bad.Count} Teile überlappen oder ragen über den Rand" : ""), Foreground = bad.Count > 0 ? Brush.Parse("#F87171") : Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap };
+        return new StackPanel { Spacing = 4, Children = { H("Schnittlagebild", 13), bar, facts,
+            new TextBlock { Text = "Teil ziehen: verschieben (1 cm) · Doppelklick: drehen · gestrichelt: Nahtlinie", Foreground = Muted, FontSize = 11.5 },
+            new ScrollViewer { HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, MaxHeight = 420, Content = canvas } } };
     }
 }
