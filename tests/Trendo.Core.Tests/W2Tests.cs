@@ -227,6 +227,34 @@ public class SYS05_Workflows
         Assert.Single(e.History(w.Id), h => h.Ok);
     }
 
+    [Fact(DisplayName = "T-0250: Derselbe Ablauf startet nicht doppelt – auch nicht aus einem zweiten Trendo-Fenster; verwaiste Sperre nach Absturz wird gelöst")]
+    public async Task No_double_start()
+    {
+        var (f, e, home) = Make(); using var _ = f;
+        var docs = Path.Combine(home, "Documents"); Directory.CreateDirectory(docs); File.WriteAllText(Path.Combine(docs, "a.txt"), "Text");
+        var gate = new TaskCompletionSource<string?>();
+        e.Summarize = _ => gate.Task;
+        var w = e.Add(new Workflow { Name = "lang", Steps = [new() { Kind = StepKind.KiZusammenfassen, From = docs, To = "" }] });
+        var first = e.RunAsync(w, false);
+        var second = await e.RunAsync(w, false);
+        Assert.False(second.Ok); Assert.Contains(second.Lines, l => l.Contains("Läuft gerade schon"));
+        var other = new WorkflowEngine(f.Root, f.Core.Audit, f.Core.Approvals, [home]); // zweites Fenster, gleiche Daten
+        var third = await other.RunAsync(other.All().Single(x => x.Id == w.Id), false);
+        Assert.False(third.Ok);
+        gate.SetResult("Zusammenfassung");
+        Assert.True((await first).Ok);
+        e.Summarize = _ => Task.FromResult<string?>("Zusammenfassung");
+        Assert.True((await e.RunAsync(w, false)).Ok); // nach dem Ende wieder frei
+        // Sperre aus einem Absturz (älter als die Frist) blockiert nicht für immer
+        var lockFile = Directory.GetFiles(Path.Combine(f.Root, "ablaeufe")).FirstOrDefault(x => x.EndsWith(".lock"));
+        Assert.Null(lockFile);
+        var stale = Path.Combine(f.Root, "ablaeufe", "laeuft-" + string.Concat(w.Id.Where(char.IsLetterOrDigit)) + ".lock");
+        File.WriteAllText(stale, ""); File.SetLastWriteTimeUtc(stale, DateTime.UtcNow - WorkflowEngine.LeaseTimeout - TimeSpan.FromMinutes(1));
+        other.Summarize = _ => Task.FromResult<string?>("Zusammenfassung");
+        var after = await other.RunAsync(other.All().Single(x => x.Id == w.Id), false);
+        Assert.True(after.Ok, string.Join(" | ", after.Lines));
+    }
+
     [Fact(DisplayName = "SYS-05: Nur erlaubte Ordner, Textdatei mit {datum}, ZIP, Datum voranstellen")]
     public async Task Steps_and_sandbox()
     {

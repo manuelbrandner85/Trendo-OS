@@ -44,6 +44,29 @@ public sealed record WfRun(string WorkflowId, DateTimeOffset At, bool DryRun, bo
 public sealed class WorkflowEngine
 {
     private readonly string _file, _runs; private readonly AuditLog _audit; private readonly ApprovalGate _gate;
+    // T-0250 (V110): kein Doppelstart – weder zwei Zeitgeber-Durchläufe gleichzeitig noch derselbe Ablauf zweimal (auch nicht aus zwei Trendo-Fenstern)
+    private int _dueBusy;
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, byte> Running = new();
+    /// <summary>Eine Sperrdatei gilt als verwaist, wenn sie älter ist (z. B. nach einem Absturz).</summary>
+    public static readonly TimeSpan LeaseTimeout = TimeSpan.FromHours(2);
+    private string LeaseFile(string id) => Path.Combine(Path.GetDirectoryName(_file)!, "laeuft-" + string.Concat(id.Where(char.IsLetterOrDigit)) + ".lock");
+
+    /// <summary>Ablauf für diesen Lauf belegen – false, wenn er gerade schon läuft.</summary>
+    private bool Lease(string id)
+    {
+        if (!Running.TryAdd(_file + "|" + id, 0)) return false;
+        var f = LeaseFile(id);
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(f)!);
+            if (File.Exists(f) && DateTime.UtcNow - File.GetLastWriteTimeUtc(f) > LeaseTimeout) File.Delete(f); // verwaist
+            using (new FileStream(f, FileMode.CreateNew, FileAccess.Write, FileShare.None)) { }
+            return true;
+        }
+        catch (IOException) { Running.TryRemove(_file + "|" + id, out _); return false; }
+    }
+
+    private void Release(string id) { try { File.Delete(LeaseFile(id)); } catch (IOException) { } Running.TryRemove(_file + "|" + id, out _); }
     private readonly IReadOnlyList<string> _allowed;
     private readonly List<Workflow> _items;
     public Func<string, Task<string?>>? Summarize { get; set; }
@@ -124,11 +147,18 @@ public sealed class WorkflowEngine
 
     public async Task<WfRun> RunAsync(Workflow w, bool dryRun, string? triggerFile = null, DateTimeOffset? now = null)
     {
-        var t = now ?? DateTimeOffset.Now; var lines = new List<string>(); var ok = true;
+        var t = now ?? DateTimeOffset.Now; var lines = new List<string>();
         string V(string s) => s.Replace("{datum}", t.ToString("yyyy-MM-dd")).Replace("{zeit}", t.ToString("HH-mm")).Replace("{datei}", triggerFile is null ? "" : Path.GetFileName(triggerFile));
         if (!dryRun && !w.IsApproved) { lines.Add("Gestoppt: Dieser Ablauf verschiebt oder benennt Dateien um und braucht zuerst deine Freigabe."); return Log(new(w.Id, t, dryRun, false, lines)); }
-        var halt = _gate.HaltToken;
         if (!dryRun && _gate.Halted) { lines.Add("Gestoppt: Der Not-Stopp ist aktiv. Es wurde nichts geändert."); return Log(new(w.Id, t, dryRun, false, lines)); }
+        if (!dryRun && !Lease(w.Id)) { lines.Add("Läuft gerade schon – nicht doppelt gestartet."); _audit.Append("ablauf", "workflow.skipped", w.Id + " läuft schon"); return new(w.Id, t, dryRun, false, lines); }
+        try { return await RunLeasedAsync(w, dryRun, triggerFile, t, lines, V); }
+        finally { if (!dryRun) Release(w.Id); }
+    }
+
+    private async Task<WfRun> RunLeasedAsync(Workflow w, bool dryRun, string? triggerFile, DateTimeOffset t, List<string> lines, Func<string, string> V)
+    {
+        var ok = true; var halt = _gate.HaltToken;
         foreach (var s in w.Steps)
         {
             if (!dryRun && halt.IsCancellationRequested) { ok = false; lines.Add("Not-Stopp: Der Ablauf wurde angehalten. Weitere Schritte laufen nicht."); break; }
@@ -194,7 +224,9 @@ public sealed class WorkflowEngine
     {
         var res = new List<WfRun>();
         if (_gate.Halted) return res; // Not-Stopp: zeitgesteuerte Abläufe ruhen
-        foreach (var (w, f) in Due(now)) res.Add(await RunAsync(w, false, f, now));
+        if (Interlocked.Exchange(ref _dueBusy, 1) == 1) return res; // der vorige Zeitgeber-Durchlauf ist noch nicht fertig
+        try { foreach (var (w, f) in Due(now)) res.Add(await RunAsync(w, false, f, now)); }
+        finally { Volatile.Write(ref _dueBusy, 0); }
         return res;
     }
 
