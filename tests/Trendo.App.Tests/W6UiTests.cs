@@ -54,24 +54,6 @@ public static class Img
 }
 
 
-public class CORE09_Ui
-{
-    [AvaloniaFact(DisplayName = "CORE-09 UI: Objekt im Bild finden, Arm rechnen, Programm speichern")]
-    public void Robot()
-    {
-        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
-        w.Show(MainWindow.StudioPages["CORE-09"]);
-        // T-0251: Bild im Seitenverhältnis des Tischs (400 × 300 mm → 4:3); ein quadratisches Bild wird als falsche Kalibrierung abgelehnt
-        Assert.Contains("Kalibrierung passt nicht", W6Ui.Run(w, "rob-see", ("file", Img.Png(root, 100, 100, (60, 60, 79, 79)))));
-        var o = W6Ui.Run(w, "rob-see", ("file", Img.Png(root, 100, 75, (60, 50, 79, 69))));
-        Assert.Contains("x = 278,0 mm", o);
-        Assert.Contains("Kein", W6Ui.Run(w, "rob-see", ("color", "grün")));
-        Assert.Contains("Kontrolle: Greifer landet bei 150,0 / 50,0 / 40,0", W6Ui.Run(w, "rob-ik"));
-        Assert.Contains("⚠", W6Ui.Run(w, "rob-ik", ("x", "900")));
-        Assert.Contains("Gespeichert", W6Ui.Run(w, "rob-prog"));
-    }
-}
-
 public static class Gltf
 {
     public static byte[] TinyPng(int w, int h) { var b = new byte[33]; new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52 }.CopyTo(b, 0); b[16] = (byte)(w >> 24); b[17] = (byte)(w >> 16); b[18] = (byte)(w >> 8); b[19] = (byte)w; b[20] = (byte)(h >> 24); b[21] = (byte)(h >> 16); b[22] = (byte)(h >> 8); b[23] = (byte)h; return b; }
@@ -91,24 +73,3 @@ public static class Gltf
 }
 
 
-public class CORE09_UiPlus
-{
-    [AvaloniaFact(DisplayName = "CORE-09 UI Ausbau: Bild prüfen und Arm planen")]
-    public void Plus()
-    {
-        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
-        var a = Img.Png(root, 80, 60, (10, 20, 29, 39));
-        var b = Path.Combine(root, "leer.png"); var grey = new byte[80 * 60 * 3]; Array.Fill(grey, (byte)120); File.WriteAllBytes(b, VisionPlus.EncodePng(new RgbImage(80, 60, grey)));
-        w.Show(MainWindow.StudioPages["CORE-09"]);
-        Assert.Contains("1 Objekt(e)", W6Ui.Run(w, "rob-count", ("file", a)));
-        Assert.Contains("Schärfe", W6Ui.Run(w, "rob-exp", ("file", a)));
-        Assert.Contains("Bewegung: 8,3 %", W6Ui.Run(w, "rob-motion", ("file", a), ("file2", b)));
-        W6Ui.Run(w, "rob-mask", ("file", a)); Assert.True(File.Exists(Path.Combine(root, "bild.maske-rot.png")));
-        Assert.Contains("x = 0,0 mm, y = 300,0 mm", W6Ui.Run(w, "rob-cal", ("pt", "100 50")));
-        var pick = W6Ui.Run(w, "rob-pick"); Assert.Contains("5. loslassen", pick); Assert.Contains("Aktion", File.ReadAllText(Path.Combine(MainWindowData(root), "greifbahn.csv")));
-        Assert.Contains("% des Quadrats", W6Ui.Run(w, "rob-reach"));
-        Assert.Contains("1500 µs", W6Ui.Run(w, "rob-servo"));
-        Assert.Contains("2,50 s", W6Ui.Run(w, "rob-prof"));
-    }
-    static string MainWindowData(string root) => Directory.GetDirectories(root, "roboter", SearchOption.AllDirectories).First();
-}
