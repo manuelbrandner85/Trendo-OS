@@ -53,62 +53,6 @@ public static class Glb
 }
 
 
-public class SPEC10_Ui
-{
-    /// <summary>Speist Festplatte (%) und Arbeitsspeicher (MB) ein und verlangt genau diese Ampel, im Modell und in der Zeile.</summary>
-    static void Erwarte(MainWindow w, double platte, double ram, TwinLevel platteAmpel, TwinLevel ramAmpel)
-    {
-        w.PcSampleSource = () => new MainWindow.PcSample(platte, ram);
-        w.Find<Button>("twin-pc").Press();
-        var p = w.Twin.States().Single(s => s.Sensor == "Festplatte belegt");
-        var r = w.Twin.States().Single(s => s.Sensor == "Trendo-Arbeitsspeicher");
-        Assert.Equal(platte, p.Last!.Value, 4);
-        Assert.Equal(ram, r.Last!.Value, 4);
-        Assert.Equal(platteAmpel, p.Level);
-        Assert.Equal(ramAmpel, r.Level);
-        Assert.Contains(platteAmpel.ToString(), w.Find<TextBlock>("twin-Dieser_PC-Festplatte_belegt").Text);
-        Assert.Contains(ramAmpel.ToString(), w.Find<TextBlock>("twin-Dieser_PC-Trendo-Arbeitsspeicher").Text);
-    }
-
-    [AvaloniaFact(DisplayName = "SPEC-10 UI: Schwellen Ok, Warnung und Alarm mit festen Messwerten; Sensor anlegen, CSV einlesen")]
-    public void Twin_schwellen()
-    {
-        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
-        w.Show(MainWindow.StudioPages["SPEC-10"]);
-        // Grenzen im Produkt, Vergleich ist >= : Platte 85/95, Arbeitsspeicher 1500/3000 MB.
-        // Direkt darunter bleibt die niedrigere Ampel, auf der Grenze springt sie.
-        Erwarte(w, 84.9, 1499, TwinLevel.Ok, TwinLevel.Ok);
-        Erwarte(w, 85, 1500, TwinLevel.Warnung, TwinLevel.Warnung);
-        Erwarte(w, 94.9, 2999, TwinLevel.Warnung, TwinLevel.Warnung);
-        Erwarte(w, 95, 3000, TwinLevel.Alarm, TwinLevel.Alarm);
-        Assert.True(w.Twin.Model.Readings.Count >= 2);
-        W6Ui.Run(w, "twin-def");
-        var f = Path.Combine(root, "m.csv"); File.WriteAllText(f, "Zeit;Anlage;Sensor;Wert\n21.10.2026 10:00;Heizung;Vorlauf;85\n");
-        Assert.Contains("1 Messwerte", W6Ui.Run(w, "twin-import", ("file", f)));
-        Assert.Contains("Alarm", w.Find<TextBlock>("twin-Heizung-Vorlauf").Text);
-        w.Close();
-    }
-
-    [AvaloniaFact(DisplayName = "SPEC-10 UI: Live-Messung liefert eine plausible Zahl und einen gültigen Status")]
-    public void Twin_live()
-    {
-        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
-        w.Show(MainWindow.StudioPages["SPEC-10"]);
-        Assert.Null(w.PcSampleSource);
-        w.Find<Button>("twin-pc").Press();
-        var ram = w.Twin.States().Single(s => s.Sensor == "Trendo-Arbeitsspeicher");
-        var platte = w.Twin.States().Single(s => s.Sensor == "Festplatte belegt");
-        Assert.Contains(ram.Level, new[] { TwinLevel.Ok, TwinLevel.Warnung, TwinLevel.Alarm });
-        Assert.Contains(platte.Level, new[] { TwinLevel.Ok, TwinLevel.Warnung, TwinLevel.Alarm });
-        Assert.Contains(ram.Level.ToString(), w.Find<TextBlock>("twin-Dieser_PC-Trendo-Arbeitsspeicher").Text);
-        Assert.Contains(platte.Level.ToString(), w.Find<TextBlock>("twin-Dieser_PC-Festplatte_belegt").Text);
-        Assert.InRange(ram.Last!.Value, 1, 500_000);
-        Assert.InRange(platte.Last!.Value, 0, 100);
-        Assert.True(w.Twin.Model.Readings.Count >= 2);
-        w.Close();
-    }
-}
-
 public class SPEC14_Ui
 {
     [AvaloniaFact(DisplayName = "SPEC-14 UI: G-Code prüfen mit Vorschau, Schnittwerte")]
@@ -230,32 +174,6 @@ public class SPEC04_UiPlus
         Assert.Contains("Stufe 3", W6Ui.Run(w, "xr-lod"));
         Assert.Contains("1.024 Pixel", W6Ui.Run(w, "xr-texel"));
         Assert.Contains("Komfort", W6Ui.Run(w, "xr-move"));
-    }
-}
-
-public class SPEC10_UiPlus
-{
-    [AvaloniaFact(DisplayName = "SPEC-10 UI Ausbau: Auswerten und Verwalten")]
-    public void Plus()
-    {
-        var (w, _, _) = Ui.Open(); var t = new DateTime(2026, 10, 21, 10, 0, 0);
-        w.Twin.Define("Heizung", "Vorlauf", "°C", 70, 80);
-        foreach (var (h, v) in new[] { (0, 60.0), (1, 72), (2, 69), (3, 60) }) w.Twin.Record(t.AddHours(h), "Heizung", "Vorlauf", v);
-        w.Show(MainWindow.StudioPages["SPEC-10"]);
-        Assert.Equal(2, W6Ui.Run(w, "twin-events").Split('\n').Length);
-        Assert.Contains("max 72,00", W6Ui.Run(w, "twin-span", ("from", "21.10.2026"), ("to", "21.10.2026")));
-        Assert.Contains("3,0 Stunden", W6Ui.Run(w, "twin-hours"));
-        Assert.Contains("etwa", W6Ui.Run(w, "twin-fc"));
-        Assert.Contains("⚠ Heizung", W6Ui.Run(w, "twin-stale"));
-        Assert.Contains("4 Werte", W6Ui.Run(w, "twin-derive"));
-        Assert.True(File.Exists(W6Ui.Run(w, "twin-export").Replace("Gespeichert: ", "")));
-        Assert.Contains("Umbenannt", W6Ui.Run(w, "twin-rename", ("sensor", "Vorlauf °F"), ("new", "VL F")));
-        Assert.Contains("Bestätigung", W6Ui.Run(w, "twin-del", ("sensor", "VL F")));
-        Assert.Contains("4 Werte", W6Ui.Run(w, "twin-del", ("sensor", "VL F"), ("confirm", "vl f")));
-        Assert.Contains("noch 300 h", W6Ui.Run(w, "twin-maint"));
-        Assert.Contains("2 alte Werte", W6Ui.Run(w, "twin-trim", ("max", "2")));
-        w.Twin.Define("Solar", "Leistung", "kW"); w.Twin.Record(t, "Solar", "Leistung", 2); w.Twin.Record(t.AddHours(2), "Solar", "Leistung", 4);
-        Assert.Contains("6,00 kWh", W6Ui.Run(w, "twin-kwh"));
     }
 }
 

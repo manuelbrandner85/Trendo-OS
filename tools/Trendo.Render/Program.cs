@@ -158,6 +158,10 @@ else if (shot == "seite")
         win.Learn.Import("Englisch", "Hund;dog\nKatze;cat\nHaus;house\nBaum;tree\nApfel;apple\nBuch;book"); win.LearnMode = lm == "auf" ? "lernen" : lm; win.LearnDeck = "Englisch";
         if (lm == "auf") win.LearnReveal(); else win.Show(page);
     }
+    if (page == "zwilling" && Environment.GetEnvironmentVariable("TRENDO_TWIN") is { Length: > 0 }) // Anlagen-Monitor mit Beispielanlagen
+    {
+        Trendo.Core.TwinDemo.Seed(win.Twin, DateTime.Now); win.TwinSelect("Kühlraum", "Temperatur");
+    }
     if (page == "ki-bibliothek" && Enum.TryParse<KiKind>(Environment.GetEnvironmentVariable("TRENDO_KIKIND"), out var kind)) win.KiLibraryShow(kind); // Art der KI-Bibliothek
 }
 else if (shot == "brief")
