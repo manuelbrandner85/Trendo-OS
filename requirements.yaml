@@ -1508,14 +1508,14 @@ improvements:
   decision: APPROVED
   implementation_status: NOT_STARTED
   test_status: NOT_RUN
-  note: Freigabe 2026-10-23; Originalbeschreibung der 50 Funktionen fehlt im Repo, Abgrenzung zu IMP-55 klären
+  note: Freigabe 2026-10-23; Originalbeschreibung der 50 Funktionen fehlt im Repo, Abgrenzung zu IMP-55 klären; BLOCKED_SOURCE (Entscheidung 31.10.2026)
 - id: IMP-96
   title: Ultimate Lighting & Acoustics Studio GODMODE
   approved_functions: 50
   decision: APPROVED
   implementation_status: NOT_STARTED
   test_status: NOT_RUN
-  note: Freigabe 2026-10-23; Originalbeschreibung der 50 Funktionen fehlt im Repo
+  note: Freigabe 2026-10-23; Originalbeschreibung der 50 Funktionen fehlt im Repo; BLOCKED_SOURCE (Entscheidung 31.10.2026)
 - id: IMP-97
   title: Invention, Prototyping & Product Validation
   approved_functions: 0
@@ -1523,6 +1523,118 @@ improvements:
   implementation_status: NOT_STARTED
   test_status: NOT_RUN
   note: OFFEN laut Entscheidungsdelta 2026-10-23; nicht als JA behandeln
+- id: IMP-98
+  title: "Full Native Program / Zero-Configuration TV & IPTV"
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  note: "Übergabe 98–113, Register freigegeben 31.10.2026; Teilbausteine laut docs/claude/audit_98_113/FUNKTIONEN_98_113_MATRIX.csv; begonnen: T-0240 (TV-Zugangsdaten); Zero-Config nur mit legalen, frei empfangbaren Quellen, abschaltbar, Rechte je Quelle geprüft"
+- id: IMP-99
+  title: "REA Professional Reconstruction"
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: "Übergabe 98–113, Register freigegeben 31.10.2026; Teilbausteine laut docs/claude/audit_98_113/FUNKTIONEN_98_113_MATRIX.csv"
+- id: IMP-100
+  title: "Office Native Suite"
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: "Übergabe 98–113, Register freigegeben 31.10.2026; Teilbausteine laut docs/claude/audit_98_113/FUNKTIONEN_98_113_MATRIX.csv"
+- id: IMP-101
+  title: "Media, Design & Broadcasting Native Suite"
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: "Übergabe 98–113, Register freigegeben 31.10.2026; Teilbausteine laut docs/claude/audit_98_113/FUNKTIONEN_98_113_MATRIX.csv"
+- id: IMP-102
+  title: "CAD, Engineering & Manufacturing Native Suite"
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: "Übergabe 98–113, Register freigegeben 31.10.2026; Teilbausteine laut docs/claude/audit_98_113/FUNKTIONEN_98_113_MATRIX.csv"
+- id: IMP-103
+  title: "Game, 3D & Interactive Production Native Suite"
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: "Übergabe 98–113, Register freigegeben 31.10.2026; Teilbausteine laut docs/claude/audit_98_113/FUNKTIONEN_98_113_MATRIX.csv"
+- id: IMP-104
+  title: "Web, App & Software Development Native Suite"
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: "Übergabe 98–113, Register freigegeben 31.10.2026; Teilbausteine laut docs/claude/audit_98_113/FUNKTIONEN_98_113_MATRIX.csv"
+- id: IMP-105
+  title: "Business, Finance & E-Commerce Native Suite"
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: "Übergabe 98–113, Register freigegeben 31.10.2026; Teilbausteine laut docs/claude/audit_98_113/FUNKTIONEN_98_113_MATRIX.csv; 105-05/105-22 (Bestand bei Lieferung, Erlös bei Zahlung) freigegeben – bestehender Test wird bewusst angepasst; CRM nur ohne Ausbau (IMP-86 NEIN)"
+- id: IMP-106
+  title: "Communication, Collaboration & Productivity Native Suite"
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: "Übergabe 98–113, Register freigegeben 31.10.2026; Teilbausteine laut docs/claude/audit_98_113/FUNKTIONEN_98_113_MATRIX.csv; Kontakt-/Ticket-Bausteine nur ohne CRM-Ausbau (IMP-86 NEIN)"
+- id: IMP-107
+  title: "System, Security & Device Fusion Native Suite"
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  note: "Übergabe 98–113, Register freigegeben 31.10.2026; Teilbausteine laut docs/claude/audit_98_113/FUNKTIONEN_98_113_MATRIX.csv; begonnen: T-0243 (Entpacken/Packen)"
+- id: IMP-108
+  title: "Knowledge, Research, Education & Publishing Native Suite"
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: "Übergabe 98–113, Register freigegeben 31.10.2026; Teilbausteine laut docs/claude/audit_98_113/FUNKTIONEN_98_113_MATRIX.csv; 108-49 KI-Umschreiben als Vorschlag zum Annehmen"
+- id: IMP-109
+  title: "Robotics, IoT, Geospatial & Digital Twin Native Suite"
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: "Übergabe 98–113, Register freigegeben 31.10.2026; Teilbausteine laut docs/claude/audit_98_113/FUNKTIONEN_98_113_MATRIX.csv"
+- id: IMP-110
+  title: "AI Agent Command & Autonomous Production"
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: "Übergabe 98–113, Register freigegeben 31.10.2026; Teilbausteine laut docs/claude/audit_98_113/FUNKTIONEN_98_113_MATRIX.csv; Ersatz-KI darf auch im Modus „nur lokal“ einspringen (Entscheidung 31.10.2026)"
+- id: IMP-111
+  title: "Cross-Studio Fusion & Platform Completion"
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: NOT_STARTED
+  test_status: NOT_RUN
+  note: "Übergabe 98–113, Register freigegeben 31.10.2026; Teilbausteine laut docs/claude/audit_98_113/FUNKTIONEN_98_113_MATRIX.csv"
+- id: IMP-112
+  title: "App Ecosystem, Plugin SDK & Compatibility"
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  note: "Übergabe 98–113, Register freigegeben 31.10.2026; Teilbausteine laut docs/claude/audit_98_113/FUNKTIONEN_98_113_MATRIX.csv; begonnen: T-0241 (Erweiterungen); Erweiterungen von jedem GitHub-Konto mit Rückfrage und Warnhinweis „ungeprüft“ (Entscheidung 31.10.2026)"
+- id: IMP-113
+  title: "VR, AR & Spatial Computing Native Suite"
+  approved_functions: 50
+  decision: APPROVED
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  note: "Übergabe 98–113, Register freigegeben 31.10.2026; Teilbausteine laut docs/claude/audit_98_113/FUNKTIONEN_98_113_MATRIX.csv; begonnen: T-0242 (glTF-Achsen), T-0244 (ehrliche XR-Texte); ersetzt/konkretisiert IMP-65 (ein XR-Studio); Optik Gold-Blau wie ganz Trendo"
 improvement_functions:
 - id: IMP-42-01
   improvement: IMP-42

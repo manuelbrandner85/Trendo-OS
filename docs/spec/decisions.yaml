@@ -578,7 +578,7 @@ items:
   title: "Ultimate VR, AR & Mixed Reality Studio GODMODE"
   functions: 50
   decision: APPROVED
-  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md)"
+  note: "Freigabe-Delta 2026-10-23 (docs/claude/TRENDO_GODMODE_ENTSCHEIDUNGEN_2026-10-23.md); 31.10.2026: konkretisiert durch IMP-113 – ein einziges XR-Studio, kein zweites"
 - id: IMP-66
   kind: improvement
   title: "Ultimate Education, Training & Learning Studio GODMODE"
@@ -758,16 +758,112 @@ items:
   title: "Ultimate Architecture & BIM Studio GODMODE"
   functions: 50
   decision: APPROVED
-  note: "Freigabe-Delta 2026-10-23; Funktionsliste fehlt im Repo, Abgrenzung zu IMP-55 klären"
+  note: "Freigabe-Delta 2026-10-23; Funktionsliste fehlt im Repo, Abgrenzung zu IMP-55 klären; BLOCKED_SOURCE – Funktionsliste fehlt, nicht erraten (Entscheidung 31.10.2026)"
 - id: IMP-96
   kind: improvement
   title: "Ultimate Lighting & Acoustics Studio GODMODE"
   functions: 50
   decision: APPROVED
-  note: "Freigabe-Delta 2026-10-23; Funktionsliste fehlt im Repo"
+  note: "Freigabe-Delta 2026-10-23; Funktionsliste fehlt im Repo; BLOCKED_SOURCE – Funktionsliste fehlt, nicht erraten (Entscheidung 31.10.2026)"
 - id: IMP-97
   kind: improvement
   title: "Invention, Prototyping & Product Validation"
   functions: 0
   decision: UNDECIDED
   note: "Freigabe-Delta 2026-10-23: OFFEN, nicht als JA behandeln"
+- id: IMP-98
+  kind: improvement
+  title: "Full Native Program / Zero-Configuration TV & IPTV"
+  functions: 50
+  decision: APPROVED
+  note: "Übergabe 98–113 (APPROVED_SPEC, 30.10.2026), Registereintrag freigegeben 31.10.2026; Quelle: Übergabe-MD SHA-256 f21b7ac0214d…; Ist-Abgleich docs/claude/audit_98_113; Zero-Config nur mit legalen, frei empfangbaren Quellen, abschaltbar, Rechte je Quelle geprüft"
+- id: IMP-99
+  kind: improvement
+  title: "REA Professional Reconstruction"
+  functions: 50
+  decision: APPROVED
+  note: "Übergabe 98–113 (APPROVED_SPEC, 30.10.2026), Registereintrag freigegeben 31.10.2026; Quelle: Übergabe-MD SHA-256 e4db09077dfa…; Ist-Abgleich docs/claude/audit_98_113"
+- id: IMP-100
+  kind: improvement
+  title: "Office Native Suite"
+  functions: 50
+  decision: APPROVED
+  note: "Übergabe 98–113 (APPROVED_SPEC, 30.10.2026), Registereintrag freigegeben 31.10.2026; Quelle: Übergabe-MD SHA-256 b8cbdac2e64d…; Ist-Abgleich docs/claude/audit_98_113"
+- id: IMP-101
+  kind: improvement
+  title: "Media, Design & Broadcasting Native Suite"
+  functions: 50
+  decision: APPROVED
+  note: "Übergabe 98–113 (APPROVED_SPEC, 30.10.2026), Registereintrag freigegeben 31.10.2026; Quelle: Übergabe-MD SHA-256 231bfecfffe4…; Ist-Abgleich docs/claude/audit_98_113"
+- id: IMP-102
+  kind: improvement
+  title: "CAD, Engineering & Manufacturing Native Suite"
+  functions: 50
+  decision: APPROVED
+  note: "Übergabe 98–113 (APPROVED_SPEC, 30.10.2026), Registereintrag freigegeben 31.10.2026; Quelle: Übergabe-MD SHA-256 d3fb6c71140c…; Ist-Abgleich docs/claude/audit_98_113"
+- id: IMP-103
+  kind: improvement
+  title: "Game, 3D & Interactive Production Native Suite"
+  functions: 50
+  decision: APPROVED
+  note: "Übergabe 98–113 (APPROVED_SPEC, 30.10.2026), Registereintrag freigegeben 31.10.2026; Quelle: Übergabe-MD SHA-256 41b8dc5e95ca…; Ist-Abgleich docs/claude/audit_98_113"
+- id: IMP-104
+  kind: improvement
+  title: "Web, App & Software Development Native Suite"
+  functions: 50
+  decision: APPROVED
+  note: "Übergabe 98–113 (APPROVED_SPEC, 30.10.2026), Registereintrag freigegeben 31.10.2026; Quelle: Übergabe-MD SHA-256 a7d60d7b5c4a…; Ist-Abgleich docs/claude/audit_98_113"
+- id: IMP-105
+  kind: improvement
+  title: "Business, Finance & E-Commerce Native Suite"
+  functions: 50
+  decision: APPROVED
+  note: "Übergabe 98–113 (APPROVED_SPEC, 30.10.2026), Registereintrag freigegeben 31.10.2026; Quelle: Übergabe-MD SHA-256 8406d9fd0ecb…; Ist-Abgleich docs/claude/audit_98_113; 105-05/105-22 (Bestand bei Lieferung, Erlös bei Zahlung) freigegeben – bestehender Test wird bewusst angepasst; CRM nur ohne Ausbau (IMP-86 NEIN)"
+- id: IMP-106
+  kind: improvement
+  title: "Communication, Collaboration & Productivity Native Suite"
+  functions: 50
+  decision: APPROVED
+  note: "Übergabe 98–113 (APPROVED_SPEC, 30.10.2026), Registereintrag freigegeben 31.10.2026; Quelle: Übergabe-MD SHA-256 3d0c22eea6fb…; Ist-Abgleich docs/claude/audit_98_113; Kontakt-/Ticket-Bausteine nur ohne CRM-Ausbau (IMP-86 NEIN)"
+- id: IMP-107
+  kind: improvement
+  title: "System, Security & Device Fusion Native Suite"
+  functions: 50
+  decision: APPROVED
+  note: "Übergabe 98–113 (APPROVED_SPEC, 30.10.2026), Registereintrag freigegeben 31.10.2026; Quelle: Übergabe-MD SHA-256 c7840acca015…; Ist-Abgleich docs/claude/audit_98_113"
+- id: IMP-108
+  kind: improvement
+  title: "Knowledge, Research, Education & Publishing Native Suite"
+  functions: 50
+  decision: APPROVED
+  note: "Übergabe 98–113 (APPROVED_SPEC, 30.10.2026), Registereintrag freigegeben 31.10.2026; Quelle: Übergabe-MD SHA-256 100217d18e65…; Ist-Abgleich docs/claude/audit_98_113; 108-49 KI-Umschreiben als Vorschlag zum Annehmen"
+- id: IMP-109
+  kind: improvement
+  title: "Robotics, IoT, Geospatial & Digital Twin Native Suite"
+  functions: 50
+  decision: APPROVED
+  note: "Übergabe 98–113 (APPROVED_SPEC, 30.10.2026), Registereintrag freigegeben 31.10.2026; Quelle: Übergabe-MD SHA-256 549de4eb367a…; Ist-Abgleich docs/claude/audit_98_113"
+- id: IMP-110
+  kind: improvement
+  title: "AI Agent Command & Autonomous Production"
+  functions: 50
+  decision: APPROVED
+  note: "Übergabe 98–113 (APPROVED_SPEC, 30.10.2026), Registereintrag freigegeben 31.10.2026; Quelle: Übergabe-MD SHA-256 ee4c0a9094d0…; Ist-Abgleich docs/claude/audit_98_113; Ersatz-KI darf auch im Modus „nur lokal“ einspringen (Entscheidung 31.10.2026)"
+- id: IMP-111
+  kind: improvement
+  title: "Cross-Studio Fusion & Platform Completion"
+  functions: 50
+  decision: APPROVED
+  note: "Übergabe 98–113 (APPROVED_SPEC, 30.10.2026), Registereintrag freigegeben 31.10.2026; Quelle: Übergabe-MD SHA-256 ed1749e00064…; Ist-Abgleich docs/claude/audit_98_113"
+- id: IMP-112
+  kind: improvement
+  title: "App Ecosystem, Plugin SDK & Compatibility"
+  functions: 50
+  decision: APPROVED
+  note: "Übergabe 98–113 (APPROVED_SPEC, 30.10.2026), Registereintrag freigegeben 31.10.2026; Quelle: Übergabe-MD SHA-256 b76d32102041…; Ist-Abgleich docs/claude/audit_98_113; Erweiterungen von jedem GitHub-Konto mit Rückfrage und Warnhinweis „ungeprüft“ (Entscheidung 31.10.2026)"
+- id: IMP-113
+  kind: improvement
+  title: "VR, AR & Spatial Computing Native Suite"
+  functions: 50
+  decision: APPROVED
+  note: "Übergabe 98–113 (APPROVED_SPEC, 30.10.2026), Registereintrag freigegeben 31.10.2026; Quelle: Übergabe-MD SHA-256 236cc41617c1…; Ist-Abgleich docs/claude/audit_98_113; ersetzt/konkretisiert IMP-65 (ein XR-Studio); Optik Gold-Blau wie ganz Trendo"

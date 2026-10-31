@@ -1,0 +1,13 @@
+Bestanden!   : Fehler:     0, erfolgreich:    15, übersprungen:     0, gesamt:    15, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+[xUnit.net 00:00:05.42]     X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku [SKIP]
+  Übersprungen X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku [1 ms]
+--
+Bestanden!   : Fehler:     0, erfolgreich:   855, übersprungen:     3, gesamt:   858, Dauer: 45 s - Trendo.Core.Tests.dll (net10.0)
+[xUnit.net 00:06:45.46]     T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+  Übersprungen T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [1 ms]
+--
+Bestanden!   : Fehler:     0, erfolgreich:   436, übersprungen:     3, gesamt:   439, Dauer: 16 m 55 s - Trendo.App.Tests.dll (net10.0)
+dotnet-exit 0
+Ran 8 tests in 9.061s
+
+OK

@@ -34,3 +34,20 @@ Nur Manuel entscheidet. Nichts davon ist in `requirements.yaml` oder `docs/spec/
 
 ## D. Unveränderlich (bestätigt, nicht berührt)
 IMP-86 REJECTED · IMP-97 UNDECIDED · frühe 23/25/34 NEIN · 35 OFFEN · Language Studio 2.0 NEIN · SPEC-07 abgelehnt · 120-Stunden-Forensikregel (`ForensicsLab.MaxLife`) · 114+ pausiert.
+
+## E. Entscheidungen von Manuel am 31.10.2026 (im Chat)
+| # | Frage | Entscheidung | Umgesetzt |
+|---|---|---|---|
+| A1 | 98–113 ins Register | **JA** – als APPROVED, Status ehrlich | `decisions.yaml`, `requirements.yaml`, `IMPROVEMENTS.csv` (IMP-98…113); `DecisionRegisterTests` prüft 13–113 |
+| A2 | 95/96 ohne Funktionsliste | **Blockiert**, bis Unterlagen da sind – nichts erraten | Notiz `BLOCKED_SOURCE` an IMP-95/96 |
+| B1/B2 | 105 und 110 freigegeben? | **Beide JA** | Register |
+| B3 | 113 vs. IMP-65 | **113 ersetzt/konkretisiert 65** – ein XR-Studio | Notiz an IMP-65 und IMP-113 |
+| B4 | Farbe in 113 | **Gold-Blau bleibt** für ganz Trendo | Notiz an IMP-113 |
+| C1 | Zero-Config-Sender | **Nur legale, frei empfangbare Quellen**, abschaltbar, Rechte je Quelle geprüft | Notiz an IMP-98 (noch nicht gebaut) |
+| C2 | Shop: Bestand/Erlös | **Wie 105** (Bestand bei Lieferung, Erlös bei Zahlung); bestehender Test wird bewusst angepasst | Notiz an IMP-105 (noch nicht gebaut) |
+| C3 | CRM-Bausteine | **Nur ohne CRM-Ausbau** (keine Pipeline, kein Service-Desk, keine SLA) | Notiz an IMP-105/106 |
+| C4 | KI-Umschreiben | **Vorschlag zum Annehmen** statt sofort ersetzen | Notiz an IMP-108 (noch nicht gebaut) |
+| C7 | Ersatz-KI im Modus „nur lokal“ | **Bleibt wie heute** – darf einspringen | Notiz an IMP-110 |
+| C10 | Erweiterungsquellen | **Jedes GitHub-Konto**, mit Rückfrage und Hinweis „ungeprüft“ (Stand T-0241) | Notiz an IMP-112 |
+
+Unverändert gesperrt: IMP-86 REJECTED, IMP-97 UNDECIDED, 23/25/34 NEIN, 35 OFFEN, Language Studio 2.0 NEIN, SPEC-07 abgelehnt, 114+ pausiert, 120-Stunden-Forensikregel.

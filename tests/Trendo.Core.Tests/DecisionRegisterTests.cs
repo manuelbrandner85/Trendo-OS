@@ -32,16 +32,16 @@ public class DecisionRegisterTests
     {
         var d = Load(Path.Combine(AppContext.BaseDirectory, "decisions.yaml"));
         foreach (var (k, v) in Locked) { Assert.True(d.ContainsKey(k), k + " fehlt"); Assert.Equal(v, d[k]); }
-        for (var n = 13; n <= 97; n++) Assert.True(d.ContainsKey($"IMP-{n}"), $"IMP-{n} fehlt");
+        for (var n = 13; n <= 113; n++) Assert.True(d.ContainsKey($"IMP-{n}"), $"IMP-{n} fehlt");
         Assert.All(d.Values, v => Assert.Contains(v, new[] { "APPROVED", "REJECTED", "UNDECIDED" }));
     }
 
-    [Fact(DisplayName = "Register: Verbesserungen 13–97 in requirements.yaml, Abgelehntes/Offenes nie begonnen")]
+    [Fact(DisplayName = "Register: Verbesserungen 13–113 in requirements.yaml, Abgelehntes/Offenes nie begonnen")]
     public void Improvements_follow_decisions()
     {
         var dec = Load(Path.Combine(AppContext.BaseDirectory, "decisions.yaml"));
         var lines = File.ReadAllLines(Path.Combine(AppContext.BaseDirectory, "requirements.yaml"));
-        for (var n = 13; n <= 97; n++)
+        for (var n = 13; n <= 113; n++)
         {
             var i = Array.FindIndex(lines, l => l.Trim() == $"- id: IMP-{n}");
             Assert.True(i >= 0, $"IMP-{n} fehlt in requirements.yaml");
