@@ -1,55 +1,181 @@
+using System.Globalization;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Layout;
+using Avalonia.Media;
 using Trendo.Core;
+using Trendo.Core.Karten;
+using Trendo.Core.Programs;
 
 namespace Trendo.App;
 
-/// <summary>SPEC-13: Karten & Geodaten.</summary>
+/// <summary>SPEC-13 / T-0260: Karten & Geodaten als echtes Programm „Karten & Touren“ – Karte (OpenStreetMap, zwischengespeichert; offline Gitter),
+/// GPX-Spuren mit Höhenprofil und Kennzahlen, Routen zeichnen, Wegpunkte, Strecken und Flächen messen, Export GPX/GeoJSON/KML.
+/// Die früheren Rechner (Koordinaten, UTM, Richtung, Zielpunkt, Wanderzeit) rechnen live. Ersetzt die Formularseite.</summary>
 public partial class MainWindow
 {
-    private void InitSpec13() => RegisterTab(FachTabs, "karten", "Karten & GPS", "SPEC-13", GeoView, "karte", "gps", "gpx", "wandern", "route", "strecke", "koordinaten", "utm", "geojson", "höhenmeter");
+    const string MK = "karten";
+    public readonly MapViewState MapState = new();
+    private TileCache? _tileCache;
+    // Kacheln nur online und nicht im abgeschotteten Testbetrieb; das Screenshot-Werkzeug darf sie mit TRENDO_TILES=1 laden
+    TileCache Tiles => _tileCache ??= new TileCache(Path.Combine(_core.DataRoot, "karten", "kacheln"), !_core.Offline && (!_opt.Isolated || Environment.GetEnvironmentVariable("TRENDO_TILES") == "1"));
+    static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
+    static readonly string[] MapColors = ["#F97316", "#3B82F6", "#22C55E", "#E11D48", "#A855F7", "#14B8A6", "#EAB308"];
 
-    private Control GeoView()
+    static readonly (string Id, string Label, string Glyph, string Tip)[] MapTools =
+    [
+        ("auswahl", "Auswahl", "M4,2 L4,20 L9,15 L12,22 L15,21 L12,14 L19,14 Z", "Karte ziehen, Spuren/Punkte anklicken (Esc)"),
+        ("route", "Route", "M3,20 C8,4 14,22 21,5 M3,20 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0 M21,5 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0", "Route Punkt für Punkt zeichnen"),
+        ("wegpunkt", "Punkt", "M12,22 L5,11 A7,7 0 1,1 19,11 Z M12,8 m-2,0 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0", "Wegpunkt setzen"),
+        ("messen", "Messen", "M2,18 L22,6 M5,13 L7,16 M10,10 L12,13 M15,7 L17,10", "Strecke messen"),
+        ("flaeche", "Fläche", "M3,18 L8,4 L20,7 L18,20 Z", "Fläche messen (z. B. Grundstück)"),
+    ];
+
+    private void InitSpec13() => RegisterProgram(FachTabs, new ProgramSpec(MK, "SPEC-13", "Karten & Touren")
     {
-        var sp = new StackPanel { Spacing = 8 };
-        sp.Children.Add(FachTool("geo-gpx", "GPS-Strecke auswerten", "GPX-Datei aus Uhr, Handy-App (Komoot, Strava, OsmAnd) oder Navi. Trendo speichert daneben GeoJSON (für QGIS, uMap) und ein Streckenbild.",
-            [("file", "GPX-Datei", "")],
-            v =>
-            {
-                var f = v("file").Trim().Trim('"'); var (trk, wpt) = Geo.ReadGpx(f);
-                var lines = new List<string>();
-                if (trk.Count > 0)
-                {
-                    var s = Geo.Analyse(trk);
-                    lines.Add($"{Fach.F(s.DistanceKm, 2)} km · ↑ {Fach.F(s.AscentM, 0)} m · ↓ {Fach.F(s.DescentM, 0)} m · Höhe {Fach.F(s.MinEle, 0)}–{Fach.F(s.MaxEle, 0)} m · {s.Points} Punkte");
-                    if (s.Duration is { } d) lines.Add($"Dauer {(int)d.TotalHours}:{d.Minutes:00} h · Schnitt {Fach.F(s.AvgKmh ?? 0, 1)} km/h");
-                    File.WriteAllText(Path.ChangeExtension(f, ".svg"), Geo.Svg(trk)); lines.Add("Streckenbild: " + Path.ChangeExtension(f, ".svg"));
-                }
-                if (wpt.Count > 0) lines.Add($"{wpt.Count} Wegpunkt(e): {string.Join(", ", wpt.Take(5).Select(w => w.Name ?? "?"))}");
-                var gj = Path.ChangeExtension(f, ".geojson"); File.WriteAllText(gj, Geo.GeoJson(trk, wpt, Path.GetFileNameWithoutExtension(f)));
-                lines.Add("Gespeichert: " + gj); return string.Join("\n", lines);
-            }, "Auswerten"));
-        sp.Children.Add(FachTool("geo-coord", "Koordinaten umrechnen", "Dezimalgrad („48,1372 11,5756“) oder Grad/Minuten/Sekunden („48°8'14\"N 11°34'32\"E“).",
-            [("c", "Koordinate", "48,1372 11,5756")],
-            v => { var (lat, lon) = Geo.ParseCoord(v("c")); var u = Geo.Utm(lat, lon); return $"Dezimal: {lat.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture)}, {lon.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture)}\nGrad/Min/Sek: {Geo.Dms(lat, lon)}\nUTM: {u.Zone}{u.Band} {Fach.F(u.Easting, 0)} O / {Fach.F(u.Northing, 0)} N"; }, "Umrechnen"));
-        sp.Children.Add(FachTool("geo-dist", "Entfernung (Luftlinie)", "Zwei Koordinaten.",
-            [("a", "Von", "52,5200 13,4050"), ("b", "Nach", "48,1372 11,5756")],
-            v => { var (la, oa) = Geo.ParseCoord(v("a")); var (lb, ob) = Geo.ParseCoord(v("b")); return $"Luftlinie: {Fach.F(Geo.Haversine(new(la, oa), new(lb, ob)), 1)} km"; }, "Messen"));
-        sp.Children.Add(FachGroup("geo-nav", "Navigieren", false,
-            FachTool("geo-utm", "UTM → Grad", "Zone, Ost- und Nordwert, z. B. von einer Karte oder einem Vermessungsplan.", [("z", "Zone", "32"), ("e", "Ost (m)", "691607"), ("n", "Nord (m)", "5334760"), ("h", "Halbkugel (N/S)", "N")],
-                v => { var (la, lo) = GeoPlus.UtmToLatLon((int)Fach.Num(v("z")), Fach.Num(v("e")), Fach.Num(v("n")), !v("h").Trim().StartsWith("S", StringComparison.OrdinalIgnoreCase)); return $"{la.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture)}, {lo.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture)} · {Geo.Dms(la, lo)}"; }, "Umrechnen"),
-            FachTool("geo-bear", "Richtung", "In welche Himmelsrichtung liegt das Ziel?", [("a", "Von", "52,5200 13,4050"), ("b", "Nach", "48,1372 11,5756")],
-                v => { var (la, oa) = Geo.ParseCoord(v("a")); var (lb, ob) = Geo.ParseCoord(v("b")); var d = GeoPlus.Bearing(new(la, oa), new(lb, ob)); return $"Richtung {Fach.F(d, 1)}° ({GeoPlus.Compass(d)}), {Fach.F(Geo.Haversine(new(la, oa), new(lb, ob)), 1)} km"; }, "Peilen"),
-            FachTool("geo-dest", "Zielpunkt", "Wo lande ich, wenn ich X km in Richtung Y gehe?", [("a", "Start", "48,1372 11,5756"), ("deg", "Richtung (°)", "90"), ("km", "Entfernung (km)", "10")],
-                v => { var (la, oa) = Geo.ParseCoord(v("a")); var p = GeoPlus.Destination(new(la, oa), Fach.Num(v("deg")), Fach.Num(v("km"))); return $"Ziel: {p.Lat.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture)}, {p.Lon.ToString("0.000000", System.Globalization.CultureInfo.InvariantCulture)}"; }, "Berechnen"),
-            FachTool("geo-area", "Fläche", "Eckpunkte des Grundstücks, je Punkt eine Koordinate, getrennt mit „/“.", [("p", "Eckpunkte", "48,0000 11,0000 / 48,0000 11,0010 / 48,0010 11,0010 / 48,0010 11,0000")],
-                v => { var pts = v("p").Split('/').Select(x => Geo.ParseCoord(x.Trim())).Select(c => new GeoPoint(c.Lat, c.Lon)).ToList(); var a = GeoPlus.AreaM2(pts); return $"Fläche: {Fach.F(a, 0)} m² = {Fach.F(a / 10000, 3)} ha"; }, "Messen")));
-        sp.Children.Add(FachGroup("geo-tour", "Tour planen", false,
-            FachTool("geo-time", "Wanderzeit", "Richtzeit nach DIN 33466 (ohne Pausen).", [("km", "Strecke (km)", "12"), ("up", "Aufstieg (m)", "800"), ("down", "Abstieg (m)", "800")],
-                v => { var t = GeoPlus.HikingTime(Fach.Num(v("km")), Fach.Num(v("up")), Fach.Num(v("down"))); return $"Gehzeit ca. {(int)t.TotalHours}:{t.Minutes:00} h (ohne Pausen)"; }, "Berechnen"),
-            FachTool("geo-prof", "Höhenprofil & Gehzeit", "GPX-Datei mit Höhen. Speichert ein Höhenprofil als Bild daneben.", [("file", "GPX-Datei", "")],
-                v => { var f = v("file").Trim().Trim('"'); var (t, _) = Geo.ReadGpx(f); var s = Geo.Analyse(t); var o = Path.ChangeExtension(f, ".profil.svg"); File.WriteAllText(o, GeoPlus.ProfileSvg(t)); var h = GeoPlus.HikingTime(s.DistanceKm, s.AscentM, s.DescentM); return $"Gehzeit nach DIN ca. {(int)h.TotalHours}:{h.Minutes:00} h\nGespeichert: {o}"; }, "Erstellen"),
-            FachTool("geo-simp", "Vereinfachen & GPX speichern", "Weniger Punkte für Navis und Uhren. Toleranz in Metern.", [("file", "GPX-Datei", ""), ("tol", "Toleranz (m)", "5")],
-                v => { var f = v("file").Trim().Trim('"'); var (t, w) = Geo.ReadGpx(f); var s = GeoPlus.Simplify(t, Fach.Num(v("tol"))); var o = Path.ChangeExtension(f, ".einfach.gpx"); File.WriteAllText(o, GeoPlus.WriteGpx(s, w, Path.GetFileNameWithoutExtension(f))); return $"{t.Count} → {s.Count} Punkte\nGespeichert: {o}"; }, "Vereinfachen")));
-        return FachPage("Karten & GPS", sp);
+        Sentence = "Touren planen und auswerten – Karte, GPS-Spuren mit Höhenprofil, Routen, Wegpunkte, Strecken und Flächen messen.",
+        Folder = "Karten",
+        FillHeight = true,
+        Templates =
+        [
+            new("leer", "Leere Karte", "Deutschland – Route zeichnen oder GPX laden", () => MapDocNode(new MapDoc())),
+            new("tour", "Beispieltour", "Erfundener Rundweg mit Höhenprofil und zwei Wegpunkten", () => MapDocNode(MapDoc.Template("tour"))),
+        ],
+        Ribbon =
+        [
+            ("Karte", [
+                new ProgramCmd("mk-tiles", "Hintergrund an/aus", _ => MapState.Tiles = !MapState.Tiles, false, "OpenStreetMap-Karte oder nur Gitter"),
+                new ProgramCmd("mk-fit", "Alles zeigen", _ => MapState.Fitted = false, false, "Ansicht auf alle Spuren und Punkte"),
+            ]),
+        ],
+        Exports =
+        [
+            new("gpx", "GPX (Navi, Uhr)", ".gpx", (d, f) => { File.WriteAllText(f, MapDoc.From(d.Data).Gpx()); return f; }),
+            new("geojson", "GeoJSON (QGIS)", ".geojson", (d, f) => { File.WriteAllText(f, MapDoc.From(d.Data).GeoJson()); return f; }),
+            new("kml", "KML (Google Earth)", ".kml", (d, f) => { File.WriteAllText(f, MapDoc.From(d.Data).Kml()); return f; }),
+        ],
+        Workspace = MapWorkspace,
+        Properties = MapProperties,
+        Status = d => { var m = MapDoc.From(d.Data); var km = m.Tracks.Sum(t => t.Stats().DistanceKm); return $"{MapTools.FirstOrDefault(t => t.Id == MapState.Tool).Label} · {m.Tracks.Count} Spuren ({km:0.0} km) · {m.Waypoints.Count} Wegpunkte · {m.Areas.Count} Flächen · Karte {(MapState.Tiles ? (Tiles.Online ? "OpenStreetMap" : "offline (Zwischenspeicher)") : "aus")}"; },
+        Help = "Mausrad zoomt, Ziehen verschiebt die Karte. Route/Fläche: Punkte klicken, Doppelklick oder Enter beendet. Messen: Punkte klicken, Esc löscht. "
+             + "Spur oder Wegpunkt anklicken für Höhenprofil, Werte und Namen. GPX-Dateien rechts unter „GPX laden“. Kartendaten © OpenStreetMap-Mitwirkende.",
+    }, "karte", "gps", "gpx", "wandern", "route", "strecke", "koordinaten", "utm", "geojson", "höhenmeter", "tour", "kml");
+
+    static System.Text.Json.Nodes.JsonObject MapDocNode(MapDoc m) { var o = new System.Text.Json.Nodes.JsonObject(); m.WriteTo(o); return o; }
+
+    public void MapEdit(string label, Action<MapDoc> change)
+    {
+        var d = ProgramActive(MK) ?? throw new InvalidOperationException("Es ist keine Karte offen.");
+        MapState.Hint = "";
+        ProgramRun(MK, () => d.Edit(label, x => { var m = MapDoc.From(x); change(m); m.WriteTo(x); }));
+    }
+
+    public void MapTool(string tool) { MapState.Tool = tool; MapState.Draft.Clear(); MapState.Hint = ""; if (tool != "auswahl") MapState.Selected = null; Show(MK); }
+    public void MapSelect(string? id) { MapState.Selected = id; Show(MK); }
+
+    public void MapImportGpx(string path)
+    {
+        if (!File.Exists(path)) throw new FileNotFoundException("Diese GPX-Datei gibt es nicht.");
+        MapTrack? t = null;
+        MapEdit("GPX laden", m => { t = m.ImportGpx(path); });
+        MapState.Fitted = false; // nach dem Laden auf die neue Spur einpassen
+        MapState.Selected = t?.Id;
+        _progMsg[MK] = t is null ? "Wegpunkte geladen." : $"„{t.Name}“ geladen – {t.Stats().DistanceKm:0.0} km.";
+        Show(MK);
+    }
+
+    private Control MapWorkspace(ProgramDocument d)
+    {
+        var m = MapDoc.From(d.Data);
+        if (MapState.DocId != d.Id) { MapState.DocId = d.Id; MapState.Fitted = false; MapState.Lat = double.NaN; MapState.Selected = null; MapState.Draft.Clear(); } // anderes Dokument: Ansicht neu
+        var tools = new WrapPanel { Name = "mk-tools", Width = 112 };
+        foreach (var (id, label, glyph, tip) in MapTools)
+        {
+            var on = MapState.Tool == id; var tid = id;
+            var b = new Button { Name = "mk-tool-" + id, Width = 53, Height = 46, Padding = new Thickness(1), Margin = new Thickness(0, 0, 3, 3), CornerRadius = new CornerRadius(10), Focusable = false,
+                Background = on ? Accent : Brush.Parse(C("#1AFFFFFF", "#0D000000")), BorderBrush = on ? Brush.Parse("#F5A524") : Edge, BorderThickness = new Thickness(on ? 1.5 : 1),
+                Content = new StackPanel { Spacing = 2, HorizontalAlignment = HorizontalAlignment.Center, Children = {
+                    new Avalonia.Controls.Shapes.Path { Data = Geometry.Parse(glyph), Stroke = on ? Brushes.White : Text, StrokeThickness = 1.6, Fill = Brushes.Transparent, Stretch = Stretch.Uniform, Width = 18, Height = 18, HorizontalAlignment = HorizontalAlignment.Center },
+                    new TextBlock { Text = label, FontSize = 10, Foreground = on ? Brushes.White : Text, HorizontalAlignment = HorizontalAlignment.Center } } } };
+            ToolTip.SetTip(b, tip); b.Click += (_, _) => MapTool(tid); tools.Children.Add(b);
+        }
+        var canvas = new MapCanvas(m, MapState, Tiles, MapEdit, MapSelect) { Name = "mk-canvas", MinHeight = 160 };
+        var frame = new Border { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = canvas };
+        return new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,10,*"), Children = { new ScrollViewer { Content = tools }, Pos(frame, 2) } };
+    }
+
+    private Control MapProperties(ProgramDocument d)
+    {
+        var m = MapDoc.From(d.Data); var sp = new StackPanel { Spacing = 5 }; var sel = MapState.Selected;
+        Button Act2(string name, string label, Action go) { var b = new Button { Name = name, Content = label, Padding = new Thickness(10, 4), Margin = new Thickness(0, 4, 4, 0) }; b.Click += (_, _) => go(); return b; }
+        void Fact(string label, string value) => sp.Children.Add(Row(P(label, null, 12), new TextBlock { Text = value, Foreground = Text, FontSize = 12, FontWeight = FontWeight.SemiBold }));
+        void NameBox(string current, Action<MapDoc, string> set)
+        {
+            var t = new TextBox { Name = "mk-p-name", Text = current };
+            void Commit() { if (!string.IsNullOrWhiteSpace(t.Text) && t.Text != current) MapEdit("Umbenennen", x => set(x, t.Text!.Trim())); }
+            t.LostFocus += (_, _) => Commit(); OnEnter(t, Commit); sp.Children.Add(t);
+        }
+        string Coord(double lat, double lon) { var u = Geo.Utm(lat, lon); return $"{lat.ToString("0.000000", Inv)}, {lon.ToString("0.000000", Inv)}\n{Geo.Dms(lat, lon)}\nUTM {u.Zone}{u.Band} {u.Easting:0} {u.Northing:0}"; }
+
+        if (sel is not null && m.Tracks.FirstOrDefault(t => t.Id == sel) is { } tr)
+        {
+            var st = tr.Stats();
+            sp.Children.Add(H(tr.Planned ? "Route" : "Spur", 13)); NameBox(tr.Name, (x, v) => x.Tracks.First(t => t.Id == sel).Name = v);
+            var colors = new WrapPanel();
+            foreach (var c in MapColors) { var cc = c; var b = new Button { Name = "mk-color-" + c.TrimStart('#'), Width = 22, Height = 22, Margin = new Thickness(0, 0, 4, 4), Padding = new Thickness(0), Background = Brush.Parse(c), BorderBrush = Brushes.White, BorderThickness = new Thickness(c == tr.Color ? 2 : 0), CornerRadius = new CornerRadius(11) }; b.Click += (_, _) => MapEdit("Farbe", x => x.Tracks.First(t => t.Id == sel).Color = cc); colors.Children.Add(b); }
+            sp.Children.Add(colors);
+            Fact("Länge", $"{st.DistanceKm:0.00} km");
+            if (st.MaxEle > st.MinEle || tr.Points.Any(p => p.Ele is not null)) { Fact("Aufstieg / Abstieg", $"↑ {st.AscentM:0} m · ↓ {st.DescentM:0} m"); Fact("Höhe", $"{st.MinEle:0} – {st.MaxEle:0} m"); }
+            if (st.Duration is { } dur) Fact("Dauer / Schnitt", $"{(int)dur.TotalHours}:{dur.Minutes:00} h · {st.AvgKmh ?? 0:0.0} km/h");
+            var hike = GeoPlus.HikingTime(st.DistanceKm, st.AscentM, st.DescentM); Fact("Gehzeit (DIN 33466)", $"{(int)hike.TotalHours}:{hike.Minutes:00} h ohne Pausen");
+            Fact("Punkte", tr.Points.Count.ToString());
+            if (tr.Points.Any(p => p.Ele is not null)) sp.Children.Add(new Border { Name = "mk-profile", Height = 110, CornerRadius = new CornerRadius(8), Background = Brush.Parse("#33081329"), Child = new ElevationProfile(tr.Points, tr.Color) });
+            sp.Children.Add(new WrapPanel { Children = {
+                Act2("mk-simplify", "Vereinfachen (5 m)", () => MapEdit("Vereinfachen", x => { var t = x.Tracks.First(y => y.Id == sel); t.Points = GeoPlus.Simplify(t.Points.Select(p => p.Geo()).ToList(), 5).Select(MapPoint.From).ToList(); })),
+                Act2("mk-reverse", "Umkehren", () => MapEdit("Umkehren", x => x.Tracks.First(y => y.Id == sel).Points.Reverse())),
+                Act2("mk-zoom", "Hinzoomen", () => { var t = new MapDoc(); t.FitTo(tr.Points.Select(p => (p.Lat, p.Lon))); (MapState.Lat, MapState.Lon, MapState.Zoom) = (t.CenterLat, t.CenterLon, t.Zoom); Show(MK); }),
+                Act2("mk-del", "Löschen", () => { MapState.Selected = null; MapEdit("Löschen", x => x.Remove(sel)); }) } });
+        }
+        else if (sel is not null && m.Waypoints.FirstOrDefault(w => w.Id == sel) is { } wp)
+        {
+            sp.Children.Add(H("Wegpunkt", 13)); NameBox(wp.Name, (x, v) => x.Waypoints.First(w => w.Id == sel).Name = v);
+            sp.Children.Add(new SelectableTextBlock { Name = "mk-coord", Text = Coord(wp.Lat, wp.Lon), Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
+            if (wp.Ele is { } e) Fact("Höhe", $"{e:0} m");
+            sp.Children.Add(Act2("mk-del", "Löschen", () => { MapState.Selected = null; MapEdit("Löschen", x => x.Remove(sel)); }));
+        }
+        else if (sel is not null && m.Areas.FirstOrDefault(a => a.Id == sel) is { } ar)
+        {
+            sp.Children.Add(H("Fläche", 13)); NameBox(ar.Name, (x, v) => x.Areas.First(a => a.Id == sel).Name = v);
+            Fact("Fläche", $"{ar.AreaM2:0} m² = {ar.AreaM2 / 10000:0.000} ha"); Fact("Umfang", $"{ar.PerimeterKm * 1000:0} m"); Fact("Eckpunkte", ar.Points.Count.ToString());
+            sp.Children.Add(Act2("mk-del", "Löschen", () => { MapState.Selected = null; MapEdit("Löschen", x => x.Remove(sel)); }));
+        }
+        else
+        {
+            sp.Children.Add(H("Karte", 13));
+            var k = 0;
+            foreach (var t in m.Tracks) { var id = t.Id; var b = new Button { Name = $"mk-track-{k++}", HorizontalAlignment = HorizontalAlignment.Stretch, Background = Brushes.Transparent, Padding = new Thickness(6, 3),
+                Content = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = { new Border { Width = 12, Height = 4, Background = Brush.Parse(t.Color), Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center }, Pos(new TextBlock { Text = t.Name, Foreground = Text, FontSize = 12 }, 1), Pos(P($"{t.Stats().DistanceKm:0.0} km", null, 11), 2) } } };
+                b.Click += (_, _) => MapSelect(id); sp.Children.Add(b); }
+            k = 0;
+            foreach (var w in m.Waypoints) { var id = w.Id; var b = new Button { Name = $"mk-wpt-{k++}", HorizontalAlignment = HorizontalAlignment.Stretch, Background = Brushes.Transparent, Padding = new Thickness(6, 3), Content = new TextBlock { Text = "📍 " + w.Name, Foreground = Text, FontSize = 12 } }; b.Click += (_, _) => MapSelect(id); sp.Children.Add(b); }
+            if (m.Tracks.Count + m.Waypoints.Count == 0) sp.Children.Add(P("Noch leer – Route zeichnen, Wegpunkt setzen oder eine GPX-Datei laden.", null, 11));
+            sp.Children.Add(H("GPX laden", 12));
+            var gpx = Field("mk-gpx-path", "GPX-Datei (Uhr, Handy, Navi)", 250); sp.Children.Add(gpx);
+            sp.Children.Add(Act2("mk-gpx-load", "Laden", () => ProgramRun(MK, () => MapImportGpx(Need(gpx, "die GPX-Datei")))));
+            var calcs = new StackPanel { Spacing = 10 };
+            LiveCalc(calcs, "geo-coord", "Koordinaten umrechnen", [("c", "Koordinate", "48,1372 11,5756", null)],
+                v => { var (lat, lon) = Geo.ParseCoord(v("c")); return Coord(lat, lon); });
+            LiveCalc(calcs, "geo-dist", "Entfernung & Richtung", [("a", "Von", "52,5200 13,4050", null), ("b", "Nach", "48,1372 11,5756", null)],
+                v => { var (la, oa) = Geo.ParseCoord(v("a")); var (lb, ob) = Geo.ParseCoord(v("b")); var dg = GeoPlus.Bearing(new(la, oa), new(lb, ob)); return $"Luftlinie {Fach.F(Geo.Haversine(new(la, oa), new(lb, ob)), 1)} km · Richtung {Fach.F(dg, 1)}° ({GeoPlus.Compass(dg)})"; });
+            LiveCalc(calcs, "geo-utm", "UTM → Grad", [("z", "Zone", "32", null), ("e", "Ost (m)", "691607", null), ("n", "Nord (m)", "5334760", null), ("h", "Halbkugel", "N", ["N", "S"])],
+                v => { var (la, lo) = GeoPlus.UtmToLatLon((int)Fach.Num(v("z")), Fach.Num(v("e")), Fach.Num(v("n")), v("h") == "N"); return $"{la.ToString("0.000000", Inv)}, {lo.ToString("0.000000", Inv)}"; });
+            LiveCalc(calcs, "geo-dest", "Zielpunkt", [("a", "Start", "48,1372 11,5756", null), ("deg", "Richtung (°)", "90", null), ("km", "Entfernung (km)", "10", null)],
+                v => { var (la, oa) = Geo.ParseCoord(v("a")); var p = GeoPlus.Destination(new(la, oa), Fach.Num(v("deg")), Fach.Num(v("km"))); return $"Ziel: {p.Lat.ToString("0.000000", Inv)}, {p.Lon.ToString("0.000000", Inv)}"; });
+            LiveCalc(calcs, "geo-time", "Wanderzeit (DIN 33466)", [("km", "Strecke (km)", "12", null), ("up", "Aufstieg (m)", "800", null), ("down", "Abstieg (m)", "800", null)],
+                v => { var t = GeoPlus.HikingTime(Fach.Num(v("km")), Fach.Num(v("up")), Fach.Num(v("down"))); return $"Gehzeit ca. {(int)t.TotalHours}:{t.Minutes:00} h (ohne Pausen)"; });
+            sp.Children.Add(new Expander { Name = "mk-calcs", Header = "Rechner (Koordinaten, UTM, Wanderzeit …)", IsExpanded = false, Content = calcs });
+            sp.Children.Add(P(Tiles.Online ? "Kartendaten © OpenStreetMap-Mitwirkende (ODbL). Kacheln werden zwischengespeichert." : "Offline: Karte aus dem Zwischenspeicher, sonst Gitter.", null, 11));
+        }
+        return sp;
     }
 }

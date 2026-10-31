@@ -176,21 +176,6 @@ public class SPEC10_Ui
     }
 }
 
-public class SPEC13_Ui
-{
-    [AvaloniaFact(DisplayName = "SPEC-13 UI: GPX auswerten, Koordinaten, Luftlinie")]
-    public void Geo()
-    {
-        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
-        var f = Path.Combine(root, "tour.gpx"); File.WriteAllText(f, "<gpx xmlns=\"http://www.topografix.com/GPX/1/1\"><trk><trkseg><trkpt lat=\"47.40\" lon=\"10.98\"><ele>1000</ele></trkpt><trkpt lat=\"47.41\" lon=\"10.98\"><ele>1100</ele></trkpt></trkseg></trk></gpx>");
-        w.Show(MainWindow.StudioPages["SPEC-13"]);
-        Assert.Contains("↑ 100 m", W6Ui.Run(w, "geo-gpx", ("file", f)));
-        Assert.True(File.Exists(Path.Combine(root, "tour.geojson"))); Assert.True(File.Exists(Path.Combine(root, "tour.svg")));
-        Assert.Contains("UTM: 32U", W6Ui.Run(w, "geo-coord"));
-        Assert.Contains("504", W6Ui.Run(w, "geo-dist"));
-    }
-}
-
 public class SPEC14_Ui
 {
     [AvaloniaFact(DisplayName = "SPEC-14 UI: G-Code prüfen mit Vorschau, Schnittwerte")]
@@ -420,25 +405,6 @@ public class SPEC10_UiPlus
         Assert.Contains("2 alte Werte", W6Ui.Run(w, "twin-trim", ("max", "2")));
         w.Twin.Define("Solar", "Leistung", "kW"); w.Twin.Record(t, "Solar", "Leistung", 2); w.Twin.Record(t.AddHours(2), "Solar", "Leistung", 4);
         Assert.Contains("6,00 kWh", W6Ui.Run(w, "twin-kwh"));
-    }
-}
-
-public class SPEC13_UiPlus
-{
-    [AvaloniaFact(DisplayName = "SPEC-13 UI Ausbau: Navigieren und Tour planen")]
-    public void Plus()
-    {
-        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
-        var f = Path.Combine(root, "t.gpx");
-        File.WriteAllText(f, "<gpx xmlns=\"http://www.topografix.com/GPX/1/1\"><trk><trkseg>" + string.Concat(Enumerable.Range(0, 21).Select(i => FormattableString.Invariant($"<trkpt lat=\"{48 + i * 0.001}\" lon=\"11\"><ele>{500 + i * 10}</ele></trkpt>"))) + "</trkseg></trk></gpx>");
-        w.Show(MainWindow.StudioPages["SPEC-13"]);
-        Assert.Contains("48.1", W6Ui.Run(w, "geo-utm"));
-        Assert.Contains("(S", W6Ui.Run(w, "geo-bear"));
-        Assert.Contains("Ziel: 48.13", W6Ui.Run(w, "geo-dest"));
-        Assert.Contains("ha", W6Ui.Run(w, "geo-area"));
-        Assert.Contains("5:46 h", W6Ui.Run(w, "geo-time"));
-        Assert.Contains("Gehzeit", W6Ui.Run(w, "geo-prof", ("file", f))); Assert.True(File.Exists(Path.Combine(root, "t.profil.svg")));
-        Assert.Contains("21 → 2 Punkte", W6Ui.Run(w, "geo-simp", ("file", f)));
     }
 }
 

@@ -149,6 +149,10 @@ else if (shot == "seite")
         for (var k = 0; k < 10; k++) win.CircuitAdvance(0.02);
         win.Show(page);
     }
+    if (page == "karten" && Environment.GetEnvironmentVariable("TRENDO_MK") is { Length: > 0 }) // Karte: erste Spur auswählen
+    {
+        var md = Trendo.Core.Karten.MapDoc.From(win.ProgramActive(page)!.Data); win.MapSelect(md.Tracks.FirstOrDefault()?.Id);
+    }
     if (page == "ki-bibliothek" && Enum.TryParse<KiKind>(Environment.GetEnvironmentVariable("TRENDO_KIKIND"), out var kind)) win.KiLibraryShow(kind); // Art der KI-Bibliothek
 }
 else if (shot == "brief")
@@ -395,7 +399,7 @@ if (Environment.GetEnvironmentVariable("TRENDO_PHONE") is { Length: > 0 } phoneA
     Directory.Delete(root, true);
     return;
 }
-for (var i = 0; i < 40; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(50); }
+for (var i = 0; i < (Environment.GetEnvironmentVariable("TRENDO_TILES") == "1" ? 200 : 40); i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(50); } // Kartenkacheln brauchen etwas länger
 var frame = win.CaptureRenderedFrame();
 if (Environment.GetEnvironmentVariable("TRENDO_DUMP") is { Length: > 0 } dump) // Lage benannter Bausteine ausgeben (Layout-Fehlersuche)
     foreach (var c in Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(win).OfType<Control>().Where(c => c.Name is { } n && dump.Split(',').Any(n.StartsWith)))
