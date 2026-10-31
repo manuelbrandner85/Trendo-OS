@@ -1,6 +1,6 @@
 # Live streamen – Einbindung in Trendo OS
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.28 (Stand 8f6f8b4)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.28 (Stand de74291)
 
 - Seite `sendung` im Studio „Live streamen“ (Kreativ & Medien) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

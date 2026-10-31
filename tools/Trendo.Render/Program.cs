@@ -170,6 +170,17 @@ else if (shot == "seite")
             win.Cal.AddTodo(new Trendo.Core.Sys.TodoItem(Guid.NewGuid().ToString("N"), t, due, st == 2, pr, l, st == 1, n));
         win.TodoSelected = win.Cal.Todos().First(x => x.Title.StartsWith("Präsentation")).Uid; win.Show("aufgaben");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_SCHNITT") is { Length: > 0 } && Cli.Find("ffmpeg") is { } ffm) // Videoschnitt mit erzeugten Beispielmedien
+    {
+        var md = Path.Combine(root, "medien-beispiel"); Directory.CreateDirectory(md);
+        string M(string n) => Path.Combine(md, n);
+        Cli.Run(ffm, ["-y", "-loglevel", "error", "-f", "lavfi", "-i", "testsrc2=size=1280x720:rate=30:duration=8", "-f", "lavfi", "-i", "sine=frequency=330:duration=8", "-shortest", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", M("ausflug.mp4")], md, 120000);
+        Cli.Run(ffm, ["-y", "-loglevel", "error", "-f", "lavfi", "-i", "mandelbrot=size=1280x720:rate=30", "-t", "6", "-c:v", "libx264", "-pix_fmt", "yuv420p", M("abendhimmel.mp4")], md, 120000);
+        Cli.Run(ffm, ["-y", "-loglevel", "error", "-f", "lavfi", "-i", "gradients=size=1280x720:seed=7", "-frames:v", "1", M("titelbild.png")], md, 120000);
+        Cli.Run(ffm, ["-y", "-loglevel", "error", "-f", "lavfi", "-i", "sine=frequency=220:duration=20", M("musik.mp3")], md, 120000);
+        win.ProgramNew("schnitt"); win.EditAdd(M("titelbild.png")); win.EditAdd(M("ausflug.mp4")); win.EditAdd(M("abendhimmel.mp4")); win.EditAdd(M("musik.mp3"), music: true);
+        var doc = win.ProgramActive("schnitt")!; doc.Set("playhead", 7.5); win.EditSelected = ("clips", 1); win.Show("schnitt");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_3D") is { Length: > 0 }) { win.Show("3d"); foreach (var sh in new[] { "cube", "sphere", "cylinder", "torus" }) win.Studio3DAddShape(sh); win.Studio3DSelect(1); } // 3D-Modelle erstellen mit Arbeitsfläche
     if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lv)); win.ProgramNew(page, tpl); win.Show(page); } // Programm mit Vorlage öffnen
     if (page == "architektur" && Environment.GetEnvironmentVariable("TRENDO_ARCH") is { Length: > 0 } arch) // Grundriss: Auswahl/3D/Werkzeug zeigen

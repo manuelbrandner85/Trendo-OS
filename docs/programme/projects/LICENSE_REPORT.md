@@ -1,6 +1,6 @@
 # Projekte – Lizenzen
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.28 (Stand 8f6f8b4)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.28 (Stand de74291)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

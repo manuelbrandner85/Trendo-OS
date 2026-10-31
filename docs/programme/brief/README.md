@@ -1,6 +1,6 @@
 # Briefe schreiben – Produktionspaket
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.28 (Stand 8f6f8b4)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.28 (Stand de74291)
 
 Arbeitsfläche: Texteditor  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test PC_VERIFIED  

@@ -1,6 +1,6 @@
 # VR & AR gestalten – Einbindung in Trendo OS
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.28 (Stand 8f6f8b4)
+Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.28 (Stand de74291)
 
 - Seite `xr` im Studio „VR & AR gestalten“ (3D, Spiele & VR) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

@@ -1,0 +1,153 @@
+using System.Globalization;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Trendo.Core.Media;
+
+namespace Trendo.App;
+
+/// <summary>Zeitleiste des Videoschnitts: Zeitlineal, Bildspur (Stücke lückenlos mit Vorschaubildern), Musikspur (frei platziert), Abspielkopf.
+/// Ziehen im Lineal oder auf leerer Fläche bewegt den Abspielkopf; Stück ziehen ordnet um (Bildspur) bzw. verschiebt (Musik);
+/// Kanten ziehen kürzt; Klick wählt aus.</summary>
+public sealed class EditTimeline : Control
+{
+    public IReadOnlyList<EditClip> Clips { get; set; } = [];
+    public IReadOnlyList<EditClip> Music { get; set; } = [];
+    public IReadOnlyDictionary<string, IReadOnlyList<Bitmap>> Thumbs { get; set; } = new Dictionary<string, IReadOnlyList<Bitmap>>();
+    public double PxPerSec { get; set; } = 40;
+    public double Playhead { get; set; }
+    public (string Track, int Index)? Selected { get; set; }
+    public Action<double>? PlayheadChanged { get; set; }
+    public Action<string, int>? ClipSelected { get; set; }
+    public Action<int, int>? ClipMoved { get; set; }
+    public Action<string, int, double, double>? ClipTrimmed { get; set; }
+    public Action<int, double>? MusicMoved { get; set; }
+
+    public const double Ruler = 22, VideoTop = 28, VideoH = 64, MusicTop = 100, MusicH = 38, Left = 8;
+    static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE");
+    enum Mode { None, Scrub, Move, TrimIn, TrimOut }
+    Mode _mode; string _track = ""; int _index = -1; Point _from, _at; bool _dragged;
+
+    public EditTimeline() { ClipToBounds = true; Focusable = true; Height = MusicTop + MusicH + 10; }
+
+    double Total => Math.Max(Clips.Sum(c => c.Length), Music.Select(m => m.Start + m.Length).DefaultIfEmpty(0).Max());
+    protected override Size MeasureOverride(Size available) => new(Math.Max(double.IsInfinity(available.Width) ? 600 : available.Width, Left * 2 + (Total + 5) * PxPerSec), MusicTop + MusicH + 10);
+    public double X(double t) => Left + t * PxPerSec;
+    public double T(double x) => Math.Max(0, (x - Left) / PxPerSec);
+
+    /// <summary>Rechteck eines Stücks (Spur „clips“ oder „music“).</summary>
+    public Rect BoxOf(string track, int i)
+    {
+        if (track == "music") { var m = Music[i]; return new Rect(X(m.Start), MusicTop, Math.Max(4, m.Length * PxPerSec), MusicH); }
+        var s = Clips.Take(i).Sum(c => c.Length); return new Rect(X(s), VideoTop, Math.Max(4, Clips[i].Length * PxPerSec), VideoH);
+    }
+    (string Track, int Index, Mode Mode)? HitTest(Point p)
+    {
+        for (var i = 0; i < Clips.Count; i++) { var r = BoxOf("clips", i); if (r.Contains(p)) return ("clips", i, p.X < r.X + 7 ? Mode.TrimIn : p.X > r.Right - 7 ? Mode.TrimOut : Mode.Move); }
+        for (var i = 0; i < Music.Count; i++) { var r = BoxOf("music", i); if (r.Contains(p)) return ("music", i, p.X < r.X + 7 ? Mode.TrimIn : p.X > r.Right - 7 ? Mode.TrimOut : Mode.Move); }
+        return null;
+    }
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e); Focus();
+        var p = e.GetPosition(this); _from = _at = p; _dragged = false;
+        if (p.Y > Ruler && HitTest(p) is { } h) { (_track, _index, _mode) = h; }
+        else { _mode = Mode.Scrub; Playhead = T(p.X); InvalidateVisual(); }
+        e.Pointer.Capture(this); e.Handled = true;
+    }
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        base.OnPointerMoved(e);
+        var p = e.GetPosition(this);
+        if (_mode == Mode.None) { Cursor = HitTest(p) is { Mode: Mode.TrimIn or Mode.TrimOut } ? new Cursor(StandardCursorType.SizeWestEast) : Cursor.Default; return; }
+        _at = p; if (Math.Abs(_at.X - _from.X) > 4) _dragged = true;
+        if (_mode == Mode.Scrub) Playhead = T(p.X);
+        InvalidateVisual();
+    }
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e); e.Pointer.Capture(null);
+        var mode = _mode; _mode = Mode.None; var dt = (_at.X - _from.X) / PxPerSec;
+        if (mode == Mode.Scrub) { PlayheadChanged?.Invoke(Math.Round(Playhead, 2)); return; }
+        if (!_dragged) { ClipSelected?.Invoke(_track, _index); return; }
+        var list = _track == "music" ? Music : Clips; var c = list[_index];
+        switch (mode)
+        {
+            case Mode.Move when _track == "clips":
+                // Ziel: Stück, über dessen Mitte die Mitte des gezogenen Stücks liegt
+                var center = BoxOf("clips", _index).Center.X + (_at.X - _from.X); var to = 0; var acc = 0.0;
+                for (var i = 0; i < Clips.Count; i++) { if (i != _index && center > X(acc + Clips[i].Length / 2)) to++; acc += Clips[i].Length; } // Mitten in der sichtbaren Anordnung
+                if (to != _index) ClipMoved?.Invoke(_index, to); else InvalidateVisual();
+                break;
+            case Mode.Move: MusicMoved?.Invoke(_index, Math.Max(0, Math.Round(c.Start + dt, 2))); break;
+            case Mode.TrimIn:
+                ClipTrimmed?.Invoke(_track, _index, Math.Round(c.In + dt, 2), c.Out); // bei Musik rückt der Start mit (im Programm), das Ende bleibt stehen
+                break;
+            case Mode.TrimOut: ClipTrimmed?.Invoke(_track, _index, c.In, Math.Round(c.Out + dt, 2)); break;
+        }
+    }
+
+    public override void Render(DrawingContext ctx)
+    {
+        var w = Bounds.Width; var h = Bounds.Height;
+        ctx.FillRectangle(new SolidColorBrush(Color.Parse("#FF0B1424")), new Rect(0, 0, w, h));
+        var muted = new SolidColorBrush(Color.Parse("#8AA0BD")); var font = new Typeface("Inter"); var bold = new Typeface("Inter", FontStyle.Normal, FontWeight.SemiBold);
+        // Lineal
+        var step = PxPerSec >= 60 ? 1 : PxPerSec >= 20 ? 5 : PxPerSec >= 8 ? 10 : 30;
+        for (var t = 0; X(t) < w; t += step)
+        {
+            ctx.DrawLine(new Pen(muted, 1), new Point(X(t), Ruler - 6), new Point(X(t), Ruler));
+            ctx.DrawText(new FormattedText(TimeSpan.FromSeconds(t).ToString(@"m\:ss"), De, FlowDirection.LeftToRight, font, 10, muted), new Point(X(t) + 2, 3));
+        }
+        ctx.FillRectangle(new SolidColorBrush(Color.Parse("#14FFFFFF")), new Rect(0, VideoTop, w, VideoH));
+        ctx.FillRectangle(new SolidColorBrush(Color.Parse("#0EFFFFFF")), new Rect(0, MusicTop, w, MusicH));
+        // Bildspur
+        for (var i = 0; i < Clips.Count; i++)
+        {
+            var r = BoxOf("clips", i); var c = Clips[i]; var sel = Selected is ("clips", var si) && si == i;
+            if (_dragged && _track == "clips" && _index == i) r = _mode switch
+            {
+                Mode.Move => r.Translate(new Vector(_at.X - _from.X, -4)),
+                Mode.TrimIn => new Rect(r.X + (_at.X - _from.X), r.Y, Math.Max(4, r.Width - (_at.X - _from.X)), r.Height),
+                Mode.TrimOut => r.WithWidth(Math.Max(4, r.Width + (_at.X - _from.X))),
+                _ => r,
+            };
+            using (ctx.PushClip(new RoundedRect(r.Deflate(1), 6)))
+            {
+                ctx.FillRectangle(new SolidColorBrush(Color.Parse(c.IsImage ? "#FF7C3AED" : "#FF1D4ED8")), r);
+                if (Thumbs.TryGetValue(c.Id, out var th) && th.Count > 0)
+                {
+                    var tw = VideoH * 16 / 9; var n = Math.Max(1, (int)Math.Ceiling(r.Width / tw));
+                    for (var k = 0; k < n; k++) { var b = th[Math.Min(th.Count - 1, k * th.Count / n)]; ctx.DrawImage(b, new Rect(r.X + k * tw, r.Y, tw, r.Height)); }
+                    ctx.FillRectangle(new SolidColorBrush(Color.Parse("#66000000")), new Rect(r.X, r.Y, r.Width, 16));
+                }
+                ctx.DrawText(new FormattedText($"{System.IO.Path.GetFileName(c.File)} · {c.Length:0.0} s", De, FlowDirection.LeftToRight, bold, 11, Brushes.White), new Point(r.X + 6, r.Y + 1));
+            }
+            ctx.DrawRectangle(null, new Pen(new SolidColorBrush(Color.Parse(sel ? "#FFFACC15" : "#88FFFFFF")), sel ? 2.5 : 1), new RoundedRect(r.Deflate(1), 6));
+            ctx.FillRectangle(new SolidColorBrush(Color.Parse("#CCFFFFFF")), new Rect(r.X + 2, r.Y + VideoH / 2 - 8, 3, 16)); ctx.FillRectangle(new SolidColorBrush(Color.Parse("#CCFFFFFF")), new Rect(r.Right - 5, r.Y + VideoH / 2 - 8, 3, 16));
+        }
+        // Musikspur mit angedeuteter Wellenform
+        for (var i = 0; i < Music.Count; i++)
+        {
+            var r = BoxOf("music", i); var m = Music[i]; var sel = Selected is ("music", var si) && si == i;
+            if (_dragged && _track == "music" && _index == i) r = _mode switch
+            {
+                Mode.Move => r.Translate(new Vector(_at.X - _from.X, 0)),
+                Mode.TrimIn => new Rect(r.X + (_at.X - _from.X), r.Y, Math.Max(4, r.Width - (_at.X - _from.X)), r.Height),
+                Mode.TrimOut => r.WithWidth(Math.Max(4, r.Width + (_at.X - _from.X))),
+                _ => r,
+            };
+            ctx.DrawRectangle(new SolidColorBrush(Color.Parse("#FF047857")), new Pen(new SolidColorBrush(Color.Parse(sel ? "#FFFACC15" : "#8834D399")), sel ? 2.5 : 1), new RoundedRect(r.Deflate(1), 6));
+            var wave = new Pen(new SolidColorBrush(Color.Parse("#9934D399")), 1.2); var rnd = new Random(m.Id.GetHashCode());
+            for (var x = r.X + 4; x < r.Right - 4; x += 3) { var a = (0.25 + 0.6 * rnd.NextDouble()) * (MusicH / 2 - 6) * m.Volume; ctx.DrawLine(wave, new Point(x, r.Center.Y - a), new Point(x, r.Center.Y + a)); }
+            ctx.DrawText(new FormattedText($"♪ {System.IO.Path.GetFileName(m.File)} · {m.Volume * 100:0} %", De, FlowDirection.LeftToRight, bold, 11, Brushes.White), new Point(r.X + 6, r.Y + 2));
+        }
+        // Abspielkopf
+        var px = X(Playhead); var red = new SolidColorBrush(Color.Parse("#EF4444"));
+        ctx.DrawLine(new Pen(red, 2), new Point(px, 0), new Point(px, h));
+        ctx.DrawGeometry(red, null, new PolylineGeometry([new Point(px - 6, 0), new Point(px + 6, 0), new Point(px, 9)], true));
+    }
+}

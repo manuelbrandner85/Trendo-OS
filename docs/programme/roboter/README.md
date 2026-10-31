@@ -1,6 +1,6 @@
 # Kameras & Roboter steuern – Produktionspaket
 
-Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.28 (Stand 8f6f8b4)
+Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.28 (Stand de74291)
 
 Arbeitsfläche: Bildansicht, Roboter-Ansicht  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

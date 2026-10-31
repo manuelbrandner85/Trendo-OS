@@ -1,0 +1,247 @@
+using System.Text.Json.Nodes;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Layout;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Trendo.Core;
+using Trendo.Core.Media;
+using Trendo.Core.Programs;
+
+namespace Trendo.App;
+
+/// <summary>CORE-08 (Masterprompt 131): „Videoschnitt“ als Programm – Medien auf Bild- und Musikspur legen, Stücke umordnen, an den Kanten kürzen,
+/// am Abspielkopf teilen, Musik mit Startzeit und Lautstärke; Vorschau des Bildes am Abspielkopf; Export als MP4 über FFmpeg.
+/// Projektdatei, Rückgängig, Autosave und Bedienstufen kommen aus der Programm-Hülle.</summary>
+public partial class MainWindow
+{
+    const string VK = "schnitt";
+    private readonly Dictionary<string, IReadOnlyList<Bitmap>> _thumbs = [];
+    private readonly Dictionary<string, Bitmap> _veFrames = [];
+    public (string Track, int Index)? EditSelected { get; set; }
+    public EditTimeline? EditTimelineForTests { get; private set; }
+    public double EditZoom { get; set; } = 40;
+
+    private void InitVideoSchnitt() => RegisterProgram(KreativTabs, new ProgramSpec(VK, "CORE-08", "Videoschnitt")
+    {
+        Sentence = "Videos, Fotos und Musik auf die Zeitleiste legen, schneiden und als MP4 speichern.",
+        FillHeight = true,
+        Folder = "Medien",
+        GroupLevels = new() { ["Ansicht"] = 1 },
+        Templates =
+        [
+            new("leer", "Neues Video (16:9, HD)", "1280 × 720, 30 Bilder je Sekunde", () => VideoEdit.NewProject()),
+            new("fullhd", "Full HD (1920 × 1080)", "Für große Bildschirme und YouTube", () => VideoEdit.NewProject(1920, 1080)),
+            new("hoch", "Hochformat (1080 × 1920)", "Für Handy, Reels und Stories", () => VideoEdit.NewProject(1080, 1920)),
+        ],
+        Ribbon =
+        [
+            ("Schneiden", [
+                new ProgramCmd("ve-split", "Teilen (S)", d => d.Edit("Teilen", x => { if (!VideoEdit.Split(x, d.Number("playhead"))) throw new InvalidOperationException("Am Abspielkopf liegt kein Stück – oder er steht zu nah an einer Schnittkante."); }), true, "Stück am Abspielkopf in zwei teilen"),
+                new ProgramCmd("ve-delete", "Löschen (Entf)", d => EditDelete(d), false, "Ausgewähltes Stück entfernen"),
+                new ProgramCmd("ve-left", "◀ Nach vorn", d => EditShift(d, -1), false, "Ausgewähltes Stück eine Stelle nach vorn"),
+                new ProgramCmd("ve-right", "Nach hinten ▶", d => EditShift(d, 1), false, "Ausgewähltes Stück eine Stelle nach hinten"),
+            ]),
+            ("Ansicht", [
+                new ProgramCmd("ve-zoom-in", "＋ Zoom", _ => EditZoom = Math.Min(200, EditZoom * 1.5)),
+                new ProgramCmd("ve-zoom-out", "－ Zoom", _ => EditZoom = Math.Max(4, EditZoom / 1.5)),
+                new ProgramCmd("ve-start", "⏮ Anfang", d => d.Set("playhead", 0, "Abspielkopf")),
+            ]),
+        ],
+        Exports = [new("mp4", "Video (MP4)", ".mp4", (d, f) => EditExport(d, f))],
+        Workspace = EditWorkspace,
+        Properties = EditProperties,
+        Status = d => { var p = d.Data; return $"{VideoEdit.Clips(p).Count} Stücke · Musik {VideoEdit.Clips(p, "music").Count} · Länge {Clock(VideoEdit.Duration(p))} · {(int)d.Number("width")} × {(int)d.Number("height")}" + (FfmpegPath is null ? " · FFmpeg fehlt (Vorschau und Export)" : ""); },
+        Help = "Rechts Medien hinzufügen. Unten auf der Zeitleiste: Stück ziehen ordnet um, Kanten ziehen kürzt, Klick ins Lineal setzt den Abspielkopf, S teilt, Entf löscht. Export unter „Exportieren“.",
+    }, "videoschnitt", "video schneiden", "zeitleiste", "timeline", "film", "clip", "musik unterlegen", "mp4", "schnitt");
+
+    // ---------- Bearbeiten (öffentlich für Tests und die KI) ----------
+    /// <summary>Datei auf die Bild- oder Musikspur legen; Länge und Ton werden mit FFmpeg ermittelt (oder angegeben).</summary>
+    public void EditAdd(string file, bool music = false, double? length = null, bool? audio = null)
+    {
+        var d = ProgramActive(VK) ?? ProgramNew(VK);
+        if (!File.Exists(file)) throw new FileNotFoundException("Datei nicht gefunden: " + Path.GetFileName(file));
+        if (!MediaStudio.Inputs.Contains(Path.GetExtension(file).ToLowerInvariant())) throw new InvalidOperationException("Diese Datei ist kein Video, Bild oder Ton.");
+        if (music && (MediaStudio.IsImage(file))) throw new InvalidOperationException("Auf die Musikspur gehören Ton- oder Videodateien.");
+        double len; bool hasAudio;
+        if (MediaStudio.IsImage(file)) { len = VideoEdit.ImageSeconds; hasAudio = false; }
+        else
+        {
+            var ff = FfmpegPath;
+            if (length is null && ff is null) throw new InvalidOperationException("Für Videos und Ton fehlt FFmpeg – unter Zusatzprogramme einrichten.");
+            len = length ?? MediaStudio.Duration(ff!, file) ?? throw new InvalidOperationException("Die Länge der Datei lässt sich nicht lesen.");
+            hasAudio = audio ?? (ff is not null && VideoEdit.HasAudioStream(ff, file));
+        }
+        var clip = VideoEdit.NewClip(file, len, hasAudio);
+        d.Edit(music ? "Musik hinzufügen" : "Hinzufügen", x => VideoEdit.Add(x, clip, music ? "music" : "clips"));
+        EditSelected = (music ? "music" : "clips", VideoEdit.Clips(d.Data, music ? "music" : "clips").Count - 1);
+        _progMsg[VK] = $"„{Path.GetFileName(file)}“ liegt auf der {(music ? "Musikspur" : "Bildspur")}.";
+    }
+
+    void EditDelete(ProgramDocument d)
+    {
+        if (EditSelected is not { } s) throw new InvalidOperationException("Erst ein Stück auf der Zeitleiste anklicken.");
+        d.Edit("Löschen", x => VideoEdit.Remove(x, s.Index, s.Track)); EditSelected = null;
+    }
+    void EditShift(ProgramDocument d, int by)
+    {
+        if (EditSelected is not ("clips", var i)) throw new InvalidOperationException("Erst ein Stück auf der Bildspur anklicken.");
+        var to = Math.Clamp(i + by, 0, VideoEdit.Clips(d.Data).Count - 1); if (to == i) return;
+        d.Edit("Verschieben", x => VideoEdit.Move(x, i, to)); EditSelected = ("clips", to);
+    }
+
+    string EditExport(ProgramDocument d, string file)
+    {
+        var ff = FfmpegPath ?? throw new InvalidOperationException("Für den Export fehlt FFmpeg – unter Zusatzprogramme einrichten.");
+        if (_opt.Isolated && ExportOverride is null) throw new InvalidOperationException("Im abgeschotteten Testmodus startet Trendo kein FFmpeg.");
+        var o = ExportOverride?.Invoke(d.Data, file) ?? VideoEdit.Export(ff, d.Data, file);
+        _core.Audit.Append(Principal.LocalOwner.Name, "video.export", Path.GetFileName(o));
+        return o;
+    }
+    /// <summary>Für Tests: Ersatz für den FFmpeg-Export.</summary>
+    public Func<JsonObject, string, string>? ExportOverride { get; set; }
+
+    IReadOnlyList<Bitmap> EditThumbs(EditClip c)
+    {
+        var key = c.Id + "|" + c.In + "|" + c.Out;
+        if (_thumbs.TryGetValue(key, out var l)) return l;
+        var list = new List<Bitmap>();
+        try
+        {
+            if (c.IsImage) { using var s = File.OpenRead(c.File); list.Add(Bitmap.DecodeToWidth(s, 160)); }
+            else if (FfmpegPath is { } ff && !_opt.Isolated && !MediaStudio.IsAudio(c.File))
+            {
+                var dir = Path.Combine(MediaFolder, ".vorschau", Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(System.Text.Encoding.UTF8.GetBytes(c.File + File.GetLastWriteTimeUtc(c.File).Ticks + c.In + c.Out)))[..12]);
+                Directory.CreateDirectory(dir);
+                for (var i = 0; i < 4; i++)
+                {
+                    var png = Path.Combine(dir, $"b{i}.png");
+                    if (!File.Exists(png)) Cli.Run(ff, MediaStudio.FrameArgs(c.File, c.In + c.Length * (i + 0.5) / 4, png), dir, 30000);
+                    if (File.Exists(png)) { using var s = File.OpenRead(png); list.Add(new Bitmap(s)); }
+                }
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException) { }
+        return _thumbs[key] = list;
+    }
+
+    /// <summary>Bild am Abspielkopf (Standbild direkt, Video über FFmpeg, zwischengespeichert).</summary>
+    Bitmap? EditFrame(ProgramDocument d)
+    {
+        if (VideoEdit.At(d.Data, d.Number("playhead")) is not { } at) return null;
+        var c = VideoEdit.Clips(d.Data)[at.Index];
+        try
+        {
+            if (c.IsImage) { using var s = File.OpenRead(c.File); return new Bitmap(s); }
+            if (FfmpegPath is not { } ff || _opt.Isolated) return null;
+            var t = Math.Round(at.SourceTime, 1); var key = c.File + "|" + t;
+            if (_veFrames.TryGetValue(key, out var b)) return b;
+            var dir = Path.Combine(MediaFolder, ".vorschau", "kopf"); Directory.CreateDirectory(dir);
+            var png = Path.Combine(dir, Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(System.Text.Encoding.UTF8.GetBytes(key)))[..16] + ".png");
+            if (!File.Exists(png)) Cli.Run(ff, ["-hide_banner", "-loglevel", "error", "-y", "-ss", t.ToString(System.Globalization.CultureInfo.InvariantCulture), "-i", c.File, "-frames:v", "1", "-vf", "scale=640:-2", png], dir, 30000);
+            if (!File.Exists(png)) return null;
+            using var fs = File.OpenRead(png); if (_veFrames.Count > 60) _veFrames.Clear(); return _veFrames[key] = new Bitmap(fs);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException) { return null; }
+    }
+
+    private Control EditWorkspace(ProgramDocument d)
+    {
+        var p = d.Data; var clips = VideoEdit.Clips(p); var music = VideoEdit.Clips(p, "music");
+        if (EditSelected is { } s && s.Index >= (s.Track == "music" ? music.Count : clips.Count)) EditSelected = null;
+        // Vorschau im Seitenverhältnis des Projekts
+        var (pw, ph) = (Math.Max(16, d.Number("width")), Math.Max(16, d.Number("height")));
+        var frame = EditFrame(d);
+        Control screen = frame is not null ? new Image { Name = "ve-preview", Source = frame, Stretch = Stretch.Uniform }
+            : new TextBlock { Name = "ve-preview-empty", Text = clips.Count == 0 ? "Rechts Videos, Fotos oder Musik hinzufügen." : FfmpegPath is null ? "Vorschau von Videos braucht FFmpeg." : "Abspielkopf ins Video setzen.", Foreground = Muted, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center };
+        var view = new Viewbox { Stretch = Stretch.Uniform, Child = new Border { Width = pw, Height = ph, Background = Brushes.Black, Child = new Viewbox { Stretch = Stretch.Uniform, Child = screen is Image ? screen : new Border { Width = 640, Height = 360, Child = screen } } } };
+        var time = new TextBlock { Name = "ve-time", Text = $"{ClockMs(d.Number("playhead"))} / {ClockMs(VideoEdit.Duration(p))}", Foreground = Text, FontSize = 13, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4) };
+        var tl = new EditTimeline { Name = "ve-timeline", Clips = clips, Music = music, PxPerSec = EditZoom, Playhead = d.Number("playhead"), Selected = EditSelected,
+            Thumbs = clips.ToDictionary(c => c.Id, EditThumbs) };
+        EditTimelineForTests = tl;
+        tl.PlayheadChanged = t => ProgramRun(VK, () => d.Set("playhead", Math.Min(t, VideoEdit.Duration(d.Data)), "Abspielkopf"));
+        tl.ClipSelected = (track, i) => { EditSelected = (track, i); Show(VK); };
+        tl.ClipMoved = (a, b) => ProgramRun(VK, () => { d.Edit("Umordnen", x => VideoEdit.Move(x, a, b)); EditSelected = ("clips", b); });
+        tl.MusicMoved = (i, start) => ProgramRun(VK, () => { var m = VideoEdit.Clips(d.Data, "music")[i]; d.Edit("Musik verschieben", x => VideoEdit.SetMusic(x, i, start, m.Volume)); EditSelected = ("music", i); });
+        tl.ClipTrimmed = (track, i, a, b) => ProgramRun(VK, () =>
+        {
+            var before = VideoEdit.Clips(d.Data, track)[i];
+            d.Edit("Kürzen", x =>
+            {
+                VideoEdit.Trim(x, i, a, b, track);
+                if (track == "music") { var after = VideoEdit.Clips(x, "music")[i]; VideoEdit.SetMusic(x, i, before.Start + (after.In - before.In), after.Volume); } // Ende bleibt stehen
+            });
+            EditSelected = (track, i);
+        });
+        tl.KeyDown += (_, e) =>
+        {
+            var spec = Programs[VK];
+            ProgramCmd? Cmd(string n) => spec.Ribbon.SelectMany(g => g.Cmds).First(c => c.Name == n);
+            switch (e.Key)
+            {
+                case Key.S when e.KeyModifiers == KeyModifiers.None: ProgramRun(VK, () => Cmd("ve-split")!.Run(d)); e.Handled = true; break;
+                case Key.Delete: ProgramRun(VK, () => EditDelete(d)); e.Handled = true; break;
+                case Key.Left: ProgramRun(VK, () => d.Set("playhead", Math.Max(0, Math.Round(d.Number("playhead") - (e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 1 : 1.0 / 30), 3)), "Abspielkopf")); e.Handled = true; break;
+                case Key.Right: ProgramRun(VK, () => d.Set("playhead", Math.Min(VideoEdit.Duration(d.Data), Math.Round(d.Number("playhead") + (e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 1 : 1.0 / 30), 3)), "Abspielkopf")); e.Handled = true; break;
+            }
+        };
+        var scroll = new ScrollViewer { Content = tl, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled };
+        var tlBox = new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, BorderBrush = Edge, BorderThickness = new Thickness(1), Child = scroll };
+        var hint = new TextBlock { Text = "Stück ziehen: umordnen · Kanten ziehen: kürzen · Lineal: Abspielkopf · S teilen · Entf löschen · ←/→ Bild für Bild (Umschalt: Sekunde)", Foreground = Muted, FontSize = 11.5, Margin = new Thickness(2, 4, 0, 0), TextWrapping = TextWrapping.Wrap };
+        var g = new Grid { RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto") };
+        g.Children.Add(new Border { Background = Brush.Parse("#05070C"), CornerRadius = new CornerRadius(10), Padding = new Thickness(6), Child = view, MinHeight = 160 });
+        Grid.SetRow(time, 1); g.Children.Add(time); Grid.SetRow(tlBox, 2); g.Children.Add(tlBox); Grid.SetRow(hint, 3); g.Children.Add(hint);
+        return g;
+    }
+
+    static string ClockMs(double s) => TimeSpan.FromSeconds(Math.Max(0, s)).ToString(s >= 3600 ? @"h\:mm\:ss\.f" : @"m\:ss\.f");
+
+    private Control EditProperties(ProgramDocument d)
+    {
+        var sp = new StackPanel { Spacing = 8 };
+        // Medien hinzufügen
+        var path = new TextBox { Name = "ve-file", PlaceholderText = "Video-, Bild- oder Tondatei", HorizontalAlignment = HorizontalAlignment.Stretch };
+        Button B(string name, string label, Action a, bool primary = false) { var b = new Button { Name = name, Content = label, Margin = new Thickness(0, 0, 4, 4), FontSize = 12 }; if (primary) { b.Background = Accent; b.Foreground = Brushes.White; } b.Click += (_, _) => ProgramRun(VK, a); return b; }
+        string Need() => (path.Text ?? "").Trim().Trim('"') is { Length: > 0 } f ? f : throw new InvalidOperationException("Bitte eine Datei wählen.");
+        sp.Children.Add(H("Medien", 13));
+        sp.Children.Add(path);
+        sp.Children.Add(new WrapPanel { Children = { B("ve-add", "Auf die Bildspur", () => EditAdd(Need()), true), B("ve-add-music", "Als Musik", () => EditAdd(Need(), music: true)) } });
+        var recent = FileShelf.Recent([MediaFolder, Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Environment.GetFolderPath(Environment.SpecialFolder.MyMusic)], MediaStudio.Inputs).Take(6).ToList();
+        if (recent.Count > 0)
+        {
+            sp.Children.Add(P("Zuletzt im Medienordner:", null, 11.5));
+            var k = 0;
+            foreach (var f in recent) { var fp = f.FullName; var b = B($"ve-recent-{k++}", (MediaStudio.IsImage(fp) ? "🖼 " : MediaStudio.IsAudio(fp) ? "♪ " : "🎬 ") + f.Name, () => EditAdd(fp, music: MediaStudio.IsAudio(fp))); b.HorizontalAlignment = HorizontalAlignment.Stretch; b.HorizontalContentAlignment = HorizontalAlignment.Left; ToolTip.SetTip(b, fp); sp.Children.Add(b); }
+        }
+        // Ausgewähltes Stück
+        if (EditSelected is { } s)
+        {
+            var list = VideoEdit.Clips(d.Data, s.Track);
+            if (s.Index < list.Count)
+            {
+                var c = list[s.Index];
+                var inBox = new TextBox { Name = "ve-in", Text = c.In.ToString("0.##", De), Width = 70 }; var outBox = new TextBox { Name = "ve-out", Text = c.Out.ToString("0.##", De), Width = 70 };
+                sp.Children.Add(H(s.Track == "music" ? "Musik" : "Stück", 13));
+                sp.Children.Add(P($"{Path.GetFileName(c.File)} · {c.Length:0.0} s" + (c.IsImage ? " (Standbild)" : $" von {c.SourceLength:0.0} s"), Text, 12));
+                sp.Children.Add(new WrapPanel { Children = { new TextBlock { Text = "von", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 4, 0) }, inBox, new TextBlock { Text = " bis ", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center }, outBox, new TextBlock { Text = " s", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center } } });
+                double Num(TextBox t) => double.TryParse((t.Text ?? "").Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : throw new InvalidOperationException("Bitte Sekunden als Zahl eingeben.");
+                var row = new WrapPanel { Children = { B("ve-trim-apply", "Übernehmen", () => d.Edit("Kürzen", x => VideoEdit.Trim(x, s.Index, Num(inBox), Num(outBox), s.Track)), true) } };
+                sp.Children.Add(row);
+                if (s.Track == "music")
+                {
+                    var start = new TextBox { Name = "ve-music-start", Text = c.Start.ToString("0.##", De), Width = 70 };
+                    var vol = new Slider { Name = "ve-music-vol", Minimum = 0, Maximum = 2, Value = c.Volume, Width = 180 };
+                    sp.Children.Add(new WrapPanel { Children = { new TextBlock { Text = "Start bei ", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center }, start, new TextBlock { Text = " s", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center } } });
+                    sp.Children.Add(new StackPanel { Children = { new TextBlock { Text = $"Lautstärke {c.Volume * 100:0} %", Foreground = Muted, FontSize = 11.5 }, vol } });
+                    sp.Children.Add(B("ve-music-apply", "Musik übernehmen", () => d.Edit("Musik", x => VideoEdit.SetMusic(x, s.Index, Num(start), vol.Value))));
+                }
+                sp.Children.Add(B("ve-sel-delete", "Stück löschen", () => EditDelete(d)));
+            }
+        }
+        sp.Children.Add(H("Projekt", 13));
+        sp.Children.Add(P($"{(int)d.Number("width")} × {(int)d.Number("height")} · {(int)d.Number("fps", 30)} Bilder/s · Länge {Clock(VideoEdit.Duration(d.Data))}", Muted, 12));
+        if (FfmpegPath is null) sp.Children.Add(P("FFmpeg fehlt: Videos und Ton brauchen es für Länge, Vorschau und Export. Fotos gehen trotzdem.", Brush.Parse("#FACC15"), 12));
+        return sp;
+    }
+}

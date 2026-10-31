@@ -1,6 +1,6 @@
 # Vorhaben – Funktionsmatrix
 
-Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.28 (Stand 8f6f8b4)
+Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.28 (Stand de74291)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

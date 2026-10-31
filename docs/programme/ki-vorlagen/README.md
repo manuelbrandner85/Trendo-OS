@@ -1,6 +1,6 @@
 # KI-Vorlagen – Produktionspaket
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.28 (Stand 8f6f8b4)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.28 (Stand de74291)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

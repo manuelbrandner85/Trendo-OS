@@ -2,7 +2,7 @@
 
 Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funktionskataloge, Vorbild-Analysen, Tests). Nicht von Hand pflegen – neu erzeugen mit `TRENDO_KATALOG=. dotnet run --project tools/Trendo.Render -c Release`.
 
-85 Programme in 54 Studios.
+88 Programme in 54 Studios.
 
 | Programm | Studio | Bereich | Arbeitsfläche | Funktionen | Tests | Vorbild-Analyse | Modulstatus | Doku |
 |---|---|---|---|---|---|---|---|---|
@@ -28,11 +28,14 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Live streamen | Live streamen (SPEC-15) | Kreativ & Medien | Bildansicht | 20 | 39 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](sendung/README.md) |
 | TV & Live | TV & Live (STUDIO-TV-01) | Kreativ & Medien | keine eigene erkannt | – | 11 | – | IN_PROGRESS / Test NOT_RUN | [Paket](tv/README.md) |
 | Medien bearbeiten | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | keine eigene erkannt | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](kreativ-medien/README.md) |
+| Videoschnitt | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Video-Zeitleiste | – | 5 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](schnitt/README.md) |
 | 3D | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | CAD-/3D-Zeichenfläche | – | 17 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](3d/README.md) |
 | Trendo 3D-Druck | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | keine eigene erkannt | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](3d-druck/README.md) |
 | Trendo CAD | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | CAD-/3D-Zeichenfläche | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](cad/README.md) |
+| Aus Fotos | Gegenstände einscannen (SPEC-09) | 3D, Spiele & VR | keine eigene erkannt | 20 | 23 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](scan3d/README.md) |
 | Punktwolke | Gegenstände einscannen (SPEC-09) | 3D, Spiele & VR | keine eigene erkannt | 20 | 23 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](punktwolke/README.md) |
 | Spiele bauen | Spiele bauen (CORE-06) | 3D, Spiele & VR | keine eigene erkannt | – | 5 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](spiele-programm/README.md) |
+| Werkstatt | Spiele bauen (CORE-06) | 3D, Spiele & VR | keine eigene erkannt | – | 20 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](spiele/README.md) |
 | VR & AR gestalten | VR & AR gestalten (SPEC-04) | 3D, Spiele & VR | keine eigene erkannt | 16 | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](xr/README.md) |
 | Auto & Fahrten | Auto & Fahrten (SPEC-16) | Technik & Fachgebiete | keine eigene erkannt | 20 | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](fahrzeug/README.md) |
 | CNC-Werkstatt | Fräsen & Fertigen (SPEC-14) | Technik & Fachgebiete | Werkzeugbahn-Ansicht | 20 | 11 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](cnc/README.md) |

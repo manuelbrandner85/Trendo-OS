@@ -1,6 +1,6 @@
 # VR & AR gestalten – Architektur
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.28 (Stand 8f6f8b4)
+Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.28 (Stand de74291)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Library3D.cs`

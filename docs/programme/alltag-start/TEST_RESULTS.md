@@ -1,5 +1,5 @@
 # Übersicht – Testergebnisse
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.28 (Stand 8f6f8b4)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.28 (Stand de74291)
 
 Noch kein Testlauf eingelesen. Ergebnisse stehen hier erst nach einem echten Lauf (TRX-Datei) – nicht vorher.

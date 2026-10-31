@@ -29,7 +29,7 @@ public partial class MainWindow
         // nur Seiten, die man öffnen kann: im Startmenü/in der Suche, Studio-Hauptseite oder Reiter eines Studios (keine Einrichtungsschritte)
         var keys = _showMap.Keys.Where(k => ModuleOf(k) is { } m && StudioCatalog.For(m) is not null && k != "programmkatalog"
             && (Listed(k) is not null || StudioPages.Values.Contains(k, StringComparer.OrdinalIgnoreCase) || TabbedPages.Contains(k))).ToList();
-        var groups = keys.GroupBy(WindowGroupOf, StringComparer.OrdinalIgnoreCase);
+        var groups = keys.GroupBy(k => Programs.ContainsKey(k) ? "prog:" + k : WindowGroupOf(k), StringComparer.OrdinalIgnoreCase); // Programme der Programm-Hülle sind eigene Einträge, auch als Reiter eines Studios
         var list = new List<ProgramEntry>();
         foreach (var g in groups)
         {
@@ -63,7 +63,7 @@ public partial class MainWindow
             {
                 CadView => "CAD-/3D-Zeichenfläche", MeshView => "3D-Ansicht", FloorPlanView => "Grundriss-Zeichenfläche", CircuitCanvas => "Schaltplan-Zeichenfläche", PcbCanvas => "Platinen-Zeichenfläche",
                 FrameCanvas => "Tragwerks-Zeichenfläche", MapCanvas => "Karte", PointCloudView => "Punktwolken-Ansicht", CncPathView => "Werkzeugbahn-Ansicht", ArmView => "Roboter-Ansicht",
-                SheetGridView or MeasureGrid => "Tabellenraster", CalTimeGrid => "Kalender-Zeitachse", Grid { Name: "cal-month" } => "Monatskalender", Grid { Name: "todo-board" } => "Aufgabentafel", SlideView => "Folienansicht", GraphView or BarChart => "Diagramm", Avalonia.Controls.Image => "Bildansicht",
+                SheetGridView or MeasureGrid => "Tabellenraster", CalTimeGrid => "Kalender-Zeitachse", EditTimeline => "Video-Zeitleiste", Grid { Name: "cal-month" } => "Monatskalender", Grid { Name: "todo-board" } => "Aufgabentafel", SlideView => "Folienansicht", GraphView or BarChart => "Diagramm", Avalonia.Controls.Image => "Bildansicht",
                 TextBox { AcceptsReturn: true } t when Math.Max(t.MinHeight, double.IsNaN(t.Height) ? 0 : t.Height) >= 100 => "Texteditor", _ => null,
             } is { } k) kinds.Add(k);
         var tools = all.OfType<Button>().Where(b => b.Name is { Length: > 0 } n && !n.StartsWith("prog-tab") && !n.StartsWith("dock") && !n.StartsWith("win-") && !n.StartsWith("toast"))

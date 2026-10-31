@@ -1,6 +1,6 @@
 # Auto & Fahrten – Funktionsmatrix
 
-Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.28 (Stand 8f6f8b4)
+Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.28 (Stand de74291)
 
 Quelle: `docs/w6-katalog/SPEC-16.md`
 

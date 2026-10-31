@@ -71,7 +71,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -116,7 +116,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -203,7 +203,7 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -255,7 +255,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -302,7 +302,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -521,7 +521,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -762,7 +762,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -994,7 +994,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -1076,7 +1076,7 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -1349,7 +1349,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -1574,7 +1574,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -1823,7 +1823,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -2075,7 +2075,7 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -2334,7 +2334,7 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -2400,7 +2400,7 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -2455,7 +2455,7 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -2496,7 +2496,7 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -2540,7 +2540,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -2710,7 +2710,7 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": true
   },
   {
@@ -2957,7 +2957,7 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -3001,7 +3001,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -3013,12 +3013,15 @@
     "Type": [],
     "Functions": [],
     "Engine": [
+      "VideoEdit",
       "MediaStudio",
       "FileShelf"
     ],
     "Tools": [
       "Plan erstellen",
       "Hinzufügen …",
+      "Medien bearbeiten",
+      "Videoschnitt",
       "Datei wählen …",
       "Übernehmen",
       "Medienordner öffnen",
@@ -3078,11 +3081,90 @@
       "T-0205: Zuschneiden + Drehen ergibt richtige Größe, Helligkeit ändert Pixel, Text wird gezeichnet, JPG/PNG"
     ],
     "SourceFiles": [
+      "src/Trendo.App/MainWindow.VideoSchnitt.cs",
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
+  },
+  {
+    "Id": "schnitt",
+    "Name": "Videoschnitt",
+    "Studio": "CORE-08",
+    "StudioName": "Videos & Fotos bearbeiten",
+    "Area": "Kreativ & Medien",
+    "Type": [
+      "Video-Zeitleiste"
+    ],
+    "Functions": [],
+    "Engine": [
+      "VideoEdit",
+      "MediaStudio",
+      "FileShelf"
+    ],
+    "Tools": [
+      "Teilen (S) (Schneiden)",
+      "Löschen (Entf) (Schneiden)",
+      "◀ Nach vorn (Schneiden)",
+      "Nach hinten ▶ (Schneiden)",
+      "＋ Zoom (Ansicht)",
+      "－ Zoom (Ansicht)",
+      "⏮ Anfang (Ansicht)",
+      "Video (MP4) (Exportieren)"
+    ],
+    "Formats": [
+      ".csv",
+      ".docx",
+      ".jpg",
+      ".json",
+      ".md",
+      ".mp3",
+      ".mp4",
+      ".ods",
+      ".odt",
+      ".ogg",
+      ".pdf",
+      ".png",
+      ".pptx",
+      ".tdoc",
+      ".txt",
+      ".wav",
+      ".webm",
+      ".xlsx",
+      ".zip"
+    ],
+    "Dependencies": [
+      "Blender (optional, 3D-Fotos/Render)",
+      "Ollama – lokale KI (optional)",
+      "FFmpeg",
+      "LibreOffice (optional)",
+      "mpv (optional)"
+    ],
+    "Ui": [
+      "Video-Zeitleiste",
+      "Menüband",
+      "Eigenschaften",
+      "Statusleiste",
+      "Dokument-Reiter"
+    ],
+    "Tabs": [
+      "Videoschnitt"
+    ],
+    "Tests": [
+      "CORE-08 (UI): Datei wählen, Ton herausholen – echte Ausgabedatei",
+      "CORE-08: Alle Aufgaben laufen mit echtem FFmpeg, Original bleibt, nichts wird überschrieben",
+      "CORE-08: Fehlende Datei gibt verständliche Meldung, Argumente ohne Shell",
+      "Videoschnitt UI: Medien auf die Spuren, Stück ziehen ordnet um, Kante ziehen kürzt, Lineal setzt Abspielkopf, S teilt, Strg+Z, Entf, Export, Einfach-Stufe",
+      "Videoschnitt UI: falsche Dateien und leere Bildspur geben klare Meldungen"
+    ],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.VideoSchnitt.cs",
+      "src/Trendo.App/MainWindow.W4Media.cs"
+    ],
+    "Status": "IMPLEMENTED / Test PC_VERIFIED",
+    "Version": "0.9.28 (Stand de74291)",
+    "Shell": true
   },
   {
     "Id": "3d",
@@ -3197,7 +3279,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -3275,7 +3357,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -3381,7 +3463,201 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
+    "Shell": false
+  },
+  {
+    "Id": "scan3d",
+    "Name": "Aus Fotos",
+    "Studio": "SPEC-09",
+    "StudioName": "Gegenstände einscannen",
+    "Area": "3D, Spiele & VR",
+    "Type": [],
+    "Functions": [
+      {
+        "Nr": "F01",
+        "Name": "PLY ASCII",
+        "State": "gebaut",
+        "Test": "SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern"
+      },
+      {
+        "Nr": "F02",
+        "Name": "PLY binär",
+        "State": "gebaut",
+        "Test": "SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern"
+      },
+      {
+        "Nr": "F03",
+        "Name": "XYZ/PTS/CSV",
+        "State": "gebaut",
+        "Test": "SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern"
+      },
+      {
+        "Nr": "F04",
+        "Name": "OBJ-Punkte",
+        "State": "gebaut",
+        "Test": "SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern"
+      },
+      {
+        "Nr": "F05",
+        "Name": "Überblick",
+        "State": "gebaut",
+        "Test": "SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern"
+      },
+      {
+        "Nr": "F06",
+        "Name": "Farben",
+        "State": "gebaut",
+        "Test": "SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern"
+      },
+      {
+        "Nr": "F07",
+        "Name": "Störpunkte entfernen",
+        "State": "gebaut",
+        "Test": "SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern"
+      },
+      {
+        "Nr": "F08",
+        "Name": "Ausdünnen",
+        "State": "gebaut",
+        "Test": "SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern"
+      },
+      {
+        "Nr": "F09",
+        "Name": "PLY speichern",
+        "State": "gebaut",
+        "Test": "SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern"
+      },
+      {
+        "Nr": "F10",
+        "Name": "Skalieren",
+        "State": "gebaut",
+        "Test": "SPEC-09 F10: Skalieren"
+      },
+      {
+        "Nr": "F11",
+        "Name": "Zentrieren",
+        "State": "gebaut",
+        "Test": "SPEC-09 F11: Zentrieren"
+      },
+      {
+        "Nr": "F12",
+        "Name": "Zuschneiden",
+        "State": "gebaut",
+        "Test": "SPEC-09 F12: Zuschneiden"
+      },
+      {
+        "Nr": "F13",
+        "Name": "Boden finden",
+        "State": "gebaut",
+        "Test": "SPEC-09 F13: Boden finden"
+      },
+      {
+        "Nr": "F14",
+        "Name": "Boden entfernen",
+        "State": "gebaut",
+        "Test": "SPEC-09 F14: Boden entfernen"
+      },
+      {
+        "Nr": "F15",
+        "Name": "Scans vergleichen",
+        "State": "gebaut",
+        "Test": "SPEC-09 F15: Scans vergleichen"
+      },
+      {
+        "Nr": "F16",
+        "Name": "Volumen",
+        "State": "gebaut",
+        "Test": "SPEC-09 F16: Volumen"
+      },
+      {
+        "Nr": "F17",
+        "Name": "XYZ speichern",
+        "State": "gebaut",
+        "Test": "SPEC-09 F17: XYZ speichern"
+      },
+      {
+        "Nr": "F18",
+        "Name": "Punktdichte",
+        "State": "gebaut",
+        "Test": "SPEC-09 F18: Punktdichte"
+      },
+      {
+        "Nr": "F19",
+        "Name": "Drehen",
+        "State": "gebaut",
+        "Test": "SPEC-09 F19: Drehen"
+      },
+      {
+        "Nr": "F20",
+        "Name": "Zusammenführen",
+        "State": "gebaut",
+        "Test": "SPEC-09 F20: Zusammenführen"
+      }
+    ],
+    "FunctionCatalog": "docs/w6-katalog/SPEC-09.md",
+    "Engine": [
+      "ScanDoc",
+      "ScanPlus",
+      "PointCloud"
+    ],
+    "Tools": [
+      "Plan erstellen",
+      "Gegenstände einscannen",
+      "Aus Fotos",
+      "COLMAP",
+      "Meshroom",
+      "Werkzeug prüfen",
+      "Ordner wählen …",
+      "Datei wählen …",
+      "Modell rechnen",
+      "Stopp",
+      "Im 3D-Studio öffnen"
+    ],
+    "Formats": [
+      ".csv",
+      ".md",
+      ".obj",
+      ".ply",
+      ".pts",
+      ".txt",
+      ".xyz"
+    ],
+    "Dependencies": [],
+    "Ui": [],
+    "Tabs": [
+      "Aus Fotos"
+    ],
+    "Tests": [
+      "SPEC-09 F10: Skalieren",
+      "SPEC-09 F11: Zentrieren",
+      "SPEC-09 F12: Zuschneiden",
+      "SPEC-09 F13: Boden finden",
+      "SPEC-09 F14: Boden entfernen",
+      "SPEC-09 F15: Scans vergleichen",
+      "SPEC-09 F16: Volumen",
+      "SPEC-09 F17: XYZ speichern",
+      "SPEC-09 F18: Punktdichte",
+      "SPEC-09 F19: Drehen",
+      "SPEC-09 F20: Zusammenführen",
+      "SPEC-09 Foto: COLMAP-Plan ohne Grafikkarte, Video nutzt FFmpeg und die Reihe",
+      "SPEC-09 Foto: Fläche aus PLY, Hülle aus Punkten, Binärformat, Quadrat, Linie",
+      "SPEC-09 Foto: Lauf schreibt OBJ fürs 3D-Studio, Abbruch bei Fehler und ohne Kameramodell",
+      "SPEC-09 Foto: Meshroom bekommt Eingabe und Ausgabe, Arbeitsordner liegt beim Programm",
+      "SPEC-09 Foto: Ordner listet Bilder, zu wenige Fotos werden abgelehnt",
+      "SPEC-09 Katalog: COLMAP als geprüftes Windows-ZIP, Meshroom nur über die offizielle Seite",
+      "SPEC-09 UI: Beispielraum – Maus dreht und zoomt, Störpunkte/Boden entfernen als Schritte, Schritt wieder entfernen, Rückgängig",
+      "SPEC-09 UI: Messen – zwei Punkte anklicken zeigt den Abstand; eigene Datei laden, Einheit umrechnen, Analyse, Export PLY/XYZ/Bericht",
+      "SPEC-09 UI: Rechnung zeigt den Fortschritt und öffnet das Modell im 3D-Studio",
+      "SPEC-09 UI: Video ohne FFmpeg fragt, bevor etwas installiert wird",
+      "SPEC-09 UI: ohne Fotos keine Installation, mit Fotos fragt Trendo vor COLMAP",
+      "SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern"
+    ],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.Spec09.cs"
+    ],
+    "Status": "IMPLEMENTED / Test PC_VERIFIED",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -3557,8 +3833,7 @@
       "Dokument-Reiter"
     ],
     "Tabs": [
-      "Punktwolke",
-      "Aus Fotos"
+      "Punktwolke"
     ],
     "Tests": [
       "SPEC-09 F10: Skalieren",
@@ -3589,7 +3864,7 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": true
   },
   {
@@ -3634,8 +3909,7 @@
       "Dokument-Reiter"
     ],
     "Tabs": [
-      "Spiele bauen",
-      "Werkstatt"
+      "Spiele bauen"
     ],
     "Tests": [
       "CORE-06 (UI): Spiel anlegen öffnet es im Browser; ohne Unreal ehrlicher Hinweis, mit Unreal Projekt anlegen",
@@ -3649,8 +3923,80 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": true
+  },
+  {
+    "Id": "spiele",
+    "Name": "Werkstatt",
+    "Studio": "CORE-06",
+    "StudioName": "Spiele bauen",
+    "Area": "3D, Spiele & VR",
+    "Type": [],
+    "Functions": [],
+    "Engine": [
+      "GameDesign",
+      "GameStudio"
+    ],
+    "Tools": [
+      "Plan erstellen",
+      "Hinzufügen …",
+      "Spiele bauen",
+      "Werkstatt",
+      "Anlegen und spielen",
+      "Unreal-Projekt anlegen",
+      "Datei wählen …",
+      "Projekt öffnen",
+      "Öffnen",
+      "Ordner",
+      "In Unreal Engine öffnen"
+    ],
+    "Formats": [
+      ".html",
+      ".jpg",
+      ".json",
+      ".md",
+      ".png",
+      ".txt",
+      ".zip"
+    ],
+    "Dependencies": [
+      "Blender (optional, 3D-Fotos/Render)",
+      "Unreal Engine (optional)"
+    ],
+    "Ui": [],
+    "Tabs": [
+      "Werkstatt"
+    ],
+    "Tests": [
+      "CORE-06 (UI): Spiel anlegen öffnet es im Browser; ohne Unreal ehrlicher Hinweis, mit Unreal Projekt anlegen",
+      "CORE-06: Alle Browser-Spiele werden angelegt, JavaScript ist gültig (node --check)",
+      "CORE-06: Unreal-Engines aus Launcher-Liste erkannt, neueste zuerst; .uproject ist gültig",
+      "Spiele: Retro-Vorlage, Level im Raster bearbeiten, Figur hinzufügen, prüfen, bauen und spielen",
+      "Spiele: Umfang AAA+ wählen setzt AAA-Meilensteine; Bauen legt ein Unreal-Projekt mit Spielbibel an",
+      "Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg",
+      "T-0203: Abbrechen installiert nichts",
+      "T-0203: LibreOffice bleibt zu, wenn die Versionsabfrage zu lange dauert",
+      "T-0203: OBS startet nicht, wenn die Dateiversion fehlt",
+      "T-0203: OBS unter Windows liest die Dateiversion und öffnet ohne Prozess in der Prüfung",
+      "T-0203: „Einrichten“ fragt, „Ja“ lädt nichts, solange die Prüfung nicht besteht",
+      "T-0203: „In LibreOffice öffnen“ startet die Datei, wenn --version schnell antwortet",
+      "T-0203: „In OBS öffnen“ startet die Sammlung, wenn --version schnell antwortet",
+      "T-0203: „In VS Code öffnen“ startet den Ordner, wenn --version schnell antwortet",
+      "T-0203: „Ja, einrichten“ öffnet keine Herstellerseite, solange die Prüfung nicht besteht",
+      "T-0203: „Starten“ öffnet LibreOffice und Blender erst nach bestandener Prüfung und Freigabe",
+      "T-0203: „Starten“ öffnet nicht, wenn die Prüfung scheitert",
+      "T-0204 (UI): Anlegen → Editor; Tempo und Level ändern, speichern, als ZIP exportieren",
+      "T-0204 (UI): Unreal – vorhandenes Projekt öffnen; ohne Unreal klarer Hinweis",
+      "T-0204: Einstellungen landen in config.js, Bild wird kopiert, Export enthält alles"
+    ],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.ProgGame.cs",
+      "src/Trendo.App/MainWindow.W4Game.cs"
+    ],
+    "Status": "IMPLEMENTED / Test PC_VERIFIED",
+    "Version": "0.9.28 (Stand de74291)",
+    "Shell": false
   },
   {
     "Id": "xr",
@@ -3816,7 +4162,7 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -3998,7 +4344,7 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -4187,7 +4533,7 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": true
   },
   {
@@ -4375,7 +4721,7 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -4589,7 +4935,7 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -4783,7 +5129,7 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": true
   },
   {
@@ -4963,7 +5309,7 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": true
   },
   {
@@ -5143,7 +5489,7 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": true
   },
   {
@@ -5332,7 +5678,7 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": true
   },
   {
@@ -5484,7 +5830,7 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -5675,7 +6021,7 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": true
   },
   {
@@ -5718,7 +6064,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -5763,7 +6109,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -5808,7 +6154,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -5857,7 +6203,7 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -5932,7 +6278,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -5975,7 +6321,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6050,7 +6396,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6102,7 +6448,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6179,7 +6525,7 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6238,7 +6584,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6282,7 +6628,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6338,7 +6684,7 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6383,7 +6729,7 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6458,7 +6804,7 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6515,7 +6861,7 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6589,7 +6935,7 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6631,7 +6977,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6666,7 +7012,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6708,7 +7054,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6739,7 +7085,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6841,7 +7187,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6933,7 +7279,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -6973,7 +7319,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -7037,7 +7383,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -7149,7 +7495,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -7190,7 +7536,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -7231,7 +7577,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -7290,7 +7636,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -7345,7 +7691,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -7392,7 +7738,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -7434,7 +7780,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -7668,7 +8014,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -7881,7 +8227,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -8099,7 +8445,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -8343,7 +8689,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -8517,7 +8863,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -8696,7 +9042,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -8883,7 +9229,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -9061,7 +9407,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -9319,7 +9665,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -9498,7 +9844,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -9688,7 +10034,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -9866,7 +10212,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -9898,7 +10244,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -10136,7 +10482,7 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -10353,7 +10699,7 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   },
   {
@@ -10400,7 +10746,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8f6f8b4)",
+    "Version": "0.9.28 (Stand de74291)",
     "Shell": false
   }
 ]
