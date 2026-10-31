@@ -476,41 +476,155 @@ public partial class MainWindow
             new WrapPanel { Children = { loc, new Border { Width = 4 }, remind, new Border { Width = 4 }, rep, new Border { Width = 4 }, add, new Border { Width = 12 }, imp, new Border { Width = 4 }, ics } } } });
     }
 
-    // ---------- Aufgaben ----------
+    // ---------- Aufgaben: Tafel (Offen · In Arbeit · Erledigt) ----------
+    public string? TodoSelected { get; set; }
+    public string TodoListFilter { get; set; } = "";
+    private readonly List<TodoItem?> _todoUndoBefore = [];
+    private readonly List<string> _todoUndoUid = [];
+    static readonly string[] Stages = ["Offen", "In Arbeit", "Erledigt"];
+
+    void TodoChange(string uid, Func<TodoItem?> change, string msg)
+    {
+        var before = Cal.GetTodo(uid);
+        try { change(); _todoUndoUid.Add(uid); _todoUndoBefore.Add(before); _pimMsg = msg; }
+        catch (InvalidOperationException ex) { _pimMsg = ex.Message; }
+        Show("aufgaben");
+    }
+
+    public void TodoUndo()
+    {
+        if (_todoUndoUid.Count == 0) { _pimMsg = "Es gibt nichts rückgängig zu machen."; return; }
+        var uid = _todoUndoUid[^1]; var before = _todoUndoBefore[^1]; _todoUndoUid.RemoveAt(_todoUndoUid.Count - 1); _todoUndoBefore.RemoveAt(_todoUndoBefore.Count - 1);
+        if (before is null) Cal.DeleteTodo(uid); else Cal.AddTodo(before);
+        _pimMsg = "Rückgängig gemacht.";
+    }
+
+    /// <summary>Aufgabe in eine Spalte setzen (auch für Tests und die KI).</summary>
+    public void TodoMove(string uid, int stage) => TodoChange(uid, () => Cal.SetStage(uid, stage), $"„{Cal.GetTodo(uid)?.Title}“ → {Stages[Math.Clamp(stage, 0, 2)]}.");
+
     Control TodoView()
     {
         var sp = new StackPanel { Spacing = 8 };
         var title = new TextBox { Name = "todo-title", PlaceholderText = "Neue Aufgabe", Width = 280 };
         var due = new TextBox { Name = "todo-due", PlaceholderText = "fällig TT.MM.JJJJ", Width = 130 };
         var prio = new ComboBox { Name = "todo-prio", ItemsSource = new[] { "hoch", "normal", "niedrig" }, SelectedIndex = 1, Width = 100 };
-        var list = new TextBox { Name = "todo-list", Text = "Allgemein", Width = 120 };
+        var list = new TextBox { Name = "todo-list", Text = TodoListFilter.Length > 0 ? TodoListFilter : "Allgemein", Width = 120 };
         var add = new Button { Name = "todo-add", Content = "Hinzufügen", Background = Accent };
         add.Click += (_, _) =>
         {
             if ((title.Text ?? "").Trim().Length == 0) { _pimMsg = "Bitte eine Aufgabe eintragen."; Show("aufgaben"); return; }
             DateTime? d = DateTime.TryParseExact((due.Text ?? "").Trim(), ["d.M.yyyy", "dd.MM.yyyy"], De, DateTimeStyles.None, out var dd) ? dd : null;
-            Cal.AddTodo(new TodoItem(Guid.NewGuid().ToString("N"), title.Text!.Trim(), d, false, prio.SelectedIndex + 1, (list.Text ?? "").Trim() is { Length: > 0 } l ? l : "Allgemein"));
-            _pimMsg = ""; Show("aufgaben");
+            var t = new TodoItem(Guid.NewGuid().ToString("N"), title.Text!.Trim(), d, false, prio.SelectedIndex + 1, (list.Text ?? "").Trim() is { Length: > 0 } l ? l : "Allgemein");
+            TodoChange(t.Uid, () => { Cal.AddTodo(t); return t; }, "");
         };
         title.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) add.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent)); };
-        sp.Children.Add(Card(new WrapPanel { Children = { title, new Border { Width = 4 }, due, new Border { Width = 4 }, prio, new Border { Width = 4 }, list, new Border { Width = 4 }, add } }));
-        var todos = Cal.Todos(); var i = 0;
-        if (todos.Count == 0) sp.Children.Add(EmptyState("todo-empty", "✅", "Keine Aufgaben", "Oben eintragen – mit Fälligkeit und Priorität. Erledigte bleiben durchgestrichen sichtbar."));
-        foreach (var grp in todos.GroupBy(t => t.List))
+        var undo = new Button { Name = "todo-undo", Content = "↶ Rückgängig", IsEnabled = _todoUndoUid.Count > 0 };
+        undo.Click += (_, _) => { TodoUndo(); Show("aufgaben"); };
+        sp.Children.Add(Card(new WrapPanel { Children = { title, new Border { Width = 4 }, due, new Border { Width = 4 }, prio, new Border { Width = 4 }, list, new Border { Width = 4 }, add, new Border { Width = 12 }, undo } }));
+
+        var todos = Cal.Todos();
+        // Listen als Filter
+        var lists = todos.Select(t => t.List).Distinct().OrderBy(x => x, StringComparer.CurrentCulture).ToList();
+        if (lists.Count > 1)
         {
-            sp.Children.Add(H(grp.Key, 14));
-            foreach (var t in grp)
+            var chips = new WrapPanel { Name = "todo-lists" };
+            foreach (var l in lists.Prepend(""))
             {
-                var uid = t.Uid; var idx = i++;
-                var cb = new CheckBox { Name = $"todo-done-{idx}", IsChecked = t.Done, Content = new TextBlock { Text = t.Title, Foreground = t.Done ? Muted : Text, TextDecorations = t.Done ? TextDecorations.Strikethrough : null } };
-                cb.IsCheckedChanged += (_, _) => { Cal.SetDone(uid, cb.IsChecked == true); Show("aufgaben"); };
-                var overdue = !t.Done && t.Due is { } dd && dd.Date < DateTime.Today;
-                var info = new TextBlock { Text = (t.Priority == 1 ? "‼ " : "") + (t.Due is { } d ? $"fällig {d:dd.MM.yyyy}" : ""), Foreground = overdue ? Brush.Parse("#F87171") : Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0) };
-                var del = new Button { Name = $"todo-del-{idx}", Content = "✕", Padding = new Thickness(6, 0) }; del.Click += (_, _) => { Cal.DeleteTodo(uid); Show("aufgaben"); };
-                sp.Children.Add(Row(new StackPanel { Orientation = Orientation.Horizontal, Children = { cb, info } }, del));
+                var ll = l; var on = TodoListFilter == l;
+                var b = new Button { Name = "todo-filter-" + (l.Length == 0 ? "alle" : lists.IndexOf(l).ToString()), Content = l.Length == 0 ? "Alle Listen" : $"{l} ({todos.Count(t => t.List == l && !t.Done)})", Margin = new Thickness(0, 0, 4, 4) };
+                if (on) b.Background = Accent;
+                b.Click += (_, _) => { TodoListFilter = ll; Show("aufgaben"); };
+                chips.Children.Add(b);
             }
+            sp.Children.Add(chips);
         }
-        if (_pimMsg.Length > 0) sp.Children.Add(new TextBlock { Text = _pimMsg, Foreground = Muted, FontSize = 13 });
+        if (TodoListFilter.Length > 0) todos = todos.Where(t => t.List == TodoListFilter).ToList();
+        if (_pimMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "todo-msg", Text = _pimMsg, Foreground = Muted, FontSize = 13 });
+
+        var board = new Grid { Name = "todo-board", ColumnDefinitions = new ColumnDefinitions("*,10,*,10,*") };
+        var idx = 0;
+        for (var stage = 0; stage < 3; stage++)
+        {
+            var items = todos.Where(t => t.Stage == stage).ToList();
+            var col = new StackPanel { Spacing = 6 };
+            col.Children.Add(new DockPanel { Children = {
+                new TextBlock { Text = $"{items.Count}", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, [DockPanel.DockProperty] = Avalonia.Controls.Dock.Right },
+                new TextBlock { Text = Stages[stage], Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold } } });
+            foreach (var t in items) col.Children.Add(TodoCard(t, idx++));
+            if (items.Count == 0) col.Children.Add(new TextBlock { Text = stage switch { 0 => "Nichts offen – oben eintragen.", 1 => "Karte hierher ziehen, wenn du daran arbeitest.", _ => "Erledigtes landet hier." }, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap });
+            var lane = new Border { Name = $"todo-col-{stage}", Tag = stage, MinHeight = 360, Padding = new Thickness(10), CornerRadius = new CornerRadius(12), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = col };
+            Grid.SetColumn(lane, stage * 2); board.Children.Add(lane);
+        }
+        if (Cal.Todos().Count == 0) sp.Children.Add(EmptyState("todo-empty", "✅", "Keine Aufgaben", "Oben eintragen – mit Fälligkeit und Priorität. Karten zieht man zwischen Offen, In Arbeit und Erledigt."));
+        var side = TodoSelected is { } su && Cal.GetTodo(su) is { } sel ? TodoEditPanel(sel) : null;
+        var split = new Grid { ColumnDefinitions = new ColumnDefinitions(side is null ? "*" : "*,12,320") };
+        split.Children.Add(board); if (side is not null) { Grid.SetColumn(side, 2); split.Children.Add(side); }
+        sp.Children.Add(split);
+        sp.Children.Add(new TextBlock { Text = "Karte ziehen: in eine andere Spalte setzen · Klick: bearbeiten · Häkchen: erledigt", Foreground = Muted, FontSize = 11.5 });
+        sp.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Z && e.KeyModifiers == Avalonia.Input.KeyModifiers.Control) { TodoUndo(); Show("aufgaben"); e.Handled = true; } };
         return SysPage("Aufgaben", sp);
+    }
+
+    Control TodoCard(TodoItem t, int idx)
+    {
+        var uid = t.Uid;
+        var overdue = !t.Done && t.Due is { } dd && dd.Date < DateTime.Today;
+        var cb = new CheckBox { Name = $"todo-done-{idx}", IsChecked = t.Done, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 0, 4, 0) };
+        cb.IsCheckedChanged += (_, _) => { if ((cb.IsChecked == true) != t.Done) TodoChange(uid, () => Cal.SetStage(uid, cb.IsChecked == true ? 2 : 0), cb.IsChecked == true ? $"„{t.Title}“ erledigt." : $"„{t.Title}“ wieder offen."); };
+        var info = new WrapPanel();
+        if (t.Priority == 1) info.Children.Add(Chip("hoch", "#EF4444"));
+        if (t.Due is { } d) info.Children.Add(Chip((overdue ? "überfällig " : "fällig ") + d.ToString("dd.MM.", De), overdue ? "#EF4444" : "#64748B"));
+        info.Children.Add(Chip(t.List, "#2F86F6"));
+        var body = new StackPanel { Spacing = 4, Children = {
+            new TextBlock { Text = t.Title, Foreground = t.Done ? Muted : Text, FontSize = 13.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, TextDecorations = t.Done ? TextDecorations.Strikethrough : null }, info } };
+        if (t.Notes.Length > 0) body.Children.Add(new TextBlock { Text = t.Notes, Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap, MaxHeight = 32, TextTrimming = TextTrimming.CharacterEllipsis });
+        var card = new Border { Name = $"todo-card-{idx}", Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(10), Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
+            Background = Brush.Parse(TodoSelected == uid ? "#332F86F6" : "#14FFFFFF"), BorderBrush = Brush.Parse(TodoSelected == uid ? "#FACC15" : overdue ? "#88EF4444" : "#22FFFFFF"), BorderThickness = new Thickness(TodoSelected == uid ? 1.5 : 1),
+            Child = new DockPanel { Children = { cb, body } } };
+        DockPanel.SetDock(cb, Avalonia.Controls.Dock.Left);
+        // ziehen in eine andere Spalte, Klick wählt aus
+        Point? from = null; var dragged = false;
+        card.PointerPressed += (_, e) => { if (e.Source is CheckBox || (e.Source is Visual sv && Avalonia.VisualTree.VisualExtensions.FindAncestorOfType<CheckBox>(sv) is not null)) return; from = e.GetPosition(this); dragged = false; e.Pointer.Capture(card); e.Handled = true; };
+        card.PointerMoved += (_, e) => { if (from is { } f && Math.Abs(e.GetPosition(this).X - f.X) + Math.Abs(e.GetPosition(this).Y - f.Y) > 8) { dragged = true; card.Opacity = 0.6; } };
+        card.PointerReleased += (_, e) =>
+        {
+            if (from is null) return; from = null; e.Pointer.Capture(null); card.Opacity = 1;
+            if (!dragged) { TodoSelected = TodoSelected == uid ? null : uid; Show("aufgaben"); return; }
+            var hit = Avalonia.Input.InputExtensions.InputHitTest(this, e.GetPosition(this)) as Visual;
+            while (hit is not null && !(hit is Border { Tag: int })) hit = Avalonia.VisualTree.VisualExtensions.GetVisualParent(hit);
+            if (hit is Border { Tag: int stage } && stage != t.Stage) TodoMove(uid, stage);
+        };
+        return card;
+
+        Control Chip(string text, string color) => new Border { Margin = new Thickness(0, 0, 4, 0), Padding = new Thickness(6, 1), CornerRadius = new CornerRadius(6), Background = Brush.Parse("#33" + color.TrimStart('#')),
+            Child = new TextBlock { Text = text, FontSize = 11, Foreground = Brush.Parse(color == "#64748B" ? "#CBD5E1" : color) } };
+    }
+
+    Control TodoEditPanel(TodoItem t)
+    {
+        var title = new TextBox { Name = "todo-edit-title", Text = t.Title };
+        var due = new TextBox { Name = "todo-edit-due", Text = t.Due?.ToString("dd.MM.yyyy", De) ?? "", PlaceholderText = "TT.MM.JJJJ", Width = 120 };
+        var prio = new ComboBox { Name = "todo-edit-prio", ItemsSource = new[] { "hoch", "normal", "niedrig" }, SelectedIndex = Math.Clamp(t.Priority - 1, 0, 2), Width = 110 };
+        var stage = new ComboBox { Name = "todo-edit-stage", ItemsSource = Stages, SelectedIndex = t.Stage, Width = 120 };
+        var list = new TextBox { Name = "todo-edit-list", Text = t.List };
+        var notes = new TextBox { Name = "todo-edit-notes", Text = t.Notes, AcceptsReturn = true, MinHeight = 80, TextWrapping = TextWrapping.Wrap, PlaceholderText = "Beschreibung, Schritte, Links …" };
+        var save = new Button { Name = "todo-edit-save", Content = "Übernehmen", Background = Accent, Foreground = Brushes.White };
+        save.Click += (_, _) =>
+        {
+            if ((title.Text ?? "").Trim().Length == 0) { _pimMsg = "Bitte einen Titel eingeben."; Show("aufgaben"); return; }
+            DateTime? d = null;
+            if ((due.Text ?? "").Trim().Length > 0) { if (!DateTime.TryParseExact(due.Text!.Trim(), ["d.M.yyyy", "dd.MM.yyyy", "d.M.yy"], De, DateTimeStyles.None, out var dd)) { _pimMsg = "Datum bitte als TT.MM.JJJJ."; Show("aufgaben"); return; } d = dd; }
+            var n = t with { Title = title.Text!.Trim(), Due = d, Priority = prio.SelectedIndex + 1, List = (list.Text ?? "").Trim() is { Length: > 0 } l ? l : "Allgemein", Notes = notes.Text?.Trim() ?? "", Done = stage.SelectedIndex == 2, Working = stage.SelectedIndex == 1 };
+            TodoChange(t.Uid, () => { Cal.AddTodo(n); return n; }, $"„{n.Title}“ gespeichert.");
+        };
+        var del = new Button { Name = "todo-edit-delete", Content = "Löschen" };
+        del.Click += (_, _) => { TodoSelected = null; TodoChange(t.Uid, () => { Cal.DeleteTodo(t.Uid); return null; }, $"„{t.Title}“ gelöscht – Rückgängig holt sie zurück."); };
+        var close = new Button { Name = "todo-edit-close", Content = "Fertig" };
+        close.Click += (_, _) => { TodoSelected = null; Show("aufgaben"); };
+        Control L(string label, Control c) => new StackPanel { Spacing = 2, Children = { new TextBlock { Text = label, Foreground = Muted, FontSize = 11.5 }, c } };
+        return Card(new StackPanel { Name = "todo-edit", Spacing = 8, Children = {
+            H("Aufgabe", 14), L("Titel", title), new WrapPanel { Children = { L("Fällig", due), new Border { Width = 6 }, L("Priorität", prio) } },
+            L("Spalte", stage), L("Liste", list), L("Beschreibung", notes),
+            new WrapPanel { Children = { save, new Border { Width = 6 }, del, new Border { Width = 6 }, close } } } });
     }
 }

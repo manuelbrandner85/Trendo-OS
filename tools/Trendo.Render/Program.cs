@@ -163,6 +163,13 @@ else if (shot == "seite")
         win.Cal.Add(new Trendo.Core.Sys.CalEvent("ganz", mo.AddDays(5), mo.AddDays(6), "Ausflug", AllDay: true));
         win.CalDay = mo; win.CalMode = "woche"; win.CalSelected = win.Cal.All().First(e => e.Title == "Zahnarzt").Uid; win.Show("kalender");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_TODO") is { Length: > 0 }) // Aufgaben-Tafel mit erfundenen Beispielaufgaben
+    {
+        var td = new DateTime(2026, 11, 2);
+        foreach (var (t, l, pr, due, st, n) in new[] { ("Steuererklärung abgeben", "Haushalt", 1, (DateTime?)td.AddDays(13), 0, "Belege im Ordner 2025"), ("Fahrrad zur Inspektion", "Haushalt", 2, null, 0, ""), ("Noten kopieren", "Chor", 2, td.AddDays(-2), 0, ""), ("Präsentation vorbereiten", "Arbeit", 1, td.AddDays(3), 1, "Folien 1–12, Zahlen vom Oktober"), ("Angebot vergleichen", "Arbeit", 2, td.AddDays(5), 1, ""), ("Geschenk für Erika", "Familie", 3, null, 2, ""), ("Arzttermin ausmachen", "Familie", 2, null, 2, "") })
+            win.Cal.AddTodo(new Trendo.Core.Sys.TodoItem(Guid.NewGuid().ToString("N"), t, due, st == 2, pr, l, st == 1, n));
+        win.TodoSelected = win.Cal.Todos().First(x => x.Title.StartsWith("Präsentation")).Uid; win.Show("aufgaben");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_3D") is { Length: > 0 }) { win.Show("3d"); foreach (var sh in new[] { "cube", "sphere", "cylinder", "torus" }) win.Studio3DAddShape(sh); win.Studio3DSelect(1); } // 3D-Modelle erstellen mit Arbeitsfläche
     if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lv)); win.ProgramNew(page, tpl); win.Show(page); } // Programm mit Vorlage öffnen
     if (page == "architektur" && Environment.GetEnvironmentVariable("TRENDO_ARCH") is { Length: > 0 } arch) // Grundriss: Auswahl/3D/Werkzeug zeigen

@@ -317,7 +317,12 @@ public sealed class FocusMode(string dataRoot)
 public enum Repeat { Keine, Taeglich, Woechentlich, Monatlich, Jaehrlich }
 public sealed record CalEvent(string Uid, DateTime Start, DateTime End, string Title, string Location = "", string Notes = "", bool AllDay = false, int RemindMin = 15, Repeat Repeat = Repeat.Keine);
 /// <summary>O5/N19: Aufgabe mit Fälligkeit, Priorität (1 hoch, 2 normal, 3 niedrig) und Liste.</summary>
-public sealed record TodoItem(string Uid, string Title, DateTime? Due = null, bool Done = false, int Priority = 2, string List = "Allgemein");
+/// <summary><paramref name="Working"/>: in Arbeit (Tafel-Spalte „In Arbeit“, ICS STATUS:IN-PROCESS); <paramref name="Notes"/>: Beschreibung.</summary>
+public sealed record TodoItem(string Uid, string Title, DateTime? Due = null, bool Done = false, int Priority = 2, string List = "Allgemein", bool Working = false, string Notes = "")
+{
+    /// <summary>Spalte auf der Aufgabentafel: 0 offen, 1 in Arbeit, 2 erledigt.</summary>
+    public int Stage => Done ? 2 : Working ? 1 : 0;
+}
 
 public static class Ics
 {
@@ -344,7 +349,8 @@ public static class Ics
         foreach (var t in todos ?? [])
         {
             sb.Append("BEGIN:VTODO\r\nUID:").Append(t.Uid).Append("\r\nDTSTAMP:").Append(DateTime.UtcNow.ToString("yyyyMMdd'T'HHmmss'Z'", CultureInfo.InvariantCulture)).Append("\r\nSUMMARY:").Append(Esc(t.Title)).Append("\r\n");
-            sb.Append("PRIORITY:").Append(t.Priority switch { 1 => 1, 3 => 9, _ => 5 }).Append("\r\nSTATUS:").Append(t.Done ? "COMPLETED" : "NEEDS-ACTION").Append("\r\nCATEGORIES:").Append(Esc(t.List)).Append("\r\n");
+            sb.Append("PRIORITY:").Append(t.Priority switch { 1 => 1, 3 => 9, _ => 5 }).Append("\r\nSTATUS:").Append(t.Done ? "COMPLETED" : t.Working ? "IN-PROCESS" : "NEEDS-ACTION").Append("\r\nCATEGORIES:").Append(Esc(t.List)).Append("\r\n");
+            if (t.Notes.Length > 0) sb.Append("DESCRIPTION:").Append(Esc(t.Notes)).Append("\r\n");
             if (t.Due is { } d) sb.Append("DUE;VALUE=DATE:").Append(Day(d)).Append("\r\n");
             sb.Append("END:VTODO\r\n");
         }
@@ -399,7 +405,7 @@ public static class Ics
         Blocks(text).Where(b => b.Kind == "VTODO").Select(b =>
         {
             var c = b.Props; var pr = int.TryParse(c.GetValueOrDefault("PRIORITY"), out var p) && p > 0 ? p <= 4 ? 1 : p >= 6 ? 3 : 2 : 2;
-            return new TodoItem(c.GetValueOrDefault("UID") ?? Guid.NewGuid().ToString("N"), Unesc(c.GetValueOrDefault("SUMMARY") ?? ""), c.TryGetValue("DUE", out var d) ? ParseDt(d) : null, c.GetValueOrDefault("STATUS") == "COMPLETED", pr, Unesc(c.GetValueOrDefault("CATEGORIES") ?? "Allgemein"));
+            return new TodoItem(c.GetValueOrDefault("UID") ?? Guid.NewGuid().ToString("N"), Unesc(c.GetValueOrDefault("SUMMARY") ?? ""), c.TryGetValue("DUE", out var d) ? ParseDt(d) : null, c.GetValueOrDefault("STATUS") == "COMPLETED", pr, Unesc(c.GetValueOrDefault("CATEGORIES") ?? "Allgemein"), c.GetValueOrDefault("STATUS") == "IN-PROCESS", Unesc(c.GetValueOrDefault("DESCRIPTION") ?? ""));
         }).ToList();
 }
 
@@ -441,7 +447,14 @@ public sealed class Calendar(string dataRoot)
     public List<TodoItem> Todos() => J.Load<TodoItem>(T).OrderBy(t => t.Done).ThenBy(t => t.Priority).ThenBy(t => t.Due ?? DateTime.MaxValue).ToList();
     public void AddTodo(TodoItem t) { var l = J.Load<TodoItem>(T); l.RemoveAll(x => x.Uid == t.Uid); l.Add(t); J.Save(T, l); }
     public void DeleteTodo(string uid) { var l = J.Load<TodoItem>(T); l.RemoveAll(x => x.Uid == uid); J.Save(T, l); }
-    public void SetDone(string uid, bool done) { var l = J.Load<TodoItem>(T); var i = l.FindIndex(x => x.Uid == uid); if (i >= 0) { l[i] = l[i] with { Done = done }; J.Save(T, l); } }
+    /// <summary>Aufgabe in eine Tafel-Spalte setzen (0 offen, 1 in Arbeit, 2 erledigt).</summary>
+    public TodoItem SetStage(string uid, int stage)
+    {
+        var l = J.Load<TodoItem>(T); var i = l.FindIndex(x => x.Uid == uid); if (i < 0) throw new InvalidOperationException("Diese Aufgabe gibt es nicht mehr.");
+        l[i] = l[i] with { Done = stage == 2, Working = stage == 1 }; J.Save(T, l); return l[i];
+    }
+    public TodoItem? GetTodo(string uid) => J.Load<TodoItem>(T).FirstOrDefault(x => x.Uid == uid);
+    public void SetDone(string uid, bool done) { var l = J.Load<TodoItem>(T); var i = l.FindIndex(x => x.Uid == uid); if (i >= 0) { l[i] = l[i] with { Done = done, Working = !done && l[i].Working }; J.Save(T, l); } }
 
     /// <summary>O3: alle Vorkommen im Zeitraum (Wiederholungen aufgelöst), nach Beginn sortiert.</summary>
     public List<(CalEvent Event, DateTime Start, DateTime End)> Occurrences(DateTime from, DateTime to)
