@@ -1,8 +1,8 @@
 # Auto & Fahrten – Produktionspaket
 
-Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.28 (Stand de74291)
+Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.28 (Stand 8fb56d8)
 
-Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
+Arbeitsfläche: Diagramm/Zeichnung  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): nein – eigene Arbeitsseite
 

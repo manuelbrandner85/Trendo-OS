@@ -1,6 +1,6 @@
 # TV & Live – Funktionsmatrix
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.28 (Stand de74291)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.28 (Stand 8fb56d8)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

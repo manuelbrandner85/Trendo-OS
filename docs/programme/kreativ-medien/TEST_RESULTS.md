@@ -1,5 +1,5 @@
 # Medien bearbeiten – Testergebnisse
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.28 (Stand de74291)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.28 (Stand 8fb56d8)
 
 Noch kein Testlauf eingelesen. Ergebnisse stehen hier erst nach einem echten Lauf (TRX-Datei) – nicht vorher.

@@ -1,6 +1,6 @@
 # Personen – Funktionsmatrix
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `personen` · Stand: 0.9.28 (Stand de74291)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `personen` · Stand: 0.9.28 (Stand 8fb56d8)
 
 Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 

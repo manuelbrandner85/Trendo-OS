@@ -1,6 +1,6 @@
 # Sauberer Nachbau – Funktionsmatrix
 
-Studio: Programme nachbauen (X-10) · Bereich: Entwickeln · Seite: `nachbau` · Stand: 0.9.28 (Stand de74291)
+Studio: Programme nachbauen (X-10) · Bereich: Entwickeln · Seite: `nachbau` · Stand: 0.9.28 (Stand 8fb56d8)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

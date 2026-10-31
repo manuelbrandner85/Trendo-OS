@@ -1,9 +1,10 @@
 # Abläufe (Automatisch erledigen) – Testplan
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.28 (Stand de74291)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.28 (Stand 8fb56d8)
 
-15 Tests sprechen dieses Programm an.
+16 Tests sprechen dieses Programm an.
 
+- Ablaufplan: Bausteine anhängen, Schritt per Maus nach oben ziehen, einstellen, Probelauf, Rückgängig; Änderung an freigegebenem Ablauf verlangt neue Freigabe
 - CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet
 - CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt
 - CORE-02: Ollama-Format (tags/chat) wird korrekt gesprochen

@@ -1,6 +1,6 @@
 # Live streamen – Funktionsmatrix
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.28 (Stand de74291)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.28 (Stand 8fb56d8)
 
 Quelle: `docs/w6-katalog/SPEC-15.md`
 

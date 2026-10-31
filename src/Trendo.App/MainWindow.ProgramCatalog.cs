@@ -52,9 +52,12 @@ public partial class MainWindow
     public (List<string> Ui, List<string> Tools) ProgramCatalogInspect(string key)
     {
         var spec = Programs.GetValueOrDefault(key); var made = false;
-        if (spec is not null && ProgramActive(key) is null) { ProgramNew(key, spec.Templates.FirstOrDefault(t => t.Id != "leer")?.Id); made = true; } // Arbeitsfläche mit Inhalt zeigen
+        if (spec is not null && ProgramActive(key) is null) { ProgramNew(key, (spec.Templates.FirstOrDefault(t => t.Id.Contains("beispiel")) ?? spec.Templates.FirstOrDefault(t => t.Id != "leer"))?.Id); made = true; } // Arbeitsfläche mit Inhalt zeigen
         switch (key) { case "text": TextNew(); break; case "tabelle": SheetNew(); break; case "praesentation": DeckNew(); break; } // Office: mit leerem Dokument statt Startseite
         Show(key);
+        // Seiten mit „Beispiel laden“: einmal laden, damit die Arbeitsfläche mit Inhalt erscheint (nur im Katalog-Generator, eigener Datenordner)
+        if ((ActivePageRoot ?? this).GetLogicalDescendants().OfType<Button>().FirstOrDefault(b => b.IsVisible && b.Name is { } n && (n.EndsWith("-demo") || n.EndsWith("-sample"))) is { } demo)
+        { demo.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent)); Show(key); }
         var page = ActivePageRoot ?? this;
         var all = page.GetLogicalDescendants().OfType<Control>().Where(c => c.IsVisible).ToList();
         var kinds = new SortedSet<string>(StringComparer.Ordinal);
@@ -63,7 +66,7 @@ public partial class MainWindow
             {
                 CadView => "CAD-/3D-Zeichenfläche", MeshView => "3D-Ansicht", FloorPlanView => "Grundriss-Zeichenfläche", CircuitCanvas => "Schaltplan-Zeichenfläche", PcbCanvas => "Platinen-Zeichenfläche",
                 FrameCanvas => "Tragwerks-Zeichenfläche", MapCanvas => "Karte", PointCloudView => "Punktwolken-Ansicht", CncPathView => "Werkzeugbahn-Ansicht", ArmView => "Roboter-Ansicht",
-                SheetGridView or MeasureGrid => "Tabellenraster", CalTimeGrid => "Kalender-Zeitachse", EditTimeline => "Video-Zeitleiste", Grid { Name: "cal-month" } => "Monatskalender", Grid { Name: "todo-board" } => "Aufgabentafel", SlideView => "Folienansicht", GraphView or BarChart => "Diagramm", Avalonia.Controls.Image => "Bildansicht",
+                SheetGridView or MeasureGrid => "Tabellenraster", CalTimeGrid => "Kalender-Zeitachse", EditTimeline => "Video-Zeitleiste", ShapeView => "Diagramm/Zeichnung", Border { Name: "learn-card" } => "Lernkarte", StackPanel { Name: "wf-flow" } => "Ablaufplan", Control { Name: "text-paper" } => "Dokumentseite (Textverarbeitung)", Control { Name: "pdf-page" } => "PDF-Seite", Grid { Name: "cal-month" } => "Monatskalender", Grid { Name: "todo-board" } => "Aufgabentafel", SlideView => "Folienansicht", GraphView or BarChart => "Diagramm", Avalonia.Controls.Image => "Bildansicht",
                 TextBox { AcceptsReturn: true } t when Math.Max(t.MinHeight, double.IsNaN(t.Height) ? 0 : t.Height) >= 100 => "Texteditor", _ => null,
             } is { } k) kinds.Add(k);
         var tools = all.OfType<Button>().Where(b => b.Name is { Length: > 0 } n && !n.StartsWith("prog-tab") && !n.StartsWith("dock") && !n.StartsWith("win-") && !n.StartsWith("toast"))

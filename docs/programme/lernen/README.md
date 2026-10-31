@@ -1,8 +1,8 @@
 # Lernen mit Karteikarten – Produktionspaket
 
-Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.28 (Stand de74291)
+Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.28 (Stand 8fb56d8)
 
-Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
+Arbeitsfläche: Diagramm/Zeichnung, Lernkarte  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): nein – eigene Arbeitsseite
 

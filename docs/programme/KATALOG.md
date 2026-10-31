@@ -19,13 +19,13 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Trendo PDF | Texte & Tabellen (SYS-10) | Arbeiten & Büro | keine eigene erkannt | 25 | 26 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](pdf/README.md) |
 | Trendo Präsentation | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Folienansicht | 25 | 27 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](praesentation/README.md) |
 | Trendo Tabelle | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Tabellenraster | 25 | 33 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](tabelle/README.md) |
-| Trendo Text | Texte & Tabellen (SYS-10) | Arbeiten & Büro | keine eigene erkannt | 25 | 31 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](text/README.md) |
+| Trendo Text | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Dokumentseite (Textverarbeitung) | 25 | 31 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](text/README.md) |
 | Geld | Geld & Rechnungen (SPEC-11) | Business & Geld | Diagramm | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](finanzen/README.md) |
 | Verkaufen | Online verkaufen (STUDIO-ONLINE-BUSINESS-01) | Business & Geld | Diagramm | – | 3 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](verkaufen/README.md) |
 | Freie Assets | Freie Bilder & Klänge finden (X-07) | Kreativ & Medien | keine eigene erkannt | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](assets/README.md) |
 | KI-Vorlagen | KI-Anweisungen schreiben (CORE-12) | Kreativ & Medien | keine eigene erkannt | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-vorlagen/README.md) |
 | Kleidung & Produkte | Kleidung & Produkte entwerfen (SPEC-08) | Kreativ & Medien | keine eigene erkannt | 18 | 16 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](mode-programm/README.md) |
-| Live streamen | Live streamen (SPEC-15) | Kreativ & Medien | Bildansicht | 20 | 39 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](sendung/README.md) |
+| Live streamen | Live streamen (SPEC-15) | Kreativ & Medien | Bildansicht, Diagramm/Zeichnung | 20 | 39 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](sendung/README.md) |
 | TV & Live | TV & Live (STUDIO-TV-01) | Kreativ & Medien | keine eigene erkannt | – | 11 | – | IN_PROGRESS / Test NOT_RUN | [Paket](tv/README.md) |
 | Medien bearbeiten | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | keine eigene erkannt | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](kreativ-medien/README.md) |
 | Videoschnitt | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Video-Zeitleiste | – | 5 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](schnitt/README.md) |
@@ -33,23 +33,23 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Trendo 3D-Druck | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | keine eigene erkannt | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](3d-druck/README.md) |
 | Trendo CAD | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | CAD-/3D-Zeichenfläche | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](cad/README.md) |
 | Aus Fotos | Gegenstände einscannen (SPEC-09) | 3D, Spiele & VR | keine eigene erkannt | 20 | 23 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](scan3d/README.md) |
-| Punktwolke | Gegenstände einscannen (SPEC-09) | 3D, Spiele & VR | keine eigene erkannt | 20 | 23 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](punktwolke/README.md) |
+| Punktwolke | Gegenstände einscannen (SPEC-09) | 3D, Spiele & VR | Punktwolken-Ansicht | 20 | 23 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](punktwolke/README.md) |
 | Spiele bauen | Spiele bauen (CORE-06) | 3D, Spiele & VR | keine eigene erkannt | – | 5 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](spiele-programm/README.md) |
 | Werkstatt | Spiele bauen (CORE-06) | 3D, Spiele & VR | keine eigene erkannt | – | 20 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](spiele/README.md) |
-| VR & AR gestalten | VR & AR gestalten (SPEC-04) | 3D, Spiele & VR | keine eigene erkannt | 16 | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](xr/README.md) |
-| Auto & Fahrten | Auto & Fahrten (SPEC-16) | Technik & Fachgebiete | keine eigene erkannt | 20 | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](fahrzeug/README.md) |
+| VR & AR gestalten | VR & AR gestalten (SPEC-04) | 3D, Spiele & VR | 3D-Ansicht | 16 | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](xr/README.md) |
+| Auto & Fahrten | Auto & Fahrten (SPEC-16) | Technik & Fachgebiete | Diagramm/Zeichnung | 20 | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](fahrzeug/README.md) |
 | CNC-Werkstatt | Fräsen & Fertigen (SPEC-14) | Technik & Fachgebiete | Werkzeugbahn-Ansicht | 20 | 11 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](cnc/README.md) |
-| Geräte überwachen | Geräte überwachen (SPEC-10) | Technik & Fachgebiete | keine eigene erkannt | 20 | 20 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](zwilling/README.md) |
+| Geräte überwachen | Geräte überwachen (SPEC-10) | Technik & Fachgebiete | Diagramm/Zeichnung | 20 | 20 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](zwilling/README.md) |
 | Kameras & Roboter steuern | Kameras & Roboter steuern (CORE-09) | Technik & Fachgebiete | Bildansicht, Roboter-Ansicht | 20 | 27 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](roboter/README.md) |
 | Karten & Touren | Routen & Karten (SPEC-13) | Technik & Fachgebiete | Karte | 20 | 14 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](karten/README.md) |
 | Schaltung & Simulation | Schaltungen berechnen (SPEC-02) | Technik & Fachgebiete | Schaltplan-Zeichenfläche | 16 | 20 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](elektronik/README.md) |
 | Tragwerk & Mechanik | Statik nachrechnen (SPEC-03) | Technik & Fachgebiete | Tragwerks-Zeichenfläche | 16 | 17 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](technik/README.md) |
 | Grundriss & Wohnen | Wohnung planen (SPEC-01) | Technik & Fachgebiete | Grundriss-Zeichenfläche | 16 | 23 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](architektur/README.md) |
-| Lernen mit Karteikarten | Lernen mit Karteikarten (SPEC-06) | Wissen & Lernen | keine eigene erkannt | 16 | 13 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](lernen/README.md) |
-| Messdaten & Auswertung | Messwerte auswerten (SPEC-05) | Wissen & Lernen | Tabellenraster | 16 | 20 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](wissenschaft/README.md) |
+| Lernen mit Karteikarten | Lernen mit Karteikarten (SPEC-06) | Wissen & Lernen | Diagramm/Zeichnung, Lernkarte | 16 | 13 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](lernen/README.md) |
+| Messdaten & Auswertung | Messwerte auswerten (SPEC-05) | Wissen & Lernen | Diagramm/Zeichnung, Tabellenraster | 16 | 20 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](wissenschaft/README.md) |
 | Recherche im Lesemodus | Sicher recherchieren (SYS-08) | Wissen & Lernen | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](recherche/README.md) |
 | Wissen für die KI | Wissen merken (CORE-10) | Wissen & Lernen | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-wissen/README.md) |
-| Abläufe (Automatisch erledigen) | Aufgaben automatisieren (SYS-05) | KI & Automatik | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ablaeufe/README.md) |
+| Abläufe (Automatisch erledigen) | Aufgaben automatisieren (SYS-05) | KI & Automatik | keine eigene erkannt | – | 16 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ablaeufe/README.md) |
 | Produktion | Großprojekte umsetzen (X-01) | KI & Automatik | keine eigene erkannt | – | 8 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](produktion/README.md) |
 | KI | KI fragen (CORE-02) | KI & Automatik | keine eigene erkannt | – | 43 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki/README.md) |
 | KI fragen | KI fragen (CORE-02) | KI & Automatik | keine eigene erkannt | – | 10 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-fragen/README.md) |

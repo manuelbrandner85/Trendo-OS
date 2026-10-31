@@ -1,6 +1,6 @@
 # Geräteverbund (PC, Pi, Android) – Testplan
 
-Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.28 (Stand de74291)
+Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.28 (Stand 8fb56d8)
 
 19 Tests sprechen dieses Programm an.
 

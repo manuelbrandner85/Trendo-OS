@@ -1,6 +1,6 @@
 # Desktop-Symbole – Umsetzungsstand
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.28 (Stand de74291)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.28 (Stand 8fb56d8)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 

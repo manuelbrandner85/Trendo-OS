@@ -1,6 +1,6 @@
 # Selbstheilung – Produktionspaket
 
-Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.28 (Stand de74291)
+Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.28 (Stand 8fb56d8)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

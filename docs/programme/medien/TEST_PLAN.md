@@ -1,6 +1,6 @@
 # Medien – Testplan
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.28 (Stand de74291)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.28 (Stand 8fb56d8)
 
 24 Tests sprechen dieses Programm an.
 

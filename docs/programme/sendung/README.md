@@ -1,8 +1,8 @@
 # Live streamen – Produktionspaket
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.28 (Stand de74291)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.28 (Stand 8fb56d8)
 
-Arbeitsfläche: Bildansicht  
+Arbeitsfläche: Bildansicht, Diagramm/Zeichnung  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): nein – eigene Arbeitsseite
 

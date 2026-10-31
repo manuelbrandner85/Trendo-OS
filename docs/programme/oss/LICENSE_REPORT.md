@@ -1,6 +1,6 @@
 # Open Source – Lizenzen
 
-Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.28 (Stand de74291)
+Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.28 (Stand 8fb56d8)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

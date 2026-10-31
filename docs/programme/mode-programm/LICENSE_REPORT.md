@@ -1,6 +1,6 @@
 # Kleidung & Produkte – Lizenzen
 
-Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.28 (Stand de74291)
+Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.28 (Stand 8fb56d8)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

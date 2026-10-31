@@ -1,6 +1,6 @@
 # VR & AR gestalten – Funktionsmatrix
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.28 (Stand de74291)
+Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.28 (Stand 8fb56d8)
 
 Quelle: `docs/w6-katalog/SPEC-04.md`
 
@@ -32,3 +32,9 @@ Quelle: `docs/w6-katalog/SPEC-04.md`
 - Meta Quest 2
 - Handy-AR
 - PC-VR
+- Schräg
+- Vorne
+- Seite
+- Oben
+- Drahtgitter an
+- Prüfbericht speichern

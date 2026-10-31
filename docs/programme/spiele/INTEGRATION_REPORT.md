@@ -1,6 +1,6 @@
 # Werkstatt – Einbindung in Trendo OS
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.28 (Stand de74291)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.28 (Stand 8fb56d8)
 
 - Seite `spiele` im Studio „Spiele bauen“ (3D, Spiele & VR) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

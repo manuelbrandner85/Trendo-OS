@@ -1,6 +1,6 @@
 # Geräte überwachen – Funktionsmatrix
 
-Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.28 (Stand de74291)
+Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.28 (Stand 8fb56d8)
 
 Quelle: `docs/w6-katalog/SPEC-10.md`
 
@@ -31,11 +31,21 @@ Quelle: `docs/w6-katalog/SPEC-10.md`
 - Plan erstellen
 - Diesen PC jetzt messen
 - ● Live (alle 5 s)
-- Beispielanlagen laden
 - 24 h
 - 7 Tage
 - 30 Tage
 - Alles
+- Vorlauf
+- Rücklauf
+- Brenner
+- Leistung
+- Temperatur
 - ＋ Anlegen
 - Datei wählen …
 - Einlesen
+- Anlegen
+- Umbenennen
+- CSV speichern
+- Diagramm (SVG)
+- Löschen
+- Speicher begrenzen (100 000 Werte)

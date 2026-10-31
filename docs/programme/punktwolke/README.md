@@ -1,8 +1,8 @@
 # Punktwolke – Produktionspaket
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.28 (Stand de74291)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.28 (Stand 8fb56d8)
 
-Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
+Arbeitsfläche: Punktwolken-Ansicht  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): ja
 

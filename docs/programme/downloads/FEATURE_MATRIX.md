@@ -1,6 +1,6 @@
 # Downloads – Funktionsmatrix
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.28 (Stand de74291)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.28 (Stand 8fb56d8)
 
 Quelle: `docs/spec/kataloge/SYS-03_KATALOG.md`
 

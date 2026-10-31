@@ -1,6 +1,6 @@
 # Trendo-Updates – Einbindung in Trendo OS
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.28 (Stand de74291)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.28 (Stand 8fb56d8)
 
 - Seite `updates` im Studio „Schrift & Farben anpassen“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

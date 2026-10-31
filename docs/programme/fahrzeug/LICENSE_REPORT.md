@@ -1,6 +1,6 @@
 # Auto & Fahrten – Lizenzen
 
-Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.28 (Stand de74291)
+Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.28 (Stand 8fb56d8)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

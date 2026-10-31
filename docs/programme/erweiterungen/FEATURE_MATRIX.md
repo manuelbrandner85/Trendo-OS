@@ -1,11 +1,13 @@
 # Erweiterungen – Funktionsmatrix
 
-Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.28 (Stand de74291)
+Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.28 (Stand 8fb56d8)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Plan erstellen
+- Ja, installieren
+- Abbrechen
 - Datei wählen …
 - Ordner wählen …
 - Installieren

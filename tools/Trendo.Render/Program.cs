@@ -181,6 +181,12 @@ else if (shot == "seite")
         win.ProgramNew("schnitt"); win.EditAdd(M("titelbild.png")); win.EditAdd(M("ausflug.mp4")); win.EditAdd(M("abendhimmel.mp4")); win.EditAdd(M("musik.mp3"), music: true);
         var doc = win.ProgramActive("schnitt")!; doc.Set("playhead", 7.5); win.EditSelected = ("clips", 1); win.Show("schnitt");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_WF") is { Length: > 0 }) // Ablaufplan mit Vorlage
+    {
+        MainWindow.WorkflowHome = Path.Combine(root, "heim"); Directory.CreateDirectory(MainWindow.WorkflowHome);
+        var wfl = win.Workflows.Add(WorkflowEngine.Templates[0].Make(MainWindow.WorkflowHome)); wfl.Steps.Add(new WfStep { Kind = StepKind.Zippen, From = Path.Combine(MainWindow.WorkflowHome, "Downloads"), To = Path.Combine(MainWindow.WorkflowHome, "archiv-{datum}.zip") }); win.Workflows.Update(wfl);
+        win.WfSelected = wfl.Id; win.WfNode = 0; win.Show("ablaeufe");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_3D") is { Length: > 0 }) { win.Show("3d"); foreach (var sh in new[] { "cube", "sphere", "cylinder", "torus" }) win.Studio3DAddShape(sh); win.Studio3DSelect(1); } // 3D-Modelle erstellen mit Arbeitsfläche
     if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lv)); win.ProgramNew(page, tpl); win.Show(page); } // Programm mit Vorlage öffnen
     if (page == "architektur" && Environment.GetEnvironmentVariable("TRENDO_ARCH") is { Length: > 0 } arch) // Grundriss: Auswahl/3D/Werkzeug zeigen

@@ -1,6 +1,6 @@
 # VR & AR gestalten – Testplan
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.28 (Stand de74291)
+Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.28 (Stand 8fb56d8)
 
 15 Tests sprechen dieses Programm an.
 

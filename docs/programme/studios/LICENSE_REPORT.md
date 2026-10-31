@@ -1,6 +1,6 @@
 # Alle Studios – Lizenzen
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.28 (Stand de74291)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.28 (Stand 8fb56d8)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

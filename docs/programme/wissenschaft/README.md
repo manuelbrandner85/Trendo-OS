@@ -1,8 +1,8 @@
 # Messdaten & Auswertung – Produktionspaket
 
-Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.28 (Stand de74291)
+Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.28 (Stand 8fb56d8)
 
-Arbeitsfläche: Tabellenraster  
+Arbeitsfläche: Diagramm/Zeichnung, Tabellenraster  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): ja
 

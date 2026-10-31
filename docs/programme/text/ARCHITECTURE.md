@@ -1,13 +1,13 @@
 # Trendo Text – Architektur
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.28 (Stand de74291)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.28 (Stand 8fb56d8)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys10.cs`
 - `src/Trendo.App/MainWindow.Text.cs`
 
 ## Bedienelemente der Arbeitsfläche
-– (nicht erfasst)
+- Dokumentseite (Textverarbeitung)
 
 ## Fach-Engine (Trendo.Core)
 - `TextDoc`

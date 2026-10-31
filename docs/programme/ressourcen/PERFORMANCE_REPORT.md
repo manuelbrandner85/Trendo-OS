@@ -1,6 +1,6 @@
 # Speicher & Leistung – Leistung
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.28 (Stand de74291)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.28 (Stand 8fb56d8)
 
 Kein eigener Leistungsmesslauf für dieses Programm. Zielhardware und Budgets sind noch nicht festgelegt – Messung offen.
 
