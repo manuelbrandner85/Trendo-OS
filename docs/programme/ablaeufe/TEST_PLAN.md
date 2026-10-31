@@ -1,8 +1,8 @@
 # Abläufe (Automatisch erledigen) – Testplan
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.28 (Stand c3fd776)
 
-16 Tests sprechen dieses Programm an.
+17 Tests sprechen dieses Programm an.
 
 - Ablaufplan: Bausteine anhängen, Schritt per Maus nach oben ziehen, einstellen, Probelauf, Rückgängig; Änderung an freigegebenem Ablauf verlangt neue Freigabe
 - CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet
@@ -19,4 +19,5 @@ Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `a
 - T-0201: Mausklick auf „Datei wählen …“ füllt das Feld, die Datei steht danach unter „Zuletzt“; Eintippen geht weiter
 - T-0201: Ordnerfeld öffnet den Ordner-Dialog
 - T-0201: jedes Pfad- oder Ordnerfeld hat „Datei wählen …“ bzw. „Ordner wählen …“
+- Vorschläge UI: Kalender plant fällige Aufgabe ein (Ja, Rückgängig), Aufgaben aus E-Mails (Nein bleibt gemerkt), Abläufe, Videoschnitt-Stille
 - X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette

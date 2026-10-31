@@ -1,6 +1,6 @@
 # Sicherung – Produktionspaket
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.28 (Stand c3fd776)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

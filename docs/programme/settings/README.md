@@ -1,6 +1,6 @@
 # Einstellungen – Produktionspaket
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.28 (Stand c3fd776)
 
 Arbeitsfläche: Bildansicht  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test PC_VERIFIED  

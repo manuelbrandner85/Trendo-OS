@@ -1,8 +1,8 @@
 # Aufgaben – Testplan
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.28 (Stand c3fd776)
 
-10 Tests sprechen dieses Programm an.
+11 Tests sprechen dieses Programm an.
 
 - Aufgaben-Kern: Spalte setzen, erledigt beendet „in Arbeit“, ICS behält In-Arbeit und Beschreibung
 - Aufgaben-Tafel: anlegen, Karte nach „In Arbeit“ und „Erledigt“ ziehen, Klick öffnet Bearbeiten (Beschreibung, Liste), Listenfilter, Häkchen, Rückgängig
@@ -14,3 +14,4 @@ Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufga
 - SYS-09: Eingegangene E-Mail (multipart, quoted-printable) wird lesbar
 - SYS-09: Entwurf als .eml (Umlaute korrekt, X-Unsent) und mailto; Prüfung findet Fehler
 - SYS-09: Kontakte speichern, vCard ein- und ausgeben, ungültige Adresse abgelehnt
+- Vorschläge UI: Kalender plant fällige Aufgabe ein (Ja, Rückgängig), Aufgaben aus E-Mails (Nein bleibt gemerkt), Abläufe, Videoschnitt-Stille

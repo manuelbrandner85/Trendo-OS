@@ -1,6 +1,6 @@
 # Vorhaben – Testplan
 
-Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.28 (Stand c3fd776)
 
 6 Tests sprechen dieses Programm an.
 

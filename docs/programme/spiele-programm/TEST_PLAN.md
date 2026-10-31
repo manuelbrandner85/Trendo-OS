@@ -1,6 +1,6 @@
 # Spiele bauen – Testplan
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.28 (Stand c3fd776)
 
 5 Tests sprechen dieses Programm an.
 

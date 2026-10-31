@@ -1,8 +1,8 @@
 # Kalender – Testplan
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kalender` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kalender` · Stand: 0.9.28 (Stand c3fd776)
 
-10 Tests sprechen dieses Programm an.
+11 Tests sprechen dieses Programm an.
 
 - Kalender-Kern: Raster 15 Minuten, Verschieben behält die Dauer, Ende nie vor Beginn + 15 min
 - Kalender: in der Woche ziehen legt Termin an, benennen, verschieben auf anderen Tag, Unterkante ziehen verlängert, Rückgängig; Monat: Termin auf anderen Tag ziehen
@@ -14,3 +14,4 @@ Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kalen
 - SYS-09: Eingegangene E-Mail (multipart, quoted-printable) wird lesbar
 - SYS-09: Entwurf als .eml (Umlaute korrekt, X-Unsent) und mailto; Prüfung findet Fehler
 - SYS-09: Kontakte speichern, vCard ein- und ausgeben, ungültige Adresse abgelehnt
+- Vorschläge UI: Kalender plant fällige Aufgabe ein (Ja, Rückgängig), Aufgaben aus E-Mails (Nein bleibt gemerkt), Abläufe, Videoschnitt-Stille

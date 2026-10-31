@@ -1,6 +1,6 @@
 # KI-Rollen und Teams – Produktionspaket
 
-Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.28 (Stand c3fd776)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

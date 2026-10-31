@@ -1,6 +1,6 @@
 # Werkstatt – Architektur
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.28 (Stand c3fd776)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.ProgGame.cs`
@@ -10,8 +10,8 @@ Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` ·
 – (nicht erfasst)
 
 ## Fach-Engine (Trendo.Core)
-- `GameDesign`
 - `GameStudio`
+- `GameDesign`
 
 ## Dateiformate (im Code belegt)
 - .html

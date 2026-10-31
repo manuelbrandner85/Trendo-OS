@@ -7,10 +7,10 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Programm | Studio | Bereich | Arbeitsfläche | Funktionen | Tests | Vorbild-Analyse | Modulstatus | Doku |
 |---|---|---|---|---|---|---|---|---|
 | Briefe schreiben | Briefe schreiben (STUDIO-LETTER-01) | Arbeiten & Büro | Texteditor | – | 11 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](brief/README.md) |
-| Aufgaben | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Aufgabentafel | – | 10 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](aufgaben/README.md) |
+| Aufgaben | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Aufgabentafel | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](aufgaben/README.md) |
 | E-Mail & Kontakte | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Texteditor | – | 18 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](post/README.md) |
-| Kalender | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Monatskalender | – | 10 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](kalender/README.md) |
-| Posteingang | E-Mails & Termine (SYS-09) | Arbeiten & Büro | keine eigene erkannt | – | 10 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](posteingang/README.md) |
+| Kalender | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Monatskalender | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](kalender/README.md) |
+| Posteingang | E-Mails & Termine (SYS-09) | Arbeiten & Büro | keine eigene erkannt | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](posteingang/README.md) |
 | Medien | Kleine Helfer & Musik (SYS-02) | Arbeiten & Büro | keine eigene erkannt | 25 | 24 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](medien/README.md) |
 | Übersicht | Kleine Helfer & Musik (SYS-02) | Arbeiten & Büro | keine eigene erkannt | 25 | 27 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](alltag-start/README.md) |
 | Werkzeuge: Notizen, Rechner, Wecker | Kleine Helfer & Musik (SYS-02) | Arbeiten & Büro | keine eigene erkannt | 25 | 31 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](werkzeuge/README.md) |
@@ -28,7 +28,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Live streamen | Live streamen (SPEC-15) | Kreativ & Medien | Bildansicht, Diagramm/Zeichnung | 20 | 39 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](sendung/README.md) |
 | TV & Live | TV & Live (STUDIO-TV-01) | Kreativ & Medien | keine eigene erkannt | – | 11 | – | IN_PROGRESS / Test NOT_RUN | [Paket](tv/README.md) |
 | Medien bearbeiten | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | keine eigene erkannt | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](kreativ-medien/README.md) |
-| Videoschnitt | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Video-Zeitleiste | – | 5 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](schnitt/README.md) |
+| Videoschnitt | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Video-Zeitleiste | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](schnitt/README.md) |
 | 3D | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | CAD-/3D-Zeichenfläche | – | 17 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](3d/README.md) |
 | Trendo 3D-Druck | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | keine eigene erkannt | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](3d-druck/README.md) |
 | Trendo CAD | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | CAD-/3D-Zeichenfläche | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](cad/README.md) |
@@ -49,7 +49,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Messdaten & Auswertung | Messwerte auswerten (SPEC-05) | Wissen & Lernen | Diagramm/Zeichnung, Tabellenraster | 16 | 20 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](wissenschaft/README.md) |
 | Recherche im Lesemodus | Sicher recherchieren (SYS-08) | Wissen & Lernen | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](recherche/README.md) |
 | Wissen für die KI | Wissen merken (CORE-10) | Wissen & Lernen | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-wissen/README.md) |
-| Abläufe (Automatisch erledigen) | Aufgaben automatisieren (SYS-05) | KI & Automatik | keine eigene erkannt | – | 16 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ablaeufe/README.md) |
+| Abläufe (Automatisch erledigen) | Aufgaben automatisieren (SYS-05) | KI & Automatik | keine eigene erkannt | – | 17 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ablaeufe/README.md) |
 | Produktion | Großprojekte umsetzen (X-01) | KI & Automatik | keine eigene erkannt | – | 8 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](produktion/README.md) |
 | KI | KI fragen (CORE-02) | KI & Automatik | keine eigene erkannt | – | 43 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki/README.md) |
 | KI fragen | KI fragen (CORE-02) | KI & Automatik | keine eigene erkannt | – | 10 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-fragen/README.md) |

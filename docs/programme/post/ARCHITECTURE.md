@@ -1,6 +1,6 @@
 # E-Mail & Kontakte – Architektur
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.28 (Stand c3fd776)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Pim.cs`
@@ -10,14 +10,14 @@ Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post`
 
 ## Fach-Engine (Trendo.Core)
 - `CalEvent`
+- `MailDraft`
 - `ImapSession`
 - `MailCenter`
-- `MailDraft`
-- `Repeat`
-- `MailAccount`
 - `MailDates`
-- `MailRule`
+- `Repeat`
 - `TodoItem`
+- `MailAccount`
+- `MailRule`
 
 ## Dateiformate (im Code belegt)
 - .eml

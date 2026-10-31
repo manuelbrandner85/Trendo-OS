@@ -1,6 +1,6 @@
 # Handy verbinden – Produktionspaket
 
-Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.28 (Stand c3fd776)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test PC_VERIFIED  

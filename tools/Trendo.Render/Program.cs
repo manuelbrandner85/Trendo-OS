@@ -180,7 +180,7 @@ else if (shot == "seite")
         Cli.Run(ffm, ["-y", "-loglevel", "error", "-f", "lavfi", "-i", "gradients=size=1280x720:seed=7", "-frames:v", "1", M("titelbild.png")], md, 120000);
         Cli.Run(ffm, ["-y", "-loglevel", "error", "-f", "lavfi", "-i", "sine=frequency=220:duration=20", M("musik.mp3")], md, 120000);
         win.ProgramNew("schnitt"); win.EditAdd(M("titelbild.png")); win.EditAdd(M("ausflug.mp4")); win.EditAdd(M("abendhimmel.mp4")); win.EditAdd(M("musik.mp3"), music: true);
-        var doc = win.ProgramActive("schnitt")!; doc.Set("playhead", 7.5); win.EditSelected = ("clips", 1); win.Show("schnitt");
+        var doc = win.ProgramActive("schnitt")!; doc.Edit("Überblenden/Text", x => { Trendo.Core.Media.VideoEdit.SetClip(x, 0, 1, "Unser Ausflug"); Trendo.Core.Media.VideoEdit.SetClip(x, 1, 1.5, ""); }); doc.Set("playhead", 2.5); win.EditSelected = ("clips", 0); win.Show("schnitt");
     }
     if (Environment.GetEnvironmentVariable("TRENDO_WF") is { Length: > 0 }) // Ablaufplan mit Vorlage
     {

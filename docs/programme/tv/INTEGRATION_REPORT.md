@@ -1,6 +1,6 @@
 # TV & Live – Einbindung in Trendo OS
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.28 (Stand c3fd776)
 
 - Seite `tv` im Studio „TV & Live“ (Kreativ & Medien) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

@@ -1,5 +1,5 @@
 # Programme verwalten – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.28 (Stand c3fd776)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

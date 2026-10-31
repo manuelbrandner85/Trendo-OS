@@ -5,7 +5,8 @@ namespace Trendo.Core.Media;
 
 /// <summary>Ein Stück auf der Zeitleiste: Ausschnitt <see cref="In"/>–<see cref="Out"/> (Sekunden) aus einer Datei.
 /// Bildspur: lückenlos hintereinander (Reihenfolge = Liste). Tonspur (Musik): eigene Startzeit und Lautstärke.</summary>
-public sealed record EditClip(string Id, string File, double In, double Out, double SourceLength, bool HasAudio = true, double Start = 0, double Volume = 1)
+/// <summary><paramref name="Fade"/>: Überblenden ins nächste Stück (Sekunden), <paramref name="Title"/>: eingeblendeter Text.</summary>
+public sealed record EditClip(string Id, string File, double In, double Out, double SourceLength, bool HasAudio = true, double Start = 0, double Volume = 1, double Fade = 0, string Title = "")
 {
     public double Length => Math.Max(0, Out - In);
     public bool IsImage => MediaStudio.IsImage(File);
@@ -21,15 +22,19 @@ public static class VideoEdit
     public static JsonObject NewProject(int width = 1280, int height = 720) => new() { ["clips"] = new JsonArray(), ["music"] = new JsonArray(), ["playhead"] = 0, ["width"] = width, ["height"] = height, ["fps"] = 30 };
 
     public static List<EditClip> Clips(JsonObject p, string track = "clips") => (p[track] as JsonArray ?? []).OfType<JsonObject>().Select(Read).ToList();
-    static EditClip Read(JsonObject o) => new((string?)o["id"] ?? Guid.NewGuid().ToString("N")[..8], (string?)o["file"] ?? "", D(o["in"]), D(o["out"]), D(o["len"]), (bool?)o["audio"] ?? true, D(o["start"]), o["vol"] is null ? 1 : D(o["vol"]));
+    static EditClip Read(JsonObject o) => new((string?)o["id"] ?? Guid.NewGuid().ToString("N")[..8], (string?)o["file"] ?? "", D(o["in"]), D(o["out"]), D(o["len"]), (bool?)o["audio"] ?? true, D(o["start"]), o["vol"] is null ? 1 : D(o["vol"]), D(o["fade"]), (string?)o["title"] ?? "");
     static double D(JsonNode? n) => n is null ? 0 : double.TryParse(n.GetValueKind() == System.Text.Json.JsonValueKind.String ? n.GetValue<string>() : n.ToJsonString(), NumberStyles.Float, Inv, out var v) ? v : 0;
-    static JsonObject Write(EditClip c) => new() { ["id"] = c.Id, ["file"] = c.File, ["in"] = Math.Round(c.In, 3), ["out"] = Math.Round(c.Out, 3), ["len"] = Math.Round(c.SourceLength, 3), ["audio"] = c.HasAudio, ["start"] = Math.Round(c.Start, 3), ["vol"] = Math.Round(c.Volume, 2) };
+    static JsonObject Write(EditClip c) => new() { ["id"] = c.Id, ["file"] = c.File, ["in"] = Math.Round(c.In, 3), ["out"] = Math.Round(c.Out, 3), ["len"] = Math.Round(c.SourceLength, 3), ["audio"] = c.HasAudio, ["start"] = Math.Round(c.Start, 3), ["vol"] = Math.Round(c.Volume, 2), ["fade"] = Math.Round(c.Fade, 2), ["title"] = c.Title };
     public static void Store(JsonObject p, List<EditClip> clips, string track = "clips") => p[track] = new JsonArray([.. clips.Select(c => (JsonNode)Write(c))]);
 
     /// <summary>Gesamtlänge: Bildspur, mindestens bis zum Ende der Musik.</summary>
-    public static double Duration(JsonObject p) => Math.Max(Clips(p).Sum(c => c.Length), Clips(p, "music").Select(m => m.Start + m.Length).DefaultIfEmpty(0).Max());
+    public static double Duration(JsonObject p) => Math.Max(VideoLength(Clips(p)), Clips(p, "music").Select(m => m.Start + m.Length).DefaultIfEmpty(0).Max());
+    /// <summary>Länge der Bildspur: Überblendungen überlappen zwei Stücke und verkürzen sie entsprechend.</summary>
+    public static double VideoLength(List<EditClip> clips) => clips.Sum(c => c.Length) - Enumerable.Range(0, Math.Max(0, clips.Count - 1)).Sum(i => FadeOf(clips, i));
+    /// <summary>Wirksame Überblendung nach Stück i (begrenzt auf die Länge beider Stücke).</summary>
+    public static double FadeOf(List<EditClip> clips, int i) => i < 0 || i >= clips.Count - 1 || clips[i].Fade <= 0 ? 0 : Math.Min(clips[i].Fade, Math.Min(clips[i].Length, clips[i + 1].Length) - 0.1) is var f && f > 0.05 ? f : 0;
     /// <summary>Startzeit jedes Bildspur-Stücks auf der Zeitleiste.</summary>
-    public static List<double> Starts(List<EditClip> clips) { var t = 0.0; var l = new List<double>(); foreach (var c in clips) { l.Add(t); t += c.Length; } return l; }
+    public static List<double> Starts(List<EditClip> clips) { var t = 0.0; var l = new List<double>(); for (var i = 0; i < clips.Count; i++) { l.Add(t); t += clips[i].Length - FadeOf(clips, i); } return l; }
 
     /// <summary>Stück unter einer Zeitleisten-Zeit (Bildspur) und die Zeit innerhalb der Quelldatei.</summary>
     public static (int Index, double SourceTime)? At(JsonObject p, double t)
@@ -97,6 +102,18 @@ public static class VideoEdit
 
     public static void Remove(JsonObject p, int index, string track = "clips") { var l = Clips(p, track); if (index >= 0 && index < l.Count) { l.RemoveAt(index); Store(p, l, track); } }
 
+    /// <summary>Überblenden ins nächste Stück und Texteinblendung setzen.</summary>
+    public static void SetClip(JsonObject p, int index, double fade, string title)
+    {
+        var l = Clips(p); if (index < 0 || index >= l.Count) return;
+        l[index] = l[index] with { Fade = Math.Clamp(fade, 0, 5), Title = (title ?? "").Trim() }; Store(p, l);
+    }
+
+    /// <summary>Schrift für Texteinblendungen (Windows: Arial/Segoe UI, Linux: DejaVu Sans).</summary>
+    public static string? FontFile() => new[] { @"C:\Windows\Fonts\arial.ttf", @"C:\Windows\Fonts\segoeui.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", "/usr/share/fonts/TTF/DejaVuSans.ttf" }.FirstOrDefault(System.IO.File.Exists);
+    /// <summary>Text für FFmpeg-drawtext maskieren (Doppelpunkt, Prozent, Backslash; Apostroph typografisch).</summary>
+    public static string DrawText(string t) => t.Replace("\\", "\\\\").Replace("'", "’").Replace(":", "\\:").Replace("%", "\\%");
+
     public static void SetMusic(JsonObject p, int index, double start, double volume)
     {
         var l = Clips(p, "music"); if (index < 0 || index >= l.Count) return;
@@ -114,20 +131,40 @@ public static class VideoEdit
         if (clips.FirstOrDefault(c => !System.IO.File.Exists(c.File)) is { } miss) throw new FileNotFoundException("Datei fehlt: " + Path.GetFileName(miss.File));
         int w = (int)D(p["width"]), h = (int)D(p["height"]), fps = (int)Math.Max(1, D(p["fps"])); if (w < 16) w = 1280; if (h < 16) h = 720;
         var a = new List<string> { "-hide_banner", "-loglevel", "error", "-y" };
-        var f = new List<string>(); var input = 0; var concat = "";
+        var f = new List<string>(); var input = 0; var concat = ""; var ids = new List<int>();
         foreach (var c in clips)
         {
             if (c.IsImage) a.AddRange(["-loop", "1", "-framerate", fps.ToString(Inv), "-t", F(c.Length), "-i", c.File]);
             else a.AddRange(["-ss", F(c.In), "-t", F(c.Length), "-i", c.File]);
             var vi = input++;
-            f.Add($"[{vi}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={fps},format=yuv420p[v{vi}]");
+            var title = c.Title.Length > 0 && FontFile() is { } font
+                ? $",drawtext=fontfile='{font.Replace("\\", "/").Replace(":", "\\:")}':text='{DrawText(c.Title)}':fontcolor=white:fontsize=h/14:borderw=3:bordercolor=black@0.6:x=(w-text_w)/2:y=h-text_h-h/10" : "";
+            f.Add($"[{vi}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={fps},format=yuv420p{title}[v{vi}]");
             string ai;
             if (c.HasAudio && !c.IsImage) { ai = $"{vi}:a"; }
             else { a.AddRange(["-f", "lavfi", "-t", F(c.Length), "-i", "anullsrc=r=48000:cl=stereo"]); ai = $"{input++}:a"; }
             f.Add($"[{ai}]aresample=48000,aformat=channel_layouts=stereo[a{vi}]");
-            concat += $"[v{vi}][a{vi}]";
+            concat += $"[v{vi}][a{vi}]"; ids.Add(vi);
         }
-        f.Add($"{concat}concat=n={clips.Count}:v=1:a=1[vout][abase]");
+        if (clips.Select((_, i) => FadeOf(clips, i)).All(x => x <= 0)) f.Add($"{concat}concat=n={clips.Count}:v=1:a=1[vout][abase]");
+        else
+        {
+            // Überblendungen: paarweise Kette, xfade (Bild) und acrossfade (Ton); ohne Überblendung wird einfach angehängt
+            string cv = $"v{ids[0]}", ca = $"a{ids[0]}"; var len = clips[0].Length;
+            for (var i = 1; i < clips.Count; i++)
+            {
+                var fd = FadeOf(clips, i - 1); var nv = i == clips.Count - 1 ? "vout" : $"xv{i}"; var na = i == clips.Count - 1 ? "abase" : $"xa{i}";
+                if (fd > 0)
+                {
+                    f.Add($"[{cv}][v{ids[i]}]xfade=transition=fade:duration={F(fd)}:offset={F(len - fd)}[{nv}]");
+                    f.Add($"[{ca}][a{ids[i]}]acrossfade=d={F(fd)}[{na}]");
+                    len += clips[i].Length - fd;
+                }
+                else { f.Add($"[{cv}][{ca}][v{ids[i]}][a{ids[i]}]concat=n=2:v=1:a=1[{nv}][{na}]"); len += clips[i].Length; }
+                cv = nv; ca = na;
+            }
+            if (clips.Count == 1) { f.Add($"[{cv}]null[vout]"); f.Add($"[{ca}]anull[abase]"); }
+        }
         var mix = "[abase]"; var n = 1;
         foreach (var m in music)
         {
@@ -137,7 +174,7 @@ public static class VideoEdit
             f.Add($"[{input++}:a]aresample=48000,aformat=channel_layouts=stereo,volume={F(m.Volume)},adelay={ms}|{ms}[m{n}]");
             mix += $"[m{n}]"; n++;
         }
-        var total = clips.Sum(c => c.Length);
+        var total = VideoLength(clips);
         f.Add(n > 1 ? $"{mix}amix=inputs={n}:duration=first:normalize=0[aout]" : "[abase]anull[aout]");
         a.AddRange(["-filter_complex", string.Join(";", f), "-map", "[vout]", "-map", "[aout]", "-t", F(total),
             "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", output]);
@@ -152,6 +189,48 @@ public static class VideoEdit
         if (!r.Ok || !System.IO.File.Exists(output) || new FileInfo(output).Length == 0)
             throw new InvalidOperationException("Export hat nicht geklappt: " + (r.Err.Length > 0 ? r.Err.Trim().Split('\n')[^1] : $"FFmpeg-Code {r.Exit}"));
         return output;
+    }
+
+    /// <summary>Export im Hintergrund: Fortschritt aus FFmpeg (-progress), Abbrechen beendet nur den eigenen FFmpeg-Prozess und löscht die halbe Datei.</summary>
+    public static async Task<string> ExportAsync(string ffmpeg, JsonObject p, string output, IProgress<double>? progress = null, CancellationToken ct = default)
+    {
+        var args = ExportArgs(p, output); args.InsertRange(4, ["-progress", "pipe:1", "-nostats"]);
+        var total = Math.Max(0.1, VideoLength(Clips(p)));
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
+        var psi = new System.Diagnostics.ProcessStartInfo(ffmpeg) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
+        foreach (var a in args) psi.ArgumentList.Add(a);
+        using var proc = System.Diagnostics.Process.Start(psi) ?? throw new InvalidOperationException("FFmpeg ließ sich nicht starten.");
+        var err = proc.StandardError.ReadToEndAsync(ct);
+        try
+        {
+            while (await proc.StandardOutput.ReadLineAsync(ct) is { } line)
+                if ((line.StartsWith("out_time_us=") || line.StartsWith("out_time_ms=")) && long.TryParse(line[(line.IndexOf('=') + 1)..], out var us) && us >= 0)
+                    progress?.Report(Math.Clamp(us / 1e6 / total, 0, 1));
+            await proc.WaitForExitAsync(ct);
+        }
+        catch (OperationCanceledException)
+        {
+            try { if (!proc.HasExited) proc.Kill(true); } catch (InvalidOperationException) { }
+            await Task.Delay(200, CancellationToken.None);
+            try { if (System.IO.File.Exists(output)) System.IO.File.Delete(output); } catch (IOException) { }
+            throw;
+        }
+        var e = await err;
+        if (proc.ExitCode != 0 || !System.IO.File.Exists(output) || new FileInfo(output).Length == 0)
+            throw new InvalidOperationException("Export hat nicht geklappt: " + (e.Trim().Length > 0 ? e.Trim().Split('\n')[^1] : $"FFmpeg-Code {proc.ExitCode}"));
+        progress?.Report(1);
+        return output;
+    }
+
+    /// <summary>Vorschaubilder fürs Abspielen im Programm: ein FFmpeg-Lauf je Stück, <paramref name="fps"/> Bilder je Sekunde, 320 px breit, zwischengespeichert.</summary>
+    public static IReadOnlyList<string> PlayFrames(string ffmpeg, EditClip c, string dir, int fps = 6)
+    {
+        Directory.CreateDirectory(dir);
+        var have = Directory.GetFiles(dir, "f*.jpg").OrderBy(x => x, StringComparer.Ordinal).ToList();
+        if (have.Count > 0) return have;
+        if (c.IsImage) return [];
+        Cli.Run(ffmpeg, ["-hide_banner", "-loglevel", "error", "-y", "-ss", F(c.In), "-t", F(c.Length), "-i", c.File, "-vf", $"fps={fps},scale=320:-2", "-q:v", "5", Path.Combine(dir, "f%05d.jpg")], dir, 300000);
+        return Directory.GetFiles(dir, "f*.jpg").OrderBy(x => x, StringComparer.Ordinal).ToList();
     }
 
     /// <summary>Hat die Datei eine Tonspur? (ffprobe neben ffmpeg)</summary>

@@ -1,6 +1,6 @@
 # Messdaten & Auswertung – Einbindung in Trendo OS
 
-Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.28 (Stand c3fd776)
 
 - Seite `wissenschaft` im Studio „Messwerte auswerten“ (Wissen & Lernen) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: ja (Dokumente .tdoc, Zuletzt, Wiederherstellen, Bedienstufen)

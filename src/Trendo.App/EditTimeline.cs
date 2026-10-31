@@ -32,7 +32,7 @@ public sealed class EditTimeline : Control
 
     public EditTimeline() { ClipToBounds = true; Focusable = true; Height = MusicTop + MusicH + 10; }
 
-    double Total => Math.Max(Clips.Sum(c => c.Length), Music.Select(m => m.Start + m.Length).DefaultIfEmpty(0).Max());
+    double Total => Math.Max(VideoEdit.VideoLength([.. Clips]), Music.Select(m => m.Start + m.Length).DefaultIfEmpty(0).Max());
     protected override Size MeasureOverride(Size available) => new(Math.Max(double.IsInfinity(available.Width) ? 600 : available.Width, Left * 2 + (Total + 5) * PxPerSec), MusicTop + MusicH + 10);
     public double X(double t) => Left + t * PxPerSec;
     public double T(double x) => Math.Max(0, (x - Left) / PxPerSec);
@@ -41,7 +41,7 @@ public sealed class EditTimeline : Control
     public Rect BoxOf(string track, int i)
     {
         if (track == "music") { var m = Music[i]; return new Rect(X(m.Start), MusicTop, Math.Max(4, m.Length * PxPerSec), MusicH); }
-        var s = Clips.Take(i).Sum(c => c.Length); return new Rect(X(s), VideoTop, Math.Max(4, Clips[i].Length * PxPerSec), VideoH);
+        var s = VideoEdit.Starts([.. Clips])[i]; return new Rect(X(s), VideoTop, Math.Max(4, Clips[i].Length * PxPerSec), VideoH);
     }
     (string Track, int Index, Mode Mode)? HitTest(Point p)
     {
@@ -79,7 +79,8 @@ public sealed class EditTimeline : Control
             case Mode.Move when _track == "clips":
                 // Ziel: Stück, über dessen Mitte die Mitte des gezogenen Stücks liegt
                 var center = BoxOf("clips", _index).Center.X + (_at.X - _from.X); var to = 0; var acc = 0.0;
-                for (var i = 0; i < Clips.Count; i++) { if (i != _index && center > X(acc + Clips[i].Length / 2)) to++; acc += Clips[i].Length; } // Mitten in der sichtbaren Anordnung
+                var starts = VideoEdit.Starts([.. Clips]);
+                for (var i = 0; i < Clips.Count; i++) if (i != _index && center > X(starts[i] + Clips[i].Length / 2)) to++; // Mitten in der sichtbaren Anordnung
                 if (to != _index) ClipMoved?.Invoke(_index, to); else InvalidateVisual();
                 break;
             case Mode.Move: MusicMoved?.Invoke(_index, Math.Max(0, Math.Round(c.Start + dt, 2))); break;
@@ -124,10 +125,18 @@ public sealed class EditTimeline : Control
                     for (var k = 0; k < n; k++) { var b = th[Math.Min(th.Count - 1, k * th.Count / n)]; ctx.DrawImage(b, new Rect(r.X + k * tw, r.Y, tw, r.Height)); }
                     ctx.FillRectangle(new SolidColorBrush(Color.Parse("#66000000")), new Rect(r.X, r.Y, r.Width, 16));
                 }
-                ctx.DrawText(new FormattedText($"{System.IO.Path.GetFileName(c.File)} · {c.Length:0.0} s", De, FlowDirection.LeftToRight, bold, 11, Brushes.White), new Point(r.X + 6, r.Y + 1));
+                ctx.DrawText(new FormattedText($"{System.IO.Path.GetFileName(c.File)} · {c.Length:0.0} s" + (c.Title.Length > 0 ? $" · T „{c.Title}“" : ""), De, FlowDirection.LeftToRight, bold, 11, Brushes.White), new Point(r.X + 6, r.Y + 1));
             }
             ctx.DrawRectangle(null, new Pen(new SolidColorBrush(Color.Parse(sel ? "#FFFACC15" : "#88FFFFFF")), sel ? 2.5 : 1), new RoundedRect(r.Deflate(1), 6));
             ctx.FillRectangle(new SolidColorBrush(Color.Parse("#CCFFFFFF")), new Rect(r.X + 2, r.Y + VideoH / 2 - 8, 3, 16)); ctx.FillRectangle(new SolidColorBrush(Color.Parse("#CCFFFFFF")), new Rect(r.Right - 5, r.Y + VideoH / 2 - 8, 3, 16));
+        }
+        // Überblendungen: Keil über der Überlappung
+        for (var i = 0; i + 1 < Clips.Count; i++)
+        {
+            var fd = VideoEdit.FadeOf([.. Clips], i); if (fd <= 0) continue;
+            var r2 = BoxOf("clips", i + 1); var w0 = fd * PxPerSec;
+            ctx.DrawGeometry(new SolidColorBrush(Color.Parse("#99FFFFFF")), null, new PolylineGeometry([new Point(r2.X, r2.Bottom - 2), new Point(r2.X + w0, r2.Y + 18), new Point(r2.X + w0, r2.Bottom - 2)], true));
+            ctx.DrawText(new FormattedText($"⤫ {fd:0.#} s", De, FlowDirection.LeftToRight, font, 10, Brushes.White), new Point(r2.X + 2, r2.Bottom - 14));
         }
         // Musikspur mit angedeuteter Wellenform
         for (var i = 0; i < Music.Count; i++)

@@ -1,6 +1,6 @@
 # Punktwolke – Architektur
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.28 (Stand c3fd776)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec09.cs`

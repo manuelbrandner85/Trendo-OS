@@ -1,5 +1,5 @@
 # Trendo CAD – Leistung
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.28 (Stand c3fd776)
 
 Kein eigener Leistungsmesslauf für dieses Programm. Zielhardware und Budgets sind noch nicht festgelegt – Messung offen.

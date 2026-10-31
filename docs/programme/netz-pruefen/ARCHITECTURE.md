@@ -1,6 +1,6 @@
 # Sicher prüfen – Architektur
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.28 (Stand c3fd776)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys03.cs`

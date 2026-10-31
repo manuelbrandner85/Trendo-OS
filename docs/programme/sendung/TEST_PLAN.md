@@ -1,6 +1,6 @@
 # Live streamen – Testplan
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.28 (Stand c3fd776)
 
 39 Tests sprechen dieses Programm an.
 

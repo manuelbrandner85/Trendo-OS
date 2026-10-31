@@ -1,6 +1,6 @@
 # Alle Studios – Testplan
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.28 (Stand c3fd776)
 
 41 Tests sprechen dieses Programm an.
 

@@ -1,6 +1,6 @@
 # Abläufe (Automatisch erledigen) – Arbeitsabläufe
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.28 (Stand 8fb56d8)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.28 (Stand c3fd776)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 
@@ -9,4 +9,5 @@ Die Abläufe unten sind die Oberflächentests, die das Programm über den echten
 - CORE-10 UI: Merken, Suchen, Löschen und Korrektur aus dem Gespräch
 - CORE-12 UI: Vorlage ausfüllen und senden, neue Vorlage speichern, Masterprompt bauen
 - SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf
+- Vorschläge UI: Kalender plant fällige Aufgabe ein (Ja, Rückgängig), Aufgaben aus E-Mails (Nein bleibt gemerkt), Abläufe, Videoschnitt-Stille
 - X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette
