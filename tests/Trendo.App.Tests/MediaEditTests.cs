@@ -55,7 +55,7 @@ public class MediaEditTests
     [AvaloniaFact(DisplayName = "T-0205 (UI): Video → Länge, Zeitleiste mit Bildern, Ausschnitt Start–Ende, zwei Clips aneinanderhängen")]
     public void Video_timeline_cut_concat()
     {
-        var src = W4_Core08_Media_Ui.Sample(); if (src is null) return; // ohne FFmpeg nicht prüfbar
+        var src = W4_Core08_Media_Ui.Sample(); if (src is null) { Assert.Skip("Übersprungen – FFmpeg fehlt auf diesem PC."); return; }
         var (w, _, _) = Ui.Open();
         w.MediaPick(src); w.Show("kreativ-medien");
         Assert.Equal(6, w.Find<StackPanel>("media-timeline").Children.Count);

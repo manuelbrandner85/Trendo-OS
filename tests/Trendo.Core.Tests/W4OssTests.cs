@@ -17,7 +17,7 @@ public class W4_X06_OpenSource
         Assert.Contains("language%3AC%23", OpenSource.SearchUrl("editor", "C#"));
     }
 
-    [Fact(DisplayName = "X-06: Kopie holen (echtes git, lokales Quell-Repo) mit Herkunftsdatei; unsichere Adressen abgewiesen")]
+    [NeedsFact("git", DisplayName = "X-06: Kopie holen (echtes git, lokales Quell-Repo) mit Herkunftsdatei; unsichere Adressen abgewiesen")]
     public void Fetch_local()
     {
         if (Cli.Find("git") is null) return;

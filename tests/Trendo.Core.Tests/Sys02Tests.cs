@@ -21,7 +21,7 @@ public class Sys02_Alltag
         c.Delete(0); Assert.DoesNotContain("Hallo Welt, wie geht es dir?", c.All()); c.Clear(); Assert.Empty(c.All());
     }
 
-    [Fact(DisplayName = "SYS-02-P07/P23: Aufnahme- und Audio-Befehle für ffmpeg; Umwandeln mit Prüfsumme")]
+    [Fact(DisplayName = "SYS-02-P07/P23: Aufnahme- und Audio-Befehle für ffmpeg")]
     public void Ffmpeg()
     {
         var w = FfmpegJobs.RecordArgs(true, "a.mp4", 30, "Mikrofon");
@@ -29,17 +29,6 @@ public class Sys02_Alltag
         Assert.DoesNotContain("-c:a", FfmpegJobs.RecordArgs(false, "b.mp4", 5));
         Assert.Throws<ArgumentException>(() => FfmpegJobs.RecordArgs(true, "c.mp4", 0));
         Assert.Throws<ArgumentException>(() => FfmpegJobs.AudioArgs("a.wav", "a.exe"));
-        var ff = Cli.Find("ffmpeg"); if (ff is null) return;
-        var d = Tmp(); var wav = Path.Combine(d, "ton.wav");
-        Assert.True(Cli.Run(ff, ["-y", "-f", "lavfi", "-i", "sine=frequency=440:duration=1", wav]).Ok);
-        var log = new AuditLog(Path.Combine(d, "audit.jsonl"));
-        foreach (var f in FfmpegJobs.AudioFormats)
-        {
-            var (ok, msg, sha) = FfmpegJobs.ConvertAudio(ff, wav, f, log);
-            Assert.True(ok, msg); Assert.Equal(64, sha!.Length);
-            Assert.True(Cli.Run(ff, ["-v", "error", "-i", Path.Combine(d, msg), "-f", "null", "-"]).Ok); // abspielbar/decodierbar
-        }
-        Assert.True(File.Exists(wav)); Assert.Contains(log.ReadAll(), e => e.Action == "audio.convert" && e.Detail.Contains("sha256="));
     }
 
     [Fact(DisplayName = "SYS-02-P08/P09: Mediathek indiziert 2000 Dateien in < 5 s; Spielerwahl mpv → VLC → Standard")]
@@ -53,6 +42,22 @@ public class Sys02_Alltag
         Assert.Equal("mpv", MediaLibrary.Player("a.mp3", "mpv", "vlc")!.Value.Exe);
         Assert.Equal("vlc", MediaLibrary.Player("a.mp3", null, "vlc")!.Value.Exe);
         Assert.Null(MediaLibrary.Player("a.mp3", null, null));
+    }
+
+    [NeedsFact("ffmpeg", DisplayName = "SYS-02-P23 (T-0244 getrennt): Audio mit echtem ffmpeg umwandeln, abspielbar, Prüfsumme im Protokoll")]
+    public void Ffmpeg_real()
+    {
+        var ff = Cli.Find("ffmpeg")!;
+        var d = Tmp(); var wav = Path.Combine(d, "ton.wav");
+        Assert.True(Cli.Run(ff, ["-y", "-f", "lavfi", "-i", "sine=frequency=440:duration=1", wav]).Ok);
+        var log = new AuditLog(Path.Combine(d, "audit.jsonl"));
+        foreach (var f in FfmpegJobs.AudioFormats)
+        {
+            var (ok, msg, sha) = FfmpegJobs.ConvertAudio(ff, wav, f, log);
+            Assert.True(ok, msg); Assert.Equal(64, sha!.Length);
+            Assert.True(Cli.Run(ff, ["-v", "error", "-i", Path.Combine(d, msg), "-f", "null", "-"]).Ok); // abspielbar/decodierbar
+        }
+        Assert.True(File.Exists(wav)); Assert.Contains(log.ReadAll(), e => e.Action == "audio.convert" && e.Detail.Contains("sha256="));
     }
 
     [Fact(DisplayName = "SYS-02-P11: Umbenennen – Vorschau = Ergebnis, Rückgängig-Datei, Konflikte erkannt")]

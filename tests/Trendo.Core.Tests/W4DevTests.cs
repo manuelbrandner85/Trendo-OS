@@ -17,7 +17,7 @@ public class W4_Core07_DevStudio
         Assert.DoesNotContain("..", DevStudio.SafeName("../../etc"));
     }
 
-    [Fact(DisplayName = "CORE-07: Git-Stand anlegen, Änderung erkennen, speichern (echtes git)")]
+    [NeedsFact("git", DisplayName = "CORE-07: Git-Stand anlegen, Änderung erkennen, speichern (echtes git)")]
     public void Git_roundtrip()
     {
         if (Cli.Find("git") is null) return;

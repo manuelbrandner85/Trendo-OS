@@ -1,0 +1,37 @@
+[xUnit.net 00:00:01.53]     X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku [SKIP]
+  Übersprungen X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku [1 ms]
+
+Bestanden!   : Fehler:     0, erfolgreich:    15, übersprungen:     0, gesamt:    15, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+[xUnit.net 00:00:03.32]     SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt [SKIP]
+[xUnit.net 00:00:03.32]     SYS-10-P08 (T-0244 getrennt): Scan → durchsuchbares PDF mit Tesseract [SKIP]
+[xUnit.net 00:00:03.33]     SYS-10-P07: Text aus einem echten PDF [SKIP]
+  Übersprungen SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt [1 ms]
+  Übersprungen SYS-10-P08 (T-0244 getrennt): Scan → durchsuchbares PDF mit Tesseract [1 ms]
+--
+[xUnit.net 00:00:03.34]     SYS-10-P01 (T-0244 getrennt): LibreOffice öffnet ein von Trendo erzeugtes DOCX [SKIP]
+  Übersprungen SYS-10-P01 (T-0244 getrennt): LibreOffice öffnet ein von Trendo erzeugtes DOCX [1 ms]
+[xUnit.net 00:00:03.39]     SYS-10-P17 (T-0244 getrennt): PDF zusammenfügen = Summe der Seiten, Teilen stimmt [SKIP]
+[xUnit.net 00:00:03.50]     SYS-10-P05/P06: Seitenzahl und A4 eines echten LibreOffice-PDFs [SKIP]
+  Übersprungen SYS-10-P17 (T-0244 getrennt): PDF zusammenfügen = Summe der Seiten, Teilen stimmt [1 ms]
+  Übersprungen SYS-10-P05/P06: Seitenzahl und A4 eines echten LibreOffice-PDFs [1 ms]
+[xUnit.net 00:00:08.44]     CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen [SKIP]
+  Übersprungen CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen [1 ms]
+[xUnit.net 00:00:08.71]     LETTER-012: Echte Tesseract-Texterkennung eines gerenderten Briefs (deu), unsichere Wörter markiert, Sprachpaket per Hash geprüft [SKIP]
+  Übersprungen LETTER-012: Echte Tesseract-Texterkennung eines gerenderten Briefs (deu), unsichere Wörter markiert, Sprachpaket per Hash geprüft [1 ms]
+[xUnit.net 00:00:09.92]     LTR-QA-002/004 / LETTER-003/016: DOCX real mit LibreOffice zu PDF und ODT; A4, 1 Seite, Hash im Protokoll [SKIP]
+  Übersprungen LTR-QA-002/004 / LETTER-003/016: DOCX real mit LibreOffice zu PDF und ODT; A4, 1 Seite, Hash im Protokoll [1 ms]
+  Trendo.App -> C:\Users\manue\Desktop\Trend Os-worktrees\integration\src\Trendo.App\bin\Release\net10.0\TrendoOS.dll
+--
+Bestanden!   : Fehler:     0, erfolgreich:   848, übersprungen:    10, gesamt:   858, Dauer: 21 s - Trendo.Core.Tests.dll (net10.0)
+[xUnit.net 00:03:53.53]     T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [SKIP]
+  Übersprungen T-0202: Kein Klick auf irgendeiner Seite stürzt ab (Klick-Audit, Bericht der stummen Knöpfe) [1 ms]
+[xUnit.net 00:08:45.08]     SYS-03-P14: Seite als PDF – A4, Prüfsumme im Protokoll (nur wenn Chrome/Edge da) [SKIP]
+  Übersprungen SYS-03-P14: Seite als PDF – A4, Prüfsumme im Protokoll (nur wenn Chrome/Edge da) [1 ms]
+[xUnit.net 00:14:39.98]     Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [SKIP]
+  Übersprungen Musik-KI live: Paket prüfen, entpacken, Server starten, 30 s Lied erzeugen [1 ms]
+
+Bestanden!   : Fehler:     0, erfolgreich:   436, übersprungen:     3, gesamt:   439, Dauer: 20 m 18 s - Trendo.App.Tests.dll (net10.0)
+dotnet-exit 0
+Ran 8 tests in 12.030s
+
+OK

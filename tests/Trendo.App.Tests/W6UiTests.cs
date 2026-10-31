@@ -76,7 +76,9 @@ public class SPEC04_Ui
         var o = W6Ui.Run(w, "xr-check", ("file", Glb.Write(root, 500_000)));
         Assert.Contains("500.000 Dreiecke", o); Assert.Contains("⚠ Meta Quest 2", o); Assert.Contains("✓ PC-VR", o);
         Assert.Contains("⚠", W6Ui.Run(w, "xr-check", ("file", "/gibtsnicht.glb")));
-        Assert.Contains("Ruckelt", W6Ui.Run(w, "xr-frame", ("ms", "20")));
+        Assert.Contains("Laut deiner Messung zu langsam", W6Ui.Run(w, "xr-frame", ("ms", "20"))); // T-0244: Trendo misst nicht selbst
+        Assert.Contains("auf dem Gerät nicht geprüft", o);
+        Assert.DoesNotContain("läuft flüssig", o);
     }
 }
 

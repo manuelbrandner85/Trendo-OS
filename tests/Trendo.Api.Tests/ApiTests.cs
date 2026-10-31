@@ -35,7 +35,7 @@ public sealed class ApiFixture : IAsyncLifetime
 
 public class Api_Auth_Binding(ApiFixture f) : IClassFixture<ApiFixture>
 {
-    [Fact(DisplayName = "API: nur an 127.0.0.1 gebunden (Verbindung über Nicht-Loopback-Adresse scheitert)")]
+    [NeedsLanFact(DisplayName = "API: nur an 127.0.0.1 gebunden (Verbindung über Nicht-Loopback-Adresse scheitert)")]
     public async Task Bound_to_loopback_only()
     {
         Assert.Equal("127.0.0.1", f.Api.BaseAddress.Host);

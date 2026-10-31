@@ -3,7 +3,7 @@ using Xunit;
 
 public class W4_Core05_3D
 {
-    [Fact(DisplayName = "CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen")]
+    [NeedsFact("blender", DisplayName = "CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen")]
     public void Blender_roundtrip()
     {
         var bl = Cli.Find("blender"); if (bl is null) return;

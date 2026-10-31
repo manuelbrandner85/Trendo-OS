@@ -10,7 +10,7 @@ public class W4_Core08_Ui
     [AvaloniaFact(DisplayName = "CORE-08 (UI): Datei wählen, Ton herausholen – echte Ausgabedatei")]
     public void Extract_audio()
     {
-        var src = W4_Core08_Media_Ui.Sample(); if (src is null) return;
+        var src = W4_Core08_Media_Ui.Sample(); if (src is null) { Assert.Skip("Übersprungen – FFmpeg fehlt auf diesem PC."); return; }
         var (w, _, _) = Ui.Open();
         w.MediaPick(src);
         w.Find<Button>("media-job-mp3").Press();

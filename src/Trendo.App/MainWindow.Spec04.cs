@@ -11,7 +11,7 @@ public partial class MainWindow
     private Control XrView()
     {
         var sp = new StackPanel { Spacing = 8 };
-        sp.Children.Add(P("Läuft dein 3D-Modell flüssig auf der Brille? Trendo liest glTF/GLB-Dateien (z. B. aus Blender) und vergleicht sie mit den Grenzen der Geräte.", Text));
+        sp.Children.Add(P("Passt dein 3D-Modell in die Grenzen der Brille? Trendo liest glTF/GLB-Dateien (z. B. aus Blender) und vergleicht sie mit den Richtwerten der Geräte. Ob es auf dem Gerät wirklich flüssig läuft, zeigt nur ein Test auf der Brille.", Text));
         sp.Children.Add(FachTool("xr-check", "Modell prüfen", "Pfad zu einer .glb- oder .gltf-Datei.",
             [("file", "Datei", "")],
             v =>
@@ -19,12 +19,12 @@ public partial class MainWindow
                 var f = v("file").Trim().Trim('"'); if (!File.Exists(f)) throw new IOException("Diese Datei gibt es nicht.");
                 var m = XrInspector.Inspect(f);
                 var lines = new List<string> { $"{m.File}: {Fach.F(m.Triangles, 0)} Dreiecke, {Fach.F(m.Vertices, 0)} Punkte, {m.Primitives} Zeichenaufrufe, {m.Materials} Materialien, {m.Textures} Texturen, {m.Animations} Animationen, {m.Bytes / 1048576.0:0.##} MB" };
-                foreach (var b in XrInspector.Budgets) { var c = XrInspector.Check(m, b); lines.Add($"{(c.Ok ? "✓" : "⚠")} {b.Device}{(c.Ok ? ": läuft flüssig" : ": " + string.Join(" ", c.Problems))}"); }
+                foreach (var b in XrInspector.Budgets) { var c = XrInspector.Check(m, b); lines.Add($"{(c.Ok ? "✓" : "⚠")} {b.Device}{(c.Ok ? ": innerhalb der Richtwerte (auf dem Gerät nicht geprüft)" : ": " + string.Join(" ", c.Problems))}"); }
                 return string.Join("\n", lines);
             }, "Prüfen"));
-        sp.Children.Add(FachTool("xr-frame", "Bildzeit prüfen", "Gemessene Zeit pro Bild (ms) aus der Leistungsanzeige der Brille oder Engine.",
-            [("fps", "Bildwiederholrate (Hz)", "72"), ("ms", "Gemessen (ms)", "12")],
-            v => { var (b, ok, h) = XrInspector.FrameBudget((int)Fach.Num(v("fps")), Fach.Num(v("ms"))); return ok ? $"✓ Flüssig: Budget {Fach.F(b)} ms, {Fach.F(h, 1)} % Reserve." : $"⚠ Ruckelt: Budget nur {Fach.F(b)} ms. Das kann übel machen – Szene vereinfachen."; }));
+        sp.Children.Add(FachTool("xr-frame", "Bildzeit prüfen", "Trag die Zeit pro Bild ein, die du in der Leistungsanzeige der Brille oder Engine abgelesen hast – Trendo misst hier nicht selbst.",
+            [("fps", "Bildwiederholrate (Hz)", "72"), ("ms", "Deine Messung (ms)", "12")],
+            v => { var (b, ok, h) = XrInspector.FrameBudget((int)Fach.Num(v("fps")), Fach.Num(v("ms"))); return ok ? $"✓ Laut deiner Messung im Budget: {Fach.F(b)} ms je Bild, {Fach.F(h, 1)} % Reserve." : $"⚠ Laut deiner Messung zu langsam: Budget nur {Fach.F(b)} ms. Das kann übel machen – Szene vereinfachen."; }));
         sp.Children.Add(FachGroup("xr-more", "Modell genauer ansehen", false,
             FachTool("xr-detail", "Details & Bericht", "Maße, Namen, Texturen, Materialien, Erweiterungen. Der Bericht wird neben dem Modell gespeichert.",
                 [("file", "Datei (.glb/.gltf)", "")],

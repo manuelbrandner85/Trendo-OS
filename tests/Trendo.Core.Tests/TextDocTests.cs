@@ -203,7 +203,7 @@ public class T0223_TrendoText
         }
     }
 
-    [Fact(DisplayName = "T-0223 T8: Rechtschreibung Deutsch – Fehler gefunden mit Vorschlägen, richtige Wörter, Zahlen, Adressen und eigene Wörter nicht angestrichen")]
+    [NeedsFact("repo:artifacts/vollpaket/staging/libreoffice/App/libreoffice/share/extensions/dict-de/de_DE_frami.dic", DisplayName = "T-0223 T8: Rechtschreibung Deutsch – Fehler gefunden mit Vorschlägen, richtige Wörter, Zahlen, Adressen und eigene Wörter nicht angestrichen")]
     public void Spelling_german()
     {
         var dic = Repo("artifacts/vollpaket/staging/libreoffice/App/libreoffice/share/extensions/dict-de/de_DE_frami.dic");

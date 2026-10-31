@@ -26,7 +26,7 @@ public class WebsitePreviewTests
     [Fact(DisplayName = "Webseite: echte Browser-Vorschau je Technik (übersprungen ohne Chrome)")]
     public async Task Preview_screenshots()
     {
-        if (WebsitePreview.FindBrowser() is null) return;
+        if (WebsitePreview.FindBrowser() is null) { Assert.Skip("Übersprungen – kein Chrome/Edge auf diesem PC."); return; }
         var ct = TestContext.Current.CancellationToken;
         var root = Tmp();
         var shotDir = Path.Combine(root, "shots");

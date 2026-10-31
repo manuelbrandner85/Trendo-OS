@@ -9,7 +9,7 @@ public static class KiAdvisor
     public static (string Model, string Why) Choose(HardwareInfo h)
     {
         if (h.RamBytes >= 15 * G && (h.VramBytes >= 4 * G || h.RamBytes >= 24 * G))
-            return (DependencyCatalog.LargeModel, $"{h.RamBytes / G} GB RAM{(h.Gpu is null ? "" : $", {h.Gpu}{(h.VramBytes > 0 ? $" ({h.VramBytes / G} GB)" : "")}")} – das größere Modell läuft flüssig und schreibt besseres Deutsch.");
+            return (DependencyCatalog.LargeModel, $"{h.RamBytes / G} GB RAM{(h.Gpu is null ? "" : $", {h.Gpu}{(h.VramBytes > 0 ? $" ({h.VramBytes / G} GB)" : "")}")} – das größere Modell sollte hier gut laufen und schreibt besseres Deutsch.");
         return (DependencyCatalog.LocalModel, $"{h.RamBytes / G} GB RAM – das kleine Modell ist auf diesem Gerät schneller.");
     }
 }

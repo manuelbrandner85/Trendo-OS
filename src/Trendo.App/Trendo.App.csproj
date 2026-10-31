@@ -7,7 +7,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\logo\trendo.ico</ApplicationIcon>
     <AssemblyName>TrendoOS</AssemblyName>
-    <Version>0.9.19</Version>
+    <Version>0.9.20</Version>
     <!-- SYS-13-P15: vorkompiliert (ReadyToRun) – spart auf dem PC ~0,5 s beim Start -->
     <PublishReadyToRun Condition="'$(RuntimeIdentifier)' != ''">true</PublishReadyToRun>
   </PropertyGroup>

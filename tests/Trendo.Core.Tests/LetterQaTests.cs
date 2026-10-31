@@ -69,7 +69,7 @@ public class LetterQa : IDisposable
         Assert.Contains("150,00 €", lost); Assert.Contains("31.12.2026", lost);
     }
 
-    [Fact(DisplayName = "LTR-QA-002/004 / LETTER-003/016: DOCX real mit LibreOffice zu PDF und ODT; A4, 1 Seite, Hash im Protokoll")]
+    [NeedsFact("/usr/bin/soffice|C:\\Program Files\\LibreOffice\\program\\soffice.exe", DisplayName = "LTR-QA-002/004 / LETTER-003/016: DOCX real mit LibreOffice zu PDF und ODT; A4, 1 Seite, Hash im Protokoll")]
     public async Task Qa002_004()
     {
         var soffice = new[] { "/usr/bin/soffice", @"C:\Program Files\LibreOffice\program\soffice.exe" }.FirstOrDefault(File.Exists);
@@ -255,7 +255,7 @@ public class LetterQa : IDisposable
 
 public class LetterOcrReal
 {
-    [Fact(DisplayName = "LETTER-012: Echte Tesseract-Texterkennung eines gerenderten Briefs (deu), unsichere Wörter markiert, Sprachpaket per Hash geprüft")]
+    [NeedsFact("/usr/bin/tesseract|C:\\Program Files\\Tesseract-OCR\\tesseract.exe", "/usr/bin/soffice|C:\\Program Files\\LibreOffice\\program\\soffice.exe", DisplayName = "LETTER-012: Echte Tesseract-Texterkennung eines gerenderten Briefs (deu), unsichere Wörter markiert, Sprachpaket per Hash geprüft")]
     public async Task Real_ocr()
     {
         var tess = new[] { "/usr/bin/tesseract", @"C:\Program Files\Tesseract-OCR\tesseract.exe" }.FirstOrDefault(File.Exists);
