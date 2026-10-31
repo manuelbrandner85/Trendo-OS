@@ -80,3 +80,51 @@ public class SPEC13_Ui
         w.Close();
     }
 }
+
+/// <summary>T-0274: Höhen und Routing aus dem Internet – nur nach Zustimmung, mit nachgebautem Dienst.</summary>
+public class SPEC13_UiNet
+{
+    const string MK = "karten";
+    static T Get<T>(MainWindow w, string name) where T : Control { Settle(); return w.GetVisualDescendants().OfType<T>().Last(c => c.Name == name && c.IsEffectivelyVisible && c.Bounds.Width > 0); }
+    static T? Try<T>(MainWindow w, string name) where T : Control { Settle(); return w.GetVisualDescendants().OfType<T>().LastOrDefault(c => c.Name == name && c.IsEffectivelyVisible && c.Bounds.Width > 0); }
+    static void Press(MainWindow w, string name) { var b = Get<Button>(w, name); b.BringIntoView(); Settle(); RealClick(w, Get<Button>(w, name)); }
+    static async Task Wait(Func<bool> done) { for (var i = 0; i < 200 && !done(); i++) { await Task.Delay(10); Settle(); } }
+
+    sealed class Fake : HttpMessageHandler
+    {
+        public List<string> Urls { get; } = [];
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r, CancellationToken ct)
+        {
+            var u = r.RequestUri!.ToString(); Urls.Add(u);
+            string json;
+            if (u.Contains("opentopodata")) { var n = Uri.UnescapeDataString(r.RequestUri.Query).Split("locations=")[1].Split('|').Length; json = "{\"status\":\"OK\",\"results\":[" + string.Join(",", Enumerable.Range(0, n).Select(i => $"{{\"elevation\":{600 + i}}}")) + "]}"; }
+            else json = "{\"code\":\"Ok\",\"routes\":[{\"distance\":2500,\"duration\":1800,\"geometry\":{\"coordinates\":[[11.0,48.0],[11.005,48.004],[11.01,48.01]]}}]}";
+            return Task.FromResult(new HttpResponseMessage(System.Net.HttpStatusCode.OK) { Content = new StringContent(json) });
+        }
+    }
+
+    [AvaloniaFact(DisplayName = "SPEC-13 UI: Höhen ergänzen fragt erst – „Nein“ sendet nichts, „Ja“ holt die Höhen; Route entlang von Wegen über den eingetragenen Server")]
+    public async Task Elevation_and_route_with_consent()
+    {
+        var (w, _, _) = Ui.Open(); var fake = new Fake(); w.MapHttpOverride = fake;
+        w.Show(MK); Settle(); RealClick(w, Get<Button>(w, "prog-tpl-leer"));
+        string id = ""; w.MapEdit("Route", x => id = x.AddRoute([(48.0, 11.0), (48.01, 11.01)], "Testroute").Id); w.MapSelect(id);
+        Press(w, "mk-ele"); Assert.NotNull(Try<Border>(w, "mk-consent"));
+        Press(w, "mk-consent-no"); Assert.Empty(fake.Urls); Assert.Equal("Nichts gesendet.", Get<TextBlock>(w, "mk-net-msg").Text);
+        Press(w, "mk-ele"); Press(w, "mk-consent-yes");
+        await Wait(() => Try<TextBlock>(w, "mk-net-msg")?.Text?.StartsWith('✓') == true);
+        Assert.Single(fake.Urls); Assert.Contains("api.opentopodata.org/v1/eudem25m", fake.Urls[0]);
+        var tr = MapDoc.From(w.ProgramActive(MK)!.Data).Tracks.Single(); Assert.True(tr.Points.Count > 10); Assert.All(tr.Points, p => Assert.NotNull(p.Ele));
+        Assert.NotNull(Try<Border>(w, "mk-profile"));
+        // Routing: ohne Adresse klare Meldung, mit Adresse neue Linie
+        Press(w, "mk-route"); Press(w, "mk-consent-yes");
+        await Wait(() => Try<TextBlock>(w, "mk-net-msg")?.Text?.StartsWith('⚠') == true);
+        Assert.Contains("Routing-Servers", Get<TextBlock>(w, "mk-net-msg").Text);
+        Get<TextBox>(w, "mk-route-server").Text = "https://osrm.example"; Press(w, "mk-route"); Press(w, "mk-consent-yes");
+        await Wait(() => Try<TextBlock>(w, "mk-net-msg")?.Text?.Contains("entlang von Wegen") == true);
+        Assert.StartsWith("https://osrm.example/route/v1/foot/", fake.Urls[^1]);
+        Assert.Equal(3, MapDoc.From(w.ProgramActive(MK)!.Data).Tracks.Single().Points.Count);
+        Assert.Contains("2,5 km", Get<TextBlock>(w, "mk-net-msg").Text);
+        w.Close();
+    }
+}

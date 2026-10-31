@@ -16,6 +16,8 @@ namespace Trendo.App;
 public sealed class TileCache(string dir, bool online)
 {
     static readonly HttpClient Http = CreateHttp();
+    /// <summary>T-0274: derselbe Client mit Trendo-Kennung für Höhen- und Routing-Abrufe.</summary>
+    public static HttpClient Shared => Http;
     static HttpClient CreateHttp()
     {
         var h = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };

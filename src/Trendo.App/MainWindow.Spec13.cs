@@ -135,6 +135,7 @@ public partial class MainWindow
                 Act2("mk-reverse", "Umkehren", () => MapEdit("Umkehren", x => x.Tracks.First(y => y.Id == sel).Points.Reverse())),
                 Act2("mk-zoom", "Hinzoomen", () => { var t = new MapDoc(); t.FitTo(tr.Points.Select(p => (p.Lat, p.Lon))); (MapState.Lat, MapState.Lon, MapState.Zoom) = (t.CenterLat, t.CenterLon, t.Zoom); Show(MK); }),
                 Act2("mk-del", "Löschen", () => { MapState.Selected = null; MapEdit("Löschen", x => x.Remove(sel)); }) } });
+            MapOnlineTools(sp, tr, sel);
         }
         else if (sel is not null && m.Waypoints.FirstOrDefault(w => w.Id == sel) is { } wp)
         {
@@ -177,5 +178,75 @@ public partial class MainWindow
             sp.Children.Add(P(Tiles.Online ? "Kartendaten © OpenStreetMap-Mitwirkende (ODbL). Kacheln werden zwischengespeichert." : "Offline: Karte aus dem Zwischenspeicher, sonst Gitter.", null, 11));
         }
         return sp;
+    }
+
+    // ---------- T-0274: Höhen und Routing (Dienste im Internet – nur nach Zustimmung, offline gesperrt) ----------
+    private string? _mapAsk; // "hoehen" oder "route", wartet auf Zustimmung
+    private string _mapNetMsg = "";
+    public HttpMessageHandler? MapHttpOverride { get; set; }
+    HttpClient MapHttp => MapHttpOverride is { } h ? new HttpClient(h) : TileCache.Shared;
+    string RoutingFile => Path.Combine(_core.DataRoot, "karten", "routing.txt");
+    public string MapRoutingServer { get => File.Exists(RoutingFile) ? File.ReadAllText(RoutingFile).Trim() : ""; set { Directory.CreateDirectory(Path.GetDirectoryName(RoutingFile)!); File.WriteAllText(RoutingFile, value.Trim()); } }
+    public string MapProfile = "foot";
+
+    void MapOnlineTools(StackPanel sp, MapTrack tr, string sel)
+    {
+        var online = !_core.Offline && (!_opt.Isolated || MapHttpOverride is not null);
+        sp.Children.Add(H("Aus dem Internet", 12));
+        if (!online) { sp.Children.Add(P("Offline – Höhen und Routing brauchen eine Internetverbindung.", null, 11)); return; }
+        Button B(string name, string label, Action go) { var b = new Button { Name = name, Content = label, Padding = new Thickness(10, 4), Margin = new Thickness(0, 4, 4, 0) }; b.Click += (_, _) => go(); return b; }
+        var noEle = tr.Points.Count >= 2 && tr.Points.All(p => p.Ele is null);
+        sp.Children.Add(B("mk-ele", noEle ? "Höhen ergänzen" : "Höhen neu abrufen", () => { _mapAsk = "hoehen"; Show(MK); }));
+        if (tr.Planned)
+        {
+            var srv = new TextBox { Name = "mk-route-server", Text = MapRoutingServer, PlaceholderText = "Routing-Server (OSRM), z. B. https://mein-server/osrm" };
+            srv.LostFocus += (_, _) => MapRoutingServer = srv.Text ?? ""; OnEnter(srv, () => MapRoutingServer = srv.Text ?? "");
+            var prof = new ComboBox { Name = "mk-route-profile", ItemsSource = new[] { "zu Fuß", "Fahrrad", "Auto" }, SelectedIndex = Array.IndexOf(RouteService.Profiles, MapProfile), Width = 110 };
+            prof.SelectionChanged += (_, _) => MapProfile = RouteService.Profiles[Math.Max(0, prof.SelectedIndex)];
+            sp.Children.Add(P("Route entlang von Wegen – über einen OSRM-Server, den du einträgst (eigener Server oder ein Anbieter, dessen Bedingungen das erlauben).", null, 11));
+            sp.Children.Add(srv);
+            sp.Children.Add(new WrapPanel { Children = { prof, B("mk-route", "Entlang von Wegen", () => { MapRoutingServer = srv.Text ?? ""; _mapAsk = "route"; Show(MK); }) } });
+        }
+        if (_mapAsk is { } ask)
+        {
+            var host = ask == "hoehen" ? ElevationService.Host : (Uri.TryCreate(MapRoutingServer, UriKind.Absolute, out var u) ? u.Host : "(keine Adresse)");
+            sp.Children.Add(new Border { Name = "mk-consent", Background = Brush.Parse("#332F86F6"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8), Margin = new Thickness(0, 6, 0, 0), Child = new StackPanel { Spacing = 6, Children = {
+                new TextBlock { Text = $"Dafür werden die Koordinaten dieser {(tr.Planned ? "Route" : "Spur")} an {host} gesendet. Ohne deine Zustimmung passiert nichts.", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap },
+                new WrapPanel { Children = { B("mk-consent-yes", "Ja, senden", () => { _mapAsk = null; _ = ask == "hoehen" ? MapFetchElevation(sel) : MapFetchRoute(sel); }), B("mk-consent-no", "Nein", () => { _mapAsk = null; _mapNetMsg = "Nichts gesendet."; Show(MK); }) } } } } });
+        }
+        if (_mapNetMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "mk-net-msg", Text = _mapNetMsg, FontSize = 12, TextWrapping = TextWrapping.Wrap, Foreground = Brush.Parse(_mapNetMsg.StartsWith('⚠') ? "#F87171" : "#7FD3FF") });
+    }
+
+    /// <summary>Höhen für die Spur/Route holen (nach Zustimmung) und als ein Bearbeitungsschritt übernehmen.</summary>
+    public async Task MapFetchElevation(string sel)
+    {
+        var d = ProgramActive(MK); var tr = d is null ? null : MapDoc.From(d.Data).Tracks.FirstOrDefault(t => t.Id == sel); if (d is null || tr is null) return;
+        _mapNetMsg = "Höhen werden abgerufen …"; Show(MK);
+        try
+        {
+            var svc = new ElevationService(MapHttp, Path.Combine(_core.DataRoot, "karten", "hoehen.json"));
+            var pts = await svc.AddElevation(tr.Points.Select(p => p.Geo()).ToList());
+            MapEdit("Höhen ergänzen", x => x.Tracks.First(t => t.Id == sel).Points = pts.Select(MapPoint.From).ToList());
+            _mapNetMsg = $"✓ {pts.Count(p => p.Ele is not null)} Höhen von OpenTopoData (EU-DEM/SRTM) übernommen.";
+        }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or TaskCanceledException or System.Text.Json.JsonException) { _mapNetMsg = "⚠ " + ex.Message; }
+        Show(MK);
+    }
+
+    /// <summary>Route über den eingetragenen OSRM-Server entlang von Wegen neu berechnen (die bisherigen Punkte sind die Zwischenziele).</summary>
+    public async Task MapFetchRoute(string sel)
+    {
+        var d = ProgramActive(MK); var tr = d is null ? null : MapDoc.From(d.Data).Tracks.FirstOrDefault(t => t.Id == sel); if (d is null || tr is null) return;
+        _mapNetMsg = "Route wird berechnet …"; Show(MK);
+        try
+        {
+            var via = tr.Points.Select(p => p.Geo()).ToList(); if (via.Count > 25) via = Enumerable.Range(0, 25).Select(k => via[k * (via.Count - 1) / 24]).ToList();
+            var json = await MapHttp.GetStringAsync(RouteService.Url(MapRoutingServer, MapProfile, via));
+            var (pts, m, s) = RouteService.Parse(json);
+            MapEdit("Route entlang von Wegen", x => x.Tracks.First(t => t.Id == sel).Points = pts.Select(MapPoint.From).ToList());
+            _mapNetMsg = $"✓ Route entlang von Wegen: {m / 1000:0.0} km, etwa {TimeSpan.FromSeconds(s):h\\:mm} h.";
+        }
+        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or ArgumentException or TaskCanceledException or System.Text.Json.JsonException or KeyNotFoundException) { _mapNetMsg = "⚠ " + ex.Message; }
+        Show(MK);
     }
 }
