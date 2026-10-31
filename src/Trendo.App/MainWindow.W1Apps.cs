@@ -182,6 +182,7 @@ public partial class MainWindow
         sp.Children.Add(P("Trendo zeigt nur an und beendet keine fremden Programme. Schließe ein Programm selbst, wenn es zu viel belegt.", null, 10.5));
         var refresh = new Button { Name = "res-refresh", Content = "Aktualisieren" }; refresh.Click += (_, _) => Show("ressourcen");
         sp.Children.Add(refresh);
+        sp.Children.Add(Card(DiskMapCard()));
         return AppsPage("Speicher & Leistung", sp);
     }
 }

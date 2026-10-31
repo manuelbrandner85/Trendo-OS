@@ -208,6 +208,12 @@ else if (shot == "seite")
         var stl = Path.Combine(root, "t-stueck.stl"); Mesh3D.WriteStl(tm, stl);
         win.Open3dPrint(stl); if (Environment.GetEnvironmentVariable("TRENDO_DRUCK") == "auf") win.PrintAutoOrient(); win.Show("3d-druck");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_DISK") is { Length: > 0 } diskDir) // Speicherplatz-Karte
+    {
+        var task = win.DiskScanAsync(diskDir); while (!task.IsCompleted) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
+        if (win.DiskAt?.Children.FirstOrDefault(c => c.IsDir) is { } firstDir) win.DiskSelect(firstDir);
+        win.Show("ressourcen");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_3D") is { Length: > 0 }) { win.Show("3d"); foreach (var sh in new[] { "cube", "sphere", "cylinder", "torus" }) win.Studio3DAddShape(sh); win.Studio3DSelect(1); } // 3D-Modelle erstellen mit Arbeitsfläche
     if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lv)); win.ProgramNew(page, tpl); if (Environment.GetEnvironmentVariable("TRENDO_GAMESEC") is { Length: > 0 } gs) win.GameSection = gs; win.Show(page); } // Programm mit Vorlage öffnen
     if (page == "architektur" && Environment.GetEnvironmentVariable("TRENDO_ARCH") is { Length: > 0 } arch) // Grundriss: Auswahl/3D/Werkzeug zeigen
