@@ -43,6 +43,8 @@ public sealed class UserSettings
     public List<string> DismissedSuggestions { get; set; } = [];
     /// <summary>Posteingang: lokal gemerkte Nachrichten (IMAP-UID) – auf dem Server ändert sich nichts.</summary>
     public List<long> MailFlagged { get; set; } = [];
+    /// <summary>Fotoalbum: zusätzliche Ordner mit Fotos (neben „Bilder“ und dem Projektordner).</summary>
+    public List<string> PhotoFolders { get; set; } = [];
     public int[]? WindowRect { get; set; }
     /// <summary>Startmenü: angeheftete Studios (IDs) und zuletzt benutzte Seiten (neueste zuerst).</summary>
     public List<string> PinnedStudios { get; set; } = [];

@@ -132,10 +132,11 @@ public partial class MainWindow
     // ---------- SYS-02: Medien ----------
     private Control MediaView()
     {
+        if (_mediaTab == "fotos") return AppsPage("Medien", new StackPanel { Spacing = 8, Children = { MediaTabs(), PhotoView() } });
         var music = Environment.GetFolderPath(Environment.SpecialFolder.MyMusic); var videos = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
         var files = FileShelf.Recent([music, videos, ProjectsRoot], FileShelf.Media, 40);
         var mpv = ToolPath("mpv");
-        var sp = new StackPanel { Spacing = 4, Children = { P(mpv is not null ? "Musik und Videos aus deinen Ordnern Musik, Videos und dem Projektordner. Abspielen mit mpv." : "Musik und Videos aus deinen Ordnern. Abspielen mit dem Windows-Standardprogramm (mpv ist nicht installiert).") } };
+        var sp = new StackPanel { Spacing = 4, Children = { MediaTabs(), P(mpv is not null ? "Musik und Videos aus deinen Ordnern Musik, Videos und dem Projektordner. Abspielen mit mpv." : "Musik und Videos aus deinen Ordnern. Abspielen mit dem Windows-Standardprogramm (mpv ist nicht installiert).") } };
         var i = 0;
         foreach (var f in files) sp.Children.Add(FileRow(f, i++, "media", mpv));
         if (files.Count == 0) sp.Children.Add(P("Keine Musik- oder Videodateien gefunden.", Text));

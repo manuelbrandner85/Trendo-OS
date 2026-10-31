@@ -214,6 +214,31 @@ else if (shot == "seite")
         if (win.DiskAt?.Children.FirstOrDefault(c => c.IsDir) is { } firstDir) win.DiskSelect(firstDir);
         win.Show("ressourcen");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_FOTOS") is { Length: > 0 } fotoMode) // Fotoalbum mit erzeugten Beispielbildern (Verläufe, Horizont, Sonne)
+    {
+        var fdir = Path.Combine(root, "beispielfotos"); Directory.CreateDirectory(fdir); var rnd = new Random(11);
+        (SkiaSharp.SKColor, SkiaSharp.SKColor)[] skies = [(new(0x1e, 0x3c, 0x72), new(0xf7, 0x9d, 0x5c)), (new(0x5b, 0x9b, 0xd5), new(0xe8, 0xf1, 0xf8)), (new(0x2c, 0x3e, 0x50), new(0xfd, 0x74, 0x6c)), (new(0x13, 0x4e, 0x5e), new(0x71, 0xb2, 0x80)), (new(0x41, 0x29, 0x5a), new(0x2f, 0x07, 0x43))];
+        for (var k = 0; k < 26; k++)
+        {
+            using var bmp = new SkiaSharp.SKBitmap(640, 480); using (var cv = new SkiaSharp.SKCanvas(bmp))
+            {
+                var (top, bottom) = skies[rnd.Next(skies.Length)];
+                using var sky = new SkiaSharp.SKPaint { Shader = SkiaSharp.SKShader.CreateLinearGradient(new(0, 0), new(0, 480), [top, bottom], SkiaSharp.SKShaderTileMode.Clamp) }; cv.DrawRect(0, 0, 640, 480, sky);
+                using var sun = new SkiaSharp.SKPaint { Color = new SkiaSharp.SKColor(255, 236, 180, 220), IsAntialias = true }; cv.DrawCircle(rnd.Next(80, 560), rnd.Next(90, 230), rnd.Next(25, 60), sun);
+                var hz = rnd.Next(260, 360); using var land = new SkiaSharp.SKPath(); land.MoveTo(0, hz);
+                for (var x = 0; x <= 640; x += 40) land.LineTo(x, hz + (float)(Math.Sin(x / 90.0 + k) * 30 + rnd.Next(-12, 12)));
+                land.LineTo(640, 480); land.LineTo(0, 480); land.Close();
+                using var lp = new SkiaSharp.SKPaint { Shader = SkiaSharp.SKShader.CreateLinearGradient(new(0, hz), new(0, 480), [new SkiaSharp.SKColor(0x1b, 0x2a, 0x1f), new SkiaSharp.SKColor(0x0b, 0x12, 0x0e)], SkiaSharp.SKShaderTileMode.Clamp), IsAntialias = true }; cv.DrawPath(land, lp);
+            }
+            var file = Path.Combine(fdir, $"IMG_{2000 + k}.png"); using (var fs = File.Create(file)) bmp.Encode(fs, SkiaSharp.SKEncodedImageFormat.Png, 90);
+            File.SetLastWriteTime(file, DateTime.Now.AddDays(-k * 3.3));
+        }
+        win.PhotoFoldersOverride = [fdir];
+        var t = win.PhotosLoadAsync(); while (!t.IsCompleted || win.PhotosLoaded.Count == 0) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
+        win.Albums.Create("Urlaub am See"); win.Albums.Add("Urlaub am See", win.PhotosLoaded.Take(6).Select(p => p.Path)); win.Albums.Add("Favoriten", win.PhotosLoaded.Skip(2).Take(3).Select(p => p.Path));
+        if (fotoMode == "gross") win.PhotoOpenForPreview(win.PhotosLoaded[3].Path);
+        win.Show("medien"); for (var i = 0; i < 60; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); } win.Show("medien"); for (var i = 0; i < 30; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_GELD") is { Length: > 0 }) // Haushaltsbuch mit Beispielbuchungen (drei Monate)
     {
         var m0 = new DateOnly(DateTime.Today.Year, DateTime.Today.Month, 1); var rnd = new Random(3);
