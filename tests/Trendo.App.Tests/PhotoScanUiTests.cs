@@ -15,7 +15,7 @@ public class PhotoScanUiTests
     {
         var (w, _, root) = Ui.Open(offline: true);
         Directory.CreateDirectory(root);
-        w.Show(MainWindow.StudioPages["SPEC-09"]);
+        w.Show("scan3d"); // T-0264: Fotos-Reiter neben dem Programm „Punktwolke“
         Assert.NotNull(w.TryFind<Button>("scan-photos-folder-pickdir"));
         Assert.NotNull(w.TryFind<Button>("scan-video-file-pick"));
         w.Find<Button>("scan-run").Press();

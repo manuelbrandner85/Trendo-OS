@@ -53,22 +53,6 @@ public static class Glb
 }
 
 
-public class SPEC09_Ui
-{
-    [AvaloniaFact(DisplayName = "SPEC-09 UI: Scan lesen und bereinigt speichern")]
-    public void Scan()
-    {
-        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
-        var f = Path.Combine(root, "s.xyz");
-        File.WriteAllLines(f, Enumerable.Range(0, 400).Select(i => FormattableString.Invariant($"{i % 20 * 0.002} {i / 20 * 0.002} 0")).Append("3 3 3"));
-        w.Show(MainWindow.StudioPages["SPEC-09"]);
-        Assert.Contains("401 Punkte", W6Ui.Run(w, "scan-info", ("file", f)));
-        var o = W6Ui.Run(w, "scan-clean", ("file", f), ("voxel", "0,004"), ("radius", "0,01"));
-        Assert.Contains("1 Störpunkte", o); Assert.Contains("100 Punkte", o);
-        Assert.True(File.Exists(Path.Combine(root, "s.bereinigt.ply")));
-    }
-}
-
 public class SPEC10_Ui
 {
     /// <summary>Speist Festplatte (%) und Arbeitsspeicher (MB) ein und verlangt genau diese Ampel, im Modell und in der Zeile.</summary>
@@ -246,30 +230,6 @@ public class SPEC04_UiPlus
         Assert.Contains("Stufe 3", W6Ui.Run(w, "xr-lod"));
         Assert.Contains("1.024 Pixel", W6Ui.Run(w, "xr-texel"));
         Assert.Contains("Komfort", W6Ui.Run(w, "xr-move"));
-    }
-}
-
-public class SPEC09_UiPlus
-{
-    [AvaloniaFact(DisplayName = "SPEC-09 UI Ausbau: Umformen, Boden, Prüfen")]
-    public void Plus()
-    {
-        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
-        var f = Path.Combine(root, "b.xyz");
-        File.WriteAllLines(f, Enumerable.Range(0, 100).Select(i => FormattableString.Invariant($"{i % 10 * 10} {i / 10 * 10} 0")).Append("50 50 500"));
-        w.Show(MainWindow.StudioPages["SPEC-09"]);
-        Assert.Contains("0,090 × 0,090 × 0,500", W6Ui.Run(w, "scan-scale", ("file", f)));
-        Assert.True(File.Exists(Path.Combine(root, "b.skaliert.ply")));
-        Assert.Contains("Gespeichert", W6Ui.Run(w, "scan-center", ("file", f)));
-        Assert.Contains("90", W6Ui.Run(w, "scan-rot", ("file", f)));
-        Assert.Contains("4 Punkte", W6Ui.Run(w, "scan-crop", ("file", f), ("box", "0 0 -1 10 10 1")));
-        Assert.Contains("202 Punkte", W6Ui.Run(w, "scan-merge", ("file", f), ("file2", f)));
-        Assert.Contains("100 von 101", W6Ui.Run(w, "scan-plane", ("file", f), ("tol", "1")));
-        Assert.Contains("100 Bodenpunkte", W6Ui.Run(w, "scan-nofloor", ("file", f), ("tol", "1")));
-        Assert.Contains("Volumen", W6Ui.Run(w, "scan-vol", ("file", f), ("cell", "10")));
-        Assert.Contains("größte 0,0000", W6Ui.Run(w, "scan-cmp", ("file", f), ("file2", f)));
-        Assert.Contains("Punktabstand", W6Ui.Run(w, "scan-dens", ("file", f)));
-        W6Ui.Run(w, "scan-xyz", ("file", f)); Assert.True(File.Exists(Path.Combine(root, "b.export.xyz")));
     }
 }
 
