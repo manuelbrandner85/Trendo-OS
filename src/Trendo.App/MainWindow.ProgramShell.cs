@@ -106,6 +106,7 @@ public partial class MainWindow
     public void ProgramAutosaveAll()
     {
         foreach (var l in _progDocs.Values) foreach (var d in l) try { d.Autosave(ProgBackup); } catch (IOException) { } catch (UnauthorizedAccessException) { }
+        OfficeAutosave(); // T-0254: Text, Tabelle, Präsentation
     }
 
     /// <summary>Eigenschaftsfelder übernehmen mit Enter (bei einzeiligen Feldern) oder beim Verlassen.</summary>

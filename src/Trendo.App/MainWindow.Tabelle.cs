@@ -59,7 +59,7 @@ public partial class MainWindow
     public void SheetSaveAs(string path)
     {
         if (path.EndsWith(".csv", StringComparison.OrdinalIgnoreCase)) SheetFiles.WriteCsv(SheetDocument, ActiveSheet, path);
-        else { SheetFiles.Save(SheetDocument, path); if (!path.EndsWith(".ods", StringComparison.OrdinalIgnoreCase)) { SheetPath = path; SheetDirty = false; } }
+        else { SheetFiles.Save(SheetDocument, path); if (!path.EndsWith(".ods", StringComparison.OrdinalIgnoreCase)) { SheetPath = path; SheetDirty = false; RecoveryClear("tabelle"); } }
         RememberSheetRecent(path); _shMsg = $"Gespeichert: {Path.GetFileName(path)}";
         _core.Audit.Append(Principal.LocalOwner.Name, "tabelle.save", Path.GetFileName(path));
     }
@@ -454,7 +454,8 @@ public partial class MainWindow
     }
 
     // ---------- Oberfläche ----------
-    private Control SheetPageView() => new Border { Name = "tabelle-page-root", Background = Brush.Parse(C("#F2081329", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = SheetStartVisible ? SheetStartPage() : SheetShell() };
+    private Control SheetPageView() => WithRecovery("tabelle", SheetDirty, SheetPageCore());
+    private Control SheetPageCore() => new Border { Name = "tabelle-page-root", Background = Brush.Parse(C("#F2081329", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = SheetStartVisible ? SheetStartPage() : SheetShell() };
 
     /// <summary>G1: Startseite mit „Neu“, Vorlagen, Zuletzt geöffnet und Öffnen.</summary>
     private Control SheetStartPage()

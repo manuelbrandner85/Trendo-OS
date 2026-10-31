@@ -61,7 +61,7 @@ public partial class MainWindow
     public void TextSaveAs(string path)
     {
         TextFiles.Save(TextDocument, path);
-        if (!path.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) { TextPath = path; TextDirty = false; RememberRecent(path); }
+        if (!path.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) { TextPath = path; TextDirty = false; RememberRecent(path); RecoveryClear("text"); }
         _txMsg = $"Gespeichert: {Path.GetFileName(path)}";
         _core.Audit.Append(Principal.LocalOwner.Name, "text.save", Path.GetFileName(path));
     }
@@ -144,6 +144,7 @@ public partial class MainWindow
         if (_txRibbon == "start") { ribbon.Children.Add(TextToolbar()); ribbon.Children.Add(StyleGallery()); } else ribbon.Children.Add(TextRibbonBody());
         if (TextPromptBar() is { } prompt) ribbon.Children.Add(prompt);
         if (TextAiProposalCard() is { } proposal) ribbon.Children.Add(proposal); // 108-49: Vorschlag statt sofort ersetzen
+        if (RecoveryBanner("text", TextDirty) is { } recovery) ribbon.Children.Add(recovery); // T-0254
         Grid.SetRow(ribbon, 1); Grid.SetColumnSpan(ribbon, 2); g.Children.Add(ribbon);
         var more = TextMoreBar(); more.IsVisible = _txMore && _txRibbon == "start"; Grid.SetRow(more, 2); Grid.SetColumnSpan(more, 2); g.Children.Add(more);
         var page = TextPaper(); Grid.SetRow(page, 3); g.Children.Add(page);

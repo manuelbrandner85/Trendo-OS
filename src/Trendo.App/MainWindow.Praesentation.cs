@@ -74,7 +74,7 @@ public partial class MainWindow
     public void DeckSaveAs(string path)
     {
         SlideFiles.Save(Deck, path);
-        if (path.EndsWith(".pptx", StringComparison.OrdinalIgnoreCase)) { DeckPath = path; DeckDirty = false; RememberDeckRecent(path); }
+        if (path.EndsWith(".pptx", StringComparison.OrdinalIgnoreCase)) { DeckPath = path; DeckDirty = false; RememberDeckRecent(path); RecoveryClear("praesentation"); }
         _dkMsg = $"Gespeichert: {Path.GetFileName(path)}";
         _core.Audit.Append(Principal.LocalOwner.Name, "praesentation.save", Path.GetFileName(path));
     }
@@ -293,7 +293,8 @@ public partial class MainWindow
     }
 
     // ---------- Oberfläche ----------
-    Control DeckPageView() => new Border { Name = "praesentation-page-root", Background = Brush.Parse(C("#F2081329", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = DeckStartVisible ? DeckStartPage() : DeckShell() };
+    Control DeckPageView() => WithRecovery("praesentation", DeckDirty, DeckPageCore());
+    Control DeckPageCore() => new Border { Name = "praesentation-page-root", Background = Brush.Parse(C("#F2081329", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = DeckStartVisible ? DeckStartPage() : DeckShell() };
 
     /// <summary>G1: Startseite – Neu, Vorlagen, aus Stichpunkten, mit der KI, Zuletzt, Öffnen.</summary>
     Control DeckStartPage()
