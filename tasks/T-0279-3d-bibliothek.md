@@ -1,0 +1,10 @@
+# T-0279 – 3D-Bibliothek: freie Quellen live und Modelle aus anderen Programmen
+
+- Freigabe: Manuel im Chat am 31.10.2026 („die 3d objekte sollen auch aus kostenlose seiten genutzt werden die aus einer liste oder von anderen programmen rausgezogen werden alles in echtzeit“, „immer ok von mir“)
+- Kern `Trendo.Core/Bibliothek/AssetLibrary.cs`: Live-Suche in Poly Haven (Modelle, HDRI; CC0) und ambientCG (PBR-Materialien; CC0), deutsche Suchwörter werden übersetzt, Liste 1 Tag zwischengespeichert, Vorschaubilder zwischengespeichert. Laden nur auf Klick: glTF mit 1k-Texturen, HDR 1k, Material-1K-JPG-Satz (entpackt). Nur HTTPS zu den Quell-Servern, Schutz gegen `../`-Pfade, `LIZENZ.txt` und Namensnennung je Objekt, Audit-Eintrag je Download.
+- `Trendo.Core/Bibliothek/ModelConverter.cs`: FBX, OBJ, USD/USDZ, Alembic, PLY, STL, glTF und `.blend` über Blender im Hintergrund (`-b --factory-startup`, Zeitlimit 3 min) nach GLB (Meter, Y oben, Materialien eingebettet).
+- Programm-Reiter „3D-Bibliothek“ im Fenster des Modell-Prüfers: Art (Modelle/Himmel/Materialien), Suche, Kacheln mit Vorschau, Maßen, Lizenz und Urheber, „Laden“, eigene Bibliothek mit „Ansehen“ (Modell-Prüfer) und „Entfernen“, Übernahme aus anderen Programmen, Namensnennung. Offline gesperrt, Bibliothek bleibt nutzbar.
+- Gefundener Fehler durch Test: Suche passte auf jedes Modell (Übersetzung des Suchworts stand im Suchtext) – behoben.
+- Live geprüft (31.10.2026): „stuhl“ → 24 Modelle; „Painted Wooden Stool“ geladen, 676 Dreiecke, 38 × 41 × 58 cm (Katalog 38,5 × 40,6 × 57,9); „abend“ → 225 HDRIs; „holz“ → 40 Materialien mit Farbe/Normal/Rauheit/Höhe. OBJ → GLB mit Blender 5.2: 12 Dreiecke, 1 m → 100 cm.
+- Tests: Core 5 (Suche deutsch + Zwischenspeicher, Download + Entfernen, Pfad-/Fremdadressen-Schutz, ambientCG, Umwandlungsskript), App 3 (Suche/Vorschau/Laden/Entfernen, Übernahme + Ansehen, Offline-Sperre)
+- Offen: Bibliotheksmodelle im Grundriss aufstellen und HDRI/Materialien in der Foto-Ansicht nutzen (nächster Schritt).

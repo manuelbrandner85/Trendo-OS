@@ -170,6 +170,11 @@ else if (shot == "seite")
     {
         var demo = Trendo.Core.VehiclePlus.SeedDemo(win.Cars, DateTime.Today); win.CarSel = demo.Name; win.CarTab = carTab; win.Show(page);
     }
+    if (page == "bib3d" && Environment.GetEnvironmentVariable("TRENDO_BIB") is { Length: > 0 } bibQ) // 3D-Bibliothek: echte Live-Suche (Internet)
+    {
+        var parts = bibQ.Split(':'); if (parts.Length > 1) win.BibKind = parts[0]; win.BibQuery = parts[^1];
+        var t = win.BibSearch(); for (var i = 0; i < 600 && (!t.IsCompleted); i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(50); }
+    }
     if (page == "xr" && Environment.GetEnvironmentVariable("TRENDO_XR") is { Length: > 0 }) // Modell-Prüfer mit Beispielmodell
     {
         win.XrFile = Trendo.Core.XrSample.Write(Path.Combine(root, "beispiel-sessel.glb")); win.Show(page);
