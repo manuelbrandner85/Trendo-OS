@@ -92,6 +92,34 @@ public static class CircuitDrawing
                         if (p.Kind == "led") { Ln(2, -12, 8, -20, t.Part, 1.4); Ln(6, -10, 12, -18, t.Part, 1.4); }
                         break;
                     }
+                case "npn": case "pnp":
+                    {   // T-0272: Kreis, Basisbalken, Kollektor- und Emitterschräge, Pfeil am Emitter (NPN hinaus, PNP hinein)
+                        var q = p.Pin3()!.Value; double bx = q.X * Grid, by = q.Y * Grid; var cb = Col(q.X, q.Y);
+                        var (cx, cy) = At(0, 0); var side = (bx - cx) * nx + (by - cy) * ny >= 0 ? 1.0 : -1.0;
+                        sh.Add(new DPoly(Enumerable.Range(0, 28).Select(k => (cx + Math.Cos(k * Math.PI / 14) * 17, cy + Math.Sin(k * Math.PI / 14) * 17)).ToList(), t.Bg, t.Part, 2, "BAUTEIL", p.Id));
+                        Ln(-9, 6 * side, 9, 6 * side, t.Part, 3);                       // Basisbalken
+                        var (bbx, bby) = At(0, 6 * side); sh.Add(new DLine(bx, by, bbx, bby, cb, 2.2, "DRAHT"));
+                        Ln(-4, 6 * side, -11, -4 * side, t.Part, 2); Ln(4, 6 * side, 11, -4 * side, t.Part, 2);
+                        var (k1x, k1y) = At(-11, -4 * side); sh.Add(new DLine(x1, y1, k1x, k1y, c1, 2.2, "DRAHT"));
+                        var (e1x, e1y) = At(11, -4 * side); sh.Add(new DLine(e1x, e1y, x2, y2, c2, 2.2, "DRAHT"));
+                        if (p.Kind == "npn") Poly(t.Part, t.Part, 1, (11, -4 * side), (5, -4 * side), (9, 1 * side));
+                        else Poly(t.Part, t.Part, 1, (4, 6 * side), (9, 5 * side), (6, 1 * side));
+                        break;
+                    }
+                case "opv":
+                    {   // T-0272: Dreieck mit − und + Eingang, Ausgang an der Spitze
+                        var q = p.Pin3()!.Value; double px = q.X * Grid, py = q.Y * Grid; var cp = Col(q.X, q.Y);
+                        var mxp = (x1 + px) / 2; var myp = (y1 + py) / 2; // Mitte zwischen den Eingängen
+                        double baseL = Math.Sqrt((px - x1) * (px - x1) + (py - y1) * (py - y1)) + 16;
+                        var tipX = x2 - ux * 10; var tipY = y2 - uy * 10; var bx0 = mxp + ux * 10; var by0 = myp + uy * 10;
+                        var nnx = (px - x1) / Math.Max(1e-9, baseL - 16); var nny = (py - y1) / Math.Max(1e-9, baseL - 16);
+                        tipX += nnx * (baseL - 16) / 2; tipY += nny * (baseL - 16) / 2; // Spitze mittig zwischen den Eingängen
+                        sh.Add(new DPoly([(bx0 - nnx * baseL / 2, by0 - nny * baseL / 2), (bx0 + nnx * baseL / 2, by0 + nny * baseL / 2), (tipX, tipY)], t.Bg, t.Part, 2, "BAUTEIL", p.Id));
+                        sh.Add(new DLine(x1, y1, x1 + ux * 10, y1 + uy * 10, c1, 2.2, "DRAHT")); sh.Add(new DLine(px, py, px + ux * 10, py + uy * 10, cp, 2.2, "DRAHT"));
+                        sh.Add(new DLine(tipX, tipY, x2, y2, c2, 2.2, "DRAHT"));
+                        sh.Add(new DText(x1 + ux * 17, y1 + uy * 17 + 4, "−", 13, t.Text, "BAUTEIL", true)); sh.Add(new DText(px + ux * 17, py + uy * 17 + 4, "+", 13, t.Text, "BAUTEIL", true));
+                        break;
+                    }
             }
             // Beschriftung: waagrecht über dem Bauteil, senkrecht rechts daneben; Messwerte nur am ausgewählten Bauteil
             if (values && p.Kind is not ("draht" or "masse"))

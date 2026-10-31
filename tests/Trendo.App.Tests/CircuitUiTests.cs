@@ -109,3 +109,33 @@ public class SPEC02_Ui
         w.Close();
     }
 }
+
+/// <summary>T-0272: Transistor, OPV und Frequenzgang über die Oberfläche.</summary>
+public class SPEC02_UiPlus
+{
+    const string EK = "elektronik";
+    static Trendo.Core.Elektro.Circuit Model(MainWindow w) => Trendo.Core.Elektro.Circuit.From(w.ProgramActive(EK)!.Data);
+    static T Get<T>(MainWindow w, string name) where T : Control { Settle(); return w.GetVisualDescendants().OfType<T>().Last(c => c.Name == name && c.IsEffectivelyVisible && c.Bounds.Width > 0); }
+    static void Press(MainWindow w, string name) { var b = Get<Button>(w, name); b.BringIntoView(); Settle(); RealClick(w, Get<Button>(w, name)); }
+
+    [AvaloniaFact(DisplayName = "SPEC-02 UI: Vorlage Transistor schaltet die LED ein; OPV-Vorlage – Bode-Diagramm am Ausgang zeigt Verstärkung 20 dB und die Grenzfrequenz des Tiefpasses")]
+    public void Transistor_opamp_bode()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show(EK); Settle(); RealClick(w, Get<Button>(w, "prog-tpl-transistor"));
+        Assert.NotNull(Get<Button>(w, "ek-tool-npn"));
+        w.CircuitAdvance(0.01);
+        var c = Model(w); var led = c.Parts.Single(p => p.Kind == "led");
+        Assert.InRange(w.CircuitSim()!.Last!.Parts[led.Id].I, 0.010, 0.020); // ≈ (9 − 2 − 0,1) V / 470 Ω
+        w.ProgramNew(EK, "verstaerker"); w.Show(EK); Settle(); // zweites Dokument aus der Vorlage
+        var op = Model(w).Parts.Single(p => p.Kind == "opv");
+        w.CircuitSelect(op.Id);
+        Assert.Equal("12", Get<TextBox>(w, "ek-p-value").Text);
+        Press(w, "ek-bode");
+        var fc = Get<TextBlock>(w, "ek-bode-fc").Text!;
+        Assert.Contains("Grenzfrequenz 1,", fc); Assert.Contains("kHz", fc); // 1/(2π·1 kΩ·100 nF) ≈ 1,59 kHz
+        Assert.Contains("Verstärkung bei 10 Hz 20", fc);
+        Assert.NotNull(Get<Border>(w, "ek-bode"));
+        w.Close();
+    }
+}

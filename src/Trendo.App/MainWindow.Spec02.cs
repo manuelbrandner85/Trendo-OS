@@ -19,6 +19,7 @@ public partial class MainWindow
     private Simulator? _sim; private string _simKey = "";
     private DispatcherTimer? _simTimer;
 
+    private (string Part, List<BodePoint> Pts)? _bode; private string _bodeErr = "";
     static readonly (string Id, string Label, string Glyph)[] CircuitTools =
     [
         ("auswahl", "Auswahl", "M4,2 L4,20 L9,15 L12,22 L15,21 L12,14 L19,14 Z"),
@@ -33,6 +34,9 @@ public partial class MainWindow
         ("diode", "Diode", "M1,12 L7,12 M7,6 L17,12 L7,18 Z M17,6 L17,18 M17,12 L23,12"),
         ("led", "LED", "M1,12 L7,12 M7,6 L17,12 L7,18 Z M17,6 L17,18 M17,12 L23,12 M12,4 L16,0 M15,5 L19,1"),
         ("lampe", "Lampe", "M1,12 L5,12 M12,12 m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0 M7,7 L17,17 M17,7 L7,17 M19,12 L23,12"),
+        ("npn", "NPN", "M12,12 m-9,0 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0 M9,7 L9,17 M9,10 L15,5 L15,1 M9,14 L15,19 L15,23 M13,17 L15,19 L12,19 M1,12 L9,12"),
+        ("pnp", "PNP", "M12,12 m-9,0 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0 M9,7 L9,17 M9,10 L15,5 L15,1 M9,14 L15,19 L15,23 M11,14 L9,14 L10,16 M1,12 L9,12"),
+        ("opv", "OPV", "M5,3 L5,21 L21,12 Z M1,8 L5,8 M1,16 L5,16 M21,12 L23,12 M7,8 L10,8 M7,16 L10,16 M8.5,14.5 L8.5,17.5"),
     ];
 
     private void InitSpec02() => RegisterProgram(FachTabs, new ProgramSpec(EK, "SPEC-02", "Schaltung & Simulation")
@@ -48,6 +52,8 @@ public partial class MainWindow
             new("rc", "RC-Glied", "Kondensator über 1 kΩ laden – Schalter umlegen", () => CircuitDoc(Circuit.Template("rc"))),
             new("gleichrichter", "Gleichrichter", "12 V Wechselspannung, Diode, Glättung", () => CircuitDoc(Circuit.Template("gleichrichter"))),
             new("schwingkreis", "Schwingkreis", "1 H und 15 µF – schwingt mit 41 Hz", () => CircuitDoc(Circuit.Template("schwingkreis"))),
+            new("transistor", "Transistor als Schalter", "NPN schaltet eine LED, Basis über 10 kΩ", () => CircuitDoc(Circuit.Template("transistor"))),
+            new("verstaerker", "OPV-Verstärker", "×10 nicht-invertierend, mit Tiefpass am Eingang – Bode-Diagramm", () => CircuitDoc(Circuit.Template("verstaerker"))),
         ],
         Ribbon =
         [
@@ -174,6 +180,12 @@ public partial class MainWindow
                 case "wechsel":
                     Val("value", "Scheitelspannung (V)", ElectronicsPlus.Fmt(p.Value, "").Trim(), (x, v) => x.Value = Parse(v, "V"));
                     Val("freq", "Frequenz (Hz)", ElectronicsPlus.Fmt(p.Freq, "").Trim(), (x, v) => x.Freq = Math.Clamp(Parse(v, "Hz"), 0.01, 1e5)); Fact("Effektivwert", ElectronicsPlus.Fmt(p.Value / Math.Sqrt(2), "V")); break;
+                case "npn": case "pnp":
+                    Val("value", "Stromverstärkung β", p.Value.ToString("0", De), (x, v) => x.Value = Math.Clamp(Parse(v, ""), 1, 2000));
+                    Fact("Anschlüsse", "Linie: Kollektor → Emitter, Basis seitlich"); break;
+                case "opv":
+                    Val("value", "Versorgung ± (V)", ElectronicsPlus.Fmt(p.Value, "").Trim(), (x, v) => x.Value = Math.Clamp(Parse(v, "V"), 0.5, 50));
+                    Fact("Anschlüsse", "Linie: Minus-Eingang → Ausgang, Plus-Eingang daneben"); break;
                 case "schalter": sp.Children.Add(Act2("ek-toggle", p.Closed ? "Schalter öffnen" : "Schalter schließen", () => CircuitEdit("Schalter umlegen", x => { var q = x.Part(sel)!; q.Closed = !q.Closed; }))); break;
                 case "led":
                     var colors = new[] { "rot", "gruen", "gelb", "blau", "weiss" };
@@ -188,6 +200,19 @@ public partial class MainWindow
                     Text = $"U {ElectronicsPlus.Fmt(Math.Abs(r.V), "V")} · I {ElectronicsPlus.Fmt(Math.Abs(r.I), "A")} · P {ElectronicsPlus.Fmt(Math.Abs(r.V * r.I), "W")}" };
                 sp.Children.Add(_simLive);
                 sp.Children.Add(P("Unten auf der Fläche läuft das Oszilloskop: grün Spannung, gelb Strom.", null, 11));
+            }
+            // T-0272: Frequenzgang an diesem Bauteil (Anschluss 2) messen
+            if (p.Kind is not ("spannung" or "wechsel"))
+            {
+                sp.Children.Add(H("Frequenzgang", 12));
+                sp.Children.Add(Act2("ek-bode", "Bode-Diagramm hier (Anschluss 2)", () => { try { _bode = (sel, AcAnalysis.Sweep(c, (p.X2, p.Y2))); _bodeErr = ""; } catch (Exception ex) when (ex is InvalidOperationException or ArgumentException) { _bode = null; _bodeErr = ex.Message; } Show(EK); }));
+                if (_bodeErr.Length > 0) sp.Children.Add(new TextBlock { Name = "ek-bode-err", Text = "⚠ " + _bodeErr, Foreground = Brush.Parse("#F87171"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
+                if (_bode is { } bd && bd.Part == sel)
+                {
+                    var fc = AcAnalysis.Cutoff(bd.Pts);
+                    sp.Children.Add(new TextBlock { Name = "ek-bode-fc", Text = (fc is { } g ? $"Grenzfrequenz {AcAnalysis.Hz(g)} (−3 dB)" : "Keine −3-dB-Grenze im Bereich 10 Hz … 100 kHz") + $" · Verstärkung bei 10 Hz {bd.Pts[0].MagDb:0.#} dB", Foreground = Brush.Parse("#F5A524"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
+                    sp.Children.Add(new Border { Name = "ek-bode", Height = 170, CornerRadius = new CornerRadius(8), ClipToBounds = true, Child = new ShapeView((w, h) => AcAnalysis.Draw(bd.Pts, w, h), "#0E1A2E") });
+                }
             }
             sp.Children.Add(new WrapPanel { Children = {
                 Act2("ek-rotate", "↻ Drehen (R)", () => CircuitEdit("Drehen", x => { var q = x.Part(sel)!; var (dx, dy) = (q.X2 - q.X1, q.Y2 - q.Y1); (q.X2, q.Y2) = (q.X1 - dy, q.Y1 + dx); })),

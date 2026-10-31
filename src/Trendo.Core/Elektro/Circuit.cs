@@ -55,6 +55,16 @@ public sealed class Circuit
             case "schwingkreis":
                 c.Name = "LC-Schwingkreis";
                 c.Add("spannung", 0, 6, 0, 0, 10); c.Add("schalter", 0, 0, 4, 0).Closed = true; c.Add("widerstand", 4, 0, 8, 0, 10); c.Add("spule", 8, 0, 8, 6, 1); c.Add("kondensator", 8, 6, 0, 6, 15e-6); c.Add("masse", 0, 6, 0, 7); break;
+            case "transistor": // T-0272: NPN schaltet eine LED, Basis über 10 kΩ
+                c.Name = "Transistor als Schalter";
+                c.Add("spannung", 0, 10, 0, 0, 9); c.Add("draht", 0, 0, 16, 0); c.Add("widerstand", 10, 0, 10, 3, 470); c.Add("led", 10, 3, 10, 6).Color = "gruen";
+                c.Add("npn", 10, 6, 10, 10, 150); c.Add("schalter", 16, 0, 16, 4).Closed = true; c.Add("widerstand", 16, 4, 12, 8, 10000);
+                c.Add("draht", 10, 10, 10, 12); c.Add("draht", 10, 12, 0, 12); c.Add("draht", 0, 10, 0, 12); c.Add("masse", 0, 12, 0, 13); break;
+            case "verstaerker": // T-0272: nicht-invertierender OPV-Verstärker ×10 mit RC-Tiefpass am Eingang
+                c.Name = "OPV-Verstärker ×10";
+                c.Add("wechsel", 0, 8, 0, 0, 0.5).Freq = 200; c.Add("widerstand", 0, 0, 4, 0, 1000); c.Add("kondensator", 4, 0, 4, 8, 100e-9); c.Add("draht", 4, 0, 8, 0);
+                c.Add("opv", 8, 2, 14, 2, 12); c.Add("draht", 8, 2, 8, 4); c.Add("widerstand", 8, 4, 8, 8, 1000); c.Add("widerstand", 8, 4, 14, 4, 9000); c.Add("draht", 14, 2, 14, 4);
+                c.Add("widerstand", 14, 4, 14, 8, 10000); c.Add("draht", 14, 8, 8, 8); c.Add("draht", 8, 8, 0, 8); c.Add("masse", 0, 8, 0, 9); break;
         }
         return c;
     }
@@ -65,6 +75,7 @@ public sealed class Circuit
     {
         var net = Netlist.Build(this); var sb = new StringBuilder($"* {Name} – Trendo Schaltung\n");
         string N(double v) => v.ToString("0.######E+0", CultureInfo.InvariantCulture);
+        int P3(Part p) => p.Pin3() is { } q ? net.NodeOf(q.X, q.Y) : 0;
         var k = 0;
         foreach (var p in Parts.Where(p => p.Kind is not ("draht" or "masse")))
         {
@@ -79,6 +90,9 @@ public sealed class Circuit
                 "diode" => $"D{nm} {a} {b} DSI\n",
                 "led" => $"D{nm} {a} {b} DLED\n",
                 "schalter" => p.Closed ? $"R{nm} {a} {b} 1E-3\n" : $"R{nm} {a} {b} 1E+12\n",
+                "npn" => $"Q{nm} {a} {P3(p)} {b} QN{N(p.Value)}\n.model QN{N(p.Value)} NPN(IS=1E-14 BF={N(p.Value)} BR=1)\n",
+                "pnp" => $"Q{nm} {a} {P3(p)} {b} QP{N(p.Value)}\n.model QP{N(p.Value)} PNP(IS=1E-14 BF={N(p.Value)} BR=1)\n",
+                "opv" => $"B{nm} {b} 0 V={N(p.Value)}*tanh(1E5*(V({P3(p)})-V({a}))/{N(p.Value)})\n",
                 _ => "",
             });
         }
@@ -112,6 +126,17 @@ public sealed class Part
     public bool Closed { get; set; } = true;
     /// <summary>Nur LED: Farbe (rot, gruen, blau, weiss, gelb).</summary>
     public string Color { get; set; } = "rot";
+
+    /// <summary>T-0272: dritter Anschluss bei Dreipolen. Transistor: Anschluss 1 = Kollektor, 2 = Emitter, 3 = Basis (seitlich in der Mitte).
+    /// Operationsverstärker: 1 = Minus-Eingang, 2 = Ausgang, 3 = Plus-Eingang (zwei Raster neben dem Minus-Eingang).</summary>
+    public (int X, int Y)? Pin3()
+    {
+        if (Kind is not ("npn" or "pnp" or "opv")) return null;
+        int dx = Math.Sign(X2 - X1), dy = Math.Sign(Y2 - Y1); var len = Math.Max(Math.Abs(X2 - X1), Math.Abs(Y2 - Y1));
+        var (px, py) = (dy, -dx); // senkrecht zur Bauteilachse
+        if (Kind == "opv") return (X1 + px * 2, Y1 + py * 2);
+        var h = Math.Max(1, len / 2); return ((X1 + X2) / 2 + px * h, (Y1 + Y2) / 2 + py * h);
+    }
 }
 
 public sealed record PartType(string Kind, string Label, string Prefix, double Default, string Unit);
@@ -124,13 +149,14 @@ public static class PartTypes
         new("spule", "Spule", "L", 0.01, "H"), new("spannung", "Batterie / Gleichspannung", "V", 9, "V"), new("wechsel", "Wechselspannung", "V", 12, "V"),
         new("masse", "Masse (0 V)", "", 0, ""), new("schalter", "Schalter", "S", 0, ""), new("diode", "Diode", "D", 0, ""), new("led", "Leuchtdiode", "LED", 0, ""),
         new("lampe", "Glühlampe", "H", 24, "Ω"),
+        new("npn", "NPN-Transistor", "T", 100, "β"), new("pnp", "PNP-Transistor", "T", 100, "β"), new("opv", "Operationsverstärker", "IC", 12, "V"),
     ];
     public static PartType Get(string kind) => All.FirstOrDefault(t => t.Kind == kind) ?? throw new ArgumentException($"Bauteil „{kind}“ gibt es nicht.");
     public static string Format(Part p) => p.Kind switch
     {
         "widerstand" or "lampe" => Electronics.Ohm(p.Value), "kondensator" => ElectronicsPlus.Fmt(p.Value, "F"), "spule" => ElectronicsPlus.Fmt(p.Value, "H"),
         "spannung" => ElectronicsPlus.Fmt(p.Value, "V"), "wechsel" => ElectronicsPlus.Fmt(p.Value, "V") + " " + ElectronicsPlus.Fmt(p.Freq, "Hz"),
-        "schalter" => p.Closed ? "zu" : "offen", "led" => p.Color, _ => "",
+        "schalter" => p.Closed ? "zu" : "offen", "led" => p.Color, "npn" or "pnp" => $"β {p.Value:0}", "opv" => $"±{p.Value:0.#} V", _ => "",
     };
 }
 
@@ -147,7 +173,7 @@ public sealed class Netlist
         var parent = new Dictionary<(int, int), (int, int)>();
         (int, int) Find((int, int) p) { if (!parent.TryGetValue(p, out var q)) { parent[p] = p; return p; } if (q == p) return p; var r = Find(q); parent[p] = r; return r; }
         void Union((int, int) a, (int, int) b) { var ra = Find(a); var rb = Find(b); if (ra != rb) parent[ra] = rb; }
-        foreach (var p in c.Parts) { Find((p.X1, p.Y1)); Find((p.X2, p.Y2)); if (p.Kind == "draht") Union((p.X1, p.Y1), (p.X2, p.Y2)); }
+        foreach (var p in c.Parts) { Find((p.X1, p.Y1)); Find((p.X2, p.Y2)); if (p.Pin3() is { } p3) Find(p3); if (p.Kind == "draht") Union((p.X1, p.Y1), (p.X2, p.Y2)); }
         // Drahtenden, die auf einem anderen Draht liegen (T-Abzweig), verbinden
         foreach (var w in c.Parts.Where(p => p.Kind == "draht"))
             foreach (var pt in parent.Keys.ToList())
@@ -201,7 +227,7 @@ public sealed class Simulator
     public SimState Step()
     {
         var n = _net.Count - 1; // ohne Masse
-        var sources = _parts.Where(p => p.Kind is "spannung" or "wechsel").ToList();
+        var sources = _parts.Where(p => p.Kind is "spannung" or "wechsel" or "opv").ToList();
         var size = n + sources.Count;
         double[] x = new double[size];
         for (var iter = 0; iter < 200; iter++)
@@ -233,6 +259,35 @@ public sealed class Simulator
                             var e = Math.Exp(Math.Min(vd / nvt, 80)); var id = Is * (e - 1); var gd = Is / nvt * e + 1e-12;
                             Stamp(a, c, gd); Inject(a, c, id - gd * vd); break;
                         }
+                    case "npn": case "pnp":
+                        {
+                            var bn = Pin(p); var sg = p.Kind == "npn" ? 1.0 : -1.0; // PNP: alle Spannungen und Ströme umgekehrt
+                            const double Is = 1e-14; var bf = Math.Max(1, p.Value); const double br = 1;
+                            var vbeOld = _diodeV.GetValueOrDefault(p.Id + "be"); var vbcOld = _diodeV.GetValueOrDefault(p.Id + "bc");
+                            var vbe = Limit(sg * (V(x, bn) - V(x, c)), vbeOld, Vt, Is); var vbc = Limit(sg * (V(x, bn) - V(x, a)), vbcOld, Vt, Is);
+                            if (Math.Abs(vbe - vbeOld) > 1e-7 || Math.Abs(vbc - vbcOld) > 1e-7) diodeMoved = true;
+                            _diodeV[p.Id + "be"] = vbe; _diodeV[p.Id + "bc"] = vbc;
+                            double ef = Math.Exp(Math.Min(vbe / Vt, 80)), er = Math.Exp(Math.Min(vbc / Vt, 80));
+                            // Basis-Emitter- und Basis-Kollektor-Diode
+                            void Junction(int an, int ca, double v, double e, double isj) { var g = isj / Vt * e + 1e-12; var i0 = isj * (e - 1); if (sg > 0) { Stamp(an, ca, g); Inject(an, ca, i0 - g * v); } else { Stamp(ca, an, g); Inject(ca, an, i0 - g * v); } }
+                            Junction(bn, c, vbe, ef, Is / bf); Junction(bn, a, vbc, er, Is / br);
+                            double gf = Is / Vt * ef, gr = Is / Vt * er, ict = Is * (ef - er), i0t = ict - gf * vbe + gr * vbc; // Transportstrom, linearisiert
+                            // Ict von C nach E = sg·i0t + gf·(Vb−Ve) − gr·(Vb−Vc) – die Steilheiten sind für NPN und PNP gleich (sg² = 1)
+                            void G2(int r, int col, double v) { if (r > 0 && col > 0) G[r - 1, col - 1] += v; }
+                            G2(a, bn, gf); G2(a, c, -gf); G2(c, bn, -gf); G2(c, c, gf);
+                            G2(a, bn, -gr); G2(a, a, gr); G2(c, bn, gr); G2(c, a, -gr);
+                            Inject(a, c, sg * i0t); break;
+                        }
+                    case "opv":
+                        {
+                            var k = n + si++; var pin = Pin(p); var vs = Math.Max(0.1, p.Value); const double A = 1e5;
+                            var vd = V(x, pin) - V(x, a); var th = Math.Tanh(A * vd / vs); var f0 = vs * th; var g = A * (1 - th * th);
+                            var vdOld = _diodeV.GetValueOrDefault(p.Id); if (Math.Abs(vd - vdOld) > 1e-9) diodeMoved = true; _diodeV[p.Id] = vd;
+                            // Ausgang als gesteuerte Spannungsquelle gegen Masse: V(out) − g·(V+ − V−) = f0 − g·vd
+                            if (c > 0) { G[c - 1, k] += 1; G[k, c - 1] += 1; }
+                            if (pin > 0) G[k, pin - 1] -= g; if (a > 0) G[k, a - 1] += g;
+                            b[k] = f0 - g * vd; break;
+                        }
                     case "spannung": case "wechsel":
                         {
                             var k = n + si++; var val = p.Kind == "spannung" ? p.Value : p.Value * Math.Sin(2 * Math.PI * p.Freq * (Time + Dt));
@@ -247,9 +302,10 @@ public sealed class Simulator
             try { nx = Solve(G, b); }
             catch (InvalidOperationException) { Problem = "Die Schaltung lässt sich nicht berechnen – vermutlich ein Kurzschluss über eine Spannungsquelle oder zwei Quellen parallel."; nx = new double[size]; }
             // fertig erst, wenn sich weder Knotenspannungen noch Diodenspannungen noch bewegen
-            var converged = _parts.All(p => p.Kind is not ("diode" or "led")) || !diodeMoved && Enumerable.Range(0, size).All(i => Math.Abs(nx[i] - x[i]) < 1e-6 + 1e-6 * Math.Abs(nx[i]));
+            var linear = _parts.All(p => p.Kind is not ("diode" or "led" or "npn" or "pnp" or "opv"));
+            var converged = linear || !diodeMoved && Enumerable.Range(0, size).All(i => Math.Abs(nx[i] - x[i]) < 1e-6 + 1e-6 * Math.Abs(nx[i]));
             x = nx;
-            if (converged && iter > 0 || _parts.All(p => p.Kind is not ("diode" or "led"))) break;
+            if (converged && iter > 0 || linear) break;
         }
         Time += Dt;
         // Ergebnisse und Zustände fortschreiben
@@ -266,6 +322,14 @@ public sealed class Simulator
                 case "kondensator": i = Math.Max(1e-15, p.Value) / Dt * (v - _capV.GetValueOrDefault(p.Id)); _capV[p.Id] = v; break;
                 case "spule": i = _indI.GetValueOrDefault(p.Id) + Dt / Math.Max(1e-12, p.Value) * v; _indI[p.Id] = i; break;
                 case "diode": case "led": { var (Is, N) = DiodeModel(p); i = Is * (Math.Exp(Math.Min(v / (N * Vt), 80)) - 1); break; }
+                case "npn": case "pnp":
+                    {
+                        var sg = p.Kind == "npn" ? 1.0 : -1.0; const double Is = 1e-14; var bf = Math.Max(1, p.Value);
+                        var vbe = sg * (V(x, Pin(p)) - V(x, c)); var vbc = sg * (V(x, Pin(p)) - V(x, a));
+                        double ef = Math.Exp(Math.Min(vbe / Vt, 80)), er = Math.Exp(Math.Min(vbc / Vt, 80));
+                        i = sg * (Is * (ef - er) - Is * (er - 1)); v = V(x, a) - V(x, c); break; // Kollektorstrom, Spannung Kollektor−Emitter
+                    }
+                case "opv": i = -x[n + sIdx++]; v = V(x, c); break; // Ausgangsstrom, Ausgangsspannung
                 case "spannung": case "wechsel": i = -x[n + sIdx++]; break; // MNA-Größe ist der Strom in den Pluspol hinein; positiv = Quelle liefert (von − nach + durch die Quelle)
                 default: i = 0; break;
             }
@@ -278,6 +342,7 @@ public sealed class Simulator
     public SimState Run(double seconds) { SimState s = Last ?? Step(); var steps = (int)Math.Ceiling(seconds / Dt); for (var k = 0; k < steps; k++) s = Step(); return s; }
 
     static double V(double[] x, int node) => node > 0 ? x[node - 1] : 0;
+    int Pin(Part p) => p.Pin3() is { } q ? _net.NodeOf(q.X, q.Y) : 0;
 
     /// <summary>Spannungsbegrenzung für Newton (verhindert Überlauf der e-Funktion).</summary>
     static double Limit(double vnew, double vold, double nvt, double Is)
