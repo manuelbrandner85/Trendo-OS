@@ -162,6 +162,8 @@ public partial class MainWindow
             var sup = new ComboBox { Name = "tk-p-support", Width = 150, ItemsSource = new[] { "frei", "Festlager", "Loslager", "Einspannung" }, SelectedIndex = Array.IndexOf(new[] { "", "fest", "los", "einspannung" }, n.Support) };
             sup.SelectionChanged += (_, _) => { var v = new[] { "", "fest", "los", "einspannung" }[Math.Max(0, sup.SelectedIndex)]; if (v != n.Support) FrameEdit("Lager", f => f.Node(sel)!.Support = v); };
             sp.Children.Add(Row(P("Lager", Text, 12), sup));
+            if (n.Support != "") Num("settle", "Setzung", n.Settle, (f, v) => f.Node(sel)!.Settle = v, "mm nach unten");
+            if (n.Support == "los") Num("angle", "Neigung der Gleitebene", n.Angle, (f, v) => f.Node(sel)!.Angle = Math.Clamp(v, -80, 80), "°");
             if (r is not null && r.Reactions.TryGetValue(n.Id, out var re)) { sp.Children.Add(H("Lagerkräfte", 12)); Fact("waagrecht Rx", $"{re.Rx:0.##} kN"); Fact("senkrecht Ry", $"{re.Ry:0.##} kN"); if (n.Support == "einspannung") Fact("Moment", $"{re.M:0.##} kNm"); }
             if (r is not null && r.Displacements.TryGetValue(n.Id, out var u)) Fact("Verschiebung", $"{Math.Sqrt(u.Ux * u.Ux + u.Uy * u.Uy) * 1000:0.##} mm");
             sp.Children.Add(new WrapPanel { Children = {
@@ -201,13 +203,20 @@ public partial class MainWindow
             }
             sp.Children.Add(new WrapPanel { Children = {
                 Act2("tk-lineload", "＋ Streckenlast", () => FrameEdit("Streckenlast", f => FrameState.Selected = f.AddLineLoad(sel, FrameState.LoadValue).Id)),
+                Act2("tk-temp", "＋ Temperatur", () => FrameEdit("Temperatur", f => FrameState.Selected = f.AddTemperature(sel, 30).Id)),
                 Act2("tk-split", "Stab teilen", () => FrameEdit("Stab teilen", f => FrameState.Selected = f.SplitMember(sel).Id)),
                 Act2("tk-del", "Stab löschen", () => { FrameState.Selected = null; FrameEdit("Stab löschen", f => f.Remove(sel)); }) } });
         }
         else if (sel is not null && m.Loads.FirstOrDefault(l => l.Id == sel) is { } ld)
         {
-            sp.Children.Add(H(ld.Kind switch { "strecke" => "Streckenlast", "einzel" => "Einzellast am Stab", _ => "Knotenlast" }, 13));
-            Num("value", ld.Kind == "strecke" ? "Last nach unten" : "Kraft nach unten", ld.Value, (f, v) => f.Loads.First(x => x.Id == sel).Value = v, ld.Kind == "strecke" ? "kN/m" : "kN");
+            sp.Children.Add(H(ld.Kind switch { "strecke" => "Streckenlast", "einzel" => "Einzellast am Stab", "temperatur" => "Temperatur", _ => "Knotenlast" }, 13));
+            if (ld.Kind == "temperatur")
+            {
+                Num("value", "Gleichmäßige Erwärmung", ld.Value, (f, v) => f.Loads.First(x => x.Id == sel).Value = v, "K");
+                Num("grad", "Unterschied unten − oben", ld.M, (f, v) => f.Loads.First(x => x.Id == sel).M = v, "K");
+            }
+            else Num("value", ld.Kind == "strecke" ? "Last am Anfang" : "Kraft nach unten", ld.Value, (f, v) => f.Loads.First(x => x.Id == sel).Value = v, ld.Kind == "strecke" ? "kN/m" : "kN");
+            if (ld.Kind == "strecke") Num("value2", "Last am Ende (Trapez)", ld.Value2 ?? ld.Value, (f, v) => { var l = f.Loads.First(x => x.Id == sel); l.Value2 = Math.Abs(v - l.Value) < 1e-12 ? null : v; }, "kN/m");
             if (ld.Kind == "einzel") Num("at", "Lage", ld.At * 100, (f, v) => f.Loads.First(x => x.Id == sel).At = Math.Clamp(v / 100, 0, 1), "% der Länge");
             if (ld.Kind == "knoten") { Num("fx", "Kraft nach rechts", ld.Fx, (f, v) => f.Loads.First(x => x.Id == sel).Fx = v, "kN"); Num("m", "Moment", ld.M, (f, v) => f.Loads.First(x => x.Id == sel).M = v, "kNm"); }
             sp.Children.Add(Act2("tk-del", "Last löschen", () => { FrameState.Selected = null; FrameEdit("Last löschen", f => f.Remove(sel)); }));

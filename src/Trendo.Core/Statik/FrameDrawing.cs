@@ -101,9 +101,20 @@ public static class FrameDrawing
                 case "fest": case "los":
                     s.Add(new DPoly([(x, y), (x - unit * 0.7, y + unit * 1.1), (x + unit * 0.7, y + unit * 1.1)], null, t.Support, 1.6, "LAGER"));
                     var gy = y + unit * (n.Support == "los" ? 1.45 : 1.1);
-                    if (n.Support == "los") s.Add(new DLine(x - unit * 0.9, y + unit * 1.25, x + unit * 0.9, y + unit * 1.25, t.Support, 1.2, "LAGER"));
-                    s.Add(new DLine(x - unit, gy, x + unit, gy, t.Support, 1.6, "LAGER"));
-                    for (var k = -2; k <= 2; k++) s.Add(new DLine(x + k * unit * 0.4, gy, x + k * unit * 0.4 - unit * 0.3, gy + unit * 0.35, t.Support, 0.8, "LAGER"));
+                    if (n.Support == "los" && Math.Abs(n.Angle) > 1e-9)
+                    {   // T-0271: geneigte Gleitebene, durch den Fußpunkt gedreht
+                        var an = -n.Angle * Math.PI / 180; double ca = Math.Cos(an), sa = Math.Sin(an), cx = x, cy = y + unit * 1.35;
+                        (double, double) R(double dx, double dy) => (cx + dx * ca - dy * sa, cy + dx * sa + dy * ca);
+                        var (l1x, l1y) = R(-unit, 0); var (l2x, l2y) = R(unit, 0); s.Add(new DLine(l1x, l1y, l2x, l2y, t.Support, 1.6, "LAGER"));
+                        for (var k = -2; k <= 2; k++) { var (hx, hy) = R(k * unit * 0.4, 0); var (ex, ey) = R(k * unit * 0.4 - unit * 0.3, unit * 0.35); s.Add(new DLine(hx, hy, ex, ey, t.Support, 0.8, "LAGER")); }
+                        s.Add(new DText(x + unit * 1.8, y + unit * 1.2, Fmt(n.Angle) + "°", unit * 0.75, t.Support, "LAGER"));
+                    }
+                    else
+                    {
+                        if (n.Support == "los") s.Add(new DLine(x - unit * 0.9, y + unit * 1.25, x + unit * 0.9, y + unit * 1.25, t.Support, 1.2, "LAGER"));
+                        s.Add(new DLine(x - unit, gy, x + unit, gy, t.Support, 1.6, "LAGER"));
+                        for (var k = -2; k <= 2; k++) s.Add(new DLine(x + k * unit * 0.4, gy, x + k * unit * 0.4 - unit * 0.3, gy + unit * 0.35, t.Support, 0.8, "LAGER"));
+                    }
                     break;
                 case "einspannung":
                     s.Add(new DLine(x - unit, y, x + unit, y, t.Support, 2.4, "LAGER"));
@@ -111,6 +122,7 @@ public static class FrameDrawing
                     break;
             }
         }
+        foreach (var n in f.Nodes.Where(n => n.Support != "" && Math.Abs(n.Settle) > 1e-9)) { var (x, y) = P(n.X, n.Y); s.Add(new DText(x - unit * 2.2, y + unit * 2.6, "↓ " + Fmt(n.Settle) + " mm", unit * 0.75, t.Load, "LASTEN")); } // Setzung
         // Lasten
         foreach (var l in f.Loads)
         {
@@ -125,11 +137,18 @@ public static class FrameDrawing
             {
                 var a = f.Node(m.A)!; var bb = f.Node(m.B)!; var (x0, y0) = P(a.X, a.Y); var (x1, y1) = P(bb.X, bb.Y);
                 if (l.Kind == "strecke")
+                {   // T-0271: Trapez – Pfeillänge folgt der Last
+                    var qb = l.Value2 ?? l.Value; var qm = Math.Max(1e-9, Math.Max(Math.Abs(l.Value), Math.Abs(qb)));
+                    double H(double q) => unit * (0.6 + 1.6 * Math.Abs(q) / qm);
+                    var cnt = Math.Max(3, (int)(Math.Sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)) / (unit * 2.5)));
+                    s.Add(new DPoly([(x0, y0 - H(l.Value)), (x1, y1 - H(qb))], null, t.Load, 1.4, "LASTEN", l.Id, false));
+                    for (var k = 0; k <= cnt; k++) { var tt = (double)k / cnt; var px = x0 + (x1 - x0) * tt; var py = y0 + (y1 - y0) * tt; var hh = H(l.Value + (qb - l.Value) * tt); if (hh > unit * 0.7) Arrow(s, px, py - hh, px, py - unit * 0.3, t.Load, unit * 0.7, l.Id); }
+                    s.Add(new DText((x0 + x1) / 2, (y0 + y1) / 2 - unit * 2.4 - unit * 0.8, l.Value2 is { } v2 && Math.Abs(v2 - l.Value) > 1e-9 ? $"{Fmt(l.Value)} → {Fmt(v2)} kN/m" : Fmt(l.Value) + " kN/m", unit * 0.85, t.Load, "LASTEN", true));
+                }
+                else if (l.Kind == "temperatur")
                 {
-                    var h = unit * 2.2; var cnt = Math.Max(3, (int)(Math.Sqrt((x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0)) / (unit * 2.5)));
-                    s.Add(new DPoly([(x0, y0 - h), (x1, y1 - h)], null, t.Load, 1.4, "LASTEN", l.Id, false));
-                    for (var k = 0; k <= cnt; k++) { var px = x0 + (x1 - x0) * k / cnt; var py = y0 + (y1 - y0) * k / cnt; Arrow(s, px, py - h, px, py - unit * 0.3, t.Load, unit * 0.7, l.Id); }
-                    s.Add(new DText((x0 + x1) / 2, (y0 + y1) / 2 - h - unit * 0.8, Fmt(l.Value) + " kN/m", unit * 0.85, t.Load, "LASTEN", true));
+                    var mx = (x0 + x1) / 2; var my = (y0 + y1) / 2;
+                    s.Add(new DText(mx, my + unit * 1.6, $"ΔT {Fmt(l.Value)} K" + (Math.Abs(l.M) > 1e-9 ? $" · unten−oben {Fmt(l.M)} K" : ""), unit * 0.8, "#F87171", "LASTEN", true));
                 }
                 else
                 {

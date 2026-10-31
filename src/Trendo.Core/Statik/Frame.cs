@@ -77,6 +77,8 @@ public sealed class FrameModel
     public FLoad AddNodeLoad(string node, double down, double right = 0, double moment = 0)
     { var l = new FLoad { Kind = "knoten", Target = node, Value = down, Fx = right, M = moment }; Loads.Add(l); return l; }
     public FLoad AddLineLoad(string member, double q) { var l = new FLoad { Kind = "strecke", Target = member, Value = q }; Loads.Add(l); return l; }
+    public FLoad AddTrapezLoad(string member, double qa, double qb) { var l = new FLoad { Kind = "strecke", Target = member, Value = qa, Value2 = qb }; Loads.Add(l); return l; }
+    public FLoad AddTemperature(string member, double uniformK, double gradientK = 0) { var l = new FLoad { Kind = "temperatur", Target = member, Value = uniformK, M = gradientK }; Loads.Add(l); return l; }
     public FLoad AddPointLoad(string member, double f, double at = 0.5) { var l = new FLoad { Kind = "einzel", Target = member, Value = f, At = Math.Clamp(at, 0, 1) }; Loads.Add(l); return l; }
 
     public (double MinX, double MinY, double MaxX, double MaxY)? Bounds() =>
@@ -124,6 +126,10 @@ public sealed class FNode
     public double Y { get; set; }
     /// <summary>"" frei · "fest" (Festlager, hält x und y) · "los" (Loslager, hält y) · "einspannung" (hält x, y und Drehung).</summary>
     public string Support { get; set; } = "";
+    /// <summary>T-0271: Lagersetzung in mm nach unten (nur bei festem Lager, Loslager oder Einspannung).</summary>
+    public double Settle { get; set; }
+    /// <summary>T-0271: Neigung der Gleitebene eines Loslagers in Grad (0 = waagerecht, hält dann senkrecht).</summary>
+    public double Angle { get; set; }
 }
 
 public sealed class FMember
@@ -148,6 +154,10 @@ public sealed class FLoad
     public double Fx { get; set; }
     public double M { get; set; }
     public double At { get; set; } = 0.5;
+    /// <summary>T-0271: Streckenlast am Stabende (kN/m) – ergibt eine Trapez- oder Dreieckslast; null = gleichmäßig wie Value.</summary>
+    public double? Value2 { get; set; }
+    /// <summary>T-0271: "temperatur": Value = gleichmäßige Erwärmung (K), M = Temperaturunterschied unten − oben (K).</summary>
+    public double DeltaT => Value;
 }
 
 public sealed record SectionInfo(string Name, double A_mm2, double I_mm4, double W_mm3, double H_mm);
@@ -220,8 +230,14 @@ public static class FrameSolver
             var c = dx / L; var s = dy / L;
             var k = Local(EA, EI, L); var p = new double[6];
             // Lasten am Stab (global nach unten) → örtliche Ersatz-Knotenlasten
-            var q = f.Loads.Where(l => l.Kind == "strecke" && l.Target == m.Id).Sum(l => l.Value) + (f.SelfWeight ? mat.Density * sec.A_mm2 * 1e-6 * G / 1000 : 0);
-            if (q != 0) { var wx = -q * s; var wy = -q * c; Add(p, [wx * L / 2, wy * L / 2, wy * L * L / 12, wx * L / 2, wy * L / 2, -wy * L * L / 12]); }
+            var (qa, qb) = LineLoad(f, m.Id, mat, sec);
+            if (qa != 0) { var wx = -qa * s; var wy = -qa * c; Add(p, [wx * L / 2, wy * L / 2, wy * L * L / 12, wx * L / 2, wy * L / 2, -wy * L * L / 12]); }
+            if (qb != qa) { var dq = qb - qa; var wx = -dq * s; var wy = -dq * c; Add(p, [wx * L / 6, 3 * wy * L / 20, wy * L * L / 30, wx * L / 3, 7 * wy * L / 20, -wy * L * L / 20]); } // Dreiecksanteil 0 → dq
+            foreach (var t in f.Loads.Where(l => l.Kind == "temperatur" && l.Target == m.Id))
+            {
+                var nT = EA * mat.Alpha_perK * t.Value; var kap = mat.Alpha_perK * t.M / (sec.H_mm / 1000); var mT = EI * kap;
+                Add(p, [-nT, 0, -mT, nT, 0, mT]); // Dehnung drückt die Enden auseinander, Krümmung erzeugt Endmomente
+            }
             foreach (var l in f.Loads.Where(l => l.Kind == "einzel" && l.Target == m.Id))
             {
                 var aa = l.At * L; var bb = L - aa; var px = -l.Value * s; var py = -l.Value * c;
@@ -240,23 +256,41 @@ public static class FrameSolver
         var kmax = Enumerable.Range(0, dof).Max(i => Math.Abs(K[i, i]));
         for (var n = 0; n < f.Nodes.Count; n++) if (Math.Abs(K[3 * n + 2, 3 * n + 2]) < kmax * 1e-12) K[3 * n + 2, 3 * n + 2] = kmax * 1e-9;
         // Lager
-        var fixedDof = new bool[dof];
+        var fixedDof = new bool[dof]; var pres = new double[dof]; var penalty = kmax * 1e6; var slanted = new List<(int I, double Nx, double Ny)>();
         foreach (var n in f.Nodes)
         {
             var i = 3 * idx[n.Id];
-            switch (n.Support) { case "fest": fixedDof[i] = fixedDof[i + 1] = true; break; case "los": fixedDof[i + 1] = true; break; case "einspannung": fixedDof[i] = fixedDof[i + 1] = fixedDof[i + 2] = true; break; }
+            switch (n.Support)
+            {
+                case "fest": fixedDof[i] = fixedDof[i + 1] = true; break;
+                case "los" when Math.Abs(n.Angle) > 1e-9: // gehaltene Richtung = Normale der geneigten Gleitebene
+                    var a = n.Angle * Math.PI / 180; var (nx, ny) = (-Math.Sin(a), Math.Cos(a)); slanted.Add((i, nx, ny));
+                    K[i, i] += penalty * nx * nx; K[i, i + 1] += penalty * nx * ny; K[i + 1, i] += penalty * nx * ny; K[i + 1, i + 1] += penalty * ny * ny;
+                    if (n.Settle != 0) { var d = -n.Settle / 1000 * ny; F[i] += penalty * nx * d; F[i + 1] += penalty * ny * d; }
+                    break;
+                case "los": fixedDof[i + 1] = true; break;
+                case "einspannung": fixedDof[i] = fixedDof[i + 1] = fixedDof[i + 2] = true; break;
+            }
+            if (n.Settle != 0 && fixedDof[i + 1]) pres[i + 1] = -n.Settle / 1000; // Setzung nach unten
         }
         var free = Enumerable.Range(0, dof).Where(i => !fixedDof[i]).ToArray();
         var Kff = new double[free.Length, free.Length]; var Ff = new double[free.Length];
-        for (var i = 0; i < free.Length; i++) { Ff[i] = F[free[i]]; for (var j = 0; j < free.Length; j++) Kff[i, j] = K[free[i], free[j]]; }
+        for (var i = 0; i < free.Length; i++)
+        {
+            Ff[i] = F[free[i]];
+            for (var j = 0; j < dof; j++) if (fixedDof[j] && pres[j] != 0) Ff[i] -= K[free[i], j] * pres[j];
+            for (var j = 0; j < free.Length; j++) Kff[i, j] = K[free[i], free[j]];
+        }
         var uf = SolveLinear(Kff, Ff, kmax);
-        var U = new double[dof]; for (var i = 0; i < free.Length; i++) U[free[i]] = uf[i];
+        var U = (double[])pres.Clone(); for (var i = 0; i < free.Length; i++) U[free[i]] = uf[i];
         // Lagerreaktionen R = K·U − F
         var reactions = new Dictionary<string, (double, double, double)>();
         foreach (var n in f.Nodes.Where(n => n.Support != ""))
         {
             var i = 3 * idx[n.Id]; var r = new double[3];
             for (var k = 0; k < 3; k++) { if (!fixedDof[i + k]) continue; double sum = 0; for (var j = 0; j < dof; j++) sum += K[i + k, j] * U[j]; r[k] = sum - F[i + k]; }
+            if (slanted.FirstOrDefault(x => x.I == i) is { I: > -1 } sl && n.Support == "los" && Math.Abs(n.Angle) > 1e-9)
+            { var dn = U[i] * sl.Nx + U[i + 1] * sl.Ny + n.Settle / 1000 * sl.Ny; var rn = -penalty * dn; r[0] = rn * sl.Nx; r[1] = rn * sl.Ny; } // Kraft der schrägen Gleitebene
             reactions[n.Id] = (Math.Round(r[0], 6), Math.Round(r[1], 6), Math.Round(r[2], 6));
         }
         var disp = f.Nodes.ToDictionary(n => n.Id, n => (U[3 * idx[n.Id]], U[3 * idx[n.Id] + 1], U[3 * idx[n.Id] + 2]));
@@ -270,8 +304,9 @@ public static class FrameSolver
         var dg = new[] { U[ia], U[ia + 1], U[ia + 2], U[ib], U[ib + 1], U[ib + 2] };
         var dl = MulV(T, dg);
         var kd = MulV(e.K, dl); var fe = new double[6]; for (var i = 0; i < 6; i++) fe[i] = kd[i] - e.P[i]; // Stabendkräfte (örtlich, am Stab)
-        var q = f.Loads.Where(l => l.Kind == "strecke" && l.Target == e.M.Id).Sum(l => l.Value) + (f.SelfWeight ? e.Mat.Density * e.Sec.A_mm2 * 1e-6 * G / 1000 : 0);
-        var wx = -q * e.S; var wy = -q * e.C;
+        var (qa, qb) = LineLoad(f, e.M.Id, e.Mat, e.Sec);
+        var wx = -qa * e.S; var wy = -qa * e.C; var dwx = -(qb - qa) * e.S / e.L; var dwy = -(qb - qa) * e.C / e.L; // linear: w(x) = w + dw·x
+        var kap = f.Loads.Where(l => l.Kind == "temperatur" && l.Target == e.M.Id).Sum(l => e.Mat.Alpha_perK * l.M / (e.Sec.H_mm / 1000));
         var pts = f.Loads.Where(l => l.Kind == "einzel" && l.Target == e.M.Id).Select(l => (a: l.At * e.L, px: -l.Value * e.S, py: -l.Value * e.C)).ToList();
         var xs = new double[n]; var N = new double[n]; var V = new double[n]; var M = new double[n];
         for (var i = 0; i < n; i++)
@@ -279,13 +314,13 @@ public static class FrameSolver
             var x = e.L * i / (n - 1); xs[i] = x;
             double sx = 0, sy = 0, sm = 0;
             foreach (var p in pts) if (p.a < x || p.a <= x && i == n - 1) { sx += p.px; sy += p.py; sm += p.py * (x - p.a); }
-            N[i] = -(fe[0] + wx * x + sx);
-            V[i] = fe[1] + wy * x + sy;
-            M[i] = -fe[2] + fe[1] * x + wy * x * x / 2 + sm;
+            N[i] = -(fe[0] + wx * x + dwx * x * x / 2 + sx);
+            V[i] = fe[1] + wy * x + dwy * x * x / 2 + sy;
+            M[i] = -fe[2] + fe[1] * x + wy * x * x / 2 + dwy * x * x * x / 6 + sm;
         }
         // Biegelinie: v'' = M/EI, Endwerte aus den Knotenverschiebungen (Sehne) + Krümmungsanteil
         var I1 = new double[n]; var I2 = new double[n];
-        for (var i = 1; i < n; i++) { var h = xs[i] - xs[i - 1]; I1[i] = I1[i - 1] + (M[i] + M[i - 1]) / 2 * h / e.EI; I2[i] = I2[i - 1] + (I1[i] + I1[i - 1]) / 2 * h; }
+        for (var i = 1; i < n; i++) { var h = xs[i] - xs[i - 1]; I1[i] = I1[i - 1] + ((M[i] + M[i - 1]) / 2 / e.EI + kap) * h; I2[i] = I2[i - 1] + (I1[i] + I1[i - 1]) / 2 * h; }
         var dx = new double[n]; var dy = new double[n]; double maxRel = 0;
         for (var i = 0; i < n; i++)
         {
@@ -306,6 +341,14 @@ public static class FrameSolver
         if (buckle is < 2) problems.Add($"Knickgefahr (Sicherheit {FrameModel.Num(buckle.Value)} < 2)");
         return new(e.M.Id, e.L, xs, N, V, M, dx, dy, maxN, maxV, maxM, Math.Round(defl, 2), Math.Round(stress, 2), Math.Round(safety, 2), buckle is { } bk ? Math.Round(bk, 2) : null,
             problems.Count == 0, problems.Count == 0 ? "✓ hält – Spannung, Durchbiegung und Knicken im grünen Bereich" : "⚠ " + string.Join(", ", problems));
+    }
+
+    /// <summary>Streckenlast am Anfang und Ende (kN/m, nach unten) – Summe aller gleichmäßigen und trapezförmigen Lasten plus Eigengewicht.</summary>
+    static (double A, double B) LineLoad(FrameModel f, string member, Material mat, SectionInfo sec)
+    {
+        var own = f.SelfWeight ? mat.Density * sec.A_mm2 * 1e-6 * G / 1000 : 0;
+        var ls = f.Loads.Where(l => l.Kind == "strecke" && l.Target == member).ToList();
+        return (ls.Sum(l => l.Value) + own, ls.Sum(l => l.Value2 ?? l.Value) + own);
     }
 
     static double[,] Local(double EA, double EI, double L)

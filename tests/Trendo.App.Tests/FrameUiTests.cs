@@ -106,3 +106,35 @@ public class SPEC03_Ui
         w.Close();
     }
 }
+
+/// <summary>T-0271: Trapezlast, Temperatur, Setzung und schräges Loslager über die Eigenschaften eintippen.</summary>
+public class SPEC03_UiPlus
+{
+    const string TK = "technik";
+    static FrameModel Model(MainWindow w) => FrameModel.From(w.ProgramActive(TK)!.Data);
+    static T Get<T>(MainWindow w, string name) where T : Control { Settle(); return w.GetVisualDescendants().OfType<T>().Last(c => c.Name == name && c.IsEffectivelyVisible && c.Bounds.Width > 0); }
+    static void Press(MainWindow w, string name) { var b = Get<Button>(w, name); b.BringIntoView(); Settle(); RealClick(w, Get<Button>(w, name)); }
+    static void Key1(MainWindow w, Key k, PhysicalKey ph) { w.KeyPress(k, RawInputModifiers.None, ph, null); w.KeyRelease(k, RawInputModifiers.None, ph, null); Settle(); }
+    static void Retype(MainWindow w, string name, string text) { var tb = Get<TextBox>(w, name); tb.BringIntoView(); RealClick(w, tb); tb.Focus(); tb.SelectAll(); Settle(); Key1(w, Key.Back, PhysicalKey.Backspace); foreach (var ch in text) { w.KeyTextInput(ch.ToString()); Settle(); } Key1(w, Key.Enter, PhysicalKey.Enter); }
+
+    [AvaloniaFact(DisplayName = "SPEC-03 UI: Streckenlast zum Trapez machen, Temperatur am Stab, Setzung und Neigung am Lager – Ergebnis rechnet mit")]
+    public void Trapez_temp_settle_angle()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show(TK); Settle(); RealClick(w, Get<Button>(w, "prog-tpl-einfeld"));
+        var m = Model(w); var load = m.Loads.Single(l => l.Kind == "strecke"); var mem = m.Members.Single();
+        w.FrameSelect(load.Id);
+        Retype(w, "tk-p-value2", "0");
+        Assert.Equal(0, Model(w).Loads.Single(l => l.Kind == "strecke").Value2);
+        var r = FrameSolver.Solve(Model(w)); Assert.Equal(10 * 5 / 3.0, r.Reactions[mem.A].Ry, 3); // Dreieck 10 → 0: links qL/3
+        w.FrameSelect(mem.Id); Press(w, "tk-temp");
+        var t = Model(w).Loads.Single(l => l.Kind == "temperatur"); Assert.Equal(30, t.Value);
+        Retype(w, "tk-p-grad", "15"); Assert.Equal(15, Model(w).Loads.Single(l => l.Kind == "temperatur").M);
+        var right = Model(w).Nodes.Single(n => n.Support == "los"); w.FrameSelect(right.Id);
+        Retype(w, "tk-p-settle", "5"); Retype(w, "tk-p-angle", "20");
+        var n2 = Model(w).Node(right.Id)!; Assert.Equal(5, n2.Settle); Assert.Equal(20, n2.Angle);
+        Assert.NotEqual(0, FrameSolver.Solve(Model(w)).Reactions[mem.A].Rx, 3); // schräge Ebene erzeugt waagerechte Kraft
+        Press(w, "prog-undo"); Assert.Equal(0, Model(w).Node(right.Id)!.Angle);
+        w.Close();
+    }
+}
