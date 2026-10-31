@@ -25,6 +25,7 @@ public partial class MainWindow
     [
         ("auswahl", "Auswahl", "M4,2 L4,20 L9,15 L12,22 L15,21 L12,14 L19,14 Z", "Auswählen und verschieben (Esc)"),
         ("wand", "Wand", "M2,8 L22,8 L22,16 L2,16 Z", "Wände zeichnen – Klick für Klick, Länge tippen + Enter"),
+        ("bogen", "Bogen", "M3,20 Q12,0 21,20", "Bogenwand: Anfang und Ende klicken, Wölbung rechts einstellen"),
         ("raum", "Raum", "M3,3 L21,3 L21,21 L3,21 Z M6,6 L6,18 L18,18 L18,6 Z", "Raum aufziehen oder per Doppelklick erkennen"),
         ("tuer", "Tür", "M4,20 L4,4 L12,4 L12,20 M12,20 A8,8 0 0 0 4,12", "Tür in eine Wand setzen"),
         ("fenster", "Fenster", "M3,9 L21,9 L21,15 L3,15 Z M3,12 L21,12", "Fenster in eine Wand setzen"),
@@ -230,14 +231,21 @@ public partial class MainWindow
         }
         else if (sel is not null && p.WallOf(sel) is { } w)
         {
-            sp.Children.Add(H("Wand", 13));
-            Num("length", "Länge", Math.Round(w.Length, 1), (pl, v) => pl.SetWallLength(sel, v));
+            sp.Children.Add(H(w.Arc is null ? "Wand" : "Bogenwand", 13));
+            if (w.Arc is { } grp)
+            {
+                Num("bulge", "Stich (Wölbung)", Math.Round(w.ArcBulge, 1), (pl, v) => { pl.SetArcBulge(grp, v); ArchState.Selected = pl.ArcWalls(grp).FirstOrDefault()?.Id ?? pl.Walls.LastOrDefault()?.Id; });
+                Fact("Radius", $"{FloorPlan.ArcRadius(w) / 100:0.00} m"); Fact("Bogenlänge", $"{p.ArcLength(grp) / 100:0.00} m");
+                Fact("Stücke", $"{p.ArcWalls(grp).Count} (gemeinsam bearbeitet)");
+            }
+            else Num("length", "Länge", Math.Round(w.Length, 1), (pl, v) => pl.SetWallLength(sel, v));
             Num("thickness", "Stärke", w.Thickness, (pl, v) => { if (v is < 5 or > 100) throw new ArgumentException("Die Wandstärke muss zwischen 5 und 100 cm liegen."); pl.WallOf(sel)!.Thickness = v; });
             Num("height", "Höhe", w.Height, (pl, v) => pl.WallOf(sel)!.Height = Math.Clamp(v, 50, 600));
             Fact("Fläche je Seite", $"{w.Length * w.Height / 10000:0.00} m²");
-            sp.Children.Add(new WrapPanel { Children = {
-                Act2("arch-split", "Wand teilen", () => ArchEdit("Wand teilen", pl => pl.SplitWall(sel))),
-                Act2("arch-del", "Wand löschen", () => { ArchState.Selected = null; ArchEdit("Wand löschen", pl => pl.Remove(sel)); }) } });
+            var acts = new WrapPanel();
+            if (w.Arc is null) acts.Children.Add(Act2("arch-split", "Wand teilen", () => ArchEdit("Wand teilen", pl => pl.SplitWall(sel))));
+            acts.Children.Add(Act2("arch-del", w.Arc is null ? "Wand löschen" : "Bogen löschen", () => { ArchState.Selected = null; ArchEdit("Wand löschen", pl => pl.Remove(sel)); }));
+            sp.Children.Add(acts);
         }
         else if (sel is not null && p.Openings.FirstOrDefault(o => o.Id == sel) is { } o)
         {
@@ -341,6 +349,7 @@ public partial class MainWindow
             Fact("Boden", $"{n.Floor:0.00} m² → {n.FloorPacks} Pakete"); Fact("Farbe", $"{n.PaintLiters:0.0} l = {n.PaintBuckets} Eimer"); Fact("Sockelleisten", $"{n.SkirtingMeters:0.00} m");
             sp.Children.Add(P("Tipp: Element anklicken, um es zu bearbeiten. Export über das Menüband.", null, 11));
             // Geschoss
+            Num("north", "Nordrichtung", p.North, (pl, v) => pl.North = ((v % 360) + 360) % 360, "°"); // T-0273: Nordpfeil im Plan
             sp.Children.Add(H("Geschoss", 12));
             var lname = new TextBox { Name = "arch-p-levelname", Text = p.LevelName };
             void RenameLevel() { if (!string.IsNullOrWhiteSpace(lname.Text) && lname.Text != p.LevelName) ArchEdit("Geschoss umbenennen", pl => pl.LevelName = lname.Text!.Trim()); }

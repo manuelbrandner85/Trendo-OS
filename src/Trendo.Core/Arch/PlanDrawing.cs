@@ -27,6 +27,17 @@ public sealed record PlanTheme(string Background, string Wall, string WallEdge, 
 
 public static class PlanDrawing
 {
+    /// <summary>T-0273: Nordpfeil oben rechts neben dem Plan (Kreis, Pfeil, „N“), gedreht nach der Nordrichtung.</summary>
+    static void NorthArrow(List<Shape> s, FloorPlan p, PlanTheme t)
+    {
+        if (p.Bounds() is not { } b) return;
+        double r = Math.Clamp(Math.Max(b.MaxX - b.MinX, b.MaxY - b.MinY) * 0.04, 25, 70), cx = b.MaxX + r * 2.2, cy = b.MinY + r;
+        var a = p.North * Math.PI / 180; (double, double) R(double x, double y) => (cx + x * Math.Cos(a) - y * Math.Sin(a), cy + x * Math.Sin(a) + y * Math.Cos(a));
+        s.Add(new DPoly(Enumerable.Range(0, 32).Select(k => (cx + Math.Cos(k * Math.PI / 16) * r, cy + Math.Sin(k * Math.PI / 16) * r)).ToList(), null, t.Dim, 1.2, "NORDPFEIL"));
+        s.Add(new DPoly([R(0, -r * 0.95), R(r * 0.32, r * 0.55), R(0, r * 0.3), R(-r * 0.32, r * 0.55)], t.Dim, null, 0, "NORDPFEIL"));
+        var (nxp, nyp) = R(0, -r * 1.35); s.Add(new DText(nxp, nyp + r * 0.15, "N", r * 0.55, t.Dim, "NORDPFEIL", true));
+    }
+
     static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE");
     static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
@@ -115,6 +126,7 @@ public static class PlanDrawing
                 s.Add(new DText((ax + bx) / 2 + nx * 9, (ay + by) / 2 + ny * 9, (w.Length / 100).ToString("0.00", De), 10, t.Dim, "MASSE", false, ang));
             }
         }
+        NorthArrow(s, p, t);
         return s;
     }
 

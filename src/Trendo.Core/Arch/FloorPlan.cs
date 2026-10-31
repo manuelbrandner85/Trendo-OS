@@ -22,6 +22,8 @@ public sealed class FloorPlan
     public List<DimLine> Dimensions { get; set; } = [];
     public List<PlanLabel> Labels { get; set; } = [];
     public PlanImage? Background { get; set; }
+    /// <summary>T-0273: Nordrichtung in Grad (0 = Norden zeigt im Plan nach oben, im Uhrzeigersinn).</summary>
+    public double North { get; set; }
 
     static readonly JsonSerializerOptions Opt = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, DefaultIgnoreCondition = JsonIgnoreCondition.Never };
     public static string NewId() => Guid.NewGuid().ToString("N")[..8];
@@ -98,8 +100,54 @@ public sealed class FloorPlan
 
     public Wall? WallOf(string id) => Walls.FirstOrDefault(w => w.Id == id);
 
+    // ---------- T-0273: Bogenwände (als Kette kurzer Wandstücke, gemeinsam bearbeitbar) ----------
+    /// <summary>Bogenwand von A nach B mit Stich <paramref name="bulge"/> (cm, + = links von A→B). Gibt die Gruppen-Kennung zurück.</summary>
+    public string AddArcWall(double ax, double ay, double bx, double by, double bulge, double thickness = 24, double height = 250, string? group = null, int at = -1)
+    {
+        var c = Math.Sqrt((bx - ax) * (bx - ax) + (by - ay) * (by - ay));
+        if (c < 20) throw new ArgumentException("Der Bogen ist zu kurz (mindestens 20 cm Sehne).");
+        if (Math.Abs(bulge) < 1) return Insert(AddWall(ax, ay, bx, by, thickness, height));
+        if (Math.Abs(bulge) > c / 2 + 1e-9) throw new ArgumentException($"Der Stich darf höchstens die halbe Sehne sein ({c / 2:0} cm) – sonst wird es mehr als ein Halbkreis.");
+        var r = (c * c / 4 + bulge * bulge) / (2 * Math.Abs(bulge));
+        double mx = (ax + bx) / 2, my = (ay + by) / 2, ux = (bx - ax) / c, uy = (by - ay) / c, nx = uy, ny = -ux; // links von A→B (Plan: y nach unten)
+        var d = r - Math.Abs(bulge); var sg = Math.Sign(bulge);
+        double cx = mx - nx * sg * d, cy = my - ny * sg * d;
+        double a0 = Math.Atan2(ay - cy, ax - cx), a1 = Math.Atan2(by - cy, bx - cx), sweep = a1 - a0;
+        // Richtung so wählen, dass der Bogen durch den Stichpunkt läuft
+        double tx = mx + nx * bulge, ty = my + ny * bulge;
+        double Miss(double sw) { var am = a0 + sw / 2; return Math.Abs(cx + r * Math.Cos(am) - tx) + Math.Abs(cy + r * Math.Sin(am) - ty); }
+        var other = sweep > 0 ? sweep - 2 * Math.PI : sweep + 2 * Math.PI; if (Miss(other) < Miss(sweep)) sweep = other; // die Bogenhälfte durch den Stichpunkt
+        var len = Math.Abs(sweep) * r; var n = Math.Clamp((int)Math.Ceiling(len / 40), 6, 48);
+        var g = group ?? NewId(); double px = ax, py = ay; var pos = at;
+        for (var k = 1; k <= n; k++)
+        {
+            var an = a0 + sweep * k / n; double qx = k == n ? bx : cx + r * Math.Cos(an), qy = k == n ? by : cy + r * Math.Sin(an);
+            var w = new Wall { X1 = px, Y1 = py, X2 = qx, Y2 = qy, Thickness = thickness, Height = height, Arc = g, ArcBulge = bulge, ArcAX = ax, ArcAY = ay, ArcBX = bx, ArcBY = by };
+            if (pos >= 0 && pos <= Walls.Count) Walls.Insert(pos++, w); else Walls.Add(w);
+            (px, py) = (qx, qy);
+        }
+        return g;
+        string Insert(Wall w) { if (at >= 0 && at < Walls.Count - 1) { Walls.Remove(w); Walls.Insert(at, w); } return w.Id; }
+    }
+
+    public List<Wall> ArcWalls(string group) => Walls.Where(w => w.Arc == group).ToList();
+    public double ArcLength(string group) => ArcWalls(group).Sum(w => w.Length);
+    public static double ArcRadius(Wall w) { var c = Math.Sqrt((w.ArcBX - w.ArcAX) * (w.ArcBX - w.ArcAX) + (w.ArcBY - w.ArcAY) * (w.ArcBY - w.ArcAY)); return Math.Abs(w.ArcBulge) < 1e-9 ? double.PositiveInfinity : (c * c / 4 + w.ArcBulge * w.ArcBulge) / (2 * Math.Abs(w.ArcBulge)); }
+
+    /// <summary>Stich eines Bogens ändern: alle Stücke werden neu erzeugt (Öffnungen darauf entfallen).</summary>
+    public void SetArcBulge(string group, double bulge)
+    {
+        var segs = ArcWalls(group); if (segs.Count == 0) throw new ArgumentException("Diesen Bogen gibt es nicht.");
+        var f = segs[0]; var at = Walls.IndexOf(f);
+        var chord = Math.Sqrt((f.ArcBX - f.ArcAX) * (f.ArcBX - f.ArcAX) + (f.ArcBY - f.ArcAY) * (f.ArcBY - f.ArcAY));
+        if (Math.Abs(bulge) > chord / 2 + 1e-9) throw new ArgumentException($"Der Stich darf höchstens die halbe Sehne sein ({chord / 2:0} cm) – sonst wird es mehr als ein Halbkreis."); // erst prüfen, dann umbauen
+        Walls.RemoveAll(w => w.Arc == group); Openings.RemoveAll(o => Walls.All(w => w.Id != o.WallId));
+        AddArcWall(f.ArcAX, f.ArcAY, f.ArcBX, f.ArcBY, bulge, f.Thickness, f.Height, Math.Abs(bulge) < 1 ? null : group, at);
+    }
+
     public bool Remove(string id)
     {
+        if (WallOf(id) is { Arc: { } grp }) { Walls.RemoveAll(w => w.Arc == grp); Openings.RemoveAll(o => Walls.All(w => w.Id != o.WallId)); return true; } // Bogen als Ganzes
         var n = Walls.RemoveAll(w => w.Id == id) + Rooms.RemoveAll(r => r.Id == id) + Items.RemoveAll(i => i.Id == id) + Openings.RemoveAll(o => o.Id == id)
             + Dimensions.RemoveAll(d => d.Id == id) + Labels.RemoveAll(l => l.Id == id);
         Openings.RemoveAll(o => Walls.All(w => w.Id != o.WallId));
@@ -632,6 +680,13 @@ public sealed class Wall
     public double Y2 { get; set; }
     public double Thickness { get; set; } = 24;
     public double Height { get; set; } = 250;
+    /// <summary>T-0273: Stück einer Bogenwand – Gruppe, Stich (cm) und Sehnenenden, damit der Bogen als Ganzes bearbeitet werden kann.</summary>
+    public string? Arc { get; set; }
+    public double ArcBulge { get; set; }
+    public double ArcAX { get; set; }
+    public double ArcAY { get; set; }
+    public double ArcBX { get; set; }
+    public double ArcBY { get; set; }
 
     [JsonIgnore] public double Length => Math.Sqrt((X2 - X1) * (X2 - X1) + (Y2 - Y1) * (Y2 - Y1));
     [JsonIgnore] public (double X, double Y) Dir { get { var l = Math.Max(Length, 1e-9); return ((X2 - X1) / l, (Y2 - Y1) / l); } }

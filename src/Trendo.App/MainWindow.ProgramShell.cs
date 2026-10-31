@@ -112,6 +112,15 @@ public partial class MainWindow
     }
 
     /// <summary>Eigenschaftsfelder übernehmen mit Enter (bei einzeiligen Feldern) oder beim Verlassen.</summary>
+    /// <summary>T-0273: Ein Eingabefeld, das nach dem Neuzeichnen schon aus der Seite gelöst ist, übernimmt beim Fokusverlust nichts mehr –
+    /// sonst schreibt es nach Enter + „Rückgängig“ den alten Wert erneut zurück. Klassen-Handler laufen vor den Feld-Handlern.</summary>
+    static readonly bool StaleFocusGuard = RegisterStaleFocusGuard();
+    static bool RegisterStaleFocusGuard()
+    {
+        InputElement.LostFocusEvent.AddClassHandler<TextBox>((t, e) => { if (TopLevel.GetTopLevel(t) is null) e.Handled = true; });
+        return true;
+    }
+
     private static void OnEnter(TextBox t, Action commit) => t.KeyDown += (_, e) => { if (e.Key == Key.Enter && !t.AcceptsReturn) { commit(); e.Handled = true; } };
 
     /// <summary>Befehl ausführen: Fehler werden zur Meldung, danach Seite neu zeichnen.</summary>

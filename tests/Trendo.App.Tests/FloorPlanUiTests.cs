@@ -272,3 +272,34 @@ public class SPEC01_Ui
         w.Close();
     }
 }
+
+/// <summary>T-0273: Bogenwand mit der Maus zeichnen, Wölbung eintippen, Nordrichtung.</summary>
+public class SPEC01_UiArc
+{
+    const string AK = "architektur";
+    static FloorPlan Plan(MainWindow w) => FloorPlan.From(w.ProgramActive(AK)!.Data);
+    static T Get<T>(MainWindow w, string name) where T : Control { Settle(); return w.GetVisualDescendants().OfType<T>().Last(c => c.Name == name && c.IsEffectivelyVisible && c.Bounds.Width > 0); }
+    static FloorPlanView Canvas(MainWindow w) => w.GetVisualDescendants().OfType<FloorPlanView>().First(c => c.Name == "arch-canvas" && c.IsEffectivelyVisible && c.Bounds.Width > 0);
+    static Point At(MainWindow w, double x, double y) { Settle(); w.UpdateLayout(); Settle(); var s = w.ArchState; return Canvas(w).TranslatePoint(new Point((x - s.PanX) * s.Zoom, (y - s.PanY) * s.Zoom), w)!.Value; }
+    static void Click(MainWindow w, Point p) { w.MouseMove(p); Settle(); w.MouseDown(p, MouseButton.Left); w.MouseUp(p, MouseButton.Left); Settle(); }
+    static void Key1(MainWindow w, Key k, PhysicalKey ph) { w.KeyPress(k, RawInputModifiers.None, ph, null); w.KeyRelease(k, RawInputModifiers.None, ph, null); Settle(); }
+    static void Retype(MainWindow w, string name, string text) { var tb = Get<TextBox>(w, name); tb.BringIntoView(); RealClick(w, tb); tb.Focus(); tb.SelectAll(); Settle(); Key1(w, Key.Back, PhysicalKey.Backspace); foreach (var ch in text) { w.KeyTextInput(ch.ToString()); Settle(); } Key1(w, Key.Enter, PhysicalKey.Enter); }
+
+    [AvaloniaFact(DisplayName = "SPEC-01 UI: Bogenwand – Anfang und Ende klicken, Wölbung eintippen, Radius stimmt; Nordrichtung dreht den Nordpfeil; Rückgängig")]
+    public void Arc_tool()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show(AK); Settle(); RealClick(w, Get<Button>(w, "prog-tpl-leer"));
+        RealClick(w, Get<Button>(w, "arch-tool-bogen"));
+        Click(w, At(w, 100, 100)); Click(w, At(w, 500, 100));
+        var p = Plan(w); var grp = Assert.Single(p.Walls.Select(x => x.Arc).Distinct())!;
+        Assert.Equal(100, p.ArcWalls(grp)[0].ArcBulge, 1); // Vorgabe: Viertel der Sehne
+        Assert.Equal("auswahl", w.ArchState.Tool);
+        Retype(w, "arch-p-bulge", "200");
+        Assert.Equal(200, FloorPlan.ArcRadius(Plan(w).ArcWalls(grp)[0]), 3); // Halbkreis: r = halbe Sehne
+        Assert.Contains("Bogenwand", string.Join(" ", w.GetVisualDescendants().OfType<TextBlock>().Select(t => t.Text)));
+        RealClick(w, Get<Button>(w, "prog-undo")); Assert.Equal(100, Plan(w).ArcWalls(grp)[0].ArcBulge, 1);
+        w.ArchSelect(null); Retype(w, "arch-p-north", "45"); Assert.Equal(45, Plan(w).North);
+        w.Close();
+    }
+}

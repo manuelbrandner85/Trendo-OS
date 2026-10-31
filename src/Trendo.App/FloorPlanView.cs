@@ -105,6 +105,15 @@ public sealed class FloorPlanView : Control
                 }
                 else _s.Chain = _snap;
                 InvalidateVisual(); return;
+            case "bogen": // T-0273: Bogenwand – Anfang, Ende; Stich danach in den Eigenschaften
+                if (_s.Chain is { } ac)
+                {
+                    var (ex, ey) = _snap; if (Dist(ac, (ex, ey)) < 20) return;
+                    var chord = Dist(ac, (ex, ey)); Commit("Bogenwand zeichnen", pl => _s.Selected = pl.ArcWalls(pl.AddArcWall(ac.X, ac.Y, ex, ey, chord / 4, _s.WallThickness))[0].Id);
+                    _s.Chain = null; _s.Tool = "auswahl";
+                }
+                else _s.Chain = _snap;
+                InvalidateVisual(); return;
             case "mass":
                 if (_s.DimA is null) _s.DimA = _snap;
                 else if (_s.DimB is null) { if (Dist(_s.DimA.Value, _snap) >= 1) _s.DimB = _snap; }
@@ -271,7 +280,7 @@ public sealed class FloorPlanView : Control
         var grid = _s.Grid ? 10 : 0;
         var (x, y, snapped) = _plan.Snap(w.X, w.Y, grid, 10 / _s.Zoom + 3);
         // Winkel in 15°-Schritten (wie üblich in Planungsprogrammen); Umschalt zeichnet frei
-        (double X, double Y)? from = _s.Tool == "wand" ? _s.Chain : _s.Tool == "raum" && _s.RoomPts.Count > 0 ? _s.RoomPts[^1] : _s.Tool == "mass" && _s.DimB is null ? _s.DimA : null;
+        (double X, double Y)? from = _s.Tool is "wand" or "bogen" ? _s.Chain : _s.Tool == "raum" && _s.RoomPts.Count > 0 ? _s.RoomPts[^1] : _s.Tool == "mass" && _s.DimB is null ? _s.DimA : null;
         if (from is { } c && !snapped && !mods.HasFlag(KeyModifiers.Shift)) (x, y) = FloorPlan.AngleSnap(c.X, c.Y, x, y);
         _snap = (x, y); _snapped = snapped;
     }
@@ -354,6 +363,7 @@ public sealed class FloorPlanView : Control
     {
         "mass" => _s.DimA is null ? "Bemaßen: Anfangspunkt klicken." : _s.DimB is null ? "Endpunkt klicken (15°-Fang, Umschalt frei)." : "Abstand der Maßlinie mit der Maus wählen und klicken · Esc bricht ab",
         "text" => "Text: an die Stelle klicken – den Text rechts eintippen",
+        "bogen" => _s.Chain is null ? "Bogenwand: Anfangspunkt klicken." : "Bogenwand: Endpunkt klicken – den Stich (Wölbung) danach rechts einstellen.",
         "kalib" => _s.CalA is null ? "Maßstab: im Vorlage-Bild den Anfang einer bekannten Strecke klicken (z. B. eine bemaßte Wand)." : _s.CalB is null ? "Jetzt das Ende der Strecke klicken." : "Rechts die echte Länge eintragen und übernehmen.",
         "wand" => _s.Chain is null ? "Wand: Startpunkt klicken (fängt an Ecken und am 10-cm-Raster)." : $"Nächster Punkt klicken · Länge tippen + Enter{(_typed.Length > 0 ? $": {_typed}" : "")} · Doppelklick, Esc oder rechte Maustaste beendet · Umschalt: freier Winkel",
         "raum" => _s.RoomPts.Count > 0 ? $"Raum Punkt für Punkt: {_s.RoomPts.Count} Punkt(e) · Doppelklick oder Enter schließt · Esc bricht ab" : "Raum: Rechteck aufziehen (Wände entstehen außen) · einzelne Klicks zeichnen ein Vieleck · Doppelklick in umschlossene Fläche erkennt den Raum",
@@ -419,6 +429,8 @@ public sealed class FloorPlanView : Control
         var gold = new Pen(B("#F5A524"), 2, new DashStyle([6, 4], 0));
         switch (_s.Tool)
         {
+            case "bogen" when _s.Chain is { } bc:
+                { var pen = new Pen(B("#F5A524"), 2, new DashStyle([6, 4], 0)); ctx.DrawLine(pen, Screen(bc.X, bc.Y), Screen(_snap.X, _snap.Y)); break; }
             case "wand" when _s.Chain is { } c:
                 var end = _snap;
                 if (TypedLength() is { } len) { var (dx, dy) = (end.X - c.X, end.Y - c.Y); var l = Math.Max(1, Math.Sqrt(dx * dx + dy * dy)); end = (c.X + dx / l * len, c.Y + dy / l * len); }
