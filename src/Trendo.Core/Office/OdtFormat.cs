@@ -220,8 +220,8 @@ public static class OdtFormat
     // ---------- Lesen ----------
     public static TextDoc Read(string path)
     {
-        using var z = ZipFile.OpenRead(path);
-        XDocument Load(string n) { var e = z.GetEntry(n); if (e is null) return new XDocument(); using var s = e.Open(); return XDocument.Load(s, LoadOptions.PreserveWhitespace); }
+        using var z = OfficeZip.OpenRead(path);
+        XDocument Load(string n) { var e = z.GetEntry(n); if (e is null) return new XDocument(); return e.LoadXml(LoadOptions.PreserveWhitespace); }
         var content = Load("content.xml"); var stylesDoc = Load("styles.xml");
         // Stilnamen → Absatzart/Ausrichtung/Zeichenformat (automatische und benannte Stile)
         var all = content.Descendants(Style + "style").Concat(stylesDoc.Descendants(Style + "style")).GroupBy(s => (string?)s.Attribute(Style + "name") ?? "").ToDictionary(g => g.Key, g => g.First());
@@ -314,7 +314,7 @@ public static class OdtFormat
                             var href = (string?)img.Attribute(XLink + "href");
                             if (href is not null && z.GetEntry(href) is { } entry)
                             {
-                                using var ms = new MemoryStream(); using (var s = entry.Open()) s.CopyTo(ms);
+                                using var ms = new MemoryStream(entry.ReadBytes());
                                 static double Cm(string? v) => v is null ? 0 : v.EndsWith("cm", StringComparison.Ordinal) ? double.Parse(v[..^2], CultureInfo.InvariantCulture) : v.EndsWith("in", StringComparison.Ordinal) ? double.Parse(v[..^2], CultureInfo.InvariantCulture) * 2.54 : v.EndsWith("mm", StringComparison.Ordinal) ? double.Parse(v[..^2], CultureInfo.InvariantCulture) / 10 : 0;
                                 doc.Blocks.Add(new Picture { Data = ms.ToArray(), Ext = Path.GetExtension(href).TrimStart('.').ToLowerInvariant().Replace("jpeg", "jpg"), WidthCm = Cm((string?)c.Attribute(Svg + "width")) is > 0 and var w ? w : 12, HeightCm = Cm((string?)c.Attribute(Svg + "height")) is > 0 and var h ? h : 8, Alt = c.Element(Svg + "desc")?.Value ?? c.Element(Svg + "title")?.Value ?? "" });
                             }

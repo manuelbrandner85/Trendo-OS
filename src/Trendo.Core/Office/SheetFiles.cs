@@ -247,7 +247,7 @@ public static class SheetFiles
     /// <summary>Diagramme eines Blatts lesen: Art, Titel und den Bereich aus allen Bezügen (Kopf, Beschriftung, Werte).</summary>
     static void ReadCharts(ZipArchive z, string sheetPath, Sheet sh)
     {
-        XDocument? Load(string name) { var e = z.GetEntry(name); if (e is null) return null; using var s = e.Open(); return XDocument.Load(s); }
+        XDocument? Load(string name) { var e = z.GetEntry(name); if (e is null) return null; return e.LoadXml(); }
         static string Dir(string file) { var i = file.LastIndexOf('/'); return i < 0 ? "" : file[..i]; }
         static string Resolve(string baseFile, string target)
         {
@@ -387,10 +387,10 @@ public static class SheetFiles
                 sh.Validations.Add(new ValidationRule(range, f1.Trim('"').Split(',').Select(x => x.Trim()).Where(x => x.Length > 0).ToList()));
         }
         var relEntry = z.GetEntry(SheetRelsPath(sheetPath)); if (relEntry is null) return;
-        XDocument rels; using (var s = relEntry.Open()) rels = XDocument.Load(s);
+        XDocument rels; rels = relEntry.LoadXml();
         var target = rels.Root?.Elements(Pr + "Relationship").FirstOrDefault(r => ((string?)r.Attribute("Type"))?.EndsWith("/comments", StringComparison.Ordinal) == true)?.Attribute("Target")?.Value;
         if (target is null || z.GetEntry(ResolvePath(sheetPath, target)) is not { } ce) return;
-        XDocument cdoc; using (var s = ce.Open()) cdoc = XDocument.Load(s);
+        XDocument cdoc; cdoc = ce.LoadXml();
         foreach (var cm in cdoc.Root?.Element(S + "commentList")?.Elements(S + "comment") ?? [])
             if (Addr.TryParse((string?)cm.Attribute("ref") ?? "", out var rc))
                 sh.GetOrAdd(rc.Row, rc.Col).Note = string.Concat(cm.Descendants(S + "t").Select(x => x.Value));
@@ -422,8 +422,8 @@ public static class SheetFiles
 
     public static SheetDoc ReadXlsx(string path)
     {
-        using var z = ZipFile.OpenRead(path);
-        XDocument? Load(string name) { var e = z.GetEntry(name); if (e is null) return null; using var s = e.Open(); return XDocument.Load(s); }
+        using var z = OfficeZip.OpenRead(path);
+        XDocument? Load(string name) { var e = z.GetEntry(name); if (e is null) return null; return e.LoadXml(); }
         var wb = Load("xl/workbook.xml") ?? throw new InvalidDataException("Keine Excel-Mappe (workbook.xml fehlt).");
         var rels = Load("xl/_rels/workbook.xml.rels");
         var shared = Load("xl/sharedStrings.xml")?.Root?.Elements(S + "si").Select(si => string.Concat(si.Descendants(S + "t").Select(t => t.Value))).ToList() ?? [];
@@ -512,9 +512,9 @@ public static class SheetFiles
 
     public static SheetDoc ReadOds(string path)
     {
-        using var z = ZipFile.OpenRead(path);
+        using var z = OfficeZip.OpenRead(path);
         var e = z.GetEntry("content.xml") ?? throw new InvalidDataException("Keine ODS-Datei (content.xml fehlt).");
-        XDocument x; using (var s = e.Open()) x = XDocument.Load(s);
+        XDocument x; x = e.LoadXml();
         var doc = new SheetDoc(); doc.Sheets.Clear();
         foreach (var t in x.Descendants(Table + "table"))
         {

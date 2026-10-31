@@ -317,8 +317,8 @@ public static class DocxFormat
     /// Änderungen, Inhaltsverzeichnis, Bildbeschriftungen und Alternativtext.</summary>
     public static TextDoc Read(string path)
     {
-        using var z = ZipFile.OpenRead(path);
-        XDocument Load(string n) { var e = z.GetEntry(n); if (e is null) return new XDocument(); using var s = e.Open(); return XDocument.Load(s); }
+        using var z = OfficeZip.OpenRead(path);
+        XDocument Load(string n) { var e = z.GetEntry(n); if (e is null) return new XDocument(); return e.LoadXml(); }
         var main = Load("word/document.xml");
         var relEls = Load("word/_rels/document.xml.rels").Root?.Elements().ToList() ?? [];
         var rels = relEls.ToDictionary(e => (string?)e.Attribute("Id") ?? "", e => (string?)e.Attribute("Target") ?? "");
@@ -502,7 +502,7 @@ public static class DocxFormat
                 {
                     var entry = ctx.Z.GetEntry("word/" + target.TrimStart('/').Replace("../", ""));
                     if (entry is null) continue;
-                    using var ms = new MemoryStream(); using (var s = entry.Open()) s.CopyTo(ms);
+                    using var ms = new MemoryStream(entry.ReadBytes());
                     var ext = c.Descendants(WP + "extent").FirstOrDefault();
                     Flush();
                     doc.Blocks.Add(new Picture

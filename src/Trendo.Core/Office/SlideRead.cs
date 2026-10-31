@@ -9,8 +9,8 @@ public static partial class SlideFiles
     // ================= PPTX lesen =================
     sealed class Pkg(ZipArchive z)
     {
-        public XDocument? Load(string name) { var e = z.GetEntry(name); if (e is null) return null; using var s = e.Open(); return XDocument.Load(s); }
-        public byte[]? Bytes(string name) { var e = z.GetEntry(name); if (e is null) return null; using var s = e.Open(); using var m = new MemoryStream(); s.CopyTo(m); return m.ToArray(); }
+        public XDocument? Load(string name) { var e = z.GetEntry(name); if (e is null) return null; return e.LoadXml(); }
+        public byte[]? Bytes(string name) { var e = z.GetEntry(name); if (e is null) return null; return e.ReadBytes(); }
         static string Dir(string f) { var i = f.LastIndexOf('/'); return i < 0 ? "" : f[..i]; }
         public static string Resolve(string baseFile, string target)
         {
@@ -28,7 +28,7 @@ public static partial class SlideFiles
 
     public static SlideDoc ReadPptx(string path)
     {
-        using var z = ZipFile.OpenRead(path);
+        using var z = OfficeZip.OpenRead(path);
         var pkg = new Pkg(z);
         var pres = pkg.Load("ppt/presentation.xml") ?? throw new InvalidDataException("Keine PowerPoint-Datei (presentation.xml fehlt).");
         var presRels = pkg.Rels("ppt/presentation.xml");
@@ -208,7 +208,7 @@ public static partial class SlideFiles
 
     public static SlideDoc ReadOdp(string path)
     {
-        using var z = ZipFile.OpenRead(path);
+        using var z = OfficeZip.OpenRead(path);
         var pkg = new Pkg(z);
         var content = pkg.Load("content.xml") ?? throw new InvalidDataException("Keine Impress-Datei (content.xml fehlt).");
         var doc = new SlideDoc();
