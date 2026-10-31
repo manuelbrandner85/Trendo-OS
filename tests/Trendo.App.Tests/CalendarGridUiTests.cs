@@ -16,7 +16,8 @@ namespace Trendo.App.Tests;
 public class CalendarGrid_Ui
 {
     static readonly DateTime Mon = new(2026, 11, 2);
-    static Point At(MainWindow w, DateTime t) { Settle(); var g = w.CalGridForTests!; g.BringIntoView(new Rect(g.PointOf(t), new Size(1, 1))); Settle(); return g.TranslatePoint(g.PointOf(t), w)!.Value; }
+    static Point At(MainWindow w, DateTime t) { Settle(); var g = w.CalGridForTests!; var sv = V<ScrollViewer>(w, "cal-scroll"); sv.BringIntoView(); Settle(); var want = new Vector(0, 8 * g.HourHeight); if (sv.Offset != want) { sv.Offset = want; Settle(); } // feste Lage: ab 8 Uhr
+        return g.TranslatePoint(g.PointOf(t), w)!.Value; }
     static void Click(MainWindow w, string name) { var b = V<Button>(w, name); Assert.True(b.IsEffectivelyEnabled, name + " ist gesperrt"); b.BringIntoView(); Settle(); RealClick(w, V<Button>(w, name)); }
     static void Drag(MainWindow w, Point a, Point b) { w.MouseDown(a, MouseButton.Left); for (var i = 1; i <= 5; i++) { w.MouseMove(a + (b - a) * (i / 5.0)); Settle(); } w.MouseUp(b, MouseButton.Left); Settle(); }
 
@@ -52,9 +53,14 @@ public class CalendarGrid_Ui
         Click(w, "cal-undo"); Assert.Equal(Mon.AddDays(1).AddHours(10), w.Cal.Get(ev.Uid)!.Start);
         // Monat: Termin vom Dienstag auf Freitag ziehen
         Click(w, "cal-mode-monat"); Settle();
-        var chip = V<Button>(w, "cal-ev-0"); var from = chip.TranslatePoint(new Point(chip.Bounds.Width / 2, chip.Bounds.Height / 2), w)!.Value;
-        var fri = w.GetVisualDescendants().OfType<Border>().First(b => b.Tag is DateTime d && d == Mon.AddDays(4));
-        Drag(w, from, fri.TranslatePoint(new Point(fri.Bounds.Width / 2, fri.Bounds.Height - 10), w)!.Value);
+        var chip = V<Button>(w, "cal-ev-0"); var fri = w.GetVisualDescendants().OfType<Border>().First(b => b.Tag is DateTime d && d == Mon.AddDays(4));
+        fri.BringIntoView(); chip.BringIntoView(); Settle(); // gleiche Wochenzeile: beide sichtbar
+        var from = chip.TranslatePoint(new Point(chip.Bounds.Width / 2, chip.Bounds.Height / 2), w)!.Value;
+        var to = fri.TranslatePoint(new Point(fri.Bounds.Width / 2, 12), w)!.Value;
+        var hitTo = w.InputHitTest(to) as Visual; var hitFrom = w.InputHitTest(from) as Visual;
+        Assert.True(hitTo is not null && (hitTo == fri || hitTo.GetVisualAncestors().Contains(fri)), $"Ziel verdeckt: {(hitTo as Control)?.GetType().Name} {(hitTo as Control)?.Name} bei {to}, Fenster {w.ClientSize}");
+        Assert.True(hitFrom is not null && (hitFrom == chip || hitFrom.GetVisualAncestors().Contains(chip)), $"Termin verdeckt: {(hitFrom as Control)?.GetType().Name} {(hitFrom as Control)?.Name} bei {from}");
+        Drag(w, from, to);
         ev = w.Cal.Get(ev.Uid)!; Assert.Equal(Mon.AddDays(4).AddHours(10), ev.Start); Assert.Equal("Zahnarzt", ev.Title);
         // Löschen im Bearbeiten-Feld, Rückgängig holt ihn zurück
         w.CalSelected = ev.Uid; w.Show("kalender"); Settle();

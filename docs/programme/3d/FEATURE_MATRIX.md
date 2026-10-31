@@ -1,6 +1,6 @@
 # 3D – Funktionsmatrix
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.28 (Stand 99a5092)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.28 (Stand 8f6f8b4)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -13,11 +13,25 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Als GLB
 - Als FBX
 - Als Blender-Datei
-- Plan erstellen
-- Hinzufügen …
 - Speichern
 - Neues Objekt
 - Rückgängig
+- Würfel
+- Kugel
+- Zylinder
+- Kegel
+- Torus
+- Ebene
+- Text
+- Verdoppeln
+- Auf den Boden
+- Löschen
+- Schräg
+- Vorne
+- Oben
+- Rechts
+- Hinten
+- Links
 - Hinzufügen
 - Übernehmen
 - Kanten abrunden
@@ -25,10 +39,6 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Glätten
 - Spiegeln
 - Aushöhlen
+- Plan erstellen
+- Hinzufügen …
 - Teile vorschlagen
-- Vorne
-- Hinten
-- Links
-- Rechts
-- Oben
-- Schräg

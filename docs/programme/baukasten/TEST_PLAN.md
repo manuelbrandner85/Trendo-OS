@@ -1,10 +1,10 @@
 # Baukasten – Testplan
 
-Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.28 (Stand 99a5092)
+Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.28 (Stand 8f6f8b4)
 
 13 Tests sprechen dieses Programm an.
 
-- 3D-Seite zeigt die Auftragsleiste, ohne die Vorschau zu verkleinern
+- 3D-Seite zeigt die Auftragsleiste, ohne die 3D-Arbeitsfläche zu verkleinern
 - Abdeckung und StudioCatalog nennen dieselben Kennungen, Titel und Bereiche
 - Baukasten übernimmt die neue Seite ins Formular
 - Briefseite zeigt den echten Brieftext in der Vorschau

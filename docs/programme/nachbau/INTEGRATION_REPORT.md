@@ -1,6 +1,6 @@
 # Sauberer Nachbau – Einbindung in Trendo OS
 
-Studio: Programme nachbauen (X-10) · Bereich: Entwickeln · Seite: `nachbau` · Stand: 0.9.28 (Stand 99a5092)
+Studio: Programme nachbauen (X-10) · Bereich: Entwickeln · Seite: `nachbau` · Stand: 0.9.28 (Stand 8f6f8b4)
 
 - Seite `nachbau` im Studio „Programme nachbauen“ (Entwickeln) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

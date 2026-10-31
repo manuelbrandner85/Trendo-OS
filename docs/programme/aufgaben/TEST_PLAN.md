@@ -1,9 +1,11 @@
 # Aufgaben – Testplan
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.28 (Stand 99a5092)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.28 (Stand 8f6f8b4)
 
-8 Tests sprechen dieses Programm an.
+10 Tests sprechen dieses Programm an.
 
+- Aufgaben-Kern: Spalte setzen, erledigt beendet „in Arbeit“, ICS behält In-Arbeit und Beschreibung
+- Aufgaben-Tafel: anlegen, Karte nach „In Arbeit“ und „Erledigt“ ziehen, Klick öffnet Bearbeiten (Beschreibung, Liste), Listenfilter, Häkchen, Rückgängig
 - O1/O2/O6: Konto (Passwort geschützt), Posteingang nur lesend, Nachricht öffnen, Antworten nur nach Bestätigung senden, Regel erst nach Freigabe
 - O3/O5: Termin eintragen (wöchentlich), Monats-/Wochen-/Tagesansicht, Erinnerung als Benachrichtigung; Aufgabe anlegen und abhaken
 - SYS-09 F2: Datum, Monatsname, Wochentag und morgen erkennen – mit Uhrzeit

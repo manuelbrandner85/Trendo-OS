@@ -1,5 +1,5 @@
 # Kameras & Roboter steuern – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.28 (Stand 99a5092)
+Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.28 (Stand 8f6f8b4)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

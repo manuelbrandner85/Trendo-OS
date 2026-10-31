@@ -1,10 +1,10 @@
 # Briefe schreiben – Testplan
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.28 (Stand 99a5092)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.28 (Stand 8f6f8b4)
 
 11 Tests sprechen dieses Programm an.
 
-- 3D-Seite zeigt die Auftragsleiste, ohne die Vorschau zu verkleinern
+- 3D-Seite zeigt die Auftragsleiste, ohne die 3D-Arbeitsfläche zu verkleinern
 - Abdeckung und StudioCatalog nennen dieselben Kennungen, Titel und Bereiche
 - Baukasten übernimmt die neue Seite ins Formular
 - Briefe F1/U3: Galerie bei neuem Brief, Vorlage wählen schließt sie; Schrittleiste zeigt Fortschritt und springt zum Feld

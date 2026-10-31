@@ -1,10 +1,10 @@
 # Startbildschirm – Testplan
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.28 (Stand 99a5092)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.28 (Stand 8f6f8b4)
 
 77 Tests sprechen dieses Programm an.
 
-- 3D-Seite zeigt die Auftragsleiste, ohne die Vorschau zu verkleinern
+- 3D-Seite zeigt die Auftragsleiste, ohne die 3D-Arbeitsfläche zu verkleinern
 - Abdeckung und StudioCatalog nennen dieselben Kennungen, Titel und Bereiche
 - Alle Studios + Bereiche: jede Karte ist klickbar und führt aus der Liste heraus
 - Anmeldung: „Beim Start nach PIN fragen“ lässt sich abschalten

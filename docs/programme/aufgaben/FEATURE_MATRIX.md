@@ -1,6 +1,6 @@
 # Aufgaben – Funktionsmatrix
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.28 (Stand 99a5092)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.28 (Stand 8f6f8b4)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -11,3 +11,4 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Kalender
 - Aufgaben
 - Hinzufügen
+- ↶ Rückgängig

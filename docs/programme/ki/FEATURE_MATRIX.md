@@ -1,6 +1,6 @@
 # KI – Funktionsmatrix
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.28 (Stand 99a5092)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.28 (Stand 8f6f8b4)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
