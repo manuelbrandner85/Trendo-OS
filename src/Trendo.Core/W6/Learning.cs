@@ -53,10 +53,32 @@ public sealed class LearnBox(string dataRoot, Func<DateTime>? now = null)
     {
         var c = Store.Cards.First(x => x.Id == id); var q = (int)g;
         if (q < 3) { c.Reps = 0; c.IntervalDays = 1; c.Lapses++; }
-        else { c.IntervalDays = c.Reps switch { 0 => 1, 1 => 6, _ => (int)Math.Round(c.IntervalDays * c.Ease) }; c.Reps++; }
+        else { c.IntervalDays = NextInterval(c, q); c.Reps++; }
         c.Ease = Math.Max(1.3, c.Ease + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)));
         c.Due = _now().Date.AddDays(c.IntervalDays); if (!Store.ReviewDays.Contains(_now().Date)) Store.ReviewDays.Add(_now().Date); Save(); return c;
     }
+
+    /// <summary>T-0262: Wie viele Tage bis zur nächsten Wiederholung, wenn man so bewertet (ohne zu speichern) – für die Knöpfe „Nochmal/Schwer/Gut/Leicht“.</summary>
+    public int PreviewDays(string id, Grade g)
+    {
+        var c = Store.Cards.First(x => x.Id == id); var q = (int)g;
+        return q < 3 ? 1 : NextInterval(c, q);
+    }
+
+    /// <summary>SM-2 mit abgestuften Antworten (wie bei verbreiteten Karteiprogrammen): „Schwer“ wächst langsam, „Leicht“ springt weiter; „Gut“ bleibt klassisches SM-2 (1, 6, Abstand × Leichtigkeit).</summary>
+    static int NextInterval(Flashcard c, int q)
+    {
+        var good = c.Reps switch { 0 => 1, 1 => 6, _ => (int)Math.Round(c.IntervalDays * c.Ease) };
+        return q switch
+        {
+            3 => c.Reps switch { 0 => 1, 1 => 3, _ => Math.Max(c.IntervalDays + 1, (int)Math.Round(c.IntervalDays * 1.2)) },
+            5 => c.Reps switch { 0 => 4, 1 => 8, _ => Math.Max(good + 1, (int)Math.Round(good * 1.3)) },
+            _ => good,
+        };
+    }
+
+    /// <summary>T-0262: heute schon wiederholte Karten (für den Fortschrittsbalken).</summary>
+    public int ReviewedToday(string? deck = null) => Store.Cards.Count(c => (deck is null || c.Deck == deck) && c.Due.Date > _now().Date && c.Reps + c.Lapses > 0 && c.Due.Date <= _now().Date.AddDays(c.IntervalDays) && c.Due.Date.AddDays(-c.IntervalDays) == _now().Date);
 
     public (int Total, int Due, int Learned, int Hard) Progress(string? deck = null)
     {

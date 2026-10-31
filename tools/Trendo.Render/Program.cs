@@ -153,6 +153,11 @@ else if (shot == "seite")
     {
         var md = Trendo.Core.Karten.MapDoc.From(win.ProgramActive(page)!.Data); win.MapSelect(md.Tracks.FirstOrDefault()?.Id);
     }
+    if (page == "lernen" && Environment.GetEnvironmentVariable("TRENDO_LEARN") is { Length: > 0 } lm) // Karteikarten: Beispielstapel, Modus, aufgedeckt
+    {
+        win.Learn.Import("Englisch", "Hund;dog\nKatze;cat\nHaus;house\nBaum;tree\nApfel;apple\nBuch;book"); win.LearnMode = lm == "auf" ? "lernen" : lm; win.LearnDeck = "Englisch";
+        if (lm == "auf") win.LearnReveal(); else win.Show(page);
+    }
     if (page == "ki-bibliothek" && Enum.TryParse<KiKind>(Environment.GetEnvironmentVariable("TRENDO_KIKIND"), out var kind)) win.KiLibraryShow(kind); // Art der KI-Bibliothek
 }
 else if (shot == "brief")

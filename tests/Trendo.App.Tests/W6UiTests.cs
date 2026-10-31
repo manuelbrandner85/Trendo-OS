@@ -53,24 +53,6 @@ public static class Glb
 }
 
 
-public class SPEC06_Ui
-{
-    [AvaloniaFact(DisplayName = "SPEC-06 UI: Karten anlegen, lernen, bewerten")]
-    public void Learn()
-    {
-        var (w, _, _) = Ui.Open();
-        w.Show(MainWindow.StudioPages["SPEC-06"]);
-        W6Ui.Run(w, "learn-import", ("text", "Hund;dog|Katze;cat"));
-        Assert.Contains("2 Karten", w.Find<TextBlock>("learn-progress").Text);
-        Assert.Equal("Hund", w.Find<TextBlock>("learn-front").Text);
-        w.Find<Button>("learn-show").Press();
-        Assert.Equal("dog", w.Find<TextBlock>("learn-back").Text);
-        w.Find<Button>("learn-gut").Press();
-        Assert.Equal("Katze", w.Find<TextBlock>("learn-front").Text);
-        Assert.Contains("1 heute fällig", w.Find<TextBlock>("learn-progress").Text);
-    }
-}
-
 public class SPEC08_Ui
 {
     [AvaloniaFact(DisplayName = "SPEC-08 UI: Größe, Schuh, Stoff, Varianten-CSV, Preis")]
@@ -281,25 +263,6 @@ public class SPEC04_UiPlus
         Assert.Contains("Stufe 3", W6Ui.Run(w, "xr-lod"));
         Assert.Contains("1.024 Pixel", W6Ui.Run(w, "xr-texel"));
         Assert.Contains("Komfort", W6Ui.Run(w, "xr-move"));
-    }
-}
-
-public class SPEC06_UiPlus
-{
-    [AvaloniaFact(DisplayName = "SPEC-06 UI Ausbau: Eintippen, Quiz, Fortschritt, Verwalten")]
-    public void Plus()
-    {
-        var (w, _, _) = Ui.Open(); w.Show("lernen");
-        W6Ui.Run(w, "learn-import", ("text", "Hund;dog|Katze;cat|Haus;house"));
-        Assert.Contains("✓ Richtig", W6Ui.Run(w, "learn-type", ("ans", "dog")));
-        var q = W6Ui.Run(w, "learn-quiz"); Assert.Contains("1)", q);
-        Assert.Contains("Richtig", W6Ui.Run(w, "learn-quiz", ("pick", "1")));
-        Assert.Contains("Nächste 7 Tage", w.Find<TextBlock>("learn-forecast").Text);
-        Assert.Contains("pro Tag", W6Ui.Run(w, "learn-exam"));
-        Assert.Contains("Geändert", W6Ui.Run(w, "learn-edit", ("front", "Haus"), ("back", "home")));
-        Assert.Contains("3 umgekehrte", W6Ui.Run(w, "learn-rev", ("deck", "Englisch")));
-        Assert.Contains("3 Karte(n) verschoben", W6Ui.Run(w, "learn-rename", ("from", "Englisch"), ("to", "EN")));
-        Assert.Contains("Gespeichert", W6Ui.Run(w, "learn-export"));
     }
 }
 

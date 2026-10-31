@@ -129,11 +129,30 @@ public class SPEC06_Learning
         Assert.Equal(3, lb.DueCards().Count);
         Assert.Equal(1, lb.Answer(c.Id, Grade.Gut).IntervalDays);
         now = now.AddDays(1); Assert.Equal(6, lb.Answer(c.Id, Grade.Gut).IntervalDays);
-        now = now.AddDays(6); var c3 = lb.Answer(c.Id, Grade.Leicht); Assert.Equal(15, c3.IntervalDays); Assert.True(c3.Ease > 2.5);
+        now = now.AddDays(6); var c3 = lb.Answer(c.Id, Grade.Leicht); Assert.Equal(20, c3.IntervalDays); Assert.True(c3.Ease > 2.5); // „Leicht“: 6 × 2,5 × 1,3 (T-0262)
         lb.Answer(c.Id, Grade.Falsch); Assert.Equal(1, c.IntervalDays); Assert.Equal(1, c.Lapses); Assert.Equal(0, c.Reps);
         Assert.DoesNotContain(new LearnBox(f.Root, () => now).DueCards(), x => x.Id == c.Id);
         Assert.Equal(3, new LearnBox(f.Root, () => now).Progress("Englisch").Total);
         Assert.Throws<ArgumentException>(() => lb.Add("x", "", "y"));
+    }
+
+    [Fact(DisplayName = "T-0262: Vorschau der Abstände je Bewertung stimmt mit der echten Bewertung überein; „Schwer“ < „Gut“ < „Leicht“; heute gelernt zählt")]
+    public void Preview_matches_answer()
+    {
+        using var f = new Fixture(); var now = new DateTime(2026, 10, 1, 9, 0, 0);
+        var lb = new LearnBox(f.Root, () => now);
+        var c = lb.Add("Englisch", "Baum", "tree");
+        Assert.Equal([1, 1, 1, 4], new[] { Grade.Falsch, Grade.Schwer, Grade.Gut, Grade.Leicht }.Select(g => lb.PreviewDays(c.Id, g)));
+        Assert.Equal(0, lb.ReviewedToday("Englisch"));
+        Assert.Equal(lb.PreviewDays(c.Id, Grade.Gut), lb.Answer(c.Id, Grade.Gut).IntervalDays);
+        Assert.Equal(1, lb.ReviewedToday("Englisch")); Assert.Equal(0, lb.ReviewedToday("Mathe"));
+        now = now.AddDays(1);
+        var p = new[] { Grade.Schwer, Grade.Gut, Grade.Leicht }.Select(g => lb.PreviewDays(c.Id, g)).ToArray();
+        Assert.True(p[0] < p[1] && p[1] < p[2], string.Join(",", p));
+        Assert.Equal(p[2], lb.Answer(c.Id, Grade.Leicht).IntervalDays);
+        now = now.AddDays(8);
+        p = new[] { Grade.Schwer, Grade.Gut, Grade.Leicht }.Select(g => lb.PreviewDays(c.Id, g)).ToArray();
+        Assert.True(p[0] > 8 && p[0] < p[1] && p[1] < p[2], string.Join(",", p));
     }
 }
 
