@@ -43,4 +43,15 @@ public class W5_X04_Catalog
         var (n, er) = ExtensionCatalog.InstallVerified(new ExtensionStore(root), e0 with { Id = "anderer.name" }, ExtensionCatalog.LocalFile(dir, e0)!);
         Assert.Null(n); Assert.Contains("Katalogeintrag", er[0]);
     }
+
+    [Fact(DisplayName = "T-0241: Weiterleitung beim Download nur zu GitHub über https – kein http, kein fremder Server")]
+    public void Redirects()
+    {
+        Assert.True(ExtensionCatalog.RedirectAllowed(new Uri("https://objects.githubusercontent.com/x.zip")));
+        Assert.True(ExtensionCatalog.RedirectAllowed(new Uri("https://release-assets.githubusercontent.com/x.zip")));
+        Assert.False(ExtensionCatalog.RedirectAllowed(new Uri("http://github.com/x.zip")));
+        Assert.False(ExtensionCatalog.RedirectAllowed(new Uri("https://evil.example/x.zip")));
+        Assert.False(ExtensionCatalog.RedirectAllowed(new Uri("https://github.com.evil.example/x.zip")));
+        Assert.False(ExtensionCatalog.RedirectAllowed(new Uri("https://github.com:8443/x.zip")));
+    }
 }

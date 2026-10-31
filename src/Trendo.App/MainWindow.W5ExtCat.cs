@@ -18,22 +18,59 @@ public partial class MainWindow
         (ExtCatalog, _extCatErr) = ExtensionCatalog.Parse(File.ReadAllText(f)); Show("erweiterungen");
     }
 
+    /// <summary>T-0241: ein Client ohne automatische Weiterleitung – jede Weiterleitung wird einzeln geprüft (nur GitHub über https).</summary>
+    static readonly HttpClient ExtHttp = new(new SocketsHttpHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromSeconds(60) };
+    /// <summary>Für Tests: Inhalt einer Adresse statt Netz.</summary>
+    public Func<string, Task<byte[]>>? ExtFetchOverride { get; set; }
+
+    async Task<byte[]> ExtFetch(string url, long max)
+    {
+        if (_core.Offline) throw new InvalidOperationException("Trendo ist offline – zum Laden braucht es Internet.");
+        _core.Audit.Append(Principal.LocalOwner.Name, "ext.download", url);
+        if (ExtFetchOverride is { } o) { var b = await o(url); return b.Length > max ? throw new InvalidOperationException("Datei ist größer als erlaubt.") : b; }
+        var u = new Uri(url);
+        for (var i = 0; i < 6; i++)
+        {
+            if (!ExtensionCatalog.RedirectAllowed(u)) throw new InvalidOperationException("Unerwartete Adresse: " + u.Host);
+            using var res = await ExtHttp.GetAsync(u, HttpCompletionOption.ResponseHeadersRead);
+            if ((int)res.StatusCode is >= 300 and < 400 && res.Headers.Location is { } loc) { u = loc.IsAbsoluteUri ? loc : new Uri(u, loc); continue; }
+            res.EnsureSuccessStatusCode();
+            if (res.Content.Headers.ContentLength > max) throw new InvalidOperationException("Datei ist größer als erlaubt.");
+            await using var s = await res.Content.ReadAsStreamAsync();
+            using var ms = new MemoryStream();
+            var buf = new byte[81920]; int n;
+            while ((n = await s.ReadAsync(buf)) > 0) { if (ms.Length + n > max) throw new InvalidOperationException("Datei ist größer als erlaubt."); ms.Write(buf, 0, n); }
+            return ms.ToArray();
+        }
+        throw new InvalidOperationException("Zu viele Weiterleitungen.");
+    }
+
     public async Task ExtCatalogLoadRemote(string url)
     {
         if (!ExtensionCatalog.IsRemote(url)) { Say("Nur GitHub-Adressen über https sind erlaubt.", "erweiterungen"); return; }
         try
         {
-            using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
-            var json = await http.GetStringAsync(url);
+            var json = System.Text.Encoding.UTF8.GetString(await ExtFetch(url, 2 << 20));
             ExtCatalogUrl = url; _extCatSrcDir = "";
             (ExtCatalog, _extCatErr) = ExtensionCatalog.Parse(json);
             ExtCatalog = ExtCatalog.Where(e => ExtensionCatalog.IsRemote(e.Url)).ToList();
         }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException) { Say("Katalog nicht erreichbar: " + ex.Message, "erweiterungen"); return; }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException) { Say("Katalog nicht erreichbar: " + ex.Message, "erweiterungen"); return; }
         Show("erweiterungen");
     }
 
-    public async Task ExtCatalogInstall(CatalogEntry e)
+    /// <summary>Erst fragen (Name, Version, Herkunft, Prüfsumme aus dem Katalog), dann laden, prüfen und mit Freigabe installieren.</summary>
+    public Task ExtCatalogInstall(CatalogEntry e)
+    {
+        var third = ExtensionCatalog.IsRemote(e.Url);
+        _extAsk = ("Erweiterung aus dem Katalog installieren?",
+            $"„{e.Name}“ {e.Version} · Art: {e.Kind} · {e.Description}\nQuelle: {(third ? e.Url + " – Katalog von Dritten, ungeprüft" : "mitgelieferter Katalog")}\nPrüfsumme {e.Sha256[..12]}… wird vor dem Installieren geprüft.",
+            "Ja, installieren", () => ExtCatalogInstallNow(e));
+        Show("erweiterungen");
+        return Task.CompletedTask;
+    }
+
+    async Task<string> ExtCatalogInstallNow(CatalogEntry e)
     {
         var file = ExtensionCatalog.LocalFile(_extCatSrcDir, e);
         string? tmp = null;
@@ -42,19 +79,19 @@ public partial class MainWindow
             tmp = Path.Combine(Path.GetTempPath(), "trendo-dl-" + Guid.NewGuid().ToString("N") + ".zip");
             try
             {
-                using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
-                var bytes = await http.GetByteArrayAsync(e.Url);
-                if (bytes.Length > 50 << 20) { Say("Erweiterung ist größer als 50 MB.", "erweiterungen"); return; }
+                var bytes = await ExtFetch(e.Url, ExtensionStore.MaxBytes);
                 await File.WriteAllBytesAsync(tmp, bytes); file = tmp;
             }
-            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException) { Say("Herunterladen fehlgeschlagen: " + ex.Message, "erweiterungen"); return; }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidOperationException) { return "Herunterladen fehlgeschlagen: " + ex.Message; }
         }
         try
         {
-            var (x, err) = ExtensionCatalog.InstallVerified(Exts, e, file);
-            Say(x is not null ? $"„{x.Manifest.Name}“ {x.Manifest.Version} installiert (Prüfsumme bestätigt)." : "Nicht installiert: " + string.Join(" ", err), "erweiterungen");
+            if (!File.Exists(file)) return "Nicht installiert: Datei nicht gefunden.";
+            // Ziel der Freigabe ist die Prüfsumme der geladenen Datei – stimmt sie nicht mit dem Katalog, scheitert die Prüfung ohnehin
+            var (x, err) = ExtensionCatalog.InstallVerified(Exts, e, file, ExtApprove(ExtensionStore.InstallAction, $"Erweiterung {e.Name} {e.Version} installieren", ExtensionStore.SourceHash(file)));
+            return x is not null ? $"„{x.Manifest.Name}“ {x.Manifest.Version} installiert (Prüfsumme bestätigt)." : "Nicht installiert: " + string.Join(" ", err);
         }
-        finally { if (tmp is not null) File.Delete(tmp); }
+        finally { if (tmp is not null && File.Exists(tmp)) File.Delete(tmp); }
     }
 
     private Control ExtCatalogCard()

@@ -60,12 +60,34 @@ public static partial class Extensions
     }
 }
 
-public sealed class ExtensionStore(string dataRoot, AuditLog? audit = null)
+/// <summary>X-04, T-0241: Mit <paramref name="gate"/> brauchen Installieren und Entfernen eine Freigabe (ApprovalGate, Not-Stopp sperrt);
+/// Ziel der Freigabe ist die Prüfsumme der Quelle bzw. die Kennung – wird die Datei danach verändert, wird nichts installiert.</summary>
+public sealed class ExtensionStore(string dataRoot, AuditLog? audit = null, ApprovalGate? gate = null)
 {
     public string Root { get; } = Path.Combine(dataRoot, "erweiterungen");
+    public const string InstallAction = "ext.install";
+    public const string RemoveAction = "ext.remove";
+    // Grenzen gegen „ZIP-Bomben“ und unsaubere Pakete
+    public const int MaxEntries = 2000;
+    public const long MaxBytes = 50L << 20;
+    public const double MaxRatio = 100;
 
-    /// <summary>Installiert aus Ordner oder .zip. ZIP-Einträge, die aus dem Ordner ausbrechen, werden abgewiesen.</summary>
-    public (InstalledExt? Ext, List<string> Errors) Install(string source)
+    /// <summary>Prüfsumme einer Quelle (ZIP-Datei oder Ordner) – Ziel der Freigabe.</summary>
+    public static string SourceHash(string source) =>
+        File.Exists(source) ? ExtensionCatalog.FileSha256(source) : Directory.Exists(source) ? Extensions.Hash(source) : "";
+
+    /// <summary>Installiert aus Ordner oder .zip – mit Freigabe, wenn ein ApprovalGate gesetzt ist.</summary>
+    public (InstalledExt? Ext, List<string> Errors) Install(string source, string? approvalId = null)
+    {
+        if (gate is null) return InstallCore(source);
+        if (approvalId is null) return (null, ["Installieren braucht deine Freigabe."]);
+        try { return gate.Execute(approvalId, InstallAction, SourceHash(source), () => InstallCore(source)); }
+        catch (ApprovalException e) { return (null, [e.Message]); }
+    }
+
+    /// <summary>Installiert aus Ordner oder .zip. ZIP-Einträge, die aus dem Ordner ausbrechen, werden abgewiesen.
+    /// Der Austausch ist atomar: neue Fassung erst vollständig daneben, dann umbenennen; die alte bleibt bis zum Erfolg erhalten.</summary>
+    (InstalledExt? Ext, List<string> Errors) InstallCore(string source)
     {
         var tmp = Path.Combine(Path.GetTempPath(), "trendo-ext-" + Guid.NewGuid().ToString("N"));
         try
@@ -74,12 +96,16 @@ public sealed class ExtensionStore(string dataRoot, AuditLog? audit = null)
             {
                 Directory.CreateDirectory(tmp);
                 using var z = ZipFile.OpenRead(source);
+                if (z.Entries.Count > MaxEntries) return (null, [$"Erweiterung hat zu viele Dateien (mehr als {MaxEntries})."]);
+                var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 long total = 0;
                 foreach (var e in z.Entries)
                 {
                     if (e.FullName.EndsWith('/')) continue;
                     if (!FreeAssets.SafeRel(e.FullName)) return (null, ["Unsicherer Pfad im ZIP: " + e.FullName]);
-                    if ((total += e.Length) > 50L << 20) return (null, ["Erweiterung ist größer als 50 MB."]);
+                    if (!seen.Add(e.FullName.Replace('\\', '/'))) return (null, ["Doppelte Datei im ZIP: " + e.FullName]);
+                    if ((total += e.Length) > MaxBytes) return (null, ["Erweiterung ist größer als 50 MB."]);
+                    if (e.Length > 1 << 20 && e.Length > MaxRatio * Math.Max(1, e.CompressedLength)) return (null, ["Ungewöhnlich stark gepackte Datei im ZIP (möglicherweise schädlich): " + e.FullName]);
                     var t = Path.Combine(tmp, e.FullName); Directory.CreateDirectory(Path.GetDirectoryName(t)!); e.ExtractToFile(t);
                 }
                 var inner = Directory.GetDirectories(tmp); if (!File.Exists(Path.Combine(tmp, Extensions.ManifestFile)) && inner.Length == 1) source = inner[0]; else source = tmp;
@@ -88,8 +114,20 @@ public sealed class ExtensionStore(string dataRoot, AuditLog? audit = null)
             var (m, err) = Extensions.Validate(source);
             if (m is null || err.Count > 0) return (null, err);
             var dst = Path.Combine(Root, m.Id);
-            if (Directory.Exists(dst)) Directory.Delete(dst, true);
-            CopyDir(source, dst);
+            if (Get(m.Id) is { } old && !string.Equals(old.Manifest.Author, m.Author, StringComparison.Ordinal))
+                return (null, [$"Es gibt schon eine Erweiterung „{old.Manifest.Name}“ mit derselben Kennung von „{old.Manifest.Author}“. Erst diese entfernen."]);
+            Directory.CreateDirectory(Root);
+            var stage = Path.Combine(Root, ".neu-" + Guid.NewGuid().ToString("N")[..8]);
+            var backup = Path.Combine(Root, ".alt-" + Guid.NewGuid().ToString("N")[..8]);
+            try
+            {
+                CopyDir(source, stage);
+                if (Directory.Exists(dst)) Directory.Move(dst, backup);
+                try { Directory.Move(stage, dst); }
+                catch (Exception) { if (Directory.Exists(backup) && !Directory.Exists(dst)) Directory.Move(backup, dst); throw; }
+                if (Directory.Exists(backup)) Directory.Delete(backup, true);
+            }
+            finally { if (Directory.Exists(stage)) Directory.Delete(stage, true); }
             audit?.Append("app", "ext.install", $"{m.Id} {m.Version}");
             return (Get(m.Id), []);
         }
@@ -110,9 +148,18 @@ public sealed class ExtensionStore(string dataRoot, AuditLog? audit = null)
         return new(m, d, !File.Exists(Path.Combine(d, ".aus")), Extensions.Hash(d));
     }
 
-    public IReadOnlyList<InstalledExt> All() => Directory.Exists(Root) ? Directory.GetDirectories(Root).Select(d => Get(Path.GetFileName(d))).OfType<InstalledExt>().OrderBy(e => e.Manifest.Name).ToList() : [];
+    public IReadOnlyList<InstalledExt> All() => Directory.Exists(Root) ? Directory.GetDirectories(Root).Where(d => !Path.GetFileName(d).StartsWith('.')).Select(d => Get(Path.GetFileName(d))).OfType<InstalledExt>().OrderBy(e => e.Manifest.Name).ToList() : [];
     public void SetEnabled(string id, bool on) { var f = Path.Combine(Root, id, ".aus"); if (on) File.Delete(f); else File.WriteAllText(f, ""); audit?.Append("app", "ext." + (on ? "on" : "off"), id); }
-    public void Remove(string id) { var d = Path.Combine(Root, id); if (Directory.Exists(d)) Directory.Delete(d, true); audit?.Append("app", "ext.remove", id); }
+    /// <summary>Entfernen – mit Freigabe, wenn ein ApprovalGate gesetzt ist. Liefert null bei Erfolg, sonst den Grund.</summary>
+    public string? Remove(string id, string? approvalId = null)
+    {
+        if (gate is null) { RemoveCore(id); return null; }
+        if (approvalId is null) return "Entfernen braucht deine Freigabe.";
+        try { gate.Execute(approvalId, RemoveAction, id, () => { RemoveCore(id); return true; }); return null; }
+        catch (ApprovalException e) { return e.Message; }
+    }
+
+    void RemoveCore(string id) { var d = Path.Combine(Root, id); if (Directory.Exists(d)) Directory.Delete(d, true); audit?.Append("app", "ext.remove", id); }
     public string EntryText(InstalledExt e) => File.ReadAllText(Path.Combine(e.Dir, e.Manifest.Entry));
 }
 

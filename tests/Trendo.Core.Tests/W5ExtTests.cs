@@ -37,4 +37,64 @@ public class W5_X04_Extensions
         Assert.Contains(s.Install(zip).Errors, x => x.Contains("Unsicherer Pfad"));
         Assert.Empty(s.All());
     }
+
+    [Fact(DisplayName = "T-0241: Mit ApprovalGate nur mit Freigabe installieren/entfernen; Not-Stopp sperrt; geänderte Datei nach Freigabe wird abgewiesen")]
+    public void Approval_required()
+    {
+        var root = Tmp();
+        var audit = new AuditLog(Path.Combine(root, "a.jsonl"));
+        var gate = new ApprovalGate(audit);
+        var s = new ExtensionStore(root, audit, gate);
+        var src = ExtensionSamples.WriteSample(Tmp());
+        var zip = Path.Combine(Tmp(), "v.zip"); ZipFile.CreateFromDirectory(src, zip, CompressionLevel.Fastest, includeBaseDirectory: true);
+        string Approved(string action, string target) { var r = gate.Request(Principal.LocalOwner, action, "Test", target); gate.Approve(r.Id, Principal.LocalOwner); return r.Id; }
+
+        Assert.Contains(s.Install(zip).Errors, x => x.Contains("Freigabe"));
+        Assert.Empty(s.All());
+        // Freigabe gilt für genau diese Datei: danach verändert → blockiert
+        var id = Approved(ExtensionStore.InstallAction, ExtensionStore.SourceHash(zip));
+        using (var z = ZipFile.Open(zip, ZipArchiveMode.Update)) { using var w = new StreamWriter(z.CreateEntry("visitenkarte/extra.txt").Open()); w.Write("neu"); }
+        Assert.Contains(s.Install(zip, id).Errors, x => x.Contains("blockiert"));
+        Assert.Empty(s.All());
+        // passende Freigabe → installiert, genau einmal verwendbar
+        var ok = Approved(ExtensionStore.InstallAction, ExtensionStore.SourceHash(zip));
+        Assert.Empty(s.Install(zip, ok).Errors);
+        Assert.Single(s.All());
+        Assert.Contains(s.Install(zip, ok).Errors, x => x.Contains("blockiert"));
+        // Not-Stopp: weder Freigabe noch Ausführung
+        var rm = Approved(ExtensionStore.RemoveAction, "trendo.visitenkarte");
+        gate.Halt(Principal.LocalOwner, "Test");
+        Assert.NotNull(s.Remove("trendo.visitenkarte", rm));
+        Assert.Single(s.All());
+        gate.Resume(Principal.LocalOwner);
+        Assert.Null(s.Remove("trendo.visitenkarte", Approved(ExtensionStore.RemoveAction, "trendo.visitenkarte")));
+        Assert.Empty(s.All());
+    }
+
+    [Fact(DisplayName = "T-0241: Doppelte Dateien, zu viele Einträge, stark gepackte Dateien und fremde Kennung werden abgewiesen; alte Fassung bleibt heil")]
+    public void Hardening()
+    {
+        var s = new ExtensionStore(Tmp());
+        var src = ExtensionSamples.WriteSample(Tmp());
+        Assert.Empty(s.Install(src).Errors);
+        var before = s.All()[0].Sha256;
+        // doppelte Datei
+        var dup = Path.Combine(Tmp(), "dup.zip");
+        using (var z = ZipFile.Open(dup, ZipArchiveMode.Create)) { z.CreateEntryFromFile(Path.Combine(src, Extensions.ManifestFile), Extensions.ManifestFile); z.CreateEntryFromFile(Path.Combine(src, "seite.json"), "seite.json"); z.CreateEntryFromFile(Path.Combine(src, "seite.json"), "seite.json"); }
+        Assert.Contains(s.Install(dup).Errors, x => x.Contains("Doppelte"));
+        // zu viele Einträge
+        var many = Path.Combine(Tmp(), "many.zip");
+        using (var z = ZipFile.Open(many, ZipArchiveMode.Create)) for (var i = 0; i <= ExtensionStore.MaxEntries; i++) z.CreateEntry($"x/{i}.txt");
+        Assert.Contains(s.Install(many).Errors, x => x.Contains("zu viele"));
+        // stark gepackt (2 MB Nullen)
+        var bomb = Path.Combine(Tmp(), "bomb.zip");
+        using (var z = ZipFile.Open(bomb, ZipArchiveMode.Create)) { using var st = z.CreateEntry("nullen.txt", CompressionLevel.Optimal).Open(); st.Write(new byte[2 << 20]); }
+        Assert.Contains(s.Install(bomb).Errors, x => x.Contains("stark gepackt"));
+        // gleiche Kennung, anderer Herausgeber
+        var other = ExtensionSamples.WriteSample(Tmp()); var mf = Path.Combine(other, Extensions.ManifestFile);
+        File.WriteAllText(mf, File.ReadAllText(mf).Replace("\"Author\": \"Trendo\"", "\"Author\": \"Fremd\""));
+        Assert.Contains(s.Install(other).Errors, x => x.Contains("derselben Kennung"));
+        Assert.Equal(before, s.All()[0].Sha256);
+        Assert.Empty(Directory.GetDirectories(s.Root, ".*")); // keine Reste vom Austausch
+    }
 }

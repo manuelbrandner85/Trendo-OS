@@ -11,7 +11,7 @@ public sealed record CatalogEntry(string Id, string Name, string Version, string
 public static class ExtensionCatalog
 {
     public const string FileName = "katalog.json";
-    static readonly string[] GitHubHosts = ["github.com", "raw.githubusercontent.com", "objects.githubusercontent.com"];
+    static readonly string[] GitHubHosts = ["github.com", "raw.githubusercontent.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com", "codeload.github.com"];
     static readonly JsonSerializerOptions Opt = new() { PropertyNameCaseInsensitive = true, WriteIndented = true };
 
     /// <summary>Erlaubt: https auf GitHub-Adressen oder ein relativer Pfad neben dem Katalog (lokal). Alles andere wird abgewiesen.</summary>
@@ -41,7 +41,10 @@ public static class ExtensionCatalog
     public static string? LocalFile(string catalogDir, CatalogEntry e) => IsRemote(e.Url) ? null : Path.GetFullPath(Path.Combine(catalogDir, e.Url));
 
     /// <summary>Installiert nur, wenn die Prüfsumme der ZIP stimmt und Kennung/Version zum Katalogeintrag passen.</summary>
-    public static (InstalledExt? Ext, List<string> Errors) InstallVerified(ExtensionStore store, CatalogEntry e, string zip)
+    /// <summary>T-0241: Weiterleitung beim Herunterladen nur zu GitHub über https (nie auf http oder fremde Server).</summary>
+    public static bool RedirectAllowed(Uri target) => target.Scheme == Uri.UriSchemeHttps && target.Port == 443 && GitHubHosts.Contains(target.Host);
+
+    public static (InstalledExt? Ext, List<string> Errors) InstallVerified(ExtensionStore store, CatalogEntry e, string zip, string? approvalId = null)
     {
         if (!File.Exists(zip)) return (null, ["Datei nicht gefunden."]);
         var h = FileSha256(zip);
@@ -57,7 +60,7 @@ public static class ExtensionCatalog
                 var m = JsonSerializer.Deserialize<ExtManifest>(new StreamReader(mf.Open()).ReadToEnd(), Opt);
                 if (m?.Id != e.Id || m.Version != e.Version) return (null, ["Inhalt passt nicht zum Katalogeintrag (Kennung/Version)."]);
             }
-            return store.Install(zip);
+            return store.Install(zip, approvalId);
         }
         catch (JsonException) { return (null, ["Beschreibung in der ZIP ist ungültig."]); }
         finally { Directory.Delete(tmp, true); }

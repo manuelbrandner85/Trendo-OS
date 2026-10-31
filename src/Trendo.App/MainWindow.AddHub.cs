@@ -93,7 +93,7 @@ public partial class MainWindow
         {
             var xid = x.Manifest.Id;
             items.Add(new("ext:" + xid, "erweiterungen", x.Manifest.Name, $"Erweiterung · Version {x.Manifest.Version}", true, null,
-                () => { Show("erweiterungen"); return Task.CompletedTask; }, () => { Exts.Remove(xid); return Task.CompletedTask; }));
+                () => { Show("erweiterungen"); return Task.CompletedTask; }, () => { _hubMsg = ExtRemoveApproved(xid); return Task.CompletedTask; }));
         }
         items.Add(new("page:erweiterungen", "erweiterungen", "Erweiterungen hinzufügen", "Vorlagen, Plugins und Add-ons für Trendo", false, null, () => { Show("erweiterungen"); return Task.CompletedTask; }));
         return items;
