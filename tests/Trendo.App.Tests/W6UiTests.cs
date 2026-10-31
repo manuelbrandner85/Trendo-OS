@@ -53,25 +53,6 @@ public static class Glb
 }
 
 
-public class SPEC16_Ui
-{
-    [AvaloniaFact(DisplayName = "SPEC-16 UI: Fahrzeug, Tanken, Fahrt, Fahrtenbuch")]
-    public void Vehicle()
-    {
-        var (w, l, _) = Ui.Open();
-        w.Show(MainWindow.StudioPages["SPEC-16"]);
-        W6Ui.Run(w, "car-add", ("name", "Golf"));
-        W6Ui.Run(w, "car-fuel", ("odo", "1000"), ("amt", "40"));
-        W6Ui.Run(w, "car-fuel", ("odo", "1600"), ("amt", "36"));
-        Assert.Contains("6,0 l/100 km", w.Find<TextBlock>("car-stats-Golf").Text);
-        Assert.Contains("⚠", W6Ui.Run(w, "car-trip", ("s", "1600"), ("e", "1650"), ("why", "")));
-        W6Ui.Run(w, "car-trip", ("s", "1600"), ("e", "1650"), ("why", "Baumarkt"));
-        Assert.Single(w.Cars.Get("Golf").Trips);
-        Assert.Contains("Gespeichert", W6Ui.Run(w, "car-export"));
-        Assert.Contains(l.Opened, x => x.EndsWith("fahrtenbuch-Golf.csv"));
-    }
-}
-
 public static class Img
 {
     /// <summary>Echte PNG-Datei (RGB, Filter 0) mit rotem Rechteck auf grauem Grund.</summary>
@@ -138,25 +119,6 @@ public class SPEC04_UiPlus
         Assert.Contains("Stufe 3", W6Ui.Run(w, "xr-lod"));
         Assert.Contains("1.024 Pixel", W6Ui.Run(w, "xr-texel"));
         Assert.Contains("Komfort", W6Ui.Run(w, "xr-move"));
-    }
-}
-
-public class SPEC16_UiPlus
-{
-    [AvaloniaFact(DisplayName = "SPEC-16 UI Ausbau: Steuer & Erstattung, Rechner")]
-    public void Plus()
-    {
-        var (w, _, _) = Ui.Open();
-        w.Cars.Add("Zoe", "", true); w.Cars.Refuel("Zoe", new DateTime(2026, 1, 1), 1000, 40, 0.4); w.Cars.Refuel("Zoe", new DateTime(2026, 1, 9), 1200, 36, 0.4);
-        w.Show(MainWindow.StudioPages["SPEC-16"]);
-        Assert.Contains("2.508,00 €", W6Ui.Run(w, "car-commute", ("year", "2026")));
-        Assert.Contains("günstiger: Fahrtenbuch", W6Ui.Run(w, "car-company"));
-        Assert.Contains("37,50 €", W6Ui.Run(w, "car-mile"));
-        Assert.Contains("18,0 kWh/100 km", W6Ui.Run(w, "car-ev", ("fp", "1,8")));
-        Assert.Contains("46,7 kWh", W6Ui.Run(w, "car-charge"));
-        Assert.Contains("Jahre alt", W6Ui.Run(w, "car-tire"));
-        Assert.Contains("13,43 € pro Person", W6Ui.Run(w, "car-share"));
-        Assert.Contains("im Monat", W6Ui.Run(w, "car-year"));
     }
 }
 

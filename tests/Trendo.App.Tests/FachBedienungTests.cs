@@ -25,12 +25,12 @@ public class FachBedienungTests
             var hints = w.GetLogicalDescendants().OfType<TextBlock>().Select(t => t.Text ?? "").Where(s => aufzaehlung.IsMatch(s)).ToList();
             Assert.True(hints.Count == 0, page + ": Aufzählung im Hinweis – " + string.Join(" | ", hints));
         }
-        // SPEC-01/03/14 sind seit T-0256/T-0258/T-0266 Programme ohne Formular – Wahlfelder hier am Beispiel Verkehr & Fahrzeug
-        w.Show(MainWindow.StudioPages["SPEC-16"]);
+        // SPEC-01/03/14/16 sind seit T-0256/T-0258/T-0266/T-0268 Programme ohne Formular – Wahlfelder hier am Beispiel VR & AR
+        w.Show(MainWindow.StudioPages["SPEC-04"]);
         foreach (var ex in w.GetLogicalDescendants().OfType<Expander>().ToList()) ex.IsExpanded = true;
         Dispatcher.UIThread.RunJobs();
-        var winter = w.Find<ComboBox>("car-tire-w");
-        Assert.Equal(["j", "n"], winter.ItemsSource!.Cast<string>());
+        var vig = w.Find<ComboBox>("xr-move-vig");
+        Assert.Equal(["j", "n"], vig.ItemsSource!.Cast<string>());
         w.Close();
     }
 
@@ -49,25 +49,25 @@ public class FachBedienungTests
     public void Number_check_and_state_survives()
     {
         var (w, l, root) = Ui.Open();
-        w.Show(MainWindow.StudioPages["SPEC-16"]);
+        w.Show(MainWindow.StudioPages["SPEC-04"]);
         foreach (var ex in w.GetLogicalDescendants().OfType<Expander>().ToList()) ex.IsExpanded = true;
         Dispatcher.UIThread.RunJobs();
-        var v = w.Find<TextBox>("car-tire-mm");
+        var v = w.Find<TextBox>("xr-move-move");
         v.Text = "zwölf"; Dispatcher.UIThread.RunJobs(); Assert.NotNull(ToolTip.GetTip(v));
-        v.Text = "3"; Dispatcher.UIThread.RunJobs(); Assert.Null(ToolTip.GetTip(v));
-        w.Find<ComboBox>("car-tire-w").SelectedItem = "j";
-        w.Find<Button>("car-tire-run").Press();
-        var res = w.Find<SelectableTextBlock>("car-tire-out").Text;
+        v.Text = "1,5"; Dispatcher.UIThread.RunJobs(); Assert.Null(ToolTip.GetTip(v));
+        w.Find<ComboBox>("xr-move-vig").SelectedItem = "j";
+        w.Find<Button>("xr-move-run").Press();
+        var res = w.Find<SelectableTextBlock>("xr-move-out").Text;
         Assert.False(string.IsNullOrWhiteSpace(res));
         w.Close();
         // gleicher Datenordner, neues Fenster: Stand ist wieder da
         var core = new TrendoCore(root, new InMemorySecretStore(), l);
         var w2 = new MainWindow(core, new AppOptions(root, null, 0, false, Isolated: true), new Probe("browser")); w2.Show(); Dispatcher.UIThread.RunJobs();
-        w2.Show(MainWindow.StudioPages["SPEC-16"]);
+        w2.Show(MainWindow.StudioPages["SPEC-04"]);
         foreach (var ex in w2.GetLogicalDescendants().OfType<Expander>().ToList()) ex.IsExpanded = true;
         Dispatcher.UIThread.RunJobs();
-        Assert.Equal("j", w2.Find<ComboBox>("car-tire-w").SelectedItem);
-        Assert.Equal(res, w2.Find<SelectableTextBlock>("car-tire-out").Text);
+        Assert.Equal("j", w2.Find<ComboBox>("xr-move-vig").SelectedItem);
+        Assert.Equal(res, w2.Find<SelectableTextBlock>("xr-move-out").Text);
         w2.Close();
     }
 

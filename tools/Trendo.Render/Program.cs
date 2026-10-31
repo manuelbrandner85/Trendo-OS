@@ -164,6 +164,10 @@ else if (shot == "seite")
         foreach (var (t, sec, n) in new[] { ("Begrüßung", 90, "Kamera 1"), ("Nachrichten", 300, "Einspieler"), ("Gast im Studio: Erika Muster", 600, "Kamera 2, Ansteckmikro"), ("Musik", 240, ""), ("Wetter", 120, "Grafik"), ("Verabschiedung", 60, "") }) win.Broadcast.Add(t, sec, n);
         win.BcMode = bcMode; win.Show(page);
     }
+    if (page == "fahrzeug" && Environment.GetEnvironmentVariable("TRENDO_CAR") is { Length: > 0 } carTab) // Fahrzeugbuch mit Beispielfahrzeug
+    {
+        var demo = Trendo.Core.VehiclePlus.SeedDemo(win.Cars, DateTime.Today); win.CarSel = demo.Name; win.CarTab = carTab; win.Show(page);
+    }
     if (page == "zwilling" && Environment.GetEnvironmentVariable("TRENDO_TWIN") is { Length: > 0 }) // Anlagen-Monitor mit Beispielanlagen
     {
         Trendo.Core.TwinDemo.Seed(win.Twin, DateTime.Now); win.TwinSelect("Kühlraum", "Temperatur");
