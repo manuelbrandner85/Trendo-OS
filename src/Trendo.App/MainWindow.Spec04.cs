@@ -47,7 +47,7 @@ public partial class MainWindow
         var bar = new WrapPanel { Name = "xr-bar" };
         var file = Field("xr-file-path", "3D-Modell (.glb, .gltf, .obj, .stl)", 320, XrFile); bar.Children.Add(file);
         bar.Children.Add(Btn("xr-open", "Öffnen", () => XrRun(() => { var p = Need(file, "das Modell"); if (!File.Exists(p)) throw new FileNotFoundException("Diese Datei gibt es nicht."); XrFile = p; _xrMsg = ""; }), true));
-        bar.Children.Add(Btn("xr-sample", "Beispielmodell", () => XrRun(() => { XrFile = XrSample.Write(Path.Combine(WorkFolder("Modell-Prüfer"), "beispiel-sessel.glb")); _xrMsg = "Beispielmodell (erfunden) geladen."; })));
+        bar.Children.Add(Btn("xr-sample", "Beispielmodell", () => XrRun(() => { XrFile = XrSample.Write(Path.Combine(WorkFolder("Modell-Prüfer"), "beispiel-leseecke.glb")); _xrMsg = "Beispiel geladen: Leseecke mit Sessel, Pflanze und Teppich in echten Maßen."; })));
         bar.Children.Add(new TextBlock { Text = "Zielgerät", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0, 6, 4) });
         for (var k = 0; k < XrInspector.Budgets.Count; k++)
         {

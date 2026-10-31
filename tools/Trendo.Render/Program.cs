@@ -188,7 +188,7 @@ else if (shot == "seite")
     }
     if (page == "xr" && Environment.GetEnvironmentVariable("TRENDO_XR") is { Length: > 0 } xrArg) // Modell-Prüfer mit Beispielmodell oder Datei
     {
-        win.XrFile = File.Exists(xrArg) ? xrArg : Trendo.Core.XrSample.Write(Path.Combine(root, "beispiel-sessel.glb")); win.Show(page);
+        win.XrFile = File.Exists(xrArg) ? xrArg : Trendo.Core.XrSample.Write(Path.Combine(root, "beispiel-leseecke.glb")); win.Show(page);
     }
     if (page == "zwilling" && Environment.GetEnvironmentVariable("TRENDO_TWIN") is { Length: > 0 }) // Anlagen-Monitor mit Beispielanlagen
     {

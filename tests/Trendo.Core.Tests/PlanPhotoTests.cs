@@ -84,3 +84,22 @@ public class T0281_XrSize
         Assert.InRange(det.SizeX, 2.15, 2.30); Assert.InRange(det.SizeY, 0.80, 0.92); Assert.InRange(det.SizeZ, 0.85, 0.98);
     }
 }
+
+/// <summary>T-0282: Beispielmodell des Modell-Prüfers aus echten Katalogmöbeln statt Kisten.</summary>
+public class T0282_XrSample
+{
+    [Fact(DisplayName = "T-0282: Beispiel-Leseecke – Teppich 200 × 140 cm, Pflanze 120 cm hoch, alles steht auf dem Boden, Sessellehne hinten, mehrere Materialfarben")]
+    public void Sample_is_real_furniture()
+    {
+        var m = XrSample.Build();
+        Assert.InRange(m.V.Max(v => v.X) - m.V.Min(v => v.X), 195, 205); Assert.InRange(m.V.Max(v => v.Y) - m.V.Min(v => v.Y), 135, 145);
+        Assert.InRange(m.V.Min(v => v.Z), -0.01, 0.01); Assert.InRange(m.V.Max(v => v.Z), 112, 128);
+        var chair = m.V.Where(v => v.X < 20 && v.Z > 70).ToList(); Assert.NotEmpty(chair); // Sessellehne über der Sitzhöhe
+        Assert.True(chair.Average(v => v.Y) > 15, "Lehne muss hinten (+Y) stehen, Front zum Betrachter");
+        Assert.True(Enumerable.Range(0, m.Triangles).Select(t => (m.R[t], m.G[t], m.B[t])).Distinct().Count() >= 4);
+        Assert.True(m.Triangles > 3000);
+        var f = Path.Combine(Path.GetTempPath(), $"trendo-t0282-{Guid.NewGuid():N}.glb");
+        try { XrSample.Write(f); var d = XrPlus.Detail(f); Assert.InRange(d.SizeY, 1.12, 1.28); } // glTF: Y ist die Höhe
+        finally { File.Delete(f); }
+    }
+}

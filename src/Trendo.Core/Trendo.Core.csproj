@@ -18,5 +18,6 @@
     <EmbeddedResource Include="WebAssets\seite.js" />
     <EmbeddedResource Include="WebAssets\LIZENZEN.txt" />
     <EmbeddedResource Include="WebAssets\THREE-LICENSE.txt" />
+    <EmbeddedResource Include="..\Trendo.App\Assets\moebel\sessel.glb;..\Trendo.App\Assets\moebel\pflanze.glb;..\Trendo.App\Assets\moebel\teppich.glb" LogicalName="Trendo.Core.Moebel.%(Filename).glb" />
   </ItemGroup>
 </Project>
