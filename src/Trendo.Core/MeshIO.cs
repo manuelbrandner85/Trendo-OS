@@ -441,15 +441,11 @@ public static partial class Mesh3D
         }
         var m = Gray();
         if (!root.TryGetProperty("meshes", out var meshes)) return m;
-        var mi = 0;
+        var mi = 0; var placed = MeshInstances(root);
         foreach (var mesh in meshes.EnumerateArray())
         {
-            if (!mesh.TryGetProperty("primitives", out var prims)) continue;
-            double[]? matrix = null;
-            if (root.TryGetProperty("nodes", out var nodes))
-                foreach (var node in nodes.EnumerateArray())
-                    if (node.TryGetProperty("mesh", out var nm) && nm.GetInt32() == mi && node.TryGetProperty("matrix", out var mat) && mat.GetArrayLength() == 16)
-                        matrix = mat.EnumerateArray().Select(x => x.GetDouble()).ToArray();
+            if (!mesh.TryGetProperty("primitives", out var prims)) { mi++; continue; }
+            foreach (var matrix in placed.TryGetValue(mi, out var list) ? list : [null])
             foreach (var prim in prims.EnumerateArray())
             {
                 if (prim.TryGetProperty("mode", out var mode) && mode.GetInt32() != 4)
@@ -532,6 +528,60 @@ public static partial class Mesh3D
     // Drehung um die X-Achse (Determinante +1): Umlaufsinn der Dreiecke und Normalen bleiben richtig.
     static Vec3 ToGltf(Vec3 v) => new(v.X, v.Z, -v.Y);
     static Vec3 FromGltf(Vec3 v) => new(v.X, -v.Z, v.Y);
+
+    /// <summary>T-0278: Szenengraph auswerten – jede Stelle, an der ein Netz steht, mit Weltmatrix (Matrix oder Verschiebung/Drehung/Skalierung,
+    /// über alle Elternknoten). Netze ohne Knoten bleiben unverändert (null).</summary>
+    static Dictionary<int, List<double[]?>> MeshInstances(JsonElement root)
+    {
+        var res = new Dictionary<int, List<double[]?>>();
+        if (!root.TryGetProperty("nodes", out var nodes)) return res;
+        var roots = new List<int>();
+        if (root.TryGetProperty("scenes", out var scenes) && scenes.GetArrayLength() > 0)
+        {
+            var si = root.TryGetProperty("scene", out var sc) ? sc.GetInt32() : 0;
+            if (scenes[Math.Clamp(si, 0, scenes.GetArrayLength() - 1)].TryGetProperty("nodes", out var rn)) roots.AddRange(rn.EnumerateArray().Select(x => x.GetInt32()));
+        }
+        if (roots.Count == 0) // ohne Szene: alle Knoten, die kein Kind sind
+        {
+            var children = nodes.EnumerateArray().SelectMany(n => n.TryGetProperty("children", out var c) ? c.EnumerateArray().Select(x => x.GetInt32()) : []).ToHashSet();
+            roots.AddRange(Enumerable.Range(0, nodes.GetArrayLength()).Where(i => !children.Contains(i)));
+        }
+        void Walk(int i, double[] parent, int depth)
+        {
+            if (depth > 64 || i < 0 || i >= nodes.GetArrayLength()) return;
+            var n = nodes[i]; var world = Mul(parent, Local(n));
+            if (n.TryGetProperty("mesh", out var mesh)) { var k = mesh.GetInt32(); if (!res.TryGetValue(k, out var l)) res[k] = l = []; l.Add(world); }
+            if (n.TryGetProperty("children", out var ch)) foreach (var c in ch.EnumerateArray()) Walk(c.GetInt32(), world, depth + 1);
+        }
+        foreach (var r in roots) Walk(r, Identity(), 0);
+        return res;
+    }
+
+    static double[] Identity() => [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+
+    /// <summary>Lokale Matrix eines Knotens (spaltenweise wie glTF): „matrix“ oder T · R · S.</summary>
+    static double[] Local(JsonElement n)
+    {
+        if (n.TryGetProperty("matrix", out var mat) && mat.GetArrayLength() == 16) return mat.EnumerateArray().Select(x => x.GetDouble()).ToArray();
+        double[] t = [0, 0, 0], r = [0, 0, 0, 1], s = [1, 1, 1];
+        if (n.TryGetProperty("translation", out var te) && te.GetArrayLength() == 3) t = te.EnumerateArray().Select(x => x.GetDouble()).ToArray();
+        if (n.TryGetProperty("rotation", out var re) && re.GetArrayLength() == 4) r = re.EnumerateArray().Select(x => x.GetDouble()).ToArray();
+        if (n.TryGetProperty("scale", out var se) && se.GetArrayLength() == 3) s = se.EnumerateArray().Select(x => x.GetDouble()).ToArray();
+        double x = r[0], y = r[1], z = r[2], w = r[3];
+        double[] rot = [1 - 2 * (y * y + z * z), 2 * (x * y + z * w), 2 * (x * z - y * w), 0,
+                        2 * (x * y - z * w), 1 - 2 * (x * x + z * z), 2 * (y * z + x * w), 0,
+                        2 * (x * z + y * w), 2 * (y * z - x * w), 1 - 2 * (x * x + y * y), 0, 0, 0, 0, 1];
+        for (var c = 0; c < 3; c++) for (var k = 0; k < 3; k++) rot[c * 4 + k] *= s[c];
+        rot[12] = t[0]; rot[13] = t[1]; rot[14] = t[2];
+        return rot;
+    }
+
+    static double[] Mul(double[] a, double[] b)
+    {
+        var m = new double[16];
+        for (var c = 0; c < 4; c++) for (var r = 0; r < 4; r++) { double v = 0; for (var k = 0; k < 4; k++) v += a[k * 4 + r] * b[c * 4 + k]; m[c * 4 + r] = v; }
+        return m;
+    }
 
     static Vec3 Transform(Vec3 v, double[]? matrix)
     {
