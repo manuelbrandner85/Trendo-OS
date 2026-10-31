@@ -214,6 +214,21 @@ else if (shot == "seite")
         if (win.DiskAt?.Children.FirstOrDefault(c => c.IsDir) is { } firstDir) win.DiskSelect(firstDir);
         win.Show("ressourcen");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_GELD") is { Length: > 0 }) // Haushaltsbuch mit Beispielbuchungen (drei Monate)
+    {
+        var m0 = new DateOnly(DateTime.Today.Year, DateTime.Today.Month, 1); var rnd = new Random(3);
+        for (var k = 0; k < 3; k++)
+        {
+            var m = m0.AddMonths(-k);
+            win.Money.Add(new(m, "Arbeitgeber – Gehalt", 2850, "Einnahmen")); win.Money.Add(new(m, "Hausverwaltung – Miete", -890, "Wohnen"));
+            win.Money.Add(new(m.AddDays(2), "Stadtwerke – Abschlag Strom", -78, "Wohnen")); win.Money.Add(new(m.AddDays(14), "Streamingdienst – Abo", -13.99m, "Freizeit"));
+            win.Money.Add(new(m.AddDays(4), "Versicherung – Haftpflicht", -7.50m, "Versicherung")); win.Money.Add(new(m.AddDays(9), "Deutschlandticket", -58, "Mobilität"));
+            foreach (var shop in new[] { "Rewe", "Edeka", "Wochenmarkt", "Bäckerei" }) win.Money.Add(new(m.AddDays(rnd.Next(0, 27)), shop + " – Einkauf", -Math.Round((decimal)(rnd.NextDouble() * 60 + 12), 2), "Lebensmittel"));
+            win.Money.Add(new(m.AddDays(rnd.Next(0, 27)), "Apotheke am Markt", -14.90m, "Gesundheit")); win.Money.Add(new(m.AddDays(rnd.Next(0, 27)), "Kino – Erika Muster", -24, "Freizeit"));
+        }
+        win.Budgets.Set("Lebensmittel", 250); win.Budgets.Set("Freizeit", 60);
+        win.Show("finanzen");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_TV") is { Length: > 0 }) // Programmführer als Raster mit Beispielsendern
     {
         var src = win.Tv.AddSource("Beispiel", "datei", "beispiel.m3u");

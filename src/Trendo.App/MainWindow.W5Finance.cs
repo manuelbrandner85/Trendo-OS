@@ -23,7 +23,7 @@ public partial class MainWindow
     private Control FinanceView()
     {
         var all = Money.All();
-        var sp = new StackPanel { Spacing = 8, Children = { P("Behalte Einnahmen und Ausgaben im Blick – privat wie geschäftlich. Alles bleibt auf diesem PC. Ersetzt keine Steuerberatung."), FinanceOverview(all) } };
+        var sp = new StackPanel { Spacing = 8, Children = { P("Behalte Einnahmen und Ausgaben im Blick – privat wie geschäftlich. Alles bleibt auf diesem PC. Ersetzt keine Steuerberatung."), FinanceOverview(all), HouseholdView() } };
         var date = new TextBox { Name = "fin-date", Text = DateTime.Today.ToString("dd.MM.yyyy"), Width = 110 };
         var text = new TextBox { Name = "fin-text", PlaceholderText = "Wofür?", Width = 220 };
         var amount = new TextBox { Name = "fin-amount", PlaceholderText = "Betrag, z. B. -12,50", Width = 140 };
@@ -41,7 +41,7 @@ public partial class MainWindow
         }, true);
         sp.Children.Add(Card(new StackPanel { Spacing = 5, Children = { H("Neue Buchung", 14), new WrapPanel { Children = { date, text, amount, cat, vat, add } } } }));
         var csv = new TextBox { Name = "fin-csv", PlaceholderText = "Pfad zur Bank-CSV", Width = 340 };
-        sp.Children.Add(Card(new WrapPanel { Children = { P("Kontoauszug als CSV übernehmen  "), csv, Act("fin-import", "Übernehmen", () => FinanceImport(csv.Text?.Trim('"', ' ') ?? "")),
+        sp.Children.Add(Card(new WrapPanel { Children = { P("Kontoauszug als CSV übernehmen  "), csv, Act("fin-import", "Ansehen und übernehmen …", () => HouseholdPreviewImport(csv.Text?.Trim('"', ' ') ?? "")),
             Act("fin-export", "Als CSV speichern", () => { var f = Path.Combine(BusinessFolder, $"Buchungen-{DateTime.Today:yyyy-MM-dd}.csv"); File.WriteAllText(f, Finance.ExportCsv(all), new System.Text.UTF8Encoding(true)); Say("Gespeichert: " + Path.GetFileName(f), "finanzen"); }) } }));
 
         var y = Finance.Year(all, _finYear);
@@ -74,7 +74,6 @@ public partial class MainWindow
         sp.Children.Add(Card(new StackPanel { Spacing = 5, Children = { H("Rechnung schreiben", 14), new WrapPanel { Children = { seller, buyer } }, new WrapPanel { Children = { item, qty, unit } }, small, make } }));
 
         sp.Children.Add(SmallBizCheck("fin-ku"));
-        sp.Children.Add(FinanceTable(all));
         sp.Children.Add(FinanceExtras());
         return BusinessPage("Geld", sp);
     }

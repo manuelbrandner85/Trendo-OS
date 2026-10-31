@@ -10,7 +10,7 @@ public class W5_Spec11_Finance
     {
         var e = Finance.ImportCsv(Bank);
         Assert.Equal(3, e.Count);
-        Assert.Equal(1190m, e[0].Amount); Assert.Equal("Rechnung RE-1; danke", e[0].Text); Assert.Equal("Einnahmen", e[0].Category);
+        Assert.Equal(1190m, e[0].Amount); Assert.Equal("Kunde A – Rechnung RE-1; danke", e[0].Text); Assert.Equal("Adobe Creative Cloud", e[1].Text); // Empfänger vorn, außer er steht schon im Zweck Assert.Equal("Einnahmen", e[0].Category);
         Assert.Equal(-59.49m, e[1].Amount); Assert.Equal("Software", e[1].Category); Assert.Equal("Gebühren", e[2].Category);
         Assert.Equal(1234.5m, Finance.ParseAmount("1,234.50")); Assert.Equal(-3m, Finance.ParseAmount("-3 €"));
         Assert.Throws<InvalidDataException>(() => Finance.ImportCsv("a;b\n1;2"));

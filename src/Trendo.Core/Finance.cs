@@ -51,13 +51,17 @@ public static class Finance
         var h = SplitCsv(lines[hi], sep).Select(x => x.Trim().ToLowerInvariant()).ToArray();
         int Col(params string[] names) { foreach (var n in names) { var k = Array.FindIndex(h, x => x.Contains(n)); if (k >= 0) return k; } return -1; }
         int cd = Col("buchungstag", "datum", "date"), ca = Col("betrag", "amount"), ct = Col("verwendungszweck", "beschreibung", "text", "empfänger", "name", "description");
+        // Empfänger/Auftraggeber eigens (T-0301): erst er sagt, wofür das Geld war („Stadtwerke – Abschlag“ statt nur „Abschlag“)
+        var cp = Col("empfänger", "auftraggeber", "begünstigter", "beguenstigter", "zahlungspflichtiger", "payee", "name"); if (cp == ct) cp = -1;
         var res = new List<Entry>();
         foreach (var l in lines.Skip(hi + 1))
         {
             var f = SplitCsv(l, sep); if (f.Length <= Math.Max(cd, ca)) continue;
             if (!DateOnly.TryParse(f[cd].Trim(), De, out var d) && !DateOnly.TryParse(f[cd].Trim(), CultureInfo.InvariantCulture, out d)) continue;
             decimal a; try { a = ParseAmount(f[ca]); } catch (FormatException) { continue; }
-            res.Add(new(d, ct >= 0 && ct < f.Length ? f[ct].Trim() : "", a, a > 0 ? "Einnahmen" : Guess(ct >= 0 && ct < f.Length ? f[ct] : "")));
+            var purpose = ct >= 0 && ct < f.Length ? f[ct].Trim() : ""; var payee = cp >= 0 && cp < f.Length ? f[cp].Trim() : "";
+            var text = payee.Length == 0 ? purpose : purpose.Length == 0 || purpose.StartsWith(payee, StringComparison.OrdinalIgnoreCase) ? (purpose.Length == 0 ? payee : purpose) : payee + " – " + purpose;
+            res.Add(new(d, text, a, a > 0 ? "Einnahmen" : Guess(text)));
         }
         return res;
     }
@@ -142,6 +146,8 @@ public sealed class Ledger(string dataRoot)
         foreach (var x in e) if (keys.Add((x.Date, x.Amount, x.Text))) { a.Add(x); n++; }
         Save(a); return n;
     }
+    /// <summary>Eine Buchung ändern (Index wie in <see cref="All"/>); Rückgabe ist die alte Fassung.</summary>
+    public Entry Replace(int i, Entry e) { var a = All(); if (i < 0 || i >= a.Count) throw new ArgumentException("Diese Buchung gibt es nicht."); var old = a[i]; a[i] = e; Save(a); return old; }
     public void RemoveAt(int i) { var a = All(); if (i >= 0 && i < a.Count) { a.RemoveAt(i); Save(a); } }
 
     public const string ReversalPrefix = "Storno: ";

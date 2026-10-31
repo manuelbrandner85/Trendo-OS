@@ -106,6 +106,9 @@ public sealed class CategoryMemory(string dataRoot)
         var k = Key(text); if (k.Length == 0) return;
         var d = Load(); d[k] = category; Directory.CreateDirectory(Path.GetDirectoryName(F)!); File.WriteAllText(F, JsonSerializer.Serialize(d));
     }
+    /// <summary>Alle gelernten Zuordnungen (Stichwort → Kategorie), alphabetisch.</summary>
+    public IReadOnlyList<(string Key, string Category)> All() => Load().OrderBy(p => p.Key, StringComparer.CurrentCultureIgnoreCase).Select(p => (p.Key, p.Value)).ToList();
+    public void Forget(string key) { var d = Load(); if (d.Remove(key)) File.WriteAllText(F, JsonSerializer.Serialize(d)); }
     /// <summary>Gleicher Anfang reicht: „Wochenmarkt“ gelernt passt auch zu „Wochenmarkt Samstag“; der längste gelernte Schlüssel gewinnt.</summary>
     public string? Lookup(string text)
     {
