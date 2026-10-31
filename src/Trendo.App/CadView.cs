@@ -85,7 +85,7 @@ public sealed class CadView : Control
         var faces = new List<(double D, Point[] Pts, IBrush Fill, bool Sel, List<(Point, Point)> Edges)>();
         foreach (var (color, solid, sel) in Parts)
         {
-            var sharp = SharpEdges(solid);
+            var sharp = solid.Smooth ? [] : SharpEdges(solid);
             var baseCol = Color.TryParse(color, out var bc) ? bc : Color.Parse("#2F86F6");
             foreach (var poly in solid.Polys)
             {

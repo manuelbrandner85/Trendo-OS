@@ -328,11 +328,11 @@ public static class PlanDrawing
 
     // ---------- OBJ (3D-Modell für Blender, SketchUp & Co.) ----------
     /// <summary>T-0257: alle Geschosse als OBJ mit Materialdatei (Farben); Einheit Meter, z nach oben wird y (OBJ-Konvention).</summary>
-    public static (string Obj, string Mtl) Obj(IReadOnlyList<FloorPlan> levels, string mtlName)
+    public static (string Obj, string Mtl) Obj(IReadOnlyList<FloorPlan> levels, string mtlName, Func<string, Mesh?>? model = null)
     {
         var obj = new StringBuilder($"# Trendo Grundriss\nmtllib {mtlName}\n"); var mtl = new StringBuilder("# Trendo Grundriss\n");
         var colors = new Dictionary<string, string>(); var v = 0; var part = 0;
-        foreach (var (color, solid, _) in Plan3D.BuildAll(levels))
+        foreach (var (color, solid, _) in Plan3D.BuildAll(levels, model))
         {
             if (!colors.TryGetValue(color, out var mat))
             {

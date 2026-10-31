@@ -5,6 +5,8 @@ namespace Trendo.Core.Cad;
 public sealed class Solid
 {
     public List<Poly> Polys { get; } = [];
+    /// <summary>T-0280: Teil eines weichen Modells (Möbel aus Blender) – Anzeige ohne Kantenlinien.</summary>
+    public bool Smooth { get; init; }
     public Solid() { }
     public Solid(IEnumerable<Poly> polys) => Polys.AddRange(polys);
     public Solid Clone() => new(Polys.Select(p => p.Clone()));

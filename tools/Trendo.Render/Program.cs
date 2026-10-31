@@ -142,6 +142,17 @@ else if (shot == "seite")
         if (arch.Contains("bogen")) win.ArchEdit("Beispiel", pl => { pl.North = 30; var g = pl.AddArcWall(860, 100, 860, 600, -150); win.ArchState.Selected = pl.ArcWalls(g)[0].Id; });
         if (arch.Contains("3d")) win.ArchToggle3D();
         win.Show(page);
+        if (arch.Contains("foto")) // Foto-Ansicht: echtes Blender (Cycles) im Hintergrund
+        {
+            win.ArchPhotoToggle(); win.ArchPhotoMode = arch.Contains("raum") ? "raum" : "vogel"; win.ArchPhotoFinal = arch.Contains("fertig");
+            var t = win.ArchPhotoRender(); for (var i = 0; i < 6000 && !t.IsCompleted; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(50); }
+            win.Show(page);
+        }
+        if (arch.Contains("nah")) // Nahansicht der 3D-Möbel
+        {
+            Pump(); var cv = Avalonia.VisualTree.VisualExtensions.GetVisualDescendants(win).OfType<CadView>().FirstOrDefault(c => c.Name == "arch-3d");
+            if (cv is not null) { cv.Zoom = 2.4; cv.Pitch = 48; cv.Yaw = 25; cv.InvalidateVisual(); }
+        }
     }
     if (page == "elektronik" && Environment.GetEnvironmentVariable("TRENDO_EK") is { Length: > 0 } ek) // Schaltung: Bauteil wählen, Simulation laufen lassen
     {

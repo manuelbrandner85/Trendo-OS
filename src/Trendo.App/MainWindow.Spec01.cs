@@ -50,7 +50,8 @@ public partial class MainWindow
         Ribbon =
         [
             ("Ansicht", [
-                new ProgramCmd("arch-2d3d", "2D / 3D", _ => _arch3D = !_arch3D, false, "Zwischen Grundriss und 3D-Modell wechseln"),
+                new ProgramCmd("arch-2d3d", "2D / 3D", _ => { _arch3D = !_arch3D; _archPhoto = false; }, false, "Zwischen Grundriss und 3D-Modell wechseln"),
+                new ProgramCmd("arch-photo", "Foto", _ => _archPhoto = !_archPhoto, false, "Fotorealistische Ansicht mit Blender (Sonne, Materialien, Möbel)"),
                 new ProgramCmd("arch-fit", "Einpassen", _ => { ArchState.Fitted = false; ArchState.UserView = false; }, false, "Ganzen Plan zeigen"),
                 new ProgramCmd("arch-grid", "Raster", _ => ArchState.Grid = !ArchState.Grid, false, "10-cm-Raster und Fang an/aus"),
                 new ProgramCmd("arch-dims", "Maße", _ => ArchState.Dims = !ArchState.Dims, false, "Wandmaße zeigen/ausblenden"),
@@ -65,7 +66,7 @@ public partial class MainWindow
             new("svg", "SVG", ".svg", (d, f) => { File.WriteAllText(f, PlanDrawing.Svg(FloorPlan.From(d.Data))); return f; }),
             new("dxf", "DXF (CAD)", ".dxf", (d, f) => { File.WriteAllText(f, PlanDrawing.Dxf(FloorPlan.From(d.Data))); return f; }),
             new("raumbuch", "Raumbuch (CSV)", ".csv", (d, f) => { File.WriteAllText(f, PlanDrawing.RoomBookCsv(FloorPlan.Levels(d.Data)), new System.Text.UTF8Encoding(true)); return f; }),
-            new("obj", "3D (OBJ)", ".obj", (d, f) => { var mtl = Path.ChangeExtension(f, ".mtl"); var (obj, m) = PlanDrawing.Obj(FloorPlan.Levels(d.Data), Path.GetFileName(mtl)); File.WriteAllText(mtl, m); File.WriteAllText(f, obj); return f; }),
+            new("obj", "3D (OBJ)", ".obj", (d, f) => { var mtl = Path.ChangeExtension(f, ".mtl"); var full = new Dictionary<string, Mesh?>(); var (obj, m) = PlanDrawing.Obj(FloorPlan.Levels(d.Data), Path.GetFileName(mtl), t => full.TryGetValue(t, out var x) ? x : full[t] = PlanModelFile(t) is { } mf ? Mesh3D.ReadMeshFile(mf) : null); File.WriteAllText(mtl, m); File.WriteAllText(f, obj); return f; }),
             new("material", "Materialliste", ".md", (d, f) => { File.WriteAllText(f, PlanDrawing.MaterialList(FloorPlan.From(d.Data))); return f; }),
         ],
         Workspace = ArchWorkspace,
@@ -145,8 +146,10 @@ public partial class MainWindow
 
         var levels = FloorPlan.Levels(d.Data); var active = FloorPlan.ActiveLevel(d.Data);
         Control view;
-        if (_arch3D)
-            view = new CadView { Name = "arch-3d", MinHeight = 160, Parts = Plan3D.BuildAll(levels).Select(x => (x.Color, x.Solid, x.Id is not null && x.Id == ArchState.Selected)).ToList() };
+        if (_archPhoto)
+            view = ArchPhotoView(d);
+        else if (_arch3D)
+            view = new CadView { Name = "arch-3d", MinHeight = 160, Parts = Plan3D.BuildAll(levels, PlanModel).Select(x => (x.Color, x.Solid, x.Id is not null && x.Id == ArchState.Selected)).ToList() };
         else
         {
             var below = levels.Where(l => l.Elevation < plan.Elevation).OrderByDescending(l => l.Elevation).FirstOrDefault();
@@ -334,6 +337,21 @@ public partial class MainWindow
                 }
                 sp.Children.Add(wrap);
             }
+            // T-0280: eigene Modelle aus der 3D-Bibliothek (Poly Haven, eigene Dateien) mit Maßen aus dem Modell
+            var models = PlanLibraryTypes();
+            sp.Children.Add(P("Aus der 3D-Bibliothek", null, 11));
+            if (models.Count == 0) sp.Children.Add(P("Noch keine Modelle – in der 3D-Bibliothek (Modell-Prüfer) suchen und laden.", Muted, 11));
+            var lw = new WrapPanel();
+            for (var k = 0; k < models.Count; k++)
+            {
+                var ft = models[k]; var on = ArchState.ItemType == ft.Type;
+                var b = new Button { Name = "arch-bib-" + k, Content = ft.Name, FontSize = 11.5, Padding = new Thickness(8, 4), Margin = new Thickness(0, 0, 4, 4), Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text, BorderBrush = Edge, BorderThickness = new Thickness(1) };
+                ToolTip.SetTip(b, $"{ft.W:0} × {ft.D:0} cm, Höhe {ft.H:0} cm");
+                b.Click += (_, _) => { ArchState.ItemType = ft.Type; Show(AK); };
+                lw.Children.Add(b);
+            }
+            sp.Children.Add(lw);
+            sp.Children.Add(Act2("arch-bib-open", "3D-Bibliothek öffnen", () => Show(BIB)));
         }
         else
         {

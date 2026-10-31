@@ -100,7 +100,7 @@ public static partial class Mesh3D
             var na = Acc(nv, norm.Count / 3, "VEC3", 5126);
             var ia = Acc(iv, idx.Count, "SCALAR", 5125);
             var mi = materials.Count;
-            materials.Add("{\"pbrMetallicRoughness\":{\"baseColorFactor\":[" + F(key.R / 255.0) + "," + F(key.G / 255.0) + "," + F(key.B / 255.0) + ",1],\"metallicFactor\":0.05,\"roughnessFactor\":0.6},\"name\":\"Farbe\"}");
+            materials.Add("{\"pbrMetallicRoughness\":{\"baseColorFactor\":[" + F(ToLinear(key.R)) + "," + F(ToLinear(key.G)) + "," + F(ToLinear(key.B)) + ",1],\"metallicFactor\":0.05,\"roughnessFactor\":0.6},\"name\":\"Farbe\"}");
             primitives.Add("{\"attributes\":{\"POSITION\":" + pa + ",\"NORMAL\":" + na + "},\"indices\":" + ia + ",\"material\":" + mi + ",\"mode\":4}");
         }
         while (bin.Length % 4 != 0) bw.Write((byte)0x20);
@@ -518,11 +518,15 @@ public static partial class Mesh3D
         try
         {
             var f = materials[mat.GetInt32()].GetProperty("pbrMetallicRoughness").GetProperty("baseColorFactor");
-            byte C(int i) => (byte)Math.Clamp((int)Math.Round(f[i].GetDouble() * 255), 0, 255);
+            byte C(int i) => ToSrgb(f[i].GetDouble());
             return (C(0), C(1), C(2));
         }
         catch { return (0xB7, 0xBC, 0xC4); }
     }
+
+    // T-0280: glTF speichert baseColorFactor linear, Trendo zeigt Bildschirmfarben (sRGB) – ohne Umrechnung wird z. B. Anthrazit schwarz.
+    static double ToLinear(byte c) { var v = c / 255.0; return v <= 0.04045 ? v / 12.92 : Math.Pow((v + 0.055) / 1.055, 2.4); }
+    static byte ToSrgb(double v) { v = Math.Clamp(v, 0, 1); var s = v <= 0.0031308 ? v * 12.92 : 1.055 * Math.Pow(v, 1 / 2.4) - 0.055; return (byte)Math.Clamp((int)Math.Round(s * 255), 0, 255); }
 
     // T-0242: Trendo arbeitet mit Z oben (Zentimeter), glTF verlangt Y oben (Meter) – sonst liegen Modelle in Blender, Unreal und im Web gekippt.
     // Drehung um die X-Achse (Determinante +1): Umlaufsinn der Dreiecke und Normalen bleiben richtig.

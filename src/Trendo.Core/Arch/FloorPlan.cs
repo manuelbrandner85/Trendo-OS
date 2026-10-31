@@ -788,7 +788,11 @@ public static class FurnitureCatalog
         new("schreibtisch", "Schreibtisch", "Arbeiten", 140, 70, 75), new("buerostuhl", "Bürostuhl", "Arbeiten", 60, 60, 110),
         new("treppe", "Treppe (gerade)", "Bau", 100, 280, 275),
     ];
-    public static FurnitureType? Get(string type) => All.FirstOrDefault(x => x.Type == type);
+    public static FurnitureType? Get(string type) => All.FirstOrDefault(x => x.Type == type) ?? (Extra.TryGetValue(type, out var e) ? e : null);
+
+    /// <summary>T-0280: zusätzliche Möbel aus der 3D-Bibliothek (Typ „bib:Quelle/Id“, Maße aus dem Modell) – werden von der App eingetragen.</summary>
+    static readonly System.Collections.Concurrent.ConcurrentDictionary<string, FurnitureType> Extra = new();
+    public static void Register(FurnitureType f) => Extra[f.Type] = f;
 }
 
 /// <summary>Kleine 2D-Geometrie für den Grundriss.</summary>
