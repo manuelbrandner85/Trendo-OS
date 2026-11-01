@@ -90,7 +90,7 @@ public class Claude_Ui
         finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeRunOverride = null; MainWindow.ClaudeOpenOverride = null; }
     }
 
-    [AvaloniaFact(DisplayName = "T-0316: Code-Studio – „In Claude Code öffnen“ in der Auftragsleiste nimmt Auftrag und Studio-Rolle mit; ohne Claude Code kein Knopf")]
+    [AvaloniaFact(DisplayName = "T-0316: Studio – „Claude Code“ immer in der Auftragsleiste; „Im eigenen Fenster“ öffnet Claude Code mit der Rolle des Studios")]
     public async Task Open_from_code_studio()
     {
         var (w, _, _) = Ui.Open();
@@ -100,18 +100,16 @@ public class Claude_Ui
         {
             MainWindow.ClaudeStatusOverride = () => St(false, false); await Run(w.ClaudeCheck(true));
             w.Show("baukasten"); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            Assert.Null(w.TryFind<Button>("auftrag-claude"));
+            Assert.NotNull(w.TryFind<Button>("auftrag-claude")); // auch ohne Claude – dann mit „einrichten“
             MainWindow.ClaudeStatusOverride = () => St(true, true); await Run(w.ClaudeCheck(true));
             w.Show("start"); w.Show("baukasten"); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
             w.Find<TextBox>("auftrag-prompt").Text = "Baue eine Kontaktseite mit Formular";
             w.Find<Button>("auftrag-claude").Press();
+            w.Find<Button>("claude-dock-window").Press();
             var args = opened!.Value.Args.ToList();
-            Assert.Equal("Baue eine Kontaktseite mit Formular", args[^1]);
             Assert.Contains("Apps zusammenklicken", args[args.IndexOf("--append-system-prompt") + 1]);
-            w.Show("ki-fragen"); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            Assert.DoesNotContain(Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(w.ActivePageRoot!).OfType<Button>(), b => b.Name == "auftrag-claude"); // nur wo programmiert wird (Baukasten-Fenster bleibt daneben offen)
         }
-        finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeOpenOverride = null; }
+        finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeOpenOverride = null; w.Close(); }
     }
 
     [AvaloniaFact(DisplayName = "T-0316: Claude als Haupt-KI – Frage läuft eingegrenzt über Claude (kein Datei-Ändern), Antwort mit Quelle „Claude (dein Abo)“; Haupt-KI aus → Claude wird nicht gefragt")]

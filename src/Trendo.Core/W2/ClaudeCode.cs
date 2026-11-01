@@ -57,6 +57,23 @@ public static partial class ClaudeCode
     /// <summary>Abo-Token aus <c>claude setup-token</c> (optional) – Claude Code liest ihn aus dieser Variablen; abgerechnet wird über das Abo.</summary>
     public const string TokenVariable = "CLAUDE_CODE_OAUTH_TOKEN";
 
+    /// <summary>Umgebung für Claude Code im Terminal von Trendo: Variablen der kostenpflichtigen API leer (gelten dann als nicht gesetzt – nur Abo),
+    /// ein gespeicherter Abo-Token als <see cref="TokenVariable"/>, sonst ebenfalls leer.</summary>
+    public static Dictionary<string, string> TerminalEnvironment(string? aboToken)
+    {
+        var env = ApiVariables.ToDictionary(v => v, _ => "");
+        env[TokenVariable] = aboToken is { Length: > 0 } t && LooksLikeAboToken(t) ? t : "";
+        return env;
+    }
+
+    /// <summary>Skript für claude.ai: Text ins Eingabefeld schreiben (nicht absenden). Der Text ist als JSON-Zeichenkette sicher eingebettet.</summary>
+    public static string WebInsertScript(string text) =>
+        "(()=>{const t=" + System.Text.Json.JsonSerializer.Serialize(text.Trim()) + ";const e=document.querySelector('div[contenteditable=\\\"true\\\"]')||document.querySelector('textarea');" +
+        "if(!e)return 'kein Eingabefeld';e.focus();if(e.tagName==='TEXTAREA'){e.value=t;e.dispatchEvent(new Event('input',{bubbles:true}));}else{document.execCommand('insertText',false,t);}return 'ok';})()";
+
+    /// <summary>Auftrag als eine Eingabezeile (Zeilenumbrüche würden in Claude Code sofort absenden).</summary>
+    public static string OneLine(string text) => System.Text.RegularExpressions.Regex.Replace(text.Trim(), @"\s*[\r\n]+\s*", " ");
+
     /// <summary>Sieht ein eingefügter Text wie ein Abo-Token von <c>claude setup-token</c> aus (nicht wie ein API-Schlüssel)?</summary>
     public static bool LooksLikeAboToken(string t) => Regex.IsMatch(t.Trim(), @"^sk-ant-oat\d{2}-[A-Za-z0-9_-]{20,}$");
     public static bool LooksLikeApiKey(string t) => t.Trim().StartsWith("sk-ant-api", StringComparison.Ordinal);

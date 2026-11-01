@@ -78,10 +78,10 @@ public partial class MainWindow
         if (_deskHost.Children.Count == 0) _deskHost.Children.Add(SafeView("start"));
         var content = SafeView(key);
         var (win, closed) = Windows.Open(_backWindow ?? TargetWindow(key), key, PresentTitle(key), back: _backWindow is not null);
-        if (closed is not null && _frames.Remove(closed.Id, out var old)) { DetachFrame(old.Frame); _windowStudio.Remove(closed.Id); }
+        if (closed is not null && _frames.Remove(closed.Id, out var old)) { DetachFrame(old.Frame); _windowStudio.Remove(closed.Id); ClaudeDockWindowClosed(closed.Id); }
         if (StudioKeyFor(key) is { } sid) _windowStudio[win.Id] = sid;
         if (!_frames.TryGetValue(win.Id, out var fr)) { fr = MakeFrame(win); _frames[win.Id] = fr; _winCanvas.Children.Add(fr.Frame); }
-        fr.Title.Text = win.Title; ((DeskFrame)fr.Frame).WindowTitle = win.Title; fr.Body.Content = content;
+        fr.Title.Text = win.Title; ((DeskFrame)fr.Frame).WindowTitle = win.Title; fr.Body.Content = WithClaudeDock(win.Id, content);
         if (fr.Frame.GetLogicalDescendants().OfType<ContentControl>().FirstOrDefault(c => c.Name == "win-icon-" + win.Id) is { } icon)
             icon.Content = IconFor(_windowStudio.TryGetValue(win.Id, out var ws) ? ws : ModuleOf(key), 16);
         RenderWindows();
@@ -230,7 +230,7 @@ public partial class MainWindow
     public void FocusWindow(string id) { if (Windows.Get(id) is null || Windows.Active?.Id == id) return; Windows.Activate(id); AfterWindowChange(); }
     public void CloseWindow(string id)
     {
-        Windows.Close(id);
+        Windows.Close(id); ClaudeDockWindowClosed(id);
         _windowStudio.Remove(id);
         if (_frames.Remove(id, out var f)) DetachFrame(f.Frame);
         _backButtons.Remove(id);

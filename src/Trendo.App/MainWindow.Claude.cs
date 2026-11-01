@@ -12,6 +12,7 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     ClaudeCode.Status _claude = ClaudeCode.Status.Missing; DateTime _claudeAt = DateTime.MinValue; string _claudeMsg = "";
+    public string ClaudeMessage => _claudeMsg;
     public ClaudeCode.Status ClaudeState => _claude;
     /// <summary>Eingebettete Abo-Nutzung (Haupt-KI, Läufe im Hintergrund) erst nach Freigabe durch Anthropic – siehe <see cref="ClaudeCode.EmbeddingApproved"/>. Für Tests umschaltbar.</summary>
     public static bool ClaudeEmbedApproved { get; set; } = ClaudeCode.EmbeddingApproved;

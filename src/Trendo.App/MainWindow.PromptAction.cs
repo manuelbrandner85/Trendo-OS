@@ -371,8 +371,11 @@ public partial class MainWindow
             add.Click += (_, _) => OpenAddHubFor(studio);
             buttons.Children.Add(add);
         }
-        // T-0316: wo programmiert wird – echtes Claude Code im Projektordner öffnen, mit dem eingetippten Auftrag
-        if (CodeStudios.Contains(studio) && ClaudeOpenButton("auftrag-claude", () => ClaudeFolderFor(studio), () => box.Text, studio) is { } cc) { cc.Height = 32; buttons.Children.Add(cc); }
+        // Wunsch 01.11.2026: in jedem Studio – dein echtes Claude Code rechts im Studio-Fenster, im Projektordner, mit dem eingetippten Auftrag
+        var cc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } aw && ClaudeDockOpen(aw) ? "Claude Code ✕" : "✳ Claude Code", Height = 32 };
+        ToolTip.SetTip(cc, "Dein Claude Code (mit deinem Abo) rechts in diesem Fenster öffnen – im Projektordner, mit Rolle und Skills dieses Studios");
+        cc.Click += (_, _) => ClaudeDockToggle(studio, box.Text);
+        buttons.Children.Add(cc);
         var spark = new TextBlock { Text = "✨", FontSize = 16, VerticalAlignment = VerticalAlignment.Center, Margin = new Avalonia.Thickness(4, 0, 0, 0) };
         ToolTip.SetTip(spark, "Sag der Trendo KI in deinen Worten, was dieses Studio für dich tun soll.");
         box.MaxHeight = 64; box.MinHeight = 34;

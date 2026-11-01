@@ -120,4 +120,16 @@ public class ClaudeCodeTests
         }
         finally { foreach (var d in new[] { root, store }) if (Directory.Exists(d)) Directory.Delete(d, true); }
     }
+
+    [Fact(DisplayName = "Claude im Studio-Terminal: API-Variablen leer (nur Abo), Abo-Token nur wenn gültig, kein API-Schlüssel; Auftrag als eine Zeile")]
+    public void Terminal_environment()
+    {
+        var e = ClaudeCode.TerminalEnvironment(null);
+        Assert.All(ClaudeCode.ApiVariables, v => Assert.Equal("", e[v]));
+        Assert.Equal("", e[ClaudeCode.TokenVariable]);
+        var tok = "sk-ant-oat01-" + new string('a', 30);
+        Assert.Equal(tok, ClaudeCode.TerminalEnvironment(tok)[ClaudeCode.TokenVariable]);
+        Assert.Equal("", ClaudeCode.TerminalEnvironment("sk-ant-api03-xyz")[ClaudeCode.TokenVariable]);
+        Assert.Equal("Baue eine Seite mit Kontakt und Preisen", ClaudeCode.OneLine("  Baue eine Seite\r\n  mit Kontakt\nund Preisen  "));
+    }
 }
