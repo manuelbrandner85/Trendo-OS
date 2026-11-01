@@ -18,7 +18,7 @@ public partial class MainWindow
     sealed class ClaudeDock
     {
         public required Border Panel; public TerminalControl? Term; public required string Folder; public string? Studio; public Grid? Split; public ContentControl? PageHost;
-        public string Tab = "code"; public Border CodeHost = new(); public Border? WebPane; public NativeWebView? Web; public string WebUrl = "";
+        public string Tab = "code"; public Border CodeHost = new(); public Border? WebPane; public Border? AgentPane; public NativeWebView? Web; public string WebUrl = "";
     }
     readonly Dictionary<string, ClaudeDock> _claudeDocks = [];
     /// <summary>Für Tests: statt Claude Code dieses Programm im Terminal starten (Programm, Argumente). Im Testmodus startet sonst nichts.</summary>
@@ -74,7 +74,7 @@ public partial class MainWindow
     {
         var head = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Margin = new Thickness(10, 8, 10, 4) };
         var tabs = new StackPanel { Name = "claude-tabs", Orientation = Orientation.Horizontal, Spacing = 4 };
-        foreach (var (k, l, tip) in new[] { ("code", "✳ Claude Code", "Dein Claude Code auf diesem PC – arbeitet direkt in den Trendo-Projektordnern"), ("web", "Claude", "claude.ai mit deinem Abo – Chat, Bilder, Recherche und Claude Code im Web (GitHub-Projekte)") })
+        foreach (var (k, l, tip) in new[] { ("code", "✳ Claude Code", "Dein Claude Code auf diesem PC – arbeitet direkt in den Trendo-Projektordnern"), ("web", "Claude", "claude.ai mit deinem Abo – Chat, Bilder, Recherche und Claude Code im Web (GitHub-Projekte)"), ("agent", "Trendo-Agent", "Arbeitet wie Claude Code mit der KI, die Trendo hat – auch ohne Abo: Wunsch eintippen, „Los“, am Ende nur Ja oder Nein") })
         {
             var tab = k;
             var b = new Button { Name = "claude-tab-" + k, Content = l, Padding = new Thickness(12, 4), CornerRadius = new CornerRadius(12), Foreground = Text, BorderBrush = Edge, BorderThickness = new Thickness(1) };
@@ -88,15 +88,17 @@ public partial class MainWindow
         head.Children.Add(tabs); head.Children.Add(Pos(where, 1)); head.Children.Add(Pos(close, 2));
         DockPanel.SetDock(head, Avalonia.Controls.Dock.Top);
         dock.WebPane = new Border { Name = "claude-web-pane", IsVisible = false };
-        dock.Panel.Child = new DockPanel { Children = { head, new Grid { Children = { dock.CodeHost, dock.WebPane } } } };
+        dock.AgentPane = new Border { Name = "claude-agent-pane", IsVisible = false };
+        dock.Panel.Child = new DockPanel { Children = { head, new Grid { Children = { dock.CodeHost, dock.WebPane, dock.AgentPane } } } };
         ClaudeDockShowTab(dock, dock.Tab);
     }
 
     void ClaudeDockShowTab(ClaudeDock dock, string tab)
     {
         dock.Tab = tab;
-        dock.CodeHost.IsVisible = tab == "code"; dock.WebPane!.IsVisible = tab == "web";
-        if (tab == "web" && dock.Web is null) BuildWeb(dock);
+        dock.CodeHost.IsVisible = tab == "code"; dock.WebPane!.IsVisible = tab == "web"; dock.AgentPane!.IsVisible = tab == "agent";
+        if (tab == "web" && dock.Web is null && dock.WebPane.Child is null) BuildWeb(dock);
+        if (tab == "agent" && dock.AgentPane.Child is null) BuildAgentPane(dock);
         if (dock.Panel.Child is DockPanel dp && dp.Children.OfType<Grid>().FirstOrDefault()?.Children.OfType<StackPanel>().FirstOrDefault(c => c.Name == "claude-tabs") is { } tabs)
             foreach (var b in tabs.Children.OfType<Button>()) b.Background = b.Name == "claude-tab-" + tab ? Accent : Brushes.Transparent;
         if (tab == "web") _core.Audit.Append(Principal.LocalOwner.Name, "claude.web", dock.Studio ?? "");
