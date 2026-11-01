@@ -7,6 +7,7 @@ Automatisch erzeugt aus project.assets.json (alle Projekte, auch indirekte Paket
 | Avalonia | 12.1.4 | MIT |
 | Avalonia.Angle.Windows.Natives | 2.1.27548.20260419 | Lizenzdatei im Paket: LICENSE |
 | Avalonia.BuildServices | 11.3.2 | MIT |
+| Avalonia.Controls.WebView | 12.1.1 | MIT |
 | Avalonia.Desktop | 12.1.4 | MIT |
 | Avalonia.Fonts.Inter | 12.1.4 | MIT |
 | Avalonia.FreeDesktop | 12.1.4 | MIT |
@@ -21,19 +22,23 @@ Automatisch erzeugt aus project.assets.json (alle Projekte, auch indirekte Paket
 | bblanchon.PDFium.Linux | 147.0.7690 | Apache-2.0 |
 | bblanchon.PDFium.macOS | 147.0.7690 | Apache-2.0 |
 | bblanchon.PDFium.Win32 | 147.0.7690 | Apache-2.0 |
-| HarfBuzzSharp | 8.3.1.3 | MIT |
+| HarfBuzzSharp | 8.3.1.5 | MIT |
 | HarfBuzzSharp.NativeAssets.Linux | 8.3.1.3 | MIT |
-| HarfBuzzSharp.NativeAssets.macOS | 8.3.1.3 | MIT |
+| HarfBuzzSharp.NativeAssets.macOS | 8.3.1.5 | MIT |
 | HarfBuzzSharp.NativeAssets.WebAssembly | 8.3.1.3 | MIT |
-| HarfBuzzSharp.NativeAssets.Win32 | 8.3.1.3 | MIT |
+| HarfBuzzSharp.NativeAssets.Win32 | 8.3.1.5 | MIT |
+| Iciclecreek.Avalonia.Terminal | 4.1.2 | MIT |
 | MicroCom.Runtime | 0.11.6 | MIT |
 | Microsoft.Data.Sqlite | 10.0.14 | MIT |
 | Microsoft.Data.Sqlite.Core | 10.0.14 | MIT |
 | Microsoft.Extensions.DependencyInjection.Abstractions | 8.0.2 | MIT |
 | Microsoft.Extensions.Logging.Abstractions | 8.0.3 | MIT |
+| Microsoft.Windows.Console.ConPTY | 1.24.260710001 | MIT |
 | PDFsharp | 6.2.4 | MIT |
 | PDFtoImage | 5.2.1 | MIT |
+| Porta.Pty | 2.2.3 | MIT |
 | SkiaSharp | 3.119.4 | MIT |
+| SkiaSharp.HarfBuzz | 3.119.4 | MIT |
 | SkiaSharp.NativeAssets.Linux | 3.119.4 | MIT |
 | SkiaSharp.NativeAssets.Linux.NoDependencies | 3.119.2 | MIT |
 | SkiaSharp.NativeAssets.macOS | 3.119.4 | MIT |
@@ -45,6 +50,9 @@ Automatisch erzeugt aus project.assets.json (alle Projekte, auch indirekte Paket
 | SQLitePCLRaw.provider.e_sqlite3 | 2.1.13 | Apache-2.0 |
 | System.Security.Cryptography.Pkcs | 10.0.14 | MIT |
 | Tmds.DBus.Protocol | 0.94.1 | MIT |
+| Unicode.net | 2.0.0 | Lizenzdatei im Paket: LICENSE |
 | Velopack | 1.2.161 | MIT |
+| Wcwidth | 4.0.1 | MIT |
 | WeCantSpell.Hunspell | 7.0.1 | Lizenzdatei im Paket: license.txt |
+| XTerm.NET | 3.0.0 | MIT |
 | YamlDotNet | 16.3.0 | MIT |

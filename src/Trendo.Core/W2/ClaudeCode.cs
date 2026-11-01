@@ -66,12 +66,7 @@ public static partial class ClaudeCode
         return env;
     }
 
-    /// <summary>Skript für claude.ai: Text ins Eingabefeld schreiben (nicht absenden). Der Text ist als JSON-Zeichenkette sicher eingebettet.</summary>
-    public static string WebInsertScript(string text) =>
-        "(()=>{const t=" + System.Text.Json.JsonSerializer.Serialize(text.Trim()) + ";const e=document.querySelector('div[contenteditable=\\\"true\\\"]')||document.querySelector('textarea');" +
-        "if(!e)return 'kein Eingabefeld';e.focus();if(e.tagName==='TEXTAREA'){e.value=t;e.dispatchEvent(new Event('input',{bubbles:true}));}else{document.execCommand('insertText',false,t);}return 'ok';})()";
-
-    /// <summary>Auftrag als eine Eingabezeile (Zeilenumbrüche würden in Claude Code sofort absenden).</summary>
+    /// <summary>Auftrag als eine Eingabezeile ohne Zeilenumbruch – ein Umbruch würde in Claude Code absenden, das tut nur der Nutzer.</summary>
     public static string OneLine(string text) => System.Text.RegularExpressions.Regex.Replace(text.Trim(), @"\s*[\r\n]+\s*", " ");
 
     /// <summary>Sieht ein eingefügter Text wie ein Abo-Token von <c>claude setup-token</c> aus (nicht wie ein API-Schlüssel)?</summary>

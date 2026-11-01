@@ -43,16 +43,17 @@ public class ClaudeDock_Ui
             w.Find<Button>("claude-tab-web").Press();
             Assert.Equal("web", w.ClaudeDockTab(win)); Assert.True(w.Find<Border>("claude-web-pane").IsVisible);
             Assert.Equal(ClaudeWeb.Login, w.ClaudeDockWebUrl(win));
-            Assert.NotNull(w.TryFind<Button>("claude-web-login")); Assert.Null(w.TryFind<Button>("claude-web-send"));
+            Assert.NotNull(w.TryFind<Button>("claude-web-login")); Assert.Null(w.TryFind<Button>("claude-web-copy"));
             w.ClaudeWebNavigated("https://claude.ai/login"); Assert.False(w.CWeb.Connected);
             w.ClaudeWebNavigated("https://claude.ai/new"); Assert.True(w.CWeb.Connected); // angemeldet
             Assert.StartsWith("✓ Mit Claude verbunden", w.Find<TextBlock>("claude-web-state").Text);
             w.ClaudeWebNavigated("https://claude.ai/chat/0f3a9c2e-1111-2222-3333-444455556666");
             Assert.Equal("https://claude.ai/chat/0f3a9c2e-1111-2222-3333-444455556666", w.CWeb.StartUrl("X-03"));
             w.Find<TextBox>("auftrag-prompt").Text = "Baue eine Kontaktseite";
-            var first = await w.ClaudeWebInsert();
+            var first = await w.ClaudeWebCopy(); // nur Zwischenablage – Trendo bedient claude.ai nie selbst
             Assert.StartsWith("[Trendo OS · Studio „", first); Assert.EndsWith("Mein Auftrag: Baue eine Kontaktseite", first);
-            Assert.Equal("Und die Farben", await w.ClaudeWebInsert("Und die Farben"));
+            Assert.Equal(first, w.LastClipboardText); Assert.StartsWith("Kopiert", w.Find<TextBlock>("claude-web-msg").Text);
+            Assert.Equal("Und die Farben", await w.ClaudeWebCopy("Und die Farben"));
             w.Find<Button>("claude-web-code").Press(); Assert.Equal(MainWindow.ClaudeWebCode, w.ClaudeDockWebUrl(win));
             w.Find<Button>("claude-tab-code").Press(); Assert.False(w.Find<Border>("claude-web-pane").IsVisible);
             // KI-Seite zeigt die Verbindung
@@ -81,7 +82,8 @@ public class ClaudeDock_Ui
             w.Show("baukasten"); w.Show("baukasten"); // Neuzeichnen
             Assert.Same(term, w.ClaudeDockTerminal(win)); Assert.True(term.IsLive);
             w.ClaudeDockSelectTab("web"); w.ClaudeDockSelectTab("code"); Assert.True(term.IsLive); // Reiterwechsel beendet Claude Code nicht
-            await w.ClaudeDockSend("echo ZWEITE ZEILE");
+            var typed = await w.ClaudeDockType("echo ZWEITE\nZEILE"); // nur eintippen – Enter drückt der Nutzer
+            Assert.Equal("echo ZWEITE ZEILE", typed); Assert.DoesNotContain('\r', typed!); Assert.DoesNotContain('\n', typed!);
             w.CloseWindow(win);
             Assert.False(w.ClaudeDockOpen(win));
             await Until(() => !term.IsLive);

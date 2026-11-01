@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform;
@@ -164,7 +165,7 @@ public partial class MainWindow
         }
         if (connected)
         {
-            B("claude-web-send", "Auftrag an Claude", "Deinen Auftrag aus der Auftragsleiste ins Eingabefeld schreiben – im neuen Chat mit Rolle und Fachregeln dieses Studios. Abschicken tust du selbst.", () => _ = ClaudeWebInsert(dock), true);
+            B("claude-web-copy", "Auftrag kopieren", "Deinen Auftrag aus der Auftragsleiste kopieren – im neuen Chat mit Rolle und Fachregeln dieses Studios. Einfügen (Strg+V) und abschicken tust du selbst.", () => _ = ClaudeWebCopy(dock), true);
             B("claude-web-chat", "Neuer Chat", "Neuen Chat für dieses Studio beginnen", () => { if (dock.Studio is { } st) CWeb.NewStudioChat(st); WebGo(dock, ClaudeWeb.NewChat); });
             B("claude-web-code", "Claude Code im Web", "Claude Code im Browser – arbeitet mit deinen GitHub-Projekten", () => WebGo(dock, ClaudeWebCode));
             B("claude-web-skills", "Fachregeln für Claude", "Die Fachregeln dieses Studios als Skill-Paket speichern – einmal in Claude unter Einstellungen → Fähigkeiten hochladen", () => Try(CurrentView, () => ClaudeSkillPackage(dock.Studio)));
@@ -173,7 +174,7 @@ public partial class MainWindow
         B("claude-web-back", "←", "Zurück", () => dock.Web?.GoBack());
         B("claude-web-reload", "↻", "Neu laden", () => dock.Web?.Refresh());
         dock.WebBar.Children.Add(row);
-        if (_claudeMsg.Length > 0 && _claudeMsg.StartsWith("Fachregeln")) dock.WebBar.Children.Add(P(_claudeMsg, Muted, 11));
+        if (_claudeMsg.Length > 0 && (_claudeMsg.StartsWith("Fachregeln") || _claudeMsg.StartsWith("Kopiert"))) dock.WebBar.Children.Add(new TextBlock { Name = "claude-web-msg", Text = _claudeMsg, Foreground = _claudeMsg.StartsWith("Kopiert") ? GoldText() : Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
     }
 
     /// <summary>Fachregeln eines Studios als Skill-Paket für Claude speichern und den Ordner zeigen (öffentlich für Tests).</summary>
@@ -187,22 +188,24 @@ public partial class MainWindow
         return zip;
     }
 
-    /// <summary>Auftrag ins Eingabefeld von claude.ai schreiben – im neuen Studio-Chat mit Rolle und Fachregeln davor; nicht absenden (öffentlich für Tests: Rückgabe = eingefügter Text).</summary>
-    public async Task<string?> ClaudeWebInsert(string? text = null)
+    /// <summary>Auftrag in die Zwischenablage – im neuen Studio-Chat mit Rolle und Fachregeln davor. Entscheidung 01.11.2026: Trendo bedient die Seite von claude.ai
+    /// nie selbst (kein Skript in der Seite); Einfügen und Abschicken macht der Nutzer (öffentlich für Tests: Rückgabe = kopierter Text).</summary>
+    public async Task<string?> ClaudeWebCopy(string? text = null)
     {
-        if (Windows.Active?.Id is { } id && _claudeDocks.TryGetValue(id, out var d)) return await ClaudeWebInsert(d, text);
+        if (Windows.Active?.Id is { } id && _claudeDocks.TryGetValue(id, out var d)) return await ClaudeWebCopy(d, text);
         return null;
     }
 
-    async Task<string?> ClaudeWebInsert(ClaudeDock dock, string? text = null)
+    async Task<string?> ClaudeWebCopy(ClaudeDock dock, string? text = null)
     {
         text ??= this.GetLogicalDescendantsOf<TextBox>().FirstOrDefault(t => t.Name == "auftrag-prompt")?.Text;
         if (string.IsNullOrWhiteSpace(text)) return null;
         var msg = CWeb.Message(dock.Studio, StudioCatalog.NameOf(dock.Studio ?? "", "Trendo"), ClaudeRoleFor(dock.Studio), Skills.For(null, dock.Studio), text);
-        if (dock.Web is { } w)
-            try { await w.InvokeScript(ClaudeCode.WebInsertScript(msg)); }
-            catch (Exception e) when (e is InvalidOperationException or NotSupportedException) { _claudeMsg = "Der Auftrag ließ sich nicht einfügen: " + e.Message; }
+        LastClipboardText = msg;
+        try { if (Clipboard is { } cb) await cb.SetTextAsync(msg); _claudeMsg = "Kopiert – klick unten ins Eingabefeld von Claude, drück Strg+V und schick ab."; }
+        catch (Exception e) when (e is InvalidOperationException or NotSupportedException or System.Runtime.InteropServices.COMException) { _claudeMsg = "Der Auftrag ließ sich nicht kopieren: " + e.Message; }
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.web.auftrag", dock.Studio ?? "");
+        BuildWebBar(dock);
         return msg;
     }
 
@@ -226,12 +229,12 @@ public partial class MainWindow
             StartClaudeTerminal(dock, term, prompt);
             body = term;
         }
-        var send = Act("claude-dock-send", "Auftrag senden", () => _ = ClaudeDockSend(dock));
-        ToolTip.SetTip(send, "Den Text aus der Auftragsleiste an Claude Code schicken");
+        var send = Act("claude-dock-type", "Auftrag eintippen", () => _ = ClaudeDockType(dock));
+        ToolTip.SetTip(send, "Den Text aus der Auftragsleiste in Claude Code eintippen – abschicken mit Enter tust du selbst");
         var restart = Act("claude-dock-restart", "Neu starten", () => { CloseDock(dock); dock.Term = null; BuildDock(dock, null); });
         var external = Act("claude-dock-window", "Im eigenen Fenster", () => ClaudeOpen(dock.Folder, null, ClaudeRoleFor(dock.Studio), dock.Studio));
         var foot = new WrapPanel { Margin = new Thickness(10, 6), Children = { send, new Border { Width = 6 }, restart, new Border { Width = 6 }, external } };
-        var hint = new TextBlock { Text = "Dein echtes Claude Code mit deinem Abo – Trendo zeigt es nur an. Kopieren: Strg+Umschalt+C · Einfügen: Strg+Umschalt+V", Foreground = Muted, FontSize = 10.5, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(10, 0, 10, 8) };
+        var hint = new TextBlock { Text = "Dein echtes Claude Code mit deinem Abo – Trendo zeigt es nur an und schickt nie selbst ab. Abschicken: Enter · Kopieren: Strg+Umschalt+C · Einfügen: Strg+Umschalt+V", Foreground = Muted, FontSize = 10.5, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(10, 0, 10, 8) };
         DockPanel.SetDock(hint, Avalonia.Controls.Dock.Bottom); DockPanel.SetDock(foot, Avalonia.Controls.Dock.Bottom);
         dock.CodeHost.Child = new DockPanel { Children = { hint, foot, body } };
     }
@@ -251,7 +254,7 @@ public partial class MainWindow
         BuildDock(dock, prompt);
     }
 
-    /// <summary>Terminal mit Claude Code im Projektordner starten: Rolle und Skills des Studios, API-Variablen geleert (nur Abo), Auftrag nach dem Start eingetippt.</summary>
+    /// <summary>Terminal mit Claude Code im Projektordner starten: Rolle und Skills des Studios, API-Variablen geleert (nur Abo), Auftrag nach dem Start eingetippt (ohne Enter – abschicken tut der Nutzer).</summary>
     void StartClaudeTerminal(ClaudeDock dock, TerminalControl term, string? prompt)
     {
         Directory.CreateDirectory(dock.Folder);
@@ -265,21 +268,25 @@ public partial class MainWindow
             catch (Exception e) when (e is InvalidOperationException or System.ComponentModel.Win32Exception or IOException) { _claudeMsg = "Claude Code ließ sich nicht starten: " + e.Message; return; }
             _core.Audit.Append(Principal.LocalOwner.Name, "claude.terminal", Path.GetFileName(dock.Folder));
             if (prompt is { Length: > 0 } && prompt.Trim().Length > 0)
-                DispatcherTimer.RunOnce(() => _ = term.SendInputAsync(ClaudeCode.OneLine(prompt) + "\r"), TimeSpan.FromSeconds(3));
+                DispatcherTimer.RunOnce(() => _ = term.SendInputAsync(ClaudeCode.OneLine(prompt)), TimeSpan.FromSeconds(3));
         };
     }
 
-    /// <summary>„Auftrag senden“: Text der Auftragsleiste als Eingabe an Claude Code (öffentlich für Tests).</summary>
-    public async Task ClaudeDockSend(string? text = null)
+    /// <summary>„Auftrag eintippen“: Text der Auftragsleiste in die Eingabezeile von Claude Code – ohne Enter, abschicken tut der Nutzer
+    /// (Entscheidung 01.11.2026). Öffentlich für Tests: Rückgabe = eingetippter Text.</summary>
+    public async Task<string?> ClaudeDockType(string? text = null)
     {
-        if (Windows.Active?.Id is { } id && _claudeDocks.TryGetValue(id, out var d)) await ClaudeDockSend(d, text);
+        if (Windows.Active?.Id is { } id && _claudeDocks.TryGetValue(id, out var d)) return await ClaudeDockType(d, text);
+        return null;
     }
 
-    async Task ClaudeDockSend(ClaudeDock d, string? text = null)
+    async Task<string?> ClaudeDockType(ClaudeDock d, string? text = null)
     {
         text ??= this.GetLogicalDescendantsOf<TextBox>().FirstOrDefault(t => t.Name == "auftrag-prompt")?.Text;
-        if (d.Term is not { IsLive: true } term || string.IsNullOrWhiteSpace(text)) return;
-        await term.SendInputAsync(ClaudeCode.OneLine(text) + "\r");
+        if (d.Term is not { IsLive: true } term || string.IsNullOrWhiteSpace(text)) return null;
+        var line = ClaudeCode.OneLine(text);
+        await term.SendInputAsync(line);
+        return line;
     }
 }
 

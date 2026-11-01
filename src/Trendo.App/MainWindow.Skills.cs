@@ -22,7 +22,7 @@ public partial class MainWindow
     {
         _showMap["ki-skills"] = SkillsView; KiTabs.Add(("ki-skills", "Skills"));
         _showMap["claude-verbinden"] = ClaudeConnectView; ExtraPages.Add(("Mit Claude verbinden", "claude-verbinden", ["claude", "abo", "anmelden", "verbinden"]));
-        PageModules["ki-skills"] = "CORE-12";
+        PageModules["ki-skills"] = "CORE-12"; PageModules["claude-verbinden"] = "CORE-02";
         ExtraPages.Add(("Skills", "ki-skills", ["skill", "skills", "fachregeln", "checkliste", "qualität", "stil"]));
         SkillTextFor = key => Skills.PromptText(key, ModuleOf(key));
     }
