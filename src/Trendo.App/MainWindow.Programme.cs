@@ -56,8 +56,9 @@ public partial class MainWindow
         var b = new Button { Name = name, Content = armed ? "Wirklich entfernen?" : "Entfernen", IsEnabled = !_depBusy, Background = armed ? Brush.Parse("#B91C1C") : Brushes.Transparent };
         b.Click += (_, _) =>
         {
-            if (!_confirmRemove.Remove(key)) { _confirmRemove.Add(key); Show("components"); return; }
-            remove(); ReloadStudios(); Show("components");
+            var page = CurrentView is { Length: > 0 } cv ? cv : "components"; // auf der Seite bleiben, auf der der Knopf steht (Chat, Skills, Programme …)
+            if (!_confirmRemove.Remove(key)) { _confirmRemove.Add(key); Show(page); return; }
+            remove(); ReloadStudios(); Show(page);
         };
         return b;
     }

@@ -78,59 +78,6 @@ public partial class MainWindow
     public string LastAnswer { get; private set; } = "";
     private string _askState = "";
 
-    private Control AskView()
-    {
-        var sp = new StackPanel { Spacing = 8, Children = { ClaudeCard(), P(KiSourceSettings.Load(_core.DataRoot).Cloud.Count == 0 ? "Stell eine Frage. Die Antwort kommt von der KI auf diesem PC – nichts geht ins Internet." : "Stell eine Frage. Zuerst antwortet die KI auf diesem PC. Nur wenn sie schweigt, springt dein eingeschalteter KI-Dienst ein – dann geht nur diese eine Frage hinaus, ohne Verlauf und ohne deine Dokumente.") } };
-        var log = new StackPanel { Name = "ask-log", Spacing = 6 };
-        foreach (var m in _chat)
-            log.Children.Add(WCard(new StackPanel { Children = { P(m.Role == "user" ? "Du" : "Trendo", m.Role == "user" ? Accent : null, 10.5), new SelectableTextBlock { Text = m.Content, Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap } } }));
-        var input = new TextBox { Name = "ask-input", PlaceholderText = "Was möchtest du wissen?", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 54 };
-        var state = new TextBlock { Name = "ask-state", Text = _askState, Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap };
-        var send = new Button { Name = "ask-send", Content = "Fragen", Background = Accent };
-        var clear = new Button { Name = "ask-clear", Content = "Neues Gespräch" };
-        clear.Click += (_, _) => { _chat.Clear(); Show("ki-fragen"); };
-        send.Click += async (_, _) =>
-        {
-            var q = input.Text?.Trim() ?? "";
-            if (q == "") { state.Text = "Bitte schreib zuerst eine Frage."; return; }
-            send.IsEnabled = false; state.Text = "Trendo denkt nach …";
-            using var kiLabel = Trendo.Core.KiActivityHub.Label("Trendo KI"); var a = await Intel.AskAsync(new KiRequest(q, PreferredModel: KiModelName, History: _chat.ToList(), AllowRemote: true));
-            LastAnswer = a.Text;
-            if (a.Ok) { _chat.Add(new("user", q)); _chat.Add(new("assistant", a.Text)); }
-            _askState = a.Ok ? $"Antwort von {a.Model} ({a.Backend}{(KiCatalog.Cloud.Any(c => c.Name == a.Backend) ? ", außerhalb des PCs" : "")}) in {a.Took.TotalSeconds:0.0} s{(a.Sources.Count > 0 ? " · Wissen: " + string.Join(", ", a.Sources) : "")}" : a.Text;
-            Show("ki-fragen");
-        };
-        if (_chat.Count == 0)
-        {
-            Button Ask(string n, string q) => Chip(n, q, () => { input.Text = q; send.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent)); });
-            sp.Children.Add(EmptyState("ask-empty", "💬", "Frag mich etwas", "Die Trendo KI läuft auf deinem PC. Tippe unten deine Frage – oder probier ein Beispiel:",
-                Ask("ask-ex-0", "Schreib eine freundliche Absage für einen Termin"), Ask("ask-ex-1", "Erkläre mir kurz, was eine Firewall macht"),
-                Ask("ask-ex-2", "Plane mir ein Abendessen für 4 Personen"), Ask("ask-ex-3", "Fasse die Vorteile von Open Source in 3 Punkten zusammen")));
-        }
-        sp.Children.Add(log);
-        sp.Children.Add(input);
-        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { send, clear } });
-        sp.Children.Add(state);
-        if (_chat.Count >= 2)
-        {
-            var (lq, la) = (_chat[^2].Content, _chat[^1].Content);
-            var good = new Button { Name = "ask-good", Content = "👍 Gut" };
-            good.Click += (_, _) => { Wissen.Feedback(lq, la, true); _askState = "Danke für deine Rückmeldung."; Show("ki-fragen"); };
-            var fix = new TextBox { Name = "ask-fix", PlaceholderText = "Was ist richtig? Trendo merkt es sich.", Width = 320 };
-            var bad = new Button { Name = "ask-bad", Content = "Verbessern" };
-            bad.Click += (_, _) => { Wissen.Feedback(lq, la, false, fix.Text); _askState = string.IsNullOrWhiteSpace(fix.Text) ? "Danke. Schreib beim nächsten Mal dazu, was richtig ist – dann lernt Trendo daraus." : "Gemerkt. Trendo nutzt die Korrektur bei der nächsten Frage."; Show("ki-fragen"); };
-            sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { good, fix, bad } });
-        }
-        var hist = Intel.History(5);
-        if (hist.Count > 0)
-        {
-            sp.Children.Add(H("Zuletzt gefragt", 14));
-            foreach (var h in hist) sp.Children.Add(P($"{h.At:dd.MM. HH:mm} · {h.Question}", null, 11));
-            var del = new Button { Name = "ask-history-clear", Content = "Verlauf löschen" };
-            del.Click += (_, _) => { Intel.ClearHistory(); Show("ki-fragen"); };
-            sp.Children.Add(del);
-        }
-        return KiPage("KI fragen", sp);
-    }
+    // AskView: siehe MainWindow.ChatWindow.cs (Chatfenster, Runde 7)
 }
 

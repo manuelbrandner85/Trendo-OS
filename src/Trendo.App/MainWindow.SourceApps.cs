@@ -69,7 +69,7 @@ public partial class MainWindow
             var rt = d.Runtime is { } id ? SourceApps.RuntimeFor(id, Arm64) : null;
             var have = rt is not null && SourceApps.RuntimeExe(_deps.ToolsRoot, rt) is not null;
             sp.Children.Add(new Border { Name = $"oss-src-ask-{i}", Background = Brush.Parse("#1AF5A524"), CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 8), Child = new StackPanel { Spacing = 6, Children = {
-                P($"Trendo lädt den Quellcode von „{r.FullName}“{(rt is null ? "" : have ? $" und nutzt das schon eingerichtete {rt.Name}" : $" und die offizielle Laufzeit {rt.Name} {rt.Version} ({(rt.Size > 0 ? $"{rt.Size / (1 << 20)} MB" : "Größe laut Hersteller")}, Prüfsumme fest hinterlegt)")}. Beim Einrichten lädt das Projekt seine Bausteine nach. " +
+                P($"Trendo lädt den Quellcode von „{r.FullName}“{(rt is null ? "" : have ? $" und nutzt das schon eingerichtete {rt.Name}" : $" und das offizielle Grundprogramm {rt.Name} {rt.Version} ({(rt.Size > 0 ? $"{rt.Size / (1 << 20)} MB" : "Größe laut Hersteller")}, Prüfsumme fest hinterlegt)")}. Beim Einrichten lädt das Projekt seine Bausteine nach. " +
                   "Der Code läuft dann auf deinem PC wie ein Programm – mach das nur bei Projekten, denen du vertraust. Alles bleibt im Trendo-Werkzeugordner, ohne Admin-Rechte.", Text, 12),
                 new WrapPanel { Children = { Act($"oss-src-confirm-{i}", "Ja, einrichten & starten", () => { _srcConfirm = null; _ = SourceInstall(r); }, true), new Border { Width = 6 },
                     Act($"oss-src-cancel-{i}", "Abbrechen", () => { _srcConfirm = null; Show("oss"); }) } } } } });
@@ -303,7 +303,7 @@ public partial class MainWindow
             }
             if (e.Start is not { } st) throw new InvalidOperationException("Kein Startbefehl hinterlegt.");
             var rt = e.Runtime is { } id ? SourceApps.RuntimeExe(_deps.ToolsRoot, SourceApps.RuntimeFor(id, Arm64)) : null;
-            if (e.Runtime is not null && rt is null) throw new InvalidOperationException("Die Laufzeit fehlt – bitte „Neu einrichten“.");
+            if (e.Runtime is not null && rt is null) throw new InvalidOperationException("Das Grundprogramm fehlt – bitte „Neu einrichten“.");
             var port = e.Web ? WebsitePreview.FreePort().ToString() : "0";
             var (values, env) = SourceContext(rt, e.Env, port);
             var exe = SourceApps.Fill(st.Exe, values); if (!Path.IsPathRooted(exe)) exe = Path.Combine(dir, exe.Replace('/', Path.DirectorySeparatorChar));
@@ -355,7 +355,7 @@ public partial class MainWindow
         var unused = SourceApps.UnusedRuntimes(_deps.ToolsRoot);
         if (list.Count == 0 && unused.Count == 0) return;
         sp.Children.Add(H("Aus Quellcode eingerichtet", 13));
-        sp.Children.Add(P("GitHub-Projekte ohne fertiges Windows-Programm, die Trendo mit einer offiziellen Laufzeit eingerichtet hat. Alles liegt im Trendo-Werkzeugordner.", null, 11));
+        sp.Children.Add(P("GitHub-Projekte ohne fertiges Windows-Programm, die Trendo mit einem offiziellen Grundprogramm (Python, Node.js, Go, .NET) eingerichtet hat. Alles liegt im Trendo-Werkzeugordner.", null, 11));
         foreach (var e in list)
         {
             var running = _srcRunning.TryGetValue(e.Id, out var p) && !p.HasExited || _srcSites.ContainsKey(e.Id);
@@ -378,7 +378,7 @@ public partial class MainWindow
                 P($"{e.Description}{(e.Description.Length > 0 ? " · " : "")}eingerichtet am {e.InstalledAt:dd.MM.yyyy}{(e.Sha.Contains(':') ? $" · Paket {e.Sha}" : "")}", null, 11) } }, buttons)));
         }
         if (unused.Count > 0)
-            sp.Children.Add(Act("btn-src-runtimes-clean", $"Ungenutzte Laufzeiten entfernen ({string.Join(", ", unused.Select(Path.GetFileName))})", () =>
+            sp.Children.Add(Act("btn-src-runtimes-clean", $"Ungenutzte Grundprogramme entfernen ({string.Join(", ", unused.Select(Path.GetFileName))})", () =>
             {
                 foreach (var d in unused) try { Directory.Delete(d, true); _core.Audit.Append(Principal.LocalOwner.Name, "source.runtime.removed", Path.GetFileName(d)); } catch (IOException) { } catch (UnauthorizedAccessException) { }
                 Show("components");
