@@ -110,6 +110,51 @@ public class PhotoScanUiTests
         Assert.True(w.Find<Button>("btn-yes-ffmpeg").IsEnabled); // T-0222: aus dem Vollpaket, geht auch offline
     }
 
+    [AvaloniaFact(DisplayName = "Scan-Arbeitsplatz (Runde 7): Fotos einlesen mit Prüfung und Vorschau, Schritte der Rechnung mit Fortschritt, Modell in 3D drehen, Export als OBJ, STL und GLB")]
+    public void Arbeitsplatz()
+    {
+        var (w, _, root) = Ui.Open();
+        Directory.CreateDirectory(root);
+        var fotos = Path.Combine(root, "fotos"); Directory.CreateDirectory(fotos);
+        for (var i = 0; i < 5; i++) File.WriteAllText(Path.Combine(fotos, $"f{i}.jpg"), "x" + i);
+        File.WriteAllText(Path.Combine(fotos, "f9.jpg"), "x0"); // doppelt
+        var tool = Path.Combine(root, "colmap-test"); File.WriteAllText(tool, "x");
+        w.ScanToolOverride = tool;
+        var seen = new List<int>();
+        w.ScanRunner = new ScanUiFake((file, args) =>
+        {
+            seen.Add(w.ScanStepIndex);
+            if (args.Contains("mapper")) { var sparse = Path.Combine(NewestScan(root), "sparse", "0"); Directory.CreateDirectory(sparse); File.WriteAllText(Path.Combine(sparse, "cameras.bin"), "cams"); }
+            if (args.Contains("delaunay_mesher")) { var dir = NewestScan(root); Directory.CreateDirectory(Path.Combine(dir, "dicht")); File.WriteAllText(Path.Combine(dir, "dicht", "meshed-delaunay.ply"), Tetra()); }
+            return (0, "ok");
+        });
+        w.Show("scan3d");
+        Assert.NotNull(w.TryFind<Grid>("scan-workbench"));
+        w.Find<TextBox>("scan-photos-folder").Text = fotos; w.Find<Button>("scan-load").Press();
+        Assert.Equal(6, w.PhotoReport!.Count);
+        Assert.Contains("6 Fotos", w.Find<TextBlock>("scan-count").Text);
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("1 doppelte"));
+        Assert.NotNull(w.TryFind<Border>("scan-thumb-5"));
+        Assert.Null(w.TryFind<MeshView>("scan-view"));
+        w.Find<Button>("scan-run").Press();
+        for (var i = 0; i < 100 && w.ScanModelPath is null; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(10); }
+        Dispatcher.UIThread.RunJobs();
+        Assert.True(w.ScanSteps.Count >= 3, string.Join(", ", w.ScanSteps));
+        Assert.Equal(Enumerable.Range(0, seen.Count), seen); // jeder Schritt wird angezeigt, bevor er läuft
+        Assert.StartsWith("✓", w.Find<TextBlock>($"scan-step-{w.ScanSteps.Count - 1}").Text);
+        Assert.Equal(w.ScanSteps.Count, w.Find<ProgressBar>("scan-progress").Value);
+        var view = w.Find<MeshView>("scan-view"); Assert.Equal(4, view.Model!.Triangles);
+        w.Find<Button>("scan-view-oben").Press(); Assert.Equal(89, view.Pitch);
+        w.Find<Button>("scan-wire").Press(); Assert.True(w.Find<MeshView>("scan-view").Wire);
+        foreach (var ext in new[] { "obj", "stl", "glb" })
+        {
+            w.Find<Button>("scan-export-" + ext).Press();
+            Assert.Single(Directory.GetFiles(Path.Combine(root, "Projekte", "Scan"), "*." + ext));
+        }
+        Assert.Contains("Gespeichert", w.Find<TextBlock>("scan-status").Text);
+        Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "scan.export");
+    }
+
     static string NewestScan(string root)
     {
         var scan = Path.Combine(root, "Projekte", "Scan");
