@@ -22,7 +22,7 @@ public partial class MainWindow
 
     void InitAddressBook()
     {
-        _showMap[AB] = AddressBookView; SysTabs.Add((AB, "Adressbuch"));
+        _showMap[AB] = AddressBookView; SysTabs.Add((AB, "Adressbuch")); PageModules[AB] = "SYS-09"; // Persönliche Daten (wie Post und Kalender)
         ExtraPages.Add(("Adressbuch", AB, ["adressbuch", "kontakte", "telefonnummer", "geburtstag", "vcard", "visitenkarte", "personen"]));
     }
 
