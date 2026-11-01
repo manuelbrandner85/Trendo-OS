@@ -22,7 +22,8 @@ public partial class MainWindow
     public Func<string, Task<string>>? OssReadmeOverride { get; set; }
     private static readonly HttpClient OssHttp = new() { Timeout = TimeSpan.FromSeconds(20) };
 
-    private void InitW4Oss() => RegisterTab(KreativTabs, "oss", "Open Source", "X-06", OssView, "github", "open source", "quellcode", "lizenz", "programm installieren");
+    private void InitW4Oss() { LoadGitHubToken(); InitW4OssTab(); }
+    private void InitW4OssTab() => RegisterTab(KreativTabs, "oss", "Open Source", "X-06", OssView, "github", "open source", "quellcode", "lizenz", "programm installieren");
 
     public async Task OssSearch(string q)
     {
@@ -30,6 +31,8 @@ public partial class MainWindow
         if (_core.Offline) { Say("Trendo ist offline. Die Suche braucht Internet.", "oss"); return; }
         try { _ossHits = OssSearchOverride is not null ? await OssSearchOverride(q) : await OssSearchHttp(OssHttp, q); _w45Msg = _ossHits.Count == 0 ? "Nichts gefunden." : ""; }
         catch (Exception ex) { _ossHits = []; _w45Msg = "Suche hat nicht geklappt: " + ex.Message; }
+        // Masterprompt 131: gleich zeigen, ob es ein fertiges Windows-Programm gibt (ohne Anmeldung nur die ersten 6 – schont das GitHub-Limit)
+        if (_ossHits.Count > 0 && (OssSearchOverride is null || GitHubHandlerOverride is not null)) _ = OssCheckAvailability(_ossHits.Take(GitHubToken is null ? 6 : 20).Select(h => h.FullName));
         _core.Audit.Append(Principal.LocalOwner.Name, "oss.search", q);
         Show("oss");
     }
@@ -71,6 +74,7 @@ public partial class MainWindow
         var q = new TextBox { Name = "oss-query", Text = _ossQuery, PlaceholderText = "z. B. markdown editor", Width = 300 };
         q.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) _ = OssSearch(q.Text ?? ""); };
         sp.Children.Add(new WrapPanel { Children = { q, Act("oss-search", "Suchen", () => _ = OssSearch(q.Text ?? ""), true) } });
+        sp.Children.Add(GitHubTokenBox());
         if (_ossHits.Count == 0 && _ossQuery.Length == 0)
             sp.Children.Add(EmptyState("oss-empty", "🐙", "Freie Programme von GitHub", "Suche nach einem Thema – Trendo zeigt Sterne, Lizenz und eine verständliche Beschreibung. Fertige Windows-Programme installierst und startest du mit einem Klick.",
                 Chip("oss-ex-0", "Notizen", () => _ = OssSearch("notes app")), Chip("oss-ex-1", "Bildbearbeitung", () => _ = OssSearch("image editor")),
@@ -92,7 +96,9 @@ public partial class MainWindow
             else
             {
                 var install = Act($"oss-install-{i}", "Installieren & starten", () => _ = GitHubInstall(repo), true);
-                install.IsEnabled = kind != OpenSource.LicenseKind.Unklar && !_depBusy;
+                var onlySource = _ossAvail.TryGetValue(r.FullName, out var av) && av.Kind != "windows";
+                install.IsEnabled = kind != OpenSource.LicenseKind.Unklar && !_depBusy && !onlySource;
+                if (onlySource) ToolTip.SetTip(install, "Dieses Projekt hat kein fertiges Windows-Programm – mit „Quellcode holen“ bekommst du den Code.");
                 if (!install.IsEnabled) ToolTip.SetTip(install, kind == OpenSource.LicenseKind.Unklar ? "Die Lizenz ist unklar – Trendo installiert es deshalb nicht." : "Gerade wird etwas eingerichtet.");
                 Add(install);
             }
@@ -117,7 +123,7 @@ public partial class MainWindow
                     new StackPanel { Spacing = 2, Children = {
                         new TextBlock { Text = r.FullName.Split('/')[1], Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold },
                         new TextBlock { Text = $"{r.FullName}  ·  ★ {r.Stars:N0}{(r.Language.Length > 0 ? "  ·  " + r.Language : "")}{(have is not null ? "  ·  ✓ eingerichtet" : "")}", Foreground = Muted, FontSize = 11.5 },
-                        P(r.Description, Text, 12.5),
+                        P(r.Description, Text, 12.5), OssAvailBadge(r, i),
                         P(OpenSource.Explain(r.LicenseId), kind == OpenSource.LicenseKind.Unklar ? Brush.Parse("#FACC15") : null, 11) } },
                     Pos(buttons, 1) } },
                 _ossGerman.TryGetValue(r.FullName, out var de) ? new Border { Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(10), Background = Brush.Parse("#1A3B82F6"), Child = new StackPanel { Spacing = 3, Children = { new TextBlock { Text = "Auf Deutsch erklärt (KI)", Foreground = Text, FontSize = 12, FontWeight = FontWeight.SemiBold }, P(de, Text, 12) } } } : new Panel(),

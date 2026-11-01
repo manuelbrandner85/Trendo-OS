@@ -43,6 +43,23 @@ public static partial class GitHubApps
     public static string IdFor(string fullName) =>
         Prefix + Regex.Replace(fullName.ToLowerInvariant().Replace('/', '-'), "[^a-z0-9-]", "-");
 
+    /// <summary>Was ein Projekt anbietet (für die Trefferliste): fertiges Windows-Programm mit Version und Größe, nur Quellcode oder noch keine Veröffentlichung.</summary>
+    public static (string Kind, string Text) Availability(Release rel, bool arm64, bool has7z)
+    {
+        if (rel.Tag.Length == 0 && rel.Assets.Count == 0) return ("keine", "Noch keine Veröffentlichung – nur Quellcode");
+        if (PickWindows(rel.Assets, arm64, has7z) is { } a)
+            return ("windows", $"✓ Windows-Programm · {(rel.Tag.Length > 0 ? rel.Tag : rel.Name)}{(a.Size > 0 ? $" · {(a.Size >= 1 << 20 ? $"{a.Size / (double)(1 << 20):0} MB" : $"{a.Size / 1024.0:0} KB")}" : "")}");
+        return ("quelle", $"Nur Quellcode – kein fertiges Windows-Programm{(rel.Tag.Length > 0 ? $" ({rel.Tag})" : "")}");
+    }
+
+    /// <summary>Ist <paramref name="latest"/> neuer als <paramref name="installed"/>? Versionsnummern (v1.2.10 &gt; v1.2.9), sonst „anders = neuer“.</summary>
+    public static bool IsNewer(string installed, string latest)
+    {
+        static Version? V(string t) { var m = Regex.Match(t, @"(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?"); if (!m.Success) return null; int G(int i) => m.Groups[i].Success ? int.Parse(m.Groups[i].Value) : 0; return new Version(G(1), G(2), G(3), G(4)); }
+        if (latest.Trim().Length == 0 || string.Equals(installed.Trim(), latest.Trim(), StringComparison.OrdinalIgnoreCase)) return false;
+        return V(installed) is { } a && V(latest) is { } b ? b > a : true;
+    }
+
     public static Release ParseRelease(string json)
     {
         using var doc = JsonDocument.Parse(json);

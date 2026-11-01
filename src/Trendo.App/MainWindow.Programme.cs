@@ -99,6 +99,7 @@ public partial class MainWindow
             var rd = _ossReadme.GetValueOrDefault(e.Repo);
             var guide = ProgramGuide.ForGitHub(e.Repo, e.Description, e.License, null, 0, e.Version, e.Asset, null, rd.Intro, rd.Features, _ossGerman.GetValueOrDefault(e.Repo));
             var start = new Button { Name = "btn-gh-start-" + e.Id, Content = "Starten", IsEnabled = File.Exists(exe) }; start.Click += (_, _) => Launch(exe);
+            var upd = _ghUpdates.TryGetValue(e.Id, out var newTag) ? Act("btn-gh-update-" + e.Id, $"Auf {newTag} aktualisieren", () => _ = GitHubUpdate(e), true) : null;
             var remove = RemoveButton("gh:" + e.Id, "btn-gh-remove-" + e.Id, () =>
             {
                 try { if (Path.IsPathRooted(e.Exe) && File.Exists(e.Exe)) GitHubRunUninstaller(e.Exe); _depLog.Text = GitHubApps.Uninstall(_deps.ToolsRoot, e.Id, _core.Audit) ? $"{e.Repo} wurde entfernt." : $"{e.Repo} war nicht installiert."; }
@@ -106,9 +107,11 @@ public partial class MainWindow
             });
             sp.Children.Add(Card(new StackPanel { Spacing = 4, Children = {
                 Row(new StackPanel { Children = { new TextBlock { Text = $"{e.Repo}  ·  {e.Version}", Foreground = Text, FontWeight = FontWeight.SemiBold }, P(e.Description, null, 11) } },
-                    new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { start, remove } }),
+                    new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { upd ?? (Control)new Panel(), start, remove } }),
                 GuideBox(guide, "guide-" + e.Id) } }));
         }
+        if (list.Count > 0) sp.Children.Add(Act("btn-gh-updates", _ghUpdates.Count > 0 ? $"{_ghUpdates.Count} Update(s) verfügbar – erneut prüfen" : "Nach Updates suchen", () => _ = GitHubCheckUpdates()));
+        if (list.Count > 0 && !_ghUpdateChecked && !_opt.Isolated && !_core.Offline) { _ghUpdateChecked = true; _ = GitHubCheckUpdates(); } // einmal je Sitzung von selbst
         var find = new Button { Name = "btn-gh-find", Content = "Programme auf GitHub finden" }; find.Click += (_, _) => Show("oss");
         sp.Children.Add(find);
     }
@@ -243,9 +246,9 @@ public partial class MainWindow
         _core.Audit.Append(Principal.LocalOwner.Name, "github.uninstall.installer", Path.GetFileName(un));
     }
 
-    static async Task<GitHubApps.Release> GitHubLatestOrEmpty(string fullName, CancellationToken ct)
+    static async Task<GitHubApps.Release> GitHubLatestOrEmpty(string fullName, CancellationToken ct, bool fresh = false)
     {
-        try { return await GitHubLatest(fullName, ct); }
+        try { return await GitHubLatest(fullName, ct, fresh); }
         catch (InvalidOperationException ex) when (ex.Message.StartsWith("Dieses Projekt hat noch keine", StringComparison.Ordinal)) { return new GitHubApps.Release("", "", []); } // keine „neueste“ Version: Liste prüfen
     }
 
@@ -298,7 +301,7 @@ public partial class MainWindow
     };
 
     /// <summary>GET mit eigenen Weiterleitungen (höchstens 5), jede nur zu GitHub über HTTPS. Bis die Antwort beginnt, gilt <paramref name="wait"/> (Abbrechen wirkt sofort).</summary>
-    static async Task<HttpResponseMessage> GitHubGet(string url, string accept, CancellationToken ct = default, TimeSpan? wait = null)
+    static async Task<HttpResponseMessage> GitHubGet(string url, string accept, CancellationToken ct = default, TimeSpan? wait = null, long rangeFrom = 0)
     {
         var u = new Uri(url);
         using var limit = CancellationTokenSource.CreateLinkedTokenSource(ct); limit.CancelAfter(wait ?? GitHubApiTimeout);
@@ -309,6 +312,8 @@ public partial class MainWindow
                 CheckHost(u);
                 var req = new HttpRequestMessage(HttpMethod.Get, u);
                 req.Headers.UserAgent.Add(new ProductInfoHeaderValue("TrendoOS", "1.0")); req.Headers.Accept.ParseAdd(accept);
+                if (GitHubToken is { Length: > 0 } tok && u.Host.Equals("api.github.com", StringComparison.OrdinalIgnoreCase)) req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tok); // nie an Download-Server
+                if (rangeFrom > 0) req.Headers.Range = new RangeHeaderValue(rangeFrom, null);
                 var res = await GitHubHttp.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, limit.Token);
                 if ((int)res.StatusCode is >= 300 and < 400 && res.Headers.Location is { } loc) { u = loc.IsAbsoluteUri ? loc : new Uri(u, loc); res.Dispose(); continue; }
                 if (res.StatusCode == HttpStatusCode.NotFound) { res.Dispose(); throw new InvalidOperationException("Dieses Projekt hat noch keine Veröffentlichung mit fertigen Programmen."); }
@@ -317,7 +322,7 @@ public partial class MainWindow
                     var reset = res.Headers.TryGetValues("X-RateLimit-Reset", out var rv) && long.TryParse(rv.FirstOrDefault(), out var unix) ? DateTimeOffset.FromUnixTimeSeconds(unix).ToLocalTime() : (DateTimeOffset?)null;
                     var left = res.Headers.TryGetValues("X-RateLimit-Remaining", out var rl) ? rl.FirstOrDefault() : null; res.Dispose();
                     throw new InvalidOperationException(left == "0" && reset is { } r
-                        ? $"GitHub erlaubt ohne Anmeldung 60 Abfragen pro Stunde – die sind aufgebraucht. Ab {r:HH:mm} Uhr geht es wieder."
+                        ? (GitHubToken is null ? $"GitHub erlaubt ohne Anmeldung 60 Abfragen pro Stunde – die sind aufgebraucht. Ab {r:HH:mm} Uhr geht es wieder (oder mit der freiwilligen GitHub-Anmeldung)." : $"Das GitHub-Limit ist aufgebraucht. Ab {r:HH:mm} Uhr geht es wieder.")
                         : "GitHub bremst gerade. Versuch es in einer Minute noch mal.");
                 }
                 res.EnsureSuccessStatusCode();
@@ -348,9 +353,9 @@ public partial class MainWindow
 
     static readonly Dictionary<string, (DateTime At, GitHubApps.Release Rel)> _ghLatest = new(StringComparer.OrdinalIgnoreCase);
     /// <summary>Neueste Veröffentlichung (10 Minuten zwischengespeichert – schont das Limit von 60 Abfragen pro Stunde).</summary>
-    static async Task<GitHubApps.Release> GitHubLatest(string fullName, CancellationToken ct = default)
+    static async Task<GitHubApps.Release> GitHubLatest(string fullName, CancellationToken ct = default, bool fresh = false)
     {
-        lock (_ghLatest) if (_ghLatest.TryGetValue(fullName, out var c) && DateTime.UtcNow - c.At < TimeSpan.FromMinutes(10)) return c.Rel;
+        lock (_ghLatest) if (!fresh && _ghLatest.TryGetValue(fullName, out var c) && DateTime.UtcNow - c.At < TimeSpan.FromMinutes(10)) return c.Rel;
         var rel = GitHubApps.ParseRelease(await GitHubJson(GitHubApps.LatestReleaseUrl(fullName), ct));
         lock (_ghLatest) _ghLatest[fullName] = (DateTime.UtcNow, rel);
         return rel;
@@ -382,13 +387,22 @@ public partial class MainWindow
 
     async Task<string> GitHubDownload(GitHubApps.Asset asset)
     {
-        var file = Path.Combine(Path.GetTempPath(), "trendo-gh-" + Guid.NewGuid().ToString("N") + Path.GetExtension(asset.Name));
-        using var res = await GitHubGet(asset.Url, "application/octet-stream", SetupToken, TimeSpan.FromSeconds(45));
-        var total = res.Content.Headers.ContentLength ?? asset.Size;
+        // Fortsetzen: angefangene Datei je Download-Adresse bleibt bei Abbruch liegen und wird beim nächsten Versuch weitergeladen
+        var partDir = Path.Combine(Path.GetTempPath(), "trendo-gh-teile"); Directory.CreateDirectory(partDir);
+        foreach (var old in Directory.GetFiles(partDir).Where(f => File.GetLastWriteTimeUtc(f) < DateTime.UtcNow.AddDays(-7))) try { File.Delete(old); } catch (IOException) { }
+        var part = Path.Combine(partDir, Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(asset.Url)))[..20] + Path.GetExtension(asset.Name) + ".part");
+        var have = File.Exists(part) ? new FileInfo(part).Length : 0;
+        if (asset.Size > 0 && have >= asset.Size) { File.Delete(part); have = 0; }
+        using var res = await GitHubGet(asset.Url, "application/octet-stream", SetupToken, TimeSpan.FromSeconds(45), have);
+        var resumed = have > 0 && res.StatusCode == HttpStatusCode.PartialContent;
+        if (!resumed) have = 0;
+        var total = resumed ? have + (res.Content.Headers.ContentLength ?? asset.Size - have) : res.Content.Headers.ContentLength ?? asset.Size;
         if (total > GitHubApps.MaxBytes) throw new InvalidOperationException("Die Datei ist zu groß.");
+        if (resumed) Avalonia.Threading.Dispatcher.UIThread.Post(() => SetupOverlayFraction(0.10 + 0.70 * have / Math.Max(1.0, total), $"Wird fortgesetzt ab {have / (1 << 20)} MB …"));
         await using var src = await res.Content.ReadAsStreamAsync(SetupToken);
-        await using var dst = File.Create(file);
-        var buf = new byte[1 << 20]; long done = 0; int n; var last = DateTime.MinValue; var t0 = DateTime.UtcNow;
+        var buf = new byte[1 << 20]; long done = have; int n; var last = DateTime.MinValue; var t0 = DateTime.UtcNow;
+        await using (var dst = new FileStream(part, resumed ? FileMode.Append : FileMode.Create, FileAccess.Write, FileShare.None))
+        {
         while (true)
         {
             // Stockt der Download (keine Daten mehr), gibt es eine klare Meldung statt endlosen Wartens
@@ -402,14 +416,17 @@ public partial class MainWindow
             if ((DateTime.UtcNow - last).TotalMilliseconds > 250)
             {
                 last = DateTime.UtcNow; var d = done;
-                var speed = d / Math.Max(0.5, (DateTime.UtcNow - t0).TotalSeconds) / (1 << 20);
+                var speed = (d - have) / Math.Max(0.5, (DateTime.UtcNow - t0).TotalSeconds) / (1 << 20);
                 var frac = total > 0 ? Math.Min(1, d / (double)total) : 0;
                 var eta = total > 0 && speed > 0.01 ? (total - d) / (1 << 20) / speed : -1;
                 Avalonia.Threading.Dispatcher.UIThread.Post(() => SetupOverlayFraction(0.10 + 0.70 * frac,
                     total > 0 ? $"{asset.Name}: {d / (1 << 20)} von {total / (1 << 20)} MB · {speed:0.0} MB/s{(eta >= 0 ? $" · noch etwa {Math.Ceiling(eta)} s" : "")}" : $"{asset.Name}: {d / (1 << 20)} MB · {speed:0.0} MB/s"));
             }
         }
-        if (total > 0 && done < total) throw new IOException($"Der Download ist unvollständig ({done / (1 << 20)} von {total / (1 << 20)} MB). Bitte noch einmal versuchen.");
+        }
+        if (total > 0 && done < total) throw new IOException($"Der Download ist unvollständig ({done / (1 << 20)} von {total / (1 << 20)} MB). Beim nächsten Versuch geht es an dieser Stelle weiter.");
+        var file = Path.Combine(Path.GetTempPath(), "trendo-gh-" + Guid.NewGuid().ToString("N") + Path.GetExtension(asset.Name));
+        File.Move(part, file);
         return file;
     }
 }
