@@ -26,7 +26,7 @@ public partial class MainWindow
         Show("finanzen");
     }
 
-    static string HbColor(string cat) { var i = Array.IndexOf(FinanceExtra.AllCategories, cat); return HbColors[(i < 0 ? Math.Abs(cat.GetHashCode()) : i) % HbColors.Length]; }
+    static string HbColor(string cat) { var i = Array.IndexOf(FinanceExtra.AllCategories, cat); return HbColors[(i < 0 ? StableHash(cat) : i) % HbColors.Length]; }
 
     Control HouseholdView()
     {

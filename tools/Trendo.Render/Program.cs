@@ -214,6 +214,20 @@ else if (shot == "seite")
         if (win.DiskAt?.Children.FirstOrDefault(c => c.IsDir) is { } firstDir) win.DiskSelect(firstDir);
         win.Show("ressourcen");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_KONTAKTE") is { Length: > 0 } abMode) // Adressbuch mit Beispielkontakten
+    {
+        var t = DateOnly.FromDateTime(DateTime.Today);
+        (string N, string E, string M, string C, string City, int BdayIn, string[] G, bool Fav)[] people = [
+            ("Erika Muster", "erika@example.de", "0160 1234567", "Muster GmbH", "10115 Berlin", 4, ["Familie"], true), ("Max Beispiel", "max@example.de", "0171 7654321", "Beispiel AG", "80331 München", 40, ["Arbeit"], false),
+            ("Anna Schmidt", "anna@example.org", "0152 111222", "", "50667 Köln", 12, ["Verein"], true), ("Bernd Neumann", "", "0176 999888", "Neumann Holzbau", "20095 Hamburg", 200, ["Arbeit"], false),
+            ("Clara Weber", "clara@example.net", "", "", "01067 Dresden", 25, ["Familie", "Verein"], false), ("David Fischer", "david@example.de", "0151 333444", "Praxis Fischer", "70173 Stuttgart", 90, [], false),
+            ("Eva Hoffmann", "eva@example.de", "", "", "04109 Leipzig", 300, ["Verein"], false), ("Felix Wagner", "", "0172 555666", "", "90402 Nürnberg", 150, [], false),
+            ("Greta Becker", "greta@example.de", "0163 777", "Café Becker", "28195 Bremen", 60, ["Arbeit"], false), ("Max Beispiel", "", "+49 171 7654321", "", "", 400, [], false) ];
+        var k = 0;
+        foreach (var x in people) { var b = t.AddDays(x.BdayIn); win.Mail.UpdateContact(new Trendo.Core.Contact($"demo{k++}", x.N, x.E, "", x.N.StartsWith("Erika") ? "Mag Rosen; ruft lieber abends an." : "", x.M, x.C, x.N.StartsWith("Erika") ? "Hauptstraße 1" : "", x.City, new DateOnly(1960 + k * 3, b.Month, b.Day), x.G.Length > 0 ? [.. x.G] : null, "", x.Fav, x.N.StartsWith("Erika") ? "https://example.de" : "")); }
+        win.AddressSelectForPreview("demo0", abMode == "bearbeiten");
+        win.Show("kontakte");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_MUSIK") is { Length: > 0 } musikMode) // Musikbibliothek mit Beispiel-Alben (eingebettete Cover), ein Titel läuft
     {
         static byte[] Syn(int n) => [(byte)(n >> 21 & 0x7F), (byte)(n >> 14 & 0x7F), (byte)(n >> 7 & 0x7F), (byte)(n & 0x7F)];

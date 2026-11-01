@@ -91,7 +91,7 @@ public partial class MainWindow
     /// <summary>Cover-Kachel: eingebettetes Bild, sonst ein Verlauf mit Anfangsbuchstaben.</summary>
     Control CoverTile(string trackPath, string title, double size)
     {
-        var h = Math.Abs(title.GetHashCode()); var hue = h % 360;
+        var h = StableHash(title); var hue = h % 360;
         Color Hsl(double l) { var hh = hue / 60.0; var x = 1 - Math.Abs(hh % 2 - 1); var (r, g, b) = hh switch { < 1 => (1.0, x, 0.0), < 2 => (x, 1.0, 0.0), < 3 => (0.0, 1.0, x), < 4 => (0.0, x, 1.0), < 5 => (x, 0.0, 1.0), _ => (1.0, 0.0, x) }; return Color.FromRgb((byte)(r * 255 * l), (byte)(g * 255 * l), (byte)(b * 255 * l)); }
         var initials = string.Concat(title.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(w => char.ToUpperInvariant(w[0])));
         var img = new Image { Width = size, Height = size, Stretch = Stretch.UniformToFill };

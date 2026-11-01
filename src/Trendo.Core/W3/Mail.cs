@@ -4,7 +4,9 @@ using System.Text.RegularExpressions;
 
 namespace Trendo.Core;
 
-public sealed record Contact(string Id, string Name, string Email, string Phone = "", string Note = "");
+/// <summary>Kontakt im Adressbuch (alle Felder außer Name sind freiwillig; ältere Daten ohne die neuen Felder bleiben lesbar).</summary>
+public sealed record Contact(string Id, string Name, string Email, string Phone = "", string Note = "", string Mobile = "", string Company = "", string Street = "", string City = "",
+    DateOnly? Birthday = null, List<string>? Groups = null, string Photo = "", bool Favorite = false, string Website = "");
 public sealed record MailDraft(string To, string Subject, string Body, string Cc = "");
 public sealed record ParsedMail(string From, string To, string Subject, string Date, string Body);
 
@@ -12,12 +14,12 @@ public sealed record ParsedMail(string From, string To, string Subject, string D
 /// eingegangene .eml-Dateien lesen. Trendo verschickt selbst nichts – das macht immer dein Mailprogramm, nachdem du es geprüft hast.</summary>
 public sealed partial class MailCenter
 {
-    private readonly string _file; private readonly AuditLog _audit; private readonly List<Contact> _contacts;
+    private readonly string _file, _root; private readonly AuditLog _audit; private readonly List<Contact> _contacts;
     [GeneratedRegex(@"^[^@\s,;<>]+@[^@\s,;<>]+\.[A-Za-z]{2,}$")] private static partial Regex EmailRx();
 
     public MailCenter(string dataRoot, AuditLog audit)
     {
-        _audit = audit; _file = Path.Combine(dataRoot, "kontakte.json");
+        _audit = audit; _root = dataRoot; _file = Path.Combine(dataRoot, "kontakte.json");
         try { _contacts = File.Exists(_file) ? JsonSerializer.Deserialize<List<Contact>>(File.ReadAllText(_file)) ?? [] : []; } catch (JsonException) { _contacts = []; }
     }
 
@@ -33,24 +35,6 @@ public sealed partial class MailCenter
     }
     public bool RemoveContact(string id) { var n = _contacts.RemoveAll(c => c.Id == id); Save(); return n > 0; }
     public IReadOnlyList<Contact> Find(string q) => _contacts.Where(c => (c.Name + " " + c.Email).Contains(q.Trim(), StringComparison.CurrentCultureIgnoreCase)).ToList();
-
-    public string ExportVcf() => string.Concat(Contacts().Select(c => $"BEGIN:VCARD\r\nVERSION:3.0\r\nFN:{Esc(c.Name)}\r\n{(c.Email != "" ? $"EMAIL:{c.Email}\r\n" : "")}{(c.Phone != "" ? $"TEL:{Esc(c.Phone)}\r\n" : "")}{(c.Note != "" ? $"NOTE:{Esc(c.Note)}\r\n" : "")}END:VCARD\r\n"));
-
-    public int ImportVcf(string vcf)
-    {
-        var n = 0;
-        foreach (Match card in Regex.Matches(vcf.Replace("\r\n ", "").Replace("\n ", ""), @"BEGIN:VCARD(.*?)END:VCARD", RegexOptions.Singleline | RegexOptions.IgnoreCase))
-        {
-            string F(string key) => Regex.Match(card.Groups[1].Value, $@"^{key}(?:;[^:\r\n]*)?:(.*)$", RegexOptions.Multiline | RegexOptions.IgnoreCase).Groups[1].Value.Trim().Replace("\\,", ",").Replace("\\;", ";").Replace("\\n", "\n");
-            var name = F("FN"); if (name == "") name = F("N").Replace(";", " ").Trim();
-            var mail = F("EMAIL");
-            if (name == "" || _contacts.Any(c => c.Name == name && c.Email == mail)) continue;
-            if (mail != "" && !ValidEmail(mail)) mail = "";
-            _contacts.Add(new(Guid.NewGuid().ToString("N")[..8], name, mail, F("TEL"), F("NOTE"))); n++;
-        }
-        Save(); _audit.Append(Principal.LocalOwner.Name, "contacts.import", $"{n}");
-        return n;
-    }
 
     public static IReadOnlyList<string> Check(MailDraft d)
     {

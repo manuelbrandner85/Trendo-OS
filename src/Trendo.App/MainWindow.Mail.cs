@@ -60,7 +60,7 @@ public partial class MainWindow
         sp.Children.Add(new WrapPanel { Children = { MSp(check), MSp(open), MSp(link), MSp(ki) } });
         sp.Children.Add(new TextBlock { Name = "mail-msg", Text = _mailMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap });
 
-        sp.Children.Add(H($"Kontakte ({people.Count})", 14));
+        sp.Children.Add(H("Kontakt schnell anlegen", 14));
         var cn = new TextBox { Name = "contact-name", PlaceholderText = "Name", Width = 180 }; var ce = new TextBox { Name = "contact-email", PlaceholderText = "E-Mail", Width = 220 }; var cp = new TextBox { Name = "contact-phone", PlaceholderText = "Telefon", Width = 140 };
         var add = new Button { Name = "contact-add", Content = "Hinzufügen" };
         add.Click += (_, _) => { try { Mail.AddContact(cn.Text ?? "", ce.Text ?? "", cp.Text ?? ""); _mailMsg = "Kontakt gespeichert."; } catch (ArgumentException ex) { _mailMsg = ex.Message; } Show("post"); };
@@ -78,13 +78,7 @@ public partial class MainWindow
         exp.Click += (_, _) => { Directory.CreateDirectory(MailDraftFolder); var f = Path.Combine(MailDraftFolder, "kontakte.vcf"); File.WriteAllText(f, Mail.ExportVcf()); _mailMsg = $"Gespeichert: {f}"; Show("post"); };
         sp.Children.Add(new WrapPanel { Children = { MSp(cn), MSp(ce), MSp(cp), MSp(add) } });
         sp.Children.Add(new WrapPanel { Children = { MSp(path), MSp(imp), MSp(exp) } });
-        var i = 0;
-        foreach (var c in people.Take(50))
-        {
-            var del = new Button { Name = $"contact-del-{i++}", Content = "Löschen", Padding = new Thickness(8, 2) };
-            del.Click += (_, _) => { Mail.RemoveContact(c.Id); Show("post"); };
-            sp.Children.Add(Row2(new StackPanel { Children = { new TextBlock { Text = c.Name, Foreground = Text }, P(string.Join(" · ", new[] { c.Email, c.Phone }.Where(x => x != "")), null, 11) } }, del));
-        }
+        sp.Children.Add(Act("mail-to-addressbook", $"Zum Adressbuch ({people.Count} Kontakte) →", () => Show("kontakte"), true));
         if (_mailRead is { } m)
             sp.Children.Add(WCard(new StackPanel { Name = "mail-read", Spacing = 3, Children = { H(m.Subject, 14), P($"Von {m.From} · an {m.To} · {m.Date}", null, 11), new SelectableTextBlock { Text = m.Body, Foreground = Text, TextWrapping = TextWrapping.Wrap } } }));
         return SysPage("E-Mail & Kontakte", sp);
