@@ -12,3 +12,8 @@
 ## Ergänzung 01.11.2026 (Manuel): volle Claude-Funktionalität, wenn Claude in Trendo verbunden ist
 - Zwei Stufen je Projekt: „Sicher“ (Standard: `--restricted`, nur Dateien im Projektordner, keine Befehle, kein Web, keine fremden Erweiterungen) und „Volle Claude-Funktionen“ (einmal je Projekt mit Ja freigegeben, jederzeit widerrufbar): alle Werkzeuge von Claude Code – Befehle (Build/Test/npm), Websuche und Webseiten, eigene Skills/Plugins/MCP des Nutzers, Unteragenten, Bilder lesen; Rechte über Claude Codes eigenen Auto-Modus (`--permission-mode auto`) mit dessen Sicherheitsprüfung; Arbeitsordner bleibt das Projekt; Planphase ändert weiterhin nichts.
 - Claude als Haupt-KI auch außerhalb der Code-Programme, solange verbunden (KI fragen, Recherche, Programm-Assistent, Studio-Aufträge); lokale KI bleibt Ersatz ohne Internet bzw. ohne Abo. Einstellung „Haupt-KI“: Claude (wenn verbunden) / lokal.
+
+## Ergänzung 01.11.2026 (Manuel): Claude nur über das Abo, nie über die API
+- Verbunden gilt nur eine Anmeldung über claude.ai (Abo) oder ein Abo-Token; Console-/API-Anmeldung wird als „nicht verbunden“ mit Erklärung angezeigt.
+- Jeder Claude-Lauf entfernt Variablen, die auf die kostenpflichtige API umschalten würden (`ANTHROPIC_API_KEY`, `ANTHROPIC_AUTH_TOKEN`, `ANTHROPIC_BASE_URL`, Bedrock/Vertex/Foundry); Anmeldung nur mit `--claudeai`.
+- Abo-Token (Idee von Manuel): „Token erzeugen …“ öffnet `claude setup-token`; der Token (sk-ant-oat…) wird im sicheren Windows-Speicher abgelegt und nur als `CLAUDE_CODE_OAUTH_TOKEN` an Claude Code gegeben. API-Schlüssel (sk-ant-api…) nimmt Trendo nicht an.

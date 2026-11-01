@@ -11,12 +11,17 @@ namespace Trendo.Core;
 /// fremde Einstellungsdateien aus) und <c>--strict-mcp-config</c> (keine fremden Erweiterungen). Kostenpflichtige KI bleibt optional – ohne Claude arbeitet der Trendo-Agent.</summary>
 public static partial class ClaudeCode
 {
+    /// <summary>Nur das Claude-Abo zählt (Vorgabe 01.11.2026): Anmeldung über claude.ai oder ein Abo-Token. Console/API-Schlüssel gelten als nicht verbunden.</summary>
     public sealed record Status(bool Installed, bool LoggedIn, string Method, string Plan, string? Exe)
     {
+        public bool Subscription => LoggedIn && Method is "claude.ai" or "oauth_token" or "abo-token";
+        /// <summary>Verbunden im Sinne von Trendo: angemeldet UND über das Abo.</summary>
+        public bool Ready => Subscription;
         public static readonly Status Missing = new(false, false, "", "", null);
         /// <summary>Kurztext für Leiste und Einstellungen.</summary>
         public string Text => !Installed ? "Claude Code ist nicht installiert." : !LoggedIn ? "Claude Code ist installiert, aber nicht angemeldet." :
-            $"✓ Mit deinem Claude-Abo verbunden{(Plan.Length > 0 ? $" ({char.ToUpperInvariant(Plan[0])}{Plan[1..]})" : "")}" + (Method == "claude.ai" ? "" : Method.Length > 0 ? $" – Anmeldung über {Method}" : "");
+            !Subscription ? "Claude Code ist über die kostenpflichtige API/Console angemeldet – Trendo nutzt Claude nur über dein Abo. Bitte mit „Mit Claude verbinden“ über das Abo anmelden." :
+            $"✓ Mit deinem Claude-Abo verbunden{(Plan.Length > 0 ? $" ({char.ToUpperInvariant(Plan[0])}{Plan[1..]})" : "")}";
     }
 
     /// <summary>Wo Claude Code liegen kann (offizieller Installer, npm, PATH). <paramref name="env"/> liefert Umgebungsvariablen.</summary>
@@ -30,6 +35,15 @@ public static partial class ClaudeCode
     }
 
     public static string? Find(Func<string, string?> env, Func<string, bool> exists) => Candidates(env).FirstOrDefault(exists);
+
+    /// <summary>Umgebungsvariablen, die Claude Code auf die kostenpflichtige API umschalten würden – werden für jeden Lauf entfernt (nur Abo).</summary>
+    public static readonly string[] ApiVariables = ["ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BASE_URL", "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY", "ANTHROPIC_BEDROCK_BASE_URL", "ANTHROPIC_VERTEX_PROJECT_ID"];
+    /// <summary>Abo-Token aus <c>claude setup-token</c> (optional) – Claude Code liest ihn aus dieser Variablen; abgerechnet wird über das Abo.</summary>
+    public const string TokenVariable = "CLAUDE_CODE_OAUTH_TOKEN";
+
+    /// <summary>Sieht ein eingefügter Text wie ein Abo-Token von <c>claude setup-token</c> aus (nicht wie ein API-Schlüssel)?</summary>
+    public static bool LooksLikeAboToken(string t) => Regex.IsMatch(t.Trim(), @"^sk-ant-oat\d{2}-[A-Za-z0-9_-]{20,}$");
+    public static bool LooksLikeApiKey(string t) => t.Trim().StartsWith("sk-ant-api", StringComparison.Ordinal);
 
     /// <summary>Antwort von <c>claude auth status --json</c> lesen. Nur die nötigen Felder; E-Mail und Organisation werden bewusst ignoriert.</summary>
     public static Status ParseStatus(string exe, string json)

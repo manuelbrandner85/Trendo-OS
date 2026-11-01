@@ -35,7 +35,10 @@ public partial class MainWindow
             if (KiCatalog.Cloud.FirstOrDefault(c => c.Id == id) is { } svc && _core.Secrets.Get(svc.SecretName) is { Length: > 0 } key)
                 cloud.Add(CloudBackendFactory?.Invoke(svc, key) ?? CloudKiBackend.For(svc, key));
         if (set.OpenRouterModels.TryGetValue(OpenRouterFree.Text, out var orText)) CloudKiBackend.Preferred["openrouter"] = orText; else CloudKiBackend.Preferred.TryRemove("openrouter", out _);
-        return set.RemoteMode == "zuerst" ? [.. cloud, .. list] : [.. list, .. cloud]; // „zuerst“: Internet-KI bevorzugt, sonst die KI auf dem PC
+        var order = set.RemoteMode == "zuerst" ? [.. cloud, .. list] : new List<IKiBackend>([.. list, .. cloud]); // „zuerst“: Internet-KI bevorzugt, sonst die KI auf dem PC
+        // T-0316: Claude über das Abo des Nutzers ist die Haupt-KI, solange verbunden (nie in Tests mit eigenem Datenordner); sonst übernimmt die KI auf dem PC
+        if (set.ClaudeMain && (!_opt.Isolated || ClaudeStatusOverride is not null)) order.Insert(0, new ClaudeKiBackend(this, () => KiSourceSettings.Load(_core.DataRoot).ClaudeModel));
+        return order;
     }
 
     /// <summary>Für Tests: KI-Dienst ohne Netz nachbilden.</summary>
@@ -77,7 +80,7 @@ public partial class MainWindow
 
     private Control AskView()
     {
-        var sp = new StackPanel { Spacing = 8, Children = { P(KiSourceSettings.Load(_core.DataRoot).Cloud.Count == 0 ? "Stell eine Frage. Die Antwort kommt von der KI auf diesem PC – nichts geht ins Internet." : "Stell eine Frage. Zuerst antwortet die KI auf diesem PC. Nur wenn sie schweigt, springt dein eingeschalteter KI-Dienst ein – dann geht nur diese eine Frage hinaus, ohne Verlauf und ohne deine Dokumente.") } };
+        var sp = new StackPanel { Spacing = 8, Children = { ClaudeCard(), P(KiSourceSettings.Load(_core.DataRoot).Cloud.Count == 0 ? "Stell eine Frage. Die Antwort kommt von der KI auf diesem PC – nichts geht ins Internet." : "Stell eine Frage. Zuerst antwortet die KI auf diesem PC. Nur wenn sie schweigt, springt dein eingeschalteter KI-Dienst ein – dann geht nur diese eine Frage hinaus, ohne Verlauf und ohne deine Dokumente.") } };
         var log = new StackPanel { Name = "ask-log", Spacing = 6 };
         foreach (var m in _chat)
             log.Children.Add(WCard(new StackPanel { Children = { P(m.Role == "user" ? "Du" : "Trendo", m.Role == "user" ? Accent : null, 10.5), new SelectableTextBlock { Text = m.Content, Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap } } }));

@@ -99,7 +99,7 @@ public partial class MainWindow
     private Control SourcesView()
     {
         var set = KiSourceSettings.Load(_core.DataRoot);
-        var sp = new StackPanel { Spacing = 6, Children = { P("Trendo nutzt zuerst die kostenlose KI auf diesem PC. Ist die erste Quelle aus, fragt Trendo automatisch die nächste. Freie Modelle lädt Trendo selbst; KI-Dienste mit Schlüssel trägst du unter „Dienste & Schlüssel“ ein.") } };
+        var sp = new StackPanel { Spacing = 6, Children = { ClaudeCard(), P("Trendo nutzt zuerst die kostenlose KI auf diesem PC. Ist die erste Quelle aus, fragt Trendo automatisch die nächste. Freie Modelle lädt Trendo selbst; KI-Dienste mit Schlüssel trägst du unter „Dienste & Schlüssel“ ein.") } };
         var scan = new Button { Name = "src-scan", Content = "Jetzt suchen", Background = Accent };
         var srcMsg = new TextBlock { Name = "src-msg", Text = _srcMsg, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap };
         scan.Click += async (_, _) =>

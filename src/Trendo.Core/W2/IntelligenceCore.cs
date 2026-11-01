@@ -18,6 +18,10 @@ public interface IKiBackend
 /// <summary>Quelle außerhalb dieses PCs (KI-Dienst mit Schlüssel). Bekommt nie Ausschnitte aus den eigenen Dokumenten („Wissen“) – nur Frage und Verlauf.</summary>
 public interface IRemoteKiBackend : IKiBackend { }
 
+/// <summary>T-0316: vom Nutzer bewusst gewählte Haupt-KI außerhalb des PCs (Claude über das eigene Abo). Darf überall antworten, nicht nur im freien Chat –
+/// bekommt aber wie jede Internet-KI keine Ausschnitte aus den eigenen Dokumenten.</summary>
+public interface IMainKiBackend : IRemoteKiBackend { }
+
 /// <param name="AllowRemote">Nur der freie Chat setzt das: dann darf ein eingeschalteter KI-Dienst außerhalb des PCs einspringen – ohne Verlauf und ohne eigene Dokumente. Abläufe, E-Mail, Agenten und Aufträge bleiben immer lokal.</param>
 public sealed record KiRequest(string Question, string? SystemPrompt = null, string? PreferredModel = null, IReadOnlyList<KiMessage>? History = null, bool UseKnowledge = true, bool AllowRemote = false);
 public sealed record KiAnswer(bool Ok, string Text, string? Backend, string? Model, IReadOnlyList<string> Sources, TimeSpan Took);
@@ -85,7 +89,7 @@ public sealed class IntelligenceCore
         KiActivityHub.Update(act, phase: "KI wird gesucht …");
         foreach (var b in _backends())
         {
-            if (b is IRemoteKiBackend && !req.AllowRemote && RemoteEverywhere?.Invoke() != true) continue; // nur der freie Chat – oder überall, wenn eingestellt
+            if (b is IRemoteKiBackend and not IMainKiBackend && !req.AllowRemote && RemoteEverywhere?.Invoke() != true) continue; // nur der freie Chat – oder überall, wenn eingestellt
             if (!await b.IsUpAsync(ct)) { tried.Add($"{b.Name}: nicht erreichbar"); continue; }
             var models = await b.ModelsAsync(ct);
             var model = req.PreferredModel is { } p && models.Contains(p) ? p : models.FirstOrDefault();

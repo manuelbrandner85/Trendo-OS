@@ -74,6 +74,12 @@ public sealed class KiSourceSettings
     /// <summary>Gewählte kostenlose OpenRouter-Modelle je Bereich (leer = automatisch das beste).</summary>
     public Dictionary<string, string> OpenRouterModels { get; set; } = [];
     public bool RemoteEverywhere => RemoteMode is "ersatz" or "zuerst";
+    /// <summary>T-0316: Claude (über das Abo des Nutzers) ist die Haupt-KI, sobald Claude Code verbunden ist. Aus = nur lokale KI und gewählte Dienste.</summary>
+    public bool ClaudeMain { get; set; } = true;
+    /// <summary>T-0316: Projekte mit freigegebenen vollen Claude-Funktionen (Ordnerpfade).</summary>
+    public List<string> ClaudeFull { get; set; } = [];
+    /// <summary>T-0316: gewähltes Claude-Modell (leer = Standard von Claude Code).</summary>
+    public string ClaudeModel { get; set; } = "";
     /// <summary>Freie Modelle nach dem Setup automatisch laden (Vorgabe 2026-10-25).</summary>
     public bool AutoModels { get; set; } = true;
     /// <summary>Fehlversuche je Modell beim automatischen Laden; nach 3 Versuchen nur noch per Knopf.</summary>
