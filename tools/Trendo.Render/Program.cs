@@ -214,6 +214,46 @@ else if (shot == "seite")
         if (win.DiskAt?.Children.FirstOrDefault(c => c.IsDir) is { } firstDir) win.DiskSelect(firstDir);
         win.Show("ressourcen");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_MUSIK") is { Length: > 0 } musikMode) // Musikbibliothek mit Beispiel-Alben (eingebettete Cover), ein Titel läuft
+    {
+        static byte[] Syn(int n) => [(byte)(n >> 21 & 0x7F), (byte)(n >> 14 & 0x7F), (byte)(n >> 7 & 0x7F), (byte)(n & 0x7F)];
+        static byte[] Fr(string id, byte[] d) => [.. System.Text.Encoding.ASCII.GetBytes(id), (byte)(d.Length >> 24), (byte)(d.Length >> 16), (byte)(d.Length >> 8), (byte)d.Length, 0, 0, .. d];
+        static byte[] Cov(SkiaSharp.SKColor a, SkiaSharp.SKColor b, int seed)
+        {
+            using var bmp = new SkiaSharp.SKBitmap(300, 300); using (var cv = new SkiaSharp.SKCanvas(bmp))
+            {
+                using var bg = new SkiaSharp.SKPaint { Shader = SkiaSharp.SKShader.CreateLinearGradient(new(0, 0), new(300, 300), [a, b], SkiaSharp.SKShaderTileMode.Clamp) }; cv.DrawRect(0, 0, 300, 300, bg);
+                var r = new Random(seed); using var ring = new SkiaSharp.SKPaint { Color = new SkiaSharp.SKColor(255, 255, 255, 70), IsStroke = true, StrokeWidth = 6, IsAntialias = true };
+                for (var k = 0; k < 5; k++) cv.DrawCircle(r.Next(40, 260), r.Next(40, 260), r.Next(20, 120), ring);
+            }
+            using var ms = new MemoryStream(); bmp.Encode(ms, SkiaSharp.SKEncodedImageFormat.Png, 90); return ms.ToArray();
+        }
+        var mdir = Path.Combine(root, "beispielmusik");
+        (string Artist, string Album, string[] Titles, SkiaSharp.SKColor A, SkiaSharp.SKColor B)[] albums = [
+            ("Erika Muster", "Morgenlicht", ["Aufbruch", "Über den Feldern", "Kaffee am Fenster", "Lichtspiel"], new(0xf7, 0x9d, 0x5c), new(0x6a, 0x1b, 0x4d)),
+            ("Das Hafenquartett", "Nordwind", ["Möwen", "Leuchtturm", "Ebbe"], new(0x13, 0x4e, 0x5e), new(0x71, 0xb2, 0x80)),
+            ("Klangwerk", "Stadt bei Nacht", ["Neon", "Letzte Bahn", "Dächer", "Regen auf Glas", "Halb vier"], new(0x41, 0x29, 0x5a), new(0x2f, 0x80, 0xed)),
+            ("Max Beispiel", "Holz & Saiten", ["Werkstatt", "Erste Saite"], new(0x8e, 0x5a, 0x2b), new(0x2b, 0x1a, 0x0e)),
+            ("Klangwerk", "Frühe Aufnahmen", ["Probe 1", "Probe 2", "Garage"], new(0x37, 0x47, 0x4f), new(0xcf, 0xd8, 0xdc)) ];
+        var seedN = 1;
+        foreach (var al in albums)
+        {
+            var d = Directory.CreateDirectory(Path.Combine(mdir, al.Artist, al.Album)).FullName; var cover = Cov(al.A, al.B, seedN++);
+            for (var t = 0; t < al.Titles.Length; t++)
+            {
+                byte[] frames = [.. Fr("TIT2", [3, .. System.Text.Encoding.UTF8.GetBytes(al.Titles[t])]), .. Fr("TPE1", [3, .. System.Text.Encoding.UTF8.GetBytes(al.Artist)]), .. Fr("TALB", [3, .. System.Text.Encoding.UTF8.GetBytes(al.Album)]),
+                    .. Fr("TRCK", [0, .. System.Text.Encoding.ASCII.GetBytes((t + 1).ToString())]), .. Fr("TYER", [0, .. "2025"u8.ToArray()]), .. Fr("APIC", [0, .. "image/png"u8.ToArray(), 0, 3, 0, .. cover])];
+                File.WriteAllBytes(Path.Combine(d, $"{t + 1:00}.mp3"), [.. "ID3"u8.ToArray(), 3, 0, 0, .. Syn(frames.Length), .. frames, .. new byte[200]]);
+            }
+        }
+        win.MusicFoldersOverride = [mdir]; win.AudioOverride = () => new PreviewAudio();
+        win.Show("medien"); win.MediaTabForPreview("musik");
+        var mt = win.MusicLoadAsync(); while (!mt.IsCompleted || win.MusicTracks.Count == 0) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
+        var morgen = win.MusicTracks.Where(x => x.Album == "Morgenlicht").OrderBy(x => x.No).Select(x => x.Path).ToList();
+        if (musikMode == "album") win.MusicViewForPreview("album:Erika Muster|Morgenlicht");
+        win.MusicPlay(morgen, 1); win.MusicProgressForPreview(83, 214);
+        for (var i = 0; i < 50; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); } win.Show("medien"); win.MusicProgressForPreview(83, 214); for (var i = 0; i < 20; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_KASSE") is { Length: > 0 }) // Kasse mit Beispielartikeln, zwei Verkäufen und gefülltem Warenkorb
     {
         var k = win.Kasse;
@@ -607,3 +647,11 @@ Console.WriteLine($"OK {outPath}");
 foreach (var crash in CrashLog.List(root).Take(1)) Console.Error.WriteLine("ABSTURZ beim Rendern:" + Environment.NewLine + File.ReadAllText(crash));
 Directory.Delete(root, true);
 sealed class NoopL : IProcessLauncher { public void Open(string t) { } }
+
+/// <summary>Stumme Tonausgabe für Vorschaubilder.</summary>
+sealed class PreviewAudio : IAudioOut
+{
+    public event Action<double, double>? Progress { add { } remove { } }
+    public event Action? Ended { add { } remove { } }
+    public void Load(string file) { } public void SetPause(bool pause) { } public void Seek(double seconds) { } public void SetVolume(int percent) { } public void Stop() { } public void Dispose() { }
+}
