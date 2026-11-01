@@ -29,6 +29,17 @@ public class T0223_TrendoPdfUi
         return f;
     }
 
+    [AvaloniaFact(DisplayName = "Klick-Audit 01.11.2026: „PDF öffnen …“ mit einer Datei, die keine PDF ist – Hinweis statt Absturz")]
+    public void Open_not_a_pdf()
+    {
+        var (w, _, root) = Ui.Open();
+        var f = Path.Combine(root, "auswahl.txt"); File.WriteAllText(f, "x");
+        w.PickOverride = _ => Task.FromResult<string[]?>([f]);
+        w.Show("pdf"); w.Find<Button>("pdf-open").Press();
+        Assert.Null(w.PdfPath); Assert.Contains("keine lesbare PDF", w.Find<TextBlock>("pdf-msg").Text);
+        w.Close();
+    }
+
     [AvaloniaFact(DisplayName = "T-0223 P1/P2 UI: PDF öffnen, blättern, Gehe zu, suchen, Lesezeichen – Seite wird gezeichnet")]
     public void View_search_bookmarks()
     {

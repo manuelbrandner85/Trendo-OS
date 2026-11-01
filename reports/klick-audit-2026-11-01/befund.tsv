@@ -1,0 +1,49 @@
+3d	3d-export-stl	Als STL	ohne Wirkung
+3d	3d-export-fbx	Als FBX	ohne Wirkung
+3d-druck	btn-help	?	ohne Wirkung
+pdf	pdf-open	PDF öffnen …	Absturz InvalidOperationException: The file is not a valid PDF document.
+tabelle	btn-help	?	ohne Wirkung
+tabelle	tabelle-file	Datei ▾	ohne Wirkung
+tabelle	tabelle-rib-start	Start	ohne Wirkung
+technik	btn-help	?	ohne Wirkung
+teilen	btn-help	?	ohne Wirkung
+text	btn-help	?	ohne Wirkung
+text	text-rib-start	Start	ohne Wirkung
+text	text-cut	Ausschneiden	ohne Wirkung
+text	text-copy	Kopieren	ohne Wirkung
+text	text-paste	Einfügen	ohne Wirkung
+text	text-selectall	Alles markieren	ohne Wirkung
+text	text-super	x²	ohne Wirkung
+text	text-sub	x₂	ohne Wirkung
+text	text-grow	A+	ohne Wirkung
+text	text-shrink	A−	ohne Wirkung
+tv	btn-help	?	ohne Wirkung
+tv	tv-tab-live	📺 Live-TV	ohne Wirkung
+tv	tv-tab-film	🎬 Filme	ohne Wirkung
+tv	tv-tab-serie	🍿 Serien	ohne Wirkung
+tv	tv-tab-guide	🗓 Programmführer	ohne Wirkung
+tv	tv-tab-rec	⏺ Aufnahmen	ohne Wirkung
+tv	tv-tab-multi	▦ Mehrfachansicht	ohne Wirkung
+uhr	btn-help	?	ohne Wirkung
+uhr	uhr-wc-add	Hinzufügen	ohne Wirkung
+updates	btn-help	?	ohne Wirkung
+updates	upd-when-sofort	Sofort, sobald es geladen ist – mit 30 Sekunden Hinweis, alles wird vorher gesichert	ohne Wirkung
+verbund	btn-help	?	ohne Wirkung
+verkaufen	btn-help	?	ohne Wirkung
+verkaufen	verkaufen-idea-0	● Meine Idee	ohne Wirkung
+verkaufen	sell-tab-kasse	🧾 Kasse	ohne Wirkung
+vorhaben	btn-help	?	ohne Wirkung
+vorhaben	suite-new	＋ Neues Projekt	ohne Wirkung
+werkzeuge	note-add	Notiz speichern	ohne Wirkung
+werkzeuge	timer-1	1 Min.	ohne Wirkung
+werkzeuge	timer-5	5 Min.	ohne Wirkung
+werkzeuge	timer-10	10 Min.	ohne Wirkung
+werkzeuge	timer-25	25 Min.	ohne Wirkung
+werkzeuge	timer-stop	Stopp	ohne Wirkung
+wissenschaft	btn-help	?	ohne Wirkung
+xr	btn-help	?	ohne Wirkung
+xr	xr-dev-0	Meta Quest 3 / Pico 4	ohne Wirkung
+zettel	btn-help	?	ohne Wirkung
+zwilling	btn-help	?	ohne Wirkung
+zwilling	twin-range-30d	30 Tage	ohne Wirkung
+zwilling	twin-range-all	Alles	ohne Wirkung

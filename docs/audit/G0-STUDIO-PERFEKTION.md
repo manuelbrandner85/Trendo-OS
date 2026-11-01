@@ -19,7 +19,7 @@ Die Merkmale je Programm stammen aus einer Textsuche in den Quelldateien der jew
 | 07 Speichern & Wiederherstellen | `ProgramDocument`: Speichern über temporäre Datei + Ersetzen, Sicherung alle 30 s (`.autosave`), Wiederherstellen nach Absturz; Text/Tabelle/Präsentation mit eigener Sicherung | Autosave-Datei selbst wird direkt geschrieben (nicht atomar); Programme außerhalb der Hülle (z. B. 3D, Spiele, Roboter, Zwilling, Fahrzeug, Lernen, Brief) ohne automatische Sicherung |
 | 08 Tempo | Seitenmessung in „Qualität & Leistung“; Speicherlecks durch DedupeRegistries behoben | App-Tests dauern 20–48 min; alle Studios werden beim Start registriert (kein Laden erst bei Bedarf) |
 | 09 Profi-Editoren | Menüband + Eigenschaften + Statuszeile in den 11 Hüllen-Programmen; echte Arbeitsflächen in Text, Tabelle, Präsentation, Bild, Schnitt, CAD, Architektur, Elektronik … | Tastenkürzel fehlen in etwa der Hälfte der Programme (z. B. Architektur, Elektronik, Karten, Bild) |
-| 10 QA & Abnahme | Volltest je Version mit Rohlog + SHA-256 unter `reports/`; Status nur mit Beleg | Klick-Audit über alle Knöpfe zuletzt am **22.10.2026** (73 Befunde: 36 stumm, 6 Abstürze); muss neu laufen; keine echten Fenstertests bei 150/200 % DPI und zweitem Bildschirm (NOT_RUN) |
+| 10 QA & Abnahme | Volltest je Version mit Rohlog + SHA-256 unter `reports/`; Status nur mit Beleg; Klick-Audit 01.11.: 49 Befunde, 1 Absturz (behoben) | Knöpfe ohne erkennbare Wirkung prüfen (siehe unten); keine echten Fenstertests bei 150/200 % DPI und zweitem Bildschirm (NOT_RUN) |
 
 ## Befund Datenschutz (beim G0 gefunden, behoben)
 
@@ -27,6 +27,16 @@ Das Werkzeug für Katalog und Vorschaubilder (`tools/Trendo.Render`) lief nicht 
 dabei „Zuletzt benutzt“ aus dem echten Dokumente-Ordner, und diese Dateinamen standen im öffentlichen Katalog
 (`docs/programme/katalog.json`, `docs/programme/doku-start/FEATURE_MATRIX.md`, seit Commit `ab682fbf`). Behoben: Das Werkzeug läuft jetzt immer im Testmodus,
 der Katalog ist neu erzeugt und enthält keine Dateinamen mehr. Ältere Commits enthalten sie weiterhin (Entscheidung über das Umschreiben des Verlaufs liegt beim Projektinhaber).
+
+## Klick-Audit (01.11.2026, Stand 0.9.30, T-0202 über alle Seiten, 35 min)
+
+Vorher (22.10.2026): 73 Befunde, davon 6 Abstürze. Jetzt: **49 Befunde, davon 1 Absturz**.
+
+- **Absturz (behoben in 0.9.32):** pdf · „PDF öffnen …“ – InvalidOperationException: The file is not a valid PDF document. → jetzt Hinweis „keine lesbare PDF-Datei“, mit Test.
+- **„?“ (Hilfe) ohne erkennbare Wirkung:** 15 Seiten (3d-druck, tabelle, technik, teilen, text, tv, uhr, updates, verbund, verkaufen, vorhaben, wissenschaft, xr, zettel, zwilling). Prüfen in G1: Hilfe-Knopf zeigt auf diesen Seiten keinen Text.
+- **Weitere Knöpfe ohne erkennbare Wirkung (33):** 3d · „Als STL“; 3d · „Als FBX“; tabelle · „Datei ▾“; tabelle · „Start“; text · „Start“; text · „Ausschneiden“; text · „Kopieren“; text · „Einfügen“; text · „Alles markieren“; text · „x²“; text · „x₂“; text · „A+“; text · „A−“; tv · „📺 Live-TV“; tv · „🎬 Filme“; tv · „🍿 Serien“; tv · „🗓 Programmführer“; tv · „⏺ Aufnahmen“; tv · „▦ Mehrfachansicht“; uhr · „Hinzufügen“; updates · „Sofort, sobald es geladen ist – mit 30 Sekunden Hinweis, alles wird vorher gesichert“; verkaufen · „● Meine Idee“; verkaufen · „🧾 Kasse“; vorhaben · „＋ Neues Projekt“; werkzeuge · „Notiz speichern“; werkzeuge · „1 Min.“; werkzeuge · „5 Min.“; werkzeuge · „10 Min.“; werkzeuge · „25 Min.“; werkzeuge · „Stopp“; xr · „Meta Quest 3 / Pico 4“; zwilling · „30 Tage“; zwilling · „Alles“.
+  Das Prüfwerkzeug erkennt nur sichtbare Änderungen der Seite. Kopieren/Einfügen (Zwischenablage), Timer und Reiter, die schon offen sind, sind deshalb oft
+  kein echter Fehler. Echte Kandidaten: 3D „Als STL“/„Als FBX“, Tabelle „Datei ▾“, Werkzeuge „Notiz speichern“, Vorhaben „＋ Neues Projekt“, Uhr „Hinzufügen“ (wohl ohne Eingabe).
 
 ## Empfohlenes Pilotstudio (G1)
 
@@ -136,5 +146,4 @@ Spalten: Tests = Anzahl Tests im Katalog · Speichern / Rückgängig / Autosave 
 ## Nicht geprüft
 
 - Verhalten im echten Fenster bei 125/150/200 % DPI, auf zweitem Bildschirm, nach Absturz (NOT_RUN).
-- Klick-Audit über alle Seiten mit dem aktuellen Stand (läuft als Nächstes, Ergebnis wird hier ergänzt).
 - Ob jede gefundene Funktion fachlich vollständig ist – dafür gibt es die Tests der Programme.

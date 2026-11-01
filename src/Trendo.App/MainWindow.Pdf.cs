@@ -134,7 +134,14 @@ public partial class MainWindow
         // Kopf: Öffnen und Neu
         var head = new WrapPanel();
         var open = new Button { Name = "pdf-open", Content = "PDF öffnen …", Background = Accent, Margin = new Thickness(0, 0, 5, 5), Padding = new Thickness(12, 4) };
-        open.Click += async (_, _) => { if (await PickPdf("pdf-open", false) is [var f, ..]) OpenPdf(f); Show("pdf"); };
+        open.Click += async (_, _) =>
+        {
+            if (await PickPdf("pdf-open", false) is [var f, ..])
+                try { OpenPdf(f); }
+                catch (Exception e) when (e is InvalidOperationException or InvalidDataException or IOException or UnauthorizedAccessException) // Klick-Audit 01.11.2026: keine PDF → Hinweis statt Absturz
+                { PdfPath = null; PdfPages = 0; _pdfSizes = []; PdfSay($"„{Path.GetFileName(f)}“ ist keine lesbare PDF-Datei."); }
+            Show("pdf");
+        };
         head.Children.Add(open);
         head.Children.Add(B("pdf-new", "Neue leere PDF", () =>
         {
