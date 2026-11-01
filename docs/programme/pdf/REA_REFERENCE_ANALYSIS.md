@@ -1,5 +1,5 @@
 # Trendo PDF – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.32 (Stand 345fe84)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.33 (Stand 9436f3b)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

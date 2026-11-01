@@ -1,6 +1,6 @@
 # KI-Vorlagen – Testplan
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.32 (Stand 345fe84)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.33 (Stand 9436f3b)
 
 11 Tests sprechen dieses Programm an.
 

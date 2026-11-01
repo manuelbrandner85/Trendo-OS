@@ -1,8 +1,8 @@
 # Punktwolke – Testergebnisse
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.32 (Stand 345fe84)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.33 (Stand 9436f3b)
 
-Lauf: `volltest-0.9.32-api.trx, volltest-0.9.32-app.trx, volltest-0.9.32-core.trx`
+Lauf: `volltest-0.9.33-api.trx, volltest-0.9.33-app.trx, volltest-0.9.33-core.trx`
 
 Bestanden 23 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

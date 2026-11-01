@@ -1,6 +1,6 @@
 # Ersteinrichtung – Architektur
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `einrichtung` · Stand: 0.9.32 (Stand 345fe84)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `einrichtung` · Stand: 0.9.33 (Stand 9436f3b)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

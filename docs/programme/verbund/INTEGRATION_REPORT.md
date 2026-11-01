@@ -1,6 +1,6 @@
 # Geräteverbund (PC, Pi, Android) – Einbindung in Trendo OS
 
-Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.32 (Stand 345fe84)
+Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.33 (Stand 9436f3b)
 
 - Seite `verbund` im Studio „PC, Pi & Handy verbinden“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

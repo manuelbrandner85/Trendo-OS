@@ -1,6 +1,6 @@
 # VR & AR gestalten – Produktionspaket
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.32 (Stand 345fe84)
+Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.33 (Stand 9436f3b)
 
 Arbeitsfläche: 3D-Ansicht  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

@@ -1,8 +1,8 @@
 # Einstellungen – Testergebnisse
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.32 (Stand 345fe84)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.33 (Stand 9436f3b)
 
-Lauf: `volltest-0.9.32-api.trx, volltest-0.9.32-app.trx, volltest-0.9.32-core.trx`
+Lauf: `volltest-0.9.33-api.trx, volltest-0.9.33-app.trx, volltest-0.9.33-core.trx`
 
 Bestanden 59 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

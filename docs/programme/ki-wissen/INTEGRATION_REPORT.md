@@ -1,6 +1,6 @@
 # Wissen für die KI – Einbindung in Trendo OS
 
-Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.32 (Stand 345fe84)
+Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.33 (Stand 9436f3b)
 
 - Seite `ki-wissen` im Studio „Wissen merken“ (Wissen & Lernen) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

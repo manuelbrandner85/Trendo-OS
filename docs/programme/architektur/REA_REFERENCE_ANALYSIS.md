@@ -1,6 +1,6 @@
 # Grundriss & Wohnen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.32 (Stand 345fe84)
+Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.33 (Stand 9436f3b)
 
 Analyse: [Vorbild-Analyse Grundriss: Sweet Home 3D 7.5 (Clean-Room)](../../../docs/claude/vorbilder/grundriss-sweethome3d.md)
 

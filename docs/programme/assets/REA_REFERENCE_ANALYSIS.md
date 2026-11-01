@@ -1,5 +1,5 @@
 # Freie Bilder & Klänge – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.32 (Stand 345fe84)
+Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.33 (Stand 9436f3b)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.
