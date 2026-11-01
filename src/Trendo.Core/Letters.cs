@@ -18,6 +18,11 @@ public sealed class LetterDraft
     public string Place { get; set; } = "";
     public DateTime Date { get; set; } = DateTime.Today;
     public string Reference { get; set; } = "";          // z. B. Kundennummer, Aktenzeichen
+    /// <summary>DIN 5008: Form B (Anschriftfeld ab 45 mm, Standard) oder Form A (ab 27 mm, kleiner Briefkopf).</summary>
+    public string Form { get; set; } = "B";
+    /// <summary>Informationsblock: „Ihre Nachricht vom“ und „Unser Zeichen“ (freiwillig).</summary>
+    public string YourMessage { get; set; } = "";
+    public string OurReference { get; set; } = "";
     public string Subject { get; set; } = "";
     public string Salutation { get; set; } = "Sehr geehrte Damen und Herren,";
     public string Body { get; set; } = "";
@@ -160,6 +165,45 @@ public static class Letters
         return $"{d.Date:yyyy-MM-dd}-{(s.Length == 0 ? "brief" : s)}";
     }
 
+    /// <summary>Informationsblock nach DIN 5008 (rechts neben dem Anschriftfeld): Zeichen, Nachricht vom, Ort und Datum.</summary>
+    public static List<string> InfoBlock(LetterDraft d)
+    {
+        var l = new List<string>();
+        if (d.Reference.Trim().Length > 0) l.Add("Ihr Zeichen: " + d.Reference.Trim());
+        if (d.YourMessage.Trim().Length > 0) l.Add("Ihre Nachricht vom: " + d.YourMessage.Trim());
+        if (d.OurReference.Trim().Length > 0) l.Add("Unser Zeichen: " + d.OurReference.Trim());
+        l.Add((d.Place.Trim().Length > 0 ? d.Place.Trim() + ", " : "") + d.Date.ToString("d. MMMM yyyy", new System.Globalization.CultureInfo("de-DE")));
+        return l;
+    }
+
+    /// <summary>Anschrift aus einem Adressbuch-Kontakt: Firma, Name, Straße, PLZ Ort.</summary>
+    public static string RecipientOf(Contact c) =>
+        string.Join("\n", new[] { c.Company, c.Name == c.Company ? "" : c.Name, c.Street, c.City }.Where(x => x.Trim().Length > 0).Select(x => x.Trim()));
+
+    /// <summary>Anrede für einen Kontakt: „Guten Tag Vorname Nachname,“ (geschlechtsneutral, DIN-5008-üblich), nur Firma → „Sehr geehrte Damen und Herren,“.</summary>
+    public static string SalutationFor(Contact c) => c.Name.Trim().Length == 0 || c.Name.Trim() == c.Company.Trim() ? "Sehr geehrte Damen und Herren," : $"Guten Tag {c.Name.Trim()},";
+
+    /// <summary>Serienbrief an Kontakte: je Kontakt ein Brief; {Name}, {Vorname}, {Nachname}, {Firma}, {Ort} werden ersetzt; ohne eigenen Empfänger wird die Anschrift gesetzt,
+    /// die Standard-Anrede persönlich. Kontakte ohne Straße oder Ort fallen heraus (Liste <paramref name="skipped"/>).</summary>
+    public static List<LetterDraft> SerialFromContacts(LetterDraft tpl, IEnumerable<Contact> contacts, List<string>? skipped = null)
+    {
+        var res = new List<LetterDraft>();
+        foreach (var c in contacts)
+        {
+            if (c.Street.Trim().Length == 0 || c.City.Trim().Length == 0) { skipped?.Add(c.Name); continue; }
+            var parts = c.Name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var city = Regex.Replace(c.City.Trim(), @"^\d{4,5}\s+", "");
+            var map = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase) { ["Name"] = c.Name.Trim(), ["Vorname"] = parts.Length > 1 ? string.Join(' ', parts[..^1]) : c.Name.Trim(), ["Nachname"] = parts.Length > 0 ? parts[^1] : "", ["Firma"] = c.Company, ["Ort"] = city, ["Straße"] = c.Street, ["E-Mail"] = c.Email };
+            string Fill(string t) => SerialField.Replace(t, m => map.TryGetValue((m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value).Trim(), out var v) ? v : m.Value);
+            var d = tpl.Copy();
+            d.Subject = Fill(d.Subject); d.Body = Fill(d.Body);
+            d.Recipient = d.Recipient.Trim().Length > 0 ? Fill(d.Recipient) : RecipientOf(c);
+            d.Salutation = d.Salutation.Trim() is "" or "Sehr geehrte Damen und Herren," ? SalutationFor(c) : Fill(d.Salutation);
+            res.Add(d);
+        }
+        return res;
+    }
+
     // ---------- LETTER-003/016: DOCX nach DIN 5008 Form B (Ränder 25/20 mm, Anschriftfeld ab 45 mm, Arial 11) ----------
     public static void WriteDocx(LetterDraft d, string path)
     {
@@ -171,10 +215,10 @@ public static class Letters
         void Lines(string t, int after = 0) { foreach (var line in t.Replace("\r", "").Split('\n')) Para(line, after: after); }
 
         // Rücksendeangabe (klein) im Anschriftfeld; Seite beginnt bei 45 mm → 1 Zeile darüber
-        Para($"{d.SenderName} · {d.SenderStreet} · {d.SenderCity}", size: 16, before: 1134);
+        Para($"{d.SenderName} · {d.SenderStreet} · {d.SenderCity}", size: 16, before: d.Form == "A" ? 397 : 1134); // Form A: Anschriftfeld ab 27 mm, Form B ab 45 mm
         Lines(d.Recipient);
         // Informationsblock rechtsbündig: Datum (und Zeichen)
-        var info = (d.Reference.Length > 0 ? $"Ihr Zeichen/Nummer: {d.Reference}\n" : "") + $"{(d.Place.Length > 0 ? d.Place + ", " : "")}{d.Date.ToString("d. MMMM yyyy", new System.Globalization.CultureInfo("de-DE"))}";
+        var info = string.Join("\n", InfoBlock(d));
         var first = true;
         foreach (var line in info.Split('\n')) { Para(line, before: first ? 480 : 0, align: "right"); first = false; }
         Para(d.Subject, bold: true, before: 480, after: 240);

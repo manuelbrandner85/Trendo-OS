@@ -20,6 +20,8 @@ public partial class MainWindow
     private bool _letterSaved;
     private Action? _letterStepSync;
     private string _letterDl = "";
+    private List<LetterDraft>? _letterSerial; private int _letterSerialIdx;
+    public IReadOnlyList<LetterDraft>? LetterSerialPreview => _letterSerial;
 
     private bool LetterGalleryOpen(LetterDraft d) => _letterGallery ?? (d.Category == "frei" && d.Body.Trim().Length == 0);
 
@@ -129,7 +131,52 @@ public partial class MainWindow
                     _settings.LetterSignature = d.SignatureFile = f; SaveSettings(); _letterMsg = "Unterschrift wird unter den Gruß gesetzt."; Show(V);
                 })),
                 B("letter-signature-off", "Ohne Unterschrift", () => { _settings.LetterSignature = d.SignatureFile = ""; SaveSettings(); Show(V); })));
-        return new StackPanel { Children = { dl, serial, sign } };
+        // Masterprompt 131: Empfänger aus dem Adressbuch
+        var people = Mail.Contacts().Where(c => c.Street.Trim().Length > 0 || c.City.Trim().Length > 0 || c.Company.Trim().Length > 0).ToList();
+        var pick = new ComboBox { Name = "letter-contact-pick", ItemsSource = people.Select(c => c.Name + (c.City.Length > 0 ? " · " + c.City : "")).ToList(), PlaceholderText = people.Count == 0 ? "Im Adressbuch hat noch niemand eine Anschrift" : "Kontakt wählen …", MinWidth = 260 };
+        var book = Box("Empfänger aus dem Adressbuch", "Setzt Anschrift und eine passende Anrede ein („Guten Tag …“ bzw. „Sehr geehrte Damen und Herren“ bei Firmen).",
+            Row(pick, B("letter-contact-use", "Einsetzen", () => LetterTry(() =>
+            {
+                if (pick.SelectedIndex < 0) throw new ArgumentException("Bitte einen Kontakt wählen.");
+                var c = people[pick.SelectedIndex]; d.Recipient = Letters.RecipientOf(c);
+                if (d.Salutation.Trim() is "" or "Sehr geehrte Damen und Herren,") d.Salutation = Letters.SalutationFor(c);
+                _letterMsg = $"Empfänger „{c.Name}“ eingesetzt."; Show(V);
+            }), true)));
+        // Briefform und Informationsblock (DIN 5008)
+        var msgDate = new TextBox { Name = "letter-your-message", Text = d.YourMessage, PlaceholderText = "Ihre Nachricht vom (z. B. 28.10.2026)", Width = 200 };
+        var ourRef = new TextBox { Name = "letter-our-ref", Text = d.OurReference, PlaceholderText = "Unser Zeichen", Width = 150 };
+        msgDate.TextChanged += (_, _) => { d.YourMessage = msgDate.Text ?? ""; _letterSync?.Invoke(); };
+        ourRef.TextChanged += (_, _) => { d.OurReference = ourRef.Text ?? ""; _letterSync?.Invoke(); };
+        var formToggle = B(d.Form == "A" ? "letter-form-b" : "letter-form-a", d.Form == "A" ? "Jetzt Form A – zu Form B wechseln" : "Jetzt Form B – zu Form A wechseln", () => { d.Form = d.Form == "A" ? "B" : "A"; Show(V); }, true);
+        var form = Box("Briefform und Informationsblock", "Form B: Anschrift ab 45 mm (üblich). Form A: ab 27 mm, für Briefbögen mit kleinem Kopf. Die Angaben erscheinen rechts neben der Anschrift.",
+            Row(formToggle), Row(msgDate, ourRef));
+        // Serienbrief an eine Adressbuch-Gruppe
+        var groups = new List<string> { "Alle Kontakte", "Favoriten" }; groups.AddRange(Mail.GroupNames().Select(g => g.Name));
+        var grp = new ComboBox { Name = "letter-serial-group", ItemsSource = groups, SelectedIndex = 0, MinWidth = 180 };
+        List<Contact> GroupContacts() => grp.SelectedIndex switch { 0 => Mail.Contacts().ToList(), 1 => Mail.Contacts().Where(c => c.Favorite).ToList(), _ => Mail.Search("", (string)grp.SelectedItem!).ToList() };
+        var serialBook = Box("Serienbrief an das Adressbuch", "Ein Brief je Kontakt der Gruppe (mit Anschrift). Felder wie {Vorname}, {Nachname}, {Firma} oder {Ort} werden ersetzt. Erst ansehen, dann speichern.",
+            Row(grp, B("letter-serial-group-preview", "Vorschau", () => LetterTry(() =>
+            {
+                var skipped = new List<string>(); var list = Letters.SerialFromContacts(d, GroupContacts(), skipped);
+                if (list.Count == 0) throw new ArgumentException("In dieser Gruppe hat niemand eine vollständige Anschrift (Straße und Ort).");
+                _letterSerial = list; _letterSerialIdx = 0;
+                _letterMsg = $"{list.Count} Briefe – mit ◀ ▶ über der Vorschau durchblättern." + (skipped.Count > 0 ? $" Ohne Anschrift übersprungen: {string.Join(", ", skipped)}." : ""); Show(V);
+            })), B("letter-serial-group-run", "Alle als DOCX speichern", () => LetterTry(() =>
+            {
+                var list = _letterSerial ?? Letters.SerialFromContacts(d, GroupContacts());
+                if (list.Count == 0) throw new ArgumentException("Keine Empfänger mit Anschrift in dieser Gruppe.");
+                var bad = list.Select((l, i) => (i, Letters.Validate(l).FirstOrDefault(x => x.Blocking))).FirstOrDefault(x => x.Item2 is not null);
+                if (bad.Item2 is { } issue) throw new ArgumentException($"Brief {bad.i + 1}: {issue.Field} – {issue.Message}");
+                var dir = System.IO.Path.Combine(ProjectsRoot, "Briefe", $"Serienbrief-{DateTime.Now:yyyyMMdd-HHmmss}"); Directory.CreateDirectory(dir);
+                for (var i = 0; i < list.Count; i++)
+                {
+                    var stem = new string(list[i].Recipient.Split('\n')[0].Where(ch => !System.IO.Path.GetInvalidFileNameChars().Contains(ch)).ToArray()).Trim();
+                    Letters.WriteDocx(list[i], System.IO.Path.Combine(dir, $"{i + 1:000}-{(stem.Length > 0 ? stem : "Brief")}.docx"));
+                }
+                _core.Audit.Append(Principal.LocalOwner.Name, "letter.serial", $"{list.Count} Briefe (Adressbuch)");
+                _letterSerial = null; _letterMsg = $"{list.Count} Briefe gespeichert in {dir}"; Show(V); NotifyFileResult(_letterMsg);
+            }), true)));
+        return new StackPanel { Children = { book, form, dl, serial, serialBook, sign } };
     }
 
     /// <summary>U3: Schrittleiste – zeigt, was schon fertig ist, und springt zum passenden Feld.</summary>
@@ -190,76 +237,119 @@ public partial class MainWindow
         if (this.GetLogicalDescendants().OfType<Button>().FirstOrDefault(b => b.Name == name) is { } b) b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
     }
 
-    /// <summary>U1: DIN-A4-Blatt im Maßstab (DIN 5008 Form B) mit Sichtfenster, Falz- und Lochmarken. U2: Klick auf einen Teil springt ins passende Feld.</summary>
+    /// <summary>U1 + Masterprompt 131: DIN-A4-Seiten im Maßstab (DIN 5008 Form A oder B) mit Sichtfenster, Falz- und Lochmarken, Informationsblock,
+    /// echtem Seitenumbruch und Folgeseiten („Seite n von N“). U2: Klick auf einen Teil springt ins passende Feld. Serienbrief: Brief für Brief ansehen.</summary>
     private Control LetterPreview(LetterDraft d)
     {
-        const double Pt = 0.3528; // 1 pt in mm
-        var ink = Brushes.Black; var grey = Brush.Parse("#5C6B7A");
-        TextBlock T(string name, double pt, IBrush fg, string? field, bool bold = false)
+        var pagesHost = new StackPanel { Name = "letter-pages", Spacing = 10 };
+        var serialBar = new StackPanel { Spacing = 6 };
+        void Sync()
         {
-            var t = new TextBlock { Name = name, FontFamily = new FontFamily("Arial, Liberation Sans, Helvetica"), FontSize = pt * Pt, Foreground = fg, TextWrapping = TextWrapping.Wrap, LineHeight = pt * Pt * 1.2, FontWeight = bold ? FontWeight.Bold : FontWeight.Normal };
-            if (field is not null)
+            var shown = _letterSerial is { Count: > 0 } ser ? ser[Math.Clamp(_letterSerialIdx, 0, ser.Count - 1)] : d;
+            pagesHost.Children.Clear();
+            foreach (var page in LetterPages(shown, interactive: ReferenceEquals(shown, d)))
+                pagesHost.Children.Add(new Viewbox { Stretch = Stretch.Uniform, MaxWidth = 560, Child = new Border { BoxShadow = BoxShadows.Parse("0 2 8 0 #44000000"), Child = page } });
+            serialBar.Children.Clear();
+            if (_letterSerial is { Count: > 0 } s2)
+                serialBar.Children.Add(new Border { Name = "letter-serial-bar", Background = Brush.Parse("#332F86F6"), BorderBrush = Brush.Parse("#D4A84B"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 4),
+                    Child = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
+                        Act("letter-serial-prev", "◀", () => { _letterSerialIdx = Math.Max(0, _letterSerialIdx - 1); _letterSync?.Invoke(); }),
+                        new TextBlock { Name = "letter-serial-pos", Text = $"Serienbrief {_letterSerialIdx + 1} von {s2.Count}: {s2[_letterSerialIdx].Recipient.Split('\n')[0]}", Foreground = Text, VerticalAlignment = VerticalAlignment.Center, FontWeight = FontWeight.SemiBold },
+                        Act("letter-serial-next", "▶", () => { _letterSerialIdx = Math.Min(s2.Count - 1, _letterSerialIdx + 1); _letterSync?.Invoke(); }),
+                        Act("letter-serial-close", "Zurück zum Entwurf", () => { _letterSerial = null; _letterSerialIdx = 0; _letterSync?.Invoke(); }) } } });
+            _letterStepSync?.Invoke();
+        }
+        _letterSync = Sync; Sync();
+        var sheet = new Border { Name = "letter-preview", Background = Brush.Parse("#E6EBF0"), CornerRadius = new CornerRadius(8), Padding = new Thickness(10), MinWidth = 180, VerticalAlignment = VerticalAlignment.Stretch,
+            Child = new ScrollViewer { Content = pagesHost, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto } };
+        var wrap = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,*") };
+        wrap.Children.Add(new TextBlock { Text = $"Vorschau (DIN A4, DIN 5008 Form {(d.Form == "A" ? "A" : "B")}) – auf einen Teil klicken, um ihn zu bearbeiten", Foreground = Text, FontSize = 12, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 0, 0, 6), TextWrapping = TextWrapping.Wrap });
+        Grid.SetRow(serialBar, 1); wrap.Children.Add(serialBar);
+        Grid.SetRow(sheet, 2); wrap.Children.Add(sheet);
+        return wrap;
+    }
+
+    /// <summary>Zeilen eines Textes so, wie sie auf der Seite umbrechen (Arial, Breite in mm).</summary>
+    static List<string> LetterLines(string text, double pt, double width, bool bold = false)
+    {
+        if (text.Length == 0) return [];
+        var tl = new Avalonia.Media.TextFormatting.TextLayout(text.Replace("\r", ""), new Typeface(new FontFamily("Arial, Liberation Sans, Helvetica"), FontStyle.Normal, bold ? FontWeight.Bold : FontWeight.Normal), pt * 0.3528, Brushes.Black,
+            textWrapping: TextWrapping.Wrap, maxWidth: width);
+        var src = text.Replace("\r", "");
+        return tl.TextLines.Select(l => src.Substring(l.FirstTextSourceIndex, Math.Min(l.Length, src.Length - l.FirstTextSourceIndex)).TrimEnd('\n')).ToList();
+    }
+
+    /// <summary>Die Seiten des Briefs: Seite 1 mit Kopf, Anschrift, Informationsblock, Betreff und Anrede; Text fließt weiter; Gruß, Unterschrift und Anlagen am Ende.</summary>
+    List<Canvas> LetterPages(LetterDraft d, bool interactive)
+    {
+        const double Pt = 0.3528; double lineH = 11 * Pt * 1.2; var formA = d.Form == "A"; var shift = formA ? -18 : 0;
+        IBrush ink = Brushes.Black, grey = Brush.Parse("#5C6B7A");
+        TextBlock T(string name, string text, double pt, IBrush fg, string? field, bool bold = false, double? width = null, bool wrap = true)
+        {
+            var t = new TextBlock { Name = name, Text = text, FontFamily = new FontFamily("Arial, Liberation Sans, Helvetica"), FontSize = pt * Pt, Foreground = fg, TextWrapping = wrap ? TextWrapping.Wrap : TextWrapping.NoWrap, LineHeight = pt * Pt * 1.2, FontWeight = bold ? FontWeight.Bold : FontWeight.Normal };
+            if (width is { } w) t.Width = w;
+            if (field is not null && interactive)
             {
                 t.Cursor = new Cursor(StandardCursorType.Hand); ToolTip.SetTip(t, "Zum Bearbeiten klicken");
                 t.PointerPressed += (_, e) => { FocusLetterField(field); e.Handled = true; };
             }
             return t;
         }
-        var sender = T("letter-preview-sender", 9, grey, "letter-sender-name"); sender.TextAlignment = TextAlignment.Right; sender.Width = 85;
-        var back = T("letter-preview-return", 7, grey, "letter-sender-street"); back.Width = 80; back.TextWrapping = TextWrapping.NoWrap; back.TextTrimming = TextTrimming.CharacterEllipsis;
-        var recip = T("letter-preview-recipient", 11, ink, "letter-recipient"); recip.Width = 80;
-        var date = T("letter-preview-date", 11, ink, "letter-place"); date.Width = 65;
-        var subject = T("letter-preview-subject", 11, ink, "letter-subject", bold: true);
-        var sal = T("letter-preview-salutation", 11, ink, "letter-salutation"); sal.Margin = new Thickness(0, 8.5, 0, 4.2);
-        var body = T("letter-preview-body", 11, ink, "letter-body");
-        var closing = T("letter-preview-closing", 11, ink, "letter-closing"); closing.Margin = new Thickness(0, 4.2, 0, 0);
-        var sigImg = new Image { Name = "letter-preview-signature", Width = 45, HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 1, 0, 0) };
-        var name = T("letter-preview-name", 11, ink, "letter-sender-name"); name.Margin = new Thickness(0, 2, 0, 0);
-        var att = T("letter-preview-attachments", 11, ink, "letter-attachments"); att.Margin = new Thickness(0, 6, 0, 0);
-        var flow = new StackPanel { Width = 165, Children = { subject, sal, body, closing, sigImg, name, att } };
-        Canvas.SetLeft(flow, 25); Canvas.SetTop(flow, 98.5);
-        var more = new TextBlock { Name = "letter-preview-more", Text = "… weiter auf Seite 2", FontSize = 3, Foreground = grey, IsVisible = false };
-        Canvas.SetLeft(more, 160); Canvas.SetTop(more, 287);
-        var flowClip = new Canvas { Width = 210, Height = 297 - 20, ClipToBounds = true, Children = { flow } };
-        flow.SizeChanged += (_, e) => more.IsVisible = 98.5 + e.NewSize.Height > 277;
-
-        string? sigPath = null;
-        void Sync()
+        Canvas NewPage() => new() { Width = 210, Height = 297, Background = Brushes.White, ClipToBounds = true };
+        void At(Canvas p, Control c, double x, double y) { Canvas.SetLeft(c, x); Canvas.SetTop(c, y); p.Children.Add(c); }
+        void Marks(Canvas p)
         {
-            sender.Text = string.Join("\n", new[] { d.SenderName, d.SenderStreet, d.SenderCity, d.SenderContact }.Where(s => !string.IsNullOrWhiteSpace(s)));
-            back.Text = string.Join(" · ", new[] { d.SenderName, d.SenderStreet, d.SenderCity }.Where(s => !string.IsNullOrWhiteSpace(s)));
-            recip.Text = d.Recipient;
-            date.Text = (d.Reference.Trim().Length > 0 ? $"Ihr Zeichen: {d.Reference.Trim()}\n" : "") + (string.IsNullOrWhiteSpace(d.Place) ? "" : d.Place + ", ") + d.Date.ToString("d. MMMM yyyy", De);
-            subject.Text = d.Subject; sal.Text = d.Salutation; body.Text = d.Body; closing.Text = d.Closing;
-            name.Text = d.SenderName; name.Margin = new Thickness(0, File.Exists(d.SignatureFile) ? 1 : 12, 0, 0);
-            att.Text = string.IsNullOrWhiteSpace(d.Attachments) ? "" : "Anlagen\n" + d.Attachments.Trim(); att.IsVisible = att.Text.Length > 0;
-            if (sigPath != d.SignatureFile)
-            {
-                sigPath = d.SignatureFile;
-                try { sigImg.Source = File.Exists(sigPath) ? new Avalonia.Media.Imaging.Bitmap(sigPath) : null; } catch (Exception) { sigImg.Source = null; }
-                sigImg.IsVisible = sigImg.Source is not null;
-            }
-            _letterStepSync?.Invoke();
+            foreach (var y in formA ? new[] { 87.0, 192.0 } : [105.0, 210.0]) At(p, new Line { StartPoint = new Point(0, 0), EndPoint = new Point(5, 0), Stroke = grey, StrokeThickness = 0.3 }, 3, y);
+            At(p, new Line { StartPoint = new Point(0, 0), EndPoint = new Point(7, 0), Stroke = grey, StrokeThickness = 0.3 }, 3, 148.5);
         }
-        _letterSync = Sync; Sync();
 
-        var page = new Canvas { Width = 210, Height = 297, Background = Brushes.White, ClipToBounds = true };
-        void At(Control c, double x, double y) { Canvas.SetLeft(c, x); Canvas.SetTop(c, y); page.Children.Add(c); }
-        // Sichtfenster (Anschriftfeld 85 × 45 mm, 20 mm von links, 45 mm von oben) – nur in der Vorschau sichtbar
-        At(new Rectangle { Width = 85, Height = 45, Stroke = Brush.Parse("#9CB3C9"), StrokeThickness = 0.3, StrokeDashArray = [4, 3] }, 20, 45);
-        foreach (var y in new[] { 105.0, 210.0 }) At(new Line { StartPoint = new Point(0, 0), EndPoint = new Point(5, 0), Stroke = grey, StrokeThickness = 0.3 }, 3, y);
-        At(new Line { StartPoint = new Point(0, 0), EndPoint = new Point(7, 0), Stroke = grey, StrokeThickness = 0.3 }, 3, 148.5);
-        At(sender, 105, 15);
-        At(back, 25, 58);
-        At(recip, 25, 62.7);
-        At(date, 125, 62.7);
-        page.Children.Add(flowClip);
-        At(more, 150, 287);
-        var sheet = new Border { Name = "letter-preview", Background = Brush.Parse("#E6EBF0"), CornerRadius = new CornerRadius(8), Padding = new Thickness(10),
-            Child = new Viewbox { Stretch = Stretch.Uniform, Child = new Border { BoxShadow = BoxShadows.Parse("0 1 4 0 #33000000"), Child = page } }, MinWidth = 180, VerticalAlignment = VerticalAlignment.Stretch };
-        var wrap = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
-        wrap.Children.Add(new TextBlock { Text = "Vorschau (DIN A4, DIN 5008) – auf einen Teil klicken, um ihn zu bearbeiten", Foreground = Text, FontSize = 12, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 0, 0, 6), TextWrapping = TextWrapping.Wrap });
-        Grid.SetRow(sheet, 1); wrap.Children.Add(sheet);
-        return wrap;
+        var pages = new List<Canvas>(); var p1 = NewPage(); pages.Add(p1); Marks(p1);
+        // Kopf, Sichtfenster, Anschrift, Informationsblock
+        At(p1, new Rectangle { Width = 85, Height = 45, Stroke = Brush.Parse("#9CB3C9"), StrokeThickness = 0.3, StrokeDashArray = [4, 3] }, 20, 45 + shift);
+        var sender = T("letter-preview-sender", string.Join("\n", new[] { d.SenderName, d.SenderStreet, d.SenderCity, d.SenderContact }.Where(s => !string.IsNullOrWhiteSpace(s))), 9, grey, "letter-sender-name", width: 85); sender.TextAlignment = TextAlignment.Right;
+        At(p1, sender, 105, formA ? 8 : 15);
+        var back = T("letter-preview-return", string.Join(" · ", new[] { d.SenderName, d.SenderStreet, d.SenderCity }.Where(s => !string.IsNullOrWhiteSpace(s))), 7, grey, "letter-sender-street", width: 80, wrap: false); back.TextTrimming = TextTrimming.CharacterEllipsis;
+        At(p1, back, 25, 58 + shift);
+        At(p1, T("letter-preview-recipient", d.Recipient, 11, ink, "letter-recipient", width: 80), 25, 62.7 + shift);
+        At(p1, T("letter-preview-date", string.Join("\n", Letters.InfoBlock(d)), 9, ink, "letter-place", width: 75), 125, 50 + shift);
+        // Betreff und Anrede
+        var y = 98.5 + shift;
+        var subjLines = LetterLines(d.Subject, 11, 165, bold: true);
+        At(p1, T("letter-preview-subject", d.Subject, 11, ink, "letter-subject", bold: true, width: 165), 25, y); y += Math.Max(1, subjLines.Count) * lineH + 8.5;
+        var salLines = LetterLines(d.Salutation, 11, 165);
+        At(p1, T("letter-preview-salutation", d.Salutation, 11, ink, "letter-salutation", width: 165), 25, y); y += Math.Max(1, salLines.Count) * lineH + 4.2;
+        // Text mit Seitenumbruch (unten 20 mm frei, Folgeseiten ab 27 mm)
+        var lines = LetterLines(d.Body, 11, 165);
+        double sigH = 0; if (File.Exists(d.SignatureFile)) try { var (sw, sh) = XrPlus.ImageSize(File.ReadAllBytes(d.SignatureFile)); if (sw > 0) sigH = 45.0 * sh / sw; } catch (IOException) { }
+        var attLines = string.IsNullOrWhiteSpace(d.Attachments) ? 0 : 1 + LetterLines(d.Attachments.Trim(), 11, 165).Count;
+        var endH = 4.2 + lineH + (sigH > 0 ? sigH + 1 : 12) + lineH + (attLines > 0 ? 6 + attLines * lineH : 0);
+        const double Bottom = 277, FollowTop = 27;
+        var page = p1; var chunk = new List<string>(); var chunkTop = y; var pageNo = 1;
+        void Flush()
+        {
+            if (chunk.Count == 0) return;
+            var tb = T(pageNo == 1 ? "letter-preview-body" : $"letter-preview-body-{pageNo}", string.Join("\n", chunk), 11, ink, "letter-body", width: 170, wrap: false);
+            At(page, tb, 25, chunkTop); chunk.Clear();
+        }
+        void NextPage() { Flush(); page = NewPage(); pages.Add(page); pageNo++; Marks(page); y = FollowTop; chunkTop = y; }
+        foreach (var l in lines) { if (y + lineH > Bottom) NextPage(); chunk.Add(l); y += lineH; }
+        if (y + endH > Bottom) NextPage();
+        Flush();
+        // Gruß, Unterschrift, Name, Anlagen
+        y += 4.2; At(page, T("letter-preview-closing", d.Closing, 11, ink, "letter-closing", width: 165), 25, y); y += lineH;
+        var sig = new Image { Name = "letter-preview-signature", Width = 45, IsVisible = sigH > 0 };
+        if (sigH > 0) try { sig.Source = new Avalonia.Media.Imaging.Bitmap(d.SignatureFile); } catch (Exception) { sig.IsVisible = false; }
+        At(page, sig, 25, y + 1); y += sigH > 0 ? sigH + 1 : 12;
+        At(page, T("letter-preview-name", d.SenderName, 11, ink, "letter-sender-name", width: 165), 25, y); y += lineH;
+        var att = T("letter-preview-attachments", attLines > 0 ? "Anlagen\n" + d.Attachments.Trim() : "", 11, ink, "letter-attachments", width: 165); att.IsVisible = attLines > 0;
+        At(page, att, 25, y + 6);
+        // Seitenzahlen (DIN 5008: Folgeseiten nummerieren; bei mehreren Seiten auch „Seite 1 von N“)
+        if (pages.Count > 1)
+            for (var i = 0; i < pages.Count; i++)
+            {
+                At(pages[i], T(i == 0 ? "letter-preview-pageno" : $"letter-preview-pageno-{i + 1}", $"Seite {i + 1} von {pages.Count}", 8, grey, null, width: 40), 165, 287);
+                if (i > 0) At(pages[i], T($"letter-preview-head-{i + 1}", (d.SenderName.Trim().Length > 0 ? d.SenderName.Trim() + " · " : "") + d.Subject, 8, grey, null, width: 160, wrap: false), 25, 15);
+            }
+        return pages;
     }
 }

@@ -216,6 +216,16 @@ else if (shot == "seite")
         if (win.DiskAt?.Children.FirstOrDefault(c => c.IsDir) is { } firstDir) win.DiskSelect(firstDir);
         win.Show("ressourcen");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_BRIEF") is { Length: > 0 }) // Brief nach DIN 5008, zweiseitig, Empfänger aus dem Adressbuch
+    {
+        win.Mail.UpdateContact(new Trendo.Core.Contact("demo-e", "Max Beispiel", "", Street: "Ring 5", City: "80331 München", Company: "Beispiel AG"));
+        var L = win.Letter; L.SenderName = "Erika Muster"; L.SenderStreet = "Hauptstraße 1"; L.SenderCity = "10115 Berlin"; L.SenderContact = "Tel. 030 123456 · erika@example.de";
+        L.Recipient = Trendo.Core.Letters.RecipientOf(win.Mail.Contacts()[0]); L.Salutation = Trendo.Core.Letters.SalutationFor(win.Mail.Contacts()[0]); L.Place = "Berlin";
+        L.Reference = "KD-4711"; L.YourMessage = "28.10.2026"; L.OurReference = "em/26"; L.Subject = "Angebot für die Gartengestaltung";
+        L.Body = string.Join("\n\n", Enumerable.Range(1, 14).Select(i => $"Punkt {i}: Wir bedanken uns für Ihre Anfrage und bieten Ihnen die Leistung wie besprochen an. Die Arbeiten umfassen Planung, Material und Ausführung."));
+        L.Attachments = "Leistungsbeschreibung\nPreisliste 2026"; L.Category = "anfrage";
+        win.Show("brief");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_RECHERCHE") is { Length: > 0 }) // Recherche mit Markierungen (Beispielartikel, ohne Netz)
     {
         const string article = "<html><head><title>Wildbienen im Garten</title></head><body><h1>Wildbienen im Garten</h1>"
