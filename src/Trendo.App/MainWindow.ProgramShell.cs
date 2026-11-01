@@ -133,6 +133,7 @@ public partial class MainWindow
     /// <summary>Befehl ausführen: Fehler werden zur Meldung, danach Seite neu zeichnen.</summary>
     private void ProgramRun(string key, Action a)
     {
+        if (AssistQuiet > 0) { a(); return; } // T-0315: Vorschau-Lauf des Assistenten – kein Neuzeichnen, Fehler gehen an den Assistenten
         try { a(); }
         catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException or InvalidDataException or FormatException or KeyNotFoundException) { _progMsg[key] = ex.Message; }
         Show(key);

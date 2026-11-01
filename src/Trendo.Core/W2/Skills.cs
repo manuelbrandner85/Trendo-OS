@@ -1,0 +1,164 @@
+using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace Trendo.Core;
+
+/// <summary>T-0317: Skills für professionelle Ergebnisse – Fachregeln je Studio als lesbare Markdown-Dateien (wie Skills in Claude):
+/// Kopf (name, description, studios, lizenz, quelle), Fachteil und „## Checkliste“ für die Qualitätsprüfung.
+/// Drei Quellen: mitgeliefert (im Programm), eigene (in der vorhandenen <see cref="PromptLibrary"/>, Kategorie „Skill“, mit Versionen),
+/// geladen aus vertrauten Quellen (nur nach Zustimmung, mit Herkunft und Lizenz). Kein zweites Prompt-System.</summary>
+public sealed record Skill(string Id, string Name, string Description, IReadOnlyList<string> Studios, string Body, IReadOnlyList<string> Checklist, string Origin, string License, string Source)
+{
+    public bool BuiltIn => Origin == "mitgeliefert";
+    public bool AppliesTo(string? key, string? studio) => Studios.Contains("*") || key is not null && Studios.Contains(key, StringComparer.OrdinalIgnoreCase) || studio is not null && Studios.Contains(studio, StringComparer.OrdinalIgnoreCase);
+}
+
+public static partial class SkillFiles
+{
+    [GeneratedRegex(@"\A---\s*\n(.*?)\n---\s*\n?", RegexOptions.Singleline)] private static partial Regex Front();
+    [GeneratedRegex(@"^##\s+Checkliste\s*$", RegexOptions.Multiline | RegexOptions.IgnoreCase)] private static partial Regex CheckHead();
+    [GeneratedRegex(@"[^a-z0-9-]")] private static partial Regex NotSlug();
+
+    public static string Slug(string s)
+    {
+        var t = s.ToLowerInvariant().Replace("ä", "ae").Replace("ö", "oe").Replace("ü", "ue").Replace("ß", "ss").Replace(' ', '-');
+        t = NotSlug().Replace(t, ""); while (t.Contains("--")) t = t.Replace("--", "-");
+        return t.Trim('-') is { Length: > 0 } x ? x[..Math.Min(60, x.Length)] : "skill";
+    }
+
+    /// <summary>Skill aus Markdown lesen. Fehlt der Kopf, gilt die erste Überschrift als Name.</summary>
+    public static Skill Parse(string markdown, string origin, string? fallbackId = null)
+    {
+        var text = markdown.Replace("\r\n", "\n");
+        var head = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (Front().Match(text) is { Success: true } m)
+        {
+            foreach (var line in m.Groups[1].Value.Split('\n'))
+                if (line.IndexOf(':') is var i and > 0) head[line[..i].Trim()] = line[(i + 1)..].Trim().Trim('"');
+            text = text[m.Length..];
+        }
+        var name = head.GetValueOrDefault("name") is { Length: > 0 } n ? n : Regex.Match(text, @"^#\s+(.+)$", RegexOptions.Multiline) is { Success: true } h ? h.Groups[1].Value.Trim() : fallbackId ?? "Skill";
+        var studios = (head.GetValueOrDefault("studios") ?? "*").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var checklist = new List<string>(); var body = text.Trim();
+        if (CheckHead().Match(text) is { Success: true } ch)
+        {
+            var rest = text[(ch.Index + ch.Length)..];
+            var end = Regex.Match(rest, @"^##\s", RegexOptions.Multiline) is { Success: true } nx ? nx.Index : rest.Length;
+            checklist = rest[..end].Split('\n').Select(l => l.Trim()).Where(l => l.StartsWith("- ") || l.StartsWith("* ")).Select(l => Regex.Replace(l[2..], @"^\[[ xX]\]\s*", "").Trim()).Where(l => l.Length > 0).ToList();
+        }
+        return new Skill(Slug(head.GetValueOrDefault("id") ?? fallbackId ?? name), name, head.GetValueOrDefault("description") ?? "", studios, body, checklist, origin,
+            head.GetValueOrDefault("lizenz") ?? head.GetValueOrDefault("license") ?? "", head.GetValueOrDefault("quelle") ?? head.GetValueOrDefault("source") ?? "");
+    }
+
+    /// <summary>Als Markdown mit Kopf schreiben (eigene und geladene Skills).</summary>
+    public static string ToMarkdown(string name, string description, IEnumerable<string> studios, string body, IEnumerable<string> checklist, string? license = null, string? source = null)
+    {
+        var sb = new StringBuilder("---\n");
+        sb.Append($"name: {name.Trim()}\ndescription: {description.Trim().Replace('\n', ' ')}\nstudios: {string.Join(", ", studios)}\n");
+        if (license is { Length: > 0 }) sb.Append($"lizenz: {license}\n");
+        if (source is { Length: > 0 }) sb.Append($"quelle: {source}\n");
+        sb.Append("---\n\n").Append(body.Trim()).Append('\n');
+        var items = checklist.Where(c => c.Trim().Length > 0).ToList();
+        if (items.Count > 0 && !CheckHead().IsMatch(body)) { sb.Append("\n## Checkliste\n"); foreach (var c in items) sb.Append("- ").Append(c.Trim()).Append('\n'); }
+        return sb.ToString();
+    }
+
+    /// <summary>Format, das Claude Code als Skill liest (<c>.claude/skills/&lt;name&gt;/SKILL.md</c>: Kopf mit name und description).</summary>
+    public static string ToClaudeSkill(Skill s) =>
+        $"---\nname: {s.Id}\ndescription: {(s.Description.Length > 0 ? s.Description : s.Name).Replace('\n', ' ')}\n---\n\n{s.Body}\n";
+}
+
+/// <summary>Bibliothek aller Skills: mitgelieferte (eingebettet), eigene (PromptLibrary, Kategorie „Skill“), geladene (Datenordner/skills).</summary>
+public sealed class SkillLibrary(string dataRoot, PromptLibrary prompts, AuditLog audit)
+{
+    public const string Category = "Skill";
+    public const int MaxImportBytes = 100_000;
+    /// <summary>Höchstlänge der Fachregeln, die einer KI mitgegeben werden (Zeichen).</summary>
+    public const int MaxPromptChars = 7000;
+    string LoadedDir => Path.Combine(dataRoot, "skills");
+
+    static IReadOnlyList<Skill>? _builtIn;
+    public static IReadOnlyList<Skill> BuiltIn => _builtIn ??= typeof(SkillLibrary).Assembly.GetManifestResourceNames()
+        .Where(n => n.Contains(".Skills.", StringComparison.Ordinal) && n.EndsWith(".md", StringComparison.OrdinalIgnoreCase)).OrderBy(n => n)
+        .Select(n => { using var s = typeof(SkillLibrary).Assembly.GetManifestResourceStream(n)!; using var r = new StreamReader(s, Encoding.UTF8); return SkillFiles.Parse(r.ReadToEnd(), "mitgeliefert", n.Split('.')[^2]); })
+        .ToList();
+
+    public IReadOnlyList<Skill> All()
+    {
+        var list = new List<Skill>(BuiltIn);
+        list.AddRange(prompts.All().Where(p => p.Category == Category).Select(p => SkillFiles.Parse(p.Text, "eigen", p.Id) with { Id = p.Id }));
+        if (Directory.Exists(LoadedDir))
+            foreach (var f in Directory.GetFiles(LoadedDir, "*.md").OrderBy(f => f))
+                try { list.Add(SkillFiles.Parse(File.ReadAllText(f), "geladen", Path.GetFileNameWithoutExtension(f)) with { Id = "geladen-" + Path.GetFileNameWithoutExtension(f) }); }
+                catch (IOException) { }
+        return list;
+    }
+
+    /// <summary>Skills für eine Seite bzw. ein Studio (eigene und geladene vor mitgelieferten, damit eigene Regeln Vorrang haben).</summary>
+    public IReadOnlyList<Skill> For(string? key, string? studio) =>
+        All().Where(s => s.AppliesTo(key, studio) && !s.Studios.Contains("*")).OrderBy(s => s.BuiltIn ? 1 : 0).ThenBy(s => s.Name).ToList();
+
+    /// <summary>Fachregeln als Text für die KI (gekürzt auf <see cref="MaxPromptChars"/>).</summary>
+    public string? PromptText(string? key, string? studio)
+    {
+        var skills = For(key, studio); if (skills.Count == 0) return null;
+        var sb = new StringBuilder();
+        foreach (var s in skills)
+        {
+            var part = $"### Skill: {s.Name}\n{s.Body}\n";
+            if (sb.Length + part.Length > MaxPromptChars) { sb.Append(part[..Math.Max(0, MaxPromptChars - sb.Length)]); break; }
+            sb.Append(part);
+        }
+        return sb.ToString().Trim();
+    }
+
+    /// <summary>Checkliste für die Qualitätsprüfung (aus allen passenden Skills, ohne Doppelte).</summary>
+    public IReadOnlyList<(string Skill, string Item)> Checklist(string? key, string? studio) =>
+        For(key, studio).SelectMany(s => s.Checklist.Select(c => (s.Name, c))).DistinctBy(x => x.c.ToLowerInvariant()).Take(20).ToList();
+
+    /// <summary>Eigenen Skill anlegen oder als neue Version speichern (PromptLibrary: Versionen und Wiederherstellen inklusive).</summary>
+    public Skill SaveOwn(string? id, string name, string description, IEnumerable<string> studios, string body, IEnumerable<string> checklist)
+    {
+        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Bitte einen Namen für den Skill.");
+        if (string.IsNullOrWhiteSpace(body)) throw new ArgumentException("Bitte die Fachregeln eintragen.");
+        var md = SkillFiles.ToMarkdown(name, description, studios.Where(s => s.Trim().Length > 0).DefaultIfEmpty("*"), body, checklist);
+        var t = prompts.Save(id, name.Trim(), Category, md, id is null ? "angelegt" : "geändert");
+        return SkillFiles.Parse(t.Text, "eigen", t.Id) with { Id = t.Id };
+    }
+
+    public bool DeleteOwn(string id) => prompts.Get(id) is { Category: Category } && prompts.Delete(id);
+
+    /// <summary>Skill aus einer vertrauten Quelle übernehmen (nach Zustimmung): nur Text, höchstens 100 KB, mit Herkunft und Lizenz.</summary>
+    public Skill Import(string markdown, string sourceUrl, string license)
+    {
+        if (Encoding.UTF8.GetByteCount(markdown) > MaxImportBytes) throw new InvalidDataException("Der Skill ist zu groß (höchstens 100 KB).");
+        if (markdown.Contains('\0')) throw new InvalidDataException("Das ist keine Textdatei.");
+        var s = SkillFiles.Parse(markdown, "geladen");
+        var md = SkillFiles.ToMarkdown(s.Name, s.Description, s.Studios, s.Body, s.Checklist, license, sourceUrl);
+        Directory.CreateDirectory(LoadedDir);
+        var f = Path.Combine(LoadedDir, s.Id + ".md");
+        File.WriteAllText(f + ".tmp", md); SafeFile.Move(f + ".tmp", f);
+        audit.Append(Principal.LocalOwner.Name, "skill.import", $"{s.Id} quelle={sourceUrl} lizenz={license}");
+        return SkillFiles.Parse(md, "geladen", s.Id) with { Id = "geladen-" + s.Id };
+    }
+
+    public bool RemoveLoaded(string id)
+    {
+        var f = Path.Combine(LoadedDir, id.StartsWith("geladen-") ? id["geladen-".Length..] : id) + ".md";
+        if (!File.Exists(f) || Path.GetDirectoryName(Path.GetFullPath(f)) != Path.GetFullPath(LoadedDir)) return false;
+        File.Delete(f); audit.Append(Principal.LocalOwner.Name, "skill.remove", id); return true;
+    }
+
+    /// <summary>Passende Skills in einen Projektordner legen, damit Claude Code sie als eigene Skills nutzt (<c>.claude/skills/&lt;id&gt;/SKILL.md</c>). Liefert die Anzahl.</summary>
+    public int ExportForClaude(string projectDir, string? key, string? studio)
+    {
+        var n = 0;
+        foreach (var s in For(key, studio))
+        {
+            var d = Path.Combine(projectDir, ".claude", "skills", "trendo-" + s.Id); Directory.CreateDirectory(d);
+            File.WriteAllText(Path.Combine(d, "SKILL.md"), SkillFiles.ToClaudeSkill(s)); n++;
+        }
+        return n;
+    }
+}

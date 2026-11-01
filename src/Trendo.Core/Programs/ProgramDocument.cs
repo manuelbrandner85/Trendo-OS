@@ -67,6 +67,18 @@ public sealed class ProgramDocument
         Data = JsonNode.Parse(data)!.AsObject(); Dirty = true; Changed = DateTime.Now; return true;
     }
 
+    /// <summary>T-0315: Stand merken (Daten, Rückgängig-Tiefe, „geändert“) – für Vorschau-Läufe des Assistenten.</summary>
+    public readonly record struct Mark(string Data, int Undo, int Redo, bool Dirty, DateTime Changed);
+    public Mark Remember() => new(Data.ToJsonString(), _undo.Count, _redo.Count, Dirty, Changed);
+
+    /// <summary>Genau auf den gemerkten Stand zurück: Daten, Rückgängig-Liste (seitdem hinzugekommene Schritte fallen weg), „geändert“.</summary>
+    public void Rollback(Mark m)
+    {
+        while (_undo.Count > m.Undo) _undo.Pop();
+        if (_redo.Count == 0 && m.Redo > 0) { } // Wiederholen-Liste ist durch Bearbeiten geleert – sie bleibt leer (wie nach jeder Änderung)
+        Data = JsonNode.Parse(m.Data)!.AsObject(); Dirty = m.Dirty; Changed = m.Changed;
+    }
+
     static void Trim(Stack<(string, string)> s) { var keep = s.Take(MaxUndo).Reverse().ToList(); s.Clear(); foreach (var x in keep) s.Push(x); }
 
     // ---------- Werte bequem lesen/schreiben ----------

@@ -12,6 +12,9 @@ public partial class MainWindow
     private Control DownloadsView()
     {
         var sp = new StackPanel { Spacing = 5 };
+        // Download-Manager (Runde 6): Warteschlange zuerst
+        sp.Children.Add(H("Download-Manager", 15));
+        sp.Children.Add(DownloadManagerPanel());
         var browsers = Browsers.Find();
         var url = new TextBox { Name = "web-url", PlaceholderText = "Adresse oder Suchbegriff, z. B. tagesschau.de", Width = 420, HorizontalAlignment = HorizontalAlignment.Left, IsEnabled = !_core.Offline };
         var msg = P(_core.Offline ? "Offline-Modus: Internet ist ausgeschaltet." : ""); msg.Name = "web-msg";
@@ -36,7 +39,7 @@ public partial class MainWindow
 
         var dl = Browsers.DownloadsFolder();
         var files = FileShelf.Recent([dl], null, 30, depth: 0);
-        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { H("Downloads", 15) } };
+        var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { H("Im Download-Ordner", 15) } };
         var openDir = new Button { Name = "dl-folder", Content = "Ordner öffnen", FontSize = 11 }; openDir.Click += (_, _) => Launch(dl);
         head.Children.Add(Pos(openDir, 1));
         sp.Children.Add(head);

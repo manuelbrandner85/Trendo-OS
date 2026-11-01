@@ -13,12 +13,21 @@ public sealed class Flashcard
     public int Reps { get; set; }
     public int Lapses { get; set; }
     public DateTime Due { get; set; }
+    /// <summary>Lernplan: Tag, an dem die Karte zum ersten Mal gelernt wurde (neue Karten je Tag zählen).</summary>
+    public DateTime? FirstReviewed { get; set; }
 }
 
-public sealed class CardStore { public List<Flashcard> Cards { get; set; } = []; public List<DateTime> ReviewDays { get; set; } = []; }
+public sealed class CardStore
+{
+    public List<Flashcard> Cards { get; set; } = []; public List<DateTime> ReviewDays { get; set; } = [];
+    /// <summary>Lernplan je Stapel (Prüfungstermin, neue Karten pro Tag).</summary>
+    public List<StudyPlan> Plans { get; set; } = [];
+    /// <summary>Wiederholungen je Tag („JJJJ-MM-TT“ → Anzahl) für Verlauf und Tagesziel.</summary>
+    public Dictionary<string, int> ReviewLog { get; set; } = [];
+}
 
 /// <summary>SPEC-06: Lernen & Training – Karteikarten mit Wiederholung in wachsenden Abständen (SM-2).</summary>
-public sealed class LearnBox(string dataRoot, Func<DateTime>? now = null)
+public sealed partial class LearnBox(string dataRoot, Func<DateTime>? now = null)
 {
     private readonly Func<DateTime> _now = now ?? (() => DateTime.Now);
     public CardStore Store { get; } = Fach.Load<CardStore>(dataRoot, "lernen", "karten");
@@ -55,7 +64,9 @@ public sealed class LearnBox(string dataRoot, Func<DateTime>? now = null)
         if (q < 3) { c.Reps = 0; c.IntervalDays = 1; c.Lapses++; }
         else { c.IntervalDays = NextInterval(c, q); c.Reps++; }
         c.Ease = Math.Max(1.3, c.Ease + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)));
-        c.Due = _now().Date.AddDays(c.IntervalDays); if (!Store.ReviewDays.Contains(_now().Date)) Store.ReviewDays.Add(_now().Date); Save(); return c;
+        c.Due = _now().Date.AddDays(c.IntervalDays); if (!Store.ReviewDays.Contains(_now().Date)) Store.ReviewDays.Add(_now().Date);
+        c.FirstReviewed ??= _now().Date; var key = _now().ToString("yyyy-MM-dd"); Store.ReviewLog[key] = Store.ReviewLog.GetValueOrDefault(key) + 1;
+        Save(); return c;
     }
 
     /// <summary>T-0262: Wie viele Tage bis zur nächsten Wiederholung, wenn man so bewertet (ohne zu speichern) – für die Knöpfe „Nochmal/Schwer/Gut/Leicht“.</summary>

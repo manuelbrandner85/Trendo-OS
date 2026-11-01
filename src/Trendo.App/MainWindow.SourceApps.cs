@@ -185,6 +185,7 @@ public partial class MainWindow
     async Task<int> SourceRun(string exe, string args, string dir, IReadOnlyDictionary<string, string> env, Action<string> line, CancellationToken ct)
     {
         if (SourceRunOverride is { } o) return await o(exe, args, dir, env, line, ct);
+        if (_opt.Isolated) throw new InvalidOperationException("Testmodus: Programme aus dem Quellcode werden nicht wirklich eingerichtet.");
         var psi = new ProcessStartInfo(exe, args) { WorkingDirectory = dir, UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true,
             StandardOutputEncoding = System.Text.Encoding.UTF8, StandardErrorEncoding = System.Text.Encoding.UTF8 };
         foreach (var (k, v) in env) psi.Environment[k] = v;
@@ -312,6 +313,7 @@ public partial class MainWindow
                 var url = $"http://127.0.0.1:{port}/";
                 if (SourceWebStartOverride is { } wo) { if (await wo(e, url)) Launch(url); return; }
                 if (_srcRunning.TryGetValue(e.Id, out var running) && !running.HasExited) { Say($"„{e.Repo.Split('/')[1]}“ läuft schon.", CurrentView); return; }
+                if (_opt.Isolated) { Say("Testmodus: Web-Programme werden nicht wirklich gestartet.", CurrentView); return; }
                 var psi = new ProcessStartInfo(exe, args) { WorkingDirectory = dir, UseShellExecute = false, CreateNoWindow = true };
                 foreach (var (k, v) in env) psi.Environment[k] = v;
                 var p = Process.Start(psi)!; _srcRunning[e.Id] = p;
@@ -363,6 +365,7 @@ public partial class MainWindow
             void Add(Control c) { c.Margin = new Thickness(0, 0, 6, 4); buttons.Children.Add(c); }
             Add(Act("btn-src-start-" + e.Id, running ? "Öffnen" : "Starten", () => _ = SourceStart(e), true));
             if (running) Add(Act("btn-src-stop-" + e.Id, "Beenden", () => SourceStop(e.Id)));
+            if (ClaudeOpenButton("btn-src-claude-" + e.Id, () => SourceApps.Dir(_deps.ToolsRoot, e.Id), () => null, "X-06") is { } cc) Add(cc);
             if (!e.Sha.Contains(':')) Add(Act("btn-src-again-" + e.Id, "Neu einrichten (neuester Code)", () => { _srcTree.Remove(e.Repo); _ = SourceInstall(repo, start: false); }));
             Add(RemoveButton("src:" + e.Id, "btn-src-remove-" + e.Id, () =>
             {

@@ -27,7 +27,9 @@ public sealed record AssistQuestion(string Id, string Text, IReadOnlyList<string
 
 public sealed record AssistStep(AssistAction Action, Dictionary<string, string> Args, List<string> FromMemory)
 {
-    public string Text => Action.Label + (Args.Count == 0 ? "" : " – " + string.Join(", ", Action.Parameters.Where(p => Args.ContainsKey(p.Name)).Select(p => $"{p.Label}: {Show(p, Args[p.Name])}")));
+    /// <summary>Wie oft (bei Aktionen ohne Parameter: „füge 3 Zeilen hinzu“).</summary>
+    public int Times => Args.TryGetValue(AssistPlanner.TimesKey, out var t) && int.TryParse(t, out var n) ? n : 1;
+    public string Text => Action.Label + (Times > 1 ? $" ({Times}×)" : "") + (Action.Parameters.Count == 0 ? "" : " – " + string.Join(", ", Action.Parameters.Where(p => Args.ContainsKey(p.Name)).Select(p => $"{p.Label}: {Show(p, Args[p.Name])}")));
     static string Show(AssistParam p, string v) => p.Kind switch { AssistKind.YesNo => v == "ja" ? "ja" : "nein", AssistKind.Date when DateTime.TryParse(v, CultureInfo.InvariantCulture, out var d) => d.ToString("dd.MM.yyyy", CultureInfo.GetCultureInfo("de-DE")), _ => v };
 }
 
@@ -50,6 +52,7 @@ public sealed class AssistPlan
 
 public static partial class AssistPlanner
 {
+    public const string TimesKey = "__mal";
     static readonly CultureInfo De = CultureInfo.GetCultureInfo("de-DE");
     static readonly string[] Particles = ["ein", "aus", "an", "zu", "hinzu", "ab", "auf", "um", "weg", "vor", "nach", "fest", "zurueck", "dazu"];
     static readonly string[] NoWords = ["nicht", "ohne", "kein", "keine", "keinen", "nein"];
@@ -109,9 +112,18 @@ public static partial class AssistPlanner
     {
         var plan = new AssistPlan { Prompt = prompt.Trim() };
         if (plan.Prompt.Length == 0 || actions.Count == 0) return plan;
-        foreach (var clause in Clauses(plan.Prompt))
+        AssistAction? Best(string c) => actions.Select(a => (a, s: Score(c, a))).Where(x => x.s >= 3).OrderByDescending(x => x.s).ThenBy(x => x.a.Label.Length).FirstOrDefault().a;
+        var clauses = new List<string>();
+        foreach (var c in Clauses(plan.Prompt))
         {
-            var best = actions.Select(a => (a, s: Score(clause, a))).Where(x => x.s >= 3).OrderByDescending(x => x.s).ThenBy(x => x.a.Label.Length).FirstOrDefault().a;
+            // „Füge 3 Zeilen hinzu und zwei Spalten“: „und“ ohne Verb trennt, wenn jeder Teil für sich eine andere Aktion ergibt
+            var parts = Regex.Split(c, @"\s+und\s+", RegexOptions.IgnoreCase);
+            if (parts.Length > 1 && parts.Select(Best).ToList() is var bs && bs.All(b => b is not null) && bs.Distinct().Count() == bs.Count) clauses.AddRange(parts);
+            else clauses.Add(c);
+        }
+        foreach (var clause in clauses)
+        {
+            var best = Best(clause);
             if (best is null) { plan.Unclear.Add(clause); continue; }
             plan.Steps.Add(Fill(best, clause, prefs, today ?? DateTime.Today));
         }
@@ -163,6 +175,10 @@ public static partial class AssistPlanner
             if (v is null && p.Default is not null && !p.Required) v = p.Kind == AssistKind.Date ? DayWord(p.Default, today) : p.Default;
             if (v is not null) args[p.Name] = v;
         }
+        // Aktion ohne Parameter mit kleiner Zahl im Satz: so oft ausführen („füge 3 Zeilen hinzu“, höchstens 50)
+        if (a.Parameters.Count == 0 && Num().Match(clause) is { Success: true } tm && int.TryParse(tm.Value, out var times) && times is >= 2 and <= 50) args[TimesKey] = times.ToString();
+        else if (a.Parameters.Count == 0 && Regex.IsMatch(n, @"\b(zwei|drei|vier|fuenf|sechs|sieben|acht|neun|zehn)\b") && Regex.Match(n, @"\b(zwei|drei|vier|fuenf|sechs|sieben|acht|neun|zehn)\b").Value is var wn)
+            args[TimesKey] = (Array.IndexOf(["zwei", "drei", "vier", "fuenf", "sechs", "sieben", "acht", "neun", "zehn"], wn) + 2).ToString();
         return new AssistStep(a, args, mem);
     }
 

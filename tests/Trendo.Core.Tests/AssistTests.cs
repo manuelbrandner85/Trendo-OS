@@ -105,6 +105,15 @@ public class AssistTests
         Assert.False(AssistPlanner.FromKi("x", "{kaputt", All).Understood);
     }
 
+    [Fact(DisplayName = "T-0315: Wiederholung – „füge 3 Zeilen hinzu“ bzw. „zwei Spalten“ läuft mehrfach (höchstens 50)")]
+    public void Times()
+    {
+        var zeile = new AssistAction("ms-addrow", "Zeile +", ["Zeile"]); var spalte = new AssistAction("ms-addcol", "Spalte +", ["Spalte"]);
+        var p = AssistPlanner.Plan("Füge 3 Zeilen hinzu und zwei Spalten", [zeile, spalte]);
+        Assert.Equal([3, 2], p.Steps.Select(s => s.Times)); Assert.Equal("Zeile + (3×)", p.Steps[0].Text);
+        Assert.Equal(1, AssistPlanner.Plan("Zeile 500 einfügen", [zeile]).Steps[0].Times);
+    }
+
     [Fact(DisplayName = "T-0315: Wortstämme und Satzteile – „Zeilen“≈„Zeile“, Komma in Beträgen und Datum zerschneidet nichts")]
     public void Stems_and_clauses()
     {

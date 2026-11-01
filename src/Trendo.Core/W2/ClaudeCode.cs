@@ -37,7 +37,23 @@ public static partial class ClaudeCode
     public static string? Find(Func<string, string?> env, Func<string, bool> exists) => Candidates(env).FirstOrDefault(exists);
 
     /// <summary>Umgebungsvariablen, die Claude Code auf die kostenpflichtige API umschalten würden – werden für jeden Lauf entfernt (nur Abo).</summary>
-    public static readonly string[] ApiVariables = ["ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BASE_URL", "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY", "ANTHROPIC_BEDROCK_BASE_URL", "ANTHROPIC_VERTEX_PROJECT_ID"];
+    public static readonly string[] ApiVariables = ["ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BASE_URL", "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY",
+        "ANTHROPIC_BEDROCK_BASE_URL", "ANTHROPIC_VERTEX_PROJECT_ID", "ANTHROPIC_PROFILE", "ANTHROPIC_FEDERATION_RULE_ID", "ANTHROPIC_ORGANIZATION_ID", "ANTHROPIC_IDENTITY_TOKEN_FILE"];
+
+    /// <summary>Anthropic erlaubt Drittprodukten ohne vorherige Freigabe nicht, claude.ai-Anmeldung oder Abo-Kontingente anzubieten (Agent-SDK-Dokumentation,
+    /// Stand 01.11.2026). Bis eine schriftliche Freigabe vorliegt, nutzt Trendo das Abo NICHT eingebettet im Hintergrund (keine Haupt-KI, keine Läufe aus Trendo heraus),
+    /// sondern öffnet das echte Claude Code sichtbar, in dem der Nutzer selbst arbeitet (Entscheidung Manuel, 01.11.2026: „Echtes Claude Code öffnen“, keine Anfrage an Anthropic).
+    /// Der eingebettete Weg bleibt im Code (getestet), ist aber gesperrt; umschalten nur mit eigenem Auftrag und Freigabe.</summary>
+    public const bool EmbeddingApproved = false;
+
+    /// <summary>Argumente, um das echte Claude Code sichtbar (interaktiv) im Projektordner zu öffnen – mit Auftrag und Rolle des Programms. Kein -p: der Nutzer arbeitet selbst darin.</summary>
+    public static IReadOnlyList<string> OpenArgs(string? prompt, string? system)
+    {
+        var a = new List<string>();
+        if (system is { Length: > 0 }) { a.Add("--append-system-prompt"); a.Add(system); }
+        if (prompt is { Length: > 0 } && prompt.Trim().Length > 0) a.Add(prompt.Trim());
+        return a;
+    }
     /// <summary>Abo-Token aus <c>claude setup-token</c> (optional) – Claude Code liest ihn aus dieser Variablen; abgerechnet wird über das Abo.</summary>
     public const string TokenVariable = "CLAUDE_CODE_OAUTH_TOKEN";
 

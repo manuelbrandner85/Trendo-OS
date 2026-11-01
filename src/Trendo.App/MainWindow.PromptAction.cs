@@ -67,7 +67,7 @@ public partial class MainWindow
         var studio = ModuleOf(key);
         if (studio is null || CapabilityCatalog.Find(studio) is null) return view;
         var dock = new DockPanel { LastChildFill = true, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
-        var bar = BuildPromptBar(studio);
+        var bar = BuildPromptBar(studio, key);
         DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top);
         dock.Children.Add(bar);
         view.HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -76,7 +76,7 @@ public partial class MainWindow
         return dock;
     }
 
-    private Control BuildPromptBar(string studio)
+    private Control BuildPromptBar(string studio, string? key = null)
     {
         var box = new TextBox
         {
@@ -90,6 +90,13 @@ public partial class MainWindow
             VerticalAlignment = VerticalAlignment.Center
         };
         AutomationProperties.SetName(box, "Auftrag an dieses Studio");
+        // T-0315: Programm-Assistent – versteht das offene Programm den Auftrag, arbeitet er im Dokument (Plan, Rückfragen, Vorschau); sonst der Studio-Ablauf
+        var assistHost = new ContentControl { Name = "assist-host" };
+        var assistTarget = AssistTargetFor(key);
+        if (assistTarget is not null) box.PlaceholderText = $"Was soll ich in „{assistTarget.Title}“ für dich tun? Sag es in deinen Worten – ich zeige dir zuerst Plan und Vorschau.";
+        var liveThumb = new ContentControl { Name = "assist-live" };
+        DispatcherTimer? liveTimer = null;
+        if (key is not null && _assistTyped.TryGetValue(key, out var typed)) box.Text = typed.Prompt;
         var status = new TextBlock { Name = "auftrag-status", Text = "Noch nicht gestartet", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.NoWrap, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center, MaxWidth = 220 };
         AutomationProperties.SetName(status, "Stand des Auftrags");
         var preview = new TextBlock { Name = "auftrag-vorschau", Text = "Noch keine Vorschau.", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap, MaxHeight = 36, TextTrimming = TextTrimming.CharacterEllipsis };
@@ -179,6 +186,12 @@ public partial class MainWindow
 
         check.Click += async (_, _) =>
         {
+            if (AssistTargetFor(key) is { } at && (box.Text ?? "").Trim().Length > 0)
+            {
+                check.IsEnabled = false;
+                try { liveThumb.Content = null; if (await AssistStart(at, box.Text ?? "", assistHost)) return; }
+                finally { check.IsEnabled = true; }
+            }
             status.Text = "Plan wird erstellt";
             check.IsEnabled = false;
             try
@@ -325,6 +338,23 @@ public partial class MainWindow
             preview.IsVisible = preview.Text is { Length: > 0 } pv && pv != "Noch keine Vorschau.";
         }
         status.PropertyChanged += (_, e) => { if (e.Property == TextBlock.TextProperty) Sync(); };
+        if (key is not null && _assistTyped.TryGetValue(key, out var lastLive) && lastLive.Live.Length > 0) preview.Text = lastLive.Live;
+        // T-0315 Echtzeit-Vorschau beim Tippen: was der Assistent im offenen Programm tun würde (ohne KI, ohne etwas zu ändern)
+        box.TextChanged += (_, _) =>
+        {
+            if (AssistTargetFor(key) is null) return;
+            liveTimer?.Stop();
+            liveTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(AssistLiveDelayMs) };
+            liveTimer.Tick += (_, _) =>
+            {
+                liveTimer!.Stop();
+                if (AssistTargetFor(key) is not { } lt || _assistRuns.TryGetValue(assistHost, out var busy) && busy.Phase is "plan" or "fragen" or "läuft" or "vorschau") return;
+                var (text, thumb) = AssistLive(lt, box.Text ?? "");
+                preview.Text = text.Length > 0 ? text : "Noch keine Vorschau."; liveThumb.Content = thumb;
+                if (key is not null) _assistTyped[key] = (box.Text ?? "", preview.Text);
+            };
+            liveTimer.Start();
+        };
         preview.PropertyChanged += (_, e) => { if (e.Property == TextBlock.TextProperty) Sync(); };
         Sync();
         var buttons = new StackPanel
@@ -341,6 +371,8 @@ public partial class MainWindow
             add.Click += (_, _) => OpenAddHubFor(studio);
             buttons.Children.Add(add);
         }
+        // T-0316: wo programmiert wird – echtes Claude Code im Projektordner öffnen, mit dem eingetippten Auftrag
+        if (CodeStudios.Contains(studio) && ClaudeOpenButton("auftrag-claude", () => ClaudeFolderFor(studio), () => box.Text, studio) is { } cc) { cc.Height = 32; buttons.Children.Add(cc); }
         var spark = new TextBlock { Text = "✨", FontSize = 16, VerticalAlignment = VerticalAlignment.Center, Margin = new Avalonia.Thickness(4, 0, 0, 0) };
         ToolTip.SetTip(spark, "Sag der Trendo KI in deinen Worten, was dieses Studio für dich tun soll.");
         box.MaxHeight = 64; box.MinHeight = 34;
@@ -362,7 +394,7 @@ public partial class MainWindow
             CornerRadius = new Avalonia.CornerRadius(12),
             Padding = new Avalonia.Thickness(8, 6),
             Margin = new Avalonia.Thickness(0, 0, 0, 6),
-            Child = new StackPanel { Spacing = 4, Children = { ability, row, preview, detail, pro } }
+            Child = new StackPanel { Spacing = 4, Children = { ability, row, preview, liveThumb, AssistAttached(key, assistHost), detail, pro } }
         };
     }
 }
