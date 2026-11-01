@@ -8,7 +8,18 @@ namespace Trendo.Core;
 public sealed record Contact(string Id, string Name, string Email, string Phone = "", string Note = "", string Mobile = "", string Company = "", string Street = "", string City = "",
     DateOnly? Birthday = null, List<string>? Groups = null, string Photo = "", bool Favorite = false, string Website = "");
 public sealed record MailDraft(string To, string Subject, string Body, string Cc = "");
-public sealed record ParsedMail(string From, string To, string Subject, string Date, string Body);
+public sealed record ParsedMail(string From, string To, string Subject, string Date, string Body)
+{
+    /// <summary>Weitere Empfänger (Kopie) – für „Allen antworten“.</summary>
+    public string Cc { get; init; } = "";
+    /// <summary>Anhänge (Name, Art, Inhalt) – nur gelesen, nie automatisch geöffnet.</summary>
+    public IReadOnlyList<MailAttachment> Attachments { get; init; } = [];
+}
+
+public sealed record MailAttachment(string Name, string ContentType, byte[] Data)
+{
+    public long Size => Data.LongLength;
+}
 
 /// <summary>SYS-09 Communication Mail & Collaboration Center: Kontakte (mit vCard), Entwürfe als .eml oder mailto für dein Mailprogramm,
 /// eingegangene .eml-Dateien lesen. Trendo verschickt selbst nichts – das macht immer dein Mailprogramm, nachdem du es geprüft hast.</summary>
@@ -72,29 +83,57 @@ public sealed partial class MailCenter
     /// <summary>Liest eine .eml-Datei (Text-Teil, Base64/Quoted-Printable, kodierte Kopfzeilen).</summary>
     public static ParsedMail ParseEml(string raw)
     {
-        var parts = raw.Replace("\r\n", "\n").Split("\n\n", 2);
-        var headers = Regex.Replace(parts[0], @"\n[ \t]+", " ");
-        string Hd(string k) => DecodeWord(Regex.Match(headers, $@"^{k}:\s*(.*)$", RegexOptions.Multiline | RegexOptions.IgnoreCase).Groups[1].Value.Trim());
-        var body = parts.Length > 1 ? parts[1] : "";
-        var ct = Hd("Content-Type");
+        var (head, body) = SplitPart(raw.Replace("\r\n", "\n"));
+        string Hd(string k) => DecodeWord(HeaderOf(head, k));
+        var texts = new List<(bool Html, string Text)>(); var atts = new List<MailAttachment>();
+        Walk(head, body, texts, atts, 0);
+        var text = texts.FirstOrDefault(t => !t.Html).Text ?? (texts.FirstOrDefault(t => t.Html).Text is { } h ? HtmlToText(h) : "");
+        return new(Hd("From"), Hd("To"), Hd("Subject"), Hd("Date"), text.Trim()) { Cc = Hd("Cc"), Attachments = atts };
+    }
+
+    static (string Head, string Body) SplitPart(string part) { var x = part.Split("\n\n", 2); return (Regex.Replace(x[0], @"\n[ \t]+", " "), x.Length > 1 ? x[1] : ""); }
+    static string HeaderOf(string head, string k) => Regex.Match(head, $@"^{k}:\s*(.*)$", RegexOptions.Multiline | RegexOptions.IgnoreCase).Groups[1].Value.Trim();
+
+    /// <summary>MIME-Teile rekursiv lesen (auch multipart/mixed mit multipart/alternative darin): Texte sammeln, Anhänge mit Name und Inhalt.</summary>
+    static void Walk(string head, string body, List<(bool, string)> texts, List<MailAttachment> atts, int depth)
+    {
+        if (depth > 8) return;
+        var ct = HeaderOf(head, "Content-Type"); var enc = HeaderOf(head, "Content-Transfer-Encoding").ToLowerInvariant();
+        var disp = HeaderOf(head, "Content-Disposition");
         var bm = Regex.Match(ct, @"boundary=""?([^"";]+)""?", RegexOptions.IgnoreCase);
-        var enc = Hd("Content-Transfer-Encoding");
-        if (bm.Success)
+        if (ct.StartsWith("multipart/", StringComparison.OrdinalIgnoreCase) && bm.Success)
         {
-            var seg = body.Split("--" + bm.Groups[1].Value).Select(s => s.TrimStart('\n')).FirstOrDefault(s => Regex.IsMatch(s, @"(?i)content-type:\s*text/plain"));
-            if (seg is not null)
+            foreach (var seg in body.Split("--" + bm.Groups[1].Value).Skip(1))
             {
-                var sp = seg.Split("\n\n", 2); body = sp.Length > 1 ? sp[1] : "";
-                enc = Regex.Match(sp[0], @"(?im)^content-transfer-encoding:\s*(\S+)").Groups[1].Value;
+                if (seg.StartsWith("--")) break; // Ende
+                var (h, b) = SplitPart(seg.TrimStart('\n'));
+                Walk(h, b.TrimEnd('\n'), texts, atts, depth + 1);
             }
+            return;
         }
-        body = enc.ToLowerInvariant() switch
+        var name = DecodeWord(Regex.Match(disp, @"filename\*?=""?([^"";]+)""?", RegexOptions.IgnoreCase) is { Success: true } fm ? fm.Groups[1].Value
+            : Regex.Match(ct, @"name\*?=""?([^"";]+)""?", RegexOptions.IgnoreCase) is { Success: true } nm ? nm.Groups[1].Value : "");
+        var isText = ct.Length == 0 || ct.StartsWith("text/", StringComparison.OrdinalIgnoreCase);
+        if (disp.StartsWith("attachment", StringComparison.OrdinalIgnoreCase) || name.Length > 0 && !isText || !isText)
         {
-            "base64" => TryB64(body),
-            "quoted-printable" => QP(body),
-            _ => body,
-        };
-        return new(Hd("From"), Hd("To"), Hd("Subject"), Hd("Date"), body.Trim());
+            var data = enc == "base64" ? TryBytes(body) : enc == "quoted-printable" ? Encoding.UTF8.GetBytes(QP(body)) : Encoding.UTF8.GetBytes(body);
+            var safe = string.Concat((name.Length > 0 ? name : "anhang" + (atts.Count + 1)).Where(c => !Path.GetInvalidFileNameChars().Contains(c)));
+            atts.Add(new MailAttachment(safe.Length > 0 ? safe : "anhang", ct.Split(';')[0].Trim().ToLowerInvariant() is { Length: > 0 } t ? t : "application/octet-stream", data));
+            return;
+        }
+        var txt = enc switch { "base64" => TryB64(body), "quoted-printable" => QP(body), _ => body };
+        texts.Add((ct.StartsWith("text/html", StringComparison.OrdinalIgnoreCase), txt));
+    }
+
+    static byte[] TryBytes(string s) { try { return Convert.FromBase64String(Regex.Replace(s, @"\s", "")); } catch (FormatException) { return Encoding.UTF8.GetBytes(s); } }
+
+    /// <summary>HTML-Mail als lesbarer Text (Skripte und Stile entfernt, Zeilenumbrüche erhalten).</summary>
+    public static string HtmlToText(string html)
+    {
+        var t = Regex.Replace(html, @"<(script|style|head)\b[^>]*>.*?</\1>", "", RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        t = Regex.Replace(t, @"<(br|/p|/div|/li|/tr|/h[1-6])\b[^>]*>", "\n", RegexOptions.IgnoreCase);
+        t = Regex.Replace(t, "<[^>]+>", "");
+        return Regex.Replace(System.Net.WebUtility.HtmlDecode(t), @"\n{3,}", "\n\n").Trim();
     }
 
     private static string TryB64(string s) { try { return Encoding.UTF8.GetString(Convert.FromBase64String(Regex.Replace(s, @"\s", ""))); } catch (FormatException) { return s; } }

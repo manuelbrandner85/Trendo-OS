@@ -23,6 +23,11 @@ public partial class MainWindow
     public string CalMode { get; set; } = "monat";
     private string _pimMsg = "", _pwDraft = "";
     private MailDraft _sendDraft = new("", "", "");
+    // Runde 7: Entwürfe, Gesendet, Unterhaltungen
+    MailFolders? _mailFolders; public MailFolders MailBoxes => _mailFolders ??= new MailFolders(_core.DataRoot);
+    string? _draftId; MailFolders.Stored? _sentOpen; bool _inboxThreads;
+    /// <summary>Ordner für gespeicherte Anhänge (im Testmodus im Datenordner).</summary>
+    string MailAttachmentFolder => _opt.Isolated ? Directory.CreateDirectory(Path.Combine(_core.DataRoot, "test-anhaenge")).FullName : WorkFolder("Mail-Anhänge");
     private DateTime _calLastCheck = DateTime.Now;
     private string? _inboxFolder; private bool _composeOpen;
     private string _inboxSearch = ""; private bool _inboxAccountOpen;
@@ -126,6 +131,7 @@ public partial class MainWindow
             else await MailNet.SendAsync(a, _core.Secrets.Get(a.SecretKey) ?? throw new InvalidOperationException("Das Passwort fehlt."), _sendDraft);
             _pimMsg = $"Gesendet an {_sendDraft.To}.";
             _core.Audit.Append(Principal.LocalOwner.Name, "post.gesendet", $"{_sendDraft.To} · {_sendDraft.Subject}");
+            MailBoxes.AddSent(_sendDraft, _draftId); _draftId = null;
             _sendDraft = new("", "", ""); _composeOpen = false;
         }
         catch (Exception ex) when (ex is IOException or InvalidOperationException or System.Net.Sockets.SocketException or System.Security.Authentication.AuthenticationException) { _pimMsg = "Senden ging nicht: " + ex.Message; }
@@ -169,12 +175,17 @@ public partial class MainWindow
         }
         folders.Children.Add(Folder("inbox-folder-alle", $"Posteingang ({Inbox.Count})", _inboxFolder is null, () => _inboxFolder = null));
         folders.Children.Add(Folder("inbox-folder-ungelesen", $"Ungelesen ({Inbox.Count(h => !h.Seen)})", _inboxFolder == "\u0001", () => _inboxFolder = "\u0001"));
+        folders.Children.Add(Folder("inbox-folder-entwuerfe", $"✎ Entwürfe ({MailBoxes.Drafts.Count})", _inboxFolder == "\u0003", () => { _inboxFolder = "\u0003"; _sentOpen = null; }));
+        folders.Children.Add(Folder("inbox-folder-gesendet", $"➤ Gesendet ({MailBoxes.Sent.Count})", _inboxFolder == "\u0004", () => { _inboxFolder = "\u0004"; _sentOpen = null; }));
         folders.Children.Add(Folder("inbox-folder-merker", $"⭐ Gemerkt ({Inbox.Count(h => _settings.MailFlagged.Contains(h.Uid))})", _inboxFolder == "\u0002", () => _inboxFolder = "\u0002"));
         foreach (var (cat, k) in active.Select(r => r.Category).Distinct().Select((c, k) => (c, k)))
             folders.Children.Add(Folder($"inbox-folder-{k}", $"{cat} ({Inbox.Count(h => active.FirstOrDefault(r => r.Matches(h))?.Category == cat)})", _inboxFolder == cat, () => _inboxFolder = cat));
+        var threads = new CheckBox { Name = "inbox-threads", Content = "Als Unterhaltungen", IsChecked = _inboxThreads, Foreground = Text, Margin = new Thickness(4, 6, 0, 0) };
+        threads.IsCheckedChanged += (_, _) => { _inboxThreads = threads.IsChecked == true; Show("posteingang"); };
+        folders.Children.Add(threads);
         folders.Children.Add(new Border { Height = 10 });
         var compose = new Button { Name = "inbox-new", Content = "✉ Neue Nachricht", Background = Accent, IsEnabled = a is not null, HorizontalAlignment = HorizontalAlignment.Stretch };
-        compose.Click += (_, _) => { _sendDraft = new("", "", ""); _composeOpen = true; Show("posteingang"); };
+        compose.Click += (_, _) => MailCompose(new("", "", ""));
         folders.Children.Add(compose);
         folders.Children.Add(Folder("inbox-go-kalender", "📅 Kalender", false, () => { }));
         ((Button)folders.Children[^1]).Click += (_, _) => Show("kalender");
@@ -186,25 +197,50 @@ public partial class MainWindow
         search.KeyUp += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter || (search.Text ?? "").Length == 0) { _inboxSearch = search.Text ?? ""; Show("posteingang"); } };
         list.Children.Add(search);
         var shown = 0;
-        for (var i = 0; i < Inbox.Count; i++)
+        var local = _inboxFolder == "\u0003" ? MailBoxes.Drafts : _inboxFolder == "\u0004" ? MailBoxes.Sent : null;
+        if (local is not null)
+        {
+            for (var i = 0; i < local.Count; i++)
+            {
+                var st = local[i]; var isDraft = _inboxFolder == "\u0003";
+                if (_inboxSearch.Trim() is { Length: > 0 } lq && !(st.Subject.Contains(lq, StringComparison.CurrentCultureIgnoreCase) || st.To.Contains(lq, StringComparison.CurrentCultureIgnoreCase))) continue;
+                shown++;
+                var lb = new Button { Name = $"inbox-local-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 5), Background = _sentOpen?.Id == st.Id ? Brush.Parse("#332F86F6") : Brushes.Transparent,
+                    Content = new StackPanel { Children = {
+                        new TextBlock { Text = st.Subject.Length > 0 ? st.Subject : "(ohne Betreff)", Foreground = Text, TextTrimming = TextTrimming.CharacterEllipsis },
+                        new TextBlock { Text = $"An {(st.To.Length > 0 ? st.To : "–")} · {st.At.LocalDateTime.ToString("dd.MM. HH:mm", De)}", Foreground = Muted, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis } } } };
+                lb.Click += (_, _) => { if (isDraft) { _draftId = st.Id; MailCompose(new MailDraft(st.To, st.Subject, st.Body, st.Cc), keepDraft: true); } else { _sentOpen = st; _composeOpen = false; InboxOpen = null; Show("posteingang"); } };
+                list.Children.Add(lb);
+            }
+        }
+        var threadOf = _inboxThreads && local is null ? MailFolders.Threads(Inbox).ToDictionary(t => t.Mails[0].Uid, t => t.Mails.Count) : null;
+        for (var i = 0; i < Inbox.Count && local is null; i++)
         {
             var h = Inbox[i]; var uid = h.Uid;
+            if (threadOf is not null && !threadOf.ContainsKey(uid)) continue; // Unterhaltung: nur die neueste zeigen
             var cat = active.FirstOrDefault(r => r.Matches(h))?.Category;
             if (_inboxFolder == "\u0001" ? h.Seen : _inboxFolder == "\u0002" ? !_settings.MailFlagged.Contains(h.Uid) : _inboxFolder is not null && cat != _inboxFolder) continue;
             if (_inboxSearch.Trim() is { Length: > 0 } q && !(h.Subject.Contains(q, StringComparison.CurrentCultureIgnoreCase) || h.From.Contains(q, StringComparison.CurrentCultureIgnoreCase))) continue;
             shown++;
             var b = new Button { Name = $"inbox-item-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 5), Background = InboxOpenUid == uid ? Accent : Brushes.Transparent,
                 Content = new StackPanel { Children = {
-                    new TextBlock { Text = (_settings.MailFlagged.Contains(uid) ? "⭐ " : "") + (h.Subject.Length > 0 ? h.Subject : "(ohne Betreff)"), Foreground = Text, FontWeight = h.Seen ? FontWeight.Normal : FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
+                    new TextBlock { Text = (_settings.MailFlagged.Contains(uid) ? "⭐ " : "") + (h.Subject.Length > 0 ? h.Subject : "(ohne Betreff)") + (threadOf?.GetValueOrDefault(uid) is > 1 and var tc ? $"  ({tc})" : ""), Foreground = Text, FontWeight = h.Seen ? FontWeight.Normal : FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
                     new TextBlock { Text = $"{h.From} · {(h.Date is { } d ? d.LocalDateTime.ToString("dd.MM. HH:mm", De) : "")}{(cat is null ? "" : $"  [{cat}]")}", Foreground = Muted, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis } } } };
-            b.Click += async (_, _) => { await OpenInboxMail(uid); InboxOpenUid = uid; _composeOpen = false; Show("posteingang"); };
+            b.Click += async (_, _) => { await OpenInboxMail(uid); InboxOpenUid = uid; _composeOpen = false; _sentOpen = null; Show("posteingang"); };
             list.Children.Add(b);
         }
         if (Inbox.Count == 0) list.Children.Add(EmptyState("inbox-empty", "📬", "Noch keine Nachrichten geladen", "Konto eintragen und „Abrufen“ drücken."));
         else if (shown == 0) list.Children.Add(P(_inboxSearch.Length > 0 ? $"Nichts gefunden für „{_inboxSearch}“." : "In diesem Ordner ist nichts.", Text));
 
         var read = new StackPanel { Spacing = 6 };
-        if (InboxOpen is { } m && !_composeOpen && !SendConfirmOpen)
+        if (_sentOpen is { } so && !_composeOpen && !SendConfirmOpen)
+        {
+            read.Children.Add(new TextBlock { Name = "inbox-subject", Text = so.Subject, Foreground = Text, FontSize = 16, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
+            read.Children.Add(P($"Gesendet an {so.To}{(so.Cc.Length > 0 ? $", Kopie an {so.Cc}" : "")} · {so.At.LocalDateTime.ToString("dd.MM.yyyy HH:mm", De)}", null, 12));
+            read.Children.Add(new SelectableTextBlock { Name = "inbox-body", Text = so.Body, Foreground = Text, TextWrapping = TextWrapping.Wrap, FontSize = 13 });
+            read.Children.Add(Act("inbox-resend", "Als neue Nachricht verwenden", () => MailCompose(new MailDraft(so.To, so.Subject, so.Body, so.Cc))));
+        }
+        else if (InboxOpen is { } m && !_composeOpen && !SendConfirmOpen)
         {
             read.Children.Add(new TextBlock { Name = "inbox-subject", Text = m.Subject, Foreground = Text, FontSize = 16, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
             read.Children.Add(P($"Von {m.From} · {m.Date}", null, 12));
@@ -229,14 +265,29 @@ public partial class MainWindow
                 read.Children.Add(new Border { Background = Brush.Parse("#222F86F6"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6), Child = new StackPanel { Spacing = 4, Children = { P("Termin in dieser Nachricht gefunden – bitte prüfen:", Text, 12), hw } } });
             }
             read.Children.Add(new SelectableTextBlock { Name = "inbox-body", Text = m.Body, Foreground = Text, TextWrapping = TextWrapping.Wrap, FontSize = 13 });
+            // Anhänge: ansehen und speichern – nie automatisch öffnen
+            if (m.Attachments.Count > 0)
+            {
+                var att = new StackPanel { Name = "inbox-attachments", Spacing = 3, Children = { P($"📎 {m.Attachments.Count} Anhang/Anhänge", Text, 12) } };
+                for (var k = 0; k < m.Attachments.Count; k++)
+                {
+                    var at = m.Attachments[k];
+                    var risky = Browsers.Risky(at.Name);
+                    var saveAtt = Act($"inbox-att-{k}", "Speichern", () => MailSaveAttachment(at), !risky);
+                    att.Children.Add(new WrapPanel { Children = { P($"{at.Name} · {(at.Size >= 1 << 20 ? $"{at.Size / (double)(1 << 20):0.0} MB" : $"{Math.Max(1, at.Size / 1024)} KB")}{(risky ? " · ⚠ Programmdatei – nur speichern, wenn du dem Absender vertraust" : "")}", risky ? Brush.Parse("#FACC15") : null, 11.5), new Border { Width = 6 }, saveAtt } });
+                }
+                read.Children.Add(new Border { Background = Brush.Parse("#14FFFFFF"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6), Child = att });
+            }
             var reply = new Button { Name = "inbox-reply", Content = "Antworten", Background = Accent };
             var from = System.Text.RegularExpressions.Regex.Match(m.From, @"<([^>]+)>") is { Success: true } mm ? mm.Groups[1].Value : m.From;
-            reply.Click += (_, _) => { _sendDraft = new MailDraft(from, m.Subject.StartsWith("Re:", StringComparison.OrdinalIgnoreCase) ? m.Subject : "Re: " + m.Subject, "\n\n> " + m.Body.Replace("\n", "\n> ")); _composeOpen = true; Show("posteingang"); };
+            reply.Click += (_, _) => MailCompose(new MailDraft(from, MailFolders.ReplySubject(m.Subject, false), MailFolders.Quote(m)));
+            var replyAll = new Button { Name = "inbox-reply-all", Content = "Allen antworten" };
+            replyAll.Click += (_, _) => { var (rt, rc) = MailFolders.ReplyAll(m, a?.Email ?? ""); MailCompose(new MailDraft(rt.Length > 0 ? rt : from, MailFolders.ReplySubject(m.Subject, false), MailFolders.Quote(m), rc)); };
             var uidOpen = InboxOpenUid ?? 0; var flagged = _settings.MailFlagged.Contains(uidOpen);
             var flag = new Button { Name = "inbox-flag", Content = flagged ? "⭐ Gemerkt" : "☆ Merken" };
             flag.Click += (_, _) => { if (flagged) _settings.MailFlagged.Remove(uidOpen); else _settings.MailFlagged.Add(uidOpen); SaveSettings(); Show("posteingang"); };
             var fwd = new Button { Name = "inbox-forward", Content = "Weiterleiten" };
-            fwd.Click += (_, _) => { _sendDraft = new MailDraft("", m.Subject.StartsWith("WG:", StringComparison.OrdinalIgnoreCase) ? m.Subject : "WG: " + m.Subject, $"\n\n---------- Weitergeleitete Nachricht ----------\nVon: {m.From}\nDatum: {m.Date}\nBetreff: {m.Subject}\n\n{m.Body}"); _composeOpen = true; Show("posteingang"); };
+            fwd.Click += (_, _) => { _sendDraft = new MailDraft("", MailFolders.ReplySubject(m.Subject, true), $"\n\n---------- Weitergeleitete Nachricht ----------\nVon: {m.From}\nDatum: {m.Date}\nBetreff: {m.Subject}\n\n{m.Body}"); _composeOpen = true; Show("posteingang"); };
             var task = new Button { Name = "inbox-task", Content = "☑ Als Aufgabe" };
             task.Click += (_, _) =>
             {
@@ -245,20 +296,24 @@ public partial class MainWindow
                 Cal.AddTodo(new TodoItem(Guid.NewGuid().ToString("N"), title.Length > 0 ? title : "E-Mail beantworten", due, false, 2, "E-Mail", Notes: $"Aus der E-Mail von {m.From}"));
                 _pimMsg = $"„{title}“ steht in den Aufgaben{(due is { } dd ? $", fällig {dd:dd.MM.}" : "")}."; Show("posteingang");
             };
-            read.Children.Add(new WrapPanel { Children = { reply, new Border { Width = 6 }, fwd, new Border { Width = 6 }, task, new Border { Width = 6 }, flag } });
+            read.Children.Add(new WrapPanel { Children = { reply, new Border { Width = 6 }, replyAll, new Border { Width = 6 }, fwd, new Border { Width = 6 }, task, new Border { Width = 6 }, flag } });
+            read.Children.Add(P("Tasten: R antworten · Umschalt+R allen antworten · F weiterleiten · N neu · J/K nächste/vorige", Muted, 10.5));
         }
         else if (_composeOpen || SendConfirmOpen)
         {
             // Schreiben mit Bestätigung
             var to = new TextBox { Name = "send-to", Text = _sendDraft.To, PlaceholderText = "An" };
+            var cc = new TextBox { Name = "send-cc", Text = _sendDraft.Cc, PlaceholderText = "Kopie an (optional)" };
             var subj = new TextBox { Name = "send-subject", Text = _sendDraft.Subject, PlaceholderText = "Betreff" };
             var body = new TextBox { Name = "send-body", Text = _sendDraft.Body, PlaceholderText = "Nachricht", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 180 };
             var send = new Button { Name = "send-ask", Content = "Senden …", Background = Accent, IsEnabled = a is not null };
-            send.Click += (_, _) => { AskSend(new MailDraft(to.Text ?? "", subj.Text ?? "", body.Text ?? "")); Show("posteingang"); };
+            send.Click += (_, _) => { AskSend(new MailDraft(to.Text ?? "", subj.Text ?? "", body.Text ?? "", cc.Text ?? "")); Show("posteingang"); };
+            var keep = new Button { Name = "send-draft", Content = "Als Entwurf speichern" };
+            keep.Click += (_, _) => { var dd = MailBoxes.SaveDraft(new MailDraft(to.Text ?? "", subj.Text ?? "", body.Text ?? "", cc.Text ?? ""), _draftId); _draftId = null; _composeOpen = false; _sendDraft = new("", "", ""); _pimMsg = dd is null ? "Leerer Entwurf – nichts gespeichert." : $"Entwurf „{(dd.Subject.Length > 0 ? dd.Subject : "(ohne Betreff)")}“ gespeichert."; Show("posteingang"); };
             var cancel = new Button { Name = "send-discard", Content = "Verwerfen" };
-            cancel.Click += (_, _) => { _composeOpen = false; _sendDraft = new("", "", ""); Show("posteingang"); };
-            read.Children.Add(H("Neue Nachricht", 15)); read.Children.Add(to); read.Children.Add(subj); read.Children.Add(body);
-            read.Children.Add(new WrapPanel { Children = { send, new Border { Width = 6 }, cancel } });
+            cancel.Click += (_, _) => { if (_draftId is { } did) MailBoxes.DeleteDraft(did); _draftId = null; _composeOpen = false; _sendDraft = new("", "", ""); Show("posteingang"); };
+            read.Children.Add(H(_draftId is null ? "Neue Nachricht" : "Entwurf bearbeiten", 15)); read.Children.Add(to); read.Children.Add(cc); read.Children.Add(subj); read.Children.Add(body);
+            read.Children.Add(new WrapPanel { Children = { send, new Border { Width = 6 }, keep, new Border { Width = 6 }, cancel } });
             if (SendConfirmOpen)
             {
                 var yes = new Button { Name = "send-confirm-yes", Content = "Ja, jetzt senden", Background = Accent }; yes.Click += async (_, _) => { await ConfirmSend(true); Show("posteingang"); };
@@ -286,6 +341,7 @@ public partial class MainWindow
         }
         sp.Children.Add(Card(rules));
         if (_pimMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "pim-msg", Text = _pimMsg, Foreground = Muted, FontSize = 13, TextWrapping = TextWrapping.Wrap });
+        sp.KeyDown += (_, e) => { if (e.Source is not TextBox && MailKey(e.Key, e.KeyModifiers)) e.Handled = true; };
         return SysPage("Posteingang", sp);
     }
 
@@ -649,5 +705,45 @@ public partial class MainWindow
             H("Aufgabe", 14), L("Titel", title), new WrapPanel { Children = { L("Fällig", due), new Border { Width = 6 }, L("Priorität", prio) } },
             L("Spalte", stage), L("Liste", list), L("Beschreibung", notes),
             new WrapPanel { Children = { save, new Border { Width = 6 }, del, new Border { Width = 6 }, close } } } });
+    }
+
+    /// <summary>Schreibfeld öffnen (neu, Antwort, Entwurf).</summary>
+    public void MailCompose(MailDraft d, bool keepDraft = false)
+    {
+        if (!keepDraft) _draftId = null;
+        _sendDraft = d; _composeOpen = true; _sentOpen = null; Show("posteingang");
+    }
+
+    /// <summary>Anhang speichern (Ordner „Mail-Anhänge“ im Projektordner; gleicher Name → „Name (2)“). Öffnet nichts.</summary>
+    public string MailSaveAttachment(MailAttachment at)
+    {
+        var dir = MailAttachmentFolder; var target = Path.Combine(dir, at.Name);
+        for (var n = 2; File.Exists(target); n++) target = Path.Combine(dir, $"{Path.GetFileNameWithoutExtension(at.Name)} ({n}){Path.GetExtension(at.Name)}");
+        File.WriteAllBytes(target, at.Data);
+        _core.Audit.Append(Principal.LocalOwner.Name, "post.anhang", Path.GetFileName(target));
+        _pimMsg = $"Gespeichert: {target}"; Show("posteingang");
+        return target;
+    }
+
+    /// <summary>Tastenkürzel im Posteingang wie in Mailprogrammen. True = verarbeitet.</summary>
+    public bool MailKey(Avalonia.Input.Key k, Avalonia.Input.KeyModifiers mod)
+    {
+        var shift = mod.HasFlag(Avalonia.Input.KeyModifiers.Shift);
+        switch (k)
+        {
+            case Avalonia.Input.Key.N: MailCompose(new("", "", "")); return true;
+            case Avalonia.Input.Key.R when InboxOpen is { } m:
+                if (shift) { var (rt, rc) = MailFolders.ReplyAll(m, MailAccountCfg?.Email ?? ""); MailCompose(new MailDraft(rt, MailFolders.ReplySubject(m.Subject, false), MailFolders.Quote(m), rc)); }
+                else MailCompose(new MailDraft(System.Text.RegularExpressions.Regex.Match(m.From, @"<([^>]+)>") is { Success: true } mm ? mm.Groups[1].Value : m.From, MailFolders.ReplySubject(m.Subject, false), MailFolders.Quote(m)));
+                return true;
+            case Avalonia.Input.Key.F when InboxOpen is { } m2:
+                MailCompose(new MailDraft("", MailFolders.ReplySubject(m2.Subject, true), $"\n\n---------- Weitergeleitete Nachricht ----------\nVon: {m2.From}\nDatum: {m2.Date}\nBetreff: {m2.Subject}\n\n{m2.Body}")); return true;
+            case Avalonia.Input.Key.J or Avalonia.Input.Key.K when Inbox.Count > 0:
+                var i = InboxOpenUid is { } u ? Inbox.FindIndex(h => h.Uid == u) : -1;
+                var next = Math.Clamp(k == Avalonia.Input.Key.J ? i + 1 : i - 1, 0, Inbox.Count - 1);
+                var uid = Inbox[next].Uid; _ = OpenInboxMail(uid).ContinueWith(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() => { InboxOpenUid = uid; _composeOpen = false; Show("posteingang"); }));
+                return true;
+        }
+        return false;
     }
 }

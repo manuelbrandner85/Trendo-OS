@@ -60,7 +60,8 @@ public class O1O6_PimUi
         Assert.True(w.SendConfirmOpen); Assert.Null(sent);
         w.Find<Button>("send-confirm-yes").Press();
         for (var i = 0; i < 50 && sent is null; i++) { Pump(); await Task.Delay(20, ct); }
-        Assert.Equal("Re: Termin am Freitag", sent!.Subject); Assert.Equal("Ja, passt.", sent.Body);
+        Assert.Equal("AW: Termin am Freitag", sent!.Subject); // Antwort „AW:“ wie in deutschen Mailprogrammen
+        Assert.Equal("Ja, passt.", sent.Body);
         // Regeln: nur Vorschlag, wirksam erst nach Freigabe
         w.MailRules.Add(new MailRule("r1", "Post von Erika", "erika@", "", "Familie"));
         w.Show("posteingang"); Pump();
