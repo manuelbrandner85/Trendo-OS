@@ -91,6 +91,8 @@ if (Environment.GetEnvironmentVariable("TRENDO_TV_DEMO") is { Length: > 0 }) // 
     for (var i = 1; i <= 24; i++) { var t = now.Date.AddHours(now.Hour - 1).AddMinutes(-(i * 7 % 30)); for (var k = 0; k < 6; k++) { progs.Add(new($"k{i}", t, t.AddMinutes(45 + i % 4 * 15), titles[(i + k) % titles.Length], "Beispielsendung")); t = t.AddMinutes(45 + i % 4 * 15); } }
     lib.StoreEpg(src.Id, progs);
 }
+// Vorschaubilder und Katalog-Lauf schreiben nie in die echten Dokumente: Projektordner liegt im eigenen Temp-Ordner
+{ var us = UserSettings.Load(root); if (string.IsNullOrEmpty(us.ProjectsFolder)) { us.ProjectsFolder = Path.Combine(root, "Projekte"); us.Save(root); } }
 var win = new MainWindow(core, new AppOptions(root, null, 0, Page: args.Length > 3 ? args[3] : null, Query: Environment.GetEnvironmentVariable("TRENDO_QUERY")), new DefaultToolProbe()) { Width = w, Height = h, WindowState = Avalonia.Controls.WindowState.Normal };
 if (Environment.GetEnvironmentVariable("TRENDO_TV_TAB") is { Length: > 0 } tvTab) { win.TvTabForTests = tvTab; win.Show("tv"); }
 win.Show();
@@ -213,6 +215,15 @@ else if (shot == "seite")
         var task = win.DiskScanAsync(diskDir); while (!task.IsCompleted) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
         if (win.DiskAt?.Children.FirstOrDefault(c => c.IsDir) is { } firstDir) win.DiskSelect(firstDir);
         win.Show("ressourcen");
+    }
+    if (Environment.GetEnvironmentVariable("TRENDO_PLAN") is { Length: > 0 }) // Vorhaben als Zeitplan mit Abhängigkeiten
+    {
+        var pdir = CreationSuite.Create(win.SuiteFolder, "event", "Sommerfest im Verein", DateTime.Today.AddDays(-4));
+        var st = CreationSuite.Steps(pdir);
+        CreationSuite.SetState(pdir, st[0].Line, 2); CreationSuite.SetState(pdir, st[1].Line, 1);
+        CreationSuite.SetAfter(pdir, 3, [2]); CreationSuite.SetAfter(pdir, 5, [3, 4]); CreationSuite.SetAfter(pdir, 6, [5]); CreationSuite.Reschedule(pdir);
+        win.SuiteOpenForPreview(pdir, "zeitplan", 2);
+        win.Show("vorhaben");
     }
     if (Environment.GetEnvironmentVariable("TRENDO_KONTAKTE") is { Length: > 0 } abMode) // Adressbuch mit Beispielkontakten
     {

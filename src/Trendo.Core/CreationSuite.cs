@@ -5,8 +5,9 @@ namespace Trendo.Core;
 
 /// <summary>X-11: Vorhaben-Baukasten – ein Ziel wählen, Trendo legt Ordner, Startdateien und eine Schritt-für-Schritt-Liste an.</summary>
 public sealed record Kit(string Id, string Label, string Goal, string[] Folders, string[] Steps, string? DevTemplate = null, string? GameTemplate = null, bool Page = false);
-/// <summary>Ein Schritt. State: 0 offen, 1 in Arbeit, 2 fertig. Due und Milestone für den Zeitplan (Teil 4, F1).</summary>
-public sealed record Step(int Line, bool Done, string Text, int State = 0, DateTime? Due = null, bool Milestone = false);
+/// <summary>Ein Schritt. State: 0 offen, 1 in Arbeit, 2 fertig. Due und Milestone für den Zeitplan (Teil 4, F1);
+/// Start (Beginn) und After (hängt ab von Schritt Nr., 1-basiert) für den Zeitplan mit Balken (Masterprompt 131).</summary>
+public sealed record Step(int Line, bool Done, string Text, int State = 0, DateTime? Due = null, bool Milestone = false, DateTime? Start = null, int[]? After = null);
 
 public static partial class CreationSuite
 {
@@ -51,16 +52,22 @@ public static partial class CreationSuite
         return dir;
     }
 
-    [GeneratedRegex(@"^\s*- \[( |x|X|~)\] (◆ )?(.*?)(?: @(\d{4}-\d{2}-\d{2}))?\s*$")] private static partial Regex StepRx();
+    [GeneratedRegex(@"^\s*- \[( |x|X|~)\] (◆ )?(.*?)(?: @(\d{4}-\d{2}-\d{2})(?:\.\.(\d{4}-\d{2}-\d{2}))?)?(?: \^([\d,]+))?\s*$")] private static partial Regex StepRx();
 
     static Step Parse(int line, Match m)
     {
         var state = m.Groups[1].Value switch { " " => 0, "~" => 1, _ => 2 };
-        DateTime? due = m.Groups[4].Success ? DateTime.ParseExact(m.Groups[4].Value, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) : null;
-        return new(line, state == 2, m.Groups[3].Value, state, due, m.Groups[2].Success);
+        static DateTime D(string v) => DateTime.ParseExact(v, "yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+        DateTime? start = null, due = null;
+        if (m.Groups[5].Success) { start = D(m.Groups[4].Value); due = D(m.Groups[5].Value); } else if (m.Groups[4].Success) due = D(m.Groups[4].Value);
+        int[]? after = m.Groups[6].Success ? m.Groups[6].Value.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).Distinct().Order().ToArray() : null;
+        return new(line, state == 2, m.Groups[3].Value, state, due, m.Groups[2].Success, start, after is { Length: > 0 } ? after : null);
     }
 
-    static string Format(Step s) => $"- [{(s.State switch { 1 => "~", 2 => "x", _ => " " })}] {(s.Milestone ? "◆ " : "")}{s.Text}{(s.Due is { } d ? " @" + d.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) : "")}";
+    static string Iso(DateTime d) => d.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+    static string Format(Step s) => $"- [{(s.State switch { 1 => "~", 2 => "x", _ => " " })}] {(s.Milestone ? "◆ " : "")}{s.Text}"
+        + (s.Due is { } d ? " @" + (s.Start is { } st && st.Date < d.Date ? Iso(st) + ".." : "") + Iso(d) : "")
+        + (s.After is { Length: > 0 } a ? " ^" + string.Join(",", a) : "");
 
     static void Update(string dir, int line, Func<Step, Step> change)
     {

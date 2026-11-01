@@ -147,46 +147,89 @@ public partial class MainWindow
         return grid;
     }
 
-    /// <summary>F1: Zeitplan als einfache Balken (Gantt light) mit Meilensteinen und heutiger Linie.</summary>
+    // ---------- Zeitplan (Gantt, Masterprompt 131) ----------
+    double _planDayW = 28; int _planSel = -1; readonly Stack<(string File, string Text, string Label)> _planUndo = new();
+    public GanttCanvas? GanttForTests { get; private set; }
+    public string PlanUndoLabel => _planUndo.TryPeek(out var u) ? u.Label : "";
+    /// <summary>Für Vorschaubilder: Vorhaben öffnen, Ansicht und gewählten Schritt setzen.</summary>
+    public void SuiteOpenForPreview(string dir, string mode, int sel = -1) { _suiteOpen = dir; SuiteMode = mode; _planSel = sel; }
+
+    void PlanChange(string open, string label, Func<int> act)
+    {
+        const string V = "vorhaben";
+        var f = Path.Combine(open, CreationSuite.ListFile); var before = File.ReadAllText(f);
+        try { var moved = act(); _planUndo.Push((f, before, label)); if (moved > 0) Say($"{moved} abhängige Schritte sind nachgerückt.", V); }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or IOException) { Say(ex.Message, V); }
+        Show(V);
+    }
+
+    /// <summary>F1 + Masterprompt 131: Zeitplan als Gantt – Balken ziehen, Kanten ziehen, Abhängigkeiten, kritischer Pfad, Wochenenden, heute.</summary>
     private Control SuiteTimeline(string open, IReadOnlyList<Step> steps)
     {
         const string V = "vorhaben";
-        var dated = steps.Where(s => s.Due is not null).ToList();
-        var sp = new StackPanel { Name = "suite-timeline", Spacing = 4 };
-        if (dated.Count == 0) sp.Children.Add(P("Noch keine Termine. Trag bei einem Schritt ein Datum ein:", Text));
+        var sp = new StackPanel { Name = "suite-timeline", Spacing = 8 };
+        var bars = CreationSuite.Bars(steps);
+        if (bars.Count == 0) sp.Children.Add(P("Noch keine Termine. Trag unten bei einem Schritt ein Datum ein – oder lege das Vorhaben mit Startdatum an.", Text));
         else
         {
-            var first = Directory.GetCreationTime(open).Date; var from = new[] { first, dated.Min(s => s.Due!.Value) }.Min(); var to = dated.Max(s => s.Due!.Value).AddDays(1);
-            var span = Math.Max(1, (to - from).TotalDays); const double W = 520;
-            var prev = from;
-            foreach (var s in steps)
+            var from = bars.Min(b => b.Start).AddDays(-2); if (DateTime.Today < from && (from - DateTime.Today).TotalDays < 14) from = DateTime.Today.AddDays(-1);
+            var to = new[] { bars.Max(b => b.End), DateTime.Today }.Max().AddDays(8);
+            var canvas = new GanttCanvas { Name = "suite-gantt", Bars = bars, From = from, DaysShown = Math.Max(21, (to - from).Days), DayW = _planDayW, Selected = _planSel < bars.Count ? _planSel : -1 };
+            GanttForTests = canvas;
+            canvas.Moved = (no, d) => PlanChange(open, "Verschieben", () => CreationSuite.MoveBy(open, no, d));
+            canvas.Resized = (no, d, atStart) => PlanChange(open, atStart ? "Beginn ändern" : "Dauer ändern", () => CreationSuite.ResizeBy(open, no, d, atStart));
+            canvas.Linked = (fromNo, toNo) => PlanChange(open, "Abhängigkeit", () => { CreationSuite.AddAfter(open, toNo, fromNo); return CreationSuite.Reschedule(open); });
+            canvas.Clicked = row => { _planSel = row; Show(V); };
+            var crit = bars.Count(b => b.Critical); var end = bars.Max(b => b.End);
+            var undo = Act("suite-plan-undo", _planUndo.TryPeek(out var u) ? "↶ " + u.Label : "↶ Rückgängig", () => { if (_planUndo.TryPop(out var x)) { File.WriteAllText(x.File, x.Text); Show(V); } });
+            undo.IsEnabled = _planUndo.Count > 0;
+            sp.Children.Add(new WrapPanel { Children = {
+                new TextBlock { Name = "suite-plan-info", Text = $"Fertig am {end:ddd dd.MM.yyyy} · {(end - bars.Min(b => b.Start)).Days + 1} Tage · {crit} Schritte auf dem kritischen Pfad (rot)", Foreground = GoldText(), FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) },
+                Act("suite-zoom-days", "Tage", () => { _planDayW = 28; Show(V); }, _planDayW >= 20), Act("suite-zoom-weeks", "Wochen", () => { _planDayW = 12; Show(V); }, _planDayW < 20), new Border { Width = 8 }, undo } });
+            var labels = new StackPanel { Width = 230, Children = { new Border { Height = GanttCanvas.Head } } };
+            for (var r = 0; r < bars.Count; r++)
             {
-                var bar = new Canvas { Width = W, Height = 18 };
-                if (s.Due is { } due)
-                {
-                    var x0 = (prev - from).TotalDays / span * W; var x1 = (due.AddDays(1) - from).TotalDays / span * W;
-                    var color = s.Done ? "#22B35E" : s.State == 1 ? "#F08A3C" : due < DateTime.Today ? "#E5484D" : "#2F86F6";
-                    if (s.Milestone)
-                    {
-                        var diamond = new Avalonia.Controls.Shapes.Path { Data = Geometry.Parse("M7,0 L14,7 L7,14 L0,7 Z"), Fill = Brush.Parse(color) };
-                        Canvas.SetLeft(diamond, x1 - 7); Canvas.SetTop(diamond, 2); bar.Children.Add(diamond);
-                    }
-                    else { var r = new Rectangle { Width = Math.Max(4, x1 - x0), Height = 12, RadiusX = 4, RadiusY = 4, Fill = Brush.Parse(color) }; Canvas.SetLeft(r, x0); Canvas.SetTop(r, 3); bar.Children.Add(r); }
-                    prev = due.AddDays(1) > prev ? due.AddDays(1) : prev;
-                }
-                var today = (DateTime.Today - from).TotalDays / span * W;
-                if (today is >= 0 and <= W) { var l = new Line { StartPoint = new Point(today, 0), EndPoint = new Point(today, 18), Stroke = Brush.Parse("#E5484D"), StrokeThickness = 1 }; bar.Children.Add(l); }
-                sp.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("230,90,*"), Children = {
-                    new TextBlock { Text = (s.Milestone ? "◆ " : "") + s.Text, Foreground = Text, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis, VerticalAlignment = VerticalAlignment.Center },
-                    Pos(P(s.Due is { } d ? d.ToString("ddd dd.MM.", De) : "–", null, 11), 1), Pos(bar, 2) } });
+                var b = bars[r]; var row = r;
+                var lb = new Button { Name = $"suite-plan-row-{r}", Height = GanttCanvas.RowH, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = row == _planSel ? Brush.Parse("#332F86F6") : Brushes.Transparent, Padding = new Thickness(6, 0), CornerRadius = new CornerRadius(4),
+                    Content = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = {
+                        new TextBlock { Text = $"{b.No}. " + (b.Step.Milestone ? "◆ " : "") + b.Step.Text, Foreground = b.Critical ? Brush.Parse("#FCA5A5") : Text, FontSize = 12, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
+                        new TextBlock { Text = $"{b.Start:dd.MM.}–{b.End:dd.MM.} · {b.Days} T" + (b.Slack > 0 ? $" · {b.Slack} T Puffer" : ""), Foreground = Muted, FontSize = 10 } } } };
+                lb.Click += (_, _) => { _planSel = row; Show(V); };
+                labels.Children.Add(lb);
             }
-            sp.Children.Add(P($"{from:dd.MM.yyyy} bis {to.AddDays(-1):dd.MM.yyyy} · rote Linie = heute · ◆ = Meilenstein", null, 10.5));
+            var scroll = new ScrollViewer { Content = canvas, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled };
+            sp.Children.Add(new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, BorderBrush = Brush.Parse("#22FFFFFF"), BorderThickness = new Thickness(1), Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { labels, Pos(scroll, 1) } } });
+            sp.Children.Add(P("Balken ziehen: verschieben · Kante ziehen: Beginn/Ende · gelben Punkt am Balkenende auf einen anderen Balken ziehen: „kommt danach“ · Nachfolger rücken automatisch nach", Muted, 11));
+            if (_planSel >= 0 && _planSel < bars.Count)
+            {
+                var b = bars[_planSel];
+                var st = new TextBox { Name = "suite-plan-start", Text = b.Start.ToString("dd.MM.yyyy"), Width = 110 };
+                var en = new TextBox { Name = "suite-plan-end", Text = b.End.ToString("dd.MM.yyyy"), Width = 110 };
+                var deps = new WrapPanel();
+                for (var k = 0; k < steps.Count; k++)
+                {
+                    if (k + 1 == b.No) continue; var no = k + 1;
+                    deps.Children.Add(new CheckBox { Name = $"suite-plan-after-{no}", IsChecked = (b.Step.After ?? []).Contains(no), Content = new TextBlock { Text = $"{no}. {steps[k].Text}", Foreground = Text, FontSize = 11.5 }, Margin = new Thickness(0, 0, 10, 0) });
+                }
+                var apply = Act("suite-plan-apply", "Übernehmen", () => PlanChange(open, "Schritt ändern", () =>
+                {
+                    DateTime Date(TextBox t) => DateTime.TryParseExact((t.Text ?? "").Trim(), "d.M.yyyy", De, System.Globalization.DateTimeStyles.None, out var x) ? x : throw new ArgumentException("Datum bitte als TT.MM.JJJJ.");
+                    CreationSuite.SetSpan(open, b.Step.Line, Date(st), Date(en));
+                    CreationSuite.SetAfter(open, b.No, deps.Children.OfType<CheckBox>().Where(c => c.IsChecked == true).Select(c => int.Parse(c.Name!["suite-plan-after-".Length..])));
+                    return CreationSuite.Reschedule(open);
+                }), true);
+                sp.Children.Add(Card(new StackPanel { Name = "suite-plan-step", Spacing = 6, Children = { H($"{b.No}. {b.Step.Text}", 14),
+                    new WrapPanel { Children = { new TextBlock { Text = "Beginn", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) }, st, new TextBlock { Text = "Ende", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0, 6, 0) }, en } },
+                    new TextBlock { Text = "Kommt nach:", Foreground = Muted, FontSize = 12 }, deps, apply } }));
+            }
         }
-        // Datum oder Meilenstein für einen Schritt setzen
+        // Ende oder Meilenstein für einen Schritt setzen (auch für Schritte ohne Termin)
         var pick = new ComboBox { Name = "suite-due-step", ItemsSource = steps.Select(s => s.Text).ToList(), SelectedIndex = steps.Count > 0 ? 0 : -1, MinWidth = 220 };
         var date = new TextBox { Name = "suite-due-date", PlaceholderText = "TT.MM.JJJJ", Width = 110 };
         var ms = new CheckBox { Name = "suite-due-milestone", Content = "Meilenstein" };
-        sp.Children.Add(new WrapPanel { Margin = new Thickness(0, 6, 0, 0), Children = { pick, new Border { Width = 6 }, date, new Border { Width = 6 }, ms, new Border { Width = 6 },
+        var undated = steps.Where(s => s.Due is null).ToList();
+        if (undated.Count > 0) sp.Children.Add(P("Ohne Termin: " + string.Join(" · ", undated.Select(s => s.Text)), Muted, 11.5));
+        sp.Children.Add(new WrapPanel { Margin = new Thickness(0, 6, 0, 0), Children = { new TextBlock { Text = "Ende/Meilenstein setzen:", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) }, pick, new Border { Width = 6 }, date, new Border { Width = 6 }, ms, new Border { Width = 6 },
             Act("suite-due-set", "Übernehmen", () => Try(V, () =>
             {
                 if (pick.SelectedIndex < 0) return;
