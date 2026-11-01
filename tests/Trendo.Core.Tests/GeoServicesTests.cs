@@ -25,16 +25,16 @@ public class T0274_GeoServices
         var dir = Path.Combine(Path.GetTempPath(), "trendo-t0274-" + Guid.NewGuid().ToString("N")[..6]);
         try
         {
-            var fake = new Fake(Heights); var svc = new ElevationService(new HttpClient(fake), Path.Combine(dir, "hoehen.json")); var pauses = 0;
+            var fake = new Fake(Heights); var svc = new ElevationService(new TestFetch(new HttpClient(fake)), Path.Combine(dir, "hoehen.json")); var pauses = 0;
             var route = new List<GeoPoint> { new(47.0, 11.0), new(47.2, 11.0) }; // ~22 km nach Norden
             var res = await svc.AddElevation(route, _ => { pauses++; return Task.CompletedTask; });
             Assert.InRange(res.Count, 220, 225); Assert.All(res, p => Assert.NotNull(p.Ele));
             Assert.Equal(3, fake.Urls.Count); Assert.Equal(2, pauses); Assert.All(fake.Urls, u => Assert.Contains("/v1/eudem25m?", u));
             Assert.Equal(500, res[0].Ele!.Value, 3); Assert.Equal(2500, res[^1].Ele!.Value, 3);
-            var again = new ElevationService(new HttpClient(fake), Path.Combine(dir, "hoehen.json"));
+            var again = new ElevationService(new TestFetch(new HttpClient(fake)), Path.Combine(dir, "hoehen.json"));
             await again.AddElevation(route, _ => Task.CompletedTask); Assert.Equal(3, fake.Urls.Count); // nichts erneut abgefragt
             Assert.Equal("srtm30m", ElevationService.Dataset([new(40.7, -74)]));
-            var busy = new ElevationService(new HttpClient(new Fake(_ => new HttpResponseMessage((HttpStatusCode)429))), Path.Combine(dir, "x.json"));
+            var busy = new ElevationService(new TestFetch(new HttpClient(new Fake(_ => new HttpResponseMessage((HttpStatusCode)429)))), Path.Combine(dir, "x.json"));
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => busy.AddElevation([new(48, 11), new(48.001, 11)]));
             Assert.Contains("Tageslimit", ex.Message);
             Assert.Throws<InvalidOperationException>(() => ElevationService.Parse("{\"status\":\"INVALID_REQUEST\",\"error\":\"Too many locations\"}"));

@@ -24,7 +24,7 @@ public sealed class LibraryItem
 
 /// <summary>T-0279: Freie 3D-Quellen live durchsuchen und Objekte auf Klick in die eigene Bibliothek holen.
 /// Poly Haven (CC0: Modelle, HDRI) und ambientCG (CC0: Materialien) – beide ohne Schlüssel, mit Trendo-Kennung, Liste 1 Tag zwischengespeichert.</summary>
-public sealed class AssetLibrary(HttpClient http, string root)
+public sealed class AssetLibrary(IWebFetch http, string root)
 {
     public const string PolyHaven = "Poly Haven", AmbientCg = "ambientCG";
     string IndexFile => Path.Combine(root, "index.json");
@@ -41,7 +41,7 @@ public sealed class AssetLibrary(HttpClient http, string root)
     {
         var f = Path.Combine(root, "cache", file);
         if (File.Exists(f) && (DateTime.UtcNow - File.GetLastWriteTimeUtc(f)).TotalHours < 24) return await File.ReadAllTextAsync(f, ct);
-        var json = await http.GetStringAsync(url, ct);
+        var json = (await http.GetAsync(url, ct)).EnsureOk().Text;
         Directory.CreateDirectory(Path.GetDirectoryName(f)!); await File.WriteAllTextAsync(f, json, ct); return json;
     }
 
@@ -69,7 +69,7 @@ public sealed class AssetLibrary(HttpClient http, string root)
         }
         // Materialien: ambientCG
         var url = $"https://ambientcg.com/api/v2/full_json?type=Material&q={Uri.EscapeDataString(Translate(q))}&limit=40&include=previewData,displayData";
-        using var md = JsonDocument.Parse(await http.GetStringAsync(url, ct));
+        using var md = JsonDocument.Parse((await http.GetAsync(url, ct)).EnsureOk().Text);
         foreach (var a in md.RootElement.GetProperty("foundAssets").EnumerateArray())
         {
             var id = a.GetProperty("assetId").GetString() ?? "";
@@ -99,7 +99,7 @@ public sealed class AssetLibrary(HttpClient http, string root)
         var dir = Path.Combine(root, Safe(hit.Source), Safe(hit.Id)); Directory.CreateDirectory(dir); string main;
         if (hit.Source == PolyHaven)
         {
-            using var d = JsonDocument.Parse(await http.GetStringAsync($"https://api.polyhaven.com/files/{hit.Id}", ct));
+            using var d = JsonDocument.Parse((await http.GetAsync($"https://api.polyhaven.com/files/{hit.Id}", ct)).EnsureOk().Text);
             if (hit.Kind == "modell")
             {
                 var g = d.RootElement.GetProperty("gltf").GetProperty("1k").GetProperty("gltf");
@@ -120,7 +120,7 @@ public sealed class AssetLibrary(HttpClient http, string root)
         }
         else
         {
-            using var d = JsonDocument.Parse(await http.GetStringAsync($"https://ambientcg.com/api/v2/full_json?id={Uri.EscapeDataString(hit.Id)}&include=downloadData", ct));
+            using var d = JsonDocument.Parse((await http.GetAsync($"https://ambientcg.com/api/v2/full_json?id={Uri.EscapeDataString(hit.Id)}&include=downloadData", ct)).EnsureOk().Text);
             var dl = d.RootElement.GetProperty("foundAssets")[0].GetProperty("downloadFolders").GetProperty("default").GetProperty("downloadFiletypeCategories").GetProperty("zip").GetProperty("downloads")
                 .EnumerateArray().FirstOrDefault(x => x.GetProperty("attribute").GetString() == "1K-JPG");
             if (dl.ValueKind != JsonValueKind.Object) throw new InvalidOperationException("Für dieses Material gibt es kein 1K-Paket.");
@@ -147,7 +147,7 @@ public sealed class AssetLibrary(HttpClient http, string root)
         if (!Uri.TryCreate(url, UriKind.Absolute, out var u) || !Allowed(u))
             throw new InvalidDataException("Die Quelle verweist auf eine fremde Adresse – nicht geladen.");
         Directory.CreateDirectory(Path.GetDirectoryName(file)!);
-        var bytes = await http.GetByteArrayAsync(u, ct); await File.WriteAllBytesAsync(file, bytes, ct);
+        var bytes = (await http.GetAsync(u.AbsoluteUri, ct)).EnsureOk().Body; await File.WriteAllBytesAsync(file, bytes, ct);
     }
 
     /// <summary>Vorschaubild eines Treffers (zwischengespeichert); null, wenn es keines gibt oder die Adresse fremd ist.</summary>

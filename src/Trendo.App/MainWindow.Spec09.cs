@@ -184,7 +184,7 @@ public partial class MainWindow
     string ScanReport(ProgramDocument d)
     {
         var s = ScanDoc.From(d.Data); var pc = ScanCloud(d); var i = pc.Info();
-        var sb = new System.Text.StringBuilder($"# Messbericht Punktwolke\n\nQuelle: {(s.Source == ScanDoc.DemoSource ? "Beispielraum" : Path.GetFileName(s.Source))}  \nErstellt mit Trendo OS am {DateTime.Now:dd.MM.yyyy HH:mm}\n\n| Kennzahl | Wert |\n|---|---|\n");
+        var sb = new System.Text.StringBuilder($"# Messbericht Punktwolke\n\nQuelle: {(s.Source == ScanDoc.DemoSource ? "Beispielraum" : Path.GetFileName(s.Source))}  \nErstellt am {DateTime.Now:dd.MM.yyyy HH:mm}\n\n| Kennzahl | Wert |\n|---|---|\n");
         sb.Append($"| Punkte | {Fach.F(i.Points, 0)} |\n| Größe X × Y × Z | {Fach.F(i.SizeX, 3)} × {Fach.F(i.SizeY, 3)} × {Fach.F(i.SizeZ, 3)} |\n| Mitte | {P3s(i.Center)} |\n| Farbe | {(i.HasColor ? "ja" : "nein")} |\n");
         if (_pcMarks.Count == 2) sb.Append($"| Gemessener Abstand | {Fach.F(Dist(_pcMarks[0], _pcMarks[1]), 3)} |\n");
         sb.Append("\n## Bearbeitungsschritte\n\n");

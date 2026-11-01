@@ -35,7 +35,7 @@ public class PlanPhoto_Ui
     {
         var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
         var glb = Trendo.Core.XrSample.Write(Path.Combine(root, "lesesessel.glb"));
-        new AssetLibrary(new HttpClient(), Path.Combine(root, "bibliothek3d")).AddLocal(glb, "lesesessel.glb", "lesesessel.glb");
+        new AssetLibrary(new HttpFetch(new HttpClient()), Path.Combine(root, "bibliothek3d")).AddLocal(glb, "lesesessel.glb", "lesesessel.glb");
         w.Show(MainWindow.StudioPages["SPEC-01"]); Settle(); RealClick(w, Get<Button>(w, "prog-tpl-leer"));
         Press(w, "arch-tool-moebel");
         Press(w, "arch-bib-0");

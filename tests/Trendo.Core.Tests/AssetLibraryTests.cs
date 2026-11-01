@@ -24,7 +24,7 @@ public class T0279_AssetLibrary
     [Fact(DisplayName = "T-0279: Deutsche Suche findet englisch verschlagwortete Modelle; Maße mm→cm, Lizenz, Urheber; Liste 1 Tag zwischengespeichert")]
     public async Task Search_german_and_cached()
     {
-        var fake = new Fake(u => Json(Models)); var lib = new AssetLibrary(new HttpClient(fake), Temp());
+        var fake = new Fake(u => Json(Models)); var lib = new AssetLibrary(new TestFetch(new HttpClient(fake)), Temp());
         var hits = await lib.Search("Stuhl");
         var h = Assert.Single(hits); Assert.Equal("wooden_chair", h.Id); Assert.Equal("CC0 1.0", h.License); Assert.Equal("Erika Muster", h.Author);
         Assert.Equal([45.0, 52.0, 90.0], h.SizeCm); Assert.Equal(4200, h.Polycount); Assert.StartsWith("https://cdn.polyhaven.com/", h.ThumbUrl);
@@ -37,7 +37,7 @@ public class T0279_AssetLibrary
     {
         var root = Temp();
         var fake = new Fake(u => u.Host == "api.polyhaven.com" ? Json(u.AbsolutePath.StartsWith("/files") ? Files("""{"textures/chair_diff_1k.jpg":{"url":"https://dl.polyhaven.org/file/ph-assets/Models/jpg/1k/wooden_chair/chair_diff_1k.jpg"}}""") : Models) : Bytes([1, 2, 3]));
-        var lib = new AssetLibrary(new HttpClient(fake), root);
+        var lib = new AssetLibrary(new TestFetch(new HttpClient(fake)), root);
         var item = await lib.Download((await lib.Search("chair"))[0]);
         Assert.True(File.Exists(item.File)); Assert.EndsWith("wooden_chair_1k.gltf", item.File);
         Assert.True(File.Exists(Path.Combine(Path.GetDirectoryName(item.File)!, "textures", "chair_diff_1k.jpg")));
@@ -52,7 +52,7 @@ public class T0279_AssetLibrary
         foreach (var inc in new[] { """{"../../boese.jpg":{"url":"https://dl.polyhaven.org/x.jpg"}}""", """{"t.jpg":{"url":"https://example.com/t.jpg"}}""" })
         {
             var fake = new Fake(u => u.Host == "api.polyhaven.com" ? Json(u.AbsolutePath.StartsWith("/files") ? Files(inc) : Models) : Bytes([1]));
-            var lib = new AssetLibrary(new HttpClient(fake), Temp());
+            var lib = new AssetLibrary(new TestFetch(new HttpClient(fake)), Temp());
             var hit = (await lib.Search("chair"))[0];
             await Assert.ThrowsAsync<InvalidDataException>(() => lib.Download(hit));
             Assert.DoesNotContain(fake.Calls, c => c.Contains("example.com"));
@@ -67,7 +67,7 @@ public class T0279_AssetLibrary
         var fake = new Fake(u => u.Host == "ambientcg.com" && u.AbsolutePath == "/get" ? Bytes(ms.ToArray())
             : u.Query.Contains("include=downloadData") ? Json("""{"foundAssets":[{"assetId":"Wood049","downloadFolders":{"default":{"downloadFiletypeCategories":{"zip":{"downloads":[{"attribute":"1K-JPG","fullDownloadPath":"https://ambientcg.com/get?file=Wood049_1K-JPG.zip"}]}}}}}]}""")
             : Json("""{"foundAssets":[{"assetId":"Wood049","displayName":"Wood 049","displayCategory":"Wood","previewImage":{"256-PNG":"https://acg-media.struffelproductions.com/x.png"}}]}"""));
-        var lib = new AssetLibrary(new HttpClient(fake), Temp());
+        var lib = new AssetLibrary(new TestFetch(new HttpClient(fake)), Temp());
         var hit = Assert.Single(await lib.Search("holz", "material")); Assert.Contains(fake.Calls, c => c.Contains("q=wood"));
         var item = await lib.Download(hit);
         Assert.True(File.Exists(Path.Combine(item.File, "Wood049_1K-JPG_Color.jpg"))); Assert.False(Directory.EnumerateFiles(item.File, "*.zip").Any());

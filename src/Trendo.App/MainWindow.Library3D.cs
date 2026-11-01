@@ -14,7 +14,7 @@ public partial class MainWindow
     public HttpMessageHandler? BibHttpOverride { get; set; }
     static readonly HttpClient BibShared = MakeBibHttp(null);
     static HttpClient MakeBibHttp(HttpMessageHandler? h) { var c = h is null ? new HttpClient() : new HttpClient(h); c.Timeout = TimeSpan.FromSeconds(60); c.DefaultRequestHeaders.UserAgent.ParseAdd("Trendo-OS/0.9 (3D-Bibliothek)"); return c; }
-    AssetLibrary Bib => new(BibHttpOverride is { } h ? MakeBibHttp(h) : BibShared, Path.Combine(_core.DataRoot, "bibliothek3d"));
+    AssetLibrary Bib => new(new HttpFetch(BibHttpOverride is { } h ? MakeBibHttp(h) : BibShared), Path.Combine(_core.DataRoot, "bibliothek3d"));
     bool BibOnline => !_core.Offline && (!_opt.Isolated || BibHttpOverride is not null);
 
     public string BibKind = "modell";

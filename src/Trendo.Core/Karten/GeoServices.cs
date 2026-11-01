@@ -5,7 +5,7 @@ namespace Trendo.Core.Karten;
 
 /// <summary>T-0274: Höhen für gezeichnete Routen über OpenTopoData (freier Dienst, ohne Schlüssel; EU-DEM 25 m in Europa, sonst SRTM 30 m).
 /// Nur nach Zustimmung (Koordinaten verlassen den Rechner), höchstens 100 Punkte je Abruf, eine Sekunde Abstand, Ergebnisse auf der Platte zwischengespeichert.</summary>
-public sealed class ElevationService(HttpClient http, string cacheFile)
+public sealed class ElevationService(IWebFetch http, string cacheFile)
 {
     public const string Host = "api.opentopodata.org";
     readonly Dictionary<string, double> _cache = Load(cacheFile);
@@ -50,10 +50,9 @@ public sealed class ElevationService(HttpClient http, string cacheFile)
         {
             if (i > 0) await (pause ?? (t => Task.Delay(t, ct)))(TimeSpan.FromSeconds(1.1));
             var chunk = missing.Skip(i).Take(100).ToList();
-            using var resp = await http.GetAsync(Url(ds, chunk), ct);
-            if ((int)resp.StatusCode == 429) throw new InvalidOperationException("Der Höhendienst ist für heute ausgelastet (Tageslimit). Bitte später erneut versuchen.");
-            resp.EnsureSuccessStatusCode();
-            var h = Parse(await resp.Content.ReadAsStringAsync(ct));
+            var resp = await http.GetAsync(Url(ds, chunk), ct);
+            if (resp.Status == 429) throw new InvalidOperationException("Der Höhendienst ist für heute ausgelastet (Tageslimit). Bitte später erneut versuchen.");
+            var h = Parse(resp.EnsureOk().Text);
             for (var k = 0; k < chunk.Count && k < h.Count; k++) if (h[k] is { } e) _cache[Key(chunk[k].Lat, chunk[k].Lon)] = e;
         }
         try { Directory.CreateDirectory(Path.GetDirectoryName(cacheFile)!); File.WriteAllText(cacheFile, JsonSerializer.Serialize(_cache)); } catch (IOException) { }

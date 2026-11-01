@@ -129,7 +129,7 @@ public sealed class CashRegister(string dataRoot, string ideaId)
         foreach (var (p, q, s) in d.ByProduct) Row($"{p} · {q:0.##}×", s.ToString("N2", De) + " €", f);
         y += 10; g.DrawString("Bons", b, XBrushes.Black, new XPoint(l, y)); y += 16;
         foreach (var s in sales.OrderBy(x => x.At)) { if (y > page.Height.Point - 60) break; Row($"{s.At:HH:mm} {s.No} · {(s.Payment == "bar" ? "bar" : "Karte")}{(s.Cancelled ? " · STORNIERT" : "")}", s.Gross.ToString("N2", De) + " €", f); }
-        g.DrawString("Erstellt mit Trendo OS – kein Ersatz für eine zertifizierte Registrierkasse (TSE).", f, XBrushes.Gray, new XPoint(l, page.Height.Point - 36));
+        g.DrawString($"Erstellt am {DateTime.Now:dd.MM.yyyy HH:mm} – kein Ersatz für eine zertifizierte Registrierkasse (TSE).", f, XBrushes.Gray, new XPoint(l, page.Height.Point - 36));
         doc.Save(path);
     }
 }

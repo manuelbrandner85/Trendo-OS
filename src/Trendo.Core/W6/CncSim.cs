@@ -71,7 +71,7 @@ public static partial class CncSim
 
     public static string Report(string name, GcodeReport r, (double X, double Y, double Z) envelope)
     {
-        var sb = new System.Text.StringBuilder($"# Prüfbericht {name}\n\nErstellt mit Trendo OS am {DateTime.Now:dd.MM.yyyy HH:mm}. Vor dem Fräsen immer an der Maschine kontrollieren.\n\n| Kennzahl | Wert |\n|---|---|\n");
+        var sb = new System.Text.StringBuilder($"# Prüfbericht {name}\n\nErstellt am {DateTime.Now:dd.MM.yyyy HH:mm}. Vor dem Fräsen immer an der Maschine kontrollieren.\n\n| Kennzahl | Wert |\n|---|---|\n");
         var de = CultureInfo.GetCultureInfo("de-DE");
         sb.Append($"| Dauer (geschätzt) | {(int)r.Time.TotalHours}:{r.Time.Minutes:00}:{r.Time.Seconds:00} |\n| Fräsweg | {(r.CutMm / 1000).ToString("0.00", de)} m |\n| Eilgang | {(r.RapidMm / 1000).ToString("0.00", de)} m |\n| Bewegungen | {r.Moves} |\n");
         sb.Append($"| Größe X × Y × Z | {(r.Box.X1 - r.Box.X0).ToString("0.0", de)} × {(r.Box.Y1 - r.Box.Y0).ToString("0.0", de)} × {(r.Box.Z1 - r.Box.Z0).ToString("0.0", de)} mm |\n| Arbeitsraum | {envelope.X:0} × {envelope.Y:0} × {envelope.Z:0} mm |\n");

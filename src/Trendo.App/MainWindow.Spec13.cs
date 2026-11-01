@@ -238,12 +238,12 @@ public partial class MainWindow
         _mapNetMsg = "Höhen werden abgerufen …"; Show(MK);
         try
         {
-            var svc = new ElevationService(MapHttp, Path.Combine(_core.DataRoot, "karten", "hoehen.json"));
+            var svc = new ElevationService(new HttpFetch(MapHttp), Path.Combine(_core.DataRoot, "karten", "hoehen.json"));
             var pts = await svc.AddElevation(tr.Points.Select(p => p.Geo()).ToList());
             MapEdit("Höhen ergänzen", x => x.Tracks.First(t => t.Id == sel).Points = pts.Select(MapPoint.From).ToList());
             _mapNetMsg = $"✓ {pts.Count(p => p.Ele is not null)} Höhen von OpenTopoData (EU-DEM/SRTM) übernommen.";
         }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or TaskCanceledException or System.Text.Json.JsonException) { _mapNetMsg = "⚠ " + ex.Message; }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidOperationException or TaskCanceledException or System.Text.Json.JsonException) { _mapNetMsg = "⚠ " + ex.Message; }
         Show(MK);
     }
 
