@@ -16,7 +16,7 @@ public partial class MainWindow
 {
     sealed class ClaudeDock
     {
-        public required Border Panel; public required string Folder; public string? Studio; public Grid? Split; public ContentControl? PageHost;
+        public required Border Panel; public required string Folder; public string? Studio; public string Page = ""; public Grid? Split; public ContentControl? PageHost;
         public bool Max = true; public string Tab = "chat"; public Border? ChatPane; public Border? WebPane; public Border? AgentPane; public StackPanel? WebBar; public StackPanel? ProjectList;
         public NativeWebView? Web; public string WebUrl = "";
     }
@@ -52,7 +52,7 @@ public partial class MainWindow
     {
         if (Windows.Active?.Id is not { } id) return;
         if (_claudeDocks.Remove(id, out var old)) { CloseChat(old); Show(CurrentView); return; }
-        var dock = new ClaudeDock { Folder = ClaudeFolderFor(studio), Studio = studio, Panel = new Border { Name = "claude-dock", Background = ClaudeBg, BorderBrush = ClaudeLine, BorderThickness = new Thickness(1, 0, 0, 0) } };
+        var dock = new ClaudeDock { Folder = ClaudeFolderFor(studio), Studio = studio, Page = CurrentView, Panel = new Border { Name = "claude-dock", Background = ClaudeBg, BorderBrush = ClaudeLine, BorderThickness = new Thickness(1, 0, 0, 0) } };
         _claudeDocks[id] = dock;
         BuildShell(dock);
         if (prompt is { Length: > 0 } && prompt.Trim().Length > 0 && _chatUis.TryGetValue(dock, out var ui)) ui.Input.Text = prompt.Trim(); // Auftrag steht im Eingabefeld, abschicken tust du

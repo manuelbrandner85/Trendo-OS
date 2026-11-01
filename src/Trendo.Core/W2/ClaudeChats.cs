@@ -76,9 +76,54 @@ public sealed partial class ClaudeChats(string dataRoot)
         all.Remove(c); Save(studio, all); return c;
     }
 
-    /// <summary>Anweisungen für Claude in diesem Studio: Rolle, Fachgebiet, Fachregeln, Arbeitsweise im Projektordner.</summary>
-    public static string System(string studioName, string role, IReadOnlyList<Skill> skills) =>
+    /// <summary>Anweisungen für Claude in diesem Studio: Rolle, Fachgebiet, Fachregeln, Lieferformat, Arbeitsweise im Projektordner.</summary>
+    public static string System(string studioName, string role, IReadOnlyList<Skill> skills, StudioFormat? format = null, string? workFile = null) =>
         ClaudeWeb.Brief(studioName, role, skills) +
         "\n\nArbeite wie in Claude Code direkt im Projektordner dieses Projekts: Dateien anlegen und ändern ist erlaubt, alles bleibt im Ordner. " +
-        "Erkläre kurz, was du tust, und fasse am Ende in ein bis zwei Sätzen zusammen, was jetzt da ist.";
+        (format is not null ? "\nLieferformat, damit Trendo es sofort live zeigt: " + format.Rule : "") +
+        (workFile is not null ? $"\nDas offene Studio-Dokument liegt als „{workFile}“ im Projektordner. Bearbeite genau diese Datei (gültiges JSON, Aufbau und Felder beibehalten, nur Inhalte unter \"data\" ändern) – Trendo übernimmt jede Änderung sofort ins Studio." : "") +
+        "\nErkläre kurz, was du tust, und fasse am Ende in ein bis zwei Sätzen zusammen, was jetzt da ist.";
+}
+
+/// <summary>Lieferformat je Studio (Wunsch 01.11.2026: was Claude baut, erscheint live im Programm): Anweisung an Claude, Hauptdatei für die Vorschau,
+/// und welche Dateien Trendo im passenden Programm öffnet. Nur Textformate – Claude arbeitet ohne Befehle und kann keine Word- oder Excel-Dateien schreiben.</summary>
+public sealed record StudioFormat(string Rule, string? Main, string[] Opens)
+{
+    static readonly StudioFormat Web = new("Webseite bzw. App aus index.html mit CSS und JavaScript (alles relativ verlinkt, ohne Server und ohne externe Dienste lauffähig). Startseite ist immer index.html.", "index.html", []);
+    static readonly StudioFormat Game = new("Spiel als HTML5: index.html mit JavaScript und Canvas, ohne Server spielbar, Steuerung mit Tastatur und Maus, Grafiken als SVG oder Canvas-Zeichnung. Startseite ist immer index.html.", "index.html", []);
+    static readonly StudioFormat Graphic = new("Grafiken und Illustrationen als SVG-Dateien (.svg); bei mehreren Bildern eine index.html, die alle zeigt.", null, []);
+    static readonly StudioFormat Model3D = new("3D-Modelle als glTF 2.0 (.gltf, JSON mit eingebetteten Daten als data:-URI) oder als OBJ (.obj mit .mtl); Maße in Metern, Y nach oben.", null, [".gltf", ".obj"]);
+    static readonly StudioFormat Text = new("Texte als Markdown (.md): Überschriften mit #, Absätze, Listen. Trendo öffnet sie in Trendo Text.", null, [".md", ".txt"]);
+    static readonly StudioFormat Sheet = new("Tabellen als CSV (.csv, Semikolon als Trenner, erste Zeile Spaltennamen). Trendo öffnet sie in Trendo Tabelle.", null, [".csv"]);
+    static readonly StudioFormat Program = new("Arbeite im offenen Studio-Dokument (.tdoc, JSON).", null, [".tdoc"]);
+
+    /// <summary>Format für Studio und Seite (die Seite unterscheidet z. B. Text und Tabelle im selben Studio; <paramref name="shell"/>: Seite ist ein Fachprogramm mit .tdoc).</summary>
+    public static StudioFormat? For(string? studio, string? page, bool shell = false) => (studio, page) switch
+    {
+        (_, _) when shell => Program,
+        (_, "text") => Text,
+        (_, "tabelle") => Sheet,
+        ("CORE-07" or "X-03" or "X-04" or "STUDIO-ONLINE-BUSINESS-01", _) => Web,
+        ("CORE-06", _) => Game,
+        ("CORE-08", _) => Graphic,
+        ("CORE-05" or "SPEC-09" or "SPEC-04", _) => Model3D,
+        ("SYS-10", _) => Text,
+        _ => null,
+    };
+
+    /// <summary>Kann die Vorschau diese Datei zeigen (Browser-Ansicht) oder als Text?</summary>
+    public static string PreviewKind(string file) => Path.GetExtension(file).ToLowerInvariant() switch
+    {
+        ".html" or ".htm" or ".svg" or ".png" or ".jpg" or ".jpeg" or ".gif" or ".webp" => "web",
+        ".md" or ".txt" or ".csv" or ".json" or ".js" or ".css" or ".ts" or ".py" or ".cs" or ".xml" or ".obj" or ".mtl" or ".gltf" or ".tdoc" or ".gd" => "text",
+        _ => "none",
+    };
+
+    /// <summary>Welche geänderte Datei die Vorschau zeigt: zuerst die Hauptdatei des Formats, sonst die erste zeigbare (Webseiten vor Text).</summary>
+    public static string? PickPreview(StudioFormat? f, IEnumerable<string> changed)
+    {
+        var list = changed.ToList();
+        if (f?.Main is { } main && list.FirstOrDefault(c => Path.GetFileName(c).Equals(main, StringComparison.OrdinalIgnoreCase)) is { } m) return m;
+        return list.FirstOrDefault(c => PreviewKind(c) == "web") ?? list.FirstOrDefault(c => PreviewKind(c) == "text");
+    }
 }

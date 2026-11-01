@@ -6,6 +6,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Trendo.Core;
+using Trendo.Core.Programs;
 
 namespace Trendo.App;
 
@@ -22,6 +23,9 @@ public partial class MainWindow
         public ScrollViewer Scroll = new(); public StackPanel Side = new() { Name = "claude-chat-list", Spacing = 4 };
         public TextBox Input = new(); public Button Send = new(); public TextBlock Title = new(); public Border Body = new();
         public string? ConfirmDelete; public FolderSnapshot? LastSnapshot; public string? LastSnapshotChat;
+        // Vorschau rechts (Wunsch 01.11.2026: was Claude baut, live sehen; vorher/nachher vergleichen)
+        public Border Preview = new() { Name = "claude-preview" }; public ColumnDefinition PreviewCol = new(0, GridUnitType.Pixel);
+        public string? PreviewFile; public string? PreviewOriginal; public string Compare = "nachher"; public NativeWebView? PreviewWeb; public string? PreviewNote;
     }
     readonly Dictionary<ClaudeDock, ChatUi> _chatUis = [];
 
@@ -50,13 +54,20 @@ public partial class MainWindow
         var folder = new Button { Name = "claude-chat-folder", Content = "📁 Ordner", FontSize = 12, Padding = new Thickness(10, 3), Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
         ToolTip.SetTip(folder, "Ordner dieses Projekts öffnen");
         folder.Click += (_, _) => { if (ui.ChatId is { } id && CChats.Get(ChatStudio(dock), id) is { } c) Launch(c.Folder); };
-        var head = new DockPanel { Margin = new Thickness(24, 12, 24, 4), Children = { Dk(folder, Avalonia.Controls.Dock.Right), ui.Title } };
+        var eye = new Button { Name = "claude-chat-preview-toggle", Content = "👁 Vorschau", FontSize = 12, Padding = new Thickness(10, 3), Margin = new Thickness(0, 0, 6, 0), Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
+        ToolTip.SetTip(eye, "Vorschau ein- oder ausblenden – zeigt live, was Claude baut");
+        eye.Click += (_, _) => { if (ui.PreviewCol.Width.Value > 0) ui.PreviewCol.Width = new GridLength(0); else ShowPreview(dock, ui.PreviewFile); };
+        var head = new DockPanel { Margin = new Thickness(24, 12, 24, 4), Children = { Dk(folder, Avalonia.Controls.Dock.Right), Dk(eye, Avalonia.Controls.Dock.Right), ui.Title } };
         var bottom = new StackPanel { Children = { inputBox, hint } };
         ui.Body = new Border { Child = ui.Scroll };
         var main = new DockPanel { Background = ClaudeBg, Children = { Dk(head, Avalonia.Controls.Dock.Top), Dk(bottom, Avalonia.Controls.Dock.Bottom), ui.Body } };
         Grid.SetColumn(main, 1);
         var side = new Border { Name = "claude-chat-side", Background = ClaudeBar, BorderBrush = ClaudeLine, BorderThickness = new Thickness(0, 0, 1, 0), Padding = new Thickness(10), Child = new ScrollViewer { Content = ui.Side } };
-        dock.ChatPane!.Child = new Grid { ColumnDefinitions = new ColumnDefinitions("230,*"), Children = { side, main } };
+        ui.PreviewCol = new ColumnDefinition(0, GridUnitType.Pixel);
+        var cols = new ColumnDefinitions { new ColumnDefinition(230, GridUnitType.Pixel), new ColumnDefinition(1, GridUnitType.Star), ui.PreviewCol };
+        ui.Preview = new Border { Name = "claude-preview", Background = ClaudeBar, BorderBrush = ClaudeLine, BorderThickness = new Thickness(1, 0, 0, 0) };
+        Grid.SetColumn(ui.Preview, 2);
+        dock.ChatPane!.Child = new Grid { ColumnDefinitions = cols, Children = { side, main, ui.Preview } };
         ui.ChatId = CChats.All(ChatStudio(dock)).FirstOrDefault()?.Id; // zuletzt benutztes Projekt fortsetzen
         RenderChatList(dock); RenderChat(dock);
         _ = ClaudeChatReady(dock);
@@ -237,9 +248,17 @@ public partial class MainWindow
 
         var folder = chat.Folder; Directory.CreateDirectory(folder);
         if (dock.Studio is not null) try { Skills.ExportForClaude(folder, null, dock.Studio); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        // Studio-Dokument: ein offenes Fachprogramm-Dokument (.tdoc) liegt als Datei im Projekt – Claude bearbeitet es, Trendo übernimmt jede Änderung live (als ein Rückgängig-Schritt)
+        var shell = Programs.ContainsKey(dock.Page) && ProgramActive(dock.Page) is not null;
+        string? workFile = null;
+        if (shell && ProgramActive(dock.Page) is { } doc)
+            try { workFile = Regex.Replace(doc.Title, @"[\\/:*?""<>|]", "-") + ProgramDocument.Extension; File.WriteAllText(Path.Combine(folder, workFile), doc.Serialize()); }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { workFile = null; }
+        var format = StudioFormat.For(dock.Studio, dock.Page, shell);
         FolderSnapshot? snap = null;
         try { snap = FolderSnapshot.Take(folder, Path.Combine(_core.DataRoot, "claude-chats", "sicherung", chat.Id)); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
-        var system = ClaudeChats.System(StudioCatalog.NameOf(dock.Studio ?? "", "Trendo"), ClaudeRoleFor(dock.Studio), Skills.For(null, dock.Studio));
+        var system = ClaudeChats.System(StudioCatalog.NameOf(dock.Studio ?? "", "Trendo"), ClaudeRoleFor(dock.Studio), Skills.For(null, dock.Studio), format, workFile);
+        string? pendingFile = null;
         var model = KiSourceSettings.Load(_core.DataRoot).ClaudeModel;
         void OnLine(string l)
         {
@@ -251,8 +270,9 @@ public partial class MainWindow
                     {
                         case ClaudeCode.Init i when i.Session.Length > 0: session = i.Session; break;
                         case ClaudeCode.Say sy: say.AppendLine(sy.Text).AppendLine(); textPanel.Children.Clear(); foreach (var b in ChatBlocks(say.ToString())) textPanel.Children.Add(b); break;
-                        case ClaudeCode.Tool t: var st = new ClaudeChats.Step(t.Text, t.Changes); steps.Add(st); stepsPanel.Children.Add(ChatStep(st)); thinking.Text = "✳ " + t.Text + " …"; break;
-                        case ClaudeCode.ToolDone td when td.Error: var se = new ClaudeChats.Step("Fehler: " + td.Text, false, true); steps.Add(se); stepsPanel.Children.Add(ChatStep(se)); break;
+                        case ClaudeCode.Tool t: var st = new ClaudeChats.Step(t.Text, t.Changes); steps.Add(st); stepsPanel.Children.Add(ChatStep(st)); thinking.Text = "✳ " + t.Text + " …"; if (t.Changes && t.File is { } tf) pendingFile = tf; break;
+                        case ClaudeCode.ToolDone td when td.Error: var se = new ClaudeChats.Step("Fehler: " + td.Text, false, true); steps.Add(se); stepsPanel.Children.Add(ChatStep(se)); pendingFile = null; break;
+                        case ClaudeCode.ToolDone when pendingFile is { } pf: pendingFile = null; ClaudeLiveChanged(dock, Path.Combine(folder, pf), workFile, null); break; // live bei jedem Schritt
                         case ClaudeCode.Todo todo: thinking.Text = "✳ " + (todo.Items.FirstOrDefault(x => x.State == "in_progress").Text ?? "arbeitet") + " …"; break;
                         case ClaudeCode.Done dn: ok = dn.Ok; if (dn.Session.Length > 0) session = dn.Session; if (say.Length == 0 && dn.Text.Length > 0) say.Append(dn.Text); break;
                     }
@@ -266,7 +286,9 @@ public partial class MainWindow
         catch (OperationCanceledException) { error = "Angehalten."; }
         catch (InvalidOperationException e) { error = e.Message; }
         await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background); // ausstehende Ereignisse abarbeiten
-        var changed = snap?.Changes().Select(c => $"{c.File} ({c.Change})").ToList() ?? [];
+        if (pendingFile is { } lastPf) ClaudeLiveChanged(dock, Path.Combine(folder, lastPf), workFile, null);
+        var changes = snap?.Changes() ?? [];
+        var changed = changes.Select(c => $"{c.File} ({c.Change})").ToList();
         var answer = say.ToString().Trim();
         if (error is not null) answer = (answer.Length > 0 ? answer + "\n\n" : "") + "⚠ " + error;
         else if (!ok && answer.Length == 0) answer = "⚠ Claude hat die Antwort nicht fertigbekommen.";
@@ -276,6 +298,116 @@ public partial class MainWindow
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat", $"{studio} · {changed.Count} Änderungen");
         ui.Running = false; ui.Cts = null; ui.Send.Content = "↑"; ToolTip.SetTip(ui.Send, "Senden (Enter) · neue Zeile mit Umschalt+Enter");
         RenderChatList(dock); RenderChat(dock);
+        ClaudeAfterRun(dock, folder, format, workFile, snap, changes);
+    }
+
+    /// <summary>Datei während der Antwort geändert: Studio-Dokument sofort übernehmen, Vorschau sofort neu zeigen.</summary>
+    void ClaudeLiveChanged(ClaudeDock dock, string file, string? workFile, string? original)
+    {
+        if (!File.Exists(file)) return;
+        if (workFile is not null && Path.GetFileName(file).Equals(workFile, StringComparison.OrdinalIgnoreCase)) ClaudeSyncProgram(dock, file);
+        if (StudioFormat.PreviewKind(file) != "none") ShowPreview(dock, file, original);
+    }
+
+    /// <summary>Studio-Dokument aus der Datei übernehmen, die Claude bearbeitet hat (ein Rückgängig-Schritt im Studio).</summary>
+    void ClaudeSyncProgram(ClaudeDock dock, string file)
+    {
+        if (ProgramActive(dock.Page) is not { } doc) return;
+        try { var fresh = ProgramDocument.Load(file); doc.ReplaceData(fresh.Data.ToJsonString()); _progMsg[dock.Page] = "✳ Claude hat das Dokument geändert – Rückgängig mit Strg+Z."; }
+        catch (InvalidDataException e) { _claudeMsg = "Claudes Änderung ließ sich nicht übernehmen: " + e.Message; }
+        if (!dock.Max) Show(CurrentView);
+    }
+
+    /// <summary>Nach der Antwort: Hauptdatei in der Vorschau (mit vorher/nachher), neue Texte/Tabellen gleich im passenden Programm öffnen.</summary>
+    void ClaudeAfterRun(ClaudeDock dock, string folder, StudioFormat? format, string? workFile, FolderSnapshot? snap, IReadOnlyList<(string File, string Change)> changes)
+    {
+        var alive = changes.Where(c => c.Change != "gelöscht").Select(c => c.File).ToList();
+        if (StudioFormat.PickPreview(format, alive) is { } rel)
+        {
+            var orig = snap is not null && changes.Any(c => c.File == rel && c.Change == "geändert") ? Path.Combine(snap.Store, rel.Replace('/', Path.DirectorySeparatorChar)) : null;
+            ShowPreview(dock, Path.Combine(folder, rel.Replace('/', Path.DirectorySeparatorChar)), orig);
+        }
+        foreach (var rf in alive)
+        {
+            var f = Path.Combine(folder, rf.Replace('/', Path.DirectorySeparatorChar)); var ext = Path.GetExtension(f).ToLowerInvariant();
+            if (workFile is not null && Path.GetFileName(f).Equals(workFile, StringComparison.OrdinalIgnoreCase)) continue;
+            if (dock.Page == "text" && ext is ".md" or ".txt")
+            {
+                if (TextDirty) { _claudeMsg = $"„{Path.GetFileName(f)}“ ist fertig – dein offener Text ist noch nicht gespeichert, darum öffnet Trendo es nicht von selbst."; continue; }
+                TextOpen(f); _claudeMsg = $"„{Path.GetFileName(f)}“ ist in Trendo Text geöffnet."; break;
+            }
+            if (dock.Page == "tabelle" && ext == ".csv")
+            {
+                if (SheetDirty) { _claudeMsg = $"„{Path.GetFileName(f)}“ ist fertig – deine offene Tabelle ist noch nicht gespeichert, darum öffnet Trendo sie nicht von selbst."; continue; }
+                SheetOpen(f); _claudeMsg = $"„{Path.GetFileName(f)}“ ist in Trendo Tabelle geöffnet."; break;
+            }
+        }
+        if (!dock.Max) Show(CurrentView);
+        RenderPreview(dock);
+    }
+
+    /// <summary>Vorschau zeigen (öffentlich lesbar für Tests): Webseiten, Spiele, Grafiken in der Browser-Ansicht, sonst als Text; mit „vorher“, wenn es ein Original gibt.</summary>
+    void ShowPreview(ClaudeDock dock, string? file, string? original = null)
+    {
+        if (!_chatUis.TryGetValue(dock, out var ui) || file is null || !File.Exists(file)) return;
+        if (ui.PreviewFile != file || original is not null) { ui.PreviewOriginal = original; ui.Compare = "nachher"; }
+        ui.PreviewFile = file;
+        if (ui.PreviewCol.Width.Value == 0) ui.PreviewCol.Width = new GridLength(1, GridUnitType.Star);
+        RenderPreview(dock);
+    }
+
+    public string? ClaudeChatPreviewFile() => ActiveChatUi()?.PreviewFile;
+    public string? ClaudeChatPreviewSide() => ActiveChatUi()?.Compare;
+    public void ClaudeChatCompare(string side) { if (Windows.Active?.Id is { } id && _claudeDocks.TryGetValue(id, out var d) && _chatUis.TryGetValue(d, out var ui) && ui.PreviewOriginal is not null) { ui.Compare = side; RenderPreview(d); } }
+    ChatUi? ActiveChatUi() => Windows.Active?.Id is { } id && _claudeDocks.TryGetValue(id, out var d) && _chatUis.TryGetValue(d, out var ui) ? ui : null;
+
+    void RenderPreview(ClaudeDock dock)
+    {
+        if (!_chatUis.TryGetValue(dock, out var ui) || ui.PreviewFile is not { } file) return;
+        var shown = ui.Compare == "vorher" && ui.PreviewOriginal is { } o && File.Exists(o) ? o : file;
+        var bar = new WrapPanel { Margin = new Thickness(10, 8) };
+        void B(string name, string label, string tip, Action a, bool on = false)
+        {
+            var b = new Button { Name = name, Content = label, FontSize = 12, Padding = new Thickness(10, 3), Margin = new Thickness(0, 0, 6, 4), CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0),
+                Background = on ? ClaudeAccent : ClaudeItem, Foreground = on ? Brushes.White : ClaudeFg };
+            ToolTip.SetTip(b, tip); b.Click += (_, _) => a(); bar.Children.Add(b);
+        }
+        bar.Children.Add(new TextBlock { Name = "claude-preview-name", Text = Path.GetFileName(file), Foreground = ClaudeFg, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 4) });
+        if (ui.PreviewOriginal is not null)
+        {
+            B("claude-preview-before", "Vorher", "So war es vor Claudes letzter Antwort", () => { ui.Compare = "vorher"; RenderPreview(dock); }, ui.Compare == "vorher");
+            B("claude-preview-after", "Nachher", "So ist es jetzt", () => { ui.Compare = "nachher"; RenderPreview(dock); }, ui.Compare == "nachher");
+            if (ui.LastSnapshot is not null)
+            {
+                B("claude-preview-keep", "✓ Behalten", "Änderung behalten", () => { ui.PreviewOriginal = null; ui.Compare = "nachher"; ui.LastSnapshot = null; RenderPreview(dock); RenderChat(dock); });
+                B("claude-preview-undo", "↶ Zurücknehmen", "Änderungen der letzten Antwort rückgängig machen", () => { ClaudeChatUndo(dock); ui.PreviewOriginal = null; ui.Compare = "nachher"; RenderPreview(dock); });
+            }
+        }
+        B("claude-preview-reload", "↻", "Neu laden", () => RenderPreview(dock));
+        B("claude-preview-close", "✕", "Vorschau schließen", () => ui.PreviewCol.Width = new GridLength(0));
+        Control view;
+        if (StudioFormat.PreviewKind(shown) == "web")
+        {
+            if (_opt.Isolated) view = new Border { Name = "claude-preview-web", Child = new TextBlock { Text = "Testmodus: Vorschau von " + Path.GetFileName(shown) + " wird nicht geladen.", Foreground = ClaudeMuted, Margin = new Thickness(12) } };
+            else
+            {
+                ui.PreviewWeb ??= new NativeWebView { Name = "claude-preview-web" };
+                ui.PreviewWeb.Navigate(new Uri(new Uri(shown).AbsoluteUri + "?t=" + DateTime.Now.Ticks)); // neu laden, nicht aus dem Zwischenspeicher
+                if (ui.PreviewWeb.Parent is Decorator dp) dp.Child = null; else if (ui.PreviewWeb.Parent is Panel pp) pp.Children.Remove(ui.PreviewWeb);
+                view = ui.PreviewWeb;
+            }
+        }
+        else
+        {
+            string text; try { text = File.ReadAllText(shown); } catch (IOException e) { text = e.Message; }
+            if (text.Length > 30000) text = text[..30000] + "\n…";
+            view = new ScrollViewer { Content = new SelectableTextBlock { Name = "claude-preview-text", Text = text, FontFamily = new FontFamily("Cascadia Mono, Consolas, Courier New"), FontSize = 12.5, Foreground = ClaudeFg, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(12) } };
+        }
+        var note = _claudeMsg.Length > 0 && (_claudeMsg.Contains("geöffnet") || _claudeMsg.Contains("noch nicht gespeichert")) ? new TextBlock { Name = "claude-preview-note", Text = _claudeMsg, Foreground = ClaudeAccent, FontSize = 12, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(10, 0, 10, 6) } : null;
+        var dpn = new DockPanel { Children = { Dk(bar, Avalonia.Controls.Dock.Top) } };
+        if (note is not null) dpn.Children.Add(Dk(note, Avalonia.Controls.Dock.Top));
+        dpn.Children.Add(view);
+        ui.Preview.Child = dpn;
     }
 
     /// <summary>Änderungen der letzten Antwort zurücknehmen (öffentlich für Tests über das aktive Fenster).</summary>
