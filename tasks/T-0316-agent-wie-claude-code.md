@@ -1,0 +1,4 @@
+# T-0316 – Agent wie Claude Code für Web, Spiele und Code-Programme
+- Freigabe: Manuel im Chat am 01.11.2026 – alle vier: Trendo-Agent wie Claude Code (lokale KI: Plan → Dateien lesen/ändern → Vorschau → Bildschirmfoto prüfen → nachbessern; jeder Schritt sichtbar, jede Änderung als Vorher/Nachher mit Ja/Nein, Rückfragen mit Knöpfen), echtes Claude Code nutzen, wenn installiert und angemeldet (Konto des Nutzers, nur nach Zustimmung, nie Pflicht), Rollen je Studio und Programm, ehrlicher Hinweis zur KI-Stärke (welches Modell arbeitet, Empfehlung für anspruchsvolle Designs).
+- Grenzen: kostenpflichtige KI bleibt optional (CLAUDE.md); Dateizugriff des Agenten nur im Projektordner; keine Befehle außerhalb einer festen Liste ohne Zustimmung; Audit je Schritt.
+- Baut auf: `WebsiteStudio`, `SoftwarePromptAdapter`, `GamePromptAdapter`, `WebsitePreview` (Bildschirmfoto), `IntelligenceCore`, T-0315 (Plan/Fragen/Vorschau-Oberfläche).

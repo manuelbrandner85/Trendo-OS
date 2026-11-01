@@ -1,0 +1,3 @@
+# T-0317 – Skills für professionelle Ergebnisse
+- Freigabe: Manuel im Chat am 01.11.2026 – alle vier: Skill-Bibliothek je Fachgebiet (mitgeliefert, lesbare Dateien: Webdesign, Spiele, Brief/DIN 5008, Präsentation, Tabellen, Fotos …; automatisch passend geladen), eigene Skills anlegen/bearbeiten/versionieren und Programmen zuordnen (auf der vorhandenen `PromptLibrary`), Qualitätsprüfung nach Skill-Checkliste vor „fertig“, Skills aus vertrauten Quellen holen (nur nach Zustimmung, mit Herkunft und Lizenz).
+- Kein zweites Prompt-System: Skills sind eine Kategorie bzw. Erweiterung der `PromptLibrary` (Versionen, Prüfung vorhanden).
