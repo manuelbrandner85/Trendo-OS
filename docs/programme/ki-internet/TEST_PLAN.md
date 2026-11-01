@@ -1,6 +1,6 @@
 # Kostenlose Internet-KIs – Testplan
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-internet` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-internet` · Stand: 0.9.30 (Stand 234e066)
 
 6 Tests sprechen dieses Programm an.
 

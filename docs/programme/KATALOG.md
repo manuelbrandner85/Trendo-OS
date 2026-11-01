@@ -2,7 +2,7 @@
 
 Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funktionskataloge, Vorbild-Analysen, Tests). Nicht von Hand pflegen – neu erzeugen mit `TRENDO_KATALOG=. dotnet run --project tools/Trendo.Render -c Release`.
 
-91 Programme in 54 Studios.
+92 Programme in 54 Studios.
 
 | Programm | Studio | Bereich | Arbeitsfläche | Funktionen | Tests | Vorbild-Analyse | Modulstatus | Doku |
 |---|---|---|---|---|---|---|---|---|
@@ -28,7 +28,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Skills | KI-Anweisungen schreiben (CORE-12) | Kreativ & Medien | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-skills/README.md) |
 | Kleidung & Produkte | Kleidung & Produkte entwerfen (SPEC-08) | Kreativ & Medien | keine eigene erkannt | 18 | 19 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](mode-programm/README.md) |
 | Live streamen | Live streamen (SPEC-15) | Kreativ & Medien | Bildansicht, Diagramm/Zeichnung | 20 | 39 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](sendung/README.md) |
-| TV & Live | TV & Live (STUDIO-TV-01) | Kreativ & Medien | keine eigene erkannt | – | 12 | – | IN_PROGRESS / Test NOT_RUN | [Paket](tv/README.md) |
+| TV & Live | TV & Live (STUDIO-TV-01) | Kreativ & Medien | keine eigene erkannt | – | 14 | – | IN_PROGRESS / Test NOT_RUN | [Paket](tv/README.md) |
 | Bildbearbeitung | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Bild-Arbeitsfläche (Ebenen) | – | 3 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](bild/README.md) |
 | Medien bearbeiten | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | keine eigene erkannt | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](kreativ-medien/README.md) |
 | Videoschnitt | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Video-Zeitleiste | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](schnitt/README.md) |
@@ -56,12 +56,13 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Produktion | Großprojekte umsetzen (X-01) | KI & Automatik | keine eigene erkannt | – | 9 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](produktion/README.md) |
 | KI | KI fragen (CORE-02) | KI & Automatik | keine eigene erkannt | – | 43 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki/README.md) |
 | KI fragen | KI fragen (CORE-02) | KI & Automatik | keine eigene erkannt | – | 17 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-fragen/README.md) |
+| Mit Claude verbinden | KI fragen (CORE-02) | KI & Automatik | keine eigene erkannt | – | 10 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](claude-verbinden/README.md) |
 | Online-Dienste | KI fragen (CORE-02) | KI & Automatik | keine eigene erkannt | – | 41 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](keys/README.md) |
 | KI-Rollen und Teams | KI-Team einsetzen (CORE-03) | KI & Automatik | keine eigene erkannt | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-rollen/README.md) |
 | KI-Bibliothek | Kostenlose KI finden (X-05) | KI & Automatik | keine eigene erkannt | – | 6 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-bibliothek/README.md) |
-| KI-Quellen | Kostenlose KI finden (X-05) | KI & Automatik | keine eigene erkannt | – | 26 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-quellen/README.md) |
+| KI-Quellen | Kostenlose KI finden (X-05) | KI & Automatik | keine eigene erkannt | – | 28 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-quellen/README.md) |
 | Kostenlose Internet-KIs | Kostenlose KI finden (X-05) | KI & Automatik | keine eigene erkannt | – | 6 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-internet/README.md) |
-| Baukasten | Apps zusammenklicken (X-03) | Entwickeln | keine eigene erkannt | – | 20 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](baukasten/README.md) |
+| Baukasten | Apps zusammenklicken (X-03) | Entwickeln | keine eigene erkannt | – | 23 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](baukasten/README.md) |
 | Sauberer Nachbau | Programme nachbauen (X-10) | Entwickeln | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](nachbau/README.md) |
 | Open Source | Projekte von GitHub holen (X-06) | Entwickeln | keine eigene erkannt | – | 25 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](oss/README.md) |
 | Erweiterungen | Trendo erweitern (X-04) | Entwickeln | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](erweiterungen/README.md) |
@@ -77,7 +78,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Startbildschirm | Desktop einrichten (CORE-01) | System & Sicherheit | keine eigene erkannt | – | 83 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](start/README.md) |
 | Selbstheilung | Einrichten & Reparieren (X-02) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](heilung/README.md) |
 | Geräte & Laufwerke | Geräte erkennen (SYS-07) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](geraete/README.md) |
-| Handy verbinden | Handy verbinden (X-08) | System & Sicherheit | keine eigene erkannt | – | 23 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](handy/README.md) |
+| Handy verbinden | Handy verbinden (X-08) | System & Sicherheit | keine eigene erkannt | – | 25 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](handy/README.md) |
 | Speicher & Leistung | Leistung anzeigen (X-09) | System & Sicherheit | Diagramm/Zeichnung | – | 32 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](ressourcen/README.md) |
 | Geräteverbund (PC, Pi, Android) | PC, Pi & Handy verbinden (CORE-04) | System & Sicherheit | keine eigene erkannt | – | 19 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](verbund/README.md) |
 | Programme verwalten | Programme installieren (SYS-04) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](appcenter/README.md) |
@@ -92,7 +93,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Einstellungen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | Bildansicht | 25 | 59 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](settings/README.md) |
 | Personen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](personen/README.md) |
 | Sehen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](bedien-sehen/README.md) |
-| Trendo-Updates | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 16 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](updates/README.md) |
+| Trendo-Updates | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](updates/README.md) |
 | Betriebsmodus | Startmodus wählen (SYS-01) | System & Sicherheit | keine eigene erkannt | – | 7 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](modus/README.md) |
 | Downloads | Surfen & Herunterladen (SYS-03) | System & Sicherheit | keine eigene erkannt | 25 | 47 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](downloads/README.md) |
 | Sicher prüfen | Surfen & Herunterladen (SYS-03) | System & Sicherheit | keine eigene erkannt | 25 | 17 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](netz-pruefen/README.md) |

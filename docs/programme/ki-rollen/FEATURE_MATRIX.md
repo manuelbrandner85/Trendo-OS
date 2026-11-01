@@ -1,11 +1,12 @@
 # KI-Rollen und Teams – Funktionsmatrix
 
-Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.30 (Stand 234e066)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
-- Plan erstellen
+- Los
+- ✳ Claude Code
 - Planer
 - Rechercheur
 - Texter

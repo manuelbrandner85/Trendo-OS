@@ -1,11 +1,12 @@
 # Abläufe (Automatisch erledigen) – Funktionsmatrix
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.30 (Stand 234e066)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
-- Plan erstellen
+- Los
+- ✳ Claude Code
 - + Downloads aufräumen: PDFs in einen Ordner
 - + Jeden Morgen eine Tagesnotiz
 - + Fotos mit Datum versehen

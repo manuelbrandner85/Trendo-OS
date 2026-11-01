@@ -1,6 +1,6 @@
 # Lernen mit Karteikarten – Funktionsmatrix
 
-Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.30 (Stand 234e066)
 
 Quelle: `docs/w6-katalog/SPEC-06.md`
 
@@ -24,7 +24,8 @@ Quelle: `docs/w6-katalog/SPEC-06.md`
 | F16 | Prüfungsplan | Vorhanden | gebaut |
 
 ## Werkzeuge der Oberfläche
-- Plan erstellen
+- Los
+- ✳ Claude Code
 - Lernen
 - Lernplan
 - Eintippen

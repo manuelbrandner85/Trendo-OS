@@ -1,6 +1,6 @@
 # Kameras & Roboter steuern – Testplan
 
-Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.30 (Stand 234e066)
 
 27 Tests sprechen dieses Programm an.
 

@@ -1,6 +1,6 @@
 # Kameras & Roboter steuern – Funktionsmatrix
 
-Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.30 (Stand 234e066)
 
 Quelle: `docs/w6-katalog/CORE-09.md`
 
@@ -28,7 +28,8 @@ Quelle: `docs/w6-katalog/CORE-09.md`
 | F20 | Fahrprofil | Vorhanden | gebaut |
 
 ## Werkzeuge der Oberfläche
-- Plan erstellen
+- Los
+- ✳ Claude Code
 - Not-Aus
 - Not-Aus lösen
 - Arm planen

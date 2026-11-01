@@ -1,6 +1,6 @@
 # Trendo-Updates – Funktionsmatrix
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.30 (Stand 234e066)
 
 Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 
@@ -33,9 +33,10 @@ Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 | SYS-12-P25 | Barrierefreiheits-Bericht | Vorhanden | umgesetzt, Box getestet |
 
 ## Werkzeuge der Oberfläche
-- Plan erstellen
+- Los
+- ✳ Claude Code
 - Automatisch nach Updates suchen und laden
-- Sofort, sobald es geladen ist
+- Sofort, sobald es geladen ist – mit 30 Sekunden Hinweis, alles wird vorher gesichert
 - Beim nächsten Start von Trendo
 - Nachts um 3 Uhr (wenn du nicht am PC bist)
 - Jetzt nach Updates suchen

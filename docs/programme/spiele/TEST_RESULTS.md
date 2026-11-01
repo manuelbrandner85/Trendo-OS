@@ -1,8 +1,8 @@
 # Werkstatt – Testergebnisse
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.30 (Stand 234e066)
 
-Lauf: `volltest-0.9.28-api.trx, volltest-0.9.28-app.trx, volltest-0.9.28-core.trx`
+Lauf: `volltest-0.9.30-api.trx, volltest-0.9.30-app.trx, volltest-0.9.30-core.trx`
 
 Bestanden 20 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

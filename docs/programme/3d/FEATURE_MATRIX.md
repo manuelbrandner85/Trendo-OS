@@ -1,11 +1,12 @@
 # 3D – Funktionsmatrix
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.30 (Stand 234e066)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Verstanden
+- Blender einrichten
 - In Blender öffnen
 - Ordner zeigen
 - Datei öffnen …
@@ -40,6 +41,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Glätten
 - Spiegeln
 - Aushöhlen
-- Plan erstellen
+- Los
 - Hinzufügen …
+- ✳ Claude Code
 - Teile vorschlagen

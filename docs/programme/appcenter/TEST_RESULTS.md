@@ -1,8 +1,8 @@
 # Programme verwalten – Testergebnisse
 
-Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.30 (Stand 234e066)
 
-Lauf: `volltest-0.9.28-api.trx, volltest-0.9.28-app.trx, volltest-0.9.28-core.trx`
+Lauf: `volltest-0.9.30-api.trx, volltest-0.9.30-app.trx, volltest-0.9.30-core.trx`
 
 Bestanden 15 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

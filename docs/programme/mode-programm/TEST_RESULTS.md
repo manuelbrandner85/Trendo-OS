@@ -1,8 +1,8 @@
 # Kleidung & Produkte – Testergebnisse
 
-Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.30 (Stand 234e066)
 
-Lauf: `volltest-0.9.28-api.trx, volltest-0.9.28-app.trx, volltest-0.9.28-core.trx`
+Lauf: `volltest-0.9.30-api.trx, volltest-0.9.30-app.trx, volltest-0.9.30-core.trx`
 
 Bestanden 19 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

@@ -1,6 +1,6 @@
 # Start – Funktionsmatrix
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.30 (Stand 234e066)
 
 Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 
@@ -33,8 +33,9 @@ Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 | SYS-10-P25 | Barrierefreie PDF-Hinweise | Vorhanden | umgesetzt, Box getestet |
 
 ## Werkzeuge der Oberfläche
-- Plan erstellen
+- Los
 - Hinzufügen …
+- ✳ Claude Code
 - Start
 - PDF
 - Schreiben
@@ -61,35 +62,3 @@ Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 - Heute
 - 7 Tage
 - 30 Tage
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- CLAUDE.md
-- DIN5008-Geschaeftsbrief-FormB.docx
-- DIN5008-Privatbrief-FormB.docx
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- girocode.txt
-- Kaffee-Abo-Bauplan.md
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- [privat]
-- [privat]

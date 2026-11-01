@@ -1,6 +1,6 @@
 # Sicher prüfen – Funktionsmatrix
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.30 (Stand 234e066)
 
 Quelle: `docs/spec/kataloge/SYS-03_KATALOG.md`
 
@@ -33,7 +33,8 @@ Quelle: `docs/spec/kataloge/SYS-03_KATALOG.md`
 | SYS-03-P25 | Verlauf löschen anleiten | Vorhanden | umgesetzt, Box getestet |
 
 ## Werkzeuge der Oberfläche
-- Plan erstellen
+- Los
+- ✳ Claude Code
 - Sicher prüfen
 - Laden & Speichern
 - Browser

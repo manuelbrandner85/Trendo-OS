@@ -1,5 +1,5 @@
 # Speicher & Leistung – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.30 (Stand 234e066)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

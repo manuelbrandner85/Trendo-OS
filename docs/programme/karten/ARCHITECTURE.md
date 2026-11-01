@@ -1,6 +1,6 @@
 # Karten & Touren – Architektur
 
-Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.30 (Stand 234e066)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec13.cs`

@@ -1,10 +1,10 @@
 # Handy verbinden – Testergebnisse
 
-Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.30 (Stand 234e066)
 
-Lauf: `volltest-0.9.28-api.trx, volltest-0.9.28-app.trx, volltest-0.9.28-core.trx`
+Lauf: `volltest-0.9.30-api.trx, volltest-0.9.30-app.trx, volltest-0.9.30-core.trx`
 
-Bestanden 22 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 0
+Bestanden 24 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -15,7 +15,9 @@ Bestanden 22 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 0
 | Handy-App: Apps-Liste, App öffnet in Handy-Größe auf dem Handy (nicht am PC), Navigation bleibt auf dem Handy, Zurück zum Start | ✓ bestanden |
 | Handy: QR öffnen → verbinden → Foto senden → Text senden → Datei vom PC laden; Fremde und Ungekoppelte abgewiesen | ✓ bestanden |
 | Handy: Trendo bedienen nur mit Erlaubnis am PC – dann Bildschirm, Tippen, Schreiben, Tasten, Scrollen; Scan wird gemeldet; Unterwegs-Link meldet an | ✓ bestanden |
+| Neuerungen im Vollbild: nicht wegklickbar (Esc, Klick daneben), läuft von selbst weiter, Pfeile blättern, „Los geht's“ erst auf der letzten Folie | ✓ bestanden |
 | SYS-01 UI: Betriebsmodus zeigt aktuellen Modus und Fähigkeiten | ✓ bestanden |
+| Update sofort: geladenes Update startet 30-Sekunden-Countdown (alles gesichert), danach Installation; „Jetzt neu starten“ geht sofort | ✓ bestanden |
 | Updates: nach dem Neustart kommen die Fenster zurück und „Was ist neu?“ erscheint einmal | ✓ bestanden |
 | Updates: suchen und im Hintergrund laden; „beim nächsten Start“ installiert beim Beenden, „sofort“ mit Einrichtungsbildschirm, Sicherung und Fenstern | ✓ bestanden |
 | X-08 Android-Seite: Modell/Version/Akku per adb, Bildschirmfoto und neuestes Foto nur mit Zustimmung, Handy-Temp gelöscht | ✓ bestanden |

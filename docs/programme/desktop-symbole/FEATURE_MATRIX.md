@@ -1,11 +1,12 @@
 # Desktop-Symbole – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.30 (Stand 234e066)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
-- Plan erstellen
+- Los
+- ✳ Claude Code
 - Trendo KI
 - Agenten-Zentrale
 - Abläufe
@@ -64,4 +65,3 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Programme installieren
 - Dateien teilen
 - Geräte erkennen
-- Programme starten

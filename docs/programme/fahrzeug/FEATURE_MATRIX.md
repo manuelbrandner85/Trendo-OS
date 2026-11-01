@@ -1,6 +1,6 @@
 # Auto & Fahrten – Funktionsmatrix
 
-Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.30 (Stand 234e066)
 
 Quelle: `docs/w6-katalog/SPEC-16.md`
 
@@ -28,7 +28,8 @@ Quelle: `docs/w6-katalog/SPEC-16.md`
 | F20 | Jahreskosten | Vorhanden | gebaut |
 
 ## Werkzeuge der Oberfläche
-- Plan erstellen
+- Los
+- ✳ Claude Code
 - ⛽ Familienauto
 - Elektro
 - ＋ Anlegen

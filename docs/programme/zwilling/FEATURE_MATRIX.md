@@ -1,6 +1,6 @@
 # Geräte überwachen – Funktionsmatrix
 
-Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.30 (Stand 234e066)
 
 Quelle: `docs/w6-katalog/SPEC-10.md`
 
@@ -28,7 +28,8 @@ Quelle: `docs/w6-katalog/SPEC-10.md`
 | F20 | Energie | Vorhanden | gebaut |
 
 ## Werkzeuge der Oberfläche
-- Plan erstellen
+- Los
+- ✳ Claude Code
 - Diesen PC jetzt messen
 - ● Live (alle 5 s)
 - 24 h

@@ -1,6 +1,6 @@
 # Trendo CAD – Architektur
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.30 (Stand 234e066)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Cad.cs`

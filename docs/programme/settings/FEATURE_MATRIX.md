@@ -1,6 +1,6 @@
 # Einstellungen – Funktionsmatrix
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.30 (Stand 234e066)
 
 Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 
@@ -33,7 +33,8 @@ Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 | SYS-12-P25 | Barrierefreiheits-Bericht | Vorhanden | umgesetzt, Box getestet |
 
 ## Werkzeuge der Oberfläche
-- Plan erstellen
+- Los
+- ✳ Claude Code
 - Verstanden
 - Aussehen
 - Farbe
@@ -60,7 +61,7 @@ Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 - Morgen
 - Hintergrund nach Tageszeit wechseln (Morgen · Wellen · Bergsee · Polarlicht)
 - Bewegung reduzieren (keine Animationen)
-- Updates automatisch laden (Updates gibt es in der installierten Version (Setup).)
+- Updates automatisch laden (Noch nicht geprüft)
 - Normal
 - Groß
 - Sehr groß

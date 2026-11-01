@@ -1,6 +1,6 @@
 # Live streamen – Funktionsmatrix
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.30 (Stand 234e066)
 
 Quelle: `docs/w6-katalog/SPEC-15.md`
 
@@ -28,7 +28,8 @@ Quelle: `docs/w6-katalog/SPEC-15.md`
 | F20 | Timecode | Vorhanden | gebaut |
 
 ## Werkzeuge der Oberfläche
-- Plan erstellen
+- Los
+- ✳ Claude Code
 - Ablauf
 - On-Air-Uhr
 - Beginn = jetzt
@@ -50,8 +51,7 @@ Quelle: `docs/w6-katalog/SPEC-15.md`
 - Ablaufplan (CSV)
 - YouTube-Kapitel
 - Moderationskarten
-- Verbindung prüfen
-- In OBS Studio öffnen
+- OBS Studio einrichten …
 - Zwei Wochen planen
 - Datei wählen …
 - Kopie verschieben

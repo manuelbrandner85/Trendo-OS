@@ -1,6 +1,6 @@
 # System & Sicherheit – Funktionsmatrix
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.30 (Stand 234e066)
 
 Quelle: `docs/spec/kataloge/SYS-13_KATALOG.md`
 
@@ -33,5 +33,6 @@ Quelle: `docs/spec/kataloge/SYS-13_KATALOG.md`
 | SYS-13-P25 | Rückfall-Version | Vorhanden | umgesetzt, Box getestet |
 
 ## Werkzeuge der Oberfläche
-- Plan erstellen
+- Los
+- ✳ Claude Code
 - Verstanden

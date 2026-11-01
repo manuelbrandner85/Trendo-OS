@@ -93,7 +93,8 @@ if (Environment.GetEnvironmentVariable("TRENDO_TV_DEMO") is { Length: > 0 }) // 
 }
 // Vorschaubilder und Katalog-Lauf schreiben nie in die echten Dokumente: Projektordner liegt im eigenen Temp-Ordner
 { var us = UserSettings.Load(root); if (string.IsNullOrEmpty(us.ProjectsFolder)) { us.ProjectsFolder = Path.Combine(root, "Projekte"); us.Save(root); } }
-var win = new MainWindow(core, new AppOptions(root, null, 0, Page: args.Length > 3 ? args[3] : null, Query: Environment.GetEnvironmentVariable("TRENDO_QUERY")), new DefaultToolProbe()) { Width = w, Height = h, WindowState = Avalonia.Controls.WindowState.Normal };
+// Immer Testmodus: Katalog und Bilder landen im öffentlichen Repository – nie echte Ordner des Nutzers lesen (z. B. „Zuletzt benutzt“ aus Dokumente).
+var win = new MainWindow(core, new AppOptions(root, null, 0, Page: args.Length > 3 ? args[3] : null, Query: Environment.GetEnvironmentVariable("TRENDO_QUERY"), Isolated: true), new DefaultToolProbe()) { Width = w, Height = h, WindowState = Avalonia.Controls.WindowState.Normal };
 if (Environment.GetEnvironmentVariable("TRENDO_TV_TAB") is { Length: > 0 } tvTab) { win.TvTabForTests = tvTab; win.Show("tv"); }
 win.Show();
 if (Environment.GetEnvironmentVariable("TRENDO_KATALOG") is { Length: > 0 } repoArg) // Masterprompt 131: Programmkatalog und Produktionspakete aus dem Repository erzeugen

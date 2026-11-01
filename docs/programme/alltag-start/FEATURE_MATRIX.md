@@ -1,6 +1,6 @@
 # Übersicht – Funktionsmatrix
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.30 (Stand 234e066)
 
 Quelle: `docs/spec/kataloge/SYS-02_KATALOG.md`
 
@@ -33,7 +33,8 @@ Quelle: `docs/spec/kataloge/SYS-02_KATALOG.md`
 | SYS-02-P25 | Ressourcen-Warnung | Vorhanden | umgesetzt, Box getestet |
 
 ## Werkzeuge der Oberfläche
-- Plan erstellen
+- Los
+- ✳ Claude Code
 - Übersicht
 - Dateien
 - Bilder & Medien

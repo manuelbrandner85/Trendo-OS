@@ -1,6 +1,6 @@
 # Trendo Text – Funktionsmatrix
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.30 (Stand 234e066)
 
 Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 
@@ -33,8 +33,9 @@ Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 | SYS-10-P25 | Barrierefreie PDF-Hinweise | Vorhanden | umgesetzt, Box getestet |
 
 ## Werkzeuge der Oberfläche
-- Plan erstellen
+- Los
 - Hinzufügen …
+- ✳ Claude Code
 - Start
 - Einfügen
 - Entwurf

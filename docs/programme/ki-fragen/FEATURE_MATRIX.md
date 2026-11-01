@@ -1,12 +1,13 @@
 # KI fragen – Funktionsmatrix
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · Stand: 0.9.28 (Stand 83bf3c3)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · Stand: 0.9.30 (Stand 234e066)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
-- Plan erstellen
+- Los
 - Hinzufügen …
+- ✳ Claude Code
 - Modell
 - Fragen
 - ＋ Neues Gespräch
@@ -14,6 +15,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Neu prüfen
 - Token erzeugen …
 - Speichern
+- Mit Claude verbinden
 - Schreib eine freundliche Absage für einen Termin
 - Erkläre mir kurz, was eine Firewall macht
 - Plane mir ein Abendessen für 4 Personen
