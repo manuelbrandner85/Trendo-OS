@@ -18,6 +18,7 @@ public class Teil4BusinessUiTests
         var (w, _, _) = Ui.Open();
         Assert.Equal("verkaufen", MainWindow.StudioPages["STUDIO-ONLINE-BUSINESS-01"]);
         w.Show("verkaufen"); Pump();
+        w.Find<Button>("sell-tab-online").Press(); Pump(); // T-0303: Verkaufen startet mit der Kasse
         w.Find<TextBox>("sell-cust-name").Text = "Erika Muster"; w.Find<TextBox>("sell-cust-address").Text = "Hauptstraße 1, 10115 Berlin";
         w.Find<Button>("sell-cust-add").Press(); Pump();
         w.Find<TextBox>("sell-prod-name").Text = "Kaffee"; w.Find<TextBox>("sell-prod-price").Text = "10,00"; w.Find<TextBox>("sell-prod-stock").Text = "5";

@@ -214,6 +214,16 @@ else if (shot == "seite")
         if (win.DiskAt?.Children.FirstOrDefault(c => c.IsDir) is { } firstDir) win.DiskSelect(firstDir);
         win.Show("ressourcen");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_KASSE") is { Length: > 0 }) // Kasse mit Beispielartikeln, zwei Verkäufen und gefülltem Warenkorb
+    {
+        var k = win.Kasse;
+        foreach (var (n, pr, st) in new[] { ("Filterkaffee", 2.2, 40), ("Cappuccino", 3.1, 40), ("Croissant", 1.9, 12), ("Apfelkuchen", 3.4, 8), ("Bio-Honig 500 g", 7.5, 6), ("Tee", 2.0, 30), ("Brezel", 1.2, 0), ("Kaffeebohnen 1 kg", 18.9, 4) })
+            k.Shop.Products.Add(new Trendo.Core.Product(n, "", 0, pr, st, 0, 0));
+        k.Checkout([("Cappuccino", 2), ("Croissant", 2)], "bar", 20, DateTime.Now.AddHours(-2), win.Money, true);
+        k.Checkout([("Bio-Honig 500 g", 1), ("Filterkaffee", 1)], "karte", 0, DateTime.Now.AddHours(-1), win.Money, true);
+        win.Show("verkaufen"); win.KasseRenderCart([("Cappuccino", 2), ("Apfelkuchen", 1)], "10");
+        win.Show("verkaufen");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_FOTOS") is { Length: > 0 } fotoMode) // Fotoalbum mit erzeugten Beispielbildern (Verläufe, Horizont, Sonne)
     {
         var fdir = Path.Combine(root, "beispielfotos"); Directory.CreateDirectory(fdir); var rnd = new Random(11);

@@ -32,10 +32,11 @@ public partial class MainWindow
     private Control SellView()
     {
         const string V = "verkaufen";
+        if (_sellTab == "kasse") return BusinessPage("Verkaufen", new StackPanel { Spacing = 10, Children = { IdeaHeader(V), SellTabs(), KasseView() } });
         var shop = BizShop; var today = DateOnly.FromDateTime(DateTime.Today);
         var (month, year, customers, open) = shop.Figures(today);
         var y = Finance.Year(Money.All(), today.Year);
-        var sp = new StackPanel { Spacing = 10, Children = { IdeaHeader(V) } };
+        var sp = new StackPanel { Spacing = 10, Children = { IdeaHeader(V), SellTabs() } };
         sp.Children.Add(new WrapPanel { Name = "sell-kpis", Children = {
             Kpi("sell-kpi-month", "Umsatz " + MonthShort[today.Month - 1], Eu(month) + " €", "netto, nach Zahlungseingang", "#3D8BFF", "#1E4FD8"),
             Kpi("sell-kpi-year", "Umsatz " + today.Year, Eu(year) + " €", "netto", "#7C4DFF", "#4B2BC2"),
