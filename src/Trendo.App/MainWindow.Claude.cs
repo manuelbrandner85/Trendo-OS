@@ -48,7 +48,7 @@ public partial class MainWindow
     string? ClaudeExe() => ClaudeCode.Find(Environment.GetEnvironmentVariable, File.Exists);
 
     /// <summary>Testmodus (eigener Datenordner): nie ein echtes Programm starten – nur melden und protokollieren, was passieren würde.
-    /// Sonst öffnen Knopf-Prüfungen echte Fenster (Installer, Anmeldung, setup-token) auf dem PC.</summary>
+    /// Sonst öffnen Knopf-Prüfungen echte Fenster (Installer, Anmeldung) auf dem PC.</summary>
     bool ClaudeSandboxed(string what)
     {
         if (!_opt.Isolated) return false;
@@ -57,38 +57,25 @@ public partial class MainWindow
         RefreshKiPage();
         return true;
     }
+    /// <summary>Früher gespeicherter Abo-Token (bis 0.9.30). Anthropic erlaubt fremden Programmen nicht, Claude-Tokens zu speichern – Trendo löscht ihn beim Start.</summary>
     public const string ClaudeTokenKey = "claude-abo-token";
 
-    /// <summary>Nur Abo: Variablen für die kostenpflichtige API entfernen; ein gespeicherter Abo-Token (claude setup-token) wird mitgegeben.</summary>
+    /// <summary>Nur Abo, nur Anthropics eigene Anmeldung: Variablen für die kostenpflichtige API und Tokens entfernen; jede weitere Person hat ihren eigenen Claude-Code-Ordner.</summary>
     void ClaudeEnv(ProcessStartInfo psi)
     {
         foreach (var v in ClaudeCode.ApiVariables) psi.Environment.Remove(v);
         psi.Environment.Remove(ClaudeCode.TokenVariable);
-        try { if (_core.Secrets.Get(ClaudeTokenKey) is { Length: > 0 } t) psi.Environment[ClaudeCode.TokenVariable] = t; } catch (Exception) { }
+        psi.Environment.Remove(ClaudeCode.ConfigVariable);
+        if (ClaudeCode.PersonConfigDir(_core.DataRoot) is { } own) { Directory.CreateDirectory(own); psi.Environment[ClaudeCode.ConfigVariable] = own; } // eigene Anmeldung je Person
     }
 
-    /// <summary>Abo-Token speichern (sicherer Windows-Speicher). API-Schlüssel werden abgelehnt – Trendo nutzt Claude nur über das Abo.</summary>
-    public async Task<bool> ClaudeSetToken(string token)
+    /// <summary>Alten gespeicherten Token entfernen (einmal beim Start; öffentlich für Tests). Gibt true zurück, wenn einer da war.</summary>
+    public bool ClaudeForgetStoredToken()
     {
-        token = token.Trim();
-        if (ClaudeCode.LooksLikeApiKey(token)) { _claudeMsg = "Das ist ein API-Schlüssel (kostenpflichtig). Trendo nutzt Claude nur über dein Abo – bitte den Abo-Token aus „claude setup-token“ nehmen."; RefreshKiPage(); return false; }
-        if (!ClaudeCode.LooksLikeAboToken(token)) { _claudeMsg = "Das sieht nicht wie ein Abo-Token aus. Er beginnt mit „sk-ant-oat“."; RefreshKiPage(); return false; }
-        _core.Secrets.Set(ClaudeTokenKey, token); _core.Audit.Append(Principal.LocalOwner.Name, "claude.token.set", "");
-        var s = await ClaudeCheck(true);
-        _claudeMsg = s.Ready ? "Abo-Token gespeichert – Claude ist verbunden." : "Abo-Token gespeichert, aber Claude meldet noch keine Verbindung. Ist der Token abgelaufen?";
-        RefreshKiPage(); return s.Ready;
-    }
-    public void ClaudeRemoveToken() { _core.Secrets.Delete(ClaudeTokenKey); _core.Audit.Append(Principal.LocalOwner.Name, "claude.token.removed", ""); _claudeAt = DateTime.MinValue; _claudeMsg = "Abo-Token entfernt."; RefreshKiPage(); }
-
-    /// <summary>„Abo-Token erzeugen“: öffnet <c>claude setup-token</c> im Fenster; den angezeigten Token fügst du danach hier ein.</summary>
-    public void ClaudeMakeToken()
-    {
-        if (ClaudeSandboxed("„claude setup-token“ öffnen")) return;
-        var exe = ClaudeExe(); if (exe is null) return;
-        try { var psi = new ProcessStartInfo("cmd.exe") { UseShellExecute = false, CreateNoWindow = false, WorkingDirectory = Path.GetTempPath() }; foreach (var a in new[] { "/k", exe, "setup-token" }) psi.ArgumentList.Add(a); ClaudeEnv(psi); Process.Start(psi); }
-        catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { _claudeMsg = e.Message; }
-        _claudeMsg = "Im neuen Fenster meldest du dich über dein Abo an; danach steht dort ein Token (sk-ant-oat…). Kopiere ihn und füge ihn hier ein.";
-        RefreshKiPage();
+        try { if (_core.Secrets.Get(ClaudeTokenKey) is null) return false; _core.Secrets.Delete(ClaudeTokenKey); }
+        catch (Exception e) when (e is InvalidOperationException or System.ComponentModel.Win32Exception) { return false; }
+        _core.Audit.Append(Principal.LocalOwner.Name, "claude.token.entfernt", "Anmeldung nur noch über Claude selbst");
+        return true;
     }
 
     /// <summary>Anmeldestand (kostenlos, ohne Nutzung des Abos); 5 Minuten zwischengespeichert.</summary>
@@ -118,6 +105,7 @@ public partial class MainWindow
     {
         if (!ClaudeEmbedApproved) throw new InvalidOperationException("Eingebettete Claude-Nutzung über das Abo wartet auf die Freigabe durch Anthropic. Nutze „In Claude Code öffnen“.");
         if (ClaudeRunOverride is { } o) return await o(args, dir, line, ct);
+        if (_opt.Isolated) throw new InvalidOperationException("Testmodus: Claude wird nicht gestartet."); // Tests und Vorschaubilder nutzen nie das echte Abo
         var exe = _claude.Exe ?? ClaudeExe() ?? throw new InvalidOperationException("Claude Code ist nicht installiert.");
         var psi = new ProcessStartInfo(exe) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true, RedirectStandardInput = true,
             StandardOutputEncoding = System.Text.Encoding.UTF8, StandardErrorEncoding = System.Text.Encoding.UTF8, WorkingDirectory = dir };
@@ -146,7 +134,7 @@ public partial class MainWindow
         try
         {
             var psi = new ProcessStartInfo(exe) { UseShellExecute = false, CreateNoWindow = false, WorkingDirectory = Path.GetTempPath() };
-            psi.ArgumentList.Add("auth"); psi.ArgumentList.Add("login"); psi.ArgumentList.Add("--claudeai");
+            psi.ArgumentList.Add("auth"); psi.ArgumentList.Add("login"); psi.ArgumentList.Add("--claudeai"); ClaudeEnv(psi); // Anmeldung landet im Claude-Ordner dieser Person
             using var p = Process.Start(psi);
             if (p is not null) await p.WaitForExitAsync();
         }
@@ -226,13 +214,6 @@ public partial class MainWindow
             "Im Hintergrund der Trendo-Programme nutzt Trendo dein Abo nicht; dort arbeitet die KI auf diesem PC.", Brush.Parse("#FACC15"), 11.5);
         gate.Name = "claude-gate"; gate.IsVisible = !ClaudeEmbedApproved;
         main.IsCheckedChanged += (_, _) => KiSourceSettings.Update(_core.DataRoot, x => x.ClaudeMain = main.IsChecked == true);
-        var hasToken = false; try { hasToken = _core.Secrets.Get(ClaudeTokenKey) is { Length: > 0 }; } catch (Exception) { }
-        var tokBox = new TextBox { Name = "claude-token", PasswordChar = '•', PlaceholderText = "Abo-Token (sk-ant-oat…)", Width = 300 };
-        var tokenRow = new Expander { Name = "claude-token-box", Header = hasToken ? "Abo-Token ✓ (statt Anmeldung)" : "Andere Möglichkeit: Abo-Token", IsExpanded = false,
-            Content = new StackPanel { Spacing = 6, Children = {
-                P("Für Fortgeschrittene: „claude setup-token“ erzeugt einen langlebigen Token für dein Abo. Trendo legt ihn im sicheren Windows-Speicher ab und gibt ihn nur an Claude Code weiter. API-Schlüssel nimmt Trendo nicht an.", Muted, 11.5),
-                hasToken ? new WrapPanel { Children = { Act("claude-token-remove", "Token entfernen", ClaudeRemoveToken) } }
-                    : new WrapPanel { Children = { Act("claude-token-make", "Token erzeugen …", ClaudeMakeToken), new Border { Width = 6 }, tokBox, new Border { Width = 6 }, Act("claude-token-save", "Speichern", () => _ = ClaudeSetToken(tokBox.Text ?? ""), true) } } } } };
         return new Border
         {
             Name = "claude-card", Background = Brush.Parse(s.Ready ? "#1A22B35E" : "#1A3B82F6"), BorderBrush = Brush.Parse(s.Ready ? "#4ADE80" : "#D4A84B"), BorderThickness = new Thickness(1),
@@ -243,7 +224,7 @@ public partial class MainWindow
                 P(s.Ready && !ClaudeEmbedApproved ? "Claude Code ist mit deinem Abo bereit. „Claude Code öffnen“ startet es sichtbar im Projektordner – dort arbeitest du direkt mit Claude, ohne API."
                   : s.Ready ? "Claude beantwortet Fragen, plant und baut in allen Programmen – wo programmiert wird, arbeitet es wie Claude Code. Volle Funktionen (Befehle, Web, deine Skills) gibst du je Projekt frei. Deine Dokumente aus „Wissen“ gehen nicht automatisch mit."
                   : "Einmal verbinden, dann ist Claude deine Haupt-KI in Trendo. Die Anmeldung läuft über Claude selbst – Trendo sieht nie dein Passwort. Ohne Claude arbeitet die KI auf diesem PC weiter.", Muted, 12),
-                gate, main, buttons, tokenRow, ClaudeWebRow(),
+                gate, main, buttons, ClaudeWebRow(),
                 new TextBlock { Name = "claude-msg", Text = _claudeMsg, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = _claudeMsg.Length > 0 } } },
         };
     }
@@ -256,9 +237,18 @@ public partial class MainWindow
             Foreground = w.Connected ? Brush.Parse("#4ADE80") : Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap };
         var row = new WrapPanel { Children = { state } };
         if (!w.Connected) { var b = Act("claude-web-connect", "Mit Claude verbinden", () => Show("claude-verbinden"), true); b.Margin = new Thickness(8, 0, 0, 0); row.Children.Add(b); }
-        else { var b = Act("claude-web-disconnect", "Trennen", () => { CWeb.Disconnect(); _core.Audit.Append(Principal.LocalOwner.Name, "claude.web.getrennt", ""); RefreshKiPage(); }); b.Margin = new Thickness(8, 0, 0, 0); row.Children.Add(b); }
+        else
+        {
+            // Trennen meldet auch bei claude.ai ab – danach kann sich jemand anderes (oder ein anderes Konto) anmelden
+            var b = Act("claude-web-disconnect", "Trennen und abmelden", () => { CWeb.Disconnect(); _claudeLogout = true; _core.Audit.Append(Principal.LocalOwner.Name, "claude.web.getrennt", ""); Show("claude-verbinden"); });
+            b.Margin = new Thickness(8, 0, 0, 0); row.Children.Add(b);
+        }
         return row;
     }
+
+    /// <summary>Zuletzt in „Mit Claude verbinden“ aufgerufene Adresse (öffentlich für Tests).</summary>
+    public string ClaudeConnectUrl { get; private set; } = "";
+    bool _claudeLogout;
 
     /// <summary>Einmalig mit Claude verbinden: Anmeldeseite von claude.ai im Trendo-Profil; sobald die Anmeldung durch ist, gilt Claude in allen Studios als verbunden.</summary>
     Control ClaudeConnectView()
@@ -270,7 +260,9 @@ public partial class MainWindow
         if (w.Connected) sp.Children.Add(Act("claude-connect-done", "Fertig", () => Show("ki-quellen"), true));
         Control view = _opt.Isolated ? new Border { Name = "claude-connect-web", Height = 200, Child = P("Testmodus: claude.ai wird nicht geladen.", Muted, 12) }
             : ClaudeWebView("claude-connect-web", u => { var was = CWeb.Connected; if (CWeb.Navigated(u, null) && !was && CWeb.Connected) { _core.Audit.Append(Principal.LocalOwner.Name, "claude.web.verbunden", ""); Show("claude-verbinden"); } });
-        if (view is NativeWebView nv) { nv.Height = 640; nv.Navigate(new Uri(w.Connected ? ClaudeWeb.NewChat : ClaudeWeb.Login)); }
+        ClaudeConnectUrl = _claudeLogout ? ClaudeWeb.Logout : w.Connected ? ClaudeWeb.NewChat : ClaudeWeb.Login; _claudeLogout = false;
+        if (view is NativeWebView nv) { nv.Height = 640; nv.Navigate(new Uri(ClaudeConnectUrl)); }
+        if (!w.Connected) sp.Children.Add(ClaudeLoginLinkRow("claude-connect-link", u => { ClaudeConnectUrl = u.AbsoluteUri; if (view is NativeWebView v) v.Navigate(u); }));
         sp.Children.Add(new Border { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = view });
         return KiPage("Mit Claude verbinden", sp);
     }

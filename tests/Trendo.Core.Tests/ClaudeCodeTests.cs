@@ -18,14 +18,12 @@ public class ClaudeCodeTests
         Assert.Contains("nicht installiert", ClaudeCode.Status.Missing.Text);
     }
 
-    [Fact(DisplayName = "T-0316: Nur das Abo zählt – Anmeldung über Console/API gilt nicht als verbunden; API-Schlüssel ≠ Abo-Token; API-Variablen werden für Läufe entfernt")]
+    [Fact(DisplayName = "T-0316: Nur das Abo zählt – Anmeldung über Console/API gilt nicht als verbunden; API-Variablen werden für Läufe entfernt")]
     public void Subscription_only()
     {
         var api = ClaudeCode.ParseStatus("c", """{"loggedIn":true,"authMethod":"console"}""");
         Assert.True(api.LoggedIn); Assert.False(api.Ready); Assert.Contains("nur über dein Abo", api.Text);
         Assert.True(ClaudeCode.ParseStatus("c", """{"loggedIn":true,"authMethod":"oauth_token"}""").Ready);
-        Assert.True(ClaudeCode.LooksLikeAboToken("sk-ant-oat01-" + new string('a', 40)));
-        Assert.False(ClaudeCode.LooksLikeAboToken("sk-ant-api03-" + new string('a', 40))); Assert.True(ClaudeCode.LooksLikeApiKey("sk-ant-api03-xyz"));
         Assert.Contains("ANTHROPIC_API_KEY", ClaudeCode.ApiVariables); Assert.Contains("ANTHROPIC_BASE_URL", ClaudeCode.ApiVariables);
     }
 
@@ -121,15 +119,14 @@ public class ClaudeCodeTests
         finally { foreach (var d in new[] { root, store }) if (Directory.Exists(d)) Directory.Delete(d, true); }
     }
 
-    [Fact(DisplayName = "Claude im Studio-Terminal: API-Variablen leer (nur Abo), Abo-Token nur wenn gültig, kein API-Schlüssel; Auftrag als eine Zeile")]
-    public void Terminal_environment()
+    [Fact(DisplayName = "Claude im Studio: Chat-Lauf ändert nur im Projektordner, gesichert, setzt die Sitzung fort; Trendo setzt nie einen Token")]
+    public void Chat_args()
     {
-        var e = ClaudeCode.TerminalEnvironment(null);
-        Assert.All(ClaudeCode.ApiVariables, v => Assert.Equal("", e[v]));
-        Assert.Equal("", e[ClaudeCode.TokenVariable]);
-        var tok = "sk-ant-oat01-" + new string('a', 30);
-        Assert.Equal(tok, ClaudeCode.TerminalEnvironment(tok)[ClaudeCode.TokenVariable]);
-        Assert.Equal("", ClaudeCode.TerminalEnvironment("sk-ant-api03-xyz")[ClaudeCode.TokenVariable]);
-        Assert.Equal("Baue eine Seite mit Kontakt und Preisen", ClaudeCode.OneLine("  Baue eine Seite\r\n  mit Kontakt\nund Preisen  "));
+        var a = ClaudeCode.Args("Baue ein Menü", ClaudeCode.Phase.Chat, null, "Rolle");
+        Assert.Contains("--restricted", a); Assert.Contains("acceptEdits", a); Assert.DoesNotContain("--resume", a); Assert.DoesNotContain("--disallowedTools", a);
+        var b = ClaudeCode.Args("Und jetzt Sound", ClaudeCode.Phase.Chat, "sitzung-1", "Rolle");
+        Assert.Equal("sitzung-1", b[b.ToList().IndexOf("--resume") + 1]);
+        Assert.True(ClaudeCode.EmbeddingApproved);
+        Assert.Equal("CLAUDE_CODE_OAUTH_TOKEN", ClaudeCode.TokenVariable); // wird für jeden Lauf entfernt, nie gesetzt
     }
 }

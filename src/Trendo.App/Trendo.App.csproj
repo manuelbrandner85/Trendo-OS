@@ -7,7 +7,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\logo\trendo.ico</ApplicationIcon>
     <AssemblyName>TrendoOS</AssemblyName>
-    <Version>0.9.30</Version>
+    <Version>0.9.32</Version>
     <!-- SYS-13-P15: vorkompiliert (ReadyToRun) – spart auf dem PC ~0,5 s beim Start -->
     <PublishReadyToRun Condition="'$(RuntimeIdentifier)' != ''">true</PublishReadyToRun>
   </PropertyGroup>
@@ -17,7 +17,6 @@
     <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
     <PackageReference Include="Avalonia.Fonts.Inter" Version="12.1.4" />
-    <PackageReference Include="Iciclecreek.Avalonia.Terminal" Version="4.1.2" />
     <PackageReference Include="PDFtoImage" Version="5.2.1" />
     <PackageReference Include="Velopack" Version="1.2.161" />
   </ItemGroup>

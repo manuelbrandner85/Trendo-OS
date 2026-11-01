@@ -152,7 +152,7 @@ public sealed partial class MainWindow : Window
             KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.D1 + i, KeyModifiers.Control), Command = new RelayCommand(() => Show(key)) });
         }
         StartupTrace.Mark("ctor.layout");
-        InitWave1(); InitWave45(); InitWave23(); InitW7(); DedupeRegistries(); StartupTrace.Mark("ctor.initwaves"); _query = opt.Query ?? "";
+        InitWave1(); InitWave45(); InitWave23(); InitW7(); DedupeRegistries(); ClaudeForgetStoredToken(); StartupTrace.Mark("ctor.initwaves"); _query = opt.Query ?? "";
         InitSetup(opt);
         if (_reopenSection is { } keepSection) { _settingsSection = keepSection; _reopenSection = null; }
         if (Environment.GetEnvironmentVariable("TRENDO_SETTINGS") is { Length: > 0 } settingsSection) _settingsSection = settingsSection;

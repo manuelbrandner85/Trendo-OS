@@ -34,63 +34,52 @@ public class Claude_Ui
         finally { MainWindow.ClaudeStatusOverride = null; }
     }
 
-    [AvaloniaFact(DisplayName = "T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Token erzeugen“, „Claude Code öffnen“ starten nie ein echtes Programm")]
+    [AvaloniaFact(DisplayName = "T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Claude Code öffnen“ starten nie ein echtes Programm")]
     public async Task Test_mode_starts_nothing()
     {
         var (w, _, _) = Ui.Open();
         var before = System.Diagnostics.Process.GetProcesses().Select(p => p.Id).ToHashSet();
-        await w.ClaudeInstall(); await w.ClaudeConnect(); w.ClaudeMakeToken(); w.ClaudeOpen(Path.GetTempPath(), "x");
-        Assert.Equal(4, w.Core.Audit.ReadAll().Count(a => a.Action == "claude.testmodus"));
+        await w.ClaudeInstall(); await w.ClaudeConnect(); w.ClaudeOpen(Path.GetTempPath(), "x");
+        Assert.Equal(3, w.Core.Audit.ReadAll().Count(a => a.Action == "claude.testmodus"));
         var neu = System.Diagnostics.Process.GetProcesses().Where(p => !before.Contains(p.Id)).Select(p => { try { return p.ProcessName; } catch (InvalidOperationException) { return ""; } }).ToList();
         Assert.DoesNotContain(neu, n => n is "claude" or "powershell");
         w.Show("ki-quellen"); Assert.Contains("Testmodus", w.Find<TextBlock>("claude-msg").Text);
     }
 
-    [AvaloniaFact(DisplayName = "T-0316: Abo-Token – API-Schlüssel wird abgelehnt (nur Abo), Abo-Token landet im sicheren Speicher und lässt sich entfernen")]
-    public async Task Abo_token()
+    [AvaloniaFact(DisplayName = "Claude-Regeln 01.11.2026: Trendo speichert keine Claude-Tokens – ein alter wird beim Start gelöscht, kein Token-Feld mehr")]
+    public void No_token_storage()
     {
         var (w, _, _) = Ui.Open();
-        MainWindow.ClaudeStatusOverride = () => St(true, true);
-        try
-        {
-            w.Show("ki-quellen");
-            Assert.False(await w.ClaudeSetToken("sk-ant-api03-" + new string('x', 40)));
-            Assert.Contains("nur über dein Abo", w.Find<TextBlock>("claude-msg").Text);
-            Assert.Null(w.Core.Secrets.Get(MainWindow.ClaudeTokenKey));
-            Assert.True(await w.ClaudeSetToken(" sk-ant-oat01-" + new string('y', 40) + " "));
-            Assert.Equal("sk-ant-oat01-" + new string('y', 40), w.Core.Secrets.Get(MainWindow.ClaudeTokenKey));
-            w.ClaudeRemoveToken(); Assert.Null(w.Core.Secrets.Get(MainWindow.ClaudeTokenKey));
-        }
-        finally { MainWindow.ClaudeStatusOverride = null; }
+        w.Core.Secrets.Set(MainWindow.ClaudeTokenKey, "sk-ant-oat01-" + new string('y', 40));
+        Assert.True(w.ClaudeForgetStoredToken()); Assert.Null(w.Core.Secrets.Get(MainWindow.ClaudeTokenKey));
+        Assert.False(w.ClaudeForgetStoredToken());
+        Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.token.entfernt");
+        w.Show("ki-quellen"); Assert.Null(w.TryFind<TextBox>("claude-token")); Assert.Null(w.TryFind<Expander>("claude-token-box"));
     }
 
-    [AvaloniaFact(DisplayName = "T-0316: Ohne Anthropic-Freigabe – kein Abo im Hintergrund (keine Haupt-KI, Läufe gesperrt), Hinweis sichtbar; „Claude Code öffnen“ startet das echte Claude Code im Projektordner")]
-    public async Task Gate_without_approval()
+    [AvaloniaFact(DisplayName = "Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner")]
+    public async Task Embedding_allowed()
     {
-        Assert.False(ClaudeCode.EmbeddingApproved); // Stand bis zur schriftlichen Freigabe
+        Assert.True(ClaudeCode.EmbeddingApproved);
         var (w, _, _) = Ui.Open();
-        var calls = 0; (string Folder, IReadOnlyList<string> Args)? opened = null;
+        (string Folder, IReadOnlyList<string> Args)? opened = null;
         MainWindow.ClaudeStatusOverride = () => St(true, true);
-        MainWindow.ClaudeRunOverride = (_, _, _, _) => { calls++; return Task.FromResult(0); };
         MainWindow.ClaudeOpenOverride = (f, a) => opened = (f, a);
         try
         {
             await Run(w.ClaudeCheck(true));
-            var a = await w.Intel.AskAsync(new KiRequest("Hallo?"));
-            Assert.Equal(0, calls); Assert.NotEqual("Claude (dein Abo)", a.Backend);
-            await Assert.ThrowsAsync<InvalidOperationException>(() => w.ClaudeRun(["-p", "x"], Path.GetTempPath(), _ => { }, CancellationToken.None));
             w.Show("ki-quellen"); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
-            Assert.True(w.Find<TextBlock>("claude-gate").IsVisible); Assert.False(w.Find<CheckBox>("claude-main").IsVisible);
+            Assert.False(w.Find<TextBlock>("claude-gate").IsVisible); Assert.True(w.Find<CheckBox>("claude-main").IsVisible);
             w.Find<Button>("claude-open").Press();
             Assert.NotNull(opened); Assert.DoesNotContain("-p", opened!.Value.Args);
             w.ClaudeOpen(Path.GetTempPath(), "Mach die Überschrift blau", "Du bist Webdesignerin.");
             Assert.Equal(["--append-system-prompt", "Du bist Webdesignerin.", "Mach die Überschrift blau"], opened!.Value.Args);
             Assert.Contains(w.Core.Audit.ReadAll(), x => x.Action == "claude.open");
         }
-        finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeRunOverride = null; MainWindow.ClaudeOpenOverride = null; }
+        finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeOpenOverride = null; }
     }
 
-    [AvaloniaFact(DisplayName = "T-0316: Studio – „Claude Code“ immer in der Auftragsleiste; „Im eigenen Fenster“ öffnet Claude Code mit der Rolle des Studios")]
+    [AvaloniaFact(DisplayName = "T-0316: Studio – „✳ Claude“ immer in der Auftragsleiste; das Claude-Projekt des Studios trägt seine Rolle, kein Terminal")]
     public async Task Open_from_code_studio()
     {
         var (w, _, _) = Ui.Open();
@@ -104,10 +93,11 @@ public class Claude_Ui
             MainWindow.ClaudeStatusOverride = () => St(true, true); await Run(w.ClaudeCheck(true));
             w.Show("start"); w.Show("baukasten"); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
             w.Find<TextBox>("auftrag-prompt").Text = "Baue eine Kontaktseite mit Formular";
-            w.Find<Button>("auftrag-claude").Press();
-            w.Find<Button>("claude-dock-window").Press();
-            var args = opened!.Value.Args.ToList();
-            Assert.Contains("Apps zusammenklicken", args[args.IndexOf("--append-system-prompt") + 1]);
+            w.Find<Button>("auftrag-claude").Press(); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            w.ClaudeWebNavigated("https://claude.ai/new"); // angemeldet
+            var instr = await w.ClaudeProjectSetup("Kontaktseite");
+            Assert.Contains("Apps zusammenklicken", instr); // Rolle des Studios in den Anweisungen des Claude-Projekts
+            Assert.Null(opened); // kein Terminal, kein Claude-Code-Fenster
         }
         finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeOpenOverride = null; w.Close(); }
     }
@@ -117,7 +107,7 @@ public class Claude_Ui
     {
         var (w, _, root) = Ui.Open();
         var calls = new List<IReadOnlyList<string>>();
-        MainWindow.ClaudeEmbedApproved = true; // Weg für den Fall der Anthropic-Freigabe
+        MainWindow.ClaudeEmbedApproved = true;
         MainWindow.ClaudeStatusOverride = () => St(true, true);
         MainWindow.ClaudeRunOverride = (args, dir, line, _) =>
         {

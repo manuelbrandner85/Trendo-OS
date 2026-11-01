@@ -1,93 +1,97 @@
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
-using Iciclecreek.Terminal;
 using Trendo.App;
 using Trendo.Core;
-using Avalonia.VisualTree;
 using Xunit;
 
 namespace Trendo.App.Tests;
 
-/// Claude Code im Studio-Fenster: Knopf in jeder Auftragsleiste, Fläche rechts im Fenster; ohne Installation „einrichten“, ohne Anmeldung „anmelden“;
-/// mit Claude läuft ein echtes Terminal im Projektordner (hier mit einem Testprogramm statt Claude), bleibt beim Neuzeichnen erhalten und endet mit dem Fenster.
+/// Claude im Studio-Fenster wie Claude im Web oder in der App: Knopf in jeder Auftragsleiste, echtes claude.ai (im Testmodus nicht geladen), groß wie in der App,
+/// kein Terminal, nichts zu kopieren. Einmal anmelden; links die Claude-Projekte des Studios (neu, fortsetzen, entfernen) mit Rolle, Fachregeln und Fachgebiet.
 [Collection("Claude")]
 public class ClaudeDock_Ui
 {
-    static Task<ClaudeCode.Status> St(bool inst, bool on) => Task.FromResult(inst ? new ClaudeCode.Status(true, on, on ? "claude.ai" : "", on ? "max" : "", @"C:\x\claude.exe") : ClaudeCode.Status.Missing);
-    static async Task Run(Task t) { while (!t.IsCompleted) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); await Task.Delay(20); } await t; }
-    static async Task Until(Func<bool> ok, int ms = 8000) { for (var i = 0; i < ms / 20 && !ok(); i++) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); await Task.Delay(20); } Assert.True(ok()); }
-
-    [AvaloniaFact(DisplayName = "Claude im Studio: Knopf in jedem Studio, Fläche rechts; nicht installiert → einrichten, nicht angemeldet → anmelden, Testmodus startet nichts")]
-    public async Task Dock_states()
+    [AvaloniaFact(DisplayName = "Claude im Studio: wie Claude im Web – claude.ai im ganzen Fenster, kein Terminal; anmelden, Projekte des Studios anlegen, fortsetzen, entfernen")]
+    public async Task Dock_like_claude()
     {
         var (w, _, _) = Ui.Open();
         try
         {
             foreach (var key in new[] { "baukasten", "brief", "vorhaben" }) { w.Show(key); Assert.NotNull(w.TryFind<Button>("auftrag-claude")); }
-            MainWindow.ClaudeStatusOverride = () => St(false, false); await Run(w.ClaudeCheck(true));
-            w.Show("baukasten"); w.Find<Button>("auftrag-claude").Press();
-            Assert.True(w.ClaudeDockOpen(w.ActiveWindowId!)); Assert.NotNull(w.TryFind<Grid>("claude-split"));
-            Assert.NotNull(w.TryFind<Button>("claude-dock-install"));
-            w.Find<Button>("claude-dock-close").Press(); Assert.False(w.ClaudeDockOpen(w.ActiveWindowId!)); Assert.Null(w.TryFind<Grid>("claude-split"));
-            MainWindow.ClaudeStatusOverride = () => St(true, false); await Run(w.ClaudeCheck(true));
-            w.Find<Button>("auftrag-claude").Press(); Assert.NotNull(w.TryFind<Button>("claude-dock-login"));
-            w.Find<Button>("claude-dock-close").Press();
-            MainWindow.ClaudeStatusOverride = () => St(true, true); await Run(w.ClaudeCheck(true));
-            w.Find<Button>("auftrag-claude").Press();
-            Assert.Contains("Testmodus", string.Join("|", w.GetLogicalTexts()));
-            Assert.Null(w.TryFind<TerminalControl>("claude-term")); // im Testmodus startet kein echtes Claude
-            Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.dock");
-            // Reiter „Claude“: erst einmal anmelden, danach eigener Chat je Studio (im Testmodus wird nichts geladen)
-            var win = w.ActiveWindowId!;
-            Assert.Equal("code", w.ClaudeDockTab(win));
-            w.Find<Button>("claude-tab-web").Press();
-            Assert.Equal("web", w.ClaudeDockTab(win)); Assert.True(w.Find<Border>("claude-web-pane").IsVisible);
-            Assert.Equal(ClaudeWeb.Login, w.ClaudeDockWebUrl(win));
-            Assert.NotNull(w.TryFind<Button>("claude-web-login")); Assert.Null(w.TryFind<Button>("claude-web-copy"));
-            w.ClaudeWebNavigated("https://claude.ai/login"); Assert.False(w.CWeb.Connected);
-            w.ClaudeWebNavigated("https://claude.ai/new"); Assert.True(w.CWeb.Connected); // angemeldet
-            Assert.StartsWith("✓ Mit Claude verbunden", w.Find<TextBlock>("claude-web-state").Text);
-            w.ClaudeWebNavigated("https://claude.ai/chat/0f3a9c2e-1111-2222-3333-444455556666");
-            Assert.Equal("https://claude.ai/chat/0f3a9c2e-1111-2222-3333-444455556666", w.CWeb.StartUrl("X-03"));
+            w.Show("baukasten");
             w.Find<TextBox>("auftrag-prompt").Text = "Baue eine Kontaktseite";
-            var first = await w.ClaudeWebCopy(); // nur Zwischenablage – Trendo bedient claude.ai nie selbst
-            Assert.StartsWith("[Trendo OS · Studio „", first); Assert.EndsWith("Mein Auftrag: Baue eine Kontaktseite", first);
-            Assert.Equal(first, w.LastClipboardText); Assert.StartsWith("Kopiert", w.Find<TextBlock>("claude-web-msg").Text);
-            Assert.Equal("Und die Farben", await w.ClaudeWebCopy("Und die Farben"));
+            w.Find<Button>("auftrag-claude").Press();
+            var win = w.ActiveWindowId!;
+            Assert.True(w.ClaudeDockOpen(win)); Assert.NotNull(w.TryFind<Grid>("claude-split"));
+            Assert.Null(w.LastClipboardText); // nichts kopiert – man tippt direkt in Claude
+            Assert.Equal("chat", w.ClaudeDockTab(win)); // startet mit dem Claude-Chat; claude.ai ist der zweite Reiter
+            w.Find<Button>("claude-tab-web").Press(); Assert.Equal("web", w.ClaudeDockTab(win));
+            Assert.True(w.ClaudeDockIsMax(win)); Assert.Equal("⤡ Studio zeigen", w.Find<Button>("claude-dock-max").Content);
+            Assert.Null(w.TryFind<Button>("claude-tab-code")); Assert.Contains("Testmodus", string.Join("|", w.GetLogicalTexts()));
+            w.Find<Button>("claude-dock-max").Press(); Assert.False(w.ClaudeDockIsMax(win)); Assert.Equal("⤢ Groß", w.Find<Button>("claude-dock-max").Content);
+            w.Find<Button>("claude-dock-max").Press(); Assert.True(w.ClaudeDockIsMax(win));
+            var pane = w.Find<Border>("claude-web-pane");
+            w.Show("baukasten"); w.Show("baukasten"); Assert.Same(pane, w.Find<Border>("claude-web-pane")); // Neuzeichnen lädt claude.ai nicht neu
+
+            // einmal anmelden – Anmeldelink aus der E-Mail nur von claude.ai
+            Assert.Equal(ClaudeWeb.Login, w.ClaudeDockWebUrl(win));
+            Assert.NotNull(w.TryFind<Button>("claude-web-login")); Assert.Null(w.TryFind<Button>("claude-newproj-go"));
+            w.Find<TextBox>("claude-web-link").Text = "https://boese.example/claude.ai"; w.Find<Button>("claude-web-link-open").Press();
+            Assert.Contains("kein Anmeldelink", w.Find<TextBlock>("claude-web-link-msg").Text); Assert.Equal(ClaudeWeb.Login, w.ClaudeDockWebUrl(win));
+            w.Find<TextBox>("claude-web-link").Text = "https://claude.ai/magic-link#abc123"; w.Find<Button>("claude-web-link-open").Press();
+            Assert.Equal("https://claude.ai/magic-link#abc123", w.ClaudeDockWebUrl(win));
+            w.ClaudeWebNavigated("https://claude.ai/login"); Assert.False(w.CWeb.Connected);
+            w.ClaudeWebNavigated("https://claude.ai/new"); Assert.True(w.CWeb.Connected);
+            Assert.Contains("Leg links ein Projekt an", w.Find<TextBlock>("claude-web-state").Text);
+
+            // Projekt anlegen: Name in Trendo, Anweisungen (Rolle, Fachregeln, Fachgebiet) einmal bereit, Projekte von Claude offen
+            w.Find<TextBox>("claude-newproj-name").Text = "Kontaktformular";
+            w.Find<Button>("claude-newproj-go").Press(); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            Assert.Contains("ausschließlich für das Studio", w.LastClipboardText); Assert.Contains("Apps zusammenklicken", w.LastClipboardText);
+            Assert.Equal(ClaudeWeb.Projects, w.ClaudeDockWebUrl(win)); Assert.StartsWith("Neues Projekt „Kontaktformular“", w.Find<TextBlock>("claude-web-state").Text);
+            w.ClaudeWebNavigated("https://claude.ai/project/0f3a9c2e-1111-2222-3333-444455556666");
+            Assert.Equal("0f3a9c2e-1111-2222-3333-444455556666", w.CWeb.ProjectOf("X-03"));
+            Assert.StartsWith("✓ Projekt „Kontaktformular“", w.Find<TextBlock>("claude-web-msg").Text);
+            Assert.Contains("Kontaktformular", string.Join("|", w.GetLogicalTexts()));
+            Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.web.projekt");
+
+            // fremdes Projekt nicht von selbst, aber übernehmbar; fortsetzen öffnet das Projekt
+            w.ClaudeWebNavigated("https://claude.ai/project/eeeeeeee-1111-2222-3333-444455556666");
+            Assert.Single(w.CWeb.ProjectsOf("X-03"));
+            w.Find<Button>("claude-proj-take").Press(); Assert.Equal(2, w.CWeb.ProjectsOf("X-03").Count);
+            w.Find<Button>("claude-proj-1").Press(); Assert.StartsWith("https://claude.ai/project/", w.ClaudeDockWebUrl(win));
+            w.Find<Button>("claude-web-chat").Press(); Assert.StartsWith("https://claude.ai/project/", w.ClaudeDockWebUrl(win)); // neuer Chat im Projekt
+            w.Find<Button>("claude-proj-del-0").Press(); Assert.Single(w.CWeb.ProjectsOf("X-03"));
+            Assert.Contains("aus der Liste entfernt", w.Find<TextBlock>("claude-web-msg").Text);
             w.Find<Button>("claude-web-code").Press(); Assert.Equal(MainWindow.ClaudeWebCode, w.ClaudeDockWebUrl(win));
-            w.Find<Button>("claude-tab-code").Press(); Assert.False(w.Find<Border>("claude-web-pane").IsVisible);
-            // KI-Seite zeigt die Verbindung
+
+            // Trendo-Agent als zweiter Reiter; Schließen
+            w.Find<Button>("claude-tab-agent").Press(); Assert.False(w.Find<Border>("claude-web-pane").IsVisible);
+            w.Find<Button>("claude-dock-close").Press(); Assert.False(w.ClaudeDockOpen(win)); Assert.Null(w.TryFind<Grid>("claude-split"));
+
+            // KI-Seite zeigt die Verbindung; Trennen meldet wirklich ab
             w.Show("ki-quellen"); Assert.StartsWith("✓ Claude im Web verbunden", w.Find<TextBlock>("claude-web-connected").Text);
             w.Find<Button>("claude-web-disconnect").Press(); Assert.False(w.CWeb.Connected);
+            Assert.Equal("claude-verbinden", w.CurrentView); Assert.Equal(ClaudeWeb.Logout, w.ClaudeConnectUrl);
             w.Show("ki-quellen"); w.Find<Button>("claude-web-connect").Press(); Assert.Equal("claude-verbinden", w.CurrentView);
             Assert.NotNull(w.TryFind<Border>("claude-connect-web"));
-            Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.web");
+            w.Find<TextBox>("claude-connect-link").Text = "https://claude.ai/magic-link#xyz"; w.Find<Button>("claude-connect-link-open").Press();
+            Assert.Equal("https://claude.ai/magic-link#xyz", w.ClaudeConnectUrl);
+            Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.dock");
         }
-        finally { MainWindow.ClaudeStatusOverride = null; w.Close(); }
+        finally { w.Close(); }
     }
 
-    [AvaloniaFact(DisplayName = "Claude im Studio: echtes Terminal im Projektordner, Auftrag als Eingabe, Fläche bleibt beim Neuzeichnen dieselbe, Fenster schließen beendet sie")]
-    public async Task Terminal_runs()
+    [AvaloniaFact(DisplayName = "Claude im Studio: Fenster schließen schließt Claude")]
+    public void Window_close()
     {
         var (w, _, _) = Ui.Open();
-        MainWindow.ClaudeTerminalOverride = ("cmd.exe", ["/k", "echo TRENDO-TERMINAL"]);
         try
         {
             w.Show("baukasten"); var win = w.ActiveWindowId!;
             w.Find<Button>("auftrag-claude").Press();
-            var term = w.ClaudeDockTerminal(win)!; Assert.NotNull(term);
-            for (var i = 0; i < 100 && !term.IsLive; i++) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); await Task.Delay(20); }
-            Assert.True(term.IsLive, $"vorlage={term.Template is not null} imBaum={term.IsAttachedToVisualTree()} groesse={term.Bounds} sichtbar={term.IsEffectivelyVisible} pid={term.Pid} meldung={w.ClaudeMessage}");
-            Assert.True(Directory.Exists(w.ClaudeFolderFor("X-03")));
-            w.Show("baukasten"); w.Show("baukasten"); // Neuzeichnen
-            Assert.Same(term, w.ClaudeDockTerminal(win)); Assert.True(term.IsLive);
-            w.ClaudeDockSelectTab("web"); w.ClaudeDockSelectTab("code"); Assert.True(term.IsLive); // Reiterwechsel beendet Claude Code nicht
-            var typed = await w.ClaudeDockType("echo ZWEITE\nZEILE"); // nur eintippen – Enter drückt der Nutzer
-            Assert.Equal("echo ZWEITE ZEILE", typed); Assert.DoesNotContain('\r', typed!); Assert.DoesNotContain('\n', typed!);
-            w.CloseWindow(win);
-            Assert.False(w.ClaudeDockOpen(win));
-            await Until(() => !term.IsLive);
+            w.CloseWindow(win); Assert.False(w.ClaudeDockOpen(win));
         }
-        finally { MainWindow.ClaudeTerminalOverride = null; w.Close(); }
+        finally { w.Close(); }
     }
 }

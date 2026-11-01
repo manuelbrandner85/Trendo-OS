@@ -384,8 +384,8 @@ public partial class MainWindow
             buttons.Children.Add(add);
         }
         // Wunsch 01.11.2026: in jedem Studio – dein echtes Claude Code rechts im Studio-Fenster, im Projektordner, mit dem eingetippten Auftrag
-        var cc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } aw && ClaudeDockOpen(aw) ? "Claude Code ✕" : "✳ Claude Code", Height = 32 };
-        ToolTip.SetTip(cc, "Dein Claude Code (mit deinem Abo) rechts in diesem Fenster öffnen – im Projektordner, mit Rolle und Skills dieses Studios");
+        var cc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } aw && ClaudeDockOpen(aw) ? "Claude ✕" : "✳ Claude", Height = 32 };
+        ToolTip.SetTip(cc, "Claude mit deinem Abo öffnen – wie im Web und in der App, mit eigenem Projekt für dieses Studio");
         cc.Click += (_, _) => ClaudeDockToggle(studio, box.Text);
         buttons.Children.Add(cc);
         var spark = new TextBlock { Text = "✨", FontSize = 16, VerticalAlignment = VerticalAlignment.Center, Margin = new Avalonia.Thickness(4, 0, 0, 0) };

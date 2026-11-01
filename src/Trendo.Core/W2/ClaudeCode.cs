@@ -11,7 +11,7 @@ namespace Trendo.Core;
 /// fremde Einstellungsdateien aus) und <c>--strict-mcp-config</c> (keine fremden Erweiterungen). Kostenpflichtige KI bleibt optional – ohne Claude arbeitet der Trendo-Agent.</summary>
 public static partial class ClaudeCode
 {
-    /// <summary>Nur das Claude-Abo zählt (Vorgabe 01.11.2026): Anmeldung über claude.ai oder ein Abo-Token. Console/API-Schlüssel gelten als nicht verbunden.</summary>
+    /// <summary>Nur das Claude-Abo zählt (Vorgabe 01.11.2026): Anmeldung über claude.ai. Console/API-Schlüssel gelten als nicht verbunden.</summary>
     public sealed record Status(bool Installed, bool LoggedIn, string Method, string Plan, string? Exe)
     {
         public bool Subscription => LoggedIn && Method is "claude.ai" or "oauth_token" or "abo-token";
@@ -40,11 +40,12 @@ public static partial class ClaudeCode
     public static readonly string[] ApiVariables = ["ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BASE_URL", "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY",
         "ANTHROPIC_BEDROCK_BASE_URL", "ANTHROPIC_VERTEX_PROJECT_ID", "ANTHROPIC_PROFILE", "ANTHROPIC_FEDERATION_RULE_ID", "ANTHROPIC_ORGANIZATION_ID", "ANTHROPIC_IDENTITY_TOKEN_FILE"];
 
-    /// <summary>Anthropic erlaubt Drittprodukten ohne vorherige Freigabe nicht, claude.ai-Anmeldung oder Abo-Kontingente anzubieten (Agent-SDK-Dokumentation,
-    /// Stand 01.11.2026). Bis eine schriftliche Freigabe vorliegt, nutzt Trendo das Abo NICHT eingebettet im Hintergrund (keine Haupt-KI, keine Läufe aus Trendo heraus),
-    /// sondern öffnet das echte Claude Code sichtbar, in dem der Nutzer selbst arbeitet (Entscheidung des Projektinhabers, 01.11.2026: „Echtes Claude Code öffnen“, keine Anfrage an Anthropic).
-    /// Der eingebettete Weg bleibt im Code (getestet), ist aber gesperrt; umschalten nur mit eigenem Auftrag und Freigabe.</summary>
-    public const bool EmbeddingApproved = false;
+    /// <summary>Claude Code aus Trendo heraus nutzen (Entscheidung des Projektinhabers, 01.11.2026, nach Recherche): Anthropic erlaubt, dass ein Produkt das
+    /// unveränderte Claude-Code-Programm mitbenutzt, wenn sich jeder Nutzer selbst über Anthropics eigene Anmeldung mit seinem Abo anmeldet
+    /// (code.claude.com/docs/en/legal-and-compliance); „claude -p“ und Drittprogramme zählen dann auf das Abo-Kontingent (support.claude.com, Artikel 15036540, Stand 07.10.2026).
+    /// Verboten bleiben: claude.ai-Anmeldung in Trendo anbieten, Anmeldedaten oder Tokens sammeln/speichern/weiterreichen, Nutzung für andere bezahlen oder vermitteln.
+    /// Deshalb: Trendo startet nur das installierte Claude Code, angemeldet wird mit „claude auth login“, Trendo speichert keine Tokens; jede Person hat ihre eigene Anmeldung.</summary>
+    public const bool EmbeddingApproved = true;
 
     /// <summary>Argumente, um das echte Claude Code sichtbar (interaktiv) im Projektordner zu öffnen – mit Auftrag und Rolle des Programms. Kein -p: der Nutzer arbeitet selbst darin.</summary>
     public static IReadOnlyList<string> OpenArgs(string? prompt, string? system)
@@ -54,24 +55,14 @@ public static partial class ClaudeCode
         if (prompt is { Length: > 0 } && prompt.Trim().Length > 0) a.Add(prompt.Trim());
         return a;
     }
-    /// <summary>Abo-Token aus <c>claude setup-token</c> (optional) – Claude Code liest ihn aus dieser Variablen; abgerechnet wird über das Abo.</summary>
+    /// <summary>Token-Variable von Claude Code – Trendo setzt sie nie und entfernt sie für jeden Lauf (Anmeldung nur über Anthropics eigenen Ablauf, keine Tokens in Trendo).</summary>
     public const string TokenVariable = "CLAUDE_CODE_OAUTH_TOKEN";
 
-    /// <summary>Umgebung für Claude Code im Terminal von Trendo: Variablen der kostenpflichtigen API leer (gelten dann als nicht gesetzt – nur Abo),
-    /// ein gespeicherter Abo-Token als <see cref="TokenVariable"/>, sonst ebenfalls leer.</summary>
-    public static Dictionary<string, string> TerminalEnvironment(string? aboToken)
-    {
-        var env = ApiVariables.ToDictionary(v => v, _ => "");
-        env[TokenVariable] = aboToken is { Length: > 0 } t && LooksLikeAboToken(t) ? t : "";
-        return env;
-    }
+    /// <summary>Eigene Claude-Code-Anmeldung je Trendo-Person: Claude Code liest sie aus <see cref="ConfigVariable"/>. Die Hauptperson nutzt die normale
+    /// Anmeldung des Windows-Kontos; jede weitere Person bekommt einen eigenen Ordner in ihrem Datenordner (sonst wäre sie mit dem Claude der Hauptperson verbunden).</summary>
+    public const string ConfigVariable = "CLAUDE_CONFIG_DIR";
+    public static string? PersonConfigDir(string dataRoot) => PersonStore.IdOf(dataRoot) is null ? null : Path.Combine(dataRoot, "claude-code");
 
-    /// <summary>Auftrag als eine Eingabezeile ohne Zeilenumbruch – ein Umbruch würde in Claude Code absenden, das tut nur der Nutzer.</summary>
-    public static string OneLine(string text) => System.Text.RegularExpressions.Regex.Replace(text.Trim(), @"\s*[\r\n]+\s*", " ");
-
-    /// <summary>Sieht ein eingefügter Text wie ein Abo-Token von <c>claude setup-token</c> aus (nicht wie ein API-Schlüssel)?</summary>
-    public static bool LooksLikeAboToken(string t) => Regex.IsMatch(t.Trim(), @"^sk-ant-oat\d{2}-[A-Za-z0-9_-]{20,}$");
-    public static bool LooksLikeApiKey(string t) => t.Trim().StartsWith("sk-ant-api", StringComparison.Ordinal);
 
     /// <summary>Antwort von <c>claude auth status --json</c> lesen. Nur die nötigen Felder; E-Mail und Organisation werden bewusst ignoriert.</summary>
     public static Status ParseStatus(string exe, string json)
@@ -85,8 +76,9 @@ public static partial class ClaudeCode
         catch (JsonException) { return new(true, false, "", "", exe); }
     }
 
-    /// <summary>Plan: lesen und planen; Build: freigegebenen Plan umsetzen; Reply: Antwort auf eine Rückfrage in derselben Sitzung; Ask: Frage beantworten (Haupt-KI in jedem Programm).</summary>
-    public enum Phase { Plan, Build, Reply, Ask }
+    /// <summary>Plan: lesen und planen; Build: freigegebenen Plan umsetzen; Reply: Antwort auf eine Rückfrage in derselben Sitzung; Ask: Frage beantworten (Haupt-KI in jedem Programm);
+    /// Chat: Gespräch im Claude-Bereich eines Studios wie in Claude – liest und ändert Dateien im Projektordner, Fortsetzung über die Sitzung.</summary>
+    public enum Phase { Plan, Build, Reply, Ask, Chat }
 
     /// <summary>Sicher (Standard) oder volle Claude-Funktionen (je Projekt freigegeben): Befehle, Web, eigene Skills/Plugins/MCP, Unteragenten – Rechte über Claude Codes Auto-Modus.</summary>
     public enum Level { Sicher, Voll }
