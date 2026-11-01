@@ -292,18 +292,41 @@ public partial class MainWindow
     public char GameTile { get; set; } = '#';
     public LevelCanvas? GameLevelForTests { get; private set; }
 
-    private Control GameLevel(ProgramDocument d)
+    // ---------- Spiel-Editor (Masterprompt 131, Runde 7): Objekte auswählen, Eigenschaften, Probespielen im Fenster ----------
+    public (int X, int Y)? GameObjSel { get; set; }
+    PlatformSim? _gamePlay;
+    public PlatformSim? GamePlaytest => _gamePlay;
+    public PlaytestCanvas? GamePlaytestCanvas { get; private set; }
+    static List<string> GameRows(ProgramDocument d)
     {
         var rows = d.List("level").Select(x => x?.GetValue<string>() ?? "").Where(x => x.Length > 0).ToList();
         var kind = d.Text("browser");
-        if (rows.Count == 0) rows = [.. kind == "plattform" ? GameStudio.DefaultPlatform : kind == "breakout" ? GameStudio.DefaultBreakout : GameStudio.DefaultJump];
+        return rows.Count > 0 ? rows : [.. kind == "plattform" ? GameStudio.DefaultPlatform : kind == "breakout" ? GameStudio.DefaultBreakout : GameStudio.DefaultJump];
+    }
+    static Dictionary<string, double> GameProps(ProgramDocument d) =>
+        (d.Data["objects"] as JsonObject ?? []).Where(kv => kv.Value is JsonValue).ToDictionary(kv => kv.Key, kv => ProgramDocument.ToNumber(kv.Value));
+    /// <summary>Probespiel starten (öffentlich für Tests und die KI).</summary>
+    public void GamePlayHere(ProgramDocument d)
+    {
+        var rows = GameRows(d);
+        if (GameStudio.CheckPlatform(rows) is { Count: > 0 } w && w.Any(x => x.StartsWith("Kein"))) throw new InvalidOperationException(w.First(x => x.StartsWith("Kein")));
+        _gamePlay = new PlatformSim(rows, (int)d.Number("speed", 5), (int)d.Number("lives", 3), GameProps(d));
+        _core.Audit.Append(Principal.LocalOwner.Name, "game.playtest", d.Text("title"));
+    }
+
+    private Control GameLevel(ProgramDocument d)
+    {
+        var rows = GameRows(d);
+        var kind = d.Text("browser");
+        if (kind == "plattform" && _gamePlay is not null) return GamePlayView(d);
         var tiles = kind == "plattform"
-            ? new (char Ch, string Id, string Label)[] { ('#', "boden", "Boden"), ('o', "muenze", "Münze"), ('E', "gegner", "Gegner"), ('^', "stacheln", "Stacheln"), ('S', "start", "Start"), ('Z', "ziel", "Ziel"), ('.', "radierer", "Radierer") }
+            ? new (char Ch, string Id, string Label)[] { (LevelCanvas.PickTool, "auswahl", "⬚ Auswählen"), ('#', "boden", "Boden"), ('o', "muenze", "Münze"), ('E', "gegner", "Gegner"), ('^', "stacheln", "Stacheln"), ('S', "start", "Start"), ('Z', "ziel", "Ziel"), ('.', "radierer", "Radierer") }
             : [('#', "boden", kind == "breakout" ? "Stein" : "Hindernis"), ('.', "radierer", "Radierer")];
         if (!tiles.Any(t => t.Ch == GameTile)) GameTile = '#';
-        var canvas = new LevelCanvas { Name = "game-level", Rows = rows, Tile = GameTile, Cell = kind == "jump" ? 18 : 22 };
+        var canvas = new LevelCanvas { Name = "game-level", Rows = rows, Tile = GameTile, Cell = kind == "jump" ? 18 : 22, Selected = GameObjSel };
         GameLevelForTests = canvas;
         canvas.LevelChanged = l => ProgramRun(GK, () => d.Set("level", new JsonArray([.. l.Select(x => (JsonNode)x)]), "Level malen"));
+        canvas.Picked = (x, y) => { GameObjSel = (x, y); Show(GK); };
         var palette = new WrapPanel { Name = "game-tiles" };
         foreach (var (ch, id, label) in tiles)
         {
@@ -320,17 +343,92 @@ public partial class MainWindow
         });
         var more = new Button { Name = "game-level-wider", Content = "＋ 10 Spalten" }; more.Click += (_, _) => Resize(10);
         var less = new Button { Name = "game-level-narrower", Content = "－ 10 Spalten" }; less.Click += (_, _) => Resize(-10);
-        var test = new Button { Name = "game-level-test", Content = "▶ Testen", Background = Accent, Foreground = Brushes.White };
+        var test = new Button { Name = "game-level-test", Content = kind == "plattform" ? "Im Browser testen" : "▶ Testen" };
+        if (kind != "plattform") { test.Background = Accent; test.Foreground = Brushes.White; }
         test.Click += (_, _) => ProgramRun(GK, () => { if (d.List("level").Count == 0) d.Set("level", new JsonArray([.. rows.Select(x => (JsonNode)x)]), "Level"); GameBuild(d); GamePlay(d); });
+        var tools = new WrapPanel { Children = { palette, new Border { Width = 12 }, more, new Border { Width = 4 }, less, new Border { Width = 12 } } };
+        if (kind == "plattform")
+        {
+            var play = new Button { Name = "game-level-play", Content = "▶ Im Fenster spielen", Background = Accent, Foreground = Brushes.White, Margin = new Thickness(0, 0, 4, 0) };
+            play.Click += (_, _) => ProgramRun(GK, () => GamePlayHere(d));
+            tools.Children.Add(play);
+        }
+        tools.Children.Add(test);
         var hints = new StackPanel { Name = "game-level-hints", Spacing = 2 };
         foreach (var h in kind == "plattform" ? GameStudio.CheckPlatform(rows) : []) hints.Children.Add(P("⚠ " + h, Brush.Parse("#F5A524"), 12));
-        if (hints.Children.Count == 0 && kind == "plattform") hints.Children.Add(P("✓ Start, Ziel und Boden sind da – „Testen“ baut das Spiel und startet es.", Brush.Parse("#2FBF71"), 12));
+        if (hints.Children.Count == 0 && kind == "plattform") hints.Children.Add(P("✓ Start, Ziel und Boden sind da – „Im Fenster spielen“ startet sofort, „Im Browser testen“ baut das fertige Spiel.", Brush.Parse("#2FBF71"), 12));
         var stats = string.Concat(rows);
-        var info = P(kind == "plattform" ? $"{rows.Max(x => x.Length)} × {rows.Count} Kacheln · {stats.Count(ch => ch == 'o')} Münzen · {stats.Count(ch => ch == 'E')} Gegner · {stats.Count(ch => ch == '^')} Stacheln" : $"{rows.Max(x => x.Length)} × {rows.Count} Kacheln", Muted, 12);
+        var info = P(kind == "plattform" ? $"{rows.Max(x => x.Length)} × {rows.Count} Kacheln · {stats.Count(ch => ch == 'o')} Münzen · {stats.Count(ch => ch == 'E')} Gegner · {stats.Count(ch => ch == '^')} Stacheln" : $"{rows.Max(x => x.Length)} × {rows.Count} Kacheln", Muted, 11.5);
+        Control scene = new ScrollViewer { Content = canvas, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Disabled, MaxHeight = 16 * 22 + 20 };
+        if (kind == "plattform")
+            scene = new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,260"), Children = { scene, Pos(GameObjPanel(d, rows), 2) } };
         return new StackPanel { Spacing = 8, Children = {
-            new WrapPanel { Children = { palette, new Border { Width = 12 }, more, new Border { Width = 4 }, less, new Border { Width = 12 }, test } },
-            new TextBlock { Text = "Linke Maustaste malt (auch ziehen), rechte radiert. Jeder Strich ist ein Schritt im Rückgängig.", Foreground = Muted, FontSize = 11.5 },
-            new ScrollViewer { Content = canvas, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Disabled, MaxHeight = 16 * 22 + 20 },
-            info, hints } };
+            tools,
+            new TextBlock { Text = kind == "plattform" ? "Linke Maustaste malt (auch ziehen), rechte radiert · „Auswählen“ zeigt rechts die Eigenschaften eines Objekts" : "Linke Maustaste malt (auch ziehen), rechte radiert. Jeder Strich ist ein Schritt im Rückgängig.", Foreground = Muted, FontSize = 11.5 },
+            scene, info, hints } };
+    }
+
+    /// <summary>Eigenschaften-Leiste: Spielregeln (Tempo, Leben) und das ausgewählte Objekt (Gegner-Tempo, Münzwert, Entfernen).</summary>
+    private Control GameObjPanel(ProgramDocument d, List<string> rows)
+    {
+        var sp = new StackPanel { Name = "game-obj-panel", Spacing = 6 };
+        void Num(string name, string label, double value, double min, double max, Action<double> set)
+        {
+            var t = new TextBox { Name = name, Text = value.ToString("0.##", De), Width = 70 };
+            void Commit() { if (double.TryParse(t.Text, System.Globalization.NumberStyles.Float, De, out var v) && Math.Abs(Math.Clamp(v, min, max) - value) > 1e-9) ProgramRun(GK, () => set(Math.Clamp(v, min, max))); }
+            t.LostFocus += (_, _) => Commit(); OnEnter(t, Commit);
+            sp.Children.Add(Row(P(label, Text, 12), t));
+        }
+        sp.Children.Add(H("Spielregeln", 13));
+        Num("game-set-speed", "Tempo (1–10)", d.Number("speed", 5), 1, 10, v => d.Set("speed", Math.Round(v), "Tempo"));
+        Num("game-set-lives", "Leben (1–9)", d.Number("lives", 3), 1, 9, v => d.Set("lives", Math.Round(v), "Leben"));
+        sp.Children.Add(H("Objekt", 13));
+        if (GameObjSel is not { } sel || sel.Y >= rows.Count || sel.X >= rows[sel.Y].Length)
+        {
+            sp.Children.Add(P("Werkzeug „Auswählen“ nehmen und ein Objekt im Level antippen.", Muted, 11.5));
+            return new Border { CornerRadius = new CornerRadius(12), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(10), VerticalAlignment = VerticalAlignment.Top, Child = sp };
+        }
+        var ch = rows[sel.Y][sel.X]; var key = $"{sel.X},{sel.Y}";
+        var (name, what) = ch switch
+        {
+            'E' => ("Gegner", "Läuft hin und her und kehrt an Wand oder Kante um. Draufspringen besiegt ihn."),
+            'o' => ("Münze", "Bringt Punkte."), '#' => ("Boden", "Fester Boden oder Wand."), '^' => ("Stacheln", "Kostet ein Leben."),
+            'S' => ("Start", "Hier beginnt die Figur."), 'Z' => ("Ziel", "Erreichen = geschafft (+10 Punkte)."), _ => ("Leer", "Hier ist nichts.")
+        };
+        sp.Children.Add(new TextBlock { Name = "game-obj-name", Text = $"{name} · Spalte {sel.X + 1}, Zeile {sel.Y + 1}", Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold });
+        sp.Children.Add(P(what, Muted, 11.5));
+        var props = GameProps(d);
+        void SetProp(string k, double v, string label) => d.Edit(label, x => { var o = x["objects"] as JsonObject ?? []; o[$"{key}:{k}"] = v; x["objects"] = o; });
+        if (ch == 'E') Num("game-obj-speed", "Tempo (× 0,25–4)", props.GetValueOrDefault(key + ":speed", 1), 0.25, 4, v => SetProp("speed", Math.Round(v, 2), "Gegner-Tempo"));
+        if (ch == 'o') Num("game-obj-value", "Wert (Punkte)", props.GetValueOrDefault(key + ":value", 1), 1, 100, v => SetProp("value", Math.Round(v), "Münzwert"));
+        if (ch != '.')
+        {
+            var del = Act("game-obj-del", "Entfernen", () => ProgramRun(GK, () =>
+            {
+                var l = rows.ToList(); var r = l[sel.Y].ToCharArray(); r[sel.X] = '.'; l[sel.Y] = new string(r);
+                d.Edit("Objekt entfernen", x => { x["level"] = new JsonArray([.. l.Select(y => (JsonNode)y)]); if (x["objects"] is JsonObject o) foreach (var k in o.Select(kv => kv.Key).Where(k => k.StartsWith(key + ":")).ToList()) o.Remove(k); });
+            }));
+            sp.Children.Add(del);
+        }
+        return new Border { CornerRadius = new CornerRadius(12), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(10), VerticalAlignment = VerticalAlignment.Top, Child = sp };
+    }
+
+    /// <summary>Probespiel im Fenster: Figur steuern, Punkte und Leben oben, „Nochmal“ und „Zurück zum Editor“.</summary>
+    private Control GamePlayView(ProgramDocument d)
+    {
+        var sim = _gamePlay!;
+        var status = new TextBlock { Name = "game-play-status", Foreground = GoldText(), FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) };
+        string Status() => sim.Won ? $"Geschafft! {sim.Score} Punkte" : sim.Lost ? $"Verloren – {sim.Score} Punkte" : $"Punkte {sim.Score} · Leben {sim.Lives} · {sim.Coins.Count(c => c.Taken)}/{sim.Coins.Count} Münzen";
+        status.Text = Status();
+        var canvas = new PlaytestCanvas { Name = "game-playtest", Sim = sim, Height = 360, HorizontalAlignment = HorizontalAlignment.Stretch };
+        GamePlaytestCanvas = canvas;
+        canvas.Ticked = () => status.Text = Status();
+        canvas.Stop = () => { _gamePlay = null; GamePlaytestCanvas = null; Show(GK); };
+        var again = Act("game-play-again", "↻ Nochmal", () => { _gamePlay = sim.Restart(); Show(GK); }, true);
+        var stop = Act("game-play-stop", "■ Zurück zum Editor", () => canvas.Stop());
+        return new StackPanel { Spacing = 8, Children = {
+            new WrapPanel { Children = { status, again, new Border { Width = 6 }, stop } },
+            new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = canvas },
+            P("← → oder A/D laufen · Leertaste, ↑ oder W springt · Esc zurück zum Editor · gleiche Regeln wie im gebauten Spiel", Muted, 11.5) } };
     }
 }

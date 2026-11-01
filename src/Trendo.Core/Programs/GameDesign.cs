@@ -158,7 +158,9 @@ public static class GameDesign
         var t = S(d["browser"]); if (t.Length == 0) throw new InvalidOperationException("Bitte zuerst die Spielart wählen (Hüpfspiel, Mauerbrecher, Schlange oder Plattformer).");
         var level = (d["level"] as JsonArray ?? []).Select(S).Where(r => r.Length > 0).ToArray();
         var dir = Path.Combine(parent, DevStudio.SafeName(S(d["title"])));
-        var settings = GameStudio.Validate(new GameStudio.GameSettings { Level = level });
+        static double? N(JsonNode? n) => n is JsonValue && double.TryParse(n.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : null;
+        var props = (d["objects"] as JsonObject ?? []).Where(kv => N(kv.Value) is not null).ToDictionary(kv => kv.Key, kv => N(kv.Value)!.Value);
+        var settings = GameStudio.Validate(new GameStudio.GameSettings { Level = level, Props = props, Speed = (int)(N(d["speed"]) ?? 5), Lives = (int)(N(d["lives"]) ?? 3) });
         if (Directory.Exists(dir)) { GameStudio.Save(dir, settings); return dir; }
         return GameStudio.CreateBrowserGame(parent, t, S(d["title"]), settings);
     }
