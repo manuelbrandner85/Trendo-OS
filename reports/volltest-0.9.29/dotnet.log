@@ -1,0 +1,57 @@
+  Wiederherzustellende Projekte werden ermittelt...
+  Alle Projekte sind f├╝r die Wiederherstellung auf dem neuesten Stand.
+  Trendo.Core -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Companion -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+  Trendo.Api -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.Api\bin\Release\net10.0\Trendo.Api.dll
+  Trendo.Api.Tests -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll
+Testlauf f├╝r "C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" (.NETCoreApp,Version=v10.0)
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\AssetLibraryTests.cs(30,42): warning CS8604: M├Âgliches Nullverweisargument f├╝r den Parameter "actualArray" in "void Assert.Equal<double>(ReadOnlySpan<double> expectedSpan, double[] actualArray)". [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\PdfOrganizeTests.cs(11,24): warning xUnit1013: Public method 'Make' on test class 'PdfOrganizeTests' should be marked as a Theory. Reduce the visibility of the method, or add a Theory attribute to the method. (https://xunit.net/xunit.analyzers/rules/xUnit1013) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\SafeFileTests.cs(21,20): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\SkillsTests.cs(62,47): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\Trendo.Core.Tests.csproj]
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster ├╝berein.
+  Trendo.Core.Tests -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf f├╝r "C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster ├╝berein.
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\MeasureGrid.cs(142,26): warning CS0108: "MeasureGrid.Clip(string, Typeface, double, IBrush, double)" blendet den vererbten Member "Visual.Clip" aus. Verwenden Sie das new-Schl├╝sselwort, wenn das Ausblenden vorgesehen war. [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\Trendo.App.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\EditTimeline.cs(81,99): warning CS0219: Die Variable "acc" ist zugewiesen, ihr Wert wird aber nie verwendet. [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\Trendo.App.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\ImageRender.cs(41,153): warning CS0618: "SKPaint.FilterQuality" ist veraltet: "Use SKSamplingOptions instead." [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\Trendo.App.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\ImageRender.cs(41,169): warning CS0618: "SKFilterQuality" ist veraltet: "Use SKSamplingOptions instead." [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\Trendo.App.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\MainWindow.Pim.cs(33,52): warning CS0649: Dem Feld "MainWindow._inboxAccountOpen" wird nie etwas zugewiesen, und es hat immer seinen Standardwert von "false". [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\Trendo.App.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\FrameCanvas.cs(36,45): warning CS0414: Dem Feld "FrameCanvas._mouse" wurde ein Wert zugewiesen, der aber nie verwendet wird. [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\Trendo.App.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\MainWindow.Spec06.cs(22,55): warning CS0414: Dem Feld "MainWindow._quizSeedKey" wurde ein Wert zugewiesen, der aber nie verwendet wird. [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\Trendo.App.csproj]
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-trx\voll\<user>_<pc>_2026-11-01_18_21_54_net10.0.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:    15, ├╝bersprungen:     0, gesamt:    15, Dauer: 3 s - Trendo.Api.Tests.dll (net10.0)
+  Trendo.App -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\bin\Release\net10.0\TrendoOS.dll
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\RoundSixUiTests.cs(95,77): warning CS8604: M├Âgliches Nullverweisargument f├╝r den Parameter "collection" in "string Assert.Single<string>(IEnumerable<string> collection)". [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\AddressBookUiTests.cs(34,28): warning xUnit2013: Do not use Assert.Equal() to check for collection size. Use Assert.Single instead. (https://xunit.net/xunit.analyzers/rules/xUnit2013) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\DiskMapUiTests.cs(26,24): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\LevelEditorUiTests.cs(66,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\MpvAudioTests.cs(29,57): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\MpvAudioTests.cs(31,33): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\MpvAudioTests.cs(31,72): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\MpvAudioTests.cs(33,59): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\NotizWikiUiTests.cs(45,47): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+  Trendo.App.Tests -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll
+Testlauf f├╝r "C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster ├╝berein.
+[xUnit.net 00:00:10.22]     Musik-KI live: Paket pr├╝fen, entpacken, Server starten, 30 s Lied erzeugen [SKIP]
+  ├£bersprungen Musik-KI live: Paket pr├╝fen, entpacken, Server starten, 30 s Lied erzeugen [1 ms]
+[xUnit.net 00:01:42.37]     X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku [SKIP]
+  ├£bersprungen X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku [1 ms]
+[xUnit.net 00:01:44.38]     SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt [SKIP]
+[xUnit.net 00:01:44.38]     SYS-10-P08 (T-0244 getrennt): Scan ÔåÆ durchsuchbares PDF mit Tesseract [SKIP]
+  ├£bersprungen SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt [1 ms]
+  ├£bersprungen SYS-10-P08 (T-0244 getrennt): Scan ÔåÆ durchsuchbares PDF mit Tesseract [1 ms]
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-trx\voll\<user>_<pc>_2026-11-01_18_21_55_net10.0.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:  1060, ├╝bersprungen:     3, gesamt:  1063, Dauer: 3 m 57 s - Trendo.Core.Tests.dll (net10.0)
+[xUnit.net 00:29:58.81]     SYS-03-P14: Seite als PDF ÔÇô A4, Pr├╝fsumme im Protokoll (nur wenn Chrome/Edge da) [SKIP]
+  ├£bersprungen SYS-03-P14: Seite als PDF ÔÇô A4, Pr├╝fsumme im Protokoll (nur wenn Chrome/Edge da) [1 ms]
+[xUnit.net 00:40:26.26]     T-0202: Kein Klick auf irgendeiner Seite st├╝rzt ab (Klick-Audit, Bericht der stummen Kn├Âpfe) [SKIP]
+  ├£bersprungen T-0202: Kein Klick auf irgendeiner Seite st├╝rzt ab (Klick-Audit, Bericht der stummen Kn├Âpfe) [1 ms]
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-trx\voll\<user>_<pc>_2026-11-01_18_22_39_net10.0.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:   545, ├╝bersprungen:     3, gesamt:   548, Dauer: 47 m 37 s - Trendo.App.Tests.dll (net10.0)
+EXIT dotnet=0
