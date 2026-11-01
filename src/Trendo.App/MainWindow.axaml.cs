@@ -1019,6 +1019,7 @@ public sealed partial class MainWindow : Window
             }
         }
         AddGitHubPrograms(sp);
+        AddSourcePrograms(sp);
         var re = new Button { Name = "btn-deps-recheck", Content = "Neu prüfen" }; re.Click += (_, _) => { ReloadStudios(); Show("components"); };
         sp.Children.Add(re);
         return Page("Zusatzprogramme", sp);

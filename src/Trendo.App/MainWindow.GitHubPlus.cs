@@ -30,7 +30,11 @@ public partial class MainWindow
         await Task.WhenAll(todo.Select(async r =>
         {
             await gate.WaitAsync();
-            try { var rel = await GitHubLatestOrEmpty(r, CancellationToken.None); _ossAvail[r] = GitHubApps.Availability(rel, Arm64, Has7z); }
+            try
+            {
+                var rel = await GitHubLatestOrEmpty(r, CancellationToken.None); _ossAvail[r] = GitHubApps.Availability(rel, Arm64, Has7z);
+                if (_ossAvail[r].Kind != "windows") await SourceDetect(r); // T-0314: gleich sagen, ob es trotzdem läuft
+            }
             catch (Exception ex) when (ex is not OutOfMemoryException) { if (ex.Message.Contains("60 Abfragen")) _w45Msg = ex.Message; }
             finally { gate.Release(); _ossAvailBusy.Remove(r); }
         }));

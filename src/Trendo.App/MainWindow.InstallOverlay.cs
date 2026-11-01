@@ -186,6 +186,7 @@ public partial class MainWindow
     /// <summary>Fortschritt als Anteil 0…1 (z. B. nach geladenen Bytes) mit echtem Prozentwert.</summary>
     private void SetupOverlayFraction(double value, string text)
     {
+        if (SetupFinishShown) return; // verspätete Fortschrittsmeldung (aus dem Hintergrund) überschreibt nie das Ergebnis
         _setupStep.Text = text; _setupBar.IsIndeterminate = false;
         var v = Math.Clamp(value, 0, 1); _setupBar.Value = v; _setupPercent.Text = $"{v:P0}";
     }

@@ -54,7 +54,7 @@ public class GitHubPlus_Ui
             Assert.StartsWith("Nur Quellcode", w.OssAvailability["avail-src/b"].Text); Assert.StartsWith("Noch keine Veröffentlichung", w.OssAvailability["avail-none/c"].Text);
             w.Show("oss"); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
             Assert.Equal("✓ Windows-Programm · v3.1 · 45 MB", ((TextBlock)w.Find<Border>("oss-avail-0").Child!).Text);
-            Assert.True(w.Find<Button>("oss-install-0").IsEnabled); Assert.False(w.Find<Button>("oss-install-1").IsEnabled); Assert.False(w.Find<Button>("oss-install-2").IsEnabled);
+            Assert.True(w.Find<Button>("oss-install-0").IsEnabled); Assert.Null(w.TryFind<Button>("oss-install-1")); Assert.Null(w.TryFind<Button>("oss-install-2")); // nur Quellcode: statt ausgegrautem Knopf der Weg über den Quellcode (T-0314)
         }
         finally { MainWindow.GitHubHandlerOverride = null; }
     }
