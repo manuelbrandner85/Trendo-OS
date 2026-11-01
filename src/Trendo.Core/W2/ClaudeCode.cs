@@ -43,23 +43,32 @@ public static partial class ClaudeCode
         catch (JsonException) { return new(true, false, "", "", exe); }
     }
 
-    public enum Phase { Plan, Build, Reply }
+    /// <summary>Plan: lesen und planen; Build: freigegebenen Plan umsetzen; Reply: Antwort auf eine Rückfrage in derselben Sitzung; Ask: Frage beantworten (Haupt-KI in jedem Programm).</summary>
+    public enum Phase { Plan, Build, Reply, Ask }
+
+    /// <summary>Sicher (Standard) oder volle Claude-Funktionen (je Projekt freigegeben): Befehle, Web, eigene Skills/Plugins/MCP, Unteragenten – Rechte über Claude Codes Auto-Modus.</summary>
+    public enum Level { Sicher, Voll }
 
     public const string PlanRule = "Arbeite wie Claude Code, aber in Trendo OS. Phase 1: Lies dir das Projekt an, was du brauchst, und ändere NICHTS. " +
         "Antworte mit einem kurzen Plan als nummerierte Liste (eine Zeile je Schritt, deutsch, verständlich). Ist etwas unklar, stelle am Ende genau eine Frage, die man mit Ja oder Nein beantworten kann.";
+    public const string AskRule = "Du bist die Haupt-KI in Trendo OS. Antworte auf Deutsch, klar und hilfreich. Ändere keine Dateien.";
     public const string BuildRule = "Der Plan ist freigegeben. Setze ihn jetzt Schritt für Schritt um, führe eine Aufgabenliste (TodoWrite) und arbeite nur im Projektordner. Fasse am Ende in zwei Sätzen zusammen, was du geändert hast.";
 
     /// <summary>Argumente für einen Lauf. Plan: Datei-Änderungen gesperrt. Build/Reply: dieselbe Sitzung fortsetzen, Änderungen im Projektordner erlaubt.
     /// <paramref name="system"/>: Rolle und Skills des Programms. <paramref name="model"/>: nur wenn der Nutzer eins gewählt hat.</summary>
-    public static IReadOnlyList<string> Args(string prompt, Phase phase, string? session = null, string? system = null, string? model = null)
+    public static IReadOnlyList<string> Args(string prompt, Phase phase, string? session = null, string? system = null, string? model = null, Level level = Level.Sicher)
     {
-        if (phase != Phase.Plan && string.IsNullOrWhiteSpace(session)) throw new ArgumentException("Zum Umsetzen braucht es die Sitzung aus dem Plan.");
+        if (phase is Phase.Build or Phase.Reply && string.IsNullOrWhiteSpace(session)) throw new ArgumentException("Zum Umsetzen braucht es die Sitzung aus dem Plan.");
         var a = new List<string> { "-p", phase == Phase.Build ? BuildRule + (prompt.Trim().Length > 0 ? "\nZusatz vom Nutzer: " + prompt.Trim() : "") : prompt.Trim(),
-            "--output-format", "stream-json", "--verbose", "--restricted", "--strict-mcp-config" };
+            "--output-format", "stream-json", "--verbose" };
+        // Sicher: keine Befehle, kein Web, Datei-Werkzeuge nur im Projektordner, keine fremden Einstellungen/Erweiterungen.
+        // Voll: alles, was Claude Code kann (auch eigene Skills, Plugins, MCP) – Rechte über den Auto-Modus von Claude Code.
+        if (level == Level.Sicher) { a.Add("--restricted"); a.Add("--strict-mcp-config"); }
         if (session is { Length: > 0 }) { a.Add("--resume"); a.Add(session); }
-        a.Add("--append-system-prompt"); a.Add((phase == Phase.Plan ? PlanRule : "") + (system is { Length: > 0 } ? "\n" + system : ""));
-        if (phase == Phase.Plan) { a.Add("--disallowedTools"); a.Add("Edit Write NotebookEdit MultiEdit"); }
-        else { a.Add("--permission-mode"); a.Add("acceptEdits"); }
+        var rule = phase switch { Phase.Plan => PlanRule, Phase.Ask => AskRule, _ => "" };
+        a.Add("--append-system-prompt"); a.Add(rule + (system is { Length: > 0 } ? "\n" + system : ""));
+        if (phase is Phase.Plan or Phase.Ask) { a.Add("--disallowedTools"); a.Add("Edit Write NotebookEdit MultiEdit"); }
+        else { a.Add("--permission-mode"); a.Add(level == Level.Voll ? "auto" : "acceptEdits"); }
         if (model is { Length: > 0 } && Regex.IsMatch(model, "^[a-z0-9.-]{2,60}$")) { a.Add("--model"); a.Add(model); }
         return a;
     }

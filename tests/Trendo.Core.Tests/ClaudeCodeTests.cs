@@ -46,6 +46,20 @@ public class ClaudeCodeTests
         Assert.DoesNotContain("--model", ClaudeCode.Args("x", ClaudeCode.Phase.Plan, model: "opus; rm -rf"));
     }
 
+    [Fact(DisplayName = "T-0316: Volle Claude-Funktionen – ohne Eingrenzung, Auto-Modus beim Umsetzen; Planen und Fragen ändern trotzdem nichts")]
+    public void Full_level()
+    {
+        var build = ClaudeCode.Args("", ClaudeCode.Phase.Build, "s-1", level: ClaudeCode.Level.Voll).ToList();
+        Assert.DoesNotContain("--restricted", build); Assert.DoesNotContain("--strict-mcp-config", build);
+        Assert.Equal("auto", build[build.IndexOf("--permission-mode") + 1]);
+        var plan = ClaudeCode.Args("x", ClaudeCode.Phase.Plan, level: ClaudeCode.Level.Voll).ToList();
+        Assert.Equal("Edit Write NotebookEdit MultiEdit", plan[plan.IndexOf("--disallowedTools") + 1]); Assert.DoesNotContain("--permission-mode", plan);
+        var ask = ClaudeCode.Args("Was ist ein Rechnungsbetrag?", ClaudeCode.Phase.Ask, system: "Du bist Buchhalter.").ToList();
+        Assert.Contains("--restricted", ask); Assert.Contains("Haupt-KI in Trendo OS", ask[ask.IndexOf("--append-system-prompt") + 1]); Assert.Contains("Buchhalter", ask[ask.IndexOf("--append-system-prompt") + 1]);
+        Assert.Contains("Edit Write NotebookEdit MultiEdit", ask);
+        Assert.Contains("--resume", ClaudeCode.Args("weiter", ClaudeCode.Phase.Ask, "s-2")); // Unterhaltung fortsetzen
+    }
+
     [Fact(DisplayName = "T-0316: Live-Ausgabe – Sitzung, Text, Datei lesen/ändern mit Vorher/Nachher (Pfad relativ), Aufgabenliste, Ergebnis; Unbekanntes wird übergangen")]
     public void Parse_stream()
     {
