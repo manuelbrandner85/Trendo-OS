@@ -109,4 +109,48 @@ public static class Marker
         g.DrawString("Gestrichelt: Nahtlinie · durchgezogen: Schnittkante · ↻ gedreht · Fadenlauf beachten", small, XBrushes.Gray, new XPoint(40, page.Height.Point - 30));
         doc.Save(path);
     }
+
+    /// <summary>Größen ableiten (vereinfachte Gradierung): je Größenschritt von der Basisgröße wächst jedes Teil in der Breite um ein Viertel des Umfangsprungs
+    /// (vier Teilbreiten ergeben den Umfang) und in der Länge um <paramref name="lengthStep"/> cm. Kleinste Maße 1 cm.</summary>
+    public static List<Piece> Grade(IReadOnlyList<Piece> pieces, int steps, double girthStep, double lengthStep = 1) =>
+        pieces.Select(p => p with { W = Math.Max(1, Math.Round(p.W + steps * girthStep / 4, 1)), H = Math.Max(1, Math.Round(p.H + steps * lengthStep, 1)) }).ToList();
+
+    /// <summary>Stoffbedarf je Größe: Teile gradieren und automatisch legen. Basisgröße ist die mittlere (wie in der Größentabelle).</summary>
+    public static List<(string Size, double Meters, double Efficiency)> SizeRun(IReadOnlyList<Piece> pieces, IReadOnlyList<string> sizes, double fabricW, double girthStep, double lengthStep = 1)
+    {
+        var res = new List<(string, double, double)>(); var b = sizes.Count / 2;
+        for (var i = 0; i < sizes.Count; i++)
+        {
+            var g = Grade(pieces, i - b, girthStep, lengthStep);
+            try { var l = AutoLayout(g, fabricW); res.Add((sizes[i], Math.Round(Length(g, l) / 100, 2), Efficiency(g, l, fabricW))); }
+            catch (ArgumentException) { res.Add((sizes[i], double.NaN, 0)); }
+        }
+        return res;
+    }
+
+    /// <summary>Schnittlagebild als SVG im Maßstab 1:1 (Einheit cm) – für Plotter, Inkscape oder Zuschnittprogramme: Stoffbahn, 10-cm-Raster, Schnittkante, Nahtlinie, Namen.</summary>
+    public static string Svg(string title, IReadOnlyList<Piece> pieces, IReadOnlyList<Placed> layout, double fabricW)
+    {
+        var ic = CultureInfo.InvariantCulture; string F(double v) => v.ToString("0.##", ic);
+        static string E(string s) => s.Replace("&", "&amp;").Replace("<", "&lt;").Replace(">", "&gt;").Replace("\"", "&quot;");
+        var len = Math.Max(10, Length(pieces, layout));
+        var sb = new System.Text.StringBuilder();
+        sb.Append($"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{F(fabricW)}cm\" height=\"{F(len)}cm\" viewBox=\"0 0 {F(fabricW)} {F(len)}\">\n");
+        sb.Append($"<title>{E(title)} – Schnittlagebild</title>\n");
+        sb.Append($"<rect x=\"0\" y=\"0\" width=\"{F(fabricW)}\" height=\"{F(len)}\" fill=\"#F5F5F0\" stroke=\"#888\" stroke-width=\"0.2\"/>\n<g stroke=\"#D2D2D2\" stroke-width=\"0.08\">");
+        for (var x = 10.0; x < fabricW; x += 10) sb.Append($"<line x1=\"{F(x)}\" y1=\"0\" x2=\"{F(x)}\" y2=\"{F(len)}\"/>");
+        for (var y = 10.0; y < len; y += 10) sb.Append($"<line x1=\"0\" y1=\"{F(y)}\" x2=\"{F(fabricW)}\" y2=\"{F(y)}\"/>");
+        sb.Append("</g>\n");
+        string[] cols = ["#2F86F6", "#22B35E", "#F08A3C", "#7C4DFF", "#E5484D"];
+        foreach (var p in layout)
+        {
+            var b = Box(pieces, p); var c = cols[p.Piece % cols.Length]; var pc = pieces[p.Piece];
+            sb.Append($"<g id=\"teil-{p.Piece}-{p.Copy}\"><rect x=\"{F(b.X)}\" y=\"{F(b.Y)}\" width=\"{F(b.W)}\" height=\"{F(b.H)}\" fill=\"{c}\" fill-opacity=\"0.25\" stroke=\"{c}\" stroke-width=\"0.2\"/>");
+            sb.Append($"<rect x=\"{F(b.X + Seam)}\" y=\"{F(b.Y + Seam)}\" width=\"{F(b.W - 2 * Seam)}\" height=\"{F(b.H - 2 * Seam)}\" fill=\"none\" stroke=\"{c}\" stroke-width=\"0.12\" stroke-dasharray=\"0.8 0.5\"/>");
+            sb.Append($"<text x=\"{F(b.X + 2)}\" y=\"{F(b.Y + 4)}\" font-family=\"Arial\" font-size=\"2.4\" fill=\"#1F2933\">{E(pc.Name + (p.Rot ? " ↻" : ""))}</text>");
+            sb.Append($"<text x=\"{F(b.X + 2)}\" y=\"{F(b.Y + 7)}\" font-family=\"Arial\" font-size=\"1.8\" fill=\"#5C6B7A\">{F(pc.W)} × {F(pc.H)} cm</text></g>\n");
+        }
+        sb.Append("</svg>\n");
+        return sb.ToString();
+    }
 }

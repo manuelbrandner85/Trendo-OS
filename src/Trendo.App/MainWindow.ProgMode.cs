@@ -51,6 +51,7 @@ public partial class MainWindow
         Exports =
         [
             new("sheet", "Datenblatt", ".md", (d, f) => { File.WriteAllText(f, FashionPlus.DataSheet(d.Text("name"), d.Text("sku"), d.Text("description"), d.Text("material"), ModeVariants(d), ModePrice(d), d.Text("care"))); return f; }),
+            new("svg", "Schnittlage (SVG, 1:1)", ".svg", (d, f) => { var w = d.Number("fabricWidth", 140); File.WriteAllText(f, Marker.Svg(d.Text("name"), MarkerPieces(d), MarkerLayout(d, w), w)); return f; }),
             new("csv", "Varianten (CSV)", ".csv", (d, f) => { File.WriteAllText(f, Fashion.VariantsCsv(ModeVariants(d)), new System.Text.UTF8Encoding(true)); return f; }),
         ],
         Workspace = ModeWorkspace,
@@ -131,10 +132,10 @@ public partial class MainWindow
             t.LostFocus += (_, _) => Commit(); OnEnter(t, Commit);
             sp.Children.Add(P(label, null, 11)); sp.Children.Add(t);
         }
-        void Num(string key, string label)
+        void Num(string key, string label, double def = 0)
         {
-            var t = new TextBox { Name = "mode-p-" + key, Text = d.Number(key).ToString("0.##", De), Width = 90 };
-            void Commit() { if (double.TryParse(t.Text, System.Globalization.NumberStyles.Float, De, out var v) && v != d.Number(key)) { d.Set(key, v, label); Show("mode-programm"); } }
+            var t = new TextBox { Name = "mode-p-" + key, Text = d.Number(key, def).ToString("0.##", De), Width = 90 };
+            void Commit() { if (double.TryParse(t.Text, System.Globalization.NumberStyles.Float, De, out var v) && v != d.Number(key, def)) { d.Set(key, v, label); Show("mode-programm"); } }
             t.LostFocus += (_, _) => Commit(); OnEnter(t, Commit);
             sp.Children.Add(Row(P(label, Text, 12), t));
         }
@@ -156,7 +157,7 @@ public partial class MainWindow
         var women = new CheckBox { Name = "mode-p-women", Content = "Damengrößen", IsChecked = d.Flag("women") };
         women.IsCheckedChanged += (_, _) => { if ((women.IsChecked == true) != d.Flag("women")) { d.Set("women", women.IsChecked == true, "Damen/Herren"); Show("mode-programm"); } };
         sp.Children.Add(H("Maße", 12)); sp.Children.Add(women);
-        Num("chest", "Brust cm"); Num("waist", "Taille cm"); Num("hip", "Hüfte cm"); Num("gradeStep", "Sprung je Größe cm"); Num("fabricWidth", "Stoffbreite cm");
+        Num("chest", "Brust cm"); Num("waist", "Taille cm"); Num("hip", "Hüfte cm"); Num("gradeStep", "Sprung je Größe cm", 4); Num("gradeLen", "Längensprung je Größe cm", 1); Num("fabricWidth", "Stoffbreite cm", 140);
         // Schnittteile direkt bearbeiten: Name, Breite × Höhe × Anzahl
         sp.Children.Add(H("Schnittteile", 12));
         var pieces = d.List("pieces").OfType<JsonObject>().ToList();
@@ -217,24 +218,71 @@ public partial class MainWindow
     }
     static JsonArray MarkerJson(IEnumerable<Marker.Placed> l) => new([.. l.Select(x => (JsonNode)new JsonObject { ["p"] = x.Piece, ["c"] = x.Copy, ["x"] = x.X, ["y"] = x.Y, ["r"] = x.Rot })]);
 
+    /// <summary>Schnitt-Editor: Größe der Schnittlage ("" = Basisgröße, die bearbeitet wird; sonst abgeleitet und automatisch gelegt).</summary>
+    public string MarkerSize { get; set; } = "";
+    static string MarkerBase(ProgramDocument d) => Strings(d, "sizes") is { Count: > 0 } s ? s[s.Count / 2] : "";
+    /// <summary>Teile und Lage für die gewählte Größe: Basis = bearbeitbare Lage, andere Größen gradiert und automatisch gelegt.</summary>
+    (List<Marker.Piece> Pieces, List<Marker.Placed> Layout, bool Derived) MarkerFor(ProgramDocument d, double width)
+    {
+        var sizes = Strings(d, "sizes"); var idx = sizes.IndexOf(MarkerSize);
+        if (MarkerSize.Length == 0 || idx < 0 || MarkerSize == MarkerBase(d)) return (MarkerPieces(d), MarkerLayout(d, width), false);
+        var g = Marker.Grade(MarkerPieces(d), idx - sizes.Count / 2, d.Number("gradeStep", 4), d.Number("gradeLen", 1));
+        try { return (g, Marker.AutoLayout(g, width), true); } catch (ArgumentException) { return (g, [], true); }
+    }
+    static string MarkerFile(ProgramDocument d, string size, string ext) => DevStudio.SafeName(d.Text("name")) + (size.Length > 0 ? $" {size}" : "") + " – Schnittlage" + ext;
+
     private Control ModeMarker(ProgramDocument d, double width)
     {
         const string K = "mode-programm";
-        var pieces = MarkerPieces(d); var lay = MarkerLayout(d, width);
-        var canvas = new MarkerCanvas { Name = "mode-marker", Pieces = pieces, Layout = lay, FabricW = width, Scale = 3, Selected = MarkerSelected };
+        var (pieces, lay, derived) = MarkerFor(d, width);
+        var sizeLabel = derived ? MarkerSize : MarkerBase(d);
+        var canvas = new MarkerCanvas { Name = "mode-marker", Pieces = pieces, Layout = lay, FabricW = width, Scale = 3, Selected = derived ? -1 : MarkerSelected };
         MarkerForTests = canvas;
-        canvas.Moved = (i, dx, dy) => ProgramRun(K, () => { var l = MarkerLayout(d, width); l[i] = l[i] with { X = Math.Round(l[i].X + dx), Y = Math.Max(0, Math.Round(l[i].Y + dy)) }; d.Set("layout", MarkerJson(l), "Teil verschieben"); MarkerSelected = i; });
-        canvas.Rotated = i => ProgramRun(K, () => { var l = MarkerLayout(d, width); l[i] = l[i] with { Rot = !l[i].Rot }; d.Set("layout", MarkerJson(l), "Teil drehen"); MarkerSelected = i; });
-        canvas.Clicked = i => { MarkerSelected = i; canvas.Selected = i; canvas.InvalidateVisual(); }; // nicht neu aufbauen – sonst kommt ein Doppelklick nie an
+        if (!derived)
+        {
+            canvas.Moved = (i, dx, dy) => ProgramRun(K, () => { var l = MarkerLayout(d, width); l[i] = l[i] with { X = Math.Round(l[i].X + dx), Y = Math.Max(0, Math.Round(l[i].Y + dy)) }; d.Set("layout", MarkerJson(l), "Teil verschieben"); MarkerSelected = i; });
+            canvas.Rotated = i => ProgramRun(K, () => { var l = MarkerLayout(d, width); l[i] = l[i] with { Rot = !l[i].Rot }; d.Set("layout", MarkerJson(l), "Teil drehen"); MarkerSelected = i; });
+            canvas.Clicked = i => { MarkerSelected = i; canvas.Selected = i; canvas.InvalidateVisual(); }; // nicht neu aufbauen – sonst kommt ein Doppelklick nie an
+        }
         var len = Marker.Length(pieces, lay); var eff = Marker.Efficiency(pieces, lay, width); var bad = Marker.Problems(pieces, lay, width);
         Button B(string name, string label, Action a, bool primary = false) { var b = new Button { Name = name, Content = label, FontSize = 12, Margin = new Thickness(0, 0, 4, 4) }; if (primary) { b.Background = Accent; b.Foreground = Brushes.White; } b.Click += (_, _) => ProgramRun(K, a); return b; }
-        var bar = new WrapPanel { Children = {
-            B("mode-marker-auto", "Automatisch legen", () => { d.Set("layout", MarkerJson(Marker.AutoLayout(pieces, width)), "Automatisch legen"); MarkerSelected = -1; }, true),
-            B("mode-marker-rotate", "↻ Drehen", () => { if (MarkerSelected < 0 || MarkerSelected >= lay.Count) throw new InvalidOperationException("Erst ein Teil anklicken."); canvas.Rotated!(MarkerSelected); }),
-            B("mode-marker-pdf", "Als PDF", () => { var f = Path.Combine(WorkFolder("Produkte"), DevStudio.SafeName(d.Text("name")) + " – Schnittlage.pdf"); Marker.Pdf(f, d.Text("name"), pieces, lay, width); _progMsg[K] = "Gespeichert: " + f; NotifyFileResult(_progMsg[K]); }) } };
-        var facts = new TextBlock { Name = "mode-marker-facts", Text = $"Verbrauch {len / 100:0.00} m bei {width:0} cm Breite · Ausnutzung {eff * 100:0} % · Verschnitt {100 - eff * 100:0} %" + (bad.Count > 0 ? $" · ⚠ {bad.Count} Teile überlappen oder ragen über den Rand" : ""), Foreground = bad.Count > 0 ? Brush.Parse("#F87171") : Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap };
-        return new StackPanel { Spacing = 4, Children = { H("Schnittlagebild", 13), bar, facts,
-            new TextBlock { Text = "Teil ziehen: verschieben (1 cm) · Doppelklick: drehen · gestrichelt: Nahtlinie", Foreground = Muted, FontSize = 11.5 },
-            new ScrollViewer { HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, MaxHeight = 420, Content = canvas } } };
+        // Größe wählen: Basis bearbeiten oder abgeleitete Größe ansehen
+        var sizes = Strings(d, "sizes");
+        var pick = new WrapPanel { Name = "mode-marker-sizes" };
+        foreach (var sz in sizes)
+        {
+            var size = sz; var on = sz == sizeLabel;
+            var b = new Button { Name = "mode-marker-size-" + sz, Content = sz == MarkerBase(d) ? sz + " (Basis)" : sz, FontSize = 12, Padding = new Thickness(10, 3), Margin = new Thickness(0, 0, 4, 4), CornerRadius = new CornerRadius(12),
+                Background = on ? Accent : Brushes.Transparent, Foreground = Text, BorderBrush = Edge, BorderThickness = new Thickness(1) };
+            b.Click += (_, _) => { MarkerSize = size == MarkerBase(d) ? "" : size; MarkerSelected = -1; Show(K); };
+            pick.Children.Add(b);
+        }
+        var bar = new WrapPanel();
+        if (!derived)
+        {
+            bar.Children.Add(B("mode-marker-auto", "Automatisch legen", () => { d.Set("layout", MarkerJson(Marker.AutoLayout(pieces, width)), "Automatisch legen"); MarkerSelected = -1; }, true));
+            bar.Children.Add(B("mode-marker-rotate", "↻ Drehen", () => { if (MarkerSelected < 0 || MarkerSelected >= lay.Count) throw new InvalidOperationException("Erst ein Teil anklicken."); canvas.Rotated!(MarkerSelected); }));
+        }
+        var title = d.Text("name") + (sizeLabel.Length > 0 ? $" ({sizeLabel})" : "");
+        bar.Children.Add(B("mode-marker-pdf", "Als PDF", () => { var f = Path.Combine(WorkFolder("Produkte"), MarkerFile(d, derived ? MarkerSize : "", ".pdf")); Marker.Pdf(f, title, pieces, lay, width); _progMsg[K] = "Gespeichert: " + f; NotifyFileResult(_progMsg[K]); }));
+        bar.Children.Add(B("mode-marker-svg", "Als SVG (1:1)", () => { var f = Path.Combine(WorkFolder("Produkte"), MarkerFile(d, derived ? MarkerSize : "", ".svg")); File.WriteAllText(f, Marker.Svg(title, pieces, lay, width)); _progMsg[K] = "Gespeichert: " + f; NotifyFileResult(_progMsg[K]); }));
+        var facts = new TextBlock { Name = "mode-marker-facts", Text = $"Verbrauch {len / 100:0.00} m bei {width:0} cm Breite · Ausnutzung {eff * 100:0} % · Verschnitt {100 - eff * 100:0} %" + (bad.Count > 0 ? $" · ⚠ {bad.Count} Teile überlappen oder ragen über den Rand" : "") + (lay.Count == 0 && pieces.Count > 0 ? " · ⚠ ein Teil ist breiter als der Stoff" : ""), Foreground = bad.Count > 0 || (lay.Count == 0 && pieces.Count > 0) ? Brush.Parse("#F87171") : Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap };
+        // Stoffbedarf aller Größen
+        var run = new Grid { Name = "mode-marker-run", ColumnDefinitions = new ColumnDefinitions(string.Join(",", Enumerable.Repeat("Auto", sizes.Count + 1))) };
+        if (sizes.Count > 1 && pieces.Count > 0)
+        {
+            run.RowDefinitions.Add(new RowDefinition(GridLength.Auto)); run.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+            void Cell(string t, int r, int c, bool head) { var tb = new TextBlock { Text = t, Foreground = head ? Muted : Text, FontSize = 12, FontWeight = head ? FontWeight.SemiBold : FontWeight.Normal, Margin = new Thickness(6, 2) }; Grid.SetRow(tb, r); Grid.SetColumn(tb, c); run.Children.Add(tb); }
+            Cell("Größe", 0, 0, true); Cell("Stoff", 1, 0, true);
+            var all = Marker.SizeRun(MarkerPieces(d), sizes, width, d.Number("gradeStep", 4), d.Number("gradeLen", 1));
+            for (var i = 0; i < all.Count; i++) { Cell(all[i].Size, 0, i + 1, true); Cell(double.IsNaN(all[i].Meters) ? "passt nicht" : $"{all[i].Meters:0.00} m", 1, i + 1, false); }
+        }
+        var hint = derived
+            ? $"Größe {MarkerSize} ist aus der Basis {MarkerBase(d)} abgeleitet (Breite ± Sprung/4 = {d.Number("gradeStep", 4) / 4:0.#} cm, Länge ± {d.Number("gradeLen", 1):0.#} cm je Größe) und automatisch gelegt. Bearbeiten in der Basisgröße."
+            : "Teil ziehen: verschieben (1 cm) · Doppelklick: drehen · gestrichelt: Nahtlinie";
+        return new StackPanel { Spacing = 4, Children = { H("Schnittlagebild", 13), pick, bar, facts,
+            new TextBlock { Name = "mode-marker-hint", Text = hint, Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap },
+            new ScrollViewer { HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, MaxHeight = 420, Content = canvas },
+            sizes.Count > 1 ? H("Stoffbedarf je Größe", 12) : new Border(), run } };
     }
 }
