@@ -1,6 +1,6 @@
 # Auto & Fahrten – Architektur
 
-Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.28 (Stand bea73f9)
+Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.28 (Stand ab682fb)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec16.cs`
@@ -9,8 +9,8 @@ Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fa
 - Diagramm/Zeichnung
 
 ## Fach-Engine (Trendo.Core)
-- `VehiclePlus`
 - `VehicleBook`
+- `VehiclePlus`
 - `DText`
 - `DPoly`
 - `DLine`

@@ -1,6 +1,6 @@
 # Tragwerk & Mechanik – Architektur
 
-Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite: `technik` · Stand: 0.9.28 (Stand bea73f9)
+Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite: `technik` · Stand: 0.9.28 (Stand ab682fb)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec03.cs`

@@ -1,5 +1,5 @@
 # Produktion – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `produktion` · Stand: 0.9.28 (Stand bea73f9)
+Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `produktion` · Stand: 0.9.28 (Stand ab682fb)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

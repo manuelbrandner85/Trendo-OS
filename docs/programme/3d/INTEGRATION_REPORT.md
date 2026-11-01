@@ -1,6 +1,6 @@
 # 3D – Einbindung in Trendo OS
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.28 (Stand bea73f9)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.28 (Stand ab682fb)
 
 - Seite `3d` im Studio „3D-Modelle erstellen“ (3D, Spiele & VR) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

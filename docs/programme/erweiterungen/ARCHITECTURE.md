@@ -1,6 +1,6 @@
 # Erweiterungen – Architektur
 
-Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.28 (Stand bea73f9)
+Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.28 (Stand ab682fb)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W5Ext.cs`

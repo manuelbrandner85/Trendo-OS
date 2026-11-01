@@ -1,6 +1,6 @@
 # KI-Rollen und Teams – Funktionsmatrix
 
-Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.28 (Stand bea73f9)
+Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.28 (Stand ab682fb)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

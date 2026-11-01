@@ -1,6 +1,6 @@
 # Briefe schreiben – Funktionsmatrix
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.28 (Stand bea73f9)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.28 (Stand ab682fb)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -33,10 +33,14 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Vorlagen ausblenden
 - Brief prüfen
 - Text von der KI verbessern lassen
+- Einsetzen
+- Jetzt Form B – zu Form A wechseln
 - Berechnen
 - In den Brief einsetzen
 - In den Kalender
 - Datei wählen …
 - Serienbrief erstellen
+- Vorschau
+- Alle als DOCX speichern
 - Übernehmen
 - Ohne Unterschrift

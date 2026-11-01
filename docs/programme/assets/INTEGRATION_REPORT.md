@@ -1,6 +1,6 @@
 # Freie Assets – Einbindung in Trendo OS
 
-Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.28 (Stand bea73f9)
+Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.28 (Stand ab682fb)
 
 - Seite `assets` im Studio „Freie Bilder & Klänge finden“ (Kreativ & Medien) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

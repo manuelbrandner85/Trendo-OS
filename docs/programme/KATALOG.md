@@ -6,7 +6,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 
 | Programm | Studio | Bereich | Arbeitsfläche | Funktionen | Tests | Vorbild-Analyse | Modulstatus | Doku |
 |---|---|---|---|---|---|---|---|---|
-| Briefe schreiben | Briefe schreiben (STUDIO-LETTER-01) | Arbeiten & Büro | Texteditor | – | 11 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](brief/README.md) |
+| Briefe schreiben | Briefe schreiben (STUDIO-LETTER-01) | Arbeiten & Büro | Texteditor | – | 12 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](brief/README.md) |
 | Aufgaben | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Aufgabentafel | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](aufgaben/README.md) |
 | E-Mail & Kontakte | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Texteditor | – | 18 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](post/README.md) |
 | Kalender | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Monatskalender | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](kalender/README.md) |
@@ -61,7 +61,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Kostenlose Internet-KIs | Kostenlose KI finden (X-05) | KI & Automatik | keine eigene erkannt | – | 6 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-internet/README.md) |
 | Baukasten | Apps zusammenklicken (X-03) | Entwickeln | keine eigene erkannt | – | 13 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](baukasten/README.md) |
 | Sauberer Nachbau | Programme nachbauen (X-10) | Entwickeln | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](nachbau/README.md) |
-| Open Source | Projekte von GitHub holen (X-06) | Entwickeln | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](oss/README.md) |
+| Open Source | Projekte von GitHub holen (X-06) | Entwickeln | keine eigene erkannt | – | 22 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](oss/README.md) |
 | Erweiterungen | Trendo erweitern (X-04) | Entwickeln | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](erweiterungen/README.md) |
 | Software | Webseite bauen (CORE-07) | Entwickeln | Bildansicht | – | 19 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](dev/README.md) |
 | Ordner im Heimnetz teilen | Dateien teilen (SYS-06) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](teilen/README.md) |
@@ -82,7 +82,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Apps | Programme starten (SYS-11) | System & Sicherheit | keine eigene erkannt | 25 | 41 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](apps/README.md) |
 | Hinzufügen | Programme starten (SYS-11) | System & Sicherheit | keine eigene erkannt | 25 | 12 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](hinzufuegen/README.md) |
 | Pflegen | Programme starten (SYS-11) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](prog-pflege/README.md) |
-| Zusatzprogramme | Programme starten (SYS-11) | System & Sicherheit | keine eigene erkannt | 25 | 46 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](components/README.md) |
+| Zusatzprogramme | Programme starten (SYS-11) | System & Sicherheit | keine eigene erkannt | 25 | 50 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](components/README.md) |
 | Fortschritt | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 13 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](fortschritt/README.md) |
 | Leistung | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 13 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](qual-leistung/README.md) |
 | System & Sicherheit | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 26 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](system/README.md) |

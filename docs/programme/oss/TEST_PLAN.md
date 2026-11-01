@@ -1,8 +1,8 @@
 # Open Source – Testplan
 
-Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.28 (Stand bea73f9)
+Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.28 (Stand ab682fb)
 
-15 Tests sprechen dieses Programm an.
+22 Tests sprechen dieses Programm an.
 
 - Beschreibung: README wird beim Aufklappen geladen; geholte Projekte lassen sich mit Rückfrage entfernen
 - GitHub (UI): Treffer mit Beschreibung, „Zustimmen & installieren“ richtet ein, Programmseite zeigt Starten/Entfernen
@@ -15,6 +15,13 @@ Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` 
 - Installer-Programm: Installieren & starten führt den Installer still aus, erkennt das Programm, startet es; Entfernen ruft den Deinstaller
 - KI-Programme entfernen: über KI-Quellen eingerichtetes KoboldCpp und eine KI-Laufzeit lassen sich wieder entfernen
 - Programme (UI): mitgelieferte Programme haben eine Beschreibung mit Funktionsweise
+- T-0312: Aufgebrauchtes GitHub-Limit → Meldung mit Uhrzeit; Projekt ohne Windows-Programm und kaputte Antwort beenden die Anzeige statt bei 0 % zu hängen
+- T-0312: Download zeigt steigenden Prozentwert bis zur fertigen Einrichtung; stockender Download wird nach dem Zeitlimit gemeldet
+- T-0312: Hängende GitHub-Antwort → nach dem Zeitlimit klare Meldung, Anzeige beendet, nächster Versuch möglich; Sekundenzähler beim Suchen
+- T-0313: Abgebrochener Download – angefangene Datei bleibt, nächster Versuch lädt mit Range ab der Stelle weiter (206) und richtet ein
+- T-0313: GitHub-Anmeldung – Schlüssel wird geprüft und im sicheren Speicher abgelegt, geht nur an api.github.com, Abmelden löscht ihn; falscher Schlüssel abgewiesen
+- T-0313: Trefferliste zeigt „✓ Windows-Programm · Version · Größe“ bzw. „Nur Quellcode“; Installieren nur, wo es ein Windows-Programm gibt
+- T-0313: Update – neue Version wird erkannt (Versionsvergleich), „Aktualisieren“ richtet sie ein, danach kein Update mehr
 - X-06 (UI): Suche zeigt Treffer mit Lizenz, ohne Lizenz kein Herunterladen
 - X-06: GitHub-Antwort wird gelesen, Lizenz verständlich erklärt
 - X-06: Kopie holen (echtes git, lokales Quell-Repo) mit Herkunftsdatei; unsichere Adressen abgewiesen

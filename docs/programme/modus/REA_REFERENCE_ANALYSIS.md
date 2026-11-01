@@ -1,5 +1,5 @@
 # Betriebsmodus – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.28 (Stand bea73f9)
+Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.28 (Stand ab682fb)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.
