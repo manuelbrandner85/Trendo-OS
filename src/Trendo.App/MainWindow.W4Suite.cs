@@ -144,7 +144,7 @@ public partial class MainWindow
             new ProgressBar { Name = "suite-progress", Value = CreationSuite.Percent(open), Maximum = 100, Height = 6 } } };
         Control body = SuiteMode switch { "kanban" => SuiteKanban(open, steps), "zeitplan" => SuiteTimeline(open, steps), "dateien" => SuiteFiles(open), "liste" => SuiteList(open, steps), _ => SuiteOverview(open, steps) };
         var jump = new WrapPanel();
-        foreach (var (k, l) in new[] { ("kreativ-medien", "Medien-Studio"), ("baukasten", "Baukasten"), ("dev", "Software"), ("spiele", "Spiele"), ("3d", "3D"), ("assets", "Freie Assets") })
+        foreach (var (k, l) in new[] { ("kreativ-medien", "Medien-Studio"), ("baukasten", "Baukasten"), ("dev", "Software"), ("spiele", "Spiele"), ("3d", "3D"), ("assets", "Freie Bilder & Klänge") })
             if (_showMap.ContainsKey(k)) { var b = Nav2(l, k); b.Margin = new Thickness(0, 4, 6, 0); jump.Children.Add(b); }
         return Card(new StackPanel { Spacing = 8, Children = { head, body, jump } });
     }

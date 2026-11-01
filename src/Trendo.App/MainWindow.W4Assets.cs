@@ -5,7 +5,7 @@ using Trendo.Core;
 
 namespace Trendo.App;
 
-/// <summary>X-07: Freie Assets.</summary>
+/// <summary>X-07: Freie Assets – Reiter „3D & Texturen“ im Medienbrowser (Poly Haven).</summary>
 public partial class MainWindow
 {
     public string AssetFolder => WorkFolder("Assets");
@@ -14,11 +14,11 @@ public partial class MainWindow
     public Func<string, Task<string>> AssetGet { get; set; } = async url => await OssHttp.GetStringAsync(url);
     public Func<string, string, Task> AssetDownload { get; set; } = async (url, file) => { await using var s = await OssHttp.GetStreamAsync(url); await using var f = File.Create(file); await s.CopyToAsync(f); };
 
-    private void InitW4Assets() => RegisterTab(KreativTabs, "assets", "Freie Assets", "X-07", AssetView, "asset", "textur", "hdri", "modell", "cc0", "kostenlos", "poly haven");
+    private void InitW4Assets() => RegisterTab(KreativTabs, "assets", "Freie Bilder & Klänge", "X-07", AssetView, "asset", "textur", "hdri", "modell", "cc0", "kostenlos", "poly haven", "bilder", "fotos", "klänge", "geräusche", "sounds", "wikimedia", "commons", "medienbrowser");
 
     public async Task AssetSearch(int type, string q)
     {
-        _assetType = type; _assetQuery = q;
+        _assetType = type; _assetQuery = q; MediaTab = "3d";
         if (_core.Offline) { Say("Trendo ist offline. Die Suche braucht Internet.", "assets"); return; }
         try { _assetHits = FreeAssets.ParseList(await AssetGet(FreeAssets.ListUrl(FreeAssets.Types[type].Api)), q); _w45Msg = _assetHits.Count == 0 ? "Nichts gefunden. Versuch ein englisches Wort, z. B. „rock“." : ""; }
         catch (Exception ex) { _assetHits = []; _w45Msg = "Suche hat nicht geklappt: " + ex.Message; }
@@ -47,9 +47,9 @@ public partial class MainWindow
         catch (Exception ex) { Say("Laden hat nicht geklappt: " + ex.Message, "assets"); return null; }
     }
 
-    private Control AssetView()
+    private Control AssetPolyHaven()
     {
-        var sp = new StackPanel { Spacing = 8, Children = { P("Freie Modelle, Texturen und Himmel. Alles hier darfst du kostenlos nutzen, auch für Geld.") } };
+        var sp = new StackPanel { Spacing = 8, Children = { P("Freie Modelle, Texturen und Himmel von Poly Haven (CC0).") } };
         var type = new ComboBox { Name = "asset-type", ItemsSource = FreeAssets.Types.Select(t => t.Label).ToList(), SelectedIndex = _assetType, Width = 160 };
         var q = new TextBox { Name = "asset-query", Text = _assetQuery, PlaceholderText = "z. B. rock, wood, sky", Width = 220 };
         sp.Children.Add(new WrapPanel { Children = { type, q, Act("asset-search", "Suchen", () => _ = AssetSearch(Math.Max(0, type.SelectedIndex), q.Text ?? ""), true) } });
@@ -70,6 +70,6 @@ public partial class MainWindow
             sp.Children.Add(Card(Row(new StackPanel { Children = { new TextBlock { Text = s.Name, Foreground = Text, FontSize = 12.5 }, P($"{s.What} · Lizenz: {s.License}", null, 10.5) } }, Act($"asset-src-{j++}", "Öffnen", () => Launch(src.Url)))));
         }
         sp.Children.Add(Act("asset-folder", "Assets-Ordner öffnen", () => Launch(AssetFolder)));
-        return KreativPage("Freie Assets", sp);
+        return sp;
     }
 }
