@@ -14,6 +14,9 @@ public sealed class DeskWindow(string id, string page, string title)
     public bool Maximized { get; set; }
     /// <summary>Vom Benutzer verschoben – dann passt Trendo die Größe nicht mehr automatisch an.</summary>
     public bool Moved { get; set; }
+    /// <summary>Seiten, die vorher in diesem Fenster zu sehen waren (neueste zuletzt) – für „Zurück“ (Wunsch 01.11.2026).</summary>
+    public List<string> History { get; } = [];
+    public bool CanGoBack => History.Count > 0;
 }
 
 /// <summary>Fensterverwaltung innerhalb von Trendo: öffnen, nach vorn holen, minimieren, maximieren, schließen, verschieben. Reihenfolge = Stapel (letztes = oben). Ersetzt nicht die Windows-Taskleiste.</summary>
@@ -23,6 +26,8 @@ public sealed class WindowManager
     public const int NoticeAfter = 24;
     public const string ManyWindowsNotice = "Viele Fenster sind offen. Trendo schließt keines davon und verwirft keine Eingaben. Schließe Fenster, die du nicht mehr brauchst.";
     public const double MinW = 360, MinH = 240, TitleBar = 36;
+    /// <summary>So viele Schritte merkt sich jedes Fenster für „Zurück“.</summary>
+    public const int HistoryMax = 30;
     /// <summary>Hinweis, wenn sehr viele Fenster offen sind. Null, solange alles übersichtlich bleibt.</summary>
     public string? Notice { get; private set; }
     private readonly List<DeskWindow> _stack = [];
@@ -39,9 +44,18 @@ public sealed class WindowManager
     public DeskWindow? Get(string id) => _stack.FirstOrDefault(w => w.Id == id);
 
     /// <summary>Öffnet ein neues Fenster oder holt ein vorhandenes nach vorn. Ein bereits geöffnetes Studio wird aktiviert, nie dupliziert. Andere Fenster bleiben offen – nichts wird still geschlossen.</summary>
-    public (DeskWindow Window, DeskWindow? Closed) Open(string id, string page, string title)
+    public (DeskWindow Window, DeskWindow? Closed) Open(string id, string page, string title, bool back = false)
     {
-        if (Get(id) is { } w) { w.Page = page; w.Title = title; Activate(id); return (w, null); }
+        if (Get(id) is { } w)
+        {
+            // Wechsel der Seite im selben Fenster merken (nicht beim Zurückgehen und nicht beim Neuzeichnen derselben Seite)
+            if (!back && !string.Equals(w.Page, page, StringComparison.OrdinalIgnoreCase))
+            {
+                w.History.Add(w.Page);
+                if (w.History.Count > HistoryMax) w.History.RemoveAt(0);
+            }
+            w.Page = page; w.Title = title; Activate(id); return (w, null);
+        }
         if (_stack.Count >= NoticeAfter) Notice ??= ManyWindowsNotice;
         var n = _taskOrder.Count % 8;
         w = new DeskWindow(id, page, title) { W = Math.Max(MinW, AreaW * 0.9), H = Math.Max(MinH, AreaH * 0.9), X = 16 + n * 28, Y = 8 + n * 28 };
@@ -63,6 +77,13 @@ public sealed class WindowManager
         int Index(string id) { var i = s.Windows.FindIndex(x => x.Id == id); return i < 0 ? int.MaxValue : i; }
     }
 
+    /// <summary>Vorige Seite dieses Fensters (und aus dem Verlauf nehmen); null, wenn es keine gibt.</summary>
+    public string? Back(string id)
+    {
+        if (Get(id) is not { History.Count: > 0 } w) return null;
+        var p = w.History[^1]; w.History.RemoveAt(w.History.Count - 1);
+        return p;
+    }
     public void Activate(string id) { if (Get(id) is not { } w) return; w.Minimized = false; _stack.Remove(w); _stack.Add(w); }
     public void Minimize(string id) { if (Get(id) is { } w) w.Minimized = true; }
     public void ToggleMaximize(string id) { if (Get(id) is { } w) { w.Maximized = !w.Maximized; Activate(id); } }

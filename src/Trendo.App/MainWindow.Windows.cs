@@ -44,6 +44,11 @@ public partial class MainWindow
         // Tunnel: läuft vor dem Handler des Fensterrahmens, der die Merkung für Klicks im Fenster wieder setzt.
         AddHandler(PointerPressedEvent, (_, _) => _navWindow = null, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
         AddHandler(KeyDownEvent, (_, _) => _navWindow = null, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
+        // Zurück wie im Browser: Alt+← im aktiven Fenster
+        AddHandler(KeyDownEvent, (_, e) =>
+        {
+            if (e.Key == Key.Left && e.KeyModifiers == KeyModifiers.Alt && Windows.Active is { CanGoBack: true } a) { GoBack(a.Id); e.Handled = true; }
+        }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         _center.Children.Clear();
         _deskHost.ZIndex = 0;
         _center.Children.Add(_deskHost);
@@ -72,7 +77,7 @@ public partial class MainWindow
         }
         if (_deskHost.Children.Count == 0) _deskHost.Children.Add(SafeView("start"));
         var content = SafeView(key);
-        var (win, closed) = Windows.Open(TargetWindow(key), key, PresentTitle(key));
+        var (win, closed) = Windows.Open(_backWindow ?? TargetWindow(key), key, PresentTitle(key), back: _backWindow is not null);
         if (closed is not null && _frames.Remove(closed.Id, out var old)) { DetachFrame(old.Frame); _windowStudio.Remove(closed.Id); }
         if (StudioKeyFor(key) is { } sid) _windowStudio[win.Id] = sid;
         if (!_frames.TryGetValue(win.Id, out var fr)) { fr = MakeFrame(win); _frames[win.Id] = fr; _winCanvas.Children.Add(fr.Frame); }
@@ -84,6 +89,19 @@ public partial class MainWindow
 
     // Vorgabe 27.10.2026: Ein Klick innerhalb eines Fensters öffnet das Ziel in demselben Fenster – nicht in einem neuen.
     private string? _navWindow; private DateTime _navAt;
+    /// <summary>Wie lange nach einem Klick im Fenster das nächste Ziel noch dort öffnet. Vorher 3 s – dann gingen beim Laden neue Fenster auf (Rückmeldung 01.11.2026).</summary>
+    const double NavWindowSeconds = 30;
+    private string? _backWindow;
+    private readonly Dictionary<string, Button> _backButtons = [];
+
+    /// <summary>Zurück im Fenster: die vorige Seite erscheint in demselben Fenster (kein neues Fenster).</summary>
+    public void GoBack(string id)
+    {
+        if (Windows.Back(id) is not { } page) return;
+        if (!_showMap.ContainsKey(page) && page != "start") { GoBack(id); return; } // Seite gibt es nicht mehr: einen Schritt weiter
+        _backWindow = id;
+        try { Show(page); } finally { _backWindow = null; }
+    }
 
     /// <summary>Welches Fenster zeigt die Seite? 1. ein Fenster, das genau diese Seite schon zeigt; 2. nach einem Klick in einem Fenster dieses Fenster
     /// (außer die Seite hat schon ihr eigenes offenes Fenster); 3. sonst das Fenster ihres Studios.</summary>
@@ -91,7 +109,7 @@ public partial class MainWindow
     {
         if (Windows.Stack.FirstOrDefault(w => w.Page == key) is { } showing) return showing.Id;
         var own = PresentGroup(key);
-        if (_navWindow is { } nw && (DateTime.UtcNow - _navAt).TotalSeconds < 3 && Windows.Get(nw) is { Minimized: false } && Windows.Get(own) is null)
+        if (_navWindow is { } nw && (DateTime.UtcNow - _navAt).TotalSeconds < NavWindowSeconds && Windows.Get(nw) is { Minimized: false } && Windows.Get(own) is null)
             return nw;
         return own;
     }
@@ -133,8 +151,11 @@ public partial class MainWindow
             Cap("win-min", "—", "Minimieren", () => { Windows.Minimize(id); AfterWindowChange(); }),
             Cap("win-max", "☐", "Maximieren / Wiederherstellen", () => { Windows.ToggleMaximize(id); AfterWindowChange(); }),
             Cap("win-close", "✕", "Schließen", () => CloseWindow(id)) } };
+        // Zurück-Knopf in jedem Fenster (Wunsch 01.11.2026): vorige Seite im selben Fenster, auch mit Alt+← oder der Zurück-Taste der Maus
+        var back = Cap("win-back", "←", "Zurück", () => GoBack(id)); back.Margin = new Thickness(6, 0, 0, 0); back.Width = 34; back.FontSize = 15; back.IsEnabled = w.CanGoBack;
+        _backButtons[id] = back;
         var bar = new Border { Name = "win-title-" + id, Height = WindowManager.TitleBar, Background = Brush.Parse("#331C3058"), CornerRadius = new CornerRadius(0), Cursor = new Cursor(StandardCursorType.SizeAll),
-            Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = { titleIcon, Pos(title, 1), Pos(caps, 2) } } };
+            Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), Children = { back, Pos(titleIcon, 1), Pos(title, 2), Pos(caps, 3) } } };
         // Verschieben mit der Maus an der Titelleiste; Doppelklick maximiert
         Point? from = null;
         bar.PointerPressed += (_, e) =>
@@ -161,7 +182,12 @@ public partial class MainWindow
         foreach (var h in ResizeHandles(id)) layers.Children.Add(h);
         var frame = new DeskFrame { Name = "win-" + id, WindowTitle = w.Title, Background = GlassStrong, BorderThickness = new Thickness(1.5), CornerRadius = new CornerRadius(11), Child = layers, ClipToBounds = true, BoxShadow = LowPower ? default : WindowShadow };
         // Klick ins Fenster holt es nach vorn (nach dem Klick, damit Knöpfe ihren Klick behalten)
-        frame.AddHandler(PointerPressedEvent, (_, _) => { _navWindow = id; _navAt = DateTime.UtcNow; if (Windows.Active?.Id != id) Dispatcher.UIThread.Post(() => FocusWindow(id), DispatcherPriority.Background); }, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
+        frame.AddHandler(PointerPressedEvent, (_, e) =>
+        {
+            _navWindow = id; _navAt = DateTime.UtcNow;
+            if (e.GetCurrentPoint(frame).Properties.IsXButton1Pressed && Windows.Get(id) is { CanGoBack: true }) { e.Handled = true; Dispatcher.UIThread.Post(() => GoBack(id)); return; } // Zurück-Taste der Maus
+            if (Windows.Active?.Id != id) Dispatcher.UIThread.Post(() => FocusWindow(id), DispatcherPriority.Background);
+        }, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
         frame.AddHandler(KeyDownEvent, (_, _) => { _navWindow = id; _navAt = DateTime.UtcNow; }, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
         return (frame, body, title);
     }
@@ -207,6 +233,7 @@ public partial class MainWindow
         Windows.Close(id);
         _windowStudio.Remove(id);
         if (_frames.Remove(id, out var f)) DetachFrame(f.Frame);
+        _backButtons.Remove(id);
         AfterWindowChange();
     }
     public void TaskbarClick(string id) { Windows.TaskbarClick(id); AfterWindowChange(); }
@@ -234,6 +261,12 @@ public partial class MainWindow
     private void RenderWindows()
     {
         var active = Windows.Active;
+        foreach (var (bid, bb) in _backButtons)
+            if (Windows.Get(bid) is { } bw)
+            {
+                bb.IsEnabled = bw.CanGoBack;
+                ToolTip.SetTip(bb, bw.CanGoBack ? $"Zurück zu „{PageTitle(bw.History[^1])}“ (Alt+←)" : "Zurück – in diesem Fenster gibt es noch keine vorige Seite");
+            }
         // Aktives Fenster zuerst in der Liste (wird zuerst gefunden), Zeichenreihenfolge über ZIndex.
         // Maximierte Fenster liegen in der Arbeitsfläche über Seitenleiste und Assistent, die übrigen im Mittelbereich.
         var order = Windows.Stack.Reverse().Where(w => !w.Maximized).Select(w => _frames[w.Id].Frame).ToList();
