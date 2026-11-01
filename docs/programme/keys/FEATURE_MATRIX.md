@@ -1,13 +1,13 @@
 # Online-Dienste – Funktionsmatrix
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.30 (Stand 234e066)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.32 (Stand 345fe84)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Los
 - Hinzufügen …
-- ✳ Claude Code
+- ✳ Claude
 - Verstanden
 - Schlüssel holen
 - Prüfen & speichern

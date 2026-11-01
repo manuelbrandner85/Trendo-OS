@@ -1,6 +1,6 @@
 # Downloads – Funktionsmatrix
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.30 (Stand 234e066)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.32 (Stand 345fe84)
 
 Quelle: `docs/spec/kataloge/SYS-03_KATALOG.md`
 
@@ -34,7 +34,7 @@ Quelle: `docs/spec/kataloge/SYS-03_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude Code
+- ✳ Claude
 - Verstanden
 - Herunterladen
 - Im Standardbrowser öffnen

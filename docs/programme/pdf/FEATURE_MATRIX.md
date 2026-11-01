@@ -1,6 +1,6 @@
 # Trendo PDF – Funktionsmatrix
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.30 (Stand 234e066)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.32 (Stand 345fe84)
 
 Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 
@@ -35,6 +35,6 @@ Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 ## Werkzeuge der Oberfläche
 - Los
 - Hinzufügen …
-- ✳ Claude Code
+- ✳ Claude
 - PDF öffnen …
 - Neue leere PDF

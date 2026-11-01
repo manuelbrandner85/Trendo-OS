@@ -1,12 +1,12 @@
 # Handy verbinden – Funktionsmatrix
 
-Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.30 (Stand 234e066)
+Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.32 (Stand 345fe84)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude Code
+- ✳ Claude
 - 🏠  Zuhause (im selben WLAN)
 - 🌍  Überall – auch unterwegs
 - Handy für unterwegs verbinden

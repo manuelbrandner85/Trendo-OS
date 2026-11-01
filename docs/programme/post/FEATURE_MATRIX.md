@@ -1,12 +1,12 @@
 # E-Mail & Kontakte – Funktionsmatrix
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.30 (Stand 234e066)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.32 (Stand 345fe84)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude Code
+- ✳ Claude
 - E-Mail & Kontakte
 - Adressbuch
 - Posteingang

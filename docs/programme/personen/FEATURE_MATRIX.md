@@ -1,6 +1,6 @@
 # Personen – Funktionsmatrix
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `personen` · Stand: 0.9.30 (Stand 234e066)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `personen` · Stand: 0.9.32 (Stand 345fe84)
 
 Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 
@@ -34,7 +34,7 @@ Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude Code
+- ✳ Claude
 - Jetzt sperren
 - Anmeldung ändern
 - Beim Start von Trendo nach PIN/Passwort fragen

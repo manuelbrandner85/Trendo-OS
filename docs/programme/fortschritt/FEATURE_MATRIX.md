@@ -1,6 +1,6 @@
 # Fortschritt – Funktionsmatrix
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `fortschritt` · Stand: 0.9.30 (Stand 234e066)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `fortschritt` · Stand: 0.9.32 (Stand 345fe84)
 
 Quelle: `docs/spec/kataloge/SYS-13_KATALOG.md`
 
@@ -34,5 +34,5 @@ Quelle: `docs/spec/kataloge/SYS-13_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude Code
+- ✳ Claude
 - Verstanden

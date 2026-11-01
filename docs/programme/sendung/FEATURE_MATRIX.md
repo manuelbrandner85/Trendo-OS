@@ -1,6 +1,6 @@
 # Live streamen – Funktionsmatrix
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.30 (Stand 234e066)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.32 (Stand 345fe84)
 
 Quelle: `docs/w6-katalog/SPEC-15.md`
 
@@ -29,7 +29,7 @@ Quelle: `docs/w6-katalog/SPEC-15.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude Code
+- ✳ Claude
 - Ablauf
 - On-Air-Uhr
 - Beginn = jetzt

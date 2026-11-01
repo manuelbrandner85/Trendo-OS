@@ -1,5 +1,5 @@
 # Trendo Text – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.30 (Stand 234e066)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.32 (Stand 345fe84)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

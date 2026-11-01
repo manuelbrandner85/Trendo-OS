@@ -1,20 +1,19 @@
 # KI fragen – Funktionsmatrix
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · Stand: 0.9.30 (Stand 234e066)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · Stand: 0.9.32 (Stand 345fe84)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Los
 - Hinzufügen …
-- ✳ Claude Code
+- ✳ Claude
 - Modell
 - Fragen
 - ＋ Neues Gespräch
+- Claude als Haupt-KI nutzen (wenn verbunden)
 - Claude Code einrichten
 - Neu prüfen
-- Token erzeugen …
-- Speichern
 - Mit Claude verbinden
 - Schreib eine freundliche Absage für einen Termin
 - Erkläre mir kurz, was eine Firewall macht

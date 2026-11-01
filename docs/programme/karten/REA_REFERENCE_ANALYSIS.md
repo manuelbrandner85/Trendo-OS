@@ -1,6 +1,6 @@
 # Karten & Touren – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.30 (Stand 234e066)
+Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.32 (Stand 345fe84)
 
 Analyse: [Vorbild-Analyse Karten: GPXSee, QGIS, Komoot (Clean-Room)](../../../docs/claude/vorbilder/karten-gpxsee.md)
 

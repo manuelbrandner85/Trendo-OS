@@ -14,7 +14,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
-      "✳ Claude Code",
+      "✳ Claude",
       "Speichern",
       "Exportieren",
       "Als PDF",
@@ -80,7 +80,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -94,7 +94,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "E-Mail & Kontakte",
       "Adressbuch",
       "Posteingang",
@@ -127,7 +127,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -143,7 +143,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "E-Mail & Kontakte",
       "Adressbuch",
       "Posteingang",
@@ -175,7 +175,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -202,7 +202,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "E-Mail & Kontakte",
       "Adressbuch",
       "Posteingang",
@@ -266,7 +266,7 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -282,7 +282,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "E-Mail & Kontakte",
       "Adressbuch",
       "Posteingang",
@@ -321,7 +321,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -335,7 +335,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "E-Mail & Kontakte",
       "Adressbuch",
       "Posteingang",
@@ -376,7 +376,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -528,7 +528,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden",
       "Werkzeuge",
       "Medien",
@@ -601,7 +601,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -753,7 +753,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Übersicht",
       "Dateien",
       "Bilder & Medien",
@@ -846,7 +846,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -998,7 +998,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden",
       "Werkzeuge",
       "Medien",
@@ -1081,7 +1081,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -1098,7 +1098,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "＋ Neues Projekt",
       "Video für YouTube",
       "Eigene Webseite",
@@ -1151,7 +1151,7 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -1304,7 +1304,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
-      "✳ Claude Code",
+      "✳ Claude",
       "Start",
       "PDF",
       "Schreiben",
@@ -1403,7 +1403,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -1556,7 +1556,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
-      "✳ Claude Code",
+      "✳ Claude",
       "PDF öffnen …",
       "Neue leere PDF"
     ],
@@ -1597,6 +1597,7 @@
       "Trendo PDF"
     ],
     "Tests": [
+      "Klick-Audit 01.11.2026: „PDF öffnen …“ mit einer Datei, die keine PDF ist – Hinweis statt Absturz",
       "SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien",
       "SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen",
       "SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt",
@@ -1630,7 +1631,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -1785,7 +1786,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
-      "✳ Claude Code",
+      "✳ Claude",
       "Datei ▾",
       "Start",
       "Einfügen",
@@ -1880,7 +1881,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -2035,7 +2036,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
-      "✳ Claude Code",
+      "✳ Claude",
       "Datei ▾",
       "Start",
       "Einfügen",
@@ -2133,7 +2134,7 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -2288,7 +2289,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
-      "✳ Claude Code",
+      "✳ Claude",
       "Start",
       "Einfügen",
       "Entwurf",
@@ -2400,7 +2401,7 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -2421,7 +2422,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Budget setzen",
       "Heute",
       "↶ Rückgängig",
@@ -2473,7 +2474,7 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -2492,7 +2493,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verkaufen",
       "Geschäftsidee",
       "\uD83E\uDDFE Kasse",
@@ -2532,7 +2533,7 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -2548,7 +2549,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Bilder",
       "Klänge",
       "3D & Texturen",
@@ -2578,7 +2579,7 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -2592,7 +2593,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Vorlagen",
       "Skills",
       "Einfach erklären",
@@ -2625,7 +2626,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -2642,7 +2643,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Vorlagen",
       "Skills",
       "＋ Eigener Skill",
@@ -2678,7 +2679,7 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -2858,7 +2859,7 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": true
   },
   {
@@ -3001,7 +3002,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Ablauf",
       "On-Air-Uhr",
       "Beginn = jetzt",
@@ -3107,7 +3108,7 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -3121,7 +3122,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "\uD83D\uDCFA Live-TV",
       "\uD83C\uDFAC Filme",
       "\uD83C\uDF7F Serien",
@@ -3155,7 +3156,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -3244,7 +3245,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": true
   },
   {
@@ -3267,7 +3268,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden",
       "Medien bearbeiten",
       "Videoschnitt",
@@ -3338,7 +3339,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -3427,7 +3428,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": true
   },
   {
@@ -3487,7 +3488,7 @@
       "Aushöhlen",
       "Los",
       "Hinzufügen …",
-      "✳ Claude Code",
+      "✳ Claude",
       "Teile vorschlagen"
     ],
     "Formats": [
@@ -3546,7 +3547,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -3572,7 +3573,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
-      "✳ Claude Code",
+      "✳ Claude",
       "Datei wählen …",
       "Aus Trendo CAD",
       "Bambu Studio einrichten (kostenlos, AGPL)",
@@ -3625,7 +3626,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -3653,7 +3654,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
-      "✳ Claude Code",
+      "✳ Claude",
       "Datei ▾",
       "Quader",
       "Zylinder",
@@ -3732,7 +3733,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -3872,7 +3873,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Gegenstände einscannen",
       "Aus Fotos",
       "Ordner wählen …",
@@ -3929,7 +3930,7 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -4139,7 +4140,7 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": true
   },
   {
@@ -4199,7 +4200,7 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": true
   },
   {
@@ -4218,7 +4219,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
-      "✳ Claude Code",
+      "✳ Claude",
       "Spiele bauen",
       "Werkstatt",
       "Anlegen und spielen",
@@ -4270,7 +4271,7 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -4391,7 +4392,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Datei wählen …",
       "Öffnen",
       "Beispielmodell",
@@ -4448,7 +4449,7 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -4593,7 +4594,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "⛽ Familienauto",
       "Elektro",
       "＋ Anlegen",
@@ -4642,7 +4643,7 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -4831,7 +4832,7 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": true
   },
   {
@@ -4975,7 +4976,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Diesen PC jetzt messen",
       "● Live (alle 5 s)",
       "24 h",
@@ -5034,7 +5035,7 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -5179,7 +5180,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Not-Aus",
       "Not-Aus lösen",
       "Arm planen",
@@ -5249,7 +5250,7 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -5443,7 +5444,7 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": true
   },
   {
@@ -5623,7 +5624,7 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": true
   },
   {
@@ -5803,7 +5804,7 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": true
   },
   {
@@ -5992,7 +5993,7 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": true
   },
   {
@@ -6112,7 +6113,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Lernen",
       "Lernplan",
       "Eintippen",
@@ -6155,7 +6156,7 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -6351,7 +6352,7 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": true
   },
   {
@@ -6365,7 +6366,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Lesen",
       "Literaturliste kopieren",
       "Als Bericht speichern",
@@ -6397,7 +6398,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -6413,7 +6414,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "＋ Neue Seite",
       "Suchen",
       "Datei wählen …",
@@ -6452,7 +6453,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -6466,7 +6467,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "+ Downloads aufräumen: PDFs in einen Ordner",
       "+ Jeden Morgen eine Tagesnotiz",
       "+ Fotos mit Datum versehen",
@@ -6502,7 +6503,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -6519,7 +6520,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden",
       "Abläufe über mehrere Studios",
       "＋ Neues Großprojekt",
@@ -6554,7 +6555,7 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -6569,7 +6570,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden",
       "Modell",
       "Fragen",
@@ -6631,7 +6632,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -6646,14 +6647,13 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
-      "✳ Claude Code",
+      "✳ Claude",
       "Modell",
       "Fragen",
       "＋ Neues Gespräch",
+      "Claude als Haupt-KI nutzen (wenn verbunden)",
       "Claude Code einrichten",
       "Neu prüfen",
-      "Token erzeugen …",
-      "Speichern",
       "Mit Claude verbinden",
       "Schreib eine freundliche Absage für einen Termin",
       "Erkläre mir kurz, was eine Firewall macht",
@@ -6678,18 +6678,18 @@
       "CORE-10 UI: Merken, Suchen, Löschen und Korrektur aus dem Gespräch",
       "CORE-12 UI: Vorlage ausfüllen und senden, neue Vorlage speichern, Masterprompt bauen",
       "Chatfenster: Enter sendet, Antwort als Sprechblase mit Tabelle und Code (Kopieren), Gespräch gespeichert und wieder zu öffnen, umbenennen, löschen",
+      "Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
+      "Claude-Regeln 01.11.2026: Trendo speichert keine Claude-Tokens – ein alter wird beim Start gelöscht, kein Token-Feld mehr",
       "SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf",
-      "T-0316: Abo-Token – API-Schlüssel wird abgelehnt (nur Abo), Abo-Token landet im sicheren Speicher und lässt sich entfernen",
       "T-0316: Claude als Haupt-KI – Frage läuft eingegrenzt über Claude (kein Datei-Ändern), Antwort mit Quelle „Claude (dein Abo)“; Haupt-KI aus → Claude wird nicht gefragt",
       "T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „✓ Mit deinem Claude-Abo verbunden (Max)“",
-      "T-0316: Ohne Anthropic-Freigabe – kein Abo im Hintergrund (keine Haupt-KI, Läufe gesperrt), Hinweis sichtbar; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
-      "T-0316: Studio – „Claude Code“ immer in der Auftragsleiste; „Im eigenen Fenster“ öffnet Claude Code mit der Rolle des Studios",
-      "T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Token erzeugen“, „Claude Code öffnen“ starten nie ein echtes Programm",
+      "T-0316: Studio – „✳ Claude“ immer in der Auftragsleiste; das Claude-Projekt des Studios trägt seine Rolle, kein Terminal",
+      "T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Claude Code öffnen“ starten nie ein echtes Programm",
       "X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette"
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -6707,9 +6707,10 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
-      "✳ Claude Code",
+      "✳ Claude",
       "Modell",
-      "Fragen"
+      "Fragen",
+      "Öffnen"
     ],
     "Formats": [
       ".html",
@@ -6743,7 +6744,7 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -6758,7 +6759,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden",
       "Schlüssel holen",
       "Prüfen & speichern",
@@ -6820,7 +6821,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -6834,7 +6835,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Planer",
       "Rechercheur",
       "Texter",
@@ -6873,7 +6874,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -6894,7 +6895,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden",
       "KI-Quellen",
       "KI-Bibliothek",
@@ -6952,7 +6953,7 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -6966,15 +6967,14 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden",
       "KI-Quellen",
       "KI-Bibliothek",
       "Kostenlose Internet-KIs",
+      "Claude als Haupt-KI nutzen (wenn verbunden)",
       "Claude Code einrichten",
       "Neu prüfen",
-      "Token erzeugen …",
-      "Speichern",
       "Mit Claude verbinden",
       "Jetzt suchen",
       "Herunterladen & einrichten",
@@ -7002,8 +7002,10 @@
       "CORE-03 UI: Rolle wählen, starten, Team-Ablauf, Speichern über Freigabe",
       "CORE-10 UI: Merken, Suchen, Löschen und Korrektur aus dem Gespräch",
       "CORE-12 UI: Vorlage ausfüllen und senden, neue Vorlage speichern, Masterprompt bauen",
-      "Claude im Studio: Knopf in jedem Studio, Fläche rechts; nicht installiert → einrichten, nicht angemeldet → anmelden, Testmodus startet nichts",
-      "Claude im Studio: echtes Terminal im Projektordner, Auftrag als Eingabe, Fläche bleibt beim Neuzeichnen dieselbe, Fenster schließen beendet sie",
+      "Claude im Studio: Fenster schließen schließt Claude",
+      "Claude im Studio: wie Claude im Web – claude.ai im ganzen Fenster, kein Terminal; anmelden, Projekte des Studios anlegen, fortsetzen, entfernen",
+      "Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
+      "Claude-Regeln 01.11.2026: Trendo speichert keine Claude-Tokens – ein alter wird beim Start gelöscht, kein Token-Feld mehr",
       "Einrichtung: Ergebnis bleibt stehen (mit fehlgeschlagenen Paketen), schließt erst nach „Los geht's“",
       "Einrichtung: „Abbrechen“ beendet die Installation und schließt den Bildschirm; danach kein Ergebnisbildschirm",
       "Installer-Programm: Installieren & starten führt den Installer still aus, erkennt das Programm, startet es; Entfernen ruft den Deinstaller",
@@ -7013,12 +7015,10 @@
       "KoboldCpp: Bestätigen → von GitHub laden → einrichten → Starten mit größtem Sprachmodell",
       "LM Studio: Installer von der Herstellerseite laden und starten, danach erkennen und Quelle einschalten",
       "SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf",
-      "T-0316: Abo-Token – API-Schlüssel wird abgelehnt (nur Abo), Abo-Token landet im sicheren Speicher und lässt sich entfernen",
       "T-0316: Claude als Haupt-KI – Frage läuft eingegrenzt über Claude (kein Datei-Ändern), Antwort mit Quelle „Claude (dein Abo)“; Haupt-KI aus → Claude wird nicht gefragt",
       "T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „✓ Mit deinem Claude-Abo verbunden (Max)“",
-      "T-0316: Ohne Anthropic-Freigabe – kein Abo im Hintergrund (keine Haupt-KI, Läufe gesperrt), Hinweis sichtbar; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
-      "T-0316: Studio – „Claude Code“ immer in der Auftragsleiste; „Im eigenen Fenster“ öffnet Claude Code mit der Rolle des Studios",
-      "T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Token erzeugen“, „Claude Code öffnen“ starten nie ein echtes Programm",
+      "T-0316: Studio – „✳ Claude“ immer in der Auftragsleiste; das Claude-Projekt des Studios trägt seine Rolle, kein Terminal",
+      "T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Claude Code öffnen“ starten nie ein echtes Programm",
       "X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette",
       "X-05: Nur freie Quellen auf diesem Gerät, Modelle passend zur Hardware",
       "X-05: Rückfallkette lässt sich sortieren, abschalten und bleibt gespeichert",
@@ -7026,7 +7026,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -7040,7 +7040,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "KI-Quellen",
       "KI-Bibliothek",
       "Kostenlose Internet-KIs",
@@ -7071,7 +7071,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -7088,7 +7088,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "+ Überschrift",
       "+ Text",
       "+ Bild",
@@ -7125,19 +7125,21 @@
       "Baukasten übernimmt die neue Seite ins Formular",
       "Briefseite zeigt den echten Brieftext in der Vorschau",
       "Briefseite zeigt die Auftragsleiste und meldet ehrlich, wenn nichts eingebaut ist",
-      "Claude im Studio: Knopf in jedem Studio, Fläche rechts; nicht installiert → einrichten, nicht angemeldet → anmelden, Testmodus startet nichts",
-      "Claude im Studio: echtes Terminal im Projektordner, Auftrag als Eingabe, Fläche bleibt beim Neuzeichnen dieselbe, Fenster schließen beendet sie",
+      "Claude im Studio: Fenster schließen schließt Claude",
+      "Claude im Studio: wie Claude im Web – claude.ai im ganzen Fenster, kein Terminal; anmelden, Projekte des Studios anlegen, fortsetzen, entfernen",
+      "Claude-Chat: ohne Claude Code „einrichten“, ohne Anmeldung „Mit Claude anmelden“ – im Testmodus startet nie ein echtes Claude",
+      "Claude-Chat: wie in Claude – erste Nachricht legt das Projekt an, Antwort mit Arbeitsschritten, Fortsetzen über die Sitzung, Zurücknehmen, Löschen in den Papierkorb",
+      "Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
+      "Claude-Regeln 01.11.2026: Trendo speichert keine Claude-Tokens – ein alter wird beim Start gelöscht, kein Token-Feld mehr",
       "Startbildschirm bekommt keine Auftragsleiste",
       "T-0201: Datei aufs Feld oder aufs Studio ziehen füllt das passende Feld",
       "T-0201: Mausklick auf „Datei wählen …“ füllt das Feld, die Datei steht danach unter „Zuletzt“; Eintippen geht weiter",
       "T-0201: Ordnerfeld öffnet den Ordner-Dialog",
       "T-0201: jedes Pfad- oder Ordnerfeld hat „Datei wählen …“ bzw. „Ordner wählen …“",
-      "T-0316: Abo-Token – API-Schlüssel wird abgelehnt (nur Abo), Abo-Token landet im sicheren Speicher und lässt sich entfernen",
       "T-0316: Claude als Haupt-KI – Frage läuft eingegrenzt über Claude (kein Datei-Ändern), Antwort mit Quelle „Claude (dein Abo)“; Haupt-KI aus → Claude wird nicht gefragt",
       "T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „✓ Mit deinem Claude-Abo verbunden (Max)“",
-      "T-0316: Ohne Anthropic-Freigabe – kein Abo im Hintergrund (keine Haupt-KI, Läufe gesperrt), Hinweis sichtbar; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
-      "T-0316: Studio – „Claude Code“ immer in der Auftragsleiste; „Im eigenen Fenster“ öffnet Claude Code mit der Rolle des Studios",
-      "T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Token erzeugen“, „Claude Code öffnen“ starten nie ein echtes Programm",
+      "T-0316: Studio – „✳ Claude“ immer in der Auftragsleiste; das Claude-Projekt des Studios trägt seine Rolle, kein Terminal",
+      "T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Claude Code öffnen“ starten nie ein echtes Programm",
       "Trendo-Agent: Los → eine Rückfrage als Knopf → Umsetzen, Prüfung findet Fehler, bessert selbst nach → „Behalten?“; Nein stellt alles wieder her, Ja behält",
       "X-03 (UI): Baustein hinzufügen, verschieben, entfernen, veröffentlichen",
       "X-03: Bausteine werden zu sicherem HTML, Reihenfolge änderbar, Speichern und Laden",
@@ -7147,7 +7149,7 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -7163,7 +7165,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Anlegen"
     ],
     "Formats": [
@@ -7187,7 +7189,7 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -7207,7 +7209,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Suchen",
       "Prüfen & speichern",
       "Notizen",
@@ -7272,7 +7274,7 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -7292,7 +7294,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Ja, installieren",
       "Abbrechen",
       "Datei wählen …",
@@ -7330,7 +7332,7 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -7347,7 +7349,7 @@
     "Tools": [
       "Los",
       "Hinzufügen …",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden",
       "Klar",
       "Verspielt",
@@ -7406,7 +7408,7 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -7420,7 +7422,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Ordner wählen …",
       "Teilen starten"
     ],
@@ -7449,7 +7451,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -7463,7 +7465,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden"
     ],
     "Formats": [],
@@ -7486,7 +7488,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -7500,7 +7502,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Jetzt sichern",
       "Ordner wählen …",
       "Ordner prüfen"
@@ -7530,7 +7532,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -7544,7 +7546,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden",
       "Jetzt sichern"
     ],
@@ -7563,7 +7565,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -7666,7 +7668,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -7682,7 +7684,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Trendo KI",
       "Agenten-Zentrale",
       "Abläufe",
@@ -7758,7 +7760,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -7772,7 +7774,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "\uD83D\uDCF7 Eigenes Foto wählen …",
       "Mit der Kamera aufnehmen",
       "Weiter"
@@ -7799,7 +7801,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -7813,7 +7815,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden",
       "Projekt anlegen",
       "Trendo-Repository im Browser öffnen (Freigabe nötig)"
@@ -7865,7 +7867,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -7909,6 +7911,8 @@
       "CORE-01: Dateisuche begrenzt Tiefe und Anzahl",
       "CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte",
       "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+K fokussiert die Suche",
+      "Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
+      "Claude-Regeln 01.11.2026: Trendo speichert keine Claude-Tokens – ein alter wird beim Start gelöscht, kein Token-Feld mehr",
       "Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt",
       "Design: Dock-Klick auf Dateien startet direkt (nur Owner) und wird auditiert; Browser offline deaktiviert",
       "Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert",
@@ -7967,12 +7971,10 @@
       "T-0107: Sparsam – keine Hintergrund-Unschärfe, keine Schatten und Effekte, keine Übergänge; Auswahl in den Einstellungen",
       "T-0212: Einfacher Modus vergrößert Knöpfe",
       "T-0212: Schalter zeigt Zustand; „Status mit Zeichen“ setzt ✓ ⚠ ✕ an echte Statuspunkte",
-      "T-0316: Abo-Token – API-Schlüssel wird abgelehnt (nur Abo), Abo-Token landet im sicheren Speicher und lässt sich entfernen",
       "T-0316: Claude als Haupt-KI – Frage läuft eingegrenzt über Claude (kein Datei-Ändern), Antwort mit Quelle „Claude (dein Abo)“; Haupt-KI aus → Claude wird nicht gefragt",
       "T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „✓ Mit deinem Claude-Abo verbunden (Max)“",
-      "T-0316: Ohne Anthropic-Freigabe – kein Abo im Hintergrund (keine Haupt-KI, Läufe gesperrt), Hinweis sichtbar; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
-      "T-0316: Studio – „Claude Code“ immer in der Auftragsleiste; „Im eigenen Fenster“ öffnet Claude Code mit der Rolle des Studios",
-      "T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Token erzeugen“, „Claude Code öffnen“ starten nie ein echtes Programm",
+      "T-0316: Studio – „✳ Claude“ immer in der Auftragsleiste; das Claude-Projekt des Studios trägt seine Rolle, kein Terminal",
+      "T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Claude Code öffnen“ starten nie ein echtes Programm",
       "TV-Vollbild: kleines Fenster „Verkleinern“ beim Start und bei Mausbewegung, ein Klick verkleinert",
       "Viele Studiofenster: das erste bleibt, Hinweis statt stillem Schließen",
       "W0-01/03/06: Assistent – Name, Ordner, Design, Pakete, Installation über Zustimmung, Vorlagen, Systemcheck",
@@ -7983,7 +7985,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -7997,7 +7999,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Jetzt prüfen und reparieren"
     ],
     "Formats": [],
@@ -8025,7 +8027,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -8039,7 +8041,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Geräte suchen"
     ],
     "Formats": [],
@@ -8067,7 +8069,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -8081,7 +8083,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "\uD83C\uDFE0  Zuhause (im selben WLAN)",
       "\uD83C\uDF0D  Überall – auch unterwegs",
       "Handy für unterwegs verbinden",
@@ -8129,7 +8131,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -8145,7 +8147,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden",
       "Leistung",
       "Prozesse",
@@ -8196,7 +8198,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -8210,7 +8212,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Koppeln",
       "Erreichbarkeit prüfen",
       "Wo läuft das?"
@@ -8244,7 +8246,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -8258,7 +8260,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Suchen",
       "Installierte & Updates anzeigen"
     ],
@@ -8287,7 +8289,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -8433,7 +8435,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden",
       "Installieren …"
     ],
@@ -8521,7 +8523,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -8667,7 +8669,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Alles",
       "Apps",
       "Programme",
@@ -8734,7 +8736,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -8880,7 +8882,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Nach Updates schauen",
       "Datei wählen …",
       "Prüfen und entpacken",
@@ -8953,7 +8955,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -9099,7 +9101,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden",
       "Ordner wählen …",
       "Programme aus dem Vollpaket einrichten",
@@ -9206,7 +9208,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -9350,7 +9352,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden"
     ],
     "Formats": [
@@ -9382,7 +9384,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -9526,7 +9528,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Leistung",
       "Rückfall & Lizenzen",
       "Jetzt messen",
@@ -9562,7 +9564,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -9706,7 +9708,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden"
     ],
     "Formats": [
@@ -9751,7 +9753,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -9895,7 +9897,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden"
     ],
     "Formats": [
@@ -9931,7 +9933,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -10076,7 +10078,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden",
       "Aussehen",
       "Farbe",
@@ -10191,7 +10193,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -10334,7 +10336,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Jetzt sperren",
       "Anmeldung ändern",
       "Beim Start von Trendo nach PIN/Passwort fragen",
@@ -10371,7 +10373,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -10514,7 +10516,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Sehen",
       "Hilfen",
       "Prüfen",
@@ -10562,7 +10564,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -10705,7 +10707,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Automatisch nach Updates suchen und laden",
       "Sofort, sobald es geladen ist – mit 30 Sekunden Hinweis, alles wird vorher gesichert",
       "Beim nächsten Start von Trendo",
@@ -10743,7 +10745,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -10757,7 +10759,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code"
+      "✳ Claude"
     ],
     "Formats": [],
     "Dependencies": [],
@@ -10776,7 +10778,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -10924,7 +10926,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Verstanden",
       "Herunterladen",
       "Im Standardbrowser öffnen",
@@ -11020,7 +11022,7 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -11168,7 +11170,7 @@
     ],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Sicher prüfen",
       "Laden & Speichern",
       "Browser",
@@ -11238,7 +11240,7 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   },
   {
@@ -11252,7 +11254,7 @@
     "Engine": [],
     "Tools": [
       "Los",
-      "✳ Claude Code",
+      "✳ Claude",
       "Datei wählen …",
       "Prüfen",
       "Fall anlegen"
@@ -11286,7 +11288,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.30 (Stand 234e066)",
+    "Version": "0.9.32 (Stand 345fe84)",
     "Shell": false
   }
 ]

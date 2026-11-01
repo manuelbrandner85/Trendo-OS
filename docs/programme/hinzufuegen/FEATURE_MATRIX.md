@@ -1,6 +1,6 @@
 # Hinzufügen – Funktionsmatrix
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `hinzufuegen` · Stand: 0.9.30 (Stand 234e066)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `hinzufuegen` · Stand: 0.9.32 (Stand 345fe84)
 
 Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 
@@ -34,7 +34,7 @@ Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 
 ## Werkzeuge der Oberfläche
 - Los
-- ✳ Claude Code
+- ✳ Claude
 - Alles
 - Apps
 - Programme

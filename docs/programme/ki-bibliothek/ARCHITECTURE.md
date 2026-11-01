@@ -1,6 +1,6 @@
 # KI-Bibliothek – Architektur
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.30 (Stand 234e066)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.32 (Stand 345fe84)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.KiLibrary.cs`
