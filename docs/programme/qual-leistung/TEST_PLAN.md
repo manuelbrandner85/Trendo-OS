@@ -1,6 +1,6 @@
 # Leistung – Testplan
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-leistung` · Stand: 0.9.28 (Stand 089576b)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-leistung` · Stand: 0.9.28 (Stand bea73f9)
 
 13 Tests sprechen dieses Programm an.
 

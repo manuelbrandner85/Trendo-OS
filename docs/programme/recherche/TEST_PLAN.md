@@ -1,8 +1,8 @@
 # Recherche im Lesemodus – Testplan
 
-Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.28 (Stand 089576b)
+Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.28 (Stand bea73f9)
 
-15 Tests sprechen dieses Programm an.
+16 Tests sprechen dieses Programm an.
 
 - CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen
 - SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht
@@ -18,4 +18,5 @@ Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `rec
 - SYS-08: .onion nur Tor Browser, andere Schemata und Heimnetz abgelehnt, Webseiten im Lesemodus
 - SYS-08: Lesetext ohne Skripte und Formulare, Links absolut; Sitzung flüchtig
 - SYS-09 UI: Kontakt anlegen, Entwurf prüfen und im Mailprogramm öffnen (nichts wird gesendet)
+- T-0309: Recherche – Auswahl markieren (farbig im Text), Notiz, Farbe, Zitat mit Quelle kopieren, Literaturliste einfach/APA, Bericht mit Zitaten, Sitzungsende löscht
 - X-02 UI: Beim Start automatisch geprüft, Seite zeigt Ergebnis, erneut prüfen

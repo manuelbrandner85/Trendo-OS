@@ -1,6 +1,6 @@
 # Trendo Präsentation – Architektur
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.28 (Stand 089576b)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.28 (Stand bea73f9)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Praesentation.cs`

@@ -1,6 +1,6 @@
 # E-Mail & Kontakte – Funktionsmatrix
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.28 (Stand 089576b)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.28 (Stand bea73f9)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -18,3 +18,4 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Datei wählen …
 - Öffnen
 - Kontakte sichern (.vcf)
+- Zum Adressbuch (0 Kontakte) →

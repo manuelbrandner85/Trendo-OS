@@ -1,6 +1,6 @@
 # Open Source – Funktionsmatrix
 
-Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.28 (Stand 089576b)
+Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.28 (Stand bea73f9)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -13,5 +13,3 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Musik
 - PDF
 - Spiele
-- Ordner
-- Entfernen

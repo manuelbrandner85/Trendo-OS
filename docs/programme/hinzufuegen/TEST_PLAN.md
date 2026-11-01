@@ -1,6 +1,6 @@
 # Hinzufügen – Testplan
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `hinzufuegen` · Stand: 0.9.28 (Stand 089576b)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `hinzufuegen` · Stand: 0.9.28 (Stand bea73f9)
 
 12 Tests sprechen dieses Programm an.
 

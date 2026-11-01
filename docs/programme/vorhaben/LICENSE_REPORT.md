@@ -1,6 +1,6 @@
 # Vorhaben – Lizenzen
 
-Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.28 (Stand 089576b)
+Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.28 (Stand bea73f9)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 
@@ -8,6 +8,5 @@ Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nen
 - Ollama – lokale KI (optional)
 - LibreOffice (optional)
 - mpv (optional)
-- Python (optional)
 
 Lizenztexte der mitgelieferten Bibliotheken: `src/Trendo.Core/WebAssets/LIZENZEN.txt`. Optionale Programme werden nur nach Zustimmung aus offiziellen Quellen eingerichtet (GRUNDSATZ-01).

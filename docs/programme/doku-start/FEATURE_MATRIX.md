@@ -1,6 +1,6 @@
 # Start – Funktionsmatrix
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.28 (Stand 089576b)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.28 (Stand bea73f9)
 
 Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 
@@ -61,7 +61,6 @@ Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 - Heute
 - 7 Tage
 - 30 Tage
-- LIZENZ.txt
 - [privat]
 - [privat]
 - [privat]
@@ -71,8 +70,6 @@ Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 - [privat]
 - [privat]
 - [privat]
-- [privat]
-- README.md
 - [privat]
 - CLAUDE.md
 - DIN5008-Geschaeftsbrief-FormB.docx
@@ -81,5 +78,18 @@ Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 - [privat]
 - [privat]
 - [privat]
-- SCHRITTE.md
+- [privat]
+- girocode.txt
+- Kaffee-Abo-Bauplan.md
+- [privat]
+- [privat]
+- [privat]
+- [privat]
+- [privat]
+- [privat]
+- [privat]
+- [privat]
+- [privat]
+- [privat]
+- [privat]
 - [privat]
