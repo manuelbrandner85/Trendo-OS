@@ -22,6 +22,9 @@ public partial class MainWindow
     /// <summary>Für Tests: statt echtem Netz (Eintrag, Fortschritt, Abbruch).</summary>
     public static Func<DownloadQueue.Job, IProgress<(long Done, long Total)>, CancellationToken, Task>? DownloadRunOverride { get; set; }
 
+    /// <summary>Zielordner: der Download-Ordner des Nutzers – im Testmodus (eigener Datenordner) nie, damit Prüfungen keine Dateien in echte Ordner legen.</summary>
+    string DownloadManagerFolder => _opt.Isolated ? Directory.CreateDirectory(Path.Combine(_core.DataRoot, "test-downloads")).FullName : DownloadTarget;
+
     /// <summary>Einträge hinzufügen (eingefügter Text mit einem oder mehreren Links) und Warteschlange anstoßen.</summary>
     public int DownloadAdd(string text, string? hash = null)
     {
@@ -31,7 +34,7 @@ public partial class MainWindow
         var n = 0;
         foreach (var u in links)
         {
-            try { Downloads.Add(u, DownloadTarget, links.Count == 1 ? hash : null); n++; }
+            try { Downloads.Add(u, DownloadManagerFolder, links.Count == 1 ? hash : null); n++; }
             catch (ArgumentException e) { _dlMsg = e.Message; return n; }
         }
         _core.Audit.Append(Principal.LocalOwner.Name, "download.add", $"{n} Eintrag/Einträge");

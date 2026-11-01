@@ -31,7 +31,7 @@ public partial class MainWindow
     /// <summary>Bewertung der aufgedeckten Karte (Knopf oder Taste 1–4).</summary>
     public void LearnGrade(Grade g)
     {
-        if (Learn.DueCards(LearnDeck).FirstOrDefault() is not { } c || !_reveal) return;
+        if (Learn.SessionQueue(LearnDeck).FirstOrDefault() is not { } c || !_reveal) return;
         var next = Learn.Answer(c.Id, g); _reveal = false;
         _learnMsg = g == Grade.Falsch ? "Kommt morgen wieder." : $"Nächstes Mal in {next.IntervalDays} Tag{(next.IntervalDays == 1 ? "" : "en")}.";
         Show("lernen");
@@ -41,7 +41,7 @@ public partial class MainWindow
     {
         // Kopf: Modus und Stapel
         var modes = new WrapPanel { Name = "learn-modes" };
-        foreach (var (id, label) in new[] { ("lernen", "Lernen"), ("tippen", "Eintippen"), ("quiz", "Quiz"), ("karten", "Karten verwalten") })
+        foreach (var (id, label) in new[] { ("lernen", "Lernen"), ("plan", "Lernplan"), ("tippen", "Eintippen"), ("quiz", "Quiz"), ("karten", "Karten verwalten") })
         {
             var on = LearnMode == id; var mid = id;
             var b = new Button { Name = "learn-mode-" + id, Content = label, Padding = new Thickness(14, 6), Margin = new Thickness(0, 0, 6, 6), CornerRadius = new CornerRadius(10),
@@ -54,7 +54,7 @@ public partial class MainWindow
         deckBox.SelectionChanged += (_, _) => { var v = deckBox.SelectedIndex <= 0 ? null : decks[deckBox.SelectedIndex]; if (v != LearnDeck) { LearnDeck = v; _reveal = false; _quiz = null; Show("lernen"); } };
         modes.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Margin = new Thickness(12, 0, 0, 6), VerticalAlignment = VerticalAlignment.Center, Children = { P("Stapel", null, 12), deckBox } });
 
-        Control main = LearnMode switch { "tippen" => LearnTyped(), "quiz" => LearnQuiz(), "karten" => LearnCards(), _ => LearnStudy() };
+        Control main = LearnMode switch { "tippen" => LearnTyped(), "quiz" => LearnQuiz(), "karten" => LearnCards(), "plan" => LearnPlanView(), _ => LearnStudy() };
         var mainBox = new Border { Name = "learn-main", CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(18), Child = main };
         var side = new Border { Name = "learn-side", Width = 300, CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(12), Child = new ScrollViewer { Content = LearnStats() } };
         var body = new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,Auto"), Children = { mainBox, Pos(side, 2) } };
@@ -98,7 +98,7 @@ public partial class MainWindow
         var (total, due, _, _) = Learn.Progress(LearnDeck);
         var sp = new StackPanel { Spacing = 14 };
         if (_learnMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "learn-msg", Text = _learnMsg, Foreground = Brush.Parse("#4ADE80"), FontSize = 12.5 });
-        var card = Learn.DueCards(LearnDeck).FirstOrDefault();
+        var card = Learn.SessionQueue(LearnDeck).FirstOrDefault();
         if (card is null)
         {
             sp.Children.Add(CardFace(LearnDeck ?? "Alle Stapel", total == 0 ? "Noch keine Karten" : "✓ Für heute alles gelernt", total == 0 ? "Unter „Karten verwalten“ anlegen oder eine Liste einfügen." : "Morgen geht es weiter – die Vorschau rechts zeigt, wie viel kommt."));
@@ -134,7 +134,7 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 14 };
         // Nach der Antwort bleibt die beantwortete Karte stehen (sie ist dann nicht mehr fällig), bis „Weiter“ gedrückt wird
-        var card = _typedResult.Length > 0 && _typedCard is { } tid ? Learn.Store.Cards.FirstOrDefault(c => c.Id == tid) : Learn.DueCards(LearnDeck).FirstOrDefault();
+        var card = _typedResult.Length > 0 && _typedCard is { } tid ? Learn.Store.Cards.FirstOrDefault(c => c.Id == tid) : Learn.SessionQueue(LearnDeck).FirstOrDefault();
         if (card is null) { sp.Children.Add(CardFace(LearnDeck ?? "Alle Stapel", "✓ Nichts fällig", null)); return sp; }
         var answered = _typedCard == card.Id && _typedResult.Length > 0;
         sp.Children.Add(CardFace(card.Deck, card.Front, answered ? card.Back : null));
@@ -231,6 +231,7 @@ public partial class MainWindow
         sp.Children.Add(H(LearnDeck ?? "Alle Stapel", 13));
         Fact("Karten", total.ToString()); Fact("Heute fällig", due.ToString()); Fact("Sitzen sicher (≥ 21 Tage)", learned.ToString()); Fact("Machen Mühe", hard.ToString());
         Fact("Lernserie", $"{streak} Tag{(streak == 1 ? "" : "e")}{(today ? " ✓ heute" : "")}");
+        if (Learn.Reminder() is { } rem) sp.Children.Add(new TextBlock { Name = "learn-reminder", Text = rem, Foreground = Brush.Parse("#FACC15"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
         // 7-Tage-Vorschau
         var fc = Learn.Forecast();
         sp.Children.Add(H("Nächste 7 Tage", 12));
@@ -268,5 +269,83 @@ public partial class MainWindow
             sp.Children.Add(new WrapPanel { Children = { rev, new Border { Width = 4 }, exp } });
         }
         return sp;
+    }
+
+    string _planMsg = "";
+
+    /// <summary>Lernplan: Tagesplan mit Ziel, Plan je Stapel (Prüfung, neue Karten pro Tag), Kalender der nächsten 4 Wochen, Lernverlauf der letzten 12 Wochen.</summary>
+    Control LearnPlanView()
+    {
+        var sp = new StackPanel { Spacing = 12 };
+        // Tagesplan
+        var (rev, neu, done, goal, min) = Learn.Today(LearnDeck);
+        var bar = new ProgressBar { Name = "learn-today-bar", Minimum = 0, Maximum = Math.Max(1, goal), Value = done, Height = 10, Foreground = Brush.Parse(done >= goal && goal > 0 ? "#4ADE80" : "#2F86F6") };
+        var todayText = rev + neu == 0 ? (done > 0 ? $"✓ Tagesziel geschafft – {done} Karten gelernt." : "Heute steht nichts an.") : $"Heute: {rev} Wiederholung{(rev == 1 ? "" : "en")} und {neu} neue Karte{(neu == 1 ? "" : "n")} – etwa {min} min.";
+        var go = Act("learn-plan-go", "Jetzt lernen", () => { LearnMode = "lernen"; _reveal = false; Show("lernen"); }, true); go.IsEnabled = rev + neu > 0;
+        sp.Children.Add(new Border { Name = "learn-today", Background = Brush.Parse("#1A2F86F6"), CornerRadius = new CornerRadius(12), Padding = new Thickness(14, 10), Child = new StackPanel { Spacing = 6, Children = {
+            new TextBlock { Name = "learn-today-text", Text = todayText, Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+            bar, P(goal > 0 ? $"{done} von {goal} geschafft" : "", Muted, 11.5), go } } });
+
+        // Plan je Stapel
+        sp.Children.Add(H("Plan je Stapel", 14));
+        if (Learn.Decks.Count == 0) sp.Children.Add(P("Lege zuerst Karten an (Karten verwalten).", Muted, 12));
+        var i = 0;
+        foreach (var deck in Learn.Decks.Where(d => LearnDeck is null || d == LearnDeck))
+        {
+            var dk = deck; var k = i++; var plan = Learn.Plan(dk);
+            var exam = new TextBox { Name = $"learn-plan-exam-{k}", Width = 130, PlaceholderText = "TT.MM.JJJJ", Text = plan?.Exam?.ToString("dd.MM.yyyy") ?? "" };
+            var per = new TextBox { Name = $"learn-plan-new-{k}", Width = 90, PlaceholderText = "automatisch", Text = plan is { Auto: false } ? plan.NewPerDay.ToString() : "" };
+            var save = Act($"learn-plan-save-{k}", plan is null ? "Plan anlegen" : "Speichern", () =>
+            {
+                try
+                {
+                    DateTime? ex = null;
+                    if ((exam.Text ?? "").Trim().Length > 0) ex = DateTime.TryParseExact(exam.Text!.Trim(), "dd.MM.yyyy", De, System.Globalization.DateTimeStyles.None, out var d) ? d : throw new FormatException("Prüfungsdatum bitte als TT.MM.JJJJ.");
+                    int? n = (per.Text ?? "").Trim().Length > 0 ? int.TryParse(per.Text!.Trim(), out var v) ? v : throw new FormatException("Neue Karten pro Tag bitte als Zahl.") : null;
+                    if (ex is null && n is null) throw new FormatException("Bitte ein Prüfungsdatum oder eine Zahl neuer Karten pro Tag.");
+                    var pl = Learn.SetPlan(dk, ex, n);
+                    _planMsg = $"✓ Plan für „{dk}“: {pl.NewPerDay} neue Karten pro Tag{(pl.Exam is { } e ? $", Prüfung am {e:dd.MM.yyyy}" : "")}.";
+                }
+                catch (Exception e) when (e is ArgumentException or FormatException) { _planMsg = e.Message; }
+                Show("lernen");
+            }, true);
+            var row = new WrapPanel { Children = { P("Prüfung", null, 12), exam, new Border { Width = 10 }, P("Neue pro Tag", null, 12), per, new Border { Width = 10 }, save } };
+            if (plan is not null) row.Children.Add(Act($"learn-plan-remove-{k}", "Plan entfernen", () => { Learn.RemovePlan(dk); _planMsg = $"Plan für „{dk}“ entfernt – es gelten wieder alle fälligen Karten."; Show("lernen"); }));
+            var fresh = Learn.Store.Cards.Count(c => c.Deck == dk && c.Reps == 0 && c.Lapses == 0 && c.FirstReviewed is null);
+            sp.Children.Add(Card(new StackPanel { Spacing = 4, Children = {
+                new TextBlock { Text = dk, Foreground = Text, FontWeight = FontWeight.SemiBold },
+                P(plan is null ? $"Kein Plan – {fresh} neue Karten warten." : $"{Learn.NewPerDay(dk)} neue Karten pro Tag{(plan.Auto ? " (automatisch aus dem Prüfungstermin)" : "")} · {fresh} neue übrig{(plan.Exam is { } e2 ? $" · Prüfung in {(e2 - DateTime.Today).Days} Tagen" : "")}", Muted, 11.5),
+                row } }));
+        }
+        if (_planMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "learn-plan-msg", Text = _planMsg, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap });
+
+        // Kalender: 4 Wochen
+        sp.Children.Add(H("Die nächsten 4 Wochen", 14));
+        var cal = Learn.Calendar(28, LearnDeck);
+        var grid = new UniformGrid { Name = "learn-calendar", Columns = 7 };
+        var maxLoad = Math.Max(1, cal.Max(c => c.Reviews + c.New));
+        for (var d = 0; d < cal.Count; d++)
+        {
+            var (day, r, n, isExam) = cal[d]; var load = (r + n) / (double)maxLoad;
+            grid.Children.Add(new Border { Name = $"learn-cal-{d}", Margin = new Thickness(2), Padding = new Thickness(6, 4), CornerRadius = new CornerRadius(8),
+                Background = new SolidColorBrush(Color.FromArgb((byte)(20 + 140 * load), 47, 134, 246)), BorderBrush = isExam ? GoldEdge : Edge, BorderThickness = new Thickness(isExam ? 2 : 1),
+                Child = new StackPanel { Children = {
+                    new TextBlock { Text = d == 0 ? "heute" : day.ToString("ddd dd.MM.", De), Foreground = Text, FontSize = 10.5, FontWeight = FontWeight.SemiBold },
+                    new TextBlock { Text = isExam ? "🎓 Prüfung" : r + n == 0 ? "frei" : $"{r} wdh. · {n} neu", Foreground = isExam ? GoldEdge : Muted, FontSize = 10 } } } });
+        }
+        sp.Children.Add(grid);
+
+        // Lernverlauf: 12 Wochen als Kacheln
+        var hist = Learn.History(84); var maxH = Math.Max(1, hist.Max(h => h.Count));
+        sp.Children.Add(H($"Lernverlauf – {hist.Sum(h => h.Count)} Wiederholungen in 12 Wochen", 14));
+        var heat = new UniformGrid { Name = "learn-history", Columns = 21 };
+        foreach (var (day, count) in hist)
+        {
+            var tile = new Border { Width = 18, Height = 18, Margin = new Thickness(1.5), CornerRadius = new CornerRadius(3),
+                Background = count == 0 ? Brush.Parse("#1AFFFFFF") : new SolidColorBrush(Color.FromArgb((byte)(60 + 195 * count / maxH), 74, 222, 128)) };
+            ToolTip.SetTip(tile, $"{day:ddd dd.MM.}: {count} Wiederholung{(count == 1 ? "" : "en")}"); heat.Children.Add(tile);
+        }
+        sp.Children.Add(heat);
+        return new ScrollViewer { Content = sp };
     }
 }
