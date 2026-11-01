@@ -98,8 +98,8 @@ public sealed partial class MainWindow
                         new TextBlock { Text = "Einen Moment …", FontSize = 13, Foreground = Brush.Parse("#9DB0CF"), HorizontalAlignment = HorizontalAlignment.Center } } },
                     Transitions = [new DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(700) }] };
                 Grid.SetRowSpan(splash, 2); root.Children.Add(splash);
-                DispatcherTimer.RunOnce(() => splash.Opacity = 0, TimeSpan.FromMilliseconds(600));
-                DispatcherTimer.RunOnce(() => root.Children.Remove(splash), TimeSpan.FromMilliseconds(1500));
+                Later(() => splash.Opacity = 0, TimeSpan.FromMilliseconds(600));
+                Later(() => root.Children.Remove(splash), TimeSpan.FromMilliseconds(1500));
             }
         }
     }

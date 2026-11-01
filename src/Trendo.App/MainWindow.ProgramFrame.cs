@@ -93,7 +93,7 @@ public partial class MainWindow
         row.Children.Add(close);
         _toastHost.Children.Add(t);
         while (_toastHost.Children.Count > 3) _toastHost.Children.RemoveAt(0);
-        DispatcherTimer.RunOnce(() => _toastHost.Children.Remove(t), TimeSpan.FromSeconds(actions.Length > 0 ? 9 : 6));
+        Later(() => _toastHost.Children.Remove(t), TimeSpan.FromSeconds(actions.Length > 0 ? 9 : 6));
     }
 
     /// <summary>Nennt eine Meldung eine vorhandene Datei oder einen Ordner, bietet die Benachrichtigung „Ordner öffnen“ an.</summary>

@@ -14,10 +14,29 @@ public partial class MainWindow
     private readonly StackPanel _kiProgress = new() { Name = "ki-progress", Spacing = 6, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 74, 0, 0), ZIndex = 4500, Width = 560, IsVisible = false };
     private DispatcherTimer? _kiProgressTimer;
 
+    private Action? _kiHubHandler;
+    private readonly List<IDisposable> _later = [];
+
+    /// <summary>Einmal später ausführen; beim Schließen des Fensters wird es abgebrochen (hält das Fenster sonst fest).</summary>
+    private void Later(Action a, TimeSpan after) { if (_later.Count > 200) _later.RemoveRange(0, 100); _later.Add(DispatcherTimer.RunOnce(a, after)); }
+
+    /// <summary>Beim Schließen alles lösen, was das Fenster sonst am Leben hält: das statische KI-Ereignis und laufende Zeitgeber
+    /// (ein laufender DispatcherTimer bleibt vom Dispatcher erreichbar – samt Fenster).</summary>
+    private void ReleaseOnClose()
+    {
+        if (_kiHubHandler is not null) { KiActivityHub.Changed -= _kiHubHandler; _kiHubHandler = null; }
+        foreach (var f in typeof(MainWindow).GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public))
+            if (f.FieldType == typeof(DispatcherTimer) && f.GetValue(this) is DispatcherTimer t) t.Stop();
+        foreach (var t in _ownedTimers) t.Stop();
+        foreach (var d in _later) d.Dispose();
+        _later.Clear();
+    }
+
     private void InitKiProgress(Grid root)
     {
         Grid.SetRowSpan(_kiProgress, 2); root.Children.Add(_kiProgress);
-        KiActivityHub.Changed += () => Dispatcher.UIThread.Post(RefreshKiProgress);
+        _kiHubHandler = () => Dispatcher.UIThread.Post(RefreshKiProgress);
+        KiActivityHub.Changed += _kiHubHandler;
         _kiProgressTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
         _kiProgressTimer.Tick += (_, _) => RefreshKiProgress();
     }

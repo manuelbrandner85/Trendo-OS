@@ -54,7 +54,7 @@ public partial class MainWindow
         if (ReleaseNotes.ShowFor(_settings.LastSeenVersion, cur, ReleaseNotes.For(_core.DataRoot, cur)))
             Dispatcher.UIThread.Post(() => Show("neu"), DispatcherPriority.Background);
         if (_settings.LastSeenVersion != cur) { _settings.LastSeenVersion = cur; SaveSettings(); }
-        DispatcherTimer.RunOnce(() => Boot.MarkOk(cur), TimeSpan.FromSeconds(30));
+        MarkBootOkLater(Boot, cur);
         if (_opt.Isolated || _core.Offline || !_settings.AutoUpdate) return;
         _updateTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(20) };
         var lastCheck = DateTime.MinValue;
@@ -68,6 +68,9 @@ public partial class MainWindow
         _updateTimer.Start();
         _ = UpdateCheckAsync();
     }
+
+    /// <summary>Start nach 30 s als gelungen vermerken – statisch, damit der Zeitgeber das Fenster nicht festhält.</summary>
+    static void MarkBootOkLater(BootGuard boot, string version) => DispatcherTimer.RunOnce(() => boot.MarkOk(version), TimeSpan.FromSeconds(30));
 
     /// <summary>Für Tests: Start-Ablauf der Updates erneut ausführen.</summary>
     public void UpdatesOnStartForTests() => UpdatesOnStart();
