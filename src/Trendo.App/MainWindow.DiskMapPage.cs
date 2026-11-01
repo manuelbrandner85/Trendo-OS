@@ -22,6 +22,7 @@ public partial class MainWindow
 
     public async Task DiskScanAsync(string folder)
     {
+        _tmTab = "speicher"; // Task-Manager: die Platzkarte liegt im Reiter „Speicher“
         if (!Directory.Exists(folder)) { _diskMsg = "Diesen Ordner gibt es nicht."; Show("ressourcen"); return; }
         _diskScan?.Cancel(); _diskScan = new CancellationTokenSource(); _diskFolder = folder; _diskCount = 0; _diskMsg = "Wird eingelesen …"; _diskDupes = []; Show("ressourcen");
         var prog = new Progress<int>(n => { _diskCount = n; });

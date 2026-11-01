@@ -139,44 +139,5 @@ public partial class MainWindow
     private string ProjectsRoot => string.IsNullOrEmpty(_settings.ProjectsFolder) ? UserSettings.DefaultProjectsFolder() : _settings.ProjectsFolder;
 
     // ---------- X-09: Speicher & Leistung ----------
-    private Control ResourcesView()
-    {
-        var sp = new StackPanel { Spacing = 8 };
-        MetricsSnapshot m; lock (_metrics) m = _metrics.Sample();
-        Border Meter(string name, string label, string value)
-        {
-            var n = new TextBlock { Name = name, Text = value, Foreground = Text, FontSize = 28, FontWeight = FontWeight.SemiBold };
-            return new Border { Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(14, 10), Margin = new Thickness(0, 0, 10, 10), MinWidth = 180, Child = new StackPanel { Spacing = 2, Children = { P(label, null, 12), n } } };
-        }
-        var meters = new WrapPanel();
-        meters.Children.Add(Meter("res-cpu", "Prozessor", m.CpuPercent is { } cpu ? $"{cpu:0} %" : "n. v."));
-        meters.Children.Add(Meter("res-ram", "Arbeitsspeicher", m.RamPercent is { } ram ? $"{ram:0} %" : "n. v."));
-        meters.Children.Add(Meter("res-gpu", "Grafik", m.GpuPercent is { } gpu ? $"{gpu:0} %" : "n. v."));
-        sp.Children.Add(meters);
-        sp.Children.Add(P($"Prozessor {m.CpuPercent?.ToString("0") ?? "n. v."} % · Arbeitsspeicher {m.RamPercent?.ToString("0") ?? "n. v."} % belegt von {TotalRam / (1024 * 1024 * 1024.0):0} GB · Grafik {m.GpuPercent?.ToString("0") ?? "n. v."} %", Text, 13));
-        var ki = new StackPanel { Spacing = 4, Children = { P("KI-Modelle im Speicher: wird geprüft …") } };
-        sp.Children.Add(new StackPanel { Spacing = 4, Children = { H("Trendo KI", 15), ki } });
-        _ = FillKi();
-        async Task FillKi()
-        {
-            var loaded = await _ollama.LoadedAsync();
-            ki.Children.Clear();
-            if (loaded.Count == 0) { ki.Children.Add(P("Kein KI-Modell im Speicher – belegt nichts.")); return; }
-            foreach (var (name, bytes) in loaded)
-            {
-                var b = new Button { Name = "ki-unload", Content = "Aus dem Speicher nehmen", FontSize = 11 };
-                b.Click += async (_, _) => { var ok = await _ollama.UnloadAsync(name); _core.Audit.Append(Principal.LocalOwner.Name, "ki.unload", $"{name} ok={ok}"); Show("ressourcen"); };
-                ki.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { P($"{name}: {ResourceMonitor.Size(bytes)}", Text, 12.5), b } });
-            }
-            ki.Children.Add(P("Das Modell bleibt installiert und lädt bei der nächsten Frage automatisch neu.", null, 10.5));
-        }
-        sp.Children.Add(H("Größte Programme gerade", 15));
-        foreach (var p in ResourceMonitor.Snapshot())
-            sp.Children.Add(P($"{p.Name}{(p.Count > 1 ? $" ({p.Count}×)" : "")}: {ResourceMonitor.Size(p.Bytes)}{(p.Studio is { } s ? $" · {s}" : "")}", p.Studio is null ? null : Text, 12));
-        sp.Children.Add(P("Trendo zeigt nur an und beendet keine fremden Programme. Schließe ein Programm selbst, wenn es zu viel belegt.", null, 10.5));
-        var refresh = new Button { Name = "res-refresh", Content = "Aktualisieren" }; refresh.Click += (_, _) => Show("ressourcen");
-        sp.Children.Add(refresh);
-        sp.Children.Add(Card(DiskMapCard()));
-        return AppsPage("Speicher & Leistung", sp);
-    }
+    // ResourcesView: siehe MainWindow.TaskManager.cs (Task-Manager, Runde 7)
 }
