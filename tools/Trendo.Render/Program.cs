@@ -216,6 +216,23 @@ else if (shot == "seite")
         if (win.DiskAt?.Children.FirstOrDefault(c => c.IsDir) is { } firstDir) win.DiskSelect(firstDir);
         win.Show("ressourcen");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_RECHERCHE") is { Length: > 0 }) // Recherche mit Markierungen (Beispielartikel, ohne Netz)
+    {
+        const string article = "<html><head><title>Wildbienen im Garten</title></head><body><h1>Wildbienen im Garten</h1>"
+            + "<p>In Deutschland leben rund 560 Wildbienenarten. Anders als die Honigbiene leben die meisten von ihnen allein und bilden keine Völker.</p>"
+            + "<p>Wildbienen bestäuben viele Wild- und Kulturpflanzen. Manche Arten sind auf wenige Pflanzen spezialisiert und verschwinden, wenn diese fehlen.</p>"
+            + "<h2>Was hilft</h2><p>Etwa drei Viertel der Arten nisten im Boden. Sie brauchen offene, sonnige Bodenstellen ohne dichten Bewuchs.</p>"
+            + "<p>Heimische Blühpflanzen von März bis Oktober sichern Nahrung über die ganze Saison. Ungefüllte Blüten sind besser als gefüllte, weil sie Pollen und Nektar bieten.</p>"
+            + "<p>Totholz, markhaltige Stängel und Trockenmauern sind wertvolle Nistplätze. Ein aufgeräumter Garten ist für viele Arten dagegen ein Problem.</p></body></html>";
+        win.ReaderFetchOverride = u => Task.FromResult(("text/html", article, u));
+        var rt = win.ReadUrlAsync("https://www.example.org/wildbienen"); while (!rt.IsCompleted) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(10); }
+        var txt = win.ReaderShown!.Text; var url = win.ReaderUrl;
+        void Mark(string part, string color, string note) { var i = txt.IndexOf(part, StringComparison.Ordinal); if (i >= 0) win.Desk.AddHighlight(url, win.ReaderShown!.Title, txt, i, part.Length, color, note); }
+        Mark("Wildbienen bestäuben viele Wild- und Kulturpflanzen.", "gelb", "Kernaussage für den Vortrag");
+        Mark("Etwa drei Viertel der Arten nisten im Boden.", "grün", "Zahl prüfen (zweite Quelle)");
+        Mark("Ein aufgeräumter Garten ist für viele Arten dagegen ein Problem.", "rot", "");
+        win.Show("recherche");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_PLAN") is { Length: > 0 }) // Vorhaben als Zeitplan mit Abhängigkeiten
     {
         var pdir = CreationSuite.Create(win.SuiteFolder, "event", "Sommerfest im Verein", DateTime.Today.AddDays(-4));

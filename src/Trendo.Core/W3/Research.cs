@@ -78,6 +78,7 @@ public sealed partial class ResearchDesk
         var title = System.Web.HttpUtility.HtmlDecode(T().Match(html).Groups[1].Value).Trim();
         var h = Drop().Replace(html, " ");
         h = Regex.Replace(h, @"<!--.*?-->", " ", RegexOptions.Singleline);
+        h = Regex.Replace(h, @"<title[^>]*>.*?</title>", " ", RegexOptions.Singleline | RegexOptions.IgnoreCase); // steht schon als Überschrift darüber
         var links = A().Matches(h).Select(m => (Text: Clean(m.Groups[2].Value), Href: m.Groups[1].Value)).Where(l => l.Text.Length > 0)
             .Select(l => Uri.TryCreate(baseUri, l.Href, out var u) && u.Scheme is "http" or "https" ? (l.Text, u.ToString()) : (l.Text, "")).Where(l => l.Item2 != "").Distinct().Take(100).ToList();
         h = Regex.Replace(h, @"<(br|/p|/div|/h[1-6]|/li|/tr|/section|/article)\b[^>]*>", "\n", RegexOptions.IgnoreCase);
@@ -105,12 +106,13 @@ public sealed partial class ResearchDesk
     /// <summary>Beendet die Sitzung: Quellenliste und Notizen werden gelöscht (flüchtig). Optional vorher als Bericht exportieren.</summary>
     public void EndSession() { if (Directory.Exists(_dir)) Directory.Delete(_dir, true); Directory.CreateDirectory(_dir); _audit.Append(Principal.LocalOwner.Name, "research.session.end", ""); }
 
-    public string ExportReport(string folder)
+    public string ExportReport(string folder, string style = "einfach")
     {
         Directory.CreateDirectory(folder);
         var f = Path.Combine(folder, $"recherche-{DateTime.Now:yyyy-MM-dd_HHmm}.md");
         var sb = new StringBuilder("# Recherche (Lesemodus)\n\n## Notizen\n").Append(Note()).Append("\n\n## Quellen\n");
         foreach (var s in SessionSources()) sb.Append($"- {s.At:dd.MM.yyyy HH:mm} [{s.Title}]({s.Url}) · SHA-256 {s.Sha256[..16]}…\n");
+        sb.Append(MarksMarkdown(style));
         File.WriteAllText(f, sb.ToString()); return f;
     }
 }

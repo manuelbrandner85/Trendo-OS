@@ -13,7 +13,9 @@ public partial class MainWindow
     public ResearchDesk Desk => _desk ??= new ResearchDesk(_core.DataRoot, _core.Audit);
     public Func<Uri, Task<(string Type, string Body, Uri Final)>>? ReaderFetchOverride { get; set; }
     public ReaderPage? ReaderShown { get; private set; }
-    private string _rsMsg = "", _rsUrl = "", _rsTrans = "";
+    private string _rsMsg = "", _rsUrl = "", _rsTrans = "", _rsShownUrl = "", _rsStyle = "einfach";
+    public string ReaderUrl => _rsShownUrl;
+    SelectableTextBlock? _rsTextBlock;
 
     private void InitSys08()
     {
@@ -39,7 +41,7 @@ public partial class MainWindow
         {
             var (type, body, final) = await (ReaderFetchOverride ?? FetchReadOnly)(v.Uri!);
             ReaderShown = type == "text/plain" ? new ReaderPage(final.Host, body, []) : ResearchDesk.ToReader(body, final);
-            Desk.Record(final, ReaderShown, body);
+            Desk.Record(final, ReaderShown, body); _rsShownUrl = final.ToString();
             _rsMsg = $"Gelesen: {final.Host} · {ReaderShown.Text.Length} Zeichen · nichts wurde gespeichert außer in dieser Sitzung.";
         }
         catch (Exception ex) { ReaderShown = null; _rsMsg = "Konnte die Seite nicht lesen: " + ex.Message; }
@@ -66,7 +68,16 @@ public partial class MainWindow
             tr.Click += async (_, _) => { tr.IsEnabled = false; using var kiLabel = Trendo.Core.KiActivityHub.Label("Recherche"); var a = await Intel.AskAsync(new KiRequest("Übersetze ins Deutsche. Gib nur die Übersetzung aus:\n\n" + (p.Text.Length > 4000 ? p.Text[..4000] : p.Text), PreferredModel: KiModelName, UseKnowledge: false)); _rsTrans = a.Text; Show("recherche"); };
             var body = new StackPanel { Spacing = 4, Children = { H(p.Title, 15), tr } };
             if (_rsTrans != "") body.Children.Add(new SelectableTextBlock { Name = "rs-trans", Text = _rsTrans, Foreground = Text, TextWrapping = TextWrapping.Wrap });
-            body.Children.Add(new SelectableTextBlock { Name = "rs-text", Text = p.Text.Length > 20000 ? p.Text[..20000] + "\n…" : p.Text, Foreground = Text, TextWrapping = TextWrapping.Wrap, FontSize = 12.5 });
+            body.Children.Add(ResearchMarkBar(p));
+            var shownText = p.Text.Length > 20000 ? p.Text[..20000] : p.Text;
+            var marks = Desk.Highlights(_rsShownUrl);
+            var reader = new SelectableTextBlock { Name = "rs-text", Foreground = Text, TextWrapping = TextWrapping.Wrap, FontSize = 14, LineHeight = 22, SelectionBrush = Brush.Parse("#662F86F6") };
+            if (marks.Count == 0 && !shownText.Contains("## ")) reader.Text = shownText + (p.Text.Length > 20000 ? "\n…" : "");
+            else reader.Inlines = ReaderInlines(shownText, marks);
+            _rsTextBlock = reader;
+            body.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,16,320"), Children = {
+                new Border { Background = Brush.Parse("#0B1424"), CornerRadius = new CornerRadius(10), Padding = new Thickness(18, 14), Child = new ScrollViewer { Content = reader, MaxHeight = 560 } },
+                Pos(ResearchMarksSide(), 2) } });
             if (p.Links.Count > 0)
             {
                 body.Children.Add(H("Links auf der Seite", 13)); var i = 0;
@@ -83,14 +94,15 @@ public partial class MainWindow
         var wp = new WrapPanel();
         foreach (var (n, u, why) in ResearchDesk.Sources) { var b = new Button { Content = n }; ToolTip.SetTip(b, why); b.Click += async (_, _) => { await ReadUrlAsync(u); Show("recherche"); }; wp.Children.Add(MSp(b)); }
         sp.Children.Add(wp);
+        sp.Children.Add(ResearchQuotes());
         sp.Children.Add(H("Diese Sitzung", 14));
         var srcs = Desk.SessionSources();
         sp.Children.Add(P(srcs.Count == 0 ? "Noch nichts gelesen." : string.Join("\n", srcs.Select(s => $"{s.At:HH:mm} {s.Title} – {s.Url}")), null, 11));
         var note = new TextBox { Name = "rs-note", PlaceholderText = "Notizen zur Recherche", Text = Desk.Note(), AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 50 };
         var save = new Button { Name = "rs-export", Content = "Als Bericht speichern" };
-        save.Click += (_, _) => { Desk.SaveNote(note.Text ?? ""); var f = Desk.ExportReport(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Trendo Recherche")); _rsMsg = "Gespeichert: " + f; Show("recherche"); };
+        save.Click += (_, _) => { Desk.SaveNote(note.Text ?? ""); var f = Desk.ExportReport(ResearchReportFolder ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Trendo Recherche"), _rsStyle); _rsMsg = "Gespeichert: " + f; Show("recherche"); };
         var end = new Button { Name = "rs-end", Content = "Sitzung beenden (alles löschen)" };
-        end.Click += (_, _) => { Desk.EndSession(); ReaderShown = null; _rsUrl = ""; _rsTrans = ""; _rsMsg = "Sitzung beendet. Quellen und Notizen sind gelöscht."; Show("recherche"); };
+        end.Click += (_, _) => { Desk.EndSession(); ReaderShown = null; _rsUrl = ""; _rsTrans = ""; _rsMsg = "Sitzung beendet. Quellen, Notizen und Markierungen sind gelöscht."; Show("recherche"); };
         sp.Children.Add(note); sp.Children.Add(new WrapPanel { Children = { MSp(save), MSp(end) } });
         return SysPage("Recherche (Lesemodus)", sp);
     }
