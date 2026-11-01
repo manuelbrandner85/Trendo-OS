@@ -73,7 +73,9 @@ public static class WebsitePreview
             "--remote-debugging-port=" + port, "--user-data-dir=" + profile, "--window-size=" + width + "," + height,
             "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "about:blank"
         }) psi.ArgumentList.Add(arg);
+        using var job = new ProcessJob(); // Chrome-Hilfsprozesse enden mit dem Job – Kill(true) erwischt nicht alle
         using var process = Process.Start(psi) ?? throw new InvalidOperationException("Chrome ließ sich nicht starten.");
+        job.Add(process);
         _ = process.StandardOutput.ReadToEndAsync();
         _ = process.StandardError.ReadToEndAsync();
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
@@ -98,6 +100,8 @@ public static class WebsitePreview
         {
             Cut(socket, http, process);
             try { socket?.Dispose(); } catch { /* schon zu */ }
+            job.Dispose(); // beendet alle übrigen Chrome-Prozesse, danach ist das Profil frei
+            try { process.WaitForExit(3000); } catch (InvalidOperationException) { }
             try { Directory.Delete(profile, true); } catch { /* Chrome hält die Datei manchmal noch */ }
         }
 
