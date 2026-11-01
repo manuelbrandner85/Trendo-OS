@@ -13,6 +13,17 @@ public interface ISecretStore
     bool Delete(string key);
 }
 
+/// <summary>Geheimnisse einer weiteren Trendo-Person: eigener Namensraum im selben Speicher, damit jede Person ihre eigenen Anmeldungen hat
+/// (Wunsch 01.11.2026: jeder Nutzer bindet sein eigenes Claude an, nichts vom Projektinhaber ist fest verbunden).</summary>
+public sealed class ScopedSecretStore(ISecretStore inner, string scope) : ISecretStore
+{
+    public string BackendName => inner.BackendName + " · " + scope;
+    string K(string key) => scope + ":" + key;
+    public void Set(string key, string value) => inner.Set(K(key), value);
+    public string? Get(string key) => inner.Get(K(key));
+    public bool Delete(string key) => inner.Delete(K(key));
+}
+
 public static class SecretStoreFactory
 {
     public static ISecretStore CreateDefault() =>

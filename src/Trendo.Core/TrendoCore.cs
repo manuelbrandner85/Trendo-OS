@@ -22,7 +22,8 @@ public sealed class TrendoCore
         Audit = new AuditLog(Path.Combine(DataRoot, "audit", "audit.jsonl"));
         Projects = new ProjectStore(Path.Combine(DataRoot, "projects"), Audit);
         Approvals = new ApprovalGate(Audit, time);
-        Secrets = secrets ?? SecretStoreFactory.CreateDefault();
+        var store = secrets ?? SecretStoreFactory.CreateDefault();
+        Secrets = PersonStore.IdOf(DataRoot) is { } person ? new ScopedSecretStore(store, "person-" + person) : store; // jede Person eigene Schlüssel
         Integrations = new Integrations(Approvals, Projects, launcher ?? new ShellProcessLauncher(), () => Offline);
         Audit.Append("core", "core.start", $"v{Version} secrets={Secrets.BackendName} offline={Offline}");
     }

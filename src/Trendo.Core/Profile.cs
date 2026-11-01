@@ -102,6 +102,13 @@ public sealed class PersonStore(string baseRoot)
 
     public string RootOf(string id) => id == "haupt" ? baseRoot : Path.Combine(baseRoot, "personen", id);
 
+    /// <summary>Kennung der Person zu einem Datenordner („personen/&lt;id&gt;“), null für die Hauptperson.</summary>
+    public static string? IdOf(string dataRoot)
+    {
+        var d = Path.TrimEndingDirectorySeparator(dataRoot);
+        return Path.GetFileName(Path.GetDirectoryName(d)) == "personen" ? Path.GetFileName(d) : null;
+    }
+
     public List<Person> All()
     {
         try { return File.Exists(FileOf) ? JsonSerializer.Deserialize<List<Person>>(File.ReadAllText(FileOf)) ?? [] : []; }
