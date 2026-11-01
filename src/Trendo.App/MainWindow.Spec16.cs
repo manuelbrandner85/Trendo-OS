@@ -1,3 +1,4 @@
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -150,33 +151,118 @@ public partial class MainWindow
         return sp;
     }
 
+    int _carYear = DateTime.Today.Year; Trip? _carFix, _carVoid;
+    public int CarTripYear { get => _carYear; set => _carYear = value; }
+
+    /// <summary>Fahrtenbuch (Masterprompt 131): Schnelleingabe mit Art, Ziel, Zweck, Partner und häufigen Fahrten; Monate mit Summen und Festschreiben;
+    /// Korrigieren und Stornieren nur mit Grund (bleibt sichtbar); Jahr blättern; PDF fürs Finanzamt.</summary>
     Control CarTrips(Vehicle v)
     {
-        var sp = new StackPanel { Name = "car-trip-table", Spacing = 3 }; var (biz, priv, share) = VehicleBook.TripShare(v); var gaps = VehicleBook.Gaps(v);
-        sp.Children.Add(new TextBlock { Name = "car-trip-sum", Text = $"{Fach.F(biz, 0)} km dienstlich · {Fach.F(priv, 0)} km privat · {Fach.F(share, 1)} % dienstlich", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold });
+        var sp = new StackPanel { Name = "car-trip-table", Spacing = 6 }; var (biz, priv, share) = VehicleBook.TripShare(v, _carYear); var gaps = VehicleBook.Gaps(v);
+        var commute = v.Trips.Where(t => !t.Voided && t.Date.Year == _carYear && t.Art == "arbeitsweg").Sum(t => t.Km);
+        // Kopf: Jahr, Summen, Anteil als Balken, PDF
+        var total = Math.Max(1, biz + priv);
+        var bar = new Grid { Height = 12, ColumnDefinitions = new ColumnDefinitions($"{Math.Max(0.001, biz)}*,{Math.Max(0.001, priv - commute)}*,{Math.Max(0.001, commute)}*"), Children = {
+            new Border { Background = Brush.Parse("#2F86F6"), CornerRadius = new CornerRadius(6, 0, 0, 6) }, Pos(new Border { Background = Brush.Parse("#64748B") }, 1), Pos(new Border { Background = Brush.Parse("#F5A524"), CornerRadius = new CornerRadius(0, 6, 6, 0) }, 2) } };
+        sp.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
+            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { Btn("car-t-year-prev", "◀", () => { _carYear--; Show("fahrzeug"); }), new TextBlock { Name = "car-t-year", Text = _carYear.ToString(), Foreground = GoldText(), FontSize = 20, FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center }, Btn("car-t-year-next", "▶", () => { _carYear++; Show("fahrzeug"); }) } },
+            Pos(new StackPanel { Margin = new Thickness(16, 0), Spacing = 4, VerticalAlignment = VerticalAlignment.Center, Children = {
+                new TextBlock { Name = "car-trip-sum", Text = $"{Fach.F(biz, 0)} km dienstlich · {Fach.F(priv - commute, 0)} km privat · {Fach.F(commute, 0)} km Arbeitsweg · {Fach.F(share, 1)} % dienstlich", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
+                bar } }, 1),
+            Pos(Btn("car-t-pdf", "Fahrtenbuch als PDF", () => CarRun(() => { var f = Path.Combine(WorkFolder("Fahrzeug"), $"Fahrtenbuch {_carYear} {DevStudio.SafeName(v.Name)}.pdf"); Directory.CreateDirectory(Path.GetDirectoryName(f)!); VehicleBook.LogPdf(f, v, _carYear); _carMsg = "Gespeichert: " + f; NotifyFileResult(_carMsg); })), 2) } });
         foreach (var (a, b) in gaps) sp.Children.Add(new TextBlock { Text = $"⚠ Lücke im Fahrtenbuch: {Fach.F(a, 0)} → {Fach.F(b, 0)} km ({Fach.F(b - a, 0)} km fehlen)", Foreground = Brush.Parse("#FACC15"), FontSize = 12 });
-        var cols = "100,80,80,60,*,Auto";
-        var hdr = new Grid { ColumnDefinitions = new ColumnDefinitions(cols) };
-        foreach (var (t, c) in new[] { ("Datum", 0), ("km Start", 1), ("km Ende", 2), ("dienstl.", 3), ("Zweck / Ziel (Pflicht bei dienstlich)", 4) }) hdr.Children.Add(Pos(new TextBlock { Text = t, Foreground = Muted, FontSize = 11 }, c));
-        sp.Children.Add(hdr);
-        var nd = new TextBox { Name = "car-t-new-date", Text = DateTime.Today.ToString("dd.MM.yyyy"), Margin = new Thickness(1, 0) }; var ns = new TextBox { Name = "car-t-new-start", Text = v.Odometer > 0 ? v.Odometer.ToString("0", De) : "", Margin = new Thickness(1, 0) };
-        var ne = new TextBox { Name = "car-t-new-end", PlaceholderText = "km", Margin = new Thickness(1, 0) }; var nb = new CheckBox { Name = "car-t-new-biz" }; var nw = new TextBox { Name = "car-t-new-why", PlaceholderText = "z. B. Kundentermin Augsburg", Margin = new Thickness(1, 0) };
-        void Add() => CarRun(() => { Cars.Drive(v.Name, DateOr(nd.Text ?? ""), Fach.Num(ns.Text ?? "", "km Start"), Fach.Num(ne.Text ?? "", "km Ende"), nb.IsChecked == true, nw.Text ?? ""); _carMsg = ""; });
-        foreach (var t in new[] { nd, ns, ne, nw }) OnEnter(t, Add);
-        var add = new Button { Name = "car-t-add", Content = "＋", Padding = new Thickness(10, 2), Background = Accent, Foreground = Brushes.White }; add.Click += (_, _) => Add();
-        sp.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions(cols), Margin = new Thickness(0, 0, 0, 6), Children = { nd, Pos(ns, 1), Pos(ne, 2), Pos(nb, 3), Pos(nw, 4), Pos(add, 5) } });
-        var rows = v.Trips.OrderByDescending(t => t.StartKm).ToList();
-        for (var k = 0; k < rows.Count; k++)
+
+        // Schnelleingabe
+        var nd = new TextBox { Name = "car-t-new-date", Text = DateTime.Today.ToString("dd.MM.yyyy"), Width = 100 }; var ns = new TextBox { Name = "car-t-new-start", Text = v.Odometer > 0 ? v.Odometer.ToString("0", De) : "", Width = 90 };
+        var ne = new TextBox { Name = "car-t-new-end", PlaceholderText = "km Ende", Width = 90 };
+        var nb = new CheckBox { Name = "car-t-new-biz", Content = new TextBlock { Text = "dienstlich", Foreground = Text } }; var nc = new CheckBox { Name = "car-t-new-commute", Content = new TextBlock { Text = "Arbeitsweg", Foreground = Text } };
+        nb.IsCheckedChanged += (_, _) => { if (nb.IsChecked == true) nc.IsChecked = false; }; nc.IsCheckedChanged += (_, _) => { if (nc.IsChecked == true) nb.IsChecked = false; };
+        var nt = new TextBox { Name = "car-t-new-dest", PlaceholderText = "Ziel (Ort, Adresse)", Width = 190 }; var nw = new TextBox { Name = "car-t-new-why", PlaceholderText = "Zweck, z. B. Kundentermin", Width = 200 };
+        var np = new TextBox { Name = "car-t-new-partner", PlaceholderText = "Geschäftspartner", Width = 160 };
+        void Add() => CarRun(() =>
         {
-            var t = rows[k]; var i = k;
-            var del = new Button { Name = $"car-t-del-{i}", Content = "✕", Padding = new Thickness(6, 2) }; del.Click += (_, _) => CarRun(() => { v.Trips.Remove(t); Cars.Save(); });
-            sp.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions(cols), Children = {
-                new TextBlock { Text = t.Date.ToString("dd.MM.yyyy"), Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center },
-                Pos(new TextBlock { Text = Fach.F(t.StartKm, 0), Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, 1), Pos(new TextBlock { Text = Fach.F(t.EndKm, 0), Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, 2),
-                Pos(new TextBlock { Text = t.Business ? "✓" : "", Foreground = Brush.Parse("#4ADE80"), FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, 3),
-                Pos(new TextBlock { Name = $"car-t-why-{i}", Text = t.Purpose, Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis }, 4), Pos(del, 5) } });
+            var kind = nb.IsChecked == true ? "dienstlich" : nc.IsChecked == true ? "arbeitsweg" : "privat";
+            var t = Cars.Log(v.Name, DateOr(nd.Text ?? ""), Fach.Num(ns.Text ?? "", "km Start"), Fach.Num(ne.Text ?? "", "km Ende"), kind, nt.Text ?? "", nw.Text ?? "", np.Text ?? "");
+            _carMsg = kind == "dienstlich" && t.Destination.Length == 0 ? "Eingetragen. Tipp: Das Finanzamt erwartet bei dienstlichen Fahrten auch das Ziel." : ""; _carYear = t.Date.Year;
+        });
+        foreach (var t in new[] { nd, ns, ne, nt, nw, np }) OnEnter(t, Add);
+        var add = new Button { Name = "car-t-add", Content = "＋ Eintragen", Padding = new Thickness(12, 4), Background = Accent, Foreground = Brushes.White }; add.Click += (_, _) => Add();
+        var entry = new WrapPanel { Children = { nd, ns, ne, nb, nc, nt, nw, np, add } };
+        foreach (var c in entry.Children.OfType<Control>()) { c.Margin = new Thickness(0, 0, 6, 6); c.VerticalAlignment = VerticalAlignment.Center; }
+        var freq = VehicleBook.Frequent(v);
+        var chips = new WrapPanel();
+        if (freq.Count > 0) chips.Children.Add(new TextBlock { Text = "Häufig:", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) });
+        for (var i = 0; i < freq.Count; i++)
+        {
+            var fr = freq[i];
+            var chip = Btn($"car-t-freq-{i}", $"{(fr.Destination.Length > 0 ? fr.Destination : fr.Purpose)} · {Fach.F(fr.Km, 0)} km", () =>
+            {
+                nt.Text = fr.Destination; nw.Text = fr.Purpose; np.Text = fr.Partner; nb.IsChecked = fr.Kind == "dienstlich"; nc.IsChecked = fr.Kind == "arbeitsweg";
+                if (double.TryParse(ns.Text, NumberStyles.Number, De, out var st)) ne.Text = (st + fr.Km).ToString("0", De);
+            });
+            chip.Margin = new Thickness(0, 0, 6, 6); chips.Children.Add(chip);
+        }
+        sp.Children.Add(new Border { Background = Brush.Parse("#132440"), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 10), BorderBrush = Edge, BorderThickness = new Thickness(1), Child = new StackPanel { Spacing = 4, Children = { H("Neue Fahrt", 13), entry, chips } } });
+
+        // Monate
+        var months = VehicleBook.Months(v, _carYear); var all = v.Trips.Where(t => t.Date.Year == _carYear).OrderByDescending(t => t.StartKm).ToList(); var idx = 0;
+        if (all.Count == 0) sp.Children.Add(P($"Im Jahr {_carYear} noch keine Fahrten.", Muted, 12));
+        foreach (var grp in all.GroupBy(t => t.Date.Month))
+        {
+            var m = months.FirstOrDefault(x => x.Month == grp.Key); var mon = grp.Key;
+            var head = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Margin = new Thickness(0, 8, 0, 2), Children = {
+                new TextBlock { Text = $"{new DateTime(_carYear, mon, 1).ToString("MMMM", De)} · {Fach.F(m?.Business ?? 0, 0)} km dienstlich · {Fach.F(m?.Private ?? 0, 0)} km privat · {Fach.F(m?.Commute ?? 0, 0)} km Arbeitsweg", Foreground = GoldText(), FontSize = 13, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center } } };
+            head.Children.Add(Pos(m?.Locked == true ? new TextBlock { Name = $"car-t-locked-{mon}", Text = "🔒 festgeschrieben", Foreground = Muted, FontSize = 12 } : Btn($"car-t-lock-{mon}", "Monat festschreiben", () => CarRun(() => { var n = Cars.LockMonth(v.Name, _carYear, mon); _carMsg = $"{n} Fahrten im {new DateTime(_carYear, mon, 1).ToString("MMMM", De)} festgeschrieben – Änderungen sind nicht mehr möglich."; })), 1));
+            sp.Children.Add(head);
+            foreach (var t in grp)
+            {
+                var i = idx++; var tt = t;
+                var col = t.Art switch { "dienstlich" => "#2F86F6", "arbeitsweg" => "#F5A524", _ => "#64748B" };
+                var info = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = {
+                    new TextBlock { Name = $"car-t-why-{i}", Text = t.Art == "dienstlich" ? string.Join(" · ", new[] { t.Destination, t.Purpose, t.Partner }.Where(x => x.Length > 0)) : t.Art == "arbeitsweg" ? "Wohnung – Arbeitsstätte" : "Privatfahrt", Foreground = Text, FontSize = 12.5, TextTrimming = TextTrimming.CharacterEllipsis, TextDecorations = t.Voided ? TextDecorations.Strikethrough : null },
+                    new TextBlock { Text = t.Voided ? "storniert: " + t.VoidReason : t.Corrections is { Count: > 0 } c ? "korrigiert: " + c[^1] : "", Foreground = Brush.Parse(t.Voided ? "#F87171" : "#FACC15"), FontSize = 10.5, IsVisible = t.Voided || t.Corrections is { Count: > 0 }, TextTrimming = TextTrimming.CharacterEllipsis } } };
+                var acts = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
+                if (!t.Locked && !t.Voided)
+                {
+                    acts.Children.Add(Btn($"car-t-fix-{i}", "Korrigieren", () => { _carFix = tt; _carVoid = null; Show("fahrzeug"); }));
+                    acts.Children.Add(Btn($"car-t-void-{i}", "Stornieren …", () => { _carVoid = tt; _carFix = null; Show("fahrzeug"); }));
+                }
+                else if (t.Locked) acts.Children.Add(new TextBlock { Text = "🔒", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center });
+                sp.Children.Add(new Border { Name = $"car-t-row-{i}", Background = Brush.Parse(i % 2 == 0 ? "#0CFFFFFF" : "#00000000"), CornerRadius = new CornerRadius(6), Padding = new Thickness(6, 3), Opacity = t.Voided ? 0.6 : 1,
+                    Child = new Grid { ColumnDefinitions = new ColumnDefinitions("6,90,120,70,90,*,Auto"), Children = {
+                        new Border { Background = Brush.Parse(col), CornerRadius = new CornerRadius(3) },
+                        Pos(new TextBlock { Text = t.Date.ToString("dd.MM.yyyy"), Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) }, 1),
+                        Pos(new TextBlock { Text = $"{Fach.F(t.StartKm, 0)} – {Fach.F(t.EndKm, 0)}", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, 2),
+                        Pos(new TextBlock { Text = $"{Fach.F(t.Km, 0)} km", Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center }, 3),
+                        Pos(new TextBlock { Text = t.Art, Foreground = Brush.Parse(col), FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, 4), Pos(info, 5), Pos(acts, 6) } } });
+                if (ReferenceEquals(_carFix, t)) sp.Children.Add(CarFixPanel(v, t));
+                if (ReferenceEquals(_carVoid, t))
+                {
+                    var why = new TextBox { Name = "car-t-void-reason", PlaceholderText = "Grund, z. B. doppelt eingetragen", Width = 280 };
+                    sp.Children.Add(new Border { Name = "car-t-void-ask", Background = Brush.Parse("#33F59E0B"), CornerRadius = new CornerRadius(8), Padding = new Thickness(10), Child = new WrapPanel { Children = {
+                        new TextBlock { Text = "Fahrt stornieren? Sie bleibt mit Grund sichtbar, zählt aber nicht mehr.", Foreground = Text, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) }, why,
+                        Btn("car-t-void-yes", "Ja, stornieren", () => CarRun(() => { Cars.Void(v.Name, tt, why.Text ?? ""); _carVoid = null; _carMsg = "Storniert."; })), Btn("car-t-void-no", "Nein", () => { _carVoid = null; Show("fahrzeug"); }) } } });
+                }
+            }
         }
         return sp;
+    }
+
+    Control CarFixPanel(Vehicle v, Trip t)
+    {
+        var d = new TextBox { Name = "car-t-fix-date", Text = t.Date.ToString("dd.MM.yyyy"), Width = 100 }; var s = new TextBox { Name = "car-t-fix-start", Text = t.StartKm.ToString("0", De), Width = 90 }; var e = new TextBox { Name = "car-t-fix-end", Text = t.EndKm.ToString("0", De), Width = 90 };
+        var kind = new ComboBox { Name = "car-t-fix-kind", ItemsSource = VehicleBook.Kinds, SelectedItem = t.Art, Width = 130 };
+        var dest = new TextBox { Name = "car-t-fix-dest", Text = t.Destination, PlaceholderText = "Ziel", Width = 170 }; var why = new TextBox { Name = "car-t-fix-why", Text = t.Purpose, PlaceholderText = "Zweck", Width = 180 }; var part = new TextBox { Name = "car-t-fix-partner", Text = t.Partner, PlaceholderText = "Partner", Width = 150 };
+        var reason = new TextBox { Name = "car-t-fix-reason", PlaceholderText = "Grund der Korrektur (Pflicht)", Width = 240 };
+        var save = Btn("car-t-fix-save", "Korrektur speichern", () => CarRun(() =>
+        {
+            Cars.Correct(v.Name, t, reason.Text ?? "", DateOr(d.Text ?? ""), Fach.Num(s.Text ?? "", "km Start"), Fach.Num(e.Text ?? "", "km Ende"), (string)kind.SelectedItem!, dest.Text ?? "", why.Text ?? "", part.Text ?? "");
+            _carFix = null; _carMsg = "Korrektur gespeichert und an der Fahrt vermerkt.";
+        }));
+        var cancel = Btn("car-t-fix-cancel", "Abbrechen", () => { _carFix = null; Show("fahrzeug"); });
+        var w = new WrapPanel { Children = { d, s, e, kind, dest, why, part, reason, save, cancel } };
+        foreach (var c in w.Children.OfType<Control>()) { c.Margin = new Thickness(0, 0, 6, 6); c.VerticalAlignment = VerticalAlignment.Center; }
+        return new Border { Name = "car-t-fix", Background = Brush.Parse("#222F86F6"), BorderBrush = Brush.Parse("#D4A84B"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(10), Child = w };
     }
 
     Control CarSide(Vehicle? car)

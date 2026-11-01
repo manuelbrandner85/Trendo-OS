@@ -3,7 +3,16 @@ using System.Text;
 namespace Trendo.Core;
 
 public sealed class FuelEntry { public DateTime Date { get; set; } public double Odometer { get; set; } public double Amount { get; set; } public double Price { get; set; } public bool Full { get; set; } = true; }
-public sealed class Trip { public DateTime Date { get; set; } public double StartKm { get; set; } public double EndKm { get; set; } public string Purpose { get; set; } = ""; public bool Business { get; set; } public string Route { get; set; } = ""; }
+public sealed class Trip
+{
+    public DateTime Date { get; set; } public double StartKm { get; set; } public double EndKm { get; set; } public string Purpose { get; set; } = ""; public bool Business { get; set; } public string Route { get; set; } = "";
+    /// <summary>Fahrtenbuch (Masterprompt 131): Art (dienstlich/privat/arbeitsweg; ältere Einträge ohne Art gelten nach <see cref="Business"/>), Ziel, Geschäftspartner,
+    /// festgeschrieben, storniert (mit Grund) und Korrekturen – nichts verschwindet spurlos.</summary>
+    public string? Kind { get; set; } public string Destination { get; set; } = ""; public string Partner { get; set; } = "";
+    public bool Locked { get; set; } public bool Voided { get; set; } public string VoidReason { get; set; } = ""; public List<string>? Corrections { get; set; }
+    public string Art => Kind ?? (Business ? "dienstlich" : "privat");
+    public double Km => EndKm - StartKm;
+}
 public sealed class Vehicle
 {
     public string Name { get; set; } = "";
@@ -21,7 +30,7 @@ public sealed record FuelStats(double? AvgPer100, double? LastPer100, double Tot
 public sealed record Reminder(string Text, bool Urgent);
 
 /// <summary>SPEC-16: Verkehr & Fahrzeug – Tankbuch (Verbrauch, Kosten), Fahrtenbuch (dienstlich/privat), Erinnerungen (HU, Service).</summary>
-public sealed class VehicleBook(string dataRoot)
+public sealed partial class VehicleBook(string dataRoot)
 {
     public Garage Garage { get; } = Fach.Load<Garage>(dataRoot, "fahrzeug", "garage");
     public void Save() => Fach.Save(dataRoot, "fahrzeug", "garage", Garage);
@@ -49,7 +58,7 @@ public sealed class VehicleBook(string dataRoot)
         var v = Get(vehicle);
         if (end <= start) throw new ArgumentException("Der End-Kilometerstand muss größer als der Start sein.");
         if (business && string.IsNullOrWhiteSpace(purpose)) throw new ArgumentException("Für dienstliche Fahrten verlangt das Finanzamt Zweck und Ziel.");
-        if (v.Trips.Any(t => start < t.EndKm && end > t.StartKm)) throw new ArgumentException("Diese Kilometer überschneiden sich mit einer anderen Fahrt.");
+        if (v.Trips.Any(t => !t.Voided && start < t.EndKm && end > t.StartKm)) throw new ArgumentException("Diese Kilometer überschneiden sich mit einer anderen Fahrt.");
         var t = new Trip { Date = date, StartKm = start, EndKm = end, Business = business, Purpose = purpose.Trim(), Route = route.Trim() }; v.Trips.Add(t); v.Trips.Sort((a, b) => a.StartKm.CompareTo(b.StartKm)); Save(); return t;
     }
 
@@ -72,12 +81,12 @@ public sealed class VehicleBook(string dataRoot)
 
     public static (double Business, double Private, double SharePct) TripShare(Vehicle v, int? year = null)
     {
-        var t = v.Trips.Where(x => year is null || x.Date.Year == year).ToList(); var b = t.Where(x => x.Business).Sum(x => x.EndKm - x.StartKm); var p = t.Where(x => !x.Business).Sum(x => x.EndKm - x.StartKm);
+        var t = v.Trips.Where(x => !x.Voided && (year is null || x.Date.Year == year)).ToList(); var b = t.Where(x => x.Art == "dienstlich").Sum(x => x.Km); var p = t.Where(x => x.Art != "dienstlich").Sum(x => x.Km);
         return (b, p, b + p == 0 ? 0 : Math.Round(b / (b + p) * 100, 1));
     }
 
     /// <summary>Lücken im Fahrtenbuch (km zwischen zwei Fahrten) – das Finanzamt erkennt sie.</summary>
-    public static IReadOnlyList<(double From, double To)> Gaps(Vehicle v) => v.Trips.Zip(v.Trips.Skip(1)).Where(p => p.Second.StartKm > p.First.EndKm + 0.5).Select(p => (p.First.EndKm, p.Second.StartKm)).ToList();
+    public static IReadOnlyList<(double From, double To)> Gaps(Vehicle v) => v.Trips.Where(t => !t.Voided).Zip(v.Trips.Where(t => !t.Voided).Skip(1)).Where(p => p.Second.StartKm > p.First.EndKm + 0.5).Select(p => (p.First.EndKm, p.Second.StartKm)).ToList();
 
     public static IReadOnlyList<Reminder> Reminders(Vehicle v, DateTime today)
     {
@@ -90,8 +99,8 @@ public sealed class VehicleBook(string dataRoot)
 
     public static string LogCsv(Vehicle v)
     {
-        var sb = new StringBuilder($"Fahrtenbuch {v.Name} {v.Plate}\nDatum;km Start;km Ende;km;Art;Zweck;Strecke\n");
-        foreach (var t in v.Trips) sb.Append($"{t.Date:dd.MM.yyyy};{t.StartKm:0};{t.EndKm:0};{t.EndKm - t.StartKm:0};{(t.Business ? "dienstlich" : "privat")};{t.Purpose};{t.Route}\n");
+        var sb = new StringBuilder($"Fahrtenbuch {v.Name} {v.Plate}\nDatum;km Start;km Ende;km;Art;Zweck;Strecke;Ziel;Geschäftspartner;Status\n");
+        foreach (var t in v.Trips) sb.Append($"{t.Date:dd.MM.yyyy};{t.StartKm:0};{t.EndKm:0};{t.Km:0};{t.Art};{t.Purpose};{t.Route};{t.Destination};{t.Partner};{(t.Voided ? "storniert: " + t.VoidReason : t.Locked ? "festgeschrieben" : "")}{(t.Corrections is { Count: > 0 } c ? " | " + string.Join(" | ", c) : "")}\n");
         return sb.ToString();
     }
 }
