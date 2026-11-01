@@ -243,9 +243,36 @@ public partial class MainWindow
                 P(s.Ready && !ClaudeEmbedApproved ? "Claude Code ist mit deinem Abo bereit. „Claude Code öffnen“ startet es sichtbar im Projektordner – dort arbeitest du direkt mit Claude, ohne API."
                   : s.Ready ? "Claude beantwortet Fragen, plant und baut in allen Programmen – wo programmiert wird, arbeitet es wie Claude Code. Volle Funktionen (Befehle, Web, deine Skills) gibst du je Projekt frei. Deine Dokumente aus „Wissen“ gehen nicht automatisch mit."
                   : "Einmal verbinden, dann ist Claude deine Haupt-KI in Trendo. Die Anmeldung läuft über Claude selbst – Trendo sieht nie dein Passwort. Ohne Claude arbeitet die KI auf diesem PC weiter.", Muted, 12),
-                gate, main, buttons, tokenRow,
+                gate, main, buttons, tokenRow, ClaudeWebRow(),
                 new TextBlock { Name = "claude-msg", Text = _claudeMsg, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = _claudeMsg.Length > 0 } } },
         };
+    }
+
+    /// <summary>Zeile „Claude im Web“ auf der Claude-Karte: Stand der einmaligen Verbindung und Knopf dazu.</summary>
+    Control ClaudeWebRow()
+    {
+        var w = CWeb;
+        var state = new TextBlock { Name = "claude-web-connected", Text = w.Connected ? $"✓ Claude im Web verbunden (seit {w.ConnectedAt!.Value.LocalDateTime.ToString("dd.MM.yyyy", De)}) – in jedem Studio rechts unter „Claude“" : "Claude im Web: noch nicht verbunden",
+            Foreground = w.Connected ? Brush.Parse("#4ADE80") : Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap };
+        var row = new WrapPanel { Children = { state } };
+        if (!w.Connected) { var b = Act("claude-web-connect", "Mit Claude verbinden", () => Show("claude-verbinden"), true); b.Margin = new Thickness(8, 0, 0, 0); row.Children.Add(b); }
+        else { var b = Act("claude-web-disconnect", "Trennen", () => { CWeb.Disconnect(); _core.Audit.Append(Principal.LocalOwner.Name, "claude.web.getrennt", ""); RefreshKiPage(); }); b.Margin = new Thickness(8, 0, 0, 0); row.Children.Add(b); }
+        return row;
+    }
+
+    /// <summary>Einmalig mit Claude verbinden: Anmeldeseite von claude.ai im Trendo-Profil; sobald die Anmeldung durch ist, gilt Claude in allen Studios als verbunden.</summary>
+    Control ClaudeConnectView()
+    {
+        var sp = new StackPanel { Spacing = 8 };
+        var w = CWeb;
+        sp.Children.Add(new TextBlock { Name = "claude-connect-state", Text = w.Connected ? "✓ Verbunden. Claude ist jetzt in jedem Studio rechts unter „✳ Claude Code“ → Reiter „Claude“ angemeldet – mit eigenem Chat je Studio." : "Melde dich unten einmal mit deinem Claude-Abo an (E-Mail, Google oder Apple). Trendo merkt sich die Anmeldung in einem eigenen, geschützten Profil – dein Passwort sieht Trendo nie.",
+            Foreground = w.Connected ? Brush.Parse("#4ADE80") : Text, FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
+        if (w.Connected) sp.Children.Add(Act("claude-connect-done", "Fertig", () => Show("ki-quellen"), true));
+        Control view = _opt.Isolated ? new Border { Name = "claude-connect-web", Height = 200, Child = P("Testmodus: claude.ai wird nicht geladen.", Muted, 12) }
+            : ClaudeWebView("claude-connect-web", u => { var was = CWeb.Connected; if (CWeb.Navigated(u, null) && !was && CWeb.Connected) { _core.Audit.Append(Principal.LocalOwner.Name, "claude.web.verbunden", ""); Show("claude-verbinden"); } });
+        if (view is NativeWebView nv) { nv.Height = 640; nv.Navigate(new Uri(w.Connected ? ClaudeWeb.NewChat : ClaudeWeb.Login)); }
+        sp.Children.Add(new Border { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = view });
+        return KiPage("Mit Claude verbinden", sp);
     }
 }
 

@@ -37,15 +37,29 @@ public class ClaudeDock_Ui
             Assert.Contains("Testmodus", string.Join("|", w.GetLogicalTexts()));
             Assert.Null(w.TryFind<TerminalControl>("claude-term")); // im Testmodus startet kein echtes Claude
             Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.dock");
-            // Reiter „Claude“: claude.ai als Webansicht (im Testmodus wird nichts geladen)
+            // Reiter „Claude“: erst einmal anmelden, danach eigener Chat je Studio (im Testmodus wird nichts geladen)
             var win = w.ActiveWindowId!;
             Assert.Equal("code", w.ClaudeDockTab(win));
             w.Find<Button>("claude-tab-web").Press();
             Assert.Equal("web", w.ClaudeDockTab(win)); Assert.True(w.Find<Border>("claude-web-pane").IsVisible);
-            Assert.NotNull(w.TryFind<Border>("claude-web"));
-            Assert.Equal(MainWindow.ClaudeWebChat, w.ClaudeDockWebUrl(win));
+            Assert.Equal(ClaudeWeb.Login, w.ClaudeDockWebUrl(win));
+            Assert.NotNull(w.TryFind<Button>("claude-web-login")); Assert.Null(w.TryFind<Button>("claude-web-send"));
+            w.ClaudeWebNavigated("https://claude.ai/login"); Assert.False(w.CWeb.Connected);
+            w.ClaudeWebNavigated("https://claude.ai/new"); Assert.True(w.CWeb.Connected); // angemeldet
+            Assert.StartsWith("✓ Mit Claude verbunden", w.Find<TextBlock>("claude-web-state").Text);
+            w.ClaudeWebNavigated("https://claude.ai/chat/0f3a9c2e-1111-2222-3333-444455556666");
+            Assert.Equal("https://claude.ai/chat/0f3a9c2e-1111-2222-3333-444455556666", w.CWeb.StartUrl("X-03"));
+            w.Find<TextBox>("auftrag-prompt").Text = "Baue eine Kontaktseite";
+            var first = await w.ClaudeWebInsert();
+            Assert.StartsWith("[Trendo OS · Studio „", first); Assert.EndsWith("Mein Auftrag: Baue eine Kontaktseite", first);
+            Assert.Equal("Und die Farben", await w.ClaudeWebInsert("Und die Farben"));
             w.Find<Button>("claude-web-code").Press(); Assert.Equal(MainWindow.ClaudeWebCode, w.ClaudeDockWebUrl(win));
             w.Find<Button>("claude-tab-code").Press(); Assert.False(w.Find<Border>("claude-web-pane").IsVisible);
+            // KI-Seite zeigt die Verbindung
+            w.Show("ki-quellen"); Assert.StartsWith("✓ Claude im Web verbunden", w.Find<TextBlock>("claude-web-connected").Text);
+            w.Find<Button>("claude-web-disconnect").Press(); Assert.False(w.CWeb.Connected);
+            w.Show("ki-quellen"); w.Find<Button>("claude-web-connect").Press(); Assert.Equal("claude-verbinden", w.CurrentView);
+            Assert.NotNull(w.TryFind<Border>("claude-connect-web"));
             Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.web");
         }
         finally { MainWindow.ClaudeStatusOverride = null; w.Close(); }

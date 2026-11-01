@@ -18,7 +18,7 @@ public partial class MainWindow
     sealed class ClaudeDock
     {
         public required Border Panel; public TerminalControl? Term; public required string Folder; public string? Studio; public Grid? Split; public ContentControl? PageHost;
-        public string Tab = "code"; public Border CodeHost = new(); public Border? WebPane; public Border? AgentPane; public NativeWebView? Web; public string WebUrl = "";
+        public string Tab = "code"; public Border CodeHost = new(); public Border? WebPane; public Border? AgentPane; public StackPanel? WebBar; public NativeWebView? Web; public string WebUrl = "";
     }
     readonly Dictionary<string, ClaudeDock> _claudeDocks = [];
     /// <summary>Für Tests: statt Claude Code dieses Programm im Terminal starten (Programm, Argumente). Im Testmodus startet sonst nichts.</summary>
@@ -97,7 +97,7 @@ public partial class MainWindow
     {
         dock.Tab = tab;
         dock.CodeHost.IsVisible = tab == "code"; dock.WebPane!.IsVisible = tab == "web"; dock.AgentPane!.IsVisible = tab == "agent";
-        if (tab == "web" && dock.Web is null && dock.WebPane.Child is null) BuildWeb(dock);
+        if (tab == "web" && dock.WebPane.Child is null) BuildWeb(dock);
         if (tab == "agent" && dock.AgentPane.Child is null) BuildAgentPane(dock);
         if (dock.Panel.Child is DockPanel dp && dp.Children.OfType<Grid>().FirstOrDefault()?.Children.OfType<StackPanel>().FirstOrDefault(c => c.Name == "claude-tabs") is { } tabs)
             foreach (var b in tabs.Children.OfType<Button>()) b.Background = b.Name == "claude-tab-" + tab ? Accent : Brushes.Transparent;
@@ -107,46 +107,103 @@ public partial class MainWindow
     /// <summary>Öffentlich für Tests und die Auftragsleiste: Reiter im aktiven Fenster wählen.</summary>
     public void ClaudeDockSelectTab(string tab) { if (Windows.Active?.Id is { } id && _claudeDocks.TryGetValue(id, out var d)) ClaudeDockShowTab(d, tab); }
 
-    /// <summary>claude.ai als eingebettete Webansicht (Edge WebView2) mit eigenem, dauerhaftem Profil in Trendo – Anmeldung bleibt, getrennt vom Browser.
-    /// Neue Fenster (z. B. Links) öffnen im normalen Browser. Im Testmodus wird nichts geladen.</summary>
-    void BuildWeb(ClaudeDock dock)
+    public ClaudeWeb CWeb => new(_core.DataRoot);
+
+    /// <summary>Webansicht für claude.ai mit dem gemeinsamen, dauerhaften Trendo-Profil (einmal anmelden, dann in allen Studios angemeldet).
+    /// Neue Fenster (Links) öffnen im normalen Browser. <paramref name="navigated"/> bekommt jede fertig geladene Adresse.</summary>
+    NativeWebView ClaudeWebView(string name, Action<Uri> navigated)
     {
-        if (_opt.Isolated) // Testmodus: keine echte Webansicht (WebView2 braucht ein echtes Fenster), nichts wird geladen
-        {
-            dock.WebUrl = ClaudeWebChat;
-            var tb = new WrapPanel { Margin = new Thickness(10, 4) };
-            foreach (var (n, l, u) in new[] { ("claude-web-chat", "Chat", ClaudeWebChat), ("claude-web-code", "Claude Code im Web", ClaudeWebCode) }) { var url = u; var b = new Button { Name = n, Content = l, Margin = new Thickness(0, 0, 4, 0) }; b.Click += (_, _) => dock.WebUrl = url; tb.Children.Add(b); }
-            DockPanel.SetDock(tb, Avalonia.Controls.Dock.Top);
-            dock.WebPane!.Child = new DockPanel { Children = { tb, new Border { Name = "claude-web", Child = P("Testmodus: claude.ai wird nicht geladen.", Muted, 12) } } };
-            return;
-        }
-        var web = new NativeWebView { Name = "claude-web" };
-        var profile = Path.Combine(_core.DataRoot, "claude-web");
+        var web = new NativeWebView { Name = name };
+        var profile = CWeb.Profile;
         web.EnvironmentRequested += (_, e) => { if (e is WindowsWebView2EnvironmentRequestedEventArgs w) { Directory.CreateDirectory(profile); w.UserDataFolder = profile; } };
         web.NewWindowRequested += (_, e) => { if (e.Request is { } u && u.Scheme is "https" or "http") Launch(u.AbsoluteUri); e.Handled = true; };
-        dock.Web = web;
-        void Go(string url) { dock.WebUrl = url; if (!_opt.Isolated) web.Navigate(new Uri(url)); }
-        var bar = new WrapPanel { Margin = new Thickness(10, 4) };
-        void B(string name, string label, string tip, Action a) { var b = new Button { Name = name, Content = label, FontSize = 12, Padding = new Thickness(10, 3), Margin = new Thickness(0, 0, 4, 0), Background = Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1) }; ToolTip.SetTip(b, tip); b.Click += (_, _) => a(); bar.Children.Add(b); }
-        B("claude-web-chat", "Chat", "Neuer Chat mit Claude", () => Go(ClaudeWebChat));
-        B("claude-web-code", "Claude Code im Web", "Claude Code im Browser – arbeitet mit deinen GitHub-Projekten", () => Go(ClaudeWebCode));
-        B("claude-web-back", "←", "Zurück", () => web.GoBack());
-        B("claude-web-reload", "↻", "Neu laden", () => web.Refresh());
-        B("claude-web-send", "Auftrag einfügen", "Den Text aus der Auftragsleiste ins Eingabefeld von Claude schreiben (abschicken tust du selbst)", () => _ = ClaudeWebInsert(dock));
-        var note = new TextBlock { Text = _opt.Isolated ? "Testmodus: claude.ai wird nicht geladen." : "claude.ai mit deinem Abo – du meldest dich hier einmal selbst an. Claude im Web sieht deine Dateien auf dem PC nicht; dafür ist der Reiter „Claude Code“ da.",
-            Foreground = Muted, FontSize = 10.5, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(10, 0, 10, 6) };
-        DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top); DockPanel.SetDock(note, Avalonia.Controls.Dock.Bottom);
-        dock.WebPane!.Child = new DockPanel { Children = { bar, note, web } };
-        Go(ClaudeWebChat);
+        web.NavigationCompleted += (_, _) => { if (web.Source is { } u) navigated(u); };
+        return web;
     }
 
-    /// <summary>Auftrag ins Eingabefeld von claude.ai schreiben – nicht absenden (das entscheidet der Nutzer).</summary>
-    async Task ClaudeWebInsert(ClaudeDock dock)
+    /// <summary>Navigation im Claude-Reiter verarbeiten (öffentlich für Tests): Anmeldung erkennen, Chat dem Studio zuordnen.</summary>
+    public void ClaudeWebNavigated(string url)
     {
-        var text = this.GetLogicalDescendantsOf<TextBox>().FirstOrDefault(t => t.Name == "auftrag-prompt")?.Text;
-        if (dock.Web is null || string.IsNullOrWhiteSpace(text)) return;
-        try { await dock.Web.InvokeScript(ClaudeCode.WebInsertScript(text)); }
-        catch (Exception e) when (e is InvalidOperationException or NotSupportedException) { _claudeMsg = "Der Auftrag ließ sich nicht einfügen: " + e.Message; }
+        if (Windows.Active?.Id is { } id && _claudeDocks.TryGetValue(id, out var d)) WebNavigated(d, new Uri(url));
+    }
+
+    void WebNavigated(ClaudeDock dock, Uri u)
+    {
+        dock.WebUrl = u.AbsoluteUri;
+        var was = CWeb.Connected;
+        if (CWeb.Navigated(u, dock.Studio) && !was && CWeb.Connected) { _core.Audit.Append(Principal.LocalOwner.Name, "claude.web.verbunden", ""); BuildWebBar(dock); }
+    }
+
+    /// <summary>Claude-Reiter: angemeldet → Chat dieses Studios (oder neu); sonst die Anmeldung von claude.ai (einmalig). Im Testmodus wird nichts geladen.</summary>
+    void BuildWeb(ClaudeDock dock)
+    {
+        dock.WebBar = new StackPanel { Spacing = 4, Margin = new Thickness(10, 4) };
+        Control view;
+        if (_opt.Isolated) view = new Border { Name = "claude-web", Child = P("Testmodus: claude.ai wird nicht geladen.", Muted, 12) };
+        else { dock.Web = ClaudeWebView("claude-web", u => WebNavigated(dock, u)); view = dock.Web; }
+        DockPanel.SetDock(dock.WebBar, Avalonia.Controls.Dock.Top);
+        dock.WebPane!.Child = new DockPanel { Children = { dock.WebBar, view } };
+        BuildWebBar(dock);
+        WebGo(dock, CWeb.StartUrl(dock.Studio));
+    }
+
+    void WebGo(ClaudeDock dock, string url) { dock.WebUrl = url; if (dock.Web is { } w) w.Navigate(new Uri(url)); }
+
+    void BuildWebBar(ClaudeDock dock)
+    {
+        if (dock.WebBar is null) return;
+        dock.WebBar.Children.Clear();
+        var connected = CWeb.Connected;
+        dock.WebBar.Children.Add(new TextBlock { Name = "claude-web-state", Text = connected ? $"✓ Mit Claude verbunden – dein Chat für „{StudioCatalog.NameOf(dock.Studio ?? "", "dieses Studio")}“" : "Einmal anmelden: Melde dich unten mit deinem Claude-Abo an – danach ist Claude in allen Studios verbunden.",
+            Foreground = connected ? Brush.Parse("#86EFAC") : GoldText(), FontSize = 12, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
+        var row = new WrapPanel();
+        void B(string name, string label, string tip, Action a, bool primary = false)
+        {
+            var b = new Button { Name = name, Content = label, FontSize = 12, Padding = new Thickness(10, 3), Margin = new Thickness(0, 0, 4, 4), Background = primary ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1) };
+            ToolTip.SetTip(b, tip); b.Click += (_, _) => a(); row.Children.Add(b);
+        }
+        if (connected)
+        {
+            B("claude-web-send", "Auftrag an Claude", "Deinen Auftrag aus der Auftragsleiste ins Eingabefeld schreiben – im neuen Chat mit Rolle und Fachregeln dieses Studios. Abschicken tust du selbst.", () => _ = ClaudeWebInsert(dock), true);
+            B("claude-web-chat", "Neuer Chat", "Neuen Chat für dieses Studio beginnen", () => { if (dock.Studio is { } st) CWeb.NewStudioChat(st); WebGo(dock, ClaudeWeb.NewChat); });
+            B("claude-web-code", "Claude Code im Web", "Claude Code im Browser – arbeitet mit deinen GitHub-Projekten", () => WebGo(dock, ClaudeWebCode));
+            B("claude-web-skills", "Fachregeln für Claude", "Die Fachregeln dieses Studios als Skill-Paket speichern – einmal in Claude unter Einstellungen → Fähigkeiten hochladen", () => Try(CurrentView, () => ClaudeSkillPackage(dock.Studio)));
+        }
+        else B("claude-web-login", "Zur Anmeldung", "Anmeldeseite von claude.ai öffnen", () => WebGo(dock, ClaudeWeb.Login), true);
+        B("claude-web-back", "←", "Zurück", () => dock.Web?.GoBack());
+        B("claude-web-reload", "↻", "Neu laden", () => dock.Web?.Refresh());
+        dock.WebBar.Children.Add(row);
+        if (_claudeMsg.Length > 0 && _claudeMsg.StartsWith("Fachregeln")) dock.WebBar.Children.Add(P(_claudeMsg, Muted, 11));
+    }
+
+    /// <summary>Fachregeln eines Studios als Skill-Paket für Claude speichern und den Ordner zeigen (öffentlich für Tests).</summary>
+    public string ClaudeSkillPackage(string? studio)
+    {
+        var zip = ClaudeWeb.SkillPackage(Skills.For(null, studio), studio ?? "trendo", WorkFolder("Claude"));
+        _claudeMsg = $"Fachregeln gespeichert: {Path.GetFileName(zip)} – in Claude unter Einstellungen → Fähigkeiten hochladen (einmalig).";
+        _core.Audit.Append(Principal.LocalOwner.Name, "claude.skills.paket", Path.GetFileName(zip));
+        Launch(Path.GetDirectoryName(zip)!);
+        foreach (var d in _claudeDocks.Values) BuildWebBar(d);
+        return zip;
+    }
+
+    /// <summary>Auftrag ins Eingabefeld von claude.ai schreiben – im neuen Studio-Chat mit Rolle und Fachregeln davor; nicht absenden (öffentlich für Tests: Rückgabe = eingefügter Text).</summary>
+    public async Task<string?> ClaudeWebInsert(string? text = null)
+    {
+        if (Windows.Active?.Id is { } id && _claudeDocks.TryGetValue(id, out var d)) return await ClaudeWebInsert(d, text);
+        return null;
+    }
+
+    async Task<string?> ClaudeWebInsert(ClaudeDock dock, string? text = null)
+    {
+        text ??= this.GetLogicalDescendantsOf<TextBox>().FirstOrDefault(t => t.Name == "auftrag-prompt")?.Text;
+        if (string.IsNullOrWhiteSpace(text)) return null;
+        var msg = CWeb.Message(dock.Studio, StudioCatalog.NameOf(dock.Studio ?? "", "Trendo"), ClaudeRoleFor(dock.Studio), Skills.For(null, dock.Studio), text);
+        if (dock.Web is { } w)
+            try { await w.InvokeScript(ClaudeCode.WebInsertScript(msg)); }
+            catch (Exception e) when (e is InvalidOperationException or NotSupportedException) { _claudeMsg = "Der Auftrag ließ sich nicht einfügen: " + e.Message; }
+        _core.Audit.Append(Principal.LocalOwner.Name, "claude.web.auftrag", dock.Studio ?? "");
+        return msg;
     }
 
     void BuildDock(ClaudeDock dock, string? prompt)
