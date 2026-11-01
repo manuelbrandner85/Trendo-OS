@@ -1,6 +1,7 @@
 using System.Net;
 using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
@@ -12,6 +13,9 @@ namespace Trendo.App;
 /// <summary>Auftragsleiste für Verbesserung 42. Liegt über dem bestehenden Seiteninhalt und ändert die Studio-Layouts nicht.</summary>
 public partial class MainWindow
 {
+    /// <summary>Auftragsleiste: ein fertiger Plan ohne offene Freigabe oder Rückfrage wird gleich erledigt (Tests können das abschalten).</summary>
+    public bool AutoRunPlans { get; set; } = true;
+
     private StudioWorkflow? _promptFlow;
     private string? _promptProject;
     private string? _promptRun;
@@ -81,7 +85,7 @@ public partial class MainWindow
         var box = new TextBox
         {
             Name = "auftrag-prompt",
-            PlaceholderText = "Was soll dieses Studio für dich tun? Sag es in deinen Worten – die KI zeigt dir zuerst einen Plan.",
+            PlaceholderText = "Was soll dieses Studio für dich tun? Sag es in deinen Worten und drück Enter – am Ende entscheidest du: behalten oder nicht.",
             AcceptsReturn = true,
             TextWrapping = TextWrapping.Wrap,
             MinHeight = 32,
@@ -110,8 +114,9 @@ public partial class MainWindow
         ability.TextTrimming = TextTrimming.CharacterEllipsis;
         ability.MaxHeight = 18;
 
-        var check = new Button { Name = "auftrag-pruefen", Content = "Plan erstellen", Height = 32, MinWidth = 120, Background = Accent, Foreground = Brushes.White };
-        ToolTip.SetTip(check, "Die Trendo KI zeigt dir zuerst einen Plan. Es passiert nichts, bevor du „Los“ drückst.");
+        // Wunsch 01.11.2026: einfach – Wunsch eintippen, „Los“ (oder Enter); Trendo plant und erledigt es, fragt nur bei Bedarf, am Ende „Behalten? Ja / Nein“
+        var check = new Button { Name = "auftrag-pruefen", Content = "Los", Height = 32, MinWidth = 88, Background = Accent, Foreground = Brushes.White };
+        ToolTip.SetTip(check, "Trendo plant und erledigt deinen Wunsch. Rückfragen nur, wenn nötig – am Ende entscheidest du: behalten oder nicht.");
         AutomationProperties.SetName(check, "Auftrag prüfen");
         var cancel = new Button { Name = "auftrag-abbrechen", Content = "Abbrechen", Height = 32, MinWidth = 104 };
         AutomationProperties.SetName(cancel, "Auftrag abbrechen");
@@ -221,6 +226,7 @@ public partial class MainWindow
                     result = await Task.Run(() => PromptFlow.Start(request, ctx));
                 }
                 await Dispatcher.UIThread.InvokeAsync(() => ShowResult(result));
+                if (result.Phase == WorkflowPhase.Planned && AutoRunPlans) await RunLos(); // nichts offen: gleich erledigen
             }
             catch (Exception ex)
             {
@@ -284,10 +290,10 @@ public partial class MainWindow
             }
         };
 
-        go.Click += async (_, _) =>
+        async Task RunLos()
         {
-            if (_promptProject is null || _promptRun is null) { status.Text = "Zuerst den Plan prüfen."; return; }
-            status.Text = "Wird wirklich ausgeführt";
+            if (_promptProject is null || _promptRun is null) { status.Text = "Zuerst den Wunsch eintippen."; return; }
+            status.Text = "Wird erledigt …";
             go.IsEnabled = false;
             try
             {
@@ -301,7 +307,13 @@ public partial class MainWindow
                 detail.IsVisible = true;
             }
             finally { go.IsEnabled = true; }
-        };
+        }
+        go.Click += async (_, _) => await RunLos();
+        // Enter schickt ab (Umschalt+Enter = neue Zeile)
+        box.AddHandler(InputElement.KeyDownEvent, (_, e) =>
+        {
+            if (e.Key == Key.Enter && e.KeyModifiers == KeyModifiers.None && check.IsEnabled) { e.Handled = true; check.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent)); }
+        }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         undo.Click += (_, _) =>
         {
             if (_promptProject is null || _promptRun is null)

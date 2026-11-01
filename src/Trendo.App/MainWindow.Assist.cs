@@ -178,7 +178,7 @@ public partial class MainWindow
         }
         try { r.Preview = r.Session.Preview(); } catch (Exception ex) when (ex is not OutOfMemoryException) { r.Preview = null; r.Log.Add("Keine Bildvorschau möglich: " + ex.Message); }
         r.Phase = "vorschau";
-        r.Message = r.Session.Changed || r.Plan.HasSideEffects ? "So würde es aussehen. Übernehmen?" : "Der Plan ändert nichts am Dokument.";
+        r.Message = r.Session.Changed || r.Plan.HasSideEffects ? "So sieht es aus. Behalten?" : "Das ändert nichts am Dokument.";
         AssistRender(r, host);
     }
 
@@ -191,7 +191,7 @@ public partial class MainWindow
         try { r.Session.Apply(label, r.Plan.Steps.Where(s => s.Action.SideEffect).ToList()); }
         catch (Exception ex) when (ex is not OutOfMemoryException) { r.Phase = "fehler"; r.Message = "Übernehmen hat nicht geklappt: " + ex.Message; AssistRender(r, host); return; }
         _core.Audit.Append(Principal.LocalOwner.Name, "assist.apply", $"{r.Target.Key} „{label}“");
-        r.Phase = "fertig"; r.Message = "✓ Übernommen. Rückgängig geht hier oder mit Strg+Z.";
+        r.Phase = "fertig"; r.Message = "✓ Behalten. Rückgängig geht hier oder mit Strg+Z.";
         r.Suggestions = AssistPlanner.Suggest(r.Plan.Steps.Select(s => s.Action), r.Target.Actions, r.Target.Hints()).ToList();
         var page = CurrentView; Show(page); // neue Leiste übernimmt das Panel (AssistAttach)
     }
@@ -256,8 +256,8 @@ public partial class MainWindow
         if (r.Phase == "läuft") B(Act("assist-stop", "■ Stopp", () => r.Stop = true));
         if (r.Phase == "vorschau")
         {
-            var apply = Act("assist-apply", "Übernehmen", () => AssistApply(r, host), true); apply.IsEnabled = r.Session?.Changed == true || r.Plan.HasSideEffects; B(apply);
-            B(Act("assist-discard", "Verwerfen", () => { r.Phase = "verworfen"; r.Message = "Verworfen – nichts geändert."; _core.Audit.Append(Principal.LocalOwner.Name, "assist.discard", r.Target.Key); AssistRender(r, host); }));
+            var apply = Act("assist-apply", "Ja, behalten", () => AssistApply(r, host), true); apply.IsEnabled = r.Session?.Changed == true || r.Plan.HasSideEffects; B(apply);
+            B(Act("assist-discard", "Nein", () => { r.Phase = "verworfen"; r.Message = "Verworfen – nichts geändert."; _core.Audit.Append(Principal.LocalOwner.Name, "assist.discard", r.Target.Key); AssistRender(r, host); }));
         }
         if (r.Phase == "fertig") B(Act("assist-undo", "Rückgängig", () => { if (r.Target.Undo()) { r.Message = "Zurückgenommen."; r.Phase = "verworfen"; var p = CurrentView; Show(p); } else { r.Message = "Nichts zum Zurücknehmen."; AssistRender(r, host); } }));
         if (r.Phase is "fertig" or "verworfen" or "fehler" or "fragen") B(Act("assist-close", "Schließen", () => { _assistRuns.Remove(r.Host); _assistByKey.Remove(r.Target.Key); r.Host.Content = null; }));

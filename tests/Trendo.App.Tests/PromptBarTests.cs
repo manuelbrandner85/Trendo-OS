@@ -38,6 +38,7 @@ public class PromptBarTests
     {
         var (w, _, _) = Ui.Open();
         w.Core.Projects.Create("briefprobe", "Briefprobe");
+        w.AutoRunPlans = false; // prüft den Zwischenstand „Plan steht“ (sonst läuft der Plan gleich durch)
         w.WindowState = WindowState.Normal;
         w.Width = 1280;
         w.Height = 800;
