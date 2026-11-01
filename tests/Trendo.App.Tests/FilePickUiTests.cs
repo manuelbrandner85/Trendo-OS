@@ -43,7 +43,7 @@ public class T0201_Dateiauswahl_Ui
         }
         foreach (var key in w.PageKeys.OrderBy(k => k, StringComparer.Ordinal).ToList()) Scan(key);
         w.Show("ablaeufe"); w.Find<Button>("wf-new").Press(); Scan("ablaeufe");
-        w.Show("produktion"); w.Find<Button>("fusion-recipe-video-pack").Press(); Scan("produktion");
+        w.ProdTab = "ablaeufe"; w.Show("produktion"); w.Find<Button>("fusion-recipe-video-pack").Press(); Scan("produktion"); w.ProdTab = "tafel";
         w.Show("baukasten"); w.Find<Button>("builder-add-img").Press(); Scan("baukasten");
         w.Show("forensik");
         w.Find<TextBox>("for-case-title").Text = "Beweis";

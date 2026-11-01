@@ -10,7 +10,7 @@ public class W5_X01_Ui
     public void Run()
     {
         var (w, _, _) = Ui.Open();
-        w.Show("produktion");
+        w.ProdTab = "ablaeufe"; w.Show("produktion");
         Assert.False(w.Find<Button>("fusion-request").IsEnabled);
         w.Find<TextBox>("fusion-in-name").Text = "Radkurier"; w.Find<TextBox>("fusion-in-problem").Text = "Pakete kommen zu spät.";
         w.Show("produktion");
