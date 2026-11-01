@@ -15,6 +15,7 @@ public class W4_X03_Ui
         Assert.Equal(3, w.BuilderPage.Blocks.Count);
         w.Find<Button>("builder-up-2").Press();
         Assert.Equal("button", w.BuilderPage.Blocks[1].Kind);
+        w.BuilderSel = 0; w.Show("baukasten"); // App-Designer: Entfernen gilt dem ausgewählten Baustein
         w.Find<Button>("builder-del-0").Press();
         Assert.Equal(2, w.BuilderPage.Blocks.Count);
         Assert.True(File.Exists(w.BuilderFile));
