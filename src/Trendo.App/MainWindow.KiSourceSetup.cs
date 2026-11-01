@@ -47,7 +47,7 @@ public partial class MainWindow
             if (s.Repo is { } repo)
             {
                 SetupOverlayProgress(0, 3, "Neueste offizielle Version auf GitHub suchen …");
-                var json = KiSourceReleasesOverride is { } o ? await o(repo) : await (await GitHubGet(KiSourceSetups.ReleasesUrl(repo), "application/vnd.github+json")).Content.ReadAsStringAsync(SetupToken);
+                var json = KiSourceReleasesOverride is { } o ? await o(repo) : await GitHubJson(KiSourceSetups.ReleasesUrl(repo), SetupToken);
                 (rel, asset) = KiSourceSetups.Pick(s, KiSourceSetups.ParseReleases(json)) ?? throw new InvalidOperationException($"Auf GitHub gibt es gerade keine passende Windows-Datei für {info.Name}.");
                 (url, name, size) = (asset.Url, asset.Name, asset.Size);
             }

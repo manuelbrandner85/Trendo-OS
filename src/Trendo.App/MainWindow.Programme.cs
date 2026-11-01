@@ -133,25 +133,36 @@ public partial class MainWindow
         string? file = null; string? exe = null;
         try
         {
-            SetupOverlayProgress(0, 4, "Neueste Version auf GitHub suchen …");
             GitHubApps.Release rel; GitHubApps.Asset? asset;
-            if (GitHubFetchOverride is not null) { (rel, file) = await GitHubFetchOverride(repo.FullName); asset = GitHubApps.PickWindows(rel.Assets, Arm64, Has7z); }
-            else
+            // Suchen: Sekunden mitzählen, damit sichtbar ist, dass es weitergeht (vorher stand hier „0 %“ ohne Bewegung)
+            var t0 = DateTime.UtcNow;
+            SetupOverlayProgress(0, 0, "Neueste Version auf GitHub suchen …");
+            var tick = new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            tick.Tick += (_, _) => SetupOverlayProgress(0, 0, $"Neueste Version auf GitHub suchen … {(int)(DateTime.UtcNow - t0).TotalSeconds} s");
+            tick.Start();
+            try
             {
-                rel = await GitHubLatestOrEmpty(repo.FullName);
-                asset = GitHubApps.PickWindows(rel.Assets, Arm64, Has7z);
-                if (asset is null)
+                if (GitHubFetchOverride is not null) { (rel, file) = await GitHubFetchOverride(repo.FullName); asset = GitHubApps.PickWindows(rel.Assets, Arm64, Has7z); }
+                else
                 {
-                    using var res = await GitHubGet(KiSourceSetups.ReleasesUrl(repo.FullName), "application/vnd.github+json");
-                    foreach (var r in KiSourceSetups.ParseReleases(await res.Content.ReadAsStringAsync(SetupToken)))
-                        if (GitHubApps.PickWindows(r.Assets, Arm64, Has7z) is { } a) { (rel, asset) = (r, a); break; }
+                    rel = await GitHubLatestOrEmpty(repo.FullName, SetupToken);
+                    asset = GitHubApps.PickWindows(rel.Assets, Arm64, Has7z);
+                    if (asset is null)
+                        foreach (var r in KiSourceSetups.ParseReleases(await GitHubJson(KiSourceSetups.ReleasesUrl(repo.FullName), SetupToken)))
+                            if (GitHubApps.PickWindows(r.Assets, Arm64, Has7z) is { } a) { (rel, asset) = (r, a); break; }
                 }
             }
-            if (asset is null) { Say($"„{repo.FullName}“ bietet kein fertiges Windows-Programm an – nur Quellcode. Mit „Quellcode holen“ landet es in deinem Ordner „Open Source“.", "oss"); return null; }
-            SetupOverlayProgress(1, 4, $"{asset.Name} wird geladen …");
+            finally { tick.Stop(); }
+            if (asset is null)
+            {
+                // vorher blieb die Anzeige hier für immer bei „Neueste Version suchen … 0 %“ stehen
+                var none = $"„{repo.FullName}“ bietet kein fertiges Windows-Programm an – nur Quellcode. Mit „Quellcode holen“ landet es in deinem Ordner „Open Source“.";
+                FinishSetupOverlay("Kein Windows-Programm", none, [none]); Say(none, "oss"); return null;
+            }
+            SetupOverlayFraction(0.10, $"{asset.Name} wird geladen …");
             file ??= await GitHubDownload(asset);
             SetupToken.ThrowIfCancellationRequested();
-            SetupOverlayProgress(2, 4, "Prüfen und einrichten …");
+            SetupOverlayFraction(0.82, "Prüfen und einrichten …");
             try
             {
                 var entry = await Task.Run(() => GitHubApps.Install(_deps.ToolsRoot, repo.FullName, rel, asset, file, repo.LicenseId, repo.Description, _core.Audit, Has7z ? Extract7z : null, Arm64));
@@ -170,11 +181,12 @@ public partial class MainWindow
             return exe;
         }
         catch (OperationCanceledException) when (SetupCancelRequested) { Say($"Installation von „{repo.FullName}“ abgebrochen.", "oss"); return null; }
-        catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or IOException or UnauthorizedAccessException or TaskCanceledException or System.Text.Json.JsonException or InvalidDataException or System.ComponentModel.Win32Exception)
+        catch (Exception ex) when (ex is not OutOfMemoryException) // nie mehr eine hängende Anzeige: jeder Fehler beendet sie mit einer Meldung
         {
-            _core.Audit.Append(Principal.LocalOwner.Name, "github.install.failed", $"{repo.FullName}: {ex.Message}");
-            FinishSetupOverlay("Installieren hat nicht geklappt", ex.Message, [ex.Message]);
-            Say("Installieren hat nicht geklappt: " + ex.Message, "oss");
+            var why = GitHubWhy(ex);
+            _core.Audit.Append(Principal.LocalOwner.Name, "github.install.failed", $"{repo.FullName}: {ex.GetType().Name}: {ex.Message}");
+            FinishSetupOverlay("Installieren hat nicht geklappt", why, [why]);
+            Say("Installieren hat nicht geklappt: " + why, "oss");
             return null;
         }
         finally
@@ -231,43 +243,117 @@ public partial class MainWindow
         _core.Audit.Append(Principal.LocalOwner.Name, "github.uninstall.installer", Path.GetFileName(un));
     }
 
-    static async Task<GitHubApps.Release> GitHubLatestOrEmpty(string fullName)
+    static async Task<GitHubApps.Release> GitHubLatestOrEmpty(string fullName, CancellationToken ct)
     {
-        try { return await GitHubLatest(fullName); }
-        catch (InvalidOperationException) { return new GitHubApps.Release("", "", []); } // keine „neueste“ Version: Liste prüfen
+        try { return await GitHubLatest(fullName, ct); }
+        catch (InvalidOperationException ex) when (ex.Message.StartsWith("Dieses Projekt hat noch keine", StringComparison.Ordinal)) { return new GitHubApps.Release("", "", []); } // keine „neueste“ Version: Liste prüfen
     }
 
     static readonly string[] GitHubHosts = ["github.com", "api.github.com", "objects.githubusercontent.com", "release-assets.githubusercontent.com", "github-releases.githubusercontent.com"];
-    static readonly HttpClient GitHubHttp = new(new SocketsHttpHandler { AllowAutoRedirect = false }) { Timeout = TimeSpan.FromMinutes(30) };
+    /// <summary>Für Tests: eigener Netz-Handler und kürzere Zeitlimits.</summary>
+    public static HttpMessageHandler? GitHubHandlerOverride { get; set; }
+    public static TimeSpan GitHubApiTimeout { get; set; } = TimeSpan.FromSeconds(20);
+    public static TimeSpan GitHubStallTimeout { get; set; } = TimeSpan.FromSeconds(45);
+    static HttpClient? _gitHubHttp; static HttpMessageHandler? _gitHubHttpFor;
+    /// <summary>Verbindung: IPv4 zuerst (kaputtes IPv6 ließ Abfragen minutenlang hängen), 8 s je Adresse; Gesamtzeit regeln die Aufrufer.</summary>
+    static HttpClient GitHubHttp
+    {
+        get
+        {
+            if (_gitHubHttp is not null && ReferenceEquals(_gitHubHttpFor, GitHubHandlerOverride)) return _gitHubHttp;
+            _gitHubHttpFor = GitHubHandlerOverride;
+            return _gitHubHttp = new HttpClient(GitHubHandlerOverride ?? new SocketsHttpHandler
+            {
+                AllowAutoRedirect = false, ConnectTimeout = TimeSpan.FromSeconds(15), PooledConnectionLifetime = TimeSpan.FromMinutes(5),
+                ConnectCallback = async (ctx, ct) =>
+                {
+                    var addrs = (await System.Net.Dns.GetHostAddressesAsync(ctx.DnsEndPoint.Host, ct)).OrderBy(a => a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ? 0 : 1).ToList();
+                    Exception? last = null;
+                    foreach (var a in addrs)
+                    {
+                        var sock = new System.Net.Sockets.Socket(a.AddressFamily, System.Net.Sockets.SocketType.Stream, System.Net.Sockets.ProtocolType.Tcp) { NoDelay = true };
+                        using var one = CancellationTokenSource.CreateLinkedTokenSource(ct); one.CancelAfter(TimeSpan.FromSeconds(8));
+                        try { await sock.ConnectAsync(a, ctx.DnsEndPoint.Port, one.Token); return new System.Net.Sockets.NetworkStream(sock, ownsSocket: true); }
+                        catch (Exception e) when (e is System.Net.Sockets.SocketException or OperationCanceledException && !ct.IsCancellationRequested) { sock.Dispose(); last = e; }
+                    }
+                    throw new HttpRequestException("Keine Verbindung zu " + ctx.DnsEndPoint.Host, last);
+                },
+            }, disposeHandler: GitHubHandlerOverride is null) { Timeout = Timeout.InfiniteTimeSpan };
+        }
+    }
 
     static void CheckHost(Uri u)
     {
         if (u.Scheme != Uri.UriSchemeHttps || u.Port != 443 || !GitHubHosts.Contains(u.Host, StringComparer.OrdinalIgnoreCase)) throw new InvalidOperationException("Unerwartete Download-Adresse: " + u.Host);
     }
 
-    /// <summary>GET mit eigenen Weiterleitungen (höchstens 5), jede nur zu GitHub über HTTPS.</summary>
-    static async Task<HttpResponseMessage> GitHubGet(string url, string accept)
+    /// <summary>Verständliche Meldung statt Technik.</summary>
+    static string GitHubWhy(Exception ex) => ex switch
+    {
+        TimeoutException t => t.Message,
+        HttpRequestException h when h.InnerException is System.Net.Sockets.SocketException || h.Message.StartsWith("Keine Verbindung", StringComparison.Ordinal) => "Keine Verbindung zu GitHub. Ist das Internet da? Ein Virenschutz oder Proxy kann GitHub auch blockieren.",
+        HttpRequestException h => "GitHub hat nicht richtig geantwortet (" + h.Message + "). Bitte gleich noch einmal versuchen.",
+        KeyNotFoundException or System.Text.Json.JsonException => "GitHub hat eine unerwartete Antwort geliefert. Bitte gleich noch einmal versuchen.",
+        _ => ex.Message,
+    };
+
+    /// <summary>GET mit eigenen Weiterleitungen (höchstens 5), jede nur zu GitHub über HTTPS. Bis die Antwort beginnt, gilt <paramref name="wait"/> (Abbrechen wirkt sofort).</summary>
+    static async Task<HttpResponseMessage> GitHubGet(string url, string accept, CancellationToken ct = default, TimeSpan? wait = null)
     {
         var u = new Uri(url);
-        for (var i = 0; i < 6; i++)
+        using var limit = CancellationTokenSource.CreateLinkedTokenSource(ct); limit.CancelAfter(wait ?? GitHubApiTimeout);
+        try
         {
-            CheckHost(u);
-            var req = new HttpRequestMessage(HttpMethod.Get, u);
-            req.Headers.UserAgent.Add(new ProductInfoHeaderValue("TrendoOS", "1.0")); req.Headers.Accept.ParseAdd(accept);
-            var res = await GitHubHttp.SendAsync(req, HttpCompletionOption.ResponseHeadersRead);
-            if ((int)res.StatusCode is >= 300 and < 400 && res.Headers.Location is { } loc) { u = loc.IsAbsoluteUri ? loc : new Uri(u, loc); res.Dispose(); continue; }
-            if (res.StatusCode == HttpStatusCode.NotFound) { res.Dispose(); throw new InvalidOperationException("Dieses Projekt hat noch keine Veröffentlichung mit fertigen Programmen."); }
-            if ((int)res.StatusCode == 403) { res.Dispose(); throw new InvalidOperationException("GitHub bremst gerade. Versuch es in einer Minute noch mal."); }
-            res.EnsureSuccessStatusCode();
-            return res;
+            for (var i = 0; i < 6; i++)
+            {
+                CheckHost(u);
+                var req = new HttpRequestMessage(HttpMethod.Get, u);
+                req.Headers.UserAgent.Add(new ProductInfoHeaderValue("TrendoOS", "1.0")); req.Headers.Accept.ParseAdd(accept);
+                var res = await GitHubHttp.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, limit.Token);
+                if ((int)res.StatusCode is >= 300 and < 400 && res.Headers.Location is { } loc) { u = loc.IsAbsoluteUri ? loc : new Uri(u, loc); res.Dispose(); continue; }
+                if (res.StatusCode == HttpStatusCode.NotFound) { res.Dispose(); throw new InvalidOperationException("Dieses Projekt hat noch keine Veröffentlichung mit fertigen Programmen."); }
+                if ((int)res.StatusCode is 403 or 429)
+                {
+                    var reset = res.Headers.TryGetValues("X-RateLimit-Reset", out var rv) && long.TryParse(rv.FirstOrDefault(), out var unix) ? DateTimeOffset.FromUnixTimeSeconds(unix).ToLocalTime() : (DateTimeOffset?)null;
+                    var left = res.Headers.TryGetValues("X-RateLimit-Remaining", out var rl) ? rl.FirstOrDefault() : null; res.Dispose();
+                    throw new InvalidOperationException(left == "0" && reset is { } r
+                        ? $"GitHub erlaubt ohne Anmeldung 60 Abfragen pro Stunde – die sind aufgebraucht. Ab {r:HH:mm} Uhr geht es wieder."
+                        : "GitHub bremst gerade. Versuch es in einer Minute noch mal.");
+                }
+                res.EnsureSuccessStatusCode();
+                return res;
+            }
+            throw new InvalidOperationException("Zu viele Weiterleitungen.");
         }
-        throw new InvalidOperationException("Zu viele Weiterleitungen.");
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            throw new TimeoutException($"GitHub antwortet nicht (nach {(int)(wait ?? GitHubApiTimeout).TotalSeconds} s). Prüfe die Internetverbindung und versuch es noch einmal.");
+        }
     }
 
-    static async Task<GitHubApps.Release> GitHubLatest(string fullName)
+    /// <summary>JSON von der GitHub-API (mit Zeitlimit), ein zweiter Versuch bei Zeitüberschreitung.</summary>
+    static async Task<string> GitHubJson(string url, CancellationToken ct)
     {
-        using var res = await GitHubGet(GitHubApps.LatestReleaseUrl(fullName), "application/vnd.github+json");
-        return GitHubApps.ParseRelease(await res.Content.ReadAsStringAsync());
+        for (var attempt = 0; ; attempt++)
+        {
+            try
+            {
+                using var res = await GitHubGet(url, "application/vnd.github+json", ct);
+                using var limit = CancellationTokenSource.CreateLinkedTokenSource(ct); limit.CancelAfter(GitHubApiTimeout);
+                return await res.Content.ReadAsStringAsync(limit.Token);
+            }
+            catch (TimeoutException) when (attempt == 0) { }
+        }
+    }
+
+    static readonly Dictionary<string, (DateTime At, GitHubApps.Release Rel)> _ghLatest = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>Neueste Veröffentlichung (10 Minuten zwischengespeichert – schont das Limit von 60 Abfragen pro Stunde).</summary>
+    static async Task<GitHubApps.Release> GitHubLatest(string fullName, CancellationToken ct = default)
+    {
+        lock (_ghLatest) if (_ghLatest.TryGetValue(fullName, out var c) && DateTime.UtcNow - c.At < TimeSpan.FromMinutes(10)) return c.Rel;
+        var rel = GitHubApps.ParseRelease(await GitHubJson(GitHubApps.LatestReleaseUrl(fullName), ct));
+        lock (_ghLatest) _ghLatest[fullName] = (DateTime.UtcNow, rel);
+        return rel;
     }
 
     /// <summary>Programme, die Windows unter „Apps“ für diesen Benutzer kennt (nur lesen).</summary>
@@ -297,24 +383,33 @@ public partial class MainWindow
     async Task<string> GitHubDownload(GitHubApps.Asset asset)
     {
         var file = Path.Combine(Path.GetTempPath(), "trendo-gh-" + Guid.NewGuid().ToString("N") + Path.GetExtension(asset.Name));
-        using var res = await GitHubGet(asset.Url, "application/octet-stream");
+        using var res = await GitHubGet(asset.Url, "application/octet-stream", SetupToken, TimeSpan.FromSeconds(45));
         var total = res.Content.Headers.ContentLength ?? asset.Size;
         if (total > GitHubApps.MaxBytes) throw new InvalidOperationException("Die Datei ist zu groß.");
-        await using var src = await res.Content.ReadAsStreamAsync();
+        await using var src = await res.Content.ReadAsStreamAsync(SetupToken);
         await using var dst = File.Create(file);
-        var buf = new byte[1 << 20]; long done = 0; int n; var last = DateTime.UtcNow; var t0 = DateTime.UtcNow;
-        while ((n = await src.ReadAsync(buf, SetupToken)) > 0)
+        var buf = new byte[1 << 20]; long done = 0; int n; var last = DateTime.MinValue; var t0 = DateTime.UtcNow;
+        while (true)
         {
+            // Stockt der Download (keine Daten mehr), gibt es eine klare Meldung statt endlosen Wartens
+            using var stall = CancellationTokenSource.CreateLinkedTokenSource(SetupToken); stall.CancelAfter(GitHubStallTimeout);
+            try { n = await src.ReadAsync(buf, stall.Token); }
+            catch (OperationCanceledException) when (!SetupToken.IsCancellationRequested) { throw new TimeoutException($"Der Download stockt seit {(int)GitHubStallTimeout.TotalSeconds} s. Prüfe die Internetverbindung und versuch es noch einmal."); }
+            if (n <= 0) break;
             done += n;
             if (done > GitHubApps.MaxBytes) throw new InvalidOperationException("Die Datei ist größer als angegeben.");
-            await dst.WriteAsync(buf.AsMemory(0, n));
-            if ((DateTime.UtcNow - last).TotalMilliseconds > 250 && total > 0)
+            await dst.WriteAsync(buf.AsMemory(0, n), SetupToken);
+            if ((DateTime.UtcNow - last).TotalMilliseconds > 250)
             {
                 last = DateTime.UtcNow; var d = done;
                 var speed = d / Math.Max(0.5, (DateTime.UtcNow - t0).TotalSeconds) / (1 << 20);
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => SetupOverlayProgress(1, 4, $"{asset.Name}: {d / (1 << 20)} von {total / (1 << 20)} MB · {speed:0.0} MB/s"));
+                var frac = total > 0 ? Math.Min(1, d / (double)total) : 0;
+                var eta = total > 0 && speed > 0.01 ? (total - d) / (1 << 20) / speed : -1;
+                Avalonia.Threading.Dispatcher.UIThread.Post(() => SetupOverlayFraction(0.10 + 0.70 * frac,
+                    total > 0 ? $"{asset.Name}: {d / (1 << 20)} von {total / (1 << 20)} MB · {speed:0.0} MB/s{(eta >= 0 ? $" · noch etwa {Math.Ceiling(eta)} s" : "")}" : $"{asset.Name}: {d / (1 << 20)} MB · {speed:0.0} MB/s"));
             }
         }
+        if (total > 0 && done < total) throw new IOException($"Der Download ist unvollständig ({done / (1 << 20)} von {total / (1 << 20)} MB). Bitte noch einmal versuchen.");
         return file;
     }
 }

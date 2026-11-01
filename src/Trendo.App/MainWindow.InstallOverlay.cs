@@ -183,6 +183,16 @@ public partial class MainWindow
         _setupBar.Value = v; _setupPercent.Text = $"{done} von {total} · {v:P0}";
     }
 
+    /// <summary>Fortschritt als Anteil 0…1 (z. B. nach geladenen Bytes) mit echtem Prozentwert.</summary>
+    private void SetupOverlayFraction(double value, string text)
+    {
+        _setupStep.Text = text; _setupBar.IsIndeterminate = false;
+        var v = Math.Clamp(value, 0, 1); _setupBar.Value = v; _setupPercent.Text = $"{v:P0}";
+    }
+    public string SetupOverlayPercentText => _setupPercent.Text ?? "";
+    public string SetupOverlayStepText => _setupStep.Text ?? "";
+    public bool SetupOverlayVisible => _setupOverlay.IsVisible;
+
     /// <summary>Für Bildschirmfotos und Tests: Einrichtung mit festem Stand zeigen, Animation an Zeitpunkt <paramref name="t"/>.</summary>
     public void ShowSetupOverlay(string title, int done, int total, string text, double t = 2.4)
     {

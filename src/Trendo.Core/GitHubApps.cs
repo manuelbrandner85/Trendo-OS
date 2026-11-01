@@ -53,10 +53,13 @@ public static partial class GitHubApps
             {
                 var digest = a.TryGetProperty("digest", out var d) && d.ValueKind == JsonValueKind.String ? d.GetString() : null;
                 var sha = digest is not null && digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase) ? digest[7..].ToLowerInvariant() : null;
-                assets.Add(new Asset(a.GetProperty("name").GetString() ?? "", a.GetProperty("browser_download_url").GetString() ?? "",
-                    a.TryGetProperty("size", out var s) ? s.GetInt64() : 0, sha));
+                // robust: fehlende oder leere Felder überspringen statt abzustürzen (sonst blieb die Einrichtung hängen)
+                var name = a.TryGetProperty("name", out var nm) && nm.ValueKind == JsonValueKind.String ? nm.GetString() ?? "" : "";
+                var url = a.TryGetProperty("browser_download_url", out var bu) && bu.ValueKind == JsonValueKind.String ? bu.GetString() ?? "" : "";
+                if (name.Length == 0 || url.Length == 0) continue;
+                assets.Add(new Asset(name, url, a.TryGetProperty("size", out var s) && s.ValueKind == JsonValueKind.Number ? s.GetInt64() : 0, sha));
             }
-        return new Release(r.TryGetProperty("tag_name", out var t) ? t.GetString() ?? "" : "", r.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "", assets);
+        return new Release(r.TryGetProperty("tag_name", out var t) && t.ValueKind == JsonValueKind.String ? t.GetString() ?? "" : "", r.TryGetProperty("name", out var n) && n.ValueKind == JsonValueKind.String ? n.GetString() ?? "" : "", assets);
     }
 
     static readonly string[] Skip = ["src", "source", "debug", "symbols", "pdb", "linux", "macos", "darwin", "osx", "android", "ios", "sha256", "checksum", ".sig", ".asc"];
