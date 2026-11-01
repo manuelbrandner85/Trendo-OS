@@ -1,6 +1,6 @@
 # Tragwerk & Mechanik – Einbindung in Trendo OS
 
-Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite: `technik` · Stand: 0.9.28 (Stand ab682fb)
+Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite: `technik` · Stand: 0.9.28 (Stand 8123ac9)
 
 - Seite `technik` im Studio „Statik nachrechnen“ (Technik & Fachgebiete) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: ja (Dokumente .tdoc, Zuletzt, Wiederherstellen, Bedienstufen)
