@@ -9,7 +9,7 @@ public sealed record KnowledgeHit(KnowledgeItem Item, double Score);
 
 /// <summary>CORE-10 Knowledge Memory & Self Improvement: eigenes Wissen nur auf diesem Gerät, Volltextsuche (BM25, Umlaute egal),
 /// Lernen aus Rückmeldungen – eine Korrektur wird zu Wissen, das die KI künftig mitliest.</summary>
-public sealed class KnowledgeStore
+public sealed partial class KnowledgeStore
 {
     private readonly string _file;
     private readonly AuditLog _audit;

@@ -116,14 +116,14 @@ public class CORE10_Ui
         Assert.Equal("Gemerkt.", w.Find<TextBlock>("wissen-msg").Text);
         w.Find<TextBox>("wissen-search").Text = "muell dienstag";
         w.Find<Button>("wissen-go").Press();
-        Assert.NotNull(w.TryFind<Button>("wissen-del-0"));
+        Assert.NotNull(w.TryFind<Button>("wissen-page-0"));
         w.KiBackendsOverride = () => [new FakeKi("Montag")];
         w.Show("ki-fragen"); w.Find<TextBox>("ask-input").Text = "Wann wird der Müll abgeholt?"; w.Find<Button>("ask-send").Press(); W2Ui.Settle();
         Assert.Contains("Wissen:", w.Find<TextBlock>("ask-state").Text);
         w.Find<TextBox>("ask-fix").Text = "Dienstags."; w.Find<Button>("ask-bad").Press();
         Assert.Equal(2, w.Wissen.All().Count);
-        w.Show("ki-wissen"); w.Find<Button>("wissen-del-0").Press();
-        Assert.Single(w.Wissen.All());
+        w.Show("ki-wissen"); w.Find<Button>("wissen-page-0").Press(); w.Find<Button>("wissen-del").Press(); w.Find<Button>("wissen-del").Press(); // zweistufig, in den Papierkorb
+        Assert.Single(w.Wissen.All()); Assert.Single(w.Wissen.Trashed());
     }
 }
 
