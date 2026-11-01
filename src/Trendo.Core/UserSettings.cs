@@ -73,7 +73,9 @@ public sealed class UserSettings
     public List<string> SeenHints { get; set; } = [];
     public bool AutoUpdate { get; set; } = true;
     /// <summary>U3: wann ein geladenes Update installiert wird – „sofort“, „start“ (beim nächsten Start) oder „nacht“.</summary>
-    public string UpdateWhen { get; set; } = "nacht";
+    public string UpdateWhen { get; set; } = "sofort";
+    /// <summary>Stand der Update-Regel: 1 = „sofort mit Countdown“ ist eingestellt (Wunsch 01.11.2026); ältere Einstellungen werden einmal umgestellt.</summary>
+    public int UpdatePolicy { get; set; }
     public int UpdateHour { get; set; } = 3;
     /// <summary>U4: zuletzt gesehene Version (für „Was ist neu?“).</summary>
     public string LastSeenVersion { get; set; } = "";

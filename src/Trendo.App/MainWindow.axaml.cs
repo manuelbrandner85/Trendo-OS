@@ -122,6 +122,7 @@ public sealed partial class MainWindow : Window
         _search.KeyDown += (_, e) => { if (e.Key == Key.Enter) { _query = _search.Text ?? ""; Show("suche"); } };
         WireKi();
         InitSetupOverlay(root);
+        InitNewsShow(root);
         InitToasts(root);
         InitKiProgress(root);
         InitPhoneSurface(root);

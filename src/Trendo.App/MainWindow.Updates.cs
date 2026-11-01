@@ -51,16 +51,18 @@ public partial class MainWindow
             catch (Exception e) when (e is JsonException or IOException or KeyNotFoundException) { }
             try { File.Delete(WindowRestoreFile); } catch (IOException) { }
         }
-        if (ReleaseNotes.ShowFor(_settings.LastSeenVersion, cur, ReleaseNotes.For(_core.DataRoot, cur)))
-            Dispatcher.UIThread.Post(() => Show("neu"), DispatcherPriority.Background);
+        // Wunsch 01.11.2026: Updates kommen sofort (mit Countdown) – ältere Einstellungen werden einmal umgestellt
+        if (_settings.UpdatePolicy < 1) { _settings.UpdatePolicy = 1; _settings.UpdateWhen = "sofort"; SaveSettings(); }
+        if (ReleaseNotes.ShowFor(_settings.LastSeenVersion, cur, ReleaseNotes.For(_core.DataRoot, cur)) && ReleaseNotes.For(_core.DataRoot, cur) is { } notes)
+            Dispatcher.UIThread.Post(() => { Show("neu"); ShowNews(cur, notes); }, DispatcherPriority.Background); // Vollbild „Das ist neu“, dahinter die Liste
         if (_settings.LastSeenVersion != cur) { _settings.LastSeenVersion = cur; SaveSettings(); }
         MarkBootOkLater(Boot, cur);
         if (_opt.Isolated || _core.Offline || !_settings.AutoUpdate) return;
-        _updateTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(20) };
+        _updateTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(5) };
         var lastCheck = DateTime.MinValue;
         _updateTimer.Tick += async (_, _) =>
         {
-            if (_updateReady is not null) { if (UpdateSchedule.ApplyNow(_settings.UpdateWhen, _settings.UpdateHour, DateTime.Now)) InstallUpdateNow(); return; }
+            if (_updateReady is not null) { if (UpdateSchedule.ApplyNow(_settings.UpdateWhen, _settings.UpdateHour, DateTime.Now)) { if (_settings.UpdateWhen == "sofort") StartUpdateCountdown(); else InstallUpdateNow(); } return; }
             if (DateTime.UtcNow - lastCheck < UpdateSchedule.CheckEvery) return;
             lastCheck = DateTime.UtcNow;
             await UpdateCheckAsync();
@@ -94,7 +96,7 @@ public partial class MainWindow
             _updateReady = u.Version;
             _core.Audit.Append("app", "update.downloaded", u.Version);
             _updateInfo = $"Update {u.Version} bereit";
-            if (UpdateSchedule.ApplyNow(_settings.UpdateWhen, _settings.UpdateHour, DateTime.Now) && _settings.UpdateWhen == "sofort") InstallUpdateNow();
+            if (UpdateSchedule.ApplyNow(_settings.UpdateWhen, _settings.UpdateHour, DateTime.Now) && _settings.UpdateWhen == "sofort") StartUpdateCountdown(); // sichern, 30 s Countdown, dann neu starten
             else
             {
                 if (_settings.UpdateWhen == "start") Updater.ApplyOnExit();

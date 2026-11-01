@@ -62,9 +62,65 @@ public class UpdatesUiTests
         w.UpdatesOnStartForTests(); Pump();
         Assert.Contains(w.Windows.Stack, x => x.Page == "handy");
         Assert.Equal("neu", w.CurrentView);
+        Assert.True(w.NewsOpen); Assert.Single(w.NewsSlides); // Vollbild „Das ist neu“
         Assert.Contains(w.GetLogicalTexts(), t => t.Contains("TV & Live mit Serien"));
         Assert.Equal("0.9.13", w.Settings.LastSeenVersion);
         Assert.False(File.Exists(Path.Combine(root, "updates", "fenster.json")));
         w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Neuerungen im Vollbild: nicht wegklickbar (Esc, Klick daneben), läuft von selbst weiter, Pfeile blättern, „Los geht's“ erst auf der letzten Folie")]
+    public void News_fullscreen()
+    {
+        var (w, _, _) = Ui.Open();
+        w.NewsManualClock = true;
+        w.ShowNews("0.9.29", "## 0.9.29\n- **Karten & Touren:** echte Karte\n  - GPX laden\n  - Höhenprofil\n- **Posteingang als Mailprogramm:** Ordner und Anhänge\n- Rückgängig wirkt jetzt zuverlässig\n");
+        Assert.True(w.NewsOpen); Assert.Equal(3, w.NewsSlides.Count); Assert.Equal(-1, w.NewsIndex);
+        Assert.Equal(WindowState.FullScreen, w.WindowState);
+        Assert.Equal("Trendo OS 0.9.29", w.Find<TextBlock>("news-title").Text);
+        Assert.False(w.Find<Button>("news-done").IsVisible);
+        // Esc und Klick schließen nicht
+        w.Key(Avalonia.Input.PhysicalKey.Escape); Assert.True(w.NewsOpen);
+        w.NewsClose(); Assert.True(w.NewsOpen); // „Los geht's“ erst am Ende
+        // läuft von selbst weiter
+        w.NewsTick(TimeSpan.FromSeconds(5)); Pump();
+        Assert.Equal(0, w.NewsIndex); Assert.Equal("Karten & Touren", w.Find<TextBlock>("news-title").Text);
+        Assert.NotNull(w.TryFind<Border>("news-point-1"));
+        Assert.Equal("1 / 3", w.Find<TextBlock>("news-count").Text);
+        // Pfeile
+        w.Key(Avalonia.Input.PhysicalKey.ArrowRight); Assert.Equal(1, w.NewsIndex);
+        w.Key(Avalonia.Input.PhysicalKey.ArrowLeft); Assert.Equal(0, w.NewsIndex);
+        w.Find<Button>("news-next").Press(); w.Find<Button>("news-next").Press();
+        Assert.Equal(2, w.NewsIndex); Assert.True(w.NewsLast);
+        Assert.True(w.Find<Button>("news-done").IsVisible); Assert.False(w.Find<Button>("news-next").IsVisible);
+        w.NewsTick(TimeSpan.FromSeconds(30)); Assert.Equal(2, w.NewsIndex); // letzte Folie bleibt stehen
+        w.Find<Button>("news-done").Press();
+        Assert.False(w.NewsOpen); Assert.NotEqual(WindowState.FullScreen, w.WindowState);
+        Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "news.done");
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Update sofort: geladenes Update startet 30-Sekunden-Countdown (alles gesichert), danach Installation; „Jetzt neu starten“ geht sofort")]
+    public async Task Countdown()
+    {
+        var (w, _, _) = Ui.Open();
+        var up = new FakeUpdater(); w.Updater = up;
+        Assert.Equal("sofort", w.Settings.UpdateWhen);
+        Assert.True(await w.UpdateCheckAsync(userAsked: true)); Pump();
+        Assert.Equal(30, w.UpdateCountdownLeft); Assert.Equal(0, up.Applied);
+        Assert.True(w.Find<Border>("upd-countdown").IsVisible);
+        Assert.Contains("30 Sekunden", w.Find<TextBlock>("upd-countdown-text").Text);
+        for (var i = 0; i < 29; i++) w.UpdateCountdownStep();
+        Assert.Equal(1, w.UpdateCountdownLeft); Assert.Equal(0, up.Applied);
+        w.UpdateCountdownStep(); Pump();
+        Assert.Equal(-1, w.UpdateCountdownLeft); Assert.Equal(1, up.Applied); Assert.True(w.UpdateApplying);
+        Assert.False(w.Find<Border>("upd-countdown").IsVisible);
+        w.Close();
+
+        var (w2, _, _) = Ui.Open(); var up2 = new FakeUpdater(); w2.Updater = up2;
+        await w2.UpdateCheckAsync(userAsked: true); Pump();
+        w2.Find<Button>("upd-countdown-now").Press(); Pump();
+        Assert.Equal(1, up2.Applied); Assert.Equal(-1, w2.UpdateCountdownLeft);
+        w2.Close();
     }
 }
