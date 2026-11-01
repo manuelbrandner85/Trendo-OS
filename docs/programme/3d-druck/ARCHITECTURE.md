@@ -1,6 +1,6 @@
 # Trendo 3D-Druck – Architektur
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d-druck` · Stand: 0.9.28 (Stand 9511c3a)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d-druck` · Stand: 0.9.28 (Stand 83bf3c3)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Print3D.cs`

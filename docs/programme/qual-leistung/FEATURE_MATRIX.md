@@ -1,6 +1,6 @@
 # Leistung – Funktionsmatrix
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-leistung` · Stand: 0.9.28 (Stand 9511c3a)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-leistung` · Stand: 0.9.28 (Stand 83bf3c3)
 
 Quelle: `docs/spec/kataloge/SYS-13_KATALOG.md`
 

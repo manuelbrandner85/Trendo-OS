@@ -1,6 +1,6 @@
 # Schutz & Datenschutz – Einbindung in Trendo OS
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.28 (Stand 9511c3a)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.28 (Stand 83bf3c3)
 
 - Seite `schutz` im Studio „Daten schützen“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

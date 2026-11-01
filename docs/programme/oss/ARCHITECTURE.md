@@ -1,6 +1,6 @@
 # Open Source – Architektur
 
-Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.28 (Stand 9511c3a)
+Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.28 (Stand 83bf3c3)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W4Oss.cs`

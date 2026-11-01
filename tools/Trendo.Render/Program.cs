@@ -110,7 +110,7 @@ if (Environment.GetEnvironmentVariable("TRENDO_KATALOG") is { Length: > 0 } repo
         var full = Trendo.Core.Programs.ProgramCatalog.Enrich(e with { Type = ui, Tools = e.Tools.Count > 0 ? e.Tools : tools, Ui = ui.Concat(e.Shell ? ["Menüband", "Eigenschaften", "Statusleiste", "Dokument-Reiter"] : []).ToList() }, repo, req, types);
         entries.Add(full);
         var dir = Path.Combine(outDir, full.Id); Directory.CreateDirectory(dir);
-        foreach (var (name, text) in Trendo.Core.Programs.ProgramCatalog.Docs(full, outcomes, trx.Length > 0 ? string.Join(", ", trx.Select(t => Path.GetRelativePath(repo, t).Replace('\\', '/'))) : null))
+        foreach (var (name, text) in Trendo.Core.Programs.ProgramCatalog.Docs(full, outcomes, trx.Length > 0 ? string.Join(", ", trx.Select(Path.GetFileName)) : null)) // nur Dateinamen: keine Pfade mit Benutzer- oder Rechnernamen
             File.WriteAllText(Path.Combine(dir, name), text.Replace("\r\n", "\n"));
     }
     foreach (var stale in Directory.GetDirectories(outDir).Where(d => !entries.Any(x => x.Id == Path.GetFileName(d)))) Directory.Delete(stale, true);

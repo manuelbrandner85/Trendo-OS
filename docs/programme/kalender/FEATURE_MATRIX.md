@@ -1,6 +1,6 @@
 # Kalender – Funktionsmatrix
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kalender` · Stand: 0.9.28 (Stand 9511c3a)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kalender` · Stand: 0.9.28 (Stand 83bf3c3)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

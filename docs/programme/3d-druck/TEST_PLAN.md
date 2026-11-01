@@ -1,6 +1,6 @@
 # Trendo 3D-Druck – Testplan
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d-druck` · Stand: 0.9.28 (Stand 9511c3a)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d-druck` · Stand: 0.9.28 (Stand 83bf3c3)
 
 4 Tests sprechen dieses Programm an.
 
