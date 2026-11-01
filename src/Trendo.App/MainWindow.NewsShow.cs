@@ -216,7 +216,7 @@ public partial class MainWindow
     void InitUpdateCountdown(Grid root)
     {
         Grid.SetRowSpan(_updBar, 2);
-        var now = new Button { Name = "upd-countdown-now", Content = "Jetzt neu starten", Padding = new Thickness(16, 6), CornerRadius = new CornerRadius(10), Background = Accent, Foreground = Brushes.White, Margin = new Thickness(16, 0, 0, 0) };
+        var now = new Button { Name = "upd-countdown-now", Content = "Jetzt neu starten", FontSize = 16, Padding = new Thickness(16, 6), CornerRadius = new CornerRadius(10), Background = Accent, Foreground = Brushes.White, Margin = new Thickness(16, 0, 0, 0) };
         now.Click += (_, _) => { StopUpdateCountdown(); InstallUpdateNow(); };
         _updBar.Child = new StackPanel { Orientation = Orientation.Horizontal, Children = { new TextBlock { Text = "⬆", FontSize = 22, Foreground = GoldText(), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) }, _updBarText, now } };
         root.Children.Add(_updBar);
