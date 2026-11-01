@@ -92,7 +92,7 @@ public sealed class CompanionState
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(file))!);
         var tmp = file + ".tmp"; File.WriteAllText(tmp, JsonSerializer.Serialize(this, J));
         if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(tmp, UnixFileMode.UserRead | UnixFileMode.UserWrite);
-        File.Move(tmp, file, true);
+        SafeFile.Move(tmp, file);
     }
 
     public string NewCode(DateTime now) { Code = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6"); CodeExpires = now.AddMinutes(CodeMinutes); FailedTries = 0; return Code; }

@@ -32,10 +32,6 @@ public static class Fach
     public static void Save<T>(string dataRoot, string studio, string name, T value)
     {
         var p = Path.Combine(StoreDir(dataRoot, studio), name + ".json");
-        File.WriteAllText(p + ".tmp", JsonSerializer.Serialize(value, Json));
-        // Virenscanner oder Suchindex halten die Datei manchmal kurz fest – dann ein paar Mal kurz warten statt den Speichervorgang zu verlieren
-        for (var i = 0; ; i++)
-            try { File.Move(p + ".tmp", p, true); return; }
-            catch (Exception e) when (e is UnauthorizedAccessException or IOException && i < 20) { Thread.Sleep(25 * (i + 1)); }
+        File.WriteAllText(p + ".tmp", JsonSerializer.Serialize(value, Json)); SafeFile.Move(p + ".tmp", p);
     }
 }

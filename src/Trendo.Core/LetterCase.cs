@@ -341,7 +341,7 @@ public sealed class CaseStore(string projectsFolder, AuditLog audit)
         var json = JsonSerializer.Serialize(c, J);
         var v = Directory.GetFiles(Path.Combine(dir, "versionen"), "v*.json").Length + 1;
         File.WriteAllText(Path.Combine(dir, "versionen", $"v{v:000}.json"), json);
-        var tmp = Path.Combine(dir, "akte.json.tmp"); File.WriteAllText(tmp, json); File.Move(tmp, Path.Combine(dir, "akte.json"), true);
+        var tmp = Path.Combine(dir, "akte.json.tmp"); File.WriteAllText(tmp, json); SafeFile.Move(tmp, Path.Combine(dir, "akte.json"));
         audit.Append(by.Name, "letter.case.save", $"{c.Id} v{v} {why}");
     }
 

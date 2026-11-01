@@ -29,7 +29,7 @@ public static class Ooxml
         Add(z, "[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/><Default Extension=\"png\" ContentType=\"image/png\"/><Override PartName=\"/word/document.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/></Types>");
         Add(z, "_rels/.rels", string.Format(Rels, "word/document.xml"));
         Add(z, "word/document.xml", doc);
-        z.Dispose(); File.Move(path + ".tmp", path, true);
+        z.Dispose(); SafeFile.Move(path + ".tmp", path);
     }
 
     /// <summary>P02: Einfache Tabelle (erste Zeile = Überschriften).</summary>
@@ -57,7 +57,7 @@ public static class Ooxml
             Add(z, "xl/_rels/workbook.xml.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/></Relationships>");
             Add(z, "xl/worksheets/sheet1.xml", $"<?xml version=\"1.0\" encoding=\"UTF-8\"?><worksheet xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"><sheetData>{sb}</sheetData></worksheet>");
         }
-        File.Move(path + ".tmp", path, true);
+        SafeFile.Move(path + ".tmp", path);
     }
 
     static string Entry(string file, string name) { using var z = ZipFile.OpenRead(file); var e = z.GetEntry(name); if (e is null) return ""; using var r = new StreamReader(e.Open()); return r.ReadToEnd(); }

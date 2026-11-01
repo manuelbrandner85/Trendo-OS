@@ -92,7 +92,7 @@ public sealed class ProgramDocument
         var target = path ?? Path ?? throw new InvalidOperationException("Bitte einen Speicherort wählen.");
         if (!target.EndsWith(Extension, StringComparison.OrdinalIgnoreCase)) target += Extension;
         Directory.CreateDirectory(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(target))!);
-        var tmp = target + ".tmp"; File.WriteAllText(tmp, Serialize()); File.Move(tmp, target, true);
+        var tmp = target + ".tmp"; File.WriteAllText(tmp, Serialize()); SafeFile.Move(tmp, target);
         Path = target; Dirty = false;
         if (File.Exists(AutosaveFile(target))) File.Delete(AutosaveFile(target));
     }

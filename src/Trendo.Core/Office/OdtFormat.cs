@@ -178,7 +178,7 @@ public static class OdtFormat
             Add(z, "content.xml", content); Add(z, "styles.xml", styles); Add(z, "meta.xml", meta); Add(z, "META-INF/manifest.xml", manifest.ToString());
             foreach (var (n, data, _) in pics) { using var s = z.CreateEntry(n).Open(); s.Write(data); }
         }
-        File.Move(tmp, path, true);
+        SafeFile.Move(tmp, path);
     }
 
     static string Cm(double v) => v.ToString("0.###", CultureInfo.InvariantCulture) + "cm";

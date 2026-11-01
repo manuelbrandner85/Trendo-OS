@@ -255,7 +255,7 @@ public static class Letters
                 using var st = zip.CreateEntry($"word/media/unterschrift.{sigExt}").Open(); st.Write(sig);
             }
         }
-        File.Move(tmp, path, true);
+        SafeFile.Move(tmp, path);
     }
 
     /// <summary>Reiner Text der DOCX (für Vorschau/Tests).</summary>
@@ -349,7 +349,7 @@ public static class Ocr
             await using (var s = await fetch(url)) await using (var f = File.Create(tmp)) await s.CopyToAsync(f);
             var got = LetterKit.Sha(tmp);
             if (got != sha) { File.Delete(tmp); audit.Append(by.Name, "ocr.lang.rejected", got); return (false, "Download verworfen: Prüfsumme stimmt nicht."); }
-            File.Move(tmp, Path.Combine(dir, "deu.traineddata"), true);
+            SafeFile.Move(tmp, Path.Combine(dir, "deu.traineddata"));
             audit.Append(by.Name, "ocr.lang.installed", $"deu sha={got[..16]}");
             return (true, "Deutsches Sprachpaket installiert (1,5 MB, Apache-2.0).");
         }

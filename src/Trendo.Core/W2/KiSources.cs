@@ -111,7 +111,7 @@ public sealed class KiSourceSettings
             Directory.CreateDirectory(Path.GetDirectoryName(f)!);
             var tmp = f + "." + Environment.ProcessId + ".tmp";
             File.WriteAllText(tmp, JsonSerializer.Serialize(this));
-            File.Move(tmp, f, overwrite: true);
+            SafeFile.Move(tmp, f);
         }
     }
 

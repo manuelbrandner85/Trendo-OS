@@ -116,7 +116,7 @@ public sealed class UserSettings
         if (!Themes.Contains(Theme)) throw new ArgumentException("unbekanntes Design");
         var tmp = PathIn(dataRoot) + ".tmp";
         File.WriteAllText(tmp, JsonSerializer.Serialize(this, Json));
-        File.Move(tmp, PathIn(dataRoot), true);
+        SafeFile.Move(tmp, PathIn(dataRoot));
     }
 
     public static string DefaultProjectsFolder() =>

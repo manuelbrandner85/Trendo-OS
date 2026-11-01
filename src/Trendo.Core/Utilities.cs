@@ -37,7 +37,7 @@ public sealed class NoteStore(string dataRoot)
 {
     private string File_ => Path.Combine(dataRoot, "notizen.json");
     public List<Note> All() { try { return File.Exists(File_) ? JsonSerializer.Deserialize<List<Note>>(File.ReadAllText(File_)) ?? [] : []; } catch (JsonException) { return []; } }
-    private void Save(List<Note> l) { var t = File_ + ".tmp"; File.WriteAllText(t, JsonSerializer.Serialize(l)); File.Move(t, File_, true); }
+    private void Save(List<Note> l) { var t = File_ + ".tmp"; File.WriteAllText(t, JsonSerializer.Serialize(l)); SafeFile.Move(t, File_); }
     public Note Add(string text) { var l = All(); var n = new Note(Guid.NewGuid().ToString("N")[..8], text.Trim(), DateTime.Now); l.Insert(0, n); Save(l); return n; }
     public void Update(string id, string text) { var l = All(); var i = l.FindIndex(n => n.Id == id); if (i >= 0) { l[i] = l[i] with { Text = text.Trim(), Changed = DateTime.Now }; Save(l); } }
     public void Delete(string id) { var l = All(); l.RemoveAll(n => n.Id == id); Save(l); }

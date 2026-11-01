@@ -34,7 +34,7 @@ public sealed class SelfHealer(string dataRoot, AuditLog audit)
         else if (repair)
         {
             var q = Path.Combine(dataRoot, "quarantaene", now.ToString("yyyyMMdd-HHmmss")); Directory.CreateDirectory(q);
-            foreach (var b in bad) File.Move(b, Path.Combine(q, Path.GetRelativePath(dataRoot, b).Replace(Path.DirectorySeparatorChar, '_')), true);
+            foreach (var b in bad) SafeFile.Move(b, Path.Combine(q, Path.GetRelativePath(dataRoot, b).Replace(Path.DirectorySeparatorChar, '_')));
             r.Add(new("json", "Einstellungsdateien", HealState.Repaired, $"{bad.Count} kaputte Datei(en) beiseitegelegt (Ordner quarantaene), Standardwerte gelten wieder: {string.Join(", ", bad.Select(Path.GetFileName))}"));
         }
         else r.Add(new("json", "Einstellungsdateien", HealState.NeedsYou, $"{bad.Count} Datei(en) beschädigt."));

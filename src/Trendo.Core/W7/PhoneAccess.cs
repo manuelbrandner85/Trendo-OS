@@ -93,7 +93,7 @@ public sealed class PhoneAccess(string dataRoot)
         Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
         var tmp = FilePath + ".tmp";
         File.WriteAllText(tmp, JsonSerializer.Serialize(all, J));
-        File.Move(tmp, FilePath, true);
+        SafeFile.Move(tmp, FilePath);
     }
 
     static bool Same(string a, string b) => CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(a), Encoding.ASCII.GetBytes(b));

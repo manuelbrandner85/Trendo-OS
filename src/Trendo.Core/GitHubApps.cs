@@ -119,7 +119,7 @@ public static partial class GitHubApps
         Directory.CreateDirectory(toolsRoot);
         var f = Path.Combine(toolsRoot, ListName);
         File.WriteAllText(f + ".tmp", JsonSerializer.Serialize(list.OrderBy(i => i.Repo, StringComparer.OrdinalIgnoreCase).ToList(), new JsonSerializerOptions { WriteIndented = true }));
-        File.Move(f + ".tmp", f, true);
+        SafeFile.Move(f + ".tmp", f);
     }
 
     /// <summary>Installiert eine heruntergeladene Datei: Prüfsumme prüfen (wenn GitHub eine nennt), ZIP sicher entpacken oder .exe ablegen,

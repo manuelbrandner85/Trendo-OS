@@ -73,7 +73,7 @@ public static class TextFileCodec
     public static void Save(string path, string text, TextFileInfo info)
     {
         var bytes = Encode(text, info);
-        var tmp = path + ".trendo-tmp"; File.WriteAllBytes(tmp, bytes); File.Move(tmp, path, true);
+        var tmp = path + ".trendo-tmp"; File.WriteAllBytes(tmp, bytes); SafeFile.Move(tmp, path);
     }
 
     /// <summary>Suchen ab Position (mit Umlauf), optional Groß/klein und regulärer Ausdruck. Liefert (Start, Länge) oder null.</summary>
@@ -141,7 +141,7 @@ public sealed class Notebook(string dataRoot)
 
     public void AddSection(string section) => Directory.CreateDirectory(Dir(section));
     public string Read(string section, string page) => File.Exists(FileOf(section, page)) ? File.ReadAllText(FileOf(section, page)) : "";
-    public void Write(string section, string page, string text) { Directory.CreateDirectory(Dir(section)); var f = FileOf(section, page); File.WriteAllText(f + ".tmp", text); File.Move(f + ".tmp", f, true); }
+    public void Write(string section, string page, string text) { Directory.CreateDirectory(Dir(section)); var f = FileOf(section, page); File.WriteAllText(f + ".tmp", text); SafeFile.Move(f + ".tmp", f); }
     public bool Exists(string section, string page) => File.Exists(FileOf(section, page));
 
     public void RenamePage(string section, string from, string to)
@@ -156,7 +156,7 @@ public sealed class Notebook(string dataRoot)
     {
         var f = FileOf(section, page); if (!File.Exists(f)) return;
         var bin = Path.Combine(Root, ".papierkorb"); Directory.CreateDirectory(bin);
-        File.Move(f, Path.Combine(bin, $"{SafeName(section)} - {SafeName(page)} {DateTime.Now:yyyyMMdd-HHmmss}.md"), true);
+        SafeFile.Move(f, Path.Combine(bin, $"{SafeName(section)} - {SafeName(page)} {DateTime.Now:yyyyMMdd-HHmmss}.md"));
     }
 
     public static List<string> Tags(string text) => TagRx.Matches(text).Select(m => m.Groups[1].Value).Distinct(StringComparer.OrdinalIgnoreCase).ToList();

@@ -44,7 +44,7 @@ public partial class MainWindow
             var bytes = await o(url);
             if (bytes.Length > max) throw new InvalidOperationException("Datei größer als angegeben.");
             await File.WriteAllBytesAsync(tmp, bytes, ct);
-            File.Move(tmp, file, true);
+            SafeFile.Move(tmp, file);
             return;
         }
         var u = new Uri(url);
@@ -74,7 +74,7 @@ public partial class MainWindow
                     if ((DateTime.UtcNow - last).TotalMilliseconds > 500) { last = DateTime.UtcNow; progress?.Invoke(done); }
                 }
             }
-            File.Move(tmp, file, true);
+            SafeFile.Move(tmp, file);
         }
     }
 }

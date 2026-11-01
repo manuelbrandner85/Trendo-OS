@@ -32,7 +32,7 @@ public static partial class Web
     }
     public static DlState? LoadState(string target) { try { return File.Exists(StateFile(target)) ? JsonSerializer.Deserialize<DlState>(File.ReadAllText(StateFile(target))) : null; } catch (JsonException) { return null; } }
     public static void SaveState(DlState s) => File.WriteAllText(StateFile(s.Target), JsonSerializer.Serialize(s));
-    public static void Finish(string target) { File.Move(PartFile(target), target, true); File.Delete(StateFile(target)); }
+    public static void Finish(string target) { SafeFile.Move(PartFile(target), target); File.Delete(StateFile(target)); }
     public static string SafeFileName(Uri u)
     {
         var n = Uri.UnescapeDataString(Path.GetFileName(u.AbsolutePath)); n = string.Concat(n.Where(c => !Path.GetInvalidFileNameChars().Contains(c)));

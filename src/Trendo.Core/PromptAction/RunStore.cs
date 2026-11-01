@@ -66,7 +66,7 @@ public sealed class RunStore
         if (File.Exists(full)) File.Copy(full, full + ".bak", true);
         var tmp = full + ".tmp";
         File.WriteAllText(tmp, JsonSerializer.Serialize(state, Json));
-        File.Move(tmp, full, true);
+        SafeFile.Move(tmp, full);
     }
 
     public RunState? TryLoad(string projectId, string runId)
@@ -180,6 +180,6 @@ public sealed class EffectLedger
         Directory.CreateDirectory(Path.GetDirectoryName(full)!);
         var tmp = full + ".tmp";
         File.WriteAllText(tmp, JsonSerializer.Serialize(dto, Json));
-        File.Move(tmp, full, true);
+        SafeFile.Move(tmp, full);
     }
 }

@@ -77,7 +77,7 @@ public sealed class KiLibraryStore(string toolsRoot)
             if (!string.Equals(sha, expectedSha256, StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException($"{f.FileName}: Prüfsumme passt nicht – nicht übernommen.");
         }
         Directory.CreateDirectory(ModelDir(m));
-        File.Move(downloaded, ModelFile(m, f), true);
+        SafeFile.Move(downloaded, ModelFile(m, f));
         audit?.Append("app", "ki.model.file", $"{m.Id} {f.FileName} {f.Bytes}{(sha is null ? "" : " sha256=" + sha)}");
     }
 

@@ -414,7 +414,7 @@ public sealed class TvLibrary(string dataRoot, ISecretStore? secrets = null)
                 if (!File.Exists(f)) continue;
                 var text = File.ReadAllText(f);
                 var clean = Scrub(text, s.Id);
-                if (clean != text) { File.WriteAllText(f + ".tmp", clean); File.Move(f + ".tmp", f, true); }
+                if (clean != text) { File.WriteAllText(f + ".tmp", clean); SafeFile.Move(f + ".tmp", f); }
                 ParseCache.TryRemove(new FileInfo(f).FullName, out _);
             }
             audit?.Append("app", "tv.secrets.migrated", s.Id); // ohne Passwort
@@ -489,7 +489,7 @@ public sealed class TvLibrary(string dataRoot, ISecretStore? secrets = null)
         p.Episodes = eps; p.Series = series;
         return p;
     }
-    void Save(State s) { Directory.CreateDirectory(Dir); var f = Path.Combine(Dir, "tv.json"); File.WriteAllText(f + ".tmp", JsonSerializer.Serialize(s, J)); File.Move(f + ".tmp", f, true); StateCache.TryRemove(new FileInfo(f).FullName, out _); }
+    void Save(State s) { Directory.CreateDirectory(Dir); var f = Path.Combine(Dir, "tv.json"); File.WriteAllText(f + ".tmp", JsonSerializer.Serialize(s, J)); SafeFile.Move(f + ".tmp", f); StateCache.TryRemove(new FileInfo(f).FullName, out _); }
     void Change(Action<State> a) { var s = Load(); a(s); Save(s); }
 
     public IReadOnlyList<TvSource> Sources => Load().Sources;

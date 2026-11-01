@@ -149,7 +149,7 @@ public static class DocxFormat
             Add(z, "docProps/core.xml", $"<?xml version=\"1.0\" encoding=\"UTF-8\"?><cp:coreProperties xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\" xmlns:dc=\"http://purl.org/dc/elements/1.1/\"><dc:title>{Esc(doc.Title ?? "")}</dc:title><dc:creator></dc:creator></cp:coreProperties>");
             foreach (var (n, data) in ctx.Media) { using var s = z.CreateEntry("word/media/" + n).Open(); s.Write(data); }
         }
-        File.Move(tmp, path, true);
+        SafeFile.Move(tmp, path);
     }
 
     static int Tw(double cm) => (int)Math.Round(cm * TwipsPerCm);

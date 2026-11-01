@@ -33,7 +33,7 @@ public static class SheetFiles
             case ".csv": WriteCsv(doc, doc.Sheets[0], tmp); break;
             default: throw new ArgumentException("Speichern geht als .xlsx oder .csv (ODS kann Trendo Tabelle lesen).");
         }
-        File.Move(tmp, path, true);
+        SafeFile.Move(tmp, path);
     }
 
     // ---------- XLSX schreiben ----------

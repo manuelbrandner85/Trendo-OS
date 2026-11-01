@@ -12,7 +12,7 @@ static class J
 {
     public static readonly JsonSerializerOptions O = new() { WriteIndented = true };
     public static List<T> Load<T>(string f) { try { return File.Exists(f) ? JsonSerializer.Deserialize<List<T>>(File.ReadAllText(f)) ?? [] : []; } catch (JsonException) { return []; } }
-    public static void Save<T>(string f, List<T> l) { Directory.CreateDirectory(Path.GetDirectoryName(f)!); File.WriteAllText(f + ".tmp", JsonSerializer.Serialize(l, O)); File.Move(f + ".tmp", f, true); }
+    public static void Save<T>(string f, List<T> l) { Directory.CreateDirectory(Path.GetDirectoryName(f)!); File.WriteAllText(f + ".tmp", JsonSerializer.Serialize(l, O)); SafeFile.Move(f + ".tmp", f); }
     public static string Sha(string file) { using var s = File.OpenRead(file); return Convert.ToHexString(SHA256.HashData(s)).ToLowerInvariant(); }
 }
 
