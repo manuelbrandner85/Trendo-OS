@@ -14,9 +14,11 @@ public partial class MainWindow
 {
     public string SuiteFolder => WorkFolder("Vorhaben");
     private string? _suiteOpen;
-    public string SuiteMode { get; set; } = "liste";
+    bool _suiteNew, _suiteRenaming;
+    public string SuiteMode { get; set; } = "uebersicht";
+    public string? SuiteOpenDir => _suiteOpen;
 
-    private void InitW4Suite() => RegisterTab(KreativTabs, "vorhaben", "Vorhaben", "X-11", SuiteView, "vorhaben", "plan", "checkliste", "schritte", "ziel", "kanban", "zeitplan", "meilenstein", "projekt");
+    private void InitW4Suite() => RegisterTab(KreativTabs, "vorhaben", "Vorhaben", "X-11", SuiteView, "vorhaben", "plan", "checkliste", "schritte", "ziel", "kanban", "zeitplan", "meilenstein", "projekt", "projektmappe");
 
     /// <summary>U2: Fortschritt als Ring mit Prozentzahl.</summary>
     private Control Ring(int percent, double size, string name)
@@ -27,10 +29,61 @@ public partial class MainWindow
         return new Grid { Width = size, Height = size, Children = { bg, arc, new TextBlock { Text = $"{percent} %", Foreground = Text, FontSize = size / 4.2, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } } };
     }
 
+    /// <summary>Neues Projekt als Projektmappe (Masterprompt 131, Runde 7): links alle Vorhaben und der Baum des offenen Vorhabens,
+    /// rechts Übersicht (Kennzahlen, Aufgaben-Tafel, Zeitplan-Leiste, letzte Dateien) oder die vollen Ansichten Liste, Tafel, Zeitplan und Dateien – alles in einem Fenster.</summary>
     private Control SuiteView()
     {
         const string V = "vorhaben";
-        var sp = new StackPanel { Spacing = 8, Children = { P("Was willst du machen? Wähle ein Ziel. Trendo legt Ordner, Schritte und einen Zeitplan an.") } };
+        var dirs = Directory.GetDirectories(SuiteFolder).OrderByDescending(Directory.GetLastWriteTime).ToList();
+        if (_suiteOpen is not null && !Directory.Exists(_suiteOpen)) _suiteOpen = null;
+        _suiteOpen ??= dirs.FirstOrDefault();
+
+        // ── links: Projekte und Mappe ──
+        var side = new StackPanel { Name = "suite-side", Spacing = 4 };
+        side.Children.Add(Act("suite-new", "＋ Neues Projekt", () => { _suiteNew = true; Show(V); }, true));
+        if (dirs.Count > 0) side.Children.Add(new TextBlock { Text = "Projekte", Foreground = Muted, FontSize = 11, Margin = new Thickness(2, 6, 0, 0) });
+        var i = 0;
+        foreach (var d in dirs.Take(30))
+        {
+            var dir = d; var on = dir == _suiteOpen && !_suiteNew; var steps = CreationSuite.Steps(dir); var next = steps.FirstOrDefault(s => !s.Done);
+            var b = new Button { Name = $"suite-open-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(6, 4), CornerRadius = new CornerRadius(8),
+                Background = on ? Brush.Parse("#332F86F6") : Brushes.Transparent,
+                Content = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { Ring(CreationSuite.Percent(dir), 34, $"suite-ring-{i}"),
+                    Pos(new StackPanel { Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Children = {
+                        new TextBlock { Text = Path.GetFileName(dir), Foreground = Text, FontSize = 12.5, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal, TextTrimming = TextTrimming.CharacterEllipsis },
+                        new TextBlock { Text = next is null ? "Alles erledigt" : next.Text, Foreground = Muted, FontSize = 10.5, TextTrimming = TextTrimming.CharacterEllipsis } } }, 1) } } };
+            b.Click += (_, _) => { _suiteOpen = dir; _suiteNew = false; _suiteRenaming = false; Show(V); };
+            side.Children.Add(b); i++;
+        }
+        if (_suiteOpen is { } cur && !_suiteNew)
+        {
+            side.Children.Add(new TextBlock { Text = "Mappe", Foreground = Muted, FontSize = 11, Margin = new Thickness(2, 10, 0, 0) });
+            var tree = CreationSuite.Tree(cur, 120); var t = 0;
+            if (tree.Count == 0) side.Children.Add(P("Noch leer.", Muted, 11));
+            foreach (var e in tree)
+            {
+                var full = Path.Combine(cur, e.Relative); var entry = e;
+                var tb = new Button { Name = $"suite-tree-{t++}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = Brushes.Transparent,
+                    Padding = new Thickness(6 + 14 * e.Depth, 2, 6, 2), CornerRadius = new CornerRadius(4),
+                    Content = new TextBlock { Text = e.IsFolder ? $"▸ {e.Name}  ({e.Count})" : e.Name, Foreground = e.IsFolder ? Text : Muted, FontSize = 11.5, FontWeight = e.IsFolder ? FontWeight.SemiBold : FontWeight.Normal, TextTrimming = TextTrimming.CharacterEllipsis } };
+                ToolTip.SetTip(tb, e.IsFolder ? "Ordner öffnen" : "Öffnen");
+                tb.Click += (_, _) => Try(V, () => { if (entry.IsFolder) Launch(full); else OpenOfficeDoc(full); });
+                side.Children.Add(tb);
+            }
+            side.Children.Add(Act("suite-folder", "Ordner öffnen", () => Launch(cur)));
+        }
+
+        Control main = _suiteNew || _suiteOpen is null ? SuiteNewCard(dirs.Count > 0) : SuiteProject(_suiteOpen);
+        var body = new Grid { Name = "suite-window", ColumnDefinitions = new ColumnDefinitions("250,12,*"), Children = {
+            new Border { CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(10), VerticalAlignment = VerticalAlignment.Top, Child = side },
+            Pos(main, 2) } };
+        return KreativPage("Vorhaben", body);
+    }
+
+    /// <summary>Neues Projekt: Ziel wählen, Trendo legt Ordner, Schritte und einen Zeitplan an.</summary>
+    private Control SuiteNewCard(bool canCancel)
+    {
+        const string V = "vorhaben";
         var name = new TextBox { Name = "suite-name", PlaceholderText = "Name, z. B. Urlaubsvideo", Width = 240 };
         var start = new TextBox { Name = "suite-start", Text = DateTime.Today.ToString("dd.MM.yyyy", De), Width = 110 };
         ToolTip.SetTip(start, "Startdatum für den Zeitplan");
@@ -46,60 +99,115 @@ public partial class MainWindow
                 {
                     var s = DateTime.TryParseExact(start.Text?.Trim(), "d.M.yyyy", De, System.Globalization.DateTimeStyles.None, out var d) ? d : DateTime.Today;
                     _suiteOpen = CreationSuite.Create(SuiteFolder, kit.Id, string.IsNullOrWhiteSpace(name.Text) ? kit.Label : name.Text, s);
+                    _suiteNew = false; SuiteMode = "uebersicht";
                     _core.Audit.Append(Principal.LocalOwner.Name, "suite.create", kit.Id); Say($"„{Path.GetFileName(_suiteOpen)}“ ist eingerichtet. Los geht's mit Schritt 1.", V);
                 }
-                catch (Exception ex) { Say("Hat nicht geklappt: " + ex.Message, V); }
+                catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException) { Say("Hat nicht geklappt: " + ex.Message, V); }
             };
             wrap.Children.Add(b);
         }
-        sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { new WrapPanel { Children = { name, new Border { Width = 8 }, P("Start", null, 11.5), new Border { Width = 4 }, start } }, wrap } }));
+        var head = new WrapPanel { Children = { H("Neues Projekt", 15) } };
+        var sp = new StackPanel { Name = "suite-newcard", Spacing = 8, Children = {
+            canCancel ? Row(head, Act("suite-new-cancel", "Abbrechen", () => { _suiteNew = false; Show(V); })) : head,
+            P("Was willst du machen? Wähle ein Ziel. Trendo legt Ordner, Schritte und einen Zeitplan an."),
+            new WrapPanel { Children = { name, new Border { Width = 8 }, P("Start", null, 11.5), new Border { Width = 4 }, start } }, wrap } };
+        return Card(sp);
+    }
 
-        // U2: Vorhaben als Karten mit Ring
-        var dirs = Directory.GetDirectories(SuiteFolder).OrderByDescending(Directory.GetLastWriteTime).ToList();
-        _suiteOpen ??= dirs.FirstOrDefault();
-        if (dirs.Count > 0)
+    private Control SuiteProject(string open)
+    {
+        const string V = "vorhaben";
+        var steps = CreationSuite.Steps(open);
+        var modes = new WrapPanel { Name = "suite-modes" };
+        foreach (var (m, l) in new[] { ("uebersicht", "Übersicht"), ("liste", "Liste"), ("kanban", "Tafel"), ("zeitplan", "Zeitplan"), ("dateien", "Dateien") })
         {
-            sp.Children.Add(H("Deine Vorhaben", 14));
-            var cards = new WrapPanel { Name = "suite-cards" };
-            var i = 0;
-            foreach (var d in dirs.Take(12))
-            {
-                var dir = d; var steps = CreationSuite.Steps(dir); var pct = CreationSuite.Percent(dir);
-                var next = steps.FirstOrDefault(s => !s.Done);
-                var b = new Button { Name = $"suite-open-{i}", Width = 250, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(10), CornerRadius = new CornerRadius(12),
-                    Background = dir == _suiteOpen ? Accent : TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                    Content = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { Ring(pct, 52, $"suite-ring-{i}"),
-                        Pos(new StackPanel { Margin = new Thickness(10, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Children = {
-                            new TextBlock { Text = Path.GetFileName(dir), Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
-                            new TextBlock { Text = next is null ? "Alles erledigt" : "Als Nächstes: " + next.Text, Foreground = Muted, FontSize = 10.5, TextTrimming = TextTrimming.CharacterEllipsis },
-                            new TextBlock { Text = steps.LastOrDefault(s => s.Milestone)?.Due is { } due ? $"Ziel: {due:dd.MM.yyyy}" : $"{steps.Count(s => s.Done)} von {steps.Count} Schritten", Foreground = Muted, FontSize = 10.5 } } }, 1) } } };
-                b.Click += (_, _) => { _suiteOpen = dir; Show(V); };
-                cards.Children.Add(b); i++;
-            }
-            sp.Children.Add(cards);
+            var b = new Button { Name = "suite-mode-" + m, Content = l, FontSize = 12, Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 6, 0), CornerRadius = new CornerRadius(14),
+                Background = SuiteMode == m ? Accent : Brushes.Transparent, Foreground = Text, BorderBrush = Edge, BorderThickness = new Thickness(1) };
+            b.Click += (_, _) => { SuiteMode = m; Show(V); };
+            modes.Children.Add(b);
         }
+        Control title;
+        if (_suiteRenaming)
+        {
+            var nt = new TextBox { Name = "suite-rename-text", Text = Path.GetFileName(open), Width = 240 };
+            void Commit() => Try(V, () => { _suiteOpen = CreationSuite.Rename(open, nt.Text ?? ""); _suiteRenaming = false; _core.Audit.Append(Principal.LocalOwner.Name, "suite.rename", Path.GetFileName(_suiteOpen)); Show(V); });
+            OnEnter(nt, Commit);
+            title = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { nt, Act("suite-rename-ok", "Übernehmen", Commit, true), Act("suite-rename-cancel", "Abbrechen", () => { _suiteRenaming = false; Show(V); }) } };
+        }
+        else
+        {
+            var rn = new Button { Name = "suite-rename", Content = "✎", Padding = new Thickness(6, 1), Background = Brushes.Transparent, VerticalAlignment = VerticalAlignment.Center };
+            ToolTip.SetTip(rn, "Umbenennen"); rn.Click += (_, _) => { _suiteRenaming = true; Show(V); };
+            title = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, Children = { H(Path.GetFileName(open), 16), rn } };
+        }
+        var head = new StackPanel { Spacing = 6, Children = { Row(title, modes),
+            new ProgressBar { Name = "suite-progress", Value = CreationSuite.Percent(open), Maximum = 100, Height = 6 } } };
+        Control body = SuiteMode switch { "kanban" => SuiteKanban(open, steps), "zeitplan" => SuiteTimeline(open, steps), "dateien" => SuiteFiles(open), "liste" => SuiteList(open, steps), _ => SuiteOverview(open, steps) };
+        var jump = new WrapPanel();
+        foreach (var (k, l) in new[] { ("kreativ-medien", "Medien-Studio"), ("baukasten", "Baukasten"), ("dev", "Software"), ("spiele", "Spiele"), ("3d", "3D"), ("assets", "Freie Assets") })
+            if (_showMap.ContainsKey(k)) { var b = Nav2(l, k); b.Margin = new Thickness(0, 4, 6, 0); jump.Children.Add(b); }
+        return Card(new StackPanel { Spacing = 8, Children = { head, body, jump } });
+    }
 
-        if (_suiteOpen is { } open && Directory.Exists(open))
+    /// <summary>Übersicht: Kennzahlen, Aufgaben-Tafel, Zeitplan-Leiste und die letzten Dateien auf einen Blick.</summary>
+    private Control SuiteOverview(string open, IReadOnlyList<Step> steps)
+    {
+        const string V = "vorhaben";
+        var x = CreationSuite.Summary(open, DateTime.Today);
+        Border Tile(string name, string label, Control value) => new() { Name = name, Background = Brush.Parse(C("#22000000", "#0F000000")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 8), Margin = new Thickness(0, 0, 8, 8), MinWidth = 150,
+            Child = new StackPanel { Spacing = 2, Children = { new TextBlock { Text = label, Foreground = Muted, FontSize = 11 }, value } } };
+        TextBlock Big(string t, IBrush? c = null) => new() { Text = t, Foreground = c ?? Text, FontSize = 15, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 260 };
+        var kpis = new WrapPanel { Children = {
+            Tile("suite-kpi-percent", "Fortschritt", new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Ring(x.Percent, 40, "suite-ring-big"), new TextBlock { Text = $"{x.Done} von {steps.Count} fertig", Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } }),
+            Tile("suite-kpi-next", "Als Nächstes", Big(x.Next?.Text ?? "Alles erledigt")),
+            Tile("suite-kpi-end", "Ziel", Big(x.End is { } e ? $"{e:dd.MM.yyyy} · " + (x.DaysLeft switch { > 1 => $"noch {x.DaysLeft} Tage", 1 => "morgen", 0 => "heute", _ => $"{-x.DaysLeft} Tage drüber" }) : "kein Termin",
+                x.DaysLeft < 0 && x.Percent < 100 ? Brush.Parse("#F97316") : null)),
+            Tile("suite-kpi-overdue", "Überfällig", Big(x.Overdue == 0 ? "nichts" : $"{x.Overdue} Schritt{(x.Overdue == 1 ? "" : "e")}", x.Overdue > 0 ? Brush.Parse("#F97316") : null)) } };
+        if (x.Goal.Length > 0) kpis.Children.Insert(0, Tile("suite-kpi-goal", x.Kind.Length > 0 ? x.Kind : "Ziel", Big(x.Goal)));
+
+        // Zeitplan-Leiste: ein Balken je Schritt mit Termin, Heute-Linie; Klick öffnet den vollen Zeitplan
+        var bars = CreationSuite.Bars(steps);
+        Control plan;
+        if (bars.Count == 0) plan = P("Noch keine Termine – im Zeitplan eintragen.", Muted, 11.5);
+        else
         {
-            var steps = CreationSuite.Steps(open);
-            var modes = new WrapPanel { Name = "suite-modes" };
-            foreach (var (m, l) in new[] { ("liste", "Liste"), ("kanban", "Kanban"), ("zeitplan", "Zeitplan"), ("dateien", "Dateien") })
+            const double W = 420, RH = 18;
+            var from = bars.Min(b => b.Start); var to = new[] { bars.Max(b => b.End), DateTime.Today }.Max();
+            if (DateTime.Today < from) from = DateTime.Today;
+            var span = Math.Max(1, (to - from).Days + 1); var dayW = W / span;
+            var canvas = new Canvas { Name = "suite-mini-plan", Width = W, Height = bars.Count * RH };
+            var labels = new StackPanel { Width = 150 }; var row = 0;
+            foreach (var bar in bars)
             {
-                var b = new Button { Name = "suite-mode-" + m, Content = l, FontSize = 12, Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 6, 0), CornerRadius = new CornerRadius(14),
-                    Background = SuiteMode == m ? Accent : Brushes.Transparent, Foreground = Text, BorderBrush = Edge, BorderThickness = new Thickness(1) };
-                b.Click += (_, _) => { SuiteMode = m; Show(V); };
-                modes.Children.Add(b);
+                var r = new Rectangle { Width = Math.Max(4, bar.Days * dayW - 2), Height = RH - 8, RadiusX = 3, RadiusY = 3,
+                    Fill = Brush.Parse(bar.Step.Done ? "#22B35E" : bar.Critical ? "#EF4444" : "#2F86F6") };
+                Canvas.SetLeft(r, (bar.Start - from).Days * dayW); Canvas.SetTop(r, row++ * RH + 4);
+                ToolTip.SetTip(r, $"{bar.Step.Text}: {bar.Start:dd.MM.}–{bar.End:dd.MM.}");
+                canvas.Children.Add(r);
+                labels.Children.Add(new TextBlock { Text = bar.Step.Text, Height = RH, Foreground = bar.Step.Done ? Muted : Text, FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis });
             }
-            var head = new StackPanel { Spacing = 6, Children = {
-                Row(H(Path.GetFileName(open), 15), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { modes, Act("suite-folder", "Ordner", () => Launch(open)) } }),
-                new ProgressBar { Name = "suite-progress", Value = CreationSuite.Percent(open), Maximum = 100, Height = 6 } } };
-            Control body = SuiteMode switch { "kanban" => SuiteKanban(open, steps), "zeitplan" => SuiteTimeline(open, steps), "dateien" => SuiteFiles(open), _ => SuiteList(open, steps) };
-            var jump = new WrapPanel();
-            foreach (var (k, l) in new[] { ("kreativ-medien", "Medien-Studio"), ("baukasten", "Baukasten"), ("dev", "Software"), ("spiele", "Spiele"), ("3d", "3D"), ("assets", "Freie Assets") })
-                if (_showMap.ContainsKey(k)) { var b = Nav2(l, k); b.Margin = new Thickness(0, 4, 6, 0); jump.Children.Add(b); }
-            sp.Children.Add(Card(new StackPanel { Spacing = 8, Children = { head, body, jump } }));
+            var today = new Rectangle { Width = 2, Height = canvas.Height, Fill = GoldText() }; Canvas.SetLeft(today, (DateTime.Today - from).Days * dayW + dayW / 2); canvas.Children.Add(today);
+            plan = new StackPanel { Spacing = 4, Children = { new StackPanel { Orientation = Orientation.Horizontal, Children = { labels, canvas } },
+                P($"{from:dd.MM.} bis {to:dd.MM.yyyy} · goldene Linie: heute · rot: kritischer Pfad", Muted, 10.5) } };
         }
-        return KreativPage("Vorhaben", sp);
+        var planCard = new StackPanel { Spacing = 6, Children = { Row(H("Zeitplan", 13), Act("suite-mini-open", "Zeitplan öffnen", () => { SuiteMode = "zeitplan"; Show(V); })), plan } };
+
+        var files = CreationSuite.Files(open).Take(6).ToList();
+        var recent = new StackPanel { Spacing = 2, Children = { Row(H($"Letzte Dateien ({x.Files})", 13), Act("suite-files-open", "Alle", () => { SuiteMode = "dateien"; Show(V); })) } };
+        if (files.Count == 0) recent.Children.Add(P("Noch keine Dateien – alles, was du für dieses Projekt speicherst, erscheint hier.", Muted, 11.5));
+        var n = 0;
+        foreach (var f in files)
+        {
+            var path = f.FullName;
+            var b = new Button { Name = $"suite-recent-{n++}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Background = Brushes.Transparent, Padding = new Thickness(4, 2),
+                Content = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = Path.GetRelativePath(open, path), Foreground = Text, FontSize = 11.5, TextTrimming = TextTrimming.CharacterEllipsis },
+                    Pos(P(f.LastWriteTime.ToString("dd.MM. HH:mm", De), null, 10.5), 1) } } };
+            b.Click += (_, _) => Try(V, () => OpenOfficeDoc(path));
+            recent.Children.Add(b);
+        }
+        Border Panel(Control c) => new() { Background = Brush.Parse(C("#14000000", "#0A000000")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = c };
+        var bottom = new Grid { ColumnDefinitions = new ColumnDefinitions("3*,12,2*"), Children = { Panel(planCard), Pos(Panel(recent), 2) } };
+        return new StackPanel { Name = "suite-overview", Spacing = 10, Children = { kpis, H("Aufgaben-Tafel", 13), SuiteKanban(open, steps), bottom } };
     }
 
     private Control SuiteList(string open, IReadOnlyList<Step> steps)

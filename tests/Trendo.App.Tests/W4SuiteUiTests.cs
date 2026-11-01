@@ -16,6 +16,7 @@ public class W4_X11_Ui
         w.Find<Button>("suite-kit-video").Press();
         var dir = Path.Combine(w.SuiteFolder, "Urlaub");
         Assert.True(File.Exists(Path.Combine(dir, CreationSuite.ListFile)));
+        w.Find<Button>("suite-mode-liste").Press();
         w.Find<CheckBox>("suite-step-0").IsChecked = true; Avalonia.Threading.Dispatcher.UIThread.RunJobs();
         Assert.True(CreationSuite.Percent(dir) > 0);
         Assert.True(w.Find<ProgressBar>("suite-progress").Value > 0);
