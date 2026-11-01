@@ -1,8 +1,8 @@
 # Medien – Testplan
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.28 (Stand 4ec46e4)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.28 (Stand 089576b)
 
-24 Tests sprechen dieses Programm an.
+25 Tests sprechen dieses Programm an.
 
 - G3: Fachstudio zeigt keine Reiter fremder Studios; G10: keine Schrift unter 12 pt auf der Seite
 - G6: Dateifeld zeigt Vorschau der gewählten Datei (Name, Größe)
@@ -28,3 +28,4 @@ Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `m
 - SYS-02: Notizen werden gespeichert, geändert und gelöscht
 - SYS-02: Rechner lehnt Unsinn ab statt zu raten
 - SYS-02: Rechner rechnet korrekt (Punkt vor Strich, Klammern, Komma, Prozent, Potenz)
+- T-0302: Fotos nach Monaten, Klick/Strg-Klick wählt, Album + Favoriten, Doppelklick groß mit ← →/Esc, Papierkorb nur nach Ja, Doppelte gefunden

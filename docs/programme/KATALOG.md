@@ -11,17 +11,17 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | E-Mail & Kontakte | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Texteditor | – | 18 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](post/README.md) |
 | Kalender | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Monatskalender | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](kalender/README.md) |
 | Posteingang | E-Mails & Termine (SYS-09) | Arbeiten & Büro | keine eigene erkannt | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](posteingang/README.md) |
-| Medien | Kleine Helfer & Musik (SYS-02) | Arbeiten & Büro | keine eigene erkannt | 25 | 24 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](medien/README.md) |
+| Medien | Kleine Helfer & Musik (SYS-02) | Arbeiten & Büro | keine eigene erkannt | 25 | 25 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](medien/README.md) |
 | Übersicht | Kleine Helfer & Musik (SYS-02) | Arbeiten & Büro | keine eigene erkannt | 25 | 27 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](alltag-start/README.md) |
 | Werkzeuge: Notizen, Rechner, Wecker | Kleine Helfer & Musik (SYS-02) | Arbeiten & Büro | keine eigene erkannt | 25 | 31 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](werkzeuge/README.md) |
 | Vorhaben | Neues Projekt starten (X-11) | Arbeiten & Büro | keine eigene erkannt | – | 6 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](vorhaben/README.md) |
 | Start | Texte & Tabellen (SYS-10) | Arbeiten & Büro | keine eigene erkannt | 25 | 25 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](doku-start/README.md) |
-| Trendo PDF | Texte & Tabellen (SYS-10) | Arbeiten & Büro | keine eigene erkannt | 25 | 26 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](pdf/README.md) |
+| Trendo PDF | Texte & Tabellen (SYS-10) | Arbeiten & Büro | keine eigene erkannt | 25 | 27 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](pdf/README.md) |
 | Trendo Präsentation | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Folienansicht | 25 | 27 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](praesentation/README.md) |
 | Trendo Tabelle | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Tabellenraster | 25 | 33 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](tabelle/README.md) |
 | Trendo Text | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Dokumentseite (Textverarbeitung) | 25 | 33 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](text/README.md) |
-| Geld | Geld & Rechnungen (SPEC-11) | Business & Geld | Diagramm | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](finanzen/README.md) |
-| Verkaufen | Online verkaufen (STUDIO-ONLINE-BUSINESS-01) | Business & Geld | Diagramm | – | 3 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](verkaufen/README.md) |
+| Geld | Geld & Rechnungen (SPEC-11) | Business & Geld | Diagramm | – | 12 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](finanzen/README.md) |
+| Verkaufen | Online verkaufen (STUDIO-ONLINE-BUSINESS-01) | Business & Geld | keine eigene erkannt | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](verkaufen/README.md) |
 | Freie Assets | Freie Bilder & Klänge finden (X-07) | Kreativ & Medien | keine eigene erkannt | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](assets/README.md) |
 | KI-Vorlagen | KI-Anweisungen schreiben (CORE-12) | Kreativ & Medien | keine eigene erkannt | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-vorlagen/README.md) |
 | Kleidung & Produkte | Kleidung & Produkte entwerfen (SPEC-08) | Kreativ & Medien | keine eigene erkannt | 18 | 18 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](mode-programm/README.md) |

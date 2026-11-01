@@ -1,6 +1,6 @@
 # Kameras & Roboter steuern – Einbindung in Trendo OS
 
-Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.28 (Stand 4ec46e4)
+Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.28 (Stand 089576b)
 
 - Seite `roboter` im Studio „Kameras & Roboter steuern“ (Technik & Fachgebiete) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

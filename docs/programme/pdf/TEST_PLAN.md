@@ -1,8 +1,8 @@
 # Trendo PDF – Testplan
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.28 (Stand 4ec46e4)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.28 (Stand 089576b)
 
-26 Tests sprechen dieses Programm an.
+27 Tests sprechen dieses Programm an.
 
 - SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien
 - SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen
@@ -29,4 +29,5 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` �
 - T-0222: Ordner des Vollpakets wird bei der Installation gemerkt und beim ersten Start gefunden
 - T-0223 P1/P2 UI: PDF öffnen, blättern, Gehe zu, suchen, Lesezeichen – Seite wird gezeichnet
 - T-0223 P3–P5 UI: Markieren in einer Kopie (Original bleibt), Seiten auswählen, Passwort setzen und wieder öffnen
+- T-0303: Miniatur springt zur Seite; Seiten ordnen: Ziehen verschiebt, Drehen, Löschen, leere Seite, PDF einfügen, Rückgängig, Kopie speichern – Original bleibt
 - X-11 F1/F2/U1/U2: Vorhaben mit Ring, Kanban verschieben, Zeitplan mit Meilenstein, Dateien des Vorhabens

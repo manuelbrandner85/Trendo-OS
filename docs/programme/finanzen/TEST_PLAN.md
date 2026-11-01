@@ -1,8 +1,8 @@
 # Geld – Testplan
 
-Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.28 (Stand 4ec46e4)
+Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.28 (Stand 089576b)
 
-11 Tests sprechen dieses Programm an.
+12 Tests sprechen dieses Programm an.
 
 - Geld: Übersicht mit Saldo und Diagramm, Budget-Warnung, Kategorie in der Tabelle ändern wird gelernt, Steuerberater-ZIP
 - Geschäftsidee U2/U3: Score als Ring mit Ampel, Gründungsschritte abhaken
@@ -14,4 +14,5 @@ Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finan
 - SPEC-11: Bank-CSV (deutsches Format, Anführungszeichen) wird gelesen, Kategorien geraten
 - SPEC-11: Netto/MwSt, Monats- und Jahresübersicht stimmen; Export-Import ohne Verlust; doppelte übersprungen
 - SPEC-11: Rechnung – fortlaufende Nummer, Summen, Kleinunternehmer-Hinweis, keine doppelte Nummer
+- T-0301: Ring-Klick filtert, Suche, Buchung ändern + Rückgängig, Monat blättern, Fixkosten, Kontoauszug erst Vorschau dann Ja, Regel anlegen
 - § 19 UStG (UI): Kleinunternehmer-Prüfung auf Geld- und Business-Seite

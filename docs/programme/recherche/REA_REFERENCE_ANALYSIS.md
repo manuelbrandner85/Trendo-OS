@@ -1,5 +1,5 @@
 # Recherche im Lesemodus – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.28 (Stand 4ec46e4)
+Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.28 (Stand 089576b)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

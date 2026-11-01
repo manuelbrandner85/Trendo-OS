@@ -1,6 +1,6 @@
 # Verkaufen – Funktionsmatrix
 
-Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.28 (Stand 4ec46e4)
+Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.28 (Stand 089576b)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -8,8 +8,10 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Plan erstellen
 - Verkaufen
 - Geschäftsidee
-- ● Meine Idee
-- Bestellung eintragen
-- Kunde anlegen
-- Artikel anlegen
-- Als Webseite speichern
+- 🧾 Kasse
+- 🛒 Online & Artikel
+- Artikel anlegen →
+- 💶 Bar
+- 💳 Karte
+- Kassieren
+- Tagesabschluss als PDF
