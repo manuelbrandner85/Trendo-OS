@@ -1,9 +1,11 @@
-# Freie Assets – Testplan
+# Freie Bilder & Klänge – Testplan
 
-Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.28 (Stand 9511c3a)
 
-4 Tests sprechen dieses Programm an.
+6 Tests sprechen dieses Programm an.
 
+- Medienbrowser: Bilder suchen, Raster mit Vorschaubild, Vorschau mit Lizenz und Urheber, nur freie Lizenzen, Laden mit Herkunft, Namensnennung kopieren; Klänge vorhören; Bibliothek
+- Medienbrowser: Testmodus ohne nachgebildetes Netz sucht nicht im Internet
 - X-07 (UI): Suche und Laden mit Lizenzdatei (Netz simuliert)
 - X-07: Echter Download eines HDRI von Poly Haven mit Prüfsumme (übersprungen ohne Internet)
 - X-07: Pfade aus dem Katalog können nicht aus dem Ordner ausbrechen, Prüfsumme wird geprüft

@@ -1,6 +1,6 @@
 # KI-Quellen – Funktionsmatrix
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.28 (Stand 9511c3a)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -10,6 +10,10 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - KI-Quellen
 - KI-Bibliothek
 - Kostenlose Internet-KIs
+- Claude Code einrichten
+- Neu prüfen
+- Token erzeugen …
+- Speichern
 - Jetzt suchen
 - Herunterladen & einrichten
 - Ausschalten

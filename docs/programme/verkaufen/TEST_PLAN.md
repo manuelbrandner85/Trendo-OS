@@ -1,6 +1,6 @@
 # Verkaufen – Testplan
 
-Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.28 (Stand 9511c3a)
 
 4 Tests sprechen dieses Programm an.
 

@@ -1,8 +1,8 @@
 # Startbildschirm – Testplan
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.28 (Stand 9511c3a)
 
-77 Tests sprechen dieses Programm an.
+83 Tests sprechen dieses Programm an.
 
 - 3D-Seite zeigt die Auftragsleiste, ohne die 3D-Arbeitsfläche zu verkleinern
 - Abdeckung und StudioCatalog nennen dieselben Kennungen, Titel und Bereiche
@@ -74,6 +74,12 @@ Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `
 - T-0107: Sparsam – keine Hintergrund-Unschärfe, keine Schatten und Effekte, keine Übergänge; Auswahl in den Einstellungen
 - T-0212: Einfacher Modus vergrößert Knöpfe
 - T-0212: Schalter zeigt Zustand; „Status mit Zeichen“ setzt ✓ ⚠ ✕ an echte Statuspunkte
+- T-0316: Abo-Token – API-Schlüssel wird abgelehnt (nur Abo), Abo-Token landet im sicheren Speicher und lässt sich entfernen
+- T-0316: Claude als Haupt-KI – Frage läuft eingegrenzt über Claude (kein Datei-Ändern), Antwort mit Quelle „Claude (dein Abo)“; Haupt-KI aus → Claude wird nicht gefragt
+- T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „✓ Mit deinem Claude-Abo verbunden (Max)“
+- T-0316: Code-Studio – „In Claude Code öffnen“ in der Auftragsleiste nimmt Auftrag und Studio-Rolle mit; ohne Claude Code kein Knopf
+- T-0316: Ohne Anthropic-Freigabe – kein Abo im Hintergrund (keine Haupt-KI, Läufe gesperrt), Hinweis sichtbar; „Claude Code öffnen“ startet das echte Claude Code im Projektordner
+- T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Token erzeugen“, „Claude Code öffnen“ starten nie ein echtes Programm
 - TV-Vollbild: kleines Fenster „Verkleinern“ beim Start und bei Mausbewegung, ein Klick verkleinert
 - Viele Studiofenster: das erste bleibt, Hinweis statt stillem Schließen
 - W0-01/03/06: Assistent – Name, Ordner, Design, Pakete, Installation über Zustimmung, Vorlagen, Systemcheck

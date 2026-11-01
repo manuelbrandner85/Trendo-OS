@@ -1,6 +1,6 @@
 # Kleidung & Produkte – Funktionsmatrix
 
-Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.28 (Stand 9511c3a)
 
 Quelle: `docs/w6-katalog/SPEC-08.md`
 
@@ -31,4 +31,5 @@ Quelle: `docs/w6-katalog/SPEC-08.md`
 - Teil hinzufügen (Schnittteile)
 - Letztes Teil entfernen (Schnittteile)
 - Datenblatt (Exportieren)
+- Schnittlage (SVG, 1:1) (Exportieren)
 - Varianten (CSV) (Exportieren)

@@ -1,11 +1,12 @@
 # Briefe schreiben – Architektur
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.28 (Stand 9511c3a)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)
 
 ## Bedienelemente der Arbeitsfläche
+- Briefseite nach DIN 5008
 - Texteditor
 
 ## Reiter

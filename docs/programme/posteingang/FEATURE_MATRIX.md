@@ -1,6 +1,6 @@
 # Posteingang – Funktionsmatrix
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `posteingang` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `posteingang` · Stand: 0.9.28 (Stand 9511c3a)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -15,7 +15,10 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Abrufen
 - Posteingang (0)
 - Ungelesen (0)
+- ✎ Entwürfe (0)
+- ➤ Gesendet (0)
 - ⭐ Gemerkt (0)
+- Als Unterhaltungen
 - ✉ Neue Nachricht
 - 📅 Kalender
 - ☑ Aufgaben

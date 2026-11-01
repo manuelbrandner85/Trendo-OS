@@ -1,6 +1,6 @@
 # System & Sicherheit – Einbindung in Trendo OS
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.28 (Stand 9511c3a)
 
 - Seite `system` im Studio „Qualität prüfen“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

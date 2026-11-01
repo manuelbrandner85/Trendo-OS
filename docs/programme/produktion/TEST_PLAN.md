@@ -1,9 +1,10 @@
 # Produktion – Testplan
 
-Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `produktion` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `produktion` · Stand: 0.9.28 (Stand 9511c3a)
 
-8 Tests sprechen dieses Programm an.
+9 Tests sprechen dieses Programm an.
 
+- Kanban: Großprojekt aus Ablauf-Vorlage, Karte in „Läuft“ ziehen, Rolle und Fortschritt (100 % = Fertig), Beleg mit Prüfsumme, neue Karte, Papierkorb und zurück; Abläufe bleiben als Reiter
 - T-0201: Datei aufs Feld oder aufs Studio ziehen füllt das passende Feld
 - T-0201: Mausklick auf „Datei wählen …“ füllt das Feld, die Datei steht danach unter „Zuletzt“; Eintippen geht weiter
 - T-0201: Ordnerfeld öffnet den Ordner-Dialog

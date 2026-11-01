@@ -1,8 +1,8 @@
 # Downloads – Testplan
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.28 (Stand 9511c3a)
 
-44 Tests sprechen dieses Programm an.
+47 Tests sprechen dieses Programm an.
 
 - CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+K fokussiert die Suche
 - Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt
@@ -10,9 +10,12 @@ Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite
 - Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert
 - Design: Systemstatus zeigt Messwert in % oder 'n. v.', nie Mockup-Werte ohne Messung
 - Design: die neun bekannten Studios zeigen auf der Studios-Seite den echten Status aus requirements.yaml
+- Download-Manager: mehrere Links auf einmal, höchstens N gleichzeitig, Fortschritt, Anhalten/Fortsetzen, Prüfsumme falsch → Fehler; ohne Netz (nachgebildet)
+- Fahrtenbuch (T-0311): Fahrt korrigieren mit Grund, Fahrt stornieren mit Grund, Monat festschreiben – danach keine Änderung mehr möglich
 - Komponenten: Lizenzliste, Unreal nur geführt (offizieller Link), Zustimmung wird gespeichert
 - LETTER-UI: Briefkopf → Akte (Behörde) → Fakt, Chronik, Eingang → Frist UNGEPRÜFT → Quelle fehlt → Export gesperrt → beheben → DOCX → Freigabe → Versand BLOCKED
 - LETTER-UI: Briefstudio hat genau eine Unterebene; Akte/Ausgabe erst mit offener Akte
+- Lernplan: Plan mit Prüfungstermin anlegen → Tagesplan mit Ziel, Kalender mit Prüfungstag; „Jetzt lernen“ lernt in Plan-Reihenfolge und hält das Tempo
 - QA-004 UI: Browser-Aktion abgelehnt → nichts geöffnet
 - QA-004 UI: Browser-Aktion freigegeben → genau einmal geöffnet
 - QA-004 UI: Explorer-Aktion → Freigabe-Ansicht; Ausführung erst nach Klick auf Freigeben

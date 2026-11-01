@@ -6,6 +6,7 @@
     "StudioName": "Briefe schreiben",
     "Area": "Arbeiten & Büro",
     "Type": [
+      "Briefseite nach DIN 5008",
       "Texteditor"
     ],
     "Functions": [],
@@ -54,6 +55,7 @@
     "Formats": [],
     "Dependencies": [],
     "Ui": [
+      "Briefseite nach DIN 5008",
       "Texteditor"
     ],
     "Tabs": [
@@ -77,7 +79,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -123,7 +125,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -170,7 +172,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -184,15 +186,16 @@
     ],
     "Functions": [],
     "Engine": [
-      "CalEvent",
+      "MailFolders",
       "MailDraft",
+      "CalEvent",
       "ImapSession",
       "MailCenter",
       "MailDates",
       "Repeat",
       "TodoItem",
-      "MailAccount",
-      "MailRule"
+      "Browsers",
+      "MailAccount"
     ],
     "Tools": [
       "Plan erstellen",
@@ -259,7 +262,7 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -313,7 +316,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -336,7 +339,10 @@
       "Abrufen",
       "Posteingang (0)",
       "Ungelesen (0)",
+      "✎ Entwürfe (0)",
+      "➤ Gesendet (0)",
       "⭐ Gemerkt (0)",
+      "Als Unterhaltungen",
       "✉ Neue Nachricht",
       "\uD83D\uDCC5 Kalender",
       "☑ Aufgaben",
@@ -349,6 +355,7 @@
       "Posteingang"
     ],
     "Tests": [
+      "Mailprogramm: Anhang ansehen und speichern, Allen antworten (Kopie ohne eigene Adresse), Entwurf speichern/öffnen, Senden → Gesendet, Unterhaltungen, Tasten N/R",
       "O1/O2/O6: Konto (Passwort geschützt), Posteingang nur lesend, Nachricht öffnen, Antworten nur nach Bestätigung senden, Regel erst nach Freigabe",
       "O3/O5: Termin eintragen (wöchentlich), Monats-/Wochen-/Tagesansicht, Erinnerung als Benachrichtigung; Aufgabe anlegen und abhaken",
       "Posteingang: Suche nach Absender/Betreff, Ordner „Gemerkt“ zeigt nur gemerkte Nachrichten",
@@ -363,7 +370,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -587,7 +594,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -795,7 +802,10 @@
       "Zettel"
     ],
     "Tests": [
+      "Fenster-Verlauf: merkt Seitenwechsel (höchstens 30), nicht beim Neuzeichnen oder Zurückgehen",
+      "Fenster: Alt+← geht im aktiven Fenster zurück; mehrere Schritte nacheinander",
       "Fenster: Klick auf eine Kategorie im Fenster bleibt im selben Fenster; ohne Klick eigenes Fenster; offene Seite wird wiederverwendet",
+      "Fenster: Zurück-Knopf führt im selben Fenster zur vorigen Seite; ohne vorige Seite ausgegraut; kein neues Fenster",
       "Fenster: maximiert ohne Rand bis an die Seiten, die Leiste unten bleibt sichtbar",
       "N11: Rechner – Tasten, wissenschaftlich, Programmierer, Grafik, Datum, Verlauf",
       "N18: Zettel anlegen, Farbe wählen, auf der Startseite anheften und lösen",
@@ -828,7 +838,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -1062,7 +1072,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -1079,6 +1089,7 @@
     ],
     "Tools": [
       "Plan erstellen",
+      "＋ Neues Projekt",
       "Video für YouTube",
       "Eigene Webseite",
       "Kleines Programm",
@@ -1117,6 +1128,7 @@
       "Vorhaben"
     ],
     "Tests": [
+      "Projektmappe: ohne Projekt Auswahl der Ziele; danach Übersicht mit Tafel, Zeitplan-Leiste, Dateien und Baum; zweites Projekt, wechseln, umbenennen",
       "SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen",
       "SYS-10 F1/U1/U2: Start mit Programmkacheln und Vorlagen; Dokumente als Kacheln mit Filter; Öffnen im passenden Programm",
       "T-0308: Gantt – Balken ziehen verschiebt um Tage, Kante ziehen verlängert, Punkt auf anderen Balken = Abhängigkeit mit Nachrücken, Rückgängig, Beginn/Ende/„kommt nach“ im Feld",
@@ -1129,7 +1141,7 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -1412,7 +1424,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -1638,7 +1650,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -1887,7 +1899,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -2139,7 +2151,7 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -2405,7 +2417,7 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -2477,7 +2489,7 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -2486,7 +2498,9 @@
     "Studio": "STUDIO-ONLINE-BUSINESS-01",
     "StudioName": "Online verkaufen",
     "Area": "Business & Geld",
-    "Type": [],
+    "Type": [
+      "Kasse mit Warenkorb"
+    ],
     "Functions": [],
     "Engine": [
       "BusinessStudio",
@@ -2516,7 +2530,9 @@
       ".zip"
     ],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Kasse mit Warenkorb"
+    ],
     "Tabs": [
       "Verkaufen",
       "Geschäftsidee"
@@ -2531,12 +2547,12 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
     "Id": "assets",
-    "Name": "Freie Assets",
+    "Name": "Freie Bilder & Klänge",
     "Studio": "X-07",
     "StudioName": "Freie Bilder & Klänge finden",
     "Area": "Kreativ & Medien",
@@ -2547,9 +2563,11 @@
     ],
     "Tools": [
       "Plan erstellen",
-      "Suchen",
-      "Öffnen",
-      "Assets-Ordner öffnen"
+      "Bilder",
+      "Klänge",
+      "3D & Texturen",
+      "Meine Bibliothek",
+      "Suchen"
     ],
     "Formats": [
       ".txt"
@@ -2560,9 +2578,11 @@
     ],
     "Ui": [],
     "Tabs": [
-      "Freie Assets"
+      "Freie Bilder & Klänge"
     ],
     "Tests": [
+      "Medienbrowser: Bilder suchen, Raster mit Vorschaubild, Vorschau mit Lizenz und Urheber, nur freie Lizenzen, Laden mit Herkunft, Namensnennung kopieren; Klänge vorhören; Bibliothek",
+      "Medienbrowser: Testmodus ohne nachgebildetes Netz sucht nicht im Internet",
       "X-07 (UI): Suche und Laden mit Lizenzdatei (Netz simuliert)",
       "X-07: Echter Download eines HDRI von Poly Haven mit Prüfsumme (übersprungen ohne Internet)",
       "X-07: Pfade aus dem Katalog können nicht aus dem Ordner ausbrechen, Prüfsumme wird geprüft",
@@ -2572,7 +2592,7 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -2586,6 +2606,8 @@
     "Engine": [],
     "Tools": [
       "Plan erstellen",
+      "Vorlagen",
+      "Skills",
       "Einfach erklären",
       "Brief formulieren",
       "Ideen sammeln",
@@ -2616,7 +2638,57 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
+    "Shell": false
+  },
+  {
+    "Id": "ki-skills",
+    "Name": "Skills",
+    "Studio": "CORE-12",
+    "StudioName": "KI-Anweisungen schreiben",
+    "Area": "Kreativ & Medien",
+    "Type": [],
+    "Functions": [],
+    "Engine": [
+      "SourceApps",
+      "SkillLibrary"
+    ],
+    "Tools": [
+      "Plan erstellen",
+      "＋ Eigener Skill",
+      "Ansehen",
+      "Liste holen"
+    ],
+    "Formats": [
+      ".html",
+      ".json",
+      ".md",
+      ".txt",
+      ".zip"
+    ],
+    "Dependencies": [
+      "Python (optional)",
+      "Node.js (optional)",
+      "Docker (optional)"
+    ],
+    "Ui": [],
+    "Tabs": [
+      "Skills"
+    ],
+    "Tests": [
+      "CORE-12 UI: Vorlage ausfüllen und senden, neue Vorlage speichern, Masterprompt bauen",
+      "CORE-12: Platzhalter mit Standardwert ausfüllen, fehlende werden genannt",
+      "CORE-12: Qualitätsprüfung erkennt kurze Aufträge, Geheimnisse, offene Platzhalter; Masterprompt hat Regeln",
+      "CORE-12: Versionen speichern und zurückholen, Mitgelieferte nicht löschbar",
+      "T-0317: Skills-Seite – ansehen, eigenen Skill anlegen und ändern (Version 2), passende Fachregeln gehen an die KI",
+      "T-0317: Vertraute Quelle – Liste nur der SKILL.md-Dateien, Übernehmen speichert Text mit Lizenz und Herkunft (nichts wird ausgeführt)",
+      "T-0317: „In Claude Code öffnen“ legt die passenden Skills als .claude/skills/trendo-…/SKILL.md in den Ordner und nennt die Checklisten-Prüfung"
+    ],
+    "SourceFiles": [
+      "src/Trendo.App/MainWindow.Skills.cs"
+    ],
+    "Status": "IMPLEMENTED / Test PC_VERIFIED",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -2738,8 +2810,8 @@
     ],
     "FunctionCatalog": "docs/w6-katalog/SPEC-08.md",
     "Engine": [
-      "FashionPlus",
       "Marker",
+      "FashionPlus",
       "Fashion"
     ],
     "Tools": [
@@ -2748,15 +2820,18 @@
       "Teil hinzufügen (Schnittteile)",
       "Letztes Teil entfernen (Schnittteile)",
       "Datenblatt (Exportieren)",
+      "Schnittlage (SVG, 1:1) (Exportieren)",
       "Varianten (CSV) (Exportieren)"
     ],
     "Formats": [
       ".csv",
       ".md",
       ".pdf",
+      ".svg",
       ".tdoc"
     ],
     "Dependencies": [
+      "Inkscape (optional)",
       "PDFsharp (MIT)"
     ],
     "Ui": [
@@ -2785,6 +2860,7 @@
       "SPEC-08 UI: Etikett sofort geprüft, Größensprung ändert die Größentabelle, Rechner (Schuh, Kind, BH, Ring, EAN, Staffel vom Ladenpreis) rechnen beim Tippen",
       "SPEC-08 UI: kein Rechner-Formular mehr; Schnittteil umbenennen/vergrößern/entfernen ändert Zuschnitt und Stoffbedarf; Rückgängig",
       "SPEC-08: Größen aus Maßen, Schuhgrößen, Stoffbedarf, Varianten, Preiskalkulation",
+      "Schnitt-Editor: Basisgröße bearbeitbar, andere Größe abgeleitet und automatisch gelegt (größer bei XL), Stoffbedarf je Größe, SVG speichern und als Export",
       "Schnittlage UI: Teil ziehen speichert die Lage (Rückgängig), Doppelklick dreht, Überlappung wird gemeldet, automatisch legen räumt auf, PDF",
       "Schnittlage-Kern: automatisch ohne Überlappung im Stoff, mindestens so sparsam wie das alte Reihenlegen, Ausnutzung, zu breit = Fehler, PDF"
     ],
@@ -2792,7 +2868,7 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": true
   },
   {
@@ -3041,7 +3117,7 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -3086,7 +3162,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -3175,7 +3251,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": true
   },
   {
@@ -3268,7 +3344,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -3357,7 +3433,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": true
   },
   {
@@ -3474,7 +3550,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -3552,7 +3628,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -3658,7 +3734,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -3800,11 +3876,12 @@
       "Plan erstellen",
       "Gegenstände einscannen",
       "Aus Fotos",
+      "Ordner wählen …",
+      "Einlesen und prüfen",
+      "Datei wählen …",
       "COLMAP",
       "Meshroom",
       "Werkzeug prüfen",
-      "Ordner wählen …",
-      "Datei wählen …",
       "Modell rechnen",
       "Stopp",
       "Im 3D-Studio öffnen"
@@ -3846,13 +3923,14 @@
       "SPEC-09 UI: Rechnung zeigt den Fortschritt und öffnet das Modell im 3D-Studio",
       "SPEC-09 UI: Video ohne FFmpeg fragt, bevor etwas installiert wird",
       "SPEC-09 UI: ohne Fotos keine Installation, mit Fotos fragt Trendo vor COLMAP",
-      "SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern"
+      "SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern",
+      "Scan-Arbeitsplatz (Runde 7): Fotos einlesen mit Prüfung und Vorschau, Schritte der Rechnung mit Fortschritt, Modell in 3D drehen, Export als OBJ, STL und GLB"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -4062,7 +4140,7 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": true
   },
   {
@@ -4075,7 +4153,8 @@
     "Functions": [],
     "Engine": [
       "GameStudio",
-      "GameDesign"
+      "GameDesign",
+      "PlatformSim"
     ],
     "Tools": [
       "Spiel prüfen (Spiel)",
@@ -4121,7 +4200,7 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": true
   },
   {
@@ -4134,7 +4213,8 @@
     "Functions": [],
     "Engine": [
       "GameStudio",
-      "GameDesign"
+      "GameDesign",
+      "PlatformSim"
     ],
     "Tools": [
       "Plan erstellen",
@@ -4190,7 +4270,7 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -4367,7 +4447,7 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -4538,6 +4618,9 @@
     ],
     "Tests": [
       "Alle Studios: kurze deutsche Namen und ein Satz, nach Bereichen gruppiert, keine Kennungen oder Fachbegriffe sichtbar",
+      "Download-Manager: mehrere Links auf einmal, höchstens N gleichzeitig, Fortschritt, Anhalten/Fortsetzen, Prüfsumme falsch → Fehler; ohne Netz (nachgebildet)",
+      "Fahrtenbuch (T-0311): Fahrt korrigieren mit Grund, Fahrt stornieren mit Grund, Monat festschreiben – danach keine Änderung mehr möglich",
+      "Lernplan: Plan mit Prüfungstermin anlegen → Tagesplan mit Ziel, Kalender mit Prüfungstag; „Jetzt lernen“ lernt in Plan-Reihenfolge und hält das Tempo",
       "SPEC-16 F05: E-Auto",
       "SPEC-16 F14: Pendlerpauschale",
       "SPEC-16 F15: 1-%-Regel",
@@ -4557,7 +4640,7 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -4746,7 +4829,7 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": true
   },
   {
@@ -4948,7 +5031,7 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -5162,7 +5245,7 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -5356,7 +5439,7 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": true
   },
   {
@@ -5536,7 +5619,7 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": true
   },
   {
@@ -5716,7 +5799,7 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": true
   },
   {
@@ -5905,7 +5988,7 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": true
   },
   {
@@ -6026,6 +6109,7 @@
     "Tools": [
       "Plan erstellen",
       "Lernen",
+      "Lernplan",
       "Eintippen",
       "Quiz",
       "Karten verwalten"
@@ -6045,6 +6129,9 @@
       "Lernen mit Karteikarten"
     ],
     "Tests": [
+      "Download-Manager: mehrere Links auf einmal, höchstens N gleichzeitig, Fortschritt, Anhalten/Fortsetzen, Prüfsumme falsch → Fehler; ohne Netz (nachgebildet)",
+      "Fahrtenbuch (T-0311): Fahrt korrigieren mit Grund, Fahrt stornieren mit Grund, Monat festschreiben – danach keine Änderung mehr möglich",
+      "Lernplan: Plan mit Prüfungstermin anlegen → Tagesplan mit Ziel, Kalender mit Prüfungstag; „Jetzt lernen“ lernt in Plan-Reihenfolge und hält das Tempo",
       "SPEC-06 F07: Export",
       "SPEC-06 F08: Bearbeiten & löschen",
       "SPEC-06 F09: Quiz mit Auswahl",
@@ -6063,7 +6150,7 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -6250,13 +6337,16 @@
       "T-0201: Datei aufs Feld oder aufs Studio ziehen füllt das passende Feld",
       "T-0201: Mausklick auf „Datei wählen …“ füllt das Feld, die Datei steht danach unter „Zuletzt“; Eintippen geht weiter",
       "T-0201: Ordnerfeld öffnet den Ordner-Dialog",
-      "T-0201: jedes Pfad- oder Ordnerfeld hat „Datei wählen …“ bzw. „Ordner wählen …“"
+      "T-0201: jedes Pfad- oder Ordnerfeld hat „Datei wählen …“ bzw. „Ordner wählen …“",
+      "T-0315: Rückfrage als Knöpfe mit Empfehlung zuerst, „Immer so“ merkt die Antwort; gemerkte Vorliebe sichtbar und löschbar",
+      "T-0315: Verwerfen lässt alles, wie es war; Unverstandenes geht an den Studio-Ablauf; Echtzeit-Vorschau beim Tippen zeigt, was passieren würde",
+      "T-0315: „Füge 3 Zeilen hinzu und zwei Spalten“ → Plan, Live-Haken, Vorschau ohne Änderung am Original; Übernehmen = ein Schritt, Rückgängig nimmt ihn zurück"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": true
   },
   {
@@ -6301,7 +6391,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -6310,20 +6400,28 @@
     "Studio": "CORE-10",
     "StudioName": "Wissen merken",
     "Area": "Wissen & Lernen",
-    "Type": [],
+    "Type": [
+      "Texteditor"
+    ],
     "Functions": [],
     "Engine": [],
     "Tools": [
       "Plan erstellen",
-      "Merken",
+      "＋ Neue Seite",
+      "Suchen",
       "Datei wählen …",
       "Ordner wählen …",
       "Einlesen",
-      "Suchen"
+      "\uD83D\uDDD1 Papierkorb (0)",
+      "Merken",
+      "Abbrechen",
+      "Fragen"
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Texteditor"
+    ],
     "Tabs": [
       "Wissen für die KI"
     ],
@@ -6337,6 +6435,7 @@
       "CORE-10: Ordner einlesen nur Textdateien, keine Doppelten",
       "CORE-10: Suche findet Wissen trotz Umlauten und Mehrzahl, bleibt nach Neustart erhalten",
       "CORE-12 UI: Vorlage ausfüllen und senden, neue Vorlage speichern, Masterprompt bauen",
+      "Notiz-Wiki: Seite mit Verweis anlegen, Verweis auf fehlende Seite legt sie an, Rückverweis führt zurück, Bearbeiten, Papierkorb und Wiederherstellen, Frag dein Wissen mit Quellen",
       "SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf",
       "T-0201: Datei aufs Feld oder aufs Studio ziehen füllt das passende Feld",
       "T-0201: Mausklick auf „Datei wählen …“ füllt das Feld, die Datei steht danach unter „Zuletzt“; Eintippen geht weiter",
@@ -6346,7 +6445,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -6374,6 +6473,7 @@
       "Abläufe (Automatisch erledigen)"
     ],
     "Tests": [
+      "Ablauf-Editor: Probelauf mit Anzeige – jeder Baustein leuchtet vorher auf, danach ✓ mit Anzahl bzw. ✕ bei Fehler, Ergebnis am Ende; nichts wird geändert",
       "Ablaufplan: Bausteine anhängen, Schritt per Maus nach oben ziehen, einstellen, Probelauf, Rückgängig; Änderung an freigegebenem Ablauf verlangt neue Freigabe",
       "CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet",
       "CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt",
@@ -6394,7 +6494,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -6406,15 +6506,16 @@
     "Type": [],
     "Functions": [],
     "Engine": [
+      "BigBoards",
       "Fusion"
     ],
     "Tools": [
       "Plan erstellen",
       "Verstanden",
-      "Geschäftsidee → Bauplan → Webseite",
-      "Video → Upload-Paket",
-      "3D-Schriftzug → Druckdatei",
-      "Plan freigeben …"
+      "Tafel",
+      "Abläufe über mehrere Studios",
+      "＋ Neues Großprojekt",
+      "Anlegen"
     ],
     "Formats": [
       ".json",
@@ -6431,6 +6532,7 @@
       "Produktion"
     ],
     "Tests": [
+      "Kanban: Großprojekt aus Ablauf-Vorlage, Karte in „Läuft“ ziehen, Rolle und Fortschritt (100 % = Fertig), Beleg mit Prüfsumme, neue Karte, Papierkorb und zurück; Abläufe bleiben als Reiter",
       "T-0201: Datei aufs Feld oder aufs Studio ziehen füllt das passende Feld",
       "T-0201: Mausklick auf „Datei wählen …“ füllt das Feld, die Datei steht danach unter „Zuletzt“; Eintippen geht weiter",
       "T-0201: Ordnerfeld öffnet den Ordner-Dialog",
@@ -6444,7 +6546,7 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -6520,7 +6622,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -6537,10 +6639,16 @@
       "Hinzufügen …",
       "Modell",
       "Fragen",
+      "＋ Neues Gespräch",
+      "Claude Code einrichten",
+      "Neu prüfen",
+      "Token erzeugen …",
+      "Speichern",
       "Schreib eine freundliche Absage für einen Termin",
       "Erkläre mir kurz, was eine Firewall macht",
       "Plane mir ein Abendessen für 4 Personen",
       "Fasse die Vorteile von Open Source in 3 Punkten zusammen",
+      "Senden",
       "Neues Gespräch"
     ],
     "Formats": [],
@@ -6558,12 +6666,19 @@
       "CORE-03 UI: Rolle wählen, starten, Team-Ablauf, Speichern über Freigabe",
       "CORE-10 UI: Merken, Suchen, Löschen und Korrektur aus dem Gespräch",
       "CORE-12 UI: Vorlage ausfüllen und senden, neue Vorlage speichern, Masterprompt bauen",
+      "Chatfenster: Enter sendet, Antwort als Sprechblase mit Tabelle und Code (Kopieren), Gespräch gespeichert und wieder zu öffnen, umbenennen, löschen",
       "SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf",
+      "T-0316: Abo-Token – API-Schlüssel wird abgelehnt (nur Abo), Abo-Token landet im sicheren Speicher und lässt sich entfernen",
+      "T-0316: Claude als Haupt-KI – Frage läuft eingegrenzt über Claude (kein Datei-Ändern), Antwort mit Quelle „Claude (dein Abo)“; Haupt-KI aus → Claude wird nicht gefragt",
+      "T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „✓ Mit deinem Claude-Abo verbunden (Max)“",
+      "T-0316: Code-Studio – „In Claude Code öffnen“ in der Auftragsleiste nimmt Auftrag und Studio-Rolle mit; ohne Claude Code kein Knopf",
+      "T-0316: Ohne Anthropic-Freigabe – kein Abo im Hintergrund (keine Haupt-KI, Läufe gesperrt), Hinweis sichtbar; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
+      "T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Token erzeugen“, „Claude Code öffnen“ starten nie ein echtes Programm",
       "X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette"
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -6639,7 +6754,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -6691,7 +6806,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -6769,7 +6884,7 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -6787,6 +6902,10 @@
       "KI-Quellen",
       "KI-Bibliothek",
       "Kostenlose Internet-KIs",
+      "Claude Code einrichten",
+      "Neu prüfen",
+      "Token erzeugen …",
+      "Speichern",
       "Jetzt suchen",
       "Herunterladen & einrichten",
       "Ausschalten",
@@ -6822,6 +6941,12 @@
       "KoboldCpp: Bestätigen → von GitHub laden → einrichten → Starten mit größtem Sprachmodell",
       "LM Studio: Installer von der Herstellerseite laden und starten, danach erkennen und Quelle einschalten",
       "SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf",
+      "T-0316: Abo-Token – API-Schlüssel wird abgelehnt (nur Abo), Abo-Token landet im sicheren Speicher und lässt sich entfernen",
+      "T-0316: Claude als Haupt-KI – Frage läuft eingegrenzt über Claude (kein Datei-Ändern), Antwort mit Quelle „Claude (dein Abo)“; Haupt-KI aus → Claude wird nicht gefragt",
+      "T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „✓ Mit deinem Claude-Abo verbunden (Max)“",
+      "T-0316: Code-Studio – „In Claude Code öffnen“ in der Auftragsleiste nimmt Auftrag und Studio-Rolle mit; ohne Claude Code kein Knopf",
+      "T-0316: Ohne Anthropic-Freigabe – kein Abo im Hintergrund (keine Haupt-KI, Läufe gesperrt), Hinweis sichtbar; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
+      "T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Token erzeugen“, „Claude Code öffnen“ starten nie ein echtes Programm",
       "X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette",
       "X-05: Nur freie Quellen auf diesem Gerät, Modelle passend zur Hardware",
       "X-05: Rückfallkette lässt sich sortieren, abschalten und bleibt gespeichert",
@@ -6829,7 +6954,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -6873,7 +6998,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -6885,7 +7010,8 @@
     "Type": [],
     "Functions": [],
     "Engine": [
-      "SitePage"
+      "SitePage",
+      "FreeAssets"
     ],
     "Tools": [
       "Plan erstellen",
@@ -6896,15 +7022,24 @@
       "+ Liste",
       "+ Kontakt per E-Mail",
       "+ Trennlinie",
-      "Entfernen",
-      "Ansehen im Browser",
-      "Ordner mit fertiger Seite"
+      "\uD83D\uDCF1 Handy",
+      "\uD83D\uDDA5 Bildschirm",
+      "↶ Rückgängig",
+      "▶ Ausprobieren im Browser",
+      "Exportieren (ZIP)",
+      "Ordner mit fertiger Seite",
+      "Akzentfarbe"
     ],
     "Formats": [
       ".html",
-      ".json"
+      ".json",
+      ".txt",
+      ".zip"
     ],
-    "Dependencies": [],
+    "Dependencies": [
+      "Poly Haven (freie 3D-Modelle)",
+      "ambientCG (freie Materialien)"
+    ],
     "Ui": [],
     "Tabs": [
       "Baukasten"
@@ -6912,6 +7047,7 @@
     "Tests": [
       "3D-Seite zeigt die Auftragsleiste, ohne die 3D-Arbeitsfläche zu verkleinern",
       "Abdeckung und StudioCatalog nennen dieselben Kennungen, Titel und Bereiche",
+      "App-Designer: Knopf aus der Leiste auf den ersten Baustein ziehen fügt ihn dort ein, Ziehen in der Vorschau sortiert um, Eigenschaften und Akzentfarbe wirken in der Vorschau, Rückgängig, ZIP",
       "Baukasten übernimmt die neue Seite ins Formular",
       "Briefseite zeigt den echten Brieftext in der Vorschau",
       "Briefseite zeigt die Auftragsleiste und meldet ehrlich, wenn nichts eingebaut ist",
@@ -6920,6 +7056,12 @@
       "T-0201: Mausklick auf „Datei wählen …“ füllt das Feld, die Datei steht danach unter „Zuletzt“; Eintippen geht weiter",
       "T-0201: Ordnerfeld öffnet den Ordner-Dialog",
       "T-0201: jedes Pfad- oder Ordnerfeld hat „Datei wählen …“ bzw. „Ordner wählen …“",
+      "T-0316: Abo-Token – API-Schlüssel wird abgelehnt (nur Abo), Abo-Token landet im sicheren Speicher und lässt sich entfernen",
+      "T-0316: Claude als Haupt-KI – Frage läuft eingegrenzt über Claude (kein Datei-Ändern), Antwort mit Quelle „Claude (dein Abo)“; Haupt-KI aus → Claude wird nicht gefragt",
+      "T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „✓ Mit deinem Claude-Abo verbunden (Max)“",
+      "T-0316: Code-Studio – „In Claude Code öffnen“ in der Auftragsleiste nimmt Auftrag und Studio-Rolle mit; ohne Claude Code kein Knopf",
+      "T-0316: Ohne Anthropic-Freigabe – kein Abo im Hintergrund (keine Haupt-KI, Läufe gesperrt), Hinweis sichtbar; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
+      "T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Token erzeugen“, „Claude Code öffnen“ starten nie ein echtes Programm",
       "X-03 (UI): Baustein hinzufügen, verschieben, entfernen, veröffentlichen",
       "X-03: Bausteine werden zu sicherem HTML, Reihenfolge änderbar, Speichern und Laden",
       "X-03: Veröffentlichen schreibt index.html und kopiert lokale Bilder mit"
@@ -6928,7 +7070,7 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -6967,7 +7109,7 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7039,6 +7181,9 @@
       "T-0313: GitHub-Anmeldung – Schlüssel wird geprüft und im sicheren Speicher abgelegt, geht nur an api.github.com, Abmelden löscht ihn; falscher Schlüssel abgewiesen",
       "T-0313: Trefferliste zeigt „✓ Windows-Programm · Version · Größe“ bzw. „Nur Quellcode“; Installieren nur, wo es ein Windows-Programm gibt",
       "T-0313: Update – neue Version wird erkannt (Versionsvergleich), „Aktualisieren“ richtet sie ein, danach kein Update mehr",
+      "T-0314: Fehlgeschlagener Schritt → klare Meldung mit letzter Ausgabe, nichts eingetragen, alter Stand bleibt; Rust-Projekt zeigt Grund und findet Fork mit Windows-Programm und PyPI-Paket",
+      "T-0314: Python-Projekt ohne Windows-Programm → Abzeichen „läuft in Trendo“, Zustimmung, Einrichtung mit uv (sichtbare Schritte), Start im Fenster, Entfernen",
+      "T-0314: Reine Web-Seite läuft ohne Laufzeit über Trendos lokalen Server (nur 127.0.0.1, nur der Projektordner) und lässt sich beenden",
       "X-06 (UI): Suche zeigt Treffer mit Lizenz, ohne Lizenz kein Herunterladen",
       "X-06: GitHub-Antwort wird gelesen, Lizenz verständlich erklärt",
       "X-06: Kopie holen (echtes git, lokales Quell-Repo) mit Herkunftsdatei; unsichere Adressen abgewiesen",
@@ -7048,7 +7193,7 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7105,7 +7250,7 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7180,7 +7325,7 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7222,7 +7367,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7258,7 +7403,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7301,7 +7446,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7333,7 +7478,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7436,7 +7581,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7528,7 +7673,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7568,7 +7713,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7633,7 +7778,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7735,6 +7880,12 @@
       "T-0107: Sparsam – keine Hintergrund-Unschärfe, keine Schatten und Effekte, keine Übergänge; Auswahl in den Einstellungen",
       "T-0212: Einfacher Modus vergrößert Knöpfe",
       "T-0212: Schalter zeigt Zustand; „Status mit Zeichen“ setzt ✓ ⚠ ✕ an echte Statuspunkte",
+      "T-0316: Abo-Token – API-Schlüssel wird abgelehnt (nur Abo), Abo-Token landet im sicheren Speicher und lässt sich entfernen",
+      "T-0316: Claude als Haupt-KI – Frage läuft eingegrenzt über Claude (kein Datei-Ändern), Antwort mit Quelle „Claude (dein Abo)“; Haupt-KI aus → Claude wird nicht gefragt",
+      "T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „✓ Mit deinem Claude-Abo verbunden (Max)“",
+      "T-0316: Code-Studio – „In Claude Code öffnen“ in der Auftragsleiste nimmt Auftrag und Studio-Rolle mit; ohne Claude Code kein Knopf",
+      "T-0316: Ohne Anthropic-Freigabe – kein Abo im Hintergrund (keine Haupt-KI, Läufe gesperrt), Hinweis sichtbar; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
+      "T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Token erzeugen“, „Claude Code öffnen“ starten nie ein echtes Programm",
       "TV-Vollbild: kleines Fenster „Verkleinern“ beim Start und bei Mausbewegung, ein Klick verkleinert",
       "Viele Studiofenster: das erste bleibt, Hinweis statt stillem Schließen",
       "W0-01/03/06: Assistent – Name, Ordner, Design, Pakete, Installation über Zustimmung, Vorlagen, Systemcheck",
@@ -7745,7 +7896,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7786,7 +7937,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7827,7 +7978,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7886,7 +8037,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7895,19 +8046,24 @@
     "Studio": "X-09",
     "StudioName": "Leistung anzeigen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Diagramm/Zeichnung"
+    ],
     "Functions": [],
     "Engine": [],
     "Tools": [
       "Plan erstellen",
       "Verstanden",
-      "Aktualisieren",
-      "Ordner wählen …",
-      "Karte erstellen"
+      "Leistung",
+      "Prozesse",
+      "Speicher",
+      "Aktualisieren"
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Diagramm/Zeichnung"
+    ],
     "Tabs": [
       "Speicher & Leistung"
     ],
@@ -7938,6 +8094,7 @@
       "Speicherplatz-Karte UI: Ordner einlesen, Kachel anklicken wählt, zweiter Klick geht hinein, Papierkorb erst nach Ja",
       "Studio-Klick: Unreal nur geführt – kein Installieren-Knopf, offizieller Installer-Link",
       "Studio-Klick: fehlendes Programm → genau eine Frage 'Studio braucht X. Jetzt installieren?', 'Später' installiert nichts",
+      "Task-Manager: Reiter Leistung mit Kurven, Prozesse sortierbar und durchsuchbar, Beenden nur für eigenes Trendo-Werkzeug nach Rückfrage",
       "W0-01/03/06: Assistent – Name, Ordner, Design, Pakete, Installation über Zustimmung, Vorlagen, Systemcheck",
       "W0b-01: Keine Fachwörter in Oberflächentexten (docs/SPRACHE.md)",
       "W0b-02/04/05: Widgets ausblenden, Dock sortieren, Bewegung reduzieren, Hinweis einmalig – alles gespeichert",
@@ -7946,7 +8103,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -7993,7 +8150,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -8035,7 +8192,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -8270,7 +8427,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -8483,7 +8640,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -8701,7 +8858,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -8940,6 +9097,9 @@
       "T-0313: GitHub-Anmeldung – Schlüssel wird geprüft und im sicheren Speicher abgelegt, geht nur an api.github.com, Abmelden löscht ihn; falscher Schlüssel abgewiesen",
       "T-0313: Trefferliste zeigt „✓ Windows-Programm · Version · Größe“ bzw. „Nur Quellcode“; Installieren nur, wo es ein Windows-Programm gibt",
       "T-0313: Update – neue Version wird erkannt (Versionsvergleich), „Aktualisieren“ richtet sie ein, danach kein Update mehr",
+      "T-0314: Fehlgeschlagener Schritt → klare Meldung mit letzter Ausgabe, nichts eingetragen, alter Stand bleibt; Rust-Projekt zeigt Grund und findet Fork mit Windows-Programm und PyPI-Paket",
+      "T-0314: Python-Projekt ohne Windows-Programm → Abzeichen „läuft in Trendo“, Zustimmung, Einrichtung mit uv (sichtbare Schritte), Start im Fenster, Entfernen",
+      "T-0314: Reine Web-Seite läuft ohne Laufzeit über Trendos lokalen Server (nur 127.0.0.1, nur der Projektordner) und lässt sich beenden",
       "W0-01/03/06: Assistent – Name, Ordner, Design, Pakete, Installation über Zustimmung, Vorlagen, Systemcheck",
       "W0b-01: Keine Fachwörter in Oberflächentexten (docs/SPRACHE.md)",
       "W0b-02/04/05: Widgets ausblenden, Dock sortieren, Bewegung reduzieren, Hinweis einmalig – alles gespeichert",
@@ -8950,7 +9110,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -9125,7 +9285,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -9304,7 +9464,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -9492,7 +9652,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -9671,7 +9831,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -9930,7 +10090,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -10109,7 +10269,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -10299,7 +10459,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -10477,7 +10637,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -10509,7 +10669,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -10658,6 +10818,7 @@
     "Tools": [
       "Plan erstellen",
       "Verstanden",
+      "Herunterladen",
       "Im Standardbrowser öffnen",
       "Google Chrome",
       "Ordner öffnen",
@@ -10705,9 +10866,12 @@
       "Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert",
       "Design: Systemstatus zeigt Messwert in % oder 'n. v.', nie Mockup-Werte ohne Messung",
       "Design: die neun bekannten Studios zeigen auf der Studios-Seite den echten Status aus requirements.yaml",
+      "Download-Manager: mehrere Links auf einmal, höchstens N gleichzeitig, Fortschritt, Anhalten/Fortsetzen, Prüfsumme falsch → Fehler; ohne Netz (nachgebildet)",
+      "Fahrtenbuch (T-0311): Fahrt korrigieren mit Grund, Fahrt stornieren mit Grund, Monat festschreiben – danach keine Änderung mehr möglich",
       "Komponenten: Lizenzliste, Unreal nur geführt (offizieller Link), Zustimmung wird gespeichert",
       "LETTER-UI: Briefkopf → Akte (Behörde) → Fakt, Chronik, Eingang → Frist UNGEPRÜFT → Quelle fehlt → Export gesperrt → beheben → DOCX → Freigabe → Versand BLOCKED",
       "LETTER-UI: Briefstudio hat genau eine Unterebene; Akte/Ausgabe erst mit offener Akte",
+      "Lernplan: Plan mit Prüfungstermin anlegen → Tagesplan mit Ziel, Kalender mit Prüfungstag; „Jetzt lernen“ lernt in Plan-Reihenfolge und hält das Tempo",
       "QA-004 UI: Browser-Aktion abgelehnt → nichts geöffnet",
       "QA-004 UI: Browser-Aktion freigegeben → genau einmal geöffnet",
       "QA-004 UI: Explorer-Aktion → Freigabe-Ansicht; Ausführung erst nach Klick auf Freigeben",
@@ -10748,7 +10912,7 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -10965,7 +11129,7 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   },
   {
@@ -11012,7 +11176,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.28 (Stand 8123ac9)",
+    "Version": "0.9.28 (Stand 9511c3a)",
     "Shell": false
   }
 ]

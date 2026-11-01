@@ -1,6 +1,6 @@
 # Geräte überwachen – Arbeitsabläufe
 
-Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.28 (Stand 9511c3a)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 

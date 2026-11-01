@@ -1,5 +1,5 @@
 # 3D – Testergebnisse
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.28 (Stand 9511c3a)
 
 Noch kein Testlauf eingelesen. Ergebnisse stehen hier erst nach einem echten Lauf (TRX-Datei) – nicht vorher.

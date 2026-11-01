@@ -1,10 +1,13 @@
 # Auto & Fahrten – Testplan
 
-Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.28 (Stand 9511c3a)
 
-15 Tests sprechen dieses Programm an.
+18 Tests sprechen dieses Programm an.
 
 - Alle Studios: kurze deutsche Namen und ein Satz, nach Bereichen gruppiert, keine Kennungen oder Fachbegriffe sichtbar
+- Download-Manager: mehrere Links auf einmal, höchstens N gleichzeitig, Fortschritt, Anhalten/Fortsetzen, Prüfsumme falsch → Fehler; ohne Netz (nachgebildet)
+- Fahrtenbuch (T-0311): Fahrt korrigieren mit Grund, Fahrt stornieren mit Grund, Monat festschreiben – danach keine Änderung mehr möglich
+- Lernplan: Plan mit Prüfungstermin anlegen → Tagesplan mit Ziel, Kalender mit Prüfungstag; „Jetzt lernen“ lernt in Plan-Reihenfolge und hält das Tempo
 - SPEC-16 F05: E-Auto
 - SPEC-16 F14: Pendlerpauschale
 - SPEC-16 F15: 1-%-Regel

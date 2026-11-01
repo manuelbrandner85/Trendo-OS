@@ -1,6 +1,6 @@
 # Auto & Fahrten – Architektur
 
-Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.28 (Stand 9511c3a)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec16.cs`

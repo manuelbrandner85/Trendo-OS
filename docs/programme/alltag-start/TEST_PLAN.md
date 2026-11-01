@@ -1,10 +1,13 @@
 # Übersicht – Testplan
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.28 (Stand 9511c3a)
 
-27 Tests sprechen dieses Programm an.
+30 Tests sprechen dieses Programm an.
 
+- Fenster-Verlauf: merkt Seitenwechsel (höchstens 30), nicht beim Neuzeichnen oder Zurückgehen
+- Fenster: Alt+← geht im aktiven Fenster zurück; mehrere Schritte nacheinander
 - Fenster: Klick auf eine Kategorie im Fenster bleibt im selben Fenster; ohne Klick eigenes Fenster; offene Seite wird wiederverwendet
+- Fenster: Zurück-Knopf führt im selben Fenster zur vorigen Seite; ohne vorige Seite ausgegraut; kein neues Fenster
 - Fenster: maximiert ohne Rand bis an die Seiten, die Leiste unten bleibt sichtbar
 - N11: Rechner – Tasten, wissenschaftlich, Programmierer, Grafik, Datum, Verlauf
 - N18: Zettel anlegen, Farbe wählen, auf der Startseite anheften und lösen

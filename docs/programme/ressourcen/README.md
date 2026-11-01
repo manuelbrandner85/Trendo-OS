@@ -1,8 +1,8 @@
 # Speicher & Leistung – Produktionspaket
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.28 (Stand 9511c3a)
 
-Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
+Arbeitsfläche: Diagramm/Zeichnung  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test PC_VERIFIED  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): nein – eigene Arbeitsseite
 

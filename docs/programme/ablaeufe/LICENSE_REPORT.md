@@ -1,6 +1,6 @@
 # Abläufe (Automatisch erledigen) – Lizenzen
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.28 (Stand 9511c3a)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

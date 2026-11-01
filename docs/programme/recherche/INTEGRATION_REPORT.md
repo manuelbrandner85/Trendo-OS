@@ -1,6 +1,6 @@
 # Recherche im Lesemodus – Einbindung in Trendo OS
 
-Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.28 (Stand 9511c3a)
 
 - Seite `recherche` im Studio „Sicher recherchieren“ (Wissen & Lernen) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

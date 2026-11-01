@@ -1,6 +1,6 @@
 # Start – Einbindung in Trendo OS
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.28 (Stand 9511c3a)
 
 - Seite `doku-start` im Studio „Texte & Tabellen“ (Arbeiten & Büro) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

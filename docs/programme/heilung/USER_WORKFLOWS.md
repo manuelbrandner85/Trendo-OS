@@ -1,6 +1,6 @@
 # Selbstheilung – Arbeitsabläufe
 
-Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.28 (Stand 9511c3a)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 

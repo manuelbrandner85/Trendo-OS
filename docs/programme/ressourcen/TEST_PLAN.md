@@ -1,8 +1,8 @@
 # Speicher & Leistung – Testplan
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.28 (Stand 9511c3a)
 
-31 Tests sprechen dieses Programm an.
+32 Tests sprechen dieses Programm an.
 
 - CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+K fokussiert die Suche
 - Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt
@@ -30,6 +30,7 @@ Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ress
 - Speicherplatz-Karte UI: Ordner einlesen, Kachel anklicken wählt, zweiter Klick geht hinein, Papierkorb erst nach Ja
 - Studio-Klick: Unreal nur geführt – kein Installieren-Knopf, offizieller Installer-Link
 - Studio-Klick: fehlendes Programm → genau eine Frage 'Studio braucht X. Jetzt installieren?', 'Später' installiert nichts
+- Task-Manager: Reiter Leistung mit Kurven, Prozesse sortierbar und durchsuchbar, Beenden nur für eigenes Trendo-Werkzeug nach Rückfrage
 - W0-01/03/06: Assistent – Name, Ordner, Design, Pakete, Installation über Zustimmung, Vorlagen, Systemcheck
 - W0b-01: Keine Fachwörter in Oberflächentexten (docs/SPRACHE.md)
 - W0b-02/04/05: Widgets ausblenden, Dock sortieren, Bewegung reduzieren, Hinweis einmalig – alles gespeichert

@@ -1,6 +1,6 @@
 # Software – Produktionspaket
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.28 (Stand 9511c3a)
 
 Arbeitsfläche: Bildansicht  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

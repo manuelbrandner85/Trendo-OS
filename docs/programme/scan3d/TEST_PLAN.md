@@ -1,8 +1,8 @@
 # Aus Fotos – Testplan
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.28 (Stand 9511c3a)
 
-23 Tests sprechen dieses Programm an.
+24 Tests sprechen dieses Programm an.
 
 - SPEC-09 F10: Skalieren
 - SPEC-09 F11: Zentrieren
@@ -27,3 +27,4 @@ Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: 
 - SPEC-09 UI: Video ohne FFmpeg fragt, bevor etwas installiert wird
 - SPEC-09 UI: ohne Fotos keine Installation, mit Fotos fragt Trendo vor COLMAP
 - SPEC-09: Punktwolke aus PLY (ASCII/binär), XYZ, OBJ; ausdünnen, Ausreißer, PLY speichern
+- Scan-Arbeitsplatz (Runde 7): Fotos einlesen mit Prüfung und Vorschau, Schritte der Rechnung mit Fortschritt, Modell in 3D drehen, Export als OBJ, STL und GLB

@@ -1,6 +1,6 @@
 # Medien – Produktionspaket
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.28 (Stand 9511c3a)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

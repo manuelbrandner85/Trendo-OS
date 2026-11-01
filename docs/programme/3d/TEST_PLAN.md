@@ -1,6 +1,6 @@
 # 3D – Testplan
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.28 (Stand 9511c3a)
 
 17 Tests sprechen dieses Programm an.
 

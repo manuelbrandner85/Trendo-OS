@@ -1,9 +1,12 @@
 # Lernen mit Karteikarten – Testplan
 
-Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.28 (Stand 8123ac9)
+Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.28 (Stand 9511c3a)
 
-13 Tests sprechen dieses Programm an.
+16 Tests sprechen dieses Programm an.
 
+- Download-Manager: mehrere Links auf einmal, höchstens N gleichzeitig, Fortschritt, Anhalten/Fortsetzen, Prüfsumme falsch → Fehler; ohne Netz (nachgebildet)
+- Fahrtenbuch (T-0311): Fahrt korrigieren mit Grund, Fahrt stornieren mit Grund, Monat festschreiben – danach keine Änderung mehr möglich
+- Lernplan: Plan mit Prüfungstermin anlegen → Tagesplan mit Ziel, Kalender mit Prüfungstag; „Jetzt lernen“ lernt in Plan-Reihenfolge und hält das Tempo
 - SPEC-06 F07: Export
 - SPEC-06 F08: Bearbeiten & löschen
 - SPEC-06 F09: Quiz mit Auswahl
