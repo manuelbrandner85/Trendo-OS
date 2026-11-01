@@ -14,6 +14,24 @@ public partial class MainWindow
     public static string WorkflowHome { get; set; } = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
     public WorkflowEngine Workflows => _wf ??= new WorkflowEngine(_core.DataRoot, _core.Audit, _core.Approvals, [WorkflowHome]) { Summarize = async t => { var a = await Intel.AskAsync(new KiRequest("Fasse diesen Text in 5 Stichpunkten zusammen:\n\n" + (t.Length > 8000 ? t[..8000] : t), PreferredModel: KiModelName, UseKnowledge: false)); return a.Ok ? a.Text : null; } };
     public WfRun? LastWfRun { get; private set; }
+    // Ablauf-Editor (Masterprompt 131, Runde 7): Probelauf mit sichtbarem Fortschritt an den Bausteinen
+    WfRun? _wfProbe; int _wfProbeStep = -1; bool _wfProbing; string? _wfProbeId;
+    public WfRun? WfProbe => _wfProbe;
+    public int WfProbeStep => _wfProbeStep;
+    /// <summary>Pause je Baustein, damit man dem Probelauf zusehen kann (Tests: 0).</summary>
+    public int WfProbeDelayMs { get; set; } = 350;
+    /// <summary>Probelauf mit Anzeige: jeder Baustein leuchtet nacheinander auf, danach Ergebnis am Baustein. Ändert nichts.</summary>
+    public async Task WfProbeRun(Workflow w)
+    {
+        if (_wfProbing) return;
+        _wfProbing = true; _wfProbe = null; _wfProbeId = w.Id; _wfProbeStep = -1; Show("ablaeufe");
+        try
+        {
+            var r = await Workflows.RunAsync(w, dryRun: true, onStep: async i => { _wfProbeStep = i; Show("ablaeufe"); if (WfProbeDelayMs > 0) await Task.Delay(WfProbeDelayMs); });
+            _wfProbe = r; LastWfRun = r;
+        }
+        finally { _wfProbing = false; _wfProbeStep = -1; Show("ablaeufe"); }
+    }
     private string _wfMsg = ""; private bool _wfNew;
     private readonly List<WfStep> _wfDraft = [];
 
@@ -168,14 +186,27 @@ public partial class MainWindow
     Control WfFlow(Workflow w)
     {
         var flow = new StackPanel { Name = "wf-flow", Spacing = 0, HorizontalAlignment = HorizontalAlignment.Center, Width = 420 };
-        Border Node(string name, int idx, string icon, string title, string sub, string c1, bool selected)
+        var probe = _wfProbeId == w.Id ? _wfProbe : null; var probing = _wfProbing && _wfProbeId == w.Id;
+        (string? Text, string Color) Badge(int i)
+        {
+            if (probing) return i == _wfProbeStep ? ("◐ wird geprüft …", "#FACC15") : i < _wfProbeStep ? ("✓ geprüft", "#86EFAC") : (null, "");
+            if (probe is null) return (null, "");
+            var r = probe.Steps.FirstOrDefault(x => x.Step == i);
+            return r is null ? ("– nicht erreicht", "#94A3B8") : r.Ok ? ("✓ " + r.Summary, r.Count == 0 ? "#CBD5E1" : "#86EFAC") : ("✕ " + r.Summary, "#FCA5A5");
+        }
+        var probeBtn = new Button { Name = "wf-probe", Content = probing ? "Probelauf läuft …" : "▶ Probelauf mit Anzeige", IsEnabled = !probing, Background = Accent, Foreground = Brushes.White, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 0, 0, 10) };
+        probeBtn.Click += async (_, _) => await WfProbeRun(w);
+        flow.Children.Add(probeBtn);
+        Border Node(string name, int idx, string icon, string title, string sub, string c1, bool selected, string? badge = null, string badgeColor = "#CFE0F5", bool live = false)
         {
             var b = new Border { Name = name, Tag = idx, Padding = new Thickness(14, 10), CornerRadius = new CornerRadius(14), Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
                 Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse(c1), 0), new GradientStop(Color.Parse("#1A2740"), 1) } },
                 BorderBrush = Brush.Parse(selected ? "#FACC15" : "#44FFFFFF"), BorderThickness = new Thickness(selected ? 2 : 1), BoxShadow = CardShadow,
                 Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = {
                     new TextBlock { Text = icon, FontSize = 22, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) },
-                    Pos(new StackPanel { Spacing = 2, Children = { new TextBlock { Text = title, Foreground = Brushes.White, FontSize = 14, FontWeight = FontWeight.SemiBold }, new TextBlock { Text = sub, Foreground = Brush.Parse("#CFE0F5"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap } } }, 1) } } };
+                    Pos(new StackPanel { Spacing = 2, Children = { new TextBlock { Text = title, Foreground = Brushes.White, FontSize = 14, FontWeight = FontWeight.SemiBold }, new TextBlock { Text = sub, Foreground = Brush.Parse("#CFE0F5"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap },
+                        badge is null ? new Border() : new TextBlock { Name = name + "-badge", Text = badge, Foreground = Brush.Parse(badgeColor), FontSize = 12, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 3, 0, 0) } } }, 1) } } };
+            if (live) { b.BorderBrush = Brush.Parse("#FACC15"); b.BorderThickness = new Thickness(3); b.BoxShadow = BoxShadows.Parse("0 0 18 2 #88FACC15"); }
             return b;
         }
         Control Arrow() => new TextBlock { Text = "↓", Foreground = Muted, FontSize = 20, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 2) };
@@ -193,7 +224,7 @@ public partial class MainWindow
             };
             var risky = s.Kind is StepKind.Verschieben or StepKind.DatumVoranstellen;
             var node = Node($"wf-node-{i}", i, s.Kind switch { StepKind.OrdnerAnlegen => "📁", StepKind.Kopieren => "📄", StepKind.Verschieben => "🚚", StepKind.DatumVoranstellen => "📅", StepKind.TextSchreiben => "✏", StepKind.Zippen => "🗜", _ => "✨" },
-                $"{i + 1}. {WorkflowEngine.StepLabel(s.Kind)}" + (risky ? "  · braucht Freigabe" : ""), sub.Length == 0 ? "– noch nicht eingestellt –" : sub, risky ? "#B45309" : "#1D4ED8", WfNode == i);
+                $"{i + 1}. {WorkflowEngine.StepLabel(s.Kind)}" + (risky ? "  · braucht Freigabe" : ""), sub.Length == 0 ? "– noch nicht eingestellt –" : sub, risky ? "#B45309" : "#1D4ED8", WfNode == i, Badge(i).Text, Badge(i).Color, probing && _wfProbeStep == i);
             // ziehen = umsortieren, Klick = auswählen
             Point? from = null; var dragged = false;
             node.PointerPressed += (_, e) => { from = e.GetPosition(this); dragged = false; e.Pointer.Capture(node); e.Handled = true; };
@@ -209,8 +240,11 @@ public partial class MainWindow
             flow.Children.Add(node);
         }
         flow.Children.Add(Arrow());
-        flow.Children.Add(new Border { Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(10), BorderBrush = Brush.Parse("#44FFFFFF"), BorderThickness = new Thickness(1), HorizontalAlignment = HorizontalAlignment.Center,
-            Child = new TextBlock { Text = "Ende · Protokoll unter „Verlauf“", Foreground = Muted, FontSize = 11.5 } });
+        var endText = probe is null ? "Ende · Protokoll unter „Verlauf“"
+            : probe.Ok ? $"Ergebnis: {probe.Steps.Sum(x => x.Count)} Änderungen wären nötig – im Probelauf wurde nichts geändert. Passt alles? Dann „Ausführen“."
+            : "Ergebnis: Der Ablauf bricht an dem roten Baustein ab – dort einstellen und neu prüfen.";
+        flow.Children.Add(new Border { Name = "wf-node-end", Padding = new Thickness(12, 8), CornerRadius = new CornerRadius(10), BorderBrush = Brush.Parse(probe is null ? "#44FFFFFF" : probe.Ok ? "#2FBF71" : "#F87171"), BorderThickness = new Thickness(probe is null ? 1 : 2), HorizontalAlignment = HorizontalAlignment.Center, MaxWidth = 420,
+            Child = new TextBlock { Name = "wf-end-text", Text = endText, Foreground = probe is null ? Muted : Text, FontSize = 11.5, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center } });
         // Bausteine einfügen
         var palette = new WrapPanel { Name = "wf-palette", HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 0, 0, 8) };
         palette.Children.Add(new TextBlock { Text = "Baustein anhängen:", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 4) });

@@ -37,7 +37,13 @@ public sealed class Workflow
     public bool IsApproved => !NeedsApproval || ApprovedHash == Hash();
 }
 
-public sealed record WfRun(string WorkflowId, DateTimeOffset At, bool DryRun, bool Ok, List<string> Lines);
+public sealed record WfRun(string WorkflowId, DateTimeOffset At, bool DryRun, bool Ok, List<string> Lines)
+{
+    /// <summary>Ablauf-Editor: Ergebnis je Schritt (für die Anzeige am Baustein). Schritte nach einem Fehler fehlen.</summary>
+    public List<WfStepResult> Steps { get; init; } = [];
+}
+/// <summary>Ergebnis eines Schritts: Zeilen im Protokoll ab <paramref name="First"/>, Anzahl betroffener Dateien bzw. Aktionen, ob er geklappt hat.</summary>
+public sealed record WfStepResult(int Step, bool Ok, int First, int Count, string Summary);
 
 /// <summary>SYS-05 Universal Automation & Workflow Engine: Abläufe aus einfachen Schritten, Auslöser (von Hand, täglich, alle X Minuten, neue Datei),
 /// Probelauf ohne Änderungen, verschiebende/umbenennende Abläufe nur nach Freigabe (Änderung = neue Freigabe), nur in erlaubten Ordnern, Protokoll.</summary>
@@ -145,23 +151,26 @@ public sealed class WorkflowEngine
         return due;
     }
 
-    public async Task<WfRun> RunAsync(Workflow w, bool dryRun, string? triggerFile = null, DateTimeOffset? now = null)
+    /// <param name="onStep">Wird vor jedem Schritt aufgerufen (Ablauf-Editor: Baustein leuchtet auf).</param>
+    public async Task<WfRun> RunAsync(Workflow w, bool dryRun, string? triggerFile = null, DateTimeOffset? now = null, Func<int, Task>? onStep = null)
     {
         var t = now ?? DateTimeOffset.Now; var lines = new List<string>();
         string V(string s) => s.Replace("{datum}", t.ToString("yyyy-MM-dd")).Replace("{zeit}", t.ToString("HH-mm")).Replace("{datei}", triggerFile is null ? "" : Path.GetFileName(triggerFile));
         if (!dryRun && !w.IsApproved) { lines.Add("Gestoppt: Dieser Ablauf verschiebt oder benennt Dateien um und braucht zuerst deine Freigabe."); return Log(new(w.Id, t, dryRun, false, lines)); }
         if (!dryRun && _gate.Halted) { lines.Add("Gestoppt: Der Not-Stopp ist aktiv. Es wurde nichts geändert."); return Log(new(w.Id, t, dryRun, false, lines)); }
         if (!dryRun && !Lease(w.Id)) { lines.Add("Läuft gerade schon – nicht doppelt gestartet."); _audit.Append("ablauf", "workflow.skipped", w.Id + " läuft schon"); return new(w.Id, t, dryRun, false, lines); }
-        try { return await RunLeasedAsync(w, dryRun, triggerFile, t, lines, V); }
+        try { return await RunLeasedAsync(w, dryRun, triggerFile, t, lines, V, onStep); }
         finally { if (!dryRun) Release(w.Id); }
     }
 
-    private async Task<WfRun> RunLeasedAsync(Workflow w, bool dryRun, string? triggerFile, DateTimeOffset t, List<string> lines, Func<string, string> V)
+    private async Task<WfRun> RunLeasedAsync(Workflow w, bool dryRun, string? triggerFile, DateTimeOffset t, List<string> lines, Func<string, string> V, Func<int, Task>? onStep)
     {
-        var ok = true; var halt = _gate.HaltToken;
-        foreach (var s in w.Steps)
+        var ok = true; var halt = _gate.HaltToken; var results = new List<WfStepResult>();
+        for (var si = 0; si < w.Steps.Count; si++)
         {
+            var s = w.Steps[si]; var first = lines.Count;
             if (!dryRun && halt.IsCancellationRequested) { ok = false; lines.Add("Not-Stopp: Der Ablauf wurde angehalten. Weitere Schritte laufen nicht."); break; }
+            if (onStep is not null) await onStep(si);
             try
             {
                 var from = V(s.From); var to = V(s.To);
@@ -213,11 +222,13 @@ public sealed class WorkflowEngine
                         break;
                 }
             }
-            catch (OperationCanceledException) when (halt.IsCancellationRequested) { ok = false; lines.Add("Not-Stopp: Der Ablauf wurde angehalten. Weitere Schritte laufen nicht."); break; }
-            catch (Exception ex) { ok = false; lines.Add($"Hat nicht geklappt bei „{StepLabel(s.Kind)}“: {ex.Message}"); break; }
+            catch (OperationCanceledException) when (halt.IsCancellationRequested) { ok = false; lines.Add("Not-Stopp: Der Ablauf wurde angehalten. Weitere Schritte laufen nicht."); results.Add(new(si, false, first, 0, "angehalten")); break; }
+            catch (Exception ex) { ok = false; lines.Add($"Hat nicht geklappt bei „{StepLabel(s.Kind)}“: {ex.Message}"); results.Add(new(si, false, first, 0, ex.Message)); break; }
+            var n = lines.Count - first; var none = n == 1 && lines[first].Contains("keine passenden Dateien");
+            results.Add(new(si, true, first, none ? 0 : n, none ? "nichts zu tun" : n == 1 ? lines[first] : $"{n} {(s.Kind is StepKind.Kopieren or StepKind.Verschieben or StepKind.DatumVoranstellen or StepKind.KiZusammenfassen ? "Dateien" : "Aktionen")}"));
         }
         if (!dryRun) { w.LastRun = t; Save(); }
-        return Log(new(w.Id, t, dryRun, ok, lines));
+        return Log(new(w.Id, t, dryRun, ok, lines) { Steps = results });
     }
 
     public async Task<IReadOnlyList<WfRun>> RunDueAsync(DateTimeOffset now)
