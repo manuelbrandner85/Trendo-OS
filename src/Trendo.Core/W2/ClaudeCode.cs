@@ -42,7 +42,7 @@ public static partial class ClaudeCode
 
     /// <summary>Anthropic erlaubt Drittprodukten ohne vorherige Freigabe nicht, claude.ai-Anmeldung oder Abo-Kontingente anzubieten (Agent-SDK-Dokumentation,
     /// Stand 01.11.2026). Bis eine schriftliche Freigabe vorliegt, nutzt Trendo das Abo NICHT eingebettet im Hintergrund (keine Haupt-KI, keine Läufe aus Trendo heraus),
-    /// sondern öffnet das echte Claude Code sichtbar, in dem der Nutzer selbst arbeitet (Entscheidung Manuel, 01.11.2026: „Echtes Claude Code öffnen“, keine Anfrage an Anthropic).
+    /// sondern öffnet das echte Claude Code sichtbar, in dem der Nutzer selbst arbeitet (Entscheidung des Projektinhabers, 01.11.2026: „Echtes Claude Code öffnen“, keine Anfrage an Anthropic).
     /// Der eingebettete Weg bleibt im Code (getestet), ist aber gesperrt; umschalten nur mit eigenem Auftrag und Freigabe.</summary>
     public const bool EmbeddingApproved = false;
 

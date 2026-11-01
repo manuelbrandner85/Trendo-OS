@@ -80,7 +80,7 @@ public partial class MainWindow
             var pth = path;
             sp.Children.Add(new WrapPanel { Children = { P("• " + name, Text, 12), Act($"skill-src-get-{k++}", "Übernehmen", () => _ = SkillImportRemote(SkillSources[0].Repo, pth)) } });
         }
-        return sp;
+        return KiPage("Skills", sp);
     }
 
     Control SkillEditor(Skill? s)

@@ -101,7 +101,7 @@ public class SPEC01_Ui
     [AvaloniaFact(DisplayName = "SPEC-01 UI: Grundriss – Vorlage, Raum auswählen und umbenennen, Boden wählen, Wandlänge eintippen, Plan prüfen, 3D, Exporte")]
     public void Properties_check_export()
     {
-        var (w, l, _) = Ui.Open();
+        var (w, l, _) = Ui.Open(); w.Width = 1600; w.Height = 1200; // Menüband in einer Zeile, Zeichenfläche groß genug für gezielte Klicks
         w.Show(MainWindow.StudioPages["SPEC-01"]); Settle();
         RealClick(w, Get<Button>(w, "prog-tpl-wohnung"));
         Assert.Contains("Wohnfläche", Get<TextBlock>(w, "prog-status-text").Text);

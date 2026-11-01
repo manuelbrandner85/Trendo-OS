@@ -46,8 +46,9 @@ public partial class MainWindow
         var tabs = new WrapPanel { Name = "prod-tabs" };
         foreach (var (k, l) in new[] { ("tafel", "Tafel"), ("ablaeufe", "Abläufe über mehrere Studios") })
         {
+            if (ProdTab == k) { tabs.Children.Add(new Border { Name = "prod-tab-" + k, Padding = new Thickness(14, 5), Margin = new Thickness(0, 0, 6, 0), CornerRadius = new CornerRadius(14), Background = Accent, Child = new TextBlock { Text = l, Foreground = Text } }); continue; } // aktiver Reiter ist kein Knopf
             var b = new Button { Name = "prod-tab-" + k, Content = l, Padding = new Thickness(14, 5), Margin = new Thickness(0, 0, 6, 0), CornerRadius = new CornerRadius(14), Foreground = Text,
-                Background = ProdTab == k ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1) };
+                Background = Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1) };
             b.Click += (_, _) => { ProdTab = k; Show("produktion"); };
             tabs.Children.Add(b);
         }

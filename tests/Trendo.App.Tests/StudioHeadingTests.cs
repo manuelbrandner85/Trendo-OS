@@ -37,7 +37,7 @@ public class StudioHeadingTests
         foreach (var (key, id) in pages)
         {
             w.Show(key);
-            var title = Heading(w);
+            var title = w.ActivePageRoot!.GetLogicalDescendants().OfType<TextBlock>().Where(t => t.Name == "page-title").Select(t => t.Text).ToList() is [var one] ? one : $"{key}: keine oder mehrere Überschriften";
             Assert.True(title == StudioCatalog.ById[id].Name, $"{key} ({id}): „{title}“ statt „{StudioCatalog.ById[id].Name}“");
         }
 
