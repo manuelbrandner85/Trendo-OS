@@ -152,7 +152,7 @@ public sealed partial class MainWindow : Window
             KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.D1 + i, KeyModifiers.Control), Command = new RelayCommand(() => Show(key)) });
         }
         StartupTrace.Mark("ctor.layout");
-        InitWave1(); InitWave45(); InitWave23(); InitW7(); StartupTrace.Mark("ctor.initwaves"); _query = opt.Query ?? "";
+        InitWave1(); InitWave45(); InitWave23(); InitW7(); DedupeRegistries(); StartupTrace.Mark("ctor.initwaves"); _query = opt.Query ?? "";
         InitSetup(opt);
         if (_reopenSection is { } keepSection) { _settingsSection = keepSection; _reopenSection = null; }
         if (Environment.GetEnvironmentVariable("TRENDO_SETTINGS") is { Length: > 0 } settingsSection) _settingsSection = settingsSection;
@@ -191,6 +191,16 @@ public sealed partial class MainWindow : Window
     private string _apiInfo = "";
     private readonly List<DispatcherTimer> _ownedTimers = [];
     /// <summary>Timer gehören zum Fenster. Beim Schließen stoppen, sonst bleibt jedes Testfenster samt Hintergrundbild im Speicher.</summary>
+    /// <summary>Statische Listen (Suche, KI- und System-Reiter) werden von jedem Fenster befüllt – nach einem Neuaufbau des Fensters stünde alles doppelt da.
+    /// Hier bleibt je Schlüssel nur der erste Eintrag (Reihenfolge bleibt).</summary>
+    private static void DedupeRegistries()
+    {
+        static void Keep<T>(List<T> list, Func<T, string> key) { var seen = new HashSet<string>(); list.RemoveAll(x => !seen.Add(key(x))); }
+        Keep(ExtraPages, x => x.Key + "|" + x.Title); Keep(KiTabs, x => x.Key); Keep(SysTabs, x => x.Key);
+        Keep(KreativTabs, x => x.Item1); Keep(BusinessTabs, x => x.Item1); Keep(FachTabs, x => x.Item1);
+        Keep(AlltagTabs, x => x.Key); Keep(NetzTabs, x => x.Key); Keep(DokuTabs, x => x.Key); Keep(ProgTabs, x => x.Key); Keep(BedienTabs, x => x.Key); Keep(QualTabs, x => x.Key);
+    }
+
     private void OwnTimer(DispatcherTimer t) { _ownedTimers.Add(t); t.Start(); }
     private void RefreshStatusBar() =>
         _status.Text = $"Core {_core.Version}{(_core.Offline ? " · OFFLINE" : "")} · Secrets: {_core.Secrets.BackendName} · Audit-Kette: {(_core.Audit.Verify() ? "intakt" : "FEHLER")}{_apiInfo} · Hintergrund: KI-generiert";

@@ -13,9 +13,9 @@ public static class StartupTrace
 
     /// <summary>Millisekunden seit Prozessstart.</summary>
     public static double Now => Offset + Sw.Elapsed.TotalMilliseconds;
-    public static void Mark(string name) { lock (Marks) Marks.Add((name, Now)); }
+    public static void Mark(string name) { lock (Marks) { Marks.Add((name, Now)); if (Marks.Count > 2000) Marks.RemoveRange(0, 1000); } }
     /// <summary>Dauer einer Teilaufgabe (z. B. Seitenaufbau) festhalten.</summary>
-    public static void Took(string name, double ms) { lock (Marks) Marks.Add((name, ms)); }
+    public static void Took(string name, double ms) { lock (Marks) { Marks.Add((name, ms)); if (Marks.Count > 2000) Marks.RemoveRange(0, 1000); } }
     public static IReadOnlyList<(string Name, double Ms)> All { get { lock (Marks) return [.. Marks]; } }
     public static double? Of(string name) { lock (Marks) return Marks.LastOrDefault(m => m.Item1 == name) is var m && m.Item1 is not null ? m.Item2 : null; }
     public static void Flush()
