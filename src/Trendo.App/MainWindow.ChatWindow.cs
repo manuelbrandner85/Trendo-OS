@@ -123,7 +123,7 @@ public partial class MainWindow
         }
         sp.Children.Add(log);
         // neueste Nachricht ins Bild holen
-        if (log.Children.Count > 0 && log.Children[^1] is Control lastMsg) lastMsg.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => lastMsg.BringIntoView(), Avalonia.Threading.DispatcherPriority.Background);
+        if (log.Children.Count > 0 && log.Children[^1] is Control lastMsg) lastMsg.AttachedToVisualTree += (_, _) => _ui.Post(() => lastMsg.BringIntoView(), Avalonia.Threading.DispatcherPriority.Background);
         // Eingabe fest am unteren Rand (wie in Chatprogrammen) – der Verlauf rollt darüber
         var dock = new StackPanel { Name = "ask-dock", Spacing = 6, Children = {
             input,

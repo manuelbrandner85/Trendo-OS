@@ -149,7 +149,7 @@ public partial class MainWindow
             var pc = Circuit.From(d.Data);
             var cv = new PcbCanvas { Name = "ek-pcb-canvas", Model = pc, Selected = CircuitState.Selected };
             cv.Select = id => { CircuitState.Selected = id; };
-            cv.AttachedToVisualTree += (_, _) => { if (cv.Selected is not null) Avalonia.Threading.Dispatcher.UIThread.Post(() => cv.Focus(), Avalonia.Threading.DispatcherPriority.Input); }; // nach Ziehen/Drehen gleich weiter mit R
+            cv.AttachedToVisualTree += (_, _) => { if (cv.Selected is not null) _ui.Post(() => cv.Focus(), Avalonia.Threading.DispatcherPriority.Input); }; // nach Ziehen/Drehen gleich weiter mit R
             cv.Moved = (id, x, y) => CircuitEdit("Bauteil verschieben", c => { var pl = c.Pcb.Places[id]; pl.X = x; pl.Y = y; });
             cv.Rotate = id => CircuitEdit("Bauteil drehen", c => { var pl = c.Pcb.Places[id]; pl.Rot = (pl.Rot + 90) % 360; });
             var issues = Pcb.Check(pc);

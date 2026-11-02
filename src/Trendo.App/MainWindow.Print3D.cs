@@ -64,7 +64,7 @@ public partial class MainWindow
         {
             var stream = openStream is not null ? await openStream() : await BambuNet.OpenTls(p.Ip, 8883, () => Thumb(p), t => RememberThumb(p, t), CancellationToken.None);
             var c = new BambuClient(p, code);
-            c.Changed += _ => Dispatcher.UIThread.Post(() => { if (CurrentView == "3d-druck" && DateTime.UtcNow - _prLastDraw > TimeSpan.FromSeconds(1)) { _prLastDraw = DateTime.UtcNow; Show("3d-druck"); } });
+            c.Changed += _ => _ui.Post(() => { if (CurrentView == "3d-druck" && DateTime.UtcNow - _prLastDraw > TimeSpan.FromSeconds(1)) { _prLastDraw = DateTime.UtcNow; Show("3d-druck"); } });
             await c.ConnectAsync(stream);
             _bambu = c; _prMsg = $"Verbunden mit „{p.Name}“.";
             _core.Audit.Append(Principal.LocalOwner.Name, "3ddruck.verbunden", p.Name);

@@ -241,7 +241,7 @@ public partial class MainWindow
     {
         var s = _claude; var set = KiSourceSettings.Load(_core.DataRoot);
         // Stand im Hintergrund auffrischen; neu zeichnen nur, wenn er sich geändert hat (sonst endlose Schleife Prüfen → Zeichnen → Prüfen)
-        if ((DateTime.UtcNow - _claudeAt).TotalMinutes >= 5) { var before = _claude; _ = ClaudeCheck().ContinueWith(t => { if (t.Result != before) Avalonia.Threading.Dispatcher.UIThread.Post(RefreshKiPage); }); }
+        if ((DateTime.UtcNow - _claudeAt).TotalMinutes >= 5) { var before = _claude; _ = ClaudeCheck().ContinueWith(t => { if (t.Result != before) _ui.Post(RefreshKiPage); }); }
         var buttons = new WrapPanel();
         void Add(Control c) { c.Margin = new Thickness(0, 0, 6, 4); buttons.Children.Add(c); }
         if (s.Installed) Add(Act("claude-open", "Claude Code öffnen", () => ClaudeOpen(ProjectsFolderForClaude()), s.Ready));

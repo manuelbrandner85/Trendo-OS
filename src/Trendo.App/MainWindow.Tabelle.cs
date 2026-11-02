@@ -324,7 +324,7 @@ public partial class MainWindow
             Child = new StackPanel { Spacing = 8, Children = { new TextBlock { Text = label, Foreground = Brushes.Black, FontSize = 13, TextWrapping = TextWrapping.Wrap, MaxWidth = 320 }, tb, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { go, cancel } } } } };
         Canvas.SetLeft(box, 70); Canvas.SetTop(box, 36);
         _shPrompt = box; _shOverlay.Children.Add(box);
-        Dispatcher.UIThread.Post(() => { tb.Focus(); tb.SelectAll(); });
+        _ui.Post(() => { tb.Focus(); tb.SelectAll(); });
     }
 
     static double ParseNum(string s) => SheetFormat.TryNumber(s.Trim(), out var d) ? d : 0;
@@ -707,7 +707,7 @@ public partial class MainWindow
                 default: e.Handled = false; break;
             }
         };
-        Dispatcher.UIThread.Post(() => grid.Focus());
+        _ui.Post(() => grid.Focus());
         var charts = new StackPanel { Name = "tabelle-charts", Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 30, 14, 0) };
         _shCharts.Clear();
         for (var i = 0; i < ActiveSheet.Charts.Count; i++)
@@ -752,7 +752,7 @@ public partial class MainWindow
         tb.TextChanged += (_, _) => { if (_shFormula is { } f) f.Text = tb.Text; };
         tb.LostFocus += (_, _) => { if (_shEditor == tb) CommitEditor(); };
         _shEditor = tb; _shOverlay.Children.Add(tb);
-        Dispatcher.UIThread.Post(() => { tb.Focus(); tb.CaretIndex = tb.Text?.Length ?? 0; });
+        _ui.Post(() => { tb.Focus(); tb.CaretIndex = tb.Text?.Length ?? 0; });
     }
 
     private void CommitEditor()
@@ -866,7 +866,7 @@ public partial class MainWindow
             catch (ArgumentException ex) { _shMsg = ex.Message; }
             Show("tabelle");
         };
-        if (_shOverlay is { } o) { Canvas.SetLeft(tb, 60); Canvas.SetTop(tb, 40); o.Children.Add(tb); Dispatcher.UIThread.Post(() => { tb.Focus(); tb.SelectAll(); }); }
+        if (_shOverlay is { } o) { Canvas.SetLeft(tb, 60); Canvas.SetTop(tb, 40); o.Children.Add(tb); _ui.Post(() => { tb.Focus(); tb.SelectAll(); }); }
     }
 
     public void SheetRename(int index, string name) { SheetSnapshot(); SheetDocument.RenameSheet(SheetDocument.Sheets[index], name); SheetDirty = true; }

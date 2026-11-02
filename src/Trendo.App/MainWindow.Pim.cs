@@ -464,7 +464,7 @@ public partial class MainWindow
         }
         var scroll = new ScrollViewer { Name = "cal-scroll", Content = grid, Height = 560, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto };
         var startHour = first <= DateTime.Today && DateTime.Today < first.AddDays(days) ? Math.Clamp(DateTime.Now.Hour - 2, 0, 14) : 7; // heute: kurz vor jetzt, sonst ab 7 Uhr
-        scroll.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => scroll.Offset = new Vector(0, startHour * grid.HourHeight));
+        scroll.AttachedToVisualTree += (_, _) => _ui.Post(() => scroll.Offset = new Vector(0, startHour * grid.HourHeight));
         var hint = new TextBlock { Text = "Termin ziehen verschiebt ihn · Unterkante ziehen ändert die Dauer · in freie Zeit ziehen legt einen neuen an · Klick wählt aus", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 4, 0, 0) };
         var g = new Grid { Name = name, RowDefinitions = new RowDefinitions("Auto,*,Auto") };
         g.Children.Add(head); Grid.SetRow(scroll, 1); g.Children.Add(scroll); Grid.SetRow(hint, 2); g.Children.Add(hint);
@@ -741,7 +741,7 @@ public partial class MainWindow
             case Avalonia.Input.Key.J or Avalonia.Input.Key.K when Inbox.Count > 0:
                 var i = InboxOpenUid is { } u ? Inbox.FindIndex(h => h.Uid == u) : -1;
                 var next = Math.Clamp(k == Avalonia.Input.Key.J ? i + 1 : i - 1, 0, Inbox.Count - 1);
-                var uid = Inbox[next].Uid; _ = OpenInboxMail(uid).ContinueWith(_ => Avalonia.Threading.Dispatcher.UIThread.Post(() => { InboxOpenUid = uid; _composeOpen = false; Show("posteingang"); }));
+                var uid = Inbox[next].Uid; _ = OpenInboxMail(uid).ContinueWith(_ => _ui.Post(() => { InboxOpenUid = uid; _composeOpen = false; Show("posteingang"); }));
                 return true;
         }
         return false;

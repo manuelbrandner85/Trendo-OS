@@ -237,7 +237,7 @@ public partial class MainWindow
         AddLearnProposals(dock, ui); // gelernte Regeln warten auf Ja/Nein
         if (chat is not null && !ui.Running && chat.Messages.Count > 0 && chat.Messages[^1].Role == "assistant") AddDocSuggestions(dock, ui, chat); // passende Unterlagen? nur mit Ja
         AttachQueue(ui); RenderFlows(dock, ui);
-        Dispatcher.UIThread.Post(() => ui.Scroll.ScrollToEnd(), DispatcherPriority.Background);
+        _ui.Post(() => ui.Scroll.ScrollToEnd(), DispatcherPriority.Background);
     }
 
     Control ChatNotice(ClaudeDock dock, ClaudeCode.Status s)
@@ -430,7 +430,7 @@ public partial class MainWindow
         {
             if (l.Contains("\"trendo_error\"")) { error = System.Text.Json.Nodes.JsonNode.Parse(l)?["text"]?.ToString(); return; }
             foreach (var ev in ClaudeCode.Parse(l, folder))
-                Dispatcher.UIThread.Post(() =>
+                _ui.Post(() =>
                 {
                     switch (ev)
                     {
@@ -468,7 +468,7 @@ public partial class MainWindow
             }
             catch (OperationCanceledException) { error = "Angehalten."; }
             catch (InvalidOperationException e) { error = e.Message; }
-            await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background); // ausstehende Ereignisse abarbeiten
+            await _ui.InvokeAsync(() => { }, DispatcherPriority.Background); // ausstehende Ereignisse abarbeiten
             if (pendingFile is { } lastPf) ClaudeLiveChanged(dock, Path.Combine(folder, lastPf), workFile, null);
             if (limitRaw is null && ClaudeCode.IsLimit(error)) limitRaw = error;
             if (limitRaw is not null)

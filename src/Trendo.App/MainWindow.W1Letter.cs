@@ -40,7 +40,7 @@ public partial class MainWindow
         {
             _letterMsg = "Empfänger: Firma, Name, Straße und PLZ Ort, eine Angabe pro Zeile.";
             Show("brief");
-            Avalonia.Threading.Dispatcher.UIThread.Post(() => Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(this).OfType<TextBox>().FirstOrDefault(t => t.Name == "letter-recipient")?.Focus());
+            _ui.Post(() => Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(this).OfType<TextBox>().FirstOrDefault(t => t.Name == "letter-recipient")?.Focus());
         }; sp.Children.Add(emp);
         return new Border { Background = Brush.Parse(C("#55101830", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(8), Child = sp, Margin = new Thickness(0, 0, 10, 0) };
     }

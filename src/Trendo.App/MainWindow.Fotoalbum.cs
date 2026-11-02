@@ -35,7 +35,7 @@ public partial class MainWindow
         var folders = PhotoFolders;
         return _photoLoad = Task.Run(() => Trendo.Core.Sys.PhotoAlbum.Scan(folders)).ContinueWith(t =>
         {
-            Dispatcher.UIThread.Post(() => { _photos = t.IsCompletedSuccessfully ? t.Result : []; _photoLoad = null; _photoDups = null; if (CurrentView == "medien") Show("medien"); });
+            _ui.Post(() => { _photos = t.IsCompletedSuccessfully ? t.Result : []; _photoLoad = null; _photoDups = null; if (CurrentView == "medien") Show("medien"); });
         }, TaskScheduler.Default);
     }
 
@@ -46,7 +46,7 @@ public partial class MainWindow
         {
             Bitmap? b = null;
             try { using var s = File.OpenRead(path); b = Bitmap.DecodeToWidth(s, width, BitmapInterpolationMode.MediumQuality); } catch (Exception) { /* kein lesbares Bild → Platzhalter */ }
-            Dispatcher.UIThread.Post(() => { _photoThumbs[path] = b; img.Source = b; });
+            _ui.Post(() => { _photoThumbs[path] = b; img.Source = b; });
         });
     }
 
@@ -224,7 +224,7 @@ public partial class MainWindow
         var root = new Grid { Name = "photo-viewer", Focusable = true, RowDefinitions = new RowDefinitions("Auto,10,*"), ColumnDefinitions = new ColumnDefinitions("*,14,Auto"), Children = { top, Pos(stage, 0), Pos(Glass2(info, 12), 2) } };
         Grid.SetColumnSpan(top, 3); Grid.SetRow(stage, 2); Grid.SetRow(root.Children[2], 2);
         root.KeyDown += (_, e) => { if (e.Key == Key.Right) { Go(1); e.Handled = true; } else if (e.Key == Key.Left) { Go(-1); e.Handled = true; } else if (e.Key == Key.Escape) { _photoOpen = null; Show("medien"); e.Handled = true; } };
-        root.AttachedToVisualTree += (_, _) => Dispatcher.UIThread.Post(() => root.Focus());
+        root.AttachedToVisualTree += (_, _) => _ui.Post(() => root.Focus());
         return root;
     }
 

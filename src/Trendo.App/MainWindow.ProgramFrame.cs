@@ -155,7 +155,7 @@ public partial class MainWindow
     public void OpenPalette(string text = "")
     {
         _paletteBox.Text = text; _palette.IsVisible = true; FillPalette();
-        Dispatcher.UIThread.Post(() => _paletteBox.Focus());
+        _ui.Post(() => _paletteBox.Focus());
     }
 
     public void ClosePalette() => _palette.IsVisible = false;

@@ -25,7 +25,7 @@ public partial class MainWindow
         if (!_claudeDocks.TryGetValue(id, out var dock) || !_chatUis.TryGetValue(dock, out var ui)) return null;
         if (chatId is not null && !ui.Running && CChats.Get(studio, chatId) is { } cc) { ui.ChatId = chatId; if (cc.Doc is not null) ClaudeEnsureProgram(dock, cc); RenderChatList(dock); RenderChat(dock); }
         if (text is { Length: > 0 }) { ui.Input.Text = ((ui.Input.Text ?? "").TrimEnd() + (string.IsNullOrWhiteSpace(ui.Input.Text) ? "" : "\n\n") + text).TrimStart(); ui.Input.CaretIndex = ui.Input.Text.Length; }
-        Dispatcher.UIThread.Post(() => ui.Input.Focus());
+        _ui.Post(() => ui.Input.Focus());
         return dock;
     }
 

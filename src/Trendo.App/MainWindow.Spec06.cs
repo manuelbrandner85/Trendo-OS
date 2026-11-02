@@ -73,7 +73,7 @@ public partial class MainWindow
             }
             else if (LearnMode == "quiz" && _quiz is { } q && e.Key is >= Key.D1 and <= Key.D4) { LearnQuizAnswer((int)(e.Key - Key.D1)); e.Handled = true; }
         };
-        root.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (LearnMode == "lernen") root.Focus(); }, Avalonia.Threading.DispatcherPriority.Input);
+        root.AttachedToVisualTree += (_, _) => _ui.Post(() => { if (LearnMode == "lernen") root.Focus(); }, Avalonia.Threading.DispatcherPriority.Input);
         root.Focusable = true;
         return FitPage("Karteikarten", new Panel(), root);
     }
@@ -148,7 +148,7 @@ public partial class MainWindow
                 Learn.Answer(card.Id, ok ? (typo ? Grade.Schwer : Grade.Gut) : Grade.Falsch); Show("lernen");
             }
             box.KeyDown += (_, e) => { if (e.Key == Key.Enter) { Check(); e.Handled = true; } };
-            box.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => box.Focus(), Avalonia.Threading.DispatcherPriority.Input);
+            box.AttachedToVisualTree += (_, _) => _ui.Post(() => box.Focus(), Avalonia.Threading.DispatcherPriority.Input);
             sp.Children.Add(box);
         }
         else

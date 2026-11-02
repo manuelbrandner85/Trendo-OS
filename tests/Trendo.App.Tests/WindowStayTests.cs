@@ -35,7 +35,7 @@ public class WindowStayTests
         w.Close();
     }
 
-    [AvaloniaFact(DisplayName = "Fenster: maximiert ohne Rand bis an die Seiten, die Leiste unten bleibt sichtbar")]
+    [AvaloniaFact(DisplayName = "Fenster: maximiert füllt den ganzen Bildschirm – über Kopfleiste und Taskleiste, ohne Rand; Wiederherstellen bringt die Leisten zurück")]
     public void Maximize_full_area()
     {
         var (w, _, _) = Ui.Open();
@@ -44,12 +44,16 @@ public class WindowStayTests
         Settle();
         var frame = V<Border>(w, "win-settings");
         var p = frame.TranslatePoint(default, w)!.Value;
-        Assert.True(p.X <= 1, $"links bleibt ein Rand: {p.X}");
+        Assert.True(p.X <= 1 && p.Y <= 1, $"oben/links bleibt ein Rand: {p}");
         Assert.True(p.X + frame.Bounds.Width >= w.Bounds.Width - 2, "rechts bleibt ein Rand");
+        Assert.True(p.Y + frame.Bounds.Height >= w.Bounds.Height - 2, "unten bleibt ein Rand");
         Assert.Equal(0, frame.BorderThickness.Left);
         var taskbar = w.GetVisualDescendants().OfType<Control>().First(c => c.Name == "task-settings");
-        var hit = w.InputHitTest(taskbar.TranslatePoint(new Avalonia.Point(taskbar.Bounds.Width / 2, taskbar.Bounds.Height / 2), w)!.Value) as Avalonia.Visual;
-        Assert.True(hit == taskbar || hit!.GetVisualAncestors().Contains(taskbar), "Taskleiste ist verdeckt");
+        bool Free() { if (!taskbar.IsEffectivelyVisible || taskbar.TranslatePoint(new Avalonia.Point(taskbar.Bounds.Width / 2, taskbar.Bounds.Height / 2), w) is not { } c) return false; var hit = w.InputHitTest(c) as Avalonia.Visual; return hit is not null && (hit == taskbar || hit.GetVisualAncestors().Contains(taskbar)); }
+        Assert.False(Free(), "maximiert liegt das Studio über der Taskleiste");
+        RealClick(w, V<Button>(w, "win-max-settings")); Settle();
+        taskbar = w.GetVisualDescendants().OfType<Control>().First(c => c.Name == "task-settings"); // die Taskleiste wird neu gezeichnet
+        Assert.True(Free(), "nach dem Wiederherstellen ist die Taskleiste wieder frei");
         w.Close();
     }
 }

@@ -30,7 +30,7 @@ public partial class MainWindow
         {
             Bitmap? bmp = null;
             try { bmp = PdfView.Render(file, page, dpi, rot, pw); } catch (Exception) { /* Miniatur fehlt → Platzhalter */ }
-            Dispatcher.UIThread.Post(() => { _pdfThumbs[key] = bmp; img.Source = bmp; });
+            _ui.Post(() => { _pdfThumbs[key] = bmp; img.Source = bmp; });
         });
     }
 
@@ -52,7 +52,7 @@ public partial class MainWindow
         }
         var sv = new ScrollViewer { Content = sp, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto };
         // aktuelle Seite in die Leiste holen
-        sv.AttachedToVisualTree += (_, _) => Dispatcher.UIThread.Post(() => { if (sp.Children.Count > PdfPage) sp.Children[PdfPage].BringIntoView(); }, DispatcherPriority.Background);
+        sv.AttachedToVisualTree += (_, _) => _ui.Post(() => { if (sp.Children.Count > PdfPage) sp.Children[PdfPage].BringIntoView(); }, DispatcherPriority.Background);
         return sv;
     }
 

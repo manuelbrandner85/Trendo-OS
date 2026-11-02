@@ -205,7 +205,7 @@ public partial class MainWindow
                 if (ffmpeg is null) throw new InvalidOperationException("Dafür fehlt ffmpeg.");
                 var o = Path.Combine(WorkFolder("aufnahmen"), $"aufnahme-{DateTime.Now:yyyyMMdd-HHmmss}.mp4");
                 var a = FfmpegJobs.RecordArgs(OperatingSystem.IsWindows(), o, int.TryParse(recSec.Text, out var s) ? s : 0, recAudio.Text);
-                _ = Task.Run(() => { var r = Cli.Run(ffmpeg, a, timeoutMs: (s + 30) * 1000); Dispatcher.UIThread.Post(() => Say(r.Ok && File.Exists(o) ? "Aufnahme gespeichert: " + o : "Aufnahme hat nicht geklappt.", V)); });
+                _ = Task.Run(() => { var r = Cli.Run(ffmpeg, a, timeoutMs: (s + 30) * 1000); _ui.Post(() => Say(r.Ok && File.Exists(o) ? "Aufnahme gespeichert: " + o : "Aufnahme hat nicht geklappt.", V)); });
                 Say($"Aufnahme läuft {s} Sekunden …", V);
             }), true)))));
 

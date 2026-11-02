@@ -39,7 +39,7 @@ public partial class MainWindow
                 if (paths.Length > 0 && e.Source is Control s) { DropPaths(s, paths); e.Handled = true; }
             }, RoutingStrategies.Bubble, true);
             // Felder, die erst nach einem Klick entstehen (z. B. Rezept-Eingaben), bekommen die Knöpfe gleich danach
-            AddHandler(Button.ClickEvent, (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => EnhancePathFields(ActivePageRoot, CurrentView), Avalonia.Threading.DispatcherPriority.Background), RoutingStrategies.Bubble, true);
+            AddHandler(Button.ClickEvent, (_, _) => _ui.Post(() => EnhancePathFields(ActivePageRoot, CurrentView), Avalonia.Threading.DispatcherPriority.Background), RoutingStrategies.Bubble, true);
         }
         if (root is null) return;
         foreach (var tb in root.GetLogicalDescendants().OfType<TextBox>().ToList())

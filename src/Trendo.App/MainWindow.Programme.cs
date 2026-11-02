@@ -400,7 +400,7 @@ public partial class MainWindow
         if (!resumed) have = 0;
         var total = resumed ? have + (res.Content.Headers.ContentLength ?? asset.Size - have) : res.Content.Headers.ContentLength ?? asset.Size;
         if (total > GitHubApps.MaxBytes) throw new InvalidOperationException("Die Datei ist zu groß.");
-        if (resumed) Avalonia.Threading.Dispatcher.UIThread.Post(() => SetupOverlayFraction(lo + (hi - lo) * have / Math.Max(1.0, total), $"Wird fortgesetzt ab {have / (1 << 20)} MB …"));
+        if (resumed) _ui.Post(() => SetupOverlayFraction(lo + (hi - lo) * have / Math.Max(1.0, total), $"Wird fortgesetzt ab {have / (1 << 20)} MB …"));
         await using var src = await res.Content.ReadAsStreamAsync(SetupToken);
         var buf = new byte[1 << 20]; long done = have; int n; var last = DateTime.MinValue; var t0 = DateTime.UtcNow;
         await using (var dst = new FileStream(part, resumed ? FileMode.Append : FileMode.Create, FileAccess.Write, FileShare.None))
@@ -421,7 +421,7 @@ public partial class MainWindow
                 var speed = (d - have) / Math.Max(0.5, (DateTime.UtcNow - t0).TotalSeconds) / (1 << 20);
                 var frac = total > 0 ? Math.Min(1, d / (double)total) : 0;
                 var eta = total > 0 && speed > 0.01 ? (total - d) / (1 << 20) / speed : -1;
-                Avalonia.Threading.Dispatcher.UIThread.Post(() => SetupOverlayFraction(lo + (hi - lo) * frac,
+                _ui.Post(() => SetupOverlayFraction(lo + (hi - lo) * frac,
                     total > 0 ? $"{asset.Name}: {d / (1 << 20)} von {total / (1 << 20)} MB · {speed:0.0} MB/s{(eta >= 0 ? $" · noch etwa {Math.Ceiling(eta)} s" : "")}" : $"{asset.Name}: {d / (1 << 20)} MB · {speed:0.0} MB/s"));
             }
         }

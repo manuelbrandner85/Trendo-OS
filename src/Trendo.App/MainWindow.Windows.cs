@@ -185,8 +185,8 @@ public partial class MainWindow
         frame.AddHandler(PointerPressedEvent, (_, e) =>
         {
             _navWindow = id; _navAt = DateTime.UtcNow;
-            if (e.GetCurrentPoint(frame).Properties.IsXButton1Pressed && Windows.Get(id) is { CanGoBack: true }) { e.Handled = true; Dispatcher.UIThread.Post(() => GoBack(id)); return; } // Zurück-Taste der Maus
-            if (Windows.Active?.Id != id) Dispatcher.UIThread.Post(() => FocusWindow(id), DispatcherPriority.Background);
+            if (e.GetCurrentPoint(frame).Properties.IsXButton1Pressed && Windows.Get(id) is { CanGoBack: true }) { e.Handled = true; _ui.Post(() => GoBack(id)); return; } // Zurück-Taste der Maus
+            if (Windows.Active?.Id != id) _ui.Post(() => FocusWindow(id), DispatcherPriority.Background);
         }, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
         frame.AddHandler(KeyDownEvent, (_, _) => { _navWindow = id; _navAt = DateTime.UtcNow; }, Avalonia.Interactivity.RoutingStrategies.Tunnel, handledEventsToo: true);
         return (frame, body, title);
@@ -313,7 +313,18 @@ public partial class MainWindow
                 fr.Frame.BoxShadow = LowPower ? default : WindowShadow;
             }
         }
-        _workArea.IsHitTestVisible = Windows.Stack.Any(w => w.Maximized && !w.Minimized);
+        var anyMax = Windows.Stack.Any(w => w.Maximized && !w.Minimized);
+        _workArea.IsHitTestVisible = anyMax;
+        MaxFullScreen(anyMax);
+    }
+
+    WindowState? _beforeMax;
+    /// <summary>Maximiertes Studio-Fenster = echtes Vollbild: auch das Trendo-Fenster geht auf volle Bildschirmgröße und kehrt beim Wiederherstellen zurück.</summary>
+    void MaxFullScreen(bool on)
+    {
+        if (_opt.Isolated || SetupOverlayOpen) return; // Tests und Einrichtung steuern den Fensterzustand selbst
+        if (on && WindowState != WindowState.FullScreen) { _beforeMax = WindowState; WindowState = WindowState.FullScreen; }
+        else if (!on && _beforeMax is { } prev && !FocusMode) { _beforeMax = null; if (WindowState == WindowState.FullScreen) WindowState = prev; }
     }
 
     private static void DetachFrame(Control frame) { if (frame.Parent is Panel p) p.Children.Remove(frame); }

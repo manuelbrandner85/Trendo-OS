@@ -259,7 +259,7 @@ public partial class MainWindow
                     if ((DateTime.UtcNow - last).TotalMilliseconds > 300)
                     {
                         last = DateTime.UtcNow; var d = done;
-                        Dispatcher.UIThread.Post(() => SetupOverlayProgress(step, steps, $"{fileName}: {d / (1 << 20):N0} von {bytes / (1 << 20):N0} MB"));
+                        _ui.Post(() => SetupOverlayProgress(step, steps, $"{fileName}: {d / (1 << 20):N0} von {bytes / (1 << 20):N0} MB"));
                     }
                 }
             }

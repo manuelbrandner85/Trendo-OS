@@ -36,7 +36,7 @@ public partial class MainWindow
     public Task MusicLoadAsync()
     {
         var folders = MusicFolders;
-        return _trackLoad = Task.Run(() => MusicLibrary.Scan(folders)).ContinueWith(t => Dispatcher.UIThread.Post(() =>
+        return _trackLoad = Task.Run(() => MusicLibrary.Scan(folders)).ContinueWith(t => _ui.Post(() =>
         { _tracks = t.IsCompletedSuccessfully ? t.Result : []; _trackLoad = null; if (CurrentView == "medien") Show("medien"); }), TaskScheduler.Default);
     }
 
@@ -48,8 +48,8 @@ public partial class MainWindow
         if (AudioOverride is { } o) _audio = o();
         else if (MpvExe is { } mpv) _audio = new MpvAudio(mpv);
         else return null;
-        _audio.Progress += (pos, dur) => Dispatcher.UIThread.Post(() => { _mPos = pos; _mDur = dur; MusicTick(); });
-        _audio.Ended += () => Dispatcher.UIThread.Post(MusicEnded);
+        _audio.Progress += (pos, dur) => _ui.Post(() => { _mPos = pos; _mDur = dur; MusicTick(); });
+        _audio.Ended += () => _ui.Post(MusicEnded);
         _audio.SetVolume(_mVol);
         Closed += (_, _) => _audio?.Dispose();
         return _audio;
@@ -84,7 +84,7 @@ public partial class MainWindow
         _ = Task.Run(() =>
         {
             Bitmap? b = null; try { if (MusicLibrary.Cover(trackPath) is { } bytes) b = Bitmap.DecodeToWidth(new MemoryStream(bytes), width); } catch (Exception) { }
-            Dispatcher.UIThread.Post(() => { _covers[trackPath] = b; img.Source = b; });
+            _ui.Post(() => { _covers[trackPath] = b; img.Source = b; });
         });
     }
 

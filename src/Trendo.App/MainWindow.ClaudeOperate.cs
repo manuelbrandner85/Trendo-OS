@@ -183,7 +183,7 @@ public partial class MainWindow
                 case ("klick", Button b) when b.IsEffectivelyEnabled: b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); done.Add(text); break;
                 default: failed.Add(text); break;
             }
-            await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background); // Seite zeichnet sich nach jedem Schritt neu
+            await _ui.InvokeAsync(() => { }, DispatcherPriority.Background); // Seite zeichnet sich nach jedem Schritt neu
         }
         if (doc is not null)
         {

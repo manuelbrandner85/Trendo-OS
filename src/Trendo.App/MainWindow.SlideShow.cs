@@ -64,7 +64,7 @@ public partial class MainWindow
         UpdatePresenter();
         _core.Audit.Append(Principal.LocalOwner.Name, "praesentation.show", $"{Deck.Slides.Count} Folien{(presenter ? " · Referentenansicht" : "")}");
         w.Show();
-        Dispatcher.UIThread.Post(() => _showView?.Focus());
+        _ui.Post(() => _showView?.Focus());
     }
 
     public void EndShow()

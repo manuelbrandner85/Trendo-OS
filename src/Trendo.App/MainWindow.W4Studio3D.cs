@@ -48,7 +48,7 @@ public partial class MainWindow
                 var up = false;
                 try { up = await probe(); } catch { up = false; }
                 if (!up) return;
-                Dispatcher.UIThread.Post(() => { _ollamaUp = true; if (CurrentView == "3d") Show("3d"); });
+                _ui.Post(() => { _ollamaUp = true; if (CurrentView == "3d") Show("3d"); });
             });
         }
         var aiOn = SceneAi is not null || _ollamaUp;

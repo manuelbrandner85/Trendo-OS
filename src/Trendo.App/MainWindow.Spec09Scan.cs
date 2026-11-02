@@ -136,7 +136,7 @@ public partial class MainWindow
         var idx = _scanSteps.IndexOf(text);
         if (idx < 0) { ScanStatus(text); return; }
         void Apply() { _scanStepIdx = idx; _scanStatus = text; if (CurrentView == "scan3d") Show("scan3d"); }
-        if (Dispatcher.UIThread.CheckAccess()) Apply(); else Dispatcher.UIThread.Post(Apply);
+        if (Dispatcher.UIThread.CheckAccess()) Apply(); else _ui.Post(Apply);
     }
 
     private void StopScan()
@@ -248,6 +248,6 @@ public partial class MainWindow
                 if (t.Name == "scan-status") t.Text = text;
         }
         if (Dispatcher.UIThread.CheckAccess()) Apply();
-        else Dispatcher.UIThread.Post(Apply);
+        else _ui.Post(Apply);
     }
 }

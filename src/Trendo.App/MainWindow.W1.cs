@@ -11,6 +11,8 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     private Action? Rescale;
+    /// <summary>Der Oberflächen-Thread dieses Fensters, beim Erstellen gemerkt: späte Meldungen aus Hintergrundaufgaben gehen nur hierher – nie legen sie aus Versehen einen neuen Oberflächen-Thread an (das ließ die Oberflächentests sporadisch scheitern oder hängen).</summary>
+    private readonly Avalonia.Threading.Dispatcher _ui = Avalonia.Threading.Dispatcher.UIThread;
     private string _query = "";
     public string LastQuery => _query;
 

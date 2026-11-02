@@ -85,6 +85,7 @@ public class O1O6_PimUi
         Assert.NotNull(w.TryFind<Grid>("cal-month")); Assert.NotNull(w.TryFind<Button>("cal-ev-0"));
         w.Find<Button>("cal-mode-woche").Press(); Pump(); Assert.NotNull(w.TryFind<Grid>("cal-week"));
         w.Find<Button>("cal-mode-tag").Press(); Pump(); Assert.NotNull(w.TryFind<StackPanel>("cal-day"));
+        w.CheckCalendarReminders(new DateTime(2026, 11, 2, 18, 40, 0)); // Startpunkt fest setzen – sonst hängt das Ergebnis von der echten Uhrzeit ab
         var due = w.CheckCalendarReminders(new DateTime(2026, 11, 2, 18, 50, 0));
         Assert.Single(due);
         w.Show("aufgaben"); Pump();

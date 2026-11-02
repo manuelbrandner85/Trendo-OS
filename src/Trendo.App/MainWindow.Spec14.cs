@@ -160,7 +160,7 @@ public partial class MainWindow
         right.Children.Add(notes); right.Children.Add(simBar); right.Children.Add(new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = view });
         var left = new DockPanel { Children = { new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = ed } } };
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("340,10,*"), Children = { left, Pos(right, 2) } };
-        Dispatcher.UIThread.Post(() => CncSeek(_cncT), DispatcherPriority.Background);
+        _ui.Post(() => CncSeek(_cncT), DispatcherPriority.Background);
         return grid;
     }
 

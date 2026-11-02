@@ -77,7 +77,7 @@ public partial class MainWindow
         catch (Exception e) when (e is HttpRequestException or IOException or UnauthorizedAccessException or ArgumentException or TaskCanceledException)
         { Downloads.Failed(j, $"Abgebrochen: {e.Message} – „Erneut versuchen“ macht dort weiter, wo er aufgehört hat."); }
         finally { _dlRunning.Remove(j.Id); cts.Dispose(); }
-        Dispatcher.UIThread.Post(() => { if (CurrentView == "downloads") Show("downloads"); DownloadPump(); });
+        _ui.Post(() => { if (CurrentView == "downloads") Show("downloads"); DownloadPump(); });
     }
 
     public void DownloadPause(string id) { if (_dlRunning.TryGetValue(id, out var c)) c.Cancel(); Downloads.Pause(id); if (CurrentView == "downloads") Show("downloads"); }

@@ -130,7 +130,7 @@ public partial class MainWindow
                 var forgot = new Button { Name = "lock-forgot", Content = pin ? "PIN vergessen?" : "Passwort vergessen?", Background = Brushes.Transparent, Foreground = Accent, HorizontalAlignment = HorizontalAlignment.Center };
                 forgot.Click += (_, _) => { _lockMode = "vergessen"; _lockMsg = ""; RenderLock(); };
                 col.Children.Add(box); col.Children.Add(go); col.Children.Add(forgot);
-                Dispatcher.UIThread.Post(() => box.Focus(), DispatcherPriority.Background);
+                _ui.Post(() => box.Focus(), DispatcherPriority.Background);
                 break;
             }
             case "vergessen":

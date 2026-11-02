@@ -54,7 +54,7 @@ public partial class MainWindow
         // Wunsch 01.11.2026: Updates kommen sofort (mit Countdown) – ältere Einstellungen werden einmal umgestellt
         if (_settings.UpdatePolicy < 1) { _settings.UpdatePolicy = 1; _settings.UpdateWhen = "sofort"; SaveSettings(); }
         if (ReleaseNotes.ShowFor(_settings.LastSeenVersion, cur, ReleaseNotes.For(_core.DataRoot, cur)) && ReleaseNotes.For(_core.DataRoot, cur) is { } notes)
-            Dispatcher.UIThread.Post(() => { Show("neu"); ShowNews(cur, notes); }, DispatcherPriority.Background); // Vollbild „Das ist neu“, dahinter die Liste
+            _ui.Post(() => { Show("neu"); ShowNews(cur, notes); }, DispatcherPriority.Background); // Vollbild „Das ist neu“, dahinter die Liste
         if (_settings.LastSeenVersion != cur) { _settings.LastSeenVersion = cur; SaveSettings(); }
         MarkBootOkLater(Boot, cur);
         if (_opt.Isolated || _core.Offline || !_settings.AutoUpdate) return;
@@ -91,7 +91,7 @@ public partial class MainWindow
             var found = await Updater.CheckAsync();
             if (found is not { } u) { _updateMsg = $"Trendo ist aktuell (Version {Updater.Current})."; _updateInfo = $"Aktuell (v{Updater.Current})"; return false; }
             _updateMsg = $"Version {u.Version} wird im Hintergrund geladen …";
-            await Updater.DownloadAsync(p => Dispatcher.UIThread.Post(() => { _updateMsg = $"Version {u.Version} wird geladen … {p} %"; if (CurrentView == "updates") Show("updates"); }), CancellationToken.None);
+            await Updater.DownloadAsync(p => _ui.Post(() => { _updateMsg = $"Version {u.Version} wird geladen … {p} %"; if (CurrentView == "updates") Show("updates"); }), CancellationToken.None);
             ReleaseNotes.Save(_core.DataRoot, u.Version, u.Notes);
             _updateReady = u.Version;
             _core.Audit.Append("app", "update.downloaded", u.Version);
@@ -132,7 +132,7 @@ public partial class MainWindow
         BeginSetupOverlay($"Trendo wird aktualisiert auf {v}");
         SetupOverlayProgress(1, 2, "Bitte kurz warten – deine Fenster sind gleich wieder da.");
         UpdateApplying = true;
-        Dispatcher.UIThread.Post(() => Updater.ApplyAndRestart(), DispatcherPriority.Background);
+        _ui.Post(() => Updater.ApplyAndRestart(), DispatcherPriority.Background);
     }
 
     /// <summary>Für Tests: Installation wurde angestoßen.</summary>

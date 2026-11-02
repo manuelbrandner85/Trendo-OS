@@ -439,7 +439,7 @@ public sealed partial class MainWindow
         _ = Task.Run(async () =>
         {
             var checks = (await Task.WhenAll(comps.Select(async c => (C: c, R: await _deps.CheckAsync(c))))).ToList();
-            await Dispatcher.UIThread.InvokeAsync(() => { host.Children.Clear(); host.Children.Add(BuildCheckGrid(checks)); });
+            await _ui.InvokeAsync(() => { host.Children.Clear(); host.Children.Add(BuildCheckGrid(checks)); });
         });
         return host;
     }

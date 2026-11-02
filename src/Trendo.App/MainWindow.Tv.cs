@@ -132,7 +132,7 @@ public partial class MainWindow
         if (!lib.Sources.Any(x => !TvCredentials.HasToken(x.Url) && Xtream.FromPlaylistUrl(x.Url) is { Pass.Length: > 0 })) return; // nichts umzuziehen
         _tvMigrate = Task.Run(() =>
         {
-            try { if (lib.MigrateSecrets(_core.Audit) > 0) Dispatcher.UIThread.Post(() => { TvReload(); if (CurrentView == "tv") Show("tv"); }); }
+            try { if (lib.MigrateSecrets(_core.Audit) > 0) _ui.Post(() => { TvReload(); if (CurrentView == "tv") Show("tv"); }); }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException or System.Text.Json.JsonException) { _core.Audit.Append("app", "tv.secrets.migrate_failed", e.GetType().Name); }
         });
     }
@@ -159,7 +159,7 @@ public partial class MainWindow
     {
         if (_tvMigrate is { IsCompleted: false } mig)
         {
-            mig.ContinueWith(_ => Dispatcher.UIThread.Post(() => { if (CurrentView == "tv") Show("tv"); }), TaskScheduler.Default);
+            mig.ContinueWith(_ => _ui.Post(() => { if (CurrentView == "tv") Show("tv"); }), TaskScheduler.Default);
             return Glass2(new StackPanel { Spacing = 10, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 60), Children = {
                 new TextBlock { Name = "tv-migrating", Text = "Zugangsdaten werden sicher abgelegt …", FontSize = 18, FontWeight = FontWeight.SemiBold, Foreground = GoldText(), HorizontalAlignment = HorizontalAlignment.Center },
                 new ProgressBar { IsIndeterminate = true, Width = 260, HorizontalAlignment = HorizontalAlignment.Center } } }, 24);
@@ -173,7 +173,7 @@ public partial class MainWindow
         {
             var lib = new TvLibrary(_core.DataRoot, _core.Secrets);
             var ch = lib.Channels(); var vod = lib.Vod(); var ser = lib.Series(); var pr = lib.Programmes();
-            Dispatcher.UIThread.Post(() => { _tvChannels = ch; _tvVod = vod; _tvSeries = ser; _tvProgs = pr; _tvWarm = null; if (CurrentView == "tv") Show("tv"); });
+            _ui.Post(() => { _tvChannels = ch; _tvVod = vod; _tvSeries = ser; _tvProgs = pr; _tvWarm = null; if (CurrentView == "tv") Show("tv"); });
         });
         return Glass2(new StackPanel { Spacing = 10, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 60), Children = {
             new TextBlock { Text = "📺", FontSize = 48, HorizontalAlignment = HorizontalAlignment.Center },
@@ -397,7 +397,7 @@ public partial class MainWindow
                 var p = Process.Start(psi)!; p.EnableRaisingEvents = true;
                 _tvRecProcs[r.Id] = p; Tv.UpdateRecording(r.Id, "läuft", file);
                 var id = r.Id;
-                p.Exited += (_, _) => Dispatcher.UIThread.Post(() =>
+                p.Exited += (_, _) => _ui.Post(() =>
                 {
                     _tvRecProcs.Remove(id);
                     var ok = File.Exists(file) && new FileInfo(file).Length > 0;

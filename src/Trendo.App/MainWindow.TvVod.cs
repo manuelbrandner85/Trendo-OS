@@ -140,7 +140,7 @@ public partial class MainWindow
             }
             catch (Exception) { bmp = null; } // kaputtes oder fremdes Bild: Kachel ohne Bild (vorher Absturz im Hintergrund)
             finally { TvImageGate.Release(); }
-            Dispatcher.UIThread.Post(() => { TvImages[url] = bmp; target.Source = bmp; });
+            _ui.Post(() => { TvImages[url] = bmp; target.Source = bmp; });
         });
     }
 
@@ -238,7 +238,7 @@ public partial class MainWindow
             // Serie gewählt: Staffeln und Folgen
             var img = new Image { Width = 140, Height = 210, Stretch = Stretch.UniformToFill }; TvImage(img, ser.Cover);
             var eps = _tvEpsFor == ser.Id ? _tvEps ?? [] : [];
-            if (_tvEpsFor != ser.Id) { _tvEpsFor = ser.Id; _tvEps = null; _ = Task.Run(async () => { var e = await Dispatcher.UIThread.InvokeAsync(() => TvEpisodes(ser)); Dispatcher.UIThread.Post(() => { _tvEps = e; if (CurrentView == "tv" && _tvTab == "serie") Show("tv"); }); }); }
+            if (_tvEpsFor != ser.Id) { _tvEpsFor = ser.Id; _tvEps = null; _ = Task.Run(async () => { var e = await _ui.InvokeAsync(() => TvEpisodes(ser)); _ui.Post(() => { _tvEps = e; if (CurrentView == "tv" && _tvTab == "serie") Show("tv"); }); }); }
             var seasons = eps.Select(e => e.Season).Distinct().OrderBy(x => x).ToList();
             if (seasons.Count > 0 && !seasons.Contains(_tvSeason)) _tvSeason = seasons[0];
             var sw = new WrapPanel { Name = "tv-seasons" };

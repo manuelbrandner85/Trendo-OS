@@ -77,7 +77,7 @@ public partial class MainWindow
     {
         var s = MeasureSheet.From(d.Data); _msCol = Math.Clamp(_msCol, 0, Math.Max(0, s.Columns.Count - 1));
         var grid = new MeasureGrid(s, _msCol, Math.Max(0, _msRow), (c, r, t) => { _msCol = c; _msRow = r + 1; SheetCell(c, r, t); }, (c, r) => { var changed = c != _msCol || r < 0 != _msRow < 0; _msCol = c; _msRow = r; if (changed) Show(SK); }) { Name = "ms-grid", Top = Math.Max(0, _msRow - 12) };
-        grid.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (grid.IsAttached()) grid.Focus(); }, Avalonia.Threading.DispatcherPriority.Input);
+        grid.AttachedToVisualTree += (_, _) => _ui.Post(() => { if (grid.IsAttached()) grid.Focus(); }, Avalonia.Threading.DispatcherPriority.Input);
         var chart = new ShapeView((w, h) => ChartDrawing.Build(s, w, h)) { Name = "ms-chart" };
         Border Box(Control c) => new() { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = c };
         return new Grid { ColumnDefinitions = new ColumnDefinitions("5*,10,6*"), Children = { Box(grid), Pos(Box(chart), 2) } };

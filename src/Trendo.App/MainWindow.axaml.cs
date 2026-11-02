@@ -116,8 +116,8 @@ public sealed partial class MainWindow : Window
         var dock = Dock(); Grid.SetColumn(dock, 1); Grid.SetRow(dock, 1); dock.ZIndex = 5; body.Children.Add(dock);
         var right = RightColumn(); Grid.SetColumn(right, 2); Grid.SetRowSpan(right, 2); body.Children.Add(right);
         StartupTrace.Mark("ctor.left+dock");
-        // Maximiert: ganze Fläche bis an die Ränder (Rand der Arbeitsfläche ausgeglichen), die Leiste unten mit Dock und Taskleiste bleibt sichtbar – wie bei Windows
-        Grid.SetColumnSpan(_workArea, 3); _workArea.ZIndex = 30; _workArea.Margin = new Thickness(-8, -4, -8, 0); body.Children.Add(_workArea);
+        // Maximiert (Wunsch 02.11.2026): das Studio-Fenster füllt den ganzen Bildschirm – über Kopfleiste, Seitenspalten, Dock und Taskleiste hinweg
+        Grid.SetRowSpan(_workArea, 2); _workArea.ZIndex = 30; ui.Children.Add(_workArea);
         _status.IsVisible = false;
         _search.KeyDown += (_, e) => { if (e.Key == Key.Enter) { _query = _search.Text ?? ""; Show("suche"); } };
         WireKi();
@@ -168,7 +168,7 @@ public sealed partial class MainWindow : Window
         timer.Tick += (_, _) => Tick();
         // Uhr sofort; erste Messung (CPU/GPU-Zähler, ~65 ms) erst nach dem ersten Bild
         _clock.Text = DateTime.Now.ToString("HH:mm", De); _weekday.Text = DateTime.Now.ToString("dddd", De); _date.Text = DateLine(DateTime.Now);
-        OwnTimer(timer); Dispatcher.UIThread.Post(Tick, DispatcherPriority.Background); StartupTrace.Mark("ctor.tick");
+        OwnTimer(timer); _ui.Post(Tick, DispatcherPriority.Background); StartupTrace.Mark("ctor.tick");
 
         if (opt.ApiPort is { } port)
         {
@@ -178,9 +178,9 @@ public sealed partial class MainWindow : Window
                 try
                 {
                     _api = await Trendo.Api.LocalApi.StartAsync(_core, new Trendo.Api.ApiTokens(_core.Secrets), reqPath ?? "", probe, port);
-                    Dispatcher.UIThread.Post(() => { _apiInfo = $" · API: 127.0.0.1:{_api.Port}"; RefreshStatusBar(); });
+                    _ui.Post(() => { _apiInfo = $" · API: 127.0.0.1:{_api.Port}"; RefreshStatusBar(); });
                 }
-                catch (Exception ex) { Dispatcher.UIThread.Post(() => { _apiInfo = $" · API-Fehler: {ex.Message}"; RefreshStatusBar(); }); }
+                catch (Exception ex) { _ui.Post(() => { _apiInfo = $" · API-Fehler: {ex.Message}"; RefreshStatusBar(); }); }
             });
         }
         Opened += OnOpened;
@@ -237,9 +237,9 @@ public sealed partial class MainWindow : Window
             {
                 MetricsSnapshot m; (double? UsedGb, double? TotalGb) mem, disk; (double? DownBps, double? UpBps) net;
                 lock (_metrics) { m = _metrics.Sample(); mem = _metrics.MemorySize(); disk = _metrics.DiskSize(); net = _metrics.NetworkSpeed(); }
-                Dispatcher.UIThread.Post(() => { _sampling = false; ApplyMetrics(m, mem, disk, net); });
+                _ui.Post(() => { _sampling = false; ApplyMetrics(m, mem, disk, net); });
             }
-            catch (Exception) { Dispatcher.UIThread.Post(() => _sampling = false); }
+            catch (Exception) { _ui.Post(() => _sampling = false); }
         });
     }
 
@@ -292,7 +292,7 @@ public sealed partial class MainWindow : Window
         StartupTrace.Flush();
         DispatcherTimer.RunOnce(StartupTrace.Flush, TimeSpan.FromSeconds(5));
         Reveal();
-        Dispatcher.UIThread.Post(Reveal, DispatcherPriority.Loaded);
+        _ui.Post(Reveal, DispatcherPriority.Loaded);
         // erstes gezeichnetes Bild = sichtbarer Start
         RequestAnimationFrame(_ => { StartupTrace.Mark("first.frame"); StartupTrace.Flush(); });
         // KI-Laufzeit im Hintergrund prüfen/starten – blockiert weder Start noch Bildschirmfoto
@@ -313,7 +313,7 @@ public sealed partial class MainWindow : Window
         if (_opt.ScreenshotPath is { } path)
         {
             await Task.Delay(2500);
-            await Dispatcher.UIThread.InvokeAsync(() => SaveScreenshot(path));
+            await _ui.InvokeAsync(() => SaveScreenshot(path));
             _core.Audit.Append("app", "app.screenshot", Path.GetFileName(path));
         }
         if (_opt.AutoExitSeconds > 0) { await Task.Delay(TimeSpan.FromSeconds(_opt.AutoExitSeconds)); Close(); }
@@ -1308,7 +1308,7 @@ public sealed partial class MainWindow : Window
         try
         {
             var ct = SetupToken;
-            r = await Task.Run(() => Vollpaket.InstallEach(dir, _deps.ToolsRoot, _core.Audit, line => Dispatcher.UIThread.Post(() => { _depLog.Text = line; SetupOverlayProgress(++step, total, line); }), ct));
+            r = await Task.Run(() => Vollpaket.InstallEach(dir, _deps.ToolsRoot, _core.Audit, line => _ui.Post(() => { _depLog.Text = line; SetupOverlayProgress(++step, total, line); }), ct));
             if (r.Canceled) { _depLog.Text = $"Abgebrochen – {r.Installed + r.Present} von {r.Total} Programmen sind eingerichtet."; return r; }
             var ok = r.Installed + r.Present;
             _depLog.Text = r.Failed.Count == 0 ? $"Alle {r.Total} mitgelieferten Programme sind eingerichtet ✓" : $"{ok} von {r.Total} Programmen eingerichtet, {r.Failed.Count} nicht.";
@@ -1367,7 +1367,7 @@ public sealed partial class MainWindow : Window
         try
         {
             ok = await Task.Run(() => _deps.InstallAsync(Principal.LocalOwner, c, line =>
-                Dispatcher.UIThread.Post(() => { if (!string.IsNullOrWhiteSpace(line)) _depLog.Text = $"{c.Name}: {line.Trim()}"; })));
+                _ui.Post(() => { if (!string.IsNullOrWhiteSpace(line)) _depLog.Text = $"{c.Name}: {line.Trim()}"; })));
             _depLog.Text = ok ? $"{c.Name}: installiert und erkannt ✓" : $"{c.Name}: hat nicht geklappt – im Systemcheck kannst du es erneut versuchen";
         }
         catch (Exception ex) { ok = false; _depLog.Text = $"{c.Name}: {ex.Message}"; }

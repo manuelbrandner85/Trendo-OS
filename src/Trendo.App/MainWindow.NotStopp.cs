@@ -22,7 +22,7 @@ public partial class MainWindow
         b.Click += async (_, _) => { if (_core.Approvals.Halted) ResumeAll(); else await HaltAll("Not-Stopp-Knopf"); };
         _haltButton = b;
         MarkHalt();
-        _core.Approvals.HaltChanged += () => Avalonia.Threading.Dispatcher.UIThread.Post(MarkHalt);
+        _core.Approvals.HaltChanged += () => _ui.Post(MarkHalt);
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.Pause), Command = new RelayCommand(() => _ = HaltAll("Pause-Taste")) });
         return b;
     }

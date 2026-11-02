@@ -370,7 +370,7 @@ public partial class MainWindow
         {
             var text = Math.Clamp(p.Percent, 0, 100) + " Prozent. " + p.Meldung;
             maske.Stand = text;
-            Dispatcher.UIThread.Post(() =>
+            _ui.Post(() =>
             {
                 var tb = this.GetLogicalDescendants().OfType<TextBlock>().FirstOrDefault(t => t.Name == "fach-inst-stand-" + programm.Id);
                 if (tb is not null) tb.Text = text;

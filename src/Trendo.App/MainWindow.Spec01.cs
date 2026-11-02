@@ -155,7 +155,7 @@ public partial class MainWindow
         {
             var below = levels.Where(l => l.Elevation < plan.Elevation).OrderByDescending(l => l.Elevation).FirstOrDefault();
             var fv = new FloorPlanView(plan, ArchState, ArchEdit, ArchSelect, below) { Name = "arch-canvas", MinHeight = 160 }; // schrumpft lieber, als unter die Geschoss-Leiste zu rutschen
-            if (!ArchState.Fitted) fv.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (fv.Bounds.Width > 10) { fv.Fit(); ArchState.Fitted = true; } });
+            if (!ArchState.Fitted) fv.AttachedToVisualTree += (_, _) => _ui.Post(() => { if (fv.Bounds.Width > 10) { fv.Fit(); ArchState.Fitted = true; } });
             view = fv;
         }
         var frame = new Border { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = view };

@@ -90,7 +90,7 @@ public sealed partial class MainWindow
         if (EffectiveTheme(_settings.Theme) == "hell") RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Light;
         // „Wie Windows“: stellt Windows auf hell oder dunkel um, zieht Trendo mit
         if (Application.Current?.PlatformSettings is { } ps)
-            ps.ColorValuesChanged += (_, _) => Dispatcher.UIThread.Post(() => { if (_settings.Theme == "system" && EffectiveTheme("system") != _theme && IsVisible) Reopen(CurrentView); });
+            ps.ColorValuesChanged += (_, _) => _ui.Post(() => { if (_settings.Theme == "system" && EffectiveTheme("system") != _theme && IsVisible) Reopen(CurrentView); });
         // Hintergrund nach Tageszeit: jede Minute prüfen
         var t = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
         t.Tick += (_, _) =>
@@ -122,7 +122,7 @@ public sealed partial class MainWindow
     /// <summary>Wird nach jedem Seitenwechsel aufgerufen: sanftes Einblenden und Hinweis beim ersten Öffnen.</summary>
     private void AfterShow(string key)
     {
-        if (!Motionless) { _center.Opacity = 0; Dispatcher.UIThread.Post(() => _center.Opacity = 1, DispatcherPriority.Background); }
+        if (!Motionless) { _center.Opacity = 0; _ui.Post(() => _center.Opacity = 1, DispatcherPriority.Background); }
         ShowHelp(key, force: false);
         EnhancePathFields(ActivePageRoot, key);
         if (ActivePageRoot is { } c0) ApplyAccessibility(c0);

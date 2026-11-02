@@ -183,7 +183,7 @@ public partial class MainWindow
             c.Opacity = 0; c.RenderTransformOrigin = RelativePoint.Center;
             c.RenderTransform = TransformOperations.Parse(first ? "scale(0.55) rotate(-8deg)" : "translateY(36px)");
             var delay = TimeSpan.FromMilliseconds(first ? 0 : 140 + 110 * i);
-            Dispatcher.UIThread.Post(() =>
+            _ui.Post(() =>
             {
                 c.Transitions = [
                     new DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(520), Delay = delay, Easing = new CubicEaseOut() },

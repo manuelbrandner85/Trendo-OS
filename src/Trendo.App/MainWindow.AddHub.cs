@@ -107,7 +107,7 @@ public partial class MainWindow
         if (DateTime.UtcNow - _hubOllamaAt > TimeSpan.FromMinutes(1) && !_opt.Isolated)
         {
             _hubOllamaAt = DateTime.UtcNow;
-            _ = Task.Run(async () => { var have = await new OllamaBackend().ModelsAsync(); Avalonia.Threading.Dispatcher.UIThread.Post(() => { _hubOllama = have; if (CurrentView == "hinzufuegen") Show("hinzufuegen"); }); });
+            _ = Task.Run(async () => { var have = await new OllamaBackend().ModelsAsync(); _ui.Post(() => { _hubOllama = have; if (CurrentView == "hinzufuegen") Show("hinzufuegen"); }); });
         }
         var sp = new StackPanel { Spacing = 10 };
         sp.Children.Add(P("Programme, KI, GitHub-Projekte und Erweiterungen – alles an einem Ort. Trendo lädt nur aus offiziellen Quellen und fragt vorher.", Text, 13));

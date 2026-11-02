@@ -542,7 +542,7 @@ public partial class MainWindow
         var view = new SlideView { Name = "praesentation-canvas", Doc = Deck, Slide = CurrentSlide, Editable = true, MinHeight = 300 };
         DeckCanvas = view; view.Select(_dkSel);
         _dkOverlay = new Canvas();
-        view.SelectionChanged += () => { var before = _dkSel; _dkSel = view.Selected; CloseDeckEditor(true); if (before != _dkSel) Dispatcher.UIThread.Post(() => Show("praesentation")); };
+        view.SelectionChanged += () => { var before = _dkSel; _dkSel = view.Selected; CloseDeckEditor(true); if (before != _dkSel) _ui.Post(() => Show("praesentation")); };
         view.Begin += DeckSnapshot;
         view.Changed += () => { DeckDirty = true; };
         view.EditRequested += OpenDeckEditor;
@@ -565,7 +565,7 @@ public partial class MainWindow
                 default: e.Handled = false; break;
             }
         };
-        Dispatcher.UIThread.Post(() => view.Focus());
+        _ui.Post(() => view.Focus());
         return new Border { Background = Brush.Parse("#33000000"), CornerRadius = new CornerRadius(8), Padding = new Thickness(12), Child = new Panel { Children = { view, _dkOverlay } } };
     }
 
@@ -591,7 +591,7 @@ public partial class MainWindow
         tb.LostFocus += (_, _) => { if (_dkEditor == tb) { CloseDeckEditor(true); Show("praesentation"); } };
         tb.Tag = index;
         _dkEditor = tb; _dkOverlay.Children.Add(tb);
-        Dispatcher.UIThread.Post(() => { tb.Focus(); if (s.Text is "Titel" or "Untertitel" or "Neuer Text" or "Titel der Präsentation" or "Erster Punkt\nZweiter Punkt\nDritter Punkt") tb.SelectAll(); else tb.CaretIndex = tb.Text?.Length ?? 0; });
+        _ui.Post(() => { tb.Focus(); if (s.Text is "Titel" or "Untertitel" or "Neuer Text" or "Titel der Präsentation" or "Erster Punkt\nZweiter Punkt\nDritter Punkt") tb.SelectAll(); else tb.CaretIndex = tb.Text?.Length ?? 0; });
     }
 
     void CloseDeckEditor(bool commit)

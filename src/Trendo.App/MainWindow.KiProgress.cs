@@ -35,7 +35,7 @@ public partial class MainWindow
     private void InitKiProgress(Grid root)
     {
         Grid.SetRowSpan(_kiProgress, 2); root.Children.Add(_kiProgress);
-        _kiHubHandler = () => Dispatcher.UIThread.Post(RefreshKiProgress);
+        _kiHubHandler = () => _ui.Post(RefreshKiProgress);
         KiActivityHub.Changed += _kiHubHandler;
         _kiProgressTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
         _kiProgressTimer.Tick += (_, _) => RefreshKiProgress();

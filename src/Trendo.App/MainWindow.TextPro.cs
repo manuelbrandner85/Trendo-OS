@@ -271,7 +271,7 @@ public partial class MainWindow
         void Done() { var v = tb.Text ?? ""; _txPrompt = null; pr.Ok(v); Show("text"); }
         ok.Click += (_, _) => Done(); cancel.Click += (_, _) => { _txPrompt = null; Show("text"); };
         tb.KeyDown += (_, e) => { if (e.Key == Key.Enter) { Done(); e.Handled = true; } else if (e.Key == Key.Escape) { _txPrompt = null; Show("text"); e.Handled = true; } };
-        Dispatcher.UIThread.Post(() => { tb.Focus(); tb.SelectAll(); });
+        _ui.Post(() => { tb.Focus(); tb.SelectAll(); });
         return new Border { Name = "text-prompt-bar", Background = Brush.Parse("#222F86F6"), CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6), Margin = new Thickness(0, 0, 0, 6),
             Child = new WrapPanel { Children = { new TextBlock { Text = pr.Label, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0), FontSize = 13 }, tb, new Border { Width = 6 }, ok, new Border { Width = 4 }, cancel } } };
     }

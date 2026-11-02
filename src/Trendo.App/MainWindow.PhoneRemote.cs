@@ -492,16 +492,16 @@ public partial class MainWindow
     sealed class PhoneRemoteBridge(MainWindow w) : IPhoneRemote
     {
         public IReadOnlyList<PhoneApp> Apps() => Dispatcher.UIThread.Invoke(w.PhoneApps);
-        public async Task<string?> OpenAsync(string id) => await Dispatcher.UIThread.InvokeAsync(() => w.PhoneOpen(id));
-        public async Task<string?> BackAsync() => await Dispatcher.UIThread.InvokeAsync(w.PhoneBack);
-        public async Task<PhoneFrame?> ScreenAsync(int width, int height, double scale, bool desktop) => await Dispatcher.UIThread.InvokeAsync(() => w.PhoneScreen(width, height, scale, desktop));
-        public async Task<PhoneHit> TapAsync(double fx, double fy, bool desktop) => await Dispatcher.UIThread.InvokeAsync(() => w.PhoneTapAt(fx, fy, desktop));
-        public async Task SetTextAsync(string text) => await Dispatcher.UIThread.InvokeAsync(() => w.PhoneSetText(text));
-        public async Task ChooseAsync(int index) => await Dispatcher.UIThread.InvokeAsync(() => w.PhoneChoose(index));
-        public async Task KeyAsync(string key) => await Dispatcher.UIThread.InvokeAsync(() => w.PhoneKey(key));
-        public async Task ScrollAsync(double fx, double fy, double dy, bool desktop) => await Dispatcher.UIThread.InvokeAsync(() => w.PhoneScroll(fx, fy, dy, desktop));
+        public async Task<string?> OpenAsync(string id) => await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => w.PhoneOpen(id));
+        public async Task<string?> BackAsync() => await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(w.PhoneBack);
+        public async Task<PhoneFrame?> ScreenAsync(int width, int height, double scale, bool desktop) => await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => w.PhoneScreen(width, height, scale, desktop));
+        public async Task<PhoneHit> TapAsync(double fx, double fy, bool desktop) => await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => w.PhoneTapAt(fx, fy, desktop));
+        public async Task SetTextAsync(string text) => await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => w.PhoneSetText(text));
+        public async Task ChooseAsync(int index) => await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => w.PhoneChoose(index));
+        public async Task KeyAsync(string key) => await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => w.PhoneKey(key));
+        public async Task ScrollAsync(double fx, double fy, double dy, bool desktop) => await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => w.PhoneScroll(fx, fy, dy, desktop));
         public byte[]? Icon() => PhoneIcon();
-        public async Task<byte[]?> AppIconAsync(string id) => await Dispatcher.UIThread.InvokeAsync(() => w.PhoneAppIcon(id));
-        public void Started(string device) => Dispatcher.UIThread.Post(() => w.PhoneRemoteStarted(device));
+        public async Task<byte[]?> AppIconAsync(string id) => await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => w.PhoneAppIcon(id));
+        public void Started(string device) => Avalonia.Threading.Dispatcher.UIThread.Post(() => w.PhoneRemoteStarted(device));
     }
 }

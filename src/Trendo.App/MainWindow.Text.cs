@@ -410,7 +410,7 @@ public partial class MainWindow
                     else if (e.Key == Key.S) { e.Handled = true; TextSaveAs(TextPath ?? DefaultTextName(".docx")); Show("text"); }
                 }
             };
-            tb.AttachedToVisualTree += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            tb.AttachedToVisualTree += (_, _) => _ui.Post(() =>
             {
                 tb.Focus();
                 var s = Math.Clamp(_txSel, 0, tb.Text?.Length ?? 0); var l = Math.Clamp(_txSelLen, 0, (tb.Text?.Length ?? 0) - s);

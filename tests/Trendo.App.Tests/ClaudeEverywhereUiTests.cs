@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia;
 using Avalonia.Headless.XUnit;
 using Trendo.App;
 using Xunit;
@@ -15,13 +16,21 @@ public class ClaudeEverywhere_Ui
         var (w, _, _) = Ui.Open();
         try
         {
-            var missing = new List<string>();
+            var missing = new List<string>(); var hidden = new List<string>();
             foreach (var key in w.PageKeys.OrderBy(k => k, StringComparer.Ordinal).ToList())
             {
                 if (w.ModuleOf(key) is not { } studio || !w.ClaudeBelongs(key)) continue;
-                try { w.Show(key); Avalonia.Threading.Dispatcher.UIThread.RunJobs(); } catch (Exception) { continue; }
-                if (w.TryFind<Button>("auftrag-claude") is null) missing.Add($"{key} ({studio})");
+                try { w.Show(key); Avalonia.Threading.Dispatcher.UIThread.RunJobs(); } catch (Exception ex) { missing.Add($"{key} ({studio}): Seite lädt nicht – {ex.GetType().Name}"); continue; }
+                var b = w.TryFind<Button>("auftrag-claude") ?? w.TryFind<Button>("prog-claude");
+                if (b is null) { missing.Add($"{key} ({studio})"); continue; }
+                // sichtbar ohne Scrollen: der Knopf liegt ganz im Fenster (Wunsch 02.11.2026 – auf „3D-Modelle erstellen“ war er unten in einer Spalte versteckt)
+                // gemessen am Studio-Fenster (win-…): Trendo zeichnet auf einer Designfläche und skaliert sie aufs echte Fenster
+                var frame = Avalonia.VisualTree.VisualExtensions.GetVisualAncestors(b).OfType<Control>().FirstOrDefault(c => c.Name?.StartsWith("win-", StringComparison.Ordinal) == true && c.GetType().Name == "DeskFrame") ?? (Control)w;
+                var at = b.TranslatePoint(new Point(0, 0), frame);
+                if (!b.IsEffectivelyVisible || at is not { } p || b.Bounds.Width < 10 || p.X < 0 || p.Y < 0 || p.X + b.Bounds.Width > frame.Bounds.Width + 1 || p.Y + b.Bounds.Height > frame.Bounds.Height + 1)
+                    hidden.Add($"{key} ({studio}) bei {at} im Fenster {frame.Bounds.Size}");
             }
+            Assert.True(hidden.Count == 0, "Claude nicht sichtbar: " + string.Join(", ", hidden));
             if (Environment.GetEnvironmentVariable("TRENDO_CLAUDE_DIAG") is { Length: > 0 } diag)
                 File.WriteAllLines(diag, w.PageKeys.OrderBy(k => k).Select(k => $"{k}	{w.ModuleOf(k) ?? "-"}	{w.ClaudeBelongs(k)}"));
             Assert.True(missing.Count == 0, "Ohne Claude: " + string.Join(", ", missing));

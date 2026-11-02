@@ -251,7 +251,7 @@ public partial class MainWindow
                     lock (log) { log.Add(l); if (log.Count > 400) log.RemoveAt(0); }
                     if ((DateTime.UtcNow - last).TotalMilliseconds < 300) return; last = DateTime.UtcNow;
                     var t = l.Length > 110 ? l[..110] + "…" : l;
-                    Avalonia.Threading.Dispatcher.UIThread.Post(() => { if (live) SetupOverlayFraction(frac, $"{step.Text}: {t}"); });
+                    _ui.Post(() => { if (live) SetupOverlayFraction(frac, $"{step.Text}: {t}"); });
                 }, SetupToken);
                 live = false;
                 SetupToken.ThrowIfCancellationRequested();

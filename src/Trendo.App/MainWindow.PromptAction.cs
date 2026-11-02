@@ -88,7 +88,8 @@ public partial class MainWindow
     {
         // start und studios haben eine eigene Eingabezeile (T-0218). 3d: die Seite füllt die Höhe; die Leiste sitzt dort im linken Rollbereich.
         // Claude auch hier (Wunsch 02.11.2026): Fokusmodus (statt der KI-Zeile nur ein schlanker Claude-Knopf), Studio-Übersicht und Suche (Claude allgemein)
-        if (key is "studios" or "suche" || FocusMode && key is not ("start" or "3d")) return ClaudeSlimRow(key, view);
+        // 3d: Claude oben rechts statt nur unten in der schmalen rechten Spalte (dort war der Knopf ohne Scrollen nicht zu sehen)
+        if (key is "studios" or "suche" or "3d" || FocusMode && key is not "start") return ClaudeSlimRow(key, view);
         if (key is "start" or "studios" or "3d") return view;
         var studio = ModuleOf(key);
         if (studio is null) return view;
@@ -263,7 +264,7 @@ public partial class MainWindow
                     var request = new StudioPromptRequest(id, project, studio, box.Text ?? "", [], "de", null, PrivacyMode.Local, new Provenance("oberflaeche", null, null));
                     result = await Task.Run(() => PromptFlow.Start(request, ctx));
                 }
-                await Dispatcher.UIThread.InvokeAsync(() => ShowResult(result));
+                await _ui.InvokeAsync(() => ShowResult(result));
                 if (result.Phase == WorkflowPhase.Planned && AutoRunPlans) await RunLos(); // nichts offen: gleich erledigen
             }
             catch (Exception ex)
@@ -302,7 +303,7 @@ public partial class MainWindow
             try
             {
                 var result = await Task.Run(() => PromptFlow.Approve(_promptProject, _promptRun, Principal.LocalOwner, Ctx(_promptProject)));
-                await Dispatcher.UIThread.InvokeAsync(() => ShowResult(result));
+                await _ui.InvokeAsync(() => ShowResult(result));
             }
             catch (Exception ex)
             {
@@ -336,7 +337,7 @@ public partial class MainWindow
             try
             {
                 var result = await Task.Run(() => PromptFlow.Los(_promptProject, _promptRun, Ctx(_promptProject)));
-                await Dispatcher.UIThread.InvokeAsync(() => ShowResult(result));
+                await _ui.InvokeAsync(() => ShowResult(result));
             }
             catch (Exception ex)
             {
@@ -426,7 +427,7 @@ public partial class MainWindow
         ToolTip.SetTip(cc, "Claude mit deinem Abo öffnen – wie im Web und in der App, mit eigenem Projekt für dieses Studio");
         cc.Click += (_, _) => ClaudeDockToggle(studio, box.Text);
         if (key is not null && ClaudeStudioOf(key) is { } ccs) { ClaudeAcceptDrop(cc, () => ccs); foreach (var x in ClaudeBarExtras(key, ccs)) buttons.Children.Add(x); }
-        buttons.Children.Add(cc);
+        if (key is not null) buttons.Children.Add(cc); // ohne Seite (3D-Spalte): Claude sitzt schon oben rechts
         var spark = new TextBlock { Text = "✨", FontSize = 16, VerticalAlignment = VerticalAlignment.Center, Margin = new Avalonia.Thickness(4, 0, 0, 0) };
         ToolTip.SetTip(spark, "Sag der Trendo KI in deinen Worten, was dieses Studio für dich tun soll.");
         box.MaxHeight = 64; box.MinHeight = 34;

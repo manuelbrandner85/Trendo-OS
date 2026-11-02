@@ -78,7 +78,7 @@ public partial class MainWindow
 
     private Control GameWorkspace(ProgramDocument d)
     {
-        var sections = new List<string> { "Übersicht", "Spielbibel", "Figuren", "Welt", "Missionen", "Produktion", "Bauen" };
+        var sections = new List<string> { "Übersicht", "Spielbibel", "Figuren", "Welt", "Missionen", "Produktion", "Bauen", "Veröffentlichen" };
         if (d.Text("browser") is "plattform" or "jump" or "breakout") sections.Insert(4, "Level");
         if (_gameSection == "Level" && !sections.Contains("Level")) _gameSection = "Übersicht";
         var bar = new WrapPanel { Name = "game-sections" };
@@ -99,6 +99,7 @@ public partial class MainWindow
             "Produktion" => GameProduction(d),
             "Level" => GameLevel(d),
             "Bauen" => GameBuildView(d),
+            "Veröffentlichen" => GameReleaseView(d), // Ziele, Checkliste, Pakete, Hochladen mit eigenem Konto
             _ => GameOverview(d),
         };
         return new StackPanel { Spacing = 4, Children = { bar, body } };

@@ -82,8 +82,8 @@ public partial class MainWindow
         {
             _phoneRemote ??= new PhoneRemoteBridge(this);
             _phoneServer = await PhoneLinkServer.StartAsync(PhoneAccess, PhoneAddresses(), PhoneAccess.DefaultPort, PhoneInbox, PhoneOutbox, _core.Audit,
-                (dev, file) => Dispatcher.UIThread.Post(() => Toast($"Vom Handy ({dev}): {Path.GetFileName(file)}", ("Ordner öffnen", new Action(() => Launch(PhoneInbox))))),
-                (dev, text) => Dispatcher.UIThread.Post(() =>
+                (dev, file) => _ui.Post(() => Toast($"Vom Handy ({dev}): {Path.GetFileName(file)}", ("Ordner öffnen", new Action(() => Launch(PhoneInbox))))),
+                (dev, text) => _ui.Post(() =>
                 {
                     if (text == "\u0001verbunden") { Toast($"✓ {dev} ist jetzt verbunden."); if (CurrentView == "handy") Show("handy"); return; }
                     _phoneTexts.Insert(0, (dev, text)); if (_phoneTexts.Count > 10) _phoneTexts.RemoveAt(10);
@@ -125,7 +125,7 @@ public partial class MainWindow
         PhoneAccess.NewOffer();
         _phoneQrAt = DateTime.UtcNow.AddSeconds(-1); _phoneNewDevice = null; _phoneRemoteAsked = false; _phoneMsg = "";
         _core.Audit.Append(Principal.LocalOwner.Name, "phonelink.offer", "QR-Code angezeigt");
-        if (_phoneSsid is null && !_opt.Isolated) _ = Task.Run(() => { _phoneSsid = WlanName() ?? ""; Dispatcher.UIThread.Post(() => { if (CurrentView == "handy") Show("handy"); }); });
+        if (_phoneSsid is null && !_opt.Isolated) _ = Task.Run(() => { _phoneSsid = WlanName() ?? ""; _ui.Post(() => { if (CurrentView == "handy") Show("handy"); }); });
         Show("handy");
     }
 
@@ -500,7 +500,7 @@ public partial class MainWindow
                     if (url is null && l is not null && Regex.Match(l, @"https://login\.tailscale\.com/\S+") is { Success: true } m)
                     {
                         url = m.Value;
-                        Dispatcher.UIThread.Post(() => { Launch(url); _phoneMsg = "Anmeldung im Browser geöffnet – bitte dort abschließen. Trendo merkt es automatisch."; if (CurrentView == "handy") Show("handy"); });
+                        _ui.Post(() => { Launch(url); _phoneMsg = "Anmeldung im Browser geöffnet – bitte dort abschließen. Trendo merkt es automatisch."; if (CurrentView == "handy") Show("handy"); });
                     }
                 }
                 p.OutputDataReceived += (_, e) => Line(e.Data); p.ErrorDataReceived += (_, e) => Line(e.Data);
@@ -510,7 +510,7 @@ public partial class MainWindow
             }
             catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException or OperationCanceledException)
             {
-                if (url is null) Dispatcher.UIThread.Post(() =>
+                if (url is null) _ui.Post(() =>
                 {
                     // Plan B: die Tailscale-App selbst öffnen, dort „Log in“
                     var gui = Path.Combine(Path.GetDirectoryName(TailscaleExe)!, "tailscale-ipn.exe");

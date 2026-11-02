@@ -64,7 +64,7 @@ public partial class MainWindow
     {
         _progMsg[page] = "✳ Claude hat das Dokument geändert – oben vergleichen, behalten oder verwerfen.";
         if (CurrentView == page) Show(page);
-        Dispatcher.UIThread.Post(() => { if (ActivePageRoot?.GetLogicalDescendants().OfType<Avalonia.Controls.Control>().FirstOrDefault(c => c.Name == "prog-workspace") is { } ws) ClaudeFlash(ws); }, DispatcherPriority.Background); // zeigt, wo Claude gearbeitet hat
+        _ui.Post(() => { if (ActivePageRoot?.GetLogicalDescendants().OfType<Avalonia.Controls.Control>().FirstOrDefault(c => c.Name == "prog-workspace") is { } ws) ClaudeFlash(ws); }, DispatcherPriority.Background); // zeigt, wo Claude gearbeitet hat
     }
 
     /// <summary>Für Tests: läuft gerade eine Live-Wiedergabe in diesem Programm?</summary>
@@ -76,15 +76,16 @@ public partial class MainWindow
         FileSystemWatcher w;
         try { w = new FileSystemWatcher(folder) { IncludeSubdirectories = true, NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.Size }; }
         catch (Exception e) when (e is ArgumentException or IOException or PlatformNotSupportedException) { return null; }
-        var pending = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var pending = new HashSet<string>(StringComparer.OrdinalIgnoreCase); var ended = new CancellationTokenSource(); // Lauf zu Ende → ausstehende Meldungen verfallen
         void On(string path)
         {
             var rel = Path.GetRelativePath(folder, path);
             if (rel.Split(Path.DirectorySeparatorChar).Any(p => p is ".trendo" or ".claude" or "anhang" or ".git" or "node_modules") || path.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase)) return;
             lock (pending) if (!pending.Add(path)) return;
-            _ = Task.Delay(220).ContinueWith(_ => Dispatcher.UIThread.Post(() => // kurz bündeln: mehrere Schreibvorgänge an derselben Datei → eine Anzeige
+            _ = Task.Delay(220).ContinueWith(_ => _ui.Post(() => // kurz bündeln: mehrere Schreibvorgänge an derselben Datei → eine Anzeige
             {
                 lock (pending) pending.Remove(path);
+                if (ended.IsCancellationRequested) return; // sonst könnte eine späte Meldung z. B. ein „Verwerfen“ wieder rückgängig machen
                 if (!File.Exists(path) || !_chatUis.ContainsKey(dock)) return;
                 ClaudeLiveChanged(dock, path, workFile(), null);
                 ClaudeLiveProgram(dock, folder, path);
@@ -92,7 +93,7 @@ public partial class MainWindow
         }
         w.Changed += (_, e) => On(e.FullPath); w.Created += (_, e) => On(e.FullPath); w.Renamed += (_, e) => On(e.FullPath);
         w.EnableRaisingEvents = true;
-        return w;
+        return new LiveWatch(w, ended);
     }
 
     /// <summary>Live in den Programmen ohne Studio-Dokument: Text und Tabelle öffnen die Datei (nie über Ungespeichertes), Webseite, 3D und Editor zeigen sie.</summary>
@@ -115,4 +116,10 @@ public partial class MainWindow
                 break;
         }
     }
+}
+
+/// <summary>Ordner-Beobachter eines Claude-Laufs: beim Ende des Laufs aus und alle noch ausstehenden Live-Meldungen verfallen.</summary>
+sealed class LiveWatch(FileSystemWatcher watcher, CancellationTokenSource ended) : IDisposable
+{
+    public void Dispose() { ended.Cancel(); watcher.EnableRaisingEvents = false; watcher.Dispose(); }
 }

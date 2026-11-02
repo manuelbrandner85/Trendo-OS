@@ -18,7 +18,7 @@ public partial class MainWindow
         StudioPages["X-02"] = "heilung";
         ExtraPages.Add(("Selbstheilung", "heilung", ["reparieren", "kaputt", "fehler", "heilen", "selbst"]));
         var root = _core.DataRoot;
-        StartupHeal = Task.Run(() => { var r = new SelfHealer(root, _core.Audit).Run(true, DateTime.Now); Dispatcher.UIThread.Post(() => LastHeal = r); });
+        StartupHeal = Task.Run(() => { var r = new SelfHealer(root, _core.Audit).Run(true, DateTime.Now); _ui.Post(() => LastHeal = r); });
     }
 
     private Control HealView()
