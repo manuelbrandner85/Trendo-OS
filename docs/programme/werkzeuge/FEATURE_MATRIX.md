@@ -1,6 +1,6 @@
 # Werkzeuge: Notizen, Rechner, Wecker – Funktionsmatrix
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.36 (Stand 6cf88c3)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.36 (Stand 18aa2a5)
 
 Quelle: `docs/spec/kataloge/SYS-02_KATALOG.md`
 

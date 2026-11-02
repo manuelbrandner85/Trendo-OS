@@ -1,6 +1,6 @@
 # Leistung – Arbeitsabläufe
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-leistung` · Stand: 0.9.36 (Stand 6cf88c3)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-leistung` · Stand: 0.9.36 (Stand 18aa2a5)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 

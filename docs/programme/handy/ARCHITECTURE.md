@@ -1,6 +1,6 @@
 # Handy verbinden – Architektur
 
-Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.36 (Stand 6cf88c3)
+Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.36 (Stand 18aa2a5)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

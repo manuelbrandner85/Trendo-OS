@@ -1,6 +1,6 @@
 # Recherche im Lesemodus – Testergebnisse
 
-Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand 6cf88c3)
+Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand 18aa2a5)
 
 Lauf: `api.trx, app.trx, core.trx`
 

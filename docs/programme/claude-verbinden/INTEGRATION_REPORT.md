@@ -1,6 +1,6 @@
 # Mit Claude verbinden – Einbindung in Trendo OS
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `claude-verbinden` · Stand: 0.9.36 (Stand 6cf88c3)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `claude-verbinden` · Stand: 0.9.36 (Stand 18aa2a5)
 
 - Seite `claude-verbinden` im Studio „KI fragen“ (KI & Automatik) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

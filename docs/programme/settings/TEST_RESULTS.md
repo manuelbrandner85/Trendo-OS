@@ -1,15 +1,16 @@
 # Einstellungen – Testergebnisse
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 6cf88c3)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 18aa2a5)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 59 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 62 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
 | Alle Studios: Bereich und Suche filtern die Karten, Alle zeigt wieder alles | ✓ bestanden |
 | CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste | ✓ bestanden |
+| Claude zeigt, wo es arbeitet; Felder in Aufklapp-Menüs kann Claude lesen und ausfüllen | ✓ bestanden |
 | Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt | ✓ bestanden |
 | Design: Dock-Klick auf Dateien startet direkt (nur Owner) und wird auditiert; Browser offline deaktiviert | ✓ bestanden |
 | Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert | ✓ bestanden |
@@ -24,6 +25,7 @@ Bestanden 59 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | Fenster: maximiert ohne Rand bis an die Seiten, die Leiste unten bleibt sichtbar | ✓ bestanden |
 | Fenster: maximiert und daneben geöffnet bleiben im AutomationPeer-Baum, mit Namen und endlichem Rechteck | ✓ bestanden |
 | Fenster: wechseln per Taskleiste, aktives hervorgehoben, maximieren, schließen | ✓ bestanden |
+| Genauere Leser (Kalender, Programm-Dokument), Design „Wie Windows“, Hilfe „?“ auf Seiten ohne eigenen Hilfetext, Hinweis statt stummer Knöpfe | ✓ bestanden |
 | KI: die Seite lässt sich erneut öffnen, Status bleibt „Nicht verbunden“ | ✓ bestanden |
 | Komponenten: Lizenzliste, Unreal nur geführt (offizieller Link), Zustimmung wird gespeichert | ✓ bestanden |
 | LETTER-UI: Briefkopf → Akte (Behörde) → Fakt, Chronik, Eingang → Frist UNGEPRÜFT → Quelle fehlt → Export gesperrt → beheben → DOCX → Freigabe → Versand BLOCKED | ✓ bestanden |
@@ -67,3 +69,4 @@ Bestanden 59 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | W0b-01: Keine Fachwörter in Oberflächentexten (docs/SPRACHE.md) | ✓ bestanden |
 | W0b-02/04/05: Widgets ausblenden, Dock sortieren, Bewegung reduzieren, Hinweis einmalig – alles gespeichert | ✓ bestanden |
 | W0b-06: Design wechseln (Hell/Kontrast) baut das Fenster neu auf und speichert | ✓ bestanden |
+| Zeitleiste mit Dauer und Tönen: fertig, Rückfrage, abschaltbar | ✓ bestanden |

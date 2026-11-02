@@ -1,6 +1,6 @@
 # Spiele bauen – Funktionsmatrix
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 6cf88c3)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 18aa2a5)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

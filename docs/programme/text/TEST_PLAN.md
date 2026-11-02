@@ -1,13 +1,15 @@
 # Trendo Text – Testplan
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand 6cf88c3)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand 18aa2a5)
 
-36 Tests sprechen dieses Programm an.
+39 Tests sprechen dieses Programm an.
 
 - 108-49: KI-Vorschlag mit Änderungen – erst „Übernehmen“ ersetzt, „Verwerfen“ lässt alles, geänderter Text wird nicht überschrieben
 - Claude live: Webseite erscheint in der Vorschau, beim Ändern vorher/nachher – Behalten oder Zurücknehmen; Lieferformat index.html
 - Claude live: neuer Text öffnet gleich in Trendo Text – aber nie über einen ungespeicherten Text
 - Claude live: offenes Studio-Dokument (.tdoc) – Claude bearbeitet es, das Studio übernimmt die Änderung sofort, Rückgängig im Studio
+- Claude zeigt, wo es arbeitet; Felder in Aufklapp-Menüs kann Claude lesen und ausfüllen
+- Genauere Leser (Kalender, Programm-Dokument), Design „Wie Windows“, Hilfe „?“ auf Seiten ohne eigenen Hilfetext, Hinweis statt stummer Knöpfe
 - SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien
 - SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen
 - SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt
@@ -40,3 +42,4 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` 
 - T-0230 W6/W7: Serienbrief aus Tabelle mit Feldern und Etiketten; Vergleichen, annehmen; Barrierefreiheit und Kommentare in der Seitenleiste
 - T-0254: Text und Tabelle – ungespeichert gesichert, nach Neustart „Wiederherstellen“; „Verwerfen“ löscht; Speichern räumt die Sicherung weg
 - X-11 F1/F2/U1/U2: Vorhaben mit Ring, Kanban verschieben, Zeitplan mit Meilenstein, Dateien des Vorhabens
+- Zeitleiste mit Dauer und Tönen: fertig, Rückfrage, abschaltbar

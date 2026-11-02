@@ -1,6 +1,6 @@
 # Schutz & Datenschutz – Testplan
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 6cf88c3)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 18aa2a5)
 
 15 Tests sprechen dieses Programm an.
 

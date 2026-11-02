@@ -1,6 +1,6 @@
 # Online-Dienste – Testergebnisse
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.36 (Stand 6cf88c3)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.36 (Stand 18aa2a5)
 
 Lauf: `api.trx, app.trx, core.trx`
 

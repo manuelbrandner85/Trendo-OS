@@ -1,11 +1,12 @@
 # Einstellungen – Testplan
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 6cf88c3)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 18aa2a5)
 
-59 Tests sprechen dieses Programm an.
+62 Tests sprechen dieses Programm an.
 
 - Alle Studios: Bereich und Suche filtern die Karten, Alle zeigt wieder alles
 - CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste
+- Claude zeigt, wo es arbeitet; Felder in Aufklapp-Menüs kann Claude lesen und ausfüllen
 - Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt
 - Design: Dock-Klick auf Dateien startet direkt (nur Owner) und wird auditiert; Browser offline deaktiviert
 - Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert
@@ -20,6 +21,7 @@ Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Se
 - Fenster: maximiert ohne Rand bis an die Seiten, die Leiste unten bleibt sichtbar
 - Fenster: maximiert und daneben geöffnet bleiben im AutomationPeer-Baum, mit Namen und endlichem Rechteck
 - Fenster: wechseln per Taskleiste, aktives hervorgehoben, maximieren, schließen
+- Genauere Leser (Kalender, Programm-Dokument), Design „Wie Windows“, Hilfe „?“ auf Seiten ohne eigenen Hilfetext, Hinweis statt stummer Knöpfe
 - KI: die Seite lässt sich erneut öffnen, Status bleibt „Nicht verbunden“
 - Komponenten: Lizenzliste, Unreal nur geführt (offizieller Link), Zustimmung wird gespeichert
 - LETTER-UI: Briefkopf → Akte (Behörde) → Fakt, Chronik, Eingang → Frist UNGEPRÜFT → Quelle fehlt → Export gesperrt → beheben → DOCX → Freigabe → Versand BLOCKED
@@ -63,3 +65,4 @@ Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Se
 - W0b-01: Keine Fachwörter in Oberflächentexten (docs/SPRACHE.md)
 - W0b-02/04/05: Widgets ausblenden, Dock sortieren, Bewegung reduzieren, Hinweis einmalig – alles gespeichert
 - W0b-06: Design wechseln (Hell/Kontrast) baut das Fenster neu auf und speichert
+- Zeitleiste mit Dauer und Tönen: fertig, Rückfrage, abschaltbar

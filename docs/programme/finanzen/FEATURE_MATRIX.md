@@ -1,6 +1,6 @@
 # Geld – Funktionsmatrix
 
-Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand 6cf88c3)
+Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand 18aa2a5)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

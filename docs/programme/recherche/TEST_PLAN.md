@@ -1,6 +1,6 @@
 # Recherche im Lesemodus – Testplan
 
-Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand 6cf88c3)
+Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand 18aa2a5)
 
 16 Tests sprechen dieses Programm an.
 

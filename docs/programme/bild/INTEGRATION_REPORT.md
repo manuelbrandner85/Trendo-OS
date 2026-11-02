@@ -1,6 +1,6 @@
 # Bildbearbeitung – Einbindung in Trendo OS
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand 6cf88c3)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand 18aa2a5)
 
 - Seite `bild` im Studio „Videos & Fotos bearbeiten“ (Kreativ & Medien) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: ja (Dokumente .tdoc, Zuletzt, Wiederherstellen, Bedienstufen)

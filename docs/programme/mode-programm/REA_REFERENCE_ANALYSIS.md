@@ -1,5 +1,5 @@
 # Kleidung & Produkte – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.36 (Stand 6cf88c3)
+Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.36 (Stand 18aa2a5)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

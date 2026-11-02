@@ -1,6 +1,6 @@
 # 3D – Architektur
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 6cf88c3)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 18aa2a5)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W4Studio3D.cs`

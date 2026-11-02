@@ -10,7 +10,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Adressbuch | E-Mails & Termine (SYS-09) | Arbeiten & Büro | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](kontakte/README.md) |
 | Aufgaben | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Aufgabentafel | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](aufgaben/README.md) |
 | E-Mail & Kontakte | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Texteditor | – | 18 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](post/README.md) |
-| Kalender | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Monatskalender | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](kalender/README.md) |
+| Kalender | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Monatskalender | – | 14 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](kalender/README.md) |
 | Posteingang | E-Mails & Termine (SYS-09) | Arbeiten & Büro | keine eigene erkannt | – | 12 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](posteingang/README.md) |
 | Medien | Kleine Helfer & Musik (SYS-02) | Arbeiten & Büro | keine eigene erkannt | 25 | 26 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](medien/README.md) |
 | Übersicht | Kleine Helfer & Musik (SYS-02) | Arbeiten & Büro | keine eigene erkannt | 25 | 30 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](alltag-start/README.md) |
@@ -20,7 +20,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Trendo PDF | Texte & Tabellen (SYS-10) | Arbeiten & Büro | keine eigene erkannt | 25 | 28 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](pdf/README.md) |
 | Trendo Präsentation | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Folienansicht | 25 | 27 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](praesentation/README.md) |
 | Trendo Tabelle | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Tabellenraster | 25 | 46 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](tabelle/README.md) |
-| Trendo Text | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Dokumentseite (Textverarbeitung) | 25 | 36 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](text/README.md) |
+| Trendo Text | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Dokumentseite (Textverarbeitung) | 25 | 39 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](text/README.md) |
 | Geld | Geld & Rechnungen (SPEC-11) | Business & Geld | Diagramm | – | 12 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](finanzen/README.md) |
 | Verkaufen | Online verkaufen (STUDIO-ONLINE-BUSINESS-01) | Business & Geld | Kasse mit Warenkorb | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](verkaufen/README.md) |
 | Freie Bilder & Klänge | Freie Bilder & Klänge finden (X-07) | Kreativ & Medien | keine eigene erkannt | – | 6 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](assets/README.md) |
@@ -90,7 +90,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Leistung | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 13 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](qual-leistung/README.md) |
 | System & Sicherheit | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 26 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](system/README.md) |
 | Systemcheck | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 17 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](systemcheck/README.md) |
-| Einstellungen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | Bildansicht | 25 | 59 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](settings/README.md) |
+| Einstellungen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | Bildansicht | 25 | 62 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](settings/README.md) |
 | Personen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](personen/README.md) |
 | Sehen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](bedien-sehen/README.md) |
 | Trendo-Updates | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](updates/README.md) |
