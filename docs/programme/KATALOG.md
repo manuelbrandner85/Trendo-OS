@@ -2,7 +2,7 @@
 
 Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funktionskataloge, Vorbild-Analysen, Tests). Nicht von Hand pflegen – neu erzeugen mit `TRENDO_KATALOG=. dotnet run --project tools/Trendo.Render -c Release`.
 
-92 Programme in 54 Studios.
+93 Programme in 54 Studios.
 
 | Programm | Studio | Bereich | Arbeitsfläche | Funktionen | Tests | Vorbild-Analyse | Modulstatus | Doku |
 |---|---|---|---|---|---|---|---|---|
@@ -58,15 +58,16 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | KI fragen | KI fragen (CORE-02) | KI & Automatik | keine eigene erkannt | – | 17 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-fragen/README.md) |
 | Mit Claude verbinden | KI fragen (CORE-02) | KI & Automatik | keine eigene erkannt | – | 10 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](claude-verbinden/README.md) |
 | Online-Dienste | KI fragen (CORE-02) | KI & Automatik | keine eigene erkannt | – | 41 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](keys/README.md) |
+| Verbindungen | KI fragen (CORE-02) | KI & Automatik | keine eigene erkannt | – | 12 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](verbindungen/README.md) |
 | KI-Rollen und Teams | KI-Team einsetzen (CORE-03) | KI & Automatik | keine eigene erkannt | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-rollen/README.md) |
 | KI-Bibliothek | Kostenlose KI finden (X-05) | KI & Automatik | keine eigene erkannt | – | 6 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-bibliothek/README.md) |
 | KI-Quellen | Kostenlose KI finden (X-05) | KI & Automatik | keine eigene erkannt | – | 32 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-quellen/README.md) |
 | Kostenlose Internet-KIs | Kostenlose KI finden (X-05) | KI & Automatik | keine eigene erkannt | – | 6 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-internet/README.md) |
-| Baukasten | Apps zusammenklicken (X-03) | Entwickeln | keine eigene erkannt | – | 28 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](baukasten/README.md) |
+| Baukasten | Apps zusammenklicken (X-03) | Entwickeln | keine eigene erkannt | – | 30 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](baukasten/README.md) |
 | Sauberer Nachbau | Programme nachbauen (X-10) | Entwickeln | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](nachbau/README.md) |
 | Open Source | Projekte von GitHub holen (X-06) | Entwickeln | keine eigene erkannt | – | 25 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](oss/README.md) |
 | Erweiterungen | Trendo erweitern (X-04) | Entwickeln | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](erweiterungen/README.md) |
-| Software | Webseite bauen (CORE-07) | Entwickeln | Bildansicht | – | 47 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](dev/README.md) |
+| Software | Webseite bauen (CORE-07) | Entwickeln | Bildansicht | – | 49 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](dev/README.md) |
 | Ordner im Heimnetz teilen | Dateien teilen (SYS-06) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](teilen/README.md) |
 | Freigaben | Daten schützen (CORE-11) | System & Sicherheit | keine eigene erkannt | – | 10 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](approvals/README.md) |
 | Schutz & Datenschutz | Daten schützen (CORE-11) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](schutz/README.md) |

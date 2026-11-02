@@ -1,10 +1,10 @@
 # Baukasten – Testergebnisse
 
-Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand c18c198)
+Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand 7684536)
 
-Lauf: `trendo-api.trx, trendo-app.trx, trendo-core.trx`
+Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 28 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 29 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 
 | Test | Ergebnis |
 |---|---|
@@ -21,6 +21,7 @@ Bestanden 28 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | Claude live: offenes Studio-Dokument (.tdoc) – Claude bearbeitet es, das Studio übernimmt die Änderung sofort, Rückgängig im Studio | ✓ bestanden |
 | Claude-Chat: ohne Claude Code „einrichten“, ohne Anmeldung „Mit Claude anmelden“ – im Testmodus startet nie ein echtes Claude | ✓ bestanden |
 | Claude-Chat: wie in Claude – erste Nachricht legt das Projekt an, Antwort mit Arbeitsschritten, Fortsetzen über die Sitzung, Zurücknehmen, Löschen in den Papierkorb | ✓ bestanden |
+| Claude-Chat: „⬆ GitHub“ lädt das Projekt nach Ja als privates Repo hoch (gh-Ordner der Person); „🌐 Netlify“ nur im Web-Studio, veröffentlicht nach Ja | nicht im Lauf |
 | Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner | ✓ bestanden |
 | Claude-Regeln 01.11.2026: Trendo speichert keine Claude-Tokens – ein alter wird beim Start gelöscht, kein Token-Feld mehr | ✓ bestanden |
 | Startbildschirm bekommt keine Auftragsleiste | ✓ bestanden |
@@ -33,6 +34,7 @@ Bestanden 28 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | T-0316: Studio – „✳ Claude“ immer in der Auftragsleiste; das Claude-Projekt des Studios trägt seine Rolle, kein Terminal | ✓ bestanden |
 | T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Claude Code öffnen“ starten nie ein echtes Programm | ✓ bestanden |
 | Trendo-Agent: Los → eine Rückfrage als Knopf → Umsetzen, Prüfung findet Fehler, bessert selbst nach → „Behalten?“; Nein stellt alles wieder her, Ja behält | ✓ bestanden |
+| Verbindungen: GitHub-Anmeldung im eigenen gh-Ordner der Person (sichtbar, im Browser), Netlify-Schlüssel nur im Tresor, Claude-Plugins nur nach Ja geändert | ✓ bestanden |
 | X-03 (UI): Baustein hinzufügen, verschieben, entfernen, veröffentlichen | ✓ bestanden |
 | X-03: Bausteine werden zu sicherem HTML, Reihenfolge änderbar, Speichern und Laden | ✓ bestanden |
 | X-03: Veröffentlichen schreibt index.html und kopiert lokale Bilder mit | ✓ bestanden |

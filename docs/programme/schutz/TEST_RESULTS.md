@@ -1,8 +1,8 @@
 # Schutz & Datenschutz – Testergebnisse
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand c18c198)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 7684536)
 
-Lauf: `trendo-api.trx, trendo-app.trx, trendo-core.trx`
+Lauf: `api.trx, app.trx, core.trx`
 
 Bestanden 15 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

@@ -1,8 +1,8 @@
 # Downloads – Testergebnisse
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.36 (Stand c18c198)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.36 (Stand 7684536)
 
-Lauf: `trendo-api.trx, trendo-app.trx, trendo-core.trx`
+Lauf: `api.trx, app.trx, core.trx`
 
 Bestanden 44 · Fehlgeschlagen 0 · Übersprungen 1 · nicht im Lauf 2
 

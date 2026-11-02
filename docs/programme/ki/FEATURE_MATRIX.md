@@ -1,6 +1,6 @@
 # KI – Funktionsmatrix
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.36 (Stand c18c198)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.36 (Stand 7684536)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -11,6 +11,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Verstanden
 - Modell
 - Fragen
+- Verbindungen
 - Qwen2.5 0.5B (klein, schnell) herunterladen (Zustimmung)
 - Qwen2.5 3B (besseres Deutsch, ~1,9 GB) herunterladen (Zustimmung)
 - KI einrichten

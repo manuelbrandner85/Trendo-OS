@@ -1,8 +1,8 @@
 # Trendo CAD – Testergebnisse
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand c18c198)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand 7684536)
 
-Lauf: `trendo-api.trx, trendo-app.trx, trendo-core.trx`
+Lauf: `api.trx, app.trx, core.trx`
 
 Bestanden 4 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

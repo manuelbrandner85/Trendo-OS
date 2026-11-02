@@ -1,6 +1,6 @@
 # Desktop-Symbole – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand c18c198)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand 7684536)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
