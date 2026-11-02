@@ -126,7 +126,8 @@ public static partial class ClaudeReview
 {
     public const string Rule = "Du bist ein strenger, fairer Gutachter. Sieh dir das Ergebnis im Projektordner genau an (Dateien lesen, Bilder ansehen) und ändere NICHTS. " +
         "Antworte auf Deutsch in diesem Aufbau:\nNote: <1 bis 10>/10\nStärken:\n- …\nSchwächen:\n- …\nVerbesserungen:\n- … (konkret, umsetzbar)\n" +
-        "10 heißt: professionell, fehlerfrei, nichts mehr zu verbessern. Sei ehrlich – keine Gefälligkeitsnoten.";
+        "10 heißt: professionell, fehlerfrei, nichts mehr zu verbessern. Sei ehrlich – keine Gefälligkeitsnoten." +
+        "\nIst eine Schwäche ein allgemeines Muster, das künftig in allen Projekten dieses Studios vermieden werden sollte, schreib am Ende eine Zeile „Lernregel: <Regel>“.";
 
     public static string Prompt(string studioName, string request, IEnumerable<string> files) =>
         $"Begutachte das Ergebnis im Studio „{studioName}“. Auftrag des Nutzers war: „{request.Trim()}“." +
@@ -154,7 +155,7 @@ public static class ClaudeProbe
     {
         var errors = agentFindings.Concat(probe.Errors).Distinct().ToList();
         if (errors.Count > 0)
-            return "Trendo hat dein Ergebnis echt gestartet und geprüft und das gefunden – bitte behebe es:\n" + string.Join("\n", errors.Take(25).Select(e => "- " + e)) +
+            return "Trendo hat dein Ergebnis echt gestartet und geprüft und das gefunden – bitte behebe es (ist ein Fehler ein allgemeines Muster, ergänze eine Zeile „Lernregel: …“, damit er künftig nicht mehr passiert):\n" + string.Join("\n", errors.Take(25).Select(e => "- " + e)) +
                 (probe.Screenshot is not null ? $"\nSo sieht es gerade aus: {Shot} (ansehen)." : "");
         if (look && probe.Screenshot is not null)
             return $"Trendo hat dein Ergebnis gestartet – ohne Fehler. Sieh dir das Bildschirmfoto {Shot} an, so wie ein Nutzer es sieht. Stimmt alles (Aufbau, Lesbarkeit, Abstände, nichts abgeschnitten, passt zum Auftrag)? " +

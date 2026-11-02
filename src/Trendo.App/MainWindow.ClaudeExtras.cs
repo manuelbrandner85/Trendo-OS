@@ -354,6 +354,7 @@ public partial class MainWindow
         catch (OperationCanceledException) { text = "⚠ Gutachten angehalten."; }
         catch (InvalidOperationException e) { text = "⚠ " + e.Message; }
         if (text.Length == 0) text = "⚠ Der Gutachter hat nichts geliefert.";
+        ClaudeLearnFrom(studio, text, true, false, null, chat.Title); text = StudioLearning.Strip(text); // Gutachten lehrt das Studio (Vorschlag, gilt erst nach Ja)
         CChats.Add(studio, cid, new ClaudeChats.Msg("review", text, [], DateTimeOffset.Now, null, 0, null, null, ki));
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.gutachten", $"{studio} · Note {ClaudeReview.Grade(text)?.ToString() ?? "–"}");
         ui.Cts.Cancel(); ui.Running = false; ui.Cts = null;

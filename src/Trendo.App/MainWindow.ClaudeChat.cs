@@ -100,15 +100,16 @@ public partial class MainWindow
         void TogglePanel(string p) { ui.Panel = ui.Panel == p ? null : p; RenderChat(dock); }
         var memory = HeadBtn("claude-chat-memory", "🧠 Gedächtnis", "Projekt-Gedächtnis: was Claude sich für dieses Projekt dauerhaft merkt", () => TogglePanel("gedaechtnis"));
         var travel = HeadBtn("claude-chat-timeline", "🕘 Zeitreise", "Zeitreise: zu einem früheren Stand des Projekts zurück", () => TogglePanel("zeitreise"));
+        var rules = HeadBtn("claude-chat-rules", "📚 Regeln", "Regeln dieses Studios: was Claude hier immer beachtet – eingebaut, aus GAMEFORGE (Spiele) und aus deinen Projekten gelernt (nur mit deinem Ja)", () => TogglePanel("regeln"));
         var review = HeadBtn("claude-chat-review", "🎓 Gutachter", "Zweite Meinung: ein Gutachter bewertet das Ergebnis mit Note 1–10 und sagt, was besser geht", () => _ = ClaudeReviewRun(dock));
         ui.SideToggle = new Button { Name = "claude-chat-side-toggle", Content = "☰", FontSize = 13, Padding = new Thickness(9, 3), Margin = new Thickness(0, 0, 8, 0), Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0), IsVisible = false };
         ToolTip.SetTip(ui.SideToggle, "Projekte dieses Studios ein- oder ausblenden");
         ui.SideToggle.Click += (_, _) => { ui.SideOpen = !ui.SideOpen; ui.SideCol.Width = new GridLength(ui.SideOpen ? 230 : 0); };
         // Kopf in zwei Zeilen: Titel, darunter die Knöpfe (umbrechend) – so passt alles auch in den schmalen Bereich neben dem Studio
-        foreach (var hb in new Control[] { memory, travel, review, full, app, eye, folder }) hb.Margin = new Thickness(0, 0, 6, 6);
+        foreach (var hb in new Control[] { memory, travel, rules, review, full, app, eye, folder }) hb.Margin = new Thickness(0, 0, 6, 6);
         var head = new StackPanel { Margin = new Thickness(24, 12, 24, 2), Spacing = 6, Children = {
             new DockPanel { Children = { Dk(ui.SideToggle, Avalonia.Controls.Dock.Left), ui.Title } },
-            new WrapPanel { Name = "claude-chat-head-tools", Children = { memory, travel, review, full, app, eye, folder } } } };
+            new WrapPanel { Name = "claude-chat-head-tools", Children = { memory, travel, rules, review, full, app, eye, folder } } } };
         var bottom = new StackPanel { Children = { ClaudeToolBar(dock), ui.Flows, ui.Chips, inputBox, hint } };
         ui.Body = new Border { Child = ui.Scroll };
         ui.Caps = new TextBlock { Name = "claude-chat-caps", FontSize = 11, Foreground = ClaudeMuted, Margin = new Thickness(24, 0, 24, 6), TextWrapping = TextWrapping.Wrap, Text = ClaudeCapsText(LoadCaps()) };
@@ -210,6 +211,7 @@ public partial class MainWindow
         if (ui.AskFull) ui.Log.Children.Add(FullConsent(dock, chat));
         if (ui.Panel == "gedaechtnis") ui.Log.Children.Add(MemoryPanel(dock, chat));
         if (ui.Panel == "zeitreise") ui.Log.Children.Add(TimelinePanel(dock, chat));
+        if (ui.Panel == "regeln") ui.Log.Children.Add(RulesPanel(dock));
         if (chat is null || chat.Messages.Count == 0)
             ui.Log.Children.Add(new StackPanel { Spacing = 8, Margin = new Thickness(0, 40, 0, 0), HorizontalAlignment = HorizontalAlignment.Center, Children = {
                 new TextBlock { Text = "✳", FontSize = 34, Foreground = ClaudeAccent, HorizontalAlignment = HorizontalAlignment.Center },
@@ -228,6 +230,7 @@ public partial class MainWindow
         }
         for (var i = 0; i < ui.Drafts.Count; i++) if (ui.Drafts[i].ChatId == chat?.Id) ui.Log.Children.Add(DraftCard(ui.Drafts[i], i)); // Entwürfe warten auf Freigabe
         if (ui.Plan is { } pl && pl.ChatId == chat?.Id) ui.Log.Children.Add(PlanCard(dock, ui, pl)); // wartet auf „Ausführen“
+        AddLearnProposals(dock, ui); // gelernte Regeln warten auf Ja/Nein
         AttachQueue(ui); RenderFlows(dock, ui);
         Dispatcher.UIThread.Post(() => ui.Scroll.ScrollToEnd(), DispatcherPriority.Background);
     }
@@ -407,7 +410,7 @@ public partial class MainWindow
         FolderSnapshot? snap = null;
         var point = CTimeline.NewStore(chat.Id); // Versionspunkt für die Zeitreise
         try { snap = FolderSnapshot.Take(folder, point); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
-        var system = ClaudeChats.System(StudioCatalog.NameOf(dock.Studio ?? "", "Trendo"), ClaudeRoleFor(dock.Studio), Skills.For(null, dock.Studio), format, workFile) + programInfo + CMemory.Prompt(chat.Id) + (ClaudeSuggestsOn ? ClaudeChats.SuggestRule : "");
+        var system = ClaudeChats.System(StudioCatalog.NameOf(dock.Studio ?? "", "Trendo"), ClaudeRoleFor(dock.Studio), Skills.For(null, dock.Studio), format, workFile) + programInfo + ClaudeStudioRules(dock, folder, chat.FullWith(ClaudeAlways)) + CMemory.Prompt(chat.Id) + (ClaudeSuggestsOn ? ClaudeChats.SuggestRule : "");
         string? pendingFile = null;
         var model = KiSourceSettings.Load(_core.DataRoot).ClaudeModel;
         void OnLine(string l)
@@ -483,6 +486,9 @@ public partial class MainWindow
         // Projekt-Gedächtnis: „Merken: …“-Zeilen übernehmen und als Arbeitsschritt zeigen
         // Claude bedient das Programm: Schritte erst als Plan, Ausführen nur nach Freigabe
         if (error is null && pageState is not null && ClaudeActions.Parse(answer, pageState) is { Count: > 0 } psteps) ui.Plan = new ClaudePlan(dock.Page, pageState, psteps, chat.Id);
+        // selbstlernend: „Lernregel: …“ wird ein Vorschlag (gilt erst nach Ja)
+        foreach (var lr in ClaudeLearnFrom(studio, answer, false, check, check ? null : text, chat.Title)) steps.Add(new ClaudeChats.Step("🎓 Regel-Vorschlag: " + lr.Text, false));
+        answer = StudioLearning.Strip(answer);
         foreach (var keep in ClaudeMemory.Extract(answer)) if (CMemory.Add(chat.Id, keep)) steps.Add(new ClaudeChats.Step("🧠 Gemerkt: " + keep, false));
         answer = ClaudeMemory.Strip(answer);
         if (snap is not null) try { CTimeline.Keep(chat.Id, point, check ? "Nachbesserung: " + text.Split('\n')[0] : text.Split('\n')[0], changes.Count); } catch (IOException) { }
