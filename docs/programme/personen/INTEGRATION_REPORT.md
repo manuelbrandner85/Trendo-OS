@@ -1,6 +1,6 @@
 # Personen – Einbindung in Trendo OS
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `personen` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `personen` · Stand: 0.9.34 (Stand 695d2ea)
 
 - Seite `personen` im Studio „Schrift & Farben anpassen“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

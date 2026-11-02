@@ -1,13 +1,17 @@
 # Trendo Tabelle – Testergebnisse
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.34 (Stand 695d2ea)
 
-Lauf: `volltest-0.9.33-api.trx, volltest-0.9.33-app.trx, volltest-0.9.33-core.trx`
+Lauf: `volltest-0.9.34-api.trx, volltest-0.9.34-app.trx, volltest-0.9.34-core.trx`
 
-Bestanden 31 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
+Bestanden 35 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
+| Claude im Studio: Auswahl in Trendo Tabelle geht als Zustand mit; Internet und Befehle bei Bedarf immer an, je Projekt auf „sicher“ stellbar; Vorgabe abschaltbar | ✓ bestanden |
+| Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet | ✓ bestanden |
+| Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort | ✓ bestanden |
+| Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler einmal automatisch an Claude zurück | ✓ bestanden |
 | Fenster: Klick auf eine Kategorie im Fenster bleibt im selben Fenster; ohne Klick eigenes Fenster; offene Seite wird wiederverwendet | ✓ bestanden |
 | Fenster: maximiert ohne Rand bis an die Seiten, die Leiste unten bleibt sichtbar | ✓ bestanden |
 | SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien | ✓ bestanden |

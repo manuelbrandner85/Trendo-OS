@@ -1,6 +1,6 @@
 # CNC-Werkstatt – Funktionsmatrix
 
-Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.34 (Stand 695d2ea)
 
 Quelle: `docs/w6-katalog/SPEC-14.md`
 

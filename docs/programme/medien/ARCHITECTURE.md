@@ -1,6 +1,6 @@
 # Medien – Architektur
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.34 (Stand 695d2ea)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Helfer.cs`

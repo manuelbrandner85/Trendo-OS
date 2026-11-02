@@ -1,6 +1,6 @@
 # Punktwolke – Einbindung in Trendo OS
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.34 (Stand 695d2ea)
 
 - Seite `punktwolke` im Studio „Gegenstände einscannen“ (3D, Spiele & VR) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: ja (Dokumente .tdoc, Zuletzt, Wiederherstellen, Bedienstufen)

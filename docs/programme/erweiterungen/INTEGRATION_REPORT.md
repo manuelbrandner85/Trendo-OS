@@ -1,6 +1,6 @@
 # Erweiterungen – Einbindung in Trendo OS
 
-Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.34 (Stand 695d2ea)
 
 - Seite `erweiterungen` im Studio „Trendo erweitern“ (Entwickeln) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

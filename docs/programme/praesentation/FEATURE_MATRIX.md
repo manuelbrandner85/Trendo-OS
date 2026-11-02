@@ -1,6 +1,6 @@
 # Trendo Präsentation – Funktionsmatrix
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.34 (Stand 695d2ea)
 
 Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 

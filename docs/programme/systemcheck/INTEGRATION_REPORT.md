@@ -1,6 +1,6 @@
 # Systemcheck – Einbindung in Trendo OS
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `systemcheck` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `systemcheck` · Stand: 0.9.34 (Stand 695d2ea)
 
 - Seite `systemcheck` im Studio „Qualität prüfen“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

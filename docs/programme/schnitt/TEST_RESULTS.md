@@ -1,8 +1,8 @@
 # Videoschnitt – Testergebnisse
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.34 (Stand 695d2ea)
 
-Lauf: `volltest-0.9.33-api.trx, volltest-0.9.33-app.trx, volltest-0.9.33-core.trx`
+Lauf: `volltest-0.9.34-api.trx, volltest-0.9.34-app.trx, volltest-0.9.34-core.trx`
 
 Bestanden 7 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

@@ -1,6 +1,6 @@
 # Speicher & Leistung – Testplan
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.34 (Stand 695d2ea)
 
 32 Tests sprechen dieses Programm an.
 

@@ -1,5 +1,5 @@
 # TV & Live – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.34 (Stand 695d2ea)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

@@ -1,6 +1,6 @@
 # Downloads – Einbindung in Trendo OS
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.34 (Stand 695d2ea)
 
 - Seite `downloads` im Studio „Surfen & Herunterladen“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

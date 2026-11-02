@@ -1,6 +1,6 @@
 # Kleidung & Produkte – Testplan
 
-Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.34 (Stand 695d2ea)
 
 19 Tests sprechen dieses Programm an.
 

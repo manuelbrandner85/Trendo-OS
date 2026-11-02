@@ -1,6 +1,6 @@
 # Trendo CAD – Einbindung in Trendo OS
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.34 (Stand 695d2ea)
 
 - Seite `cad` im Studio „3D-Modelle erstellen“ (3D, Spiele & VR) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

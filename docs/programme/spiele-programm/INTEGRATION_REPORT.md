@@ -1,6 +1,6 @@
 # Spiele bauen – Einbindung in Trendo OS
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.34 (Stand 695d2ea)
 
 - Seite `spiele-programm` im Studio „Spiele bauen“ (3D, Spiele & VR) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: ja (Dokumente .tdoc, Zuletzt, Wiederherstellen, Bedienstufen)

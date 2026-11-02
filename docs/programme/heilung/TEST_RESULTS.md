@@ -1,8 +1,8 @@
 # Selbstheilung – Testergebnisse
 
-Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.34 (Stand 695d2ea)
 
-Lauf: `volltest-0.9.33-api.trx, volltest-0.9.33-app.trx, volltest-0.9.33-core.trx`
+Lauf: `volltest-0.9.34-api.trx, volltest-0.9.34-app.trx, volltest-0.9.34-core.trx`
 
 Bestanden 15 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

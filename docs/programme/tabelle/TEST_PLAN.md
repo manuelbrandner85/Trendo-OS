@@ -1,9 +1,13 @@
 # Trendo Tabelle – Testplan
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.34 (Stand 695d2ea)
 
-33 Tests sprechen dieses Programm an.
+37 Tests sprechen dieses Programm an.
 
+- Claude im Studio: Auswahl in Trendo Tabelle geht als Zustand mit; Internet und Befehle bei Bedarf immer an, je Projekt auf „sicher“ stellbar; Vorgabe abschaltbar
+- Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet
+- Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort
+- Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler einmal automatisch an Claude zurück
 - Fenster: Klick auf eine Kategorie im Fenster bleibt im selben Fenster; ohne Klick eigenes Fenster; offene Seite wird wiederverwendet
 - Fenster: maximiert ohne Rand bis an die Seiten, die Leiste unten bleibt sichtbar
 - SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien

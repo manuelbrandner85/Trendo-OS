@@ -1,10 +1,10 @@
 # KI-Quellen – Testergebnisse
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.34 (Stand 695d2ea)
 
-Lauf: `volltest-0.9.33-api.trx, volltest-0.9.33-app.trx, volltest-0.9.33-core.trx`
+Lauf: `volltest-0.9.34-api.trx, volltest-0.9.34-app.trx, volltest-0.9.34-core.trx`
 
-Bestanden 28 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 32 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -15,7 +15,11 @@ Bestanden 28 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | CORE-03 UI: Rolle wählen, starten, Team-Ablauf, Speichern über Freigabe | ✓ bestanden |
 | CORE-10 UI: Merken, Suchen, Löschen und Korrektur aus dem Gespräch | ✓ bestanden |
 | CORE-12 UI: Vorlage ausfüllen und senden, neue Vorlage speichern, Masterprompt bauen | ✓ bestanden |
+| Claude im Studio: Auswahl in Trendo Tabelle geht als Zustand mit; Internet und Befehle bei Bedarf immer an, je Projekt auf „sicher“ stellbar; Vorgabe abschaltbar | ✓ bestanden |
+| Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet | ✓ bestanden |
 | Claude im Studio: Fenster schließen schließt Claude | ✓ bestanden |
+| Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort | ✓ bestanden |
+| Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler einmal automatisch an Claude zurück | ✓ bestanden |
 | Claude im Studio: wie Claude im Web – claude.ai im ganzen Fenster, kein Terminal; anmelden, Projekte des Studios anlegen, fortsetzen, entfernen | ✓ bestanden |
 | Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner | ✓ bestanden |
 | Claude-Regeln 01.11.2026: Trendo speichert keine Claude-Tokens – ein alter wird beim Start gelöscht, kein Token-Feld mehr | ✓ bestanden |

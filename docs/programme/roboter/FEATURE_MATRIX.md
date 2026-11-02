@@ -1,6 +1,6 @@
 # Kameras & Roboter steuern – Funktionsmatrix
 
-Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.34 (Stand 695d2ea)
 
 Quelle: `docs/w6-katalog/CORE-09.md`
 

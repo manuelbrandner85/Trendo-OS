@@ -1,8 +1,8 @@
 # Software – Testplan
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.34 (Stand 695d2ea)
 
-19 Tests sprechen dieses Programm an.
+23 Tests sprechen dieses Programm an.
 
 - CORE-07 (UI): Seite aus Beschreibung, Note, Stil, Paket erst nach Bestätigung
 - CORE-07 (UI): Software-Studio legt Projekt an und zeigt es mit Git-Stand
@@ -10,6 +10,10 @@ Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand
 - CORE-07: Git-Stand anlegen, Änderung erkennen, speichern (echtes git)
 - CORE-07: Python- und .NET-Vorlage bestehen ihren eigenen Test (echte Werkzeuge)
 - CORE-07: Vorlagen legen echte Projekte an, vorhandener Ordner wird nie überschrieben
+- Claude im Studio: Auswahl in Trendo Tabelle geht als Zustand mit; Internet und Befehle bei Bedarf immer an, je Projekt auf „sicher“ stellbar; Vorgabe abschaltbar
+- Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet
+- Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort
+- Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler einmal automatisch an Claude zurück
 - Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg
 - T-0203: Abbrechen installiert nichts
 - T-0203: LibreOffice bleibt zu, wenn die Versionsabfrage zu lange dauert

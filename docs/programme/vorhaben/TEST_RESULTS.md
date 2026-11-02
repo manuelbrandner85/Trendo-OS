@@ -1,8 +1,8 @@
 # Vorhaben – Testergebnisse
 
-Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.34 (Stand 695d2ea)
 
-Lauf: `volltest-0.9.33-api.trx, volltest-0.9.33-app.trx, volltest-0.9.33-core.trx`
+Lauf: `volltest-0.9.34-api.trx, volltest-0.9.34-app.trx, volltest-0.9.34-core.trx`
 
 Bestanden 8 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

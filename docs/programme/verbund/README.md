@@ -1,6 +1,6 @@
 # Geräteverbund (PC, Pi, Android) – Produktionspaket
 
-Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.34 (Stand 695d2ea)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test PC_VERIFIED  

@@ -1,6 +1,6 @@
 # Punktwolke – Testplan
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.34 (Stand 695d2ea)
 
 23 Tests sprechen dieses Programm an.
 

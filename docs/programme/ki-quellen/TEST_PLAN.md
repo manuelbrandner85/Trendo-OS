@@ -1,8 +1,8 @@
 # KI-Quellen – Testplan
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.33 (Stand 9436f3b)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.34 (Stand 695d2ea)
 
-28 Tests sprechen dieses Programm an.
+32 Tests sprechen dieses Programm an.
 
 - Beschreibung: README wird beim Aufklappen geladen; geholte Projekte lassen sich mit Rückfrage entfernen
 - CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet
@@ -11,7 +11,11 @@ Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-que
 - CORE-03 UI: Rolle wählen, starten, Team-Ablauf, Speichern über Freigabe
 - CORE-10 UI: Merken, Suchen, Löschen und Korrektur aus dem Gespräch
 - CORE-12 UI: Vorlage ausfüllen und senden, neue Vorlage speichern, Masterprompt bauen
+- Claude im Studio: Auswahl in Trendo Tabelle geht als Zustand mit; Internet und Befehle bei Bedarf immer an, je Projekt auf „sicher“ stellbar; Vorgabe abschaltbar
+- Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet
 - Claude im Studio: Fenster schließen schließt Claude
+- Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort
+- Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler einmal automatisch an Claude zurück
 - Claude im Studio: wie Claude im Web – claude.ai im ganzen Fenster, kein Terminal; anmelden, Projekte des Studios anlegen, fortsetzen, entfernen
 - Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner
 - Claude-Regeln 01.11.2026: Trendo speichert keine Claude-Tokens – ein alter wird beim Start gelöscht, kein Token-Feld mehr
