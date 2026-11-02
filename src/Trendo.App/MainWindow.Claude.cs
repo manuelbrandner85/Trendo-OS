@@ -172,6 +172,7 @@ public partial class MainWindow
 
     /// <summary>Rolle für Claude Code passend zum Studio (wird angehängt; das eigene Verhalten von Claude Code bleibt).</summary>
     public string ClaudeRoleFor(string? studio) =>
+        (StudioProfiles.Has(studio) ? StudioProfiles.For(studio).Role + " " : "") +
         $"Du arbeitest für Trendo OS im Studio „{(studio is null ? "Programmieren" : StudioCatalog.NameOf(studio, studio))}“. Antworte auf Deutsch, plane zuerst sichtbar (Aufgabenliste), frage bei Unklarem nach und arbeite professionell und barrierearm." +
         (studio is not null && Skills.For(null, studio).Count > 0 ? " Nutze die Trendo-Skills unter .claude/skills (trendo-…) und prüfe dein Ergebnis vor dem Abschluss gegen deren Checklisten; bessere nach, bis alle Punkte erfüllt sind." : "");
 

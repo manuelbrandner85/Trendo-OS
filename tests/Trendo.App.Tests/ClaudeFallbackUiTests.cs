@@ -64,7 +64,7 @@ public class ClaudeFallback_Ui
         finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeRunOverride = null; MainWindow.ClaudeFallbackOverride = null; w.Close(); }
     }
 
-    [AvaloniaFact(DisplayName = "Kostenlose KI-Werkzeuge: Claude bestellt ein Bild, Trendo erzeugt es ins Projekt; Knöpfe für Bild und Vorlesen; Diktieren füllt das Eingabefeld")]
+    [AvaloniaFact(DisplayName = "Kostenlose KI-Werkzeuge: Claude bestellt ein Bild – erst als Entwurf zum Ansehen, ins Projekt erst nach „Übernehmen“; neu erzeugen, verwerfen; Knöpfe; Diktieren")]
     public async Task Tools_and_buttons()
     {
         var (w, _, _) = Ui.Open();
@@ -85,17 +85,24 @@ public class ClaudeFallback_Ui
             await Run(w.ClaudeChatSend("Ein Ritterspiel"));
             var chat = w.ClaudeChatCurrent()!;
             Assert.Equal(("bild", "Ein Ritter im Sonnenuntergang"), (tools[0].Kind, tools[0].Input)); Assert.EndsWith(Path.Combine("bilder", "titel.png"), tools[0].File);
-            Assert.True(File.Exists(Path.Combine(chat.Folder, "bilder", "titel.png")));
+            Assert.False(File.Exists(Path.Combine(chat.Folder, "bilder", "titel.png"))); // noch nicht im Projekt – erst nach Freigabe
             var ans = chat.Messages[1];
-            Assert.Contains(ans.Steps, s => s.Text == "Bild erzeugen: bilder/titel.png"); Assert.Contains("bilder/titel.png (neu)", ans.Changed!);
+            Assert.Contains(ans.Steps, s => s.Text.StartsWith("Bild erzeugen: bilder/titel.png – Entwurf"));
             Assert.DoesNotContain("[[trendo:", string.Join("|", w.GetLogicalTexts())); // Bestellzeile wird nicht angezeigt
+            Assert.Single(w.ClaudeDrafts); Assert.NotNull(w.TryFind<Border>("claude-draft-0")); Assert.NotNull(w.TryFind<Button>("claude-draft-ok-0"));
+            w.Find<Button>("claude-draft-again-0").Press(); while (tools.Count < 2) await Run(Task.Delay(20)); // neu erzeugen
+            Assert.Single(w.ClaudeDrafts);
+            w.Find<Button>("claude-draft-ok-0").Press(); await Run(Task.Delay(50));
+            Assert.True(File.Exists(Path.Combine(chat.Folder, "bilder", "titel.png"))); Assert.Empty(w.ClaudeDrafts);
+            Assert.StartsWith("✓ Bild erzeugen übernommen", w.ClaudeChatCurrent()!.Messages[^1].Text);
 
             w.Find<TextBox>("claude-chat-input").Text = "Ein Leuchtturm";
-            w.Find<Button>("claude-tool-bild").Press(); while (w.ClaudeChatRunning() || tools.Count < 2) await Run(Task.Delay(20));
-            Assert.Equal(("bild", "Ein Leuchtturm"), (tools[1].Kind, tools[1].Input));
-            Assert.Contains("KI-Bibliothek", w.ClaudeChatCurrent()!.Messages[^1].Ki);
-            w.Find<Button>("claude-tool-vorlesen").Press(); while (w.ClaudeChatRunning() || tools.Count < 3) await Run(Task.Delay(20));
-            Assert.Equal("vorlesen", tools[2].Kind); Assert.StartsWith("Bild erzeugen: fertig", tools[2].Input);
+            w.Find<Button>("claude-tool-bild").Press(); while (w.ClaudeChatRunning() || tools.Count < 3) await Run(Task.Delay(20));
+            Assert.Equal(("bild", "Ein Leuchtturm"), (tools[2].Kind, tools[2].Input));
+            Assert.Contains("KI-Bibliothek", w.ClaudeChatCurrent()!.Messages[^1].Ki); Assert.Single(w.ClaudeDrafts);
+            w.Find<Button>("claude-draft-no-0").Press(); await Run(Task.Delay(50)); Assert.Empty(w.ClaudeDrafts); // verworfen
+            w.Find<Button>("claude-tool-vorlesen").Press(); while (w.ClaudeChatRunning() || tools.Count < 4) await Run(Task.Delay(20));
+            Assert.Equal("vorlesen", tools[3].Kind); Assert.StartsWith("Bild erzeugen: Entwurf", tools[3].Input);
 
             w.Find<TextBox>("claude-chat-input").Text = "";
             await Run(w.ClaudeDictate()); Assert.Equal("Bau mir ein Quiz", w.Find<TextBox>("claude-chat-input").Text);

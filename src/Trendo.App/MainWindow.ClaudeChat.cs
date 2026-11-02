@@ -29,7 +29,10 @@ public partial class MainWindow
         public string? PreviewFile; public string? PreviewOriginal; public string Compare = "nachher"; public NativeWebView? PreviewWeb; public string? PreviewNote;
         public List<string> Pending = []; public WrapPanel Chips = new() { Name = "claude-chat-attachments" };
         public bool AskFull; public Button? FullButton; public bool FullForNew, SafeForNew;
-        public TextBlock ActiveKi = new(); public string? LastKi; public TextBlock Caps = new();
+        public TextBlock ActiveKi = new(); public string? LastKi; public TextBlock Caps = new(); public int IdeaPage;
+        public List<ClaudeDraft> Drafts = [];
+        // Weiterschreiben, während Claude arbeitet (Wunsch 02.11.2026): Nachrichten warten und kommen gleich danach dran
+        public Queue<string> Queue = new(); public StackPanel QueuePanel = new() { Name = "claude-chat-queue", Spacing = 6 };
     }
     /// <summary>Spiel, das Claude im Spiele-Studio gebaut hat (wird dort oben gezeigt), mit Vorschaubild.</summary>
     string? _gameClaude, _gameClaudeShot;
@@ -55,11 +58,11 @@ public partial class MainWindow
         ui.Title = new TextBlock { Name = "claude-chat-title", Foreground = ClaudeFg, FontSize = 14, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
         ui.Input = new TextBox { Name = "claude-chat-input", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 56, MaxHeight = 200, FontSize = 14,
             PlaceholderText = "Schreib Claude, was du bauen möchtest …", Background = Brush.Parse("#FF30302E"), Foreground = ClaudeFg, BorderBrush = ClaudeLine, CornerRadius = new CornerRadius(14), Padding = new Thickness(14, 10, 52, 10) };
-        ui.Input.KeyDown += (_, e) => { if (e.Key == Key.Enter && !e.KeyModifiers.HasFlag(KeyModifiers.Shift)) { e.Handled = true; _ = ClaudeChatSend(dock, ui.Input.Text); } };
+        ui.Input.KeyDown += (_, e) => { if (e.Key == Key.Enter && !e.KeyModifiers.HasFlag(KeyModifiers.Shift)) { e.Handled = true; ClaudeChatSubmit(dock); } };
         ui.Send = new Button { Name = "claude-chat-send", Content = "↑", Width = 34, Height = 34, CornerRadius = new CornerRadius(17), Background = ClaudeAccent, Foreground = Brushes.White, FontSize = 16, FontWeight = FontWeight.Bold,
             HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 10, 10), HorizontalContentAlignment = HorizontalAlignment.Center, Padding = new Thickness(0) };
         ToolTip.SetTip(ui.Send, "Senden (Enter) · neue Zeile mit Umschalt+Enter");
-        ui.Send.Click += (_, _) => { if (ui.Running) ui.Cts?.Cancel(); else _ = ClaudeChatSend(dock, ui.Input.Text); };
+        ui.Send.Click += (_, _) => { if (ui.Running && string.IsNullOrWhiteSpace(ui.Input.Text)) ui.Cts?.Cancel(); else ClaudeChatSubmit(dock); };
         var attach = new Button { Name = "claude-chat-attach", Content = "📎", Width = 34, Height = 34, CornerRadius = new CornerRadius(17), Background = ClaudeItem, Foreground = ClaudeFg, FontSize = 15,
             HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(0, 0, 50, 10), HorizontalContentAlignment = HorizontalAlignment.Center, Padding = new Thickness(0) };
         ToolTip.SetTip(attach, "Bilder oder Dateien anhängen (oder einfach hierher ziehen)");
@@ -166,7 +169,7 @@ public partial class MainWindow
             ui.Input.IsEnabled = false; ui.Send.IsEnabled = false;
             return;
         }
-        ui.Input.IsEnabled = !ui.Running; ui.Send.IsEnabled = true;
+        ui.Input.IsEnabled = true; ui.Send.IsEnabled = true; // auch während Claude arbeitet: weiterschreiben
         ui.LastKi = chat?.Messages.LastOrDefault(m => m.Role == "assistant" && m.Ki is not null)?.Ki;
         ui.ActiveKi.Text = ActiveKiText(ui.LastKi);
         ui.ActiveKi.Foreground = CLimit.Active(DateTimeOffset.Now) ? ClaudeAccent : ClaudeMuted;
@@ -180,6 +183,8 @@ public partial class MainWindow
                 new TextBlock { Text = "Claude bleibt hier beim Fachgebiet dieses Studios.", FontSize = 12.5, Foreground = ClaudeMuted, HorizontalAlignment = HorizontalAlignment.Center },
                 IdeaChips(dock) } });
         else foreach (var m in chat.Messages) ui.Log.Children.Add(ChatMessage(dock, chat, m, m == chat.Messages[^1]));
+        for (var i = 0; i < ui.Drafts.Count; i++) if (ui.Drafts[i].ChatId == chat?.Id) ui.Log.Children.Add(DraftCard(ui.Drafts[i], i)); // Entwürfe warten auf Freigabe
+        AttachQueue(ui);
         Dispatcher.UIThread.Post(() => ui.Scroll.ScrollToEnd(), DispatcherPriority.Background);
     }
 
@@ -333,7 +338,7 @@ public partial class MainWindow
             Child = new TextBlock { Foreground = ClaudeFg, FontSize = 12 } };
         live.Children.Add(skillChip); live.Children.Add(stepsPanel); live.Children.Add(textPanel); live.Children.Add(thinking);
         var used = new List<string>();
-        ui.Log.Children.Add(live);
+        ui.Log.Children.Add(live); AttachQueue(ui);
         var steps = new List<ClaudeChats.Step>(); var say = new System.Text.StringBuilder(); string? error = null; string? session = null; var ok = true; var tokens = 0; string? limitRaw = null; var ki = ClaudeKi;
 
         var folder = chat.Folder; Directory.CreateDirectory(folder);
@@ -416,7 +421,7 @@ public partial class MainWindow
             }
         }
         // bestellte KI-Werkzeuge (Bild, Musik, …) kostenlos auf dem PC ausführen – die Dateien zählen zu den Änderungen dieser Antwort
-        if (error is null && ClaudeTools.Parse(say.ToString()).Count > 0) { thinking.Text = "🎨 Trendo erzeugt Bilder, Musik … (auf diesem PC)"; steps.AddRange(await ClaudeRunTools(say.ToString(), folder)); }
+        if (error is null && ClaudeTools.Parse(say.ToString()).Count > 0) { thinking.Text = "🎨 Trendo erzeugt Bilder, Musik … (auf diesem PC)"; steps.AddRange(await ClaudeRunTools(dock, chat.Id, say.ToString(), folder)); }
         var changes = snap?.Changes() ?? [];
         var changed = changes.Select(c => $"{c.File} ({c.Change})").ToList();
         var answer = say.ToString().Trim();
@@ -440,6 +445,7 @@ public partial class MainWindow
                 await ClaudeChatSend(dock, "Trendo hat dein Ergebnis geprüft und das gefunden – bitte behebe es:\n" + TrendoAgent.Feedback(found), check: true);
             }
         }
+        if (!check && ui.Queue.Count > 0) { var next = ui.Queue.Dequeue(); RenderQueue(dock); await ClaudeChatSend(dock, next); } // wartende Nachricht gleich danach
     }
 
     /// <summary>Vorgabe „Claude darf bei Bedarf ins Internet und Befehle ausführen“ (KI-Einstellungen, Standard an).</summary>
@@ -477,11 +483,31 @@ public partial class MainWindow
     /// <summary>Offizielle Claude-App öffnen (Cowork, Claude Design …); ohne installierte App die Download-Seite.</summary>
     public void ClaudeOpenApp()
     {
-        _core.Audit.Append(Principal.LocalOwner.Name, "claude.app", "");
-        if (_opt.Isolated) { _claudeMsg = "Testmodus: würde jetzt die Claude-App öffnen – nichts gestartet."; return; }
+        var app = ClaudeAppProbe is { } probe ? probe() : FindClaudeApp();
+        _core.Audit.Append(Principal.LocalOwner.Name, "claude.app", app is null ? "nicht installiert" : "öffnen");
+        _claudeMsg = app is not null ? "Die Claude-App wird geöffnet." : "Die Claude-App ist auf diesem PC nicht installiert – die offizielle Download-Seite öffnet sich.";
+        if (_opt.Isolated) { _claudeMsg = "Testmodus: " + _claudeMsg + " (nichts gestartet)"; return; }
+        Launch(app ?? ClaudeDownload);
+    }
+
+    public const string ClaudeDownload = "https://claude.ai/download";
+    /// <summary>Für Tests: statt auf dem PC zu suchen (Rückgabe: was geöffnet würde, null = nicht installiert).</summary>
+    public static Func<string?>? ClaudeAppProbe { get; set; }
+
+    /// <summary>Ist die offizielle Claude-App installiert? Klassische Installation (Programmdatei) oder App-Paket aus dem Store bzw. dem neuen Installer –
+    /// beide melden „claude://“ bei Windows an; darüber öffnet Windows die App. Liefert, was zu öffnen ist, sonst null. Liest nur, ändert nichts.</summary>
+    static string? FindClaudeApp()
+    {
         var la = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var exe = new[] { Path.Combine(la, "AnthropicClaude", "claude.exe"), Path.Combine(la, "Programs", "Claude", "Claude.exe") }.FirstOrDefault(File.Exists);
-        Launch(exe ?? "https://claude.ai/download");
+        if (new[] { Path.Combine(la, "AnthropicClaude", "claude.exe"), Path.Combine(la, "Programs", "Claude", "Claude.exe") }.FirstOrDefault(File.Exists) is { } exe) return exe;
+        if (!OperatingSystem.IsWindows()) return null;
+        try
+        {
+            using var key = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(@"claude\shell\open\command");
+            if (key?.GetValue(null) is string cmd && cmd.Contains("Claude.exe", StringComparison.OrdinalIgnoreCase)) return "claude://";
+        }
+        catch (Exception e) when (e is System.Security.SecurityException or UnauthorizedAccessException or IOException) { }
+        return null;
     }
 
     /// <summary>Was Claude aus deinem eigenen Claude mitbringt (vom letzten Lauf gemerkt, je Person): Skills, Connectoren, Plugins, Agenten.</summary>
@@ -504,11 +530,45 @@ public partial class MainWindow
         return "Aktive KI: " + ClaudeKi;
     }
 
+    /// <summary>Eingabe abschicken – arbeitet Claude noch, kommt die Nachricht in die Warteschlange und gleich danach dran (öffentlich für Tests über das aktive Fenster).</summary>
+    public void ClaudeChatSubmit(string text) { if (Windows.Active?.Id is { } id && _claudeDocks.TryGetValue(id, out var d) && _chatUis.TryGetValue(d, out var ui)) { ui.Input.Text = text; ClaudeChatSubmit(d); } }
+    public int ClaudeChatQueued() => ActiveChatUi()?.Queue.Count ?? 0;
+    void ClaudeChatSubmit(ClaudeDock dock)
+    {
+        if (!_chatUis.TryGetValue(dock, out var ui) || string.IsNullOrWhiteSpace(ui.Input.Text)) return;
+        if (!ui.Running) { _ = ClaudeChatSend(dock, ui.Input.Text); return; }
+        ui.Queue.Enqueue(ui.Input.Text.Trim()); ui.Input.Text = "";
+        _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat.wartet", ChatStudio(dock));
+        RenderQueue(dock);
+    }
+
+    void AttachQueue(ChatUi ui) { (ui.QueuePanel.Parent as Panel)?.Children.Remove(ui.QueuePanel); ui.Log.Children.Add(ui.QueuePanel); }
+
+    /// <summary>Wartende Nachrichten als Blasen: „wartet“, mit „Stopp & jetzt“ (Claude hält an und nimmt sie sofort auf).</summary>
+    void RenderQueue(ClaudeDock dock)
+    {
+        if (!_chatUis.TryGetValue(dock, out var ui)) return;
+        ui.QueuePanel.Children.Clear();
+        var i = 0;
+        foreach (var q in ui.Queue)
+        {
+            var now = new Button { Name = $"claude-chat-queue-now-{i++}", Content = "⏹ Stopp & jetzt", FontSize = 11.5, Padding = new Thickness(8, 2), Background = Brushes.Transparent, Foreground = ClaudeAccent, BorderThickness = new Thickness(1), BorderBrush = ClaudeAccent, CornerRadius = new CornerRadius(8) };
+            ToolTip.SetTip(now, "Claude hält jetzt an und arbeitet gleich mit dieser Nachricht weiter – bisher Gemachtes bleibt");
+            now.Click += (_, _) => ui.Cts?.Cancel();
+            ui.QueuePanel.Children.Add(new Border { Background = Brush.Parse("#803A3935"), BorderBrush = ClaudeLine, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(14, 8), HorizontalAlignment = HorizontalAlignment.Right, MaxWidth = 620,
+                Child = new StackPanel { Spacing = 4, Children = { new TextBlock { Text = q, Foreground = ClaudeFg, FontSize = 14, TextWrapping = TextWrapping.Wrap },
+                    new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { new TextBlock { Text = "⏳ wartet – Claude nimmt es gleich danach auf", Foreground = ClaudeMuted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center }, now } } } } });
+        }
+        ui.Scroll.ScrollToEnd();
+    }
+
     /// <summary>Startideen passend zum Studio – anklicken schickt sie gleich ab.</summary>
     Control IdeaChips(ClaudeDock dock)
     {
         var row = new WrapPanel { Name = "claude-chat-ideas", HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 14, 0, 0), MaxWidth = 640 };
-        var ideas = ClaudeChats.Ideas(dock.Studio, dock.Page);
+        var ui = _chatUis[dock];
+        var used = CChats.All(ChatStudio(dock)).Select(c => c.Messages.FirstOrDefault()?.Text ?? c.Title).ToHashSet();
+        var ideas = StudioIdeas.Pick(ClaudeChats.Ideas(dock.Studio, dock.Page), DateOnly.FromDateTime(DateTime.Today), used, ui.IdeaPage); // jeden Tag andere, genutzte zuletzt
         for (var i = 0; i < ideas.Count; i++)
         {
             var idea = ideas[i];
@@ -516,6 +576,9 @@ public partial class MainWindow
             b.Click += (_, _) => _ = ClaudeChatSend(dock, idea);
             row.Children.Add(b);
         }
+        var more = new Button { Name = "claude-chat-ideas-more", Content = "🔄 Andere Ideen", Background = Brushes.Transparent, Foreground = ClaudeMuted, CornerRadius = new CornerRadius(16), Padding = new Thickness(12, 7), Margin = new Thickness(0, 0, 8, 8), BorderThickness = new Thickness(1), BorderBrush = ClaudeLine, FontSize = 12.5 };
+        more.Click += (_, _) => { ui.IdeaPage++; RenderChat(dock); };
+        row.Children.Add(more);
         return row;
     }
 

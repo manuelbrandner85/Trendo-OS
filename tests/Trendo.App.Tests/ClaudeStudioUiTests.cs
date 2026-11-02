@@ -46,7 +46,9 @@ public class ClaudeStudio_Ui
             await Run(w.ClaudeCheck(true));
             w.Show("dev"); w.ClaudeDockToggle("CORE-07"); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
             Assert.NotNull(w.TryFind<Button>("claude-chat-idea-0"));
-            Assert.Contains("Visitenkarten", (string)w.Find<Button>("claude-chat-idea-0").Content!);
+            var first = (string)w.Find<Button>("claude-chat-idea-0").Content!;
+            Assert.Contains(first, ClaudeChats.Ideas("CORE-07", "dev")); // aus dem Vorrat des Studios
+            w.Find<Button>("claude-chat-ideas-more").Press(); Assert.NotEqual(first, (string)w.Find<Button>("claude-chat-idea-0").Content!); // andere Ideen
             var pic = Path.Combine(root, "skizze.png"); File.WriteAllBytes(pic, [137, 80, 78, 71]);
             w.ClaudeChatAttach([pic]); Assert.NotNull(w.TryFind<Button>("claude-chat-attachment-del-0"));
             w.Find<Button>("claude-chat-idea-0").Press(); await Run(Task.Delay(50)); while (w.ClaudeChatRunning()) await Run(Task.Delay(20));

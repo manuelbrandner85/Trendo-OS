@@ -105,17 +105,14 @@ public sealed partial class ClaudeChats(string dataRoot)
         return opts.Count == 0 ? (answer, null, []) : (answer[..m.Index].TrimEnd(), m.Groups["q"].Value.Trim(), opts);
     }
 
-    /// <summary>Startideen im leeren Chat – passend zum Studio (anklicken und loslegen).</summary>
+    /// <summary>Vorrat an Startideen – passend zum Studio bzw. Programm (die Auswahl für heute trifft <see cref="StudioIdeas.Pick"/>).</summary>
     public static IReadOnlyList<string> Ideas(string? studio, string? page) => (studio, page) switch
     {
-        (_, "text") => ["Schreib eine Einladung zum Sommerfest", "Fasse ein Thema in einer Seite zusammen", "Schreib ein freundliches Bewerbungsanschreiben", "Erstelle eine Checkliste für den Umzug"],
-        (_, "tabelle") => ["Haushaltsbuch mit Einnahmen und Ausgaben", "Trainingsplan für 8 Wochen", "Preisliste mit Mehrwertsteuer", "Stundenzettel für einen Monat"],
-        ("CORE-06", _) => ["Ein kleines Jump-and-Run", "Ein Quiz mit 10 Fragen", "Ein Snake-Spiel mit Highscore", "Ein Memory mit Tierbildern"],
-        ("CORE-07" or "X-03" or "X-04", _) => ["Eine Visitenkarten-Seite", "Eine Seite für ein Café mit Speisekarte", "Ein kleiner Online-Shop", "Eine Landingpage für ein Produkt"],
-        ("CORE-08", _) => ["Ein Logo als SVG", "Ein Plakat für ein Konzert", "Eine Geburtstagskarte", "Icons für eine App"],
-        ("CORE-05" or "SPEC-09" or "SPEC-04", _) => ["Ein einfacher Holztisch", "Eine Vase", "Ein kleines Haus", "Ein Regal für die Wand"],
-        ("SPEC-01", _) => ["Richte das Wohnzimmer gemütlich ein", "Plane eine Küche", "Mach den Grundriss barrierefrei", "Schlage Farben für die Wände vor"],
-        _ => ["Erklär mir, was ich hier machen kann", "Mach einen Vorschlag für den Anfang", "Hilf mir, eine Idee zu planen", "Prüfe, was schon da ist"],
+        (_, "text") => ["Schreib eine Einladung zum Sommerfest", "Fasse ein Thema in einer Seite zusammen", "Schreib ein freundliches Bewerbungsanschreiben", "Erstelle eine Checkliste für den Umzug",
+            "Schreib eine Rede für den 60. Geburtstag", "Kurzgeschichte für Kinder zum Vorlesen", "Vereinsnachrichten für den Monat", "Anleitung Schritt für Schritt", "Gedicht für eine Karte", "Bericht über einen Ausflug", "Text für ein Fotobuch", "Lebenslauf in Stichpunkten"],
+        (_, "tabelle") => ["Haushaltsbuch mit Einnahmen und Ausgaben", "Trainingsplan für 8 Wochen", "Preisliste mit Mehrwertsteuer", "Stundenzettel für einen Monat",
+            "Putzplan für die WG", "Gewichtstagebuch mit Wochenmittel", "Inventarliste für den Keller", "Notenliste mit Durchschnitt", "Urlaubskosten aufteilen", "Vereinskasse", "Geburtstagsliste der Familie", "Kalorientabelle"],
+        _ => StudioIdeas.Pool(studio), // konkrete Ideen je Studio
     };
 }
 
@@ -137,12 +134,7 @@ public sealed record StudioFormat(string Rule, string? Main, string[] Opens)
         (_, _) when shell => Program,
         (_, "text") => Text,
         (_, "tabelle") => Sheet,
-        ("CORE-07" or "X-03" or "X-04" or "STUDIO-ONLINE-BUSINESS-01", _) => Web,
-        ("CORE-06", _) => Game,
-        ("CORE-08", _) => Graphic,
-        ("CORE-05" or "SPEC-09" or "SPEC-04", _) => Model3D,
-        ("SYS-10", _) => Text,
-        _ => null,
+        _ => StudioProfiles.Has(studio) ? StudioProfiles.For(studio).Format : null, // jedes Studio mit eigenem Profil (Wunsch 02.11.2026)
     };
 
     /// <summary>Kann die Vorschau diese Datei zeigen (Browser-Ansicht) oder als Text?</summary>

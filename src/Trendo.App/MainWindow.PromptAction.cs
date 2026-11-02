@@ -63,13 +63,30 @@ public partial class MainWindow
 
     private string? NewestProject() => _core.Projects.List().OrderByDescending(p => p.CreatedAt).ThenBy(p => p.Id).FirstOrDefault()?.Id;
 
+    /// <summary>Gehört auf diese Seite der Claude-Knopf? Jede Seite eines Studios (öffentlich für Tests); nicht Startbildschirm und Studio-Übersicht (eigene Eingabe).</summary>
+    public bool ClaudeBelongs(string key) => key is not ("start" or "studios" or "suche" or "claude-verbinden") && ClaudeStudioOf(key) is { } m && StudioCatalog.For(m) is not null;
+
+    /// <summary>Studio, für das Claude auf dieser Seite arbeitet: das Modul der Seite; die Business-Seiten (BUS-…) gehören zu „Online verkaufen“.</summary>
+    public string? ClaudeStudioOf(string key) => ModuleOf(key) is { } m ? (m.StartsWith("BUS-", StringComparison.Ordinal) ? "STUDIO-ONLINE-BUSINESS-01" : m) : null;
+
     /// <summary>Hängt die Leiste an. Der Startbildschirm bleibt unverändert, damit der parallele Desktop-Auftrag dort frei bleibt.</summary>
     private Control WithPromptBar(string key, Control view)
     {
         // start und studios haben eine eigene Eingabezeile (T-0218). 3d: die Seite füllt die Höhe; die Leiste sitzt dort im linken Rollbereich.
         if (key is "start" or "studios" or "3d" || FocusMode) return view; // G13: Fokusmodus ohne KI-Zeile
         var studio = ModuleOf(key);
-        if (studio is null || CapabilityCatalog.Find(studio) is null) return view;
+        if (studio is null) return view;
+        if (CapabilityCatalog.Find(studio) is null)
+        {
+            // keine Auftragsleiste für dieses Modul – Claude gehört trotzdem in jedes Studio (Wunsch 02.11.2026): schlanke Leiste nur mit Claude
+            if (!ClaudeBelongs(key) || ClaudeStudioOf(key) is not { } cs) return view;
+            var cc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } aw && ClaudeDockOpen(aw) ? "Claude ✕" : "✳ Claude", Height = 32, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Avalonia.Thickness(8, 6, 8, 2) };
+            ToolTip.SetTip(cc, $"Claude für „{StudioCatalog.NameOf(cs, cs)}“ öffnen – mit deinem Abo, passend zu diesem Studio");
+            cc.Click += (_, _) => ClaudeDockToggle(cs, null);
+            DockPanel.SetDock(cc, Avalonia.Controls.Dock.Top);
+            view.HorizontalAlignment = HorizontalAlignment.Stretch; view.VerticalAlignment = VerticalAlignment.Stretch;
+            return new DockPanel { LastChildFill = true, Children = { cc, view } };
+        }
         var dock = new DockPanel { LastChildFill = true, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
         var bar = BuildPromptBar(studio, key);
         DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top);

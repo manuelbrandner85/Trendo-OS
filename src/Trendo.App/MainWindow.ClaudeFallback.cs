@@ -49,24 +49,95 @@ public partial class MainWindow
         return (summary + (tools.Any() ? "\n" + string.Join("\n", tools) : ""), KiLabel(a, all), changes, null);
     }
 
-    /// <summary>Werkzeug-Bestellungen ausführen (Claude oder Ersatz-KI): jede Datei landet im Projekt; gibt die Schritte für den Verlauf zurück.</summary>
-    async Task<List<ClaudeChats.Step>> ClaudeRunTools(string answer, string folder)
+    /// <summary>Entwurf eines KI-Werkzeugs (Wunsch 02.11.2026: „vorher anzeigen, erst mit Freigabe“): liegt außerhalb des Projekts, bis du ihn übernimmst.</summary>
+    public sealed record ClaudeDraft(string Kind, string Input, string File, string Path, string Folder, string ChatId);
+    /// <summary>Entwürfe, die auf Freigabe warten (öffentlich für Tests).</summary>
+    public IReadOnlyList<ClaudeDraft> ClaudeDrafts => ActiveChatUi()?.Drafts ?? [];
+    string DraftRoot(string chatId) => System.IO.Path.Combine(_core.DataRoot, "claude-chats", "entwurf", chatId);
+
+    /// <summary>Werkzeug-Bestellungen ausführen (Claude oder Ersatz-KI): jede Datei entsteht als Entwurf und wartet auf deine Freigabe.</summary>
+    async Task<List<ClaudeChats.Step>> ClaudeRunTools(ClaudeDock dock, string chatId, string answer, string folder)
     {
         var steps = new List<ClaudeChats.Step>();
         foreach (var call in ClaudeTools.Parse(answer))
         {
-            var (ok, msg) = await KiToolRun(call.Kind, call.Input, folder, call.File);
-            steps.Add(new ClaudeChats.Step(ok ? $"{ClaudeTools.Kinds[call.Kind].Label}: {call.File}" : msg, ok, !ok));
+            var (ok, msg) = await KiToolRun(call.Kind, call.Input, folder, call.File, DraftRoot(chatId));
+            if (ok && _chatUis.TryGetValue(dock, out var ui)) ui.Drafts.Add(new ClaudeDraft(call.Kind, call.Input, call.File, System.IO.Path.Combine(DraftRoot(chatId), call.File.Replace('/', System.IO.Path.DirectorySeparatorChar)), folder, chatId));
+            steps.Add(new ClaudeChats.Step(ok ? $"{ClaudeTools.Kinds[call.Kind].Label}: {call.File} – Entwurf wartet auf deine Freigabe" : msg, false, !ok));
         }
         return steps;
     }
 
+    /// <summary>Entwurf übernehmen (ins Projekt), neu erzeugen oder verwerfen (öffentlich für Tests über das aktive Fenster).</summary>
+    public async Task ClaudeDraftDecide(int index, string what)
+    {
+        if (Windows.Active?.Id is not { } id || !_claudeDocks.TryGetValue(id, out var dock) || !_chatUis.TryGetValue(dock, out var ui) || index < 0 || index >= ui.Drafts.Count) return;
+        var d = ui.Drafts[index];
+        var label = ClaudeTools.Kinds[d.Kind].Label;
+        switch (what)
+        {
+            case "ok":
+            {
+                var target = System.IO.Path.Combine(d.Folder, d.File.Replace('/', System.IO.Path.DirectorySeparatorChar));
+                Directory.CreateDirectory(System.IO.Path.GetDirectoryName(target)!);
+                if (File.Exists(d.Path)) File.Move(d.Path, target, true);
+                ui.Drafts.RemoveAt(index);
+                CChats.Add(ChatStudio(dock), d.ChatId, new ClaudeChats.Msg("assistant", $"✓ {label} übernommen: {d.File}", [new ClaudeChats.Step($"{label}: {d.File}", true)], DateTimeOffset.Now, [d.File + " (neu)"], 0, null, null, "🆓 KI-Bibliothek (auf diesem PC)"));
+                _core.Audit.Append(Principal.LocalOwner.Name, "claude.entwurf.ok", d.File);
+                RenderChat(dock);
+                if (StudioFormat.PreviewKind(target) != "none") ShowPreview(dock, target);
+                await ClaudeShowInStudio(dock, d.Folder, [d.File]);
+                return;
+            }
+            case "neu":
+                ui.Drafts[index] = d; ui.Running = true; RenderChat(dock);
+                var (ok, msg) = await KiToolRun(d.Kind, d.Input, d.Folder, d.File, DraftRoot(d.ChatId));
+                ui.Running = false; if (!ok) _claudeMsg = msg;
+                _core.Audit.Append(Principal.LocalOwner.Name, "claude.entwurf.neu", d.File);
+                RenderChat(dock); return;
+            default:
+                try { if (File.Exists(d.Path)) File.Delete(d.Path); } catch (IOException) { } // eigener Entwurf von Trendo, noch nicht im Projekt
+                ui.Drafts.RemoveAt(index);
+                _core.Audit.Append(Principal.LocalOwner.Name, "claude.entwurf.verworfen", d.File);
+                RenderChat(dock); return;
+        }
+    }
+
+    /// <summary>Karte eines Entwurfs wie bei ChatGPT: ansehen bzw. anhören, dann übernehmen, neu erzeugen oder verwerfen.</summary>
+    Control DraftCard(ClaudeDraft d, int i)
+    {
+        var label = ClaudeTools.Kinds[d.Kind].Label;
+        var sp = new StackPanel { Spacing = 8 };
+        sp.Children.Add(new TextBlock { Text = $"Entwurf · {label} · {d.File}", Foreground = ClaudeFg, FontWeight = FontWeight.SemiBold, FontSize = 13 });
+        var ext = System.IO.Path.GetExtension(d.Path).ToLowerInvariant();
+        if (ext is ".png" or ".jpg" or ".jpeg" or ".webp" && File.Exists(d.Path))
+            try { using var fs = File.OpenRead(d.Path); sp.Children.Add(new Image { Name = $"claude-draft-image-{i}", Source = new Avalonia.Media.Imaging.Bitmap(fs), MaxHeight = 320, HorizontalAlignment = HorizontalAlignment.Left }); }
+            catch (Exception e) when (e is IOException or ArgumentException or InvalidOperationException or NullReferenceException) { sp.Children.Add(new TextBlock { Text = "Vorschau nicht möglich.", Foreground = ClaudeMuted }); }
+        else if (ext == ".txt" && File.Exists(d.Path)) sp.Children.Add(new SelectableTextBlock { Text = File.ReadAllText(d.Path), Foreground = ClaudeFg, TextWrapping = TextWrapping.Wrap, MaxHeight = 200 });
+        else
+        {
+            var play = new Button { Name = $"claude-draft-play-{i}", Content = ext is ".webm" or ".mp4" ? "▶ Ansehen" : "▶ Anhören", Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), Padding = new Thickness(12, 5), BorderThickness = new Thickness(0), HorizontalAlignment = HorizontalAlignment.Left };
+            play.Click += (_, _) => { if (!_opt.Isolated) Launch(d.Path); };
+            sp.Children.Add(play);
+        }
+        var row = new WrapPanel();
+        Button B(string name, string text, bool primary, string what)
+        {
+            var b = new Button { Name = name, Content = text, Background = primary ? ClaudeAccent : ClaudeItem, Foreground = primary ? Brushes.White : ClaudeFg, CornerRadius = new CornerRadius(8), Padding = new Thickness(12, 5), Margin = new Thickness(0, 0, 6, 0), BorderThickness = new Thickness(0) };
+            b.Click += async (_, _) => await ClaudeDraftDecide(i, what); row.Children.Add(b); return b;
+        }
+        B($"claude-draft-ok-{i}", "✓ Übernehmen", true, "ok"); B($"claude-draft-again-{i}", "↻ Neu erzeugen", false, "neu"); B($"claude-draft-no-{i}", "✕ Verwerfen", false, "no");
+        sp.Children.Add(row);
+        return new Border { Name = $"claude-draft-{i}", Background = Brush.Parse("#14FFFFFF"), BorderBrush = ClaudeAccent, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(14, 10), Child = sp };
+    }
+
     /// <summary>Ein kostenloses KI-Werkzeug der KI-Bibliothek ausführen (auf dem PC). Fehlt das Modell, sagt Trendo, wo es sich einrichten lässt.</summary>
-    public async Task<(bool Ok, string Msg)> KiToolRun(string kind, string input, string folder, string file)
+    public async Task<(bool Ok, string Msg)> KiToolRun(string kind, string input, string folder, string file, string? outRoot = null)
     {
         if (!ClaudeTools.Kinds.TryGetValue(kind, out var info)) return (false, $"Unbekanntes Werkzeug „{kind}“.");
-        var target = Path.GetFullPath(Path.Combine(folder, file.Replace('/', Path.DirectorySeparatorChar)));
-        if (!target.StartsWith(Path.GetFullPath(folder), StringComparison.OrdinalIgnoreCase)) return (false, "Zieldatei liegt nicht im Projekt.");
+        var root = outRoot ?? folder; // Entwürfe entstehen außerhalb des Projekts
+        var target = Path.GetFullPath(Path.Combine(root, file.Replace('/', Path.DirectorySeparatorChar)));
+        if (!target.StartsWith(Path.GetFullPath(root), StringComparison.OrdinalIgnoreCase)) return (false, "Zieldatei liegt nicht im Projekt.");
         Directory.CreateDirectory(Path.GetDirectoryName(target)!);
         string Src() => Path.GetFullPath(Path.Combine(folder, input.Replace('/', Path.DirectorySeparatorChar)));
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.werkzeug", $"{kind} {Path.GetFileName(target)}");
@@ -156,16 +227,13 @@ public partial class MainWindow
         chats.Add(studio, chat.Id, new ClaudeChats.Msg("user", (kind is "bild" or "video" or "musik" ? $"{label}: " : "") + (kind == "vorlesen" ? "Letzte Antwort vorlesen" : input), [], DateTimeOffset.Now));
         ui.Input.Text = ""; ui.Running = true; RenderChatList(dock); RenderChat(dock);
         ui.Log.Children.Add(new TextBlock { Text = $"⏳ {label} … (kostenlos auf diesem PC)", Foreground = ClaudeAccent, FontSize = 13 });
-        var (ok, msg) = await KiToolRun(kind, input, chat.Folder, file);
+        var (ok, msg) = await KiToolRun(kind, input, chat.Folder, file, DraftRoot(chat.Id));
         ui.Running = false;
-        var full = Path.Combine(chat.Folder, file.Replace('/', Path.DirectorySeparatorChar));
-        chats.Add(studio, chat.Id, new ClaudeChats.Msg("assistant", ok ? $"{label}: fertig – {file}" : "⚠ " + msg, ok ? [new ClaudeChats.Step($"{label}: {file}", true)] : [], DateTimeOffset.Now, ok ? [file + " (neu)"] : null, 0, null, null, "🆓 KI-Bibliothek (auf diesem PC)"));
+        var draft = Path.Combine(DraftRoot(chat.Id), file.Replace('/', Path.DirectorySeparatorChar));
+        if (ok) ui.Drafts.Add(new ClaudeDraft(kind, input, file, draft, chat.Folder, chat.Id));
+        chats.Add(studio, chat.Id, new ClaudeChats.Msg("assistant", ok ? $"{label}: Entwurf fertig – sieh ihn dir an und übernimm ihn, wenn er passt." : "⚠ " + msg, [], DateTimeOffset.Now, null, 0, null, null, "🆓 KI-Bibliothek (auf diesem PC)"));
         RenderChatList(dock); RenderChat(dock);
-        if (ok)
-        {
-            if (StudioFormat.PreviewKind(full) != "none") ShowPreview(dock, full);
-            if (kind == "vorlesen" && !_opt.Isolated) Launch(full);
-        }
+        if (ok && kind == "vorlesen" && !_opt.Isolated) Launch(draft); // vorlesen: gleich anhören
     }
 
     /// <summary>Diktieren: einmal klicken startet die Aufnahme (Mikrofon, FFmpeg), noch einmal klicken beendet sie – der erkannte Text steht dann im Eingabefeld.</summary>

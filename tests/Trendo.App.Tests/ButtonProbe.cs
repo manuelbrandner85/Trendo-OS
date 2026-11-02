@@ -18,6 +18,7 @@ public static class ButtonProbe
         ["shot-screen"] = "Nimmt den echten Bildschirm mit ffmpeg auf, nicht über den Fake-Launcher.",
         ["trash-yes"] = "Leert den Papierkorb endgültig.",
         ["print-yes"] = "Schickt einen Auftrag an den echten Drucker.",
+        ["auftrag-claude"] = "Öffnet den Claude-Bereich im ganzen Fenster und verdeckt die Seite – eigener Test in ClaudeDock_Ui und ClaudeEverywhere_Ui.",
     };
 
     public static IReadOnlyList<string> Require(MainWindow w, FakeLauncher launcher, string root, params string[] pages)

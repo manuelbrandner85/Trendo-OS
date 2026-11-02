@@ -15,7 +15,8 @@ public class StudioFormatTests
         Assert.Contains("CSV", StudioFormat.For("SYS-10", "tabelle")!.Rule);
         Assert.Contains(".gltf", StudioFormat.For("CORE-05", "3d")!.Opens);
         Assert.Contains(".tdoc", StudioFormat.For("SPEC-01", "architektur", shell: true)!.Rule);
-        Assert.Null(StudioFormat.For("CORE-11", "sicherung"));
+        Assert.Contains("Markdown", StudioFormat.For("CORE-11", "sicherung")!.Rule); // jedes Studio hat ein Profil
+        Assert.Null(StudioFormat.For("UNBEKANNT", "x"));
         Assert.Equal("web", StudioFormat.PreviewKind("a/index.html")); Assert.Equal("web", StudioFormat.PreviewKind("logo.svg"));
         Assert.Equal("text", StudioFormat.PreviewKind("spiel.js")); Assert.Equal("none", StudioFormat.PreviewKind("x.exe"));
         Assert.Equal("index.html", StudioFormat.PickPreview(StudioFormat.For("CORE-07", null), ["style.css", "index.html", "app.js"]));
