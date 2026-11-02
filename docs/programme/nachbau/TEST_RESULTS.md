@@ -1,8 +1,8 @@
 # Sauberer Nachbau – Testergebnisse
 
-Studio: Programme nachbauen (X-10) · Bereich: Entwickeln · Seite: `nachbau` · Stand: 0.9.35 (Stand e086a2d)
+Studio: Programme nachbauen (X-10) · Bereich: Entwickeln · Seite: `nachbau` · Stand: 0.9.36 (Stand 53a9750)
 
-Lauf: `volltest-0.9.35-api.trx, volltest-0.9.35-app.trx, volltest-0.9.35-core.trx`
+Lauf: `volltest-0.9.36-api.trx, volltest-0.9.36-app.trx, volltest-0.9.36-core.trx`
 
 Bestanden 7 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

@@ -1,6 +1,6 @@
 # Produktion – Funktionsmatrix
 
-Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `produktion` · Stand: 0.9.35 (Stand e086a2d)
+Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `produktion` · Stand: 0.9.36 (Stand 53a9750)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
