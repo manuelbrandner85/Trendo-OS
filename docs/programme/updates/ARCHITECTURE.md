@@ -1,6 +1,6 @@
 # Trendo-Updates – Architektur
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.35 (Stand e086a2d)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys12.cs`

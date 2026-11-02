@@ -1,6 +1,6 @@
 # Karten & Touren – Funktionsmatrix
 
-Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.35 (Stand e086a2d)
 
 Quelle: `docs/w6-katalog/SPEC-13.md`
 

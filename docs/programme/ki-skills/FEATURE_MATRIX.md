@@ -1,6 +1,6 @@
 # Skills – Funktionsmatrix
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-skills` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-skills` · Stand: 0.9.35 (Stand e086a2d)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

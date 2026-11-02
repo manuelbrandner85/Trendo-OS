@@ -1,8 +1,8 @@
 # Werkstatt – Testplan
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.35 (Stand e086a2d)
 
-24 Tests sprechen dieses Programm an.
+27 Tests sprechen dieses Programm an.
 
 - CORE-06 (UI): Spiel anlegen öffnet es im Browser; ohne Unreal ehrlicher Hinweis, mit Unreal Projekt anlegen
 - CORE-06: Alle Browser-Spiele werden angelegt, JavaScript ist gültig (node --check)
@@ -11,6 +11,9 @@ Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` ·
 - Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet
 - Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort
 - Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler einmal automatisch an Claude zurück
+- Claude wie im Original: Skills, Plugins, Connectoren und Agenten aus dem eigenen Claude sichtbar; genutzter Skill/Connector unter der Antwort
+- Claude-Abo aufgebraucht: Ersatz-KI übernimmt dieselbe Nachricht (sichtbar „Aktive KI“), bis zur Freigabe ohne Claude, danach automatisch wieder Claude
+- Kostenlose KI-Werkzeuge: Claude bestellt ein Bild, Trendo erzeugt es ins Projekt; Knöpfe für Bild und Vorlesen; Diktieren füllt das Eingabefeld
 - Spiele: Retro-Vorlage, Level im Raster bearbeiten, Figur hinzufügen, prüfen, bauen und spielen
 - Spiele: Umfang AAA+ wählen setzt AAA-Meilensteine; Bauen legt ein Unreal-Projekt mit Spielbibel an
 - Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg

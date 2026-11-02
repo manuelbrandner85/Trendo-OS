@@ -1,6 +1,6 @@
 # KI-Quellen – Architektur
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.35 (Stand e086a2d)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

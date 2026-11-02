@@ -38,7 +38,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Aus Fotos | Gegenstände einscannen (SPEC-09) | 3D, Spiele & VR | keine eigene erkannt | 20 | 24 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](scan3d/README.md) |
 | Punktwolke | Gegenstände einscannen (SPEC-09) | 3D, Spiele & VR | Punktwolken-Ansicht | 20 | 23 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](punktwolke/README.md) |
 | Spiele bauen | Spiele bauen (CORE-06) | 3D, Spiele & VR | keine eigene erkannt | – | 5 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](spiele-programm/README.md) |
-| Werkstatt | Spiele bauen (CORE-06) | 3D, Spiele & VR | keine eigene erkannt | – | 24 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](spiele/README.md) |
+| Werkstatt | Spiele bauen (CORE-06) | 3D, Spiele & VR | keine eigene erkannt | – | 27 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](spiele/README.md) |
 | VR & AR gestalten | VR & AR gestalten (SPEC-04) | 3D, Spiele & VR | 3D-Ansicht | 16 | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](xr/README.md) |
 | Auto & Fahrten | Auto & Fahrten (SPEC-16) | Technik & Fachgebiete | Diagramm/Zeichnung | 20 | 18 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](fahrzeug/README.md) |
 | CNC-Werkstatt | Fräsen & Fertigen (SPEC-14) | Technik & Fachgebiete | Werkzeugbahn-Ansicht | 20 | 11 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](cnc/README.md) |
@@ -66,7 +66,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Sauberer Nachbau | Programme nachbauen (X-10) | Entwickeln | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](nachbau/README.md) |
 | Open Source | Projekte von GitHub holen (X-06) | Entwickeln | keine eigene erkannt | – | 25 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](oss/README.md) |
 | Erweiterungen | Trendo erweitern (X-04) | Entwickeln | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](erweiterungen/README.md) |
-| Software | Webseite bauen (CORE-07) | Entwickeln | Bildansicht | – | 23 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](dev/README.md) |
+| Software | Webseite bauen (CORE-07) | Entwickeln | Bildansicht | – | 26 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](dev/README.md) |
 | Ordner im Heimnetz teilen | Dateien teilen (SYS-06) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](teilen/README.md) |
 | Freigaben | Daten schützen (CORE-11) | System & Sicherheit | keine eigene erkannt | – | 10 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](approvals/README.md) |
 | Schutz & Datenschutz | Daten schützen (CORE-11) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](schutz/README.md) |

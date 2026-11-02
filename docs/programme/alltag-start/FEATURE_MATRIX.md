@@ -1,6 +1,6 @@
 # Übersicht – Funktionsmatrix
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.35 (Stand e086a2d)
 
 Quelle: `docs/spec/kataloge/SYS-02_KATALOG.md`
 

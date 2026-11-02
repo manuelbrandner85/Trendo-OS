@@ -1,6 +1,6 @@
 # Trendo PDF – Testplan
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.35 (Stand e086a2d)
 
 28 Tests sprechen dieses Programm an.
 

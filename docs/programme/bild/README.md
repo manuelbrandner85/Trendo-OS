@@ -1,6 +1,6 @@
 # Bildbearbeitung – Produktionspaket
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.35 (Stand e086a2d)
 
 Arbeitsfläche: Bild-Arbeitsfläche (Ebenen)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

@@ -1,6 +1,6 @@
 # Geld – Einbindung in Trendo OS
 
-Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.35 (Stand e086a2d)
 
 - Seite `finanzen` im Studio „Geld & Rechnungen“ (Business & Geld) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

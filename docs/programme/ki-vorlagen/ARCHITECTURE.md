@@ -1,6 +1,6 @@
 # KI-Vorlagen – Architektur
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.35 (Stand e086a2d)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

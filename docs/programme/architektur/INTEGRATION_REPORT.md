@@ -1,6 +1,6 @@
 # Grundriss & Wohnen – Einbindung in Trendo OS
 
-Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.35 (Stand e086a2d)
 
 - Seite `architektur` im Studio „Wohnung planen“ (Technik & Fachgebiete) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: ja (Dokumente .tdoc, Zuletzt, Wiederherstellen, Bedienstufen)

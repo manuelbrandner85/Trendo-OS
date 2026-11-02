@@ -1,8 +1,8 @@
 # Hinzufügen – Testergebnisse
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `hinzufuegen` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `hinzufuegen` · Stand: 0.9.35 (Stand e086a2d)
 
-Lauf: `volltest-0.9.34-api.trx, volltest-0.9.34-app.trx, volltest-0.9.34-core.trx`
+Lauf: `volltest-0.9.35-api.trx, volltest-0.9.35-app.trx, volltest-0.9.35-core.trx`
 
 Bestanden 12 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

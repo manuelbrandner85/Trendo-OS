@@ -1,6 +1,6 @@
 # VR & AR gestalten – Funktionsmatrix
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.35 (Stand e086a2d)
 
 Quelle: `docs/w6-katalog/SPEC-04.md`
 

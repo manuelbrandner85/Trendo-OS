@@ -1,8 +1,8 @@
 # Bildbearbeitung – Testergebnisse
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.35 (Stand e086a2d)
 
-Lauf: `volltest-0.9.34-api.trx, volltest-0.9.34-app.trx, volltest-0.9.34-core.trx`
+Lauf: `volltest-0.9.35-api.trx, volltest-0.9.35-app.trx, volltest-0.9.35-core.trx`
 
 Bestanden 3 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

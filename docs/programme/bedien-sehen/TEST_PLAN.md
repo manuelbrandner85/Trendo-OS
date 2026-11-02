@@ -1,6 +1,6 @@
 # Sehen – Testplan
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.35 (Stand e086a2d)
 
 18 Tests sprechen dieses Programm an.
 

@@ -1,6 +1,6 @@
 # Grundriss & Wohnen – Produktionspaket
 
-Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.35 (Stand e086a2d)
 
 Arbeitsfläche: Grundriss-Zeichenfläche  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

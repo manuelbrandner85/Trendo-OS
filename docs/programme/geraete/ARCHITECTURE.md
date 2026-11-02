@@ -1,6 +1,6 @@
 # Geräte & Laufwerke – Architektur
 
-Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.35 (Stand e086a2d)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

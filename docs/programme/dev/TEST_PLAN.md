@@ -1,8 +1,8 @@
 # Software – Testplan
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.34 (Stand 695d2ea)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.35 (Stand e086a2d)
 
-23 Tests sprechen dieses Programm an.
+26 Tests sprechen dieses Programm an.
 
 - CORE-07 (UI): Seite aus Beschreibung, Note, Stil, Paket erst nach Bestätigung
 - CORE-07 (UI): Software-Studio legt Projekt an und zeigt es mit Git-Stand
@@ -14,6 +14,9 @@ Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand
 - Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet
 - Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort
 - Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler einmal automatisch an Claude zurück
+- Claude wie im Original: Skills, Plugins, Connectoren und Agenten aus dem eigenen Claude sichtbar; genutzter Skill/Connector unter der Antwort
+- Claude-Abo aufgebraucht: Ersatz-KI übernimmt dieselbe Nachricht (sichtbar „Aktive KI“), bis zur Freigabe ohne Claude, danach automatisch wieder Claude
+- Kostenlose KI-Werkzeuge: Claude bestellt ein Bild, Trendo erzeugt es ins Projekt; Knöpfe für Bild und Vorlesen; Diktieren füllt das Eingabefeld
 - Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg
 - T-0203: Abbrechen installiert nichts
 - T-0203: LibreOffice bleibt zu, wenn die Versionsabfrage zu lange dauert
