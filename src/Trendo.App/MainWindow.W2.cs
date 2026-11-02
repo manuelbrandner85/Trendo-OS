@@ -49,7 +49,7 @@ public partial class MainWindow
         _showMap["ki-fragen"] = AskView;
         StudioPages["CORE-02"] = "ki-fragen";
         ExtraPages.Add(("KI fragen", "ki-fragen", ["frage", "chat", "assistent", "trendo"]));
-        InitX05(); InitCore10(); InitCore12(); InitSkills(); InitCore03(); InitSys05(); InitOpenRouter();
+        InitX05(); InitCore10(); InitCore12(); InitSkills(); InitConnections(); InitCore03(); InitSys05(); InitOpenRouter();
         InitWave3();
         InitWave6();
     }

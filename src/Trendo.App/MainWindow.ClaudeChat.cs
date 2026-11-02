@@ -102,16 +102,19 @@ public partial class MainWindow
         var travel = HeadBtn("claude-chat-timeline", "🕘 Zeitreise", "Zeitreise: zu einem früheren Stand des Projekts zurück", () => TogglePanel("zeitreise"));
         var docs = HeadBtn("claude-chat-docs", "📎 Unterlagen", "Deine Unterlagen aus „Wissen“ für dieses Projekt an Claude freigeben – nur, was du auswählst", () => TogglePanel("unterlagen"));
         var publish = HeadBtn("claude-chat-publish", "🚀 Veröffentlichen", "Projekt fertig verpacken (ZIP im Ordner „Veröffentlicht“) – erst nach deinem Ja, hochgeladen wird nichts", () => TogglePanel("veroeffentlichen"));
+        var github = HeadBtn("claude-chat-github", "⬆ GitHub", "Projekt als eigenes Repo auf GitHub hochladen – mit deiner GitHub-Anmeldung, erst nach deinem Ja", () => TogglePanel("github"));
+        var netlify = HeadBtn("claude-chat-netlify", "🌐 Netlify", "Webseite auf Netlify veröffentlichen – öffentlich im Internet, erst nach deinem Ja", () => TogglePanel("netlify"));
+        netlify.IsVisible = dock.Studio == "CORE-07"; // nur im Web-Studio: dort entstehen Webseiten
         var rules = HeadBtn("claude-chat-rules", "📚 Regeln", "Regeln dieses Studios: was Claude hier immer beachtet – eingebaut, aus GAMEFORGE (Spiele) und aus deinen Projekten gelernt (nur mit deinem Ja)", () => TogglePanel("regeln"));
         var review = HeadBtn("claude-chat-review", "🎓 Gutachter", "Zweite Meinung: ein Gutachter bewertet das Ergebnis mit Note 1–10 und sagt, was besser geht", () => _ = ClaudeReviewRun(dock));
         ui.SideToggle = new Button { Name = "claude-chat-side-toggle", Content = "☰", FontSize = 13, Padding = new Thickness(9, 3), Margin = new Thickness(0, 0, 8, 0), Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0), IsVisible = false };
         ToolTip.SetTip(ui.SideToggle, "Projekte dieses Studios ein- oder ausblenden");
         ui.SideToggle.Click += (_, _) => { ui.SideOpen = !ui.SideOpen; ui.SideCol.Width = new GridLength(ui.SideOpen ? 230 : 0); };
         // Kopf in zwei Zeilen: Titel, darunter die Knöpfe (umbrechend) – so passt alles auch in den schmalen Bereich neben dem Studio
-        foreach (var hb in new Control[] { memory, travel, docs, rules, review, publish, full, app, eye, folder }) hb.Margin = new Thickness(0, 0, 6, 6);
+        foreach (var hb in new Control[] { memory, travel, docs, rules, review, publish, github, netlify, full, app, eye, folder }) hb.Margin = new Thickness(0, 0, 6, 6);
         var head = new StackPanel { Margin = new Thickness(24, 12, 24, 2), Spacing = 6, Children = {
             new DockPanel { Children = { Dk(ui.SideToggle, Avalonia.Controls.Dock.Left), ui.Title } },
-            new WrapPanel { Name = "claude-chat-head-tools", Children = { memory, travel, docs, rules, review, publish, full, app, eye, folder } } } };
+            new WrapPanel { Name = "claude-chat-head-tools", Children = { memory, travel, docs, rules, review, publish, github, netlify, full, app, eye, folder } } } };
         var bottom = new StackPanel { Children = { ClaudeToolBar(dock), ui.Flows, ui.Chips, inputBox, hint } };
         ui.Body = new Border { Child = ui.Scroll };
         ui.Caps = new TextBlock { Name = "claude-chat-caps", FontSize = 11, Foreground = ClaudeMuted, Margin = new Thickness(24, 0, 24, 6), TextWrapping = TextWrapping.Wrap, Text = ClaudeCapsText(LoadCaps()) };
@@ -238,6 +241,8 @@ public partial class MainWindow
         if (ui.Panel == "regeln") ui.Log.Children.Add(RulesPanel(dock));
         if (ui.Panel == "unterlagen") ui.Log.Children.Add(DocsPanel(dock, chat));
         if (ui.Panel == "veroeffentlichen") ui.Log.Children.Add(PublishPanel(dock, chat));
+        if (ui.Panel == "github") ui.Log.Children.Add(GitHubPanel(dock, chat));
+        if (ui.Panel == "netlify") ui.Log.Children.Add(NetlifyPanel(dock, chat));
         if (chat is null || chat.Messages.Count == 0)
             ui.Log.Children.Add(new StackPanel { Spacing = 8, Margin = new Thickness(0, 40, 0, 0), HorizontalAlignment = HorizontalAlignment.Center, Children = {
                 new TextBlock { Text = "✳", FontSize = 34, Foreground = ClaudeAccent, HorizontalAlignment = HorizontalAlignment.Center },

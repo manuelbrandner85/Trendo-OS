@@ -248,6 +248,7 @@ public partial class MainWindow
         if (!s.Installed) Add(Act("claude-install", "Claude Code einrichten", () => _ = ClaudeInstall(), true));
         else if (!s.Ready) Add(Act("claude-connect", "Mit Claude verbinden", () => _ = ClaudeConnect(), true));
         Add(Act("claude-check", "Neu prüfen", () => _ = ClaudeRecheck()));
+        Add(Act("claude-links", "🔗 GitHub, Netlify & Erweiterungen", () => Show("verbindungen")));
         var main = new CheckBox { Name = "claude-main", Content = "Claude als Haupt-KI nutzen (wenn verbunden)", IsChecked = set.ClaudeMain, Foreground = Text, IsVisible = ClaudeEmbedApproved };
         var gate = P("Mit „Claude Code öffnen“ startest du dein echtes Claude Code im passenden Ordner und arbeitest dort direkt mit deinem Abo – so, wie Anthropic es für das Abo vorsieht. " +
             "Im Hintergrund der Trendo-Programme nutzt Trendo dein Abo nicht; dort arbeitet die KI auf diesem PC.", Brush.Parse("#FACC15"), 11.5);

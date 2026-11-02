@@ -15,6 +15,7 @@ Quelle: `src/Trendo.Core/DependencyCatalog` (Installation bei Bedarf beim Öffne
 | Ollama (lokale KI-Laufzeit) | MIT | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | Ollama.Ollama | Installer ~1 GB → nicht ins Setup gepackt; pro Benutzer ohne Admin installierbar |
 | KI-Modell Qwen2.5 0.5B (qwen2.5:0.5b) | Apache-2.0 | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | — | Gewichte ~400 MB, über Ollama geladen |
 | KI-Modell Qwen2.5 3B (qwen2.5:3b, optional) | Qwen Research License (frei für nicht-kommerzielle Nutzung; kommerziell gesonderte Lizenz nötig) | Auto pro Benutzer nach Zustimmung (ollama pull) | — | ~1,9 GB; Standard ab 16 GB RAM, wenn geladen |
+| GitHub CLI | MIT | Auto-Installation pro Benutzer nach Zustimmung (winget --scope user); Anmeldung je Person im Browser | GitHub.cli | Pro Benutzer installierbar |
 | Git für Windows | GPL-2.0 | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | Git.Git | Pro Benutzer installierbar |
 | Python 3.13 | PSF-2.0 | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | Python.Python.3.13 | Pro Benutzer installierbar |
 | mpv Player | GPL-2.0-or-later | Auto-Installation pro Benutzer (ohne Admin, winget --scope user / ollama pull) | shinchiro.mpv | Pro Benutzer installierbar |

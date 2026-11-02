@@ -52,6 +52,8 @@ public static class DependencyCatalog
             "Gewichte ~1,9 GB, nur nach Zustimmung über Ollama geladen; empfohlen ab 16 GB RAM", null, 1900, "https://ollama.com/library/qwen2.5:3b", ["model-3b"], null, $"ollama pull {LargeModel}"),
         new("git", "Git für Windows", "Web & App Studio, Versionierung", "GPL-2.0", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
             "Git.Git", 350, "https://git-scm.com", ["git"], [@"%LOCALAPPDATA%\Programs\Git\cmd\git.exe", @"%ProgramFiles%\Git\cmd\git.exe"]),
+        new("gh", "GitHub CLI", "GitHub anbinden – Projekte als Repo hochladen (alle Studios)", "MIT", DeliveryMode.AutoUser, "Nur nach Zustimmung aus der offiziellen Quelle; anmelden macht jeder selbst im Browser",
+            "GitHub.cli", 45, "https://cli.github.com", ["gh"], [@"%ProgramFiles%\GitHub CLI\gh.exe", @"%LOCALAPPDATA%\Programs\GitHub CLI\gh.exe"]),
         new("python", "Python 3.13", "Automatisierung, Hilfswerkzeuge", "PSF-2.0", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
             "Python.Python.3.13", 120, "https://python.org", ["python"], [@"%LOCALAPPDATA%\Programs\Python\Python313\python.exe", @"%ProgramFiles%\Python313\python.exe"]),
         new("mpv", "mpv Player", "Medien Studio – Wiedergabe", "GPL-2.0-or-later", DeliveryMode.Included, "Mitgeliefert im Trendo-Vollpaket – ohne Internet, ohne Admin",
