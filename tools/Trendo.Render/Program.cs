@@ -128,6 +128,32 @@ if (shot == "claude") // Claude im Studio-Fenster (Testmodus: claude.ai wird nic
 {
     win.Show("baukasten"); win.ClaudeDockToggle("X-03", null);
 }
+else if (shot == "claude-chat") // 0.9.37: Claude-Chat mit schöner Antwort, Gedächtnis und Gutachten (Claude nachgebildet, nichts wird gestartet)
+{
+    static string Jc(object o) => System.Text.Json.JsonSerializer.Serialize(o);
+    MainWindow.ClaudeStatusOverride = () => Task.FromResult(new ClaudeCode.Status(true, true, "claude.ai", "max", "claude"));
+    MainWindow.ClaudeRunOverride = (_, dir, line, _) =>
+    {
+        File.WriteAllText(Path.Combine(dir, "index.html"), "<!doctype html><html lang=\"de\"><head><meta name=\"viewport\" content=\"width=device-width\"><title>Bäckerei</title></head><body><h1>Bäckerei Muster</h1></body></html>");
+        line(Jc(new { type = "assistant", message = new { content = new object[] { new { type = "tool_use", name = "Write", input = new { file_path = Path.Combine(dir, "index.html"), content = "…" } } } } }));
+        line(Jc(new { type = "user", message = new { content = new object[] { new { type = "tool_result", content = "ok", is_error = false } } } }));
+        line(Jc(new { type = "assistant", message = new { content = new object[] { new { type = "text", text = "## Deine Startseite steht\n\nIch habe eine **klare Startseite** gebaut – mit Kopfbereich, Angebot und Öffnungszeiten.\n\n| Bereich | Inhalt |\n|---|---|\n| Kopf | Logo und Menü |\n| Angebot | 6 Karten mit Bildern |\n| Kontakt | Karte und Zeiten |\n\n```css\n/* Leitfarben */\n:root { --gold: #e8c26a; --blau: #5b8fe0; }\nh1 { font-size: 2.4rem; }\n```\n\n> Tipp: Bilder kannst du einfach in den Chat ziehen.\n\nMerken: Farben sind Dunkelblau und Gold" } } } }));
+        line(Jc(new { type = "result", subtype = "success", is_error = false, result = "ok", session_id = "s1", num_turns = 1, usage = new { input_tokens = 2100, output_tokens = 640 } }));
+        return Task.FromResult(0);
+    };
+    MainWindow.ReviewOverride = _ => Task.FromResult("Note: 8/10\nStärken:\n- Klarer Aufbau, gut lesbar\nSchwächen:\n- Öffnungszeiten auf dem Handy zu klein\nVerbesserungen:\n- Schrift der Zeiten auf 1,1 rem");
+    void PumpChat(Task t) { while (!t.IsCompleted) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); } }
+    PumpChat(win.ClaudeCheck(true));
+    win.Show("dev"); win.ClaudeDockToggle("CORE-07", null); Dispatcher.UIThread.RunJobs();
+    PumpChat(win.ClaudeChatSend("Baue eine Startseite für meine Bäckerei"));
+    PumpChat(win.ClaudeReviewRun());
+    for (var i = 0; i < 30; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
+    if (Environment.GetEnvironmentVariable("TRENDO_CLAUDE_GROSS") == "1")
+        foreach (var b in win.GetLogicalDescendants().OfType<Button>().Where(b => b.Name is "claude-dock-max" or "claude-preview-close").ToList()) b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    if (Environment.GetEnvironmentVariable("TRENDO_CLAUDE_PANEL") is { Length: > 0 } panel)
+        foreach (var b in win.GetLogicalDescendants().OfType<Button>().Where(b => b.Name == panel).ToList()) b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    for (var i = 0; i < 30; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
+}
 else if (shot?.StartsWith("neuerungen", StringComparison.Ordinal) == true) // Vollbild „Das ist neu“ nach einem Update (Folie als Zahl dahinter, sonst Begrüßung)
 {
     win.NewsManualClock = true; win.ShowNews("0.9.28", File.ReadAllText(Path.Combine("installer", "neuerungen", "0.9.28.md")));

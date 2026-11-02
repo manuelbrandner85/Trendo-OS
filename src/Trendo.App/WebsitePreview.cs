@@ -41,7 +41,8 @@ public static class WebsitePreview
         return null;
     }
 
-    public static async Task<WebsitePreviewResult> CaptureAsync(string projectDir, int width, int height, string pngPath, string? query = null, CancellationToken ct = default)
+    /// <summary><paramref name="errors"/>: sammelt Skriptfehler, Konsolen-Fehler und nicht gefundene Dateien der Seite („echt testen“).</summary>
+    public static async Task<WebsitePreviewResult> CaptureAsync(string projectDir, int width, int height, string pngPath, string? query = null, CancellationToken ct = default, List<string>? errors = null)
     {
         var index = Path.Combine(projectDir, "index.html");
         if (!File.Exists(index)) return new(false, "", "Die Seite hat keine index.html.");
@@ -50,11 +51,11 @@ public static class WebsitePreview
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(pngPath))!);
         using var host = WebsiteHost.Start(projectDir);
         var url = host.Origin + "/index.html" + (string.IsNullOrWhiteSpace(query) ? "" : "?" + query.TrimStart('?'));
-        await ShotAsync(browser, url, width, height, pngPath, ct);
+        await ShotAsync(browser, url, width, height, pngPath, ct, errors);
         return File.Exists(pngPath) ? new(true, pngPath, width < 700 ? "Handy" : "Desktop") : new(false, "", "Die Vorschau hat kein Bild geschrieben.");
     }
 
-    static async Task ShotAsync(string browser, string url, int width, int height, string pngPath, CancellationToken ct)
+    static async Task ShotAsync(string browser, string url, int width, int height, string pngPath, CancellationToken ct, List<string>? errors = null)
     {
         var profile = Path.Combine(Path.GetTempPath(), "trendo-chrome-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(profile);
@@ -110,8 +111,9 @@ public static class WebsitePreview
             var wsUrl = await PageSocket(http, port, timeout.Token);
             socket = new ClientWebSocket();
             await socket.ConnectAsync(new Uri(wsUrl), timeout.Token);
-            var cdp = new Cdp(socket);
+            var cdp = new Cdp(socket) { OnEvent = errors is null ? null : e => Collect(e, errors) };
             await cdp.Call("Page.enable", new { }, timeout.Token);
+            if (errors is not null) { await cdp.Call("Runtime.enable", new { }, timeout.Token); await cdp.Call("Log.enable", new { }, timeout.Token); }
             await cdp.Call("Emulation.setDeviceMetricsOverride", new { width, height, deviceScaleFactor = 1, mobile = width < 700 }, timeout.Token);
             await cdp.Call("Page.navigate", new { url }, timeout.Token);
             var until = DateTime.UtcNow.AddSeconds(8);
@@ -123,12 +125,41 @@ public static class WebsitePreview
                 if (value == "1") break;
                 await Task.Delay(120, timeout.Token);
             }
-            await Task.Delay(400, timeout.Token);
+            await Task.Delay(errors is null ? 400 : 1200, timeout.Token); // beim echten Test etwas länger laufen lassen, damit späte Fehler auffallen
+            if (errors is not null) await cdp.Call("Runtime.evaluate", new { expression = "1" }, timeout.Token); // ausstehende Meldungen abholen
             var shot = await cdp.Call("Page.captureScreenshot", new { format = "png" }, timeout.Token);
             var data = ResultString(shot, "data");
             if (string.IsNullOrWhiteSpace(data)) throw new InvalidOperationException("Chrome hat kein Bild geliefert.");
             await File.WriteAllBytesAsync(pngPath, Convert.FromBase64String(data), timeout.Token);
         }
+    }
+
+    /// <summary>Fehlermeldung der Seite in verständlicher Form merken (ohne Adresse des lokalen Servers).</summary>
+    static void Collect(JsonElement e, List<string> errors)
+    {
+        var method = e.TryGetProperty("method", out var m) ? m.GetString() : null;
+        if (!e.TryGetProperty("params", out var p)) return;
+        string? text = null;
+        if (method == "Runtime.exceptionThrown" && p.TryGetProperty("exceptionDetails", out var d))
+        {
+            var msg = d.TryGetProperty("exception", out var ex) && ex.TryGetProperty("description", out var desc) ? desc.GetString() : d.TryGetProperty("text", out var t) ? t.GetString() : "Fehler";
+            var line = d.TryGetProperty("lineNumber", out var ln) ? ln.GetInt32() + 1 : 0;
+            var src = d.TryGetProperty("url", out var u) ? System.IO.Path.GetFileName(new Uri(u.GetString() ?? "x:/", UriKind.Absolute).AbsolutePath) : "";
+            text = $"Skriptfehler{(src.Length > 0 ? " in " + src : "")}{(line > 0 ? " Zeile " + line : "")}: {msg?.Split('\n')[0]}";
+        }
+        else if (method == "Runtime.consoleAPICalled" && p.TryGetProperty("type", out var ty) && ty.GetString() == "error" && p.TryGetProperty("args", out var args))
+            text = "Konsole: " + string.Join(" ", args.EnumerateArray().Select(a => a.TryGetProperty("value", out var v) ? v.ToString() : a.TryGetProperty("description", out var ds) ? ds.GetString() : ""));
+        else if (method == "Log.entryAdded" && p.TryGetProperty("entry", out var en) && en.TryGetProperty("level", out var lv) && lv.GetString() == "error")
+        {
+            var raw = en.TryGetProperty("text", out var tx) ? tx.GetString() ?? "Fehler" : "Fehler";
+            var path = en.TryGetProperty("url", out var eu) && eu.GetString() is { Length: > 0 } uu && Uri.TryCreate(uu, UriKind.Absolute, out var lu) ? lu.AbsolutePath.TrimStart('/') : "";
+            if (path.Equals("favicon.ico", StringComparison.OrdinalIgnoreCase)) return; // fehlendes Seitensymbol fragt der Browser von selbst an – kein Fehler der Seite
+            text = raw.Contains("404") && path.Length > 0 ? $"Datei nicht gefunden: {path} (die Seite verlinkt sie, sie liegt aber nicht im Projekt)" : raw + (path.Length > 0 ? $" ({path})" : "");
+        }
+        if (text is null) return;
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"https?://127\.0\.0\.1:\d+/", "");
+        if (text.Length > 300) text = text[..300] + "…";
+        lock (errors) if (!errors.Contains(text)) errors.Add(text);
     }
 
     static void Cut(ClientWebSocket? socket, HttpClient http, Process process)
@@ -188,6 +219,8 @@ public static class WebsitePreview
     sealed class Cdp(ClientWebSocket socket)
     {
         int _id;
+        /// <summary>Ereignisse ohne Antwort-Nummer (Konsole, Fehler) – nur wenn jemand zuhört.</summary>
+        public Action<JsonElement>? OnEvent { get; init; }
         public async Task<JsonDocument> Call(string method, object args, CancellationToken ct)
         {
             var id = ++_id;
@@ -198,7 +231,7 @@ public static class WebsitePreview
             {
                 var text = await Read(ct);
                 var doc = JsonDocument.Parse(text);
-                if (!doc.RootElement.TryGetProperty("id", out var got) || got.GetInt32() != id) { doc.Dispose(); continue; }
+                if (!doc.RootElement.TryGetProperty("id", out var got) || got.GetInt32() != id) { if (OnEvent is { } on && doc.RootElement.TryGetProperty("method", out _)) on(doc.RootElement); doc.Dispose(); continue; }
                 if (doc.RootElement.TryGetProperty("error", out var error))
                 {
                     var message = error.TryGetProperty("message", out var m) ? m.GetString() : "unbekannt";

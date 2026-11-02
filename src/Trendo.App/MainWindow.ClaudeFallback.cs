@@ -199,6 +199,7 @@ public partial class MainWindow
         B("musik", "🎵 Musik", "Musikstück nach der Beschreibung im Eingabefeld", () => ClaudeToolButton(dock, "musik"));
         B("vorlesen", "🔊 Vorlesen", "Claudes letzte Antwort vorlesen", () => ClaudeToolButton(dock, "vorlesen"));
         B("diktieren", "🎙 Diktieren", "Sprechen statt tippen – auf dem PC erkannt, ohne Cloud", () => ClaudeDictate(dock));
+        B("freihaendig", "🗣 Freihändig", "Freihändig sprechen: Trendo hört zu, schickt nach einer kurzen Pause ab und liest Claudes Antwort vor – bis du es wieder ausschaltest", () => ClaudeHandsFreeToggle(dock));
         return row;
     }
 

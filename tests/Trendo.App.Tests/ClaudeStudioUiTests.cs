@@ -89,7 +89,7 @@ public class ClaudeStudio_Ui
         finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeRunOverride = null; w.Close(); }
     }
 
-    [AvaloniaFact(DisplayName = "Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler einmal automatisch an Claude zurück")]
+    [AvaloniaFact(DisplayName = "Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler automatisch an Claude zurück, bis es läuft – höchstens drei Durchgänge")]
     public async Task Auto_check_once()
     {
         var (w, _, _) = Ui.Open();
@@ -101,9 +101,9 @@ public class ClaudeStudio_Ui
             await Run(w.ClaudeCheck(true));
             w.Show("dev"); w.ClaudeDockToggle("CORE-07"); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
             await Run(w.ClaudeChatSend("Baue eine Seite"));
-            Assert.Equal(2, calls.Count); // genau eine automatische Nachbesserung, keine Endlosschleife
-            Assert.Contains("kein <title>", calls[1][1]);
-            Assert.Equal(["user", "assistant", "check", "assistant"], w.ClaudeChatCurrent()!.Messages.Select(m => m.Role));
+            Assert.Equal(3, calls.Count); // Nachbessern bis es läuft, aber keine Endlosschleife
+            Assert.Contains("kein <title>", calls[1][1]); Assert.Contains("echt gestartet", calls[1][1]);
+            Assert.Equal(["user", "assistant", "check", "assistant", "check", "assistant"], w.ClaudeChatCurrent()!.Messages.Select(m => m.Role));
             Assert.NotNull(w.TryFind<Border>("claude-chat-check"));
         }
         finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeRunOverride = null; w.Close(); }

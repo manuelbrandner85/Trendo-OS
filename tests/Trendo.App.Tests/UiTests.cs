@@ -44,7 +44,7 @@ public static class Ui
     public static T? TryFind<T>(this Window w, string prefix) where T : Control =>
         w.GetLogicalDescendants().OfType<T>().FirstOrDefault(c => c.Name?.StartsWith(prefix) == true);
     public static List<string> GetLogicalTexts(this Window w) =>
-        w.GetLogicalDescendants().Select(c => c is TextBlock t ? t.Text : c is SelectableTextBlock s ? s.Text : null).Where(x => !string.IsNullOrEmpty(x)).Select(x => x!).ToList();
+        w.GetLogicalDescendants().Select(c => c is TextBlock t ? (t.Inlines is { Count: > 0 } il ? string.Concat(il.OfType<Avalonia.Controls.Documents.Run>().Select(r => r.Text)) : t.Text) : null).Where(x => !string.IsNullOrEmpty(x)).Select(x => x!).ToList();
     public static void Press(this Button b) { b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); Dispatcher.UIThread.RunJobs(); }
     public static void Key(this Window w, PhysicalKey k, RawInputModifiers m = RawInputModifiers.None)
     { w.KeyPressQwerty(k, m); w.KeyReleaseQwerty(k, m); Dispatcher.UIThread.RunJobs(); }

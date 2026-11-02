@@ -81,6 +81,8 @@ public sealed class KiSourceSettings
     /// <summary>Vorgabe des Projektinhabers (02.11.2026): Claude darf im Claude-Chat jedes Studios bei Bedarf ins Internet und Befehle ausführen
     /// (volle Claude-Code-Funktionen inkl. eigener Skills, Agenten, Plugins, MCP). Einzelne Projekte lassen sich auf „sicher“ stellen; aus = nur mit Freigabe je Projekt.</summary>
     public bool ClaudeAlwaysFull { get; set; } = true;
+    /// <summary>Wunsch 02.11.2026: Claude sieht sich sein Ergebnis (Bildschirmfoto) nach dem echten Start selbst an und bessert nach – kostet etwas Abo, darum abschaltbar.</summary>
+    public bool ClaudeLooks { get; set; } = true;
     /// <summary>T-0316: gewähltes Claude-Modell (leer = Standard von Claude Code).</summary>
     public string ClaudeModel { get; set; } = "";
     /// <summary>Freie Modelle nach dem Setup automatisch laden (Vorgabe 2026-10-25).</summary>

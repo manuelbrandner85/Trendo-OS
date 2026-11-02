@@ -212,7 +212,7 @@ public static partial class ClaudeCode
 /// Große Ordner (node_modules, .git, bin, obj) und Dateien über 20 MB bleiben außen vor.</summary>
 public sealed class FolderSnapshot
 {
-    static readonly string[] SkipDirs = ["node_modules", ".git", "bin", "obj", ".venv", "__pycache__", "trendo-bin"];
+    static readonly string[] SkipDirs = ["node_modules", ".git", "bin", "obj", ".venv", "__pycache__", "trendo-bin", ".trendo"]; // .trendo: Bildschirmfoto und Hilfsdateien von Trendo
     public const long MaxFile = 20L << 20;
     public string Root { get; }
     public string Store { get; }
@@ -236,6 +236,14 @@ public sealed class FolderSnapshot
             Directory.CreateDirectory(Path.GetDirectoryName(dst)!); File.Copy(f, dst, true);
             s._files[rel] = (fi.Length, fi.LastWriteTimeUtc);
         }
+        return s;
+    }
+
+    /// <summary>Gespeicherte Sicherung wieder öffnen (Zeitreise zu einem älteren Versionspunkt).</summary>
+    public static FolderSnapshot Open(string root, string store)
+    {
+        var s = new FolderSnapshot(root, store);
+        foreach (var f in Directory.EnumerateFiles(store, "*", SearchOption.AllDirectories)) { var fi = new FileInfo(f); s._files[Path.GetRelativePath(store, f)] = (fi.Length, fi.LastWriteTimeUtc); }
         return s;
     }
 
