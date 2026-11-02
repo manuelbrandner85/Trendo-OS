@@ -1,6 +1,6 @@
 # Sicherung – Architektur
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.36 (Stand 53a9750)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.36 (Stand 2e53f9e)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

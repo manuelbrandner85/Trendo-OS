@@ -1,6 +1,6 @@
 # Kalender – Produktionspaket
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kalender` · Stand: 0.9.36 (Stand 53a9750)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kalender` · Stand: 0.9.36 (Stand 2e53f9e)
 
 Arbeitsfläche: Monatskalender  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

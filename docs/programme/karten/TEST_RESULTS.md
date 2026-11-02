@@ -1,8 +1,8 @@
 # Karten & Touren – Testergebnisse
 
-Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.36 (Stand 53a9750)
+Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.36 (Stand 2e53f9e)
 
-Lauf: `volltest-0.9.36-api.trx, volltest-0.9.36-app.trx, volltest-0.9.36-core.trx`
+Lauf: `api.trx, app.trx, core.trx`
 
 Bestanden 14 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

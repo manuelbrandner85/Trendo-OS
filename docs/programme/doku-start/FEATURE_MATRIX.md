@@ -1,6 +1,6 @@
 # Start – Funktionsmatrix
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 53a9750)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 2e53f9e)
 
 Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 

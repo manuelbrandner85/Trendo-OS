@@ -80,7 +80,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -127,7 +127,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -175,7 +175,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -266,7 +266,7 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -321,7 +321,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -376,7 +376,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -601,7 +601,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -846,7 +846,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -1081,7 +1081,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -1151,7 +1151,7 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -1403,7 +1403,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -1631,7 +1631,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -1881,7 +1881,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -2098,7 +2098,7 @@
       "Claude im Studio: Auswahl in Trendo Tabelle geht als Zustand mit; Internet und Befehle bei Bedarf immer an, je Projekt auf „sicher“ stellbar; Vorgabe abschaltbar",
       "Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet",
       "Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort",
-      "Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler einmal automatisch an Claude zurück",
+      "Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler automatisch an Claude zurück, bis es läuft – höchstens drei Durchgänge",
       "Fenster: Klick auf eine Kategorie im Fenster bleibt im selben Fenster; ohne Klick eigenes Fenster; offene Seite wird wiederverwendet",
       "Fenster: maximiert ohne Rand bis an die Seiten, die Leiste unten bleibt sichtbar",
       "SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien",
@@ -2138,7 +2138,7 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -2408,7 +2408,7 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -2481,7 +2481,7 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -2540,7 +2540,7 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -2586,7 +2586,7 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -2633,7 +2633,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -2686,7 +2686,7 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -2866,7 +2866,7 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": true
   },
   {
@@ -3115,7 +3115,7 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -3163,7 +3163,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -3252,7 +3252,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": true
   },
   {
@@ -3346,7 +3346,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -3435,7 +3435,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": true
   },
   {
@@ -3554,7 +3554,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -3633,7 +3633,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -3740,7 +3740,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -3937,7 +3937,7 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -4147,7 +4147,7 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": true
   },
   {
@@ -4207,7 +4207,7 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": true
   },
   {
@@ -4258,7 +4258,7 @@
       "Claude im Studio: Auswahl in Trendo Tabelle geht als Zustand mit; Internet und Befehle bei Bedarf immer an, je Projekt auf „sicher“ stellbar; Vorgabe abschaltbar",
       "Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet",
       "Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort",
-      "Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler einmal automatisch an Claude zurück",
+      "Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler automatisch an Claude zurück, bis es läuft – höchstens drei Durchgänge",
       "Claude wie im Original: Skills, Plugins, Connectoren und Agenten aus dem eigenen Claude sichtbar; genutzter Skill/Connector unter der Antwort",
       "Claude-Abo aufgebraucht: Ersatz-KI übernimmt dieselbe Nachricht (sichtbar „Aktive KI“), bis zur Freigabe ohne Claude, danach automatisch wieder Claude",
       "Kostenlose KI-Werkzeuge: Claude bestellt ein Bild – erst als Entwurf zum Ansehen, ins Projekt erst nach „Übernehmen“; neu erzeugen, verwerfen; Knöpfe; Diktieren",
@@ -4285,7 +4285,7 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -4463,7 +4463,7 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -4657,7 +4657,7 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -4846,7 +4846,7 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": true
   },
   {
@@ -5049,7 +5049,7 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -5264,7 +5264,7 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -5458,7 +5458,7 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": true
   },
   {
@@ -5638,7 +5638,7 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": true
   },
   {
@@ -5818,7 +5818,7 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": true
   },
   {
@@ -6007,7 +6007,7 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": true
   },
   {
@@ -6170,7 +6170,7 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -6366,7 +6366,7 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": true
   },
   {
@@ -6412,7 +6412,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -6467,7 +6467,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -6517,7 +6517,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -6569,7 +6569,7 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -6646,7 +6646,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -6667,6 +6667,7 @@
       "＋ Neues Gespräch",
       "Claude als Haupt-KI nutzen (wenn verbunden)",
       "Claude darf im Claude-Chat bei Bedarf ins Internet und Befehle ausführen",
+      "Claude startet sein Ergebnis echt und sieht es sich selbst an (Bildschirmfoto), bevor du es bekommst",
       "Claude Code einrichten",
       "Neu prüfen",
       "Mit Claude verbinden",
@@ -6704,7 +6705,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -6759,7 +6760,7 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -6836,7 +6837,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -6889,7 +6890,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -6968,7 +6969,7 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -6989,6 +6990,7 @@
       "Kostenlose Internet-KIs",
       "Claude als Haupt-KI nutzen (wenn verbunden)",
       "Claude darf im Claude-Chat bei Bedarf ins Internet und Befehle ausführen",
+      "Claude startet sein Ergebnis echt und sieht es sich selbst an (Bildschirmfoto), bevor du es bekommst",
       "Claude Code einrichten",
       "Neu prüfen",
       "Mit Claude verbinden",
@@ -7022,7 +7024,7 @@
       "Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet",
       "Claude im Studio: Fenster schließen schließt Claude",
       "Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort",
-      "Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler einmal automatisch an Claude zurück",
+      "Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler automatisch an Claude zurück, bis es läuft – höchstens drei Durchgänge",
       "Claude im Studio: wie Claude im Web – claude.ai im ganzen Fenster, kein Terminal; anmelden, Projekte des Studios anlegen, fortsetzen, entfernen",
       "Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
       "Claude-Regeln 01.11.2026: Trendo speichert keine Claude-Tokens – ein alter wird beim Start gelöscht, kein Token-Feld mehr",
@@ -7046,7 +7048,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -7091,7 +7093,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -7172,7 +7174,7 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -7212,7 +7214,7 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -7297,7 +7299,7 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -7355,7 +7357,7 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -7416,12 +7418,17 @@
       "Claude im Studio: Auswahl in Trendo Tabelle geht als Zustand mit; Internet und Befehle bei Bedarf immer an, je Projekt auf „sicher“ stellbar; Vorgabe abschaltbar",
       "Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet",
       "Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort",
-      "Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler einmal automatisch an Claude zurück",
+      "Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler automatisch an Claude zurück, bis es läuft – höchstens drei Durchgänge",
       "Claude wie im Original: Skills, Plugins, Connectoren und Agenten aus dem eigenen Claude sichtbar; genutzter Skill/Connector unter der Antwort",
       "Claude-Abo aufgebraucht: Ersatz-KI übernimmt dieselbe Nachricht (sichtbar „Aktive KI“), bis zur Freigabe ohne Claude, danach automatisch wieder Claude",
       "Claude-App-Knopf: installiert (auch App-Paket über claude://) → öffnen; sonst die offizielle Download-Seite",
       "Claude: während der Arbeit weiterschreiben – Nachricht wartet sichtbar und kommt gleich danach dran; „Stopp & jetzt“ nimmt sie sofort",
+      "Echt testen bis es läuft: Skriptfehler gehen zurück an Claude; ohne Fehler sieht Claude das Bildschirmfoto an; abschaltbar",
+      "Freihändig sprechen: zuhören, abschicken, Antwort vorlesen, bis man es ausschaltet",
+      "Gutachter: zweite Meinung mit Note, ändert nichts; „Verbessern lassen“ gibt die Punkte an Claude",
       "Kostenlose KI-Werkzeuge: Claude bestellt ein Bild – erst als Entwurf zum Ansehen, ins Projekt erst nach „Übernehmen“; neu erzeugen, verwerfen; Knöpfe; Diktieren",
+      "Projekt-Gedächtnis: Claude merkt sich „Merken:“-Zeilen, sie gehen bei jeder Nachricht mit; ansehen, ergänzen, vergessen",
+      "Schöne Antworten: Überschrift, Tabelle als Raster, Code mit Farben und „Kopieren“; Glas-Design im Chat",
       "Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg",
       "T-0203: Abbrechen installiert nichts",
       "T-0203: LibreOffice bleibt zu, wenn die Versionsabfrage zu lange dauert",
@@ -7434,13 +7441,14 @@
       "T-0203: „Ja, einrichten“ öffnet keine Herstellerseite, solange die Prüfung nicht besteht",
       "T-0203: „Starten“ öffnet LibreOffice und Blender erst nach bestandener Prüfung und Freigabe",
       "T-0203: „Starten“ öffnet nicht, wenn die Prüfung scheitert",
-      "T-0206 (UI): Dateiliste, Editor mit Zeilennummern, Speichern; Änderung erst als Vorschau, dann übernehmen"
+      "T-0206 (UI): Dateiliste, Editor mit Zeilennummern, Speichern; Änderung erst als Vorschau, dann übernehmen",
+      "Zeitreise: jede Antwort mit Änderungen wird ein Versionspunkt; zurück auf einen älteren Stand und wieder vor"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -7483,7 +7491,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -7520,7 +7528,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -7564,7 +7572,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -7597,7 +7605,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -7700,7 +7708,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -7792,7 +7800,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -7833,7 +7841,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -7899,7 +7907,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -8017,7 +8025,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -8059,7 +8067,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -8101,7 +8109,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -8163,7 +8171,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -8230,7 +8238,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -8278,7 +8286,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -8321,7 +8329,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -8555,7 +8563,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -8768,7 +8776,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -8987,7 +8995,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -9240,7 +9248,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -9416,7 +9424,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -9596,7 +9604,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -9785,7 +9793,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -9965,7 +9973,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -10225,7 +10233,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -10405,7 +10413,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -10596,7 +10604,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -10777,7 +10785,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -10810,7 +10818,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -11054,7 +11062,7 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -11272,7 +11280,7 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   },
   {
@@ -11320,7 +11328,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 53a9750)",
+    "Version": "0.9.36 (Stand 2e53f9e)",
     "Shell": false
   }
 ]

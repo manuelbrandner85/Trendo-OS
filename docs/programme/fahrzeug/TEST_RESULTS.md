@@ -1,8 +1,8 @@
 # Auto & Fahrten – Testergebnisse
 
-Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.36 (Stand 53a9750)
+Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.36 (Stand 2e53f9e)
 
-Lauf: `volltest-0.9.36-api.trx, volltest-0.9.36-app.trx, volltest-0.9.36-core.trx`
+Lauf: `api.trx, app.trx, core.trx`
 
 Bestanden 18 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
