@@ -144,7 +144,8 @@ else if (shot == "claude-chat") // 0.9.37: Claude-Chat mit schöner Antwort, Ged
     MainWindow.ReviewOverride = _ => Task.FromResult("Note: 8/10\nStärken:\n- Klarer Aufbau, gut lesbar\nSchwächen:\n- Öffnungszeiten auf dem Handy zu klein\nVerbesserungen:\n- Schrift der Zeiten auf 1,1 rem");
     void PumpChat(Task t) { while (!t.IsCompleted) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); } }
     PumpChat(win.ClaudeCheck(true));
-    win.Show("dev"); win.ClaudeDockToggle("CORE-07", null); Dispatcher.UIThread.RunJobs();
+    var chatStudio = Environment.GetEnvironmentVariable("TRENDO_CLAUDE_STUDIO") is { Length: > 0 } cst ? cst : "CORE-07"; // Studio wählbar (z. B. CORE-06: Claude arbeitet im Programm „Spiele bauen“)
+    win.Show(win.PageForStudio(chatStudio) ?? "dev"); win.ClaudeDockToggle(chatStudio, null); Dispatcher.UIThread.RunJobs();
     PumpChat(win.ClaudeChatSend("Baue eine Startseite für meine Bäckerei"));
     PumpChat(win.ClaudeReviewRun());
     for (var i = 0; i < 30; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
@@ -159,6 +160,11 @@ else if (shot == "claude-programm") // 0.9.38: Claude hat ein Studio-Dokument ge
     MainWindow.ClaudeStatusOverride = () => Task.FromResult(new ClaudeCode.Status(true, true, "claude.ai", "max", "claude"));
     MainWindow.ClaudeRunOverride = (_, dir, line, _) =>
     {
+        if (Environment.GetEnvironmentVariable("TRENDO_CLAUDE_PLAN") == "1") // Claude bedient das Programm: Plan wartet auf „Ausführen“
+        {
+            line(System.Text.Json.JsonSerializer.Serialize(new { type = "result", subtype = "success", is_error = false, result = "Ich lege ein zweites Geschoss an und exportiere den Plan.\n[[trendo:klick | prog-new]]\n[[trendo:klick | prog-save]]\n[[trendo:klick | prog-close]]", session_id = "s1", num_turns = 1 }));
+            return Task.FromResult(0);
+        }
         var tdoc = Directory.GetFiles(dir, "*.tdoc").Single();
         var o = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(tdoc))!.AsObject();
         o["data"]!.AsObject()["claude"] = "hell";
@@ -171,6 +177,8 @@ else if (shot == "claude-programm") // 0.9.38: Claude hat ein Studio-Dokument ge
     var progPage = MainWindow.Programs.Keys.First(k => MainWindow.Programs[k].Studio == "SPEC-01");
     win.Show(progPage); win.ProgramNew(progPage);
     win.ClaudeDockToggle("SPEC-01", null); Dispatcher.UIThread.RunJobs();
+    if (win.Windows.Active?.Id is { } pwid && win.ClaudeDockIsMax(pwid)) foreach (var mb in win.GetLogicalDescendants().OfType<Button>().Where(b => b.Name == "claude-dock-max").ToList()) mb.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+    win.Show(progPage);
     PumpProg(win.ClaudeChatSend("Mach das Wohnzimmer hell"));
     win.Show(progPage);
     for (var i = 0; i < 30; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }

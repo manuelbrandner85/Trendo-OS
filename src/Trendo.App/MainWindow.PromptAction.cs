@@ -69,11 +69,27 @@ public partial class MainWindow
     /// <summary>Studio, für das Claude auf dieser Seite arbeitet: das Modul der Seite; die Business-Seiten (BUS-…) gehören zu „Online verkaufen“.</summary>
     public string? ClaudeStudioOf(string key) => ModuleOf(key) is { } m ? (m.StartsWith("BUS-", StringComparison.Ordinal) ? "STUDIO-ONLINE-BUSINESS-01" : m) : null;
 
+    /// <summary>Schlanke Zeile nur mit „✳ Claude“ (rechts oben) – für den Fokusmodus, die Studio-Übersicht und die Suche.</summary>
+    Control ClaudeSlimRow(string key, Control view)
+    {
+        var studio = ClaudeBelongs(key) ? ClaudeStudioOf(key) : null;
+        var cc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } aw && ClaudeDockOpen(aw) ? "Claude ✕" : "✳ Claude", Height = 30 };
+        ToolTip.SetTip(cc, studio is null ? "Claude öffnen – allgemein, mit deinem Abo" : $"Claude für „{StudioCatalog.NameOf(studio, studio)}“ öffnen");
+        cc.Click += (_, _) => ClaudeDockToggle(studio, null);
+        if (studio is not null) ClaudeAcceptDrop(cc, () => studio);
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Avalonia.Thickness(8, 4, 8, 2), Children = { cc } };
+        DockPanel.SetDock(row, Avalonia.Controls.Dock.Top);
+        view.HorizontalAlignment = HorizontalAlignment.Stretch; view.VerticalAlignment = VerticalAlignment.Stretch;
+        return new DockPanel { LastChildFill = true, Children = { row, view } };
+    }
+
     /// <summary>Hängt die Leiste an. Der Startbildschirm bleibt unverändert, damit der parallele Desktop-Auftrag dort frei bleibt.</summary>
     private Control WithPromptBar(string key, Control view)
     {
         // start und studios haben eine eigene Eingabezeile (T-0218). 3d: die Seite füllt die Höhe; die Leiste sitzt dort im linken Rollbereich.
-        if (key is "start" or "studios" or "3d" || FocusMode) return view; // G13: Fokusmodus ohne KI-Zeile
+        // Claude auch hier (Wunsch 02.11.2026): Fokusmodus (statt der KI-Zeile nur ein schlanker Claude-Knopf), Studio-Übersicht und Suche (Claude allgemein)
+        if (key is "studios" or "suche" || FocusMode && key is not ("start" or "3d")) return ClaudeSlimRow(key, view);
+        if (key is "start" or "studios" or "3d") return view;
         var studio = ModuleOf(key);
         if (studio is null) return view;
         if (CapabilityCatalog.Find(studio) is null)

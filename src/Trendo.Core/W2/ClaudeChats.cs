@@ -13,7 +13,8 @@ public sealed partial class ClaudeChats(string dataRoot)
     public sealed record Msg(string Role, string Text, List<Step> Steps, DateTimeOffset At, List<string>? Changed = null, int Tokens = 0, List<string>? Attachments = null, string? Context = null, string? Ki = null, List<string>? Used = null);
     /// <summary><paramref name="Full"/>: volle Claude-Funktionen für dieses Projekt freigegeben (Befehle, Internet, eigene Skills, Agenten, Plugins/Mods, MCP-Werkzeuge);
     /// <paramref name="Safe"/>: dieses Projekt ausdrücklich auf „sicher“ gestellt (gilt auch, wenn volle Funktionen sonst immer an sind).</summary>
-    public sealed record Chat(string Id, string Studio, string Title, string Folder, string? Session, DateTimeOffset Created, DateTimeOffset Last, List<Msg> Messages, bool Full = false, bool Safe = false)
+    /// <param name="Doc">Dokument im Programm des Studios, in dem Claude für dieses Projekt arbeitet (.tdoc im Projektordner) – öffnet sich beim Fortsetzen wieder.</param>
+    public sealed record Chat(string Id, string Studio, string Title, string Folder, string? Session, DateTimeOffset Created, DateTimeOffset Last, List<Msg> Messages, bool Full = false, bool Safe = false, string? Doc = null)
     {
         /// <summary>Volle Funktionen in diesem Projekt wirksam? <paramref name="always"/>: Vorgabe „immer bei Bedarf Internet und Befehle“.</summary>
         public bool FullWith(bool always) => !Safe && (Full || always);
@@ -73,6 +74,7 @@ public sealed partial class ClaudeChats(string dataRoot)
 
     public Chat Add(string studio, string id, Msg m) => Update(studio, id, c => c with { Messages = [.. c.Messages, m], Last = DateTimeOffset.Now });
     public Chat SetSession(string studio, string id, string session) => Update(studio, id, c => c with { Session = session });
+    public Chat SetDoc(string studio, string id, string doc) => Update(studio, id, c => c with { Doc = doc });
     public Chat SetFull(string studio, string id, bool full) => Update(studio, id, c => c with { Full = full, Safe = !full });
     public Chat Rename(string studio, string id, string title) => Update(studio, id, c => c with { Title = string.IsNullOrWhiteSpace(title) ? c.Title : title.Trim() });
 
@@ -156,7 +158,8 @@ public sealed record StudioFormat(string Rule, string? Main, string[] Opens)
     /// <summary>Format für Studio und Seite (die Seite unterscheidet z. B. Text und Tabelle im selben Studio; <paramref name="shell"/>: Seite ist ein Fachprogramm mit .tdoc).</summary>
     public static StudioFormat? For(string? studio, string? page, bool shell = false) => (studio, page) switch
     {
-        (_, _) when shell => Program,
+        // im Programm: das Studio-Dokument – und ergänzend das Lieferformat des Studios (z. B. ein spielbarer Prototyp zum Spiel)
+        (_, _) when shell => StudioProfiles.Has(studio) ? Program with { Rule = Program.Rule + " Ergänzend, wenn es zum Auftrag passt: " + StudioProfiles.For(studio).Format.Rule } : Program,
         (_, "text") => Text,
         (_, "tabelle") => Sheet,
         _ => StudioProfiles.Has(studio) ? StudioProfiles.For(studio).Format : null, // jedes Studio mit eigenem Profil (Wunsch 02.11.2026)

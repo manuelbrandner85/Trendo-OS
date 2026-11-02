@@ -19,6 +19,10 @@ public static class ButtonProbe
         ["trash-yes"] = "Leert den Papierkorb endgültig.",
         ["print-yes"] = "Schickt einen Auftrag an den echten Drucker.",
         ["auftrag-claude"] = "Öffnet den Claude-Bereich im ganzen Fenster und verdeckt die Seite – eigener Test in ClaudeDock_Ui und ClaudeEverywhere_Ui.",
+        ["prog-claude"] = "Öffnet den Claude-Bereich aus dem Menüband und verdeckt die Seite – eigener Test in ClaudeOperate_Ui.",
+        ["prog-claude-ask"] = "Öffnet den Claude-Bereich mit der Markierung und verdeckt die Seite – eigener Test in ClaudeOperate_Ui.",
+        ["auftrag-claude-markierung"] = "Öffnet den Claude-Bereich mit der Markierung – eigener Test in ClaudePrograms_Ui.",
+        ["auftrag-claude-weiter"] = "Öffnet den Claude-Bereich mit dem letzten Projekt – eigener Test in ClaudePrograms_Ui.",
     };
 
     public static IReadOnlyList<string> Require(MainWindow w, FakeLauncher launcher, string root, params string[] pages)

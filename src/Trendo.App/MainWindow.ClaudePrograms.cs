@@ -23,7 +23,7 @@ public partial class MainWindow
         if (_claudeDocks.TryGetValue(id, out var open) && open.Studio != studio) ClaudeDockToggle(null); // anderes Studio: schließen …
         if (!_claudeDocks.ContainsKey(id)) ClaudeDockToggle(studio); // … und für dieses öffnen
         if (!_claudeDocks.TryGetValue(id, out var dock) || !_chatUis.TryGetValue(dock, out var ui)) return null;
-        if (chatId is not null && !ui.Running && CChats.Get(studio, chatId) is not null) { ui.ChatId = chatId; RenderChatList(dock); RenderChat(dock); }
+        if (chatId is not null && !ui.Running && CChats.Get(studio, chatId) is { } cc) { ui.ChatId = chatId; if (cc.Doc is not null) ClaudeEnsureProgram(dock, cc); RenderChatList(dock); RenderChat(dock); }
         if (text is { Length: > 0 }) { ui.Input.Text = ((ui.Input.Text ?? "").TrimEnd() + (string.IsNullOrWhiteSpace(ui.Input.Text) ? "" : "\n\n") + text).TrimStart(); ui.Input.CaretIndex = ui.Input.Text.Length; }
         Dispatcher.UIThread.Post(() => ui.Input.Focus());
         return dock;
@@ -61,7 +61,7 @@ public partial class MainWindow
     public bool ClaudeAskSelection(string page)
     {
         if (ClaudeStudioOf(page) is not { } studio) return false;
-        var sel = ClaudeSelection(page);
+        var sel = ClaudeSelection(page) ?? (_lastTextSel is { } ls && ls.Page == page ? ls.Text : null); // auch Markierung in einem beliebigen Eingabefeld
         if (sel is { Length: > 2000 }) sel = sel[..2000] + " …";
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.markierung", page);
         return ClaudeOpenFor(studio, sel is null ? null : "Zu dieser Markierung:\n„" + sel + "“\n\n") is not null;

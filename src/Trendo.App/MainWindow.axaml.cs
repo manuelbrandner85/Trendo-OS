@@ -127,6 +127,7 @@ public sealed partial class MainWindow : Window
         InitKiProgress(root);
         InitPhoneSurface(root);
         InitCommandPalette(root);
+        InitClaudeOperate(); // Claude kennt und bedient jedes Programm, Rechtsklick „✳ Claude fragen“
         var scaler = new LayoutTransformControl { Child = root };
         Content = scaler;
         void DoRescale()

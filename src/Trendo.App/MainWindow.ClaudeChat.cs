@@ -38,6 +38,7 @@ public partial class MainWindow
         // schmaler Claude-Bereich (Studio links offen): Projektliste einklappen, damit das Gespräch Platz hat
         public ColumnDefinition SideCol = new(230, GridUnitType.Pixel); public bool SideOpen; public Button? SideToggle;
         public WrapPanel Flows = new() { Name = "claude-flows", Margin = new Thickness(24, 0, 24, 2), IsVisible = false }; // gemerkte Abläufe
+        public ClaudePlan? Plan; // was Claude im offenen Programm tun möchte (wartet auf „Ausführen“)
     }
     /// <summary>Spiel, das Claude im Spiele-Studio gebaut hat (wird dort oben gezeigt), mit Vorschaubild.</summary>
     string? _gameClaude, _gameClaudeShot;
@@ -168,7 +169,7 @@ public partial class MainWindow
                 Background = c.Id == ui.ChatId ? ClaudeItem : Brushes.Transparent, Foreground = ClaudeFg,
                 Content = new StackPanel { Children = { new TextBlock { Text = c.Title, FontSize = 12.5, TextTrimming = TextTrimming.CharacterEllipsis }, new TextBlock { Text = c.Last.LocalDateTime.ToString("dd.MM. HH:mm", De), FontSize = 10.5, Foreground = ClaudeMuted } } } };
             ToolTip.SetTip(open, "Fortsetzen");
-            open.Click += (_, _) => { if (ui.Running) return; ui.ChatId = c.Id; ui.ConfirmDelete = null; RenderChatList(dock); RenderChat(dock); };
+            open.Click += (_, _) => { if (ui.Running) return; ui.ChatId = c.Id; ui.ConfirmDelete = null; if (c.Doc is not null) ClaudeEnsureProgram(dock, c); RenderChatList(dock); RenderChat(dock); }; // Projekt fortsetzen: sein Dokument im Programm
             var del = new Button { Name = $"claude-chat-del-{i}", Content = "✕", Padding = new Thickness(6, 2), Background = Brushes.Transparent, Foreground = ClaudeMuted, VerticalAlignment = VerticalAlignment.Center };
             ToolTip.SetTip(del, "Projekt löschen (Verlauf und Ordner – der Ordner kommt in den Papierkorb)");
             del.Click += (_, _) => { ui.ConfirmDelete = c.Id; RenderChatList(dock); };
@@ -225,6 +226,7 @@ public partial class MainWindow
             ui.Shown = chat.Messages.Count;
         }
         for (var i = 0; i < ui.Drafts.Count; i++) if (ui.Drafts[i].ChatId == chat?.Id) ui.Log.Children.Add(DraftCard(ui.Drafts[i], i)); // Entwürfe warten auf Freigabe
+        if (ui.Plan is { } pl && pl.ChatId == chat?.Id) ui.Log.Children.Add(PlanCard(dock, ui, pl)); // wartet auf „Ausführen“
         AttachQueue(ui); RenderFlows(dock, ui);
         Dispatcher.UIThread.Post(() => ui.Scroll.ScrollToEnd(), DispatcherPriority.Background);
     }
@@ -345,6 +347,8 @@ public partial class MainWindow
             if (ui.FullForNew) { chat = chats.SetFull(studio, chat.Id, true); ui.FullForNew = false; _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat.voll.an", studio); }
             if (ui.SafeForNew) { chat = chats.SetFull(studio, chat.Id, false); ui.SafeForNew = false; }
         }
+        // Claude arbeitet direkt im Programm des Studios: Dokument anlegen bzw. wieder öffnen, Programm zeigen (Wunsch 02.11.2026)
+        if (!check) chat = ClaudeEnsureProgram(dock, chat);
         // Anhänge in den Ordner „anhang“ des Projekts; Claude liest sie von dort (Bilder kann es ansehen)
         var attached = new List<string>();
         foreach (var src in ui.Pending.Where(File.Exists))
@@ -357,7 +361,10 @@ public partial class MainWindow
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         ui.Pending.Clear(); RenderChips(dock);
         var context = check ? null : ClaudeStudioContext(dock.Page);
-        var prompt = text + (attached.Count > 0 ? "\n\n(Angehängt: " + string.Join(", ", attached) + ")" : "") + (context is not null ? "\n\n[Gerade im Studio: " + context + "]" : "");
+        // Claude kennt das offene Programm: Seite lesen (nur wenn sie gerade offen ist) – Felder, Auswahl, Knöpfe; Claude kann es dann auch bedienen
+        var pageState = !check && CurrentView == dock.Page ? ClaudeReadPage(dock.Page) : null;
+        context ??= pageState is { } ps0 ? ps0.Program + (ps0.Title.Length > 0 ? " – " + ps0.Title : "") + (ps0.Selected is { Length: > 0 } sl0 ? $"; markiert: „{(sl0.Length > 80 ? sl0[..80] + " …" : sl0)}“" : "") : null;
+        var prompt = text + (attached.Count > 0 ? "\n\n(Angehängt: " + string.Join(", ", attached) + ")" : "") + (context is not null ? "\n\n[Gerade im Studio: " + context + "]" : "") + (pageState is not null ? ClaudeActions.Prompt(pageState) : "");
         if (shot is not null) attached.Add(shot);
         chat = chats.Add(studio, chat.Id, new ClaudeChats.Msg(check ? "check" : "user", text, [], DateTimeOffset.Now, null, 0, attached.Count > 0 ? attached : null, context));
         ui.Input.Text = ""; ui.Running = true; ui.Cts = new CancellationTokenSource();
@@ -386,10 +393,13 @@ public partial class MainWindow
             try { workFile = Regex.Replace(doc.Title, @"[\\/:*?""<>|]", "-") + ProgramDocument.Extension; File.WriteAllText(Path.Combine(folder, workFile), doc.Serialize()); }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { workFile = null; }
         var format = StudioFormat.For(dock.Studio, dock.Page, shell);
+        var programInfo = shell && Programs.TryGetValue(dock.Page, out var pspec)
+            ? $"\nDu arbeitest im Programm „{pspec.Title}“ von Trendo: {pspec.Sentence} Befehle im Menüband: " + string.Join(", ", pspec.Ribbon.SelectMany(g => g.Item2).Select(c => c.Label).Take(30)) + ". Inhalte änderst du im Studio-Dokument; Befehle des Programms kannst du über die Knöpfe auslösen."
+            : "";
         FolderSnapshot? snap = null;
         var point = CTimeline.NewStore(chat.Id); // Versionspunkt für die Zeitreise
         try { snap = FolderSnapshot.Take(folder, point); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
-        var system = ClaudeChats.System(StudioCatalog.NameOf(dock.Studio ?? "", "Trendo"), ClaudeRoleFor(dock.Studio), Skills.For(null, dock.Studio), format, workFile) + CMemory.Prompt(chat.Id) + (ClaudeSuggestsOn ? ClaudeChats.SuggestRule : "");
+        var system = ClaudeChats.System(StudioCatalog.NameOf(dock.Studio ?? "", "Trendo"), ClaudeRoleFor(dock.Studio), Skills.For(null, dock.Studio), format, workFile) + programInfo + CMemory.Prompt(chat.Id) + (ClaudeSuggestsOn ? ClaudeChats.SuggestRule : "");
         string? pendingFile = null;
         var model = KiSourceSettings.Load(_core.DataRoot).ClaudeModel;
         void OnLine(string l)
@@ -463,6 +473,8 @@ public partial class MainWindow
         var changed = changes.Select(c => $"{c.File} ({c.Change})").ToList();
         var answer = say.ToString().Trim();
         // Projekt-Gedächtnis: „Merken: …“-Zeilen übernehmen und als Arbeitsschritt zeigen
+        // Claude bedient das Programm: Schritte erst als Plan, Ausführen nur nach Freigabe
+        if (error is null && pageState is not null && ClaudeActions.Parse(answer, pageState) is { Count: > 0 } psteps) ui.Plan = new ClaudePlan(dock.Page, pageState, psteps, chat.Id);
         foreach (var keep in ClaudeMemory.Extract(answer)) if (CMemory.Add(chat.Id, keep)) steps.Add(new ClaudeChats.Step("🧠 Gemerkt: " + keep, false));
         answer = ClaudeMemory.Strip(answer);
         if (snap is not null) try { CTimeline.Keep(chat.Id, point, check ? "Nachbesserung: " + text.Split('\n')[0] : text.Split('\n')[0], changes.Count); } catch (IOException) { }
@@ -679,7 +691,7 @@ public partial class MainWindow
                 _webDir = folder; _webEditFile = index; _webPreview = null;
                 if (!_opt.Isolated) await RefreshPreview();
                 return true;
-            case "spiele" when index is not null:
+            case "spiele" or "spiele-programm" when index is not null:
                 _gameClaude = folder; _gameClaudeShot = null;
                 if (!_opt.Isolated) try { var shot = await WebsitePreview.CaptureAsync(folder, 520, 520, Path.Combine(folder, ".vorschau", "spiel.png")); _gameClaudeShot = shot.Ok ? shot.Path : null; } catch (Exception e) when (e is IOException or InvalidOperationException or System.ComponentModel.Win32Exception) { }
                 return true;

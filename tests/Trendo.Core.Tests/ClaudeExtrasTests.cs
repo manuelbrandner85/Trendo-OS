@@ -178,3 +178,34 @@ public class ClaudeProgramsCoreTests
         finally { Directory.Delete(root, true); }
     }
 }
+
+/// 0.9.39: Claude bedient das Programm – nur echte Ziele, nie Geheimnisfelder, Wirkung nach außen erkannt.
+public class ClaudeActionsTests
+{
+    static readonly ClaudeActions.Page P = new("Kalender", "", "Zahnarzt",  ["Mai 2026"],
+        [new("cal-title", "Titel", ""), new("cal-pin", "PIN", "")],
+        [new("cal-view", "Ansicht", "Monat", ["Tag", "Woche", "Monat"])],
+        [new("cal-add", "Termin anlegen"), new("cal-del", "Termin löschen"), new("mail-send", "Senden")]);
+
+    [Fact(DisplayName = "Bedien-Schritte: Felder, Auswahl, Klick – nur vorhandene Ziele und gültige Einträge, nie Geheimnisfelder")]
+    public void Parse_steps()
+    {
+        var s = ClaudeActions.Parse("Mach ich.\n[[trendo:feld | cal-title | Zahnarzt 10 Uhr]]\n[[trendo:wahl | cal-view | woche]]\n[[trendo:wahl | cal-view | Jahr]]\n[[trendo:feld | cal-pin | 1234]]\n[[trendo:klick | cal-add]]\n[[trendo:klick | gibts-nicht]]", P);
+        Assert.Equal([("feld", "cal-title"), ("wahl", "cal-view"), ("klick", "cal-add")], s.Select(x => (x.Kind, x.Target)));
+        Assert.Equal("woche", s[1].Value);
+        Assert.Equal("„Titel“ = „Zahnarzt 10 Uhr“", ClaudeActions.Describe(s[0], P));
+        Assert.False(ClaudeActions.StepRisky(s[2], P));
+        Assert.True(ClaudeActions.StepRisky(new("klick", "cal-del", null), P)); Assert.True(ClaudeActions.StepRisky(new("klick", "mail-send", null), P));
+        Assert.True(ClaudeActions.Secret("Passwort", "x")); Assert.True(ClaudeActions.Secret("", "or-api-key")); Assert.False(ClaudeActions.Secret("Titel", "cal-title"));
+        Assert.Equal("Mach ich.", ClaudeTools.Strip("Mach ich.\n[[trendo:klick | cal-add]]")); // Bedienzeilen erscheinen nicht im Text
+    }
+
+    [Fact(DisplayName = "Seitenbeschreibung für Claude: Programm, Markierung, Felder, Auswahl, Knöpfe und die Regel zum Bedienen")]
+    public void Prompt()
+    {
+        var p = ClaudeActions.Prompt(P);
+        Assert.Contains("[Offenes Programm: Kalender]", p); Assert.Contains("Markiert: „Zahnarzt“", p);
+        Assert.Contains("cal-view „Ansicht“ = „Monat“ [Tag | Woche | Monat]", p); Assert.Contains("cal-add „Termin anlegen“", p);
+        Assert.Contains("[[trendo:klick | NAME]]", p); Assert.Contains("erst nach seiner Freigabe", p);
+    }
+}
