@@ -1,8 +1,8 @@
 # Übersicht – Testergebnisse
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.36 (Stand 7f51e00)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.36 (Stand 302f050)
 
-Lauf: `api.trx, app.trx, core.trx`
+Lauf: `trendo-api.trx, trendo-app.trx, trendo-core.trx`
 
 Bestanden 28 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
 
@@ -12,7 +12,7 @@ Bestanden 28 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
 | Fenster: Alt+← geht im aktiven Fenster zurück; mehrere Schritte nacheinander | ✓ bestanden |
 | Fenster: Klick auf eine Kategorie im Fenster bleibt im selben Fenster; ohne Klick eigenes Fenster; offene Seite wird wiederverwendet | ✓ bestanden |
 | Fenster: Zurück-Knopf führt im selben Fenster zur vorigen Seite; ohne vorige Seite ausgegraut; kein neues Fenster | ✓ bestanden |
-| Fenster: maximiert ohne Rand bis an die Seiten, die Leiste unten bleibt sichtbar | ✓ bestanden |
+| Fenster: maximiert füllt den ganzen Bildschirm – über Kopfleiste und Taskleiste, ohne Rand; Wiederherstellen bringt die Leisten zurück | ✓ bestanden |
 | N11: Rechner – Tasten, wissenschaftlich, Programmierer, Grafik, Datum, Verlauf | ✓ bestanden |
 | N18: Zettel anlegen, Farbe wählen, auf der Startseite anheften und lösen | ✓ bestanden |
 | N20: Wecker stellen und klingeln (Benachrichtigung mit Schlummern), Timer läuft ab, Stoppuhr-Runden, Weltuhr | ✓ bestanden |

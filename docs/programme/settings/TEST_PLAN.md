@@ -1,6 +1,6 @@
 # Einstellungen – Testplan
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 7f51e00)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 302f050)
 
 62 Tests sprechen dieses Programm an.
 
@@ -18,7 +18,7 @@ Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Se
 - Fenster: Klick auf eine Kategorie im Fenster bleibt im selben Fenster; ohne Klick eigenes Fenster; offene Seite wird wiederverwendet
 - Fenster: Startmenü öffnet Dokumente mit Taskleisten-Eintrag, Startbildschirm bleibt dahinter
 - Fenster: Ziehen an der Titelleiste verschiebt; Klick ins hintere Fenster holt es nach vorn; Reiter teilen ein Fenster
-- Fenster: maximiert ohne Rand bis an die Seiten, die Leiste unten bleibt sichtbar
+- Fenster: maximiert füllt den ganzen Bildschirm – über Kopfleiste und Taskleiste, ohne Rand; Wiederherstellen bringt die Leisten zurück
 - Fenster: maximiert und daneben geöffnet bleiben im AutomationPeer-Baum, mit Namen und endlichem Rechteck
 - Fenster: wechseln per Taskleiste, aktives hervorgehoben, maximieren, schließen
 - Genauere Leser (Kalender, Programm-Dokument), Design „Wie Windows“, Hilfe „?“ auf Seiten ohne eigenen Hilfetext, Hinweis statt stummer Knöpfe

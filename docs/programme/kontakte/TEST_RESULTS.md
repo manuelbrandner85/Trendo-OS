@@ -1,8 +1,8 @@
 # Adressbuch – Testergebnisse
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand 7f51e00)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand 302f050)
 
-Lauf: `api.trx, app.trx, core.trx`
+Lauf: `trendo-api.trx, trendo-app.trx, trendo-core.trx`
 
 Bestanden 7 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

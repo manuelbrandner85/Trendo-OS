@@ -1,8 +1,8 @@
 # Selbstheilung – Testergebnisse
 
-Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.36 (Stand 7f51e00)
+Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.36 (Stand 302f050)
 
-Lauf: `api.trx, app.trx, core.trx`
+Lauf: `trendo-api.trx, trendo-app.trx, trendo-core.trx`
 
 Bestanden 15 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

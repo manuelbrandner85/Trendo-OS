@@ -1,8 +1,8 @@
 # Open Source – Testergebnisse
 
-Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.36 (Stand 7f51e00)
+Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.36 (Stand 302f050)
 
-Lauf: `api.trx, app.trx, core.trx`
+Lauf: `trendo-api.trx, trendo-app.trx, trendo-core.trx`
 
 Bestanden 25 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

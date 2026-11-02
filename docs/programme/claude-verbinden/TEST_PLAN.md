@@ -1,6 +1,6 @@
 # Mit Claude verbinden – Testplan
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `claude-verbinden` · Stand: 0.9.36 (Stand 7f51e00)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `claude-verbinden` · Stand: 0.9.36 (Stand 302f050)
 
 10 Tests sprechen dieses Programm an.
 

@@ -1,15 +1,15 @@
 # Start – Testergebnisse
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 7f51e00)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 302f050)
 
-Lauf: `api.trx, app.trx, core.trx`
+Lauf: `trendo-api.trx, trendo-app.trx, trendo-core.trx`
 
 Bestanden 23 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
 | Fenster: Klick auf eine Kategorie im Fenster bleibt im selben Fenster; ohne Klick eigenes Fenster; offene Seite wird wiederverwendet | ✓ bestanden |
-| Fenster: maximiert ohne Rand bis an die Seiten, die Leiste unten bleibt sichtbar | ✓ bestanden |
+| Fenster: maximiert füllt den ganzen Bildschirm – über Kopfleiste und Taskleiste, ohne Rand; Wiederherstellen bringt die Leisten zurück | ✓ bestanden |
 | SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien | ✓ bestanden |
 | SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen | ✓ bestanden |
 | SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt | übersprungen |

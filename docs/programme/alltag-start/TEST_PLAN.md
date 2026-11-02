@@ -1,6 +1,6 @@
 # Übersicht – Testplan
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.36 (Stand 7f51e00)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.36 (Stand 302f050)
 
 30 Tests sprechen dieses Programm an.
 
@@ -8,7 +8,7 @@ Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `a
 - Fenster: Alt+← geht im aktiven Fenster zurück; mehrere Schritte nacheinander
 - Fenster: Klick auf eine Kategorie im Fenster bleibt im selben Fenster; ohne Klick eigenes Fenster; offene Seite wird wiederverwendet
 - Fenster: Zurück-Knopf führt im selben Fenster zur vorigen Seite; ohne vorige Seite ausgegraut; kein neues Fenster
-- Fenster: maximiert ohne Rand bis an die Seiten, die Leiste unten bleibt sichtbar
+- Fenster: maximiert füllt den ganzen Bildschirm – über Kopfleiste und Taskleiste, ohne Rand; Wiederherstellen bringt die Leisten zurück
 - N11: Rechner – Tasten, wissenschaftlich, Programmierer, Grafik, Datum, Verlauf
 - N18: Zettel anlegen, Farbe wählen, auf der Startseite anheften und lösen
 - N20: Wecker stellen und klingeln (Benachrichtigung mit Schlummern), Timer läuft ab, Stoppuhr-Runden, Weltuhr

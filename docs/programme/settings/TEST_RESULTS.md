@@ -1,8 +1,8 @@
 # Einstellungen – Testergebnisse
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 7f51e00)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 302f050)
 
-Lauf: `api.trx, app.trx, core.trx`
+Lauf: `trendo-api.trx, trendo-app.trx, trendo-core.trx`
 
 Bestanden 62 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
@@ -22,7 +22,7 @@ Bestanden 62 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | Fenster: Klick auf eine Kategorie im Fenster bleibt im selben Fenster; ohne Klick eigenes Fenster; offene Seite wird wiederverwendet | ✓ bestanden |
 | Fenster: Startmenü öffnet Dokumente mit Taskleisten-Eintrag, Startbildschirm bleibt dahinter | ✓ bestanden |
 | Fenster: Ziehen an der Titelleiste verschiebt; Klick ins hintere Fenster holt es nach vorn; Reiter teilen ein Fenster | ✓ bestanden |
-| Fenster: maximiert ohne Rand bis an die Seiten, die Leiste unten bleibt sichtbar | ✓ bestanden |
+| Fenster: maximiert füllt den ganzen Bildschirm – über Kopfleiste und Taskleiste, ohne Rand; Wiederherstellen bringt die Leisten zurück | ✓ bestanden |
 | Fenster: maximiert und daneben geöffnet bleiben im AutomationPeer-Baum, mit Namen und endlichem Rechteck | ✓ bestanden |
 | Fenster: wechseln per Taskleiste, aktives hervorgehoben, maximieren, schließen | ✓ bestanden |
 | Genauere Leser (Kalender, Programm-Dokument), Design „Wie Windows“, Hilfe „?“ auf Seiten ohne eigenen Hilfetext, Hinweis statt stummer Knöpfe | ✓ bestanden |

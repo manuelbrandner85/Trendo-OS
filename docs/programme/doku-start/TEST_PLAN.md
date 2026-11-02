@@ -1,11 +1,11 @@
 # Start – Testplan
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 7f51e00)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 302f050)
 
 25 Tests sprechen dieses Programm an.
 
 - Fenster: Klick auf eine Kategorie im Fenster bleibt im selben Fenster; ohne Klick eigenes Fenster; offene Seite wird wiederverwendet
-- Fenster: maximiert ohne Rand bis an die Seiten, die Leiste unten bleibt sichtbar
+- Fenster: maximiert füllt den ganzen Bildschirm – über Kopfleiste und Taskleiste, ohne Rand; Wiederherstellen bringt die Leisten zurück
 - SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien
 - SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen
 - SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt

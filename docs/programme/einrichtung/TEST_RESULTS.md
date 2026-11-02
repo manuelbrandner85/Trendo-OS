@@ -1,8 +1,8 @@
 # Ersteinrichtung – Testergebnisse
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `einrichtung` · Stand: 0.9.36 (Stand 7f51e00)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `einrichtung` · Stand: 0.9.36 (Stand 302f050)
 
-Lauf: `api.trx, app.trx, core.trx`
+Lauf: `trendo-api.trx, trendo-app.trx, trendo-core.trx`
 
 Bestanden 12 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 

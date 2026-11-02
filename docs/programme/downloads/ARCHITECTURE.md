@@ -1,6 +1,6 @@
 # Downloads – Architektur
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.36 (Stand 7f51e00)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.36 (Stand 302f050)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys03.cs`
