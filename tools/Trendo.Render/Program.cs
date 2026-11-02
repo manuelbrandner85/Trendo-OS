@@ -154,6 +154,27 @@ else if (shot == "claude-chat") // 0.9.37: Claude-Chat mit schöner Antwort, Ged
         foreach (var b in win.GetLogicalDescendants().OfType<Button>().Where(b => b.Name == panel).ToList()) b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
     for (var i = 0; i < 30; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
 }
+else if (shot == "claude-programm") // 0.9.38: Claude hat ein Studio-Dokument geändert – Leiste zum Vergleichen, Behalten, Verwerfen (Claude nachgebildet)
+{
+    MainWindow.ClaudeStatusOverride = () => Task.FromResult(new ClaudeCode.Status(true, true, "claude.ai", "max", "claude"));
+    MainWindow.ClaudeRunOverride = (_, dir, line, _) =>
+    {
+        var tdoc = Directory.GetFiles(dir, "*.tdoc").Single();
+        var o = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(tdoc))!.AsObject();
+        o["data"]!.AsObject()["claude"] = "hell";
+        File.WriteAllText(tdoc, o.ToJsonString());
+        line(System.Text.Json.JsonSerializer.Serialize(new { type = "result", subtype = "success", is_error = false, result = "Erledigt.\nVorschläge: Fenster größer | Boden in Eiche", session_id = "s1", num_turns = 1 }));
+        return Task.FromResult(0);
+    };
+    void PumpProg(Task t) { while (!t.IsCompleted) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); } }
+    PumpProg(win.ClaudeCheck(true));
+    var progPage = MainWindow.Programs.Keys.First(k => MainWindow.Programs[k].Studio == "SPEC-01");
+    win.Show(progPage); win.ProgramNew(progPage);
+    win.ClaudeDockToggle("SPEC-01", null); Dispatcher.UIThread.RunJobs();
+    PumpProg(win.ClaudeChatSend("Mach das Wohnzimmer hell"));
+    win.Show(progPage);
+    for (var i = 0; i < 30; i++) { Dispatcher.UIThread.RunJobs(); Thread.Sleep(20); }
+}
 else if (shot?.StartsWith("neuerungen", StringComparison.Ordinal) == true) // Vollbild „Das ist neu“ nach einem Update (Folie als Zahl dahinter, sonst Begrüßung)
 {
     win.NewsManualClock = true; win.ShowNews("0.9.28", File.ReadAllText(Path.Combine("installer", "neuerungen", "0.9.28.md")));

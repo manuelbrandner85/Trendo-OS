@@ -54,6 +54,25 @@ public sealed partial class ClaudeMemory(string dataRoot)
     public static string Strip(string answer) => Regex.Replace(MarkLine().Replace(answer, ""), @"\n{3,}", "\n\n").Trim();
 }
 
+/// <summary>Wiederholungen automatisieren (Wunsch 02.11.2026): ein Auftrag an Claude wird zum Ablauf, der sich mit einem Klick in jedem Projekt des Studios wiederholen lässt.
+/// Abläufe sind Vorlagen in der vorhandenen Prompt-Bibliothek (Kategorie je Studio) – dort lassen sie sich auch bearbeiten und versionieren.</summary>
+public static class ClaudeFlows
+{
+    public static string Category(string studioName) => "Claude-Abläufe · " + studioName;
+    public static IReadOnlyList<PromptTemplate> For(PromptLibrary lib, string studioName) => lib.All().Where(p => p.Category == Category(studioName)).ToList();
+
+    /// <summary>Auftrag als Ablauf merken (gleicher Text nur einmal). Gibt die Vorlage zurück.</summary>
+    public static PromptTemplate Save(PromptLibrary lib, string studioName, string text)
+    {
+        var t = text.Trim();
+        return For(lib, studioName).FirstOrDefault(p => p.Text.Equals(t, StringComparison.OrdinalIgnoreCase)) ?? lib.Save(null, ClaudeChats.TitleOf(t), Category(studioName), t, "aus dem Claude-Chat");
+    }
+
+    /// <summary>Wie oft dieser Auftrag in den Projekten des Studios schon kam – ab 2 schlägt Trendo vor, ihn als Ablauf zu merken.</summary>
+    public static int Repeats(IEnumerable<ClaudeChats.Chat> chats, string text) =>
+        chats.SelectMany(c => c.Messages).Count(m => m.Role == "user" && m.Text.Trim().Equals(text.Trim(), StringComparison.OrdinalIgnoreCase));
+}
+
 /// <summary>Zeitreise (Wunsch 02.11.2026): vor jeder Antwort mit Änderungen sichert Trendo den Projektordner als Versionspunkt. Man sieht alle Punkte mit Zeit und Auftrag
 /// und springt zu jedem zurück – vorher sichert Trendo den aktuellen Stand, die Zeitreise ist also selbst wieder rückgängig zu machen.</summary>
 public sealed class ClaudeTimeline(string dataRoot)

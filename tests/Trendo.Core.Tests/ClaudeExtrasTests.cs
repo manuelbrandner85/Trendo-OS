@@ -132,3 +132,49 @@ public class ClaudeExtrasTests
         finally { Directory.Delete(root, true); }
     }
 }
+
+/// 0.9.38: Vorschläge abtrennen, Projekte über alle Studios, Abläufe in der Prompt-Bibliothek.
+public class ClaudeProgramsCoreTests
+{
+    [Fact(DisplayName = "Vorschläge: Zeile „Vorschläge: A | B“ wird zu Knöpfen und verschwindet aus dem Text; Frage bleibt erkennbar")]
+    public void Suggestions()
+    {
+        var (text, s) = ClaudeChats.SplitSuggestions("Fertig.\n**Vorschläge:** Kontaktformular | „Farben anpassen“ | x\nFrage: Hell oder dunkel? [Hell | Dunkel]");
+        Assert.Equal(["Kontaktformular", "Farben anpassen"], s);
+        Assert.Equal("Hell oder dunkel?", ClaudeChats.SplitQuestion(text).Question);
+        Assert.Empty(ClaudeChats.SplitSuggestions("Nur Text.").Suggestions);
+        Assert.Contains(ClaudeChats.SuggestMark, ClaudeChats.SuggestRule);
+    }
+
+    [Fact(DisplayName = "Projekt-Fortsetzung: zuletzt benutzte Projekte über alle Studios, neueste zuerst, leere ausgelassen")]
+    public void Recent()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-recent-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var c = new ClaudeChats(root);
+            var a = c.Create("CORE-07", "Webseite", Path.Combine(root, "w")); c.Add("CORE-07", a.Id, new ClaudeChats.Msg("user", "x", [], DateTimeOffset.Now));
+            Thread.Sleep(10);
+            var b = c.Create("CORE-06", "Spiel", Path.Combine(root, "s")); c.Add("CORE-06", b.Id, new ClaudeChats.Msg("user", "y", [], DateTimeOffset.Now));
+            c.Create("CORE-05", "Leer", Path.Combine(root, "l"));
+            Assert.Equal(["Spiel", "Webseite"], c.Recent().Select(x => x.Title));
+        }
+        finally { Directory.Delete(root, true); }
+    }
+
+    [Fact(DisplayName = "Abläufe: als Vorlage in der Prompt-Bibliothek je Studio, gleicher Auftrag nur einmal, Wiederholungen gezählt")]
+    public void Flows()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-flows-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(root);
+        try
+        {
+            var lib = new PromptLibrary(root, new AuditLog(Path.Combine(root, "audit.jsonl")));
+            var t = ClaudeFlows.Save(lib, "Webseite bauen", "Prüfe alle Links");
+            Assert.Equal(t.Id, ClaudeFlows.Save(lib, "Webseite bauen", "prüfe alle links ").Id);
+            Assert.Single(ClaudeFlows.For(lib, "Webseite bauen")); Assert.Empty(ClaudeFlows.For(lib, "Spiele"));
+            var chats = new[] { new ClaudeChats.Chat("1", "s", "t", "f", null, DateTimeOffset.Now, DateTimeOffset.Now, [new("user", "Prüfe alle Links", [], DateTimeOffset.Now), new("user", "prüfe alle links", [], DateTimeOffset.Now), new("assistant", "Prüfe alle Links", [], DateTimeOffset.Now)]) };
+            Assert.Equal(2, ClaudeFlows.Repeats(chats, "Prüfe alle Links"));
+        }
+        finally { Directory.Delete(root, true); }
+    }
+}

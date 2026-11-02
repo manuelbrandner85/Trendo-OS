@@ -109,7 +109,7 @@ public partial class MainWindow
 
     // ---------- G8: Befehlssuche „Was möchtest du tun?“ (Strg+Q) · G9: Tastenkürzel · G13: Fokusmodus ----------
     private readonly Grid _palette = new() { Name = "command-palette", IsVisible = false, ZIndex = 4500, Background = Brush.Parse("#99000000") };
-    private readonly TextBox _paletteBox = new() { Name = "command-search", PlaceholderText = "Was möchtest du tun? z. B. „PDF zusammenfügen“, „Handy verbinden“, „Rechnung“", FontSize = 16, Height = 44 };
+    private readonly TextBox _paletteBox = new() { Name = "command-search", PlaceholderText = "Was möchtest du tun? Befehl, Studio – oder einfach Claude fragen (Strg+K)", FontSize = 16, Height = 44 };
     private readonly StackPanel _paletteList = new() { Name = "command-results", Spacing = 2 };
     private List<(string Label, string Kind, Action Run)> _paletteHits = [];
     private int _paletteSel;
@@ -141,8 +141,11 @@ public partial class MainWindow
         {
             if (SetupOverlayOpen) return;
             var ctrl = e.KeyModifiers.HasFlag(KeyModifiers.Control);
+            var shift = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
             if (ctrl && e.Key == Key.Q) { OpenPalette(); e.Handled = true; }
-            else if (ctrl && e.Key == Key.K) { ShowShortcuts(); e.Handled = true; }
+            else if (ctrl && shift && e.Key == Key.K) { ShowShortcuts(); e.Handled = true; }
+            else if (ctrl && e.Key == Key.K) { OpenPalette(); e.Handled = true; } // Befehlsleiste (Wunsch 02.11.2026) – mit Claude
+            else if (ctrl && shift && e.Key == Key.A && ClaudeBelongs(CurrentView)) { ClaudeAskSelection(CurrentView); e.Handled = true; } // Markierung an Claude
             else if (e.Key == Key.F11) { ToggleFocusMode(); e.Handled = true; }
             else if (e.Key == Key.F1 && CurrentView.Length > 0) { ShowHelp(CurrentView, force: true); e.Handled = true; }
         }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
@@ -181,6 +184,8 @@ public partial class MainWindow
                 var btn = b;
                 hits.Add((label, "Auf dieser Seite", () => btn.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent)), s + 1));
             }
+        // Claude: fragen, Markierung, Vorschläge, Abläufe, weitermachen (auch in anderen Studios)
+        foreach (var h in ClaudePaletteHits(q, Score)) hits.Add(h);
         // 2) Studios und Seiten
         foreach (var (id, info) in StudioCatalog.ById)
         {
@@ -234,7 +239,7 @@ public partial class MainWindow
     }
 
     /// <summary>G9: Übersicht der Tastenkürzel (Strg+K).</summary>
-    public void ShowShortcuts() => Toast("Tastenkürzel: Strg+Q Was möchtest du tun? · F1 Hilfe · F11 Fokusmodus · Strg+K diese Übersicht · Strg+1…5 Start, Studios, Projekte, Freigaben, System · Strg+Tab Fenster wechseln · Win Startmenü · Strg+S Speichern · Strg+Z/Y Rückgängig/Wiederholen · Strg+F Suchen");
+    public void ShowShortcuts() => Toast("Tastenkürzel: Strg+K oder Strg+Q Befehlsleiste (auch Claude) · Strg+Umschalt+A Markierung an Claude · Strg+Umschalt+F Suche · F1 Hilfe · F11 Fokusmodus · Strg+Umschalt+K diese Übersicht · Strg+1…5 Start, Studios, Projekte, Freigaben, System · Strg+Tab Fenster wechseln · Win Startmenü · Strg+S Speichern · Strg+Z/Y Rückgängig/Wiederholen · Strg+F Suchen");
 
     /// <summary>G13: Fokusmodus – Vollbild, ohne Kopfkarte und KI-Zeile, nur der Inhalt. F11 schaltet zurück.</summary>
     public void ToggleFocusMode()

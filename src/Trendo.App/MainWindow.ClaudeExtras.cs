@@ -61,6 +61,10 @@ public partial class MainWindow
         c.Transitions = [new DoubleTransition { Property = Visual.OpacityProperty, Duration = TimeSpan.FromMilliseconds(650) }];
         var t = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(700) };
         t.Tick += (_, _) => { if (ct.IsCancellationRequested) { t.Stop(); c.Opacity = 1; return; } c.Opacity = c.Opacity > 0.7 ? 0.4 : 1; };
+        // sofort anhalten – beim Ende der Antwort und wenn die Anzeige verschwindet (kein Zeitgeber läuft weiter, wenn das Fenster zu ist)
+        void Stop() { if (Dispatcher.UIThread.CheckAccess()) t.Stop(); else Dispatcher.UIThread.Post(t.Stop); }
+        ct.Register(Stop);
+        c.DetachedFromVisualTree += (_, _) => Stop();
         t.Start();
     }
 
@@ -377,7 +381,7 @@ public partial class MainWindow
             if (heard.Trim().Length < 2) continue;
             await ClaudeChatSend(dock, heard);
             var answer = ClaudeChatCurrent()?.Messages.LastOrDefault(m => m.Role == "assistant")?.Text;
-            if (answer is { Length: > 0 } && ui.HandsFree) await Speak(ChatMarkdown.Plain(ClaudeTools.Strip(answer)), ct);
+            if (answer is { Length: > 0 } && ui.HandsFree) await Speak(ChatMarkdown.Plain(ClaudeChats.SplitSuggestions(ClaudeTools.Strip(answer)).Text), ct);
         }
     }
 

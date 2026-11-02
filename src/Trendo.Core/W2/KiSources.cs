@@ -83,6 +83,8 @@ public sealed class KiSourceSettings
     public bool ClaudeAlwaysFull { get; set; } = true;
     /// <summary>Wunsch 02.11.2026: Claude sieht sich sein Ergebnis (Bildschirmfoto) nach dem echten Start selbst an und bessert nach – kostet etwas Abo, darum abschaltbar.</summary>
     public bool ClaudeLooks { get; set; } = true;
+    /// <summary>Wunsch 02.11.2026: Claude schlägt am Ende jeder Antwort sinnvolle nächste Schritte vor (anklickbar) – abschaltbar.</summary>
+    public bool ClaudeSuggests { get; set; } = true;
     /// <summary>T-0316: gewähltes Claude-Modell (leer = Standard von Claude Code).</summary>
     public string ClaudeModel { get; set; } = "";
     /// <summary>Freie Modelle nach dem Setup automatisch laden (Vorgabe 2026-10-25).</summary>

@@ -95,6 +95,31 @@ public sealed partial class ClaudeChats(string dataRoot)
         "\nAngehängte Dateien liegen im Ordner „anhang“ des Projekts; Bilder kannst du ansehen." + ClaudeTools.Rule;
 
     public const string QuestionMark = "Frage:";
+    public const string SuggestMark = "Vorschläge:";
+    /// <summary>Zusatz zu den Anweisungen, wenn Claude Vorschläge machen soll (abschaltbar).</summary>
+    public const string SuggestRule = "\nSchlage am Ende jeder Antwort in einer eigenen Zeile zwei bis drei sinnvolle nächste Schritte für dieses Projekt vor, kurz wie ein Auftrag an dich: " + SuggestMark + " <Schritt 1> | <Schritt 2> | <Schritt 3>";
+
+    [GeneratedRegex(@"^[ \t>*_-]*Vorschläge:\**\s*(?<s>[^\n]+?)\s*$", RegexOptions.Multiline)] private static partial Regex SuggestLine();
+
+    /// <summary>Vorschlagszeile („Vorschläge: A | B | C“) abtrennen – die Vorschläge werden zu Knöpfen.</summary>
+    public static (string Text, IReadOnlyList<string> Suggestions) SplitSuggestions(string answer)
+    {
+        var m = SuggestLine().Match(answer);
+        if (!m.Success) return (answer, []);
+        var list = m.Groups["s"].Value.Split('|').Select(x => x.Trim().Trim('*', '_', '„', '“', '"').Trim()).Where(x => x.Length is > 1 and <= 120).Take(4).ToList();
+        return (Regex.Replace(SuggestLine().Replace(answer, ""), @"\n{3,}", "\n\n").Trim(), list);
+    }
+
+    /// <summary>Zuletzt benutzte Projekte über alle Studios (Projekt-Fortsetzung überall).</summary>
+    public IReadOnlyList<Chat> Recent(int n = 6)
+    {
+        if (!Directory.Exists(Dir)) return [];
+        var all = new List<Chat>();
+        foreach (var f in Directory.EnumerateFiles(Dir, "*.json"))
+            try { all.AddRange(JsonSerializer.Deserialize<List<Chat>>(File.ReadAllText(f), Json)?.Where(c => c.Studio.Length > 0 && c.Messages.Count > 0) ?? []); }
+            catch (Exception e) when (e is JsonException or IOException or NotSupportedException) { }
+        return all.OrderByDescending(c => c.Last).Take(n).ToList();
+    }
 
     /// <summary>Rückfrage am Ende einer Antwort („Frage: … [A | B]“) abtrennen – die Antworten werden zu Knöpfen.</summary>
     public static (string Text, string? Question, IReadOnlyList<string> Options) SplitQuestion(string answer)
@@ -141,7 +166,7 @@ public sealed record StudioFormat(string Rule, string? Main, string[] Opens)
     public static string PreviewKind(string file) => Path.GetExtension(file).ToLowerInvariant() switch
     {
         ".html" or ".htm" or ".svg" or ".png" or ".jpg" or ".jpeg" or ".gif" or ".webp" => "web",
-        ".md" or ".txt" or ".csv" or ".json" or ".js" or ".css" or ".ts" or ".py" or ".cs" or ".xml" or ".obj" or ".mtl" or ".gltf" or ".tdoc" or ".gd" => "text",
+        ".md" or ".txt" or ".csv" or ".json" or ".js" or ".css" or ".ts" or ".py" or ".cs" or ".xml" or ".obj" or ".mtl" or ".gltf" or ".gd" => "text", // .tdoc nicht: das Studio-Dokument zeigt das Programm links
         _ => "none",
     };
 

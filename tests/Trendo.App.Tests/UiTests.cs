@@ -409,12 +409,14 @@ public class W0b_Look
 
 public class W1_Search_Access
 {
-    [AvaloniaFact(DisplayName = "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+K fokussiert die Suche")]
+    [AvaloniaFact(DisplayName = "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste")]
     public async Task Search_opens_hit()
     {
         var (w, _, _) = Ui.Open();
         var box = w.Find<TextBox>("txt-search");
         w.Key(PhysicalKey.K, RawInputModifiers.Control);
+        Assert.True(w.CommandPaletteOpen); w.ClosePalette();
+        w.Key(PhysicalKey.F, RawInputModifiers.Control | RawInputModifiers.Shift);
         Assert.True(box.IsFocused);
         box.Text = "einstell";
         box.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Enter });

@@ -83,9 +83,14 @@ public partial class MainWindow
             var cc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } aw && ClaudeDockOpen(aw) ? "Claude ✕" : "✳ Claude", Height = 32, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Avalonia.Thickness(8, 6, 8, 2) };
             ToolTip.SetTip(cc, $"Claude für „{StudioCatalog.NameOf(cs, cs)}“ öffnen – mit deinem Abo, passend zu diesem Studio");
             cc.Click += (_, _) => ClaudeDockToggle(cs, null);
-            DockPanel.SetDock(cc, Avalonia.Controls.Dock.Top);
+            ClaudeAcceptDrop(cc, () => cs); // Dateien oder Text auf „✳ Claude“ ziehen
+            cc.Margin = new Avalonia.Thickness(0);
+            var slim = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Avalonia.Thickness(8, 6, 8, 2) };
+            foreach (var x in ClaudeBarExtras(key, cs)) slim.Children.Add(x);
+            slim.Children.Add(cc);
+            DockPanel.SetDock(slim, Avalonia.Controls.Dock.Top);
             view.HorizontalAlignment = HorizontalAlignment.Stretch; view.VerticalAlignment = VerticalAlignment.Stretch;
-            return new DockPanel { LastChildFill = true, Children = { cc, view } };
+            return new DockPanel { LastChildFill = true, Children = { slim, view } };
         }
         var dock = new DockPanel { LastChildFill = true, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
         var bar = BuildPromptBar(studio, key);
@@ -404,6 +409,7 @@ public partial class MainWindow
         var cc = new Button { Name = "auftrag-claude", Content = Windows.Active?.Id is { } aw && ClaudeDockOpen(aw) ? "Claude ✕" : "✳ Claude", Height = 32 };
         ToolTip.SetTip(cc, "Claude mit deinem Abo öffnen – wie im Web und in der App, mit eigenem Projekt für dieses Studio");
         cc.Click += (_, _) => ClaudeDockToggle(studio, box.Text);
+        if (key is not null && ClaudeStudioOf(key) is { } ccs) { ClaudeAcceptDrop(cc, () => ccs); foreach (var x in ClaudeBarExtras(key, ccs)) buttons.Children.Add(x); }
         buttons.Children.Add(cc);
         var spark = new TextBlock { Text = "✨", FontSize = 16, VerticalAlignment = VerticalAlignment.Center, Margin = new Avalonia.Thickness(4, 0, 0, 0) };
         ToolTip.SetTip(spark, "Sag der Trendo KI in deinen Worten, was dieses Studio für dich tun soll.");

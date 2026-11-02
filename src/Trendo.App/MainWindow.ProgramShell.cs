@@ -173,6 +173,7 @@ public partial class MainWindow
             var (top, grid, status) = ProgramWorkParts(spec, d, docs);
             band.Padding = new Thickness(14, 8);
             var head = new StackPanel { Spacing = 6, Children = { band, top } };
+            if (ClaudeChangeBanner(key, d) is { } cb) head.Children.Insert(1, cb); // Claude hat geändert: vergleichen, behalten, verwerfen
             // DockPanel: Kopf und Statusleiste bekommen die echte Breite (Menüband bricht richtig um), die Arbeitsfläche den Rest
             head.Margin = new Thickness(0, 0, 0, 8); status.Margin = new Thickness(0, 8, 0, 0);
             DockPanel.SetDock(head, Avalonia.Controls.Dock.Top); DockPanel.SetDock(status, Avalonia.Controls.Dock.Bottom);
@@ -183,6 +184,7 @@ public partial class MainWindow
             Control body = d is null ? ProgramStart(spec) : ProgramWork(spec, d, docs);
             root = new StackPanel { Name = "prog-root", Spacing = 10, Children = { band, body } };
             if (_progMsg.GetValueOrDefault(key) is { Length: > 0 } msg) root.Children.Insert(1, ResultCard(msg));
+            if (ClaudeChangeBanner(key, d) is { } cb) root.Children.Insert(1, cb); // Claude hat geändert: vergleichen, behalten, verwerfen
         }
         root.KeyDown += (_, e) =>
         {

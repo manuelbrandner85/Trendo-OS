@@ -37,6 +37,7 @@ public partial class MainWindow
         public string? Panel; public bool HandsFree; public CancellationTokenSource? HandsCts; public string? ShownChat; public int Shown;
         // schmaler Claude-Bereich (Studio links offen): Projektliste einklappen, damit das Gespräch Platz hat
         public ColumnDefinition SideCol = new(230, GridUnitType.Pixel); public bool SideOpen; public Button? SideToggle;
+        public WrapPanel Flows = new() { Name = "claude-flows", Margin = new Thickness(24, 0, 24, 2), IsVisible = false }; // gemerkte Abläufe
     }
     /// <summary>Spiel, das Claude im Spiele-Studio gebaut hat (wird dort oben gezeigt), mit Vorschaubild.</summary>
     string? _gameClaude, _gameClaudeShot;
@@ -106,17 +107,18 @@ public partial class MainWindow
         var head = new StackPanel { Margin = new Thickness(24, 12, 24, 2), Spacing = 6, Children = {
             new DockPanel { Children = { Dk(ui.SideToggle, Avalonia.Controls.Dock.Left), ui.Title } },
             new WrapPanel { Name = "claude-chat-head-tools", Children = { memory, travel, review, full, app, eye, folder } } } };
-        var bottom = new StackPanel { Children = { ClaudeToolBar(dock), ui.Chips, inputBox, hint } };
+        var bottom = new StackPanel { Children = { ClaudeToolBar(dock), ui.Flows, ui.Chips, inputBox, hint } };
         ui.Body = new Border { Child = ui.Scroll };
         ui.Caps = new TextBlock { Name = "claude-chat-caps", FontSize = 11, Foreground = ClaudeMuted, Margin = new Thickness(24, 0, 24, 6), TextWrapping = TextWrapping.Wrap, Text = ClaudeCapsText(LoadCaps()) };
         var main = new DockPanel { Background = GlassBg, Children = { Dk(head, Avalonia.Controls.Dock.Top), Dk(ui.ActiveKi, Avalonia.Controls.Dock.Top), Dk(ui.Caps, Avalonia.Controls.Dock.Top), Dk(bottom, Avalonia.Controls.Dock.Bottom), ui.Body } };
         Grid.SetColumn(main, 1);
         DragDrop.SetAllowDrop(main, true);
-        main.AddHandler(DragDrop.DragOverEvent, (_, e) => { e.DragEffects = e.DataTransfer.Contains(DataFormat.File) ? DragDropEffects.Copy : DragDropEffects.None; e.Handled = true; });
+        main.AddHandler(DragDrop.DragOverEvent, (_, e) => { e.DragEffects = e.DataTransfer.Contains(DataFormat.File) || e.DataTransfer.Contains(DataFormat.Text) ? DragDropEffects.Copy : DragDropEffects.None; e.Handled = true; });
         main.AddHandler(DragDrop.DropEvent, (_, e) =>
         {
             var paths = e.DataTransfer.TryGetFiles()?.Select(f => f.TryGetLocalPath()).OfType<string>().Where(File.Exists).ToList() ?? [];
             if (paths.Count > 0) { ClaudeChatAttach(dock, paths); e.Handled = true; }
+            else if (e.DataTransfer.TryGetText() is { Length: > 0 } dropped) { ui.Input.Text = ((ui.Input.Text ?? "").TrimEnd() + "\n„" + dropped.Trim() + "“\n").TrimStart(); e.Handled = true; } // Text aus einem Programm hierher gezogen
         });
         var side = new Border { Name = "claude-chat-side", Background = ClaudeBar, BorderBrush = ClaudeLine, BorderThickness = new Thickness(0, 0, 1, 0), Padding = new Thickness(10), Child = new ScrollViewer { Content = ui.Side } };
         ui.PreviewCol = new ColumnDefinition(0, GridUnitType.Pixel);
@@ -223,7 +225,7 @@ public partial class MainWindow
             ui.Shown = chat.Messages.Count;
         }
         for (var i = 0; i < ui.Drafts.Count; i++) if (ui.Drafts[i].ChatId == chat?.Id) ui.Log.Children.Add(DraftCard(ui.Drafts[i], i)); // Entwürfe warten auf Freigabe
-        AttachQueue(ui);
+        AttachQueue(ui); RenderFlows(dock, ui);
         Dispatcher.UIThread.Post(() => ui.Scroll.ScrollToEnd(), DispatcherPriority.Background);
     }
 
@@ -274,6 +276,7 @@ public partial class MainWindow
             var bubble = new StackPanel { Spacing = 4, Children = { new SelectableTextBlock { Text = m.Text, Foreground = ClaudeFg, FontSize = 14, TextWrapping = TextWrapping.Wrap } } };
             if (m.Attachments is { Count: > 0 } att) bubble.Children.Add(new TextBlock { Text = "📎 " + string.Join(", ", att.Select(Path.GetFileName)), Foreground = ClaudeMuted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
             if (m.Context is { Length: > 0 } cx) bubble.Children.Add(new TextBlock { Text = "◎ " + cx, Foreground = ClaudeMuted, FontSize = 11, TextWrapping = TextWrapping.Wrap });
+            if (m == chat.Messages.LastOrDefault(x => x.Role == "user") && FlowSaveButton(dock, m.Text) is { } fs) bubble.Children.Add(fs); // Wiederholungen automatisieren
             return new Border { Background = ClaudeItem, BorderBrush = GlassEdge, BorderThickness = new Thickness(1), BoxShadow = BoxShadows.Parse("0 6 20 0 #40000000"), CornerRadius = new CornerRadius(16), Padding = new Thickness(14, 10), HorizontalAlignment = HorizontalAlignment.Right, MaxWidth = 620, Child = bubble };
         }
         var sp = new StackPanel { Spacing = 6 };
@@ -283,7 +286,8 @@ public partial class MainWindow
             foreach (var st in m.Steps) steps.Children.Add(ChatStep(st));
             sp.Children.Add(new Expander { Header = $"{m.Steps.Count} Arbeitsschritt{(m.Steps.Count == 1 ? "" : "e")}", Content = steps, IsExpanded = false, Foreground = ClaudeMuted, Background = Brushes.Transparent });
         }
-        var (body, question, options) = ClaudeChats.SplitQuestion(ClaudeTools.Strip(m.Text));
+        var (noSuggest, suggestions) = ClaudeChats.SplitSuggestions(ClaudeTools.Strip(m.Text));
+        var (body, question, options) = ClaudeChats.SplitQuestion(noSuggest);
         foreach (var block in ChatBlocks(body)) sp.Children.Add(block);
         if (question is not null)
         {
@@ -301,6 +305,7 @@ public partial class MainWindow
                 sp.Children.Add(row);
             }
         }
+        if (last && question is null && suggestions.Count > 0 && ClaudeSuggestsOn) sp.Children.Add(SuggestChips(dock, suggestions)); // Claude schlägt vor
         if (m.Used is { Count: > 0 } us) sp.Children.Add(new TextBlock { Name = last ? "claude-chat-used" : null, Text = "Genutzt: " + string.Join(" · ", us), Foreground = ClaudeMuted, FontSize = 11, TextWrapping = TextWrapping.Wrap });
         if (m.Ki is { Length: > 0 } ki) sp.Children.Add(new TextBlock { Name = last ? "claude-chat-ki" : null, Text = "Antwort von: " + ki, Foreground = ki == ClaudeKi ? ClaudeMuted : ClaudeAccent, FontSize = 10.5 });
         if (m.Tokens > 0) sp.Children.Add(new TextBlock { Name = last ? "claude-chat-usage" : null, Text = $"Abo-Nutzung dieser Antwort: ≈ {m.Tokens.ToString("N0", De)} Tokens", Foreground = ClaudeMuted, FontSize = 10.5 });
@@ -384,7 +389,7 @@ public partial class MainWindow
         FolderSnapshot? snap = null;
         var point = CTimeline.NewStore(chat.Id); // Versionspunkt für die Zeitreise
         try { snap = FolderSnapshot.Take(folder, point); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
-        var system = ClaudeChats.System(StudioCatalog.NameOf(dock.Studio ?? "", "Trendo"), ClaudeRoleFor(dock.Studio), Skills.For(null, dock.Studio), format, workFile) + CMemory.Prompt(chat.Id);
+        var system = ClaudeChats.System(StudioCatalog.NameOf(dock.Studio ?? "", "Trendo"), ClaudeRoleFor(dock.Studio), Skills.For(null, dock.Studio), format, workFile) + CMemory.Prompt(chat.Id) + (ClaudeSuggestsOn ? ClaudeChats.SuggestRule : "");
         string? pendingFile = null;
         var model = KiSourceSettings.Load(_core.DataRoot).ClaudeModel;
         void OnLine(string l)
@@ -708,7 +713,13 @@ public partial class MainWindow
     void ClaudeSyncProgram(ClaudeDock dock, string file)
     {
         if (ProgramActive(dock.Page) is not { } doc) return;
-        try { var fresh = ProgramDocument.Load(file); doc.ReplaceData(fresh.Data.ToJsonString()); _progMsg[dock.Page] = "✳ Claude hat das Dokument geändert – Rückgängig mit Strg+Z."; }
+        try
+        {
+            var fresh = ProgramDocument.Load(file);
+            if (fresh.Data.ToJsonString() == doc.Data.ToJsonString()) return; // schon übernommen
+            ClaudeChangeBegin(dock.Page, doc); doc.ReplaceData(fresh.Data.ToJsonString()); ClaudeChangeAfter(dock.Page, doc);
+            _progMsg[dock.Page] = "✳ Claude hat das Dokument geändert – oben vergleichen, behalten oder verwerfen.";
+        }
         catch (InvalidDataException e) { _claudeMsg = "Claudes Änderung ließ sich nicht übernehmen: " + e.Message; }
         if (!dock.Max) Show(CurrentView);
     }
@@ -719,6 +730,8 @@ public partial class MainWindow
         var alive = changes.Where(c => c.Change != "gelöscht").Select(c => c.File).ToList();
         var shown = alive.Count > 0 && await ClaudeShowInStudio(dock, folder, alive);
         shown |= workFile is not null && alive.Any(f => Path.GetFileName(f).Equals(workFile, StringComparison.OrdinalIgnoreCase));
+        // Studio-Dokument abgleichen – auch wenn Claude es ohne Schreibwerkzeug geändert hat (z. B. per Befehl); gleiche Daten ändern nichts
+        if (workFile is not null && alive.Any(f => Path.GetFileName(f).Equals(workFile, StringComparison.OrdinalIgnoreCase))) ClaudeSyncProgram(dock, Path.Combine(folder, workFile));
         if (StudioFormat.PickPreview(format, alive) is { } rel)
         {
             var orig = snap is not null && changes.Any(c => c.File == rel && c.Change == "geändert") ? Path.Combine(snap.Store, rel.Replace('/', Path.DirectorySeparatorChar)) : null;
