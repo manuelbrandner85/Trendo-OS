@@ -21,7 +21,12 @@ public sealed class UserSettings
     public string Language { get; set; } = "de-DE";
     public string ProjectsFolder { get; set; } = "";
     public string Theme { get; set; } = "dunkel";          // dunkel | hell | kontrast | system (wie Windows)
-    public string Accent { get; set; } = "#2F86F6";
+    public string Accent { get; set; } = "#C9A227";
+    /// <summary>Wunsch 02.11.2026: Bedienstil – trendo (eigen), windows, mac, linux. Nachempfunden, keine fremden Symbole, Schriften oder Logos.</summary>
+    public string Style { get; set; } = "trendo";
+    public static readonly string[] Styles = ["trendo", "windows", "mac", "linux"]; // Gold (Wunsch 02.11.2026: Gold statt Blau)
+    /// <summary>Stand des Aussehens: ab 2 ist Gold die Vorgabe – frühere Vorgabe Blau wird einmalig umgestellt.</summary>
+    public int LookVersion { get; set; }
     public string Wallpaper { get; set; } = "orbit";
     public bool WallpaperByTime { get; set; }
     /// <summary>Akzentfarbe folgt dem Hintergrund (Orbit, Abendrot und Bergsee → Blau, Morgen → Bernstein, Polarlicht → Türkis, Wellen → Violett).</summary>

@@ -172,7 +172,7 @@ public partial class MainWindow
         }
         if (pg.Blocks.Count == 0) blocks.Children.Add(new TextBlock { Text = "Zieh einen Baustein hierher.", Foreground = Brush.Parse("#8A94A6"), HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 40) });
         var frame = new Border { Name = "builder-preview-frame", Width = BuilderPhone ? 390 : 760, MinHeight = 520, Background = Brushes.White, CornerRadius = new CornerRadius(BuilderPhone ? 28 : 10),
-            BorderBrush = Brush.Parse("#2A3346"), BorderThickness = new Thickness(BuilderPhone ? 10 : 2), Padding = new Thickness(18, 22), HorizontalAlignment = HorizontalAlignment.Center, BoxShadow = CardShadow,
+            BorderBrush = Brush.Parse("#3E3E3E"), BorderThickness = new Thickness(BuilderPhone ? 10 : 2), Padding = new Thickness(18, 22), HorizontalAlignment = HorizontalAlignment.Center, BoxShadow = CardShadow,
             Child = new StackPanel { Spacing = 10, Children = { new TextBlock { Text = pg.Title, Foreground = Brush.Parse("#8A94A6"), FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center }, blocks } } };
         var undo = Act("builder-undo", "↶ Rückgängig", BuilderUndo); undo.IsEnabled = _builderUndo.Count > 0;
         var toolbar = new WrapPanel { Children = {

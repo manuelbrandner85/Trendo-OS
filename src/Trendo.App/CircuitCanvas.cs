@@ -156,7 +156,7 @@ public sealed class CircuitCanvas : Control
     {
         var size = Bounds.Size; if (size.Width < 2) return;
         ctx.FillRectangle(new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
-            GradientStops = { new GradientStop(Color.Parse("#FF0E1B30"), 0), new GradientStop(Color.Parse("#FF081120"), 1) } }, new Rect(size));
+            GradientStops = { new GradientStop(Color.Parse("#FF222222"), 0), new GradientStop(Color.Parse("#FF081120"), 1) } }, new Rect(size));
         // Rasterpunkte
         if (_s.Zoom * G >= 8)
         {
@@ -194,9 +194,9 @@ public sealed class CircuitCanvas : Control
         // Oszilloskop
         if (ScopeHeight > 0 && _s.Selected is { } sid && c.Part(sid) is { } sp2) DrawScope(ctx, size, sp2);
         var info = st is null ? "" : $"t = {st.Time:0.000} s · {(_s.Running ? (_s.Speed >= 1 ? "läuft (Echtzeit)" : $"läuft ({1 / _s.Speed:0}× langsamer)") : "angehalten")}";
-        if (info.Length > 0) Label(ctx, info, new Point(10, size.Height - 24 - ScopeHeight), "#C9D6EA", "#AA0A1628");
+        if (info.Length > 0) Label(ctx, info, new Point(10, size.Height - 24 - ScopeHeight), "#C9D6EA", "#AA1C1C1C");
         var hint = _problem is { } pr ? "⚠ " + pr : _s.Hint.Length > 0 ? _s.Hint : ToolHint();
-        if (hint.Length > 0) Label(ctx, hint, new Point(10, 10), "#FFFFFF", _problem is null ? "#CC14233D" : "#DDB91C1C");
+        if (hint.Length > 0) Label(ctx, hint, new Point(10, 10), "#FFFFFF", _problem is null ? "#CC2C2C2C" : "#DDB91C1C");
         if (c.Parts.Count == 0 && _s.Tool == "auswahl")
         {
             var ft = new FormattedText("Leere Schaltung – links ein Bauteil wählen und von Punkt zu Punkt ziehen (Klick = Standardlänge).", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Face, 15, B("#9FB4D3"));

@@ -200,7 +200,7 @@ public partial class MainWindow
         Border Node(string name, int idx, string icon, string title, string sub, string c1, bool selected, string? badge = null, string badgeColor = "#CFE0F5", bool live = false)
         {
             var b = new Border { Name = name, Tag = idx, Padding = new Thickness(14, 10), CornerRadius = new CornerRadius(14), Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
-                Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse(c1), 0), new GradientStop(Color.Parse("#1A2740"), 1) } },
+                Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse(c1), 0), new GradientStop(Color.Parse("#313131"), 1) } },
                 BorderBrush = Brush.Parse(selected ? "#FACC15" : "#44FFFFFF"), BorderThickness = new Thickness(selected ? 2 : 1), BoxShadow = CardShadow,
                 Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = {
                     new TextBlock { Text = icon, FontSize = 22, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) },

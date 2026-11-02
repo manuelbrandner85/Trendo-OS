@@ -43,7 +43,7 @@ public partial class MainWindow
         {
             var rem = VehicleBook.Reminders(v, DateTime.Today); var on = v.Name == CarSel; var nm = v.Name;
             var b = new Button { Name = $"car-pick-{v.Name}".Replace(' ', '_'), HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 8),
-                Background = on ? Brush.Parse("#2F86F633") : Brush.Parse("#132440"), BorderBrush = on ? Accent : Edge, BorderThickness = new Thickness(on ? 2 : 1), CornerRadius = new CornerRadius(10),
+                Background = on ? Brush.Parse("#C9A22733") : Brush.Parse("#2E2E2E"), BorderBrush = on ? Accent : Edge, BorderThickness = new Thickness(on ? 2 : 1), CornerRadius = new CornerRadius(10),
                 Content = new StackPanel { Spacing = 1, Children = {
                     new TextBlock { Text = (v.Electric ? "⚡ " : "⛽ ") + v.Name, Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 14 },
                     new TextBlock { Text = $"{v.Plate} · {Fach.F(v.Odometer, 0)} km".Trim(' ', '·'), Foreground = Muted, FontSize = 11 },
@@ -76,7 +76,7 @@ public partial class MainWindow
     Control CarOverview(Vehicle v)
     {
         var sp = new StackPanel { Spacing = 10 }; var s = VehicleBook.Stats(v); var unit = v.Electric ? "kWh" : "l"; var (biz, priv, share) = VehicleBook.TripShare(v);
-        Border Kpi(string name, string label, string value, string sub) => new() { Name = name, Width = 170, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 8), CornerRadius = new CornerRadius(12), Background = Brush.Parse("#132440"), BorderBrush = Edge, BorderThickness = new Thickness(1),
+        Border Kpi(string name, string label, string value, string sub) => new() { Name = name, Width = 170, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 8), CornerRadius = new CornerRadius(12), Background = Brush.Parse("#2E2E2E"), BorderBrush = Edge, BorderThickness = new Thickness(1),
             Child = new StackPanel { Children = { new TextBlock { Text = label, Foreground = Muted, FontSize = 11 }, new TextBlock { Text = value, Foreground = Text, FontSize = 22, FontWeight = FontWeight.Bold }, new TextBlock { Text = sub, Foreground = Muted, FontSize = 11 } } } };
         sp.Children.Add(new WrapPanel { Name = "car-kpis", Children = {
             Kpi("car-kpi-avg", "Ø Verbrauch", s.AvgPer100 is { } a ? $"{Fach.F(a, 1)} {unit}" : "–", s.LastPer100 is { } l ? $"zuletzt {Fach.F(l, 1)} {unit}/100 km" : "mind. 2× voll tanken"),
@@ -86,7 +86,7 @@ public partial class MainWindow
         foreach (var r in VehicleBook.Reminders(v, DateTime.Today)) sp.Children.Add(new TextBlock { Text = (r.Urgent ? "⚠ " : "• ") + r.Text, Foreground = Brush.Parse(r.Urgent ? "#FACC15" : "#C9D6EA"), FontSize = 13 });
         var cons = VehiclePlus.Consumption(v);
         sp.Children.Add(H($"Verbrauch je Tankfüllung ({unit}/100 km)", 13));
-        sp.Children.Add(new Border { Name = "car-chart-cons", Height = 180, CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = new ShapeView((w, h) => CarLineChart(cons.Select(x => (x.Date, x.Per100)).ToList(), w, h, "#4FA3FF", s.AvgPer100), "#0E1A2E") });
+        sp.Children.Add(new Border { Name = "car-chart-cons", Height = 180, CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = new ShapeView((w, h) => CarLineChart(cons.Select(x => (x.Date, x.Per100)).ToList(), w, h, "#4FA3FF", s.AvgPer100), "#212121") });
         var month = VehiclePlus.MonthlyCost(v, DateTime.Today);
         sp.Children.Add(H("Kosten je Monat (€)", 13));
         sp.Children.Add(new Border { Name = "car-chart-cost", Height = 150, CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = new ShapeView((w, h) =>
@@ -100,7 +100,7 @@ public partial class MainWindow
                 if (month[i].Cost > 0) sh.Add(new DText(x + bw / 2, h - 23 - bh, Fach.F(month[i].Cost, 0), 10, "#FFFFFF", "TEXT"));
             }
             return sh;
-        }, "#0E1A2E") });
+        }, "#212121") });
         return sp;
     }
 
@@ -202,7 +202,7 @@ public partial class MainWindow
             });
             chip.Margin = new Thickness(0, 0, 6, 6); chips.Children.Add(chip);
         }
-        sp.Children.Add(new Border { Background = Brush.Parse("#132440"), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 10), BorderBrush = Edge, BorderThickness = new Thickness(1), Child = new StackPanel { Spacing = 4, Children = { H("Neue Fahrt", 13), entry, chips } } });
+        sp.Children.Add(new Border { Background = Brush.Parse("#2E2E2E"), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 10), BorderBrush = Edge, BorderThickness = new Thickness(1), Child = new StackPanel { Spacing = 4, Children = { H("Neue Fahrt", 13), entry, chips } } });
 
         // Monate
         var months = VehicleBook.Months(v, _carYear); var all = v.Trips.Where(t => t.Date.Year == _carYear).OrderByDescending(t => t.StartKm).ToList(); var idx = 0;
@@ -262,7 +262,7 @@ public partial class MainWindow
         var cancel = Btn("car-t-fix-cancel", "Abbrechen", () => { _carFix = null; Show("fahrzeug"); });
         var w = new WrapPanel { Children = { d, s, e, kind, dest, why, part, reason, save, cancel } };
         foreach (var c in w.Children.OfType<Control>()) { c.Margin = new Thickness(0, 0, 6, 6); c.VerticalAlignment = VerticalAlignment.Center; }
-        return new Border { Name = "car-t-fix", Background = Brush.Parse("#222F86F6"), BorderBrush = Brush.Parse("#D4A84B"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(10), Child = w };
+        return new Border { Name = "car-t-fix", Background = Brush.Parse("#22C9A227"), BorderBrush = Brush.Parse("#D4A84B"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(10), Child = w };
     }
 
     Control CarSide(Vehicle? car)

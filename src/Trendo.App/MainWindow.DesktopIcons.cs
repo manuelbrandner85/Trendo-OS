@@ -60,13 +60,13 @@ public partial class MainWindow
     {
         if (id.StartsWith("app:", StringComparison.Ordinal) && WebApps.Get(id[4..]) is { } wa) return WebAppFace(wa, iconSize * 1.3);
         if (id.StartsWith("page:", StringComparison.Ordinal) && SystemModules.FirstOrDefault(m => "page:" + m.Key == id) is { Key: not null } m)
-            return new Border { Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#2B4C86"), 0), new GradientStop(Color.Parse("#0E1B3A"), 1) } },
+            return new Border { Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#2B4C86"), 0), new GradientStop(Color.Parse("#262626"), 1) } },
                 Child = new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Spacing = 4, Children = { Chip(m.Icon, m.C1, m.C2, iconSize * 1.4, 0.58) } } };
         var face = new Grid { ClipToBounds = true };
         if (StudioPicture(id) is { } pic) face.Children.Add(new Image { Source = pic, Stretch = Stretch.UniformToFill });
         else
         {
-            face.Children.Add(new Border { Background = Grad("#1A3A6B", "#0A1A36") });
+            face.Children.Add(new Border { Background = Grad("#1A3A6B", "#222222") });
             if (IconFor(id, iconSize) is { } ico) { ico.HorizontalAlignment = HorizontalAlignment.Center; ico.VerticalAlignment = VerticalAlignment.Center; face.Children.Add(ico); }
         }
         face.Children.Add(new Border { Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0.35, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
@@ -142,7 +142,7 @@ public partial class MainWindow
                 var on = OnDesktop(id);
                 var face = new Border { Width = 46, Height = 46, CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = DeskIconFace(id, false, 22) };
                 var b = new Button { Name = "desk-toggle-" + id.Replace(':', '-'), Width = 250, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(8, 6), HorizontalContentAlignment = HorizontalAlignment.Stretch,
-                    Background = on ? Brush.Parse("#262F86F6") : Brushes.Transparent, CornerRadius = new CornerRadius(10),
+                    Background = on ? Brush.Parse("#26C9A227") : Brushes.Transparent, CornerRadius = new CornerRadius(10),
                     Content = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = { face,
                         Pos(new TextBlock { Text = title, Foreground = Text, FontSize = 12.5, Margin = new Thickness(10, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis }, 1),
                         Pos(new TextBlock { Text = on ? "✓ auf dem Desktop" : "＋ hinzufügen", Foreground = on ? Brush.Parse("#4ADE80") : Accent, FontSize = 11, VerticalAlignment = VerticalAlignment.Center }, 2) } } };

@@ -61,7 +61,7 @@ public sealed class PointCloudView : Control
 
     public override void Render(DrawingContext ctx)
     {
-        ctx.FillRectangle(new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#16243C"), 0), new GradientStop(Color.Parse("#0A1322"), 1) } }, new Rect(Bounds.Size));
+        ctx.FillRectangle(new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#2D2D2D"), 0), new GradientStop(Color.Parse("#0A1322"), 1) } }, new Rect(Bounds.Size));
         if (Cloud is not { Points.Count: > 0 } pc) return;
         var info = pc.Info(); var step = Math.Max(1, pc.Points.Count / MaxDraw);
         var idx = new List<(int I, double X, double Y, double D)>(pc.Points.Count / step + 1);

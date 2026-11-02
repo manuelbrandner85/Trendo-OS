@@ -9,7 +9,7 @@ public class W0b_Hintergrund_Farbe
     {
         var s = new UserSettings();
         Assert.Equal("orbit", s.CurrentWallpaper(DateTime.Now));
-        Assert.Equal("#2F86F6", s.EffectiveAccent(DateTime.Now));
+        Assert.Equal("#C9A227", s.EffectiveAccent(DateTime.Now)); // Dunkel-Gold-Look (02.11.2026): Gold ist die Vorgabe
         s.Accent = "#22C55E"; s.Wallpaper = "morgen";
         Assert.Equal("#22C55E", s.EffectiveAccent(DateTime.Now));
         s.AccentFromWallpaper = true;

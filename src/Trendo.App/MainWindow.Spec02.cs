@@ -236,7 +236,7 @@ public partial class MainWindow
                 {
                     var fc = AcAnalysis.Cutoff(bd.Pts);
                     sp.Children.Add(new TextBlock { Name = "ek-bode-fc", Text = (fc is { } g ? $"Grenzfrequenz {AcAnalysis.Hz(g)} (−3 dB)" : "Keine −3-dB-Grenze im Bereich 10 Hz … 100 kHz") + $" · Verstärkung bei 10 Hz {bd.Pts[0].MagDb:0.#} dB", Foreground = Brush.Parse("#F5A524"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
-                    sp.Children.Add(new Border { Name = "ek-bode", Height = 170, CornerRadius = new CornerRadius(8), ClipToBounds = true, Child = new ShapeView((w, h) => AcAnalysis.Draw(bd.Pts, w, h), "#0E1A2E") });
+                    sp.Children.Add(new Border { Name = "ek-bode", Height = 170, CornerRadius = new CornerRadius(8), ClipToBounds = true, Child = new ShapeView((w, h) => AcAnalysis.Draw(bd.Pts, w, h), "#212121") });
                 }
             }
             sp.Children.Add(new WrapPanel { Children = {

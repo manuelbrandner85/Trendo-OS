@@ -195,7 +195,7 @@ public sealed class MapCanvas : Control
     {
         var size = Bounds.Size; if (size.Width < 2) return;
         var tilesOn = _s.Tiles;
-        ctx.FillRectangle(tilesOn ? B("#E9E5DC") : new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#FF12233D"), 0), new GradientStop(Color.Parse("#FF0A1628"), 1) } }, new Rect(size));
+        ctx.FillRectangle(tilesOn ? B("#E9E5DC") : new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#FF2C2C2C"), 0), new GradientStop(Color.Parse("#FF1C1C1C"), 1) } }, new Rect(size));
         var loadedAny = false;
         if (tilesOn)
         {
@@ -224,7 +224,7 @@ public sealed class MapCanvas : Control
             ctx.DrawGeometry(null, new Pen(B(t.Color), sel ? 6 : 4, t.Planned ? new DashStyle([2, 1.2], 0) : null) { LineJoin = PenLineJoin.Round, LineCap = PenLineCap.Round }, new PolylineGeometry(pts, false));
             ctx.DrawEllipse(B("#22C55E"), new Pen(Brushes.White, 2), pts[0], 6, 6);
             ctx.DrawEllipse(B("#E11D48"), new Pen(Brushes.White, 2), pts[^1], 6, 6);
-            if (sel) Label(ctx, $"{t.Name} · {t.Stats().DistanceKm:0.0} km", pts[pts.Count * 3 / 4] + new Point(12, 6), "#0A1628", "#F5A524");
+            if (sel) Label(ctx, $"{t.Name} · {t.Stats().DistanceKm:0.0} km", pts[pts.Count * 3 / 4] + new Point(12, 6), "#1C1C1C", "#F5A524");
         }
         // Wegpunkte
         foreach (var w in _m.Waypoints)
@@ -232,7 +232,7 @@ public sealed class MapCanvas : Control
             var q = Screen(w.Lat, w.Lon); var sel = w.Id == _s.Selected;
             var pin = new PolylineGeometry([q, new Point(q.X - 8, q.Y - 14), new Point(q.X - 8, q.Y - 22), new Point(q.X + 8, q.Y - 22), new Point(q.X + 8, q.Y - 14)], true);
             ctx.DrawGeometry(B(sel ? "#F5A524" : "#7C3AED"), new Pen(Brushes.White, 2), pin);
-            Label(ctx, w.Name, new Point(q.X + 12, q.Y - 26), "#FFFFFF", "#CC1E1B4B");
+            Label(ctx, w.Name, new Point(q.X + 12, q.Y - 26), "#FFFFFF", "#CC333333");
         }
         // Entwurf (Route, Messen, Fläche)
         if (_s.Draft.Count > 0)
@@ -244,14 +244,14 @@ public sealed class MapCanvas : Control
             var all = _s.Draft.Concat(_over ? [_mouse] : []).Select(p => new GeoPoint(p.Lat, p.Lon)).ToList();
             var km = all.Zip(all.Skip(1), Trendo.Core.Geo.Haversine).Sum();
             var text = _s.Tool == "flaeche" && all.Count >= 3 ? $"Fläche {FormatArea(GeoPlus.AreaM2(all))} · Umfang {km + Trendo.Core.Geo.Haversine(all[^1], all[0]):0.00} km" : $"{km:0.000} km" + (_s.Tool == "route" ? $" · Gehzeit ca. {Fmt(GeoPlus.HikingTime(km, 0, 0))}" : "");
-            Label(ctx, text, pts[^1] + new Point(12, 10), "#0A1628", "#F5A524");
+            Label(ctx, text, pts[^1] + new Point(12, 10), "#1C1C1C", "#F5A524");
         }
         // Maßstab, Koordinaten, Namensnennung, Hinweis
         DrawScale(ctx, size);
-        if (_over) Label(ctx, $"{_mouse.Lat.ToString("0.00000", CultureInfo.InvariantCulture)}, {_mouse.Lon.ToString("0.00000", CultureInfo.InvariantCulture)} · Zoom {_s.Zoom:0.#}", new Point(10, size.Height - 48), "#FFFFFF", "#AA0A1628");
+        if (_over) Label(ctx, $"{_mouse.Lat.ToString("0.00000", CultureInfo.InvariantCulture)}, {_mouse.Lon.ToString("0.00000", CultureInfo.InvariantCulture)} · Zoom {_s.Zoom:0.#}", new Point(10, size.Height - 48), "#FFFFFF", "#AA1C1C1C");
         if (tilesOn) Label(ctx, "© OpenStreetMap-Mitwirkende", new Point(size.Width - 196, size.Height - 22), "#1A1A1A", "#CCFFFFFF");
         var hint = _s.Hint.Length > 0 ? _s.Hint : ToolHint();
-        if (hint.Length > 0) Label(ctx, hint, new Point(10, 10), "#FFFFFF", "#CC14233D");
+        if (hint.Length > 0) Label(ctx, hint, new Point(10, 10), "#FFFFFF", "#CC2C2C2C");
     }
 
     string ToolHint() => _s.Tool switch

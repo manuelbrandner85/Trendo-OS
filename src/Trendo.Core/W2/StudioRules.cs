@@ -152,3 +152,35 @@ public sealed partial class StudioLearning(string dataRoot)
     public static string SourceOf(bool review, bool check, string? userText) =>
         review ? "Gutachter" : check ? "Prüfung (behobener Fehler)" : userText is not null && IsCorrection(userText) ? "Deine Korrektur" : "Claudes Erkenntnis";
 }
+
+/// <summary>0.9.47: Regeln für Claude im Webseiten-Studio – hochwertige, immersive Seiten mit den lokalen Bibliotheken von Trendo.</summary>
+public static class WebRules
+{
+    public const string Studio = "CORE-07";
+    public const string Text = "\n\nWEBSEITEN AUF SPITZENNIVEAU (Trendo-Regel):\n"
+        + "- Die lokalen Bibliotheken liegen im Projektordner unter .trendo/web-vendor – kopiere sie nur bei Bedarf nach assets/vendor: trendo-three.js (three.js 0.180, MIT; TrendoWeb3.start für ein drehbares Modell, TrendoWeb3.immersiv für eine fotorealistische Szene mit Kamerafahrt beim Scrollen) und trendo-motion.js (eigene Bewegungs-Engine: data-split = Text Wort für Wort, data-reveal = Einblenden, data-scrub = Fortschritt als CSS-Variable --p, data-zahl = Zähler, TrendoMotion.timeline() mit Easing, weiches Scrollen). Nutze sie; lade nichts von CDNs und baue kein GSAP ein (Lizenz verbietet es für Werkzeuge wie Trendo).\n"
+        + "- Hochwertig heißt: echtes Storyscrolling mit Kapiteln, physikalisch plausibles Licht und Material in 3D (Umgebungsspiegelung, weiche Schatten, filmische Tonwerte), ruhige Typografie, viel Raum, Details mit Sinn. Modelle und Texturen nur aus CC0-Quellen (Poly Haven, ambientCG) lokal ins Projekt.\n"
+        + "- Barrierearm und schnell: „Bewegung reduzieren“ respektieren (Inhalte ohne Animation lesbar), Bilder und Modelle komprimiert, Seite läuft ohne Server per index.html.\n"
+        + "- Arbeite in sichtbaren Schritten: index.html früh anlegen und Abschnitt für Abschnitt ergänzen – der Nutzer sieht die Seite live in der Vorschau entstehen.";
+
+    public static readonly string[] Files = ["trendo-three.js", "trendo-motion.js", "LIZENZEN.txt", "THREE-LICENSE.txt"];
+
+    /// <summary>Lokale Bibliotheken bereitlegen – im versteckten Ordner .trendo/web-vendor (zählt nicht als Änderung am Projekt; Claude kopiert bei Bedarf). Nur fehlende; Vorhandenes bleibt.</summary>
+    public static int Prepare(string projectDir)
+    {
+        var n = 0; var dir = Path.Combine(projectDir, ".trendo", "web-vendor");
+        foreach (var f in Files) { var t = Path.Combine(dir, f); if (File.Exists(t)) continue; WebsiteAssets.Copy(f, t); n++; }
+        return n;
+    }
+}
+
+/// <summary>0.9.47: Regeln für Claude im 3D-Studio – komplexe, fotorealistische Figuren (z. B. Drache) in Blender, sichtbar.</summary>
+public static class Model3DRules
+{
+    public const string Studio = "CORE-05";
+    public const string Text = "\n\n3D AUF SPITZENNIVEAU (Trendo-Regel):\n"
+        + "- Blender ist das Werkzeug für komplexe Figuren und arbeitet sichtbar: Blender-Fenster offen (über die Blender-Verbindung, wenn vorhanden), damit der Nutzer zusieht. Echte Maße in Metern, Z oben.\n"
+        + "- Ablauf für Kreaturen (Drache, Tiere, Figuren): 1. Grundform mit Skelett und Haut (Trendo-Kreatur-Baukasten trendo_kreatur.py oder eigene Skin-/Metaball-Grundform), 2. Sculpting mit Multires für Muskeln, Falten, Schuppen, 3. Retopologie bzw. Decimate für eine saubere Echtzeit-Fassung, 4. UVs und PBR-Materialien (Albedo in realen Bereichen, Rauheit mit Variation, Subsurface für Haut), 5. Rigify oder automatisch gewichtetes Rig, 6. Export als GLB (.blend behalten), 7. Vorschaubild mit Cycles (GPU, AgX) und ehrlicher Prüfung.\n"
+        + "- Freie Bild-zu-3D-KI nur nach Zustimmung des Nutzers und aus offizieller Quelle: TRELLIS.2 (Microsoft, MIT) oder TripoSR (MIT). Hunyuan3D ist in der EU nicht lizenziert – nicht verwenden. Fehlt ein Werkzeug, schlage die Installation vor statt sie selbst auszuführen.\n"
+        + "- Prüfe jedes Ergebnis selbst mit einem Bild (Licht mit Herkunft, Kontaktschatten, keine schwebenden Teile, Proportionen) und sage ehrlich, was noch Grundform ist.";
+}

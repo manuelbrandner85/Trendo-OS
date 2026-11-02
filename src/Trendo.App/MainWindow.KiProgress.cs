@@ -56,7 +56,7 @@ public partial class MainWindow
             var pct = a.Percent;
             var bar = new ProgressBar { Name = "ki-progress-bar", Minimum = 0, Maximum = 1, Height = 6, IsIndeterminate = pct is null, Value = pct ?? 0, CornerRadius = new CornerRadius(3),
                 Foreground = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative),
-                    GradientStops = { new GradientStop(Color.Parse("#3B82F6"), 0), new GradientStop(Color.Parse("#F5C451"), 0.75), new GradientStop(Color.Parse("#FFF1B8"), 1) } } };
+                    GradientStops = { new GradientStop(Color.Parse("#7A5512"), 0), new GradientStop(Color.Parse("#F5C451"), 0.75), new GradientStop(Color.Parse("#FFF1B8"), 1) } } };
             var secs = (int)a.Elapsed.TotalSeconds;
             var info = $"{(pct is { } p ? $"ca. {p:P0} · " : "")}{(secs < 60 ? $"{secs} s" : $"{secs / 60} min {secs % 60} s")}{(a.Model is { } m ? " · " + m : "")}";
             var stop = new Button { Name = "ki-progress-cancel-" + a.Id, Content = "Abbrechen", FontSize = 11.5, Padding = new Thickness(10, 3), CornerRadius = new CornerRadius(8),

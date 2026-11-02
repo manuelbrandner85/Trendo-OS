@@ -60,7 +60,7 @@ public partial class MainWindow
     Control SourceBadge(OssRepo r, int i)
     {
         if (!_srcDetect.TryGetValue(r.FullName, out var d)) return new Panel();
-        var (col, bg) = d.Runnable ? ("#60A5FA", "#1A3B82F6") : ("#FDBA74", "#1AF97316");
+        var (col, bg) = d.Runnable ? ("#60A5FA", "#1AC9A227") : ("#FDBA74", "#1AF97316");
         var sp = new StackPanel { Spacing = 3, Children = { new Border { Name = $"oss-src-kind-{i}", Background = Brush.Parse(bg), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 2), HorizontalAlignment = HorizontalAlignment.Left,
             Child = new TextBlock { Text = d.Text, Foreground = Brush.Parse(col), FontSize = 11.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap } } } };
         if (!d.Runnable && d.Why is { } why) sp.Children.Add(P(why, Muted, 11));

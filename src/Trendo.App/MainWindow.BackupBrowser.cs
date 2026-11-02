@@ -65,7 +65,7 @@ public partial class MainWindow
         {
             var d = shown[i]; var path = d.Path;
             var (tag, col) = d.Kind switch { Backup.Change.Geaendert => ("geändert", "#F59E0B"), Backup.Change.Geloescht => ("gelöscht", "#F87171"), Backup.Change.Neu => ("neu", "#60A5FA"), _ => ("gleich", "#64748B") };
-            var b = new Button { Name = $"backup-file-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 3), Background = path == BackupFile ? Brush.Parse("#332F86F6") : Brushes.Transparent,
+            var b = new Button { Name = $"backup-file-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 3), Background = path == BackupFile ? Brush.Parse("#33C9A227") : Brushes.Transparent,
                 Content = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), Children = { new TextBlock { Text = path, Foreground = Text, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis },
                     Pos(new TextBlock { Text = DiskMapView.Size(d.Bytes), Foreground = Muted, FontSize = 11, Margin = new Thickness(8, 0) }, 1), Pos(new TextBlock { Text = tag, Foreground = Brush.Parse(col), FontSize = 11, FontWeight = FontWeight.SemiBold }, 2) } } };
             b.Click += (_, _) => { BackupFile = path; _backupOneAsk = false; Show("sicherung"); };

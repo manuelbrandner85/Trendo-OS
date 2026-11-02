@@ -320,7 +320,7 @@ public partial class MainWindow
         void Done() { var v = tb.Text ?? ""; Close(); ok(v); Show("tabelle"); }
         go.Click += (_, _) => Done(); cancel.Click += (_, _) => Close();
         tb.KeyDown += (_, e) => { if (e.Key == Key.Enter) { Done(); e.Handled = true; } else if (e.Key == Key.Escape) { Close(); e.Handled = true; } };
-        box = new Border { Background = Brushes.White, BorderBrush = Brush.Parse("#FF2F86F6"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(12), BoxShadow = BoxShadows.Parse("0 6 20 0 #55000000"),
+        box = new Border { Background = Brushes.White, BorderBrush = Brush.Parse("#FFC9A227"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(12), BoxShadow = BoxShadows.Parse("0 6 20 0 #55000000"),
             Child = new StackPanel { Spacing = 8, Children = { new TextBlock { Text = label, Foreground = Brushes.Black, FontSize = 13, TextWrapping = TextWrapping.Wrap, MaxWidth = 320 }, tb, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { go, cancel } } } } };
         Canvas.SetLeft(box, 70); Canvas.SetTop(box, 36);
         _shPrompt = box; _shOverlay.Children.Add(box);
@@ -455,7 +455,7 @@ public partial class MainWindow
 
     // ---------- Oberfläche ----------
     private Control SheetPageView() => WithRecovery("tabelle", SheetDirty, SheetPageCore());
-    private Control SheetPageCore() => new Border { Name = "tabelle-page-root", Background = Brush.Parse(C("#F2081329", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = SheetStartVisible ? SheetStartPage() : SheetShell() };
+    private Control SheetPageCore() => new Border { Name = "tabelle-page-root", Background = Brush.Parse(C("#F21A1A1A", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = SheetStartVisible ? SheetStartPage() : SheetShell() };
 
     /// <summary>G1: Startseite mit „Neu“, Vorlagen, Zuletzt geöffnet und Öffnen.</summary>
     private Control SheetStartPage()
@@ -548,7 +548,7 @@ public partial class MainWindow
         foreach (var (id, label) in new[] { ("start", "Start"), ("einfuegen", "Einfügen"), ("daten", "Daten"), ("pruefen", "Überprüfen"), ("ansicht", "Ansicht") })
         {
             var key = id;
-            var b = new Button { Name = "tabelle-rib-" + id, Content = label, Focusable = false, Padding = new Thickness(12, 4), Background = _shRibbon == id ? Brush.Parse("#332F86F6") : Brushes.Transparent, FontWeight = _shRibbon == id ? FontWeight.SemiBold : FontWeight.Normal };
+            var b = new Button { Name = "tabelle-rib-" + id, Content = label, Focusable = false, Padding = new Thickness(12, 4), Background = _shRibbon == id ? Brush.Parse("#33C9A227") : Brushes.Transparent, FontWeight = _shRibbon == id ? FontWeight.SemiBold : FontWeight.Normal };
             b.Click += (_, _) => { _shRibbon = key; Show("tabelle"); };
             tabRow.Children.Add(b);
         }
@@ -741,7 +741,7 @@ public partial class MainWindow
         CloseEditor(true);
         var (row, col) = _shActive;
         var tb = new TextBox { Name = "tabelle-editor", Text = first ?? ActiveSheet.Raw(row, col), MinWidth = rect.Width, Height = rect.Height, MinHeight = 0, Padding = new Thickness(3, 2), FontSize = 13,
-            Background = Brushes.White, Foreground = Brushes.Black, BorderBrush = Brush.Parse("#2F86F6"), BorderThickness = new Thickness(2), CornerRadius = new CornerRadius(0) };
+            Background = Brushes.White, Foreground = Brushes.Black, BorderBrush = Brush.Parse("#C9A227"), BorderThickness = new Thickness(2), CornerRadius = new CornerRadius(0) };
         Canvas.SetLeft(tb, rect.X); Canvas.SetTop(tb, rect.Y);
         tb.KeyDown += (_, e) =>
         {

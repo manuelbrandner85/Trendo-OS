@@ -99,13 +99,13 @@ public partial class MainWindow
     {
         var s = ScanDoc.From(d.Data);
         if (s.Source.Length == 0)
-            return new Border { Name = "pc-empty", Background = Brush.Parse("#0E1A2E"), CornerRadius = new CornerRadius(10), Child = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Spacing = 8, Children = {
+            return new Border { Name = "pc-empty", Background = Brush.Parse("#212121"), CornerRadius = new CornerRadius(10), Child = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Spacing = 8, Children = {
                 new TextBlock { Text = "Scan-Datei rechts wählen oder hierher ziehen", Foreground = Text, FontSize = 18, HorizontalAlignment = HorizontalAlignment.Center },
                 new TextBlock { Text = "PLY, XYZ, PTS, CSV oder OBJ – z. B. vom iPhone-LiDAR, Laserscanner oder aus Fotos", Foreground = Muted, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Center } } } };
         PointCloud pc;
         try { pc = ScanCloudOf(s); }
         catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or InvalidDataException or FormatException)
-        { return new Border { Name = "pc-error", Background = Brush.Parse("#0E1A2E"), CornerRadius = new CornerRadius(10), Child = new TextBlock { Text = "⚠ " + ex.Message, Foreground = Brush.Parse("#F87171"), FontSize = 15, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(24), VerticalAlignment = VerticalAlignment.Center } }; }
+        { return new Border { Name = "pc-error", Background = Brush.Parse("#212121"), CornerRadius = new CornerRadius(10), Child = new TextBlock { Text = "⚠ " + ex.Message, Foreground = Brush.Parse("#F87171"), FontSize = 15, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(24), VerticalAlignment = VerticalAlignment.Center } }; }
         var view = new PointCloudView { Name = "pc-view", Cloud = pc, Yaw = s.Yaw, Pitch = s.Pitch, Zoom = s.Zoom, ByHeight = s.ColorBy != "auto", MeasureMode = _pcMeasure, Cursor = new Avalonia.Input.Cursor(_pcMeasure ? Avalonia.Input.StandardCursorType.Cross : Avalonia.Input.StandardCursorType.SizeAll) };
         view.Marks.AddRange(_pcMarks);
         view.ViewChanged = (yaw, pitch, zoom) => { var cur = ScanDoc.From(d.Data); cur.Yaw = yaw; cur.Pitch = pitch; cur.Zoom = zoom; cur.WriteTo(d.Data); }; // Ansicht ohne Rückgängig-Eintrag merken

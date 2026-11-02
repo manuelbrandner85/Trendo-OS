@@ -127,7 +127,7 @@ public partial class MainWindow
                         P(r.Description, Text, 12.5), OssAvailBadge(r, i), SourceBadge(r, i),
                         P(OpenSource.Explain(r.LicenseId), kind == OpenSource.LicenseKind.Unklar ? Brush.Parse("#FACC15") : null, 11) } },
                     Pos(buttons, 1) } },
-                _ossGerman.TryGetValue(r.FullName, out var de) ? new Border { Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(10), Background = Brush.Parse("#1A3B82F6"), Child = new StackPanel { Spacing = 3, Children = { new TextBlock { Text = "Auf Deutsch erklärt (KI)", Foreground = Text, FontSize = 12, FontWeight = FontWeight.SemiBold }, P(de, Text, 12) } } } : new Panel(),
+                _ossGerman.TryGetValue(r.FullName, out var de) ? new Border { Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(10), Background = Brush.Parse("#1AC9A227"), Child = new StackPanel { Spacing = 3, Children = { new TextBlock { Text = "Auf Deutsch erklärt (KI)", Foreground = Text, FontSize = 12, FontWeight = FontWeight.SemiBold }, P(de, Text, 12) } } } : new Panel(),
                 new WrapPanel { Children = { box, explain } } } }));
             i++;
         }

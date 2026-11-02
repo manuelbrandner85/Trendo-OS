@@ -43,7 +43,32 @@ public static partial class Extensions
         }
         if (err.Count == 0 && m.Kind is "seite" or "links")
             try { JsonDocument.Parse(File.ReadAllText(Path.Combine(dir, m.Entry!))).Dispose(); } catch (JsonException) { err.Add("Einstiegsdatei ist kein gültiges JSON."); }
+        if (TouchesBrand(dir)) err.Add("Name und Logo von Trendo OS lassen sich nicht ändern – alles andere darfst du frei erweitern.");
+
         return (m, err);
+    }
+
+    /// <summary>Wunsch 02.11.2026: Jeder darf Trendo erweitern, nur Name und Logo bleiben fest. Erweiterungen, die Produktname, Marke oder Logo setzen wollen, werden abgelehnt.</summary>
+    public static bool TouchesBrand(string dir)
+    {
+        foreach (var f in Directory.EnumerateFiles(dir, "*.json", SearchOption.AllDirectories))
+        {
+            try
+            {
+                using var d = JsonDocument.Parse(File.ReadAllText(f));
+                if (HasBrandKey(d.RootElement)) return true;
+            }
+            catch (JsonException) { }
+        }
+        foreach (var f in Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories))
+            if (Path.GetFileNameWithoutExtension(f).ToLowerInvariant() is "trendo-logo" or "logo-trendo" or "trendo-emblem" or "trendo") return true;
+        return false;
+        static bool HasBrandKey(JsonElement e) => e.ValueKind switch
+        {
+            JsonValueKind.Object => e.EnumerateObject().Any(p => p.Name.ToLowerInvariant() is "productname" or "systemname" or "brand" or "brandname" or "osname" or "logo" or "applogo" || HasBrandKey(p.Value)),
+            JsonValueKind.Array => e.EnumerateArray().Any(HasBrandKey),
+            _ => false,
+        };
     }
 
     public static string Hash(string dir)

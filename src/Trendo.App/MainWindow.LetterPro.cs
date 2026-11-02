@@ -17,6 +17,10 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     private bool? _letterGallery;
+    /// <summary>Brief-Assistent (02.11.2026): aktueller Schritt 1–3; „Alles auf einer Seite“ zeigt alle Schritte.</summary>
+    private int _letterStep = 1;
+    private bool _letterAll;
+    public int LetterStep => _letterStep;
     private bool _letterSaved;
     private Action? _letterStepSync;
     private string _letterDl = "";
@@ -45,7 +49,7 @@ public partial class MainWindow
                     HorizontalContentAlignment = HorizontalAlignment.Left, VerticalContentAlignment = VerticalAlignment.Top, Background = c.Id == d.Category ? Accent : TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), Content = card };
                 b.Click += (_, _) =>
                 {
-                    Letters.ApplyTemplate(d, c.Id); _letterGallery = false;
+                    Letters.ApplyTemplate(d, c.Id); _letterGallery = false; if (!_letterAll && _letterStep == 1) _letterStep = 2; // Assistent: nach der Vorlage weiter zu „An wen?“
                     _letterMsg = c.Id == "frei" ? "Freier Brief: ohne Vorlage. Betreff und Text schreibst du selbst." : $"Vorlage „{c.Label}“ eingesetzt. Passe die eckigen Klammern an.";
                     Show("brief");
                 };
@@ -229,6 +233,16 @@ public partial class MainWindow
 
     private void FocusLetterField(string name)
     {
+        // Assistent: liegt das Feld in einem anderen Schritt (oder unter „Mehr“), erst dorthin wechseln
+        var step = name switch { "letter-sender-name" or "letter-sender-street" or "letter-sender-city" or "letter-sender-contact" or "letter-recipient" => 2,
+            "letter-subject" or "letter-salutation" or "letter-body" or "letter-closing" => 3, _ => 0 };
+        if (!_letterAll && CurrentView == "brief" && ((step > 0 && step != _letterStep) || (step == 0 && name is "letter-place" or "letter-reference" or "letter-attachments")))
+        {
+            if (step > 0) _letterStep = step; else _letterAll = true;
+            Show("brief");
+            _ui.Post(() => FocusLetterField(name)); // nach dem Neuaufbau ins Feld springen
+            return;
+        }
         if (this.GetLogicalDescendants().OfType<TextBox>().FirstOrDefault(t => t.Name == name) is { } t) { t.BringIntoView(); t.Focus(); t.CaretIndex = t.Text?.Length ?? 0; }
     }
 
@@ -251,7 +265,7 @@ public partial class MainWindow
                 pagesHost.Children.Add(new Viewbox { Stretch = Stretch.Uniform, MaxWidth = 560, Child = new Border { BoxShadow = BoxShadows.Parse("0 2 8 0 #44000000"), Child = page } });
             serialBar.Children.Clear();
             if (_letterSerial is { Count: > 0 } s2)
-                serialBar.Children.Add(new Border { Name = "letter-serial-bar", Background = Brush.Parse("#332F86F6"), BorderBrush = Brush.Parse("#D4A84B"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 4),
+                serialBar.Children.Add(new Border { Name = "letter-serial-bar", Background = Brush.Parse("#33C9A227"), BorderBrush = Brush.Parse("#D4A84B"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 4),
                     Child = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
                         Act("letter-serial-prev", "◀", () => { _letterSerialIdx = Math.Max(0, _letterSerialIdx - 1); _letterSync?.Invoke(); }),
                         new TextBlock { Name = "letter-serial-pos", Text = $"Serienbrief {_letterSerialIdx + 1} von {s2.Count}: {s2[_letterSerialIdx].Recipient.Split('\n')[0]}", Foreground = Text, VerticalAlignment = VerticalAlignment.Center, FontWeight = FontWeight.SemiBold },

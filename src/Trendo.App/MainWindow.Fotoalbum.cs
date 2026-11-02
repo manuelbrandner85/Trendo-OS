@@ -77,7 +77,7 @@ public partial class MainWindow
         {
             var on = _photoView == view;
             var b = new Button { Name = name, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(8),
-                Background = on ? Brush.Parse("#332F86F6") : Brushes.Transparent, BorderBrush = on ? Brush.Parse("#D4A84B") : Brushes.Transparent, BorderThickness = new Thickness(1),
+                Background = on ? Brush.Parse("#33C9A227") : Brushes.Transparent, BorderBrush = on ? Brush.Parse("#D4A84B") : Brushes.Transparent, BorderThickness = new Thickness(1),
                 Content = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = label, Foreground = Text, FontSize = 13, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal, TextTrimming = TextTrimming.CharacterEllipsis },
                     Pos(new TextBlock { Text = count.ToString(), Foreground = Muted, FontSize = 12 }, 1) } } };
             b.Click += (_, _) => { _photoView = view; _photoSel.Clear(); _photoLimit = 300; Show("medien"); }; Hover(b); return b;
@@ -155,7 +155,7 @@ public partial class MainWindow
                 var i = idx++; var path = p.Path; var sel = _photoSel.Contains(path);
                 var img = new Image { Stretch = Stretch.UniformToFill, Width = _photoSize, Height = _photoSize * 0.75 };
                 Thumb(img, path, (int)Math.Max(160, _photoSize * 1.4));
-                var cell = new Grid { Children = { new Border { Background = Brush.Parse("#FF15233D") }, new TextBlock { Text = "🖼", FontSize = 22, Foreground = Muted, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }, img } };
+                var cell = new Grid { Children = { new Border { Background = Brush.Parse("#FF2D2D2D") }, new TextBlock { Text = "🖼", FontSize = 22, Foreground = Muted, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }, img } };
                 if (favs.Contains(path)) cell.Children.Add(new TextBlock { Text = "★", FontSize = 16, Foreground = Brush.Parse("#FACC15"), Margin = new Thickness(6, 3), HorizontalAlignment = HorizontalAlignment.Right });
                 var badge = new Border { Width = 22, Height = 22, CornerRadius = new CornerRadius(11), Background = Brush.Parse("#D4A84B"), Margin = new Thickness(6), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, IsVisible = sel,
                     Child = new TextBlock { Text = "✓", Foreground = Brush.Parse("#1B1406"), FontWeight = FontWeight.Bold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } };

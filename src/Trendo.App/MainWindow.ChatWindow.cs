@@ -74,7 +74,7 @@ public partial class MainWindow
         {
             var id = c.Id; var on = id == _chatId;
             var b = new Button { Name = $"ask-chat-{i++}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 5),
-                Background = on ? Brush.Parse("#332F86F6") : Brushes.Transparent,
+                Background = on ? Brush.Parse("#33C9A227") : Brushes.Transparent,
                 Content = new StackPanel { Children = { new TextBlock { Text = c.Title, Foreground = Text, TextTrimming = TextTrimming.CharacterEllipsis, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal },
                     new TextBlock { Text = $"{c.Updated.LocalDateTime.ToString("dd.MM. HH:mm", De)} · {c.Messages.Count / 2} Frage{(c.Messages.Count == 2 ? "" : "n")}", Foreground = Muted, FontSize = 10.5 } } } };
             b.Click += (_, _) => OpenChat(id);
@@ -182,7 +182,7 @@ public partial class MainWindow
                         g.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
                         for (var x = 0; x < rows[y].Count; x++)
                         {
-                            var cell = new Border { BorderBrush = Edge, BorderThickness = new Thickness(0, 0, 1, 1), Padding = new Thickness(8, 3), Background = y == 0 ? Brush.Parse("#1A2F86F6") : null,
+                            var cell = new Border { BorderBrush = Edge, BorderThickness = new Thickness(0, 0, 1, 1), Padding = new Thickness(8, 3), Background = y == 0 ? Brush.Parse("#1AC9A227") : null,
                                 Child = new TextBlock { Text = rows[y][x], Foreground = Text, FontSize = 12.5, FontWeight = y == 0 ? FontWeight.SemiBold : FontWeight.Normal } };
                             Grid.SetRow(cell, y); Grid.SetColumn(cell, x); g.Children.Add(cell);
                         }
@@ -204,7 +204,7 @@ public partial class MainWindow
                 Act($"ask-save-{k}", "Als Dokument", () => { var f = Path.Combine(WorkFolder("KI-Antworten"), $"Antwort {DateTime.Now:yyyy-MM-dd HH-mm-ss}.md"); File.WriteAllText(f, text); _askState = "Gespeichert: " + f; NotifyFileResult(_askState); Show("ki-fragen"); }) } });
         }
         return new Border { Name = k >= 0 ? $"ask-msg-{k}" : "ask-msg-pending", MaxWidth = 760, HorizontalAlignment = mine ? HorizontalAlignment.Right : HorizontalAlignment.Left,
-            Background = mine ? Brush.Parse("#332F86F6") : TileBg, BorderBrush = mine ? Accent : EdgeLit, BorderThickness = new Thickness(1),
+            Background = mine ? Brush.Parse("#33C9A227") : TileBg, BorderBrush = mine ? Accent : EdgeLit, BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(14, 14, mine ? 4 : 14, mine ? 14 : 4), Padding = new Thickness(12, 8), Child = content };
     }
 }

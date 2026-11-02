@@ -47,7 +47,7 @@ public sealed class MeshView : Control
 
     public override void Render(DrawingContext ctx)
     {
-        ctx.FillRectangle(new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#22344F"), 0), new GradientStop(Color.Parse("#0A1322"), 1) } }, new Rect(Bounds.Size));
+        ctx.FillRectangle(new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#3F3F3F"), 0), new GradientStop(Color.Parse("#0A1322"), 1) } }, new Rect(Bounds.Size));
         if (Model is not { Triangles: > 0 } m) return;
         var f = Frame(); var view = ViewDir();
         Point S(Vec3 v) { var q = P(v, f); return new Point(q.X, q.Y); }

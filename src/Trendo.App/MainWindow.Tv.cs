@@ -31,6 +31,8 @@ public sealed class MpvView : NativeControlHost
     string Pipe => $"trendo-tv-{Slot}-{Environment.ProcessId}";
 
     public MpvView(string slot) { Slot = slot; }
+    /// <summary>Zusätzliche Einstellungen für jeden Start (Sprache für Ton und Untertitel, 02.11.2026).</summary>
+    public static string[] ExtraArgs { get; set; } = [];
 
     protected override IPlatformHandle CreateNativeControlCore(IPlatformHandle parent)
     {
@@ -59,6 +61,7 @@ public sealed class MpvView : NativeControlHost
         Kill();
         if (_hwnd == IntPtr.Zero || MpvPath is null || !File.Exists(MpvPath)) return;
         var psi = new ProcessStartInfo(MpvPath) { UseShellExecute = false, CreateNoWindow = true };
+        foreach (var a in ExtraArgs) psi.ArgumentList.Add(a);
         foreach (var a in new[] { $"--wid={_hwnd}", "--no-terminal", "--force-window=yes", "--keep-open=yes", "--idle=yes", "--osc=yes", "--input-vo-keyboard=no", $"--user-agent={Xtream.UserAgent}", "--cache=yes",
                      "--demuxer-max-back-bytes=1GiB", "--demuxer-max-bytes=150MiB", "--hwdec=auto-safe", $"--input-ipc-server=\\\\.\\pipe\\{Pipe}", Muted ? "--mute=yes" : "--mute=no", url })
             psi.ArgumentList.Add(a);
@@ -81,6 +84,30 @@ public sealed class MpvView : NativeControlHost
     }
 
     public void Stop() { Url = null; Kill(); }
+
+    /// <summary>Eigenschaft von mpv lesen (z. B. time-pos, duration, pause). null, wenn mpv nicht läuft oder nicht rechtzeitig antwortet.</summary>
+    public async Task<JsonElement?> GetAsync(string property)
+    {
+        if (_proc is not { HasExited: false }) return null;
+        try
+        {
+            using var pipe = new NamedPipeClientStream(".", Pipe, PipeDirection.InOut, PipeOptions.Asynchronous);
+            using var cts = new CancellationTokenSource(600);
+            await pipe.ConnectAsync(cts.Token);
+            var id = Random.Shared.Next(1, int.MaxValue);
+            var bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new { command = new object[] { "get_property", property }, request_id = id }) + "\n");
+            await pipe.WriteAsync(bytes, cts.Token); await pipe.FlushAsync(cts.Token);
+            using var r = new StreamReader(pipe, Encoding.UTF8, false, 4096, leaveOpen: true);
+            while (await r.ReadLineAsync(cts.Token) is { } line)
+            {
+                using var d = JsonDocument.Parse(line);
+                if (d.RootElement.TryGetProperty("request_id", out var rid) && rid.ValueKind == JsonValueKind.Number && rid.GetInt32() == id)
+                    return d.RootElement.TryGetProperty("data", out var data) ? data.Clone() : null;
+            }
+        }
+        catch (Exception e) when (e is IOException or TimeoutException or OperationCanceledException or UnauthorizedAccessException or JsonException) { }
+        return null;
+    }
 
     void Kill()
     {
@@ -307,9 +334,10 @@ public partial class MainWindow
 
     bool TvPlayUrl(string url, string slot, TvChannel? c = null)
     {
-        if (slot == "main") { _tvChannel = c?.Id ?? _tvChannel; if (c is not null) { Tv.Watched(c.Id); _tvPlayingTitle = null; } }
+        if (slot == "main") { _tvChannel = c?.Id ?? _tvChannel; if (c is not null) { Tv.Watched(c.Id); _tvPlayingTitle = null; _tvVodPlaying = false; } }
         if (Tv.Reveal(url) is not { } real) { _tvMsg = "✗ Das Passwort für diese Quelle fehlt im sicheren Speicher – bitte die Quelle unter „Quellen“ entfernen und neu anlegen."; return false; }
         url = real;
+        TvApplyLanguage();
         if (TvPlayOverride is { } o) { o(slot, url); TvUpdateNow(); return true; }
         if (MpvExe is null) { _tvMsg = "Zum Abspielen braucht Trendo den freien Player mpv – einmal „Player jetzt einrichten“ klicken."; return false; }
         var view = slot == "main" ? _tvPlayer : _tvMulti[int.Parse(slot[1..])];
@@ -355,7 +383,10 @@ public partial class MainWindow
             var g => all.Where(c => c.Group == g),
         };
         if (_tvQuery.Trim() is { Length: > 0 } s) q = q.Where(c => c.Name.Contains(s, StringComparison.OrdinalIgnoreCase) || c.Number.ToString() == s);
-        return q.Where(c => !locked.Contains(c.Group) || _tvGroup == c.Group).ToList();
+        var tv = Tv; // Wunsch 02.11.2026: nur deutschsprachig / Erwachsene / Kinder-Profil nach Einstellung
+        var res = q.Where(c => (!locked.Contains(c.Group) || _tvGroup == c.Group) && tv.Allowed(c.Group, c.Name)).ToList();
+        if (tv.MergeDuplicates && _tvGroup is not ("Favoriten" or "Zuletzt")) { var (best, alt) = TvPlus.MergeDuplicates(res); _tvAlternatives = alt; return best; } // HD/FHD/SD als ein Sender
+        return res;
     }
 
     // ---------- Aufnahmen ----------
@@ -378,9 +409,11 @@ public partial class MainWindow
     }
 
     /// <summary>Prüft, ob eine geplante Aufnahme starten soll, und startet sie (ffmpeg kopiert den Stream ohne Umrechnen).</summary>
+    DateTime _tvRulesChecked;
     public void TvRecTick()
     {
         TvReminderTick();
+        if ((DateTime.UtcNow - _tvRulesChecked).TotalMinutes >= 5) { _tvRulesChecked = DateTime.UtcNow; try { TvRuleTick(); } catch (Exception e) when (e is IOException or InvalidOperationException) { } }
         foreach (var r in Tv.Due(DateTime.UtcNow))
         {
             if (TvChannels().FirstOrDefault(c => c.Id == r.ChannelId) is not { } c) { Tv.UpdateRecording(r.Id, "Sender fehlt"); continue; }
@@ -437,7 +470,7 @@ public partial class MainWindow
         {
             Name = "tv-hero", CornerRadius = new CornerRadius(16), Padding = new Thickness(20, 14), ClipToBounds = true, BoxShadow = CardShadow,
             Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-                GradientStops = { new GradientStop(Color.Parse("#FF0E2350"), 0), new GradientStop(Color.Parse("#FF0A1630"), 0.55), new GradientStop(Color.Parse("#FF1B1406"), 1) } },
+                GradientStops = { new GradientStop(Color.Parse("#FF313131"), 0), new GradientStop(Color.Parse("#FF1F1F1F"), 0.55), new GradientStop(Color.Parse("#FF1B1406"), 1) } },
             BorderBrush = EdgeLit, BorderThickness = new Thickness(1),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {
                 new StackPanel { Spacing = 2, VerticalAlignment = VerticalAlignment.Center, Children = {
@@ -462,7 +495,8 @@ public partial class MainWindow
             var tid = id; b.Click += (_, _) => { _tvTab = tid; _tvMsg = ""; Show("tv"); };
             Hover(b); tabs.Children.Add(b);
         }
-        sp.Children.Add(new Border { Background = Brush.Parse("#990A1428"), BorderBrush = EdgeLit, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(24), Padding = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Left, Child = tabs });
+        sp.Children.Add(new DockPanel { Children = { DockRight(TvKidsBar()),
+            new Border { Background = Brush.Parse("#991B1B1B"), BorderBrush = EdgeLit, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(24), Padding = new Thickness(5), HorizontalAlignment = HorizontalAlignment.Left, Child = tabs } } });
         if (_tvMsg.Length > 0)
         {
             var ok = _tvMsg.StartsWith('✓');
@@ -530,7 +564,7 @@ public partial class MainWindow
                 var logo = new Image { Width = 40, Height = 40, Stretch = Stretch.Uniform };
                 TvImage(logo, c.Logo);
                 var badge = new Grid { Width = 44, Height = 44, Children = {
-                    new Border { CornerRadius = new CornerRadius(12), Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#FF2B4C86"), 0), new GradientStop(Color.Parse("#FF0E1B3A"), 1) } }, BorderBrush = Brush.Parse(on ? "#D4A84B" : "#33D4A84B"), BorderThickness = new Thickness(1) },
+                    new Border { CornerRadius = new CornerRadius(12), Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#FF2B4C86"), 0), new GradientStop(Color.Parse("#FF262626"), 1) } }, BorderBrush = Brush.Parse(on ? "#D4A84B" : "#33D4A84B"), BorderThickness = new Thickness(1) },
                     new TextBlock { Text = c.Number.ToString(), Foreground = GoldText(), FontSize = 15, FontWeight = FontWeight.Bold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center },
                     logo } };
                 var info = new StackPanel { Spacing = 3, Margin = new Thickness(10, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Children = {
@@ -545,7 +579,7 @@ public partial class MainWindow
                 {
                     Name = "tv-ch-" + c.Id.Replace(':', '-'), Content = row, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch,
                     Padding = new Thickness(8, 7), CornerRadius = new CornerRadius(14),
-                    Background = on ? new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#402F86F6"), 0), new GradientStop(Color.Parse("#14D4A84B"), 1) } } : Brush.Parse("#0FFFFFFF"),
+                    Background = on ? new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#40C9A227"), 0), new GradientStop(Color.Parse("#14D4A84B"), 1) } } : Brush.Parse("#0FFFFFFF"),
                     BorderBrush = on ? Brush.Parse("#D4A84B") : Brush.Parse("#14FFFFFF"), BorderThickness = new Thickness(on ? 1.5 : 1),
                 };
                 var id = c.Id;
@@ -565,7 +599,7 @@ public partial class MainWindow
         _tvPlayer ??= new MpvView("main");
         if (!TvIsFullscreen) Detach(_tvPlayer); // im Vollbild bleibt das Bild dort
         Control idle = new Grid { Children = {
-            new Border { Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#FF16305E"), 0), new GradientStop(Color.Parse("#FF02060F"), 1) } } },
+            new Border { Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#FF3F3F3F"), 0), new GradientStop(Color.Parse("#FF02060F"), 1) } } },
             new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Spacing = 8, Children = {
                 new TextBlock { Text = "📺", FontSize = 46, HorizontalAlignment = HorizontalAlignment.Center },
                 new TextBlock { Text = "Wähle links einen Sender", Foreground = GoldText(), FontSize = 18, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center },
@@ -573,9 +607,9 @@ public partial class MainWindow
         var screen = new Border
         {
             Name = "tv-screen", Background = Brushes.Black, CornerRadius = new CornerRadius(16), ClipToBounds = true, MinHeight = 280, Height = 420,
-            BorderBrush = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#AAF1C870"), 0), new GradientStop(Color.Parse("#552F86F6"), 1) } },
-            BorderThickness = new Thickness(1.5), BoxShadow = BoxShadows.Parse("0 18 40 0 #A0000000, 0 0 30 0 #262F86F6"),
-            Child = TvIsFullscreen ? P("Läuft im Vollbild – Esc zum Verkleinern", Brushes.White, 13) : _tvChannel is null && _tvPlayingTitle is null ? idle : _tvPlayer,
+            BorderBrush = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#AAF1C870"), 0), new GradientStop(Color.Parse("#55C9A227"), 1) } },
+            BorderThickness = new Thickness(1.5), BoxShadow = BoxShadows.Parse("0 18 40 0 #A0000000, 0 0 30 0 #26C9A227"),
+            Child = TvIsFullscreen ? P("Läuft im Vollbild – Esc zum Verkleinern", Brushes.White, 13) : _tvPip is not null ? P("Läuft im Bild im Bild – „⧉ Zurückholen“ holt es hierher.", Brushes.White, 13) : _tvChannel is null && _tvPlayingTitle is null ? idle : _tvPlayer,
         };
         if (MpvExe is null && TvPlayOverride is null)
             screen.Child = new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Spacing = 8, Children = {
@@ -613,6 +647,9 @@ public partial class MainWindow
                 TvRound("tv-full", "⛶", "Vollbild (F)", () => TvFullscreen(true)) } }, 2) } };
         _tvFavBtn.Margin = new Thickness(8, 0, 8, 0);
         right.Children.Add(Glass2(bar, 10));
+        var more = new WrapPanel { Name = "tv-live-more", Children = { TvPipButton("tv-live-pip"), TvTuneButton("tv-live-tune") } };
+        if (TvQualityButton() is { } qb) more.Children.Add(qb);
+        right.Children.Add(more);
         _tvNowTitle = new TextBlock { Name = "tv-now-title", Foreground = GoldText(), FontSize = 20, FontWeight = FontWeight.Bold, Text = "Kein Sender gewählt" };
         _tvNowInfo = new TextBlock { Name = "tv-now-info", Foreground = Text, FontSize = 14, TextWrapping = TextWrapping.Wrap };
         _tvNextInfo = new TextBlock { Name = "tv-next-info", Foreground = Muted, FontSize = 12.5, TextWrapping = TextWrapping.Wrap };
@@ -688,6 +725,26 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 10, Name = "tv-sources" };
         sp.Children.Add(P("Trendo bringt keine Sender mit. Füge die Senderliste deines Anbieters hinzu – bitte nur legale Quellen (z. B. frei empfangbare Sender oder dein eigenes Abo).", Text, 12.5));
+        // Wunsch 02.11.2026: alles Ausländische aus – nur Deutsch (und Erwachsene nach Wahl)
+        var onlyDe = new CheckBox { Name = "tv-only-german", Content = "Nur deutschsprachige Sender, Filme und Serien (Deutschland, Österreich, Schweiz) – alles Ausländische ausblenden", IsChecked = Tv.OnlyGerman, Foreground = Text };
+        onlyDe.IsCheckedChanged += (_, _) => { Tv.SetOnlyGerman(onlyDe.IsChecked == true); _tvChannels = null; _core.Audit.Append(Principal.LocalOwner.Name, "tv.filter.deutsch", onlyDe.IsChecked == true ? "an" : "aus"); _tvMsg = onlyDe.IsChecked == true ? "✓ Nur noch deutschsprachige Inhalte." : "✓ Wieder alle Sprachen."; Show("tv"); };
+        var adult = new CheckBox { Name = "tv-show-adult", Content = "Inhalte für Erwachsene zeigen (bleiben auch bei „nur deutschsprachig“ sichtbar)", IsChecked = Tv.ShowAdult, Foreground = Text };
+        adult.IsCheckedChanged += (_, _) => { Tv.SetShowAdult(adult.IsChecked == true); _tvChannels = null; _core.Audit.Append(Principal.LocalOwner.Name, "tv.filter.erwachsene", adult.IsChecked == true ? "an" : "aus"); Show("tv"); };
+        var langs = new (string Id, string Label)[] { ("de", "Deutsch"), ("en", "Englisch"), ("tr", "Türkisch"), ("fr", "Französisch") };
+        var lang = new ComboBox { Name = "tv-language", ItemsSource = langs.Select(l => l.Label).ToList(), SelectedIndex = Math.Max(0, Array.FindIndex(langs, l => l.Id == Tv.Language)), MinWidth = 140 };
+        lang.SelectionChanged += (_, _) => { if (lang.SelectedIndex >= 0) { Tv.SetLanguage(langs[lang.SelectedIndex].Id); TvApplyLanguage(); } };
+        var merge = new CheckBox { Name = "tv-merge", Content = "Doppelte Sender (HD/FHD/SD) zusammenfassen – es läuft die beste Qualität, andere über „Qualität ▾“", IsChecked = Tv.MergeDuplicates, Foreground = Text };
+        merge.IsCheckedChanged += (_, _) => { Tv.SetMergeDuplicates(merge.IsChecked == true); Show("tv"); };
+        var rules = new StackPanel { Name = "tv-rules", Spacing = 4 };
+        foreach (var r in Tv.RecordRules) { var rid = r.Id; rules.Children.Add(new WrapPanel { Children = { new TextBlock { Text = "⏺ " + r.Keyword, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0) }, TvButton("tv-rule-del-" + rid, "Entfernen", () => { Tv.RemoveRecordRule(rid); Show("tv"); }) } }); }
+        var ruleBox = new TextBox { Name = "tv-rule-text", PlaceholderText = "z. B. FC Bayern, Tatort, Tagesschau", Width = 260 };
+        rules.Children.Add(new WrapPanel { Children = { ruleBox, TvButton("tv-rule-add", "Immer aufnehmen", () => { try { Tv.AddRecordRule(ruleBox.Text ?? ""); var n = TvRuleTick(); _tvMsg = $"✓ Aufnahme-Regel angelegt{(n > 0 ? $" – {n} Sendung(en) schon eingeplant" : "")}."; } catch (ArgumentException e) { _tvMsg = e.Message; } Show("tv"); }, true) } });
+        sp.Children.Add(WCard(new StackPanel { Name = "tv-prefs", Spacing = 6, Children = { H("Ton, Untertitel und Sender", 14),
+            new WrapPanel { Children = { new TextBlock { Text = "Sprache für Ton und Untertitel: ", Foreground = Text, VerticalAlignment = VerticalAlignment.Center }, lang } },
+            P("Der Ton läuft in dieser Sprache, wenn es sie gibt. Untertitel in dieser Sprache erscheinen nur, wenn der Ton fremdsprachig ist.", null, 11.5), merge,
+            H("Aufnahme-Regeln", 13), P("Alles, was im Programmführer zum Stichwort passt, wird automatisch aufgenommen (geprüft alle 5 Minuten für die nächsten 24 Stunden).", null, 11.5), rules } }));
+        sp.Children.Add(WCard(new StackPanel { Name = "tv-content-filter", Spacing = 6, Children = { H("Inhalte filtern", 14), onlyDe, adult,
+            P("Ausgeblendet wird alles, was in der Liste ausdrücklich zu einem anderen Land gehört (z. B. „TR •“, „UK |“, „FR:“). Einträge ohne Länderkennung bleiben sichtbar. Wer Erwachsenen-Inhalte zusätzlich schützen will: Gruppe unten mit PIN sperren.", null, 11.5) } }));
         // M3U per Adresse oder Datei
         var m3u = new StackPanel { Spacing = 6 };
         m3u.Children.Add(H("Wiedergabeliste (M3U)", 14));

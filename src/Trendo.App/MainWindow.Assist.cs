@@ -243,7 +243,7 @@ public partial class MainWindow
                 rem.IsCheckedChanged += (_, _) => { if (rem.IsChecked == true) r.Remember.Add(qq.Id); else r.Remember.Remove(qq.Id); };
                 row.Children.Add(rem);
             }
-            sp.Children.Add(new Border { Name = $"assist-q-{idx}", Background = Brush.Parse(q.Confirm ? "#1AF5A524" : "#1A3B82F6"), CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 8),
+            sp.Children.Add(new Border { Name = $"assist-q-{idx}", Background = Brush.Parse(q.Confirm ? "#1AF5A524" : "#1AC9A227"), CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 8),
                 Child = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = q.Text, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap }, row } } });
         }
 
@@ -288,7 +288,7 @@ public partial class MainWindow
             foreach (var it in r.Prefs.All) { var key = it.Key; list.Children.Add(new WrapPanel { Children = { P(it.Text, Text, 11.5), Act($"assist-pref-del-{n++}", "✕", () => { r.Prefs.Forget(key); AssistRender(r, host); }) } }); }
             sp.Children.Add(new Expander { Name = "assist-prefs", Header = $"Gemerkt ({r.Prefs.All.Count})", Content = list });
         }
-        host.Content = new Border { Background = Brush.Parse("#0F1C3058"), BorderBrush = GoldEdge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 10), Margin = new Thickness(0, 4, 0, 4), Child = sp };
+        host.Content = new Border { Background = Brush.Parse("#0F3F3F3F"), BorderBrush = GoldEdge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 10), Margin = new Thickness(0, 4, 0, 4), Child = sp };
     }
 
     void AssistAnswer(AssistRun r, ContentControl host, AssistQuestion q, string value)

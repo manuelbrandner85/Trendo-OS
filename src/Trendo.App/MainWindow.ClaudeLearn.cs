@@ -33,6 +33,8 @@ public partial class MainWindow
                 if (!full) GameForge.ExportSkills(gf, folder); // im sicheren Modus lädt Claude keine Plugins – die Regeln gehen als Projekt-Skills mit
             }
         }
+        if (dock.Studio == WebRules.Studio) { text += WebRules.Text; try { WebRules.Prepare(folder); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } } // lokale Bibliotheken für hochwertige Seiten
+        if (dock.Studio == Model3DRules.Studio) text += Model3DRules.Text;
         return text + CLearn.Prompt(studio);
     }
 

@@ -89,7 +89,7 @@ public partial class MainWindow
             face.Children.Add(new TextBlock { Name = "learn-back", Text = back, Foreground = Brush.Parse("#7FD3FF"), FontSize = 24, TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center });
         }
         return new Border { Name = "learn-card", MinHeight = 260, CornerRadius = new CornerRadius(18), Padding = new Thickness(28), BoxShadow = CardShadow,
-            Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#FF1C3157"), 0), new GradientStop(Color.Parse("#FF122340"), 1) } },
+            Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#FF3F3F3F"), 0), new GradientStop(Color.Parse("#FF2D2D2D"), 1) } },
             BorderBrush = Brush.Parse("#557FD3FF"), BorderThickness = new Thickness(1), Child = face };
     }
 
@@ -246,7 +246,7 @@ public partial class MainWindow
                 if (fc[i].Due > 0) s.Add(new DText(x + bw / 2, h - 26 - bh, fc[i].Due.ToString(), 10, "#FFFFFF", "TEXT", true));
             }
             return s;
-        }, "#10203A") });
+        }, "#292929") });
         var leeches = Learn.Leeches().Where(c => LearnDeck is null || c.Deck == LearnDeck).Take(5).ToList();
         if (leeches.Count > 0) { sp.Children.Add(H("Problemkarten", 12)); foreach (var c in leeches) sp.Children.Add(P($"⚠ {c.Front} ({c.Lapses}× vergessen)", null, 11.5)); }
         // Prüfungsplan
@@ -282,7 +282,7 @@ public partial class MainWindow
         var bar = new ProgressBar { Name = "learn-today-bar", Minimum = 0, Maximum = Math.Max(1, goal), Value = done, Height = 10, Foreground = Brush.Parse(done >= goal && goal > 0 ? "#4ADE80" : "#2F86F6") };
         var todayText = rev + neu == 0 ? (done > 0 ? $"✓ Tagesziel geschafft – {done} Karten gelernt." : "Heute steht nichts an.") : $"Heute: {rev} Wiederholung{(rev == 1 ? "" : "en")} und {neu} neue Karte{(neu == 1 ? "" : "n")} – etwa {min} min.";
         var go = Act("learn-plan-go", "Jetzt lernen", () => { LearnMode = "lernen"; _reveal = false; Show("lernen"); }, true); go.IsEnabled = rev + neu > 0;
-        sp.Children.Add(new Border { Name = "learn-today", Background = Brush.Parse("#1A2F86F6"), CornerRadius = new CornerRadius(12), Padding = new Thickness(14, 10), Child = new StackPanel { Spacing = 6, Children = {
+        sp.Children.Add(new Border { Name = "learn-today", Background = Brush.Parse("#1AC9A227"), CornerRadius = new CornerRadius(12), Padding = new Thickness(14, 10), Child = new StackPanel { Spacing = 6, Children = {
             new TextBlock { Name = "learn-today-text", Text = todayText, Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
             bar, P(goal > 0 ? $"{done} von {goal} geschafft" : "", Muted, 11.5), go } } });
 

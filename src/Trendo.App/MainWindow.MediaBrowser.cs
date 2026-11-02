@@ -110,9 +110,9 @@ public partial class MainWindow
             var h = MediaHits[i]; var idx = i; var on = i == MediaSel;
             Control pic = _mbThumbs.TryGetValue(h.Id, out var tp) && tp is not null && BibBitmap(tp) is { } bmp
                 ? new Image { Source = bmp, Width = 150, Height = 100, Stretch = Stretch.UniformToFill }
-                : new Border { Width = 150, Height = 100, Background = Brush.Parse(sound ? "#1F2F86F6" : "#14000000"), Child = new TextBlock { Text = sound ? "♪" : "▧", FontSize = 34, Foreground = Muted, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } };
+                : new Border { Width = 150, Height = 100, Background = Brush.Parse(sound ? "#1FC9A227" : "#14000000"), Child = new TextBlock { Text = sound ? "♪" : "▧", FontSize = 34, Foreground = Muted, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } };
             var tile = new Button { Name = $"mb-hit-{i}", Padding = new Thickness(0), Margin = new Thickness(0, 0, 8, 8), Width = 152, CornerRadius = new CornerRadius(8), ClipToBounds = true,
-                Background = TileBg, BorderBrush = on ? Brush.Parse("#2F86F6") : Edge, BorderThickness = new Thickness(on ? 2 : 1),
+                Background = TileBg, BorderBrush = on ? Brush.Parse("#C9A227") : Edge, BorderThickness = new Thickness(on ? 2 : 1),
                 Content = new StackPanel { Children = { pic, new StackPanel { Margin = new Thickness(6, 4), Children = {
                     new TextBlock { Text = h.Title, Foreground = Text, FontSize = 11.5, TextTrimming = TextTrimming.CharacterEllipsis },
                     new TextBlock { Text = (h.Free ? "frei · " : "Nennung · ") + h.Format.ToUpperInvariant() + (sound && h.Seconds > 0 ? $" · {TimeSpan.FromSeconds(h.Seconds):m\\:ss}" : ""), Foreground = h.Free ? Brush.Parse("#22B35E") : GoldText(), FontSize = 10 } } } } } };

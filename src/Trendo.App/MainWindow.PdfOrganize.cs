@@ -44,7 +44,7 @@ public partial class MainWindow
             var img = new Image { Width = 84, Height = 112, Stretch = Stretch.Uniform };
             PdfThumb(img, PdfPath!, i, 0, 14);
             var b = new Button { Name = $"pdf-thumb-{i}", Padding = new Thickness(4), CornerRadius = new CornerRadius(6), HorizontalAlignment = HorizontalAlignment.Center,
-                Background = on ? Brush.Parse("#332F86F6") : Brushes.Transparent, BorderBrush = Brush.Parse(on ? "#D4A84B" : "#22FFFFFF"), BorderThickness = new Thickness(on ? 2 : 1),
+                Background = on ? Brush.Parse("#33C9A227") : Brushes.Transparent, BorderBrush = Brush.Parse(on ? "#D4A84B" : "#22FFFFFF"), BorderThickness = new Thickness(on ? 2 : 1),
                 Content = new StackPanel { Spacing = 2, Children = { new Border { Background = Brushes.White, Child = img, BoxShadow = BoxShadows.Parse("0 2 6 0 #55000000") },
                     new TextBlock { Text = (i + 1).ToString(), Foreground = on ? GoldText() : Muted, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center } } } };
             b.Click += (_, _) => { PdfGo(idx); Show("pdf"); };
@@ -130,7 +130,7 @@ public partial class MainWindow
         var indicator = new Border { Width = 4, Background = Brush.Parse("#D4A84B"), CornerRadius = new CornerRadius(2), IsVisible = false, IsHitTestVisible = false, BoxShadow = BoxShadows.Parse("0 0 8 0 #AAD4A84B") };
         var overlay = new Canvas { IsHitTestVisible = false, Children = { indicator } };
         var tiles = new List<Border>();
-        void Mark() { for (var k = 0; k < tiles.Count; k++) { var on = _pdfOrgSel.Contains(k); tiles[k].BorderBrush = Brush.Parse(on ? "#D4A84B" : "#22FFFFFF"); tiles[k].BorderThickness = new Thickness(on ? 3 : 1); tiles[k].Background = Brush.Parse(on ? "#332F86F6" : "#10FFFFFF"); } Info(); }
+        void Mark() { for (var k = 0; k < tiles.Count; k++) { var on = _pdfOrgSel.Contains(k); tiles[k].BorderBrush = Brush.Parse(on ? "#D4A84B" : "#22FFFFFF"); tiles[k].BorderThickness = new Thickness(on ? 3 : 1); tiles[k].Background = Brush.Parse(on ? "#33C9A227" : "#10FFFFFF"); } Info(); }
         int DropIndex(Point p)
         {
             for (var k = 0; k < tiles.Count; k++) { var r = tiles[k].Bounds; if (p.Y >= r.Top - 4 && p.Y <= r.Bottom + 4 && p.X <= r.Right + 4) return p.X < r.Center.X ? k : k + 1; }

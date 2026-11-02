@@ -42,7 +42,7 @@ public partial class MainWindow
             Show("brief");
             _ui.Post(() => Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(this).OfType<TextBox>().FirstOrDefault(t => t.Name == "letter-recipient")?.Focus());
         }; sp.Children.Add(emp);
-        return new Border { Background = Brush.Parse(C("#55101830", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(8), Child = sp, Margin = new Thickness(0, 0, 10, 0) };
+        return new Border { Background = Brush.Parse(C("#55222222", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(8), Child = sp, Margin = new Thickness(0, 0, 10, 0) };
     }
 
     private Control LetterShell(Control body, Control? actions)
@@ -103,8 +103,12 @@ public partial class MainWindow
             var b = new Button { Name = $"case-open-{i++}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = TileBg,
                 Content = new StackPanel { Children = { new TextBlock { Text = c.Title, Foreground = Text }, P($"{LetterKit.Category(c.Category).Label} · {StateLabel(c.State)} · {c.Attachments.Count} Anlagen · {c.Deadlines.Count(d => d.Status == Verification.Ungeprueft)} ungeprüfte Fristen", null, 10.5) } } };
             b.Click += (_, _) => { OpenCase(c); Show("akte"); };
-            sp.Children.Add(b);
+            var cid = c.Id; var del = new Button { Name = $"case-del-{i - 1}", Content = "🗑", Padding = new Thickness(10, 4), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(6, 0, 0, 0) };
+            ToolTip.SetTip(del, "Akte löschen (mit allen Anlagen – kommt in den Papierkorb, zurückholbar)");
+            del.Click += (_, _) => { if (_case?.Id == cid) _case = null; LetterTrashed(Cases.Delete(cid, Principal.LocalOwner), "akten"); };
+            sp.Children.Add(new DockPanel { Children = { DockRight(del), b } });
         }
+        sp.Children.Add(LetterTrashView());
         return LetterPage("Akten", sp);
     }
     public static string StateLabel(DeliveryState s) => s switch { DeliveryState.Entwurf => "ENTWURF", DeliveryState.Exportiert => "EXPORTIERT (nicht versendet)", DeliveryState.Druckbereit => "DRUCKBEREIT", DeliveryState.FreigegebenFuerVersand => "FREIGEGEBEN – noch nicht versendet", _ => "VERSENDET (Nachweis vorhanden)" };
@@ -346,6 +350,53 @@ public partial class MainWindow
     }
 
     // ---------- Briefköpfe ----------
+    /// <summary>Nach dem Löschen: Hinweis mit „Rückgängig“ (holt es sofort zurück).</summary>
+    void LetterTrashed(LetterTrash.Entry? e, string view)
+    {
+        if (e is null) { Show(view); return; }
+        _core.Audit.Append(Principal.LocalOwner.Name, "letter.trash", e.Kind);
+        Toast($"„{e.Label}“ liegt im Papierkorb.", ("Rückgängig", () => LetterRestore(e.Id, view)));
+        Show(view);
+    }
+
+    /// <summary>Aus dem Trendo-Papierkorb zurückholen (Briefköpfe werden wieder eingetragen).</summary>
+    public void LetterRestore(string id, string view = "akten")
+    {
+        try
+        {
+            var e = new LetterTrash(ProjectsRoot).List().FirstOrDefault(x => x.Id == id);
+            if (e?.Kind == "briefkopf") Cases.RestoreLetterhead(id, Principal.LocalOwner); else new LetterTrash(ProjectsRoot).Restore(id);
+            _caseMsg = $"✓ „{e?.Label}“ ist wieder da.";
+        }
+        catch (Exception ex) when (ex is IOException or FileNotFoundException or UnauthorizedAccessException) { _caseMsg = "Zurückholen ging nicht: " + ex.Message; }
+        Show(view);
+    }
+
+    /// <summary>Für Tests: statt in den Windows-Papierkorb zu verschieben.</summary>
+    public static Action<string>? LetterRecycleOverride { get; set; }
+
+    /// <summary>Papierkorb des Brief-Studios: zurückholen oder leeren (geht an den Windows-Papierkorb, nichts wird endgültig gelöscht).</summary>
+    Control LetterTrashView()
+    {
+        var trash = new LetterTrash(ProjectsRoot); var list = trash.List();
+        var sp = new StackPanel { Name = "letter-trash", Spacing = 4, Margin = new Thickness(0, 12, 0, 0) };
+        sp.Children.Add(H($"🗑 Papierkorb ({list.Count})", 14));
+        if (list.Count == 0) { sp.Children.Add(P("Leer. Gelöschte Briefe, Akten und Briefköpfe landen hier und lassen sich zurückholen.", null, 11.5)); return sp; }
+        var i = 0;
+        foreach (var e in list.Take(30))
+        {
+            var id = e.Id;
+            sp.Children.Add(Row(P($"{e.Label} · gelöscht {e.At.ToLocalTime():dd.MM. HH:mm}", Text, 12), Btn($"trash-restore-{i++}", "Zurückholen", () => LetterRestore(id))));
+        }
+        sp.Children.Add(Btn("trash-empty", "Papierkorb leeren (in den Windows-Papierkorb)", () =>
+        {
+            var n = trash.Empty(p => { if (LetterRecycleOverride is { } o) o(p); else RecycleBin.Move(p); });
+            _caseMsg = $"✓ {n} Einträge sind im Windows-Papierkorb – dort kannst du sie noch zurückholen.";
+            _core.Audit.Append(Principal.LocalOwner.Name, "letter.trash.empty", n.ToString()); Show("akten");
+        }));
+        return sp;
+    }
+
     private Control LetterheadsView()
     {
         var sp = new StackPanel { Spacing = 6 };
@@ -354,7 +405,8 @@ public partial class MainWindow
         {
             var use = Btn("head-use-" + h.Id, _case?.LetterheadId == h.Id ? "✓ in dieser Akte" : "Für die Akte verwenden", () => { if (_case is null) throw new InvalidOperationException("Erst eine Akte öffnen."); _case.LetterheadId = h.Id; LetterKit.Compose(_case, h); SaveCase("Briefkopf"); Show("briefkoepfe"); });
             use.IsEnabled = _case is not null;
-            sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6), Child = Row(P($"{(h.Kind == "firma" ? "Firma" : "Privat")}: {h.Name}, {h.Street}, {h.City} {h.Contact}", Text, 12), use) });
+            var hid = h.Id; var del = Btn("head-del-" + h.Id, "🗑 Löschen", () => LetterTrashed(Cases.DeleteLetterhead(hid, Principal.LocalOwner), "briefkoepfe"));
+            sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6), Child = Row(P($"{(h.Kind == "firma" ? "Firma" : "Privat")}: {h.Name}, {h.Street}, {h.City} {h.Contact}", Text, 12), use, del) });
         }
         if (heads.Count == 0) sp.Children.Add(P("Noch kein Briefkopf. Lege einen privaten und – falls nötig – einen Firmen-Briefkopf an. Sie werden nie vermischt."));
         var kind = new ComboBox { Name = "head-kind", ItemsSource = new[] { "Privat", "Firma" }, SelectedIndex = 0 };

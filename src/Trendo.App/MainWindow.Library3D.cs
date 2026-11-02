@@ -81,7 +81,7 @@ public partial class MainWindow
         foreach (var (k, label) in new[] { ("modell", "Modelle"), ("himmel", "Himmel (HDRI)"), ("material", "Materialien") })
         {
             var kind = k; var b = Btn("bib-kind-" + k, label, () => { BibKind = kind; BibHits = []; _bibMsg = ""; Show(BIB); });
-            if (BibKind == k) { b.Background = Brush.Parse("#2F86F6"); b.Foreground = Brushes.White; }
+            if (BibKind == k) { b.Background = Brush.Parse("#C9A227"); b.Foreground = Brushes.White; }
             bar.Children.Add(b);
         }
         var q = Field("bib-query", BibKind == "material" ? "z. B. Holz, Fliesen, Beton" : BibKind == "himmel" ? "z. B. Abend, innen, Wolken" : "z. B. Stuhl, Pflanze, Lampe", 260, BibQuery);
@@ -106,7 +106,7 @@ public partial class MainWindow
                 var hit = h; var have = mine.Any(m => m.Source == h.Source && m.Id == h.Id);
                 Control pic = _bibThumbs.TryGetValue(h.Source + h.Id, out var tp) && tp is not null && BibBitmap(tp) is { } bmp
                     ? new Image { Source = bmp, Width = 156, Height = 156, Stretch = Stretch.UniformToFill }
-                    : new Border { Width = 156, Height = 156, Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#1B2B47"), 0), new GradientStop(Color.Parse("#0E1A2E"), 1) } },
+                    : new Border { Width = 156, Height = 156, Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#363636"), 0), new GradientStop(Color.Parse("#212121"), 1) } },
                         Child = new TextBlock { Text = "Vorschau lädt …", Foreground = Muted, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } };
                 var info = new StackPanel { Spacing = 2, Margin = new Thickness(0, 6, 0, 0), Children = {
                     new TextBlock { Text = h.Name, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 156 },
@@ -114,7 +114,7 @@ public partial class MainWindow
                     new TextBlock { Text = $"{h.License} · {h.Author}", Foreground = Muted, FontSize = 10.5, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 156 } } };
                 var act = have ? (Control)new TextBlock { Name = $"bib-have-{i}", Text = "✓ in der Bibliothek", Foreground = Brush.Parse("#4ADE80"), FontSize = 11.5, Margin = new Thickness(0, 4, 0, 0) }
                     : Btn($"bib-get-{i}", "Laden", () => { _ = BibDownload(hit); }, true);
-                grid.Children.Add(new Border { Name = $"bib-hit-{i}", Width = 176, Margin = new Thickness(0, 0, 10, 10), Padding = new Thickness(10), CornerRadius = new CornerRadius(12), Background = Brush.Parse("#14233B"), BorderBrush = EdgeLit, BorderThickness = new Thickness(1),
+                grid.Children.Add(new Border { Name = $"bib-hit-{i}", Width = 176, Margin = new Thickness(0, 0, 10, 10), Padding = new Thickness(10), CornerRadius = new CornerRadius(12), Background = Brush.Parse("#2C2C2C"), BorderBrush = EdgeLit, BorderThickness = new Thickness(1),
                     Child = new StackPanel { Children = { new Border { CornerRadius = new CornerRadius(8), ClipToBounds = true, Child = pic }, info, act } } });
                 i++;
             }
@@ -140,7 +140,7 @@ public partial class MainWindow
             var item = it; var row = new WrapPanel();
             if (it.Kind == "modell") row.Children.Add(btn($"bib-open-{k}", "Ansehen", () => { XrFile = item.File; _xrMsg = $"„{item.Name}“ aus der 3D-Bibliothek."; Show("xr"); }, false));
             row.Children.Add(btn($"bib-del-{k}", "Entfernen", () => { Bib.Remove(item); _bibMsg = $"„{item.Name}“ entfernt."; Show(BIB); }, false));
-            sp.Children.Add(new Border { Name = $"bib-item-{k}", Background = Brush.Parse("#14233B"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8), Child = new StackPanel { Spacing = 2, Children = {
+            sp.Children.Add(new Border { Name = $"bib-item-{k}", Background = Brush.Parse("#2C2C2C"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8), Child = new StackPanel { Spacing = 2, Children = {
                 new TextBlock { Text = it.Name, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
                 new TextBlock { Text = (it.Kind switch { "himmel" => "Himmel", "material" => "Material", _ => "Modell" }) + $" · {it.Source} · {it.License}" + (it.Author.Length > 0 ? " · " + it.Author : ""), Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap },
                 row } } });

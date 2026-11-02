@@ -30,7 +30,7 @@ public partial class MainWindow
         _smSearch.Height = 40; _smSearch.FontSize = 14; _smSearch.Background = Brushes.Transparent; _smSearch.BorderThickness = new Thickness(0); _smSearch.VerticalContentAlignment = VerticalAlignment.Center;
         _smSearch.TextChanged += (_, _) => FillStartMenu();
         _smSearch.KeyDown += async (_, e) => { if (e.Key == Key.Enter && StartHits(_smSearch.Text ?? "").FirstOrDefault() is { } h) { CloseStartMenu(); await OpenStartHit(h); } };
-        var search = new Border { Height = 44, CornerRadius = new CornerRadius(12), Background = Brush.Parse(C("#66101830", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), Padding = new Thickness(12, 0), Margin = new Thickness(0, 0, 0, 12),
+        var search = new Border { Height = 44, CornerRadius = new CornerRadius(12), Background = Brush.Parse(C("#66222222", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), Padding = new Thickness(12, 0), Margin = new Thickness(0, 0, 0, 12),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { new Border { Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center, Child = Ico(Mdi.Magnify, 16, Muted) }, Pos(_smSearch, 1) } } };
         var cols = new Grid { ColumnDefinitions = new ColumnDefinitions("200,*,210") };
         cols.Children.Add(_smCats);
@@ -248,7 +248,7 @@ public partial class MainWindow
 
     private Control PinTile(string id, string name)
     {
-        var icon = new Border { Width = 52, Height = 52, CornerRadius = new CornerRadius(14), Background = Brush.Parse(C("#33283C5C", "#E6FFFFFF")), HorizontalAlignment = HorizontalAlignment.Center, Child = IconFor(id, 28) ?? Ico(Mdi.FileDocumentOutline, 28, Accent) };
+        var icon = new Border { Width = 52, Height = 52, CornerRadius = new CornerRadius(14), Background = Brush.Parse(C("#334A4A4A", "#E6FFFFFF")), HorizontalAlignment = HorizontalAlignment.Center, Child = IconFor(id, 28) ?? Ico(Mdi.FileDocumentOutline, 28, Accent) };
         var stack = new StackPanel { Width = 96, Spacing = 4, Children = { icon, new TextBlock { Text = name, Foreground = Text, FontSize = 11, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap, MaxHeight = 32 } } };
         if (UnavailableHint(id) is { } hint) stack.Children.Add(new TextBlock { Text = hint, Foreground = Muted, FontSize = 10, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap });
         var b = new Button { Name = "sm-pin-" + id, Background = Brushes.Transparent, Padding = new Thickness(4), Margin = new Thickness(4), Content = stack };

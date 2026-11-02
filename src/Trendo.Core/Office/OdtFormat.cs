@@ -29,12 +29,12 @@ public static class OdtFormat
     public static void Write(TextDoc doc, string path)
     {
         var auto = new StringBuilder(); var body = new StringBuilder(); var pics = new List<(string Name, byte[] Data, string Ext)>();
-        var spanStyles = new Dictionary<(Fmt, double?), string>(); var paraStyles = new Dictionary<(ParaStyle, Align, double, double?), string>();
+        var spanStyles = new Dictionary<(Fmt, double?, string?, string?, string?), string>(); var paraStyles = new Dictionary<(ParaStyle, Align, double, double?, double?, double?, double), string>();
         int notes = 0, endnotes = 0, comments = 0, figures = 0; var page = doc.Page;
-        string SpanStyle(Fmt f, double? size)
+        string SpanStyle(Fmt f, double? size, string? font = null, string? color = null, string? hl = null)
         {
-            if (spanStyles.TryGetValue((f, size), out var n)) return n;
-            n = "T" + (spanStyles.Count + 1); spanStyles[(f, size)] = n;
+            if (spanStyles.TryGetValue((f, size, font, color, hl), out var n)) return n;
+            n = "T" + (spanStyles.Count + 1); spanStyles[(f, size, font, color, hl)] = n;
             auto.Append($"<style:style style:name=\"{n}\" style:family=\"text\"><style:text-properties");
             if (f.HasFlag(Fmt.Bold)) auto.Append(" fo:font-weight=\"bold\"");
             if (f.HasFlag(Fmt.Italic)) auto.Append(" fo:font-style=\"italic\"");
@@ -43,19 +43,25 @@ public static class OdtFormat
             if (f.HasFlag(Fmt.Super)) auto.Append(" style:text-position=\"super 58%\"");
             if (f.HasFlag(Fmt.Sub)) auto.Append(" style:text-position=\"sub 58%\"");
             if (size is { } s) auto.Append($" fo:font-size=\"{s.ToString(CultureInfo.InvariantCulture)}pt\"");
+            if (font is not null) auto.Append($" fo:font-family=\"{Esc(font)}\" style:font-family-generic=\"swiss\"");
+            if (color is not null) auto.Append($" fo:color=\"{color}\"");
+            if (hl is not null) auto.Append($" fo:background-color=\"{hl}\"");
             auto.Append("/></style:style>");
             return n;
         }
         string ParaStyleFor(Para p)
         {
-            if (p.Align == Align.Left && p.IndentCm == 0 && p.SpaceAfterPt is null) return StyleName(p.Style);
-            var key = (p.Style, p.Align, p.IndentCm, p.SpaceAfterPt);
+            if (p.Align == Align.Left && p.IndentCm == 0 && p.SpaceAfterPt is null && p.LineSpacing is null && p.SpaceBeforePt is null && p.FirstLineCm == 0) return StyleName(p.Style);
+            var key = (p.Style, p.Align, p.IndentCm, p.SpaceAfterPt, p.LineSpacing, p.SpaceBeforePt, p.FirstLineCm);
             if (paraStyles.TryGetValue(key, out var n)) return n;
             n = "P" + (paraStyles.Count + 1); paraStyles[key] = n;
             auto.Append($"<style:style style:name=\"{n}\" style:family=\"paragraph\" style:parent-style-name=\"{StyleName(p.Style)}\"><style:paragraph-properties");
             if (p.Align != Align.Left) auto.Append($" fo:text-align=\"{p.Align switch { Align.Center => "center", Align.Right => "end", _ => "justify" }}\"");
             if (p.IndentCm > 0) auto.Append($" fo:margin-left=\"{p.IndentCm.ToString("0.###", CultureInfo.InvariantCulture)}cm\"");
             if (p.SpaceAfterPt is { } sa) auto.Append($" fo:margin-bottom=\"{(sa * 2.54 / 72).ToString("0.###", CultureInfo.InvariantCulture)}cm\"");
+            if (p.SpaceBeforePt is { } sb0) auto.Append($" fo:margin-top=\"{(sb0 * 2.54 / 72).ToString("0.###", CultureInfo.InvariantCulture)}cm\"");
+            if (p.LineSpacing is { } ls) auto.Append($" fo:line-height=\"{Math.Round(ls * 100).ToString(CultureInfo.InvariantCulture)}%\"");
+            if (p.FirstLineCm != 0) auto.Append($" fo:text-indent=\"{p.FirstLineCm.ToString("0.###", CultureInfo.InvariantCulture)}cm\"");
             auto.Append("/></style:style>");
             return n;
         }
@@ -94,7 +100,8 @@ public static class OdtFormat
                     prevSpace = ch is '\t' or '\n';
                     content.Append(ch switch { '\t' => "<text:tab/>", '\n' => "<text:line-break/>", _ => Esc(ch.ToString()) });
                 }
-                sb.Append(f == Fmt.None && size is null ? content.ToString() : $"<text:span text:style-name=\"{SpanStyle(f, size)}\">{content}</text:span>");
+                var (fo, co, hi) = (TextDoc.InkAt(p, x, MarkKind.Font), TextDoc.InkAt(p, x, MarkKind.Color), TextDoc.InkAt(p, x, MarkKind.Highlight));
+                sb.Append(f == Fmt.None && size is null && fo is null && co is null && hi is null ? content.ToString() : $"<text:span text:style-name=\"{SpanStyle(f, size, fo, co, hi)}\">{content}</text:span>");
                 if (link is not null) sb.Append("</text:a>");
                 foreach (var m in p.Marks.Where(m => m.Kind == MarkKind.Comment && m.Length > 0 && m.End == y && openComments.ContainsKey(m))) sb.Append($"<office:annotation-end office:name=\"{openComments[m]}\"/>");
                 Points(y);
@@ -254,7 +261,19 @@ public static class OdtFormat
         }
         double PIndent(string? name) => name is not null && all.TryGetValue(name, out var st) && (string?)st.Element(Style + "paragraph-properties")?.Attribute(Fo + "margin-left") is { } ml && ml.EndsWith("cm", StringComparison.Ordinal) && double.TryParse(ml[..^2], NumberStyles.Float, CultureInfo.InvariantCulture, out var v) && v > 0.01 && !(st.Attribute(Style + "family")?.Value == "paragraph" && PStyle(name) == ParaStyle.Quote) ? Math.Round(v, 2) : 0;
         double? PSpace(string? name) => name is not null && all.TryGetValue(name, out var st) && (string?)st.Attribute(Style + "parent-style-name") is not null && (string?)st.Element(Style + "paragraph-properties")?.Attribute(Fo + "margin-bottom") is { } mb && mb.EndsWith("cm", StringComparison.Ordinal) && double.TryParse(mb[..^2], NumberStyles.Float, CultureInfo.InvariantCulture, out var v) && content.Descendants(Style + "style").Contains(st) ? Math.Round(v * 72 / 2.54) : null;
+        string? PProp(string? name, string attr) => name is not null && all.TryGetValue(name, out var st) && (string?)st.Attribute(Style + "parent-style-name") is not null ? (string?)st.Element(Style + "paragraph-properties")?.Attribute(Fo + attr) : null;
+        static double? CmOf(string? v) => v is not null && v.EndsWith("cm", StringComparison.Ordinal) && double.TryParse(v[..^2], NumberStyles.Float, CultureInfo.InvariantCulture, out var d) ? d : null;
+        double? PLine(string? name) => PProp(name, "line-height") is { } lh && lh.EndsWith('%') && double.TryParse(lh[..^1], NumberStyles.Float, CultureInfo.InvariantCulture, out var pc) && pc > 0 ? Math.Round(pc / 100, 2) : null;
+        double? PBefore(string? name) => CmOf(PProp(name, "margin-top")) is { } mt ? Math.Round(mt * 72 / 2.54) : null;
+        double PFirst(string? name) => CmOf(PProp(name, "text-indent")) is { } ti ? Math.Round(ti, 2) : 0;
         bool BreakBefore(string? name) => name is not null && all.TryGetValue(name, out var st) && (string?)st.Element(Style + "paragraph-properties")?.Attribute(Fo + "break-before") == "page";
+        (string? Font, string? Color, string? Hl) SInk(string? name)
+        {
+            if (name is null || !all.TryGetValue(name, out var st) || st.Element(Style + "text-properties") is not { } tp) return (null, null, null);
+            static string? Hex(string? v) => v is { Length: 7 } && v[0] == '#' ? v.ToUpperInvariant() : null;
+            var font = ((string?)tp.Attribute(Fo + "font-family") ?? (string?)tp.Attribute(Style + "font-name"))?.Trim('\'', '"');
+            return (font is { Length: > 0 } ? font : null, Hex((string?)tp.Attribute(Fo + "color")), Hex((string?)tp.Attribute(Fo + "background-color")));
+        }
         (Fmt, double?) SFmt(string? name)
         {
             if (name is null || !all.TryGetValue(name, out var st) || st.Element(Style + "text-properties") is not { } tp) return (Fmt.None, null);
@@ -278,7 +297,7 @@ public static class OdtFormat
             if (BreakBefore(styleName)) doc.Blocks.Add(new PageBreak());
             var style = el.Name == Text + "h" ? (int.TryParse((string?)el.Attribute(Text + "outline-level"), out var lvl) ? lvl switch { 1 => ParaStyle.Heading1, 2 => ParaStyle.Heading2, _ => ParaStyle.Heading3 } : ParaStyle.Heading1) : PStyle(styleName);
             if (el.Name == Text + "h" && PStyle(styleName) is var named && named != ParaStyle.Text) style = named;
-            var p = new Para { Style = style, Align = PAlign(styleName), List = list, IndentCm = PIndent(styleName), SpaceAfterPt = PSpace(styleName) };
+            var p = new Para { Style = style, Align = PAlign(styleName), List = list, IndentCm = PIndent(styleName), SpaceAfterPt = PSpace(styleName), LineSpacing = PLine(styleName), SpaceBeforePt = PBefore(styleName), FirstLineCm = PFirst(styleName) };
             var runs = new List<(string, Fmt, double?)>(); var marks = new List<Mark>(); var openAnn = new Dictionary<string, (int Start, string Text)>();
             int Len() => runs.Sum(r => r.Item1.Length);
             void Walk(XElement e, Fmt f, double? size)
@@ -287,7 +306,13 @@ public static class OdtFormat
                     switch (n)
                     {
                         case XText t: runs.Add((System.Text.RegularExpressions.Regex.Replace(t.Value, "[ \t\r\n]+", " "), f, size)); break; // ODF: Leerraum im Text zählt als ein Leerzeichen
-                        case XElement c when c.Name == Text + "span": { var (sf, ss) = SFmt((string?)c.Attribute(Text + "style-name")); Walk(c, f | sf, ss ?? size); break; }
+                        case XElement c when c.Name == Text + "span":
+                        {
+                            var sn = (string?)c.Attribute(Text + "style-name"); var (sf, ss) = SFmt(sn); var start = Len(); Walk(c, f | sf, ss ?? size);
+                            var (ifo, ico, ihl) = SInk(sn); // Schrift, Farbe, Hervorhebung des Abschnitts (innere Abschnitte gewinnen)
+                            if (Len() > start) foreach (var (ik, iv) in new[] { (MarkKind.Font, ifo), (MarkKind.Color, ico), (MarkKind.Highlight, ihl) }) if (iv is not null) marks.Add(new Mark(start, Len() - start, ik, iv));
+                            break;
+                        }
                         case XElement c when c.Name == Text + "s": runs.Add((new string(' ', int.TryParse((string?)c.Attribute(Text + "c"), out var k) ? k : 1), f, size)); break;
                         case XElement c when c.Name == Text + "tab": runs.Add(("\t", f, size)); break;
                         case XElement c when c.Name == Text + "line-break": runs.Add(("\n", f, size)); break;
@@ -329,7 +354,7 @@ public static class OdtFormat
                 return;
             }
             Walk(el, Fmt.None, null);
-            p.SetRuns(runs); p.Marks = marks;
+            p.SetRuns(runs); p.Marks = marks; TextDoc.NormalizeInk(p);
             // leerer Träger eines Seitenumbruchs oder eines Bildes ist kein eigener Absatz
             var carrier = p.Text.Length == 0 && (el.Descendants(Draw + "frame").Any() || (BreakBefore(styleName) && !el.Nodes().Any()));
             if (!carrier || p.Marks.Count > 0) doc.Blocks.Add(p);

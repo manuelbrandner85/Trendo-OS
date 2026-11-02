@@ -14,7 +14,8 @@ public static class TextPdf
     const double Cm = 72 / 2.54;
     static readonly XColor InsColor = XColor.FromArgb(0x15, 0x80, 0x3D), DelColor = XColor.FromArgb(0xB9, 0x1C, 0x1C), LinkColor = XColor.FromArgb(0x05, 0x63, 0xC1);
 
-    sealed record Word(string Text, XFont Font, bool Underline, bool Strike, double Rise, double W, bool SpaceAfter, XColor? Color, string? Link, string? Comment, bool Highlight);
+    sealed record Word(string Text, XFont Font, bool Underline, bool Strike, double Rise, double W, bool SpaceAfter, XColor? Color, string? Link, string? Comment, bool Highlight, XColor? Mark = null);
+    static XColor Hex(string h) => XColor.FromArgb(255, Convert.ToByte(h.Substring(1, 2), 16), Convert.ToByte(h.Substring(3, 2), 16), Convert.ToByte(h.Substring(5, 2), 16));
 
     public static int Export(TextDoc doc, string path)
     {
@@ -139,6 +140,12 @@ public static class TextPdf
             try { return new XFont(page.Font, size, style); } catch (InvalidOperationException) { return new XFont("Arial", size, style); }
         }
 
+        /// <summary>Gleiche Größe und Auszeichnung in einer anderen Schrift; fehlt die Schrift, bleibt die bisherige.</summary>
+        XFont FontIn(string family, XFont like)
+        {
+            try { return new XFont(family, like.Size, like.Style); } catch (Exception ex) when (ex is InvalidOperationException or ArgumentException) { return like; }
+        }
+
         void Text(string s, XFont f, XBrush b) { var h = f.Size * 1.3; Need(h); g.DrawString(s, f, b, X0, y + f.Size); y += h; }
 
         XFont Font(Para p, Fmt f, double? size)
@@ -162,7 +169,7 @@ public static class TextPdf
         {
             var indent = p.IndentCm * Cm + (p.List != ListKind.None ? 0.9 * Cm : p.Style == ParaStyle.Quote ? 1 * Cm : 0);
             var avail = ColW - indent - (p.Style == ParaStyle.Quote ? 1 * Cm : 0);
-            y += p.Style is ParaStyle.Heading1 or ParaStyle.Heading2 or ParaStyle.Heading3 ? 10.0 : 0;
+            y += p.SpaceBeforePt ?? (p.Style is ParaStyle.Heading1 or ParaStyle.Heading2 or ParaStyle.Heading3 ? 10.0 : 0);
             var lines = new List<List<Word>>(); var line = new List<Word>(); var lineW = 0.0;
             var baseColor = ColorOf(p);
             // Abschnitte nach Format und Markierungen; Fußnotenzeichen als hochgestellte Zahl
@@ -171,9 +178,9 @@ public static class TextPdf
             foreach (var m in p.Marks) { cuts.Add(Math.Clamp(m.Start, 0, p.Text.Length)); cuts.Add(Math.Clamp(m.End, 0, p.Text.Length)); }
             var pts = cuts.ToList();
             var notesHere = new List<(int No, Word Ref, string Text)>();
-            void AddText(string text, Fmt f, double? size, XColor? color, string? link, string? comment, bool hl)
+            void AddText(string text, Fmt f, double? size, XColor? color, string? link, string? comment, bool hl, string? family = null, XColor? mark = null)
             {
-                var font = Font(p, f, size);
+                var font = family is null ? Font(p, f, size) : FontIn(family, Font(p, f, size));
                 var rise = f.HasFlag(Fmt.Super) ? -0.35 * (size ?? TextDoc.StyleSize(p.Style)) : f.HasFlag(Fmt.Sub) ? 0.15 * (size ?? TextDoc.StyleSize(p.Style)) : 0;
                 var pieces = text.Replace("\t", "    ").Split('\n');
                 for (var k = 0; k < pieces.Length; k++)
@@ -187,10 +194,10 @@ public static class TextPdf
                         while (w > avail && word.Length > 1) // überlange Wörter hart teilen
                         {
                             var n = word.Length; while (n > 1 && g.MeasureString(word[..n], font).Width > avail) n--;
-                            line.Add(new Word(word[..n], font, f.HasFlag(Fmt.Underline) || link is not null, f.HasFlag(Fmt.Strike), rise, g.MeasureString(word[..n], font).Width, false, color, link, comment, hl));
+                            line.Add(new Word(word[..n], font, f.HasFlag(Fmt.Underline) || link is not null, f.HasFlag(Fmt.Strike), rise, g.MeasureString(word[..n], font).Width, false, color, link, comment, hl, mark));
                             lines.Add(line); line = []; lineW = 0; word = word[n..]; w = g.MeasureString(word, font).Width;
                         }
-                        line.Add(new Word(word, font, f.HasFlag(Fmt.Underline) || link is not null, f.HasFlag(Fmt.Strike), rise, w, space, color, link, comment, hl));
+                        line.Add(new Word(word, font, f.HasFlag(Fmt.Underline) || link is not null, f.HasFlag(Fmt.Strike), rise, w, space, color, link, comment, hl, mark));
                         lineW += w + sw;
                     }
                 }
@@ -211,10 +218,11 @@ public static class TextPdf
                 var (f, size) = p.At(x);
                 var link = p.Marks.FirstOrDefault(m => m.Kind == MarkKind.Link && m.Start <= x && m.End >= e)?.Value;
                 var comment = p.Marks.FirstOrDefault(m => m.Kind == MarkKind.Comment && m.Length > 0 && m.Start <= x && m.End >= e)?.Value;
-                XColor? color = link is not null ? LinkColor : null;
+                XColor? color = link is not null ? LinkColor : TextDoc.InkAt(p, x, MarkKind.Color) is { } cHex ? Hex(cHex) : null;
+                XColor? mark = TextDoc.InkAt(p, x, MarkKind.Highlight) is { } hHex ? Hex(hHex) : null;
                 if (p.Marks.Any(m => m.Kind == MarkKind.Insert && m.Start <= x && m.End >= e)) { color = InsColor; f |= Fmt.Underline; }
                 if (p.Marks.Any(m => m.Kind == MarkKind.Delete && m.Start <= x && m.End >= e)) { color = DelColor; f |= Fmt.Strike; }
-                AddText(p.Text[x..e], f, size, color, link, comment, comment is not null);
+                AddText(p.Text[x..e], f, size, color, link, comment, comment is not null, TextDoc.InkAt(p, x, MarkKind.Font), mark);
                 Notes(e);
             }
             lines.Add(line);
@@ -223,7 +231,7 @@ public static class TextPdf
             for (var li = 0; li < lines.Count; li++)
             {
                 var ln = lines[li];
-                var lh = Math.Max(baseSize, ln.Count == 0 ? 0 : ln.Max(w => w.Font.Size)) * 1.32;
+                var lh = Math.Max(baseSize, ln.Count == 0 ? 0 : ln.Max(w => w.Font.Size)) * 1.32 * (p.LineSpacing ?? 1.0);
                 // Fußnoten dieser Zeile brauchen unten Platz
                 var lineNotes = notesHere.Where(n => ln.Contains(n.Ref)).ToList();
                 var noteH = lineNotes.Sum(n => Wrap(n.Text, F(8.5), Body).Count * 11.0) + (pageNotes.Count == 0 && lineNotes.Count > 0 ? 8 : 0);
@@ -241,6 +249,7 @@ public static class TextPdf
                 {
                     var by = y + lh * 0.78 + w.Rise;
                     var adv = w.W + (w.SpaceAfter ? g.MeasureString(" ", w.Font).Width + extra : 0);
+                    if (w.Mark is { } mk) g.DrawRectangle(new XSolidBrush(mk), x, y + lh * 0.12, adv, lh * 0.82);
                     if (w.Highlight) g.DrawRectangle(new XSolidBrush(XColor.FromArgb(110, 255, 230, 120)), x, y + lh * 0.12, adv, lh * 0.82);
                     var brush = new XSolidBrush(w.Color ?? baseColor); var pen = new XPen(w.Color ?? XColors.Black, 0.6);
                     if (w.Text.Length > 0) g.DrawString(w.Text, w.Font, brush, x, by);

@@ -20,13 +20,13 @@ public partial class MainWindow
     /// <summary>Designfläche der Referenz (16:9). Die Oberfläche wird darauf proportional skaliert.</summary>
     public const double DesignW = 1536, DesignH = 864;
 
-    private static readonly IBrush NavyGlass = new SolidColorBrush(Color.Parse("#C7081329"));
+    private static readonly IBrush NavyGlass = new SolidColorBrush(Color.Parse("#C71A1A1A"));
     private static readonly IBrush NavyEdge = new SolidColorBrush(Color.Parse("#4D3B7BD6"));
 
     /// <summary>Dunkle Glasfläche wie im Referenzbild (heller im hellen Design).</summary>
     private static Border Glass2(Control c, double pad = 12) => new()
     {
-        Background = Brush.Parse(C("#C7081329", "#E6F4F7FC")), BorderBrush = Brush.Parse(C("#4D3B7BD6", "#663F7FD0")), BorderThickness = new Thickness(1),
+        Background = Brush.Parse(C("#C71A1A1A", "#E6F4F7FC")), BorderBrush = Brush.Parse(C("#4D3B7BD6", "#663F7FD0")), BorderThickness = new Thickness(1),
         CornerRadius = new CornerRadius(12), Padding = new Thickness(pad), Child = c, Margin = new Thickness(0, 0, 0, 7), BoxShadow = BoxShadows.Parse("0 6 22 0 #80000814"),
     };
 
@@ -53,8 +53,8 @@ public partial class MainWindow
     private static Control Orb(double size) => new Border
     {
         Width = size, Height = size, CornerRadius = new CornerRadius(size / 2), VerticalAlignment = VerticalAlignment.Center, IsHitTestVisible = false,
-        Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#FFFFFF"), 0), new GradientStop(Color.Parse("#8FD3FF"), 0.25), new GradientStop(Color.Parse("#2F7BFF"), 0.6), new GradientStop(Color.Parse("#0A1E55"), 1) } },
-        BorderBrush = Brush.Parse("#997FD3FF"), BorderThickness = new Thickness(1), BoxShadow = BoxShadows.Parse($"0 0 {size * 0.55:0} 2 #993BA7FF"),
+        Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#FFFFFF"), 0), new GradientStop(Color.Parse("#FFF1B8"), 0.25), new GradientStop(Color.Parse("#D4A84B"), 0.6), new GradientStop(Color.Parse("#303030"), 1) } },
+        BorderBrush = Brush.Parse("#99F5D27A"), BorderThickness = new Thickness(1), BoxShadow = BoxShadows.Parse($"0 0 {size * 0.55:0} 2 #99E0B84A"),
     };
 
     // ---------- Kopfleiste: Marke · KI-Eingabe · Not-Stopp, Suche, Freigaben, Uhr, Benutzer ----------
@@ -82,8 +82,8 @@ public partial class MainWindow
             if (_kiInput.IsEnabled) await AskKi(q);
         }
         _prompt.KeyDown += async (_, e) => { if (e.Key == Key.Enter) { e.Handled = true; await Go(); } };
-        var go = new Button { Name = "desk-prompt-go", Width = 36, Height = 36, CornerRadius = new CornerRadius(18), Padding = new Thickness(0), Background = Brush.Parse("#332F86F6"),
-            BorderBrush = Brush.Parse("#AA7FD3FF"), BorderThickness = new Thickness(1.5), Content = Ico(Mdi.ArrowRight, 18, Text), VerticalAlignment = VerticalAlignment.Center };
+        var go = new Button { Name = "desk-prompt-go", Width = 36, Height = 36, CornerRadius = new CornerRadius(18), Padding = new Thickness(0), Background = Brush.Parse("#33C9A227"),
+            BorderBrush = Brush.Parse("#AAF5D27A"), BorderThickness = new Thickness(1.5), Content = Ico(Mdi.ArrowRight, 18, Text), VerticalAlignment = VerticalAlignment.Center };
         Avalonia.Automation.AutomationProperties.SetName(go, "Trendo KI fragen"); ToolTip.SetTip(go, "Trendo KI fragen");
         go.Click += async (_, _) => await Go();
         var row = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), Children = {
@@ -91,18 +91,18 @@ public partial class MainWindow
             Pos(new TextBlock { Text = "Trendo KI –", Foreground = Text, FontSize = 19, FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(14, 0, 6, 0) }, 1),
             Pos(_prompt, 2), Pos(go, 3) } };
         var prompt = new Border { Name = "desk-prompt", Height = 54, MaxWidth = 820, Margin = new Thickness(8, 6, 12, 0), CornerRadius = new CornerRadius(27), Padding = new Thickness(8, 6, 10, 6),
-            Background = Brush.Parse(C("#D9081329", "#F2FFFFFF")), BorderThickness = new Thickness(1.5), VerticalAlignment = VerticalAlignment.Center,
+            Background = Brush.Parse(C("#D91A1A1A", "#F2FFFFFF")), BorderThickness = new Thickness(1.5), VerticalAlignment = VerticalAlignment.Center,
             BorderBrush = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative),
-                GradientStops = { new GradientStop(Color.Parse("#AA5AA9FF"), 0), new GradientStop(Color.Parse("#FF9FD8FF"), 0.5), new GradientStop(Color.Parse("#AA5AA9FF"), 1) } },
-            BoxShadow = BoxShadows.Parse("0 0 26 0 #553BA7FF"), Child = row };
+                GradientStops = { new GradientStop(Color.Parse("#AA9C7419"), 0), new GradientStop(Color.Parse("#FFF5D27A"), 0.5), new GradientStop(Color.Parse("#AA9C7419"), 1) } },
+            BoxShadow = BoxShadows.Parse("0 0 26 0 #55E0B84A"), Child = row };
         Grid.SetColumn(prompt, 1); bar.Children.Add(prompt);
 
         Detach(_search);
         _search.Background = Brushes.Transparent; _search.BorderThickness = new Thickness(0); _search.Width = double.NaN; _search.Height = 30; _search.FontSize = 12;
         _search.VerticalContentAlignment = VerticalAlignment.Center; _search.PlaceholderText = "Suchen …";
-        var search = new Border { Width = 138, Height = 32, CornerRadius = new CornerRadius(16), Background = Brush.Parse(C("#99081329", "#CCFFFFFF")), BorderBrush = NavyEdge, BorderThickness = new Thickness(1),
+        var search = new Border { Width = 138, Height = 32, CornerRadius = new CornerRadius(16), Background = Brush.Parse(C("#991A1A1A", "#CCFFFFFF")), BorderBrush = NavyEdge, BorderThickness = new Thickness(1),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { new Border { Margin = new Thickness(10, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Child = Ico(Mdi.Magnify, 15, Text) }, Pos(_search, 1) } } };
-        Border Circle(Control c) => new() { Width = 32, Height = 32, CornerRadius = new CornerRadius(16), Background = Brush.Parse(C("#99081329", "#CCFFFFFF")), BorderBrush = NavyEdge, BorderThickness = new Thickness(1), Child = c };
+        Border Circle(Control c) => new() { Width = 32, Height = 32, CornerRadius = new CornerRadius(16), Background = Brush.Parse(C("#991A1A1A", "#CCFFFFFF")), BorderBrush = NavyEdge, BorderThickness = new Thickness(1), Child = c };
         var bell = Flat("nav-approvals", new Grid { Children = { Circle(Ico(Mdi.Bell, 16, Text)),
             new Border { Background = Brush.Parse("#FF3B4A"), CornerRadius = new CornerRadius(6), MinWidth = 10, Height = 12, Padding = new Thickness(2, 0), HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 1, 1, 0),
                 Child = new Viewbox { Child = _bellBadge } } } }, "Freigaben");
@@ -114,7 +114,7 @@ public partial class MainWindow
         _clock.FontSize = 18; _clock.FontWeight = FontWeight.SemiBold; _clock.HorizontalAlignment = HorizontalAlignment.Right; _clock.Foreground = Text;
         _date.FontSize = 11; _date.Foreground = Brush.Parse(C("#C9D6EA", "#3A4A66")); _date.HorizontalAlignment = HorizontalAlignment.Right;
         var clock = new StackPanel { Name = "desk-clock", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0), Children = { _date, _clock } };
-        var user = Flat("btn-user", new Border { Width = 38, Height = 38, CornerRadius = new CornerRadius(19), Background = Grad("#2F86F6", "#0B2A6B"), BorderBrush = Brush.Parse("#AA7FD3FF"), BorderThickness = new Thickness(1.5),
+        var user = Flat("btn-user", new Border { Width = 38, Height = 38, CornerRadius = new CornerRadius(19), Background = Grad("#E8C26A", "#7A5512"), BorderBrush = Brush.Parse("#AA7FD3FF"), BorderThickness = new Thickness(1.5),
             Child = new TextBlock { Name = "user-initial", Text = Initial(_settings.Name), Foreground = Brushes.White, FontSize = 16, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } }, "Benutzer");
         user.Padding = new Thickness(0);
         ToolTip.SetTip(user, "Lokaler Besitzer – Einstellungen"); user.Click += (_, _) => Show("settings");
@@ -165,11 +165,11 @@ public partial class MainWindow
             Stat(Chip(Mdi.Folder, "#42A5F5", "#1565C0", 26), "Laufende Projekte", _ecoProjects),
             Stat(Chip(Mdi.ShieldCheck, "#22C55E", "#15803D", 26), "System-Status", _ecoState) } };
         var ecoPanel = Glass2(eco, 10); ecoPanel.VerticalAlignment = VerticalAlignment.Bottom; ecoPanel.Margin = new Thickness(0);
-        ecoPanel.Background = Brush.Parse(C("#A6081329", "#E6F4F7FC"));
+        ecoPanel.Background = Brush.Parse(C("#A61A1A1A", "#E6F4F7FC"));
         var earthBox = new Grid { Name = "widget-eco", ClipToBounds = true, Children = { earth, ecoPanel } };
 
         var owner = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
-            new Border { Width = 34, Height = 34, CornerRadius = new CornerRadius(17), Background = Grad("#2F86F6", "#0B2A6B"), Child = new TextBlock { Text = Initial(_settings.Name), Foreground = Brushes.White, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } },
+            new Border { Width = 34, Height = 34, CornerRadius = new CornerRadius(17), Background = Grad("#E8C26A", "#7A5512"), Child = new TextBlock { Text = Initial(_settings.Name), Foreground = Brushes.White, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } },
             Pos(new StackPanel { Margin = new Thickness(10, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Children = {
                 new TextBlock { Text = string.IsNullOrWhiteSpace(_settings.Name) ? "Trendo" : _settings.Name, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
                 new TextBlock { Text = "Besitzer · lokal", Foreground = Muted, FontSize = 10.5 } } }, 1) } };
@@ -245,7 +245,7 @@ public partial class MainWindow
                      ("Mehr …", () => Show("apps")) })
         {
             var b = new Button { Name = "action-" + label.TrimEnd('.', ' ', '…').ToLowerInvariant(), Content = label, Margin = new Thickness(0, 0, 8, 4), Padding = new Thickness(16, 5), CornerRadius = new CornerRadius(14), FontSize = 12,
-                Foreground = Text, Background = Brush.Parse(C("#99081329", "#CCFFFFFF")), BorderBrush = Brush.Parse("#665AA9FF"), BorderThickness = new Thickness(1) };
+                Foreground = Text, Background = Brush.Parse(C("#991A1A1A", "#CCFFFFFF")), BorderBrush = Brush.Parse("#665AA9FF"), BorderThickness = new Thickness(1) };
             b.Click += (_, _) => go();
             Hover(b); chips.Children.Add(b);
         }
@@ -352,7 +352,7 @@ public partial class MainWindow
             Stroke = Grad("#34E3C3", "#18B892"), Effect = new DropShadowEffect { Color = Color.Parse("#22D3A6"), BlurRadius = 6, OffsetX = 0, OffsetY = 0, Opacity = 0.8 } };
         var val = new TextBlock { Name = "metric-" + key.ToLowerInvariant(), Text = "…", Foreground = Text, FontSize = 10.5, HorizontalAlignment = HorizontalAlignment.Center };
         _rings[key] = (arc, val);
-        return new Grid { Name = "ring-" + key.ToLowerInvariant(), Width = 50, Height = 50, Children = { new Ellipse { Width = 46, Height = 46, Fill = Brush.Parse(C("#66091428", "#E6FFFFFF")) }, bg, arc,
+        return new Grid { Name = "ring-" + key.ToLowerInvariant(), Width = 50, Height = 50, Children = { new Ellipse { Width = 46, Height = 46, Fill = Brush.Parse(C("#661A1A1A", "#E6FFFFFF")) }, bg, arc,
             new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = { new TextBlock { Text = key, Foreground = Muted, FontSize = 8.5, HorizontalAlignment = HorizontalAlignment.Center }, val } } } };
     }
 
@@ -384,7 +384,7 @@ public partial class MainWindow
             var last = tasks.FirstOrDefault(t => t.RoleId == id);
             var (state, on) = last?.State switch { AgentTaskState.Laeuft => ("Aktiv", true), AgentTaskState.WartetAufFreigabe => ("Freigabe", false), AgentTaskState.Fertig or AgentTaskState.Gespeichert => ("Fertig", true), _ => ("Bereit", false) };
             _agentRows.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
-                new Border { Width = 26, Height = 26, CornerRadius = new CornerRadius(13), Background = Grad("#1E3A6B", "#0B1A36"), BorderBrush = Brush.Parse("#553F7FD0"), BorderThickness = new Thickness(1),
+                new Border { Width = 26, Height = 26, CornerRadius = new CornerRadius(13), Background = Grad("#4B4B4B", "#232323"), BorderBrush = Brush.Parse("#553F7FD0"), BorderThickness = new Thickness(1),
                     Child = new TextBlock { Text = role.Name[..1], Foreground = Text, FontSize = 11, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } },
                 Pos(new StackPanel { Margin = new Thickness(9, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center, Children = {
                     new TextBlock { Text = role.Name, Foreground = Text, FontSize = 11, FontWeight = FontWeight.SemiBold },
@@ -408,7 +408,7 @@ public partial class MainWindow
         var list = _core.Projects.List().OrderByDescending(p => p.CreatedAt).Take(5).ToList();
         if (list.Count == 0)
         {
-            var b = new Button { Name = "btn-first-project", Content = "＋ Erstes Projekt anlegen", FontSize = 12, Padding = new Thickness(14, 8), CornerRadius = new CornerRadius(8), Background = Brush.Parse("#332F86F6"), BorderBrush = Brush.Parse("#665AA9FF"), BorderThickness = new Thickness(1) };
+            var b = new Button { Name = "btn-first-project", Content = "＋ Erstes Projekt anlegen", FontSize = 12, Padding = new Thickness(14, 8), CornerRadius = new CornerRadius(8), Background = Brush.Parse("#33C9A227"), BorderBrush = Brush.Parse("#665AA9FF"), BorderThickness = new Thickness(1) };
             b.Click += (_, _) => Show("projects");
             _deskProjects.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { new TextBlock { Text = "Noch keine Projekte.", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, b } });
         }

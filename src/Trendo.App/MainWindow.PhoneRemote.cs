@@ -40,7 +40,7 @@ public partial class MainWindow
 
     void InitPhoneSurface(Grid root)
     {
-        _phoneSurface = new Border { Name = "phone-surface", Background = Brush.Parse("#0A1428"), ClipToBounds = true };
+        _phoneSurface = new Border { Name = "phone-surface", Background = Brush.Parse("#1B1B1B"), ClipToBounds = true };
         _phoneSurface.Width = 412; _phoneSurface.Height = 800;
         // Schärfe über eine Layout-Vergrößerung statt über die DPI: Avalonia zeichnet eingebettete Ebenen (Schatten, Ausschnitte) bei hoher DPI
         // sonst doppelt vergrößert – Befund 27.10.2026 („am Handy ist alles zu groß“).
@@ -503,5 +503,6 @@ public partial class MainWindow
         public byte[]? Icon() => PhoneIcon();
         public async Task<byte[]?> AppIconAsync(string id) => await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => w.PhoneAppIcon(id));
         public void Started(string device) => Avalonia.Threading.Dispatcher.UIThread.Post(() => w.PhoneRemoteStarted(device));
+        public async Task<string> TvAsync(string cmd) => await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => w.TvRemote(cmd)); // TV-Fernbedienung vom Handy
     }
 }

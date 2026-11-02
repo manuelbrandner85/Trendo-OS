@@ -81,7 +81,7 @@ public partial class MainWindow
         foreach (var (id, label) in new[] { ("24h", "24 h"), ("7d", "7 Tage"), ("30d", "30 Tage"), ("all", "Alles") })
         {
             var on = TwinRange == id; var rid = id;
-            var b = Btn("twin-range-" + id, label, () => { TwinRange = rid; Show("zwilling"); }); if (on) { b.Background = Brush.Parse("#2F86F6"); b.Foreground = Brushes.White; }
+            var b = Btn("twin-range-" + id, label, () => { TwinRange = rid; Show("zwilling"); }); if (on) { b.Background = Brush.Parse("#C9A227"); b.Foreground = Brushes.White; }
             bar.Children.Add(b);
         }
         if (_twMsg.Length > 0) bar.Children.Add(new TextBlock { Name = "twin-msg", Text = _twMsg, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, Margin = new Thickness(8, 0), Foreground = Brush.Parse(_twMsg.StartsWith('⚠') ? "#F87171" : "#4ADE80"), FontSize = 12 });
@@ -96,7 +96,7 @@ public partial class MainWindow
             {
                 var on = a.Name == TwinAsset && s.Sensor == TwinSensor; var (an, sn) = (a.Name, s.Sensor);
                 var b = new Button { Name = $"twin-node-{a.Name}-{s.Sensor}".Replace(' ', '_'), HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch, HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Left, Padding = new Thickness(8, 3),
-                    Background = on ? Brush.Parse("#2F86F633") : Brushes.Transparent, BorderThickness = new Thickness(0),
+                    Background = on ? Brush.Parse("#C9A22733") : Brushes.Transparent, BorderThickness = new Thickness(0),
                     Content = new StackPanel { Orientation = Avalonia.Layout.Orientation.Horizontal, Spacing = 6, Children = { new Avalonia.Controls.Shapes.Ellipse { Width = 9, Height = 9, Fill = LevelBrush(s.Level) }, new TextBlock { Text = s.Sensor, Foreground = Text, FontSize = 12 } } } };
                 b.Click += (_, _) => TwinSelect(an, sn); tree.Children.Add(b);
             }
@@ -122,7 +122,7 @@ public partial class MainWindow
             var (an, sn) = (s.Asset, s.Sensor); var col = s.Level switch { TwinLevel.Alarm => "#F87171", TwinLevel.Warnung => "#FACC15", TwinLevel.Ok => "#4ADE80", _ => "#8FA3BF" };
             var info = s.Last is null ? "noch keine Werte" : $"{s.At:dd.MM. HH:mm}" + (s.TrendPerHour is { } t ? $" · {(t >= 0 ? "▲" : "▼")} {Fach.F(Math.Abs(t), 2)}/h" : "");
             var tile = new Border { Name = $"twin-tile-{s.Asset}-{s.Sensor}".Replace(' ', '_'), Width = 200, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(12), Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
-                Background = s.Sensor == TwinSensor ? Brush.Parse("#1D3358") : Brush.Parse("#132440"), BorderBrush = Brush.Parse(col), BorderThickness = new Thickness(s.Sensor == TwinSensor ? 2 : 1),
+                Background = s.Sensor == TwinSensor ? Brush.Parse("#404040") : Brush.Parse("#2E2E2E"), BorderBrush = Brush.Parse(col), BorderThickness = new Thickness(s.Sensor == TwinSensor ? 2 : 1),
                 Child = new StackPanel { Spacing = 2, Children = {
                     new TextBlock { Name = $"twin-{s.Asset}-{s.Sensor}".Replace(' ', '_'), Text = $"{Dot(s.Level switch { TwinLevel.Alarm => Trendo.Core.Sys.A11y.Level.Problem, TwinLevel.Warnung => Trendo.Core.Sys.A11y.Level.Hinweis, _ => Trendo.Core.Sys.A11y.Level.Gut })} {s.Sensor}: {s.Level}", Foreground = Brush.Parse(col), FontSize = 12, FontWeight = FontWeight.SemiBold },
                     new TextBlock { Text = s.Last is null ? "–" : $"{Fach.F(s.Last.Value, 1)} {s.Unit}", Foreground = Text, FontSize = 24, FontWeight = FontWeight.Bold },
@@ -133,7 +133,7 @@ public partial class MainWindow
         }
         DockPanel.SetDock(tiles, Avalonia.Controls.Dock.Top); center.Children.Add(tiles);
         if (TwinAsset is { } ca && TwinSensor is { } cs)
-            center.Children.Add(new Border { Name = "twin-chart", CornerRadius = new CornerRadius(12), ClipToBounds = true, MinHeight = 220, Child = new ShapeView((w, h) => TwinChart.Build(Twin.Model, ca, cs, w, h, TwinRange, _twForecast), "#0E1A2E") });
+            center.Children.Add(new Border { Name = "twin-chart", CornerRadius = new CornerRadius(12), ClipToBounds = true, MinHeight = 220, Child = new ShapeView((w, h) => TwinChart.Build(Twin.Model, ca, cs, w, h, TwinRange, _twForecast), "#212121") });
         var mid = new Border { CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(12), Child = center };
 
         // Rechts: Sensor-Eigenschaften und Auswertung

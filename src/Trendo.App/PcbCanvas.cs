@@ -25,12 +25,12 @@ public sealed class PcbCanvas : Control
 
     public override void Render(DrawingContext ctx)
     {
-        ctx.FillRectangle(new SolidColorBrush(Color.Parse("#0E1A2E")), new Rect(Bounds.Size));
+        ctx.FillRectangle(new SolidColorBrush(Color.Parse("#212121")), new Rect(Bounds.Size));
         if (Model is not { } c) return;
         var s = Scale; var b = new Rect(ToScreen(0, 0), ToScreen(c.Pcb.W, c.Pcb.H));
         ctx.DrawRectangle(new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#1F6B3A"), 0), new GradientStop(Color.Parse("#14522B"), 1) } },
             new Pen(Brush.Parse("#C9B37A"), 1.5), b, 3 * s / 10, 3 * s / 10);
-        foreach (var (x, y) in new[] { (3.0, 3.0), (c.Pcb.W - 3, 3.0), (3.0, c.Pcb.H - 3), (c.Pcb.W - 3, c.Pcb.H - 3) }) ctx.DrawEllipse(new SolidColorBrush(Color.Parse("#0E1A2E")), new Pen(Brush.Parse("#C9A54A"), 0.6 * s), ToScreen(x, y), 1.6 * s, 1.6 * s); // Befestigungslöcher
+        foreach (var (x, y) in new[] { (3.0, 3.0), (c.Pcb.W - 3, 3.0), (3.0, c.Pcb.H - 3), (c.Pcb.W - 3, c.Pcb.H - 3) }) ctx.DrawEllipse(new SolidColorBrush(Color.Parse("#212121")), new Pen(Brush.Parse("#C9A54A"), 0.6 * s), ToScreen(x, y), 1.6 * s, 1.6 * s); // Befestigungslöcher
         // Leiterbahnen: erst Unterseite (durchscheinend), dann Oberseite
         foreach (var bottom in new[] { true, false })
             foreach (var t in c.Pcb.Traces.Where(t => t.Bottom == bottom))

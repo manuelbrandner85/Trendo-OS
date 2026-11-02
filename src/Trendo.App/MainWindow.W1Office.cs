@@ -80,41 +80,73 @@ public partial class MainWindow
             };
             hiddenCats.Children.Add(b);
         }
-        form.Children.Add(hiddenCats);
+        // Wunsch 02.11.2026: Briefe ganz einfach – Assistent in 3 Schritten (Was? → Von wem an wen? → Text & Design); alles Weitere unter „Mehr“
+        StackPanel Step(int n, string title) => new() { Name = $"letter-wiz-{n}", Spacing = 4, IsVisible = _letterAll || _letterStep == n, Children = { H(title, 15) } };
+        var s1 = Step(1, "1 · Was möchtest du schreiben?"); var s2 = Step(2, "2 · Von wem an wen?"); var s3 = Step(3, "3 · Text und Design");
+        Button Nav(string name, string label, int to, bool primary = false)
+        {
+            var b = new Button { Name = name, Content = label, Padding = new Thickness(14, 6), Margin = new Thickness(0, 8, 6, 0), CornerRadius = new CornerRadius(10) };
+            if (primary) { b.Background = Accent; b.Foreground = Brushes.White; }
+            b.Click += (_, _) => { _letterStep = to; _letterMsg = to switch { 1 => "Schritt 1 von 3: Was möchtest du schreiben?", 2 => "Schritt 2 von 3: Von wem an wen?", _ => "Schritt 3 von 3: Text und Design – dann „Fertig“." }; Show("brief"); }; return b; // sichtbar, wo man ist
+        }
+        var wiz = new WrapPanel { Name = "letter-wizard" };
+        foreach (var (n, label) in new[] { (1, "1  Was?"), (2, "2  An wen?"), (3, "3  Text & Design") })
+        {
+            var on = !_letterAll && _letterStep == n;
+            var b = new Button { Name = $"letter-wiz-tab-{n}", Content = label, Padding = new Thickness(14, 6), Margin = new Thickness(0, 0, 6, 6), CornerRadius = new CornerRadius(16), Background = on ? Accent : TileBg, Foreground = on ? Brushes.White : Text, BorderBrush = Edge, BorderThickness = new Thickness(1) };
+            var nn = n; b.Click += (_, _) => { _letterStep = nn; _letterAll = false; Show("brief"); }; wiz.Children.Add(b);
+        }
+        var all = new CheckBox { Name = "letter-wiz-all", Content = "Alles auf einer Seite", IsChecked = _letterAll, Foreground = Text, Margin = new Thickness(6, 0, 6, 6) };
+        all.IsCheckedChanged += (_, _) => { _letterAll = all.IsChecked == true; Show("brief"); };
+        var clear = new Button { Name = "letter-clear", Content = "🗑 Alles leeren", Margin = new Thickness(0, 0, 0, 6) };
+        clear.Click += (_, _) =>
+        {
+            var before = System.Text.Json.JsonSerializer.Serialize(d);
+            _letter = NewLetter(); _letterSaved = false; _letterStep = 1; _letterGallery = null;
+            Toast("Alle Eingaben geleert.", ("Rückgängig", () => { if (System.Text.Json.JsonSerializer.Deserialize<LetterDraft>(before) is { } old) { _letter = old; Show("brief"); } }));
+            Show("brief");
+        };
+        wiz.Children.Add(all); wiz.Children.Add(clear);
+        form.Children.Add(wiz);
+        form.Children.Add(s1); form.Children.Add(s2); form.Children.Add(s3);
+        s1.Children.Add(hiddenCats);
         var galleryOpen = LetterGalleryOpen(d);
         var galleryToggle = new Button { Name = "letter-gallery-toggle", Content = galleryOpen ? "Vorlagen ausblenden" : $"Vorlage: {Letters.Category(d.Category).Label} – andere wählen …", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left };
         galleryToggle.Click += (_, _) => { _letterGallery = !galleryOpen; Show("brief"); };
-        form.Children.Add(FieldLabel("Vorlage")); form.Children.Add(galleryToggle);
-        if (galleryOpen) form.Children.Add(LetterGallery(d));
+        s1.Children.Add(FieldLabel("Vorlage")); s1.Children.Add(galleryToggle);
+        if (galleryOpen) s1.Children.Add(LetterGallery(d));
         if (Letters.Category(d.Category).Legal)
-            form.Children.Add(P("Hinweis: Trendo hilft beim Formulieren, ersetzt aber keine Rechtsberatung. Fristen und Ansprüche bitte selbst prüfen oder beraten lassen.", Brush.Parse("#FACC15"), 11));
+            s1.Children.Add(P("Hinweis: Trendo hilft beim Formulieren, ersetzt aber keine Rechtsberatung. Fristen und Ansprüche bitte selbst prüfen oder beraten lassen.", Brush.Parse("#FACC15"), 11));
+        s1.Children.Add(Nav("letter-wiz-next-1", "Weiter →", 2, true));
 
         TextBox Field(string name, string label, string value, Action<string> set, bool multi = false)
         {
             var t = new TextBox { Name = "letter-" + name, Text = value, PlaceholderText = label, AcceptsReturn = multi, TextWrapping = multi ? TextWrapping.Wrap : TextWrapping.NoWrap, MinHeight = multi ? 72 : 0, HorizontalAlignment = HorizontalAlignment.Stretch };
             t.TextChanged += (_, _) => { set(t.Text ?? ""); _letterSync?.Invoke(); }; return t;
         }
-        form.Children.Add(FieldLabel("Absender"));
-        form.Children.Add(Field("sender-name", "Dein Name", d.SenderName, v => d.SenderName = v));
-        form.Children.Add(Field("sender-street", "Straße und Hausnummer", d.SenderStreet, v => d.SenderStreet = v));
-        form.Children.Add(Field("sender-city", "PLZ und Ort", d.SenderCity, v => d.SenderCity = v));
-        form.Children.Add(Field("sender-contact", "Telefon / E-Mail (optional)", d.SenderContact, v => d.SenderContact = v));
-        form.Children.Add(FieldLabel("Empfänger"));
-        form.Children.Add(Field("recipient", "Firma, Name, Straße, PLZ Ort", d.Recipient, v => d.Recipient = v, multi: true));
-        form.Children.Add(FieldLabel("Betreff"));
-        form.Children.Add(Field("subject", "Betreff", d.Subject, v => d.Subject = v));
-        form.Children.Add(FieldLabel("Anrede"));
-        form.Children.Add(Field("salutation", "Anrede", d.Salutation, v => d.Salutation = v));
-        form.Children.Add(FieldLabel("Inhalt"));
-        var body = Field("body", "Text", d.Body, v => d.Body = v, multi: true); body.MinHeight = 120;
-        form.Children.Add(body);
-        form.Children.Add(P("Der Brief wird als Klartext nach DIN 5008 gespeichert.", Muted, 11));
-        form.Children.Add(FieldLabel("Gruß"));
-        form.Children.Add(Field("closing", "Gruß", d.Closing, v => d.Closing = v));
-        form.Children.Add(FieldLabel("Ort und Anlagen"));
-        form.Children.Add(Field("place", "Ort für das Datum", d.Place, v => d.Place = v));
-        form.Children.Add(Field("reference", "Kundennummer oder Aktenzeichen (optional)", d.Reference, v => d.Reference = v));
-        form.Children.Add(Field("attachments", "Anlagen, eine pro Zeile (optional)", d.Attachments, v => d.Attachments = v, multi: true));
+        s2.Children.Add(FieldLabel("Absender (wird gemerkt)"));
+        s2.Children.Add(Field("sender-name", "Dein Name", d.SenderName, v => d.SenderName = v));
+        s2.Children.Add(Field("sender-street", "Straße und Hausnummer", d.SenderStreet, v => d.SenderStreet = v));
+        s2.Children.Add(Field("sender-city", "PLZ und Ort", d.SenderCity, v => d.SenderCity = v));
+        s2.Children.Add(Field("sender-contact", "Telefon / E-Mail (optional)", d.SenderContact, v => d.SenderContact = v));
+        s2.Children.Add(FieldLabel("Empfänger"));
+        s2.Children.Add(Field("recipient", "Firma, Name, Straße, PLZ Ort", d.Recipient, v => d.Recipient = v, multi: true));
+        s2.Children.Add(new WrapPanel { Children = { Nav("letter-wiz-back-2", "← Zurück", 1), Nav("letter-wiz-next-2", "Weiter →", 3, true) } });
+        s3.Children.Add(FieldLabel("Betreff"));
+        s3.Children.Add(Field("subject", "Betreff", d.Subject, v => d.Subject = v));
+        s3.Children.Add(FieldLabel("Anrede"));
+        s3.Children.Add(Field("salutation", "Anrede", d.Salutation, v => d.Salutation = v));
+        s3.Children.Add(FieldLabel("Inhalt"));
+        var body = Field("body", "Text", d.Body, v => d.Body = v, multi: true); body.MinHeight = 160;
+        s3.Children.Add(body);
+        s3.Children.Add(P("Der Brief wird nach DIN 5008 gesetzt.", Muted, 11));
+        s3.Children.Add(FieldLabel("Gruß"));
+        s3.Children.Add(Field("closing", "Gruß", d.Closing, v => d.Closing = v));
+        var more = new StackPanel { Spacing = 4 };
+        more.Children.Add(FieldLabel("Ort und Anlagen"));
+        more.Children.Add(Field("place", "Ort für das Datum", d.Place, v => d.Place = v));
+        more.Children.Add(Field("reference", "Kundennummer oder Aktenzeichen (optional)", d.Reference, v => d.Reference = v));
+        more.Children.Add(Field("attachments", "Anlagen, eine pro Zeile (optional)", d.Attachments, v => d.Attachments = v, multi: true));
 
         var issues = new StackPanel { Name = "letter-issues", Spacing = 2 };
         void Check()
@@ -180,11 +212,16 @@ public partial class MainWindow
             suggestion.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(8), Padding = new Thickness(10), Child = new StackPanel { Spacing = 6, Children = { P("Vorschlag der KI (bitte prüfen):", null, 11), P(ans, Text, 12), take } } });
             improve.IsEnabled = true;
         };
-        var reset = new Button { Name = "letter-new", Content = "Neuer Brief" }; reset.Click += (_, _) => { _letter = NewLetter(); _letterGallery = null; _letterSaved = false; _letterMsg = "Neuer Brief. Betreff und Text schreibst du selbst."; _letterPreview = true; Show("brief"); };
-        form.Children.Add(new WrapPanel { Margin = new Thickness(0, 8, 0, 0), Children = { check, Sp(improve), Sp(reset) } });
-        form.Children.Add(msg); form.Children.Add(issues); form.Children.Add(suggestion);
-        form.Children.Add(FieldLabel("Design")); form.Children.Add(LetterDesignBox(d)); // Wunsch 02.11.2026: Bewerbung & Co. zeitgemäß gestalten
-        form.Children.Add(FieldLabel("Mehr")); form.Children.Add(LetterTools(d));
+        var reset = new Button { Name = "letter-new", Content = "Neuer Brief" }; reset.Click += (_, _) => { _letter = NewLetter(); _letterGallery = null; _letterSaved = false; _letterStep = 1; _letterMsg = "Neuer Brief. Betreff und Text schreibst du selbst."; _letterPreview = true; Show("brief"); };
+        s3.Children.Add(new WrapPanel { Margin = new Thickness(0, 8, 0, 0), Children = { check, Sp(improve), Sp(reset) } });
+        s3.Children.Add(issues); s3.Children.Add(suggestion);
+        s3.Children.Add(FieldLabel("Design")); s3.Children.Add(LetterDesignBox(d)); // Wunsch 02.11.2026: Bewerbung & Co. zeitgemäß gestalten
+        var done = new Button { Name = "letter-wiz-done", Content = "✓ Fertig – Brief speichern", Padding = new Thickness(18, 8), Margin = new Thickness(0, 10, 6, 0), CornerRadius = new CornerRadius(10), Background = Accent, Foreground = Brushes.White, FontWeight = FontWeight.SemiBold };
+        done.Click += async (_, _) => await SafeSave(pdf.IsEnabled, "Fertig – gespeichert");
+        s3.Children.Add(new WrapPanel { Children = { Nav("letter-wiz-back-3", "← Zurück", 2), done } });
+        form.Children.Insert(1, msg);
+        form.Children.Add(new Expander { Name = "letter-more", Header = "Mehr – Ort, Anlagen, Frist, Serienbrief, Unterschrift", IsExpanded = _letterAll, HorizontalAlignment = HorizontalAlignment.Stretch,
+            Content = new StackPanel { Spacing = 4, Children = { more, LetterTools(d) } } });
         var arch = new LetterArchive(ProjectsRoot).List().Take(8).ToList();
         if (arch.Count > 0)
         {
@@ -194,14 +231,18 @@ public partial class MainWindow
             {
                 var r = (Border)FileRow(new FileInfo(f), i, "letter-arch");
                 var edit = new Button { Name = $"letter-edit-{i}", Content = "Weiterschreiben", FontSize = 11, Padding = new Thickness(10, 2), IsEnabled = LetterArchive.Load(f) is not null };
-                edit.Click += (_, _) => { if (LetterArchive.Load(f) is { } old) { _letter = old; _letter.Date = DateTime.Today; Show("brief"); } };
+                edit.Click += (_, _) => { if (LetterArchive.Load(f) is { } old) { _letter = old; _letter.Date = DateTime.Today; _letterStep = 3; Show("brief"); } };
+                var del = new Button { Name = $"letter-del-{i}", Content = "🗑", FontSize = 11, Padding = new Thickness(8, 2) };
+                ToolTip.SetTip(del, "Brief löschen (kommt in den Papierkorb, zurückholbar)");
+                del.Click += (_, _) => LetterTrashed(new LetterArchive(ProjectsRoot).Delete(f), "brief");
                 ((StackPanel)((Grid)r.Child!).Children[1]).Children.Insert(0, edit);
+                ((StackPanel)((Grid)r.Child!).Children[1]).Children.Insert(1, del);
                 form.Children.Add(r); i++;
             }
         }
 
         var preview = LetterPreview(d);
-        var formScroll = new ScrollViewer { Content = new Border { Background = Brush.Parse(C("#44101830", "#B3FFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(12), Margin = new Thickness(0, 0, 8, 0), Child = form } };
+        var formScroll = new ScrollViewer { Content = new Border { Background = Brush.Parse(C("#44222222", "#B3FFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(12), Margin = new Thickness(0, 0, 8, 0), Child = form } };
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("200,*,*") };
         grid.Children.Add(LetterNav());
         Grid.SetColumn(formScroll, 1); grid.Children.Add(formScroll);

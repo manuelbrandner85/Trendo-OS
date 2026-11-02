@@ -52,7 +52,7 @@ public sealed class ArmView : Control
 
     public override void Render(DrawingContext ctx)
     {
-        ctx.FillRectangle(new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#1B2C4A"), 0), new GradientStop(Color.Parse("#0A1322"), 1) } }, new Rect(Bounds.Size));
+        ctx.FillRectangle(new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#383838"), 0), new GradientStop(Color.Parse("#0A1322"), 1) } }, new Rect(Bounds.Size));
         var orange = Color.FromRgb(232, 120, 32); var grey = Color.FromRgb(150, 156, 166); var dark = Color.FromRgb(46, 50, 58);
         // ---- Draufsicht ----
         var tr = TopRect; var ts = TopScale; var c0 = TopPoint(0, 0);

@@ -139,6 +139,7 @@ public static class WebsitePlan
             return (id, "Du hast „" + WebsiteTechniques.Label(id) + "“ gewählt.");
         }
         var p = brief.Prompt.ToLowerInvariant();
+        if (Has(p, "immersiv", "hyperreal", "fotoreal", "storyscroll", "story-scroll", "erlebnis")) return ("immersiv", "In der Beschreibung steht ein immersives, realistisches Erlebnis – 3D-Szene mit Storyscrolling.");
         if (Has(p, "parallax", "parallaxe")) return ("parallax", "In der Beschreibung steht Parallax.");
         if (Has(p, "partikel", "shader", "funken")) return ("partikel", "In der Beschreibung stehen Partikel oder ein Shader.");
         if (Has(p, "video", "film", "clip", "hintergrundvideo")) return ("video", "In der Beschreibung steht ein Video.");

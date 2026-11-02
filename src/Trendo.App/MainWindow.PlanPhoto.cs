@@ -94,7 +94,7 @@ public partial class MainWindow
         Button Btn(string name, string label, Action go, bool on = false, bool accent = false)
         {
             var b = new Button { Name = name, Content = label, Padding = new Thickness(10, 4), Margin = new Thickness(0, 0, 4, 4), FontSize = 12 };
-            if (on || accent) { b.Background = accent ? Accent : Brush.Parse("#2F86F6"); b.Foreground = Brushes.White; }
+            if (on || accent) { b.Background = accent ? Accent : Brush.Parse("#C9A227"); b.Foreground = Brushes.White; }
             b.Click += (_, _) => go(); return b;
         }
         var bar = new WrapPanel { Name = "arch-photo-bar" };

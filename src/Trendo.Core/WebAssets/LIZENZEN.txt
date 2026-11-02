@@ -12,7 +12,12 @@ trendo-scroll.js
   Trendo legt GSAP deshalb nicht bei und lädt es nicht nach.
   trendo-scroll.js übernimmt dieselbe Aufgabe und gehört zum Programm.
 
-three.js 0.180.0 und GLTFLoader
+trendo-motion.js
+  Eigene Datei von Trendo OS (0.9.47): weiches Scrollen, Zeitleisten mit Easing,
+  Text Wort für Wort, Einblenden, Scroll-Scrubbing, Zähler. Clean-Room – kein Code
+  aus GSAP, ScrollTrigger, SplitText oder Lenis.
+
+three.js 0.180.0 mit GLTFLoader und RoomEnvironment
   Copyright (c) 2010-2025 three.js authors
   Lizenz: MIT. Der volle Text liegt in THREE-LICENSE.txt.
   Lokal gebündelt als trendo-three.js. Kein Abruf zur Laufzeit.

@@ -111,7 +111,7 @@ public partial class MainWindow
     }
 
     /// <summary>Eigene dunkle Fläche: das Fensterglas lässt sonst den Desktop durchscheinen, Text und Werkzeuge wären schwer lesbar.</summary>
-    private Control PdfPageView() => new Border { Name = "pdf-page-root", Background = Brush.Parse(C("#F2081329", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = PdfShell() };
+    private Control PdfPageView() => new Border { Name = "pdf-page-root", Background = Brush.Parse(C("#F21A1A1A", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = PdfShell() };
 
     private Control PdfShell()
     {
@@ -329,7 +329,7 @@ public partial class MainWindow
             catch (Exception ex) when (ex is InvalidOperationException or IOException or DllNotFoundException) { pagesRow.Children.Add(P("Seite lässt sich nicht zeichnen: " + ex.Message, Text)); continue; }
             var img = new Image { Name = "pdf-image-" + k, Source = bmp, Width = pw, Height = ph, Stretch = Stretch.Fill }; // 1 Bildpunkt = 1 Einheit, passt zur Umrechnung in PDF-Punkte
             var canvas = new Canvas { Width = pw, Height = ph, Background = Brushes.Transparent, Cursor = _pdfMode is null ? Cursor.Default : new Cursor(StandardCursorType.Cross) };
-            var rect = new Rectangle { Stroke = Accent, StrokeThickness = 1.5, Fill = Brush.Parse("#332F86F6"), IsVisible = false };
+            var rect = new Rectangle { Stroke = Accent, StrokeThickness = 1.5, Fill = Brush.Parse("#33C9A227"), IsVisible = false };
             canvas.Children.Add(rect);
             Point? start = null;
             canvas.PointerPressed += (_, e) => { if (_pdfMode is null || _pdfRot != 0) return; start = e.GetPosition(canvas); Canvas.SetLeft(rect, start.Value.X); Canvas.SetTop(rect, start.Value.Y); rect.Width = rect.Height = 0; rect.IsVisible = _pdfMode != "Note"; };

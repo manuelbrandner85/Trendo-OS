@@ -18,8 +18,9 @@ public sealed record Span(int Start, int Length, Fmt Fmt, double? Size = null)
     public int End => Start + Length;
 }
 
-/// <summary>W2/W5/W7: Markierung über einem Textbereich – Link, Kommentar, Fußnote/Endnote (Länge 0, steht hinter der Stelle), eingefügt/gelöscht (Änderungen).</summary>
-public enum MarkKind { Link, Comment, Footnote, Endnote, Insert, Delete }
+/// <summary>W2/W5/W7: Markierung über einem Textbereich – Link, Kommentar, Fußnote/Endnote (Länge 0, steht hinter der Stelle), eingefügt/gelöscht (Änderungen).
+/// Pilot 0.9.47: Schriftart, Schriftfarbe und Hervorhebung sind ebenfalls Markierungen (Wert = Schriftname bzw. Farbe #RRGGBB) – so wandern sie beim Tippen, Teilen und Verbinden mit.</summary>
+public enum MarkKind { Link, Comment, Footnote, Endnote, Insert, Delete, Font, Color, Highlight }
 
 public sealed record Mark(int Start, int Length, MarkKind Kind, string Value = "")
 {
@@ -80,11 +81,17 @@ public sealed class Para : Block
     public double IndentCm { get; set; }
     /// <summary>W4: Abstand nach dem Absatz in Punkt (null = Standard).</summary>
     public double? SpaceAfterPt { get; set; }
+    /// <summary>Pilot 0.9.47: Zeilenabstand als Faktor (1 = einfach, 1,15, 1,5, 2); null = Standard der Absatzart.</summary>
+    public double? LineSpacing { get; set; }
+    /// <summary>Abstand vor dem Absatz in Punkt; null = Standard.</summary>
+    public double? SpaceBeforePt { get; set; }
+    /// <summary>Einzug der ersten Zeile in cm (negativ = hängend).</summary>
+    public double FirstLineCm { get; set; }
     /// <summary>W2/W5/W7: Links, Kommentare, Fuß-/Endnoten, Änderungen.</summary>
     public List<Mark> Marks { get; set; } = [];
     public Para() { }
     public Para(string text, ParaStyle style = ParaStyle.Text) { Text = text; Style = style; }
-    public override Block Copy() => new Para { Text = Text, Style = Style, Align = Align, List = List, Spans = [.. Spans], IndentCm = IndentCm, SpaceAfterPt = SpaceAfterPt, Marks = [.. Marks] };
+    public override Block Copy() => new Para { Text = Text, Style = Style, Align = Align, List = List, Spans = [.. Spans], IndentCm = IndentCm, SpaceAfterPt = SpaceAfterPt, LineSpacing = LineSpacing, SpaceBeforePt = SpaceBeforePt, FirstLineCm = FirstLineCm, Marks = [.. Marks] };
 
     /// <summary>Format und Größe an einer Zeichenposition.</summary>
     public (Fmt Fmt, double? Size) At(int i)
@@ -278,11 +285,54 @@ public sealed class TextDoc
         {
             int Map(int i) => i <= pre ? i : i >= pre + removed ? i - removed + inserted : pre;
             var a = Map(m.Start); var b = Map(m.End);
-            if (m.Length > 0 && m.Start < pre && m.End >= pre && m.End <= pre + removed && inserted > 0 && m.Kind is MarkKind.Link or MarkKind.Insert) b = pre + inserted;
+            if (m.Length > 0 && m.Start < pre && m.End >= pre && m.End <= pre + removed && inserted > 0 && (m.Kind is MarkKind.Link or MarkKind.Insert || IsInk(m.Kind))) b = pre + inserted; // Weitertippen behält Link, Schrift, Farbe
             if (m.Length == 0) { if (m.Start > pre && m.Start < pre + removed) continue; res.Add(m with { Start = a }); }   // Fußnote im gelöschten Text fällt weg
             else if (b > a) res.Add(m with { Start = a, Length = b - a });
         }
         p.Marks = res;
+    }
+
+    // ---------- Pilot 0.9.47: Schriftart, Schriftfarbe, Hervorhebung ----------
+    public static bool IsInk(MarkKind k) => k is MarkKind.Font or MarkKind.Color or MarkKind.Highlight;
+
+    /// <summary>Schriftart, Farbe bzw. Hervorhebung an einer Zeichenposition (innerste Markierung gewinnt); null = Standard.</summary>
+    public static string? InkAt(Para p, int i, MarkKind kind) =>
+        p.Marks.Where(m => m.Kind == kind && m.Length > 0 && i >= m.Start && i < m.End).OrderBy(m => m.Length).FirstOrDefault()?.Value;
+
+    /// <summary>Schriftart, Farbe oder Hervorhebung für einen Bereich setzen (null = entfernen). Überlappende alte Werte werden zugeschnitten.</summary>
+    public static void SetInk(Para p, int start, int length, MarkKind kind, string? value)
+    {
+        if (!IsInk(kind)) throw new ArgumentException("Nur Schriftart, Farbe oder Hervorhebung.");
+        (start, length) = Clamp(p, start, length); if (length == 0) return;
+        if (kind != MarkKind.Font && value is not null && !System.Text.RegularExpressions.Regex.IsMatch(value, "^#[0-9A-Fa-f]{6}$")) throw new ArgumentException("Farbe als #RRGGBB angeben.");
+        if (kind == MarkKind.Font && value is not null && (value.Trim().Length == 0 || value.Length > 64)) throw new ArgumentException("Bitte einen Schriftnamen angeben.");
+        var end = start + length; var res = new List<Mark>();
+        foreach (var m in p.Marks)
+        {
+            if (m.Kind != kind || m.End <= start || m.Start >= end) { res.Add(m); continue; }
+            if (m.Start < start) res.Add(m with { Length = start - m.Start });   // linker Rest
+            if (m.End > end) res.Add(m with { Start = end, Length = m.End - end }); // rechter Rest
+        }
+        if (value is not null) res.Add(new Mark(start, length, kind, kind == MarkKind.Font ? value.Trim() : value.ToUpperInvariant()));
+        p.Marks = res; NormalizeInk(p);
+    }
+
+    /// <summary>Angrenzende Bereiche mit gleichem Wert zusammenfassen (z. B. nach dem Öffnen einer Datei mit vielen kleinen Abschnitten).</summary>
+    public static void NormalizeInk(Para p)
+    {
+        var other = p.Marks.Where(m => !IsInk(m.Kind)).ToList();
+        foreach (var g in p.Marks.Where(m => IsInk(m.Kind) && m.Length > 0).GroupBy(m => (m.Kind, m.Value)))
+        {
+            Mark? cur = null;
+            foreach (var m in g.OrderBy(m => m.Start))
+            {
+                if (cur is { } c && m.Start <= c.End) { cur = c with { Length = Math.Max(c.End, m.End) - c.Start }; continue; }
+                if (cur is not null) other.Add(cur); cur = m;
+            }
+            if (cur is not null) other.Add(cur);
+        }
+        other.Sort((x, y) => x.Start.CompareTo(y.Start));
+        p.Marks = other;
     }
 
     /// <summary>Markierung hinzufügen (Link, Kommentar, Fuß-/Endnote).</summary>
@@ -306,8 +356,9 @@ public sealed class TextDoc
         var next = new Para { Style = p.Style is ParaStyle.Text or ParaStyle.Quote ? p.Style : ParaStyle.Text, Align = p.Align, List = p.List };
         next.SetRuns(parts.Where(x => x.Inside).Select(x => (x.Text, x.Fmt, x.Size)));
         p.SetRuns(parts.Where(x => !x.Inside).Select(x => (x.Text, x.Fmt, x.Size)));
-        next.IndentCm = p.IndentCm; next.SpaceAfterPt = p.SpaceAfterPt;
-        next.Marks = p.Marks.Where(m => m.Start >= at && (m.Length > 0 || m.Start > at)).Select(m => m with { Start = m.Start - at }).ToList();
+        next.IndentCm = p.IndentCm; next.SpaceAfterPt = p.SpaceAfterPt; next.LineSpacing = p.LineSpacing; next.SpaceBeforePt = p.SpaceBeforePt; next.FirstLineCm = p.FirstLineCm;
+        next.Marks = p.Marks.Where(m => m.Start >= at && (m.Length > 0 || m.Start > at)).Select(m => m with { Start = m.Start - at })
+            .Concat(p.Marks.Where(m => IsInk(m.Kind) && m.Start < at && m.End > at).Select(m => m with { Start = 0, Length = m.End - at })).ToList(); // Schrift und Farbe laufen im neuen Absatz weiter
         p.Marks = p.Marks.Where(m => m.Start < at || m.Length == 0 && m.Start == at).Select(m => m.End > at && m.Length > 0 ? m with { Length = at - m.Start } : m).ToList();
         if (p.Text.Length == 0 && p.List != ListKind.None && next.Text.Length == 0) { p.List = ListKind.None; } // leerer Listenpunkt + Enter beendet die Liste
         Blocks.Insert(block + 1, next);

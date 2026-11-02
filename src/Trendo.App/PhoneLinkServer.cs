@@ -29,6 +29,8 @@ public interface IPhoneRemote
     /// <summary>Symbol einer App – dieselbe Kachel wie auf dem Trendo-Desktop (PNG).</summary>
     Task<byte[]?> AppIconAsync(string id);
     void Started(string device);
+    /// <summary>TV-Fernbedienung (02.11.2026): pause, zurueck, vor, lauter, leiser, stumm, sender+, sender-, vollbild, naechste.</summary>
+    Task<string> TvAsync(string cmd);
 }
 
 public sealed record PhoneApp(string Id, string Name, string Area, string Icon, bool Home = false);
@@ -193,6 +195,13 @@ public sealed class PhoneLinkServer : IAsyncDisposable
             c.Response.Headers.CacheControl = "private, max-age=86400";
             return await remote.AppIconAsync(id) is { } png ? Results.File(png, "image/png") : Results.NotFound();
         });
+        app.MapPost("/api/tv", async (HttpContext c) =>
+        {
+            if (Denied(c, out _) is { } no) return no;
+            var cmd = c.Request.HasFormContentType ? (await c.Request.ReadFormAsync()).TryGetValue("cmd", out var v) ? v.ToString() : "" : "";
+            return cmd is "pause" or "zurueck" or "vor" or "lauter" or "leiser" or "stumm" or "sender+" or "sender-" or "vollbild" or "naechste"
+                ? Results.Ok(new { ok = await remote!.TvAsync(cmd) }) : Results.BadRequest();
+        });
         app.MapGet("/api/apps", (HttpContext c) => Denied(c, out _) is { } no ? no : Results.Ok(remote!.Apps()));
         app.MapPost("/api/open", async (HttpContext c) =>
         {
@@ -303,7 +312,7 @@ static class PhoneLinkPages
 
     public const string Manifest = """
         {"name":"Trendo","short_name":"Trendo","start_url":"/app","scope":"/","display":"standalone","orientation":"portrait",
-         "background_color":"#050B18","theme_color":"#0A1428","icons":[{"src":"/icon.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}
+         "background_color":"#050B18","theme_color":"#1B1B1B","icons":[{"src":"/icon.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]}
         """;
 
     /// <summary>Trendo als Handy-App: Startseite, alle Apps, offene App bildschirmfüllend, Leiste unten. Fühlt sich an wie eine echte App –
@@ -313,7 +322,7 @@ static class PhoneLinkPages
     const string MobileHtml = """
 <!doctype html><html lang="de"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#0A1428"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1B1B1B"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Trendo">
 <link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/icon.png"><link rel="apple-touch-icon" href="/icon.png"><title>Trendo</title>
 <style>
@@ -439,6 +448,11 @@ hello();tick();setInterval(tick,10000);fetch('/api/apps').then(function(r){retur
         $"<h1>Verbunden mit {E(pc)}</h1><p class=\"ok\">✓ {E(device)} ist mit Trendo verbunden.</p>" +
         (remote ? "<div class=\"card\"><b>Trendo bedienen</b><p>Trendo als App auf dem Handy: alle Programme und Studios, in Handy-Größe, mit dem Finger bedienen.</p><a class=\"btn\" id=\"fern\" href=\"/app\">Trendo öffnen</a></div>"
                 : "<div class=\"card\"><b>Trendo bedienen</b><p>Möchtest du Trendo komplett vom Handy aus bedienen? Am PC unter „Handy“ bei diesem Handy „Trendo bedienen erlauben“ antippen.</p></div>") +
+        (remote ? "<div class=\"card\"><b>📺 TV-Fernbedienung</b><p id=\"tvs\">Steuert TV &amp; Live am PC.</p><div class=\"tvr\">" +
+            string.Concat(new[] { ("sender-", "◀ Sender"), ("pause", "⏯"), ("sender+", "Sender ▶"), ("zurueck", "⏪ 30 s"), ("vor", "30 s ⏩"), ("naechste", "⏭ Folge"), ("leiser", "🔉"), ("stumm", "🔇"), ("lauter", "🔊"), ("vollbild", "⛶ Vollbild") }
+                .Select(x => $"<button class=\"sec\" onclick=\"tv('{x.Item1}')\">{x.Item2}</button>")) +
+            "</div><style>.tvr{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.tvr button{padding:14px 4px;font-size:18px}</style>" +
+            "<script>function tv(c){var d=new FormData();d.append('cmd',c);fetch('/api/tv',{method:'POST',body:d}).then(function(r){return r.json();}).then(function(j){document.getElementById('tvs').textContent=j.ok;}).catch(function(){document.getElementById('tvs').textContent='Keine Verbindung zum PC.';});}</script></div>" : "") +
         (canAway ? "<div class=\"card\"><b>Auch unterwegs</b><p>Einmal hier antippen, solange du zuhause bist. Danach erreichst du den PC überall, wenn am Handy Tailscale an ist. Speichere die neue Seite als Lesezeichen oder auf dem Startbildschirm.</p>" +
                    "<button class=\"sec\" id=\"away\" onclick=\"fetch('/api/away',{method:'POST'}).then(function(r){return r.json();}).then(function(j){location.href=j.url;}).catch(function(){document.getElementById('away').textContent='Hat nicht geklappt – ist Tailscale am Handy an?';});\">Unterwegs-Zugang einrichten</button></div>" : "") +
         "<div class=\"card\"><b>Fotos &amp; Dateien an den PC</b><p>Landen am PC im Ordner „Vom Handy“.</p><input type=\"file\" id=\"f\" multiple style=\"display:none\">" +

@@ -43,9 +43,9 @@ public partial class MainWindow
     {
         Grid.SetRowSpan(_news, 2);
         _news.Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-            GradientStops = { new GradientStop(Color.Parse("#070E22"), 0), new GradientStop(Color.Parse("#0F2350"), 0.55), new GradientStop(Color.Parse("#1A1238"), 1) } };
+            GradientStops = { new GradientStop(Color.Parse("#151515"), 0), new GradientStop(Color.Parse("#323232"), 0.55), new GradientStop(Color.Parse("#262626"), 1) } };
         // ruhiges Licht im Hintergrund: Gold und Blau, langsam kreisend
-        foreach (var (c, size, speed, phase, r) in new[] { ("#55F5C451", 620.0, 0.05, 0.0, 0.32), ("#663B82F6", 760.0, -0.04, 2.1, 0.36), ("#335BA8FF", 520.0, 0.07, 4.0, 0.28) })
+        foreach (var (c, size, speed, phase, r) in new[] { ("#55F5C451", 620.0, 0.05, 0.0, 0.32), ("#66C9A227", 760.0, -0.04, 2.1, 0.36), ("#335BA8FF", 520.0, 0.07, 4.0, 0.28) })
         {
             var e = new Ellipse { Width = size, Height = size, Fill = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse(c), 0), new GradientStop(Color.Parse("#00000000"), 1) } } };
             _newsGlow.Children.Add(e); _newsOrbs.Add((e, speed, phase, r));
@@ -56,7 +56,7 @@ public partial class MainWindow
             _newsDone.Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
                 GradientStops = { new GradientStop(Color.Parse("#FFF1C4"), 0), new GradientStop(Color.Parse("#E8B64C"), 0.55), new GradientStop(Color.Parse("#B8862A"), 1) } };
             _newsAll.Foreground = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative),
-                GradientStops = { new GradientStop(Color.Parse("#3B82F6"), 0), new GradientStop(Color.Parse("#F5C451"), 1) } };
+                GradientStops = { new GradientStop(Color.Parse("#7A5512"), 0), new GradientStop(Color.Parse("#F5C451"), 1) } };
         }
         else _newsDone.Background = Brushes.White;
         _newsTime.Foreground = Brush.Parse("#88F5C451"); _newsTime.Background = Brush.Parse("#14FFFFFF"); _newsAll.Background = Brush.Parse("#1FFFFFFF");
@@ -156,7 +156,7 @@ public partial class MainWindow
         {
             var s = NewsSlides[index];
             var icon = new Border { Width = 150, Height = 150, CornerRadius = new CornerRadius(75), HorizontalAlignment = HorizontalAlignment.Center,
-                Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#44F5C451"), 0), new GradientStop(Color.Parse("#223B82F6"), 0.7), new GradientStop(Color.Parse("#003B82F6"), 1) } },
+                Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#44F5C451"), 0), new GradientStop(Color.Parse("#22C9A227"), 0.7), new GradientStop(Color.Parse("#00C9A227"), 1) } },
                 BorderBrush = Brush.Parse("#55F5C451"), BorderThickness = new Thickness(1.5),
                 Child = new TextBlock { Name = "news-icon", Text = s.Icon, FontSize = 70, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } };
             sp.Children.Add(icon); parts.Add(icon);
@@ -206,7 +206,7 @@ public partial class MainWindow
     // ---------- Countdown vor dem automatischen Update ----------
     readonly Border _updBar = new() { Name = "upd-countdown", IsVisible = false, ZIndex = 4900, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 80, 0, 0),
         CornerRadius = new CornerRadius(16), Padding = new Thickness(20, 12), BorderThickness = new Thickness(1), BorderBrush = Brush.Parse("#66F5C451"),
-        Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#F0102347"), 0), new GradientStop(Color.Parse("#F01A1238"), 1) } },
+        Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#F02F2F2F"), 0), new GradientStop(Color.Parse("#F0262626"), 1) } },
         BoxShadow = BoxShadows.Parse("0 12 32 -8 #AA000000") };
     readonly TextBlock _updBarText = new() { Name = "upd-countdown-text", Foreground = Brushes.White, FontSize = 15, VerticalAlignment = VerticalAlignment.Center };
     DispatcherTimer? _updCountTimer;

@@ -205,7 +205,7 @@ public partial class MainWindow
                 var st = local[i]; var isDraft = _inboxFolder == "\u0003";
                 if (_inboxSearch.Trim() is { Length: > 0 } lq && !(st.Subject.Contains(lq, StringComparison.CurrentCultureIgnoreCase) || st.To.Contains(lq, StringComparison.CurrentCultureIgnoreCase))) continue;
                 shown++;
-                var lb = new Button { Name = $"inbox-local-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 5), Background = _sentOpen?.Id == st.Id ? Brush.Parse("#332F86F6") : Brushes.Transparent,
+                var lb = new Button { Name = $"inbox-local-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 5), Background = _sentOpen?.Id == st.Id ? Brush.Parse("#33C9A227") : Brushes.Transparent,
                     Content = new StackPanel { Children = {
                         new TextBlock { Text = st.Subject.Length > 0 ? st.Subject : "(ohne Betreff)", Foreground = Text, TextTrimming = TextTrimming.CharacterEllipsis },
                         new TextBlock { Text = $"An {(st.To.Length > 0 ? st.To : "–")} · {st.At.LocalDateTime.ToString("dd.MM. HH:mm", De)}", Foreground = Muted, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis } } } };
@@ -262,7 +262,7 @@ public partial class MainWindow
                     };
                     hw.Children.Add(hb);
                 }
-                read.Children.Add(new Border { Background = Brush.Parse("#222F86F6"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6), Child = new StackPanel { Spacing = 4, Children = { P("Termin in dieser Nachricht gefunden – bitte prüfen:", Text, 12), hw } } });
+                read.Children.Add(new Border { Background = Brush.Parse("#22C9A227"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6), Child = new StackPanel { Spacing = 4, Children = { P("Termin in dieser Nachricht gefunden – bitte prüfen:", Text, 12), hw } } });
             }
             read.Children.Add(new SelectableTextBlock { Name = "inbox-body", Text = m.Body, Foreground = Text, TextWrapping = TextWrapping.Wrap, FontSize = 13 });
             // Anhänge: ansehen und speichern – nie automatisch öffnen
@@ -375,7 +375,7 @@ public partial class MainWindow
     Control EventChip((CalEvent Event, DateTime Start, DateTime End) o, int i)
     {
         var e = o.Event;
-        var b = new Button { Name = $"cal-ev-{i}", Padding = new Thickness(5, 2), Margin = new Thickness(0, 1), HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = Brush.Parse(e.AllDay ? "#5510B981" : "#552F86F6"),
+        var b = new Button { Name = $"cal-ev-{i}", Padding = new Thickness(5, 2), Margin = new Thickness(0, 1), HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = Brush.Parse(e.AllDay ? "#5510B981" : "#55C9A227"),
             Content = new TextBlock { Text = (e.AllDay ? "" : o.Start.ToString("HH:mm ", De)) + e.Title + (e.Repeat != Repeat.Keine ? " ↻" : ""), FontSize = 12, Foreground = Text, TextTrimming = TextTrimming.CharacterEllipsis } };
         ToolTip.SetTip(b, $"{e.Title}\n{(e.AllDay ? "ganztägig" : $"{o.Start:HH:mm}–{o.End:HH:mm}")}{(e.Location.Length > 0 ? "\n" + e.Location : "")}{(e.Notes.Length > 0 ? "\n" + e.Notes : "")}");
         var menu = new ContextMenu(); var del = new MenuItem { Header = "Termin löschen" }; del.Click += (_, _) => { Cal.Delete(e.Uid); _pimMsg = $"„{e.Title}“ gelöscht."; Show("kalender"); }; menu.Items.Add(del); b.ContextMenu = menu;
@@ -409,7 +409,7 @@ public partial class MainWindow
             var cell = new StackPanel { Spacing = 1, Children = { new TextBlock { Text = d.Day.ToString(De), FontSize = 12, FontWeight = d == DateTime.Today ? FontWeight.Bold : FontWeight.Normal, Foreground = d.Month == CalDay.Month ? Text : Muted } } };
             foreach (var o in occ.Where(o => o.Start.Date <= d && o.End > d).Take(3)) cell.Children.Add(EventChip(o, k++));
             var more = occ.Count(o => o.Start.Date <= d && o.End > d) - 3; if (more > 0) cell.Children.Add(new TextBlock { Text = $"+{more} weitere", FontSize = 11, Foreground = Muted });
-            var border = new Border { Name = $"cal-cell-{i}", Tag = d, Child = cell, MinHeight = 86, Padding = new Thickness(4), BorderBrush = Edge, BorderThickness = new Thickness(0.5), Background = d == DateTime.Today ? Brush.Parse("#222F86F6") : Brushes.Transparent };
+            var border = new Border { Name = $"cal-cell-{i}", Tag = d, Child = cell, MinHeight = 86, Padding = new Thickness(4), BorderBrush = Edge, BorderThickness = new Thickness(0.5), Background = d == DateTime.Today ? Brush.Parse("#22C9A227") : Brushes.Transparent };
             var day = d; border.PointerPressed += (_, ev) => { if (ev.ClickCount == 2) { CalDay = day; CalMode = "tag"; Show("kalender"); } };
             Grid.SetRow(border, 1 + i / 7); Grid.SetColumn(border, i % 7); g.Children.Add(border);
         }
@@ -658,7 +658,7 @@ public partial class MainWindow
             new TextBlock { Text = t.Title, Foreground = t.Done ? Muted : Text, FontSize = 13.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, TextDecorations = t.Done ? TextDecorations.Strikethrough : null }, info } };
         if (t.Notes.Length > 0) body.Children.Add(new TextBlock { Text = t.Notes, Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap, MaxHeight = 32, TextTrimming = TextTrimming.CharacterEllipsis });
         var card = new Border { Name = $"todo-card-{idx}", Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(10), Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.Hand),
-            Background = Brush.Parse(TodoSelected == uid ? "#332F86F6" : "#14FFFFFF"), BorderBrush = Brush.Parse(TodoSelected == uid ? "#FACC15" : overdue ? "#88EF4444" : "#22FFFFFF"), BorderThickness = new Thickness(TodoSelected == uid ? 1.5 : 1),
+            Background = Brush.Parse(TodoSelected == uid ? "#33C9A227" : "#14FFFFFF"), BorderBrush = Brush.Parse(TodoSelected == uid ? "#FACC15" : overdue ? "#88EF4444" : "#22FFFFFF"), BorderThickness = new Thickness(TodoSelected == uid ? 1.5 : 1),
             Child = new DockPanel { Children = { cb, body } } };
         DockPanel.SetDock(cb, Avalonia.Controls.Dock.Left);
         // ziehen in eine andere Spalte, Klick wählt aus

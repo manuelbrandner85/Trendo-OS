@@ -222,7 +222,7 @@ public partial class MainWindow
             row.Children.Add(new Border
             {
                 Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(10, 4), CornerRadius = new CornerRadius(14),
-                Background = done ? Brush.Parse("#2216A34A") : on ? Brush.Parse("#333B82F6") : Brush.Parse("#14FFFFFF"),
+                Background = done ? Brush.Parse("#2216A34A") : on ? Brush.Parse("#33C9A227") : Brush.Parse("#14FFFFFF"),
                 BorderBrush = done ? Brush.Parse("#664ADE80") : on ? Brush.Parse("#AAF5C451") : Brush.Parse("#22FFFFFF"), BorderThickness = new Thickness(1),
                 Child = new TextBlock { Text = $"{(done ? "✓" : (i + 1).ToString())}  {names[i]}", Foreground = done ? Brush.Parse("#4ADE80") : on ? Text : Muted, FontSize = 12.5, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal },
             });

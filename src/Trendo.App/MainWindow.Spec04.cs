@@ -51,7 +51,7 @@ public partial class MainWindow
         bar.Children.Add(new TextBlock { Text = "Zielgerät", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0, 6, 4) });
         for (var k = 0; k < XrInspector.Budgets.Count; k++)
         {
-            var i = k; var b = Btn($"xr-dev-{k}", XrInspector.Budgets[k].Device.Split(" (")[0], () => { XrDevice = i; Show("xr"); }); if (XrDevice == k) { b.Background = Brush.Parse("#2F86F6"); b.Foreground = Brushes.White; }
+            var i = k; var b = Btn($"xr-dev-{k}", XrInspector.Budgets[k].Device.Split(" (")[0], () => { XrDevice = i; Show("xr"); }); if (XrDevice == k) { b.Background = Brush.Parse("#C9A227"); b.Foreground = Brushes.White; }
             bar.Children.Add(b);
         }
         if (_xrMsg.Length > 0) bar.Children.Add(new TextBlock { Name = "xr-msg", Text = _xrMsg, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4), FontSize = 12, Foreground = Brush.Parse(_xrMsg.StartsWith('⚠') ? "#F87171" : "#4ADE80") });
@@ -59,7 +59,7 @@ public partial class MainWindow
         // Mitte: 3D-Ansicht
         Control center;
         if (mesh is null)
-            center = new Border { Name = "xr-empty", Background = Brush.Parse("#0E1A2E"), CornerRadius = new CornerRadius(10), Child = new TextBlock { Text = err is null ? "Modell oben wählen oder hierher ziehen – oder das Beispielmodell laden." : "⚠ " + err, Foreground = err is null ? Muted : Brush.Parse("#F87171"), FontSize = 15, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(24), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } };
+            center = new Border { Name = "xr-empty", Background = Brush.Parse("#212121"), CornerRadius = new CornerRadius(10), Child = new TextBlock { Text = err is null ? "Modell oben wählen oder hierher ziehen – oder das Beispielmodell laden." : "⚠ " + err, Foreground = err is null ? Muted : Brush.Parse("#F87171"), FontSize = 15, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(24), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } };
         else
         {
             var view = new MeshView { Name = "xr-view", Model = mesh, Wire = _xrWire, Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.SizeAll) };

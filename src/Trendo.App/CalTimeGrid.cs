@@ -90,7 +90,7 @@ public sealed class CalTimeGrid : Control
         for (var d = 0; d < Days; d++)
         {
             var day = FirstDay.Date.AddDays(d);
-            if (day == Now().Date) ctx.FillRectangle(new SolidColorBrush(Color.Parse("#142F86F6")), new Rect(Gutter + d * cw, 0, cw, h));
+            if (day == Now().Date) ctx.FillRectangle(new SolidColorBrush(Color.Parse("#14C9A227")), new Rect(Gutter + d * cw, 0, cw, h));
             else if (day.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday) ctx.FillRectangle(new SolidColorBrush(Color.Parse("#0AFFFFFF")), new Rect(Gutter + d * cw, 0, cw, h));
             ctx.DrawLine(line, new Point(Gutter + d * cw, 0), new Point(Gutter + d * cw, h));
         }
@@ -130,8 +130,8 @@ public sealed class CalTimeGrid : Control
                 if (_mode == Mode.Move) { var p = PointOf(start + by); r = new Rect(p.X - cw / 2 + 3, p.Y + 1, cw - 8, r.Height); }
                 else r = r.WithHeight(Math.Max(HourHeight / 4, r.Height + by.TotalHours * HourHeight));
             }
-            var fill = new SolidColorBrush(Color.Parse(sel ? "#E62F86F6" : "#B32F86F6"));
-            ctx.DrawRectangle(fill, new Pen(new SolidColorBrush(Color.Parse(sel ? "#FFFACC15" : "#FF60A5FA")), sel ? 2 : 1), new RoundedRect(r, 6));
+            var fill = new SolidColorBrush(Color.Parse(sel ? "#E6C9A227" : "#B3C9A227"));
+            ctx.DrawRectangle(fill, new Pen(new SolidColorBrush(Color.Parse(sel ? "#FFFACC15" : "#FFE8C26A")), sel ? 2 : 1), new RoundedRect(r, 6));
             ctx.FillRectangle(new SolidColorBrush(Color.Parse("#FF93C5FD")), new Rect(r.X, r.Y + 3, 3, Math.Max(4, r.Height - 6)));
             using (ctx.PushClip(r.Deflate(new Thickness(7, 2, 3, 2))))
             {
@@ -143,7 +143,7 @@ public sealed class CalTimeGrid : Control
         {
             var (a, b) = (TimeAt(_from), TimeAt(_at)); if (b < a) (a, b) = (b, a); if (b == a) b = a.AddMinutes(15);
             var pa = PointOf(a); var r = new Rect(pa.X - cw / 2 + 3, pa.Y, cw - 6, Math.Max(HourHeight / 4, (b - a).TotalHours * HourHeight));
-            ctx.DrawRectangle(new SolidColorBrush(Color.Parse("#552F86F6")), new Pen(new SolidColorBrush(Color.Parse("#FF60A5FA")), 1.5, DashStyle.Dash), new RoundedRect(r, 6));
+            ctx.DrawRectangle(new SolidColorBrush(Color.Parse("#55C9A227")), new Pen(new SolidColorBrush(Color.Parse("#FFE8C26A")), 1.5, DashStyle.Dash), new RoundedRect(r, 6));
             ctx.DrawText(new FormattedText($"{a:HH:mm}–{b:HH:mm}", De, FlowDirection.LeftToRight, font, 11, Brushes.White), new Point(r.X + 6, r.Y + 2));
         }
         // jetzt

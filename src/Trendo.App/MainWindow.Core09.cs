@@ -154,7 +154,7 @@ public partial class MainWindow
         cmp.Click += (_, _) => RobRun(() => { var p = Need(f2, "das zweite Bild"); RobImage2 = p; var m = VisionPlus.Motion(img, Vision.Load(p), 30); _robMsg = m.Moved ? $"Bewegung: {Fach.F(m.ChangedPct, 1)} % geändert, Bereich {m.MinX}/{m.MinY} bis {m.MaxX}/{m.MaxY}" : $"Keine nennenswerte Bewegung ({Fach.F(m.ChangedPct, 2)} % geändert)."; });
         info.Children.Add(new WrapPanel { Children = { f2, cmp } });
         DockPanel.SetDock(info, Avalonia.Controls.Dock.Bottom); sp.Children.Add(info);
-        sp.Children.Add(new Border { Name = "rob-img-view", CornerRadius = new CornerRadius(10), ClipToBounds = true, Background = Brush.Parse("#0E1A2E"), Child = new Viewbox { Stretch = Stretch.Uniform, Child = canvas } });
+        sp.Children.Add(new Border { Name = "rob-img-view", CornerRadius = new CornerRadius(10), ClipToBounds = true, Background = Brush.Parse("#212121"), Child = new Viewbox { Stretch = Stretch.Uniform, Child = canvas } });
         return sp;
     }
 

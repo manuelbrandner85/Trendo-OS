@@ -71,7 +71,7 @@ public partial class MainWindow
             body.Children.Add(ResearchMarkBar(p));
             var shownText = p.Text.Length > 20000 ? p.Text[..20000] : p.Text;
             var marks = Desk.Highlights(_rsShownUrl);
-            var reader = new SelectableTextBlock { Name = "rs-text", Foreground = Text, TextWrapping = TextWrapping.Wrap, FontSize = 14, LineHeight = 22, SelectionBrush = Brush.Parse("#662F86F6") };
+            var reader = new SelectableTextBlock { Name = "rs-text", Foreground = Text, TextWrapping = TextWrapping.Wrap, FontSize = 14, LineHeight = 22, SelectionBrush = Brush.Parse("#66C9A227") };
             if (marks.Count == 0 && !shownText.Contains("## ")) reader.Text = shownText + (p.Text.Length > 20000 ? "\n…" : "");
             else reader.Inlines = ReaderInlines(shownText, marks);
             _rsTextBlock = reader;

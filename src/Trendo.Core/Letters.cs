@@ -369,6 +369,12 @@ public sealed class LetterArchive(string projectsFolder)
     private static string Name(string stem, int v) => v == 1 ? stem : $"{stem}-v{v}";
 
     public IReadOnlyList<string> List() => Directory.Exists(Dir) ? Directory.GetFiles(Dir, "*.docx").OrderByDescending(File.GetLastWriteTimeUtc).ToList() : [];
+
+    /// <summary>Wunsch 02.11.2026: Brief löschen – Word-Datei, Entwurf und PDF gemeinsam in den Trendo-Papierkorb (zurückholbar).</summary>
+    public LetterTrash.Entry? Delete(string docx) =>
+        Path.GetFullPath(Path.GetDirectoryName(docx)!).Equals(Path.GetFullPath(Dir), StringComparison.OrdinalIgnoreCase)
+            ? new LetterTrash(projectsFolder).Move("Brief " + Path.GetFileNameWithoutExtension(docx), "brief", docx, Path.ChangeExtension(docx, ".trendo-brief.json"), Path.ChangeExtension(docx, ".pdf"))
+            : throw new ArgumentException("Nur Briefe aus dem Ordner „Briefe“.");
     public static LetterDraft? Load(string docx)
     {
         var j = Path.ChangeExtension(docx, ".trendo-brief.json");

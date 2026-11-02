@@ -102,16 +102,16 @@ public sealed class MeasureGrid : Panel
 
     void Draw(DrawingContext ctx)
     {
-        var size = Bounds.Size; ctx.FillRectangle(new SolidColorBrush(Color.Parse("#0E1B30")), new Rect(size));
+        var size = Bounds.Size; ctx.FillRectangle(new SolidColorBrush(Color.Parse("#222222")), new Rect(size));
         var line = new Pen(new SolidColorBrush(Color.Parse("#22FFFFFF")), 1); var face = new Typeface("Inter"); var bold = new Typeface("Inter", FontStyle.Normal, FontWeight.SemiBold);
         var text = new SolidColorBrush(Color.Parse("#E6EDF7")); var muted = new SolidColorBrush(Color.Parse("#8FA3C2")); var de = CultureInfo.GetCultureInfo("de-DE");
         var rows = VisibleRows;
         // Spaltenkopf
-        ctx.FillRectangle(new SolidColorBrush(Color.Parse("#16284A")), new Rect(0, 0, size.Width, HeadH));
+        ctx.FillRectangle(new SolidColorBrush(Color.Parse("#343434")), new Rect(0, 0, size.Width, HeadH));
         for (var c = 0; c < _s.Columns.Count; c++)
         {
             var (x, _) = CellPos(c, 0); var col = _s.Columns[c];
-            if (c == Col) ctx.FillRectangle(new SolidColorBrush(Color.Parse("#332F86F6")), new Rect(x, 0, CellW, size.Height));
+            if (c == Col) ctx.FillRectangle(new SolidColorBrush(Color.Parse("#33C9A227")), new Rect(x, 0, CellW, size.Height));
             var dot = ChartDrawing.Palette[Math.Max(0, _s.Chart.Ys.IndexOf(c)) % ChartDrawing.Palette.Length];
             if (_s.Chart.Ys.Contains(c)) ctx.FillRectangle(new SolidColorBrush(Color.Parse(dot)), new Rect(x + 4, 6, 4, 14));
             if (_s.Chart.X == c) ctx.DrawText(new FormattedText("x", de, FlowDirection.LeftToRight, bold, 10, new SolidColorBrush(Color.Parse("#F5A524"))), new Point(x + 3, 4));

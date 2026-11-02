@@ -39,15 +39,15 @@ public partial class MainWindow
         var ask = new TextBox { Name = "studios-ask", PlaceholderText = "Was möchtest du heute erstellen?", Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Text, FontSize = 19, VerticalContentAlignment = VerticalAlignment.Center };
         void Go() { var q = ask.Text?.Trim() ?? ""; if (q.Length == 0) return; _query = q; Show("suche"); }
         ask.KeyDown += (_, e) => { if (e.Key == Key.Enter) { e.Handled = true; Go(); } };
-        var goBtn = new Button { Name = "studios-ask-go", Width = 38, Height = 38, CornerRadius = new CornerRadius(19), Padding = new Thickness(0), Background = Brush.Parse("#332F86F6"), BorderBrush = Accent, BorderThickness = new Thickness(1), Content = Ico(Mdi.ChevronRight, 20, Text), VerticalAlignment = VerticalAlignment.Center };
+        var goBtn = new Button { Name = "studios-ask-go", Width = 38, Height = 38, CornerRadius = new CornerRadius(19), Padding = new Thickness(0), Background = Brush.Parse("#33C9A227"), BorderBrush = Accent, BorderThickness = new Thickness(1), Content = Ico(Mdi.ChevronRight, 20, Text), VerticalAlignment = VerticalAlignment.Center };
         Avalonia.Automation.AutomationProperties.SetName(goBtn, "Suchen"); ToolTip.SetTip(goBtn, "Suchen");
         goBtn.Click += (_, _) => { if (string.IsNullOrWhiteSpace(ask.Text)) ask.Focus(); else Go(); };
-        var orb = new Border { Width = 46, Height = 46, CornerRadius = new CornerRadius(23), Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#E6F4FF"), 0), new GradientStop(Color.Parse("#3BA7FF"), 0.35), new GradientStop(Color.Parse("#0B2A6B"), 1) } },
-            BoxShadow = BoxShadows.Parse("0 0 22 2 #883BA7FF"), VerticalAlignment = VerticalAlignment.Center };
+        var orb = new Border { Width = 46, Height = 46, CornerRadius = new CornerRadius(23), Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#E6F4FF"), 0), new GradientStop(Color.Parse("#E0B84A"), 0.35), new GradientStop(Color.Parse("#3D3D3D"), 1) } },
+            BoxShadow = BoxShadows.Parse("0 0 22 2 #88E0B84A"), VerticalAlignment = VerticalAlignment.Center };
         var askRow = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), Children = {
             orb, Pos(new TextBlock { Text = "Trendo –", Foreground = Text, FontSize = 21, FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(14, 0, 8, 0) }, 1), Pos(ask, 2), Pos(goBtn, 3) } };
-        main.Children.Add(new Border { Name = "studios-ask-bar", CornerRadius = new CornerRadius(34), Padding = new Thickness(10, 8, 12, 8), Background = Brush.Parse(C("#B30A1530", "#E6FFFFFF")), BorderBrush = Brush.Parse("#995AA9FF"), BorderThickness = new Thickness(1.5),
-            BoxShadow = BoxShadows.Parse("0 0 26 0 #553BA7FF"), MaxWidth = 860, HorizontalAlignment = HorizontalAlignment.Stretch, Child = askRow });
+        main.Children.Add(new Border { Name = "studios-ask-bar", CornerRadius = new CornerRadius(34), Padding = new Thickness(10, 8, 12, 8), Background = Brush.Parse(C("#B31E1E1E", "#E6FFFFFF")), BorderBrush = Brush.Parse("#995AA9FF"), BorderThickness = new Thickness(1.5),
+            BoxShadow = BoxShadows.Parse("0 0 26 0 #55E0B84A"), MaxWidth = 860, HorizontalAlignment = HorizontalAlignment.Stretch, Child = askRow });
 
         // Bereichs-Chips (Filter)
         var filters = new WrapPanel { HorizontalAlignment = HorizontalAlignment.Center };
@@ -55,7 +55,7 @@ public partial class MainWindow
         {
             var on = string.IsNullOrWhiteSpace(area) ? string.IsNullOrWhiteSpace(_studioFilter) : string.Equals(_studioFilter, area, StringComparison.OrdinalIgnoreCase);
             var b = new Button { Name = "studio-filter-" + StudioFilterId(area), Content = label, Margin = new Thickness(0, 0, 8, 6), Padding = new Thickness(14, 5), CornerRadius = new CornerRadius(14), FontSize = 12.5, Foreground = Text,
-                Background = on ? Accent : Brush.Parse(C("#66101F3D", "#CCFFFFFF")), BorderBrush = Brush.Parse("#665AA9FF"), BorderThickness = new Thickness(on ? 0 : 1) };
+                Background = on ? Accent : Brush.Parse(C("#66292929", "#CCFFFFFF")), BorderBrush = Brush.Parse("#665AA9FF"), BorderThickness = new Thickness(on ? 0 : 1) };
             b.Click += (_, _) => { _studioFilter = string.IsNullOrWhiteSpace(area) ? null : area; _studioQuery = ""; Show("studios"); };
             filters.Children.Add(b);
         }
@@ -78,7 +78,7 @@ public partial class MainWindow
         var count = new TextBlock { Name = "studios-count", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 2, 0, 0),
             Text = _studios.Count == 0 ? "Die Studio-Liste wurde nicht gefunden." : string.IsNullOrWhiteSpace(_studioFilter) && _studioQuery.Trim().Length == 0 ? $"{list.Count} Studios – alle kreativen und technischen Studios auf einen Blick" : $"{list.Count} Studios in dieser Ansicht" };
         if (_studios.Count == 0) count.Foreground = Brushes.OrangeRed;
-        var searchBox = new Border { CornerRadius = new CornerRadius(10), BorderBrush = Edge, BorderThickness = new Thickness(1), Background = Brush.Parse(C("#55202C48", "#CCFFFFFF")), Padding = new Thickness(10, 4),
+        var searchBox = new Border { CornerRadius = new CornerRadius(10), BorderBrush = Edge, BorderThickness = new Thickness(1), Background = Brush.Parse(C("#55393939", "#CCFFFFFF")), Padding = new Thickness(10, 4),
             Child = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { Ico(Mdi.Magnify, 14, Muted), search } } };
         main.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), Children = {
             Ico(Mdi.ViewGridOutline, 20, Text), Pos(new TextBlock { Text = "Studios", Foreground = Text, FontSize = 19, FontWeight = FontWeight.SemiBold, Margin = new Thickness(10, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center }, 1),
@@ -115,7 +115,7 @@ public partial class MainWindow
         if (StudioPicture(st.Id) is { } pic)
             layers.Children.Add(new Image { Source = pic, Stretch = Stretch.UniformToFill, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center });
         else
-            layers.Children.Add(new Border { Background = si is null ? Grad("#1B3150", "#060D1A") : Grad(si.C1, si.C2), Opacity = 0.55 });
+            layers.Children.Add(new Border { Background = si is null ? Grad("#3C3C3C", "#060D1A") : Grad(si.C1, si.C2), Opacity = 0.55 });
         layers.Children.Add(new Border { Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
             GradientStops = { new GradientStop(Color.Parse("#00050B18"), 0.25), new GradientStop(Color.Parse("#E6050B18"), 1) } } });
         var chip = si is null ? new Border { Name = "studio-icon-" + st.Id, Width = 26, Height = 26 } : Chip(si.Path, si.C1, si.C2, 26, 0.6);
@@ -149,7 +149,7 @@ public partial class MainWindow
         {
             var info = StudioCatalog.For(id); if (info is null) continue;
             var icon = StudioIcons.For(id) is { } si ? Chip(si.Path, si.C1, si.C2, 34, 0.6) : Chip(Mdi.Apps, "#42A5F5", "#1565C0", 34, 0.6);
-            var b = new Button { Name = "sysmod-" + id, Width = 228, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(10), Background = Brush.Parse(C("#99101F3D", "#E6FFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1),
+            var b = new Button { Name = "sysmod-" + id, Width = 228, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(10), Background = Brush.Parse(C("#99292929", "#E6FFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1),
                 HorizontalContentAlignment = HorizontalAlignment.Stretch,
                 Content = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { icon, Pos(new StackPanel { Margin = new Thickness(10, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Children = {
                     new TextBlock { Text = info.Name, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
@@ -175,7 +175,7 @@ public partial class MainWindow
         }
         foreach (var p in list)
         {
-            var b = new Button { Name = "studios-project-" + p.Id, Width = 190, Height = 78, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(10), Background = Brush.Parse(C("#99101F3D", "#E6FFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1),
+            var b = new Button { Name = "studios-project-" + p.Id, Width = 190, Height = 78, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(10), Background = Brush.Parse(C("#99292929", "#E6FFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1),
                 HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Top,
                 Content = new StackPanel { Spacing = 3, Children = { new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { Chip(Mdi.Folder, "#42A5F5", "#1565C0", 22), new TextBlock { Text = p.Name, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = 130 } } },
                     new TextBlock { Text = $"Angelegt {p.CreatedAt:dd.MM.yyyy}", Foreground = Muted, FontSize = 10.5 } } } };

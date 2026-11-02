@@ -19,11 +19,11 @@ namespace Trendo.App;
 public sealed partial class MainWindow : Window
 {
     // Farben: dunkles Blau, Glas-Panels, kühle Akzente
-    private static IBrush Glass = new SolidColorBrush(Color.Parse("#B30B1730"));
-    private static IBrush GlassStrong = new SolidColorBrush(Color.Parse("#F50A1428"));
-    private static IBrush TileBg = new SolidColorBrush(Color.Parse("#99142445"));
+    private static IBrush Glass = new SolidColorBrush(Color.Parse("#B31F1F1F"));
+    private static IBrush GlassStrong = new SolidColorBrush(Color.Parse("#F51B1B1B"));
+    private static IBrush TileBg = new SolidColorBrush(Color.Parse("#99303030"));
     private static IBrush Edge = new SolidColorBrush(Color.Parse("#3355A8FF"));
-    private static IBrush Accent = Brush.Parse("#3BA7FF");
+    private static IBrush Accent = Brush.Parse("#C9A227");
     private static IBrush Muted = Brush.Parse("#9DB0CF");
     private static IBrush Text = Brush.Parse("#EEF3FB");
     private static readonly CultureInfo De = new("de-DE");
@@ -37,7 +37,7 @@ public sealed partial class MainWindow : Window
     private readonly TextBlock _kiStatus = new() { Name = "ki-status", Text = "Nicht verbunden", Foreground = Brush.Parse("#93A4C3"), FontSize = 11 };
     private readonly Ellipse _kiDot = new() { Width = 8, Height = 8, Fill = Brushes.Gray };
     private readonly TextBox _kiInput = new() { Name = "ki-input", PlaceholderText = "Deine Nachricht an Trendo …", IsEnabled = false, Margin = new Thickness(0, 8, 0, 0) };
-    private readonly TextBlock _kiText = new() { Text = "Hallo! Ich bin noch nicht verbunden. Mit „KI einrichten“ installierst du die kostenlose lokale KI – danach kannst du mir Aufgaben geben, Studios öffnen oder Fragen stellen.", Foreground = Brush.Parse(C("#E6EDF7", "#1B2A44")), FontSize = 12, TextWrapping = TextWrapping.Wrap };
+    private readonly TextBlock _kiText = new() { Text = "Hallo! Ich bin noch nicht verbunden. Mit „KI einrichten“ installierst du die kostenlose lokale KI – danach kannst du mir Aufgaben geben, Studios öffnen oder Fragen stellen.", Foreground = Brush.Parse(C("#E6EDF7", "#353535")), FontSize = 12, TextWrapping = TextWrapping.Wrap };
     private readonly Button _kiSetup = new() { Name = "btn-ki-setup", Content = "KI einrichten", Margin = new Thickness(0, 6, 0, 0) };
     private bool _kiConnected; private int _tick;
     private readonly ProgressBar _depProgress = new() { Name = "deps-progress", IsIndeterminate = false, IsVisible = false, Height = 6, Margin = new Thickness(0, 6) };
@@ -48,7 +48,7 @@ public sealed partial class MainWindow : Window
     private readonly TextBlock _clock = new() { Foreground = Text, FontSize = 18, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Right };
     private readonly TextBlock _date = new() { Foreground = Muted, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Right };
     private readonly TextBlock _status = new() { Foreground = Muted, FontSize = 11 };
-    private readonly TextBlock _bellBadge = new() { Foreground = _theme == "hell" ? Brush.Parse("#0F1B2E") : Brushes.White, FontSize = 10, FontWeight = FontWeight.Bold };
+    private readonly TextBlock _bellBadge = new() { Foreground = _theme == "hell" ? Brush.Parse("#222222") : Brushes.White, FontSize = 10, FontWeight = FontWeight.Bold };
     private readonly StackPanel _projectsPanel = new() { Spacing = 6 };
     private readonly TextBox _search = new() { Name = "txt-search", PlaceholderText = "Studios, Dateien und Einstellungen suchen", Height = 36 };
     private readonly TextBlock _weekday = new() { Foreground = Muted, FontSize = 13 };
@@ -87,9 +87,11 @@ public sealed partial class MainWindow : Window
         else _deps.LocateVollpaket = VollpaketStart.Find;
         InitVollpaketOnline(); // ohne Vollpaket: dieselben Pakete vom GitHub-Release
         StartupTrace.Mark("ctor.deps");
-        _settings = UserSettings.Load(core.DataRoot); ApplyTheme(_settings);
+        _settings = UserSettings.Load(core.DataRoot);
+        if (_settings.LookVersion < 2) { if (_settings.Accent == "#2F86F6") _settings.Accent = "#C9A227"; _settings.LookVersion = 2; } // Dunkel-Gold-Look (02.11.2026): alte Blau-Vorgabe wird Gold
+        ApplyTheme(_settings);
         // Felder wurden vor ApplyTheme erzeugt: Schriftfarben nachziehen
-        _clock.Foreground = Text; _kiText.Foreground = Brush.Parse(C("#E6EDF7", "#1B2A44")); _kiStatus.Foreground = Muted; _depLog.Foreground = Muted;
+        _clock.Foreground = Text; _kiText.Foreground = Brush.Parse(C("#E6EDF7", "#353535")); _kiStatus.Foreground = Muted; _depLog.Foreground = Muted;
         FirstStartDefaults();
         Title = "Trendo OS";
         try { using var ico = Avalonia.Platform.AssetLoader.Open(new Uri("avares://TrendoOS/Assets/logo/trendo.ico")); Icon = new WindowIcon(ico); } catch (Exception) { /* Symbol fehlt: Standard */ }
@@ -375,7 +377,7 @@ public sealed partial class MainWindow : Window
     }
     private static Button SmallOutline(string name, string label)
     {
-        var b = new Button { Name = name, Padding = new Thickness(10, 3), FontSize = 11, Foreground = Text, Background = Brush.Parse("#33102A55"), BorderBrush = Brush.Parse("#664C8DFF"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(6),
+        var b = new Button { Name = name, Padding = new Thickness(10, 3), FontSize = 11, Foreground = Text, Background = Brush.Parse("#33373737"), BorderBrush = Brush.Parse("#664C8DFF"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(6),
             Content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, Children = { Ico(Mdi.ChevronRight, 10, Accent), new TextBlock { Text = label, FontSize = 11, Foreground = Text } } } };
         return b;
     }
@@ -473,7 +475,7 @@ public sealed partial class MainWindow : Window
         foreach (var (k, b) in _tabs)
         {
             var on = k == key;
-            b.Background = on ? Brush.Parse("#59123466") : Brushes.Transparent;
+            b.Background = on ? Brush.Parse("#59424242") : Brushes.Transparent;
             b.BorderBrush = on ? Brush.Parse("#995AA9FF") : Brushes.Transparent;
             b.BorderThickness = new Thickness(on ? 1 : 0);
         }
@@ -482,7 +484,7 @@ public sealed partial class MainWindow : Window
     private void MarkSide(string key)
     {
         if (_sideStart is null) return;
-        _sideStart.Background = key == "start" ? Grad("#2F86F6", "#1F5FD0") : Brushes.Transparent;
+        _sideStart.Background = key == "start" ? Grad("#E0B84A", "#8C6A16") : Brushes.Transparent;
     }
 
     private static TextBlock Badge(StudioEntry? st)
@@ -505,7 +507,7 @@ public sealed partial class MainWindow : Window
             var known = StudioCatalog.For(id) is not null || _studios.Any(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase));
             if (!known) continue;
             var name = StudioCatalog.NameOf(id, _studios.FirstOrDefault(s => string.Equals(s.Id, id, StringComparison.OrdinalIgnoreCase))?.Name ?? id);
-            var icon = new Border { Width = 40, Height = 40, CornerRadius = new CornerRadius(12), Background = Brush.Parse(C("#33283C5C", "#E6FFFFFF")), HorizontalAlignment = HorizontalAlignment.Center, Child = IconFor(id, 20) ?? Ico(Mdi.FileDocumentOutline, 20, Accent) };
+            var icon = new Border { Width = 40, Height = 40, CornerRadius = new CornerRadius(12), Background = Brush.Parse(C("#334A4A4A", "#E6FFFFFF")), HorizontalAlignment = HorizontalAlignment.Center, Child = IconFor(id, 20) ?? Ico(Mdi.FileDocumentOutline, 20, Accent) };
             var label = new TextBlock { Text = name, Foreground = Text, FontSize = 11, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap, MaxHeight = 30, TextTrimming = TextTrimming.CharacterEllipsis };
             var b = new Button { Name = "desk-pin-" + id, Background = Brushes.Transparent, Padding = new Thickness(2), Margin = new Thickness(2), Width = 84, Content = new StackPanel { Spacing = 4, Children = { icon, label } } };
             Avalonia.Automation.AutomationProperties.SetName(b, name);
@@ -592,7 +594,7 @@ public sealed partial class MainWindow : Window
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { StartButton(), new Border { Width = 1, Height = 36, Background = Brush.Parse("#553F7FD0"), VerticalAlignment = VerticalAlignment.Center }, bar, new Border { Width = 1, Height = 36, Background = Brush.Parse("#553F7FD0"), VerticalAlignment = VerticalAlignment.Center }, trash } };
         var dockBar = new Border
         {
-            Background = Brush.Parse(C("#C0101C33", "#E6F4F7FC")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(22), Padding = new Thickness(14, 8),
+            Background = Brush.Parse(C("#C0242424", "#E6F4F7FC")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(22), Padding = new Thickness(14, 8),
             HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4, 0, 6), Child = row, BoxShadow = BoxShadows.Parse("0 10 28 0 #66000818")
         };
         _taskbar.IsVisible = false;
@@ -696,8 +698,8 @@ public sealed partial class MainWindow : Window
                 Background = new LinearGradientBrush
                 {
                     StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-                    GradientStops = { new GradientStop(Color.Parse(_theme == "hell" ? "#FFE8F0FF" : _theme == "kontrast" ? "#FF000000" : "#FF13254A"), 0),
-                                      new GradientStop(Color.Parse(_theme == "hell" ? "#FFFFFFFF" : _theme == "kontrast" ? "#FF000000" : "#FF0A1428"), 1) },
+                    GradientStops = { new GradientStop(Color.Parse(_theme == "hell" ? "#FFE8F0FF" : _theme == "kontrast" ? "#FF000000" : "#FF323232"), 0),
+                                      new GradientStop(Color.Parse(_theme == "hell" ? "#FFFFFFFF" : _theme == "kontrast" ? "#FF000000" : "#FF1B1B1B"), 1) },
                 },
             };
         }
@@ -798,7 +800,7 @@ public sealed partial class MainWindow : Window
                 new TextBlock { Text = r.Description, Foreground = Text, TextWrapping = TextWrapping.Wrap }, P($"Aktion {r.Action} · Ziel {r.Target} · gültig bis {r.ExpiresAt:HH:mm}"),
                 // T-0005 Änderungsvorschau: genau das, was passiert
                 r.Preview is { Length: > 0 } pv
-                    ? new Border { Name = "approval-preview-" + r.Id, Background = Brush.Parse(C("#66091428", "#F1F5FB")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6),
+                    ? new Border { Name = "approval-preview-" + r.Id, Background = Brush.Parse(C("#661A1A1A", "#F1F5FB")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6),
                         Child = new StackPanel { Spacing = 2, Children = { new TextBlock { Text = "Was passiert:", Foreground = Muted, FontSize = 11 }, new SelectableTextBlock { Text = pv.Length > 2000 ? pv[..2000] + " …" : pv, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap } } } }
                     : P("Keine Änderungsvorschau für diese Aktion.", null, 11),
                 new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { yes, no } } } } });
@@ -894,16 +896,16 @@ public sealed partial class MainWindow : Window
         var send = new Button { Name = "btn-ki-send", Width = 34, Height = 34, Padding = new Thickness(0), Background = Brush.Parse("#33FFFFFF"), CornerRadius = new CornerRadius(8), Content = Ico(Mdi.Send, 15, Text) };
         Avalonia.Automation.AutomationProperties.SetName(send, "Senden");
         send.Click += async (_, _) => { if (_kiInput.IsEnabled && !string.IsNullOrWhiteSpace(_kiInput.Text)) await AskKi(_kiInput.Text!); };
-        var inputBox = new Border { Height = 42, CornerRadius = new CornerRadius(12), Background = Brush.Parse(C("#990A1630", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), Padding = new Thickness(8, 0),
+        var inputBox = new Border { Height = 42, CornerRadius = new CornerRadius(12), Background = Brush.Parse(C("#991F1F1F", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), Padding = new Thickness(8, 0),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), Children = { _kiInput, Pos(_kiSetup, 1), Pos(send, 2) } } };
         _kiSetup.Margin = new Thickness(0, 0, 4, 0); _kiSetup.VerticalAlignment = VerticalAlignment.Center; _kiSetup.Background = Accent; _kiSetup.Padding = new Thickness(8, 2);
         _kiText.FontSize = 13; _kiText.TextWrapping = TextWrapping.Wrap;
         var chat = new Border { Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(14), MinHeight = 160, Child = new ScrollViewer { Content = _kiText } };
         var note = P(_kiConnected ? $"Die KI läuft auf diesem PC (Modell {KiModelName}). Nichts geht ins Internet, nichts kostet extra." : "Die KI ist noch nicht eingerichtet. Unter „Zusatzprogramme“ installiert Trendo sie kostenlos mit einem Klick.", Text);
         var center = new StackPanel { Spacing = 10, Children = { chat, note, Nav2("Zusatzprogramme öffnen", "components") } };
-        var side = new Border { Background = Brush.Parse(C("#55101830", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(12), Child = new StackPanel { Spacing = 8, Children = { H("Modell und Status", 14), state, KiModelChooser() } } };
+        var side = new Border { Background = Brush.Parse(C("#55222222", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(12), Child = new StackPanel { Spacing = 8, Children = { H("Modell und Status", 14), state, KiModelChooser() } } };
         var cols = new Grid { ColumnDefinitions = new ColumnDefinitions("200,*,240"), ColumnSpacing = 12 };
-        var navBox = new Border { Background = Brush.Parse(C("#55101830", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(8), Child = KiNav(vertical: true) };
+        var navBox = new Border { Background = Brush.Parse(C("#55222222", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(8), Child = KiNav(vertical: true) };
         cols.Children.Add(navBox); Grid.SetColumn(center, 1); cols.Children.Add(center); Grid.SetColumn(side, 2); cols.Children.Add(side);
         return Page("KI", cols, inputBox);
     }

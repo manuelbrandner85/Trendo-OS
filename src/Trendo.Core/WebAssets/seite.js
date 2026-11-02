@@ -36,6 +36,18 @@
   zeichneShader();
   zeichnePartikel();
   if (window.TrendoScroll) window.TrendoScroll.start();
+  if (window.TrendoMotion) window.TrendoMotion.start(); // 0.9.47: Text Wort für Wort, Einblenden, weiches Scrollen
+
+  var szene = document.getElementById('szene'); // 0.9.47 Immersiv: fotorealistische Szene mit Kamerafahrt
+  var szeneModell = document.getElementById('modell-daten');
+  if (szene && window.TrendoWeb3 && window.TrendoWeb3.immersiv) {
+    window.TrendoWeb3.immersiv(szene, {
+      farbe: '#e6b84d', hintergrund: '#0b0b0c',
+      modell: szeneModell ? szeneModell.textContent : '',
+      url: document.body.dataset.modellUrl || '',
+      fertig: mark
+    });
+  }
 
   var buehne = document.getElementById('buehne');
   var modell = document.getElementById('modell-daten');

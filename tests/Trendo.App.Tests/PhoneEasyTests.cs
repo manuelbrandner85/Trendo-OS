@@ -69,6 +69,7 @@ public class PhoneEasyTests
 
     sealed class FakeRemote : IPhoneRemote
     {
+        public Task<string> TvAsync(string cmd) => Task.FromResult(cmd);
         public readonly List<string> Calls = [];
         public IReadOnlyList<PhoneApp> Apps() => [new("W3-TEXT", "Texte & Tabellen", "Arbeiten & Büro", "M0,0H24V24H0Z")];
         public Task<string?> OpenAsync(string id) { Calls.Add("open " + id); return Task.FromResult<string?>("Texte"); }

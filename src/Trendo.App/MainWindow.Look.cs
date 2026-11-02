@@ -21,12 +21,15 @@ public sealed partial class MainWindow
     private readonly StackPanel _hintHost = new() { Name = "hint-host" };
 
     public static readonly (string Id, string Label)[] AccentChoices =
-        [("#2F86F6", "Blau"), ("#22C3A6", "Türkis"), ("#8B5CF6", "Violett"), ("#F472B6", "Pink"), ("#F59E0B", "Bernstein"), ("#22C55E", "Grün")];
+        [("#C9A227", "Gold"), ("#2F86F6", "Blau"), ("#22C3A6", "Türkis"), ("#8B5CF6", "Violett"), ("#F472B6", "Pink"), ("#F59E0B", "Bernstein"), ("#22C55E", "Grün")];
 
     public static readonly (string Id, string Label)[] WidgetChoices =
         [("widget-projekte", "Aktuelle Projekte"), ("widget-ki", "KI-Router"), ("widget-system", "Geräte und Messwerte"), ("widget-agenten", "Agenten Live"), ("widget-studiomanager", "Studio Manager"), ("widget-github", "Open Source")];
 
     private static string _theme = "dunkel";
+    /// <summary>Bedienstil: trendo, windows, mac, linux (Fensterknöpfe, Ecken, Titel).</summary>
+    private static string _style = "trendo";
+    public static string StyleNow => _style;
     private string _settingsSection = "aussehen";
     /// <summary>Nur für den direkten Neuaufbau: die nächste Instanz öffnet denselben Abschnitt. Sonst immer „Aussehen“.</summary>
     private static string? _reopenSection;
@@ -48,6 +51,7 @@ public sealed partial class MainWindow
     private static void ApplyTheme(UserSettings s)
     {
         _theme = EffectiveTheme(s.Theme);
+        _style = UserSettings.Styles.Contains(s.Style) ? s.Style : "trendo";
         switch (_theme)
         {
             case "hell":
@@ -57,19 +61,27 @@ public sealed partial class MainWindow
                 Glass = Brush.Parse("#FF000000"); GlassStrong = Brush.Parse("#FF000000"); TileBg = Brush.Parse("#FF000000");
                 Edge = Brush.Parse("#FFFFFF00"); Muted = Brush.Parse("#FFFFFFFF"); Text = Brush.Parse("#FFFFFFFF"); break;
             default:
-                Glass = Brush.Parse("#B30B1730"); GlassStrong = Brush.Parse("#F50A1428"); TileBg = Brush.Parse("#99142445");
-                Edge = Brush.Parse("#3355A8FF"); Muted = Brush.Parse("#9DB0CF"); Text = Brush.Parse("#EEF3FB"); break;
+                // Wunsch 02.11.2026: Farbwelt wie Windows im Dunkelmodus – neutrale Grautöne (Mica/Acryl), Kanten mit einem Hauch Gold
+                Glass = Brush.Parse("#C7202020"); GlassStrong = Brush.Parse("#F51C1C1C"); TileBg = Brush.Parse("#B02B2B2B");
+                Edge = Brush.Parse("#33D4A84B"); Muted = Brush.Parse("#A8A8A8"); Text = Brush.Parse("#F3F3F3"); break;
         }
-        Accent = Brush.Parse(_theme == "kontrast" ? "#FFD400" : AccentChoices.Any(a => a.Id == s.EffectiveAccent(DateTime.Now)) ? s.EffectiveAccent(DateTime.Now) : "#2F86F6");
+        var acc = AccentChoices.Any(a => a.Id == s.EffectiveAccent(DateTime.Now)) ? s.EffectiveAccent(DateTime.Now) : "#C9A227";
+        Accent = _theme == "kontrast" ? Brush.Parse("#FFD400") : acc == "#C9A227" ? Gold() : Brush.Parse(acc);
         // Vorgabe 27.10.2026: hochwertig statt flach – Flächen mit Verlauf, Kanten mit Lichtkante oben, weiche Schatten (nicht im Kontrast-Design)
         if (_theme == "kontrast") { EdgeLit = Edge; CardShadow = default; return; }
         var light = _theme == "hell";
-        TileBg = Vertical(light ? "#F7FFFFFF" : "#B2213A6B", light ? "#E0E9F0FA" : "#A00F1C3A");
-        EdgeLit = Vertical(light ? "#CCE8C77A" : "#80F5C451", light ? "#403B82F6" : "#333B82F6"); // Gold oben, Blau unten (Logo C, 27.10.2026)
+        TileBg = Vertical(light ? "#F7FFFFFF" : "#B82D2D2D", light ? "#E0E9F0FA" : "#A8202020");
+        EdgeLit = Vertical(light ? "#CCE8C77A" : "#80F5C451", light ? "#40B8892C" : "#22FFFFFF"); // Lichtkante Gold oben, darunter neutral (Dunkel-Gold-Look 02.11.2026)
         CardShadow = BoxShadows.Parse(light ? "0 8 22 -10 #40223355" : "0 10 26 -10 #99000614");
     }
 
-    private static IBrush EdgeLit = new SolidColorBrush(Color.Parse("#3355A8FF"));
+    private static IBrush EdgeLit = new SolidColorBrush(Color.Parse("#33D4A84B"));
+    /// <summary>Realistisches Gold: heller Glanz oben links, sattes Gold in der Mitte, dunkles Bronze unten – dunkel genug für weiße Schrift.</summary>
+    internal static LinearGradientBrush Gold() => new()
+    {
+        StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
+        GradientStops = { new GradientStop(Color.Parse("#D9B24C"), 0), new GradientStop(Color.Parse("#B8892C"), 0.35), new GradientStop(Color.Parse("#9C7419"), 0.7), new GradientStop(Color.Parse("#7A5A12"), 1) },
+    };
     private static BoxShadows CardShadow = BoxShadows.Parse("0 10 26 -10 #99000614");
     private static LinearGradientBrush Vertical(string top, string bottom) => new()
     {
@@ -189,7 +201,7 @@ public sealed partial class MainWindow
         if (!force && _settings.SeenHints.Contains(key)) return;
         var ok = new Button { Name = "hint-ok", Content = "Verstanden", FontSize = 11, Background = Accent, VerticalAlignment = VerticalAlignment.Center };
         ok.Click += (_, _) => { if (!_settings.SeenHints.Contains(key)) { _settings.SeenHints.Add(key); SaveSettings(); } _hintHost.Children.Clear(); };
-        _hintHost.Children.Add(new Border { Name = "hint", Background = Brush.Parse("#332F86F6"), BorderBrush = Accent, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8),
+        _hintHost.Children.Add(new Border { Name = "hint", Background = Brush.Parse("#33C9A227"), BorderBrush = Accent, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
                 new TextBlock { Text = "💡", FontSize = 16, Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center },
                 Pos(new TextBlock { Text = _settings.EasyLanguage ? Trendo.Core.Sys.A11y.Easy(text) : text, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center }, 1), Pos(ok, 2) } } });
@@ -230,6 +242,15 @@ public sealed partial class MainWindow
         var sections = new StackPanel { Spacing = 12 };
         Control Section(string id, string title, Control body) => new StackPanel { Name = "settings-section-" + id, Spacing = 6, IsVisible = _settingsSection == id, Children = { H(title, 15), body } };
 
+        var styles = new WrapPanel { Name = "settings-styles" };
+        foreach (var (id, label, hint) in new[] { ("trendo", "Trendo", "Gold-Rahmen, Knöpfe rechts"), ("windows", "Wie Windows", "eckige Knöpfe rechts, Titel links"), ("mac", "Wie Mac", "runde Ampel-Knöpfe links, Titel mittig"), ("linux", "Wie Linux", "runde Knöpfe rechts, Titel mittig") })
+        {
+            var on = _settings.Style == id;
+            var b = new Button { Name = "style-" + id, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 8), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1),
+                Content = new StackPanel { Children = { new TextBlock { Text = (on ? "✓ " : "") + label, FontWeight = FontWeight.SemiBold, Foreground = Text }, new TextBlock { Text = hint, FontSize = 11, Foreground = Muted } } } };
+            var sid = id; b.Click += (_, _) => { _settings.Style = sid; SaveSettings(); ApplyTheme(_settings); _core.Audit.Append(Principal.LocalOwner.Name, "look.style", sid); Reopen("settings"); };
+            styles.Children.Add(b);
+        }
         var themes = new WrapPanel();
         foreach (var (id, label) in new[] { ("dunkel", "Dunkel Premium"), ("hell", "Hell"), ("system", "Wie Windows (hell/dunkel)"), ("kontrast", "Hoher Kontrast") })
         {
@@ -238,7 +259,8 @@ public sealed partial class MainWindow
             b.Click += (_, _) => { _settings.Theme = id; Reopen("settings"); };
             themes.Children.Add(b);
         }
-        sections.Children.Add(Section("aussehen", "Aussehen", themes));
+        sections.Children.Add(Section("aussehen", "Aussehen", new StackPanel { Spacing = 6, Children = { themes,
+            H("Bedienstil", 13), P("Fenster wie gewohnt: Trendo, Windows, Mac oder Linux. Nachempfunden – mit Trendo-Logo und Gold, ohne fremde Symbole.", null, 11.5), styles } }));
 
         var colors = new WrapPanel();
         foreach (var (id, label) in AccentChoices)

@@ -311,7 +311,7 @@ public sealed class FloorPlanView : Control
         var size = Bounds.Size; if (size.Width < 2) return;
         var t = PlanTheme.Screen;
         ctx.FillRectangle(new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
-            GradientStops = { new GradientStop(Color.Parse("#FF102038"), 0), new GradientStop(Color.Parse("#FF0A1628"), 1) } }, new Rect(size));
+            GradientStops = { new GradientStop(Color.Parse("#FF282828"), 0), new GradientStop(Color.Parse("#FF1C1C1C"), 1) } }, new Rect(size));
         var plan = Shown;
         DrawBackground(ctx, plan);
         if (_s.Grid) DrawGrid(ctx, size);
@@ -331,9 +331,9 @@ public sealed class FloorPlanView : Control
         }
         // Kopfzeile: Koordinaten, Maßstab, Hinweis
         var info = $"x {_snap.X / 100:0.00} m · y {_snap.Y / 100:0.00} m · {_s.Zoom * 100 / 1:0} px/m";
-        Label(ctx, info, new Point(10, size.Height - 24), "#C9D6EA", 11, "#AA0A1628");
+        Label(ctx, info, new Point(10, size.Height - 24), "#C9D6EA", 11, "#AA1C1C1C");
         var hint = _s.Hint.Length > 0 ? _s.Hint : ToolHint();
-        if (hint.Length > 0) Label(ctx, hint, new Point(10, 10), "#F2F6FC", 12, "#CC14233D");
+        if (hint.Length > 0) Label(ctx, hint, new Point(10, 10), "#F2F6FC", 12, "#CC2C2C2C");
         if (plan.Walls.Count == 0 && plan.Rooms.Count == 0 && _s.Tool == "auswahl")
         {
             var ft = new FormattedText("Leerer Plan – links „Raum“ wählen und ein Rechteck aufziehen, oder „Wand“ für einzelne Wände.", CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Face, 15, B("#9FB4D3"));
@@ -421,7 +421,7 @@ public sealed class FloorPlanView : Control
         }
         if (outline is not null) ctx.DrawGeometry(fill, gold, new PolylineGeometry(outline.Select(v => Screen(v.X, v.Y)).ToList(), true));
         foreach (var (hx, hy) in Handles(p, sel)) { var s = Screen(hx, hy); ctx.DrawRectangle(Brushes.White, gold, new Rect(s.X - 5, s.Y - 5, 10, 10), 2, 2); }
-        if (p.WallOf(sel) is { } sw) { var m = sw.PointAt(sw.Length / 2); Label(ctx, FloorPlan.Cm(sw.Length), Screen(m.X, m.Y) + new Point(8, -26), "#0A1628", 12, "#F5A524"); }
+        if (p.WallOf(sel) is { } sw) { var m = sw.PointAt(sw.Length / 2); Label(ctx, FloorPlan.Cm(sw.Length), Screen(m.X, m.Y) + new Point(8, -26), "#1C1C1C", 12, "#F5A524"); }
     }
 
     void DrawToolPreview(DrawingContext ctx, FloorPlan p)
@@ -439,14 +439,14 @@ public sealed class FloorPlanView : Control
                 {
                     ctx.DrawGeometry(B("#F5A524", 70), gold, new PolylineGeometry(prev.Outline().Select(v => Screen(v.X, v.Y)).ToList(), true));
                     var ang = Math.Atan2(-(end.Y - c.Y), end.X - c.X) * 180 / Math.PI; if (ang < 0) ang += 360;
-                    Label(ctx, $"{FloorPlan.Cm(prev.Length)} · {ang:0}°{(_typed.Length > 0 ? $"  ⌨ {_typed}" : "")}", Screen(end.X, end.Y) + new Point(12, 10), "#0A1628", 12, "#F5A524");
+                    Label(ctx, $"{FloorPlan.Cm(prev.Length)} · {ang:0}°{(_typed.Length > 0 ? $"  ⌨ {_typed}" : "")}", Screen(end.X, end.Y) + new Point(12, 10), "#1C1C1C", 12, "#F5A524");
                 }
                 break;
             case "raum" when _press is { } a:
                 var (bx, by) = _snap;
                 var r = new[] { (a.X, a.Y), (bx, a.Y), (bx, by), (a.X, by) };
                 ctx.DrawGeometry(B("#7FD3FF", 50), gold, new PolylineGeometry(r.Select(v => Screen(v.Item1, v.Item2)).ToList(), true));
-                Label(ctx, $"{FloorPlan.Cm(Math.Abs(bx - a.X))} × {FloorPlan.Cm(Math.Abs(by - a.Y))} = {Math.Abs(bx - a.X) * Math.Abs(by - a.Y) / 10000:0.00} m²", Screen(bx, by) + new Point(12, 10), "#0A1628", 12, "#F5A524");
+                Label(ctx, $"{FloorPlan.Cm(Math.Abs(bx - a.X))} × {FloorPlan.Cm(Math.Abs(by - a.Y))} = {Math.Abs(bx - a.X) * Math.Abs(by - a.Y) / 10000:0.00} m²", Screen(bx, by) + new Point(12, 10), "#1C1C1C", 12, "#F5A524");
                 break;
             case "tuer": case "fenster":
                 var near = p.Walls.Select(x => (W: x, P: x.Project(_mouse.X, _mouse.Y))).Where(x => x.P.Dist <= 60).OrderBy(x => x.P.Dist).FirstOrDefault();
@@ -463,7 +463,7 @@ public sealed class FloorPlanView : Control
                 ctx.DrawGeometry(B("#7FD3FF", 40), gold, new PolylineGeometry(poly, true));
                 foreach (var q in _s.RoomPts) { var sq = Screen(q.X, q.Y); ctx.DrawRectangle(Brushes.White, new Pen(B("#F5A524"), 1.5), new Rect(sq.X - 4, sq.Y - 4, 8, 8)); }
                 var area = Math.Abs(Trendo.Core.Arch.Geo.SignedArea(_s.RoomPts.Append(_snap).ToList())) / 10000;
-                Label(ctx, $"{area:0.00} m²", Screen(_snap.X, _snap.Y) + new Point(12, 10), "#0A1628", 12, "#F5A524");
+                Label(ctx, $"{area:0.00} m²", Screen(_snap.X, _snap.Y) + new Point(12, 10), "#1C1C1C", 12, "#F5A524");
                 break;
             case "mass" when _s.DimA is { } da:
                 var db = _s.DimB ?? _snap; var off = _s.DimB is null ? 0 : DimLine.OffsetFor(da.X, da.Y, db.X, db.Y, _mouse.X, _mouse.Y);

@@ -348,7 +348,7 @@ public partial class MainWindow
                 Child = spec.FillHeight ? new ScrollViewer { Content = new StackPanel { Spacing = 6, Margin = new Thickness(0, 0, 8, 0), Children = { H("Eigenschaften", 13), props(d) } } } : new StackPanel { Spacing = 6, Children = { H("Eigenschaften", 13), props(d) } } }, 2));
 
         // Statusleiste
-        var status = new Border { Name = "prog-status", CornerRadius = new CornerRadius(10), Background = Brush.Parse(C("#33081329", "#14000000")), Padding = new Thickness(12, 5),
+        var status = new Border { Name = "prog-status", CornerRadius = new CornerRadius(10), Background = Brush.Parse(C("#331A1A1A", "#14000000")), Padding = new Thickness(12, 5),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {
                 new TextBlock { Name = "prog-status-text", Text = spec.Status?.Invoke(d) ?? "", Foreground = Muted, FontSize = 12 },
                 Pos(new TextBlock { Text = (d.Path is null ? "Noch nicht gespeichert" : Path.GetFileName(d.Path)) + (d.Dirty ? " · geändert, wird automatisch gesichert" : "") + $" · {d.Changed:HH:mm}", Foreground = Muted, FontSize = 12 }, 1) } } };

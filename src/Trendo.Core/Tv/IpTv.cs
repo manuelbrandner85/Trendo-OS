@@ -438,6 +438,16 @@ public sealed class TvLibrary(string dataRoot, ISecretStore? secrets = null)
         public List<TvRecording> Recordings { get; set; } = [];
         public List<TvReminder> Reminders { get; set; } = [];
         public string? LastChannel { get; set; }
+        /// <summary>Wunsch 02.11.2026: alle ausländischen Sender, Filme und Serien ausblenden – nur Deutsch (Deutschland, Österreich, Schweiz).</summary>
+        public bool OnlyGerman { get; set; }
+        /// <summary>Inhalte für Erwachsene zeigen (bleiben auch bei „nur Deutsch“ sichtbar, wenn eingeschaltet).</summary>
+        public bool ShowAdult { get; set; } = true;
+        // TV-Highend (02.11.2026)
+        public List<TvResume> Resume { get; set; } = [];
+        public bool KidsMode { get; set; }
+        public string Language { get; set; } = "de";
+        public bool MergeDuplicates { get; set; } = true;
+        public List<TvRecordRule> RecordRules { get; set; } = [];
     }
     static readonly JsonSerializerOptions J = new() { WriteIndented = false };
     // Zwischenspeicher (Absturzbericht 27.10.2026: Listen mit 300 000+ Einträgen ließen Trendo hängen): Zustand und gelesene Listen
@@ -497,6 +507,37 @@ public sealed class TvLibrary(string dataRoot, ISecretStore? secrets = null)
     public IReadOnlyList<string> Recent => Load().Recent;
     public IReadOnlyList<string> HiddenGroups => Load().HiddenGroups;
     public IReadOnlyList<string> LockedGroups => Load().LockedGroups;
+    public bool OnlyGerman => Load().OnlyGerman;
+    public bool ShowAdult => Load().ShowAdult;
+    public void SetOnlyGerman(bool on) => Change(s => s.OnlyGerman = on);
+    public void SetShowAdult(bool on) => Change(s => s.ShowAdult = on);
+    // ---------- TV-Highend (02.11.2026) ----------
+    public IReadOnlyList<TvResume> Resume => Load().Resume;
+    public TvResume? ResumeFor(string url) => Load().Resume.FirstOrDefault(r => r.Key == TvPlus.ResumeKey(url));
+    /// <summary>Stelle merken (höchstens 60 Einträge, neueste zuerst). Am Ende angekommen = aus „Weiterschauen“ entfernen.</summary>
+    public void SaveResume(TvResume r) => Change(s => { s.Resume.RemoveAll(x => x.Key == r.Key); if (r.Open) s.Resume.Insert(0, r); if (s.Resume.Count > 60) s.Resume.RemoveRange(60, s.Resume.Count - 60); });
+    public void ForgetResume(string key) => Change(s => s.Resume.RemoveAll(x => x.Key == key));
+    public bool KidsMode => Load().KidsMode;
+    public void SetKidsMode(bool on) => Change(s => s.KidsMode = on);
+    public string Language => Load().Language;
+    public void SetLanguage(string lang) => Change(s => s.Language = lang is "de" or "en" or "tr" or "fr" ? lang : "de");
+    public bool MergeDuplicates => Load().MergeDuplicates;
+    public void SetMergeDuplicates(bool on) => Change(s => s.MergeDuplicates = on);
+    public IReadOnlyList<TvRecordRule> RecordRules => Load().RecordRules;
+    public TvRecordRule AddRecordRule(string keyword, string? channelId = null)
+    {
+        if (keyword.Trim().Length < 2) throw new ArgumentException("Bitte ein Stichwort mit mindestens 2 Zeichen.");
+        var r = new TvRecordRule(Guid.NewGuid().ToString("N")[..10], keyword.Trim(), channelId);
+        Change(s => s.RecordRules.Add(r)); return r;
+    }
+    public void RemoveRecordRule(string id) => Change(s => s.RecordRules.RemoveAll(x => x.Id == id));
+    /// <summary>Darf eine Gruppe/Kategorie (mit Name des Eintrags) nach den Einstellungen gezeigt werden?</summary>
+    public bool Allowed(string group, string? name = null)
+    {
+        var st = Load();
+        if (st.KidsMode) return TvPlus.IsKids(group, name); // Kinder-Profil: nur Kinderinhalte, nie Erwachsene
+        return TvCommands.Allowed(group, name, st.OnlyGerman, st.ShowAdult);
+    }
     public IReadOnlyList<TvRecording> Recordings => Load().Recordings;
     public string? LastChannel => Load().LastChannel;
 

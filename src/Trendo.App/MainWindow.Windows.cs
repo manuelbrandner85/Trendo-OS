@@ -141,21 +141,39 @@ public partial class MainWindow
         var id = w.Id;
         var titleIcon = new ContentControl { Name = "win-icon-" + id, Margin = new Thickness(12, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Content = IconFor(_windowStudio.TryGetValue(id, out var sid) ? sid : ModuleOf(w.Page), 16) };
         var title = new TextBlock { Name = "win-titletext-" + id, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0), TextTrimming = TextTrimming.CharacterEllipsis };
+        var mac = _style == "mac"; var round = _style is "mac" or "linux";
         Button Cap(string name, string glyph, string tip, Action a)
         {
             var b = new Button { Name = name + "-" + id, Content = glyph, Width = 42, Height = 28, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Foreground = Text,
                 HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, FontSize = 13, CornerRadius = new CornerRadius(name == "win-close" ? 6 : 4), Margin = new Thickness(0, 0, name == "win-close" ? 6 : 0, 0) };
+            if (mac && name is "win-close" or "win-min" or "win-max")
+            {
+                // Wie Mac: kleine runde Ampel-Knöpfe (Rot schließen, Gelb minimieren, Grün maximieren), Zeichen erst beim Darüberfahren
+                var col = name switch { "win-close" => "#FF5F57", "win-min" => "#FEBC2E", _ => "#28C840" };
+                b.Width = 14; b.Height = 14; b.CornerRadius = new CornerRadius(7); b.Background = Brush.Parse(col); b.FontSize = 9; b.Foreground = Brush.Parse("#66000000");
+                b.Margin = new Thickness(name == "win-close" ? 12 : 0, 0, 8, 0); b.Content = "";
+                var g = glyph; b.PointerEntered += (_, _) => b.Content = g; b.PointerExited += (_, _) => b.Content = "";
+            }
+            else if (round && name is "win-close" or "win-min" or "win-max")
+            {
+                // Wie Linux (GNOME): runde, ruhige Knöpfe rechts
+                b.Width = 24; b.Height = 24; b.CornerRadius = new CornerRadius(12); b.Background = Brush.Parse("#22FFFFFF"); b.FontSize = 11; b.Margin = new Thickness(0, 0, name == "win-close" ? 10 : 6, 0);
+            }
             ToolTip.SetTip(b, tip); Avalonia.Automation.AutomationProperties.SetName(b, tip); b.Click += (_, _) => a(); return b;
         }
-        var caps = new StackPanel { Orientation = Orientation.Horizontal, Children = {
-            Cap("win-min", "—", "Minimieren", () => { Windows.Minimize(id); AfterWindowChange(); }),
-            Cap("win-max", "☐", "Maximieren / Wiederherstellen", () => { Windows.ToggleMaximize(id); AfterWindowChange(); }),
-            Cap("win-close", "✕", "Schließen", () => CloseWindow(id)) } };
+        var bMin = Cap("win-min", "—", "Minimieren", () => { Windows.Minimize(id); AfterWindowChange(); });
+        var bMax = Cap("win-max", "☐", "Maximieren / Wiederherstellen", () => { Windows.ToggleMaximize(id); AfterWindowChange(); });
+        var bClose = Cap("win-close", "✕", "Schließen", () => CloseWindow(id));
+        var caps = new StackPanel { Name = "win-caps-" + id, Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Children = { } };
+        if (mac) { caps.Children.Add(bClose); caps.Children.Add(bMin); caps.Children.Add(bMax); } else { caps.Children.Add(bMin); caps.Children.Add(bMax); caps.Children.Add(bClose); }
+        if (_style is "mac" or "linux") { title.TextAlignment = TextAlignment.Center; title.HorizontalAlignment = HorizontalAlignment.Center; }
         // Zurück-Knopf in jedem Fenster (Wunsch 01.11.2026): vorige Seite im selben Fenster, auch mit Alt+← oder der Zurück-Taste der Maus
         var back = Cap("win-back", "←", "Zurück", () => GoBack(id)); back.Margin = new Thickness(6, 0, 0, 0); back.Width = 34; back.FontSize = 15; back.IsEnabled = w.CanGoBack;
         _backButtons[id] = back;
-        var bar = new Border { Name = "win-title-" + id, Height = WindowManager.TitleBar, Background = Brush.Parse("#331C3058"), CornerRadius = new CornerRadius(0), Cursor = new Cursor(StandardCursorType.SizeAll),
-            Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), Children = { back, Pos(titleIcon, 1), Pos(title, 2), Pos(caps, 3) } } };
+        var bar = new Border { Name = "win-title-" + id, Height = WindowManager.TitleBar, Background = Brush.Parse("#333F3F3F"), CornerRadius = new CornerRadius(0), Cursor = new Cursor(StandardCursorType.SizeAll),
+            Child = mac
+                ? new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto,*,Auto"), Children = { caps, Pos(back, 1), Pos(titleIcon, 2), Pos(title, 3) } } // Mac: Knöpfe links
+                : new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), Children = { back, Pos(titleIcon, 1), Pos(title, 2), Pos(caps, 3) } } };
         // Verschieben mit der Maus an der Titelleiste; Doppelklick maximiert
         Point? from = null;
         bar.PointerPressed += (_, e) =>
@@ -279,9 +297,9 @@ public partial class MainWindow
             var f = _frames[w.Id].Frame; f.ZIndex = ++z; f.IsVisible = !w.Minimized;
             var on = active?.Id == w.Id;
             f.BorderBrush = on ? GoldEdge : Edge; f.Opacity = on ? 1 : 0.9;
-            f.BoxShadow = LowPower ? default : on ? BoxShadows.Parse("0 22 50 0 #BB000000, 0 0 0 1 #66F5C451, 0 0 24 0 #333B82F6") : BoxShadows.Parse("0 8 18 0 #66000000");
+            f.BoxShadow = LowPower ? default : on ? BoxShadows.Parse("0 22 50 0 #BB000000, 0 0 0 1 #66F5C451, 0 0 24 0 #33C9A227") : BoxShadows.Parse("0 8 18 0 #66000000");
             _frames[w.Id].Title.Foreground = on ? Text : Muted;
-            if (f.Child is Panel { Children: [Grid g, ..] } && g.Children[0] is Border bar) bar.Background = on ? Brush.Parse("#55305078") : Brush.Parse("#22101830");
+            if (f.Child is Panel { Children: [Grid g, ..] } && g.Children[0] is Border bar) bar.Background = on ? Brush.Parse("#55305078") : Brush.Parse("#22222222");
             if (f.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "win-close-" + w.Id) is { } close)
             { close.Background = on ? Brush.Parse("#E23B4A") : Brushes.Transparent; close.Foreground = on ? Brushes.White : Text; }
         }
@@ -309,7 +327,7 @@ public partial class MainWindow
             {
                 var (x, y, ww, hh) = Windows.Rect(w);
                 Canvas.SetLeft(fr.Frame, x); Canvas.SetTop(fr.Frame, y); fr.Frame.Width = ww; fr.Frame.Height = hh;
-                fr.Frame.CornerRadius = new CornerRadius(11); fr.Frame.BorderThickness = new Thickness(1.5);
+                fr.Frame.CornerRadius = new CornerRadius(_style switch { "windows" => 8, "mac" => 12, "linux" => 14, _ => 11 }); fr.Frame.BorderThickness = new Thickness(_style == "trendo" ? 1.5 : 1);
                 fr.Frame.BoxShadow = LowPower ? default : WindowShadow;
             }
         }
@@ -358,7 +376,7 @@ public partial class MainWindow
             if (IconFor(iconId, 15) is { } ic) content.Children.Add(ic);
             content.Children.Add(new TextBlock { Text = t, VerticalAlignment = VerticalAlignment.Center });
             var b = new Button { Name = "task-" + w.Id, Content = content, FontSize = 11.5, Padding = new Thickness(12, 4), CornerRadius = new CornerRadius(8),
-                Background = on ? Accent : Brush.Parse(w.Minimized ? "#330A1630" : "#660A1630"), Foreground = on ? Brushes.White : Text, BorderBrush = on ? Brushes.White : Edge, BorderThickness = new Thickness(on ? 1 : 1) };
+                Background = on ? Accent : Brush.Parse(w.Minimized ? "#331F1F1F" : "#661F1F1F"), Foreground = on ? Brushes.White : Text, BorderBrush = on ? Brushes.White : Edge, BorderThickness = new Thickness(on ? 1 : 1) };
             ToolTip.SetTip(b, w.Title + (w.Minimized ? " (minimiert)" : on ? " (aktiv)" : "")); Avalonia.Automation.AutomationProperties.SetName(b, w.Title);
             var id = w.Id; b.Click += (_, _) => TaskbarClick(id);
             _taskbar.Children.Add(b);
@@ -372,7 +390,7 @@ public partial class MainWindow
             var shown = name.Length > 22 ? name[..21] + "…" : name;
             content.Children.Add(new TextBlock { Text = shown, VerticalAlignment = VerticalAlignment.Center, Opacity = 0.85 });
             var b = new Button { Name = "pinbar-" + pin, Content = content, FontSize = 11.5, Padding = new Thickness(12, 4), CornerRadius = new CornerRadius(8),
-                Background = Brush.Parse("#220A1630"), Foreground = Text, BorderBrush = Edge, BorderThickness = new Thickness(1) };
+                Background = Brush.Parse("#221F1F1F"), Foreground = Text, BorderBrush = Edge, BorderThickness = new Thickness(1) };
             ToolTip.SetTip(b, name + " (angeheftet)"); Avalonia.Automation.AutomationProperties.SetName(b, name);
             var id = pin; b.Click += async (_, _) => await ActivateOrOpenStudio(id, name);
             _taskbar.Children.Add(b);

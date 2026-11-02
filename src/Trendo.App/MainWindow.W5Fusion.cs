@@ -145,7 +145,7 @@ public partial class MainWindow
         foreach (var p in projects)
         {
             var id = p.Id; var on = id == BigProject; var b = BigBoards.Load(_core.Projects, id);
-            var btn = new Button { Name = $"big-proj-{pi++}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(6, 4), Background = on ? Brush.Parse("#332F86F6") : Brushes.Transparent,
+            var btn = new Button { Name = $"big-proj-{pi++}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(6, 4), Background = on ? Brush.Parse("#33C9A227") : Brushes.Transparent,
                 Content = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { Ring(b.Percent, 34, $"big-ring-{id}"), Pos(new StackPanel { Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Children = {
                     new TextBlock { Text = p.Name, Foreground = Text, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal, TextTrimming = TextTrimming.CharacterEllipsis },
                     new TextBlock { Text = $"{b.Cards.Count(c => c.Column == 2)} von {b.Cards.Count} Karten fertig", Foreground = Muted, FontSize = 10.5 } } }, 1) } } };
@@ -172,7 +172,7 @@ public partial class MainWindow
                     var card = new Border { Name = $"big-card-{cid}", Background = TileBg, BorderBrush = on ? Brush.Parse("#FACC15") : Edge, BorderThickness = new Thickness(on ? 2 : 1), CornerRadius = new CornerRadius(8), Padding = new Thickness(8, 6), Cursor = new Cursor(StandardCursorType.Hand),
                         Child = new StackPanel { Spacing = 4, Children = {
                             new TextBlock { Text = c.Title, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
-                            new WrapPanel { Children = { new Border { CornerRadius = new CornerRadius(8), Padding = new Thickness(6, 1), Background = Brush.Parse("#332F86F6"), Margin = new Thickness(0, 0, 6, 0), Child = new TextBlock { Text = "🤖 " + c.Role, Foreground = Text, FontSize = 10.5 } },
+                            new WrapPanel { Children = { new Border { CornerRadius = new CornerRadius(8), Padding = new Thickness(6, 1), Background = Brush.Parse("#33C9A227"), Margin = new Thickness(0, 0, 6, 0), Child = new TextBlock { Text = "🤖 " + c.Role, Foreground = Text, FontSize = 10.5 } },
                                 new TextBlock { Text = c.Evidence.Count > 0 ? $"📎 {c.Evidence.Count}" : "", Foreground = Muted, FontSize = 10.5, VerticalAlignment = VerticalAlignment.Center } } },
                             new ProgressBar { Value = c.Column == 2 ? 100 : c.Progress, Maximum = 100, Height = 4 } } } };
                     Point? from = null; var dragged = false;

@@ -41,9 +41,9 @@ public sealed class CncPathView : Control
 
     public override void Render(DrawingContext ctx)
     {
-        ctx.FillRectangle(new SolidColorBrush(Color.Parse("#0E1A2E")), new Rect(Bounds.Size));
+        ctx.FillRectangle(new SolidColorBrush(Color.Parse("#212121")), new Rect(Bounds.Size));
         // Raster alle 10 mm in der Werkstückebene und Arbeitsraum
-        var grid = new Pen(new SolidColorBrush(Color.Parse("#1A2B47")), 1); var env = new Pen(new SolidColorBrush(Color.Parse("#557FD3FF")), 1, new DashStyle([4, 3], 0));
+        var grid = new Pen(new SolidColorBrush(Color.Parse("#363636")), 1); var env = new Pen(new SolidColorBrush(Color.Parse("#557FD3FF")), 1, new DashStyle([4, 3], 0));
         var (cx, cy, _, r) = Frame(); var step = r > 200 ? 50 : r > 60 ? 10 : 5;
         for (var gx = Math.Floor((cx - r * 1.4) / step) * step; gx <= cx + r * 1.4; gx += step) ctx.DrawLine(grid, Project(gx, cy - r * 1.4, 0), Project(gx, cy + r * 1.4, 0));
         for (var gy = Math.Floor((cy - r * 1.4) / step) * step; gy <= cy + r * 1.4; gy += step) ctx.DrawLine(grid, Project(cx - r * 1.4, gy, 0), Project(cx + r * 1.4, gy, 0));

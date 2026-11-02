@@ -116,6 +116,7 @@ public static class WebsiteTechniques
 {
     public static readonly (string Id, string Label, string Help)[] All =
     [
+        ("immersiv", "Immersiv 3D-Story", "Fotorealistische 3D-Szene hinter der Seite: beim Scrollen fährt die Kamera durch die Kapitel, Text erscheint Wort für Wort, weiches Scrollen."),
         ("geschichte", "Story-Scrolling", "Die Seite führt beim Scrollen durch Kapitel."),
         ("parallax", "Parallax", "Ebenen verschieben sich unterschiedlich schnell."),
         ("drei", "3D im Browser", "Ein Objekt mit Three.js, drehbar oder beim Scrollen."),

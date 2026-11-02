@@ -21,6 +21,7 @@ public static class WebsiteHtml
         File.WriteAllText(Path.Combine(dir, "impressum.html"), Simple(c, "Impressum", "Pflichtangaben fehlen noch. Trendo erfindet keinen Namen und keine Adresse.", ImpressumBody(c)), Utf8);
         if (c.Kind == "blog") WriteArticles(dir, c);
         WebsiteAssets.Copy("trendo-scroll.js", Path.Combine(dir, "assets", "vendor", "trendo-scroll.js"));
+        WebsiteAssets.Copy("trendo-motion.js", Path.Combine(dir, "assets", "vendor", "trendo-motion.js"));
         WebsiteAssets.Copy("seite.js", Path.Combine(dir, "seite.js"));
         WebsiteAssets.Copy("LIZENZEN.txt", Path.Combine(dir, "assets", "vendor", "LIZENZEN.txt"));
         if (NeedsThree(c))
@@ -37,7 +38,8 @@ public static class WebsiteHtml
         File.WriteAllText(Path.Combine(dir, "PROJEKT.md"), Projekt(c), Utf8);
     }
 
-    public static bool NeedsThree(WebsiteContent c) => c.Technique == "drei" || !string.IsNullOrWhiteSpace(c.ModelFile);
+    public static bool NeedsThree(WebsiteContent c) => c.Technique is "drei" or "immersiv" || !string.IsNullOrWhiteSpace(c.ModelFile);
+    static bool Dark(WebsiteContent c) => c.Technique is "drei" or "partikel" or "video" or "immersiv";
 
     public static string Css(WebsiteContent c)
     {
@@ -100,6 +102,27 @@ textarea { min-height: 8rem; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+/* 0.9.47 Immersiv: Szene fest im Hintergrund, Kapitel davor, Text Wort für Wort (trendo-motion.js) */
+.immersiv-buehne { position: fixed; inset: 0; z-index: 0; }
+.immersiv-buehne canvas { width: 100%; height: 100%; display: block; }
+body[data-technik="immersiv"] { background: #0b0b0c; color: #f3efe6; }
+body[data-technik="immersiv"] main, body[data-technik="immersiv"] .kopf, body[data-technik="immersiv"] .fuss { position: relative; z-index: 1; }
+body[data-technik="immersiv"] .kopf { background: linear-gradient(#0b0b0cdd, #0b0b0c00); }
+body[data-technik="immersiv"] .kopf a, body[data-technik="immersiv"] .marke { color: #f3efe6; }
+.immersiv-kapitel { min-height: 100vh; display: flex; align-items: center; background: transparent; }
+.immersiv-kapitel .text { max-width: 34rem; padding: 2rem 2.2rem; border-radius: var(--radius); background: rgba(14, 14, 15, 0.55); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(232, 194, 106, 0.28); box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.8); color: #f3efe6; }
+.immersiv-kapitel .text { margin-left: 6vw; margin-right: auto; }
+.immersiv-kapitel:nth-of-type(even) .text { margin-left: auto; margin-right: 6vw; }
+.immersiv-kapitel h2, body[data-technik="immersiv"] h1 { color: #fff; letter-spacing: -0.01em; }
+.immersiv-kapitel p { color: #e7e1d5; }
+body[data-technik="immersiv"] .akzentlinie { border-color: #e6b84d; }
+.bewegung-an [data-split] .wort { display: inline-block; opacity: 0; transform: translateY(0.6em); filter: blur(4px);
+  transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1), filter .7s; transition-delay: calc(var(--i) * 45ms); }
+.bewegung-an [data-split].sichtbar .wort { opacity: 1; transform: none; filter: none; }
+.bewegung-an [data-reveal] { opacity: 0; transform: translateY(24px); transition: opacity .8s ease .15s, transform .8s cubic-bezier(.2,.7,.2,1) .15s; }
+.bewegung-an [data-reveal].sichtbar { opacity: 1; transform: none; }
+[data-scrub] .text { transform: translateY(calc((0.5 - var(--p, 0.5)) * 60px)); }
 @media (max-width: 700px) {
   .kopf { flex-direction: column; align-items: flex-start; }
   .held, .kapitel { padding-top: 5.5rem; min-height: 100vh; }
@@ -114,7 +137,7 @@ textarea { min-height: 8rem; }
     {
         var b64 = ModelBase64(dir, c);
         var url = b64 is null && !string.IsNullOrWhiteSpace(c.ModelFile) ? c.ModelFile! : "";
-        var dark = c.Technique is "drei" or "partikel" or "video";
+        var dark = Dark(c);
         var sb = new StringBuilder();
         sb.Append(Head(c, c.Headline, c.Description, c.Technique, c.ModelMotion, c.Style.Accent, dark ? "#10141c" : c.Style.Background, url));
         if (c.Technique == "geschichte")
@@ -139,13 +162,16 @@ textarea { min-height: 8rem; }
     static string Hero(WebsiteContent c, string? b64)
     {
         var sb = new StringBuilder();
-        var dark = c.Technique is "drei" or "partikel" or "video";
-        var kapitel = c.Technique == "geschichte" ? " kapitel\" data-kapitel=\"" : "";
+        var dark = Dark(c);
+        var kapitel = c.Technique == "geschichte" ? " kapitel\" data-kapitel=\"" : c.Technique == "immersiv" ? " immersiv-kapitel\" data-scrub=\"" : "";
         sb.Append("<section class=\"held").Append(dark ? " dunkel" : "").Append(kapitel).Append("\" id=\"start\">\n");
         switch (c.Technique)
         {
             case "parallax":
                 sb.Append("<div class=\"schicht weit\" data-parallax=\"0.18\"></div><div class=\"schicht nah\" data-parallax=\"-0.22\"></div>\n");
+                break;
+            case "immersiv":
+                sb.Append("<div class=\"immersiv-buehne\" aria-hidden=\"true\"><canvas id=\"szene\"></canvas></div>\n");
                 break;
             case "drei":
                 sb.Append("<div class=\"buehne-voll\">");
@@ -168,7 +194,8 @@ textarea { min-height: 8rem; }
                 sb.Append("</div>\n");
                 break;
         }
-        sb.Append("<div class=\"schmal text\"><hr class=\"akzentlinie\"><p class=\"kicker\">").Append(E(Kicker(c))).Append("</p><h1>").Append(E(c.Headline)).Append("</h1><p class=\"lead\">").Append(E(c.Subline)).Append("</p>");
+        sb.Append("<div class=\"schmal text\"><hr class=\"akzentlinie\"><p class=\"kicker\">").Append(E(Kicker(c))).Append(c.Technique == "immersiv" ? "</p><h1 data-split>" : "</p><h1>").Append(E(c.Headline)).Append(c.Technique == "immersiv" ? "</h1><p class=\"lead\" data-reveal>" : "</h1><p class=\"lead\">").Append(E(c.Subline)).Append("</p>");
+        if (c.Technique == "immersiv") sb.Append("<p data-reveal>Scrollen – die Szene folgt dir durch die Kapitel.</p>");
         if (c.Technique == "geschichte") sb.Append("<p>Scrollen führt durch die Kapitel.</p>");
         if (c.Technique == "drei") sb.Append(TurnButtons());
         if (c.Technique == "mikro") sb.Append(MicroCards(c));
@@ -182,8 +209,9 @@ textarea { min-height: 8rem; }
     static string Section(WebsiteContent c, WebsiteSection s)
     {
         var sb = new StringBuilder();
-        var extra = c.Technique == "geschichte" ? " kapitel\" data-kapitel=\"" : "";
-        sb.Append("<section class=\"abschnitt schmal").Append(extra).Append("\" id=\"").Append(s.Id).Append("\"><div class=\"text\"><h2>").Append(E(s.Title)).Append("</h2><p>").Append(E(s.Text)).Append("</p>");
+        var extra = c.Technique == "geschichte" ? " kapitel\" data-kapitel=\"" : c.Technique == "immersiv" ? " immersiv-kapitel\" data-scrub=\"" : "";
+        var imm = c.Technique == "immersiv";
+        sb.Append("<section class=\"abschnitt schmal").Append(extra).Append("\" id=\"").Append(s.Id).Append("\"><div class=\"text\"><h2").Append(imm ? " data-split" : "").Append(">").Append(E(s.Title)).Append("</h2><p").Append(imm ? " data-reveal" : "").Append(">").Append(E(s.Text)).Append("</p>");
         if (s.Id == "kontakt") sb.Append(Form());
         else if (s.Items.Count > 0)
         {
@@ -310,6 +338,7 @@ textarea { min-height: 8rem; }
     {
         var sb = new StringBuilder();
         sb.Append("<script src=\"assets/vendor/trendo-scroll.js\"></script>\n");
+        sb.Append("<script src=\"assets/vendor/trendo-motion.js\"></script>\n");
         if (NeedsThree(c)) sb.Append("<script src=\"assets/vendor/trendo-three.js\"></script>\n");
         sb.Append("<script src=\"seite.js\"></script>\n");
         return sb.ToString();
@@ -333,6 +362,7 @@ textarea { min-height: 8rem; }
 
     static string Kicker(WebsiteContent c) => c.Technique switch
     {
+        "immersiv" => "Erlebnis",
         "geschichte" => "Kapitel 01",
         "parallax" => "Mit Tiefe",
         "drei" => "Im Raum",

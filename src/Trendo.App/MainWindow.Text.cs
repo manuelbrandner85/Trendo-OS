@@ -134,7 +134,7 @@ public partial class MainWindow
     }
 
     // ---------- Oberfläche ----------
-    private Control TextPageView() => new Border { Name = "text-page-root", Background = Brush.Parse(C("#F2081329", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = TextShell() };
+    private Control TextPageView() => new Border { Name = "text-page-root", Background = Brush.Parse(C("#F21A1A1A", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = TextShell() };
 
     private Control TextShell()
     {
@@ -210,6 +210,7 @@ public partial class MainWindow
         style.SelectionChanged += (_, _) => { if (CurPara() is { } cp && style.SelectedIndex >= 0 && (int)cp.Style != style.SelectedIndex) { Snapshot(); cp.Style = (ParaStyle)style.SelectedIndex; Changed(); Show("text"); } };
         ToolTip.SetTip(style, "Absatzart: Titel, Überschriften, Text, Zitat");
         bar.Children.Add(style);
+        foreach (var look in TextLookItems()) bar.Children.Add(look); // Pilot 0.9.47: Schriftart, Größe, Farbe, Hervorhebung, Zeilen- und Absatzabstand
         bool Has(Fmt f) => p is not null && TextDoc.Has(p, _txSel, _txSelLen, f);
         bar.Children.Add(TB("text-bold", "F", () => TextToggle(Fmt.Bold), "Fett (Strg+B)", Has(Fmt.Bold)));
         bar.Children.Add(TB("text-italic", "K", () => TextToggle(Fmt.Italic), "Kursiv (Strg+I)", Has(Fmt.Italic)));
@@ -356,9 +357,9 @@ public partial class MainWindow
     {
         foreach (var k in new[] { "TextControlBackground", "TextControlBackgroundPointerOver", "TextControlBackgroundFocused" }) tb.Resources[k] = background;
         foreach (var k in new[] { "TextControlForeground", "TextControlForegroundPointerOver", "TextControlForegroundFocused" }) tb.Resources[k] = tb.Foreground ?? Ink;
-        tb.Resources["TextControlBorderBrushFocused"] = Brush.Parse("#2F86F6");
+        tb.Resources["TextControlBorderBrushFocused"] = Brush.Parse("#C9A227");
         tb.Resources["TextControlBorderBrushPointerOver"] = Brush.Parse("#7FA7E0");
-        tb.Resources["TextControlSelectionHighlightColor"] = Brush.Parse("#662F86F6");
+        tb.Resources["TextControlSelectionHighlightColor"] = Brush.Parse("#66C9A227");
     }
 
     private static TextAlignment ToAlign(Align a) => a switch { Align.Center => TextAlignment.Center, Align.Right => TextAlignment.Right, Align.Justify => TextAlignment.Justify, _ => TextAlignment.Left };
@@ -373,11 +374,14 @@ public partial class MainWindow
             var tb = new TextBox
             {
                 Name = "text-edit", Text = p.Text, FontSize = size, FontWeight = bold ? FontWeight.Bold : FontWeight.Normal, FontStyle = p.Style == ParaStyle.Quote ? FontStyle.Italic : FontStyle.Normal,
-                Foreground = StyleBrush(p.Style), Background = Brush.Parse("#0F2F86F6"), BorderThickness = new Thickness(0, 0, 0, 1), BorderBrush = Brush.Parse("#552F86F6"),
+                Foreground = StyleBrush(p.Style), Background = Brush.Parse("#0FC9A227"), BorderThickness = new Thickness(0, 0, 0, 1), BorderBrush = Brush.Parse("#55C9A227"),
                 TextWrapping = TextWrapping.Wrap, AcceptsReturn = false, TextAlignment = ToAlign(p.Align), Padding = new Thickness(2, 1), MinHeight = 0, FontFamily = new FontFamily("Arial"),
-                CaretBrush = Ink, SelectionBrush = Brush.Parse("#662F86F6"),
+                CaretBrush = Ink, SelectionBrush = Brush.Parse("#66C9A227"),
             };
             PaperBox(tb, Brush.Parse("#F2F6FC"));
+            if (TextDoc.InkAt(p, 0, MarkKind.Font) is { } tf) tb.FontFamily = new FontFamily(tf);
+            if (p.LineSpacing is { } tls) tb.LineHeight = size * 1.2 * tls;
+            tb.ContextFlyout = null; tb.ContextMenu = TextParaMenu(index); // eigenes Menü statt nur Ausschneiden/Kopieren/Einfügen
             Avalonia.Automation.AutomationProperties.SetName(tb, "Absatz bearbeiten");
             _txActive = tb;
             tb.TextChanged += (_, _) =>
@@ -440,6 +444,7 @@ public partial class MainWindow
                     var run = new Run(t[a..e2]);
                     bool In(MarkKind k) => p.Marks.Any(m => m.Kind == k && m.Length > 0 && pos + a >= m.Start && pos + a < m.End);
                     var isLink = In(MarkKind.Link); var ins = In(MarkKind.Insert); var del = In(MarkKind.Delete);
+                    TextApplyInk(run, p, pos + a);
                     if (In(MarkKind.Comment)) run.Background = Brush.Parse("#66FFE680");
                     if (isLink) run.Foreground = Brush.Parse("#0563C1"); if (ins) run.Foreground = Brush.Parse("#15803D"); if (del) run.Foreground = Brush.Parse("#B91C1C");
                     if (f.HasFlag(Fmt.Bold)) run.FontWeight = FontWeight.Bold;
@@ -458,6 +463,10 @@ public partial class MainWindow
             }
             if (p.Text.Length == 0) AddNotes(view, p, index, 0);
             if (p.Text.Length == 0) view.Inlines!.Add(new Run(" "));
+            if (p.FirstLineCm > 0) view.Inlines!.Insert(0, new Avalonia.Controls.Documents.InlineUIContainer(new Border { Width = p.FirstLineCm * 33.3, Height = 1 })); // Erstzeileneinzug
+            if (p.LineSpacing is { } vls) view.LineHeight = size * 1.2 * vls;
+            view.ContextMenu = TextParaMenu(index);
+            view.ContextRequested += (_, _) => { if (TextFocusBlock != index) { TextFocusBlock = index; _txSel = 0; _txSelLen = p.Text.Length; } }; // Rechtsklick wirkt auf diesen Absatz
             view.PointerPressed += (_, e) =>
             {
                 var at = p.Text.Length;
@@ -468,6 +477,7 @@ public partial class MainWindow
         }
         if (p.IndentCm > 0) body.Margin = new Thickness(p.IndentCm * 33.3, 0, 0, 0);
         if (p.SpaceAfterPt is { } sa) body.Margin = new Thickness(body.Margin.Left, 0, 0, sa * 1.33);
+        if (p.SpaceBeforePt is { } sbf) body.Margin = new Thickness(body.Margin.Left, sbf * 1.33, 0, body.Margin.Bottom);
         if (p.List == ListKind.None) return body;
         var g = new Grid { ColumnDefinitions = new ColumnDefinitions("28,*") };
         g.Children.Add(new TextBlock { Text = p.List == ListKind.Bullet ? "•" : number + ".", FontSize = size, Foreground = Ink, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 1, 6, 0), FontFamily = new FontFamily("Arial") });

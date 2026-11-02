@@ -24,7 +24,8 @@ public partial class MainWindow
     {
         var hidden = Tv.HiddenGroups.ToHashSet();
         var locked = _tvUnlocked ? [] : Tv.LockedGroups.ToHashSet();
-        return cats.Distinct().Where(c => !hidden.Contains(c) && !locked.Contains(c) && (prov == "Alle" || TvCommands.HasProvider(c, prov)) && (lang == "Alle" || TvCommands.CountryOf(c) == lang)).ToHashSet();
+        var tv = Tv; // nur deutschsprachig / Erwachsene / Kinder-Profil
+        return cats.Distinct().Where(c => !hidden.Contains(c) && !locked.Contains(c) && tv.Allowed(c) && (prov == "Alle" || TvCommands.HasProvider(c, prov)) && (lang == "Alle" || TvCommands.CountryOf(c) == lang)).ToHashSet();
     }
 
     Button TvChip(string name, string label, bool on, Action click)
@@ -59,6 +60,76 @@ public partial class MainWindow
         return sp;
     }
     string? _tvVodSel, _tvSerSel, _tvPlayingTitle;
+    /// <summary>Läuft gerade ein Film oder eine Folge (statt eines Senders)?</summary>
+    bool _tvVodPlaying;
+    public bool TvVodPlaying => _tvVodPlaying;
+    DispatcherTimer? _tvSeekTimer;
+    readonly List<(Slider Bar, TextBlock Time)> _tvSeekViews = [];
+    bool _tvSeekDrag;
+
+    /// <summary>Zeitleiste wie in jedem Player: Position ziehen spult, links die Zeit, rechts die Länge. Wird jede Sekunde aus mpv gelesen.</summary>
+    Control TvSeekRow(string prefix)
+    {
+        var time = new TextBlock { Name = prefix + "-time", Text = "--:-- / --:--", Foreground = Brushes.White, FontSize = 13, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0), MinWidth = 120 };
+        var bar = new Slider { Name = prefix + "-seek", Minimum = 0, Maximum = 1, Value = 0, VerticalAlignment = VerticalAlignment.Center };
+        bar.AddHandler(PointerPressedEvent, (_, _) => _tvSeekDrag = true, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+        bar.AddHandler(PointerReleasedEvent, (_, _) => { _tvSeekDrag = false; _tvPlayer?.Send("seek", Math.Round(bar.Value, 1), "absolute"); }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+        bar.ValueChanged += (_, _) => { if (_tvSeekDrag) time.Text = $"{TvClock(bar.Value)} / {TvClock(bar.Maximum)}"; };
+        _tvSeekViews.RemoveAll(v => TopLevel.GetTopLevel(v.Bar) is null);
+        _tvSeekViews.Add((bar, time));
+        if (_tvSeekTimer is null)
+        {
+            _tvSeekTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            _tvSeekTimer.Tick += async (_, _) => await TvSeekTick();
+            OwnTimer(_tvSeekTimer);
+        }
+        return new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { time, Pos(bar, 1) } };
+    }
+
+    static string TvClock(double s) => s <= 0 || double.IsNaN(s) ? "--:--" : TimeSpan.FromSeconds(s).ToString(s >= 3600 ? @"h\:mm\:ss" : @"mm\:ss");
+
+    async Task TvSeekTick()
+    {
+        _tvSeekViews.RemoveAll(v => TopLevel.GetTopLevel(v.Bar) is null);
+        if (_tvSeekViews.Count == 0 || _tvPlayer is null || _tvSeekDrag) return;
+        var pos = await _tvPlayer.GetAsync("time-pos"); var dur = await _tvPlayer.GetAsync("duration");
+        double D(System.Text.Json.JsonElement? e) => e is { ValueKind: System.Text.Json.JsonValueKind.Number } v ? v.GetDouble() : 0;
+        var (p, d) = (D(pos), D(dur));
+        foreach (var (bar, time) in _tvSeekViews)
+        {
+            bar.Maximum = Math.Max(1, d); bar.Value = Math.Clamp(p, 0, bar.Maximum);
+            time.Text = $"{TvClock(p)} / {TvClock(d)}";
+        }
+        TvPlusTick(p, d); // Weiterschauen merken, Intro/Nächste Folge
+    }
+
+    /// <summary>Film/Folge läuft: Bild im Bereich „Filme“ bzw. „Serien“ mit Zeitleiste und Steuerung – kein Sprung mehr zu „Live-TV“.</summary>
+    Control? TvVodStage()
+    {
+        if (!_tvVodPlaying || _tvPlayingTitle is null) return null;
+        _tvPlayer ??= new MpvView("main");
+        if (!TvIsFullscreen) Detach(_tvPlayer);
+        var screen = new Border { Name = "tv-vod-screen", Background = Brushes.Black, CornerRadius = new CornerRadius(16), ClipToBounds = true, Height = 420,
+            BorderBrush = Brush.Parse("#88D4A84B"), BorderThickness = new Thickness(1.5), BoxShadow = BoxShadows.Parse("0 18 40 0 #A0000000"),
+            Child = TvIsFullscreen ? P("Läuft im Vollbild – Esc zum Verkleinern", Brushes.White, 13) : _tvPip is not null ? P("Läuft im Bild im Bild – „⧉ Zurückholen“ holt es hierher.", Brushes.White, 13) : _tvPlayer };
+        var vol = new Slider { Name = "tv-vod-volume", Minimum = 0, Maximum = 130, Value = 100, Width = 120, VerticalAlignment = VerticalAlignment.Center };
+        vol.ValueChanged += (_, _) => _tvPlayer?.Send("set_property", "volume", Math.Round(vol.Value));
+        var ctl = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, VerticalAlignment = VerticalAlignment.Center, Children = {
+            TvRound("tv-vod-back", "⏪", "30 Sekunden zurück", () => _tvPlayer?.Send("seek", -30)),
+            TvRound("tv-vod-back10", "↺", "10 Sekunden zurück", () => _tvPlayer?.Send("seek", -10)),
+            TvRound("tv-vod-pause", "⏯", "Pause / Weiter (Leertaste)", () => _tvPlayer?.Send("cycle", "pause"), gold: true, size: 56),
+            TvRound("tv-vod-fwd10", "↻", "10 Sekunden vor", () => _tvPlayer?.Send("seek", 10)),
+            TvRound("tv-vod-fwd", "⏩", "30 Sekunden vor", () => _tvPlayer?.Send("seek", 30)) } };
+        var extra = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = {
+            TvButton("tv-vod-audio", "🔈 Tonspur", () => _tvPlayer?.Send("cycle", "aid")),
+            TvButton("tv-vod-sub", "💬 Untertitel", () => _tvPlayer?.Send("cycle", "sid")),
+            new TextBlock { Text = "🔊", Foreground = Text, VerticalAlignment = VerticalAlignment.Center }, vol,
+            TvRound("tv-vod-full", "⛶", "Vollbild (F)", () => TvFullscreen(true)),
+            TvButton("tv-vod-stop", "■ Beenden", () => { _tvPlayer?.Stop(); _tvVodPlaying = false; _tvPlayingTitle = null; Show("tv"); }) } };
+        var head = new TextBlock { Name = "tv-vod-title", Text = "🎬 " + _tvPlayingTitle, Foreground = GoldText(), FontSize = 18, FontWeight = FontWeight.Bold, TextTrimming = TextTrimming.CharacterEllipsis };
+        return Glass2(new StackPanel { Name = "tv-vod-stage", Spacing = 10, Children = { head, screen, TvSeekRow("tv-vod"),
+            new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = { ctl, Pos(extra, 2) } }, TvVodExtras() } }, 12);
+    }
     int _tvSeason;
     List<TvVod>? _tvVod;
     List<TvSeries>? _tvSeries;
@@ -108,13 +179,15 @@ public partial class MainWindow
         return eps;
     }
 
-    /// <summary>Film oder Folge abspielen – im großen Bild unter „Live-TV“.</summary>
+    /// <summary>Film oder Folge abspielen – im Bereich „Filme“ bzw. „Serien“ (Wunsch 02.11.2026: nicht mehr zu „Live-TV“ springen).</summary>
     public bool TvPlayVideo(string url, string title)
     {
-        _tvPlayingTitle = title; _tvTab = "live";
+        _tvPlayingTitle = title; _tvVodPlaying = true; _tvChannel = null;
+        if (_tvTab is not ("film" or "serie")) _tvTab = "film";
         _core.Audit.Append(Principal.LocalOwner.Name, "tv.vod.play", title.Length > 60 ? title[..60] : title);
         Show("tv");
         var ok = TvPlayUrl(url, "main");
+        if (ok) TvAfterPlay(url); // an der gemerkten Stelle weiter
         if (_tvNowTitle is not null) _tvNowTitle.Text = "🎬 " + title;
         if (_tvNowInfo is not null) _tvNowInfo.Text = "Film/Folge – mit ⏪ ⏩ spulen, ⏯ pausieren";
         return ok;
@@ -149,7 +222,7 @@ public partial class MainWindow
         var img = new Image { Stretch = Stretch.UniformToFill };
         TvImage(img, cover);
         var face = new Grid { Height = 234, Width = 156, ClipToBounds = true, Children = {
-            new Border { Background = Grad("#1A3A6B", "#0A1A36"), Child = new TextBlock { Text = "🎬", FontSize = 40, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Opacity = 0.5 } },
+            new Border { Background = Grad("#1A3A6B", "#222222"), Child = new TextBlock { Text = "🎬", FontSize = 40, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Opacity = 0.5 } },
             img,
             new Border { VerticalAlignment = VerticalAlignment.Bottom, Padding = new Thickness(8, 18, 8, 6), Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
                 GradientStops = { new GradientStop(Color.Parse("#00040A18"), 0), new GradientStop(Color.Parse("#F0040A18"), 1) } },
@@ -190,6 +263,7 @@ public partial class MainWindow
     Control TvFilms()
     {
         var sp = new StackPanel { Spacing = 8, Name = "tv-films" };
+        if (TvVodStage() is { } stage) sp.Children.Add(stage);
         var all = TvVodList();
         if (all.Count == 0) { sp.Children.Add(P("Keine Filme gefunden. Filme kommen aus deiner Senderliste (Einträge wie „/movie/…“ oder Videodateien) oder vom Xtream-Zugang.", Text, 12.5)); return sp; }
         var grid = new WrapPanel { Name = "tv-film-grid" };
@@ -209,6 +283,7 @@ public partial class MainWindow
         }
         sp.Children.Add(TvFacets("tv-film", allCats, _tvVodProv, _tvVodLang, p => { _tvVodProv = p; _tvVodCat = "Alle"; Show("tv"); }, l => { _tvVodLang = l; _tvVodCat = "Alle"; Show("tv"); }));
         sp.Children.Add(TvCategoryBar("tv-film", ok, _tvVodCat, c => { _tvVodCat = c; Show("tv"); }, _tvVodQuery, q => { _tvVodQuery = q; Fill(); }));
+        if (_tvVodSel is null && _tvVodCat == "Alle" && _tvVodQuery.Trim().Length == 0 && !_tvVodPlaying) sp.Children.Add(TvFilmHome(all.Where(v => ok.Contains(v.Category)).ToList())); // Startseite wie bei Streaming-Diensten
         if (_tvVodSel is { } sel && all.FirstOrDefault(v => v.Id == sel) is { } film)
         {
             var img = new Image { Width = 160, Height = 240, Stretch = Stretch.UniformToFill }; TvImage(img, film.Cover);
@@ -218,7 +293,9 @@ public partial class MainWindow
                     H(film.Name, 17),
                     P(string.Join(" · ", new[] { film.Category, film.Year, film.Rating is { Length: > 0 } r ? "★ " + r : null }.Where(x => !string.IsNullOrEmpty(x))), null, 12),
                     P(film.Plot ?? "Keine Beschreibung.", Text, 12.5),
-                    new WrapPanel { Children = { TvButton("tv-film-play", "▶ Abspielen", () => TvPlayVideo(film.Url, film.Name), true), TvButton("tv-film-close", "Schließen", () => { _tvVodSel = null; Show("tv"); }) } } } }, 1) } }));
+                    TvVodInfoBlock() ?? new Border(),
+                    new WrapPanel { Children = { TvButton("tv-film-play", Tv.ResumeFor(film.Url) is { Open: true } rs ? $"▶ Weiter ab {TvClock(rs.Pos)}" : "▶ Abspielen", () => { _tvEp = null; TvPlayVideo(film.Url, film.Name); }, true), TvButton("tv-film-close", "Schließen", () => { _tvVodSel = null; Show("tv"); }) } } } }, 1) } }));
+            _ = TvLoadVodInfo(film); // Bewertung, Darsteller, Trailer vom Anbieter
         }
         Fill();
         sp.Children.Add(grid);
@@ -231,6 +308,8 @@ public partial class MainWindow
     Control TvSeriesView()
     {
         var sp = new StackPanel { Spacing = 8, Name = "tv-series" };
+        if (TvVodStage() is { } stage) sp.Children.Add(stage);
+        if (_tvSerSel is null && TvContinueRow("serie") is { } cont) sp.Children.Add(cont);
         var all = TvSeriesList();
         if (all.Count == 0) { sp.Children.Add(P("Keine Serien gefunden. Serien kommen aus deiner Senderliste (Einträge wie „Name S01 E02“) oder vom Xtream-Zugang.", Text, 12.5)); return sp; }
         if (_tvSerSel is { } sel && all.FirstOrDefault(s => s.Id == sel) is { } ser)
@@ -256,7 +335,7 @@ public partial class MainWindow
                 var row = new Button { Name = $"tv-ep-{e.Season}-{e.Episode}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(8), Background = Brush.Parse("#14FFFFFF"),
                     Content = new StackPanel { Children = { new TextBlock { Text = $"▶  Folge {e.Episode}: {e.Title}", Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap },
                         new TextBlock { Text = (e.Seconds > 0 ? $"{e.Seconds / 60} Min. · " : "") + (e.Plot ?? ""), Foreground = Muted, FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis, IsVisible = e.Seconds > 0 || e.Plot is not null } } } };
-                row.Click += (_, _) => TvPlayVideo(ee.Url, $"{ser.Name} – S{ee.Season:00}E{ee.Episode:00} {ee.Title}");
+                row.Click += (_, _) => TvPlayEpisode(ser, ee, eps);
                 list.Children.Add(row);
             }
             if (eps.Count == 0) list.Children.Add(P(_tvEps is null ? "Folgen werden geladen …" : "Keine Folgen gefunden.", null, 12));

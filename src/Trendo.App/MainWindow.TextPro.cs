@@ -155,7 +155,7 @@ public partial class MainWindow
         accept.Click += (_, _) => { TextAiDecide(true); Show("text"); };
         var reject = new Button { Name = "text-ai-reject", Content = "Verwerfen", Padding = new Thickness(12, 4), Focusable = false };
         reject.Click += (_, _) => { TextAiDecide(false); Show("text"); };
-        return new Border { Name = "text-ai-card", Background = Brush.Parse("#1A2F86F6"), BorderBrush = Brush.Parse("#552F86F6"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8), Margin = new Thickness(0, 4, 0, 4),
+        return new Border { Name = "text-ai-card", Background = Brush.Parse("#1AC9A227"), BorderBrush = Brush.Parse("#55C9A227"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8), Margin = new Thickness(0, 4, 0, 4),
             Child = new StackPanel { Spacing = 6, Children = {
                 new TextBlock { Text = "✨ Vorschlag der KI – noch nichts geändert", Foreground = Text, FontWeight = FontWeight.SemiBold },
                 tb, new StackPanel { Orientation = Orientation.Horizontal, Children = { accept, reject } } } } };
@@ -234,7 +234,7 @@ public partial class MainWindow
         foreach (var (id, label) in new[] { ("start", "Start"), ("einfuegen", "Einfügen"), ("entwurf", "Entwurf"), ("layout", "Layout"), ("referenzen", "Referenzen"), ("sendungen", "Sendungen"), ("pruefen", "Überprüfen"), ("ansicht", "Ansicht"), ("ki", "KI") })
         {
             var key = id;
-            var b = new Button { Name = "text-rib-" + id, Content = label, Focusable = false, Padding = new Thickness(12, 4), Background = _txRibbon == id ? Brush.Parse("#332F86F6") : Brushes.Transparent, FontWeight = _txRibbon == id ? FontWeight.SemiBold : FontWeight.Normal };
+            var b = new Button { Name = "text-rib-" + id, Content = label, Focusable = false, Padding = new Thickness(12, 4), Background = _txRibbon == id ? Brush.Parse("#33C9A227") : Brushes.Transparent, FontWeight = _txRibbon == id ? FontWeight.SemiBold : FontWeight.Normal };
             b.Click += (_, _) => { _txRibbon = key; Show("text"); };
             row.Children.Add(b);
         }
@@ -272,7 +272,7 @@ public partial class MainWindow
         ok.Click += (_, _) => Done(); cancel.Click += (_, _) => { _txPrompt = null; Show("text"); };
         tb.KeyDown += (_, e) => { if (e.Key == Key.Enter) { Done(); e.Handled = true; } else if (e.Key == Key.Escape) { _txPrompt = null; Show("text"); e.Handled = true; } };
         _ui.Post(() => { tb.Focus(); tb.SelectAll(); });
-        return new Border { Name = "text-prompt-bar", Background = Brush.Parse("#222F86F6"), CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6), Margin = new Thickness(0, 0, 0, 6),
+        return new Border { Name = "text-prompt-bar", Background = Brush.Parse("#22C9A227"), CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6), Margin = new Thickness(0, 0, 0, 6),
             Child = new WrapPanel { Children = { new TextBlock { Text = pr.Label, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0), FontSize = 13 }, tb, new Border { Width = 6 }, ok, new Border { Width = 4 }, cancel } } };
     }
 

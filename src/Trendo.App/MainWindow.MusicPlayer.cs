@@ -117,7 +117,7 @@ public partial class MainWindow
         {
             var on = _musicView == view || view == "alben" && _musicView.StartsWith("album:") || view == "kuenstler" && _musicView.StartsWith("artist:");
             var b = new Button { Name = name, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(8),
-                Background = on ? Brush.Parse("#332F86F6") : Brushes.Transparent, BorderBrush = on ? Brush.Parse("#D4A84B") : Brushes.Transparent, BorderThickness = new Thickness(1),
+                Background = on ? Brush.Parse("#33C9A227") : Brushes.Transparent, BorderBrush = on ? Brush.Parse("#D4A84B") : Brushes.Transparent, BorderThickness = new Thickness(1),
                 Content = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = label, Foreground = Text, FontSize = 13, TextTrimming = TextTrimming.CharacterEllipsis }, Pos(new TextBlock { Text = count.ToString(), Foreground = Muted, FontSize = 12 }, 1) } } };
             b.Click += (_, _) => { _musicView = view; Show("medien"); }; Hover(b); return b;
         }
@@ -155,7 +155,7 @@ public partial class MainWindow
         for (var i = 0; i < albums.Count && i < 400; i++)
         {
             var (artist, album, tracks) = albums[i]; var key = "album:" + artist + "|" + album; var playing = tracks.Any(t => t.Path == _queue.Current);
-            var b = new Button { Name = $"music-album-{i}", Width = 176, Padding = new Thickness(8), Margin = new Thickness(0, 0, 10, 12), CornerRadius = new CornerRadius(12), Background = playing ? Brush.Parse("#222F86F6") : Brushes.Transparent,
+            var b = new Button { Name = $"music-album-{i}", Width = 176, Padding = new Thickness(8), Margin = new Thickness(0, 0, 10, 12), CornerRadius = new CornerRadius(12), Background = playing ? Brush.Parse("#22C9A227") : Brushes.Transparent,
                 BorderBrush = Brush.Parse(playing ? "#D4A84B" : "#00000000"), BorderThickness = new Thickness(1),
                 Content = new StackPanel { Spacing = 4, Children = { CoverTile(tracks[0].Path, album, 158),
                     new TextBlock { Text = album, Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
@@ -236,7 +236,7 @@ public partial class MainWindow
         for (var i = 0; i < tracks.Count; i++)
         {
             var t = tracks[i]; var idx = i; var cur = t.Path == _queue.Current;
-            var row = new Grid { ColumnDefinitions = new ColumnDefinitions(showAlbum ? "34,*,180,180,Auto,Auto" : "34,*,180,Auto,Auto"), Background = Brush.Parse(cur ? "#262F86F6" : i % 2 == 0 ? "#08FFFFFF" : "#00000000") };
+            var row = new Grid { ColumnDefinitions = new ColumnDefinitions(showAlbum ? "34,*,180,180,Auto,Auto" : "34,*,180,Auto,Auto"), Background = Brush.Parse(cur ? "#26C9A227" : i % 2 == 0 ? "#08FFFFFF" : "#00000000") };
             row.Children.Add(new TextBlock { Text = cur ? (_mPaused ? "❚❚" : "♪") : (t.No > 0 ? t.No.ToString() : (i + 1).ToString()), Foreground = cur ? GoldText() : Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center });
             var play = new Button { Name = $"music-track-{i}", Background = Brushes.Transparent, Padding = new Thickness(6, 5), HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left,
                 Content = new TextBlock { Text = t.Title, Foreground = cur ? GoldText() : Text, FontSize = 13, FontWeight = cur ? FontWeight.Bold : FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis } };
@@ -310,7 +310,7 @@ public partial class MainWindow
             Act("music-queue", (_mQueueOpen ? "▾ " : "▸ ") + $"Warteschlange ({_queue.Items.Count})", () => { _mQueueOpen = !_mQueueOpen; Show("medien"); }, _mQueueOpen) } };
         if (MpvExe is null && AudioOverride is null) right.Children.Insert(0, Act("music-setup", "Player einrichten", () => _ = MusicSetupPlayer(), true));
         bar.Children.Add(Pos(right, 2));
-        return new Border { Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#F0182A4A"), 0), new GradientStop(Color.Parse("#F00C1628"), 1) } },
+        return new Border { Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#F0363636"), 0), new GradientStop(Color.Parse("#F01C1C1C"), 1) } },
             BorderBrush = Brush.Parse("#44D4A84B"), BorderThickness = new Thickness(0, 1, 0, 0), CornerRadius = new CornerRadius(14), Padding = new Thickness(14, 10), BoxShadow = BoxShadows.Parse("0 -6 20 -8 #AA000000"), Child = bar };
     }
 

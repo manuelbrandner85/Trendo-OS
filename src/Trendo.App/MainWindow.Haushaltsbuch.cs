@@ -73,7 +73,7 @@ public partial class MainWindow
                 line.Children.Add(new TextBlock { Text = $"Budget {Eu(lim)} € – {(ratio >= 1 ? "überschritten" : $"noch {Eu(lim - amt)} €")}", Foreground = Brush.Parse(col), FontSize = 10.5 });
             }
             var b = new Button { Name = $"hb-cat-{i}", Content = line, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 4), CornerRadius = new CornerRadius(8),
-                Background = on ? Brush.Parse("#332F86F6") : Brushes.Transparent, BorderThickness = new Thickness(0) };
+                Background = on ? Brush.Parse("#33C9A227") : Brushes.Transparent, BorderThickness = new Thickness(0) };
             var cc = cat; b.Click += (_, _) => { _hbCat = _hbCat == cc ? null : cc; _hbEdit = -1; Show("finanzen"); };
             legend.Children.Add(b);
         }
@@ -137,7 +137,7 @@ public partial class MainWindow
             _hbEdit = -1;
         }), true);
         var cancel = Act("hb-edit-cancel", "Abbrechen", () => { _hbEdit = -1; Show("finanzen"); });
-        return new Border { Name = "hb-editor", Background = Brush.Parse("#222F86F6"), BorderBrush = Brush.Parse("#D4A84B"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(8), Margin = new Thickness(0, 2),
+        return new Border { Name = "hb-editor", Background = Brush.Parse("#22C9A227"), BorderBrush = Brush.Parse("#D4A84B"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(8), Margin = new Thickness(0, 2),
             Child = new WrapPanel { Children = { date, text, amount, cat, save, cancel } } };
     }
 

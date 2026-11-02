@@ -157,6 +157,7 @@ public static class WebsiteStudio
 
     public static WebsiteBrief Example(string technique, string? media = null, string? model = null, bool cube = false) => technique switch
     {
+        "immersiv" => new("Ein hyperrealistischer Auftritt für eine Goldschmiede – das Schmuckstück dreht sich im Licht, während man durch die Geschichte scrollt.", "Goldschmiede Licht", Kind: "landing", Technique: "immersiv", StyleId: "luxus", ModelPath: model),
         "geschichte" => new("Eine ruhige Landingpage für eine Berghütte, die Stille vermietet.", "Berghütte Stille", Kind: "landing", Technique: "geschichte", StyleId: "klar"),
         "parallax" => new("Portfolio einer Fotografin mit Tiefe beim Scrollen.", "Lichtbild", Kind: "portfolio", Technique: "parallax", StyleId: "verspielt"),
         "drei" => new("Eine Lampe, die sich im Raum ansehen lässt.", "Lampe Nord", Kind: "shop", Technique: "drei", StyleId: "technik", ModelPath: model, ExampleCube: cube || model is null),

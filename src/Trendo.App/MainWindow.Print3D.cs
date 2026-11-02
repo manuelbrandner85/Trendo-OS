@@ -219,6 +219,6 @@ public partial class MainWindow
         if (_prCamera is { } jpg) try { using var ms = new MemoryStream(jpg); pr.Children.Add(new Image { Name = "print-camera-image", Source = new Avalonia.Media.Imaging.Bitmap(ms), MaxWidth = 480, HorizontalAlignment = HorizontalAlignment.Left }); } catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or NotSupportedException) { }
         sp.Children.Add(Card(pr));
         if (_prMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "print-msg", Text = _prMsg, Foreground = Muted, FontSize = 13, TextWrapping = TextWrapping.Wrap });
-        return new Border { Name = "print-page-root", Background = Brush.Parse(C("#F2081329", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = new ScrollViewer { Content = sp } };
+        return new Border { Name = "print-page-root", Background = Brush.Parse(C("#F21A1A1A", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = new ScrollViewer { Content = sp } };
     }
 }

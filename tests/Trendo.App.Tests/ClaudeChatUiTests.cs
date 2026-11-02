@@ -83,6 +83,17 @@ public class ClaudeChat_Ui
             // fortsetzen nach Neuöffnen: zuletzt benutztes Projekt
             w.Find<Button>("claude-dock-close").Press(); w.Find<Button>("auftrag-claude").Press(); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
             Assert.Equal("Ein Rechner für Preise", w.ClaudeChatCurrent()!.Title);
+
+            // umbenennen wie in der Claude-App (Wunsch 02.11.2026): ✎ → Name ändern → Speichern; leerer Name lässt den alten stehen
+            w.Find<Button>("claude-chat-rename-0").Press(); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            w.Find<TextBox>("claude-chat-rename-box").Text = "Preisrechner Café";
+            w.Find<Button>("claude-chat-rename-ok").Press(); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            Assert.Equal("Preisrechner Café", w.ClaudeChatCurrent()!.Title);
+            Assert.Equal("Preisrechner Café", w.Find<TextBlock>("claude-chat-title").Text);
+            Assert.Null(w.TryFind<TextBox>("claude-chat-rename-box"));
+            w.ClaudeChatRename(w.ClaudeChatCurrent()!.Id, "   ");
+            Assert.Equal("Preisrechner Café", w.ClaudeChatCurrent()!.Title);
+            Assert.NotNull(w.Find<Button>("claude-chat-item-0").ContextMenu); // Rechtsklick: Umbenennen / Löschen
         }
         finally { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeRunOverride = null; MainWindow.ChatTrashOverride = null; w.Close(); }
     }

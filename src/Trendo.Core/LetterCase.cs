@@ -434,6 +434,33 @@ public sealed class CaseStore(string projectsFolder, AuditLog audit)
         audit.Append(by.Name, "letter.letterhead", $"{nh.Kind} {nh.Id}"); return nh;
     }
     public Letterhead? Letterhead(string id, Principal by) => Letterheads(by).FirstOrDefault(h => h.Id == id);
+
+    /// <summary>Wunsch 02.11.2026: Briefkopf löschen – er kommt in den Trendo-Papierkorb und lässt sich zurückholen.</summary>
+    public LetterTrash.Entry? DeleteLetterhead(string id, Principal by)
+    {
+        var all = File.Exists(HeadsFile) ? JsonSerializer.Deserialize<List<Letterhead>>(File.ReadAllText(HeadsFile), J) ?? [] : [];
+        if (all.FirstOrDefault(x => x.Id == id) is not { } h) return null;
+        if (h.Owner != by.Name) throw new UnauthorizedAccessException("Fremder Briefkopf");
+        var e = new LetterTrash(projectsFolder).Keep($"Briefkopf {h.Name}", "briefkopf", JsonSerializer.Serialize(h, J));
+        all.Remove(h); File.WriteAllText(HeadsFile, JsonSerializer.Serialize(all, J));
+        audit.Append(by.Name, "letter.letterhead.delete", h.Id); return e;
+    }
+
+    /// <summary>Briefkopf aus dem Papierkorb wieder eintragen.</summary>
+    public Letterhead RestoreLetterhead(string trashId, Principal by)
+    {
+        var json = new LetterTrash(projectsFolder).Restore(trashId).Single();
+        var h = JsonSerializer.Deserialize<Letterhead>(json, J) ?? throw new InvalidDataException("Briefkopf unlesbar");
+        return SaveLetterhead(h with { Id = h.Id }, by);
+    }
+
+    /// <summary>Wunsch 02.11.2026: Akte löschen (ganzer Ordner mit Anlagen und Versionen) – in den Trendo-Papierkorb.</summary>
+    public LetterTrash.Entry? Delete(string id, Principal by)
+    {
+        var dir = Dir(id); if (!Directory.Exists(dir)) return null;
+        var e = new LetterTrash(projectsFolder).Move("Akte " + (Load(id, by)?.Title ?? id), "akte", dir);
+        audit.Append(by.Name, "letter.case.delete", id); return e;
+    }
 }
 
 /// <summary>LETTER-024: Freigabe bindet Empfänger, Kanal, Datei-Hash und Anlagen-Hashes. Jede Änderung macht sie ungültig.</summary>

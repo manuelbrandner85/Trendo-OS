@@ -75,7 +75,7 @@ public partial class MainWindow
         {
             var id = it.Id; var on = id == _wikiId;
             var b = new Button { Name = $"wissen-page-{i++}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(8, 4),
-                Background = on ? Brush.Parse("#332F86F6") : Brushes.Transparent,
+                Background = on ? Brush.Parse("#33C9A227") : Brushes.Transparent,
                 Content = new StackPanel { Children = { new TextBlock { Text = it.Title, Foreground = Text, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal, TextTrimming = TextTrimming.CharacterEllipsis },
                     new TextBlock { Text = $"{it.Source} · {KnowledgeStore.Links(it.Text).Count} Verweise", Foreground = Muted, FontSize = 10.5, TextTrimming = TextTrimming.CharacterEllipsis } } } };
             b.Click += (_, _) => { _wikiId = id; _wikiEdit = false; _wikiDelArmed = false; _wikiTrashView = false; _wissenMsg = ""; Show(V); };

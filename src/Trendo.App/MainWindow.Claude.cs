@@ -265,7 +265,7 @@ public partial class MainWindow
         sounds.IsCheckedChanged += (_, _) => KiSourceSettings.Update(_core.DataRoot, x => x.ClaudeSounds = sounds.IsChecked == true);
         return new Border
         {
-            Name = "claude-card", Background = Brush.Parse(s.Ready ? "#1A22B35E" : "#1A3B82F6"), BorderBrush = Brush.Parse(s.Ready ? "#4ADE80" : "#D4A84B"), BorderThickness = new Thickness(1),
+            Name = "claude-card", Background = Brush.Parse(s.Ready ? "#1A22B35E" : "#1AC9A227"), BorderBrush = Brush.Parse(s.Ready ? "#4ADE80" : "#D4A84B"), BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(12), Padding = new Thickness(14, 10), Margin = new Thickness(0, 0, 0, 10),
             Child = new StackPanel { Spacing = 6, Children = {
                 new TextBlock { Text = "Claude (dein Abo)", Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold },

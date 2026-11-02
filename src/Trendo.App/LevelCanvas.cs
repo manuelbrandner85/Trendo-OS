@@ -53,7 +53,7 @@ public sealed class LevelCanvas : Control
         if (_changed) { Rows = _grid.Select(r => new string(r)).ToList(); LevelChanged?.Invoke(Rows); }
     }
 
-    internal static readonly IBrush Sky = new SolidColorBrush(Color.Parse("#FF142544")), Ground = new SolidColorBrush(Color.Parse("#FF5B3A1E")), Grass = new SolidColorBrush(Color.Parse("#FF3FBF5A")),
+    internal static readonly IBrush Sky = new SolidColorBrush(Color.Parse("#FF303030")), Ground = new SolidColorBrush(Color.Parse("#FF5B3A1E")), Grass = new SolidColorBrush(Color.Parse("#FF3FBF5A")),
         Coin = new SolidColorBrush(Color.Parse("#FFFACC15")), Foe = new SolidColorBrush(Color.Parse("#FFE0475B")), Spike = new SolidColorBrush(Color.Parse("#FFC9CED6")), Start = new SolidColorBrush(Color.Parse("#FF4FB3FF")), White = Brushes.White;
 
     public override void Render(DrawingContext ctx)

@@ -16,8 +16,8 @@ public partial class MainWindow
     private string _a11yOut = "";
     public UserSettings Settings => _settings;
     /// <summary>Akzentfarbe für Text auf der Fläche – automatisch so angepasst, dass der Kontrast AA erreicht.</summary>
-    public static string PanelColor(string theme) => theme switch { "hell" => "#F4F7FC", "kontrast" => "#000000", _ => "#0B1730" };
-    private IBrush AccentText => Brush.Parse(A11y.AccentForText(Hx(((ISolidColorBrush)Accent).Color), PanelColor(_settings.Theme)));
+    public static string PanelColor(string theme) => theme switch { "hell" => "#F4F7FC", "kontrast" => "#000000", _ => "#1F1F1F" };
+    private IBrush AccentText => Brush.Parse(A11y.AccentForText(Hx(Accent switch { ISolidColorBrush s => s.Color, IGradientBrush { GradientStops.Count: > 0 } g => g.GradientStops[g.GradientStops.Count / 2].Color, _ => Avalonia.Media.Colors.Goldenrod }), PanelColor(_settings.Theme))); // Gold ist ein Verlauf: mittlere Farbe nehmen
 
     private static string Hx(Color c) => $"#{c.R:X2}{c.G:X2}{c.B:X2}";
 

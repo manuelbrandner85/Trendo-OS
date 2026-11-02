@@ -111,7 +111,16 @@ public class TvStudioUiTests
         Assert.Contains(w.GetLogicalTexts(), t => t == "Großes Abenteuer");
         w.Find<Button>("tv-film-play").Press();
         Assert.Equal("http://srv.example:8080/movie/u/p/7.mkv", played[^1].Url);
-        Assert.Equal("live", w.CurrentTvTab);
+        Assert.Equal("film", w.CurrentTvTab); // Wunsch 02.11.2026: Film läuft im Bereich „Filme“, kein Sprung zu „Live-TV“
+        Assert.True(w.TvVodPlaying);
+        Assert.NotNull(w.TryFind<StackPanel>("tv-vod-stage"));
+        Assert.NotNull(w.TryFind<Slider>("tv-vod-seek")); // Zeitleiste zum Spulen
+        w.TvFullscreen(true); Pump();
+        Assert.NotNull(w.TryFind<Slider>("tv-full-seek"));
+        Assert.NotNull(w.TryFind<Button>("tv-full-audio")); Assert.NotNull(w.TryFind<Button>("tv-full-sub"));
+        Assert.Null(w.TryFind<Button>("tv-full-prev")); // bei Filmen kein Senderwechsel
+        w.TvFullscreen(false); Pump();
+        Assert.Equal("film", w.CurrentTvTab); // nach dem Vollbild wieder im Bereich „Filme“
         // Serien
         w.Find<Button>("tv-tab-serie").Press();
         w.TryFind<Button>("tv-serie-item-")!.Press();
@@ -120,6 +129,8 @@ public class TvStudioUiTests
         w.Find<Button>("tv-season-2").Press();
         w.Find<Button>("tv-ep-2-1").Press();
         Assert.Equal("http://srv.example:8080/series/u/p/201.mkv", played[^1].Url);
+        Assert.Equal("serie", w.CurrentTvTab);
+        Assert.NotNull(w.TryFind<StackPanel>("tv-vod-stage"));
         w.Close();
     }
 

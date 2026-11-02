@@ -15,6 +15,7 @@
   <ItemGroup>
     <EmbeddedResource Include="WebAssets\trendo-three.js" />
     <EmbeddedResource Include="WebAssets\trendo-scroll.js" />
+    <EmbeddedResource Include="WebAssets\trendo-motion.js" />
     <EmbeddedResource Include="WebAssets\seite.js" />
     <EmbeddedResource Include="Skills\*.md" />
     <EmbeddedResource Include="WebAssets\LIZENZEN.txt" />

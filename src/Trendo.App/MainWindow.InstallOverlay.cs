@@ -15,7 +15,7 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     private readonly Grid _setupOverlay = new() { Name = "setup-overlay", IsVisible = false, ZIndex = 5000, Focusable = true,
-        Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#FF0E1F45"), 0), new GradientStop(Color.Parse("#FF050B1A"), 0.6), new GradientStop(Color.Parse("#FF02060F"), 1) } } };
+        Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#FF2C2C2C"), 0), new GradientStop(Color.Parse("#FF050B1A"), 0.6), new GradientStop(Color.Parse("#FF02060F"), 1) } } };
     private readonly TextBlock _setupTitle = new() { Name = "setup-overlay-title", FontSize = 26, FontWeight = FontWeight.SemiBold, Foreground = Brushes.White, HorizontalAlignment = HorizontalAlignment.Center };
     private readonly TextBlock _setupStep = new() { Name = "setup-overlay-step", FontSize = 14, Foreground = Brush.Parse("#BFD4F5"), HorizontalAlignment = HorizontalAlignment.Center, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap, MaxWidth = 560 };
     private readonly TextBlock _setupPercent = new() { Name = "setup-overlay-percent", FontSize = 13, Foreground = Brush.Parse("#7CB8FF"), HorizontalAlignment = HorizontalAlignment.Center };
@@ -85,7 +85,7 @@ public partial class MainWindow
         if (_theme != "kontrast")
         {
             _setupWaves.IsHitTestVisible = false;
-            foreach (var (color, opacity, thick) in new[] { ("#3B82F6", 0.22, 1.6), ("#F5C451", 0.18, 1.2), ("#5BA8FF", 0.14, 2.2), ("#E8B64C", 0.12, 1.0), ("#2563EB", 0.10, 2.8) })
+            foreach (var (color, opacity, thick) in new[] { ("#7A5512", 0.22, 1.6), ("#F5C451", 0.18, 1.2), ("#5BA8FF", 0.14, 2.2), ("#E8B64C", 0.12, 1.0), ("#2563EB", 0.10, 2.8) })
             {
                 var w = new Avalonia.Controls.Shapes.Path { Stroke = Brush.Parse(color), StrokeThickness = thick, Opacity = opacity, IsHitTestVisible = false };
                 _setupWaveLines.Add(w); _setupWaves.Children.Add(w);
@@ -95,26 +95,26 @@ public partial class MainWindow
         }
         if (_theme != "kontrast") _setupTitle.Foreground = GoldText();
         if (_theme != "kontrast") _setupBar.Foreground = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative),
-            GradientStops = { new GradientStop(Color.Parse("#3B82F6"), 0), new GradientStop(Color.Parse("#F5C451"), 0.7), new GradientStop(Color.Parse("#FFF1B8"), 1) } };
+            GradientStops = { new GradientStop(Color.Parse("#7A5512"), 0), new GradientStop(Color.Parse("#F5C451"), 0.7), new GradientStop(Color.Parse("#FFF1B8"), 1) } };
         root.Children.Add(_setupOverlay);
         var rnd = new Random(7);
         // Gold-Blau wie Logo C: pulsierendes Goldleuchten, zwei feine Kreise, ein schräger Orbit wie im Logo mit kreisendem Lichtfunken
         _setupHalo = new Ellipse { Width = 260, Height = 260, IsHitTestVisible = false,
-            Fill = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#66F5C451"), 0), new GradientStop(Color.Parse("#333B82F6"), 0.55), new GradientStop(Color.Parse("#003B82F6"), 1) } } };
+            Fill = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#66F5C451"), 0), new GradientStop(Color.Parse("#33C9A227"), 0.55), new GradientStop(Color.Parse("#00C9A227"), 1) } } };
         Canvas.SetLeft(_setupHalo, 50); Canvas.SetTop(_setupHalo, 50); _setupScene.Children.Add(_setupHalo);
         foreach (var (r, speed, w) in new[] { (158.0, 0.18, 1.0), (126.0, -0.3, 0.8) })
         {
             var ring = new Ellipse { Width = r * 2, Height = r * 2, Stroke = new LinearGradientBrush
             {
                 StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-                GradientStops = { new GradientStop(Color.Parse("#AAF5C451"), 0), new GradientStop(Color.Parse("#103B82F6"), 0.5), new GradientStop(Color.Parse("#AA5BA8FF"), 1) },
+                GradientStops = { new GradientStop(Color.Parse("#AAF5C451"), 0), new GradientStop(Color.Parse("#10C9A227"), 0.5), new GradientStop(Color.Parse("#AA5BA8FF"), 1) },
             }, StrokeThickness = w, StrokeDashArray = speed > 0 ? null : [6, 8], RenderTransform = new RotateTransform(0), RenderTransformOrigin = RelativePoint.Center };
             Canvas.SetLeft(ring, 180 - r); Canvas.SetTop(ring, 180 - r);
             _setupScene.Children.Add(ring); _setupRings.Add((ring, speed));
         }
         var orbit = new Ellipse { Width = 330, Height = 96, StrokeThickness = 2.2, IsHitTestVisible = false, RenderTransform = new RotateTransform(-12), RenderTransformOrigin = RelativePoint.Center,
             Stroke = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative),
-                GradientStops = { new GradientStop(Color.Parse("#CC3B82F6"), 0), new GradientStop(Color.Parse("#CCF5C451"), 0.55), new GradientStop(Color.Parse("#EEFFF1B8"), 1) } } };
+                GradientStops = { new GradientStop(Color.Parse("#CCC9A227"), 0), new GradientStop(Color.Parse("#CCF5C451"), 0.55), new GradientStop(Color.Parse("#EEFFF1B8"), 1) } } };
         Canvas.SetLeft(orbit, 15); Canvas.SetTop(orbit, 132); _setupScene.Children.Add(orbit);
         for (var i = 0; i < 48; i++)
         {
@@ -133,7 +133,7 @@ public partial class MainWindow
         for (var k = 0; k <= 48; k++) { var a = Math.PI * k / 48; pts.Add(OrbitPoint(a)); }
         var front = new Polyline { Points = pts, StrokeThickness = 2.6, IsHitTestVisible = false, StrokeLineCap = PenLineCap.Round,
             Stroke = new LinearGradientBrush { StartPoint = new RelativePoint(1, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 0, RelativeUnit.Relative),
-                GradientStops = { new GradientStop(Color.Parse("#FFFFF1B8"), 0), new GradientStop(Color.Parse("#EEF5C451"), 0.4), new GradientStop(Color.Parse("#DD3B82F6"), 1) } } };
+                GradientStops = { new GradientStop(Color.Parse("#FFFFF1B8"), 0), new GradientStop(Color.Parse("#EEF5C451"), 0.4), new GradientStop(Color.Parse("#DDC9A227"), 1) } } };
         _setupScene.Children.Add(front);
         _setupSpark = new Ellipse { Width = 9, Height = 9, Fill = Brushes.White, IsHitTestVisible = false, Effect = new DropShadowEffect { Color = Color.Parse("#F5C451"), BlurRadius = 14, OffsetX = 0, OffsetY = 0, Opacity = 1 } };
         _setupScene.Children.Add(_setupSpark);

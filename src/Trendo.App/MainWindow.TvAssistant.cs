@@ -144,6 +144,12 @@ public partial class MainWindow
                 TvPlanRecording(ch, p.Title, p.Start, p.Stop);
                 return $"✓ Aufnahme geplant: {p.Title} auf {ch.Name}, {p.Start.ToLocalTime():ddd HH:mm}–{p.Stop.ToLocalTime():HH:mm}.";
             }
+            case "record-rule":
+            {
+                var rule = Tv.AddRecordRule(a.Arg);
+                var n = TvRuleTick();
+                return $"✓ Ab jetzt nehme ich alles mit „{rule.Keyword}“ auf{(n > 0 ? $" – {n} Sendung(en) sind schon eingeplant" : " – sobald es im Programmführer steht")}.";
+            }
             case "films":
             {
                 _tvTab = "film"; _tvVodQuery = a.Arg;

@@ -50,7 +50,7 @@ public partial class MainWindow
         {
             var on = _abGroup == g;
             var b = new Button { Name = name, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(8),
-                Background = on ? Brush.Parse("#332F86F6") : Brushes.Transparent, BorderBrush = on ? Brush.Parse("#D4A84B") : Brushes.Transparent, BorderThickness = new Thickness(1),
+                Background = on ? Brush.Parse("#33C9A227") : Brushes.Transparent, BorderBrush = on ? Brush.Parse("#D4A84B") : Brushes.Transparent, BorderThickness = new Thickness(1),
                 Content = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = label, Foreground = Text, FontSize = 13, TextTrimming = TextTrimming.CharacterEllipsis }, Pos(new TextBlock { Text = n.ToString(), Foreground = Muted, FontSize = 12 }, 1) } } };
             b.Click += (_, _) => { _abGroup = g; _abEdit = false; Show(AB); }; Hover(b); return b;
         }
@@ -104,7 +104,7 @@ public partial class MainWindow
             var sub = _abGroup == "bday" ? bdays.First(b => b.Contact.Id == id) is var bd ? $"{bd.Next:dd.MM.} · wird {bd.Age}" : "" : c.Company.Length > 0 ? c.Company : c.Email.Length > 0 ? c.Email : c.Mobile.Length > 0 ? c.Mobile : c.Phone;
             var on = id == _abSel;
             var b = new Button { Name = $"ab-c-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 5), CornerRadius = new CornerRadius(8),
-                Background = on ? Brush.Parse("#332F86F6") : Brushes.Transparent, BorderBrush = on ? Brush.Parse("#D4A84B") : Brushes.Transparent, BorderThickness = new Thickness(1),
+                Background = on ? Brush.Parse("#33C9A227") : Brushes.Transparent, BorderBrush = on ? Brush.Parse("#D4A84B") : Brushes.Transparent, BorderThickness = new Thickness(1),
                 Content = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,10,*,Auto"), Children = { Avatar(c, 34),
                     Pos(new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = { new TextBlock { Text = c.Name, Foreground = Text, FontSize = 13.5, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
                         new TextBlock { Text = sub, Foreground = Muted, FontSize = 11.5, TextTrimming = TextTrimming.CharacterEllipsis } } }, 2),

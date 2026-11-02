@@ -47,7 +47,7 @@ public partial class MainWindow
         {
             var dir = d; var on = dir == _suiteOpen && !_suiteNew; var steps = CreationSuite.Steps(dir); var next = steps.FirstOrDefault(s => !s.Done);
             var b = new Button { Name = $"suite-open-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(6, 4), CornerRadius = new CornerRadius(8),
-                Background = on ? Brush.Parse("#332F86F6") : Brushes.Transparent,
+                Background = on ? Brush.Parse("#33C9A227") : Brushes.Transparent,
                 Content = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { Ring(CreationSuite.Percent(dir), 34, $"suite-ring-{i}"),
                     Pos(new StackPanel { Margin = new Thickness(8, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Children = {
                         new TextBlock { Text = Path.GetFileName(dir), Foreground = Text, FontSize = 12.5, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal, TextTrimming = TextTrimming.CharacterEllipsis },
@@ -298,7 +298,7 @@ public partial class MainWindow
             for (var r = 0; r < bars.Count; r++)
             {
                 var b = bars[r]; var row = r;
-                var lb = new Button { Name = $"suite-plan-row-{r}", Height = GanttCanvas.RowH, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = row == _planSel ? Brush.Parse("#332F86F6") : Brushes.Transparent, Padding = new Thickness(6, 0), CornerRadius = new CornerRadius(4),
+                var lb = new Button { Name = $"suite-plan-row-{r}", Height = GanttCanvas.RowH, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Background = row == _planSel ? Brush.Parse("#33C9A227") : Brushes.Transparent, Padding = new Thickness(6, 0), CornerRadius = new CornerRadius(4),
                     Content = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = {
                         new TextBlock { Text = $"{b.No}. " + (b.Step.Milestone ? "◆ " : "") + b.Step.Text, Foreground = b.Critical ? Brush.Parse("#FCA5A5") : Text, FontSize = 12, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
                         new TextBlock { Text = $"{b.Start:dd.MM.}–{b.End:dd.MM.} · {b.Days} T" + (b.Slack > 0 ? $" · {b.Slack} T Puffer" : ""), Foreground = Muted, FontSize = 10 } } } };

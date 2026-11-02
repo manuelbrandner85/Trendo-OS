@@ -64,7 +64,7 @@ public partial class MainWindow
             var p = shown[i]; var inCart = _cart.Where(c => c.Product == p.Name).Sum(c => c.Qty); var free = kasse.Shop.Available(p.Name) - inCart; var name = p.Name;
             var b = new Button { Name = $"kasse-art-{i}", Width = 170, Height = 104, Padding = new Thickness(12, 10), CornerRadius = new CornerRadius(14), IsEnabled = free > 0,
                 HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Stretch,
-                Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#FF223A66"), 0), new GradientStop(Color.Parse("#FF132544"), 1) } },
+                Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#FF4A4A4A"), 0), new GradientStop(Color.Parse("#FF303030"), 1) } },
                 BorderBrush = Brush.Parse(inCart > 0 ? "#D4A84B" : "#33FFFFFF"), BorderThickness = new Thickness(inCart > 0 ? 2 : 1),
                 Content = new Grid { RowDefinitions = new RowDefinitions("*,Auto,Auto"), Children = {
                     new TextBlock { Text = p.Name, Foreground = Brushes.White, FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, MaxLines = 2 },

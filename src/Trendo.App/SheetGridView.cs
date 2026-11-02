@@ -196,9 +196,9 @@ public sealed class SheetGridView : Control
 
     public override void Render(DrawingContext ctx)
     {
-        var bg = Dark ? Color.Parse("#0B1730") : Colors.White;
+        var bg = Dark ? Color.Parse("#1F1F1F") : Colors.White;
         var line = new Pen(new SolidColorBrush(Dark ? Color.Parse("#22FFFFFF") : Color.Parse("#FFD8DEE8")), 1);
-        var headBg = new SolidColorBrush(Dark ? Color.Parse("#14254A") : Color.Parse("#FFEEF2F8"));
+        var headBg = new SolidColorBrush(Dark ? Color.Parse("#323232") : Color.Parse("#FFEEF2F8"));
         var headSel = new SolidColorBrush(Dark ? Color.Parse("#2F4F86") : Color.Parse("#FFCFE0FA"));
         var fg = new SolidColorBrush(Dark ? Color.Parse("#E6EDF7") : Color.Parse("#FF101828"));
         var muted = new SolidColorBrush(Dark ? Color.Parse("#9FB1CF") : Color.Parse("#FF5B6B82"));

@@ -80,7 +80,8 @@ public partial class MainWindow
         var right = Side("3d-editor-scroll",
             Card(new StackPanel { Spacing = 8, Children = { H(Selected is { } sp0 ? "Teil: " + sp0.Name : "Neues Teil", 14), PartForm(objName) } }),
             BuildPromptBar("CORE-05"),
-            Card(AiBlock(aiOn, objName)));
+            Card(AiBlock(aiOn, objName)),
+            Card(KreaturBlock())); // 0.9.47: Drache und andere komplexe Figuren über Blender
         var center = Card(Viewport3D()); center.Name = "3d-stage"; center.VerticalAlignment = VerticalAlignment.Stretch; center.Margin = new Thickness(8, 0);
         var split = new Grid { ColumnDefinitions = new ColumnDefinitions("250,*,330"), MinHeight = 0, VerticalAlignment = VerticalAlignment.Stretch };
         split.Children.Add(left); Grid.SetColumn(center, 1); split.Children.Add(center);

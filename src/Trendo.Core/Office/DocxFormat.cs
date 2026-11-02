@@ -194,8 +194,11 @@ public static class DocxFormat
         if (p.Style != ParaStyle.Text) sb.Append($"<w:pStyle w:val=\"{StyleId(p.Style)}\"/>");
         if (p.List != ListKind.None) sb.Append($"<w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"{(p.List == ListKind.Bullet ? 1 : 2)}\"/></w:numPr>");
         sb.Append(extra);
-        if (p.SpaceAfterPt is { } sa) sb.Append($"<w:spacing w:after=\"{(int)Math.Round(sa * 20)}\"/>");
-        if (p.IndentCm > 0) sb.Append($"<w:ind w:left=\"{Tw(p.IndentCm)}\"/>");
+        if (p.SpaceAfterPt is not null || p.SpaceBeforePt is not null || p.LineSpacing is not null)
+            sb.Append("<w:spacing" + (p.SpaceBeforePt is { } sb0 ? $" w:before=\"{(int)Math.Round(sb0 * 20)}\"" : "") + (p.SpaceAfterPt is { } sa ? $" w:after=\"{(int)Math.Round(sa * 20)}\"" : "")
+                + (p.LineSpacing is { } ls ? $" w:line=\"{(int)Math.Round(ls * 240)}\" w:lineRule=\"auto\"" : "") + "/>");
+        if (p.IndentCm > 0 || p.FirstLineCm != 0)
+            sb.Append("<w:ind" + (p.IndentCm > 0 ? $" w:left=\"{Tw(p.IndentCm)}\"" : "") + (p.FirstLineCm > 0 ? $" w:firstLine=\"{Tw(p.FirstLineCm)}\"" : p.FirstLineCm < 0 ? $" w:hanging=\"{Tw(-p.FirstLineCm)}\"" : "") + "/>");
         if (p.Align != Align.Left) sb.Append($"<w:jc w:val=\"{p.Align switch { Align.Center => "center", Align.Right => "right", _ => "both" }}\"/>");
         sb.Append("</w:pPr>");
         // Abschnitte gleicher Formate und Markierungen
@@ -230,7 +233,7 @@ public static class DocxFormat
             var del = p.Marks.Any(m => m.Kind == MarkKind.Delete && m.Start <= x && m.End >= y);
             if (ins) sb.Append($"<w:ins w:id=\"{ctx.Rev++}\" w:author=\"\" w:date=\"{Stamp}\">");
             if (del) sb.Append($"<w:del w:id=\"{ctx.Rev++}\" w:author=\"\" w:date=\"{Stamp}\">");
-            sb.Append(RunXml(p.Text[x..y], f, size, link is not null, del));
+            sb.Append(RunXml(p.Text[x..y], f, size, link is not null, del, TextDoc.InkAt(p, x, MarkKind.Font), TextDoc.InkAt(p, x, MarkKind.Color), TextDoc.InkAt(p, x, MarkKind.Highlight)));
             if (del) sb.Append("</w:del>");
             if (ins) sb.Append("</w:ins>");
             foreach (var m in p.Marks.Where(m => m.Kind == MarkKind.Comment && m.Length > 0 && m.End == y && commentIds.ContainsKey(m)))
@@ -241,20 +244,23 @@ public static class DocxFormat
         return sb.Append("</w:p>").ToString();
     }
 
-    static string RunXml(string t, Fmt f, double? size, bool link, bool deleted)
+    static string RunXml(string t, Fmt f, double? size, bool link, bool deleted, string? font = null, string? color = null, string? highlight = null)
     {
         var sb = new StringBuilder("<w:r>");
-        if (f != Fmt.None || size is not null || link)
+        if (f != Fmt.None || size is not null || link || font is not null || color is not null || highlight is not null)
         {
             sb.Append("<w:rPr>");
             if (link) sb.Append("<w:rStyle w:val=\"Hyperlink\"/>");
+            if (font is not null) sb.Append($"<w:rFonts w:ascii=\"{Esc(font)}\" w:hAnsi=\"{Esc(font)}\" w:cs=\"{Esc(font)}\"/>");
             if (f.HasFlag(Fmt.Bold)) sb.Append("<w:b/>");
             if (f.HasFlag(Fmt.Italic)) sb.Append("<w:i/>");
             if (f.HasFlag(Fmt.Strike)) sb.Append("<w:strike/>");
             if (f.HasFlag(Fmt.Underline)) sb.Append("<w:u w:val=\"single\"/>");
             if (f.HasFlag(Fmt.Super)) sb.Append("<w:vertAlign w:val=\"superscript\"/>");
             if (f.HasFlag(Fmt.Sub)) sb.Append("<w:vertAlign w:val=\"subscript\"/>");
+            if (color is not null) sb.Append($"<w:color w:val=\"{color.TrimStart('#')}\"/>");
             if (size is { } s) sb.Append($"<w:sz w:val=\"{(int)Math.Round(s * 2)}\"/>");
+            if (highlight is not null) sb.Append($"<w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"{highlight.TrimStart('#')}\"/>");
             sb.Append("</w:rPr>");
         }
         var tag = deleted ? "delText" : "t";
@@ -311,6 +317,8 @@ public static class DocxFormat
         public required Dictionary<string, string> StyleNames;
         public required Func<string?, ListKind> NumKind;
         public Dictionary<string, string> Comments = [], Footnotes = [], Endnotes = [];
+        /// <summary>Schrift aus den Dokument-Standards – gleiche Schrift im Lauf wird nicht als eigene Schriftart gemerkt.</summary>
+        public string? DefaultFont;
     }
 
     /// <summary>Liest .docx (auch von Word oder LibreOffice) mit Seite einrichten, Kopf-/Fußzeile, Links, Kommentaren, Fuß-/Endnoten,
@@ -339,7 +347,7 @@ public static class DocxFormat
                 .ToDictionary(n => (string?)n.Attribute(W + "id") ?? "", n => string.Join("\n", n.Elements(W + "p").Select(PText)).Trim()) ?? [];
         var ctx = new RCtx
         {
-            Z = z, Rels = rels, StyleNames = styleNames, NumKind = NumKind,
+            Z = z, Rels = rels, StyleNames = styleNames, NumKind = NumKind, DefaultFont = (string?)stylesDoc.Root?.Element(W + "docDefaults")?.Descendants(W + "rFonts").FirstOrDefault()?.Attribute(W + "ascii"),
             ExternalRels = relEls.Where(e => ((string?)e.Attribute("Type"))?.EndsWith("/hyperlink", StringComparison.Ordinal) == true).ToDictionary(e => (string?)e.Attribute("Id") ?? "", e => (string?)e.Attribute("Target") ?? ""),
             Comments = RelOfType("comments") is { } ct ? Load("word/" + ct).Root?.Elements(W + "comment").ToDictionary(c => (string?)c.Attribute(W + "id") ?? "", c => string.Join("\n", c.Elements(W + "p").Select(PText)).Trim()) ?? [] : [],
             Footnotes = NotesOf(RelOfType("footnotes"), "footnote"), Endnotes = NotesOf(RelOfType("endnotes"), "endnote"),
@@ -445,12 +453,16 @@ public static class DocxFormat
             List = ppr?.Element(W + "numPr") is { } np ? ctx.NumKind((string?)np.Element(W + "numId")?.Attribute(W + "val")) : ListKind.None,
             IndentCm = double.TryParse((string?)(ppr?.Element(W + "ind")?.Attribute(W + "left") ?? ppr?.Element(W + "ind")?.Attribute(W + "start")), NumberStyles.Float, CultureInfo.InvariantCulture, out var ind) && ppr?.Element(W + "numPr") is null ? Math.Round(ind / TwipsPerCm, 2) : 0,
             SpaceAfterPt = double.TryParse((string?)ppr?.Element(W + "spacing")?.Attribute(W + "after"), NumberStyles.Float, CultureInfo.InvariantCulture, out var sa) ? sa / 20 : null,
+            SpaceBeforePt = double.TryParse((string?)ppr?.Element(W + "spacing")?.Attribute(W + "before"), NumberStyles.Float, CultureInfo.InvariantCulture, out var sbf) ? sbf / 20 : null,
+            LineSpacing = (string?)ppr?.Element(W + "spacing")?.Attribute(W + "lineRule") is null or "auto" && double.TryParse((string?)ppr?.Element(W + "spacing")?.Attribute(W + "line"), NumberStyles.Float, CultureInfo.InvariantCulture, out var ln) && ln > 0 ? Math.Round(ln / 240, 2) : null,
+            FirstLineCm = double.TryParse((string?)ppr?.Element(W + "ind")?.Attribute(W + "firstLine"), NumberStyles.Float, CultureInfo.InvariantCulture, out var fl) ? Math.Round(fl / TwipsPerCm, 2)
+                : double.TryParse((string?)ppr?.Element(W + "ind")?.Attribute(W + "hanging"), NumberStyles.Float, CultureInfo.InvariantCulture, out var hg) && ppr?.Element(W + "numPr") is null ? -Math.Round(hg / TwipsPerCm, 2) : 0,
         };
         var para = NewPara();
         var runs = new List<(string, Fmt, double?)>(); var marks = new List<Mark>(); var len = 0;
         var commentStart = new Dictionary<string, int>();
         void Text(string s, Fmt f, double? size) { runs.Add((s, f, size)); len += s.Length; }
-        void Flush(bool keepEmpty = false) { para.SetRuns(runs); para.Marks = marks; if (para.Text.Length > 0 || keepEmpty || para.Marks.Count > 0) doc.Blocks.Add(para); runs = []; marks = []; len = 0; para = NewPara(); }
+        void Flush(bool keepEmpty = false) { para.SetRuns(runs); para.Marks = marks; TextDoc.NormalizeInk(para); if (para.Text.Length > 0 || keepEmpty || para.Marks.Count > 0) doc.Blocks.Add(para); runs = []; marks = []; len = 0; para = NewPara(); }
         void Walk(XElement container, string? link, MarkKind? rev)
         {
             foreach (var e in container.Elements())
@@ -489,6 +501,19 @@ public static class DocxFormat
             if (va == "superscript" && rstyle is not ("FootnoteReference" or "EndnoteReference")) f |= Fmt.Super; else if (va == "subscript") f |= Fmt.Sub;
             double? size = double.TryParse((string?)rpr?.Element(W + "sz")?.Attribute(W + "val"), NumberStyles.Float, CultureInfo.InvariantCulture, out var hp) ? hp / 2 : null;
             if (size is { } sz && Math.Abs(sz - TextDoc.StyleSize(para.Style)) < 0.01) size = null;
+            // Schriftart, Farbe, Hervorhebung als Markierungen über dem Text dieses Laufs
+            var font = (string?)rpr?.Element(W + "rFonts")?.Attribute(W + "ascii") ?? (string?)rpr?.Element(W + "rFonts")?.Attribute(W + "hAnsi");
+            var color = (string?)rpr?.Element(W + "color")?.Attribute(W + "val") is { Length: 6 } cv && cv != "auto" && rstyle is not ("Hyperlink" or "InternetLink") ? "#" + cv.ToUpperInvariant() : null;
+            var hl = (string?)rpr?.Element(W + "shd")?.Attribute(W + "fill") is { Length: 6 } fill && fill != "auto" ? "#" + fill.ToUpperInvariant()
+                : (string?)rpr?.Element(W + "highlight")?.Attribute(W + "val") switch { "yellow" => "#FFFF00", "green" => "#00FF00", "cyan" => "#00FFFF", "magenta" => "#FF00FF", "red" => "#FF0000", "blue" => "#0000FF", "lightGray" => "#D3D3D3", "darkYellow" => "#808000", _ => null };
+            var inkFrom = len;
+            void Ink()
+            {
+                if (len > inkFrom)
+                    foreach (var (k, v) in new[] { (MarkKind.Font, font), (MarkKind.Color, color), (MarkKind.Highlight, hl) })
+                        if (v is not null && (k != MarkKind.Font || v != ctx.DefaultFont)) marks.Add(new Mark(inkFrom, len - inkFrom, k, v));
+                inkFrom = len;
+            }
             foreach (var c in r.Elements())
             {
                 if (c.Name == W + "t" || c.Name == W + "delText") Text(c.Value, f, size);
@@ -496,7 +521,7 @@ public static class DocxFormat
                 else if (c.Name == W + "footnoteReference" && ctx.Footnotes.TryGetValue((string?)c.Attribute(W + "id") ?? "", out var fn)) marks.Add(new Mark(len, 0, MarkKind.Footnote, fn));
                 else if (c.Name == W + "endnoteReference" && ctx.Endnotes.TryGetValue((string?)c.Attribute(W + "id") ?? "", out var en)) marks.Add(new Mark(len, 0, MarkKind.Endnote, en));
                 else if (c.Name == W + "commentReference" && ctx.Comments.TryGetValue((string?)c.Attribute(W + "id") ?? "", out var cm)) { marks.Add(new Mark(len, 0, MarkKind.Comment, cm)); ctx.Comments.Remove((string?)c.Attribute(W + "id") ?? ""); }
-                else if (c.Name == W + "br" && (string?)c.Attribute(W + "type") == "page") { Flush(); doc.Blocks.Add(new PageBreak()); }
+                else if (c.Name == W + "br" && (string?)c.Attribute(W + "type") == "page") { Ink(); Flush(); doc.Blocks.Add(new PageBreak()); inkFrom = 0; }
                 else if (c.Name == W + "br" || c.Name == W + "cr") Text("\n", f, size); // weicher Zeilenumbruch bleibt im Absatz
                 else if (c.Name == W + "drawing" && c.Descendants(A + "blip").FirstOrDefault()?.Attribute(R + "embed")?.Value is { } rid && ctx.Rels.TryGetValue(rid, out var target))
                 {
@@ -504,7 +529,7 @@ public static class DocxFormat
                     if (entry is null) continue;
                     using var ms = new MemoryStream(entry.ReadBytes());
                     var ext = c.Descendants(WP + "extent").FirstOrDefault();
-                    Flush();
+                    Ink(); Flush();
                     doc.Blocks.Add(new Picture
                     {
                         Data = ms.ToArray(), Ext = Path.GetExtension(target).TrimStart('.').ToLowerInvariant() is { Length: > 0 } e ? e.Replace("jpeg", "jpg") : "png",
@@ -512,13 +537,15 @@ public static class DocxFormat
                         HeightCm = long.TryParse((string?)ext?.Attribute("cy"), out var cy) ? cy / (double)EmuPerCm : 8,
                         Alt = (string?)c.Descendants(WP + "docPr").FirstOrDefault()?.Attribute("descr") ?? "",
                     });
+                    inkFrom = len;
                 }
             }
+            Ink();
         }
         Walk(p, null, null);
         var hadBreakOrPic = p.Descendants(W + "br").Any(b => (string?)b.Attribute(W + "type") == "page") || p.Descendants(W + "drawing").Any();
         // Absatz, der nur einen Seitenumbruch oder ein Bild trug, bleibt nicht als leerer Absatz zurück
-        para.SetRuns(runs); para.Marks = marks;
+        para.SetRuns(runs); para.Marks = marks; TextDoc.NormalizeInk(para);
         if (para.Text.Length > 0 || para.Marks.Count > 0 || !hadBreakOrPic) doc.Blocks.Add(para);
     }
 }

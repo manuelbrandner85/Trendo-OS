@@ -122,7 +122,7 @@ public partial class MainWindow
     {
         var j = CncJob.From(d.Data);
         var ed = new TextBox { Name = "cnc-editor", Text = j.Gcode, AcceptsReturn = true, FontFamily = new FontFamily("Consolas, Cascadia Mono, DejaVu Sans Mono, monospace"), FontSize = 12.5, TextWrapping = TextWrapping.NoWrap,
-            Background = Brush.Parse("#0B1526"), Foreground = Brush.Parse("#D6E4FF"), SelectionBrush = Brush.Parse("#F5A52466"), VerticalContentAlignment = VerticalAlignment.Top };
+            Background = Brush.Parse("#1B1B1B"), Foreground = Brush.Parse("#D6E4FF"), SelectionBrush = Brush.Parse("#F5A52466"), VerticalContentAlignment = VerticalAlignment.Top };
         ScrollViewer.SetHorizontalScrollBarVisibility(ed, Avalonia.Controls.Primitives.ScrollBarVisibility.Auto);
         void Commit() { var t = ed.Text ?? ""; if (t != CncJob.From(d.Data).Gcode) { ProgramRun(CK, () => { CncEdit(d, "G-Code ändern", x => x.Gcode = t); CncStop(); _cncT = -1; }); } }
         ed.LostFocus += (_, _) => Commit();

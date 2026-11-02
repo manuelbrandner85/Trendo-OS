@@ -12,7 +12,7 @@ public static partial class TvCommands
     /// <param name="Extra">bei only-country/show-all/provider/lang: Bereich live, film, serie oder leer (alles); bei films/series: Kategorie</param>
     public sealed record Action(string Kind, string Arg = "", string Extra = "");
 
-    public static readonly string[] Kinds = ["only-country", "show-all", "hide-groups", "show-groups", "lock-groups", "unlock-groups", "play", "favorite", "record", "films", "series", "live", "guide", "search", "provider", "lang"];
+    public static readonly string[] Kinds = ["only-country", "show-all", "hide-groups", "show-groups", "lock-groups", "unlock-groups", "play", "favorite", "record", "films", "series", "live", "guide", "search", "provider", "lang", "record-rule"];
 
     /// <summary>Streaming-Anbieter und Sender, nach denen viele Listen Filme und Serien einordnen („DE • NETFLIX SERIEN“, „TR • DISNEY PLUS DIZILER“).</summary>
     public static readonly (string Name, string[] Keys)[] Providers =
@@ -112,6 +112,23 @@ public static partial class TvCommands
         channels.GroupBy(c => c.Group).Where(g => IsCountry(g.Key, code) || g.Count(c => IsCountry(c.Name, code)) * 2 > g.Count()).Select(g => g.Key).ToList();
 
     [GeneratedRegex(@"\b(erwachsen\w*|adult|xxx|18\+|porn\w*|erotik)\b", RegexOptions.IgnoreCase)] private static partial Regex AdultWords();
+    [GeneratedRegex(@"(^|[^a-z0-9])(xxx|18\+|adult\w*|erwachsen\w*|porn\w*|erotik\w*)([^a-z0-9]|$)", RegexOptions.IgnoreCase)] private static partial Regex AdultMark();
+
+    /// <summary>Inhalt für Erwachsene? („XXX“, „18+“, „Adult“, „Erotik“ im Gruppen- oder Sendernamen)</summary>
+    public static bool IsAdult(string? text) => !string.IsNullOrEmpty(text) && AdultMark().IsMatch(text);
+
+    /// <summary>Deutschsprachig: Deutschland, Österreich, Schweiz.</summary>
+    public static readonly string[] GermanSpeaking = ["de", "at", "ch"];
+
+    /// <summary>Nach den Einstellungen zeigen? Erwachsene nur, wenn erlaubt. „Nur Deutsch“ blendet alles aus, was ausdrücklich zu einem anderen Land gehört;
+    /// Einträge ohne Länderkennung bleiben (viele deutsche Listen haben keine).</summary>
+    public static bool Allowed(string group, string? name, bool onlyGerman, bool showAdult)
+    {
+        if (IsAdult(group) || IsAdult(name)) return showAdult;
+        if (!onlyGerman) return true;
+        var c = CountryOf(group) ?? (name is null ? null : CountryOf(name));
+        return c is null || GermanSpeaking.Contains(c);
+    }
 
     /// <summary>Feste Regeln für die häufigen Wünsche (ohne KI). Liefert leer, wenn der Satz nicht sicher verstanden wurde.</summary>
     public static List<Action> Rules(string text)
@@ -135,6 +152,12 @@ public static partial class TvCommands
         if (AdultWords().IsMatch(t) && Regex.IsMatch(t, @"\b(ausblend\w*|versteck\w*|weg)\b")) { list.Add(new("hide-groups", "adult")); return list; }
         var m = Regex.Match(t, @"\b(?:blend\w*|versteck\w*)\s+(?:die\s+)?(?:gruppe\s+)?[„""]?(.+?)[“""]?\s+aus\b");
         if (m.Success) { list.Add(new("hide-groups", m.Groups[1].Value)); return list; }
+        // Aufnahme-Regel (02.11.2026): „Nimm alle Spiele vom FC Bayern auf“, „Nimm jede Folge Tatort auf“, „Tagesschau immer aufnehmen“
+        m = Regex.Match(t, @"\b(?:nimm|nehme)\s+(?:mir\s+)?(?:alle|jede[nrs]?|immer)\s+(?:spiele|folgen|sendungen|übertragungen)?\s*(?:vom|von|der|des|mit|zu)?\s*(.+?)\s+auf\b|^(.+?)\s+immer\s+(?:aufnehmen|aufzeichnen)\b");
+        if (m.Success) { var kw = (m.Groups[1].Success && m.Groups[1].Value.Length > 0 ? m.Groups[1].Value : m.Groups[2].Value).Trim(' ', '.', '!'); if (kw.Length > 1) { list.Add(new("record-rule", kw)); return list; } }
+        // „Such mir einen Krimi für heute Abend“ → Filme dieser Art
+        m = Regex.Match(t, @"\b(?:such\w*|find\w*|empfiehl\w*)\s+(?:mir\s+)?(?:einen|eine|ein|was|etwas)\s+(?:guten?\s+|schöne[nr]?\s+)?(krimi|thriller|komödie|horror|actionfilm|action|drama|liebesfilm|western|animationsfilm|familienfilm|science-fiction|sci-fi|doku\w*|abenteuer\w*)\b");
+        if (m.Success) { var g = m.Groups[1].Value; list.Add(new("films", "", g switch { "actionfilm" => "action", "liebesfilm" => "romant", "familienfilm" => "famil", "animationsfilm" => "anima", "sci-fi" => "science", _ => g.Length > 6 ? g[..6] : g })); return list; }
         m = Regex.Match(t, @"\b(?:nimm|aufnehmen|aufzeichnen|nehme)\b\s*(?:mir\s+)?(?:heute\s+(?:abend\s+)?|morgen\s+)?(?:den|die|das)?\s*(.+?)(?:\s+auf)?$");
         if (Regex.IsMatch(t, @"\b(nimm|aufnehmen|aufzeichnen|nehme)\b") && m.Success && m.Groups[1].Value.Trim().Length > 1) { list.Add(new("record", m.Groups[1].Value.Trim(' ', '.', '!'))); return list; }
         m = Regex.Match(t, @"\b(?:favorit\w*)\b.*?(?:mach\w*|setz\w*)?\s*(.+)$|\b(?:mach|setz)\w*\s+(.+?)\s+zu(?:m|r)?\s+favorit");
@@ -162,7 +185,7 @@ public static partial class TvCommands
         "Erlaubte kind-Werte: only-country (arg: Ländercode de, at, ch, uk, us, tr, fr, it, es, pl, nl, ar), show-all, hide-groups (arg: Teil des Gruppennamens oder adult), " +
         "show-groups, lock-groups (arg wie hide-groups), unlock-groups, play (arg: Sendername), favorite (arg: Sendername), record (arg: Titel der Sendung), " +
         "films (arg: Suchwort, extra: Kategorie), series (arg: Suchwort, extra: Kategorie), live, guide, search (arg: Sendername), " +
-        "provider (arg: Netflix, Amazon Prime, Disney+, Apple TV+, HBO Max, Paramount+, RTL+, Joyn, Sky; extra: film oder serie), lang (arg: Ländercode; extra: film oder serie). " +
+        "record-rule (arg: Stichwort – nimmt alle passenden Sendungen im Programmführer auf), provider (arg: Netflix, Amazon Prime, Disney+, Apple TV+, HBO Max, Paramount+, RTL+, Joyn, Sky; extra: film oder serie), lang (arg: Ländercode; extra: film oder serie). " +
         "Bei only-country und show-all ist extra der Bereich: live (Sender), film, serie oder leer für alles. Unbekanntes: [].";
 
     /// <summary>KI-Antwort lesen – nur bekannte Aktionen, höchstens 5.</summary>

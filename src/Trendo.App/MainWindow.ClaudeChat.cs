@@ -24,7 +24,7 @@ public partial class MainWindow
         public StackPanel Log = new() { Name = "claude-chat-log", Spacing = 14, Margin = new Thickness(24, 18, 24, 18) };
         public ScrollViewer Scroll = new(); public StackPanel Side = new() { Name = "claude-chat-list", Spacing = 4 };
         public TextBox Input = new(); public Button Send = new(); public TextBlock Title = new(); public Border Body = new();
-        public string? ConfirmDelete; public FolderSnapshot? LastSnapshot; public string? LastSnapshotChat;
+        public string? ConfirmDelete, Renaming; public FolderSnapshot? LastSnapshot; public string? LastSnapshotChat;
         // Vorschau rechts (Wunsch 01.11.2026: was Claude baut, live sehen; vorher/nachher vergleichen)
         public Border Preview = new() { Name = "claude-preview" }; public ColumnDefinition PreviewCol = new(0, GridUnitType.Pixel);
         public string? PreviewFile; public string? PreviewOriginal; public string Compare = "nachher"; public NativeWebView? PreviewWeb; public string? PreviewNote;
@@ -172,12 +172,34 @@ public partial class MainWindow
             var open = new Button { Name = $"claude-chat-item-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 6), BorderThickness = new Thickness(0),
                 Background = c.Id == ui.ChatId ? ClaudeItem : Brushes.Transparent, Foreground = ClaudeFg,
                 Content = new StackPanel { Children = { new TextBlock { Text = c.Title, FontSize = 12.5, TextTrimming = TextTrimming.CharacterEllipsis }, new TextBlock { Text = c.Last.LocalDateTime.ToString("dd.MM. HH:mm", De), FontSize = 10.5, Foreground = ClaudeMuted } } } };
-            ToolTip.SetTip(open, "Fortsetzen");
+            ToolTip.SetTip(open, "Fortsetzen (Doppelklick oder ✎: umbenennen)");
+            // Wunsch 02.11.2026: Projekte umbenennen wie in der Claude-App – ✎, Doppelklick oder Rechtsklick
+            void StartRename() { ui.Renaming = c.Id; ui.ConfirmDelete = null; RenderChatList(dock); }
+            open.DoubleTapped += (_, e) => { e.Handled = true; StartRename(); };
+            var ctx = new ContextMenu();
+            var miRename = new MenuItem { Name = $"claude-chat-ctx-rename-{i}", Header = "✎ Umbenennen" }; miRename.Click += (_, _) => StartRename();
+            var miDelete = new MenuItem { Name = $"claude-chat-ctx-del-{i}", Header = "✕ Löschen …" }; miDelete.Click += (_, _) => { ui.ConfirmDelete = c.Id; ui.Renaming = null; RenderChatList(dock); };
+            ctx.Items.Add(miRename); ctx.Items.Add(miDelete); open.ContextMenu = ctx;
+            var ren = new Button { Name = $"claude-chat-rename-{i}", Content = "✎", Padding = new Thickness(6, 2), Background = Brushes.Transparent, Foreground = ClaudeMuted, VerticalAlignment = VerticalAlignment.Center };
+            ToolTip.SetTip(ren, "Projekt umbenennen"); ren.Click += (_, _) => StartRename();
             open.Click += (_, _) => { if (ui.Running) return; ui.ChatId = c.Id; ui.ConfirmDelete = null; if (c.Doc is not null) ClaudeEnsureProgram(dock, c); RenderChatList(dock); RenderChat(dock); }; // Projekt fortsetzen: sein Dokument im Programm
             var del = new Button { Name = $"claude-chat-del-{i}", Content = "✕", Padding = new Thickness(6, 2), Background = Brushes.Transparent, Foreground = ClaudeMuted, VerticalAlignment = VerticalAlignment.Center };
             ToolTip.SetTip(del, "Projekt löschen (Verlauf und Ordner – der Ordner kommt in den Papierkorb)");
             del.Click += (_, _) => { ui.ConfirmDelete = c.Id; RenderChatList(dock); };
-            ui.Side.Children.Add(new DockPanel { Children = { Dk(del, Avalonia.Controls.Dock.Right), open } });
+            if (ui.Renaming == c.Id)
+            {
+                var box = new TextBox { Name = "claude-chat-rename-box", Text = c.Title, FontSize = 12.5, Margin = new Thickness(4, 2) };
+                void Commit() { ClaudeChatRename(dock, c.Id, box.Text ?? ""); }
+                box.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { e.Handled = true; Commit(); } else if (e.Key == Avalonia.Input.Key.Escape) { e.Handled = true; ui.Renaming = null; RenderChatList(dock); } };
+                var ok = new Button { Name = "claude-chat-rename-ok", Content = "Speichern", Background = ClaudeAccent, Foreground = Brushes.White, CornerRadius = new CornerRadius(6), Padding = new Thickness(10, 3), BorderThickness = new Thickness(0) };
+                ok.Click += (_, _) => Commit();
+                var cancel = new Button { Name = "claude-chat-rename-cancel", Content = "Abbrechen", Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(6), Padding = new Thickness(10, 3), BorderThickness = new Thickness(0) };
+                cancel.Click += (_, _) => { ui.Renaming = null; RenderChatList(dock); };
+                ui.Side.Children.Add(new StackPanel { Spacing = 4, Margin = new Thickness(0, 2, 0, 6), Children = { box, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Margin = new Thickness(4, 0), Children = { ok, cancel } } } });
+                _ui.Post(() => { box.Focus(); box.SelectAll(); });
+                continue;
+            }
+            ui.Side.Children.Add(new DockPanel { Children = { Dk(del, Avalonia.Controls.Dock.Right), Dk(ren, Avalonia.Controls.Dock.Right), open } });
             if (ui.ConfirmDelete == c.Id)
             {
                 var yes = new Button { Name = "claude-chat-del-yes", Content = "Löschen", Background = Brush.Parse("#FFB3261E"), Foreground = Brushes.White, CornerRadius = new CornerRadius(6), Padding = new Thickness(10, 3), BorderThickness = new Thickness(0) };
@@ -881,6 +903,18 @@ public partial class MainWindow
     }
 
     /// <summary>Projekt löschen: Verlauf weg, Ordner in den Papierkorb (öffentlich für Tests über das aktive Fenster).</summary>
+    /// <summary>Projekt umbenennen (nur der Name – Verlauf und Ordner bleiben). Öffentlich für Tests über das aktive Fenster.</summary>
+    public void ClaudeChatRename(string id, string title) { if (Windows.Active?.Id is { } w && _claudeDocks.TryGetValue(w, out var d)) ClaudeChatRename(d, id, title); }
+    void ClaudeChatRename(ClaudeDock dock, string id, string title)
+    {
+        if (!_chatUis.TryGetValue(dock, out var ui)) return;
+        if (title.Trim().Length == 0) { ui.Renaming = null; RenderChatList(dock); return; } // leerer Name: alter Name bleibt
+        var t = title.Trim(); if (t.Length > 80) t = t[..80];
+        CChats.Rename(ChatStudio(dock), id, t);
+        _core.Audit.Append(Principal.LocalOwner.Name, "claude.projekt.umbenennen", ChatStudio(dock));
+        ui.Renaming = null; RenderChatList(dock); if (ui.ChatId == id) RenderChat(dock);
+    }
+
     public void ClaudeChatDelete(string id) { if (Windows.Active?.Id is { } w && _claudeDocks.TryGetValue(w, out var d)) ClaudeChatDelete(d, id); }
     void ClaudeChatDelete(ClaudeDock dock, string id)
     {
