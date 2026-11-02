@@ -1,6 +1,6 @@
 # Vorhaben – Einbindung in Trendo OS
 
-Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.36 (Stand fecc44b)
+Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.36 (Stand 7f51e00)
 
 - Seite `vorhaben` im Studio „Neues Projekt starten“ (Arbeiten & Büro) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

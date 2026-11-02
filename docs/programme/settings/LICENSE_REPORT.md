@@ -1,6 +1,6 @@
 # Einstellungen – Lizenzen
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand fecc44b)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 7f51e00)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

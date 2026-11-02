@@ -1,6 +1,6 @@
 # Geld – Testergebnisse
 
-Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand fecc44b)
+Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand 7f51e00)
 
 Lauf: `api.trx, app.trx, core.trx`
 

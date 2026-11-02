@@ -1,6 +1,6 @@
 # Freie Bilder & Klänge – Umsetzungsstand
 
-Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand fecc44b)
+Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand 7f51e00)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 

@@ -1,6 +1,6 @@
 # Erweiterungen – Testplan
 
-Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.36 (Stand fecc44b)
+Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.36 (Stand 7f51e00)
 
 7 Tests sprechen dieses Programm an.
 

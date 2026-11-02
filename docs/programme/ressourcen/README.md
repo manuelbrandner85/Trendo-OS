@@ -1,6 +1,6 @@
 # Speicher & Leistung – Produktionspaket
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand fecc44b)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand 7f51e00)
 
 Arbeitsfläche: Diagramm/Zeichnung  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test PC_VERIFIED  

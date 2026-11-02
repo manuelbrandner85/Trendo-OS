@@ -1,6 +1,6 @@
 # Adressbuch – Produktionspaket
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand fecc44b)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand 7f51e00)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

@@ -1,6 +1,6 @@
 # Briefe schreiben – Architektur
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand fecc44b)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 7f51e00)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

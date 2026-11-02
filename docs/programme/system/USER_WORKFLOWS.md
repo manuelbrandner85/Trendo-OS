@@ -1,6 +1,6 @@
 # System & Sicherheit – Arbeitsabläufe
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.36 (Stand fecc44b)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.36 (Stand 7f51e00)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 

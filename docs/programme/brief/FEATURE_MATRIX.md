@@ -1,6 +1,6 @@
 # Briefe schreiben – Funktionsmatrix
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand fecc44b)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 7f51e00)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -34,6 +34,11 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Vorlagen ausblenden
 - Brief prüfen
 - Text von der KI verbessern lassen
+- Klassisch (DIN 5008)
+- Modern
+- Elegant
+- Kreativ
+- Minimal
 - Einsetzen
 - Jetzt Form B – zu Form A wechseln
 - Berechnen

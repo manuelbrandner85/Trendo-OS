@@ -1,6 +1,6 @@
 # Start – Umsetzungsstand
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand fecc44b)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 7f51e00)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 

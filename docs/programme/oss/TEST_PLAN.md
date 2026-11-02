@@ -1,6 +1,6 @@
 # Open Source – Testplan
 
-Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.36 (Stand fecc44b)
+Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.36 (Stand 7f51e00)
 
 25 Tests sprechen dieses Programm an.
 

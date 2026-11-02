@@ -1,6 +1,6 @@
 # Kalender – Testergebnisse
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kalender` · Stand: 0.9.36 (Stand fecc44b)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kalender` · Stand: 0.9.36 (Stand 7f51e00)
 
 Lauf: `api.trx, app.trx, core.trx`
 

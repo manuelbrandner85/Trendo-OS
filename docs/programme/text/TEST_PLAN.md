@@ -1,8 +1,8 @@
 # Trendo Text – Testplan
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand fecc44b)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand 7f51e00)
 
-39 Tests sprechen dieses Programm an.
+42 Tests sprechen dieses Programm an.
 
 - 108-49: KI-Vorschlag mit Änderungen – erst „Übernehmen“ ersetzt, „Verwerfen“ lässt alles, geänderter Text wird nicht überschrieben
 - Claude live: Webseite erscheint in der Vorschau, beim Ändern vorher/nachher – Behalten oder Zurücknehmen; Lieferformat index.html
@@ -10,6 +10,9 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` 
 - Claude live: offenes Studio-Dokument (.tdoc) – Claude bearbeitet es, das Studio übernimmt die Änderung sofort, Rückgängig im Studio
 - Claude zeigt, wo es arbeitet; Felder in Aufklapp-Menüs kann Claude lesen und ausfüllen
 - Genauere Leser (Kalender, Programm-Dokument), Design „Wie Windows“, Hilfe „?“ auf Seiten ohne eigenen Hilfetext, Hinweis statt stummer Knöpfe
+- Grundriss live: Claude setzt die Wände einer 2-Raum-Wohnung auf einmal – sie erscheinen nacheinander im Programm, Rückgängig ist ein Schritt
+- Live ohne Schreibwerkzeug (z. B. per Befehl): Trendo sieht die Änderung im Projektordner und zeigt sie noch während Claude arbeitet – auch in Trendo Text
+- Live-Wiedergabe: neue Elemente auch in verschachtelten Listen, je Zwischenstand eins mehr; geänderte Werte gelten sofort; nichts Neues → keine Zwischenstände
 - SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien
 - SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen
 - SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt

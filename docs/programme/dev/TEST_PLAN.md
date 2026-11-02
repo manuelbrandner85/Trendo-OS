@@ -1,8 +1,8 @@
 # Software – Testplan
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand fecc44b)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 7f51e00)
 
-44 Tests sprechen dieses Programm an.
+47 Tests sprechen dieses Programm an.
 
 - Annehmen/Verwerfen im Programm: Claude ändert das Studio-Dokument – Vorher/Nachher vergleichen, verwerfen stellt alles her, behalten übernimmt
 - Befehlsleiste Strg+K und Projekt-Fortsetzung überall: Claude fragen, weitermachen – auch aus einem anderen Studio
@@ -24,6 +24,7 @@ Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand
 - Claude-App-Knopf: installiert (auch App-Paket über claude://) → öffnen; sonst die offizielle Download-Seite
 - Claude: während der Arbeit weiterschreiben – Nachricht wartet sichtbar und kommt gleich danach dran; „Stopp & jetzt“ nimmt sie sofort
 - Echt testen bis es läuft: Skriptfehler gehen zurück an Claude; ohne Fehler sieht Claude das Bildschirmfoto an; abschaltbar
+- Etappen: Abo mitten im Auftrag leer – Ersatz-KI übernimmt, Trendo merkt sich das Projekt; ist Claude wieder frei, macht Claude dort weiter
 - Freihändig sprechen: zuhören, abschicken, Antwort vorlesen, bis man es ausschaltet
 - Gutachter: zweite Meinung mit Note, ändert nichts; „Verbessern lassen“ gibt die Punkte an Claude
 - Kostenlose KI-Werkzeuge: Claude bestellt ein Bild – erst als Entwurf zum Ansehen, ins Projekt erst nach „Übernehmen“; neu erzeugen, verwerfen; Knöpfe; Diktieren
@@ -45,6 +46,8 @@ Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand
 - T-0203: „Starten“ öffnet LibreOffice und Blender erst nach bestandener Prüfung und Freigabe
 - T-0203: „Starten“ öffnet nicht, wenn die Prüfung scheitert
 - T-0206 (UI): Dateiliste, Editor mit Zeilennummern, Speichern; Änderung erst als Vorschau, dann übernehmen
+- Unterlagen: nur Freigegebenes geht an Claude (als Datei im Projekt); passende Unterlagen werden vorgeschlagen – erst nach Ja
+- Veröffentlichen: erst nach Ja; Projekt als ZIP im Ordner „Veröffentlicht“, ohne Hilfsdateien – hochgeladen wird nichts
 - Wiederholungen automatisieren: Auftrag als Ablauf merken (Prompt-Bibliothek), mit einem Klick wiederholen; Wiederholung wird erkannt
 - Zeitreise: jede Antwort mit Änderungen wird ein Versionspunkt; zurück auf einen älteren Stand und wieder vor
 - Ziehen in Claude: Text kommt als Zitat ins Eingabefeld, Dateien werden angehängt

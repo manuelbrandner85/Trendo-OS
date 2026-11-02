@@ -1,10 +1,10 @@
 # Trendo Text – Testergebnisse
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand fecc44b)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand 7f51e00)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 37 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
+Bestanden 40 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -14,6 +14,9 @@ Bestanden 37 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
 | Claude live: offenes Studio-Dokument (.tdoc) – Claude bearbeitet es, das Studio übernimmt die Änderung sofort, Rückgängig im Studio | ✓ bestanden |
 | Claude zeigt, wo es arbeitet; Felder in Aufklapp-Menüs kann Claude lesen und ausfüllen | ✓ bestanden |
 | Genauere Leser (Kalender, Programm-Dokument), Design „Wie Windows“, Hilfe „?“ auf Seiten ohne eigenen Hilfetext, Hinweis statt stummer Knöpfe | ✓ bestanden |
+| Grundriss live: Claude setzt die Wände einer 2-Raum-Wohnung auf einmal – sie erscheinen nacheinander im Programm, Rückgängig ist ein Schritt | ✓ bestanden |
+| Live ohne Schreibwerkzeug (z. B. per Befehl): Trendo sieht die Änderung im Projektordner und zeigt sie noch während Claude arbeitet – auch in Trendo Text | ✓ bestanden |
+| Live-Wiedergabe: neue Elemente auch in verschachtelten Listen, je Zwischenstand eins mehr; geänderte Werte gelten sofort; nichts Neues → keine Zwischenstände | ✓ bestanden |
 | SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien | ✓ bestanden |
 | SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen | ✓ bestanden |
 | SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt | übersprungen |

@@ -6,7 +6,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 
 | Programm | Studio | Bereich | Arbeitsfläche | Funktionen | Tests | Vorbild-Analyse | Modulstatus | Doku |
 |---|---|---|---|---|---|---|---|---|
-| Briefe schreiben | Briefe schreiben (STUDIO-LETTER-01) | Arbeiten & Büro | Briefseite nach DIN 5008, Texteditor | – | 12 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](brief/README.md) |
+| Briefe schreiben | Briefe schreiben (STUDIO-LETTER-01) | Arbeiten & Büro | Briefseite nach DIN 5008, Texteditor | – | 14 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](brief/README.md) |
 | Adressbuch | E-Mails & Termine (SYS-09) | Arbeiten & Büro | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](kontakte/README.md) |
 | Aufgaben | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Aufgabentafel | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](aufgaben/README.md) |
 | E-Mail & Kontakte | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Texteditor | – | 18 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](post/README.md) |
@@ -20,7 +20,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Trendo PDF | Texte & Tabellen (SYS-10) | Arbeiten & Büro | keine eigene erkannt | 25 | 28 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](pdf/README.md) |
 | Trendo Präsentation | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Folienansicht | 25 | 27 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](praesentation/README.md) |
 | Trendo Tabelle | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Tabellenraster | 25 | 46 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](tabelle/README.md) |
-| Trendo Text | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Dokumentseite (Textverarbeitung) | 25 | 39 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](text/README.md) |
+| Trendo Text | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Dokumentseite (Textverarbeitung) | 25 | 42 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](text/README.md) |
 | Geld | Geld & Rechnungen (SPEC-11) | Business & Geld | Diagramm | – | 12 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](finanzen/README.md) |
 | Verkaufen | Online verkaufen (STUDIO-ONLINE-BUSINESS-01) | Business & Geld | Kasse mit Warenkorb | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](verkaufen/README.md) |
 | Freie Bilder & Klänge | Freie Bilder & Klänge finden (X-07) | Kreativ & Medien | keine eigene erkannt | – | 6 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](assets/README.md) |
@@ -66,7 +66,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Sauberer Nachbau | Programme nachbauen (X-10) | Entwickeln | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](nachbau/README.md) |
 | Open Source | Projekte von GitHub holen (X-06) | Entwickeln | keine eigene erkannt | – | 25 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](oss/README.md) |
 | Erweiterungen | Trendo erweitern (X-04) | Entwickeln | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](erweiterungen/README.md) |
-| Software | Webseite bauen (CORE-07) | Entwickeln | Bildansicht | – | 44 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](dev/README.md) |
+| Software | Webseite bauen (CORE-07) | Entwickeln | Bildansicht | – | 47 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](dev/README.md) |
 | Ordner im Heimnetz teilen | Dateien teilen (SYS-06) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](teilen/README.md) |
 | Freigaben | Daten schützen (CORE-11) | System & Sicherheit | keine eigene erkannt | – | 10 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](approvals/README.md) |
 | Schutz & Datenschutz | Daten schützen (CORE-11) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](schutz/README.md) |

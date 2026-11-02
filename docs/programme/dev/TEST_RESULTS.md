@@ -1,10 +1,10 @@
 # Software – Testergebnisse
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand fecc44b)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 7f51e00)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 44 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 47 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -28,6 +28,7 @@ Bestanden 44 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | Claude-App-Knopf: installiert (auch App-Paket über claude://) → öffnen; sonst die offizielle Download-Seite | ✓ bestanden |
 | Claude: während der Arbeit weiterschreiben – Nachricht wartet sichtbar und kommt gleich danach dran; „Stopp & jetzt“ nimmt sie sofort | ✓ bestanden |
 | Echt testen bis es läuft: Skriptfehler gehen zurück an Claude; ohne Fehler sieht Claude das Bildschirmfoto an; abschaltbar | ✓ bestanden |
+| Etappen: Abo mitten im Auftrag leer – Ersatz-KI übernimmt, Trendo merkt sich das Projekt; ist Claude wieder frei, macht Claude dort weiter | ✓ bestanden |
 | Freihändig sprechen: zuhören, abschicken, Antwort vorlesen, bis man es ausschaltet | ✓ bestanden |
 | Gutachter: zweite Meinung mit Note, ändert nichts; „Verbessern lassen“ gibt die Punkte an Claude | ✓ bestanden |
 | Kostenlose KI-Werkzeuge: Claude bestellt ein Bild – erst als Entwurf zum Ansehen, ins Projekt erst nach „Übernehmen“; neu erzeugen, verwerfen; Knöpfe; Diktieren | ✓ bestanden |
@@ -49,6 +50,8 @@ Bestanden 44 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | T-0203: „Starten“ öffnet LibreOffice und Blender erst nach bestandener Prüfung und Freigabe | ✓ bestanden |
 | T-0203: „Starten“ öffnet nicht, wenn die Prüfung scheitert | ✓ bestanden |
 | T-0206 (UI): Dateiliste, Editor mit Zeilennummern, Speichern; Änderung erst als Vorschau, dann übernehmen | ✓ bestanden |
+| Unterlagen: nur Freigegebenes geht an Claude (als Datei im Projekt); passende Unterlagen werden vorgeschlagen – erst nach Ja | ✓ bestanden |
+| Veröffentlichen: erst nach Ja; Projekt als ZIP im Ordner „Veröffentlicht“, ohne Hilfsdateien – hochgeladen wird nichts | ✓ bestanden |
 | Wiederholungen automatisieren: Auftrag als Ablauf merken (Prompt-Bibliothek), mit einem Klick wiederholen; Wiederholung wird erkannt | ✓ bestanden |
 | Zeitreise: jede Antwort mit Änderungen wird ein Versionspunkt; zurück auf einen älteren Stand und wieder vor | ✓ bestanden |
 | Ziehen in Claude: Text kommt als Zitat ins Eingabefeld, Dateien werden angehängt | ✓ bestanden |

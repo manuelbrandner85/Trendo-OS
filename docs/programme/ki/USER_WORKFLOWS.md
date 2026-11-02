@@ -1,6 +1,6 @@
 # KI – Arbeitsabläufe
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.36 (Stand fecc44b)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.36 (Stand 7f51e00)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 
