@@ -214,6 +214,9 @@ public partial class MainWindow
             "Im Hintergrund der Trendo-Programme nutzt Trendo dein Abo nicht; dort arbeitet die KI auf diesem PC.", Brush.Parse("#FACC15"), 11.5);
         gate.Name = "claude-gate"; gate.IsVisible = !ClaudeEmbedApproved;
         main.IsCheckedChanged += (_, _) => KiSourceSettings.Update(_core.DataRoot, x => x.ClaudeMain = main.IsChecked == true);
+        var always = new CheckBox { Name = "claude-always-full", Content = "Claude darf im Claude-Chat bei Bedarf ins Internet und Befehle ausführen", IsChecked = set.ClaudeAlwaysFull, Foreground = Text };
+        ToolTip.SetTip(always, "Volle Claude-Code-Funktionen in allen Studios (auch deine Skills, Agenten, Plugins und MCP-Werkzeuge). Einzelne Projekte stellst du im Chat mit „🔒 Sicher“ ab.");
+        always.IsCheckedChanged += (_, _) => { KiSourceSettings.Update(_core.DataRoot, x => x.ClaudeAlwaysFull = always.IsChecked == true); _core.Audit.Append(Principal.LocalOwner.Name, always.IsChecked == true ? "claude.immer.voll.an" : "claude.immer.voll.aus", ""); };
         return new Border
         {
             Name = "claude-card", Background = Brush.Parse(s.Ready ? "#1A22B35E" : "#1A3B82F6"), BorderBrush = Brush.Parse(s.Ready ? "#4ADE80" : "#D4A84B"), BorderThickness = new Thickness(1),
@@ -224,7 +227,7 @@ public partial class MainWindow
                 P(s.Ready && !ClaudeEmbedApproved ? "Claude Code ist mit deinem Abo bereit. „Claude Code öffnen“ startet es sichtbar im Projektordner – dort arbeitest du direkt mit Claude, ohne API."
                   : s.Ready ? "Claude beantwortet Fragen, plant und baut in allen Programmen – wo programmiert wird, arbeitet es wie Claude Code. Volle Funktionen (Befehle, Web, deine Skills) gibst du je Projekt frei. Deine Dokumente aus „Wissen“ gehen nicht automatisch mit."
                   : "Einmal verbinden, dann ist Claude deine Haupt-KI in Trendo. Die Anmeldung läuft über Claude selbst – Trendo sieht nie dein Passwort. Ohne Claude arbeitet die KI auf diesem PC weiter.", Muted, 12),
-                gate, main, buttons, ClaudeWebRow(),
+                gate, main, always, buttons, ClaudeWebRow(),
                 new TextBlock { Name = "claude-msg", Text = _claudeMsg, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = _claudeMsg.Length > 0 } } },
         };
     }

@@ -38,7 +38,7 @@ public class ClaudeLive_Ui
         var (w, _, _) = Ui.Open();
         var calls = new List<IReadOnlyList<string>>(); var n = 0;
         MainWindow.ClaudeStatusOverride = St;
-        MainWindow.ClaudeRunOverride = Fake(calls, _ => ("index.html", ++n == 1 ? "<h1>Hallo</h1>" : "<h1>Hallo Welt</h1>"));
+        MainWindow.ClaudeRunOverride = Fake(calls, _ => ("index.html", ClaudeChat_Ui.Page(++n == 1 ? "<h1>Hallo</h1>" : "<h1>Hallo Welt</h1>")));
         try
         {
             await Run(w.ClaudeCheck(true));
@@ -55,7 +55,7 @@ public class ClaudeLive_Ui
             w.Find<Button>("claude-preview-after").Press(); Assert.Equal("nachher", w.ClaudeChatPreviewSide());
             var file = w.ClaudeChatPreviewFile()!;
             w.Find<Button>("claude-preview-undo").Press();
-            Assert.Equal("<h1>Hallo</h1>", File.ReadAllText(file)); // zurückgenommen
+            Assert.Equal(ClaudeChat_Ui.Page("<h1>Hallo</h1>"), File.ReadAllText(file)); // zurückgenommen
             Assert.Null(w.TryFind<Button>("claude-preview-before"));
             w.Find<Button>("claude-preview-close").Press(); w.Find<Button>("claude-chat-preview-toggle").Press(); Assert.NotNull(w.TryFind<TextBlock>("claude-preview-name"));
         }

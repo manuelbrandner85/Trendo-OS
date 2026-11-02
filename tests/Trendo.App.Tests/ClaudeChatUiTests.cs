@@ -15,6 +15,8 @@ public class ClaudeChat_Ui
     static Task<ClaudeCode.Status> St(bool inst, bool on) => Task.FromResult(inst ? new ClaudeCode.Status(true, on, on ? "claude.ai" : "", on ? "max" : "", @"C:\x\claude.exe") : ClaudeCode.Status.Missing);
     static async Task Run(Task t) { while (!t.IsCompleted) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); await Task.Delay(20); } await t; }
     static string J(object o) => JsonSerializer.Serialize(o);
+    /// <summary>Vollständige Seite (Titel, Sprache, Handy-Ansicht) – sonst bessert Claude nach Trendos Prüfung automatisch nach.</summary>
+    internal static string Page(string body) => "<!doctype html><html lang=\"de\"><head><meta name=\"viewport\" content=\"width=device-width\"><title>Seite</title></head><body>" + body + "</body></html>";
 
     /// <summary>Nachgebildetes Claude Code: meldet Sitzung, schreibt eine Datei im Projektordner, antwortet.</summary>
     static Func<IReadOnlyList<string>, string, Action<string>, CancellationToken, Task<int>> FakeClaude(List<IReadOnlyList<string>> calls, string file = "kontakt.html") => (args, dir, line, _) =>
@@ -22,8 +24,8 @@ public class ClaudeChat_Ui
         calls.Add(args);
         line(J(new { type = "system", subtype = "init", session_id = "sitzung-1", model = "claude" }));
         var path = Path.Combine(dir, file);
-        line(J(new { type = "assistant", message = new { content = new object[] { new { type = "tool_use", name = "Write", input = new { file_path = path, content = "<h1>Kontakt</h1>" } } } } }));
-        File.WriteAllText(path, "<h1>Kontakt</h1>");
+        line(J(new { type = "assistant", message = new { content = new object[] { new { type = "tool_use", name = "Write", input = new { file_path = path, content = Page("<h1>Kontakt</h1>") } } } } }));
+        File.WriteAllText(path, Page("<h1>Kontakt</h1>"));
         line(J(new { type = "assistant", message = new { content = new object[] { new { type = "text", text = "Fertig: Die Kontaktseite ist angelegt.\n```html\n<h1>Kontakt</h1>\n```" } } } }));
         line(J(new { type = "result", subtype = "success", is_error = false, result = "Fertig", session_id = "sitzung-1", num_turns = 2 }));
         return Task.FromResult(0);
@@ -54,7 +56,7 @@ public class ClaudeChat_Ui
             Assert.StartsWith("Fertig: Die Kontaktseite", chat.Messages[1].Text); Assert.Contains(chat.Messages[1].Steps, s => s.Changes && s.Text.Contains("kontakt.html"));
             Assert.Equal(["kontakt.html (neu)"], chat.Messages[1].Changed);
             var a0 = calls[0].ToList();
-            Assert.DoesNotContain("--resume", a0); Assert.Contains("--restricted", a0); Assert.Contains("acceptEdits", a0);
+            Assert.DoesNotContain("--resume", a0); Assert.DoesNotContain("--restricted", a0); Assert.Equal("auto", a0[a0.IndexOf("--permission-mode") + 1]); // Vorgabe: bei Bedarf Internet und Befehle
             Assert.Contains("ausschließlich für das Studio", a0[a0.IndexOf("--append-system-prompt") + 1]); Assert.Contains("Apps zusammenklicken", a0[a0.IndexOf("--append-system-prompt") + 1]);
             Assert.NotNull(w.TryFind<Button>("claude-chat-undo")); Assert.Contains("Baue eine Kontaktseite", string.Join("|", w.GetLogicalTexts()));
 

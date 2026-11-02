@@ -116,7 +116,8 @@ public static partial class ClaudeCode
     public sealed record Tool(string Name, string Text, string? File, string? Before, string? After, bool Changes) : Ev;
     public sealed record ToolDone(bool Error, string Text) : Ev;
     public sealed record Todo(IReadOnlyList<(string Text, string State)> Items) : Ev;
-    public sealed record Done(bool Ok, string Text, string Session, int Turns) : Ev;
+    /// <summary>Ende einer Antwort; <paramref name="Tokens"/>: verarbeitete Tokens (Eingabe, Ausgabe, Zwischenspeicher) – Maß für den Verbrauch am Abo-Kontingent.</summary>
+    public sealed record Done(bool Ok, string Text, string Session, int Turns, int Tokens = 0) : Ev;
 
     /// <summary>Eine Zeile der stream-json-Ausgabe in Ereignisse übersetzen. Unbekanntes wird übergangen.</summary>
     public static IEnumerable<Ev> Parse(string line, string projectDir)
@@ -128,7 +129,9 @@ public static partial class ClaudeCode
         if (type == "system" && sub == "init") { yield return new Init((string?)o["session_id"] ?? "", (string?)o["model"] ?? ""); yield break; }
         if (type == "result")
         {
-            yield return new Done(sub == "success" && o["is_error"]?.GetValue<bool>() != true, (string?)o["result"] ?? "", (string?)o["session_id"] ?? "", o["num_turns"] is JsonValue nt && nt.TryGetValue<int>(out var n) ? n : 0);
+            int U(string k) => o["usage"]?[k] is JsonValue v && v.TryGetValue<int>(out var x) ? x : 0;
+            yield return new Done(sub == "success" && o["is_error"]?.GetValue<bool>() != true, (string?)o["result"] ?? "", (string?)o["session_id"] ?? "", o["num_turns"] is JsonValue nt && nt.TryGetValue<int>(out var n) ? n : 0,
+                U("input_tokens") + U("output_tokens") + U("cache_creation_input_tokens") + U("cache_read_input_tokens"));
             yield break;
         }
         if (o["message"]?["content"] is not JsonArray content) yield break;
@@ -171,6 +174,10 @@ public static partial class ClaudeCode
     }
 
     [GeneratedRegex(@"^\s*(?:\d{1,2}[.)]|[-*•])\s+(.+)$", RegexOptions.Multiline)] private static partial Regex ListLine();
+
+    /// <summary>Meldet Claude, dass das Abo-Kontingent gerade aufgebraucht ist? Dann sagt Trendo das verständlich statt einer Fehlermeldung.</summary>
+    public static bool IsLimit(string? text) => text is not null && Regex.IsMatch(text, @"usage limit|rate limit|limit (?:reached|exceeded)|out of (?:extra )?usage|5-hour limit|weekly limit", RegexOptions.IgnoreCase);
+    public const string LimitText = "Dein Claude-Kontingent ist für den Moment aufgebraucht. Es füllt sich von selbst wieder auf – versuch es etwas später noch einmal (Stand siehst du in Claude unter Einstellungen → Nutzung).";
 
     /// <summary>Planschritte aus der Antwort der Planphase (nummerierte oder Aufzählungs-Zeilen); dazu die Rückfrage, falls die Antwort mit einer Frage endet.</summary>
     public static (IReadOnlyList<string> Steps, string? Question) PlanOf(string text)

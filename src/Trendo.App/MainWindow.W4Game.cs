@@ -20,6 +20,7 @@ public partial class MainWindow
     private Control GameView()
     {
         var sp = new StackPanel { Spacing = 8, Children = { P("Starte mit einem fertigen kleinen Spiel und verändere es. Es läuft direkt im Browser.") } };
+        if (_gameClaude is { } cg && Directory.Exists(cg)) sp.Children.Add(ClaudeGameCard(cg)); // was Claude gerade baut, gleich hier im Studio
         var name = new TextBox { Name = "game-name", Text = "Mein Spiel", Width = 200 };
         var tpl = new ComboBox { Name = "game-template", ItemsSource = GameStudio.Templates.Select(t => t.Label).ToList(), SelectedIndex = 0, Width = 170 };
         sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { H("Browser-Spiel", 14), new WrapPanel { Children = { name, tpl } },
