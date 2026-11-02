@@ -487,7 +487,7 @@ public partial class MainWindow
         }
         var pick = new ComboBox { Name = "uhr-wc-pick", ItemsSource = WorldClock.Choices.Select(x => x.City).Where(x => !Weltuhr.Cities().Contains(x)).ToList(), PlaceholderText = "Stadt wählen", MinWidth = 160 };
         var wc = Card(Section("Weltuhr", "Uhrzeit in anderen Städten, Sommerzeit wird automatisch berücksichtigt.", world,
-            Line(pick, Act("uhr-wc-add", "Hinzufügen", () => { if (pick.SelectedItem is string s) { Weltuhr.Add(s); Show(V); } }))));
+            Line(pick, Act("uhr-wc-add", "Hinzufügen", () => { if (pick.SelectedItem is string s) { Weltuhr.Add(s); Show(V); } else Toast("Wähle zuerst eine Stadt aus der Liste."); }))));
 
         return AlltagPage("Uhr & Wecker", new StackPanel { Spacing = 10, Children = { clock, alarms, new Grid { ColumnDefinitions = new ColumnDefinitions("*,10,*"), Children = { timer, Pos(sw2, 2) } }, wc } });
     }

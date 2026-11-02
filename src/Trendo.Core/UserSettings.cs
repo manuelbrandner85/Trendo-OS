@@ -20,7 +20,7 @@ public sealed class UserSettings
     public bool SearchWindowsFolders { get; set; }
     public string Language { get; set; } = "de-DE";
     public string ProjectsFolder { get; set; } = "";
-    public string Theme { get; set; } = "dunkel";          // dunkel | hell | kontrast
+    public string Theme { get; set; } = "dunkel";          // dunkel | hell | kontrast | system (wie Windows)
     public string Accent { get; set; } = "#2F86F6";
     public string Wallpaper { get; set; } = "orbit";
     public bool WallpaperByTime { get; set; }
@@ -100,7 +100,7 @@ public sealed class UserSettings
     public static readonly double[] UiScales = [1.0, 1.15, 1.3];
     public static double ClampScale(double v) => UiScales.OrderBy(x => Math.Abs(x - v)).First();
 
-    public static readonly string[] Themes = ["dunkel", "hell", "kontrast"];
+    public static readonly string[] Themes = ["dunkel", "hell", "kontrast", "system"];
     public static readonly string[] Wallpapers = ["orbit", "abendrot", "bergsee-nacht", "polarlicht", "wellen", "morgen"];
 
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true };

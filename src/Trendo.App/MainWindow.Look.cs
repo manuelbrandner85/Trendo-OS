@@ -33,10 +33,22 @@ public sealed partial class MainWindow
     /// <summary>Farbe je Design: im hellen Design die helle Variante.</summary>
     private static string C(string dark, string light) => _theme == "hell" ? light : dark;
 
+    /// <summary>Für Tests: statt Windows zu fragen, ob es hell eingestellt ist.</summary>
+    public static Func<bool>? SystemLightOverride { get; set; }
+    /// <summary>Ist Windows (bzw. das System) auf hell gestellt? Liest nur, ändert nichts.</summary>
+    static bool SystemIsLight()
+    {
+        if (SystemLightOverride is { } o) return o();
+        try { return Application.Current?.PlatformSettings?.GetColorValues().ThemeVariant == Avalonia.Platform.PlatformThemeVariant.Light; }
+        catch (Exception e) when (e is InvalidOperationException or NotSupportedException) { return false; }
+    }
+    /// <summary>Wirksames Design: „system“ wird zu hell oder dunkel – wie Windows gerade eingestellt ist.</summary>
+    public static string EffectiveTheme(string theme) => theme == "system" ? (SystemIsLight() ? "hell" : "dunkel") : theme;
+
     private static void ApplyTheme(UserSettings s)
     {
-        _theme = s.Theme;
-        switch (s.Theme)
+        _theme = EffectiveTheme(s.Theme);
+        switch (_theme)
         {
             case "hell":
                 Glass = Brush.Parse("#D9F4F7FC"); GlassStrong = Brush.Parse("#F2FFFFFF"); TileBg = Brush.Parse("#CCFFFFFF");
@@ -48,10 +60,10 @@ public sealed partial class MainWindow
                 Glass = Brush.Parse("#B30B1730"); GlassStrong = Brush.Parse("#F50A1428"); TileBg = Brush.Parse("#99142445");
                 Edge = Brush.Parse("#3355A8FF"); Muted = Brush.Parse("#9DB0CF"); Text = Brush.Parse("#EEF3FB"); break;
         }
-        Accent = Brush.Parse(s.Theme == "kontrast" ? "#FFD400" : AccentChoices.Any(a => a.Id == s.EffectiveAccent(DateTime.Now)) ? s.EffectiveAccent(DateTime.Now) : "#2F86F6");
+        Accent = Brush.Parse(_theme == "kontrast" ? "#FFD400" : AccentChoices.Any(a => a.Id == s.EffectiveAccent(DateTime.Now)) ? s.EffectiveAccent(DateTime.Now) : "#2F86F6");
         // Vorgabe 27.10.2026: hochwertig statt flach – Flächen mit Verlauf, Kanten mit Lichtkante oben, weiche Schatten (nicht im Kontrast-Design)
-        if (s.Theme == "kontrast") { EdgeLit = Edge; CardShadow = default; return; }
-        var light = s.Theme == "hell";
+        if (_theme == "kontrast") { EdgeLit = Edge; CardShadow = default; return; }
+        var light = _theme == "hell";
         TileBg = Vertical(light ? "#F7FFFFFF" : "#B2213A6B", light ? "#E0E9F0FA" : "#A00F1C3A");
         EdgeLit = Vertical(light ? "#CCE8C77A" : "#80F5C451", light ? "#403B82F6" : "#333B82F6"); // Gold oben, Blau unten (Logo C, 27.10.2026)
         CardShadow = BoxShadows.Parse(light ? "0 8 22 -10 #40223355" : "0 10 26 -10 #99000614");
@@ -75,7 +87,10 @@ public sealed partial class MainWindow
     private void InitLook(Grid root, AppOptions opt)
     {
         _showMap["settings"] = SettingsView;
-        if (_settings.Theme == "hell") RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Light;
+        if (EffectiveTheme(_settings.Theme) == "hell") RequestedThemeVariant = Avalonia.Styling.ThemeVariant.Light;
+        // „Wie Windows“: stellt Windows auf hell oder dunkel um, zieht Trendo mit
+        if (Application.Current?.PlatformSettings is { } ps)
+            ps.ColorValuesChanged += (_, _) => Dispatcher.UIThread.Post(() => { if (_settings.Theme == "system" && EffectiveTheme("system") != _theme && IsVisible) Reopen(CurrentView); });
         // Hintergrund nach Tageszeit: jede Minute prüfen
         var t = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
         t.Tick += (_, _) =>
@@ -169,7 +184,8 @@ public sealed partial class MainWindow
     private void ShowHelp(string key, bool force)
     {
         _hintHost.Children.Clear();
-        if (!HelpTexts.TryGetValue(key, out var text)) return;
+        // Seiten ohne eigenen Hilfetext: beim „?“ trotzdem helfen – aus Studio-Katalog und Programm (G0-Befund: 15 Seiten ohne Wirkung)
+        if (!HelpTexts.TryGetValue(key, out var text)) { if (!force || FallbackHelp(key) is not { } fb) return; text = fb; }
         if (!force && _settings.SeenHints.Contains(key)) return;
         var ok = new Button { Name = "hint-ok", Content = "Verstanden", FontSize = 11, Background = Accent, VerticalAlignment = VerticalAlignment.Center };
         ok.Click += (_, _) => { if (!_settings.SeenHints.Contains(key)) { _settings.SeenHints.Add(key); SaveSettings(); } _hintHost.Children.Clear(); };
@@ -177,6 +193,14 @@ public sealed partial class MainWindow
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
                 new TextBlock { Text = "💡", FontSize = 16, Margin = new Thickness(0, 0, 10, 0), VerticalAlignment = VerticalAlignment.Center },
                 Pos(new TextBlock { Text = _settings.EasyLanguage ? Trendo.Core.Sys.A11y.Easy(text) : text, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap, VerticalAlignment = VerticalAlignment.Center }, 1), Pos(ok, 2) } } });
+    }
+
+    /// <summary>Hilfetext für Seiten ohne eigenen: was das Studio kann, plus die Wege zu Befehlen und Claude.</summary>
+    string? FallbackHelp(string key)
+    {
+        var what = Programs.TryGetValue(key, out var spec) ? (spec.Help.Length > 0 ? spec.Help : spec.Sentence)
+            : ModuleOf(key) is { } m && StudioCatalog.For(m) is { } info ? info.Sentence : null;
+        return (what is { Length: > 0 } ? what + " " : "") + "Tipp: Strg+K öffnet die Befehlsleiste (alle Befehle dieser Seite), „✳ Claude“ hilft dir hier direkt – auch per Rechtsklick auf ein Element.";
     }
 
     private void SaveSettings() { try { _settings.Save(_core.DataRoot); } catch (Exception ex) { _core.Audit.Append("app", "settings.save_failed", ex.GetType().Name); } }
@@ -207,7 +231,7 @@ public sealed partial class MainWindow
         Control Section(string id, string title, Control body) => new StackPanel { Name = "settings-section-" + id, Spacing = 6, IsVisible = _settingsSection == id, Children = { H(title, 15), body } };
 
         var themes = new WrapPanel();
-        foreach (var (id, label) in new[] { ("dunkel", "Dunkel Premium"), ("hell", "Hell"), ("kontrast", "Hoher Kontrast") })
+        foreach (var (id, label) in new[] { ("dunkel", "Dunkel Premium"), ("hell", "Hell"), ("system", "Wie Windows (hell/dunkel)"), ("kontrast", "Hoher Kontrast") })
         {
             var on = _settings.Theme == id;
             var b = new Button { Name = "theme-" + id, Content = (on ? "✓ " : "") + label, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 8), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };

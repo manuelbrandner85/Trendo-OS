@@ -570,7 +570,7 @@ public partial class MainWindow
     {
         if (BlenderPath is not null) { _ = ExportWithBlender(objName, ".fbx"); return; }
         Keep(objName);
-        if (_scene.Parts.Count == 0) { Say("Noch kein Teil. Füge zuerst eines hinzu.", "3d"); return; }
+        if (_scene.Parts.Count == 0) { Say("Noch kein Teil. Füge zuerst eines hinzu.", "3d"); Toast("Noch kein Teil zum Exportieren – füge zuerst eines hinzu."); return; }
         try
         {
             var mesh = Mesh3D.FromScene(_scene);
@@ -586,7 +586,7 @@ public partial class MainWindow
     private void ExportNative(TextBox objName, string ext)
     {
         Keep(objName);
-        if (_scene.Parts.Count == 0) { Say("Noch kein Teil. Füge zuerst eines hinzu.", "3d"); return; }
+        if (_scene.Parts.Count == 0) { Say("Noch kein Teil. Füge zuerst eines hinzu.", "3d"); Toast("Noch kein Teil zum Exportieren – füge zuerst eines hinzu."); return; }
         try
         {
             var mesh = Mesh3D.FromScene(_scene);
@@ -605,7 +605,7 @@ public partial class MainWindow
     private async Task ExportWithBlender(TextBox objName, string ext)
     {
         Keep(objName);
-        if (_scene.Parts.Count == 0) { Say("Noch kein Teil. Füge zuerst eines hinzu.", "3d"); return; }
+        if (_scene.Parts.Count == 0) { Say("Noch kein Teil. Füge zuerst eines hinzu.", "3d"); Toast("Noch kein Teil zum Exportieren – füge zuerst eines hinzu."); return; }
         var bl = await ReadyBlender();
         if (bl is null) return;
         var spec = _scene.WriteBlenderSpec(Path.Combine(Folder3D, "blender"));

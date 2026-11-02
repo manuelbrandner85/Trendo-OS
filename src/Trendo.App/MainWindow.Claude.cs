@@ -100,6 +100,9 @@ public partial class MainWindow
         return _claude;
     }
 
+    /// <summary>Wie lange Claude nichts melden darf, bevor Trendo den Lauf beendet (Wächter).</summary>
+    public static TimeSpan ClaudeSilenceLimit { get; set; } = TimeSpan.FromMinutes(20);
+
     /// <summary>Einen Claude-Lauf starten und jede Ausgabezeile weitergeben. Arbeitsordner = Projekt (bzw. leerer Temp-Ordner für Fragen).</summary>
     public async Task<int> ClaudeRun(IReadOnlyList<string> args, string dir, Action<string> line, CancellationToken ct)
     {
@@ -111,14 +114,49 @@ public partial class MainWindow
             StandardOutputEncoding = System.Text.Encoding.UTF8, StandardErrorEncoding = System.Text.Encoding.UTF8, WorkingDirectory = dir };
         foreach (var a in args) psi.ArgumentList.Add(a);
         ClaudeEnv(psi);
+        return await ClaudeRunProcess(psi, dir, line, ct);
+    }
+
+    /// <summary>Prozess eines Claude-Laufs abwarten (öffentlich für Tests mit einem echten Windows-Prozess): fertig, sobald Claude „result“ meldet – auch wenn
+    /// mitgestartete MCP-Werkzeuge ihn offen halten; Wächter beendet ihn, wenn er zu lange nichts meldet; Mitschrift in .trendo/letzter-lauf.jsonl.</summary>
+    public static async Task<int> ClaudeRunProcess(ProcessStartInfo psi, string dir, Action<string> line, CancellationToken ct)
+    {
         using var p = Process.Start(psi) ?? throw new InvalidOperationException("Claude Code ließ sich nicht starten.");
         p.StandardInput.Close();
         var err = new System.Text.StringBuilder();
-        p.OutputDataReceived += (_, e) => { if (e.Data is { Length: > 0 } s) line(s); };
+        // Mitschrift des Laufs im Projekt (.trendo/letzter-lauf.jsonl) – zum Nachsehen, wenn etwas hakt
+        StreamWriter? log = null;
+        try { Directory.CreateDirectory(Path.Combine(dir, ".trendo")); log = new StreamWriter(Path.Combine(dir, ".trendo", "letzter-lauf.jsonl"), false, new System.Text.UTF8Encoding(false)) { AutoFlush = true }; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        var done = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var lastOutput = DateTime.UtcNow;
+        p.OutputDataReceived += (_, e) =>
+        {
+            if (e.Data is not { Length: > 0 } s) return;
+            lastOutput = DateTime.UtcNow;
+            lock (p) log?.WriteLine(s);
+            line(s);
+            if (s.Contains("\"type\":\"result\"")) done.TrySetResult(); // Claude ist fertig – auch wenn MCP-Werkzeuge den Prozess noch offen halten
+        };
         p.ErrorDataReceived += (_, e) => { if (e.Data is { Length: > 0 } s) lock (err) err.AppendLine(s); };
         p.BeginOutputReadLine(); p.BeginErrorReadLine();
-        try { await p.WaitForExitAsync(ct); }
-        catch (OperationCanceledException) { try { p.Kill(true); } catch (InvalidOperationException) { } throw; }
+        var silent = false;
+        try
+        {
+            var exit = p.WaitForExitAsync(ct);
+            while (!exit.IsCompleted && !done.Task.IsCompleted)
+            {
+                await Task.WhenAny(exit, done.Task, Task.Delay(TimeSpan.FromSeconds(Math.Clamp(ClaudeSilenceLimit.TotalSeconds / 4, 0.2, 15)), ct));
+                if (!exit.IsCompleted && !done.Task.IsCompleted && DateTime.UtcNow - lastOutput > ClaudeSilenceLimit) { silent = true; break; } // Wächter: zu lange nichts gemeldet
+            }
+            if (done.Task.IsCompleted && !exit.IsCompleted) await Task.WhenAny(exit, Task.Delay(TimeSpan.FromSeconds(8), ct)); // kurz aufräumen lassen
+            await exit.WaitAsync(TimeSpan.Zero).ContinueWith(_ => { }, TaskScheduler.Default);
+        }
+        catch (OperationCanceledException) { try { p.Kill(true); } catch (InvalidOperationException) { } lock (p) log?.Dispose(); throw; }
+        if (!p.HasExited) try { p.Kill(true); } catch (InvalidOperationException) { } // eigener Lauf: samt der von ihm gestarteten Werkzeuge beenden
+        lock (p) { log?.Dispose(); log = null; }
+        if (silent) { line("{\"type\":\"trendo_error\",\"text\":" + System.Text.Json.JsonSerializer.Serialize($"Claude hat {ClaudeSilenceLimit.TotalMinutes:0} Minuten nichts mehr gemeldet – Trendo hat den Lauf beendet. Bisher Gemachtes bleibt; schreib „mach weiter“, um fortzusetzen.") + "}"); return -1; }
+        if (done.Task.IsCompleted) return 0;
         if (p.ExitCode != 0 && err.Length > 0) line("{\"type\":\"trendo_error\",\"text\":" + System.Text.Json.JsonSerializer.Serialize(err.ToString().Trim()) + "}");
         return p.ExitCode;
     }
@@ -223,6 +261,8 @@ public partial class MainWindow
         looks.IsCheckedChanged += (_, _) => KiSourceSettings.Update(_core.DataRoot, x => x.ClaudeLooks = looks.IsChecked == true);
         var suggests = new CheckBox { Name = "claude-suggests", Content = "Claude schlägt am Ende jeder Antwort nächste Schritte vor (anklickbar, auch in der Befehlsleiste Strg+K)", IsChecked = set.ClaudeSuggests, Foreground = Text };
         suggests.IsCheckedChanged += (_, _) => KiSourceSettings.Update(_core.DataRoot, x => x.ClaudeSuggests = suggests.IsChecked == true);
+        var sounds = new CheckBox { Name = "claude-sounds", Content = "Dezente Töne, wenn Claude fertig ist, etwas fragt oder ein Fehler kam", IsChecked = set.ClaudeSounds, Foreground = Text };
+        sounds.IsCheckedChanged += (_, _) => KiSourceSettings.Update(_core.DataRoot, x => x.ClaudeSounds = sounds.IsChecked == true);
         return new Border
         {
             Name = "claude-card", Background = Brush.Parse(s.Ready ? "#1A22B35E" : "#1A3B82F6"), BorderBrush = Brush.Parse(s.Ready ? "#4ADE80" : "#D4A84B"), BorderThickness = new Thickness(1),
@@ -233,7 +273,7 @@ public partial class MainWindow
                 P(s.Ready && !ClaudeEmbedApproved ? "Claude Code ist mit deinem Abo bereit. „Claude Code öffnen“ startet es sichtbar im Projektordner – dort arbeitest du direkt mit Claude, ohne API."
                   : s.Ready ? "Claude beantwortet Fragen, plant und baut in allen Programmen – wo programmiert wird, arbeitet es wie Claude Code. Volle Funktionen (Befehle, Web, deine Skills) gibst du je Projekt frei. Deine Dokumente aus „Wissen“ gehen nicht automatisch mit."
                   : "Einmal verbinden, dann ist Claude deine Haupt-KI in Trendo. Die Anmeldung läuft über Claude selbst – Trendo sieht nie dein Passwort. Ohne Claude arbeitet die KI auf diesem PC weiter.", Muted, 12),
-                gate, main, always, looks, suggests, buttons, ClaudeWebRow(),
+                gate, main, always, looks, suggests, sounds, buttons, ClaudeWebRow(),
                 new TextBlock { Name = "claude-msg", Text = _claudeMsg, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap, IsVisible = _claudeMsg.Length > 0 } } },
         };
     }

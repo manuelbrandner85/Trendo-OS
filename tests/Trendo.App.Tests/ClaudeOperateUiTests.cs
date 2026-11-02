@@ -26,7 +26,7 @@ public class ClaudeOperate_Ui
         line(J(new { type = "result", subtype = "success", is_error = false, result = text, session_id = "s1", num_turns = 1 }));
         return Task.FromResult(0);
     };
-    static void End(MainWindow w) { MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeRunOverride = null; if (w.FocusMode) w.ToggleFocusMode(); w.Close(); }
+    static void End(MainWindow w) { MainWindow.ClaudeStepDelay = 350; MainWindow.ClaudeStatusOverride = null; MainWindow.ClaudeRunOverride = null; if (w.FocusMode) w.ToggleFocusMode(); w.Close(); }
     static string Page() => MainWindow.Programs.Keys.First(k => k == "architektur" || MainWindow.Programs[k].Studio == "SPEC-01");
 
     [AvaloniaFact(DisplayName = "Claude kennt das Programm: offene Seite mit Feldern und Knöpfen geht mit; Claude bedient es erst nach „Ausführen“ – unbekannte Ziele fallen weg")]
@@ -34,7 +34,7 @@ public class ClaudeOperate_Ui
     {
         var (w, _, _) = Ui.Open();
         var calls = new List<IReadOnlyList<string>>();
-        MainWindow.ClaudeStatusOverride = St;
+        MainWindow.ClaudeStatusOverride = St; MainWindow.ClaudeStepDelay = 0; // ohne Pause zwischen den Schritten
         string field = "";
         MainWindow.ClaudeRunOverride = Fake(calls, n => n == 1
             ? $"Ich trage etwas ein und lege ein neues Dokument an.\n[[trendo:feld | {field} | Wohnung Erika Muster]]\n[[trendo:klick | prog-new]]\n[[trendo:klick | gibt-es-nicht]]"
@@ -56,9 +56,9 @@ public class ClaudeOperate_Ui
             Assert.Contains("[Offenes Programm:", calls[0][1]); Assert.Contains("prog-new", calls[0][1]);
             Assert.True(w.ClaudePlanPending());
             Assert.NotNull(w.TryFind<Border>("claude-plan")); Assert.NotNull(w.TryFind<TextBlock>("claude-plan-step-1")); Assert.Null(w.TryFind<TextBlock>("claude-plan-step-2")); // unbekanntes Ziel fällt weg
-            Assert.Same(first, w.ProgramActive(page)); // noch nichts passiert
+            var projectDoc = w.ProgramActive(page)!; Assert.Equal(w.ClaudeChatCurrent()!.Doc, projectDoc.Path); // Claude arbeitet im Dokument des Projekts – noch nichts ausgeführt
             w.Find<Button>("claude-plan-run").Press(); await Run(Task.Delay(100));
-            Assert.NotSame(first, w.ProgramActive(page)); // neues Dokument angelegt
+            Assert.True(!ReferenceEquals(projectDoc, w.ProgramActive(page)), w.ClaudeChatCurrent()!.Messages[^1].Text); // neues Dokument angelegt
             Assert.Contains("„Wohnung Erika Muster“", w.ClaudeChatCurrent()!.Messages[^1].Text); // Feld ausgefüllt
             Assert.Contains("Im Programm erledigt", w.ClaudeChatCurrent()!.Messages[^1].Text);
             Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "claude.bedient");

@@ -695,8 +695,8 @@ public sealed partial class MainWindow : Window
                 Background = new LinearGradientBrush
                 {
                     StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-                    GradientStops = { new GradientStop(Color.Parse(_settings.Theme == "hell" ? "#FFE8F0FF" : _settings.Theme == "kontrast" ? "#FF000000" : "#FF13254A"), 0),
-                                      new GradientStop(Color.Parse(_settings.Theme == "hell" ? "#FFFFFFFF" : _settings.Theme == "kontrast" ? "#FF000000" : "#FF0A1428"), 1) },
+                    GradientStops = { new GradientStop(Color.Parse(_theme == "hell" ? "#FFE8F0FF" : _theme == "kontrast" ? "#FF000000" : "#FF13254A"), 0),
+                                      new GradientStop(Color.Parse(_theme == "hell" ? "#FFFFFFFF" : _theme == "kontrast" ? "#FF000000" : "#FF0A1428"), 1) },
                 },
             };
         }

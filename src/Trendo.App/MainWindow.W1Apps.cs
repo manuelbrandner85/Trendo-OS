@@ -74,7 +74,7 @@ public partial class MainWindow
         // Notizen
         var input = new TextBox { Name = "note-input", PlaceholderText = "Neue Notiz …", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 54 };
         var add = new Button { Name = "note-add", Content = "Notiz speichern", Background = Accent };
-        add.Click += (_, _) => { if (!string.IsNullOrWhiteSpace(input.Text)) { notes.Add(input.Text); _core.Audit.Append(Principal.LocalOwner.Name, "tool.note", "neu"); Show("werkzeuge"); } };
+        add.Click += (_, _) => { if (!string.IsNullOrWhiteSpace(input.Text)) { notes.Add(input.Text); _core.Audit.Append(Principal.LocalOwner.Name, "tool.note", "neu"); Show("werkzeuge"); } else Toast("Schreib zuerst etwas in das Notizfeld."); };
         var list = new StackPanel { Spacing = 4 };
         var n = 0;
         foreach (var note in notes.All().Take(20))

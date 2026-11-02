@@ -36,7 +36,7 @@ public partial class MainWindow
     public ClaudeActions.Page? ClaudeReadPage(string page)
     {
         if (ActivePageRoot is not { } root) return null;
-        var all = root.GetLogicalDescendants().OfType<Control>().Where(c => c.IsVisible && !InsideClaude(c)).ToList();
+        var all = PageControls(root).Where(c => c.IsVisible && !InsideClaude(c)).ToList();
         var fields = new List<ClaudeActions.Field>(); var choices = new List<ClaudeActions.Choice>(); var buttons = new List<ClaudeActions.Button>(); var texts = new List<string>();
         foreach (var c in all)
             switch (c)
@@ -63,9 +63,66 @@ public partial class MainWindow
                     texts.Add(s); break;
             }
         var program = Windows.Active?.Title is { Length: > 0 } wt ? wt : StudioCatalog.NameOf(ModuleOf(page) ?? "", page);
-        var title = Programs.ContainsKey(page) && ProgramActive(page) is { } doc ? "Dokument „" + doc.Title + "“" : "";
+        var title = ClaudeFocus(page) ?? (Programs.ContainsKey(page) && ProgramActive(page) is { } doc ? "Dokument „" + doc.Title + "“" : "");
         var sel = ClaudeSelection(page) ?? (_lastTextSel is { } ls && ls.Page == page ? ls.Text : null);
         return new(program, title, sel, texts, fields, choices, buttons.GroupBy(b => b.Name).Select(g => g.First()).ToList());
+    }
+
+    /// <summary>Alle Elemente der Seite – auch die in Aufklapp-Menüs (Flyout) von Knöpfen, die erst beim Aufklappen sichtbar werden.</summary>
+    static IEnumerable<Control> PageControls(Control root)
+    {
+        foreach (var c in root.GetLogicalDescendants().OfType<Control>())
+        {
+            yield return c;
+            if (c is Button { Flyout: Flyout { Content: Control fc } })
+                foreach (var f in fc.GetSelfAndLogicalDescendants().OfType<Control>()) yield return f;
+        }
+    }
+
+    /// <summary>Pause zwischen zwei Bedien-Schritten, damit man sieht, wo Claude arbeitet (Tests: 0).</summary>
+    public static int ClaudeStepDelay { get; set; } = 350;
+
+    /// <summary>Claude zeigt, wo es arbeitet: das Element leuchtet kurz mit Gold-Blau-Kante auf.</summary>
+    void ClaudeFlash(Control c)
+    {
+        if (c is TemplatedControl tc)
+        {
+            var (brush, thick) = (tc.BorderBrush, tc.BorderThickness);
+            tc.BorderBrush = GlassEdge; tc.BorderThickness = new Thickness(2.5);
+            DispatcherTimer.RunOnce(() => { tc.BorderBrush = brush; tc.BorderThickness = thick; }, TimeSpan.FromMilliseconds(1300));
+        }
+        else if (c is Border b)
+        {
+            var (brush, thick) = (b.BorderBrush, b.BorderThickness);
+            b.BorderBrush = GlassEdge; b.BorderThickness = new Thickness(2.5);
+            DispatcherTimer.RunOnce(() => { b.BorderBrush = brush; b.BorderThickness = thick; }, TimeSpan.FromMilliseconds(1300));
+        }
+        c.BringIntoView();
+        _claudeFlashed = c.Name;
+    }
+    string? _claudeFlashed;
+    /// <summary>Für Tests: zuletzt aufgeleuchtetes Element.</summary>
+    public string? ClaudeLastFlashed => _claudeFlashed;
+
+    /// <summary>Genauere Leser für die wichtigsten Programme: was gerade offen bzw. ausgewählt ist (Kalendertag, PDF-Seite, Postfach, 3D-Szene, Programm-Dokument).</summary>
+    public string? ClaudeFocus(string page)
+    {
+        static string Cut(string s, int n) => s.Length > n ? s[..n] + "…" : s;
+        switch (page)
+        {
+            case "pdf" when PdfPath is { } pp: return $"PDF „{Path.GetFileName(pp)}“, Seite {PdfPage + 1} von {PdfPages}";
+            case "kalender": return $"Kalender, {CalDay.ToString("dddd, dd.MM.yyyy", De)}, Ansicht {CalMode}" + (CalSelected is { } cs ? $", Termin ausgewählt ({cs})" : "");
+            case "posteingang" when Inbox.Count > 0:
+                return $"Posteingang mit {Inbox.Count} Mails; neueste: " + string.Join(" · ", Inbox.OrderByDescending(m => m.Date).Take(5).Select(m => $"{Cut(m.From, 30)}: „{Cut(m.Subject, 60)}“" + (m.Seen ? "" : " (ungelesen)")));
+            case "3d":
+                return $"3D-Szene „{_scene.Name}“ mit {_scene.Parts.Count} Teilen" + (_scene.Parts.Count > 0 ? ": " + string.Join(", ", _scene.Parts.Take(12).Select(p => p.Name)) : "") + (Selected is { } sp ? $"; ausgewählt: {sp.Name}" : "");
+        }
+        if (Programs.TryGetValue(page, out var spec) && ProgramActive(page) is { } d)
+        {
+            var parts = d.Data.Select(kv => kv.Value is System.Text.Json.Nodes.JsonArray a ? $"{kv.Key}: {a.Count}" : null).OfType<string>().Take(10).ToList();
+            return $"{spec.Title}: Dokument „{d.Title}“" + (parts.Count > 0 ? " (" + string.Join(", ", parts) + ")" : "") + (d.Dirty ? ", ungespeichert" : "");
+        }
+        return null;
     }
 
     static string ItemText(object? o) => o switch
@@ -116,7 +173,8 @@ public partial class MainWindow
         foreach (var s in plan.Steps)
         {
             var root = ActivePageRoot;
-            var target = root?.GetLogicalDescendants().OfType<Control>().FirstOrDefault(c => c.Name == s.Target && !InsideClaude(c));
+            var target = root is null ? null : PageControls(root).FirstOrDefault(c => c.Name == s.Target && !InsideClaude(c));
+            if (target is not null) { ClaudeFlash(target); if (ClaudeStepDelay > 0) await Task.Delay(ClaudeStepDelay); } // Claude zeigt, wo es arbeitet
             var text = ClaudeActions.Describe(s, plan.State);
             switch (s.Kind, target)
             {

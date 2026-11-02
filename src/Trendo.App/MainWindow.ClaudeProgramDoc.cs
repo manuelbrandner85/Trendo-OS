@@ -31,8 +31,9 @@ public partial class MainWindow
             {
                 var open = ProgramActive(page);
                 var linkedElsewhere = open?.Path is { } op && CChats.All(studio).Any(c => c.Id != chat.Id && c.Doc is { } d && string.Equals(Path.GetFullPath(d), Path.GetFullPath(op), StringComparison.OrdinalIgnoreCase));
-                if (open is not null && CurrentView == page && chat.Messages.Count == 0 && !linkedElsewhere) doc = open; // du hast es vor dir: Claude arbeitet darin
-                else { doc = ProgramNew(page); doc.Title = chat.Title; }
+                // dein eigenes Dokument (gespeichert oder schon bearbeitet), das du gerade vor dir hast: Claude arbeitet darin – eine nur geöffnete Vorlage nicht
+                if (open is not null && CurrentView == page && chat.Messages.Count == 0 && !linkedElsewhere && (open.Path is not null || open.Dirty)) doc = open;
+                else { doc = ProgramNew(page, Programs[page].Templates.Any(t => t.Id == "leer") ? "leer" : null); doc.Title = chat.Title; }
                 if (doc.Path is null)
                 {
                     Directory.CreateDirectory(chat.Folder);

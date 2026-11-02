@@ -8,7 +8,11 @@ namespace Trendo.Core;
 /// die Sitzung von Claude Code wird mit <c>--resume</c> fortgesetzt. Die erste Nachricht in einem Studio legt das Projekt automatisch an.</summary>
 public sealed partial class ClaudeChats(string dataRoot)
 {
-    public sealed record Step(string Text, bool Changes, bool Error = false);
+    /// <summary>Arbeitsschritt; <see cref="At"/>: wann er kam (für die Zeitleiste).</summary>
+    public sealed record Step(string Text, bool Changes, bool Error = false)
+    {
+        public DateTimeOffset? At { get; init; } = DateTimeOffset.Now;
+    }
     /// <summary><paramref name="Ki"/>: welche KI die Antwort geschrieben hat (Claude oder eine Ersatz-KI).</summary>
     public sealed record Msg(string Role, string Text, List<Step> Steps, DateTimeOffset At, List<string>? Changed = null, int Tokens = 0, List<string>? Attachments = null, string? Context = null, string? Ki = null, List<string>? Used = null);
     /// <summary><paramref name="Full"/>: volle Claude-Funktionen für dieses Projekt freigegeben (Befehle, Internet, eigene Skills, Agenten, Plugins/Mods, MCP-Werkzeuge);

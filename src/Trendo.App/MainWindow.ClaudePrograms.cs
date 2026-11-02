@@ -164,7 +164,7 @@ public partial class MainWindow
         }
         return row;
     }
-    static readonly IBrush CGlassChip = Brush.Parse("#1FFFFFFF");
+    static IBrush CGlassChip => Brush.Parse(ClaudeLight ? "#14000000" : "#1FFFFFFF");
 
     // ───────────── Wiederholungen automatisieren ─────────────
     string StudioName(ClaudeDock dock) => StudioCatalog.NameOf(dock.Studio ?? "", "Trendo");

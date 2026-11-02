@@ -21,9 +21,16 @@ public partial class MainWindow
         public NativeWebView? Web; public string WebUrl = "";
     }
     readonly Dictionary<string, ClaudeDock> _claudeDocks = [];
-    /// <summary>Farben der Claude-App (dunkles Design): warmes Anthrazit, helle Schrift, Claude-Orange für Aktives.</summary>
-    static readonly IBrush ClaudeBg = Brush.Parse("#FF262624"), ClaudeBar = Brush.Parse("#FF1F1E1D"), ClaudeFg = Brush.Parse("#FFF5F4EF"), ClaudeMuted = Brush.Parse("#FFB7B5A9"),
-        ClaudeAccent = Brush.Parse("#FFD97757"), ClaudeLine = Brush.Parse("#FF3E3E38"), ClaudeItem = Brush.Parse("#FF3A3935");
+    /// <summary>Farben der Claude-App – passend zum Design von Trendo (Wunsch 02.11.2026): dunkel warmes Anthrazit mit heller Schrift, hell cremeweiß mit dunkler Schrift; Claude-Orange für Aktives.</summary>
+    static bool ClaudeLight => _theme == "hell";
+    static IBrush ClaudeBg => Brush.Parse(ClaudeLight ? "#FFFAF9F5" : "#FF262624");
+    static IBrush ClaudeBar => Brush.Parse(ClaudeLight ? "#FFF0EEE6" : "#FF1F1E1D");
+    static IBrush ClaudeFg => Brush.Parse(ClaudeLight ? "#FF1F1E1D" : "#FFF5F4EF");
+    static IBrush ClaudeMuted => Brush.Parse(ClaudeLight ? "#FF6B6A63" : "#FFB7B5A9");
+    static IBrush ClaudeAccent => Brush.Parse(ClaudeLight ? "#FFC96442" : "#FFD97757");
+    static IBrush ClaudeLine => Brush.Parse(ClaudeLight ? "#FFDAD7CC" : "#FF3E3E38");
+    static IBrush ClaudeItem => Brush.Parse(ClaudeLight ? "#FFE8E6DC" : "#FF3A3935");
+    static IBrush ClaudeInput => Brush.Parse(ClaudeLight ? "#FFFFFFFF" : "#FF30302E");
     public bool ClaudeDockOpen(string winId) => _claudeDocks.ContainsKey(winId);
     public string? ClaudeDockTab(string winId) => _claudeDocks.TryGetValue(winId, out var d) ? d.Tab : null;
     public string? ClaudeDockWebUrl(string winId) => _claudeDocks.TryGetValue(winId, out var d) ? d.WebUrl : null;

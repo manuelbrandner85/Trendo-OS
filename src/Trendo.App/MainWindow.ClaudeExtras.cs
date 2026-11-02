@@ -18,22 +18,26 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     // ───────────── Glas-Design ─────────────
-    static readonly IBrush GlassEdge = new LinearGradientBrush
+    static IBrush GlassEdge => new LinearGradientBrush
     {
         StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-        GradientStops = { new GradientStop(Color.Parse("#B3E8C26A"), 0), new GradientStop(Color.Parse("#26FFFFFF"), 0.45), new GradientStop(Color.Parse("#B35B8FE0"), 1) },
+        GradientStops = { new GradientStop(Color.Parse(ClaudeLight ? "#CCC9A040" : "#B3E8C26A"), 0), new GradientStop(Color.Parse(ClaudeLight ? "#33000000" : "#26FFFFFF"), 0.45), new GradientStop(Color.Parse(ClaudeLight ? "#CC3B6FC9" : "#B35B8FE0"), 1) },
     };
-    static readonly IBrush GlassFill = new LinearGradientBrush
+    static IBrush GlassFill => new LinearGradientBrush
     {
         StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
-        GradientStops = { new GradientStop(Color.Parse("#2EFFFFFF"), 0), new GradientStop(Color.Parse("#0DFFFFFF"), 1) },
+        GradientStops = { new GradientStop(Color.Parse(ClaudeLight ? "#F2FFFFFF" : "#2EFFFFFF"), 0), new GradientStop(Color.Parse(ClaudeLight ? "#CCF7F5EE" : "#0DFFFFFF"), 1) },
     };
-    static readonly IBrush GlassBg = new LinearGradientBrush
+    static IBrush GlassBg => new LinearGradientBrush
     {
         StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
-        GradientStops = { new GradientStop(Color.Parse("#FF282725"), 0), new GradientStop(Color.Parse("#FF23242B"), 0.6), new GradientStop(Color.Parse("#FF1C2233"), 1) },
+        GradientStops = ClaudeLight
+            ? [new GradientStop(Color.Parse("#FFFAF9F5"), 0), new GradientStop(Color.Parse("#FFF4F3EE"), 0.6), new GradientStop(Color.Parse("#FFEAF0FA"), 1)]
+            : [new GradientStop(Color.Parse("#FF282725"), 0), new GradientStop(Color.Parse("#FF23242B"), 0.6), new GradientStop(Color.Parse("#FF1C2233"), 1)],
     };
-    static readonly IBrush CGold = Brush.Parse("#FFE8C26A"), CBlue = Brush.Parse("#FF8DB4F2"), CodeBg = Brush.Parse("#E6141416");
+    static IBrush CGold => Brush.Parse(ClaudeLight ? "#FF9A6B12" : "#FFE8C26A");
+    static IBrush CBlue => Brush.Parse(ClaudeLight ? "#FF2459B8" : "#FF8DB4F2");
+    static readonly IBrush CodeBg = Brush.Parse("#E6141416"); // Code bleibt dunkel – wie in Claude
 
     /// <summary>Glas-Fläche: halbtransparenter Verlauf, Lichtkante von Gold nach Blau, weicher Schatten.</summary>
     static Border CGlass(Control child, double radius = 14, Thickness? pad = null, string? name = null) => new()
@@ -66,6 +70,78 @@ public partial class MainWindow
         ct.Register(Stop);
         c.DetachedFromVisualTree += (_, _) => Stop();
         t.Start();
+    }
+
+    // ───────────── Zeitleiste der Arbeitsschritte ─────────────
+    static string Duration(TimeSpan t) => t.TotalMinutes >= 1 ? $"{(int)t.TotalMinutes} min {t.Seconds} s" : $"{Math.Max(1, (int)t.TotalSeconds)} s";
+
+    /// <summary>Arbeitsschritte als Zeitleiste: Punkt (blau = lesen/denken, gold = ändern, rot = Fehler), Linie, Text und Zeit seit Beginn.</summary>
+    Control Timeline(IReadOnlyList<ClaudeChats.Step> steps)
+    {
+        var sp = new StackPanel { Name = "claude-timeline-steps", Spacing = 0 };
+        var start = steps.FirstOrDefault()?.At;
+        var timed = steps.Count > 1 && steps.Max(s => s.At) - steps.Min(s => s.At) > TimeSpan.FromSeconds(0.5); // ältere Verläufe ohne echte Zeiten: keine Zeiten zeigen
+        for (var i = 0; i < steps.Count; i++) sp.Children.Add(TimelineRow(steps[i], timed ? start : null, i < steps.Count - 1));
+        return sp;
+    }
+
+    Control TimelineRow(ClaudeChats.Step st, DateTimeOffset? start, bool line)
+    {
+        var color = st.Error ? Brush.Parse("#FFF87171") : st.Changes ? CGold : CBlue;
+        var dot = new Border { Width = 9, Height = 9, CornerRadius = new CornerRadius(5), Background = color, Margin = new Thickness(0, 5, 0, 0), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Top };
+        var rail = new Border { Width = 2, Background = ClaudeLine, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 16, 0, 0), IsVisible = line };
+        var text = new TextBlock { Text = st.Text, Foreground = st.Error ? color : ClaudeMuted, FontSize = 12, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(6, 2, 6, 6) };
+        var when = new TextBlock { Text = start is { } s0 && st.At is { } a ? "+" + (a - s0).ToString(@"m\:ss") : "", Foreground = ClaudeMuted, FontSize = 10.5, Margin = new Thickness(0, 3, 0, 0) };
+        var g = new Grid { ColumnDefinitions = new ColumnDefinitions("16,*,Auto") };
+        Grid.SetColumn(text, 1); Grid.SetColumn(when, 2);
+        g.Children.Add(rail); g.Children.Add(dot); g.Children.Add(text); g.Children.Add(when);
+        return g;
+    }
+
+    // ───────────── Geräusche ─────────────
+    /// <summary>Für Tests: Ton nachbilden (Art: fertig, frage, fehler).</summary>
+    public static Action<string>? SoundOverride { get; set; }
+    bool ClaudeSoundsOn => KiSourceSettings.Load(_core.DataRoot).ClaudeSounds;
+
+    /// <summary>Nach einer Antwort: fertig, Rückfrage/Plan wartet oder Fehler – je ein dezenter Ton (abschaltbar).</summary>
+    void ClaudeSoundAfter(ClaudeDock dock, ChatUi ui, string chatId)
+    {
+        if (!ClaudeSoundsOn || CChats.Get(ChatStudio(dock), chatId)?.Messages.LastOrDefault(x => x.Role == "assistant") is not { } m) return;
+        var kind = m.Text.StartsWith('⚠') ? "fehler" : ui.Plan is not null || ClaudeChats.SplitQuestion(ClaudeChats.SplitSuggestions(ClaudeTools.Strip(m.Text)).Text).Question is not null || ui.Drafts.Any(d => d.ChatId == chatId) ? "frage" : "fertig";
+        ClaudeSound(kind);
+    }
+
+    /// <summary>Ton abspielen – Trendo erzeugt ihn selbst (keine fremden Dateien): fertig = zwei helle Töne aufwärts, frage = ein Ton, fehler = zwei tiefe abwärts.</summary>
+    void ClaudeSound(string kind)
+    {
+        if (SoundOverride is { } o) { o(kind); return; }
+        if (_opt.Isolated || !OperatingSystem.IsWindows()) return;
+        try
+        {
+            var file = Path.Combine(Path.GetTempPath(), $"trendo-klang-{kind}.wav");
+            if (!File.Exists(file)) File.WriteAllBytes(file, Chime(kind switch { "fehler" => [330, 247], "frage" => [740], _ => [784, 1175] }));
+            PlaySound(file, IntPtr.Zero, 0x00020001); // SND_FILENAME | SND_ASYNC: spielt im Hintergrund
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+    }
+
+    /// <summary>Kurzer, weicher Glockenton als WAV (16 Bit, mono): je Note 140 ms mit sanftem Ein- und Ausklang.</summary>
+    public static byte[] Chime(IReadOnlyList<double> notes)
+    {
+        const int rate = 22050; var per = (int)(rate * 0.14);
+        var samples = new short[per * notes.Count];
+        for (var n = 0; n < notes.Count; n++)
+            for (var i = 0; i < per; i++)
+            {
+                var env = Math.Min(1, i / (rate * 0.008)) * Math.Exp(-4.0 * i / per);
+                var v = Math.Sin(2 * Math.PI * notes[n] * i / rate) * 0.8 + Math.Sin(4 * Math.PI * notes[n] * i / rate) * 0.2;
+                samples[n * per + i] = (short)(v * env * 0.22 * short.MaxValue);
+            }
+        using var ms = new MemoryStream(); using var w = new BinaryWriter(ms);
+        w.Write("RIFF"u8); w.Write(36 + samples.Length * 2); w.Write("WAVE"u8); w.Write("fmt "u8); w.Write(16); w.Write((short)1); w.Write((short)1);
+        w.Write(rate); w.Write(rate * 2); w.Write((short)2); w.Write((short)16); w.Write("data"u8); w.Write(samples.Length * 2);
+        foreach (var s in samples) w.Write(s);
+        return ms.ToArray();
     }
 
     // ───────────── Schöne Antworten ─────────────
@@ -113,7 +189,7 @@ public partial class MainWindow
             {
                 case ChatMarkdown.Kind.Bold: tb.Inlines!.Add(new Run(s.Text) { FontWeight = FontWeight.Bold }); break;
                 case ChatMarkdown.Kind.Italic: tb.Inlines!.Add(new Run(s.Text) { FontStyle = FontStyle.Italic }); break;
-                case ChatMarkdown.Kind.Code: tb.Inlines!.Add(new Run(s.Text) { FontFamily = new FontFamily("Cascadia Mono, Consolas, Courier New"), Background = Brush.Parse("#FF3A3935"), Foreground = Brush.Parse("#FFF0B28F"), FontSize = size - 1 }); break;
+                case ChatMarkdown.Kind.Code: tb.Inlines!.Add(new Run(s.Text) { FontFamily = new FontFamily("Cascadia Mono, Consolas, Courier New"), Background = ClaudeItem, Foreground = Brush.Parse(ClaudeLight ? "#FFB0442A" : "#FFF0B28F"), FontSize = size - 1 }); break;
                 case ChatMarkdown.Kind.Link:
                     var url = s.Url!;
                     var link = new TextBlock { Text = s.Text, Foreground = CBlue, TextDecorations = TextDecorations.Underline, Cursor = new Cursor(StandardCursorType.Hand), FontSize = size };
@@ -188,7 +264,7 @@ public partial class MainWindow
             del.Click += (_, _) => { CMemory.Remove(chat.Id, idx); _core.Audit.Append(Principal.LocalOwner.Name, "claude.gedaechtnis.weg", ChatStudio(dock)); RenderChat(dock); };
             sp.Children.Add(new DockPanel { Children = { Dk(del, Avalonia.Controls.Dock.Right), new TextBlock { Text = "• " + items[i], Foreground = ClaudeFg, FontSize = 13, TextWrapping = TextWrapping.Wrap } } });
         }
-        var add = new TextBox { Name = "claude-memory-input", PlaceholderText = "Etwas, das immer gelten soll – z. B. „Farben: Dunkelblau und Gold“", FontSize = 12.5, Background = Brush.Parse("#FF30302E"), Foreground = ClaudeFg, BorderBrush = ClaudeLine, CornerRadius = new CornerRadius(8) };
+        var add = new TextBox { Name = "claude-memory-input", PlaceholderText = "Etwas, das immer gelten soll – z. B. „Farben: Dunkelblau und Gold“", FontSize = 12.5, Background = ClaudeInput, Foreground = ClaudeFg, BorderBrush = ClaudeLine, CornerRadius = new CornerRadius(8) };
         var ok = new Button { Name = "claude-memory-add", Content = "Merken", FontSize = 12, Padding = new Thickness(10, 4), Margin = new Thickness(6, 0, 0, 0), Background = ClaudeAccent, Foreground = Brushes.White, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
         void Add() { if (add.Text is { Length: > 0 } t && CMemory.Add(chat.Id, t)) _core.Audit.Append(Principal.LocalOwner.Name, "claude.gedaechtnis.neu", ChatStudio(dock)); RenderChat(dock); }
         ok.Click += (_, _) => Add();
