@@ -1,5 +1,5 @@
 # Einstellungen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 18aa2a5)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand fecc44b)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.
