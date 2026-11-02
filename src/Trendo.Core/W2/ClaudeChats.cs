@@ -9,7 +9,8 @@ namespace Trendo.Core;
 public sealed partial class ClaudeChats(string dataRoot)
 {
     public sealed record Step(string Text, bool Changes, bool Error = false);
-    public sealed record Msg(string Role, string Text, List<Step> Steps, DateTimeOffset At, List<string>? Changed = null, int Tokens = 0, List<string>? Attachments = null, string? Context = null);
+    /// <summary><paramref name="Ki"/>: welche KI die Antwort geschrieben hat (Claude oder eine Ersatz-KI).</summary>
+    public sealed record Msg(string Role, string Text, List<Step> Steps, DateTimeOffset At, List<string>? Changed = null, int Tokens = 0, List<string>? Attachments = null, string? Context = null, string? Ki = null, List<string>? Used = null);
     /// <summary><paramref name="Full"/>: volle Claude-Funktionen für dieses Projekt freigegeben (Befehle, Internet, eigene Skills, Agenten, Plugins/Mods, MCP-Werkzeuge);
     /// <paramref name="Safe"/>: dieses Projekt ausdrücklich auf „sicher“ gestellt (gilt auch, wenn volle Funktionen sonst immer an sind).</summary>
     public sealed record Chat(string Id, string Studio, string Title, string Folder, string? Session, DateTimeOffset Created, DateTimeOffset Last, List<Msg> Messages, bool Full = false, bool Safe = false)
@@ -91,7 +92,7 @@ public sealed partial class ClaudeChats(string dataRoot)
         (workFile is not null ? $"\nDas offene Studio-Dokument liegt als „{workFile}“ im Projektordner. Bearbeite genau diese Datei (gültiges JSON, Aufbau und Felder beibehalten, nur Inhalte unter \"data\" ändern) – Trendo übernimmt jede Änderung sofort ins Studio." : "") +
         "\nErkläre kurz, was du tust, und fasse am Ende in ein bis zwei Sätzen zusammen, was jetzt da ist." +
         "\nMusst du vor dem Weiterarbeiten etwas wissen, beende deine Antwort mit genau einer Zeile in dieser Form: " + QuestionMark + " <deine Frage> [Antwort 1 | Antwort 2 | Antwort 3]" +
-        "\nAngehängte Dateien liegen im Ordner „anhang“ des Projekts; Bilder kannst du ansehen.";
+        "\nAngehängte Dateien liegen im Ordner „anhang“ des Projekts; Bilder kannst du ansehen." + ClaudeTools.Rule;
 
     public const string QuestionMark = "Frage:";
 

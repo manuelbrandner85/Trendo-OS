@@ -29,6 +29,7 @@ public partial class MainWindow
         public string? PreviewFile; public string? PreviewOriginal; public string Compare = "nachher"; public NativeWebView? PreviewWeb; public string? PreviewNote;
         public List<string> Pending = []; public WrapPanel Chips = new() { Name = "claude-chat-attachments" };
         public bool AskFull; public Button? FullButton; public bool FullForNew, SafeForNew;
+        public TextBlock ActiveKi = new(); public string? LastKi; public TextBlock Caps = new();
     }
     /// <summary>Spiel, das Claude im Spiele-Studio gebaut hat (wird dort oben gezeigt), mit Vorschaubild.</summary>
     string? _gameClaude, _gameClaudeShot;
@@ -80,10 +81,12 @@ public partial class MainWindow
         var app = new Button { Name = "claude-chat-app", Content = "Claude-App", FontSize = 12, Padding = new Thickness(10, 3), Margin = new Thickness(0, 0, 6, 0), Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
         ToolTip.SetTip(app, "Cowork, Claude Design und mehr: in der offiziellen Claude-App öffnen");
         app.Click += (_, _) => ClaudeOpenApp();
+        ui.ActiveKi = new TextBlock { Name = "claude-chat-active", FontSize = 11.5, Foreground = ClaudeMuted, Margin = new Thickness(24, 0, 24, 4), TextWrapping = TextWrapping.Wrap };
         var head = new DockPanel { Margin = new Thickness(24, 12, 24, 4), Children = { Dk(folder, Avalonia.Controls.Dock.Right), Dk(eye, Avalonia.Controls.Dock.Right), Dk(app, Avalonia.Controls.Dock.Right), Dk(full, Avalonia.Controls.Dock.Right), ui.Title } };
-        var bottom = new StackPanel { Children = { ui.Chips, inputBox, hint } };
+        var bottom = new StackPanel { Children = { ClaudeToolBar(dock), ui.Chips, inputBox, hint } };
         ui.Body = new Border { Child = ui.Scroll };
-        var main = new DockPanel { Background = ClaudeBg, Children = { Dk(head, Avalonia.Controls.Dock.Top), Dk(bottom, Avalonia.Controls.Dock.Bottom), ui.Body } };
+        ui.Caps = new TextBlock { Name = "claude-chat-caps", FontSize = 11, Foreground = ClaudeMuted, Margin = new Thickness(24, 0, 24, 6), TextWrapping = TextWrapping.Wrap, Text = ClaudeCapsText(LoadCaps()) };
+        var main = new DockPanel { Background = ClaudeBg, Children = { Dk(head, Avalonia.Controls.Dock.Top), Dk(ui.ActiveKi, Avalonia.Controls.Dock.Top), Dk(ui.Caps, Avalonia.Controls.Dock.Top), Dk(bottom, Avalonia.Controls.Dock.Bottom), ui.Body } };
         Grid.SetColumn(main, 1);
         DragDrop.SetAllowDrop(main, true);
         main.AddHandler(DragDrop.DragOverEvent, (_, e) => { e.DragEffects = e.DataTransfer.Contains(DataFormat.File) ? DragDropEffects.Copy : DragDropEffects.None; e.Handled = true; });
@@ -164,6 +167,9 @@ public partial class MainWindow
             return;
         }
         ui.Input.IsEnabled = !ui.Running; ui.Send.IsEnabled = true;
+        ui.LastKi = chat?.Messages.LastOrDefault(m => m.Role == "assistant" && m.Ki is not null)?.Ki;
+        ui.ActiveKi.Text = ActiveKiText(ui.LastKi);
+        ui.ActiveKi.Foreground = CLimit.Active(DateTimeOffset.Now) ? ClaudeAccent : ClaudeMuted;
         var fullOn = chat is null ? ClaudeAlways && !ui.SafeForNew || ui.FullForNew : chat.FullWith(ClaudeAlways);
         if (ui.FullButton is { } fb) { fb.Content = fullOn ? "🔓 Internet & Befehle an" : "🔒 Sicher"; fb.Background = fullOn ? ClaudeAccent : ClaudeItem; }
         if (ui.AskFull) ui.Log.Children.Add(FullConsent(dock, chat));
@@ -226,7 +232,7 @@ public partial class MainWindow
             foreach (var st in m.Steps) steps.Children.Add(ChatStep(st));
             sp.Children.Add(new Expander { Header = $"{m.Steps.Count} Arbeitsschritt{(m.Steps.Count == 1 ? "" : "e")}", Content = steps, IsExpanded = false, Foreground = ClaudeMuted, Background = Brushes.Transparent });
         }
-        var (body, question, options) = ClaudeChats.SplitQuestion(m.Text);
+        var (body, question, options) = ClaudeChats.SplitQuestion(ClaudeTools.Strip(m.Text));
         foreach (var block in ChatBlocks(body)) sp.Children.Add(block);
         if (question is not null)
         {
@@ -244,6 +250,8 @@ public partial class MainWindow
                 sp.Children.Add(row);
             }
         }
+        if (m.Used is { Count: > 0 } us) sp.Children.Add(new TextBlock { Name = last ? "claude-chat-used" : null, Text = "Genutzt: " + string.Join(" · ", us), Foreground = ClaudeMuted, FontSize = 11, TextWrapping = TextWrapping.Wrap });
+        if (m.Ki is { Length: > 0 } ki) sp.Children.Add(new TextBlock { Name = last ? "claude-chat-ki" : null, Text = "Antwort von: " + ki, Foreground = ki == ClaudeKi ? ClaudeMuted : ClaudeAccent, FontSize = 10.5 });
         if (m.Tokens > 0) sp.Children.Add(new TextBlock { Name = last ? "claude-chat-usage" : null, Text = $"Abo-Nutzung dieser Antwort: ≈ {m.Tokens.ToString("N0", De)} Tokens", Foreground = ClaudeMuted, FontSize = 10.5 });
         if (m.Changed is { Count: > 0 } ch)
         {
@@ -319,10 +327,14 @@ public partial class MainWindow
         // Live-Antwort
         var live = new StackPanel { Name = "claude-chat-live", Spacing = 6 };
         var stepsPanel = new StackPanel { Spacing = 2 }; var textPanel = new StackPanel { Spacing = 6 };
-        var thinking = new TextBlock { Text = "✳ Claude denkt nach …", Foreground = ClaudeAccent, FontSize = 13 };
-        live.Children.Add(stepsPanel); live.Children.Add(textPanel); live.Children.Add(thinking);
+        var limited = CLimit.Active(DateTimeOffset.Now);
+        var thinking = new TextBlock { Text = limited ? "🌐 Die Ersatz-KI denkt nach …" : "✳ Claude denkt nach …", Foreground = ClaudeAccent, FontSize = 13 };
+        var skillChip = new Border { Name = "claude-chat-skill", IsVisible = false, Background = Brush.Parse("#26D97757"), BorderBrush = ClaudeAccent, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 3), HorizontalAlignment = HorizontalAlignment.Left,
+            Child = new TextBlock { Foreground = ClaudeFg, FontSize = 12 } };
+        live.Children.Add(skillChip); live.Children.Add(stepsPanel); live.Children.Add(textPanel); live.Children.Add(thinking);
+        var used = new List<string>();
         ui.Log.Children.Add(live);
-        var steps = new List<ClaudeChats.Step>(); var say = new System.Text.StringBuilder(); string? error = null; string? session = null; var ok = true; var tokens = 0;
+        var steps = new List<ClaudeChats.Step>(); var say = new System.Text.StringBuilder(); string? error = null; string? session = null; var ok = true; var tokens = 0; string? limitRaw = null; var ki = ClaudeKi;
 
         var folder = chat.Folder; Directory.CreateDirectory(folder);
         if (dock.Studio is not null) try { Skills.ExportForClaude(folder, null, dock.Studio); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
@@ -346,25 +358,65 @@ public partial class MainWindow
                 {
                     switch (ev)
                     {
-                        case ClaudeCode.Init i when i.Session.Length > 0: session = i.Session; break;
+                        case ClaudeCode.Init i:
+                            if (i.Session.Length > 0) session = i.Session;
+                            if (i.Skills is not null || i.Connectors is not null || i.Plugins is not null) { SaveCaps(i); ui.Caps.Text = ClaudeCapsText(i); }
+                            break;
                         case ClaudeCode.Say sy: say.AppendLine(sy.Text).AppendLine(); textPanel.Children.Clear(); foreach (var b in ChatBlocks(say.ToString())) textPanel.Children.Add(b); break;
-                        case ClaudeCode.Tool t: var st = new ClaudeChats.Step(t.Text, t.Changes); steps.Add(st); stepsPanel.Children.Add(ChatStep(st)); thinking.Text = "✳ " + t.Text + " …"; if (t.Changes && t.File is { } tf) pendingFile = tf; break;
+                        case ClaudeCode.Tool t:
+                        {
+                            var icon = t.Badge switch { "Skill" => "🧩 ", "Agent" => "🤖 ", "Connector" => "🔌 ", "Befehl" => "⌨ ", "Internet" => "🌐 ", _ => "" };
+                            var st = new ClaudeChats.Step(icon + t.Text, t.Changes); steps.Add(st); stepsPanel.Children.Add(ChatStep(st)); thinking.Text = "✳ " + t.Text + " …";
+                            if (t.Badge is "Skill" or "Agent" or "Connector" && t.Detail is { } det)
+                            {
+                                var u = $"{icon}{t.Badge} {det}"; if (!used.Contains(u)) used.Add(u);
+                                if (t.Badge == "Skill") { skillChip.IsVisible = true; ((TextBlock)skillChip.Child!).Text = $"🧩 Aktiver Skill: {det}"; }
+                            }
+                            if (t.Changes && t.File is { } tf) pendingFile = tf;
+                            break;
+                        }
                         case ClaudeCode.ToolDone td when td.Error: var se = new ClaudeChats.Step("Fehler: " + td.Text, false, true); steps.Add(se); stepsPanel.Children.Add(ChatStep(se)); pendingFile = null; break;
                         case ClaudeCode.ToolDone when pendingFile is { } pf: pendingFile = null; ClaudeLiveChanged(dock, Path.Combine(folder, pf), workFile, null); break; // live bei jedem Schritt
                         case ClaudeCode.Todo todo: thinking.Text = "✳ " + (todo.Items.FirstOrDefault(x => x.State == "in_progress").Text ?? "arbeitet") + " …"; break;
-                        case ClaudeCode.Done dn: ok = dn.Ok; tokens = dn.Tokens; if (dn.Session.Length > 0) session = dn.Session; if (say.Length == 0 && dn.Text.Length > 0) say.Append(dn.Text); if (!dn.Ok && ClaudeCode.IsLimit(dn.Text)) error = ClaudeCode.LimitText; break;
+                        case ClaudeCode.Done dn: ok = dn.Ok; tokens = dn.Tokens; if (dn.Session.Length > 0) session = dn.Session; if (ClaudeCode.IsLimit(dn.Text)) { limitRaw = dn.Text; error = ClaudeCode.LimitText; } else if (say.Length == 0 && dn.Text.Length > 0) say.Append(dn.Text); break;
                     }
                     ui.Scroll.ScrollToEnd();
                 });
         }
-        try
+        if (!limited)
         {
-            await Task.Run(() => ClaudeRun(ClaudeCode.Args(prompt, ClaudeCode.Phase.Chat, chat.Session, system, model is { Length: > 0 } ? model : null, chat.FullWith(ClaudeAlways) ? ClaudeCode.Level.Voll : ClaudeCode.Level.Sicher), folder, OnLine, ui.Cts.Token));
+            try
+            {
+                await Task.Run(() => ClaudeRun(ClaudeCode.Args(prompt, ClaudeCode.Phase.Chat, chat.Session, system, model is { Length: > 0 } ? model : null, chat.FullWith(ClaudeAlways) ? ClaudeCode.Level.Voll : ClaudeCode.Level.Sicher), folder, OnLine, ui.Cts.Token));
+            }
+            catch (OperationCanceledException) { error = "Angehalten."; }
+            catch (InvalidOperationException e) { error = e.Message; }
+            await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background); // ausstehende Ereignisse abarbeiten
+            if (pendingFile is { } lastPf) ClaudeLiveChanged(dock, Path.Combine(folder, lastPf), workFile, null);
+            if (limitRaw is null && ClaudeCode.IsLimit(error)) limitRaw = error;
+            if (limitRaw is not null)
+            {
+                // Kontingent aufgebraucht: merken, bis wann – bis dahin übernimmt die Ersatz-KI (diese Nachricht gleich mit)
+                var until = ClaudeLimit.ResetOf(limitRaw, DateTimeOffset.Now); CLimit.Set(until); limited = true; error = null; say.Clear();
+                steps.Add(new ClaudeChats.Step($"Claude-Abo aufgebraucht – die Ersatz-KI übernimmt, Claude wieder ab {until.LocalDateTime:HH:mm} Uhr", false));
+                _core.Audit.Append(Principal.LocalOwner.Name, "claude.kontingent.leer", until.ToString("O"));
+            }
+            else if (error is null) CLimit.Clear();
         }
-        catch (OperationCanceledException) { error = "Angehalten."; }
-        catch (InvalidOperationException e) { error = e.Message; }
-        await Dispatcher.UIThread.InvokeAsync(() => { }, DispatcherPriority.Background); // ausstehende Ereignisse abarbeiten
-        if (pendingFile is { } lastPf) ClaudeLiveChanged(dock, Path.Combine(folder, lastPf), workFile, null);
+        if (limited && error is null)
+        {
+            thinking.Text = "🌐 Die Ersatz-KI arbeitet …";
+            var fb = await ClaudeFallbackRun(prompt, system, folder, ui.Cts.Token);
+            if (fb.Error is not null) error = fb.Error;
+            else
+            {
+                ki = fb.Ki; say.Append(fb.Text);
+                foreach (var c in fb.Changes) steps.Add(new ClaudeChats.Step($"schreibt {c.Path} (+{c.Added} −{c.Removed})", true));
+                _core.Audit.Append(Principal.LocalOwner.Name, "claude.ersatz", ki);
+            }
+        }
+        // bestellte KI-Werkzeuge (Bild, Musik, …) kostenlos auf dem PC ausführen – die Dateien zählen zu den Änderungen dieser Antwort
+        if (error is null && ClaudeTools.Parse(say.ToString()).Count > 0) { thinking.Text = "🎨 Trendo erzeugt Bilder, Musik … (auf diesem PC)"; steps.AddRange(await ClaudeRunTools(say.ToString(), folder)); }
         var changes = snap?.Changes() ?? [];
         var changed = changes.Select(c => $"{c.File} ({c.Change})").ToList();
         var answer = say.ToString().Trim();
@@ -372,7 +424,7 @@ public partial class MainWindow
         if (error is not null) answer = (answer.Length > 0 ? answer + "\n\n" : "") + "⚠ " + error;
         else if (!ok && answer.Length == 0) answer = "⚠ Claude hat die Antwort nicht fertigbekommen.";
         if (session is { Length: > 0 }) chats.SetSession(studio, chat.Id, session);
-        chats.Add(studio, chat.Id, new ClaudeChats.Msg("assistant", answer, steps, DateTimeOffset.Now, changed.Count > 0 ? changed : null, tokens));
+        chats.Add(studio, chat.Id, new ClaudeChats.Msg("assistant", answer, steps, DateTimeOffset.Now, changed.Count > 0 ? changed : null, tokens, null, null, error is null ? ki : null, used.Count > 0 ? used : null));
         ui.LastSnapshot = changed.Count > 0 ? snap : null; ui.LastSnapshotChat = chat.Id;
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat", $"{studio} · {changed.Count} Änderungen");
         ui.Running = false; ui.Cts = null; ui.Send.Content = "↑"; ToolTip.SetTip(ui.Send, "Senden (Enter) · neue Zeile mit Umschalt+Enter");
@@ -430,6 +482,26 @@ public partial class MainWindow
         var la = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var exe = new[] { Path.Combine(la, "AnthropicClaude", "claude.exe"), Path.Combine(la, "Programs", "Claude", "Claude.exe") }.FirstOrDefault(File.Exists);
         Launch(exe ?? "https://claude.ai/download");
+    }
+
+    /// <summary>Was Claude aus deinem eigenen Claude mitbringt (vom letzten Lauf gemerkt, je Person): Skills, Connectoren, Plugins, Agenten.</summary>
+    string CapsFile => Path.Combine(_core.DataRoot, "claude-chats", "faehigkeiten.json");
+    ClaudeCode.Init? LoadCaps() { try { return File.Exists(CapsFile) ? System.Text.Json.JsonSerializer.Deserialize<ClaudeCode.Init>(File.ReadAllText(CapsFile)) : null; } catch (Exception e) when (e is System.Text.Json.JsonException or IOException or NotSupportedException) { return null; } }
+    void SaveCaps(ClaudeCode.Init i) { try { Directory.CreateDirectory(Path.GetDirectoryName(CapsFile)!); File.WriteAllText(CapsFile, System.Text.Json.JsonSerializer.Serialize(i)); } catch (IOException) { } }
+    static string ClaudeCapsText(ClaudeCode.Init? i)
+    {
+        if (i is null) return "Aus deinem Claude: deine Skills, Plugins (Mods), Agenten und Connectoren stehen hier nach der ersten Antwort.";
+        static string L(IReadOnlyList<string>? l, int n = 4) => l is { Count: > 0 } ? string.Join(", ", l.Take(n)) + (l.Count > n ? $" +{l.Count - n}" : "") : "–";
+        return $"Aus deinem Claude: 🧩 {i.Skills?.Count ?? 0} Skills · 🔌 Connectoren: {L(i.Connectors)} · Plugins: {L(i.Plugins)} · 🤖 {i.Agents?.Count ?? 0} Agenten";
+    }
+
+    /// <summary>Zeile „Aktive KI“ oben im Chat: Claude oder die Ersatz-KI, mit Uhrzeit, ab wann Claude wieder übernimmt.</summary>
+    string ActiveKiText(string? lastKi)
+    {
+        var l = CLimit;
+        if (l.Active(DateTimeOffset.Now) && l.Until is { } u)
+            return $"Aktive KI: {(lastKi is { } k && k != ClaudeKi ? k : "🌐 kostenlose Ersatz-KI")} – dein Claude-Abo ist gerade aufgebraucht, Claude übernimmt wieder ab {u.LocalDateTime:HH:mm} Uhr.";
+        return "Aktive KI: " + ClaudeKi;
     }
 
     /// <summary>Startideen passend zum Studio – anklicken schickt sie gleich ab.</summary>

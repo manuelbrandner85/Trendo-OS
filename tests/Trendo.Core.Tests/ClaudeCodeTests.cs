@@ -74,7 +74,8 @@ public class ClaudeCodeTests
     {
         var root = @"C:\Projekte\seite";
         List<ClaudeCode.Ev> P(string l) => ClaudeCode.Parse(l, root).ToList();
-        Assert.Equal(new ClaudeCode.Init("s-1", "claude-sonnet-5-5"), Assert.Single(P("""{"type":"system","subtype":"init","session_id":"s-1","model":"claude-sonnet-5-5"}""")));
+        var init = (ClaudeCode.Init)Assert.Single(P("""{"type":"system","subtype":"init","session_id":"s-1","model":"claude-sonnet-5-5"}"""));
+        Assert.Equal(("s-1", "claude-sonnet-5-5"), (init.Session, init.Model)); Assert.Empty(init.Skills!);
         Assert.Equal("Ich schaue mir die Datei an.", ((ClaudeCode.Say)Assert.Single(P("""{"type":"assistant","message":{"content":[{"type":"text","text":"Ich schaue mir die Datei an."}]}}"""))).Text);
         var read = (ClaudeCode.Tool)Assert.Single(P("""{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Read","input":{"file_path":"C:\\Projekte\\seite\\css\\stil.css"}}]}}"""));
         Assert.Equal(("liest css/stil.css", false), (read.Text, read.Changes));

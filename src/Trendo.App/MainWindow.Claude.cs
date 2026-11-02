@@ -276,7 +276,7 @@ public sealed class ClaudeKiBackend(MainWindow owner, Func<string> model) : IMai
 {
     public string Name => "Claude (dein Abo)";
     public string BaseUrl => "claude-code";
-    public async Task<bool> IsUpAsync(CancellationToken ct = default) => (await owner.ClaudeCheck()).Ready; // nur über das Abo
+    public async Task<bool> IsUpAsync(CancellationToken ct = default) => !owner.CLimit.Active(DateTimeOffset.Now) && (await owner.ClaudeCheck()).Ready; // nur über das Abo; Kontingent aufgebraucht → Ersatz-KI
     public Task<IReadOnlyList<string>> ModelsAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<string>>([model() is { Length: > 0 } m ? m : "claude"]);
     public Task<string> ChatAsync(string m, IReadOnlyList<KiMessage> messages, CancellationToken ct = default) => ChatStreamAsync(m, messages, _ => { }, ct);
 

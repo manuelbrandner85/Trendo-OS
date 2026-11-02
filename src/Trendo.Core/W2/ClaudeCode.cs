@@ -110,10 +110,12 @@ public static partial class ClaudeCode
     // ───────────── Live-Ausgabe ─────────────
 
     public abstract record Ev;
-    public sealed record Init(string Session, string Model) : Ev;
+    /// <summary>Start eines Laufs: Sitzung, Modell und was Claude in diesem Lauf verfügbar hat – Skills, Connectoren (MCP), Plugins (Mods), Agenten aus dem eigenen Claude.</summary>
+    public sealed record Init(string Session, string Model, IReadOnlyList<string>? Skills = null, IReadOnlyList<string>? Connectors = null, IReadOnlyList<string>? Plugins = null, IReadOnlyList<string>? Agents = null) : Ev;
     public sealed record Say(string Text) : Ev;
     /// <summary>Werkzeug-Aufruf, verständlich beschrieben. Bei Änderungen: Datei (relativ zum Projekt) und Vorher/Nachher.</summary>
-    public sealed record Tool(string Name, string Text, string? File, string? Before, string? After, bool Changes) : Ev;
+    /// <summary><paramref name="Badge"/>: Art des Schritts für die Anzeige wie in Claude (Skill, Agent, Connector, Befehl, Internet …); <paramref name="Detail"/>: z. B. Name des Skills.</summary>
+    public sealed record Tool(string Name, string Text, string? File, string? Before, string? After, bool Changes, string? Badge = null, string? Detail = null) : Ev;
     public sealed record ToolDone(bool Error, string Text) : Ev;
     public sealed record Todo(IReadOnlyList<(string Text, string State)> Items) : Ev;
     /// <summary>Ende einer Antwort; <paramref name="Tokens"/>: verarbeitete Tokens (Eingabe, Ausgabe, Zwischenspeicher) – Maß für den Verbrauch am Abo-Kontingent.</summary>
@@ -126,7 +128,13 @@ public static partial class ClaudeCode
         try { o = JsonNode.Parse(line) as JsonObject; } catch (JsonException) { yield break; }
         if (o is null) yield break;
         var type = (string?)o["type"]; var sub = (string?)o["subtype"];
-        if (type == "system" && sub == "init") { yield return new Init((string?)o["session_id"] ?? "", (string?)o["model"] ?? ""); yield break; }
+        if (type == "system" && sub == "init")
+        {
+            static List<string> Names(JsonNode? n, string key = "name") => n is JsonArray a ? a.Select(x => x is JsonValue v ? v.ToString() : (string?)x?[key] ?? "").Where(x => x.Length > 0).Distinct().ToList() : [];
+            var mcp = o["mcp_servers"] is JsonArray ms ? ms.OfType<JsonObject>().Where(m => (string?)m["status"] is null or "connected").Select(m => (string?)m["name"] ?? "").Where(x => x.Length > 0).ToList() : [];
+            yield return new Init((string?)o["session_id"] ?? "", (string?)o["model"] ?? "", Names(o["skills"]), mcp, Names(o["plugins"]), Names(o["agents"]));
+            yield break;
+        }
         if (type == "result")
         {
             int U(string k) => o["usage"]?[k] is JsonValue v && v.TryGetValue<int>(out var x) ? x : 0;
@@ -169,6 +177,18 @@ public static partial class ClaudeCode
             case "Write": return new Tool(name, $"schreibt {file}", file, null, (string?)inp["content"], true);
             case "NotebookEdit": return new Tool(name, $"ändert {file}", file, null, null, true);
             case "ToolSearch": return null;
+            case "Skill": { var sk = (string?)inp["skill"] ?? (string?)inp["name"] ?? (string?)inp["command"] ?? "Skill"; return new Tool(name, $"nutzt den Skill „{sk}“", null, null, null, false, "Skill", sk); }
+            case "Task" or "Agent": { var ag = (string?)inp["subagent_type"] ?? "Agent"; return new Tool(name, $"Agent „{ag}“: {(string?)inp["description"] ?? "arbeitet mit"}", null, null, null, false, "Agent", ag); }
+            case "Bash" or "PowerShell": { var cmd = (string?)inp["description"] is { Length: > 0 } d ? d : (string?)inp["command"] ?? ""; return new Tool(name, $"führt aus: {(cmd.Length > 120 ? cmd[..120] + " …" : cmd)}", null, null, null, false, "Befehl"); }
+            case "WebSearch": return new Tool(name, $"sucht im Internet: „{(string?)inp["query"]}“", null, null, null, false, "Internet");
+            case "WebFetch": return new Tool(name, $"liest {(string?)inp["url"]}", null, null, null, false, "Internet");
+            case "TodoWrite": return null;
+            case var mcpName when mcpName.StartsWith("mcp__", StringComparison.Ordinal):
+            {
+                var parts = mcpName.Split("__", 3); var server = parts.Length > 1 ? parts[1] : "Connector"; var tool = parts.Length > 2 ? parts[2] : "";
+                server = server.StartsWith("claude_ai_", StringComparison.Ordinal) ? server["claude_ai_".Length..].Replace('_', ' ') : server;
+                return new Tool(name, $"Connector {server}: {tool.Replace('_', ' ')}", null, null, null, false, "Connector", server);
+            }
             default: return new Tool(name, $"nutzt {name}", file, null, null, false);
         }
     }
