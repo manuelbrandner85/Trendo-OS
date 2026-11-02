@@ -62,7 +62,7 @@ public class WebsiteStudioUiTests
 
     static async Task Until(Func<bool> done)
     {
-        for (var i = 0; i < 600 && !done(); i++)
+        for (var i = 0; i < 1800 && !done(); i++) // bis 90 s: im Volltest läuft vieles gleichzeitig, das Bauen dauert dort länger als einzeln (~4 s)
         {
             Dispatcher.UIThread.RunJobs();
             await Task.Delay(50);

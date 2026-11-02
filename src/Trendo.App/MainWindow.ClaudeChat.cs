@@ -100,16 +100,18 @@ public partial class MainWindow
         void TogglePanel(string p) { ui.Panel = ui.Panel == p ? null : p; RenderChat(dock); }
         var memory = HeadBtn("claude-chat-memory", "🧠 Gedächtnis", "Projekt-Gedächtnis: was Claude sich für dieses Projekt dauerhaft merkt", () => TogglePanel("gedaechtnis"));
         var travel = HeadBtn("claude-chat-timeline", "🕘 Zeitreise", "Zeitreise: zu einem früheren Stand des Projekts zurück", () => TogglePanel("zeitreise"));
+        var docs = HeadBtn("claude-chat-docs", "📎 Unterlagen", "Deine Unterlagen aus „Wissen“ für dieses Projekt an Claude freigeben – nur, was du auswählst", () => TogglePanel("unterlagen"));
+        var publish = HeadBtn("claude-chat-publish", "🚀 Veröffentlichen", "Projekt fertig verpacken (ZIP im Ordner „Veröffentlicht“) – erst nach deinem Ja, hochgeladen wird nichts", () => TogglePanel("veroeffentlichen"));
         var rules = HeadBtn("claude-chat-rules", "📚 Regeln", "Regeln dieses Studios: was Claude hier immer beachtet – eingebaut, aus GAMEFORGE (Spiele) und aus deinen Projekten gelernt (nur mit deinem Ja)", () => TogglePanel("regeln"));
         var review = HeadBtn("claude-chat-review", "🎓 Gutachter", "Zweite Meinung: ein Gutachter bewertet das Ergebnis mit Note 1–10 und sagt, was besser geht", () => _ = ClaudeReviewRun(dock));
         ui.SideToggle = new Button { Name = "claude-chat-side-toggle", Content = "☰", FontSize = 13, Padding = new Thickness(9, 3), Margin = new Thickness(0, 0, 8, 0), Background = ClaudeItem, Foreground = ClaudeFg, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0), IsVisible = false };
         ToolTip.SetTip(ui.SideToggle, "Projekte dieses Studios ein- oder ausblenden");
         ui.SideToggle.Click += (_, _) => { ui.SideOpen = !ui.SideOpen; ui.SideCol.Width = new GridLength(ui.SideOpen ? 230 : 0); };
         // Kopf in zwei Zeilen: Titel, darunter die Knöpfe (umbrechend) – so passt alles auch in den schmalen Bereich neben dem Studio
-        foreach (var hb in new Control[] { memory, travel, rules, review, full, app, eye, folder }) hb.Margin = new Thickness(0, 0, 6, 6);
+        foreach (var hb in new Control[] { memory, travel, docs, rules, review, publish, full, app, eye, folder }) hb.Margin = new Thickness(0, 0, 6, 6);
         var head = new StackPanel { Margin = new Thickness(24, 12, 24, 2), Spacing = 6, Children = {
             new DockPanel { Children = { Dk(ui.SideToggle, Avalonia.Controls.Dock.Left), ui.Title } },
-            new WrapPanel { Name = "claude-chat-head-tools", Children = { memory, travel, rules, review, full, app, eye, folder } } } };
+            new WrapPanel { Name = "claude-chat-head-tools", Children = { memory, travel, docs, rules, review, publish, full, app, eye, folder } } } };
         var bottom = new StackPanel { Children = { ClaudeToolBar(dock), ui.Flows, ui.Chips, inputBox, hint } };
         ui.Body = new Border { Child = ui.Scroll };
         ui.Caps = new TextBlock { Name = "claude-chat-caps", FontSize = 11, Foreground = ClaudeMuted, Margin = new Thickness(24, 0, 24, 6), TextWrapping = TextWrapping.Wrap, Text = ClaudeCapsText(LoadCaps()) };
@@ -212,6 +214,8 @@ public partial class MainWindow
         if (ui.Panel == "gedaechtnis") ui.Log.Children.Add(MemoryPanel(dock, chat));
         if (ui.Panel == "zeitreise") ui.Log.Children.Add(TimelinePanel(dock, chat));
         if (ui.Panel == "regeln") ui.Log.Children.Add(RulesPanel(dock));
+        if (ui.Panel == "unterlagen") ui.Log.Children.Add(DocsPanel(dock, chat));
+        if (ui.Panel == "veroeffentlichen") ui.Log.Children.Add(PublishPanel(dock, chat));
         if (chat is null || chat.Messages.Count == 0)
             ui.Log.Children.Add(new StackPanel { Spacing = 8, Margin = new Thickness(0, 40, 0, 0), HorizontalAlignment = HorizontalAlignment.Center, Children = {
                 new TextBlock { Text = "✳", FontSize = 34, Foreground = ClaudeAccent, HorizontalAlignment = HorizontalAlignment.Center },
@@ -231,6 +235,7 @@ public partial class MainWindow
         for (var i = 0; i < ui.Drafts.Count; i++) if (ui.Drafts[i].ChatId == chat?.Id) ui.Log.Children.Add(DraftCard(ui.Drafts[i], i)); // Entwürfe warten auf Freigabe
         if (ui.Plan is { } pl && pl.ChatId == chat?.Id) ui.Log.Children.Add(PlanCard(dock, ui, pl)); // wartet auf „Ausführen“
         AddLearnProposals(dock, ui); // gelernte Regeln warten auf Ja/Nein
+        if (chat is not null && !ui.Running && chat.Messages.Count > 0 && chat.Messages[^1].Role == "assistant") AddDocSuggestions(dock, ui, chat); // passende Unterlagen? nur mit Ja
         AttachQueue(ui); RenderFlows(dock, ui);
         Dispatcher.UIThread.Post(() => ui.Scroll.ScrollToEnd(), DispatcherPriority.Background);
     }
@@ -399,7 +404,15 @@ public partial class MainWindow
         if (shell && ProgramActive(dock.Page) is { } doc)
             try { workFile = Regex.Replace(doc.Title, @"[\\/:*?""<>|]", "-") + ProgramDocument.Extension; File.WriteAllText(Path.Combine(folder, workFile), doc.Serialize()); }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { workFile = null; }
-        var format = StudioFormat.For(dock.Studio, dock.Page, shell);
+        // Brief-Studio: der offene Brief ist das Dokument (Text UND Design) – Claude arbeitet darin, Trendo übernimmt jede Änderung live ins Brief-Programm
+        var letterDoc = !shell && dock.Studio == LetterStudio;
+        if (letterDoc)
+        {
+            if (CurrentView != "brief") ClaudeMoveToPage(dock, "brief");
+            try { workFile = LetterWorkFile; File.WriteAllText(Path.Combine(folder, workFile), LetterToJson(Letter)); }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException) { workFile = null; }
+        }
+        var format = letterDoc && workFile is not null ? new StudioFormat(LetterDesigns.Rule, null, []) : StudioFormat.For(dock.Studio, dock.Page, shell);
         // Claude arbeitet IM Programm (Wunsch 02.11.2026, bei allen Studios): das Studio-Dokument ist das Projekt – eigene Dateien sind höchstens Ergänzung
         var programInfo = shell && workFile is not null && Programs.TryGetValue(dock.Page, out var pspec)
             ? $"\nWICHTIG – du arbeitest im Programm „{pspec.Title}“ von Trendo ({pspec.Sentence}). Das Projekt IST das Studio-Dokument „{workFile}“ im Projektordner: " +
@@ -410,7 +423,7 @@ public partial class MainWindow
         FolderSnapshot? snap = null;
         var point = CTimeline.NewStore(chat.Id); // Versionspunkt für die Zeitreise
         try { snap = FolderSnapshot.Take(folder, point); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
-        var system = ClaudeChats.System(StudioCatalog.NameOf(dock.Studio ?? "", "Trendo"), ClaudeRoleFor(dock.Studio), Skills.For(null, dock.Studio), format, workFile) + programInfo + ClaudeStudioRules(dock, folder, chat.FullWith(ClaudeAlways)) + CMemory.Prompt(chat.Id) + (ClaudeSuggestsOn ? ClaudeChats.SuggestRule : "");
+        var system = ClaudeChats.System(StudioCatalog.NameOf(dock.Studio ?? "", "Trendo"), ClaudeRoleFor(dock.Studio), Skills.For(null, dock.Studio), format, workFile) + programInfo + LiveReplay.Rule + ClaudeStudioRules(dock, folder, chat.FullWith(ClaudeAlways)) + ClaudeDocsFor(chat.Id, folder) + CMemory.Prompt(chat.Id) + (ClaudeSuggestsOn ? ClaudeChats.SuggestRule : "");
         string? pendingFile = null;
         var model = KiSourceSettings.Load(_core.DataRoot).ClaudeModel;
         void OnLine(string l)
@@ -446,6 +459,7 @@ public partial class MainWindow
                     ui.Scroll.ScrollToEnd();
                 });
         }
+        using var watch = limited ? null : ClaudeWatch(dock, folder, () => workFile); // jede Änderung im Projektordner live im Programm – egal, wie Claude sie macht
         if (!limited)
         {
             try
@@ -476,6 +490,7 @@ public partial class MainWindow
                 ki = fb.Ki; say.Append(fb.Text);
                 foreach (var c in fb.Changes) steps.Add(new ClaudeChats.Step($"schreibt {c.Path} (+{c.Added} −{c.Removed})", true));
                 _core.Audit.Append(Principal.LocalOwner.Name, "claude.ersatz", ki);
+                if (!check) CStages.Add(chat.Id, studio, text); // Etappe: sobald Claude wieder frei ist, macht es hier weiter
             }
         }
         // bestellte KI-Werkzeuge (Bild, Musik, …) kostenlos auf dem PC ausführen – die Dateien zählen zu den Änderungen dieser Antwort
@@ -511,7 +526,7 @@ public partial class MainWindow
             var found = TrendoAgent.Check(folder, alive).Where(c => !c.Ok).Select(c => c.Text).ToList();
             // am Programm vorbei gearbeitet? Dann zurück ins Studio-Dokument
             if (workFile is not null && !changes.Any(c => Path.GetFileName(c.File).Equals(workFile, StringComparison.OrdinalIgnoreCase)))
-                found.Insert(0, $"Du hast nicht im Programm gearbeitet: Das Studio-Dokument „{workFile}“ ist unverändert. Trage dein Ergebnis jetzt dort unter \"data\" ein (vorhandene Felder und Aufbau beibehalten) – das ist das Projekt, das der Nutzer im Programm sieht.");
+                found.Insert(0, $"Du hast nicht im Programm gearbeitet: Das Studio-Dokument „{workFile}“ ist unverändert. Trage dein Ergebnis jetzt dort ein ({(workFile == LetterWorkFile ? "Text und – falls gewünscht – Design in den Feldern des Briefs" : "unter \"data\", vorhandene Felder und Aufbau beibehalten")}) – das ist das Projekt, das der Nutzer im Programm sieht.");
             thinking.Text = "🧪 Trendo startet das Ergebnis und prüft es …";
             var probe = ClaudeLooks || found.Count > 0 ? await ClaudeProbeRun(folder, alive) : new ClaudeProbe.Result([], null);
             var look = round == 0 && ClaudeLooks && ki == ClaudeKi; // Bildschirmfoto ansehen kann nur Claude
@@ -735,8 +750,9 @@ public partial class MainWindow
     void ClaudeLiveChanged(ClaudeDock dock, string file, string? workFile, string? original)
     {
         if (!File.Exists(file)) return;
-        if (workFile is not null && Path.GetFileName(file).Equals(workFile, StringComparison.OrdinalIgnoreCase)) ClaudeSyncProgram(dock, file);
-        if (StudioFormat.PreviewKind(file) != "none") ShowPreview(dock, file, original);
+        var isWork = workFile is not null && Path.GetFileName(file).Equals(workFile, StringComparison.OrdinalIgnoreCase);
+        if (isWork) { if (workFile == LetterWorkFile) ClaudeSyncLetter(file); else ClaudeSyncProgram(dock, file); }
+        if (!isWork && StudioFormat.PreviewKind(file) != "none") ShowPreview(dock, file, original); // das Studio-Dokument zeigt das Programm selbst
     }
 
     /// <summary>Studio-Dokument aus der Datei übernehmen, die Claude bearbeitet hat (ein Rückgängig-Schritt im Studio).</summary>
@@ -746,10 +762,8 @@ public partial class MainWindow
         try
         {
             var fresh = ProgramDocument.Load(file);
-            if (fresh.Data.ToJsonString() == doc.Data.ToJsonString()) return; // schon übernommen
-            ClaudeChangeBegin(dock.Page, doc); doc.ReplaceData(fresh.Data.ToJsonString()); ClaudeChangeAfter(dock.Page, doc);
-            Dispatcher.UIThread.Post(() => { if (ActivePageRoot?.GetLogicalDescendants().OfType<Control>().FirstOrDefault(c => c.Name == "prog-workspace") is { } ws) ClaudeFlash(ws); }, DispatcherPriority.Background); // zeigt, wo Claude gearbeitet hat
-            _progMsg[dock.Page] = "✳ Claude hat das Dokument geändert – oben vergleichen, behalten oder verwerfen.";
+            if (fresh.Data.ToJsonString() == LiveTarget(dock.Page, doc)) return; // schon übernommen (oder wird gerade live eingespielt)
+            ClaudeApplyLive(dock, doc, fresh.Data); // live – viele neue Teile erscheinen nacheinander
         }
         catch (InvalidDataException e) { _claudeMsg = "Claudes Änderung ließ sich nicht übernehmen: " + e.Message; }
         if (!dock.Max) Show(CurrentView);
@@ -762,8 +776,9 @@ public partial class MainWindow
         var shown = alive.Count > 0 && await ClaudeShowInStudio(dock, folder, alive);
         shown |= workFile is not null && alive.Any(f => Path.GetFileName(f).Equals(workFile, StringComparison.OrdinalIgnoreCase));
         // Studio-Dokument abgleichen – auch wenn Claude es ohne Schreibwerkzeug geändert hat (z. B. per Befehl); gleiche Daten ändern nichts
-        if (workFile is not null && alive.Any(f => Path.GetFileName(f).Equals(workFile, StringComparison.OrdinalIgnoreCase))) ClaudeSyncProgram(dock, Path.Combine(folder, workFile));
-        if (StudioFormat.PickPreview(format, alive) is { } rel)
+        if (workFile is not null && alive.Any(f => Path.GetFileName(f).Equals(workFile, StringComparison.OrdinalIgnoreCase)))
+        { if (workFile == LetterWorkFile) ClaudeSyncLetter(Path.Combine(folder, workFile)); else ClaudeSyncProgram(dock, Path.Combine(folder, workFile)); }
+        if (StudioFormat.PickPreview(format, alive.Where(f => workFile is null || !Path.GetFileName(f).Equals(workFile, StringComparison.OrdinalIgnoreCase))) is { } rel)
         {
             var orig = snap is not null && changes.Any(c => c.File == rel && c.Change == "geändert") ? Path.Combine(snap.Store, rel.Replace('/', Path.DirectorySeparatorChar)) : null;
             ShowPreview(dock, Path.Combine(folder, rel.Replace('/', Path.DirectorySeparatorChar)), orig);
@@ -859,6 +874,7 @@ public partial class MainWindow
     {
         if (!_chatUis.TryGetValue(dock, out var ui) || ui.LastSnapshot is not { } snap || ui.LastSnapshotChat is not { } cid) return;
         snap.Restore(); ui.LastSnapshot = null;
+        if (dock.Studio == LetterStudio && File.Exists(Path.Combine(snap.Root, LetterWorkFile))) ClaudeSyncLetter(Path.Combine(snap.Root, LetterWorkFile)); // Brief im Programm zurück
         CChats.Add(ChatStudio(dock), cid, new ClaudeChats.Msg("assistant", "↶ Die Änderungen der letzten Antwort sind zurückgenommen.", [], DateTimeOffset.Now));
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.chat.zurueck", dock.Studio ?? "");
         RenderChat(dock);
@@ -880,7 +896,7 @@ public partial class MainWindow
                 else if (_opt.Isolated) Directory.Delete(c.Folder, true); // Testmodus: Temp-Ordner, nie den echten Papierkorb
                 else RecycleBin.Move(c.Folder);
             }
-            CMemory.Delete(c.Id);
+            CMemory.Delete(c.Id); CDocs.Delete(c.Id); CStages.Done(c.Id);
             var snapDir = Path.Combine(_core.DataRoot, "claude-chats", "sicherung", c.Id);
             if (Directory.Exists(snapDir)) Directory.Delete(snapDir, true); // eigene Sicherungskopie von Trendo, keine Nutzerdaten
         }

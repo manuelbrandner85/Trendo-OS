@@ -78,8 +78,8 @@ public sealed class MpvAudio(string mpvPath) : IAudioOut
 
     void Close()
     {
-        try { _w?.Dispose(); } catch (IOException) { }
-        try { _pipe?.Dispose(); } catch (IOException) { }
+        try { _w?.Dispose(); } catch (Exception x) when (x is IOException or ObjectDisposedException) { } // mpv hat die Verbindung schon beendet
+        try { _pipe?.Dispose(); } catch (Exception x) when (x is IOException or ObjectDisposedException) { }
         try { if (_proc is { HasExited: false }) _proc.Kill(true); } catch (Exception x) when (x is InvalidOperationException or System.ComponentModel.Win32Exception) { }
         _proc?.Dispose(); _proc = null; _pipe = null; _w = null;
     }

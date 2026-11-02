@@ -522,6 +522,12 @@ else if (shot == "brief")
     d.Subject = "Kündigung der Mitgliedschaft 123"; d.Salutation = "Sehr geehrte Damen und Herren,";
     d.Body = "hiermit kündige ich die Mitgliedschaft 123 zum nächstmöglichen Zeitpunkt.\n\nBitte bestätigen Sie mir den Eingang und das Ende der Mitgliedschaft schriftlich.";
     d.Closing = "Mit freundlichen Grüßen";
+    if (Environment.GetEnvironmentVariable("TRENDO_BRIEF_DESIGN") is { Length: > 0 } design) // 0.9.43: Bewerbung mit Design
+    {
+        d.Recipient = "Zahnarztpraxis Dr. Muster\nLindenweg 5\n10115 Berlin"; d.Subject = "Bewerbung als Zahnmedizinische Fachangestellte";
+        d.Body = "mit großem Interesse habe ich Ihre Stellenanzeige gelesen. Als ausgebildete Zahnmedizinische Fachangestellte mit drei Jahren Erfahrung in Prophylaxe und Abrechnung möchte ich Ihr Team verstärken.\n\nÜber eine Einladung zu einem persönlichen Gespräch freue ich mich sehr.";
+        win.LetterSetDesign(design, Environment.GetEnvironmentVariable("TRENDO_BRIEF_FARBE") ?? "#1F5FA8", "Zahnmedizinische Fachangestellte");
+    }
     win.Show("brief");
     if (win.Windows.Active is { Maximized: false } briefWin) win.Windows.ToggleMaximize(briefWin.Id);
     win.Show("brief");

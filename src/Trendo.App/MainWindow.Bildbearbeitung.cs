@@ -154,7 +154,7 @@ public partial class MainWindow
         if (layers.Count == 0) sp.Children.Add(P("Noch keine Ebene – Bild hinzufügen oder ein Werkzeug benutzen.", Muted, 12));
         for (var i = layers.Count - 1; i >= 0; i--)
         {
-            var l = layers[i]; var id = (string)l["id"]!; var vis = l["visible"]?.GetValue<bool>() != false; var on = id == sel;
+            var l = layers[i]; var id = l["id"].AsText() ?? ""; var vis = l["visible"].AsBool(true); var on = id == sel;
             var eye = new Button { Name = $"img-vis-{i}", Content = vis ? "👁" : "–", Width = 30, Padding = new Thickness(0), FontSize = 12 };
             ToolTip.SetTip(eye, vis ? "Ausblenden" : "Einblenden");
             eye.Click += (_, _) => ProgramRun(BK, () => d.Edit(vis ? "Ausblenden" : "Einblenden", x => ImageDoc.Layer(x, id)!["visible"] = !vis));

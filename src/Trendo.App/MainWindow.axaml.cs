@@ -128,6 +128,7 @@ public sealed partial class MainWindow : Window
         InitPhoneSurface(root);
         InitCommandPalette(root);
         InitClaudeOperate(); // Claude kennt und bedient jedes Programm, Rechtsklick „✳ Claude fragen“
+        if (!opt.Isolated) InitClaudeStages(); // nach der Abo-Pause macht Claude weiter (Etappen)
         var scaler = new LayoutTransformControl { Child = root };
         Content = scaler;
         void DoRescale()

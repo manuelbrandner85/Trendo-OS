@@ -60,7 +60,7 @@ public partial class MainWindow
         Help = "Links die Figur mit deinen Maßen, in der Mitte Größen, Varianten und Zuschnitt. Rechts trägst du Werte ein – jede Änderung lässt sich mit Strg+Z zurücknehmen.",
     }, "kleidung", "produkt", "schnitt", "datenblatt", "varianten", "nähen", "mode", "größe", "schuhgröße", "stoff", "sku", "variante", "kalkulation", "preis", "ean", "etikett");
 
-    static List<string> Strings(ProgramDocument d, string key) => d.List(key).Select(x => x?.GetValue<string>() ?? "").Where(x => x.Length > 0).ToList();
+    static List<string> Strings(ProgramDocument d, string key) => d.List(key).Select(x => x.AsText() ?? "").Where(x => x.Length > 0).ToList();
     static IReadOnlyList<ProductVariant> ModeVariants(ProgramDocument d) => Fashion.Variants(d.Text("sku"), Strings(d, "sizes"), Strings(d, "colors"), d.Text("material"));
     static PriceCalc ModePrice(ProgramDocument d) => Fashion.Price(d.Number("matCost"), d.Number("labour"), d.Number("overhead"), d.Number("profit"));
     static List<(string Name, double W, double H, int Q)> ModePieces(ProgramDocument d) =>
@@ -211,7 +211,7 @@ public partial class MainWindow
     public static List<Marker.Placed> MarkerLayout(ProgramDocument d, double width)
     {
         var pieces = MarkerPieces(d);
-        var saved = d.List("layout").OfType<JsonObject>().Select(o => new Marker.Placed((int)ProgramDocument.ToNumber(o["p"]), (int)ProgramDocument.ToNumber(o["c"]), ProgramDocument.ToNumber(o["x"]), ProgramDocument.ToNumber(o["y"]), o["r"]?.GetValue<bool>() == true)).ToList();
+        var saved = d.List("layout").OfType<JsonObject>().Select(o => new Marker.Placed((int)ProgramDocument.ToNumber(o["p"]), (int)ProgramDocument.ToNumber(o["c"]), ProgramDocument.ToNumber(o["x"]), ProgramDocument.ToNumber(o["y"]), o["r"].AsBool())).ToList();
         var want = pieces.SelectMany((p, i) => Enumerable.Range(0, p.Qty).Select(c => (i, c))).ToHashSet();
         if (saved.Count == want.Count && saved.All(x => want.Contains((x.Piece, x.Copy)))) return saved;
         try { return Marker.AutoLayout(pieces, width); } catch (ArgumentException) { return []; }

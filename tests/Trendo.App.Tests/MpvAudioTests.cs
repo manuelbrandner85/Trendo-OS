@@ -28,7 +28,7 @@ public class MpvAudioTests
         a.SetVolume(0); a.Load(f);
         for (var i = 0; i < 100 && dur == 0; i++) await Task.Delay(50);
         Assert.InRange(dur, 1.4, 1.6);
-        a.SetPause(true); await Task.Delay(300); var held = pos; await Task.Delay(400); Assert.InRange(pos - held, 0, 0.05);
+        a.SetPause(true); await Task.Delay(300); var held = pos; await Task.Delay(400); Assert.InRange(pos - held, 0, 0.15); // in der Pause steht die Position (ohne Pause wären es ~0,4 s); eine letzte Meldung kurz nach dem Pausieren ist erlaubt
         a.Seek(1.2); a.SetPause(false);
         for (var i = 0; i < 100 && ended == 0; i++) await Task.Delay(50);
         Assert.Equal(1, ended); Assert.True(pos >= 1.2, $"pos={pos}");

@@ -19,7 +19,10 @@ public static class GameRules
         "\n- Jedes Spiel ist getrennt; die Spielbibel (Story, Figuren, Welt, Missionen) ist die Quelle der Wahrheit. Den festgelegten Story-Kanon nur nach ausdrücklicher Zustimmung ändern, vorher Vorher/Nachher zeigen." +
         "\n- Vor Löschen oder großen Umbauten sichern; Assets nie ohne Zustimmung importieren, löschen oder überschreiben; nichts „fertig“ ohne echten Test im Editor bzw. Spiel." +
         "\n- Keine kostenpflichtigen Dienste, keine Käufe, keine Veröffentlichung ohne Zustimmung. Der Stil des Spiels bestimmt den Look – Qualität im Stil des Spiels, so hoch wie sinnvoll." +
-        "\n- Grafikkarte schonen: immer nur ein schwerer Grafikjob gleichzeitig (Bild-KI, Rendern); fertige Endqualität nie selbst senken.";
+        "\n- Grafikkarte schonen: immer nur ein schwerer Grafikjob gleichzeitig (Bild-KI, Rendern); fertige Endqualität nie selbst senken." +
+        "\n- Wie ein professionelles Spielestudio arbeiten – aber für den Nutzer einfach: Konzept → Vorproduktion (Spielbibel, Stil, spielbarer Prototyp) → Produktion in Meilensteinen → Test und Qualität → Veröffentlichung. Die Meilensteine stehen im Feld „milestones“." +
+        "\n- Ziel klären: Sagt der Nutzer bei einem neuen Spiel nicht, wo es erscheinen soll, stelle genau diese eine Frage: " + ClaudeChats.QuestionMark + " Wie soll dein Spiel erscheinen? [Browser-Spiel | Windows-Setup | Windows und Mac | Steam | itch.io | Handy] – und trage die Antwort im Feld „platforms“ ein." +
+        "\n- Alle Formulare ausfüllen: Fülle im Spiele-Dokument jedes Feld (title, scale, genre, logline, loop, controls, style, audience, platforms, sound, menus, systems, mechanics, characters, world, quests, milestones) – Feld für Feld und jeweils gespeichert, damit der Nutzer live im Programm zusieht. Listen im vorhandenen Aufbau (z. B. mechanics als Liste kurzer Texte, characters/world/quests als Einträge mit den vorhandenen Feldern).";
 }
 
 /// <summary>Claude-Plugin GAMEFORGE auf dem PC: wird erkannt (neueste Version im Plugin-Speicher von Claude Code) und im Spiele-Studio genutzt –

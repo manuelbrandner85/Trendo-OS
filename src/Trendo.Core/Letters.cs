@@ -30,7 +30,63 @@ public sealed class LetterDraft
     public string Attachments { get; set; } = "";
     /// <summary>F4: Bild der Unterschrift (PNG/JPEG). Ausdrücklich keine qualifizierte elektronische Signatur.</summary>
     public string SignatureFile { get; set; } = "";
+    // Design (Wunsch 02.11.2026: z. B. Bewerbung „zeitgemäß in Blau mit schönen Elementen“) – „klassisch“ ist der reine DIN-5008-Brief ohne Gestaltung
+    /// <summary>Stil: klassisch, modern, elegant, kreativ oder minimal.</summary>
+    public string Design { get; set; } = "klassisch";
+    /// <summary>Akzentfarbe als Hex (z. B. #1F5FA8) für Kopf, Linien und Betreff.</summary>
+    public string Accent { get; set; } = "#1F5FA8";
+    public string Font { get; set; } = "Arial";
+    /// <summary>Kopf-Gestaltung: keiner, band (Farbband oben), linie (Name in Farbe mit Linie) oder seitenleiste (Farbstreifen links).</summary>
+    public string Header { get; set; } = "keiner";
+    /// <summary>Zeile unter dem Namen, z. B. Beruf („Zahnmedizinische Fachangestellte“).</summary>
+    public string Tagline { get; set; } = "";
+    /// <summary>Bewerbungsfoto (Bilddatei), erscheint oben rechts.</summary>
+    public string Photo { get; set; } = "";
+    public bool Designed => Design != "klassisch" || Header != "keiner";
     public LetterDraft Copy() => (LetterDraft)MemberwiseClone();
+}
+
+/// <summary>Brief-Design: Stile mit passenden Voreinstellungen, erlaubte Werte, Anweisung für Claude. Die DIN-5008-Positionen (Anschriftfeld, Falzmarken) bleiben immer.</summary>
+public static partial class LetterDesigns
+{
+    public sealed record Style(string Id, string Label, string Font, string Header, string Hint);
+    public static readonly Style[] Styles =
+    [
+        new("klassisch", "Klassisch (DIN 5008)", "Arial", "keiner", "Reiner Geschäftsbrief ohne Gestaltung"),
+        new("modern", "Modern", "Segoe UI", "band", "Farbband oben mit Name und Kontakt – zeitgemäß, z. B. für Bewerbungen"),
+        new("elegant", "Elegant", "Georgia", "linie", "Name in Akzentfarbe mit feiner Linie – seriös und ruhig"),
+        new("kreativ", "Kreativ", "Segoe UI", "seitenleiste", "Farbstreifen links, Name groß – für kreative Berufe"),
+        new("minimal", "Minimal", "Calibri", "linie", "Schlicht, viel Weißraum, eine feine Akzentlinie"),
+    ];
+    public static readonly string[] Fonts = ["Arial", "Calibri", "Segoe UI", "Georgia", "Garamond", "Verdana"];
+    public static readonly string[] Headers = ["keiner", "band", "linie", "seitenleiste"];
+
+    [GeneratedRegex("^#[0-9A-Fa-f]{6}$")] private static partial Regex HexRx();
+
+    /// <summary>Stil anwenden (Schrift und Kopf aus dem Stil, Farbe bleibt).</summary>
+    public static void Apply(LetterDraft d, string styleId)
+    {
+        var s = Styles.FirstOrDefault(x => x.Id == styleId) ?? Styles[0];
+        d.Design = s.Id; d.Font = s.Font; d.Header = s.Header;
+    }
+
+    /// <summary>Ungültige Werte (z. B. von Claude) auf sichere Werte zurücksetzen.</summary>
+    public static void Normalize(LetterDraft d)
+    {
+        if (!Styles.Any(s => s.Id == d.Design)) d.Design = "klassisch";
+        if (!HexRx().IsMatch(d.Accent ?? "")) d.Accent = "#1F5FA8";
+        if (!Fonts.Contains(d.Font)) d.Font = "Arial";
+        if (!Headers.Contains(d.Header)) d.Header = d.Design == "klassisch" ? "keiner" : Styles.First(s => s.Id == d.Design).Header;
+        d.Tagline = (d.Tagline ?? "").Trim(); if (d.Tagline.Length > 80) d.Tagline = d.Tagline[..80];
+        d.Photo ??= "";
+    }
+
+    public const string Rule =
+        "Der offene Brief liegt als „Brief.json“ im Projektordner – bearbeite genau diese Datei (gültiges JSON, Feldnamen beibehalten); Trendo zeigt jede Änderung sofort im Brief-Programm. " +
+        "Text: Subject, Salutation, Body (Absätze mit Leerzeile), Closing, Recipient (mehrzeilig), Attachments; Absender: SenderName, SenderStreet, SenderCity, SenderContact. " +
+        "Design, wenn der Nutzer es wünscht (z. B. „zeitgemäß in Blau“): Design = klassisch | modern | elegant | kreativ | minimal; Accent = Hex-Farbe wie #1F5FA8; Font = Arial | Calibri | Segoe UI | Georgia | Garamond | Verdana; " +
+        "Header = keiner | band | linie | seitenleiste; Tagline = Zeile unter dem Namen (z. B. der Beruf); Photo = Bilddatei im Projekt (z. B. anhang/foto.jpg) für ein Bewerbungsfoto. " +
+        "Halte DIN 5008 ein (Anschriftfeld, Datum, Betreff); Gestaltung nur im Kopf, mit Farbe sparsam und gut lesbar.";
 }
 
 public sealed record LetterCategory(string Id, string Label, string Subject, string Body, bool Legal = false, string Group = "Allgemein");
@@ -208,20 +264,43 @@ public static class Letters
     public static void WriteDocx(LetterDraft d, string path)
     {
         var body = new StringBuilder();
-        string Run(string t, bool bold = false, int size = 22) =>
-            $"<w:r><w:rPr><w:rFonts w:ascii=\"Arial\" w:hAnsi=\"Arial\" w:cs=\"Arial\"/>{(bold ? "<w:b/>" : "")}<w:sz w:val=\"{size}\"/></w:rPr><w:t xml:space=\"preserve\">{SecurityElement.Escape(t)}</w:t></w:r>";
+        LetterDesigns.Normalize(d);
+        var font = d.Designed ? SecurityElement.Escape(d.Font) : "Arial"; var hex = d.Accent.TrimStart('#').ToUpperInvariant();
+        string Run(string t, bool bold = false, int size = 22, string? color = null) =>
+            $"<w:r><w:rPr><w:rFonts w:ascii=\"{font}\" w:hAnsi=\"{font}\" w:cs=\"{font}\"/>{(bold ? "<w:b/>" : "")}{(color is null ? "" : $"<w:color w:val=\"{color}\"/>")}<w:sz w:val=\"{size}\"/></w:rPr><w:t xml:space=\"preserve\">{SecurityElement.Escape(t)}</w:t></w:r>";
         void Para(string t, bool bold = false, int size = 22, int before = 0, int after = 0, string align = "left") =>
             body.Append($"<w:p><w:pPr><w:spacing w:before=\"{before}\" w:after=\"{after}\" w:line=\"264\" w:lineRule=\"auto\"/><w:jc w:val=\"{align}\"/></w:pPr>{Run(t, bold, size)}</w:p>");
         void Lines(string t, int after = 0) { foreach (var line in t.Replace("\r", "").Split('\n')) Para(line, after: after); }
 
-        // Rücksendeangabe (klein) im Anschriftfeld; Seite beginnt bei 45 mm → 1 Zeile darüber
-        Para($"{d.SenderName} · {d.SenderStreet} · {d.SenderCity}", size: 16, before: d.Form == "A" ? 397 : 1134); // Form A: Anschriftfeld ab 27 mm, Form B ab 45 mm
+        // Design-Kopf (Wunsch 02.11.2026): Name groß in Akzentfarbe (bzw. weiß auf Farbband), Zeile darunter, Kontakt, Linie in Akzentfarbe; Foto rechts
+        byte[]? photo = d.Designed && d.Photo.Length > 0 && File.Exists(d.Photo) ? File.ReadAllBytes(d.Photo) : null;
+        var photoExt = photo is not null && photo.Length > 1 && photo[0] == 0x89 ? "png" : "jpeg";
+        if (d.Designed)
+        {
+            var band = d.Header == "band"; var fg = band ? "FFFFFF" : hex;
+            var shd = band ? $"<w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"{hex}\"/>" : "";
+            var (pw, ph) = photo is null ? (0, 0) : XrPlus.ImageSize(photo);
+            if (photo is not null && pw > 0 && ph > 0)
+            {
+                const long cx = 24L * 36000; var cy = cx * ph / pw; // 2,4 cm breit
+                body.Append($"<w:p><w:pPr><w:jc w:val=\"right\"/><w:spacing w:before=\"0\" w:after=\"0\"/></w:pPr><w:r><w:drawing><wp:inline><wp:extent cx=\"{cx}\" cy=\"{cy}\"/><wp:docPr id=\"2\" name=\"Foto\" descr=\"Foto\"/><a:graphic><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:pic><pic:nvPicPr><pic:cNvPr id=\"2\" name=\"foto.{photoExt}\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed=\"rIdPhoto\"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"{cx}\" cy=\"{cy}\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r></w:p>");
+            }
+            else photo = null;
+            body.Append($"<w:p><w:pPr>{shd}<w:spacing w:before=\"0\" w:after=\"0\"/></w:pPr>{Run(d.SenderName, true, 36, fg)}</w:p>");
+            if (d.Tagline.Length > 0) body.Append($"<w:p><w:pPr>{shd}<w:spacing w:before=\"0\" w:after=\"0\"/></w:pPr>{Run(d.Tagline, false, 20, band ? "FFFFFF" : "5C6B7A")}</w:p>");
+            var contact = string.Join(" · ", new[] { d.SenderStreet, d.SenderCity, d.SenderContact }.Where(s => s.Trim().Length > 0));
+            var line = d.Header is "linie" or "seitenleiste" ? $"<w:pBdr><w:bottom w:val=\"single\" w:sz=\"8\" w:space=\"4\" w:color=\"{hex}\"/></w:pBdr>" : "";
+            body.Append($"<w:p><w:pPr>{shd}{line}<w:spacing w:before=\"0\" w:after=\"0\"/></w:pPr>{Run(contact, false, 16, band ? "FFFFFF" : "5C6B7A")}</w:p>");
+        }
+        // Rücksendeangabe (klein) im Anschriftfeld; Seite beginnt bei 45 mm → 1 Zeile darüber (mit Design-Kopf entsprechend weniger Abstand)
+        Para($"{d.SenderName} · {d.SenderStreet} · {d.SenderCity}", size: 16, before: d.Designed ? (d.Form == "A" ? 120 : 420) : d.Form == "A" ? 397 : 1134); // Form A: Anschriftfeld ab 27 mm, Form B ab 45 mm
         Lines(d.Recipient);
         // Informationsblock rechtsbündig: Datum (und Zeichen)
         var info = string.Join("\n", InfoBlock(d));
         var first = true;
         foreach (var line in info.Split('\n')) { Para(line, before: first ? 480 : 0, align: "right"); first = false; }
-        Para(d.Subject, bold: true, before: 480, after: 240);
+        if (d.Designed) body.Append($"<w:p><w:pPr><w:spacing w:before=\"480\" w:after=\"240\"/></w:pPr>{Run(d.Subject, true, 22, hex)}</w:p>"); // Betreff in Akzentfarbe
+        else Para(d.Subject, bold: true, before: 480, after: 240);
         Para(d.Salutation, after: 240);
         foreach (var block in d.Body.Replace("\r", "").Split("\n\n")) { Lines(block); Para("", after: 0); }
         Para(d.Closing, before: 0);
@@ -246,13 +325,16 @@ public static class Letters
         using (var zip = new ZipArchive(fs, ZipArchiveMode.Create))
         {
             void Add(string n, string c) { using var w = new StreamWriter(zip.CreateEntry(n).Open(), new UTF8Encoding(false)); w.Write(c); }
-            Add("[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>" + (sig is null ? "" : $"<Default Extension=\"{sigExt}\" ContentType=\"image/{sigExt}\"/>") + "<Override PartName=\"/word/document.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/></Types>");
+            Add("[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>" + string.Concat(new[] { sig is null ? null : sigExt, photo is null ? null : photoExt }.OfType<string>().Distinct().Select(e => $"<Default Extension=\"{e}\" ContentType=\"image/{e}\"/>")) + "<Override PartName=\"/word/document.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/></Types>");
             Add("_rels/.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"word/document.xml\"/></Relationships>");
             Add("word/document.xml", doc);
-            if (sig is not null)
+            if (sig is not null || photo is not null)
             {
-                Add("word/_rels/document.xml.rels", $"<?xml version=\"1.0\" encoding=\"UTF-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rIdSig\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/image\" Target=\"media/unterschrift.{sigExt}\"/></Relationships>");
-                using var st = zip.CreateEntry($"word/media/unterschrift.{sigExt}").Open(); st.Write(sig);
+                const string img = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
+                Add("word/_rels/document.xml.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
+                    (sig is null ? "" : $"<Relationship Id=\"rIdSig\" Type=\"{img}\" Target=\"media/unterschrift.{sigExt}\"/>") + (photo is null ? "" : $"<Relationship Id=\"rIdPhoto\" Type=\"{img}\" Target=\"media/foto.{photoExt}\"/>") + "</Relationships>");
+                if (sig is not null) { using var st = zip.CreateEntry($"word/media/unterschrift.{sigExt}").Open(); st.Write(sig); }
+                if (photo is not null) { using var pt = zip.CreateEntry($"word/media/foto.{photoExt}").Open(); pt.Write(photo); }
             }
         }
         SafeFile.Move(tmp, path);

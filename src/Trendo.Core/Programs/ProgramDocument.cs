@@ -6,6 +6,32 @@ namespace Trendo.Core.Programs;
 /// <summary>T-0231 V3: Projektdatei eines Studios. Inhalt als JSON, dazu Titel, Studio und Zeitstempel.
 /// Rückgängig/Wiederholen über Schnappschüsse, automatisches Sichern in eine Nebendatei, „Zuletzt geöffnet“ je Studio.
 /// Die Datei enthält keinen Programm- oder Herstellernamen (Vorgabe 26.10.2026).</summary>
+/// <summary>Werte aus Studio-Dokumenten sicher als Text lesen (Befund 02.11.2026: Claude schrieb in eine Textliste Einträge mit Name und Beschreibung – die Spielbibel stürzte ab).
+/// Text bleibt Text, Zahlen und Wahrheitswerte werden zu Text, Einträge mit mehreren Feldern zu „Name – Beschreibung“, Listen zu „a, b, c“.</summary>
+public static class JsonText
+{
+    public static string? AsText(this JsonNode? n) => n switch
+    {
+        null => null,
+        JsonValue v when v.TryGetValue<string>(out var s) => s,
+        JsonValue v => v.ToJsonString().Trim('"'),
+        JsonObject o => string.Join(" – ", o.Select(kv => kv.Value.AsText()).Where(x => !string.IsNullOrWhiteSpace(x))),
+        JsonArray a => string.Join(", ", a.Select(x => x.AsText()).Where(x => !string.IsNullOrWhiteSpace(x))),
+        _ => n.ToJsonString(),
+    };
+
+    /// <summary>Wahrheitswert sicher lesen (true, "ja", "true", 1) – sonst <paramref name="fallback"/>.</summary>
+    public static bool AsBool(this JsonNode? n, bool fallback = false) => n?.GetValueKind() switch
+    {
+        JsonValueKind.True => true,
+        JsonValueKind.False => false,
+        JsonValueKind.String => n.AsText()?.Trim().ToLowerInvariant() switch { "ja" or "true" or "1" or "wahr" => true, "nein" or "false" or "0" or "falsch" => false, _ => fallback },
+        JsonValueKind.Number => ToNumberSafe(n) != 0,
+        _ => fallback,
+    };
+    static double ToNumberSafe(JsonNode n) => double.TryParse(n.ToJsonString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 0;
+}
+
 public sealed class ProgramDocument
 {
     public const string Extension = ".tdoc";

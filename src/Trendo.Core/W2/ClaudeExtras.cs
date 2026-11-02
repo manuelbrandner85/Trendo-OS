@@ -250,3 +250,80 @@ public static partial class ClaudeActions
         return sb.ToString();
     }
 }
+
+/// <summary>Deine Unterlagen nutzen (Wunsch 02.11.2026): Einträge aus „Wissen“ gehen nur an Claude, wenn du sie für ein Projekt freigibst. Je Projekt gemerkt.</summary>
+public sealed class ClaudeDocs(string dataRoot)
+{
+    string FileOf(string chatId) => Path.Combine(dataRoot, "claude-chats", "unterlagen", Regex.Replace(chatId, "[^A-Za-z0-9-]", "-") + ".json");
+    sealed record State(List<string> Shared, List<string> Declined);
+    State Load(string chatId)
+    {
+        try { return File.Exists(FileOf(chatId)) ? JsonSerializer.Deserialize<State>(File.ReadAllText(FileOf(chatId))) ?? new([], []) : new([], []); }
+        catch (JsonException) { return new([], []); }
+    }
+    void Save(string chatId, State s) { Directory.CreateDirectory(Path.GetDirectoryName(FileOf(chatId))!); File.WriteAllText(FileOf(chatId), JsonSerializer.Serialize(s)); }
+    public IReadOnlyList<string> Shared(string chatId) => Load(chatId).Shared;
+    public bool Declined(string chatId, string id) => Load(chatId).Declined.Contains(id);
+    public void Share(string chatId, string id) { var s = Load(chatId); if (!s.Shared.Contains(id)) s.Shared.Add(id); s.Declined.Remove(id); Save(chatId, s); }
+    public void Unshare(string chatId, string id) { var s = Load(chatId); s.Shared.Remove(id); Save(chatId, s); }
+    public void Decline(string chatId, string id) { var s = Load(chatId); if (!s.Declined.Contains(id)) s.Declined.Add(id); Save(chatId, s); }
+    public void Delete(string chatId) { try { if (File.Exists(FileOf(chatId))) File.Delete(FileOf(chatId)); } catch (IOException) { } }
+
+    /// <summary>Freigegebene Unterlagen als Dateien in den Projektordner (.trendo/unterlagen) legen und den Hinweis für Claude liefern.</summary>
+    public static string Write(string folder, IEnumerable<KnowledgeItem> items)
+    {
+        var dir = Path.Combine(folder, ".trendo", "unterlagen");
+        if (Directory.Exists(dir)) foreach (var f in Directory.EnumerateFiles(dir, "*.md")) File.Delete(f); // nur, was gerade freigegeben ist
+        var names = new List<string>();
+        foreach (var it in items)
+        {
+            Directory.CreateDirectory(dir);
+            var name = Regex.Replace(it.Title, @"[\\/:*?""<>|]", "-").Trim(); if (name.Length == 0) name = it.Id; if (name.Length > 60) name = name[..60];
+            File.WriteAllText(Path.Combine(dir, name + ".md"), "# " + it.Title + "\n\n" + it.Text);
+            names.Add(name + ".md");
+        }
+        return names.Count == 0 ? "" : "\nDer Nutzer hat dir für dieses Projekt Unterlagen freigegeben (Ordner .trendo/unterlagen): " + string.Join(", ", names) +
+            ". Nutze sie, wo sie passen, und gib nichts davon nach außen weiter.";
+    }
+}
+
+/// <summary>Große Aufträge in Etappen (Wunsch 02.11.2026): ist das Claude-Abo mitten in der Arbeit aufgebraucht, merkt sich Trendo das Projekt;
+/// sobald Claude wieder frei ist, macht Claude dort weiter – und prüft, was die Ersatz-KI in der Zwischenzeit gemacht hat.</summary>
+public sealed class ClaudeStages(string dataRoot)
+{
+    public sealed record Stage(string ChatId, string Studio, string Request, DateTimeOffset Since);
+    public const string Resume = "Dein Claude-Abo ist wieder frei. Mach mit dem Auftrag weiter, wo du aufgehört hast. Prüfe zuerst, was die Ersatz-KI in der Zwischenzeit geändert hat, und verbessere es, wo nötig. Ursprünglicher Auftrag: ";
+    string FileOf => Path.Combine(dataRoot, "claude-chats", "etappen.json");
+    public IReadOnlyList<Stage> Pending()
+    {
+        try { return File.Exists(FileOf) ? JsonSerializer.Deserialize<List<Stage>>(File.ReadAllText(FileOf)) ?? [] : []; } catch (JsonException) { return []; }
+    }
+    void Save(List<Stage> l) { Directory.CreateDirectory(Path.GetDirectoryName(FileOf)!); File.WriteAllText(FileOf, JsonSerializer.Serialize(l)); }
+    /// <summary>Projekt merken (je Projekt nur einmal – der erste unterbrochene Auftrag zählt).</summary>
+    public void Add(string chatId, string studio, string request) { var l = Pending().ToList(); if (l.Any(s => s.ChatId == chatId)) return; l.Add(new(chatId, studio, request.Length > 400 ? request[..400] + " …" : request, DateTimeOffset.Now)); Save(l); }
+    public void Done(string chatId) { var l = Pending().Where(s => s.ChatId != chatId).ToList(); Save(l); }
+}
+
+/// <summary>Veröffentlichen mit einem Klick (Wunsch 02.11.2026): das Projekt fertig verpacken – als ZIP im Ordner „Veröffentlicht“, ohne Hilfsdateien von Trendo und Claude.
+/// Hochgeladen wird dabei nichts.</summary>
+public static class ClaudePublish
+{
+    static readonly string[] Skip = [".trendo", ".claude", ".git", "node_modules", "anhang", "__pycache__", "bin", "obj"];
+
+    public static string Pack(string folder, string outDir, string title)
+    {
+        Directory.CreateDirectory(outDir);
+        var name = Regex.Replace(title, @"[\\/:*?""<>|]", "-").Trim(); if (name.Length == 0) name = "Projekt"; if (name.Length > 50) name = name[..50].Trim();
+        var zip = Path.Combine(outDir, $"{name} {DateTime.Now:yyyy-MM-dd HH-mm}.zip");
+        for (var i = 2; File.Exists(zip); i++) zip = Path.Combine(outDir, $"{name} {DateTime.Now:yyyy-MM-dd HH-mm} ({i}).zip");
+        using var a = System.IO.Compression.ZipFile.Open(zip, System.IO.Compression.ZipArchiveMode.Create);
+        var root = Path.GetFullPath(folder);
+        foreach (var f in Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories))
+        {
+            var rel = Path.GetRelativePath(root, f);
+            if (rel.Split(Path.DirectorySeparatorChar).Any(p => Skip.Contains(p, StringComparer.OrdinalIgnoreCase))) continue;
+            System.IO.Compression.ZipFileExtensions.CreateEntryFromFile(a, f, rel.Replace(Path.DirectorySeparatorChar, '/'));
+        }
+        return zip;
+    }
+}

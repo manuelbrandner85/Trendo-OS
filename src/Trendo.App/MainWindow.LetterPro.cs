@@ -269,6 +269,29 @@ public partial class MainWindow
         return wrap;
     }
 
+    /// <summary>Design-Kopf (Wunsch 02.11.2026): Farbband, Linie oder Seitenleiste in der Akzentfarbe, Name groß, Zeile darunter (z. B. Beruf), Kontakt rechts, Foto oben rechts.
+    /// Das Anschriftfeld und die Falzmarken nach DIN 5008 bleiben unberührt.</summary>
+    static void LetterDesignHead(Canvas p1, LetterDraft d, bool formA, Func<string, string, double, IBrush, string?, bool, double?, bool, TextBlock> T, Action<Canvas, Control, double, double> At, IBrush accent, IBrush grey)
+    {
+        var band = d.Header == "band"; var hdrH = formA ? 22.0 : 32.0;
+        IBrush onBand = Brushes.White, onBandSoft = Brush.Parse("#E6FFFFFF");
+        if (band) At(p1, new Rectangle { Name = "letter-design-band", Width = 210, Height = hdrH, Fill = accent }, 0, 0);
+        if (d.Header == "seitenleiste") At(p1, new Rectangle { Name = "letter-design-side", Width = 7, Height = 297, Fill = accent }, 0, 0);
+        var hasPhoto = File.Exists(d.Photo);
+        At(p1, T("letter-preview-sender-name", d.SenderName, formA ? 16 : 20, band ? onBand : accent, "letter-sender-name", true, 125, false), 25, formA ? 4 : 7);
+        if (d.Tagline.Length > 0) At(p1, T("letter-preview-tagline", d.Tagline, 10, band ? onBandSoft : grey, "letter-sender-name", false, 125, true), 25, formA ? 11.5 : 15.5);
+        var contact = T("letter-preview-sender", string.Join("\n", new[] { d.SenderStreet, d.SenderCity, d.SenderContact }.Where(s => !string.IsNullOrWhiteSpace(s))), 8.5, band ? onBandSoft : grey, "letter-sender-street", false, 60, true);
+        contact.TextAlignment = TextAlignment.Right;
+        At(p1, contact, hasPhoto ? 103 : 130, formA ? 4 : 7);
+        if (d.Header is "linie" or "seitenleiste") At(p1, new Rectangle { Name = "letter-design-line", Width = 165, Height = 0.6, Fill = accent }, 25, hdrH - 3);
+        if (hasPhoto)
+        {
+            var img = new Image { Name = "letter-preview-photo", Width = formA ? 19 : 26, Height = formA ? 24 : 33, Stretch = Stretch.UniformToFill };
+            try { img.Source = new Avalonia.Media.Imaging.Bitmap(d.Photo); } catch (Exception) { img.IsVisible = false; }
+            At(p1, new Border { ClipToBounds = true, BorderBrush = band ? onBand : accent, BorderThickness = new Thickness(0.6), Child = img }, formA ? 178 : 170, 4);
+        }
+    }
+
     /// <summary>Zeilen eines Textes so, wie sie auf der Seite umbrechen (Arial, Breite in mm).</summary>
     static List<string> LetterLines(string text, double pt, double width, bool bold = false)
     {
@@ -283,10 +306,13 @@ public partial class MainWindow
     List<Canvas> LetterPages(LetterDraft d, bool interactive)
     {
         const double Pt = 0.3528; double lineH = 11 * Pt * 1.2; var formA = d.Form == "A"; var shift = formA ? -18 : 0;
+        LetterDesigns.Normalize(d);
+        var font = d.Designed ? d.Font + ", Arial, Liberation Sans, Helvetica" : "Arial, Liberation Sans, Helvetica"; // Design: gewählte Schrift
+        IBrush accent = Brush.Parse(d.Accent);
         IBrush ink = Brushes.Black, grey = Brush.Parse("#5C6B7A");
         TextBlock T(string name, string text, double pt, IBrush fg, string? field, bool bold = false, double? width = null, bool wrap = true)
         {
-            var t = new TextBlock { Name = name, Text = text, FontFamily = new FontFamily("Arial, Liberation Sans, Helvetica"), FontSize = pt * Pt, Foreground = fg, TextWrapping = wrap ? TextWrapping.Wrap : TextWrapping.NoWrap, LineHeight = pt * Pt * 1.2, FontWeight = bold ? FontWeight.Bold : FontWeight.Normal };
+            var t = new TextBlock { Name = name, Text = text, FontFamily = new FontFamily(font), FontSize = pt * Pt, Foreground = fg, TextWrapping = wrap ? TextWrapping.Wrap : TextWrapping.NoWrap, LineHeight = pt * Pt * 1.2, FontWeight = bold ? FontWeight.Bold : FontWeight.Normal };
             if (width is { } w) t.Width = w;
             if (field is not null && interactive)
             {
@@ -307,7 +333,8 @@ public partial class MainWindow
         // Kopf, Sichtfenster, Anschrift, Informationsblock
         At(p1, new Rectangle { Width = 85, Height = 45, Stroke = Brush.Parse("#9CB3C9"), StrokeThickness = 0.3, StrokeDashArray = [4, 3] }, 20, 45 + shift);
         var sender = T("letter-preview-sender", string.Join("\n", new[] { d.SenderName, d.SenderStreet, d.SenderCity, d.SenderContact }.Where(s => !string.IsNullOrWhiteSpace(s))), 9, grey, "letter-sender-name", width: 85); sender.TextAlignment = TextAlignment.Right;
-        At(p1, sender, 105, formA ? 8 : 15);
+        if (d.Designed) LetterDesignHead(p1, d, formA, T, At, accent, grey);
+        else At(p1, sender, 105, formA ? 8 : 15);
         var back = T("letter-preview-return", string.Join(" · ", new[] { d.SenderName, d.SenderStreet, d.SenderCity }.Where(s => !string.IsNullOrWhiteSpace(s))), 7, grey, "letter-sender-street", width: 80, wrap: false); back.TextTrimming = TextTrimming.CharacterEllipsis;
         At(p1, back, 25, 58 + shift);
         At(p1, T("letter-preview-recipient", d.Recipient, 11, ink, "letter-recipient", width: 80), 25, 62.7 + shift);
@@ -315,7 +342,7 @@ public partial class MainWindow
         // Betreff und Anrede
         var y = 98.5 + shift;
         var subjLines = LetterLines(d.Subject, 11, 165, bold: true);
-        At(p1, T("letter-preview-subject", d.Subject, 11, ink, "letter-subject", bold: true, width: 165), 25, y); y += Math.Max(1, subjLines.Count) * lineH + 8.5;
+        At(p1, T("letter-preview-subject", d.Subject, 11, d.Designed ? accent : ink, "letter-subject", bold: true, width: 165), 25, y); y += Math.Max(1, subjLines.Count) * lineH + 8.5;
         var salLines = LetterLines(d.Salutation, 11, 165);
         At(p1, T("letter-preview-salutation", d.Salutation, 11, ink, "letter-salutation", width: 165), 25, y); y += Math.Max(1, salLines.Count) * lineH + 4.2;
         // Text mit Seitenumbruch (unten 20 mm frei, Folgeseiten ab 27 mm)
@@ -348,6 +375,7 @@ public partial class MainWindow
             for (var i = 0; i < pages.Count; i++)
             {
                 At(pages[i], T(i == 0 ? "letter-preview-pageno" : $"letter-preview-pageno-{i + 1}", $"Seite {i + 1} von {pages.Count}", 8, grey, null, width: 40), 165, 287);
+                if (i > 0 && d.Designed) At(pages[i], new Rectangle { Width = 165, Height = 0.5, Fill = accent }, 25, 20); // Design: feine Linie auch auf Folgeseiten
                 if (i > 0) At(pages[i], T($"letter-preview-head-{i + 1}", (d.SenderName.Trim().Length > 0 ? d.SenderName.Trim() + " · " : "") + d.Subject, 8, grey, null, width: 160, wrap: false), 25, 15);
             }
         return pages;

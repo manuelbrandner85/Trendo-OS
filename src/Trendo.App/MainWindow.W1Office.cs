@@ -183,6 +183,7 @@ public partial class MainWindow
         var reset = new Button { Name = "letter-new", Content = "Neuer Brief" }; reset.Click += (_, _) => { _letter = NewLetter(); _letterGallery = null; _letterSaved = false; _letterMsg = "Neuer Brief. Betreff und Text schreibst du selbst."; _letterPreview = true; Show("brief"); };
         form.Children.Add(new WrapPanel { Margin = new Thickness(0, 8, 0, 0), Children = { check, Sp(improve), Sp(reset) } });
         form.Children.Add(msg); form.Children.Add(issues); form.Children.Add(suggestion);
+        form.Children.Add(FieldLabel("Design")); form.Children.Add(LetterDesignBox(d)); // Wunsch 02.11.2026: Bewerbung & Co. zeitgemäß gestalten
         form.Children.Add(FieldLabel("Mehr")); form.Children.Add(LetterTools(d));
         var arch = new LetterArchive(ProjectsRoot).List().Take(8).ToList();
         if (arch.Count > 0)

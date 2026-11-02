@@ -121,7 +121,7 @@ public partial class MainWindow
             new WrapPanel { Children = {
                 Kpi("game-kpi-scale", "Umfang", scale.Name, scale.Hint, "#7C4DFF", "#4B2BC2"),
                 Kpi("game-kpi-plan", "Geplant", GameDesign.Overall(d.Data) + " %", "über alle Bereiche", "#3D8BFF", "#1E4FD8"),
-                Kpi("game-kpi-ms", "Meilensteine", $"{done} / {ms.Count}", ms.FirstOrDefault(m => m["done"]?.GetValueKind() != System.Text.Json.JsonValueKind.True)?["name"]?.GetValue<string>() ?? "alles geschafft", "#2FBF71", "#167A45") } },
+                Kpi("game-kpi-ms", "Meilensteine", $"{done} / {ms.Count}", ms.FirstOrDefault(m => m["done"]?.GetValueKind() != System.Text.Json.JsonValueKind.True)?["name"].AsText() ?? "alles geschafft", "#2FBF71", "#167A45") } },
             H("Bereiche", 14), rings, H("Prüfung", 14), w } };
     }
 
@@ -136,7 +136,7 @@ public partial class MainWindow
             sp.Children.Add(P(label, null, 11.5)); sp.Children.Add(t);
         }
         Field("logline", "Idee in einem Satz", true); Field("genre", "Genre"); Field("loop", "Kernschleife (was macht man immer wieder?)", true);
-        var mech = new TextBox { Name = "game-f-mechanics", Text = string.Join(", ", d.List("mechanics").Select(x => x?.GetValue<string>())), PlaceholderText = "Mechaniken, mit Komma getrennt" };
+        var mech = new TextBox { Name = "game-f-mechanics", Text = string.Join(", ", d.List("mechanics").Select(x => x.AsText())), PlaceholderText = "Mechaniken, mit Komma getrennt" };
         void CommitMech() { var l = (mech.Text ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries); d.Set("mechanics", new JsonArray([.. l.Select(x => (JsonNode)x)]), "Mechaniken"); Show(GK); }
         mech.LostFocus += (_, _) => CommitMech(); OnEnter(mech, CommitMech);
         sp.Children.Add(P("Mechaniken", null, 11.5)); sp.Children.Add(mech);
@@ -160,7 +160,7 @@ public partial class MainWindow
                 if (f is "role" or "kind")
                 {
                     var opts = f == "role" ? GameDesign.Roles : ["Haupt", "Neben"];
-                    var cb = new ComboBox { Name = $"game-{key}-{i}-{f}", ItemsSource = opts, SelectedItem = items[i][f]?.GetValue<string>(), MinWidth = 110 };
+                    var cb = new ComboBox { Name = $"game-{key}-{i}-{f}", ItemsSource = opts, SelectedItem = items[i][f].AsText(), MinWidth = 110 };
                     cb.SelectionChanged += (_, _) => { if (cb.SelectedItem is string v && v != (string?)d.List(key)[idx]?[field]) { d.Edit(label, x => ((JsonObject)((JsonArray)x[key]!)[idx]!)[field] = v); Show(GK); } };
                     c = cb;
                 }
@@ -195,7 +195,7 @@ public partial class MainWindow
         var browser = d.Text("browser");
         if (GameDesign.ScaleOf(d.Text("scale")).Engine != "browser" || browser is not ("jump" or "breakout")) return sp;
         // Kachel-Leveleditor: Klick setzt oder entfernt einen Stein/ein Hindernis
-        var rows = d.List("level").Select(x => x?.GetValue<string>() ?? "").ToList();
+        var rows = d.List("level").Select(x => x.AsText() ?? "").ToList();
         if (rows.Count == 0) rows = [.. browser == "jump" ? GameStudio.DefaultJump : GameStudio.DefaultBreakout];
         var width = rows.Max(r => r.Length);
         var grid = new UniformGrid { Name = "game-level", Columns = width, Rows = rows.Count, Width = Math.Min(900, width * 22) };
@@ -231,7 +231,7 @@ public partial class MainWindow
         for (var i = 0; i < ms.Count; i++)
         {
             var idx = i; var on = ms[i]["done"]?.GetValueKind() == System.Text.Json.JsonValueKind.True;
-            var cb = new CheckBox { Name = $"game-ms-{i}", IsChecked = on, Content = new TextBlock { Text = $"{i + 1}. {ms[i]["name"]?.GetValue<string>()}", Foreground = Text, FontSize = 13 } };
+            var cb = new CheckBox { Name = $"game-ms-{i}", IsChecked = on, Content = new TextBlock { Text = $"{i + 1}. {ms[i]["name"].AsText()}", Foreground = Text, FontSize = 13 } };
             cb.IsCheckedChanged += (_, _) => { if ((cb.IsChecked == true) != on) { d.Edit("Meilenstein", x => ((JsonObject)((JsonArray)x["milestones"]!)[idx]!)["done"] = cb.IsChecked == true); Show(GK); } };
             sp.Children.Add(cb);
         }
@@ -299,7 +299,7 @@ public partial class MainWindow
     public PlaytestCanvas? GamePlaytestCanvas { get; private set; }
     static List<string> GameRows(ProgramDocument d)
     {
-        var rows = d.List("level").Select(x => x?.GetValue<string>() ?? "").Where(x => x.Length > 0).ToList();
+        var rows = d.List("level").Select(x => x.AsText() ?? "").Where(x => x.Length > 0).ToList();
         var kind = d.Text("browser");
         return rows.Count > 0 ? rows : [.. kind == "plattform" ? GameStudio.DefaultPlatform : kind == "breakout" ? GameStudio.DefaultBreakout : GameStudio.DefaultJump];
     }
