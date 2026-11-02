@@ -19,7 +19,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Start | Texte & Tabellen (SYS-10) | Arbeiten & Büro | keine eigene erkannt | 25 | 25 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](doku-start/README.md) |
 | Trendo PDF | Texte & Tabellen (SYS-10) | Arbeiten & Büro | keine eigene erkannt | 25 | 28 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](pdf/README.md) |
 | Trendo Präsentation | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Folienansicht | 25 | 27 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](praesentation/README.md) |
-| Trendo Tabelle | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Tabellenraster | 25 | 43 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](tabelle/README.md) |
+| Trendo Tabelle | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Tabellenraster | 25 | 46 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](tabelle/README.md) |
 | Trendo Text | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Dokumentseite (Textverarbeitung) | 25 | 36 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](text/README.md) |
 | Geld | Geld & Rechnungen (SPEC-11) | Business & Geld | Diagramm | – | 12 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](finanzen/README.md) |
 | Verkaufen | Online verkaufen (STUDIO-ONLINE-BUSINESS-01) | Business & Geld | Kasse mit Warenkorb | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](verkaufen/README.md) |
@@ -66,12 +66,12 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Sauberer Nachbau | Programme nachbauen (X-10) | Entwickeln | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](nachbau/README.md) |
 | Open Source | Projekte von GitHub holen (X-06) | Entwickeln | keine eigene erkannt | – | 25 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](oss/README.md) |
 | Erweiterungen | Trendo erweitern (X-04) | Entwickeln | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](erweiterungen/README.md) |
-| Software | Webseite bauen (CORE-07) | Entwickeln | Bildansicht | – | 40 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](dev/README.md) |
+| Software | Webseite bauen (CORE-07) | Entwickeln | Bildansicht | – | 42 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](dev/README.md) |
 | Ordner im Heimnetz teilen | Dateien teilen (SYS-06) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](teilen/README.md) |
 | Freigaben | Daten schützen (CORE-11) | System & Sicherheit | keine eigene erkannt | – | 10 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](approvals/README.md) |
 | Schutz & Datenschutz | Daten schützen (CORE-11) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](schutz/README.md) |
 | Sicherung | Daten schützen (CORE-11) | System & Sicherheit | keine eigene erkannt | – | 5 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](sicherung/README.md) |
-| Alle Studios | Desktop einrichten (CORE-01) | System & Sicherheit | Bildansicht | – | 41 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](studios/README.md) |
+| Alle Studios | Desktop einrichten (CORE-01) | System & Sicherheit | Bildansicht | – | 44 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](studios/README.md) |
 | Desktop-Symbole | Desktop einrichten (CORE-01) | System & Sicherheit | Bildansicht | – | 4 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](desktop-symbole/README.md) |
 | Ersteinrichtung | Desktop einrichten (CORE-01) | System & Sicherheit | keine eigene erkannt | – | 12 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](einrichtung/README.md) |
 | Projekte | Desktop einrichten (CORE-01) | System & Sicherheit | keine eigene erkannt | – | 37 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](projects/README.md) |

@@ -1,6 +1,6 @@
 # KI – Architektur
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.36 (Stand 9fa45e4)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.36 (Stand 6cf88c3)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

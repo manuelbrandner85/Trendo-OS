@@ -1,6 +1,6 @@
 # Kleidung & Produkte – Funktionsmatrix
 
-Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.36 (Stand 9fa45e4)
+Studio: Kleidung & Produkte entwerfen (SPEC-08) · Bereich: Kreativ & Medien · Seite: `mode-programm` · Stand: 0.9.36 (Stand 6cf88c3)
 
 Quelle: `docs/w6-katalog/SPEC-08.md`
 

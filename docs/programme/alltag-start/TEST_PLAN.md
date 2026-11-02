@@ -1,6 +1,6 @@
 # Übersicht – Testplan
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.36 (Stand 9fa45e4)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.36 (Stand 6cf88c3)
 
 30 Tests sprechen dieses Programm an.
 

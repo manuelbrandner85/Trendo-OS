@@ -1,10 +1,10 @@
 # Alle Studios – Testergebnisse
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand 9fa45e4)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand 6cf88c3)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 41 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 44 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -14,6 +14,9 @@ Bestanden 41 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | CORE-01: Dateisuche begrenzt Tiefe und Anzahl | ✓ bestanden |
 | CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte | ✓ bestanden |
 | CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste | ✓ bestanden |
+| Claude auch in der Studio-Übersicht, in der Suche und im Fokusmodus | ✓ bestanden |
+| Claude im Menüband jedes Fachprogramms und Rechtsklick „✳ Claude fragen“ auf Elemente der Seite | ✓ bestanden |
+| Claude kennt das Programm: offene Seite mit Feldern und Knöpfen geht mit; Claude bedient es erst nach „Ausführen“ – unbekannte Ziele fallen weg | ✓ bestanden |
 | Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt | ✓ bestanden |
 | Design: Dock-Klick auf Dateien startet direkt (nur Owner) und wird auditiert; Browser offline deaktiviert | ✓ bestanden |
 | Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert | ✓ bestanden |

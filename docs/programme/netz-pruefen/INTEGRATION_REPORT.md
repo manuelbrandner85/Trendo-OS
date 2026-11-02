@@ -1,6 +1,6 @@
 # Sicher prüfen – Einbindung in Trendo OS
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.36 (Stand 9fa45e4)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.36 (Stand 6cf88c3)
 
 - Seite `netz-pruefen` im Studio „Surfen & Herunterladen“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

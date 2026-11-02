@@ -1,6 +1,6 @@
 # Trendo-Updates – Testergebnisse
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.36 (Stand 9fa45e4)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.36 (Stand 6cf88c3)
 
 Lauf: `api.trx, app.trx, core.trx`
 

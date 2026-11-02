@@ -1,6 +1,6 @@
 # Aus Fotos – Einbindung in Trendo OS
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand 9fa45e4)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand 6cf88c3)
 
 - Seite `scan3d` im Studio „Gegenstände einscannen“ (3D, Spiele & VR) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

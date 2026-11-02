@@ -1,8 +1,8 @@
 # Alle Studios – Testplan
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand 9fa45e4)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand 6cf88c3)
 
-41 Tests sprechen dieses Programm an.
+44 Tests sprechen dieses Programm an.
 
 - Alle Studios + Bereiche: jede Karte ist klickbar und führt aus der Liste heraus
 - Alle Studios: Bereich und Suche filtern die Karten, Alle zeigt wieder alles
@@ -10,6 +10,9 @@ Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `
 - CORE-01: Dateisuche begrenzt Tiefe und Anzahl
 - CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte
 - CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste
+- Claude auch in der Studio-Übersicht, in der Suche und im Fokusmodus
+- Claude im Menüband jedes Fachprogramms und Rechtsklick „✳ Claude fragen“ auf Elemente der Seite
+- Claude kennt das Programm: offene Seite mit Feldern und Knöpfen geht mit; Claude bedient es erst nach „Ausführen“ – unbekannte Ziele fallen weg
 - Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt
 - Design: Dock-Klick auf Dateien startet direkt (nur Owner) und wird auditiert; Browser offline deaktiviert
 - Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert

@@ -1,6 +1,6 @@
 # Kameras & Roboter steuern – Architektur
 
-Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.36 (Stand 9fa45e4)
+Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.36 (Stand 6cf88c3)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Core09.cs`

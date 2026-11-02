@@ -1,6 +1,6 @@
 # Sauberer Nachbau – Testplan
 
-Studio: Programme nachbauen (X-10) · Bereich: Entwickeln · Seite: `nachbau` · Stand: 0.9.36 (Stand 9fa45e4)
+Studio: Programme nachbauen (X-10) · Bereich: Entwickeln · Seite: `nachbau` · Stand: 0.9.36 (Stand 6cf88c3)
 
 7 Tests sprechen dieses Programm an.
 

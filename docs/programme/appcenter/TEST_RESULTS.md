@@ -1,6 +1,6 @@
 # Programme verwalten – Testergebnisse
 
-Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.36 (Stand 9fa45e4)
+Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.36 (Stand 6cf88c3)
 
 Lauf: `api.trx, app.trx, core.trx`
 

@@ -1,10 +1,10 @@
 # Software – Testergebnisse
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 9fa45e4)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 6cf88c3)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 40 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 42 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -16,6 +16,8 @@ Bestanden 40 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | CORE-07: Git-Stand anlegen, Änderung erkennen, speichern (echtes git) | ✓ bestanden |
 | CORE-07: Python- und .NET-Vorlage bestehen ihren eigenen Test (echte Werkzeuge) | ✓ bestanden |
 | CORE-07: Vorlagen legen echte Projekte an, vorhandener Ordner wird nie überschrieben | ✓ bestanden |
+| Claude im Programm: Studio ohne eigenes Programm (Webseiten) bleibt auf seiner Seite, kein Dokument | ✓ bestanden |
+| Claude im Programm: neues Projekt im Spiele-Studio legt ein Dokument in „Spiele bauen“ an, zeigt das Programm, Claude arbeitet darin; Fortsetzen öffnet es wieder | ✓ bestanden |
 | Claude im Studio: Auswahl in Trendo Tabelle geht als Zustand mit; Internet und Befehle bei Bedarf immer an, je Projekt auf „sicher“ stellbar; Vorgabe abschaltbar | ✓ bestanden |
 | Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet | ✓ bestanden |
 | Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort | ✓ bestanden |
