@@ -1,12 +1,13 @@
 # 3D – Testplan
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 302f050)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand c18c198)
 
-17 Tests sprechen dieses Programm an.
+18 Tests sprechen dieses Programm an.
 
 - 3D-Arbeitsfläche: Formen einsetzen (auf dem Boden), Teil anklicken, mit der Maus verschieben (Raster), Pfeiltasten, Verdoppeln, Entf, Rückgängig
 - 3D-Arbeitsfläche: „Auf den Boden“ setzt die Unterkante auf 0, Text und Ebene stehen auf dem Boden
 - 3D-Seite zeigt die Auftragsleiste, ohne die 3D-Arbeitsfläche zu verkleinern
+- 3D-Studio: Kreatur-Karte – Drache in Bronze/Grün, „Vorschaubild rendern“ startet Blender im Hintergrund, „sichtbar“ ohne -b; Ergebnis mit Vorschau
 - 3D: OBJ, STL und GLB speichern, Datei öffnen, Projekt wieder öffnen
 - 3D: Satz wird zum Vorschlag und erst nach Übernehmen gebaut
 - 3D: Teil hinzufügen, ändern, Vorschau, löschen, rückgängig

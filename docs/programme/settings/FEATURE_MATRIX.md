@@ -1,6 +1,6 @@
 # Einstellungen – Funktionsmatrix
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 302f050)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand c18c198)
 
 Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 
@@ -46,6 +46,11 @@ Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 - Hell
 - Wie Windows (hell/dunkel)
 - Hoher Kontrast
+- ✓ Trendo
+- Wie Windows
+- Wie Mac
+- Wie Linux
+- Gold
 - Blau
 - Türkis
 - Violett

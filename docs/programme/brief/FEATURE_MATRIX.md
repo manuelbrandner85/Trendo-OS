@@ -1,6 +1,6 @@
 # Briefe schreiben – Funktionsmatrix
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 302f050)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand c18c198)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -22,6 +22,11 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Meine Briefe
 - Briefköpfe
 - Empfänger
+- 1  Was?
+- 2  An wen?
+- 3  Text & Design
+- Alles auf einer Seite
+- 🗑 Alles leeren
 - Freier Brief
 - Kündigung
 - Widerspruch
@@ -32,6 +37,8 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Widerruf (Kauf im Internet)
 - Adressänderung
 - Vorlagen ausblenden
+- Weiter →
+- ← Zurück
 - Brief prüfen
 - Text von der KI verbessern lassen
 - Klassisch (DIN 5008)
@@ -39,6 +46,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Elegant
 - Kreativ
 - Minimal
+- Fertig – Brief speichern
 - Einsetzen
 - Jetzt Form B – zu Form A wechseln
 - Berechnen

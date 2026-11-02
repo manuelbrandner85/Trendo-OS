@@ -1,6 +1,6 @@
 # Geräte überwachen – Testplan
 
-Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand 302f050)
+Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand c18c198)
 
 20 Tests sprechen dieses Programm an.
 

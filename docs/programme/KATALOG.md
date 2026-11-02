@@ -6,7 +6,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 
 | Programm | Studio | Bereich | Arbeitsfläche | Funktionen | Tests | Vorbild-Analyse | Modulstatus | Doku |
 |---|---|---|---|---|---|---|---|---|
-| Briefe schreiben | Briefe schreiben (STUDIO-LETTER-01) | Arbeiten & Büro | Briefseite nach DIN 5008, Texteditor | – | 14 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](brief/README.md) |
+| Briefe schreiben | Briefe schreiben (STUDIO-LETTER-01) | Arbeiten & Büro | Briefseite nach DIN 5008, Texteditor | – | 18 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](brief/README.md) |
 | Adressbuch | E-Mails & Termine (SYS-09) | Arbeiten & Büro | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](kontakte/README.md) |
 | Aufgaben | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Aufgabentafel | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](aufgaben/README.md) |
 | E-Mail & Kontakte | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Texteditor | – | 18 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](post/README.md) |
@@ -16,11 +16,11 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Übersicht | Kleine Helfer & Musik (SYS-02) | Arbeiten & Büro | keine eigene erkannt | 25 | 30 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](alltag-start/README.md) |
 | Werkzeuge: Notizen, Rechner, Wecker | Kleine Helfer & Musik (SYS-02) | Arbeiten & Büro | keine eigene erkannt | 25 | 31 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](werkzeuge/README.md) |
 | Vorhaben | Neues Projekt starten (X-11) | Arbeiten & Büro | keine eigene erkannt | – | 8 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](vorhaben/README.md) |
-| Start | Texte & Tabellen (SYS-10) | Arbeiten & Büro | keine eigene erkannt | 25 | 25 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](doku-start/README.md) |
-| Trendo PDF | Texte & Tabellen (SYS-10) | Arbeiten & Büro | keine eigene erkannt | 25 | 28 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](pdf/README.md) |
-| Trendo Präsentation | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Folienansicht | 25 | 27 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](praesentation/README.md) |
-| Trendo Tabelle | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Tabellenraster | 25 | 46 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](tabelle/README.md) |
-| Trendo Text | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Dokumentseite (Textverarbeitung) | 25 | 42 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](text/README.md) |
+| Start | Texte & Tabellen (SYS-10) | Arbeiten & Büro | keine eigene erkannt | 25 | 25 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](doku-start/README.md) |
+| Trendo PDF | Texte & Tabellen (SYS-10) | Arbeiten & Büro | keine eigene erkannt | 25 | 28 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](pdf/README.md) |
+| Trendo Präsentation | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Folienansicht | 25 | 27 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](praesentation/README.md) |
+| Trendo Tabelle | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Tabellenraster | 25 | 46 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](tabelle/README.md) |
+| Trendo Text | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Dokumentseite (Textverarbeitung) | 25 | 45 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](text/README.md) |
 | Geld | Geld & Rechnungen (SPEC-11) | Business & Geld | Diagramm | – | 12 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](finanzen/README.md) |
 | Verkaufen | Online verkaufen (STUDIO-ONLINE-BUSINESS-01) | Business & Geld | Kasse mit Warenkorb | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](verkaufen/README.md) |
 | Freie Bilder & Klänge | Freie Bilder & Klänge finden (X-07) | Kreativ & Medien | keine eigene erkannt | – | 6 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](assets/README.md) |
@@ -28,11 +28,11 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Skills | KI-Anweisungen schreiben (CORE-12) | Kreativ & Medien | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-skills/README.md) |
 | Kleidung & Produkte | Kleidung & Produkte entwerfen (SPEC-08) | Kreativ & Medien | keine eigene erkannt | 18 | 19 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](mode-programm/README.md) |
 | Live streamen | Live streamen (SPEC-15) | Kreativ & Medien | Bildansicht, Diagramm/Zeichnung | 20 | 39 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](sendung/README.md) |
-| TV & Live | TV & Live (STUDIO-TV-01) | Kreativ & Medien | keine eigene erkannt | – | 14 | – | IN_PROGRESS / Test NOT_RUN | [Paket](tv/README.md) |
+| TV & Live | TV & Live (STUDIO-TV-01) | Kreativ & Medien | keine eigene erkannt | – | 15 | – | IN_PROGRESS / Test NOT_RUN | [Paket](tv/README.md) |
 | Bildbearbeitung | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Bild-Arbeitsfläche (Ebenen) | – | 3 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](bild/README.md) |
 | Medien bearbeiten | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | keine eigene erkannt | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](kreativ-medien/README.md) |
 | Videoschnitt | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Video-Zeitleiste | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](schnitt/README.md) |
-| 3D | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | CAD-/3D-Zeichenfläche | – | 17 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](3d/README.md) |
+| 3D | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | CAD-/3D-Zeichenfläche | – | 18 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](3d/README.md) |
 | Trendo 3D-Druck | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | keine eigene erkannt | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](3d-druck/README.md) |
 | Trendo CAD | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | CAD-/3D-Zeichenfläche | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](cad/README.md) |
 | Aus Fotos | Gegenstände einscannen (SPEC-09) | 3D, Spiele & VR | keine eigene erkannt | 20 | 24 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](scan3d/README.md) |
@@ -90,7 +90,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Leistung | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 13 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](qual-leistung/README.md) |
 | System & Sicherheit | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 26 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](system/README.md) |
 | Systemcheck | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 17 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](systemcheck/README.md) |
-| Einstellungen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | Bildansicht | 25 | 62 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](settings/README.md) |
+| Einstellungen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | Bildansicht | 25 | 64 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](settings/README.md) |
 | Personen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](personen/README.md) |
 | Sehen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](bedien-sehen/README.md) |
 | Trendo-Updates | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](updates/README.md) |

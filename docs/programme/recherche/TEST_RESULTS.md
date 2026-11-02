@@ -1,6 +1,6 @@
 # Recherche im Lesemodus – Testergebnisse
 
-Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand 302f050)
+Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand c18c198)
 
 Lauf: `trendo-api.trx, trendo-app.trx, trendo-core.trx`
 

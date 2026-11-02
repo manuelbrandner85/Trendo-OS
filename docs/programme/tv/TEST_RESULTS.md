@@ -1,10 +1,10 @@
 # TV & Live – Testergebnisse
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand 302f050)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand c18c198)
 
 Lauf: `trendo-api.trx, trendo-app.trx, trendo-core.trx`
 
-Bestanden 14 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 15 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -18,6 +18,7 @@ Bestanden 14 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | TV & Live: Programmführer zeigt Sendungen, Aufnahme planen und starten, Mehrfachansicht, Quelle entfernen | ✓ bestanden |
 | TV & Live: Quelle mit Programmführer laden, Sender schauen und umschalten, Favorit, gesperrte Gruppe nur mit PIN | ✓ bestanden |
 | TV & Live: Xtream-Zugang abgelehnt → klare Meldung ohne Passwort; Server nicht erreichbar → verständlich | ✓ bestanden |
+| TV Highend: Startseite, Film-Infos/Trailer, Weiterschauen, nächste Folge, Kinder-Profil, Bild im Bild, Bild & Ton, Regeln, Fernbedienung, Qualität | ✓ bestanden |
 | TV-Vollbild: kleines Fenster „Verkleinern“ beim Start und bei Mausbewegung, ein Klick verkleinert | ✓ bestanden |
 | Update sofort: geladenes Update startet 30-Sekunden-Countdown (alles gesichert), danach Installation; „Jetzt neu starten“ geht sofort | ✓ bestanden |
 | Updates: nach dem Neustart kommen die Fenster zurück und „Was ist neu?“ erscheint einmal | ✓ bestanden |

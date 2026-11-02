@@ -1,5 +1,7 @@
 # Start – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 302f050)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand c18c198)
 
-Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.
+Analyse: [Vorbild-Analyse Trendo Text: Microsoft Word, LibreOffice Writer (Clean-Room)](../../../docs/claude/vorbilder/text-word-writer.md)
+
+Kein fremder Code und keine fremden Grafiken übernommen – nur öffentlich beschriebener Funktionsumfang.

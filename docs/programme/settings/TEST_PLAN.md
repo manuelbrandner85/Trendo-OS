@@ -1,10 +1,11 @@
 # Einstellungen – Testplan
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 302f050)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand c18c198)
 
-62 Tests sprechen dieses Programm an.
+64 Tests sprechen dieses Programm an.
 
 - Alle Studios: Bereich und Suche filtern die Karten, Alle zeigt wieder alles
+- Bedienstil: in den Einstellungen wählbar; Mac setzt runde Ampel-Knöpfe links (Schließen zuerst), Linux runde Knöpfe rechts – Knöpfe funktionieren weiter
 - CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste
 - Claude zeigt, wo es arbeitet; Felder in Aufklapp-Menüs kann Claude lesen und ausfüllen
 - Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt
@@ -61,6 +62,7 @@ Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Se
 - Studio-Seiten: Überschrift ist der Name aus dem Studio-Katalog
 - StudioCatalog.NameOf: Katalogname, sonst der bisherige Text
 - T-0107: Sparsam – keine Hintergrund-Unschärfe, keine Schatten und Effekte, keine Übergänge; Auswahl in den Einstellungen
+- Trendo erweitern: Erweiterungen dürfen alles außer Name und Logo – Produktname, Marke oder Logo-Datei werden abgelehnt
 - W0-01/03/06: Assistent – Name, Ordner, Design, Pakete, Installation über Zustimmung, Vorlagen, Systemcheck
 - W0b-01: Keine Fachwörter in Oberflächentexten (docs/SPRACHE.md)
 - W0b-02/04/05: Widgets ausblenden, Dock sortieren, Bewegung reduzieren, Hinweis einmalig – alles gespeichert

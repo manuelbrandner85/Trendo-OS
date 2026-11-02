@@ -1,6 +1,6 @@
 # Adressbuch – Funktionsmatrix
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand 302f050)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand c18c198)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

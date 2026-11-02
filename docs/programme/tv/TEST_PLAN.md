@@ -1,8 +1,8 @@
 # TV & Live – Testplan
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand 302f050)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand c18c198)
 
-14 Tests sprechen dieses Programm an.
+15 Tests sprechen dieses Programm an.
 
 - Anmeldung: „Beim Start nach PIN fragen“ lässt sich abschalten
 - Apps: WhatsApp installieren → Desktop und Startmenü, öffnet als App-Fenster mit eigenem Speicher, Entfernen löscht die Anmeldung
@@ -14,6 +14,7 @@ Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · 
 - TV & Live: Programmführer zeigt Sendungen, Aufnahme planen und starten, Mehrfachansicht, Quelle entfernen
 - TV & Live: Quelle mit Programmführer laden, Sender schauen und umschalten, Favorit, gesperrte Gruppe nur mit PIN
 - TV & Live: Xtream-Zugang abgelehnt → klare Meldung ohne Passwort; Server nicht erreichbar → verständlich
+- TV Highend: Startseite, Film-Infos/Trailer, Weiterschauen, nächste Folge, Kinder-Profil, Bild im Bild, Bild & Ton, Regeln, Fernbedienung, Qualität
 - TV-Vollbild: kleines Fenster „Verkleinern“ beim Start und bei Mausbewegung, ein Klick verkleinert
 - Update sofort: geladenes Update startet 30-Sekunden-Countdown (alles gesichert), danach Installation; „Jetzt neu starten“ geht sofort
 - Updates: nach dem Neustart kommen die Fenster zurück und „Was ist neu?“ erscheint einmal

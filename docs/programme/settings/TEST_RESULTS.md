@@ -1,14 +1,15 @@
 # Einstellungen – Testergebnisse
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 302f050)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand c18c198)
 
 Lauf: `trendo-api.trx, trendo-app.trx, trendo-core.trx`
 
-Bestanden 62 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 64 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
 | Alle Studios: Bereich und Suche filtern die Karten, Alle zeigt wieder alles | ✓ bestanden |
+| Bedienstil: in den Einstellungen wählbar; Mac setzt runde Ampel-Knöpfe links (Schließen zuerst), Linux runde Knöpfe rechts – Knöpfe funktionieren weiter | ✓ bestanden |
 | CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste | ✓ bestanden |
 | Claude zeigt, wo es arbeitet; Felder in Aufklapp-Menüs kann Claude lesen und ausfüllen | ✓ bestanden |
 | Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt | ✓ bestanden |
@@ -65,6 +66,7 @@ Bestanden 62 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | Studio-Seiten: Überschrift ist der Name aus dem Studio-Katalog | ✓ bestanden |
 | StudioCatalog.NameOf: Katalogname, sonst der bisherige Text | ✓ bestanden |
 | T-0107: Sparsam – keine Hintergrund-Unschärfe, keine Schatten und Effekte, keine Übergänge; Auswahl in den Einstellungen | ✓ bestanden |
+| Trendo erweitern: Erweiterungen dürfen alles außer Name und Logo – Produktname, Marke oder Logo-Datei werden abgelehnt | ✓ bestanden |
 | W0-01/03/06: Assistent – Name, Ordner, Design, Pakete, Installation über Zustimmung, Vorlagen, Systemcheck | ✓ bestanden |
 | W0b-01: Keine Fachwörter in Oberflächentexten (docs/SPRACHE.md) | ✓ bestanden |
 | W0b-02/04/05: Widgets ausblenden, Dock sortieren, Bewegung reduzieren, Hinweis einmalig – alles gespeichert | ✓ bestanden |

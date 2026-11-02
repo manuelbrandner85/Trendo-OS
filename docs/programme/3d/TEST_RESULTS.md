@@ -1,16 +1,17 @@
 # 3D – Testergebnisse
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 302f050)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand c18c198)
 
 Lauf: `trendo-api.trx, trendo-app.trx, trendo-core.trx`
 
-Bestanden 16 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
+Bestanden 17 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 
 | Test | Ergebnis |
 |---|---|
 | 3D-Arbeitsfläche: Formen einsetzen (auf dem Boden), Teil anklicken, mit der Maus verschieben (Raster), Pfeiltasten, Verdoppeln, Entf, Rückgängig | ✓ bestanden |
 | 3D-Arbeitsfläche: „Auf den Boden“ setzt die Unterkante auf 0, Text und Ebene stehen auf dem Boden | ✓ bestanden |
 | 3D-Seite zeigt die Auftragsleiste, ohne die 3D-Arbeitsfläche zu verkleinern | ✓ bestanden |
+| 3D-Studio: Kreatur-Karte – Drache in Bronze/Grün, „Vorschaubild rendern“ startet Blender im Hintergrund, „sichtbar“ ohne -b; Ergebnis mit Vorschau | ✓ bestanden |
 | 3D: OBJ, STL und GLB speichern, Datei öffnen, Projekt wieder öffnen | ✓ bestanden |
 | 3D: Satz wird zum Vorschlag und erst nach Übernehmen gebaut | ✓ bestanden |
 | 3D: Teil hinzufügen, ändern, Vorschau, löschen, rückgängig | ✓ bestanden |
