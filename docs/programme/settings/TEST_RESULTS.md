@@ -1,6 +1,6 @@
 # Einstellungen – Testergebnisse
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 2e53f9e)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 9fa45e4)
 
 Lauf: `api.trx, app.trx, core.trx`
 
@@ -9,7 +9,7 @@ Bestanden 59 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | Test | Ergebnis |
 |---|---|
 | Alle Studios: Bereich und Suche filtern die Karten, Alle zeigt wieder alles | ✓ bestanden |
-| CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+K fokussiert die Suche | ✓ bestanden |
+| CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste | ✓ bestanden |
 | Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt | ✓ bestanden |
 | Design: Dock-Klick auf Dateien startet direkt (nur Owner) und wird auditiert; Browser offline deaktiviert | ✓ bestanden |
 | Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert | ✓ bestanden |

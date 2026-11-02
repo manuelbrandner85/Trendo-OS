@@ -1,6 +1,6 @@
 # Personen – Testergebnisse
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `personen` · Stand: 0.9.36 (Stand 2e53f9e)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `personen` · Stand: 0.9.36 (Stand 9fa45e4)
 
 Lauf: `api.trx, app.trx, core.trx`
 

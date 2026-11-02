@@ -1,6 +1,6 @@
 # Alle Studios – Testplan
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand 2e53f9e)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand 9fa45e4)
 
 41 Tests sprechen dieses Programm an.
 
@@ -9,7 +9,7 @@ Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `
 - Alle Studios: kurze deutsche Namen und ein Satz, nach Bereichen gruppiert, keine Kennungen oder Fachbegriffe sichtbar
 - CORE-01: Dateisuche begrenzt Tiefe und Anzahl
 - CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte
-- CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+K fokussiert die Suche
+- CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste
 - Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt
 - Design: Dock-Klick auf Dateien startet direkt (nur Owner) und wird auditiert; Browser offline deaktiviert
 - Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert

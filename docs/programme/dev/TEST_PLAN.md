@@ -1,9 +1,11 @@
 # Software – Testplan
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 2e53f9e)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 9fa45e4)
 
-34 Tests sprechen dieses Programm an.
+40 Tests sprechen dieses Programm an.
 
+- Annehmen/Verwerfen im Programm: Claude ändert das Studio-Dokument – Vorher/Nachher vergleichen, verwerfen stellt alles her, behalten übernimmt
+- Befehlsleiste Strg+K und Projekt-Fortsetzung überall: Claude fragen, weitermachen – auch aus einem anderen Studio
 - CORE-07 (UI): Seite aus Beschreibung, Note, Stil, Paket erst nach Bestätigung
 - CORE-07 (UI): Software-Studio legt Projekt an und zeigt es mit Git-Stand
 - CORE-07 (UI): Suche findet das Software-Studio
@@ -14,6 +16,7 @@ Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand
 - Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet
 - Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort
 - Claude im Studio: Trendo prüft das Ergebnis und gibt Fehler automatisch an Claude zurück, bis es läuft – höchstens drei Durchgänge
+- Claude schlägt vor: Vorschläge als Knöpfe, Klick schickt sie ab, auch in der Befehlsleiste; abschaltbar
 - Claude wie im Original: Skills, Plugins, Connectoren und Agenten aus dem eigenen Claude sichtbar; genutzter Skill/Connector unter der Antwort
 - Claude-Abo aufgebraucht: Ersatz-KI übernimmt dieselbe Nachricht (sichtbar „Aktive KI“), bis zur Freigabe ohne Claude, danach automatisch wieder Claude
 - Claude-App-Knopf: installiert (auch App-Paket über claude://) → öffnen; sonst die offizielle Download-Seite
@@ -22,6 +25,7 @@ Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand
 - Freihändig sprechen: zuhören, abschicken, Antwort vorlesen, bis man es ausschaltet
 - Gutachter: zweite Meinung mit Note, ändert nichts; „Verbessern lassen“ gibt die Punkte an Claude
 - Kostenlose KI-Werkzeuge: Claude bestellt ein Bild – erst als Entwurf zum Ansehen, ins Projekt erst nach „Übernehmen“; neu erzeugen, verwerfen; Knöpfe; Diktieren
+- Markieren & Claude fragen: Zellbereich in Trendo Tabelle geht mit ins Eingabefeld; Knopf auf der Seite; Strg+Umschalt+A
 - Projekt-Gedächtnis: Claude merkt sich „Merken:“-Zeilen, sie gehen bei jeder Nachricht mit; ansehen, ergänzen, vergessen
 - Schöne Antworten: Überschrift, Tabelle als Raster, Code mit Farben und „Kopieren“; Glas-Design im Chat
 - Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg
@@ -37,4 +41,6 @@ Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand
 - T-0203: „Starten“ öffnet LibreOffice und Blender erst nach bestandener Prüfung und Freigabe
 - T-0203: „Starten“ öffnet nicht, wenn die Prüfung scheitert
 - T-0206 (UI): Dateiliste, Editor mit Zeilennummern, Speichern; Änderung erst als Vorschau, dann übernehmen
+- Wiederholungen automatisieren: Auftrag als Ablauf merken (Prompt-Bibliothek), mit einem Klick wiederholen; Wiederholung wird erkannt
 - Zeitreise: jede Antwort mit Änderungen wird ein Versionspunkt; zurück auf einen älteren Stand und wieder vor
+- Ziehen in Claude: Text kommt als Zitat ins Eingabefeld, Dateien werden angehängt

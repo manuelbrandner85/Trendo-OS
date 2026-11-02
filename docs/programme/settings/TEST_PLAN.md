@@ -1,11 +1,11 @@
 # Einstellungen – Testplan
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 2e53f9e)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 9fa45e4)
 
 59 Tests sprechen dieses Programm an.
 
 - Alle Studios: Bereich und Suche filtern die Karten, Alle zeigt wieder alles
-- CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+K fokussiert die Suche
+- CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste
 - Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt
 - Design: Dock-Klick auf Dateien startet direkt (nur Owner) und wird auditiert; Browser offline deaktiviert
 - Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert

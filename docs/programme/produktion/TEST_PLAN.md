@@ -1,6 +1,6 @@
 # Produktion – Testplan
 
-Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `produktion` · Stand: 0.9.36 (Stand 2e53f9e)
+Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `produktion` · Stand: 0.9.36 (Stand 9fa45e4)
 
 9 Tests sprechen dieses Programm an.
 

@@ -1,10 +1,10 @@
 # Online-Dienste – Testplan
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.36 (Stand 2e53f9e)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.36 (Stand 9fa45e4)
 
 41 Tests sprechen dieses Programm an.
 
-- CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+K fokussiert die Suche
+- CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste
 - CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet
 - CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt
 - CORE-02: Ohne erreichbare KI ehrliche Meldung statt Fantasieantwort

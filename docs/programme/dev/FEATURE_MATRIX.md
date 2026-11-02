@@ -1,6 +1,6 @@
 # Software – Funktionsmatrix
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 2e53f9e)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 9fa45e4)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

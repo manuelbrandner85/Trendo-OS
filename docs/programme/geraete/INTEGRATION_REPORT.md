@@ -1,6 +1,6 @@
 # Geräte & Laufwerke – Einbindung in Trendo OS
 
-Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 2e53f9e)
+Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 9fa45e4)
 
 - Seite `geraete` im Studio „Geräte erkennen“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

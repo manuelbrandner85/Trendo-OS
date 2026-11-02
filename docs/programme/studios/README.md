@@ -1,6 +1,6 @@
 # Alle Studios – Produktionspaket
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand 2e53f9e)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand 9fa45e4)
 
 Arbeitsfläche: Bildansicht  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test PC_VERIFIED  

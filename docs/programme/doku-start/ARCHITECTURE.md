@@ -1,6 +1,6 @@
 # Start – Architektur
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 2e53f9e)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 9fa45e4)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys10.cs`
