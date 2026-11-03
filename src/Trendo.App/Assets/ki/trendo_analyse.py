@@ -1,6 +1,8 @@
 """Trendo Musik – Song-Analyse (M5, freigegeben 03.11.2026): Tonart, Tempo (BPM), Takt, Akkordfolge und Tonumfang der Melodie.
 Lokal mit librosa (ISC). Aufruf: python trendo_analyse.py [ordner] <audiodatei> <ausgabe.json>  (Trendo übergibt vorn den Programmordner)
 Grenzen (ehrlich): Takt und Akkorde sind Schätzungen aus dem Klang; der Tonumfang ist der der lautesten Melodielinie (meist der Gesang).
+S1 (03.11.2026): mit „--stimme“ wird eine Mikrofon-Aufnahme der eigenen Stimme untersucht – Umfang, bequemer Bereich, Stimmlage,
+Klangfarbe und Hauchanteil (Schätzungen) und passende Tonarten. Mit Prüftönen gemessen: Bariton A2–D4 → „Bariton“, Sopran D4–G5 → „Sopran“.
 """
 import json
 import sys
@@ -90,5 +92,62 @@ def main(path, out):
                'chords': chords, 'range': rng}, open(out, 'w', encoding='utf-8'), ensure_ascii=False)
 
 
+# ───────────── S1: eigene Stimme ─────────────
+def note(m):
+    m = int(round(m))
+    return NOTES[m % 12] + str(m // 12 - 1)
+
+
+def voice_main(path, out):
+    y, sr = librosa.load(path, sr=22050, mono=True)
+    hop = 512
+    f0, voiced, prob = librosa.pyin(y, fmin=librosa.note_to_hz('C2'), fmax=librosa.note_to_hz('C6'), sr=sr, hop_length=hop)
+    ok = (voiced) & (prob > 0.5) & np.isfinite(f0)
+    if ok.sum() < 40:
+        json.dump({'stimme': None, 'grund': 'zu wenig gesungen – bitte lauter oder länger singen'}, open(out, 'w', encoding='utf-8'), ensure_ascii=False)
+        return
+    midi = librosa.hz_to_midi(f0[ok])
+    lo, hi = np.percentile(midi, 2), np.percentile(midi, 98)
+    clo, chi = np.percentile(midi, 15), np.percentile(midi, 85)  # bequemer Bereich
+    mid = float(np.median(midi))
+    voice = 'Bass' if mid < 50 else 'Bariton' if mid < 55 else 'Tenor' if mid < 60 else 'Alt' if mid < 65 else 'Mezzosopran' if mid < 69 else 'Sopran'
+    # Klangfarbe aus den gesungenen Stellen: Schwerpunkt des Spektrums (hell/dunkel) und Anteil Rauschen (gehaucht/klar)
+    S = np.abs(librosa.stft(y, hop_length=hop))
+    n = min(S.shape[1], len(ok))
+    Sv = S[:, :n][:, ok[:n]]
+    cent = float(np.median(librosa.feature.spectral_centroid(S=Sv, sr=sr)) / (librosa.midi_to_hz(mid)))
+    # Hauchanteil: spektrale Flachheit der gesungenen Stellen (gemessen 03.11.2026: klare Stimme 0,0002; Rauschzusatz 3/6/12 % → 0,002/0,007/0,025)
+    flat = float(np.median(librosa.feature.spectral_flatness(S=Sv)))
+    color = 'hell' if cent > 14 else 'warm' if cent > 7 else 'dunkel'
+    breath = 'gehaucht' if flat > 0.02 else 'leicht gehaucht' if flat > 0.006 else 'klar'
+    # passende Tonarten: eine typische Melodie kreist um die Terz über dem Grundton – sie soll in der Mitte des bequemen Bereichs liegen
+    center = (clo + chi) / 2
+    keys = sorted(((min(abs(12 * o + t + 4 - center) for o in range(2, 8)), NOTES[t]) for t in range(12)))
+    rec = [k for d, k in keys[:3]]
+    tags = {'Bass': 'deep bass male vocals', 'Bariton': 'baritone male vocals', 'Tenor': 'tenor male vocals', 'Alt': 'alto female vocals',
+            'Mezzosopran': 'mezzo-soprano female vocals', 'Sopran': 'soprano female vocals'}[voice]
+    tags += ', ' + {'hell': 'bright voice', 'warm': 'warm voice', 'dunkel': 'dark voice'}[color] + ', ' + {'gehaucht': 'breathy', 'leicht gehaucht': 'soft airy', 'klar': 'clear'}[breath]
+    res = {'low': note(lo), 'high': note(hi), 'comfy_low': note(clo), 'comfy_high': note(chi), 'semitones': int(round(hi - lo)), 'voice': voice,
+           'color': color, 'breath': breath, 'keys': rec, 'tags': tags, 'seconds': round(float(ok.sum()) * hop / sr, 1)}
+    json.dump({'stimme': res}, open(out, 'w', encoding='utf-8'), ensure_ascii=False)
+
+
+# ───────────── S5: Zielmelodie zum Mitsingen ─────────────
+def melody_main(path, out, stem):
+    # Gesangsspur (aus „Spuren trennen“) direkt, sonst der harmonische Anteil des ganzen Lieds; 50 ms je Wert
+    sr, hop = 16000, 800
+    y, _ = librosa.load(path, sr=sr, mono=True)
+    if not stem:
+        y, _ = librosa.effects.hpss(y)
+    f0, voiced, prob = librosa.pyin(y, fmin=librosa.note_to_hz('C2'), fmax=librosa.note_to_hz('C6'), sr=sr, hop_length=hop, frame_length=2048)
+    midi = [round(float(librosa.hz_to_midi(f)), 2) if v and p > 0.5 and np.isfinite(f) else None for f, v, p in zip(f0, voiced, prob)]
+    json.dump({'hop': hop / sr, 'midi': midi}, open(out, 'w', encoding='utf-8'))
+
+
 if __name__ == '__main__':
-    main(sys.argv[-2], sys.argv[-1])
+    if '--melodie' in sys.argv:
+        melody_main(sys.argv[-2], sys.argv[-1], '--gesangsspur' in sys.argv)
+    elif '--stimme' in sys.argv:
+        voice_main(sys.argv[-2], sys.argv[-1])
+    else:
+        main(sys.argv[-2], sys.argv[-1])

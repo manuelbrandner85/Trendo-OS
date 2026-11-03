@@ -234,6 +234,7 @@ public partial class MainWindow
             sp.Children.Add(new WrapPanel { Children = { bpm, Spacer(key), Spacer(ts) } });
         }
         sp.Children.Add(MsStylePanel(Sync)); // M1/M2/M6/M8: Genres, Stimme, Tonlage, Instrumente, „Im Stil von“
+        if (_msPro) sp.Children.Add(MsVoicePanel(Sync)); // S1: eigene Stimme analysieren
         var instr = new CheckBox { Name = "ms-instrumental", Content = "Instrumental (ohne Gesang)", IsChecked = _msInstr, Foreground = Text };
         instr.IsCheckedChanged += (_, _) => { _msInstr = instr.IsChecked == true; Show(MS); };
         var lang = new ComboBox { Name = "ms-language", Width = 150, ItemsSource = AceStepClient.Languages.Select(x => x.Name).ToArray(), SelectedIndex = _msLang };
@@ -361,6 +362,7 @@ public partial class MainWindow
 
         sp.Children.Add(MsExtendPanel(s)); // M10: Verlängern mit dem Grundmodell
         sp.Children.Add(MsStemsPanel(s)); // Spuren trennen mit Demucs
+        sp.Children.Add(MsSingPanel(s)); // S5/S6: Mitsingen, Aufnahme mischen
 
         // Cover in anderem Stil
         var coverStyle = new TextBox { Name = "ms-cover-style", Watermark = "Neuer Stil, z. B. ruhige Jazz-Ballade mit Klavier" };
