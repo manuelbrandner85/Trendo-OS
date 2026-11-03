@@ -33,15 +33,15 @@ public partial class MainWindow
 
     // ───────────── Erzeugen ─────────────
     /// <summary>Lied erzeugen (öffentlich für Tests und die KI): Auftrag an ACE-Step, Varianten laden, in die Bibliothek.</summary>
-    public async Task<List<MusicSong>> MusicStudioCreate(AceStepClient.Job job, string title, string? fromSongId = null)
+    public async Task<List<MusicSong>> MusicStudioCreate(AceStepClient.Job job, string title, string? fromSongId = null, string model = AceStepClient.TurboModel)
     {
         var made = new List<MusicSong>();
         var src = fromSongId is null ? null : Songs.Get(fromSongId);
-        var kind = job.Task switch { "repaint" => "abschnitt", "cover" => "cover", _ => "neu" };
+        var kind = job.Task switch { "repaint" when src is not null && job.Seconds > src.Seconds + 1 => "laenger", "repaint" => "abschnitt", "cover" => "cover", _ => "neu" };
         _msRunning.Add((title, DateTime.Now)); _msMsg = ""; Show(MS);
         try
         {
-            if (!await EnsureAceServer(t => { _msMsg = t; if (_msRunningText is { } rt0) rt0.Text = t; })) { _msMsg = string.IsNullOrEmpty(_msMsg) ? "ACE-Step ist nicht bereit – in der KI-Bibliothek unter „Musik“ einrichten." : _msMsg; return made; }
+            if (!await EnsureAceServer(t => { _msMsg = t; if (_msRunningText is { } rt0) rt0.Text = t; }, model)) { _msMsg = string.IsNullOrEmpty(_msMsg) ? "ACE-Step ist nicht bereit – in der KI-Bibliothek unter „Musik“ einrichten." : _msMsg; return made; }
             var client = AceClient;
             var task = await client.SubmitAsync(job, src?.File);
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.start", $"{job.Task} {job.Seconds}s {job.Language} x{job.Variants}");
@@ -59,7 +59,7 @@ public partial class MainWindow
                         var file = Path.Combine(dir, $"{stem}{(st.AudioUrls.Count > 1 ? $" ({i + 1})" : "")}{(kind == "neu" ? "" : " – " + kind)}.{job.Format}");
                         for (var n = 2; File.Exists(file); n++) file = Path.Combine(dir, $"{stem} {n}{(st.AudioUrls.Count > 1 ? $" ({i + 1})" : "")}.{job.Format}");
                         await client.DownloadAsync(st.AudioUrls[i], file);
-                        made.Add(Songs.Add(new MusicSong { Title = title + (st.AudioUrls.Count > 1 ? $" ({i + 1})" : "") + (kind == "abschnitt" ? " – neuer Abschnitt" : kind == "cover" ? " – Cover" : ""),
+                        made.Add(Songs.Add(new MusicSong { Title = title + (st.AudioUrls.Count > 1 ? $" ({i + 1})" : "") + (kind == "abschnitt" ? " – neuer Abschnitt" : kind == "cover" ? " – Cover" : kind == "laenger" ? " – länger" : ""),
                             Style = job.SampleQuery is null ? job.Prompt : job.SampleQuery.Split(", sung in")[0], Lyrics = job.SampleQuery is not null && st.Lyrics is { Length: > 0 } sung ? sung : job.Lyrics,
                             Language = job.Language, Seconds = job.SampleQuery is not null && st.Duration is double dur && dur > 0 ? dur : job.Seconds, Bpm = job.Bpm, Key = job.Key, TimeSignature = job.TimeSignature,
                             File = file, Kind = kind, ParentId = src?.Id }));
@@ -351,6 +351,8 @@ public partial class MainWindow
             new WrapPanel { Children = { new TextBlock { Text = "von", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) }, from,
                 new TextBlock { Text = "bis", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 6, 0) }, to, new TextBlock { Text = "s", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0) } } },
             repaint } });
+
+        sp.Children.Add(MsExtendPanel(s)); // M10: Verlängern mit dem Grundmodell
 
         // Cover in anderem Stil
         var coverStyle = new TextBox { Name = "ms-cover-style", Watermark = "Neuer Stil, z. B. ruhige Jazz-Ballade mit Klavier" };

@@ -57,8 +57,13 @@ public sealed class AceStepClient(HttpClient http, int port = AceStepClient.Defa
 
     /// <summary>Startumgebung: kleines Sprachmodell (0.6B) mit PyTorch-Backend – laut ACE-Step-Tabelle passend ab 6 GB Grafikspeicher; keine Telemetrie.
     /// Diese Werte haben Vorrang vor der .env im Paket (dort override=False).</summary>
-    public static IReadOnlyDictionary<string, string> ServerEnvironment() => new Dictionary<string, string>
+    /// <summary>Modelle: Turbo (schnell, für alles Übliche) und Grundmodell (M10: Verlängern – am 03.11.2026 auf der RTX 5070 echt geprüft;
+    /// beide gleichzeitig passen nicht in 12 GB, darum lädt der Server immer genau eins).</summary>
+    public const string TurboModel = "acestep-v15-turbo", BaseModel = "acestep-v15-base";
+
+    public static IReadOnlyDictionary<string, string> ServerEnvironment(string model = TurboModel) => new Dictionary<string, string>
     {
+        ["ACESTEP_CONFIG_PATH"] = model,
         ["ACESTEP_LM_MODEL_PATH"] = "acestep-5Hz-lm-0.6B",
         ["ACESTEP_LM_BACKEND"] = "pt",
         ["ACESTEP_INIT_LLM"] = "auto",

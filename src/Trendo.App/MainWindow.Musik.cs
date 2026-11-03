@@ -19,11 +19,27 @@ public partial class MainWindow
     public Func<(double FreeGb, double TotalGb)?> GpuMemoryProbe { get; set; } = SystemMetrics.GpuMemory;
 
     /// <summary>Server starten (falls nicht schon da) und warten, bis er antwortet. Beim ersten Mal lädt ACE-Step seine Modelle – das dauert.</summary>
-    private async Task<bool> EnsureAceServer(Action<string> say)
+    /// <summary>Welches Modell Trendos eigener Musik-Server geladen hat.</summary>
+    private string _aceModel = AceStepClient.TurboModel;
+    public string AceModel => _aceModel;
+
+    private async Task<bool> EnsureAceServer(Action<string> say, string model = AceStepClient.TurboModel)
     {
         var client = AceClient;
-        if (await client.HealthyAsync()) return true;
-        if (AceClientOverride is not null) return false;
+        if (AceClientOverride is not null) { var ok = await client.HealthyAsync(); if (ok) _aceModel = model; return ok; }
+        // anderes Modell nötig (M10): Trendos eigenen Server mit dem anderen Modell neu starten – beide zugleich passen nicht in den Grafikspeicher
+        if (model != _aceModel && _aceServer is { HasExited: false } old)
+        {
+            say(model == AceStepClient.BaseModel ? "Musik-KI lädt das Grundmodell (für Verlängern) …" : "Musik-KI lädt wieder das schnelle Modell …");
+            try { old.Kill(true); await old.WaitForExitAsync(); } catch (InvalidOperationException) { }
+            _aceServer = null; await Task.Delay(1500);
+        }
+        if (await client.HealthyAsync())
+        {
+            if (model == _aceModel || _aceServer is not null) return true;
+            say("Die Musik-KI läuft schon außerhalb von Trendo – zum Umschalten bitte dort beenden."); return model == AceStepClient.TurboModel;
+        }
+        _aceModel = model;
         var dir = KiStore.RuntimeDir(KiRuntime.AceStep);
         var (file, args) = AceStepClient.ServerCommand(dir);
         if (!File.Exists(file)) { say("ACE-Step ist noch nicht eingerichtet."); return false; }
@@ -31,7 +47,7 @@ public partial class MainWindow
         {
             var psi = new ProcessStartInfo(file) { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = dir, RedirectStandardOutput = true, RedirectStandardError = true };
             foreach (var a in args) psi.ArgumentList.Add(a);
-            foreach (var (k, v) in AceStepClient.ServerEnvironment()) psi.Environment[k] = v;
+            foreach (var (k, v) in AceStepClient.ServerEnvironment(model)) psi.Environment[k] = v;
             var log = Path.Combine(KiStore.Root, "acestep-server.log");
             _aceServer = Process.Start(psi);
             if (_aceServer is null) { say("ACE-Step konnte nicht gestartet werden."); return false; }
