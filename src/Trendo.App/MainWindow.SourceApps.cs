@@ -190,8 +190,9 @@ public partial class MainWindow
             StandardOutputEncoding = System.Text.Encoding.UTF8, StandardErrorEncoding = System.Text.Encoding.UTF8 };
         foreach (var (k, v) in env) psi.Environment[k] = v;
         using var p = Process.Start(psi) ?? throw new InvalidOperationException("Konnte nicht starten: " + Path.GetFileName(exe));
-        p.OutputDataReceived += (_, e) => { if (e.Data is { Length: > 0 } s) line(s); };
-        p.ErrorDataReceived += (_, e) => { if (e.Data is { Length: > 0 } s) line(s); };
+        void Safe(string? s) { if (s is not { Length: > 0 }) return; try { line(s); } catch (Exception ex) { try { CrashLog.Write(_core.DataRoot, ex, "Programmausgabe (abgefangen)"); } catch (IOException) { } } } // nie im Hintergrund werfen
+        p.OutputDataReceived += (_, e) => Safe(e.Data);
+        p.ErrorDataReceived += (_, e) => Safe(e.Data);
         p.BeginOutputReadLine(); p.BeginErrorReadLine();
         using var limit = CancellationTokenSource.CreateLinkedTokenSource(ct); limit.CancelAfter(SourceStepTimeout);
         try { await p.WaitForExitAsync(limit.Token); }

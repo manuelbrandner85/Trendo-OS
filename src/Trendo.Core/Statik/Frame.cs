@@ -23,11 +23,27 @@ public sealed class FrameModel
     public static string NewId() => Guid.NewGuid().ToString("N")[..8];
     public static FrameModel From(JsonObject data)
     {
-        var m = data["frame"] is JsonObject o ? o.Deserialize<FrameModel>(Opt) ?? new() : new();
+        // Kennungen als Zahl (z. B. von einer KI geschrieben: "id": 1) werden zu Text – sonst ließ sich die Seite nicht öffnen (14 Protokolle in 0.9.45)
+        FrameModel m;
+        try { m = data["frame"] is JsonObject o ? TextIds(o.DeepClone()).Deserialize<FrameModel>(Opt) ?? new() : new(); }
+        catch (Exception e) when (e is JsonException or InvalidOperationException or FormatException) { m = new(); }
         m.Loads.RemoveAll(l => l.Kind == "knoten" ? m.Node(l.Target) is null : m.Member(l.Target) is null);
         m.Members.RemoveAll(x => m.Node(x.A) is null || m.Node(x.B) is null || x.A == x.B);
         m.Version = FormatVersion; return m;
     }
+    static readonly HashSet<string> IdKeys = ["id", "a", "b", "target"];
+    static JsonNode TextIds(JsonNode n)
+    {
+        if (n is JsonObject o)
+            foreach (var key in o.Select(kv => kv.Key).ToList())
+            {
+                if (IdKeys.Contains(key) && o[key] is JsonValue v && v.GetValueKind() == JsonValueKind.Number) o[key] = v.ToJsonString();
+                else if (o[key] is { } child) TextIds(child);
+            }
+        else if (n is JsonArray a) foreach (var x in a) if (x is not null) TextIds(x);
+        return n;
+    }
+
     public void WriteTo(JsonObject data) => data["frame"] = JsonSerializer.SerializeToNode(this, Opt);
     public FrameModel Clone() => JsonSerializer.Deserialize<FrameModel>(JsonSerializer.Serialize(this, Opt), Opt)!;
 

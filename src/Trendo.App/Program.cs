@@ -8,6 +8,9 @@ public sealed record AppOptions(string? DataRoot, string? ScreenshotPath, int Au
 class Program
 {
     public static AppOptions Options { get; private set; } = new(null, null, 0);
+    /// <summary>Ein Fehler auf der Oberfläche wurde abgefangen (Trendo läuft weiter) – das Fenster zeigt einen Hinweis.</summary>
+    public static event Action<Exception>? UiErrorCaught;
+    internal static void RaiseUiError(Exception e) => UiErrorCaught?.Invoke(e);
 
     [STAThread]
     public static int Main(string[] args)
@@ -107,6 +110,13 @@ class Program
             core.Shutdown();
             return rc;
         }
+        // Absturzschutz (Rückmeldung 03.11.2026 „schließt sich einfach“): Fehler auf der Oberfläche werden protokolliert und abgefangen,
+        // statt Trendo zu beenden – außer bei Speichermangel und ähnlichen schweren Fehlern
+        Avalonia.Threading.Dispatcher.UIThread.UnhandledException += (_, e) =>
+        {
+            try { CrashLog.Write(crashRoot, e.Exception, "Oberfläche (abgefangen)"); } catch { }
+            if (e.Exception is not (OutOfMemoryException or StackOverflowException or AccessViolationException)) { e.Handled = true; RaiseUiError(e.Exception); }
+        };
         StartupTrace.LogPath = Arg("--startup-log");
         StartupTrace.Mark("avalonia.start");
         return BuildAvaloniaApp().StartWithClassicDesktopLifetime(uiArgs);

@@ -135,7 +135,8 @@ public partial class MainWindow
             if (e.Data is not { Length: > 0 } s) return;
             lastOutput = DateTime.UtcNow;
             lock (p) log?.WriteLine(s);
-            line(s);
+            try { line(s); }
+            catch (Exception ex) { try { CrashLog.Write(Path.Combine(dir, ".trendo"), ex, "Claude-Ausgabe (abgefangen)"); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
             if (s.Contains("\"type\":\"result\"")) done.TrySetResult(); // Claude ist fertig – auch wenn MCP-Werkzeuge den Prozess noch offen halten
         };
         p.ErrorDataReceived += (_, e) => { if (e.Data is { Length: > 0 } s) lock (err) err.AppendLine(s); };

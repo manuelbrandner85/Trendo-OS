@@ -188,6 +188,7 @@ public sealed partial class MainWindow : Window
         Opened += OnOpened;
         Closing += (_, _) => { StartupTrace.Mark("window.closing"); StartupTrace.Flush(); foreach (var t in _ownedTimers) t.Stop(); if (_reopening) return; _api?.DisposeAsync().AsTask().Wait(2000); _core.Shutdown(); };
         Closed += (_, _) => ReleaseOnClose(); // Fenster nach dem Schließen freigeben (Zeitgeber, statische Ereignisse)
+        Program.UiErrorCaught += OnUiErrorCaught; Closed += (_, _) => Program.UiErrorCaught -= OnUiErrorCaught;
         InitLook(root, opt);
         StartupTrace.Mark("window.ready");
     }

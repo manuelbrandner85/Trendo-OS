@@ -121,8 +121,17 @@ public static partial class ClaudeCode
     /// <summary>Ende einer Antwort; <paramref name="Tokens"/>: verarbeitete Tokens (Eingabe, Ausgabe, Zwischenspeicher) – Maß für den Verbrauch am Abo-Kontingent.</summary>
     public sealed record Done(bool Ok, string Text, string Session, int Turns, int Tokens = 0) : Ev;
 
-    /// <summary>Eine Zeile der stream-json-Ausgabe in Ereignisse übersetzen. Unbekanntes wird übergangen.</summary>
+    /// <summary>Eine Zeile der stream-json-Ausgabe in Ereignisse übersetzen. Unbekanntes wird übergangen.
+    /// Hat eine Zeile eine unerwartete Form (z. B. „message“ als Text statt Objekt), wird sie übersprungen – früher beendete das Trendo (Absturz 0.9.45–0.9.48).</summary>
     public static IEnumerable<Ev> Parse(string line, string projectDir)
+    {
+        var list = new List<Ev>();
+        try { foreach (var ev in ParseLine(line, projectDir)) list.Add(ev); }
+        catch (Exception e) when (e is InvalidOperationException or FormatException or JsonException or ArgumentException or IndexOutOfRangeException or KeyNotFoundException) { }
+        return list;
+    }
+
+    static IEnumerable<Ev> ParseLine(string line, string projectDir)
     {
         JsonObject? o;
         try { o = JsonNode.Parse(line) as JsonObject; } catch (JsonException) { yield break; }

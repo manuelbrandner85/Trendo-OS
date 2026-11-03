@@ -141,6 +141,15 @@ public partial class MainWindow
         return row;
     }
 
+    /// <summary>Absturzschutz (03.11.2026): ein abgefangener Fehler wird kurz gemeldet – Trendo bleibt offen, Einzelheiten stehen im Protokoll.</summary>
+    DateTime _lastUiErrorToast;
+    void OnUiErrorCaught(Exception e) => _ui.Post(() =>
+    {
+        if ((DateTime.UtcNow - _lastUiErrorToast).TotalSeconds < 10) return; // nicht bei jedem Folgefehler erneut
+        _lastUiErrorToast = DateTime.UtcNow;
+        Toast("Ein Fehler wurde abgefangen – Trendo läuft weiter. Einzelheiten stehen unter „System & Sicherheit“ im Absturzprotokoll.");
+    });
+
     void KiPyDone(KiLibraryModel m, Cli.Result r, string resultFile)
     {
         _core.Audit.Append(Principal.LocalOwner.Name, "ki.library.run", $"{m.Id} exit={r.Exit}");
