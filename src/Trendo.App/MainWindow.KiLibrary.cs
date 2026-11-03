@@ -160,6 +160,13 @@ public partial class MainWindow
         var store = KiStore;
         try
         {
+            if (KiPyApps.For(m.Runtime) is { } pyApp)
+            {
+                await KiPyInstall(m, pyApp);
+                _core.Audit.Append(Principal.LocalOwner.Name, "ki.library.install", $"{m.Id} {m.License}");
+                _kiLibMsg = $"{m.Name} ist eingerichtet. Mit „Ausprobieren“ kannst du es gleich testen."; _kiTry = m.Id;
+                return;
+            }
             var rt = KiLibrary.RuntimeInfo(m.Runtime);
             var steps = m.Files.Count + (store.RuntimeReady(m.Runtime) || rt.FromVollpaket ? 0 : 1); var step = 0;
             if (!rt.FromVollpaket && !store.RuntimeReady(m.Runtime))
@@ -357,6 +364,12 @@ public partial class MainWindow
             case KiKind.Musik:
                 sp.Children.Add(MusicTryPanel(m, status));
                 break;
+            case KiKind.Modell3D:
+                sp.Children.Add(KiTry3D(m, status, Out));
+                break;
+            case KiKind.Geraeusche:
+                sp.Children.Add(KiTrySound(m, status, Out));
+                break;
             case KiKind.TextZuSprache:
             {
                 var p = Prompt("Text zum Vorlesen eingeben");
@@ -384,6 +397,12 @@ public partial class MainWindow
                 try { sp.Children.Add(new Image { Name = "kilib-image-result", Source = new Bitmap(res), MaxHeight = 360, HorizontalAlignment = HorizontalAlignment.Left }); } catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException) { }
             else if (res.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
                 sp.Children.Add(new TextBox { Name = "kilib-text-result", Text = File.ReadAllText(res), IsReadOnly = true, TextWrapping = TextWrapping.Wrap, MaxHeight = 300 });
+            if (res.EndsWith(".glb", StringComparison.OrdinalIgnoreCase))
+            {
+                var to3d = new Button { Name = "kilib-open-3d", Content = "Im 3D-Studio öffnen", Background = Accent };
+                to3d.Click += (_, _) => { Show("3d"); Import3DFile(res); };
+                sp.Children.Add(to3d);
+            }
             var open = new Button { Name = "kilib-open-result", Content = "Ergebnis öffnen" }; open.Click += (_, _) => Launch(res);
             var folder = new Button { Name = "kilib-open-folder", Content = "Ordner „KI-Ergebnisse“" }; folder.Click += (_, _) => Launch(KiOutFolder);
             sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { open, folder } });

@@ -690,8 +690,10 @@ public sealed partial class MainWindow : Window
             titleCol.Children.Add(new TextBlock { Name = "page-sentence", Text = info.Sentence, Foreground = Muted, FontSize = 13.5, TextWrapping = TextWrapping.Wrap });
             var card = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), ColumnSpacing = 14 };
             if (StudioIcons.For(sid) is { } si) card.Children.Add(new Border { VerticalAlignment = VerticalAlignment.Center, Child = Chip(si.Path, si.C1, si.C2, 46, 0.6) });
-            card.Children.Add(Pos(titleCol, 1)); card.Children.Add(Pos(help, 2));
+            card.Children.Add(Pos(titleCol, 1));
             help.VerticalAlignment = VerticalAlignment.Top;
+            // Vorschlag 36: freie KIs rechts oben neben „?“ – ohne den Kopf höher zu machen (sonst rutschen Arbeitsflächen wie die 3D-Ansicht)
+            card.Children.Add(Pos(FreeKiRow(sid) is { } freeKi ? new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Top, Children = { freeKi, help } } : help, 2));
             return new Border
             {
                 Name = "page-hero", Child = card, CornerRadius = new CornerRadius(14), Padding = new Thickness(14, 12), BorderBrush = Edge, BorderThickness = new Thickness(1),

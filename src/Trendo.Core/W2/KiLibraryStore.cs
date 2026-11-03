@@ -19,7 +19,10 @@ public sealed class KiLibraryStore(string toolsRoot)
         return Path.Combine(info.FromVollpaket ? ToolsRoot : RuntimeDir(r), info.Exe.Replace('/', Path.DirectorySeparatorChar));
     }
 
-    public bool RuntimeReady(KiRuntime r) => File.Exists(RuntimeExe(r));
+    public bool RuntimeReady(KiRuntime r) => KiPyApps.For(r) is { } a ? KiPyApps.Ready(a, PyPaths(r)) : File.Exists(RuntimeExe(r));
+
+    /// <summary>Pfade einer Python-KI (Paket E): uv und Git aus Trendos Werkzeugen, eigener Ordner je KI.</summary>
+    public KiPyApps.Paths PyPaths(KiRuntime r) => new(RuntimeExe(KiRuntime.Uv), Path.Combine(ToolsRoot, "git", "cmd", "git.exe"), RuntimeDir(r), RuntimeDir(KiRuntime.Uv));
 
     public string ModelFile(KiLibraryModel m, KiFile f) => Path.Combine(ModelDir(m), f.FileName);
 

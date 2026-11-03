@@ -1,10 +1,10 @@
 namespace Trendo.Core;
 
 /// <summary>Arten von KI in der KI-Bibliothek (Vorgabe 2026-10-26: „chat ki, bild ki, video ki, sound, musik ki … alles schön kategorisiert“).</summary>
-public enum KiKind { Chat, Denken, Code, BildVerstehen, Uebersetzen, Wissen, BildErzeugen, BildVerbessern, Video, SpracheZuText, TextZuSprache, Musik }
+public enum KiKind { Chat, Denken, Code, BildVerstehen, Uebersetzen, Wissen, BildErzeugen, BildVerbessern, Video, SpracheZuText, TextZuSprache, Musik, Modell3D, Geraeusche }
 
 /// <summary>Womit Trendo ein Modell ausführt. Jede Laufzeit ist ein freies Programm, das Trendo selbst in „TrendoWerkzeuge“ einrichtet.</summary>
-public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep }
+public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio }
 
 /// <summary>Eine Laufzeit: offizielles GitHub-Projekt mit fest gewählter Veröffentlichung (Tag, Datei, SHA-256, Größe), Hauptprogramm im ZIP.
 /// Ollama und Python kommen aus dem Vollpaket (<see cref="Tag"/> leer).</summary>
@@ -47,6 +47,8 @@ public static class KiLibrary
         [KiKind.SpracheZuText] = ("Sprache zu Text", "microphone", "Schreibt Gesprochenes mit: Diktate, Interviews, Videos mit Untertiteln."),
         [KiKind.TextZuSprache] = ("Vorlesen", "speaker", "Liest Texte mit natürlicher deutscher Stimme vor und speichert sie als Audiodatei."),
         [KiKind.Musik] = ("Musik", "music", "Komponiert Musikstücke aus einer Beschreibung und Liedtext."),
+        [KiKind.Modell3D] = ("3D aus Bild", "cube", "Macht aus einem Foto eines Gegenstands ein 3D-Modell (GLB) – zum Weiterbearbeiten im 3D-Studio und in Blender."),
+        [KiKind.Geraeusche] = ("Geräusche & Effekte", "speaker", "Erzeugt Geräusche aus einer Beschreibung („Regen auf einem Blechdach“) oder passend zu einem Video."),
     };
 
     public static readonly IReadOnlyList<KiRuntimeInfo> Runtimes =
@@ -65,6 +67,13 @@ public static class KiLibrary
         // die Modelle (ca. 10 GB) lädt ACE-Step beim ersten Start selbst von Hugging Face. Trendo spricht mit dem lokalen Server über die REST-API.
         new(KiRuntime.AceStep, "ACE-Step 1.5", "ace-step/ACE-Step-1.5", "MIT", "Erzeugt ganze Lieder mit Gesang aus Stil und Liedtext, auf deinem PC.",
             "portable-2026-02-17", "ACE-Step-1.5.7z", "25402adb2a852a8792d0b562af7e9c7c5f84f35503542e0586fb6c033193e486", 2_403_883_448, "python_embeded/python.exe", "https://files.acemusic.ai/acemusic/win/ACE-Step-1.5.7z"),
+        // Paket E (0.9.49): uv richtet Python-KIs in eigenen Umgebungen ein (siehe KiPyApps)
+        new(KiRuntime.Uv, "uv (Python-Umgebungen)", "astral-sh/uv", "MIT / Apache-2.0", "Richtet Python-KIs in eigenen, getrennten Umgebungen ein – ohne Admin, ohne Systemänderung.",
+            "0.13.6", "uv-x86_64-pc-windows-msvc.zip", "a2a8820d5eea32f08ef467ef3b7f66883a9b076d5737a2fc2fbb5f458d1bb50f", 15_239_500, "uv.exe"),
+        new(KiRuntime.TripoSR, "TripoSR", "VAST-AI-Research/TripoSR", "MIT", "Erzeugt in Sekunden ein 3D-Modell aus einem einzigen Foto.",
+            "107cefdc244c39106fa830359024f6a2f1c78871", "", "", 0, "env/Scripts/python.exe"),
+        new(KiRuntime.MMAudio, "MMAudio", "hkchengrex/MMAudio", "MIT (Programm) · CC BY-NC 4.0 (Modelle)", "Erzeugt Geräusche aus Text oder passend zu einem Video.",
+            "974010a026c731054592d8f777218bd9d85a6c24", "", "", 0, "env/Scripts/python.exe"),
     ];
 
     const string Hf = "https://huggingface.co/";
@@ -136,6 +145,14 @@ public static class KiLibrary
         new("ace-step", KiKind.Musik, KiRuntime.AceStep, "ACE-Step 1.5 (Lieder mit Gesang)", "", 12.0, 16, "MIT",
             "ganze Lieder mit Gesang, 10 s bis 10 min, viele Stile und Sprachen",
             "Stil beschreiben (z. B. „fröhlicher Pop mit Klavier“), auf Wunsch Liedtext eingeben, Länge wählen, „Musik erzeugen“. Beim ersten Mal lädt ACE-Step seine Modelle (ca. 10 GB). Am besten mit einer NVIDIA-Grafikkarte ab 6 GB.", []),
+        // 3D aus Bild (Paket E, Wunsch 02.11.2026). TRELLIS.2 läuft laut Microsoft nur unter Linux mit 24 GB Grafikspeicher – darum TripoSR.
+        new("triposr", KiKind.Modell3D, KiRuntime.TripoSR, "TripoSR (Foto → 3D-Modell)", "", 6.5, 16, "MIT",
+            "Gegenstände, Figuren und Möbel aus einem Foto als 3D-Modell, in Sekunden",
+            "Foto wählen (ein Gegenstand, ruhiger Hintergrund), „3D-Modell erzeugen“. Trendo stellt den Hintergrund frei; das Ergebnis (GLB) öffnest du im 3D-Studio oder in Blender. Ehrlich: eine gute Grundform mit weichen Details zum Weiterbearbeiten, kein fertiges fotoreales Modell. Beim ersten Mal lädt TripoSR sein Modell (ca. 1,7 GB). Am besten mit einer NVIDIA-Grafikkarte ab 6 GB.", []),
+        // Geräusche (Paket E): MMAudio – Modelle nur für nicht-kommerzielle Zwecke (CC BY-NC 4.0), das zeigt Trendo vor dem Laden
+        new("mmaudio", KiKind.Geraeusche, KiRuntime.MMAudio, "MMAudio (Geräusche aus Text oder Video)", "", 10.0, 16, "CC-BY-NC-4.0 (nur nicht-kommerziell)",
+            "Geräusche und Atmosphären bis 10 s, auch passend zu einem Video",
+            "Geräusch beschreiben (z. B. „Regen auf einem Blechdach, entfernter Donner“), Länge wählen, „Geräusch erzeugen“ – oder ein Video wählen, dann passt der Ton zum Bild. Beim ersten Mal lädt MMAudio seine Modelle (ca. 6 GB). Nur für private, nicht-kommerzielle Zwecke.", []),
     ];
 
     public static IEnumerable<KiLibraryModel> OfKind(KiKind k) => Models.Where(m => m.Kind == k);

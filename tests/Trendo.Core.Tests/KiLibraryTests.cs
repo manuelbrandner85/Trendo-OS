@@ -29,7 +29,7 @@ public class KiLibraryTests
                 Assert.Equal(Path.GetFileName(f.FileName), f.FileName);
             }
         }
-        foreach (var r in KiLibrary.Runtimes.Where(r => !r.FromVollpaket))
+        foreach (var r in KiLibrary.Runtimes.Where(r => !r.FromVollpaket && KiPyApps.For(r.Id) is null)) // Python-KIs: Stand per Git-Commit geprüft (KiPyAppsTests)
         {
             Assert.Matches("^[0-9a-f]{64}$", r.Sha256);
             if (r.Url is null) Assert.StartsWith("https://github.com/" + r.Repo + "/releases/download/", r.DownloadUrl);
