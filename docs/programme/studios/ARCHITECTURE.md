@@ -1,6 +1,6 @@
 # Alle Studios – Architektur
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand d735c2c)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand d04e032)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

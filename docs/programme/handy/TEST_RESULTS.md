@@ -1,6 +1,6 @@
 # Handy verbinden – Testergebnisse
 
-Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.36 (Stand d735c2c)
+Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.36 (Stand d04e032)
 
 Lauf: `api.trx, app.trx, core.trx`
 

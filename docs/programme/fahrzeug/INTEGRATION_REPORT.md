@@ -1,6 +1,6 @@
 # Auto & Fahrten – Einbindung in Trendo OS
 
-Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.36 (Stand d735c2c)
+Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.36 (Stand d04e032)
 
 - Seite `fahrzeug` im Studio „Auto & Fahrten“ (Technik & Fachgebiete) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

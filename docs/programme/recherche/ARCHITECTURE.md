@@ -1,6 +1,6 @@
 # Recherche im Lesemodus – Architektur
 
-Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand d735c2c)
+Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand d04e032)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

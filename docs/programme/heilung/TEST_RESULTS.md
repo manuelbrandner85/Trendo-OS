@@ -1,6 +1,6 @@
 # Selbstheilung – Testergebnisse
 
-Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.36 (Stand d735c2c)
+Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.36 (Stand d04e032)
 
 Lauf: `api.trx, app.trx, core.trx`
 

@@ -1,6 +1,6 @@
 # Trendo CAD – Testplan
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand d735c2c)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand d04e032)
 
 4 Tests sprechen dieses Programm an.
 

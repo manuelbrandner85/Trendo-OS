@@ -1,6 +1,6 @@
 # Grundriss & Wohnen – Testplan
 
-Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.36 (Stand d735c2c)
+Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.36 (Stand d04e032)
 
 23 Tests sprechen dieses Programm an.
 
