@@ -1,6 +1,6 @@
 # Verbindungen – Testergebnisse
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.36 (Stand e6f79fe)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.36 (Stand ccb1ad1)
 
 Lauf: `api.trx, app.trx, core.trx`
 

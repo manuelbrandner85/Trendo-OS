@@ -1,6 +1,6 @@
 # Personen – Testplan
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `personen` · Stand: 0.9.36 (Stand e6f79fe)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `personen` · Stand: 0.9.36 (Stand ccb1ad1)
 
 18 Tests sprechen dieses Programm an.
 

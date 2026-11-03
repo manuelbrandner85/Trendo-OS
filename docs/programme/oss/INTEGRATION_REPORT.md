@@ -1,6 +1,6 @@
 # Open Source – Einbindung in Trendo OS
 
-Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.36 (Stand e6f79fe)
+Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.36 (Stand ccb1ad1)
 
 - Seite `oss` im Studio „Projekte von GitHub holen“ (Entwickeln) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

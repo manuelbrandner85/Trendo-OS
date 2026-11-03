@@ -14,6 +14,9 @@
 - ✓ Länge bis 10 Minuten (erprobt: über 8 Minuten ohne planendes Sprachmodell, sonst gekürzt)
 - ✓ Tempo, Tonart, Takt als eigene Felder – nachgemessen 03.11.2026: A-Moll/3-4 und E-Dur/4-4 genau, 140 BPM → 143,6, 90 → 92,3 (Tempo im Stiltext wird ignoriert)
 - ✓ Über 180 Genres in 11 Gruppen mit Suche und Tempo-Vorschlag (Begriffe aus ACE-Steps eigener Genre-Liste), 14 Gesangsarten (Duett, Chor, Rap + Gesang …), Tonlage, Instrumente
+- ✓ Mastering wie für Streamingdienste nach jedem Lied (−14 LUFS, −1 dBTP; 03.11.2026 gemessen: ACE-Step liefert −13,4 LUFS/−0,7 dBTP/LRA 15,7 → −14,0/−1,0/10,7)
+- ✓ Liedtexte mit Songwriter-Regeln, Prüfung auf KI-Floskeln, gefundene ersetzt die Text-KI gezielt
+- ✓ YouTube-Link als Vorlage: Titel/Interpret per oEmbed, Stil/Tonart/Tempo aus freien Daten – kein Download (YouTube-Bedingungen, § 95a UrhG), kein fremder Liedtext
 - ✓ „Im Stil von“: aus dem Web nachgeschlagen (MusicBrainz CC0: Genres, Solo/Band, Gründungsjahrzehnt; Wikipedia: Kurzbeschreibung mit Quelle), die Text-KI verfeinert darauf – ohne Namen und ohne nachgemachte Stimme
 - ✓ Song-Analyse (librosa): Tonart, Tempo, Takt, Akkorde, Tonumfang – als Vorlage übernehmbar
 - ✓ Eigene Aufnahme hinzufügen und als Cover neu einspielen (Hinweis: nur privat, GEMA)

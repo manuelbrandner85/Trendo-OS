@@ -1,6 +1,6 @@
 # Betriebsmodus – Einbindung in Trendo OS
 
-Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.36 (Stand e6f79fe)
+Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.36 (Stand ccb1ad1)
 
 - Seite `modus` im Studio „Startmodus wählen“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

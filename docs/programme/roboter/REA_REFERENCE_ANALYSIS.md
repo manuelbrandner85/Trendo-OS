@@ -1,6 +1,6 @@
 # Kameras & Roboter steuern – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.36 (Stand e6f79fe)
+Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.36 (Stand ccb1ad1)
 
 Analyse: [Vorbild-Analyse Roboter-Werkstatt: RoboDK, MoveIt (Clean-Room)](../../../docs/claude/vorbilder/roboter-robodk.md)
 
