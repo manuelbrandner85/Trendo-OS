@@ -8,6 +8,18 @@ namespace Trendo.App;
 /// fertiges Lied holen (/v1/audio). Beschreibung der API: github.com/ace-step/ACE-Step-1.5/blob/main/docs/en/API.md.</summary>
 public sealed class AceStepClient(HttpClient http, int port = AceStepClient.DefaultPort)
 {
+    /// <summary>Gesangssprachen von ACE-Step 1.5 (acestep/constants.py VALID_LANGUAGES, geprüft 03.11.2026) – Deutsch und Englisch zuerst.</summary>
+    public static readonly (string Code, string Name)[] Languages =
+    [
+        ("de", "Deutsch"), ("en", "Englisch"), ("ar", "Arabisch"), ("az", "Aserbaidschanisch"), ("bg", "Bulgarisch"), ("bn", "Bengalisch"), ("ca", "Katalanisch"),
+        ("cs", "Tschechisch"), ("da", "Dänisch"), ("el", "Griechisch"), ("es", "Spanisch"), ("fa", "Persisch"), ("fi", "Finnisch"), ("fr", "Französisch"),
+        ("he", "Hebräisch"), ("hi", "Hindi"), ("hr", "Kroatisch"), ("ht", "Haitianisch"), ("hu", "Ungarisch"), ("id", "Indonesisch"), ("is", "Isländisch"),
+        ("it", "Italienisch"), ("ja", "Japanisch"), ("ko", "Koreanisch"), ("la", "Latein"), ("lt", "Litauisch"), ("ms", "Malaiisch"), ("ne", "Nepalesisch"),
+        ("nl", "Niederländisch"), ("no", "Norwegisch"), ("pa", "Panjabi"), ("pl", "Polnisch"), ("pt", "Portugiesisch"), ("ro", "Rumänisch"), ("ru", "Russisch"),
+        ("sa", "Sanskrit"), ("sk", "Slowakisch"), ("sr", "Serbisch"), ("sv", "Schwedisch"), ("sw", "Suaheli"), ("ta", "Tamil"), ("te", "Telugu"), ("th", "Thailändisch"),
+        ("tl", "Tagalog"), ("tr", "Türkisch"), ("uk", "Ukrainisch"), ("ur", "Urdu"), ("vi", "Vietnamesisch"), ("yue", "Kantonesisch"), ("zh", "Chinesisch"),
+    ];
+
     public const int DefaultPort = 8001;
     /// <summary>So viel freier Grafikspeicher reicht, damit das Lied auf der Grafikkarte fertig wird (Probelauf 27.10.2026: bei 0 GB frei lief die Fertigstellung auf dem Prozessor über eine Stunde).</summary>
     public const double MinFreeVramGb = 4;
@@ -36,8 +48,12 @@ public sealed class AceStepClient(HttpClient http, int port = AceStepClient.Defa
         ["vocal_language"] = s.Language,
         ["batch_size"] = 1,
         ["audio_format"] = "mp3",
-        ["thinking"] = true,
+        // Das planende Sprachmodell kürzt lange Lieder (bis 12 GB Grafikspeicher auf 8 Minuten, gemessen 03.11.2026: 600 s → 8:02).
+        // Über 8 Minuten ohne Sprachmodell – dann entstehen echte 10:00 Minuten.
+        ["thinking"] = s.Seconds <= ThinkingMaxSeconds,
     };
+    /// <summary>Bis zu dieser Länge plant das Sprachmodell das Stück mit; darüber würde es gekürzt.</summary>
+    public const int ThinkingMaxSeconds = 480;
 
     /// <summary>Startumgebung: kleines Sprachmodell (0.6B) mit PyTorch-Backend – laut ACE-Step-Tabelle passend ab 6 GB Grafikspeicher; keine Telemetrie.
     /// Diese Werte haben Vorrang vor der .env im Paket (dort override=False).</summary>

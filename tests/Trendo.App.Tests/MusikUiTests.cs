@@ -58,6 +58,35 @@ public class MusikUiTests
         w.Close();
     }
 
+    [AvaloniaFact(DisplayName = "Musik-KI (UI): Länge bis 10 Minuten und alle 50 Gesangssprachen wählbar (Rückmeldung 03.11.2026) – Wartezeit wächst mit der Länge")]
+    public async Task Ten_minutes_all_languages()
+    {
+        var (w, _, _) = Ui.Open();
+        var m = KiLibrary.Models.Single(x => x.Kind == KiKind.Musik);
+        var exe = AceStepClient.ServerCommand(w.KiStore.RuntimeDir(KiRuntime.AceStep)).File;
+        Directory.CreateDirectory(Path.GetDirectoryName(exe)!); File.WriteAllText(exe, "MZ");
+        var fake = new FakeAce();
+        w.AceClientOverride = new AceStepClient(new HttpClient(fake));
+        w.GpuMemoryProbe = () => (12, 16);
+        w.KiLibraryShow(KiKind.Musik, m.Id);
+        var len = w.Find<ComboBox>("kilib-length"); var lang = w.Find<ComboBox>("kilib-language");
+        Assert.Equal("10 Minuten", ((IEnumerable<object>)len.ItemsSource!).Last());
+        Assert.Equal(50, ((IEnumerable<object>)lang.ItemsSource!).Count());
+        Assert.Equal(["Deutsch", "Englisch"], ((IEnumerable<object>)lang.ItemsSource!).Take(2));
+        len.SelectedIndex = MainWindow.MusicLengths.Length - 1;
+        lang.SelectedIndex = Array.FindIndex(AceStepClient.Languages, x => x.Code == "es");
+        w.Find<TextBox>("kilib-prompt").Text = "Flamenco-Gitarre mit Gesang";
+        w.Find<Button>("kilib-run").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+        for (var i = 0; i < 200 && w.TryFind<Button>("kilib-play-result") is null; i++) { Dispatcher.UIThread.RunJobs(); await Task.Delay(20); }
+        Assert.Contains("\"audio_duration\":600", fake.Request);
+        Assert.Contains("\"vocal_language\":\"es\"", fake.Request);
+        Assert.Contains("\"thinking\":false", fake.Request); // über 8 Minuten ohne Sprachmodell, sonst würde auf 8:02 gekürzt
+        Assert.True((bool)AceStepClient.Request(new("x", "", 300, "de"))["thinking"]!);
+        Assert.True(MainWindow.MusicTimeout(600) >= TimeSpan.FromMinutes(90));
+        Assert.Equal(TimeSpan.FromMinutes(36), MainWindow.MusicTimeout(60));
+        w.Close();
+    }
+
     [AvaloniaFact(DisplayName = "Musik-KI (UI): volle Grafikkarte → erst verständlicher Hinweis, zweiter Klick startet trotzdem")]
     public async Task Full_gpu_warns_first()
     {

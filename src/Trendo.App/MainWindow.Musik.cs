@@ -53,13 +53,21 @@ public partial class MainWindow
         return false;
     }
 
+    /// <summary>Längen wie bei ACE-Step möglich (bis 10 Minuten).</summary>
+    internal static readonly (string Label, int Seconds)[] MusicLengths =
+        [("30 Sekunden", 30), ("1 Minute", 60), ("2 Minuten", 120), ("3 Minuten", 180), ("4 Minuten", 240), ("5 Minuten", 300), ("8 Minuten", 480), ("10 Minuten", 600)];
+    /// <summary>Wartezeit wächst mit der Länge: 30 Minuten Grundzeit plus 6 Minuten je Liedminute.</summary>
+    internal static TimeSpan MusicTimeout(int seconds) => TimeSpan.FromMinutes(30 + 6 * seconds / 60.0);
+
     private Control MusicTryPanel(KiLibraryModel m, TextBlock status)
     {
         var sp = new StackPanel { Spacing = 6 };
         var style = new TextBox { Name = "kilib-prompt", PlaceholderText = "Stil beschreiben, z. B. „fröhlicher Pop mit Klavier und warmer Frauenstimme, 120 BPM“", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 50 };
         var lyrics = new TextBox { Name = "kilib-lyrics", PlaceholderText = "Liedtext (optional). Leer = instrumental.\n[Verse]\n…\n[Chorus]\n…", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 110 };
-        var len = new ComboBox { Name = "kilib-length", ItemsSource = new[] { "30 Sekunden", "1 Minute", "2 Minuten", "3 Minuten" }, SelectedIndex = 1, Width = 150 };
-        var lang = new ComboBox { Name = "kilib-language", ItemsSource = new[] { "Deutsch", "Englisch" }, SelectedIndex = 0, Width = 120 };
+        var len = new ComboBox { Name = "kilib-length", ItemsSource = MusicLengths.Select(x => x.Label).ToArray(), SelectedIndex = 1, Width = 150 };
+        ToolTip.SetTip(len, "ACE-Step erzeugt Lieder bis 10 Minuten. Lange Lieder brauchen deutlich länger und mehr Grafikspeicher.");
+        var lang = new ComboBox { Name = "kilib-language", ItemsSource = AceStepClient.Languages.Select(x => x.Name).ToArray(), SelectedIndex = 0, Width = 160 };
+        ToolTip.SetTip(lang, "Sprache des Gesangs – ACE-Step singt in 50 Sprachen.");
         var go = new Button { Name = "kilib-run", Content = "Musik erzeugen", Background = Accent };
         var warned = false;
         go.Click += async (_, _) =>
@@ -73,8 +81,8 @@ public partial class MainWindow
                 return;
             }
             go.IsEnabled = false;
-            var seconds = len.SelectedIndex switch { 0 => 30, 2 => 120, 3 => 180, _ => 60 };
-            var song = new AceStepClient.Song(style.Text!, lyrics.Text ?? "", seconds, lang.SelectedIndex == 1 ? "en" : "de");
+            var seconds = MusicLengths[Math.Clamp(len.SelectedIndex, 0, MusicLengths.Length - 1)].Seconds;
+            var song = new AceStepClient.Song(style.Text!, lyrics.Text ?? "", seconds, AceStepClient.Languages[Math.Clamp(lang.SelectedIndex, 0, AceStepClient.Languages.Length - 1)].Code);
             try
             {
                 if (!await EnsureAceServer(t => status.Text = t)) { go.IsEnabled = true; return; }
@@ -98,7 +106,7 @@ public partial class MainWindow
                         return;
                     }
                     status.Text = $"Das Lied entsteht … {(int)(DateTime.UtcNow - t0).TotalSeconds} s";
-                    if (DateTime.UtcNow - t0 > TimeSpan.FromMinutes(30)) throw new InvalidOperationException("Das dauert ungewöhnlich lange – bitte erneut versuchen.");
+                    if (DateTime.UtcNow - t0 > MusicTimeout(seconds)) throw new InvalidOperationException("Das dauert ungewöhnlich lange – bitte erneut versuchen.");
                 }
             }
             catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or IOException or TaskCanceledException or System.Text.Json.JsonException)
