@@ -33,7 +33,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Bildbearbeitung | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Bild-Arbeitsfläche (Ebenen) | – | 4 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](bild/README.md) |
 | Medien bearbeiten | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | keine eigene erkannt | – | 11 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](kreativ-medien/README.md) |
 | Videoschnitt | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Video-Zeitleiste | – | 7 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](schnitt/README.md) |
-| 3D | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | CAD-/3D-Zeichenfläche | – | 21 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](3d/README.md) |
+| 3D | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | CAD-/3D-Zeichenfläche | – | 23 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](3d/README.md) |
 | Trendo 3D-Druck | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | keine eigene erkannt | – | 4 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](3d-druck/README.md) |
 | Trendo CAD | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | CAD-/3D-Zeichenfläche | – | 4 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](cad/README.md) |
 | Aus Fotos | Gegenstände einscannen (SPEC-09) | 3D, Spiele & VR | keine eigene erkannt | 20 | 24 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](scan3d/README.md) |
@@ -68,7 +68,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Sauberer Nachbau | Programme nachbauen (X-10) | Entwickeln | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](nachbau/README.md) |
 | Open Source | Projekte von GitHub holen (X-06) | Entwickeln | keine eigene erkannt | – | 25 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](oss/README.md) |
 | Erweiterungen | Trendo erweitern (X-04) | Entwickeln | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](erweiterungen/README.md) |
-| Software | Webseite bauen (CORE-07) | Entwickeln | Bildansicht | – | 49 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](dev/README.md) |
+| Software | Webseite bauen (CORE-07) | Entwickeln | Bildansicht | – | 51 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](dev/README.md) |
 | Ordner im Heimnetz teilen | Dateien teilen (SYS-06) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](teilen/README.md) |
 | Freigaben | Daten schützen (CORE-11) | System & Sicherheit | keine eigene erkannt | – | 10 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](approvals/README.md) |
 | Schutz & Datenschutz | Daten schützen (CORE-11) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](schutz/README.md) |

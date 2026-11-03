@@ -1,6 +1,6 @@
 # Trendo CAD – Funktionsmatrix
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand a16248d)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand b4c619b)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -10,6 +10,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - ✳ Claude
 - 3D aus Bild
 - Bilder erzeugen
+- 👥 Team
 - Datei ▾
 - Quader
 - Zylinder

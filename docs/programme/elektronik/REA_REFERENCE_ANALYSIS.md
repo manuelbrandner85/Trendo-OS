@@ -1,6 +1,6 @@
 # Schaltung & Simulation – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.36 (Stand a16248d)
+Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.36 (Stand b4c619b)
 
 Analyse: [Vorbild-Analyse Elektronik: Falstad Circuit Simulator (Clean-Room)](../../../docs/claude/vorbilder/schaltung-falstad.md)
 

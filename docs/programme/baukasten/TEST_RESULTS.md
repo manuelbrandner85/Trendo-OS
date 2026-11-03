@@ -1,6 +1,6 @@
 # Baukasten – Testergebnisse
 
-Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand a16248d)
+Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand b4c619b)
 
 Lauf: `api.trx, app.trx, core.trx`
 

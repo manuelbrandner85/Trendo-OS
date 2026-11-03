@@ -1,6 +1,6 @@
 # Freie Bilder & Klänge – Funktionsmatrix
 
-Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand a16248d)
+Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand b4c619b)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -10,6 +10,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Geräusche & Effekte
 - Bilder erzeugen
 - Musik
+- 👥 Team
 - Bilder
 - Klänge
 - 3D & Texturen

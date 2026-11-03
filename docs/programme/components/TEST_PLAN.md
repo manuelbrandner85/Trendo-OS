@@ -1,6 +1,6 @@
 # Zusatzprogramme – Testplan
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand a16248d)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand b4c619b)
 
 54 Tests sprechen dieses Programm an.
 

@@ -1,10 +1,10 @@
 # 3D – Testergebnisse
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand a16248d)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand b4c619b)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 20 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
+Bestanden 21 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
 
 | Test | Ergebnis |
 |---|---|
@@ -28,4 +28,6 @@ Bestanden 20 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 | Startbildschirm bekommt keine Auftragsleiste | ✓ bestanden |
 | Studio-Seiten: Überschrift ist der Name aus dem Studio-Katalog | ✓ bestanden |
 | StudioCatalog.NameOf: Katalogname, sonst der bisherige Text | ✓ bestanden |
+| Teams im Claude-Chat: vor dem Lauf liegt das Studio-Team als .claude/agents/trendo-*.md im Projektordner – Claude kann die Fachrollen hinzuziehen | ✓ bestanden |
+| Teams: jedes Studio (außer dem abgelehnten SPEC-07) hat ein Profi-Team; „👥 Team“ im 3D-Studio öffnet „KI einsetzen“ mit dem 3D-Team; eigene Rolle nur mit Studio | nicht im Lauf |
 | Vorschlag 36: Studios zeigen „✨ Freie KI hier“ – 3D-Studio schlägt „3D aus Bild“ vor, der Klick öffnet die KI-Bibliothek (geladen wird erst dort); jede Studio-Zuordnung gibt es wirklich | ✓ bestanden |

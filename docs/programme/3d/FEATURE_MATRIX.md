@@ -1,6 +1,6 @@
 # 3D – Funktionsmatrix
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand a16248d)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand b4c619b)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -8,6 +8,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - ✳ Claude
 - 3D aus Bild
 - Bilder erzeugen
+- 👥 Team
 - Verstanden
 - Blender einrichten
 - In Blender öffnen

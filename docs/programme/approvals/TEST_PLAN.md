@@ -1,6 +1,6 @@
 # Freigaben – Testplan
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `approvals` · Stand: 0.9.36 (Stand a16248d)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `approvals` · Stand: 0.9.36 (Stand b4c619b)
 
 10 Tests sprechen dieses Programm an.
 

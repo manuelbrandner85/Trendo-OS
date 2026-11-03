@@ -1,6 +1,6 @@
 # Trendo Musik – Funktionsmatrix
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand a16248d)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand b4c619b)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -9,6 +9,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - ✳ Claude
 - Musik
 - Geräusche & Effekte
+- 👥 Team
 - Einfach
 - Profi
 - Instrumental (ohne Gesang)

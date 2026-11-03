@@ -1,6 +1,6 @@
 # Baukasten – Funktionsmatrix
 
-Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand a16248d)
+Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand b4c619b)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -8,6 +8,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Los
 - ✳ Claude
 - Programmieren
+- 👥 Team
 - + Überschrift
 - + Text
 - + Bild

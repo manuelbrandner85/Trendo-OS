@@ -1,6 +1,6 @@
 # Speicher & Leistung – Architektur
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand a16248d)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand b4c619b)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

@@ -1,6 +1,6 @@
 # Kameras & Roboter steuern – Funktionsmatrix
 
-Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.36 (Stand a16248d)
+Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.36 (Stand b4c619b)
 
 Quelle: `docs/w6-katalog/CORE-09.md`
 
@@ -30,6 +30,7 @@ Quelle: `docs/w6-katalog/CORE-09.md`
 ## Werkzeuge der Oberfläche
 - Los
 - ✳ Claude
+- 👥 Team
 - Not-Aus
 - Not-Aus lösen
 - Arm planen
