@@ -65,8 +65,13 @@ public partial class MainWindow
                             File = file, Kind = kind, ParentId = src?.Id }));
                     }
                     _msSel = made[0].Id;
+                    // hochprofessionell: jedes neue Lied gleich mastern (Lautheit wie bei Streamingdiensten, keine Übersteuerung)
+                    if (CurrentView == MS && _msRunningText is { } rtm) rtm.Text = "Das Lied wird gemastert …";
+                    var mastered = 0;
+                    foreach (var m in made) if (await MsMaster(m.Id, quiet: true)) mastered++;
+                    made = [.. made.Select(m => Songs.Get(m.Id) ?? m)];
                     if (CoverImageOverride is not null || (!_opt.Isolated && CoverModel() is not null)) _ = MsMakeCover(made[0].Id, auto: true); // gleich ein passendes Cover dazu
-                    _msMsg = made.Count > 1 ? $"✓ {made.Count} Varianten fertig – anhören und die schönere behalten." : "✓ Fertig.";
+                    _msMsg = (made.Count > 1 ? $"✓ {made.Count} Varianten fertig – anhören und die schönere behalten." : "✓ Fertig.") + (mastered > 0 ? " Gemastert auf −14 LUFS." : "");
                     _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.fertig", $"{kind} {made.Count}");
                     return made;
                 }
@@ -110,7 +115,7 @@ public partial class MainWindow
         var english = j.Language switch { "de" => "German", "en" => "English", _ => TryCulture(j.Language) };
         var prompt = $"Schreibe einen Liedtext auf {langName} für ein Lied von etwa {j.Seconds} Sekunden. Thema/Stil: {j.Prompt}. "
             + "Aufbau mit Abschnitts-Marken in eckigen Klammern auf eigener Zeile, z. B. [Strophe], [Refrain], [Strophe], [Refrain]" + (j.Seconds >= 150 ? ", [Bridge], [Refrain]" : "") + ". "
-            + "Kurze, singbare Zeilen, gute Reime, keine Namen echter Künstler, keine Zeilen aus bekannten Liedern. Gib nur den Liedtext aus.";
+            + LyricsCraft.Rules + " Keine Namen echter Künstler, keine Zeilen aus bekannten Liedern. Gib nur den Liedtext aus.";
         _msMsg = "Der Liedtext entsteht …"; Show(MS);
         string? text = null;
         try
@@ -122,6 +127,7 @@ public partial class MainWindow
         text = text?.Trim().Trim('`').Trim();
         if (text is { Length: > 20 } && text.Contains('['))
         {
+            (text, _) = await MsPolishLyrics(text); // KI-Floskeln gezielt ersetzen
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.einfach", "text-ki");
             return await MusicStudioCreate(j with { Lyrics = SongLibrary.ToAceLyrics(text) }, title);
         }
@@ -141,13 +147,14 @@ public partial class MainWindow
         if (topic.Length == 0 && _msLyrics.Trim().Length == 0) { _msMsg = "Schreib zuerst, worum es im Lied gehen soll."; Show(MS); return; }
         var lang = AceStepClient.Languages[Math.Clamp(_msLang, 0, AceStepClient.Languages.Length - 1)].Name;
         var prompt = $"Schreibe einen Liedtext auf {lang}. Thema/Stil: {topic}. " + (_msLyrics.Trim().Length > 0 ? $"Verbessere diesen Entwurf und behalte seine Idee: {_msLyrics}. " : "")
-            + "Aufbau mit Abschnitts-Marken in eckigen Klammern auf eigener Zeile: [Strophe], [Refrain], [Strophe], [Refrain], [Bridge], [Refrain]. Kurze, singbare Zeilen, gute Reime, "
-            + "keine Namen echter Künstler, keine Zeilen aus bekannten Liedern. Gib nur den Liedtext aus.";
+            + "Aufbau mit Abschnitts-Marken in eckigen Klammern auf eigener Zeile: [Strophe], [Refrain], [Strophe], [Refrain], [Bridge], [Refrain]. "
+            + LyricsCraft.Rules + " Keine Namen echter Künstler, keine Zeilen aus bekannten Liedern. Gib nur den Liedtext aus.";
         _msMsg = "Der Liedtext entsteht …"; Show(MS);
         try
         {
             var text = MusicLyricsOverride is { } o ? await o(prompt) : await Intel.AskAsync(new KiRequest(prompt, PreferredModel: KiModelName, UseKnowledge: false, AllowRemote: true)) is { Ok: true } a ? a.Text : throw new InvalidOperationException("Die KI hat gerade keinen Text geliefert.");
-            _msLyrics = text.Trim().Trim('`').Trim(); _msPro = true; _msMsg = "✓ Liedtext eingesetzt – anpassen und dann „Erstellen“.";
+            var (polished, left) = await MsPolishLyrics(text.Trim().Trim('`').Trim());
+            _msLyrics = polished; _msPro = true; _msMsg = "✓ Liedtext eingesetzt – anpassen und dann „Erstellen“." + FloskelHint(left);
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.liedtext", lang);
         }
         catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException or TaskCanceledException) { _msMsg = "Liedtext ging nicht: " + ex.Message; }
@@ -371,6 +378,7 @@ public partial class MainWindow
         var actions = new WrapPanel { Children = {
             Act("ms-rename-ok", "Umbenennen", () => { Songs.Rename(s.Id, name.Text ?? ""); Show(MS); }),
             Act("ms-to-video", "In den Videoschnitt", () => MsToVideo(s)),
+            Act("ms-master", s.Mastered ? "✓ Gemastert" : "Mastern (−14 LUFS)", () => _ = MsMaster(s.Id)),
             Act("ms-export-mp3c", "MP3 mit Cover", () => MsExportMp3WithCover(s)),
             Act("ms-export-wav", "Als WAV", () => MsExport(s, "wav")), Act("ms-export-flac", "Als FLAC", () => MsExport(s, "flac")),
             Act("ms-folder", "Ordner öffnen", () => Launch(Path.GetDirectoryName(s.File)!)),

@@ -107,6 +107,7 @@ public partial class MainWindow
         row.Children.Add(B("ms-lyrics-repeat", "Refrain wiederholen", "Den letzten Refrain am Ende noch einmal", () =>
         { try { _msLyrics = SongTools.RepeatChorus(_msLyrics); _msMsg = ""; } catch (ArgumentException e) { _msMsg = e.Message; } Show(MS); }));
         row.Children.Add(B("ms-lyrics-syllables", _msShowSyllables ? "Silben aus" : "Silben zählen", "Silben je Zeile – gleich lange Zeilen singen sich besser", () => { _msShowSyllables = !_msShowSyllables; Show(MS); }));
+        row.Children.Add(B("ms-lyrics-floskeln", "KI-Floskeln prüfen", "Sucht abgegriffene KI-Phrasen wie „Neonlicht“ oder „Herz in Flammen“", MsCheckFloskeln));
         row.Children.Add(B("ms-lyrics-catchy", "✳ Refrain eingängiger", "Die KI macht den Refrain einprägsamer – der Rest bleibt", () => _ = MsCatchyChorus()));
         sp.Children.Add(row);
         if (_msShowSyllables)
@@ -195,13 +196,43 @@ public partial class MainWindow
     }
 
     /// <summary>Bereich M7 im Profi-Modus.</summary>
+    string _msYouTube = "";
+
+    /// <summary>Y1 (freigegeben 03.11.2026): YouTube-Link → Interpret und Titel (offizielles oEmbed, kein Download, kein Liedtext) →
+    /// Tonart/Tempo aus freien Daten und Stil aus dem Web; das Lied entsteht neu im gewählten Stil, den Text fügt man selbst ein.</summary>
+    public async Task<(string Artist, string Song)?> MsFromYouTube(string link)
+    {
+        if (YouTubeLink.Normalize(link) is not { } video) { _msFactsMsg = "Das ist kein YouTube-Link (z. B. https://www.youtube.com/watch?v=… oder https://youtu.be/…)."; Show(MS); return null; }
+        if (_core.Offline) { _msFactsMsg = "Trendo ist offline – dafür braucht es Internet."; Show(MS); return null; }
+        _msFactsMsg = "YouTube wird gefragt …"; Show(MS);
+        using var http = MsWebClient();
+        if (await MsWebGet(http, YouTubeLink.OEmbedUri(video)) is not { } j || YouTubeLink.ParseOEmbed(j) is not { } o)
+        { _msFactsMsg = "YouTube kennt dieses Video nicht (oder es ist privat)."; Show(MS); return null; }
+        var (artist, song) = YouTubeLink.Split(o.Title, o.Channel);
+        _core.Audit.Append(Principal.LocalOwner.Name, "musik.youtube", video.Query);
+        _msTitle = song.Length > 0 ? song + " (neu)" : _msTitle;
+        _msFactsQuery = artist.Length > 0 ? $"{artist} – {song}" : song;
+        _msPro = true;
+        if (artist.Length > 1) { _msLike = artist; await MsStyleLike(artist); }
+        await MsSongFacts(_msFactsQuery);
+        _msMsg = $"„{song}“ von {(artist.Length > 0 ? artist : "unbekannt")} erkannt. Stil und – wenn bekannt – Tonart und Tempo sind eingesetzt. " +
+                 "Den Liedtext fügst du selbst ein (die Text-Werkzeuge gliedern ihn) oder lässt die KI einen eigenen schreiben. Von YouTube wird nichts heruntergeladen; ein Cover fremder Lieder nur privat nutzen.";
+        Show(MS);
+        return (artist, song);
+    }
+
     Control MsFactsPanel(Action sync)
     {
+        var yt = new TextBox { Name = "ms-youtube", Watermark = "YouTube-Link eines Songs", Text = _msYouTube, MinWidth = 200 };
+        yt.TextChanged += (_, _) => _msYouTube = yt.Text ?? "";
+        var ytGo = new Button { Name = "ms-youtube-go", Content = "Als Vorlage", FontSize = 11.5, Padding = new Thickness(8, 2) };
+        ToolTip.SetTip(ytGo, "Trendo liest nur Titel und Interpret (offizielle YouTube-Schnittstelle) und holt Stil, Tonart und Tempo aus freien Daten. Es wird nichts heruntergeladen.");
+        ytGo.Click += (_, _) => { sync(); _msYouTube = yt.Text ?? ""; _ = MsFromYouTube(_msYouTube); };
         var q = new TextBox { Name = "ms-facts-query", Watermark = "Bekannter Song: Künstler – Titel", Text = _msFactsQuery, MinWidth = 200 };
         q.TextChanged += (_, _) => _msFactsQuery = q.Text ?? "";
         var go = new Button { Name = "ms-facts-go", Content = "Tonart & Tempo", FontSize = 11.5, Padding = new Thickness(8, 2) };
         go.Click += (_, _) => { sync(); _msFactsQuery = q.Text ?? ""; _ = MsSongFacts(_msFactsQuery); };
-        var sp = new StackPanel { Name = "ms-facts", Spacing = 4, Children = { new WrapPanel { Children = { q, new Border { Width = 6 }, go } } } };
+        var sp = new StackPanel { Name = "ms-facts", Spacing = 4, Children = { new WrapPanel { Children = { yt, new Border { Width = 6 }, ytGo } }, new WrapPanel { Children = { q, new Border { Width = 6 }, go } } } };
         if (_msFactsMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "ms-facts-result", Text = _msFactsMsg, Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
         if (_msFacts is { } f)
             sp.Children.Add(new Button { Name = "ms-facts-take", Content = "Übernehmen", FontSize = 11.5, Padding = new Thickness(8, 2) }.Also(b => b.Click += (_, _) =>

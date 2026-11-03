@@ -19,6 +19,8 @@ public sealed class MusicSong
     public string Kind { get; set; } = "neu";
     public string? ParentId { get; set; }
     public bool Favorite { get; set; }
+    /// <summary>Gemastert (−14 LUFS, −1 dBTP) – siehe <see cref="SongMaster"/>.</summary>
+    public bool Mastered { get; set; }
     /// <summary>Cover-Bild (JPEG, 1400 × 1400) – siehe <see cref="SongCover"/>; leer = noch keins.</summary>
     public string CoverFile { get; set; } = "";
     public string CoverLayout { get; set; } = "unten";
