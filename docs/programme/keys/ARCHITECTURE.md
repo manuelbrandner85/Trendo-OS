@@ -1,6 +1,6 @@
 # Online-Dienste – Architektur
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.36 (Stand 2aef5ba)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.36 (Stand 080e64c)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

@@ -25,13 +25,13 @@
 - ✓ Bibliothek mit Suche, Favoriten, Umbenennen, Löschen in den Papierkorb, Export WAV/FLAC, Übergabe an den Videoschnitt
 - ✓ Cover-Bilder: Motiv aus der Bild-KI (SDXL Turbo) zu Genre und Stimmung, Titel und Name mit echter Schrift, 4 Layouts, 1400 × 1400, in die MP3 eingebettet
 - ✓ Verlängern mit dem Grundmodell (03.11.2026 auf der RTX 5070 echt geprüft: 30 → 60 s in 9 s, Anfang unverändert, Fortsetzung schließt an); Turbo und Grundmodell zugleich passen nicht in 12 GB – Trendo lädt jeweils eins
-- ✗ Spuren trennen / Begleitung zu Gesang (auch mit dem Grundmodell nachgemessen keine sauber getrennten Spuren – nicht eingebaut; Vorschlag: eigenes Trennwerkzeug wie Demucs)
+- ✓ Spuren trennen mit Demucs (MIT): Gesang, Schlagzeug, Bass, Rest und Begleitung (03.11.2026 echt geprüft: 3:26 Minuten in 24 s, Summe = Original mit 30 dB, Übersprechen Gesang/Begleitung 0,02); ACE-Step selbst trennt nachgemessen nicht
+- ✗ Begleitung zu Gesang erzeugen (ACE-Step „complete“ nachgemessen unbrauchbar)
 - ✗ Mitlaufender Liedtext beim Abspielen
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Erstellen links, Bibliothek in der Mitte, gewähltes Lied rechts, Player unten – füllt das Fenster.
 
 ## Nächste Schritte
-1. Spuren trennen mit einem eigenen Trennwerkzeug (z. B. Demucs, MIT) statt ACE-Step
-2. Mitlaufender Liedtext
-3. Song-Analyse auch für Aufnahmen aus dem Mikrofon
+1. Mitlaufender Liedtext
+2. Song-Analyse auch für Aufnahmen aus dem Mikrofon

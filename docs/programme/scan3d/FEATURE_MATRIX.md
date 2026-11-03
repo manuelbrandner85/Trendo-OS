@@ -1,6 +1,6 @@
 # Aus Fotos – Funktionsmatrix
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand 2aef5ba)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand 080e64c)
 
 Quelle: `docs/w6-katalog/SPEC-09.md`
 

@@ -1,6 +1,6 @@
 # Freigaben – Testergebnisse
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `approvals` · Stand: 0.9.36 (Stand 2aef5ba)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `approvals` · Stand: 0.9.36 (Stand 080e64c)
 
 Lauf: `api.trx, app.trx, core.trx`
 

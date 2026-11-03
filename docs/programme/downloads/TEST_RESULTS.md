@@ -1,6 +1,6 @@
 # Downloads – Testergebnisse
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.36 (Stand 2aef5ba)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.36 (Stand 080e64c)
 
 Lauf: `api.trx, app.trx, core.trx`
 

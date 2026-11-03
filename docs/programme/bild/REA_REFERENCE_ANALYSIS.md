@@ -1,6 +1,6 @@
 # Bildbearbeitung – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand 2aef5ba)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand 080e64c)
 
 Analyse: [Vorbild-Analyse Bild: GIMP, Krita, Photoshop (Clean-Room)](../../../docs/claude/vorbilder/bild-gimp-krita-photoshop.md)
 
