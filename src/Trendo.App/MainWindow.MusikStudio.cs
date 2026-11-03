@@ -91,13 +91,13 @@ public partial class MainWindow
         var secs = MusicLengths[Math.Clamp(_msLen, 0, MusicLengths.Length - 1)].Seconds;
         if (!_msPro)
         {
-            if (string.IsNullOrWhiteSpace(_msDesc)) throw new ArgumentException("Beschreibe zuerst dein Lied – z. B. „fröhliches Sommerlied über einen Roadtrip“.");
-            return new(_msDesc.Trim(), _msInstr ? "[Instrumental]" : "", secs, lang, _msVariants);
+            if (string.IsNullOrWhiteSpace(_msDesc) && _msGenres.Count == 0) throw new ArgumentException("Beschreibe zuerst dein Lied – z. B. „fröhliches Sommerlied über einen Roadtrip“.");
+            return new(MsWithExtras(_msDesc), _msInstr ? "[Instrumental]" : "", secs, lang, _msVariants);
         }
-        if (string.IsNullOrWhiteSpace(_msStyle)) throw new ArgumentException("Gib zuerst den Stil an – z. B. „Pop, Akustikgitarre, Frauenstimme“.");
+        if (string.IsNullOrWhiteSpace(_msStyle) && _msGenres.Count == 0) throw new ArgumentException("Gib zuerst den Stil an – z. B. „Pop, Akustikgitarre, Frauenstimme“.");
         int? bpm = int.TryParse(_msBpm, out var b) ? b : null;
         if (_msBpm.Length > 0 && bpm is null or < 30 or > 300) throw new ArgumentException("Tempo bitte zwischen 30 und 300 BPM (oder leer für automatisch).");
-        return new(_msStyle.Trim(), _msInstr ? "[Instrumental]" : SongLibrary.ToAceLyrics(_msLyrics), secs, lang, _msVariants, bpm,
+        return new(MsWithExtras(_msStyle), _msInstr ? "[Instrumental]" : SongLibrary.ToAceLyrics(_msLyrics), secs, lang, _msVariants, bpm,
             _msKey.Length > 0 ? _msKey : null, _msTime.Length > 0 ? _msTime : null);
     }
 
@@ -216,7 +216,8 @@ public partial class MainWindow
                 tags.Children.Add(b);
             }
             var claude = Act("ms-lyrics-ki", "✳ Liedtext mit KI", () => { Sync(); _ = MsWriteLyrics(); });
-            sp.Children.Add(new StackPanel { Spacing = 4, Children = { new DockPanel { Children = { Dk(claude, Avalonia.Controls.Dock.Right), H("Liedtext", 13) } }, lyr, tags } });
+            sp.Children.Add(new StackPanel { Spacing = 4, Children = { new DockPanel { Children = { Dk(claude, Avalonia.Controls.Dock.Right), H("Liedtext", 13) } }, lyr, tags, MsLyricsTools(Sync) } });
+            sp.Children.Add(MsFactsPanel(Sync)); // M7: Tonart und Tempo eines bekannten Songs
             // Tempo, Tonart, Takt
             var bpm = Box("ms-bpm", "BPM auto", _msBpm, v => _msBpm = v.Trim()); bpm.Width = 88; ToolTip.SetTip(bpm, "Tempo in Schlägen pro Minute (30–300). Leer = die KI wählt.");
             var key = new ComboBox { Name = "ms-key", Width = 118, ItemsSource = new[] { "Tonart" }.Concat(AceStepClient.Keys.Select(KeyDe)).ToArray(), SelectedIndex = _msKey.Length == 0 ? 0 : 1 + Array.IndexOf(AceStepClient.Keys, _msKey) };
@@ -225,8 +226,9 @@ public partial class MainWindow
             ts.SelectionChanged += (_, _) => _msTime = ts.SelectedIndex <= 0 ? "" : AceStepClient.TimeSignatures[ts.SelectedIndex - 1].Value;
             sp.Children.Add(new WrapPanel { Children = { bpm, Spacer(key), Spacer(ts) } });
         }
+        sp.Children.Add(MsStylePanel(Sync)); // M1/M2/M6/M8: Genres, Stimme, Tonlage, Instrumente, „Im Stil von“
         var instr = new CheckBox { Name = "ms-instrumental", Content = "Instrumental (ohne Gesang)", IsChecked = _msInstr, Foreground = Text };
-        instr.IsCheckedChanged += (_, _) => { _msInstr = instr.IsChecked == true; if (_msPro) Show(MS); };
+        instr.IsCheckedChanged += (_, _) => { _msInstr = instr.IsChecked == true; Show(MS); };
         var lang = new ComboBox { Name = "ms-language", Width = 150, ItemsSource = AceStepClient.Languages.Select(x => x.Name).ToArray(), SelectedIndex = _msLang };
         lang.SelectionChanged += (_, _) => _msLang = lang.SelectedIndex;
         var len = new ComboBox { Name = "ms-length", Width = 130, ItemsSource = MusicLengths.Select(x => x.Label).ToArray(), SelectedIndex = _msLen };
@@ -271,12 +273,15 @@ public partial class MainWindow
     Control MsLibraryPanel()
     {
         var sp = new StackPanel { Spacing = 6 };
-        var search = new TextBox { Name = "ms-search", Watermark = "In deinen Liedern suchen", Text = _msSearch, Width = 220 };
+        var search = new TextBox { Name = "ms-search", Watermark = "In deinen Liedern suchen", Text = _msSearch, Width = 200 };
+        var import = new Button { Name = "ms-import", Content = "＋ Eigene Aufnahme" }; // M3
+        ToolTip.SetTip(import, "Eine Aufnahme, die du hast (eigene oder gekaufte Datei), hinzufügen – zum Analysieren und für ein Cover in anderem Stil (nur privat)");
+        import.Click += async (_, _) => await MsImport();
         search.TextChanged += (_, _) => { _msSearch = search.Text ?? ""; };
         search.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) Show(MS); };
         var fav = new Avalonia.Controls.Primitives.ToggleButton { Name = "ms-fav-filter", Content = "★ Favoriten", IsChecked = _msFav };
         fav.IsCheckedChanged += (_, _) => { _msFav = fav.IsChecked == true; Show(MS); };
-        sp.Children.Add(new DockPanel { Children = { Dk(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { search, fav } }, Avalonia.Controls.Dock.Right), H("Meine Lieder", 16) } });
+        sp.Children.Add(new DockPanel { Children = { Dk(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { import, search, fav } }, Avalonia.Controls.Dock.Right), H("Meine Lieder", 16) } });
         foreach (var (title, started) in _msRunning)
         {
             _msRunningText = new TextBlock { Name = "ms-running", Text = $"„{title}“ entsteht … {(int)(DateTime.Now - started).TotalSeconds} s", Foreground = Text, FontSize = 13 };
@@ -332,6 +337,7 @@ public partial class MainWindow
         sp.Children.Add(new Border { CornerRadius = new CornerRadius(10), Background = Brush.Parse("#14FFFFFF"), Padding = new Thickness(10), MaxHeight = 220,
             Child = new ScrollViewer { Content = new SelectableTextBlock { Name = "ms-detail-lyrics", Text = lyr, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap } } });
         sp.Children.Add(MsCoverPanel(s)); // Wunsch 03.11.2026: Cover-Bild wie ein echtes Song-Cover
+        sp.Children.Add(MsAnalysePanel(s)); // M5: Tonart, Tempo, Takt, Akkorde, Tonumfang
 
         // Abschnitt neu erzeugen
         var from = new NumericUpDown { Name = "ms-repaint-from", Minimum = 0, Maximum = (decimal)Math.Max(1, s.Seconds - 1), Value = 0, Increment = 1, FormatString = "0", Width = 100 };
@@ -355,7 +361,7 @@ public partial class MainWindow
             if (string.IsNullOrWhiteSpace(coverStyle.Text)) { _msMsg = "Beschreibe zuerst den neuen Stil für das Cover."; Show(MS); return; }
             _ = MusicStudioCreate(new AceStepClient.Job(coverStyle.Text.Trim(), s.Lyrics, (int)s.Seconds, s.Language, 1, Task: "cover", CoverStrength: strength.Value), s.Title, s.Id);
         });
-        sp.Children.Add(new StackPanel { Spacing = 4, Children = { H("Cover", 13), coverStyle, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new TextBlock { Text = "frei", Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center }, strength, new TextBlock { Text = "nah", Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center } } }, cover } });
+        sp.Children.Add(new StackPanel { Spacing = 4, Children = { H("In anderem Stil (Cover)", 13), coverStyle, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new TextBlock { Text = "frei", Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center }, strength, new TextBlock { Text = "nah", Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center } } }, cover } });
 
         // Weitergeben
         var name = new TextBox { Name = "ms-rename", Text = s.Title, HorizontalAlignment = HorizontalAlignment.Stretch };

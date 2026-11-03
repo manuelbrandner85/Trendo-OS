@@ -4,7 +4,7 @@ namespace Trendo.Core;
 public enum KiKind { Chat, Denken, Code, BildVerstehen, Uebersetzen, Wissen, BildErzeugen, BildVerbessern, Video, SpracheZuText, TextZuSprache, Musik, Modell3D, Geraeusche }
 
 /// <summary>Womit Trendo ein Modell ausführt. Jede Laufzeit ist ein freies Programm, das Trendo selbst in „TrendoWerkzeuge“ einrichtet.</summary>
-public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio }
+public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse }
 
 /// <summary>Eine Laufzeit: offizielles GitHub-Projekt mit fest gewählter Veröffentlichung (Tag, Datei, SHA-256, Größe), Hauptprogramm im ZIP.
 /// Ollama und Python kommen aus dem Vollpaket (<see cref="Tag"/> leer).</summary>
@@ -74,6 +74,9 @@ public static class KiLibrary
             "107cefdc244c39106fa830359024f6a2f1c78871", "", "", 0, "env/Scripts/python.exe"),
         new(KiRuntime.MMAudio, "MMAudio", "hkchengrex/MMAudio", "MIT (Programm) · CC BY-NC 4.0 (Modelle)", "Erzeugt Geräusche aus Text oder passend zu einem Video.",
             "974010a026c731054592d8f777218bd9d85a6c24", "", "", 0, "env/Scripts/python.exe"),
+        // Trendo Musik M5: Song-Analyse mit librosa (nur ein PyPI-Paket, kein GitHub-Quellcode)
+        new(KiRuntime.MusikAnalyse, "Song-Analyse (librosa)", "librosa/librosa", "ISC", "Erkennt Tonart, Tempo, Takt, Akkorde und Tonumfang eines Lieds – lokal.",
+            "librosa-0.11.0", "", "", 0, "env/Scripts/python.exe"),
     ];
 
     const string Hf = "https://huggingface.co/";
@@ -153,6 +156,10 @@ public static class KiLibrary
         new("mmaudio", KiKind.Geraeusche, KiRuntime.MMAudio, "MMAudio (Geräusche aus Text oder Video)", "", 10.0, 16, "CC-BY-NC-4.0 (nur nicht-kommerziell)",
             "Geräusche und Atmosphären bis 10 s, auch passend zu einem Video",
             "Geräusch beschreiben (z. B. „Regen auf einem Blechdach, entfernter Donner“), Länge wählen, „Geräusch erzeugen“ – oder ein Video wählen, dann passt der Ton zum Bild. Beim ersten Mal lädt MMAudio seine Modelle (ca. 6 GB). Nur für private, nicht-kommerzielle Zwecke.", []),
+        // Trendo Musik M5 (03.11.2026): Song-Analyse – kein KI-Modell, sondern Signalanalyse (librosa, ISC)
+        new("musik-analyse", KiKind.Musik, KiRuntime.MusikAnalyse, "Song-Analyse (Tonart, Tempo, Akkorde, Tonumfang)", "", 0.3, 4, "ISC",
+            "jedes Lied untersuchen: Tonart, BPM, Takt, Akkordfolge, höchster und tiefster Ton",
+            "In Trendo Musik bei einem Lied „Analysieren“ – oder eine eigene Audiodatei wählen. Takt und Akkorde sind Schätzungen aus dem Klang; der Tonumfang ist der der Gesangsmelodie.", []),
     ];
 
     public static IEnumerable<KiLibraryModel> OfKind(KiKind k) => Models.Where(m => m.Kind == k);

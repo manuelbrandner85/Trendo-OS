@@ -13,7 +13,7 @@ public class KiPyAppsTests
         try
         {
             var store = new KiLibraryStore(root);
-            foreach (var a in KiPyApps.All)
+            foreach (var a in KiPyApps.All.Where(x => !x.PackagesOnly)) // Song-Analyse (nur PyPI) prüft MusicToolsTests
             {
                 Assert.Matches("^[0-9a-f]{40}$", a.Commit);
                 Assert.Equal(KiLibrary.RuntimeInfo(a.Id).Tag, a.Commit); // Bibliothek und Rezept zeigen denselben Stand

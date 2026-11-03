@@ -25,6 +25,8 @@ public sealed class MusicSong
     /// <summary>Name auf dem Cover (Künstlername); leer = ohne Namen.</summary>
     public string Artist { get; set; } = "";
     public int CoverSeed { get; set; }
+    /// <summary>M5: Ergebnis der Song-Analyse (oder null).</summary>
+    public SongAnalysis? Analysis { get; set; }
     public DateTimeOffset Created { get; set; } = DateTimeOffset.Now;
 }
 

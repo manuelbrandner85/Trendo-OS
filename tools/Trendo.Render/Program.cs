@@ -256,6 +256,7 @@ else if (shot == "seite")
             win.MusicStudioSelect(s.Id);
         }
         if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") == "profi") win.MusicStudioProMode(true);
+        if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") == "genre") win.MusicStudioPickGenres(true, "Jazz-Ballade", "Smooth Jazz");
         win.Show(page);
     }
     if (Environment.GetEnvironmentVariable("TRENDO_BRIEF_DEMO") is { Length: > 0 }) // Brief mit Beispieldaten, Tippfehler und gezeichneter Unterschrift (Schritt 3)

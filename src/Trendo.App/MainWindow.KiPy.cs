@@ -40,7 +40,7 @@ public partial class MainWindow
             try { await Task.Run(() => store.InstallRuntime(KiRuntime.Uv, zip, _core.Audit, Extract7z)); } finally { TryDelete(zip); }
         }
         step++;
-        if (KiStepOverride is null && !File.Exists(p.Git)) throw new InvalidOperationException("Git fehlt – bitte unter „Programme“ aus dem Vollpaket einrichten.");
+        if (KiStepOverride is null && !app.PackagesOnly && !File.Exists(p.Git)) throw new InvalidOperationException("Git fehlt – bitte unter „Programme“ aus dem Vollpaket einrichten.");
         Directory.CreateDirectory(p.Dir);
         var env = KiPyApps.UvEnv(p.UvHome);
         _core.Audit.Append(Principal.LocalOwner.Name, "ki.pyapp.start", $"{app.Repo}@{app.Commit} torch={KiPyApps.TorchIndex(nvidia)}");
@@ -52,7 +52,7 @@ public partial class MainWindow
             if (!r.Ok) throw new InvalidOperationException($"{s.Text}: " + Short(r.Err.Length > 0 ? r.Err : r.Out));
             step++;
         }
-        var head = await KiStep(p.Git, ["-C", p.Repo, "rev-parse", "HEAD"], p.Dir, env);
+        var head = app.PackagesOnly ? new Cli.Result(0, app.Commit, "") : await KiStep(p.Git, ["-C", p.Repo, "rev-parse", "HEAD"], p.Dir, env);
         if (!KiPyApps.CommitOk(app, head.Out)) throw new InvalidOperationException("Der geladene Quellcode hat nicht den geprüften Stand – nicht eingerichtet.");
         CopyKiScript(app, p);
         File.WriteAllText(p.Marker, app.Commit);

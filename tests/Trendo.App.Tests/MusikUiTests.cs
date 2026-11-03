@@ -36,7 +36,7 @@ public class MusikUiTests
     public async Task Generate_song()
     {
         var (w, _, root) = Ui.Open();
-        var m = KiLibrary.Models.Single(x => x.Kind == KiKind.Musik);
+        var m = KiLibrary.Models.Single(x => x.Kind == KiKind.Musik && x.Runtime == KiRuntime.AceStep);
         Assert.True(m.Ready);
         var exe = AceStepClient.ServerCommand(w.KiStore.RuntimeDir(KiRuntime.AceStep)).File;
         Directory.CreateDirectory(Path.GetDirectoryName(exe)!); File.WriteAllText(exe, "MZ");
@@ -62,7 +62,7 @@ public class MusikUiTests
     public async Task Ten_minutes_all_languages()
     {
         var (w, _, _) = Ui.Open();
-        var m = KiLibrary.Models.Single(x => x.Kind == KiKind.Musik);
+        var m = KiLibrary.Models.Single(x => x.Kind == KiKind.Musik && x.Runtime == KiRuntime.AceStep);
         var exe = AceStepClient.ServerCommand(w.KiStore.RuntimeDir(KiRuntime.AceStep)).File;
         Directory.CreateDirectory(Path.GetDirectoryName(exe)!); File.WriteAllText(exe, "MZ");
         var fake = new FakeAce();
@@ -91,7 +91,7 @@ public class MusikUiTests
     public async Task Full_gpu_warns_first()
     {
         var (w, _, _) = Ui.Open();
-        var m = KiLibrary.Models.Single(x => x.Kind == KiKind.Musik);
+        var m = KiLibrary.Models.Single(x => x.Kind == KiKind.Musik && x.Runtime == KiRuntime.AceStep);
         var exe = AceStepClient.ServerCommand(w.KiStore.RuntimeDir(KiRuntime.AceStep)).File;
         Directory.CreateDirectory(Path.GetDirectoryName(exe)!); File.WriteAllText(exe, "MZ");
         var fake = new FakeAce();

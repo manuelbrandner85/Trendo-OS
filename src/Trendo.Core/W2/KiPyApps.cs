@@ -7,6 +7,8 @@ namespace Trendo.Core;
 public sealed record KiPyApp(KiRuntime Id, string Repo, string Commit, string Python, string[] Torch, string[] Packages, bool InstallRepo, string Script)
 {
     public string RepoUrl => $"https://github.com/{Repo}.git";
+    /// <summary>Ohne GitHub-Quellcode (nur Pakete von PyPI).</summary>
+    public bool PackagesOnly => Repo.Length == 0;
 }
 
 public static class KiPyApps
@@ -20,6 +22,8 @@ public static class KiPyApps
         // MMAudio: Text (oder Video) zu Geräusch; das Projekt bringt seine Abhängigkeiten in pyproject.toml mit
         new(KiRuntime.MMAudio, "hkchengrex/MMAudio", "974010a026c731054592d8f777218bd9d85a6c24", "3.12", ["torch", "torchvision", "torchaudio"],
             ["soundfile"], true, "trendo_mmaudio.py"),
+        // Trendo Musik M5: kein Quellcode von GitHub, nur das PyPI-Paket librosa auf fester Fassung (Merker = Fassung)
+        new(KiRuntime.MusikAnalyse, "", "librosa-0.11.0", "3.12", [], ["librosa==0.11.0", "soundfile"], false, "trendo_analyse.py"),
     ];
 
     public static KiPyApp? For(KiRuntime r) => All.FirstOrDefault(a => a.Id == r);
@@ -53,11 +57,14 @@ public static class KiPyApps
     public static List<Step> Steps(KiPyApp a, Paths p, bool nvidia)
     {
         var s = new List<Step>();
-        if (!Directory.Exists(Path.Combine(p.Repo, ".git"))) s.Add(new("Quellcode von GitHub holen", p.Git, ["clone", "--quiet", a.RepoUrl, p.Repo], p.Dir));
-        s.Add(new("Fest gewählten Stand auswählen", p.Git, ["-C", p.Repo, "checkout", "--quiet", "--detach", a.Commit], p.Dir));
+        if (!a.PackagesOnly)
+        {
+            if (!Directory.Exists(Path.Combine(p.Repo, ".git"))) s.Add(new("Quellcode von GitHub holen", p.Git, ["clone", "--quiet", a.RepoUrl, p.Repo], p.Dir));
+            s.Add(new("Fest gewählten Stand auswählen", p.Git, ["-C", p.Repo, "checkout", "--quiet", "--detach", a.Commit], p.Dir));
+        }
         s.Add(new($"Python {a.Python} einrichten", p.Uv, ["python", "install", "--no-bin", a.Python], p.Dir));
         s.Add(new("Eigene Umgebung anlegen", p.Uv, ["venv", "--quiet", "--clear", "--python", a.Python, p.Env], p.Dir));
-        s.Add(new("PyTorch laden (offizieller Server, groß)", p.Uv, ["pip", "install", "--quiet", "--python", p.Env, .. a.Torch, "--index-url", TorchIndex(nvidia)], p.Dir));
+        if (a.Torch.Length > 0) s.Add(new("PyTorch laden (offizieller Server, groß)", p.Uv, ["pip", "install", "--quiet", "--python", p.Env, .. a.Torch, "--index-url", TorchIndex(nvidia)], p.Dir));
         var pk = new List<string> { "pip", "install", "--quiet", "--python", p.Env };
         if (a.InstallRepo) { pk.Add("--editable"); pk.Add(p.Repo); }
         pk.AddRange(a.Packages);
