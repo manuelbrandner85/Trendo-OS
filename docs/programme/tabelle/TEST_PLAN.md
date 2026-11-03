@@ -1,8 +1,8 @@
 # Trendo Tabelle – Testplan
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.36 (Stand c568975)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.36 (Stand 101332d)
 
-46 Tests sprechen dieses Programm an.
+48 Tests sprechen dieses Programm an.
 
 - Annehmen/Verwerfen im Programm: Claude ändert das Studio-Dokument – Vorher/Nachher vergleichen, verwerfen stellt alles her, behalten übernimmt
 - Befehlsleiste Strg+K und Projekt-Fortsetzung überall: Claude fragen, weitermachen – auch aus einem anderen Studio
@@ -47,6 +47,8 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabell
 - T-0228 Menüband: Σ-Summe, Fett, Euro, Sortieren, Ausfüllen (Mo, Di …), Kopieren/Einfügen mit angepasster Formel, Blätter
 - T-0228: Speichern als XLSX und wieder öffnen; erscheint unter „Zuletzt geöffnet“
 - T-0254: Text und Tabelle – ungespeichert gesichert, nach Neustart „Wiederherstellen“; „Verwerfen“ löscht; Speichern räumt die Sicherung weg
+- Tabelle F3: Autofilter – Knopf unter „Daten“, rechts je Spalte Werte mit Anzahl, Haken weg blendet Zeilen aus, „Alle“ und „Autofilter aus“
+- Tabelle F3: Pivot – „⊞ Pivot“ öffnet den Bauer rechts mit Vorschlag (Kategorie/Betrag), erstellt ein neues Blatt mit Formeln, das mitrechnet
 - Wiederholungen automatisieren: Auftrag als Ablauf merken (Prompt-Bibliothek), mit einem Klick wiederholen; Wiederholung wird erkannt
 - X-11 F1/F2/U1/U2: Vorhaben mit Ring, Kanban verschieben, Zeitplan mit Meilenstein, Dateien des Vorhabens
 - Ziehen in Claude: Text kommt als Zitat ins Eingabefeld, Dateien werden angehängt

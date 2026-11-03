@@ -1,6 +1,6 @@
 # Trendo Text – Architektur
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand c568975)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand 101332d)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys10.cs`
@@ -15,11 +15,11 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` 
 - `MarkKind`
 - `ListKind`
 - `Ooxml`
+- `TextTools`
 - `Align`
 - `Spelling`
 - `Writing`
 - `DocVersions`
-- `TextFiles`
 
 ## Dateiformate (im Code belegt)
 - .csv
@@ -40,6 +40,7 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` 
 - LibreOffice (optional)
 - qpdf
 - Tesseract OCR
+- PDFsharp (MIT)
 - Hunspell-Wörterbücher
 
 ## Bausteine (Masterprompt 131 / 5)

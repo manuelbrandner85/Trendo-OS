@@ -1,6 +1,6 @@
 # Online-Dienste – Funktionsmatrix
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.36 (Stand c568975)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.36 (Stand 101332d)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

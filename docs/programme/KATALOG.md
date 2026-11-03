@@ -17,10 +17,10 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Werkzeuge: Notizen, Rechner, Wecker | Kleine Helfer & Musik (SYS-02) | Arbeiten & Büro | keine eigene erkannt | 25 | 31 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](werkzeuge/README.md) |
 | Vorhaben | Neues Projekt starten (X-11) | Arbeiten & Büro | keine eigene erkannt | – | 8 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](vorhaben/README.md) |
 | Start | Texte & Tabellen (SYS-10) | Arbeiten & Büro | keine eigene erkannt | 25 | 25 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](doku-start/README.md) |
-| Trendo PDF | Texte & Tabellen (SYS-10) | Arbeiten & Büro | keine eigene erkannt | 25 | 28 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](pdf/README.md) |
+| Trendo PDF | Texte & Tabellen (SYS-10) | Arbeiten & Büro | keine eigene erkannt | 25 | 30 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](pdf/README.md) |
 | Trendo Präsentation | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Folienansicht | 25 | 27 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](praesentation/README.md) |
-| Trendo Tabelle | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Tabellenraster | 25 | 46 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](tabelle/README.md) |
-| Trendo Text | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Dokumentseite (Textverarbeitung) | 25 | 45 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](text/README.md) |
+| Trendo Tabelle | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Tabellenraster | 25 | 48 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](tabelle/README.md) |
+| Trendo Text | Texte & Tabellen (SYS-10) | Arbeiten & Büro | Dokumentseite (Textverarbeitung) | 25 | 47 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](text/README.md) |
 | Geld | Geld & Rechnungen (SPEC-11) | Business & Geld | Diagramm | – | 12 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](finanzen/README.md) |
 | Verkaufen | Online verkaufen (STUDIO-ONLINE-BUSINESS-01) | Business & Geld | Kasse mit Warenkorb | – | 4 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](verkaufen/README.md) |
 | Freie Bilder & Klänge | Freie Bilder & Klänge finden (X-07) | Kreativ & Medien | keine eigene erkannt | – | 6 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](assets/README.md) |

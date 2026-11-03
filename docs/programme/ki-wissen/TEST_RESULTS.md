@@ -1,6 +1,6 @@
 # Wissen für die KI – Testergebnisse
 
-Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand c568975)
+Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand 101332d)
 
 Lauf: `api.trx, app.trx, core.trx`
 

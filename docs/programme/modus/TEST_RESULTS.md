@@ -1,6 +1,6 @@
 # Betriebsmodus – Testergebnisse
 
-Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.36 (Stand c568975)
+Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.36 (Stand 101332d)
 
 Lauf: `api.trx, app.trx, core.trx`
 

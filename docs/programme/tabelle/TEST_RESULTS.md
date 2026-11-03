@@ -1,10 +1,10 @@
 # Trendo Tabelle – Testergebnisse
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.36 (Stand c568975)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.36 (Stand 101332d)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 44 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
+Bestanden 46 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -51,6 +51,8 @@ Bestanden 44 · Fehlgeschlagen 0 · Übersprungen 2 · nicht im Lauf 0
 | T-0228 Menüband: Σ-Summe, Fett, Euro, Sortieren, Ausfüllen (Mo, Di …), Kopieren/Einfügen mit angepasster Formel, Blätter | ✓ bestanden |
 | T-0228: Speichern als XLSX und wieder öffnen; erscheint unter „Zuletzt geöffnet“ | ✓ bestanden |
 | T-0254: Text und Tabelle – ungespeichert gesichert, nach Neustart „Wiederherstellen“; „Verwerfen“ löscht; Speichern räumt die Sicherung weg | ✓ bestanden |
+| Tabelle F3: Autofilter – Knopf unter „Daten“, rechts je Spalte Werte mit Anzahl, Haken weg blendet Zeilen aus, „Alle“ und „Autofilter aus“ | ✓ bestanden |
+| Tabelle F3: Pivot – „⊞ Pivot“ öffnet den Bauer rechts mit Vorschlag (Kategorie/Betrag), erstellt ein neues Blatt mit Formeln, das mitrechnet | ✓ bestanden |
 | Wiederholungen automatisieren: Auftrag als Ablauf merken (Prompt-Bibliothek), mit einem Klick wiederholen; Wiederholung wird erkannt | ✓ bestanden |
 | X-11 F1/F2/U1/U2: Vorhaben mit Ring, Kanban verschieben, Zeitplan mit Meilenstein, Dateien des Vorhabens | ✓ bestanden |
 | Ziehen in Claude: Text kommt als Zitat ins Eingabefeld, Dateien werden angehängt | ✓ bestanden |

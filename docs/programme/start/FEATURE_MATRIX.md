@@ -1,6 +1,6 @@
 # Startbildschirm – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand c568975)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand 101332d)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

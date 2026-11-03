@@ -21,9 +21,9 @@ Stand: **da** = vorhanden und getestet · **neu** = mit dem Piloten 0.9.47 gebau
 | Start | Groß-/Kleinschreibung | da | T-0223 T3 |
 | Start | Schriftfarbe | **neu** | Pilot Text: Schrift, Farbe, Hervorhebung setzen … |
 | Start | Texthervorhebung (Marker) | **neu** | Pilot Text UI |
-| Start | Formatierung löschen | fehlt | – |
+| Start | Formatierung löschen | **neu** (F3, 0.9.56) | Text F3: „Formatierung löschen“ |
 | Start | Aufzählung, Nummerierung | da | T-0223 T1–T4 UI |
-| Start | Mehrstufige Liste | fehlt | – |
+| Start | Mehrstufige Liste (Tab/Umschalt+Tab, 1. a) i. / • ◦ ▪) | **neu** (F3, 0.9.56) | Text F3: Listen-Nummern, DOCX/ODT-Rundweg |
 | Start | Einzug vergrößern/verkleinern | da | T-0230 W3/W4 |
 | Start | Erstzeileneinzug, hängender Einzug | **neu** | Pilot Text: DOCX-/ODT-Rundweg |
 | Start | Ausrichtung links/zentriert/rechts/Blocksatz | da | T-0223 T1–T4 UI |
@@ -57,7 +57,7 @@ Stand: **da** = vorhanden und getestet · **neu** = mit dem Piloten 0.9.47 gebau
 
 1. Markieren über mehrere Absätze (Editor auf ein durchgehendes Textfeld je Seite umstellen) – Voraussetzung für Kopieren/Formatieren ganzer Passagen.
 2. Seitenansicht mit echten Seitenumbrüchen und Lineal.
-3. Formatierung löschen, mehrstufige Listen, eigene Formatvorlagen.
+3. Eigene Formatvorlagen (Formatierung löschen und mehrstufige Listen sind seit 0.9.56 da).
 4. Formen, Textfeld, Formel; Literaturverzeichnis.
 
 ## Leistung

@@ -1,6 +1,6 @@
 # Messdaten & Auswertung – Testergebnisse
 
-Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.36 (Stand c568975)
+Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.36 (Stand 101332d)
 
 Lauf: `api.trx, app.trx, core.trx`
 

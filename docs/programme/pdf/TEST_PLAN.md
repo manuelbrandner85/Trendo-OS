@@ -1,10 +1,12 @@
 # Trendo PDF – Testplan
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.36 (Stand c568975)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.36 (Stand 101332d)
 
-28 Tests sprechen dieses Programm an.
+30 Tests sprechen dieses Programm an.
 
 - Klick-Audit 01.11.2026: „PDF öffnen …“ mit einer Datei, die keine PDF ist – Hinweis statt Absturz
+- PDF F3: Texterkennung – ohne Tesseract ehrlicher Hinweis; mit Tesseract wird ein Bild-Scan zur durchsuchbaren PDF und die Seite als Text erkannt
+- PDF F3: Unterschrift im Zeichenfeld zeichnen, dann auf die Seite klicken – fest als Bild in einer Kopie „(Trendo)“, Original unverändert
 - SYS-02/SYS-10: Dateiregal filtert nach Art, neueste zuerst, ohne Office-Sperrdateien
 - SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen
 - SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt
