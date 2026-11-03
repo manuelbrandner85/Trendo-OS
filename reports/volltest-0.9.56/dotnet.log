@@ -1,0 +1,52 @@
+  Wiederherzustellende Projekte werden ermittelt...
+  Alle Projekte sind f├╝r die Wiederherstellung auf dem neuesten Stand.
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.Core\W2\ClaudeChats.cs(166,140): warning CS8602: Dereferenzierung eines m├Âglichen Nullverweises. [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.Core\Trendo.Core.csproj]
+  Trendo.Core -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.Core\bin\Release\net10.0\Trendo.Core.dll
+  Trendo.Companion -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.Companion\bin\Release\net10.0\trendo-companion.dll
+  Trendo.Api -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.Api\bin\Release\net10.0\Trendo.Api.dll
+  Trendo.Core.Tests -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll
+Testlauf f├╝r "C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Core.Tests\bin\Release\net10.0\Trendo.Core.Tests.dll" (.NETCoreApp,Version=v10.0)
+  Trendo.App -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\src\Trendo.App\bin\Release\net10.0\TrendoOS.dll
+  Trendo.Api.Tests -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll
+Testlauf f├╝r "C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.Api.Tests\bin\Release\net10.0\Trendo.Api.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster ├╝berein.
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster ├╝berein.
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\ScrollKeepUiTests.cs(16,25): warning CS0028: "ScrollKeep_Ui.Main(MainWindow)" hat die falsche Signatur, um ein Einstiegspunkt zu sein. [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\RoundSixUiTests.cs(95,77): warning CS8604: M├Âgliches Nullverweisargument f├╝r den Parameter "collection" in "string Assert.Single<string>(IEnumerable<string> collection)". [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\AddressBookUiTests.cs(34,28): warning xUnit2013: Do not use Assert.Equal() to check for collection size. Use Assert.Single instead. (https://xunit.net/xunit.analyzers/rules/xUnit2013) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\DiskMapUiTests.cs(26,24): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\LevelEditorUiTests.cs(66,9): warning xUnit2029: Do not use Assert.Empty to check if a value does not exist in a collection. Use Assert.DoesNotContain instead. (https://xunit.net/xunit.analyzers/rules/xUnit2029) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\NotizWikiUiTests.cs(45,47): warning xUnit2031: Do not use a Where clause to filter before calling Assert.Single. Use the overload of Assert.Single that accepts a filtering function. (https://xunit.net/xunit.analyzers/rules/xUnit2031) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\MpvAudioTests.cs(29,57): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\MpvAudioTests.cs(31,33): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\MpvAudioTests.cs(31,72): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\MpvAudioTests.cs(33,59): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\NetlifyLinkTests.cs(38,71): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\NetlifyLinkTests.cs(42,29): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\NetlifyLinkTests.cs(50,19): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\NetlifyLinkTests.cs(52,79): warning xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive. (https://xunit.net/xunit.analyzers/rules/xUnit1051) [C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\Trendo.App.Tests.csproj]
+  Trendo.App.Tests -> C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll
+Testlauf f├╝r "C:\Users\<user>\Desktop\Trend Os-worktrees\integration\tests\Trendo.App.Tests\bin\Release\net10.0\Trendo.App.Tests.dll" (.NETCoreApp,Version=v10.0)
+Insgesamt 1 Testdateien stimmten mit dem angegebenen Muster ├╝berein.
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-trx\voll\<user>_<pc>_2026-11-03_13_06_53_net10.0.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:    15, ├╝bersprungen:     0, gesamt:    15, Dauer: 2 s - Trendo.Api.Tests.dll (net10.0)
+[xUnit.net 00:00:18.94]     X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku [SKIP]
+  ├£bersprungen X-08: BlueZ sucht ohne zu koppeln, koppelt nur nach Zustimmung, OBEX und Akku [1 ms]
+[xUnit.net 00:00:21.75]     SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt [SKIP]
+[xUnit.net 00:00:21.75]     SYS-10-P08 (T-0244 getrennt): Scan ÔåÆ durchsuchbares PDF mit Tesseract [SKIP]
+  ├£bersprungen SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt [1 ms]
+  ├£bersprungen SYS-10-P08 (T-0244 getrennt): Scan ÔåÆ durchsuchbares PDF mit Tesseract [1 ms]
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-trx\voll\<user>_<pc>_2026-11-03_13_06_52_net10.0.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:  1159, ├╝bersprungen:     3, gesamt:  1162, Dauer: 51 s - Trendo.Core.Tests.dll (net10.0)
+[xUnit.net 00:04:01.68]     Musik-KI live: Paket pr├╝fen, entpacken, Server starten, 30 s Lied erzeugen [SKIP]
+  ├£bersprungen Musik-KI live: Paket pr├╝fen, entpacken, Server starten, 30 s Lied erzeugen [1 ms]
+[xUnit.net 00:04:16.77]     SYS-03-P14: Seite als PDF ÔÇô A4, Pr├╝fsumme im Protokoll (nur wenn Chrome/Edge da) [SKIP]
+  ├£bersprungen SYS-03-P14: Seite als PDF ÔÇô A4, Pr├╝fsumme im Protokoll (nur wenn Chrome/Edge da) [1 ms]
+[xUnit.net 00:12:07.32]     T-0202: Kein Klick auf irgendeiner Seite st├╝rzt ab (Klick-Audit, Bericht der stummen Kn├Âpfe) [SKIP]
+  ├£bersprungen T-0202: Kein Klick auf irgendeiner Seite st├╝rzt ab (Klick-Audit, Bericht der stummen Kn├Âpfe) [1 ms]
+Ergebnisdatei: C:\Users\<user>\AppData\Local\Temp\trendo-trx\voll\<user>_<pc>_2026-11-03_13_06_55_net10.0.trx
+
+Bestanden!   : Fehler:     0, erfolgreich:   638, ├╝bersprungen:     3, gesamt:   641, Dauer: 21 m 38 s - Trendo.App.Tests.dll (net10.0)
+EXIT dotnet=0
