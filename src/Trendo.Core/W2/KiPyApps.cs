@@ -24,6 +24,8 @@ public static class KiPyApps
             ["soundfile"], true, "trendo_mmaudio.py"),
         // Trendo Musik M5: kein Quellcode von GitHub, nur das PyPI-Paket librosa auf fester Fassung (Merker = Fassung)
         new(KiRuntime.MusikAnalyse, "", "librosa-0.11.0", "3.12", [], ["librosa==0.11.0", "soundfile"], false, "trendo_analyse.py"),
+        // Spuren trennen: Demucs 4.0.1 von PyPI (MIT) mit PyTorch; Laden/Speichern über soundfile, darum ohne ffmpeg (geprüft 03.11.2026)
+        new(KiRuntime.Spuren, "", "demucs-4.0.1", "3.12", ["torch", "torchaudio"], ["demucs==4.0.1", "soundfile"], false, "trendo_spuren.py"),
     ];
 
     public static KiPyApp? For(KiRuntime r) => All.FirstOrDefault(a => a.Id == r);

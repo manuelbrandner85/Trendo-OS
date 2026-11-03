@@ -7,7 +7,7 @@ namespace Trendo.App;
 
 /// <summary>Trendo Musik M10 (freigegeben 03.11.2026): Lied verlängern mit dem Grundmodell von ACE-Step. Am 03.11.2026 auf der RTX 5070 echt geprüft:
 /// 30 → 60 s in 9 s, der Anfang bleibt unverändert (Ähnlichkeit 1,0), der neue Teil schließt an. Spuren trennen und „Begleitung dazu“ lieferten dabei
-/// nachgemessen keine getrennten Spuren – darum nicht eingebaut. Turbo- und Grundmodell passen nicht zugleich in 12 GB: Trendo lädt jeweils eins.</summary>
+/// nachgemessen keine getrennten Spuren – Spuren trennt Trendo darum mit Demucs (MainWindow.MusikSpuren.cs). Turbo- und Grundmodell passen nicht zugleich in 12 GB: Trendo lädt jeweils eins.</summary>
 public partial class MainWindow
 {
     /// <summary>Tests: Grundmodell gilt als vorhanden.</summary>
@@ -51,7 +51,7 @@ public partial class MainWindow
         sp.Children.Add(H("Verlängern", 13));
         if (!AceBaseReady)
         {
-            sp.Children.Add(P("Braucht das Grundmodell von ACE-Step (einmalig ca. 4,5 GB). Spuren trennen bietet Trendo nicht an – nachgemessen lieferte ACE-Step dabei keine sauber getrennten Spuren.", Muted, 11));
+            sp.Children.Add(P("Braucht das Grundmodell von ACE-Step (einmalig ca. 4,5 GB).", Muted, 11));
             sp.Children.Add(Act("ms-extend-setup", "Grundmodell laden", () => _ = MsLoadBaseModel()));
             return sp;
         }

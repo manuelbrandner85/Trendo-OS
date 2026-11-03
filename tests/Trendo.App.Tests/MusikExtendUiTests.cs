@@ -59,7 +59,7 @@ public class MusikExtendUiTests
         finally { w.Close(); }
     }
 
-    [AvaloniaFact(DisplayName = "M10 ohne Grundmodell: ehrlicher Hinweis (Spuren trennen nicht angeboten) und „Grundmodell laden“ über das Download-Werkzeug von ACE-Step")]
+    [AvaloniaFact(DisplayName = "M10 ohne Grundmodell: Hinweis auf das Grundmodell und „Grundmodell laden“ über das Download-Werkzeug von ACE-Step")]
     public async Task Base_model_setup()
     {
         var (w, _, root) = Ui.Open();
@@ -70,7 +70,7 @@ public class MusikExtendUiTests
         {
             var s = Song(root); w.MusicStudioSelect(s.Id); w.Show("musik-studio"); await Pump();
             Assert.DoesNotContain(Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(w).OfType<Button>(), b => b.Name == "ms-extend");
-            Assert.Contains("Spuren trennen bietet Trendo nicht an", string.Join("|", w.GetLogicalTexts()));
+            Assert.Contains("Grundmodell von ACE-Step", string.Join("|", w.GetLogicalTexts()));
             w.Find<Button>("ms-extend-setup").Press();
             for (var i = 0; i < 50 && calls.Count == 0; i++) await Pump();
             Assert.Contains("download_submodel('acestep-v15-base'", calls.Single());

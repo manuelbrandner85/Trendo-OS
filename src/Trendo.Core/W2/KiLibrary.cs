@@ -4,7 +4,7 @@ namespace Trendo.Core;
 public enum KiKind { Chat, Denken, Code, BildVerstehen, Uebersetzen, Wissen, BildErzeugen, BildVerbessern, Video, SpracheZuText, TextZuSprache, Musik, Modell3D, Geraeusche }
 
 /// <summary>Womit Trendo ein Modell ausführt. Jede Laufzeit ist ein freies Programm, das Trendo selbst in „TrendoWerkzeuge“ einrichtet.</summary>
-public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse }
+public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse, Spuren }
 
 /// <summary>Eine Laufzeit: offizielles GitHub-Projekt mit fest gewählter Veröffentlichung (Tag, Datei, SHA-256, Größe), Hauptprogramm im ZIP.
 /// Ollama und Python kommen aus dem Vollpaket (<see cref="Tag"/> leer).</summary>
@@ -77,6 +77,9 @@ public static class KiLibrary
         // Trendo Musik M5: Song-Analyse mit librosa (nur ein PyPI-Paket, kein GitHub-Quellcode)
         new(KiRuntime.MusikAnalyse, "Song-Analyse (librosa)", "librosa/librosa", "ISC", "Erkennt Tonart, Tempo, Takt, Akkorde und Tonumfang eines Lieds – lokal.",
             "librosa-0.11.0", "", "", 0, "env/Scripts/python.exe"),
+        // Trendo Musik (03.11.2026): Spuren trennen mit Demucs (Meta, MIT) – PyPI-Paket auf fester Fassung, Modell htdemucs (80 MB)
+        new(KiRuntime.Spuren, "Spuren trennen (Demucs)", "facebookresearch/demucs", "MIT", "Trennt ein Lied in Gesang, Schlagzeug, Bass und Rest – lokal.",
+            "demucs-4.0.1", "", "", 0, "env/Scripts/python.exe"),
     ];
 
     const string Hf = "https://huggingface.co/";
@@ -160,6 +163,10 @@ public static class KiLibrary
         new("musik-analyse", KiKind.Musik, KiRuntime.MusikAnalyse, "Song-Analyse (Tonart, Tempo, Akkorde, Tonumfang)", "", 0.3, 4, "ISC",
             "jedes Lied untersuchen: Tonart, BPM, Takt, Akkordfolge, höchster und tiefster Ton",
             "In Trendo Musik bei einem Lied „Analysieren“ – oder eine eigene Audiodatei wählen. Takt und Akkorde sind Schätzungen aus dem Klang; der Tonumfang ist der der Gesangsmelodie.", []),
+        // Trendo Musik (03.11.2026, echt geprüft auf der RTX 5070: 3:26 Minuten in 24 s, Spuren ergeben zusammen wieder das Original)
+        new("musik-spuren", KiKind.Musik, KiRuntime.Spuren, "Spuren trennen (Gesang, Schlagzeug, Bass, Rest)", "", 3.0, 8, "MIT",
+            "Begleitung ohne Gesang (Karaoke), Gesang allein, einzelne Instrumente zum Üben oder Remixen",
+            "In Trendo Musik bei einem Lied „Spuren trennen“. Beim ersten Mal lädt Demucs sein Modell (80 MB). Mit NVIDIA-Grafikkarte in Sekunden, sonst einige Minuten. Fremde Lieder nur privat nutzen.", []),
     ];
 
     public static IEnumerable<KiLibraryModel> OfKind(KiKind k) => Models.Where(m => m.Kind == k);

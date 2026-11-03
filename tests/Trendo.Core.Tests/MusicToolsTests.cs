@@ -52,6 +52,17 @@ public class MusicToolsTests
         Assert.Contains(KiLibrary.OfKind(KiKind.Musik), m => m.Id == "musik-analyse" && m.Runtime == KiRuntime.MusikAnalyse);
     }
 
+    [Fact(DisplayName = "Spuren trennen: Demucs 4.0.1 von PyPI mit PyTorch (CUDA 12.8 bei NVIDIA), kein Git; als Musik-Werkzeug (MIT) in der KI-Bibliothek")]
+    public void Stems_setup()
+    {
+        var app = KiPyApps.For(KiRuntime.Spuren)!;
+        Assert.True(app.PackagesOnly); Assert.Contains("demucs==4.0.1", app.Packages); Assert.Equal("trendo_spuren.py", app.Script);
+        var steps = KiPyApps.Steps(app, new KiPyApps.Paths("uv.exe", "git.exe", "d", "uvhome"), nvidia: true);
+        Assert.DoesNotContain(steps, s => s.Exe == "git.exe");
+        Assert.Contains(steps, s => s.Text.Contains("PyTorch") && s.Args.Contains("https://download.pytorch.org/whl/cu128"));
+        Assert.Contains(KiLibrary.OfKind(KiKind.Musik), m => m.Id == "musik-spuren" && m.Runtime == KiRuntime.Spuren && m.License == "MIT");
+    }
+
     [Fact(DisplayName = "M5/M7: Analyse-Ergebnis lesen (Tonart deutsch, Takt-Wert); MusicBrainz-Treffer und AcousticBrainz-Messung (Kreuz-Tonarten wie bei ACE-Step) lesen, kaputte Antworten = nichts")]
     public void Analysis_and_facts()
     {

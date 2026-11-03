@@ -304,7 +304,7 @@ public partial class MainWindow
             var info = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = {
                 new TextBlock { Text = s.Title, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
                 new TextBlock { Text = s.Style, Foreground = Muted, FontSize = 11.5, TextTrimming = TextTrimming.CharacterEllipsis },
-                new TextBlock { Text = $"{SongTime(s.Seconds)} · {AceStepClient.Languages.FirstOrDefault(x => x.Code == s.Language).Name ?? s.Language}{(s.Kind == "neu" ? "" : s.Kind == "cover" ? " · Cover" : " · neuer Abschnitt")} · {s.Created:dd.MM. HH:mm}", Foreground = Muted, FontSize = 11 } } };
+                new TextBlock { Text = $"{SongTime(s.Seconds)} · {AceStepClient.Languages.FirstOrDefault(x => x.Code == s.Language).Name ?? s.Language}{SongKindLabel(s.Kind)} · {s.Created:dd.MM. HH:mm}", Foreground = Muted, FontSize = 11 } } };
             var row = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), ColumnSpacing = 10, Children = { MsCover(s, 52), Pos(play, 1), Pos(info, 2), Pos(star, 3) } };
             play.VerticalAlignment = VerticalAlignment.Center; star.VerticalAlignment = VerticalAlignment.Center;
             var item = new Button { Name = $"ms-song-{n}", Content = row, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8),
@@ -353,6 +353,7 @@ public partial class MainWindow
             repaint } });
 
         sp.Children.Add(MsExtendPanel(s)); // M10: Verlängern mit dem Grundmodell
+        sp.Children.Add(MsStemsPanel(s)); // Spuren trennen mit Demucs
 
         // Cover in anderem Stil
         var coverStyle = new TextBox { Name = "ms-cover-style", Watermark = "Neuer Stil, z. B. ruhige Jazz-Ballade mit Klavier" };
