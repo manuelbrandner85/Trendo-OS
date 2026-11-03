@@ -1,6 +1,6 @@
 # Software – Testplan
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 101332d)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 862c4f1)
 
 51 Tests sprechen dieses Programm an.
 

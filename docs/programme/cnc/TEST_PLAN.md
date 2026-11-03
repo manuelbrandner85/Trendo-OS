@@ -1,6 +1,6 @@
 # CNC-Werkstatt – Testplan
 
-Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.36 (Stand 101332d)
+Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.36 (Stand 862c4f1)
 
 11 Tests sprechen dieses Programm an.
 

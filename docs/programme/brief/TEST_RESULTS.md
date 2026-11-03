@@ -1,10 +1,10 @@
 # Briefe schreiben – Testergebnisse
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 101332d)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 862c4f1)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 21 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 25 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -20,6 +20,10 @@ Bestanden 21 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | Briefe F3: Falz- und Lochmarken – Haken aus nimmt sie aus Vorschau und Brief, Haken an bringt sie zurück | ✓ bestanden |
 | Briefe F3: Rechtschreibung beim Tippen – unbekanntes Wort rot in der Vorschau, Klick auf den Vorschlag ersetzt es, „+“ merkt ein Wort; ohne Wörterbuch ehrlicher Hinweis | ✓ bestanden |
 | Briefe F3: Unterschrift mit der Maus zeichnen → PNG unter dem Gruß (Vorschau und DOCX), Feld leeren, gemerkt für neue Briefe | ✓ bestanden |
+| Briefe-Designs wie Canva: Galerie mit Vorschaubildern (8, „Alle“ zeigt 20), große Farbpalette, zweite Farbe, neue Kopf-Layouts in Vorschau und PDF | ✓ bestanden |
+| Briefe: „Als PDF“ ohne LibreOffice (Trendo setzt das PDF selbst), fehlender Punkt wird genannt und angesprungen | ✓ bestanden |
+| Briefe: „Exportieren“ fragt nach Ort und Format – PDF oder Word landen genau dort | ✓ bestanden |
+| Briefe: „Senden“ – E-Mail-Entwurf mit dem Brief als PDF-Anhang öffnet sich im Mailprogramm (abschicken tut man selbst) oder Drucken | ✓ bestanden |
 | Briefseite zeigt den echten Brieftext in der Vorschau | ✓ bestanden |
 | Briefseite zeigt die Auftragsleiste und meldet ehrlich, wenn nichts eingebaut ist | ✓ bestanden |
 | Briefvorschau: kein Trendo-Logo und kein „Trendo OS“ auf dem Blatt | ✓ bestanden |

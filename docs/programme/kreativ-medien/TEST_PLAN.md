@@ -1,6 +1,6 @@
 # Medien bearbeiten – Testplan
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand 101332d)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand 862c4f1)
 
 11 Tests sprechen dieses Programm an.
 

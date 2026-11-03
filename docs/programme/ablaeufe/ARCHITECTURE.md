@@ -1,6 +1,6 @@
 # Abläufe (Automatisch erledigen) – Architektur
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand 101332d)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand 862c4f1)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

@@ -1,6 +1,6 @@
 # Baukasten – Architektur
 
-Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand 101332d)
+Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand 862c4f1)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W4Builder.cs`

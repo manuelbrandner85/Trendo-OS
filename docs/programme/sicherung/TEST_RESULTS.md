@@ -1,6 +1,6 @@
 # Sicherung – Testergebnisse
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.36 (Stand 101332d)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.36 (Stand 862c4f1)
 
 Lauf: `api.trx, app.trx, core.trx`
 

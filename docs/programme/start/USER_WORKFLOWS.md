@@ -1,6 +1,6 @@
 # Startbildschirm – Arbeitsabläufe
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand 101332d)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand 862c4f1)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 

@@ -1,6 +1,6 @@
 # Geräte & Laufwerke – Lizenzen
 
-Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 101332d)
+Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 862c4f1)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

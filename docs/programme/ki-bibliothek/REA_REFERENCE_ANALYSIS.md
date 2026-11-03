@@ -1,5 +1,5 @@
 # KI-Bibliothek – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.36 (Stand 101332d)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.36 (Stand 862c4f1)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

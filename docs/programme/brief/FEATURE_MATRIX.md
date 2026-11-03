@@ -1,6 +1,6 @@
 # Briefe schreiben – Funktionsmatrix
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 101332d)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 862c4f1)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -39,17 +39,15 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Vorlagen ausblenden
 - Weiter →
 - ← Zurück
+- 🎨 Design wählen (20 Vorlagen)
 - ✍ Gezeichnete Unterschrift übernehmen
 - Feld leeren
 - Bild übernehmen
 - Ohne Unterschrift
 - Brief prüfen
 - Text von der KI verbessern lassen
-- Klassisch (DIN 5008)
-- Modern
-- Elegant
-- Kreativ
-- Minimal
+- 3. November 2026
+- Alle 20 Vorlagen zeigen …
 - Fertig – Brief speichern
 - Einsetzen
 - Jetzt Form B – zu Form A wechseln
