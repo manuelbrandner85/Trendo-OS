@@ -1,6 +1,6 @@
 # E-Mail & Kontakte – Einbindung in Trendo OS
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.36 (Stand 3c05eb0)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.36 (Stand a5ae41e)
 
 - Seite `post` im Studio „E-Mails & Termine“ (Arbeiten & Büro) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

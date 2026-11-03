@@ -1,6 +1,6 @@
 # Hinzufügen – Einbindung in Trendo OS
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `hinzufuegen` · Stand: 0.9.36 (Stand 3c05eb0)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `hinzufuegen` · Stand: 0.9.36 (Stand a5ae41e)
 
 - Seite `hinzufuegen` im Studio „Programme starten“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

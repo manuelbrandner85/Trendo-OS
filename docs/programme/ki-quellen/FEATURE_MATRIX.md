@@ -1,6 +1,6 @@
 # KI-Quellen – Funktionsmatrix
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand 3c05eb0)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand a5ae41e)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

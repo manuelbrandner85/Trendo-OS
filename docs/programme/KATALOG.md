@@ -91,7 +91,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Leistung | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 13 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](qual-leistung/README.md) |
 | System & Sicherheit | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 26 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](system/README.md) |
 | Systemcheck | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 17 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](systemcheck/README.md) |
-| Einstellungen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | Bildansicht | 25 | 64 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](settings/README.md) |
+| Einstellungen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | Bildansicht | 25 | 65 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](settings/README.md) |
 | Personen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](personen/README.md) |
 | Sehen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](bedien-sehen/README.md) |
 | Trendo-Updates | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](updates/README.md) |

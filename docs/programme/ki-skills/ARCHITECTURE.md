@@ -1,6 +1,6 @@
 # Skills – Architektur
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-skills` · Stand: 0.9.36 (Stand 3c05eb0)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-skills` · Stand: 0.9.36 (Stand a5ae41e)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Skills.cs`

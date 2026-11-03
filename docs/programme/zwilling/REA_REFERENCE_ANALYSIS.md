@@ -1,5 +1,5 @@
 # Geräte überwachen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand 3c05eb0)
+Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand a5ae41e)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

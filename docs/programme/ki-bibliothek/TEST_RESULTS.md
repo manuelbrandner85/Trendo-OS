@@ -1,6 +1,6 @@
 # KI-Bibliothek – Testergebnisse
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.36 (Stand 3c05eb0)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.36 (Stand a5ae41e)
 
 Lauf: `api.trx, app.trx, core.trx`
 

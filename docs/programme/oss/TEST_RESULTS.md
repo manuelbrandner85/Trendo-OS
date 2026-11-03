@@ -1,6 +1,6 @@
 # Open Source – Testergebnisse
 
-Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.36 (Stand 3c05eb0)
+Studio: Projekte von GitHub holen (X-06) · Bereich: Entwickeln · Seite: `oss` · Stand: 0.9.36 (Stand a5ae41e)
 
 Lauf: `api.trx, app.trx, core.trx`
 

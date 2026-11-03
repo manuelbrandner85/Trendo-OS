@@ -1,13 +1,14 @@
 # Einstellungen – Testergebnisse
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 3c05eb0)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand a5ae41e)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 64 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 65 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
+| Absturzschutz: abgefangener Oberflächenfehler zeigt einen Hinweis „Trendo läuft weiter“ – nur einmal bei Folgefehlern, Fenster bleibt bedienbar | ✓ bestanden |
 | Alle Studios: Bereich und Suche filtern die Karten, Alle zeigt wieder alles | ✓ bestanden |
 | Bedienstil: in den Einstellungen wählbar; Mac setzt runde Ampel-Knöpfe links (Schließen zuerst), Linux runde Knöpfe rechts – Knöpfe funktionieren weiter | ✓ bestanden |
 | CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste | ✓ bestanden |

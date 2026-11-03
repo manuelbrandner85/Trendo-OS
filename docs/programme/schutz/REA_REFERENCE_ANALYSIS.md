@@ -1,5 +1,5 @@
 # Schutz & Datenschutz – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 3c05eb0)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand a5ae41e)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

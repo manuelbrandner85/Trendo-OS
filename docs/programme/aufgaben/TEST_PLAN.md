@@ -1,6 +1,6 @@
 # Aufgaben – Testplan
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.36 (Stand 3c05eb0)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.36 (Stand a5ae41e)
 
 11 Tests sprechen dieses Programm an.
 
