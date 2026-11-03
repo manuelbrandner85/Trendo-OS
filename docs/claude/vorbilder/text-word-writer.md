@@ -1,5 +1,6 @@
 # Vorbild-Analyse Trendo Text: Microsoft Word, LibreOffice Writer (Clean-Room)
 
+- Programme: „Trendo Text“
 - Programm: „Trendo Text“ im Studio „Texte & Tabellen“ (SYS-10) · Pilot des Gesamtumbaus 0.9.47 (GODMODE V31–V40, Gate P1)
 - Vorbilder: Microsoft Word (Marktführer), LibreOffice Writer (freie Referenz, MPL), Google Docs (einfache Bedienung)
 - Werkzeug: Funktionsumfang aus der öffentlichen Hilfe und Bedienung der Vorbilder. Kein Code, keine Grafiken, keine Oberfläche übernommen.

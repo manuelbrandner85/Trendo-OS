@@ -1,5 +1,7 @@
 # Trendo CAD – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand a5ae41e)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand a7ce7c1)
 
-Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.
+Analyse: [Vorbild-Analyse Trendo CAD: FreeCAD, Fusion, Onshape (Clean-Room)](../../../docs/claude/vorbilder/cad-freecad-fusion.md)
+
+Kein fremder Code und keine fremden Grafiken übernommen – nur öffentlich beschriebener Funktionsumfang.

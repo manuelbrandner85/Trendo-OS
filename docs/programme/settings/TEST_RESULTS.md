@@ -1,10 +1,10 @@
 # Einstellungen – Testergebnisse
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand a5ae41e)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand a7ce7c1)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 65 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 66 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -32,6 +32,7 @@ Bestanden 65 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | Komponenten: Lizenzliste, Unreal nur geführt (offizieller Link), Zustimmung wird gespeichert | ✓ bestanden |
 | LETTER-UI: Briefkopf → Akte (Behörde) → Fakt, Chronik, Eingang → Frist UNGEPRÜFT → Quelle fehlt → Export gesperrt → beheben → DOCX → Freigabe → Versand BLOCKED | ✓ bestanden |
 | LETTER-UI: Briefstudio hat genau eine Unterebene; Akte/Ausgabe erst mit offener Akte | ✓ bestanden |
+| Profi-Rahmen: Bildbearbeitung mit Werkzeugleiste links (aktives Werkzeug markiert), Werkzeuge nicht mehr im Menüband; Werkzeuge und Eigenschaften ein-/ausklappbar und gemerkt | ✓ bestanden |
 | QA-004 UI: Browser-Aktion abgelehnt → nichts geöffnet | ✓ bestanden |
 | QA-004 UI: Browser-Aktion freigegeben → genau einmal geöffnet | ✓ bestanden |
 | QA-004 UI: Explorer-Aktion → Freigabe-Ansicht; Ausführung erst nach Klick auf Freigeben | ✓ bestanden |

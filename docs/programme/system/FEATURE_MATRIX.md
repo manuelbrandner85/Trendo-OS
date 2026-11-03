@@ -1,6 +1,6 @@
 # System & Sicherheit – Funktionsmatrix
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.36 (Stand a5ae41e)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.36 (Stand a7ce7c1)
 
 Quelle: `docs/spec/kataloge/SYS-13_KATALOG.md`
 

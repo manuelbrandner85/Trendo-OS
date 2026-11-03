@@ -1,5 +1,6 @@
 # Vorbild-Analyse CNC: CAMotics, NC Viewer, bCNC (Clean-Room)
 
+- Programme: „CNC-Werkstatt“
 - Recherche: CAMotics (GPL, Simulation von Fräsprogrammen), NC Viewer (Web-Vorschau von G-Code), bCNC (GRBL-Steuerung mit Editor)
 - Werkzeug: Funktionsumfang aus öffentlicher Doku; kein Download, kein Code übernommen. REA nicht eingesetzt (kein lokal installiertes Vorbild).
 

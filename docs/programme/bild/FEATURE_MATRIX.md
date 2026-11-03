@@ -1,17 +1,10 @@
 # Bildbearbeitung – Funktionsmatrix
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand a5ae41e)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand a7ce7c1)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
-- ✥ Verschieben (Werkzeug)
-- 🖌 Pinsel (Werkzeug)
-- ◌ Radierer (Werkzeug)
-- T Text (Werkzeug)
-- ▭ Rechteck (Werkzeug)
-- ◯ Ellipse (Werkzeug)
-- ⛶ Zuschneiden (Werkzeug)
 - ＋ Mal-Ebene (Ebene)
 - ▲ Nach oben (Ebene)
 - ▼ Nach unten (Ebene)

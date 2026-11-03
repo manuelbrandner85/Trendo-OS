@@ -1,5 +1,6 @@
 # Vorbild-Analyse Anlagen-Monitor: Grafana, Home Assistant, ThingsBoard (Clean-Room)
 
+- Programme: „Geräte überwachen“
 - Recherche: Grafana (Zeitreihen-Dashboards, Schwellwerte), Home Assistant (Geräte/Entitäten, Verlauf), ThingsBoard (IoT-Anlagen, Alarme)
 - Werkzeug: Funktionsumfang aus öffentlicher Doku; kein Download, kein Code übernommen. REA nicht eingesetzt (kein lokal installiertes Vorbild).
 

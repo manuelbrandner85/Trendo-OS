@@ -1,5 +1,6 @@
 # Vorbild-Analyse Modell-Prüfer: glTF-Viewer, Validator, Brillen-Leistungsanzeigen (Clean-Room)
 
+- Programme: „VR & AR gestalten“
 - Recherche: glTF-Viewer (Web-Betrachter mit Statistik), glTF-Validator (Khronos), Leistungsrichtwerte für Standalone-Brillen und Handy-AR
 - Werkzeug: Funktionsumfang aus öffentlicher Doku; kein Download, kein Code übernommen. REA nicht eingesetzt.
 

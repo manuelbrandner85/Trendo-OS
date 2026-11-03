@@ -1,6 +1,6 @@
 # Lernen mit Karteikarten – Testergebnisse
 
-Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.36 (Stand a5ae41e)
+Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.36 (Stand a7ce7c1)
 
 Lauf: `api.trx, app.trx, core.trx`
 

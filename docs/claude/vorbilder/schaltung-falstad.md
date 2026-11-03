@@ -1,5 +1,6 @@
 # Vorbild-Analyse Elektronik: Falstad Circuit Simulator (Clean-Room)
 
+- Programme: „Schaltung & Simulation“
 - Quelle: öffentliche Web-App falstad.com/circuit (CircuitJS1, GPL-2.0, github.com/sharpie7/circuitjs1); weitere Vorbilder aus der Recherche: KiCad (Schaltplan/Platine), LTspice/ngspice (SPICE-Simulation), Qucs-S
 - Werkzeug: Bedienung im eingebauten Browser angesehen (Beispiel „RLC-Schwingkreis“). REA-Webanalyse nicht möglich (braucht CDP-Debug-Browser). Kein Code übernommen.
 - Beobachtet: Leitungsfarbe nach Spannung (grün +, grau 0, rot −), gelbe Punkte zeigen Stromfluss (Tempo nach Stromstärke), Oszilloskop-Streifen unten mit Max-Werten je Bauteil, Simulationszeit und Zeitschritt, Werkzeugleiste mit Bauteilen, Schalter per Klick.

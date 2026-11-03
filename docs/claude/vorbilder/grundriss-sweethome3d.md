@@ -1,5 +1,6 @@
 # Vorbild-Analyse Grundriss: Sweet Home 3D 7.5 (Clean-Room)
 
+- Programme: „Grundriss & Wohnen“
 - Quelle: offizielle JAR `SweetHome3D-7.5.jar` von sourceforge.net/projects/sweethome3d (Download mit Zustimmung von Manuel am 31.10.2026), SHA-256 `1a0f025a0b4d2956098469114fa9e12b994819699c683dfda2d6854d8d829590`, Lizenz GPL-2.0
 - Werkzeug: REA (`open_binary`, `inspect_artifact`, `extract_artifact`), Evidence `ev_e5e09afc…` (Inventar, 4.087 Dateien), `ev_e0eadc58…` (Entpacken); dazu das öffentliche Benutzerhandbuch
 - Übernommen wird **nur Funktionsumfang und Bedienverhalten** (Clean-Room). Kein Code, keine Grafiken, keine Texte. Trendo bleibt eigener Code.

@@ -1,5 +1,7 @@
 # Verkaufen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.36 (Stand a5ae41e)
+Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.36 (Stand a7ce7c1)
 
-Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.
+Analyse: [Vorbild-Analyse Verkaufen: Kassensysteme, Online-Shop-Verwaltung (Clean-Room)](../../../docs/claude/vorbilder/verkaufen-kasse-shop.md)
+
+Kein fremder Code und keine fremden Grafiken übernommen – nur öffentlich beschriebener Funktionsumfang.

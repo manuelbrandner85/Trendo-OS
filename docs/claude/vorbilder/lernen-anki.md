@@ -1,5 +1,6 @@
 # Vorbild-Analyse Lernen: Anki, Quizlet (Clean-Room)
 
+- Programme: „Lernen mit Karteikarten“
 - Recherche: Anki (Open Source, AGPL; Karteikarten mit verteilter Wiederholung), Quizlet (Lernmodi Karten/Schreiben/Test)
 - Werkzeug: Funktionsumfang aus öffentlicher Doku und Bedienung; kein Download, kein Code, keine Assets übernommen. REA nicht eingesetzt (kein lokal installiertes Vorbild).
 - Algorithmus: SM-2 (SuperMemo 2, öffentlich beschrieben) in eigener Umsetzung, mit abgestuften Antworten.

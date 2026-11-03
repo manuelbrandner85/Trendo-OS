@@ -1,5 +1,6 @@
 # Vorbild-Analyse Roboter-Werkstatt: RoboDK, MoveIt (Clean-Room)
 
+- Programme: „Kameras & Roboter steuern“
 - Recherche: RoboDK (Offline-Programmierung, Simulation), MoveIt/RViz (Bewegungsplanung mit Zielmarker)
 - Werkzeug: Funktionsumfang aus öffentlicher Doku; kein Download, kein Code übernommen. REA nicht eingesetzt.
 

@@ -68,6 +68,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/briefe-word-serienbrief.md",
+    "ReaSummary": "Vorbild-Analyse Briefe: Word-Briefvorlagen und Serienbrief, Writer-Seriendruck (Clean-Room)",
     "Ui": [
       "Briefseite nach DIN 5008",
       "Texteditor"
@@ -99,7 +101,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -132,6 +134,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/adressbuch-contacts.md",
+    "ReaSummary": "Vorbild-Analyse Adressbuch: Outlook-Kontakte, Thunderbird-Adressbuch (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "Adressbuch"
@@ -147,7 +151,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -175,6 +179,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/aufgaben-todo-planka.md",
+    "ReaSummary": "Vorbild-Analyse Aufgaben: Microsoft To Do, Todoist, Kanban-Tafeln (Clean-Room)",
     "Ui": [
       "Aufgabentafel"
     ],
@@ -196,7 +202,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -261,6 +267,8 @@
       "VLC (optional)",
       "mpv (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/mail-thunderbird-outlook.md",
+    "ReaSummary": "Vorbild-Analyse E-Mail: Mozilla Thunderbird, Microsoft Outlook (Clean-Room)",
     "Ui": [
       "Texteditor"
     ],
@@ -291,7 +299,7 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -326,6 +334,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/kalender-outlook.md",
+    "ReaSummary": "Vorbild-Analyse Kalender: Thunderbird-Kalender, Outlook, Google Kalender (Clean-Room)",
     "Ui": [
       "Monatskalender"
     ],
@@ -350,7 +360,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -386,6 +396,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/mail-thunderbird-outlook.md",
+    "ReaSummary": "Vorbild-Analyse E-Mail: Mozilla Thunderbird, Microsoft Outlook (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "Posteingang"
@@ -406,7 +418,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -594,6 +606,8 @@
       "VLC (optional)",
       "mpv (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/medien-vlc-foobar.md",
+    "ReaSummary": "Vorbild-Analyse Medien: VLC, foobar2000, Windows Fotos (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "Medien"
@@ -631,7 +645,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -877,7 +891,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -1112,7 +1126,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -1182,7 +1196,7 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -1398,8 +1412,6 @@
       "mpv (optional)",
       "Python (optional)"
     ],
-    "Rea": "docs/claude/vorbilder/text-word-writer.md",
-    "ReaSummary": "Vorbild-Analyse Trendo Text: Microsoft Word, LibreOffice Writer (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "Dokumente",
@@ -1439,7 +1451,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -1631,8 +1643,8 @@
       "mpv (optional)",
       "Python (optional)"
     ],
-    "Rea": "docs/claude/vorbilder/text-word-writer.md",
-    "ReaSummary": "Vorbild-Analyse Trendo Text: Microsoft Word, LibreOffice Writer (Clean-Room)",
+    "Rea": "docs/claude/vorbilder/pdf-acrobat-okular.md",
+    "ReaSummary": "Vorbild-Analyse Trendo PDF: Adobe Acrobat Reader, PDF-XChange, Okular (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "Trendo PDF"
@@ -1672,7 +1684,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -1886,8 +1898,8 @@
       "Tesseract OCR",
       "Hunspell-Wörterbücher"
     ],
-    "Rea": "docs/claude/vorbilder/text-word-writer.md",
-    "ReaSummary": "Vorbild-Analyse Trendo Text: Microsoft Word, LibreOffice Writer (Clean-Room)",
+    "Rea": "docs/claude/vorbilder/praesentation-powerpoint-impress.md",
+    "ReaSummary": "Vorbild-Analyse Trendo Präsentation: Microsoft PowerPoint, LibreOffice Impress (Clean-Room)",
     "Ui": [
       "Folienansicht"
     ],
@@ -1928,7 +1940,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -2139,8 +2151,8 @@
       "Tesseract OCR",
       "Hunspell-Wörterbücher"
     ],
-    "Rea": "docs/claude/vorbilder/text-word-writer.md",
-    "ReaSummary": "Vorbild-Analyse Trendo Text: Microsoft Word, LibreOffice Writer (Clean-Room)",
+    "Rea": "docs/claude/vorbilder/tabelle-excel-calc.md",
+    "ReaSummary": "Vorbild-Analyse Trendo Tabelle: Microsoft Excel, LibreOffice Calc (Clean-Room)",
     "Ui": [
       "Tabellenraster"
     ],
@@ -2200,7 +2212,7 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -2488,7 +2500,7 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -2537,6 +2549,8 @@
       ".zip"
     ],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/geld-gnucash-homebank.md",
+    "ReaSummary": "Vorbild-Analyse Geld: HomeBank, GnuCash, Finanzguru (Clean-Room)",
     "Ui": [
       "Diagramm"
     ],
@@ -2561,7 +2575,7 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -2605,6 +2619,8 @@
       ".zip"
     ],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/verkaufen-kasse-shop.md",
+    "ReaSummary": "Vorbild-Analyse Verkaufen: Kassensysteme, Online-Shop-Verwaltung (Clean-Room)",
     "Ui": [
       "Kasse mit Warenkorb"
     ],
@@ -2622,7 +2638,7 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -2671,7 +2687,7 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -2699,6 +2715,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/ki-vorlagen-promptbibliothek.md",
+    "ReaSummary": "Vorbild-Analyse KI-Anweisungen: Prompt-Bibliotheken (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "KI-Vorlagen"
@@ -2718,7 +2736,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -2771,7 +2789,7 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -2917,6 +2935,8 @@
       "Inkscape (optional)",
       "PDFsharp (MIT)"
     ],
+    "Rea": "docs/claude/vorbilder/mode-seamly2d.md",
+    "ReaSummary": "Vorbild-Analyse Kleidung: Seamly2D, Valentina, CLO 3D (Clean-Room)",
     "Ui": [
       "Menüband",
       "Eigenschaften",
@@ -2951,7 +2971,7 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": true
   },
   {
@@ -3150,6 +3170,8 @@
       "LibreOffice (optional)",
       "OBS Studio (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/sendeablauf-rundown.md",
+    "ReaSummary": "Vorbild-Analyse Sendeablauf: Rundown-Planer, OBS (Clean-Room)",
     "Ui": [
       "Bildansicht",
       "Diagramm/Zeichnung"
@@ -3202,7 +3224,7 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -3229,6 +3251,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/tv-kodi-tivimate.md",
+    "ReaSummary": "Vorbild-Analyse TV & Live: Kodi, TiviMate, Streaming-Apps (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "TV & Live"
@@ -3252,7 +3276,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -3275,13 +3299,6 @@
       "Rect"
     ],
     "Tools": [
-      "✥ Verschieben (Werkzeug)",
-      "\uD83D\uDD8C Pinsel (Werkzeug)",
-      "◌ Radierer (Werkzeug)",
-      "T Text (Werkzeug)",
-      "▭ Rechteck (Werkzeug)",
-      "◯ Ellipse (Werkzeug)",
-      "⛶ Zuschneiden (Werkzeug)",
       "＋ Mal-Ebene (Ebene)",
       "▲ Nach oben (Ebene)",
       "▼ Nach unten (Ebene)",
@@ -3320,6 +3337,8 @@
       "VLC (optional)",
       "mpv (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/bild-gimp-krita-photoshop.md",
+    "ReaSummary": "Vorbild-Analyse Bild: GIMP, Krita, Photoshop (Clean-Room)",
     "Ui": [
       "Bild-Arbeitsfläche (Ebenen)",
       "Menüband",
@@ -3333,7 +3352,8 @@
     "Tests": [
       "CORE-08 (UI): Datei wählen, Ton herausholen – echte Ausgabedatei",
       "CORE-08: Alle Aufgaben laufen mit echtem FFmpeg, Original bleibt, nichts wird überschrieben",
-      "CORE-08: Fehlende Datei gibt verständliche Meldung, Argumente ohne Shell"
+      "CORE-08: Fehlende Datei gibt verständliche Meldung, Argumente ohne Shell",
+      "Profi-Rahmen: Bildbearbeitung mit Werkzeugleiste links (aktives Werkzeug markiert), Werkzeuge nicht mehr im Menüband; Werkzeuge und Eigenschaften ein-/ausklappbar und gemerkt"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Bildbearbeitung.cs",
@@ -3341,7 +3361,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": true
   },
   {
@@ -3416,6 +3436,8 @@
       "VLC (optional)",
       "mpv (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/bild-gimp-krita-photoshop.md",
+    "ReaSummary": "Vorbild-Analyse Bild: GIMP, Krita, Photoshop (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "Medien bearbeiten"
@@ -3439,7 +3461,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -3503,6 +3525,8 @@
       "VLC (optional)",
       "mpv (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/video-kdenlive-resolve.md",
+    "ReaSummary": "Vorbild-Analyse Video: Kdenlive, Shotcut, DaVinci Resolve (Clean-Room)",
     "Ui": [
       "Video-Zeitleiste",
       "Menüband",
@@ -3528,7 +3552,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": true
   },
   {
@@ -3622,6 +3646,8 @@
       "mpv (optional)",
       "Python (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/3d-blender.md",
+    "ReaSummary": "Vorbild-Analyse 3D: Blender, SketchUp, Tinkercad (Clean-Room)",
     "Ui": [
       "CAD-/3D-Zeichenfläche"
     ],
@@ -3655,7 +3681,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -3721,6 +3747,8 @@
       "Python (optional)",
       "Node.js (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/druck-prusaslicer-cura.md",
+    "ReaSummary": "Vorbild-Analyse Trendo 3D-Druck: PrusaSlicer, Cura, Bambu Studio (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "Trendo 3D-Druck"
@@ -3736,7 +3764,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -3828,6 +3856,8 @@
       "mpv (optional)",
       "Python (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/cad-freecad-fusion.md",
+    "ReaSummary": "Vorbild-Analyse Trendo CAD: FreeCAD, Fusion, Onshape (Clean-Room)",
     "Ui": [
       "CAD-/3D-Zeichenfläche"
     ],
@@ -3845,7 +3875,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -4009,6 +4039,8 @@
       ".xyz"
     ],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/scan-meshroom-reality.md",
+    "ReaSummary": "Vorbild-Analyse Aus Fotos: Meshroom, COLMAP, RealityScan (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "Aus Fotos"
@@ -4043,7 +4075,7 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -4253,7 +4285,7 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": true
   },
   {
@@ -4292,6 +4324,8 @@
       "Blender (optional, 3D-Fotos/Render)",
       "Unreal Engine (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/spiele-godot-gdevelop.md",
+    "ReaSummary": "Vorbild-Analyse Spiele: Godot, GDevelop, Unreal Engine (Clean-Room)",
     "Ui": [
       "Menüband",
       "Eigenschaften",
@@ -4313,7 +4347,7 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": true
   },
   {
@@ -4356,6 +4390,8 @@
       "Blender (optional, 3D-Fotos/Render)",
       "Unreal Engine (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/spiele-godot-gdevelop.md",
+    "ReaSummary": "Vorbild-Analyse Spiele: Godot, GDevelop, Unreal Engine (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "Werkstatt"
@@ -4394,7 +4430,7 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -4545,6 +4581,8 @@
       "Blender (optional, 3D-Fotos/Render)",
       "ambientCG (freie Materialien)"
     ],
+    "Rea": "docs/claude/vorbilder/modell-pruefer-gltf.md",
+    "ReaSummary": "Vorbild-Analyse Modell-Prüfer: glTF-Viewer, Validator, Brillen-Leistungsanzeigen (Clean-Room)",
     "Ui": [
       "3D-Ansicht"
     ],
@@ -4574,7 +4612,7 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -4738,6 +4776,8 @@
       "Blender (optional, 3D-Fotos/Render)",
       "PDFsharp (MIT)"
     ],
+    "Rea": "docs/claude/vorbilder/fahrzeugbuch-spritmonitor.md",
+    "ReaSummary": "Vorbild-Analyse Fahrzeugbuch: Spritmonitor, Fuelio, Drivvo (Clean-Room)",
     "Ui": [
       "Diagramm/Zeichnung"
     ],
@@ -4768,7 +4808,7 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -4957,7 +4997,7 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": true
   },
   {
@@ -5128,6 +5168,8 @@
       ".svg"
     ],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/monitor-grafana.md",
+    "ReaSummary": "Vorbild-Analyse Anlagen-Monitor: Grafana, Home Assistant, ThingsBoard (Clean-Room)",
     "Ui": [
       "Diagramm/Zeichnung"
     ],
@@ -5160,7 +5202,7 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -5335,6 +5377,8 @@
       ".csv"
     ],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/roboter-robodk.md",
+    "ReaSummary": "Vorbild-Analyse Roboter-Werkstatt: RoboDK, MoveIt (Clean-Room)",
     "Ui": [
       "Bildansicht",
       "Roboter-Ansicht"
@@ -5375,7 +5419,7 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -5569,7 +5613,7 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": true
   },
   {
@@ -5749,7 +5793,7 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": true
   },
   {
@@ -5929,7 +5973,7 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": true
   },
   {
@@ -6118,7 +6162,7 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": true
   },
   {
@@ -6254,6 +6298,8 @@
       "Blender (optional, 3D-Fotos/Render)",
       "PDFsharp (MIT)"
     ],
+    "Rea": "docs/claude/vorbilder/lernen-anki.md",
+    "ReaSummary": "Vorbild-Analyse Lernen: Anki, Quizlet (Clean-Room)",
     "Ui": [
       "Diagramm/Zeichnung",
       "Lernkarte"
@@ -6283,7 +6329,7 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -6439,6 +6485,8 @@
       "Tesseract OCR",
       "Hunspell-Wörterbücher"
     ],
+    "Rea": "docs/claude/vorbilder/messdaten-origin-scidavis.md",
+    "ReaSummary": "Vorbild-Analyse Messdaten: Origin, SciDAVis, LabPlot (Clean-Room)",
     "Ui": [
       "Diagramm/Zeichnung",
       "Tabellenraster",
@@ -6479,7 +6527,7 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": true
   },
   {
@@ -6503,6 +6551,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/recherche-zotero.md",
+    "ReaSummary": "Vorbild-Analyse Recherche: Zotero, Lesemodus der Browser (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "Recherche im Lesemodus"
@@ -6527,7 +6577,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -6558,6 +6608,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/wissen-obsidian.md",
+    "ReaSummary": "Vorbild-Analyse Wissen: Obsidian, OneNote, Notion (Clean-Room)",
     "Ui": [
       "Texteditor"
     ],
@@ -6584,7 +6636,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -6608,6 +6660,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/ablaeufe-power-automate-n8n.md",
+    "ReaSummary": "Vorbild-Analyse Abläufe: Power Automate, n8n, Kurzbefehle (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "Abläufe (Automatisch erledigen)"
@@ -6634,7 +6688,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -6667,6 +6721,8 @@
       "Blender (optional, 3D-Fotos/Render)",
       "FFmpeg"
     ],
+    "Rea": "docs/claude/vorbilder/produktion-openproject.md",
+    "ReaSummary": "Vorbild-Analyse Großprojekte: OpenProject, Microsoft Project (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "Produktion"
@@ -6686,7 +6742,7 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -6713,6 +6769,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/ki-fragen-claude-app.md",
+    "ReaSummary": "Vorbild-Analyse KI fragen: Claude-App, ChatGPT, LM Studio (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "KI"
@@ -6764,7 +6822,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -6804,6 +6862,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/ki-fragen-claude-app.md",
+    "ReaSummary": "Vorbild-Analyse KI fragen: Claude-App, ChatGPT, LM Studio (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "KI fragen"
@@ -6829,7 +6889,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -6887,7 +6947,7 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -6964,7 +7024,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -7054,7 +7114,7 @@
       "src/Trendo.App/MainWindow.Connections.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -7107,7 +7167,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -7191,7 +7251,7 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -7273,7 +7333,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -7318,7 +7378,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -7362,6 +7422,8 @@
       "Poly Haven (freie 3D-Modelle)",
       "ambientCG (freie Materialien)"
     ],
+    "Rea": "docs/claude/vorbilder/baukasten-carrd-webflow.md",
+    "ReaSummary": "Vorbild-Analyse Apps zusammenklicken: Carrd, Webflow, Google Sites (Clean-Room)",
     "Ui": [],
     "Tabs": [
       "Baukasten"
@@ -7402,7 +7464,7 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -7442,7 +7504,7 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -7527,7 +7589,7 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -7585,7 +7647,7 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -7633,6 +7695,8 @@
       "Python (optional)",
       "Node.js (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/web-vscode-webflow.md",
+    "ReaSummary": "Vorbild-Analyse Webseite bauen: Visual Studio Code, Webflow, Framer (Clean-Room)",
     "Ui": [
       "Bildansicht"
     ],
@@ -7694,7 +7758,7 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -7737,7 +7801,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -7774,7 +7838,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -7818,7 +7882,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -7851,7 +7915,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -7958,7 +8022,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -8050,7 +8114,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -8091,7 +8155,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -8157,7 +8221,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -8275,7 +8339,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -8317,7 +8381,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -8359,7 +8423,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -8421,7 +8485,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -8488,7 +8552,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -8536,7 +8600,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -8579,7 +8643,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -8813,7 +8877,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -9026,7 +9090,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -9245,7 +9309,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -9499,7 +9563,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -9675,7 +9739,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -9855,7 +9919,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -10044,7 +10108,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -10224,7 +10288,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -10450,6 +10514,7 @@
       "Komponenten: Lizenzliste, Unreal nur geführt (offizieller Link), Zustimmung wird gespeichert",
       "LETTER-UI: Briefkopf → Akte (Behörde) → Fakt, Chronik, Eingang → Frist UNGEPRÜFT → Quelle fehlt → Export gesperrt → beheben → DOCX → Freigabe → Versand BLOCKED",
       "LETTER-UI: Briefstudio hat genau eine Unterebene; Akte/Ausgabe erst mit offener Akte",
+      "Profi-Rahmen: Bildbearbeitung mit Werkzeugleiste links (aktives Werkzeug markiert), Werkzeuge nicht mehr im Menüband; Werkzeuge und Eigenschaften ein-/ausklappbar und gemerkt",
       "QA-004 UI: Browser-Aktion abgelehnt → nichts geöffnet",
       "QA-004 UI: Browser-Aktion freigegeben → genau einmal geöffnet",
       "QA-004 UI: Explorer-Aktion → Freigabe-Ansicht; Ausführung erst nach Klick auf Freigeben",
@@ -10496,7 +10561,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -10676,7 +10741,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -10867,7 +10932,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -11048,7 +11113,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -11081,7 +11146,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -11325,7 +11390,7 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -11543,7 +11608,7 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   },
   {
@@ -11591,7 +11656,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand a5ae41e)",
+    "Version": "0.9.36 (Stand a7ce7c1)",
     "Shell": false
   }
 ]

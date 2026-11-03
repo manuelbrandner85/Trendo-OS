@@ -1,5 +1,7 @@
 # Wissen für die KI – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand a5ae41e)
+Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand a7ce7c1)
 
-Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.
+Analyse: [Vorbild-Analyse Wissen: Obsidian, OneNote, Notion (Clean-Room)](../../../docs/claude/vorbilder/wissen-obsidian.md)
+
+Kein fremder Code und keine fremden Grafiken übernommen – nur öffentlich beschriebener Funktionsumfang.

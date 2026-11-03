@@ -1,5 +1,6 @@
 # Vorbild-Analyse Statik: edubeam (Clean-Room)
 
+- Programme: „Tragwerk & Mechanik“
 - Quelle: öffentliche Web-App run.edubeam.app und README auf github.com/janvorisek/edubeam (GPL-3.0); Recherche-Alternativen: Ftool, LinPro, Frame2D, PlenFrem
 - Werkzeug: Bedienung im eingebauten Browser angesehen (Bedienelemente, Beispielmodelle). REA-Webanalyse war nicht möglich: Sie braucht einen Browser mit Debug-Schnittstelle (CDP), die hier nicht verfügbar ist. Kein Download, kein Code übernommen.
 - Beobachtet: Zeichenfläche mit Lineal-Raster; Schalter für verformte Form, N, V, M, Lagerreaktionen, Beschriftungen; untere Reiter Knoten/Elemente/Lasten/Materialien/Querschnitte/Ergebnisse; Rückgängig/Wiederholen, Einpassen; Beispielmodelle; Einheitensystem; Lager mit Reaktionspfeilen und Werten; Momentenlinie auf der Zugseite.

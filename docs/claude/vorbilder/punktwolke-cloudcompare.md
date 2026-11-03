@@ -1,5 +1,6 @@
 # Vorbild-Analyse Punktwolke: CloudCompare, MeshLab (Clean-Room)
 
+- Programme: „Punktwolke“
 - Recherche: CloudCompare (GPL, Punktwolken-Bearbeitung und -Vergleich), MeshLab (GPL, Netze und Punktwolken)
 - Werkzeug: Funktionsumfang aus öffentlicher Doku; kein Download, kein Code übernommen. REA nicht eingesetzt (kein lokal installiertes Vorbild).
 

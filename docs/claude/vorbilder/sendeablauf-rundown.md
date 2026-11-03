@@ -1,5 +1,6 @@
 # Vorbild-Analyse Sendeablauf: Rundown-Planer, OBS (Clean-Room)
 
+- Programme: „Live streamen“
 - Recherche: Ablaufpläne im Rundfunk (Rundown mit Beginn, Dauer, Hinweisen, Back-Timing), On-Air-Uhren mit Countdown, OBS Studio (Szenensammlungen)
 - Werkzeug: Funktionsumfang aus öffentlicher Doku; kein Download, kein Code übernommen. REA nicht eingesetzt.
 

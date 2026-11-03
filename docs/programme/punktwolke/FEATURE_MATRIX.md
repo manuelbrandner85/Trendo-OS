@@ -1,6 +1,6 @@
 # Punktwolke – Funktionsmatrix
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.36 (Stand a5ae41e)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.36 (Stand a7ce7c1)
 
 Quelle: `docs/w6-katalog/SPEC-09.md`
 

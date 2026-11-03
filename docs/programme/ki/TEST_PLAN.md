@@ -1,6 +1,6 @@
 # KI – Testplan
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.36 (Stand a5ae41e)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki` · Stand: 0.9.36 (Stand a7ce7c1)
 
 43 Tests sprechen dieses Programm an.
 
