@@ -1,6 +1,6 @@
 # Trendo Text – Architektur
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand d04e032)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand 2aef5ba)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys10.cs`

@@ -1,6 +1,6 @@
 # Pflegen – Architektur
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `prog-pflege` · Stand: 0.9.36 (Stand d04e032)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `prog-pflege` · Stand: 0.9.36 (Stand 2aef5ba)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys11.cs`

@@ -1,6 +1,6 @@
 # Medien bearbeiten – Testergebnisse
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand d04e032)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand 2aef5ba)
 
 Lauf: `api.trx, app.trx, core.trx`
 

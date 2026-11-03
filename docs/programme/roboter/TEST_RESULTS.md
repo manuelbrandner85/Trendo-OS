@@ -1,6 +1,6 @@
 # Kameras & Roboter steuern – Testergebnisse
 
-Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.36 (Stand d04e032)
+Studio: Kameras & Roboter steuern (CORE-09) · Bereich: Technik & Fachgebiete · Seite: `roboter` · Stand: 0.9.36 (Stand 2aef5ba)
 
 Lauf: `api.trx, app.trx, core.trx`
 

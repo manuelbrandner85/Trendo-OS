@@ -1,6 +1,6 @@
 # Apps – Funktionsmatrix
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `apps` · Stand: 0.9.36 (Stand d04e032)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `apps` · Stand: 0.9.36 (Stand 2aef5ba)
 
 Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 

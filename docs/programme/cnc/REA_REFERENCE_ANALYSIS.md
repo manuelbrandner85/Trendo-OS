@@ -1,6 +1,6 @@
 # CNC-Werkstatt – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.36 (Stand d04e032)
+Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.36 (Stand 2aef5ba)
 
 Analyse: [Vorbild-Analyse CNC: CAMotics, NC Viewer, bCNC (Clean-Room)](../../../docs/claude/vorbilder/cnc-camotics.md)
 

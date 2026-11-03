@@ -1,10 +1,10 @@
 # Trendo Musik – Testergebnisse
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand d04e032)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 2aef5ba)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 12 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
+Bestanden 14 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 
 | Test | Ergebnis |
 |---|---|
@@ -12,6 +12,8 @@ Bestanden 12 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 | Einfach-Modus mit „Instrumental“: kein Text, kein Gesang – ACE-Step bekommt „[Instrumental]“ | ✓ bestanden |
 | Einfach-Modus ohne Text-KI: ACE-Step schreibt und singt selbst (sample_query in der Sprache), gesungener Text und echte Länge landen beim Lied | ✓ bestanden |
 | M1/M8/M6: Genre-Auswahl (Gruppe, Suche, höchstens drei), Stimme, Tonlage und Instrumente landen als ACE-Step-Begriffe im Auftrag; Tempo-Vorschlag übernehmbar | ✓ bestanden |
+| M10 Verlängern: Abschnitt ab dem Ende (30 → 90 s) mit dem Grundmodell, Refrain kommt dazu, neues Lied „– länger“ | ✓ bestanden |
+| M10 ohne Grundmodell: ehrlicher Hinweis (Spuren trennen nicht angeboten) und „Grundmodell laden“ über das Download-Werkzeug von ACE-Step | ✓ bestanden |
 | M2 „Im Stil von“: Stilmerkmale statt Namen – der Name wird entfernt, auch wenn die KI ihn nennt; ohne Text-KI ehrlicher Hinweis | ✓ bestanden |
 | M3/M5: eigene Aufnahme hinzufügen → analysiert (Tonart, BPM, Takt, Tonumfang), Hinweis „nur privat“, „Als Vorlage“ setzt Tempo, Tonart und Takt im Profi-Modus | ✓ bestanden |
 | M4/M9: eingefügten Text gliedern, Refrain wiederholen, Silben zählen, Refrain eingängiger (KI) | ✓ bestanden |
