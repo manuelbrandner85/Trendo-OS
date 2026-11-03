@@ -1,6 +1,6 @@
 # Zusatzprogramme – Einbindung in Trendo OS
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand 862c4f1)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand 4b0cce0)
 
 - Seite `components` im Studio „Programme starten“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

@@ -1,6 +1,6 @@
 # Trendo Präsentation – Testergebnisse
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.36 (Stand 862c4f1)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.36 (Stand 4b0cce0)
 
 Lauf: `api.trx, app.trx, core.trx`
 

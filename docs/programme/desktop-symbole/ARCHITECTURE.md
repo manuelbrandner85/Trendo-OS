@@ -1,6 +1,6 @@
 # Desktop-Symbole – Architektur
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand 862c4f1)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand 4b0cce0)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

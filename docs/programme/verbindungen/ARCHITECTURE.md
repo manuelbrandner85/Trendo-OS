@@ -1,6 +1,6 @@
 # Verbindungen – Architektur
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.36 (Stand 862c4f1)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.36 (Stand 4b0cce0)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Connections.cs`

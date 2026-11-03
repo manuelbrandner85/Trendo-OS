@@ -1,5 +1,5 @@
 # Vorhaben – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.36 (Stand 862c4f1)
+Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.36 (Stand 4b0cce0)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

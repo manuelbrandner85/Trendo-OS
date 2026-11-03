@@ -1,6 +1,6 @@
 # Trendo Musik – Funktionsmatrix
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 862c4f1)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 4b0cce0)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

@@ -1,6 +1,6 @@
 # Speicher & Leistung – Einbindung in Trendo OS
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand 862c4f1)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand 4b0cce0)
 
 - Seite `ressourcen` im Studio „Leistung anzeigen“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

@@ -1,5 +1,5 @@
 # Erweiterungen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.36 (Stand 862c4f1)
+Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.36 (Stand 4b0cce0)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.
