@@ -43,7 +43,6 @@ public partial class MainWindow
         ],
         Ribbon =
         [
-            ("Werkzeug", [.. ImgTools.Select(t => new ProgramCmd("img-tool-" + t.Id, t.Label, _ => ImgTool = t.Id, t.Id == "move", t.Tip))]),
             ("Ebene", [
                 new ProgramCmd("img-layer-paint", "＋ Mal-Ebene", d => d.Edit("Mal-Ebene", x => ImageDoc.AddPaint(x))),
                 new ProgramCmd("img-layer-up", "▲ Nach oben", d => ImgSel(d, (x, id) => ImageDoc.Reorder(x, id, 1), "Nach oben")),
@@ -60,10 +59,11 @@ public partial class MainWindow
             new("png", "PNG", ".png", (d, f) => ImageRender.Export(d.Data, f)),
             new("jpg", "JPG", ".jpg", (d, f) => ImageRender.Export(d.Data, f)),
         ],
+        Tools = [.. ImgTools.Select(t => new ProgramTool("img-tool-" + t.Id, t.Label[..t.Label.IndexOf(' ')], t.Label[(t.Label.IndexOf(' ') + 1)..], t.Tip, _ => ImgTool = t.Id, () => ImgTool == t.Id))],
         Workspace = ImgWorkspace,
         Properties = ImgProperties,
         Status = d => $"{(int)d.Number("width")} × {(int)d.Number("height")} px · {ImageDoc.Layers(d.Data).Count} Ebenen · Werkzeug: {ImgTools.First(t => t.Id == ImgTool).Label[2..]}",
-        Help = "Rechts ein Bild hinzufügen. Oben ein Werkzeug wählen und auf der Fläche arbeiten. Rechts die Ebenen: anklicken, ein-/ausblenden, Deckkraft, Filter. Speichern als Projekt, Exportieren als PNG oder JPG.",
+        Help = "Rechts ein Bild hinzufügen. Links ein Werkzeug wählen und auf der Fläche arbeiten. Rechts die Ebenen: anklicken, ein-/ausblenden, Deckkraft, Filter. Speichern als Projekt, Exportieren als PNG oder JPG.",
     }, "bildbearbeitung", "foto bearbeiten", "ebenen", "pinsel", "filter", "zuschneiden", "grafik", "collage", "plakat");
 
     static string? SelId(ProgramDocument d) => d.Text("selected") is { Length: > 0 } s && ImageDoc.Layer(d.Data, s) is not null ? s : null;

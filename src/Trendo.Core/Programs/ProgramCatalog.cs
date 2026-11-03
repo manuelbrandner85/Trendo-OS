@@ -129,14 +129,22 @@ public static class ProgramCatalog
         return (Rel(repo, f), rows);
     }
 
-    /// <summary>Vorbild-Analyse (docs/claude/vorbilder), wenn sie das Programm oder Studio nennt.</summary>
+    /// <summary>Programme, für die eine Vorbild-Analyse gilt (Zeile „- Programme: „A“, „B““).</summary>
+    public static HashSet<string> AnalysisPrograms(string text) =>
+        text.Split('\n').FirstOrDefault(l => l.StartsWith("- Programme:")) is { } line
+            ? System.Text.RegularExpressions.Regex.Matches(line, "„([^“]+)“").Select(m => m.Groups[1].Value).ToHashSet(StringComparer.Ordinal)
+            : [];
+
+    /// <summary>Vorbild-Analyse (docs/claude/vorbilder), wenn sie das Programm in ihrer Zeile „Programme:“ nennt.</summary>
     public static (string? File, string? Summary) Vorbild(string repo, ProgramEntry e)
     {
         var dir = Path.Combine(repo, "docs", "claude", "vorbilder"); if (!Directory.Exists(dir)) return (null, null);
         foreach (var f in Directory.EnumerateFiles(dir, "*.md").OrderBy(f => f, StringComparer.Ordinal))
         {
             var t = File.ReadAllText(f);
-            if (!new[] { e.Name, e.StudioName }.Where(n => n.Length > 3).Any(n => t.Contains($"„{n}“") || t.Contains($"\"{n}\""))) continue;
+            // Paket F (03.11.2026): eindeutig über die Zeile „- Programme: „A“, „B““ – früher genügte der Studioname, dann galt z. B. die
+            // Text-Analyse fälschlich auch für Tabelle, Präsentation und PDF
+            if (!AnalysisPrograms(t).Contains(e.Name)) continue;
             var title = t.Split('\n').FirstOrDefault(l => l.StartsWith("# "))?[2..].Trim();
             return (Rel(repo, f), title);
         }

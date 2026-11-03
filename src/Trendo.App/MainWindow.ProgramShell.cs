@@ -16,6 +16,10 @@ public sealed record ProgramTemplate(string Id, string Name, string Hint, Func<J
 /// <summary><paramref name="Level"/>: ab welcher Bedienstufe das Werkzeug erscheint (0 Einfach, 1 Erweitert, 2 Profi – siehe <see cref="UserLevel"/>).</summary>
 public sealed record ProgramCmd(string Name, string Label, Action<ProgramDocument> Run, bool Primary = false, string? Tip = null, int Level = 0);
 public sealed record ProgramExport(string Name, string Label, string Extension, Func<ProgramDocument, string, string> Write);
+/// <summary>Paket F (A1 Profi-Bauplan): ein Werkzeug der Werkzeugleiste links – Zeichen, Name, Hinweis; <paramref name="Active"/> markiert das gewählte.</summary>
+public sealed record ProgramTool(string Name, string Icon, string Label, string Tip, Action<ProgramDocument> Select, Func<bool> Active);
+/// <summary>Paket F (A1): Bereich unten (Zeitleiste, Ebenen, Messwerte …).</summary>
+public sealed record ProgramPanel(string Title, Func<ProgramDocument, Control> Build, double Height = 180);
 
 public sealed class ProgramSpec(string key, string studio, string title)
 {
@@ -29,6 +33,10 @@ public sealed class ProgramSpec(string key, string studio, string title)
     public List<ProgramExport> Exports { get; init; } = [];
     public required Func<ProgramDocument, Control> Workspace { get; init; }
     public Func<ProgramDocument, Control>? Properties { get; init; }
+    /// <summary>Paket F (A1): Werkzeugleiste links (wie in Profi-Programmen) – einklappbar.</summary>
+    public List<ProgramTool> Tools { get; init; } = [];
+    /// <summary>Paket F (A1): Bereich unten – einklappbar.</summary>
+    public ProgramPanel? Bottom { get; init; }
     public Func<ProgramDocument, string>? Status { get; init; }
     public string Help { get; init; } = "";
     /// <summary>T-0256: Arbeitsfläche füllt die Fensterhöhe (Zeichenprogramme) statt mitzuscrollen.</summary>
@@ -342,16 +350,58 @@ public partial class MainWindow
 
         // Arbeitsfläche und Eigenschaften
         var work = new Border { Name = "prog-workspace", ClipToBounds = true, CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(spec.FillHeight ? 8 : 12), MinHeight = spec.FillHeight ? 220 : 420, Child = spec.FillHeight && spec.ScrollWorkspace ? new ScrollViewer { Name = "prog-workspace-scroll", Content = spec.Workspace(d), HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled } : spec.Workspace(d) };
-        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions(spec.Properties is null ? "*" : "*,12,300"), Children = { work } };
-        if (spec.Properties is { } props)
+        // Paket F (A1 Profi-Bauplan): Werkzeuge links · große Mitte · Eigenschaften rechts · Bereich unten – jeder Rand einklappbar
+        bool Hidden(string part) => _settings.HiddenPanels.Contains(key + ":" + part);
+        var showTools = spec.Tools.Count > 0 && !Hidden("werkzeuge"); var showProps = spec.Properties is not null && !Hidden("eigenschaften"); var showBottom = spec.Bottom is not null && !Hidden("unten");
+        Control center = work;
+        if (spec.Bottom is { } bottom && showBottom)
+        {
+            var bp = new Border { Name = "prog-bottom", Height = bottom.Height, CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(10, 6),
+                Child = new DockPanel { Children = { Dk(new TextBlock { Text = bottom.Title, Foreground = Muted, FontSize = 12, FontWeight = FontWeight.SemiBold, Margin = new Thickness(2, 0, 0, 4) }, Avalonia.Controls.Dock.Top), bottom.Build(d) } } };
+            var g2 = new Grid { RowDefinitions = new RowDefinitions("*,10,Auto"), Children = { work } }; Grid.SetRow(bp, 2); g2.Children.Add(bp); center = g2;
+        }
+        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions((showTools ? "Auto,10," : "") + (showProps ? "*,12,300" : "*")) };
+        var col = 0;
+        if (showTools)
+        {
+            var rail = new StackPanel { Name = "prog-tools", Spacing = 4 };
+            foreach (var t in spec.Tools)
+            {
+                var on = t.Active(); var tt = t;
+                var b = new Button { Name = "prog-cmd-" + t.Name, Content = t.Icon, Width = 40, Height = 40, Padding = new Thickness(0), FontSize = 17, CornerRadius = new CornerRadius(10),
+                    HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center,
+                    Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text, BorderBrush = on ? Brushes.Transparent : Edge, BorderThickness = new Thickness(1) };
+                ToolTip.SetTip(b, $"{t.Label} – {t.Tip}"); Avalonia.Automation.AutomationProperties.SetName(b, t.Label);
+                b.Click += (_, _) => ProgramRun(key, () => tt.Select(d));
+                rail.Children.Add(b);
+            }
+            grid.Children.Add(new Border { Name = "prog-tools-panel", CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(6), Child = rail });
+            col = 2;
+        }
+        grid.Children.Add(Pos(center, col));
+        if (spec.Properties is { } props && showProps)
             grid.Children.Add(Pos(new Border { Name = "prog-properties", CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(12),
-                Child = spec.FillHeight ? new ScrollViewer { Content = new StackPanel { Spacing = 6, Margin = new Thickness(0, 0, 8, 0), Children = { H("Eigenschaften", 13), props(d) } } } : new StackPanel { Spacing = 6, Children = { H("Eigenschaften", 13), props(d) } } }, 2));
+                Child = spec.FillHeight ? new ScrollViewer { Content = new StackPanel { Spacing = 6, Margin = new Thickness(0, 0, 8, 0), Children = { H("Eigenschaften", 13), props(d) } } } : new StackPanel { Spacing = 6, Children = { H("Eigenschaften", 13), props(d) } } }, col + 2));
+
+        // Ränder ein- und ausklappen (gemerkt je Programm)
+        var toggles = new StackPanel { Name = "prog-panel-toggles", Orientation = Orientation.Horizontal, Spacing = 4, Margin = new Thickness(10, 0, 0, 0) };
+        void Toggle(string part, string icon, string label, bool on)
+        {
+            var b = new Button { Name = "prog-toggle-" + part, Content = icon, FontSize = 12, Padding = new Thickness(7, 1), Background = on ? Brush.Parse("#22FFFFFF") : Brushes.Transparent, Foreground = on ? Text : Muted, BorderThickness = new Thickness(0) };
+            ToolTip.SetTip(b, (on ? "Einklappen: " : "Ausklappen: ") + label);
+            b.Click += (_, _) => { var id = key + ":" + part; if (!_settings.HiddenPanels.Remove(id)) _settings.HiddenPanels.Add(id); SaveSettings(); Show(key); };
+            toggles.Children.Add(b);
+        }
+        if (spec.Tools.Count > 0) Toggle("werkzeuge", "◧", "Werkzeuge", showTools);
+        if (spec.Bottom is not null) Toggle("unten", "⬓", spec.Bottom.Title, showBottom);
+        if (spec.Properties is not null) Toggle("eigenschaften", "◨", "Eigenschaften", showProps);
 
         // Statusleiste
         var status = new Border { Name = "prog-status", CornerRadius = new CornerRadius(10), Background = Brush.Parse(C("#331A1A1A", "#14000000")), Padding = new Thickness(12, 5),
-            Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = {
+            Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), Children = {
                 new TextBlock { Name = "prog-status-text", Text = spec.Status?.Invoke(d) ?? "", Foreground = Muted, FontSize = 12 },
-                Pos(new TextBlock { Text = (d.Path is null ? "Noch nicht gespeichert" : Path.GetFileName(d.Path)) + (d.Dirty ? " · geändert, wird automatisch gesichert" : "") + $" · {d.Changed:HH:mm}", Foreground = Muted, FontSize = 12 }, 1) } } };
+                Pos(new TextBlock { Text = (d.Path is null ? "Noch nicht gespeichert" : Path.GetFileName(d.Path)) + (d.Dirty ? " · geändert, wird automatisch gesichert" : "") + $" · {d.Changed:HH:mm}", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, 1),
+                Pos(toggles, 2) } } };
         return (new StackPanel { Spacing = 0, Children = { tabs, new StackPanel { Spacing = 8, Children = { ribbon } } } }, grid, status);
 
         Button RBtn(string name, string label, Action go, bool primary = false, string? tip = null)

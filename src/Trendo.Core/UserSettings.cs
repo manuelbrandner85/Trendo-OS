@@ -53,6 +53,8 @@ public sealed class UserSettings
     public int[]? WindowRect { get; set; }
     /// <summary>Startmenü: angeheftete Studios (IDs) und zuletzt benutzte Seiten (neueste zuerst).</summary>
     public List<string> PinnedStudios { get; set; } = [];
+    /// <summary>Paket F (Profi-Rahmen): eingeklappte Bereiche je Programm, z. B. „bildbearbeitung:werkzeuge“.</summary>
+    public List<string> HiddenPanels { get; set; } = [];
     /// <summary>Wunsch 27.10.2026: Symbole auf dem Desktop (Studio-IDs oder „page:Seite“). Standard: leer – der Desktop ist aufgeräumt.</summary>
     public List<string> DesktopIcons { get; set; } = [];
     public List<string> RecentPages { get; set; } = [];
