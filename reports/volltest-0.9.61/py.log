@@ -1,0 +1,13 @@
+python : .........
+In C:\Users\<user>\AppData\Local\Temp\claude\C--Users-<user>-Desktop\61f33b34-8214-4ef6-96fd-dfc769da634a\scratchpad\voll
+test.ps1:13 Zeichen:1
++ python -m unittest discover -s tests/claude_handoff *> $py
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (.........:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+----------------------------------------------------------------------
+Ran 9 tests in 12.592s
+
+OK
+EXIT py=0
