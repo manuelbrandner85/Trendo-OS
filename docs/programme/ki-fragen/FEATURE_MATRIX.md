@@ -1,6 +1,6 @@
 # KI fragen – Funktionsmatrix
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · Stand: 0.9.36 (Stand 7684536)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · Stand: 0.9.36 (Stand 3c05eb0)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -8,6 +8,8 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Los
 - Hinzufügen …
 - ✳ Claude
+- Chat & Schreiben
+- Nachdenken & Rechnen
 - Modell
 - Fragen
 - Verbindungen

@@ -1,13 +1,14 @@
 # 3D – Testergebnisse
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 7684536)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 3c05eb0)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 17 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
+Bestanden 20 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 
 | Test | Ergebnis |
 |---|---|
+| 3D aus Bild: TripoSR nach Klick einrichten (Stand geprüft, eigene Umgebung), Foto wählen → GLB → „Im 3D-Studio öffnen“; falscher Stand wird nicht eingerichtet | ✓ bestanden |
 | 3D-Arbeitsfläche: Formen einsetzen (auf dem Boden), Teil anklicken, mit der Maus verschieben (Raster), Pfeiltasten, Verdoppeln, Entf, Rückgängig | ✓ bestanden |
 | 3D-Arbeitsfläche: „Auf den Boden“ setzt die Unterkante auf 0, Text und Ebene stehen auf dem Boden | ✓ bestanden |
 | 3D-Seite zeigt die Auftragsleiste, ohne die 3D-Arbeitsfläche zu verkleinern | ✓ bestanden |
@@ -23,6 +24,8 @@ Bestanden 17 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 | Briefseite zeigt die Auftragsleiste und meldet ehrlich, wenn nichts eingebaut ist | ✓ bestanden |
 | CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen | ✓ bestanden |
 | CORE-05: Unbekannte Formate und Formen werden abgewiesen | ✓ bestanden |
+| Geräusche: MMAudio mit Hinweis „nur nicht-kommerziell“, Beschreibung + Länge → WAV zum Anhören; ohne Beschreibung kein Lauf | ✓ bestanden |
 | Startbildschirm bekommt keine Auftragsleiste | ✓ bestanden |
 | Studio-Seiten: Überschrift ist der Name aus dem Studio-Katalog | ✓ bestanden |
 | StudioCatalog.NameOf: Katalogname, sonst der bisherige Text | ✓ bestanden |
+| Vorschlag 36: Studios zeigen „✨ Freie KI hier“ – 3D-Studio schlägt „3D aus Bild“ vor, der Klick öffnet die KI-Bibliothek (geladen wird erst dort); jede Studio-Zuordnung gibt es wirklich | ✓ bestanden |

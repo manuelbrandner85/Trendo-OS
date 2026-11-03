@@ -32,7 +32,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Bildbearbeitung | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Bild-Arbeitsfläche (Ebenen) | – | 3 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](bild/README.md) |
 | Medien bearbeiten | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | keine eigene erkannt | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](kreativ-medien/README.md) |
 | Videoschnitt | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Video-Zeitleiste | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](schnitt/README.md) |
-| 3D | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | CAD-/3D-Zeichenfläche | – | 18 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](3d/README.md) |
+| 3D | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | CAD-/3D-Zeichenfläche | – | 21 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](3d/README.md) |
 | Trendo 3D-Druck | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | keine eigene erkannt | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](3d-druck/README.md) |
 | Trendo CAD | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | CAD-/3D-Zeichenfläche | – | 4 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](cad/README.md) |
 | Aus Fotos | Gegenstände einscannen (SPEC-09) | 3D, Spiele & VR | keine eigene erkannt | 20 | 24 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](scan3d/README.md) |
@@ -86,7 +86,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Apps | Programme starten (SYS-11) | System & Sicherheit | keine eigene erkannt | 25 | 41 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](apps/README.md) |
 | Hinzufügen | Programme starten (SYS-11) | System & Sicherheit | keine eigene erkannt | 25 | 12 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](hinzufuegen/README.md) |
 | Pflegen | Programme starten (SYS-11) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](prog-pflege/README.md) |
-| Zusatzprogramme | Programme starten (SYS-11) | System & Sicherheit | keine eigene erkannt | 25 | 53 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](components/README.md) |
+| Zusatzprogramme | Programme starten (SYS-11) | System & Sicherheit | keine eigene erkannt | 25 | 54 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](components/README.md) |
 | Fortschritt | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 13 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](fortschritt/README.md) |
 | Leistung | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 13 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](qual-leistung/README.md) |
 | System & Sicherheit | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 26 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](system/README.md) |

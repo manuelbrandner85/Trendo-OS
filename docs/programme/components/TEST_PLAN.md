@@ -1,8 +1,8 @@
 # Zusatzprogramme – Testplan
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand 7684536)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand 3c05eb0)
 
-53 Tests sprechen dieses Programm an.
+54 Tests sprechen dieses Programm an.
 
 - CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste
 - Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt
@@ -43,6 +43,7 @@ Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `co
 - SYS-11/X-09: Apps hat genau eine Unterebene; Programme und Speicher-Seite öffnen
 - SYS-12: Anzeigegröße „Sehr groß“ wird gespeichert; F1 zeigt die Hilfe
 - Schlüssel: ungültig wird nicht gespeichert, gültig landet im Secret-Store, nie im Audit
+- Scrollen bleibt stehen: dieselbe Seite neu aufgebaut (wie nach einem Knopfdruck) behält die Position – auch zweimal hintereinander
 - Studio-Klick: Unreal nur geführt – kein Installieren-Knopf, offizieller Installer-Link
 - Studio-Klick: fehlendes Programm → genau eine Frage 'Studio braucht X. Jetzt installieren?', 'Später' installiert nichts
 - T-0313: Abgebrochener Download – angefangene Datei bleibt, nächster Versuch lädt mit Range ab der Stelle weiter (206) und richtet ein

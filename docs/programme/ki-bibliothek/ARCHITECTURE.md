@@ -1,6 +1,6 @@
 # KI-Bibliothek – Architektur
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.36 (Stand 7684536)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.36 (Stand 3c05eb0)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.KiLibrary.cs`
@@ -9,14 +9,16 @@ Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bib
 – (nicht erfasst)
 
 ## Fach-Engine (Trendo.Core)
+- `KiKind`
 - `KiLibrary`
 - `KiRuntime`
-- `KiKind`
 - `HardwareInfo`
+- `KiPyApps`
 - `KiSourceSetups`
 - `WebApps`
 
 ## Dateiformate (im Code belegt)
+- .glb
 - .jpg
 - .json
 - .mp3
@@ -29,6 +31,7 @@ Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bib
 - .zip
 
 ## Externe Programme und Dienste
+- Blender (optional, 3D-Fotos/Render)
 - Ollama – lokale KI (optional)
 - FFmpeg
 - Piper (Vorlesen)

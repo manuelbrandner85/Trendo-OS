@@ -1,10 +1,10 @@
 # Zusatzprogramme – Testergebnisse
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand 7684536)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand 3c05eb0)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 53 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 54 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -47,6 +47,7 @@ Bestanden 53 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | SYS-11/X-09: Apps hat genau eine Unterebene; Programme und Speicher-Seite öffnen | ✓ bestanden |
 | SYS-12: Anzeigegröße „Sehr groß“ wird gespeichert; F1 zeigt die Hilfe | ✓ bestanden |
 | Schlüssel: ungültig wird nicht gespeichert, gültig landet im Secret-Store, nie im Audit | ✓ bestanden |
+| Scrollen bleibt stehen: dieselbe Seite neu aufgebaut (wie nach einem Knopfdruck) behält die Position – auch zweimal hintereinander | ✓ bestanden |
 | Studio-Klick: Unreal nur geführt – kein Installieren-Knopf, offizieller Installer-Link | ✓ bestanden |
 | Studio-Klick: fehlendes Programm → genau eine Frage 'Studio braucht X. Jetzt installieren?', 'Später' installiert nichts | ✓ bestanden |
 | T-0313: Abgebrochener Download – angefangene Datei bleibt, nächster Versuch lädt mit Range ab der Stelle weiter (206) und richtet ein | ✓ bestanden |

@@ -1,6 +1,6 @@
 # Medien bearbeiten – Funktionsmatrix
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand 7684536)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand 3c05eb0)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -8,6 +8,10 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Los
 - Hinzufügen …
 - ✳ Claude
+- Geräusche & Effekte
+- Sprache zu Text
+- Bilder verbessern
+- Musik
 - Verstanden
 - Medien bearbeiten
 - Videoschnitt

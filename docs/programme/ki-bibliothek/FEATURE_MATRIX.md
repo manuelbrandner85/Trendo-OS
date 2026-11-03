@@ -1,6 +1,6 @@
 # KI-Bibliothek – Funktionsmatrix
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.36 (Stand 7684536)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.36 (Stand 3c05eb0)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -23,6 +23,8 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Sprache zu Text (3)
 - Vorlesen (2)
 - Musik (1)
+- 3D aus Bild (1)
+- Geräusche & Effekte (1)
 - Ollama jetzt starten
 - Programme einrichten …
 - Laden

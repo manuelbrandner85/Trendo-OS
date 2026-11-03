@@ -1,9 +1,10 @@
 # KI-Bibliothek – Lizenzen
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.36 (Stand 7684536)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.36 (Stand 3c05eb0)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 
+- Blender (optional, 3D-Fotos/Render)
 - Ollama – lokale KI (optional)
 - FFmpeg
 - Piper (Vorlesen)
