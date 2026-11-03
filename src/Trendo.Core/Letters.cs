@@ -37,8 +37,10 @@ public sealed class LetterDraft
     public string Design { get; set; } = "klassisch";
     /// <summary>Akzentfarbe als Hex (z. B. #1F5FA8) für Kopf, Linien und Betreff.</summary>
     public string Accent { get; set; } = "#1F5FA8";
+    /// <summary>Zweite Farbe (z. B. Goldstreifen unter dem Navy-Band); leer = wie die Akzentfarbe.</summary>
+    public string Accent2 { get; set; } = "";
     public string Font { get; set; } = "Arial";
-    /// <summary>Kopf-Gestaltung: keiner, band (Farbband oben), linie (Name in Farbe mit Linie) oder seitenleiste (Farbstreifen links).</summary>
+    /// <summary>Kopf-Gestaltung: keiner, band, linie, seitenleiste, mittig, zweifarbig, fussband oder rahmen (siehe <see cref="LetterDesigns.Headers"/>).</summary>
     public string Header { get; set; } = "keiner";
     /// <summary>Zeile unter dem Namen, z. B. Beruf („Zahnmedizinische Fachangestellte“).</summary>
     public string Tagline { get; set; } = "";
@@ -51,25 +53,54 @@ public sealed class LetterDraft
 /// <summary>Brief-Design: Stile mit passenden Voreinstellungen, erlaubte Werte, Anweisung für Claude. Die DIN-5008-Positionen (Anschriftfeld, Falzmarken) bleiben immer.</summary>
 public static partial class LetterDesigns
 {
-    public sealed record Style(string Id, string Label, string Font, string Header, string Hint);
+    /// <summary>Fertige Vorlage wie in Canva: Schrift, Kopf-Layout und Farben passen zusammen (Wunsch 03.11.2026: viel mehr Farben und Designs).</summary>
+    public sealed record Style(string Id, string Label, string Font, string Header, string Hint, string Accent = "#1F5FA8", string Accent2 = "");
     public static readonly Style[] Styles =
     [
-        new("klassisch", "Klassisch (DIN 5008)", "Arial", "keiner", "Reiner Geschäftsbrief ohne Gestaltung"),
-        new("modern", "Modern", "Segoe UI", "band", "Farbband oben mit Name und Kontakt – zeitgemäß, z. B. für Bewerbungen"),
-        new("elegant", "Elegant", "Georgia", "linie", "Name in Akzentfarbe mit feiner Linie – seriös und ruhig"),
-        new("kreativ", "Kreativ", "Segoe UI", "seitenleiste", "Farbstreifen links, Name groß – für kreative Berufe"),
-        new("minimal", "Minimal", "Calibri", "linie", "Schlicht, viel Weißraum, eine feine Akzentlinie"),
+        new("klassisch", "Klassisch (DIN 5008)", "Arial", "keiner", "Reiner Geschäftsbrief ohne Gestaltung", "#1F5FA8"),
+        new("modern", "Modern", "Segoe UI", "band", "Farbband oben mit Name und Kontakt – zeitgemäß, z. B. für Bewerbungen", "#1F5FA8"),
+        new("elegant", "Elegant", "Georgia", "linie", "Name in Akzentfarbe mit feiner Linie – seriös und ruhig", "#0F2E5C"),
+        new("kreativ", "Kreativ", "Segoe UI", "seitenleiste", "Farbstreifen links, Name groß – für kreative Berufe", "#0E7C86"),
+        new("minimal", "Minimal", "Calibri", "linie", "Schlicht, viel Weißraum, eine feine Akzentlinie", "#4A4F57"),
+        new("frisch", "Frisch", "Calibri", "mittig", "Name mittig in Türkis – freundlich und offen", "#0F9D8A"),
+        new("navy-gold", "Navy & Gold", "Georgia", "zweifarbig", "Dunkelblaues Band mit Goldstreifen – edel, z. B. für Kanzlei oder Führungskraft", "#1B2A4A", "#C9A227"),
+        new("terrakotta", "Terrakotta", "Georgia", "seitenleiste", "Warmer Rotton als Seitenstreifen – handwerklich und herzlich", "#C0553A"),
+        new("natur", "Natur", "Candara", "linie", "Waldgrün mit feiner Linie – ruhig und nachhaltig", "#3A7D44"),
+        new("kontrast", "Kontrast", "Segoe UI", "zweifarbig", "Schwarzes Band mit gelbem Streifen – stark und auffällig", "#1A1A1A", "#F5C518"),
+        new("rose", "Rosé", "Constantia", "mittig", "Beerenton, mittig gesetzt – fein und persönlich", "#B03A6F"),
+        new("violett", "Violett", "Segoe UI", "fussband", "Name oben, Kontakt im Farbband unten – modern und klar", "#5B3CC4"),
+        new("rahmen", "Rahmen", "Constantia", "rahmen", "Feiner Rahmen um die Seite – wie Briefpapier", "#455A64"),
+        new("sonne", "Sonne", "Trebuchet MS", "band", "Warmes Orange als Band – fröhlich, z. B. für Kita oder Verein", "#D97706"),
+        new("ozean", "Ozean", "Calibri", "zweifarbig", "Tiefblau mit hellem Streifen – frisch und vertrauensvoll", "#0B6E99", "#7FD1E8"),
+        new("lavendel", "Lavendel", "Constantia", "mittig", "Sanftes Lila, mittig – ruhig und kreativ", "#7E57C2"),
+        new("grafit", "Grafit", "Arial", "fussband", "Dunkelgrau mit Fußband – sachlich und modern", "#37474F"),
+        new("bordeaux", "Bordeaux", "Georgia", "rahmen", "Weinrot mit Rahmen – klassisch-edel", "#8C2F39"),
+        new("mint", "Mint", "Segoe UI", "linie", "Helles Grün mit Linie – leicht und freundlich", "#2E9E78"),
+        new("koralle", "Koralle", "Trebuchet MS", "seitenleiste", "Korallrot als Streifen – lebendig", "#E4572E"),
     ];
-    public static readonly string[] Fonts = ["Arial", "Calibri", "Segoe UI", "Georgia", "Garamond", "Verdana"];
-    public static readonly string[] Headers = ["keiner", "band", "linie", "seitenleiste"];
+    /// <summary>Schriften, die unter Windows mitkommen (Linux: ähnliche Ersatzschrift).</summary>
+    public static readonly string[] Fonts = ["Arial", "Calibri", "Candara", "Constantia", "Corbel", "Segoe UI", "Georgia", "Garamond", "Verdana", "Trebuchet MS", "Tahoma"];
+    public static readonly string[] Headers = ["keiner", "band", "linie", "seitenleiste", "mittig", "zweifarbig", "fussband", "rahmen"];
+    public static readonly (string Id, string Label)[] HeaderLabels =
+        [("band", "Farbband oben"), ("zweifarbig", "Band + Streifen"), ("linie", "Linie"), ("mittig", "Mittig"), ("seitenleiste", "Seitenleiste"), ("fussband", "Fußband"), ("rahmen", "Rahmen"), ("keiner", "Ohne")];
+    /// <summary>Farbpalette (wie in Canva) – dunkel bis hell, alle auf Weiß gut lesbar.</summary>
+    public static readonly (string Hex, string Name)[] Palette =
+    [
+        ("#1F5FA8", "Blau"), ("#0F2E5C", "Dunkelblau"), ("#1B2A4A", "Navy"), ("#0B6E99", "Ozean"), ("#0E7C86", "Petrol"), ("#0F9D8A", "Türkis"),
+        ("#2E7D5B", "Grün"), ("#3A7D44", "Waldgrün"), ("#2E9E78", "Mint"), ("#6B8E23", "Oliv"), ("#B8862B", "Gold"), ("#D97706", "Orange"),
+        ("#E4572E", "Koralle"), ("#C0553A", "Terrakotta"), ("#B3261E", "Rot"), ("#8C2F39", "Bordeaux"), ("#B03A6F", "Beere"), ("#C2185B", "Pink"),
+        ("#7E57C2", "Lavendel"), ("#5B3CC4", "Violett"), ("#4A4F57", "Anthrazit"), ("#37474F", "Grafit"), ("#455A64", "Schiefer"), ("#1A1A1A", "Schwarz"),
+    ];
+    /// <summary>Zweite Farbe der Vorlage oder die Akzentfarbe.</summary>
+    public static string Second(LetterDraft d) => HexRx().IsMatch(d.Accent2 ?? "") ? d.Accent2 : d.Accent;
 
     [GeneratedRegex("^#[0-9A-Fa-f]{6}$")] private static partial Regex HexRx();
 
-    /// <summary>Stil anwenden (Schrift und Kopf aus dem Stil, Farbe bleibt).</summary>
+    /// <summary>Vorlage anwenden: Schrift, Kopf und Farben der Vorlage (danach frei änderbar).</summary>
     public static void Apply(LetterDraft d, string styleId)
     {
         var s = Styles.FirstOrDefault(x => x.Id == styleId) ?? Styles[0];
-        d.Design = s.Id; d.Font = s.Font; d.Header = s.Header;
+        d.Design = s.Id; d.Font = s.Font; d.Header = s.Header; d.Accent = s.Accent; d.Accent2 = s.Accent2;
     }
 
     /// <summary>Ungültige Werte (z. B. von Claude) auf sichere Werte zurücksetzen.</summary>
@@ -77,6 +108,7 @@ public static partial class LetterDesigns
     {
         if (!Styles.Any(s => s.Id == d.Design)) d.Design = "klassisch";
         if (!HexRx().IsMatch(d.Accent ?? "")) d.Accent = "#1F5FA8";
+        if (!HexRx().IsMatch(d.Accent2 ?? "")) d.Accent2 = "";
         if (!Fonts.Contains(d.Font)) d.Font = "Arial";
         if (!Headers.Contains(d.Header)) d.Header = d.Design == "klassisch" ? "keiner" : Styles.First(s => s.Id == d.Design).Header;
         d.Tagline = (d.Tagline ?? "").Trim(); if (d.Tagline.Length > 80) d.Tagline = d.Tagline[..80];
@@ -86,8 +118,9 @@ public static partial class LetterDesigns
     public const string Rule =
         "Der offene Brief liegt als „Brief.json“ im Projektordner – bearbeite genau diese Datei (gültiges JSON, Feldnamen beibehalten); Trendo zeigt jede Änderung sofort im Brief-Programm. " +
         "Text: Subject, Salutation, Body (Absätze mit Leerzeile), Closing, Recipient (mehrzeilig), Attachments; Absender: SenderName, SenderStreet, SenderCity, SenderContact. " +
-        "Design, wenn der Nutzer es wünscht (z. B. „zeitgemäß in Blau“): Design = klassisch | modern | elegant | kreativ | minimal; Accent = Hex-Farbe wie #1F5FA8; Font = Arial | Calibri | Segoe UI | Georgia | Garamond | Verdana; " +
-        "Header = keiner | band | linie | seitenleiste; Tagline = Zeile unter dem Namen (z. B. der Beruf); Photo = Bilddatei im Projekt (z. B. anhang/foto.jpg) für ein Bewerbungsfoto. " +
+        "Design, wenn der Nutzer es wünscht (z. B. „zeitgemäß in Blau“): Design = eine der Vorlagen (klassisch, modern, elegant, kreativ, minimal, frisch, navy-gold, terrakotta, natur, kontrast, rose, violett, rahmen, sonne, ozean, lavendel, grafit, bordeaux, mint, koralle); " +
+        "Accent = Hex-Farbe wie #1F5FA8; Accent2 = zweite Farbe (optional, für zweifarbig); Font = Arial | Calibri | Candara | Constantia | Corbel | Segoe UI | Georgia | Garamond | Verdana | Trebuchet MS | Tahoma; " +
+        "Header = keiner | band | linie | seitenleiste | mittig | zweifarbig | fussband | rahmen; Tagline = Zeile unter dem Namen (z. B. der Beruf); Photo = Bilddatei im Projekt (z. B. anhang/foto.jpg) für ein Bewerbungsfoto. " +
         "Halte DIN 5008 ein (Anschriftfeld, Datum, Betreff); Gestaltung nur im Kopf, mit Farbe sparsam und gut lesbar.";
 }
 
@@ -279,8 +312,8 @@ public static class Letters
         var photoExt = photo is not null && photo.Length > 1 && photo[0] == 0x89 ? "png" : "jpeg";
         if (d.Designed)
         {
-            var band = d.Header == "band"; var fg = band ? "FFFFFF" : hex;
-            var shd = band ? $"<w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"{hex}\"/>" : "";
+            var band = d.Header is "band" or "zweifarbig"; var fg = band ? "FFFFFF" : hex;
+            var shd = (band ? $"<w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"{hex}\"/>" : "") + (d.Header == "mittig" ? "<w:jc w:val=\"center\"/>" : "");
             var (pw, ph) = photo is null ? (0, 0) : XrPlus.ImageSize(photo);
             if (photo is not null && pw > 0 && ph > 0)
             {
@@ -291,7 +324,13 @@ public static class Letters
             body.Append($"<w:p><w:pPr>{shd}<w:spacing w:before=\"0\" w:after=\"0\"/></w:pPr>{Run(d.SenderName, true, 36, fg)}</w:p>");
             if (d.Tagline.Length > 0) body.Append($"<w:p><w:pPr>{shd}<w:spacing w:before=\"0\" w:after=\"0\"/></w:pPr>{Run(d.Tagline, false, 20, band ? "FFFFFF" : "5C6B7A")}</w:p>");
             var contact = string.Join(" · ", new[] { d.SenderStreet, d.SenderCity, d.SenderContact }.Where(s => s.Trim().Length > 0));
-            var line = d.Header is "linie" or "seitenleiste" ? $"<w:pBdr><w:bottom w:val=\"single\" w:sz=\"8\" w:space=\"4\" w:color=\"{hex}\"/></w:pBdr>" : "";
+            var hex2 = LetterDesigns.Second(d).TrimStart('#').ToUpperInvariant();
+            var line = d.Header switch
+            {
+                "linie" or "seitenleiste" or "rahmen" or "mittig" => $"<w:pBdr><w:bottom w:val=\"single\" w:sz=\"8\" w:space=\"4\" w:color=\"{hex}\"/></w:pBdr>",
+                "zweifarbig" => $"<w:pBdr><w:bottom w:val=\"single\" w:sz=\"24\" w:space=\"0\" w:color=\"{hex2}\"/></w:pBdr>", // Streifen in der zweiten Farbe
+                _ => "",
+            };
             body.Append($"<w:p><w:pPr>{shd}{line}<w:spacing w:before=\"0\" w:after=\"0\"/></w:pPr>{Run(contact, false, 16, band ? "FFFFFF" : "5C6B7A")}</w:p>");
         }
         // Rücksendeangabe (klein) im Anschriftfeld; Seite beginnt bei 45 mm → 1 Zeile darüber (mit Design-Kopf entsprechend weniger Abstand)
@@ -320,8 +359,17 @@ public static class Letters
         if (d.SenderContact.Trim().Length > 0) Para(d.SenderContact.Trim(), size: 16, before: 480);
 
         var hdr = d.PrintMarks ? MarksHeader(d.Form == "A") : null;
+        string? ftr = null;
+        if (d.Designed && d.Header == "fussband")
+        {
+            var c = string.Join("  ·  ", new[] { d.SenderName, d.SenderStreet, d.SenderCity, d.SenderContact }.Where(x => x.Trim().Length > 0));
+            ftr = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><w:ftr xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">" +
+                  $"<w:p><w:pPr><w:shd w:val=\"clear\" w:color=\"auto\" w:fill=\"{hex}\"/><w:jc w:val=\"center\"/><w:spacing w:before=\"80\" w:after=\"80\"/></w:pPr>{Run(c, false, 17, "FFFFFF")}</w:p></w:ftr>";
+        }
+        var borders = d.Designed && d.Header == "rahmen"
+            ? $"<w:pgBorders w:offsetFrom=\"page\"><w:top w:val=\"single\" w:sz=\"8\" w:space=\"22\" w:color=\"{hex}\"/><w:left w:val=\"single\" w:sz=\"8\" w:space=\"22\" w:color=\"{hex}\"/><w:bottom w:val=\"single\" w:sz=\"8\" w:space=\"22\" w:color=\"{hex}\"/><w:right w:val=\"single\" w:sz=\"8\" w:space=\"22\" w:color=\"{hex}\"/></w:pgBorders>" : "";
         var doc = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><w:body>" + body +
-                  "<w:sectPr>" + (hdr is null ? "" : "<w:headerReference w:type=\"default\" r:id=\"rIdMarks\"/>") + "<w:pgSz w:w=\"11906\" w:h=\"16838\"/><w:pgMar w:top=\"1134\" w:right=\"1134\" w:bottom=\"1134\" w:left=\"1418\" w:header=\"709\" w:footer=\"709\" w:gutter=\"0\"/></w:sectPr></w:body></w:document>";
+                  "<w:sectPr>" + (hdr is null ? "" : "<w:headerReference w:type=\"default\" r:id=\"rIdMarks\"/>") + (ftr is null ? "" : "<w:footerReference w:type=\"default\" r:id=\"rIdFoot\"/>") + "<w:pgSz w:w=\"11906\" w:h=\"16838\"/><w:pgMar w:top=\"1134\" w:right=\"1134\" w:bottom=\"1134\" w:left=\"1418\" w:header=\"709\" w:footer=\"709\" w:gutter=\"0\"/>" + borders + "</w:sectPr></w:body></w:document>";
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
         var tmp = path + ".tmp";
         using (var fs = File.Create(tmp))
@@ -329,16 +377,19 @@ public static class Letters
         {
             void Add(string n, string c) { using var w = new StreamWriter(zip.CreateEntry(n).Open(), new UTF8Encoding(false)); w.Write(c); }
             Add("[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>" + string.Concat(new[] { sig is null ? null : sigExt, photo is null ? null : photoExt }.OfType<string>().Distinct().Select(e => $"<Default Extension=\"{e}\" ContentType=\"image/{e}\"/>")) + "<Override PartName=\"/word/document.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/>" +
-                (hdr is null ? "" : "<Override PartName=\"/word/header1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml\"/>") + "</Types>");
+                (hdr is null ? "" : "<Override PartName=\"/word/header1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml\"/>") +
+                (ftr is null ? "" : "<Override PartName=\"/word/footer1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml\"/>") + "</Types>");
             Add("_rels/.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"word/document.xml\"/></Relationships>");
             Add("word/document.xml", doc);
             if (hdr is not null) Add("word/header1.xml", hdr);
-            if (sig is not null || photo is not null || hdr is not null)
+            if (ftr is not null) Add("word/footer1.xml", ftr);
+            if (sig is not null || photo is not null || hdr is not null || ftr is not null)
             {
                 const string img = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
                 Add("word/_rels/document.xml.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
                     (sig is null ? "" : $"<Relationship Id=\"rIdSig\" Type=\"{img}\" Target=\"media/unterschrift.{sigExt}\"/>") + (photo is null ? "" : $"<Relationship Id=\"rIdPhoto\" Type=\"{img}\" Target=\"media/foto.{photoExt}\"/>") +
-                    (hdr is null ? "" : "<Relationship Id=\"rIdMarks\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/header\" Target=\"header1.xml\"/>") + "</Relationships>");
+                    (hdr is null ? "" : "<Relationship Id=\"rIdMarks\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/header\" Target=\"header1.xml\"/>") +
+                    (ftr is null ? "" : "<Relationship Id=\"rIdFoot\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer\" Target=\"footer1.xml\"/>") + "</Relationships>");
                 if (sig is not null) { using var st = zip.CreateEntry($"word/media/unterschrift.{sigExt}").Open(); st.Write(sig); }
                 if (photo is not null) { using var pt = zip.CreateEntry($"word/media/foto.{photoExt}").Open(); pt.Write(photo); }
             }

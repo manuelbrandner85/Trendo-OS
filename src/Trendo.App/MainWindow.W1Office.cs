@@ -58,6 +58,52 @@ public partial class MainWindow
 
     // ---------- STUDIO-LETTER-01: Briefstudio ----------
     private LetterDraft? _letter;
+    /// <summary>Zuletzt erzeugtes PDF des Briefs (für Senden) und ob die Senden-Karte offen ist.</summary>
+    private string? _letterPdf; private bool _letterSendOpen;
+    public string? LetterPdfFile => _letterPdf;
+
+    /// <summary>Exportieren: Ziel und Format wählen (PDF oder Word).</summary>
+    private async Task<string?> PickLetterTarget(string stem)
+    {
+        var req = new PickRequest("letter-export", false, false, ["pdf", "docx"]);
+        if (PickOverride is { } fake) return (await fake(req)) is [var f, ..] ? f : null;
+        var file = await StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions { Title = "Brief exportieren", SuggestedFileName = stem, DefaultExtension = "pdf",
+            FileTypeChoices = [new Avalonia.Platform.Storage.FilePickerFileType("PDF") { Patterns = ["*.pdf"] }, new Avalonia.Platform.Storage.FilePickerFileType("Word-Dokument") { Patterns = ["*.docx"] }] });
+        return file is null ? null : Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(file);
+    }
+
+    /// <summary>Senden (Wunsch 03.11.2026): per E-Mail mit dem PDF im Anhang – das Mailprogramm öffnet den Entwurf, abschicken tust du selbst –,
+    /// oder ausdrucken und per Post. Trendo verschickt nichts von sich aus.</summary>
+    private Control LetterSendCard(LetterDraft d, string pdf)
+    {
+        var emails = Mail.Contacts().Where(c => c.Email.Trim().Length > 0 && d.Recipient.Contains(c.Name.Trim().Length > 0 ? c.Name.Trim() : "\u0000", StringComparison.OrdinalIgnoreCase)).Select(c => c.Email.Trim()).Distinct().ToList();
+        var to = new TextBox { Name = "letter-send-to", Text = string.Join(", ", emails), PlaceholderText = "E-Mail-Adresse des Empfängers (kannst du auch im Mailprogramm eintragen)", MinWidth = 300 };
+        var mail = new Button { Name = "letter-send-mail", Content = "✉ Per E-Mail senden …", Background = Accent, Foreground = Brushes.White, Padding = new Thickness(12, 6) };
+        ToolTip.SetTip(mail, "Öffnet dein Mailprogramm mit dem Brief als PDF im Anhang – dort prüfst du und klickst auf „Senden“");
+        mail.Click += (_, _) =>
+        {
+            var body = $"{(d.Salutation.Trim().Length > 0 ? d.Salutation.Trim() : "Guten Tag,")}\n\nanbei sende ich Ihnen mein Schreiben „{d.Subject.Trim()}“ als PDF.\n\n{d.Closing.Trim()}\n{d.SenderName.Trim()}";
+            var draft = new MailDraft((to.Text ?? "").Trim(), d.Subject.Trim(), body, "", [pdf]);
+            LastDraftFile = Mail.SaveDraft(draft, MailDraftFolder, DateTimeOffset.Now);
+            Launch(LastDraftFile);
+            _core.Audit.Append(Principal.LocalOwner.Name, "letter.send.mail", Path.GetFileName(pdf));
+            _letterMsg = "✓ Dein Mailprogramm öffnet den Entwurf mit dem PDF im Anhang – dort prüfen und auf „Senden“ klicken."; _letterSendOpen = false; Show("brief");
+        };
+        var print = new Button { Name = "letter-send-print", Content = "🖨 Drucken (per Post)", Padding = new Thickness(12, 6) };
+        ToolTip.SetTip(print, "Öffnet das PDF – dort drucken, an den Marken falten und in einen Fensterumschlag stecken");
+        print.Click += (_, _) => { Launch(pdf); _letterMsg = "PDF geöffnet – drucken, an den Falzmarken falten, in den Fensterumschlag."; _letterSendOpen = false; Show("brief"); };
+        var folder = new Button { Name = "letter-send-folder", Content = "Ordner öffnen", Padding = new Thickness(12, 6) };
+        folder.Click += (_, _) => Launch(Path.GetDirectoryName(pdf)!);
+        var close = new Button { Name = "letter-send-close", Content = "Schließen", Padding = new Thickness(12, 6) };
+        close.Click += (_, _) => { _letterSendOpen = false; Show("brief"); };
+        var row = new WrapPanel { Children = { mail, Sp(print), Sp(folder), Sp(close) } };
+        if (_case is not null) { var rel = new Button { Name = "letter-send-case", Content = "Zur Freigabe in der Akte", Padding = new Thickness(12, 6) }; rel.Click += (_, _) => Show("ausgabe"); row.Children.Add(Sp(rel)); }
+        return new Border { Name = "letter-send-card", Background = TileBg, BorderBrush = Accent, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 10), Margin = new Thickness(0, 4, 0, 8),
+            Child = new StackPanel { Spacing = 6, Children = {
+                new TextBlock { Text = "Brief senden", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
+                P($"Fertig als PDF: {Path.GetFileName(pdf)}. Trendo schickt nichts von sich aus – du entscheidest im Mailprogramm oder druckst ihn aus.", null, 11.5),
+                to, row } } };
+    }
     public LetterDraft Letter => _letter ??= NewLetter();
     private string _letterMsg = "";
 
@@ -132,6 +178,14 @@ public partial class MainWindow
         s2.Children.Add(FieldLabel("Empfänger"));
         s2.Children.Add(Field("recipient", "Firma, Name, Straße, PLZ Ort", d.Recipient, v => d.Recipient = v, multi: true));
         s2.Children.Add(new WrapPanel { Children = { Nav("letter-wiz-back-2", "← Zurück", 1), Nav("letter-wiz-next-2", "Weiter →", 3, true) } });
+        // Wunsch 03.11.2026: Designs wie in Canva – gleich oben erreichbar
+        var toDesign = new Button { Name = "letter-goto-design", Content = "🎨 Design wählen (" + LetterDesigns.Styles.Length + " Vorlagen)", Margin = new Thickness(0, 4, 0, 0) };
+        toDesign.Click += (_, _) =>
+        {
+            LetterNote("🎨 Vorlage anklicken – rechts siehst du sofort, wie dein Brief damit aussieht. Farbe, Kopf und Schrift kannst du danach ändern.");
+            Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(this).OfType<Control>().FirstOrDefault(c => c.Name == "letter-design-gallery")?.BringIntoView();
+        };
+        s3.Children.Add(toDesign);
         s3.Children.Add(FieldLabel("Betreff"));
         var subjectBox = Field("subject", "Betreff", d.Subject, v => d.Subject = v);
         s3.Children.Add(subjectBox);
@@ -167,7 +221,17 @@ public partial class MainWindow
         async Task<string?> Save(bool asPdf, string verb)
         {
             Check();
-            if (Letters.Validate(d).Any(x => x.Blocking)) { msg.Text = "Bitte zuerst die Pflichtpunkte ergänzen."; return null; }
+            var blocking = Letters.Validate(d).Where(x => x.Blocking).ToList();
+            if (blocking.Count > 0)
+            {
+                // Wunsch 03.11.2026: nicht still scheitern – sagen, was fehlt, und hinspringen
+                var b0 = blocking[0];
+                var hint = $"Noch nicht fertig – {b0.Field}: {b0.Message}" + (blocking.Count > 1 ? $" (und {blocking.Count - 1} weitere Punkte, siehe „Brief prüfen“)" : "");
+                _letterMsg = msg.Text = hint; Toast(hint);
+                var field = b0.Field switch { "Absender" => "letter-sender-name", "Empfänger" => "letter-recipient", "Betreff" => "letter-subject", "Text" => "letter-body", _ => "letter-subject" };
+                LetterGo(field, hint);
+                return null;
+            }
             _settings.SenderStreet = d.SenderStreet; _settings.SenderCity = d.SenderCity; _settings.SenderContact = d.SenderContact;
             if (string.IsNullOrWhiteSpace(_settings.Name)) _settings.Name = d.SenderName;
             SaveSettings();
@@ -175,11 +239,14 @@ public partial class MainWindow
             _letterSaved = true; _letterStepSync?.Invoke();
             _core.Audit.Append(Principal.LocalOwner.Name, "letter.save", $"{Path.GetFileName(docx)} v{v}");
             msg.Text = _letterMsg = $"{verb}: {Path.GetFileName(docx)}{(v > 1 ? $" (Version {v})" : "")}";
-            if (asPdf && ToolPath("libreoffice") is { } so)
+            if (asPdf)
             {
-                msg.Text = "Erstelle PDF …";
-                var (ok, m, p) = await PdfExport.ConvertAsync(new RealProcessRunner(), so, docx);
-                msg.Text = _letterMsg = ok ? $"Gespeichert: {Path.GetFileName(docx)} und {Path.GetFileName(p)}" : $"Word-Datei gespeichert, PDF fehlgeschlagen: {m}";
+                // Wunsch 03.11.2026: „Als PDF“ ohne LibreOffice – Trendo setzt das PDF selbst (gleiche Lage wie die Vorschau)
+                var pdfFile = Path.ChangeExtension(docx, ".pdf");
+                await Task.Run(() => LetterPdf.Write(d.Copy(), pdfFile));
+                _letterPdf = pdfFile;
+                msg.Text = _letterMsg = $"{verb}: {Path.GetFileName(docx)} und {Path.GetFileName(pdfFile)}";
+                NotifyFileResult(_letterMsg);
             }
             return docx;
         }
@@ -193,17 +260,32 @@ public partial class MainWindow
         }
         var save = Act("letter-save", "Speichern", Mdi.FileDocumentEdit, true);
         var export = Act("letter-export", "Exportieren", Mdi.Folder);
-        var pdf = Act("letter-pdf", "Als PDF", Mdi.FileDocumentOutline); pdf.IsEnabled = ToolPath("libreoffice") is not null;
-        if (!pdf.IsEnabled) ToolTip.SetTip(pdf, "Braucht LibreOffice (Zusatzprogramme)");
+        var pdf = Act("letter-pdf", "Als PDF", Mdi.FileDocumentOutline);
+        ToolTip.SetTip(pdf, "Brief als PDF speichern (im Ordner „Briefe“)");
         var send = Act("letter-send", "Senden", Mdi.Send);
         save.Click += async (_, _) => await SafeSave(false, "Gespeichert in Briefe");
-        export.Click += async (_, _) => await SafeSave(false, "Exportiert nach Briefe");
-        pdf.Click += async (_, _) => await SafeSave(true, "Gespeichert");
-        send.Click += (_, _) =>
+        ToolTip.SetTip(export, "Speichern unter … – Ort und Format (PDF oder Word) selbst wählen");
+        export.Click += async (_, _) =>
         {
-            if (_case is null) { msg.Text = "Senden bleibt an der Freigabe. Trendo verschickt den Brief nicht selbst. Lege dafür eine Akte an."; return; }
-            msg.Text = "Senden bleibt an der Freigabe. Trendo verschickt den Brief nicht selbst.";
-            Show("ausgabe");
+            try
+            {
+                if (await Save(false, "Gespeichert") is null) return;
+                var target = await PickLetterTarget(Letters.FileStem(d));
+                if (target is null) { msg.Text = "Exportieren abgebrochen."; return; }
+                if (Path.GetExtension(target).Equals(".docx", StringComparison.OrdinalIgnoreCase)) Letters.WriteDocx(d.Copy(), target);
+                else { if (!target.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)) target += ".pdf"; await Task.Run(() => LetterPdf.Write(d.Copy(), target)); }
+                _core.Audit.Append(Principal.LocalOwner.Name, "letter.export", Path.GetFileName(target));
+                msg.Text = _letterMsg = "Exportiert: " + target; NotifyFileResult(_letterMsg);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException) { msg.Text = "Exportieren fehlgeschlagen: " + ex.Message; }
+        };
+        pdf.Click += async (_, _) => await SafeSave(true, "Als PDF gespeichert");
+        ToolTip.SetTip(send, "Per E-Mail (PDF im Anhang) oder zum Drucken – abschicken tust du selbst");
+        send.Click += async (_, _) =>
+        {
+            await SafeSave(true, "Bereit zum Senden");
+            if (_letterPdf is null || !File.Exists(_letterPdf)) return;
+            _letterSendOpen = true; Show("brief");
         };
         improve.Click += async (_, _) =>
         {
@@ -223,6 +305,7 @@ public partial class MainWindow
         done.Click += async (_, _) => await SafeSave(pdf.IsEnabled, "Fertig – gespeichert");
         s3.Children.Add(new WrapPanel { Children = { Nav("letter-wiz-back-3", "← Zurück", 2), done } });
         form.Children.Insert(1, msg);
+        if (_letterSendOpen && _letterPdf is { } sentPdf && File.Exists(sentPdf)) form.Children.Insert(2, LetterSendCard(d, sentPdf));
         form.Children.Add(new Expander { Name = "letter-more", Header = "Mehr – Ort, Anlagen, Frist, Serienbrief, Druck", IsExpanded = _letterAll, HorizontalAlignment = HorizontalAlignment.Stretch,
             Content = new StackPanel { Spacing = 4, Children = { more, LetterTools(d) } } });
         var arch = new LetterArchive(ProjectsRoot).List().Take(8).ToList();

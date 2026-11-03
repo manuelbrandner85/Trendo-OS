@@ -447,22 +447,52 @@ public partial class MainWindow
     /// Das Anschriftfeld und die Falzmarken nach DIN 5008 bleiben unberührt.</summary>
     static void LetterDesignHead(Canvas p1, LetterDraft d, bool formA, Func<string, string, double, IBrush, string?, bool, double?, bool, TextBlock> T, Action<Canvas, Control, double, double> At, IBrush accent, IBrush grey)
     {
-        var band = d.Header == "band"; var hdrH = formA ? 22.0 : 32.0;
+        var h = d.Header; var hdrH = formA ? 22.0 : 32.0;
+        var band = h is "band" or "zweifarbig";
         IBrush onBand = Brushes.White, onBandSoft = Brush.Parse("#E6FFFFFF");
-        if (band) At(p1, new Rectangle { Name = "letter-design-band", Width = 210, Height = hdrH, Fill = accent }, 0, 0);
-        if (d.Header == "seitenleiste") At(p1, new Rectangle { Name = "letter-design-side", Width = 7, Height = 297, Fill = accent }, 0, 0);
+        if (h == "band") At(p1, new Rectangle { Name = "letter-design-band", Width = 210, Height = hdrH, Fill = accent }, 0, 0);
+        if (h == "zweifarbig")
+        {
+            At(p1, new Rectangle { Name = "letter-design-band", Width = 210, Height = hdrH - 3, Fill = accent }, 0, 0);
+            At(p1, new Rectangle { Name = "letter-design-stripe", Width = 210, Height = 3, Fill = Brush.Parse(LetterDesigns.Second(d)) }, 0, hdrH - 3);
+        }
+        if (h == "seitenleiste") At(p1, new Rectangle { Name = "letter-design-side", Width = 7, Height = 297, Fill = accent }, 0, 0);
         var hasPhoto = File.Exists(d.Photo);
-        At(p1, T("letter-preview-sender-name", d.SenderName, formA ? 16 : 20, band ? onBand : accent, "letter-sender-name", true, 125, false), 25, formA ? 4 : 7);
-        if (d.Tagline.Length > 0) At(p1, T("letter-preview-tagline", d.Tagline, 10, band ? onBandSoft : grey, "letter-sender-name", false, 125, true), 25, formA ? 11.5 : 15.5);
-        var contact = T("letter-preview-sender", string.Join("\n", new[] { d.SenderStreet, d.SenderCity, d.SenderContact }.Where(s => !string.IsNullOrWhiteSpace(s))), 8.5, band ? onBandSoft : grey, "letter-sender-street", false, 60, true);
-        contact.TextAlignment = TextAlignment.Right;
-        At(p1, contact, hasPhoto ? 103 : 130, formA ? 4 : 7);
-        if (d.Header is "linie" or "seitenleiste") At(p1, new Rectangle { Name = "letter-design-line", Width = 165, Height = 0.6, Fill = accent }, 25, hdrH - 3);
+        var contactLines = new[] { d.SenderStreet, d.SenderCity, d.SenderContact }.Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
+        if (h == "mittig")
+        {
+            var name = T("letter-preview-sender-name", d.SenderName, formA ? 16 : 20, accent, "letter-sender-name", true, 160, false); name.TextAlignment = TextAlignment.Center; At(p1, name, 25, formA ? 4 : 7);
+            if (d.Tagline.Length > 0) { var tl = T("letter-preview-tagline", d.Tagline, 10, grey, "letter-sender-name", false, 160, true); tl.TextAlignment = TextAlignment.Center; At(p1, tl, 25, formA ? 11.5 : 15.5); }
+            var c = T("letter-preview-sender", string.Join("  ·  ", contactLines), 8.5, grey, "letter-sender-street", false, 180, true); c.TextAlignment = TextAlignment.Center; At(p1, c, 15, formA ? 16 : 21.5);
+            At(p1, new Rectangle { Name = "letter-design-line", Width = 60, Height = 0.6, Fill = accent }, 75, hdrH - 3);
+        }
+        else
+        {
+            At(p1, T("letter-preview-sender-name", d.SenderName, formA ? 16 : 20, band ? onBand : accent, "letter-sender-name", true, 125, false), 25, formA ? 4 : 7);
+            if (d.Tagline.Length > 0) At(p1, T("letter-preview-tagline", d.Tagline, 10, band ? onBandSoft : grey, "letter-sender-name", false, 125, true), 25, formA ? 11.5 : 15.5);
+            var contact = T("letter-preview-sender", string.Join("\n", contactLines), 8.5, band ? onBandSoft : grey, "letter-sender-street", false, 60, true);
+            contact.TextAlignment = TextAlignment.Right;
+            At(p1, contact, hasPhoto ? 103 : 130, formA ? 4 : 7);
+            if (h is "linie" or "seitenleiste" or "rahmen") At(p1, new Rectangle { Name = "letter-design-line", Width = 165, Height = 0.6, Fill = accent }, 25, hdrH - 3);
+        }
         if (hasPhoto)
         {
             var img = new Image { Name = "letter-preview-photo", Width = formA ? 19 : 26, Height = formA ? 24 : 33, Stretch = Stretch.UniformToFill };
             try { img.Source = new Avalonia.Media.Imaging.Bitmap(d.Photo); } catch (Exception) { img.IsVisible = false; }
             At(p1, new Border { ClipToBounds = true, BorderBrush = band ? onBand : accent, BorderThickness = new Thickness(0.6), Child = img }, formA ? 178 : 170, 4);
+        }
+    }
+
+    /// <summary>Gestaltung, die auf jeder Seite steht: Rahmen und Fußband (wie im PDF).</summary>
+    static void LetterPageDeco(Canvas p, LetterDraft d, IBrush accent, Func<string, string, double, IBrush, string?, bool, double?, bool, TextBlock> T, Action<Canvas, Control, double, double> At)
+    {
+        if (!d.Designed) return;
+        if (d.Header == "rahmen") At(p, new Rectangle { Name = "letter-design-frame", Width = 194, Height = 281, Stroke = accent, StrokeThickness = 0.5 }, 8, 8);
+        if (d.Header == "fussband")
+        {
+            At(p, new Rectangle { Name = "letter-design-foot", Width = 210, Height = 12, Fill = accent }, 0, 285);
+            var c = T("letter-preview-foot", string.Join("  ·  ", new[] { d.SenderName, d.SenderStreet, d.SenderCity, d.SenderContact }.Where(s => !string.IsNullOrWhiteSpace(s))), 8.5, Brushes.White, null, false, 180, false);
+            c.TextAlignment = TextAlignment.Center; At(p, c, 15, 288.5);
         }
     }
 
@@ -499,6 +529,7 @@ public partial class MainWindow
         void At(Canvas p, Control c, double x, double y) { Canvas.SetLeft(c, x); Canvas.SetTop(c, y); p.Children.Add(c); }
         void Marks(Canvas p)
         {
+            if (d.Designed) LetterPageDeco(p, d, accent, T, At); // Rahmen, Fußband auf jeder Seite
             if (!d.PrintMarks) return;
             foreach (var y in formA ? new[] { 87.0, 192.0 } : [105.0, 210.0]) At(p, new Line { StartPoint = new Point(0, 0), EndPoint = new Point(5, 0), Stroke = grey, StrokeThickness = 0.3 }, 3, y);
             At(p, new Line { StartPoint = new Point(0, 0), EndPoint = new Point(7, 0), Stroke = grey, StrokeThickness = 0.3 }, 3, 148.5);
@@ -525,7 +556,7 @@ public partial class MainWindow
         double sigH = 0; if (File.Exists(d.SignatureFile)) try { var (sw, sh) = XrPlus.ImageSize(File.ReadAllBytes(d.SignatureFile)); if (sw > 0) sigH = 45.0 * sh / sw; } catch (IOException) { }
         var attLines = string.IsNullOrWhiteSpace(d.Attachments) ? 0 : 1 + LetterLines(d.Attachments.Trim(), 11, 165).Count;
         var endH = 4.2 + lineH + (sigH > 0 ? sigH + 1 : 12) + lineH + (attLines > 0 ? 6 + attLines * lineH : 0);
-        const double Bottom = 277, FollowTop = 27;
+        double Bottom = d.Designed && d.Header == "fussband" ? 270 : 277; const double FollowTop = 27;
         var page = p1; var chunk = new List<string>(); var chunkTop = y; var pageNo = 1;
         void Flush()
         {
@@ -550,7 +581,7 @@ public partial class MainWindow
         if (pages.Count > 1)
             for (var i = 0; i < pages.Count; i++)
             {
-                At(pages[i], T(i == 0 ? "letter-preview-pageno" : $"letter-preview-pageno-{i + 1}", $"Seite {i + 1} von {pages.Count}", 8, grey, null, width: 40), 165, 287);
+                At(pages[i], T(i == 0 ? "letter-preview-pageno" : $"letter-preview-pageno-{i + 1}", $"Seite {i + 1} von {pages.Count}", 8, grey, null, width: 40), 165, d.Designed && d.Header == "fussband" ? 279 : 287);
                 if (i > 0 && d.Designed) At(pages[i], new Rectangle { Width = 165, Height = 0.5, Fill = accent }, 25, 20); // Design: feine Linie auch auf Folgeseiten
                 if (i > 0) At(pages[i], T($"letter-preview-head-{i + 1}", (d.SenderName.Trim().Length > 0 ? d.SenderName.Trim() + " · " : "") + d.Subject, 8, grey, null, width: 160, wrap: false), 25, 15);
             }

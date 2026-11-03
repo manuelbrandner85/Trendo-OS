@@ -7,7 +7,8 @@ namespace Trendo.Core;
 /// <summary>Kontakt im Adressbuch (alle Felder außer Name sind freiwillig; ältere Daten ohne die neuen Felder bleiben lesbar).</summary>
 public sealed record Contact(string Id, string Name, string Email, string Phone = "", string Note = "", string Mobile = "", string Company = "", string Street = "", string City = "",
     DateOnly? Birthday = null, List<string>? Groups = null, string Photo = "", bool Favorite = false, string Website = "");
-public sealed record MailDraft(string To, string Subject, string Body, string Cc = "");
+/// <summary>E-Mail-Entwurf. <paramref name="Attachments"/>: Dateien, die als Anhang mitgehen (z. B. der Brief als PDF).</summary>
+public sealed record MailDraft(string To, string Subject, string Body, string Cc = "", IReadOnlyList<string>? Attachments = null);
 public sealed record ParsedMail(string From, string To, string Subject, string Date, string Body)
 {
     /// <summary>Weitere Empfänger (Kopie) – für „Allen antworten“.</summary>
@@ -67,7 +68,22 @@ public sealed partial class MailCenter
     {
         static string H(string s) => s.All(c => c < 128) ? s : $"=?UTF-8?B?{Convert.ToBase64String(Encoding.UTF8.GetBytes(s))}?=";
         var body = Convert.ToBase64String(Encoding.UTF8.GetBytes(d.Body.Replace("\r\n", "\n").Replace("\n", "\r\n")), Base64FormattingOptions.InsertLineBreaks);
-        return $"X-Unsent: 1\r\nTo: {d.To}\r\n{(d.Cc != "" ? $"Cc: {d.Cc}\r\n" : "")}Subject: {H(d.Subject)}\r\nDate: {now:ddd, dd MMM yyyy HH:mm:ss zzz}\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: base64\r\n\r\n{body}\r\n".Replace("+01:00", "+0100").Replace("+02:00", "+0200");
+        var head = $"X-Unsent: 1\r\nTo: {d.To}\r\n{(d.Cc != "" ? $"Cc: {d.Cc}\r\n" : "")}Subject: {H(d.Subject)}\r\nDate: {now:ddd, dd MMM yyyy HH:mm:ss zzz}\r\nMIME-Version: 1.0\r\n".Replace("+01:00", "+0100").Replace("+02:00", "+0200");
+        var files = (d.Attachments ?? []).Where(File.Exists).ToList();
+        if (files.Count == 0) return head + $"Content-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: base64\r\n\r\n{body}\r\n";
+        // mit Anhängen: multipart/mixed (Brief als PDF u. a.)
+        var b = "trendo-" + Guid.NewGuid().ToString("N");
+        var sb = new StringBuilder(head + $"Content-Type: multipart/mixed; boundary=\"{b}\"\r\n\r\n");
+        sb.Append($"--{b}\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: base64\r\n\r\n{body}\r\n");
+        foreach (var f in files)
+        {
+            var name = H(Path.GetFileName(f));
+            var type = Path.GetExtension(f).ToLowerInvariant() switch { ".pdf" => "application/pdf", ".docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document", ".png" => "image/png", ".jpg" or ".jpeg" => "image/jpeg", _ => "application/octet-stream" };
+            sb.Append($"--{b}\r\nContent-Type: {type}; name=\"{name}\"\r\nContent-Disposition: attachment; filename=\"{name}\"\r\nContent-Transfer-Encoding: base64\r\n\r\n");
+            sb.Append(Convert.ToBase64String(File.ReadAllBytes(f), Base64FormattingOptions.InsertLineBreaks)).Append("\r\n");
+        }
+        sb.Append($"--{b}--\r\n");
+        return sb.ToString();
     }
 
     public string SaveDraft(MailDraft d, string folder, DateTimeOffset now)

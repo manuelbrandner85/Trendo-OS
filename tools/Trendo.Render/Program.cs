@@ -267,7 +267,11 @@ else if (shot == "seite")
         var dict = Path.Combine(Environment.CurrentDirectory, "artifacts", "vollpaket", "staging", "libreoffice", "App", "libreoffice", "share", "extensions", "dict-de");
         var dst = Path.Combine(root, "werkzeuge", "libreoffice", "App", "libreoffice", "share", "extensions", "dict-de");
         if (File.Exists(Path.Combine(dict, "de_DE_frami.dic"))) { Directory.CreateDirectory(dst); foreach (var e in new[] { ".dic", ".aff" }) File.Copy(Path.Combine(dict, "de_DE_frami" + e), Path.Combine(dst, "de_DE_frami" + e), true); }
-        l.SignatureFile = sig; win.LetterGoStep(3); win.LetterSpellNow();
+        l.SignatureFile = sig;
+        var briefDesign = Environment.GetEnvironmentVariable("TRENDO_BRIEF_DEMO") ?? "";
+        if (briefDesign.Length > 1) win.LetterSetDesign(briefDesign, tagline: "Kauffrau für Büromanagement"); // z. B. navy-gold
+        win.LetterGoStep(3); win.LetterSpellNow();
+        if (briefDesign.Length > 1) { for (var i = 0; i < 10; i++) Dispatcher.UIThread.RunJobs(); Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(win).OfType<Avalonia.Controls.Control>().FirstOrDefault(c => c.Name == "letter-design-gallery")?.BringIntoView(); }
     }
     if (Environment.GetEnvironmentVariable("TRENDO_TABELLE_DEMO") is { Length: > 0 } tabDemo) // Ausgabenliste mit Autofilter bzw. Pivot (erfundene Beispielwerte)
     {

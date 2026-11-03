@@ -488,7 +488,7 @@ public class W1_Letter
         Assert.Equal("brief", w.CurrentView);
         w.Find<Button>("letter-cat-kuendigung").Press();
         w.Find<Button>("letter-save").Press(); await Task.Delay(20); Dispatcher.UIThread.RunJobs();
-        Assert.Contains("Pflichtpunkte", w.Find<TextBlock>("letter-msg").Text);
+        Assert.Contains("Noch nicht fertig – Absender", w.Find<TextBlock>("letter-msg").Text); // sagt, was fehlt, und springt hin
         w.Find<TextBox>("letter-sender-name").Text = "Erika Muster";
         w.Find<TextBox>("letter-sender-street").Text = "Hauptstraße 1";
         w.Find<TextBox>("letter-sender-city").Text = "10115 Berlin";
