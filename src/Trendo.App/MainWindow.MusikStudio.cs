@@ -60,15 +60,17 @@ public partial class MainWindow
                         for (var n = 2; File.Exists(file); n++) file = Path.Combine(dir, $"{stem} {n}{(st.AudioUrls.Count > 1 ? $" ({i + 1})" : "")}.{job.Format}");
                         await client.DownloadAsync(st.AudioUrls[i], file);
                         made.Add(Songs.Add(new MusicSong { Title = title + (st.AudioUrls.Count > 1 ? $" ({i + 1})" : "") + (kind == "abschnitt" ? " – neuer Abschnitt" : kind == "cover" ? " – Cover" : ""),
-                            Style = job.Prompt, Lyrics = job.Lyrics, Language = job.Language, Seconds = job.Seconds, Bpm = job.Bpm, Key = job.Key, TimeSignature = job.TimeSignature,
+                            Style = job.SampleQuery is null ? job.Prompt : job.SampleQuery.Split(", sung in")[0], Lyrics = job.SampleQuery is not null && st.Lyrics is { Length: > 0 } sung ? sung : job.Lyrics,
+                            Language = job.Language, Seconds = job.SampleQuery is not null && st.Duration is double dur && dur > 0 ? dur : job.Seconds, Bpm = job.Bpm, Key = job.Key, TimeSignature = job.TimeSignature,
                             File = file, Kind = kind, ParentId = src?.Id }));
                     }
                     _msSel = made[0].Id;
+                    if (CoverImageOverride is not null || (!_opt.Isolated && CoverModel() is not null)) _ = MsMakeCover(made[0].Id, auto: true); // gleich ein passendes Cover dazu
                     _msMsg = made.Count > 1 ? $"✓ {made.Count} Varianten fertig – anhören und die schönere behalten." : "✓ Fertig.";
                     _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.fertig", $"{kind} {made.Count}");
                     return made;
                 }
-                if (DateTime.UtcNow - t0 > MusicTimeout(job.Seconds)) throw new InvalidOperationException("Das dauert ungewöhnlich lange – bitte erneut versuchen.");
+                if (DateTime.UtcNow - t0 > MusicTimeout(job.SampleQuery is null ? job.Seconds : 600)) throw new InvalidOperationException("Das dauert ungewöhnlich lange – bitte erneut versuchen.");
                 if (CurrentView == MS && _msRunningText is { } rt) rt.Text = $"„{title}“ entsteht … {(int)(DateTime.UtcNow - t0).TotalSeconds} s";
             }
         }
@@ -97,6 +99,39 @@ public partial class MainWindow
         if (_msBpm.Length > 0 && bpm is null or < 30 or > 300) throw new ArgumentException("Tempo bitte zwischen 30 und 300 BPM (oder leer für automatisch).");
         return new(_msStyle.Trim(), _msInstr ? "[Instrumental]" : SongLibrary.ToAceLyrics(_msLyrics), secs, lang, _msVariants, bpm,
             _msKey.Length > 0 ? _msKey : null, _msTime.Length > 0 ? _msTime : null);
+    }
+
+    /// <summary>Wunsch 03.11.2026: Im Einfach-Modus mit Gesang (nicht nur instrumental). Zuerst schreibt die Text-KI von Trendo den Liedtext
+    /// (dann gilt die gewählte Länge genau); ohne Text-KI schreibt ACE-Step im eigenen Einfach-Modus Text und Gesang selbst – die Länge wählt es dann selbst.</summary>
+    public async Task<List<MusicSong>> MsCreateWithVoice(AceStepClient.Job j, string title)
+    {
+        if (_msPro || j.Lyrics.Trim().Length > 0 || j.Task != "text2music") return await MusicStudioCreate(j, title);
+        var langName = AceStepClient.Languages.FirstOrDefault(x => x.Code == j.Language).Name ?? j.Language;
+        var english = j.Language switch { "de" => "German", "en" => "English", _ => TryCulture(j.Language) };
+        var prompt = $"Schreibe einen Liedtext auf {langName} für ein Lied von etwa {j.Seconds} Sekunden. Thema/Stil: {j.Prompt}. "
+            + "Aufbau mit Abschnitts-Marken in eckigen Klammern auf eigener Zeile, z. B. [Strophe], [Refrain], [Strophe], [Refrain]" + (j.Seconds >= 150 ? ", [Bridge], [Refrain]" : "") + ". "
+            + "Kurze, singbare Zeilen, gute Reime, keine Namen echter Künstler, keine Zeilen aus bekannten Liedern. Gib nur den Liedtext aus.";
+        _msMsg = "Der Liedtext entsteht …"; Show(MS);
+        string? text = null;
+        try
+        {
+            text = MusicLyricsOverride is { } o ? await o(prompt)
+                : _kiConnected || !_opt.Isolated ? (await Intel.AskAsync(new KiRequest(prompt, PreferredModel: KiModelName, UseKnowledge: false, AllowRemote: true)) is { Ok: true } a ? a.Text : null) : null;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException or TaskCanceledException) { text = null; }
+        text = text?.Trim().Trim('`').Trim();
+        if (text is { Length: > 20 } && text.Contains('['))
+        {
+            _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.einfach", "text-ki");
+            return await MusicStudioCreate(j with { Lyrics = SongLibrary.ToAceLyrics(text) }, title);
+        }
+        // ohne Text-KI: ACE-Step schreibt und singt selbst
+        _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.einfach", "ace-sample");
+        var made = await MusicStudioCreate(j with { SampleQuery = $"{j.Prompt}, sung in {english}" }, title);
+        if (made.Count > 0) _msMsg += " Die Musik-KI hat Text und Gesang selbst geschrieben und die Länge selbst gewählt.";
+        return made;
+
+        static string TryCulture(string code) { try { return System.Globalization.CultureInfo.GetCultureInfo(code).EnglishName; } catch (System.Globalization.CultureNotFoundException) { return code; } }
     }
 
     /// <summary>Liedtext mit der KI (Claude, wenn verbunden) – Aufbau mit Abschnitten, in der gewählten Sprache.</summary>
@@ -205,7 +240,7 @@ public partial class MainWindow
         go.Click += (_, _) =>
         {
             Sync();
-            try { var j = MsJob(); var title = _msPro && _msTitle.Trim().Length > 0 ? _msTitle.Trim() : SongLibrary.TitleFrom(_msPro ? _msStyle : _msDesc, _msPro ? _msLyrics : ""); _ = MusicStudioCreate(j, title); }
+            try { var j = MsJob(); var title = _msPro && _msTitle.Trim().Length > 0 ? _msTitle.Trim() : SongLibrary.TitleFrom(_msPro ? _msStyle : _msDesc, _msPro ? _msLyrics : ""); _ = MsCreateWithVoice(j, title); }
             catch (ArgumentException ex) { _msMsg = ex.Message; Show(MS); }
         };
         sp.Children.Add(go);
@@ -219,9 +254,13 @@ public partial class MainWindow
 
     static string KeyDe(string k) => k.Replace(" major", "-Dur").Replace(" minor", "-Moll").Replace("#", "♯").Replace("Eb", "E♭").Replace("Ab", "A♭").Replace("Bb", "B");
 
-    /// <summary>Titelbild: ruhiger Farbverlauf je Lied (gleiches Lied = gleiche Farben) mit Notenzeichen.</summary>
+    /// <summary>Titelbild: das Cover-Bild des Lieds (siehe MusikCover), sonst ruhiger Farbverlauf je Lied mit Notenzeichen.</summary>
     Border MsCover(MusicSong s, double size)
     {
+        if (File.Exists(s.CoverFile))
+            try { return new Border { Width = size, Height = size, CornerRadius = new CornerRadius(size / 10), ClipToBounds = true, BoxShadow = BoxShadows.Parse("0 3 10 0 #66000000"),
+                Child = new Image { Source = new Avalonia.Media.Imaging.Bitmap(s.CoverFile), Stretch = Stretch.UniformToFill } }; }
+            catch (Exception e) when (e is IOException or ArgumentException or InvalidOperationException) { }
         var palette = new[] { ("#C9A227", "#5B3A00"), ("#2F86F6", "#0B1E46"), ("#E0475B", "#3B0A1A"), ("#22C55E", "#08321A"), ("#7C3AED", "#1E0B46"), ("#F59E0B", "#3D1E00"), ("#14B8A6", "#05302C"), ("#EC4899", "#3D0726") };
         var (a, b) = palette[Math.Abs(s.Id.GetHashCode() % palette.Length)];
         return new Border { Width = size, Height = size, CornerRadius = new CornerRadius(size / 8),
@@ -286,12 +325,13 @@ public partial class MainWindow
         if (s is null || !File.Exists(s.File))
             return MsCard("ms-detail", new StackPanel { Spacing = 8, Children = { H("Lied", 16), P("Wähle in der Mitte ein Lied – hier siehst du dann den Liedtext und kannst es weiterbearbeiten.", Muted, 12.5) } });
         var sp = new StackPanel { Spacing = 8 };
-        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { MsCover(s, 84),
+        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 12, Children = { MsCover(s, File.Exists(s.CoverFile) ? 120 : 84),
             new StackPanel { VerticalAlignment = VerticalAlignment.Center, Width = 210, Children = { new TextBlock { Name = "ms-detail-title", Text = s.Title, Foreground = Text, FontSize = 16, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
                 new TextBlock { Text = s.Style, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap } } } } });
         var lyr = string.IsNullOrWhiteSpace(s.Lyrics) ? "(Text von der KI)" : s.Lyrics == "[Instrumental]" ? "Instrumental" : s.Lyrics;
         sp.Children.Add(new Border { CornerRadius = new CornerRadius(10), Background = Brush.Parse("#14FFFFFF"), Padding = new Thickness(10), MaxHeight = 220,
             Child = new ScrollViewer { Content = new SelectableTextBlock { Name = "ms-detail-lyrics", Text = lyr, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap } } });
+        sp.Children.Add(MsCoverPanel(s)); // Wunsch 03.11.2026: Cover-Bild wie ein echtes Song-Cover
 
         // Abschnitt neu erzeugen
         var from = new NumericUpDown { Name = "ms-repaint-from", Minimum = 0, Maximum = (decimal)Math.Max(1, s.Seconds - 1), Value = 0, Increment = 1, FormatString = "0", Width = 100 };
@@ -322,6 +362,7 @@ public partial class MainWindow
         var actions = new WrapPanel { Children = {
             Act("ms-rename-ok", "Umbenennen", () => { Songs.Rename(s.Id, name.Text ?? ""); Show(MS); }),
             Act("ms-to-video", "In den Videoschnitt", () => MsToVideo(s)),
+            Act("ms-export-mp3c", "MP3 mit Cover", () => MsExportMp3WithCover(s)),
             Act("ms-export-wav", "Als WAV", () => MsExport(s, "wav")), Act("ms-export-flac", "Als FLAC", () => MsExport(s, "flac")),
             Act("ms-folder", "Ordner öffnen", () => Launch(Path.GetDirectoryName(s.File)!)),
             Act("ms-delete", "🗑 Löschen", () => { Songs.Remove(s.Id, p => { if (SongRecycleOverride is { } o) o(p); else RecycleBin.Move(p); }); _msSel = null; _msMsg = $"„{s.Title}“ liegt im Papierkorb."; _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.geloescht", s.Id); Show(MS); }) } };

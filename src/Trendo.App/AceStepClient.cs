@@ -86,7 +86,9 @@ public sealed class AceStepClient(HttpClient http, int port = AceStepClient.Defa
     /// <summary>Studio „Trendo Musik“: Auftrag mit allen geprüften Möglichkeiten (03.11.2026 auf einer RTX 5070 echt erprobt:
     /// Varianten, Sprachen, Abschnitt neu erzeugen und Cover gehen; Verlängern, Spuren trennen und Begleitung liefern mit dem Turbo-Modell kein brauchbares Ergebnis).</summary>
     public sealed record Job(string Prompt, string Lyrics, int Seconds, string Language, int Variants = 1, int? Bpm = null, string? Key = null, string? TimeSignature = null,
-        string Task = "text2music", double RepaintStart = 0, double RepaintEnd = -1, double CoverStrength = 0.6, string Format = "mp3");
+        string Task = "text2music", double RepaintStart = 0, double RepaintEnd = -1, double CoverStrength = 0.6, string Format = "mp3", string? SampleQuery = null);
+    // SampleQuery: Einfach-Modus von ACE-Step (am 03.11.2026 echt erprobt) – die Sprach-KI schreibt Liedtext, Stil, Tempo und Tonart selbst und singt;
+    // die Länge legt sie dabei selbst fest (gemessen: 100–120 s statt der gewünschten 60 s).
 
     public static readonly string[] Tasks = ["text2music", "repaint", "cover"];
     public static readonly string[] Keys = [.. new[] { "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B" }.SelectMany(n => new[] { n + " major", n + " minor" })];
@@ -113,6 +115,10 @@ public sealed class AceStepClient(HttpClient http, int port = AceStepClient.Defa
             if (j.RepaintEnd >= 0 && j.RepaintEnd - j.RepaintStart < 1) throw new ArgumentException("Der Abschnitt muss mindestens 1 Sekunde lang sein.");
             f["repainting_start"] = j.RepaintStart.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
             f["repainting_end"] = j.RepaintEnd.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture);
+        }
+        if (j.SampleQuery is { Length: > 0 } q && j.Task == "text2music")
+        {
+            f["sample_query"] = q.Trim(); f.Remove("lyrics"); f["prompt"] = ""; f["thinking"] = "true"; // Text schreibt ACE-Step – nicht „[Instrumental]“ schicken
         }
         if (j.Task == "cover") f["audio_cover_strength"] = Math.Clamp(j.CoverStrength, 0.1, 1.0).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
         return f;
@@ -152,6 +158,10 @@ public sealed class AceStepClient(HttpClient http, int port = AceStepClient.Defa
     {
         /// <summary>Alle erzeugten Stücke (Varianten) – das erste ist <see cref="AudioUrl"/>.</summary>
         public IReadOnlyList<string> AudioUrls { get; init; } = AudioUrl is null ? [] : [AudioUrl];
+        /// <summary>Was ACE-Step tatsächlich gesungen hat (im Einfach-Modus selbst geschrieben), Beschreibung und Länge.</summary>
+        public string? Lyrics { get; init; }
+        public string? Caption { get; init; }
+        public double? Duration { get; init; }
     }
 
     public static State ParseState(string body, string taskId)
@@ -160,15 +170,20 @@ public sealed class AceStepClient(HttpClient http, int port = AceStepClient.Defa
         var item = (data as JsonArray)?.FirstOrDefault(x => x?["task_id"]?.ToString() == taskId) ?? (data is JsonObject o && o["task_id"]?.ToString() == taskId ? o : null);
         if (item is null) return new(0, null, null);
         var status = item["status"]?.GetValue<int>() ?? 0;
-        string? url = null; List<string> urls = [];
+        string? url = null; List<string> urls = []; string? lyrics = null, caption = null; double? duration = null;
         // „result“ ist ein JSON-Text mit einer Liste der erzeugten Stücke
         if (item["result"] is JsonNode res)
         {
             var list = res is JsonValue v && v.TryGetValue<string>(out var txt) ? JsonNode.Parse(txt) : res;
             urls = (list as JsonArray)?.Select(x => x?["file"]?.ToString()).Where(f => !string.IsNullOrEmpty(f)).Cast<string>().ToList() ?? [];
             url = urls.FirstOrDefault();
+            if ((list as JsonArray)?.FirstOrDefault() is JsonObject first)
+            {
+                lyrics = first["lyrics"]?.ToString(); caption = first["prompt"]?.ToString();
+                if (first["metas"]?["duration"] is JsonValue dv && dv.TryGetValue<double>(out var d)) duration = d;
+            }
         }
-        return new(status, url, status == 2 ? item["error"]?.ToString() ?? "Erzeugen fehlgeschlagen." : null) { AudioUrls = urls };
+        return new(status, url, status == 2 ? item["error"]?.ToString() ?? "Erzeugen fehlgeschlagen." : null) { AudioUrls = urls, Lyrics = lyrics, Caption = caption, Duration = duration };
     }
 
     public async Task<State> QueryAsync(string taskId, CancellationToken ct = default)

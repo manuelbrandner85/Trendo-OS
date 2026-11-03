@@ -20,7 +20,7 @@ public sealed partial class ClaudeMemory(string dataRoot)
     void Save(string chatId, List<string> items)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(FileOf(chatId))!);
-        var tmp = FileOf(chatId) + ".tmp"; File.WriteAllText(tmp, JsonSerializer.Serialize(items)); File.Move(tmp, FileOf(chatId), true);
+        var tmp = FileOf(chatId) + ".tmp"; File.WriteAllText(tmp, JsonSerializer.Serialize(items)); SafeFile.Move(tmp, FileOf(chatId)); // Virenscanner/Indexdienst kann die Datei kurz halten
     }
 
     /// <summary>Punkt merken (doppelte und leere übergehen; höchstens <see cref="Max"/> – der älteste fällt dann weg). Gibt true zurück, wenn er neu ist.</summary>

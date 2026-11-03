@@ -100,7 +100,7 @@ public sealed partial class StudioLearning(string dataRoot)
     void Save(string studio, List<Rule> rules)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(FileOf(studio))!);
-        var tmp = FileOf(studio) + ".tmp"; File.WriteAllText(tmp, JsonSerializer.Serialize(rules)); File.Move(tmp, FileOf(studio), true);
+        var tmp = FileOf(studio) + ".tmp"; File.WriteAllText(tmp, JsonSerializer.Serialize(rules)); SafeFile.Move(tmp, FileOf(studio)); // Virenscanner/Indexdienst kann die Datei kurz halten
     }
     public IReadOnlyList<Rule> Active(string studio) => All(studio).Where(r => r.Status == State.Aktiv).ToList();
     public IReadOnlyList<Rule> Pending(string studio) => All(studio).Where(r => r.Status == State.Vorschlag).ToList();

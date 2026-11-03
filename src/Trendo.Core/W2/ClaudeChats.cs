@@ -36,7 +36,7 @@ public sealed partial class ClaudeChats(string dataRoot)
     void Save(string studio, List<Chat> all)
     {
         Directory.CreateDirectory(Dir);
-        var tmp = FileOf(studio) + ".tmp"; File.WriteAllText(tmp, JsonSerializer.Serialize(all, Json)); File.Move(tmp, FileOf(studio), true);
+        var tmp = FileOf(studio) + ".tmp"; File.WriteAllText(tmp, JsonSerializer.Serialize(all, Json)); SafeFile.Move(tmp, FileOf(studio)); // Virenscanner/Indexdienst kann die Datei kurz halten
     }
 
     /// <summary>Projekte des Studios, zuletzt benutztes zuerst.</summary>

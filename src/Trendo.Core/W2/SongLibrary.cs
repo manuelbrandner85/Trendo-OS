@@ -19,6 +19,12 @@ public sealed class MusicSong
     public string Kind { get; set; } = "neu";
     public string? ParentId { get; set; }
     public bool Favorite { get; set; }
+    /// <summary>Cover-Bild (JPEG, 1400 × 1400) – siehe <see cref="SongCover"/>; leer = noch keins.</summary>
+    public string CoverFile { get; set; } = "";
+    public string CoverLayout { get; set; } = "unten";
+    /// <summary>Name auf dem Cover (Künstlername); leer = ohne Namen.</summary>
+    public string Artist { get; set; } = "";
+    public int CoverSeed { get; set; }
     public DateTimeOffset Created { get; set; } = DateTimeOffset.Now;
 }
 
@@ -37,7 +43,7 @@ public sealed class SongLibrary(string dataRoot)
     void Save(List<MusicSong> list)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-        var tmp = FilePath + ".neu"; System.IO.File.WriteAllText(tmp, JsonSerializer.Serialize(list, Opt)); System.IO.File.Move(tmp, FilePath, true);
+        var tmp = FilePath + ".neu"; System.IO.File.WriteAllText(tmp, JsonSerializer.Serialize(list, Opt)); SafeFile.Move(tmp, FilePath);
     }
 
     /// <summary>Neueste zuerst; nur Lieder, deren Datei noch da ist.</summary>
