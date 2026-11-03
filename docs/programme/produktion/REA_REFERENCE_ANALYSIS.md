@@ -1,6 +1,6 @@
 # Produktion – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `produktion` · Stand: 0.9.36 (Stand 87c76f5)
+Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `produktion` · Stand: 0.9.36 (Stand a16248d)
 
 Analyse: [Vorbild-Analyse Großprojekte: OpenProject, Microsoft Project (Clean-Room)](../../../docs/claude/vorbilder/produktion-openproject.md)
 

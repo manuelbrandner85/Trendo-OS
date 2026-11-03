@@ -1,6 +1,6 @@
 # Desktop-Symbole – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand 87c76f5)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand a16248d)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -26,6 +26,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Geld & Rechnungen
 - Videos & Fotos bearbeiten
 - Live streamen
+- Trendo Musik
 - TV & Live
 - Kleidung & Produkte entwerfen
 - Freie Bilder & Klänge finden
@@ -64,4 +65,3 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Surfen & Herunterladen
 - Programme installieren
 - Dateien teilen
-- Geräte erkennen

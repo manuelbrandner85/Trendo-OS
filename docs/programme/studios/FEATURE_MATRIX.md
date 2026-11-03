@@ -1,6 +1,6 @@
 # Alle Studios – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand 87c76f5)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand a16248d)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -20,6 +20,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - System & Sicherheit
 - Bereit
 - Briefe schreiben
+- Trendo Musik
 - TV & Live
 - Noch nicht verfügbar
 - Desktop einrichten
