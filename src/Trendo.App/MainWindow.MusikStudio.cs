@@ -363,6 +363,7 @@ public partial class MainWindow
         sp.Children.Add(MsExtendPanel(s)); // M10: Verlängern mit dem Grundmodell
         sp.Children.Add(MsStemsPanel(s)); // Spuren trennen mit Demucs
         sp.Children.Add(MsSingPanel(s)); // S5/S6: Mitsingen, Aufnahme mischen
+        sp.Children.Add(MsVideoPanel(s)); // Musikvideo V1/V3/V4/V6/V7/V8
 
         // Cover in anderem Stil
         var coverStyle = new TextBox { Name = "ms-cover-style", Watermark = "Neuer Stil, z. B. ruhige Jazz-Ballade mit Klavier" };

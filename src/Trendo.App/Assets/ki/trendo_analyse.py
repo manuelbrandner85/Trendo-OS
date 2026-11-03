@@ -144,8 +144,44 @@ def melody_main(path, out, stem):
     json.dump({'hop': hop / sr, 'midi': midi}, open(out, 'w', encoding='utf-8'))
 
 
+# ───────────── V1: Abschnitte und Takt fürs Musikvideo ─────────────
+def sections_main(path, out):
+    # Abschnittsgrenzen: Schläge, je Schlag Klangfarbe (MFCC) und Harmonie (Chroma), Wiederholungsstruktur (Recurrence) und
+    # Lautstärke; Grenzen nur auf Taktanfängen, mindestens 8 s Abstand. Dazu Energie je Abschnitt (für ruhige/kraftvolle Bilder).
+    y, sr = librosa.load(path, sr=22050, mono=True)
+    hop = 512
+    tempo, beats = librosa.beat.beat_track(y=y, sr=sr, hop_length=hop)
+    bpm = float(np.atleast_1d(tempo)[0])
+    while bpm > 170: bpm /= 2
+    while bpm < 60: bpm *= 2
+    dur = len(y) / sr
+    mfcc = librosa.feature.mfcc(y=y, sr=sr, hop_length=hop, n_mfcc=13)
+    chroma = librosa.feature.chroma_cqt(y=y, sr=sr, hop_length=hop)
+    feat = np.vstack([librosa.util.normalize(mfcc, axis=1), chroma])
+    sync = librosa.util.sync(feat, beats, aggregate=np.median)
+    k = int(np.clip(round(dur / 22), 3, 12))
+    bounds = librosa.segment.agglomerative(sync, k)
+    times = librosa.frames_to_time(librosa.util.fix_frames(beats, x_min=0)[bounds], sr=sr, hop_length=hop) if len(beats) else np.array([0.0])
+    bar = 4 * 60 / bpm
+    cuts = [0.0]
+    for t in sorted(set(round(float(x / bar)) * bar for x in times)):
+        if t - cuts[-1] >= 8 and dur - t >= 6:
+            cuts.append(float(t))
+    rms = librosa.feature.rms(y=y, hop_length=hop)[0]
+    rt = librosa.frames_to_time(np.arange(len(rms)), sr=sr, hop_length=hop)
+    allm = float(np.mean(rms)) + 1e-9
+    secs = []
+    for i, a in enumerate(cuts):
+        b = cuts[i + 1] if i + 1 < len(cuts) else dur
+        e = float(np.mean(rms[(rt >= a) & (rt < b)])) / allm if b > a else 1.0
+        secs.append({'start': round(a, 2), 'end': round(b, 2), 'energy': round(e, 2)})
+    json.dump({'bpm': round(bpm, 1), 'duration': round(dur, 2), 'sections': secs}, open(out, 'w', encoding='utf-8'))
+
+
 if __name__ == '__main__':
-    if '--melodie' in sys.argv:
+    if '--abschnitte' in sys.argv:
+        sections_main(sys.argv[-2], sys.argv[-1])
+    elif '--melodie' in sys.argv:
         melody_main(sys.argv[-2], sys.argv[-1], '--gesangsspur' in sys.argv)
     elif '--stimme' in sys.argv:
         voice_main(sys.argv[-2], sys.argv[-1])
