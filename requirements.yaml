@@ -466,6 +466,13 @@ modules:
   test_status: PC_VERIFIED
   evidence: reports/pc-t0003/UEBERSICHT.md
   evidence_sha256: 6041cac494b54700bab89f946942b88a034003c2fc33e32eaf4b62c01ef0d9da
+- id: STUDIO-MUSIK-01
+  name: Trendo Musik (Lieder mit ACE-Step)
+  approved_expansion_functions: '0'
+  approval_status: APPROVED_SPEC
+  implementation_status: IN_PROGRESS
+  test_status: NOT_RUN
+  evidence: tests/Trendo.App.Tests/MusikStudioUiTests.cs (Auftrag im Chat 03.11.2026)
 - id: STUDIO-TV-01
   name: TV & Live (IPTV) Studio
   approved_expansion_functions: '0'

@@ -231,6 +231,22 @@ else if (shot == "seite")
     win.Show(page);
     if (win.Windows.Active is { Maximized: false } pageWin) win.Windows.ToggleMaximize(pageWin.Id);
     win.Show(page);
+    if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") is { Length: > 0 }) // Trendo Musik mit erfundenen Beispielliedern (leere Dateien, nur zum Zeigen)
+    {
+        var lib = new SongLibrary(root); var dir = Path.Combine(root, "musik-demo"); Directory.CreateDirectory(dir);
+        foreach (var (t, st, ly, sec, lang, sk, fav) in new[] {
+            ("Sommer, nimm uns mit", "fröhlicher Pop, Akustikgitarre, Frauenstimme", "[Strophe]\nDie Straße glänzt im Abendlicht\nwir fahren los und halten nicht\n[Refrain]\nSommer, Sommer, nimm uns mit\nweit hinaus im gleichen Schritt", 184.0, "de", "neu", true),
+            ("Sommer, nimm uns mit – Cover", "ruhige Jazz-Ballade, Klavier, Kontrabass", "[Strophe]\nDie Straße glänzt im Abendlicht", 184.0, "de", "cover", false),
+            ("Bajo la luna", "Flamenco-Pop, spanische Gitarre", "[Verse]\nBajo la luna canto yo", 142.0, "es", "neu", false),
+            ("Nachtfahrt", "Synthwave, instrumental, 110 BPM", "[Instrumental]", 600.0, "de", "neu", true) })
+        {
+            var f = Path.Combine(dir, t + ".mp3"); File.WriteAllBytes(f, [0x49, 0x44, 0x33]);
+            var s = lib.Add(new MusicSong { Title = t, Style = st, Lyrics = ly, Seconds = sec, Language = lang, File = f, Kind = sk, Favorite = fav });
+            win.MusicStudioSelect(s.Id);
+        }
+        if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") == "profi") win.MusicStudioProMode(true);
+        win.Show(page);
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_CAL") is { Length: > 0 }) // Kalender-Woche mit erfundenen Beispielterminen
     {
         var mo = new DateTime(2026, 11, 2);
