@@ -1,6 +1,6 @@
 # Kostenlose Internet-KIs – Testergebnisse
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-internet` · Stand: 0.9.36 (Stand 56dc441)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-internet` · Stand: 0.9.36 (Stand 52e27a5)
 
 Lauf: `api.trx, app.trx, core.trx`
 

@@ -1,6 +1,6 @@
 # Schaltung & Simulation – Testplan
 
-Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.36 (Stand 56dc441)
+Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.36 (Stand 52e27a5)
 
 20 Tests sprechen dieses Programm an.
 

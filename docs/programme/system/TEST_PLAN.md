@@ -1,6 +1,6 @@
 # System & Sicherheit – Testplan
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.36 (Stand 56dc441)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `system` · Stand: 0.9.36 (Stand 52e27a5)
 
 26 Tests sprechen dieses Programm an.
 

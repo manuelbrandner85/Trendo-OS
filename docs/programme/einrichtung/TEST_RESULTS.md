@@ -1,6 +1,6 @@
 # Ersteinrichtung – Testergebnisse
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `einrichtung` · Stand: 0.9.36 (Stand 56dc441)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `einrichtung` · Stand: 0.9.36 (Stand 52e27a5)
 
 Lauf: `api.trx, app.trx, core.trx`
 

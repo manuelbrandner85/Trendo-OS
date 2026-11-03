@@ -19,6 +19,7 @@
 - ✓ YouTube-Link als Vorlage: Titel/Interpret per oEmbed, Stil/Tonart/Tempo aus freien Daten – kein Download (YouTube-Bedingungen, § 95a UrhG), kein fremder Liedtext
 - ✓ Meine Stimme (S1): 20 s singen → Umfang, bequemer Bereich, Stimmlage, Klangfarbe/Hauch (Schätzung), passende Tonarten; „Für mein nächstes Lied“
 - ✓ Mitsingen (S5) über die Begleitung mit Live-Treffer-Anzeige (YIN, Oktave zählt), Aufnahme mischen (S6) mit Versatz, Hall, Lautstärke, danach Mastern
+- ✓ Musikvideo: Shotliste aus Abschnitten/Energie/Takt, Schnitt auf Taktgrenzen (Refrain schneller), Kamerafahrt je Teil, Film-Looks als eigene 3D-LUT, Korn, Vignette, Breitbild-Balken, Liedtext eingeblendet (Zeiten aus der Gesangsspur, Schätzung), 16:9 und 9:16, Clips eigene oder Pexels; KI-Clips (Wan 2.2) und lippensynchroner Sänger folgen nach der Messung
 - ✓ „Im Stil von“: aus dem Web nachgeschlagen (MusicBrainz CC0: Genres, Solo/Band, Gründungsjahrzehnt; Wikipedia: Kurzbeschreibung mit Quelle), die Text-KI verfeinert darauf – ohne Namen und ohne nachgemachte Stimme
 - ✓ Song-Analyse (librosa): Tonart, Tempo, Takt, Akkorde, Tonumfang – als Vorlage übernehmbar
 - ✓ Eigene Aufnahme hinzufügen und als Cover neu einspielen (Hinweis: nur privat, GEMA)

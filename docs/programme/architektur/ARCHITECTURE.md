@@ -1,6 +1,6 @@
 # Grundriss & Wohnen – Architektur
 
-Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.36 (Stand 56dc441)
+Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.36 (Stand 52e27a5)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec01.cs`
