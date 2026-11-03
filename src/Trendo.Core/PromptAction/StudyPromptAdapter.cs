@@ -123,6 +123,35 @@ public sealed class TvListAdapter : IStudioActionAdapter
     public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Abspielen und Aufnehmen gehen im Studio „TV & Live“.");
 }
 
+/// <summary>STUDIO-MUSIK-01: Liedplan aus Thema und Stil (Titel, Abschnitte, Vorschlag für Stil/Tempo). Das Lied selbst erzeugt das Studio „Trendo Musik“ mit ACE-Step.</summary>
+public sealed class SongPlanAdapter : IStudioActionAdapter
+{
+    public string StudioId => "STUDIO-MUSIK-01";
+    public string ActionId => "musik.lied.planen";
+    public string Label => "Lied planen";
+    public SideEffectClass Effect => SideEffectClass.None;
+    public CapabilityLevel DeclaredLevel => CapabilityLevel.Partial;
+    public string Evidence => "PromptActionTests.Liedplan";
+    public bool CanPerformSideEffect => false;
+    public IReadOnlyList<string> RequiredFields => ["thema"];
+    public IReadOnlyList<string> OutputKinds => ["txt"];
+    public ActionDraft? TryParse(string prompt, IReadOnlyDictionary<string, string> known) => new(ActionId, FieldKit.Read(prompt, known));
+    public IReadOnlyList<ClarificationQuestion> Missing(IReadOnlyDictionary<string, string> parameters) =>
+        FieldKit.Has(parameters, "thema") ? [] : [new("thema", "thema", "Worum soll es im Lied gehen? Schreib z. B. „Thema: Roadtrip im Sommer“.", true)];
+    public IReadOnlyList<ValidationFinding> Validate(IReadOnlyDictionary<string, string> parameters) => [];
+    public AdapterOutcome Produce(AdapterCall call)
+    {
+        var thema = FieldKit.Text(call.Parameters, "thema"); var stil = FieldKit.Text(call.Parameters, "stil");
+        var title = SongLibrary.TitleFrom(thema, "");
+        var body = $"Liedplan: {title}\nThema: {thema}\nStil: {(stil.Length > 0 ? stil : "Pop, eingängig, 100–120 BPM (Vorschlag)")}\n\n"
+            + "[Intro]\n(4 Takte, Instrumente stellen sich vor)\n[Strophe]\n(Bild der Geschichte, 4 Zeilen)\n[Refrain]\n(Kernaussage, 4 Zeilen, Titel darin)\n[Strophe]\n(Wendung, 4 Zeilen)\n[Refrain]\n[Bridge]\n(Neuer Blick, 2–4 Zeilen)\n[Refrain]\n[Outro]\n\n"
+            + "Erzeugen: im Studio „Trendo Musik“ (Profi) Stil und Text einsetzen und „Erstellen“ – läuft lokal mit ACE-Step.";
+        var qa = new QaResult("musik.lied.planen", true, "Liedplan erstellt.", null, title, "SongLibrary");
+        return FieldKit.Save(call, FieldKit.Slot("musik", call.Version, "liedplan.txt"), body, title, qa);
+    }
+    public AdapterOutcome SideEffect(AdapterCall call) => FieldKit.Blocked("Das Lied entsteht im Studio „Trendo Musik“.");
+}
+
 /// <summary>SPEC-15: Senden und Stream bleiben aus. LiveBroadcast.Go wird nicht gerufen.</summary>
 public sealed class StreamSendAdapter : IStudioActionAdapter
 {

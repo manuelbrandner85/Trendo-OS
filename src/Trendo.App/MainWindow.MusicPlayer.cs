@@ -56,20 +56,23 @@ public partial class MainWindow
     }
 
     /// <summary>Liste ab einem Titel abspielen (öffentlich für Tests und die KI).</summary>
-    public void MusicPlay(IReadOnlyList<string> paths, int start = 0) { _queue.Play(paths, start); MusicStart(); }
+    public void MusicPlay(IReadOnlyList<string> paths, int start = 0, string page = "medien") { _mPage = page; _queue.Play(paths, start); MusicStart(); }
+    /// <summary>Seite, die den Player zeigt (Medien oder Trendo Musik) – sie wird nach Start, Pause und Ende neu gezeichnet.</summary>
+    string _mPage = "medien";
+    void MusicShow() => Show(_mPage == MS && CurrentView != "medien" ? MS : "medien");
     void MusicStart()
     {
-        if (_queue.Current is not { } cur) { _audio?.Stop(); Show("medien"); return; }
+        if (_queue.Current is not { } cur) { _audio?.Stop(); MusicShow(); return; }
         if (Audio() is not { } a) { Say("Zum Abspielen braucht Trendo den freien Player mpv – unten „Player einrichten“ antippen.", "medien"); Show("medien"); return; }
         a.Load(cur); _mPaused = false; _mPos = 0; _mDur = double.NaN;
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.play", Path.GetFileName(cur));
-        Show("medien");
+        MusicShow();
     }
     /// <summary>Titel zu Ende (vom Player gemeldet) – öffentlich für Tests.</summary>
-    public void MusicEnded() { if (_queue.Next(auto: true) is null) { _mPaused = true; _audio?.Stop(); Show("medien"); } else MusicStart(); }
+    public void MusicEnded() { if (_queue.Next(auto: true) is null) { _mPaused = true; _audio?.Stop(); MusicShow(); } else MusicStart(); }
     public void MusicNext() { if (_queue.Next() is not null) MusicStart(); }
     public void MusicPrev() { if (_mPos > 4 && _queue.Current is not null) { _audio?.Seek(0); return; } if (_queue.Prev() is not null) MusicStart(); }
-    public void MusicTogglePause() { if (_queue.Current is null) return; _mPaused = !_mPaused; _audio?.SetPause(_mPaused); Show("medien"); }
+    public void MusicTogglePause() { if (_queue.Current is null) return; _mPaused = !_mPaused; _audio?.SetPause(_mPaused); MusicShow(); }
 
     void MusicTick()
     {

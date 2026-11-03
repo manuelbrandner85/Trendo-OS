@@ -27,6 +27,7 @@ public static class StudioCatalog
 
         ["CORE-08"] = new("Videos & Fotos bearbeiten", "Videos schneiden, Musik aufnehmen und Bilder gestalten.", "Kreativ & Medien"),
         ["SPEC-15"] = new("Live streamen", "Livestreams und Sendungen planen und durchführen.", "Kreativ & Medien"),
+        ["STUDIO-MUSIK-01"] = new("Trendo Musik", "Lieder mit Gesang aus einer Beschreibung erzeugen – Liedtext, Stil, Sprache, bis 10 Minuten, alles auf deinem PC.", "Kreativ & Medien"),
         ["STUDIO-TV-01"] = new("TV & Live", "Fernsehen über das Internet: eigene Senderlisten, Programmführer, Aufnahmen und mehrere Sender gleichzeitig.", "Kreativ & Medien"),
         ["SPEC-08"] = new("Kleidung & Produkte entwerfen", "Kleidergrößen, Schnitte und Produktideen.", "Kreativ & Medien"),
         ["X-07"] = new("Freie Bilder & Klänge finden", "Kostenlose Bilder, Klänge und Schriften finden.", "Kreativ & Medien"),

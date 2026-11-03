@@ -16,6 +16,7 @@ public static class KiSuggestions
         ["SPEC-15"] = [KiKind.Geraeusche, KiKind.SpracheZuText],
         ["X-07"] = [KiKind.Geraeusche, KiKind.BildErzeugen, KiKind.Musik],
         ["SYS-02"] = [KiKind.Musik],
+        ["STUDIO-MUSIK-01"] = [KiKind.Musik, KiKind.Geraeusche],
         ["STUDIO-LETTER-01"] = [KiKind.TextZuSprache, KiKind.SpracheZuText],
         ["SYS-10"] = [KiKind.TextZuSprache, KiKind.SpracheZuText, KiKind.Uebersetzen],
         ["SYS-09"] = [KiKind.Uebersetzen],

@@ -1612,6 +1612,20 @@ public class PromptActionTests
         Assert.DoesNotContain("ist leer", File.ReadAllText(Repo("docs/improvement-42/security-approvals.md")));
     }
 
+    [Fact(DisplayName = "Trendo Musik: „Lied planen“ fragt nach dem Thema und legt einen Liedplan mit Abschnitten an – erzeugt wird im Studio, nichts wird gesendet")]
+    public void Liedplan()
+    {
+        using var fx = new Fixture();
+        var wf = new StudioWorkflow(fx.Core, PromptActions.CreateDefault());
+        var done = wf.Los(fx.Project, wf.Start(fx.Req("STUDIO-MUSIK-01", "Thema: Roadtrip im Sommer\nStil: Akustik-Pop", id: "lied-1"), fx.Ctx()).RunId, fx.Ctx());
+        Assert.Equal(RunStatus.Verified, done.Status);
+        var plan = File.ReadAllText(fx.Core.Projects.ResolveInProject(fx.Project, done.Artifacts.Single(a => a.RelativePath.EndsWith("liedplan.txt")).RelativePath));
+        Assert.Contains("[Refrain]", plan); Assert.Contains("Akustik-Pop", plan); Assert.Contains("Trendo Musik", plan);
+        var ad = PromptActions.CreateDefault().Single(a => a.StudioId == "STUDIO-MUSIK-01");
+        Assert.False(ad.CanPerformSideEffect);
+        Assert.NotEmpty(ad.Missing(new Dictionary<string, string>()));
+    }
+
     [Fact(DisplayName = "Katalogmatrix nennt jede Studio-ID genau einmal")]
     public void Matrix_deckt_den_Katalog()
     {
@@ -1620,7 +1634,7 @@ public class PromptActionTests
         var adapters = PromptActions.CreateDefault();
         var registered = adapters.Select(a => a.StudioId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         Assert.Equal(ids.Count, registered.Count);
-        Assert.Equal(82, adapters.Count); // + TV & Live (27.10.2026); SPEC-07 abgelehnt: nur die Sperre, kein Übersetzungsadapter
+        Assert.Equal(83, adapters.Count); // + TV & Live (27.10.2026), + Trendo Musik (03.11.2026); SPEC-07 abgelehnt: nur die Sperre, kein Übersetzungsadapter
         Assert.Equal(adapters.Count, adapters.Select(a => a.ActionId).Distinct(StringComparer.OrdinalIgnoreCase).Count());
         Assert.All(adapters, a => Assert.NotNull(CapabilityCatalog.Find(a.StudioId)));
         Assert.Contains(registered, id => id == "STUDIO-LETTER-01");
@@ -1647,7 +1661,7 @@ public class PromptActionTests
             Assert.Equal(CapabilityLevel.Partial, CapabilityCatalog.Level(id, adapters));
         }
         Assert.Equal(CapabilityLevel.Blocked, CapabilityCatalog.Level("SPEC-07", adapters));
-        Assert.Equal(52, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Partial)); // + TV & Live
+        Assert.Equal(53, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Partial)); // + TV & Live, + Trendo Musik (03.11.2026)
         Assert.Equal(3, ids.Count(id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Blocked));
         Assert.DoesNotContain(ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.NotImplemented);
         Assert.DoesNotContain(ids, id => CapabilityCatalog.Level(id, adapters) == CapabilityLevel.Ready);
