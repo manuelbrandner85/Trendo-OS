@@ -1,6 +1,6 @@
 # Verbindungen – Testplan
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.36 (Stand ccb1ad1)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.36 (Stand 56dc441)
 
 12 Tests sprechen dieses Programm an.
 

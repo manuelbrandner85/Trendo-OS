@@ -1,6 +1,6 @@
 # KI-Vorlagen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.36 (Stand ccb1ad1)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.36 (Stand 56dc441)
 
 Analyse: [Vorbild-Analyse KI-Anweisungen: Prompt-Bibliotheken (Clean-Room)](../../../docs/claude/vorbilder/ki-vorlagen-promptbibliothek.md)
 

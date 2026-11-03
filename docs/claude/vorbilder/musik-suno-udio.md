@@ -17,6 +17,8 @@
 - ✓ Mastering wie für Streamingdienste nach jedem Lied (−14 LUFS, −1 dBTP; 03.11.2026 gemessen: ACE-Step liefert −13,4 LUFS/−0,7 dBTP/LRA 15,7 → −14,0/−1,0/10,7)
 - ✓ Liedtexte mit Songwriter-Regeln, Prüfung auf KI-Floskeln, gefundene ersetzt die Text-KI gezielt
 - ✓ YouTube-Link als Vorlage: Titel/Interpret per oEmbed, Stil/Tonart/Tempo aus freien Daten – kein Download (YouTube-Bedingungen, § 95a UrhG), kein fremder Liedtext
+- ✓ Meine Stimme (S1): 20 s singen → Umfang, bequemer Bereich, Stimmlage, Klangfarbe/Hauch (Schätzung), passende Tonarten; „Für mein nächstes Lied“
+- ✓ Mitsingen (S5) über die Begleitung mit Live-Treffer-Anzeige (YIN, Oktave zählt), Aufnahme mischen (S6) mit Versatz, Hall, Lautstärke, danach Mastern
 - ✓ „Im Stil von“: aus dem Web nachgeschlagen (MusicBrainz CC0: Genres, Solo/Band, Gründungsjahrzehnt; Wikipedia: Kurzbeschreibung mit Quelle), die Text-KI verfeinert darauf – ohne Namen und ohne nachgemachte Stimme
 - ✓ Song-Analyse (librosa): Tonart, Tempo, Takt, Akkorde, Tonumfang – als Vorlage übernehmbar
 - ✓ Eigene Aufnahme hinzufügen und als Cover neu einspielen (Hinweis: nur privat, GEMA)

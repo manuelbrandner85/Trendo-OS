@@ -1,6 +1,6 @@
 # E-Mail & Kontakte – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.36 (Stand ccb1ad1)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.36 (Stand 56dc441)
 
 Analyse: [Vorbild-Analyse E-Mail: Mozilla Thunderbird, Microsoft Outlook (Clean-Room)](../../../docs/claude/vorbilder/mail-thunderbird-outlook.md)
 
