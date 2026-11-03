@@ -562,7 +562,8 @@ public sealed partial class MainWindow : Window
                 "unreal" => a.Target() is not null,
                 _ => true, // eingebaute Trendo-Bereiche
             };
-            var b = new Button { Name = "dock-" + a.Id, Width = 48, Height = 48, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), IsVisible = installed, Content = Ico(a.Icon, 30, a.Fg ?? Grad(a.C1, a.C2), a.C2) };
+            // Wunsch 03.11.2026: fotorealistische Symbole auf Glas-Kacheln
+            var b = new Button { Name = "dock-" + a.Id, Width = 48, Height = 48, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), IsVisible = installed, Content = DockFace(a.Id, Ico(a.Icon, 30, a.Fg ?? Grad(a.C1, a.C2), a.C2)) };
             ToolTip.SetTip(b, a.Label); Avalonia.Automation.AutomationProperties.SetName(b, a.Label);
             ToolTip.SetPlacement(b, Avalonia.Controls.PlacementMode.Top); ToolTip.SetVerticalOffset(b, -6);
             b.Click += async (_, _) =>
@@ -586,17 +587,32 @@ public sealed partial class MainWindow : Window
             };
             if (a.Id is "browser" or "mail" && _core.Offline) { b.IsEnabled = false; ToolTip.SetTip(b, $"{a.Label} – offline deaktiviert"); }
             if (!installed) b.IsEnabled = false;
-            Hover(b); bar.Children.Add(b);
+            DockLift(b); bar.Children.Add(b);
         }
-        var trash = new Button { Name = "dock-trash", Width = 46, Height = 46, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Content = Ico(Mdi.Delete, 28, Grad("#ECEFF1", "#90A4AE")) };
+        RefreshDockWebApps(); // WhatsApp, Telegram … mit Original-Symbol
+        var trash = new Button { Name = "dock-trash", Width = 48, Height = 48, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Content = DockFace("trash", Ico(Mdi.Delete, 28, Grad("#ECEFF1", "#90A4AE"))) };
+        DockLift(trash);
         ToolTip.SetTip(trash, "Papierkorb"); Avalonia.Automation.AutomationProperties.SetName(trash, "Papierkorb");
         ToolTip.SetPlacement(trash, Avalonia.Controls.PlacementMode.Top); ToolTip.SetVerticalOffset(trash, -6);
         trash.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, OperatingSystem.IsWindows() ? "shell:RecycleBinFolder" : "trash://", _core.Audit);
-        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { StartButton(), new Border { Width = 1, Height = 36, Background = Brush.Parse("#553F7FD0"), VerticalAlignment = VerticalAlignment.Center }, bar, new Border { Width = 1, Height = 36, Background = Brush.Parse("#553F7FD0"), VerticalAlignment = VerticalAlignment.Center }, trash } };
+        Border Sep() => new() { Width = 1, Height = 38, VerticalAlignment = VerticalAlignment.Center,
+            Background = new LinearGradientBrush { StartPoint = new RelativePoint(0.5, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Relative),
+                GradientStops = { new GradientStop(Color.Parse("#00D4A84B"), 0), new GradientStop(Color.Parse("#AAD4A84B"), 0.5), new GradientStop(Color.Parse("#00D4A84B"), 1) } } };
+        var webSep = Sep(); webSep.Bind(IsVisibleProperty, _dockWeb.GetObservable(IsVisibleProperty));
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { StartButton(), Sep(), bar, webSep, _dockWeb, Sep(), trash } };
+        // Leiste wie echtes Rauchglas: Verlauf, Lichtkante oben, feiner Goldrand, tiefer Schatten
+        var glass = new LinearGradientBrush { StartPoint = new RelativePoint(0.5, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Relative),
+            GradientStops = { new GradientStop(Color.Parse(C("#D8383840", "#F2FFFFFF")), 0), new GradientStop(Color.Parse(C("#E01A1A1E", "#EAF3F5F9")), 0.5), new GradientStop(Color.Parse(C("#F00C0C0E", "#E6EEF1F6")), 1) } };
+        var shine = new Border { CornerRadius = new CornerRadius(22, 22, 8, 8), Height = 26, VerticalAlignment = VerticalAlignment.Top, IsHitTestVisible = false, Margin = new Thickness(1, 1, 1, 0),
+            Background = new LinearGradientBrush { StartPoint = new RelativePoint(0.5, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Relative),
+                GradientStops = { new GradientStop(Color.Parse("#30FFFFFF"), 0), new GradientStop(Color.Parse("#00FFFFFF"), 1) } } };
         var dockBar = new Border
         {
-            Background = Brush.Parse(C("#C0242424", "#E6F4F7FC")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(22), Padding = new Thickness(14, 8),
-            HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4, 0, 6), Child = row, BoxShadow = BoxShadows.Parse("0 10 28 0 #66000818")
+            Name = "dock-bar", Background = glass, CornerRadius = new CornerRadius(24), Padding = new Thickness(14, 9), BorderThickness = new Thickness(1),
+            BorderBrush = new LinearGradientBrush { StartPoint = new RelativePoint(0.5, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Relative),
+                GradientStops = { new GradientStop(Color.Parse("#80F3D58A"), 0), new GradientStop(Color.Parse("#30B8862B"), 0.6), new GradientStop(Color.Parse("#50F3D58A"), 1) } },
+            HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4, 0, 6), Child = new Grid { Children = { shine, row } },
+            BoxShadow = BoxShadows.Parse("0 14 34 0 #99000000, inset 0 1 0 0 #40FFFFFF")
         };
         _taskbar.IsVisible = false;
         return new StackPanel { Children = { _taskbar, dockBar }, HorizontalAlignment = HorizontalAlignment.Center };

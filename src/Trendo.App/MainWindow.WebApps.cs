@@ -26,7 +26,8 @@ public partial class MainWindow
     {
         WebApps.Install(_core.DataRoot, id, _core.Audit, Principal.LocalOwner.Name);
         SetOnDesktop("app:" + id, true);
-        _hubMsg = $"{WebApps.Get(id)!.Name} ist installiert – im Startmenü und auf dem Desktop.";
+        _hubMsg = $"{WebApps.Get(id)!.Name} ist installiert – in der Leiste, im Startmenü und auf dem Desktop.";
+        RefreshDockWebApps(); // holt auch das Original-Symbol
     }
 
     public void RemoveWebApp(string id)
@@ -34,6 +35,7 @@ public partial class MainWindow
         WebApps.Uninstall(_core.DataRoot, id, _core.Audit, Principal.LocalOwner.Name);
         SetOnDesktop("app:" + id, false);
         _hubMsg = $"{WebApps.Get(id)?.Name ?? id} wurde entfernt (auch die Anmeldung).";
+        RefreshDockWebApps();
     }
 
     /// <summary>App im eigenen Fenster öffnen. Nicht installiert → „Hinzufügen“ öffnen. Liefert eine Meldung bei Problemen.</summary>
@@ -58,8 +60,12 @@ public partial class MainWindow
         catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException) { _hubMsg = _webAppMsg = $"{app.Name} ließ sich nicht öffnen: {e.Message}"; return false; }
     }
 
-    /// <summary>Symbol einer App: Farbverlauf mit Zeichen (keine fremden Markenlogos).</summary>
-    Control WebAppFace(WebApp a, double size) => new Border
+    /// <summary>Symbol einer App: Original-Symbol des Dienstes, wenn schon geholt (siehe <see cref="FetchWebAppIcon"/>), sonst Farbverlauf mit Zeichen.</summary>
+    Control WebAppFace(WebApp a, double size) => WebAppIcons.Cached(_core.DataRoot, a.Id) is { } f && TryBitmap(f) is { } bmp
+        ? new Image { Source = bmp, Stretch = Stretch.UniformToFill }
+        : WebAppGlyph(a, size);
+    static Avalonia.Media.Imaging.Bitmap? TryBitmap(string f) { try { return new Avalonia.Media.Imaging.Bitmap(f); } catch (Exception e) when (e is IOException or ArgumentException or InvalidOperationException or NotSupportedException) { return null; } }
+    Control WebAppGlyph(WebApp a, double size) => new Border
     {
         Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative),
             GradientStops = { new GradientStop(Color.Parse(a.C1), 0), new GradientStop(Color.Parse(a.C2), 1) } },

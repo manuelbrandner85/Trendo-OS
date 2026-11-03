@@ -58,7 +58,14 @@ public partial class MainWindow
     /// <summary>Aussehen eines Symbols wie auf dem Desktop: Studios als Bildkachel (Bild, Verlauf), Module mit Farbsymbol.</summary>
     Control DeskIconFace(string id, bool label, double iconSize = 30)
     {
-        if (id.StartsWith("app:", StringComparison.Ordinal) && WebApps.Get(id[4..]) is { } wa) return WebAppFace(wa, iconSize * 1.3);
+        if (id.StartsWith("app:", StringComparison.Ordinal) && WebApps.Get(id[4..]) is { } wa)
+        {
+            // Original-Symbol als Glas-Kachel mittig auf dunklem Grund – der Name steht darunter frei
+            if (WebAppIcons.Cached(_core.DataRoot, wa.Id) is not null)
+                return new Border { Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#33" + wa.C2.TrimStart('#')), 0), new GradientStop(Color.Parse("#1C1C20"), 1) } },
+                    Child = new Border { Margin = new Thickness(0, 0, 0, label ? 32 : 0), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Child = WebAppTile(wa, iconSize * 1.2) } };
+            return WebAppFace(wa, iconSize * 1.3);
+        }
         if (id.StartsWith("page:", StringComparison.Ordinal) && SystemModules.FirstOrDefault(m => "page:" + m.Key == id) is { Key: not null } m)
             return new Border { Background = new RadialGradientBrush { GradientStops = { new GradientStop(Color.Parse("#2B4C86"), 0), new GradientStop(Color.Parse("#262626"), 1) } },
                 Child = new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Spacing = 4, Children = { Chip(m.Icon, m.C1, m.C2, iconSize * 1.4, 0.58) } } };

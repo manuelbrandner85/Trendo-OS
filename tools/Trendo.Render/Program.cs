@@ -284,6 +284,12 @@ else if (shot == "seite")
         else win.SheetCreatePivot(1, 0, 2, Trendo.Core.Office.SheetPivot.Agg.Summe);
         win.Show("tabelle");
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_DOCK_APPS") is { Length: > 0 } dockApps) // Leiste mit hinzugefügten Apps und ihren Original-Symbolen (holt sie echt vom Dienst)
+    {
+        foreach (var id in dockApps.Split(',')) { win.InstallWebApp(id); Task.Run(() => win.FetchWebAppIcon(id)).Wait(TimeSpan.FromSeconds(40)); }
+        for (var i = 0; i < 20; i++) Dispatcher.UIThread.RunJobs();
+        win.RefreshDockWebApps(); win.Show(page);
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_CAL") is { Length: > 0 }) // Kalender-Woche mit erfundenen Beispielterminen
     {
         var mo = new DateTime(2026, 11, 2);
