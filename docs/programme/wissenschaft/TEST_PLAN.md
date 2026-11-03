@@ -1,6 +1,6 @@
 # Messdaten & Auswertung – Testplan
 
-Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.36 (Stand 4b0cce0)
+Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.36 (Stand d735c2c)
 
 23 Tests sprechen dieses Programm an.
 

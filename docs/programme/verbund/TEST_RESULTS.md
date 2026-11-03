@@ -1,6 +1,6 @@
 # Geräteverbund (PC, Pi, Android) – Testergebnisse
 
-Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.36 (Stand 4b0cce0)
+Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.36 (Stand d735c2c)
 
 Lauf: `api.trx, app.trx, core.trx`
 

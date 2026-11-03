@@ -1,6 +1,6 @@
 # Wissen für die KI – Testplan
 
-Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand 4b0cce0)
+Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand d735c2c)
 
 16 Tests sprechen dieses Programm an.
 

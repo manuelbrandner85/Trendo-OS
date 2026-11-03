@@ -1,6 +1,6 @@
 # CNC-Werkstatt – Testergebnisse
 
-Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.36 (Stand 4b0cce0)
+Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.36 (Stand d735c2c)
 
 Lauf: `api.trx, app.trx, core.trx`
 

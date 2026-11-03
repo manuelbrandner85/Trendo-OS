@@ -1,6 +1,6 @@
 # Werkstatt – Testergebnisse
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand 4b0cce0)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand d735c2c)
 
 Lauf: `api.trx, app.trx, core.trx`
 

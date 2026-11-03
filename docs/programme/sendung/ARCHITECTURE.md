@@ -1,6 +1,6 @@
 # Live streamen – Architektur
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand 4b0cce0)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand d735c2c)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec15.cs`

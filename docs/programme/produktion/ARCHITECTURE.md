@@ -1,6 +1,6 @@
 # Produktion – Architektur
 
-Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `produktion` · Stand: 0.9.36 (Stand 4b0cce0)
+Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `produktion` · Stand: 0.9.36 (Stand d735c2c)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W5Fusion.cs`

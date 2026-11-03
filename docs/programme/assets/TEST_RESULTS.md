@@ -1,6 +1,6 @@
 # Freie Bilder & Klänge – Testergebnisse
 
-Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand 4b0cce0)
+Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand d735c2c)
 
 Lauf: `api.trx, app.trx, core.trx`
 

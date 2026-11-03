@@ -109,7 +109,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -160,7 +160,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -212,7 +212,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -312,7 +312,7 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -374,7 +374,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -433,7 +433,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -660,7 +660,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -907,7 +907,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -1142,7 +1142,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -1213,7 +1213,7 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -1469,7 +1469,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -1705,7 +1705,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -1962,7 +1962,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -2237,7 +2237,7 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -2530,7 +2530,7 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -2606,7 +2606,7 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -2670,7 +2670,7 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -2720,7 +2720,7 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -2770,7 +2770,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -2824,7 +2824,7 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -3006,7 +3006,7 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": true
   },
   {
@@ -3260,7 +3260,7 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -3293,13 +3293,18 @@
       "Trendo Musik"
     ],
     "Tests": [
+      "Einfach-Modus mit Stimme: die Text-KI schreibt den Liedtext (Sprache, Länge, Abschnitte) – an ACE-Step geht dieser Text, nicht „[Instrumental]“, die Länge bleibt",
+      "Einfach-Modus mit „Instrumental“: kein Text, kein Gesang – ACE-Step bekommt „[Instrumental]“",
+      "Einfach-Modus ohne Text-KI: ACE-Step schreibt und singt selbst (sample_query in der Sprache), gesungener Text und echte Länge landen beim Lied",
+      "Musik-Cover ohne Bild-KI: gestaltete Farbfläche mit Schrift und ehrlicher Hinweis; „MP3 mit Cover“ bettet das Bild in die Datei ein (alter Tag ersetzt, Ton unverändert)",
+      "Musik-Cover: „\uD83C\uDFA8 Cover-Bild erstellen“ – Motiv zum Genre (Jazz-Club), 1400 × 1400 JPEG mit Titel und Name, erscheint in Bibliothek und Lied; Layout wechseln, Neu würfeln",
       "Trendo Musik: Abschnitt neu und Cover laden das Lied hoch (kein Dateipfad), neue Fassung verweist aufs Original; Liedtext mit KI; Favorit, Export, Löschen in den Papierkorb",
       "Trendo Musik: Aufträge an ACE-Step geprüft – Grenzen für Länge, Tempo, Varianten; Abschnitt mind. 1 s; über 8 Minuten ohne Sprachmodell; unbekannte Tonart/Takt/Aufgabe abgelehnt",
       "Trendo Musik: Einfach – ein Satz → zwei Varianten in „Meine Lieder“; ohne Beschreibung nur Hinweis; Profi mit Tempo, Tonart, Takt, [Strophe]/[Refrain] und Spanisch"
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -3352,7 +3357,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -3437,7 +3442,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": true
   },
   {
@@ -3538,7 +3543,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -3629,7 +3634,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": true
   },
   {
@@ -3761,7 +3766,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -3845,7 +3850,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -3957,7 +3962,7 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -4158,7 +4163,7 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -4368,7 +4373,7 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": true
   },
   {
@@ -4430,7 +4435,7 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": true
   },
   {
@@ -4514,7 +4519,7 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -4697,7 +4702,7 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -4894,7 +4899,7 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -5083,7 +5088,7 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": true
   },
   {
@@ -5289,7 +5294,7 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -5507,7 +5512,7 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -5701,7 +5706,7 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": true
   },
   {
@@ -5881,7 +5886,7 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": true
   },
   {
@@ -6061,7 +6066,7 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": true
   },
   {
@@ -6250,7 +6255,7 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": true
   },
   {
@@ -6418,7 +6423,7 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -6616,7 +6621,7 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": true
   },
   {
@@ -6667,7 +6672,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -6727,7 +6732,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -6780,7 +6785,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -6835,7 +6840,7 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -6915,7 +6920,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -6983,7 +6988,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -7042,7 +7047,7 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -7119,7 +7124,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -7210,7 +7215,7 @@
       "src/Trendo.App/MainWindow.Connections.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -7265,7 +7270,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -7350,7 +7355,7 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -7433,7 +7438,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -7478,7 +7483,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -7565,7 +7570,7 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -7606,7 +7611,7 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -7692,7 +7697,7 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -7751,7 +7756,7 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -7865,7 +7870,7 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -7909,7 +7914,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -7946,7 +7951,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -7991,7 +7996,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -8024,7 +8029,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -8132,7 +8137,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -8224,7 +8229,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -8265,7 +8270,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -8331,7 +8336,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -8449,7 +8454,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -8492,7 +8497,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -8535,7 +8540,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -8598,7 +8603,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -8666,7 +8671,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -8715,7 +8720,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -8759,7 +8764,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -8993,7 +8998,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -9206,7 +9211,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -9426,7 +9431,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -9680,7 +9685,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -9856,7 +9861,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -10037,7 +10042,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -10226,7 +10231,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -10406,7 +10411,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -10679,7 +10684,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -10859,7 +10864,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -11051,7 +11056,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -11232,7 +11237,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -11266,7 +11271,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -11510,7 +11515,7 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -11729,7 +11734,7 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   },
   {
@@ -11778,7 +11783,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 4b0cce0)",
+    "Version": "0.9.36 (Stand d735c2c)",
     "Shell": false
   }
 ]
