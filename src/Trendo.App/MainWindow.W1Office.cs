@@ -133,15 +133,18 @@ public partial class MainWindow
         s2.Children.Add(Field("recipient", "Firma, Name, Straße, PLZ Ort", d.Recipient, v => d.Recipient = v, multi: true));
         s2.Children.Add(new WrapPanel { Children = { Nav("letter-wiz-back-2", "← Zurück", 1), Nav("letter-wiz-next-2", "Weiter →", 3, true) } });
         s3.Children.Add(FieldLabel("Betreff"));
-        s3.Children.Add(Field("subject", "Betreff", d.Subject, v => d.Subject = v));
+        var subjectBox = Field("subject", "Betreff", d.Subject, v => d.Subject = v);
+        s3.Children.Add(subjectBox);
         s3.Children.Add(FieldLabel("Anrede"));
         s3.Children.Add(Field("salutation", "Anrede", d.Salutation, v => d.Salutation = v));
         s3.Children.Add(FieldLabel("Inhalt"));
         var body = Field("body", "Text", d.Body, v => d.Body = v, multi: true); body.MinHeight = 160;
         s3.Children.Add(body);
+        s3.Children.Add(LetterSpellBar(d, subjectBox, body)); // F3: Rechtschreibung beim Tippen
         s3.Children.Add(P("Der Brief wird nach DIN 5008 gesetzt.", Muted, 11));
         s3.Children.Add(FieldLabel("Gruß"));
         s3.Children.Add(Field("closing", "Gruß", d.Closing, v => d.Closing = v));
+        s3.Children.Add(LetterSignBox(d)); // F3: Unterschrift zeichnen oder Bild
         var more = new StackPanel { Spacing = 4 };
         more.Children.Add(FieldLabel("Ort und Anlagen"));
         more.Children.Add(Field("place", "Ort für das Datum", d.Place, v => d.Place = v));
@@ -220,7 +223,7 @@ public partial class MainWindow
         done.Click += async (_, _) => await SafeSave(pdf.IsEnabled, "Fertig – gespeichert");
         s3.Children.Add(new WrapPanel { Children = { Nav("letter-wiz-back-3", "← Zurück", 2), done } });
         form.Children.Insert(1, msg);
-        form.Children.Add(new Expander { Name = "letter-more", Header = "Mehr – Ort, Anlagen, Frist, Serienbrief, Unterschrift", IsExpanded = _letterAll, HorizontalAlignment = HorizontalAlignment.Stretch,
+        form.Children.Add(new Expander { Name = "letter-more", Header = "Mehr – Ort, Anlagen, Frist, Serienbrief, Druck", IsExpanded = _letterAll, HorizontalAlignment = HorizontalAlignment.Stretch,
             Content = new StackPanel { Spacing = 4, Children = { more, LetterTools(d) } } });
         var arch = new LetterArchive(ProjectsRoot).List().Take(8).ToList();
         if (arch.Count > 0)

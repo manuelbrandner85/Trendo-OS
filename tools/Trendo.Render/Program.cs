@@ -248,6 +248,17 @@ else if (shot == "seite")
         if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") == "profi") win.MusicStudioProMode(true);
         win.Show(page);
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_BRIEF_DEMO") is { Length: > 0 }) // Brief mit Beispieldaten, Tippfehler und gezeichneter Unterschrift (Schritt 3)
+    {
+        var l = win.Letter; l.SenderName = "Erika Muster"; l.SenderStreet = "Musterweg 1"; l.SenderCity = "12345 Musterstadt"; l.Recipient = "Beispiel Versicherung AG\nKundenservice\nHauptstraße 2\n54321 Beispielort";
+        l.Subject = "Kündigung meines Vertrags 4711"; l.Body = "hiermit kündige ich meinen Vertrag fristgerecht zum 31.12.2026.\n\nBitte bestätigen Sie mir die Kündigung und das Vertragsende schriftlich. Vielen Dankee für Ihre Mühe.";
+        var sig = Path.Combine(root, "unterschrift.png");
+        File.WriteAllBytes(sig, Trendo.Core.LetterSignature.ToPng([[(10, 50), (25, 20), (35, 52), (50, 18), (62, 48), (80, 30), (95, 44), (110, 26), (130, 40), (150, 32)], [(20, 60), (160, 56)]])!);
+        var dict = Path.Combine(Environment.CurrentDirectory, "artifacts", "vollpaket", "staging", "libreoffice", "App", "libreoffice", "share", "extensions", "dict-de");
+        var dst = Path.Combine(root, "werkzeuge", "libreoffice", "App", "libreoffice", "share", "extensions", "dict-de");
+        if (File.Exists(Path.Combine(dict, "de_DE_frami.dic"))) { Directory.CreateDirectory(dst); foreach (var e in new[] { ".dic", ".aff" }) File.Copy(Path.Combine(dict, "de_DE_frami" + e), Path.Combine(dst, "de_DE_frami" + e), true); }
+        l.SignatureFile = sig; win.LetterGoStep(3); win.LetterSpellNow();
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_CAL") is { Length: > 0 }) // Kalender-Woche mit erfundenen Beispielterminen
     {
         var mo = new DateTime(2026, 11, 2);

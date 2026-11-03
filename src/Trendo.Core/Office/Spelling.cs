@@ -60,17 +60,22 @@ public sealed partial class Spelling
     {
         var res = new List<Mistake>();
         for (var b = 0; b < doc.Blocks.Count && res.Count < max; b++)
+            if (doc.Blocks[b] is Para p) res.AddRange(CheckText(p.Text, max - res.Count).Select(m => m with { Block = b }));
+        return res;
+    }
+
+    /// <summary>Unbekannte Wörter in einem einfachen Text (z. B. Brieftext beim Tippen); Platzhalter in eckigen Klammern werden übersprungen.</summary>
+    public List<Mistake> CheckText(string text, int max = 500)
+    {
+        var res = new List<Mistake>();
+        foreach (Match m in WordRx().Matches(text))
         {
-            if (doc.Blocks[b] is not Para p) continue;
-            var text = p.Text;
-            foreach (Match m in WordRx().Matches(text))
-            {
-                // Adressen und Webseiten nicht prüfen
-                var left = m.Index > 0 ? text[m.Index - 1] : ' ';
-                if (left is '@' or '/' or '.' && m.Index > 1 && !char.IsWhiteSpace(text[m.Index - 2])) continue;
-                if (!Correct(m.Value)) res.Add(new Mistake(b, m.Index, m.Length, m.Value));
-                if (res.Count >= max) break;
-            }
+            // Adressen und Webseiten nicht prüfen
+            var left = m.Index > 0 ? text[m.Index - 1] : ' ';
+            if (left is '@' or '/' or '.' && m.Index > 1 && !char.IsWhiteSpace(text[m.Index - 2])) continue;
+            if (text.LastIndexOf('[', m.Index) is var o && o >= 0 && text.IndexOf(']', o) is var c && c >= m.Index + m.Length && text.IndexOf('\n', o) is var nl && (nl < 0 || nl > c)) continue;
+            if (!Correct(m.Value)) res.Add(new Mistake(0, m.Index, m.Length, m.Value));
+            if (res.Count >= max) break;
         }
         return res;
     }

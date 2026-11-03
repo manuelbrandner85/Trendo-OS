@@ -21,6 +21,8 @@ public partial class MainWindow
     private int _letterStep = 1;
     private bool _letterAll;
     public int LetterStep => _letterStep;
+    /// <summary>Assistent auf Schritt 1–3 stellen (Bildschirmfotos, Tests).</summary>
+    public void LetterGoStep(int n) { _letterStep = Math.Clamp(n, 1, 3); _letterAll = false; Show("brief"); }
     private bool _letterSaved;
     private Action? _letterStepSync;
     private string _letterDl = "";
@@ -125,16 +127,6 @@ public partial class MainWindow
                 _letterMsg = $"{letters.Count} Briefe gespeichert in {dir}"; Show(V); NotifyFileResult(_letterMsg);
             }), true)));
 
-        // F4 Unterschrift
-        var sig = new TextBox { Name = "letter-signature", Text = _settings.LetterSignature, PlaceholderText = "Bild deiner Unterschrift (PNG oder JPG)", MinWidth = 260 };
-        var sign = Box("Unterschrift", "Ein Foto oder Scan deiner Unterschrift wird unter den Gruß gesetzt. Das ist keine qualifizierte elektronische Signatur.",
-            Row(sig, B("letter-signature-set", "Übernehmen", () => LetterTry(() =>
-                {
-                    var f = Clean(sig);
-                    if (!File.Exists(f) || XrPlus.ImageSize(File.ReadAllBytes(f)) is (0, _) or (_, 0)) throw new ArgumentException("Bitte ein PNG- oder JPG-Bild wählen.");
-                    _settings.LetterSignature = d.SignatureFile = f; SaveSettings(); _letterMsg = "Unterschrift wird unter den Gruß gesetzt."; Show(V);
-                })),
-                B("letter-signature-off", "Ohne Unterschrift", () => { _settings.LetterSignature = d.SignatureFile = ""; SaveSettings(); Show(V); })));
         // Masterprompt 131: Empfänger aus dem Adressbuch
         var people = Mail.Contacts().Where(c => c.Street.Trim().Length > 0 || c.City.Trim().Length > 0 || c.Company.Trim().Length > 0).ToList();
         var pick = new ComboBox { Name = "letter-contact-pick", ItemsSource = people.Select(c => c.Name + (c.City.Length > 0 ? " · " + c.City : "")).ToList(), PlaceholderText = people.Count == 0 ? "Im Adressbuch hat noch niemand eine Anschrift" : "Kontakt wählen …", MinWidth = 260 };
@@ -152,8 +144,17 @@ public partial class MainWindow
         msgDate.TextChanged += (_, _) => { d.YourMessage = msgDate.Text ?? ""; _letterSync?.Invoke(); };
         ourRef.TextChanged += (_, _) => { d.OurReference = ourRef.Text ?? ""; _letterSync?.Invoke(); };
         var formToggle = B(d.Form == "A" ? "letter-form-b" : "letter-form-a", d.Form == "A" ? "Jetzt Form A – zu Form B wechseln" : "Jetzt Form B – zu Form A wechseln", () => { d.Form = d.Form == "A" ? "B" : "A"; Show(V); }, true);
-        var form = Box("Briefform und Informationsblock", "Form B: Anschrift ab 45 mm (üblich). Form A: ab 27 mm, für Briefbögen mit kleinem Kopf. Die Angaben erscheinen rechts neben der Anschrift.",
-            Row(formToggle), Row(msgDate, ourRef));
+        // F3 Briefe: Druckoptionen – Falz- und Lochmarken (DIN 5008) im DOCX/PDF und in der Vorschau
+        var marks = new CheckBox { Name = "letter-print-marks", Content = "Falz- und Lochmarken mitdrucken", IsChecked = d.PrintMarks, Foreground = Text };
+        ToolTip.SetTip(marks, "Kleine Striche am linken Rand: zum Falten (Form B bei 105 und 210 mm) und Lochen (148,5 mm). Für Fensterumschläge empfohlen.");
+        marks.IsCheckedChanged += (_, _) =>
+        {
+            d.PrintMarks = marks.IsChecked == true; _letterSync?.Invoke();
+            LetterNote(d.PrintMarks ? "Falz- und Lochmarken werden mitgedruckt." : "Ohne Falz- und Lochmarken – der Brief wird ohne Striche am Rand gedruckt.");
+        };
+        var form = Box("Briefform, Informationsblock und Druck", "Form B: Anschrift ab 45 mm (üblich). Form A: ab 27 mm, für Briefbögen mit kleinem Kopf. Die Angaben erscheinen rechts neben der Anschrift.",
+            Row(formToggle), Row(msgDate, ourRef), marks,
+            P("Papierschacht und Drucker wählst du beim Drucken im Druckdialog von Windows (PDF öffnen → Drucken).", null, 11));
         // Serienbrief an eine Adressbuch-Gruppe
         var groups = new List<string> { "Alle Kontakte", "Favoriten" }; groups.AddRange(Mail.GroupNames().Select(g => g.Name));
         var grp = new ComboBox { Name = "letter-serial-group", ItemsSource = groups, SelectedIndex = 0, MinWidth = 180 };
@@ -180,7 +181,147 @@ public partial class MainWindow
                 _core.Audit.Append(Principal.LocalOwner.Name, "letter.serial", $"{list.Count} Briefe (Adressbuch)");
                 _letterSerial = null; _letterMsg = $"{list.Count} Briefe gespeichert in {dir}"; Show(V); NotifyFileResult(_letterMsg);
             }), true)));
-        return new StackPanel { Children = { book, form, dl, serial, serialBook, sign } };
+        return new StackPanel { Children = { book, form, dl, serial, serialBook } };
+    }
+
+    /// <summary>Gezeichnete Striche (Pixel im Zeichenfeld) – bleiben beim Neuzeichnen der Seite erhalten.</summary>
+    private readonly List<List<Point>> _sigStrokes = [];
+    public int LetterSignatureStrokes => _sigStrokes.Count;
+
+    /// <summary>F4 + F3 Briefe (Vorbild-Analyse, nächster Schritt 1): Unterschrift mit Maus, Stift oder Finger zeichnen – oder ein Bild wählen.</summary>
+    private Control LetterSignBox(LetterDraft d)
+    {
+        const string V = "brief";
+        Button B(string name, string label, Action go, bool accent = false) { var b = new Button { Name = name, Content = label, FontSize = 12, Padding = new Thickness(10, 4), Margin = new Thickness(0, 0, 6, 6), Background = accent ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1) }; b.Click += (_, _) => go(); return b; }
+        var ink = Brush.Parse("#1B2A4A");
+        var canvas = new Canvas { Name = "letter-sig-canvas", Width = 340, Height = 110, Background = Brushes.White, ClipToBounds = true, Cursor = new Cursor(StandardCursorType.Cross) };
+        var hint = new TextBlock { Text = "Hier unterschreiben", Foreground = Brush.Parse("#9AA6B2"), FontSize = 12, IsHitTestVisible = false, IsVisible = _sigStrokes.Count == 0 };
+        Canvas.SetLeft(hint, 12); Canvas.SetTop(hint, 8); canvas.Children.Add(hint);
+        canvas.Children.Add(new Line { StartPoint = new Point(20, 86), EndPoint = new Point(320, 86), Stroke = Brush.Parse("#C9D2DB"), StrokeThickness = 1, IsHitTestVisible = false });
+        Polyline Poly(List<Point> pts) => new() { Points = [.. pts], Stroke = ink, StrokeThickness = 2.4, StrokeLineCap = PenLineCap.Round, StrokeJoin = PenLineJoin.Round, IsHitTestVisible = false };
+        foreach (var s in _sigStrokes) canvas.Children.Add(Poly(s));
+        List<Point>? cur = null; Polyline? curLine = null; Button? clearBtn = null, useBtn = null;
+        canvas.PointerPressed += (_, e) =>
+        {
+            cur = [e.GetPosition(canvas)]; _sigStrokes.Add(cur); curLine = Poly(cur); canvas.Children.Add(curLine); hint.IsVisible = false; clearBtn?.SetValue(IsEnabledProperty, true); useBtn?.SetValue(IsEnabledProperty, true);
+            e.Pointer.Capture(canvas); e.Handled = true;
+        };
+        canvas.PointerMoved += (_, e) =>
+        {
+            if (cur is null || curLine is null) return;
+            var p = e.GetPosition(canvas); if (cur.Count > 0 && (cur[^1] - p) is var v && v.X * v.X + v.Y * v.Y < 1) return;
+            cur.Add(p); curLine.Points = [.. cur];
+        };
+        canvas.PointerReleased += (_, e) => { cur = null; curLine = null; e.Pointer.Capture(null); };
+        var pad = new Border { CornerRadius = new CornerRadius(8), BorderBrush = Edge, BorderThickness = new Thickness(1), ClipToBounds = true, HorizontalAlignment = HorizontalAlignment.Left, Child = canvas };
+        var use = B("letter-sig-use", "✍ Gezeichnete Unterschrift übernehmen", () => LetterTry(() =>
+        {
+            var png = LetterSignature.ToPng(_sigStrokes.Select(s => (IReadOnlyList<(double, double)>)s.Select(p => (p.X, p.Y)).ToList()).ToList())
+                ?? throw new ArgumentException("Bitte erst im weißen Feld unterschreiben.");
+            var dir = System.IO.Path.Combine(_core.DataRoot, "briefe"); Directory.CreateDirectory(dir);
+            var f = System.IO.Path.Combine(dir, $"unterschrift-gezeichnet-{DateTime.Now:yyyyMMdd-HHmmss-fff}.png"); File.WriteAllBytes(f, png);
+            _settings.LetterSignature = d.SignatureFile = f; SaveSettings(); _sigStrokes.Clear();
+            _core.Audit.Append(Principal.LocalOwner.Name, "letter.signature.drawn", System.IO.Path.GetFileName(f));
+            _letterMsg = "✓ Gezeichnete Unterschrift steht unter dem Gruß."; Show(V);
+        }), true);
+        var clear = B("letter-sig-clear", "Feld leeren", () => { _sigStrokes.Clear(); Show(V); });
+        clear.IsEnabled = use.IsEnabled = _sigStrokes.Count > 0; clearBtn = clear; useBtn = use; // erst nach dem ersten Strich
+        var sig = new TextBox { Name = "letter-signature", Text = _settings.LetterSignature, PlaceholderText = "… oder Bild deiner Unterschrift (PNG oder JPG)", MinWidth = 260, Margin = new Thickness(0, 0, 6, 6) };
+        var set = B("letter-signature-set", "Bild übernehmen", () => LetterTry(() =>
+        {
+            var f = Clean(sig);
+            if (!File.Exists(f) || XrPlus.ImageSize(File.ReadAllBytes(f)) is (0, _) or (_, 0)) throw new ArgumentException("Bitte ein PNG- oder JPG-Bild wählen.");
+            _settings.LetterSignature = d.SignatureFile = f; SaveSettings(); _letterMsg = "Unterschrift wird unter den Gruß gesetzt."; Show(V);
+        }));
+        var off = B("letter-signature-off", "Ohne Unterschrift", () => { _settings.LetterSignature = d.SignatureFile = ""; SaveSettings(); Show(V); });
+        var sp = new StackPanel { Name = "letter-sign", Spacing = 5, Children = {
+            new TextBlock { Text = "Unterschrift", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
+            P("Mit Maus, Stift oder Finger unterschreiben – sie kommt unter den Gruß. Das ist keine qualifizierte elektronische Signatur.", null, 11),
+            pad, new WrapPanel { Children = { use, clear } }, new WrapPanel { Children = { sig, set, off } } } };
+        if (File.Exists(d.SignatureFile)) sp.Children.Add(P("✓ Im Brief: " + System.IO.Path.GetFileName(d.SignatureFile), Brush.Parse("#4ADE80"), 11));
+        return new Border { Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 8), Margin = new Thickness(0, 6, 0, 0), Child = sp };
+    }
+
+    // ───────────── F3 Briefe: Rechtschreibung beim Tippen ─────────────
+    private HashSet<string> _letterSpellBad = new(StringComparer.Ordinal);
+    private Avalonia.Threading.DispatcherTimer? _letterSpellTimer;
+    private Action? _letterSpellSync;
+    public IReadOnlyCollection<string> LetterSpellingMistakes => _letterSpellBad;
+    Spelling? LetterSpelling()
+    {
+        // Ohne Wörterbuch erneut suchen (LibreOffice kann inzwischen eingerichtet sein) – die Suche prüft nur, ob Dateien da sind
+        if (_spelling is null) { _spellTried = true; _spelling = Spelling.Load(Spelling.Candidates(_deps.ToolsRoot), System.IO.Path.Combine(_core.DataRoot, "text", "eigene-woerter.txt")); }
+        return _spelling;
+    }
+    /// <summary>Kurz nach dem Tippen prüfen (nicht bei jedem Tastendruck).</summary>
+    void LetterSpellLater()
+    {
+        _letterSpellTimer ??= new Avalonia.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(600) };
+        _letterSpellTimer.Stop(); _letterSpellTimer.Tick -= SpellTick; _letterSpellTimer.Tick += SpellTick; _letterSpellTimer.Start();
+        void SpellTick(object? s, EventArgs e) { _letterSpellTimer!.Stop(); _letterSpellSync?.Invoke(); }
+    }
+    /// <summary>Sofort prüfen (Tests, Seitenaufbau).</summary>
+    public void LetterSpellNow() => _letterSpellSync?.Invoke();
+
+    /// <summary>Leiste unter dem Brieftext: unbekannte Wörter mit Vorschlag (Klick ersetzt) und „merken“; in der Vorschau rot unterstrichen.</summary>
+    private Control LetterSpellBar(LetterDraft d, TextBox subject, TextBox body)
+    {
+        var bar = new WrapPanel { Name = "letter-spell" };
+        void Sync()
+        {
+            bar.Children.Clear();
+            d.Subject = subject.Text ?? ""; d.Body = body.Text ?? ""; // Felder lesen – TextChanged kann noch ausstehen
+            var sp = LetterSpelling();
+            if (sp is null) { _letterSpellBad.Clear(); bar.Children.Add(P("Rechtschreibung: Das deutsche Wörterbuch fehlt – es kommt mit LibreOffice (Zusatzprogramme).", null, 11)); return; }
+            var found = sp.CheckText(d.Subject).Select(m => (Field: subject, m)).Concat(sp.CheckText(d.Body).Select(m => (Field: body, m))).ToList();
+            var bad = found.Select(f => f.m.Word).ToHashSet(StringComparer.Ordinal);
+            var changed = !bad.SetEquals(_letterSpellBad); _letterSpellBad = bad;
+            if (found.Count == 0) bar.Children.Add(new TextBlock { Name = "letter-spell-ok", Text = "✓ Rechtschreibung: keine unbekannten Wörter", Foreground = Brush.Parse("#4ADE80"), FontSize = 11.5 });
+            else bar.Children.Add(new TextBlock { Text = $"Rechtschreibung – {found.Count} unbekannt:", Foreground = Brush.Parse("#F87171"), FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 4) });
+            var i = 0;
+            foreach (var (field, m) in found.DistinctBy(f => f.m.Word).Take(8))
+            {
+                var best = sp.Suggest(m.Word).FirstOrDefault();
+                var n = i++;
+                var fix = new Button { Name = $"letter-spell-fix-{n}", Content = best is null ? m.Word : $"{m.Word} → {best}", FontSize = 11.5, Padding = new Thickness(8, 2), Margin = new Thickness(0, 0, 4, 4), IsEnabled = best is not null, BorderBrush = Brush.Parse("#F87171"), BorderThickness = new Thickness(1), Background = Brushes.Transparent };
+                ToolTip.SetTip(fix, best is null ? "Kein Vorschlag – bitte selbst prüfen" : "Alle Stellen ersetzen. Weitere Vorschläge: " + string.Join(", ", sp.Suggest(m.Word).Skip(1).Take(4)));
+                var tf = field; var word = m.Word;
+                fix.Click += (_, _) =>
+                {
+                    if (best is null) return;
+                    tf.Text = System.Text.RegularExpressions.Regex.Replace(tf.Text ?? "", $@"(?<![\p{{L}}]){System.Text.RegularExpressions.Regex.Escape(word)}(?![\p{{L}}])", best);
+                    if (ReferenceEquals(tf, body)) d.Body = tf.Text ?? ""; else d.Subject = tf.Text ?? "";
+                    Sync(); _letterSync?.Invoke();
+                };
+                var own = new Button { Name = $"letter-spell-own-{n}", Content = "+", FontSize = 11.5, Padding = new Thickness(6, 2), Margin = new Thickness(0, 0, 10, 4) };
+                ToolTip.SetTip(own, $"„{word}“ ist richtig – ins eigene Wörterbuch");
+                own.Click += (_, _) => { sp.AddOwn(word); Sync(); _letterSync?.Invoke(); };
+                bar.Children.Add(fix); bar.Children.Add(own);
+            }
+            if (changed) _letterSync?.Invoke();
+        }
+        _letterSpellSync = Sync;
+        subject.TextChanged += (_, _) => LetterSpellLater(); body.TextChanged += (_, _) => LetterSpellLater();
+        Sync();
+        return bar;
+    }
+
+    /// <summary>Brieftext der Vorschau mit rot unterstrichenen unbekannten Wörtern.</summary>
+    void LetterSpellMark(TextBlock tb, string text)
+    {
+        if (_letterSpellBad.Count == 0) return;
+        var rx = new System.Text.RegularExpressions.Regex(@"[\p{L}][\p{L}\p{M}'’\-]*[\p{L}]|[\p{L}]");
+        var deco = new TextDecorationCollection { new TextDecoration { Location = TextDecorationLocation.Underline, Stroke = Brush.Parse("#E11D48"), StrokeThickness = 0.35, StrokeThicknessUnit = TextDecorationUnit.Pixel } };
+        var inl = new Avalonia.Controls.Documents.InlineCollection(); var pos = 0; var any = false;
+        foreach (System.Text.RegularExpressions.Match m in rx.Matches(text))
+        {
+            if (!_letterSpellBad.Contains(m.Value)) continue;
+            if (m.Index > pos) inl.Add(new Avalonia.Controls.Documents.Run(text[pos..m.Index]));
+            inl.Add(new Avalonia.Controls.Documents.Run(m.Value) { TextDecorations = deco, Foreground = Brush.Parse("#B91C1C") }); pos = m.Index + m.Length; any = true;
+        }
+        if (!any) return;
+        if (pos < text.Length) inl.Add(new Avalonia.Controls.Documents.Run(text[pos..]));
+        tb.Inlines = inl;
     }
 
     /// <summary>U3: Schrittleiste – zeigt, was schon fertig ist, und springt zum passenden Feld.</summary>
@@ -223,6 +364,13 @@ public partial class MainWindow
     {
         try { a(); }
         catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or UnauthorizedAccessException or InvalidDataException or FormatException) { _letterMsg = ex.Message; Show("brief"); }
+    }
+
+    /// <summary>Kurze Rückmeldung in der Briefzeile, ohne die Seite neu aufzubauen.</summary>
+    private void LetterNote(string text)
+    {
+        _letterMsg = text;
+        if (this.GetLogicalDescendants().OfType<TextBlock>().FirstOrDefault(t => t.Name == "letter-msg") is { } m) m.Text = text;
     }
 
     private void LetterGo(string field, string hint)
@@ -339,6 +487,7 @@ public partial class MainWindow
         void At(Canvas p, Control c, double x, double y) { Canvas.SetLeft(c, x); Canvas.SetTop(c, y); p.Children.Add(c); }
         void Marks(Canvas p)
         {
+            if (!d.PrintMarks) return;
             foreach (var y in formA ? new[] { 87.0, 192.0 } : [105.0, 210.0]) At(p, new Line { StartPoint = new Point(0, 0), EndPoint = new Point(5, 0), Stroke = grey, StrokeThickness = 0.3 }, 3, y);
             At(p, new Line { StartPoint = new Point(0, 0), EndPoint = new Point(7, 0), Stroke = grey, StrokeThickness = 0.3 }, 3, 148.5);
         }
@@ -370,6 +519,7 @@ public partial class MainWindow
         {
             if (chunk.Count == 0) return;
             var tb = T(pageNo == 1 ? "letter-preview-body" : $"letter-preview-body-{pageNo}", string.Join("\n", chunk), 11, ink, "letter-body", width: 170, wrap: false);
+            if (interactive) LetterSpellMark(tb, tb.Text ?? "");
             At(page, tb, 25, chunkTop); chunk.Clear();
         }
         void NextPage() { Flush(); page = NewPage(); pages.Add(page); pageNo++; Marks(page); y = FollowTop; chunkTop = y; }

@@ -30,6 +30,8 @@ public sealed class LetterDraft
     public string Attachments { get; set; } = "";
     /// <summary>F4: Bild der Unterschrift (PNG/JPEG). Ausdrücklich keine qualifizierte elektronische Signatur.</summary>
     public string SignatureFile { get; set; } = "";
+    /// <summary>F3 Briefe: Falzmarken und Lochmarke nach DIN 5008 mitdrucken (DOCX/PDF und Vorschau).</summary>
+    public bool PrintMarks { get; set; } = true;
     // Design (Wunsch 02.11.2026: z. B. Bewerbung „zeitgemäß in Blau mit schönen Elementen“) – „klassisch“ ist der reine DIN-5008-Brief ohne Gestaltung
     /// <summary>Stil: klassisch, modern, elegant, kreativ oder minimal.</summary>
     public string Design { get; set; } = "klassisch";
@@ -317,27 +319,54 @@ public static class Letters
         if (d.Attachments.Trim().Length > 0) { Para("Anlagen", bold: true, before: 360); Lines(d.Attachments.Trim()); }
         if (d.SenderContact.Trim().Length > 0) Para(d.SenderContact.Trim(), size: 16, before: 480);
 
+        var hdr = d.PrintMarks ? MarksHeader(d.Form == "A") : null;
         var doc = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><w:document xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><w:body>" + body +
-                  "<w:sectPr><w:pgSz w:w=\"11906\" w:h=\"16838\"/><w:pgMar w:top=\"1134\" w:right=\"1134\" w:bottom=\"1134\" w:left=\"1418\" w:header=\"709\" w:footer=\"709\" w:gutter=\"0\"/></w:sectPr></w:body></w:document>";
+                  "<w:sectPr>" + (hdr is null ? "" : "<w:headerReference w:type=\"default\" r:id=\"rIdMarks\"/>") + "<w:pgSz w:w=\"11906\" w:h=\"16838\"/><w:pgMar w:top=\"1134\" w:right=\"1134\" w:bottom=\"1134\" w:left=\"1418\" w:header=\"709\" w:footer=\"709\" w:gutter=\"0\"/></w:sectPr></w:body></w:document>";
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
         var tmp = path + ".tmp";
         using (var fs = File.Create(tmp))
         using (var zip = new ZipArchive(fs, ZipArchiveMode.Create))
         {
             void Add(string n, string c) { using var w = new StreamWriter(zip.CreateEntry(n).Open(), new UTF8Encoding(false)); w.Write(c); }
-            Add("[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>" + string.Concat(new[] { sig is null ? null : sigExt, photo is null ? null : photoExt }.OfType<string>().Distinct().Select(e => $"<Default Extension=\"{e}\" ContentType=\"image/{e}\"/>")) + "<Override PartName=\"/word/document.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/></Types>");
+            Add("[Content_Types].xml", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\"><Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/><Default Extension=\"xml\" ContentType=\"application/xml\"/>" + string.Concat(new[] { sig is null ? null : sigExt, photo is null ? null : photoExt }.OfType<string>().Distinct().Select(e => $"<Default Extension=\"{e}\" ContentType=\"image/{e}\"/>")) + "<Override PartName=\"/word/document.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml\"/>" +
+                (hdr is null ? "" : "<Override PartName=\"/word/header1.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml\"/>") + "</Types>");
             Add("_rels/.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\"><Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"word/document.xml\"/></Relationships>");
             Add("word/document.xml", doc);
-            if (sig is not null || photo is not null)
+            if (hdr is not null) Add("word/header1.xml", hdr);
+            if (sig is not null || photo is not null || hdr is not null)
             {
                 const string img = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
                 Add("word/_rels/document.xml.rels", "<?xml version=\"1.0\" encoding=\"UTF-8\"?><Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">" +
-                    (sig is null ? "" : $"<Relationship Id=\"rIdSig\" Type=\"{img}\" Target=\"media/unterschrift.{sigExt}\"/>") + (photo is null ? "" : $"<Relationship Id=\"rIdPhoto\" Type=\"{img}\" Target=\"media/foto.{photoExt}\"/>") + "</Relationships>");
+                    (sig is null ? "" : $"<Relationship Id=\"rIdSig\" Type=\"{img}\" Target=\"media/unterschrift.{sigExt}\"/>") + (photo is null ? "" : $"<Relationship Id=\"rIdPhoto\" Type=\"{img}\" Target=\"media/foto.{photoExt}\"/>") +
+                    (hdr is null ? "" : "<Relationship Id=\"rIdMarks\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/header\" Target=\"header1.xml\"/>") + "</Relationships>");
                 if (sig is not null) { using var st = zip.CreateEntry($"word/media/unterschrift.{sigExt}").Open(); st.Write(sig); }
                 if (photo is not null) { using var pt = zip.CreateEntry($"word/media/foto.{photoExt}").Open(); pt.Write(photo); }
             }
         }
         SafeFile.Move(tmp, path);
+    }
+
+    /// <summary>DIN 5008: Falzmarken (Form B 105/210 mm, Form A 87/192 mm) und Lochmarke (148,5 mm) am linken Rand, 3 mm vom Blattrand.</summary>
+    public static IReadOnlyList<(string Name, double Y, double Length)> Marks(bool formA) =>
+        [("Falzmarke", formA ? 87 : 105, 5), ("Lochmarke", 148.5, 7), ("Falzmarke", formA ? 192 : 210, 5)];
+
+    /// <summary>Kopfzeile mit den Marken als verankerte Linien relativ zur Seite (Word und LibreOffice), hinter dem Text.</summary>
+    static string MarksHeader(bool formA)
+    {
+        const long Mm = 36000; var sb = new StringBuilder(); var id = 100;
+        foreach (var (name, y, len) in Marks(formA))
+        {
+            var cx = (long)(len * Mm);
+            sb.Append($"<w:r><w:drawing><wp:anchor distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\" simplePos=\"0\" relativeHeight=\"{id}\" behindDoc=\"1\" locked=\"1\" layoutInCell=\"1\" allowOverlap=\"1\">" +
+                $"<wp:simplePos x=\"0\" y=\"0\"/><wp:positionH relativeFrom=\"page\"><wp:posOffset>{3 * Mm}</wp:posOffset></wp:positionH><wp:positionV relativeFrom=\"page\"><wp:posOffset>{(long)(y * Mm)}</wp:posOffset></wp:positionV>" +
+                $"<wp:extent cx=\"{cx}\" cy=\"0\"/><wp:effectExtent l=\"0\" t=\"0\" r=\"0\" b=\"0\"/><wp:wrapNone/><wp:docPr id=\"{id}\" name=\"{name}\"/><wp:cNvGraphicFramePr/>" +
+                $"<a:graphic><a:graphicData uri=\"http://schemas.microsoft.com/office/word/2010/wordprocessingShape\"><wps:wsp><wps:cNvCnPr/><wps:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"{cx}\" cy=\"0\"/></a:xfrm>" +
+                "<a:prstGeom prst=\"line\"><a:avLst/></a:prstGeom><a:ln w=\"6350\"><a:solidFill><a:srgbClr val=\"808080\"/></a:solidFill></a:ln></wps:spPr><wps:bodyPr/></wps:wsp></a:graphicData></a:graphic></wp:anchor></w:drawing></w:r>");
+            id++;
+        }
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><w:hdr xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" " +
+               "xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\" xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\" xmlns:wps=\"http://schemas.microsoft.com/office/word/2010/wordprocessingShape\">" +
+               $"<w:p><w:pPr><w:spacing w:before=\"0\" w:after=\"0\" w:line=\"20\" w:lineRule=\"exact\"/></w:pPr>{sb}</w:p></w:hdr>";
     }
 
     /// <summary>Reiner Text der DOCX (für Vorschau/Tests).</summary>
