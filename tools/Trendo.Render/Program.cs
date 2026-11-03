@@ -125,6 +125,16 @@ if (Environment.GetEnvironmentVariable("TRENDO_PDF") is { Length: > 0 } pdf) { v
 if (Environment.GetEnvironmentVariable("TRENDO_SHEET") is { Length: > 0 } mappe) { win.SheetNew(mappe); if (Enum.TryParse<Trendo.Core.Office.ChartKind>(Environment.GetEnvironmentVariable("TRENDO_SHEET_CHART"), out var chartKind)) { win.SheetSelect("A1:C7"); win.SheetInsertChart(chartKind); } if (Environment.GetEnvironmentVariable("TRENDO_SHEET_EXTRAS") == "1") { win.SheetSelect("C2:C7"); win.SheetAddCond(Trendo.Core.Office.CondKind.Datenbalken); win.SheetSelect("C9:C11"); win.SheetAddCond(Trendo.Core.Office.CondKind.Farbskala); win.SheetSelect("B2:B7"); win.SheetAddCond(Trendo.Core.Office.CondKind.Regel, Trendo.Core.Office.CondOp.Enthaelt, text: "Einnahme"); win.SheetSetValidation("Einnahme; Ausgabe"); win.SheetSelect("A2"); win.SheetSetNote("Netto, ohne Weihnachtsgeld"); } win.SheetSelect("C2:C7"); if (Environment.GetEnvironmentVariable("TRENDO_SHEET_PDF") is { Length: > 0 } sheetPdf) win.SheetExportPdf(sheetPdf); win.Show("tabelle"); } // T-0228: Trendo Tabelle mit Vorlage rendern
 if (Environment.GetEnvironmentVariable("TRENDO_DECK") is { Length: > 0 } deck) { win.DeckNew(deck); if (Environment.GetEnvironmentVariable("TRENDO_DECK_SLIDE") is { } ds && int.TryParse(ds, out var dsi)) win.DeckGo(dsi); if (Environment.GetEnvironmentVariable("TRENDO_DECK_PNG") is { Length: > 0 } pngDir) win.DeckExportImages(pngDir); win.Show("praesentation"); } // T-0229: Trendo Präsentation mit Vorlage rendern
 if (Environment.GetEnvironmentVariable("TRENDO_TEXT") is { Length: > 0 } vorlage) { win.TextNew(vorlage); if (Environment.GetEnvironmentVariable("TRENDO_TEXT_RIBBON") is { Length: > 0 } rib) { win.TextRibbon = rib; win.TextSetPage(pg => { pg.Watermark = "ENTWURF"; pg.Header = "Erika Muster"; pg.PageNumbers = true; pg.Design = "klassisch"; }); win.TextSelect(1, 0, 5); win.TextAddMark(Trendo.Core.Office.MarkKind.Comment, "Bitte prüfen"); win.TextSelect(1, 6, 0); win.TextAddMark(Trendo.Core.Office.MarkKind.Footnote, "Quelle"); win.TextInsertToc(); }
+    if (Environment.GetEnvironmentVariable("TRENDO_TEXT_LISTE") is { Length: > 0 }) // F3: mehrstufige Liste (erfundene Einkaufsliste)
+    {
+        Trendo.Core.Office.Para L(string t, Trendo.Core.Office.ListKind k, int lvl = 0) => new(t) { List = k, ListLevel = lvl };
+        var (nb, bu) = (Trendo.Core.Office.ListKind.Number, Trendo.Core.Office.ListKind.Bullet);
+        win.TextDocument.Blocks.Clear();
+        win.TextDocument.Blocks.AddRange([new Trendo.Core.Office.Para("Einkauf fürs Wochenende", Trendo.Core.Office.ParaStyle.Heading1),
+            L("Obst", nb), L("Äpfel", bu, 1), L("Birnen", bu, 1), L("die roten", bu, 2), L("Gemüse", nb), L("Möhren", nb, 1), L("Lauch", nb, 1), L("dünn", nb, 2), L("dick", nb, 2), L("Brot vom Bäcker", nb),
+            new Trendo.Core.Office.Para("Mit Tab rückt ein Punkt eine Ebene tiefer, mit Umschalt+Tab wieder höher.")]);
+        win.TextSelect(7, 2, 0);
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_TEXT_LOOK") is { Length: > 0 }) // Pilot 0.9.47: Schrift, Farbe, Hervorhebung, Zeilenabstand sichtbar
     {
         var paras = win.TextDocument.Blocks.Select((b, i) => (b, i)).Where(x => x.b is Trendo.Core.Office.Para { Text.Length: > 12 }).Select(x => x.i).Take(3).ToList();
@@ -258,6 +268,17 @@ else if (shot == "seite")
         var dst = Path.Combine(root, "werkzeuge", "libreoffice", "App", "libreoffice", "share", "extensions", "dict-de");
         if (File.Exists(Path.Combine(dict, "de_DE_frami.dic"))) { Directory.CreateDirectory(dst); foreach (var e in new[] { ".dic", ".aff" }) File.Copy(Path.Combine(dict, "de_DE_frami" + e), Path.Combine(dst, "de_DE_frami" + e), true); }
         l.SignatureFile = sig; win.LetterGoStep(3); win.LetterSpellNow();
+    }
+    if (Environment.GetEnvironmentVariable("TRENDO_TABELLE_DEMO") is { Length: > 0 } tabDemo) // Ausgabenliste mit Autofilter bzw. Pivot (erfundene Beispielwerte)
+    {
+        win.SheetNew(); win.Show("tabelle");
+        string[][] rows = [["Monat", "Kategorie", "Betrag"], ["Jan", "Miete", "800"], ["Jan", "Essen", "250,5"], ["Jan", "Auto", "95"], ["Feb", "Miete", "800"], ["Feb", "Essen", "199,5"], ["Feb", "Auto", "120"], ["Mär", "Miete", "800"], ["Mär", "Essen", "300"], ["Mär", "Freizeit", "60"]];
+        for (var r = 0; r < rows.Length; r++) for (var c = 0; c < 3; c++) win.SheetSetCell($"{(char)('A' + c)}{r + 1}", rows[r][c]);
+        win.SheetSelect("C2:C10"); win.SheetFormatSelection(Trendo.Core.Office.NumFmt.Euro); win.SheetSelect("B2");
+        if (tabDemo == "af") { win.SheetToggleAutoFilter(); win.SheetSetColumnFilter(1, ["Essen", "Freizeit"]); }
+        else if (tabDemo == "pivot") win.SheetShowPivotPanel();
+        else win.SheetCreatePivot(1, 0, 2, Trendo.Core.Office.SheetPivot.Agg.Summe);
+        win.Show("tabelle");
     }
     if (Environment.GetEnvironmentVariable("TRENDO_CAL") is { Length: > 0 }) // Kalender-Woche mit erfundenen Beispielterminen
     {

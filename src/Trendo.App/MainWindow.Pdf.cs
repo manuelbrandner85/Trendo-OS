@@ -228,7 +228,7 @@ public partial class MainWindow
         {
             var t = PdfView.Text(PdfPath!, PdfPage, _pdfPassword);
             if (Clipboard is { } cb) _ = cb.SetTextAsync(t);
-            PdfSay(t.Length == 0 ? "Diese Seite hat keinen Text (vielleicht ein Scan – dann hilft „Text erkennen“ im Briefstudio)." : $"{t.Length} Zeichen kopiert.");
+            PdfSay(t.Length == 0 ? "Diese Seite hat keinen Text (vielleicht ein Scan – dann hilft „🔎 Texterkennung“ darunter)." : $"{t.Length} Zeichen kopiert.");
         }));
 
         // P5 Markieren und Notizen
@@ -243,6 +243,8 @@ public partial class MainWindow
         }
         side.Children.Add(new Expander { Header = "Markieren & Notizen", IsExpanded = _pdfMode is not null, Content = new StackPanel { Spacing = 4, Children = {
             markRow, noteText, P(_pdfMode is null ? "Art wählen, dann auf der Seite ziehen (Notiz: klicken). Gespeichert wird in einer Kopie." : _pdfRot != 0 ? "Zum Markieren die Ansicht wieder gerade drehen." : "Jetzt auf der Seite ziehen bzw. klicken.", null, 11) } } });
+
+        side.Children.Add(PdfSignBox()); side.Children.Add(PdfOcrBox()); // F3: Unterschreiben, Texterkennung
 
         // P3/P4 Werkzeuge
         var tools = new StackPanel { Spacing = 4 };
@@ -359,6 +361,7 @@ public partial class MainWindow
     {
         if (_pdfMode is null || PdfPath is null) return;
         var k = 72.0 / dpi; var hPt = _pdfSizes[pageIndex].H;
+        if (_pdfMode == "Sign") { PdfSignAt(pageIndex, b.X * k, b.Y * k); return; } // F3: Unterschrift an die Klickstelle
         var x = Math.Min(a.X, b.X) * k; var w = Math.Abs(a.X - b.X) * k;
         var yTop = Math.Min(a.Y, b.Y) * k; var h = Math.Abs(a.Y - b.Y) * k;
         var y = hPt - yTop - h;

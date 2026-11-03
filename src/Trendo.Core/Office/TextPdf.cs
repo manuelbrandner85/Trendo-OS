@@ -55,7 +55,7 @@ public static class TextPdf
             pdf = new PdfDocument();
             pdf.Info.Title = doc.Title ?? doc.Paras.FirstOrDefault(p => p.Text.Trim().Length > 0)?.Text.Trim() ?? "";
             NewPage();
-            var number = 0; PdfOutline? h1 = null;
+            var labels = TextTools.ListLabels(doc); PdfOutline? h1 = null; // F3: Nummern und Zeichen je Listenebene
             for (var bi = 0; bi < doc.Blocks.Count; bi++)
             {
                 switch (doc.Blocks[bi])
@@ -63,7 +63,6 @@ public static class TextPdf
                     case PageBreak: NewPage(); break;
                     case TocBlock toc: DrawToc(toc); break;
                     case Para p:
-                        number = p.List == ListKind.Number ? number + 1 : 0;
                         if (p.Style is ParaStyle.Heading1 or ParaStyle.Heading2 or ParaStyle.Heading3 && p.Text.Trim().Length > 0)
                         {
                             Need(TextDoc.StyleSize(p.Style) * 1.6 + 10); // Überschrift nicht allein am Seitenende
@@ -73,7 +72,7 @@ public static class TextPdf
                             if (p.Style == ParaStyle.Heading1 || h1 is null) h1 = pdf.Outlines.Add(title, cur, true);
                             else h1.Outlines.Add(title, cur, false);
                         }
-                        DrawPara(p, number, bi);
+                        DrawPara(p, labels[bi] ?? "", bi);
                         break;
                     case Table t: DrawTable(t); break;
                     case Picture pic: DrawPicture(pic); break;
@@ -165,9 +164,9 @@ public static class TextPdf
         };
 
         // ---------- Absätze ----------
-        void DrawPara(Para p, int number, int block)
+        void DrawPara(Para p, string label, int block)
         {
-            var indent = p.IndentCm * Cm + (p.List != ListKind.None ? 0.9 * Cm : p.Style == ParaStyle.Quote ? 1 * Cm : 0);
+            var indent = p.IndentCm * Cm + (p.List != ListKind.None ? 0.9 * Cm + p.ListLevel * TextTools.ListLevelCm * Cm : p.Style == ParaStyle.Quote ? 1 * Cm : 0);
             var avail = ColW - indent - (p.Style == ParaStyle.Quote ? 1 * Cm : 0);
             y += p.SpaceBeforePt ?? (p.Style is ParaStyle.Heading1 or ParaStyle.Heading2 or ParaStyle.Heading3 ? 10.0 : 0);
             var lines = new List<List<Word>>(); var line = new List<Word>(); var lineW = 0.0;
@@ -239,7 +238,7 @@ public static class TextPdf
                 foreach (var n in lineNotes) pageNotes.Add((n.No, n.Text));
                 footReserve += noteH;
                 if (li == 0 && p.List != ListKind.None)
-                    g.DrawString(p.List == ListKind.Bullet ? "•" : number + ".", Font(p, Fmt.None, null), XBrushes.Black, X0 + indent - 0.6 * Cm, y + baseSize);
+                    g.DrawString(label, Font(p, Fmt.None, null), XBrushes.Black, X0 + indent - 0.75 * Cm, y + baseSize);
                 var total = ln.Sum(w => w.W) + ln.Take(Math.Max(0, ln.Count - 1)).Sum(w => w.SpaceAfter ? g.MeasureString(" ", w.Font).Width : 0);
                 var last = li == lines.Count - 1;
                 var x = X0 + indent + p.Align switch { Align.Center => (avail - total) / 2, Align.Right => avail - total, _ => 0 };

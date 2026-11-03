@@ -193,13 +193,38 @@ public partial class MainWindow
     {
         const string V = "brief";
         Button B(string name, string label, Action go, bool accent = false) { var b = new Button { Name = name, Content = label, FontSize = 12, Padding = new Thickness(10, 4), Margin = new Thickness(0, 0, 6, 6), Background = accent ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1) }; b.Click += (_, _) => go(); return b; }
+        var padBox = SignaturePad("letter-sig", V, f =>
+        {
+            d.SignatureFile = f; _letterMsg = "✓ Gezeichnete Unterschrift steht unter dem Gruß."; Show(V);
+        }, m => LetterTry(() => throw new ArgumentException(m)));
+        var sig = new TextBox { Name = "letter-signature", Text = _settings.LetterSignature, PlaceholderText = "… oder Bild deiner Unterschrift (PNG oder JPG)", MinWidth = 260, Margin = new Thickness(0, 0, 6, 6) };
+        var set = B("letter-signature-set", "Bild übernehmen", () => LetterTry(() =>
+        {
+            var f = Clean(sig);
+            if (!File.Exists(f) || XrPlus.ImageSize(File.ReadAllBytes(f)) is (0, _) or (_, 0)) throw new ArgumentException("Bitte ein PNG- oder JPG-Bild wählen.");
+            _settings.LetterSignature = d.SignatureFile = f; SaveSettings(); _letterMsg = "Unterschrift wird unter den Gruß gesetzt."; Show(V);
+        }));
+        var off = B("letter-signature-off", "Ohne Unterschrift", () => { _settings.LetterSignature = d.SignatureFile = ""; SaveSettings(); Show(V); });
+        var sp = new StackPanel { Name = "letter-sign", Spacing = 5, Children = {
+            new TextBlock { Text = "Unterschrift", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
+            P("Mit Maus, Stift oder Finger unterschreiben – sie kommt unter den Gruß. Das ist keine qualifizierte elektronische Signatur.", null, 11),
+            padBox, new WrapPanel { Children = { sig, set, off } } } };
+        if (File.Exists(d.SignatureFile)) sp.Children.Add(P("✓ Im Brief: " + System.IO.Path.GetFileName(d.SignatureFile), Brush.Parse("#4ADE80"), 11));
+        return new Border { Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 8), Margin = new Thickness(0, 6, 0, 0), Child = sp };
+    }
+
+    /// <summary>Zeichenfeld für die Unterschrift (Briefe und PDF): Maus, Stift oder Finger. „Übernehmen“ speichert ein PNG im Datenordner,
+    /// merkt es als Unterschrift der Person und gibt den Pfad an <paramref name="saved"/>. <paramref name="error"/> zeigt eine Meldung.</summary>
+    private Control SignaturePad(string prefix, string page, Action<string> saved, Action<string> error, double width = 340, double height = 110)
+    {
+        Button B(string name, string label, Action go, bool accent = false) { var b = new Button { Name = name, Content = label, FontSize = 12, Padding = new Thickness(10, 4), Margin = new Thickness(0, 0, 6, 6), Background = accent ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1) }; b.Click += (_, _) => go(); return b; }
         var ink = Brush.Parse("#1B2A4A");
-        var canvas = new Canvas { Name = "letter-sig-canvas", Width = 340, Height = 110, Background = Brushes.White, ClipToBounds = true, Cursor = new Cursor(StandardCursorType.Cross) };
+        var canvas = new Canvas { Name = prefix + "-canvas", Width = width, Height = height, Background = Brushes.White, ClipToBounds = true, Cursor = new Cursor(StandardCursorType.Cross) };
         var hint = new TextBlock { Text = "Hier unterschreiben", Foreground = Brush.Parse("#9AA6B2"), FontSize = 12, IsHitTestVisible = false, IsVisible = _sigStrokes.Count == 0 };
         Canvas.SetLeft(hint, 12); Canvas.SetTop(hint, 8); canvas.Children.Add(hint);
-        canvas.Children.Add(new Line { StartPoint = new Point(20, 86), EndPoint = new Point(320, 86), Stroke = Brush.Parse("#C9D2DB"), StrokeThickness = 1, IsHitTestVisible = false });
+        canvas.Children.Add(new Line { StartPoint = new Point(20, height - 24), EndPoint = new Point(width - 20, height - 24), Stroke = Brush.Parse("#C9D2DB"), StrokeThickness = 1, IsHitTestVisible = false });
         Polyline Poly(List<Point> pts) => new() { Points = [.. pts], Stroke = ink, StrokeThickness = 2.4, StrokeLineCap = PenLineCap.Round, StrokeJoin = PenLineJoin.Round, IsHitTestVisible = false };
-        foreach (var s in _sigStrokes) canvas.Children.Add(Poly(s));
+        foreach (var st in _sigStrokes) canvas.Children.Add(Poly(st));
         List<Point>? cur = null; Polyline? curLine = null; Button? clearBtn = null, useBtn = null;
         canvas.PointerPressed += (_, e) =>
         {
@@ -214,32 +239,19 @@ public partial class MainWindow
         };
         canvas.PointerReleased += (_, e) => { cur = null; curLine = null; e.Pointer.Capture(null); };
         var pad = new Border { CornerRadius = new CornerRadius(8), BorderBrush = Edge, BorderThickness = new Thickness(1), ClipToBounds = true, HorizontalAlignment = HorizontalAlignment.Left, Child = canvas };
-        var use = B("letter-sig-use", "✍ Gezeichnete Unterschrift übernehmen", () => LetterTry(() =>
+        var use = B(prefix + "-use", width < 300 ? "✍ Übernehmen" : "✍ Gezeichnete Unterschrift übernehmen", () =>
         {
-            var png = LetterSignature.ToPng(_sigStrokes.Select(s => (IReadOnlyList<(double, double)>)s.Select(p => (p.X, p.Y)).ToList()).ToList())
-                ?? throw new ArgumentException("Bitte erst im weißen Feld unterschreiben.");
+            var png = LetterSignature.ToPng(_sigStrokes.Select(x => (IReadOnlyList<(double, double)>)x.Select(p => (p.X, p.Y)).ToList()).ToList());
+            if (png is null) { error("Bitte erst im weißen Feld unterschreiben."); return; }
             var dir = System.IO.Path.Combine(_core.DataRoot, "briefe"); Directory.CreateDirectory(dir);
             var f = System.IO.Path.Combine(dir, $"unterschrift-gezeichnet-{DateTime.Now:yyyyMMdd-HHmmss-fff}.png"); File.WriteAllBytes(f, png);
-            _settings.LetterSignature = d.SignatureFile = f; SaveSettings(); _sigStrokes.Clear();
-            _core.Audit.Append(Principal.LocalOwner.Name, "letter.signature.drawn", System.IO.Path.GetFileName(f));
-            _letterMsg = "✓ Gezeichnete Unterschrift steht unter dem Gruß."; Show(V);
-        }), true);
-        var clear = B("letter-sig-clear", "Feld leeren", () => { _sigStrokes.Clear(); Show(V); });
+            _settings.LetterSignature = f; SaveSettings(); _sigStrokes.Clear();
+            _core.Audit.Append(Principal.LocalOwner.Name, "signature.drawn", System.IO.Path.GetFileName(f));
+            saved(f);
+        }, true);
+        var clear = B(prefix + "-clear", "Feld leeren", () => { _sigStrokes.Clear(); Show(page); });
         clear.IsEnabled = use.IsEnabled = _sigStrokes.Count > 0; clearBtn = clear; useBtn = use; // erst nach dem ersten Strich
-        var sig = new TextBox { Name = "letter-signature", Text = _settings.LetterSignature, PlaceholderText = "… oder Bild deiner Unterschrift (PNG oder JPG)", MinWidth = 260, Margin = new Thickness(0, 0, 6, 6) };
-        var set = B("letter-signature-set", "Bild übernehmen", () => LetterTry(() =>
-        {
-            var f = Clean(sig);
-            if (!File.Exists(f) || XrPlus.ImageSize(File.ReadAllBytes(f)) is (0, _) or (_, 0)) throw new ArgumentException("Bitte ein PNG- oder JPG-Bild wählen.");
-            _settings.LetterSignature = d.SignatureFile = f; SaveSettings(); _letterMsg = "Unterschrift wird unter den Gruß gesetzt."; Show(V);
-        }));
-        var off = B("letter-signature-off", "Ohne Unterschrift", () => { _settings.LetterSignature = d.SignatureFile = ""; SaveSettings(); Show(V); });
-        var sp = new StackPanel { Name = "letter-sign", Spacing = 5, Children = {
-            new TextBlock { Text = "Unterschrift", Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold },
-            P("Mit Maus, Stift oder Finger unterschreiben – sie kommt unter den Gruß. Das ist keine qualifizierte elektronische Signatur.", null, 11),
-            pad, new WrapPanel { Children = { use, clear } }, new WrapPanel { Children = { sig, set, off } } } };
-        if (File.Exists(d.SignatureFile)) sp.Children.Add(P("✓ Im Brief: " + System.IO.Path.GetFileName(d.SignatureFile), Brush.Parse("#4ADE80"), 11));
-        return new Border { Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 8), Margin = new Thickness(0, 6, 0, 0), Child = sp };
+        return new StackPanel { Spacing = 5, Children = { pad, new WrapPanel { Children = { use, clear } } } };
     }
 
     // ───────────── F3 Briefe: Rechtschreibung beim Tippen ─────────────

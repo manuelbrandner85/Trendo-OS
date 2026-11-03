@@ -575,7 +575,10 @@ public partial class MainWindow
                     SB("tabelle-sort-az", "↑", "A–Z", () => SheetSort(true), "Liste nach der aktiven Spalte aufsteigend sortieren"),
                     SB("tabelle-sort-za", "↓", "Z–A", () => SheetSort(false), "Absteigend sortieren"),
                     SB("tabelle-filter", "⏷", "Filter", SheetFilterLikeActive, "Nur Zeilen mit dem Wert der aktiven Zelle zeigen"),
-                    SB("tabelle-filter-off", "⊘", "Alle zeigen", () => { ActiveSheet.ClearFilter(); _shMsg = "Filter aufgehoben."; }, "Filter aufheben", ActiveSheet.HiddenRows.Count > 0)));
+                    SB("tabelle-filter-off", "⊘", "Alle zeigen", () => { ActiveSheet.ClearFilter(); _shMsg = "Filter aufgehoben."; }, "Filter aufheben", ActiveSheet.HiddenRows.Count > 0),
+                    SB("tabelle-autofilter", "▾", "Autofilter", SheetToggleAutoFilter, "Je Spalte eine Werteliste zum An- und Abhaken (rechte Leiste) – erneut = aus", ActiveSheet.AutoFilter is not null)));
+                groups.Children.Add(RibbonGroup("Auswerten",
+                    SB("tabelle-pivot", "⊞", "Pivot", () => _shSide = _shSide == "pivot" ? "" : "pivot", "Pivot-Tabelle: Liste nach Feldern zusammenfassen (Summe, Anzahl, Mittelwert) – auf einem neuen Blatt", _shSide == "pivot")));
                 groups.Children.Add(RibbonGroup("Datentools",
                     SB("tabelle-validation", "☰", "Auswahlliste", () => SheetPrompt("tabelle-prompt", $"Auswahlliste für {SelRange()} – Einträge mit ; trennen (leer = entfernen):", string.Join("; ", SheetExtras.ValidationFor(ActiveSheet, _shActive.Row, _shActive.Col)?.Items ?? []), SheetSetValidation), "Nur bestimmte Einträge erlauben, mit Auswahl-Pfeil in der Zelle"),
                     SB("tabelle-dupes", "⧉", "Duplikate", () => SheetRemoveDuplicates(), "Doppelte Zeilen entfernen"),
@@ -774,6 +777,7 @@ public partial class MainWindow
     private Control SheetSidePanel()
     {
         var sp = new StackPanel { Name = "tabelle-side", Width = 250, Spacing = 6, Margin = new Thickness(10, 0, 0, 0) };
+        if (SheetF3Side() is { } f3) sp.Children.Add(f3); // F3: Pivot und Autofilter oben in der rechten Leiste
         var (r, c) = _shActive; var cell = ActiveSheet.Get(r, c); var v = _shCalc.Value(ActiveSheet, r, c);
         sp.Children.Add(new TextBlock { Text = $"Zelle {Addr.Name(r, c)}", Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold });
         var what = cell is null || cell.Raw.Length == 0 ? "Leer – einfach lostippen." :

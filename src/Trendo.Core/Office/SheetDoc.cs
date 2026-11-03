@@ -82,6 +82,8 @@ public sealed class Sheet(string name)
     public List<ValidationRule> Validations { get; } = [];
     /// <summary>E9: Blattschutz – nur Zellen mit <see cref="Cell.Unlocked"/> lassen sich ändern.</summary>
     public bool Protected { get; set; }
+    /// <summary>F3 Tabelle: Autofilter mit Werteliste je Spalte (null = aus).</summary>
+    public SheetAutoFilter? AutoFilter { get; set; }
 
     public IEnumerable<KeyValuePair<(int Row, int Col), Cell>> Cells => _cells;
 
@@ -94,6 +96,7 @@ public sealed class Sheet(string name)
         s.Charts.AddRange(Charts);
         s.FreezeRows = FreezeRows; s.FreezeCols = FreezeCols; s.Protected = Protected;
         s.CondRules.AddRange(CondRules); s.Validations.AddRange(Validations);
+        s.AutoFilter = AutoFilter?.Clone();
         return s;
     }
     public int MaxRow => _cells.Count == 0 ? -1 : _cells.Keys.Max(k => k.Row);
@@ -188,7 +191,7 @@ public sealed class Sheet(string name)
         return HiddenRows.Count;
     }
 
-    public void ClearFilter() => HiddenRows.Clear();
+    public void ClearFilter() { HiddenRows.Clear(); AutoFilter = null; }
 }
 
 /// <summary>C7: Diagramm über einen Bereich. Erste Spalte = Beschriftung, weitere Spalten = Reihen (erste Zeile = Reihennamen).</summary>

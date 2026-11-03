@@ -35,6 +35,14 @@ public static class PdfView
         return new Bitmap(ms);
     }
 
+    /// <summary>Seite als PNG-Datei (z. B. für die Texterkennung), direkt über SkiaSharp.</summary>
+    public static void SavePng(string path, int page, int dpi, string outFile, string? password = null)
+    {
+        using var bmp = RenderSk(path, page, dpi, 0, password);
+        using var data = bmp.Encode(SKEncodedImageFormat.Png, 90);
+        using var fs = File.Create(outFile); data.SaveTo(fs);
+    }
+
     /// <summary>Seite als SkiaSharp-Bild (Bildpunkte), z. B. zum Prüfen, ob wirklich etwas gezeichnet wurde.</summary>
     public static SKBitmap RenderSk(string path, int page, int dpi, int rotation = 0, string? password = null)
     {

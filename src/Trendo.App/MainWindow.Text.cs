@@ -217,6 +217,10 @@ public partial class MainWindow
         bar.Children.Add(TB("text-underline", "U", () => TextToggle(Fmt.Underline), "Unterstrichen (Strg+U)", Has(Fmt.Underline)));
         bar.Children.Add(TB("text-bullets", "• Liste", () => SetList(ListKind.Bullet), "Aufzählung", p?.List == ListKind.Bullet));
         bar.Children.Add(TB("text-numbers", "1. Liste", () => SetList(ListKind.Number), "Nummerierung", p?.List == ListKind.Number));
+        // F3: mehrstufige Liste (auch Tab / Umschalt+Tab) und Formatierung löschen
+        bar.Children.Add(TB("text-list-out", "⇤", () => TextListLevel(-1), "Listenebene höher (Umschalt+Tab)", enabled: p is { List: not ListKind.None, ListLevel: > 0 }));
+        bar.Children.Add(TB("text-list-in", "⇥", () => TextListLevel(1), "Listenebene tiefer (Tab) – 1. → a) → i. bzw. • → ◦ → ▪", enabled: p is { List: not ListKind.None } && p.ListLevel < TextTools.MaxListLevel));
+        bar.Children.Add(TB("text-clear-format", "A⌫", TextClearFormat, "Formatierung löschen – Markiertes bzw. ganzen Absatz wieder schlicht (Links, Kommentare und Liste bleiben)", enabled: p is not null));
         foreach (var (a, label, tip) in new[] { (Align.Left, "⯇", "Linksbündig"), (Align.Center, "≡", "Zentriert"), (Align.Right, "⯈", "Rechtsbündig"), (Align.Justify, "☰", "Blocksatz") })
             bar.Children.Add(TB("text-align-" + a.ToString().ToLowerInvariant(), label, () => { if (CurPara() is { } cp) { Snapshot(); cp.Align = a; Changed(); } }, tip, p?.Align == a));
         bar.Children.Add(new Border { Width = 10 });
@@ -226,6 +230,11 @@ public partial class MainWindow
         bar.Children.Add(TB("text-more", _txMore ? "Weniger" : "Mehr …", () => _txMore = !_txMore, "Alle weiteren Funktionen"));
         return bar;
     }
+
+    /// <summary>F3: Listenebene des aktuellen Absatzes ändern.</summary>
+    public void TextListLevel(int delta) { if (CurPara() is not { } p || p.List == ListKind.None) return; var before = TextDocument.Copy(); if (TextTools.ChangeListLevel(p, delta)) { _txUndo.Add(before); _txRedo.Clear(); Changed(); } }
+    /// <summary>F3: Formatierung löschen – Markierung, sonst der ganze Absatz.</summary>
+    public void TextClearFormat() { if (CurPara() is not { } p) return; Snapshot(); TextTools.ClearFormat(p, _txSel, _txSelLen); Changed(); }
 
     private void SetList(ListKind k) { if (CurPara() is not { } p) return; Snapshot(); p.List = p.List == k ? ListKind.None : k; Changed(); }
 
@@ -311,15 +320,14 @@ public partial class MainWindow
     private Control TextPaper()
     {
         var page = new StackPanel { Name = "text-paper", Spacing = 2 };
-        var number = 0;
+        var labels = TextTools.ListLabels(TextDocument); // F3: mehrstufige Listen
         _txFootNos = TextTools.NoteNumbers(TextDocument, MarkKind.Footnote); _txEndNos = TextTools.NoteNumbers(TextDocument, MarkKind.Endnote);
         for (var i = 0; i < TextDocument.Blocks.Count; i++)
         {
             var b = TextDocument.Blocks[i]; var index = i;
-            number = b is Para { List: ListKind.Number } ? number + 1 : 0;
             page.Children.Add(b switch
             {
-                Para p => ParaControl(p, index, number),
+                Para p => ParaControl(p, index, labels[index] ?? ""),
                 Table t => TableControl(t, index),
                 Picture pic => PictureControl(pic, index),
                 PageBreak => BreakControl(index),
@@ -364,7 +372,7 @@ public partial class MainWindow
 
     private static TextAlignment ToAlign(Align a) => a switch { Align.Center => TextAlignment.Center, Align.Right => TextAlignment.Right, Align.Justify => TextAlignment.Justify, _ => TextAlignment.Left };
 
-    private Control ParaControl(Para p, int index, int number)
+    private Control ParaControl(Para p, int index, string label)
     {
         var size = TextDoc.StyleSize(p.Style) * 1.33; // Punkt → Bildschirm
         var bold = p.Style is ParaStyle.Title or ParaStyle.Heading1 or ParaStyle.Heading2 or ParaStyle.Heading3;
@@ -395,7 +403,8 @@ public partial class MainWindow
             tb.PropertyChanged += (_, e) => { if (e.Property == TextBox.SelectionStartProperty || e.Property == TextBox.SelectionEndProperty || e.Property == TextBox.CaretIndexProperty) Track(); };
             tb.KeyDown += (_, e) =>
             {
-                if (e.Key == Key.Enter) { e.Handled = true; Snapshot(); TextDocument.SplitAt(index, tb.CaretIndex); TextFocusBlock = index + 1; _txSel = _txSelLen = 0; Changed(); Show("text"); }
+                if (e.Key == Key.Tab && p.List != ListKind.None) { e.Handled = true; Track(); TextListLevel(e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? -1 : 1); Show("text"); }
+                else if (e.Key == Key.Enter) { e.Handled = true; Snapshot(); TextDocument.SplitAt(index, tb.CaretIndex); TextFocusBlock = index + 1; _txSel = _txSelLen = 0; Changed(); Show("text"); }
                 else if (e.Key == Key.Back && tb.CaretIndex == 0 && tb.SelectionStart == tb.SelectionEnd && index > 0)
                 {
                     Snapshot(); var at = TextDocument.MergeWithPrevious(index);
@@ -479,8 +488,8 @@ public partial class MainWindow
         if (p.SpaceAfterPt is { } sa) body.Margin = new Thickness(body.Margin.Left, 0, 0, sa * 1.33);
         if (p.SpaceBeforePt is { } sbf) body.Margin = new Thickness(body.Margin.Left, sbf * 1.33, 0, body.Margin.Bottom);
         if (p.List == ListKind.None) return body;
-        var g = new Grid { ColumnDefinitions = new ColumnDefinitions("28,*") };
-        g.Children.Add(new TextBlock { Text = p.List == ListKind.Bullet ? "•" : number + ".", FontSize = size, Foreground = Ink, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 1, 6, 0), FontFamily = new FontFamily("Arial") });
+        var g = new Grid { ColumnDefinitions = new ColumnDefinitions("34,*"), Margin = new Thickness(p.ListLevel * TextTools.ListLevelCm * 33.3, 0, 0, 0) };
+        g.Children.Add(new TextBlock { Name = $"text-list-label-{index}", Text = label, FontSize = size, Foreground = Ink, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 1, 6, 0), FontFamily = new FontFamily("Arial") });
         Grid.SetColumn(body, 1); g.Children.Add(body);
         return g;
     }

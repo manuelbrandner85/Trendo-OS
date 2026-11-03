@@ -76,6 +76,8 @@ public sealed class Para : Block
     public ParaStyle Style { get; set; }
     public Align Align { get; set; }
     public ListKind List { get; set; }
+    /// <summary>F3 Text: Ebene in einer mehrstufigen Liste (0 = oberste, höchstens 8).</summary>
+    public int ListLevel { get; set; }
     public List<Span> Spans { get; set; } = [];
     /// <summary>W4: Einzug links in cm.</summary>
     public double IndentCm { get; set; }
@@ -91,7 +93,7 @@ public sealed class Para : Block
     public List<Mark> Marks { get; set; } = [];
     public Para() { }
     public Para(string text, ParaStyle style = ParaStyle.Text) { Text = text; Style = style; }
-    public override Block Copy() => new Para { Text = Text, Style = Style, Align = Align, List = List, Spans = [.. Spans], IndentCm = IndentCm, SpaceAfterPt = SpaceAfterPt, LineSpacing = LineSpacing, SpaceBeforePt = SpaceBeforePt, FirstLineCm = FirstLineCm, Marks = [.. Marks] };
+    public override Block Copy() => new Para { Text = Text, Style = Style, Align = Align, List = List, ListLevel = ListLevel, Spans = [.. Spans], IndentCm = IndentCm, SpaceAfterPt = SpaceAfterPt, LineSpacing = LineSpacing, SpaceBeforePt = SpaceBeforePt, FirstLineCm = FirstLineCm, Marks = [.. Marks] };
 
     /// <summary>Format und Größe an einer Zeichenposition.</summary>
     public (Fmt Fmt, double? Size) At(int i)
@@ -356,7 +358,7 @@ public sealed class TextDoc
         var next = new Para { Style = p.Style is ParaStyle.Text or ParaStyle.Quote ? p.Style : ParaStyle.Text, Align = p.Align, List = p.List };
         next.SetRuns(parts.Where(x => x.Inside).Select(x => (x.Text, x.Fmt, x.Size)));
         p.SetRuns(parts.Where(x => !x.Inside).Select(x => (x.Text, x.Fmt, x.Size)));
-        next.IndentCm = p.IndentCm; next.SpaceAfterPt = p.SpaceAfterPt; next.LineSpacing = p.LineSpacing; next.SpaceBeforePt = p.SpaceBeforePt; next.FirstLineCm = p.FirstLineCm;
+        next.ListLevel = p.ListLevel; next.IndentCm = p.IndentCm; next.SpaceAfterPt = p.SpaceAfterPt; next.LineSpacing = p.LineSpacing; next.SpaceBeforePt = p.SpaceBeforePt; next.FirstLineCm = p.FirstLineCm;
         next.Marks = p.Marks.Where(m => m.Start >= at && (m.Length > 0 || m.Start > at)).Select(m => m with { Start = m.Start - at })
             .Concat(p.Marks.Where(m => IsInk(m.Kind) && m.Start < at && m.End > at).Select(m => m with { Start = 0, Length = m.End - at })).ToList(); // Schrift und Farbe laufen im neuen Absatz weiter
         p.Marks = p.Marks.Where(m => m.Start < at || m.Length == 0 && m.Start == at).Select(m => m.End > at && m.Length > 0 ? m with { Length = at - m.Start } : m).ToList();

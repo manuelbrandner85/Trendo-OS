@@ -8,6 +8,81 @@ namespace Trendo.Core.Office;
 /// Barrierefreiheit prüfen (W7).</summary>
 public static partial class TextTools
 {
+    // ---------- F3: mehrstufige Listen und Formatierung löschen ----------
+
+    /// <summary>Einzug je Listenebene in cm (wie Word/Writer: 0,63 cm).</summary>
+    public const double ListLevelCm = 0.63;
+    public const int MaxListLevel = 8;
+
+    /// <summary>Aufzählungszeichen bzw. Nummer je Absatz (null = kein Listenpunkt). Nummern zählen je Ebene; eine höhere Ebene setzt die tieferen
+    /// zurück, ein Absatz ohne Liste beendet die Liste. Ebenen im Wechsel: 1. → a) → i. bzw. • → ◦ → ▪.</summary>
+    public static List<string?> ListLabels(TextDoc doc)
+    {
+        var res = new List<string?>(); var counters = new int[MaxListLevel + 1];
+        foreach (var b in doc.Blocks)
+        {
+            if (b is not Para { List: not ListKind.None } p) { Array.Clear(counters); res.Add(null); continue; }
+            var lvl = Math.Clamp(p.ListLevel, 0, MaxListLevel);
+            for (var k = lvl + 1; k <= MaxListLevel; k++) counters[k] = 0;
+            if (p.List == ListKind.Bullet) { counters[lvl] = 0; res.Add((lvl % 3) switch { 0 => "•", 1 => "◦", _ => "▪" }); continue; }
+            var n = ++counters[lvl];
+            res.Add((lvl % 3) switch { 0 => n + ".", 1 => Letters(n) + ")", _ => Roman(n) + "." });
+        }
+        return res;
+
+        static string Letters(int n) { var s = ""; while (n > 0) { n--; s = (char)('a' + n % 26) + s; n /= 26; } return s; }
+        static string Roman(int n)
+        {
+            var sb = new System.Text.StringBuilder();
+            foreach (var (v, r) in new[] { (1000, "m"), (900, "cm"), (500, "d"), (400, "cd"), (100, "c"), (90, "xc"), (50, "l"), (40, "xl"), (10, "x"), (9, "ix"), (5, "v"), (4, "iv"), (1, "i") })
+                while (n >= v) { sb.Append(r); n -= v; }
+            return sb.ToString();
+        }
+    }
+
+    /// <summary>Listenebene ändern (Tab / Umschalt+Tab); nur bei Listenpunkten. Gibt zurück, ob sich etwas geändert hat.</summary>
+    public static bool ChangeListLevel(Para p, int delta)
+    {
+        if (p.List == ListKind.None) return false;
+        var lvl = Math.Clamp(p.ListLevel + delta, 0, MaxListLevel);
+        if (lvl == p.ListLevel) return false;
+        p.ListLevel = lvl; return true;
+    }
+
+    /// <summary>Formatierung löschen (wie in Word): im markierten Bereich Zeichenformat, Größe, Schrift, Farbe und Hervorhebung weg.
+    /// Ohne Markierung gilt es für den ganzen Absatz, dazu werden Absatzart, Ausrichtung, Einzüge und Abstände zurückgesetzt.
+    /// Links, Kommentare, Fußnoten und Änderungen bleiben; die Liste bleibt.</summary>
+    public static void ClearFormat(Para p, int start = 0, int length = 0)
+    {
+        var whole = length <= 0;
+        if (whole) { start = 0; length = p.Text.Length; }
+        start = Math.Clamp(start, 0, p.Text.Length); length = Math.Clamp(length, 0, p.Text.Length - start);
+        var end = start + length;
+        if (length > 0)
+        {
+            var runs = new List<(string, Fmt, double?)>(); var pos = 0;
+            foreach (var (t, f, sz) in p.Runs())
+            {
+                var a = pos; var b = pos + t.Length; pos = b;
+                if (b <= start || a >= end) { runs.Add((t, f, sz)); continue; }
+                if (a < start) runs.Add((t[..(start - a)], f, sz));
+                runs.Add((t[Math.Max(0, start - a)..(Math.Min(b, end) - a)], Fmt.None, null));
+                if (b > end) runs.Add((t[(end - a)..], f, sz));
+            }
+            p.SetRuns(runs);
+            // Schrift, Farbe, Hervorhebung im Bereich herausschneiden
+            var marks = new List<Mark>();
+            foreach (var m in p.Marks)
+            {
+                if (!TextDoc.IsInk(m.Kind) || m.End <= start || m.Start >= end) { marks.Add(m); continue; }
+                if (m.Start < start) marks.Add(m with { Length = start - m.Start });
+                if (m.End > end) marks.Add(m with { Start = end, Length = m.End - end });
+            }
+            p.Marks = marks;
+        }
+        if (whole) { p.Style = ParaStyle.Text; p.Align = Align.Left; p.IndentCm = 0; p.FirstLineCm = 0; p.SpaceAfterPt = null; p.SpaceBeforePt = null; p.LineSpacing = null; }
+    }
+
     // ---------- W5 Inhaltsverzeichnis ----------
     public sealed record TocEntry(int Level, string Text, int Block);
 

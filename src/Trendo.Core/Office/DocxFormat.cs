@@ -192,7 +192,7 @@ public static class DocxFormat
     {
         var sb = new StringBuilder("<w:p><w:pPr>");
         if (p.Style != ParaStyle.Text) sb.Append($"<w:pStyle w:val=\"{StyleId(p.Style)}\"/>");
-        if (p.List != ListKind.None) sb.Append($"<w:numPr><w:ilvl w:val=\"0\"/><w:numId w:val=\"{(p.List == ListKind.Bullet ? 1 : 2)}\"/></w:numPr>");
+        if (p.List != ListKind.None) sb.Append($"<w:numPr><w:ilvl w:val=\"{Math.Clamp(p.ListLevel, 0, TextTools.MaxListLevel)}\"/><w:numId w:val=\"{(p.List == ListKind.Bullet ? 1 : 2)}\"/></w:numPr>");
         sb.Append(extra);
         if (p.SpaceAfterPt is not null || p.SpaceBeforePt is not null || p.LineSpacing is not null)
             sb.Append("<w:spacing" + (p.SpaceBeforePt is { } sb0 ? $" w:before=\"{(int)Math.Round(sb0 * 20)}\"" : "") + (p.SpaceAfterPt is { } sa ? $" w:after=\"{(int)Math.Round(sa * 20)}\"" : "")
@@ -305,8 +305,8 @@ public static class DocxFormat
     }
 
     static readonly string Numbering = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><w:numbering xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\">"
-        + "<w:abstractNum w:abstractNumId=\"0\"><w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"bullet\"/><w:lvlText w:val=\"•\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr></w:lvl></w:abstractNum>"
-        + "<w:abstractNum w:abstractNumId=\"1\"><w:lvl w:ilvl=\"0\"><w:start w:val=\"1\"/><w:numFmt w:val=\"decimal\"/><w:lvlText w:val=\"%1.\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"720\" w:hanging=\"360\"/></w:pPr></w:lvl></w:abstractNum>"
+        + "<w:abstractNum w:abstractNumId=\"0\"><w:multiLevelType w:val=\"hybridMultilevel\"/>" + string.Concat(Enumerable.Range(0, 9).Select(l => $"<w:lvl w:ilvl=\"{l}\"><w:start w:val=\"1\"/><w:numFmt w:val=\"bullet\"/><w:lvlText w:val=\"{(l % 3) switch { 0 => "•", 1 => "◦", _ => "▪" }}\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"{720 + 357 * l}\" w:hanging=\"360\"/></w:pPr></w:lvl>")) + "</w:abstractNum>"
+        + "<w:abstractNum w:abstractNumId=\"1\"><w:multiLevelType w:val=\"hybridMultilevel\"/>" + string.Concat(Enumerable.Range(0, 9).Select(l => $"<w:lvl w:ilvl=\"{l}\"><w:start w:val=\"1\"/><w:numFmt w:val=\"{(l % 3) switch { 0 => "decimal", 1 => "lowerLetter", _ => "lowerRoman" }}\"/><w:lvlText w:val=\"%{l + 1}{(l % 3 == 1 ? ")" : ".")}\"/><w:lvlJc w:val=\"left\"/><w:pPr><w:ind w:left=\"{720 + 357 * l}\" w:hanging=\"360\"/></w:pPr></w:lvl>")) + "</w:abstractNum>"
         + "<w:num w:numId=\"1\"><w:abstractNumId w:val=\"0\"/></w:num><w:num w:numId=\"2\"><w:abstractNumId w:val=\"1\"/></w:num></w:numbering>";
 
     // ======================= Lesen =======================
@@ -315,7 +315,7 @@ public static class DocxFormat
         public required ZipArchive Z;
         public required Dictionary<string, string> Rels, ExternalRels;
         public required Dictionary<string, string> StyleNames;
-        public required Func<string?, ListKind> NumKind;
+        public required Func<string?, int, ListKind> NumKind;
         public Dictionary<string, string> Comments = [], Footnotes = [], Endnotes = [];
         /// <summary>Schrift aus den Dokument-Standards – gleiche Schrift im Lauf wird nicht als eigene Schriftart gemerkt.</summary>
         public string? DefaultFont;
@@ -334,11 +334,11 @@ public static class DocxFormat
         var stylesDoc = Load("word/styles.xml");
         var styleNames = stylesDoc.Root?.Elements(W + "style").ToDictionary(s => (string?)s.Attribute(W + "styleId") ?? "", s => (string?)s.Element(W + "name")?.Attribute(W + "val") ?? "") ?? [];
         var numbering = Load("word/numbering.xml").Root;
-        ListKind NumKind(string? numId)
+        ListKind NumKind(string? numId, int level)
         {
             if (numId is null || numId == "0" || numbering is null) return numId is null || numId == "0" ? ListKind.None : ListKind.Bullet;
             var abs = numbering.Elements(W + "num").FirstOrDefault(n => (string?)n.Attribute(W + "numId") == numId)?.Element(W + "abstractNumId")?.Attribute(W + "val")?.Value;
-            var fmt = numbering.Elements(W + "abstractNum").FirstOrDefault(a => (string?)a.Attribute(W + "abstractNumId") == abs)?.Elements(W + "lvl").FirstOrDefault()?.Element(W + "numFmt")?.Attribute(W + "val")?.Value;
+            var fmt = numbering.Elements(W + "abstractNum").FirstOrDefault(a => (string?)a.Attribute(W + "abstractNumId") == abs)?.Elements(W + "lvl").FirstOrDefault(l => (string?)l.Attribute(W + "ilvl") == level.ToString(CultureInfo.InvariantCulture))?.Element(W + "numFmt")?.Attribute(W + "val")?.Value;
             return fmt == "bullet" || fmt is null ? ListKind.Bullet : ListKind.Number;
         }
         static string PText(XElement p) => string.Concat(p.Descendants().Where(e => e.Name == W + "t" || e.Name == W + "tab").Select(e => e.Name == W + "tab" ? "\t" : e.Value));
@@ -439,6 +439,8 @@ public static class DocxFormat
         return doc;
     }
 
+    static int ListLvl(XElement numPr) => int.TryParse((string?)numPr.Element(W + "ilvl")?.Attribute(W + "val"), out var l) ? Math.Clamp(l, 0, TextTools.MaxListLevel) : 0;
+
     static void ReadPara(XElement p, TextDoc doc, RCtx ctx)
     {
         var ppr = p.Element(W + "pPr");
@@ -450,7 +452,8 @@ public static class DocxFormat
         {
             Style = style,
             Align = ((string?)ppr?.Element(W + "jc")?.Attribute(W + "val")) switch { "center" => Align.Center, "right" or "end" => Align.Right, "both" or "distribute" => Align.Justify, _ => Align.Left },
-            List = ppr?.Element(W + "numPr") is { } np ? ctx.NumKind((string?)np.Element(W + "numId")?.Attribute(W + "val")) : ListKind.None,
+            List = ppr?.Element(W + "numPr") is { } np ? ctx.NumKind((string?)np.Element(W + "numId")?.Attribute(W + "val"), ListLvl(np)) : ListKind.None,
+            ListLevel = ppr?.Element(W + "numPr") is { } np2 ? ListLvl(np2) : 0,
             IndentCm = double.TryParse((string?)(ppr?.Element(W + "ind")?.Attribute(W + "left") ?? ppr?.Element(W + "ind")?.Attribute(W + "start")), NumberStyles.Float, CultureInfo.InvariantCulture, out var ind) && ppr?.Element(W + "numPr") is null ? Math.Round(ind / TwipsPerCm, 2) : 0,
             SpaceAfterPt = double.TryParse((string?)ppr?.Element(W + "spacing")?.Attribute(W + "after"), NumberStyles.Float, CultureInfo.InvariantCulture, out var sa) ? sa / 20 : null,
             SpaceBeforePt = double.TryParse((string?)ppr?.Element(W + "spacing")?.Attribute(W + "before"), NumberStyles.Float, CultureInfo.InvariantCulture, out var sbf) ? sbf / 20 : null,

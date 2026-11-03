@@ -108,6 +108,41 @@ public static class OdtFormat
             }
             return sb.ToString();
         }
+        // Liste ab Absatz i auf Ebene lvl; gibt den ersten Absatz danach zurück. Nur die äußerste Liste nennt den Stil.
+        // Art je Ebene für eine (Teil-)Liste ab Absatz i auf Ebene lvl: erste Art, die auf jeder Ebene vorkommt; höhere Ebenen vom Elternstil
+        ListKind[] KindsFrom(int i, int lvl, ListKind[] parent)
+        {
+            var kinds = (ListKind[])parent.Clone(); var seen = new bool[9]; var first = ((Para)doc.Blocks[i]).List;
+            for (var j = i; j < doc.Blocks.Count && doc.Blocks[j] is Para q && q.List != ListKind.None && q.ListLevel >= lvl && (q.ListLevel > lvl || q.List == first); j++)
+            {
+                var l = Math.Clamp(q.ListLevel, 0, 8); if (seen[l]) continue;
+                seen[l] = true; kinds[l] = q.List;
+            }
+            return kinds;
+        }
+
+        int ListXml(int i, int lvl, string? style, ListKind[]? parentKinds = null)
+        {
+            var kind = ((Para)doc.Blocks[i]).List;
+            // jede Teilliste nennt ihren Stil – so bleibt „1. … a) b)“ neben „1. … ◦ ◦“ in derselben Liste erhalten
+            var myKinds = KindsFrom(i, lvl, parentKinds ?? Enumerable.Repeat(kind, 9).ToArray());
+            style ??= ListStyle(myKinds);
+            body.Append($"<text:list text:style-name=\"{style}\">");
+            while (i < doc.Blocks.Count && doc.Blocks[i] is Para lp && lp.List != ListKind.None && lp.ListLevel >= lvl && (lp.ListLevel > lvl || lp.List == kind))
+            {
+                body.Append("<text:list-item>");
+                if (lp.ListLevel > lvl) i = ListXml(i, lvl + 1, null, myKinds); // tiefere Ebene ohne eigenen Punkt darüber
+                else
+                {
+                    body.Append(ParaXml(lp)); i++;
+                    if (i < doc.Blocks.Count && doc.Blocks[i] is Para np && np.List != ListKind.None && np.ListLevel > lvl) i = ListXml(i, lvl + 1, null, myKinds);
+                }
+                body.Append("</text:list-item>");
+            }
+            body.Append("</text:list>");
+            return i;
+        }
+
         string ParaXml(Para p)
         {
             var name = ParaStyleFor(p);
@@ -116,8 +151,23 @@ public static class OdtFormat
                 : $"<text:p text:style-name=\"{name}\">{Inline(p)}</text:p>";
         }
         auto.Append("<style:style style:name=\"PB\" style:family=\"paragraph\" style:parent-style-name=\"Standard\"><style:paragraph-properties fo:break-before=\"page\"/></style:style>");
-        auto.Append("<text:list-style style:name=\"LBullet\"><text:list-level-style-bullet text:level=\"1\" text:bullet-char=\"•\"><style:list-level-properties text:list-level-position-and-space-mode=\"label-alignment\"><style:list-level-label-alignment text:label-followed-by=\"listtab\" fo:text-indent=\"-0.635cm\" fo:margin-left=\"1.27cm\"/></style:list-level-properties></text:list-level-style-bullet></text:list-style>");
-        auto.Append("<text:list-style style:name=\"LNumber\"><text:list-level-style-number text:level=\"1\" style:num-suffix=\".\" style:num-format=\"1\"><style:list-level-properties text:list-level-position-and-space-mode=\"label-alignment\"><style:list-level-label-alignment text:label-followed-by=\"listtab\" fo:text-indent=\"-0.635cm\" fo:margin-left=\"1.27cm\"/></style:list-level-properties></text:list-level-style-number></text:list-style>");
+        // F3: Listen mit 9 Ebenen – • ◦ ▪ bzw. 1. a) i. im Wechsel, je Ebene 0,63 cm weiter eingerückt. Name „L“ + Art je Ebene (B/N).
+        var listStyles = new HashSet<string>();
+        string ListStyle(ListKind[] kinds)
+        {
+            var name = "L" + string.Concat(kinds.Select(k => k == ListKind.Bullet ? 'B' : 'N'));
+            if (!listStyles.Add(name)) return name;
+            auto.Append($"<text:list-style style:name=\"{name}\">");
+            for (var l = 0; l < 9; l++)
+            {
+                var props = $"<style:list-level-properties text:list-level-position-and-space-mode=\"label-alignment\"><style:list-level-label-alignment text:label-followed-by=\"listtab\" fo:text-indent=\"-0.635cm\" fo:margin-left=\"{(1.27 + 0.63 * l).ToString("0.###", CultureInfo.InvariantCulture)}cm\"/></style:list-level-properties>";
+                auto.Append(kinds[l] == ListKind.Bullet
+                    ? $"<text:list-level-style-bullet text:level=\"{l + 1}\" text:bullet-char=\"{(l % 3) switch { 0 => "•", 1 => "◦", _ => "▪" }}\">{props}</text:list-level-style-bullet>"
+                    : $"<text:list-level-style-number text:level=\"{l + 1}\" style:num-suffix=\"{(l % 3 == 1 ? ")" : ".")}\" style:num-format=\"{(l % 3) switch { 0 => "1", 1 => "a", _ => "i" }}\">{props}</text:list-level-style-number>");
+            }
+            auto.Append("</text:list-style>");
+            return name;
+        }
         var pageBreakNext = false; var tableNo = 0; var picNo = 0;
         for (var i = 0; i < doc.Blocks.Count; i++)
         {
@@ -127,13 +177,11 @@ public static class OdtFormat
             switch (b)
             {
                 case Para p when p.List != ListKind.None:
-                    // aufeinanderfolgende Listenpunkte gleicher Art bilden eine Liste
-                    body.Append($"<text:list text:style-name=\"{(p.List == ListKind.Bullet ? "LBullet" : "LNumber")}\">");
-                    var kind = p.List;
-                    for (; i < doc.Blocks.Count && doc.Blocks[i] is Para lp && lp.List == kind; i++) body.Append($"<text:list-item>{ParaXml(lp)}</text:list-item>");
-                    i--;
-                    body.Append("</text:list>");
-                    break;
+                    {
+                        // Liste: Punkte gleicher Art auf oberster Ebene, tiefere Ebenen verschachtelt (F3); die Art je Ebene steht im Listenstil
+                        i = ListXml(i, 0, ListStyle(KindsFrom(i, 0, Enumerable.Repeat(p.List, 9).ToArray()))) - 1;
+                        break;
+                    }
                 case Para p: body.Append(ParaXml(p)); break;
                 case TocBlock toc:
                     body.Append($"<text:table-of-content text:name=\"Inhaltsverzeichnis1\"><text:table-of-content-source text:outline-level=\"3\"><text:index-title-template>{Esc(toc.Title)}</text:index-title-template></text:table-of-content-source><text:index-body><text:index-title text:name=\"Inhaltsverzeichnis1_Head\"><text:p text:style-name=\"Contents_20_Heading\">{Esc(toc.Title)}</text:p></text:index-title>");
@@ -291,13 +339,13 @@ public static class OdtFormat
         var doc = new TextDoc();
         var text = content.Root?.Element(Office + "body")?.Element(Office + "text");
         if (text is null) return TextDoc.Empty();
-        void ParaFrom(XElement el, ListKind list)
+        void ParaFrom(XElement el, ListKind list, int level = 0)
         {
             var styleName = (string?)el.Attribute(Text + "style-name");
             if (BreakBefore(styleName)) doc.Blocks.Add(new PageBreak());
             var style = el.Name == Text + "h" ? (int.TryParse((string?)el.Attribute(Text + "outline-level"), out var lvl) ? lvl switch { 1 => ParaStyle.Heading1, 2 => ParaStyle.Heading2, _ => ParaStyle.Heading3 } : ParaStyle.Heading1) : PStyle(styleName);
             if (el.Name == Text + "h" && PStyle(styleName) is var named && named != ParaStyle.Text) style = named;
-            var p = new Para { Style = style, Align = PAlign(styleName), List = list, IndentCm = PIndent(styleName), SpaceAfterPt = PSpace(styleName), LineSpacing = PLine(styleName), SpaceBeforePt = PBefore(styleName), FirstLineCm = PFirst(styleName) };
+            var p = new Para { Style = style, Align = PAlign(styleName), List = list, ListLevel = list == ListKind.None ? 0 : Math.Min(level, TextTools.MaxListLevel), IndentCm = PIndent(styleName), SpaceAfterPt = PSpace(styleName), LineSpacing = PLine(styleName), SpaceBeforePt = PBefore(styleName), FirstLineCm = PFirst(styleName) };
             var runs = new List<(string, Fmt, double?)>(); var marks = new List<Mark>(); var openAnn = new Dictionary<string, (int Start, string Text)>();
             int Len() => runs.Sum(r => r.Item1.Length);
             void Walk(XElement e, Fmt f, double? size)
@@ -359,14 +407,19 @@ public static class OdtFormat
             var carrier = p.Text.Length == 0 && (el.Descendants(Draw + "frame").Any() || (BreakBefore(styleName) && !el.Nodes().Any()));
             if (!carrier || p.Marks.Count > 0) doc.Blocks.Add(p);
         }
-        void Block(XElement el, ListKind list)
+        void Block(XElement el, ListKind list, int level = -1, XElement? listStyle = null)
         {
-            if (el.Name == Text + "p" || el.Name == Text + "h") ParaFrom(el, list);
+            if (el.Name == Text + "p" || el.Name == Text + "h") ParaFrom(el, list, Math.Max(0, level));
             else if (el.Name == Text + "list")
             {
                 var ls = (string?)el.Attribute(Text + "style-name");
                 var kind = ls is not null && content.Descendants(Text + "list-style").Concat(stylesDoc.Descendants(Text + "list-style")).FirstOrDefault(s => (string?)s.Attribute(Style + "name") == ls)?.Elements().FirstOrDefault()?.Name == Text + "list-level-style-number" ? ListKind.Number : ListKind.Bullet;
-                foreach (var item in el.Elements(Text + "list-item")) foreach (var c in item.Elements()) Block(c, list == ListKind.None ? kind : list);
+                var depth = level + 1;
+                // Art je Ebene aus dem Listenstil (eigener Stil der Liste, sonst der der äußeren Liste)
+                var lstyle = (ls is null ? null : content.Descendants(Text + "list-style").Concat(stylesDoc.Descendants(Text + "list-style")).FirstOrDefault(s => (string?)s.Attribute(Style + "name") == ls)) ?? listStyle;
+                var atLevel = lstyle?.Elements().FirstOrDefault(e => (string?)e.Attribute(Text + "level") == (depth + 1).ToString(CultureInfo.InvariantCulture))?.Name;
+                var k = atLevel is null ? (list != ListKind.None ? list : kind) : atLevel == Text + "list-level-style-number" ? ListKind.Number : ListKind.Bullet;
+                foreach (var item in el.Elements(Text + "list-item")) foreach (var c in item.Elements()) Block(c, k, depth, lstyle);
             }
             else if (el.Name == TableNs + "table")
             {
@@ -384,7 +437,7 @@ public static class OdtFormat
                 }
                 if (t.Rows.Count > 0) doc.Blocks.Add(t);
             }
-            else if (el.Name == Text + "section") foreach (var c in el.Elements()) Block(c, list);
+            else if (el.Name == Text + "section") foreach (var c in el.Elements()) Block(c, list, level, listStyle);
             else if (el.Name == Text + "table-of-content") doc.Blocks.Add(new TocBlock { Title = el.Descendants(Text + "index-title-template").FirstOrDefault()?.Value is { Length: > 0 } tt ? tt : "Inhalt" });
         }
         foreach (var el in text.Elements()) Block(el, ListKind.None);
