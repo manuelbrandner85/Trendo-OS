@@ -24,7 +24,7 @@ public partial class MainWindow
     public void ClaudeOpen(string folder, string? prompt = null, string? system = null, string? studio = null)
     {
         // T-0317: passende Skills als Claude-Code-Skills in den Projektordner legen – Claude Code nutzt sie wie eigene
-        if (studio is not null) try { Directory.CreateDirectory(folder); Skills.ExportForClaude(folder, null, studio); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        if (studio is not null) try { Directory.CreateDirectory(folder); Skills.ExportForClaude(folder, null, studio); ClaudeTeamExport(folder, studio); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         var args = ClaudeCode.OpenArgs(prompt, system);
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.open", Path.GetFileName(folder));
         if (ClaudeOpenOverride is { } o) { o(folder, args); return; }

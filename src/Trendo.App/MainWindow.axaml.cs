@@ -694,7 +694,18 @@ public sealed partial class MainWindow : Window
             card.Children.Add(Pos(titleCol, 1));
             help.VerticalAlignment = VerticalAlignment.Top;
             // Vorschlag 36: freie KIs rechts oben neben „?“ – ohne den Kopf höher zu machen (sonst rutschen Arbeitsflächen wie die 3D-Ansicht)
-            card.Children.Add(Pos(FreeKiRow(sid) is { } freeKi ? new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Top, Children = { freeKi, help } } : help, 2));
+            var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Top };
+            if (FreeKiRow(sid) is { } freeKi) right.Children.Add(freeKi);
+            if (StudioTeams.For(sid) is { } team)
+            {
+                // Wunsch 03.11.2026: das Profi-Team des Studios einen Klick entfernt
+                var tb = new Button { Name = "page-team", Content = "👥 Team", FontSize = 12, Padding = new Thickness(9, 2), CornerRadius = new CornerRadius(10), Background = Brush.Parse("#22FFFFFF"), Foreground = Text, BorderThickness = new Thickness(0), VerticalAlignment = VerticalAlignment.Top };
+                ToolTip.SetTip(tb, $"{team.Name}: {string.Join(", ", team.Roles.Select(r => r.Name))} – unter „KI einsetzen“ starten");
+                var tsid = sid; tb.Click += (_, _) => AgentsForStudio(tsid);
+                right.Children.Add(tb);
+            }
+            right.Children.Add(help);
+            card.Children.Add(Pos(right, 2));
             return new Border
             {
                 Name = "page-hero", Child = card, CornerRadius = new CornerRadius(14), Padding = new Thickness(14, 12), BorderBrush = Edge, BorderThickness = new Thickness(1),

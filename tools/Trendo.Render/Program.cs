@@ -231,6 +231,7 @@ else if (shot == "seite")
     win.Show(page);
     if (win.Windows.Active is { Maximized: false } pageWin) win.Windows.ToggleMaximize(pageWin.Id);
     win.Show(page);
+    if (Environment.GetEnvironmentVariable("TRENDO_TEAM_STUDIO") is { Length: > 0 } teamStudio) win.AgentsForStudio(teamStudio); // Profi-Team eines Studios unter „KI einsetzen“
     if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") is { Length: > 0 }) // Trendo Musik mit erfundenen Beispielliedern (leere Dateien, nur zum Zeigen)
     {
         var lib = new SongLibrary(root); var dir = Path.Combine(root, "musik-demo"); Directory.CreateDirectory(dir);

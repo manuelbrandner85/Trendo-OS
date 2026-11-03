@@ -39,7 +39,7 @@ public class SPEC10_Ui
         // Warnung ab 40 eintippen → Vorlauf geht auf Warnung oder Alarm
         Retype(w, "twin-p-wa", "40");
         Assert.Equal(40, w.Twin.Model.Assets.First(a => a.Name == "Heizung").Sensors.First(s => s.Name == "Vorlauf").WarnAbove);
-        Assert.Contains("Warnung", Get<TextBlock>(w, "twin-Heizung-Vorlauf").Text);
+        Assert.Matches("Warnung|Alarm", Get<TextBlock>(w, "twin-Heizung-Vorlauf").Text); // Beispielwerte hängen von der Uhrzeit ab – beides heißt: Grenze greift
         Retype(w, "twin-p-wa", ""); Assert.True(double.IsNaN(w.Twin.Model.Assets.First(a => a.Name == "Heizung").Sensors.First(s => s.Name == "Vorlauf").WarnAbove));
         Retype(w, "twin-p-fc", "12"); Assert.Contains("In 12 h etwa", Get<TextBlock>(w, "twin-fc-out").Text);
         // Kachel anklicken wählt den Sensor

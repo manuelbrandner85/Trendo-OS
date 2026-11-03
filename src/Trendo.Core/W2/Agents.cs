@@ -2,7 +2,8 @@ using System.Text.Json;
 
 namespace Trendo.Core;
 
-public sealed record AgentRole(string Id, string Name, string Does, string SystemPrompt, bool MayWriteFiles);
+/// <summary>KI-Rolle. <paramref name="Studio"/>: das Studio, dem die Rolle fest gehört (Wunsch 03.11.2026) – leer bei den allgemeinen Rollen.</summary>
+public sealed record AgentRole(string Id, string Name, string Does, string SystemPrompt, bool MayWriteFiles, string? Studio = null);
 
 public enum AgentTaskState { Neu, Laeuft, Fertig, Fehler, WartetAufFreigabe, Gespeichert }
 
@@ -62,13 +63,65 @@ public sealed class AgentCenter
         foreach (var t in _tasks.Where(t => t.State == AgentTaskState.Laeuft)) { t.State = AgentTaskState.Fehler; t.Result = "Unterbrochen (Trendo wurde beendet)."; }
     }
 
-    public static AgentRole Role(string id) => Roles.First(r => r.Id == id);
+    /// <summary>Allgemeine Rolle oder Rolle eines Studio-Teams (Id „&lt;studio&gt;.&lt;rolle&gt;“).</summary>
+    public static AgentRole Role(string id) => Roles.FirstOrDefault(r => r.Id == id) ?? StudioRole(id) ?? throw new InvalidOperationException("Diese Rolle gibt es nicht: " + id);
+
+    /// <summary>Rolle aus dem Profi-Team eines Studios – mit fester Studio-Zuordnung.</summary>
+    public static AgentRole? StudioRole(string id)
+    {
+        if (StudioTeams.StudioOf(id) is not { } sid || StudioTeams.Role(id) is not { } r) return null;
+        return new(r.Id, r.Name, r.Does, StudioTeams.Prompt(r, StudioName?.Invoke(sid) ?? sid), r.MayWriteFiles, sid);
+    }
+    /// <summary>Anzeigename eines Studios (setzt die App aus dem Studio-Katalog).</summary>
+    public static Func<string, string?>? StudioName { get; set; }
+
+    /// <summary>Team-Kennung eines Studios.</summary>
+    public static string TeamId(string studioId) => "studio:" + studioId;
+    /// <summary>Allgemeines Team oder Profi-Team eines Studios.</summary>
+    public static (string Id, string Name, string[] Roles)? Team(string teamId)
+    {
+        foreach (var t in Teams) if (t.Id == teamId) return t;
+        return teamId.StartsWith("studio:", StringComparison.Ordinal) && StudioTeams.For(teamId[7..]) is { } st ? (teamId, st.Name, st.Roles.Select(r => r.Id).ToArray()) : null;
+    }
+
+    // ───────────── eigene Rollen (je Person, immer einem Studio zugewiesen) ─────────────
+    string CustomFile => Path.Combine(Path.GetDirectoryName(_file)!, "eigene-rollen.json");
+    public IReadOnlyList<AgentRole> CustomRoles()
+    {
+        try { return File.Exists(CustomFile) ? JsonSerializer.Deserialize<List<AgentRole>>(File.ReadAllText(CustomFile)) ?? [] : []; } catch (JsonException) { return []; }
+    }
+    /// <summary>Eigene Rolle anlegen – das Studio ist Pflicht, damit das Programm weiß, wo die Rolle mitarbeitet.</summary>
+    public AgentRole AddCustomRole(string name, string does, string focus, string studio, bool mayWriteFiles, Func<string, string?> studioName)
+    {
+        if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Gib der Rolle einen Namen.");
+        if (string.IsNullOrWhiteSpace(does)) throw new ArgumentException("Schreib in einem Satz, was die Rolle tut.");
+        if (studioName(studio) is not { } sn) throw new ArgumentException("Wähle das Studio, in dem die Rolle mitarbeitet.");
+        var slug = new string(name.Trim().ToLowerInvariant().Replace('ä', 'a').Replace('ö', 'o').Replace('ü', 'u').Replace("ß", "ss").Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray()).Trim('-');
+        var list = CustomRoles().ToList();
+        var id = $"eigen.{studio.ToLowerInvariant()}.{(slug.Length == 0 ? "rolle" : slug)}";
+        for (var n = 2; list.Any(r => r.Id == id) || Roles.Any(r => r.Id == id); n++) id = $"eigen.{studio.ToLowerInvariant()}.{slug}-{n}";
+        var role = new AgentRole(id, name.Trim(), does.Trim(), StudioTeams.Prompt(new StudioRole(id, name.Trim(), does.Trim().TrimEnd('.'), focus.Trim().Length > 0 ? focus.Trim() : "sorgfältig und ehrlich", mayWriteFiles), sn), mayWriteFiles, studio);
+        list.Add(role); File.WriteAllText(CustomFile, JsonSerializer.Serialize(list));
+        _audit.Append(Principal.LocalOwner.Name, "agent.rolle.neu", $"{id} studio={studio}");
+        return role;
+    }
+    public bool RemoveCustomRole(string id)
+    {
+        var list = CustomRoles().ToList(); var n = list.RemoveAll(r => r.Id == id);
+        if (n > 0) { File.WriteAllText(CustomFile, JsonSerializer.Serialize(list)); _audit.Append(Principal.LocalOwner.Name, "agent.rolle.entfernt", id); }
+        return n > 0;
+    }
+    /// <summary>Rolle mit eigenen Rollen dieser Person.</summary>
+    public AgentRole RoleOf(string id) => CustomRoles().FirstOrDefault(r => r.Id == id) ?? Role(id);
+    /// <summary>Alle Rollen eines Studios: Profi-Team und eigene Rollen.</summary>
+    public IReadOnlyList<AgentRole> RolesFor(string studioId) =>
+        [.. (StudioTeams.For(studioId)?.Roles ?? []).Select(r => StudioRole(r.Id)!), .. CustomRoles().Where(r => r.Studio == studioId)];
     public IReadOnlyList<AgentTask> Tasks(string? projectId = null) => _tasks.Where(t => projectId is null || t.ProjectId == projectId).OrderByDescending(t => t.Created).ToList();
     public AgentTask? Get(string id) => _tasks.FirstOrDefault(t => t.Id == id);
 
     public AgentTask Create(string roleId, string goal, string? projectId = null, string? input = null, string? teamId = null)
     {
-        _ = Role(roleId);
+        _ = RoleOf(roleId);
         if (string.IsNullOrWhiteSpace(goal)) throw new ArgumentException("Ziel fehlt");
         if (projectId is not null && _projects.List().All(p => p.Id != projectId)) throw new ProjectIsolationException("Projekt unbekannt");
         var t = new AgentTask { RoleId = roleId, Goal = goal.Trim(), ProjectId = projectId, Input = input, TeamId = teamId };
@@ -79,7 +132,7 @@ public sealed class AgentCenter
 
     public async Task<AgentTask> RunAsync(AgentTask t, IntelligenceCore ki, string? model = null, CancellationToken ct = default)
     {
-        var r = Role(t.RoleId);
+        var r = RoleOf(t.RoleId);
         t.State = AgentTaskState.Laeuft; Save();
         var q = t.Input is { Length: > 0 } inp ? $"Auftrag: {t.Goal}\n\nVorarbeit/Eingabe:\n{inp}" : $"Auftrag: {t.Goal}";
         var a = await ki.AskAsync(new KiRequest(q, r.SystemPrompt + " Antworte auf Deutsch.", model), ct);
@@ -91,7 +144,7 @@ public sealed class AgentCenter
     /// <summary>Team-Ablauf: jede Rolle bekommt das Ergebnis der vorherigen. Bricht beim ersten Fehler ab.</summary>
     public async Task<IReadOnlyList<AgentTask>> RunTeamAsync(string teamId, string goal, IntelligenceCore ki, string? projectId = null, string? model = null, CancellationToken ct = default)
     {
-        var team = Teams.First(x => x.Id == teamId); var run = Guid.NewGuid().ToString("N")[..6];
+        var team = Team(teamId) ?? throw new InvalidOperationException("Dieses Team gibt es nicht: " + teamId); var run = Guid.NewGuid().ToString("N")[..6];
         var done = new List<AgentTask>(); string? prev = null;
         foreach (var role in team.Roles)
         {
@@ -107,10 +160,10 @@ public sealed class AgentCenter
     public ApprovalRequest RequestSave(AgentTask t, string fileName)
     {
         if (t.ProjectId is null) throw new InvalidOperationException("Aufgabe gehört zu keinem Projekt.");
-        if (!Role(t.RoleId).MayWriteFiles) throw new UnauthorizedAccessException($"{Role(t.RoleId).Name} darf keine Dateien schreiben.");
+        if (!RoleOf(t.RoleId).MayWriteFiles) throw new UnauthorizedAccessException($"{RoleOf(t.RoleId).Name} darf keine Dateien schreiben.");
         if (t.State is not (AgentTaskState.Fertig or AgentTaskState.WartetAufFreigabe)) throw new InvalidOperationException("Aufgabe ist nicht fertig.");
         _projects.ResolveInProject(t.ProjectId, fileName);
-        var req = _gate.Request(Principal.LocalOwner, "agent.save", $"{Role(t.RoleId).Name}: Ergebnis als {fileName} im Projekt speichern", $"{t.ProjectId}/{fileName}");
+        var req = _gate.Request(Principal.LocalOwner, "agent.save", $"{RoleOf(t.RoleId).Name}: Ergebnis als {fileName} im Projekt speichern", $"{t.ProjectId}/{fileName}");
         t.ApprovalId = req.Id; t.State = AgentTaskState.WartetAufFreigabe; Save();
         return req;
     }
@@ -121,12 +174,12 @@ public sealed class AgentCenter
         t.SavedAs = fileName; t.State = AgentTaskState.Gespeichert; Save();
     }
 
-    /// <summary>Übergabe an Claude Code: schreibt einen Auftrag als Markdown ins Projekt. Ausgeführt wird er erst, wenn Claude Code verbunden ist.</summary>
+    /// <summary>Übergabe an Claude Code: schreibt einen Auftrag als Markdown ins Projekt – Claude Code (im Claude-Chat des Studios) arbeitet ihn ab.</summary>
     public string ExportClaudeCodeJob(AgentTask t)
     {
         if (t.ProjectId is null) throw new InvalidOperationException("Aufgabe gehört zu keinem Projekt.");
         var name = $"claude-code-auftrag-{t.Id}.md";
-        var md = $"# Auftrag für Claude Code\n\n- Erstellt: {DateTimeOffset.Now:yyyy-MM-dd HH:mm}\n- Rolle: {Role(t.RoleId).Name}\n- Status: wartet auf Claude Code (nicht verbunden)\n- Regeln: nur im Projektordner arbeiten, keine Adminrechte, kein Push ohne Freigabe, Testergebnisse ehrlich als Rohlog\n\n## Ziel\n{t.Goal}\n\n## Vorarbeit\n{(t.Result.Length > 0 ? t.Result : "(keine)")}\n";
+        var md = $"# Auftrag für Claude Code\n\n- Erstellt: {DateTimeOffset.Now:yyyy-MM-dd HH:mm}\n- Rolle: {RoleOf(t.RoleId).Name}\n- Status: wartet – nicht automatisch ausgeführt; im Claude-Chat des Studios sagen: „Arbeite diesen Auftrag ab“\n- Regeln: nur im Projektordner arbeiten, keine Adminrechte, kein Push ohne Freigabe, Testergebnisse ehrlich als Rohlog\n\n## Ziel\n{t.Goal}\n\n## Vorarbeit\n{(t.Result.Length > 0 ? t.Result : "(keine)")}\n";
         _projects.WriteFile(t.ProjectId, name, md);
         _audit.Append(Principal.LocalOwner.Name, "agent.claudecode.export", $"{t.Id} -> {name}");
         return name;

@@ -198,7 +198,7 @@ public class CORE03_Agents
         c.ExecuteSave(t, "text.md");
         Assert.Equal("Antwort von A", f.Core.Projects.ReadFile("p1", "text.md"));
         var job = c.ExportClaudeCodeJob(t);
-        Assert.Contains("nicht verbunden", f.Core.Projects.ReadFile("p1", job));
+        Assert.Contains("nicht automatisch ausgeführt", f.Core.Projects.ReadFile("p1", job)); // ehrlich: wartet, bis die Person ihn im Claude-Chat startet
     }
 }
 

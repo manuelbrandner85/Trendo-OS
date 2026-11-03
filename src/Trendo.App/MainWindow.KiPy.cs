@@ -126,13 +126,13 @@ public partial class MainWindow
         var kinds = KiSuggestions.For(studioId);
         if (kinds.Count == 0) return null;
         var row = new WrapPanel { Name = "page-freeki", MaxWidth = 380, HorizontalAlignment = HorizontalAlignment.Right };
-        row.Children.Add(new TextBlock { Text = "✨ Freie KI:", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 5, 3) });
+        row.Children.Add(new TextBlock { Text = "✨ Freie KI:", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 5, 3) });
         var store = KiStore;
         foreach (var k in kinds)
         {
             var kk = k;
             var ready = KiLibrary.OfKind(k).Any(m => m.Runtime != KiRuntime.Ollama && store.ModelReady(m));
-            var b = new Button { Name = "page-freeki-" + k, Content = (ready ? "✓ " : "") + KiLibrary.Kinds[k].Name, FontSize = 11.5, Padding = new Thickness(9, 2), Margin = new Thickness(0, 0, 5, 3),
+            var b = new Button { Name = "page-freeki-" + k, Content = (ready ? "✓ " : "") + KiLibrary.Kinds[k].Name, FontSize = 12, Padding = new Thickness(9, 2), Margin = new Thickness(0, 0, 5, 3),
                 CornerRadius = new CornerRadius(10), Background = Brush.Parse("#22FFFFFF"), Foreground = Text, BorderThickness = new Thickness(0) };
             ToolTip.SetTip(b, KiLibrary.Kinds[k].Description + (ready ? " (schon eingerichtet)" : " – kostenlos, läuft auf deinem PC; geladen wird erst nach deinem Klick dort."));
             b.Click += (_, _) => KiLibraryShow(kk);

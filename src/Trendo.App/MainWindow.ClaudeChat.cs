@@ -424,7 +424,7 @@ public partial class MainWindow
         var steps = new List<ClaudeChats.Step>(); var say = new System.Text.StringBuilder(); string? error = null; string? session = null; var ok = true; var tokens = 0; string? limitRaw = null; var ki = ClaudeKi;
 
         var folder = chat.Folder; Directory.CreateDirectory(folder);
-        if (dock.Studio is not null) try { Skills.ExportForClaude(folder, null, dock.Studio); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        if (dock.Studio is not null) try { Skills.ExportForClaude(folder, null, dock.Studio); ClaudeTeamExport(folder, dock.Studio); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         // Studio-Dokument: ein offenes Fachprogramm-Dokument (.tdoc) liegt als Datei im Projekt – Claude bearbeitet es, Trendo übernimmt jede Änderung live (als ein Rückgängig-Schritt)
         var shell = Programs.ContainsKey(dock.Page) && ProgramActive(dock.Page) is not null;
         string? workFile = null;

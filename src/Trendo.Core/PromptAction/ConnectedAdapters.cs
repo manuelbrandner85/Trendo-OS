@@ -201,7 +201,7 @@ public sealed class TeamAdapter : IStudioActionAdapter
     {
         if (FieldKit.Text(parameters, "aufgabe").Length > 4000) return [new("aufgabe", "Die Aufgabe ist zu lang.", true)];
         var team = FieldKit.Text(parameters, "team");
-        if (team.Length > 0 && AgentCenter.Teams.All(t => !string.Equals(t.Id, team, StringComparison.OrdinalIgnoreCase)))
+        if (team.Length > 0 && AgentCenter.Team(team) is null)
             return [new("team", "Dieses Team gibt es nicht. Möglich: text, code, projekt.", true)];
         return [];
     }
