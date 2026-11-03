@@ -14,7 +14,7 @@
 - ✓ Länge bis 10 Minuten (erprobt: über 8 Minuten ohne planendes Sprachmodell, sonst gekürzt)
 - ✓ Tempo, Tonart, Takt als eigene Felder – nachgemessen 03.11.2026: A-Moll/3-4 und E-Dur/4-4 genau, 140 BPM → 143,6, 90 → 92,3 (Tempo im Stiltext wird ignoriert)
 - ✓ Über 180 Genres in 11 Gruppen mit Suche und Tempo-Vorschlag (Begriffe aus ACE-Steps eigener Genre-Liste), 14 Gesangsarten (Duett, Chor, Rap + Gesang …), Tonlage, Instrumente
-- ✓ „Im Stil von“: Stilmerkmale per Text-KI, ohne Namen und ohne nachgemachte Stimme
+- ✓ „Im Stil von“: aus dem Web nachgeschlagen (MusicBrainz CC0: Genres, Solo/Band, Gründungsjahrzehnt; Wikipedia: Kurzbeschreibung mit Quelle), die Text-KI verfeinert darauf – ohne Namen und ohne nachgemachte Stimme
 - ✓ Song-Analyse (librosa): Tonart, Tempo, Takt, Akkorde, Tonumfang – als Vorlage übernehmbar
 - ✓ Eigene Aufnahme hinzufügen und als Cover neu einspielen (Hinweis: nur privat, GEMA)
 - ◐ Tonart/Tempo bekannter Songs aus AcousticBrainz (CC0) über MusicBrainz – der Dienst läuft nur noch als Archiv und antwortet nicht immer

@@ -1,6 +1,6 @@
 # Sicherung – Testplan
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.36 (Stand 080e64c)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.36 (Stand e6f79fe)
 
 5 Tests sprechen dieses Programm an.
 

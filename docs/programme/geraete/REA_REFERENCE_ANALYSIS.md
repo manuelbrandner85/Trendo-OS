@@ -1,5 +1,5 @@
 # Geräte & Laufwerke – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 080e64c)
+Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand e6f79fe)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

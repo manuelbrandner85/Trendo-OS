@@ -1,6 +1,6 @@
 # Schaltung & Simulation – Testergebnisse
 
-Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.36 (Stand 080e64c)
+Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.36 (Stand e6f79fe)
 
 Lauf: `api.trx, app.trx, core.trx`
 

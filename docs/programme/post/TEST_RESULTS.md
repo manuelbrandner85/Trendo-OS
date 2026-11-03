@@ -1,6 +1,6 @@
 # E-Mail & Kontakte – Testergebnisse
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.36 (Stand 080e64c)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.36 (Stand e6f79fe)
 
 Lauf: `api.trx, app.trx, core.trx`
 
