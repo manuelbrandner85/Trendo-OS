@@ -1,6 +1,6 @@
 # Handy verbinden – Einbindung in Trendo OS
 
-Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.36 (Stand a7ce7c1)
+Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.36 (Stand 87c76f5)
 
 - Seite `handy` im Studio „Handy verbinden“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

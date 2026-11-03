@@ -1,6 +1,6 @@
 # Aufgaben – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.36 (Stand a7ce7c1)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.36 (Stand 87c76f5)
 
 Analyse: [Vorbild-Analyse Aufgaben: Microsoft To Do, Todoist, Kanban-Tafeln (Clean-Room)](../../../docs/claude/vorbilder/aufgaben-todo-planka.md)
 

@@ -1,6 +1,6 @@
 # Briefe schreiben – Testergebnisse
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand a7ce7c1)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 87c76f5)
 
 Lauf: `api.trx, app.trx, core.trx`
 
