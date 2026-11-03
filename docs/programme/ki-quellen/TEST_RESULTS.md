@@ -1,6 +1,6 @@
 # KI-Quellen – Testergebnisse
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand b4c619b)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand c568975)
 
 Lauf: `api.trx, app.trx, core.trx`
 

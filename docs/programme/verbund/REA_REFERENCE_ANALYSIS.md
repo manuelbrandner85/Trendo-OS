@@ -1,5 +1,5 @@
 # Geräteverbund (PC, Pi, Android) – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.36 (Stand b4c619b)
+Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.36 (Stand c568975)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

@@ -1,6 +1,6 @@
 # KI-Rollen und Teams – Testergebnisse
 
-Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.36 (Stand b4c619b)
+Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.36 (Stand c568975)
 
 Lauf: `api.trx, app.trx, core.trx`
 

@@ -1,6 +1,6 @@
 # Briefe schreiben – Funktionsmatrix
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand b4c619b)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand c568975)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -39,6 +39,10 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Vorlagen ausblenden
 - Weiter →
 - ← Zurück
+- ✍ Gezeichnete Unterschrift übernehmen
+- Feld leeren
+- Bild übernehmen
+- Ohne Unterschrift
 - Brief prüfen
 - Text von der KI verbessern lassen
 - Klassisch (DIN 5008)
@@ -49,6 +53,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Fertig – Brief speichern
 - Einsetzen
 - Jetzt Form B – zu Form A wechseln
+- Falz- und Lochmarken mitdrucken
 - Berechnen
 - In den Brief einsetzen
 - In den Kalender
@@ -56,5 +61,3 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Serienbrief erstellen
 - Vorschau
 - Alle als DOCX speichern
-- Übernehmen
-- Ohne Unterschrift

@@ -6,7 +6,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 
 | Programm | Studio | Bereich | Arbeitsfläche | Funktionen | Tests | Vorbild-Analyse | Modulstatus | Doku |
 |---|---|---|---|---|---|---|---|---|
-| Briefe schreiben | Briefe schreiben (STUDIO-LETTER-01) | Arbeiten & Büro | Briefseite nach DIN 5008, Texteditor | – | 18 | ja | IN_PROGRESS / Test PC_VERIFIED | [Paket](brief/README.md) |
+| Briefe schreiben | Briefe schreiben (STUDIO-LETTER-01) | Arbeiten & Büro | Briefseite nach DIN 5008, Texteditor | – | 21 | ja | IN_PROGRESS / Test PC_VERIFIED | [Paket](brief/README.md) |
 | Adressbuch | E-Mails & Termine (SYS-09) | Arbeiten & Büro | keine eigene erkannt | – | 7 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](kontakte/README.md) |
 | Aufgaben | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Aufgabentafel | – | 11 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](aufgaben/README.md) |
 | E-Mail & Kontakte | E-Mails & Termine (SYS-09) | Arbeiten & Büro | Texteditor | – | 18 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](post/README.md) |
