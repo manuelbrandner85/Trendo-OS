@@ -133,11 +133,16 @@ public partial class MainWindow
         sp.Children.Add(new Expander { Name = "ms-instruments-box", Header = _msInstruments.Count == 0 ? "Instrumente (optional)" : $"Instrumente: {string.Join(", ", _msInstruments)}", IsExpanded = _msInstruments.Count > 0, Content = ins, HorizontalAlignment = HorizontalAlignment.Stretch });
 
         // M2 Im Stil von
-        var like = new TextBox { Name = "ms-like", Watermark = "Im Stil von … (Musiker oder Band)", Text = _msLike, MinWidth = 200 };
+        var like = new TextBox { Name = "ms-like", Watermark = "Im Stil von … (Musiker, Band oder Stil)", Text = _msLike, MinWidth = 200 };
         like.TextChanged += (_, _) => _msLike = like.Text ?? "";
         var likeGo = Act("ms-like-go", "Stil übernehmen", () => { sync(); _msLike = like.Text ?? ""; _ = MsStyleLike(_msLike); });
-        ToolTip.SetTip(likeGo, "Die KI beschreibt den Stil in Merkmalen (Jahrzehnt, Instrumente, Tempo, Gesang). Kein Name und keine nachgemachte Stimme einer echten Person.");
+        ToolTip.SetTip(likeGo, "Trendo schaut im Web nach (MusicBrainz, Wikipedia) und macht daraus Merkmale (Genre, Jahrzehnt, Instrumente, Gesang). Kein Name und keine nachgemachte Stimme einer echten Person.");
         sp.Children.Add(new WrapPanel { Children = { like, new Border { Width = 6 }, likeGo } });
+        if (_msLikeInfo.Length > 0)
+        {
+            sp.Children.Add(new TextBlock { Name = "ms-like-info", Text = _msLikeInfo, Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap });
+            if (_msLikeUrl.Length > 0) { var u = _msLikeUrl; sp.Children.Add(new Button { Name = "ms-like-source", Content = "Quelle öffnen (Wikipedia)", FontSize = 11, Padding = new Thickness(7, 1) }.Also(b => b.Click += (_, _) => Launch(u))); }
+        }
         return sp;
     }
 
@@ -146,23 +151,67 @@ public partial class MainWindow
 
     static string Slug(string s) => System.Text.RegularExpressions.Regex.Replace(new string(s.ToLowerInvariant().Replace('ä', 'a').Replace('ö', 'o').Replace('ü', 'u').Replace("ß", "ss").Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray()), "-+", "-").Trim('-');
 
-    /// <summary>M2: Stil eines Musikers als Merkmale – ohne Namen von Personen, Bands oder Liedern (Persönlichkeitsrecht; ACE-Step soll niemanden nachahmen).</summary>
+    string _msLikeInfo = "", _msLikeUrl = "";
+
+    /// <summary>„Im Stil von“ aus dem Web (Wunsch 03.11.2026): Künstler bei MusicBrainz (Genres, Zeitraum, Solo/Band – CC0) und Wikipedia (Kurzbeschreibung)
+    /// nachschlagen – oder einen Stilbegriff bei Wikipedia. Gibt die Web-Merkmale und den Text zurück, den die KI als Grundlage bekommt.</summary>
+    async Task<(List<string> Traits, string Facts)> MsStyleFromWeb(string q)
+    {
+        _msLikeInfo = ""; _msLikeUrl = "";
+        if (_core.Offline || (_opt.Isolated && SongFactsFetchOverride is null)) return ([], "");
+        using var http = MsWebClient();
+        var traits = new List<string>(); var facts = new List<string>(); var src = new List<string>();
+        var title = q;
+        var sj = await MsWebGet(http, ArtistStyle.SearchUri(q));
+        if (sj is null && SongFactsFetchOverride is null) { await Task.Delay(2000); sj = await MsWebGet(http, ArtistStyle.SearchUri(q)); } // MusicBrainz ist manchmal kurz überlastet (503)
+        if (sj is not null && ArtistStyle.ParseSearch(sj) is { } art)
+        {
+            if (SongFactsFetchOverride is null) await Task.Delay(1100); // MusicBrainz erlaubt eine Anfrage pro Sekunde
+            var genres = await MsWebGet(http, ArtistStyle.GenresUri(art.Mbid)) is { } gj ? ArtistStyle.ParseGenres(gj) : [];
+            traits = ArtistStyle.Traits(art, genres);
+            facts.Add("Genres: " + string.Join(", ", genres.Concat(art.Tags).Distinct().Take(10)));
+            if (art.Begin is int b) facts.Add($"aktiv seit {b}" + (art.End is int e ? $" bis {e}" : ""));
+            facts.Add(art.Type == "Group" ? "Band" : art.Gender == "Female" ? "Sängerin" : art.Gender == "Male" ? "Sänger" : art.Type);
+            src.Add("MusicBrainz (CC0)"); title = art.Name;
+        }
+        foreach (var lang in new[] { "de", "en" })
+            if (await MsWebGet(http, ArtistStyle.WikiUri(lang, title)) is { } wj && ArtistStyle.ParseWiki(wj) is { } w)
+            {
+                facts.Add("Beschreibung: " + (w.Extract.Length > 600 ? w.Extract[..600] : w.Extract));
+                src.Add($"Wikipedia {lang} (CC BY-SA)"); _msLikeUrl = w.Url; break;
+            }
+        if (src.Count > 0)
+            _msLikeInfo = (traits.Count > 0 ? "Aus dem Web: " + string.Join(", ", traits) + " · " : "Im Web nachgeschlagen · ") + "Quelle: " + string.Join(", ", src);
+        return (traits, string.Join("\n", facts));
+    }
+
+    /// <summary>M2: Stil eines Musikers als Merkmale – ohne Namen von Personen, Bands oder Liedern (Persönlichkeitsrecht; ACE-Step soll niemanden nachahmen).
+    /// Zuerst aus dem Web (MusicBrainz, Wikipedia); die Text-KI verfeinert auf dieser Grundlage (Instrumente, Tempo, Produktion).</summary>
     public async Task<string?> MsStyleLike(string artist)
     {
         var a = artist.Trim();
-        if (a.Length < 2) { _msMsg = "Gib zuerst einen Musiker oder eine Band ein."; Show(MS); return null; }
+        if (a.Length < 2) { _msMsg = "Gib zuerst einen Musiker, eine Band oder einen Stil ein."; Show(MS); return null; }
+        _msMsg = "Trendo schaut im Web nach …"; Show(MS);
+        var (web, facts) = await MsStyleFromWeb(a);
         var prompt = $"Beschreibe den typischen musikalischen Stil von „{a}“ als englische Stichworte für eine Musik-KI, durch Kommas getrennt: Genre, Jahrzehnt, Instrumente, Tempo, Gesangsart, Produktion. " +
+                     (facts.Length > 0 ? "Halte dich an diese Angaben aus dem Web:\n" + facts + "\n" : "") +
                      "Nenne KEINE Namen von Personen, Bands, Alben oder Liedern. Höchstens 25 Wörter, nur die Stichworte.";
         _msMsg = "Die KI beschreibt den Stil …"; Show(MS);
         string? text;
         try { text = MusicLyricsOverride is { } o ? await o(prompt) : await Intel.AskAsync(new KiRequest(prompt, PreferredModel: KiModelName, UseKnowledge: false, AllowRemote: true)) is { Ok: true } r ? r.Text : null; }
         catch (Exception e) when (e is InvalidOperationException or HttpRequestException or TaskCanceledException) { text = null; }
-        if (string.IsNullOrWhiteSpace(text)) { _msMsg = "Dafür braucht es eine Text-KI (unter „KI einsetzen“ einrichten) – oder wähle oben Genres und Stimme selbst."; Show(MS); return null; }
+        if (string.IsNullOrWhiteSpace(text)) text = web.Count > 0 ? string.Join(", ", web) : null; // ohne Text-KI: die Merkmale aus dem Web
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            _msMsg = _core.Offline ? "Trendo ist offline und es gibt keine Text-KI – wähle oben Genres und Stimme selbst."
+                : "Im Web nichts gefunden und keine Text-KI eingerichtet (unter „KI einsetzen“) – wähle oben Genres und Stimme selbst.";
+            Show(MS); return null;
+        }
         // Sicherheit: Namen entfernen, falls die KI sie doch nennt
         var traits = System.Text.RegularExpressions.Regex.Replace(text.Replace("\n", " "), System.Text.RegularExpressions.Regex.Escape(a), "", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
         traits = string.Join(", ", traits.Split(',', ';').Select(t => t.Trim(' ', '.', '"', '„', '“')).Where(t => t.Length > 1).Take(12));
         if (_msPro) _msStyle = (_msStyle.Trim().Length > 0 ? _msStyle.TrimEnd(' ', ',') + ", " : "") + traits; else _msDesc = (_msDesc.Trim().Length > 0 ? _msDesc.TrimEnd(' ', ',') + ", " : "") + traits;
-        _msMsg = "✓ Stilmerkmale eingesetzt – ohne Namen, die Musik-KI ahmt niemanden nach.";
+        _msMsg = "✓ Stilmerkmale eingesetzt" + (facts.Length > 0 ? " – aus dem Web nachgeschlagen" : "") + ", ohne Namen: die Musik-KI ahmt niemanden nach.";
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.stil", "merkmale");
         Show(MS);
         return traits;

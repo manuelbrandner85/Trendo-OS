@@ -11,7 +11,7 @@ public class TvGuide_Ui
 {
     const string M3U = "#EXTM3U\n#EXTINF:-1 tvg-id=\"eins.de\" group-title=\"Deutschland\",Eins\nhttps://tv.example/eins.m3u8\n#EXTINF:-1 tvg-id=\"zwei.de\" group-title=\"Deutschland\",Zwei\nhttps://tv.example/zwei.m3u8\n#EXTINF:-1 tvg-id=\"kika.de\" group-title=\"Kinder\",Kinderkanal\nhttps://tv.example/kika.m3u8\n";
 
-    static string Cell(TvChannel c, TvProgramme p) => "tv-prog-" + c.Id.Replace(':', '-') + "-" + p.Start.ToString("HHmm");
+    static string Cell(TvChannel c, TvProgramme p) => "tv-prog-" + c.Id.Replace(':', '-') + "-" + p.Start.ToString("MMddHHmm");
 
     [AvaloniaFact(DisplayName = "T-0300: Raster mit Jetzt-Linie, Tage und 20:15, Sparten-Filter, Suche springt zur Sendung, Aufnahme meldet Überschneidung, Erinnerung zeigt Hinweis")]
     public void Ui_guide()

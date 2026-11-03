@@ -52,6 +52,26 @@ public class MusicToolsTests
         Assert.Contains(KiLibrary.OfKind(KiKind.Musik), m => m.Id == "musik-analyse" && m.Runtime == KiRuntime.MusikAnalyse);
     }
 
+    [Fact(DisplayName = "Im Stil von aus dem Web: MusicBrainz-Treffer (ab Trefferwert 90), Genres, Wikipedia-Artikel (keine Begriffsklärung); Merkmale ohne Namen und Länder, mit Jahrzehnt (Bands) und Gesang")]
+    public void Artist_style_from_web()
+    {
+        var search = """{"artists":[{"id":"m1","score":100,"name":"Erika Muster","type":"Person","gender":"female","country":"DE","life-span":{"begin":"1984-08-05"},"tags":[{"count":3,"name":"schlager"},{"count":5,"name":"german"},{"count":1,"name":"erika muster fan"},{"count":2,"name":"pop"}]}]}""";
+        var a = ArtistStyle.ParseSearch(search)!;
+        Assert.Equal(("Erika Muster", "m1", "Person", "Female", 1984), (a.Name, a.Mbid, a.Type, a.Gender, a.Begin));
+        Assert.Equal(["german", "schlager", "pop", "erika muster fan"], a.Tags);
+        Assert.Null(ArtistStyle.ParseSearch("""{"artists":[{"id":"x","score":60,"name":"Irgendwer"}]}"""));
+        Assert.Null(ArtistStyle.ParseSearch("kaputt"));
+        var genres = ArtistStyle.ParseGenres("""{"genres":[{"count":1,"name":"europop"},{"count":4,"name":"schlager"}]}""");
+        Assert.Equal(["schlager", "europop"], genres);
+        Assert.Equal(["schlager", "europop", "pop", "female vocals"], ArtistStyle.Traits(a, genres)); // Geburtsjahr ist kein Jahrzehnt der Musik
+        var band = a with { Type = "Group", Gender = null, Begin = 1994, Tags = ["industrial metal"] };
+        Assert.Equal(["industrial metal", "1990s", "band"], ArtistStyle.Traits(band, []));
+        var w = ArtistStyle.ParseWiki("""{"type":"standard","title":"Neue Deutsche Härte","extract":"Die Neue Deutsche Härte ist eine Musikrichtung mit harten Gitarren.","content_urls":{"desktop":{"page":"https://de.wikipedia.org/wiki/Neue_Deutsche_H%C3%A4rte"}}}""")!;
+        Assert.StartsWith("https://de.wikipedia.org/", w.Url);
+        Assert.Null(ArtistStyle.ParseWiki("""{"type":"disambiguation","title":"X","extract":"X steht für verschiedene Dinge und Begriffe.","content_urls":{"desktop":{"page":"u"}}}"""));
+        Assert.Equal("https://de.wikipedia.org/api/rest_v1/page/summary/Neue_Deutsche_H%C3%A4rte", ArtistStyle.WikiUri("de", "Neue Deutsche Härte").AbsoluteUri);
+    }
+
     [Fact(DisplayName = "Spuren trennen: Demucs 4.0.1 von PyPI mit PyTorch (CUDA 12.8 bei NVIDIA), kein Git; als Musik-Werkzeug (MIT) in der KI-Bibliothek")]
     public void Stems_setup()
     {

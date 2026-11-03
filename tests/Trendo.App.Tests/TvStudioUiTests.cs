@@ -173,7 +173,7 @@ public class TvStudioUiTests
         await w.TvRefreshEpg(w.Tv.Sources[0]);
         w.Show("tv"); w.Find<Button>("tv-tab-guide").Press();
         Assert.Contains(w.GetLogicalTexts(), t => t == "Jetzt-Sendung");
-        var later = w.TryFind<Button>("tv-prog-" + w.Tv.Channels()[0].Id.Replace(':', '-') + "-" + w.Tv.Programmes()[1].Start.ToString("HHmm"))!;
+        var later = w.TryFind<Button>("tv-prog-" + w.Tv.Channels()[0].Id.Replace(':', '-') + "-" + w.Tv.Programmes()[1].Start.ToString("MMddHHmm"))!;
         later.Press();
         w.Find<Button>("tv-prog-rec").Press();
         Assert.Single(w.Tv.Recordings);

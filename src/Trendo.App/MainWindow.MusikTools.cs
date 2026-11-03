@@ -153,20 +153,28 @@ public partial class MainWindow
         Show(MS);
     }
 
+    static HttpClient MsWebClient()
+    {
+        var http = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
+        http.DefaultRequestHeaders.UserAgent.ParseAdd("TrendoOS/0.9 ( https://github.com/manuelbrandner85/Trendo-OS )"); // MusicBrainz und Wikipedia verlangen eine Kennung
+        return http;
+    }
+
+    async Task<string?> MsWebGet(HttpClient http, Uri u)
+    {
+        if (SongFactsFetchOverride is { } o) return await o(u);
+        try { using var r = await http.GetAsync(u); return r.IsSuccessStatusCode ? await r.Content.ReadAsStringAsync() : null; }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException) { return null; }
+    }
+
     /// <summary>M7: Tonart und Tempo eines bekannten Songs aus freien Daten (MusicBrainz sucht, AcousticBrainz misst – CC0). Kein Liedtext.</summary>
     public async Task<SongTools.SongFacts?> MsSongFacts(string query)
     {
         _msFacts = null;
         if (query.Trim().Length < 3) { _msFactsMsg = "Gib Künstler und Titel ein, z. B. „Queen – Bohemian Rhapsody“."; Show(MS); return null; }
         if (_core.Offline) { _msFactsMsg = "Trendo ist offline – dafür braucht es Internet."; Show(MS); return null; }
-        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
-        http.DefaultRequestHeaders.UserAgent.ParseAdd("TrendoOS/0.9 ( https://github.com/manuelbrandner85/Trendo-OS )"); // MusicBrainz verlangt eine Kennung
-        async Task<string?> Get(Uri u)
-        {
-            if (SongFactsFetchOverride is { } o) return await o(u);
-            try { using var r = await http.GetAsync(u); return r.IsSuccessStatusCode ? await r.Content.ReadAsStringAsync() : null; }
-            catch (Exception e) when (e is HttpRequestException or TaskCanceledException) { return null; }
-        }
+        using var http = MsWebClient();
+        Task<string?> Get(Uri u) => MsWebGet(http, u);
         var parts = query.Split(['–', '-', '—'], 2, StringSplitOptions.TrimEntries);
         var q = parts.Length == 2 ? $"recording:\"{parts[1]}\" AND artist:\"{parts[0]}\"" : $"recording:\"{query.Trim()}\"";
         _msFactsMsg = "Suche …"; Show(MS);

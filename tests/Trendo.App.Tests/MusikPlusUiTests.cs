@@ -82,6 +82,38 @@ public class MusikPlusUiTests
         finally { w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "Im Stil von aus dem Web: MusicBrainz und Wikipedia nachschlagen, die KI bekommt die Angaben als Grundlage; ohne Text-KI die Merkmale aus dem Web, mit Quelle")]
+    public async Task Style_like_web()
+    {
+        var (w, _, _) = Ui.Open();
+        var urls = new List<string>(); string? asked = null;
+        w.SongFactsFetchOverride = u =>
+        {
+            urls.Add(u.AbsoluteUri);
+            return Task.FromResult<string?>(u.Host == "musicbrainz.org" && u.AbsolutePath.EndsWith("/artist/")
+                ? """{"artists":[{"id":"m1","score":100,"name":"Erika Muster","type":"Group","life-span":{"begin":"1994"},"tags":[{"count":2,"name":"industrial metal"}]}]}"""
+                : u.Host == "musicbrainz.org" ? """{"genres":[{"count":3,"name":"neue deutsche härte"}]}"""
+                : u.Host == "de.wikipedia.org" ? """{"type":"standard","title":"Erika Muster","extract":"Erika Muster ist eine Band mit harten Gitarren und tiefem Gesang.","content_urls":{"desktop":{"page":"https://de.wikipedia.org/wiki/Erika_Muster"}}}""" : null);
+        };
+        w.MusicLyricsOverride = p => { asked = p; return Task.FromResult(""); };
+        try
+        {
+            w.Show("musik-studio"); await Pump();
+            var traits = await w.MsStyleLike("Erika Muster");
+            Assert.Equal("neue deutsche härte, industrial metal, 1990s, band", traits);
+            Assert.Contains("Angaben aus dem Web", asked); Assert.Contains("harten Gitarren", asked); Assert.Contains("neue deutsche härte", asked);
+            Assert.Contains(urls, u => u.Contains("/ws/2/artist/m1?inc=genres"));
+            await Pump();
+            Assert.Contains("MusicBrainz (CC0)", w.Find<TextBlock>("ms-like-info").Text);
+            Assert.Contains("Wikipedia de", w.Find<TextBlock>("ms-like-info").Text);
+            Assert.NotNull(w.Find<Button>("ms-like-source"));
+            // mit Text-KI: deren Merkmale, ohne Namen
+            w.MusicLyricsOverride = _ => Task.FromResult("Erika Muster style, heavy guitars, deep male vocals, 1990s");
+            Assert.Equal("style, heavy guitars, deep male vocals, 1990s", await w.MsStyleLike("Erika Muster"));
+        }
+        finally { w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "M3/M5: eigene Aufnahme hinzufügen → analysiert (Tonart, BPM, Takt, Tonumfang), Hinweis „nur privat“, „Als Vorlage“ setzt Tempo, Tonart und Takt im Profi-Modus")]
     public async Task Import_and_analyse()
     {
