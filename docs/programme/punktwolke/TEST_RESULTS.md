@@ -1,6 +1,6 @@
 # Punktwolke – Testergebnisse
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.36 (Stand bee36a7)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.36 (Stand c58bb7c)
 
 Lauf: `api.trx, app.trx, core.trx`
 

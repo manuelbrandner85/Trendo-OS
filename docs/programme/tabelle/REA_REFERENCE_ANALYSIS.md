@@ -1,6 +1,6 @@
 # Trendo Tabelle – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.36 (Stand bee36a7)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.36 (Stand c58bb7c)
 
 Analyse: [Vorbild-Analyse Trendo Tabelle: Microsoft Excel, LibreOffice Calc (Clean-Room)](../../../docs/claude/vorbilder/tabelle-excel-calc.md)
 

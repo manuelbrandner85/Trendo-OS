@@ -1,6 +1,6 @@
 # Grundriss & Wohnen – Testergebnisse
 
-Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.36 (Stand bee36a7)
+Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.36 (Stand c58bb7c)
 
 Lauf: `api.trx, app.trx, core.trx`
 

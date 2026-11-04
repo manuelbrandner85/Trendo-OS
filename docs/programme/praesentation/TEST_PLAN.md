@@ -1,6 +1,6 @@
 # Trendo Präsentation – Testplan
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.36 (Stand bee36a7)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.36 (Stand c58bb7c)
 
 27 Tests sprechen dieses Programm an.
 

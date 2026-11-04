@@ -1,5 +1,5 @@
 # Selbstheilung – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.36 (Stand bee36a7)
+Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.36 (Stand c58bb7c)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

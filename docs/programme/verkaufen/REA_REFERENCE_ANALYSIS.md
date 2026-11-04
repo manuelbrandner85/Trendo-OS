@@ -1,6 +1,6 @@
 # Verkaufen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.36 (Stand bee36a7)
+Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.36 (Stand c58bb7c)
 
 Analyse: [Vorbild-Analyse Verkaufen: Kassensysteme, Online-Shop-Verwaltung (Clean-Room)](../../../docs/claude/vorbilder/verkaufen-kasse-shop.md)
 

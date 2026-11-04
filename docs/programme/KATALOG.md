@@ -28,7 +28,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Skills | KI-Anweisungen schreiben (CORE-12) | Kreativ & Medien | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-skills/README.md) |
 | Kleidung & Produkte | Kleidung & Produkte entwerfen (SPEC-08) | Kreativ & Medien | keine eigene erkannt | 18 | 19 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](mode-programm/README.md) |
 | Live streamen | Live streamen (SPEC-15) | Kreativ & Medien | Bildansicht, Diagramm/Zeichnung | 20 | 39 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](sendung/README.md) |
-| Trendo Musik | Trendo Musik (STUDIO-MUSIK-01) | Kreativ & Medien | keine eigene erkannt | – | 32 | ja | IN_PROGRESS / Test NOT_RUN | [Paket](musik-studio/README.md) |
+| Trendo Musik | Trendo Musik (STUDIO-MUSIK-01) | Kreativ & Medien | keine eigene erkannt | – | 33 | ja | IN_PROGRESS / Test NOT_RUN | [Paket](musik-studio/README.md) |
 | TV & Live | TV & Live (STUDIO-TV-01) | Kreativ & Medien | keine eigene erkannt | – | 18 | ja | IN_PROGRESS / Test NOT_RUN | [Paket](tv/README.md) |
 | Bildbearbeitung | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Bild-Arbeitsfläche (Ebenen) | – | 4 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](bild/README.md) |
 | Medien bearbeiten | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | keine eigene erkannt | – | 11 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](kreativ-medien/README.md) |

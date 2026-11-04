@@ -1,6 +1,6 @@
 # Aufgaben – Produktionspaket
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.36 (Stand bee36a7)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `aufgaben` · Stand: 0.9.36 (Stand c58bb7c)
 
 Arbeitsfläche: Aufgabentafel  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  
