@@ -1,6 +1,6 @@
 # Verbindungen – Einbindung in Trendo OS
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.36 (Stand dfd134a)
 
 - Seite `verbindungen` im Studio „KI fragen“ (KI & Automatik) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

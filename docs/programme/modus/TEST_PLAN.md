@@ -1,6 +1,6 @@
 # Betriebsmodus – Testplan
 
-Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.36 (Stand dfd134a)
 
 15 Tests sprechen dieses Programm an.
 

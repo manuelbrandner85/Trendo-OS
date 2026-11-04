@@ -1,6 +1,6 @@
 # Produktion – Einbindung in Trendo OS
 
-Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `produktion` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Großprojekte umsetzen (X-01) · Bereich: KI & Automatik · Seite: `produktion` · Stand: 0.9.36 (Stand dfd134a)
 
 - Seite `produktion` im Studio „Großprojekte umsetzen“ (KI & Automatik) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

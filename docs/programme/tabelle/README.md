@@ -1,6 +1,6 @@
 # Trendo Tabelle – Produktionspaket
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.36 (Stand dfd134a)
 
 Arbeitsfläche: Tabellenraster  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

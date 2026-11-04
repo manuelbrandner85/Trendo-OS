@@ -1,6 +1,6 @@
 # KI-Rollen und Teams – Testplan
 
-Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.36 (Stand dfd134a)
 
 11 Tests sprechen dieses Programm an.
 

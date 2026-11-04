@@ -1,6 +1,6 @@
 # Speicher & Leistung – Produktionspaket
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand dfd134a)
 
 Arbeitsfläche: Diagramm/Zeichnung, Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test PC_VERIFIED  

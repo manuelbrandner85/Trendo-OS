@@ -1,6 +1,6 @@
 # Mit Claude verbinden – Architektur
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `claude-verbinden` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `claude-verbinden` · Stand: 0.9.36 (Stand dfd134a)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Skills.cs`

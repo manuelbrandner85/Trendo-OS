@@ -1,5 +1,5 @@
 # Desktop-Symbole – Testergebnisse
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand dfd134a)
 
 Noch kein Testlauf eingelesen. Ergebnisse stehen hier erst nach einem echten Lauf (TRX-Datei) – nicht vorher.

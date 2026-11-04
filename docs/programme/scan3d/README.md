@@ -1,6 +1,6 @@
 # Aus Fotos – Produktionspaket
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand dfd134a)
 
 Arbeitsfläche: Fotoscan (Fotos, Rechnung, 3D-Ergebnis – wie Meshroom)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

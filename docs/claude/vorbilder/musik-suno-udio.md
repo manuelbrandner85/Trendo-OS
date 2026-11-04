@@ -1,7 +1,7 @@
 # Vorbild-Analyse Trendo Musik: Musik-KI-Dienste wie Suno und Udio (Clean-Room)
 
 - Programme: „Trendo Musik“
-- Vorbilder: Suno, Udio (nur Bedienkonzept aus öffentlicher Darstellung) – Erzeugung lokal mit ACE-Step 1.5 (MIT)
+- Vorbilder: Suno, Udio, ElevenLabs Music, Google Lyria/ProducerAI, Stable Audio, AIVA, Soundraw, Moises, LANDR (nur Funktionen aus öffentlicher Darstellung, auch kostenpflichtige) – Erzeugung lokal mit ACE-Step 1.5 (MIT); Recherche 04.11.2026 in docs/programme/MUSIK-KI-RECHERCHE.md
 - Werkzeug: Bedienkonzept aus öffentlicher Doku; kein fremder Code, keine fremden Grafiken, Namen oder Texte. Funktionen von ACE-Step am 03.11.2026 auf einer RTX 5070 (12 GB) echt erprobt.
 
 ## Funktionen eines Profi-Programms – Stand in Trendo
@@ -32,7 +32,16 @@
 - ✓ Cover-Bilder: Motiv aus der Bild-KI (SDXL Turbo) zu Genre und Stimmung, Titel und Name mit echter Schrift, 4 Layouts, 1400 × 1400, in die MP3 eingebettet
 - ✓ Verlängern mit dem Grundmodell (03.11.2026 auf der RTX 5070 echt geprüft: 30 → 60 s in 9 s, Anfang unverändert, Fortsetzung schließt an); Turbo und Grundmodell zugleich passen nicht in 12 GB – Trendo lädt jeweils eins
 - ✓ Spuren trennen mit Demucs (MIT): Gesang, Schlagzeug, Bass, Rest und Begleitung (03.11.2026 echt geprüft: 3:26 Minuten in 24 s, Summe = Original mit 30 dB, Übersprechen Gesang/Begleitung 0,02); ACE-Step selbst trennt nachgemessen nicht
-- ✗ Begleitung zu Gesang erzeugen (ACE-Step „complete“ nachgemessen unbrauchbar)
+- ✗ Begleitung zu Gesang erzeugen (ACE-Step „complete“ – 04.11.2026 auch mit dem Grundmodell nachgemessen: folgt dem Gesang nicht, 0,06; braucht das XL-Modell ab 24 GB)
+- ✗ Instrument dazu erzeugen (ACE-Step „lego“, nachgemessen: Streicher folgen den Akkorden nicht, 0,40 = Zufall)
+- ✓ Klang-Referenz und Persona (Suno „Inspo“): Datei oder eigenes Lied als Klangvorbild – gemessen: Klangabstand 101 statt 139
+- ✓ Ablaufplan je Abschnitt (ElevenLabs „composition plan“): Teile mit Takten und Stimmung → Textgerüst und Länge
+- ✓ Mastern wie LANDR: Stile warm/ausgewogen/offen, Ziel je Plattform (−8 bis −16 LUFS), Angleichen an ein Referenzlied (7 Bänder, ±6 dB)
+- ✓ Üben wie Moises: Tempo 50–150 % ohne Tonhöhe, Tonart ±6 Halbtöne (Rubber Band), Klick im erkannten Takt, Kapodaster-Vorschlag
+- ✓ MIDI-Export wie AIVA: Melodie und Akkorde als Standard-MIDI-Datei
+- ✓ Nahtlose Loops wie Stable Audio (Takte im Tempo, Überblendung ohne Knacken)
+- ✓ Kurzclip wie Suno Hooks: stärkster Abschnitt als Hochkant-Video 1080 × 1920 mit Titelbild und Wellenform
+- ✓ Cover-Werkstatt M1–M8: Lied suchen, eigenes Original untersuchen, Cover mit gleicher Melodie (gemessen 55 % auf der Gesangsspur), Ampel, erfundene Epochen-Stimmen, Klang wie damals, Karaoke, eigene Stimme (nur live, mit Zustimmung)
 - ✗ Mitlaufender Liedtext beim Abspielen
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)

@@ -1,6 +1,6 @@
 # Trendo Musik – Produktionspaket
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand dfd134a)
 
 Arbeitsfläche: Liederliste mit Player und Lied-Ansicht (wie Suno), Texteditor  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test NOT_RUN  

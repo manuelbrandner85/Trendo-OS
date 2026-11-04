@@ -1,6 +1,6 @@
 # Aus Fotos – Testplan
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand dfd134a)
 
 24 Tests sprechen dieses Programm an.
 

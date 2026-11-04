@@ -1,6 +1,6 @@
 # Werkstatt – Produktionspaket
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand dfd134a)
 
 Arbeitsfläche: Bildansicht, Spielesammlung (Bibliothek, gewähltes Spiel mit Einstellungen, Neu und Unreal)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

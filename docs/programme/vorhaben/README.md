@@ -1,6 +1,6 @@
 # Vorhaben – Produktionspaket
 
-Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.36 (Stand dfd134a)
 
 Arbeitsfläche: Projektplaner (Übersicht, Liste, Tafel, Zeitplan, Dateien – wie Asana)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

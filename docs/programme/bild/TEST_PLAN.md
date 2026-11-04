@@ -1,6 +1,6 @@
 # Bildbearbeitung – Testplan
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand dfd134a)
 
 7 Tests sprechen dieses Programm an.
 

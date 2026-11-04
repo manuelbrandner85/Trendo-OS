@@ -1,6 +1,6 @@
 # Lernen mit Karteikarten – Testplan
 
-Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.36 (Stand dfd134a)
 
 16 Tests sprechen dieses Programm an.
 

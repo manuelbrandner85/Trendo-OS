@@ -1,6 +1,6 @@
 # Start – Testplan
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand dfd134a)
 
 25 Tests sprechen dieses Programm an.
 

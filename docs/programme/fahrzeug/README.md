@@ -1,6 +1,6 @@
 # Auto & Fahrten – Produktionspaket
 
-Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.36 (Stand dfd134a)
 
 Arbeitsfläche: Diagramm/Zeichnung  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

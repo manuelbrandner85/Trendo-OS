@@ -1,6 +1,6 @@
 # 3D – Produktionspaket
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand dfd134a)
 
 Arbeitsfläche: CAD-/3D-Zeichenfläche  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

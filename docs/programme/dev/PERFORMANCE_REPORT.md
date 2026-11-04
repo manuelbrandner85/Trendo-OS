@@ -1,6 +1,6 @@
 # Software – Leistung
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand dfd134a)
 
 Kein eigener Leistungsmesslauf für dieses Programm. Zielhardware und Budgets sind noch nicht festgelegt – Messung offen.
 

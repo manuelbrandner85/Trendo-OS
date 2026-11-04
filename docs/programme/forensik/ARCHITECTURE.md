@@ -1,6 +1,6 @@
 # Sicherheits-Werkzeuge & Beweise – Architektur
 
-Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand dfd134a)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

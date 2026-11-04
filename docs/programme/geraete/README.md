@@ -1,6 +1,6 @@
 # Geräte & Laufwerke – Produktionspaket
 
-Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand dfd134a)
 
 Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

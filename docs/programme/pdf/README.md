@@ -1,6 +1,6 @@
 # Trendo PDF – Produktionspaket
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.36 (Stand dfd134a)
 
 Arbeitsfläche: PDF-Startseite (Zuletzt geöffnet, Öffnen, Werkzeuge)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

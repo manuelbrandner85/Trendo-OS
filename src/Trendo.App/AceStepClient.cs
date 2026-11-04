@@ -91,7 +91,7 @@ public sealed class AceStepClient(HttpClient http, int port = AceStepClient.Defa
     /// <summary>Studio „Trendo Musik“: Auftrag mit allen geprüften Möglichkeiten (03.11.2026 auf einer RTX 5070 echt erprobt:
     /// Varianten, Sprachen, Abschnitt neu erzeugen und Cover gehen; Verlängern, Spuren trennen und Begleitung liefern mit dem Turbo-Modell kein brauchbares Ergebnis).</summary>
     public sealed record Job(string Prompt, string Lyrics, int Seconds, string Language, int Variants = 1, int? Bpm = null, string? Key = null, string? TimeSignature = null,
-        string Task = "text2music", double RepaintStart = 0, double RepaintEnd = -1, double CoverStrength = 0.6, string Format = "mp3", string? SampleQuery = null);
+        string Task = "text2music", double RepaintStart = 0, double RepaintEnd = -1, double CoverStrength = 0.6, string Format = "mp3", string? SampleQuery = null, string? ReferenceAudio = null);
     // SampleQuery: Einfach-Modus von ACE-Step (am 03.11.2026 echt erprobt) – die Sprach-KI schreibt Liedtext, Stil, Tempo und Tonart selbst und singt;
     // die Länge legt sie dabei selbst fest (gemessen: 100–120 s statt der gewünschten 60 s).
 
@@ -134,14 +134,23 @@ public sealed class AceStepClient(HttpClient http, int port = AceStepClient.Defa
     {
         var fields = Fields(j);
         HttpResponseMessage r;
-        if (j.Task == "text2music") r = await http.PostAsJsonAsync(new Uri(Base, "release_task"), new JsonObject(fields.Select(kv => KeyValuePair.Create(kv.Key, (JsonNode?)(kv.Key is "thinking" ? JsonValue.Create(kv.Value == "true") : kv.Key is "audio_duration" or "batch_size" or "bpm" ? JsonValue.Create(int.Parse(kv.Value, System.Globalization.CultureInfo.InvariantCulture)) : JsonValue.Create(kv.Value))))), ct);
+        if (j.Task == "text2music" && j.ReferenceAudio is null) r = await http.PostAsJsonAsync(new Uri(Base, "release_task"), new JsonObject(fields.Select(kv => KeyValuePair.Create(kv.Key, (JsonNode?)(kv.Key is "thinking" ? JsonValue.Create(kv.Value == "true") : kv.Key is "audio_duration" or "batch_size" or "bpm" ? JsonValue.Create(int.Parse(kv.Value, System.Globalization.CultureInfo.InvariantCulture)) : JsonValue.Create(kv.Value))))), ct);
         else
         {
-            if (sourceAudio is null || !File.Exists(sourceAudio)) throw new InvalidOperationException("Das Ausgangslied fehlt.");
+            if (j.Task != "text2music" && (sourceAudio is null || !File.Exists(sourceAudio))) throw new InvalidOperationException("Das Ausgangslied fehlt.");
             using var form = new MultipartFormDataContent();
             foreach (var (k, v) in fields) form.Add(new StringContent(v), k);
-            var audio = new ByteArrayContent(await File.ReadAllBytesAsync(sourceAudio, ct)); audio.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/mpeg");
-            form.Add(audio, "src_audio", Path.GetFileName(sourceAudio));
+            if (j.Task != "text2music")
+            {
+                var audio = new ByteArrayContent(await File.ReadAllBytesAsync(sourceAudio!, ct)); audio.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/mpeg");
+                form.Add(audio, "src_audio", Path.GetFileName(sourceAudio));
+            }
+            // Klang-Referenz (Suno „Inspo“; gemessen 04.11.2026: Klang näher an der Referenz) – eigene Datei oder eigenes Lied
+            if (j.ReferenceAudio is { } refFile && File.Exists(refFile))
+            {
+                var ra = new ByteArrayContent(await File.ReadAllBytesAsync(refFile, ct)); ra.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/mpeg");
+                form.Add(ra, "reference_audio", Path.GetFileName(refFile));
+            }
             r = await http.PostAsync(new Uri(Base, "release_task"), form, ct);
         }
         using (r)

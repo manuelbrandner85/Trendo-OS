@@ -1,6 +1,6 @@
 # Mit Claude verbinden – Produktionspaket
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `claude-verbinden` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `claude-verbinden` · Stand: 0.9.36 (Stand dfd134a)
 
 Arbeitsfläche: KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

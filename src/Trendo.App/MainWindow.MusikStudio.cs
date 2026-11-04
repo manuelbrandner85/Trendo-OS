@@ -14,7 +14,7 @@ public partial class MainWindow
 {
     public const string MusikStudio = "STUDIO-MUSIK-01";
     const string MS = "musik-studio";
-    SongLibrary Songs => new(_core.DataRoot);
+    public SongLibrary Songs => new(_core.DataRoot);
     bool _msPro; string _msMsg = ""; string? _msSel; bool _msFav; string _msSearch = "";
     readonly List<(string Title, DateTime Started, CancellationTokenSource Cts)> _msRunning = [];
 
@@ -138,13 +138,13 @@ public partial class MainWindow
         if (!_msPro)
         {
             if (string.IsNullOrWhiteSpace(_msDesc) && _msGenres.Count == 0) throw new ArgumentException("Beschreibe zuerst dein Lied – z. B. „fröhliches Sommerlied über einen Roadtrip“.");
-            return new(MsWithExtras(_msDesc), _msInstr ? "[Instrumental]" : "", secs, lang, _msVariants);
+            return new(MsWithExtras(_msDesc), _msInstr ? "[Instrumental]" : "", secs, lang, _msVariants, ReferenceAudio: _msRefFile);
         }
         if (string.IsNullOrWhiteSpace(_msStyle) && _msGenres.Count == 0) throw new ArgumentException("Gib zuerst den Stil an – z. B. „Pop, Akustikgitarre, Frauenstimme“.");
         int? bpm = int.TryParse(_msBpm, out var b) ? b : null;
         if (_msBpm.Length > 0 && bpm is null or < 30 or > 300) throw new ArgumentException("Tempo bitte zwischen 30 und 300 BPM (oder leer für automatisch).");
         return new(MsWithExtras(_msStyle), _msInstr ? "[Instrumental]" : SongLibrary.ToAceLyrics(_msLyrics), secs, lang, _msVariants, bpm,
-            _msKey.Length > 0 ? _msKey : null, _msTime.Length > 0 ? _msTime : null);
+            _msKey.Length > 0 ? _msKey : null, _msTime.Length > 0 ? _msTime : null, ReferenceAudio: _msRefFile);
     }
 
     /// <summary>Wunsch 03.11.2026: Im Einfach-Modus mit Gesang (nicht nur instrumental). Zuerst schreibt die Text-KI von Trendo den Liedtext
@@ -299,6 +299,7 @@ public partial class MainWindow
             more.Children.Add(new StackPanel { Spacing = 4, Children = { H("Tempo, Tonart, Takt", 13), new WrapPanel { Children = { bpm, Spacer(key), Spacer(ts) } } } });
         }
         more.Children.Insert(0, MsStylePanel(Sync)); // M1/M2/M6/M8: Genres, Stimme, Tonlage, Instrumente, „Im Stil von“
+        more.Children.Add(MsRefPlanPanel(Sync)); // Vorbilder: Klang-Referenz/Persona (Suno), Ablaufplan (ElevenLabs)
         if (_msPro) more.Children.Add(MsVoicePanel(Sync)); // S1: eigene Stimme analysieren
         var instr = new CheckBox { Name = "ms-instrumental", Content = "Instrumental (ohne Gesang)", IsChecked = _msInstr, Foreground = Text };
         instr.IsCheckedChanged += (_, _) => { _msInstr = instr.IsChecked == true; Show(MS); };
@@ -454,7 +455,7 @@ public partial class MainWindow
             Child = new ScrollViewer { Content = new SelectableTextBlock { Name = "ms-detail-lyrics", Text = lyr, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap } } });
         // Wunsch 04.11.2026 „viel übersichtlicher“: Lied-Werkzeuge in Registerkarten statt einer langen Liste – alle Funktionen bleiben erhalten
         var tabs = new (string Id, string Label, StackPanel Body)[] { ("lied", "Lied", new StackPanel { Spacing = 8 }), ("bearbeiten", "Bearbeiten", new StackPanel { Spacing = 8 }),
-            ("spuren", "Spuren & Mitsingen", new StackPanel { Spacing = 8 }), ("video", "Musikvideo", new StackPanel { Spacing = 8 }) };
+            ("spuren", "Spuren & Mitsingen", new StackPanel { Spacing = 8 }), ("video", "Musikvideo", new StackPanel { Spacing = 8 }), ("profi", "Profi", new StackPanel { Spacing = 8 }) };
         if (!tabs.Any(t => t.Id == _msDetailTab)) _msDetailTab = "lied";
         var bar = new WrapPanel { Name = "ms-dtabs" };
         foreach (var (id, label, body) in tabs)
@@ -469,6 +470,7 @@ public partial class MainWindow
         sp.Children.Add(bar);
         foreach (var t in tabs) sp.Children.Add(t.Body);
         var lied = tabs[0].Body; var edit = tabs[1].Body; var spuren = tabs[2].Body; var video = tabs[3].Body;
+        tabs[4].Body.Children.Add(MsProPanel(s)); // Vorbild-Funktionen: Mastern (LANDR), Üben (Moises), MIDI (AIVA), Loop (Stable Audio), Kurzclip (Suno)
         lied.Children.Add(MsCoverPanel(s)); // Wunsch 03.11.2026: Cover-Bild wie ein echtes Song-Cover
         lied.Children.Add(MsAnalysePanel(s)); // M5: Tonart, Tempo, Takt, Akkorde, Tonumfang
 

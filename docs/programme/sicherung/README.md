@@ -1,6 +1,6 @@
 # Sicherung – Produktionspaket
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.36 (Stand 0d902aa)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.36 (Stand dfd134a)
 
 Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  
