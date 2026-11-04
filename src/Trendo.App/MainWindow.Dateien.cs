@@ -5,6 +5,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Trendo.Core;
 using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
 using Avalonia.Platform.Storage;
 using Trendo.Core.Shell;
 
@@ -20,9 +21,41 @@ public partial class MainWindow
     FileBrowser? _fb;
     public FileBrowser Files => _fb ??= new FileBrowser { Root = _opt.Isolated ? Path.Combine(_core.DataRoot, "dateien-test") : null };
     public string FilesDir { get; private set; } = PcPlace;
-    public string? FilesSelected { get; set; }
+    readonly List<string> _fbSel = [];
+    string? _fbAnchor;
+    List<string> _fbShown = [];
+    /// <summary>Zuletzt gewähltes Element (Einzelauswahl); Setzen ersetzt die ganze Auswahl.</summary>
+    public string? FilesSelected { get => _fbSel.Count > 0 ? _fbSel[^1] : null; set { _fbSel.Clear(); if (value is not null) _fbSel.Add(value); _fbAnchor = value; } }
+    /// <summary>Alle gewählten Elemente (Mehrfachauswahl).</summary>
+    public IReadOnlyList<string> FilesSelection => _fbSel;
+    bool IsSel(string path) => _fbSel.Any(x => SamePath(x, path));
+
+    /// <summary>Klick auf ein Element wie im System: allein wählt nur dieses, Strg (Mac: ⌘) schaltet dazu/weg, Umschalt wählt den Bereich ab dem Anker.</summary>
+    public void FilesClick(string path, KeyModifiers mods)
+    {
+        var toggle = _style == "mac" ? OsBehavior.Cmd(ModsOf(mods), OperatingSystem.IsMacOS()) : mods.HasFlag(KeyModifiers.Control);
+        if (mods.HasFlag(KeyModifiers.Shift) && _fbAnchor is { } a && _fbShown.FindIndex(x => SamePath(x, a)) is var i0 && i0 >= 0 && _fbShown.FindIndex(x => SamePath(x, path)) is var i1 && i1 >= 0)
+        {
+            if (!toggle) _fbSel.Clear();
+            for (var i = Math.Min(i0, i1); i <= Math.Max(i0, i1); i++) if (!IsSel(_fbShown[i])) _fbSel.Add(_fbShown[i]);
+        }
+        else if (toggle) { var k = _fbSel.FindIndex(x => SamePath(x, path)); if (k >= 0) _fbSel.RemoveAt(k); else _fbSel.Add(path); _fbAnchor = path; }
+        else FilesSelected = path;
+        _fbRenaming = false; Show(FK);
+    }
+
+    /// <summary>Alles auswählen (Strg+A, Mac ⌘A).</summary>
+    public void FilesSelectAll() { _fbSel.Clear(); _fbSel.AddRange(_fbShown); _fbAnchor = _fbShown.FirstOrDefault(); Show(FK); }
+
+    /// <summary>Auswahlrahmen aufziehen: alles, was den Rahmen berührt; mit Strg/⌘ zur bestehenden Auswahl dazu.</summary>
+    public void FilesBand(IEnumerable<string> hit, bool add)
+    {
+        if (!add) _fbSel.Clear();
+        foreach (var h in hit) if (!IsSel(h)) _fbSel.Add(h);
+        _fbAnchor = _fbSel.FirstOrDefault(); Show(FK);
+    }
     readonly List<string> _fbBack = [], _fbFwd = [];
-    (string Path, bool Move)? _fbClip;
+    (List<string> Paths, bool Move)? _fbClip;
     public string FilesView { get; set; } = "";
     string _fbSort = "name"; bool _fbDesc; string _fbQuery = ""; bool _fbRenaming;
     public string FilesMessage { get; private set; } = "";
@@ -81,14 +114,15 @@ public partial class MainWindow
         var cmd = OsBehavior.FileKey(_style, key.ToString(), ModsOf(mods), OperatingSystem.IsMacOS());
         switch (cmd)
         {
-            case "open": if (FilesSelected is { } o) FilesOpen(o); break;
-            case "rename": if (FilesSelected is null) return false; _fbRenaming = true; Show(FK); break;
+            case "open": foreach (var o in _fbSel.ToList()) { FilesOpen(o); if (Directory.Exists(o)) break; } break;
+            case "rename": if (_fbSel.Count != 1) return false; _fbRenaming = true; Show(FK); break;
             case "trash": FilesTrash(); break;
             case "copy": FilesCopy(false); break;
             case "cut": FilesCopy(true); break;
             case "paste": FilesPaste(); break;
-            case "move-here": if (_fbClip is { } c) { _fbClip = (c.Path, true); FilesPaste(); } break;
-            case "duplicate": if (FilesSelected is { } d) FilesDo(() => FilesSelected = Files.Paste(d, CurDir, false)); break;
+            case "move-here": if (_fbClip is { } c) { _fbClip = (c.Paths, true); FilesPaste(); } break;
+            case "duplicate": FilesDo(() => { var r = _fbSel.Select(d => Files.Paste(d, CurDir, false)).ToList(); _fbSel.Clear(); _fbSel.AddRange(r); }); break;
+            case "selectall": FilesSelectAll(); break;
             case "newfolder": FilesNewFolder(); break;
             case "up": FilesUp(); break;
             case "back": FilesBack(); break;
@@ -106,20 +140,26 @@ public partial class MainWindow
     void FilesDo(Action a) { try { a(); } catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException) { FilesMessage = e.Message; } Show(FK); }
     string CurDir => FilesDir == PcPlace ? Files.Home : FilesDir;
     public string FilesNewFolder() { string p = ""; FilesDo(() => { p = Files.NewFolder(CurDir); FilesSelected = p; _fbRenaming = true; }); return p; }
-    public void FilesRename(string newName) { if (FilesSelected is not { } s) return; FilesDo(() => { FilesSelected = Files.Rename(s, newName); _fbRenaming = false; }); }
-    public void FilesCopy(bool cut) { if (FilesSelected is { } s) { _fbClip = (s, cut); FilesMessage = (cut ? "Ausgeschnitten: " : "Kopiert: ") + Path.GetFileName(s); Show(FK); } }
-    public void FilesPaste() { if (_fbClip is not { } c) return; FilesDo(() => { FilesSelected = Files.Paste(c.Path, CurDir, c.Move); if (c.Move) _fbClip = null; }); }
+    public void FilesRename(string newName) { if (_fbSel.Count != 1 || FilesSelected is not { } s) return; FilesDo(() => { FilesSelected = Files.Rename(s, newName); _fbRenaming = false; }); }
+    static string Count(int n) => n == 1 ? "1 Element" : $"{n} Elemente";
+    public void FilesCopy(bool cut) { if (_fbSel.Count == 0) return; _fbClip = ([.. _fbSel], cut); FilesMessage = (cut ? "Ausgeschnitten: " : "Kopiert: ") + (_fbSel.Count == 1 ? Path.GetFileName(_fbSel[0]) : Count(_fbSel.Count)); Show(FK); }
+    public void FilesPaste()
+    {
+        if (_fbClip is not { } c) return;
+        FilesDo(() => { var r = new List<string>(); foreach (var p in c.Paths) r.Add(Files.Paste(p, CurDir, c.Move)); _fbSel.Clear(); _fbSel.AddRange(r); if (c.Move) _fbClip = null; FilesMessage = Count(r.Count) + " eingefügt"; });
+    }
     public void FilesTrash()
     {
-        if (FilesSelected is not { } s) return;
+        if (_fbSel.Count == 0) return;
+        var all = _fbSel.ToList();
         FilesDo(() =>
         {
-            Files.Trash(s, OperatingSystem.IsWindows() ? p =>
+            foreach (var s in all) Files.Trash(s, OperatingSystem.IsWindows() ? p =>
             {
                 if (Directory.Exists(p)) Microsoft.VisualBasic.FileIO.FileSystem.DeleteDirectory(p, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
                 else Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(p, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
             } : null);
-            FilesMessage = $"„{Path.GetFileName(s)}“ liegt im Papierkorb."; FilesSelected = null;
+            FilesMessage = all.Count == 1 ? $"„{Path.GetFileName(all[0])}“ liegt im Papierkorb." : $"{all.Count} Elemente liegen im Papierkorb."; FilesSelected = null;
         });
     }
 
@@ -150,7 +190,7 @@ public partial class MainWindow
         {
             if (e.DataTransfer.TryGetText() is { } t && t.StartsWith(DragPrefix, StringComparison.Ordinal))
             {
-                var src = t[DragPrefix.Length..]; var same = string.Equals(Path.GetPathRoot(src), Path.GetPathRoot(dir), StringComparison.OrdinalIgnoreCase);
+                var src = t[DragPrefix.Length..].Split(NL)[0]; var same = string.Equals(Path.GetPathRoot(src), Path.GetPathRoot(dir), StringComparison.OrdinalIgnoreCase);
                 e.DragEffects = OsBehavior.DropCopies(_style, same, ModsOf(e.KeyModifiers), OperatingSystem.IsMacOS()) ? DragDropEffects.Copy : DragDropEffects.Move; // Zeiger zeigt „+“ beim Kopieren
             }
             else e.DragEffects = e.DataTransfer.Contains(DataFormat.File) ? DragDropEffects.Copy : DragDropEffects.None;
@@ -158,14 +198,22 @@ public partial class MainWindow
         });
         c.AddHandler(DragDrop.DropEvent, (_, e) =>
         {
-            if (e.DataTransfer.TryGetText() is { } t && t.StartsWith(DragPrefix, StringComparison.Ordinal)) { FilesDrop(t[DragPrefix.Length..], dir, ModsOf(e.KeyModifiers)); e.Handled = true; return; }
+            if (e.DataTransfer.TryGetText() is { } t && t.StartsWith(DragPrefix, StringComparison.Ordinal))
+            {
+                var res = new List<string>();
+                foreach (var src in t[DragPrefix.Length..].Split(NL, StringSplitOptions.RemoveEmptyEntries)) if (!SamePath(src, dir) && FilesDrop(src, dir, ModsOf(e.KeyModifiers)) is { } r) res.Add(r);
+                if (res.Count > 1) { _fbSel.Clear(); _fbSel.AddRange(res); Show(FK); }
+                e.Handled = true; return;
+            }
             foreach (var f in e.DataTransfer.TryGetFiles()?.Select(x => x.TryGetLocalPath()).OfType<string>() ?? []) FilesDrop(f, dir, ModsOf(e.KeyModifiers));
             e.Handled = true;
         });
     }
 
+    readonly Dictionary<string, Button> _fbButtons = [];
     private Control DateienView()
     {
+        _fbButtons.Clear();
         Files.Style = _style;
         var view = FilesView.Length > 0 ? FilesView : _style is "mac" or "linux" ? "symbole" : "liste";
         var light = _theme == "hell";
@@ -203,12 +251,13 @@ public partial class MainWindow
         if (FilesDir != PcPlace) { var cs = Files.Crumbs(FilesDir); for (var i = 0; i < cs.Count; i++) Crumb(i == 0 && cs.Count > 1 && Files.Root is not null ? "Lokaler Datenträger" : cs[i].Label, cs[i].Path, i == cs.Count - 1); }
 
         // Befehle (Windows-Befehlsleiste; bei Mac/GNOME im Menü „⋯“ bzw. „☰“ und per Rechtsklick)
-        var sel = FilesSelected is not null;
+        var sel = _fbSel.Count > 0;
+        _fbShown = [.. items.Select(i => i.Path)];
         var newBtn = Tb("fb-new-folder", new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { G("＋", 14), new TextBlock { Text = "Neu", FontSize = 12.5, Foreground = Text, VerticalAlignment = VerticalAlignment.Center } } }, "Neuer Ordner", () => FilesNewFolder(), FilesDir != PcPlace, 70);
         var cut = Tb("fb-cut", G("✂", 14), "Ausschneiden", () => FilesCopy(true), sel);
         var copy = Tb("fb-copy", G("⧉", 14), "Kopieren", () => FilesCopy(false), sel);
         var paste = Tb("fb-paste", G("📋", 13), "Einfügen", FilesPaste, _fbClip is not null && FilesDir != PcPlace);
-        var ren = Tb("fb-rename", G("✎", 14), "Umbenennen", () => { _fbRenaming = true; Show(FK); }, sel);
+        var ren = Tb("fb-rename", G("✎", 14), "Umbenennen", () => { _fbRenaming = true; Show(FK); }, _fbSel.Count == 1);
         var del = Tb("fb-delete", G("🗑", 13), "Löschen (in den Papierkorb)", FilesTrash, sel);
         var sortBox = new ComboBox { Name = "fb-sort", ItemsSource = new[] { "Name", "Änderungsdatum", "Typ", "Größe" }, SelectedIndex = Array.IndexOf(new[] { "name", "datum", "typ", "groesse" }, _fbSort), Height = 32, FontSize = 12 };
         sortBox.SelectionChanged += (_, _) => { var v = new[] { "name", "datum", "typ", "groesse" }[Math.Max(0, sortBox.SelectedIndex)]; if (v != _fbSort) { _fbSort = v; Show(FK); } };
@@ -297,8 +346,8 @@ public partial class MainWindow
             var even = false;
             foreach (var it in items)
             {
-                var on = FilesSelected is { } s0 && SamePath(s0, it.Path);
-                Control name = on && _fbRenaming ? RenameBox(it) : new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(6, 0), Children = { ItemIcon(it, 18), new TextBlock { Text = it.Name, FontSize = 12.5, Foreground = on ? Brushes.White : Text, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis } } };
+                var on = IsSel(it.Path);
+                Control name = on && _fbRenaming && _fbSel.Count == 1 ? RenameBox(it) : new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Margin = new Thickness(6, 0), Children = { ItemIcon(it, 18), new TextBlock { Text = it.Name, FontSize = 12.5, Foreground = on ? Brushes.White : Text, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis } } };
                 var row = Row(name, C(it.Modified.ToString("dd.MM.yyyy HH:mm", OsDe), true), C(it.Kind, true), C(it.IsDir ? (_style == "mac" ? "--" : "") : FileBrowser.SizeText(it.Size), true));
                 var bg = on ? Accent : _style == "mac" && even ? Brush.Parse(light ? "#0A000000" : "#0DFFFFFF") : Brushes.Transparent; even = !even;
                 list.Children.Add(ItemButton(it, row, bg, 30, double.NaN));
@@ -310,8 +359,8 @@ public partial class MainWindow
             var wrap = new WrapPanel { Name = "fb-icons", Margin = new Thickness(10) };
             foreach (var it in items)
             {
-                var on = FilesSelected is { } s0 && SamePath(s0, it.Path);
-                var label = on && _fbRenaming ? (Control)RenameBox(it) : new Border { CornerRadius = new CornerRadius(4), Padding = new Thickness(4, 1), Background = on && _style == "mac" ? Accent : Brushes.Transparent, HorizontalAlignment = HorizontalAlignment.Center,
+                var on = IsSel(it.Path);
+                var label = on && _fbRenaming && _fbSel.Count == 1 ? (Control)RenameBox(it) : new Border { CornerRadius = new CornerRadius(4), Padding = new Thickness(4, 1), Background = on && _style == "mac" ? Accent : Brushes.Transparent, HorizontalAlignment = HorizontalAlignment.Center,
                     Child = new TextBlock { Text = it.Name, FontSize = 12, Foreground = on && _style == "mac" ? Brushes.White : Text, TextAlignment = TextAlignment.Center, TextWrapping = TextWrapping.Wrap, MaxWidth = 100, MaxHeight = 34, TextTrimming = TextTrimming.CharacterEllipsis } };
                 var face = new StackPanel { Spacing = 4, Children = { new Border { HorizontalAlignment = HorizontalAlignment.Center, Padding = new Thickness(4), CornerRadius = new CornerRadius(6), Background = on && _style != "mac" ? Brush.Parse(light ? "#330067C0" : "#4D4CC2FF") : on ? Brush.Parse(light ? "#1A000000" : "#26FFFFFF") : Brushes.Transparent, Child = ItemIcon(it, 56) }, label } };
                 wrap.Children.Add(ItemButton(it, face, Brushes.Transparent, 104, 112));
@@ -321,11 +370,41 @@ public partial class MainWindow
         if (FilesDir != PcPlace && items.Count == 0)
             content = new TextBlock { Name = "fb-empty", Text = _fbQuery.Length > 0 ? "Keine Treffer." : _style == "linux" ? "Ordner ist leer" : "Dieser Ordner ist leer.", Foreground = Muted, FontSize = _style == "linux" ? 18 : 13, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
         var areaDir = CurDir;
+        var band = new Border { Name = "fb-band", IsVisible = false, IsHitTestVisible = false, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(_style == "windows" ? 0 : 2),
+            BorderBrush = Accent, Background = new SolidColorBrush(Accent is ISolidColorBrush sb ? sb.Color : Colors.DodgerBlue, 0.25) };
+        var bandHost = new Canvas { IsHitTestVisible = false, Children = { band } };
+        var layer = new Grid { Children = { content, bandHost } };
+        content = layer;
+        Point? bandFrom = null; var bandAdd = false;
+        layer.AddHandler(PointerPressedEvent, (_, e) =>
+        {
+            if (e.Source is Visual v && v.FindAncestorOfType<Button>(true) is not null) return; // auf einem Element: Klick/Ziehen des Elements
+            if (!e.GetCurrentPoint(layer).Properties.IsLeftButtonPressed || FilesDir == PcPlace) return;
+            bandFrom = e.GetPosition(layer); bandAdd = _style == "mac" ? OsBehavior.Cmd(ModsOf(e.KeyModifiers), OperatingSystem.IsMacOS()) : e.KeyModifiers.HasFlag(KeyModifiers.Control);
+            e.Pointer.Capture(layer); e.Handled = true;
+        }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+        layer.AddHandler(PointerMovedEvent, (_, e) =>
+        {
+            if (bandFrom is not { } f) return;
+            var r = new Rect(f, e.GetPosition(layer)).Normalize();
+            Canvas.SetLeft(band, r.X); Canvas.SetTop(band, r.Y); band.Width = r.Width; band.Height = r.Height; band.IsVisible = r.Width > 3 || r.Height > 3;
+        }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+        layer.AddHandler(PointerReleasedEvent, (_, e) =>
+        {
+            if (bandFrom is not { } f) return;
+            bandFrom = null; e.Pointer.Capture(null);
+            var r = new Rect(f, e.GetPosition(layer)).Normalize(); band.IsVisible = false;
+            if (r.Width < 4 && r.Height < 4) { if (!bandAdd && _fbSel.Count > 0) { FilesSelected = null; Show(FK); } return; } // Klick ins Leere hebt die Auswahl auf
+            var hit = new List<string>();
+            foreach (var (path, btn) in _fbButtons)
+                if (btn.TranslatePoint(new Point(0, 0), layer) is { } tl && new Rect(tl, btn.Bounds.Size).Intersects(r)) hit.Add(path);
+            FilesBand(hit, bandAdd);
+        }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         var area = new Border { Name = "fb-area", Background = Brush.Parse(_style switch { "mac" => light ? "#FFFFFFFF" : "#FF1E1E1E", "linux" => light ? "#FFFFFFFF" : "#FF1D1D20", "windows" => light ? "#FFF9F9F9" : "#FF191919", _ => "#00000000" }), Child = content };
         if (FilesDir != PcPlace) DropTarget(area, areaDir);
         area.ContextMenu = new ContextMenu { Items = { Mi("Neuer Ordner", () => FilesNewFolder()), Mi("Einfügen", FilesPaste), Mi("Aktualisieren", () => Show(FK)), Mi(view == "liste" ? "Als Symbole" : "Als Liste", () => { FilesView = view == "liste" ? "symbole" : "liste"; Show(FK); }) } };
 
-        var count = FilesDir == PcPlace ? $"{Files.Drives().Count} Laufwerke" : $"{items.Count} {(items.Count == 1 ? "Element" : "Elemente")}" + (FilesSelected is not null ? " · 1 Element ausgewählt" : "");
+        var count = FilesDir == PcPlace ? $"{Files.Drives().Count} Laufwerke" : $"{items.Count} {(items.Count == 1 ? "Element" : "Elemente")}" + (_fbSel.Count == 1 ? " · 1 Element ausgewählt" : _fbSel.Count > 1 ? $" · {_fbSel.Count} Elemente ausgewählt" : "");
         var status = new TextBlock { Name = "fb-status", Text = FilesMessage.Length > 0 ? count + "   ·   " + FilesMessage : count, FontSize = 11.5, Foreground = Muted, Margin = new Thickness(12, 4), VerticalAlignment = VerticalAlignment.Center };
 
         // Anordnung je System
@@ -387,22 +466,25 @@ public partial class MainWindow
                 HorizontalAlignment = double.IsNaN(w) ? HorizontalAlignment.Stretch : HorizontalAlignment.Left, HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = double.IsNaN(w) ? VerticalAlignment.Center : VerticalAlignment.Top };
             Avalonia.Automation.AutomationProperties.SetName(b, it.Name);
             var p = it.Path;
-            b.Click += (_, _) => { if (FilesSelected is { } s && SamePath(s, p)) return; FilesSelected = p; _fbRenaming = false; Show(FK); };
+            _fbButtons[p] = b;
+            var clickMods = KeyModifiers.None;
+            b.Click += (_, _) => { if (clickMods == KeyModifiers.None && _fbSel.Count == 1 && IsSel(p)) return; FilesClick(p, clickMods); };
             b.DoubleTapped += (_, _) => FilesOpen(p);
             // Ziehen startet nach ein paar Bildpunkten Bewegung (wie überall) – Ordner nehmen Abgelegtes an
             PointerPressedEventArgs? pressed = null; Point start = default;
-            b.AddHandler(PointerPressedEvent, (_, e) => { if (e.GetCurrentPoint(b).Properties.IsLeftButtonPressed) { pressed = e; start = e.GetPosition(b); } }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+            b.AddHandler(PointerPressedEvent, (_, e) => { clickMods = e.KeyModifiers; if (e.GetCurrentPoint(b).Properties.IsLeftButtonPressed) { pressed = e; start = e.GetPosition(b); } }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
             b.AddHandler(PointerReleasedEvent, (_, _) => pressed = null, Avalonia.Interactivity.RoutingStrategies.Tunnel);
             b.AddHandler(PointerMovedEvent, async (_, e) =>
             {
                 if (pressed is not { } pe || (Math.Abs(e.GetPosition(b).X - start.X) < 5 && Math.Abs(e.GetPosition(b).Y - start.Y) < 5)) return;
-                pressed = null; var dt = new DataTransfer(); dt.Add(DataTransferItem.CreateText(DragPrefix + p));
+                pressed = null; var dt = new DataTransfer();
+                var drag = IsSel(p) ? _fbSel.ToList() : [p]; // gezogen wird die ganze Auswahl, wenn das Element dazugehört
+                dt.Add(DataTransferItem.CreateText(DragPrefix + string.Join(NL, drag)));
                 await DragDrop.DoDragDropAsync(pe, dt, DragDropEffects.Copy | DragDropEffects.Move);
             }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
             if (it.IsDir) DropTarget(b, p);
-            b.KeyDown += (_, e) => { if (e.Key == Key.Enter) FilesOpen(p); else if (e.Key == Key.Delete) FilesTrash(); else if (e.Key == Key.F2) { _fbRenaming = true; Show(FK); } };
-            b.ContextMenu = new ContextMenu { Items = { Mi("Öffnen", () => FilesOpen(p)), Mi("Ausschneiden", () => { FilesSelected = p; FilesCopy(true); }), Mi("Kopieren", () => { FilesSelected = p; FilesCopy(false); }),
-                Mi("Umbenennen", () => { FilesSelected = p; _fbRenaming = true; Show(FK); }), Mi(_style == "mac" ? "In den Papierkorb legen" : _style == "linux" ? "In den Papierkorb verschieben" : "Löschen", () => { FilesSelected = p; FilesTrash(); }) } };
+            b.ContextMenu = new ContextMenu { Items = { Mi("Öffnen", () => FilesOpen(p)), Mi("Ausschneiden", () => { if (!IsSel(p)) FilesSelected = p; FilesCopy(true); }), Mi("Kopieren", () => { if (!IsSel(p)) FilesSelected = p; FilesCopy(false); }),
+                Mi("Umbenennen", () => { FilesSelected = p; _fbRenaming = true; Show(FK); }), Mi(_style == "mac" ? "In den Papierkorb legen" : _style == "linux" ? "In den Papierkorb verschieben" : "Löschen", () => { if (!IsSel(p)) FilesSelected = p; FilesTrash(); }) } };
             return b;
         }
         static MenuItem Mi(string header, Action a) { var m = new MenuItem { Header = header }; m.Click += (_, _) => a(); return m; }

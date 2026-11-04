@@ -1,3 +1,5 @@
+using Avalonia;
+using Avalonia.Headless;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
@@ -157,5 +159,52 @@ public class OsStyles_Ui
             Assert.False(Visible(w, "os-taskbar")); Assert.False(Visible(w, "os-menubar")); Assert.False(Visible(w, "os-topbar"));
         }
         finally { w.Close(); }
+    }
+    [AvaloniaFact(DisplayName = "Mehrfachauswahl wie im System: Umschalt-Klick Bereich, Strg-Klick dazu/weg, Rahmen mit der Maus aufziehen, Alles auswählen, mehrere kopieren/einfügen und in den Papierkorb, Klick ins Leere hebt auf")]
+    public void Multi_select()
+    {
+        var (w0, _, _) = Ui.Open(); MainWindow? w = null;
+        try
+        {
+            w = Switch(w0, "windows"); w.Width = 1600; w.Height = 1000;
+            var dir = w.Files.KnownFolders().First(k => k.Id == "bilder").Path; var target = w.Files.KnownFolders().First(k => k.Id == "musik").Path;
+            var names = new[] { "a.txt", "b.txt", "c.txt", "d.txt", "e.txt" };
+            foreach (var n in names) File.WriteAllText(Path.Combine(dir, n), n);
+            w.FilesView = "liste"; w.FilesGo(dir); Pump();
+            string P(string n) => Path.Combine(dir, n);
+            w.FilesClick(P("a.txt"), KeyModifiers.None); w.FilesClick(P("c.txt"), KeyModifiers.Shift);
+            Assert.Equal(["a.txt", "b.txt", "c.txt"], w.FilesSelection.Select(Path.GetFileName).Order());
+            Assert.Contains("3 Elemente ausgewählt", w.Find<TextBlock>("fb-status").Text);
+            // echter Strg-Klick mit der Maus auf e.txt
+            Pump(); var eb = w.Find<Button>("fb-item-e.txt"); var pt = eb.TranslatePoint(new Avalonia.Point(20, eb.Bounds.Height / 2), w)!.Value;
+            w.MouseDown(pt, MouseButton.Left, RawInputModifiers.Control); w.MouseUp(pt, MouseButton.Left, RawInputModifiers.Control); Pump();
+            Assert.Equal(4, w.FilesSelection.Count);
+            w.FilesClick(P("b.txt"), KeyModifiers.Control); Assert.Equal(3, w.FilesSelection.Count); Assert.DoesNotContain(P("b.txt"), w.FilesSelection);
+            // mehrere kopieren und woanders einfügen
+            w.FilesCopy(false); w.FilesGo(target); Pump(); w.FilesPaste(); Pump();
+            Assert.Equal(["a.txt", "c.txt", "e.txt"], Directory.GetFiles(target).Select(Path.GetFileName).Order());
+            Assert.Equal(3, w.FilesSelection.Count);
+            // Rahmen aufziehen: rechts neben den Namen von oben nach unten über die ersten zwei Zeilen
+            w.FilesGo(dir); Pump();
+            var area = w.Find<Border>("fb-area"); var first = w.Find<Button>("fb-item-a.txt"); var second = w.Find<Button>("fb-item-b.txt");
+            var from = first.TranslatePoint(new Avalonia.Point(first.Bounds.Width - 30, 2), w)!.Value; var to = second.TranslatePoint(new Avalonia.Point(first.Bounds.Width - 40, second.Bounds.Height - 4), w)!.Value;
+            var start = area.TranslatePoint(new Avalonia.Point(area.Bounds.Width - 20, area.Bounds.Height - 20), w)!.Value; // im Leeren unten rechts beginnen
+            w.MouseDown(start, MouseButton.Left); for (var i = 1; i <= 6; i++) { w.MouseMove(start + (from - start) * (i / 6.0)); Pump(); } w.MouseUp(from, MouseButton.Left); Pump();
+            Assert.True(w.FilesSelection.Count >= 2, "Rahmen hat nichts gewählt: " + w.FilesSelection.Count);
+            Assert.DoesNotContain(w.FilesSelection, x => x.EndsWith("Musik", StringComparison.Ordinal));
+            // Klick ins Leere hebt die Auswahl auf
+            w.MouseDown(start, MouseButton.Left); w.MouseUp(start, MouseButton.Left); Pump();
+            Assert.Empty(w.FilesSelection);
+            // Strg+A, dann Entf: alles in den Papierkorb
+            Assert.True(w.FilesKey(Key.A, KeyModifiers.Control)); Assert.Equal(5, w.FilesSelection.Count);
+            Assert.True(w.FilesKey(Key.Delete, KeyModifiers.None)); Pump();
+            Assert.Empty(Directory.GetFiles(dir)); Assert.Contains("5 Elemente", w.FilesMessage);
+            // Mac: ⌘-Klick (PC-Tastatur Strg) schaltet ebenfalls dazu
+            w = Switch(w, "mac"); w.FilesGo(target); Pump();
+            w.FilesClick(Path.Combine(target, "a.txt"), KeyModifiers.None); w.FilesClick(Path.Combine(target, "e.txt"), KeyModifiers.Control);
+            Assert.Equal(2, w.FilesSelection.Count);
+            Assert.False(w.FilesKey(Key.Enter, KeyModifiers.None)); // Umbenennen geht nur bei einem Element
+        }
+        finally { Back(w ?? w0); }
     }
 }

@@ -39,9 +39,9 @@
 - ✓ Mauszeiger schwarz mit weißem Rand (Adwaita)
 
 ### Offen
-- ◐ Mehrfachauswahl (Strg-/Umschalt-Klick, Rahmen aufziehen) – noch Einzelauswahl
+- ✓ Mehrfachauswahl wie im System: Umschalt-Klick Bereich, Strg-Klick (Mac ⌘) dazu/weg, Auswahlrahmen mit der Maus, Strg/⌘+A, Klick ins Leere hebt auf; Kopieren, Einfügen, Ziehen und Papierkorb wirken auf alle gewählten
 - ◐ Natürliches Scrollen und Systemgesten kommen vom echten Betriebssystem, nicht von Trendo
 - ✗ Explorer-Registerkarten (Tabs) im Titel
 
 ## Tests
-OsStyles_Ui (5), OsBehaviorTests (4), StyleAndBrand_Ui.
+OsStyles_Ui (6), OsBehaviorTests (4), StyleAndBrand_Ui.
