@@ -62,6 +62,10 @@ public static class OsBehavior
         {
             return (key, cmd, m.HasFlag(Mods.Shift), m.HasFlag(Mods.Alt)) switch
             {
+                ("T", true, _, _) => "newtab",                 // Finder-Tabs: ⌘T neu, ⌘W schließen, ⌘⇧] / ⌘⇧[ wechseln
+                ("W", true, _, _) => "closetab",
+                ("OemCloseBrackets", true, true, _) => "nexttab",
+                ("OemOpenBrackets", true, true, _) => "prevtab",
                 ("Enter", false, _, _) => "rename",          // Finder: Zeilenschalter benennt um
                 ("O", true, _, _) or ("Down", true, _, _) => "open",
                 ("Back", true, _, _) or ("Delete", true, _, _) => "trash",
@@ -83,6 +87,10 @@ public static class OsBehavior
         var ctrl = m.HasFlag(Mods.Ctrl); var shift = m.HasFlag(Mods.Shift); var alt = m.HasFlag(Mods.Alt);
         return (key, ctrl, shift, alt) switch
         {
+            ("T", true, false, _) => "newtab",                 // Registerkarten: Strg+T neu, Strg+W schließen, Strg+Bild↓/↑ wechseln
+            ("W", true, false, _) => "closetab",
+            ("PageDown", true, _, _) => "nexttab",
+            ("PageUp", true, _, _) => "prevtab",
             ("Enter", false, false, false) => "open",
             ("Enter", false, false, true) => "info",
             ("F2", _, _, _) => "rename",

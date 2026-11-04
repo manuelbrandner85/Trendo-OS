@@ -207,4 +207,42 @@ public class OsStyles_Ui
         }
         finally { Back(w ?? w0); }
     }
+    [AvaloniaFact(DisplayName = "Registerkarten wie Explorer/Finder/Dateien: Strg/⌘+T neu, Mittelklick-Ordner in neuer Karte, Wechsel per Klick und Strg+Bild↓, eigener Verlauf je Karte, Strg/⌘+W schließt erst die Karte, dann das Fenster")]
+    public void Tabs()
+    {
+        var (w0, _, _) = Ui.Open(); MainWindow? w = null;
+        try
+        {
+            w = Switch(w0, "windows");
+            var k = w.Files.KnownFolders(); var docs = k.First(x => x.Id == "dokumente").Path; var pics = k.First(x => x.Id == "bilder").Path;
+            Directory.CreateDirectory(Path.Combine(docs, "Steuern"));
+            w.FilesGo(docs); Pump();
+            Assert.True(Visible(w, "fb-tabbar")); Assert.Equal(1, w.FilesTabCount); // Windows: Leiste immer sichtbar
+            Assert.True(w.FilesKey(Key.T, KeyModifiers.Control)); Pump();
+            Assert.Equal(2, w.FilesTabCount); Assert.Equal(1, w.FilesTabIndex); Assert.True(SamePath(w.FilesDir, w.Files.Home));
+            w.FilesGo(pics); Pump(); Assert.Equal(["Dokumente", "Bilder"], w.FilesTabTitles);
+            // Karte 1 behält ihren Verlauf
+            w.Find<Button>("fb-tab-0").Press(); Pump(); Assert.True(SamePath(w.FilesDir, docs));
+            w.FilesGo(Path.Combine(docs, "Steuern")); w.FilesBack(); Assert.True(SamePath(w.FilesDir, docs));
+            Assert.True(w.FilesKey(Key.PageDown, KeyModifiers.Control)); Assert.Equal(1, w.FilesTabIndex); Assert.True(SamePath(w.FilesDir, pics));
+            // Ordner in neuer Karte (Kontextmenü/Mittelklick)
+            w.FilesSelectTab(0); w.FilesNewTab(Path.Combine(docs, "Steuern")); Pump();
+            Assert.Equal(3, w.FilesTabCount); Assert.Equal("Steuern", w.FilesTabTitles[1]);
+            // Strg+W schließt die Karte, bei der letzten das Fenster
+            Assert.True(w.FilesKey(Key.W, KeyModifiers.Control)); Assert.Equal(2, w.FilesTabCount);
+            w.Find<Button>("fb-tab-close-1").Press(); Pump(); Assert.Equal(1, w.FilesTabCount);
+            var id = w.Windows.Active!.Id; Assert.Equal("dateien", w.Windows.Active!.Page);
+            Assert.True(w.FilesKey(Key.W, KeyModifiers.Control)); Pump(); Assert.Null(w.Windows.Get(id));
+            // Mac: Tab-Leiste erst ab zwei Tabs; ⌘W (PC: Strg+W) schließt zuerst den Tab
+            w = Switch(w, "mac"); w.FilesGo(docs); Pump();
+            Assert.False(Visible(w, "fb-tabbar"));
+            w.FilesNewTab(pics); Pump(); Assert.True(Visible(w, "fb-tabbar"));
+            var wid = w.Windows.Active!.Id;
+            Assert.True(w.OsWindowKey(Key.W, KeyModifiers.Control)); Pump();
+            Assert.Equal(1, w.FilesTabCount); Assert.NotNull(w.Windows.Get(wid));
+        }
+        finally { Back(w ?? w0); }
+    }
+
+    static bool SamePath(string a, string b) => string.Equals(Path.GetFullPath(a).TrimEnd((char)92, '/'), Path.GetFullPath(b).TrimEnd((char)92, '/'), StringComparison.OrdinalIgnoreCase);
 }

@@ -55,6 +55,34 @@ public partial class MainWindow
         _fbAnchor = _fbSel.FirstOrDefault(); Show(FK);
     }
     readonly List<string> _fbBack = [], _fbFwd = [];
+
+    // ---------- Registerkarten (Explorer seit Windows 11, Finder-Tabs, GNOME „Dateien“) ----------
+    sealed class FbTab { public string Dir = PcPlace; public List<string> Back = [], Fwd = []; }
+    readonly List<FbTab> _fbTabs = [new()];
+    int _fbTabIx;
+    public int FilesTabIndex => _fbTabIx;
+    public int FilesTabCount => _fbTabs.Count;
+    public IReadOnlyList<string> FilesTabTitles => [.. _fbTabs.Select((t, i) => PlaceName(i == _fbTabIx ? FilesDir : t.Dir))];
+    void SaveTab() { var t = _fbTabs[_fbTabIx]; t.Dir = FilesDir; t.Back = [.. _fbBack]; t.Fwd = [.. _fbFwd]; }
+    void LoadTab(int i)
+    {
+        _fbTabIx = Math.Clamp(i, 0, _fbTabs.Count - 1); var t = _fbTabs[_fbTabIx];
+        FilesDir = t.Dir; _fbBack.Clear(); _fbBack.AddRange(t.Back); _fbFwd.Clear(); _fbFwd.AddRange(t.Fwd);
+        FilesSelected = null; _fbQuery = ""; _fbRenaming = false; FilesPreview = null; FilesMessage = "";
+    }
+    /// <summary>Neue Registerkarte rechts neben der aktiven – leer im persönlichen Ordner („Start“), oder mit einem Ordner (Mittelklick, Kontextmenü).</summary>
+    public void FilesNewTab(string? dir = null)
+    {
+        SaveTab(); _fbTabs.Insert(_fbTabIx + 1, new FbTab { Dir = dir ?? Files.Home }); LoadTab(_fbTabIx + 1); Show(FK);
+    }
+    /// <summary>Registerkarte schließen; die letzte bleibt (dann schließt das Fenster wie im Original).</summary>
+    public bool FilesCloseTab(int? index = null)
+    {
+        if (_fbTabs.Count <= 1) return false;
+        SaveTab(); var k = index ?? _fbTabIx; _fbTabs.RemoveAt(k);
+        LoadTab(k < _fbTabIx ? _fbTabIx - 1 : k == _fbTabIx ? Math.Min(k, _fbTabs.Count - 1) : _fbTabIx); Show(FK); return true;
+    }
+    public void FilesSelectTab(int index) { if (index == _fbTabIx || index < 0 || index >= _fbTabs.Count) return; SaveTab(); LoadTab(index); Show(FK); }
     (List<string> Paths, bool Move)? _fbClip;
     public string FilesView { get; set; } = "";
     string _fbSort = "name"; bool _fbDesc; string _fbQuery = ""; bool _fbRenaming;
@@ -123,6 +151,10 @@ public partial class MainWindow
             case "move-here": if (_fbClip is { } c) { _fbClip = (c.Paths, true); FilesPaste(); } break;
             case "duplicate": FilesDo(() => { var r = _fbSel.Select(d => Files.Paste(d, CurDir, false)).ToList(); _fbSel.Clear(); _fbSel.AddRange(r); }); break;
             case "selectall": FilesSelectAll(); break;
+            case "newtab": FilesNewTab(); break;
+            case "closetab": if (!FilesCloseTab() && Windows.Active is { } aw && aw.Page == FK) CloseWindow(aw.Id); break; // letzte Registerkarte: Fenster zu
+            case "nexttab": FilesSelectTab((_fbTabIx + 1) % _fbTabs.Count); break;
+            case "prevtab": FilesSelectTab((_fbTabIx - 1 + _fbTabs.Count) % _fbTabs.Count); break;
             case "newfolder": FilesNewFolder(); break;
             case "up": FilesUp(); break;
             case "back": FilesBack(); break;
@@ -247,7 +279,7 @@ public partial class MainWindow
             b.Click += (_, _) => FilesGo(target); crumbs.Children.Add(b);
             if (!last) crumbs.Children.Add(new TextBlock { Text = _style == "linux" ? "/" : "›", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(2, 0) });
         }
-        Crumb(_style == "linux" ? "Andere Orte" : "Dieser PC", PcPlace, FilesDir == PcPlace);
+        Crumb(PlaceName(PcPlace), PcPlace, FilesDir == PcPlace);
         if (FilesDir != PcPlace) { var cs = Files.Crumbs(FilesDir); for (var i = 0; i < cs.Count; i++) Crumb(i == 0 && cs.Count > 1 && Files.Root is not null ? "Lokaler Datenträger" : cs[i].Label, cs[i].Path, i == cs.Count - 1); }
 
         // Befehle (Windows-Befehlsleiste; bei Mac/GNOME im Menü „⋯“ bzw. „☰“ und per Rechtsklick)
@@ -423,7 +455,7 @@ public partial class MainWindow
                 top = new Border { Height = 52, Padding = new Thickness(10, 0), Background = area.Background, BorderBrush = Edge, BorderThickness = new Thickness(0, 0, 0, 1), Child = new Grid { Children = { left, right } } };
                 // Pfadleiste unten wie in Finder
                 var path = new Border { BorderBrush = Edge, BorderThickness = new Thickness(0, 1, 0, 0), Child = new StackPanel { Orientation = Orientation.Horizontal, Children = { crumbs, status } } };
-                var mainCol = new DockPanel { Children = { DockTop(top), DockBottom(path), area } };
+                var mainCol = new DockPanel { Children = { DockTop(top), DockTop(TabBar()), DockBottom(path), area } };
                 return Frame(new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { sideBox, Pos(mainCol, 1) } });
             }
             case "linux":
@@ -436,7 +468,7 @@ public partial class MainWindow
                     Pos(new Border { Margin = new Thickness(8, 0), Child = pathPill, HorizontalAlignment = HorizontalAlignment.Stretch }, 1),
                     Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Center, Children = { search, viewBtn, sortBox, menu } }, 2) } };
                 top = new Border { Height = 47, Padding = new Thickness(6, 0), Background = Brush.Parse(light ? "#FFFFFFFF" : "#FF222226"), Child = head };
-                var mainCol = new DockPanel { Children = { DockTop(top), DockBottom(status), area } };
+                var mainCol = new DockPanel { Children = { DockTop(top), DockTop(TabBar()), DockBottom(status), area } };
                 return Frame(new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { sideBox, Pos(mainCol, 1) } });
             }
             default: // Windows 11 Datei-Explorer (auch für den Trendo-Stil)
@@ -449,7 +481,7 @@ public partial class MainWindow
                     new Border { Width = 1, Height = 22, Background = Edge, Margin = new Thickness(6, 0) }, sortBox, viewBtn, hidden, sysOpen } };
                 top = new StackPanel { Background = Brush.Parse(_style == "windows" ? (light ? "#FFF3F3F3" : "#FF202020") : "#00000000"), Children = { addrRow, new Border { BorderBrush = Edge, BorderThickness = new Thickness(0, 1, 0, 1), Child = cmd } } };
                 var body = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { sideBox, Pos(area, 1) } };
-                return Frame(new DockPanel { Children = { DockTop(top), DockBottom(status), body } });
+                return Frame(new DockPanel { Children = { DockTop(TabBar()), DockTop(top), DockBottom(status), body } });
             }
         }
 
@@ -472,6 +504,7 @@ public partial class MainWindow
             b.DoubleTapped += (_, _) => FilesOpen(p);
             // Ziehen startet nach ein paar Bildpunkten Bewegung (wie überall) – Ordner nehmen Abgelegtes an
             PointerPressedEventArgs? pressed = null; Point start = default;
+            if (it.IsDir) b.AddHandler(PointerPressedEvent, (_, e) => { if (e.GetCurrentPoint(b).Properties.IsMiddleButtonPressed) { e.Handled = true; FilesNewTab(p); } }, Avalonia.Interactivity.RoutingStrategies.Tunnel); // Mittelklick: in neuer Registerkarte
             b.AddHandler(PointerPressedEvent, (_, e) => { clickMods = e.KeyModifiers; if (e.GetCurrentPoint(b).Properties.IsLeftButtonPressed) { pressed = e; start = e.GetPosition(b); } }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
             b.AddHandler(PointerReleasedEvent, (_, _) => pressed = null, Avalonia.Interactivity.RoutingStrategies.Tunnel);
             b.AddHandler(PointerMovedEvent, async (_, e) =>
@@ -483,11 +516,45 @@ public partial class MainWindow
                 await DragDrop.DoDragDropAsync(pe, dt, DragDropEffects.Copy | DragDropEffects.Move);
             }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
             if (it.IsDir) DropTarget(b, p);
-            b.ContextMenu = new ContextMenu { Items = { Mi("Öffnen", () => FilesOpen(p)), Mi("Ausschneiden", () => { if (!IsSel(p)) FilesSelected = p; FilesCopy(true); }), Mi("Kopieren", () => { if (!IsSel(p)) FilesSelected = p; FilesCopy(false); }),
+            var tabItem = Mi(_style == "mac" ? "In neuem Tab öffnen" : _style == "linux" ? "In neuem Reiter öffnen" : "In neuer Registerkarte öffnen", () => FilesNewTab(p)); tabItem.IsVisible = it.IsDir;
+            b.ContextMenu = new ContextMenu { Items = { Mi("Öffnen", () => FilesOpen(p)), tabItem, Mi("Ausschneiden", () => { if (!IsSel(p)) FilesSelected = p; FilesCopy(true); }), Mi("Kopieren", () => { if (!IsSel(p)) FilesSelected = p; FilesCopy(false); }),
                 Mi("Umbenennen", () => { FilesSelected = p; _fbRenaming = true; Show(FK); }), Mi(_style == "mac" ? "In den Papierkorb legen" : _style == "linux" ? "In den Papierkorb verschieben" : "Löschen", () => { if (!IsSel(p)) FilesSelected = p; FilesTrash(); }) } };
             return b;
         }
         static MenuItem Mi(string header, Action a) { var m = new MenuItem { Header = header }; m.Click += (_, _) => a(); return m; }
+
+        // Registerkartenleiste: Windows immer im Kopf (Karte mit runden oberen Ecken, „+“); Finder und GNOME erst ab zwei Tabs, gleich breit unter der Werkzeugleiste
+        Control TabBar()
+        {
+            var win = _style is "windows" or "trendo";
+            var bar = new StackPanel { Name = "fb-tabs", Orientation = Orientation.Horizontal, Spacing = win ? 2 : 4 };
+            var titles = FilesTabTitles;
+            for (var i = 0; i < titles.Count; i++)
+            {
+                var ix = i; var on = i == _fbTabIx;
+                var close = new Button { Name = "fb-tab-close-" + i, Content = "✕", FontSize = 10, Width = 20, Height = 20, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), CornerRadius = new CornerRadius(win ? 4 : 10), Foreground = Muted,
+                    HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, IsVisible = titles.Count > 1 || win };
+                ToolTip.SetTip(close, "Schließen"); close.Click += (_, _) => { if (!FilesCloseTab(ix) && Windows.Active is { } aw) CloseWindow(aw.Id); };
+                var label = new TextBlock { Text = titles[i], FontSize = 12, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis, MaxWidth = win ? 170 : 220 };
+                Control inner = _style == "mac"
+                    ? new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { close, Pos(new Border { HorizontalAlignment = HorizontalAlignment.Center, Child = label }, 1) } }
+                    : new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { win ? FolderIcon(14) : new Border(), label, close } };
+                var tab = new Button { Name = "fb-tab-" + i, Content = inner, Height = win ? 34 : 30, Padding = new Thickness(win ? 10 : 8, 0), BorderThickness = new Thickness(0), HorizontalContentAlignment = HorizontalAlignment.Stretch,
+                    CornerRadius = win ? new CornerRadius(8, 8, 0, 0) : new CornerRadius(_style == "linux" ? 8 : 6), MinWidth = win ? 180 : 160,
+                    Background = on ? Brush.Parse(win ? (light ? "#FFF9F9F9" : "#FF2C2C2C") : (light ? "#1A000000" : "#1FFFFFFF")) : Brushes.Transparent };
+                tab.Click += (_, _) => FilesSelectTab(ix);
+                tab.AddHandler(PointerPressedEvent, (_, e) => { if (e.GetCurrentPoint(tab).Properties.IsMiddleButtonPressed) { e.Handled = true; FilesCloseTab(ix); } }, Avalonia.Interactivity.RoutingStrategies.Tunnel); // Mittelklick schließt
+                Avalonia.Automation.AutomationProperties.SetName(tab, titles[i]);
+                bar.Children.Add(tab);
+            }
+            var plus = new Button { Name = "fb-tab-new", Content = "＋", FontSize = 13, Width = 30, Height = 28, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), CornerRadius = new CornerRadius(4), Foreground = Text,
+                HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
+            ToolTip.SetTip(plus, _style == "mac" ? "Neuer Tab (⌘T)" : "Neue Registerkarte (Strg+T)"); plus.Click += (_, _) => FilesNewTab();
+            bar.Children.Add(plus);
+            return new Border { Name = "fb-tabbar", IsVisible = win || titles.Count > 1, Padding = win ? new Thickness(8, 6, 8, 0) : new Thickness(6, 4),
+                Background = Brush.Parse(win ? (light ? "#FFE8E8E8" : "#FF1A1A1A") : _style == "mac" ? (light ? "#FFE2E2E4" : "#FF252527") : (light ? "#FFEBEBED" : "#FF2A2A2E")),
+                BorderBrush = Edge, BorderThickness = win ? default : new Thickness(0, 0, 0, 1), Child = new ScrollViewer { HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled, Content = bar } };
+        }
         static Control DockTop(Control c) { DockPanel.SetDock(c, Avalonia.Controls.Dock.Top); return c; }
         static Control DockBottom(Control c) { DockPanel.SetDock(c, Avalonia.Controls.Dock.Bottom); return c; }
         Control Frame(Control c)

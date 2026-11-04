@@ -169,6 +169,7 @@ public sealed partial class MainWindow
         var w = Windows.Active;
         switch (act)
         {
+            case "close" when w is not null && w.Page == "dateien" && key == Key.W && FilesTabCount > 1: FilesCloseTab(); return true; // ⌘W/Strg+W: erst die Registerkarte
             case "close" when w is not null: CloseWindow(w.Id); return true;
             case "minimize" when w is not null: Windows.Minimize(w.Id); AfterWindowChange(); return true;
             case "maximize" when w is not null && !w.Maximized: Windows.ToggleMaximize(w.Id); AfterWindowChange(); return true;

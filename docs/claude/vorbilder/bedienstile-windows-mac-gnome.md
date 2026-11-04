@@ -41,7 +41,8 @@
 ### Offen
 - ✓ Mehrfachauswahl wie im System: Umschalt-Klick Bereich, Strg-Klick (Mac ⌘) dazu/weg, Auswahlrahmen mit der Maus, Strg/⌘+A, Klick ins Leere hebt auf; Kopieren, Einfügen, Ziehen und Papierkorb wirken auf alle gewählten
 - ◐ Natürliches Scrollen und Systemgesten kommen vom echten Betriebssystem, nicht von Trendo
-- ✗ Explorer-Registerkarten (Tabs) im Titel
+- ✓ Registerkarten: Windows-Leiste immer sichtbar mit „+“, Finder- und GNOME-Tabs ab zwei, je Karte eigener Verlauf; Strg/⌘+T, Strg/⌘+W (erst Karte, dann Fenster), Strg+Bild↓/↑ bzw. ⌘⇧]/[, Mittelklick auf Ordner öffnet, auf Karte schließt, Kontextmenü „In neuer Registerkarte öffnen“
+- ◐ Windows-Registerkarten sitzen unter der Titelzeile statt in ihr; Strg+Tab wechselt weiter die Fenster (Strg+Bild↓ wechselt die Karte)
 
 ## Tests
-OsStyles_Ui (6), OsBehaviorTests (4), StyleAndBrand_Ui.
+OsStyles_Ui (7), OsBehaviorTests (4), StyleAndBrand_Ui.

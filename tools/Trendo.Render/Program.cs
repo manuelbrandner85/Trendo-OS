@@ -107,6 +107,7 @@ if (Environment.GetEnvironmentVariable("TRENDO_OS_OPEN") is { Length: > 0 } osOp
     {
         case "dateien": win.FilesGo(dk.First(k => k.Id == "dokumente").Path); break;
         case "pc": win.FilesGo(MainWindow.PcPlace); break;
+        case "tabs": win.FilesGo(dk.First(k => k.Id == "dokumente").Path); win.FilesNewTab(dk.First(k => k.Id == "bilder").Path); win.FilesNewTab(Path.Combine(dk.First(k => k.Id == "dokumente").Path, "Projekte")); win.FilesSelectTab(0); break;
         case "widgets": win.ToggleOsWidgets(); break;
         default: win.OpenOsLauncher(osOpen); break;
     }
