@@ -29,7 +29,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Kleidung & Produkte | Kleidung & Produkte entwerfen (SPEC-08) | Kreativ & Medien | keine eigene erkannt | 18 | 19 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](mode-programm/README.md) |
 | Live streamen | Live streamen (SPEC-15) | Kreativ & Medien | Bildansicht, Diagramm/Zeichnung | 20 | 39 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](sendung/README.md) |
 | Trendo Musik | Trendo Musik (STUDIO-MUSIK-01) | Kreativ & Medien | keine eigene erkannt | – | 32 | ja | IN_PROGRESS / Test NOT_RUN | [Paket](musik-studio/README.md) |
-| TV & Live | TV & Live (STUDIO-TV-01) | Kreativ & Medien | keine eigene erkannt | – | 16 | ja | IN_PROGRESS / Test NOT_RUN | [Paket](tv/README.md) |
+| TV & Live | TV & Live (STUDIO-TV-01) | Kreativ & Medien | keine eigene erkannt | – | 18 | ja | IN_PROGRESS / Test NOT_RUN | [Paket](tv/README.md) |
 | Bildbearbeitung | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Bild-Arbeitsfläche (Ebenen) | – | 4 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](bild/README.md) |
 | Medien bearbeiten | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | keine eigene erkannt | – | 11 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](kreativ-medien/README.md) |
 | Videoschnitt | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Video-Zeitleiste | – | 8 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](schnitt/README.md) |
@@ -77,7 +77,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Desktop-Symbole | Desktop einrichten (CORE-01) | System & Sicherheit | Bildansicht | – | 4 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](desktop-symbole/README.md) |
 | Ersteinrichtung | Desktop einrichten (CORE-01) | System & Sicherheit | keine eigene erkannt | – | 12 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](einrichtung/README.md) |
 | Projekte | Desktop einrichten (CORE-01) | System & Sicherheit | keine eigene erkannt | – | 37 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](projects/README.md) |
-| Startbildschirm | Desktop einrichten (CORE-01) | System & Sicherheit | keine eigene erkannt | – | 84 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](start/README.md) |
+| Startbildschirm | Desktop einrichten (CORE-01) | System & Sicherheit | keine eigene erkannt | – | 86 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](start/README.md) |
 | Selbstheilung | Einrichten & Reparieren (X-02) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](heilung/README.md) |
 | Geräte & Laufwerke | Geräte erkennen (SYS-07) | System & Sicherheit | keine eigene erkannt | – | 15 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](geraete/README.md) |
 | Handy verbinden | Handy verbinden (X-08) | System & Sicherheit | keine eigene erkannt | – | 25 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](handy/README.md) |
@@ -93,7 +93,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | System & Sicherheit | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 26 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](system/README.md) |
 | Systemcheck | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 17 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](systemcheck/README.md) |
 | Einstellungen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | Bildansicht | 25 | 66 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](settings/README.md) |
-| Personen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 19 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](personen/README.md) |
+| Personen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 21 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](personen/README.md) |
 | Sehen | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](bedien-sehen/README.md) |
 | Trendo-Updates | Schrift & Farben anpassen (SYS-12) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](updates/README.md) |
 | Betriebsmodus | Startmodus wählen (SYS-01) | System & Sicherheit | keine eigene erkannt | – | 7 | – | IN_PROGRESS / Test PC_VERIFIED | [Paket](modus/README.md) |

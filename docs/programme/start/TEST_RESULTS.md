@@ -1,10 +1,10 @@
 # Startbildschirm – Testergebnisse
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand ab225a6)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand bee36a7)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 83 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
+Bestanden 85 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 
 | Test | Ergebnis |
 |---|---|
@@ -75,6 +75,8 @@ Bestanden 83 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 | Startmenü: jedes Katalog-Studio öffnet das eigene Fenster, Taskleiste, Minimieren, Wiederherstellen, Schließen | ✓ bestanden |
 | Startseite, Alle Studios und jede Studio-Seite: keine sichtbare Taste ohne Wirkung | ✓ bestanden |
 | Startseite: die neun bekannten Studios öffnen aus dem Startmenü per echtem Mausklick eine eigene Seite | ✓ bestanden |
+| Stick-Schreiber schützt: Start-/Systemlaufwerk, Windows-Laufwerk, interne Platte als „Stick“ und zu kleine Laufwerke werden verweigert | ✓ bestanden |
+| Stick-Schreiber: Abbild im Release erkannt, Laufwerk wählen, Löschen erst nach Eintippen des Buchstabens, laden, prüfen, schreiben (virtuelle Festplatte), Boot-Tasten | ✓ bestanden |
 | Studio-Abnahme: Seite öffnet, Überschrift ist der Katalogname, keine tote Taste, eine Hauptaktion ist bedienbar | nicht im Lauf |
 | Studio-Klick: Unreal nur geführt – kein Installieren-Knopf, offizieller Installer-Link | ✓ bestanden |
 | Studio-Klick: fehlendes Programm → genau eine Frage 'Studio braucht X. Jetzt installieren?', 'Später' installiert nichts | ✓ bestanden |

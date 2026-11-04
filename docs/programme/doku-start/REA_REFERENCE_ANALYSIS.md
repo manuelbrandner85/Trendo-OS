@@ -1,5 +1,5 @@
 # Start – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand ab225a6)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand bee36a7)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

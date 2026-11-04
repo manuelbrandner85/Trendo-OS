@@ -1,5 +1,5 @@
 # Pflegen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `prog-pflege` · Stand: 0.9.36 (Stand ab225a6)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `prog-pflege` · Stand: 0.9.36 (Stand bee36a7)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

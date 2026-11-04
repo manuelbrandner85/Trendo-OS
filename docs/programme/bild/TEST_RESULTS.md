@@ -1,6 +1,6 @@
 # Bildbearbeitung – Testergebnisse
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand ab225a6)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand bee36a7)
 
 Lauf: `api.trx, app.trx, core.trx`
 

@@ -1,6 +1,6 @@
 # Aus Fotos – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand ab225a6)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand bee36a7)
 
 Analyse: [Vorbild-Analyse Aus Fotos: Meshroom, COLMAP, RealityScan (Clean-Room)](../../../docs/claude/vorbilder/scan-meshroom-reality.md)
 

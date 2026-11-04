@@ -1,6 +1,6 @@
 # Erweiterungen – Testergebnisse
 
-Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.36 (Stand ab225a6)
+Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.36 (Stand bee36a7)
 
 Lauf: `api.trx, app.trx, core.trx`
 

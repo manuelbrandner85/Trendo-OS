@@ -1,6 +1,6 @@
 # Trendo PDF – Architektur
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.36 (Stand ab225a6)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `pdf` · Stand: 0.9.36 (Stand bee36a7)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Pdf.cs`
