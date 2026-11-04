@@ -37,6 +37,36 @@ public class N23N24_CadPrintUi
         w.Close();
     }
 
+    [AvaloniaFact(DisplayName = "CAD wie Fusion 360: Normbohrung M5 per Auswahl (ein Schritt, Rückgängig), Eigenschaften mit Masse je Werkstoff und Querschnitt")]
+    public void Cad_measure_and_holes()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            w.Show("cad"); Pump();
+            var t0 = w.Find<TextBlock>("cad-mass").Text!;
+            Assert.Contains("Volumen", t0); Assert.Contains("Schwerpunkt", t0); Assert.Contains("Querschnitt bei Z 5", t0);
+            var g0 = w.CadMeasureAll().Props.MassG;
+            w.Find<ComboBox>("cad-mass-mat").SelectedIndex = Array.FindIndex(CadMeasure.Werkstoffe, x => x.Id == "alu"); Pump();
+            Assert.Equal("alu", w.CadWerkstoff);
+            Assert.Equal(g0 / 1.24 * 2.70, w.CadMeasureAll().Props.MassG, 0);
+            // Bohrung anlegen und Normmaß wählen
+            var before = w.CadMeasureAll().Props.VolumeCm3;
+            w.CadSelect(0, w.Cad.Bodies[0].Features.Count - 1); w.Find<Button>("cad-add-bohrung").Press(); Pump();
+            var cb = w.Find<ComboBox>("cad-hole-preset"); cb.SelectedIndex = Array.FindIndex(CadMeasure.Holes, h => h.Id == "M5-senk"); Pump();
+            Assert.Equal(("5.5", "10.4"), (w.CadSelected!["durchmesser"], w.CadSelected!["senkung"]));
+            Assert.Equal(CadMeasure.Holes.Single(h => h.Id == "M5-senk").Label, w.Find<ComboBox>("cad-hole-preset").SelectedItem);
+            Assert.True(w.CadMeasureAll().Props.VolumeCm3 < before);
+            w.Find<Button>("cad-undo").Press(); Pump();
+            Assert.Equal("5", w.CadSelected!["durchmesser"]); // ein Schritt zurück: wieder das Standardmaß
+            // Querschnitt in anderer Höhe
+            var z = w.Find<TextBox>("cad-section-z"); z.Text = "4"; z.RaiseEvent(new Avalonia.Input.KeyEventArgs { RoutedEvent = Avalonia.Input.InputElement.KeyDownEvent, Key = Avalonia.Input.Key.Enter }); Pump();
+            Assert.Equal(4, w.CadSectionZ); Assert.Contains("Querschnitt bei Z 4", w.Find<TextBlock>("cad-mass").Text);
+            Assert.True(w.CadMeasureAll().Section > 0);
+        }
+        finally { w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "N24: Drucker eintragen (Zugangscode geschützt), mit nachgebautem Drucker verbinden, Status sehen; Druck nur nach Bestätigung")]
     public async Task Print_ui()
     {

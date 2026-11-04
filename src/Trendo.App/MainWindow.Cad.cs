@@ -66,6 +66,25 @@ public partial class MainWindow
     Solid? Built(CadBody b) => _cadBuilt.FirstOrDefault(x => ReferenceEquals(x.Body, b)).Solid;
 
     public void CadSet(string key, string value) { if (CadSelected is not { } f) return; CadSnapshot(); f[key] = value; CadChanged(); }
+    /// <summary>Werkstoff für Masse und Schwerpunkt (wie „Eigenschaften“ in Fusion 360).</summary>
+    public string CadWerkstoff { get; set; } = "pla";
+    /// <summary>Höhe des Querschnitts in mm.</summary>
+    public double CadSectionZ { get; set; } = 5;
+
+    /// <summary>Normbohrung übernehmen: Durchmesser und Senkung in einem Schritt (Rückgängig wie ein Schritt).</summary>
+    public void CadHolePreset(string id)
+    {
+        if (CadSelected is not { Op: CadOp.Bohrung } f || CadMeasure.Holes.FirstOrDefault(h => h.Id == id) is not { Diameter: > 0 } h) return;
+        CadSnapshot(); f["durchmesser"] = Num(h.Diameter); f["senkung"] = Num(h.Countersink); CadChanged();
+        _cadMsg = $"Bohrung: {h.Label}.";
+    }
+
+    /// <summary>Eigenschaften des ganzen Bauteils (Volumen, Oberfläche, Masse, Schwerpunkt) und Querschnitt.</summary>
+    public (CadMeasure.Props Props, double Section) CadMeasureAll()
+    {
+        var solids = Cad.Build().Select(b => b.Solid).Where(x => x.Polys.Count > 0).ToList();
+        return (CadMeasure.Properties(solids, CadWerkstoff), CadMeasure.SectionArea(solids, CadSectionZ));
+    }
     public void CadSetParam(string name, double value) { CadSnapshot(); Cad.Params[name] = value; CadChanged(); _cadMsg = $"{name} = {value} – alles neu berechnet."; }
     public void CadSelect(int body, int feature) { CadBodyIndex = Math.Clamp(body, 0, Cad.Bodies.Count - 1); CadFeatureIndex = feature; }
 
@@ -243,6 +262,14 @@ public partial class MainWindow
         {
             sp.Children.Add(new TextBlock { Text = $"Schritt: {f.Name}", Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold });
             foreach (var (key, label, def) in CadDoc.Fields(f.Op)) { var k = key; Field($"cad-p-{key}", label, f.P.GetValueOrDefault(key, def), v => CadSet(k, v)); }
+            if (f.Op == CadOp.Bohrung)
+            {
+                // Normbohrungen wie im Bohrungswerkzeug von Fusion 360 / Onshape
+                var cur = CadMeasure.Holes.Skip(1).FirstOrDefault(h => f.P.GetValueOrDefault("durchmesser", "") == Num(h.Diameter) && f.P.GetValueOrDefault("senkung", "0") == Num(h.Countersink));
+                var hp = new ComboBox { Name = "cad-hole-preset", ItemsSource = CadMeasure.Holes.Select(h => h.Label).ToList(), SelectedIndex = cur is null ? 0 : Array.IndexOf(CadMeasure.Holes, cur), Width = 250 };
+                hp.SelectionChanged += (_, _) => { if (hp.SelectedIndex > 0 && CadMeasure.Holes[hp.SelectedIndex] != cur) { CadHolePreset(CadMeasure.Holes[hp.SelectedIndex].Id); Show("cad"); } };
+                sp.Children.Add(new TextBlock { Text = "Normbohrung", Foreground = Muted, FontSize = 12 }); sp.Children.Add(hp);
+            }
             if (f.Sketch is { } sk)
             {
                 sp.Children.Add(new TextBlock { Text = "Skizze", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 6, 0, 0) });
@@ -276,6 +303,20 @@ public partial class MainWindow
             Field("cad-body-y", "Lage Y", b.Y, v => { CadSnapshot(); b.Y = v; CadChanged(); });
             Field("cad-body-z", "Lage Z", b.Z, v => { CadSnapshot(); b.Z = v; CadChanged(); });
         }
+        // Eigenschaften wie in Fusion 360: Volumen, Oberfläche, Masse, Schwerpunkt, Querschnitt
+        sp.Children.Add(new TextBlock { Text = "Eigenschaften", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 10, 0, 0) });
+        var wst = new ComboBox { Name = "cad-mass-mat", ItemsSource = CadMeasure.Werkstoffe.Select(w => $"{w.Name} · {w.Density:0.##} g/cm³").ToList(), SelectedIndex = Math.Max(0, Array.FindIndex(CadMeasure.Werkstoffe, w => w.Id == CadWerkstoff)), Width = 250 };
+        wst.SelectionChanged += (_, _) => { var id = CadMeasure.Werkstoffe[Math.Max(0, wst.SelectedIndex)].Id; if (id != CadWerkstoff) { CadWerkstoff = id; Show("cad"); } };
+        sp.Children.Add(wst);
+        Field("cad-section-z", "Schnitt bei Z (mm)", CadSectionZ.ToString("0.##", System.Globalization.CultureInfo.GetCultureInfo("de-DE")), v => { if (double.TryParse(v.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var z)) CadSectionZ = z; });
+        try
+        {
+            var (pr, sec) = CadMeasureAll(); var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE");
+            sp.Children.Add(new TextBlock { Name = "cad-mass", Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap,
+                Text = string.Format(de, "Volumen {0:0.###} cm³ · Oberfläche {1:0.##} cm² · Masse {2:0.##} g\nSchwerpunkt X {3:0.##} · Y {4:0.##} · Z {5:0.##} mm\nQuerschnitt bei Z {6:0.##}: {7:0.##} mm²",
+                    pr.VolumeCm3, pr.AreaCm2, pr.MassG, pr.Center.X, pr.Center.Y, pr.Center.Z, CadSectionZ, sec) });
+        }
+        catch (CadError ex) { sp.Children.Add(new TextBlock { Name = "cad-mass", Text = ex.Message, Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap }); }
         // Parameter
         sp.Children.Add(new TextBlock { Text = "Parameter", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 10, 0, 0) });
         sp.Children.Add(new TextBlock { Text = "Benannte Maße – in jedem Feld als Formel nutzbar, z. B. „Breite/2“.", Foreground = Muted, FontSize = 12, TextWrapping = TextWrapping.Wrap });

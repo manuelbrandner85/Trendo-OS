@@ -58,4 +58,39 @@ public class PrintPreview_Ui
         Assert.Null(w.TryFind<StackPanel>("print-preview")); // keine Schichten/Eigenschaften
         Assert.Contains("keine Vorschau für dieses Format", w.Find<TextBlock>("print-empty-title").Text); // leere Platte mit ehrlichem Hinweis (wie im Slicer)
     }
+    [AvaloniaFact(DisplayName = "3D-Druck wie PrusaSlicer/Cura: Schichtvorschau mit Wänden und Füllung, Material und Kosten, Füllung, Schichthöhe, Skalieren, Kopien anordnen")]
+    public void Slicer_settings()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1100; Directory.CreateDirectory(root);
+        try
+        {
+            var stl = Path.Combine(root, "wuerfel.stl"); var m = new Mesh(); Mesh3D.AddBox(m, 0, 3, 0, 3, 0, 3); Mesh3D.WriteStl(m, stl); // 30-mm-Würfel
+            w.Open3dPrint(stl); Settle();
+            var e0 = w.PrintEstimate!; Assert.Equal(150, e0.Layers);
+            Assert.Contains("Füllbahnen", w.Find<TextBlock>("print-layer-label").Text);
+            Assert.Contains("PLA", w.Find<TextBlock>("print-facts").Text); Assert.Contains("€", w.Find<TextBlock>("print-facts").Text);
+            // Material PETG: schwerer, teurer, andere Temperaturen
+            w.Find<ComboBox>("print-material").SelectedIndex = 1; Settle();
+            Assert.Equal("petg", w.PrintSettings.Material); Assert.True(w.PrintEstimate!.Grams > e0.Grams);
+            Assert.Contains("Düse 245 °C", w.Find<TextBlock>("print-facts").Text);
+            // Füllung 50 %: mehr Material
+            var g = w.PrintEstimate.Grams; w.Find<Slider>("print-infill").Value = 50; Settle();
+            Assert.Equal(50, w.PrintSettings.Infill); Assert.True(w.PrintEstimate!.Grams > g * 1.3);
+            // Schichthöhe 0,28 mm: weniger Schichten, schneller
+            var t = w.PrintEstimate.Time; w.Find<ComboBox>("print-layer-height").SelectedIndex = 4; Settle();
+            Assert.Equal(108, w.PrintEstimate!.Layers); Assert.True(w.PrintEstimate.Time < t);
+            // Skalieren auf 50 %
+            w.Find<TextBox>("print-scale").Text = "50"; w.Find<Button>("print-scale-apply").Press(); Settle();
+            Assert.Equal(15, w.PrintReport!.SizeX, 1);
+            // 4 Kopien anordnen: alle auf der Platte, viermal so viel Material
+            var one = w.PrintEstimate!.Grams; w.Find<TextBox>("print-copies").Text = "4"; w.Find<Button>("print-arrange").Press(); Settle();
+            Assert.Equal(4 * 12, w.PrintMesh!.Triangles); Assert.True(w.PrintReport!.Fits);
+            Assert.InRange(w.PrintEstimate!.Grams, one * 3.6, one * 4.4);
+            Assert.Contains("4 Kopien", w.Find<TextBlock>("print-msg").Text);
+            // zu viele Kopien: klare Meldung statt Absturz
+            w.Find<TextBox>("print-copies").Text = "500"; w.Find<Button>("print-arrange").Press(); Settle();
+            Assert.Contains("1 bis 100", w.Find<TextBlock>("print-msg").Text);
+        }
+        finally { w.Close(); }
+    }
 }
