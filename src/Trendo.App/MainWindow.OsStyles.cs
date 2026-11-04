@@ -31,6 +31,16 @@ public sealed partial class MainWindow
     private List<DockApp> _dockApps = [];
     private TextBlock? _osAppTitle;
     private string _osMode = "";
+    private readonly Border _osCal = new() { Name = "os-calendar-panel", IsVisible = false, ZIndex = 991 };
+    private readonly Border _osQuick = new() { Name = "os-quick", IsVisible = false, ZIndex = 992 };
+    private readonly List<(DateTime At, string Text)> _osNotes = [];
+    private DateTime _osMonth = DateTime.Today;
+    /// <summary>„Nicht stören“: Hinweise landen nur in den Mitteilungen.</summary>
+    public bool OsDnd { get; set; }
+    private readonly ContentControl _osNotesHost = new() { Name = "os-notes-host" };
+    public bool OsCalendarOpen => _osCal.IsVisible || (_style != "windows" && _osWidgets.IsVisible);
+    public bool OsQuickOpen => _osQuick.IsVisible;
+    public IReadOnlyList<string> OsNotifications => [.. _osNotes.Select(n => n.Text)];
     private (Control Main, Control Results)? _osViews;
     public bool OsLauncherOpen => _osLauncher.IsVisible;
     public bool OsWidgetsOpen => _osWidgets.IsVisible;
@@ -91,7 +101,15 @@ public sealed partial class MainWindow
         var scroll = new ScrollViewer { Content = new StackPanel { Spacing = 10, Children = { _osDeskExtras, right } }, VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
         right.Width = double.NaN; right.HorizontalAlignment = HorizontalAlignment.Stretch;
         var head = new TextBlock { Text = _style switch { "windows" => "Widgets", "mac" => "Mitteilungen und Widgets", _ => "Mitteilungen" }, FontSize = _style == "windows" ? 20 : 15, FontWeight = FontWeight.SemiBold, Foreground = Text, Margin = new Thickness(4, 0, 0, 10) };
-        _osWidgets.Child = new DockPanel { Children = { Top(head), scroll } };
+        _osWidgets.Child = _style switch
+        {
+            "mac" => new DockPanel { Children = { Top(head), Top(OsCard(OsCalendar(), 14)), Top(_osNotesHost), scroll } },
+            "linux" => new Grid { ColumnDefinitions = new ColumnDefinitions("*,16,300"), Children = {
+                new DockPanel { Children = { Top(_osNotesHost), scroll } },
+                Pos(new StackPanel { Spacing = 10, Children = { head, OsCalendar(), new Border { CornerRadius = new CornerRadius(12), Background = Brush.Parse(OsLight ? "#0F000000" : "#14FFFFFF"), Padding = new Thickness(12),
+                    Child = new StackPanel { Children = { new TextBlock { Text = "Termine", FontWeight = FontWeight.Bold, Foreground = Text }, new TextBlock { Text = "Keine Termine", Foreground = Muted, FontSize = 12 } } } } } }, 2) } },
+            _ => new DockPanel { Children = { Top(head), scroll } },
+        };
         _osWidgets.Background = GlassStrong; _osWidgets.BorderBrush = Edge; _osWidgets.BorderThickness = new Thickness(1); _osWidgets.BoxShadow = CardShadow; _osWidgets.Padding = new Thickness(16);
         switch (_style)
         {
@@ -107,6 +125,15 @@ public sealed partial class MainWindow
                 head.Text = DateTime.Now.ToString("dddd, d. MMMM yyyy", CultureInfo.GetCultureInfo("de-DE")); break;
         }
         Grid.SetRowSpan(_osWidgets, 2); root.Children.Add(_osWidgets);
+        Grid.SetRowSpan(_osCal, 2); root.Children.Add(_osCal);
+        Grid.SetRowSpan(_osQuick, 2); root.Children.Add(_osQuick);
+        // Hinweise erscheinen, wo das System sie zeigt: Windows unten rechts, Mac oben rechts, GNOME oben mittig
+        switch (_style)
+        {
+            case "mac": _toastHost.HorizontalAlignment = HorizontalAlignment.Right; _toastHost.VerticalAlignment = VerticalAlignment.Top; _toastHost.Margin = new Thickness(0, 32, 12, 0); break;
+            case "linux": _toastHost.HorizontalAlignment = HorizontalAlignment.Center; _toastHost.VerticalAlignment = VerticalAlignment.Top; _toastHost.Margin = new Thickness(0, 40, 0, 0); break;
+            default: _toastHost.HorizontalAlignment = HorizontalAlignment.Right; _toastHost.VerticalAlignment = VerticalAlignment.Bottom; _toastHost.Margin = new Thickness(0, 0, 12, 60); break;
+        }
         Grid.SetRowSpan(_osLauncher, 2); root.Children.Add(_osLauncher);
         _osSearch.TextChanged += (_, _) => FillOsLauncher();
         _osSearch.KeyDown += async (_, e) => { if (e.Key == Key.Enter) { e.Handled = true; await OsSearchEnter(); } else if (e.Key == Key.Escape) { CloseOsLauncher(); e.Handled = true; } };
@@ -117,6 +144,8 @@ public sealed partial class MainWindow
             bool Inside(Control target) { for (Visual? p = v; p is not null; p = p.GetVisualParentSafe()) if (p == target || (p is Control c && c.Name?.StartsWith("os-toggle", StringComparison.Ordinal) == true)) return true; return false; }
             if (OsLauncherOpen && !Inside(_osLauncher)) CloseOsLauncher();
             if (OsWidgetsOpen && !Inside(_osWidgets)) _osWidgets.IsVisible = false;
+            if (_osCal.IsVisible && !Inside(_osCal)) _osCal.IsVisible = false;
+            if (_osQuick.IsVisible && !Inside(_osQuick)) _osQuick.IsVisible = false;
         }, RoutingStrategies.Tunnel, handledEventsToo: true);
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(15) };
         timer.Tick += (_, _) => { foreach (var u in _osClockUpdates) u(); };
@@ -288,9 +317,9 @@ public sealed partial class MainWindow
             "Widgets", ToggleOsWidgets, double.NaN, 40);
         widgets.Margin = new Thickness(8, 0, 0, 0); widgets.HorizontalAlignment = HorizontalAlignment.Left; widgets.Padding = new Thickness(8, 0);
         var halt = HaltCompact();
-        var tray = OsFlat("os-tray", StatusGlyphs(fg), "Schnelleinstellungen – Netzwerk, Ton, Akku", () => Show("settings"), double.NaN, 40);
+        var tray = OsFlat("os-toggle-quick", StatusGlyphs(fg), "Schnelleinstellungen", ToggleOsQuick, double.NaN, 40);
         var clockBox = OsFlat("os-toggle-clock", new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = {
-            Fg(OsClock("os-clock", d => d.ToString("HH:mm", OsDe), 12), fg), Fg(OsClock("os-date", d => d.ToString("dd.MM.yyyy", OsDe), 12), fg) } }, "Datum, Uhrzeit und Mitteilungen", ToggleOsWidgets, double.NaN, 40);
+            Fg(OsClock("os-clock", d => d.ToString("HH:mm", OsDe), 12), fg), Fg(OsClock("os-date", d => d.ToString("dd.MM.yyyy", OsDe), 12), fg) } }, "Datum, Uhrzeit und Mitteilungen", ToggleOsCal, double.NaN, 40);
         var bell = OsFlat("os-bell", new Grid { Children = { Ico(Mdi.Bell, 16, fg), new Border { Background = Accent, CornerRadius = new CornerRadius(7), MinWidth = 12, Height = 12, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, -4, -6, 0), Child = new Viewbox { Child = OsBadge() } } } }, "Freigaben", () => Show("approvals"), 36, 40);
         var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 10, 0),
             Children = { halt, OsFlat("os-cloud", Ico(Mdi.CloudOutline, 16, fg), "Online-Dienste", () => Show("keys"), 36, 40), tray, clockBox, bell } };
@@ -338,10 +367,10 @@ public sealed partial class MainWindow
             Menu("fenster", T("Fenster"), Mi("Minimieren", () => { if (Windows.Active is { } w) { Windows.Minimize(w.Id); AfterWindowChange(); } }, "Ctrl+M"), Mi("Zoomen", () => { if (Windows.Active is { } w) { Windows.ToggleMaximize(w.Id); AfterWindowChange(); } })),
             Menu("hilfe", T("Hilfe"), Mi("Trendo KI fragen", () => Show("ki")), Mi("Hilfe zu Trendo", () => Show("hilfe"))) } };
         var spot = OsFlat("os-toggle-spotlight", Ico(Mdi.Magnify, 14, fg), "Spotlight – suchen und Trendo KI fragen", () => ToggleOsLauncher("spotlight"), 30, 22, 5);
-        var cc = OsFlat("os-toggle-widgets", Ico("M7 6 A4 4 0 1 1 7 14 A4 4 0 1 1 7 6 M17 6 A4 4 0 1 1 17 14 A4 4 0 1 1 17 6 M4 16 H20 V20 H4 Z", 14, fg), "Kontrollzentrum und Mitteilungen", ToggleOsWidgets, 30, 22, 5);
+        var cc = OsFlat("os-toggle-quick", Ico("M7 6 A4 4 0 1 1 7 14 A4 4 0 1 1 7 6 M17 6 A4 4 0 1 1 17 14 A4 4 0 1 1 17 6 M4 16 H20 V20 H4 Z", 14, fg), "Kontrollzentrum", ToggleOsQuick, 30, 22, 5);
         var clock = OsFlat("os-toggle-clock", Fg(OsClock("os-clock", d => d.ToString("ddd d. MMM  HH:mm", OsDe), 13), fg), "Mitteilungszentrale", ToggleOsWidgets, double.NaN, 22, 5);
         var right = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 8, 0),
-            Children = { HaltCompact(), OsFlat("os-bell", Ico(Mdi.Bell, 14, fg), "Freigaben", () => Show("approvals"), 30, 22, 5), OsFlat("os-tray", StatusGlyphs(fg, 14), "WLAN, Ton und Akku", () => Show("settings"), double.NaN, 22, 5), spot, cc, clock } };
+            Children = { HaltCompact(), OsFlat("os-bell", Ico(Mdi.Bell, 14, fg), "Freigaben", () => Show("approvals"), 30, 22, 5), OsFlat("os-tray", StatusGlyphs(fg, 14), "Kontrollzentrum", ToggleOsQuick, double.NaN, 22, 5), spot, cc, clock } };
         var bar = new Border { Name = "os-menubar", Height = 24, VerticalAlignment = VerticalAlignment.Top, ZIndex = 40, Background = Brush.Parse(OsLight ? "#B8F6F6F6" : "#B81E1E1E"),
             Child = new Grid { Children = { left, right } } };
         Grid.SetRowSpan(bar, 2);
@@ -381,7 +410,7 @@ public sealed partial class MainWindow
         act.Padding = new Thickness(10, 0); act.Margin = new Thickness(6, 0, 0, 0); act.HorizontalAlignment = HorizontalAlignment.Left;
         var clock = OsFlat("os-toggle-clock", Fg(OsClock("os-clock", d => d.ToString("ddd", OsDe).TrimEnd('.') + ". " + d.ToString("HH:mm", OsDe), 14, FontWeight.Bold, TextAlignment.Center), fg), "Kalender und Mitteilungen", ToggleOsWidgets, double.NaN, 24, 12);
         clock.Padding = new Thickness(10, 0); clock.HorizontalAlignment = HorizontalAlignment.Center;
-        var status = OsFlat("os-toggle-widgets", StatusGlyphs(fg, 14), "Schnelleinstellungen", ToggleOsWidgets, double.NaN, 24, 12);
+        var status = OsFlat("os-toggle-quick", StatusGlyphs(fg, 14), "Schnelleinstellungen", ToggleOsQuick, double.NaN, 24, 12);
         status.Padding = new Thickness(8, 0);
         var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0),
             Children = { HaltCompact(), OsFlat("os-bell", Ico(Mdi.Bell, 14, fg), "Freigaben", () => Show("approvals"), 30, 24, 12), OsFlat("os-settings", Ico(Mdi.CogOutline, 14, fg), "Einstellungen", () => Show("settings"), 30, 24, 12), status } };
@@ -422,7 +451,124 @@ public sealed partial class MainWindow
 
     // ---------- Startmenü (Windows), Launchpad/Spotlight (Mac), Übersicht (GNOME) ----------
     public void ToggleOsLauncher(string mode) { if (OsLauncherOpen && _osMode == mode) CloseOsLauncher(); else OpenOsLauncher(mode); }
-    public void ToggleOsWidgets() { _osWidgets.IsVisible = !_osWidgets.IsVisible; if (_osWidgets.IsVisible) CloseOsLauncher(); }
+    public void ToggleOsWidgets() { var on = !_osWidgets.IsVisible; CloseOsPanels(); _osWidgets.IsVisible = on; if (on) { _osNotesHost.Content = OsNotesView(); HideToasts(); } }
+    void CloseOsPanels() { CloseOsLauncher(); _osWidgets.IsVisible = false; _osCal.IsVisible = false; _osQuick.IsVisible = false; }
+    /// <summary>Beim Öffnen der Mitteilungen verschwinden die aufgepoppten Hinweise – sie stehen ja in der Liste (wie im System).</summary>
+    void HideToasts() => _toastHost.Children.Clear();
+
+    /// <summary>Windows: Klick auf die Uhr – Benachrichtigungen und Kalender rechts über der Taskleiste.</summary>
+    public void ToggleOsCal()
+    {
+        if (_style != "windows") { ToggleOsWidgets(); return; }
+        var on = !_osCal.IsVisible; CloseOsPanels(); if (!on) return; HideToasts();
+        _osCal.Child = new StackPanel { Spacing = 12, Children = { OsCard(OsNotesView(), 8), OsCard(new StackPanel { Spacing = 8, Children = {
+            new TextBlock { Text = DateTime.Now.ToString("dddd, d. MMMM", OsDe), FontWeight = FontWeight.SemiBold, Foreground = Text, FontSize = 14 }, OsCalendar() } }, 8) } };
+        _osCal.Width = 360; _osCal.HorizontalAlignment = HorizontalAlignment.Right; _osCal.VerticalAlignment = VerticalAlignment.Bottom; _osCal.Margin = new Thickness(0, 0, 12, 60);
+        _osCal.IsVisible = true;
+    }
+
+    /// <summary>Schnelleinstellungen (Windows), Kontrollzentrum (Mac), Systemmenü (GNOME): Kacheln für Trendo-Funktionen, Regler, Einstellungen, Ein/Aus.
+    /// Systemeinstellungen von Windows/macOS/Linux ändert Trendo nicht – die Kacheln schalten Trendo-eigene Dinge.</summary>
+    public void ToggleOsQuick()
+    {
+        var on = !_osQuick.IsVisible; CloseOsPanels(); if (!on) return;
+        var light = OsLight;
+        Control Tile(string name, string icon, string label, string sub, bool active, Action a)
+        {
+            var round = _style == "linux";
+            var ic = new Border { Width = 28, Height = 28, CornerRadius = new CornerRadius(14), Background = active ? Accent : Brush.Parse(light ? "#14000000" : "#26FFFFFF"), Child = Ico(icon, 15, active ? Brushes.White : Text) };
+            var b = new Button { Name = name, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 8), BorderThickness = new Thickness(0),
+                CornerRadius = new CornerRadius(round ? 24 : _style == "mac" ? 14 : 6), Margin = new Thickness(0, 0, 8, 8),
+                Background = round && active ? Accent : Brush.Parse(light ? "#0F000000" : "#14FFFFFF"),
+                Content = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { round ? Ico(icon, 16, active ? Brushes.White : Text) : ic,
+                    new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = { new TextBlock { Text = label, FontSize = 12.5, FontWeight = FontWeight.SemiBold, Foreground = round && active ? Brushes.White : Text },
+                        new TextBlock { Text = sub, FontSize = 11, Foreground = round && active ? Brush.Parse("#DDFFFFFF") : Muted, IsVisible = sub.Length > 0 } } } } } };
+            b.Click += (_, _) => a(); return b;
+        }
+        var tiles = new UniformGrid { Columns = _style == "windows" ? 3 : 2 };
+        tiles.Children.Add(Tile("os-q-net", Mdi.Wifi, _style == "mac" ? "WLAN" : "Netzwerk", _core.Offline ? "Offline" : "Verbunden", !_core.Offline, () => { CloseOsPanels(); Show("verbindungen"); }));
+        tiles.Children.Add(Tile("os-q-dnd", Mdi.Bell, "Nicht stören", OsDnd ? "An" : "Aus", OsDnd, () => { OsDnd = !OsDnd; _osQuick.IsVisible = false; ToggleOsQuick(); }));
+        tiles.Children.Add(Tile("os-q-dark", "M12 3 A9 9 0 1 0 21 12 A7 7 0 0 1 12 3 Z", _style == "mac" ? "Dunkelmodus" : "Dunkler Stil", _theme == "hell" ? "Aus" : "An", _theme != "hell", () => { _settings.Theme = _theme == "hell" ? "dunkel" : "hell"; SaveSettings(); Reopen(CurrentView.Length > 0 ? CurrentView : "start"); }));
+        tiles.Children.Add(Tile("os-q-halt", StopIcon, "Not-Stopp", _core.Approvals.Halted ? "Angehalten" : "Bereit", _core.Approvals.Halted, async () => { if (_core.Approvals.Halted) ResumeAll(); else await HaltAll("Schnelleinstellungen"); _osQuick.IsVisible = false; ToggleOsQuick(); }));
+        tiles.Children.Add(Tile("os-q-devices", Mdi.Monitor, "Geräte", "Handy, Raspberry Pi", false, () => { CloseOsPanels(); Show("geraete"); }));
+        tiles.Children.Add(Tile("os-q-cloud", Mdi.CloudOutline, "Online-Dienste", "Schlüssel", false, () => { CloseOsPanels(); Show("keys"); }));
+        var scale = new Slider { Name = "os-q-scale", Minimum = 80, Maximum = 150, Value = UserSettings.ClampScale(_settings.UiScale) * 100, Margin = new Thickness(8, 0) };
+        scale.PropertyChanged += (_, e) => { if (e.Property == Slider.ValueProperty) { _settings.UiScale = Math.Round(scale.Value / 100, 2); SaveSettings(); Rescale?.Invoke(); } };
+        var scaleRow = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Margin = new Thickness(0, 4, 0, 8), Children = { new TextBlock { Text = "Größe", Foreground = Text, VerticalAlignment = VerticalAlignment.Center, FontSize = 12 }, Pos(scale, 1) } };
+        var settings = OsFlat("os-q-settings", Ico(Mdi.CogOutline, 16, Text), "Einstellungen", () => { CloseOsPanels(); Show("settings"); }, 36, 36, 18);
+        var power = OsFlat("os-q-power", Ico(Mdi.Power, 16, Text), "Ein/Aus", () => { }, 36, 36, 18);
+        var pf = new MenuFlyout(); var re = new MenuItem { Header = "Trendo neu starten" }; re.Click += (_, _) => Reopen("start"); var off = new MenuItem { Header = "Trendo beenden" }; off.Click += (_, _) => Close();
+        pf.Items.Add(re); pf.Items.Add(off); power.Flyout = pf;
+        var bottom = new Grid { Children = { new TextBlock { Text = _core.Offline ? "Offline" : "Online", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center },
+            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, HorizontalAlignment = HorizontalAlignment.Right, Children = { settings, power } } } };
+        _osQuick.Child = _style == "linux"
+            ? new StackPanel { Children = { bottom, scaleRow, tiles } }   // GNOME: Knöpfe oben, Regler, dann die Pillen-Kacheln
+            : new StackPanel { Children = { tiles, scaleRow, new Border { BorderBrush = Edge, BorderThickness = new Thickness(0, 1, 0, 0), Padding = new Thickness(0, 8, 0, 0), Child = bottom } } };
+        _osQuick.Padding = new Thickness(16); _osQuick.BoxShadow = CardShadow; _osQuick.BorderBrush = Edge; _osQuick.BorderThickness = new Thickness(1);
+        switch (_style)
+        {
+            case "windows": _osQuick.Width = 360; _osQuick.CornerRadius = new CornerRadius(8); _osQuick.Background = GlassStrong; _osQuick.HorizontalAlignment = HorizontalAlignment.Right; _osQuick.VerticalAlignment = VerticalAlignment.Bottom; _osQuick.Margin = new Thickness(0, 0, 12, 60); break;
+            case "mac": _osQuick.Width = 320; _osQuick.CornerRadius = new CornerRadius(18); _osQuick.Background = Brush.Parse(light ? "#E6F2F2F2" : "#D9262626"); _osQuick.HorizontalAlignment = HorizontalAlignment.Right; _osQuick.VerticalAlignment = VerticalAlignment.Top; _osQuick.Margin = new Thickness(0, 30, 10, 0); break;
+            default: _osQuick.Width = 380; _osQuick.CornerRadius = new CornerRadius(24); _osQuick.Background = Brush.Parse(light ? "#FFFAFAFB" : "#FF2E2E32"); _osQuick.HorizontalAlignment = HorizontalAlignment.Right; _osQuick.VerticalAlignment = VerticalAlignment.Top; _osQuick.Margin = new Thickness(0, 38, 8, 0); break;
+        }
+        _osQuick.IsVisible = true;
+    }
+
+    Border OsCard(Control c, double radius) => new() { CornerRadius = new CornerRadius(radius), Background = GlassStrong, BorderBrush = Edge, BorderThickness = new Thickness(1), Padding = new Thickness(14), BoxShadow = CardShadow, Child = c, Margin = new Thickness(0, 0, 0, 10) };
+
+    /// <summary>Mitteilungen: offene Freigaben und die letzten Trendo-Hinweise; leer wie im System („Keine Benachrichtigungen“).</summary>
+    Control OsNotesView()
+    {
+        var sp = new StackPanel { Name = "os-notes", Spacing = 6 };
+        var head = new Grid { Children = { new TextBlock { Text = _style == "windows" ? "Benachrichtigungen" : "Mitteilungen", FontWeight = FontWeight.SemiBold, Foreground = Text, FontSize = 14 } } };
+        if (_osNotes.Count > 0)
+        {
+            var clear = new Button { Name = "os-notes-clear", Content = _style == "windows" ? "Alle löschen" : "Leeren", FontSize = 11.5, Padding = new Thickness(10, 3), HorizontalAlignment = HorizontalAlignment.Right, CornerRadius = new CornerRadius(_style == "linux" ? 12 : 4) };
+            clear.Click += (_, _) => { _osNotes.Clear(); sp.Children.Clear(); sp.Children.Add(OsNotesView()); };
+            head.Children.Add(clear);
+        }
+        sp.Children.Add(head);
+        foreach (var a in _core.Approvals.Pending().Take(5))
+        {
+            var b = new Button { HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(_style == "linux" ? 12 : 8), Background = Brush.Parse(OsLight ? "#0F000000" : "#14FFFFFF"), BorderThickness = new Thickness(0),
+                Content = new StackPanel { Children = { new TextBlock { Text = "Freigabe nötig", FontSize = 11, Foreground = Muted }, new TextBlock { Text = a.Description, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap } } } };
+            b.Click += (_, _) => { CloseOsPanels(); Show("approvals"); }; sp.Children.Add(b);
+        }
+        foreach (var (at, text) in _osNotes.Take(8))
+            sp.Children.Add(new Border { Padding = new Thickness(10, 8), CornerRadius = new CornerRadius(_style == "linux" ? 12 : 8), Background = Brush.Parse(OsLight ? "#0F000000" : "#14FFFFFF"),
+                Child = new StackPanel { Children = { new TextBlock { Text = "Trendo OS · " + at.ToString("HH:mm", OsDe), FontSize = 11, Foreground = Muted }, new TextBlock { Text = text, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap } } } });
+        if (sp.Children.Count == 1)
+            sp.Children.Add(new StackPanel { Name = "os-notes-empty", Spacing = 6, Margin = new Thickness(0, 16), HorizontalAlignment = HorizontalAlignment.Center, Children = {
+                Ico(Mdi.Bell, 28, Muted), new TextBlock { Text = _style == "windows" ? "Keine neuen Benachrichtigungen" : _style == "linux" ? "Keine Benachrichtigungen" : "Keine Mitteilungen", Foreground = Muted, HorizontalAlignment = HorizontalAlignment.Center } } });
+        return sp;
+    }
+
+    /// <summary>Monatskalender wie im System: Woche beginnt am Montag, heute im Akzentkreis, Tage anderer Monate blass, ‹ › blättern.</summary>
+    Control OsCalendar()
+    {
+        var host = new StackPanel { Name = "os-calendar", Spacing = 6 };
+        void Fill()
+        {
+            host.Children.Clear();
+            var m = new DateTime(_osMonth.Year, _osMonth.Month, 1);
+            Button Nav(string name, string g, int by) { var b = new Button { Name = name, Content = g, Width = 28, Height = 28, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), CornerRadius = new CornerRadius(14), Foreground = Text, HorizontalContentAlignment = HorizontalAlignment.Center };
+                b.Click += (_, _) => { _osMonth = m.AddMonths(by); Fill(); }; return b; }
+            host.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
+                Nav("os-cal-prev", "‹", -1), Pos(new TextBlock { Name = "os-cal-month", Text = m.ToString("MMMM yyyy", OsDe), FontWeight = FontWeight.SemiBold, Foreground = Text, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }, 1), Pos(Nav("os-cal-next", "›", 1), 2) } });
+            var grid = new UniformGrid { Columns = 7 };
+            foreach (var d in new[] { "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So" }) grid.Children.Add(new TextBlock { Text = d, FontSize = 11, Foreground = Muted, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 2) });
+            var start = m.AddDays(-(((int)m.DayOfWeek + 6) % 7));
+            for (var i = 0; i < 42; i++)
+            {
+                var day = start.AddDays(i); var today = day.Date == DateTime.Today; var inMonth = day.Month == m.Month;
+                grid.Children.Add(new Border { Width = 32, Height = 32, CornerRadius = new CornerRadius(16), HorizontalAlignment = HorizontalAlignment.Center, Background = today ? Accent : Brushes.Transparent,
+                    Child = new TextBlock { Text = day.Day.ToString(OsDe), FontSize = 12, Foreground = today ? Brushes.White : inMonth ? Text : Muted, Opacity = inMonth || today ? 1 : 0.55, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, FontWeight = today ? FontWeight.Bold : FontWeight.Normal } });
+            }
+            host.Children.Add(grid);
+        }
+        Fill();
+        return host;
+    }
     public void CloseOsLauncher() { _osLauncher.IsVisible = false; _osMode = ""; }
 
     public void OpenOsLauncher(string mode)

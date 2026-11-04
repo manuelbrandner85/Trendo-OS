@@ -86,6 +86,9 @@ public partial class MainWindow
     (List<string> Paths, bool Move)? _fbClip;
     public string FilesView { get; set; } = "";
     string _fbSort = "name"; bool _fbDesc; string _fbQuery = ""; bool _fbRenaming;
+    /// <summary>GNOME: Suche ist hinter der Lupe versteckt und geht beim Lostippen auf.</summary>
+    public bool FilesSearchOpen { get; private set; }
+    string _fbTypeAhead = ""; DateTime _fbTypeAt;
     public string FilesMessage { get; private set; } = "";
     /// <summary>Für Tests: statt das Programm des Systems zu starten.</summary>
     public Action<string>? FilesOpenOverride { get; set; }
@@ -106,7 +109,7 @@ public partial class MainWindow
     {
         if (dir != PcPlace && !Directory.Exists(dir)) throw new DirectoryNotFoundException("Ordner nicht gefunden: " + dir);
         if (history && dir != FilesDir) { _fbBack.Add(FilesDir); _fbFwd.Clear(); }
-        FilesDir = dir; FilesSelected = null; _fbQuery = ""; _fbRenaming = false; FilesMessage = "";
+        FilesDir = dir; FilesSelected = null; _fbQuery = ""; _fbRenaming = false; FilesMessage = ""; FilesSearchOpen = false;
         Show(FK);
     }
     public void FilesBack() { if (_fbBack.Count == 0) return; _fbFwd.Add(FilesDir); var d = _fbBack[^1]; _fbBack.RemoveAt(_fbBack.Count - 1); FilesGo(d, false); }
@@ -139,6 +142,14 @@ public partial class MainWindow
     public bool FilesKey(Key key, KeyModifiers mods)
     {
         if (_fbRenaming) return false;
+        if (mods is KeyModifiers.None or KeyModifiers.Shift && key is >= Key.A and <= Key.Z or >= Key.D0 and <= Key.D9)
+        {
+            var ch = key >= Key.D0 && key <= Key.D9 ? ((char)('0' + (key - Key.D0))).ToString() : key.ToString().ToLowerInvariant();
+            if (_style == "linux") { FilesSearchOpen = true; _fbQuery += ch; Show(FK); FocusSearch(); return true; }
+            _fbTypeAhead = (DateTime.Now - _fbTypeAt).TotalSeconds < 1 ? _fbTypeAhead + ch : ch; _fbTypeAt = DateTime.Now;
+            if (_fbShown.FirstOrDefault(x => Path.GetFileName(x).StartsWith(_fbTypeAhead, StringComparison.CurrentCultureIgnoreCase)) is { } hit) { FilesSelected = hit; Show(FK); }
+            return true;
+        }
         var cmd = OsBehavior.FileKey(_style, key.ToString(), ModsOf(mods), OperatingSystem.IsMacOS());
         switch (cmd)
         {
@@ -163,11 +174,13 @@ public partial class MainWindow
             case "hidden": Files.ShowHidden = !Files.ShowHidden; Show(FK); break;
             case "preview": FilesPreview = FilesPreview is null ? FilesSelected : null; Show(FK); break;
             case "info": if (FilesSelected is { } i) { var fi = new FileInfo(i); FilesMessage = Directory.Exists(i) ? $"Ordner · geändert {Directory.GetLastWriteTime(i):dd.MM.yyyy HH:mm}" : $"{FileBrowser.Kind(fi.Name, false)} · {FileBrowser.SizeText(fi.Length)} · geändert {fi.LastWriteTime:dd.MM.yyyy HH:mm}"; Show(FK); } break;
-            case "search" or "location": (ActivePageRoot?.GetLogicalDescendants().OfType<TextBox>().FirstOrDefault(t => t.Name == "fb-search"))?.Focus(); break;
+            case "search" or "location": if (_style == "linux" && !FilesSearchOpen) { FilesSearchOpen = true; Show(FK); } FocusSearch(); break;
             default: return false;
         }
         return true;
     }
+
+    void FocusSearch() { if (ActivePageRoot?.GetLogicalDescendants().OfType<TextBox>().FirstOrDefault(t => t.Name == "fb-search") is { } tb) { tb.Focus(); tb.CaretIndex = (tb.Text ?? "").Length; } }
 
     void FilesDo(Action a) { try { a(); } catch (Exception e) when (e is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException) { FilesMessage = e.Message; } Show(FK); }
     string CurDir => FilesDir == PcPlace ? Files.Home : FilesDir;
@@ -246,6 +259,8 @@ public partial class MainWindow
     private Control DateienView()
     {
         _fbButtons.Clear();
+        // GNOME/Finder: beim allerersten Aufbau gibt es das Fenster noch nicht – danach einmal neu zeichnen, damit die Fensterknöpfe in die Kopfleiste kommen
+        if (_style is "mac" or "linux" && Windows.Active is not { Page: FK }) _ui.Post(() => { if (Windows.Active is { Page: FK } fa && _titleBars.TryGetValue(fa.Id, out var tb) && !tb.IsVisible) Show(FK); }, Avalonia.Threading.DispatcherPriority.Background);
         Files.Style = _style;
         var view = FilesView.Length > 0 ? FilesView : _style is "mac" or "linux" ? "symbole" : "liste";
         var light = _theme == "hell";
@@ -269,7 +284,8 @@ public partial class MainWindow
         var up = Tb("fb-up", G("↑"), "Übergeordneter Ordner", FilesUp, FilesDir != PcPlace);
         var refresh = Tb("fb-refresh", G("⟳"), "Aktualisieren", () => Show(FK));
         var search = new TextBox { Name = "fb-search", Text = _fbQuery, PlaceholderText = (_style == "mac" ? "Suchen" : _style == "linux" ? "Dateien suchen" : $"{PlaceName(FilesDir)} durchsuchen"), Width = 220, Height = 32, VerticalContentAlignment = VerticalAlignment.Center, FontSize = 12.5 };
-        search.KeyDown += (_, e) => { if (e.Key == Key.Enter) { _fbQuery = search.Text ?? ""; Show(FK); } };
+        search.KeyDown += (_, e) => { if (e.Key == Key.Enter) { _fbQuery = search.Text ?? ""; Show(FK); FocusSearch(); } else if (e.Key == Key.Escape && _style == "linux") { FilesSearchOpen = false; _fbQuery = ""; Show(FK); } };
+        if (_style == "linux") search.TextChanged += (_, _) => { if ((search.Text ?? "") != _fbQuery) { _fbQuery = search.Text ?? ""; Show(FK); FocusSearch(); } };
 
         // Adresse: Brotkrumen (Windows), Pfadknöpfe in einer Pille (GNOME), Ordnername als Titel (Mac)
         var crumbs = new StackPanel { Name = "fb-crumbs", Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
@@ -362,9 +378,18 @@ public partial class MainWindow
                 b.DoubleTapped += (_, _) => FilesGo(kp); b.Click += (_, _) => { if (_style is "mac" or "linux") FilesGo(kp); };
                 fold.Children.Add(b);
             }
-            content = new StackPanel { Margin = new Thickness(12), Children = {
-                new TextBlock { Text = "Ordner", FontWeight = FontWeight.SemiBold, Foreground = Text, Margin = new Thickness(0, 0, 0, 8) }, fold,
-                new TextBlock { Text = "Geräte und Laufwerke", FontWeight = FontWeight.SemiBold, Foreground = Text, Margin = new Thickness(0, 8, 0, 8) }, wrap } };
+            TextBlock Sec(string t) => new() { Text = t, FontWeight = FontWeight.SemiBold, Foreground = Text, Margin = new Thickness(0, 8, 0, 8) };
+            content = _style switch
+            {
+                // GNOME „Andere Orte“: Auf diesem Rechner, Netzwerke, unten „Mit Server verbinden“
+                "linux" => new StackPanel { Margin = new Thickness(12), Children = { Sec("Auf diesem Rechner"), wrap, Sec("Netzwerke"),
+                    new TextBlock { Name = "fb-no-network", Text = "Keine Netzwerkorte gefunden", Foreground = Muted, FontSize = 12.5, Margin = new Thickness(4, 0, 0, 12) },
+                    new Border { BorderBrush = Edge, BorderThickness = new Thickness(0, 1, 0, 0), Padding = new Thickness(0, 10, 0, 0), Child = new TextBlock { Text = "Mit Server verbinden: smb://, sftp://, ftp:// – Adresse in der Pfadleiste", Foreground = Muted, FontSize = 12 } } } },
+                // Finder „Orte“ (Computer): nur Volumes
+                "mac" => new StackPanel { Margin = new Thickness(12), Children = { wrap } },
+                // Windows „Dieser PC“
+                _ => new StackPanel { Margin = new Thickness(12), Children = { Sec("Ordner"), fold, Sec("Geräte und Laufwerke"), wrap } },
+            };
         }
         else if (view == "liste")
         {
@@ -451,8 +476,10 @@ public partial class MainWindow
                 var more = Tb("fb-more", G("⋯", 15), "Aktionen", () => { });
                 more.Flyout = new MenuFlyout { Items = { Mi("Neuer Ordner", () => FilesNewFolder()), Mi("Umbenennen", () => { _fbRenaming = true; Show(FK); }), Mi("Kopieren", () => FilesCopy(false)), Mi("Ausschneiden", () => FilesCopy(true)), Mi("Einfügen", FilesPaste), Mi("In den Papierkorb legen", FilesTrash), Mi("Im System-Finder zeigen", () => { if (!_opt.Isolated) _core.Integrations.LaunchDirect(Principal.LocalOwner, CurDir, _core.Audit); }) } };
                 var left = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 2, VerticalAlignment = VerticalAlignment.Center, Children = { back, fwd, title } };
+                if (WinCaps() is { } mcaps) { var sc = sideBox.Child; sideBox.Child = null; sideBox.Child = new DockPanel { Children = { DockTop(new Border { Height = 38, Child = mcaps }), sc! } }; Draggable(sideBox); } // Finder: Ampel oben in der Seitenleiste
                 var right = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Children = { viewBtn, sortBox, more, del, search } };
-                top = new Border { Height = 52, Padding = new Thickness(10, 0), Background = area.Background, BorderBrush = Edge, BorderThickness = new Thickness(0, 0, 0, 1), Child = new Grid { Children = { left, right } } };
+                top = new Border { Name = "fb-headerbar", Height = 52, Padding = new Thickness(10, 0), Background = area.Background, BorderBrush = Edge, BorderThickness = new Thickness(0, 0, 0, 1), Child = new Grid { Children = { left, right } } };
+                Draggable(top);
                 // Pfadleiste unten wie in Finder
                 var path = new Border { BorderBrush = Edge, BorderThickness = new Thickness(0, 1, 0, 0), Child = new StackPanel { Orientation = Orientation.Horizontal, Children = { crumbs, status } } };
                 var mainCol = new DockPanel { Children = { DockTop(top), DockTop(TabBar()), DockBottom(path), area } };
@@ -460,14 +487,19 @@ public partial class MainWindow
             }
             case "linux":
             {
+                var searchToggle = Tb("fb-search-toggle", Ico(Mdi.Magnify, 15, Text), "Suchen (Strg+F)", () => { FilesSearchOpen = !FilesSearchOpen; if (!FilesSearchOpen) _fbQuery = ""; Show(FK); if (FilesSearchOpen) FocusSearch(); });
+                if (FilesSearchOpen || _fbQuery.Length > 0) searchToggle.Background = Brush.Parse(light ? "#1F000000" : "#26FFFFFF");
+                Control SearchPill() { search.Width = double.NaN; search.Height = 34; search.CornerRadius = new CornerRadius(8); return search; }
                 var pathPill = new Border { CornerRadius = new CornerRadius(8), Background = Brush.Parse(light ? "#14000000" : "#1AFFFFFF"), Padding = new Thickness(4, 0), Height = 34, Child = crumbs, VerticalAlignment = VerticalAlignment.Center };
                 var menu = Tb("fb-more", G("☰", 15), "Hauptmenü", () => { });
                 menu.Flyout = new MenuFlyout { Items = { Mi("Neuer Ordner", () => FilesNewFolder()), Mi("Umbenennen …", () => { _fbRenaming = true; Show(FK); }), Mi("Kopieren", () => FilesCopy(false)), Mi("Ausschneiden", () => FilesCopy(true)), Mi("Einfügen", FilesPaste), Mi("In den Papierkorb verschieben", FilesTrash), Mi("Verborgene Dateien anzeigen", () => { Files.ShowHidden = !Files.ShowHidden; Show(FK); }) } };
                 var head = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), Children = {
                     new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Center, Children = { back, fwd } },
-                    Pos(new Border { Margin = new Thickness(8, 0), Child = pathPill, HorizontalAlignment = HorizontalAlignment.Stretch }, 1),
-                    Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Center, Children = { search, viewBtn, sortBox, menu } }, 2) } };
-                top = new Border { Height = 47, Padding = new Thickness(6, 0), Background = Brush.Parse(light ? "#FFFFFFFF" : "#FF222226"), Child = head };
+                    Pos(new Border { Margin = new Thickness(8, 0), Child = FilesSearchOpen || _fbQuery.Length > 0 ? SearchPill() : pathPill, HorizontalAlignment = HorizontalAlignment.Stretch }, 1),
+                    Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Center, Children = { searchToggle, viewBtn, sortBox, menu } }, 2) } };
+                if (WinCaps() is { } gcaps) { Grid.SetColumn(gcaps, 3); head.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto)); gcaps.Margin = new Thickness(8, 0, 4, 0); head.Children.Add(gcaps); }
+                top = new Border { Name = "fb-headerbar", Height = 47, Padding = new Thickness(6, 0), Background = Brush.Parse(light ? "#FFFFFFFF" : "#FF222226"), Child = head };
+                Draggable(top); Draggable(sideBox);
                 var mainCol = new DockPanel { Children = { DockTop(top), DockTop(TabBar()), DockBottom(status), area } };
                 return Frame(new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), Children = { sideBox, Pos(mainCol, 1) } });
             }
@@ -557,6 +589,39 @@ public partial class MainWindow
         }
         static Control DockTop(Control c) { DockPanel.SetDock(c, Avalonia.Controls.Dock.Top); return c; }
         static Control DockBottom(Control c) { DockPanel.SetDock(c, Avalonia.Controls.Dock.Bottom); return c; }
+        // Eine Leiste wie GNOME/Finder: Fensterknöpfe in der Kopfleiste, Ziehen verschiebt, Doppelklick maximiert
+        Control? WinCaps()
+        {
+            if (Windows.Active is not { } aw || !UnifiedTitle(aw)) return null;
+            var wid = aw.Id;
+            Button Cap(string name, string tip, string glyph, string col, Action a)
+            {
+                var b = new Button { Name = "fb-" + name, Width = _style == "mac" ? 12 : 24, Height = _style == "mac" ? 12 : 24, Padding = new Thickness(0), CornerRadius = new CornerRadius(12), BorderThickness = new Thickness(0),
+                    Background = Brush.Parse(col), Foreground = _style == "mac" ? Brush.Parse("#80000000") : Text, FontSize = _style == "mac" ? 8 : 10, Content = _style == "mac" ? "" : glyph,
+                    HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Margin = new Thickness(_style == "mac" ? 0 : 4, 0, _style == "mac" ? 8 : 0, 0), VerticalAlignment = VerticalAlignment.Center };
+                if (_style == "mac") { b.PointerEntered += (_, _) => b.Content = glyph; b.PointerExited += (_, _) => b.Content = ""; }
+                ToolTip.SetTip(b, tip); b.Click += (_, _) => a(); return b;
+            }
+            if (_style == "mac")
+                return new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(4, 0, 12, 0), VerticalAlignment = VerticalAlignment.Center, Children = {
+                    Cap("close", "Schließen", "✕", "#FF5F57", () => CloseWindow(wid)), Cap("min", "Im Dock ablegen", "—", "#FEBC2E", () => { Windows.Minimize(wid); AfterWindowChange(); }),
+                    Cap("max", "Zoomen", "+", "#28C840", () => { Windows.ToggleMaximize(wid); AfterWindowChange(); }) } };
+            return Cap("close", "Schließen", "✕", light ? "#14000000" : "#1AFFFFFF", () => CloseWindow(wid));
+        }
+        void Draggable(Control bar)
+        {
+            if (Windows.Active is not { } aw || !UnifiedTitle(aw)) return;
+            var wid = aw.Id; Point? from = null;
+            bar.PointerPressed += (_, e) =>
+            {
+                if (e.Source is Visual v && (v.FindAncestorOfType<Button>(true) is not null || v.FindAncestorOfType<TextBox>(true) is not null || v.FindAncestorOfType<ComboBox>(true) is not null)) return;
+                if (e.ClickCount == 2) { Windows.ToggleMaximize(wid); AfterWindowChange(); return; }
+                from = e.GetPosition(_winCanvas); e.Pointer.Capture(bar);
+            };
+            bar.PointerMoved += (_, e) => { if (from is not { } f) return; var p = e.GetPosition(_winCanvas); if (Windows.Get(wid) is { Maximized: true } mx) { mx.Maximized = false; mx.X = p.X - mx.W / 2; mx.Y = 0; } Windows.Move(wid, p.X - f.X, p.Y - f.Y); from = p; LayoutWindows(); };
+            bar.PointerReleased += (_, e) => { from = null; e.Pointer.Capture(null); };
+        }
+
         Control Frame(Control c)
         {
             var main = c;

@@ -229,6 +229,7 @@ public partial class MainWindow
             if (from is not null && dragged) { Windows.SnapAt(id, e.GetPosition(_winCanvas).X); LayoutWindows(); }
             from = null; dragged = false; e.Pointer.Capture(null);
         };
+        _titleBars[id] = bar;
         var body = new ContentControl { Name = "win-body-" + id, Margin = new Thickness(6, 4, 6, 6) };
         var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,*") }; grid.Children.Add(bar); Grid.SetRow(body, 1); grid.Children.Add(body);
         var layers = new Panel { Children = { grid } };
@@ -347,11 +348,16 @@ public partial class MainWindow
         Rescale?.Invoke();
     }
 
+    readonly Dictionary<string, Border> _titleBars = [];
+    /// <summary>GNOME und Finder: die Kopfleiste des Programms ist zugleich die Titelleiste (eine Leiste statt zwei).</summary>
+    bool UnifiedTitle(DeskWindow w) => _style is "mac" or "linux" && w.Page == "dateien";
+
     private void LayoutWindows()
     {
         foreach (var w in Windows.Stack)
         {
             if (!_frames.TryGetValue(w.Id, out var fr)) continue;
+            if (_titleBars.TryGetValue(w.Id, out var tb)) { var uni = UnifiedTitle(w); tb.IsVisible = !uni; fr.Body.Margin = uni ? new Thickness(0) : new Thickness(6, 4, 6, 6); }
             var host = w.Maximized ? (Panel)_workArea : _winCanvas;
             if (!ReferenceEquals(fr.Frame.Parent, host)) { DetachFrame(fr.Frame); host.Children.Add(fr.Frame); }
             if (w.Maximized)

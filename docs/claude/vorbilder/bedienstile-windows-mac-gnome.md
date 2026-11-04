@@ -38,6 +38,14 @@
 - ✓ Verhalten: Ziehen wie Windows (Strg/Umschalt); Kopie „Name (Kopie)“, „(weitere Kopie)“, „(3. Kopie)“; „Unbenannter Ordner“; F2, Entf, Strg+H verborgene Dateien, Leertaste Vorschau; Alt+F4, Super (Übersicht), Super+↑/↓/A
 - ✓ Mauszeiger schwarz mit weißem Rand (Adwaita)
 
+### Ergänzt 04.11.2026 (Abgleich mit dem Original)
+- ✓ GNOME „Dateien“ und Finder: eine Kopfleiste statt zwei – Schließen-Knopf (GNOME) bzw. Ampel oben in der Seitenleiste (Finder), Ziehen verschiebt, Doppelklick maximiert
+- ✓ Uhr: Windows Benachrichtigungen + Kalender rechts über der Taskleiste; Mac Mitteilungszentrale mit Kalender; GNOME Mitteilungen links, Monatskalender und Termine rechts; Monat blättern, heute im Akzentkreis, Woche ab Montag
+- ✓ Schnelleinstellungen (Windows), Kontrollzentrum (Mac), Systemmenü (GNOME, Pillen-Kacheln): Netzwerk, Nicht stören, Dunkler Stil, Not-Stopp, Geräte, Online-Dienste, Größe, Einstellungen, Ein/Aus – schaltet nur Trendo-Eigenes, keine Systemeinstellungen
+- ✓ „Nicht stören“: Hinweise landen nur in den Mitteilungen; Hinweise erscheinen wie im System (Windows unten rechts, Mac oben rechts, GNOME oben mittig)
+- ✓ GNOME-Suche hinter der Lupe, Lostippen öffnet sie und filtert live, Esc schließt; Explorer und Finder springen beim Tippen zum ersten passenden Element
+- ✓ „Andere Orte“ (GNOME): Auf diesem Rechner, Netzwerke, Mit Server verbinden; Finder „Orte“: nur Volumes; Uhr GNOME „Mi. 22:35“
+
 ### Offen
 - ✓ Mehrfachauswahl wie im System: Umschalt-Klick Bereich, Strg-Klick (Mac ⌘) dazu/weg, Auswahlrahmen mit der Maus, Strg/⌘+A, Klick ins Leere hebt auf; Kopieren, Einfügen, Ziehen und Papierkorb wirken auf alle gewählten
 - ◐ Natürliches Scrollen und Systemgesten kommen vom echten Betriebssystem, nicht von Trendo
@@ -45,4 +53,4 @@
 - ◐ Windows-Registerkarten sitzen unter der Titelzeile statt in ihr; Strg+Tab wechselt weiter die Fenster (Strg+Bild↓ wechselt die Karte)
 
 ## Tests
-OsStyles_Ui (7), OsBehaviorTests (4), StyleAndBrand_Ui.
+OsStyles_Ui (8), OsBehaviorTests (4), StyleAndBrand_Ui.

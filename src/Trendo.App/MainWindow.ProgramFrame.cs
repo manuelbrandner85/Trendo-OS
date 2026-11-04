@@ -75,6 +75,8 @@ public partial class MainWindow
     /// <summary>G12: kurze Benachrichtigung unten rechts (6 s), optional mit Aktionen wie „Rückgängig“ oder „Ordner öffnen“.</summary>
     public void Toast(string text, params (string Label, Action Run)[] actions)
     {
+        _osNotes.Insert(0, (DateTime.Now, text)); if (_osNotes.Count > 30) _osNotes.RemoveAt(_osNotes.Count - 1); // Mitteilungen (Windows/Mac/GNOME)
+        if (OsDnd) return; // „Nicht stören“: nur in die Mitteilungen, kein Aufpoppen
         var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Right };
         var t = new Border
         {

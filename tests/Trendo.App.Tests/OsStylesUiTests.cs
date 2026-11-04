@@ -244,5 +244,55 @@ public class OsStyles_Ui
         finally { Back(w ?? w0); }
     }
 
+    [AvaloniaFact(DisplayName = "Wie im Original: eine Kopfleiste in GNOME-Dateien/Finder, Uhr öffnet Mitteilungen + Monatskalender, Schnelleinstellungen mit Kacheln, „Nicht stören“, GNOME-Suche per Lupe/Lostippen, „Andere Orte“, Explorer springt beim Tippen")]
+    public void Original_details()
+    {
+        var (w0, _, _) = Ui.Open(); MainWindow? w = null;
+        try
+        {
+            w = Switch(w0, "linux");
+            var docs = w.Files.KnownFolders().First(k => k.Id == "dokumente").Path;
+            foreach (var n in new[] { "Brief.txt", "Bericht.txt", "Antrag.pdf" }) File.WriteAllText(Path.Combine(docs, n), n);
+            w.FilesGo(docs); Pump();
+            var id = w.Windows.Active!.Id;
+            Assert.False(w.Find<Border>("win-title-" + id).IsVisible); // keine zweite Titelleiste
+            Assert.True(Visible(w, "fb-headerbar")); Assert.True(Visible(w, "fb-close"));
+            // Suche: hinter der Lupe, Lostippen öffnet sie und filtert
+            Assert.False(Visible(w, "fb-search")); Assert.True(Visible(w, "fb-search-toggle"));
+            Assert.True(w.FilesKey(Key.B, KeyModifiers.None)); Pump();
+            Assert.True(w.FilesSearchOpen); Assert.True(Visible(w, "fb-search"));
+            Assert.True(Visible(w, "fb-item-Brief.txt")); Assert.False(Visible(w, "fb-item-Antrag.pdf"));
+            // Andere Orte
+            w.FilesGo(MainWindow.PcPlace); Pump();
+            Assert.True(Visible(w, "fb-no-network")); Assert.False(Visible(w, "fb-pc-folders")); Assert.False(w.FilesSearchOpen);
+            // Uhr: Mitteilungen und Kalender; „Nicht stören“ hält Hinweise zurück
+            w.Toast("Export fertig"); Pump();
+            w.Find<Button>("os-toggle-clock").Press(); Pump();
+            Assert.True(w.OsCalendarOpen); Assert.True(Visible(w, "os-calendar")); Assert.True(Visible(w, "os-notes"));
+            Assert.Contains("Export fertig", w.OsNotifications);
+            w.ToggleOsWidgets(); Pump();
+            w.Find<Button>("os-toggle-quick").Press(); Pump();
+            Assert.True(w.OsQuickOpen); Assert.True(Visible(w, "os-q-dnd")); Assert.True(Visible(w, "os-q-power"));
+            w.Find<Button>("os-q-dnd").Press(); Pump(); Assert.True(w.OsDnd); Assert.True(w.OsQuickOpen);
+            var before = w.GetVisualDescendants().OfType<Border>().Count(b => b.Name == "toast");
+            w.Toast("Leise"); Pump();
+            Assert.Equal(before, w.GetVisualDescendants().OfType<Border>().Count(b => b.Name == "toast")); Assert.Contains("Leise", w.OsNotifications);
+            w.Find<Button>("fb-close").Press(); Pump(); Assert.Null(w.Windows.Get(id)); // Schließen in der Kopfleiste
+            // Windows: Uhr öffnet Benachrichtigungen + Kalender rechts, Tippen springt zum Element
+            w = Switch(w, "windows"); w.FilesView = "liste"; w.FilesGo(docs); Pump();
+            Assert.True(Visible(w, "win-title-" + w.Windows.Active!.Id)); // Windows behält die Titelleiste
+            Assert.True(w.FilesKey(Key.B, KeyModifiers.None)); Assert.Equal("Bericht.txt", Path.GetFileName(w.FilesSelected));
+            w.Find<Button>("os-toggle-clock").Press(); Pump();
+            Assert.True(Visible(w, "os-calendar-panel")); Assert.True(Visible(w, "os-cal-month"));
+            w.Find<Button>("os-cal-next").Press(); Pump();
+            Assert.Contains(DateTime.Today.AddMonths(1).ToString("MMMM", System.Globalization.CultureInfo.GetCultureInfo("de-DE")), w.Find<TextBlock>("os-cal-month").Text);
+            w.Find<Button>("os-toggle-quick").Press(); Pump(); Assert.True(w.OsQuickOpen); Assert.False(Visible(w, "os-calendar-panel"));
+            // Mac: Finder mit Ampel in der Seitenleiste, keine zweite Titelleiste
+            w = Switch(w, "mac"); w.FilesGo(docs); Pump();
+            Assert.False(w.Find<Border>("win-title-" + w.Windows.Active!.Id).IsVisible); Assert.True(Visible(w, "fb-close")); Assert.True(Visible(w, "fb-max"));
+        }
+        finally { Back(w ?? w0); }
+    }
+
     static bool SamePath(string a, string b) => string.Equals(Path.GetFullPath(a).TrimEnd((char)92, '/'), Path.GetFullPath(b).TrimEnd((char)92, '/'), StringComparison.OrdinalIgnoreCase);
 }

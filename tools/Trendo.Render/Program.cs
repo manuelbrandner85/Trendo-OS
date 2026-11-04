@@ -109,6 +109,8 @@ if (Environment.GetEnvironmentVariable("TRENDO_OS_OPEN") is { Length: > 0 } osOp
         case "pc": win.FilesGo(MainWindow.PcPlace); break;
         case "tabs": win.FilesGo(dk.First(k => k.Id == "dokumente").Path); win.FilesNewTab(dk.First(k => k.Id == "bilder").Path); win.FilesNewTab(Path.Combine(dk.First(k => k.Id == "dokumente").Path, "Projekte")); win.FilesSelectTab(0); break;
         case "widgets": win.ToggleOsWidgets(); break;
+        case "uhr": win.Toast("Export fertig: Urlaubsvideo.mp4"); win.ToggleOsCal(); break;
+        case "schnell": win.ToggleOsQuick(); break;
         default: win.OpenOsLauncher(osOpen); break;
     }
 }
