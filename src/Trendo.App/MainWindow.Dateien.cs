@@ -95,7 +95,7 @@ public partial class MainWindow
 
     private void InitDateien()
     {
-        _showMap[FK] = DateienView;
+        _showMap[FK] = DateienView; PageModules[FK] = "CORE-01"; // Dateimanager gehört zur Desktop-Oberfläche
         if (!ExtraPages.Any(p => p.Key == FK)) ExtraPages.Add(("Dateien", FK, ["dateien", "explorer", "finder", "ordner", "dieser pc", "arbeitsplatz", "laufwerk", "dokumente", "downloads", "nautilus"]));
         if (_opt.Isolated) { Directory.CreateDirectory(Files.Root!); foreach (var k in Files.KnownFolders()) Directory.CreateDirectory(k.Path); }
     }

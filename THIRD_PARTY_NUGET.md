@@ -6,6 +6,7 @@ Automatisch erzeugt aus project.assets.json (alle Projekte, auch indirekte Paket
 |---|---|---|
 | Avalonia | 12.1.4 | MIT |
 | Avalonia.Angle.Windows.Natives | 2.1.27548.20260419 | Lizenzdatei im Paket: LICENSE |
+| Avalonia.AvaloniaEdit | 12.0.0 | MIT |
 | Avalonia.BuildServices | 11.3.2 | MIT |
 | Avalonia.Controls.WebView | 12.1.1 | MIT |
 | Avalonia.Desktop | 12.1.4 | MIT |
@@ -32,8 +33,10 @@ Automatisch erzeugt aus project.assets.json (alle Projekte, auch indirekte Paket
 | Microsoft.Data.Sqlite.Core | 10.0.14 | MIT |
 | Microsoft.Extensions.DependencyInjection.Abstractions | 8.0.2 | MIT |
 | Microsoft.Extensions.Logging.Abstractions | 8.0.3 | MIT |
+| NLayer | 1.16.0 | MIT |
 | PDFsharp | 6.2.4 | MIT |
 | PDFtoImage | 5.2.1 | MIT |
+| SharpCompress | 0.50.7 | MIT |
 | SkiaSharp | 3.119.4 | MIT |
 | SkiaSharp.NativeAssets.Linux | 3.119.4 | MIT |
 | SkiaSharp.NativeAssets.Linux.NoDependencies | 3.119.2 | MIT |
