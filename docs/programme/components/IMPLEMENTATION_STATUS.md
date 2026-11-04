@@ -1,6 +1,6 @@
 # Zusatzprogramme – Umsetzungsstand
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand c58bb7c)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand bc62519)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -32,4 +32,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | SYS-11-P24 | Speicherbedarf | Implementiert | – |
 | SYS-11-P25 | Selbsttest | Implementiert | – |
 
-0 von 25 Funktionen getestet.
+0 von 25 Funktionen getestet (noch kein Testlauf eingelesen).

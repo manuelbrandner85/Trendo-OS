@@ -91,7 +91,7 @@ public partial class MainWindow
         filters.Children.Add(new Border { Width = 14 });
         foreach (var (d, l) in new[] { (0, "Jederzeit"), (1, "Heute"), (7, "7 Tage"), (30, "30 Tage") }) filters.Children.Add(F("doku-age-" + d, l, _dsDays == d, () => _dsDays = d));
 
-        var docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        var docs = UserFolder(Environment.SpecialFolder.MyDocuments);
         var since = _dsDays == 0 ? DateTime.MinValue : DateTime.Today.AddDays(1 - _dsDays);
         var files = FileShelf.Recent(_opt.Isolated ? [ProjectsRoot] : [ProjectsRoot, docs], FileShelf.Office, 200)
             .Where(f => (_dsType == "Alle" || FileShelf.Kind(f.FullName) == _dsType) && f.LastWriteTime >= since).Take(40).ToList();

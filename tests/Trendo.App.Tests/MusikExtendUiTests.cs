@@ -100,4 +100,100 @@ public class MusikExtendUiTests
         }
         finally { w.Close(); }
     }
+
+    [AvaloniaFact(DisplayName = "Wie bei Suno: „Erstellen“ mit „Mehr Optionen“ (alle Einstellungen bleiben), „⋯“-Menü je Lied mit allen Aktionen")]
+    public async Task Suno_layout()
+    {
+        var (w, _, root) = Ui.Open();
+        try
+        {
+            var s = Song(root);
+            w.MusicStudioProMode(true); w.Show("musik-studio"); await Pump();
+            Assert.False(w.Find<Expander>("ms-more").IsExpanded);
+            foreach (var n in new[] { "ms-bpm", "ms-key", "ms-time", "ms-language", "ms-length", "ms-variants", "ms-instrumental", "ms-title", "ms-style", "ms-lyrics", "ms-create" })
+                Assert.NotNull(w.TryFind<Control>(n));
+            Assert.NotNull(w.Find<StackPanel>("ms-more-body"));
+            Assert.NotNull(w.Find<Button>("ms-menu-0").Flyout);
+            var ids = w.MsSongActions(s).Select(a => a.Id).ToList();
+            Assert.Equal(["play", "fav", "edit", "stems", "video", "master", "mp3", "wav", "flac", "tovideo", "folder", "rename", "delete"], ids);
+            w.MsSongActions(s).Single(a => a.Id == "video").Run(); await Pump();
+            Assert.True(w.Find<StackPanel>("ms-dtab-body-video").IsVisible);
+            w.MsSongActions(s).Single(a => a.Id == "fav").Run(); await Pump();
+            Assert.True(new SongLibrary(root).Get(s.Id)!.Favorite);
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "KI-Musikvideo A: „Lied verstehen“ trennt den Gesang ab, erkennt Stimmen, Zeilen und Thema und zeigt wer wann singt")]
+    public async Task Understand_song()
+    {
+        var (w, _, root) = Ui.Open();
+        try
+        {
+            var f = Path.Combine(root, "duett.mp3"); File.WriteAllBytes(f, "ID3"u8.ToArray());
+            var s = new SongLibrary(root).Add(new MusicSong { Title = "Duett", Style = "pop, duet", Lyrics = "[Strophe – Sie]\nIch warte am Meer\n[Refrain – beide]\nWir zwei", Seconds = 20, File = f });
+            var split = 0;
+            w.StemSplitOverride = (src, dir) => { split++; Directory.CreateDirectory(dir); File.WriteAllBytes(Path.Combine(dir, "begleitung.wav"), [1]); File.WriteAllBytes(Path.Combine(dir, "gesang.wav"), [1]); return Task.FromResult(true); };
+            w.SectionsOverride = _ => Task.FromResult<string?>("""{"bpm":100,"duration":20,"sections":[{"start":0,"end":10,"energy":0.8},{"start":10,"end":20,"energy":1.3}],"beats":[0.6,1.2]}""");
+            w.SingersOverride = v => { Assert.EndsWith("gesang.wav", v); return Task.FromResult<string?>("""{"singers":[{"id":0,"gender":"w","voice":"Alt"},{"id":1,"gender":"m","voice":"Tenor"}],"phrases":[{"start":1,"end":5,"singer":0},{"start":11,"end":15,"singer":1,"both":true}]}"""); };
+            w.WordsOverride = _ => Task.FromResult<string?>(null);
+            w.ThemeOverride = _ => Task.FromResult<string?>("""{"thema":"Sehnsucht","geschichte":"Zwei treffen sich am Meer.","stimmung":"warm","orte":["Strand"],"tageszeit":"Abend","farben":["Gold"]}""");
+            w.MusicStudioSelect(s.Id); w.MsDetailTab("video"); w.Show("musik-studio"); await Pump();
+            w.Find<Button>("ms-understand").Press();
+            for (var i = 0; i < 100 && w.Understanding(s) is null; i++) await Pump();
+            var u = w.Understanding(s)!;
+            Assert.Equal(1, split);
+            Assert.Equal("gesungene Phrasen", u.Source);
+            Assert.Equal(["Sängerin", "beide"], u.Lines.Select(l => l.Who));
+            Assert.Equal("Sehnsucht", u.Theme!.Topic);
+            await Pump();
+            Assert.Contains("Duett: Sängerin und Sänger", w.Find<TextBlock>("ms-msg").Text);
+            Assert.Contains("Thema: Sehnsucht", w.Find<TextBlock>("ms-understand-theme").Text);
+            Assert.Equal(2, w.Find<StackPanel>("ms-understand-lines").Children.Count);
+            Assert.Equal(s.Id, w.Find<TextBlock>("ms-detail-title").Text == "Duett" ? s.Id : null); // Auswahl bleibt beim Lied, nicht bei der Gesangsspur
+
+            // B: Drehbuch erstellen, Einstellung anklicken und ändern, Figur beschreiben, löschen, neu würfeln
+            w.Find<Button>("ms-concept-performance").Press(); await Pump();
+            w.Find<Button>("ms-script-plan").Press();
+            for (var i = 0; i < 100 && w.Script(s) is null; i++) await Pump();
+            var sc = w.Script(s)!;
+            Assert.Equal("performance", sc.Concept);
+            Assert.Equal(2, sc.Figures.Count);
+            Assert.Contains(sc.Shots, x => x.Singing && x.Who == "beide");
+            await Pump();
+            w.Find<Button>("ms-shot-1").Press(); await Pump();
+            Assert.NotNull(w.TryFind<StackPanel>("ms-shot-editor"));
+            w.MsShotEdit(s.Id, 1, x => x with { Size = "Groß" }); await Pump();
+            Assert.Contains("extreme close-up", w.Script(s)!.Shots[1].Prompt);
+            w.MsFigureEdit(s.Id, "fig0", "a fictional woman with short silver hair, red coat"); await Pump();
+            Assert.All(w.Script(s)!.Shots.Where(x => x.Who is "Sängerin" or "beide" && x.Singing), x => Assert.Contains("short silver hair", x.Prompt));
+            var n = w.Script(s)!.Shots.Count; var seed = w.Script(s)!.Shots[1].Seed;
+            w.Find<Button>("ms-shot-reroll").Press(); await Pump();
+            Assert.NotEqual(seed, w.Script(s)!.Shots[1].Seed);
+            w.Find<Button>("ms-shot-delete").Press(); await Pump();
+            Assert.Equal(n - 1, w.Script(s)!.Shots.Count);
+            Assert.Equal(20, w.Script(s)!.Shots[^1].End, 1); // keine Lücke am Ende
+
+            // E: ein gemeinsames Projekt – Videoschnitt kennt Lied, Abschnitte, wer singt und das Drehbuch; fertiges Video landet am Lied
+            w.MsToVideo(s); await Pump();
+            Assert.Equal("schnitt", w.CurrentView);
+            var d = w.ProgramActive("schnitt")!;
+            Assert.Equal(s.Id, Trendo.Core.Media.VideoEdit.Song(d.Data)!.Value.Id);
+            var mk = Trendo.Core.Media.VideoEdit.Markers(d.Data);
+            Assert.Equal(2, mk.Count(m => m.Kind == "section"));
+            Assert.Contains(mk, m => m.Kind == "line" && m.Who == "beide");
+            Assert.Equal(w.Script(s)!.Shots.Count, mk.Count(m => m.Kind == "shot"));
+            Assert.NotNull(w.TryFind<Border>("ve-song-link"));
+            w.ExportAsyncOverride = (p, f, prog, ct) => { File.WriteAllText(f, "mp4"); return Task.FromResult(f); };
+            await w.EditExportBackground(d); await Pump();
+            var vid = Assert.Single(w.SongVideos(s));
+            File.SetLastWriteTimeUtc(vid, DateTime.UtcNow.AddHours(-1)); // Lied danach geändert (z. B. gemastert)
+            w.ReplaceAudioOverride = (v, song, o) => { File.WriteAllText(o, "neu"); return true; };
+            var neu = w.MsVideoNewAudio(s.Id, vid);
+            Assert.EndsWith("neuer Ton.mp4", neu); Assert.Equal(2, w.SongVideos(s).Count);
+            w.MusicStudioSelect(s.Id); w.MsDetailTab("video"); w.Show("musik-studio"); await Pump();
+            Assert.NotNull(w.TryFind<Button>("ms-vid-play-0"));
+        }
+        finally { w.Close(); }
+    }
 }

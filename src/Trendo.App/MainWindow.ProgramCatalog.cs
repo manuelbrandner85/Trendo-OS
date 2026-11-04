@@ -19,6 +19,8 @@ public partial class MainWindow
         _showMap["programmkatalog"] = ProgramCatalogView; SysTabs.Add(("programmkatalog", "Programmkatalog"));
         PageModules["programmkatalog"] = "SYS-13";
         if (!ExtraPages.Any(p => p.Key == "programmkatalog")) ExtraPages.Add(("Programmkatalog", "programmkatalog", ["programme", "katalog", "alle programme", "übersicht", "funktionen", "dateiformate", "tests"]));
+        _showMap["qualitaet"] = QualityView; SysTabs.Add(("qualitaet", "Qualitäts-Ampel")); PageModules["qualitaet"] = "SYS-13"; // A1
+        if (!ExtraPages.Any(p => p.Key == "qualitaet")) ExtraPages.Add(("Qualitäts-Ampel", "qualitaet", ["ampel", "qualität", "schwächste programme", "umbau", "linux", "trendo os"]));
     }
 
     /// <summary>Programme laut Laufzeit: Seite, Name, Studio, Bereich, Reiter, Werkzeuge und Exportformate der Programm-Hülle.</summary>
@@ -27,7 +29,7 @@ public partial class MainWindow
         string? Listed(string key) => Pages.Concat(ExtraPages).FirstOrDefault(p => string.Equals(p.Key, key, StringComparison.OrdinalIgnoreCase)).Title;
         string Label(string key) => Programs.TryGetValue(key, out var s) ? s.Title : Listed(key) ?? PageTitle(key);
         // nur Seiten, die man öffnen kann: im Startmenü/in der Suche, Studio-Hauptseite oder Reiter eines Studios (keine Einrichtungsschritte)
-        var keys = _showMap.Keys.Where(k => ModuleOf(k) is { } m && StudioCatalog.For(m) is not null && k != "programmkatalog"
+        var keys = _showMap.Keys.Where(k => ModuleOf(k) is { } m && StudioCatalog.For(m) is not null && k is not "programmkatalog" and not "qualitaet"
             && (Listed(k) is not null || StudioPages.Values.Contains(k, StringComparer.OrdinalIgnoreCase) || TabbedPages.Contains(k))).ToList();
         var groups = keys.GroupBy(k => Programs.ContainsKey(k) ? "prog:" + k : WindowGroupOf(k), StringComparer.OrdinalIgnoreCase); // Programme der Programm-Hülle sind eigene Einträge, auch als Reiter eines Studios
         var list = new List<ProgramEntry>();
@@ -58,6 +60,9 @@ public partial class MainWindow
         // Seiten mit „Beispiel laden“: einmal laden, damit die Arbeitsfläche mit Inhalt erscheint (nur im Katalog-Generator, eigener Datenordner)
         if ((ActivePageRoot ?? this).GetLogicalDescendants().OfType<Button>().FirstOrDefault(b => b.IsVisible && b.Name is { } n && (n.EndsWith("-demo") || n.EndsWith("-sample"))) is { } demo)
         { demo.RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent)); Show(key); }
+        // Seiten, die im Hintergrund laden (z. B. Fotos): kurz warten, bis „… wird geladen“ verschwunden ist
+        for (var w = 0; w < 30 && (ActivePageRoot ?? this).GetLogicalDescendants().OfType<Control>().Any(c => c.IsVisible && c.Name is { } n && n.EndsWith("-loading")); w++)
+        { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(50); Show(key); }
         var page = ActivePageRoot ?? this;
         var all = page.GetLogicalDescendants().OfType<Control>().Where(c => c.IsVisible).ToList();
         var kinds = new SortedSet<string>(StringComparer.Ordinal);
@@ -72,7 +77,8 @@ public partial class MainWindow
                 GanttCanvas => "Zeitplan (Gantt)", DonutChart => "Diagramm", Control { Name: "tv-guide" } => "Programmraster (TV-Zeitschiene)", Control { Name: "photo-album" } => "Fotogalerie mit Betrachter",
                 Control { Name: "pdf-thumbs" } => "Seiten-Miniaturen (Ordnen)", Control { Name: "kasse-cart" } => "Kasse mit Warenkorb", Control { Name: "rs-markbar" } => "Lesemodus mit Markierungen",
                 Control { Name: "letter-pages" } => "Briefseite nach DIN 5008", Control { Name: "backup-timeline" } => "Sicherungs-Zeitleiste", Control { Name: "music-player" } => "Musikspieler",
-                Control { Name: "ab-card" } => "Kontaktkarte", Control { Name: "car-trip-table" } => "Fahrtenbuch-Tabelle", _ => null,
+                Control { Name: "ab-card" } => "Kontaktkarte", Grid { Name: "ab-book" } => "Adressbuch (Gruppen, Liste, Kontaktkarte)", Grid { Name: "inbox-columns" } => "Posteingang (Ordner, Liste, Lesebereich)", Grid { Name: "rs-browser" } => "Lese-Browser (Quellen, Lesebereich, Zitate)", Grid { Name: "pdf-start" } => "PDF-Startseite (Zuletzt geöffnet, Öffnen, Werkzeuge)", Grid { Name: "tools-desk" } => "Helfer-Arbeitsfläche (Haftnotizen, Rechner mit Tastenfeld, Wecker)", Grid { Name: "builder-designer" } => "App-Designer (Bausteine, Vorschau, Eigenschaften)", Grid { Name: "settings-shell" } => "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)", Grid { Name: "ki-shell" } => "KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)",
+                Border { Name: "ms-library" } => "Liederliste mit Player und Lied-Ansicht (wie Suno)", Grid { Name: "tv-live" } => "Sender-Liste mit Live-Bild", Control { Name: "tv-hero" } => "Streaming-Startseite", Control { Name: "car-trip-table" } => "Fahrtenbuch-Tabelle", _ => null,
             } is { } k) kinds.Add(k);
         var tools = all.OfType<Button>().Where(b => b.Name is { Length: > 0 } n && !n.StartsWith("prog-tab") && !n.StartsWith("dock") && !n.StartsWith("win-") && !n.StartsWith("toast"))
             .Select(LabelOf).Where(l => l is { Length: > 1 } && l.Any(char.IsLetter)).Select(l => l!.Trim()).Distinct().Take(60).ToList();

@@ -18,6 +18,8 @@ public sealed class EditTimeline : Control
     public IReadOnlyDictionary<string, IReadOnlyList<Bitmap>> Thumbs { get; set; } = new Dictionary<string, IReadOnlyList<Bitmap>>();
     public double PxPerSec { get; set; } = 40;
     public double Playhead { get; set; }
+    /// <summary>Marken aus Trendo Musik: Abschnitte (gold), Liedzeilen nach Stimme (Sängerin rosa, Sänger blau, beide gold), Einstellungen (weiß).</summary>
+    public IReadOnlyList<EditMarker> Markers { get; set; } = [];
     public (string Track, int Index)? Selected { get; set; }
     public Action<double>? PlayheadChanged { get; set; }
     public Action<string, int>? ClipSelected { get; set; }
@@ -105,6 +107,22 @@ public sealed class EditTimeline : Control
         }
         ctx.FillRectangle(new SolidColorBrush(Color.Parse("#14FFFFFF")), new Rect(0, VideoTop, w, VideoH));
         ctx.FillRectangle(new SolidColorBrush(Color.Parse("#0EFFFFFF")), new Rect(0, MusicTop, w, MusicH));
+        foreach (var m in Markers)
+        {
+            if (m.Kind == "section")
+            {
+                var gold = new SolidColorBrush(Color.Parse("#C9A227"));
+                ctx.DrawLine(new Pen(new SolidColorBrush(Color.Parse("#66C9A227")), 1, dashStyle: DashStyle.Dash), new Point(X(m.Start), Ruler), new Point(X(m.Start), h));
+                ctx.DrawText(new FormattedText(m.Label, De, FlowDirection.LeftToRight, bold, 10, gold), new Point(X(m.Start) + 3, MusicTop + MusicH - 13));
+            }
+            else if (m.Kind == "line")
+            {
+                var col = m.Who == "beide" ? "#C9A227" : m.Who.StartsWith("Sängerin") ? "#F472B6" : m.Who.StartsWith("Sänger") ? "#60A5FA" : "#94A3B8";
+                ctx.FillRectangle(new SolidColorBrush(Color.Parse(col)), new Rect(X(m.Start), MusicTop - 6, Math.Max(2, X(m.End) - X(m.Start)), 4));
+            }
+            else if (m.Kind == "shot")
+                ctx.DrawLine(new Pen(new SolidColorBrush(Color.Parse("#55FFFFFF")), 1), new Point(X(m.Start), Ruler - 4), new Point(X(m.Start), Ruler + 3));
+        }
         // Bildspur
         for (var i = 0; i < Clips.Count; i++)
         {

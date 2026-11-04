@@ -39,7 +39,7 @@ public partial class MainWindow
         sp.Children.Add(row); sp.Children.Add(msg);
         var soffice = ToolPath("libreoffice");
         sp.Children.Add(P(soffice is null ? "LibreOffice ist nicht installiert – Öffnen nutzt dein Standardprogramm, PDF-Export ist aus." : "Zuletzt bearbeitet (Projektordner und Dokumente). „PDF“ wandelt mit LibreOffice im Hintergrund um.", null, 11));
-        var docs = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        var docs = UserFolder(Environment.SpecialFolder.MyDocuments);
         var i = 0;
         foreach (var f in FileShelf.Recent([ProjectsRoot, docs], FileShelf.Office, 30))
         {

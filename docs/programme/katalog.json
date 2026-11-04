@@ -109,8 +109,10 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 873,
+    "WindowsOnly": []
   },
   {
     "Id": "kontakte",
@@ -160,8 +162,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 250,
+    "WindowsOnly": []
   },
   {
     "Id": "aufgaben",
@@ -212,8 +216,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 250,
+    "WindowsOnly": []
   },
   {
     "Id": "post",
@@ -312,8 +318,10 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 67,
+    "WindowsOnly": []
   },
   {
     "Id": "kalender",
@@ -374,8 +382,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 225,
+    "WindowsOnly": []
   },
   {
     "Id": "posteingang",
@@ -433,8 +443,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 197,
+    "WindowsOnly": []
   },
   {
     "Id": "medien",
@@ -660,8 +672,10 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 211,
+    "WindowsOnly": []
   },
   {
     "Id": "alltag-start",
@@ -907,8 +921,10 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 214,
+    "WindowsOnly": []
   },
   {
     "Id": "werkzeuge",
@@ -1142,8 +1158,10 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 185,
+    "WindowsOnly": []
   },
   {
     "Id": "vorhaben",
@@ -1213,8 +1231,10 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 11,
+    "WindowsOnly": []
   },
   {
     "Id": "doku-start",
@@ -1469,8 +1489,10 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 38,
+    "WindowsOnly": []
   },
   {
     "Id": "pdf",
@@ -1705,8 +1727,10 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 320,
+    "WindowsOnly": []
   },
   {
     "Id": "praesentation",
@@ -1962,8 +1986,10 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 22,
+    "WindowsOnly": []
   },
   {
     "Id": "tabelle",
@@ -2237,8 +2263,10 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 50,
+    "WindowsOnly": []
   },
   {
     "Id": "text",
@@ -2530,8 +2558,10 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 27,
+    "WindowsOnly": []
   },
   {
     "Id": "finanzen",
@@ -2606,8 +2636,10 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 97,
+    "WindowsOnly": []
   },
   {
     "Id": "verkaufen",
@@ -2670,8 +2702,10 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 223,
+    "WindowsOnly": []
   },
   {
     "Id": "assets",
@@ -2720,8 +2754,10 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 170,
+    "WindowsOnly": []
   },
   {
     "Id": "ki-vorlagen",
@@ -2770,8 +2806,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 270,
+    "WindowsOnly": []
   },
   {
     "Id": "ki-skills",
@@ -2824,8 +2862,10 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 75,
+    "WindowsOnly": []
   },
   {
     "Id": "mode-programm",
@@ -3006,8 +3046,10 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": true
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": true,
+    "WarmMs": 178,
+    "WindowsOnly": []
   },
   {
     "Id": "sendung",
@@ -3260,8 +3302,10 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 242,
+    "WindowsOnly": []
   },
   {
     "Id": "musik-studio",
@@ -3278,8 +3322,10 @@
       "Musik",
       "Geräusche & Effekte",
       "\uD83D\uDC65 Team",
+      "✨ Erstellen",
       "Einfach",
       "Profi",
+      "Instrumental (ohne Gesang)",
       "\uD83C\uDFBC Genre wählen (181)",
       "Klavier",
       "Akustikgitarre",
@@ -3298,8 +3344,6 @@
       "Flöte",
       "Ukulele",
       "Stil übernehmen",
-      "Instrumental (ohne Gesang)",
-      "✨ Erstellen",
       "＋ Eigene Aufnahme",
       "★ Favoriten"
     ],
@@ -3320,6 +3364,7 @@
       "Fortschritt: Prozent aus der Musik-KI im Text und als Balken, steigt nur an; ohne Angabe läuft der Balken unbestimmt",
       "Grafikspeicher-Warteschlange: zweites Lied wartet („noch 1 Auftrag vor dir“), startet erst nach dem ersten; Abbrechen im Warten geht",
       "Im Stil von aus dem Web: MusicBrainz und Wikipedia nachschlagen, die KI bekommt die Angaben als Grundlage; ohne Text-KI die Merkmale aus dem Web, mit Quelle",
+      "KI-Musikvideo A: „Lied verstehen“ trennt den Gesang ab, erkennt Stimmen, Zeilen und Thema und zeigt wer wann singt",
       "Lied-Ansicht übersichtlich: Registerkarten Lied, Bearbeiten, Spuren & Mitsingen, Musikvideo – jede zeigt nur ihre Werkzeuge, keine Funktion fehlt",
       "M1/M8/M6: Genre-Auswahl (Gruppe, Suche, höchstens drei), Stimme, Tonlage und Instrumente landen als ACE-Step-Begriffe im Auftrag; Tempo-Vorschlag übernehmbar",
       "M10 Verlängern: Abschnitt ab dem Ende (30 → 90 s) mit dem Grundmodell, Refrain kommt dazu, neues Lied „– länger“",
@@ -3331,7 +3376,9 @@
       "Musik-Cover ohne Bild-KI: gestaltete Farbfläche mit Schrift und ehrlicher Hinweis; „MP3 mit Cover“ bettet das Bild in die Datei ein (alter Tag ersetzt, Ton unverändert)",
       "Musik-Cover: „\uD83C\uDFA8 Cover-Bild erstellen“ – Motiv zum Genre (Jazz-Club), 1400 × 1400 JPEG mit Titel und Name, erscheint in Bibliothek und Lied; Layout wechseln, Neu würfeln",
       "Musikvideo V3: ohne Schlüssel ehrlicher Hinweis; mit Schlüssel Suche nach Bildwörtern aus dem Stil, Clips geladen, Schlüssel im Tresor statt im Feld, Quellen notiert",
+      "Musikvideo ohne Video-KI: ehrlicher Hinweis und Weg in die KI-Bibliothek; Abbrechen behält Fertiges",
       "Musikvideo: Shotliste aus den Abschnitten, eigene Clips, Rendern in 16:9 und 9:16 mit Look, Balken und Liedtext; dann in den Videoschnitt",
+      "Musikvideo: Vorschau → Prüfung findet „3 Arme“ → automatisch neu (strengere Beschreibung) → grün; dauerhaft fehlerhaft = rot; Zusammensetzen im Videoschnitt",
       "Profi: Liedtext der Text-KI mit KI-Floskeln wird einmal gezielt überarbeitet, bevor gesungen wird; die Songwriter-Regeln stehen im Auftrag",
       "Profi: neues Lied wird gleich gemastert (messen, dann linear auf −14 LUFS), Datei ersetzt, „✓ Gemastert“; ohne FFmpeg bleibt das Lied wie es ist",
       "Profi: „KI-Floskeln prüfen“ unter dem Liedtext nennt gefundene Phrasen oder meldet „keine gefunden“",
@@ -3344,12 +3391,15 @@
       "Trendo Musik: Abschnitt neu und Cover laden das Lied hoch (kein Dateipfad), neue Fassung verweist aufs Original; Liedtext mit KI; Favorit, Export, Löschen in den Papierkorb",
       "Trendo Musik: Aufträge an ACE-Step geprüft – Grenzen für Länge, Tempo, Varianten; Abschnitt mind. 1 s; über 8 Minuten ohne Sprachmodell; unbekannte Tonart/Takt/Aufgabe abgelehnt",
       "Trendo Musik: Einfach – ein Satz → zwei Varianten in „Meine Lieder“; ohne Beschreibung nur Hinweis; Profi mit Tempo, Tonart, Takt, [Strophe]/[Refrain] und Spanisch",
+      "Wie bei Suno: „Erstellen“ mit „Mehr Optionen“ (alle Einstellungen bleiben), „⋯“-Menü je Lied mit allen Aktionen",
       "Y1: YouTube-Link → Titel/Interpret per oEmbed (kein Download), Stil aus dem Web, Titel vorgeschlagen, Profi-Modus; falscher Link = Hinweis"
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 238,
+    "WindowsOnly": []
   },
   {
     "Id": "tv",
@@ -3385,6 +3435,7 @@
     "Tests": [
       "Anmeldung: „Beim Start nach PIN fragen“ lässt sich abschalten",
       "Apps: WhatsApp installieren → Desktop und Startmenü, öffnet als App-Fenster mit eigenem Speicher, Entfernen löscht die Anmeldung",
+      "Einstellungen-App wie Windows 11: Bereiche links, Suche über alle Einstellungen, Betriebsmodus öffnet den Stick-Schreiber ohne PC-Einrichtung und ohne „vom PC entfernen“",
       "Ersteinrichtung im Vollbild: Claude freiwillig zuerst; Stick/SSD zeigen echte Laufwerke mit GB, zu kleine gesperrt, Windows-Laufwerk nie; ehrlicher Hinweis solange das Abbild fehlt",
       "Ersteinrichtung: nach Neustart geht es beim letzten Schritt weiter, eine schon festgelegte PIN wird nicht erneut abgefragt",
       "Neuerungen im Vollbild: nicht wegklickbar (Esc, Klick daneben), läuft von selbst weiter, Pfeile blättern, „Los geht's“ erst auf der letzten Folie",
@@ -3404,8 +3455,10 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 12,
+    "WindowsOnly": []
   },
   {
     "Id": "bild",
@@ -3418,8 +3471,8 @@
     ],
     "Functions": [],
     "Engine": [
-      "ImageDoc",
       "VideoEdit",
+      "ImageDoc",
       "MediaStudio",
       "FileShelf",
       "Colors",
@@ -3489,8 +3542,10 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": true
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": true,
+    "WarmMs": 196,
+    "WindowsOnly": []
   },
   {
     "Id": "kreativ-medien",
@@ -3501,8 +3556,8 @@
     "Type": [],
     "Functions": [],
     "Engine": [
-      "ImageDoc",
       "VideoEdit",
+      "ImageDoc",
       "MediaStudio",
       "FileShelf",
       "Colors",
@@ -3590,8 +3645,10 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 129,
+    "WindowsOnly": []
   },
   {
     "Id": "schnitt",
@@ -3604,8 +3661,8 @@
     ],
     "Functions": [],
     "Engine": [
-      "ImageDoc",
       "VideoEdit",
+      "ImageDoc",
       "MediaStudio",
       "FileShelf",
       "Colors",
@@ -3673,6 +3730,7 @@
       "Videoschnitt UI: Medien auf die Spuren, Stück ziehen ordnet um, Kante ziehen kürzt, Lineal setzt Abspielkopf, S teilt, Strg+Z, Entf, Export, Einfach-Stufe",
       "Videoschnitt UI: falsche Dateien und leere Bildspur geben klare Meldungen",
       "Videoschnitt UI: Überblenden und Titel setzen (Länge kürzer, Titel in der Vorschau), Abspielen zeigt Bilder und Titel, Hintergrund-Export mit Fortschritt, Abbrechen",
+      "Videoschnitt übersichtlich: Spurnamen, Abspielleiste unter der Vorschau, rechts Medien · Auswahl · Export – Auswahl öffnet sich beim Anklicken eines Stücks",
       "Videoschnitt „Meine Exporte“: fertiges Video bleibt in der Liste, Abspielen startet es, Ordner öffnen markiert die Datei im Explorer, Löschen in den Papierkorb",
       "Vorschläge UI: Kalender plant fällige Aufgabe ein (Ja, Rückgängig), Aufgaben aus E-Mails (Nein bleibt gemerkt), Abläufe, Videoschnitt-Stille"
     ],
@@ -3682,8 +3740,10 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": true
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": true,
+    "WarmMs": 8,
+    "WindowsOnly": []
   },
   {
     "Id": "3d",
@@ -3814,8 +3874,12 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 191,
+    "WindowsOnly": [
+      "Windows-Explorer"
+    ]
   },
   {
     "Id": "3d-druck",
@@ -3898,8 +3962,12 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 9,
+    "WindowsOnly": [
+      "Windows-Explorer"
+    ]
   },
   {
     "Id": "cad",
@@ -4010,8 +4078,12 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 188,
+    "WindowsOnly": [
+      "Windows-Explorer"
+    ]
   },
   {
     "Id": "scan3d",
@@ -4211,8 +4283,10 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 178,
+    "WindowsOnly": []
   },
   {
     "Id": "punktwolke",
@@ -4421,8 +4495,10 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": true
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": true,
+    "WarmMs": 9,
+    "WindowsOnly": []
   },
   {
     "Id": "spiele-programm",
@@ -4483,8 +4559,10 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": true
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": true,
+    "WarmMs": 14,
+    "WindowsOnly": []
   },
   {
     "Id": "spiele",
@@ -4567,8 +4645,10 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 13,
+    "WindowsOnly": []
   },
   {
     "Id": "xr",
@@ -4750,8 +4830,10 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 956,
+    "WindowsOnly": []
   },
   {
     "Id": "fahrzeug",
@@ -4947,8 +5029,10 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 152,
+    "WindowsOnly": []
   },
   {
     "Id": "cnc",
@@ -5136,8 +5220,10 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": true
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": true,
+    "WarmMs": 108,
+    "WindowsOnly": []
   },
   {
     "Id": "zwilling",
@@ -5342,8 +5428,10 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 39,
+    "WindowsOnly": []
   },
   {
     "Id": "roboter",
@@ -5560,8 +5648,10 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 82,
+    "WindowsOnly": []
   },
   {
     "Id": "karten",
@@ -5754,8 +5844,10 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": true
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": true,
+    "WarmMs": 189,
+    "WindowsOnly": []
   },
   {
     "Id": "elektronik",
@@ -5934,8 +6026,10 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": true
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": true,
+    "WarmMs": 11,
+    "WindowsOnly": []
   },
   {
     "Id": "technik",
@@ -6114,8 +6208,10 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": true
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": true,
+    "WarmMs": 176,
+    "WindowsOnly": []
   },
   {
     "Id": "architektur",
@@ -6303,8 +6399,10 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": true
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": true,
+    "WarmMs": 158,
+    "WindowsOnly": []
   },
   {
     "Id": "lernen",
@@ -6471,8 +6569,10 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 167,
+    "WindowsOnly": []
   },
   {
     "Id": "wissenschaft",
@@ -6669,8 +6769,10 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": true
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": true,
+    "WarmMs": 219,
+    "WindowsOnly": []
   },
   {
     "Id": "recherche",
@@ -6720,8 +6822,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 10,
+    "WindowsOnly": []
   },
   {
     "Id": "ki-wissen",
@@ -6780,8 +6884,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 317,
+    "WindowsOnly": []
   },
   {
     "Id": "ablaeufe",
@@ -6834,8 +6940,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 8,
+    "WindowsOnly": []
   },
   {
     "Id": "produktion",
@@ -6889,8 +6997,10 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 159,
+    "WindowsOnly": []
   },
   {
     "Id": "ki",
@@ -6969,8 +7079,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 9,
+    "WindowsOnly": []
   },
   {
     "Id": "ki-fragen",
@@ -7037,8 +7149,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 143,
+    "WindowsOnly": []
   },
   {
     "Id": "claude-verbinden",
@@ -7096,8 +7210,10 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 166,
+    "WindowsOnly": []
   },
   {
     "Id": "keys",
@@ -7173,8 +7289,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 162,
+    "WindowsOnly": []
   },
   {
     "Id": "verbindungen",
@@ -7264,8 +7382,10 @@
       "src/Trendo.App/MainWindow.Connections.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 143,
+    "WindowsOnly": []
   },
   {
     "Id": "ki-rollen",
@@ -7319,8 +7439,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 177,
+    "WindowsOnly": []
   },
   {
     "Id": "ki-bibliothek",
@@ -7355,7 +7477,7 @@
       "Wissen & Suche (2)",
       "Bilder erzeugen (2)",
       "Bilder verbessern (1)",
-      "Videos erzeugen (1)",
+      "Videos erzeugen (4)",
       "Sprache zu Text (3)",
       "Vorlesen (2)",
       "Musik (3)",
@@ -7404,8 +7526,10 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 161,
+    "WindowsOnly": []
   },
   {
     "Id": "ki-quellen",
@@ -7488,8 +7612,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 166,
+    "WindowsOnly": []
   },
   {
     "Id": "ki-internet",
@@ -7533,8 +7659,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 188,
+    "WindowsOnly": []
   },
   {
     "Id": "baukasten",
@@ -7620,8 +7748,10 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 169,
+    "WindowsOnly": []
   },
   {
     "Id": "nachbau",
@@ -7661,8 +7791,10 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 165,
+    "WindowsOnly": []
   },
   {
     "Id": "oss",
@@ -7747,8 +7879,10 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 192,
+    "WindowsOnly": []
   },
   {
     "Id": "erweiterungen",
@@ -7806,8 +7940,10 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 176,
+    "WindowsOnly": []
   },
   {
     "Id": "dev",
@@ -7920,8 +8056,10 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 212,
+    "WindowsOnly": []
   },
   {
     "Id": "teilen",
@@ -7929,19 +8067,50 @@
     "Studio": "SYS-06",
     "StudioName": "Dateien teilen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [],
     "Engine": [],
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "\uD83D\uDC65 Team",
       "Ordner wählen …",
       "Teilen starten"
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Ordner im Heimnetz teilen"
     ],
@@ -7964,8 +8133,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 183,
+    "WindowsOnly": []
   },
   {
     "Id": "approvals",
@@ -7973,17 +8144,48 @@
     "Studio": "CORE-11",
     "StudioName": "Daten schützen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [],
     "Engine": [],
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "Verstanden"
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Freigaben"
     ],
@@ -8001,8 +8203,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 164,
+    "WindowsOnly": []
   },
   {
     "Id": "schutz",
@@ -8010,12 +8214,41 @@
     "Studio": "CORE-11",
     "StudioName": "Daten schützen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [],
     "Engine": [],
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "\uD83D\uDC65 Team",
       "Jetzt sichern",
       "Ordner wählen …",
@@ -8023,7 +8256,9 @@
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Schutz & Datenschutz"
     ],
@@ -8046,8 +8281,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 150,
+    "WindowsOnly": []
   },
   {
     "Id": "sicherung",
@@ -8055,18 +8292,49 @@
     "Studio": "CORE-11",
     "StudioName": "Daten schützen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [],
     "Engine": [],
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "Verstanden",
       "Jetzt sichern"
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Sicherung"
     ],
@@ -8079,8 +8347,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 169,
+    "WindowsOnly": []
   },
   {
     "Id": "studios",
@@ -8187,8 +8457,10 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 212,
+    "WindowsOnly": []
   },
   {
     "Id": "desktop-symbole",
@@ -8279,8 +8551,10 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 179,
+    "WindowsOnly": []
   },
   {
     "Id": "einrichtung",
@@ -8320,8 +8594,10 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 162,
+    "WindowsOnly": []
   },
   {
     "Id": "projects",
@@ -8386,8 +8662,10 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 148,
+    "WindowsOnly": []
   },
   {
     "Id": "start",
@@ -8439,6 +8717,7 @@
       "Design: die neun bekannten Studios zeigen auf der Studios-Seite den echten Status aus requirements.yaml",
       "Desktop: anfangs keine Symbole; über Startmenü, Seite „Desktop-Symbole“ und Studio Manager hinzufügen; Rechtsklick entfernt; bleibt gespeichert",
       "Drei Studios gleichzeitig bei 1366×768: Briefe, Spiele, 3D – Taskleiste, Snap, Eingabe bleibt",
+      "Einstellungen-App wie Windows 11: Bereiche links, Suche über alle Einstellungen, Betriebsmodus öffnet den Stick-Schreiber ohne PC-Einrichtung und ohne „vom PC entfernen“",
       "Ersteinrichtung im Vollbild: Claude freiwillig zuerst; Stick/SSD zeigen echte Laufwerke mit GB, zu kleine gesperrt, Windows-Laufwerk nie; ehrlicher Hinweis solange das Abbild fehlt",
       "Ersteinrichtung: nach Neustart geht es beim letzten Schritt weiter, eine schon festgelegte PIN wird nicht erneut abgefragt",
       "Fenster: Einstellung übernehmen (Design-Knopf per Mausklick) schließt keine Fenster – alle kommen mit Lage und Zustand zurück",
@@ -8507,8 +8786,10 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 6,
+    "WindowsOnly": []
   },
   {
     "Id": "heilung",
@@ -8516,18 +8797,49 @@
     "Studio": "X-02",
     "StudioName": "Einrichten & Reparieren",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [],
     "Engine": [],
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "\uD83D\uDC65 Team",
       "Jetzt prüfen und reparieren"
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Selbstheilung"
     ],
@@ -8550,8 +8862,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 106,
+    "WindowsOnly": []
   },
   {
     "Id": "geraete",
@@ -8559,18 +8873,49 @@
     "Studio": "SYS-07",
     "StudioName": "Geräte erkennen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [],
     "Engine": [],
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "\uD83D\uDC65 Team",
       "Geräte suchen"
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Geräte & Laufwerke"
     ],
@@ -8593,8 +8938,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 116,
+    "WindowsOnly": []
   },
   {
     "Id": "handy",
@@ -8602,12 +8949,41 @@
     "Studio": "X-08",
     "StudioName": "Handy verbinden",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [],
     "Engine": [],
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "\uD83D\uDC65 Team",
       "\uD83C\uDFE0  Zuhause (im selben WLAN)",
       "\uD83C\uDF0D  Überall – auch unterwegs",
@@ -8623,7 +8999,9 @@
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Handy verbinden"
     ],
@@ -8656,8 +9034,10 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 164,
+    "WindowsOnly": []
   },
   {
     "Id": "ressourcen",
@@ -8666,13 +9046,41 @@
     "StudioName": "Leistung anzeigen",
     "Area": "System & Sicherheit",
     "Type": [
-      "Diagramm/Zeichnung"
+      "Diagramm/Zeichnung",
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
     "Functions": [],
     "Engine": [],
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "\uD83D\uDC65 Team",
       "Verstanden",
       "Leistung",
@@ -8683,7 +9091,8 @@
     "Formats": [],
     "Dependencies": [],
     "Ui": [
-      "Diagramm/Zeichnung"
+      "Diagramm/Zeichnung",
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
     "Tabs": [
       "Speicher & Leistung"
@@ -8724,8 +9133,10 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 180,
+    "WindowsOnly": []
   },
   {
     "Id": "verbund",
@@ -8733,12 +9144,41 @@
     "Studio": "CORE-04",
     "StudioName": "PC, Pi & Handy verbinden",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [],
     "Engine": [],
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "\uD83D\uDC65 Team",
       "Koppeln",
       "Erreichbarkeit prüfen",
@@ -8746,7 +9186,9 @@
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Geräteverbund (PC, Pi, Android)"
     ],
@@ -8773,8 +9215,10 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 175,
+    "WindowsOnly": []
   },
   {
     "Id": "appcenter",
@@ -8782,19 +9226,50 @@
     "Studio": "SYS-04",
     "StudioName": "Programme installieren",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [],
     "Engine": [],
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "\uD83D\uDC65 Team",
       "Suchen",
       "Installierte & Updates anzeigen"
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Programme verwalten"
     ],
@@ -8817,8 +9292,10 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 146,
+    "WindowsOnly": []
   },
   {
     "Id": "apps",
@@ -8826,7 +9303,9 @@
     "Studio": "SYS-11",
     "StudioName": "Programme starten",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [
       {
         "Nr": "SYS-11-P01",
@@ -8964,6 +9443,33 @@
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "Verstanden",
       "Installieren …"
     ],
@@ -9000,7 +9506,9 @@
       "mpv (optional)",
       "Python (optional)"
     ],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Apps"
     ],
@@ -9051,8 +9559,12 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 154,
+    "WindowsOnly": [
+      "Registry"
+    ]
   },
   {
     "Id": "hinzufuegen",
@@ -9060,7 +9572,9 @@
     "Studio": "SYS-11",
     "StudioName": "Programme starten",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [
       {
         "Nr": "SYS-11-P01",
@@ -9198,8 +9712,34 @@
     "Tools": [
       "Los",
       "✳ Claude",
-      "Alles",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
       "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
+      "Alles",
       "Programme",
       "KI",
       "GitHub",
@@ -9242,7 +9782,9 @@
       "mpv (optional)",
       "Python (optional)"
     ],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Hinzufügen"
     ],
@@ -9264,8 +9806,12 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 191,
+    "WindowsOnly": [
+      "Registry"
+    ]
   },
   {
     "Id": "prog-pflege",
@@ -9273,7 +9819,9 @@
     "Studio": "SYS-11",
     "StudioName": "Programme starten",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [
       {
         "Nr": "SYS-11-P01",
@@ -9411,6 +9959,33 @@
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "\uD83D\uDC65 Team",
       "Nach Updates schauen",
       "Datei wählen …",
@@ -9453,7 +10028,9 @@
       "mpv (optional)",
       "Python (optional)"
     ],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Pflegen",
       "Starten",
@@ -9484,8 +10061,12 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 148,
+    "WindowsOnly": [
+      "Registry"
+    ]
   },
   {
     "Id": "components",
@@ -9493,7 +10074,9 @@
     "Studio": "SYS-11",
     "StudioName": "Programme starten",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [
       {
         "Nr": "SYS-11-P01",
@@ -9631,6 +10214,33 @@
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "Verstanden",
       "Fehlende Programme von GitHub nachladen",
       "Zustimmen & fehlende kostenlose Programme installieren",
@@ -9673,7 +10283,9 @@
       "mpv (optional)",
       "Python (optional)"
     ],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Zusatzprogramme"
     ],
@@ -9738,8 +10350,12 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 213,
+    "WindowsOnly": [
+      "Registry"
+    ]
   },
   {
     "Id": "fortschritt",
@@ -9747,7 +10363,9 @@
     "Studio": "SYS-13",
     "StudioName": "Qualität prüfen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [
       {
         "Nr": "SYS-13-P01",
@@ -9883,6 +10501,33 @@
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "Verstanden"
     ],
     "Formats": [
@@ -9891,7 +10536,9 @@
       ".txt"
     ],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Fortschritt"
     ],
@@ -9914,8 +10561,10 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 218,
+    "WindowsOnly": []
   },
   {
     "Id": "qual-leistung",
@@ -9923,7 +10572,9 @@
     "Studio": "SYS-13",
     "StudioName": "Qualität prüfen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [
       {
         "Nr": "SYS-13-P01",
@@ -10059,6 +10710,33 @@
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "\uD83D\uDC65 Team",
       "Leistung",
       "Rückfall & Lizenzen",
@@ -10071,7 +10749,9 @@
       ".txt"
     ],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Leistung",
       "Rückfall & Lizenzen"
@@ -10095,8 +10775,10 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 177,
+    "WindowsOnly": []
   },
   {
     "Id": "system",
@@ -10104,7 +10786,9 @@
     "Studio": "SYS-13",
     "StudioName": "Qualität prüfen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [
       {
         "Nr": "SYS-13-P01",
@@ -10240,6 +10924,33 @@
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "Verstanden"
     ],
     "Formats": [
@@ -10248,7 +10959,9 @@
       ".txt"
     ],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "System & Sicherheit"
     ],
@@ -10284,8 +10997,10 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 174,
+    "WindowsOnly": []
   },
   {
     "Id": "systemcheck",
@@ -10293,7 +11008,9 @@
     "Studio": "SYS-13",
     "StudioName": "Qualität prüfen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [
       {
         "Nr": "SYS-13-P01",
@@ -10429,6 +11146,33 @@
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "Verstanden"
     ],
     "Formats": [
@@ -10437,7 +11181,9 @@
       ".txt"
     ],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Systemcheck"
     ],
@@ -10464,8 +11210,10 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 151,
+    "WindowsOnly": []
   },
   {
     "Id": "settings",
@@ -10474,7 +11222,8 @@
     "StudioName": "Schrift & Farben anpassen",
     "Area": "System & Sicherheit",
     "Type": [
-      "Bildansicht"
+      "Bildansicht",
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
     "Functions": [
       {
@@ -10610,6 +11359,33 @@
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "Verstanden",
       "Aussehen",
       "Farbe",
@@ -10640,27 +11416,13 @@
       "Polarlicht",
       "Wellen",
       "Morgen",
-      "Hintergrund nach Tageszeit wechseln (Morgen · Wellen · Bergsee · Polarlicht)",
-      "Bewegung reduzieren (keine Animationen)",
-      "Updates automatisch laden (Noch nicht geprüft)",
-      "Normal",
-      "Groß",
-      "Sehr groß",
-      "Automatisch",
-      "Volle Effekte",
-      "Sparsam (Raspberry Pi)",
-      "Aktuelle Projekte",
-      "KI-Router",
-      "Geräte und Messwerte",
-      "Agenten Live",
-      "Studio Manager",
-      "Open Source",
-      "Startbildschirm übernehmen"
+      "Hintergrund nach Tageszeit wechseln (Morgen · Wellen · Bergsee · Polarlicht)"
     ],
     "Formats": [],
     "Dependencies": [],
     "Ui": [
-      "Bildansicht"
+      "Bildansicht",
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
     "Tabs": [
       "Einstellungen"
@@ -10737,8 +11499,10 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 429,
+    "WindowsOnly": []
   },
   {
     "Id": "personen",
@@ -10746,7 +11510,9 @@
     "Studio": "SYS-12",
     "StudioName": "Schrift & Farben anpassen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [
       {
         "Nr": "SYS-12-P01",
@@ -10881,21 +11647,50 @@
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "Jetzt sperren",
       "Anmeldung ändern",
       "Beim Start von Trendo nach PIN/Passwort fragen",
-      "Hinzufügen",
       "Kind (einfache Bedienung, Installieren nur durch Erwachsene)"
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Personen"
     ],
     "Tests": [
       "Anmeldung: „Beim Start nach PIN fragen“ lässt sich abschalten",
       "Apps: WhatsApp installieren → Desktop und Startmenü, öffnet als App-Fenster mit eigenem Speicher, Entfernen löscht die Anmeldung",
+      "Einstellungen-App wie Windows 11: Bereiche links, Suche über alle Einstellungen, Betriebsmodus öffnet den Stick-Schreiber ohne PC-Einrichtung und ohne „vom PC entfernen“",
       "Ersteinrichtung im Vollbild: Claude freiwillig zuerst; Stick/SSD zeigen echte Laufwerke mit GB, zu kleine gesperrt, Windows-Laufwerk nie; ehrlicher Hinweis solange das Abbild fehlt",
       "Ersteinrichtung: nach Neustart geht es beim letzten Schritt weiter, eine schon festgelegte PIN wird nicht erneut abgefragt",
       "SYS-12 (UI): Bericht über alle Seiten; keine Seite tiefer als 2 Ebenen; Prüfseite hat keine unbenannten Knöpfe",
@@ -10920,8 +11715,10 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 160,
+    "WindowsOnly": []
   },
   {
     "Id": "bedien-sehen",
@@ -10929,7 +11726,9 @@
     "Studio": "SYS-12",
     "StudioName": "Schrift & Farben anpassen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [
       {
         "Nr": "SYS-12-P01",
@@ -11064,6 +11863,33 @@
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "\uD83D\uDC65 Team",
       "Sehen",
       "Hilfen",
@@ -11082,7 +11908,9 @@
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Sehen",
       "Hilfen",
@@ -11112,8 +11940,10 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 160,
+    "WindowsOnly": []
   },
   {
     "Id": "updates",
@@ -11121,7 +11951,9 @@
     "Studio": "SYS-12",
     "StudioName": "Schrift & Farben anpassen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [
       {
         "Nr": "SYS-12-P01",
@@ -11256,6 +12088,33 @@
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "Automatisch nach Updates suchen und laden",
       "Sofort, sobald es geladen ist – mit 30 Sekunden Hinweis, alles wird vorher gesichert",
       "Beim nächsten Start von Trendo",
@@ -11265,7 +12124,9 @@
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Trendo-Updates"
     ],
@@ -11293,8 +12154,10 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 160,
+    "WindowsOnly": []
   },
   {
     "Id": "modus",
@@ -11302,24 +12165,63 @@
     "Studio": "SYS-01",
     "StudioName": "Startmodus wählen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [],
     "Engine": [],
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "\uD83D\uDC65 Team"
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Betriebsmodus"
     ],
     "Tests": [
+      "Anmeldung: „Beim Start nach PIN fragen“ lässt sich abschalten",
+      "Apps: WhatsApp installieren → Desktop und Startmenü, öffnet als App-Fenster mit eigenem Speicher, Entfernen löscht die Anmeldung",
       "CORE-04 UI: mit echtem Begleiter koppeln (Code vom Gerät), Details holen, Erreichbarkeit, Aufgabe zuordnen, entfernen",
+      "Einstellungen-App wie Windows 11: Bereiche links, Suche über alle Einstellungen, Betriebsmodus öffnet den Stick-Schreiber ohne PC-Einrichtung und ohne „vom PC entfernen“",
+      "Ersteinrichtung im Vollbild: Claude freiwillig zuerst; Stick/SSD zeigen echte Laufwerke mit GB, zu kleine gesperrt, Windows-Laufwerk nie; ehrlicher Hinweis solange das Abbild fehlt",
+      "Ersteinrichtung: nach Neustart geht es beim letzten Schritt weiter, eine schon festgelegte PIN wird nicht erneut abgefragt",
       "SYS-01 UI: Betriebsmodus zeigt aktuellen Modus und Fähigkeiten",
       "SYS-01: Modus aus echten Merkmalen, Fähigkeiten ehrlich (Blockiert statt vorgetäuscht), USB nur Anleitung",
+      "Stick-Schreiber schützt: Start-/Systemlaufwerk, Windows-Laufwerk, interne Platte als „Stick“ und zu kleine Laufwerke werden verweigert",
+      "Stick-Schreiber: Abbild im Release erkannt, Laufwerk wählen, Löschen erst nach Eintippen des Buchstabens, laden, prüfen, schreiben (virtuelle Festplatte), Boot-Tasten",
+      "TV-Vollbild: kleines Fenster „Verkleinern“ beim Start und bei Mausbewegung, ein Klick verkleinert",
       "X-08 UI: Bildschirm, Apps und Überschriften über die WLAN-Adresse, scrcpy nur nach Frage",
       "X-08 UI: Bluetooth sucht ohne zu koppeln, adb-Einrichtung erst nach Ja",
       "X-08 UI: Handy suchen (adb), Freigabe-Hinweis, Senden erst nach Zustimmung",
@@ -11327,8 +12229,10 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 151,
+    "WindowsOnly": []
   },
   {
     "Id": "downloads",
@@ -11336,7 +12240,9 @@
     "Studio": "SYS-03",
     "StudioName": "Surfen & Herunterladen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [
       {
         "Nr": "SYS-03-P01",
@@ -11476,6 +12382,33 @@
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "Verstanden",
       "Herunterladen",
       "Im Standardbrowser öffnen",
@@ -11514,7 +12447,9 @@
       "VLC (optional)",
       "mpv (optional)"
     ],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Downloads"
     ],
@@ -11571,8 +12506,12 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 22,
+    "WindowsOnly": [
+      "Registry"
+    ]
   },
   {
     "Id": "netz-pruefen",
@@ -11580,7 +12519,9 @@
     "Studio": "SYS-03",
     "StudioName": "Surfen & Herunterladen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [
       {
         "Nr": "SYS-03-P01",
@@ -11720,8 +12661,34 @@
     "Tools": [
       "Los",
       "✳ Claude",
-      "\uD83D\uDC65 Team",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
       "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
+      "\uD83D\uDC65 Team",
       "Laden & Speichern",
       "Browser",
       "Datei wählen …",
@@ -11761,7 +12728,9 @@
       "VLC (optional)",
       "mpv (optional)"
     ],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Sicher prüfen",
       "Laden & Speichern",
@@ -11790,8 +12759,12 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 20,
+    "WindowsOnly": [
+      "Registry"
+    ]
   },
   {
     "Id": "forensik",
@@ -11799,12 +12772,41 @@
     "Studio": "SPEC-12",
     "StudioName": "System auf Gefahren prüfen",
     "Area": "System & Sicherheit",
-    "Type": [],
+    "Type": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Functions": [],
     "Engine": [],
     "Tools": [
       "Los",
       "✳ Claude",
+      "Darstellung & Sprache",
+      "Personen & Konten",
+      "Sehen & Bedienhilfen",
+      "Trendo-Updates",
+      "Betriebsmodus",
+      "Geräte & Laufwerke",
+      "Handy verbinden",
+      "Geräteverbund",
+      "Im Heimnetz teilen",
+      "Apps",
+      "Programme verwalten",
+      "Hinzufügen",
+      "Pflegen & Aktualisieren",
+      "Zusatzprogramme",
+      "Downloads",
+      "Schutz & Datenschutz",
+      "Freigaben",
+      "Sicherung",
+      "Selbstheilung",
+      "Sicher prüfen",
+      "Sicherheits-Werkzeuge",
+      "Protokoll & Abstürze",
+      "Speicher & Leistung",
+      "Leistung messen",
+      "Systemcheck",
+      "Qualitäts-Ampel",
+      "Bau-Fortschritt",
       "\uD83D\uDC65 Team",
       "Datei wählen …",
       "Prüfen",
@@ -11812,7 +12814,9 @@
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Ui": [
+      "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
+    ],
     "Tabs": [
       "Sicherheits-Werkzeuge & Beweise"
     ],
@@ -11839,7 +12843,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand c58bb7c)",
-    "Shell": false
+    "Version": "0.9.36 (Stand bc62519)",
+    "Shell": false,
+    "WarmMs": 163,
+    "WindowsOnly": []
   }
 ]

@@ -1,6 +1,6 @@
 # Pflegen – Testplan
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `prog-pflege` · Stand: 0.9.36 (Stand c58bb7c)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `prog-pflege` · Stand: 0.9.36 (Stand bc62519)
 
 18 Tests sprechen dieses Programm an.
 

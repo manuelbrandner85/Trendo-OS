@@ -34,6 +34,10 @@ public sealed record ProgramEntry
     public string Version { get; init; } = "";
     /// <summary>Läuft über die gemeinsame Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen).</summary>
     public bool Shell { get; init; }
+    /// <summary>A1: gemessene Öffnungszeit (warm, ms) beim Katalog-Lauf; null = nicht gemessen.</summary>
+    public double? WarmMs { get; init; }
+    /// <summary>A1: Windows-gebundene Stellen im Quelltext (siehe <see cref="QualityLight.WindowsOnly"/>).</summary>
+    public List<string> WindowsOnly { get; init; } = [];
 }
 
 public sealed record CatalogFunction(string Nr, string Name, string State, string? Test);
@@ -92,6 +96,7 @@ public static class ProgramCatalog
         {
             Engine = engine, Formats = formats, Dependencies = deps, Functions = functions, FunctionCatalog = fc, Rea = rea, ReaSummary = reaSum,
             Tests = Tests(repo, e), SourceFiles = files.Select(f => Rel(repo, f)).ToList(), Status = Status(requirementsLines ?? ReadLines(Path.Combine(repo, "requirements.yaml")), e.Studio),
+            WindowsOnly = QualityLight.WindowsOnly(text),
         };
     }
 
@@ -182,9 +187,12 @@ public static class ProgramCatalog
         sb.Append("Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funktionskataloge, Vorbild-Analysen, Tests). ");
         sb.Append("Nicht von Hand pflegen – neu erzeugen mit `TRENDO_KATALOG=. dotnet run --project tools/Trendo.Render -c Release`.\n\n");
         sb.Append($"{all.Count} Programme in {all.Select(x => x.Studio).Distinct().Count()} Studios.\n\n");
-        sb.Append("| Programm | Studio | Bereich | Arbeitsfläche | Funktionen | Tests | Vorbild-Analyse | Modulstatus | Doku |\n|---|---|---|---|---|---|---|---|---|\n");
+        sb.Append("| Ampel | Programm | Studio | Bereich | Arbeitsfläche | Funktionen | Tests | Vorbild-Analyse | Öffnen (warm) | Trendo OS (Linux) | Modulstatus | Doku |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n");
         foreach (var e in all)
-            sb.Append($"| {e.Name} | {e.StudioName} ({e.Studio}) | {e.Area} | {(e.Type.Count == 0 ? "keine eigene erkannt" : string.Join(", ", e.Type))} | {(e.Functions.Count > 0 ? e.Functions.Count.ToString() : "–")} | {e.Tests.Count} | {(e.Rea is null ? "–" : "ja")} | {e.Status} | [Paket]({e.Id}/README.md) |\n");
+        {
+            var q = QualityLight.Rate(e);
+            sb.Append($"| {(q.Light == "grün" ? "🟢" : q.Light == "gelb" ? "🟡" : "🔴")} {q.Score} | {e.Name} | {e.StudioName} ({e.Studio}) | {e.Area} | {(e.Type.Count == 0 ? "keine eigene erkannt" : string.Join(", ", e.Type))} | {(e.Functions.Count > 0 ? e.Functions.Count.ToString() : "–")} | {e.Tests.Count} | {(e.Rea is null ? "–" : "ja")} | {(e.WarmMs is { } ms ? $"{ms:0} ms" : "–")} | {(e.WindowsOnly.Count == 0 ? "ja" : "eingeschränkt (" + string.Join(", ", e.WindowsOnly) + ")")} | {e.Status} | [Paket]({e.Id}/README.md) |\n");
+        }
         return sb.ToString();
     }
 

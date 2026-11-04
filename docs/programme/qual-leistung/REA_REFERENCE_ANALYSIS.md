@@ -1,5 +1,5 @@
 # Leistung – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-leistung` · Stand: 0.9.36 (Stand c58bb7c)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-leistung` · Stand: 0.9.36 (Stand bc62519)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

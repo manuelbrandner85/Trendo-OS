@@ -938,8 +938,8 @@ public sealed partial class MainWindow : Window
         var note = P(_kiConnected ? $"Die KI läuft auf diesem PC (Modell {KiModelName}). Nichts geht ins Internet, nichts kostet extra." : "Die KI ist noch nicht eingerichtet. Unter „Zusatzprogramme“ installiert Trendo sie kostenlos mit einem Klick.", Text);
         var center = new StackPanel { Spacing = 10, Children = { chat, note, Nav2("Zusatzprogramme öffnen", "components") } };
         var side = new Border { Background = Brush.Parse(C("#55222222", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(12), Child = new StackPanel { Spacing = 8, Children = { H("Modell und Status", 14), state, KiModelChooser() } } };
-        var cols = new Grid { ColumnDefinitions = new ColumnDefinitions("200,*,240"), ColumnSpacing = 12 };
-        var navBox = new Border { Background = Brush.Parse(C("#55222222", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(8), Child = KiNav(vertical: true) };
+        var cols = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,240"), ColumnSpacing = 12 };
+        var navBox = new Border { Width = 200, IsVisible = !InAppShell("ki"), Background = Brush.Parse(C("#55222222", "#CCFFFFFF")), BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(8), Child = KiNav(vertical: true) };
         cols.Children.Add(navBox); Grid.SetColumn(center, 1); cols.Children.Add(center); Grid.SetColumn(side, 2); cols.Children.Add(side);
         return Page("KI", cols, inputBox);
     }

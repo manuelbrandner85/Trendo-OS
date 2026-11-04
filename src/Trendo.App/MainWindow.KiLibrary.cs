@@ -311,6 +311,10 @@ public partial class MainWindow
                 sp.Children.Add(p); sp.Children.Add(go);
                 break;
             }
+            case KiKind.Video when m.Id is "wan2.2-singen" or "video-pruefung" or "wan2.2-szenen":
+                sp.Children.Add(P("Wird von Trendo Musik im Reiter „Musikvideo“ genutzt (Drehbuch → Filmszenen → Prüfung).", Text, 12));
+                sp.Children.Add(Nav2("Trendo Musik öffnen", "musik-studio"));
+                break;
             case KiKind.Video:
             {
                 var p = Prompt("Beschreibe die Szene, z. B. „eine Katze läuft durch hohes Gras, Zeitlupe“");

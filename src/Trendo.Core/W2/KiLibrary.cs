@@ -4,7 +4,7 @@ namespace Trendo.Core;
 public enum KiKind { Chat, Denken, Code, BildVerstehen, Uebersetzen, Wissen, BildErzeugen, BildVerbessern, Video, SpracheZuText, TextZuSprache, Musik, Modell3D, Geraeusche }
 
 /// <summary>Womit Trendo ein Modell ausführt. Jede Laufzeit ist ein freies Programm, das Trendo selbst in „TrendoWerkzeuge“ einrichtet.</summary>
-public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse, Spuren }
+public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse, Spuren, VideoPruefung }
 
 /// <summary>Eine Laufzeit: offizielles GitHub-Projekt mit fest gewählter Veröffentlichung (Tag, Datei, SHA-256, Größe), Hauptprogramm im ZIP.
 /// Ollama und Python kommen aus dem Vollpaket (<see cref="Tag"/> leer).</summary>
@@ -77,6 +77,9 @@ public static class KiLibrary
         // Trendo Musik M5: Song-Analyse mit librosa (nur ein PyPI-Paket, kein GitHub-Quellcode)
         new(KiRuntime.MusikAnalyse, "Song-Analyse (librosa)", "librosa/librosa", "ISC", "Erkennt Tonart, Tempo, Takt, Akkorde und Tonumfang eines Lieds – lokal.",
             "librosa-0.11.0", "", "", 0, "env/Scripts/python.exe"),
+        // KI-Musikvideo G (04.11.2026): Artefakt-Prüfung mit MediaPipe (Google, Apache-2.0) – Körper, Hände, Gesichter, Bildsprünge, Lippen
+        new(KiRuntime.VideoPruefung, "Video-Prüfung (MediaPipe)", "google-ai-edge/mediapipe", "Apache-2.0", "Prüft KI-Videos auf Fehlbildungen (zusätzliche Arme, Hände, Gesichter), Bildsprünge und passende Lippen – lokal.",
+            "mediapipe-0.10.35", "", "", 0, "env/Scripts/python.exe"),
         // Trendo Musik (03.11.2026): Spuren trennen mit Demucs (Meta, MIT) – PyPI-Paket auf fester Fassung, Modell htdemucs (80 MB)
         new(KiRuntime.Spuren, "Spuren trennen (Demucs)", "facebookresearch/demucs", "MIT", "Trennt ein Lied in Gesang, Schlagzeug, Bass und Rest – lokal.",
             "demucs-4.0.1", "", "", 0, "env/Scripts/python.exe"),
@@ -128,6 +131,23 @@ public static class KiLibrary
             [new(Hf + "Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/diffusion_models/wan2.1_t2v_1.3B_fp16.safetensors", "wan2.1_t2v_1.3B_fp16.safetensors", 2_838_303_560),
              new(Hf + "city96/umt5-xxl-encoder-gguf/resolve/main/umt5-xxl-encoder-Q8_0.gguf", "umt5-xxl-encoder-Q8_0.gguf", 6_043_068_256),
              new(Hf + "Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors", "wan_2.1_vae.safetensors", 253_815_318)]),
+        // KI-Musikvideo C (04.11.2026): Wan 2.2 (Alibaba, Apache-2.0) über stable-diffusion.cpp – Größen laut Hugging Face
+        new("wan2.2-szenen", KiKind.Video, KiRuntime.StableDiffusionCpp, "Wan 2.2 – Filmszenen fürs Musikvideo (5B)", "", 11.7, 16, "Apache-2.0",
+            "echte Filmszenen aus Drehbuch und Figurenbild (bis 5 s, 1280 × 704)", "Wird von Trendo Musik im Reiter „Musikvideo“ genutzt. Braucht eine Grafikkarte mit mind. 8 GB.",
+            [new(Hf + "QuantStack/Wan2.2-TI2V-5B-GGUF/resolve/main/Wan2.2-TI2V-5B-Q6_K.gguf", "Wan2.2-TI2V-5B-Q6_K.gguf", 4_211_683_680),
+             new(Hf + "city96/umt5-xxl-encoder-gguf/resolve/main/umt5-xxl-encoder-Q8_0.gguf", "umt5-xxl-encoder-Q8_0.gguf", 6_043_068_256),
+             new(Hf + "Comfy-Org/Wan-2.2/resolve/main/split_files/vae/wan2.2_vae.safetensors", "wan2.2_vae.safetensors", 1_409_400_960)]),
+        new("wan2.2-singen", KiKind.Video, KiRuntime.StableDiffusionCpp, "Wan 2.2 S2V – Figur singt zur Stimme (14B)", "", 13.7, 32, "Apache-2.0",
+            "Sängerin oder Sänger singt sichtbar zum Lied – Mund, Mimik und Körper folgen der Gesangsspur", "Wird von Trendo Musik genutzt (zusätzlich zu „Filmszenen“). Rechnet langsam auf 12 GB Grafikspeicher (Teile im Arbeitsspeicher).",
+            [new(Hf + "QuantStack/Wan2.2-S2V-14B-GGUF/resolve/main/Wan2.2-S2V-14B-Q4_K_M.gguf", "Wan2.2-S2V-14B-Q4_K_M.gguf", 13_861_697_120),
+             new(Hf + "Comfy-Org/Wan-2.2/resolve/main/split_files/audio_encoders/wav2vec2_large_english_fp16.safetensors", "wav2vec2_large_english_fp16.safetensors", 630_997_322),
+             new(Hf + "Comfy-Org/Wan-2.2/resolve/main/split_files/vae/wan_2.1_vae.safetensors", "wan_2.1_vae.safetensors", 253_815_318)]),
+        new("video-pruefung", KiKind.Video, KiRuntime.VideoPruefung, "Artefakt-Prüfung für KI-Videos (MediaPipe)", "", 0.4, 4, "Apache-2.0",
+            "findet zusätzliche Arme, Hände oder Gesichter, Bildsprünge und unpassende Lippen", "Wird von Trendo Musik bei jeder Einstellung genutzt – fehlerhafte werden neu erzeugt.",
+            // MediaPipe-Modelle (Google, Apache-2.0) liegen in Trendos eigener Ablage, weil die KI-Bibliothek nur Hugging Face und GitHub zulässt
+            [new(Vollpaket.OnlineBase + "pose_landmarker_full.task", "pose_landmarker_full.task", 9_398_198),
+             new(Vollpaket.OnlineBase + "hand_landmarker.task", "hand_landmarker.task", 7_819_105),
+             new(Vollpaket.OnlineBase + "face_landmarker.task", "face_landmarker.task", 3_758_596)]),
         // Sprache zu Text
         new("whisper-base", KiKind.SpracheZuText, KiRuntime.WhisperCpp, "Whisper Base (schnell)", "", 0.14, 4, "MIT",
             "Diktate und klare Aufnahmen", "Audio- oder Videodatei wählen, „Mitschreiben“.",

@@ -120,9 +120,11 @@ public class AppsAndSetupResumeTests
         Assert.Contains("64 GB · passt", w.Find<TextBlock>("wiz-drive-E").Text);
         Assert.Contains("zu klein", w.Find<TextBlock>("wiz-drive-F").Text);
         Assert.Null(w.TryFind<TextBlock>("wiz-drive-G")); // SSD erscheint nicht bei „Stick“
-        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Abbild für Stick und SSD wird gerade gebaut"));
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Als Programm unter Windows“ wählen"));
         w.Find<Button>("wiz-use-ssd").Press(); Pump();
         Assert.Contains("500 GB · passt", w.Find<TextBlock>("wiz-drive-G").Text);
+        Assert.False(w.Find<Button>("wiz-start-next").IsEnabled); // strikt getrennt: ohne Abbild nie still auf den PC ausweichen
+        w.Find<Button>("wiz-use-programm").Press(); Pump();
         w.Find<Button>("wiz-start-next").Press(); Pump();
         Assert.Equal("einrichtung", w.CurrentView); Assert.True(w.SetupFullscreen);
         w.Close();
@@ -159,6 +161,7 @@ public class AppsAndSetupResumeTests
             w.Find<Button>("wiz-use-stick").Press(); Pump();
             Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Trendo OS 0.9.71 liegt bereit"));
             Assert.Null(w.TryFind<Button>("wiz-pick-F")); // zu klein: nicht wählbar
+            Assert.False(w.Find<Button>("wiz-start-next").IsEnabled); // erst Laufwerk wählen
             w.Find<Button>("wiz-pick-E").Press(); Pump();
             w.Find<Button>("wiz-start-next").Press(); Pump();
             Assert.Equal("einrichtung-abbild", w.CurrentView);
@@ -173,8 +176,11 @@ public class AppsAndSetupResumeTests
             Assert.Equal(img, (await File.ReadAllBytesAsync(disk))[..img.Length]);
             Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Lenovo: F12"));
             Assert.False(File.Exists(Path.Combine(root, "abbild", "0.9.71", "TrendoOS-Abbild.part00"))); // Teile nach der Prüfung gelöscht
-            w.Find<Button>("wiz-img-next").Press(); Pump();
-            Assert.Equal("einrichtung", w.CurrentView);
+            var removed = 0; w.UninstallPcOverride = () => removed++;
+            w.Find<Button>("wiz-img-finish").Press(); Pump(); // nur Stick gewählt: Trendo entfernt sich wieder vom PC
+            Assert.Equal(1, removed);
+            Assert.False(Directory.Exists(Path.Combine(root, "abbild")));
+            Assert.False(UserSettings.Load(root).SetupDone); // keine PC-Einrichtung
         }
         finally { w.Close(); }
     }
@@ -189,5 +195,29 @@ public class AppsAndSetupResumeTests
         Assert.Contains(ImageWriter.Refuse(new(1, false, false, 1000 * gb, "SATA", "x", ["D"]), 2 * gb, false, "C:\\"), t => t.Contains("kein USB"));
         Assert.Contains(ImageWriter.Refuse(new(1, false, false, 1000 * gb, "SATA", "x", ["D"]), 2 * gb, true, "C:\\"), t => t.Contains("kein externes"));
         Assert.Contains(ImageWriter.Refuse(new(3, false, false, 16 * gb, "USB", "x", ["F"]), 2 * gb, false, "C:\\"), t => t.Contains("zu klein"));
+    }
+
+    [AvaloniaFact(DisplayName = "Einstellungen-App wie Windows 11: Bereiche links, Suche über alle Einstellungen, Betriebsmodus öffnet den Stick-Schreiber ohne PC-Einrichtung und ohne „vom PC entfernen“")]
+    public void Settings_app()
+    {
+        var (w, _, _) = Ui.Open();
+        w.Show("modus"); Pump();
+        Assert.NotNull(w.Find<Grid>("settings-shell"));
+        Assert.NotNull(w.TryFind<Button>("settings-nav-geraete"));
+        Assert.Contains(w.GetLogicalTexts(), t => t == "Datenschutz & Sicherheit" || t.EndsWith("Datenschutz & Sicherheit"));
+        Assert.Contains(w.SettingsSearch("Sicherung"), x => x.Key == "sicherung");
+        Assert.Contains(w.SettingsSearch("Handy"), x => x.Key == "handy");
+        Assert.Empty(w.SettingsSearch("gibtsnichtxyz"));
+        w.Find<Button>("settings-nav-geraete").Press(); Pump();
+        Assert.Equal("geraete", w.CurrentView);
+        w.Show("modus"); Pump();
+        Assert.DoesNotContain(w.GetLogicalTexts(), t => t.Contains("Trendo flasht nicht"));
+        w.Settings.SetupDone = true;
+        w.Find<Button>("mode-write-stick").Press(); Pump();
+        Assert.True(w.SetupFullscreen); Assert.Equal("einrichtung-start", w.CurrentView);
+        w.Find<Button>("wiz-use-programm").Press(); Pump();
+        w.Find<Button>("wiz-start-next").Press(); Pump(); // schon eingerichtet: zurück, keine neue Einrichtung
+        Assert.False(w.SetupFullscreen); Assert.Equal("modus", w.CurrentView);
+        w.Close();
     }
 }

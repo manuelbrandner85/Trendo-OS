@@ -33,8 +33,9 @@ public partial class MainWindow
 
     void LeaveSetupFullscreen()
     {
+        _wizLayer.IsVisible = false; _wizLayer.Children.Clear();
         if (!_wizFull) return;
-        _wizFull = false; _wizLayer.IsVisible = false; _wizLayer.Children.Clear();
+        _wizFull = false;
         if (!_opt.Isolated) WindowState = WindowState.Maximized;
     }
 
@@ -144,16 +145,20 @@ public partial class MainWindow
                 box.Children.Add(row);
             }
             if (_wizDrive is { } wd && !drives.Any(x => x.Name == wd && x.Gb >= MinStickGb)) _wizDrive = null; // abgezogen oder anderer Typ
-            box.Children.Add(P(ImageReady ? $"Trendo OS {_imgManifest?.Version} liegt bereit. Laufwerk wählen, dann Weiter: du bestätigst das Löschen, Trendo schreibt und prüft alles."
-                : "Ehrlich: Das Trendo-OS-Abbild für Stick und SSD wird gerade gebaut. Sobald es im Release liegt, schreibt Trendo es hier mit einem Klick. Bis dahin richtet Trendo sich als Programm ein – Stick/SSD kannst du später unter „Einstellungen“ nachholen.", ImageReady ? Text : Brush.Parse("#FACC15"), 12));
+            box.Children.Add(P(ImageReady ? $"Trendo OS {_imgManifest?.Version} liegt bereit. Laufwerk wählen, dann Weiter: du bestätigst das Löschen, Trendo schreibt und prüft alles. Auf diesem PC wird dabei nichts installiert."
+                : _core.Offline ? "Ohne Internet kann Trendo das Abbild nicht laden. Bitte mit dem Internet verbinden – oder oben „Als Programm unter Windows“ wählen."
+                : "Trendo sucht das Abbild im neuesten Release … Ist es nicht da, bitte später erneut versuchen – oder oben „Als Programm unter Windows“ wählen.", ImageReady ? Text : Brush.Parse("#FACC15"), 12));
+            if (ImageReady && _wizDrive is null && drives.Any(x => x.Gb >= MinStickGb)) box.Children.Add(P("Bitte oben das Laufwerk wählen („Dieses nehmen“).", Brush.Parse("#FACC15"), 12));
             sp.Children.Add(new Border { Background = Brush.Parse("#10FFFFFF"), CornerRadius = new CornerRadius(12), Padding = new Thickness(14, 10), Child = box });
         }
 
-        var go = new Button { Name = "wiz-start-next", Content = "Weiter", Background = Accent, Padding = new Thickness(22, 8), FontSize = 15, HorizontalAlignment = HorizontalAlignment.Right };
+        var go = new Button { Name = "wiz-start-next", Content = "Weiter", Background = Accent, Padding = new Thickness(22, 8), FontSize = 15, HorizontalAlignment = HorizontalAlignment.Right,
+            IsEnabled = _wizUse == "programm" || (ImageReady && _wizDrive is not null) }; // Stick/SSD: nie still auf den PC ausweichen
         go.Click += (_, _) =>
         {
             _core.Audit.Append(Principal.LocalOwner.Name, "setup.start", _wizUse);
-            if (_wizUse is "stick" or "ssd" && ImageReady && _wizDrive is not null) { _imgOk = null; _imgStatus = ""; Show("einrichtung-abbild"); }
+            if (_wizUse is "stick" or "ssd") { if (ImageReady && _wizDrive is not null) { _imgOk = null; _imgStatus = ""; Show("einrichtung-abbild"); } }
+            else if (_settings.SetupDone) { LeaveSetupFullscreen(); Show("modus"); } // schon eingerichtet (aus „Betriebsmodus“ geöffnet): nichts neu einrichten
             else Show("einrichtung");
         };
         sp.Children.Add(go);

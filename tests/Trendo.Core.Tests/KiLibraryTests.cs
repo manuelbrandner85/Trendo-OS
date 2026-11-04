@@ -24,7 +24,7 @@ public class KiLibraryTests
             if (m.Runtime == KiRuntime.Ollama) Assert.False(string.IsNullOrWhiteSpace(m.Tag), m.Id);
             foreach (var f in m.Files)
             {
-                Assert.StartsWith("https://huggingface.co/", f.Url);
+                Assert.True(f.Url.StartsWith("https://huggingface.co/") || f.Url.StartsWith(Vollpaket.OnlineBase), f.Url); // offizielle Quelle oder Trendos eigene Ablage (Apache-2.0-Modelle der Video-Prüfung)
                 Assert.True(f.Bytes > 0, f.FileName);
                 Assert.Equal(Path.GetFileName(f.FileName), f.FileName);
             }

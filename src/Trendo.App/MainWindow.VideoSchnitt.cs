@@ -20,6 +20,9 @@ public partial class MainWindow
     private readonly Dictionary<string, IReadOnlyList<Bitmap>> _thumbs = [];
     private readonly Dictionary<string, Bitmap> _veFrames = [];
     public (string Track, int Index)? EditSelected { get; set; }
+    /// <summary>Rechte Seite in Registerkarten (Wunsch 04.11.2026 „viel übersichtlicher“): medien, auswahl, export.</summary>
+    public string EditTab { get; set; } = "medien";
+    (string Track, int Index)? _veSeenSel;
     public EditTimeline? EditTimelineForTests { get; private set; }
     public double EditZoom { get; set; } = 40;
 
@@ -168,12 +171,31 @@ public partial class MainWindow
         _veOverlay = overlay;
         var view = new Viewbox { Stretch = Stretch.Uniform, Child = frameBox };
         if (screen is not Image) { var img = new Image { Name = "ve-play-image", Stretch = Stretch.Uniform, IsVisible = false }; frameBox.Children.Insert(1, img); _vePreview = img; }
-        var time = new TextBlock { Name = "ve-time", Text = $"{ClockMs(d.Number("playhead"))} / {ClockMs(VideoEdit.Duration(p))}", Foreground = Text, FontSize = 13, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4) };
-        var tl = new EditTimeline { Name = "ve-timeline", Clips = clips, Music = music, PxPerSec = EditZoom, Playhead = d.Number("playhead"), Selected = EditSelected,
+        var time = new TextBlock { Name = "ve-time", Text = $"{ClockMs(d.Number("playhead"))} / {ClockMs(VideoEdit.Duration(p))}", Foreground = Text, FontSize = 13, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0) };
+        // Abspielleiste unter der Vorschau wie in jedem Schnittprogramm
+        Button Tp(string name, string label, string tip, Action a, bool main = false)
+        {
+            var b = new Button { Name = name, Content = label, FontSize = main ? 16 : 13, Width = main ? 44 : 36, Height = main ? 40 : 32, Padding = new Thickness(0), CornerRadius = new CornerRadius(main ? 20 : 8),
+                HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Background = main ? Accent : Brush.Parse("#18FFFFFF"), Foreground = main ? Brushes.White : Text, BorderThickness = new Thickness(0), Margin = new Thickness(2, 0) };
+            ToolTip.SetTip(b, tip); b.Click += (_, _) => ProgramRun(VK, a); return b;
+        }
+        void Seek(double t) => d.Set("playhead", Math.Clamp(Math.Round(t, 3), 0, VideoEdit.Duration(d.Data)), "Abspielkopf");
+        var transport = new DockPanel { Margin = new Thickness(0, 6), LastChildFill = false };
+        var tpMid = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Children = {
+            Tp("ve-tp-start", "⏮", "Zum Anfang", () => Seek(0)), Tp("ve-tp-back", "⏪", "1 Sekunde zurück (Umschalt+←)", () => Seek(d.Number("playhead") - 1)),
+            Tp("ve-tp-play", _vePlay is not null ? "⏸" : "▶", "Abspielen / Anhalten (Leertaste)", () => EditTogglePlay(d), true),
+            Tp("ve-tp-fwd", "⏩", "1 Sekunde vor (Umschalt+→)", () => Seek(d.Number("playhead") + 1)), Tp("ve-tp-end", "⏭", "Zum Ende", () => Seek(VideoEdit.Duration(d.Data))), time } };
+        var zoom = new StackPanel { Orientation = Orientation.Horizontal, Children = {
+            new TextBlock { Text = "Zoom", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) },
+            Tp("ve-tp-zoom-out", "－", "Zeitleiste verkleinern", () => EditZoom = Math.Max(4, EditZoom / 1.5)), Tp("ve-tp-zoom-in", "＋", "Zeitleiste vergrößern", () => EditZoom = Math.Min(200, EditZoom * 1.5)) } };
+        DockPanel.SetDock(zoom, Avalonia.Controls.Dock.Right); transport.Children.Add(zoom);
+        transport.Children.Add(new Border { Width = 1 }); // Platzhalter links
+        var tpWrap = new Grid { Children = { transport, tpMid } };
+        var tl = new EditTimeline { Name = "ve-timeline", Clips = clips, Music = music, PxPerSec = EditZoom, Playhead = d.Number("playhead"), Selected = EditSelected, Markers = VideoEdit.Markers(p),
             Thumbs = clips.ToDictionary(c => c.Id, EditThumbs) };
         EditTimelineForTests = tl;
         tl.PlayheadChanged = t => ProgramRun(VK, () => d.Set("playhead", Math.Min(t, VideoEdit.Duration(d.Data)), "Abspielkopf"));
-        tl.ClipSelected = (track, i) => { EditSelected = (track, i); Show(VK); };
+        tl.ClipSelected = (track, i) => { EditSelected = (track, i); EditTab = "auswahl"; Show(VK); };
         tl.ClipMoved = (a, b) => ProgramRun(VK, () => { d.Edit("Umordnen", x => VideoEdit.Move(x, a, b)); EditSelected = ("clips", b); });
         tl.MusicMoved = (i, start) => ProgramRun(VK, () => { var m = VideoEdit.Clips(d.Data, "music")[i]; d.Edit("Musik verschieben", x => VideoEdit.SetMusic(x, i, start, m.Volume)); EditSelected = ("music", i); });
         tl.ClipTrimmed = (track, i, a, b) => ProgramRun(VK, () =>
@@ -200,12 +222,18 @@ public partial class MainWindow
             }
         };
         var scroll = new ScrollViewer { Content = tl, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled };
-        var tlBox = new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, BorderBrush = Edge, BorderThickness = new Thickness(1), Child = scroll };
+        // Spurnamen links neben der Zeitleiste
+        var labels = new Canvas { Width = 92, Height = tl.Height, Background = Brush.Parse("#0E131C") };
+        void Lab(string text, double top, double h) { var t = new Border { Width = 92, Height = h, Child = new TextBlock { Text = text, Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0) } }; Canvas.SetTop(t, top); labels.Children.Add(t); }
+        Lab("Zeit", 0, EditTimeline.Ruler); Lab("🎬 Bild", EditTimeline.VideoTop, EditTimeline.VideoH); Lab("♪ Musik", EditTimeline.MusicTop, EditTimeline.MusicH);
+        labels.Name = "ve-track-labels";
+        var tlBox = new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, BorderBrush = Edge, BorderThickness = new Thickness(1),
+            Child = new DockPanel { Children = { Dk(labels, Avalonia.Controls.Dock.Left), scroll } } };
         var hint = new TextBlock { Text = "Stück ziehen: umordnen · Kanten ziehen: kürzen · Lineal: Abspielkopf · S teilen · Entf löschen · ←/→ Bild für Bild (Umschalt: Sekunde)", Foreground = Muted, FontSize = 11.5, Margin = new Thickness(2, 4, 0, 0), TextWrapping = TextWrapping.Wrap };
         var g = new Grid { RowDefinitions = new RowDefinitions("*,Auto,Auto,Auto") };
         g.Children.Add(new Border { Background = Brush.Parse("#05070C"), CornerRadius = new CornerRadius(10), Padding = new Thickness(6), Child = view, MinHeight = 90 });
         _veTime = time;
-        Grid.SetRow(time, 1); g.Children.Add(time); Grid.SetRow(tlBox, 2); g.Children.Add(tlBox); Grid.SetRow(hint, 3); g.Children.Add(hint);
+        Grid.SetRow(tpWrap, 1); g.Children.Add(tpWrap); Grid.SetRow(tlBox, 2); g.Children.Add(tlBox); Grid.SetRow(hint, 3); g.Children.Add(hint);
         return g;
     }
 
@@ -213,8 +241,26 @@ public partial class MainWindow
 
     private Control EditProperties(ProgramDocument d)
     {
-        var sp = new StackPanel { Spacing = 8 };
-        if (SuggestionCard(VK, EditSuggestions(d)) is { } sugg) sp.Children.Add(sugg);
+        var outer = new StackPanel { Spacing = 8 };
+        if (SuggestionCard(VK, EditSuggestions(d)) is { } sugg) outer.Children.Add(sugg);
+        // Registerkarten: Medien · Auswahl · Export – alles bleibt da, nur geordnet
+        if (EditSelected != _veSeenSel) { _veSeenSel = EditSelected; if (EditSelected is not null) EditTab = "auswahl"; } // neue Auswahl: gleich ihre Einstellungen zeigen
+        var tabs = new (string Id, string Label)[] { ("medien", "Medien"), ("auswahl", EditSelected is { } es ? (es.Track == "music" ? "Auswahl: Musik" : "Auswahl: Stück") : "Auswahl"), ("export", _veExport is not null ? "Export ⏳" : "Export") };
+        if (!tabs.Any(t => t.Id == EditTab)) EditTab = "medien";
+        var tabBar = new WrapPanel { Name = "ve-tabs" };
+        var bodies = new Dictionary<string, StackPanel>();
+        foreach (var (id, label) in tabs)
+        {
+            var on = id == EditTab; var tid = id;
+            var b = new Button { Name = "ve-tab-" + id, Content = label, Padding = new Thickness(12, 5), Margin = new Thickness(0, 0, 6, 6), FontSize = 12.5, CornerRadius = new CornerRadius(10),
+                Background = on ? Brush.Parse("#33D4A84B") : Brush.Parse("#10FFFFFF"), BorderBrush = Brush.Parse(on ? "#D4A84B" : "#22FFFFFF"), BorderThickness = new Thickness(1) };
+            b.Click += (_, _) => { EditTab = tid; Show(VK); };
+            tabBar.Children.Add(b);
+            bodies[id] = new StackPanel { Name = "ve-tab-body-" + id, Spacing = 8, IsVisible = on };
+        }
+        outer.Children.Add(tabBar);
+        foreach (var t in tabs) outer.Children.Add(bodies[t.Id]);
+        var sp = bodies["medien"];
         // Medien hinzufügen
         var path = new TextBox { Name = "ve-file", PlaceholderText = "Video-, Bild- oder Tondatei", HorizontalAlignment = HorizontalAlignment.Stretch };
         Button B(string name, string label, Action a, bool primary = false) { var b = new Button { Name = name, Content = label, Margin = new Thickness(0, 0, 4, 4), FontSize = 12 }; if (primary) { b.Background = Accent; b.Foreground = Brushes.White; } b.Click += (_, _) => ProgramRun(VK, a); return b; }
@@ -222,14 +268,25 @@ public partial class MainWindow
         sp.Children.Add(H("Medien", 13));
         sp.Children.Add(path);
         sp.Children.Add(new WrapPanel { Children = { B("ve-add", "Auf die Bildspur", () => EditAdd(Need()), true), B("ve-add-music", "Als Musik", () => EditAdd(Need(), music: true)) } });
-        var recent = FileShelf.Recent([MediaFolder, Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Environment.GetFolderPath(Environment.SpecialFolder.MyMusic)], MediaStudio.Inputs).Take(6).ToList();
+        var recent = FileShelf.Recent([MediaFolder, UserFolder(Environment.SpecialFolder.MyVideos), UserFolder(Environment.SpecialFolder.MyPictures), UserFolder(Environment.SpecialFolder.MyMusic)], MediaStudio.Inputs).Take(6).ToList();
         if (recent.Count > 0)
         {
             sp.Children.Add(P("Zuletzt im Medienordner:", null, 11.5));
             var k = 0;
             foreach (var f in recent) { var fp = f.FullName; var b = B($"ve-recent-{k++}", (MediaStudio.IsImage(fp) ? "🖼 " : MediaStudio.IsAudio(fp) ? "♪ " : "🎬 ") + f.Name, () => EditAdd(fp, music: MediaStudio.IsAudio(fp))); b.HorizontalAlignment = HorizontalAlignment.Stretch; b.HorizontalContentAlignment = HorizontalAlignment.Left; ToolTip.SetTip(b, fp); sp.Children.Add(b); }
         }
+        sp.Children.Add(P("Tipp: Unten in der Zeitleiste ein Stück anklicken – seine Einstellungen stehen dann unter „Auswahl“.", Muted, 11.5));
+        if (VideoEdit.Song(d.Data) is { } linked && Songs.Get(linked.Id) is { } ls)
+        {
+            var mk = VideoEdit.Markers(d.Data);
+            sp.Children.Add(new Border { Name = "ve-song-link", Background = Brush.Parse("#22C9A227"), CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 8), Child = new StackPanel { Spacing = 4, Children = {
+                new TextBlock { Text = $"♪ Verknüpft mit „{ls.Title}“ aus Trendo Musik", Foreground = Text, FontSize = 12, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
+                P($"{mk.Count(m => m.Kind == "section")} Abschnitte · {mk.Count(m => m.Kind == "line")} Liedzeilen (rosa Sängerin, blau Sänger, gold beide) · {mk.Count(m => m.Kind == "shot")} Einstellungen aus dem Drehbuch", Muted, 11),
+                B("ve-song-open", "Zum Lied in Trendo Musik", () => { _msSel = ls.Id; _msDetailTab = "video"; Show(MS); }) } } });
+        }
         // Ausgewähltes Stück
+        sp = bodies["auswahl"];
+        if (EditSelected is null) sp.Children.Add(P("Noch nichts ausgewählt. Klicke unten in der Zeitleiste auf ein Stück oder die Musik – dann kannst du hier kürzen, überblenden, Text einblenden oder die Lautstärke ändern.", Muted, 12));
         if (EditSelected is { } s)
         {
             var list = VideoEdit.Clips(d.Data, s.Track);
@@ -259,9 +316,17 @@ public partial class MainWindow
                     sp.Children.Add(new StackPanel { Children = { new TextBlock { Text = $"Lautstärke {c.Volume * 100:0} %", Foreground = Muted, FontSize = 11.5 }, vol } });
                     sp.Children.Add(B("ve-music-apply", "Musik übernehmen", () => d.Edit("Musik", x => VideoEdit.SetMusic(x, s.Index, Num(start), vol.Value))));
                 }
+                // E3: KI-Einstellung aus dem Musikvideo – nur diese neu erzeugen (Rest bleibt)
+                if (VideoEdit.Song(d.Data) is { } lk && Songs.Get(lk.Id) is { } lsong && System.Text.RegularExpressions.Regex.Match(Path.GetFileName(c.File), @"^einstellung(\d{3})\.mp4$") is { Success: true } mm)
+                {
+                    var idx = int.Parse(mm.Groups[1].Value); var prev = c.File.Contains(Path.DirectorySeparatorChar + "vorschau" + Path.DirectorySeparatorChar);
+                    sp.Children.Add(B("ve-shot-redo", $"🎬 Einstellung {idx + 1} neu erzeugen (KI)", () => { MsShotReroll(lsong.Id, idx); _ = MsRenderVideo(lsong.Id, prev, idx).ContinueWith(_ => _ui.Post(() => { _thumbs.Clear(); _veFrames.Clear(); Show(VK); })); }));
+                }
                 sp.Children.Add(B("ve-sel-delete", "Stück löschen", () => EditDelete(d)));
             }
         }
+        sp = bodies["export"];
+        sp.Children.Add(P("Exportieren: oben „Video exportieren“ (mit Einstellungen) oder „Video (MP4) sofort“.", Muted, 11.5));
         if (_veExport is { } job)
         {
             var bar = new ProgressBar { Name = "ve-export-progress", Minimum = 0, Maximum = 100, Value = _veExportProgress * 100, Height = 8 };
@@ -272,8 +337,8 @@ public partial class MainWindow
         sp.Children.Add(EditExportsPanel()); // „Meine Exporte“ mit Abspielen und Ordner öffnen
         sp.Children.Add(H("Projekt", 13));
         sp.Children.Add(P($"{(int)d.Number("width")} × {(int)d.Number("height")} · {(int)d.Number("fps", 30)} Bilder/s · Länge {Clock(VideoEdit.Duration(d.Data))}", Muted, 12));
-        if (FfmpegPath is null) sp.Children.Add(P("FFmpeg fehlt: Videos und Ton brauchen es für Länge, Vorschau und Export. Fotos gehen trotzdem.", Brush.Parse("#FACC15"), 12));
-        return sp;
+        if (FfmpegPath is null) outer.Children.Add(P("FFmpeg fehlt: Videos und Ton brauchen es für Länge, Vorschau und Export. Fotos gehen trotzdem.", Brush.Parse("#FACC15"), 12));
+        return outer;
     }
 
     // ---------- Abspielen im Programm ----------
@@ -341,7 +406,7 @@ public partial class MainWindow
         var file = Path.Combine(WorkFolder(Programs[VK].Folder), DevStudio.SafeName(d.Title) + ".mp4");
         for (var i = 2; File.Exists(file); i++) file = Path.Combine(WorkFolder(Programs[VK].Folder), $"{DevStudio.SafeName(d.Title)}-{i}.mp4");
         var data = (JsonObject)d.Data.DeepClone();
-        _veExport = new CancellationTokenSource(); _veExportProgress = 0; _progMsg[VK] = "Export läuft im Hintergrund – du kannst weiterarbeiten."; Show(VK);
+        _veExport = new CancellationTokenSource(); _veExportProgress = 0; EditTab = "export"; _progMsg[VK] = "Export läuft im Hintergrund – du kannst weiterarbeiten."; Show(VK);
         var progress = new Progress<double>(v => { _veExportProgress = v; if (_veExportBar is { } b) b.Value = v * 100; });
         try
         {
@@ -354,6 +419,7 @@ public partial class MainWindow
                 o = await VideoEdit.ExportAsync(ff, data, file, progress, _veExport.Token);
             }
             _core.Audit.Append(Principal.LocalOwner.Name, "video.export", Path.GetFileName(o));
+            if (VideoEdit.Song(data) is { } linked && Songs.Get(linked.Id) is { } ls) SongVideoAdd(ls, o); // E2: fertiges Video auch beim Lied
             _progMsg[VK] = "Exportiert: " + o; NotifyFileResult(_progMsg[VK]);
         }
         catch (OperationCanceledException) { _progMsg[VK] = "Export abgebrochen – die halbe Datei wurde gelöscht."; }

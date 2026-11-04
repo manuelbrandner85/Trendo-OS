@@ -12,6 +12,8 @@ public static class UninstallPrompt
 {
     /// <summary>Gesamtbudget des Hooks bis zur Antwort; Velopack bricht nach 30 s ab.</summary>
     public const int TimeoutMs = 22_000;
+    /// <summary>Merker im Datenordner: Einrichtung nur für USB-Stick/SSD – beim Entfernen alles mitlöschen.</summary>
+    public const string StickOnlyMarker = ".nur-stick";
 
     public static string Question(string dataRoot, string? projects) =>
         "Trendo OS wird deinstalliert.\n\nSollen auch deine Trendo-Daten gelöscht werden?\n" +
@@ -78,6 +80,12 @@ public static class UninstallPrompt
         var tools = DataLocation.ToolsRoot();
         if (DataLocation.ToolsSummary(tools) is { } toolInfo) RemoveTools(tools, toolInfo, log);
         if (!Directory.Exists(root)) return;
+        if (File.Exists(Path.Combine(root, StickOnlyMarker))) // Einrichtung nur für Stick/SSD: hier soll nichts zurückbleiben
+        {
+            try { var n = DataLocation.RemoveUserData(root); log?.Invoke(n < 0 ? "Daten bleiben (geschützter Ordner)." : $"Nur Stick/SSD: Daten gelöscht ({n} Einträge)."); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { log?.Invoke("Daten konnten nicht vollständig gelöscht werden: " + ex.Message); }
+            return;
+        }
         if (IsSilent(ParentCommandLine())) { log?.Invoke("Stille Deinstallation: Daten bleiben."); return; }
         string? projects;
         try { projects = UserSettings.Load(root).ProjectsFolder; }

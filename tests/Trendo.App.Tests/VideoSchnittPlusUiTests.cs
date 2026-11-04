@@ -73,4 +73,28 @@ public class VideoSchnittPlus_Ui
         Click(w, "ve-exp-del-0"); Settle();
         Assert.Equal([file], recycled);
     }
+
+    [AvaloniaFact(DisplayName = "Videoschnitt übersichtlich: Spurnamen, Abspielleiste unter der Vorschau, rechts Medien · Auswahl · Export – Auswahl öffnet sich beim Anklicken eines Stücks")]
+    public void Clear_layout()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        string F(string n) { var f = Path.Combine(root, n); File.WriteAllBytes(f, Png); return f; }
+        w.Show("schnitt"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer"));
+        Assert.NotNull(w.Find<Canvas>("ve-track-labels"));
+        Assert.True(w.Find<StackPanel>("ve-tab-body-medien").IsVisible);
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Noch nichts ausgewählt"));
+        w.EditAdd(F("a.png")); w.EditAdd(F("b.png")); w.Show("schnitt"); Settle();
+        Assert.True(w.Find<StackPanel>("ve-tab-body-auswahl").IsVisible); // neues Stück: seine Einstellungen
+        Assert.True(V<Button>(w, "ve-trim-apply").IsEffectivelyVisible);
+        Click(w, "ve-tab-medien");
+        Assert.True(V<Button>(w, "ve-add").IsEffectivelyVisible);
+        var d = w.ProgramActive("schnitt")!;
+        Click(w, "ve-tp-end"); Assert.Equal(VideoEdit.Duration(d.Data), d.Number("playhead"), 3);
+        Click(w, "ve-tp-start"); Assert.Equal(0, d.Number("playhead"), 3);
+        Click(w, "ve-tp-fwd"); Assert.Equal(1, d.Number("playhead"), 3);
+        Click(w, "ve-tp-play"); Assert.True(w.EditPlaying); Click(w, "ve-tp-play"); Assert.False(w.EditPlaying);
+        Click(w, "ve-tab-export");
+        Assert.True(w.Find<StackPanel>("ve-tab-body-export").IsVisible);
+        w.Close();
+    }
 }

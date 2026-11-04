@@ -1,12 +1,12 @@
 # Sicher prüfen – Architektur
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.36 (Stand c58bb7c)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.36 (Stand bc62519)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys03.cs`
 
 ## Bedienelemente der Arbeitsfläche
-– (nicht erfasst)
+- Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)
 
 ## Reiter
 - Sicher prüfen

@@ -1,12 +1,12 @@
 # Leistung – Architektur
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-leistung` · Stand: 0.9.36 (Stand c58bb7c)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-leistung` · Stand: 0.9.36 (Stand bc62519)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys13.cs`
 
 ## Bedienelemente der Arbeitsfläche
-– (nicht erfasst)
+- Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)
 
 ## Reiter
 - Leistung

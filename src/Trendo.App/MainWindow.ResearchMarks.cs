@@ -107,8 +107,9 @@ public partial class MainWindow
         var sp = new StackPanel { Name = "rs-quotes", Spacing = 6 };
         var style = new ComboBox { Name = "rs-cite-style", ItemsSource = new[] { "einfach (DIN-ähnlich)", "APA" }, SelectedIndex = _rsStyle == "apa" ? 1 : 0, Width = 200 };
         style.SelectionChanged += (_, _) => { var s = style.SelectedIndex == 1 ? "apa" : "einfach"; if (s != _rsStyle) { _rsStyle = s; Show("recherche"); } };
-        sp.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { H($"Zitatsammlung · {all.Count} Markierungen aus {all.Select(h => h.Url).Distinct().Count()} Quellen", 14),
-            Pos(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new TextBlock { Text = "Zitierstil", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center }, style } }, 1) } });
+        // untereinander statt nebeneinander: passt auch in die schmale rechte Spalte des Lese-Browsers
+        sp.Children.Add(H($"Zitatsammlung · {all.Count} Markierungen aus {all.Select(h => h.Url).Distinct().Count()} Quellen", 14));
+        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new TextBlock { Text = "Zitierstil", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center }, style } });
         foreach (var g in all.GroupBy(h => h.Url))
         {
             var block = new StackPanel { Spacing = 3, Children = { new TextBlock { Text = g.First().Title, Foreground = GoldText(), FontWeight = FontWeight.SemiBold, FontSize = 13 } } };

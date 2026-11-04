@@ -1,6 +1,6 @@
 # Trendo Präsentation – Umsetzungsstand
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.36 (Stand c58bb7c)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.36 (Stand bc62519)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -32,4 +32,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | SYS-10-P24 | Export-Paket | Implementiert | – |
 | SYS-10-P25 | Barrierefreie PDF-Hinweise | Implementiert | – |
 
-0 von 25 Funktionen getestet.
+0 von 25 Funktionen getestet (noch kein Testlauf eingelesen).

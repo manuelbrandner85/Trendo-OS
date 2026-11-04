@@ -109,7 +109,11 @@ if (Environment.GetEnvironmentVariable("TRENDO_KATALOG") is { Length: > 0 } repo
     foreach (var e in win.ProgramCatalogRuntime())
     {
         var (ui, tools) = win.ProgramCatalogInspect(e.Id);
-        var full = Trendo.Core.Programs.ProgramCatalog.Enrich(e with { Type = ui, Tools = e.Tools.Count > 0 ? e.Tools : tools, Ui = ui.Concat(e.Shell ? ["Menüband", "Eigenschaften", "Statusleiste", "Dokument-Reiter"] : []).ToList() }, repo, req, types);
+        double? warm = null; // A1: Öffnungszeit warm messen (zweites Öffnen, wie im Seiten-Prüflauf)
+        try { win.Show(e.Id); Dispatcher.UIThread.RunJobs(); var sw = System.Diagnostics.Stopwatch.StartNew(); win.Show(e.Id); Dispatcher.UIThread.RunJobs(); warm = Math.Round(sw.Elapsed.TotalMilliseconds); }
+        catch (Exception ex) when (ex is InvalidOperationException or IOException or ArgumentException) { }
+        foreach (var old in win.Windows.Stack.Reverse().Skip(3).ToList()) win.CloseWindow(old.Id);
+        var full = Trendo.Core.Programs.ProgramCatalog.Enrich(e with { WarmMs = warm, Type = ui, Tools = e.Tools.Count > 0 ? e.Tools : tools, Ui = ui.Concat(e.Shell ? ["Menüband", "Eigenschaften", "Statusleiste", "Dokument-Reiter"] : []).ToList() }, repo, req, types);
         entries.Add(full);
         var dir = Path.Combine(outDir, full.Id); Directory.CreateDirectory(dir);
         foreach (var (name, text) in Trendo.Core.Programs.ProgramCatalog.Docs(full, outcomes, trx.Length > 0 ? string.Join(", ", trx.Select(Path.GetFileName)) : null)) // nur Dateinamen: keine Pfade mit Benutzer- oder Rechnernamen

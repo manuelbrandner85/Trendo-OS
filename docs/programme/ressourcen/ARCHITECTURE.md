@@ -1,12 +1,13 @@
 # Speicher & Leistung – Architektur
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand c58bb7c)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand bc62519)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)
 
 ## Bedienelemente der Arbeitsfläche
 - Diagramm/Zeichnung
+- Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)
 
 ## Fach-Engine (Trendo.Core)
 – (nicht erfasst)

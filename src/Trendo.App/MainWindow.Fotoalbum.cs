@@ -17,7 +17,7 @@ public partial class MainWindow
     public Trendo.Core.Sys.PhotoAlbum Albums => new(_core.DataRoot);
     /// <summary>Für Tests und Vorschaubilder: diese Ordner statt „Bilder“ und Projektordner.</summary>
     public List<string>? PhotoFoldersOverride { get; set; }
-    List<string> PhotoFolders => PhotoFoldersOverride ?? [Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), ProjectsRoot, .. _settings.PhotoFolders];
+    List<string> PhotoFolders => PhotoFoldersOverride ?? [UserFolder(Environment.SpecialFolder.MyPictures), ProjectsRoot, .. _settings.PhotoFolders];
     string _mediaTab = "fotos", _photoView = "alle"; string? _photoOpen; bool _photoAskTrash, _photoDupAsk;
     double _photoSize = 150; int _photoLimit = 300;
     readonly HashSet<string> _photoSel = new(StringComparer.OrdinalIgnoreCase);

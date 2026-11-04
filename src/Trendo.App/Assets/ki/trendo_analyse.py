@@ -175,11 +175,115 @@ def sections_main(path, out):
         b = cuts[i + 1] if i + 1 < len(cuts) else dur
         e = float(np.mean(rms[(rt >= a) & (rt < b)])) / allm if b > a else 1.0
         secs.append({'start': round(a, 2), 'end': round(b, 2), 'energy': round(e, 2)})
-    json.dump({'bpm': round(bpm, 1), 'duration': round(dur, 2), 'sections': secs}, open(out, 'w', encoding='utf-8'))
+    bt = [round(float(x), 3) for x in librosa.frames_to_time(beats, sr=sr, hop_length=hop)] if len(beats) else []
+    json.dump({'bpm': round(bpm, 1), 'duration': round(dur, 2), 'sections': secs, 'beats': bt}, open(out, 'w', encoding='utf-8'))
+
+
+# ───────────── A1 (KI-Musikvideo, 04.11.2026): wer singt wann ─────────────
+def _kmeans2(x, w, tries=12):
+    """Zwei Gruppen (gewichtet nach Phrasenlänge) – ohne zusätzliche Bibliothek."""
+    best = None
+    rng = np.random.default_rng(7)
+    for _ in range(tries):
+        c = x[rng.choice(len(x), 2, replace=False)].copy()
+        for _ in range(40):
+            d = ((x[:, None, :] - c[None, :, :]) ** 2).sum(-1)
+            lab = d.argmin(1)
+            if len(set(lab)) < 2:
+                break
+            nc = np.array([np.average(x[lab == k], axis=0, weights=w[lab == k]) for k in (0, 1)])
+            if np.allclose(nc, c):
+                break
+            c = nc
+        if len(set(lab)) < 2:
+            continue
+        inertia = float((w * d[np.arange(len(x)), lab]).sum())
+        if best is None or inertia < best[0]:
+            best = (inertia, lab.copy(), c.copy())
+    return best
+
+
+def _voice(mid):
+    return 'Bass' if mid < 50 else 'Bariton' if mid < 55 else 'Tenor' if mid < 60 else 'Alt' if mid < 65 else 'Mezzosopran' if mid < 69 else 'Sopran'
+
+
+def singers_main(path, out):
+    # Gesangsspur (aus „Spuren trennen“): gesungene Phrasen, je Phrase Tonhöhe und Klangfarbe; zwei Gruppen, wenn sich die Stimmen klar
+    # unterscheiden. Geschlecht aus der mittleren Tonhöhe der Gruppe (Grenze C4). „beide“: zwei gleichzeitige, nicht harmonische Tonhöhen.
+    sr, hop = 16000, 320
+    y, _ = librosa.load(path, sr=sr, mono=True)
+    f0, voiced, prob = librosa.pyin(y, fmin=librosa.note_to_hz('C2'), fmax=librosa.note_to_hz('C6'), sr=sr, hop_length=hop, frame_length=1024)
+    ok = voiced & (prob > 0.4) & np.isfinite(f0)
+    n = len(ok)
+    dt = hop / sr
+    runs, start, last = [], None, -1
+    for i in range(n):
+        if not ok[i]:
+            continue
+        if start is None:
+            start = i
+        elif (i - last) * dt > 0.3:
+            if (last - start + 1) * dt >= 0.5:
+                runs.append((start, last + 1))
+            start = i
+        last = i
+    if start is not None and (last - start + 1) * dt >= 0.5:
+        runs.append((start, last + 1))
+    if not runs:
+        json.dump({'singers': [], 'phrases': []}, open(out, 'w', encoding='utf-8'))
+        return
+    mfcc = librosa.feature.mfcc(y=y, sr=sr, hop_length=hop, n_mfcc=20)
+    S = np.abs(librosa.stft(y, n_fft=2048, hop_length=hop))
+    freqs = librosa.fft_frequencies(sr=sr, n_fft=2048)
+    feats, weights, mids, both = [], [], [], []
+    for a, b in runs:
+        sel = ok[a:b]
+        mid = float(np.median(librosa.hz_to_midi(f0[a:b][sel])))
+        m = mfcc[1:14, a:b][:, sel[:mfcc.shape[1] - a] if b > mfcc.shape[1] else sel]
+        feats.append(np.concatenate([[mid / 3.0], m.mean(1) / 20.0]))
+        weights.append((b - a) * dt)
+        mids.append(mid)
+        # zweite Stimme: starke Spitze im Spektrum, die kein Oberton der Hauptstimme ist
+        two = 0
+        idx = [i for i in range(a, b) if ok[i]][::3]
+        for i in idx:
+            col = S[:, min(i, S.shape[1] - 1)]
+            main = f0[i]
+            band = (freqs > 80) & (freqs < 1100)
+            pk = librosa.util.peak_pick(col, pre_max=3, post_max=3, pre_avg=5, post_avg=5, delta=col.max() * 0.08, wait=3)
+            pk = [k for k in pk if band[k]]
+            strong = [freqs[k] for k in pk if col[k] > 0.45 * col.max()]
+            other = [f for f in strong if abs(12 * np.log2(f / main) - round(12 * np.log2(f / main) / 12) * 12) > 0.6
+                     and min(abs(f / main - h) for h in (0.5, 1, 1.5, 2, 3, 4)) > 0.06]
+            if other:
+                two += 1
+        both.append(len(idx) > 0 and two / len(idx) > 0.45)
+    x = np.array(feats); w = np.array(weights)
+    lab = np.zeros(len(x), dtype=int)
+    if len(x) >= 4:
+        km = _kmeans2(x, w)
+        if km is not None:
+            _, l2, c = km
+            share = min(w[l2 == 0].sum(), w[l2 == 1].sum()) / w.sum()
+            spread = np.sqrt(np.average(((x - c[l2]) ** 2).sum(1), weights=w)) + 1e-9
+            sep = float(np.sqrt(((c[0] - c[1]) ** 2).sum()) / spread)
+            if share >= 0.15 and sep > 1.6:
+                lab = l2
+    groups = sorted(set(lab.tolist()), key=lambda k: -w[lab == k].sum())
+    singers = []
+    for gid, k in enumerate(groups):
+        mid = float(np.average(np.array(mids)[lab == k], weights=w[lab == k]))
+        singers.append({'id': gid, 'gender': 'w' if mid >= 60 else 'm', 'voice': _voice(mid), 'midi': round(mid, 1)})
+    remap = {k: gid for gid, k in enumerate(groups)}
+    phrases = [{'start': round(a * dt, 2), 'end': round(b * dt, 2), 'singer': remap[int(lab[i])], 'both': bool(both[i]), 'midi': round(mids[i], 1)}
+               for i, (a, b) in enumerate(runs)]
+    json.dump({'singers': singers, 'phrases': phrases}, open(out, 'w', encoding='utf-8'))
 
 
 if __name__ == '__main__':
-    if '--abschnitte' in sys.argv:
+    if '--saenger' in sys.argv:
+        singers_main(sys.argv[-2], sys.argv[-1])
+    elif '--abschnitte' in sys.argv:
         sections_main(sys.argv[-2], sys.argv[-1])
     elif '--melodie' in sys.argv:
         melody_main(sys.argv[-2], sys.argv[-1], '--gesangsspur' in sys.argv)

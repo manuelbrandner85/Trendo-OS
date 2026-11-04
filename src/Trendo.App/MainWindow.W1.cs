@@ -77,7 +77,7 @@ public partial class MainWindow
         foreach (var n in new NoteStore(_core.DataRoot).All()) gs.Add("Notiz", n.Text.Split('\n')[0], "page:werkzeuge", n.Text.Split([' ', '\n', '/', '.', '-'], StringSplitOptions.RemoveEmptyEntries)); // SYS-03-P21
         gs.AddFiles(string.IsNullOrEmpty(_settings.ProjectsFolder) ? UserSettings.DefaultProjectsFolder() : _settings.ProjectsFolder);
         if (_settings.SearchWindowsFolders && !_opt.Isolated)
-            foreach (var f in new[] { Environment.SpecialFolder.MyDocuments, Environment.SpecialFolder.MyPictures }.Select(Environment.GetFolderPath).Where(Directory.Exists)) gs.AddFiles(f);
+            foreach (var f in new[] { Environment.SpecialFolder.MyDocuments, Environment.SpecialFolder.MyPictures }.Select(UserFolder).Where(Directory.Exists)) gs.AddFiles(f);
         return gs;
     }
 

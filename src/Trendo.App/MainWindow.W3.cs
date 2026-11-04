@@ -23,6 +23,7 @@ public partial class MainWindow
 
     private Control SysNav()
     {
+        if (IsSettingsPage(CurrentView)) return new Panel { Name = "tabs-none", IsVisible = false }; // E1: die Einstellungen-App hat links ihre eigene Navigation
         var row = new WrapPanel();
         foreach (var (k, l) in SysTabs.Where(t => _showMap.ContainsKey(t.Key) && OwnTab(t.Key)))
         {

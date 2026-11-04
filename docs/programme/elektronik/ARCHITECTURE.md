@@ -1,6 +1,6 @@
 # Schaltung & Simulation – Architektur
 
-Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.36 (Stand c58bb7c)
+Studio: Schaltungen berechnen (SPEC-02) · Bereich: Technik & Fachgebiete · Seite: `elektronik` · Stand: 0.9.36 (Stand bc62519)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec02.cs`

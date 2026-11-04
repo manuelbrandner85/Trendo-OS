@@ -29,7 +29,7 @@ public partial class MainWindow
         try
         {
             if (FailNextPage == key) { FailNextPage = null; throw new InvalidOperationException("Testfehler"); }
-            return WithPromptBar(key, _showMap[key]());
+            return WithPromptBar(key, InAppShell(key) ? SettingsShell(key, _showMap[key]()) : _showMap[key]()); // E1/E2: Einstellungen wie Windows 11, KI-Zentrale wie LM Studio
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {

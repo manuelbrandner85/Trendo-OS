@@ -1,6 +1,6 @@
 # Trendo Musik – Funktionsmatrix
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand c58bb7c)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand bc62519)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -10,8 +10,10 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Musik
 - Geräusche & Effekte
 - 👥 Team
+- ✨ Erstellen
 - Einfach
 - Profi
+- Instrumental (ohne Gesang)
 - 🎼 Genre wählen (181)
 - Klavier
 - Akustikgitarre
@@ -30,7 +32,5 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Flöte
 - Ukulele
 - Stil übernehmen
-- Instrumental (ohne Gesang)
-- ✨ Erstellen
 - ＋ Eigene Aufnahme
 - ★ Favoriten

@@ -1,6 +1,6 @@
 # Apps – Funktionsmatrix
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `apps` · Stand: 0.9.36 (Stand c58bb7c)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `apps` · Stand: 0.9.36 (Stand bc62519)
 
 Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 
@@ -35,5 +35,32 @@ Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 ## Werkzeuge der Oberfläche
 - Los
 - ✳ Claude
+- Darstellung & Sprache
+- Personen & Konten
+- Sehen & Bedienhilfen
+- Trendo-Updates
+- Betriebsmodus
+- Geräte & Laufwerke
+- Handy verbinden
+- Geräteverbund
+- Im Heimnetz teilen
+- Apps
+- Programme verwalten
+- Hinzufügen
+- Pflegen & Aktualisieren
+- Zusatzprogramme
+- Downloads
+- Schutz & Datenschutz
+- Freigaben
+- Sicherung
+- Selbstheilung
+- Sicher prüfen
+- Sicherheits-Werkzeuge
+- Protokoll & Abstürze
+- Speicher & Leistung
+- Leistung messen
+- Systemcheck
+- Qualitäts-Ampel
+- Bau-Fortschritt
 - Verstanden
 - Installieren …

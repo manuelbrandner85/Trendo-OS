@@ -55,6 +55,7 @@ public class PrintPreview_Ui
         Assert.Equal(10, w.PrintLayer); Assert.Contains("10 / 100", w.Find<TextBlock>("print-layer-label").Text);
         // STEP ohne Vorschau, aber ohne Fehler
         var step = Path.Combine(root, "teil.step"); File.WriteAllText(step, "ISO-10303-21;"); w.Open3dPrint(step); Settle();
-        Assert.Null(w.TryFind<CadView>("print-3d"));
+        Assert.Null(w.TryFind<StackPanel>("print-preview")); // keine Schichten/Eigenschaften
+        Assert.Contains("keine Vorschau für dieses Format", w.Find<TextBlock>("print-empty-title").Text); // leere Platte mit ehrlichem Hinweis (wie im Slicer)
     }
 }

@@ -132,10 +132,11 @@ public partial class MainWindow
         foreach (var c in TripleMode.Capabilities(mode, Has))
             sp.Children.Add(Row2(new TextBlock { Name = $"mode-cap-{i++}", Text = $"{(c.State switch { CapState.Ok => "✓", CapState.Fehlt => "○", _ => "✕" })} {c.Feature}", Foreground = Text },
                 new TextBlock { Text = (c.State == CapState.Blockiert ? "BLOCKIERT – " : c.State == CapState.Fehlt ? "fehlt – " : "") + c.Detail, Foreground = c.State == CapState.Blockiert ? Brush.Parse("#F87171") : Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center }));
-        var plan = new StackPanel { Spacing = 2, Children = { new TextBlock { Text = "Linux-USB-Stick vorbereiten (Anleitung)", Foreground = Text } } };
-        var removable = DriveInfo.GetDrives().Where(d => { try { return d.IsReady && d.DriveType == DriveType.Removable; } catch (IOException) { return false; } }).ToList();
-        foreach (var s in TripleMode.UsbPlan(removable.Count > 0 ? removable.Max(d => d.TotalSize) : 0)) plan.Children.Add(P("• " + s, null, 11.5));
-        if (removable.Count == 0) plan.Children.Add(P("Kein USB-Stick eingesteckt.", null, 11));
+        // Seit 0.9.71 schreibt Trendo das eigene Trendo-OS-Abbild selbst (geprüft, mit Rücklesen) – keine fremden Werkzeuge mehr nötig
+        var plan = new StackPanel { Spacing = 6, Children = {
+            new TextBlock { Text = "Trendo OS auf USB-Stick oder externe SSD", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
+            P($"Eigenes System zum Mitnehmen: Trendo lädt das geprüfte Abbild aus dem neuesten Release, schreibt es auf das gewählte Laufwerk (mind. {MinStickGb:0} GB) und liest alles zur Kontrolle zurück. Windows und Trendo auf diesem PC bleiben unverändert.", null, 12),
+            Act("mode-write-stick", "Stick oder SSD schreiben …", () => { EnterSetupFullscreen(); SetupUse("stick"); }, true) } };
         sp.Children.Add(WCard(plan));
         return SysPage("Betriebsmodus", sp);
     }

@@ -8,6 +8,20 @@ public sealed class OllamaClient
 {
     private readonly HttpClient _http = new() { BaseAddress = new Uri("http://127.0.0.1:11434"), Timeout = TimeSpan.FromSeconds(120) };
 
+    /// <summary>Frage zu Bildern an ein Bildverstehens-Modell (z. B. qwen2.5vl) – nur lokal; Modell bleibt danach kurz geladen.</summary>
+    public async Task<string?> AskImagesAsync(string model, string question, IEnumerable<byte[]> images, CancellationToken ct = default)
+    {
+        try
+        {
+            var body = new { model, prompt = question, stream = false, keep_alive = "30s", images = images.Select(Convert.ToBase64String).ToArray(), options = new { temperature = 0 } };
+            using var r = await _http.PostAsJsonAsync("/api/generate", body, ct);
+            if (!r.IsSuccessStatusCode) return null;
+            using var d = JsonDocument.Parse(await r.Content.ReadAsStringAsync(ct));
+            return d.RootElement.TryGetProperty("response", out var t) ? t.GetString() : null;
+        }
+        catch (Exception e) when (e is HttpRequestException or TaskCanceledException or JsonException) { return null; }
+    }
+
     public async Task<bool> IsUpAsync()
     {
         try { using var cts = new CancellationTokenSource(1000); using var r = await _http.GetAsync("/api/version", cts.Token); return r.IsSuccessStatusCode; }

@@ -150,18 +150,17 @@ public partial class MainWindow
     // ---------- Oberfläche ----------
     Control PrintPageView()
     {
+        // Aufbau wie ein Slicer (Bambu Studio/Cura, Clean-Room): Werkzeugleiste, links Datei und Drucker, Mitte Druckplatte in 3D, rechts Eigenschaften
         var sp = new StackPanel { Spacing = 10 };
-        sp.Children.Add(PageHead("Trendo 3D-Druck"));
-        // 1) Datei
-        var file = new StackPanel { Spacing = 6, Children = { H("1 · Was soll gedruckt werden?", 15) } };
+        var file = new StackPanel { Spacing = 6, Children = { H("Datei", 14) } };
         file.Children.Add(P(PrintFile is null ? "Noch keine Datei. Aus Trendo CAD weitergeben oder eine Datei wählen (3MF, STL, STEP, OBJ)." : $"{Path.GetFileName(PrintFile)} · {new FileInfo(PrintFile).Length / 1024.0:0.#} KB" + (PrintFile.EndsWith(".gcode.3mf", StringComparison.OrdinalIgnoreCase) ? " · druckfertig" : " · noch vorzubereiten"), null, 13));
         var pick = new Button { Name = "print-pick", Content = "Datei wählen …" }; pick.Click += (_, _) => _ = PickPrintFile();
         var fromCad = new Button { Name = "print-from-cad", Content = "Aus Trendo CAD" }; fromCad.Click += (_, _) => { try { Open3dPrint(CadExportAs("3mf")); } catch (Trendo.Core.Cad.CadError ex) { _prMsg = ex.Message; Show("3d-druck"); } };
-        file.Children.Add(new WrapPanel { Children = { pick, new Border { Width = 6 }, fromCad } });
+        var toolbar = new WrapPanel { Name = "print-toolbar", Children = { pick, new Border { Width = 6 }, fromCad } };
         sp.Children.Add(Card(file));
-        if (PrintPreviewCard() is { } preview) sp.Children.Add(Card(preview));
-        // 2) Vorbereiten in Bambu Studio
-        var slicer = new StackPanel { Spacing = 6, Children = { H("2 · Vorbereiten (Slicen) in Bambu Studio", 15),
+        var preview = PrintPreviewCard();
+        // Vorbereiten in Bambu Studio
+        var slicer = new StackPanel { Spacing = 6, Children = { H("Slicen in Bambu Studio", 14),
             P("Bambu Studio rechnet aus dem Modell die Bahnen für den Drucker: Drucker und Filament wählen, „Slice“, dann „Drucken“ oder „Exportieren“ als .gcode.3mf.", null, 13) } };
         var exe = BambuStudioExe();
         if (exe is not null)
@@ -179,10 +178,10 @@ public partial class MainWindow
         }
         sp.Children.Add(Card(slicer));
         // 3) Drucker im Heimnetz
-        var pr = new StackPanel { Spacing = 6, Children = { H("3 · Drucker im Heimnetz (LAN-Modus)", 15) } };
-        var name = new TextBox { Name = "print-name", Text = Printer?.Name ?? "", PlaceholderText = "Name, z. B. Werkstatt", Width = 180 };
-        var ip = new TextBox { Name = "print-ip", Text = Printer?.Ip ?? "", PlaceholderText = "IP, z. B. 192.168.1.40", Width = 170 };
-        var serial = new TextBox { Name = "print-serial", Text = Printer?.Serial ?? "", PlaceholderText = "Seriennummer", Width = 180 };
+        var pr = new StackPanel { Spacing = 6, Children = { H("Drucker im Heimnetz", 14) } };
+        var name = new TextBox { Name = "print-name", Text = Printer?.Name ?? "", PlaceholderText = "Name, z. B. Werkstatt", Width = 230 };
+        var ip = new TextBox { Name = "print-ip", Text = Printer?.Ip ?? "", PlaceholderText = "IP, z. B. 192.168.1.40", Width = 230 };
+        var serial = new TextBox { Name = "print-serial", Text = Printer?.Serial ?? "", PlaceholderText = "Seriennummer", Width = 230 };
         var code = new TextBox { Name = "print-code", Text = _prCodeDraft, PasswordChar = '•', PlaceholderText = Printer is not null && _core.Secrets.Get(Printer.SecretKey) is not null ? "Zugangscode gespeichert" : "Zugangscode", Width = 150 };
         code.TextChanged += (_, _) => _prCodeDraft = code.Text ?? "";
         var save = new Button { Name = "print-save", Content = "Speichern" };
@@ -218,7 +217,12 @@ public partial class MainWindow
         }
         if (_prCamera is { } jpg) try { using var ms = new MemoryStream(jpg); pr.Children.Add(new Image { Name = "print-camera-image", Source = new Avalonia.Media.Imaging.Bitmap(ms), MaxWidth = 480, HorizontalAlignment = HorizontalAlignment.Left }); } catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or NotSupportedException) { }
         sp.Children.Add(Card(pr));
-        if (_prMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "print-msg", Text = _prMsg, Foreground = Muted, FontSize = 13, TextWrapping = TextWrapping.Wrap });
-        return new Border { Name = "print-page-root", Background = Brush.Parse(C("#F21A1A1A", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = new ScrollViewer { Content = sp } };
+        var right = new StackPanel { Name = "print-props", Spacing = 8, Children = { preview ?? P("Eigenschaften erscheinen, sobald ein Modell auf der Platte liegt: Größe, Schichten, Filament, Zeit und Prüfungen (passt auf die Platte, Überhang).", Muted, 12) } };
+        if (_prMsg.Length > 0) right.Children.Add(new TextBlock { Name = "print-msg", Text = _prMsg, Foreground = Muted, FontSize = 13, TextWrapping = TextWrapping.Wrap });
+        var center = new Border { Name = "print-center", CornerRadius = new CornerRadius(12), ClipToBounds = true, Background = Brush.Parse("#0B1424"), MinHeight = 480, Child = PrintPlate() };
+        var work = new Grid { Name = "print-workspace", ColumnDefinitions = new ColumnDefinitions("300,10,*,10,320"), Children = {
+            new ScrollViewer { Content = sp }, Pos(center, 2), Pos(Card(new ScrollViewer { Content = right }), 4) } };
+        var page = new DockPanel { Children = { Dk(new StackPanel { Spacing = 6, Children = { PageHead("Trendo 3D-Druck"), Card(toolbar) } }, Avalonia.Controls.Dock.Top), work } };
+        return new Border { Name = "print-page-root", Background = Brush.Parse(C("#F21A1A1A", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = page };
     }
 }

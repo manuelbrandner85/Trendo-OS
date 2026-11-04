@@ -178,7 +178,7 @@ public partial class MainWindow
     Control MsVideoPanel(MusicSong s)
     {
         var sp = new StackPanel { Name = "ms-video-panel", Spacing = 4 };
-        sp.Children.Add(H("Musikvideo", 13));
+        sp.Children.Add(H("Schnelles Musikvideo aus Stockvideos (ohne KI-Darsteller)", 13));
         sp.Children.Add(P("Echte Videoclips, geschnitten auf den Takt, mit Kamera-Look wie im Kino. Clips: eigene Videos oder freies Filmmaterial von Pexels.", Muted, 11));
         var look = new ComboBox { Name = "ms-video-look", ItemsSource = MusicVideo.Looks.Select(l => "Look: " + l.Name).ToArray(), SelectedIndex = Math.Max(0, Array.FindIndex(MusicVideo.Looks, l => l.Id == _mvLook)) };
         look.SelectionChanged += (_, _) => _mvLook = MusicVideo.Looks[Math.Max(0, look.SelectedIndex)].Id;

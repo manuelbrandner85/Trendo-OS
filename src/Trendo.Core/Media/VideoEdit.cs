@@ -14,8 +14,22 @@ public sealed record EditClip(string Id, string File, double In, double Out, dou
 
 /// <summary>CORE-08 (Masterprompt 131): Videoschnitt-Projekt – Bildspur und Musikspur, Schneiden, Kürzen, Teilen, Verschieben, Export über FFmpeg.
 /// Die Daten liegen als JSON im Programmdokument (.tdoc), damit Rückgängig, Autosave und Wiederherstellen der Programm-Hülle greifen.</summary>
+/// <summary>E1 (KI-Musikvideo, 04.11.2026): Marke auf der Zeitleiste – Abschnitt („section“), Liedzeile mit Stimme („line“) oder Drehbuch-Einstellung („shot“).</summary>
+public sealed record EditMarker(double Start, double End, string Kind, string Label, string Who = "");
+
 public static class VideoEdit
 {
+    /// <summary>Marken des Projekts (z. B. aus „Lied verstehen“ und dem Drehbuch in Trendo Musik).</summary>
+    public static List<EditMarker> Markers(JsonObject p) => (p["markers"] as JsonArray ?? []).OfType<JsonObject>().Select(m => new EditMarker(
+        m["start"]?.GetValue<double>() ?? 0, m["end"]?.GetValue<double>() ?? 0, m["kind"]?.GetValue<string>() ?? "", m["label"]?.GetValue<string>() ?? "", m["who"]?.GetValue<string>() ?? "")).ToList();
+
+    public static void SetMarkers(JsonObject p, IEnumerable<EditMarker> markers) =>
+        p["markers"] = new JsonArray([.. markers.OrderBy(m => m.Start).Select(m => (JsonNode)new JsonObject { ["start"] = Math.Round(m.Start, 3), ["end"] = Math.Round(m.End, 3), ["kind"] = m.Kind, ["label"] = m.Label, ["who"] = m.Who })]);
+
+    /// <summary>Verknüpftes Lied (Trendo Musik) – Id und Datei; null = freies Projekt.</summary>
+    public static (string Id, string File)? Song(JsonObject p) => p["song"]?.GetValue<string>() is { Length: > 0 } id ? (id, p["songFile"]?.GetValue<string>() ?? "") : null;
+    public static void LinkSong(JsonObject p, string id, string file) { p["song"] = id; p["songFile"] = file; }
+
     public const double ImageSeconds = 5, MinLength = 0.2;
     static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 

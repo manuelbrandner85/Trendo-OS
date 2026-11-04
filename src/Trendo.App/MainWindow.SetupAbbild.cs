@@ -22,6 +22,25 @@ public partial class MainWindow
 
     string ImageDir => Path.Combine(_core.DataRoot, "abbild");
 
+    /// <summary>Tests: Entfernen vom PC ersetzen (nie die echte Deinstallation).</summary>
+    public Action? UninstallPcOverride { get; set; }
+
+    /// <summary>Nur Stick/SSD gewählt: Abbild-Zwischenablage löschen, Daten zum Löschen markieren und Trendo still deinstallieren.
+    /// Die Deinstallation (Velopack) entfernt Programm und Werkzeuge; der Merker sorgt dafür, dass auch die Daten dieser Einrichtung gehen.</summary>
+    void StickOnlyFinish()
+    {
+        try { if (Directory.Exists(ImageDir)) Directory.Delete(ImageDir, true); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+        _core.Audit.Append(Principal.LocalOwner.Name, "setup.nur-stick", "Trendo wird vom PC entfernt");
+        if (UninstallPcOverride is { } o) { o(); return; }
+        if (_opt.Isolated) return;
+        var update = Path.Combine(Path.GetDirectoryName(AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar)) ?? "", "Update.exe");
+        if (!File.Exists(update)) { _imgStatus = "Trendo läuft hier ohne Installation – auf diesem PC ist nichts zu entfernen. Du kannst das Fenster schließen."; Show("einrichtung-abbild"); return; }
+        try { File.WriteAllText(Path.Combine(_core.DataRoot, UninstallPrompt.StickOnlyMarker), "nur Stick/SSD gewählt"); } catch (IOException) { }
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(update) { UseShellExecute = false, ArgumentList = { "--uninstall", "-s" } }); }
+        catch (System.ComponentModel.Win32Exception e) { _imgStatus = "Entfernen ging nicht: " + e.Message + " – bitte über Windows „Apps“ deinstallieren."; Show("einrichtung-abbild"); return; }
+        (Avalonia.Application.Current?.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.Shutdown();
+    }
+
     /// <summary>Liegt im neuesten Release ein Trendo-OS-Abbild? (beim Start der Einrichtung im Hintergrund geprüft)</summary>
     public async Task CheckImageAsync(CancellationToken ct = default)
     {
@@ -95,7 +114,15 @@ public partial class MainWindow
                     Child = new TextBlock { Text = $"{maker}: {key}", Foreground = Text, FontSize = 12 } });
             sp.Children.Add(keys);
             sp.Children.Add(P("Beim ersten Start fragt Trendo OS nach einem Passwort und legt damit den verschlüsselten Speicherbereich auf dem restlichen Platz an – dort bleiben deine Dateien, Programme und KI-Modelle.", Muted, 12));
-            sp.Children.Add(Act("wiz-img-next", "Weiter mit der Einrichtung", () => Show("einrichtung"), true));
+            if (_settings.SetupDone) // Trendo ist auf diesem PC schon eingerichtet: nur fertig, nie vom PC entfernen
+            {
+                sp.Children.Add(Act("wiz-img-close", "Fertig", () => { LeaveSetupFullscreen(); Show("modus"); }, true));
+                return sp;
+            }
+            sp.Children.Add(P("Du hast nur den Stick bzw. die SSD gewählt. Mit „Fertig“ entfernt Trendo sich wieder von diesem PC – Windows bleibt genau so, wie es vorher war.", Text, 13));
+            sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, HorizontalAlignment = HorizontalAlignment.Right, Children = {
+                Act("wiz-img-next", "Zusätzlich als Programm auf diesem PC nutzen", () => { _wizUse = "programm"; Show("einrichtung"); }),
+                Act("wiz-img-finish", "Fertig – Trendo vom PC entfernen", () => StickOnlyFinish(), true) } });
             return sp;
         }
 

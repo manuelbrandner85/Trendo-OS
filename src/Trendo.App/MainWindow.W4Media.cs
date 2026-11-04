@@ -91,7 +91,7 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 8, Children = { P("Wähle eine Datei und was du damit machen willst. Das Original bleibt immer erhalten.") } };
         if (FfmpegPath is null) sp.Children.Add(Card(Row(P("FFmpeg fehlt noch. Videos und Ton gehen erst damit; Bilder kannst du trotzdem bearbeiten.", Brush.Parse("#FACC15")), Nav2("Einrichten", "components"))));
-        var files = FileShelf.Recent([MediaFolder, Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), Environment.GetFolderPath(Environment.SpecialFolder.MyPictures)], MediaStudio.Inputs);
+        var files = FileShelf.Recent([MediaFolder, UserFolder(Environment.SpecialFolder.MyVideos), UserFolder(Environment.SpecialFolder.MyMusic), UserFolder(Environment.SpecialFolder.MyPictures)], MediaStudio.Inputs);
         sp.Children.Add(H("1. Datei wählen", 14));
         var path = new TextBox { Name = "media-path", Text = _mediaFile ?? "", PlaceholderText = "Pfad zur Datei", Width = 380 };
         sp.Children.Add(new WrapPanel { Children = { path, Act("media-use", "Übernehmen", () => MediaPick(path.Text?.Trim('"', ' ') ?? "")), Act("media-folder", "Medienordner öffnen", () => Launch(MediaFolder)) } });

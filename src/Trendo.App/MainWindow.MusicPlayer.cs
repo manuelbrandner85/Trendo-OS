@@ -18,7 +18,7 @@ public partial class MainWindow
     public List<string>? MusicFoldersOverride { get; set; }
     public Func<IAudioOut>? AudioOverride { get; set; }
     public Playlists MusicLists => new(_core.DataRoot);
-    List<string> MusicFolders => MusicFoldersOverride ?? [Environment.GetFolderPath(Environment.SpecialFolder.MyMusic), Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), ProjectsRoot];
+    List<string> MusicFolders => MusicFoldersOverride ?? [UserFolder(Environment.SpecialFolder.MyMusic), UserFolder(Environment.SpecialFolder.MyVideos), ProjectsRoot];
     List<Track>? _tracks; Task? _trackLoad;
     readonly PlayQueue _queue = new(); IAudioOut? _audio;
     double _mPos, _mDur = double.NaN; bool _mPaused, _mQueueOpen, _mSeeking; int _mVol = 80;

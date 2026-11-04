@@ -363,7 +363,7 @@ public sealed partial class MainWindow
                 FinishSetup();
                 sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 14, Children = { AvatarView(64), P($"Alles bereit{(string.IsNullOrEmpty(_settings.Name) ? "" : ", " + _settings.Name)}! Hier ist dein Systemcheck:", Text, 14) } });
                 sp.Children.Add(SystemCheckPanel());
-                var done = new Button { Name = "wiz-done", Content = "Los geht's", Background = Accent, Padding = new Thickness(16, 6) }; done.Click += (_, _) => Show("start");
+                var done = new Button { Name = "wiz-done", Content = "Los geht's", Background = Accent, Padding = new Thickness(16, 6) }; done.Click += (_, _) => { LeaveSetupFullscreen(); Show("start"); };
                 sp.Children.Add(done);
                 return Page("Ersteinrichtung", sp);
         }
@@ -422,8 +422,7 @@ public sealed partial class MainWindow
                 try { var n = BrowserImport.ImportInto(_core.DataRoot, BrowserImport.Parse(File.ReadAllText(f), f.Contains("Edge") ? "Edge" : "Chrome")); _core.Audit.Append(Principal.LocalOwner.Name, "import.bookmarks", n.ToString()); }
                 catch (Exception e) when (e is IOException or System.Text.Json.JsonException or UnauthorizedAccessException) { _core.Audit.Append("app", "import.bookmarks.failed", e.GetType().Name); }
         _settings.SearchWindowsFolders = _wizWinFolders;
-        _settings.SetupDone = true; _settings.Save(_core.DataRoot);
-        LeaveSetupFullscreen();
+        _settings.SetupDone = true; _settings.Save(_core.DataRoot); // Vollbild verlässt erst „Los geht's“ (nicht mitten im Aufbau dieser Seite)
         _core.Audit.Append(Principal.LocalOwner.Name, "setup.done", $"Pakete: {string.Join(",", _settings.StudioPacks)}");
         try { Backups.Create(DateTime.Now); } catch { /* Sicherung später erneut */ }
     }

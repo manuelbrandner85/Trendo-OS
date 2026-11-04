@@ -115,9 +115,10 @@ public partial class MainWindow
         if (shown.Count == 0) list.Children.Add(P(_abGroup switch { "dups" => "Keine doppelten Kontakte. 👍", "bday" => "In den nächsten 30 Tagen hat niemand Geburtstag.", _ => all.Count == 0 ? "Noch keine Kontakte. Oben „+ Neuer Kontakt“ oder eine vCard einlesen." : "Niemand passt zur Suche." }, Muted, 12.5));
         var middle = new StackPanel { Spacing = 6, Width = 330, Children = { find, new ScrollViewer { Content = list, MaxHeight = 560 } } };
 
+        if (_abSel is null && shown.Count > 0 && _abGroup != "dups") _abSel = shown[0].Id; // wie Outlook „Personen“: gleich den ersten Kontakt zeigen
         // rechts: Karte oder Bearbeiten oder Doppelte
         Control right = _abGroup == "dups" ? AbDuplicates(dups) : _abSel is { } sid && all.FirstOrDefault(c => c.Id == sid) is { } sel ? (_abEdit ? AbEditor(sel) : AbCard(sel, today)) : P("Links einen Kontakt anklicken.", Muted, 13);
-        var body = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,12,Auto,14,*"), Children = { Glass2(side, 10), Pos(Glass2(middle, 10), 2), Pos(Glass2(new ScrollViewer { Content = right, MaxHeight = 600 }, 18), 4) } };
+        var body = new Grid { Name = "ab-book", ColumnDefinitions = new ColumnDefinitions("Auto,12,Auto,14,*"), Children = { Glass2(side, 10), Pos(Glass2(middle, 10), 2), Pos(Glass2(new ScrollViewer { Content = right, MaxHeight = 600 }, 18), 4) } };
         return SysPage("Adressbuch", new StackPanel { Spacing = 8, Children = { head, body } });
     }
 

@@ -38,8 +38,21 @@ public partial class MainWindow
     private void PdfSay(string m) { _pdfMsg = m; }
 
     /// <summary>PDF öffnen (auch per Test). Mit Passwortschutz erscheint zuerst die Passwortabfrage.</summary>
+    /// <summary>Zuletzt geöffnete PDFs (für die Startseite) – nur Pfade, im eigenen Datenordner.</summary>
+    public List<string> PdfRecent()
+    {
+        try { var f = Path.Combine(_core.DataRoot, "pdf-zuletzt.json"); return File.Exists(f) ? (System.Text.Json.JsonSerializer.Deserialize<List<string>>(File.ReadAllText(f)) ?? []).Where(File.Exists).ToList() : []; }
+        catch (System.Text.Json.JsonException) { return []; }
+    }
+    void PdfRemember(string path)
+    {
+        var l = PdfRecent(); l.RemoveAll(x => string.Equals(x, path, StringComparison.OrdinalIgnoreCase)); l.Insert(0, path);
+        try { File.WriteAllText(Path.Combine(_core.DataRoot, "pdf-zuletzt.json"), System.Text.Json.JsonSerializer.Serialize(l.Take(12))); } catch (IOException) { }
+    }
+
     public void OpenPdf(string path, string? password = null)
     {
+        PdfRemember(path);
         PdfPath = path; _pdfPassword = password; PdfPage = 0; _pdfHits = []; _pdfQuery = ""; _pdfMode = null;
         var info = PdfTools.Read(path, password);
         _pdfLocked = info.NeedsPassword;
@@ -154,8 +167,8 @@ public partial class MainWindow
 
         if (PdfPath is null || !File.Exists(PdfPath))
         {
-            var hint = P("Öffne eine PDF oder lege eine neue an. Trendo PDF zeigt, sucht, markiert und bearbeitet PDF-Dateien ohne Zusatzprogramm.", Text, 13);
-            Grid.SetRow(hint, 1); Grid.SetColumnSpan(hint, 2); root.Children.Add(hint);
+            var start = PdfStartView();
+            Grid.SetRow(start, 1); Grid.SetRowSpan(start, 2); Grid.SetColumnSpan(start, 2); root.Children.Add(start);
             return root;
         }
         if (_pdfLocked)

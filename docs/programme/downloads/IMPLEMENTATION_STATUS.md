@@ -1,6 +1,6 @@
 # Downloads – Umsetzungsstand
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.36 (Stand c58bb7c)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.36 (Stand bc62519)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -32,4 +32,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | SYS-03-P24 | Proxy-Info | Implementiert | – |
 | SYS-03-P25 | Verlauf löschen anleiten | Implementiert | – |
 
-0 von 25 Funktionen getestet.
+0 von 25 Funktionen getestet (noch kein Testlauf eingelesen).

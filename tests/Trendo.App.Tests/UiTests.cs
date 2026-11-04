@@ -337,6 +337,7 @@ public class W0_SetupWizard
         // Datenschutz, Handy, Personen: weiter bis „Fertig“
         for (var i = 0; i < 100 && w.TryFind<Button>("wiz-done") is null; i++) { if (w.TryFind<Button>("wiz-next") is { } n) n.Press(); await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }
         Assert.NotNull(w.TryFind<Button>("wiz-done"));
+        Assert.True(w.Find<Grid>("wiz-fullscreen").IsVisible); // Abschlussseite noch im Vollbild
         // T-0222: Basis- und Studio-Programme kommen aus dem Vollpaket, nie per winget
         Assert.DoesNotContain(r.Calls, c => c.Contains("SumatraPDF.SumatraPDF") || c.Contains("Git.Git") || c.Contains("LibreOffice"));
         Assert.True(File.Exists(Path.Combine(proj, "Vorlagen", "DIN5008-Geschaeftsbrief-FormB.docx")));
@@ -344,6 +345,9 @@ public class W0_SetupWizard
         Assert.True(s.SetupDone); Assert.Equal("Erika Muster", s.Name); Assert.Equal("kontrast", s.Theme); Assert.Equal(proj, s.ProjectsFolder);
         for (var i = 0; i < 200 && w.TryFind<Button>("fix-sumatra") is null; i++) { await Task.Delay(20); Dispatcher.UIThread.RunJobs(); }
         Assert.NotNull(w.TryFind<Button>("fix-sumatra")); // Systemcheck (im Hintergrund geprüft): fehlt → Reparieren
+        w.Find<Button>("wiz-done").Press(); Dispatcher.UIThread.RunJobs();
+        Assert.False(w.Find<Grid>("wiz-fullscreen").IsVisible); Assert.False(w.SetupFullscreen); // „Los geht's“ führt wirklich hinaus
+        Assert.Equal("start", w.CurrentView);
         Assert.Single(new Backup(root, Path.Combine(root, "backups"), core.Audit).List());
         w.Close(); Directory.Delete(root, true);
     }

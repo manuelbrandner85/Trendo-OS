@@ -66,6 +66,7 @@ public partial class MainWindow
             else b.Margin = new Thickness(0, 0, 6, 6);
             b.Click += (_, _) => Show(k); row.Children.Add(b);
         }
+        if (InAppShell(CurrentView)) { row.IsVisible = false; return row; } // E2: die KI-Zentrale hat links ihre eigene Navigation
         return TabsOrNothing(row);
     }
 
