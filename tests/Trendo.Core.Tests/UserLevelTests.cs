@@ -10,7 +10,10 @@ public class MP131_Levels
     {
         Assert.Equal(UserLevel.Einfach, UserLevel.Of("EINFACH")); Assert.Equal(UserLevel.Profi, UserLevel.Of("profi")); Assert.Equal(UserLevel.Erweitert, UserLevel.Of("quatsch")); Assert.Equal(UserLevel.Erweitert, UserLevel.Of(null));
         Assert.True(UserLevel.Shows(UserLevel.Einfach, 0)); Assert.False(UserLevel.Shows(UserLevel.Einfach, 1)); Assert.True(UserLevel.Shows(UserLevel.Profi, 1));
-        Assert.Equal("erweitert", new UserSettings().Level);
+        Assert.Equal("einfach", new UserSettings().Level); // neue Nutzer starten einfach (04.11.2026)
+        var keep = Path.Combine(Path.GetTempPath(), "trendo-lvl-alt-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(keep);
+        try { new UserSettings { Level = "erweitert" }.Save(keep); Assert.Equal("erweitert", UserSettings.Load(keep).Level); } // gespeicherte Wahl bleibt
+        finally { Directory.Delete(keep, true); }
         var root = Path.Combine(Path.GetTempPath(), "trendo-lvl-" + Guid.NewGuid().ToString("N"));
         try { var p = new PersonStore(root).Add("Erika Muster", "emoji:🙂", child: true); Assert.Equal("einfach", UserSettings.Load(new PersonStore(root).RootOf(p.Id)).Level); }
         finally { if (Directory.Exists(root)) Directory.Delete(root, true); }

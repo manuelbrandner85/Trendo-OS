@@ -42,8 +42,9 @@ public sealed class UserSettings
     public bool ColorBlind { get; set; }
     public string NotifyStyle { get; set; } = "normal";
     public bool SimpleMode { get; set; }
-    /// <summary>Masterprompt 131: Bedienstufe der Programme – einfach | erweitert | profi (siehe <see cref="Programs.UserLevel"/>).</summary>
-    public string Level { get; set; } = "erweitert";
+    /// <summary>Masterprompt 131: Bedienstufe der Programme – einfach | erweitert | profi (siehe <see cref="Programs.UserLevel"/>).
+    /// Seit 04.11.2026 (Nutzerwunsch „Einfach zuerst“) starten neue Nutzer mit „einfach“; eine gespeicherte Wahl bleibt erhalten.</summary>
+    public string Level { get; set; } = "einfach";
     /// <summary>Vorschläge, zu denen „Nein“ gesagt wurde (oder die erledigt sind) – erscheinen nicht wieder.</summary>
     public List<string> DismissedSuggestions { get; set; } = [];
     /// <summary>Posteingang: lokal gemerkte Nachrichten (IMAP-UID) – auf dem Server ändert sich nichts.</summary>

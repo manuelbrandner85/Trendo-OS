@@ -35,6 +35,7 @@ public static class Ui
         var l = new FakeLauncher();
         var core = new TrendoCore(root, new InMemorySecretStore(), l, offline: offline);
         var w = new MainWindow(core, new AppOptions(root, null, 0, offline, Isolated: true), new Probe("browser"));
+        w.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Erweitert); // Tests prüfen alle Fachwerkzeuge; neue Nutzer starten „Einfach“ (eigener Test)
         w.Show();
         Dispatcher.UIThread.RunJobs();
         return (w, l, root);

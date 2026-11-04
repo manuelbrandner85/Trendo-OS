@@ -1,3 +1,4 @@
+using Avalonia.LogicalTree;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -86,5 +87,23 @@ public class Einfachheit_Ui(ITestOutputHelper log)
         log.WriteLine(report);
         Assert.True(rows.Count > 40, $"nur {rows.Count} Ansichten");
         Assert.Empty(rows.Where(r => r.NavBars > 3 || r.ExpanderDepth > 2 || r.ScrollDepth > 2).Select(r => $"{r.Key}: {r.NavBars} Reiterleisten, Aufklapper {r.ExpanderDepth}, Scroll {r.ScrollDepth} [{r.Bars}]"));
+    }
+    [AvaloniaFact(DisplayName = "Einfach zuerst: neue Nutzer öffnen Programme in der Stufe „Einfach“ (weniger Werkzeuge, alle Funktionen über „Erweitert“/„Professionell“ erreichbar)")]
+    public void New_users_start_simple()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-ui-" + Guid.NewGuid().ToString("N"));
+        var core = new Trendo.Core.TrendoCore(root, new Trendo.Core.InMemorySecretStore(), new FakeLauncher());
+        var w = new MainWindow(core, new AppOptions(root, null, 0, false, Isolated: true), new Probe("browser")); w.Show(); Dispatcher.UIThread.RunJobs();
+        try
+        {
+            Assert.Equal(Trendo.Core.Programs.UserLevel.Einfach, w.ProgramLevel);
+            w.Show("ton"); w.ProgramNew("ton"); w.Show("ton"); Dispatcher.UIThread.RunJobs();
+            var simple = w.GetLogicalDescendants().OfType<Button>().Count(b => b.Name?.StartsWith("prog-cmd-") == true);
+            Assert.Null(w.TryFind<Button>("prog-cmd-au-compress")); // Profi-Werkzeug erst später
+            w.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Profi, "ton"); Dispatcher.UIThread.RunJobs();
+            Assert.NotNull(w.TryFind<Button>("prog-cmd-au-compress"));
+            Assert.True(w.GetLogicalDescendants().OfType<Button>().Count(b => b.Name?.StartsWith("prog-cmd-") == true) > simple);
+        }
+        finally { w.Close(); }
     }
 }
