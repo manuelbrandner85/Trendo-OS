@@ -1,6 +1,6 @@
 # Programme verwalten – Funktionsmatrix
 
-Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.36 (Stand 52e27a5)
+Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.36 (Stand 9ed3c01)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

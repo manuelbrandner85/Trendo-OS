@@ -1,6 +1,6 @@
 # Messdaten & Auswertung – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.36 (Stand 52e27a5)
+Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.36 (Stand 9ed3c01)
 
 Analyse: [Vorbild-Analyse Messdaten: Origin, SciDAVis, LabPlot (Clean-Room)](../../../docs/claude/vorbilder/messdaten-origin-scidavis.md)
 

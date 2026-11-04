@@ -1,5 +1,5 @@
 # Werkzeuge: Notizen, Rechner, Wecker – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.36 (Stand 52e27a5)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.36 (Stand 9ed3c01)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

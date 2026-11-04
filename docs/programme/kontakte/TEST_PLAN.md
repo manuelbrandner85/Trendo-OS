@@ -1,6 +1,6 @@
 # Adressbuch – Testplan
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand 52e27a5)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand 9ed3c01)
 
 7 Tests sprechen dieses Programm an.
 

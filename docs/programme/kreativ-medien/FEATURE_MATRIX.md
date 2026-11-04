@@ -1,6 +1,6 @@
 # Medien bearbeiten – Funktionsmatrix
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand 52e27a5)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand 9ed3c01)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -20,6 +20,7 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Datei wählen …
 - Übernehmen
 - Medienordner öffnen
+- Woke up on a Sunday - Vorschau.mp4
 - WIN_20261027_18_41_26_Pro.jpg
 - WIN_20261027_18_41_05_Pro.jpg
 - WIN_20261027_18_40_54_Pro.mp4
@@ -27,6 +28,5 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - trendo-20261021-185509.png
 - Screenshot 2026-10-05 225601.png
 - Screenshot 2026-10-05 170129.png
-- Screenshot 2026-10-05 012452.png
 - Aneinanderhängen
 - Liste leeren
