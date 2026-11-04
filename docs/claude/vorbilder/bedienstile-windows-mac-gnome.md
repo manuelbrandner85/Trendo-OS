@@ -46,6 +46,12 @@
 - ✓ GNOME-Suche hinter der Lupe, Lostippen öffnet sie und filtert live, Esc schließt; Explorer und Finder springen beim Tippen zum ersten passenden Element
 - ✓ „Andere Orte“ (GNOME): Auf diesem Rechner, Netzwerke, Mit Server verbinden; Finder „Orte“: nur Volumes; Uhr GNOME „Mi. 22:35“
 
+### Programme in den Studios (Wunsch 04.11.2026)
+- ✓ Windows 11: Menüzeile im Fenster (Datei · Bearbeiten · Programmgruppen · Exportieren · Hilfe) mit Tastenkürzeln (Strg+N/S/Z/Y, F1), darunter flaches Menüband mit Trennstrichen und Gruppennamen, Schnellzugriff links
+- ✓ macOS: keine Menüs im Fenster – oben in der Menüleiste stehen Programmname · Ablage (inkl. Exportieren) · Bearbeiten · Programmgruppen · Darstellung · Fenster · Hilfe mit ⌘-Kürzeln; im Fenster schlanke Werkzeugleiste; Reiter erst ab zwei Dokumenten
+- ✓ GNOME: Kopfleiste mit „＋ Neu“ links, „Speichern“ als blaue empfohlene Aktion und Hauptmenü ☰ rechts (alle Befehle als Untermenüs), darunter die Werkzeuge; Reiter erst ab zwei Dokumenten
+- ✓ Programmkopf neutral wie im System (keine Studio-Farbfläche); jeder Menüeintrag drückt denselben Knopf – keine Funktion fehlt
+
 ### Offen
 - ✓ Mehrfachauswahl wie im System: Umschalt-Klick Bereich, Strg-Klick (Mac ⌘) dazu/weg, Auswahlrahmen mit der Maus, Strg/⌘+A, Klick ins Leere hebt auf; Kopieren, Einfügen, Ziehen und Papierkorb wirken auf alle gewählten
 - ◐ Natürliches Scrollen und Systemgesten kommen vom echten Betriebssystem, nicht von Trendo
@@ -53,4 +59,4 @@
 - ◐ Windows-Registerkarten sitzen unter der Titelzeile statt in ihr; Strg+Tab wechselt weiter die Fenster (Strg+Bild↓ wechselt die Karte)
 
 ## Tests
-OsStyles_Ui (8), OsBehaviorTests (4), StyleAndBrand_Ui.
+OsStyles_Ui (9), OsBehaviorTests (4), StyleAndBrand_Ui.

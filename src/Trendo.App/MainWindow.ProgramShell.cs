@@ -1,3 +1,4 @@
+using Avalonia.LogicalTree;
 using System.Text.Json.Nodes;
 using Avalonia;
 using Avalonia.Controls;
@@ -176,6 +177,12 @@ public partial class MainWindow
                     LevelSwitch(key), title, new TextBlock { Name = "prog-dirty", Text = d!.Dirty ? "● geändert" : d.Path is null ? "nicht gespeichert" : "✓ gespeichert", Foreground = Brushes.White, FontSize = 12, VerticalAlignment = VerticalAlignment.Center } } } } }, 2) } },
         };
 
+        if (OsStyle) // Programmkopf neutral wie im System (keine Studio-Farbfläche), Inhalt unverändert
+        {
+            band.Background = GlassStrong; band.BorderBrush = Edge; band.BorderThickness = new Thickness(0, 0, 0, 1); band.CornerRadius = new CornerRadius(_style == "windows" ? 4 : 8); band.BoxShadow = default;
+            foreach (var tb in band.GetLogicalDescendants().OfType<TextBlock>()) if (ReferenceEquals(tb.Foreground, Brushes.White) || tb.Foreground is ISolidColorBrush { Color.A: > 200, Color.R: > 220, Color.G: > 220, Color.B: > 220 }) tb.Foreground = tb.FontSize >= 15 ? Text : Muted;
+            if (title is not null) { title.Foreground = Text; title.Background = Brushes.Transparent; }
+        }
         Panel root;
         if (spec.FillHeight && d is not null)
         {
@@ -351,8 +358,9 @@ public partial class MainWindow
             }))).ToList()));
         if (level == UserLevel.Profi) groups.Add(("Profi", ProTools(spec, d)));
         if (spec.Help.Length > 0) groups.Add(("Hilfe", [RBtn("prog-help", "? Hilfe", () => Toast(spec.Help))]));
-        var ribbon = new WrapPanel { Name = "prog-ribbon" };
-        foreach (var (g, items) in groups)
+        Control? osChrome = OsStyle ? OsProgramChrome(spec, groups, tabs, docs.Count) : null; // Windows-Menüzeile, Mac-Menüleiste, GNOME-Kopfleiste
+        var ribbon = new WrapPanel { Name = osChrome is null ? "prog-ribbon" : "prog-ribbon-trendo" };
+        foreach (var (g, items) in osChrome is null ? groups : [])
         {
             var row = new WrapPanel(); foreach (var it in items) { it.Margin = new Thickness(0, 0, 4, 4); it.VerticalAlignment = VerticalAlignment.Center; row.Children.Add(it); }
             if (spec.FillHeight)
@@ -421,6 +429,7 @@ public partial class MainWindow
                 new TextBlock { Name = "prog-status-text", Text = spec.Status?.Invoke(d) ?? "", Foreground = Muted, FontSize = 12 },
                 Pos(new TextBlock { Text = (d.Path is null ? "Noch nicht gespeichert" : Path.GetFileName(d.Path)) + (d.Dirty ? " · geändert, wird automatisch gesichert" : "") + $" · {d.Changed:HH:mm}", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, 1),
                 Pos(toggles, 2) } } };
+        if (osChrome is not null) return (new StackPanel { Spacing = 0, Children = { new Border(), new StackPanel { Spacing = 8, Children = { osChrome } } } }, grid, status);
         return (new StackPanel { Spacing = 0, Children = { tabs, new StackPanel { Spacing = 8, Children = { ribbon } } } }, grid, status);
 
         Button RBtn(string name, string label, Action go, bool primary = false, string? tip = null)

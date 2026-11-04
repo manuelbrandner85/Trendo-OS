@@ -294,5 +294,35 @@ public class OsStyles_Ui
         finally { Back(w ?? w0); }
     }
 
+    [AvaloniaFact(DisplayName = "Programme im Stil des Systems: Windows-Menüzeile im Fenster, Mac-Menüs oben in der Menüleiste (Ablage …), GNOME-Kopfleiste mit „Speichern“ blau und Hauptmenü ☰ – Menüeinträge lösen dieselben Befehle aus")]
+    public void Programs_like_os()
+    {
+        var (w0, _, _) = Ui.Open(); MainWindow? w = null;
+        try
+        {
+            static MenuItem Item(MainWindow w, string name) => w.GetLogicalDescendants().OfType<MenuItem>().First(m => m.Name == name);
+            w = Switch(w0, "windows"); w.Width = 1600; w.Height = 1000;
+            w.Show("bild"); Pump(); w.ProgramNew("bild"); w.Show("bild"); Pump();
+            Assert.True(Visible(w, "prog-menubar")); Assert.True(Visible(w, "prog-ribbon"));
+            Assert.Contains("Datei", w.OsProgramMenus("bild")); Assert.Contains("Bearbeiten", w.OsProgramMenus("bild"));
+            w.ImgZoom = 0; Item(w, "menu-prog-cmd-img-zoom-100").RaiseEvent(new Avalonia.Interactivity.RoutedEventArgs(MenuItem.ClickEvent)); Pump();
+            Assert.Equal(1, w.ImgZoom); // Menüeintrag = derselbe Befehl wie der Knopf
+            Assert.True(Visible(w, "prog-cmd-img-zoom-fit")); // Knöpfe bleiben im Menüband
+            // Mac: Programm-Menüs wandern in die Menüleiste oben
+            w = Switch(w, "mac"); w.Show("bild"); Pump(); w.ProgramNew("bild"); w.Show("bild"); Pump(); Pump();
+            Assert.False(Visible(w, "prog-menubar")); Assert.True(Visible(w, "prog-toolbar"));
+            Assert.Contains("Ablage", w.OsProgramMenus("bild"));
+            Assert.True(Visible(w, "os-menu-prog-Ablage")); Assert.True(Visible(w, "os-menu-prog-Bearbeiten"));
+            w.ImgZoom = 0; Assert.True(w.OsRunMenu("bild", "prog-cmd-img-zoom-100")); Pump(); Assert.Equal(1, w.ImgZoom);
+            // GNOME: Kopfleiste, Speichern als empfohlene Aktion, Hauptmenü
+            w = Switch(w, "linux"); w.Show("bild"); Pump(); w.ProgramNew("bild"); w.Show("bild"); Pump();
+            Assert.True(Visible(w, "prog-headerbar")); Assert.True(Visible(w, "prog-mainmenu")); Assert.False(Visible(w, "prog-menubar"));
+            var save = w.Find<Button>("prog-save"); Assert.Same(Avalonia.Media.Brushes.White, save.Foreground); // empfohlene Aktion: Akzentfläche, weiße Schrift
+            Assert.NotNull(w.Find<Button>("prog-mainmenu").Flyout);
+            Assert.False(Visible(w, "prog-tabs")); // Reiter erst ab zwei Dokumenten
+        }
+        finally { Back(w ?? w0); }
+    }
+
     static bool SamePath(string a, string b) => string.Equals(Path.GetFullPath(a).TrimEnd((char)92, '/'), Path.GetFullPath(b).TrimEnd((char)92, '/'), StringComparison.OrdinalIgnoreCase);
 }

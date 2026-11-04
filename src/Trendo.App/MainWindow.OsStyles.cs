@@ -357,15 +357,20 @@ public sealed partial class MainWindow
         }
         TextBlock T(string s, FontWeight w = FontWeight.Normal) => new() { Text = s, FontSize = 13, FontWeight = w, Foreground = fg, VerticalAlignment = VerticalAlignment.Center };
         _osAppTitle = T("Trendo OS", FontWeight.Bold);
+        _macMenuHost = new StackPanel { Name = "os-menu-host", Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
         var left = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(10, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center, Children = {
             Menu("logo", Logo(15, tile: false), Mi("Über Trendo OS", () => Show("system")), Mi("Systemeinstellungen …", () => Show("settings"), "Ctrl+OemComma"), Mi("Programme hinzufügen …", () => OpenAddHub()), Mi("Not-Stopp", () => _ = HaltAll("Not-Stopp (Menü)"))),
             Menu("app", _osAppTitle, Mi("Studios", () => Show("studios")), Mi("Projekte", () => Show("projects")), Mi("Command Center", () => Show("ki"))),
-            Menu("ablage", T("Ablage"), Mi("Neues Projekt", () => Show("projects")), Mi("Dateien", () => Show("akten")), Mi("Fenster schließen", () => { if (Windows.Active is { } w) CloseWindow(w.Id); }, "Ctrl+W")),
-            Menu("bearbeiten", T("Bearbeiten"), Mi("Suchen …", () => ToggleOsLauncher("spotlight"), "Ctrl+F")),
+            _macMenuHost! } };
+        _macDefaultMenus.Clear();
+        _macDefaultMenus.AddRange([
+            Menu("ablage", T("Ablage"), Mi("Neues Projekt", () => Show("projects")), Mi("Neues Finder-Fenster", () => Show("dateien")), Mi("Fenster schließen", () => { if (Windows.Active is { } w) CloseWindow(w.Id); })),
+            Menu("bearbeiten", T("Bearbeiten"), Mi("Suchen …", () => ToggleOsLauncher("spotlight"))),
             Menu("darstellung", T("Darstellung"), Mi("Mitteilungen und Widgets", ToggleOsWidgets), Mi("Launchpad", () => ToggleOsLauncher("start")), Mi("Aussehen …", () => Show("settings"))),
-            Menu("gehezu", T("Gehe zu"), [.. SideNav.Select(n => Mi(n.Label, () => Show(n.Key)))]),
-            Menu("fenster", T("Fenster"), Mi("Minimieren", () => { if (Windows.Active is { } w) { Windows.Minimize(w.Id); AfterWindowChange(); } }, "Ctrl+M"), Mi("Zoomen", () => { if (Windows.Active is { } w) { Windows.ToggleMaximize(w.Id); AfterWindowChange(); } })),
-            Menu("hilfe", T("Hilfe"), Mi("Trendo KI fragen", () => Show("ki")), Mi("Hilfe zu Trendo", () => Show("hilfe"))) } };
+            Menu("gehezu", T("Gehe zu"), [.. SideNav.Select(n => Mi(n.Label, () => Show(n.Key))), Mi("Dateien", () => Show("dateien"))]),
+            Menu("fenster", T("Fenster"), Mi("Minimieren", () => { if (Windows.Active is { } w) { Windows.Minimize(w.Id); AfterWindowChange(); } }), Mi("Zoomen", () => { if (Windows.Active is { } w) { Windows.ToggleMaximize(w.Id); AfterWindowChange(); } })),
+            Menu("hilfe", T("Hilfe"), Mi("Trendo KI fragen", () => Show("ki")), Mi("Hilfe zu Trendo", () => Show("hilfe")))]);
+        RefreshMacMenus();
         var spot = OsFlat("os-toggle-spotlight", Ico(Mdi.Magnify, 14, fg), "Spotlight – suchen und Trendo KI fragen", () => ToggleOsLauncher("spotlight"), 30, 22, 5);
         var cc = OsFlat("os-toggle-quick", Ico("M7 6 A4 4 0 1 1 7 14 A4 4 0 1 1 7 6 M17 6 A4 4 0 1 1 17 14 A4 4 0 1 1 17 6 M4 16 H20 V20 H4 Z", 14, fg), "Kontrollzentrum", ToggleOsQuick, 30, 22, 5);
         var clock = OsFlat("os-toggle-clock", Fg(OsClock("os-clock", d => d.ToString("ddd d. MMM  HH:mm", OsDe), 13), fg), "Mitteilungszentrale", ToggleOsWidgets, double.NaN, 22, 5);
@@ -446,7 +451,8 @@ public sealed partial class MainWindow
                 _osRunning.Children.Add(Dot(b, true));
             }
         }
-        if (_osAppTitle is not null) _osAppTitle.Text = Windows.Active is { Minimized: false } aw ? aw.Title : "Trendo OS";
+        if (_osAppTitle is not null) _osAppTitle.Text = Windows.Active is { Minimized: false } aw ? (aw.Page == "dateien" ? "Finder" : aw.Title) : "Trendo OS";
+        RefreshMacMenus();
     }
 
     // ---------- Startmenü (Windows), Launchpad/Spotlight (Mac), Übersicht (GNOME) ----------
