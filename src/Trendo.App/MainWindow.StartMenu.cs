@@ -43,6 +43,7 @@ public partial class MainWindow
         {
             if (e.Key is Key.LWin or Key.RWin) { ToggleStartMenu(); e.Handled = true; }
             else if (e.Key == Key.Escape && StartMenuOpen) { CloseStartMenu(); e.Handled = true; }
+            else if (e.Key == Key.Escape && (OsLauncherOpen || OsWidgetsOpen)) { CloseOsLauncher(); _osWidgets.IsVisible = false; e.Handled = true; }
             else if (e.Key == Key.Tab && e.KeyModifiers.HasFlag(KeyModifiers.Control) && !StartMenuOpen)
             { CycleWindows(e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? -1 : 1); e.Handled = true; }
         }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
@@ -56,9 +57,10 @@ public partial class MainWindow
         static Control Top(Control c) { DockPanel.SetDock(c, Avalonia.Controls.Dock.Top); return c; }
     }
 
-    public void ToggleStartMenu() { if (StartMenuOpen) CloseStartMenu(); else OpenStartMenu(); }
+    public void ToggleStartMenu() { if (OsStyle) { ToggleOsLauncher("start"); return; } if (StartMenuOpen) CloseStartMenu(); else OpenStartMenu(); }
     public void OpenStartMenu()
     {
+        if (OsStyle) { OpenOsLauncher("start"); return; }
         _smFilter = "alle";
         var w = Bounds.Width > 0 ? Math.Clamp(Bounds.Width - 160, 640, 1100) : 980;
         var h = Bounds.Height > 0 ? Math.Clamp(Bounds.Height - 96, 480, 760) : 680;

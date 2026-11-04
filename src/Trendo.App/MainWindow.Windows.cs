@@ -148,6 +148,7 @@ public partial class MainWindow
 
     private string PresentTitle(string key)
     {
+        if (key == "dateien") return FilesTitle;
         if (key == "studio-deps" && _depStudio.Length > 0)
             return StudioCatalog.NameOf(_depStudio, string.IsNullOrWhiteSpace(_depStudioTitle) ? _depStudio : _depStudioTitle);
         return PageTitle(key);
@@ -178,10 +179,20 @@ public partial class MainWindow
                 b.Margin = new Thickness(name == "win-close" ? 12 : 0, 0, 8, 0); b.Content = "";
                 var g = glyph; b.PointerEntered += (_, _) => b.Content = g; b.PointerExited += (_, _) => b.Content = "";
             }
+            else if (_style == "windows" && name is "win-close" or "win-min" or "win-max")
+            {
+                // Windows 11: 46 × 32 eckig, Schließen beim Darüberfahren rot (#C42B1C) mit weißem Zeichen
+                b.Width = 46; b.Height = 32; b.CornerRadius = new CornerRadius(0); b.FontSize = 11; b.Margin = new Thickness(0);
+                b.Content = name switch { "win-close" => "✕", "win-min" => "—", _ => "☐" };
+                var hover = name == "win-close" ? Brush.Parse("#C42B1C") : Brush.Parse(_theme == "hell" ? "#0F000000" : "#0FFFFFFF");
+                b.PointerEntered += (_, _) => { b.Background = hover; if (name == "win-close") b.Foreground = Brushes.White; };
+                b.PointerExited += (_, _) => { b.Background = Brushes.Transparent; b.Foreground = Text; };
+            }
             else if (round && name is "win-close" or "win-min" or "win-max")
             {
                 // Wie Linux (GNOME): runde, ruhige Knöpfe rechts
-                b.Width = 24; b.Height = 24; b.CornerRadius = new CornerRadius(12); b.Background = Brush.Parse("#22FFFFFF"); b.FontSize = 11; b.Margin = new Thickness(0, 0, name == "win-close" ? 10 : 6, 0);
+                b.Width = 24; b.Height = 24; b.CornerRadius = new CornerRadius(12); b.Background = Brush.Parse(_theme == "hell" ? "#14000000" : "#1AFFFFFF"); b.FontSize = 10; b.Margin = new Thickness(0, 0, name == "win-close" ? 10 : 6, 0);
+                if (_style == "linux" && name != "win-close") b.IsVisible = false; // GNOME zeigt nur „Schließen“ (Doppelklick auf den Titel maximiert)
             }
             ToolTip.SetTip(b, tip); Avalonia.Automation.AutomationProperties.SetName(b, tip); b.Click += (_, _) => a(); return b;
         }
@@ -194,7 +205,7 @@ public partial class MainWindow
         // Zurück-Knopf in jedem Fenster (Wunsch 01.11.2026): vorige Seite im selben Fenster, auch mit Alt+← oder der Zurück-Taste der Maus
         var back = Cap("win-back", "←", "Zurück", () => GoBack(id)); back.Margin = new Thickness(6, 0, 0, 0); back.Width = 34; back.FontSize = 15; back.IsEnabled = w.CanGoBack;
         _backButtons[id] = back;
-        var bar = new Border { Name = "win-title-" + id, Height = WindowManager.TitleBar, Background = Brush.Parse("#333F3F3F"), CornerRadius = new CornerRadius(0), Cursor = new Cursor(StandardCursorType.SizeAll),
+        var bar = new Border { Name = "win-title-" + id, Height = WindowManager.TitleBar, Background = _style switch { "windows" or "mac" => GlassStrong, "linux" => Brush.Parse(_theme == "hell" ? "#FFEBEBED" : "#FF2E2E32"), _ => Brush.Parse("#333F3F3F") }, CornerRadius = new CornerRadius(0), Cursor = new Cursor(StandardCursorType.SizeAll),
             Child = mac
                 ? new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,Auto,*,Auto"), Children = { caps, Pos(back, 1), Pos(titleIcon, 2), Pos(title, 3) } } // Mac: Knöpfe links
                 : new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto"), Children = { back, Pos(titleIcon, 1), Pos(title, 2), Pos(caps, 3) } } };
@@ -322,7 +333,7 @@ public partial class MainWindow
         {
             var f = _frames[w.Id].Frame; f.ZIndex = ++z; f.IsVisible = !w.Minimized && (coveredBy is null || w.Id == coveredBy);
             var on = active?.Id == w.Id;
-            f.BorderBrush = on ? GoldEdge : Edge; f.Opacity = on ? 1 : 0.9;
+            f.BorderBrush = on && _style == "trendo" ? GoldEdge : on ? Brush.Parse(_theme == "hell" ? "#33000000" : "#40FFFFFF") : Edge; f.Opacity = on ? 1 : 0.9;
             f.BoxShadow = LowPower ? default : on ? BoxShadows.Parse("0 22 50 0 #BB000000, 0 0 0 1 #66F5C451, 0 0 24 0 #33C9A227") : BoxShadows.Parse("0 8 18 0 #66000000");
             _frames[w.Id].Title.Foreground = on ? Text : Muted;
             if (f.Child is Panel { Children: [Grid g, ..] } && g.Children[0] is Border bar) bar.Background = on ? Brush.Parse("#55305078") : Brush.Parse("#22222222");
@@ -424,6 +435,7 @@ public partial class MainWindow
             _taskbar.Children.Add(b);
         }
         _taskbar.IsVisible = _taskbar.Children.Count > 0;
+        RenderOsRunning();
     }
 
     /// <summary>Misst sich mit Größe 0, damit die Fläche die Zeilen nicht aufbläht, und legt Kinder beim Anordnen auf die ganze Fläche.</summary>

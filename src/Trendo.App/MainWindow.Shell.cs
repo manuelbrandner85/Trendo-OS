@@ -261,7 +261,10 @@ public partial class MainWindow
         projPanel.Name = "widget-projekte"; projPanel.IsVisible = !_settings.HiddenTiles.Contains("widget-projekte");
         RefreshProjects();
 
-        var stack = new StackPanel { Children = { chips, DesktopZettel(), icons, projPanel } };
+        // Bedienstil Windows/Mac/Linux: Desktop nur mit Symbolen wie im Original – Schnellaktionen und Projekte ziehen in die Widgets
+        StackPanel stack;
+        if (OsStyle) { _osDeskExtras.Children.Clear(); chips.HorizontalAlignment = HorizontalAlignment.Left; _osDeskExtras.Children.Add(chips); _osDeskExtras.Children.Add(projPanel); stack = new StackPanel { Children = { DesktopZettel(), OsDesktopIcons() } }; }
+        else stack = new StackPanel { Children = { chips, DesktopZettel(), icons, projPanel } };
         var g = new Grid { Children = { new ScrollViewer { Content = stack, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled } } };
         DesktopMenu(g);
         if (_deskCenter is not null) _shellParts.Remove(_deskCenter);

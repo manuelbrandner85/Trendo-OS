@@ -110,7 +110,7 @@ public sealed partial class MainWindow : Window
         if (BlurredWallpaper(ui) is { } blur) { root.Children.Add(blur); Grid.SetRowSpan(blur, 2); }
         Grid.SetRowSpan(ui, 2); root.Children.Add(ui);
         StartupTrace.Mark("ctor.wallpaper");
-        ui.Children.Add(TopBar());
+        var topBar = TopBar(); ui.Children.Add(topBar);
         var body = new Grid { Name = "shell", ColumnDefinitions = new ColumnDefinitions("200,*,300"), RowDefinitions = new RowDefinitions("*,Auto"), Margin = new Thickness(8, 4, 8, 4) };
         Grid.SetRow(body, 1); ui.Children.Add(body);
         var left = LeftColumn(); Grid.SetRowSpan(left, 2); body.Children.Add(left);
@@ -118,6 +118,7 @@ public sealed partial class MainWindow : Window
         var dock = Dock(); Grid.SetColumn(dock, 1); Grid.SetRow(dock, 1); dock.ZIndex = 5; body.Children.Add(dock);
         var right = RightColumn(); Grid.SetColumn(right, 2); Grid.SetRowSpan(right, 2); body.Children.Add(right);
         StartupTrace.Mark("ctor.left+dock");
+        ApplyOsShell(root, ui, body, topBar, left, right, dock); // Bedienstil wie Windows/Mac/Linux (Trendo bleibt unverändert)
         // Maximiert (Wunsch 02.11.2026): das Studio-Fenster füllt den ganzen Bildschirm – über Kopfleiste, Seitenspalten, Dock und Taskleiste hinweg
         Grid.SetRowSpan(_workArea, 2); _workArea.ZIndex = 30; ui.Children.Add(_workArea);
         _status.IsVisible = false;
@@ -555,6 +556,7 @@ public sealed partial class MainWindow : Window
             new("security", Mdi.ShieldCheck, "#66BB6A", "#1B5E20", "Daten schützen", () => null),
         };
         var bar = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, VerticalAlignment = VerticalAlignment.Center };
+        _dockApps = [.. UserSettings.Ordered(apps, x => x.Id, _settings.DockOrder).Where(x => !_settings.HiddenTiles.Contains("dock-" + x.Id))];
         foreach (var a in UserSettings.Ordered(apps, x => x.Id, _settings.DockOrder).Where(x => !_settings.HiddenTiles.Contains("dock-" + x.Id)))
         {
             var installed = a.Id switch
@@ -575,6 +577,7 @@ public sealed partial class MainWindow : Window
                 switch (a.Id)
                 {
                     case "ki": Show("ki"); break;
+                    case "files" when OsStyle: Show("dateien"); break; // Explorer/Finder/Dateien im Stil des Systems
                     case "browser": Show("downloads"); break;
                     case "media": await OpenStudio("CORE-08", "Videos & Fotos bearbeiten"); break;
                     case "settings": Show("settings"); break;
@@ -591,11 +594,11 @@ public sealed partial class MainWindow : Window
             };
             if (a.Id is "browser" or "mail" && _core.Offline) { b.IsEnabled = false; ToolTip.SetTip(b, $"{a.Label} – offline deaktiviert"); }
             if (!installed) b.IsEnabled = false;
-            DockLift(b); bar.Children.Add(b);
+            DockLift(b); bar.Children.Add(b); _dockButtons[a.Id] = b;
         }
         RefreshDockWebApps(); // WhatsApp, Telegram … mit Original-Symbol
         var trash = new Button { Name = "dock-trash", Width = 48, Height = 48, Padding = new Thickness(0), Background = Brushes.Transparent, BorderThickness = new Thickness(0), Content = DockFace("trash", Ico(Mdi.Delete, 28, Grad("#ECEFF1", "#90A4AE"))) };
-        DockLift(trash);
+        DockLift(trash); _dockButtons["trash"] = trash;
         ToolTip.SetTip(trash, "Papierkorb"); Avalonia.Automation.AutomationProperties.SetName(trash, "Papierkorb");
         ToolTip.SetPlacement(trash, Avalonia.Controls.PlacementMode.Top); ToolTip.SetVerticalOffset(trash, -6);
         trash.Click += (_, _) => _core.Integrations.LaunchDirect(Principal.LocalOwner, OperatingSystem.IsWindows() ? "shell:RecycleBinFolder" : "trash://", _core.Audit);

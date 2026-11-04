@@ -19,7 +19,7 @@ public partial class MainWindow
     private void InitWave1()
     {
         StudioPages.TryAdd("X-09", "ressourcen"); // Speicher & Leistung
-        InitPdf(); InitText(); InitTabelle(); InitPraesentation(); InitCad(); InitPrint3D();
+        InitPdf(); InitText(); InitTabelle(); InitPraesentation(); InitCad(); InitPrint3D(); InitDateien();
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.F, KeyModifiers.Control | KeyModifiers.Shift), Command = new RelayCommand(() => { _search.Focus(); _search.SelectAll(); }) }); // Strg+K ist seit 0.9.38 die Befehlsleiste
         KeyBindings.Add(new KeyBinding { Gesture = new KeyGesture(Key.F1), Command = new RelayCommand(() => ShowHelp(CurrentView, force: true)) });
     }

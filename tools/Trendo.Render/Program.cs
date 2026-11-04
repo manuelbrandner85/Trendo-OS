@@ -98,6 +98,19 @@ if (Environment.GetEnvironmentVariable("TRENDO_TV_DEMO") is { Length: > 0 }) // 
 var win = new MainWindow(core, new AppOptions(root, null, 0, Page: args.Length > 3 ? args[3] : null, Query: Environment.GetEnvironmentVariable("TRENDO_QUERY"), Isolated: true), new DefaultToolProbe()) { Width = w, Height = h, WindowState = Avalonia.Controls.WindowState.Normal };
 if (Environment.GetEnvironmentVariable("TRENDO_TV_TAB") is { Length: > 0 } tvTab) { win.TvTabForTests = tvTab; win.Show("tv"); }
 win.Show();
+if (Environment.GetEnvironmentVariable("TRENDO_OS_OPEN") is { Length: > 0 } osOpen) // Bedienstil zeigen: Startmenü/Launchpad/Übersicht, Spotlight, Widgets, Dateimanager
+{
+    var fh = win.Files.Home; var dk = win.Files.KnownFolders();
+    foreach (var (n, t) in new[] { ("Bericht Quartal.txt", "Umsatz"), ("Urlaubsfoto.png", ""), ("Rechnung 2026-11.pdf", "%PDF"), ("Präsentation.pptx", "") }) File.WriteAllText(Path.Combine(dk.First(k => k.Id == "dokumente").Path, n), t);
+    Directory.CreateDirectory(Path.Combine(dk.First(k => k.Id == "dokumente").Path, "Projekte")); Directory.CreateDirectory(Path.Combine(dk.First(k => k.Id == "dokumente").Path, "Steuern"));
+    switch (osOpen)
+    {
+        case "dateien": win.FilesGo(dk.First(k => k.Id == "dokumente").Path); break;
+        case "pc": win.FilesGo(MainWindow.PcPlace); break;
+        case "widgets": win.ToggleOsWidgets(); break;
+        default: win.OpenOsLauncher(osOpen); break;
+    }
+}
 if (Environment.GetEnvironmentVariable("TRENDO_KATALOG") is { Length: > 0 } repoArg) // Masterprompt 131: Programmkatalog und Produktionspakete aus dem Repository erzeugen
 {
     var repo = Path.GetFullPath(repoArg); var outDir = Path.Combine(repo, "docs", "programme");

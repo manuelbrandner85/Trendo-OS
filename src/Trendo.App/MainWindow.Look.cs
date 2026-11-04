@@ -73,6 +73,7 @@ public sealed partial class MainWindow
         TileBg = Vertical(light ? "#F7FFFFFF" : "#B82D2D2D", light ? "#E0E9F0FA" : "#A8202020");
         EdgeLit = Vertical(light ? "#CCE8C77A" : "#80F5C451", light ? "#40B8892C" : "#22FFFFFF"); // Lichtkante Gold oben, darunter neutral (Dunkel-Gold-Look 02.11.2026)
         CardShadow = BoxShadows.Parse(light ? "0 8 22 -10 #40223355" : "0 10 26 -10 #99000614");
+        if (_style != "trendo") ApplyOsPalette(s); // Farben wie im Original-System
     }
 
     private static IBrush EdgeLit = new SolidColorBrush(Color.Parse("#33D4A84B"));
@@ -243,7 +244,7 @@ public sealed partial class MainWindow
         Control Section(string id, string title, Control body) => new StackPanel { Name = "settings-section-" + id, Spacing = 6, IsVisible = _settingsSection == id, Children = { H(title, 15), body } };
 
         var styles = new WrapPanel { Name = "settings-styles" };
-        foreach (var (id, label, hint) in new[] { ("trendo", "Trendo", "Gold-Rahmen, Knöpfe rechts"), ("windows", "Wie Windows", "eckige Knöpfe rechts, Titel links"), ("mac", "Wie Mac", "runde Ampel-Knöpfe links, Titel mittig"), ("linux", "Wie Linux", "runde Knöpfe rechts, Titel mittig") })
+        foreach (var (id, label, hint) in new[] { ("trendo", "Trendo", "Trendo-Desktop mit Gold, Seitenspalten und Dock"), ("windows", "Wie Windows 11", "Taskleiste unten mittig, Startmenü, Widgets"), ("mac", "Wie macOS", "Menüleiste oben, Dock, Launchpad, Spotlight"), ("linux", "Wie Linux (GNOME)", "Leiste oben, Aktivitäten-Übersicht, Dash") })
         {
             var on = _settings.Style == id;
             var b = new Button { Name = "style-" + id, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(12, 8), CornerRadius = new CornerRadius(10), Foreground = Text, Background = on ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1),
@@ -260,7 +261,7 @@ public sealed partial class MainWindow
             themes.Children.Add(b);
         }
         sections.Children.Add(Section("aussehen", "Aussehen", new StackPanel { Spacing = 6, Children = { themes,
-            H("Bedienstil", 13), P("Fenster wie gewohnt: Trendo, Windows, Mac oder Linux. Nachempfunden – mit Trendo-Logo und Gold, ohne fremde Symbole.", null, 11.5), styles } }));
+            H("Bedienstil", 13), P("Ganze Oberfläche wie gewohnt: Desktop, Leisten, Startmenü, Fenster und Farben wie Windows 11, macOS oder Linux (GNOME) – alle Trendo-Funktionen bleiben erreichbar. Statt fremder Logos steht das Trendo-Logo.", null, 11.5), styles } }));
 
         var colors = new WrapPanel();
         foreach (var (id, label) in AccentChoices)
