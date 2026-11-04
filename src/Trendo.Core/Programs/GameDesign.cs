@@ -130,7 +130,7 @@ public static class GameDesign
         var scale = ScaleOf(S(d["scale"]));
         if (scale.Engine == "browser" && S(d["browser"]).Length == 0) w.Add("Für ein Browser-Spiel bitte eine Spielart wählen (Hüpfspiel, Mauerbrecher, Schlange oder Plattformer) – oder Unreal-Umfang wählen.");
         if (scale.Id == "aaa" && Objs(d, "world").Count() < 3) w.Add("AAA+: Plane mindestens drei Regionen – die Welt trägt das Spiel.");
-        if (d["level"] is JsonArray lv && lv.Select(x => S(x)).Any(r => r.Any(ch => !GameStudio.Tiles.Contains(ch)))) w.Add("Im Level nur # . o E ^ S Z.");
+        if (d["level"] is JsonArray lv && lv.Select(x => S(x)).Any(r => r.Any(ch => !GameStudio.Tiles.Contains(ch)))) w.Add("Im Level nur # . o E ^ S Z F C K D.");
         if (S(d["browser"]) == "plattform") w.AddRange(GameStudio.CheckPlatform((d["level"] as JsonArray ?? []).Select(S).ToList()));
         return w;
     }
@@ -152,6 +152,10 @@ public static class GameDesign
         return sb.ToString();
     }
 
+    /// <summary>Ereignis-Regeln aus dem Projekt („rules“: [{when, n, do}]).</summary>
+    public static List<GameStudio.GameRule> Rules(JsonObject d) =>
+        [.. (d["rules"] as JsonArray ?? []).OfType<JsonObject>().Select(r => new GameStudio.GameRule(S(r["when"]), int.TryParse(r["n"]?.ToString(), out var n) ? n : 0, S(r["do"]))).Where(r => r.When.Length > 0 && r.Do.Length > 0)];
+
     /// <summary>Bauen: Retro/Indie 2D als spielbares Browser-Spiel (mit Level aus dem Projekt).</summary>
     public static string BuildBrowser(JsonObject d, string parent)
     {
@@ -160,7 +164,8 @@ public static class GameDesign
         var dir = Path.Combine(parent, DevStudio.SafeName(S(d["title"])));
         static double? N(JsonNode? n) => n is JsonValue && double.TryParse(n.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : null;
         var props = (d["objects"] as JsonObject ?? []).Where(kv => N(kv.Value) is not null).ToDictionary(kv => kv.Key, kv => N(kv.Value)!.Value);
-        var settings = GameStudio.Validate(new GameStudio.GameSettings { Level = level, Props = props, Speed = (int)(N(d["speed"]) ?? 5), Lives = (int)(N(d["lives"]) ?? 3) });
+        var settings = GameStudio.Validate(new GameStudio.GameSettings { Level = level, Props = props, Speed = (int)(N(d["speed"]) ?? 5), Lives = (int)(N(d["lives"]) ?? 3),
+            TimeLimit = (int)(N(d["timeLimit"]) ?? 0), Rules = Rules(d) });
         if (Directory.Exists(dir)) { GameStudio.Save(dir, settings); return dir; }
         return GameStudio.CreateBrowserGame(parent, t, S(d["title"]), settings);
     }

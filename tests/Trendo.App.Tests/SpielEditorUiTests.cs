@@ -1,4 +1,7 @@
 using Avalonia.Controls;
+using Avalonia;
+using Avalonia.Headless;
+using Avalonia.VisualTree;
 using Avalonia.Headless.XUnit;
 using Avalonia.Input;
 using Trendo.App;
@@ -56,5 +59,52 @@ public class SpielEditor_Ui
         w.Find<Button>("game-tile-auswahl").Press(); w.GameLevelForTests!.Pick(18, 8); w.Find<Button>("game-obj-del").Press();
         Assert.Equal('.', d.List("level")[8]!.GetValue<string>()[18]); Assert.Null(d.Data["objects"]?["18,8:speed"]);
         w.Close();
+    }
+    [AvaloniaFact(DisplayName = "Spiel-Editor wie GDevelop/Construct: neue Kacheln malen (Feder, Speicherpunkt, Schlüssel, Tür), Regel „Wenn … dann …“ anlegen und löschen, Zeitlimit; Probespiel zeigt Schlüssel und Restzeit; Bauen schreibt Regeln")]
+    public void Rules_and_tiles()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000;
+        try
+        {
+            w.Show(GK); w.Find<Button>("prog-tpl-retro-plattform").Press();
+            w.GameSection = "Level"; w.Show(GK);
+            var d = w.ProgramActive(GK)!;
+            foreach (var t in new[] { "feder", "speicher", "schluessel", "tuer" }) Assert.NotNull(w.TryFind<Button>("game-tile-" + t));
+            // Schlüssel und Tür in das Standardlevel malen (Zeile 8 ist die Laufebene)
+            void PaintAt(string tile, int col, int row)
+            {
+                w.Find<Button>("game-tile-" + tile).Press(); StartMenu_Ui.Settle(); var lc = w.GameLevelForTests!;
+                lc.BringIntoView(new Rect(lc.CenterOf(col, row), new Size(1, 1))); StartMenu_Ui.Settle(); var pt = lc.TranslatePoint(lc.CenterOf(col, row), w)!.Value;
+                w.MouseDown(pt, MouseButton.Left); w.MouseUp(pt, MouseButton.Left); StartMenu_Ui.Settle();
+            }
+            PaintAt("schluessel", 5, 8); PaintAt("tuer", 7, 8);
+            Assert.Equal('K', d.List("level")[8]!.GetValue<string>()[5]); Assert.Equal('D', d.List("level")[8]!.GetValue<string>()[7]);
+            w.Find<Button>("game-tile-auswahl").Press(); w.GameLevelForTests!.Pick(7, 8);
+            Assert.StartsWith("Tür", w.Find<TextBlock>("game-obj-name").Text);
+            // Regel anlegen: Wenn Münzen ≥ 3, dann +1 Leben
+            w.Find<ComboBox>("game-rule-when").SelectedIndex = 0; w.Find<TextBox>("game-rule-n").Text = "3"; w.Find<ComboBox>("game-rule-do").SelectedIndex = 0;
+            w.Find<Button>("game-rule-add").Press();
+            Assert.Equal("Regel", d.UndoLabel);
+            Assert.Contains("Wenn Münzen gesammelt ≥ 3, dann +1 Leben", string.Join("|", w.GetLogicalTexts()));
+            w.Find<TextBox>("game-rule-n").Text = "x"; w.Find<Button>("game-rule-add").Press();
+            Assert.Single(GameDesign.Rules(d.Data)); // falsche Zahl: keine Regel
+            Enter(w.Find<TextBox>("game-set-time"), "120");
+            Assert.Equal(120, d.Number("timeLimit"));
+            // Probespiel: Schlüssel und Restzeit in der Anzeige
+            w.Find<Button>("game-level-play").Press();
+            var sim = w.GamePlaytest!; Assert.Equal(1, sim.KeysTotal);
+            for (var i = 0; i < 10; i++) w.GamePlaytestCanvas!.Tick();
+            var st = w.Find<TextBlock>("game-play-status").Text!;
+            Assert.Contains("Schlüssel 0/1", st); Assert.Contains("noch 120 s", st);
+            w.GamePlaytestCanvas!.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Escape });
+            // Regel löschen und wieder herstellen
+            w.Find<Button>("game-rule-del-0").Press(); Assert.Empty(GameDesign.Rules(d.Data));
+            d.Undo(); Assert.Single(GameDesign.Rules(d.Data));
+            // Bauen: config.js mit Regeln und Zeitlimit
+            var dir = GameDesign.BuildBrowser(d.Data, root);
+            var cfg = File.ReadAllText(Path.Combine(dir, "config.js"));
+            Assert.Contains("\"timeLimit\":120", cfg); Assert.Contains("\"when\":\"muenzen\",\"n\":3,\"act\":\"leben\"", cfg);
+        }
+        finally { w.Close(); }
     }
 }

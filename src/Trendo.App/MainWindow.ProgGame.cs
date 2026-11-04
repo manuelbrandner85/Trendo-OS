@@ -311,7 +311,7 @@ public partial class MainWindow
     {
         var rows = GameRows(d);
         if (GameStudio.CheckPlatform(rows) is { Count: > 0 } w && w.Any(x => x.StartsWith("Kein"))) throw new InvalidOperationException(w.First(x => x.StartsWith("Kein")));
-        _gamePlay = new PlatformSim(rows, (int)d.Number("speed", 5), (int)d.Number("lives", 3), GameProps(d));
+        _gamePlay = new PlatformSim(rows, (int)d.Number("speed", 5), (int)d.Number("lives", 3), GameProps(d), (int)d.Number("timeLimit", 0), GameDesign.Rules(d.Data));
         _core.Audit.Append(Principal.LocalOwner.Name, "game.playtest", d.Text("title"));
     }
 
@@ -321,7 +321,7 @@ public partial class MainWindow
         var kind = d.Text("browser");
         if (kind == "plattform" && _gamePlay is not null) return GamePlayView(d);
         var tiles = kind == "plattform"
-            ? new (char Ch, string Id, string Label)[] { (LevelCanvas.PickTool, "auswahl", "⬚ Auswählen"), ('#', "boden", "Boden"), ('o', "muenze", "Münze"), ('E', "gegner", "Gegner"), ('^', "stacheln", "Stacheln"), ('S', "start", "Start"), ('Z', "ziel", "Ziel"), ('.', "radierer", "Radierer") }
+            ? new (char Ch, string Id, string Label)[] { (LevelCanvas.PickTool, "auswahl", "⬚ Auswählen"), ('#', "boden", "Boden"), ('o', "muenze", "Münze"), ('E', "gegner", "Gegner"), ('^', "stacheln", "Stacheln"), ('S', "start", "Start"), ('F', "feder", "Sprungfeder"), ('C', "speicher", "Speicherpunkt"), ('K', "schluessel", "Schlüssel"), ('D', "tuer", "Tür"), ('Z', "ziel", "Ziel"), ('.', "radierer", "Radierer") }
             : [('#', "boden", kind == "breakout" ? "Stein" : "Hindernis"), ('.', "radierer", "Radierer")];
         if (!tiles.Any(t => t.Ch == GameTile)) GameTile = '#';
         var canvas = new LevelCanvas { Name = "game-level", Rows = rows, Tile = GameTile, Cell = kind == "jump" ? 18 : 22, Selected = GameObjSel };
@@ -383,6 +383,26 @@ public partial class MainWindow
         sp.Children.Add(H("Spielregeln", 13));
         Num("game-set-speed", "Tempo (1–10)", d.Number("speed", 5), 1, 10, v => d.Set("speed", Math.Round(v), "Tempo"));
         Num("game-set-lives", "Leben (1–9)", d.Number("lives", 3), 1, 9, v => d.Set("lives", Math.Round(v), "Leben"));
+        Num("game-set-time", "Zeitlimit s (0 = ohne)", d.Number("timeLimit", 0), 0, 3600, v => d.Set("timeLimit", Math.Round(v), "Zeitlimit"));
+        // Ereignis-Regeln wie die Ereignisblätter in GDevelop/Construct: Wenn … dann …
+        sp.Children.Add(H("Regeln (Wenn … dann …)", 13));
+        var rules = GameDesign.Rules(d.Data);
+        for (var i = 0; i < rules.Count; i++)
+        {
+            var idx = i;
+            sp.Children.Add(new DockPanel { Children = { Act($"game-rule-del-{i}", "✕", () => ProgramRun(GK, () => d.Edit("Regel löschen", x => (x["rules"] as JsonArray)?.RemoveAt(idx)))), P(GameStudio.RuleText(rules[i]), Text, 11.5) } });
+        }
+        var when = new ComboBox { Name = "game-rule-when", ItemsSource = GameStudio.RuleWhens.Select(w => w.Label).ToList(), SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
+        var n = new TextBox { Name = "game-rule-n", Text = "5", Width = 60 };
+        var act = new ComboBox { Name = "game-rule-do", ItemsSource = GameStudio.RuleDos.Select(w => w.Label).ToList(), SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
+        sp.Children.Add(Row(P("Wenn", Muted, 11.5), when)); sp.Children.Add(Row(P("mindestens", Muted, 11.5), n)); sp.Children.Add(Row(P("dann", Muted, 11.5), act));
+        sp.Children.Add(Act("game-rule-add", "＋ Regel", () => ProgramRun(GK, () =>
+        {
+            if (!int.TryParse(n.Text, out var nn) || nn < 0) throw new ArgumentException("Bitte eine Zahl ab 0.");
+            if (rules.Count >= 20) throw new ArgumentException("Höchstens 20 Regeln.");
+            var r = new JsonObject { ["when"] = GameStudio.RuleWhens[Math.Max(0, when.SelectedIndex)].Id, ["n"] = nn, ["do"] = GameStudio.RuleDos[Math.Max(0, act.SelectedIndex)].Id };
+            d.Edit("Regel", x => { var a = x["rules"] as JsonArray ?? []; a.Add(r); x["rules"] = a; });
+        })));
         sp.Children.Add(H("Objekt", 13));
         if (GameObjSel is not { } sel || sel.Y >= rows.Count || sel.X >= rows[sel.Y].Length)
         {
@@ -394,7 +414,9 @@ public partial class MainWindow
         {
             'E' => ("Gegner", "Läuft hin und her und kehrt an Wand oder Kante um. Draufspringen besiegt ihn."),
             'o' => ("Münze", "Bringt Punkte."), '#' => ("Boden", "Fester Boden oder Wand."), '^' => ("Stacheln", "Kostet ein Leben."),
-            'S' => ("Start", "Hier beginnt die Figur."), 'Z' => ("Ziel", "Erreichen = geschafft (+10 Punkte)."), _ => ("Leer", "Hier ist nichts.")
+            'S' => ("Start", "Hier beginnt die Figur."), 'Z' => ("Ziel", "Erreichen = geschafft (+10 Punkte)."),
+            'F' => ("Sprungfeder", "Draufstehen schleudert die Figur hoch."), 'C' => ("Speicherpunkt", "Berühren: nach einem Treffer geht es hier weiter."),
+            'K' => ("Schlüssel", "Alle Schlüssel gesammelt öffnen die Türen."), 'D' => ("Tür", "Fest, bis alle Schlüssel gesammelt sind (oder eine Regel sie öffnet)."), _ => ("Leer", "Hier ist nichts.")
         };
         sp.Children.Add(new TextBlock { Name = "game-obj-name", Text = $"{name} · Spalte {sel.X + 1}, Zeile {sel.Y + 1}", Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold });
         sp.Children.Add(P(what, Muted, 11.5));
@@ -419,7 +441,9 @@ public partial class MainWindow
     {
         var sim = _gamePlay!;
         var status = new TextBlock { Name = "game-play-status", Foreground = GoldText(), FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) };
-        string Status() => sim.Won ? $"Geschafft! {sim.Score} Punkte" : sim.Lost ? $"Verloren – {sim.Score} Punkte" : $"Punkte {sim.Score} · Leben {sim.Lives} · {sim.Coins.Count(c => c.Taken)}/{sim.Coins.Count} Münzen";
+        string Status() => sim.Won ? $"Geschafft! {sim.Score} Punkte" : sim.Lost ? (sim.TimeUp ? $"Zeit abgelaufen – {sim.Score} Punkte" : $"Verloren – {sim.Score} Punkte")
+            : $"Punkte {sim.Score} · Leben {sim.Lives} · {sim.Coins.Count(c => c.Taken)}/{sim.Coins.Count} Münzen" + (sim.KeysTotal > 0 ? $" · Schlüssel {sim.Keys}/{sim.KeysTotal}" : "")
+              + (sim.SecondsLeft >= 0 ? $" · noch {Math.Ceiling(sim.SecondsLeft):0} s" : "") + (sim.Note.Length > 0 ? " · " + sim.Note : "");
         status.Text = Status();
         var canvas = new PlaytestCanvas { Name = "game-playtest", Sim = sim, Height = 360, HorizontalAlignment = HorizontalAlignment.Stretch };
         GamePlaytestCanvas = canvas;

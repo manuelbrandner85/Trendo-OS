@@ -63,7 +63,7 @@ public sealed class PlaytestCanvas : Control
             for (var y = 0; y < s.Rows; y++)
                 for (var x = Math.Max(0, x0); x <= x1 && x < s.Cols; x++)
                 {
-                    var ch = s.At(x, y); if (ch is 'o' or 'E' or 'S' or '.') continue; // Münzen und Gegner bewegen sich bzw. verschwinden
+                    var ch = s.At(x, y); if (ch is 'o' or 'E' or 'S' or '.' || (ch == 'D' && s.DoorsOpen)) continue; // offene Türen verschwinden // Münzen und Gegner bewegen sich bzw. verschwinden
                     LevelCanvas.DrawTile(ctx, ch, new Rect(x * c, y * c, c, c), y == 0 || s.At(x, y - 1) != '#');
                 }
             foreach (var q in s.Coins.Where(q => !q.Taken)) LevelCanvas.DrawTile(ctx, 'o', new Rect(q.Col * c, q.Row * c, c, c), false);

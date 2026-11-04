@@ -14,8 +14,17 @@ public static class GameStudio
         ("plattform", "Plattformer", "Pfeiltasten laufen, Leertaste springt. Sammle Münzen, weiche Gegnern und Stacheln aus, erreiche die Flagge."),
     ];
 
-    /// <summary>Kacheln des Level-Editors: # Boden/Wand, o Münze, E Gegner (läuft hin und her), ^ Stacheln, S Start, Z Ziel-Flagge, . frei.</summary>
-    public const string Tiles = "#.oE^SZ";
+    /// <summary>Kacheln des Level-Editors: # Boden/Wand, o Münze, E Gegner (läuft hin und her), ^ Stacheln, S Start, Z Ziel-Flagge, . frei;
+    /// seit 04.11.2026 wie in GDevelop/Construct auch F Sprungfeder, C Speicherpunkt, K Schlüssel, D Tür (öffnet, wenn alle Schlüssel gesammelt sind).</summary>
+    public const string Tiles = "#.oE^SZFCKD";
+
+    /// <summary>Ereignis-Regel wie die Ereignisblätter in GDevelop/Construct: Wenn <see cref="When"/> mindestens <see cref="N"/> erreicht, dann <see cref="Do"/> (einmal).</summary>
+    public sealed record GameRule(string When, int N, string Do);
+    public static readonly (string Id, string Label)[] RuleWhens = [("muenzen", "Münzen gesammelt"), ("punkte", "Punkte"), ("gegner", "Gegner besiegt"), ("sekunden", "Sekunden gespielt")];
+    public static readonly (string Id, string Label)[] RuleDos = [("leben", "+1 Leben"), ("tueren", "Türen öffnen"), ("schneller", "Figur schneller"), ("punkte", "+10 Punkte"), ("sieg", "Gewonnen")];
+
+    /// <summary>Regel als Satz, z. B. „Wenn Münzen gesammelt ≥ 5, dann +1 Leben“.</summary>
+    public static string RuleText(GameRule r) => $"Wenn {RuleWhens.FirstOrDefault(w => w.Id == r.When).Label ?? r.When} ≥ {r.N}, dann {RuleDos.FirstOrDefault(x => x.Id == r.Do).Label ?? r.Do}";
     public static readonly string[] DefaultPlatform =
     [
         "............................................................",
@@ -48,6 +57,10 @@ public static class GameStudio
         public string? BackgroundImage { get; init; } // Dateiname im Spielordner
         /// <summary>Eigenschaften einzelner Objekte im Plattformer: „x,y:speed“ (Gegner-Tempo 0,25–4) und „x,y:value“ (Münzwert 1–100).</summary>
         public Dictionary<string, double> Props { get; init; } = [];
+        /// <summary>Zeitlimit in Sekunden (0 = ohne) – läuft die Zeit ab, ist das Spiel vorbei.</summary>
+        public int TimeLimit { get; init; }
+        /// <summary>Ereignis-Regeln (höchstens 20).</summary>
+        public List<GameRule> Rules { get; init; } = [];
     }
 
     public static readonly string[] DefaultBreakout = ["########", "########", "########", "########", "########"];
@@ -70,16 +83,20 @@ public static class GameStudio
     public static GameSettings Validate(GameSettings s)
     {
         if (!Hex(s.Player) || !Hex(s.Accent) || !Hex(s.Background)) throw new ArgumentException("Farben bitte als # und sechs Zeichen, zum Beispiel #4FB3FF.");
-        if (s.Level.Any(r => r.Any(ch => !Tiles.Contains(ch)))) throw new ArgumentException("Im Level nur # (Boden), . (frei), o (Münze), E (Gegner), ^ (Stacheln), S (Start) und Z (Ziel).");
+        if (s.Level.Any(r => r.Any(ch => !Tiles.Contains(ch)))) throw new ArgumentException("Im Level nur # (Boden), . (frei), o (Münze), E (Gegner), ^ (Stacheln), S (Start), Z (Ziel), F (Sprungfeder), C (Speicherpunkt), K (Schlüssel) und D (Tür).");
+        if (s.Rules.Count > 20) throw new ArgumentException("Höchstens 20 Regeln.");
+        if (s.Rules.FirstOrDefault(r => !RuleWhens.Any(w => w.Id == r.When) || !RuleDos.Any(x => x.Id == r.Do)) is { } bad) throw new ArgumentException($"Unbekannte Regel „{bad.When} → {bad.Do}“.");
         if (s.Level.Length > 16 || s.Level.Any(r => r.Length > 200)) throw new ArgumentException("Level höchstens 16 Zeilen und 200 Spalten.");
-        return s with { Speed = Math.Clamp(s.Speed, 1, 10), Lives = Math.Clamp(s.Lives, 1, 9), WinScore = Math.Clamp(s.WinScore, 0, 9999),
+        return s with { Speed = Math.Clamp(s.Speed, 1, 10), Lives = Math.Clamp(s.Lives, 1, 9), WinScore = Math.Clamp(s.WinScore, 0, 9999), TimeLimit = Math.Clamp(s.TimeLimit, 0, 3600),
+            Rules = [.. s.Rules.Select(r => r with { N = Math.Clamp(r.N, 0, 9999) })],
             Props = s.Props.Where(kv => kv.Key.EndsWith(":speed") || kv.Key.EndsWith(":value")).ToDictionary(kv => kv.Key, kv => kv.Key.EndsWith(":speed") ? Math.Clamp(kv.Value, 0.25, 4) : Math.Clamp(Math.Round(kv.Value), 1, 100)) };
     }
 
     public static string ConfigJs(GameSettings s)
     {
         var o = new { speed = s.Speed, lives = s.Lives, win = s.WinScore, player = s.Player, accent = s.Accent, bg = s.Background, sound = s.Sound,
-                      level = s.Level, playerImage = s.PlayerImage, bgImage = s.BackgroundImage, props = s.Props };
+                      level = s.Level, playerImage = s.PlayerImage, bgImage = s.BackgroundImage, props = s.Props, timeLimit = s.TimeLimit,
+                      rules = s.Rules.Select(r => new { when = r.When, n = r.N, act = r.Do }) };
         return "const CFG=" + JsonSerializer.Serialize(o) + ";\n";
     }
 
@@ -163,32 +180,48 @@ step();
 """,
         ["plattform"] = """
 const T=32,L=(CFG.level&&CFG.level.length?CFG.level:['S.....Z','#######']),R=L.length,C=Math.max(...L.map(r=>r.length));
-const at=(cx,cy)=>cy<0||cx<0||cx>=C?'#':cy>=R?'.':(L[cy][cx]||'.');const solid=(cx,cy)=>at(cx,cy)==='#';
-let sx=0,sy=0;L.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='S'){sx=x;sy=y;}}));
+let G=[],open=false,kg=0,KT=0,cg=0,fk=0,fr=0,boost=0,fired=[],note='',noteT=0,tu=false;
+const at=(cx,cy)=>cy<0||cx<0||cx>=C?'#':cy>=R?'.':(G[cy][cx]||'.');const solid=(cx,cy)=>{const ch=at(cx,cy);return ch==='#'||ch==='F'||(ch==='D'&&!open);};
+let S0x=0,S0y=0;L.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='S'){S0x=x;S0y=y;}}));let sx=S0x,sy=S0y;
 let pl,coins,foes,p=0,k={},cam=0,flash=0;
-function reset(full){pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;if(full){p=0;coins=[];foes=[];L.forEach((r,y)=>[...r].forEach((ch,x)=>{const pr=(k,d)=>(CFG.props&&CFG.props[x+','+y+':'+k])||d;if(ch==='o')coins.push({x:x*T+16,y:y*T+16,a:1,v:pr('value',1)});if(ch==='E')foes.push({x:x*T+4,y:y*T+6,d:1,a:1,s:pr('speed',1)});}));}}
+function reset(full){pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;if(full){p=0;sx=S0x;sy=S0y;pl.x=sx*T+4;pl.y=sy*T;G=L.map(r=>[...r]);open=false;kg=0;cg=0;fk=0;fr=0;boost=0;fired=[];tu=false;KT=L.join('').split('K').length-1;coins=[];foes=[];
+L.forEach((r,y)=>[...r].forEach((ch,x)=>{const pr=(k,d)=>(CFG.props&&CFG.props[x+','+y+':'+k])||d;if(ch==='o')coins.push({x:x*T+16,y:y*T+16,a:1,v:pr('value',1)});if(ch==='E')foes.push({x:x*T+4,y:y*T+6,d:1,a:1,s:pr('speed',1)});}));}}
 reset(true);
 addEventListener('keydown',e=>{k[e.code]=1;if(e.code==='Space'){e.preventDefault();if(over){lives=CFG.lives;over=false;reset(true);}else if(pl.on){pl.vy=-11.5;beep(660);}}});addEventListener('keyup',e=>k[e.code]=0);
 function hit(){lives--;beep(160);flash=20;if(lives<=0)over=true;else reset(false);}
+function say(t){note=t;noteT=120;}
+function rules(){(CFG.rules||[]).forEach((r,i)=>{if(fired[i])return;const v=r.when==='muenzen'?cg:r.when==='punkte'?p:r.when==='gegner'?fk:r.when==='sekunden'?fr/60:0;if(v<r.n)return;fired[i]=1;
+if(r.act==='leben'){lives++;say('+1 Leben');}if(r.act==='tueren'){open=true;say('Türen offen');}if(r.act==='schneller'){boost=2;say('Schneller!');}if(r.act==='punkte'){p+=10;say('+10 Punkte');}if(r.act==='sieg'){over=true;say('Gewonnen!');}beep(990);});}
 function move(o,dx,dy){o.x+=dx;let l=Math.floor(o.x/T),r=Math.floor((o.x+o.w-1)/T),t=Math.floor(o.y/T),b=Math.floor((o.y+o.h-1)/T);
 for(let cy=t;cy<=b;cy++)for(let cx=l;cx<=r;cx++)if(solid(cx,cy)){if(dx>0)o.x=cx*T-o.w;if(dx<0)o.x=(cx+1)*T;}
 o.y+=dy;o.on=false;l=Math.floor(o.x/T);r=Math.floor((o.x+o.w-1)/T);t=Math.floor(o.y/T);b=Math.floor((o.y+o.h-1)/T);
 for(let cy=t;cy<=b;cy++)for(let cx=l;cx<=r;cx++)if(solid(cx,cy)){if(dy>0){o.y=cy*T-o.h;o.vy=0;o.on=true;}if(dy<0){o.y=(cy+1)*T;o.vy=0;}}}
-function step(){if(!over){const sp=2.2+CFG.speed*.35;pl.vx=(k.ArrowRight?sp:0)-(k.ArrowLeft?sp:0);pl.vy=Math.min(14,pl.vy+.6);move(pl,pl.vx,0);move(pl,0,pl.vy);
+function step(){if(!over){fr++;const sp=2.2+CFG.speed*.35+boost;pl.vx=(k.ArrowRight?sp:0)-(k.ArrowLeft?sp:0);pl.vy=Math.min(14,pl.vy+.6);move(pl,pl.vx,0);move(pl,0,pl.vy);
+if(pl.on&&at(Math.floor((pl.x+12)/T),Math.floor((pl.y+pl.h+1)/T))==='F'){pl.vy=-17;pl.on=false;beep(720);}
 if(pl.y>R*T+60)hit();const cx=Math.floor((pl.x+12)/T),cy=Math.floor((pl.y+15)/T),cb=Math.floor((pl.y+29)/T);
 if(at(cx,cb)==='^'||at(cx,cy)==='^')hit();if(at(cx,cy)==='Z'||at(cx,cb)==='Z'){p+=10;beep(990);over=true;}
-coins.forEach(q=>{if(q.a&&Math.abs(q.x-(pl.x+12))<18&&Math.abs(q.y-(pl.y+15))<20){q.a=0;p+=q.v||1;beep(880);if(won(p))over=true;}});
+[cy,cb].forEach(yy=>{if(at(cx,yy)==='K'){G[yy][cx]='.';kg++;beep(880);if(kg>=KT){open=true;say('Alle Schlüssel – Türen offen');}}if(at(cx,yy)==='C'&&(sx!==cx||sy!==yy)){sx=cx;sy=yy;say('Speicherpunkt');}});
+coins.forEach(q=>{if(q.a&&Math.abs(q.x-(pl.x+12))<18&&Math.abs(q.y-(pl.y+15))<20){q.a=0;cg++;p+=q.v||1;beep(880);if(won(p))over=true;}});
 foes.forEach(f=>{if(!f.a)return;const nx=f.x+f.d*1.2*(f.s||1),cxx=Math.floor((f.d>0?nx+24:nx)/T),cyy=Math.floor((f.y+20)/T);if(solid(cxx,cyy)||!solid(cxx,cyy+1))f.d*=-1;else f.x=nx;
-if(Math.abs(f.x-pl.x)<24&&Math.abs(f.y-pl.y)<26){if(pl.vy>1&&pl.y<f.y-8){f.a=0;pl.vy=-8;p+=2;beep(520);}else hit();}});
-cam=Math.max(0,Math.min(C*T-c.width,pl.x-c.width/3));}
+if(Math.abs(f.x-pl.x)<24&&Math.abs(f.y-pl.y)<26){if(pl.vy>1&&pl.y<f.y-8){f.a=0;fk++;pl.vy=-8;p+=2;beep(520);}else hit();}});
+if(CFG.timeLimit>0&&fr/60>CFG.timeLimit){lives=0;over=true;tu=true;say('Zeit abgelaufen');}
+rules();cam=Math.max(0,Math.min(C*T-c.width,pl.x-c.width/3));}
 bg();x.save();x.translate(-cam,Math.min(0,c.height-R*T));
 for(let y=0;y<R;y++)for(let xx=Math.floor(cam/T);xx<=Math.floor((cam+c.width)/T)&&xx<C;xx++){const ch=at(xx,y);
 if(ch==='#'){x.fillStyle='#5B3A1E';x.fillRect(xx*T,y*T,T,T);if(at(xx,y-1)!=='#'){x.fillStyle='#3FBF5A';x.fillRect(xx*T,y*T,T,7);}}
 if(ch==='^'){x.fillStyle='#C9CED6';for(let i=0;i<4;i++){x.beginPath();x.moveTo(xx*T+i*8,y*T+T);x.lineTo(xx*T+i*8+4,y*T+T-14);x.lineTo(xx*T+i*8+8,y*T+T);x.fill();}}
-if(ch==='Z'){x.fillStyle='#EEE';x.fillRect(xx*T+6,y*T-T,4,2*T);x.fillStyle=CFG.accent;x.beginPath();x.moveTo(xx*T+10,y*T-T);x.lineTo(xx*T+30,y*T-T+9);x.lineTo(xx*T+10,y*T-T+18);x.fill();}}
+if(ch==='Z'){x.fillStyle='#EEE';x.fillRect(xx*T+6,y*T-T,4,2*T);x.fillStyle=CFG.accent;x.beginPath();x.moveTo(xx*T+10,y*T-T);x.lineTo(xx*T+30,y*T-T+9);x.lineTo(xx*T+10,y*T-T+18);x.fill();}
+if(ch==='F'){x.fillStyle='#64748B';x.fillRect(xx*T,y*T+T-8,T,8);x.fillStyle='#22C55E';x.fillRect(xx*T+3,y*T+T-16,T-6,6);}
+if(ch==='C'){x.fillStyle=(sx===xx&&sy===y)?'#22C55E':'#94A3B8';x.fillRect(xx*T+13,y*T+4,4,T-4);x.fillRect(xx*T+17,y*T+4,11,8);}
+if(ch==='K'){x.fillStyle=CFG.accent;x.beginPath();x.arc(xx*T+11,y*T+16,6,0,7);x.fill();x.fillRect(xx*T+15,y*T+14,13,4);}
+if(ch==='D'&&!open){x.fillStyle='#7C4A1E';x.fillRect(xx*T+2,y*T,T-4,T);x.fillStyle=CFG.accent;x.fillRect(xx*T+T-10,y*T+15,4,4);}}
 x.fillStyle=CFG.accent;coins.forEach(q=>{if(q.a){x.beginPath();x.arc(q.x,q.y,7,0,7);x.fill();}});
 x.fillStyle='#E0475B';foes.forEach(f=>{if(f.a){x.fillRect(f.x,f.y,24,26);x.fillStyle='#FFF';x.fillRect(f.x+(f.d>0?14:4),f.y+6,6,6);x.fillStyle='#E0475B';}});
-if(!(flash>0&&flash--%4<2))me(pl.x,pl.y,pl.w,pl.h);x.restore();status(p);requestAnimationFrame(step);}
+if(!(flash>0&&flash--%4<2))me(pl.x,pl.y,pl.w,pl.h);x.restore();
+if(CFG.timeLimit>0){x.fillStyle='#FFF';x.font='14px system-ui';x.fillText('Zeit '+Math.max(0,Math.ceil(CFG.timeLimit-fr/60))+' s',c.width-90,20);}
+if(KT>0){x.fillStyle=CFG.accent;x.font='14px system-ui';x.fillText('Schlüssel '+kg+'/'+KT,10,20);}
+if(noteT>0){noteT--;x.fillStyle='rgba(0,0,0,.6)';x.fillRect(c.width/2-110,40,220,28);x.fillStyle='#FFF';x.font='15px system-ui';x.textAlign='center';x.fillText(note,c.width/2,59);x.textAlign='left';}
+status(p);requestAnimationFrame(step);}
 step();
 """,
         ["jump"] = """
