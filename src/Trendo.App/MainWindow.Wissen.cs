@@ -63,7 +63,8 @@ public partial class MainWindow
 
         // ── links: Seiten ──
         var left = new StackPanel { Name = "wissen-pages", Spacing = 4 };
-        left.Children.Add(Act("wissen-new", "＋ Neue Seite", () => { _wikiId = null; _wikiEdit = true; _wikiNewTitle = ""; _wikiTrashView = false; _wissenMsg = ""; Show(V); }, true));
+        left.Children.Add(Act("wissen-new", "＋ Neue Seite", () => { _wikiId = null; _wikiEdit = true; _wikiNewTitle = ""; _wikiTrashView = false; _wikiWeek = false; _wissenMsg = ""; Show(V); }, true));
+        left.Children.Add(Act("wissen-week", "📅 Wochenrückblick", () => { _wikiWeek = true; _wikiTrashView = false; _wikiId = null; _wikiEdit = false; _wissenMsg = ""; Show(V); })); // Vorschlag 32
         var search = new TextBox { Name = "wissen-search", PlaceholderText = "Im Wissen suchen …", Text = _wissenQuery };
         search.KeyUp += (_, e) => { if (e.Key == Key.Enter || (search.Text ?? "").Length == 0) { _wissenQuery = search.Text ?? ""; Show(V); } };
         var go = new Button { Name = "wissen-go", Content = "Suchen" }; go.Click += (_, _) => { _wissenQuery = search.Text ?? ""; Show(V); };
@@ -78,7 +79,7 @@ public partial class MainWindow
                 Background = on ? Brush.Parse("#33C9A227") : Brushes.Transparent,
                 Content = new StackPanel { Children = { new TextBlock { Text = it.Title, Foreground = Text, FontWeight = on ? FontWeight.SemiBold : FontWeight.Normal, TextTrimming = TextTrimming.CharacterEllipsis },
                     new TextBlock { Text = $"{it.Source} · {KnowledgeStore.Links(it.Text).Count} Verweise", Foreground = Muted, FontSize = 10.5, TextTrimming = TextTrimming.CharacterEllipsis } } } };
-            b.Click += (_, _) => { _wikiId = id; _wikiEdit = false; _wikiDelArmed = false; _wikiTrashView = false; _wissenMsg = ""; Show(V); };
+            b.Click += (_, _) => { _wikiId = id; _wikiEdit = false; _wikiDelArmed = false; _wikiTrashView = false; _wikiWeek = false; _wissenMsg = ""; Show(V); };
             left.Children.Add(b);
         }
         if (Wissen.All().Count == 0) left.Children.Add(P("Noch leer. Leg eine Seite an oder lies Dateien ein.", Muted, 11.5));
@@ -101,7 +102,8 @@ public partial class MainWindow
         // ── Mitte: lesen, bearbeiten, Papierkorb ──
         var center = new StackPanel { Name = "wissen-center", Spacing = 8 };
         center.Children.Add(new TextBlock { Name = "wissen-msg", Text = _wissenMsg, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
-        if (_wikiTrashView)
+        if (_wikiWeek) center.Children.Add(WeekReviewPanel());
+        else if (_wikiTrashView)
         {
             center.Children.Add(H("Papierkorb des Wissens", 15));
             var t = Wissen.Trashed(); if (t.Count == 0) center.Children.Add(P("Leer.", Muted, 12));
