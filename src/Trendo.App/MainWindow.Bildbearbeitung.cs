@@ -28,7 +28,20 @@ public partial class MainWindow
         ("eraser", "◌ Radierer", "Auf der Mal-Ebene radieren"), ("text", "T Text", "Klick setzt einen Text"), ("rect", "▭ Rechteck", "Ziehen zeichnet ein Rechteck"),
         ("ellipse", "◯ Ellipse", "Ziehen zeichnet eine Ellipse"), ("crop", "⛶ Zuschneiden", "Ziehen wählt den Ausschnitt der Leinwand"),
         ("vector", "〰 Vektorpinsel", "Zeichnen ergibt einen glatten Vektorpfad – später verschieb- und umfärbbar, als SVG speicherbar"),
+        ("select", "⬚ Auswahl", "Ziehen wählt einen Bereich – oben „Maske aus Auswahl“ blendet die Ebene außerhalb aus"),
+        ("gradient", "◩ Verlauf", "Ziehen legt einen Verlauf von der gewählten Farbe zu durchsichtig"),
+        ("fill", "▣ Füllen", "Klick füllt die zusammenhängende Fläche mit der gewählten Farbe (Toleranz rechts)"),
+        ("heal", "✚ Reparieren", "Über Fleck, Kratzer oder Staub malen – wird aus der Umgebung aufgefüllt"),
+        ("clone", "⎘ Klonen", "Erst klicken = Quelle, dann übermalen – kopiert von der Quelle"),
     ];
+    /// <summary>Auswahl-Rechteck (Leinwand-Pixel) – kein Bearbeitungsschritt, wie in GIMP.</summary>
+    public Rect? ImgMarquee { get; set; }
+    /// <summary>Quelle des Kopierstempels (Leinwand-Pixel).</summary>
+    public Point? ImgCloneSrc { get; set; }
+    /// <summary>Toleranz des Farbeimers (0–255).</summary>
+    public double ImgFillTolerance { get; set; } = 32;
+    public bool ImgMaskEllipse { get; set; }
+    public bool ImgGradRadial { get; set; }
     static readonly string[] ImgColors = ["#000000", "#FFFFFF", "#E0475B", "#F59E0B", "#FACC15", "#22C55E", "#2F86F6", "#7C3AED", "#EC4899", "#8B5A2B"];
 
     private void InitBildbearbeitung() => RegisterProgram(KreativTabs, new ProgramSpec(BK, "CORE-08", "Bildbearbeitung")
@@ -110,11 +123,13 @@ public partial class MainWindow
         var png = ImageRender.Png(d.Data);
         var canvas = new ImageCanvas { Name = "img-canvas", DocW = (int)d.Number("width", 800), DocH = (int)d.Number("height", 600), Zoom = ImgZoom, Tool = ImgTool, BrushColor = Color.Parse(ImgColor), BrushSize = ImgBrush,
             Image = new Bitmap(new MemoryStream(png)), MinHeight = 240 };
-        ImgCanvasForTests = canvas;
+        ImgCanvasForTests = canvas; canvas.Marquee = ImgMarquee; canvas.CloneSource = ImgCloneSrc;
+        canvas.Line = (a, b) => ProgramRun(BK, () => d.Edit("Verlauf", x => ImageDoc.AddGradient(x, a.X, a.Y, b.X, b.Y, ImgColor, "#00" + ImgColor.TrimStart('#')[^6..], ImgGradRadial)));
         if (SelId(d) is { } sid && ImageDoc.Layer(d.Data, sid) is { } sl && ImageDoc.S(sl["kind"]) != "paint")
             canvas.Selection = new Rect(ImageDoc.N(sl["x"]), ImageDoc.N(sl["y"]), ImageDoc.N(sl["w"]), ImageDoc.N(sl["h"]));
         canvas.Clicked = p => ProgramRun(BK, () =>
         {
+            if (ImgTool == "fill") { d.Edit("Füllen", x => ImageDoc.AddFill(ImageDoc.Retouch(x, SelId(d)), p.X, p.Y, ImgColor, ImgFillTolerance)); return; }
             if (ImgTool == "text") { d.Edit("Text", x => ImageDoc.AddText(x, "Dein Text", p.X, p.Y, Math.Max(24, d.Number("height") / 14), ImgColor)); _progMsg[BK] = "Text gesetzt – rechts ändern."; return; }
             var hit = ImageDoc.HitTest(d.Data, p.X, p.Y); d.Data["selected"] = hit ?? ""; // Auswahl ist kein Bearbeitungsschritt
         });
@@ -125,18 +140,38 @@ public partial class MainWindow
             if (id is null) return;
             d.Edit("Verschieben", x => ImageDoc.Move(ImageDoc.Layer(x, id)!, by.X, by.Y));
         });
-        canvas.Stroke = (pts, erase) => ProgramRun(BK, () => d.Edit(erase ? "Radieren" : "Malen", x =>
+        canvas.Stroke = (pts, erase) => ProgramRun(BK, () =>
+        {
+            if (ImgTool == "clone" && (ImgCloneSrc is null || pts.Count == 1))
+            {
+                if (pts.Count == 1) { ImgCloneSrc = new Point(pts[0].X, pts[0].Y); _progMsg[BK] = "Quelle gesetzt – jetzt die Stelle übermalen, die ersetzt werden soll."; return; }
+                throw new InvalidOperationException("Erst einmal auf die Quelle klicken, dann übermalen.");
+            }
+            if (ImgTool is "heal" or "clone")
+            {
+                d.Edit(ImgTool == "heal" ? "Reparieren" : "Klonen", x =>
+                {
+                    var r = ImageDoc.Retouch(x, SelId(d));
+                    if (ImgTool == "heal") ImageDoc.AddHeal(r, pts, ImgBrush);
+                    else ImageDoc.AddClone(r, pts, ImgBrush, ImgCloneSrc!.Value.X - pts[0].X, ImgCloneSrc!.Value.Y - pts[0].Y);
+                });
+                return;
+            }
+            ImgStroke(d, pts, erase);
+        });
+        void ImgStroke(ProgramDocument d, List<(double X, double Y)> pts, bool erase) => d.Edit(erase ? "Radieren" : "Malen", x =>
         {
             var target = SelId(d) is { } s0 && ImageDoc.S(ImageDoc.Layer(x, s0)!["kind"]) == "paint" ? ImageDoc.Layer(x, s0)! : ImageDoc.Layers(x).OfType<JsonObject>().LastOrDefault(l => ImageDoc.S(l["kind"]) == "paint") ?? ImageDoc.AddPaint(x);
             x["selected"] = (string?)target["id"];
             if (ImgTool == "vector") { var simple = Trendo.Core.Media.ImageVector.Simplify(pts, Math.Max(1, ImgBrush / 6)); if (simple.Count >= 2) Trendo.Core.Media.ImageVector.AddPath(x, simple, ImgColor, ImgBrush); return; }
             ImageDoc.AddStroke(target, pts, ImgColor, ImgBrush, erase, ImgBrushAlpha);
-        }));
+        });
         canvas.Dragged = r => ProgramRun(BK, () =>
         {
             switch (ImgTool)
             {
                 case "rect" or "ellipse": d.Edit(ImgTool == "rect" ? "Rechteck" : "Ellipse", x => ImageDoc.AddShape(x, ImgTool, r.X, r.Y, r.Width, r.Height, ImgColor)); break;
+                case "select": ImgMarquee = r; _progMsg[BK] = $"Auswahl {r.Width:0} × {r.Height:0} px – oben „Maske aus Auswahl“."; break;
                 case "crop": d.Edit("Zuschneiden", x => ImageDoc.Crop(x, r.X, r.Y, r.Width, r.Height)); _progMsg[BK] = $"Zugeschnitten auf {(int)d.Number("width")} × {(int)d.Number("height")} px."; break;
             }
         });
@@ -151,13 +186,39 @@ public partial class MainWindow
         }
         var size = new Slider { Name = "img-brush-size", Minimum = 1, Maximum = 120, Value = ImgBrush, Width = 160, Margin = new Thickness(12, 0, 6, 0) };
         size.PropertyChanged += (_, e) => { if (e.Property == Slider.ValueProperty) { ImgBrush = Math.Round(size.Value); canvas.BrushSize = ImgBrush; } };
-        bar.Children.Add(new TextBlock { Text = "Pinsel", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0) });
-        bar.Children.Add(size);
+        // nur die Regler, die zum Werkzeug passen (Optionsleiste wie in Photoshop) – so bleibt die Leiste einzeilig
+        if (ImgTool is "brush" or "eraser" or "vector" or "heal" or "clone" or "select")
+        {
+            bar.Children.Add(new TextBlock { Text = ImgTool == "select" ? "Weiche Kante" : "Pinsel", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0) });
+            bar.Children.Add(size);
+        }
         var alpha = new Slider { Name = "img-brush-alpha", Minimum = 5, Maximum = 100, Value = ImgBrushAlpha * 100, Width = 110, Margin = new Thickness(6, 0, 6, 0) };
         alpha.PropertyChanged += (_, e) => { if (e.Property == Slider.ValueProperty) ImgBrushAlpha = Math.Round(alpha.Value / 100, 2); };
-        bar.Children.Add(new TextBlock { Text = "Deckkraft", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) });
-        bar.Children.Add(alpha);
-        bar.Children.Add(new TextBlock { Text = ImgTools.First(t => t.Id == ImgTool).Tip, Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) });
+        if (ImgTool == "brush")
+        {
+            bar.Children.Add(new TextBlock { Text = "Deckkraft", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) });
+            bar.Children.Add(alpha);
+        }
+        var before = bar.Children.Count;
+        // Einstellungen des gewählten Werkzeugs (wie die Optionsleiste in Photoshop)
+        if (ImgTool == "fill")
+        {
+            var tol = new Slider { Name = "img-fill-tol", Minimum = 0, Maximum = 160, Value = ImgFillTolerance, Width = 110, Margin = new Thickness(6, 0, 6, 0) };
+            tol.PropertyChanged += (_, e) => { if (e.Property == Slider.ValueProperty) ImgFillTolerance = Math.Round(tol.Value); };
+            bar.Children.Add(new TextBlock { Text = "Toleranz", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) }); bar.Children.Add(tol);
+        }
+        CheckBox Opt(string name, string label, bool value, Action<bool> set) { var c = new CheckBox { Name = name, Content = label, IsChecked = value, Foreground = Text, Margin = new Thickness(8, 0, 0, 0) }; c.IsCheckedChanged += (_, _) => set(c.IsChecked == true); return c; }
+        if (ImgTool == "gradient") bar.Children.Add(Opt("img-grad-radial", "Kreisförmig", ImgGradRadial, v => ImgGradRadial = v));
+        Button Bb(string name, string label, Action a) { var b = new Button { Name = name, Content = label, FontSize = 12, Margin = new Thickness(8, 0, 0, 0) }; b.Click += (_, _) => ProgramRun(BK, a); return b; }
+        if (ImgTool == "select")
+        {
+            bar.Children.Add(Opt("img-mask-ellipse", "Maske rund", ImgMaskEllipse, v => ImgMaskEllipse = v));
+            bar.Children.Add(Bb("img-mask-sel", "Maske aus Auswahl", () => ImgSel(d, (x, id) => ImageDoc.SetMask(ImageDoc.Layer(x, id)!, ImgMaskEllipse ? "ellipse" : "rect", ImgMarquee?.X ?? 0, ImgMarquee?.Y ?? 0, ImgMarquee?.Width ?? 0, ImgMarquee?.Height ?? 0, Math.Round(ImgBrush / 2)), "Maske")));
+            if (ImgMarquee is not null) bar.Children.Add(Bb("img-sel-none", "Auswahl aufheben", () => ImgMarquee = null));
+        }
+        if (ImgTool == "clone" && ImgCloneSrc is not null) { var rs = new Button { Name = "img-clone-reset", Content = "Neue Quelle", FontSize = 12, Margin = new Thickness(8, 0, 0, 0) }; rs.Click += (_, _) => { ImgCloneSrc = null; Show(BK); }; bar.Children.Add(rs); }
+        var tip = ImgTools.First(t => t.Id == ImgTool).Tip; ToolTip.SetTip(bar, tip);
+        if (bar.Children.Count == before) bar.Children.Add(new TextBlock { Text = tip, Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) });
         var g = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
         g.Children.Add(bar); Grid.SetRow(canvas, 1); g.Children.Add(canvas);
         return g;
@@ -180,7 +241,8 @@ public partial class MainWindow
             var eye = new Button { Name = $"img-vis-{i}", Content = vis ? "👁" : "–", Width = 30, Padding = new Thickness(0), FontSize = 12 };
             ToolTip.SetTip(eye, vis ? "Ausblenden" : "Einblenden");
             eye.Click += (_, _) => ProgramRun(BK, () => d.Edit(vis ? "Ausblenden" : "Einblenden", x => ImageDoc.Layer(x, id)!["visible"] = !vis));
-            var kind = ImageDoc.S(l["kind"]) switch { "image" => "🖼", "text" => "T", "shape" => "▭", _ => "🖌" };
+            var kind = ImageDoc.S(l["kind"]) switch { "image" => "🖼", "text" => "T", "shape" => "▭", "gradient" => "◩", "retouch" => "✚", _ => "🖌" };
+            if (l["mask"] is not null) kind += "◐";
             var pick = new Button { Name = $"img-layer-{i}", Content = $"{kind}  {ImageDoc.S(l["name"])}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, FontSize = 12, Padding = new Thickness(8, 4) };
             if (on) { pick.Background = Accent; pick.Foreground = Brushes.White; }
             pick.Click += (_, _) => { d.Data["selected"] = id; Show(BK); };
@@ -198,6 +260,10 @@ public partial class MainWindow
                 SelectedIndex = Math.Max(0, Array.FindIndex(Trendo.Core.Media.ImageVector.BlendModes, b => b.Id == ImageDoc.S(L["blend"], "normal"))) };
             sp.Children.Add(new TextBlock { Text = "Mischmodus", Foreground = Muted, FontSize = 11.5 }); sp.Children.Add(blend);
             var apply = new List<Action<JsonObject>> { x => ImageDoc.Layer(x, sel)!["opacity"] = Math.Round(opacity.Value / 100, 2), x => ImageDoc.Layer(x, sel)!["blend"] = Trendo.Core.Media.ImageVector.BlendModes[Math.Max(0, blend.SelectedIndex)].Id };
+            if (L["mask"] is JsonObject lm)
+                sp.Children.Add(new WrapPanel { Children = {
+                    B("img-mask-invert", lm["invert"]?.GetValue<bool>() == true ? "Maske normal" : "Maske umkehren", () => d.Edit("Maske umkehren", x => { var m = (JsonObject)ImageDoc.Layer(x, sel)!["mask"]!; m["invert"] = m["invert"]?.GetValue<bool>() != true; })),
+                    B("img-mask-del", "Maske entfernen", () => d.Edit("Maske entfernen", x => ImageDoc.Layer(x, sel)!.Remove("mask"))) } });
             if (k == "path") apply.Add(x => ImageDoc.Layer(x, sel)!["stroke"] = ImgColor);
             if (k == "text")
             {
@@ -221,6 +287,25 @@ public partial class MainWindow
                 F("brightness", "Helligkeit", -100, 100); F("contrast", "Kontrast", -100, 100); F("saturation", "Sättigung", -100, 100); F("blur", "Unschärfe", 0, 50);
                 CheckBox C(string key, string label) { var c = new CheckBox { Name = "img-f-" + key, Content = label, IsChecked = f is not null && ImageDoc.N(f[key]) > 0, Foreground = Text }; apply.Add(x => ImageDoc.SetFilter(ImageDoc.Layer(x, sel)!, key, c.IsChecked == true ? 1 : 0)); return c; }
                 sp.Children.Add(new WrapPanel { Children = { C("grayscale", "Schwarzweiß"), C("sepia", "Sepia"), C("invert", "Invertieren") } });
+                // Tonwerte und Kurven (Photoshop/GIMP)
+                sp.Children.Add(H("Tonwerte und Kurve", 12));
+                Slider T(string key, string label, double min, double max, double def, double step)
+                {
+                    var s = new Slider { Name = "img-f-" + key, Minimum = min, Maximum = max, Value = f?[key] is null ? def : ImageDoc.N(f[key], def), SmallChange = step };
+                    sp.Children.Add(new TextBlock { Text = label, Foreground = Muted, FontSize = 11.5 }); sp.Children.Add(s);
+                    apply.Add(x => ImageDoc.SetFilter(ImageDoc.Layer(x, sel)!, key, step < 1 ? Math.Round(s.Value, 2) : Math.Round(s.Value)));
+                    return s;
+                }
+                var blk = T("black", "Schwarzpunkt", 0, 200, 0, 1); var wht = T("white", "Weißpunkt", 55, 255, 255, 1); T("gamma", "Mitteltöne (Gamma)", 0.3, 3, 1, 0.01);
+                var file = ImageDoc.S(L["file"]);
+                var auto = new Button { Name = "img-auto-levels", Content = "Auto-Tonwerte", FontSize = 12, Margin = new Thickness(0, 2, 4, 4) };
+                auto.Click += (_, _) => ProgramRun(BK, () => { var (b0, w0) = ImageRender.AutoLevels(file); d.Edit("Auto-Tonwerte", x => { var t = ImageDoc.Layer(x, sel)!; ImageDoc.SetFilter(t, "black", b0); ImageDoc.SetFilter(t, "white", w0); }); _progMsg[BK] = $"Tonwerte: Schwarz {b0}, Weiß {w0}."; });
+                sp.Children.Add(auto);
+                var curNow = (f?["curve"] as JsonArray)?.Select(n => ImageDoc.N(n)).ToArray() ?? [];
+                var curve = new ComboBox { Name = "img-curve", ItemsSource = ImageOps.CurvePresets.Select(c => c.Label).ToList(), HorizontalAlignment = HorizontalAlignment.Stretch,
+                    SelectedIndex = Math.Max(0, Array.FindIndex(ImageOps.CurvePresets, c => c.Points.SequenceEqual(curNow))) };
+                sp.Children.Add(new TextBlock { Text = "Kurve", Foreground = Muted, FontSize = 11.5 }); sp.Children.Add(curve);
+                apply.Add(x => ImageDoc.SetCurve(ImageDoc.Layer(x, sel)!, ImageOps.CurvePresets[Math.Max(0, curve.SelectedIndex)].Points));
             }
             sp.Children.Add(B("img-apply", "Übernehmen", () => d.Edit("Ebene ändern", x => { foreach (var a in apply) a(x); }), true));
         }

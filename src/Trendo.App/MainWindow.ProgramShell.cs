@@ -381,13 +381,15 @@ public partial class MainWindow
         var col = 0;
         if (showTools)
         {
-            var rail = new StackPanel { Name = "prog-tools", Spacing = 4 };
+            // viele Werkzeuge: zwei Spalten wie in Photoshop/GIMP, damit nichts unten aus dem Bild läuft
+            var two = spec.Tools.Count > 9;
+            Panel rail = two ? new WrapPanel { Name = "prog-tools", Width = 88 } : new StackPanel { Name = "prog-tools", Spacing = 4 };
             foreach (var t in spec.Tools)
             {
                 var on = t.Active(); var tt = t;
                 var b = new Button { Name = "prog-cmd-" + t.Name, Content = t.Icon, Width = 40, Height = 40, Padding = new Thickness(0), FontSize = 17, CornerRadius = new CornerRadius(10),
                     HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center,
-                    Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text, BorderBrush = on ? Brushes.Transparent : Edge, BorderThickness = new Thickness(1) };
+                    Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text, BorderBrush = on ? Brushes.Transparent : Edge, BorderThickness = new Thickness(1), Margin = two ? new Thickness(2) : default };
                 ToolTip.SetTip(b, $"{t.Label} – {t.Tip}"); Avalonia.Automation.AutomationProperties.SetName(b, t.Label);
                 b.Click += (_, _) => ProgramRun(key, () => tt.Select(d));
                 rail.Children.Add(b);

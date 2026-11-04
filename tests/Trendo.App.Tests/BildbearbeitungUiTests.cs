@@ -109,4 +109,60 @@ public class Bildbearbeitung_Ui
         }
         finally { w.Close(); }
     }
+    [AvaloniaFact(DisplayName = "Bildbearbeitung wie Photoshop/GIMP: Füllen mit Toleranz, Reparieren entfernt Fleck, Klonen mit Quelle, Verlauf ziehen, Maske aus Auswahl, Tonwerte, Kurve, Auto-Tonwerte")]
+    public void Retouch_and_tones()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        try
+        {
+            // Foto 300 × 150: grau (120), links ein schwarzer Fleck, rechts eine weiße Fläche
+            var src = Path.Combine(root, "foto.png");
+            using (var bmp = new SKBitmap(300, 150))
+            {
+                using (var c = new SKCanvas(bmp)) { c.Clear(new SKColor(120, 120, 120)); c.DrawCircle(50, 75, 8, new SKPaint { Color = SKColors.Black, IsAntialias = false }); c.DrawRect(200, 0, 100, 150, new SKPaint { Color = SKColors.White }); }
+                using var img = SKImage.FromBitmap(bmp); using var data = img.Encode(SKEncodedImageFormat.Png, 100); File.WriteAllBytes(src, data.ToArray());
+            }
+            w.Show(BK); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer")); w.ImgAddImage(src); w.Show(BK); Settle();
+            // Füllen: Klick in die weiße Fläche färbt nur sie blau
+            Click(w, "prog-cmd-img-tool-fill"); Click(w, "img-color-2f86f6");
+            var fp = P(w, 250, 75); w.MouseDown(fp, MouseButton.Left); w.MouseUp(fp, MouseButton.Left); Settle();
+            Assert.Equal("Füllen", w.ProgramActive(BK)!.UndoLabel);
+            var b = Px(w, 250, 20); Assert.True(b.Blue > 200 && b.Red < 80, $"nicht blau: {b}");
+            Assert.Equal(new SKColor(120, 120, 120), Px(w, 150, 20));
+            // Reparieren: über den schwarzen Fleck malen
+            Click(w, "prog-cmd-img-tool-heal"); w.ImgBrush = 24; w.Show(BK); Settle();
+            Drag(w, P(w, 46, 75), P(w, 54, 75));
+            var h = Px(w, 50, 75); Assert.True(Math.Abs(h.Red - 120) < 10, $"Fleck noch da: {h}");
+            // Klonen: Quelle in der blauen Fläche, dann oben links übermalen
+            Click(w, "prog-cmd-img-tool-clone"); var q = P(w, 260, 40); w.MouseDown(q, MouseButton.Left); w.MouseUp(q, MouseButton.Left); Settle();
+            Assert.Contains("Quelle", w.ProgramMessage(BK)); Assert.NotNull(w.ImgCloneSrc);
+            Drag(w, P(w, 20, 20), P(w, 40, 20));
+            var k = Px(w, 30, 20); Assert.True(k.Blue > 200 && k.Red < 80, $"nicht geklont: {k}");
+            Assert.Single(ImageDoc.Layers(w.ProgramActive(BK)!.Data).OfType<System.Text.Json.Nodes.JsonObject>(), l => ImageDoc.S(l["kind"]) == "retouch"); // eine Retusche-Ebene für alle Schritte
+            // Verlauf: von links rot nach rechts durchsichtig
+            Click(w, "prog-cmd-img-tool-gradient"); Click(w, "img-color-e0475b"); Drag(w, P(w, 0, 110), P(w, 300, 110));
+            var g0 = Px(w, 5, 110); var g1 = Px(w, 150, 110); Assert.True(g0.Red > 200 && g0.Green < 100, $"Verlauf links: {g0}"); Assert.True(g1.Red > g1.Green + 20 && g1.Red < g0.Red + 1 && g1.Green > g0.Green, $"Verlauf Mitte: {g1}");
+            // Maske: Auswahl links, Verlauf nur dort sichtbar
+            Click(w, "prog-cmd-img-tool-select"); Drag(w, P(w, 0, 0), P(w, 100, 150));
+            Assert.NotNull(w.ImgMarquee); w.ImgBrush = 0; w.Show(BK); Settle(); Click(w, "img-mask-sel"); Settle();
+            Assert.Equal("Maske", w.ProgramActive(BK)!.UndoLabel);
+            Assert.True(Px(w, 50, 110).Red > 180); Assert.Equal(new SKColor(120, 120, 120), Px(w, 150, 110));
+            Click(w, "img-mask-invert"); Settle();
+            Assert.Equal(new SKColor(120, 120, 120), Px(w, 50, 110)); Assert.True(Px(w, 150, 110).Red > 125);
+            // Tonwerte auf der Foto-Ebene: Gamma hellt das Grau auf, Kurve „Abdunkeln“ dunkelt es
+            Click(w, "img-layer-0"); Settle();
+            w.Find<Slider>("img-f-gamma").Value = 2; Click(w, "img-apply");
+            Assert.True(Px(w, 150, 75).Red > 160, $"Gamma: {Px(w, 150, 75)}");
+            w.Find<Slider>("img-f-gamma").Value = 1; w.Find<ComboBox>("img-curve").SelectedIndex = 3; Click(w, "img-apply");
+            Assert.True(Px(w, 150, 75).Red < 110, $"Kurve: {Px(w, 150, 75)}");
+            Click(w, "img-auto-levels");
+            Assert.Contains("Tonwerte: Schwarz", w.ProgramMessage(BK));
+            var f = (System.Text.Json.Nodes.JsonObject)ImageDoc.Layers(w.ProgramActive(BK)!.Data)[0]!["filter"]!;
+            Assert.Equal(0, ImageDoc.N(f["black"])); Assert.Equal(255, ImageDoc.N(f["white"]));
+            // Rückgängig nimmt Schritt für Schritt zurück, Original bleibt unverändert
+            RealClick(w, V<Button>(w, "prog-undo")); Settle();
+            using var o = SKBitmap.Decode(src); Assert.Equal(SKColors.Black, o.GetPixel(50, 75));
+        }
+        finally { w.Close(); }
+    }
 }

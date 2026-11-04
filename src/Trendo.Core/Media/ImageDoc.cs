@@ -8,8 +8,8 @@ namespace Trendo.Core.Media;
 /// Gezeichnet wird in Trendo.App (Skia); hier stehen Modell, Bearbeitungen und Trefferprüfung.</summary>
 public static class ImageDoc
 {
-    public static readonly string[] Kinds = ["image", "text", "shape", "paint"];
-    public static readonly string[] Filters = ["brightness", "contrast", "saturation", "blur", "grayscale", "sepia", "invert"];
+    public static readonly string[] Kinds = ["image", "text", "shape", "paint", "gradient", "retouch"];
+    public static readonly string[] Filters = ["brightness", "contrast", "saturation", "blur", "grayscale", "sepia", "invert", "black", "white", "gamma"];
 
     public static JsonObject New(int w, int h, string background = "#FFFFFF") => new() { ["width"] = w, ["height"] = h, ["background"] = background, ["layers"] = new JsonArray(), ["selected"] = "" };
 
@@ -82,7 +82,7 @@ public static class ImageDoc
 
     /// <summary>Oberste sichtbare Ebene unter einem Leinwandpunkt (Mal-Ebenen zählen nicht, sie decken alles ab).</summary>
     public static string? HitTest(JsonObject d, double x, double y) =>
-        Layers(d).OfType<JsonObject>().Reverse().Where(l => l["visible"]?.GetValue<bool>() != false && S(l["kind"]) != "paint")
+        Layers(d).OfType<JsonObject>().Reverse().Where(l => l["visible"]?.GetValue<bool>() != false && S(l["kind"]) is not ("paint" or "gradient" or "retouch"))
             .FirstOrDefault(l => x >= N(l["x"]) && y >= N(l["y"]) && x <= N(l["x"]) + N(l["w"]) && y <= N(l["y"]) + N(l["h"])) is { } hit ? (string?)hit["id"] : null;
 
     /// <summary>Leinwand zuschneiden: neue Größe, alle Ebenen und Striche rücken mit.</summary>
@@ -98,17 +98,69 @@ public static class ImageDoc
             if (S(l["kind"]) == "paint" && l["strokes"] is JsonArray st)
                 foreach (var s in st.OfType<JsonObject>())
                     if (s["points"] is JsonArray p) for (var i = 0; i < p.Count; i++) p[i] = Math.Round(N(p[i]) - (i % 2 == 0 ? x : y), 1);
-            if (S(l["kind"]) == "paint") { l["x"] = 0; l["y"] = 0; l["w"] = Math.Round(w); l["h"] = Math.Round(h); }
+            if (S(l["kind"]) == "retouch" && l["ops"] is JsonArray ops)
+                foreach (var o in ops.OfType<JsonObject>())
+                {
+                    if (o["points"] is JsonArray p) for (var i = 0; i < p.Count; i++) p[i] = Math.Round(N(p[i]) - (i % 2 == 0 ? x : y), 1);
+                    if (o["px"] is not null) { o["px"] = Math.Round(N(o["px"]) - x, 1); o["py"] = Math.Round(N(o["py"]) - y, 1); }
+                }
+            if (S(l["kind"]) == "gradient") { l["x1"] = Math.Round(N(l["x1"]) - x, 1); l["y1"] = Math.Round(N(l["y1"]) - y, 1); l["x2"] = Math.Round(N(l["x2"]) - x, 1); l["y2"] = Math.Round(N(l["y2"]) - y, 1); }
+            if (l["mask"] is JsonObject mk) { mk["x"] = Math.Round(N(mk["x"]) - x, 1); mk["y"] = Math.Round(N(mk["y"]) - y, 1); }
+            if (S(l["kind"]) is "paint" or "gradient" or "retouch") { l["x"] = 0; l["y"] = 0; l["w"] = Math.Round(w); l["h"] = Math.Round(h); }
         }
         d["width"] = (int)Math.Round(w); d["height"] = (int)Math.Round(h);
     }
 
-    /// <summary>Filterwert setzen: Helligkeit/Kontrast/Sättigung −100…100, Unschärfe 0…50, Schwarzweiß/Sepia/Invertieren 0 oder 1.</summary>
+    /// <summary>Farbverlauf über die Leinwand (Photoshop/GIMP „Verlauf“): von Farbe 1 bei (x1, y1) zu Farbe 2 bei (x2, y2), linear oder kreisförmig.</summary>
+    public static JsonObject AddGradient(JsonObject d, double x1, double y1, double x2, double y2, string c1, string c2, bool radial = false) =>
+        Add(d, Set(Base("gradient", radial ? "Verlauf rund" : "Verlauf", 0, 0, N(d["width"]), N(d["height"])),
+            ("x1", Math.Round(x1, 1)), ("y1", Math.Round(y1, 1)), ("x2", Math.Round(x2, 1)), ("y2", Math.Round(y2, 1)), ("c1", c1), ("c2", c2), ("radial", radial)));
+
+    /// <summary>Retusche-Ebene: Füllen, Reparieren und Klonen wirken auf alles darunter; die Schritte bleiben einzeln erhalten (nicht-destruktiv).</summary>
+    public static JsonObject Retouch(JsonObject d, string? selected)
+    {
+        if (selected is not null && Layer(d, selected) is { } s && S(s["kind"]) == "retouch") return s;
+        if (Layers(d).OfType<JsonObject>().LastOrDefault() is { } top && S(top["kind"]) == "retouch") { d["selected"] = (string?)top["id"]; return top; }
+        return Add(d, Set(Base("retouch", "Retusche", 0, 0, N(d["width"]), N(d["height"])), ("ops", new JsonArray())));
+    }
+
+    static JsonArray Pts(IReadOnlyList<(double X, double Y)> pts) { var a = new JsonArray(); foreach (var (x, y) in pts) { a.Add(Math.Round(x, 1)); a.Add(Math.Round(y, 1)); } return a; }
+    static void Op(JsonObject retouch, JsonObject op) => (retouch["ops"] as JsonArray ?? (JsonArray)(retouch["ops"] = new JsonArray())).Add(op);
+
+    /// <summary>Farbeimer an (x, y) mit Toleranz 0–255.</summary>
+    public static void AddFill(JsonObject retouch, double x, double y, string color, double tolerance) =>
+        Op(retouch, new JsonObject { ["op"] = "fill", ["px"] = Math.Round(x, 1), ["py"] = Math.Round(y, 1), ["color"] = color, ["tolerance"] = Math.Clamp(tolerance, 0, 255) });
+
+    /// <summary>Reparatur-Pinsel: übermalte Stelle wird aus der Umgebung aufgefüllt.</summary>
+    public static void AddHeal(JsonObject retouch, IReadOnlyList<(double X, double Y)> pts, double size) =>
+        Op(retouch, new JsonObject { ["op"] = "heal", ["size"] = Math.Clamp(size, 1, 400), ["points"] = Pts(pts) });
+
+    /// <summary>Kopierstempel: übermalte Stelle zeigt, was um (dx, dy) versetzt liegt.</summary>
+    public static void AddClone(JsonObject retouch, IReadOnlyList<(double X, double Y)> pts, double size, double dx, double dy) =>
+        Op(retouch, new JsonObject { ["op"] = "clone", ["size"] = Math.Clamp(size, 1, 400), ["dx"] = Math.Round(dx), ["dy"] = Math.Round(dy), ["points"] = Pts(pts) });
+
+    /// <summary>Ebenenmaske aus einer Auswahl: Rechteck oder Ellipse, weiche Kante, umkehrbar. Außerhalb der Maske wird die Ebene ausgeblendet.</summary>
+    public static void SetMask(JsonObject layer, string shape, double x, double y, double w, double h, double feather = 0, bool invert = false)
+    {
+        if (w < 0) { x += w; w = -w; } if (h < 0) { y += h; h = -h; }
+        if (w < 2 || h < 2) throw new InvalidOperationException("Erst mit dem Auswahl-Werkzeug einen Bereich aufziehen.");
+        layer["mask"] = new JsonObject { ["shape"] = shape == "ellipse" ? "ellipse" : "rect", ["x"] = Math.Round(x, 1), ["y"] = Math.Round(y, 1), ["w"] = Math.Round(w, 1), ["h"] = Math.Round(h, 1), ["feather"] = Math.Clamp(feather, 0, 200), ["invert"] = invert };
+    }
+
+    /// <summary>Kurve setzen (Punkte x,y 0–255); leer = keine Kurve.</summary>
+    public static void SetCurve(JsonObject layer, IReadOnlyList<double> points)
+    {
+        var f = layer["filter"] as JsonObject ?? (JsonObject)(layer["filter"] = new JsonObject());
+        if (points.Count < 4) { f.Remove("curve"); return; }
+        var a = new JsonArray(); foreach (var p in points) a.Add(Math.Round(Math.Clamp(p, 0, 255), 1)); f["curve"] = a;
+    }
+
+    /// <summary>Filterwert setzen: Helligkeit/Kontrast/Sättigung −100…100, Unschärfe 0…50, Schwarzweiß/Sepia/Invertieren 0 oder 1, Tonwerte Schwarz 0…254, Weiß 1…255, Gamma 0,1…5.</summary>
     public static void SetFilter(JsonObject layer, string key, double value)
     {
         if (!Filters.Contains(key)) throw new ArgumentException("Unbekannter Filter: " + key);
         var f = layer["filter"] as JsonObject ?? (JsonObject)(layer["filter"] = new JsonObject());
-        f[key] = key switch { "blur" => Math.Clamp(value, 0, 50), "grayscale" or "sepia" or "invert" => value > 0 ? 1 : 0, _ => Math.Clamp(value, -100, 100) };
+        f[key] = key switch { "blur" => Math.Clamp(value, 0, 50), "black" => Math.Clamp(value, 0, 254), "white" => Math.Clamp(value, 1, 255), "gamma" => Math.Round(Math.Clamp(value, 0.1, 5), 2), "grayscale" or "sepia" or "invert" => value > 0 ? 1 : 0, _ => Math.Clamp(value, -100, 100) };
     }
 
     /// <summary>Farbmatrix (4×5, Skia-Reihenfolge) aus Helligkeit, Kontrast, Sättigung, Schwarzweiß, Sepia, Invertieren – in dieser Reihenfolge angewandt.</summary>

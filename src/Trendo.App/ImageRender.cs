@@ -33,15 +33,30 @@ public static class ImageRender
             var op = (byte)Math.Clamp(ImageDoc.N(l["opacity"], 1) * 255, 0, 255);
             float x = (float)ImageDoc.N(l["x"]), y = (float)ImageDoc.N(l["y"]), lw = (float)ImageDoc.N(l["w"]), lh = (float)ImageDoc.N(l["h"]);
             var f = l["filter"] as JsonObject; var blur = (float)(f is null ? 0 : ImageDoc.N(f["blur"]));
-            using var layerPaint = new SKPaint { Color = new SKColor(255, 255, 255, op), ColorFilter = SKColorFilter.CreateColorMatrix(ImageDoc.ColorMatrix(f)), ImageFilter = blur > 0 ? SKImageFilter.CreateBlur(blur, blur) : null };
+            using var layerPaint = new SKPaint { Color = new SKColor(255, 255, 255, op), ColorFilter = LayerColor(f), ImageFilter = blur > 0 ? SKImageFilter.CreateBlur(blur, blur) : null };
             layerPaint.BlendMode = ImageDoc.S(l["blend"], "normal") switch // Mischmodi wie in Krita/GIMP
             {
                 "multiply" => SKBlendMode.Multiply, "screen" => SKBlendMode.Screen, "overlay" => SKBlendMode.Overlay, "darken" => SKBlendMode.Darken,
                 "lighten" => SKBlendMode.Lighten, "difference" => SKBlendMode.Difference, _ => SKBlendMode.SrcOver,
             };
+            // Retusche wirkt auf alles darunter: bisheriges Ergebnis abgreifen, bevor die Ebene beginnt
+            using var retouched = ImageDoc.S(l["kind"]) == "retouch" ? RetouchBitmap(c, bmp, l) : null;
             c.SaveLayer(layerPaint);
             switch (ImageDoc.S(l["kind"]))
             {
+                case "retouch":
+                    if (retouched is not null) c.DrawBitmap(retouched, 0, 0);
+                    break;
+                case "gradient":
+                {
+                    var c1 = Col(ImageDoc.S(l["c1"], "#000000"), SKColors.Black); var c2 = Col(ImageDoc.S(l["c2"], "#00FFFFFF"), SKColors.Transparent);
+                    SKPoint p1 = new((float)ImageDoc.N(l["x1"]), (float)ImageDoc.N(l["y1"])), p2 = new((float)ImageDoc.N(l["x2"]), (float)ImageDoc.N(l["y2"]));
+                    var len = Math.Max(1f, SKPoint.Distance(p1, p2));
+                    using var sh = l["radial"]?.GetValue<bool>() == true ? SKShader.CreateRadialGradient(p1, len, [c1, c2], null, SKShaderTileMode.Clamp) : SKShader.CreateLinearGradient(p1, p2, [c1, c2], null, SKShaderTileMode.Clamp);
+                    using var gp = new SKPaint { Shader = sh, IsAntialias = true, IsDither = true };
+                    c.DrawRect(0, 0, w, h, gp);
+                    break;
+                }
                 case "image":
                     if (Source(ImageDoc.S(l["file"])) is { } src) c.DrawBitmap(src, new SKRect(x, y, x + lw, y + lh), new SKPaint { IsAntialias = true, FilterQuality = SKFilterQuality.High });
                     break;
@@ -89,10 +104,71 @@ public static class ImageRender
                     }
                     break;
             }
+            if (l["mask"] is JsonObject mk) ApplyMask(c, mk);
             c.Restore();
         }
         return bmp;
     }
+
+    /// <summary>Farbmatrix (Helligkeit, Kontrast …) und danach Tonwerte/Kurve als Tabelle.</summary>
+    static SKColorFilter LayerColor(JsonObject? f)
+    {
+        var m = SKColorFilter.CreateColorMatrix(ImageDoc.ColorMatrix(f));
+        if (!ImageOps.HasLut(f)) return m;
+        var t = ImageOps.Lut(f);
+        return SKColorFilter.CreateCompose(SKColorFilter.CreateTable(null, t, t, t), m);
+    }
+
+    /// <summary>Ebenenmaske: außerhalb (oder bei „umkehren“ innerhalb) der Form wird die Ebene ausgeblendet, mit weicher Kante.</summary>
+    static void ApplyMask(SKCanvas c, JsonObject mk)
+    {
+        var r = new SKRect((float)ImageDoc.N(mk["x"]), (float)ImageDoc.N(mk["y"]), (float)(ImageDoc.N(mk["x"]) + ImageDoc.N(mk["w"])), (float)(ImageDoc.N(mk["y"]) + ImageDoc.N(mk["h"])));
+        using var path = new SKPath(); if (ImageDoc.S(mk["shape"]) == "ellipse") path.AddOval(r); else path.AddRect(r);
+        if (mk["invert"]?.GetValue<bool>() != true) path.FillType = SKPathFillType.InverseWinding;
+        var fe = (float)ImageDoc.N(mk["feather"]);
+        using var p = new SKPaint { BlendMode = SKBlendMode.DstOut, IsAntialias = true, Color = SKColors.Black, MaskFilter = fe > 0 ? SKMaskFilter.CreateBlur(SKBlurStyle.Normal, fe / 2) : null };
+        c.DrawPath(path, p);
+    }
+
+    static byte[] Bytes(SKBitmap b)
+    {
+        using var u = new SKBitmap(new SKImageInfo(b.Width, b.Height, SKColorType.Rgba8888, SKAlphaType.Unpremul));
+        using (var cv = new SKCanvas(u)) { cv.Clear(SKColors.Transparent); cv.DrawBitmap(b, 0, 0); }
+        return u.Bytes;
+    }
+
+    /// <summary>Füllen, Reparieren und Klonen der Retusche-Ebene auf das bisherige Bild anwenden; nur geänderte Pixel sind sichtbar.</summary>
+    static SKBitmap RetouchBitmap(SKCanvas c, SKBitmap below, JsonObject l)
+    {
+        c.Flush();
+        int w = below.Width, h = below.Height; var px = Bytes(below); var changed = new bool[w * h];
+        foreach (var o in (l["ops"] as JsonArray ?? []).OfType<JsonObject>())
+        {
+            var pts = (o["points"] as JsonArray ?? []).Select(n => ImageDoc.N(n)).ToList();
+            bool[] mask;
+            switch (ImageDoc.S(o["op"]))
+            {
+                case "fill":
+                {
+                    mask = ImageOps.FloodMask(px, w, h, (int)ImageDoc.N(o["px"]), (int)ImageDoc.N(o["py"]), ImageDoc.N(o["tolerance"], 32));
+                    var (r, g, b, a) = ImageOps.Rgba(ImageDoc.S(o["color"], "#000000"));
+                    for (var i = 0; i < mask.Length; i++) if (mask[i]) { px[i * 4] = r; px[i * 4 + 1] = g; px[i * 4 + 2] = b; px[i * 4 + 3] = a; }
+                    break;
+                }
+                case "heal": mask = ImageOps.StrokeMask(w, h, pts, ImageDoc.N(o["size"], 20)); ImageOps.Heal(px, w, h, mask); break;
+                case "clone": mask = ImageOps.StrokeMask(w, h, pts, ImageDoc.N(o["size"], 20)); ImageOps.Clone(px, (byte[])px.Clone(), w, h, mask, (int)ImageDoc.N(o["dx"]), (int)ImageDoc.N(o["dy"])); break;
+                default: continue;
+            }
+            for (var i = 0; i < mask.Length; i++) changed[i] |= mask[i];
+        }
+        for (var i = 0; i < changed.Length; i++) if (!changed[i]) px[i * 4 + 3] = 0;
+        var outBmp = new SKBitmap(new SKImageInfo(w, h, SKColorType.Rgba8888, SKAlphaType.Unpremul));
+        System.Runtime.InteropServices.Marshal.Copy(px, 0, outBmp.GetPixels(), px.Length);
+        return outBmp;
+    }
+
+    /// <summary>Auto-Tonwerte für eine Bilddatei (Schwarz- und Weißpunkt).</summary>
+    public static (int Black, int White) AutoLevels(string file) => Source(file) is { } b ? ImageOps.AutoLevels(Bytes(b)) : (0, 255);
 
     public static byte[] Png(JsonObject d)
     {
