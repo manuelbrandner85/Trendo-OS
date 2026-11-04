@@ -1,10 +1,10 @@
 """Trendo – Artefakt-Prüfung für KI-Videos (KI-Musikvideo G, freigegeben 04.11.2026). Lokal mit MediaPipe (Apache-2.0) und OpenCV.
 Aufruf: python trendo_pruefung.py [ordner] <video> <ausgabe.json> --modelle <ordner> --personen N [--singt] [--gesang teil.wav] [--referenz bild.png]
-Prüft jedes 4. Bild (höchstens 72):
+Prüft jedes 4. Bild (höchstens 72; beim Singen jedes Bild, höchstens 160):
   G1 Körper: mehr Personen/Gesichter als im Drehbuch, mehr Hände als zwei je Person, Gesicht verdoppelt oder verschwindet
   G3 Gleiche Person: Gesichtsform (Abstände der Gesichtspunkte) im Vergleich zum Figurenbild
   G4 Ruhiges Bild: Bildsprünge und Flackern zwischen benachbarten Bildern
-  G5 Lippen: Mundöffnung folgt der Lautstärke der Gesangsspur
+  G5 Lippen: Mund offen beim Singen, zu in Pausen; bei durchgehendem Gesang deutliche Mundbewegung
 Ehrlich: Das sind automatische Schätzungen. Grobe Fehler (drei Arme, zwei Köpfe, andere Person) fallen auf; feine Fehler in einem
 einzelnen Bild können durchrutschen. Ergebnis: {"ok": bool, "issues": [{"code", "text", "at"}], "stats": {...}}
 """
@@ -73,7 +73,7 @@ def main(video, out):
     singing = '--singt' in sys.argv
     vocal = arg('--gesang')
     ref = arg('--referenz')
-    frames, fps = frames_of(video)
+    frames, fps = frames_of(video, step=1 if singing else 4, maxn=160 if singing else 72)  # Lippen brauchen jedes Bild
     issues = []
     if len(frames) < 3:
         json.dump({'ok': False, 'issues': [{'code': 'leer', 'text': 'Das Video ist leer oder nicht lesbar.', 'at': 0}], 'stats': {}}, open(out, 'w', encoding='utf-8'), ensure_ascii=False)
@@ -131,17 +131,22 @@ def main(video, out):
         jumps = np.nonzero((d > 3.5 * med) & (d > 22))[0]
         if len(jumps) > 0:
             issues.append({'code': 'bildsprung', 'text': f'Bildsprung oder Flackern ({len(jumps)}×).', 'at': round(times[int(jumps[0]) + 1], 2)})
-    # G5 Lippen
+    # G5 Lippen – gemessen 04.11.2026: bei durchgehendem Gesang (keine Pausen) sagt der Vergleich mit der Lautstärke nichts aus.
+    # Darum: mit Pausen muss der Mund beim Singen weiter offen sein als in den Pausen; ohne Pausen muss er sich deutlich bewegen.
     lip = None
     if singing and vocal and os.path.exists(vocal):
         j = np.array(jaw, dtype=float); ok = np.isfinite(j)
         if ok.sum() >= 8:
-            r = rms_series(vocal, [t for t, k in zip(times, ok) if k])
-            jj = j[ok]
-            if np.std(jj) > 1e-4 and np.std(r) > 1e-6:
-                lip = float(np.corrcoef(jj, r)[0, 1])
-                if lip < 0.15:
-                    issues.append({'code': 'lippen', 'text': f'Mundbewegung passt nicht zur Stimme (Übereinstimmung {lip:.2f}).', 'at': 0})
+            r = rms_series(vocal, [t for t, k in zip(times, ok) if k]); jj = j[ok]
+            rn = r / (r.max() + 1e-9); pause = rn < 0.25
+            if pause.mean() >= 0.15 and (~pause).sum() >= 4:
+                lip = float(jj[~pause].mean() - jj[pause].mean())
+                if lip < 0.05:
+                    issues.append({'code': 'lippen', 'text': f'Der Mund folgt dem Gesang nicht (offen beim Singen kaum anders als in den Pausen: {lip:+.2f}).', 'at': 0})
+            else:
+                lip = float(np.std(jj))
+                if lip < 0.05 or jj.mean() < 0.08:
+                    issues.append({'code': 'lippen', 'text': 'Beim Singen bewegt sich der Mund kaum.', 'at': 0})
         else:
             issues.append({'code': 'lippen', 'text': 'Beim Singen ist das Gesicht zu selten zu sehen.', 'at': 0})
     stats = {'frames': len(frames), 'fps': fps, 'personen_max': int(n_pose.max()), 'haende_max': int(n_hand.max()), 'gesichter_max': int(n_face.max()),
