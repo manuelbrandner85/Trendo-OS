@@ -13,6 +13,7 @@ namespace Trendo.App;
 /// Enter sendet, Umschalt+Enter neue Zeile, Stopp bricht ab; welche KI geantwortet hat, steht unter der Antwort.</summary>
 public partial class MainWindow
 {
+    bool _askClaudeOpen;
     ChatStore? _chats; public ChatStore Chats => _chats ??= new ChatStore(_core.DataRoot);
     string? _chatId; string _chatSearch = ""; CancellationTokenSource? _askCts;
     /// <summary>Für Tests: zuletzt kopierter Text.</summary>
@@ -95,7 +96,13 @@ public partial class MainWindow
 
         // ── rechts: Verlauf ──
         var sp = new StackPanel { Spacing = 8 };
-        sp.Children.Add(ClaudeCard());
+        // Umbau 04.11.2026: wie in Chat-Programmen zuerst das Gespräch – Claude-Einstellungen als kurze Zeile zum Aufklappen
+        var cs = _claude;
+        var state = !cs.Installed ? "Claude: nicht eingerichtet – aufklappen zum Einrichten" : !cs.Ready ? "Claude: nicht verbunden – aufklappen zum Verbinden" : "✓ Claude verbunden – Einstellungen";
+        var cbox = new Expander { Name = "ask-claude-box", IsExpanded = _askClaudeOpen, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(0, 6, 0, 0), Content = ClaudeCard(),
+            Header = new TextBlock { Text = state, Foreground = cs.Ready ? Brush.Parse("#22B35E") : Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold } };
+        cbox.PropertyChanged += (_, e) => { if (e.Property == Expander.IsExpandedProperty) _askClaudeOpen = cbox.IsExpanded; };
+        sp.Children.Add(cbox);
         sp.Children.Add(P(KiSourceSettings.Load(_core.DataRoot).Cloud.Count == 0 ? "Stell eine Frage. Die Antwort kommt von der KI auf diesem PC – nichts geht ins Internet." : "Stell eine Frage. Zuerst antwortet die KI auf diesem PC. Nur wenn sie schweigt, springt dein eingeschalteter KI-Dienst ein – dann geht nur diese eine Frage hinaus, ohne Verlauf und ohne deine Dokumente.", Muted, 11.5));
         var log = new StackPanel { Name = "ask-log", Spacing = 8 };
         var input = new TextBox { Name = "ask-input", PlaceholderText = "Nachricht an die Trendo KI … (Enter sendet, Umschalt+Enter neue Zeile)", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 54, MaxHeight = 180 };
