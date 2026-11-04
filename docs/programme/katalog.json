@@ -111,7 +111,7 @@
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 75,
+    "WarmMs": 71,
     "WindowsOnly": []
   },
   {
@@ -168,7 +168,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 29,
+    "WarmMs": 34,
     "WindowsOnly": []
   },
   {
@@ -222,7 +222,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 31,
+    "WarmMs": 42,
     "WindowsOnly": []
   },
   {
@@ -324,7 +324,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 42,
+    "WarmMs": 55,
     "WindowsOnly": []
   },
   {
@@ -388,7 +388,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 31,
+    "WarmMs": 35,
     "WindowsOnly": []
   },
   {
@@ -453,7 +453,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -693,7 +693,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -946,7 +946,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -1271,7 +1271,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -2584,7 +2584,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -2662,7 +2662,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 34,
+    "WarmMs": 32,
     "WindowsOnly": []
   },
   {
@@ -2859,7 +2859,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -2931,7 +2931,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -3377,7 +3377,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 56,
+    "WarmMs": 57,
     "WindowsOnly": []
   },
   {
@@ -3487,7 +3487,7 @@
     "Status": "IN_PROGRESS / Test NOT_RUN",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -3668,7 +3668,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -4003,7 +4003,8 @@
       "Part3D",
       "Studio3D",
       "DependencyCatalog",
-      "ScenePlan"
+      "ScenePlan",
+      "DesktopPlatform"
     ],
     "Tools": [
       "✳ Claude",
@@ -4054,13 +4055,22 @@
       "Vorschaubild rendern"
     ],
     "Formats": [
+      ".docx",
       ".fbx",
       ".glb",
       ".gltf",
+      ".html",
+      ".jpg",
       ".json",
+      ".mp3",
+      ".mp4",
       ".obj",
+      ".odt",
+      ".pdf",
       ".png",
       ".stl",
+      ".txt",
+      ".xlsx",
       ".zip"
     ],
     "Dependencies": [
@@ -4119,10 +4129,8 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 43,
-    "WindowsOnly": [
-      "Windows-Explorer"
-    ]
+    "WarmMs": 42,
+    "WindowsOnly": []
   },
   {
     "Id": "3d-druck",
@@ -4144,7 +4152,7 @@
       "BambuCamera",
       "BambuClient",
       "BambuPrinter",
-      "GitHubApps"
+      "DesktopPlatform"
     ],
     "Tools": [
       "Los",
@@ -4160,16 +4168,23 @@
       "Verbinden"
     ],
     "Formats": [
+      ".docx",
       ".fbx",
       ".gcode",
       ".glb",
       ".gltf",
+      ".html",
       ".jpg",
       ".json",
+      ".mp3",
+      ".mp4",
       ".obj",
+      ".odt",
+      ".pdf",
       ".png",
       ".stl",
       ".txt",
+      ".xlsx",
       ".zip"
     ],
     "Dependencies": [
@@ -4187,8 +4202,7 @@
       "Git",
       "OBS Studio (optional)",
       "mpv (optional)",
-      "Python (optional)",
-      "Node.js (optional)"
+      "Python (optional)"
     ],
     "Rea": "docs/claude/vorbilder/druck-prusaslicer-cura.md",
     "ReaSummary": "Vorbild-Analyse Trendo 3D-Druck: PrusaSlicer, Cura, Bambu Studio (Clean-Room)",
@@ -4212,9 +4226,7 @@
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
     "WarmMs": 10,
-    "WindowsOnly": [
-      "Windows-Explorer"
-    ]
+    "WindowsOnly": []
   },
   {
     "Id": "cad",
@@ -4327,10 +4339,8 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 16,
-    "WindowsOnly": [
-      "Windows-Explorer"
-    ]
+    "WarmMs": 26,
+    "WindowsOnly": []
   },
   {
     "Id": "scan3d",
@@ -4749,7 +4759,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": true,
-    "WarmMs": 7,
+    "WarmMs": 6,
     "WindowsOnly": []
   },
   {
@@ -4916,7 +4926,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -5101,7 +5111,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 32,
+    "WarmMs": 33,
     "WindowsOnly": []
   },
   {
@@ -5300,7 +5310,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 62,
+    "WarmMs": 46,
     "WindowsOnly": []
   },
   {
@@ -5699,7 +5709,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 41,
+    "WarmMs": 37,
     "WindowsOnly": []
   },
   {
@@ -5919,7 +5929,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 45,
+    "WarmMs": 42,
     "WindowsOnly": []
   },
   {
@@ -6297,7 +6307,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -7098,7 +7108,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -7661,7 +7671,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -7770,7 +7780,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -8045,7 +8055,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -8106,7 +8116,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -8544,7 +8554,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 26,
+    "WarmMs": 27,
     "WindowsOnly": []
   },
   {
@@ -8620,7 +8630,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 23,
     "WindowsOnly": []
   },
   {
@@ -8941,7 +8951,7 @@
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 43,
+    "WarmMs": 45,
     "WindowsOnly": []
   },
   {
@@ -9035,7 +9045,7 @@
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 33,
+    "WarmMs": 35,
     "WindowsOnly": []
   },
   {
@@ -9358,7 +9368,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 19,
     "WindowsOnly": []
   },
   {
@@ -9528,7 +9538,7 @@
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 39,
+    "WarmMs": 38,
     "WindowsOnly": []
   },
   {
@@ -9927,6 +9937,7 @@
       "Software",
       "AppCenter",
       "DependencyCatalog",
+      "DesktopPlatform",
       "RealProcessRunner"
     ],
     "Tools": [
@@ -10049,10 +10060,8 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 17,
-    "WindowsOnly": [
-      "Registry"
-    ]
+    "WarmMs": 31,
+    "WindowsOnly": []
   },
   {
     "Id": "hinzufuegen",
@@ -10195,6 +10204,7 @@
       "Software",
       "AppCenter",
       "DependencyCatalog",
+      "DesktopPlatform",
       "RealProcessRunner"
     ],
     "Tools": [
@@ -10295,10 +10305,8 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 16,
-    "WindowsOnly": [
-      "Registry"
-    ]
+    "WarmMs": 28,
+    "WindowsOnly": []
   },
   {
     "Id": "prog-pflege",
@@ -10441,6 +10449,7 @@
       "Software",
       "AppCenter",
       "DependencyCatalog",
+      "DesktopPlatform",
       "RealProcessRunner"
     ],
     "Tools": [
@@ -10551,9 +10560,7 @@
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
     "WarmMs": 14,
-    "WindowsOnly": [
-      "Registry"
-    ]
+    "WindowsOnly": []
   },
   {
     "Id": "components",
@@ -10696,6 +10703,7 @@
       "Software",
       "AppCenter",
       "DependencyCatalog",
+      "DesktopPlatform",
       "RealProcessRunner"
     ],
     "Tools": [
@@ -10838,10 +10846,8 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 27,
-    "WindowsOnly": [
-      "Registry"
-    ]
+    "WarmMs": 49,
+    "WindowsOnly": []
   },
   {
     "Id": "fortschritt",
@@ -11048,7 +11054,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 28,
+    "WarmMs": 27,
     "WindowsOnly": []
   },
   {
@@ -11262,7 +11268,7 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -11984,7 +11990,7 @@
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 104,
+    "WarmMs": 98,
     "WindowsOnly": []
   },
   {
@@ -12199,7 +12205,7 @@
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -12855,6 +12861,7 @@
     "Engine": [
       "Bookmarks",
       "Browsers",
+      "DesktopPlatform",
       "Renamer",
       "NoteStore",
       "Progress",
@@ -12989,9 +12996,7 @@
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
     "WarmMs": 14,
-    "WindowsOnly": [
-      "Registry"
-    ]
+    "WindowsOnly": []
   },
   {
     "Id": "netz-pruefen",
@@ -13133,6 +13138,7 @@
     "Engine": [
       "Bookmarks",
       "Browsers",
+      "DesktopPlatform",
       "Renamer",
       "NoteStore",
       "Progress",
@@ -13242,10 +13248,8 @@
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
     "Version": "0.9.36 (Stand 0d902aa)",
     "Shell": false,
-    "WarmMs": 15,
-    "WindowsOnly": [
-      "Registry"
-    ]
+    "WarmMs": 29,
+    "WindowsOnly": []
   },
   {
     "Id": "forensik",

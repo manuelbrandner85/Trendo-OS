@@ -176,21 +176,12 @@ public partial class MainWindow
         return NetzPage("Browser", sp);
     }
 
-    private static string DefaultBrowser()
-    {
-        if (!OperatingSystem.IsWindows()) return "nur unter Windows ablesbar";
-        using var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\Shell\Associations\UrlAssociations\https\UserChoice");
-        return Web.BrowserForProgId(k?.GetValue("ProgId") as string);
-    }
+    private static string DefaultBrowser() => DesktopPlatform.DefaultBrowser(); // Windows Registrierung, Linux xdg-settings
 
     private static string ReadProxy()
     {
         bool? on = null; string? server = null, pac = null;
-        if (OperatingSystem.IsWindows())
-        {
-            using var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Internet Settings");
-            on = k?.GetValue("ProxyEnable") is int i ? i == 1 : null; server = k?.GetValue("ProxyServer") as string; pac = k?.GetValue("AutoConfigURL") as string;
-        }
+        if (DesktopPlatform.WindowsProxy() is { } wp) (on, server, pac) = wp; // Linux: Umgebungsvariablen (unten)
         return Web.ProxyInfo(on, server, pac, Environment.GetEnvironmentVariable("HTTPS_PROXY") ?? Environment.GetEnvironmentVariable("HTTP_PROXY"));
     }
 }

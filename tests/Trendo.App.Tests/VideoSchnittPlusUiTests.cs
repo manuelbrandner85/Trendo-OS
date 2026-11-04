@@ -69,7 +69,7 @@ public class VideoSchnittPlus_Ui
         Assert.Equal(Path.GetFileName(file), w.Find<TextBlock>("ve-exp-name-0").Text);
         Click(w, "ve-exp-play-0"); Assert.Contains(file, l.Opened);
         Click(w, "ve-exp-folder-0");
-        Assert.Contains(l.Opened, o => o.Contains("explorer.exe") && o.Contains("/select," + file));
+        Assert.Contains(l.Opened, o => o.Contains("explorer.exe") && o.Contains("/select,\"" + file + "\"")); // Pfad in Anführungszeichen (Leer- und Kommazeichen im Namen)
         Click(w, "ve-exp-del-0"); Settle();
         Assert.Equal([file], recycled);
     }

@@ -12,6 +12,7 @@ Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `ap
 - `Software`
 - `AppCenter`
 - `DependencyCatalog`
+- `DesktopPlatform`
 - `RealProcessRunner`
 
 ## Dateiformate (im Code belegt)

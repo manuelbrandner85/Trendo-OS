@@ -15,15 +15,25 @@ Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d
 - `Studio3D`
 - `DependencyCatalog`
 - `ScenePlan`
+- `DesktopPlatform`
 
 ## Dateiformate (im Code belegt)
+- .docx
 - .fbx
 - .glb
 - .gltf
+- .html
+- .jpg
 - .json
+- .mp3
+- .mp4
 - .obj
+- .odt
+- .pdf
 - .png
 - .stl
+- .txt
+- .xlsx
 - .zip
 
 ## Externe Programme und Dienste

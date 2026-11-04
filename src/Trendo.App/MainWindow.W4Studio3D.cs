@@ -663,8 +663,7 @@ public partial class MainWindow
     private void ShowFolder()
     {
         var target = _last3dFile is { } f && File.Exists(f) ? Path.GetDirectoryName(f)! : Folder3D;
-        if (OperatingSystem.IsWindows() && _last3dFile is { } file && File.Exists(file))
-            _core.Integrations.LaunchDirect(Principal.LocalOwner, "explorer.exe", _core.Audit, "/select,\"" + file + "\"");
+        if (_last3dFile is { } file && File.Exists(file)) { var (exe, args) = DesktopPlatform.RevealCommand(file); _core.Integrations.LaunchDirect(Principal.LocalOwner, exe, _core.Audit, args); }
         else Launch(target);
         Say(_last3dFile is { } name && File.Exists(name) ? $"Ordner geöffnet, Datei: {Path.GetFileName(name)}." : "Ordner geöffnet.", "3d");
     }

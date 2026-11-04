@@ -105,19 +105,8 @@ public partial class MainWindow
         return ProgPage("Programme starten", sp);
     }
 
-    private static List<Software.AutostartItem> RunKeys()
-    {
-        var l = new List<Software.AutostartItem>(); if (!OperatingSystem.IsWindows()) return l;
-        using var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run");
-        if (k is not null) foreach (var n in k.GetValueNames()) l.Add(new(n, k.GetValue(n)?.ToString() ?? "", "Registrierung", true));
-        return l;
-    }
-    private static string? UserChoice(string ext)
-    {
-        if (!OperatingSystem.IsWindows()) return null;
-        using var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey($@"Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\{ext}\UserChoice");
-        return k?.GetValue("ProgId")?.ToString();
-    }
+    private static List<Software.AutostartItem> RunKeys() => DesktopPlatform.AutostartItems(); // Windows Run-Schlüssel, Linux ~/.config/autostart
+    private static string? UserChoice(string ext) => DesktopPlatform.DefaultAppFor(ext); // Windows ProgId, Linux xdg-mime
 
     // ---------- Prüfen ----------
     private Control ProgCheckView()

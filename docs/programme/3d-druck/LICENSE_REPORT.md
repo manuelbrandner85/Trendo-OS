@@ -19,6 +19,5 @@ Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nen
 - OBS Studio (optional)
 - mpv (optional)
 - Python (optional)
-- Node.js (optional)
 
 Lizenztexte der mitgelieferten Bibliotheken: `src/Trendo.Core/WebAssets/LIZENZEN.txt`. Optionale Programme werden nur nach Zustimmung aus offiziellen Quellen eingerichtet (GRUNDSATZ-01).

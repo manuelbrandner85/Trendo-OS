@@ -25,8 +25,8 @@ public partial class MainWindow
     /// <summary>Ordner öffnen und die Datei darin markieren (Windows-Explorer „/select“); sonst nur den Ordner.</summary>
     void RevealInFolder(string file)
     {
-        if (OperatingSystem.IsWindows()) _core.Integrations.LaunchDirect(Principal.LocalOwner, "explorer.exe", _core.Audit, "/select," + file);
-        else Launch(Path.GetDirectoryName(file)!);
+        var (exe, args) = DesktopPlatform.RevealCommand(file); // Windows markiert die Datei im Explorer, Linux öffnet den Ordner
+        _core.Integrations.LaunchDirect(Principal.LocalOwner, exe, _core.Audit, args);
     }
 
     static string SizeText(long bytes) => bytes >= 1L << 30 ? $"{bytes / (double)(1L << 30):0.0} GB" : $"{Math.Max(1, bytes / (1 << 20))} MB";

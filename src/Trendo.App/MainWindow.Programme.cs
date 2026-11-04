@@ -372,29 +372,11 @@ public partial class MainWindow
         return rel;
     }
 
-    /// <summary>Programme, die Windows unter „Apps“ für diesen Benutzer kennt (nur lesen).</summary>
-    static HashSet<string> UninstallKeys()
-    {
-        if (!OperatingSystem.IsWindows()) return [];
-        using var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
-        return k is null ? [] : [.. k.GetSubKeyNames()];
-    }
+    /// <summary>Bekannte Programme vor der Installation (Windows „Apps“, Linux .desktop) – siehe DesktopPlatform.</summary>
+    static HashSet<string> UninstallKeys() => DesktopPlatform.InstalledAppIds();
 
-    /// <summary>Neuer Eintrag des Installers bei Windows → Programm aus „DisplayIcon“ oder dem Installationsordner.</summary>
-    static string? NewUninstallExe(HashSet<string> before, string repo)
-    {
-        if (!OperatingSystem.IsWindows()) return null;
-        using var k = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall");
-        if (k is null) return null;
-        foreach (var n in k.GetSubKeyNames().Where(n => !before.Contains(n)))
-        {
-            using var e = k.OpenSubKey(n);
-            if (e?.GetValue("DisplayIcon") is string icon && icon.Split(',')[0].Trim('"') is var ico && ico.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && File.Exists(ico)
-                && !Path.GetFileName(ico).StartsWith("unins", StringComparison.OrdinalIgnoreCase)) return ico;
-            if (e?.GetValue("InstallLocation") is string dir && Directory.Exists(dir.Trim('"')) && GitHubApps.MainExe(dir.Trim('"'), repo) is { } exe) return exe;
-        }
-        return null;
-    }
+    /// <summary>Neu installiertes Programm finden (Windows Apps-Eintrag, Linux neue .desktop-Datei).</summary>
+    static string? NewUninstallExe(HashSet<string> before, string repo) => DesktopPlatform.NewAppExe(before, dir => GitHubApps.MainExe(dir, repo));
 
     async Task<string> GitHubDownload(GitHubApps.Asset asset, double lo = 0.10, double hi = 0.80)
     {

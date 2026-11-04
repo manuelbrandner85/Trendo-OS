@@ -19,19 +19,26 @@ Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d
 - `BambuCamera`
 - `BambuClient`
 - `BambuPrinter`
-- `GitHubApps`
+- `DesktopPlatform`
 
 ## Dateiformate (im Code belegt)
+- .docx
 - .fbx
 - .gcode
 - .glb
 - .gltf
+- .html
 - .jpg
 - .json
+- .mp3
+- .mp4
 - .obj
+- .odt
+- .pdf
 - .png
 - .stl
 - .txt
+- .xlsx
 - .zip
 
 ## Externe Programme und Dienste
@@ -50,7 +57,6 @@ Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d
 - OBS Studio (optional)
 - mpv (optional)
 - Python (optional)
-- Node.js (optional)
 
 ## Bausteine (Masterprompt 131 / 5)
 Eigene Arbeitsseite ohne die gemeinsame Programm-Hülle – Dokumentmodell, Rückgängig und Bedienstufen sind hier nicht einheitlich.

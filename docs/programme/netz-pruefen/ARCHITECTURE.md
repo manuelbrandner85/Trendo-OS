@@ -16,6 +16,7 @@ Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite
 ## Fach-Engine (Trendo.Core)
 - `Bookmarks`
 - `Browsers`
+- `DesktopPlatform`
 - `Renamer`
 - `NoteStore`
 - `Progress`
