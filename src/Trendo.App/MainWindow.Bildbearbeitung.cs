@@ -220,8 +220,10 @@ public partial class MainWindow
         if (ImgTool == "clone" && ImgCloneSrc is not null) { var rs = new Button { Name = "img-clone-reset", Content = "Neue Quelle", FontSize = 12, Margin = new Thickness(8, 0, 0, 0) }; rs.Click += (_, _) => { ImgCloneSrc = null; Show(BK); }; bar.Children.Add(rs); }
         var tip = ImgTools.First(t => t.Id == ImgTool).Tip; ToolTip.SetTip(bar, tip);
         if (bar.Children.Count == before) bar.Children.Add(new TextBlock { Text = tip, Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) });
-        var g = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
-        g.Children.Add(bar); Grid.SetRow(canvas, 1); g.Children.Add(canvas);
+        // Leiste fest oben, Leinwand nimmt den Rest – auch bei wenig Platz liegt die Leinwand nie über der Leiste
+        canvas.MinHeight = 160;
+        var g = new DockPanel { LastChildFill = true };
+        DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top); g.Children.Add(bar); g.Children.Add(canvas);
         return g;
     }
 

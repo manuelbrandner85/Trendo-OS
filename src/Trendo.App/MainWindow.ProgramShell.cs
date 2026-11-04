@@ -360,13 +360,22 @@ public partial class MainWindow
         if (spec.Help.Length > 0) groups.Add(("Hilfe", [RBtn("prog-help", "? Hilfe", () => Toast(spec.Help))]));
         Control? osChrome = OsStyle ? OsProgramChrome(spec, groups, tabs, docs.Count) : null; // Windows-Menüzeile, Mac-Menüleiste, GNOME-Kopfleiste
         var ribbon = new WrapPanel { Name = osChrome is null ? "prog-ribbon" : "prog-ribbon-trendo" };
+        string? lastGroup = null;
         foreach (var (g, items) in osChrome is null ? groups : [])
         {
             var row = new WrapPanel(); foreach (var it in items) { it.Margin = new Thickness(0, 0, 4, 4); it.VerticalAlignment = VerticalAlignment.Center; row.Children.Add(it); }
             if (spec.FillHeight)
             {
-                var grp = new Border { Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(6, 4, 6, 0), CornerRadius = new CornerRadius(10), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = row };
-                ToolTip.SetTip(grp, g); ribbon.Children.Add(grp);
+                // Gruppenname klein über den Befehlen (wie die Gruppen in Word), damit man sieht, was zusammengehört; gleicher Name direkt hintereinander nur einmal (Prüfung „Einfachheit“, 04.11.2026)
+                // als Legende auf dem oberen Rand: kostet kaum Höhe, die Arbeitsfläche bleibt groß
+                var grp = new Border { Margin = new Thickness(0, 7, 6, 3), Padding = new Thickness(6, 6, 6, 0), CornerRadius = new CornerRadius(10), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = row };
+                ToolTip.SetTip(grp, g);
+                Control cell = grp;
+                if (g != lastGroup)
+                    cell = new Panel { Children = { grp, new Border { Name = "prog-group-label", Background = TileBg, CornerRadius = new CornerRadius(4), Padding = new Thickness(4, 0), Margin = new Thickness(10, 0, 0, 0), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, IsHitTestVisible = false,
+                        Child = new TextBlock { Text = g, Foreground = Muted, FontSize = 9.5, FontWeight = FontWeight.SemiBold } } } };
+                lastGroup = g;
+                ribbon.Children.Add(cell);
             }
             else
             ribbon.Children.Add(new Border { Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(10, 6, 10, 4), CornerRadius = new CornerRadius(12), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1),
