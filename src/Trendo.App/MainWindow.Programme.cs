@@ -19,7 +19,15 @@ public partial class MainWindow
     public Func<string, Task<(GitHubApps.Release Release, string? File)>>? GitHubFetchOverride { get; set; }
 
     /// <summary>Beschreibung als aufklappbarer Bereich: Was ist das? Wofür? So funktioniert es. Das kann es. Herkunft. Entfernen.</summary>
-    private Control GuideBox(ProgramGuide.Guide g, string name)
+    private Control GuideBox(ProgramGuide.Guide g, string name, bool open = false)
+    {
+        // Inhalt erst beim Aufklappen bauen (Zusatzprogramme hatte 21 zugeklappte Beschreibungen mit rund 350 Texten bei jedem Öffnen)
+        var ex = new Expander { Name = name, Header = new TextBlock { Text = "Beschreibung & Funktionsweise", Foreground = Accent, FontSize = 11.5 }, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(0), IsExpanded = open, Content = open ? GuideBody(g) : null };
+        ex.PropertyChanged += (_, e) => { if (e.Property == Expander.IsExpandedProperty && ex.IsExpanded && ex.Content is null) ex.Content = GuideBody(g); };
+        return ex;
+    }
+
+    private Control GuideBody(ProgramGuide.Guide g)
     {
         var body = new StackPanel { Spacing = 6, Margin = new Thickness(4, 6, 4, 4) };
         void Sec(string head, Control c) { body.Children.Add(new TextBlock { Text = head, Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 12 }); body.Children.Add(c); }
@@ -33,7 +41,7 @@ public partial class MainWindow
         Sec("Das kann es alles", feats);
         Sec("Herkunft und Lizenz", P(g.Origin, null, 11));
         Sec("Entfernen", P(g.Remove, null, 11));
-        return new Expander { Name = name, Header = new TextBlock { Text = "Beschreibung & Funktionsweise", Foreground = Accent, FontSize = 11.5 }, Content = body, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(0) };
+        return body;
     }
 
     /// <summary>Entfernen mit Rückfrage im Knopf auf jeder Seite (erster Klick fragt, zweiter entfernt).</summary>

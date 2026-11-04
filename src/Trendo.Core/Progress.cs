@@ -13,6 +13,9 @@ public enum EvidenceState { None, PathOnly, Recorded, Verified, Invalid }
 
 public static class Evidence
 {
+    // Prüfsummen nur neu rechnen, wenn sich die Datei geändert hat (Fortschritt-Seite rechnete bei jedem Öffnen alle Belege neu)
+    static readonly System.Collections.Concurrent.ConcurrentDictionary<(string File, string Sha), (long Len, DateTime At, EvidenceState State)> _checked = new();
+
     public static EvidenceState Check(EvidenceInfo? e, string? repoRoot)
     {
         if (e?.Path is not { Length: > 0 } rel) return EvidenceState.None;
@@ -20,7 +23,16 @@ public static class Evidence
         var exists = file is not null && File.Exists(file);
         if (e.Sha256 is not { Length: 64 } sha) return exists || repoRoot is null ? EvidenceState.PathOnly : EvidenceState.Invalid;
         if (!exists) return EvidenceState.Recorded;
-        using var s = File.OpenRead(file!);
+        var fi = new FileInfo(file!);
+        if (_checked.TryGetValue((fi.FullName, sha), out var c) && c.Len == fi.Length && c.At == fi.LastWriteTimeUtc) return c.State;
+        var st = Hash(file!, sha);
+        _checked[(fi.FullName, sha)] = (fi.Length, fi.LastWriteTimeUtc, st);
+        return st;
+    }
+
+    static EvidenceState Hash(string file, string sha)
+    {
+        using var s = File.OpenRead(file);
         // Zeilenenden wie in Git (LF) vergleichen, damit ein Auschecken unter Windows (CRLF) keinen Fehlalarm auslöst
         var bytes = new MemoryStream(); s.CopyTo(bytes); var raw = bytes.ToArray();
         var lf = raw.Length > 0 && !raw.Contains((byte)0) ? System.Text.Encoding.UTF8.GetBytes(System.Text.Encoding.UTF8.GetString(raw).Replace("\r\n", "\n")) : raw;
@@ -68,7 +80,20 @@ public static class Progress
     private sealed record PlanSub(string id);
     private sealed record PlanEntry(string wave, string waveName, int order, string id, string name, string impl, string test, bool local, List<PlanSub> subs);
 
+    static (string Key, IReadOnlyList<ProgressModule> Mods)? _loaded;
+
+    /// <summary>Projektliste lesen; unverändert (gleiche Dateien, gleiche Zeitstempel) kommt sie aus dem Zwischenspeicher.</summary>
     public static IReadOnlyList<ProgressModule> Load(string requirementsYaml, string planJson)
+    {
+        static string Stamp(string f) { var i = new FileInfo(f); return i.Exists ? $"{i.FullName}|{i.Length}|{i.LastWriteTimeUtc.Ticks}" : f; }
+        var key = Stamp(requirementsYaml) + "#" + Stamp(planJson);
+        if (_loaded is { } l && l.Key == key) return l.Mods;
+        var mods = LoadUncached(requirementsYaml, planJson);
+        _loaded = (key, mods);
+        return mods;
+    }
+
+    static IReadOnlyList<ProgressModule> LoadUncached(string requirementsYaml, string planJson)
     {
         var doc = new DeserializerBuilder().WithNamingConvention(UnderscoredNamingConvention.Instance).IgnoreUnmatchedProperties().Build()
             .Deserialize<Doc>(File.ReadAllText(requirementsYaml));

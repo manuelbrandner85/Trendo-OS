@@ -77,4 +77,27 @@ public class MusikExtendUiTests
         }
         finally { w.KiStepOverride = null; w.Close(); }
     }
+
+    [AvaloniaFact(DisplayName = "Lied-Ansicht übersichtlich: Registerkarten Lied, Bearbeiten, Spuren & Mitsingen, Musikvideo – jede zeigt nur ihre Werkzeuge, keine Funktion fehlt")]
+    public async Task Detail_tabs()
+    {
+        var (w, _, root) = Ui.Open();
+        try
+        {
+            var s = Song(root);
+            w.MusicStudioSelect(s.Id); w.Show("musik-studio"); await Pump();
+            bool Vis(string n) => w.Find<StackPanel>("ms-dtab-body-" + n).IsVisible;
+            Assert.True(Vis("lied")); Assert.False(Vis("bearbeiten")); Assert.False(Vis("spuren")); Assert.False(Vis("video"));
+            Assert.NotNull(w.TryFind<Button>("ms-master")); Assert.NotNull(w.TryFind<Button>("ms-delete"));
+            w.Find<Button>("ms-dtab-bearbeiten").Press(); await Pump();
+            Assert.True(Vis("bearbeiten")); Assert.False(Vis("lied"));
+            Assert.True(w.Find<Button>("ms-repaint").IsEffectivelyVisible); Assert.True(w.Find<Button>("ms-cover").IsEffectivelyVisible);
+            Assert.False(w.Find<Button>("ms-master").IsEffectivelyVisible);
+            w.Find<Button>("ms-dtab-video").Press(); await Pump();
+            Assert.True(Vis("video"));
+            w.Find<Button>("ms-dtab-spuren").Press(); await Pump();
+            Assert.True(Vis("spuren"));
+        }
+        finally { w.Close(); }
+    }
 }

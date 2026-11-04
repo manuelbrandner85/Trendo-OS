@@ -257,6 +257,7 @@ else if (shot == "seite")
         }
         if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") == "profi") win.MusicStudioProMode(true);
         if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") == "genre") win.MusicStudioPickGenres(true, "Jazz-Ballade", "Smooth Jazz");
+        if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_TAB") is { Length: > 0 } mtab) win.MsDetailTab(mtab);
         win.Show(page);
     }
     if (Environment.GetEnvironmentVariable("TRENDO_SETUP_DEMO") is { Length: > 0 } sd) // Ersteinrichtung im Vollbild (Begrüßung mit Claude und Nutzungsart)

@@ -114,7 +114,7 @@ public partial class MainWindow
             Add(Act($"oss-web-{i}", "Ansehen", () => Launch(repo.Url)));
             var rd = _ossReadme.GetValueOrDefault(r.FullName);
             var guide = ProgramGuide.ForGitHub(r.FullName, r.Description, r.LicenseId, r.Language, r.Stars, null, "das passende Windows-Programm", null, rd.Intro, rd.Features, _ossGerman.GetValueOrDefault(r.FullName));
-            var box = GuideBox(guide, $"oss-guide-{i}");
+            var box = GuideBox(guide, $"oss-guide-{i}", open: rd.Intro is not null || rd.Features is { Count: > 0 }); // README geladen (nach dem Aufklappen): offen bleiben
             if (box is Expander ex) ex.Expanding += (_, _) => _ = OssLoadReadme(repo.FullName);
             var explain = Act($"oss-explain-{i}", _ossGerman.ContainsKey(r.FullName) ? "Neu erklären" : "Auf Deutsch erklären (KI)", () => _ = OssExplain(repo));
             explain.IsEnabled = _kiConnected || _opt.Isolated;

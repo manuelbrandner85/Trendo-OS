@@ -378,6 +378,10 @@ public partial class MainWindow
         MusicPlay(list, Math.Max(0, list.IndexOf(s.File)), MS);
     }
 
+    string _msDetailTab = "lied";
+    /// <summary>Registerkarte der Lied-Ansicht wählen (lied, bearbeiten, spuren, video).</summary>
+    public void MsDetailTab(string id) { _msDetailTab = id; if (CurrentView == MS) Show(MS); }
+
     Control MsDetailPanel()
     {
         var s = _msSel is null ? null : Songs.Get(_msSel);
@@ -390,8 +394,25 @@ public partial class MainWindow
         var lyr = string.IsNullOrWhiteSpace(s.Lyrics) ? "(Text von der KI)" : s.Lyrics == "[Instrumental]" ? "Instrumental" : s.Lyrics;
         sp.Children.Add(new Border { CornerRadius = new CornerRadius(10), Background = Brush.Parse("#14FFFFFF"), Padding = new Thickness(10), MaxHeight = 220,
             Child = new ScrollViewer { Content = new SelectableTextBlock { Name = "ms-detail-lyrics", Text = lyr, Foreground = Text, FontSize = 12.5, TextWrapping = TextWrapping.Wrap } } });
-        sp.Children.Add(MsCoverPanel(s)); // Wunsch 03.11.2026: Cover-Bild wie ein echtes Song-Cover
-        sp.Children.Add(MsAnalysePanel(s)); // M5: Tonart, Tempo, Takt, Akkorde, Tonumfang
+        // Wunsch 04.11.2026 „viel übersichtlicher“: Lied-Werkzeuge in Registerkarten statt einer langen Liste – alle Funktionen bleiben erhalten
+        var tabs = new (string Id, string Label, StackPanel Body)[] { ("lied", "Lied", new StackPanel { Spacing = 8 }), ("bearbeiten", "Bearbeiten", new StackPanel { Spacing = 8 }),
+            ("spuren", "Spuren & Mitsingen", new StackPanel { Spacing = 8 }), ("video", "Musikvideo", new StackPanel { Spacing = 8 }) };
+        if (!tabs.Any(t => t.Id == _msDetailTab)) _msDetailTab = "lied";
+        var bar = new WrapPanel { Name = "ms-dtabs" };
+        foreach (var (id, label, body) in tabs)
+        {
+            var on = id == _msDetailTab;
+            var b = new Button { Name = "ms-dtab-" + id, Content = label, Padding = new Thickness(12, 5), Margin = new Thickness(0, 0, 6, 6), FontSize = 12.5, CornerRadius = new CornerRadius(10),
+                Background = on ? Brush.Parse("#33D4A84B") : Brush.Parse("#10FFFFFF"), BorderBrush = Brush.Parse(on ? "#D4A84B" : "#22FFFFFF"), BorderThickness = new Thickness(1) };
+            var tid = id; b.Click += (_, _) => { _msDetailTab = tid; Show(MS); };
+            bar.Children.Add(b);
+            body.Name = "ms-dtab-body-" + id; body.IsVisible = on;
+        }
+        sp.Children.Add(bar);
+        foreach (var t in tabs) sp.Children.Add(t.Body);
+        var lied = tabs[0].Body; var edit = tabs[1].Body; var spuren = tabs[2].Body; var video = tabs[3].Body;
+        lied.Children.Add(MsCoverPanel(s)); // Wunsch 03.11.2026: Cover-Bild wie ein echtes Song-Cover
+        lied.Children.Add(MsAnalysePanel(s)); // M5: Tonart, Tempo, Takt, Akkorde, Tonumfang
 
         // Abschnitt neu erzeugen
         var from = new NumericUpDown { Name = "ms-repaint-from", Minimum = 0, Maximum = (decimal)Math.Max(1, s.Seconds - 1), Value = 0, Increment = 1, FormatString = "0", Width = 100 };
@@ -401,15 +422,15 @@ public partial class MainWindow
             try { _ = MusicStudioCreate(new AceStepClient.Job(s.Style, s.Lyrics, (int)s.Seconds, s.Language, 1, Task: "repaint", RepaintStart: (double)(from.Value ?? 0), RepaintEnd: (double)(to.Value ?? 0)), s.Title, s.Id); }
             catch (ArgumentException ex) { _msMsg = ex.Message; Show(MS); }
         });
-        sp.Children.Add(new StackPanel { Spacing = 4, Children = { H("Abschnitt neu", 13), P("Nur diese Sekunden werden neu gemacht – der Rest bleibt gleich.", Muted, 11.5),
+        edit.Children.Add(new StackPanel { Spacing = 4, Children = { H("Abschnitt neu", 13), P("Nur diese Sekunden werden neu gemacht – der Rest bleibt gleich.", Muted, 11.5),
             new WrapPanel { Children = { new TextBlock { Text = "von", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) }, from,
                 new TextBlock { Text = "bis", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 6, 0) }, to, new TextBlock { Text = "s", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0) } } },
             repaint } });
 
-        sp.Children.Add(MsExtendPanel(s)); // M10: Verlängern mit dem Grundmodell
-        sp.Children.Add(MsStemsPanel(s)); // Spuren trennen mit Demucs
-        sp.Children.Add(MsSingPanel(s)); // S5/S6: Mitsingen, Aufnahme mischen
-        sp.Children.Add(MsVideoPanel(s)); // Musikvideo V1/V3/V4/V6/V7/V8
+        edit.Children.Add(MsExtendPanel(s)); // M10: Verlängern mit dem Grundmodell
+        spuren.Children.Add(MsStemsPanel(s)); // Spuren trennen mit Demucs
+        spuren.Children.Add(MsSingPanel(s)); // S5/S6: Mitsingen, Aufnahme mischen
+        video.Children.Add(MsVideoPanel(s)); // Musikvideo V1/V3/V4/V6/V7/V8
 
         // Cover in anderem Stil
         var coverStyle = new TextBox { Name = "ms-cover-style", Watermark = "Neuer Stil, z. B. ruhige Jazz-Ballade mit Klavier" };
@@ -420,7 +441,7 @@ public partial class MainWindow
             if (string.IsNullOrWhiteSpace(coverStyle.Text)) { _msMsg = "Beschreibe zuerst den neuen Stil für das Cover."; Show(MS); return; }
             _ = MusicStudioCreate(new AceStepClient.Job(coverStyle.Text.Trim(), s.Lyrics, (int)s.Seconds, s.Language, 1, Task: "cover", CoverStrength: strength.Value), s.Title, s.Id);
         });
-        sp.Children.Add(new StackPanel { Spacing = 4, Children = { H("In anderem Stil (Cover)", 13), coverStyle, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new TextBlock { Text = "frei", Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center }, strength, new TextBlock { Text = "nah", Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center } } }, cover } });
+        edit.Children.Add(new StackPanel { Spacing = 4, Children = { H("In anderem Stil (Cover)", 13), coverStyle, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { new TextBlock { Text = "frei", Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center }, strength, new TextBlock { Text = "nah", Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center } } }, cover } });
 
         // Weitergeben
         var name = new TextBox { Name = "ms-rename", Text = s.Title, HorizontalAlignment = HorizontalAlignment.Stretch };
@@ -433,7 +454,7 @@ public partial class MainWindow
             Act("ms-folder", "Ordner öffnen", () => Launch(Path.GetDirectoryName(s.File)!)),
             Act("ms-delete", "🗑 Löschen", () => { Songs.Remove(s.Id, p => { if (SongRecycleOverride is { } o) o(p); else RecycleBin.Move(p); }); _msSel = null; _msMsg = $"„{s.Title}“ liegt im Papierkorb."; _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.geloescht", s.Id); Show(MS); }) } };
         foreach (var c in actions.Children) c.Margin = new Thickness(0, 0, 6, 6);
-        sp.Children.Add(new StackPanel { Spacing = 4, Children = { H("Weitergeben", 13), name, actions } });
+        lied.Children.Add(new StackPanel { Spacing = 4, Children = { H("Weitergeben", 13), name, actions } });
         return MsCard("ms-detail", new ScrollViewer { Content = sp });
     }
 
