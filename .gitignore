@@ -38,3 +38,6 @@ installer/companion/out/
 .claude/settings.local.json
 CLAUDE.local.md
 TestResults/
+
+# Zur Laufzeit geladene KI-Modelle (z. B. Demucs über TORCH_HOME) nie mitliefern
+src/Trendo.App/Assets/ki/modelle/
