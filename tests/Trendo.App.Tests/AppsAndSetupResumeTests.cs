@@ -50,6 +50,9 @@ public class AppsAndSetupResumeTests
         var core = new TrendoCore(root, new InMemorySecretStore(), new FakeLauncher());
         var w = new MainWindow(core, new AppOptions(root, null, 0, FirstRun: true, Isolated: true), new Probe());
         w.Show(); Pump();
+        Assert.Equal("einrichtung-start", w.CurrentView); // zuerst Begrüßung im Vollbild mit Claude und Nutzungsart
+        Assert.True(w.SetupFullscreen);
+        w.Find<Button>("wiz-start-next").Press(); Pump();
         Assert.Equal("einrichtung", w.CurrentView);
         new ProfileLock(root).Set(ProfileLock.Kind.Pin, "4711"); // PIN wurde vor dem Absturz schon festgelegt
         w.Find<TextBox>("wiz-name").Text = "Erika Muster"; w.Find<Button>("wiz-next").Press(); Pump();
@@ -99,6 +102,29 @@ public class AppsAndSetupResumeTests
         w.TvFullscreen(false); Pump();
         Assert.False(w.TvIsFullscreen);
         Assert.False(w.TvMiniVisible);
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Ersteinrichtung im Vollbild: Claude freiwillig zuerst; Stick/SSD zeigen echte Laufwerke mit GB, zu kleine gesperrt, Windows-Laufwerk nie; ehrlicher Hinweis solange das Abbild fehlt")]
+    public void Setup_start_fullscreen()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-ui-" + Guid.NewGuid().ToString("N"));
+        var core = new TrendoCore(root, new InMemorySecretStore(), new FakeLauncher());
+        var w = new MainWindow(core, new AppOptions(root, null, 0, FirstRun: true, Isolated: true), new Probe());
+        w.DrivesOverride = () => [("E:", "SanDisk", 64.0, true), ("F:", "Alt", 16.0, true), ("G:", "Samsung T7", 500.0, false)];
+        w.Show(); Pump();
+        Assert.True(w.SetupFullscreen); Assert.True(w.Find<Grid>("wiz-fullscreen").IsVisible);
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Claude und Claude Code (freiwillig)"));
+        Assert.NotNull(w.TryFind<Button>("wiz-claude"));
+        w.Find<Button>("wiz-use-stick").Press(); Pump();
+        Assert.Contains("64 GB · passt", w.Find<TextBlock>("wiz-drive-E").Text);
+        Assert.Contains("zu klein", w.Find<TextBlock>("wiz-drive-F").Text);
+        Assert.Null(w.TryFind<TextBlock>("wiz-drive-G")); // SSD erscheint nicht bei „Stick“
+        Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Abbild für Stick und SSD wird gerade gebaut"));
+        w.Find<Button>("wiz-use-ssd").Press(); Pump();
+        Assert.Contains("500 GB · passt", w.Find<TextBlock>("wiz-drive-G").Text);
+        w.Find<Button>("wiz-start-next").Press(); Pump();
+        Assert.Equal("einrichtung", w.CurrentView); Assert.True(w.SetupFullscreen);
         w.Close();
     }
 }

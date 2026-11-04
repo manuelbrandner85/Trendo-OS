@@ -97,6 +97,7 @@ public partial class MainWindow
         if (_theme != "kontrast") _setupBar.Foreground = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 0, RelativeUnit.Relative),
             GradientStops = { new GradientStop(Color.Parse("#7A5512"), 0), new GradientStop(Color.Parse("#F5C451"), 0.7), new GradientStop(Color.Parse("#FFF1B8"), 1) } };
         root.Children.Add(_setupOverlay);
+        root.Children.Add(_wizLayer); // Ersteinrichtung im Vollbild
         var rnd = new Random(7);
         // Gold-Blau wie Logo C: pulsierendes Goldleuchten, zwei feine Kreise, ein schräger Orbit wie im Logo mit kreisendem Lichtfunken
         _setupHalo = new Ellipse { Width = 260, Height = 260, IsHitTestVisible = false,

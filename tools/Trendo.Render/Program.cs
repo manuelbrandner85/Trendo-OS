@@ -259,6 +259,11 @@ else if (shot == "seite")
         if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") == "genre") win.MusicStudioPickGenres(true, "Jazz-Ballade", "Smooth Jazz");
         win.Show(page);
     }
+    if (Environment.GetEnvironmentVariable("TRENDO_SETUP_DEMO") is { Length: > 0 } sd) // Ersteinrichtung im Vollbild (Begrüßung mit Claude und Nutzungsart)
+    {
+        win.DrivesOverride = () => [("E:", "SanDisk Ultra", 64.0, true), ("F:", "Intenso", 16.0, true)];
+        win.EnterSetupFullscreen(); if (sd == "stick") win.SetupUse("stick");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_BRIEF_DEMO") is { Length: > 0 }) // Brief mit Beispieldaten, Tippfehler und gezeichneter Unterschrift (Schritt 3)
     {
         var l = win.Letter; l.SenderName = "Erika Muster"; l.SenderStreet = "Musterweg 1"; l.SenderCity = "12345 Musterstadt"; l.Recipient = "Beispiel Versicherung AG\nKundenservice\nHauptstraße 2\n54321 Beispielort";

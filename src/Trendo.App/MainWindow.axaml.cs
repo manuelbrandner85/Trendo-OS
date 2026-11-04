@@ -161,7 +161,9 @@ public sealed partial class MainWindow : Window
         if (_reopenSection is { } keepSection) { _settingsSection = keepSection; _reopenSection = null; }
         if (Environment.GetEnvironmentVariable("TRENDO_SETTINGS") is { Length: > 0 } settingsSection) _settingsSection = settingsSection;
         if (NeedsSetup(opt)) _wizStep = Math.Clamp(_settings.SetupStep, 0, WizardTitles.Length - 1); // Ersteinrichtung fortsetzen, nicht neu fragen
-        Show(opt.Page ?? (NeedsSetup(opt) ? "einrichtung" : "start"));
+        if (NeedsSetup(opt) && _settings.SetupStep == 0) EnterSetupFullscreen(); // erster Start: im Vollbild mit Claude und Nutzungsart beginnen
+        else if (NeedsSetup(opt)) { _wizFull = true; if (!opt.Isolated) WindowState = WindowState.FullScreen; Show("einrichtung"); } // Einrichtung fortsetzen
+        else Show(opt.Page ?? "start");
         StartupTrace.Mark("ctor.show");
         RefreshStatusBar();
         StartupTrace.Mark("ctor.statusbar");

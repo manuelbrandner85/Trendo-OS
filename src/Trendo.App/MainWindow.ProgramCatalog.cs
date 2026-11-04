@@ -80,17 +80,20 @@ public partial class MainWindow
         return (kinds.ToList(), tools);
     }
 
+    const int CatPage = 24;
+    int _catShow = CatPage;
+
     private Control ProgramCatalogView()
     {
         var facts = ProgramCatalog.Load().ToDictionary(e => e.Id, StringComparer.OrdinalIgnoreCase);
         var all = ProgramCatalogRuntime().Select(e => facts.TryGetValue(e.Id, out var f) ? f with { Name = e.Name, Tabs = e.Tabs, Shell = e.Shell, Version = e.Version } : e).ToList();
         var q = new TextBox { Name = "cat-q", PlaceholderText = "Programm, Funktion oder Format suchen …", Width = 320, Text = _catQuery };
-        q.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { _catQuery = q.Text ?? ""; Show("programmkatalog"); } };
-        var bar = new WrapPanel { Name = "cat-bar", Children = { q, Act("cat-search", "Suchen", () => { _catQuery = q.Text ?? ""; Show("programmkatalog"); }) } };
+        q.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { _catQuery = q.Text ?? ""; _catShow = CatPage; Show("programmkatalog"); } };
+        var bar = new WrapPanel { Name = "cat-bar", Children = { q, Act("cat-search", "Suchen", () => { _catQuery = q.Text ?? ""; _catShow = CatPage; Show("programmkatalog"); }) } };
         foreach (var a in StudioCatalog.Areas.Where(a => all.Any(e => e.Area == a)).Prepend(""))
         {
             var area = a; var on = _catArea == a;
-            bar.Children.Add(Act("cat-area-" + (a.Length == 0 ? "alle" : Array.IndexOf(StudioCatalog.Areas, a).ToString()), a.Length == 0 ? "Alle" : a, () => { _catArea = area; Show("programmkatalog"); }, on));
+            bar.Children.Add(Act("cat-area-" + (a.Length == 0 ? "alle" : Array.IndexOf(StudioCatalog.Areas, a).ToString()), a.Length == 0 ? "Alle" : a, () => { _catArea = area; _catShow = CatPage; Show("programmkatalog"); }, on));
         }
         bool Hit(ProgramEntry e)
         {
@@ -101,7 +104,8 @@ public partial class MainWindow
         var shown = all.Where(Hit).ToList();
         var list = new WrapPanel { Name = "cat-list" };
         var i = 0;
-        foreach (var e in shown)
+        // Prüfung 04.11.2026: alle 94 Karten auf einmal kosteten ~0,5 s beim Zeichnen – erst 24, dann „Weitere anzeigen“ (die Suche durchsucht alle)
+        foreach (var e in shown.Take(_catShow))
         {
             var key = e.Id; var icon = StudioIcons.For(e.Studio);
             string Chips(IEnumerable<string> xs, int n) { var l = xs.ToList(); return l.Count == 0 ? "–" : string.Join(" · ", l.Take(n)) + (l.Count > n ? $" (+{l.Count - n})" : ""); }
@@ -129,9 +133,12 @@ public partial class MainWindow
             list.Children.Add(card);
         }
         if (shown.Count == 0) list.Children.Add(P("Kein Programm passt zur Suche.", Muted, 13));
+        Control? more = shown.Count > _catShow ? Act("cat-more", $"Weitere anzeigen ({shown.Count - _catShow} von {shown.Count})", () => { _catShow += CatPage; Show("programmkatalog"); }) : null;
         var head = P($"{shown.Count} von {all.Count} Programmen · {all.Count(e => e.Shell)} mit Programm-Hülle · Angaben aus Code, Funktionskatalogen und Tests" + (facts.Count == 0 ? " (Katalogdaten fehlen in diesem Build)" : ""), Muted, 12);
         head.Name = "cat-summary";
-        return Page("Programmkatalog", new StackPanel { Spacing = 10, Children = { bar, head, list } });
+        var body = new StackPanel { Spacing = 10, Children = { bar, head, list } };
+        if (more is not null) body.Children.Add(more);
+        return Page("Programmkatalog", body);
 
         Control Fact(string k, string v) => new Grid { ColumnDefinitions = new ColumnDefinitions("92,*"), Children = {
             new TextBlock { Text = k, Foreground = Muted, FontSize = 11.5 },

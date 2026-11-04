@@ -26,7 +26,7 @@ public sealed partial class MainWindow
     {
         if (string.IsNullOrEmpty(_settings.ProjectsFolder)) _settings.ProjectsFolder = opt.Isolated ? Path.Combine(_core.DataRoot, "Projekte") : UserSettings.DefaultProjectsFolder();
         foreach (var p in SetupPacks.Studios.Where(p => p.Default)) _wizPacks.Add(p.Id);
-        _showMap["einrichtung"] = SetupWizardView; _showMap["systemcheck"] = SystemCheckView; _showMap["sicherung"] = BackupView;
+        _showMap["einrichtung"] = SetupWizardView; _showMap["einrichtung-start"] = SetupStartView; _showMap["systemcheck"] = SystemCheckView; _showMap["sicherung"] = BackupView;
         for (var i = 0; i < 9; i++) { var step = i; _showMap[$"einrichtung-{i}"] = () => { _wizStep = step; return SetupWizardView(); }; }
         // Geplante Sicherung beim Start (im Hintergrund, ohne Rückfrage – betrifft nur eigene Daten)
         if (_settings.SetupDone && Backups.Due(DateTime.Now, _settings.BackupEveryHours))
@@ -423,6 +423,7 @@ public sealed partial class MainWindow
                 catch (Exception e) when (e is IOException or System.Text.Json.JsonException or UnauthorizedAccessException) { _core.Audit.Append("app", "import.bookmarks.failed", e.GetType().Name); }
         _settings.SearchWindowsFolders = _wizWinFolders;
         _settings.SetupDone = true; _settings.Save(_core.DataRoot);
+        LeaveSetupFullscreen();
         _core.Audit.Append(Principal.LocalOwner.Name, "setup.done", $"Pakete: {string.Join(",", _settings.StudioPacks)}");
         try { Backups.Create(DateTime.Now); } catch { /* Sicherung später erneut */ }
     }

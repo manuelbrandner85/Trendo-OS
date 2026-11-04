@@ -69,6 +69,7 @@ public partial class MainWindow
     /// <summary>Wird von Show aufgerufen: Startbildschirm zeigen (alle Fenster minimiert) oder Seite im passenden Fenster.</summary>
     private void PresentPage(string key)
     {
+        if (PresentSetupFullscreen(key)) return; // Ersteinrichtung im Vollbild (Wunsch 04.11.2026)
         EnsureWindowLayer();
         if (key == "start")
         {

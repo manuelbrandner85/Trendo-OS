@@ -323,6 +323,8 @@ public class W0_SetupWizard
         var w = new MainWindow(core, new AppOptions(root, null, 0, FirstRun: true, Isolated: true), new Probe());
         var r = new FakeRunner(); w.Deps.Runner = r;
         w.Show(); Dispatcher.UIThread.RunJobs();
+        Assert.Equal("einrichtung-start", w.CurrentView); // zuerst Begrüßung im Vollbild (Claude, Nutzungsart)
+        w.Find<Button>("wiz-start-next").Press(); Dispatcher.UIThread.RunJobs();
         Assert.Equal("einrichtung", w.CurrentView);
         w.Find<TextBox>("wiz-name").Text = "Erika Muster"; w.Find<Button>("wiz-next").Press();
         w.Find<Button>("wiz-next").Press(); // Anmeldung: ohne
