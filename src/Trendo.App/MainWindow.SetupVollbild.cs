@@ -28,6 +28,7 @@ public partial class MainWindow
         _wizFull = true;
         if (!_opt.Isolated) WindowState = WindowState.FullScreen;
         Show("einrichtung-start");
+        _ = CheckImageAsync(); // liegt das Trendo-OS-Abbild im neuesten Release?
     }
 
     void LeaveSetupFullscreen()
@@ -80,7 +81,7 @@ public partial class MainWindow
 
     /// <summary>Gibt es das Trendo-OS-Abbild schon im Release? (Bis dahin ist „Auf Stick/SSD schreiben“ gesperrt und sagt das.)</summary>
     public Func<bool>? ImageReadyOverride { get; set; }
-    bool ImageReady => ImageReadyOverride?.Invoke() ?? false;
+    bool ImageReady => ImageReadyOverride?.Invoke() ?? _imgManifest is not null;
 
     Control SetupStartView()
     {
@@ -129,16 +130,32 @@ public partial class MainWindow
             foreach (var d in drives)
             {
                 var ok = d.Gb >= MinStickGb;
-                box.Children.Add(new TextBlock { Name = "wiz-drive-" + d.Name.TrimEnd(':'), Foreground = ok ? Text : Muted, FontSize = 13,
+                var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10 };
+                row.Children.Add(new TextBlock { Name = "wiz-drive-" + d.Name.TrimEnd(':'), Foreground = ok ? Text : Muted, FontSize = 13, VerticalAlignment = VerticalAlignment.Center,
                     Text = $"{(d.Label.Length > 0 ? d.Label : "Laufwerk")} ({d.Name}) · {d.Gb:0} GB · " + (ok ? "passt" : $"zu klein – mindestens {MinStickGb:0} GB") });
+                if (ok && ImageReady)
+                {
+                    var name = d.Name; var on = _wizDrive == name;
+                    var pick = new Button { Name = "wiz-pick-" + name.TrimEnd(':'), Content = on ? "✓ gewählt" : "Dieses nehmen", Padding = new Thickness(10, 3), FontSize = 12,
+                        Background = on ? Brush.Parse("#33D4A84B") : Brush.Parse("#14FFFFFF"), BorderBrush = Brush.Parse(on ? "#D4A84B" : "#22FFFFFF"), BorderThickness = new Thickness(1) };
+                    pick.Click += (_, _) => SetupPickDrive(name);
+                    row.Children.Add(pick);
+                }
+                box.Children.Add(row);
             }
-            box.Children.Add(P(ImageReady ? "Nach dem Weiter wählst du das Laufwerk, bestätigst das Löschen, und Trendo schreibt und prüft alles."
+            if (_wizDrive is { } wd && !drives.Any(x => x.Name == wd && x.Gb >= MinStickGb)) _wizDrive = null; // abgezogen oder anderer Typ
+            box.Children.Add(P(ImageReady ? $"Trendo OS {_imgManifest?.Version} liegt bereit. Laufwerk wählen, dann Weiter: du bestätigst das Löschen, Trendo schreibt und prüft alles."
                 : "Ehrlich: Das Trendo-OS-Abbild für Stick und SSD wird gerade gebaut. Sobald es im Release liegt, schreibt Trendo es hier mit einem Klick. Bis dahin richtet Trendo sich als Programm ein – Stick/SSD kannst du später unter „Einstellungen“ nachholen.", ImageReady ? Text : Brush.Parse("#FACC15"), 12));
             sp.Children.Add(new Border { Background = Brush.Parse("#10FFFFFF"), CornerRadius = new CornerRadius(12), Padding = new Thickness(14, 10), Child = box });
         }
 
         var go = new Button { Name = "wiz-start-next", Content = "Weiter", Background = Accent, Padding = new Thickness(22, 8), FontSize = 15, HorizontalAlignment = HorizontalAlignment.Right };
-        go.Click += (_, _) => { _core.Audit.Append(Principal.LocalOwner.Name, "setup.start", _wizUse); Show("einrichtung"); };
+        go.Click += (_, _) =>
+        {
+            _core.Audit.Append(Principal.LocalOwner.Name, "setup.start", _wizUse);
+            if (_wizUse is "stick" or "ssd" && ImageReady && _wizDrive is not null) { _imgOk = null; _imgStatus = ""; Show("einrichtung-abbild"); }
+            else Show("einrichtung");
+        };
         sp.Children.Add(go);
         return sp;
     }

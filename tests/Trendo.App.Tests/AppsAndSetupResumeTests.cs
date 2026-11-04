@@ -127,4 +127,67 @@ public class AppsAndSetupResumeTests
         Assert.Equal("einrichtung", w.CurrentView); Assert.True(w.SetupFullscreen);
         w.Close();
     }
+
+    [AvaloniaFact(DisplayName = "Stick-Schreiber: Abbild im Release erkannt, Laufwerk wählen, Löschen erst nach Eintippen des Buchstabens, laden, prüfen, schreiben (virtuelle Festplatte), Boot-Tasten")]
+    public async Task Setup_write_stick()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-ui-" + Guid.NewGuid().ToString("N"));
+        var core = new TrendoCore(root, new InMemorySecretStore(), new FakeLauncher());
+        var w = new MainWindow(core, new AppOptions(root, null, 0, FirstRun: true, Isolated: true), new Probe());
+        var img = new byte[3_000_017]; new Random(3).NextBytes(img);
+        var sha = Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(img));
+        var manifest = $$"""{"schema":1,"version":"0.9.71","bytes":{{img.Length}},"sha256":"{{sha}}","min_gb":32,"parts":[{"file":"TrendoOS-Abbild.part00","sha256":"{{sha}}","bytes":{{img.Length}}}]}""";
+        var asked = new List<string>();
+        w.VollpaketOnlineOverride = u => { lock (asked) asked.Add(u); return Task.FromResult(u.EndsWith(".json") ? System.Text.Encoding.UTF8.GetBytes(manifest) : img); };
+        var disk = Path.Combine(root, "virtuell.disk");
+        w.ImageWriteOverride = async (file, letter, m, ssd) =>
+        {
+            Assert.Equal("E:", letter); Assert.False(ssd);
+            await using var src = File.OpenRead(file);
+            await using var dst = new FileStream(disk, FileMode.Create, FileAccess.ReadWrite);
+            var err = await TrendoImage.WriteAndVerifyAsync(src, dst, m.Bytes, m.Sha256);
+            return (err is null, err ?? "Trendo OS steht auf „SanDisk“ und ist geprüft.");
+        };
+        w.DrivesOverride = () => [("E:", "SanDisk", 64.0, true), ("F:", "Alt", 16.0, true)];
+        try
+        {
+            w.Show(); Pump();
+            Assert.Null(w.ImageManifest); // Konstruktor prüft vor dem Netz-Ersatz: Tests gehen nie ins Internet
+            await w.CheckImageAsync(); Pump();
+            Assert.Equal("0.9.71", w.ImageManifest!.Version);
+            Assert.StartsWith(TrendoImage.LatestBase, asked[0]);
+            w.Find<Button>("wiz-use-stick").Press(); Pump();
+            Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Trendo OS 0.9.71 liegt bereit"));
+            Assert.Null(w.TryFind<Button>("wiz-pick-F")); // zu klein: nicht wählbar
+            w.Find<Button>("wiz-pick-E").Press(); Pump();
+            w.Find<Button>("wiz-start-next").Press(); Pump();
+            Assert.Equal("einrichtung-abbild", w.CurrentView);
+            Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Alles auf SanDisk (E:, 64 GB) wird gelöscht"));
+            var write = w.Find<Button>("wiz-img-write");
+            Assert.False(write.IsEnabled);
+            w.Find<TextBox>("wiz-img-confirm").Text = "F"; Pump(); Assert.False(write.IsEnabled);
+            w.Find<TextBox>("wiz-img-confirm").Text = "e"; Pump(); Assert.True(write.IsEnabled);
+            write.Press();
+            for (var i = 0; i < 500 && w.TryFind<TextBlock>("wiz-img-done") is null; i++) { await Task.Delay(10); Pump(); }
+            Assert.Contains("ist geprüft", w.Find<TextBlock>("wiz-img-done").Text);
+            Assert.Equal(img, (await File.ReadAllBytesAsync(disk))[..img.Length]);
+            Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Lenovo: F12"));
+            Assert.False(File.Exists(Path.Combine(root, "abbild", "0.9.71", "TrendoOS-Abbild.part00"))); // Teile nach der Prüfung gelöscht
+            w.Find<Button>("wiz-img-next").Press(); Pump();
+            Assert.Equal("einrichtung", w.CurrentView);
+        }
+        finally { w.Close(); }
+    }
+
+    [Fact(DisplayName = "Stick-Schreiber schützt: Start-/Systemlaufwerk, Windows-Laufwerk, interne Platte als „Stick“ und zu kleine Laufwerke werden verweigert")]
+    public void Writer_refuses()
+    {
+        var gb = 1_000_000_000L;
+        Assert.Empty(ImageWriter.Refuse(new(2, false, false, 64 * gb, "USB", "SanDisk", ["E"]), 2 * gb, false, "C:\\"));
+        Assert.Contains(ImageWriter.Refuse(new(0, true, true, 1000 * gb, "NVMe", "Samsung", ["C"]), 2 * gb, true, "C:\\"), t => t.Contains("Systemlaufwerk"));
+        Assert.Contains(ImageWriter.Refuse(new(1, false, false, 1000 * gb, "USB", "x", ["D", "C"]), 2 * gb, true, "C:\\"), t => t.Contains("Windows"));
+        Assert.Contains(ImageWriter.Refuse(new(1, false, false, 1000 * gb, "SATA", "x", ["D"]), 2 * gb, false, "C:\\"), t => t.Contains("kein USB"));
+        Assert.Contains(ImageWriter.Refuse(new(1, false, false, 1000 * gb, "SATA", "x", ["D"]), 2 * gb, true, "C:\\"), t => t.Contains("kein externes"));
+        Assert.Contains(ImageWriter.Refuse(new(3, false, false, 16 * gb, "USB", "x", ["F"]), 2 * gb, false, "C:\\"), t => t.Contains("zu klein"));
+    }
 }

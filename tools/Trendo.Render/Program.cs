@@ -262,7 +262,13 @@ else if (shot == "seite")
     if (Environment.GetEnvironmentVariable("TRENDO_SETUP_DEMO") is { Length: > 0 } sd) // Ersteinrichtung im Vollbild (Begrüßung mit Claude und Nutzungsart)
     {
         win.DrivesOverride = () => [("E:", "SanDisk Ultra", 64.0, true), ("F:", "Intenso", 16.0, true)];
-        win.EnterSetupFullscreen(); if (sd == "stick") win.SetupUse("stick");
+        win.EnterSetupFullscreen(); if (sd is "stick" or "abbild" or "bereit") win.SetupUse("stick");
+        if (sd is "abbild" or "bereit")
+        {
+            win.ImageManifest = new Trendo.Core.TrendoImage.Manifest(1, "0.9.71", 1_847_721_984, new string('0', 64), 32, [new("TrendoOS-Abbild.part00", new string('0', 64), 1_847_721_984)]);
+            win.SetupPickDrive("E:");
+            if (sd == "abbild") win.Show("einrichtung-abbild");
+        }
     }
     if (Environment.GetEnvironmentVariable("TRENDO_BRIEF_DEMO") is { Length: > 0 }) // Brief mit Beispieldaten, Tippfehler und gezeichneter Unterschrift (Schritt 3)
     {

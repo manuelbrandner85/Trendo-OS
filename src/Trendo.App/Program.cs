@@ -20,6 +20,7 @@ class Program
         // Handy per QR (WLAN-Debugging): adb findet das Handy unter Windows nur mit der eingebauten mDNS-Suche (gilt nur für von Trendo gestartete adb-Prozesse)
         if (Environment.GetEnvironmentVariable("ADB_MDNS_OPENSCREEN") is null) Environment.SetEnvironmentVariable("ADB_MDNS_OPENSCREEN", "1");
         var uiArgs = AppStartup.WithoutVelopack(args);
+        if (uiArgs.Contains(ImageWriter.Arg)) return ImageWriter.RunElevated(uiArgs); // Stick-/SSD-Schreiber (eigener Prozess mit Administratorrechten)
         // Fast-Hooks (--veloapp-install usw.) beendet Velopack selbst. OnFirstRun beendet nicht: danach muss das Fenster erscheinen.
         var velo = Velopack.VelopackApp.Build().OnFirstRun(_ => AppStartup.NoteFirstRun());
         // Deinstallieren (nur Windows): fragen, ob auch die eigenen Daten weg sollen – Standard: behalten
