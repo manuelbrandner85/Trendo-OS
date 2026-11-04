@@ -4,14 +4,14 @@ using System.Text.RegularExpressions;
 
 namespace Trendo.Core.Bibliothek;
 
-/// <summary>Freies Bild oder freier Klang aus Wikimedia Commons. Kind: "bild" oder "klang". Bytes 0 = unbekannt, Seconds nur bei Klängen.</summary>
+/// <summary>Freies Bild oder freier Klang aus Wikimedia Commons oder Openverse (Provider = Herkunft, z. B. „Openverse · flickr“). Kind: "bild" oder "klang". Bytes 0 = unbekannt, Seconds nur bei Klängen.</summary>
 public sealed record MediaHit(string Id, string Kind, string Title, string Creator, string License, string LicenseUrl, string PageUrl, string FileUrl, string ThumbUrl,
-    string Format, long Bytes, int Width, int Height, double Seconds)
+    string Format, long Bytes, int Width, int Height, double Seconds, string Provider = MediaLibrary.Source)
 {
     /// <summary>Frei ohne Bedingungen (CC0, gemeinfrei) – sonst muss der Urheber genannt werden.</summary>
     public bool Free => MediaLibrary.IsFree(License);
     /// <summary>Namensnennung nach dem TASL-Schema (Titel, Autor, Quelle, Lizenz).</summary>
-    public string Credit => $"„{Title}“" + (Creator.Length > 0 ? $" von {Creator}" : "") + $", {License}" + (LicenseUrl.Length > 0 ? $" ({LicenseUrl})" : "") + $", Wikimedia Commons – {PageUrl}";
+    public string Credit => $"„{Title}“" + (Creator.Length > 0 ? $" von {Creator}" : "") + $", {License}" + (LicenseUrl.Length > 0 ? $" ({LicenseUrl})" : "") + $", {Provider} – {PageUrl}";
 }
 
 /// <summary>Freie Bilder & Klänge als Medienbrowser (Masterprompt 131, Runde 7): Wikimedia Commons durchsuchen (ohne Schlüssel), nach Lizenz und Format filtern,
@@ -23,7 +23,8 @@ public sealed partial class MediaLibrary(IWebFetch http, string root)
     public static readonly (string Id, string Label)[] LicenseFilters = [("alle", "Alle freien Lizenzen"), ("frei", "Ohne Bedingungen (CC0, gemeinfrei)"), ("nennung", "Mit Namensnennung (CC BY, CC BY-SA)")];
     public static readonly string[] ImageFormats = ["jpg", "png", "svg", "gif", "webp", "tif"];
     public static readonly string[] SoundFormats = ["ogg", "mp3", "wav", "flac", "opus", "oga"];
-    static readonly string[] Hosts = ["commons.wikimedia.org", "upload.wikimedia.org"];
+    /// <summary>Erlaubte Herkünfte (Domain-Endungen): Commons, Openverse und die Quellen, die Openverse ausliefert.</summary>
+    static readonly string[] Hosts = ["wikimedia.org", "openverse.org", "staticflickr.com", "freesound.org", "jamendo.com", "ccmixter.org"];
 
     string IndexFile => Path.Combine(root, "index.json");
     static readonly JsonSerializerOptions Opt = new() { WriteIndented = true };
@@ -73,13 +74,16 @@ public sealed partial class MediaLibrary(IWebFetch http, string root)
         return res;
     }
 
-    public async Task<List<MediaHit>> Search(string kind, string query, string license = "alle", string format = "", CancellationToken ct = default)
+    public async Task<List<MediaHit>> Search(string kind, string query, string license = "alle", string format = "", CancellationToken ct = default, string provider = "commons")
     {
         if (query.Trim().Length == 0) throw new ArgumentException("Bitte ein Suchwort eingeben, z. B. „Regen“ oder „Berge“.");
-        return Parse((await http.GetAsync(SearchUrl(kind, query), ct)).EnsureOk().Text, kind, license, format);
+        var a = provider is "commons" or "beide" ? Parse((await http.GetAsync(SearchUrl(kind, query), ct)).EnsureOk().Text, kind, license, format) : [];
+        var b = provider is "openverse" or "beide" ? ParseOpenverse((await http.GetAsync(OpenverseUrl(kind, query, license), ct)).EnsureOk().Text, kind, license, format) : [];
+        return Mix(a, b);
     }
 
-    static bool Allowed(string url, out Uri u) => Uri.TryCreate(url, UriKind.Absolute, out u!) && u.Scheme == "https" && Hosts.Contains(u.Host);
+    static bool Allowed(string url, out Uri u) => Uri.TryCreate(url, UriKind.Absolute, out u!) && u.Scheme == "https" && HostOk(u.Host);
+    static bool HostOk(string host) => Hosts.Any(x => host == x || host.EndsWith("." + x, StringComparison.Ordinal));
 
     async Task<string> Fetch(string url, string file, long max, CancellationToken ct)
     {
@@ -124,8 +128,8 @@ public sealed partial class MediaLibrary(IWebFetch http, string root)
         var stem = Safe(h.Title); var file = Path.Combine(dir, stem + "." + h.Format);
         for (var n = 2; File.Exists(file); n++) file = Path.Combine(dir, $"{stem} ({n}).{h.Format}");
         await Fetch(h.FileUrl, file, MaxBytes, ct);
-        File.WriteAllText(file + ".herkunft.txt", $"{h.Title}\nUrheber: {h.Creator}\nLizenz: {h.License} {h.LicenseUrl}\nQuelle: {Source} – {h.PageUrl}\nDatei: {h.FileUrl}\nNamensnennung: {(h.Free ? "nicht nötig, aber nett" : "nötig")}\n{h.Credit}\n");
-        var item = new LibraryItem { Source = Source, Id = h.Id, Name = h.Title, Kind = h.Kind, License = h.License, Author = h.Creator, PageUrl = h.PageUrl, File = file, Added = DateTime.Now };
+        File.WriteAllText(file + ".herkunft.txt", $"{h.Title}\nUrheber: {h.Creator}\nLizenz: {h.License} {h.LicenseUrl}\nQuelle: {h.Provider} – {h.PageUrl}\nDatei: {h.FileUrl}\nNamensnennung: {(h.Free ? "nicht nötig, aber nett" : "nötig")}\n{h.Credit}\n");
+        var item = new LibraryItem { Source = h.Provider, Id = h.Id, Name = h.Title, Kind = h.Kind, License = h.License, Author = h.Creator, PageUrl = h.PageUrl, File = file, Added = DateTime.Now };
         var items = Items(); items.RemoveAll(i => i.Id == h.Id); items.Add(item);
         Directory.CreateDirectory(root); File.WriteAllText(IndexFile, JsonSerializer.Serialize(items, Opt));
         File.WriteAllText(Path.Combine(root, "HERKUNFT.txt"), Credits() + "\n");

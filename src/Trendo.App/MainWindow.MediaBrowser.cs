@@ -22,6 +22,14 @@ public partial class MainWindow
     public List<MediaHit> MediaHits { get; private set; } = [];
     public int MediaSel { get; set; } = -1;
     string _mbQuery = "", _mbLicense = "alle", _mbFormat = "", _mbMsg = ""; bool _mbBusy;
+    /// <summary>Quelle (commons, openverse, beide), Ausrichtung und Format der Namensnennung – wie Openverse, Unsplash, Pexels.</summary>
+    public string MediaProvider { get; set; } = "beide";
+    public string MediaOrient { get; set; } = "alle";
+    string _mbCreditFmt = "text";
+    List<MediaHit> _mbAll = [];
+    public List<FontHit> FontHits { get; private set; } = [];
+    string _fontQuery = "", _fontCat = "";
+    FreeFonts Fonts => new(MediaFetchOverride ?? new HttpFetch(BibShared), Path.Combine(AssetFolder, "Medien"));
     readonly Dictionary<string, string?> _mbThumbs = [];
     /// <summary>Für Tests: zuletzt zum Vorhören geladene Datei.</summary>
     public string? MediaListening { get; private set; }
@@ -49,7 +57,8 @@ public partial class MainWindow
         _mbQuery = query;
         if (!MediaOnline) throw new InvalidOperationException("Offline – die Suche braucht Internet. Deine Bibliothek bleibt nutzbar.");
         var lib = MediaLib; var kind = MediaTab == "klaenge" ? "klang" : "bild";
-        MediaHits = await lib.Search(kind, query, _mbLicense, _mbFormat); MediaSel = MediaHits.Count > 0 ? 0 : -1;
+        _mbAll = await lib.Search(kind, query, _mbLicense, _mbFormat, default, MediaProvider);
+        MediaHits = MediaLibrary.Filter(_mbAll, MediaOrient); MediaSel = MediaHits.Count > 0 ? 0 : -1;
         Show(MB);
         foreach (var h in MediaHits.Take(50).Where(h => h.ThumbUrl.Length > 0 && !_mbThumbs.ContainsKey(h.Id)))
             try { _mbThumbs[h.Id] = await lib.Thumb(h); } catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidDataException or IOException) { _mbThumbs[h.Id] = null; }
@@ -69,21 +78,66 @@ public partial class MainWindow
     {
         if (!MediaOnline) throw new InvalidOperationException("Offline – Laden geht erst mit Internet.");
         var item = await MediaLib.Download(h);
-        _core.Audit.Append(Principal.LocalOwner.Name, "medien.download", $"{MediaLibrary.Source}/{h.Id} ({h.License})");
+        _core.Audit.Append(Principal.LocalOwner.Name, "medien.download", $"{h.Provider}/{h.Id} ({h.License})");
         return $"✓ „{item.Name}“ liegt in deiner Bibliothek – {(h.Free ? "frei nutzbar" : "bitte den Urheber nennen")} ({h.License}).";
     });
+
+    /// <summary>Freie Schriften suchen (Fontsource, wie Google Fonts).</summary>
+    public Task FontSearch(string query) => MediaGuard("Schriften werden gesucht …", async () =>
+    {
+        _fontQuery = query;
+        if (!MediaOnline) throw new InvalidOperationException("Offline – die Suche braucht Internet.");
+        FontHits = await Fonts.Search(query, _fontCat);
+        return FontHits.Count == 0 ? "Keine Schrift gefunden – anderen Namen oder „Alle Arten“ versuchen." : $"{FontHits.Count} Schriften";
+    });
+
+    public Task FontGet(FontHit f) => MediaGuard($"„{f.Family}“ wird geladen …", async () =>
+    {
+        if (!MediaOnline) throw new InvalidOperationException("Offline – Laden geht erst mit Internet.");
+        await Fonts.Download(f);
+        _core.Audit.Append(Principal.LocalOwner.Name, "medien.schrift", $"{f.Id} ({f.License})");
+        return $"✓ Schrift „{f.Family}“ liegt unter Medien › Schriften ({f.License}, frei nutzbar).";
+    });
+
+    /// <summary>Geladenes Bild in der Bildbearbeitung bzw. Klang im Audio-Editor öffnen (wie Adobe Stock in Photoshop).</summary>
+    public void MediaEdit(LibraryItem it)
+    {
+        if (!File.Exists(it.File)) throw new FileNotFoundException("Die Datei ist nicht mehr da.");
+        if (it.Kind == "klang") { AuOpen(it.File); Show("ton"); }
+        else { ProgramNew("bild"); ImgAddImage(it.File); Show("bild"); }
+    }
+
+    Control FontsView()
+    {
+        var q = new TextBox { Name = "mb-font-query", Text = _fontQuery, PlaceholderText = "Name, z. B. Lora, Roboto – leer = alle", Width = 240 };
+        q.KeyDown += (_, e) => { if (e.Key == Key.Enter) { _ = FontSearch(q.Text ?? ""); e.Handled = true; } };
+        var cat = new ComboBox { Name = "mb-font-cat", ItemsSource = FreeFonts.Categories.Select(c => c.Label).ToList(), SelectedIndex = Math.Max(0, Array.FindIndex(FreeFonts.Categories, c => c.Id == _fontCat)), MinWidth = 190 };
+        cat.SelectionChanged += (_, _) => _fontCat = FreeFonts.Categories[Math.Max(0, cat.SelectedIndex)].Id;
+        var search = Act("mb-font-search", _mbBusy ? "Sucht …" : "Suchen", () => _ = FontSearch(q.Text ?? ""), true); search.IsEnabled = !_mbBusy;
+        var sp = new StackPanel { Name = "mb-fonts", Spacing = 6, Children = { new WrapPanel { Children = { q, new Border { Width = 6 }, cat, new Border { Width = 6 }, search } } } };
+        if (FontHits.Count == 0) sp.Children.Add(P("Freie Schriften wie bei Google Fonts – alle mit offener Lizenz (SIL OFL, Apache), auch für Geld nutzbar. Geladen wird als TTF mit Lizenzdatei.", Muted, 12));
+        var i = 0;
+        foreach (var f in FontHits.Take(60))
+        {
+            var ff = f;
+            sp.Children.Add(Card(Row(new StackPanel { Children = { new TextBlock { Text = f.Family, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
+                P($"{f.Kategorie} · {f.License} · {f.Weights.Length} Stärken{(f.Variable ? " · variabel" : "")}", null, 10.5) } }, Act($"mb-font-get-{i++}", "Laden", () => _ = FontGet(ff)))));
+        }
+        sp.Children.Add(Act("mb-font-folder", "Schriften-Ordner öffnen", () => { var d = Path.Combine(AssetFolder, "Medien", "Schriften"); Directory.CreateDirectory(d); Launch(d); }));
+        return sp;
+    }
 
     private Control AssetView()
     {
         var tabs = new WrapPanel { Name = "mb-tabs" };
-        foreach (var (k, l) in new[] { ("bilder", "Bilder"), ("klaenge", "Klänge"), ("3d", "3D & Texturen"), ("bibliothek", "Meine Bibliothek") })
+        foreach (var (k, l) in new[] { ("bilder", "Bilder"), ("klaenge", "Klänge"), ("schriften", "Schriften"), ("3d", "3D & Texturen"), ("bibliothek", "Meine Bibliothek") })
         {
             var b = new Button { Name = "mb-tab-" + k, Content = l, Padding = new Thickness(14, 5), Margin = new Thickness(0, 0, 6, 0), CornerRadius = new CornerRadius(14), Foreground = Text,
                 Background = MediaTab == k ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1) };
             b.Click += (_, _) => { if (MediaTab != k && k is "bilder" or "klaenge") { MediaHits = []; MediaSel = -1; _mbFormat = ""; } MediaTab = k; _mbMsg = ""; Show(MB); };
             tabs.Children.Add(b);
         }
-        Control body = MediaTab switch { "3d" => AssetPolyHaven(), "bibliothek" => MediaLibraryView(), _ => MediaBrowse() };
+        Control body = MediaTab switch { "3d" => AssetPolyHaven(), "bibliothek" => MediaLibraryView(), "schriften" => FontsView(), _ => MediaBrowse() };
         var sp = new StackPanel { Spacing = 8, Children = { P("Freie Bilder, Klänge, Modelle und Texturen. Alles hier darfst du kostenlos nutzen, auch für Geld – bei manchen musst du den Urheber nennen, das steht immer dabei."), tabs } };
         if (_mbMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "mb-msg", Text = _mbMsg, Foreground = _mbMsg.StartsWith('⚠') ? Brush.Parse("#F97316") : GoldText(), FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
         sp.Children.Add(body);
@@ -123,7 +177,17 @@ public partial class MainWindow
         var fmt = new ComboBox { Name = "mb-format", ItemsSource = formats.Select(f => f.Length == 0 ? "Alle Formate" : f.ToUpperInvariant()).ToList(), SelectedIndex = Math.Max(0, formats.IndexOf(_mbFormat)), MinWidth = 110 };
         fmt.SelectionChanged += (_, _) => _mbFormat = formats[Math.Max(0, fmt.SelectedIndex)];
         var search = Act("mb-search", _mbBusy ? "Sucht …" : "Suchen", () => _ = MediaSearch(q.Text ?? ""), true); search.IsEnabled = !_mbBusy;
-        var bar = new WrapPanel { Children = { q, new Border { Width = 6 }, lic, new Border { Width = 6 }, fmt, new Border { Width = 6 }, search } };
+        var prov = new ComboBox { Name = "mb-provider", ItemsSource = MediaLibrary.Providers.Select(x => x.Label).ToList(), SelectedIndex = Math.Max(0, Array.FindIndex(MediaLibrary.Providers, x => x.Id == MediaProvider)), MinWidth = 150 };
+        prov.SelectionChanged += (_, _) => MediaProvider = MediaLibrary.Providers[Math.Max(0, prov.SelectedIndex)].Id;
+        var bar = new WrapPanel { Children = { q, new Border { Width = 6 }, prov, new Border { Width = 6 }, lic, new Border { Width = 6 }, fmt, new Border { Width = 6 } } };
+        if (!sound)
+        {
+            // Ausrichtung wie bei Unsplash/Pexels – filtert sofort ohne neue Suche
+            var ori = new ComboBox { Name = "mb-orient", ItemsSource = MediaLibrary.Orientations.Select(x => x.Label).ToList(), SelectedIndex = Math.Max(0, Array.FindIndex(MediaLibrary.Orientations, x => x.Id == MediaOrient)), MinWidth = 140 };
+            ori.SelectionChanged += (_, _) => { var id = MediaLibrary.Orientations[Math.Max(0, ori.SelectedIndex)].Id; if (id == MediaOrient) return; MediaOrient = id; MediaHits = MediaLibrary.Filter(_mbAll, MediaOrient); MediaSel = MediaHits.Count > 0 ? 0 : -1; Show(MB); };
+            bar.Children.Add(ori); bar.Children.Add(new Border { Width = 6 });
+        }
+        bar.Children.Add(search);
 
         // Raster
         var grid = new WrapPanel { Name = "mb-grid" };
@@ -168,16 +232,20 @@ public partial class MainWindow
             }
             var get = Act("mb-get", "In die Bibliothek", () => _ = MediaGet(h), !sound); get.IsEnabled = !_mbBusy;
             acts.Children.Add(get); acts.Children.Add(new Border { Width = 6 });
-            acts.Children.Add(Act("mb-page", "Auf Commons ansehen", () => Launch(h.PageUrl)));
+            acts.Children.Add(Act("mb-page", "Auf der Quelle ansehen", () => Launch(h.PageUrl)));
             right.Children.Add(acts);
-            right.Children.Add(P("Namensnennung:", Muted, 11));
-            right.Children.Add(new SelectableTextBlock { Name = "mb-credit", Text = h.Credit, Foreground = Text, FontSize = 11, TextWrapping = TextWrapping.Wrap });
-            right.Children.Add(Act("mb-credit-copy", "Namensnennung kopieren", () => MediaCopy(h.Credit, "Namensnennung")));
+            right.Children.Add(P("Quelle: " + h.Provider, Muted, 11));
+            var cf = new ComboBox { Name = "mb-credit-fmt", ItemsSource = MediaLibrary.CreditFormats.Select(x => x.Label).ToList(), SelectedIndex = Math.Max(0, Array.FindIndex(MediaLibrary.CreditFormats, x => x.Id == _mbCreditFmt)), MinWidth = 140 };
+            cf.SelectionChanged += (_, _) => { var id = MediaLibrary.CreditFormats[Math.Max(0, cf.SelectedIndex)].Id; if (id != _mbCreditFmt) { _mbCreditFmt = id; Show(MB); } };
+            right.Children.Add(new WrapPanel { Children = { new TextBlock { Text = "Namensnennung als ", Foreground = Muted, FontSize = 11, VerticalAlignment = VerticalAlignment.Center }, cf } });
+            var credit = MediaLibrary.CreditAs(h, _mbCreditFmt);
+            right.Children.Add(new SelectableTextBlock { Name = "mb-credit", Text = credit, Foreground = Text, FontSize = 11, TextWrapping = TextWrapping.Wrap });
+            right.Children.Add(Act("mb-credit-copy", "Namensnennung kopieren", () => MediaCopy(credit, "Namensnennung")));
         }
         else right.Children.Add(P("Tippe ein Bild oder einen Klang an – hier siehst du Urheber, Lizenz und Format.", Muted, 11.5));
         var rightCard = new Border { CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(12), VerticalAlignment = VerticalAlignment.Top, Child = right };
         var split = new Grid { Name = "mb-window", ColumnDefinitions = new ColumnDefinitions("*,12,300"), Children = { left, Pos(rightCard, 2) } };
-        return new StackPanel { Spacing = 8, Children = { bar, split, P("Quelle: Wikimedia Commons – nur freie Lizenzen, nicht-kommerzielle fallen heraus. Gesucht wird erst, wenn du „Suchen“ antippst.", Muted, 10.5) } };
+        return new StackPanel { Spacing = 8, Children = { bar, split, P("Quellen: Wikimedia Commons und Openverse (Flickr, Freesound, Jamendo …) – nur freie Lizenzen, nicht-kommerzielle und „keine Bearbeitung“ fallen heraus. Gesucht wird erst, wenn du „Suchen“ antippst.", Muted, 10.5) } };
     }
 
     Control MediaLibraryView()
@@ -198,7 +266,9 @@ public partial class MainWindow
                         new TextBlock { Text = (it.Author.Length > 0 ? it.Author + " · " : "") + it.License + " · " + it.Source, Foreground = Muted, FontSize = 10.5, TextTrimming = TextTrimming.CharacterEllipsis } } }, 1),
                     Pos(P(it.Added.ToString("dd.MM.yyyy", De), null, 10.5), 2) } } };
             ToolTip.SetTip(b, "Öffnen"); b.Click += (_, _) => Try(MB, () => { if (File.Exists(file)) Launch(file); else throw new FileNotFoundException("Die Datei ist nicht mehr da."); });
-            sp.Children.Add(b);
+            var item = it;
+            var edit = Act($"mb-lib-edit-{i - 1}", it.Kind == "klang" ? "Im Audio-Editor" : "In Bildbearbeitung", () => Try(MB, () => MediaEdit(item)));
+            sp.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { b, Pos(edit, 1) } });
         }
         return Card(sp);
     }
