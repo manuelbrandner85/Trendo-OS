@@ -1,0 +1,19 @@
+#!/bin/bash
+# Erster Start von Trendo OS: läuft ohne Speicherbereich (alles wäre nach dem Ausschalten weg) – Nutzer fragen, Passwort wählen lassen.
+grep -qs ' /run/live/persistence' /proc/mounts && exit 0
+lsblk -no LABEL "$(findmnt -no SOURCE /run/live/medium 2>/dev/null)" 2>/dev/null | grep -qx persistence && exit 0
+[[ -f "$HOME/.trendo-speicher-spaeter" ]] && exit 0
+kdialog --title "Trendo OS" --yesno "Willkommen bei Trendo OS!\n\nDamit deine Dateien, Programme und KI-Modelle nach dem Ausschalten erhalten bleiben, legt Trendo jetzt einen verschlüsselten Speicherbereich auf dem freien Platz dieses Laufwerks an.\n\nJetzt einrichten?" --yes-label "Einrichten" --no-label "Später" || { touch "$HOME/.trendo-speicher-spaeter"; exit 0; }
+while :; do
+  p1=$(kdialog --title "Trendo OS" --password "Passwort für den Speicherbereich (mindestens 8 Zeichen).\nOhne dieses Passwort kommt niemand an deine Daten – auch du nicht, also gut merken.") || exit 0
+  p2=$(kdialog --title "Trendo OS" --password "Passwort bitte noch einmal eingeben:") || exit 0
+  [[ "$p1" == "$p2" && ${#p1} -ge 8 ]] && break
+  kdialog --title "Trendo OS" --sorry "Die Passwörter stimmen nicht überein oder sind kürzer als 8 Zeichen."
+done
+out=$(printf '%s\n' "$p1" | sudo -n /usr/local/sbin/trendo-speicherbereich 2>&1); rc=$?
+unset p1 p2
+if [[ $rc -eq 0 ]]; then
+  kdialog --title "Trendo OS" --yesno "Der verschlüsselte Speicherbereich ist angelegt.\n\nBeim nächsten Start fragt Trendo OS nach dem Passwort. Jetzt neu starten?" --yes-label "Neu starten" --no-label "Später" && systemctl reboot
+else
+  kdialog --title "Trendo OS" --error "Der Speicherbereich konnte nicht angelegt werden:\n$out"
+fi
