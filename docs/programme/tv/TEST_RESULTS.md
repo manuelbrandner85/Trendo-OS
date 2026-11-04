@@ -1,15 +1,16 @@
 # TV & Live – Testergebnisse
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand df39ed6)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand ab225a6)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 15 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 16 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
 | Anmeldung: „Beim Start nach PIN fragen“ lässt sich abschalten | ✓ bestanden |
 | Apps: WhatsApp installieren → Desktop und Startmenü, öffnet als App-Fenster mit eigenem Speicher, Entfernen löscht die Anmeldung | ✓ bestanden |
+| Ersteinrichtung im Vollbild: Claude freiwillig zuerst; Stick/SSD zeigen echte Laufwerke mit GB, zu kleine gesperrt, Windows-Laufwerk nie; ehrlicher Hinweis solange das Abbild fehlt | ✓ bestanden |
 | Ersteinrichtung: nach Neustart geht es beim letzten Schritt weiter, eine schon festgelegte PIN wird nicht erneut abgefragt | ✓ bestanden |
 | Neuerungen im Vollbild: nicht wegklickbar (Esc, Klick daneben), läuft von selbst weiter, Pfeile blättern, „Los geht's“ erst auf der letzten Folie | ✓ bestanden |
 | T-0300: Raster mit Jetzt-Linie, Tage und 20:15, Sparten-Filter, Suche springt zur Sendung, Aufnahme meldet Überschneidung, Erinnerung zeigt Hinweis | ✓ bestanden |

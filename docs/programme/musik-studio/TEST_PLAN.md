@@ -1,6 +1,6 @@
 # Trendo Musik – Testplan
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand df39ed6)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand ab225a6)
 
 32 Tests sprechen dieses Programm an.
 

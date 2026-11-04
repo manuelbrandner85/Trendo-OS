@@ -1,6 +1,6 @@
 # Desktop-Symbole – Lizenzen
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand df39ed6)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand ab225a6)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

@@ -1,6 +1,6 @@
 # Sehen – Arbeitsabläufe
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.36 (Stand df39ed6)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.36 (Stand ab225a6)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 

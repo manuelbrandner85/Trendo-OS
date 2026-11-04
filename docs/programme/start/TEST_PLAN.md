@@ -1,8 +1,8 @@
 # Startbildschirm – Testplan
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand df39ed6)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand ab225a6)
 
-83 Tests sprechen dieses Programm an.
+84 Tests sprechen dieses Programm an.
 
 - 3D-Seite zeigt die Auftragsleiste, ohne die 3D-Arbeitsfläche zu verkleinern
 - Abdeckung und StudioCatalog nennen dieselben Kennungen, Titel und Bereiche
@@ -25,6 +25,7 @@ Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `
 - Design: die neun bekannten Studios zeigen auf der Studios-Seite den echten Status aus requirements.yaml
 - Desktop: anfangs keine Symbole; über Startmenü, Seite „Desktop-Symbole“ und Studio Manager hinzufügen; Rechtsklick entfernt; bleibt gespeichert
 - Drei Studios gleichzeitig bei 1366×768: Briefe, Spiele, 3D – Taskleiste, Snap, Eingabe bleibt
+- Ersteinrichtung im Vollbild: Claude freiwillig zuerst; Stick/SSD zeigen echte Laufwerke mit GB, zu kleine gesperrt, Windows-Laufwerk nie; ehrlicher Hinweis solange das Abbild fehlt
 - Ersteinrichtung: nach Neustart geht es beim letzten Schritt weiter, eine schon festgelegte PIN wird nicht erneut abgefragt
 - Fenster: Einstellung übernehmen (Design-Knopf per Mausklick) schließt keine Fenster – alle kommen mit Lage und Zustand zurück
 - Fenster: Größe an Ecke und Rand per Maus ziehen; an linken/rechten Rand ziehen rastet auf halbe Fläche ein

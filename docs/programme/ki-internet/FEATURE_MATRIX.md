@@ -1,6 +1,6 @@
 # Kostenlose Internet-KIs – Funktionsmatrix
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-internet` · Stand: 0.9.36 (Stand df39ed6)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-internet` · Stand: 0.9.36 (Stand ab225a6)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

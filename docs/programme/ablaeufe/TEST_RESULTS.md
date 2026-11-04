@@ -1,6 +1,6 @@
 # Abläufe (Automatisch erledigen) – Testergebnisse
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand df39ed6)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand ab225a6)
 
 Lauf: `api.trx, app.trx, core.trx`
 

@@ -1,6 +1,6 @@
 # VR & AR gestalten – Lizenzen
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand df39ed6)
+Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand ab225a6)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

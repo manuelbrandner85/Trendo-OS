@@ -1,15 +1,16 @@
 # Personen – Testergebnisse
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `personen` · Stand: 0.9.36 (Stand df39ed6)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `personen` · Stand: 0.9.36 (Stand ab225a6)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 18 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 19 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
 | Anmeldung: „Beim Start nach PIN fragen“ lässt sich abschalten | ✓ bestanden |
 | Apps: WhatsApp installieren → Desktop und Startmenü, öffnet als App-Fenster mit eigenem Speicher, Entfernen löscht die Anmeldung | ✓ bestanden |
+| Ersteinrichtung im Vollbild: Claude freiwillig zuerst; Stick/SSD zeigen echte Laufwerke mit GB, zu kleine gesperrt, Windows-Laufwerk nie; ehrlicher Hinweis solange das Abbild fehlt | ✓ bestanden |
 | Ersteinrichtung: nach Neustart geht es beim letzten Schritt weiter, eine schon festgelegte PIN wird nicht erneut abgefragt | ✓ bestanden |
 | SYS-12 (UI): Bericht über alle Seiten; keine Seite tiefer als 2 Ebenen; Prüfseite hat keine unbenannten Knöpfe | ✓ bestanden |
 | SYS-12 (UI): Leise Benachrichtigung; Einstellung bleibt gespeichert; einfacher Modus zeigt weniger Kacheln | ✓ bestanden |

@@ -1,6 +1,6 @@
 # Baukasten – Einbindung in Trendo OS
 
-Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand df39ed6)
+Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand ab225a6)
 
 - Seite `baukasten` im Studio „Apps zusammenklicken“ (Entwickeln) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

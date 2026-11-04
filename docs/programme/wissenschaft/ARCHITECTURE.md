@@ -1,6 +1,6 @@
 # Messdaten & Auswertung – Architektur
 
-Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.36 (Stand df39ed6)
+Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.36 (Stand ab225a6)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec05.cs`

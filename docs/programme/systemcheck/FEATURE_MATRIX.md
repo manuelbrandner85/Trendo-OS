@@ -1,6 +1,6 @@
 # Systemcheck – Funktionsmatrix
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `systemcheck` · Stand: 0.9.36 (Stand df39ed6)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `systemcheck` · Stand: 0.9.36 (Stand ab225a6)
 
 Quelle: `docs/spec/kataloge/SYS-13_KATALOG.md`
 

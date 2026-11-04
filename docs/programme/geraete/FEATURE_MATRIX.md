@@ -1,6 +1,6 @@
 # Geräte & Laufwerke – Funktionsmatrix
 
-Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand df39ed6)
+Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand ab225a6)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

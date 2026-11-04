@@ -1,6 +1,6 @@
 # Auto & Fahrten – Testplan
 
-Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.36 (Stand df39ed6)
+Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.36 (Stand ab225a6)
 
 18 Tests sprechen dieses Programm an.
 

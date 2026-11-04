@@ -1,6 +1,6 @@
 # Kalender – Testplan
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kalender` · Stand: 0.9.36 (Stand df39ed6)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kalender` · Stand: 0.9.36 (Stand ab225a6)
 
 14 Tests sprechen dieses Programm an.
 

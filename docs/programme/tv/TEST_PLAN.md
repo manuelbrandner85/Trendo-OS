@@ -1,11 +1,12 @@
 # TV & Live – Testplan
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand df39ed6)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand ab225a6)
 
-15 Tests sprechen dieses Programm an.
+16 Tests sprechen dieses Programm an.
 
 - Anmeldung: „Beim Start nach PIN fragen“ lässt sich abschalten
 - Apps: WhatsApp installieren → Desktop und Startmenü, öffnet als App-Fenster mit eigenem Speicher, Entfernen löscht die Anmeldung
+- Ersteinrichtung im Vollbild: Claude freiwillig zuerst; Stick/SSD zeigen echte Laufwerke mit GB, zu kleine gesperrt, Windows-Laufwerk nie; ehrlicher Hinweis solange das Abbild fehlt
 - Ersteinrichtung: nach Neustart geht es beim letzten Schritt weiter, eine schon festgelegte PIN wird nicht erneut abgefragt
 - Neuerungen im Vollbild: nicht wegklickbar (Esc, Klick daneben), läuft von selbst weiter, Pfeile blättern, „Los geht's“ erst auf der letzten Folie
 - T-0300: Raster mit Jetzt-Linie, Tage und 20:15, Sparten-Filter, Suche springt zur Sendung, Aufnahme meldet Überschneidung, Erinnerung zeigt Hinweis

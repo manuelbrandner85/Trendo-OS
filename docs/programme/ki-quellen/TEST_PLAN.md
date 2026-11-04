@@ -1,6 +1,6 @@
 # KI-Quellen – Testplan
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand df39ed6)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand ab225a6)
 
 33 Tests sprechen dieses Programm an.
 

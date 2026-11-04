@@ -1,6 +1,6 @@
 # Verbindungen – Produktionspaket
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.36 (Stand df39ed6)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.36 (Stand ab225a6)
 
 Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

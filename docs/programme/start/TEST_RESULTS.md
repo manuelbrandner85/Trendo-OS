@@ -1,10 +1,10 @@
 # Startbildschirm – Testergebnisse
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand df39ed6)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand ab225a6)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 82 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
+Bestanden 83 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 
 | Test | Ergebnis |
 |---|---|
@@ -29,6 +29,7 @@ Bestanden 82 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 | Design: die neun bekannten Studios zeigen auf der Studios-Seite den echten Status aus requirements.yaml | ✓ bestanden |
 | Desktop: anfangs keine Symbole; über Startmenü, Seite „Desktop-Symbole“ und Studio Manager hinzufügen; Rechtsklick entfernt; bleibt gespeichert | ✓ bestanden |
 | Drei Studios gleichzeitig bei 1366×768: Briefe, Spiele, 3D – Taskleiste, Snap, Eingabe bleibt | ✓ bestanden |
+| Ersteinrichtung im Vollbild: Claude freiwillig zuerst; Stick/SSD zeigen echte Laufwerke mit GB, zu kleine gesperrt, Windows-Laufwerk nie; ehrlicher Hinweis solange das Abbild fehlt | ✓ bestanden |
 | Ersteinrichtung: nach Neustart geht es beim letzten Schritt weiter, eine schon festgelegte PIN wird nicht erneut abgefragt | ✓ bestanden |
 | Fenster: Einstellung übernehmen (Design-Knopf per Mausklick) schließt keine Fenster – alle kommen mit Lage und Zustand zurück | ✓ bestanden |
 | Fenster: Größe an Ecke und Rand per Maus ziehen; an linken/rechten Rand ziehen rastet auf halbe Fläche ein | ✓ bestanden |

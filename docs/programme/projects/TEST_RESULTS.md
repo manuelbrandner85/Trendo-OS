@@ -1,6 +1,6 @@
 # Projekte – Testergebnisse
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.36 (Stand df39ed6)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.36 (Stand ab225a6)
 
 Lauf: `api.trx, app.trx, core.trx`
 
