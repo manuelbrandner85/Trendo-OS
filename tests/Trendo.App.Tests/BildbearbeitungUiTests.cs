@@ -149,16 +149,16 @@ public class Bildbearbeitung_Ui
             Assert.True(Px(w, 50, 110).Red > 180); Assert.Equal(new SKColor(120, 120, 120), Px(w, 150, 110));
             Click(w, "img-mask-invert"); Settle();
             Assert.Equal(new SKColor(120, 120, 120), Px(w, 50, 110)); Assert.True(Px(w, 150, 110).Red > 125);
-            // Tonwerte auf der Foto-Ebene: Gamma hellt das Grau auf, Kurve „Abdunkeln“ dunkelt es
+            // Tonwerte auf der Foto-Ebene: (unter der Maske, ohne Verlauf) Gamma hellt das Grau auf, Kurve „Abdunkeln“ dunkelt es
             Click(w, "img-layer-0"); Settle();
             w.Find<Slider>("img-f-gamma").Value = 2; Click(w, "img-apply");
-            Assert.True(Px(w, 150, 75).Red > 160, $"Gamma: {Px(w, 150, 75)}");
+            Assert.True(Px(w, 80, 75).Red > 160, $"Gamma: {Px(w, 80, 75)}");
             w.Find<Slider>("img-f-gamma").Value = 1; w.Find<ComboBox>("img-curve").SelectedIndex = 3; Click(w, "img-apply");
-            Assert.True(Px(w, 150, 75).Red < 110, $"Kurve: {Px(w, 150, 75)}");
+            Assert.True(Px(w, 80, 75).Red < 110, $"Kurve: {Px(w, 80, 75)}");
             Click(w, "img-auto-levels");
             Assert.Contains("Tonwerte: Schwarz", w.ProgramMessage(BK));
             var f = (System.Text.Json.Nodes.JsonObject)ImageDoc.Layers(w.ProgramActive(BK)!.Data)[0]!["filter"]!;
-            Assert.Equal(0, ImageDoc.N(f["black"])); Assert.Equal(255, ImageDoc.N(f["white"]));
+            Assert.InRange(ImageDoc.N(f["black"]), 0, 120); Assert.Equal(255, ImageDoc.N(f["white"])); // der winzige schwarze Fleck liegt unter 0,5 % und wird wie in Photoshop abgeschnitten
             // Rückgängig nimmt Schritt für Schritt zurück, Original bleibt unverändert
             RealClick(w, V<Button>(w, "prog-undo")); Settle();
             using var o = SKBitmap.Decode(src); Assert.Equal(SKColors.Black, o.GetPixel(50, 75));

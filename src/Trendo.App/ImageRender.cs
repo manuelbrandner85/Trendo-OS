@@ -111,12 +111,13 @@ public static class ImageRender
     }
 
     /// <summary>Farbmatrix (Helligkeit, Kontrast …) und danach Tonwerte/Kurve als Tabelle.</summary>
+    static readonly byte[] Identity = [.. Enumerable.Range(0, 256).Select(i => (byte)i)];
     static SKColorFilter LayerColor(JsonObject? f)
     {
         var m = SKColorFilter.CreateColorMatrix(ImageDoc.ColorMatrix(f));
         if (!ImageOps.HasLut(f)) return m;
         var t = ImageOps.Lut(f);
-        return SKColorFilter.CreateCompose(SKColorFilter.CreateTable(null, t, t, t), m);
+        return SKColorFilter.CreateCompose(SKColorFilter.CreateTable(Identity, t, t, t), m);
     }
 
     /// <summary>Ebenenmaske: außerhalb (oder bei „umkehren“ innerhalb) der Form wird die Ebene ausgeblendet, mit weicher Kante.</summary>

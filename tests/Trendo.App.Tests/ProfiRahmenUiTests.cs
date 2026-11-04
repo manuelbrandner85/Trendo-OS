@@ -18,8 +18,8 @@ public class ProfiRahmen_Ui
         try
         {
             w.Show("bild"); w.ProgramNew("bild"); w.Show("bild"); Pump();
-            var rail = w.Find<StackPanel>("prog-tools");
-            Assert.Equal(8, rail.Children.Count); // mit Vektorpinsel (04.11.2026)
+            var rail = w.Find<Panel>("prog-tools");
+            Assert.Equal(13, rail.Children.Count); // mit Vektorpinsel, Auswahl, Verlauf, Füllen, Reparieren, Klonen (04.11.2026)
             Assert.Null(w.TryFind<Control>("prog-ribbon")?.GetLogicalDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "prog-cmd-img-tool-brush" && b.Parent is WrapPanel));
             w.Find<Button>("prog-cmd-img-tool-brush").Press(); Pump();
             Assert.Equal("brush", w.ImgTool);
@@ -27,14 +27,14 @@ public class ProfiRahmen_Ui
             Assert.Equal(w.Find<Button>("prog-cmd-img-tool-brush").Background, w.TryFind<Button>("prog-save")!.Background); // aktiv = Akzentfarbe wie der Hauptknopf
 
             w.Find<Button>("prog-toggle-werkzeuge").Press(); Pump();
-            Assert.Null(w.TryFind<StackPanel>("prog-tools"));
+            Assert.Null(w.TryFind<Panel>("prog-tools"));
             w.Find<Button>("prog-toggle-eigenschaften").Press(); Pump();
             Assert.Null(w.TryFind<Border>("prog-properties"));
             Assert.Contains("bild:werkzeuge", Trendo.Core.UserSettings.Load(w.Core.DataRoot).HiddenPanels); // gemerkt
             w.Show("settings"); w.Show("bild"); Pump();
-            Assert.Null(w.TryFind<StackPanel>("prog-tools"));
+            Assert.Null(w.TryFind<Panel>("prog-tools"));
             w.Find<Button>("prog-toggle-werkzeuge").Press(); w.Find<Button>("prog-toggle-eigenschaften").Press(); Pump();
-            Assert.NotNull(w.TryFind<StackPanel>("prog-tools")); Assert.NotNull(w.TryFind<Border>("prog-properties"));
+            Assert.NotNull(w.TryFind<Panel>("prog-tools")); Assert.NotNull(w.TryFind<Border>("prog-properties"));
         }
         finally { w.Close(); }
     }

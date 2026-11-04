@@ -177,7 +177,8 @@ public partial class MainWindow
         });
         // Farbe und Pinselgröße direkt über der Fläche
         var bar = new WrapPanel { Name = "img-toolbar", Margin = new Thickness(0, 0, 0, 6) };
-        foreach (var c in ImgColors)
+        // Farben nur bei Werkzeugen, die Farbe brauchen – Auswahl, Reparieren, Klonen, Verschieben, Zuschneiden halten die Leiste kurz
+        foreach (var c in ImgTool is "select" or "heal" or "clone" or "move" or "crop" or "eraser" ? [] : ImgColors)
         {
             var cc = c; var on = string.Equals(ImgColor, c, StringComparison.OrdinalIgnoreCase);
             var b = new Button { Name = "img-color-" + c.TrimStart('#').ToLowerInvariant(), Width = 24, Height = 24, Padding = new Thickness(0), Margin = new Thickness(0, 0, 4, 0), CornerRadius = new CornerRadius(12), Background = Brush.Parse(c), BorderBrush = Brush.Parse(on ? "#FACC15" : "#55FFFFFF"), BorderThickness = new Thickness(on ? 3 : 1) };
