@@ -379,7 +379,7 @@ public sealed partial class MainWindow
             new Border { Width = 8, Height = 8, CornerRadius = new CornerRadius(4), Background = Brush.Parse("#99FFFFFF") } } };
         var act = OsFlat("os-toggle-activities", pill, "Aktivitäten – Übersicht, Programme und Suche", () => ToggleOsLauncher("start"), double.NaN, 24, 12);
         act.Padding = new Thickness(10, 0); act.Margin = new Thickness(6, 0, 0, 0); act.HorizontalAlignment = HorizontalAlignment.Left;
-        var clock = OsFlat("os-toggle-clock", Fg(OsClock("os-clock", d => d.ToString("ddd HH:mm", OsDe), 14, FontWeight.Bold, TextAlignment.Center), fg), "Kalender und Mitteilungen", ToggleOsWidgets, double.NaN, 24, 12);
+        var clock = OsFlat("os-toggle-clock", Fg(OsClock("os-clock", d => d.ToString("ddd", OsDe).TrimEnd('.') + ". " + d.ToString("HH:mm", OsDe), 14, FontWeight.Bold, TextAlignment.Center), fg), "Kalender und Mitteilungen", ToggleOsWidgets, double.NaN, 24, 12);
         clock.Padding = new Thickness(10, 0); clock.HorizontalAlignment = HorizontalAlignment.Center;
         var status = OsFlat("os-toggle-widgets", StatusGlyphs(fg, 14), "Schnelleinstellungen", ToggleOsWidgets, double.NaN, 24, 12);
         status.Padding = new Thickness(8, 0);
