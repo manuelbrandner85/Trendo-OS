@@ -1,0 +1,170 @@
+using System.Globalization;
+using System.Text;
+using System.Text.Json.Nodes;
+using System.Xml.Linq;
+
+namespace Trendo.Core.Media;
+
+/// <summary>Videoschnitt X1/X2/X11/X16 (freigegeben 04.11.2026): Export-Vorlagen, Grafikkarten-Encoder (NVENC), Lautheit −14 LUFS, Bereich,
+/// nur Ton – und Übergabe an andere Schnittprogramme (EDL, FCPXML). Selbst gebaut statt Kdenlive.</summary>
+public static class VideoExport
+{
+    static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
+    static string F(double v) => v.ToString("0.###", Inv);
+
+    /// <summary>W/H = 0: Größe des Projekts. MaxMb: Zielgröße (Bitrate wird daraus berechnet). AudioOnly: nur Ton (M4A).</summary>
+    public sealed record Preset(string Id, string Label, string Hint, int W, int H, string Codec, int Quality, string Ext = ".mp4", double MaxMb = 0, bool AudioOnly = false);
+
+    public static readonly Preset[] Presets =
+    [
+        new("projekt", "Wie das Projekt", "Größe und Bildrate des Projekts", 0, 0, "h264", 20),
+        new("yt1080", "YouTube 1080p", "1920 × 1080, hohe Qualität", 1920, 1080, "h264", 18),
+        new("yt4k", "YouTube 4K", "3840 × 2160, H.265", 3840, 2160, "hevc", 20),
+        new("hoch", "Hochformat 9:16", "1080 × 1920 für Reels, Shorts, TikTok", 1080, 1920, "h264", 19),
+        new("feed", "Feed 4:5", "1080 × 1350 für Instagram", 1080, 1350, "h264", 19),
+        new("whatsapp", "WhatsApp / klein", "1280 × 720, höchstens 15 MB", 1280, 720, "h264", 0, ".mp4", 15),
+        new("av1", "AV1 (sehr klein)", "Projektgröße, moderner Codec", 0, 0, "av1", 30),
+        new("ton", "Nur Ton", "M4A (AAC), z. B. für einen Podcast", 0, 0, "aac", 0, ".m4a", 0, true),
+    ];
+
+    public static Preset Get(string id) => Presets.FirstOrDefault(p => p.Id == id) ?? Presets[0];
+
+    /// <summary>Export-Einstellungen: Vorlage, Encoder-Liste der Grafikkarte, Bereich (Sekunden), Lautheit angleichen.</summary>
+    public sealed record Options(Preset Preset, IReadOnlySet<string>? Gpu = null, double From = 0, double To = 0, bool Loudness = false);
+
+    /// <summary>Encoder wählen: NVENC, wenn die Grafikkarte ihn wirklich kann (vorher gemessen), sonst die Software-Encoder.</summary>
+    public static (string Encoder, List<string> Args) Encoder(Preset p, IReadOnlySet<string>? gpu, double seconds)
+    {
+        var nv = p.Codec switch { "hevc" => "hevc_nvenc", "av1" => "av1_nvenc", _ => "h264_nvenc" };
+        var useGpu = gpu?.Contains(nv) == true;
+        if (p.MaxMb > 0)
+        {
+            var kbps = Math.Max(300, (int)(p.MaxMb * 8192 * 0.95 / Math.Max(1, seconds)) - 96); // Ton 96 kbit/s, 5 % Reserve
+            return useGpu ? (nv, ["-c:v", nv, "-preset", "p5", "-rc", "vbr", "-b:v", $"{kbps}k", "-maxrate", $"{kbps}k", "-bufsize", $"{kbps * 2}k"])
+                          : ("libx264", ["-c:v", "libx264", "-preset", "medium", "-b:v", $"{kbps}k", "-maxrate", $"{kbps}k", "-bufsize", $"{kbps * 2}k"]);
+        }
+        var q = p.Quality.ToString(Inv);
+        return (p.Codec, useGpu) switch
+        {
+            ("hevc", true) => (nv, ["-c:v", nv, "-preset", "p5", "-tune", "hq", "-rc", "vbr", "-cq", q, "-b:v", "0", "-tag:v", "hvc1"]),
+            ("hevc", false) => ("libx265", ["-c:v", "libx265", "-preset", "medium", "-crf", q, "-tag:v", "hvc1"]),
+            ("av1", true) => (nv, ["-c:v", nv, "-preset", "p5", "-cq", q, "-b:v", "0"]),
+            ("av1", false) => ("libsvtav1", ["-c:v", "libsvtav1", "-preset", "8", "-crf", q]),
+            (_, true) => (nv, ["-c:v", nv, "-preset", "p5", "-tune", "hq", "-rc", "vbr", "-cq", (p.Quality + 1).ToString(Inv), "-b:v", "0"]),
+            _ => ("libx264", ["-c:v", "libx264", "-preset", "veryfast", "-crf", q]),
+        };
+    }
+
+    /// <summary>Schluss der Filterkette: Bereich, Zielgröße (andere Seitenverhältnisse mit weichgezeichnetem Hintergrund statt schwarzer Balken), Lautheit.
+    /// Liefert die neuen Ausgänge für Bild und Ton.</summary>
+    public static (string V, string A) Tail(List<string> f, string v, string a, int w, int h, Options o)
+    {
+        if (o.To > o.From && o.To > 0)
+        {
+            f.Add($"[{v}]trim=start={F(o.From)}:end={F(o.To)},setpts=PTS-STARTPTS[vrange]"); v = "vrange";
+            f.Add($"[{a}]atrim=start={F(o.From)}:end={F(o.To)},asetpts=PTS-STARTPTS[arange]"); a = "arange";
+        }
+        int W = o.Preset.W, H = o.Preset.H;
+        if (!o.Preset.AudioOnly && W > 0 && H > 0 && (W != w || H != h))
+        {
+            if (Math.Abs(W / (double)H - w / (double)h) < 0.01) f.Add($"[{v}]scale={W}:{H}:flags=lanczos,setsar=1[vsize]");
+            else
+            {
+                f.Add($"[{v}]split[vbg0][vfg0]");
+                f.Add($"[vbg0]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},boxblur=24:2,eq=brightness=-0.06[vbg]");
+                f.Add($"[vfg0]scale={W}:{H}:force_original_aspect_ratio=decrease:flags=lanczos[vfg]");
+                f.Add("[vbg][vfg]overlay=(W-w)/2:(H-h)/2,setsar=1[vsize]");
+            }
+            v = "vsize";
+        }
+        if (o.Loudness) { f.Add($"[{a}]loudnorm=I=-14:TP=-1:LRA=11,aresample=48000[aloud]"); a = "aloud"; }
+        return (v, a);
+    }
+
+    /// <summary>Länge des Ergebnisses (mit Bereich).</summary>
+    public static double Length(double total, Options o) => o.To > o.From && o.To > 0 ? Math.Min(total, o.To) - Math.Max(0, o.From) : total;
+
+    /// <summary>NVENC wirklich prüfen (1 Bild kodieren) – „ffmpeg -encoders“ allein reicht nicht, die Grafikkarte muss es können.</summary>
+    public static IReadOnlySet<string> GpuEncoders(string ffmpeg)
+    {
+        lock (Cache) if (Cache.TryGetValue(ffmpeg, out var c)) return c;
+        var set = new HashSet<string>();
+        foreach (var e in new[] { "h264_nvenc", "hevc_nvenc", "av1_nvenc" })
+        {
+            var r = Cli.Run(ffmpeg, ["-hide_banner", "-loglevel", "error", "-f", "lavfi", "-i", "color=c=black:s=256x144:d=0.1", "-frames:v", "2", "-c:v", e, "-f", "null", "-"], null, 20000);
+            if (r.Ok) set.Add(e);
+        }
+        lock (Cache) Cache[ffmpeg] = set;
+        return set;
+    }
+    static readonly Dictionary<string, IReadOnlySet<string>> Cache = [];
+
+    // ───────────── X16: Übergabe an andere Schnittprogramme ─────────────
+
+    static string Tc(double s, int fps)
+    {
+        var fr = (long)Math.Round(s * fps); var f = fr % fps; var t = fr / fps;
+        return $"{t / 3600:00}:{t / 60 % 60:00}:{t % 60:00}:{f:00}";
+    }
+
+    /// <summary>EDL (CMX 3600) der Bildspur – lesen Resolve, Premiere, Avid. Überblendungen werden als Dissolve (D) geschrieben.</summary>
+    public static string Edl(JsonObject p, string title)
+    {
+        var clips = VideoEdit.Clips(p); var fps = (int)Math.Max(1, ProgramFps(p)); var starts = VideoEdit.Starts(clips);
+        var sb = new StringBuilder().Append("TITLE: ").AppendLine(title.Length > 0 ? title : "Trendo").AppendLine("FCM: NON-DROP FRAME").AppendLine();
+        for (var i = 0; i < clips.Count; i++)
+        {
+            var c = clips[i]; var reel = "AX";
+            var fadeIn = i > 0 ? VideoEdit.FadeOf(clips, i - 1) : 0;
+            var kind = fadeIn > 0 ? $"D    {(int)Math.Round(fadeIn * fps):000}" : "C        ";
+            sb.AppendLine($"{i + 1:000}  {reel,-8} AA/V  {kind} {Tc(c.In, fps)} {Tc(c.Out, fps)} {Tc(starts[i], fps)} {Tc(starts[i] + c.Length, fps)}");
+            sb.AppendLine($"* FROM CLIP NAME: {Path.GetFileName(c.File)}");
+            sb.AppendLine($"* SOURCE FILE: {c.File}");
+            if (c.Title.Length > 0) sb.AppendLine($"* COMMENT: Titel „{c.Title}“");
+            sb.AppendLine();
+        }
+        return sb.ToString();
+    }
+
+    static double ProgramFps(JsonObject p) => p["fps"] is JsonValue v && v.TryGetValue<double>(out var d) ? d : 30;
+
+    static string R(double s, int fps) => $"{(long)Math.Round(s * fps) * 100}/{fps * 100}s";
+
+    /// <summary>FCPXML 1.10 – Final Cut Pro und DaVinci Resolve öffnen damit Bild- und Musikspur mit Schnittpunkten.</summary>
+    public static string Fcpxml(JsonObject p, string title)
+    {
+        var clips = VideoEdit.Clips(p); var music = VideoEdit.Clips(p, "music"); var fps = (int)Math.Max(1, ProgramFps(p));
+        int w = (int)Math.Max(16, Num(p["width"], 1280)), h = (int)Math.Max(16, Num(p["height"], 720));
+        var all = clips.Concat(music).Select(c => c.File).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var res = new XElement("resources", new XElement("format", new XAttribute("id", "r0"), new XAttribute("name", $"FFVideoFormat{h}p{fps}"),
+            new XAttribute("frameDuration", $"100/{fps * 100}s"), new XAttribute("width", w), new XAttribute("height", h)));
+        string Asset(string file) => "a" + (all.IndexOf(file) + 1);
+        foreach (var f in all)
+        {
+            var c = clips.Concat(music).First(x => x.File == f);
+            res.Add(new XElement("asset", new XAttribute("id", Asset(f)), new XAttribute("name", Path.GetFileNameWithoutExtension(f)), new XAttribute("start", "0s"),
+                new XAttribute("duration", R(Math.Max(c.SourceLength, c.Out), fps)), new XAttribute("hasVideo", c.IsImage || clips.Any(x => x.File == f) ? "1" : "0"),
+                new XAttribute("hasAudio", c.HasAudio ? "1" : "0"), new XAttribute("format", "r0"),
+                new XElement("media-rep", new XAttribute("kind", "original-media"), new XAttribute("src", new Uri(Path.GetFullPath(f)).AbsoluteUri))));
+        }
+        var spine = new XElement("spine"); var t = 0.0; var starts = VideoEdit.Starts(clips);
+        for (var i = 0; i < clips.Count; i++)
+        {
+            var c = clips[i];
+            var el = new XElement("asset-clip", new XAttribute("ref", Asset(c.File)), new XAttribute("name", Path.GetFileNameWithoutExtension(c.File)),
+                new XAttribute("offset", R(starts[i], fps)), new XAttribute("start", R(c.In, fps)), new XAttribute("duration", R(c.Length, fps)), new XAttribute("format", "r0"));
+            if (i == 0)
+                foreach (var m in music)
+                    el.Add(new XElement("asset-clip", new XAttribute("ref", Asset(m.File)), new XAttribute("lane", "-1"), new XAttribute("name", Path.GetFileNameWithoutExtension(m.File)),
+                        new XAttribute("offset", R(m.Start + c.In, fps)), new XAttribute("start", R(m.In, fps)), new XAttribute("duration", R(m.Length, fps)), new XAttribute("audioRole", "music")));
+            spine.Add(el); t = starts[i] + c.Length;
+        }
+        var doc = new XDocument(new XDeclaration("1.0", "UTF-8", null), new XElement("fcpxml", new XAttribute("version", "1.10"), res,
+            new XElement("library", new XElement("event", new XAttribute("name", "Trendo"),
+                new XElement("project", new XAttribute("name", title.Length > 0 ? title : "Trendo"),
+                    new XElement("sequence", new XAttribute("format", "r0"), new XAttribute("duration", R(t, fps)), new XAttribute("tcStart", "0s"), spine))))));
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE fcpxml>\n" + doc.Root!.ToString();
+    }
+
+    static double Num(JsonNode? n, double f) => n is JsonValue v && v.TryGetValue<double>(out var d) ? d : f;
+}

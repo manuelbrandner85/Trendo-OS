@@ -47,6 +47,7 @@ public partial class MainWindow
             var dir = d; var g = DevStudio.Git(dir);
             var info = g.IsRepo ? $"Zweig {g.Branch} · {(g.Changed == 0 ? "alles gespeichert" : g.Changed + " geänderte Dateien")} · {g.LastCommit}" : "ohne Versionsstand";
             var buttons = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = {
+                Act($"dev-edit-{i}", "Bearbeiten", () => { CodeOpenFolder(dir); Show("code"); }, true), // eigener Code-Editor statt VS Code
                 Act($"dev-open-{i}", "Ordner", () => Launch(dir)),
                 OpenInButton("vscode", () => dir, "dev", $"-{i}"),
                 Act($"dev-test-{i}", "Testen", () => { var r = DevStudio.RunTests(dir); _core.Audit.Append(Principal.LocalOwner.Name, "dev.test", $"{Path.GetFileName(dir)} exit={r.Exit}"); Say(r.Ok ? $"„{Path.GetFileName(dir)}“: Test bestanden." : $"„{Path.GetFileName(dir)}“: Test nicht bestanden. {Short(r.Err + r.Out)}", "dev"); }),

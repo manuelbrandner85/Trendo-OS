@@ -138,7 +138,7 @@ public static class VideoEdit
 
     /// <summary>FFmpeg-Aufruf für den Export: jedes Stück zugeschnitten, auf gleiche Größe und Bildrate gebracht, aneinandergehängt;
     /// Stücke ohne Ton bekommen Stille; Musik mit Startzeit und Lautstärke darübergemischt. H.264 + AAC, MP4.</summary>
-    public static List<string> ExportArgs(JsonObject p, string output)
+    public static List<string> ExportArgs(JsonObject p, string output, VideoExport.Options? o = null)
     {
         var clips = Clips(p); var music = Clips(p, "music");
         if (clips.Count == 0) throw new InvalidOperationException("Die Bildspur ist leer – zuerst Videos oder Bilder hinzufügen.");
@@ -190,26 +190,54 @@ public static class VideoEdit
         }
         var total = VideoLength(clips);
         f.Add(n > 1 ? $"{mix}amix=inputs={n}:duration=first:normalize=0[aout]" : "[abase]anull[aout]");
-        a.AddRange(["-filter_complex", string.Join(";", f), "-map", "[vout]", "-map", "[aout]", "-t", F(total),
-            "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", output]);
+        o ??= new VideoExport.Options(VideoExport.Presets[0]);
+        var (vo, ao) = VideoExport.Tail(f, "vout", "aout", w, h, o); // X1/X11: Bereich, Zielgröße, Lautheit
+        var outLen = VideoExport.Length(total, o);
+        if (o.Preset.AudioOnly)
+        {
+            f.Add($"[{vo}]nullsink"); // Bild verwerfen – ein offener Ausgang bricht FFmpeg ab
+            a.AddRange(["-filter_complex", string.Join(";", f), "-map", $"[{ao}]", "-t", F(outLen), "-vn", "-c:a", "aac", "-b:a", "256k", "-movflags", "+faststart", output]);
+            return a;
+        }
+        var (_, enc) = VideoExport.Encoder(o.Preset, o.Gpu, outLen); // X2: NVENC, wenn die Grafikkarte es kann
+        a.AddRange(["-filter_complex", string.Join(";", f), "-map", $"[{vo}]", "-map", $"[{ao}]", "-t", F(outLen), .. enc,
+            "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", o.Preset.MaxMb > 0 ? "96k" : "192k", "-movflags", "+faststart", output]);
         return a;
     }
 
+    /// <summary>X15: fehlende Quelldateien (verschoben oder umbenannter Ordner).</summary>
+    public static List<string> Missing(JsonObject p) =>
+        Clips(p).Concat(Clips(p, "music")).Select(c => c.File).Where(f => !System.IO.File.Exists(f)).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+    /// <summary>X15: fehlende Dateien im Ordner (mit Unterordnern) nach Dateinamen suchen und neu verknüpfen. Liefert die Anzahl der gefundenen Dateien.</summary>
+    public static int Relink(JsonObject p, string folder)
+    {
+        var missing = Missing(p); if (missing.Count == 0 || !Directory.Exists(folder)) return 0;
+        var byName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var f in Directory.EnumerateFiles(folder, "*", new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true, MaxRecursionDepth = 8 }))
+            byName.TryAdd(Path.GetFileName(f), f);
+        var map = missing.Select(m => (m, byName.GetValueOrDefault(Path.GetFileName(m)))).Where(x => x.Item2 is not null).ToDictionary(x => x.m, x => x.Item2!, StringComparer.OrdinalIgnoreCase);
+        foreach (var track in new[] { "clips", "music" })
+            foreach (var c in (p[track] as JsonArray ?? []).OfType<JsonObject>())
+                if (c["file"]?.GetValue<string>() is { } f && map.TryGetValue(f, out var to)) c["file"] = to;
+        return map.Count;
+    }
+
     /// <summary>Export ausführen; prüft danach, dass eine Datei mit Inhalt entstanden ist.</summary>
-    public static string Export(string ffmpeg, JsonObject p, string output, int timeoutMs = 1800000)
+    public static string Export(string ffmpeg, JsonObject p, string output, int timeoutMs = 1800000, VideoExport.Options? o = null)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
-        var r = Cli.Run(ffmpeg, ExportArgs(p, output), Path.GetDirectoryName(Path.GetFullPath(output)), timeoutMs);
+        var r = Cli.Run(ffmpeg, ExportArgs(p, output, o), Path.GetDirectoryName(Path.GetFullPath(output)), timeoutMs);
         if (!r.Ok || !System.IO.File.Exists(output) || new FileInfo(output).Length == 0)
             throw new InvalidOperationException("Export hat nicht geklappt: " + (r.Err.Length > 0 ? r.Err.Trim().Split('\n')[^1] : $"FFmpeg-Code {r.Exit}"));
         return output;
     }
 
     /// <summary>Export im Hintergrund: Fortschritt aus FFmpeg (-progress), Abbrechen beendet nur den eigenen FFmpeg-Prozess und löscht die halbe Datei.</summary>
-    public static async Task<string> ExportAsync(string ffmpeg, JsonObject p, string output, IProgress<double>? progress = null, CancellationToken ct = default)
+    public static async Task<string> ExportAsync(string ffmpeg, JsonObject p, string output, IProgress<double>? progress = null, CancellationToken ct = default, VideoExport.Options? o = null)
     {
-        var args = ExportArgs(p, output); args.InsertRange(4, ["-progress", "pipe:1", "-nostats"]);
-        var total = Math.Max(0.1, VideoLength(Clips(p)));
+        var args = ExportArgs(p, output, o); args.InsertRange(4, ["-progress", "pipe:1", "-nostats"]);
+        var total = Math.Max(0.1, o is null ? VideoLength(Clips(p)) : VideoExport.Length(VideoLength(Clips(p)), o));
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
         var psi = new System.Diagnostics.ProcessStartInfo(ffmpeg) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
         foreach (var a in args) psi.ArgumentList.Add(a);

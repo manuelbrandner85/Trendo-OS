@@ -4,6 +4,8 @@
              RequestedThemeVariant="Dark">
     <Application.Styles>
         <FluentTheme />
+        <!-- Code-Editor (AvaloniaEdit, MIT) -->
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
         <!-- Vorgabe 27.10.2026: hochwertig statt flach – Knöpfe heben sich beim Überfahren leicht an, Eingabefelder mit runden Ecken -->
         <Style Selector="Button">
             <Setter Property="Transitions">

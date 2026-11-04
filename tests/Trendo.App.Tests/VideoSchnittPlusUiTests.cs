@@ -97,4 +97,57 @@ public class VideoSchnittPlus_Ui
         Assert.True(w.Find<StackPanel>("ve-tab-body-export").IsVisible);
         w.Close();
     }
+
+    [AvaloniaFact(DisplayName = "Videoschnitt Export X1/X11/X16: Vorlage Hochformat per Klick, Bereich und Lautheit gehen an den Export, Dateiname mit Vorlage, EDL und FCPXML werden geschrieben")]
+    public async Task Export_presets_and_interchange()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        string F(string n) { var f = Path.Combine(root, n); File.WriteAllBytes(f, [1]); return f; }
+        w.Show("schnitt"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer"));
+        w.EditAdd(F("a.mp4"), length: 6, audio: true); w.Show("schnitt"); Settle();
+        w.EditTab = "export"; w.Show("schnitt"); Settle();
+        Click(w, "ve-preset-hoch");
+        Assert.Equal("hoch", w.EditPreset);
+        w.Find<CheckBox>("ve-loud").IsChecked = true; w.Find<CheckBox>("ve-range").IsChecked = true;
+        w.Find<NumericUpDown>("ve-range-a").Value = 1; w.Find<NumericUpDown>("ve-range-b").Value = 4; Settle();
+        var o = w.EditExportOptions(w.ProgramActive("schnitt")!);
+        Assert.Equal(("hoch", true, 1.0, 4.0), (o.Preset.Id, o.Loudness, o.From, o.To));
+        string? target = null;
+        w.ExportAsyncOverride = (p, f, prog, ct) => { target = f; File.WriteAllText(f, "mp4"); return Task.FromResult(f); };
+        Click(w, "ve-export-go");
+        for (var i = 0; i < 100 && (target is null || w.EditExporting); i++) { await Task.Delay(10); Settle(); }
+        Assert.EndsWith("-hoch.mp4", target);
+        // nur Ton: Endung .m4a
+        w.Show("schnitt"); Settle(); Click(w, "ve-preset-ton"); target = null;
+        Click(w, "ve-export-go");
+        for (var i = 0; i < 100 && (target is null || w.EditExporting); i++) { await Task.Delay(10); Settle(); }
+        Assert.EndsWith(".m4a", target);
+        // Übergabe
+        w.Show("schnitt"); Settle(); Click(w, "ve-edl"); Settle();
+        var edl = Directory.GetFiles(root, "*.edl", SearchOption.AllDirectories).Single();
+        Assert.Contains("FROM CLIP NAME: a.mp4", File.ReadAllText(edl));
+        w.Show("schnitt"); Settle(); Click(w, "ve-fcpxml"); Settle();
+        Assert.Contains("<fcpxml version=\"1.10\"", File.ReadAllText(Directory.GetFiles(root, "*.fcpxml", SearchOption.AllDirectories).Single()));
+        Assert.Contains("Resolve", w.ProgramMessage("schnitt"));
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Videoschnitt X15: verschobene Datei wird gemeldet und per Ordnerwahl neu verknüpft (Rückgängig möglich)")]
+    public void Relink_missing()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        var a = Path.Combine(root, "alt", "strand.mp4"); Directory.CreateDirectory(Path.GetDirectoryName(a)!); File.WriteAllBytes(a, [1]);
+        w.Show("schnitt"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer"));
+        w.EditAdd(a, length: 4, audio: true); w.Show("schnitt"); Settle();
+        Assert.Null(w.TryFind<Border>("ve-missing"));
+        var neu = Path.Combine(root, "neu", "urlaub"); Directory.CreateDirectory(neu); File.Move(a, Path.Combine(neu, "strand.mp4"));
+        w.Show("schnitt"); Settle();
+        Assert.NotNull(w.TryFind<Border>("ve-missing"));
+        w.PickOverride = _ => Task.FromResult<string[]?>([Path.Combine(root, "neu")]);
+        Click(w, "ve-relink"); Settle(); Settle();
+        var d = w.ProgramActive("schnitt")!;
+        Assert.Equal(Path.Combine(neu, "strand.mp4"), VideoEdit.Clips(d.Data)[0].File);
+        Assert.Contains("1 von 1", w.ProgramMessage("schnitt")); Assert.Equal("Neu verknüpfen", d.UndoLabel);
+        w.Close();
+    }
 }

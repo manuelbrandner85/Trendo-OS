@@ -326,7 +326,7 @@ public partial class MainWindow
             }
         }
         sp = bodies["export"];
-        sp.Children.Add(P("Exportieren: oben „Video exportieren“ (mit Einstellungen) oder „Video (MP4) sofort“.", Muted, 11.5));
+        sp.Children.Add(EditExportSettings(d)); // X1/X2/X11/X16: Vorlage, Grafikkarte, Bereich, Lautheit, Übergabe an andere Programme
         if (_veExport is { } job)
         {
             var bar = new ProgressBar { Name = "ve-export-progress", Minimum = 0, Maximum = 100, Value = _veExportProgress * 100, Height = 8 };
@@ -338,6 +338,22 @@ public partial class MainWindow
         sp.Children.Add(H("Projekt", 13));
         sp.Children.Add(P($"{(int)d.Number("width")} × {(int)d.Number("height")} · {(int)d.Number("fps", 30)} Bilder/s · Länge {Clock(VideoEdit.Duration(d.Data))}", Muted, 12));
         if (FfmpegPath is null) outer.Children.Add(P("FFmpeg fehlt: Videos und Ton brauchen es für Länge, Vorschau und Export. Fotos gehen trotzdem.", Brush.Parse("#FACC15"), 12));
+        // X15: verschobene Quelldateien wiederfinden
+        if (VideoEdit.Missing(d.Data) is { Count: > 0 } miss)
+        {
+            var relink = new Button { Name = "ve-relink", Content = "Ordner wählen und neu verknüpfen …", FontSize = 12, Background = Accent, Foreground = Brushes.White };
+            relink.Click += async (_, _) =>
+            {
+                string? dir;
+                if (PickOverride is { } fake) dir = (await fake(new PickRequest("ve-relink", true, false, []))) is [var f0, ..] ? f0 : null;
+                else dir = (await StorageProvider.OpenFolderPickerAsync(new Avalonia.Platform.Storage.FolderPickerOpenOptions { Title = "Wo liegen die Dateien jetzt?" })).Select(x => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(x)).OfType<string>().FirstOrDefault();
+                if (dir is null) return;
+                var n = 0; d.Edit("Neu verknüpfen", x => n = VideoEdit.Relink(x, dir));
+                _thumbs.Clear(); _progMsg[VK] = n == 0 ? "In diesem Ordner wurden die fehlenden Dateien nicht gefunden." : $"{n} von {miss.Count} Dateien wieder verknüpft."; Show(VK);
+            };
+            outer.Children.Insert(0, new Border { Name = "ve-missing", Background = Brush.Parse("#33F59E0B"), BorderBrush = Brush.Parse("#F59E0B"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(8), Padding = new Thickness(10, 8), Margin = new Thickness(0, 0, 0, 8),
+                Child = new StackPanel { Spacing = 6, Children = { P($"⚠ {miss.Count} Datei(en) nicht gefunden – verschoben oder umbenannt? z. B. „{Path.GetFileName(miss[0])}“.", Text, 12), relink } } });
+        }
         return outer;
     }
 
@@ -403,8 +419,9 @@ public partial class MainWindow
     public async Task EditExportBackground(ProgramDocument d)
     {
         if (_veExport is not null) { _progMsg[VK] = "Ein Export läuft schon."; Show(VK); return; }
-        var file = Path.Combine(WorkFolder(Programs[VK].Folder), DevStudio.SafeName(d.Title) + ".mp4");
-        for (var i = 2; File.Exists(file); i++) file = Path.Combine(WorkFolder(Programs[VK].Folder), $"{DevStudio.SafeName(d.Title)}-{i}.mp4");
+        var opts = EditExportOptions(d); var ext = opts.Preset.Ext; var tag = opts.Preset.Id == "projekt" ? "" : "-" + opts.Preset.Id;
+        var file = Path.Combine(WorkFolder(Programs[VK].Folder), DevStudio.SafeName(d.Title) + tag + ext);
+        for (var i = 2; File.Exists(file); i++) file = Path.Combine(WorkFolder(Programs[VK].Folder), $"{DevStudio.SafeName(d.Title)}{tag}-{i}{ext}");
         var data = (JsonObject)d.Data.DeepClone();
         _veExport = new CancellationTokenSource(); _veExportProgress = 0; EditTab = "export"; _progMsg[VK] = "Export läuft im Hintergrund – du kannst weiterarbeiten."; Show(VK);
         var progress = new Progress<double>(v => { _veExportProgress = v; if (_veExportBar is { } b) b.Value = v * 100; });
@@ -416,7 +433,8 @@ public partial class MainWindow
             {
                 var ff = FfmpegPath ?? throw new InvalidOperationException("Für den Export fehlt FFmpeg – unter Zusatzprogramme einrichten.");
                 if (_opt.Isolated) throw new InvalidOperationException("Im abgeschotteten Testmodus startet Trendo kein FFmpeg.");
-                o = await VideoEdit.ExportAsync(ff, data, file, progress, _veExport.Token);
+                if (opts.Gpu is null && !opts.Preset.AudioOnly) { _veGpu = await Task.Run(() => VideoExport.GpuEncoders(ff)); opts = opts with { Gpu = _veGpu }; }
+                o = await VideoEdit.ExportAsync(ff, data, file, progress, _veExport.Token, opts);
             }
             _core.Audit.Append(Principal.LocalOwner.Name, "video.export", Path.GetFileName(o));
             if (VideoEdit.Song(data) is { } linked && Songs.Get(linked.Id) is { } ls) SongVideoAdd(ls, o); // E2: fertiges Video auch beim Lied
