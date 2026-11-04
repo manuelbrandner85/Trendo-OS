@@ -1,6 +1,6 @@
 # Selbstheilung – Funktionsmatrix
 
-Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.36 (Stand bc62519)
+Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.36 (Stand 927ab35)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -25,7 +25,6 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Schutz & Datenschutz
 - Freigaben
 - Sicherung
-- Selbstheilung
 - Sicher prüfen
 - Sicherheits-Werkzeuge
 - Protokoll & Abstürze

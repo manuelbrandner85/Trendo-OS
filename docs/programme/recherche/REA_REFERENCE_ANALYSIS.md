@@ -1,6 +1,6 @@
 # Recherche im Lesemodus – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand bc62519)
+Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand 927ab35)
 
 Analyse: [Vorbild-Analyse Recherche: Zotero, Lesemodus der Browser (Clean-Room)](../../../docs/claude/vorbilder/recherche-zotero.md)
 

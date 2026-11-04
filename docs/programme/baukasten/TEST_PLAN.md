@@ -1,6 +1,6 @@
 # Baukasten – Testplan
 
-Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand bc62519)
+Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand 927ab35)
 
 30 Tests sprechen dieses Programm an.
 

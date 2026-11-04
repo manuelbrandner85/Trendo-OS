@@ -1,6 +1,6 @@
 # Messdaten & Auswertung – Architektur
 
-Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.36 (Stand bc62519)
+Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wissenschaft` · Stand: 0.9.36 (Stand 927ab35)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec05.cs`
@@ -38,6 +38,7 @@ Studio: Messwerte auswerten (SPEC-05) · Bereich: Wissen & Lernen · Seite: `wis
 - LibreOffice (optional)
 - qpdf
 - Tesseract OCR
+- PDFsharp (MIT)
 - Hunspell-Wörterbücher
 
 ## Bausteine (Masterprompt 131 / 5)

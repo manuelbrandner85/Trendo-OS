@@ -1,6 +1,6 @@
 # Alle Studios – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand bc62519)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `studios` · Stand: 0.9.36 (Stand 927ab35)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

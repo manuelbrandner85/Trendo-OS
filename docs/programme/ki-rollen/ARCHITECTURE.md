@@ -1,12 +1,12 @@
 # KI-Rollen und Teams – Architektur
 
-Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.36 (Stand bc62519)
+Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.36 (Stand 927ab35)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)
 
 ## Bedienelemente der Arbeitsfläche
-– (nicht erfasst)
+- KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)
 
 ## Fach-Engine (Trendo.Core)
 – (nicht erfasst)

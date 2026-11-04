@@ -1,13 +1,13 @@
 # Werkzeuge: Notizen, Rechner, Wecker – Architektur
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.36 (Stand bc62519)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.36 (Stand 927ab35)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Helfer.cs`
 - `src/Trendo.App/MainWindow.Sys02.cs`
 
 ## Bedienelemente der Arbeitsfläche
-– (nicht erfasst)
+- Helfer-Arbeitsfläche (Haftnotizen, Rechner mit Tastenfeld, Wecker)
 
 ## Fach-Engine (Trendo.Core)
 - `ProgCalc`

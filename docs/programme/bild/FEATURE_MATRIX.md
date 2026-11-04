@@ -1,6 +1,6 @@
 # Bildbearbeitung – Funktionsmatrix
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand bc62519)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand 927ab35)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -13,3 +13,4 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - 100 % (Ansicht)
 - PNG (Exportieren)
 - JPG (Exportieren)
+- SVG (Vektor) (Exportieren)

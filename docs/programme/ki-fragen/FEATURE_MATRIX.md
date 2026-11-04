@@ -1,6 +1,6 @@
 # KI fragen – Funktionsmatrix
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · Stand: 0.9.36 (Stand bc62519)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · Stand: 0.9.36 (Stand 927ab35)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -8,12 +8,23 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Los
 - Hinzufügen …
 - ✳ Claude
+- Trendo KI (lokal)
+- Mit Claude verbinden
+- KI-Bibliothek
+- KI-Quellen
+- Kostenlose Internet-KIs
+- KI-Vorlagen
+- Skills
+- KI-Rollen und Teams
+- Abläufe
+- Produktion
+- Verbindungen
+- Online-Dienste
 - Chat & Schreiben
 - Nachdenken & Rechnen
 - 👥 Team
 - Modell
 - Fragen
-- Verbindungen
 - ＋ Neues Gespräch
 - Claude als Haupt-KI nutzen (wenn verbunden)
 - Claude darf im Claude-Chat bei Bedarf ins Internet und Befehle ausführen
@@ -23,7 +34,6 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Claude Code einrichten
 - Neu prüfen
 - 🔗 GitHub, Netlify & Erweiterungen
-- Mit Claude verbinden
 - Schreib eine freundliche Absage für einen Termin
 - Erkläre mir kurz, was eine Firewall macht
 - Plane mir ein Abendessen für 4 Personen

@@ -1,6 +1,6 @@
 # Trendo Tabelle – Architektur
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.36 (Stand bc62519)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabelle` · Stand: 0.9.36 (Stand 927ab35)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys10.cs`
@@ -40,6 +40,7 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `tabell
 - LibreOffice (optional)
 - qpdf
 - Tesseract OCR
+- PDFsharp (MIT)
 - Hunspell-Wörterbücher
 
 ## Bausteine (Masterprompt 131 / 5)

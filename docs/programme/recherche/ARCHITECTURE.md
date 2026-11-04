@@ -1,12 +1,12 @@
 # Recherche im Lesemodus – Architektur
 
-Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand bc62519)
+Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand 927ab35)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)
 
 ## Bedienelemente der Arbeitsfläche
-– (nicht erfasst)
+- Lese-Browser (Quellen, Lesebereich, Zitate)
 
 ## Fach-Engine (Trendo.Core)
 – (nicht erfasst)

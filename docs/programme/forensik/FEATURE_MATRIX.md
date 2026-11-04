@@ -1,6 +1,6 @@
 # Sicherheits-Werkzeuge & Beweise – Funktionsmatrix
 
-Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand bc62519)
+Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand 927ab35)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -27,7 +27,6 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Sicherung
 - Selbstheilung
 - Sicher prüfen
-- Sicherheits-Werkzeuge
 - Protokoll & Abstürze
 - Speicher & Leistung
 - Leistung messen

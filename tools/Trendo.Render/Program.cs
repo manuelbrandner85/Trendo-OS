@@ -544,6 +544,15 @@ else if (shot == "seite")
     if (Environment.GetEnvironmentVariable("TRENDO_3D") is { Length: > 0 }) { win.Show("3d"); foreach (var sh in new[] { "cube", "sphere", "cylinder", "torus" }) win.Studio3DAddShape(sh); win.Studio3DSelect(1); } // 3D-Modelle erstellen mit Arbeitsfläche
     if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lv)); win.ProgramNew(page, tpl); if (Environment.GetEnvironmentVariable("TRENDO_GAMESEC") is { Length: > 0 } gs) win.GameSection = gs; win.Show(page); } // Programm mit Vorlage öffnen
     if (Environment.GetEnvironmentVariable("TRENDO_AUDIO") is { Length: > 0 } au) { win.AuOpen(au); win.AuSel = (20, 34); win.Show("ton"); } // Audio-Editor mit echter Datei zeigen
+    if (Environment.GetEnvironmentVariable("TRENDO_PROJ_DEMO") is { Length: > 0 }) // Projektmappe mit Beispielprojekt
+    {
+        var pr = win.Core.Projects.CreateNamed("Umzug Sommer 2026"); win.Core.Projects.CreateNamed("Gartenhaus bauen"); win.Core.Projects.CreateNamed("Fotobuch Italien");
+        var tmpd = Path.Combine(Path.GetTempPath(), "trendo-projdemo"); Directory.CreateDirectory(tmpd);
+        foreach (var (n, size) in new[] { ("Grundriss neue Wohnung.pdf", 820_000), ("Kistenliste.xlsx", 24_000), ("Termine Umzugsfirma.docx", 41_000), ("Wohnzimmer.jpg", 2_400_000) })
+        { var f = Path.Combine(tmpd, n); File.WriteAllBytes(f, new byte[size]); win.Core.Projects.AddFile(pr.Id, f, n.EndsWith(".jpg") ? "Fotos" : null); }
+        win.Core.Projects.SetNote(pr.Id, "Umzug am 15. August. Kartons bis Ende Juli packen, Nachsendeauftrag stellen.");
+        win.ProjectSelected = pr.Id; win.Show("projects");
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_CODE") is { Length: > 0 } cd) { win.CodeOpenFolder(cd); foreach (var f in (Environment.GetEnvironmentVariable("TRENDO_CODE_FILES") ?? "").Split(";", StringSplitOptions.RemoveEmptyEntries)) win.CodeOpenFile(Path.Combine(cd, f)); win.Show("code"); } // Code-Editor mit Projekt zeigen
     if (page == "architektur" && Environment.GetEnvironmentVariable("TRENDO_ARCH") is { Length: > 0 } arch) // Grundriss: Auswahl/3D/Werkzeug zeigen
     {

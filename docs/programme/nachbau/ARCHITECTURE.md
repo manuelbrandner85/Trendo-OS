@@ -1,12 +1,12 @@
 # Sauberer Nachbau – Architektur
 
-Studio: Programme nachbauen (X-10) · Bereich: Entwickeln · Seite: `nachbau` · Stand: 0.9.36 (Stand bc62519)
+Studio: Programme nachbauen (X-10) · Bereich: Entwickeln · Seite: `nachbau` · Stand: 0.9.36 (Stand 927ab35)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W5CleanRoom.cs`
 
 ## Bedienelemente der Arbeitsfläche
-– (nicht erfasst)
+- Nachbau-Projekt (Projekte, drei Schritte, Tagebuch)
 
 ## Fach-Engine (Trendo.Core)
 - `CleanRoom`

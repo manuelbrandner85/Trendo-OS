@@ -1,6 +1,6 @@
 # Trendo Präsentation – Produktionspaket
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.36 (Stand bc62519)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.36 (Stand 927ab35)
 
 Arbeitsfläche: Folienansicht  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

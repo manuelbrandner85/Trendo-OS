@@ -1,6 +1,6 @@
 # Geräteverbund (PC, Pi, Android) – Funktionsmatrix
 
-Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.36 (Stand bc62519)
+Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.36 (Stand 927ab35)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -14,7 +14,6 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Betriebsmodus
 - Geräte & Laufwerke
 - Handy verbinden
-- Geräteverbund
 - Im Heimnetz teilen
 - Apps
 - Programme verwalten

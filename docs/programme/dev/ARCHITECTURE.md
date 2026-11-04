@@ -1,18 +1,29 @@
 # Software – Architektur
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand bc62519)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 927ab35)
 
 ## Präsentation (Trendo.App)
+- `src/Trendo.App/MainWindow.CodeEditor.cs`
 - `src/Trendo.App/MainWindow.W4Dev.cs`
 
 ## Bedienelemente der Arbeitsfläche
 - Bildansicht
 
+## Reiter
+- Software
+- Code-Editor
+
 ## Fach-Engine (Trendo.Core)
-– (nicht erfasst)
+- `CodeProject`
 
 ## Dateiformate (im Code belegt)
-– (nicht erfasst)
+- .html
+- .jpg
+- .json
+- .md
+- .png
+- .svg
+- .xml
 
 ## Externe Programme und Dienste
 - Git

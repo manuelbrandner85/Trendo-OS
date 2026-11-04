@@ -1,12 +1,12 @@
 # Posteingang – Architektur
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `posteingang` · Stand: 0.9.36 (Stand bc62519)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `posteingang` · Stand: 0.9.36 (Stand 927ab35)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)
 
 ## Bedienelemente der Arbeitsfläche
-– (nicht erfasst)
+- Posteingang (Ordner, Liste, Lesebereich)
 
 ## Fach-Engine (Trendo.Core)
 – (nicht erfasst)

@@ -1,6 +1,6 @@
 # Werkzeuge: Notizen, Rechner, Wecker – Funktionsmatrix
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.36 (Stand bc62519)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.36 (Stand 927ab35)
 
 Quelle: `docs/spec/kataloge/SYS-02_KATALOG.md`
 
@@ -38,10 +38,10 @@ Quelle: `docs/spec/kataloge/SYS-02_KATALOG.md`
 - Verstanden
 - Werkzeuge
 - Medien
-- Notiz speichern
+- ＋ Notiz
 - Zum Notizbuch →
 - 1 Min.
 - 5 Min.
 - 10 Min.
 - 25 Min.
-- Stopp
+- ■ Stopp

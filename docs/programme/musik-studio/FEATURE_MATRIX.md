@@ -1,6 +1,6 @@
 # Trendo Musik – Funktionsmatrix
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand bc62519)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 927ab35)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -32,5 +32,12 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Flöte
 - Ukulele
 - Stil übernehmen
+- Suchen
+- Datei wählen und untersuchen
+- Das ist meine eigene Stimme. Ich nehme sie hier selbst mit dem Mikrofon auf.
+- ⏺ Aufnahme 1 von 10
+- 🧠 Stimme lernen
+- 🎙 Cover erzeugen
+- 🎤 Karaoke aus dem Original
 - ＋ Eigene Aufnahme
 - ★ Favoriten

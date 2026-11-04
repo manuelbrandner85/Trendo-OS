@@ -1,12 +1,12 @@
 # KI-Vorlagen – Architektur
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.36 (Stand bc62519)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.36 (Stand 927ab35)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)
 
 ## Bedienelemente der Arbeitsfläche
-– (nicht erfasst)
+- KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)
 
 ## Fach-Engine (Trendo.Core)
 – (nicht erfasst)

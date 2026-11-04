@@ -1,13 +1,13 @@
 # Trendo 3D-Druck – Architektur
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d-druck` · Stand: 0.9.36 (Stand bc62519)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d-druck` · Stand: 0.9.36 (Stand 927ab35)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Print3D.cs`
 - `src/Trendo.App/MainWindow.W4Studio3D.cs`
 
 ## Bedienelemente der Arbeitsfläche
-– (nicht erfasst)
+- CAD-/3D-Zeichenfläche
 
 ## Fach-Engine (Trendo.Core)
 - `Mesh3D`

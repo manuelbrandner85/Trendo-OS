@@ -1,6 +1,6 @@
 # Medien bearbeiten – Lizenzen
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand bc62519)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand 927ab35)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 
@@ -8,6 +8,8 @@ Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nen
 - Ollama – lokale KI (optional)
 - FFmpeg
 - LibreOffice (optional)
+- Krita (optional)
+- Inkscape (optional)
 - VLC (optional)
 - mpv (optional)
 

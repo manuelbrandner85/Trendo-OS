@@ -1,6 +1,6 @@
 # Projekte – Testplan
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.36 (Stand bc62519)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.36 (Stand 927ab35)
 
 37 Tests sprechen dieses Programm an.
 

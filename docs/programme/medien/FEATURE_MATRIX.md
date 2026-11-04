@@ -1,6 +1,6 @@
 # Medien – Funktionsmatrix
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.36 (Stand bc62519)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `medien` · Stand: 0.9.36 (Stand 927ab35)
 
 Quelle: `docs/spec/kataloge/SYS-02_KATALOG.md`
 
@@ -40,3 +40,10 @@ Quelle: `docs/spec/kataloge/SYS-02_KATALOG.md`
 - Medien
 - 🖼 Fotos
 - 🎵 Musik & Videos
+- Alle Fotos
+- ★ Favoriten
+- ⧉ Doppelte
+- Album anlegen
+- Ordner wählen …
+- Ordner aufnehmen
+- ↻ Neu einlesen

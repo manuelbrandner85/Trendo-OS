@@ -1,8 +1,8 @@
 # Wissen für die KI – Testplan
 
-Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand bc62519)
+Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand 927ab35)
 
-16 Tests sprechen dieses Programm an.
+17 Tests sprechen dieses Programm an.
 
 - CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet
 - CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt
@@ -19,4 +19,5 @@ Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen
 - T-0201: Mausklick auf „Datei wählen …“ füllt das Feld, die Datei steht danach unter „Zuletzt“; Eintippen geht weiter
 - T-0201: Ordnerfeld öffnet den Ordner-Dialog
 - T-0201: jedes Pfad- oder Ordnerfeld hat „Datei wählen …“ bzw. „Ordner wählen …“
+- Wochenrückblick UI: Knopf öffnet den Rückblick mit Kacheln und Lerntagen, KI-Zusammenfassung (ersetzt) erscheint, „Als Seite speichern“ legt die Seite an
 - X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette

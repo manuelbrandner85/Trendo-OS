@@ -1,6 +1,6 @@
 # Start – Architektur
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand bc62519)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 927ab35)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys10.cs`
@@ -23,15 +23,12 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-s
 - `PdfText`
 - `Speller`
 - `TaskList`
-- `PdfExport`
-- `RealProcessRunner`
 - `TaskItem`
 
 ## Dateiformate (im Code belegt)
 - .csv
 - .docx
 - .ics
-- .jpg
 - .json
 - .md
 - .odt
@@ -43,21 +40,11 @@ Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-s
 - .zip
 
 ## Externe Programme und Dienste
-- Blender (optional, 3D-Fotos/Render)
-- Unreal Engine (optional)
-- Ollama – lokale KI (optional)
-- FFmpeg
 - LibreOffice (optional)
 - qpdf
-- Krita (optional)
-- Inkscape (optional)
 - Tesseract OCR
 - PDFsharp (MIT)
 - Hunspell-Wörterbücher
-- Git
-- OBS Studio (optional)
-- mpv (optional)
-- Python (optional)
 
 ## Bausteine (Masterprompt 131 / 5)
 Eigene Arbeitsseite ohne die gemeinsame Programm-Hülle – Dokumentmodell, Rückgängig und Bedienstufen sind hier nicht einheitlich.

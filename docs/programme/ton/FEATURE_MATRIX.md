@@ -1,0 +1,37 @@
+# Audio bearbeiten – Funktionsmatrix
+
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.36 (Stand 927ab35)
+
+Kein freigegebener Funktionskatalog für dieses Studio.
+
+## Werkzeuge der Oberfläche
+- ✂ Ausschneiden (Bearbeiten)
+- ⧉ Kopieren (Bearbeiten)
+- 📋 Einfügen (Bearbeiten)
+- Löschen (Bearbeiten)
+- Zuschneiden (Bearbeiten)
+- Stille (Bearbeiten)
+- Duplizieren (Bearbeiten)
+- ◢ Einblenden (Effekte)
+- ◣ Ausblenden (Effekte)
+- 🔊 Lauter (Effekte)
+- 🔉 Leiser (Effekte)
+- Normalisieren (Effekte)
+- Rauschen unterdrücken (Effekte)
+- Echo (Effekte)
+- Umkehren (Effekte)
+- Tiefen weg (Filter)
+- Höhen weg (Filter)
+- Zu Mono (Filter)
+- Schneller (Filter)
+- Langsamer (Filter)
+- 1 s Stille einfügen (Filter)
+- ▶ Abspielen (Abspielen)
+- ■ Stopp (Abspielen)
+- Alles wählen (Abspielen)
+- Auswahl aufheben (Abspielen)
+- WAV (16 Bit) (Exportieren)
+- WAV (24 Bit, Studio) (Exportieren)
+- MP3 (Exportieren)
+- FLAC (verlustfrei) (Exportieren)
+- OGG (Exportieren)

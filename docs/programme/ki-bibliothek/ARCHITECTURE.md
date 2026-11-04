@@ -1,17 +1,18 @@
 # KI-Bibliothek – Architektur
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.36 (Stand bc62519)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-bibliothek` · Stand: 0.9.36 (Stand 927ab35)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.KiLibrary.cs`
 
 ## Bedienelemente der Arbeitsfläche
-– (nicht erfasst)
+- KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)
 
 ## Fach-Engine (Trendo.Core)
 - `KiKind`
 - `KiLibrary`
 - `KiRuntime`
+- `Archive7z`
 - `HardwareInfo`
 - `KiPyApps`
 - `KiSourceSetups`

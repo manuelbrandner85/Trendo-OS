@@ -1,8 +1,9 @@
 # Medien bearbeiten – Architektur
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand bc62519)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand 927ab35)
 
 ## Präsentation (Trendo.App)
+- `src/Trendo.App/MainWindow.AudioEditor.cs`
 - `src/Trendo.App/MainWindow.Bildbearbeitung.cs`
 - `src/Trendo.App/MainWindow.VideoSchnitt.cs`
 - `src/Trendo.App/MainWindow.W4Media.cs`
@@ -13,9 +14,12 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 ## Fach-Engine (Trendo.Core)
 - `VideoEdit`
 - `ImageDoc`
+- `AudioEdit`
 - `MediaStudio`
+- `AudioFile`
 - `FileShelf`
 - `Colors`
+- `EditMarker`
 - `Progress`
 - `Rect`
 
@@ -33,6 +37,7 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - .pdf
 - .png
 - .pptx
+- .svg
 - .tdoc
 - .txt
 - .wav
@@ -45,6 +50,8 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - Ollama – lokale KI (optional)
 - FFmpeg
 - LibreOffice (optional)
+- Krita (optional)
+- Inkscape (optional)
 - VLC (optional)
 - mpv (optional)
 

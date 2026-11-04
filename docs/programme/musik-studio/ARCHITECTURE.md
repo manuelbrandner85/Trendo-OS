@@ -1,12 +1,13 @@
 # Trendo Musik – Architektur
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand bc62519)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 927ab35)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)
 
 ## Bedienelemente der Arbeitsfläche
-– (nicht erfasst)
+- Liederliste mit Player und Lied-Ansicht (wie Suno)
+- Texteditor
 
 ## Fach-Engine (Trendo.Core)
 – (nicht erfasst)

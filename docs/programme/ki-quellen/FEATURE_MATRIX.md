@@ -1,17 +1,27 @@
 # KI-Quellen – Funktionsmatrix
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand bc62519)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand 927ab35)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
 ## Werkzeuge der Oberfläche
 - Los
 - ✳ Claude
+- KI fragen
+- Trendo KI (lokal)
+- Mit Claude verbinden
+- KI-Bibliothek
+- Kostenlose Internet-KIs
+- KI-Vorlagen
+- Skills
+- KI-Rollen und Teams
+- Abläufe
+- Produktion
+- Verbindungen
+- Online-Dienste
 - 👥 Team
 - Verstanden
 - KI-Quellen
-- KI-Bibliothek
-- Kostenlose Internet-KIs
 - Claude als Haupt-KI nutzen (wenn verbunden)
 - Claude darf im Claude-Chat bei Bedarf ins Internet und Befehle ausführen
 - Claude startet sein Ergebnis echt und sieht es sich selbst an (Bildschirmfoto), bevor du es bekommst
@@ -20,7 +30,6 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Claude Code einrichten
 - Neu prüfen
 - 🔗 GitHub, Netlify & Erweiterungen
-- Mit Claude verbinden
 - Jetzt suchen
 - Herunterladen & einrichten
 - Ausschalten

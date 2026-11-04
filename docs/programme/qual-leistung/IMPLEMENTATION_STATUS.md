@@ -1,6 +1,6 @@
 # Leistung – Umsetzungsstand
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-leistung` · Stand: 0.9.36 (Stand bc62519)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-leistung` · Stand: 0.9.36 (Stand 927ab35)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 

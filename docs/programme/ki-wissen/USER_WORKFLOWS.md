@@ -1,6 +1,6 @@
 # Wissen für die KI – Arbeitsabläufe
 
-Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand bc62519)
+Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand 927ab35)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 
@@ -9,4 +9,5 @@ Die Abläufe unten sind die Oberflächentests, die das Programm über den echten
 - CORE-10 UI: Merken, Suchen, Löschen und Korrektur aus dem Gespräch
 - CORE-12 UI: Vorlage ausfüllen und senden, neue Vorlage speichern, Masterprompt bauen
 - SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf
+- Wochenrückblick UI: Knopf öffnet den Rückblick mit Kacheln und Lerntagen, KI-Zusammenfassung (ersetzt) erscheint, „Als Seite speichern“ legt die Seite an
 - X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette

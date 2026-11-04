@@ -769,43 +769,6 @@ public sealed partial class MainWindow : Window
         return f.Split('|').Any(x => s.Id.StartsWith(x, StringComparison.OrdinalIgnoreCase)) || name.Contains(f, StringComparison.OrdinalIgnoreCase) || s.Name.Contains(f, StringComparison.OrdinalIgnoreCase);
     }
 
-    private Control ProjectsView()
-    {
-        var sp = new StackPanel { Spacing = 8 };
-        var id = new TextBox { Name = "txt-project-id", PlaceholderText = "projekt-id (a-z, 0-9, -)", Width = 260 };
-        var create = new Button { Name = "btn-create-project", Content = "Projekt anlegen" };
-        var msg = P(""); msg.Name = "txt-project-msg";
-        create.Click += (_, _) =>
-        {
-            try { _core.Projects.Create(id.Text ?? "", id.Text ?? ""); Show("projects"); }
-            catch (Exception ex) { msg.Text = ex.Message; }
-        };
-        sp.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { id, create } });
-        sp.Children.Add(msg);
-        foreach (var p in _core.Projects.List())
-        {
-            var open = new Button { Name = "btn-open-folder-" + p.Id, Content = "Ordner im Explorer öffnen (Freigabe nötig)" };
-            open.Click += (_, _) => { _core.Integrations.PlanOpenProjectFolder(Principal.LocalOwner, p.Id); Show("approvals"); };
-            var box = new StackPanel { Spacing = 6 };
-            box.Children.Add(new TextBlock { Text = p.Name, Foreground = Text });
-            box.Children.Add(P($"Angelegt {p.CreatedAt:dd.MM.yyyy HH:mm}"));
-            var scene3d = Path.Combine(_core.Projects.ProjectFilesRoot(p.Id), "3d", "szene.json");
-            if (File.Exists(scene3d))
-            {
-                var open3 = new Button { Name = "btn-open-3d-" + p.Id, Content = "Im 3D-Studio öffnen" };
-                open3.Click += (_, _) => Open3DProject(p.Id);
-                box.Children.Add(open3);
-            }
-            box.Children.Add(open);
-            sp.Children.Add(new Border { Background = TileBg, CornerRadius = new CornerRadius(10), Padding = new Thickness(12), Child = box });
-        }
-        var url = new Button { Name = "btn-open-url", Content = "Trendo-Repository im Browser öffnen (Freigabe nötig)", IsEnabled = !_core.Offline };
-        if (_core.Offline) ToolTip.SetTip(url, "Offline-Modus: deaktiviert");
-        url.Click += (_, _) => { try { _core.Integrations.PlanOpenUrl(Principal.LocalOwner, "https://github.com/manuelbrandner85/Trendo-OS"); Show("approvals"); } catch (OfflineException ex) { msg.Text = ex.Message; } };
-        sp.Children.Add(url);
-        return Page("Projekte", sp);
-    }
-
     private Control ApprovalsView()
     {
         var sp = new StackPanel { Spacing = 8 };

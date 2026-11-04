@@ -1,12 +1,12 @@
 # Baukasten – Architektur
 
-Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand bc62519)
+Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand 927ab35)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W4Builder.cs`
 
 ## Bedienelemente der Arbeitsfläche
-– (nicht erfasst)
+- App-Designer (Bausteine, Vorschau, Eigenschaften)
 
 ## Fach-Engine (Trendo.Core)
 - `SitePage`

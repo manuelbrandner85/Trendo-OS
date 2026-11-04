@@ -1,6 +1,6 @@
 # Betriebsmodus – Funktionsmatrix
 
-Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.36 (Stand bc62519)
+Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.36 (Stand 927ab35)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -11,7 +11,6 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Personen & Konten
 - Sehen & Bedienhilfen
 - Trendo-Updates
-- Betriebsmodus
 - Geräte & Laufwerke
 - Handy verbinden
 - Geräteverbund
@@ -35,3 +34,4 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Qualitäts-Ampel
 - Bau-Fortschritt
 - 👥 Team
+- Stick oder SSD schreiben …

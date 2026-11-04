@@ -1,6 +1,6 @@
 # Sehen – Funktionsmatrix
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.36 (Stand bc62519)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `bedien-sehen` · Stand: 0.9.36 (Stand 927ab35)
 
 Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 
@@ -37,7 +37,6 @@ Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 - ✳ Claude
 - Darstellung & Sprache
 - Personen & Konten
-- Sehen & Bedienhilfen
 - Trendo-Updates
 - Betriebsmodus
 - Geräte & Laufwerke

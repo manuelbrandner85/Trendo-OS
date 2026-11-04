@@ -1,6 +1,6 @@
 # KI-Quellen – Testplan
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand bc62519)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand 927ab35)
 
 33 Tests sprechen dieses Programm an.
 
@@ -27,7 +27,7 @@ Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-que
 - KI-Quellen und KI-Bibliothek: ohne laufendes Ollama ein Hinweis mit nächstem Schritt, gesperrte Knöpfe sagen warum
 - KoboldCpp: Bestätigen → von GitHub laden → einrichten → Starten mit größtem Sprachmodell
 - LM Studio: Installer von der Herstellerseite laden und starten, danach erkennen und Quelle einschalten
-- Programme von GitHub: Programmliste vom neuesten Release, kleine Programme zuerst geladen, mit Prüfsumme eingerichtet
+- Programme von GitHub: Programmliste vom neuesten Release, kleine zuerst, mit Prüfsumme – Selbstgebautes (qpdf) und Bei-Bedarf-Programme (Blender) lädt das Setup nicht
 - SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf
 - T-0316: Claude als Haupt-KI – Frage läuft eingegrenzt über Claude (kein Datei-Ändern), Antwort mit Quelle „Claude (dein Abo)“; Haupt-KI aus → Claude wird nicht gefragt
 - T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „✓ Mit deinem Claude-Abo verbunden (Max)“

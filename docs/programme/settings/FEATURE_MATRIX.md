@@ -1,6 +1,6 @@
 # Einstellungen – Funktionsmatrix
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand bc62519)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 927ab35)
 
 Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 
@@ -35,7 +35,6 @@ Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 ## Werkzeuge der Oberfläche
 - Los
 - ✳ Claude
-- Darstellung & Sprache
 - Personen & Konten
 - Sehen & Bedienhilfen
 - Trendo-Updates
@@ -93,3 +92,4 @@ Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 - Wellen
 - Morgen
 - Hintergrund nach Tageszeit wechseln (Morgen · Wellen · Bergsee · Polarlicht)
+- Bewegung reduzieren (keine Animationen)

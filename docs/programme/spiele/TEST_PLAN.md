@@ -1,6 +1,6 @@
 # Werkstatt – Testplan
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand bc62519)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand 927ab35)
 
 27 Tests sprechen dieses Programm an.
 

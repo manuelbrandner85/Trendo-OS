@@ -1,6 +1,6 @@
 # Geräte & Laufwerke – Funktionsmatrix
 
-Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand bc62519)
+Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 927ab35)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -12,7 +12,6 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Sehen & Bedienhilfen
 - Trendo-Updates
 - Betriebsmodus
-- Geräte & Laufwerke
 - Handy verbinden
 - Geräteverbund
 - Im Heimnetz teilen

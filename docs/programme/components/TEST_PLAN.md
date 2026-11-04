@@ -1,6 +1,6 @@
 # Zusatzprogramme – Testplan
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand bc62519)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand 927ab35)
 
 55 Tests sprechen dieses Programm an.
 
@@ -19,7 +19,7 @@ Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `co
 - LETTER-UI: Briefkopf → Akte (Behörde) → Fakt, Chronik, Eingang → Frist UNGEPRÜFT → Quelle fehlt → Export gesperrt → beheben → DOCX → Freigabe → Versand BLOCKED
 - LETTER-UI: Briefstudio hat genau eine Unterebene; Akte/Ausgabe erst mit offener Akte
 - Programme (UI): mitgelieferte Programme haben eine Beschreibung mit Funktionsweise
-- Programme von GitHub: Programmliste vom neuesten Release, kleine Programme zuerst geladen, mit Prüfsumme eingerichtet
+- Programme von GitHub: Programmliste vom neuesten Release, kleine zuerst, mit Prüfsumme – Selbstgebautes (qpdf) und Bei-Bedarf-Programme (Blender) lädt das Setup nicht
 - QA-004 UI: Browser-Aktion abgelehnt → nichts geöffnet
 - QA-004 UI: Browser-Aktion freigegeben → genau einmal geöffnet
 - QA-004 UI: Explorer-Aktion → Freigabe-Ansicht; Ausführung erst nach Klick auf Freigeben
