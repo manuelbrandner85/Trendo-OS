@@ -1,6 +1,6 @@
 # CNC-Werkstatt – Einbindung in Trendo OS
 
-Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.36 (Stand c50f512)
+Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.36 (Stand 0d902aa)
 
 - Seite `cnc` im Studio „Fräsen & Fertigen“ (Technik & Fachgebiete) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: ja (Dokumente .tdoc, Zuletzt, Wiederherstellen, Bedienstufen)

@@ -1,6 +1,6 @@
 # TV & Live – Lizenzen
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand c50f512)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand 0d902aa)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

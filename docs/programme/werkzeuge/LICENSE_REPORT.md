@@ -1,6 +1,6 @@
 # Werkzeuge: Notizen, Rechner, Wecker – Lizenzen
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.36 (Stand c50f512)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.36 (Stand 0d902aa)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

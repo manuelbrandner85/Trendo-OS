@@ -1,6 +1,6 @@
 # Betriebsmodus – Funktionsmatrix
 
-Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.36 (Stand c50f512)
+Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.36 (Stand 0d902aa)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

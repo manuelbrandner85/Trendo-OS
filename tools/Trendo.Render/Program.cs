@@ -110,7 +110,15 @@ if (Environment.GetEnvironmentVariable("TRENDO_KATALOG") is { Length: > 0 } repo
     {
         var (ui, tools) = win.ProgramCatalogInspect(e.Id);
         double? warm = null; // A1: Öffnungszeit warm messen (zweites Öffnen, wie im Seiten-Prüflauf)
-        try { win.Show(e.Id); Dispatcher.UIThread.RunJobs(); var sw = System.Diagnostics.Stopwatch.StartNew(); win.Show(e.Id); Dispatcher.UIThread.RunJobs(); warm = Math.Round(sw.Elapsed.TotalMilliseconds); }
+        // Gemessen 04.11.2026 (dotnet-trace): im Prüflauf zeichnet Skia das ganze Bild auf dem Prozessor – das war mehr als die Hälfte der Zeit und im echten Betrieb
+        // Sache der Grafikkarte. Darum zählt hier: Seite bauen + anordnen (Median aus 5), ohne das Zeichnen.
+        try
+        {
+            win.Show(e.Id); Dispatcher.UIThread.RunJobs(); win.UpdateLayout();
+            var ts = new List<double>();
+            for (var r = 0; r < 5; r++) { var sw = System.Diagnostics.Stopwatch.StartNew(); win.Show(e.Id); win.UpdateLayout(); ts.Add(sw.Elapsed.TotalMilliseconds); Dispatcher.UIThread.RunJobs(); }
+            ts.Sort(); warm = Math.Round(ts[2]);
+        }
         catch (Exception ex) when (ex is InvalidOperationException or IOException or ArgumentException) { }
         foreach (var old in win.Windows.Stack.Reverse().Skip(3).ToList()) win.CloseWindow(old.Id);
         var full = Trendo.Core.Programs.ProgramCatalog.Enrich(e with { WarmMs = warm, Type = ui, Tools = e.Tools.Count > 0 ? e.Tools : tools, Ui = ui.Concat(e.Shell ? ["Menüband", "Eigenschaften", "Statusleiste", "Dokument-Reiter"] : []).ToList() }, repo, req, types);
@@ -544,6 +552,18 @@ else if (shot == "seite")
     if (Environment.GetEnvironmentVariable("TRENDO_3D") is { Length: > 0 }) { win.Show("3d"); foreach (var sh in new[] { "cube", "sphere", "cylinder", "torus" }) win.Studio3DAddShape(sh); win.Studio3DSelect(1); } // 3D-Modelle erstellen mit Arbeitsfläche
     if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lv)); win.ProgramNew(page, tpl); if (Environment.GetEnvironmentVariable("TRENDO_GAMESEC") is { Length: > 0 } gs) win.GameSection = gs; win.Show(page); } // Programm mit Vorlage öffnen
     if (Environment.GetEnvironmentVariable("TRENDO_AUDIO") is { Length: > 0 } au) { win.AuOpen(au); win.AuSel = (20, 34); win.Show("ton"); } // Audio-Editor mit echter Datei zeigen
+    if (Environment.GetEnvironmentVariable("TRENDO_PROFIL") is { Length: > 0 } prof) // Öffnungszeit messen: jede Seite 40× öffnen (für dotnet-trace)
+    {
+        foreach (var pk in prof.Split(','))
+        {
+            win.Show(pk); Dispatcher.UIThread.RunJobs();
+            var times = new List<double>();
+            for (var r = 0; r < (Environment.GetEnvironmentVariable("TRENDO_PROFIL_N") is { } pn ? int.Parse(pn) : 7); r++) { var sw = System.Diagnostics.Stopwatch.StartNew(); win.Show(pk); win.UpdateLayout(); times.Add(sw.Elapsed.TotalMilliseconds); Dispatcher.UIThread.RunJobs(); }
+            times.Sort();
+            Console.WriteLine($"PROFIL {pk}: Median {times[times.Count / 2]:0} ms, schnellstes {times[0]:0}, langsamstes {times[^1]:0} ms");
+        }
+        return;
+    }
     if (Environment.GetEnvironmentVariable("TRENDO_PROJ_DEMO") is { Length: > 0 }) // Projektmappe mit Beispielprojekt
     {
         var pr = win.Core.Projects.CreateNamed("Umzug Sommer 2026"); win.Core.Projects.CreateNamed("Gartenhaus bauen"); win.Core.Projects.CreateNamed("Fotobuch Italien");

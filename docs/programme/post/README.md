@@ -1,6 +1,6 @@
 # E-Mail & Kontakte – Produktionspaket
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.36 (Stand c50f512)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.36 (Stand 0d902aa)
 
 Arbeitsfläche: Texteditor  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

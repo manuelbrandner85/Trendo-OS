@@ -1,6 +1,6 @@
 # Geräte überwachen – Lizenzen
 
-Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand c50f512)
+Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand 0d902aa)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

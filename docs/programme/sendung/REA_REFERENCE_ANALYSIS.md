@@ -1,6 +1,6 @@
 # Live streamen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand c50f512)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand 0d902aa)
 
 Analyse: [Vorbild-Analyse Sendeablauf: Rundown-Planer, OBS (Clean-Room)](../../../docs/claude/vorbilder/sendeablauf-rundown.md)
 

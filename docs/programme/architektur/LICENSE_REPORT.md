@@ -1,6 +1,6 @@
 # Grundriss & Wohnen – Lizenzen
 
-Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.36 (Stand c50f512)
+Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.36 (Stand 0d902aa)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

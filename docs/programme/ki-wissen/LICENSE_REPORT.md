@@ -1,6 +1,6 @@
 # Wissen für die KI – Lizenzen
 
-Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand c50f512)
+Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand 0d902aa)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

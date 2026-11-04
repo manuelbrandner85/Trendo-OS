@@ -1,6 +1,6 @@
 # Freie Bilder & Klänge – Architektur
 
-Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand c50f512)
+Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand 0d902aa)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W4Assets.cs`

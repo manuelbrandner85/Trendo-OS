@@ -1,6 +1,6 @@
 # Videoschnitt – Testplan
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand c50f512)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand 0d902aa)
 
 13 Tests sprechen dieses Programm an.
 

@@ -1,6 +1,6 @@
 # Skills – Lizenzen
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-skills` · Stand: 0.9.36 (Stand c50f512)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-skills` · Stand: 0.9.36 (Stand 0d902aa)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

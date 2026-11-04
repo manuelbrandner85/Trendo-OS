@@ -1,6 +1,6 @@
 # Ersteinrichtung – Funktionsmatrix
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `einrichtung` · Stand: 0.9.36 (Stand c50f512)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `einrichtung` · Stand: 0.9.36 (Stand 0d902aa)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

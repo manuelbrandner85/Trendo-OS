@@ -1,6 +1,6 @@
 # Lernen mit Karteikarten – Produktionspaket
 
-Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.36 (Stand c50f512)
+Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.36 (Stand 0d902aa)
 
 Arbeitsfläche: Diagramm/Zeichnung, Lernkarte  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

@@ -1,6 +1,6 @@
 # Einstellungen – Funktionsmatrix
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand c50f512)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `settings` · Stand: 0.9.36 (Stand 0d902aa)
 
 Quelle: `docs/spec/kataloge/SYS-12_KATALOG.md`
 

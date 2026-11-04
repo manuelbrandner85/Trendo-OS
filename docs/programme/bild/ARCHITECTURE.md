@@ -1,6 +1,6 @@
 # Bildbearbeitung – Architektur
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand c50f512)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `bild` · Stand: 0.9.36 (Stand 0d902aa)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.AudioEditor.cs`

@@ -1,6 +1,6 @@
 # Zusatzprogramme – Produktionspaket
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand c50f512)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand 0d902aa)
 
 Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

@@ -1,6 +1,6 @@
 # Live streamen – Umsetzungsstand
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand c50f512)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand 0d902aa)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
