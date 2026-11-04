@@ -122,6 +122,13 @@ public sealed class EditTimeline : Control
             }
             else if (m.Kind == "shot")
                 ctx.DrawLine(new Pen(new SolidColorBrush(Color.Parse("#55FFFFFF")), 1), new Point(X(m.Start), Ruler - 4), new Point(X(m.Start), Ruler + 3));
+            else if (m.Kind == "user") // X5: eigene Marke (Taste M) – Dreieck am Lineal
+            {
+                var x0 = X(m.Start); var geo = new StreamGeometry();
+                using (var g = geo.Open()) { g.BeginFigure(new Point(x0 - 5, 0), true); g.LineTo(new Point(x0 + 5, 0)); g.LineTo(new Point(x0, 8)); g.EndFigure(true); }
+                ctx.DrawGeometry(new SolidColorBrush(Color.Parse("#22D3EE")), null, geo);
+                ctx.DrawLine(new Pen(new SolidColorBrush(Color.Parse("#5522D3EE")), 1), new Point(x0, 8), new Point(x0, h));
+            }
         }
         // Bildspur
         for (var i = 0; i < Clips.Count; i++)

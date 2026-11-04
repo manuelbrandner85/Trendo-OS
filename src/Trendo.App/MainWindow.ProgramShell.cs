@@ -304,12 +304,29 @@ public partial class MainWindow
             open.Flyout = new Flyout { Content = new StackPanel { Width = 380, Spacing = 4, Children = { P("Ordner und Dateiname", null, 12), saveAs, go } } };
             return [open];
         }
+        // X17: frühere Stände – jedes Speichern behält den alten Stand (höchstens 20)
+        List<Control> VersionControls()
+        {
+            if (d.Path is null || ProgramDocument.Versions(d.Path) is not { Count: > 0 } vs) return [];
+            var list = new StackPanel { Width = 300, Spacing = 2, Children = { P($"Frühere Stände von „{d.Title}“ – Wiederherstellen lässt sich rückgängig machen.", null, 12) } };
+            var open = RBtn("prog-versions", $"Versionen ({vs.Count})", () => { });
+            for (var i = 0; i < vs.Count; i++)
+            {
+                var v = vs[i];
+                var b = new Button { Name = $"prog-version-{i}", Content = v.When.ToString("dd.MM.yyyy  HH:mm:ss"), FontSize = 12, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left };
+                b.Click += (_, _) => { open.Flyout?.Hide(); ProgramRun(key, () => { d.RestoreVersion(v.File); _progMsg[key] = $"Stand vom {v.When:dd.MM.yyyy HH:mm} zurückgeholt – Strg+Z macht es rückgängig."; }); };
+                list.Children.Add(b);
+            }
+            open.Flyout = new Flyout { Content = new ScrollViewer { MaxHeight = 420, Content = list } };
+            return [open];
+        }
         var groups = new List<(string, List<Control>)>
         {
             ("Datei", [
                 RBtn("prog-new", "Neu", () => ProgramRun(key, () => ProgramNew(key))),
                 RBtn("prog-save", "Speichern", () => ProgramRun(key, () => ProgramSave(key)), true),
                 .. SaveAsControls(),
+                .. VersionControls(),
                 RBtn("prog-close", "Schließen", () => ProgramRun(key, () => { if (d.Dirty) d.Autosave(ProgBackup); ProgramClose(key, _progActive.GetValueOrDefault(key)); })),
             ]),
             ("Bearbeiten", [

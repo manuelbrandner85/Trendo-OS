@@ -130,9 +130,53 @@ public sealed class ProgramDocument
         var target = path ?? Path ?? throw new InvalidOperationException("Bitte einen Speicherort wählen.");
         if (!target.EndsWith(Extension, StringComparison.OrdinalIgnoreCase)) target += Extension;
         Directory.CreateDirectory(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(target))!);
-        var tmp = target + ".tmp"; File.WriteAllText(tmp, Serialize()); SafeFile.Move(tmp, target);
+        var json = Serialize(); KeepVersion(target, json);
+        var tmp = target + ".tmp"; File.WriteAllText(tmp, json); SafeFile.Move(tmp, target);
         Path = target; Dirty = false;
         if (File.Exists(AutosaveFile(target))) File.Delete(AutosaveFile(target));
+    }
+
+    // ───────────── X17: Versionen (freigegeben 04.11.2026) ─────────────
+    public const int MaxVersions = 20;
+
+    /// <summary>Ordner der Versionen einer Datei: neben der Datei unter „.versionen/Name“.</summary>
+    public static string VersionDir(string file) => System.IO.Path.Combine(System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(file))!, ".versionen", System.IO.Path.GetFileNameWithoutExtension(file));
+
+    /// <summary>Vor dem Überschreiben den alten Stand behalten (nur wenn er sich unterscheidet); höchstens 20 Versionen.</summary>
+    static void KeepVersion(string target, string next)
+    {
+        if (!File.Exists(target)) return;
+        try
+        {
+            var old = File.ReadAllText(target);
+            if (old == next) return; // nichts geändert
+            var dir = VersionDir(target); Directory.CreateDirectory(dir);
+            var last = Directory.GetFiles(dir, "*" + Extension).Order(StringComparer.Ordinal).LastOrDefault();
+            if (last is not null && File.ReadAllText(last) == old) return;
+            var name = File.GetLastWriteTime(target).ToString("yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture);
+            var f = System.IO.Path.Combine(dir, name + Extension);
+            for (var n = 2; File.Exists(f); n++) f = System.IO.Path.Combine(dir, $"{name}-{n}{Extension}");
+            File.WriteAllText(f, old);
+            foreach (var x in Directory.GetFiles(dir, "*" + Extension).Order(StringComparer.Ordinal).SkipLast(MaxVersions)) File.Delete(x);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } // Versionen sind ein Zusatz – Speichern geht trotzdem
+    }
+
+    /// <summary>Versionen einer Datei, neueste zuerst: (Datei, Zeitpunkt).</summary>
+    public static List<(string File, DateTime When)> Versions(string file)
+    {
+        var dir = VersionDir(file);
+        if (!Directory.Exists(dir)) return [];
+        return Directory.GetFiles(dir, "*" + Extension).Order(StringComparer.Ordinal).Reverse()
+            .Select(f => (f, DateTime.TryParseExact(System.IO.Path.GetFileNameWithoutExtension(f)[..15], "yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var t) ? t : File.GetLastWriteTime(f))).ToList();
+    }
+
+    /// <summary>Version zurückholen – als Bearbeitungsschritt (Rückgängig bringt den jetzigen Stand zurück).</summary>
+    public void RestoreVersion(string versionFile)
+    {
+        var v = Load(versionFile, Studio);
+        var json = v.Data.ToJsonString();
+        Edit("Version wiederherstellen", d => { d.Clear(); foreach (var kv in JsonNode.Parse(json)!.AsObject().ToList()) d[kv.Key] = kv.Value?.DeepClone(); });
     }
 
     public static ProgramDocument Load(string path, string? expectStudio = null)

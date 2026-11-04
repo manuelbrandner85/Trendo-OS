@@ -219,6 +219,7 @@ public partial class MainWindow
                 case Key.Space: EditTogglePlay(d); e.Handled = true; break;
                 case Key.Left: ProgramRun(VK, () => d.Set("playhead", Math.Max(0, Math.Round(d.Number("playhead") - (e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 1 : 1.0 / 30), 3)), "Abspielkopf")); e.Handled = true; break;
                 case Key.Right: ProgramRun(VK, () => d.Set("playhead", Math.Min(VideoEdit.Duration(d.Data), Math.Round(d.Number("playhead") + (e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? 1 : 1.0 / 30), 3)), "Abspielkopf")); e.Handled = true; break;
+                case Key.J or Key.K or Key.L or Key.I or Key.O or Key.M or Key.Home or Key.End when e.KeyModifiers == KeyModifiers.None: EditKey(d, e.Key); e.Handled = true; break; // X5: wie in Profi-Schnittprogrammen
             }
         };
         var scroll = new ScrollViewer { Content = tl, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled };
@@ -376,11 +377,47 @@ public partial class MainWindow
         _vePlay.Tick += (_, _) =>
         {
             var clips = VideoEdit.Clips(d.Data); var len = VideoEdit.VideoLength(clips);
-            t += 1.0 / PlayFps;
+            t += EditRate / PlayFps; _vePos = t;
+            if (t <= 0 && EditRate < 0) { _vePlay?.Stop(); _vePlay = null; EditRate = 1; d.Set("playhead", 0, "Abspielkopf"); _progMsg[VK] = "Anfang erreicht."; Show(VK); return; }
             if (t >= len) { _vePlay?.Stop(); _vePlay = null; d.Set("playhead", Math.Round(len, 2), "Abspielkopf"); _progMsg[VK] = "Ende erreicht."; Show(VK); return; }
             EditShowFrame(d, t);
         };
         _vePlay.Start(); _progMsg[VK] = "Spielt … (Leertaste hält an)";
+    }
+
+    /// <summary>X5: Abspieltempo (J/K/L): 1, 2, 4 vorwärts, −1, −2, −4 rückwärts.</summary>
+    public double EditRate { get; private set; } = 1;
+    double _vePos = -1;
+
+    /// <summary>X5 Tastatur wie in Resolve/Premiere: J rückwärts (mehrfach = schneller), K Halt, L vorwärts (mehrfach = schneller),
+    /// I/O Anfang/Ende des Export-Bereichs, M Marke setzen, Pos1/Ende springen. Öffentlich für Tests.</summary>
+    public void EditKey(ProgramDocument d, Key key)
+    {
+        var len = VideoEdit.Duration(d.Data);
+        var at = _vePlay is not null && _vePos >= 0 ? _vePos : d.Number("playhead");
+        switch (key)
+        {
+            case Key.K:
+                if (_vePlay is not null) { EditTogglePlay(d); d.Set("playhead", Math.Round(Math.Clamp(at, 0, len), 3), "Abspielkopf"); }
+                EditRate = 1; break;
+            case Key.L or Key.J:
+            {
+                var dir = key == Key.L ? 1 : -1;
+                EditRate = _vePlay is not null && Math.Sign(EditRate) == dir ? Math.Clamp(EditRate * 2, -4, 4) : dir;
+                if (_vePlay is null) { if (dir < 0 && at <= 0.05) { EditRate = 1; break; } EditTogglePlay(d); }
+                _progMsg[VK] = (EditRate > 0 ? "▶ " : "◀ ") + $"{Math.Abs(EditRate):0}× (K hält an)"; break;
+            }
+            case Key.I: EditRange = (Math.Round(at, 2), EditRange.To > at ? EditRange.To : len); _progMsg[VK] = $"Bereich ab {ClockMs(at)} (Export → „Nur einen Bereich“)."; Show(VK); break;
+            case Key.O: EditRange = (Math.Min(EditRange.From, at), Math.Round(at, 2)); _progMsg[VK] = $"Bereich {ClockMs(EditRange.From)}–{ClockMs(at)}."; Show(VK); break;
+            case Key.M:
+            {
+                var t = Math.Round(at, 2);
+                d.Edit("Marke", x => VideoEdit.SetMarkers(x, VideoEdit.Markers(x).Append(new EditMarker(t, t, "user", $"Marke {VideoEdit.Markers(x).Count(m => m.Kind == "user") + 1}"))));
+                _progMsg[VK] = $"Marke bei {ClockMs(t)}."; Show(VK); break;
+            }
+            case Key.Home: d.Set("playhead", 0, "Abspielkopf"); Show(VK); break;
+            case Key.End: d.Set("playhead", Math.Round(len, 2), "Abspielkopf"); Show(VK); break;
+        }
     }
 
     /// <summary>Bild zur Zeit t zeigen, ohne die Seite neu aufzubauen (Abspielen).</summary>

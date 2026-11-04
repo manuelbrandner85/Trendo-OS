@@ -67,4 +67,23 @@ public class ProgramShellUiTests
         Assert.True(d.Dirty); Assert.Equal(4, d.List("pieces").Count);
         w.Close();
     }
+
+    [Avalonia.Headless.XUnit.AvaloniaFact(DisplayName = "X17 Versionen: nach dem zweiten Speichern zeigt die Datei-Gruppe „Versionen (1)“, Wiederherstellen holt den alten Stand (rückgängig machbar)")]
+    public void Versions_in_shell()
+    {
+        var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1000;
+        try
+        {
+            w.Show("ton"); var d = w.ProgramNew("ton", "stille"); w.Show("ton"); StartMenu_Ui.Settle();
+            Assert.Null(w.TryFind<Avalonia.Controls.Button>("prog-versions"));
+            w.ProgramSave("ton");
+            d.Edit("Lauter", x => Trendo.Core.Media.AudioEdit.Add(x, Trendo.Core.Media.AudioEdit.Op("gain", 0, 0, 3)));
+            w.ProgramSave("ton"); w.Show("ton"); StartMenu_Ui.Settle();
+            Assert.Equal("Versionen (1)", w.Find<Avalonia.Controls.Button>("prog-versions").Content);
+            var v = Trendo.Core.Programs.ProgramDocument.Versions(d.Path!)[0].File;
+            d.RestoreVersion(v); Assert.Empty(d.List("ops"));
+            d.Undo(); Assert.Single(d.List("ops"));
+        }
+        finally { w.Close(); }
+    }
 }

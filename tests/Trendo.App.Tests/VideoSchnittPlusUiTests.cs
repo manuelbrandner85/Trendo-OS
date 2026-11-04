@@ -150,4 +150,28 @@ public class VideoSchnittPlus_Ui
         Assert.Contains("1 von 1", w.ProgramMessage("schnitt")); Assert.Equal("Neu verknüpfen", d.UndoLabel);
         w.Close();
     }
+
+    [AvaloniaFact(DisplayName = "Videoschnitt X5: L spielt (zweimal = 2×), J rückwärts, K hält an, I/O setzen den Export-Bereich, M setzt eine Marke, Pos1/Ende springen")]
+    public void Jkl_keys()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        string F(string n) { var f = Path.Combine(root, n); File.WriteAllBytes(f, [1]); return f; }
+        w.Show("schnitt"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer"));
+        w.EditAdd(F("a.mp4"), length: 10, audio: true); w.Show("schnitt"); Settle();
+        var d = w.ProgramActive("schnitt")!;
+        w.EditKey(d, Avalonia.Input.Key.L); Assert.True(w.EditPlaying); Assert.Equal(1, w.EditRate);
+        w.EditKey(d, Avalonia.Input.Key.L); Assert.Equal(2, w.EditRate);
+        w.EditKey(d, Avalonia.Input.Key.K); Assert.False(w.EditPlaying); Assert.Equal(1, w.EditRate);
+        w.EditKey(d, Avalonia.Input.Key.End); Assert.Equal(10, d.Number("playhead"), 1);
+        w.EditKey(d, Avalonia.Input.Key.J); Assert.True(w.EditPlaying); Assert.Equal(-1, w.EditRate);
+        w.EditKey(d, Avalonia.Input.Key.K);
+        d.Set("playhead", 2, "Abspielkopf"); w.EditKey(d, Avalonia.Input.Key.I);
+        d.Set("playhead", 6, "Abspielkopf"); w.EditKey(d, Avalonia.Input.Key.O);
+        Assert.Equal((2.0, 6.0), w.EditRange);
+        w.EditKey(d, Avalonia.Input.Key.M);
+        Assert.Contains(VideoEdit.Markers(d.Data), m => m.Kind == "user" && Math.Abs(m.Start - 6) < 0.01);
+        Assert.Equal("Marke", d.UndoLabel);
+        w.EditKey(d, Avalonia.Input.Key.Home); Assert.Equal(0, d.Number("playhead"));
+        w.Close();
+    }
 }
