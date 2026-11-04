@@ -1,6 +1,6 @@
 # Vorbild-Analyse Bedienstile: Windows 11, macOS, GNOME (Clean-Room)
 
-- Programme: „Dateien“
+- Gilt für: Bedienstile und den Dateimanager „Dateien“ (keine Programm-Analyse im Sinne des Programmkatalogs)
 - Vorbilder: Windows 11 (Fluent Design, Datei-Explorer), macOS (Apple Human Interface Guidelines, Finder), GNOME 46/47 (GNOME HIG, Adwaita, „Dateien“/Nautilus)
 - Wunsch 04.11.2026: Desktop, Leisten, Startmenü, Fenster, Menüs, Ordner, Arbeitsplatz und Bedienverhalten wie im Original; keine Trendo-Funktion geht verloren; Stil „Trendo“ bleibt unverändert.
 - Grenze: Maße, Anordnung, Farben, Verhalten nachgebaut. Fremde Logos, Hintergrundbilder, Symbolsätze und Schriften werden nicht mitgeliefert – an Stelle des Windows-/Apple-Logos steht das Trendo-Logo, Symbole sind eigene. Systemschrift wird genutzt, wenn sie auf dem Rechner vorhanden ist (Segoe UI Variable, SF Pro, Cantarell), sonst Inter.
