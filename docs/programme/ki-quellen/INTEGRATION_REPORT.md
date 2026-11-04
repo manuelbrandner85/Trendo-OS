@@ -1,6 +1,6 @@
 # KI-Quellen – Einbindung in Trendo OS
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand dcf0568)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand 808cc8f)
 
 - Seite `ki-quellen` im Studio „Kostenlose KI finden“ (KI & Automatik) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

@@ -1,6 +1,6 @@
 # Videoschnitt – Produktionspaket
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand dcf0568)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand 808cc8f)
 
 Arbeitsfläche: Video-Zeitleiste  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

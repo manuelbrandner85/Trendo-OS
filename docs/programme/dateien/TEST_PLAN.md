@@ -1,6 +1,6 @@
 # Dateien – Testplan
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.36 (Stand dcf0568)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.36 (Stand 808cc8f)
 
 3 Tests sprechen dieses Programm an.
 

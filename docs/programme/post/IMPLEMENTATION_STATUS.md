@@ -1,6 +1,6 @@
 # E-Mail & Kontakte – Umsetzungsstand
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.36 (Stand dcf0568)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.36 (Stand 808cc8f)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -23,4 +23,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | AU-01 | Aufgabentafel mit Spalten | Implementiert | `TodoBoard_Ui` |
 | AU-02 | Aufgaben verwalten | Implementiert | `TaskManagerTests` |
 
-0 von 16 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 16 Funktionen getestet.
