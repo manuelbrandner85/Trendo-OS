@@ -1,9 +1,10 @@
 # Adressbuch – Testplan
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand dfd134a)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand dcf0568)
 
-7 Tests sprechen dieses Programm an.
+8 Tests sprechen dieses Programm an.
 
+- Adressbuch wie Google Kontakte/Outlook: CSV einlesen und sichern, Nummern vereinheitlichen, Etiketten der gewählten Gruppe als PDF
 - SYS-09 F2: Datum, Monatsname, Wochentag und morgen erkennen – mit Uhrzeit
 - SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen
 - SYS-09 UI: Kontakt anlegen, Entwurf prüfen und im Mailprogramm öffnen (nichts wird gesendet)

@@ -1,7 +1,23 @@
 # Freie Bilder & Klänge – Umsetzungsstand
 
-Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand dfd134a)
+Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand dcf0568)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
-Kein Funktionskatalog – Stand je Funktion nicht erfasst.
+| Nr | Funktion | Stand | Test |
+|---|---|---|---|
+| FM-01 | Bilder und Klänge suchen, Raster mit Vorschau, Lizenz und Urheber | Implementiert | `MediaBrowser_Ui` |
+| FM-02 | Nur freie Lizenzen, Filter Lizenz und Format | Implementiert | `MediaLibraryTests` |
+| FM-03 | Laden mit Herkunftsdatei, Bibliothek, alle Namensnennungen | Implementiert | `MediaLibraryTests` |
+| FM-04 | Klänge vorhören | Implementiert | `MediaBrowser_Ui` |
+| FM-05 | Zweite Quelle Openverse, Quellen gemischt | Implementiert | `MediaLibraryPlusTests` |
+| FM-06 | Ausrichtung quer/hoch/quadratisch, Mindestbreite | Implementiert | `MediaLibraryPlusTests` |
+| FM-07 | Namensnennung als Text, HTML, Markdown | Implementiert | `MediaLibraryPlusTests` |
+| FM-08 | Bild in der Bildbearbeitung, Klang im Audio-Editor öffnen | Implementiert | `MediaBrowser_Ui` |
+| FM-09 | Schriften suchen und laden (offene Lizenzen) | Implementiert | `MediaLibraryPlusTests` |
+| FM-10 | 3D-Modelle, Texturen, Himmel | Implementiert | `AssetLibraryTests` |
+| FM-11 | Themen-Kacheln als Startseite | Implementiert | `MediaBrowser_Ui` |
+| FM-12 | Ähnliche Bilder | Geplant | `–` |
+| FM-13 | Merklisten | Geplant | `–` |
+
+0 von 13 Funktionen getestet (noch kein Testlauf eingelesen).

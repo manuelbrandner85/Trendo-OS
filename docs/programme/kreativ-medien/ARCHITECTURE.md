@@ -1,6 +1,6 @@
 # Medien bearbeiten – Architektur
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand dfd134a)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand dcf0568)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.AudioEditor.cs`
@@ -13,16 +13,16 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - Medien-Werkbank (Dateien, Werkzeuge, Ergebnis)
 
 ## Fach-Engine (Trendo.Core)
-- `VideoEdit`
 - `ImageDoc`
+- `VideoEdit`
 - `AudioEdit`
 - `MediaStudio`
 - `AudioFile`
+- `ImageOps`
 - `FileShelf`
+- `AudioDsp`
 - `Colors`
 - `EditMarker`
-- `Progress`
-- `Rect`
 
 ## Dateiformate (im Code belegt)
 - .csv
@@ -39,7 +39,6 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - .png
 - .pptx
 - .svg
-- .tdoc
 - .txt
 - .wav
 - .webm
@@ -53,6 +52,7 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - LibreOffice (optional)
 - Krita (optional)
 - Inkscape (optional)
+- GIMP (optional)
 - VLC (optional)
 - mpv (optional)
 

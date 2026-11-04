@@ -1,6 +1,6 @@
 # Audio bearbeiten – Lizenzen
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.36 (Stand dfd134a)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.36 (Stand dcf0568)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 
@@ -10,6 +10,7 @@ Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nen
 - LibreOffice (optional)
 - Krita (optional)
 - Inkscape (optional)
+- GIMP (optional)
 - VLC (optional)
 - mpv (optional)
 

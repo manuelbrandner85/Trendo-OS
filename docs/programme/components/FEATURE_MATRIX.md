@@ -1,6 +1,6 @@
 # Zusatzprogramme – Funktionsmatrix
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand dfd134a)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand dcf0568)
 
 Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 

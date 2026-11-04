@@ -1045,7 +1045,7 @@ public sealed partial class MainWindow : Window
         if (id.StartsWith("STUDIO-LETTER", StringComparison.OrdinalIgnoreCase)) return "brief";
         if (id.Equals("SYS-10", StringComparison.OrdinalIgnoreCase)) return "office";
         if (StudioPages.TryGetValue(id, out var sp) && _showMap.ContainsKey(sp)) return sp;
-        var tab = PageModules.FirstOrDefault(kv => string.Equals(kv.Value, id, StringComparison.OrdinalIgnoreCase) && _showMap.ContainsKey(kv.Key)).Key;
+        var tab = PageModules.FirstOrDefault(kv => string.Equals(kv.Value, id, StringComparison.OrdinalIgnoreCase) && _showMap.ContainsKey(kv.Key) && kv.Key != "dateien").Key; // Dateien ist eine Zusatzseite des Desktops, nie die Studio-Seite
         if (tab is not null) return tab;
         return BasePageModules.FirstOrDefault(kv => string.Equals(kv.Value, id, StringComparison.OrdinalIgnoreCase) && _showMap.ContainsKey(kv.Key)).Key;
     }

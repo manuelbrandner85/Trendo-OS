@@ -53,7 +53,7 @@
       "Ohne Unterschrift",
       "Brief prüfen",
       "Text von der KI verbessern lassen",
-      "4. November 2026",
+      "5. November 2026",
       "Alle 20 Vorlagen zeigen …",
       "Fertig – Brief speichern",
       "Einsetzen",
@@ -101,17 +101,27 @@
       "Briefseite zeigt die Auftragsleiste und meldet ehrlich, wenn nichts eingebaut ist",
       "Briefvorschau: kein Trendo-Logo und kein „Trendo OS“ auf dem Blatt",
       "Claude im Brief-Studio: arbeitet im offenen Brief (Brief.json) – Text und Design (z. B. Bewerbung als ZFA, zeitgemäß in Blau) erscheinen sofort im Brief-Programm",
+      "Dateimanager-Verhalten je System: Ziehen verschiebt (Strg kopiert), Kopiename je System, Finder-Zeilenschalter benennt um, Entf/⌘⌫ legt in den Papierkorb, Leertaste zeigt Vorschau",
       "Löschen überall: Brief, Akte und Briefkopf in den Papierkorb, zurückholen, Papierkorb leeren geht an den Windows-Papierkorb",
+      "Mehrfachauswahl wie im System: Umschalt-Klick Bereich, Strg-Klick dazu/weg, Rahmen mit der Maus aufziehen, Alles auswählen, mehrere kopieren/einfügen und in den Papierkorb, Klick ins Leere hebt auf",
+      "Programme im Stil des Systems: Windows-Menüzeile im Fenster, Mac-Menüs oben in der Menüleiste (Ablage …), GNOME-Kopfleiste mit „Speichern“ blau und Hauptmenü ☰ – Menüeinträge lösen dieselben Befehle aus",
+      "Registerkarten wie Explorer/Finder/Dateien: Strg/⌘+T neu, Mittelklick-Ordner in neuer Karte, Wechsel per Klick und Strg+Bild↓, eigener Verlauf je Karte, Strg/⌘+W schließt erst die Karte, dann das Fenster",
       "STUDIO-LETTER-01: Schnellzugriff „Neuer Brief“ → Kündigung → ausfüllen → prüfen → speichern; Absender gemerkt",
       "Startbildschirm bekommt keine Auftragsleiste",
+      "Stil Trendo bleibt unverändert: Trendo-Kopf, Seitenspalten, Dock – keine Fremd-Leisten",
+      "Studio-Fenster wie im System: Mac und GNOME – KI-Zeile ist die Titelleiste (Ampel bzw. Schließen, Titel, Zurück), Windows behält die Titelleiste; Schließen in der Kopfleiste schließt das Fenster",
       "T-0310: Brief – Kontakt einsetzen, Form wechseln, Informationsblock in der Vorschau, langer Text auf Folgeseiten mit „Seite n von N“, Serienbrief an Gruppe ansehen und speichern",
-      "Trendo erweitern: Erweiterungen dürfen alles außer Name und Logo – Produktname, Marke oder Logo-Datei werden abgelehnt"
+      "Trendo erweitern: Erweiterungen dürfen alles außer Name und Logo – Produktname, Marke oder Logo-Datei werden abgelehnt",
+      "Wie GNOME: schwarze Leiste mit Aktivitäten und Uhr in der Mitte, Übersicht mit Suche und Dash, nur Schließen-Knopf im Fenster, Dateien mit „Andere Orte“",
+      "Wie Windows 11: Taskleiste mit Start/Suche/Uhr, Startmenü mit Angeheftet und Suche (Trendo KI), Widgets mit allen Trendo-Karten, eckige Fensterknöpfe, Datei-Explorer mit „Dieser PC“",
+      "Wie im Original: eine Kopfleiste in GNOME-Dateien/Finder, Uhr öffnet Mitteilungen + Monatskalender, Schnelleinstellungen mit Kacheln, „Nicht stören“, GNOME-Suche per Lupe/Lostippen, „Andere Orte“, Explorer springt beim Tippen",
+      "Wie macOS: Menüleiste mit Menüs und Uhr, Dock mit Launchpad und Papierkorb, Spotlight, Ampel-Knöpfe, ⌘W schließt, Finder mit Seitenleiste und Symbolansicht"
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 231,
+    "WarmMs": 73,
     "WindowsOnly": []
   },
   {
@@ -123,7 +133,105 @@
     "Type": [
       "Adressbuch (Gruppen, Liste, Kontaktkarte)"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "EM-01",
+        "Name": "Konto, Abrufen, Nachricht lesen (EML, Anhänge)",
+        "State": "umgesetzt",
+        "Test": "SYS09_Mail"
+      },
+      {
+        "Nr": "EM-02",
+        "Name": "Entwürfe, Gesendet, Unterhaltungen, Allen antworten, Weiterleiten",
+        "State": "umgesetzt",
+        "Test": "MailPlusTests"
+      },
+      {
+        "Nr": "EM-03",
+        "Name": "Ordner, Liste, Lesebereich",
+        "State": "umgesetzt",
+        "Test": "MailPlus_Ui"
+      },
+      {
+        "Nr": "EM-04",
+        "Name": "Regeln vorschlagen und freigeben, Termine aus E-Mails",
+        "State": "umgesetzt",
+        "Test": "O1O6_PimUi"
+      },
+      {
+        "Nr": "EM-05",
+        "Name": "Senden nur nach ausdrücklichem Ja",
+        "State": "umgesetzt",
+        "Test": "SYS09_Mail"
+      },
+      {
+        "Nr": "AB-01",
+        "Name": "Kontakte mit Gruppen, Favoriten, Foto, Suche über alle Felder",
+        "State": "umgesetzt",
+        "Test": "AddressBookTests"
+      },
+      {
+        "Nr": "AB-02",
+        "Name": "Doppelte finden und zusammenführen",
+        "State": "umgesetzt",
+        "Test": "AddressBookTests"
+      },
+      {
+        "Nr": "AB-03",
+        "Name": "Geburtstage, in den Kalender",
+        "State": "umgesetzt",
+        "Test": "AddressBook_Ui"
+      },
+      {
+        "Nr": "AB-04",
+        "Name": "vCard hinein und hinaus (mit Foto)",
+        "State": "umgesetzt",
+        "Test": "AddressBookTests"
+      },
+      {
+        "Nr": "AB-05",
+        "Name": "CSV im Google- und Outlook-Format hinein und hinaus",
+        "State": "umgesetzt",
+        "Test": "AddressBookPlusTests"
+      },
+      {
+        "Nr": "AB-06",
+        "Name": "Telefonnummern vereinheitlichen (+49 …)",
+        "State": "umgesetzt",
+        "Test": "AddressBookPlusTests"
+      },
+      {
+        "Nr": "AB-07",
+        "Name": "Adressetiketten als PDF (Zweckform-Formate, angebrochener Bogen)",
+        "State": "umgesetzt",
+        "Test": "AddressBookPlusTests"
+      },
+      {
+        "Nr": "AB-08",
+        "Name": "Etiketten der gewählten Gruppe aus der Oberfläche",
+        "State": "umgesetzt",
+        "Test": "AddressBook_Ui"
+      },
+      {
+        "Nr": "KA-01",
+        "Name": "Monatskalender mit Terminen, Wiederholung, Erinnerung",
+        "State": "umgesetzt",
+        "Test": "CalendarGrid_Ui"
+      },
+      {
+        "Nr": "AU-01",
+        "Name": "Aufgabentafel mit Spalten",
+        "State": "umgesetzt",
+        "Test": "TodoBoard_Ui"
+      },
+      {
+        "Nr": "AU-02",
+        "Name": "Aufgaben verwalten",
+        "State": "umgesetzt",
+        "Test": "TaskManagerTests"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/SYS-09_KATALOG.md",
     "Engine": [],
     "Tools": [
       "Los",
@@ -139,6 +247,9 @@
       "Datei wählen …",
       "Einlesen",
       "Alle als vCard sichern",
+      "Als CSV (Google, Outlook)",
+      "Nummern vereinheitlichen",
+      "Etiketten (PDF)",
       "Geburtstage in den Kalender",
       "\uD83D\uDC65 Alle Kontakte",
       "★ Favoriten",
@@ -148,7 +259,7 @@
     "Formats": [],
     "Dependencies": [],
     "Rea": "docs/claude/vorbilder/adressbuch-contacts.md",
-    "ReaSummary": "Vorbild-Analyse Adressbuch: Outlook-Kontakte, Thunderbird-Adressbuch (Clean-Room)",
+    "ReaSummary": "Vorbild-Analyse Adressbuch: Google Kontakte, Outlook, Thunderbird (Clean-Room)",
     "Ui": [
       "Adressbuch (Gruppen, Liste, Kontaktkarte)"
     ],
@@ -156,6 +267,7 @@
       "Adressbuch"
     ],
     "Tests": [
+      "Adressbuch wie Google Kontakte/Outlook: CSV einlesen und sichern, Nummern vereinheitlichen, Etiketten der gewählten Gruppe als PDF",
       "SYS-09 F2: Datum, Monatsname, Wochentag und morgen erkennen – mit Uhrzeit",
       "SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen",
       "SYS-09 UI: Kontakt anlegen, Entwurf prüfen und im Mailprogramm öffnen (nichts wird gesendet)",
@@ -166,9 +278,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 45,
+    "WarmMs": 34,
     "WindowsOnly": []
   },
   {
@@ -180,7 +292,105 @@
     "Type": [
       "Aufgabentafel"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "EM-01",
+        "Name": "Konto, Abrufen, Nachricht lesen (EML, Anhänge)",
+        "State": "umgesetzt",
+        "Test": "SYS09_Mail"
+      },
+      {
+        "Nr": "EM-02",
+        "Name": "Entwürfe, Gesendet, Unterhaltungen, Allen antworten, Weiterleiten",
+        "State": "umgesetzt",
+        "Test": "MailPlusTests"
+      },
+      {
+        "Nr": "EM-03",
+        "Name": "Ordner, Liste, Lesebereich",
+        "State": "umgesetzt",
+        "Test": "MailPlus_Ui"
+      },
+      {
+        "Nr": "EM-04",
+        "Name": "Regeln vorschlagen und freigeben, Termine aus E-Mails",
+        "State": "umgesetzt",
+        "Test": "O1O6_PimUi"
+      },
+      {
+        "Nr": "EM-05",
+        "Name": "Senden nur nach ausdrücklichem Ja",
+        "State": "umgesetzt",
+        "Test": "SYS09_Mail"
+      },
+      {
+        "Nr": "AB-01",
+        "Name": "Kontakte mit Gruppen, Favoriten, Foto, Suche über alle Felder",
+        "State": "umgesetzt",
+        "Test": "AddressBookTests"
+      },
+      {
+        "Nr": "AB-02",
+        "Name": "Doppelte finden und zusammenführen",
+        "State": "umgesetzt",
+        "Test": "AddressBookTests"
+      },
+      {
+        "Nr": "AB-03",
+        "Name": "Geburtstage, in den Kalender",
+        "State": "umgesetzt",
+        "Test": "AddressBook_Ui"
+      },
+      {
+        "Nr": "AB-04",
+        "Name": "vCard hinein und hinaus (mit Foto)",
+        "State": "umgesetzt",
+        "Test": "AddressBookTests"
+      },
+      {
+        "Nr": "AB-05",
+        "Name": "CSV im Google- und Outlook-Format hinein und hinaus",
+        "State": "umgesetzt",
+        "Test": "AddressBookPlusTests"
+      },
+      {
+        "Nr": "AB-06",
+        "Name": "Telefonnummern vereinheitlichen (+49 …)",
+        "State": "umgesetzt",
+        "Test": "AddressBookPlusTests"
+      },
+      {
+        "Nr": "AB-07",
+        "Name": "Adressetiketten als PDF (Zweckform-Formate, angebrochener Bogen)",
+        "State": "umgesetzt",
+        "Test": "AddressBookPlusTests"
+      },
+      {
+        "Nr": "AB-08",
+        "Name": "Etiketten der gewählten Gruppe aus der Oberfläche",
+        "State": "umgesetzt",
+        "Test": "AddressBook_Ui"
+      },
+      {
+        "Nr": "KA-01",
+        "Name": "Monatskalender mit Terminen, Wiederholung, Erinnerung",
+        "State": "umgesetzt",
+        "Test": "CalendarGrid_Ui"
+      },
+      {
+        "Nr": "AU-01",
+        "Name": "Aufgabentafel mit Spalten",
+        "State": "umgesetzt",
+        "Test": "TodoBoard_Ui"
+      },
+      {
+        "Nr": "AU-02",
+        "Name": "Aufgaben verwalten",
+        "State": "umgesetzt",
+        "Test": "TaskManagerTests"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/SYS-09_KATALOG.md",
     "Engine": [],
     "Tools": [
       "Los",
@@ -220,9 +430,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 23,
+    "WarmMs": 41,
     "WindowsOnly": []
   },
   {
@@ -234,7 +444,105 @@
     "Type": [
       "Texteditor"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "EM-01",
+        "Name": "Konto, Abrufen, Nachricht lesen (EML, Anhänge)",
+        "State": "umgesetzt",
+        "Test": "SYS09_Mail"
+      },
+      {
+        "Nr": "EM-02",
+        "Name": "Entwürfe, Gesendet, Unterhaltungen, Allen antworten, Weiterleiten",
+        "State": "umgesetzt",
+        "Test": "MailPlusTests"
+      },
+      {
+        "Nr": "EM-03",
+        "Name": "Ordner, Liste, Lesebereich",
+        "State": "umgesetzt",
+        "Test": "MailPlus_Ui"
+      },
+      {
+        "Nr": "EM-04",
+        "Name": "Regeln vorschlagen und freigeben, Termine aus E-Mails",
+        "State": "umgesetzt",
+        "Test": "O1O6_PimUi"
+      },
+      {
+        "Nr": "EM-05",
+        "Name": "Senden nur nach ausdrücklichem Ja",
+        "State": "umgesetzt",
+        "Test": "SYS09_Mail"
+      },
+      {
+        "Nr": "AB-01",
+        "Name": "Kontakte mit Gruppen, Favoriten, Foto, Suche über alle Felder",
+        "State": "umgesetzt",
+        "Test": "AddressBookTests"
+      },
+      {
+        "Nr": "AB-02",
+        "Name": "Doppelte finden und zusammenführen",
+        "State": "umgesetzt",
+        "Test": "AddressBookTests"
+      },
+      {
+        "Nr": "AB-03",
+        "Name": "Geburtstage, in den Kalender",
+        "State": "umgesetzt",
+        "Test": "AddressBook_Ui"
+      },
+      {
+        "Nr": "AB-04",
+        "Name": "vCard hinein und hinaus (mit Foto)",
+        "State": "umgesetzt",
+        "Test": "AddressBookTests"
+      },
+      {
+        "Nr": "AB-05",
+        "Name": "CSV im Google- und Outlook-Format hinein und hinaus",
+        "State": "umgesetzt",
+        "Test": "AddressBookPlusTests"
+      },
+      {
+        "Nr": "AB-06",
+        "Name": "Telefonnummern vereinheitlichen (+49 …)",
+        "State": "umgesetzt",
+        "Test": "AddressBookPlusTests"
+      },
+      {
+        "Nr": "AB-07",
+        "Name": "Adressetiketten als PDF (Zweckform-Formate, angebrochener Bogen)",
+        "State": "umgesetzt",
+        "Test": "AddressBookPlusTests"
+      },
+      {
+        "Nr": "AB-08",
+        "Name": "Etiketten der gewählten Gruppe aus der Oberfläche",
+        "State": "umgesetzt",
+        "Test": "AddressBook_Ui"
+      },
+      {
+        "Nr": "KA-01",
+        "Name": "Monatskalender mit Terminen, Wiederholung, Erinnerung",
+        "State": "umgesetzt",
+        "Test": "CalendarGrid_Ui"
+      },
+      {
+        "Nr": "AU-01",
+        "Name": "Aufgabentafel mit Spalten",
+        "State": "umgesetzt",
+        "Test": "TodoBoard_Ui"
+      },
+      {
+        "Nr": "AU-02",
+        "Name": "Aufgaben verwalten",
+        "State": "umgesetzt",
+        "Test": "TaskManagerTests"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/SYS-09_KATALOG.md",
     "Engine": [
       "MailFolders",
       "MailDraft",
@@ -322,9 +630,9 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 32,
+    "WarmMs": 57,
     "WindowsOnly": []
   },
   {
@@ -336,7 +644,105 @@
     "Type": [
       "Monatskalender"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "EM-01",
+        "Name": "Konto, Abrufen, Nachricht lesen (EML, Anhänge)",
+        "State": "umgesetzt",
+        "Test": "SYS09_Mail"
+      },
+      {
+        "Nr": "EM-02",
+        "Name": "Entwürfe, Gesendet, Unterhaltungen, Allen antworten, Weiterleiten",
+        "State": "umgesetzt",
+        "Test": "MailPlusTests"
+      },
+      {
+        "Nr": "EM-03",
+        "Name": "Ordner, Liste, Lesebereich",
+        "State": "umgesetzt",
+        "Test": "MailPlus_Ui"
+      },
+      {
+        "Nr": "EM-04",
+        "Name": "Regeln vorschlagen und freigeben, Termine aus E-Mails",
+        "State": "umgesetzt",
+        "Test": "O1O6_PimUi"
+      },
+      {
+        "Nr": "EM-05",
+        "Name": "Senden nur nach ausdrücklichem Ja",
+        "State": "umgesetzt",
+        "Test": "SYS09_Mail"
+      },
+      {
+        "Nr": "AB-01",
+        "Name": "Kontakte mit Gruppen, Favoriten, Foto, Suche über alle Felder",
+        "State": "umgesetzt",
+        "Test": "AddressBookTests"
+      },
+      {
+        "Nr": "AB-02",
+        "Name": "Doppelte finden und zusammenführen",
+        "State": "umgesetzt",
+        "Test": "AddressBookTests"
+      },
+      {
+        "Nr": "AB-03",
+        "Name": "Geburtstage, in den Kalender",
+        "State": "umgesetzt",
+        "Test": "AddressBook_Ui"
+      },
+      {
+        "Nr": "AB-04",
+        "Name": "vCard hinein und hinaus (mit Foto)",
+        "State": "umgesetzt",
+        "Test": "AddressBookTests"
+      },
+      {
+        "Nr": "AB-05",
+        "Name": "CSV im Google- und Outlook-Format hinein und hinaus",
+        "State": "umgesetzt",
+        "Test": "AddressBookPlusTests"
+      },
+      {
+        "Nr": "AB-06",
+        "Name": "Telefonnummern vereinheitlichen (+49 …)",
+        "State": "umgesetzt",
+        "Test": "AddressBookPlusTests"
+      },
+      {
+        "Nr": "AB-07",
+        "Name": "Adressetiketten als PDF (Zweckform-Formate, angebrochener Bogen)",
+        "State": "umgesetzt",
+        "Test": "AddressBookPlusTests"
+      },
+      {
+        "Nr": "AB-08",
+        "Name": "Etiketten der gewählten Gruppe aus der Oberfläche",
+        "State": "umgesetzt",
+        "Test": "AddressBook_Ui"
+      },
+      {
+        "Nr": "KA-01",
+        "Name": "Monatskalender mit Terminen, Wiederholung, Erinnerung",
+        "State": "umgesetzt",
+        "Test": "CalendarGrid_Ui"
+      },
+      {
+        "Nr": "AU-01",
+        "Name": "Aufgabentafel mit Spalten",
+        "State": "umgesetzt",
+        "Test": "TodoBoard_Ui"
+      },
+      {
+        "Nr": "AU-02",
+        "Name": "Aufgaben verwalten",
+        "State": "umgesetzt",
+        "Test": "TaskManagerTests"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/SYS-09_KATALOG.md",
     "Engine": [],
     "Tools": [
       "Los",
@@ -386,9 +792,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 36,
     "WindowsOnly": []
   },
   {
@@ -400,7 +806,105 @@
     "Type": [
       "Posteingang (Ordner, Liste, Lesebereich)"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "EM-01",
+        "Name": "Konto, Abrufen, Nachricht lesen (EML, Anhänge)",
+        "State": "umgesetzt",
+        "Test": "SYS09_Mail"
+      },
+      {
+        "Nr": "EM-02",
+        "Name": "Entwürfe, Gesendet, Unterhaltungen, Allen antworten, Weiterleiten",
+        "State": "umgesetzt",
+        "Test": "MailPlusTests"
+      },
+      {
+        "Nr": "EM-03",
+        "Name": "Ordner, Liste, Lesebereich",
+        "State": "umgesetzt",
+        "Test": "MailPlus_Ui"
+      },
+      {
+        "Nr": "EM-04",
+        "Name": "Regeln vorschlagen und freigeben, Termine aus E-Mails",
+        "State": "umgesetzt",
+        "Test": "O1O6_PimUi"
+      },
+      {
+        "Nr": "EM-05",
+        "Name": "Senden nur nach ausdrücklichem Ja",
+        "State": "umgesetzt",
+        "Test": "SYS09_Mail"
+      },
+      {
+        "Nr": "AB-01",
+        "Name": "Kontakte mit Gruppen, Favoriten, Foto, Suche über alle Felder",
+        "State": "umgesetzt",
+        "Test": "AddressBookTests"
+      },
+      {
+        "Nr": "AB-02",
+        "Name": "Doppelte finden und zusammenführen",
+        "State": "umgesetzt",
+        "Test": "AddressBookTests"
+      },
+      {
+        "Nr": "AB-03",
+        "Name": "Geburtstage, in den Kalender",
+        "State": "umgesetzt",
+        "Test": "AddressBook_Ui"
+      },
+      {
+        "Nr": "AB-04",
+        "Name": "vCard hinein und hinaus (mit Foto)",
+        "State": "umgesetzt",
+        "Test": "AddressBookTests"
+      },
+      {
+        "Nr": "AB-05",
+        "Name": "CSV im Google- und Outlook-Format hinein und hinaus",
+        "State": "umgesetzt",
+        "Test": "AddressBookPlusTests"
+      },
+      {
+        "Nr": "AB-06",
+        "Name": "Telefonnummern vereinheitlichen (+49 …)",
+        "State": "umgesetzt",
+        "Test": "AddressBookPlusTests"
+      },
+      {
+        "Nr": "AB-07",
+        "Name": "Adressetiketten als PDF (Zweckform-Formate, angebrochener Bogen)",
+        "State": "umgesetzt",
+        "Test": "AddressBookPlusTests"
+      },
+      {
+        "Nr": "AB-08",
+        "Name": "Etiketten der gewählten Gruppe aus der Oberfläche",
+        "State": "umgesetzt",
+        "Test": "AddressBook_Ui"
+      },
+      {
+        "Nr": "KA-01",
+        "Name": "Monatskalender mit Terminen, Wiederholung, Erinnerung",
+        "State": "umgesetzt",
+        "Test": "CalendarGrid_Ui"
+      },
+      {
+        "Nr": "AU-01",
+        "Name": "Aufgabentafel mit Spalten",
+        "State": "umgesetzt",
+        "Test": "TodoBoard_Ui"
+      },
+      {
+        "Nr": "AU-02",
+        "Name": "Aufgaben verwalten",
+        "State": "umgesetzt",
+        "Test": "TaskManagerTests"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/SYS-09_KATALOG.md",
     "Engine": [],
     "Tools": [
       "Los",
@@ -451,7 +955,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
     "WarmMs": 16,
     "WindowsOnly": []
@@ -691,9 +1195,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 21,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -944,9 +1448,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -1185,9 +1689,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 33,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -1269,9 +1773,9 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -1519,9 +2023,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -1749,9 +2253,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -2009,9 +2513,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -2287,9 +2791,9 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 60,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -2582,9 +3086,9 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 56,
+    "WarmMs": 23,
     "WindowsOnly": []
   },
   {
@@ -2660,9 +3164,9 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 130,
+    "WarmMs": 40,
     "WindowsOnly": []
   },
   {
@@ -2726,9 +3230,9 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 41,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -2740,7 +3244,87 @@
     "Type": [
       "Medien-Browser (Themen/Raster, Vorschau mit Lizenz)"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "FM-01",
+        "Name": "Bilder und Klänge suchen, Raster mit Vorschau, Lizenz und Urheber",
+        "State": "umgesetzt",
+        "Test": "MediaBrowser_Ui"
+      },
+      {
+        "Nr": "FM-02",
+        "Name": "Nur freie Lizenzen, Filter Lizenz und Format",
+        "State": "umgesetzt",
+        "Test": "MediaLibraryTests"
+      },
+      {
+        "Nr": "FM-03",
+        "Name": "Laden mit Herkunftsdatei, Bibliothek, alle Namensnennungen",
+        "State": "umgesetzt",
+        "Test": "MediaLibraryTests"
+      },
+      {
+        "Nr": "FM-04",
+        "Name": "Klänge vorhören",
+        "State": "umgesetzt",
+        "Test": "MediaBrowser_Ui"
+      },
+      {
+        "Nr": "FM-05",
+        "Name": "Zweite Quelle Openverse, Quellen gemischt",
+        "State": "umgesetzt",
+        "Test": "MediaLibraryPlusTests"
+      },
+      {
+        "Nr": "FM-06",
+        "Name": "Ausrichtung quer/hoch/quadratisch, Mindestbreite",
+        "State": "umgesetzt",
+        "Test": "MediaLibraryPlusTests"
+      },
+      {
+        "Nr": "FM-07",
+        "Name": "Namensnennung als Text, HTML, Markdown",
+        "State": "umgesetzt",
+        "Test": "MediaLibraryPlusTests"
+      },
+      {
+        "Nr": "FM-08",
+        "Name": "Bild in der Bildbearbeitung, Klang im Audio-Editor öffnen",
+        "State": "umgesetzt",
+        "Test": "MediaBrowser_Ui"
+      },
+      {
+        "Nr": "FM-09",
+        "Name": "Schriften suchen und laden (offene Lizenzen)",
+        "State": "umgesetzt",
+        "Test": "MediaLibraryPlusTests"
+      },
+      {
+        "Nr": "FM-10",
+        "Name": "3D-Modelle, Texturen, Himmel",
+        "State": "umgesetzt",
+        "Test": "AssetLibraryTests"
+      },
+      {
+        "Nr": "FM-11",
+        "Name": "Themen-Kacheln als Startseite",
+        "State": "umgesetzt",
+        "Test": "MediaBrowser_Ui"
+      },
+      {
+        "Nr": "FM-12",
+        "Name": "Ähnliche Bilder",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "FM-13",
+        "Name": "Merklisten",
+        "State": "offen",
+        "Test": "–"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/X-07_KATALOG.md",
     "Engine": [
       "FreeAssets"
     ],
@@ -2753,6 +3337,7 @@
       "\uD83D\uDC65 Team",
       "Bilder",
       "Klänge",
+      "Schriften",
       "3D & Texturen",
       "Meine Bibliothek",
       "Suchen",
@@ -2772,6 +3357,8 @@
       "Poly Haven (freie 3D-Modelle)",
       "ambientCG (freie Materialien)"
     ],
+    "Rea": "docs/claude/vorbilder/medien-openverse-unsplash-fonts.md",
+    "ReaSummary": "Vorbild-Analyse Freie Medien: Openverse, Unsplash, Pexels, Pixabay, Freesound, Google Fonts (Clean-Room)",
     "Ui": [
       "Medien-Browser (Themen/Raster, Vorschau mit Lizenz)"
     ],
@@ -2779,6 +3366,7 @@
       "Freie Bilder & Klänge"
     ],
     "Tests": [
+      "Medienbrowser wie Openverse/Unsplash/Google Fonts: beide Quellen gemischt, Ausrichtung filtern, Namensnennung als HTML, Bild in der Bildbearbeitung öffnen, Schriften suchen und laden",
       "Medienbrowser: Bilder suchen, Raster mit Vorschaubild, Vorschau mit Lizenz und Urheber, nur freie Lizenzen, Laden mit Herkunft, Namensnennung kopieren; Klänge vorhören; Bibliothek",
       "Medienbrowser: Testmodus ohne nachgebildetes Netz sucht nicht im Internet",
       "X-07 (UI): Suche und Laden mit Lizenzdatei (Netz simuliert)",
@@ -2790,9 +3378,9 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -2857,9 +3445,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -2929,9 +3517,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -3119,9 +3707,9 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": true,
-    "WarmMs": 10,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -3375,9 +3963,9 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 111,
+    "WarmMs": 58,
     "WindowsOnly": []
   },
   {
@@ -3611,9 +4199,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 31,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -3674,9 +4262,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 6,
     "WindowsOnly": []
   },
   {
@@ -3688,18 +4276,242 @@
     "Type": [
       "Wellenform-Editor (Auswahl, Schnitt, Effekte – wie Audacity)"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "AU-01",
+        "Name": "Wellenform, Auswahl mit der Maus, Schneiden/Kopieren/Einfügen/Löschen",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-02",
+        "Name": "Normalisieren, Ein-/Ausblenden, Lauter/Leiser",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-03",
+        "Name": "Schritte-Liste, Rückgängig, Original bleibt unverändert",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-04",
+        "Name": "Export WAV/MP3",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-05",
+        "Name": "Rauschen nach Profil entfernen",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-06",
+        "Name": "Brummen 50 Hz mit Oberwellen entfernen",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-07",
+        "Name": "Stille kürzen",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-08",
+        "Name": "Lautheit −16/−14 LUFS (BS.1770, wie FFmpeg ebur128)",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-09",
+        "Name": "Kompressor",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-10",
+        "Name": "Spektrogramm-Ansicht",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-11",
+        "Name": "Reparieren in der Oberfläche, Aufnahme an der Marke",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-12",
+        "Name": "Spektrales Retuschieren",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "BI-01",
+        "Name": "Ebenen, Pinsel, Formen, Text, Verschieben, Zuschneiden, Export PNG",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui"
+      },
+      {
+        "Nr": "BI-02",
+        "Name": "Filter (Helligkeit, Kontrast, Schwarzweiß …)",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui"
+      },
+      {
+        "Nr": "BI-03",
+        "Name": "Vektorpinsel, Mischmodi, SVG speichern/öffnen",
+        "State": "umgesetzt",
+        "Test": "ImageVectorTests"
+      },
+      {
+        "Nr": "BI-04",
+        "Name": "Tonwerte und Auto-Tonwerte",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-05",
+        "Name": "Kurven (Vorlagen, monoton)",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-06",
+        "Name": "Füllen mit Toleranz",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-07",
+        "Name": "Reparieren (Fleck aus der Umgebung)",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-08",
+        "Name": "Klonen (Kopierstempel)",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-09",
+        "Name": "Verlauf linear/kreisförmig",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui"
+      },
+      {
+        "Nr": "BI-10",
+        "Name": "Auswahl und Ebenenmaske (eckig/rund, weiche Kante, umkehren)",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui"
+      },
+      {
+        "Nr": "BI-11",
+        "Name": "Lasso und Zauberstab",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "VI-01",
+        "Name": "Spuren, Stücke ziehen, kürzen, teilen, löschen",
+        "State": "umgesetzt",
+        "Test": "VideoSchnitt_Ui"
+      },
+      {
+        "Nr": "VI-02",
+        "Name": "Schnittmodell (Länge, Teilen, Verschieben)",
+        "State": "umgesetzt",
+        "Test": "VideoEditTests"
+      },
+      {
+        "Nr": "VI-03",
+        "Name": "Überblenden und Titel",
+        "State": "umgesetzt",
+        "Test": "VideoEditPlusTests"
+      },
+      {
+        "Nr": "VI-04",
+        "Name": "Export im Hintergrund mit Fortschritt, Abbrechen",
+        "State": "umgesetzt",
+        "Test": "VideoSchnittPlus_Ui"
+      },
+      {
+        "Nr": "VI-05",
+        "Name": "Export-Vorlagen, Hochformat, Lautheit, NVENC",
+        "State": "umgesetzt",
+        "Test": "VideoExportTests"
+      },
+      {
+        "Nr": "VI-06",
+        "Name": "EDL und FCPXML",
+        "State": "umgesetzt",
+        "Test": "VideoExportTests"
+      },
+      {
+        "Nr": "VI-07",
+        "Name": "Ducking (Musik unter Sprache)",
+        "State": "umgesetzt",
+        "Test": "VideoExportTests"
+      },
+      {
+        "Nr": "VI-08",
+        "Name": "Untertitel erzeugen und einbrennen",
+        "State": "umgesetzt",
+        "Test": "VideoSubtitleTests"
+      },
+      {
+        "Nr": "VI-09",
+        "Name": "Tastatur J/K/L, I/O, Marken",
+        "State": "umgesetzt",
+        "Test": "VideoSchnittPlus_Ui"
+      },
+      {
+        "Nr": "VI-10",
+        "Name": "Fehlende Dateien neu verknüpfen",
+        "State": "umgesetzt",
+        "Test": "VideoSchnittPlus_Ui"
+      },
+      {
+        "Nr": "VI-11",
+        "Name": "Schnitte auf den Takt",
+        "State": "umgesetzt",
+        "Test": "BeatDetectTests"
+      },
+      {
+        "Nr": "VI-12",
+        "Name": "Farbkorrektur je Stück",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "ME-01",
+        "Name": "Bild zuschneiden, drehen, Helligkeit, Text, JPG/PNG",
+        "State": "umgesetzt",
+        "Test": "MediaEditTests"
+      },
+      {
+        "Nr": "ME-02",
+        "Name": "Video Ausschnitt, Clips aneinanderhängen, Vorschaubilder",
+        "State": "umgesetzt",
+        "Test": "MediaEditTests"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/CORE-08_KATALOG.md",
     "Engine": [
-      "VideoEdit",
       "ImageDoc",
+      "VideoEdit",
       "AudioEdit",
       "MediaStudio",
       "AudioFile",
+      "ImageOps",
       "FileShelf",
+      "AudioDsp",
       "Colors",
-      "EditMarker",
-      "Progress",
-      "Rect"
+      "EditMarker"
     ],
     "Tools": [
       "✂ Ausschneiden (Bearbeiten)",
@@ -3723,10 +4535,19 @@
       "Schneller (Filter)",
       "Langsamer (Filter)",
       "1 s Stille einfügen (Filter)",
+      "Rauschprofil merken (Reparieren)",
+      "Rauschen entfernen (Reparieren)",
+      "Brummen weg (50 Hz) (Reparieren)",
+      "Stille kürzen (Reparieren)",
+      "Lautheit Sprache (−16 LUFS) (Reparieren)",
+      "Lautheit Musik (−14 LUFS) (Reparieren)",
+      "Kompressor (Reparieren)",
       "▶ Abspielen (Abspielen)",
       "■ Stopp (Abspielen)",
       "Alles wählen (Abspielen)",
       "Auswahl aufheben (Abspielen)",
+      "Spektrogramm (Abspielen)",
+      "⏺ Aufnehmen (10 s) (Abspielen)",
       "WAV (16 Bit) (Exportieren)",
       "WAV (24 Bit, Studio) (Exportieren)",
       "MP3 (Exportieren)",
@@ -3763,9 +4584,12 @@
       "LibreOffice (optional)",
       "Krita (optional)",
       "Inkscape (optional)",
+      "GIMP (optional)",
       "VLC (optional)",
       "mpv (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/audio-audacity-audition-rx.md",
+    "ReaSummary": "Vorbild-Analyse Audio: Audacity, Adobe Audition, iZotope RX (Clean-Room)",
     "Ui": [
       "Wellenform-Editor (Auswahl, Schnitt, Effekte – wie Audacity)",
       "Menüband",
@@ -3777,10 +4601,13 @@
       "Audio bearbeiten"
     ],
     "Tests": [
+      "Audio-Editor Reparieren: ohne Profil freundlicher Hinweis, Rauschprofil merken, Rauschen entfernen, Brummen, Stille kürzen, Lautheit −16 LUFS, Spektrogramm, Aufnahme an der Marke",
       "Audio-Editor UI: WAV öffnen, Bereich mit der Maus ziehen, Löschen, Normalisieren, Einblenden, Kopieren/Einfügen, Abspielen, Rückgängig, Export WAV",
       "CORE-08 (UI): Datei wählen, Ton herausholen – echte Ausgabedatei",
       "CORE-08: Alle Aufgaben laufen mit echtem FFmpeg, Original bleibt, nichts wird überschrieben",
       "CORE-08: Fehlende Datei gibt verständliche Meldung, Argumente ohne Shell",
+      "Einfach zuerst: neue Nutzer öffnen Programme in der Stufe „Einfach“ (weniger Werkzeuge, alle Funktionen über „Erweitert“/„Professionell“ erreichbar)",
+      "Einfachheit: jede Seite höchstens drei Reiterleisten auf einmal, Aufklapper und Scrollbereiche höchstens zwei Ebenen tief; Bericht der verschachteltsten Seiten",
       "Programm: Startseite → Vorlage → bearbeiten → Rückgängig → Speichern → Zuletzt → wieder öffnen; Reiter für zwei Dokumente",
       "Programm: ungespeichertes Dokument wird automatisch gesichert und auf der Startseite wiederhergestellt",
       "X17 Versionen: nach dem zweiten Speichern zeigt die Datei-Gruppe „Versionen (1)“, Wiederherstellen holt den alten Stand (rückgängig machbar)"
@@ -3792,9 +4619,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": true,
-    "WarmMs": 10,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -3806,18 +4633,242 @@
     "Type": [
       "Bild-Arbeitsfläche (Ebenen)"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "AU-01",
+        "Name": "Wellenform, Auswahl mit der Maus, Schneiden/Kopieren/Einfügen/Löschen",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-02",
+        "Name": "Normalisieren, Ein-/Ausblenden, Lauter/Leiser",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-03",
+        "Name": "Schritte-Liste, Rückgängig, Original bleibt unverändert",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-04",
+        "Name": "Export WAV/MP3",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-05",
+        "Name": "Rauschen nach Profil entfernen",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-06",
+        "Name": "Brummen 50 Hz mit Oberwellen entfernen",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-07",
+        "Name": "Stille kürzen",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-08",
+        "Name": "Lautheit −16/−14 LUFS (BS.1770, wie FFmpeg ebur128)",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-09",
+        "Name": "Kompressor",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-10",
+        "Name": "Spektrogramm-Ansicht",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-11",
+        "Name": "Reparieren in der Oberfläche, Aufnahme an der Marke",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-12",
+        "Name": "Spektrales Retuschieren",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "BI-01",
+        "Name": "Ebenen, Pinsel, Formen, Text, Verschieben, Zuschneiden, Export PNG",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui"
+      },
+      {
+        "Nr": "BI-02",
+        "Name": "Filter (Helligkeit, Kontrast, Schwarzweiß …)",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui"
+      },
+      {
+        "Nr": "BI-03",
+        "Name": "Vektorpinsel, Mischmodi, SVG speichern/öffnen",
+        "State": "umgesetzt",
+        "Test": "ImageVectorTests"
+      },
+      {
+        "Nr": "BI-04",
+        "Name": "Tonwerte und Auto-Tonwerte",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-05",
+        "Name": "Kurven (Vorlagen, monoton)",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-06",
+        "Name": "Füllen mit Toleranz",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-07",
+        "Name": "Reparieren (Fleck aus der Umgebung)",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-08",
+        "Name": "Klonen (Kopierstempel)",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-09",
+        "Name": "Verlauf linear/kreisförmig",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui"
+      },
+      {
+        "Nr": "BI-10",
+        "Name": "Auswahl und Ebenenmaske (eckig/rund, weiche Kante, umkehren)",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui"
+      },
+      {
+        "Nr": "BI-11",
+        "Name": "Lasso und Zauberstab",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "VI-01",
+        "Name": "Spuren, Stücke ziehen, kürzen, teilen, löschen",
+        "State": "umgesetzt",
+        "Test": "VideoSchnitt_Ui"
+      },
+      {
+        "Nr": "VI-02",
+        "Name": "Schnittmodell (Länge, Teilen, Verschieben)",
+        "State": "umgesetzt",
+        "Test": "VideoEditTests"
+      },
+      {
+        "Nr": "VI-03",
+        "Name": "Überblenden und Titel",
+        "State": "umgesetzt",
+        "Test": "VideoEditPlusTests"
+      },
+      {
+        "Nr": "VI-04",
+        "Name": "Export im Hintergrund mit Fortschritt, Abbrechen",
+        "State": "umgesetzt",
+        "Test": "VideoSchnittPlus_Ui"
+      },
+      {
+        "Nr": "VI-05",
+        "Name": "Export-Vorlagen, Hochformat, Lautheit, NVENC",
+        "State": "umgesetzt",
+        "Test": "VideoExportTests"
+      },
+      {
+        "Nr": "VI-06",
+        "Name": "EDL und FCPXML",
+        "State": "umgesetzt",
+        "Test": "VideoExportTests"
+      },
+      {
+        "Nr": "VI-07",
+        "Name": "Ducking (Musik unter Sprache)",
+        "State": "umgesetzt",
+        "Test": "VideoExportTests"
+      },
+      {
+        "Nr": "VI-08",
+        "Name": "Untertitel erzeugen und einbrennen",
+        "State": "umgesetzt",
+        "Test": "VideoSubtitleTests"
+      },
+      {
+        "Nr": "VI-09",
+        "Name": "Tastatur J/K/L, I/O, Marken",
+        "State": "umgesetzt",
+        "Test": "VideoSchnittPlus_Ui"
+      },
+      {
+        "Nr": "VI-10",
+        "Name": "Fehlende Dateien neu verknüpfen",
+        "State": "umgesetzt",
+        "Test": "VideoSchnittPlus_Ui"
+      },
+      {
+        "Nr": "VI-11",
+        "Name": "Schnitte auf den Takt",
+        "State": "umgesetzt",
+        "Test": "BeatDetectTests"
+      },
+      {
+        "Nr": "VI-12",
+        "Name": "Farbkorrektur je Stück",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "ME-01",
+        "Name": "Bild zuschneiden, drehen, Helligkeit, Text, JPG/PNG",
+        "State": "umgesetzt",
+        "Test": "MediaEditTests"
+      },
+      {
+        "Nr": "ME-02",
+        "Name": "Video Ausschnitt, Clips aneinanderhängen, Vorschaubilder",
+        "State": "umgesetzt",
+        "Test": "MediaEditTests"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/CORE-08_KATALOG.md",
     "Engine": [
-      "VideoEdit",
       "ImageDoc",
+      "VideoEdit",
       "AudioEdit",
       "MediaStudio",
       "AudioFile",
+      "ImageOps",
       "FileShelf",
+      "AudioDsp",
       "Colors",
-      "EditMarker",
-      "Progress",
-      "Rect"
+      "EditMarker"
     ],
     "Tools": [
       "＋ Mal-Ebene (Ebene)",
@@ -3859,6 +4910,7 @@
       "LibreOffice (optional)",
       "Krita (optional)",
       "Inkscape (optional)",
+      "GIMP (optional)",
       "VLC (optional)",
       "mpv (optional)"
     ],
@@ -3878,10 +4930,21 @@
       "Bild-Dokument: Ebenen-Reihenfolge, Treffer oberste Ebene, Zuschnitt verschiebt Ebenen und Striche, Filter-Grenzen, Farbmatrix Invertieren",
       "Bildbearbeitung UI: Bild als Ebene, Pinsel malt (Pixel), Rechteck aufziehen, Text setzen, Ebene verschieben, Filter Schwarzweiß, Zuschneiden, Rückgängig, Export PNG",
       "Bildbearbeitung wie Krita/Inkscape: Vektorpinsel ergibt glatten Pfad, Mischmodus je Ebene, Pinsel-Deckkraft, SVG speichern und wieder öffnen",
+      "Bildbearbeitung wie Photoshop/GIMP: Füllen mit Toleranz, Reparieren entfernt Fleck, Klonen mit Quelle, Verlauf ziehen, Maske aus Auswahl, Tonwerte, Kurve, Auto-Tonwerte",
       "CORE-08 (UI): Datei wählen, Ton herausholen – echte Ausgabedatei",
       "CORE-08: Alle Aufgaben laufen mit echtem FFmpeg, Original bleibt, nichts wird überschrieben",
       "CORE-08: Fehlende Datei gibt verständliche Meldung, Argumente ohne Shell",
-      "Profi-Rahmen: Bildbearbeitung mit Werkzeugleiste links (aktives Werkzeug markiert), Werkzeuge nicht mehr im Menüband; Werkzeuge und Eigenschaften ein-/ausklappbar und gemerkt"
+      "Dateimanager-Verhalten je System: Ziehen verschiebt (Strg kopiert), Kopiename je System, Finder-Zeilenschalter benennt um, Entf/⌘⌫ legt in den Papierkorb, Leertaste zeigt Vorschau",
+      "Mehrfachauswahl wie im System: Umschalt-Klick Bereich, Strg-Klick dazu/weg, Rahmen mit der Maus aufziehen, Alles auswählen, mehrere kopieren/einfügen und in den Papierkorb, Klick ins Leere hebt auf",
+      "Profi-Rahmen: Bildbearbeitung mit Werkzeugleiste links (aktives Werkzeug markiert), Werkzeuge nicht mehr im Menüband; Werkzeuge und Eigenschaften ein-/ausklappbar und gemerkt",
+      "Programme im Stil des Systems: Windows-Menüzeile im Fenster, Mac-Menüs oben in der Menüleiste (Ablage …), GNOME-Kopfleiste mit „Speichern“ blau und Hauptmenü ☰ – Menüeinträge lösen dieselben Befehle aus",
+      "Registerkarten wie Explorer/Finder/Dateien: Strg/⌘+T neu, Mittelklick-Ordner in neuer Karte, Wechsel per Klick und Strg+Bild↓, eigener Verlauf je Karte, Strg/⌘+W schließt erst die Karte, dann das Fenster",
+      "Stil Trendo bleibt unverändert: Trendo-Kopf, Seitenspalten, Dock – keine Fremd-Leisten",
+      "Studio-Fenster wie im System: Mac und GNOME – KI-Zeile ist die Titelleiste (Ampel bzw. Schließen, Titel, Zurück), Windows behält die Titelleiste; Schließen in der Kopfleiste schließt das Fenster",
+      "Wie GNOME: schwarze Leiste mit Aktivitäten und Uhr in der Mitte, Übersicht mit Suche und Dash, nur Schließen-Knopf im Fenster, Dateien mit „Andere Orte“",
+      "Wie Windows 11: Taskleiste mit Start/Suche/Uhr, Startmenü mit Angeheftet und Suche (Trendo KI), Widgets mit allen Trendo-Karten, eckige Fensterknöpfe, Datei-Explorer mit „Dieser PC“",
+      "Wie im Original: eine Kopfleiste in GNOME-Dateien/Finder, Uhr öffnet Mitteilungen + Monatskalender, Schnelleinstellungen mit Kacheln, „Nicht stören“, GNOME-Suche per Lupe/Lostippen, „Andere Orte“, Explorer springt beim Tippen",
+      "Wie macOS: Menüleiste mit Menüs und Uhr, Dock mit Launchpad und Papierkorb, Spotlight, Ampel-Knöpfe, ⌘W schließt, Finder mit Seitenleiste und Symbolansicht"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.AudioEditor.cs",
@@ -3890,9 +4953,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -3905,18 +4968,242 @@
       "Bildansicht",
       "Medien-Werkbank (Dateien, Werkzeuge, Ergebnis)"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "AU-01",
+        "Name": "Wellenform, Auswahl mit der Maus, Schneiden/Kopieren/Einfügen/Löschen",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-02",
+        "Name": "Normalisieren, Ein-/Ausblenden, Lauter/Leiser",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-03",
+        "Name": "Schritte-Liste, Rückgängig, Original bleibt unverändert",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-04",
+        "Name": "Export WAV/MP3",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-05",
+        "Name": "Rauschen nach Profil entfernen",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-06",
+        "Name": "Brummen 50 Hz mit Oberwellen entfernen",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-07",
+        "Name": "Stille kürzen",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-08",
+        "Name": "Lautheit −16/−14 LUFS (BS.1770, wie FFmpeg ebur128)",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-09",
+        "Name": "Kompressor",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-10",
+        "Name": "Spektrogramm-Ansicht",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-11",
+        "Name": "Reparieren in der Oberfläche, Aufnahme an der Marke",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-12",
+        "Name": "Spektrales Retuschieren",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "BI-01",
+        "Name": "Ebenen, Pinsel, Formen, Text, Verschieben, Zuschneiden, Export PNG",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui"
+      },
+      {
+        "Nr": "BI-02",
+        "Name": "Filter (Helligkeit, Kontrast, Schwarzweiß …)",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui"
+      },
+      {
+        "Nr": "BI-03",
+        "Name": "Vektorpinsel, Mischmodi, SVG speichern/öffnen",
+        "State": "umgesetzt",
+        "Test": "ImageVectorTests"
+      },
+      {
+        "Nr": "BI-04",
+        "Name": "Tonwerte und Auto-Tonwerte",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-05",
+        "Name": "Kurven (Vorlagen, monoton)",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-06",
+        "Name": "Füllen mit Toleranz",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-07",
+        "Name": "Reparieren (Fleck aus der Umgebung)",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-08",
+        "Name": "Klonen (Kopierstempel)",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-09",
+        "Name": "Verlauf linear/kreisförmig",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui"
+      },
+      {
+        "Nr": "BI-10",
+        "Name": "Auswahl und Ebenenmaske (eckig/rund, weiche Kante, umkehren)",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui"
+      },
+      {
+        "Nr": "BI-11",
+        "Name": "Lasso und Zauberstab",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "VI-01",
+        "Name": "Spuren, Stücke ziehen, kürzen, teilen, löschen",
+        "State": "umgesetzt",
+        "Test": "VideoSchnitt_Ui"
+      },
+      {
+        "Nr": "VI-02",
+        "Name": "Schnittmodell (Länge, Teilen, Verschieben)",
+        "State": "umgesetzt",
+        "Test": "VideoEditTests"
+      },
+      {
+        "Nr": "VI-03",
+        "Name": "Überblenden und Titel",
+        "State": "umgesetzt",
+        "Test": "VideoEditPlusTests"
+      },
+      {
+        "Nr": "VI-04",
+        "Name": "Export im Hintergrund mit Fortschritt, Abbrechen",
+        "State": "umgesetzt",
+        "Test": "VideoSchnittPlus_Ui"
+      },
+      {
+        "Nr": "VI-05",
+        "Name": "Export-Vorlagen, Hochformat, Lautheit, NVENC",
+        "State": "umgesetzt",
+        "Test": "VideoExportTests"
+      },
+      {
+        "Nr": "VI-06",
+        "Name": "EDL und FCPXML",
+        "State": "umgesetzt",
+        "Test": "VideoExportTests"
+      },
+      {
+        "Nr": "VI-07",
+        "Name": "Ducking (Musik unter Sprache)",
+        "State": "umgesetzt",
+        "Test": "VideoExportTests"
+      },
+      {
+        "Nr": "VI-08",
+        "Name": "Untertitel erzeugen und einbrennen",
+        "State": "umgesetzt",
+        "Test": "VideoSubtitleTests"
+      },
+      {
+        "Nr": "VI-09",
+        "Name": "Tastatur J/K/L, I/O, Marken",
+        "State": "umgesetzt",
+        "Test": "VideoSchnittPlus_Ui"
+      },
+      {
+        "Nr": "VI-10",
+        "Name": "Fehlende Dateien neu verknüpfen",
+        "State": "umgesetzt",
+        "Test": "VideoSchnittPlus_Ui"
+      },
+      {
+        "Nr": "VI-11",
+        "Name": "Schnitte auf den Takt",
+        "State": "umgesetzt",
+        "Test": "BeatDetectTests"
+      },
+      {
+        "Nr": "VI-12",
+        "Name": "Farbkorrektur je Stück",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "ME-01",
+        "Name": "Bild zuschneiden, drehen, Helligkeit, Text, JPG/PNG",
+        "State": "umgesetzt",
+        "Test": "MediaEditTests"
+      },
+      {
+        "Nr": "ME-02",
+        "Name": "Video Ausschnitt, Clips aneinanderhängen, Vorschaubilder",
+        "State": "umgesetzt",
+        "Test": "MediaEditTests"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/CORE-08_KATALOG.md",
     "Engine": [
-      "VideoEdit",
       "ImageDoc",
+      "VideoEdit",
       "AudioEdit",
       "MediaStudio",
       "AudioFile",
+      "ImageOps",
       "FileShelf",
+      "AudioDsp",
       "Colors",
-      "EditMarker",
-      "Progress",
-      "Rect"
+      "EditMarker"
     ],
     "Tools": [
       "Los",
@@ -3956,7 +5243,6 @@
       ".png",
       ".pptx",
       ".svg",
-      ".tdoc",
       ".txt",
       ".wav",
       ".webm",
@@ -3970,6 +5256,7 @@
       "LibreOffice (optional)",
       "Krita (optional)",
       "Inkscape (optional)",
+      "GIMP (optional)",
       "VLC (optional)",
       "mpv (optional)"
     ],
@@ -4002,9 +5289,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 42,
+    "WarmMs": 32,
     "WindowsOnly": []
   },
   {
@@ -4016,18 +5303,242 @@
     "Type": [
       "Video-Zeitleiste"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "AU-01",
+        "Name": "Wellenform, Auswahl mit der Maus, Schneiden/Kopieren/Einfügen/Löschen",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-02",
+        "Name": "Normalisieren, Ein-/Ausblenden, Lauter/Leiser",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-03",
+        "Name": "Schritte-Liste, Rückgängig, Original bleibt unverändert",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-04",
+        "Name": "Export WAV/MP3",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-05",
+        "Name": "Rauschen nach Profil entfernen",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-06",
+        "Name": "Brummen 50 Hz mit Oberwellen entfernen",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-07",
+        "Name": "Stille kürzen",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-08",
+        "Name": "Lautheit −16/−14 LUFS (BS.1770, wie FFmpeg ebur128)",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-09",
+        "Name": "Kompressor",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-10",
+        "Name": "Spektrogramm-Ansicht",
+        "State": "umgesetzt",
+        "Test": "AudioDspTests"
+      },
+      {
+        "Nr": "AU-11",
+        "Name": "Reparieren in der Oberfläche, Aufnahme an der Marke",
+        "State": "umgesetzt",
+        "Test": "AudioEditor_Ui"
+      },
+      {
+        "Nr": "AU-12",
+        "Name": "Spektrales Retuschieren",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "BI-01",
+        "Name": "Ebenen, Pinsel, Formen, Text, Verschieben, Zuschneiden, Export PNG",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui"
+      },
+      {
+        "Nr": "BI-02",
+        "Name": "Filter (Helligkeit, Kontrast, Schwarzweiß …)",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui"
+      },
+      {
+        "Nr": "BI-03",
+        "Name": "Vektorpinsel, Mischmodi, SVG speichern/öffnen",
+        "State": "umgesetzt",
+        "Test": "ImageVectorTests"
+      },
+      {
+        "Nr": "BI-04",
+        "Name": "Tonwerte und Auto-Tonwerte",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-05",
+        "Name": "Kurven (Vorlagen, monoton)",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-06",
+        "Name": "Füllen mit Toleranz",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-07",
+        "Name": "Reparieren (Fleck aus der Umgebung)",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-08",
+        "Name": "Klonen (Kopierstempel)",
+        "State": "umgesetzt",
+        "Test": "ImageOpsTests"
+      },
+      {
+        "Nr": "BI-09",
+        "Name": "Verlauf linear/kreisförmig",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui"
+      },
+      {
+        "Nr": "BI-10",
+        "Name": "Auswahl und Ebenenmaske (eckig/rund, weiche Kante, umkehren)",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui"
+      },
+      {
+        "Nr": "BI-11",
+        "Name": "Lasso und Zauberstab",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "VI-01",
+        "Name": "Spuren, Stücke ziehen, kürzen, teilen, löschen",
+        "State": "umgesetzt",
+        "Test": "VideoSchnitt_Ui"
+      },
+      {
+        "Nr": "VI-02",
+        "Name": "Schnittmodell (Länge, Teilen, Verschieben)",
+        "State": "umgesetzt",
+        "Test": "VideoEditTests"
+      },
+      {
+        "Nr": "VI-03",
+        "Name": "Überblenden und Titel",
+        "State": "umgesetzt",
+        "Test": "VideoEditPlusTests"
+      },
+      {
+        "Nr": "VI-04",
+        "Name": "Export im Hintergrund mit Fortschritt, Abbrechen",
+        "State": "umgesetzt",
+        "Test": "VideoSchnittPlus_Ui"
+      },
+      {
+        "Nr": "VI-05",
+        "Name": "Export-Vorlagen, Hochformat, Lautheit, NVENC",
+        "State": "umgesetzt",
+        "Test": "VideoExportTests"
+      },
+      {
+        "Nr": "VI-06",
+        "Name": "EDL und FCPXML",
+        "State": "umgesetzt",
+        "Test": "VideoExportTests"
+      },
+      {
+        "Nr": "VI-07",
+        "Name": "Ducking (Musik unter Sprache)",
+        "State": "umgesetzt",
+        "Test": "VideoExportTests"
+      },
+      {
+        "Nr": "VI-08",
+        "Name": "Untertitel erzeugen und einbrennen",
+        "State": "umgesetzt",
+        "Test": "VideoSubtitleTests"
+      },
+      {
+        "Nr": "VI-09",
+        "Name": "Tastatur J/K/L, I/O, Marken",
+        "State": "umgesetzt",
+        "Test": "VideoSchnittPlus_Ui"
+      },
+      {
+        "Nr": "VI-10",
+        "Name": "Fehlende Dateien neu verknüpfen",
+        "State": "umgesetzt",
+        "Test": "VideoSchnittPlus_Ui"
+      },
+      {
+        "Nr": "VI-11",
+        "Name": "Schnitte auf den Takt",
+        "State": "umgesetzt",
+        "Test": "BeatDetectTests"
+      },
+      {
+        "Nr": "VI-12",
+        "Name": "Farbkorrektur je Stück",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "ME-01",
+        "Name": "Bild zuschneiden, drehen, Helligkeit, Text, JPG/PNG",
+        "State": "umgesetzt",
+        "Test": "MediaEditTests"
+      },
+      {
+        "Nr": "ME-02",
+        "Name": "Video Ausschnitt, Clips aneinanderhängen, Vorschaubilder",
+        "State": "umgesetzt",
+        "Test": "MediaEditTests"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/CORE-08_KATALOG.md",
     "Engine": [
-      "VideoEdit",
       "ImageDoc",
+      "VideoEdit",
       "AudioEdit",
       "MediaStudio",
       "AudioFile",
+      "ImageOps",
       "FileShelf",
+      "AudioDsp",
       "Colors",
-      "EditMarker",
-      "Progress",
-      "Rect"
+      "EditMarker"
     ],
     "Tools": [
       "Teilen (S) (Schneiden)",
@@ -4071,6 +5582,7 @@
       "LibreOffice (optional)",
       "Krita (optional)",
       "Inkscape (optional)",
+      "GIMP (optional)",
       "VLC (optional)",
       "mpv (optional)"
     ],
@@ -4108,9 +5620,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": true,
-    "WarmMs": 11,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -4122,7 +5634,135 @@
     "Type": [
       "CAD-/3D-Zeichenfläche"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "D3-01",
+        "Name": "3D-Ansicht mit Drehen, Zoomen, Auswählen",
+        "State": "umgesetzt",
+        "Test": "Studio3DViewport_Ui"
+      },
+      {
+        "Nr": "D3-02",
+        "Name": "Formen, Szene, Export",
+        "State": "umgesetzt",
+        "Test": "W4_Core05_Ui"
+      },
+      {
+        "Nr": "D3-03",
+        "Name": "Freie Modelle in die Bibliothek",
+        "State": "umgesetzt",
+        "Test": "Library3D_Ui"
+      },
+      {
+        "Nr": "CA-01",
+        "Name": "Boolesche Operationen (Vereinigung, Abzug, Schnitt)",
+        "State": "umgesetzt",
+        "Test": "CadTests"
+      },
+      {
+        "Nr": "CA-02",
+        "Name": "Parametrisch mit Formeln",
+        "State": "umgesetzt",
+        "Test": "CadTests"
+      },
+      {
+        "Nr": "CA-03",
+        "Name": "Extrudieren, Tasche, Drehteil, Rundung, Fase, Muster, Spiegeln",
+        "State": "umgesetzt",
+        "Test": "CadTests"
+      },
+      {
+        "Nr": "CA-04",
+        "Name": "Export STL, 3MF, STEP, Zeichnung als PDF",
+        "State": "umgesetzt",
+        "Test": "CadTests"
+      },
+      {
+        "Nr": "CA-05",
+        "Name": "Bauschritte im Menüband, Rückgängig",
+        "State": "umgesetzt",
+        "Test": "N23N24_CadPrintUi"
+      },
+      {
+        "Nr": "CA-06",
+        "Name": "Eigenschaften: Volumen, Oberfläche, Masse je Werkstoff, Schwerpunkt",
+        "State": "umgesetzt",
+        "Test": "CadMeasureTests"
+      },
+      {
+        "Nr": "CA-07",
+        "Name": "Querschnittsfläche",
+        "State": "umgesetzt",
+        "Test": "CadMeasureTests"
+      },
+      {
+        "Nr": "CA-08",
+        "Name": "Normbohrungen M2–M12",
+        "State": "umgesetzt",
+        "Test": "N23N24_CadPrintUi"
+      },
+      {
+        "Nr": "CA-09",
+        "Name": "Skizzen mit Bedingungen",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "CA-10",
+        "Name": "Gelenke in Baugruppen",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "DR-01",
+        "Name": "Druckplatte, Aufstellen, Prüfungen",
+        "State": "umgesetzt",
+        "Test": "PrintPreview_Ui"
+      },
+      {
+        "Nr": "DR-02",
+        "Name": "Umrisse und Füllung je Schicht",
+        "State": "umgesetzt",
+        "Test": "SlicerTests"
+      },
+      {
+        "Nr": "DR-03",
+        "Name": "Zeit, Filament, Kosten aus den Bahnen",
+        "State": "umgesetzt",
+        "Test": "SlicerTests"
+      },
+      {
+        "Nr": "DR-04",
+        "Name": "Material, Schichthöhe, Wände, Füllung",
+        "State": "umgesetzt",
+        "Test": "PrintPreview_Ui"
+      },
+      {
+        "Nr": "DR-05",
+        "Name": "Stützen-Schätzung",
+        "State": "umgesetzt",
+        "Test": "SlicerTests"
+      },
+      {
+        "Nr": "DR-06",
+        "Name": "Skalieren, Kopien anordnen",
+        "State": "umgesetzt",
+        "Test": "SlicerTests"
+      },
+      {
+        "Nr": "DR-07",
+        "Name": "Drucker im Heimnetz, Druck nach Bestätigung",
+        "State": "umgesetzt",
+        "Test": "N23N24_CadPrintUi"
+      },
+      {
+        "Nr": "DR-08",
+        "Name": "Mehrere verschiedene Modelle auf einer Platte",
+        "State": "offen",
+        "Test": "–"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/CORE-05_KATALOG.md",
     "Engine": [
       "Mesh3D",
       "Scene3D",
@@ -4253,9 +5893,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 47,
+    "WarmMs": 46,
     "WindowsOnly": []
   },
   {
@@ -4267,7 +5907,135 @@
     "Type": [
       "CAD-/3D-Zeichenfläche"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "D3-01",
+        "Name": "3D-Ansicht mit Drehen, Zoomen, Auswählen",
+        "State": "umgesetzt",
+        "Test": "Studio3DViewport_Ui"
+      },
+      {
+        "Nr": "D3-02",
+        "Name": "Formen, Szene, Export",
+        "State": "umgesetzt",
+        "Test": "W4_Core05_Ui"
+      },
+      {
+        "Nr": "D3-03",
+        "Name": "Freie Modelle in die Bibliothek",
+        "State": "umgesetzt",
+        "Test": "Library3D_Ui"
+      },
+      {
+        "Nr": "CA-01",
+        "Name": "Boolesche Operationen (Vereinigung, Abzug, Schnitt)",
+        "State": "umgesetzt",
+        "Test": "CadTests"
+      },
+      {
+        "Nr": "CA-02",
+        "Name": "Parametrisch mit Formeln",
+        "State": "umgesetzt",
+        "Test": "CadTests"
+      },
+      {
+        "Nr": "CA-03",
+        "Name": "Extrudieren, Tasche, Drehteil, Rundung, Fase, Muster, Spiegeln",
+        "State": "umgesetzt",
+        "Test": "CadTests"
+      },
+      {
+        "Nr": "CA-04",
+        "Name": "Export STL, 3MF, STEP, Zeichnung als PDF",
+        "State": "umgesetzt",
+        "Test": "CadTests"
+      },
+      {
+        "Nr": "CA-05",
+        "Name": "Bauschritte im Menüband, Rückgängig",
+        "State": "umgesetzt",
+        "Test": "N23N24_CadPrintUi"
+      },
+      {
+        "Nr": "CA-06",
+        "Name": "Eigenschaften: Volumen, Oberfläche, Masse je Werkstoff, Schwerpunkt",
+        "State": "umgesetzt",
+        "Test": "CadMeasureTests"
+      },
+      {
+        "Nr": "CA-07",
+        "Name": "Querschnittsfläche",
+        "State": "umgesetzt",
+        "Test": "CadMeasureTests"
+      },
+      {
+        "Nr": "CA-08",
+        "Name": "Normbohrungen M2–M12",
+        "State": "umgesetzt",
+        "Test": "N23N24_CadPrintUi"
+      },
+      {
+        "Nr": "CA-09",
+        "Name": "Skizzen mit Bedingungen",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "CA-10",
+        "Name": "Gelenke in Baugruppen",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "DR-01",
+        "Name": "Druckplatte, Aufstellen, Prüfungen",
+        "State": "umgesetzt",
+        "Test": "PrintPreview_Ui"
+      },
+      {
+        "Nr": "DR-02",
+        "Name": "Umrisse und Füllung je Schicht",
+        "State": "umgesetzt",
+        "Test": "SlicerTests"
+      },
+      {
+        "Nr": "DR-03",
+        "Name": "Zeit, Filament, Kosten aus den Bahnen",
+        "State": "umgesetzt",
+        "Test": "SlicerTests"
+      },
+      {
+        "Nr": "DR-04",
+        "Name": "Material, Schichthöhe, Wände, Füllung",
+        "State": "umgesetzt",
+        "Test": "PrintPreview_Ui"
+      },
+      {
+        "Nr": "DR-05",
+        "Name": "Stützen-Schätzung",
+        "State": "umgesetzt",
+        "Test": "SlicerTests"
+      },
+      {
+        "Nr": "DR-06",
+        "Name": "Skalieren, Kopien anordnen",
+        "State": "umgesetzt",
+        "Test": "SlicerTests"
+      },
+      {
+        "Nr": "DR-07",
+        "Name": "Drucker im Heimnetz, Druck nach Bestätigung",
+        "State": "umgesetzt",
+        "Test": "N23N24_CadPrintUi"
+      },
+      {
+        "Nr": "DR-08",
+        "Name": "Mehrere verschiedene Modelle auf einer Platte",
+        "State": "offen",
+        "Test": "–"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/CORE-05_KATALOG.md",
     "Engine": [
       "Mesh3D",
       "Scene3D",
@@ -4339,6 +6107,7 @@
       "Trendo 3D-Druck"
     ],
     "Tests": [
+      "CAD wie Fusion 360: Normbohrung M5 per Auswahl (ein Schritt, Rückgängig), Eigenschaften mit Masse je Werkstoff und Querschnitt",
       "CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen",
       "CORE-05: Unbekannte Formate und Formen werden abgewiesen",
       "N23: Bauschritte über das Menüband, Maß als Formel ändern, Parameter ändern rechnet neu, Rückgängig, Export 3MF/STEP/Zeichnung",
@@ -4349,9 +6118,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -4363,18 +6132,146 @@
     "Type": [
       "CAD-/3D-Zeichenfläche"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "D3-01",
+        "Name": "3D-Ansicht mit Drehen, Zoomen, Auswählen",
+        "State": "umgesetzt",
+        "Test": "Studio3DViewport_Ui"
+      },
+      {
+        "Nr": "D3-02",
+        "Name": "Formen, Szene, Export",
+        "State": "umgesetzt",
+        "Test": "W4_Core05_Ui"
+      },
+      {
+        "Nr": "D3-03",
+        "Name": "Freie Modelle in die Bibliothek",
+        "State": "umgesetzt",
+        "Test": "Library3D_Ui"
+      },
+      {
+        "Nr": "CA-01",
+        "Name": "Boolesche Operationen (Vereinigung, Abzug, Schnitt)",
+        "State": "umgesetzt",
+        "Test": "CadTests"
+      },
+      {
+        "Nr": "CA-02",
+        "Name": "Parametrisch mit Formeln",
+        "State": "umgesetzt",
+        "Test": "CadTests"
+      },
+      {
+        "Nr": "CA-03",
+        "Name": "Extrudieren, Tasche, Drehteil, Rundung, Fase, Muster, Spiegeln",
+        "State": "umgesetzt",
+        "Test": "CadTests"
+      },
+      {
+        "Nr": "CA-04",
+        "Name": "Export STL, 3MF, STEP, Zeichnung als PDF",
+        "State": "umgesetzt",
+        "Test": "CadTests"
+      },
+      {
+        "Nr": "CA-05",
+        "Name": "Bauschritte im Menüband, Rückgängig",
+        "State": "umgesetzt",
+        "Test": "N23N24_CadPrintUi"
+      },
+      {
+        "Nr": "CA-06",
+        "Name": "Eigenschaften: Volumen, Oberfläche, Masse je Werkstoff, Schwerpunkt",
+        "State": "umgesetzt",
+        "Test": "CadMeasureTests"
+      },
+      {
+        "Nr": "CA-07",
+        "Name": "Querschnittsfläche",
+        "State": "umgesetzt",
+        "Test": "CadMeasureTests"
+      },
+      {
+        "Nr": "CA-08",
+        "Name": "Normbohrungen M2–M12",
+        "State": "umgesetzt",
+        "Test": "N23N24_CadPrintUi"
+      },
+      {
+        "Nr": "CA-09",
+        "Name": "Skizzen mit Bedingungen",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "CA-10",
+        "Name": "Gelenke in Baugruppen",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "DR-01",
+        "Name": "Druckplatte, Aufstellen, Prüfungen",
+        "State": "umgesetzt",
+        "Test": "PrintPreview_Ui"
+      },
+      {
+        "Nr": "DR-02",
+        "Name": "Umrisse und Füllung je Schicht",
+        "State": "umgesetzt",
+        "Test": "SlicerTests"
+      },
+      {
+        "Nr": "DR-03",
+        "Name": "Zeit, Filament, Kosten aus den Bahnen",
+        "State": "umgesetzt",
+        "Test": "SlicerTests"
+      },
+      {
+        "Nr": "DR-04",
+        "Name": "Material, Schichthöhe, Wände, Füllung",
+        "State": "umgesetzt",
+        "Test": "PrintPreview_Ui"
+      },
+      {
+        "Nr": "DR-05",
+        "Name": "Stützen-Schätzung",
+        "State": "umgesetzt",
+        "Test": "SlicerTests"
+      },
+      {
+        "Nr": "DR-06",
+        "Name": "Skalieren, Kopien anordnen",
+        "State": "umgesetzt",
+        "Test": "SlicerTests"
+      },
+      {
+        "Nr": "DR-07",
+        "Name": "Drucker im Heimnetz, Druck nach Bestätigung",
+        "State": "umgesetzt",
+        "Test": "N23N24_CadPrintUi"
+      },
+      {
+        "Nr": "DR-08",
+        "Name": "Mehrere verschiedene Modelle auf einer Platte",
+        "State": "offen",
+        "Test": "–"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/CORE-05_KATALOG.md",
     "Engine": [
       "CadOp",
       "Mesh3D",
       "Scene3D",
+      "CadMeasure",
       "CadDoc",
       "CadExport",
       "Part3D",
       "Studio3D",
       "DependencyCatalog",
-      "ScenePlan",
-      "CadError"
+      "ScenePlan"
     ],
     "Tools": [
       "Los",
@@ -4453,6 +6350,7 @@
       "Trendo CAD"
     ],
     "Tests": [
+      "CAD wie Fusion 360: Normbohrung M5 per Auswahl (ein Schritt, Rückgängig), Eigenschaften mit Masse je Werkstoff und Querschnitt",
       "CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen",
       "CORE-05: Unbekannte Formate und Formen werden abgewiesen",
       "N23: Bauschritte über das Menüband, Maß als Formel ändern, Parameter ändern rechnet neu, Rückgängig, Export 3MF/STEP/Zeichnung",
@@ -4463,9 +6361,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 56,
     "WindowsOnly": []
   },
   {
@@ -4671,9 +6569,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -4883,7 +6781,7 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": true,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -4897,7 +6795,87 @@
     "Type": [
       "Spieleprojekt (Übersicht, Spielbibel, Figuren, Welt, Missionen, Level, Bauen)"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "SP-01",
+        "Name": "Vorlagen mit Umfang, Meilensteinen, Prüfung auf Sackgassen",
+        "State": "umgesetzt",
+        "Test": "GameDesignTests"
+      },
+      {
+        "Nr": "SP-02",
+        "Name": "Level im Raster malen, prüfen, bauen, spielen",
+        "State": "umgesetzt",
+        "Test": "GameProgramUiTests"
+      },
+      {
+        "Nr": "SP-03",
+        "Name": "Level malen mit der Maus (ziehen, rechts radieren)",
+        "State": "umgesetzt",
+        "Test": "LevelEditor_Ui"
+      },
+      {
+        "Nr": "SP-04",
+        "Name": "Objekte auswählen, Eigenschaften je Objekt",
+        "State": "umgesetzt",
+        "Test": "SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-05",
+        "Name": "Probespielen im Fenster",
+        "State": "umgesetzt",
+        "Test": "SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-06",
+        "Name": "Sprungfeder, Speicherpunkt, Schlüssel und Tür",
+        "State": "umgesetzt",
+        "Test": "GameRulesTests"
+      },
+      {
+        "Nr": "SP-07",
+        "Name": "Ereignis-Regeln „Wenn … dann …“",
+        "State": "umgesetzt",
+        "Test": "GameRulesTests"
+      },
+      {
+        "Nr": "SP-08",
+        "Name": "Zeitlimit",
+        "State": "umgesetzt",
+        "Test": "GameRulesTests"
+      },
+      {
+        "Nr": "SP-09",
+        "Name": "Browser-Spiel mit gültigem JavaScript",
+        "State": "umgesetzt",
+        "Test": "W4_Core06_Game"
+      },
+      {
+        "Nr": "SP-10",
+        "Name": "Veröffentlichen: Ziele, Checkliste, Pakete",
+        "State": "umgesetzt",
+        "Test": "GameRelease_Ui"
+      },
+      {
+        "Nr": "SP-11",
+        "Name": "Unreal-Projekt mit Spielbibel",
+        "State": "umgesetzt",
+        "Test": "GameDesignTests"
+      },
+      {
+        "Nr": "SP-12",
+        "Name": "Mehrere Level hintereinander",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "SP-13",
+        "Name": "Animationen je Zustand",
+        "State": "offen",
+        "Test": "–"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/CORE-06_KATALOG.md",
     "Engine": [
       "GameStudio",
       "GameDesign",
@@ -4927,7 +6905,7 @@
       "Unreal Engine (optional)"
     ],
     "Rea": "docs/claude/vorbilder/spiele-godot-gdevelop.md",
-    "ReaSummary": "Vorbild-Analyse Spiele: Godot, GDevelop, Unreal Engine (Clean-Room)",
+    "ReaSummary": "Vorbild-Analyse Spiele: Godot, GDevelop, Construct, Unreal Engine (Clean-Room)",
     "Ui": [
       "Spieleprojekt (Übersicht, Spielbibel, Figuren, Welt, Missionen, Level, Bauen)",
       "Menüband",
@@ -4950,9 +6928,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -4965,7 +6943,87 @@
       "Bildansicht",
       "Spielesammlung (Bibliothek, gewähltes Spiel mit Einstellungen, Neu und Unreal)"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "SP-01",
+        "Name": "Vorlagen mit Umfang, Meilensteinen, Prüfung auf Sackgassen",
+        "State": "umgesetzt",
+        "Test": "GameDesignTests"
+      },
+      {
+        "Nr": "SP-02",
+        "Name": "Level im Raster malen, prüfen, bauen, spielen",
+        "State": "umgesetzt",
+        "Test": "GameProgramUiTests"
+      },
+      {
+        "Nr": "SP-03",
+        "Name": "Level malen mit der Maus (ziehen, rechts radieren)",
+        "State": "umgesetzt",
+        "Test": "LevelEditor_Ui"
+      },
+      {
+        "Nr": "SP-04",
+        "Name": "Objekte auswählen, Eigenschaften je Objekt",
+        "State": "umgesetzt",
+        "Test": "SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-05",
+        "Name": "Probespielen im Fenster",
+        "State": "umgesetzt",
+        "Test": "SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-06",
+        "Name": "Sprungfeder, Speicherpunkt, Schlüssel und Tür",
+        "State": "umgesetzt",
+        "Test": "GameRulesTests"
+      },
+      {
+        "Nr": "SP-07",
+        "Name": "Ereignis-Regeln „Wenn … dann …“",
+        "State": "umgesetzt",
+        "Test": "GameRulesTests"
+      },
+      {
+        "Nr": "SP-08",
+        "Name": "Zeitlimit",
+        "State": "umgesetzt",
+        "Test": "GameRulesTests"
+      },
+      {
+        "Nr": "SP-09",
+        "Name": "Browser-Spiel mit gültigem JavaScript",
+        "State": "umgesetzt",
+        "Test": "W4_Core06_Game"
+      },
+      {
+        "Nr": "SP-10",
+        "Name": "Veröffentlichen: Ziele, Checkliste, Pakete",
+        "State": "umgesetzt",
+        "Test": "GameRelease_Ui"
+      },
+      {
+        "Nr": "SP-11",
+        "Name": "Unreal-Projekt mit Spielbibel",
+        "State": "umgesetzt",
+        "Test": "GameDesignTests"
+      },
+      {
+        "Nr": "SP-12",
+        "Name": "Mehrere Level hintereinander",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "SP-13",
+        "Name": "Animationen je Zustand",
+        "State": "offen",
+        "Test": "–"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/CORE-06_KATALOG.md",
     "Engine": [
       "GameStudio",
       "GameDesign",
@@ -5008,7 +7066,7 @@
       "Unreal Engine (optional)"
     ],
     "Rea": "docs/claude/vorbilder/spiele-godot-gdevelop.md",
-    "ReaSummary": "Vorbild-Analyse Spiele: Godot, GDevelop, Unreal Engine (Clean-Room)",
+    "ReaSummary": "Vorbild-Analyse Spiele: Godot, GDevelop, Construct, Unreal Engine (Clean-Room)",
     "Ui": [
       "Bildansicht",
       "Spielesammlung (Bibliothek, gewähltes Spiel mit Einstellungen, Neu und Unreal)"
@@ -5050,9 +7108,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 23,
+    "WarmMs": 28,
     "WindowsOnly": []
   },
   {
@@ -5235,9 +7293,9 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 44,
+    "WarmMs": 33,
     "WindowsOnly": []
   },
   {
@@ -5434,9 +7492,9 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 61,
+    "WarmMs": 60,
     "WindowsOnly": []
   },
   {
@@ -5625,9 +7683,9 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": true,
-    "WarmMs": 11,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -5833,9 +7891,9 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 32,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -6053,9 +8111,9 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 45,
+    "WarmMs": 41,
     "WindowsOnly": []
   },
   {
@@ -6249,9 +8307,9 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 6,
     "WindowsOnly": []
   },
   {
@@ -6431,9 +8489,9 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": true,
-    "WarmMs": 13,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -6613,9 +8671,9 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": true,
-    "WarmMs": 14,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -6804,7 +8862,7 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -6974,9 +9032,9 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -7175,9 +9233,9 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": true,
-    "WarmMs": 12,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -7232,7 +9290,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -7296,9 +9354,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -7369,9 +9427,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -7443,9 +9501,9 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 25,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -7540,9 +9598,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 25,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -7624,9 +9682,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 29,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -7700,9 +9758,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -7795,9 +9853,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 50,
+    "WarmMs": 30,
     "WindowsOnly": []
   },
   {
@@ -7904,9 +9962,9 @@
       "src/Trendo.App/MainWindow.Connections.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -7978,9 +10036,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -8080,9 +10138,9 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -8179,9 +10237,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 24,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -8240,9 +10298,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -8334,9 +10392,9 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -8382,9 +10440,9 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -8481,9 +10539,9 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -8547,9 +10605,9 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -8678,9 +10736,9 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 52,
+    "WarmMs": 29,
     "WindowsOnly": []
   },
   {
@@ -8754,9 +10812,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 31,
+    "WarmMs": 23,
     "WindowsOnly": []
   },
   {
@@ -8823,9 +10881,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -8900,9 +10958,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -8965,9 +11023,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -9075,9 +11133,62 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 62,
+    "WarmMs": 51,
+    "WindowsOnly": []
+  },
+  {
+    "Id": "dateien",
+    "Name": "Dateien",
+    "Studio": "CORE-01",
+    "StudioName": "Desktop einrichten",
+    "Area": "System & Sicherheit",
+    "Type": [],
+    "Functions": [],
+    "Engine": [],
+    "Tools": [
+      "Los",
+      "✳ Claude",
+      "Dieser PC",
+      "Zurück",
+      "Vor",
+      "Übergeordneter Ordner",
+      "Aktualisieren",
+      "Neu",
+      "Ausschneiden",
+      "Kopieren",
+      "Einfügen",
+      "Umbenennen",
+      "Löschen (in den Papierkorb)",
+      "Ansicht: Symbole",
+      "Ausgeblendete Elemente",
+      "Im Dateimanager des Systems öffnen",
+      "Start",
+      "Desktop",
+      "Downloads",
+      "Dokumente",
+      "Bilder",
+      "Musik",
+      "Videos",
+      "Lokaler Datenträger (C:\\Users\\manue\\AppData\\Local\\Temp\\trendo-render\\dateien-test)"
+    ],
+    "Formats": [],
+    "Dependencies": [],
+    "Ui": [],
+    "Tabs": [
+      "Dateien"
+    ],
+    "Tests": [
+      "CORE-01: Dateisuche begrenzt Tiefe und Anzahl",
+      "CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte",
+      "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste"
+    ],
+    "SourceFiles": [],
+    "Status": "IN_PROGRESS / Test PC_VERIFIED",
+    "Version": "0.9.36 (Stand dcf0568)",
+    "Shell": false,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -9169,9 +11280,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 48,
+    "WarmMs": 25,
     "WindowsOnly": []
   },
   {
@@ -9216,9 +11327,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -9289,9 +11400,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -9417,7 +11528,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
     "WarmMs": 5,
     "WindowsOnly": []
@@ -9492,9 +11603,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -9567,9 +11678,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -9662,9 +11773,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 53,
+    "WarmMs": 44,
     "WindowsOnly": []
   },
   {
@@ -9760,9 +11871,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -9841,9 +11952,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -9917,7 +12028,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
     "WarmMs": 13,
     "WindowsOnly": []
@@ -10184,9 +12295,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 31,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -10429,9 +12540,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 25,
+    "WarmMs": 31,
     "WindowsOnly": []
   },
   {
@@ -10683,9 +12794,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -10970,9 +13081,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 60,
+    "WarmMs": 45,
     "WindowsOnly": []
   },
   {
@@ -11178,9 +13289,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 49,
+    "WarmMs": 41,
     "WindowsOnly": []
   },
   {
@@ -11392,9 +13503,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -11613,9 +13724,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -11825,9 +13936,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -12012,9 +14123,9 @@
       "Wie Windows (hell/dunkel)",
       "Hoher Kontrast",
       "✓ Trendo",
-      "Wie Windows",
-      "Wie Mac",
-      "Wie Linux",
+      "Wie Windows 11",
+      "Wie macOS",
+      "Wie Linux (GNOME)",
       "Gold",
       "Blau",
       "Türkis",
@@ -12048,6 +14159,7 @@
       "Bedienstil: in den Einstellungen wählbar; Mac setzt runde Ampel-Knöpfe links (Schließen zuerst), Linux runde Knöpfe rechts – Knöpfe funktionieren weiter",
       "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste",
       "Claude zeigt, wo es arbeitet; Felder in Aufklapp-Menüs kann Claude lesen und ausfüllen",
+      "Dateimanager-Verhalten je System: Ziehen verschiebt (Strg kopiert), Kopiename je System, Finder-Zeilenschalter benennt um, Entf/⌘⌫ legt in den Papierkorb, Leertaste zeigt Vorschau",
       "Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt",
       "Design: Dock-Klick auf Dateien startet direkt (nur Owner) und wird auditiert; Browser offline deaktiviert",
       "Design: KI-Assistent zeigt 'Nicht verbunden', Eingabe deaktiviert",
@@ -12067,7 +14179,9 @@
       "Komponenten: Lizenzliste, Unreal nur geführt (offizieller Link), Zustimmung wird gespeichert",
       "LETTER-UI: Briefkopf → Akte (Behörde) → Fakt, Chronik, Eingang → Frist UNGEPRÜFT → Quelle fehlt → Export gesperrt → beheben → DOCX → Freigabe → Versand BLOCKED",
       "LETTER-UI: Briefstudio hat genau eine Unterebene; Akte/Ausgabe erst mit offener Akte",
+      "Mehrfachauswahl wie im System: Umschalt-Klick Bereich, Strg-Klick dazu/weg, Rahmen mit der Maus aufziehen, Alles auswählen, mehrere kopieren/einfügen und in den Papierkorb, Klick ins Leere hebt auf",
       "Profi-Rahmen: Bildbearbeitung mit Werkzeugleiste links (aktives Werkzeug markiert), Werkzeuge nicht mehr im Menüband; Werkzeuge und Eigenschaften ein-/ausklappbar und gemerkt",
+      "Programme im Stil des Systems: Windows-Menüzeile im Fenster, Mac-Menüs oben in der Menüleiste (Ablage …), GNOME-Kopfleiste mit „Speichern“ blau und Hauptmenü ☰ – Menüeinträge lösen dieselben Befehle aus",
       "QA-004 UI: Browser-Aktion abgelehnt → nichts geöffnet",
       "QA-004 UI: Browser-Aktion freigegeben → genau einmal geöffnet",
       "QA-004 UI: Explorer-Aktion → Freigabe-Ansicht; Ausführung erst nach Klick auf Freigeben",
@@ -12075,6 +14189,7 @@
       "QA-017: Strg+1..5 schaltet alle Hauptbereiche per Tastatur",
       "QA-017: Tab bewegt Fokus durch die Navigation, Enter aktiviert",
       "QA-019 (simuliert): Offline-Modus – Browser-Aktion deaktiviert, lokale Funktionen laufen",
+      "Registerkarten wie Explorer/Finder/Dateien: Strg/⌘+T neu, Mittelklick-Ordner in neuer Karte, Wechsel per Klick und Strg+Bild↓, eigener Verlauf je Karte, Strg/⌘+W schließt erst die Karte, dann das Fenster",
       "STUDIO-LETTER-01: Schnellzugriff „Neuer Brief“ → Kündigung → ausfüllen → prüfen → speichern; Absender gemerkt",
       "SYS-02: Notiz-Schnelltool öffnet Werkzeuge; Notiz wird gespeichert; Rechner rechnet bei Enter",
       "SYS-03: Dock-Browser öffnet Browser & Downloads; Adresse wird geöffnet, javascript: abgelehnt; offline gesperrt",
@@ -12098,6 +14213,8 @@
       "Startmenü: Klick auf Startknopf öffnet, Klick daneben und Esc schließen, Windows-Taste schaltet um",
       "Startmenü: Studio aus A–Z anheften, angeheftet öffnen, lösen; Zuletzt benutzt",
       "Startmenü: Suche findet Studio/Seite, Ergebnis per Mausklick öffnet",
+      "Stil Trendo bleibt unverändert: Trendo-Kopf, Seitenspalten, Dock – keine Fremd-Leisten",
+      "Studio-Fenster wie im System: Mac und GNOME – KI-Zeile ist die Titelleiste (Ampel bzw. Schließen, Titel, Zurück), Windows behält die Titelleiste; Schließen in der Kopfleiste schließt das Fenster",
       "Studio-Klick: Unreal nur geführt – kein Installieren-Knopf, offizieller Installer-Link",
       "Studio-Klick: fehlendes Programm → genau eine Frage 'Studio braucht X. Jetzt installieren?', 'Später' installiert nichts",
       "Studio-Seiten: Überschrift ist der Name aus dem Studio-Katalog",
@@ -12108,15 +14225,19 @@
       "W0b-01: Keine Fachwörter in Oberflächentexten (docs/SPRACHE.md)",
       "W0b-02/04/05: Widgets ausblenden, Dock sortieren, Bewegung reduzieren, Hinweis einmalig – alles gespeichert",
       "W0b-06: Design wechseln (Hell/Kontrast) baut das Fenster neu auf und speichert",
+      "Wie GNOME: schwarze Leiste mit Aktivitäten und Uhr in der Mitte, Übersicht mit Suche und Dash, nur Schließen-Knopf im Fenster, Dateien mit „Andere Orte“",
+      "Wie Windows 11: Taskleiste mit Start/Suche/Uhr, Startmenü mit Angeheftet und Suche (Trendo KI), Widgets mit allen Trendo-Karten, eckige Fensterknöpfe, Datei-Explorer mit „Dieser PC“",
+      "Wie im Original: eine Kopfleiste in GNOME-Dateien/Finder, Uhr öffnet Mitteilungen + Monatskalender, Schnelleinstellungen mit Kacheln, „Nicht stören“, GNOME-Suche per Lupe/Lostippen, „Andere Orte“, Explorer springt beim Tippen",
+      "Wie macOS: Menüleiste mit Menüs und Uhr, Dock mit Launchpad und Papierkorb, Spotlight, Ampel-Knöpfe, ⌘W schließt, Finder mit Seitenleiste und Symbolansicht",
       "Zeitleiste mit Dauer und Tönen: fertig, Rückfrage, abschaltbar"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 124,
+    "WarmMs": 96,
     "WindowsOnly": []
   },
   {
@@ -12329,9 +14450,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -12554,9 +14675,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -12767,9 +14888,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -12842,9 +14963,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -13119,9 +15240,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -13372,9 +15493,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 29,
     "WindowsOnly": []
   },
   {
@@ -13453,9 +15574,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand dfd134a)",
+    "Version": "0.9.36 (Stand dcf0568)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 13,
     "WindowsOnly": []
   }
 ]

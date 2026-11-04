@@ -1,6 +1,6 @@
 # Trendo CAD – Architektur
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand dfd134a)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand dcf0568)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Cad.cs`
@@ -13,13 +13,13 @@ Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `ca
 - `CadOp`
 - `Mesh3D`
 - `Scene3D`
+- `CadMeasure`
 - `CadDoc`
 - `CadExport`
 - `Part3D`
 - `Studio3D`
 - `DependencyCatalog`
 - `ScenePlan`
-- `CadError`
 
 ## Dateiformate (im Code belegt)
 - .fbx

@@ -1,6 +1,6 @@
 # Wissen für die KI – Funktionsmatrix
 
-Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand dfd134a)
+Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand dcf0568)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

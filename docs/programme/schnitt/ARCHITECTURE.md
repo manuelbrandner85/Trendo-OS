@@ -1,6 +1,6 @@
 # Videoschnitt – Architektur
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand dfd134a)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand dcf0568)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.AudioEditor.cs`
@@ -16,16 +16,16 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - Dokument-Reiter
 
 ## Fach-Engine (Trendo.Core)
-- `VideoEdit`
 - `ImageDoc`
+- `VideoEdit`
 - `AudioEdit`
 - `MediaStudio`
 - `AudioFile`
+- `ImageOps`
 - `FileShelf`
+- `AudioDsp`
 - `Colors`
 - `EditMarker`
-- `Progress`
-- `Rect`
 
 ## Dateiformate (im Code belegt)
 - .csv
@@ -56,6 +56,7 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - LibreOffice (optional)
 - Krita (optional)
 - Inkscape (optional)
+- GIMP (optional)
 - VLC (optional)
 - mpv (optional)
 
