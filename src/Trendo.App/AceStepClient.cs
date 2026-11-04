@@ -167,6 +167,9 @@ public sealed class AceStepClient(HttpClient http, int port = AceStepClient.Defa
         public string? Lyrics { get; init; }
         public string? Caption { get; init; }
         public double? Duration { get; init; }
+        /// <summary>Fortschritt 0–1 während ACE-Step rechnet (null = unbekannt) und der Arbeitsschritt.</summary>
+        public double? Progress { get; init; }
+        public string? Stage { get; init; }
     }
 
     public static State ParseState(string body, string taskId)
@@ -175,7 +178,7 @@ public sealed class AceStepClient(HttpClient http, int port = AceStepClient.Defa
         var item = (data as JsonArray)?.FirstOrDefault(x => x?["task_id"]?.ToString() == taskId) ?? (data is JsonObject o && o["task_id"]?.ToString() == taskId ? o : null);
         if (item is null) return new(0, null, null);
         var status = item["status"]?.GetValue<int>() ?? 0;
-        string? url = null; List<string> urls = []; string? lyrics = null, caption = null; double? duration = null;
+        string? url = null; List<string> urls = []; string? lyrics = null, caption = null, stage = null; double? duration = null, progress = null;
         // „result“ ist ein JSON-Text mit einer Liste der erzeugten Stücke
         if (item["result"] is JsonNode res)
         {
@@ -184,11 +187,16 @@ public sealed class AceStepClient(HttpClient http, int port = AceStepClient.Defa
             url = urls.FirstOrDefault();
             if ((list as JsonArray)?.FirstOrDefault() is JsonObject first)
             {
-                lyrics = first["lyrics"]?.ToString(); caption = first["prompt"]?.ToString();
+                lyrics = first["lyrics"]?.ToString(); caption = first["prompt"]?.ToString(); stage = first["stage"]?.ToString();
+                if (first["progress"] is JsonValue pv && pv.TryGetValue<double>(out var p)) progress = Math.Clamp(p, 0, 1);
                 if (first["metas"]?["duration"] is JsonValue dv && dv.TryGetValue<double>(out var d)) duration = d;
             }
         }
-        return new(status, url, status == 2 ? item["error"]?.ToString() ?? "Erzeugen fehlgeschlagen." : null) { AudioUrls = urls, Lyrics = lyrics, Caption = caption, Duration = duration };
+        // sonst aus der letzten Protokollzeile („… 42%|████ …“)
+        if (progress is null && item["progress_text"]?.ToString() is { } pt && System.Text.RegularExpressions.Regex.Match(pt, @"(\d{1,3})%") is { Success: true } pm)
+            progress = Math.Clamp(int.Parse(pm.Groups[1].Value) / 100.0, 0, 1);
+        if (status == 1) progress = 1;
+        return new(status, url, status == 2 ? item["error"]?.ToString() ?? "Erzeugen fehlgeschlagen." : null) { AudioUrls = urls, Lyrics = lyrics, Caption = caption, Duration = duration, Progress = progress, Stage = stage };
     }
 
     public async Task<State> QueryAsync(string taskId, CancellationToken ct = default)

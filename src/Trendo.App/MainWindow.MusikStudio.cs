@@ -15,7 +15,23 @@ public partial class MainWindow
     const string MS = "musik-studio";
     SongLibrary Songs => new(_core.DataRoot);
     bool _msPro; string _msMsg = ""; string? _msSel; bool _msFav; string _msSearch = "";
-    readonly List<(string Title, DateTime Started)> _msRunning = [];
+    readonly List<(string Title, DateTime Started, CancellationTokenSource Cts)> _msRunning = [];
+
+    /// <summary>Wunsch 03.11.2026: ein Lied, das gerade entsteht, abbrechen. Trendos eigene Musik-KI wird dabei neu gestartet, damit sie den
+    /// Grafikspeicher sofort freigibt (sonst rechnet sie den Auftrag im Hintergrund zu Ende).</summary>
+    readonly Dictionary<string, double> _msProgress = [];
+    ProgressBar? _msRunningBar;
+
+    static string StageDe(string? stage) => stage switch
+    {
+        null or "" or "running" => "", "queued" => " · wartet", "lm" or "thinking" or "llm" => " · Text und Aufbau", "dit" or "diffusion" or "generating" => " · Musik",
+        "vae" or "decode" or "decoding" => " · Klang", "saving" => " · Speichern", _ => "",
+    };
+
+    public void MsCancelCreate(string title)
+    {
+        foreach (var r in _msRunning.Where(r => r.Title == title)) r.Cts.Cancel();
+    }
     // Eingaben bleiben beim Neuzeichnen erhalten
     string _msDesc = "", _msStyle = "", _msLyrics = "", _msTitle = "", _msBpm = "", _msKey = "", _msTime = ""; int _msLang, _msLen = 3, _msVariants = 2; bool _msInstr;
     /// <summary>Für Tests: Liedtext-Vorschlag ohne echte KI.</summary>
@@ -38,18 +54,25 @@ public partial class MainWindow
         var made = new List<MusicSong>();
         var src = fromSongId is null ? null : Songs.Get(fromSongId);
         var kind = job.Task switch { "repaint" when src is not null && job.Seconds > src.Seconds + 1 => "laenger", "repaint" => "abschnitt", "cover" => "cover", _ => "neu" };
-        _msRunning.Add((title, DateTime.Now)); _msMsg = ""; Show(MS);
+        var cts = new CancellationTokenSource();
+        _msRunning.Add((title, DateTime.Now, cts)); _msMsg = ""; Show(MS);
         try
         {
             if (!await EnsureAceServer(t => { _msMsg = t; if (_msRunningText is { } rt0) rt0.Text = t; }, model)) { _msMsg = string.IsNullOrEmpty(_msMsg) ? "ACE-Step ist nicht bereit – in der KI-Bibliothek unter „Musik“ einrichten." : _msMsg; return made; }
             var client = AceClient;
+            // D3 (vorgezogen 03.11.2026): ist der Grafikspeicher fast voll, rechnet die Musik-KI extrem langsam – das ehrlich sagen statt endlos zu laden
+            if ((GpuMemoryOverride ?? (() => AceClientOverride is null && !_opt.Isolated ? SystemMetrics.GpuMemory() : null))() is { } gm && gm.FreeGb < 1.5)
+                _msMsg = $"Achtung: Grafikspeicher fast voll (nur {gm.FreeGb:0.0} von {gm.TotalGb:0} GB frei) – andere KI-Programme belegen ihn. Das Lied kann sehr lange dauern; mit „■ Abbrechen“ stoppen und die anderen Programme schließen."; // sichtbar machen
+            if (_msMsg.StartsWith("Achtung: Grafikspeicher")) Show(MS);
             var task = await client.SubmitAsync(job, src?.File);
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.start", $"{job.Task} {job.Seconds}s {job.Language} x{job.Variants}");
             var t0 = DateTime.UtcNow;
             while (true)
             {
-                await Task.Delay(AceClientOverride is null ? 3000 : 10);
+                await Task.Delay(AceClientOverride is null ? 3000 : 10, cts.Token);
                 var st = await client.QueryAsync(task);
+                cts.Token.ThrowIfCancellationRequested();
+                if (st.Progress is double pr) _msProgress[title] = Math.Max(_msProgress.GetValueOrDefault(title), pr);
                 if (st.Status == 2) throw new InvalidOperationException(st.Error ?? "Erzeugen fehlgeschlagen.");
                 if (st.Status == 1 && st.AudioUrls.Count > 0)
                 {
@@ -76,8 +99,20 @@ public partial class MainWindow
                     return made;
                 }
                 if (DateTime.UtcNow - t0 > MusicTimeout(job.SampleQuery is null ? job.Seconds : 600)) throw new InvalidOperationException("Das dauert ungewöhnlich lange – bitte erneut versuchen.");
-                if (CurrentView == MS && _msRunningText is { } rt) rt.Text = $"„{title}“ entsteht … {(int)(DateTime.UtcNow - t0).TotalSeconds} s";
+                if (CurrentView == MS && _msRunningText is { } rt)
+                {
+                    rt.Text = RunningText(title, (int)(DateTime.UtcNow - t0).TotalSeconds) + StageDe(st.Stage);
+                    if (_msRunningBar is { } bar && _msProgress.TryGetValue(title, out var pv)) { bar.IsIndeterminate = false; bar.Value = pv * 100; }
+                }
             }
+        }
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
+        {
+            var own = _aceServer is { HasExited: false } srv && AceClientOverride is null;
+            if (own) { try { _aceServer!.Kill(true); } catch (InvalidOperationException) { } _aceServer = null; } // gibt den Grafikspeicher frei; beim nächsten Lied startet sie neu
+            _msMsg = $"„{title}“ abgebrochen." + (own ? " Die Musik-KI ist zurückgesetzt und startet beim nächsten Lied neu." : AceClientOverride is null ? " Die Musik-KI läuft außerhalb von Trendo und rechnet den Auftrag noch zu Ende." : "");
+            _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.abgebrochen", title);
+            return made;
         }
         catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or ArgumentException or IOException or TaskCanceledException or System.Text.Json.JsonException)
         {
@@ -85,9 +120,13 @@ public partial class MainWindow
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.fehler", ex.GetType().Name);
             return made;
         }
-        finally { _msRunning.RemoveAll(r => r.Title == title); Show(MS); }
+        finally { _msRunning.RemoveAll(r => r.Cts == cts); _msProgress.Remove(title); cts.Dispose(); Show(MS); }
     }
     TextBlock? _msRunningText;
+    /// <summary>„„Titel“ entsteht … 42 % · 35 s“ – mit Prozent, sobald die Musik-KI ihn meldet.</summary>
+    string RunningText(string title, int seconds) => $"„{title}“ entsteht … " + (_msProgress.TryGetValue(title, out var p) ? $"{p * 100:0} % · " : "") + $"{seconds} s";
+    /// <summary>Tests: Grafikspeicher (frei, gesamt in GB) ersetzen.</summary>
+    public Func<(double FreeGb, double TotalGb)?>? GpuMemoryOverride { get; set; }
 
     /// <summary>Auftrag aus den Eingaben bauen. Einfach: die Beschreibung ist der Stil, Text schreibt ACE-Step selbst (oder instrumental).</summary>
     AceStepClient.Job MsJob()
@@ -290,10 +329,16 @@ public partial class MainWindow
         var fav = new Avalonia.Controls.Primitives.ToggleButton { Name = "ms-fav-filter", Content = "★ Favoriten", IsChecked = _msFav };
         fav.IsCheckedChanged += (_, _) => { _msFav = fav.IsChecked == true; Show(MS); };
         sp.Children.Add(new DockPanel { Children = { Dk(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { import, search, fav } }, Avalonia.Controls.Dock.Right), H("Meine Lieder", 16) } });
-        foreach (var (title, started) in _msRunning)
+        foreach (var (title, started, _) in _msRunning)
         {
-            _msRunningText = new TextBlock { Name = "ms-running", Text = $"„{title}“ entsteht … {(int)(DateTime.Now - started).TotalSeconds} s", Foreground = Text, FontSize = 13 };
-            sp.Children.Add(new Border { CornerRadius = new CornerRadius(12), Background = Brush.Parse("#22C9A227"), Padding = new Thickness(12, 10), Child = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { new ProgressBar { IsIndeterminate = true, Width = 60, VerticalAlignment = VerticalAlignment.Center }, _msRunningText } } });
+            var t = title;
+            _msRunningText = new TextBlock { Name = "ms-running", Text = RunningText(title, (int)(DateTime.Now - started).TotalSeconds), Foreground = Text, FontSize = 13, VerticalAlignment = VerticalAlignment.Center };
+            var known = _msProgress.TryGetValue(title, out var pr);
+            _msRunningBar = new ProgressBar { Name = "ms-running-bar", IsIndeterminate = !known, Minimum = 0, Maximum = 100, Value = known ? pr * 100 : 0, Width = 90, VerticalAlignment = VerticalAlignment.Center };
+            var stop = new Button { Name = "ms-cancel", Content = "■ Abbrechen", FontSize = 11.5, Padding = new Thickness(9, 3), VerticalAlignment = VerticalAlignment.Center };
+            stop.Click += (_, _) => MsCancelCreate(t);
+            sp.Children.Add(new Border { CornerRadius = new CornerRadius(12), Background = Brush.Parse("#22C9A227"), Padding = new Thickness(12, 10),
+                Child = new DockPanel { Children = { Dk(stop, Avalonia.Controls.Dock.Right), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { _msRunningBar, _msRunningText } } } } });
         }
         var songs = Songs.Visible(_msFav, _msSearch);
         if (songs.Count == 0 && _msRunning.Count == 0)
