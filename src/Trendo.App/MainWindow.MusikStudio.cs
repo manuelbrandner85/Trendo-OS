@@ -315,6 +315,7 @@ public partial class MainWindow
             Content = more, IsExpanded = _msMoreOpen, HorizontalAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(0, 6, 0, 0) };
         moreBox.PropertyChanged += (_, e) => { if (e.Property == Expander.IsExpandedProperty) _msMoreOpen = moreBox.IsExpanded; };
         sp.Children.Add(moreBox);
+        sp.Children.Add(MsCoverWorkshopBox()); // M1–M8: Cover nach dem eigenen Original
         var go = new Button { Name = "ms-create", Content = "✨ Erstellen", FontSize = 15, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Center,
             Padding = new Thickness(0, 10), CornerRadius = new CornerRadius(12), Background = Accent, Foreground = Brushes.White, BorderThickness = new Thickness(0), Margin = new Thickness(0, 6, 0, 0) };
         go.Click += (_, _) =>

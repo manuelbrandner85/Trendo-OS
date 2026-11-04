@@ -4,7 +4,7 @@ namespace Trendo.Core;
 public enum KiKind { Chat, Denken, Code, BildVerstehen, Uebersetzen, Wissen, BildErzeugen, BildVerbessern, Video, SpracheZuText, TextZuSprache, Musik, Modell3D, Geraeusche }
 
 /// <summary>Womit Trendo ein Modell ausführt. Jede Laufzeit ist ein freies Programm, das Trendo selbst in „TrendoWerkzeuge“ einrichtet.</summary>
-public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse, Spuren, VideoPruefung }
+public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse, Spuren, VideoPruefung, Stimme }
 
 /// <summary>Eine Laufzeit: offizielles GitHub-Projekt mit fest gewählter Veröffentlichung (Tag, Datei, SHA-256, Größe), Hauptprogramm im ZIP.
 /// Ollama und Python kommen aus dem Vollpaket (<see cref="Tag"/> leer).</summary>
@@ -83,6 +83,9 @@ public static class KiLibrary
         // Trendo Musik (03.11.2026): Spuren trennen mit Demucs (Meta, MIT) – PyPI-Paket auf fester Fassung, Modell htdemucs (80 MB)
         new(KiRuntime.Spuren, "Spuren trennen (Demucs)", "facebookresearch/demucs", "MIT", "Trennt ein Lied in Gesang, Schlagzeug, Bass und Rest – lokal.",
             "demucs-4.0.1", "", "", 0, "env/Scripts/python.exe"),
+        // Trendo Musik M6 (04.11.2026): eigene Stimme lernen und Gesang darin singen lassen – Applio (RVC, MIT), fester Stand; nur mit Mikrofon-Aufnahmen der eigenen Stimme
+        new(KiRuntime.Stimme, "Eigene Stimme (Applio/RVC)", "IAHispano/Applio", "MIT", "Lernt deine eigene Stimme aus Mikrofon-Aufnahmen und singt Gesang in deiner Stimme – lokal.",
+            "140404bda545cbb3a7c438bf2c77209d11cee242", "", "", 0, "env/Scripts/python.exe"),
     ];
 
     const string Hf = "https://huggingface.co/";
@@ -187,6 +190,9 @@ public static class KiLibrary
         new("musik-spuren", KiKind.Musik, KiRuntime.Spuren, "Spuren trennen (Gesang, Schlagzeug, Bass, Rest)", "", 3.0, 8, "MIT",
             "Begleitung ohne Gesang (Karaoke), Gesang allein, einzelne Instrumente zum Üben oder Remixen",
             "In Trendo Musik bei einem Lied „Spuren trennen“. Beim ersten Mal lädt Demucs sein Modell (80 MB). Mit NVIDIA-Grafikkarte in Sekunden, sonst einige Minuten. Fremde Lieder nur privat nutzen.", []),
+        new("musik-stimme", KiKind.Musik, KiRuntime.Stimme, "Eigene Stimme (lernen und singen lassen)", "", 6.0, 16, "MIT",
+            "Deine Cover in deiner eigenen Stimme – nur deine Stimme, live mit dem Mikrofon aufgenommen",
+            "In Trendo Musik → Cover-Werkstatt → „Meine Stimme“: einige Minuten singen oder vorlesen, dann lernt Trendo deine Stimme (mit NVIDIA-Grafikkarte etwa 30–40 Minuten). Fremde Stimmen lernt Trendo nicht.", []),
     ];
 
     public static IEnumerable<KiLibraryModel> OfKind(KiKind k) => Models.Where(m => m.Kind == k);

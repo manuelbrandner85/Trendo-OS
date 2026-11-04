@@ -69,13 +69,13 @@ public partial class MainWindow
     }
 
     /// <summary>Python-KI ausführen: Trendos Startskript mit dem Python der eigenen Umgebung.</summary>
-    async Task<Cli.Result> KiPyRun(KiRuntime r, IReadOnlyList<string> args)
+    async Task<Cli.Result> KiPyRun(KiRuntime r, IReadOnlyList<string> args, int timeoutMs = 1_800_000)
     {
         // große KIs auf der Grafikkarte nacheinander; die Song-Analyse (librosa) rechnet auf dem Prozessor und darf nebenher laufen
         using var gpu = r is KiRuntime.MusikAnalyse or KiRuntime.VideoPruefung ? null : await GpuSlot(r.ToString(), KiLibrary.RuntimeInfo(r).Name);
         var app = KiPyApps.For(r)!; var p = KiStore.PyPaths(r);
         if (KiStepOverride is null && !_opt.Isolated) CopyKiScript(app, p); // immer die Fassung dieser Trendo-Version
-        return await KiStep(p.PythonExe, [Path.Combine(p.Dir, app.Script), p.Repo, .. args], p.Dir, KiPyApps.UvEnv(p.UvHome), 1_800_000);
+        return await KiStep(p.PythonExe, [Path.Combine(p.Dir, app.Script), p.Repo, .. args], p.Dir, KiPyApps.UvEnv(p.UvHome), timeoutMs);
     }
 
     /// <summary>Ausprobieren „3D aus Bild“: Foto wählen → GLB → im 3D-Studio öffnen.</summary>

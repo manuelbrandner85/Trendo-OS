@@ -262,6 +262,17 @@ else if (shot == "seite")
         if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") == "profi") win.MusicStudioProMode(true);
         if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") == "genre") win.MusicStudioPickGenres(true, "Jazz-Ballade", "Smooth Jazz");
         if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_TAB") is { Length: > 0 } mtab) win.MsDetailTab(mtab);
+        if (Environment.GetEnvironmentVariable("TRENDO_COVER_DEMO") is { Length: > 0 }) // Cover-Werkstatt mit erfundenem Lied und Bauplan
+        {
+            win.SongFactsFetchOverride = _ => Task.FromResult<string?>("{\"recordings\":[{\"id\":\"r1\",\"title\":\"Sommer, nimm uns mit\",\"length\":184000,\"first-release-date\":\"1961-05-02\",\"artist-credit\":[{\"name\":\"Erika Muster\"}],\"releases\":[{\"title\":\"Erste Platte\"}]}]}");
+            win.SongAnalyseOverride = _ => Task.FromResult<string?>("{\"duration\":184,\"bpm\":118,\"key\":\"A minor\",\"key_confidence\":0.8,\"meter\":\"4/4\",\"chords\":[\"Am\",\"F\",\"C\",\"G\"],\"range\":{\"low\":\"A3\",\"high\":\"E5\",\"semitones\":19,\"voice\":\"Alt\"}}");
+            win.SectionsOverride = _ => Task.FromResult<string?>("{\"bpm\":118,\"duration\":184,\"beats\":[],\"sections\":[{\"start\":0,\"end\":30,\"energy\":0.4},{\"start\":30,\"end\":60,\"energy\":0.9},{\"start\":60,\"end\":95,\"energy\":0.5},{\"start\":95,\"end\":130,\"energy\":0.9},{\"start\":130,\"end\":184,\"energy\":0.7}]}");
+            win.MelodyOverride = _ => Task.FromResult<string?>("{\"hop\":0.05,\"midi\":[" + string.Join(",", Enumerable.Range(0, 1800).Select(i => i % 50 < 38 ? (62 + 6 * Math.Sin(i / 23.0) + 2 * Math.Sin(i / 5.0)).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) : "null")) + "]}");
+            win.MsCoverSearch("Erika Muster – Sommer, nimm uns mit").Wait(); win.MsCoverPick(0);
+            var of = Path.Combine(dir, "original.mp3"); File.WriteAllBytes(of, [0x49, 0x44, 0x33]);
+            win.MsCoverOriginal(of).Wait();
+            win.CoverLyrics = string.Join((char)10, "[Strophe]", "Die Straße glänzt im Abendlicht", "wir fahren los und halten nicht", "[Refrain]", "Sommer, Sommer, nimm uns mit"); win.CoverVoice = "rocknroll56"; win.CoverGenre = "Rockabilly";
+        }
         win.Show(page);
     }
     if (Environment.GetEnvironmentVariable("TRENDO_SETUP_DEMO") is { Length: > 0 } sd) // Ersteinrichtung im Vollbild (Begrüßung mit Claude und Nutzungsart)
