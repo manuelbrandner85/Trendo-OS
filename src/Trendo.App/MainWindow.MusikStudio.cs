@@ -58,6 +58,7 @@ public partial class MainWindow
         _msRunning.Add((title, DateTime.Now, cts)); _msMsg = ""; Show(MS);
         try
         {
+            using var gpu = await GpuSlot("musik", title, cts.Token, n => { var t = $"„{title}“ wartet auf die Grafikkarte – noch {n} Auftrag{(n == 1 ? "" : "e")} vor dir"; _msMsg = t; if (CurrentView == MS) Show(MS); });
             if (!await EnsureAceServer(t => { _msMsg = t; if (_msRunningText is { } rt0) rt0.Text = t; }, model)) { _msMsg = string.IsNullOrEmpty(_msMsg) ? "ACE-Step ist nicht bereit – in der KI-Bibliothek unter „Musik“ einrichten." : _msMsg; return made; }
             var client = AceClient;
             // D3 (vorgezogen 03.11.2026): ist der Grafikspeicher fast voll, rechnet die Musik-KI extrem langsam – das ehrlich sagen statt endlos zu laden

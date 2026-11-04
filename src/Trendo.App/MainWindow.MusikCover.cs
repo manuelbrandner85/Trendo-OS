@@ -28,6 +28,7 @@ public partial class MainWindow
     /// <summary>Motiv mit der Bild-KI malen (spart Grafikspeicher, damit es auch neben der Musik-KI läuft).</summary>
     async Task<string?> CoverMotif(string prompt, int seed, bool mayPauseMusicAi = true)
     {
+        using var gpu = await GpuSlot("bild", "Cover-Bild");
         var png = Path.Combine(Path.GetTempPath(), $"trendo-cover-{Guid.NewGuid():N}.png");
         if (CoverImageOverride is { } o) return await o(prompt, seed, png) && File.Exists(png) ? png : null;
         if (_opt.Isolated || CoverModel() is not { } cm) return null;

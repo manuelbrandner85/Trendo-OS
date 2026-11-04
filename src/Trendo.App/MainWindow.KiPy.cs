@@ -71,6 +71,8 @@ public partial class MainWindow
     /// <summary>Python-KI ausführen: Trendos Startskript mit dem Python der eigenen Umgebung.</summary>
     async Task<Cli.Result> KiPyRun(KiRuntime r, IReadOnlyList<string> args)
     {
+        // große KIs auf der Grafikkarte nacheinander; die Song-Analyse (librosa) rechnet auf dem Prozessor und darf nebenher laufen
+        using var gpu = r == KiRuntime.MusikAnalyse ? null : await GpuSlot(r.ToString(), KiLibrary.RuntimeInfo(r).Name);
         var app = KiPyApps.For(r)!; var p = KiStore.PyPaths(r);
         if (KiStepOverride is null && !_opt.Isolated) CopyKiScript(app, p); // immer die Fassung dieser Trendo-Version
         return await KiStep(p.PythonExe, [Path.Combine(p.Dir, app.Script), p.Repo, .. args], p.Dir, KiPyApps.UvEnv(p.UvHome), 1_800_000);

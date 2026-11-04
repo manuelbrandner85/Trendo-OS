@@ -52,7 +52,7 @@ public sealed class OllamaClient
         try
         {
             Trendo.Core.KiActivityHub.Update(act, phase: $"{model} wird gestartet …", backend: "Ollama", model: model);
-            var body = new { model, stream = true, messages = new object[] {
+            var body = new { model, stream = true, keep_alive = KiBackendsShared.OllamaKeepAlive, messages = new object[] {
                 new { role = "system", content = "Du bist Trendo KI, ein hilfreicher Assistent in Trendo OS. Antworte kurz und auf Deutsch." },
                 new { role = "user", content = question } } };
             using var req = new HttpRequestMessage(HttpMethod.Post, "/api/chat") { Content = JsonContent.Create(body) };

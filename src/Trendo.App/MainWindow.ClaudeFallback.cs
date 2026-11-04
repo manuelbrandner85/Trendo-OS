@@ -143,6 +143,7 @@ public partial class MainWindow
         _core.Audit.Append(Principal.LocalOwner.Name, "claude.werkzeug", $"{kind} {Path.GetFileName(target)}");
         if (KiToolOverride is { } o) return await o(kind, input, target) ? (true, "") : (false, $"{info.Label} hat nicht geklappt.");
         if (_opt.Isolated) return (false, $"Testmodus: {info.Label} wird nicht ausgeführt.");
+        using var gpu = kind is "bild" or "video" or "verbessern" or "musik" ? await GpuSlot(kind, info.Label) : null;
         var store = KiStore;
         var m = KiLibrary.Models.FirstOrDefault(x => x.Kind == info.Kind && store.ModelReady(x) && store.RuntimeReady(x.Runtime));
         if (m is null) return (false, $"Für „{info.Label}“ ist noch keine kostenlose KI eingerichtet – in der KI-Bibliothek mit einem Klick (KI → Bibliothek).");

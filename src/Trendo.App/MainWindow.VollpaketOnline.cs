@@ -13,6 +13,47 @@ public partial class MainWindow
 
     void InitVollpaketOnline() => _deps.FetchVollpaketPackage = VollpaketOnlineFetch;
 
+    /// <summary>Wunsch 04.11.2026: nach dem Setup alle mitgelieferten Programme automatisch von GitHub laden und einrichten – ohne Ordnerwahl.
+    /// Kleine Grundwerkzeuge zuerst (Trendo ist damit gleich nutzbar), große danach; jede Datei wird gegen ihre Prüfsumme geprüft.
+    /// Ohne Internet bleibt ein Merker liegen, beim nächsten Start lädt Trendo nach.</summary>
+    public async Task<Vollpaket.InstallReport?> InstallVollpaketOnline(CancellationToken ct = default)
+    {
+        var marker = Path.Combine(_deps.ToolsRoot, Vollpaket.PendingMarker);
+        Directory.CreateDirectory(_deps.ToolsRoot);
+        if (_core.Offline) { File.WriteAllText(marker, "offline"); VollpaketMissing = true; _depLog.Text = "Ohne Internet – Trendo lädt die Programme, sobald du online bist."; return null; }
+        var dir = Path.Combine(_deps.ToolsRoot, ".vollpaket-online"); Directory.CreateDirectory(dir);
+        string? found = null;
+        foreach (var b in Vollpaket.OnlineBases)
+        {
+            try { await VollpaketGet(b + Vollpaket.ManifestName, Path.Combine(dir, Vollpaket.ManifestName), 4 << 20, null, ct); if (Vollpaket.Load(dir) is { Count: > 0 }) { found = b; break; } }
+            catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidOperationException or TaskCanceledException) { }
+        }
+        if (found is null) { File.WriteAllText(marker, "nicht erreichbar"); VollpaketMissing = true; _depLog.Text = "GitHub ist gerade nicht erreichbar – Trendo versucht es beim nächsten Start erneut."; return null; }
+        var list = Vollpaket.Load(dir)!.OrderBy(e => e.Bytes).ToList();
+        var missing = list.Where(e => !File.Exists(Path.Combine(_deps.ToolsRoot, e.Id, e.Exe.Replace('/', Path.DirectorySeparatorChar)))).ToList();
+        _core.Audit.Append("app", "vollpaket.online.start", $"{found} {missing.Count} von {list.Count}");
+        BeginSetupOverlay("Trendo OS lädt deine Programme von GitHub");
+        var step = 0;
+        try
+        {
+            foreach (var e in missing)
+            {
+                ct.ThrowIfCancellationRequested();
+                var target = Path.Combine(dir, e.File);
+                if (File.Exists(target) && new FileInfo(target).Length == e.Bytes) { step++; continue; }
+                SetupOverlayProgress(step, missing.Count, $"{e.Name} wird geladen …");
+                try { await VollpaketGet(found + e.File, target, e.Bytes, done => _ui.Post(() => SetupOverlayProgress(step, missing.Count, $"{e.Name}: {done >> 20:N0} von {e.Bytes >> 20:N0} MB")), ct); }
+                catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidOperationException) { _core.Audit.Append("app", "vollpaket.online.failed", $"{e.Id}: {ex.GetType().Name}"); }
+                step++;
+            }
+        }
+        catch (OperationCanceledException) { File.WriteAllText(marker, "abgebrochen"); EndSetupOverlay(); return null; }
+        EndSetupOverlay();
+        var r = await InstallVollpaket(dir); // prüft jede Datei gegen ihre Prüfsumme und richtet sie ein
+        if (r is { Failed.Count: 0, Canceled: false }) TryDelete(marker); else File.WriteAllText(marker, "unvollständig");
+        return r;
+    }
+
     async Task<string?> VollpaketOnlineFetch(string pkg, Action<string>? progress, CancellationToken ct)
     {
         if (_core.Offline) return null;

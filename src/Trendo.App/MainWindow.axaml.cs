@@ -301,6 +301,7 @@ public sealed partial class MainWindow : Window
         RequestAnimationFrame(_ => { StartupTrace.Mark("first.frame"); StartupTrace.Flush(); });
         // KI-Laufzeit im Hintergrund prüfen/starten – blockiert weder Start noch Bildschirmfoto
         if (AppStartup.VelopackFirstRun && !_opt.Isolated) _ = SetupVollpaket(); // T-0222: Programme aus dem Vollpaket gleich nach dem Setup
+        else if (!_opt.Isolated && File.Exists(Path.Combine(_deps.ToolsRoot, Vollpaket.PendingMarker))) _ = InstallVollpaketOnline(); // beim letzten Mal ohne Internet: jetzt nachladen
         UpdatesOnStart(); // U1–U6: Fenster nach einem Update zurück, „Was ist neu?“, Startwächter, Suche im Hintergrund
         LockIfNeeded(); // B2/B7: Sperrbildschirm bei PIN/Passwort oder mehreren Personen
         if (!_opt.Isolated && _settings.PhoneAutoStart) _ = PhoneAutoStartAsync(); // verbundene Handys erreichen Trendo gleich nach dem Start
@@ -1014,23 +1015,16 @@ public sealed partial class MainWindow : Window
         var consent = new Button { Name = "btn-deps-consent", Content = _deps.HasConsent ? "Fehlende kostenlose Programme installieren" : "Zustimmen & fehlende kostenlose Programme installieren", IsEnabled = !_depBusy, Background = Accent };
         consent.Click += async (_, _) => await InstallAll();
         (_depProgress.Parent as Panel)?.Children.Remove(_depProgress); (_depLog.Parent as Panel)?.Children.Remove(_depLog);
-        // Befund 27.10.2026: ohne Vollpaket stand nur „fehlt“ da. Jetzt: klarer Hinweis und Ordnerwahl.
-        var vpDir = new TextBox { Name = "vollpaket-dir", PlaceholderText = "Vollpaket-Ordner (enthält „TrendoOS-Setup.exe“ und „Programme“)", Width = 420 };
-        var vpGo = new Button { Name = "vollpaket-install", Content = "Programme aus dem Vollpaket einrichten", Background = Accent, IsEnabled = !_depBusy };
+        // Wunsch 04.11.2026: keine Ordnerwahl mehr – die mitgelieferten Programme kommen direkt von GitHub
+        var vpGo = new Button { Name = "vollpaket-install", Content = VollpaketMissing ? "Jetzt von GitHub laden und einrichten" : "Fehlende Programme von GitHub nachladen", Background = Accent, IsEnabled = !_depBusy };
         var vpMsg = new TextBlock { Name = "vollpaket-msg", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap };
-        vpGo.Click += async (_, _) =>
-        {
-            var p = Clean(vpDir);
-            if (Vollpaket.Locate([p]) is not { } found) { vpMsg.Text = "In diesem Ordner gibt es keinen gültigen Ordner „Programme“ mit manifest.json."; return; }
-            VollpaketStart.RememberFromInstaller([Path.GetDirectoryName(found) ?? found]);
-            await InstallVollpaket(found); Show("components");
-        };
+        vpGo.Click += async (_, _) => { vpMsg.Text = "Wird von GitHub geladen …"; var r = await InstallVollpaketOnline(); vpMsg.Text = r is null ? _depLog.Text ?? "" : r.Failed.Count == 0 ? "✓ Alle Programme sind eingerichtet." : $"{r.Failed.Count} Programm(e) nicht eingerichtet – erneut versuchen."; Show("components"); };
         sp.Children.Add(new Border { Name = "vollpaket-card", Background = Brush.Parse(VollpaketMissing ? "#33F59E0B" : C("#22FFFFFF", "#0F000000")), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 10), Margin = new Thickness(0, 4, 0, 4),
             Child = new StackPanel { Spacing = 6, Children = {
-                new TextBlock { Text = VollpaketMissing ? "Die mitgelieferten Programme wurden nicht gefunden" : "Mitgelieferte Programme (Vollpaket)", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
-                P(VollpaketMissing ? "Trendo wurde ohne den Ordner „Programme“ installiert. Starte das Setup aus dem Vollpaket-Ordner – oder wähle den Ordner hier, dann richtet Trendo alles ohne Internet ein."
-                    : "Programme wie LibreOffice, Blender oder mpv kommen aus dem Vollpaket. Fehlen welche, wähle den Vollpaket-Ordner und richte sie erneut ein.", null, 12),
-                new WrapPanel { Children = { vpDir, new Border { Width = 6 }, vpGo } }, vpMsg } } });
+                new TextBlock { Text = VollpaketMissing ? "Die mitgelieferten Programme sind noch nicht geladen" : "Mitgelieferte Programme", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
+                P(VollpaketMissing ? "Trendo lädt Blender, LibreOffice, mpv und die übrigen Programme automatisch von GitHub, sobald Internet da ist – oder jetzt per Klick."
+                    : "Programme wie LibreOffice, Blender oder mpv kommen automatisch von GitHub, jede Datei mit Prüfsumme geprüft. Fehlen welche, lädt Trendo sie hier nach.", null, 12),
+                vpGo, vpMsg } } });
         sp.Children.Add(consent); sp.Children.Add(_depProgress); sp.Children.Add(_depLog);
         foreach (var grp in DependencyCatalog.All.GroupBy(c => c.Mode))
         {
@@ -1311,12 +1305,7 @@ public sealed partial class MainWindow : Window
     private async Task SetupVollpaket()
     {
         var dir = await Task.Run(VollpaketStart.Find);
-        if (dir is null)
-        {
-            _core.Audit.Append("app", "vollpaket.not_found", "kein Ordner „Programme“ gefunden");
-            VollpaketMissing = true; // Programme-Seite zeigt den Hinweis und die Ordnerwahl
-            return;
-        }
+        if (dir is null) { await InstallVollpaketOnline(); return; } // kein Offline-Paket neben dem Setup: alles von GitHub (Wunsch 04.11.2026)
         await InstallVollpaket(dir);
     }
 

@@ -81,14 +81,14 @@ public static class WebsitePreview
         _ = process.StandardError.ReadToEndAsync();
         using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(2) };
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        timeout.CancelAfter(TimeSpan.FromSeconds(25));
+        timeout.CancelAfter(TimeSpan.FromSeconds(45));
         ClientWebSocket? socket = null;
         // ReceiveAsync und GetStringAsync lassen den Abbruch auf diesem Chrome oft liegen. Dann bleibt der Prozess stehen.
         using var wake = timeout.Token.Register(() => Cut(socket, http, process));
         try
         {
             var work = TakeShot();
-            var done = await Task.WhenAny(work, Task.Delay(TimeSpan.FromSeconds(27)));
+            var done = await Task.WhenAny(work, Task.Delay(TimeSpan.FromSeconds(45))); // Prüfung 04.11.2026: unter Last (oder auf langsamen PCs) reichten 27 s nicht
             if (done != work)
             {
                 Cut(socket, http, process);
@@ -249,7 +249,7 @@ public static class WebsitePreview
             while (true)
             {
                 var receive = socket.ReceiveAsync(buf, ct);
-                var finished = await Task.WhenAny(receive, Task.Delay(TimeSpan.FromSeconds(12)));
+                var finished = await Task.WhenAny(receive, Task.Delay(TimeSpan.FromSeconds(25)));
                 if (finished != receive)
                 {
                     try { socket.Abort(); } catch { /* schon zu */ }

@@ -69,15 +69,36 @@ public class InstallFeedbackUiTests
         w.Close();
     }
 
-    [AvaloniaFact(DisplayName = "Zusatzprogramme: Vollpaket-Karte mit Ordnerwahl; falscher Ordner wird erklärt")]
-    public void Vollpaket_card()
+    [AvaloniaFact(DisplayName = "Zusatzprogramme: keine Ordnerwahl mehr – „von GitHub laden“; ohne Internet bleibt ein Merker zum Nachladen beim nächsten Start")]
+    public async Task Vollpaket_card()
     {
-        var (w, _, root) = Ui.Open();
+        var (w, _, root) = Ui.Open(offline: true);
         w.Show("components"); Pump();
         Assert.NotNull(w.TryFind<Border>("vollpaket-card"));
-        w.Find<TextBox>("vollpaket-dir").Text = root;
-        w.Find<Button>("vollpaket-install").Press(); Pump();
-        Assert.Contains("keinen gültigen Ordner", w.Find<TextBlock>("vollpaket-msg").Text);
+        Assert.Null(w.TryFind<TextBox>("vollpaket-dir"));
+        Assert.Null(await w.InstallVollpaketOnline());
+        Assert.True(File.Exists(Path.Combine(w.ToolsRootForTests, Trendo.Core.Vollpaket.PendingMarker)));
+        w.Close();
+    }
+
+    [AvaloniaFact(DisplayName = "Programme von GitHub: Programmliste vom neuesten Release, kleine Programme zuerst geladen, mit Prüfsumme eingerichtet")]
+    public async Task Vollpaket_online()
+    {
+        var (w, _, root) = Ui.Open();
+        byte[] Zip(string exe) { using var ms = new MemoryStream(); using (var z = new System.IO.Compression.ZipArchive(ms, System.IO.Compression.ZipArchiveMode.Create, true)) using (var sw = new StreamWriter(z.CreateEntry(exe).Open())) sw.Write("x"); return ms.ToArray(); }
+        var big = Zip("blender.exe"); var small = Zip("bin/qpdf.exe");
+        string Sha(byte[] b) => Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(b));
+        var manifest = System.Text.Json.JsonSerializer.Serialize(new { schema = 1, programs = new object[] {
+            new { id = "blender", name = "Blender", version = "4", license = "GPL", file = "blender.zip", sha256 = Sha(big), bytes = (long)big.Length + 100000, exe = "blender.exe", source_url = "https://www.blender.org" },
+            new { id = "qpdf", name = "qpdf", version = "12", license = "Apache-2.0", file = "qpdf.zip", sha256 = Sha(small), bytes = (long)small.Length, exe = "bin/qpdf.exe", source_url = "https://github.com/qpdf/qpdf" } } });
+        var asked = new List<string>();
+        w.VollpaketOnlineOverride = u => { lock (asked) asked.Add(u); return Task.FromResult(u.EndsWith("manifest.json") ? System.Text.Encoding.UTF8.GetBytes(manifest) : u.EndsWith("qpdf.zip") ? small : big); };
+        Directory.CreateDirectory(w.ToolsRootForTests); File.WriteAllText(Path.Combine(w.ToolsRootForTests, Trendo.Core.Vollpaket.PendingMarker), "offline");
+        var r = await w.InstallVollpaketOnline(); Pump();
+        Assert.NotNull(r);
+        Assert.StartsWith("https://github.com/manuelbrandner85/Trendo-OS/releases/latest/download/", asked[0]);
+        Assert.True(asked.IndexOf(asked.First(a => a.EndsWith("qpdf.zip"))) < asked.IndexOf(asked.First(a => a.EndsWith("blender.zip")))); // klein zuerst
+        Assert.True(File.Exists(Path.Combine(w.ToolsRootForTests, "qpdf", "bin", "qpdf.exe")));
         w.Close();
     }
 

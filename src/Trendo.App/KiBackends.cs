@@ -59,7 +59,7 @@ public sealed class OllamaBackend(string baseUrl = "http://127.0.0.1:11434", Htt
 
     public async Task<string> ChatAsync(string model, IReadOnlyList<KiMessage> messages, CancellationToken ct = default)
     {
-        var body = new { model, stream = false, messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray() };
+        var body = new { model, stream = false, keep_alive = KiBackendsShared.OllamaKeepAlive, messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray() };
         using var r = await _http.PostAsJsonAsync("/api/chat", body, ct);
         r.EnsureSuccessStatusCode();
         var doc = await r.Content.ReadFromJsonAsync<JsonElement>(ct);
@@ -69,7 +69,7 @@ public sealed class OllamaBackend(string baseUrl = "http://127.0.0.1:11434", Htt
     /// <summary>Antwort Stück für Stück (NDJSON von /api/chat mit stream=true) – für die Fortschrittsanzeige.</summary>
     public async Task<string> ChatStreamAsync(string model, IReadOnlyList<KiMessage> messages, Action<string> onDelta, CancellationToken ct = default)
     {
-        var body = new { model, stream = true, messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray() };
+        var body = new { model, stream = true, keep_alive = KiBackendsShared.OllamaKeepAlive, messages = messages.Select(m => new { role = m.Role, content = m.Content }).ToArray() };
         using var req = new HttpRequestMessage(HttpMethod.Post, "/api/chat") { Content = JsonContent.Create(body) };
         using var r = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
         r.EnsureSuccessStatusCode();
@@ -233,4 +233,10 @@ public sealed class CloudKiBackend : IRemoteKiBackend
         var doc = await r.Content.ReadFromJsonAsync<JsonElement>(ct);
         return doc.GetProperty("choices")[0].GetProperty("message").GetProperty("content").GetString()?.Trim() ?? "";
     }
+}
+
+/// <summary>Grafikspeicher-Regel (04.11.2026): die Text-KI hält ihr Modell nur kurz nach der letzten Frage im Speicher (Ollama-Vorgabe wären 5 Minuten).</summary>
+public static class KiBackendsShared
+{
+    public const string OllamaKeepAlive = "2m";
 }

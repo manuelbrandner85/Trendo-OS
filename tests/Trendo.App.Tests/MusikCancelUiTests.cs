@@ -103,4 +103,31 @@ public class MusikCancelUiTests
         }
         finally { w.Close(); }
     }
+
+    [AvaloniaFact(DisplayName = "Grafikspeicher-Warteschlange: zweites Lied wartet („noch 1 Auftrag vor dir“), startet erst nach dem ersten; Abbrechen im Warten geht")]
+    public async Task Second_song_waits()
+    {
+        var (w, _, _) = Ui.Open();
+        w.AceClientOverride = new AceStepClient(new HttpClient(new SlowAce()));
+        try
+        {
+            w.Show("musik-studio"); await Pump();
+            var a = w.MusicStudioCreate(new AceStepClient.Job("pop", "[Refrain]\nla", 30, "de"), "Erstes");
+            for (var i = 0; i < 10; i++) await Pump();
+            var b = w.MusicStudioCreate(new AceStepClient.Job("rock", "[Refrain]\nla", 30, "de"), "Zweites");
+            for (var i = 0; i < 10; i++) await Pump();
+            Assert.Equal(2, w.Gpu.Items.Count);
+            Assert.Equal("Erstes", w.Gpu.Current!.Title);
+            Assert.Contains("„Zweites“ wartet auf die Grafikkarte – noch 1 Auftrag vor dir", w.Find<TextBlock>("ms-msg").Text);
+            w.MsCancelCreate("Erstes");
+            for (var i = 0; i < 50 && !a.IsCompleted; i++) await Pump();
+            for (var i = 0; i < 20 && w.Gpu.Current?.Title != "Zweites"; i++) await Pump();
+            Assert.Equal("Zweites", w.Gpu.Current!.Title);
+            w.MsCancelCreate("Zweites");
+            for (var i = 0; i < 50 && !b.IsCompleted; i++) await Pump();
+            Assert.Empty(await b);
+            Assert.Empty(w.Gpu.Items);
+        }
+        finally { w.Close(); }
+    }
 }
