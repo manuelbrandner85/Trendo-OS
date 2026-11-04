@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -89,45 +90,80 @@ public partial class MainWindow
         }
     }
 
+    /// <summary>Erweiterungen wie in VS Code (Clean-Room): links die Liste (installiert, mit An/Aus), rechts die Detailseite der gewählten
+    /// Erweiterung mit Herkunft, Prüfsumme und Inhalt; Installieren und Katalog oben links.</summary>
     private Control ExtView()
     {
-        var sp = new StackPanel { Spacing = 8, Children = { P("Erweiterungen bringen neue Vorlagen, Schrittlisten, Links und Textbausteine. Sie enthalten nie Programme – das prüft Trendo bei jeder Installation.") } };
+        var all = Exts.All();
+        var left = new StackPanel { Spacing = 8 };
         if (_extAsk is { } ask)
-            sp.Children.Add(Card(new StackPanel { Name = "ext-ask", Spacing = 6, Children = {
-                new TextBlock { Text = ask.Title, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
+            left.Children.Add(Card(new StackPanel { Name = "ext-ask", Spacing = 6, Children = {
+                new TextBlock { Text = ask.Title, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
                 new TextBlock { Text = ask.Details, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap },
                 new WrapPanel { Children = { Act("ext-ask-yes", ask.Yes, () => _ = ExtAnswer(true), true), Act("ext-ask-no", "Abbrechen", () => _ = ExtAnswer(false)) } } } }));
-        var path = new TextBox { Name = "ext-path", PlaceholderText = "Ordner oder ZIP der Erweiterung", Width = 340 };
-        sp.Children.Add(Card(new WrapPanel { Children = { path, Act("ext-install", "Installieren", () => ExtInstall(path.Text?.Trim('"', ' ') ?? ""), true),
-            Act("ext-sample", "Beispiel ausprobieren", () => ExtInstall(ExtensionSamples.WriteSample(Path.Combine(_core.DataRoot, "beispiele")))) } }));
-        sp.Children.Add(ExtCatalogCard());
-        var all = Exts.All();
-        if (all.Count == 0) sp.Children.Add(P("Noch keine Erweiterungen installiert."));
+        var path = new TextBox { Name = "ext-path", PlaceholderText = "Ordner oder ZIP der Erweiterung" };
+        left.Children.Add(new StackPanel { Spacing = 6, Children = { path, new WrapPanel { Children = { Act("ext-install", "Installieren", () => ExtInstall(path.Text?.Trim('"', ' ') ?? ""), true),
+            new Border { Width = 6 }, Act("ext-sample", "Beispiel ausprobieren", () => ExtInstall(ExtensionSamples.WriteSample(Path.Combine(_core.DataRoot, "beispiele")))) } } } });
+        left.Children.Add(new Expander { Name = "ext-catalog", Header = new TextBlock { Text = "Katalog (geprüfte Erweiterungen)", Foreground = Text, FontSize = 12.5 }, Content = ExtCatalogCard(), HorizontalAlignment = HorizontalAlignment.Stretch });
+        left.Children.Add(H($"Installiert ({all.Count})", 13));
+        if (all.Count == 0) left.Children.Add(P("Noch keine Erweiterungen installiert. „Beispiel ausprobieren“ zeigt, wie es geht.", Muted, 12));
+        var sel = all.FirstOrDefault(e => e.Manifest.Id == _extShow) ?? all.FirstOrDefault();
         var i = 0;
         foreach (var e in all)
         {
-            var x = e;
-            var on = new ToggleSwitch { Name = $"ext-on-{i}", IsChecked = e.Enabled, OnContent = "an", OffContent = "aus" };
-            on.IsCheckedChanged += (_, _) => { Exts.SetEnabled(x.Manifest.Id, on.IsChecked == true); Show("erweiterungen"); };
-            var use = Act($"ext-use-{i}", x.Manifest.Kind switch { "seite" => "Im Baukasten öffnen", "vorhaben" => "Als Vorhaben anlegen", _ => "Anzeigen" }, () => ExtUse(x)); use.IsEnabled = e.Enabled;
-            var body = new StackPanel { Children = { new TextBlock { Text = $"{e.Manifest.Name} {e.Manifest.Version}", Foreground = Text, FontSize = 12.5 },
-                P($"{e.Manifest.Description} · von {e.Manifest.Author} · Lizenz {e.Manifest.License} · Prüfsumme {e.Sha256[..12]}…", null, 10.5) } };
-            if (_extShow == e.Manifest.Id)
-            {
-                if (e.Manifest.Kind == "links")
-                {
-                    try
-                    {
-                        foreach (var l in System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(Exts.EntryText(e)) ?? [])
-                            if (Uri.TryCreate(l.Value, UriKind.Absolute, out var u) && u.Scheme == "https") { var url = u.AbsoluteUri; body.Children.Add(Act("ext-link-" + body.Children.Count, l.Key, () => Launch(url))); }
-                    }
-                    catch (System.Text.Json.JsonException) { body.Children.Add(P("Linkliste ist beschädigt.", Brush.Parse("#F97316"))); }
-                }
-                else body.Children.Add(new SelectableTextBlock { Name = "ext-text", Text = Exts.EntryText(e), Foreground = Text, TextWrapping = TextWrapping.Wrap });
-            }
-            sp.Children.Add(Card(Row(body, new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = { on, use, Act($"ext-remove-{i}", "Entfernen", () => { _extAsk = ("Erweiterung entfernen?", $"„{x.Manifest.Name}“ {x.Manifest.Version} – ihre Dateien werden gelöscht. Damit angelegte Vorhaben und Seiten bleiben.", "Ja, entfernen", () => Task.FromResult(ExtRemoveApproved(x.Manifest.Id))); Show("erweiterungen"); }) } })));
+            var x = e; var on = e == sel;
+            var toggle = new ToggleSwitch { Name = $"ext-on-{i}", IsChecked = e.Enabled, OnContent = "", OffContent = "", VerticalAlignment = VerticalAlignment.Center };
+            ToolTip.SetTip(toggle, e.Enabled ? "Abschalten" : "Einschalten");
+            toggle.IsCheckedChanged += (_, _) => { Exts.SetEnabled(x.Manifest.Id, toggle.IsChecked == true); Show("erweiterungen"); };
+            var item = new Button { Name = $"ext-item-{i}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8, 6), CornerRadius = new CornerRadius(8),
+                Background = on ? Brush.Parse("#26D4A84B") : Brushes.Transparent, BorderThickness = new Thickness(0),
+                Content = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,10,*,Auto"), Children = {
+                    new Border { Width = 36, Height = 36, CornerRadius = new CornerRadius(8), Background = Brush.Parse("#33D4A84B"), Child = new TextBlock { Text = e.Manifest.Name.Length > 0 ? e.Manifest.Name[..1].ToUpperInvariant() : "?", Foreground = GoldText(), FontSize = 17, FontWeight = FontWeight.Bold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } },
+                    Pos(new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = { new TextBlock { Text = e.Manifest.Name, Foreground = e.Enabled ? Text : Muted, FontSize = 13, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },
+                        new TextBlock { Text = $"{e.Manifest.Author} · {e.Manifest.Version}", Foreground = Muted, FontSize = 11, TextTrimming = TextTrimming.CharacterEllipsis } } }, 2),
+                    Pos(toggle, 3) } } };
+            item.Click += (_, _) => { _extShow = x.Manifest.Id; Show("erweiterungen"); };
+            Hover(item); left.Children.Add(item);
             i++;
         }
-        return BusinessPage("Erweiterungen", sp);
+
+        // rechts: Detailseite
+        Control right;
+        if (sel is null)
+            right = new StackPanel { Spacing = 10, VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Children = {
+                new TextBlock { Text = "🧩", FontSize = 52, HorizontalAlignment = HorizontalAlignment.Center },
+                new TextBlock { Text = "Trendo erweitern", Foreground = Text, FontSize = 20, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center },
+                P("Erweiterungen bringen neue Vorlagen, Schrittlisten, Links und Textbausteine. Sie enthalten nie Programme – das prüft Trendo bei jeder Installation.", Muted, 12.5) } };
+        else
+        {
+            var x = sel; var idx = all.ToList().IndexOf(sel);
+            var use = Act($"ext-use-{idx}", x.Manifest.Kind switch { "seite" => "Im Baukasten öffnen", "vorhaben" => "Als Vorhaben anlegen", _ => "Anzeigen" }, () => ExtUse(x), true); use.IsEnabled = x.Enabled;
+            var remove = Act($"ext-remove-{idx}", "Entfernen", () => { _extAsk = ("Erweiterung entfernen?", $"„{x.Manifest.Name}“ {x.Manifest.Version} – ihre Dateien werden gelöscht. Damit angelegte Vorhaben und Seiten bleiben.", "Ja, entfernen", () => Task.FromResult(ExtRemoveApproved(x.Manifest.Id))); Show("erweiterungen"); });
+            var detail = new StackPanel { Name = "ext-detail", Spacing = 10 };
+            detail.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 16, Children = {
+                new Border { Width = 84, Height = 84, CornerRadius = new CornerRadius(16), Background = Brush.Parse("#33D4A84B"), Child = new TextBlock { Text = x.Manifest.Name.Length > 0 ? x.Manifest.Name[..1].ToUpperInvariant() : "?", Foreground = GoldText(), FontSize = 40, FontWeight = FontWeight.Bold, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } },
+                new StackPanel { VerticalAlignment = VerticalAlignment.Center, Spacing = 2, Children = {
+                    new TextBlock { Text = x.Manifest.Name, Foreground = Text, FontSize = 24, FontWeight = FontWeight.SemiBold },
+                    new TextBlock { Text = $"{x.Manifest.Author} · Version {x.Manifest.Version} · Lizenz {x.Manifest.License} · {(x.Enabled ? "eingeschaltet" : "ausgeschaltet")}", Foreground = Muted, FontSize = 12 },
+                    new WrapPanel { Margin = new Thickness(0, 6, 0, 0), Children = { use, new Border { Width = 6 }, remove } } } } } });
+            detail.Children.Add(P(x.Manifest.Description, Text, 13));
+            detail.Children.Add(new TextBlock { Text = $"Geprüft: Prüfsumme (SHA-256) {x.Sha256[..16]}… · Art: {x.Manifest.Kind} · enthält keine Programme", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            detail.Children.Add(H("Inhalt", 14));
+            if (x.Manifest.Kind == "links")
+            {
+                try
+                {
+                    var links = new WrapPanel();
+                    foreach (var l in System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(Exts.EntryText(x)) ?? [])
+                        if (Uri.TryCreate(l.Value, UriKind.Absolute, out var u) && u.Scheme == "https") { var url = u.AbsoluteUri; links.Children.Add(Act("ext-link-" + links.Children.Count, l.Key, () => Launch(url))); }
+                    detail.Children.Add(links);
+                }
+                catch (System.Text.Json.JsonException) { detail.Children.Add(P("Linkliste ist beschädigt.", Brush.Parse("#F97316"))); }
+            }
+            else detail.Children.Add(new Border { Background = Brush.Parse("#0B1424"), CornerRadius = new CornerRadius(10), Padding = new Thickness(14, 10), Child = new SelectableTextBlock { Name = "ext-text", Text = Exts.EntryText(x), Foreground = Text, TextWrapping = TextWrapping.Wrap } });
+            right = new ScrollViewer { Content = detail };
+        }
+        var grid = new Grid { Name = "ext-manager", ColumnDefinitions = new ColumnDefinitions("340,14,*"), Children = { Card(new ScrollViewer { Content = left }), Pos(Card(right), 2) } };
+        return BusinessPage("Erweiterungen", grid);
     }
 }

@@ -54,20 +54,19 @@ public partial class MainWindow
 
         var mi = new TextBox { Name = "pdf-merge-files", PlaceholderText = "PDF-Dateien, eine pro Zeile (in dieser Reihenfolge)", AcceptsReturn = true, Width = 520, MinHeight = 60 };
         var si = Field("pdf-split-file", "PDF-Datei"); var sr = Field("pdf-split-range", "Seiten, z. B. 2-5", 120);
-        sp.Children.Add(Card(Section("Zusammenfügen und Teilen", qpdf is null && unite is null ? "Dafür fehlt das kostenlose Programm qpdf (Einstellungen → Zusatzprogramme → qpdf, ohne Admin). Seitenzahlen kann Trendo trotzdem anzeigen." : "Die Originale bleiben unverändert; das Ergebnis liegt im Projektordner unter „Dokumente“.",
+        sp.Children.Add(Card(Section("Zusammenfügen und Teilen", true ? "Fügt PDFs in der gewünschten Reihenfolge zusammen oder holt einzelne Seiten heraus – macht Trendo selbst, ohne Zusatzprogramm. Seitenzahlen kann Trendo trotzdem anzeigen." : "Die Originale bleiben unverändert; das Ergebnis liegt im Projektordner unter „Dokumente“.",
             mi, Line(Act("pdf-merge", "Zusammenfügen", () => Try(V, () =>
             {
                 var files = (mi.Text ?? "").Split('\n').Select(l => l.Trim().Trim('"')).Where(l => l.Length > 0).ToList();
                 if (files.Count < 2) throw new ArgumentException("Bitte mindestens zwei PDF-Dateien.");
-                var o = Path.Combine(DokuOut, $"zusammengefuegt-{DateTime.Now:yyyyMMdd-HHmmss}.pdf"); var (exe, args) = Pdf.MergeCmd(qpdf, unite, files, o);
-                var r = Cli.Run(exe, args, timeoutMs: 120000); if (!File.Exists(o)) throw new InvalidOperationException("Zusammenfügen hat nicht geklappt.");
+                var o = Path.Combine(DokuOut, $"zusammengefuegt-{DateTime.Now:yyyyMMdd-HHmmss}.pdf"); Pdf.Merge(files, o); // selbst, ohne qpdf
+                if (!File.Exists(o)) throw new InvalidOperationException("Zusammenfügen hat nicht geklappt.");
                 Say($"Fertig: {Path.GetFileName(o)} mit {Pdf.Pages(o)} Seiten (Summe der Einzelteile: {files.Sum(Pdf.Pages)}).", V);
             }), true)),
             Line(si, sr, Act("pdf-split", "Seiten herausholen", () => Try(V, () =>
             {
                 var (a, b) = Pdf.ParseRange(Clean(sr)); var f = Clean(si); var n = Pdf.Pages(f); if (b > n) throw new ArgumentException($"Das PDF hat nur {n} Seiten.");
-                var o = Path.Combine(DokuOut, $"{Path.GetFileNameWithoutExtension(f)}-seiten-{a}-{b}.pdf"); var (exe, args) = Pdf.ExtractCmd(qpdf, sep, f, a, b, o);
-                Cli.Run(exe, args, timeoutMs: 120000);
+                var o = Path.Combine(DokuOut, $"{Path.GetFileNameWithoutExtension(f)}-seiten-{a}-{b}.pdf"); Pdf.Extract(f, a, b, o); // selbst, ohne qpdf
                 Say(File.Exists(o) ? $"Fertig: {Path.GetFileName(o)} ({Pdf.Pages(o)} Seiten)." : $"Fertig: einzelne Seiten als {Path.GetFileNameWithoutExtension(o)}-N.pdf.", V);
             }))))));
 
@@ -116,7 +115,7 @@ public partial class MainWindow
                 var f = Need(pf, "die PDF-Datei für die Vorschau"); if (!File.Exists(f)) { Say("Datei nicht gefunden: " + Path.GetFileName(f), V); return; } var b = Pdf.MediaBox(f); _printFile = f; info.Children.Clear();
                 info.Children.Add(P($"{Pdf.Pages(f)} Seiten · {(b is { } x ? $"{x.W / 72 * 25.4:0} × {x.H / 72 * 25.4:0} mm" : "Format unbekannt")} · {(Pdf.IsA4(b) ? "A4 ✓" : "nicht A4")}", Text));
                 info.Children.Add(PageImages(f));
-                if (sumatra is not null) _core.Integrations.LaunchDirect(Principal.LocalOwner, sumatra, _core.Audit, f); else Launch(f);
+                if (!_opt.Isolated) { OpenPdf(f); } // Vorschau in Trendo PDF selbst (statt SumatraPDF)
             })), _printAsk ? Line(P("Jetzt auf dem Standarddrucker drucken?", Text), Act("print-yes", "Ja, drucken", () => Try(V, () => { PrintNow(_printFile, sumatra); _printAsk = false; Say("An den Drucker geschickt.", V); }), true), Act("print-no", "Abbrechen", () => { _printAsk = false; Show(V); }))
                             : Act("print-ask", "Drucken …", () => { _printFile = Clean(pf); if (File.Exists(_printFile)) { _printAsk = true; Show(V); } else Say("Datei nicht gefunden.", V); })), info)));
         return DokuPage("PDF", sp);

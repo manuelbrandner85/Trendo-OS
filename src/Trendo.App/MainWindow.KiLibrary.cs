@@ -216,7 +216,11 @@ public partial class MainWindow
     private void Extract7z(string archive, string target)
     {
         var seven = Path.Combine(_deps.ToolsRoot, "7zip", "7z.exe");
-        if (!File.Exists(seven)) throw new InvalidOperationException("7-Zip fehlt – bitte unter „Programme“ aus dem Vollpaket einrichten.");
+        if (!File.Exists(seven)) // selbst nachgebaut (04.11.2026): ohne 7-Zip entpackt Trendo .7z selbst
+        {
+            try { Archive7z.Extract(archive, target); return; }
+            catch (Exception e) when (e is InvalidDataException or IOException or SharpCompress.Common.ArchiveException or NotSupportedException) { throw new InvalidOperationException("Entpacken fehlgeschlagen: " + e.Message); }
+        }
         var r = Cli.Run(seven, ["x", archive, "-o" + target, "-y", "-bso0", "-bsp0", "-snl-"], timeoutMs: 3_600_000);
         if (!r.Ok) throw new InvalidOperationException("Entpacken fehlgeschlagen: " + Short(r.Err.Length > 0 ? r.Err : r.Out));
     }

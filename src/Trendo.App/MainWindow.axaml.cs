@@ -1323,16 +1323,16 @@ public sealed partial class MainWindow : Window
     public bool VollpaketMissing { get; private set; }
 
     /// <summary>Vollpaket einrichten – jedes Paket einzeln; am Ende bleibt das Ergebnis stehen, bis der Nutzer weiterklickt.</summary>
-    public async Task<Vollpaket.InstallReport?> InstallVollpaket(string dir)
+    public async Task<Vollpaket.InstallReport?> InstallVollpaket(string dir, Func<string, bool>? only = null)
     {
         _deps.VollpaketDir = dir; _depBusy = true; VollpaketMissing = false;
-        var total = Vollpaket.Load(dir)?.Count ?? 0; var step = 0;
+        var total = Vollpaket.Load(dir)?.Count(e => only is null || only(e.Id)) ?? 0; var step = 0;
         BeginSetupOverlay("Trendo OS richtet deine Programme ein");
         Vollpaket.InstallReport? r = null;
         try
         {
             var ct = SetupToken;
-            r = await Task.Run(() => Vollpaket.InstallEach(dir, _deps.ToolsRoot, _core.Audit, line => _ui.Post(() => { _depLog.Text = line; SetupOverlayProgress(++step, total, line); }), ct));
+            r = await Task.Run(() => Vollpaket.InstallEach(dir, _deps.ToolsRoot, _core.Audit, line => _ui.Post(() => { _depLog.Text = line; SetupOverlayProgress(++step, total, line); }), ct, only));
             if (r.Canceled) { _depLog.Text = $"Abgebrochen – {r.Installed + r.Present} von {r.Total} Programmen sind eingerichtet."; return r; }
             var ok = r.Installed + r.Present;
             _depLog.Text = r.Failed.Count == 0 ? $"Alle {r.Total} mitgelieferten Programme sind eingerichtet ✓" : $"{ok} von {r.Total} Programmen eingerichtet, {r.Failed.Count} nicht.";

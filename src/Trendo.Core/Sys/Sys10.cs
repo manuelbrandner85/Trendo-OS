@@ -198,6 +198,31 @@ public static class Pdf
     }
     public static bool IsA4((double W, double H)? b) => b is { } x && Math.Abs(Math.Min(x.W, x.H) - 595.3) < 3 && Math.Abs(Math.Max(x.W, x.H) - 841.9) < 3;
 
+    /// <summary>Selbst nachgebaut (04.11.2026, statt qpdf): PDFs in dieser Reihenfolge zusammenfügen – Seiten werden unverändert übernommen.</summary>
+    public static void Merge(IList<string> inputs, string output)
+    {
+        if (inputs.Count < 2) throw new ArgumentException("Bitte mindestens zwei PDF-Dateien.");
+        using var o = new PdfSharp.Pdf.PdfDocument();
+        foreach (var f in inputs)
+        {
+            if (!File.Exists(f)) throw new ArgumentException("Datei nicht gefunden: " + Path.GetFileName(f));
+            using var src = PdfSharp.Pdf.IO.PdfReader.Open(f, PdfSharp.Pdf.IO.PdfDocumentOpenMode.Import);
+            foreach (var page in src.Pages) o.AddPage(page);
+        }
+        o.Save(output);
+    }
+
+    /// <summary>Selbst nachgebaut (statt qpdf): Seiten <paramref name="from"/> bis <paramref name="to"/> als neue PDF.</summary>
+    public static void Extract(string input, int from, int to, string output)
+    {
+        if (from < 1 || to < from) throw new ArgumentException("Seitenbereich bitte wie 2-5.");
+        using var src = PdfSharp.Pdf.IO.PdfReader.Open(input, PdfSharp.Pdf.IO.PdfDocumentOpenMode.Import);
+        if (to > src.PageCount) throw new ArgumentException($"Das PDF hat nur {src.PageCount} Seiten.");
+        using var o = new PdfSharp.Pdf.PdfDocument();
+        for (var i = from - 1; i < to; i++) o.AddPage(src.Pages[i]);
+        o.Save(output);
+    }
+
     public static (string Exe, List<string> Args) MergeCmd(string? qpdf, string? pdfunite, IList<string> inputs, string output) =>
         qpdf is not null ? (qpdf, ["--empty", "--pages", .. inputs, "--", output]) : pdfunite is not null ? (pdfunite, [.. inputs, output]) : throw new InvalidOperationException("Zum Zusammenfügen fehlt das kostenlose Programm qpdf (Einstellungen → Zusatzprogramme → qpdf, ohne Admin).");
     public static (string Exe, List<string> Args) ExtractCmd(string? qpdf, string? pdfseparate, string input, int from, int to, string output)

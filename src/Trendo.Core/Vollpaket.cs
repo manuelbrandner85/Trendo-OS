@@ -16,6 +16,12 @@ public static class Vollpaket
     public static readonly string[] OnlineBases = ["https://github.com/manuelbrandner85/Trendo-OS/releases/latest/download/", OnlineBase];
     /// <summary>Merker im Werkzeugordner: Programme konnten (z. B. ohne Internet) noch nicht geladen werden – beim nächsten Start erneut versuchen.</summary>
     public const string PendingMarker = ".vollpaket-ausstehend";
+    /// <summary>Wunsch 04.11.2026 „so wenig wie möglich herunterladen“: Das kann Trendo selbst – nicht mehr beim Setup laden (per Klick weiter nachladbar).</summary>
+    public static readonly HashSet<string> SelfReplaced = new(StringComparer.OrdinalIgnoreCase) { "sumatra", "qpdf", "7zip" };
+    /// <summary>Nicht nachbaubar, aber nur für einzelne Studios nötig: erst laden, wenn man das Studio benutzt (Trendo fragt dann einmal).</summary>
+    public static readonly HashSet<string> OnDemand = new(StringComparer.OrdinalIgnoreCase) { "ollama", "model", "blender", "colmap", "git" };
+    /// <summary>Was das Setup gleich lädt.</summary>
+    public static bool InSetup(string id) => !SelfReplaced.Contains(id) && !OnDemand.Contains(id);
 
     public sealed record Entry(
         [property: JsonPropertyName("id")] string Id,
@@ -130,9 +136,9 @@ public static class Vollpaket
     public sealed record InstallReport(int Installed, int Present, int Total, List<(string Name, string Reason)> Failed, bool Canceled = false);
 
     /// <summary>Jedes Paket einzeln einrichten – ein fehlerhaftes Paket hält die übrigen nicht auf (Befund 27.10.2026).</summary>
-    public static InstallReport InstallEach(string programmeDir, string toolsRoot, AuditLog? audit = null, Action<string>? progress = null, CancellationToken ct = default)
+    public static InstallReport InstallEach(string programmeDir, string toolsRoot, AuditLog? audit = null, Action<string>? progress = null, CancellationToken ct = default, Func<string, bool>? only = null)
     {
-        var list = Load(programmeDir) ?? throw new InvalidOperationException("Im Vollpaket fehlt ein gültiges manifest.json.");
+        var list = (Load(programmeDir) ?? throw new InvalidOperationException("Im Vollpaket fehlt ein gültiges manifest.json.")).Where(e => only is null || only(e.Id)).ToList();
         int n = 0, present = 0; var failed = new List<(string, string)>();
         foreach (var e in list)
         {

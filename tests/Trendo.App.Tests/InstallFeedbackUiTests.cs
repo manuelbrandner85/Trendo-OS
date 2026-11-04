@@ -81,24 +81,29 @@ public class InstallFeedbackUiTests
         w.Close();
     }
 
-    [AvaloniaFact(DisplayName = "Programme von GitHub: Programmliste vom neuesten Release, kleine Programme zuerst geladen, mit Prüfsumme eingerichtet")]
+    [AvaloniaFact(DisplayName = "Programme von GitHub: Programmliste vom neuesten Release, kleine zuerst, mit Prüfsumme – Selbstgebautes (qpdf) und Bei-Bedarf-Programme (Blender) lädt das Setup nicht")]
     public async Task Vollpaket_online()
     {
         var (w, _, root) = Ui.Open();
         byte[] Zip(string exe) { using var ms = new MemoryStream(); using (var z = new System.IO.Compression.ZipArchive(ms, System.IO.Compression.ZipArchiveMode.Create, true)) using (var sw = new StreamWriter(z.CreateEntry(exe).Open())) sw.Write("x"); return ms.ToArray(); }
-        var big = Zip("blender.exe"); var small = Zip("bin/qpdf.exe");
+        var big = Zip("program/soffice.exe"); var small = Zip("mpv.exe"); var q = Zip("bin/qpdf.exe"); var bl = Zip("blender.exe");
         string Sha(byte[] b) => Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(b));
         var manifest = System.Text.Json.JsonSerializer.Serialize(new { schema = 1, programs = new object[] {
-            new { id = "blender", name = "Blender", version = "4", license = "GPL", file = "blender.zip", sha256 = Sha(big), bytes = (long)big.Length + 100000, exe = "blender.exe", source_url = "https://www.blender.org" },
-            new { id = "qpdf", name = "qpdf", version = "12", license = "Apache-2.0", file = "qpdf.zip", sha256 = Sha(small), bytes = (long)small.Length, exe = "bin/qpdf.exe", source_url = "https://github.com/qpdf/qpdf" } } });
+            new { id = "libreoffice", name = "LibreOffice", version = "25", license = "MPL-2.0", file = "libreoffice.zip", sha256 = Sha(big), bytes = (long)big.Length + 100000, exe = "program/soffice.exe", source_url = "https://www.libreoffice.org" },
+            new { id = "mpv", name = "mpv", version = "0.40", license = "GPL", file = "mpv.zip", sha256 = Sha(small), bytes = (long)small.Length, exe = "mpv.exe", source_url = "https://mpv.io" },
+            new { id = "qpdf", name = "qpdf", version = "12", license = "Apache-2.0", file = "qpdf.zip", sha256 = Sha(q), bytes = (long)q.Length, exe = "bin/qpdf.exe", source_url = "https://github.com/qpdf/qpdf" },
+            new { id = "blender", name = "Blender", version = "4", license = "GPL", file = "blender.zip", sha256 = Sha(bl), bytes = (long)bl.Length, exe = "blender.exe", source_url = "https://www.blender.org" } } });
         var asked = new List<string>();
-        w.VollpaketOnlineOverride = u => { lock (asked) asked.Add(u); return Task.FromResult(u.EndsWith("manifest.json") ? System.Text.Encoding.UTF8.GetBytes(manifest) : u.EndsWith("qpdf.zip") ? small : big); };
+        w.VollpaketOnlineOverride = u => { lock (asked) asked.Add(u); return Task.FromResult(u.EndsWith("manifest.json") ? System.Text.Encoding.UTF8.GetBytes(manifest) : u.EndsWith("mpv.zip") ? small : u.EndsWith("qpdf.zip") ? q : u.EndsWith("blender.zip") ? bl : big); };
         Directory.CreateDirectory(w.ToolsRootForTests); File.WriteAllText(Path.Combine(w.ToolsRootForTests, Trendo.Core.Vollpaket.PendingMarker), "offline");
         var r = await w.InstallVollpaketOnline(); Pump();
         Assert.NotNull(r);
+        Assert.Empty(r!.Failed);
         Assert.StartsWith("https://github.com/manuelbrandner85/Trendo-OS/releases/latest/download/", asked[0]);
-        Assert.True(asked.IndexOf(asked.First(a => a.EndsWith("qpdf.zip"))) < asked.IndexOf(asked.First(a => a.EndsWith("blender.zip")))); // klein zuerst
-        Assert.True(File.Exists(Path.Combine(w.ToolsRootForTests, "qpdf", "bin", "qpdf.exe")));
+        Assert.True(asked.IndexOf(asked.First(a => a.EndsWith("mpv.zip"))) < asked.IndexOf(asked.First(a => a.EndsWith("libreoffice.zip")))); // klein zuerst
+        Assert.True(File.Exists(Path.Combine(w.ToolsRootForTests, "mpv", "mpv.exe")));
+        Assert.DoesNotContain(asked, a => a.EndsWith("qpdf.zip")); // kann Trendo selbst
+        Assert.DoesNotContain(asked, a => a.EndsWith("blender.zip")); // erst, wenn man das 3D-Studio benutzt
         w.Close();
     }
 

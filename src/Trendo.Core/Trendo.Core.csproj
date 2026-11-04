@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
     <PackageReference Include="PDFsharp" Version="6.2.4" />
+    <PackageReference Include="SharpCompress" Version="0.50.7" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
     <PackageReference Include="WeCantSpell.Hunspell" Version="7.0.1" />
     <PackageReference Include="YamlDotNet" Version="16.3.0" />

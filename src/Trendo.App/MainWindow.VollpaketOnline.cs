@@ -30,7 +30,7 @@ public partial class MainWindow
         }
         if (found is null) { File.WriteAllText(marker, "nicht erreichbar"); VollpaketMissing = true; _depLog.Text = "GitHub ist gerade nicht erreichbar – Trendo versucht es beim nächsten Start erneut."; return null; }
         var list = Vollpaket.Load(dir)!.OrderBy(e => e.Bytes).ToList();
-        var missing = list.Where(e => !File.Exists(Path.Combine(_deps.ToolsRoot, e.Id, e.Exe.Replace('/', Path.DirectorySeparatorChar)))).ToList();
+        var missing = list.Where(e => Vollpaket.InSetup(e.Id) && !File.Exists(Path.Combine(_deps.ToolsRoot, e.Id, e.Exe.Replace('/', Path.DirectorySeparatorChar)))).ToList(); // nur was gleich gebraucht wird
         _core.Audit.Append("app", "vollpaket.online.start", $"{found} {missing.Count} von {list.Count}");
         BeginSetupOverlay("Trendo OS lädt deine Programme von GitHub");
         var step = 0;
@@ -49,7 +49,7 @@ public partial class MainWindow
         }
         catch (OperationCanceledException) { File.WriteAllText(marker, "abgebrochen"); EndSetupOverlay(); return null; }
         EndSetupOverlay();
-        var r = await InstallVollpaket(dir); // prüft jede Datei gegen ihre Prüfsumme und richtet sie ein
+        var r = await InstallVollpaket(dir, Vollpaket.InSetup); // prüft jede Datei gegen ihre Prüfsumme und richtet sie ein (nur was gleich gebraucht wird)
         if (r is { Failed.Count: 0, Canceled: false }) TryDelete(marker); else File.WriteAllText(marker, "unvollständig");
         return r;
     }
