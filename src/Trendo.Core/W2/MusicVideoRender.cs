@@ -23,6 +23,8 @@ public static class MusicVideoRender
     public sealed record SingModels(string Diffusion, string Vae, string TextEncoder, string AudioEncoder);
 
     static string N(double v) => v.ToString("0.###", Inv);
+    // Befund 04.11.2026 (RTX 5070, Vulkan): das Dekodieren des Videos brach auf der Grafikkarte mit „DeviceLost“ ab (Zeitlimit des Treibers) –
+    // darum dekodiert der Prozessor („--backend vae=cpu“), das Rechnen der Bilder bleibt auf der Grafikkarte.
 
     /// <summary>Bilder einer Einstellung: Wan braucht 4·k+1 Bilder.</summary>
     public static int Frames(double seconds, int fps) { var n = (int)Math.Round(seconds * fps); return Math.Max(5, n / 4 * 4 + 1); }
@@ -38,7 +40,7 @@ public static class MusicVideoRender
             "-p", prompt, "-n", MusicScript.Negative, "-W", q.Width.ToString(Inv), "-H", q.Height.ToString(Inv),
             "--video-frames", Frames(s.End - s.Start, q.Fps).ToString(Inv), "--fps", q.Fps.ToString(Inv), "--steps", q.Steps.ToString(Inv),
             "--cfg-scale", "5.0", "--flow-shift", "5.0", "--sampling-method", "euler", "-s", seed.ToString(Inv),
-            "--offload-to-cpu", "--vae-tiling", "-o", output };
+            "--offload-to-cpu", "--vae-tiling", "--backend", "vae=cpu", "-o", output };
         if (figureImage is not null) { a.Add("-i"); a.Add(figureImage); }
         return a;
     }
@@ -50,7 +52,7 @@ public static class MusicVideoRender
         "--audio", vocalClip, "-i", figureImage, "-p", prompt, "-n", MusicScript.Negative,
         "-W", q.Width.ToString(Inv), "-H", q.Height.ToString(Inv), "--video-frames", Frames(s.End - s.Start, q.Fps).ToString(Inv), "--fps", q.Fps.ToString(Inv),
         "--steps", q.Steps.ToString(Inv), "--cfg-scale", "4.5", "--flow-shift", "3.0", "--sampling-method", "euler", "-s", seed.ToString(Inv),
-        "--offload-to-cpu", "--vae-tiling", "-o", output,
+        "--offload-to-cpu", "--vae-tiling", "--backend", "vae=cpu", "-o", output,
     ];
 
     /// <summary>Gesangsausschnitt für eine Einstellung (16 kHz mono WAV, wie wav2vec2 ihn erwartet).</summary>

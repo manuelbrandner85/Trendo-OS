@@ -33,7 +33,7 @@ public static class TripleMode
         CapState T(string tool) => has(tool) ? CapState.Ok : CapState.Fehlt;
         var l = new List<ModeCapability>
         {
-            new("Briefe & Office", T("soffice"), has("soffice") ? "LibreOffice gefunden" : "LibreOffice installieren"),
+            new("Briefe & Office", CapState.Ok, "eingebaut (Text, Tabelle, Präsentation, PDF – ohne LibreOffice)"),
             new("Texterkennung", T("tesseract"), has("tesseract") ? "Tesseract gefunden" : "Tesseract installieren"),
             new("Lokale KI", T("ollama"), has("ollama") ? "Ollama gefunden" : "Ollama installieren"),
             new("Programme installieren", m == OsMode.WindowsApp ? T("winget") : T("apt"), m == OsMode.WindowsApp ? "winget (Benutzer)" : "Paketverwaltung des Systems"),

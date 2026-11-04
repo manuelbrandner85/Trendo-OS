@@ -71,7 +71,7 @@ public partial class MainWindow
     public List<string> SelfCaps()
     {
         var l = new List<string> { "office-lesen", "briefe" };
-        if (ToolPath("libreoffice") is not null) l.Add("office");
+        l.Add("office"); // Office kann Trendo selbst (Text, Tabelle, Präsentation, PDF – ohne LibreOffice)
         if (ToolPath("tesseract") is not null) l.Add("ocr");
         if (_kiConnected) l.Add("ki");
         if (ToolPath("ffmpeg") is not null) l.Add("video");
@@ -127,7 +127,7 @@ public partial class MainWindow
         var mode = TripleMode.DetectHere();
         var sp = new StackPanel { Spacing = 8, Children = { P("Trendo läuft als Windows-App, von einem Linux-USB-Stick oder auf dem Raspberry Pi. Hier steht ehrlich, was im aktuellen Modus geht."),
             new TextBlock { Name = "mode-now", Text = "Aktueller Modus: " + TripleMode.Label(mode), Foreground = Text, FontSize = 15 } } };
-        bool Has(string t) => t switch { "soffice" => ToolPath("libreoffice") is not null, "winget" => ToolPath("winget") is not null || OperatingSystem.IsWindows(), "unreal" => ToolPath("unreal") is not null, "apt" => File.Exists("/usr/bin/apt"), _ => ToolPath(t) is not null };
+        bool Has(string t) => t switch { "soffice" => true /* eigenes Office */, "winget" => ToolPath("winget") is not null || OperatingSystem.IsWindows(), "unreal" => ToolPath("unreal") is not null, "apt" => File.Exists("/usr/bin/apt"), _ => ToolPath(t) is not null };
         var i = 0;
         foreach (var c in TripleMode.Capabilities(mode, Has))
             sp.Children.Add(Row2(new TextBlock { Name = $"mode-cap-{i++}", Text = $"{(c.State switch { CapState.Ok => "✓", CapState.Fehlt => "○", _ => "✕" })} {c.Feature}", Foreground = Text },

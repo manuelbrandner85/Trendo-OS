@@ -130,7 +130,7 @@ public partial class MainWindow
     /// <summary>Für Tests: Ordner, in denen Installer Programme ablegen (sonst %LOCALAPPDATA%\Programs und %LOCALAPPDATA%).</summary>
     public string[]? GitHubInstallRootsOverride { get; set; }
     static bool Arm64 => System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64;
-    bool Has7z => true; // .7z entpackt Trendo selbst (Archive7z); 7-Zip wird nur genutzt, wenn es schon da ist
+    bool Has7z => File.Exists(Path.Combine(_deps.ToolsRoot, "7zip", "7z.exe"));
 
     /// <summary>Wunsch 27.10.2026: Auswählen = laden, einrichten und sofort starten. Neueste Veröffentlichung (notfalls Vorabversion) holen,
     /// passendes Windows-Programm wählen, prüfen, einrichten: ZIP/Programm direkt, Programmpaket (*.nsis.7z) und NSIS-Installer mit 7-Zip auspacken,
@@ -177,7 +177,8 @@ public partial class MainWindow
             SetupOverlayFraction(0.82, "Prüfen und einrichten …");
             try
             {
-                var entry = await Task.Run(() => GitHubApps.Install(_deps.ToolsRoot, repo.FullName, rel, asset, file, repo.LicenseId, repo.Description, _core.Audit, Has7z ? Extract7z : null, Arm64));
+                var entry = await Task.Run(() => GitHubApps.Install(_deps.ToolsRoot, repo.FullName, rel, asset, file, repo.LicenseId, repo.Description, _core.Audit,
+                Has7z ? Extract7z : asset.Name.EndsWith(".7z", StringComparison.OrdinalIgnoreCase) ? (a, t) => Archive7z.Extract(a, t) : null, Arm64)); // .7z selbst; Installer (NSIS) ohne 7-Zip normal ausführen
                 exe = GitHubApps.ExePath(_deps.ToolsRoot, entry);
             }
             catch (GitHubApps.InstallerOnlyException io)

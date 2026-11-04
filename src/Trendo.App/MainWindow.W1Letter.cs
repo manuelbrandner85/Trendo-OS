@@ -281,16 +281,17 @@ public partial class MainWindow
             var msg = $"Word-Datei: {Path.GetFileName(docx)} (SHA-256 {LetterKit.Sha(docx)[..16]}…)";
             if (fmt != "docx")
             {
-                if (so is null) throw new InvalidOperationException("Für PDF/ODT wird LibreOffice gebraucht (Zusatzprogramme).");
-                var r = await PdfExport.ConvertToAsync(new RealProcessRunner(), so, docx, fmt);
-                if (!r.Ok) throw new InvalidOperationException(r.Message);
-                _finalFile = r.Pdf; msg += $" · {Path.GetFileName(r.Pdf)}: {r.Message}";
+                // selbst nachgebaut (04.11.2026): PDF nach DIN 5008 mit Trendos eigenem Brief-PDF, ODT aus der Word-Datei – ohne LibreOffice
+                string outFile;
+                if (fmt == "pdf") { outFile = Path.ChangeExtension(docx, ".pdf"); var pages = LetterPdf.Write(d, outFile); msg += $" · {Path.GetFileName(outFile)}: PDF mit {pages} Seite(n)"; }
+                else { outFile = Trendo.Core.Office.OfficeConvert.DocxToOdt(docx); msg += $" · {Path.GetFileName(outFile)}: OpenDocument"; }
+                _finalFile = outFile; await Task.CompletedTask;
             }
             c.State = c.State == DeliveryState.Entwurf ? DeliveryState.Exportiert : c.State; _approval = null;
             SaveCase($"Export {fmt} v{v}"); _core.Audit.Append(Principal.LocalOwner.Name, "letter.export", $"{c.Id} {Path.GetFileName(_finalFile)} sha={LetterKit.Sha(_finalFile!)}");
             _caseMsg = msg; Show("ausgabe");
         }
-        Button ExportBtn(string n, string l, string f) { var b = new Button { Name = n, Content = l, IsEnabled = f == "docx" || so is not null }; b.Click += async (_, _) => { try { await Export(f); } catch (InvalidOperationException ex) { _caseMsg = ex.Message; Show("ausgabe"); } }; return b; }
+        Button ExportBtn(string n, string l, string f) { var b = new Button { Name = n, Content = l, IsEnabled = true }; /* DOCX, ODT und PDF macht Trendo selbst */ b.Click += async (_, _) => { try { await Export(f); } catch (InvalidOperationException ex) { _caseMsg = ex.Message; Show("ausgabe"); } }; return b; }
         sp.Children.Add(Row(ExportBtn("out-docx", "Word (DOCX)", "docx"), ExportBtn("out-odt", "OpenDocument (ODT)", "odt"), ExportBtn("out-pdf", "PDF zum Drucken", "pdf")));
         if (_finalFile is not null && File.Exists(_finalFile)) sp.Children.Add(Row(P("Letzte Ausgabe: " + Path.GetFileName(_finalFile), Text, 11.5), Btn("out-open", "Öffnen", () => Launch(_finalFile)), Btn("out-folder", "Ordner", () => Launch(Path.GetDirectoryName(_finalFile)!))));
         // Übersetzung (nur Entwurf)

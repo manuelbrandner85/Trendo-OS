@@ -44,10 +44,14 @@ public partial class MainWindow
         foreach (var f in FileShelf.Recent([ProjectsRoot, docs], FileShelf.Office, 30))
         {
             var r = (Border)FileRow(f, i, "doc");
-            if (soffice is not null && f.Extension.ToLowerInvariant() is ".docx" or ".doc" or ".odt" or ".xlsx" or ".ods" or ".pptx" or ".odp" or ".rtf")
+            if (Trendo.Core.Office.OfficeConvert.CanConvert(f.FullName))
             {
                 var pdf = new Button { Name = $"doc-pdf-{i}", Content = "PDF", FontSize = 11, Padding = new Thickness(10, 2) };
-                pdf.Click += async (_, _) => { msg.Text = $"Erstelle PDF aus {f.Name} …"; var (ok, m, p) = await PdfExport.ConvertAsync(new RealProcessRunner(), soffice, f.FullName); msg.Text = ok ? $"{m}: {Path.GetFileName(p)}" : m; _core.Audit.Append(Principal.LocalOwner.Name, "office.pdf", $"{f.Name} ok={ok}"); };
+                pdf.Click += async (_, _) =>
+                {
+                    msg.Text = $"Erstelle PDF aus {f.Name} …";
+                    var (ok, m, p) = await Task.Run(() => { try { var o = Trendo.Core.Office.OfficeConvert.ToPdf(f.FullName); return (true, "PDF erstellt (ohne Zusatzprogramm)", o); } catch (Exception ex) when (ex is IOException or InvalidDataException or NotSupportedException or InvalidOperationException or System.Xml.XmlException) { return (false, "PDF ging nicht: " + ex.Message, ""); } });
+                    msg.Text = ok ? $"{m}: {Path.GetFileName(p)}" : m; _core.Audit.Append(Principal.LocalOwner.Name, "office.pdf", $"{f.Name} ok={ok}"); };
                 ((StackPanel)((Grid)r.Child!).Children[1]).Children.Insert(1, pdf);
             }
             sp.Children.Add(r); i++;

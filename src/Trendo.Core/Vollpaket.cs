@@ -17,7 +17,7 @@ public static class Vollpaket
     /// <summary>Merker im Werkzeugordner: Programme konnten (z. B. ohne Internet) noch nicht geladen werden – beim nächsten Start erneut versuchen.</summary>
     public const string PendingMarker = ".vollpaket-ausstehend";
     /// <summary>Wunsch 04.11.2026 „so wenig wie möglich herunterladen“: Das kann Trendo selbst – nicht mehr beim Setup laden (per Klick weiter nachladbar).</summary>
-    public static readonly HashSet<string> SelfReplaced = new(StringComparer.OrdinalIgnoreCase) { "sumatra", "qpdf", "7zip" };
+    public static readonly HashSet<string> SelfReplaced = new(StringComparer.OrdinalIgnoreCase) { "sumatra", "qpdf", "7zip", "libreoffice" };
     /// <summary>Nicht nachbaubar, aber nur für einzelne Studios nötig: erst laden, wenn man das Studio benutzt (Trendo fragt dann einmal).</summary>
     public static readonly HashSet<string> OnDemand = new(StringComparer.OrdinalIgnoreCase) { "ollama", "model", "blender", "colmap", "git" };
     /// <summary>Was das Setup gleich lädt.</summary>

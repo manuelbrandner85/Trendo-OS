@@ -90,6 +90,28 @@ public partial class MainWindow
         return KreativPage("Freie Bilder & Klänge", sp);
     }
 
+    /// <summary>Start ohne Suche: Themen-Kacheln, ein Klick sucht sofort (statt leerer Seite).</summary>
+    Control MediaThemes(bool sound)
+    {
+        var themes = sound
+            ? new[] { ("🌧", "Regen", "#1E3A5F"), ("🌲", "Wald", "#14532D"), ("🌊", "Meer", "#0C4A6E"), ("🐦", "Vögel", "#3F6212"), ("🏙", "Stadt", "#3F3F46"), ("🎹", "Klavier", "#4C1D95"), ("👏", "Applaus", "#78350F"), ("🔥", "Feuer", "#7C2D12") }
+            : new[] { ("🏔", "Berge", "#1E3A5F"), ("🌊", "Meer", "#0C4A6E"), ("🌳", "Natur", "#14532D"), ("🏙", "Stadt", "#3F3F46"), ("🐾", "Tiere", "#78350F"), ("🌸", "Blumen", "#831843"), ("🍎", "Essen", "#7F1D1D"), ("✨", "Weltall", "#1E1B4B") };
+        var wp = new WrapPanel { Name = "mb-themes" };
+        var i = 0;
+        foreach (var (icon, name, col) in themes)
+        {
+            var n = name;
+            var b = new Button { Name = $"mb-theme-{i++}", Width = 170, Height = 104, Margin = new Thickness(0, 0, 10, 10), CornerRadius = new CornerRadius(12), Padding = new Thickness(0), BorderThickness = new Thickness(0),
+                Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse(col), 0), new GradientStop(Color.Parse("#0B1424"), 1) } },
+                Content = new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, Spacing = 4, Children = {
+                    new TextBlock { Text = icon, FontSize = 30, HorizontalAlignment = HorizontalAlignment.Center }, new TextBlock { Text = n, Foreground = Brushes.White, FontSize = 14, FontWeight = FontWeight.SemiBold, HorizontalAlignment = HorizontalAlignment.Center } } } };
+            b.Click += (_, _) => { _mbQuery = n; _ = MediaSearch(n); };
+            wp.Children.Add(b);
+        }
+        return new StackPanel { Spacing = 8, Children = { new TextBlock { Text = sound ? "Klänge entdecken" : "Bilder entdecken", Foreground = Text, FontSize = 16, FontWeight = FontWeight.SemiBold },
+            P(sound ? "Thema antippen oder oben suchen. Mit Doppelklick hörst du einen Klang vor." : "Thema antippen oder oben suchen – alles mit freier Lizenz.", Muted, 12), wp } };
+    }
+
     Control MediaBrowse()
     {
         var sound = MediaTab == "klaenge";
@@ -121,7 +143,7 @@ public partial class MainWindow
             grid.Children.Add(tile);
         }
         Control left = MediaHits.Count == 0
-            ? P(_mbBusy ? "Suche läuft …" : sound ? "Such nach einem Klang – z. B. „Regen“. Mit Doppelklick hörst du ihn vor." : "Such nach einem Bild – z. B. „Berge“.", Muted, 12)
+            ? (_mbBusy ? P("Suche läuft …", Muted, 12) : MediaThemes(sound)) // Startseite mit Themen wie auf Foto- und Klang-Plattformen
             : new ScrollViewer { Content = grid, MaxHeight = 640, HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled };
 
         // Vorschau rechts
