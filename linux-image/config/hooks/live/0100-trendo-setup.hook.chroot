@@ -8,3 +8,6 @@ echo 'LANG=de_DE.UTF-8' > /etc/default/locale
 chmod 0755 /opt/trendo/TrendoOS
 echo "Trendo OS Linux-Edition (P2-Vorschau) – $(date -u +%Y-%m-%dT%H:%MZ)" > /etc/trendo-release
 # Kein automatisches Einbinden von Windows-Partitionen (siehe udev-Regel)
+# Speicherbereich beim ersten Start (Skripte ausführbar, sudo-Regel nur für dieses eine Skript)
+chmod 0755 /usr/local/sbin/trendo-speicherbereich /usr/local/bin/trendo-erster-start
+chmod 0440 /etc/sudoers.d/trendo-speicherbereich

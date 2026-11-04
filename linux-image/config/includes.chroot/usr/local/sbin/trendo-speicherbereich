@@ -1,0 +1,25 @@
+#!/bin/bash
+# Trendo OS: verschlüsselten Speicherbereich (LUKS2-Persistenz) im freien Platz des STARTLAUFWERKS anlegen.
+# Wird nur vom Erster-Start-Dialog aufgerufen; Passwort kommt über stdin. Fasst ausschließlich das Laufwerk an,
+# von dem Trendo OS gerade läuft, und verweigert alles mit Windows/BitLocker oder ohne USB-Anschluss.
+set -euo pipefail
+src=$(findmnt -no SOURCE /run/live/medium 2>/dev/null || true)
+[[ -b "$src" ]] || { echo "ABBRUCH: Startlaufwerk nicht gefunden."; exit 2; }
+disk="/dev/$(lsblk -no PKNAME "$src" | head -1)"
+[[ -b "$disk" ]] || disk="$src"
+tran=$(lsblk -dno TRAN "$disk" || true); rem=$(cat "/sys/block/$(basename "$disk")/removable" 2>/dev/null || echo 0)
+[[ "$tran" == "usb" || "$rem" == "1" ]] || { echo "ABBRUCH: $disk ist kein externes Laufwerk."; exit 3; }
+if lsblk -no FSTYPE,PARTTYPE "$disk" | grep -qiE 'ntfs|bitlocker|e3c9e316|de94bba4'; then echo "ABBRUCH: Windows/BitLocker auf $disk erkannt."; exit 4; fi
+if lsblk -no LABEL "$disk" | grep -qx persistence; then echo "Speicherbereich ist schon da."; exit 0; fi
+IFS= read -r pass; [[ ${#pass} -ge 8 ]] || { echo "ABBRUCH: Passwort zu kurz (mindestens 8 Zeichen)."; exit 5; }
+start=$(parted -sm "$disk" unit MiB print free | awk -F: '/free/ {s=$2} END {print s}')
+parted -s "$disk" mkpart primary "${start}" 100%
+partprobe "$disk" || true; udevadm settle; sleep 1
+part=$(lsblk -lnpo NAME,TYPE "$disk" | awk '$2=="part"{p=$1} END{print p}')
+printf '%s' "$pass" | cryptsetup luksFormat --batch-mode --type luks2 --label persistence "$part" -
+printf '%s' "$pass" | cryptsetup open "$part" trendo-persist -
+mkfs.ext4 -q -L persistence /dev/mapper/trendo-persist
+mkdir -p /mnt/trendo-persist; mount /dev/mapper/trendo-persist /mnt/trendo-persist
+echo "/ union" > /mnt/trendo-persist/persistence.conf
+umount /mnt/trendo-persist; cryptsetup close trendo-persist
+echo "OK"

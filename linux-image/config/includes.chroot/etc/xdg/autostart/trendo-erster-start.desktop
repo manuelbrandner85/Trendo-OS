@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Trendo OS – erster Start
+Exec=/usr/local/bin/trendo-erster-start
+X-KDE-autostart-phase=2
+NoDisplay=true

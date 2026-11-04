@@ -22,7 +22,9 @@ has '/usr/sbin/user-setup|/usr/lib/user-setup/user-setup-apply' || grep -q user-
 has '/etc/X11/xorg.conf.d/00-keyboard.conf' && ok "X11-Tastatur de (Anmeldebildschirm)" || ko "X11-Tastatur fehlt"
 has '/etc/skel/.config/kxkbrc' && ok "Plasma-Tastatur de (kxkbrc)" || ko "kxkbrc fehlt"
 has '/etc/skel/.config/kscreenlockerrc' && ok "Bildschirmsperre im Live-System aus" || ko "kscreenlockerrc fehlt"
-for b in chromium libreoffice mpv okular dolphin konsole git python3 tesseract cryptsetup; do
+has '/usr/local/sbin/trendo-speicherbereich' && has '/usr/local/bin/trendo-erster-start' && has '/etc/xdg/autostart/trendo-erster-start.desktop' && ok "Speicherbereich beim ersten Start" || ko "Erster-Start-Speicherbereich fehlt"
+unsquashfs -cat "$T/fs.sq" etc/sudoers.d/trendo-speicherbereich 2>/dev/null | grep -qx 'trendo ALL=(root) NOPASSWD: /usr/local/sbin/trendo-speicherbereich' && ok "sudo nur für das Speicherbereich-Skript" || ko "sudo-Regel fehlt oder zu weit"
+for b in chromium libreoffice mpv okular dolphin konsole git python3 tesseract cryptsetup parted sudo kdialog; do
   grep -qE "^/(usr/)?s?bin/$b$" <<<"$L" && ok "Programm: $b" || ko "Programm fehlt: $b"
 done
 grep -qs "locales=de_DE.UTF-8" "$T/grub.cfg" && grep -qs "keyboard-layouts=de" "$T/grub.cfg" && ok "Sprache de_DE + Tastatur de (Bootparameter)" || ko "Sprache/Tastatur nicht de"

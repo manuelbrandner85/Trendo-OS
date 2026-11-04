@@ -22,6 +22,9 @@ tesseract-ocr-deu
 network-manager
 cryptsetup
 cryptsetup-initramfs
+parted
+sudo
+kdialog
 udisks2
 smartmontools
 pciutils
