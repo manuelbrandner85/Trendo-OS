@@ -87,6 +87,7 @@ public partial class MainWindow
                 MarkerCanvas => "Schnittlage (Teile auf der Stoffbahn)", Canvas { Name: "mode-figure" } => "Figur mit Maßen",
                 WrapPanel { Name: "game-sections" } => "Spieleprojekt (Übersicht, Spielbibel, Figuren, Welt, Missionen, Level, Bauen)",
                 Grid { Name: "game-shelf" } => "Spielesammlung (Bibliothek, gewähltes Spiel mit Einstellungen, Neu und Unreal)",
+                Grid { Name: "media-workbench" } => "Medien-Werkbank (Dateien, Werkzeuge, Ergebnis)",
                 WaveView => "Wellenform-Editor (Auswahl, Schnitt, Effekte – wie Audacity)", AvaloniaEdit.TextEditor => "Code-Editor (Dateibaum, Reiter, Farben je Sprache – wie VS Code)", _ => null,
             } is { } k) kinds.Add(k);
         var tools = all.OfType<Button>().Where(b => b.Name is { Length: > 0 } n && !n.StartsWith("prog-tab") && !n.StartsWith("dock") && !n.StartsWith("win-") && !n.StartsWith("toast"))

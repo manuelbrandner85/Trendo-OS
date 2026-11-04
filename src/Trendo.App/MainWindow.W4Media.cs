@@ -89,30 +89,63 @@ public partial class MainWindow
 
     private Control MediaStudioView()
     {
-        var sp = new StackPanel { Spacing = 8, Children = { P("Wähle eine Datei und was du damit machen willst. Das Original bleibt immer erhalten.") } };
-        if (FfmpegPath is null) sp.Children.Add(Card(Row(P("FFmpeg fehlt noch. Videos und Ton gehen erst damit; Bilder kannst du trotzdem bearbeiten.", Brush.Parse("#FACC15")), Nav2("Einrichten", "components"))));
+        // Umbau 04.11.2026: Medien-Werkbank – links Dateien und Clipliste, Mitte die gewählte Datei mit Werkzeugen, rechts Ergebnis
+        var left = new StackPanel { Name = "media-bin", Spacing = 6 };
+        var center = new StackPanel { Name = "media-center", Spacing = 8 };
+        var right = new StackPanel { Name = "media-side", Spacing = 8 };
+        if (FfmpegPath is null) center.Children.Add(Card(new StackPanel { Spacing = 4, Children = { P("FFmpeg fehlt noch. Videos und Ton gehen erst damit; Bilder kannst du trotzdem bearbeiten.", Brush.Parse("#FACC15")), Nav2("Einrichten", "components") } }));
         var files = FileShelf.Recent([MediaFolder, UserFolder(Environment.SpecialFolder.MyVideos), UserFolder(Environment.SpecialFolder.MyMusic), UserFolder(Environment.SpecialFolder.MyPictures)], MediaStudio.Inputs);
-        sp.Children.Add(H("1. Datei wählen", 14));
-        var path = new TextBox { Name = "media-path", Text = _mediaFile ?? "", PlaceholderText = "Pfad zur Datei", Width = 380 };
-        sp.Children.Add(new WrapPanel { Children = { path, Act("media-use", "Übernehmen", () => MediaPick(path.Text?.Trim('"', ' ') ?? "")), Act("media-folder", "Medienordner öffnen", () => Launch(MediaFolder)) } });
-        // Zuletzt benutzte Dateien als Reihe kleiner Karten statt einer langen Knopf-Säule
-        var recent = new WrapPanel { Name = "media-recent" };
+        left.Children.Add(H("Datei wählen", 13));
+        var path = new TextBox { Name = "media-path", Text = _mediaFile ?? "", PlaceholderText = "Pfad zur Datei" };
+        left.Children.Add(path);
+        left.Children.Add(new WrapPanel { Children = { Act("media-use", "Übernehmen", () => MediaPick(path.Text?.Trim('"', ' ') ?? "")), Act("media-folder", "Medienordner", () => Launch(MediaFolder)) } });
+        var recent = new StackPanel { Name = "media-recent", Spacing = 2 };
         var i = 0;
-        foreach (var f in files.Take(8))
+        foreach (var f in files.Take(12))
         {
-            var fp = f.FullName; var b = Act($"media-file-{i++}", (fp == _mediaFile ? "● " : "") + f.Name, () => MediaPick(fp));
-            b.Margin = new Thickness(0, 0, 6, 6); b.MaxWidth = 260; ToolTip.SetTip(b, fp); recent.Children.Add(b);
+            var fp = f.FullName; var on = fp == _mediaFile;
+            var icon = MediaStudio.IsImage(fp) ? "🖼" : MediaStudio.IsAudio(fp) ? "🎵" : "🎬";
+            var b = new Button { Name = $"media-file-{i++}", Content = $"{icon}  {f.Name}", HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, FontSize = 12, Padding = new Thickness(8, 4),
+                Background = on ? Brush.Parse("#2A2410") : Brushes.Transparent, Foreground = on ? Brush.Parse("#F5B83D") : Text, BorderThickness = new Thickness(0) };
+            ToolTip.SetTip(b, fp); b.Click += (_, _) => MediaPick(fp); recent.Children.Add(b);
         }
-        if (recent.Children.Count > 0) { sp.Children.Add(P("Zuletzt benutzt:", null, 11.5)); sp.Children.Add(recent); }
+        if (recent.Children.Count > 0) { left.Children.Add(P("Zuletzt benutzt", Muted, 11.5)); left.Children.Add(recent); }
+        left.Children.Add(ClipList());
         if (_mediaFile is { } mf && File.Exists(mf))
         {
-            if (MediaStudio.IsImage(mf)) sp.Children.Add(ImageEditor(mf));
-            else sp.Children.Add(VideoEditor(mf));
+            if (MediaStudio.IsImage(mf)) center.Children.Add(ImageEditor(mf));
+            else center.Children.Add(VideoEditor(mf));
         }
+        else center.Children.Add(EmptyState("media-empty", "🎞", "Datei wählen", "Links eine Datei wählen – Video, Ton oder Bild. Hier schneidest, wandelst, verkleinerst und drehst du sie. Das Original bleibt immer erhalten.",
+            Act("media-sample", "Beispielbild anlegen", () => Try("kreativ-medien", () => MediaPick(MediaSampleImage())), true)));
+        right.Children.Add(H("Ergebnis", 13));
         if (_mediaLast is { } last && File.Exists(last))
-            sp.Children.Add(Card(Row(P("Ergebnis: " + Path.GetFileName(last), Text), Act("media-play", "Abspielen / Öffnen", () => Launch(last)), Act("media-show", "Im Ordner zeigen", () => Launch(Path.GetDirectoryName(last)!)))));
-        sp.Children.Add(ClipList());
-        return KreativPage("Medien-Studio", sp);
+            right.Children.Add(Card(new StackPanel { Spacing = 6, Children = { P(Path.GetFileName(last), Text, 12), new WrapPanel { Children = { Act("media-play", "Abspielen / Öffnen", () => Launch(last)), Act("media-show", "Im Ordner zeigen", () => Launch(Path.GetDirectoryName(last)!)) } } } }));
+        else right.Children.Add(P("Noch nichts erzeugt. Fertige Dateien landen im Medienordner – das Original bleibt unverändert.", Muted, 11.5));
+        right.Children.Add(H("Tipp", 13));
+        right.Children.Add(P("Mehrere Clips aneinanderhängen: links in der Clipliste sammeln. Für richtigen Schnitt mit Zeitleiste gibt es den Videoschnitt, für Ton „Audio bearbeiten“.", Muted, 11.5));
+        Border Pane(Control c, string name) => new() { Name = name, Child = new ScrollViewer { Content = c }, Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(10), BoxShadow = CardShadow };
+        var g = new Grid { Name = "media-workbench", ColumnDefinitions = new ColumnDefinitions("270,*,250"), ColumnSpacing = 10 };
+        g.Children.Add(Pane(left, "media-left")); g.Children.Add(Pos(Pane(center, "media-mid"), 1)); g.Children.Add(Pos(Pane(right, "media-right"), 2));
+        return FitKreativPage("Medien-Studio", new Panel(), g);
+    }
+
+    /// <summary>Beispielbild für die leere Werkbank (Farbverlauf mit Formen), im Medienordner.</summary>
+    string MediaSampleImage()
+    {
+        var f = Path.Combine(MediaFolder, "Beispielbild.png");
+        if (File.Exists(f)) return f;
+        using var bmp = new SkiaSharp.SKBitmap(1280, 720);
+        using (var c = new SkiaSharp.SKCanvas(bmp))
+        {
+            using var sh = SkiaSharp.SKShader.CreateLinearGradient(new SkiaSharp.SKPoint(0, 0), new SkiaSharp.SKPoint(1280, 720), [new SkiaSharp.SKColor(0x1E, 0x3A, 0x8A), new SkiaSharp.SKColor(0xF5, 0xB8, 0x3D)], SkiaSharp.SKShaderTileMode.Clamp);
+            using var p = new SkiaSharp.SKPaint { Shader = sh }; c.DrawRect(0, 0, 1280, 720, p);
+            using var w = new SkiaSharp.SKPaint { Color = new SkiaSharp.SKColor(255, 255, 255, 90), IsAntialias = true };
+            c.DrawCircle(900, 300, 180, w); c.DrawCircle(380, 480, 110, w);
+        }
+        using var img = SkiaSharp.SKImage.FromBitmap(bmp); using var data = img.Encode(SkiaSharp.SKEncodedImageFormat.Png, 95);
+        File.WriteAllBytes(f, data.ToArray());
+        return f;
     }
 
     private Control VideoEditor(string mf)
