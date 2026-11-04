@@ -54,4 +54,31 @@ public class AddressBook_Ui
         Click("ab-delete"); Click("ab-delete-no"); Assert.Equal(2, w.Mail.Contacts().Count);
         Click("ab-delete"); Click("ab-delete-yes"); Assert.Single(w.Mail.Contacts()); Assert.DoesNotContain(w.Mail.Contacts(), c => c.Id == sel);
     }
+    [AvaloniaFact(DisplayName = "Adressbuch wie Google Kontakte/Outlook: CSV einlesen und sichern, Nummern vereinheitlichen, Etiketten der gewählten Gruppe als PDF")]
+    public void Ui_csv_phones_labels()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1100; Directory.CreateDirectory(root);
+        var oldDrafts = MainWindow.MailDraftFolder; MainWindow.MailDraftFolder = Path.Combine(root, "entwuerfe"); // nie in die echten Dokumente schreiben
+        try
+        {
+            void Click(string name) { var b = V<Control>(w, name); b.BringIntoView(); Settle(); RealClick(w, V<Control>(w, name)); Settle(); }
+            w.Show("kontakte"); Settle();
+            var csv = Path.Combine(root, "google.csv");
+            File.WriteAllText(csv, "First Name,Last Name,E-mail 1 - Value,Phone 1 - Value,Address 1 - Street,Address 1 - City,Group Membership\r\n"
+                + "Erika,Muster,erika@example.de,030 1234567,Hauptstraße 1,10115 Berlin,Kunden\r\nMax,Beispiel,,0171 7654321,,,Kunden\r\n");
+            w.Find<TextBox>("ab-vcf-file").Text = csv; Click("ab-vcf-import");
+            Assert.Equal(2, w.Mail.Contacts().Count);
+            Click("ab-fix-phones");
+            Assert.Equal("+49 30 1234567", w.Mail.Contacts().Single(c => c.Name == "Erika Muster").Phone);
+            Assert.Equal("+49 171 7654321", w.Mail.Contacts().Single(c => c.Name == "Max Beispiel").Phone);
+            // Etiketten für die Gruppe „Kunden“: einer ohne Anschrift wird übersprungen
+            Click("ab-g-0"); Click("ab-labels");
+            Assert.True(File.Exists(Path.Combine(MainWindow.MailDraftFolder, "etiketten.pdf")));
+            using (var pdf = PdfSharp.Pdf.IO.PdfReader.Open(Path.Combine(MainWindow.MailDraftFolder, "etiketten.pdf"), PdfSharp.Pdf.IO.PdfDocumentOpenMode.Import)) Assert.Equal(1, pdf.PageCount); // einer ohne Anschrift übersprungen
+            Click("ab-csv-export");
+            var back = File.ReadAllText(Path.Combine(MainWindow.MailDraftFolder, "kontakte.csv"));
+            Assert.Contains("Erika Muster", back); Assert.Contains("+49 30 1234567", back);
+        }
+        finally { MainWindow.MailDraftFolder = oldDrafts; w.Close(); }
+    }
 }

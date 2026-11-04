@@ -40,6 +40,7 @@ public partial class MainWindow
         return g;
     }
 
+    string _abSheet = "3475";
     Control AddressBookView()
     {
         var all = Mail.Contacts(); var today = DateOnly.FromDateTime(DateTime.Today);
@@ -62,12 +63,31 @@ public partial class MainWindow
         for (var i = 0; i < groups.Count; i++) side.Children.Add(Nav($"ab-g-{i}", "▣ " + groups[i].Name, "g:" + groups[i].Name, groups[i].Count));
 
         // Kopfleiste
-        var file = new TextBox { Name = "ab-vcf-file", PlaceholderText = "vCard-Datei (.vcf) einlesen", Width = 260 };
+        IReadOnlyList<Contact> Shown() => _abGroup switch
+        {
+            "fav" => Mail.Search(_abFind).Where(c => c.Favorite).ToList(),
+            "bday" => bdays.Select(b => b.Contact).Where(c => Mail.Search(_abFind).Any(x => x.Id == c.Id)).ToList(),
+            "dups" => dups.SelectMany(d => d).ToList(),
+            var g when g.StartsWith("g:") => Mail.Search(_abFind, g[2..]),
+            _ => Mail.Search(_abFind),
+        };
+        var file = new TextBox { Name = "ab-vcf-file", PlaceholderText = "vCard (.vcf) oder CSV (Google, Outlook) einlesen", Width = 300 };
+        var sheet = new ComboBox { Name = "ab-label-sheet", ItemsSource = MailCenter.LabelSheets.Select(x => x.Name).ToList(), SelectedIndex = Math.Max(0, Array.FindIndex(MailCenter.LabelSheets, x => x.Id == _abSheet)), Width = 300 };
+        sheet.SelectionChanged += (_, _) => _abSheet = MailCenter.LabelSheets[Math.Max(0, sheet.SelectedIndex)].Id;
         var head = new WrapPanel { Children = {
             Act("ab-new", "+ Neuer Kontakt", () => { var c = Mail.UpdateContact(new Contact(Guid.NewGuid().ToString("N")[..8], "Neuer Kontakt", "", Groups: _abGroup.StartsWith("g:") ? [_abGroup[2..]] : null)); _abSel = c.Id; _abEdit = true; Show(AB); }, true),
             new Border { Width = 10 }, file,
-            Act("ab-vcf-import", "Einlesen", () => Try(AB, () => { var f = (file.Text ?? "").Trim('"', ' '); if (!File.Exists(f)) throw new ArgumentException("Diese Datei gibt es nicht."); var n = Mail.ImportVcf(File.ReadAllText(f)); Say($"{n} Kontakt(e) eingelesen.", AB); })),
+            Act("ab-vcf-import", "Einlesen", () => Try(AB, () => { var f = (file.Text ?? "").Trim('"', ' '); if (!File.Exists(f)) throw new ArgumentException("Diese Datei gibt es nicht."); var n = Path.GetExtension(f).Equals(".csv", StringComparison.OrdinalIgnoreCase) ? Mail.ImportCsv(File.ReadAllText(f)) : Mail.ImportVcf(File.ReadAllText(f)); Say($"{n} Kontakt(e) eingelesen.", AB); })),
             Act("ab-vcf-export", "Alle als vCard sichern", () => Try(AB, () => { Directory.CreateDirectory(MailDraftFolder); var f = Path.Combine(MailDraftFolder, "kontakte.vcf"); File.WriteAllText(f, Mail.ExportVcf()); NotifyFileResult("Gespeichert: " + f); Say("Gespeichert: " + f, AB); })),
+            Act("ab-csv-export", "Als CSV (Google, Outlook)", () => Try(AB, () => { Directory.CreateDirectory(MailDraftFolder); var f = Path.Combine(MailDraftFolder, "kontakte.csv"); File.WriteAllText(f, Mail.ExportCsv(), new System.Text.UTF8Encoding(true)); NotifyFileResult("Gespeichert: " + f); Say("Gespeichert: " + f, AB); })),
+            Act("ab-fix-phones", "Nummern vereinheitlichen", () => Try(AB, () => { var n = Mail.FixPhones(); Say(n == 0 ? "Alle Nummern sind schon einheitlich." : $"{n} Kontakt(e): Nummern jetzt einheitlich (+49 …).", AB); })),
+            sheet,
+            Act("ab-labels", "Etiketten (PDF)", () => Try(AB, () =>
+            {
+                Directory.CreateDirectory(MailDraftFolder); var f = Path.Combine(MailDraftFolder, "etiketten.pdf"); var list = Shown();
+                var pages = MailCenter.WriteLabels(list, f, _abSheet); var n = list.Count(c => c.Street.Trim().Length > 0 && c.City.Trim().Length > 0);
+                NotifyFileResult("Gespeichert: " + f); Say($"{n} Etiketten auf {pages} Bogen – {f}" + (n < list.Count ? $" ({list.Count - n} ohne Anschrift übersprungen)" : ""), AB);
+            })),
             Act("ab-bday-cal", "Geburtstage in den Kalender", () => Try(AB, () =>
             {
                 var n = 0;
@@ -83,14 +103,7 @@ public partial class MainWindow
         // Mitte: Liste
         var find = new TextBox { Name = "ab-find", Text = _abFind, PlaceholderText = "🔎  Name, Firma, Ort, Nummer …" };
         find.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { _abFind = find.Text ?? ""; Show(AB); } };
-        IReadOnlyList<Contact> shown = _abGroup switch
-        {
-            "fav" => Mail.Search(_abFind).Where(c => c.Favorite).ToList(),
-            "bday" => bdays.Select(b => b.Contact).Where(c => Mail.Search(_abFind).Any(x => x.Id == c.Id)).ToList(),
-            "dups" => dups.SelectMany(d => d).ToList(),
-            var g when g.StartsWith("g:") => Mail.Search(_abFind, g[2..]),
-            _ => Mail.Search(_abFind),
-        };
+        var shown = Shown();
         var list = new StackPanel { Name = "ab-list", Spacing = 1 };
         char? letter = null;
         for (var i = 0; i < shown.Count && i < 500; i++)
