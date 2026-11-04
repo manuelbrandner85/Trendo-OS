@@ -12,7 +12,7 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     string _cwQuery = "", _cwLyrics = "", _cwGenre = "", _cwVoice = "frei", _cwSound = "heute", _cwMsg = "";
-    double _cwCloseness = 0.6; bool _cwBusy, _cwOpen;
+    double _cwCloseness = 0.9; bool _cwBusy, _cwOpen; // gemessen 04.11.2026: erst ab Nähe 0,9 folgt die Melodie messbar dem Original
     List<CoverStudio.Hit> _cwHits = []; CoverStudio.Hit? _cwHit;
     string? _cwOriginal; CoverStudio.Blueprint? _cwPlan;
     readonly List<(string SongId, CoverStudio.Report Report, double Strength)> _cwResults = [];
