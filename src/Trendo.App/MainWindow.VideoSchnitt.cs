@@ -474,6 +474,7 @@ public partial class MainWindow
                 o = await VideoEdit.ExportAsync(ff, data, file, progress, _veExport.Token, opts);
             }
             _core.Audit.Append(Principal.LocalOwner.Name, "video.export", Path.GetFileName(o));
+            EditCopySubs(data, o); // X10: SRT neben das Video
             if (VideoEdit.Song(data) is { } linked && Songs.Get(linked.Id) is { } ls) SongVideoAdd(ls, o); // E2: fertiges Video auch beim Lied
             _progMsg[VK] = "Exportiert: " + o; NotifyFileResult(_progMsg[VK]);
         }

@@ -30,7 +30,7 @@ public static class VideoExport
     public static Preset Get(string id) => Presets.FirstOrDefault(p => p.Id == id) ?? Presets[0];
 
     /// <summary>Export-Einstellungen: Vorlage, Encoder-Liste der Grafikkarte, Bereich (Sekunden), Lautheit angleichen.</summary>
-    public sealed record Options(Preset Preset, IReadOnlySet<string>? Gpu = null, double From = 0, double To = 0, bool Loudness = false);
+    public sealed record Options(Preset Preset, IReadOnlySet<string>? Gpu = null, double From = 0, double To = 0, bool Loudness = false, bool Ducking = false, string? Subtitles = null);
 
     /// <summary>Encoder wählen: NVENC, wenn die Grafikkarte ihn wirklich kann (vorher gemessen), sonst die Software-Encoder.</summary>
     public static (string Encoder, List<string> Args) Encoder(Preset p, IReadOnlySet<string>? gpu, double seconds)
@@ -77,8 +77,41 @@ public static class VideoExport
             }
             v = "vsize";
         }
+        if (!o.Preset.AudioOnly && o.Subtitles is { Length: > 0 } srt && File.Exists(srt))
+        {
+            // X10: Untertitel einbrennen – Schriftgröße passt sich der Bildhöhe an (Hochformat größer)
+            var size = (W > 0 && H > W) || (W == 0 && h > w) ? 13 : 20;
+            f.Add($"[{v}]subtitles=filename='{SubPath(srt)}':force_style='FontName=Arial,FontSize={size},Bold=1,Outline=2,Shadow=0,MarginV=36'[vsub]"); v = "vsub";
+        }
         if (o.Loudness) { f.Add($"[{a}]loudnorm=I=-14:TP=-1:LRA=11,aresample=48000[aloud]"); a = "aloud"; }
         return (v, a);
+    }
+
+    /// <summary>Pfad für den FFmpeg-Filter „subtitles“: Schrägstriche, Doppelpunkt und Hochkomma maskiert (Windows-Laufwerk C: wird C\:).</summary>
+    public static string SubPath(string path) => path.Replace('\\', '/').Replace(":", "\\:").Replace("'", "\\'");
+
+    /// <summary>SRT lesen: (Start, Ende, Text) je Untertitel.</summary>
+    public static List<(double Start, double End, string Text)> ReadSrt(string srt)
+    {
+        var list = new List<(double, double, string)>();
+        foreach (var block in srt.Replace("\r\n", "\n").Split("\n\n", StringSplitOptions.RemoveEmptyEntries))
+        {
+            var lines = block.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            var ti = Array.FindIndex(lines, l => l.Contains("-->"));
+            if (ti < 0) continue;
+            var parts = lines[ti].Split("-->");
+            if (parts.Length != 2 || !TryTime(parts[0], out var a) || !TryTime(parts[1], out var b)) continue;
+            list.Add((a, b, string.Join(" ", lines.Skip(ti + 1)).Trim()));
+        }
+        return list;
+    }
+
+    static bool TryTime(string s, out double sec)
+    {
+        sec = 0; s = s.Trim().Replace(',', '.');
+        var p = s.Split(':'); if (p.Length != 3) return false;
+        if (!int.TryParse(p[0], out var h) || !int.TryParse(p[1], out var m) || !double.TryParse(p[2], NumberStyles.Float, Inv, out var x)) return false;
+        sec = h * 3600 + m * 60 + x; return true;
     }
 
     /// <summary>Länge des Ergebnisses (mit Bereich).</summary>

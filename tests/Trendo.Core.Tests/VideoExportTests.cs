@@ -76,4 +76,21 @@ public class VideoExportTests
         }
         finally { Directory.Delete(dir, true); }
     }
+
+    [Fact(DisplayName = "Ducking: Musik läuft über eine Seitenkette des Originaltons (sidechaincompress), ohne Häkchen normales Mischen")]
+    public void Ducking_args()
+    {
+        var (dir, P) = Dir();
+        try
+        {
+            File.WriteAllBytes(P("a.mp4"), [1]); File.WriteAllBytes(P("m.mp3"), [1]); File.WriteAllBytes(P("n.mp3"), [1]);
+            var p = VideoEdit.NewProject();
+            VideoEdit.Add(p, new EditClip("a", P("a.mp4"), 0, 5, 5)); VideoEdit.Add(p, new EditClip("m", P("m.mp3"), 0, 5, 60), "music"); VideoEdit.Add(p, new EditClip("n", P("n.mp3"), 0, 5, 60), "music");
+            var on = string.Join(" ", VideoEdit.ExportArgs(p, P("o.mp4"), new VideoExport.Options(VideoExport.Presets[0], Ducking: true)));
+            Assert.Contains("[m1][m2]amix=inputs=2:duration=longest", on); Assert.Contains("sidechaincompress", on); Assert.Contains("[ab1][mduck]amix", on);
+            var off = string.Join(" ", VideoEdit.ExportArgs(p, P("o.mp4")));
+            Assert.DoesNotContain("sidechaincompress", off); Assert.Contains("[abase][m1][m2]amix=inputs=3", off);
+        }
+        finally { Directory.Delete(dir, true); }
+    }
 }

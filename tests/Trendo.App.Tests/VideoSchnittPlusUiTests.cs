@@ -174,4 +174,36 @@ public class VideoSchnittPlus_Ui
         w.EditKey(d, Avalonia.Input.Key.Home); Assert.Equal(0, d.Number("playhead"));
         w.Close();
     }
+
+    [AvaloniaFact(DisplayName = "Videoschnitt X10: Untertitel erzeugen (Whisper ersetzt), Anzahl und Beispiel sichtbar, Einbrennen geht an den Export, SRT liegt neben dem Video")]
+    public async Task Subtitles()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        string F(string n) { var f = Path.Combine(root, n); File.WriteAllBytes(f, [1]); return f; }
+        w.Show("schnitt"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer"));
+        w.EditAdd(F("a.mp4"), length: 6, audio: true); w.Show("schnitt"); Settle();
+        w.EditTab = "export"; w.Show("schnitt"); Settle();
+        const string srtText = """
+            1
+            00:00:00,500 --> 00:00:02,000
+            Hallo Welt
+
+            2
+            00:00:02,000 --> 00:00:03,000
+            Tschüss
+            """;
+        w.SubsOverride = (wav, srt) => { File.WriteAllText(srt, srtText); return Task.FromResult(true); };
+        Click(w, "ve-subs");
+        for (var i = 0; i < 100 && w.TryFind<CheckBox>("ve-burn") is null; i++) { await Task.Delay(10); Settle(); }
+        Assert.Contains("2 Untertitel", w.ProgramMessage("schnitt"));
+        var d = w.ProgramActive("schnitt")!; Assert.Equal("Untertitel", d.UndoLabel);
+        w.Find<CheckBox>("ve-burn").IsChecked = true; Settle();
+        Assert.Equal(d.Text("subs"), w.EditExportOptions(d).Subtitles);
+        string? target = null;
+        w.ExportAsyncOverride = (p, f, prog, ct) => { target = f; File.WriteAllText(f, "mp4"); return Task.FromResult(f); };
+        Click(w, "ve-export-go");
+        for (var i = 0; i < 100 && (target is null || w.EditExporting); i++) { await Task.Delay(10); Settle(); }
+        Assert.True(File.Exists(Path.ChangeExtension(target!, ".srt")));
+        w.Close();
+    }
 }

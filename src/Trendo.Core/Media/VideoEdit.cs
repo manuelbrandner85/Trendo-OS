@@ -189,8 +189,17 @@ public static class VideoEdit
             mix += $"[m{n}]"; n++;
         }
         var total = VideoLength(clips);
-        f.Add(n > 1 ? $"{mix}amix=inputs={n}:duration=first:normalize=0[aout]" : "[abase]anull[aout]");
         o ??= new VideoExport.Options(VideoExport.Presets[0]);
+        if (n > 1 && o.Ducking)
+        {
+            // X11 Ducking: Musik wird leiser, solange im Video gesprochen wird (Seitenkette über den Originalton)
+            var musicIn = mix["[abase]".Length..];
+            f.Add(n > 2 ? $"{musicIn}amix=inputs={n - 1}:duration=longest:normalize=0[mall]" : $"{musicIn}anull[mall]");
+            f.Add("[abase]asplit=2[ab1][ab2]");
+            f.Add("[mall][ab2]sidechaincompress=threshold=0.04:ratio=8:attack=20:release=500:makeup=1[mduck]");
+            f.Add("[ab1][mduck]amix=inputs=2:duration=first:normalize=0[aout]");
+        }
+        else f.Add(n > 1 ? $"{mix}amix=inputs={n}:duration=first:normalize=0[aout]" : "[abase]anull[aout]");
         var (vo, ao) = VideoExport.Tail(f, "vout", "aout", w, h, o); // X1/X11: Bereich, Zielgröße, Lautheit
         var outLen = VideoExport.Length(total, o);
         if (o.Preset.AudioOnly)
