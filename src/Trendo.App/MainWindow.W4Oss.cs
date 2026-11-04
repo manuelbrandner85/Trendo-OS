@@ -171,7 +171,7 @@ public partial class MainWindow
         Border Pane(Control c, string name) => new() { Name = name, Child = new ScrollViewer { Content = c }, Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(10), BoxShadow = CardShadow };
         var store = new Grid { Name = "oss-store", ColumnDefinitions = new ColumnDefinitions("200,*,260"), ColumnSpacing = 10 };
         store.Children.Add(Pane(cats, "oss-left")); store.Children.Add(Pos(Pane(sp, "oss-center"), 1)); store.Children.Add(Pos(Pane(side, "oss-right"), 2));
-        return FitPage("Open Source", new Panel(), store);
+        return FitKreativPage("Open Source", new Panel(), store);
 
     }
 

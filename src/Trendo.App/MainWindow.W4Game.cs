@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -19,8 +20,10 @@ public partial class MainWindow
 
     private Control GameView()
     {
-        var sp = new StackPanel { Spacing = 8, Children = { P("Starte mit einem fertigen kleinen Spiel und verändere es. Es läuft direkt im Browser.") } };
-        if (_gameClaude is { } cg && Directory.Exists(cg)) sp.Children.Add(ClaudeGameCard(cg)); // was Claude gerade baut, gleich hier im Studio
+        // Umbau 04.11.2026: Spielesammlung wie eine Bibliothek – links deine Spiele, Mitte das gewählte Spiel, rechts Neues und Unreal
+        var sp = new StackPanel { Name = "game-new-side", Spacing = 8 };
+        var center = new StackPanel { Name = "game-center", Spacing = 8 };
+        if (_gameClaude is { } cg && Directory.Exists(cg)) center.Children.Add(ClaudeGameCard(cg)); // was Claude gerade baut, gleich hier im Studio
         var name = new TextBox { Name = "game-name", Text = "Mein Spiel", Width = 200 };
         var tpl = new ComboBox { Name = "game-template", ItemsSource = GameStudio.Templates.Select(t => t.Label).ToList(), SelectedIndex = 0, Width = 170 };
         sp.Children.Add(Card(new StackPanel { Spacing = 6, Children = { H("Browser-Spiel", 14), new WrapPanel { Children = { name, tpl } },
@@ -36,7 +39,9 @@ public partial class MainWindow
                 catch (Exception ex) { Say("Hat nicht geklappt: " + ex.Message, "spiele"); }
             }, true) } }));
 
-        if (_gameEdit is { } ge && File.Exists(Path.Combine(ge, "config.js"))) sp.Children.Add(GameEditor(ge));
+        if (_gameEdit is { } ge && File.Exists(Path.Combine(ge, "config.js"))) center.Children.Add(GameEditor(ge));
+        else center.Children.Add(EmptyState("game-empty", "🎮", "Dein Spiel", "Leg rechts ein Browser-Spiel an oder wähle links eines deiner Spiele. Hier stellst du Tempo, Leben, Farben, Bilder, Ton und das Level ein – mit Vorschau.",
+            Act("game-demo", "Beispiel anlegen (Schlange)", () => Try("spiele", () => { var dir = GameStudio.CreateBrowserGame(GameFolder, GameStudio.Templates[0].Id, "Beispiel"); _gameEdit = dir; _gamePreview = null; _core.Audit.Append(Principal.LocalOwner.Name, "game.create", Path.GetFileName(dir)); Show("spiele"); }), true)));
 
         var engines = EngineFinder();
         var ue = new StackPanel { Spacing = 6, Children = { H("Unreal Engine", 14) } };
@@ -60,8 +65,8 @@ public partial class MainWindow
                 catch (Exception ex) { Say("Hat nicht geklappt: " + ex.Message, "spiele"); }
             }) } });
         }
-        var uo = new TextBox { Name = "game-ue-file", PlaceholderText = "Vorhandenes Unreal-Projekt (.uproject) – Datei wählen", Width = 380 };
-        ue.Children.Add(new WrapPanel { Children = { uo, Act("game-ue-open", "Projekt öffnen", () =>
+        var uo = new TextBox { Name = "game-ue-file", PlaceholderText = "Vorhandenes Unreal-Projekt (.uproject)" };
+        ue.Children.Add(new StackPanel { Spacing = 4, Children = { uo, Act("game-ue-open", "Projekt öffnen", () =>
         {
             var f = (uo.Text ?? "").Trim('"', ' ');
             if (f.Length == 0) { Say("Bitte zuerst eine .uproject-Datei wählen.", "spiele"); return; }
@@ -73,17 +78,22 @@ public partial class MainWindow
         }) } });
         sp.Children.Add(Card(ue));
 
-        sp.Children.Add(H("Deine Spiele", 14));
+        var lib = new StackPanel { Name = "game-library", Spacing = 4 };
+        lib.Children.Add(H("Deine Spiele", 14));
+        if (!Directory.EnumerateDirectories(GameFolder).Any()) lib.Children.Add(P("Noch keine Spiele.", Muted, 11.5));
         var i = 0;
         foreach (var d in Directory.GetDirectories(GameFolder).OrderByDescending(Directory.GetLastWriteTime).Take(15))
         {
             var dir = d; var html = Path.Combine(dir, "index.html"); var up = Directory.GetFiles(dir, "*.uproject").FirstOrDefault();
-            sp.Children.Add(Card(Row(P(Path.GetFileName(dir) + (up is not null ? " · Unreal" : " · Browser"), Text), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
+            lib.Children.Add(Card(new StackPanel { Spacing = 4, Children = { P(Path.GetFileName(dir) + (up is not null ? " · Unreal" : " · Browser"), dir == _gameEdit ? Brush.Parse("#F5B83D") : Text), new WrapPanel { Children = {
                 Act($"game-play-{i}", up is not null ? "Öffnen" : "Spielen", () => Launch(up ?? html)), Act($"game-folder-{i}", "Ordner", () => Launch(dir)),
-                up is null && File.Exists(Path.Combine(dir, "config.js")) ? Act($"game-edit-{i}", "Bearbeiten", () => { _gameEdit = dir; _gamePreview = null; Show("spiele"); }) : new Panel(), up is not null ? OpenInButton("unreal", () => up, "spiele", $"-{i}") : new Panel() } })));
+                up is null && File.Exists(Path.Combine(dir, "config.js")) ? Act($"game-edit-{i}", "Bearbeiten", () => { _gameEdit = dir; _gamePreview = null; Show("spiele"); }) : new Panel(), up is not null ? OpenInButton("unreal", () => up, "spiele", $"-{i}") : new Panel() } } } }));
             i++;
         }
-        return KreativPage("Spiele-Studio", sp);
+        Border Pane(Control c, string name) => new() { Name = name, Child = new ScrollViewer { Content = c }, Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(10), BoxShadow = CardShadow };
+        var g = new Grid { Name = "game-shelf", ColumnDefinitions = new ColumnDefinitions("260,*,320"), ColumnSpacing = 10 };
+        g.Children.Add(Pane(lib, "game-left")); g.Children.Add(Pos(Pane(center, "game-mid"), 1)); g.Children.Add(Pos(Pane(sp, "game-right"), 2));
+        return FitKreativPage("Spiele-Studio", new Panel(), g);
     }
 
     /// <summary>T-0204: Regeln, Aussehen, Spielfigur/Hintergrund aus Datei, Ton und Level-Raster; Vorschau im Studio, Export als ZIP.</summary>
