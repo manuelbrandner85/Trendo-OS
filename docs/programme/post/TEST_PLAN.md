@@ -1,6 +1,6 @@
 # E-Mail & Kontakte – Testplan
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.36 (Stand 927ab35)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `post` · Stand: 0.9.36 (Stand c50f512)
 
 18 Tests sprechen dieses Programm an.
 

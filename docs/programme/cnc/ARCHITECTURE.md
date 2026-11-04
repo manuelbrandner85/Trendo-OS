@@ -1,6 +1,6 @@
 # CNC-Werkstatt – Architektur
 
-Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.36 (Stand 927ab35)
+Studio: Fräsen & Fertigen (SPEC-14) · Bereich: Technik & Fachgebiete · Seite: `cnc` · Stand: 0.9.36 (Stand c50f512)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec14.cs`

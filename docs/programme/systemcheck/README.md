@@ -1,6 +1,6 @@
 # Systemcheck – Produktionspaket
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `systemcheck` · Stand: 0.9.36 (Stand 927ab35)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `systemcheck` · Stand: 0.9.36 (Stand c50f512)
 
 Arbeitsfläche: Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

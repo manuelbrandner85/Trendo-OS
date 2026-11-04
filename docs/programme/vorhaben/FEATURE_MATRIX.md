@@ -1,6 +1,6 @@
 # Vorhaben – Funktionsmatrix
 
-Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.36 (Stand 927ab35)
+Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.36 (Stand c50f512)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -9,9 +9,16 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - ✳ Claude
 - 👥 Team
 - ＋ Neues Projekt
-- Video für YouTube
-- Eigene Webseite
-- Kleines Programm
-- Eigenes Spiel
-- 3D-Druck
-- Feier oder Treffen planen
+- Beispiel-Urlaubsvideo
+- ▸ Aufnahmen  (0)
+- ▸ Bilder  (0)
+- ▸ Fertig  (0)
+- ▸ Ton  (0)
+- Ordner öffnen
+- Übersicht
+- Liste
+- Tafel
+- Zeitplan
+- Dateien
+- Zeitplan öffnen
+- Alle

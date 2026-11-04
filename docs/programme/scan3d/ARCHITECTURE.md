@@ -1,12 +1,12 @@
 # Aus Fotos – Architektur
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand 927ab35)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand c50f512)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec09.cs`
 
 ## Bedienelemente der Arbeitsfläche
-– (nicht erfasst)
+- Fotoscan (Fotos, Rechnung, 3D-Ergebnis – wie Meshroom)
 
 ## Fach-Engine (Trendo.Core)
 - `ScanDoc`

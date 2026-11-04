@@ -1,6 +1,6 @@
 # Ordner im Heimnetz teilen – Testplan
 
-Studio: Dateien teilen (SYS-06) · Bereich: System & Sicherheit · Seite: `teilen` · Stand: 0.9.36 (Stand 927ab35)
+Studio: Dateien teilen (SYS-06) · Bereich: System & Sicherheit · Seite: `teilen` · Stand: 0.9.36 (Stand c50f512)
 
 15 Tests sprechen dieses Programm an.
 

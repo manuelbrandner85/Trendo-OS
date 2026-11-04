@@ -1,8 +1,8 @@
 # Projekte – Produktionspaket
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.36 (Stand 927ab35)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.36 (Stand c50f512)
 
-Arbeitsfläche: keine eigene Arbeitsfläche erkannt (Seite aus Listen, Feldern und Knöpfen)  
+Arbeitsfläche: Projektmappe (Projekte, Dateien, Details – wie ein Datei-Explorer)  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test PC_VERIFIED  
 Programm-Hülle (Dokumente, Rückgängig, Autosave, Bedienstufen): nein – eigene Arbeitsseite
 

@@ -1,6 +1,6 @@
 # Medien bearbeiten – Architektur
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand 927ab35)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `kreativ-medien` · Stand: 0.9.36 (Stand c50f512)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.AudioEditor.cs`
@@ -9,7 +9,8 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - `src/Trendo.App/MainWindow.W4Media.cs`
 
 ## Bedienelemente der Arbeitsfläche
-– (nicht erfasst)
+- Bildansicht
+- Medien-Werkbank (Dateien, Werkzeuge, Ergebnis)
 
 ## Fach-Engine (Trendo.Core)
 - `VideoEdit`

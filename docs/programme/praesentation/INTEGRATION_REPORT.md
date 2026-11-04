@@ -1,6 +1,6 @@
 # Trendo Präsentation – Einbindung in Trendo OS
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.36 (Stand 927ab35)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `praesentation` · Stand: 0.9.36 (Stand c50f512)
 
 - Seite `praesentation` im Studio „Texte & Tabellen“ (Arbeiten & Büro) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

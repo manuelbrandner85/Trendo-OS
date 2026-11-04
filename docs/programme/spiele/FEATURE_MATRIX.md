@@ -1,6 +1,6 @@
 # Werkstatt – Funktionsmatrix
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand 927ab35)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand c50f512)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -14,7 +14,15 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - 👥 Team
 - Spiele bauen
 - Werkstatt
+- Kopieren
+- Spielen
+- Ordner
+- Bearbeiten
+- Ton an
+- Datei wählen …
+- Speichern und Vorschau
+- Als ZIP weitergeben
+- Fertig
 - Anlegen und spielen
 - Unreal-Projekt anlegen
-- Datei wählen …
 - Projekt öffnen

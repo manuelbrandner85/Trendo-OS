@@ -1,6 +1,6 @@
 # Startbildschirm – Testplan
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand 927ab35)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand c50f512)
 
 87 Tests sprechen dieses Programm an.
 

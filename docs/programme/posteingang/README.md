@@ -1,6 +1,6 @@
 # Posteingang – Produktionspaket
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `posteingang` · Stand: 0.9.36 (Stand 927ab35)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `posteingang` · Stand: 0.9.36 (Stand c50f512)
 
 Arbeitsfläche: Posteingang (Ordner, Liste, Lesebereich)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

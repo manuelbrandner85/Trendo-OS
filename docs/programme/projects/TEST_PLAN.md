@@ -1,8 +1,8 @@
 # Projekte – Testplan
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.36 (Stand 927ab35)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.36 (Stand c50f512)
 
-37 Tests sprechen dieses Programm an.
+38 Tests sprechen dieses Programm an.
 
 - 3D: OBJ, STL und GLB speichern, Datei öffnen, Projekt wieder öffnen
 - 3D: Satz wird zum Vorschlag und erst nach Übernehmen gebaut
@@ -20,6 +20,7 @@ Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `
 - Komponenten: Lizenzliste, Unreal nur geführt (offizieller Link), Zustimmung wird gespeichert
 - LETTER-UI: Briefkopf → Akte (Behörde) → Fakt, Chronik, Eingang → Frist UNGEPRÜFT → Quelle fehlt → Export gesperrt → beheben → DOCX → Freigabe → Versand BLOCKED
 - LETTER-UI: Briefstudio hat genau eine Unterebene; Akte/Ausgabe erst mit offener Akte
+- Projektmappe UI: Projekt mit lesbarem Namen anlegen, Dateien hinzufügen (Auswahl ersetzt), Ordner anlegen, Notiz bleibt, Umbenennen, zweites Projekt wählen
 - QA-004 UI: Browser-Aktion abgelehnt → nichts geöffnet
 - QA-004 UI: Browser-Aktion freigegeben → genau einmal geöffnet
 - QA-004 UI: Explorer-Aktion → Freigabe-Ansicht; Ausführung erst nach Klick auf Freigeben

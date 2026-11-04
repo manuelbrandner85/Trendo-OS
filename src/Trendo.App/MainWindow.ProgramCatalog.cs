@@ -80,7 +80,8 @@ public partial class MainWindow
                 Control { Name: "ab-card" } => "Kontaktkarte", Grid { Name: "ab-book" } => "Adressbuch (Gruppen, Liste, Kontaktkarte)", Grid { Name: "inbox-columns" } => "Posteingang (Ordner, Liste, Lesebereich)", Grid { Name: "mb-window" } => "Medien-Browser (Themen/Raster, Vorschau mit Lizenz)", Grid { Name: "clean-workspace" } => "Nachbau-Projekt (Projekte, drei Schritte, Tagebuch)", Grid { Name: "ext-manager" } => "Erweiterungen (Liste, Detailseite – wie VS Code)", Grid { Name: "rs-browser" } => "Lese-Browser (Quellen, Lesebereich, Zitate)", Grid { Name: "pdf-start" } => "PDF-Startseite (Zuletzt geöffnet, Öffnen, Werkzeuge)", Grid { Name: "tools-desk" } => "Helfer-Arbeitsfläche (Haftnotizen, Rechner mit Tastenfeld, Wecker)", Grid { Name: "builder-designer" } => "App-Designer (Bausteine, Vorschau, Eigenschaften)", Grid { Name: "settings-shell" } => "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)", Grid { Name: "ki-shell" } => "KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)",
                 Border { Name: "ms-library" } => "Liederliste mit Player und Lied-Ansicht (wie Suno)", Grid { Name: "tv-live" } => "Sender-Liste mit Live-Bild", Control { Name: "tv-hero" } => "Streaming-Startseite", Control { Name: "car-trip-table" } => "Fahrtenbuch-Tabelle",
                 Avalonia.Controls.Primitives.UniformGrid { Name: "doku-apps" } => "Office-Startseite (Programme, Vorlagen, Zuletzt benutzt – wie Microsoft 365)", Avalonia.Controls.Primitives.UniformGrid { Name: "alltag-apps" } => "Programm-Startseite (Kacheln der kleinen Helfer)",
-                Button { Name: { } dn } when dn.StartsWith("desk-pin-", StringComparison.Ordinal) => "Desktop (Symbole, Widgets, Dock)", Button { Name: "wiz-back" or "wiz-done" } => "Einrichtungs-Assistent (Schritt für Schritt)",
+                Button { Name: { } dn } when dn.StartsWith("desk-pin-", StringComparison.Ordinal) => "Desktop (Symbole, Widgets, Dock)", Button { Name: "btn-all-projects" } => "Desktop (Symbole, Widgets, Dock)",
+                Control { Name: { } wn } when wn.StartsWith("wiz-", StringComparison.Ordinal) => "Einrichtungs-Assistent (Schritt für Schritt)",
                 Grid { Name: "proj-workspace" } => "Projektmappe (Projekte, Dateien, Details – wie ein Datei-Explorer)",
                 Grid { Name: "oss-store" } => "Programm-Store (Kategorien, Treffer, Eingerichtetes – wie Flathub)",
                 WrapPanel { Name: "suite-modes" } => "Projektplaner (Übersicht, Liste, Tafel, Zeitplan, Dateien – wie Asana)",
@@ -88,6 +89,7 @@ public partial class MainWindow
                 WrapPanel { Name: "game-sections" } => "Spieleprojekt (Übersicht, Spielbibel, Figuren, Welt, Missionen, Level, Bauen)",
                 Grid { Name: "game-shelf" } => "Spielesammlung (Bibliothek, gewähltes Spiel mit Einstellungen, Neu und Unreal)",
                 Grid { Name: "media-workbench" } => "Medien-Werkbank (Dateien, Werkzeuge, Ergebnis)",
+                Grid { Name: "scan-workbench" } => "Fotoscan (Fotos, Rechnung, 3D-Ergebnis – wie Meshroom)",
                 WaveView => "Wellenform-Editor (Auswahl, Schnitt, Effekte – wie Audacity)", AvaloniaEdit.TextEditor => "Code-Editor (Dateibaum, Reiter, Farben je Sprache – wie VS Code)", _ => null,
             } is { } k) kinds.Add(k);
         var tools = all.OfType<Button>().Where(b => b.Name is { Length: > 0 } n && !n.StartsWith("prog-tab") && !n.StartsWith("dock") && !n.StartsWith("win-") && !n.StartsWith("toast"))

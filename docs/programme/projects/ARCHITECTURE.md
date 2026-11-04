@@ -1,12 +1,12 @@
 # Projekte – Architektur
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.36 (Stand 927ab35)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.36 (Stand c50f512)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)
 
 ## Bedienelemente der Arbeitsfläche
-– (nicht erfasst)
+- Projektmappe (Projekte, Dateien, Details – wie ein Datei-Explorer)
 
 ## Fach-Engine (Trendo.Core)
 – (nicht erfasst)

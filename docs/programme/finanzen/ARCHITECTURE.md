@@ -1,6 +1,6 @@
 # Geld – Architektur
 
-Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand 927ab35)
+Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand c50f512)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.W5Finance.cs`

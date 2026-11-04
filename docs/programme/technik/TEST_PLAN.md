@@ -1,6 +1,6 @@
 # Tragwerk & Mechanik – Testplan
 
-Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite: `technik` · Stand: 0.9.36 (Stand 927ab35)
+Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite: `technik` · Stand: 0.9.36 (Stand c50f512)
 
 17 Tests sprechen dieses Programm an.
 

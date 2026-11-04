@@ -1,6 +1,6 @@
 # Lernen mit Karteikarten – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.36 (Stand 927ab35)
+Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.36 (Stand c50f512)
 
 Analyse: [Vorbild-Analyse Lernen: Anki, Quizlet (Clean-Room)](../../../docs/claude/vorbilder/lernen-anki.md)
 
