@@ -1,6 +1,6 @@
 # Programme verwalten – Einbindung in Trendo OS
 
-Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.36 (Stand 9ed3c01)
+Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.36 (Stand fe88b0c)
 
 - Seite `appcenter` im Studio „Programme installieren“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

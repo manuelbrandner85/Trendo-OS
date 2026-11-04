@@ -32,7 +32,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | TV & Live | TV & Live (STUDIO-TV-01) | Kreativ & Medien | keine eigene erkannt | – | 15 | ja | IN_PROGRESS / Test NOT_RUN | [Paket](tv/README.md) |
 | Bildbearbeitung | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Bild-Arbeitsfläche (Ebenen) | – | 4 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](bild/README.md) |
 | Medien bearbeiten | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | keine eigene erkannt | – | 11 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](kreativ-medien/README.md) |
-| Videoschnitt | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Video-Zeitleiste | – | 7 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](schnitt/README.md) |
+| Videoschnitt | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Video-Zeitleiste | – | 8 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](schnitt/README.md) |
 | 3D | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | CAD-/3D-Zeichenfläche | – | 23 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](3d/README.md) |
 | Trendo 3D-Druck | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | keine eigene erkannt | – | 4 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](3d-druck/README.md) |
 | Trendo CAD | 3D-Modelle erstellen (CORE-05) | 3D, Spiele & VR | CAD-/3D-Zeichenfläche | – | 4 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](cad/README.md) |
@@ -53,7 +53,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Messdaten & Auswertung | Messwerte auswerten (SPEC-05) | Wissen & Lernen | Diagramm/Zeichnung, Tabellenraster | 16 | 23 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](wissenschaft/README.md) |
 | Recherche im Lesemodus | Sicher recherchieren (SYS-08) | Wissen & Lernen | keine eigene erkannt | – | 16 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](recherche/README.md) |
 | Wissen für die KI | Wissen merken (CORE-10) | Wissen & Lernen | Texteditor | – | 16 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-wissen/README.md) |
-| Abläufe (Automatisch erledigen) | Aufgaben automatisieren (SYS-05) | KI & Automatik | keine eigene erkannt | – | 18 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](ablaeufe/README.md) |
+| Abläufe (Automatisch erledigen) | Aufgaben automatisieren (SYS-05) | KI & Automatik | keine eigene erkannt | – | 19 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](ablaeufe/README.md) |
 | Produktion | Großprojekte umsetzen (X-01) | KI & Automatik | keine eigene erkannt | – | 9 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](produktion/README.md) |
 | KI | KI fragen (CORE-02) | KI & Automatik | keine eigene erkannt | – | 43 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki/README.md) |
 | KI fragen | KI fragen (CORE-02) | KI & Automatik | keine eigene erkannt | – | 17 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-fragen/README.md) |

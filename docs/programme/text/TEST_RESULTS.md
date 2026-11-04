@@ -1,6 +1,6 @@
 # Trendo Text – Testergebnisse
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand 9ed3c01)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `text` · Stand: 0.9.36 (Stand fe88b0c)
 
 Lauf: `api.trx, app.trx, core.trx`
 

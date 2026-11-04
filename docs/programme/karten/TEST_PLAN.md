@@ -1,6 +1,6 @@
 # Karten & Touren – Testplan
 
-Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.36 (Stand 9ed3c01)
+Studio: Routen & Karten (SPEC-13) · Bereich: Technik & Fachgebiete · Seite: `karten` · Stand: 0.9.36 (Stand fe88b0c)
 
 14 Tests sprechen dieses Programm an.
 

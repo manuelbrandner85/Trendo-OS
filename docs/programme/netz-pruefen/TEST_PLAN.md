@@ -1,6 +1,6 @@
 # Sicher prüfen – Testplan
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.36 (Stand 9ed3c01)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `netz-pruefen` · Stand: 0.9.36 (Stand fe88b0c)
 
 17 Tests sprechen dieses Programm an.
 

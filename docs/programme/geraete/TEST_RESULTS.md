@@ -1,6 +1,6 @@
 # Geräte & Laufwerke – Testergebnisse
 
-Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 9ed3c01)
+Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand fe88b0c)
 
 Lauf: `api.trx, app.trx, core.trx`
 
