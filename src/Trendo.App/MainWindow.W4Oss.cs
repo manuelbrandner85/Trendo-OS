@@ -74,12 +74,8 @@ public partial class MainWindow
         var q = new TextBox { Name = "oss-query", Text = _ossQuery, PlaceholderText = "z. B. markdown editor", Width = 300 };
         q.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) _ = OssSearch(q.Text ?? ""); };
         sp.Children.Add(new WrapPanel { Children = { q, Act("oss-search", "Suchen", () => _ = OssSearch(q.Text ?? ""), true) } });
-        sp.Children.Add(GitHubTokenBox());
         if (_ossHits.Count == 0 && _ossQuery.Length == 0)
-            sp.Children.Add(EmptyState("oss-empty", "🐙", "Freie Programme von GitHub", "Suche nach einem Thema – Trendo zeigt Sterne, Lizenz und eine verständliche Beschreibung. Fertige Windows-Programme installierst und startest du mit einem Klick.",
-                Chip("oss-ex-0", "Notizen", () => _ = OssSearch("notes app")), Chip("oss-ex-1", "Bildbearbeitung", () => _ = OssSearch("image editor")),
-                Chip("oss-ex-2", "Passwort-Manager", () => _ = OssSearch("password manager")), Chip("oss-ex-3", "Musik", () => _ = OssSearch("music player")),
-                Chip("oss-ex-4", "PDF", () => _ = OssSearch("pdf tool")), Chip("oss-ex-5", "Spiele", () => _ = OssSearch("open source game"))));
+            sp.Children.Add(EmptyState("oss-empty", "🐙", "Freie Programme von GitHub", "Links eine Kategorie wählen oder oben ein Thema suchen – Trendo zeigt Sterne, Lizenz und eine verständliche Beschreibung. Fertige Windows-Programme installierst und startest du mit einem Klick."));
         var installed = GitHubApps.List(_deps.ToolsRoot);
         var i = 0;
         foreach (var r in _ossHits)
@@ -131,22 +127,52 @@ public partial class MainWindow
                 new WrapPanel { Children = { box, explain } } } }));
             i++;
         }
+        // ── App-Store-Rahmen (Umbau 04.11.2026, wie Flathub/Microsoft Store): Kategorien links, Treffer in der Mitte, Eigenes rechts ──
+        var cats = new StackPanel { Name = "oss-cats", Spacing = 3 };
+        cats.Children.Add(new TextBlock { Text = "Kategorien", Foreground = Muted, FontSize = 11.5, Margin = new Thickness(4, 0, 0, 4) });
+        foreach (var (n, label, query) in new[] { ("oss-ex-0", "📝 Notizen", "notes app"), ("oss-ex-1", "🖼 Bildbearbeitung", "image editor"), ("oss-ex-2", "🔐 Passwort-Manager", "password manager"),
+                     ("oss-ex-3", "🎵 Musik", "music player"), ("oss-ex-4", "📕 PDF", "pdf tool"), ("oss-ex-5", "🎮 Spiele", "open source game"), ("oss-ex-6", "🎬 Video", "video editor"),
+                     ("oss-ex-7", "📊 Büro", "office suite"), ("oss-ex-8", "💻 Entwickeln", "code editor"), ("oss-ex-9", "🛡 Sicherheit", "privacy tool"), ("oss-ex-10", "🧊 3D", "3d modeling"), ("oss-ex-11", "📚 Lernen", "flashcards") })
+        {
+            var qq = query; var on = string.Equals(_ossQuery, query, StringComparison.OrdinalIgnoreCase);
+            var b = new Button { Name = n, Content = label, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(8),
+                Background = on ? Brush.Parse("#2A2410") : Brushes.Transparent, Foreground = on ? Brush.Parse("#F5B83D") : Text, BorderThickness = new Thickness(0), FontSize = 12.5 };
+            b.Click += (_, _) => _ = OssSearch(qq);
+            cats.Children.Add(b);
+        }
+        var side = new StackPanel { Name = "oss-side", Spacing = 8 };
+        side.Children.Add(H("Bei dir eingerichtet", 13));
+        if (installed.Count == 0) side.Children.Add(P("Noch nichts – „Installieren & starten“ bei einem Treffer.", Muted, 11.5));
+        var ii = 0;
+        foreach (var app in installed.Take(12))
+        {
+            var a0 = app; var exe = GitHubApps.ExePath(_deps.ToolsRoot, a0);
+            var run = new Button { Name = $"oss-mine-{ii++}", Content = "▶ " + a0.Repo.Split('/').Last(), HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Left, FontSize = 12, IsEnabled = File.Exists(exe) };
+            run.Click += (_, _) => Launch(exe);
+            side.Children.Add(run);
+        }
+        if (installed.Count > 0) side.Children.Add(Act("oss-manage-all", "Verwalten / Entfernen", () => Show("components")));
         // Geholte Projekte (Quellcode) – einzeln entfernbar
         var local = Directory.GetDirectories(OssFolder).OrderBy(Path.GetFileName).ToList();
         if (local.Count > 0)
         {
-            sp.Children.Add(H("Geholte Projekte (Quellcode)", 14));
+            side.Children.Add(H("Geholte Projekte (Quellcode)", 14));
             var k = 0;
             foreach (var d in local)
             {
                 var dir = d;
-                sp.Children.Add(Card(Row(P(Path.GetFileName(dir), Text, 12.5), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
+                side.Children.Add(Card(Row(P(Path.GetFileName(dir), Text, 12.5), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
                     Act($"oss-local-open-{k}", "Ordner", () => Launch(dir)),
                     OssRemoveButton(dir, $"oss-local-del-{k}") } })));
                 k++;
             }
         }
-        return KreativPage("Open Source", sp);
+        side.Children.Add(GitHubTokenBox());
+        Border Pane(Control c, string name) => new() { Name = name, Child = new ScrollViewer { Content = c }, Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(10), BoxShadow = CardShadow };
+        var store = new Grid { Name = "oss-store", ColumnDefinitions = new ColumnDefinitions("200,*,260"), ColumnSpacing = 10 };
+        store.Children.Add(Pane(cats, "oss-left")); store.Children.Add(Pos(Pane(sp, "oss-center"), 1)); store.Children.Add(Pos(Pane(side, "oss-right"), 2));
+        return FitPage("Open Source", new Panel(), store);
+
     }
 
     /// <summary>Geholtes Projekt entfernen – mit Rückfrage im Knopf; löscht nur Ordner direkt im Ordner „Open Source“.</summary>
