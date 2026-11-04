@@ -18,6 +18,8 @@ public partial class MainWindow
     public string ImgTool { get; set; } = "move";
     public string ImgColor { get; set; } = "#E0475B";
     public double ImgBrush { get; set; } = 14;
+    /// <summary>Deckkraft des Pinsels (0,05–1) – wie in Krita.</summary>
+    public double ImgBrushAlpha { get; set; } = 1;
     public double ImgZoom { get; set; }
     public ImageCanvas? ImgCanvasForTests { get; private set; }
     static readonly (string Id, string Label, string Tip)[] ImgTools =
@@ -25,6 +27,7 @@ public partial class MainWindow
         ("move", "✥ Verschieben", "Ebene anklicken wählt sie, Ziehen verschiebt sie"), ("brush", "🖌 Pinsel", "Auf einer Mal-Ebene malen (wird bei Bedarf angelegt)"),
         ("eraser", "◌ Radierer", "Auf der Mal-Ebene radieren"), ("text", "T Text", "Klick setzt einen Text"), ("rect", "▭ Rechteck", "Ziehen zeichnet ein Rechteck"),
         ("ellipse", "◯ Ellipse", "Ziehen zeichnet eine Ellipse"), ("crop", "⛶ Zuschneiden", "Ziehen wählt den Ausschnitt der Leinwand"),
+        ("vector", "〰 Vektorpinsel", "Zeichnen ergibt einen glatten Vektorpfad – später verschieb- und umfärbbar, als SVG speicherbar"),
     ];
     static readonly string[] ImgColors = ["#000000", "#FFFFFF", "#E0475B", "#F59E0B", "#FACC15", "#22C55E", "#2F86F6", "#7C3AED", "#EC4899", "#8B5A2B"];
 
@@ -58,6 +61,7 @@ public partial class MainWindow
         [
             new("png", "PNG", ".png", (d, f) => ImageRender.Export(d.Data, f)),
             new("jpg", "JPG", ".jpg", (d, f) => ImageRender.Export(d.Data, f)),
+            new("svg", "SVG (Vektor)", ".svg", (d, f) => { File.WriteAllText(f, Trendo.Core.Media.ImageVector.ToSvg(d.Data)); return f; }), // selbst statt Inkscape
         ],
         Tools = [.. ImgTools.Select(t => new ProgramTool("img-tool-" + t.Id, t.Label[..t.Label.IndexOf(' ')], t.Label[(t.Label.IndexOf(' ') + 1)..], t.Tip, _ => ImgTool = t.Id, () => ImgTool == t.Id))],
         Workspace = ImgWorkspace,
@@ -73,9 +77,22 @@ public partial class MainWindow
         d.Edit(label, x => a(x, id));
     }
 
+    /// <summary>SVG öffnen: Formen, Pfade und Text werden bearbeitbare Ebenen (selbst nachgebaut statt Inkscape).</summary>
+    public int ImgOpenSvg(string file)
+    {
+        if (!File.Exists(file)) throw new FileNotFoundException("Datei nicht gefunden: " + Path.GetFileName(file));
+        var (doc, skipped) = Trendo.Core.Media.ImageVector.FromSvg(File.ReadAllText(file));
+        var d = ProgramNew(BK);
+        d.Edit("SVG öffnen", x => { foreach (var kv in doc.ToList()) x[kv.Key] = kv.Value?.DeepClone(); });
+        var n = ImageDoc.Layers(d.Data).Count;
+        _progMsg[BK] = $"„{Path.GetFileName(file)}“ geöffnet: {n} Ebenen" + (skipped > 0 ? $", {skipped} unbekannte Teile übersprungen." : ".");
+        return n;
+    }
+
     /// <summary>Bild als Ebene hinzufügen (öffentlich für Tests und die KI).</summary>
     public void ImgAddImage(string file)
     {
+        if (Path.GetExtension(file).Equals(".svg", StringComparison.OrdinalIgnoreCase)) { ImgOpenSvg(file); return; }
         var d = ProgramActive(BK) ?? ProgramNew(BK);
         if (!File.Exists(file)) throw new FileNotFoundException("Datei nicht gefunden: " + Path.GetFileName(file));
         using var b = SkiaSharp.SKBitmap.Decode(file) ?? throw new InvalidOperationException("Das ist kein Bild, das Trendo öffnen kann.");
@@ -112,7 +129,8 @@ public partial class MainWindow
         {
             var target = SelId(d) is { } s0 && ImageDoc.S(ImageDoc.Layer(x, s0)!["kind"]) == "paint" ? ImageDoc.Layer(x, s0)! : ImageDoc.Layers(x).OfType<JsonObject>().LastOrDefault(l => ImageDoc.S(l["kind"]) == "paint") ?? ImageDoc.AddPaint(x);
             x["selected"] = (string?)target["id"];
-            ImageDoc.AddStroke(target, pts, ImgColor, ImgBrush, erase);
+            if (ImgTool == "vector") { var simple = Trendo.Core.Media.ImageVector.Simplify(pts, Math.Max(1, ImgBrush / 6)); if (simple.Count >= 2) Trendo.Core.Media.ImageVector.AddPath(x, simple, ImgColor, ImgBrush); return; }
+            ImageDoc.AddStroke(target, pts, ImgColor, ImgBrush, erase, ImgBrushAlpha);
         }));
         canvas.Dragged = r => ProgramRun(BK, () =>
         {
@@ -135,6 +153,10 @@ public partial class MainWindow
         size.PropertyChanged += (_, e) => { if (e.Property == Slider.ValueProperty) { ImgBrush = Math.Round(size.Value); canvas.BrushSize = ImgBrush; } };
         bar.Children.Add(new TextBlock { Text = "Pinsel", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 0, 0) });
         bar.Children.Add(size);
+        var alpha = new Slider { Name = "img-brush-alpha", Minimum = 5, Maximum = 100, Value = ImgBrushAlpha * 100, Width = 110, Margin = new Thickness(6, 0, 6, 0) };
+        alpha.PropertyChanged += (_, e) => { if (e.Property == Slider.ValueProperty) ImgBrushAlpha = Math.Round(alpha.Value / 100, 2); };
+        bar.Children.Add(new TextBlock { Text = "Deckkraft", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) });
+        bar.Children.Add(alpha);
         bar.Children.Add(new TextBlock { Text = ImgTools.First(t => t.Id == ImgTool).Tip, Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) });
         var g = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
         g.Children.Add(bar); Grid.SetRow(canvas, 1); g.Children.Add(canvas);
@@ -145,7 +167,7 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 6 };
         Button B(string name, string label, Action a, bool primary = false) { var b = new Button { Name = name, Content = label, FontSize = 12, Margin = new Thickness(0, 0, 4, 4) }; if (primary) { b.Background = Accent; b.Foreground = Brushes.White; } b.Click += (_, _) => ProgramRun(BK, a); return b; }
-        var path = new TextBox { Name = "img-file", PlaceholderText = "Bilddatei (JPG, PNG, WEBP)" };
+        var path = new TextBox { Name = "img-file", PlaceholderText = "Bilddatei (JPG, PNG, WEBP) oder SVG" };
         sp.Children.Add(H("Bild hinzufügen", 13)); sp.Children.Add(path);
         sp.Children.Add(B("img-add", "Als Ebene hinzufügen", () => ImgAddImage((path.Text ?? "").Trim().Trim('"') is { Length: > 0 } f ? f : throw new InvalidOperationException("Bitte eine Bilddatei wählen.")), true));
         // Ebenen von oben nach unten
@@ -172,7 +194,11 @@ public partial class MainWindow
             sp.Children.Add(H("Gewählte Ebene", 13));
             var opacity = new Slider { Name = "img-opacity", Minimum = 0, Maximum = 100, Value = ImageDoc.N(L["opacity"], 1) * 100 };
             sp.Children.Add(new TextBlock { Text = $"Deckkraft {ImageDoc.N(L["opacity"], 1) * 100:0} %", Foreground = Muted, FontSize = 11.5 }); sp.Children.Add(opacity);
-            var apply = new List<Action<JsonObject>> { x => ImageDoc.Layer(x, sel)!["opacity"] = Math.Round(opacity.Value / 100, 2) };
+            var blend = new ComboBox { Name = "img-blend", ItemsSource = Trendo.Core.Media.ImageVector.BlendModes.Select(b => b.Label).ToList(), HorizontalAlignment = HorizontalAlignment.Stretch,
+                SelectedIndex = Math.Max(0, Array.FindIndex(Trendo.Core.Media.ImageVector.BlendModes, b => b.Id == ImageDoc.S(L["blend"], "normal"))) };
+            sp.Children.Add(new TextBlock { Text = "Mischmodus", Foreground = Muted, FontSize = 11.5 }); sp.Children.Add(blend);
+            var apply = new List<Action<JsonObject>> { x => ImageDoc.Layer(x, sel)!["opacity"] = Math.Round(opacity.Value / 100, 2), x => ImageDoc.Layer(x, sel)!["blend"] = Trendo.Core.Media.ImageVector.BlendModes[Math.Max(0, blend.SelectedIndex)].Id };
+            if (k == "path") apply.Add(x => ImageDoc.Layer(x, sel)!["stroke"] = ImgColor);
             if (k == "text")
             {
                 var txt = new TextBox { Name = "img-text", Text = ImageDoc.S(L["text"]), AcceptsReturn = true, MinHeight = 50 };

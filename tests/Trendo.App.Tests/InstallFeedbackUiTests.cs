@@ -86,10 +86,10 @@ public class InstallFeedbackUiTests
     {
         var (w, _, root) = Ui.Open();
         byte[] Zip(string exe) { using var ms = new MemoryStream(); using (var z = new System.IO.Compression.ZipArchive(ms, System.IO.Compression.ZipArchiveMode.Create, true)) using (var sw = new StreamWriter(z.CreateEntry(exe).Open())) sw.Write("x"); return ms.ToArray(); }
-        var big = Zip("program/soffice.exe"); var small = Zip("mpv.exe"); var q = Zip("bin/qpdf.exe"); var bl = Zip("blender.exe");
+        var big = Zip("bin/ffmpeg.exe"); var small = Zip("mpv.exe"); var q = Zip("bin/qpdf.exe"); var bl = Zip("blender.exe");
         string Sha(byte[] b) => Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(b));
         var manifest = System.Text.Json.JsonSerializer.Serialize(new { schema = 1, programs = new object[] {
-            new { id = "libreoffice", name = "LibreOffice", version = "25", license = "MPL-2.0", file = "libreoffice.zip", sha256 = Sha(big), bytes = (long)big.Length + 100000, exe = "program/soffice.exe", source_url = "https://www.libreoffice.org" },
+            new { id = "ffmpeg", name = "FFmpeg", version = "8", license = "GPL", file = "ffmpeg.zip", sha256 = Sha(big), bytes = (long)big.Length + 100000, exe = "bin/ffmpeg.exe", source_url = "https://ffmpeg.org" },
             new { id = "mpv", name = "mpv", version = "0.40", license = "GPL", file = "mpv.zip", sha256 = Sha(small), bytes = (long)small.Length, exe = "mpv.exe", source_url = "https://mpv.io" },
             new { id = "qpdf", name = "qpdf", version = "12", license = "Apache-2.0", file = "qpdf.zip", sha256 = Sha(q), bytes = (long)q.Length, exe = "bin/qpdf.exe", source_url = "https://github.com/qpdf/qpdf" },
             new { id = "blender", name = "Blender", version = "4", license = "GPL", file = "blender.zip", sha256 = Sha(bl), bytes = (long)bl.Length, exe = "blender.exe", source_url = "https://www.blender.org" } } });
@@ -100,7 +100,7 @@ public class InstallFeedbackUiTests
         Assert.NotNull(r);
         Assert.Empty(r!.Failed);
         Assert.StartsWith("https://github.com/manuelbrandner85/Trendo-OS/releases/latest/download/", asked[0]);
-        Assert.True(asked.IndexOf(asked.First(a => a.EndsWith("mpv.zip"))) < asked.IndexOf(asked.First(a => a.EndsWith("libreoffice.zip")))); // klein zuerst
+        Assert.True(asked.IndexOf(asked.First(a => a.EndsWith("mpv.zip"))) < asked.IndexOf(asked.First(a => a.EndsWith("ffmpeg.zip")))); // klein zuerst
         Assert.True(File.Exists(Path.Combine(w.ToolsRootForTests, "mpv", "mpv.exe")));
         Assert.DoesNotContain(asked, a => a.EndsWith("qpdf.zip")); // kann Trendo selbst
         Assert.DoesNotContain(asked, a => a.EndsWith("blender.zip")); // erst, wenn man das 3D-Studio benutzt

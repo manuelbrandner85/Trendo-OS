@@ -84,8 +84,37 @@ public partial class MainWindow
         if (exe is null) return null;
         var model = VideoKiOverride is not null ? "bild.safetensors" : KiStore.ModelFile(CoverModel()!.Value.Model, CoverModel()!.Value.Model.Files[0]);
         using var gpu = await GpuSlot("bild", "Figurenbild " + f.Role, ct);
-        var ok = await Tool(exe, ["-m", model, "-p", MusicVideoRender.FigurePrompt(f, s.Style), "-n", MusicScript.Negative, "-o", png, "--steps", "6", "--cfg-scale", "1.5", "-W", "832", "-H", "1216", "--seed", (4242 + f.Id.Sum(ch => ch)).ToString(), "--vae-tiling", "--offload-to-cpu"], ct);
+        var (fw, fh) = MusicVideoRender.KeyframeSize(_mvFmt == "9:16");
+        var ok = await Tool(exe, ["-m", model, "-p", MusicVideoRender.FigurePrompt(f, s.Style), "-n", MusicScript.Negative, "-o", png, "--steps", "6", "--cfg-scale", "1.5", "-W", fw.ToString(), "-H", fh.ToString(), "--seed", (4242 + f.Id.Sum(ch => ch)).ToString(), "--vae-tiling", "--offload-to-cpu"], ct);
         return ok && File.Exists(png) ? png : null;
+    }
+
+    MusicScript.Script sc0(MusicSong s) => Script(s) ?? throw new InvalidOperationException("Kein Drehbuch.");
+
+    /// <summary>Startbild einer Szene: Figur am Drehort in Einstellungsgröße und Licht (statt des Studio-Porträts).</summary>
+    async Task<string?> Keyframe(MusicSong s, MusicScript.Shot x, string prompt, string dir, CancellationToken ct)
+    {
+        var png = Path.Combine(dir, $"start{x.Index:000}-{x.Seed}.png");
+        if (File.Exists(png)) return png;
+        var exe = VideoKiOverride is not null ? "sd-cli" : CoverModel() is { } cm ? cm.Exe : null;
+        if (exe is null) return null;
+        var model = VideoKiOverride is not null ? "bild.safetensors" : KiStore.ModelFile(CoverModel()!.Value.Model, CoverModel()!.Value.Model.Files[0]);
+        var (w, h) = MusicVideoRender.KeyframeSize(_mvFmt == "9:16");
+        using var gpu = await GpuSlot("bild", "Startbild " + (x.Index + 1), ct);
+        var people = MusicVideoRender.ExpectedPeople(x, sc0(s).Figures);
+        // G vorab: das Startbild wird geprüft, bevor es bewegt wird – bis zu 3 Zufallswerte (z. B. gegen eine verdoppelte Figur)
+        for (var k = 0; k < MusicVideoRender.MaxTries; k++)
+        {
+            var seed = x.Seed + k * 977;
+            var ok = await Tool(exe, ["-m", model, "-p", MusicVideoRender.KeyframePrompt(x, prompt, people), "-n", MusicVideoRender.KeyframeNegative(people), "-o", png, "--steps", "6", "--cfg-scale", "1.5", "-W", w.ToString(), "-H", h.ToString(), "--seed", seed.ToString(), "--vae-tiling", "--offload-to-cpu"], ct);
+            if (!ok || !File.Exists(png)) return null;
+            if (!CheckReady) return png;
+            var chk = await CheckClip(png, x, sc0(s), null, null, k + 1);
+            if (chk is null || chk.Ok) return png;
+            _core.Audit.Append(Principal.LocalOwner.Name, "musik.video.startbild", $"#{x.Index} neu: {string.Join("; ", chk.Issues.Select(i => i.Text))}");
+            TryDelete(png);
+        }
+        return null;
     }
 
     async Task<MusicVideoRender.Check?> CheckClip(string clip, MusicScript.Shot x, MusicScript.Script sc, string? figure, string? vocalClip, int attempt)
@@ -154,13 +183,19 @@ public partial class MainWindow
                             if (!File.Exists(vclip)) await Tool(ff, MusicVideoRender.VocalClipArgs(vocal!, x, vclip), ct);
                             var m = Model("wan2.2-singen"); var sm = Model("wan2.2-szenen");
                             var models = m is null || sm is null ? new MusicVideoRender.SingModels("s2v.gguf", "vae21", "t5", "w2v") : new(KiStore.ModelFile(m, m.Files[0]), KiStore.ModelFile(m, m.Files[2]), KiStore.ModelFile(sm, sm.Files[1]), KiStore.ModelFile(m, m.Files[1]));
-                            made = await Tool(sdcli, MusicVideoRender.SingArgs(models, x, prompt, figImg!, vclip, raw, preview ? MusicVideoRender.SingPreview : MusicVideoRender.SingFinal, x.Seed), ct);
+                            gpu.Dispose(); // auch beim Singen: Startbild am Drehort statt Studio-Porträt (Befund 04.11.2026)
+                            var key = await Keyframe(s, x, prompt, dir, ct);
+                            using var gpu2 = await GpuSlot("video", $"Einstellung {x.Index + 1}", ct);
+                            made = await Tool(sdcli, MusicVideoRender.SingArgs(models, x, prompt, key ?? figImg!, vclip, raw, preview ? MusicVideoRender.SingPreview : MusicVideoRender.SingFinal, x.Seed), ct);
                         }
                         else
                         {
                             var m = Model("wan2.2-szenen");
                             var models = m is null ? new MusicVideoRender.SceneModels("ti2v.gguf", "vae22", "t5") : new(KiStore.ModelFile(m, m.Files[0]), KiStore.ModelFile(m, m.Files[2]), KiStore.ModelFile(m, m.Files[1]));
-                            made = await Tool(sdcli, MusicVideoRender.SceneArgs(models, x, prompt, MusicVideoRender.ExpectedPeople(x, sc.Figures) > 0 ? figImg : null, raw, preview ? MusicVideoRender.Preview : MusicVideoRender.Final, x.Seed), ct);
+                            gpu.Dispose(); // Startbild braucht die Grafikkarte selbst
+                            var key = await Keyframe(s, x, prompt, dir, ct); // Storyboard-Bild: Figur am Drehort
+                            using var gpu2 = await GpuSlot("video", $"Einstellung {x.Index + 1}", ct);
+                            made = await Tool(sdcli, MusicVideoRender.SceneArgs(models, x, prompt, key ?? (MusicVideoRender.ExpectedPeople(x, sc.Figures) > 0 ? figImg : null), raw, preview ? MusicVideoRender.Preview : MusicVideoRender.Final, x.Seed), ct);
                         }
                         if (!made || !File.Exists(raw)) { tries.Add(new(false, [new("render", "Die Video-KI hat keinen Clip geliefert.", 0)])); continue; }
                     }

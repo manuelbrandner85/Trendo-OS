@@ -19,7 +19,7 @@ public static class Vollpaket
     /// <summary>Wunsch 04.11.2026 „so wenig wie möglich herunterladen“: Das kann Trendo selbst – nicht mehr beim Setup laden (per Klick weiter nachladbar).</summary>
     public static readonly HashSet<string> SelfReplaced = new(StringComparer.OrdinalIgnoreCase) { "sumatra", "qpdf", "7zip", "libreoffice" };
     /// <summary>Nicht nachbaubar, aber nur für einzelne Studios nötig: erst laden, wenn man das Studio benutzt (Trendo fragt dann einmal).</summary>
-    public static readonly HashSet<string> OnDemand = new(StringComparer.OrdinalIgnoreCase) { "ollama", "model", "blender", "colmap", "git" };
+    public static readonly HashSet<string> OnDemand = new(StringComparer.OrdinalIgnoreCase) { "ollama", "model", "blender", "colmap", "git", "krita", "inkscape", "kdenlive", "obs", "vscode", "audacity" }; // nur fürs Öffnen in fremden Programmen – Trendo fragt dann einmal
     /// <summary>Was das Setup gleich lädt.</summary>
     public static bool InSetup(string id) => !SelfReplaced.Contains(id) && !OnDemand.Contains(id);
 

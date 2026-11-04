@@ -80,4 +80,33 @@ public class Bildbearbeitung_Ui
         var inv = ImageDoc.ColorMatrix(new System.Text.Json.Nodes.JsonObject { ["invert"] = 1 });
         Assert.Equal((-1f, 255f), (inv[0], inv[4]));
     }
+
+    [AvaloniaFact(DisplayName = "Bildbearbeitung wie Krita/Inkscape: Vektorpinsel ergibt glatten Pfad, Mischmodus je Ebene, Pinsel-Deckkraft, SVG speichern und wieder öffnen")]
+    public void Vector_and_svg()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000;
+        try
+        {
+            w.Show("bild"); var d = w.ProgramNew("bild"); w.Show("bild"); Settle();
+            w.ImgTool = "vector"; w.Show("bild"); Settle();
+            var pts = Enumerable.Range(0, 40).Select(i => (X: 50.0 + i * 8, Y: 200 + Math.Sin(i / 4.0) * 40)).ToList();
+            w.ImgCanvasForTests!.Stroke!(pts, false); Settle();
+            var layer = ImageDoc.Layers(d.Data).OfType<System.Text.Json.Nodes.JsonObject>().Last();
+            Assert.Equal("path", ImageDoc.S(layer["kind"]));
+            Assert.True(((System.Text.Json.Nodes.JsonArray)layer["points"]!).Count < pts.Count * 2); // vereinfacht
+            w.Show("bild"); Settle();
+            w.Find<ComboBox>("img-blend").SelectedIndex = 1; // Multiplizieren
+            w.Find<Button>("img-apply").Press(); Settle();
+            Assert.Equal("multiply", ImageDoc.S(ImageDoc.Layers(w.ProgramActive("bild")!.Data).OfType<System.Text.Json.Nodes.JsonObject>().Last()["blend"]));
+            w.ImgTool = "brush"; w.ImgBrushAlpha = 0.4; w.Show("bild"); Settle();
+            w.ImgCanvasForTests!.Stroke!([(10, 10), (60, 60)], false); Settle();
+            var paint = ImageDoc.Layers(w.ProgramActive("bild")!.Data).OfType<System.Text.Json.Nodes.JsonObject>().First(l => ImageDoc.S(l["kind"]) == "paint");
+            Assert.Equal(0.4, ImageDoc.N(((System.Text.Json.Nodes.JsonArray)paint["strokes"]!)[0]!["alpha"]), 2);
+            var svg = Path.Combine(root, "zeichnung.svg"); File.WriteAllText(svg, ImageVector.ToSvg(w.ProgramActive("bild")!.Data));
+            Assert.Contains("<path", File.ReadAllText(svg));
+            Assert.True(w.ImgOpenSvg(svg) >= 2);
+            Assert.Contains(ImageDoc.Layers(w.ProgramActive("bild")!.Data).OfType<System.Text.Json.Nodes.JsonObject>(), l => ImageDoc.S(l["kind"]) == "path");
+        }
+        finally { w.Close(); }
+    }
 }

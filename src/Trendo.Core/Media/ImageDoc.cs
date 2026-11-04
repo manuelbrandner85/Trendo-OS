@@ -56,13 +56,13 @@ public static class ImageDoc
     static JsonObject Set(JsonObject l, params (string K, JsonNode? V)[] kv) { foreach (var (k, v) in kv) l[k] = v; return l; }
 
     /// <summary>Strich auf die Mal-Ebene (Punkte in Leinwand-Pixeln); Radierer löscht auf dieser Ebene.</summary>
-    public static void AddStroke(JsonObject layer, IReadOnlyList<(double X, double Y)> pts, string color, double size, bool erase)
+    public static void AddStroke(JsonObject layer, IReadOnlyList<(double X, double Y)> pts, string color, double size, bool erase, double alpha = 1)
     {
         if (S(layer["kind"]) != "paint") throw new InvalidOperationException("Malen geht nur auf einer Mal-Ebene.");
         if (pts.Count == 0) return;
         var a = new JsonArray(); foreach (var (x, y) in pts) { a.Add(Math.Round(x, 1)); a.Add(Math.Round(y, 1)); }
         var strokes = layer["strokes"] as JsonArray ?? (JsonArray)(layer["strokes"] = new JsonArray());
-        strokes.Add(new JsonObject { ["color"] = color, ["size"] = Math.Clamp(size, 1, 400), ["erase"] = erase, ["points"] = a });
+        strokes.Add(new JsonObject { ["color"] = color, ["size"] = Math.Clamp(size, 1, 400), ["erase"] = erase, ["points"] = a, ["alpha"] = Math.Round(Math.Clamp(alpha, 0.02, 1), 2) });
     }
 
     public static void Move(JsonObject layer, double dx, double dy) { layer["x"] = Math.Round(N(layer["x"]) + dx, 1); layer["y"] = Math.Round(N(layer["y"]) + dy, 1); }

@@ -42,7 +42,7 @@ public sealed class ImageCanvas : Control
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e); if (_from is null) return;
-        _at = ToDoc(e.GetPosition(this)); if (Tool is "brush" or "eraser") _pts.Add(_at); InvalidateVisual();
+        _at = ToDoc(e.GetPosition(this)); if (Tool is "brush" or "eraser" or "vector") _pts.Add(_at); InvalidateVisual();
     }
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
@@ -50,7 +50,7 @@ public sealed class ImageCanvas : Control
         var moved = Math.Abs(_at.X - a.X) + Math.Abs(_at.Y - a.Y) > 2 / Scale;
         switch (Tool)
         {
-            case "brush" or "eraser": Stroke?.Invoke(_pts.Select(p => (p.X, p.Y)).ToList(), Tool == "eraser"); break;
+            case "brush" or "eraser" or "vector": Stroke?.Invoke(_pts.Select(p => (p.X, p.Y)).ToList(), Tool == "eraser"); break;
             case "rect" or "ellipse" or "crop" when moved: Dragged?.Invoke(new Rect(a, _at).Normalize()); break;
             case "move" when moved: Moved?.Invoke(a, _at - a); break;
             default: Clicked?.Invoke(a); break;
@@ -80,7 +80,7 @@ public sealed class ImageCanvas : Control
         if (_from is not { } a) return;
         switch (Tool)
         {
-            case "brush" or "eraser" when _pts.Count > 0:
+            case "brush" or "eraser" or "vector" when _pts.Count > 0:
                 var pen = new Pen(Tool == "eraser" ? new SolidColorBrush(Color.Parse("#AAFFFFFF")) : new SolidColorBrush(BrushColor), BrushSize * s, lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round);
                 for (var i = 1; i < _pts.Count; i++) ctx.DrawLine(pen, ToScreen(_pts[i - 1]), ToScreen(_pts[i]));
                 if (_pts.Count == 1) ctx.DrawEllipse(pen.Brush, null, ToScreen(_pts[0]), BrushSize * s / 2, BrushSize * s / 2);

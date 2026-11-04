@@ -34,6 +34,11 @@ public static class ImageRender
             float x = (float)ImageDoc.N(l["x"]), y = (float)ImageDoc.N(l["y"]), lw = (float)ImageDoc.N(l["w"]), lh = (float)ImageDoc.N(l["h"]);
             var f = l["filter"] as JsonObject; var blur = (float)(f is null ? 0 : ImageDoc.N(f["blur"]));
             using var layerPaint = new SKPaint { Color = new SKColor(255, 255, 255, op), ColorFilter = SKColorFilter.CreateColorMatrix(ImageDoc.ColorMatrix(f)), ImageFilter = blur > 0 ? SKImageFilter.CreateBlur(blur, blur) : null };
+            layerPaint.BlendMode = ImageDoc.S(l["blend"], "normal") switch // Mischmodi wie in Krita/GIMP
+            {
+                "multiply" => SKBlendMode.Multiply, "screen" => SKBlendMode.Screen, "overlay" => SKBlendMode.Overlay, "darken" => SKBlendMode.Darken,
+                "lighten" => SKBlendMode.Lighten, "difference" => SKBlendMode.Difference, _ => SKBlendMode.SrcOver,
+            };
             c.SaveLayer(layerPaint);
             switch (ImageDoc.S(l["kind"]))
             {
@@ -60,12 +65,22 @@ public static class ImageRender
                     else { c.DrawRoundRect(r, Math.Min(lw, lh) * 0.04f, Math.Min(lw, lh) * 0.04f, fill); if (sw > 0) c.DrawRoundRect(r, Math.Min(lw, lh) * 0.04f, Math.Min(lw, lh) * 0.04f, stroke); }
                     break;
                 }
+                case "path":
+                {
+                    var pts = Trendo.Core.Media.ImageVector.Points(l); if (pts.Count < 2) break;
+                    using var p = SKPath.ParseSvgPathData(Trendo.Core.Media.ImageVector.PathData(pts, l["closed"]?.GetValue<bool>() == true, l["smooth"]?.GetValue<bool>() != false));
+                    if (ImageDoc.S(l["fill"]) is { Length: > 0 } pf) { using var fp = new SKPaint { Color = Col(pf, SKColors.Transparent), IsAntialias = true, Style = SKPaintStyle.Fill }; c.DrawPath(p, fp); }
+                    if (ImageDoc.S(l["stroke"]) is { Length: > 0 } ps && ImageDoc.N(l["strokeWidth"], 4) > 0)
+                    { using var sp = new SKPaint { Color = Col(ps, SKColors.Black), IsAntialias = true, Style = SKPaintStyle.Stroke, StrokeWidth = (float)ImageDoc.N(l["strokeWidth"], 4), StrokeCap = SKStrokeCap.Round, StrokeJoin = SKStrokeJoin.Round }; c.DrawPath(p, sp); }
+                    break;
+                }
                 case "paint":
                     foreach (var st in (l["strokes"] as JsonArray ?? []).OfType<JsonObject>())
                     {
                         var pts = (st["points"] as JsonArray ?? []).Select(n => (float)ImageDoc.N(n)).ToArray(); if (pts.Length < 2) continue;
                         var erase = st["erase"]?.GetValue<bool>() == true;
-                        using var pen = new SKPaint { Color = erase ? SKColors.Transparent : Col(ImageDoc.S(st["color"], "#000000"), SKColors.Black), BlendMode = erase ? SKBlendMode.Clear : SKBlendMode.SrcOver,
+                        var ink = Col(ImageDoc.S(st["color"], "#000000"), SKColors.Black); ink = ink.WithAlpha((byte)Math.Clamp(ImageDoc.N(st["alpha"], 1) * 255, 0, 255));
+                        using var pen = new SKPaint { Color = erase ? SKColors.Transparent : ink, BlendMode = erase ? SKBlendMode.Clear : SKBlendMode.SrcOver,
                             StrokeWidth = (float)ImageDoc.N(st["size"], 8), StrokeCap = SKStrokeCap.Round, StrokeJoin = SKStrokeJoin.Round, Style = SKPaintStyle.Stroke, IsAntialias = true };
                         using var path = new SKPath(); path.MoveTo(pts[0], pts[1]);
                         if (pts.Length == 2) path.LineTo(pts[0] + 0.01f, pts[1]);

@@ -27,6 +27,9 @@ def arg(name, default=None):
 
 
 def frames_of(path, step=4, maxn=72):
+    if path.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):  # Startbild: als drei gleiche Bilder prüfen (Körper, Gesichter; kein Bildsprung)
+        im = cv2.imread(path)
+        return ([(0.0, im), (0.04, im), (0.08, im)] if im is not None else []), 24.0
     cap = cv2.VideoCapture(path)
     fps = cap.get(cv2.CAP_PROP_FPS) or 24.0
     out, i = [], 0

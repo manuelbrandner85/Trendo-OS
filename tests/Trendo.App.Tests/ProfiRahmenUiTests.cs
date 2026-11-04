@@ -19,7 +19,7 @@ public class ProfiRahmen_Ui
         {
             w.Show("bild"); w.ProgramNew("bild"); w.Show("bild"); Pump();
             var rail = w.Find<StackPanel>("prog-tools");
-            Assert.Equal(7, rail.Children.Count);
+            Assert.Equal(8, rail.Children.Count); // mit Vektorpinsel (04.11.2026)
             Assert.Null(w.TryFind<Control>("prog-ribbon")?.GetLogicalDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "prog-cmd-img-tool-brush" && b.Parent is WrapPanel));
             w.Find<Button>("prog-cmd-img-tool-brush").Press(); Pump();
             Assert.Equal("brush", w.ImgTool);

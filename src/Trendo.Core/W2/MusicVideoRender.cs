@@ -24,14 +24,30 @@ public static class MusicVideoRender
 
     static string N(double v) => v.ToString("0.###", Inv);
     // Befund 04.11.2026 (RTX 5070, Vulkan): das Dekodieren des Videos brach auf der Grafikkarte mit „DeviceLost“ ab (Zeitlimit des Treibers) –
-    // darum dekodiert der Prozessor („--backend vae=cpu“), das Rechnen der Bilder bleibt auf der Grafikkarte.
+    // auf dem Prozessor dauerte es 48 min für 2 s. Lösung (gemessen): kleine Kacheln räumlich (160 px) und zeitlich (2 Bilder) – jede Rechnung
+    // bleibt unter dem Zeitlimit; 2 s Video in rund 11 min (Bilder 72 s, Dekodieren ~10 min) auf der RTX 5070.
 
     /// <summary>Bilder einer Einstellung: Wan braucht 4·k+1 Bilder.</summary>
     public static int Frames(double seconds, int fps) { var n = (int)Math.Round(seconds * fps); return Math.Max(5, n / 4 * 4 + 1); }
 
     /// <summary>B3: Figurenblatt – neutrales, gut ausgeleuchtetes Ganzkörper-Bild der erfundenen Figur (Bezug für jede Einstellung).</summary>
+    /// <summary>Befund 04.11.2026 (erster echter Lauf): ein Hochkant-Porträt als Startbild wurde im Querformat mitten durch die Augen beschnitten –
+    /// darum Figurenblatt im Format des Videos, von der Hüfte aufwärts, Kopf ganz im Bild.</summary>
     public static string FigurePrompt(MusicScript.Figure f, string style) =>
-        $"photorealistic portrait photo of {f.Look}, three-quarter body, facing the camera, neutral relaxed expression, soft even studio light, plain light grey background, sharp focus, natural skin texture, correct anatomy, {style.Trim().TrimEnd(',')} artist look";
+        $"photorealistic photo of {f.Look}, medium shot from the waist up, centered, whole head and hair fully in frame with space above, facing the camera, neutral relaxed expression, soft even studio light, plain light grey background, sharp focus, natural skin texture, correct anatomy, {style.Trim().TrimEnd(',')} artist look";
+
+    /// <summary>Startbild einer Szene (wie ein Storyboard-Bild): Figur am richtigen Ort, in Einstellungsgröße und Licht des Drehbuchs.
+    /// Befund 04.11.2026: Wan 2.2 folgt dem Startbild sehr eng – mit dem Studio-Porträt als Start fehlte der Drehort ganz.</summary>
+    public static string KeyframePrompt(MusicScript.Shot s, string shotPrompt, int people = 1) =>
+        shotPrompt.Replace("cinematic music video, ", "cinematic film still from a music video, " + (people == 1 ? "a single person alone, " : people == 2 ? "exactly two people, " : ""))
+        + ", single frame, no motion blur";
+
+    /// <summary>Ausschluss fürs Startbild: bei einer Person zusätzlich „zwei Menschen, Doppelgänger“ (gemessen: SDXL Turbo verdoppelte die Figur).</summary>
+    public static string KeyframeNegative(int people) => (people == 1 ? "two people, duplicate person, twins, crowd, " : "") + MusicScript.Negative;
+
+    /// <summary>Bildgröße fürs Startbild. Gemessen 04.11.2026: SDXL Turbo verdoppelt Personen bei 1344 × 768 – bei 768 × 448 (nahe der
+    /// Trainingsgröße) bleibt es eine Person. Das Video skaliert ohnehin auf 832 × 480.</summary>
+    public static (int W, int H) KeyframeSize(bool portrait) => portrait ? (448, 768) : (768, 448);
 
     /// <summary>C1: Szene (Text + optional Figurenbild als Startbild).</summary>
     public static List<string> SceneArgs(SceneModels m, MusicScript.Shot s, string prompt, string? figureImage, string output, Quality q, int seed)
@@ -40,7 +56,7 @@ public static class MusicVideoRender
             "-p", prompt, "-n", MusicScript.Negative, "-W", q.Width.ToString(Inv), "-H", q.Height.ToString(Inv),
             "--video-frames", Frames(s.End - s.Start, q.Fps).ToString(Inv), "--fps", q.Fps.ToString(Inv), "--steps", q.Steps.ToString(Inv),
             "--cfg-scale", "5.0", "--flow-shift", "5.0", "--sampling-method", "euler", "-s", seed.ToString(Inv),
-            "--offload-to-cpu", "--vae-tiling", "--backend", "vae=cpu", "-o", output };
+            "--offload-to-cpu", "--vae-tiling", "--vae-tile-size", "160", "--temporal-tiling", "--extra-tiling-args", "temporal_tile_frames=2", "-o", output };
         if (figureImage is not null) { a.Add("-i"); a.Add(figureImage); }
         return a;
     }
@@ -52,7 +68,7 @@ public static class MusicVideoRender
         "--audio", vocalClip, "-i", figureImage, "-p", prompt, "-n", MusicScript.Negative,
         "-W", q.Width.ToString(Inv), "-H", q.Height.ToString(Inv), "--video-frames", Frames(s.End - s.Start, q.Fps).ToString(Inv), "--fps", q.Fps.ToString(Inv),
         "--steps", q.Steps.ToString(Inv), "--cfg-scale", "4.5", "--flow-shift", "3.0", "--sampling-method", "euler", "-s", seed.ToString(Inv),
-        "--offload-to-cpu", "--vae-tiling", "--backend", "vae=cpu", "-o", output,
+        "--offload-to-cpu", "--vae-tiling", "--vae-tile-size", "160", "--temporal-tiling", "--extra-tiling-args", "temporal_tile_frames=2", "-o", output,
     ];
 
     /// <summary>Gesangsausschnitt für eine Einstellung (16 kHz mono WAV, wie wav2vec2 ihn erwartet).</summary>
