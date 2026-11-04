@@ -110,6 +110,9 @@ public static class AudioEdit
         ("reverse", "Umkehren", false), ("gate", "Rauschen unterdrücken", false), ("echo", "Echo", false), ("highpass", "Tiefen weg (Trittschall)", false),
         ("lowpass", "Höhen weg (Zischen)", false), ("mono", "Zu Mono", false), ("speed", "Tempo und Tonhöhe", false), ("insert", "Datei einfügen", false),
         ("insert-silence", "Stille einfügen", false),
+        // Vorbild-Funktionen (Audacity, Audition, iZotope RX – 04.11.2026)
+        ("denoise", "Rauschen entfernen (Profil)", false), ("dehum", "Brummen entfernen", false), ("truncate", "Stille kürzen", false),
+        ("loudness", "Lautheit angleichen (LUFS)", false), ("compress", "Kompressor", false),
     ];
 
     public static string Label(string op) => Ops.FirstOrDefault(o => o.Op == op).Label ?? op;
@@ -117,11 +120,12 @@ public static class AudioEdit
     public static JsonObject New(string? source, double silenceSeconds = 0) =>
         new() { ["source"] = source ?? "", ["length"] = silenceSeconds, ["ops"] = new JsonArray() };
 
-    public static JsonObject Op(string op, double a = 0, double b = 0, double v = 0, string? file = null)
+    public static JsonObject Op(string op, double a = 0, double b = 0, double v = 0, string? file = null, double pa = 0, double pb = 0)
     {
         if (!Ops.Any(o => o.Op == op)) throw new ArgumentException("Unbekannter Schritt: " + op);
         var o = new JsonObject { ["op"] = op, ["a"] = Math.Round(a, 4), ["b"] = Math.Round(b, 4), ["v"] = v };
         if (file is not null) o["file"] = file;
+        if (pb > pa) { o["pa"] = Math.Round(pa, 4); o["pb"] = Math.Round(pb, 4); } // Rauschprofil (Zeiten in der Spur zum Zeitpunkt des Schritts)
         return o;
     }
 
@@ -204,6 +208,26 @@ public static class AudioEdit
                 var at = Math.Clamp((int)Math.Round(a * x.Rate), 0, x.Length); var n = (int)(x.Rate * Math.Max(0, v == 0 ? 1 : v));
                 x.Replace(x.Data.Select(c => c[..at].Concat(new float[n]).Concat(c[at..]).ToArray()).ToArray()); break;
             }
+            case "denoise":
+            {
+                double pa = ProgramNum(o["pa"], 0), pb = ProgramNum(o["pb"], 0);
+                if (pb <= pa) throw new InvalidOperationException("Für „Rauschen entfernen“ zuerst ein Stück mit reinem Rauschen als Profil merken.");
+                var (ps, pe) = Range(x, pa, pb);
+                foreach (var c in x.Data) AudioDsp.Denoise(c, s, e, AudioDsp.NoiseProfile(c, ps, pe), v <= 0 ? 18 : v);
+                break;
+            }
+            case "dehum": AudioDsp.Dehum(x, s, e, v is 60 ? 60 : 50); break;
+            case "truncate": { var (d, _) = AudioDsp.TruncateSilence(x, v == 0 ? -45 : v); x.Replace(d); break; }
+            case "loudness":
+            {
+                var now = AudioDsp.Lufs(x); if (double.IsInfinity(now)) break;
+                var gain = (float)Math.Pow(10, ((v == 0 ? -16 : v) - now) / 20);
+                var peak = x.Data.Max(c => c.Max(Math.Abs)) * gain;
+                if (peak > 0.89f) gain *= 0.89f / peak; // Spitzen unter −1 dBFS halten
+                foreach (var c in x.Data) for (var i = 0; i < c.Length; i++) c[i] *= gain;
+                break;
+            }
+            case "compress": AudioDsp.Compress(x, s, e, v == 0 ? -20 : v); break;
             default: throw new InvalidOperationException("Unbekannter Schritt: " + op);
         }
     }

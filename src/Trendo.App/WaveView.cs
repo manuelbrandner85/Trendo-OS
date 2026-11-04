@@ -13,6 +13,9 @@ public sealed class WaveView : Control
     public double SelA { get; set; }
     public double SelB { get; set; }
     public double Playhead { get; set; } = -1;
+    /// <summary>Spektrogramm statt Wellenform (Spalten × Zeilen, 0–1).</summary>
+    public float[,]? Spectro { get; set; }
+    Avalonia.Media.Imaging.WriteableBitmap? _specBmp; float[,]? _specFor;
     /// <summary>Neue Auswahl (Sekunden). Ein einfacher Klick setzt nur die Marke (a == b).</summary>
     public Action<double, double>? Selected { get; set; }
 
@@ -41,6 +44,24 @@ public sealed class WaveView : Control
         Selected?.Invoke(Math.Min(a, b), Math.Max(a, b));
     }
 
+    /// <summary>Farben wie im Studio: dunkelblau (leise) über violett und rot zu gold-weiß (laut).</summary>
+    static Avalonia.Media.Imaging.WriteableBitmap SpecBitmap(float[,] sp)
+    {
+        int cols = sp.GetLength(0), rows = sp.GetLength(1);
+        var bmp = new Avalonia.Media.Imaging.WriteableBitmap(new PixelSize(cols, rows), new Vector(96, 96), Avalonia.Platform.PixelFormat.Bgra8888, Avalonia.Platform.AlphaFormat.Premul);
+        using var fb = bmp.Lock();
+        var px = new byte[cols * rows * 4];
+        for (var y = 0; y < rows; y++)
+            for (var x = 0; x < cols; x++)
+            {
+                var v = Math.Clamp(sp[x, y], 0f, 1f);
+                (double r, double gg, double b) = v < 0.33 ? (v * 3 * 0.35, 0.02, 0.18 + v * 1.2) : v < 0.66 ? (0.35 + (v - 0.33) * 1.9, 0.05, 0.58 - (v - 0.33) * 1.5) : (0.98, 0.15 + (v - 0.66) * 2.4, (v - 0.66) * 1.6);
+                var i = (y * cols + x) * 4; px[i] = (byte)(Math.Clamp(b, 0, 1) * 255); px[i + 1] = (byte)(Math.Clamp(gg, 0, 1) * 255); px[i + 2] = (byte)(Math.Clamp(r, 0, 1) * 255); px[i + 3] = 255;
+            }
+        for (var y = 0; y < rows; y++) System.Runtime.InteropServices.Marshal.Copy(px, y * cols * 4, fb.Address + y * fb.RowBytes, cols * 4); // Zeilenabstand des Bildes beachten
+        return bmp;
+    }
+
     public override void Render(DrawingContext g)
     {
         var w = Bounds.Width; var h = Bounds.Height;
@@ -65,8 +86,14 @@ public sealed class WaveView : Control
         double a = SelA, b = SelB;
         if (_down is { } d) { a = Math.Min(d, _now); b = Math.Max(d, _now); }
         if (b > a) g.FillRectangle(new SolidColorBrush(Color.Parse("#40F5B83D")), new Rect(ToX(a), Ruler, Math.Max(1, ToX(b) - ToX(a)), h - Ruler));
+        if (Spectro is { } sp)
+        {
+            if (!ReferenceEquals(_specFor, sp)) { _specBmp = SpecBitmap(sp); _specFor = sp; }
+            if (_specBmp is not null) g.DrawImage(_specBmp, new Rect(0, top - 6, w, h - top + 6));
+            if (b > a) g.FillRectangle(new SolidColorBrush(Color.Parse("#55FFFFFF")), new Rect(ToX(a), Ruler, Math.Max(1, ToX(b) - ToX(a)), h - Ruler)); // Auswahl auch über dem Spektrogramm
+        }
         // Wellenform in Gold (Leitfarbe), innen heller
-        if (Peaks.Length > 0)
+        else if (Peaks.Length > 0)
         {
             var fill = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative),
                 GradientStops = { new GradientStop(Color.Parse("#B8860B"), 0), new GradientStop(Color.Parse("#FFE08A"), 0.5), new GradientStop(Color.Parse("#B8860B"), 1) } };

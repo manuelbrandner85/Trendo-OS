@@ -551,7 +551,7 @@ else if (shot == "seite")
     }
     if (Environment.GetEnvironmentVariable("TRENDO_3D") is { Length: > 0 }) { win.Show("3d"); foreach (var sh in new[] { "cube", "sphere", "cylinder", "torus" }) win.Studio3DAddShape(sh); win.Studio3DSelect(1); } // 3D-Modelle erstellen mit Arbeitsfläche
     if (Environment.GetEnvironmentVariable("TRENDO_PROGTPL") is { Length: > 0 } tpl) { if (Environment.GetEnvironmentVariable("TRENDO_LEVEL") is { Length: > 0 } lv) win.ProgramSetLevel(Trendo.Core.Programs.UserLevel.Of(lv)); win.ProgramNew(page, tpl); if (Environment.GetEnvironmentVariable("TRENDO_GAMESEC") is { Length: > 0 } gs) win.GameSection = gs; win.Show(page); } // Programm mit Vorlage öffnen
-    if (Environment.GetEnvironmentVariable("TRENDO_AUDIO") is { Length: > 0 } au) { win.AuOpen(au); win.AuSel = (20, 34); win.Show("ton"); } // Audio-Editor mit echter Datei zeigen
+    if (Environment.GetEnvironmentVariable("TRENDO_AUDIO") is { Length: > 0 } au) { win.AuOpen(au); win.AuSel = (20, 34); win.AuSpectro = Environment.GetEnvironmentVariable("TRENDO_AUDIO_SPEKTRO") is { Length: > 0 }; win.Show("ton"); } // Audio-Editor mit echter Datei zeigen
     if (Environment.GetEnvironmentVariable("TRENDO_PROFIL") is { Length: > 0 } prof) // Öffnungszeit messen: jede Seite 40× öffnen (für dotnet-trace)
     {
         foreach (var pk in prof.Split(','))

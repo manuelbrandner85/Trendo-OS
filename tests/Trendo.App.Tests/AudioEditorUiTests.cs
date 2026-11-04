@@ -84,4 +84,34 @@ public class AudioEditor_Ui
         }
         finally { w.Close(); }
     }
+
+    [AvaloniaFact(DisplayName = "Audio-Editor Reparieren: ohne Profil freundlicher Hinweis, Rauschprofil merken, Rauschen entfernen, Brummen, Stille kürzen, Lautheit −16 LUFS, Spektrogramm, Aufnahme an der Marke")]
+    public async Task Repair()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        try
+        {
+            const int rate = 22050; var rnd = new Random(2); var a = AudioBuf.Silence(4, rate, 2);
+            for (var i = 0; i < a.Length; i++) { var v = (float)((rnd.NextDouble() - 0.5) * 0.03 + (i > rate * 2 ? 0.3 * Math.Sin(2 * Math.PI * 440 * i / rate) : 0)); a.Data[0][i] = v; a.Data[1][i] = v; }
+            var src = Path.Combine(root, "sprache.wav"); AudioFile.WriteWav(a, src);
+            w.Show("ton"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer")); Settle();
+            w.AuOpen(src); w.Show("ton"); Settle();
+            RealClick(w, V<Button>(w, "prog-cmd-au-denoise")); Settle();
+            Assert.Contains("Rauschprofil", w.ProgramMessage("ton"));
+            w.AuSel = (0.1, 1.5); w.Show("ton"); Settle(); RealClick(w, V<Button>(w, "prog-cmd-au-noise-profile")); Settle();
+            w.AuSel = default; w.Show("ton"); Settle(); RealClick(w, V<Button>(w, "prog-cmd-au-denoise")); Settle();
+            var d = w.ProgramActive("ton")!; Assert.Equal("Rauschen entfernen (Profil)", d.UndoLabel);
+            var after = AudioEdit.Render(d.Data);
+            Assert.True(AudioEdit.PeakDb(after, 0.3, 1.8) < AudioEdit.PeakDb(AudioFile.Read(src), 0.3, 1.8) - 8);
+            RealClick(w, V<Button>(w, "prog-cmd-au-dehum")); Settle(); RealClick(w, V<Button>(w, "prog-cmd-au-loud-podcast")); Settle();
+            Assert.InRange(AudioDsp.Lufs(AudioEdit.Render(w.ProgramActive("ton")!.Data)), -17, -15);
+            RealClick(w, V<Button>(w, "prog-cmd-au-spectro")); Settle();
+            Assert.NotNull(w.AuWaveForTests!.Spectro);
+            w.MicRecordOverride = sec => { var f = Path.Combine(root, "mic.wav"); AudioFile.WriteWav(AudioBuf.Silence(sec, rate, 1), f); return Task.FromResult<string?>(f); };
+            var len = AudioEdit.Render(w.ProgramActive("ton")!.Data).Seconds;
+            await w.AuRecord(w.ProgramActive("ton")!, 2); Settle();
+            Assert.Equal(len + 2, AudioEdit.Render(w.ProgramActive("ton")!.Data).Seconds, 1);
+        }
+        finally { w.Close(); }
+    }
 }

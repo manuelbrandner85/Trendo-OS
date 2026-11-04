@@ -35,7 +35,8 @@ public partial class MainWindow
         Sentence = "Aufnahmen und Musik schneiden, verbessern und speichern – wie ein Tonstudio, direkt in Trendo.",
         FillHeight = true,
         Folder = "Medien",
-        GroupLevels = new() { ["Filter"] = 1 },
+        GroupLevels = new() { ["Filter"] = 2 },
+        CmdLevels = new() { ["au-echo"] = 2, ["au-rev"] = 2, ["au-compress"] = 2, ["au-loud-music"] = 1, ["au-dup"] = 1, ["au-silence"] = 1 }, // Profi zeigt alles – Erweitert bleibt übersichtlich
         Templates =
         [
             new("leer", "Tondatei öffnen", "WAV oder MP3 rechts wählen", () => AudioEdit.New(null, 0)),
@@ -70,11 +71,22 @@ public partial class MainWindow
                 new ProgramCmd("au-slower", "Langsamer", d => AuOp(d, "speed", v: 0.9), Tip: "−10 % Tempo"),
                 new ProgramCmd("au-sil1", "1 s Stille einfügen", d => AuOp(d, "insert-silence", v: 1)),
             ]),
+            ("Reparieren", [ // Vorbilder iZotope RX, Audacity, Audition (04.11.2026)
+                new ProgramCmd("au-noise-profile", "Rauschprofil merken", _ => AuNoiseProfile(), Tip: "Erst ein Stück mit reinem Rauschen (ohne Stimme) wählen"),
+                new ProgramCmd("au-denoise", "Rauschen entfernen", d => AuDenoise(d), Primary: true, Tip: "Mit dem gemerkten Profil – Auswahl oder alles"),
+                new ProgramCmd("au-dehum", "Brummen weg (50 Hz)", d => AuOp(d, "dehum", v: 50), Tip: "Netzbrummen und Oberwellen"),
+                new ProgramCmd("au-truncate", "Stille kürzen", d => AuOp(d, "truncate", v: -45), Tip: "Pausen über 0,6 s auf 0,3 s"),
+                new ProgramCmd("au-loud-podcast", "Lautheit Sprache (−16 LUFS)", d => AuOp(d, "loudness", v: -16)),
+                new ProgramCmd("au-loud-music", "Lautheit Musik (−14 LUFS)", d => AuOp(d, "loudness", v: -14)),
+                new ProgramCmd("au-compress", "Kompressor", d => AuOp(d, "compress", v: -20), Tip: "Leise und laute Stellen näher zusammen"),
+            ]),
             ("Abspielen", [
                 new ProgramCmd("au-play", "▶ Abspielen", d => AuPlay(d), Primary: true, Tip: "Auswahl – oder ab der Marke"),
                 new ProgramCmd("au-stop", "■ Stopp", _ => AuStop()),
                 new ProgramCmd("au-all", "Alles wählen", d => AuSel = (0, AudioEdit.Render(d.Data).Seconds)),
                 new ProgramCmd("au-none", "Auswahl aufheben", _ => AuSel = default),
+                new ProgramCmd("au-spectro", "Spektrogramm", _ => AuSpectro = !AuSpectro, Tip: "Frequenzen über die Zeit – Störgeräusche sieht man sofort"),
+                new ProgramCmd("au-record", "⏺ Aufnehmen (10 s)", d => _ = AuRecord(d, 10), Tip: "Mikrofon an der Marke einfügen"),
             ]),
         ],
         Exports =
@@ -90,6 +102,39 @@ public partial class MainWindow
         Status = d => { var a = AuRendered(d); var (s, e) = AuSel; return a is null ? "Keine Tondatei" : $"{AudioEdit.Time(a.Seconds)} · {a.Rate} Hz · {(a.Channels == 1 ? "Mono" : "Stereo")} · " + (e > s ? $"Auswahl {AudioEdit.Time(s)}–{AudioEdit.Time(e)} ({e - s:0.00} s)" : $"Marke {AudioEdit.Time(s)}"); },
         Help = "Rechts eine WAV- oder MP3-Datei öffnen. In der Wellenform mit der Maus einen Bereich ziehen – oder klicken, um die Marke zu setzen. Oben schneiden, Effekte anwenden, ▶ zum Anhören. Ohne Auswahl wirken Effekte auf die ganze Spur. Exportieren speichert das Ergebnis; das Original bleibt unverändert.",
     }, "audio bearbeiten", "ton bearbeiten", "tonstudio", "aufnahme schneiden", "wav", "mp3 schneiden", "rauschen entfernen", "normalisieren", "podcast", "audacity");
+
+    /// <summary>Spektrogramm statt Wellenform zeigen (Audition „Spektral-Ansicht“).</summary>
+    public bool AuSpectro { get; set; }
+    readonly Dictionary<string, (double A, double B)> _auNoise = [];
+    float[,]? _auSpecCache; string? _auSpecKey;
+
+    /// <summary>Gewählten Bereich als Rauschprofil merken (Audacity „Rauschprofil ermitteln“).</summary>
+    public void AuNoiseProfile()
+    {
+        var d = ProgramActive(AUK) ?? throw new InvalidOperationException("Erst eine Tondatei öffnen.");
+        var (s, e) = AuSel; if (e - s < 0.1) throw new InvalidOperationException("Bitte zuerst mindestens 0,1 s mit reinem Rauschen (ohne Stimme) wählen.");
+        _auNoise[d.Id] = (s, e); _progMsg[AUK] = $"Rauschprofil gemerkt ({AudioEdit.Time(s)}–{AudioEdit.Time(e)}). Jetzt „Rauschen entfernen“ – mit Auswahl oder für alles.";
+    }
+
+    void AuDenoise(ProgramDocument d)
+    {
+        if (!_auNoise.TryGetValue(d.Id, out var np)) throw new InvalidOperationException("Zuerst ein Stück mit reinem Rauschen wählen und „Rauschprofil merken“.");
+        var (s, e) = AuSel;
+        d.Edit(AudioEdit.Label("denoise"), x => AudioEdit.Add(x, AudioEdit.Op("denoise", e > s ? s : 0, e > s ? e : 0, 18, null, np.A, np.B)));
+        _progMsg[AUK] = "Rauschen entfernt (18 dB) – Strg+Z macht es rückgängig.";
+    }
+
+    /// <summary>Mikrofon aufnehmen und an der Marke einfügen.</summary>
+    public async Task AuRecord(ProgramDocument d, int seconds)
+    {
+        _progMsg[AUK] = $"⏺ Aufnahme läuft ({seconds} s) …"; Show(AUK);
+        var wav = await RecordMic(seconds);
+        if (wav is null) { _progMsg[AUK] = _msMsg.Length > 0 ? _msMsg : "Aufnahme ging nicht."; Show(AUK); return; }
+        var dir = Path.Combine(WorkFolder("Medien"), "Aufnahmen"); Directory.CreateDirectory(dir);
+        var keep = Path.Combine(dir, $"Aufnahme {DateTime.Now:yyyy-MM-dd HH-mm-ss}.wav"); File.Move(wav, keep);
+        if (AuRendered(d) is null) AuOpen(keep); else AuInsertFile(keep);
+        Show(AUK);
+    }
 
     AudioBuf? AuRendered(ProgramDocument d)
     {
@@ -198,6 +243,12 @@ public partial class MainWindow
         var a = AuRendered(d);
         var (s, e) = AuSel;
         var wave = new WaveView { Name = "au-wave", Peaks = a is null ? [] : AudioEdit.Peaks(a, 1400), Seconds = a?.Seconds ?? 0, SelA = s, SelB = e };
+        if (AuSpectro && a is not null)
+        {
+            var key = AudioEdit.Key(d.Data);
+            if (_auSpecKey != key) { _auSpecCache = AudioDsp.Spectrogram(a, 600, 160); _auSpecKey = key; }
+            wave.Spectro = _auSpecCache;
+        }
         _auWave = wave;
         wave.Selected = (x, y) => { AuSel = (x, y); Show(AUK); };
         // Transportleiste wie im Videoschnitt: groß, mittig, mit Zeitanzeige
