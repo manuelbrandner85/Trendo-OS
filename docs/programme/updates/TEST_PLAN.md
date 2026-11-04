@@ -1,6 +1,6 @@
 # Trendo-Updates – Testplan
 
-Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: Schrift & Farben anpassen (SYS-12) · Bereich: System & Sicherheit · Seite: `updates` · Stand: 0.9.36 (Stand df39ed6)
 
 18 Tests sprechen dieses Programm an.
 

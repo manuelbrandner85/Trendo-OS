@@ -1,6 +1,6 @@
 # Ordner im Heimnetz teilen – Einbindung in Trendo OS
 
-Studio: Dateien teilen (SYS-06) · Bereich: System & Sicherheit · Seite: `teilen` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: Dateien teilen (SYS-06) · Bereich: System & Sicherheit · Seite: `teilen` · Stand: 0.9.36 (Stand df39ed6)
 
 - Seite `teilen` im Studio „Dateien teilen“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

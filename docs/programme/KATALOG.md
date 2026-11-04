@@ -28,7 +28,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Skills | KI-Anweisungen schreiben (CORE-12) | Kreativ & Medien | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-skills/README.md) |
 | Kleidung & Produkte | Kleidung & Produkte entwerfen (SPEC-08) | Kreativ & Medien | keine eigene erkannt | 18 | 19 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](mode-programm/README.md) |
 | Live streamen | Live streamen (SPEC-15) | Kreativ & Medien | Bildansicht, Diagramm/Zeichnung | 20 | 39 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](sendung/README.md) |
-| Trendo Musik | Trendo Musik (STUDIO-MUSIK-01) | Kreativ & Medien | keine eigene erkannt | – | 31 | ja | IN_PROGRESS / Test NOT_RUN | [Paket](musik-studio/README.md) |
+| Trendo Musik | Trendo Musik (STUDIO-MUSIK-01) | Kreativ & Medien | keine eigene erkannt | – | 32 | ja | IN_PROGRESS / Test NOT_RUN | [Paket](musik-studio/README.md) |
 | TV & Live | TV & Live (STUDIO-TV-01) | Kreativ & Medien | keine eigene erkannt | – | 15 | ja | IN_PROGRESS / Test NOT_RUN | [Paket](tv/README.md) |
 | Bildbearbeitung | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | Bild-Arbeitsfläche (Ebenen) | – | 4 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](bild/README.md) |
 | Medien bearbeiten | Videos & Fotos bearbeiten (CORE-08) | Kreativ & Medien | keine eigene erkannt | – | 11 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](kreativ-medien/README.md) |
@@ -62,7 +62,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Verbindungen | KI fragen (CORE-02) | KI & Automatik | keine eigene erkannt | – | 12 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](verbindungen/README.md) |
 | KI-Rollen und Teams | KI-Team einsetzen (CORE-03) | KI & Automatik | keine eigene erkannt | – | 11 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-rollen/README.md) |
 | KI-Bibliothek | Kostenlose KI finden (X-05) | KI & Automatik | keine eigene erkannt | – | 6 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-bibliothek/README.md) |
-| KI-Quellen | Kostenlose KI finden (X-05) | KI & Automatik | keine eigene erkannt | – | 32 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-quellen/README.md) |
+| KI-Quellen | Kostenlose KI finden (X-05) | KI & Automatik | keine eigene erkannt | – | 33 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-quellen/README.md) |
 | Kostenlose Internet-KIs | Kostenlose KI finden (X-05) | KI & Automatik | keine eigene erkannt | – | 6 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](ki-internet/README.md) |
 | Baukasten | Apps zusammenklicken (X-03) | Entwickeln | keine eigene erkannt | – | 30 | ja | IMPLEMENTED / Test PC_VERIFIED | [Paket](baukasten/README.md) |
 | Sauberer Nachbau | Programme nachbauen (X-10) | Entwickeln | keine eigene erkannt | – | 7 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](nachbau/README.md) |
@@ -87,7 +87,7 @@ Erzeugt aus dem Repository (angemeldete Programme, Menübänder, Quelltext, Funk
 | Apps | Programme starten (SYS-11) | System & Sicherheit | keine eigene erkannt | 25 | 41 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](apps/README.md) |
 | Hinzufügen | Programme starten (SYS-11) | System & Sicherheit | keine eigene erkannt | 25 | 12 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](hinzufuegen/README.md) |
 | Pflegen | Programme starten (SYS-11) | System & Sicherheit | keine eigene erkannt | 25 | 18 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](prog-pflege/README.md) |
-| Zusatzprogramme | Programme starten (SYS-11) | System & Sicherheit | keine eigene erkannt | 25 | 54 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](components/README.md) |
+| Zusatzprogramme | Programme starten (SYS-11) | System & Sicherheit | keine eigene erkannt | 25 | 55 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](components/README.md) |
 | Fortschritt | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 13 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](fortschritt/README.md) |
 | Leistung | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 13 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](qual-leistung/README.md) |
 | System & Sicherheit | Qualität prüfen (SYS-13) | System & Sicherheit | keine eigene erkannt | 25 | 26 | – | IMPLEMENTED / Test PC_VERIFIED | [Paket](system/README.md) |

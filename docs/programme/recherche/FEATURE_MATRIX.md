@@ -1,6 +1,6 @@
 # Recherche im Lesemodus – Funktionsmatrix
 
-Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand df39ed6)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

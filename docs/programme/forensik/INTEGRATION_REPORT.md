@@ -1,6 +1,6 @@
 # Sicherheits-Werkzeuge & Beweise – Einbindung in Trendo OS
 
-Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand df39ed6)
 
 - Seite `forensik` im Studio „System auf Gefahren prüfen“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

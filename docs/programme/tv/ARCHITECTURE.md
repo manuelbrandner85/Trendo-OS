@@ -1,6 +1,6 @@
 # TV & Live – Architektur
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand df39ed6)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

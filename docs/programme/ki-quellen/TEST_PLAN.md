@@ -1,8 +1,8 @@
 # KI-Quellen – Testplan
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand df39ed6)
 
-32 Tests sprechen dieses Programm an.
+33 Tests sprechen dieses Programm an.
 
 - Beschreibung: README wird beim Aufklappen geladen; geholte Projekte lassen sich mit Rückfrage entfernen
 - CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet
@@ -27,6 +27,7 @@ Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-que
 - KI-Quellen und KI-Bibliothek: ohne laufendes Ollama ein Hinweis mit nächstem Schritt, gesperrte Knöpfe sagen warum
 - KoboldCpp: Bestätigen → von GitHub laden → einrichten → Starten mit größtem Sprachmodell
 - LM Studio: Installer von der Herstellerseite laden und starten, danach erkennen und Quelle einschalten
+- Programme von GitHub: Programmliste vom neuesten Release, kleine Programme zuerst geladen, mit Prüfsumme eingerichtet
 - SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf
 - T-0316: Claude als Haupt-KI – Frage läuft eingegrenzt über Claude (kein Datei-Ändern), Antwort mit Quelle „Claude (dein Abo)“; Haupt-KI aus → Claude wird nicht gefragt
 - T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „✓ Mit deinem Claude-Abo verbunden (Max)“
@@ -35,4 +36,4 @@ Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-que
 - X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette
 - X-05: Nur freie Quellen auf diesem Gerät, Modelle passend zur Hardware
 - X-05: Rückfallkette lässt sich sortieren, abschalten und bleibt gespeichert
-- Zusatzprogramme: Vollpaket-Karte mit Ordnerwahl; falscher Ordner wird erklärt
+- Zusatzprogramme: keine Ordnerwahl mehr – „von GitHub laden“; ohne Internet bleibt ein Merker zum Nachladen beim nächsten Start

@@ -1,10 +1,10 @@
 # Zusatzprogramme – Testergebnisse
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand df39ed6)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 54 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 55 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -23,6 +23,7 @@ Bestanden 54 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | LETTER-UI: Briefkopf → Akte (Behörde) → Fakt, Chronik, Eingang → Frist UNGEPRÜFT → Quelle fehlt → Export gesperrt → beheben → DOCX → Freigabe → Versand BLOCKED | ✓ bestanden |
 | LETTER-UI: Briefstudio hat genau eine Unterebene; Akte/Ausgabe erst mit offener Akte | ✓ bestanden |
 | Programme (UI): mitgelieferte Programme haben eine Beschreibung mit Funktionsweise | ✓ bestanden |
+| Programme von GitHub: Programmliste vom neuesten Release, kleine Programme zuerst geladen, mit Prüfsumme eingerichtet | ✓ bestanden |
 | QA-004 UI: Browser-Aktion abgelehnt → nichts geöffnet | ✓ bestanden |
 | QA-004 UI: Browser-Aktion freigegeben → genau einmal geöffnet | ✓ bestanden |
 | QA-004 UI: Explorer-Aktion → Freigabe-Ansicht; Ausführung erst nach Klick auf Freigeben | ✓ bestanden |
@@ -61,4 +62,4 @@ Bestanden 54 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | W0b-01: Keine Fachwörter in Oberflächentexten (docs/SPRACHE.md) | ✓ bestanden |
 | W0b-02/04/05: Widgets ausblenden, Dock sortieren, Bewegung reduzieren, Hinweis einmalig – alles gespeichert | ✓ bestanden |
 | W0b-06: Design wechseln (Hell/Kontrast) baut das Fenster neu auf und speichert | ✓ bestanden |
-| Zusatzprogramme: Vollpaket-Karte mit Ordnerwahl; falscher Ordner wird erklärt | ✓ bestanden |
+| Zusatzprogramme: keine Ordnerwahl mehr – „von GitHub laden“; ohne Internet bleibt ein Merker zum Nachladen beim nächsten Start | ✓ bestanden |

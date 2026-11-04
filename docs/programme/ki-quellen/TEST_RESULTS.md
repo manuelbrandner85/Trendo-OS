@@ -1,10 +1,10 @@
 # KI-Quellen – Testergebnisse
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand df39ed6)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 32 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 33 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -31,6 +31,7 @@ Bestanden 32 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | KI-Quellen und KI-Bibliothek: ohne laufendes Ollama ein Hinweis mit nächstem Schritt, gesperrte Knöpfe sagen warum | ✓ bestanden |
 | KoboldCpp: Bestätigen → von GitHub laden → einrichten → Starten mit größtem Sprachmodell | ✓ bestanden |
 | LM Studio: Installer von der Herstellerseite laden und starten, danach erkennen und Quelle einschalten | ✓ bestanden |
+| Programme von GitHub: Programmliste vom neuesten Release, kleine Programme zuerst geladen, mit Prüfsumme eingerichtet | ✓ bestanden |
 | SYS-05 UI: Vorlage anlegen, Probelauf, Freigeben, Ausführen, eigener Ablauf | ✓ bestanden |
 | T-0316: Claude als Haupt-KI – Frage läuft eingegrenzt über Claude (kein Datei-Ändern), Antwort mit Quelle „Claude (dein Abo)“; Haupt-KI aus → Claude wird nicht gefragt | ✓ bestanden |
 | T-0316: Claude-Karte – nicht installiert → „Claude Code einrichten“, nicht angemeldet → „Mit Claude verbinden“, verbunden → „✓ Mit deinem Claude-Abo verbunden (Max)“ | ✓ bestanden |
@@ -39,4 +40,4 @@ Bestanden 32 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette | ✓ bestanden |
 | X-05: Nur freie Quellen auf diesem Gerät, Modelle passend zur Hardware | ✓ bestanden |
 | X-05: Rückfallkette lässt sich sortieren, abschalten und bleibt gespeichert | ✓ bestanden |
-| Zusatzprogramme: Vollpaket-Karte mit Ordnerwahl; falscher Ordner wird erklärt | ✓ bestanden |
+| Zusatzprogramme: keine Ordnerwahl mehr – „von GitHub laden“; ohne Internet bleibt ein Merker zum Nachladen beim nächsten Start | ✓ bestanden |

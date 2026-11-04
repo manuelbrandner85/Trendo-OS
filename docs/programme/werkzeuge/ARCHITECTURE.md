@@ -1,6 +1,6 @@
 # Werkzeuge: Notizen, Rechner, Wecker – Architektur
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `werkzeuge` · Stand: 0.9.36 (Stand df39ed6)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Helfer.cs`

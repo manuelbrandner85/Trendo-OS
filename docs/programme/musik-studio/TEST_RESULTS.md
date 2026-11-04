@@ -1,10 +1,10 @@
 # Trendo Musik – Testergebnisse
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand df39ed6)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 30 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
+Bestanden 31 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 
 | Test | Ergebnis |
 |---|---|
@@ -14,6 +14,7 @@ Bestanden 30 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 | Einfach-Modus ohne Text-KI: ACE-Step schreibt und singt selbst (sample_query in der Sprache), gesungener Text und echte Länge landen beim Lied | ✓ bestanden |
 | Fortschritt lesen: Wert aus dem Ergebnis, sonst aus der Protokollzeile, fertig = 100 % | ✓ bestanden |
 | Fortschritt: Prozent aus der Musik-KI im Text und als Balken, steigt nur an; ohne Angabe läuft der Balken unbestimmt | ✓ bestanden |
+| Grafikspeicher-Warteschlange: zweites Lied wartet („noch 1 Auftrag vor dir“), startet erst nach dem ersten; Abbrechen im Warten geht | ✓ bestanden |
 | Im Stil von aus dem Web: MusicBrainz und Wikipedia nachschlagen, die KI bekommt die Angaben als Grundlage; ohne Text-KI die Merkmale aus dem Web, mit Quelle | ✓ bestanden |
 | M1/M8/M6: Genre-Auswahl (Gruppe, Suche, höchstens drei), Stimme, Tonlage und Instrumente landen als ACE-Step-Begriffe im Auftrag; Tempo-Vorschlag übernehmbar | ✓ bestanden |
 | M10 Verlängern: Abschnitt ab dem Ende (30 → 90 s) mit dem Grundmodell, Refrain kommt dazu, neues Lied „– länger“ | ✓ bestanden |

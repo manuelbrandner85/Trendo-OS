@@ -1,6 +1,6 @@
 # Leistung – Einbindung in Trendo OS
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-leistung` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `qual-leistung` · Stand: 0.9.36 (Stand df39ed6)
 
 - Seite `qual-leistung` im Studio „Qualität prüfen“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

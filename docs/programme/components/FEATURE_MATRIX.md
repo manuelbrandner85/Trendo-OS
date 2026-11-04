@@ -1,6 +1,6 @@
 # Zusatzprogramme – Funktionsmatrix
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand df39ed6)
 
 Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 
@@ -36,8 +36,7 @@ Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 - Los
 - ✳ Claude
 - Verstanden
-- Ordner wählen …
-- Programme aus dem Vollpaket einrichten
+- Fehlende Programme von GitHub nachladen
 - Zustimmen & fehlende kostenlose Programme installieren
 - Aus dem Vollpaket einrichten
 - Installieren

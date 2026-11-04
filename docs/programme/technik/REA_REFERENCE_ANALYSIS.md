@@ -1,6 +1,6 @@
 # Tragwerk & Mechanik – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite: `technik` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: Statik nachrechnen (SPEC-03) · Bereich: Technik & Fachgebiete · Seite: `technik` · Stand: 0.9.36 (Stand df39ed6)
 
 Analyse: [Vorbild-Analyse Statik: edubeam (Clean-Room)](../../../docs/claude/vorbilder/statik-edubeam.md)
 

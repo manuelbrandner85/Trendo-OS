@@ -1,5 +1,5 @@
 # Online-Dienste – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.36 (Stand df39ed6)
 
 Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.

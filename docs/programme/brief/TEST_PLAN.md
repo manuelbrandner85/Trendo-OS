@@ -1,6 +1,6 @@
 # Briefe schreiben – Testplan
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand df39ed6)
 
 25 Tests sprechen dieses Programm an.
 

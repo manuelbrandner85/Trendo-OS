@@ -1,8 +1,8 @@
 # Zusatzprogramme – Testplan
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand df39ed6)
 
-54 Tests sprechen dieses Programm an.
+55 Tests sprechen dieses Programm an.
 
 - CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste
 - Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt
@@ -19,6 +19,7 @@ Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `co
 - LETTER-UI: Briefkopf → Akte (Behörde) → Fakt, Chronik, Eingang → Frist UNGEPRÜFT → Quelle fehlt → Export gesperrt → beheben → DOCX → Freigabe → Versand BLOCKED
 - LETTER-UI: Briefstudio hat genau eine Unterebene; Akte/Ausgabe erst mit offener Akte
 - Programme (UI): mitgelieferte Programme haben eine Beschreibung mit Funktionsweise
+- Programme von GitHub: Programmliste vom neuesten Release, kleine Programme zuerst geladen, mit Prüfsumme eingerichtet
 - QA-004 UI: Browser-Aktion abgelehnt → nichts geöffnet
 - QA-004 UI: Browser-Aktion freigegeben → genau einmal geöffnet
 - QA-004 UI: Explorer-Aktion → Freigabe-Ansicht; Ausführung erst nach Klick auf Freigeben
@@ -57,4 +58,4 @@ Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `co
 - W0b-01: Keine Fachwörter in Oberflächentexten (docs/SPRACHE.md)
 - W0b-02/04/05: Widgets ausblenden, Dock sortieren, Bewegung reduzieren, Hinweis einmalig – alles gespeichert
 - W0b-06: Design wechseln (Hell/Kontrast) baut das Fenster neu auf und speichert
-- Zusatzprogramme: Vollpaket-Karte mit Ordnerwahl; falscher Ordner wird erklärt
+- Zusatzprogramme: keine Ordnerwahl mehr – „von GitHub laden“; ohne Internet bleibt ein Merker zum Nachladen beim nächsten Start

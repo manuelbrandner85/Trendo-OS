@@ -1,6 +1,6 @@
 # Programme verwalten – Architektur
 
-Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.36 (Stand fe88b0c)
+Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.36 (Stand df39ed6)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)
