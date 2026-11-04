@@ -117,9 +117,10 @@ public partial class MainWindow
                 new TextBlock { Name = "mode-card-price", Text = $"{price.Gross:0.00} €", Foreground = Brush.Parse("#1E4FD8"), FontSize = 22, FontWeight = FontWeight.Bold },
                 new TextBlock { Text = $"Marge {price.MarginPct:0} % · netto {price.Net:0.00} €", Foreground = Brush.Parse("#5C6B7A"), FontSize = 11 } } } };
 
-        return new ScrollViewer { Name = "mode-scroll", Content = new Grid { ColumnDefinitions = new ColumnDefinitions("240,16,*"), Margin = new Thickness(4, 4, 10, 4), Children = {
+        // die Programm-Hülle scrollt die Arbeitsfläche schon (ScrollWorkspace) – kein zweiter Scrollbereich darin (Prüfung „Einfachheit“, 04.11.2026)
+        return new Grid { Name = "mode-scroll", ColumnDefinitions = new ColumnDefinitions("240,16,*"), Margin = new Thickness(4, 4, 10, 4), Children = {
             figure,
-            Pos(new StackPanel { Spacing = 12, Children = { card, H("Größentabelle", 13), table, H($"Varianten ({ModeVariants(d).Count})", 13), variants, layout } }, 2) } } };
+            Pos(new StackPanel { Spacing = 12, Children = { card, H("Größentabelle", 13), table, H($"Varianten ({ModeVariants(d).Count})", 13), variants, layout } }, 2) } };
     }
 
     private Control ModeProperties(ProgramDocument d)
@@ -282,7 +283,7 @@ public partial class MainWindow
             : "Teil ziehen: verschieben (1 cm) · Doppelklick: drehen · gestrichelt: Nahtlinie";
         return new StackPanel { Spacing = 4, Children = { H("Schnittlagebild", 13), pick, bar, facts,
             new TextBlock { Name = "mode-marker-hint", Text = hint, Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap },
-            new ScrollViewer { HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, MaxHeight = 420, Content = canvas },
+            new ScrollViewer { Name = "mode-marker-strip", HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled, Content = canvas }, // nur waagerecht wie eine Zeitleiste
             sizes.Count > 1 ? H("Stoffbedarf je Größe", 12) : new Border(), run } };
     }
 }
