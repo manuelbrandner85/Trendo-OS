@@ -29,6 +29,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
@@ -71,10 +73,14 @@ fun HomeScreen(
     ) {
         Header()
         Spacer(Modifier.height(20.dp))
+        // D-Pad: beim Start liegt der Fokus sofort auf der ersten Kachel.
+        val first = remember { FocusRequester() }
+        val firstKey = (favorites.firstOrNull() ?: apps.firstOrNull() ?: system.firstOrNull())?.key
+        LaunchedEffect(firstKey) { if (firstKey != null) runCatching { first.requestFocus() } }
         LazyColumn(verticalArrangement = Arrangement.spacedBy(24.dp)) {
-            if (favorites.isNotEmpty()) item { TileRow("Favoriten", favorites, loadBanner) }
-            item { TileRow("Alle Apps", apps, loadBanner) }
-            item { TileRow("System", system, loadBanner) }
+            if (favorites.isNotEmpty()) item { TileRow("Favoriten", favorites, loadBanner, firstKey, first) }
+            item { TileRow("Alle Apps", apps, loadBanner, firstKey, first) }
+            item { TileRow("System", system, loadBanner, firstKey, first) }
         }
     }
 }
@@ -111,7 +117,10 @@ private fun Clock() {
 }
 
 @Composable
-private fun TileRow(title: String, tiles: List<Tile>, loadBanner: (String) -> Drawable?) {
+private fun TileRow(
+    title: String, tiles: List<Tile>, loadBanner: (String) -> Drawable?,
+    firstKey: String?, first: FocusRequester,
+) {
     Column {
         Text(title, color = TvColors.TextSecondary, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.height(10.dp))
@@ -119,13 +128,15 @@ private fun TileRow(title: String, tiles: List<Tile>, loadBanner: (String) -> Dr
             horizontalArrangement = Arrangement.spacedBy(18.dp),
             contentPadding = PaddingValues(vertical = 8.dp, horizontal = 4.dp),
         ) {
-            items(tiles, key = { it.key }) { AppCard(it, loadBanner) }
+            items(tiles, key = { it.key }) {
+                AppCard(it, loadBanner, if (it.key == firstKey) Modifier.focusRequester(first) else Modifier)
+            }
         }
     }
 }
 
 @Composable
-private fun AppCard(tile: Tile, loadBanner: (String) -> Drawable?) {
+private fun AppCard(tile: Tile, loadBanner: (String) -> Drawable?, focus: Modifier) {
     val shape = RoundedCornerShape(10.dp)
     val banner by produceState<ImageBitmap?>(null, tile.app?.packageName) {
         val pkg = tile.app?.packageName ?: return@produceState
@@ -134,7 +145,7 @@ private fun AppCard(tile: Tile, loadBanner: (String) -> Drawable?) {
     }
     Card(
         onClick = tile.onOpen,
-        modifier = Modifier.width(224.dp).height(126.dp),
+        modifier = focus.width(224.dp).height(126.dp),
         shape = CardDefaults.shape(shape),
         colors = CardDefaults.colors(containerColor = TvColors.Panel, focusedContainerColor = TvColors.Panel),
         scale = CardDefaults.scale(focusedScale = 1.08f),
