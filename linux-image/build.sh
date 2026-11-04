@@ -6,8 +6,11 @@ HERE="$(cd "$(dirname "$0")" && pwd)"; REPO="$(dirname "$HERE")"
 WORK="${WORK:-/tmp/trendo-lb}"; OUT="$HERE/out"
 DOTNET="${DOTNET:-dotnet}"
 echo "== 1) Trendo linux-x64 self-contained veröffentlichen"
-rm -rf "$HERE/config/includes.chroot/opt/trendo"
-"$DOTNET" publish "$REPO/src/Trendo.App/Trendo.App.csproj" -c Release -r linux-x64 --self-contained true -o "$HERE/config/includes.chroot/opt/trendo"
+if [ -z "${SKIP_PUBLISH:-}" ]; then  # auf GitHub wird außerhalb des Debian-Containers veröffentlicht (dort gibt es das .NET-SDK)
+  rm -rf "$HERE/config/includes.chroot/opt/trendo"
+  "$DOTNET" publish "$REPO/src/Trendo.App/Trendo.App.csproj" -c Release -r linux-x64 --self-contained true -o "$HERE/config/includes.chroot/opt/trendo"
+fi
+command -v sudo >/dev/null || sudo() { "$@"; }  # im Container läuft alles als root
 echo "== 2) live-build konfigurieren"
 sudo rm -rf "$WORK"; mkdir -p "$WORK"; cp -r "$HERE/config" "$WORK/"; cd "$WORK"
 lb config \
