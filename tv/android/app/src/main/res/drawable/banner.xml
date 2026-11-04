@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TV-Banner 320x180 dp: farbiges T + Schriftzug kommt als Layer; Text wird im Banner bewusst
+     als Form gehalten, damit keine Schriftdatei nötig ist. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient android:angle="0" android:startColor="#FF050A14" android:centerColor="#FF071223" android:endColor="#FF10233B" />
+        </shape>
+    </item>
+    <item android:width="120dp" android:height="120dp" android:gravity="center_vertical|start" android:left="24dp"
+        android:drawable="@drawable/ic_trendo_t" />
+    <item android:height="4dp" android:gravity="bottom">
+        <shape android:shape="rectangle">
+            <gradient android:angle="0" android:startColor="#FF317DFF" android:centerColor="#FF854FFF" android:endColor="#FFD74EDC" />
+        </shape>
+    </item>
+</layer-list>

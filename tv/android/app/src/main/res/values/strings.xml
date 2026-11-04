@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TRENDO OS</string>
+    <!-- Marken-Credit der TV-Edition, keine Benutzerkennung. -->
+    <string name="edition">PREMIUM TV EDITION</string>
+    <string name="credit">by Manuel</string>
+</resources>
