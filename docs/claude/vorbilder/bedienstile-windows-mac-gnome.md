@@ -52,6 +52,10 @@
 - ✓ GNOME: Kopfleiste mit „＋ Neu“ links, „Speichern“ als blaue empfohlene Aktion und Hauptmenü ☰ rechts (alle Befehle als Untermenüs), darunter die Werkzeuge; Reiter erst ab zwei Dokumenten
 - ✓ Programmkopf neutral wie im System (keine Studio-Farbfläche); jeder Menüeintrag drückt denselben Knopf – keine Funktion fehlt
 
+### Studio-Fenster
+- ✓ Mac und GNOME: Die KI-Zeile des Studios ist zugleich die Titelleiste – Mac: Ampel und ‹ Zurück links, Titel fett; GNOME: ‹ Zurück und Titel links, runder Schließen-Knopf rechts; Ziehen verschiebt, Doppelklick maximiert; eine Leiste statt zwei
+- ✓ Windows: Titelleiste mit Symbol, Titel und 46 × 32-Knöpfen bleibt (wie Windows-Programme)
+
 ### Offen
 - ✓ Mehrfachauswahl wie im System: Umschalt-Klick Bereich, Strg-Klick (Mac ⌘) dazu/weg, Auswahlrahmen mit der Maus, Strg/⌘+A, Klick ins Leere hebt auf; Kopieren, Einfügen, Ziehen und Papierkorb wirken auf alle gewählten
 - ◐ Natürliches Scrollen und Systemgesten kommen vom echten Betriebssystem, nicht von Trendo
@@ -59,4 +63,4 @@
 - ◐ Windows-Registerkarten sitzen unter der Titelzeile statt in ihr; Strg+Tab wechselt weiter die Fenster (Strg+Bild↓ wechselt die Karte)
 
 ## Tests
-OsStyles_Ui (9), OsBehaviorTests (4), StyleAndBrand_Ui.
+OsStyles_Ui (10), OsBehaviorTests (4), StyleAndBrand_Ui.

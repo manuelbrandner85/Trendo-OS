@@ -440,6 +440,38 @@ public partial class MainWindow
         row.Children.Add(box);
         row.Children.Add(buttons);
         row.Children.Add(status);
+        // Mac/GNOME: die KI-Zeile ist zugleich die Titelleiste des Studio-Fensters (Ampel links bzw. Schließen rechts, Titel, ziehbar)
+        if (key is not null && _style is "mac" or "linux")
+        {
+            var newPage = _unifiedPages.Add(key);
+            var winTitle = new TextBlock { Name = "head-title", Text = WindowOfPage(key)?.Title ?? StudioCatalog.NameOf(studio, studio), FontWeight = FontWeight.Bold, FontSize = 13, Foreground = Text, VerticalAlignment = VerticalAlignment.Center, Margin = new Avalonia.Thickness(4, 0, 8, 0), MaxWidth = 260, TextTrimming = TextTrimming.CharacterEllipsis };
+            var caps = OsHeaderCaps(key);
+            // Zurück zur vorigen Seite im Fenster (sonst in der weggefallenen Titelleiste)
+            var backWin = WindowOfPage(key);
+            var hb = new Button { Name = "head-back", Content = "‹", FontSize = 18, Width = 30, Height = 30, Padding = new Avalonia.Thickness(0, -3, 0, 0), Background = Brushes.Transparent, BorderThickness = new Avalonia.Thickness(0), CornerRadius = new Avalonia.CornerRadius(6),
+                Foreground = Text, HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, IsEnabled = backWin?.CanGoBack ?? false, VerticalAlignment = VerticalAlignment.Center };
+            ToolTip.SetTip(hb, "Zurück"); hb.Click += (_, _) => { if (WindowOfPage(key) is { } bw) GoBack(bw.Id); };
+            caps = _style == "mac" ? new StackPanel { Orientation = Orientation.Horizontal, Children = { caps, hb } } : caps;
+            row.ColumnDefinitions = new ColumnDefinitions(_style == "mac" ? "Auto,Auto,Auto,*,Auto,Auto" : "Auto,Auto,*,Auto,Auto,Auto");
+            if (_style == "mac") { Grid.SetColumn(caps, 0); Grid.SetColumn(winTitle, 1); Grid.SetColumn(spark, 2); Grid.SetColumn(box, 3); Grid.SetColumn(buttons, 4); Grid.SetColumn(status, 5); }
+            else { Grid.SetColumn(winTitle, 0); Grid.SetColumn(spark, 1); Grid.SetColumn(box, 2); Grid.SetColumn(buttons, 3); Grid.SetColumn(status, 4); Grid.SetColumn(caps, 5); }
+            row.Children.Add(caps);
+            if (_style == "linux") { var tl = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Children = { hb, winTitle } }; Grid.SetColumn(tl, 0); row.Children.Add(tl); }
+            else row.Children.Add(winTitle);
+            var head = new Border
+            {
+                Name = "auftrag-leiste", Background = Brush.Parse(_style == "mac" ? (_theme == "hell" ? "#FFECECEC" : "#FF2A2A2C") : (_theme == "hell" ? "#FFEBEBED" : "#FF2E2E32")),
+                BorderBrush = Edge, BorderThickness = new Avalonia.Thickness(0, 0, 0, 1), Padding = new Avalonia.Thickness(10, 6), Margin = new Avalonia.Thickness(0, 0, 0, 6),
+                Child = new StackPanel { Spacing = 4, Children = { row, preview, liveThumb, AssistAttached(key, assistHost), detail, pro } }
+            };
+            ability.IsVisible = false; // wie im System: keine Zusatzzeile über der Titelleiste (steht im Tooltip)
+            ToolTip.SetTip(box, ability.Text);
+            preview.IsVisible = false; // Vorschau-Zeile erst, wenn es eine Vorschau gibt – die Leiste bleibt einzeilig wie eine Titelleiste
+            preview.PropertyChanged += (_, e) => { if (e.Property == TextBlock.TextProperty) preview.IsVisible = preview.Text is { Length: > 0 } pt && pt != "Noch keine Vorschau."; };
+            OsHeaderDrag(head, key);
+            if (newPage) _ui.Post(LayoutWindows); // Titelleiste des Fensters ausblenden
+            return head;
+        }
         return new Border
         {
             Name = "auftrag-leiste",

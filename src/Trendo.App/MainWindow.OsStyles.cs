@@ -8,6 +8,7 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.Styling;
+using Avalonia.VisualTree;
 using Trendo.Core;
 using Trendo.Core.Shell;
 
@@ -255,6 +256,48 @@ public sealed partial class MainWindow
             ((Button)col.Children[^1]).ContextMenu = new ContextMenu { Items = { rm } };
         }
         return col;
+    }
+
+    /// <summary>Fenster zur Seite (zum Zeitpunkt des Klicks – die Leiste entsteht manchmal, bevor es das Fenster gibt).</summary>
+    DeskWindow? WindowOfPage(string page) => Windows.Active is { } a && a.Page == page ? a : Windows.Stack.LastOrDefault(w => w.Page == page);
+
+    /// <summary>Fensterknöpfe für eine eigene Kopfleiste: Mac-Ampel (links) bzw. GNOME-Schließen (rechts).</summary>
+    Control OsHeaderCaps(string page)
+    {
+        Button Cap(string name, string tip, string glyph, string col, Action<DeskWindow> a)
+        {
+            var mac = _style == "mac";
+            var b = new Button { Name = name, Width = mac ? 12 : 24, Height = mac ? 12 : 24, Padding = new Thickness(0), CornerRadius = new CornerRadius(12), BorderThickness = new Thickness(0),
+                Background = Brush.Parse(col), Foreground = mac ? Brush.Parse("#80000000") : Text, FontSize = mac ? 8 : 10, Content = mac ? "" : glyph,
+                HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, mac ? 8 : 0, 0), VerticalAlignment = VerticalAlignment.Center };
+            if (mac) { b.PointerEntered += (_, _) => b.Content = glyph; b.PointerExited += (_, _) => b.Content = ""; }
+            ToolTip.SetTip(b, tip); b.Click += (_, _) => { if (WindowOfPage(page) is { } w) a(w); }; return b;
+        }
+        if (_style == "mac")
+            return new StackPanel { Name = "head-caps", Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 6, 0), Children = {
+                Cap("head-close", "Schließen", "✕", "#FF5F57", w => CloseWindow(w.Id)), Cap("head-min", "Im Dock ablegen", "—", "#FEBC2E", w => { Windows.Minimize(w.Id); AfterWindowChange(); }),
+                Cap("head-max", "Zoomen", "+", "#28C840", w => { Windows.ToggleMaximize(w.Id); AfterWindowChange(); }) } };
+        return Cap("head-close", "Schließen", "✕", _theme == "hell" ? "#14000000" : "#1AFFFFFF", w => CloseWindow(w.Id));
+    }
+
+    /// <summary>Eigene Kopfleiste verschiebt das Fenster (Doppelklick maximiert) – wie Titelleisten in Mac und GNOME.</summary>
+    void OsHeaderDrag(Control bar, string page)
+    {
+        Point? from = null; string? wid = null;
+        bar.PointerPressed += (_, e) =>
+        {
+            if (e.Source is Visual v && (v.FindAncestorOfType<Button>(true) is not null || v.FindAncestorOfType<TextBox>(true) is not null)) return;
+            if (WindowOfPage(page) is not { } w) return; wid = w.Id;
+            if (e.ClickCount == 2) { Windows.ToggleMaximize(w.Id); AfterWindowChange(); return; }
+            from = e.GetPosition(_winCanvas); e.Pointer.Capture(bar);
+        };
+        bar.PointerMoved += (_, e) =>
+        {
+            if (from is not { } f || wid is null) return; var p = e.GetPosition(_winCanvas);
+            if (Windows.Get(wid) is { Maximized: true } mx) { mx.Maximized = false; mx.X = p.X - mx.W / 2; mx.Y = 0; }
+            Windows.Move(wid, p.X - f.X, p.Y - f.Y); from = p; LayoutWindows();
+        };
+        bar.PointerReleased += (_, e) => { from = null; e.Pointer.Capture(null); };
     }
 
     // ---------- gemeinsame Bausteine ----------

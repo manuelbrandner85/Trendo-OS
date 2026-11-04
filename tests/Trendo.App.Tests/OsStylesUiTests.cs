@@ -324,5 +324,32 @@ public class OsStyles_Ui
         finally { Back(w ?? w0); }
     }
 
+    [AvaloniaFact(DisplayName = "Studio-Fenster wie im System: Mac und GNOME – KI-Zeile ist die Titelleiste (Ampel bzw. Schließen, Titel, Zurück), Windows behält die Titelleiste; Schließen in der Kopfleiste schließt das Fenster")]
+    public void Studio_windows()
+    {
+        var (w0, _, _) = Ui.Open(); MainWindow? w = null;
+        try
+        {
+            foreach (var style in new[] { "mac", "linux" })
+            {
+                w = Switch(w ?? w0, style);
+                w.Show("brief"); Pump(); Pump();
+                var id = w.Windows.Active!.Id;
+                Assert.False(w.Find<Border>("win-title-" + id).IsVisible); // keine zweite Leiste
+                var bar = w.Find<Border>("auftrag-leiste");
+                Assert.Contains(bar.GetLogicalDescendants().OfType<Button>(), b => b.Name == "head-close");
+                Assert.Contains(bar.GetLogicalDescendants().OfType<Button>(), b => b.Name == "head-back");
+                Assert.Equal("Briefe schreiben", bar.GetLogicalDescendants().OfType<TextBlock>().First(t => t.Name == "head-title").Text);
+                Assert.Equal(style == "mac", bar.GetLogicalDescendants().OfType<Button>().Any(b => b.Name == "head-max"));
+                bar.GetLogicalDescendants().OfType<Button>().First(b => b.Name == "head-close").Press(); Pump();
+                Assert.Null(w.Windows.Get(id));
+            }
+            w = Switch(w!, "windows"); w.Show("brief"); Pump();
+            Assert.True(w.Find<Border>("win-title-" + w.Windows.Active!.Id).IsVisible);
+            Assert.DoesNotContain(w.Find<Border>("auftrag-leiste").GetLogicalDescendants().OfType<Button>(), b => b.Name == "head-close");
+        }
+        finally { Back(w ?? w0); }
+    }
+
     static bool SamePath(string a, string b) => string.Equals(Path.GetFullPath(a).TrimEnd((char)92, '/'), Path.GetFullPath(b).TrimEnd((char)92, '/'), StringComparison.OrdinalIgnoreCase);
 }
