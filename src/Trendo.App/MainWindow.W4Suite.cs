@@ -110,6 +110,7 @@ public partial class MainWindow
         var sp = new StackPanel { Name = "suite-newcard", Spacing = 8, Children = {
             canCancel ? Row(head, Act("suite-new-cancel", "Abbrechen", () => { _suiteNew = false; Show(V); })) : head,
             P("Was willst du machen? Wähle ein Ziel. Trendo legt Ordner, Schritte und einen Zeitplan an."),
+            canCancel ? new Panel() : Act("suite-demo", "Beispiel ansehen (Urlaubsvideo)", () => Try(V, () => { _suiteOpen = CreationSuite.Create(SuiteFolder, "video", "Beispiel Urlaubsvideo", DateTime.Today); _suiteNew = false; _core.Audit.Append(Principal.LocalOwner.Name, "suite.demo", ""); Show(V); })),
             new WrapPanel { Children = { name, new Border { Width = 8 }, P("Start", null, 11.5), new Border { Width = 4 }, start } }, wrap } };
         return Card(sp);
     }

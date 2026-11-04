@@ -83,6 +83,7 @@ public partial class MainWindow
                 Button { Name: { } dn } when dn.StartsWith("desk-pin-", StringComparison.Ordinal) => "Desktop (Symbole, Widgets, Dock)", Button { Name: "wiz-back" or "wiz-done" } => "Einrichtungs-Assistent (Schritt für Schritt)",
                 Grid { Name: "proj-workspace" } => "Projektmappe (Projekte, Dateien, Details – wie ein Datei-Explorer)",
                 Grid { Name: "oss-store" } => "Programm-Store (Kategorien, Treffer, Eingerichtetes – wie Flathub)",
+                WrapPanel { Name: "suite-modes" } => "Projektplaner (Übersicht, Liste, Tafel, Zeitplan, Dateien – wie Asana)",
                 WaveView => "Wellenform-Editor (Auswahl, Schnitt, Effekte – wie Audacity)", AvaloniaEdit.TextEditor => "Code-Editor (Dateibaum, Reiter, Farben je Sprache – wie VS Code)", _ => null,
             } is { } k) kinds.Add(k);
         var tools = all.OfType<Button>().Where(b => b.Name is { Length: > 0 } n && !n.StartsWith("prog-tab") && !n.StartsWith("dock") && !n.StartsWith("win-") && !n.StartsWith("toast"))
