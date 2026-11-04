@@ -1,7 +1,15 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+}
+
+// Signaturdaten liegen lokal in tv/android/keystore.properties (nie im Repo, siehe .gitignore).
+val keyProps = Properties().apply {
+    val f = rootProject.file("keystore.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
 }
 
 android {
@@ -11,18 +19,31 @@ android {
     defaultConfig {
         // Eigene, stabile Paket-ID. Nie die ID einer Fremd-App verwenden.
         applicationId = "os.trendo.tv"
-        // VORLÄUFIG: Android TV 9. Wird nach dem Auslesen des CHiQ (API-Level) festgelegt.
+        // Zielgerät CHiQ U55N9C1 ausgelesen am 05.11.2026: Android TV 11 (API 30).
+        // minSdk 28 bleibt, damit auch ältere Android-TV-Geräte laufen.
         minSdk = 28
         targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        if (keyProps.getProperty("storeFile") != null) {
+            create("release") {
+                storeFile = file(keyProps.getProperty("storeFile"))
+                storePassword = keyProps.getProperty("storePassword")
+                keyAlias = keyProps.getProperty("keyAlias")
+                keyPassword = keyProps.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Signatur kommt aus einer lokalen keystore.properties (nie im Repo).
+            signingConfig = signingConfigs.findByName("release")
         }
     }
     compileOptions {

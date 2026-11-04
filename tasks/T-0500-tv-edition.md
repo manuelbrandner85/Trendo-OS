@@ -41,8 +41,26 @@
 | Android-TV-Emulator + Systemabbild | **fehlt** |
 | Freier Platz auf C: | ca. 24 GB (98 % belegt) – SDK + Emulator brauchen grob 4–6 GB |
 
-### Zielgerät CHiQ U55N9C1
-Noch **nicht** geprüft: Android-TV-Version, API-Level, RAM/CPU, Paketnamen von TiviMate/Google Play, verfügbarer WLAN-Debug-Weg. Ohne diese Werte keine `minSdk`-Festlegung und kein Deploy.
+### Zielgerät CHiQ U55N9C1 (read-only per ADB über WLAN, 05.11.2026)
+| Wert | Befund |
+|---|---|
+| Hersteller/Modell | CHiQ / Changhong, Modellkennung „AI PONT" |
+| Android | Android TV 11, API 30, Sicherheitspatch 2025-06-01 |
+| CPU | 4 Kerne, `armeabi-v7a` (32 Bit) |
+| RAM | 1,35 GB gesamt, ca. 474 MB verfügbar beim Auslesen (**keine 4 GB**) |
+| App-Speicher `/data` | 4,2 GB, 382 MB frei (92 % belegt) |
+| Anzeige | 1920×1080, Dichte 320 |
+| Pakete | 125 gesamt, 117 System, 8 Dritt-Apps, 1 deaktiviert (Liste nur lokal, nicht im Repo) |
+| TiviMate | am Gerät bestätigt (`ar.tvplayer.tv`) |
+| Google Play Store | vorhanden (`com.android.vending`) |
+| Standard-Home | `com.google.android.tvlauncher` (Original, bleibt) |
+| WLAN-Weg | Android 11 → ADB über Netzwerk (Port 5555) nach USB-Debugging-Freigabe am TV; funktioniert |
+| Auffällig | `dumpsys` meldet „Service dumps disabled due to hung system process" → keine Diagnose-Dumps verwenden |
+
+Folgen: wenig RAM → Performance-Modus Standard, Release-Build mit R8 (1,5 MB statt 19 MB Debug).
+
+### Emulator
+Android-TV-Emulator auf dem Entwicklungs-PC **BLOCKIERT**: keine Hardware-Beschleunigung (Hypervisor-Treiber/WHPX fehlt; Installation wäre Systemänderung). Emulator und Abbild wieder entfernt (Speicherplatz).
 
 ### Abweichungen / Entscheidungsvorschläge (Decision-Delta, nicht eingetragen)
 1. **Markenzeile „by Manuel"** widerspricht `NoFixedUserTests`/„keine Personennamen im Produkt", gilt aber laut Übergabe als Marken-Credit der TV-Edition. Vorschlag: nur im Android-Ordner `tv/android/` als Ressourcen-String; Test-Ausnahme ausdrücklich für diesen Pfad, falls der Test ihn erfasst (prüft bisher `src/`, `installer/`, `linux-image/`).

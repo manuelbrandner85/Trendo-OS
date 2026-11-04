@@ -48,6 +48,14 @@ class AndroidApps(private val context: Context) {
     fun openOriginalHome(): Boolean =
         start(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 
+    /**
+     * „Alles rückgängig": öffnet den Android-Dialog zum Entfernen von Trendo SELBST.
+     * Betrifft ausschließlich das eigene Paket; der Nutzer bestätigt am TV. Danach ist die
+     * Original-Oberfläche wieder allein aktiv, alle anderen Apps bleiben unberührt.
+     */
+    fun uninstallSelf(): Boolean =
+        start(Intent(Intent.ACTION_DELETE, Uri.parse("package:$own")).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+
     fun banner(packageName: String) = runCatching {
         pm.getApplicationBanner(packageName) ?: pm.getApplicationIcon(packageName)
     }.getOrNull()

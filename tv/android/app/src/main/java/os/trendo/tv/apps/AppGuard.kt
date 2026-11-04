@@ -20,7 +20,7 @@ object AppGuard {
     )
 
     fun isForbiddenCommand(command: String): Boolean {
-        val c = command.trim().lowercase().replace(Regex("\s+"), " ")
+        val c = command.trim().lowercase().replace(Regex("""\s+"""), " ")
         return forbiddenCommands.any { c.startsWith(it) || c.contains(" $it") || c.contains(";$it") || c.contains("&&$it") }
     }
 }

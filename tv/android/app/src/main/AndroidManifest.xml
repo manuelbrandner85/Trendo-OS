@@ -5,6 +5,9 @@
     <uses-feature android:name="android.software.leanback" android:required="true" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
+    <!-- Nur für „Alles rückgängig": Android-Dialog zum Entfernen von Trendo selbst öffnen. -->
+    <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+
     <!-- Keine QUERY_ALL_PACKAGES-Berechtigung: Trendo sieht nur Apps mit Startsymbol. -->
     <queries>
         <intent>

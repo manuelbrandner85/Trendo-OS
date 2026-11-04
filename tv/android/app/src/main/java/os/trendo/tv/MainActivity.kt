@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
                 system = listOf(
                     Tile("sys:settings", "TV-Einstellungen", null) { if (!apps.openTvSettings()) fail() },
                     Tile("sys:home", "Original-Startseite", null) { if (!apps.openOriginalHome()) fail() },
+                    Tile("sys:undo", "Alles rückgängig (Trendo entfernen)", null) { if (!apps.uninstallSelf()) fail() },
                 ),
                 loadBanner = apps::banner,
             )
