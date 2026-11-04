@@ -73,6 +73,9 @@ public class CoverStudioTests
         var next = CoverStudio.NextTry(bad, 0.7, 1)!.Value;
         Assert.True(next.Strength > 0.7); Assert.Contains("Melodie", next.Why);
         Assert.Null(CoverStudio.NextTry(bad, 0.7, 3));
+        var sparse = Bp(120, "A minor", "4/4", 60, 4, i => i < 50 ? Tune(i) : null); // kaum Gesang erkannt
+        var mp = CoverStudio.Compare(o, sparse).Points.First(p => p.Name == "Melodie");
+        Assert.Equal("gelb", mp.Light); Assert.Contains("nicht sicher messbar", mp.Text);
         Assert.Equal("gelb", CoverStudio.KeyLight("A minor", "C major")); Assert.Equal("gelb", CoverStudio.KeyLight("C major", "G major")); Assert.Equal("rot", CoverStudio.KeyLight("C major", "F# major"));
     }
 
@@ -83,5 +86,22 @@ public class CoverStudioTests
         Assert.Contains("pan=mono", a); Assert.Contains("aecho", a); Assert.Contains("loudnorm=I=-14", a); Assert.Contains("libmp3lame", a);
         Assert.DoesNotContain("libmp3lame", string.Join(" ", CoverStudio.SoundArgs("in.wav", "out.wav", "heute")));
         Assert.All(CoverStudio.Voices, v => Assert.Contains(CoverStudio.Sounds, s => s.Id == v.Sound));
+    }
+
+    /// <summary>Echter Vergleich: nur wenn TRENDO_COVER_ECHT auf einen Ordner mit Analysen zeigt (orig_grund/orig--abschnitte/orig--melodie und cov1…) – sonst übersprungen.</summary>
+    [Fact(DisplayName = "M4 mit echten Analysen (optional): Ampel und Punkte werden ausgegeben")]
+    public void Compare_real()
+    {
+        if (Environment.GetEnvironmentVariable("TRENDO_COVER_ECHT") is not { Length: > 0 } d || !Directory.Exists(d)) return;
+        CoverStudio.Blueprint B(string pre) => CoverStudio.Build(SongAnalysis.Parse(File.ReadAllText(Path.Combine(d, pre + "_grund.json")))!,
+            File.ReadAllText(Path.Combine(d, pre + "--abschnitte.json")), File.ReadAllText(Path.Combine(d, pre + "--melodie.json")));
+        var o = B("orig");
+        foreach (var c in Directory.GetFiles(d, "cov*_grund.json").Select(f => Path.GetFileName(f)[..^"_grund.json".Length]))
+        {
+            var r = CoverStudio.Compare(o, B(c));
+            File.WriteAllText(Path.Combine(d, c + "-vergleich.txt"), string.Join((char)10, new[] { $"{r.Light} {r.Score}" }.Concat(r.Points.Select(p => $"{p.Light} {p.Name}: {p.Original} -> {p.Cover} ({p.Text})"))));
+        }
+        var self = CoverStudio.Compare(o, o);
+        Assert.Equal("gruen", self.Light); // das Original gegen sich selbst muss grün sein
     }
 }

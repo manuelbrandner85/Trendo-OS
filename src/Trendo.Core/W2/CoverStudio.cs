@@ -126,7 +126,8 @@ public static class CoverStudio
     public sealed record Point(string Name, string Original, string Cover, string Light, string Text);
     public sealed record Report(IReadOnlyList<Point> Points, double Score)
     {
-        public string Light => Score >= 0.8 ? "gruen" : Score >= 0.6 ? "gelb" : "rot";
+        /// <summary>Grün nur ohne roten Punkt – eine falsche Melodie darf nicht durch gleiches Tempo „grün“ werden (echter Lauf 04.11.2026: 0,83 bei 32 % Melodie).</summary>
+        public string Light => Score >= 0.8 && Points.All(p => p.Light != "rot") ? "gruen" : Score >= 0.6 ? "gelb" : "rot";
     }
 
     static readonly string[] Pitch = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
@@ -147,31 +148,37 @@ public static class CoverStudio
         return rel || fifth ? "gelb" : "rot";
     }
 
-    /// <summary>Ähnlichkeit zweier Melodien unabhängig von der Tonhöhe (Lage abgezogen), auf gleiche Länge gebracht, verschiebbar ±2 s.</summary>
-    public static double MelodySimilarity(Blueprint a, Blueprint b, int points = 240)
+    /// <summary>Ähnlichkeit zweier Melodien (Höhen und Tiefen), unabhängig von Lage und Oktave, verschiebbar ±2 s.
+    /// Gemessen 04.11.2026 an echten Covern: aus dem ganzen Mix sind nur ~25 % der Werte gesungen und Zufall trifft schon 25 % –
+    /// darum: jeder Wert zählt, Zufall wird abgezogen (0 = Zufall, 1 = gleich), und unter 7,5 s gemeinsamem Gesang gibt es kein Urteil (null).</summary>
+    public const int MinSharedFrames = 150;
+    public static double? MelodySimilarity(Blueprint a, Blueprint b)
     {
-        double[]? Curve(Blueprint x)
+        static double[] Norm(Blueprint x)
         {
-            if (x.Melody.Count(m => m is not null) < 20) return null;
             var v = x.Melody.Select(m => m ?? double.NaN).ToArray();
-            var med = v.Where(double.IsFinite).Order().ElementAt(v.Count(double.IsFinite) / 2);
-            var r = new double[points];
-            for (var i = 0; i < points; i++) { var k = (int)((long)i * v.Length / points); r[i] = v[k] - med; }
-            return r;
+            var f = v.Where(double.IsFinite).Order().ToArray();
+            if (f.Length == 0) return v;
+            var med = Math.Round(f[f.Length / 2]);
+            return [.. v.Select(m => m - med)];
         }
-        var ca = Curve(a); var cb = Curve(b); if (ca is null || cb is null) return 0;
-        var shiftMax = (int)Math.Round(2 / Math.Max(0.01, a.Duration / points));
-        var best = -1.0;
-        for (var s = -shiftMax; s <= shiftMax; s++)
+        var ca = Norm(a); var cb = Norm(b);
+        // gleiches Zeitraster: b auf die Werte-Abstände von a bringen
+        if (Math.Abs(a.Hop - b.Hop) > 1e-6 && b.Hop > 0) cb = [.. Enumerable.Range(0, (int)(cb.Length * b.Hop / a.Hop)).Select(i => cb[Math.Min(cb.Length - 1, (int)(i * a.Hop / b.Hop))])];
+        var maxShift = (int)Math.Round(2 / Math.Max(0.01, a.Hop)); double? best = null;
+        for (var s = -maxShift; s <= maxShift; s += 2)
         {
-            var xs = new List<double>(); var ys = new List<double>();
-            for (var i = 0; i < points; i++) { var j = i + s; if (j < 0 || j >= points || !double.IsFinite(ca[i]) || !double.IsFinite(cb[j])) continue; xs.Add(ca[i]); ys.Add(cb[j]); }
-            if (xs.Count < 20) continue;
-            // Oktave egal: Unterschied auf ±6 Halbtöne falten, Treffer = Abstand ≤ 1,5 Halbtöne
-            var hits = xs.Zip(ys, (x, y) => { var d = ((x - y) % 12 + 18) % 12 - 6; return Math.Abs(d) <= 1.5 ? 1.0 : 0.0; }).Average();
-            best = Math.Max(best, hits);
+            int n = 0, hits = 0;
+            for (var i = 0; i < ca.Length; i++)
+            {
+                var j = i + s; if (j < 0 || j >= cb.Length || !double.IsFinite(ca[i]) || !double.IsFinite(cb[j])) continue;
+                n++; var d = ((ca[i] - cb[j]) % 12 + 18) % 12 - 6; if (Math.Abs(d) <= 1) hits++;
+            }
+            if (n < MinSharedFrames) continue;
+            var score = Math.Clamp((hits / (double)n - 0.25) / 0.75, 0, 1); // 3 von 12 Tönen liegen zufällig innerhalb ±1 Halbton
+            if (best is null || score > best) best = score;
         }
-        return Math.Max(0, best);
+        return best;
     }
 
     public static Report Compare(Blueprint o, Blueprint c)
@@ -190,10 +197,10 @@ public static class CoverStudio
         pts.Add(new("Länge", Time(o.Duration), Time(c.Duration), L(len, 0.66, 0.33), len >= 0.66 ? "fast gleich lang" : "Länge weicht ab"));
         var mel = MelodySimilarity(o, c);
         pts.Add(new("Melodie", o.Melody.Count > 0 ? $"{Note(o.MelodyLow)}–{Note(o.MelodyHigh)}" : "–", c.Melody.Count > 0 ? $"{Note(c.MelodyLow)}–{Note(c.MelodyHigh)}" : "–",
-            L(mel, 0.55, 0.35), $"{mel * 100:0} % gleicher Verlauf (Höhen und Tiefen)"));
+            mel is { } mv ? L(mv, 0.5, 0.25) : "gelb", mel is { } m2 ? $"{m2 * 100:0} % gleicher Verlauf (Höhen und Tiefen, Zufall abgezogen)" : "nicht sicher messbar – zu wenig Gesang erkannt"));
         var sec = o.Sections.Count == 0 ? 1 : 1 - Math.Min(1, Math.Abs(c.Sections.Count - o.Sections.Count) / (double)Math.Max(2, o.Sections.Count));
         pts.Add(new("Aufbau", $"{o.Sections.Count} Teile", $"{c.Sections.Count} Teile", L(sec, 0.75, 0.5), sec >= 0.75 ? "gleicher Aufbau" : "Aufbau weicht ab"));
-        var score = 0.25 * tempo + 0.2 * (kl == "gruen" ? 1 : kl == "gelb" ? 0.6 : 0) + 0.1 * meter + 0.1 * len + 0.25 * Math.Min(1, mel / 0.7) + 0.1 * sec;
+        var score = 0.25 * tempo + 0.2 * (kl == "gruen" ? 1 : kl == "gelb" ? 0.6 : 0) + 0.1 * meter + 0.1 * len + 0.25 * (mel is { } ms ? Math.Min(1, ms / 0.6) : 0.5) + 0.1 * sec;
         return new(pts, Math.Round(score, 2));
     }
 

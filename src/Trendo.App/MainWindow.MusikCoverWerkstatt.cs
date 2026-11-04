@@ -79,9 +79,18 @@ public partial class MainWindow
             if (MelodyOverride is { } mo) melody = await mo(file);
             else if (AnalyseReady)
             {
+                // Melodie auf der Gesangsspur messen (gemessen 04.11.2026: aus dem ganzen Mix ist zu wenig Gesang erkennbar für einen fairen Vergleich)
+                string? vocal = null; var tmp = Path.Combine(Path.GetTempPath(), $"trendo-cwspuren-{Guid.NewGuid():N}");
+                if (KiStore.RuntimeReady(KiRuntime.Spuren))
+                {
+                    CwSay(say + " (Gesang wird dafür kurz herausgelöst)");
+                    var sr = await KiPyRun(KiRuntime.Spuren, [file, tmp]);
+                    if (sr.Ok && File.Exists(Path.Combine(tmp, "gesang.wav"))) vocal = Path.Combine(tmp, "gesang.wav");
+                }
                 var o = Path.Combine(Path.GetTempPath(), $"trendo-melodie-{Guid.NewGuid():N}.json");
-                var r = await KiPyRun(KiRuntime.MusikAnalyse, ["--melodie", file, o]);
+                var r = await KiPyRun(KiRuntime.MusikAnalyse, vocal is null ? ["--melodie", file, o] : ["--melodie", "--gesangsspur", vocal, o]);
                 if (r.Ok && File.Exists(o)) { melody = await File.ReadAllTextAsync(o); TryDelete(o); }
+                try { if (Directory.Exists(tmp)) Directory.Delete(tmp, true); } catch (IOException) { }
             }
         }
         catch (Exception e) when (e is IOException or InvalidOperationException) { }
