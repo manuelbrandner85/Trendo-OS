@@ -51,4 +51,26 @@ public class VideoSchnittPlus_Ui
         for (var i = 0; i < 100 && w.EditExporting; i++) { await Task.Delay(10); Settle(); }
         Assert.Contains("abgebrochen", w.ProgramMessage("schnitt"));
     }
+
+    [AvaloniaFact(DisplayName = "Videoschnitt „Meine Exporte“: fertiges Video bleibt in der Liste, Abspielen startet es, Ordner öffnen markiert die Datei im Explorer, Löschen in den Papierkorb")]
+    public async Task Exports_list()
+    {
+        var (w, l, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        var src = Path.Combine(root, "a.mp4"); File.WriteAllBytes(src, [1]);
+        var recycled = new List<string>(); w.ExportRecycleOverride = recycled.Add;
+        w.Show("schnitt"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer"));
+        w.EditAdd(src, length: 4, audio: true); w.Show("schnitt"); Settle();
+        Assert.Contains("Noch nichts exportiert", string.Join("|", w.GetLogicalTexts()));
+        w.ExportAsyncOverride = (p, f, prog, ct) => { File.WriteAllText(f, "mp4"); return Task.FromResult(f); };
+        Click(w, "prog-cmd-ve-export-bg");
+        for (var i = 0; i < 100 && w.EditExporting; i++) { await Task.Delay(10); Settle(); }
+        w.Show("schnitt"); Settle();
+        var file = w.EditExports().Single().FullName;
+        Assert.Equal(Path.GetFileName(file), w.Find<TextBlock>("ve-exp-name-0").Text);
+        Click(w, "ve-exp-play-0"); Assert.Contains(file, l.Opened);
+        Click(w, "ve-exp-folder-0");
+        Assert.Contains(l.Opened, o => o.Contains("explorer.exe") && o.Contains("/select," + file));
+        Click(w, "ve-exp-del-0"); Settle();
+        Assert.Equal([file], recycled);
+    }
 }

@@ -215,13 +215,14 @@ public sealed partial class MainWindow : Window
         var sw = System.Diagnostics.Stopwatch.StartNew();
         if (PhoneTakes(key)) { PresentPhone(key); return; } // vom Handy ausgelöst: auf der Handy-Fläche öffnen, nicht am PC
         CurrentView = key;
-        MarkTab(key); MarkSide(key);
-        PresentPage(key);
+        double T() { var t = sw.Elapsed.TotalMilliseconds; sw.Restart(); return t; } // Teilzeiten für den Leistungswächter (D1)
+        MarkTab(key); MarkSide(key); StartupTrace.Took("page.tabs", T());
+        PresentPage(key); StartupTrace.Took("page.present." + key, T());
         NoteRecent(key);
-        AfterShow(key);
+        AfterShow(key); StartupTrace.Took("page.after." + key, T());
         _bellBadge.Text = _core.Approvals.Pending().Count is var n && n > 0 ? n.ToString() : "";
-        RefreshProjects();
-        StartupTrace.Took("page." + key, sw.Elapsed.TotalMilliseconds);
+        RefreshProjects(); StartupTrace.Took("page.projects", T());
+        StartupTrace.Took("page." + key, StartupTrace.Sum("page.tabs", "page.present." + key, "page.after." + key, "page.projects"));
     }
 
     private void Tick()

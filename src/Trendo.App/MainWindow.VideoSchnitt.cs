@@ -269,6 +269,7 @@ public partial class MainWindow
             var cancel = new Button { Name = "ve-export-cancel", Content = "Export abbrechen" }; cancel.Click += (_, _) => job.Cancel();
             sp.Children.Add(H("Export läuft", 13)); sp.Children.Add(bar); sp.Children.Add(cancel);
         }
+        sp.Children.Add(EditExportsPanel()); // „Meine Exporte“ mit Abspielen und Ordner öffnen
         sp.Children.Add(H("Projekt", 13));
         sp.Children.Add(P($"{(int)d.Number("width")} × {(int)d.Number("height")} · {(int)d.Number("fps", 30)} Bilder/s · Länge {Clock(VideoEdit.Duration(d.Data))}", Muted, 12));
         if (FfmpegPath is null) sp.Children.Add(P("FFmpeg fehlt: Videos und Ton brauchen es für Länge, Vorschau und Export. Fotos gehen trotzdem.", Brush.Parse("#FACC15"), 12));

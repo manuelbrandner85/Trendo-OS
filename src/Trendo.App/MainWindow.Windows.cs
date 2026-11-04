@@ -23,6 +23,7 @@ public partial class MainWindow
     private readonly WorkAreaLayer _workArea = new();
     private readonly StackPanel _taskbar = new() { Name = "taskbar-windows", Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 4, 0, 0) };
     private readonly Dictionary<string, (Border Frame, ContentControl Body, TextBlock Title)> _frames = [];
+    private readonly Dictionary<string, Button> _closeButtons = [];
     private readonly Dictionary<string, string> _windowGroups = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> _windowStudio = new(StringComparer.OrdinalIgnoreCase);
     private bool _windowsReady;
@@ -78,7 +79,7 @@ public partial class MainWindow
         if (_deskHost.Children.Count == 0) _deskHost.Children.Add(SafeView("start"));
         var content = SafeView(key);
         var (win, closed) = Windows.Open(_backWindow ?? TargetWindow(key), key, PresentTitle(key), back: _backWindow is not null);
-        if (closed is not null && _frames.Remove(closed.Id, out var old)) { DetachFrame(old.Frame); _framePage.Remove(closed.Id); _windowStudio.Remove(closed.Id); ClaudeDockWindowClosed(closed.Id); }
+        if (closed is not null && _frames.Remove(closed.Id, out var old)) { _closeButtons.Remove(closed.Id); DetachFrame(old.Frame); _framePage.Remove(closed.Id); _windowStudio.Remove(closed.Id); ClaudeDockWindowClosed(closed.Id); }
         if (StudioKeyFor(key) is { } sid) _windowStudio[win.Id] = sid;
         if (!_frames.TryGetValue(win.Id, out var fr)) { fr = MakeFrame(win); _frames[win.Id] = fr; _winCanvas.Children.Add(fr.Frame); }
         // Wunsch 03.11.2026: Klick auf einen Knopf baut die Seite neu – die Scrollposition bleibt dabei stehen (vorher sprang sie nach oben)
@@ -314,15 +315,19 @@ public partial class MainWindow
         Host(_winCanvas, order);
         Host(_workArea, maxOrder);
         var z = 0;
+        // Prüfung 04.11.2026: liegt das oberste Fenster maximiert vorn, sind alle anderen verdeckt – nicht mitberechnen und nicht zeichnen
+        var coveredBy = Windows.Stack.LastOrDefault(w => !w.Minimized) is { Maximized: true } top ? top.Id : null;
         foreach (var w in Windows.Stack)
         {
-            var f = _frames[w.Id].Frame; f.ZIndex = ++z; f.IsVisible = !w.Minimized;
+            var f = _frames[w.Id].Frame; f.ZIndex = ++z; f.IsVisible = !w.Minimized && (coveredBy is null || w.Id == coveredBy);
             var on = active?.Id == w.Id;
             f.BorderBrush = on ? GoldEdge : Edge; f.Opacity = on ? 1 : 0.9;
             f.BoxShadow = LowPower ? default : on ? BoxShadows.Parse("0 22 50 0 #BB000000, 0 0 0 1 #66F5C451, 0 0 24 0 #33C9A227") : BoxShadows.Parse("0 8 18 0 #66000000");
             _frames[w.Id].Title.Foreground = on ? Text : Muted;
             if (f.Child is Panel { Children: [Grid g, ..] } && g.Children[0] is Border bar) bar.Background = on ? Brush.Parse("#55305078") : Brush.Parse("#22222222");
-            if (f.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "win-close-" + w.Id) is { } close)
+            // Schließen-Knopf einmal suchen und merken – vorher wurde bei jedem Seitenaufbau der ganze Inhalt jedes Fensters durchsucht
+            if (!_closeButtons.TryGetValue(w.Id, out var close)) { close = f.GetVisualDescendants().OfType<Button>().FirstOrDefault(b => b.Name == "win-close-" + w.Id); if (close is not null) _closeButtons[w.Id] = close; }
+            if (close is not null)
             { close.Background = on ? Brush.Parse("#E23B4A") : Brushes.Transparent; close.Foreground = on ? Brushes.White : Text; }
         }
         _deskHost.IsHitTestVisible = true;

@@ -14,6 +14,23 @@ public partial class MainWindow
     public static string WorkflowHome { get; set; } = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
     public WorkflowEngine Workflows => _wf ??= new WorkflowEngine(_core.DataRoot, _core.Audit, _core.Approvals, [WorkflowHome]) { Summarize = async t => { var a = await Intel.AskAsync(new KiRequest("Fasse diesen Text in 5 Stichpunkten zusammen:\n\n" + (t.Length > 8000 ? t[..8000] : t), PreferredModel: KiModelName, UseKnowledge: false)); return a.Ok ? a.Text : null; } };
     public WfRun? LastWfRun { get; private set; }
+    /// <summary>Letzter Fehler des Zeitplans (null = keiner). Früher wurden Fehler hier stumm verschluckt (Prüfung 04.11.2026).</summary>
+    public string? LastWfError { get; private set; }
+    /// <summary>Tests: fällige Abläufe ersetzen.</summary>
+    public Func<Task<IReadOnlyList<WfRun>>>? WfDueOverride { get; set; }
+
+    /// <summary>Fällige Abläufe ausführen (jede Minute). Fehler kommen ins Protokoll und werden bei den Abläufen angezeigt.</summary>
+    public async Task WfTickAsync()
+    {
+        try { foreach (var r in await (WfDueOverride?.Invoke() ?? Workflows.RunDueAsync(DateTimeOffset.Now))) LastWfRun = r; LastWfError = null; }
+        catch (Exception e) when (e is not OutOfMemoryException)
+        {
+            LastWfError = $"{DateTime.Now:HH:mm}: {e.Message}";
+            _core.Audit.Append(Principal.LocalOwner.Name, "ablauf.zeitplan.fehler", $"{e.GetType().Name}: {e.Message}");
+            try { CrashLog.Write(_core.DataRoot, e, "Abläufe (Zeitplan)"); } catch (IOException) { }
+            if (CurrentView == "ablaeufe") Show("ablaeufe");
+        }
+    }
     // Ablauf-Editor (Masterprompt 131, Runde 7): Probelauf mit sichtbarem Fortschritt an den Bausteinen
     WfRun? _wfProbe; int _wfProbeStep = -1; bool _wfProbing; string? _wfProbeId;
     public WfRun? WfProbe => _wfProbe;
@@ -41,7 +58,7 @@ public partial class MainWindow
         StudioPages["SYS-05"] = "ablaeufe";
         ExtraPages.Add(("Abläufe (Automatisch erledigen)", "ablaeufe", ["automatisch", "ablauf", "workflow", "aufraeumen", "zeitplan", "regel"]));
         var t = new DispatcherTimer { Interval = TimeSpan.FromMinutes(1) };
-        t.Tick += async (_, _) => { try { foreach (var r in await Workflows.RunDueAsync(DateTimeOffset.Now)) LastWfRun = r; } catch { } };
+        t.Tick += async (_, _) => await WfTickAsync();
         OwnTimer(t);
     }
 
@@ -56,6 +73,7 @@ public partial class MainWindow
     private Control WorkflowsView()
     {
         var left = new StackPanel { Spacing = 6, Children = { P("Abläufe erledigen Wiederkehrendes von allein. „Probelauf“ zeigt vorher, was passieren würde – ohne etwas zu ändern.", null, 12) } };
+        if (LastWfError is { } err) left.Children.Add(new TextBlock { Name = "wf-error", Text = "⚠ Ein geplanter Ablauf ist fehlgeschlagen – " + err, Foreground = Brush.Parse("#FACC15"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
         var tpl = new WrapPanel();
         foreach (var (id, name, make) in WorkflowEngine.Templates)
         {
