@@ -59,3 +59,6 @@ Android SDK unter `C:\Users\<user>\TrendoEntwicklung\android-sdk`: cmdline-tools
 - CHiQ: `ACTION_ACCESSIBILITY_SETTINGS` zeigt auf einen leeren Platzhalter (`frameworkpackagestubs`); eigener Eintrag `android.settings.ACCESSIBILITY_TV_OEM_LINK` wird zuerst genutzt.
 - Unit-Tests 10/10 grün (AppCatalog 4, AppGuard 3, HomeGuardRules 3). 0.3.3 aufgespielt, Paketliste unverändert. Dienst am TV angeboten (`query-services` zeigt `os.trendo.tv/.HomeGuardService`), eingeschaltet: NEIN (wartet auf Nutzer).
 - NICHT geprüft: Wächter-Verhalten nach Home-Taste und nach Neustart.
+- 0.3.4: Fehler behoben – ohne `<queries>`-Eintrag für HOME sah Trendo unter Android 11 die Original-Startseite nicht, der Wächter beobachtete nichts. Nach Korrektur Log am CHiQ: „Wächter aktiv, beobachtet: [com.google.android.tvlauncher]" → „Original-Startseite erkannt – zeige Trendo" → `START … os.trendo.tv/.MainActivity`, `Displayed +3s916ms`. Wächter vom Nutzer eingeschaltet (`enabled_accessibility_services` enthält `os.trendo.tv/os.trendo.tv.HomeGuardService`). Paketliste unverändert. Screenshot `reports/tv/T-0500-chiq-v034-startseite.png`.
+- Bekannt: Die Google-Startseite blitzt kurz auf, bevor Trendo erscheint (Wächter reagiert erst auf ihr Erscheinen). Kaltstart von Trendo ca. 3,9 s.
+- NICHT geprüft: Verhalten nach TV-Neustart, Rückkehr aus TiviMate.

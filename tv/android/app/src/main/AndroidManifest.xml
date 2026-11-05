@@ -12,6 +12,11 @@
 
     <!-- Keine QUERY_ALL_PACKAGES-Berechtigung: Trendo sieht nur Apps mit Startsymbol. -->
     <queries>
+        <!-- Original-Startseite erkennen (Wächter, Knopf „Original-Startseite"). -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.HOME" />
+        </intent>
         <intent>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LEANBACK_LAUNCHER" />

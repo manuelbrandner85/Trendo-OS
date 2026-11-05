@@ -3,6 +3,7 @@ package os.trendo.tv
 import android.accessibilityservice.AccessibilityService
 import android.content.Intent
 import android.os.SystemClock
+import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import os.trendo.tv.apps.AndroidApps
 import os.trendo.tv.apps.FavoritesStore
@@ -22,7 +23,10 @@ class HomeGuardService : AccessibilityService() {
     override fun onServiceConnected() {
         store = FavoritesStore(this)
         homes = AndroidApps(this).originalHomePackages()
+        Log.i("TrendoTV", "Wächter aktiv, beobachtet: $homes")
         // Nur Ereignisse der Original-Startseite(n) empfangen – keine anderen Apps.
+        // Leere Liste hieße bei Android „alle Apps" – dann lieber gar nichts beobachten.
+        if (homes.isEmpty()) { Log.w("TrendoTV", "Keine Original-Startseite gefunden – Wächter ruht"); return }
         serviceInfo = serviceInfo.apply { packageNames = homes.toTypedArray() }
     }
 
@@ -32,6 +36,7 @@ class HomeGuardService : AccessibilityService() {
         val now = SystemClock.elapsedRealtime()
         if (!HomeGuardRules.shouldBringTrendo(pkg, homes, store.originalHomeAllowed, recent, now)) return
         recent.addLast(now)
+        Log.i("TrendoTV", "Original-Startseite erkannt – zeige Trendo")
         startActivity(
             Intent(this, MainActivity::class.java)
                 .addCategory(Intent.CATEGORY_HOME)
