@@ -15,7 +15,7 @@ public class MediaLibraryPlusTests
         ]}
         """;
 
-    [Fact(DisplayName = "Openverse: Lizenzname, Dauer in Sekunden, HTML-Zeichen, ohne „ND/NC“ und fremde Formate; Filter frei/Nennung; Suchadresse nur erlaubte Lizenzen")]
+    [Fact(DisplayName = "X-07: Openverse: Lizenzname, Dauer in Sekunden, HTML-Zeichen, ohne „ND/NC“ und fremde Formate; Filter frei/Nennung; Suchadresse nur erlaubte Lizenzen")]
     public void Openverse_parse()
     {
         var all = MediaLibrary.ParseOpenverse(Audio, "klang");
@@ -34,7 +34,7 @@ public class MediaLibraryPlusTests
 
     static MediaHit Img(string id, int w, int h, string file = "") => new(id, "bild", id, "Erika Muster", "CC BY-SA 4.0", "https://creativecommons.org/licenses/by-sa/4.0/", "https://example.org/" + id, file.Length > 0 ? file : "https://upload.wikimedia.org/" + id, "", "jpg", 0, w, h, 0);
 
-    [Fact(DisplayName = "Mischen abwechselnd ohne doppelte Dateien; Ausrichtung quer/hoch/quadrat (±8 %) und Mindestbreite")]
+    [Fact(DisplayName = "X-07: Mischen abwechselnd ohne doppelte Dateien; Ausrichtung quer/hoch/quadrat (±8 %) und Mindestbreite")]
     public void Mix_and_orientation()
     {
         var mixed = MediaLibrary.Mix([Img("a", 1, 1), Img("b", 1, 1), Img("c", 1, 1)], [Img("x", 1, 1), Img("dup", 1, 1, "https://upload.wikimedia.org/a")]);
@@ -46,7 +46,7 @@ public class MediaLibraryPlusTests
         Assert.Equal(["q"], MediaLibrary.Filter(hits, "alle", 1000).Select(h => h.Id));
     }
 
-    [Fact(DisplayName = "Namensnennung als Text, HTML (maskiert, mit Links) und Markdown")]
+    [Fact(DisplayName = "X-07: Namensnennung als Text, HTML (maskiert, mit Links) und Markdown")]
     public void Credits()
     {
         var h = Img("Berg <im> Nebel", 10, 10) with { Title = "Berg <im> Nebel" };
@@ -57,7 +57,7 @@ public class MediaLibraryPlusTests
         Assert.Contains("[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)", MediaLibrary.CreditAs(h, "md"));
     }
 
-    [Fact(DisplayName = "Schriften: nur offene Lizenzen und Latin, Art-Filter, Wortanfang zuerst, Datei-Adresse mit nächster Stärke")]
+    [Fact(DisplayName = "X-07: Schriften: nur offene Lizenzen und Latin, Art-Filter, Wortanfang zuerst, Datei-Adresse mit nächster Stärke")]
     public void Fonts()
     {
         const string json = """

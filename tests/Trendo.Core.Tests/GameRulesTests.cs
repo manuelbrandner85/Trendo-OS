@@ -10,7 +10,7 @@ public class GameRulesTests
     static string[] Lvl(params string[] rows) => [.. Enumerable.Repeat(new string('.', rows[0].Length), 8), .. rows];
     static void Run(PlatformSim s, int frames, bool right = false, bool jump = false) { for (var i = 0; i < frames && !s.Over; i++) s.Step(false, right, jump); }
 
-    [Fact(DisplayName = "Sprungfeder schleudert viel höher als ein normaler Sprung")]
+    [Fact(DisplayName = "CORE-06: Sprungfeder schleudert viel höher als ein normaler Sprung")]
     public void Spring()
     {
         double Peak(string ground) { var s = new PlatformSim(Lvl("..S.....", ground)); var y0 = s.Player.Y; var min = y0; for (var i = 0; i < 90; i++) { s.Step(false, false, i == 5); min = Math.Min(min, s.Player.Y); } return y0 - min; }
@@ -18,7 +18,7 @@ public class GameRulesTests
         Assert.InRange(normal, 90, 130); Assert.True(spring > 180, $"Feder nur {spring:0} px");
     }
 
-    [Fact(DisplayName = "Schlüssel öffnet die Tür: mit Schlüssel geschafft, ohne Schlüssel bleibt die Tür zu; Regel „Sekunden ≥ 1 → Türen öffnen“ öffnet sie auch")]
+    [Fact(DisplayName = "CORE-06: Schlüssel öffnet die Tür: mit Schlüssel geschafft, ohne Schlüssel bleibt die Tür zu; Regel „Sekunden ≥ 1 → Türen öffnen“ öffnet sie auch")]
     public void Key_and_door()
     {
         var with = new PlatformSim(Lvl("S..K...D...Z", "############")); Run(with, 900, right: true);
@@ -29,7 +29,7 @@ public class GameRulesTests
         Assert.True(rule.Won); Assert.Contains("Türen öffnen", rule.Note);
     }
 
-    [Fact(DisplayName = "Speicherpunkt: nach einem Treffer geht es dort weiter statt am Start")]
+    [Fact(DisplayName = "CORE-06: Speicherpunkt: nach einem Treffer geht es dort weiter statt am Start")]
     public void Checkpoint()
     {
         var s = new PlatformSim(Lvl("S..C...^...Z", "############"), lives: 3);
@@ -38,7 +38,7 @@ public class GameRulesTests
         Assert.InRange(s.Player.X, 3 * 32, 3 * 32 + 8);
     }
 
-    [Fact(DisplayName = "Zeitlimit: nach Ablauf verloren, Restzeit zählt herunter; ohne Limit −1")]
+    [Fact(DisplayName = "CORE-06: Zeitlimit: nach Ablauf verloren, Restzeit zählt herunter; ohne Limit −1")]
     public void Time_limit()
     {
         var s = new PlatformSim(Lvl("S.......", "########"), timeLimit: 1);
@@ -47,7 +47,7 @@ public class GameRulesTests
         Assert.Equal(-1, new PlatformSim(Lvl("S.", "##")).SecondsLeft);
     }
 
-    [Fact(DisplayName = "Regeln: „Münzen ≥ 2 → +1 Leben“ feuert genau einmal, „Punkte ≥ 3 → Gewonnen“ beendet das Spiel")]
+    [Fact(DisplayName = "CORE-06: Regeln: „Münzen ≥ 2 → +1 Leben“ feuert genau einmal, „Punkte ≥ 3 → Gewonnen“ beendet das Spiel")]
     public void Rules()
     {
         var s = new PlatformSim(Lvl("S.o.o.o.o.......", "################"), lives: 2, rules: [new("muenzen", 2, "leben"), new("punkte", 3, "sieg")]);
@@ -59,7 +59,7 @@ public class GameRulesTests
         Assert.Equal(3600, GameStudio.Validate(new GameStudio.GameSettings { TimeLimit = 99999 }).TimeLimit);
     }
 
-    [Fact(DisplayName = "Gebautes Spiel: config.js trägt Zeitlimit und Regeln, neue Kacheln sind erlaubt, game.js ist gültiges JavaScript (Node)")]
+    [Fact(DisplayName = "CORE-06: Gebautes Spiel: config.js trägt Zeitlimit und Regeln, neue Kacheln sind erlaubt, game.js ist gültiges JavaScript (Node)")]
     public void Built_game()
     {
         var dir = Path.Combine(Path.GetTempPath(), "trendo-spiel-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);

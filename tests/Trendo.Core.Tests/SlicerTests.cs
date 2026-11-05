@@ -9,7 +9,7 @@ public class SlicerTests
 {
     static Mesh Box(double x0, double x1, double y0, double y1, double z0, double z1, Mesh? m = null) { m ??= new Mesh(); Mesh3D.AddBox(m, x0, x1, y0, y1, z0, z1); return m; }
 
-    [Fact(DisplayName = "Umrisse: Würfelschnitt ergibt einen geschlossenen Umriss (Umfang 80 mm, Fläche 400 mm²); zwei Körper zwei Umrisse")]
+    [Fact(DisplayName = "CORE-05: Umrisse: Würfelschnitt ergibt einen geschlossenen Umriss (Umfang 80 mm, Fläche 400 mm²); zwei Körper zwei Umrisse")]
     public void Loops()
     {
         var loops = Slicer.Loops(PrintPrep.Slice(Box(0, 20, 0, 20, 0, 10), 5));
@@ -18,7 +18,7 @@ public class SlicerTests
         Assert.Equal(2, Slicer.Loops(PrintPrep.Slice(two, 5)).Count);
     }
 
-    [Fact(DisplayName = "Füllung: 100 % deckt die Fläche (Länge ≈ Fläche / Linienbreite), läuft nicht in die Lücke zwischen zwei Körpern, Winkel wechselt")]
+    [Fact(DisplayName = "CORE-05: Füllung: 100 % deckt die Fläche (Länge ≈ Fläche / Linienbreite), läuft nicht in die Lücke zwischen zwei Körpern, Winkel wechselt")]
     public void Infill()
     {
         var loops = Slicer.Loops(PrintPrep.Slice(Box(0, 20, 0, 20, 0, 10), 5));
@@ -33,7 +33,7 @@ public class SlicerTests
         Assert.True(a.Count > 0 && b.Count > 0); Assert.NotEqual(Math.Sign((a[0].X2 - a[0].X1) * (a[0].Y2 - a[0].Y1)), Math.Sign((b[0].X2 - b[0].X1) * (b[0].Y2 - b[0].Y1)));
     }
 
-    [Fact(DisplayName = "Schätzung aus Bahnen: massiver Würfel wiegt etwa Volumen × Dichte, 15 % Füllung deutlich weniger, PETG schwerer und teurer als PLA")]
+    [Fact(DisplayName = "CORE-05: Schätzung aus Bahnen: massiver Würfel wiegt etwa Volumen × Dichte, 15 % Füllung deutlich weniger, PETG schwerer und teurer als PLA")]
     public void Estimate()
     {
         var cube = Box(0, 20, 0, 20, 0, 20);
@@ -49,7 +49,7 @@ public class SlicerTests
         Assert.Equal(50, Slicer.Estimate(cube, new Slicer.Settings(Layer: 0.4)).Layers);
     }
 
-    [Fact(DisplayName = "Stützen: Tisch-Form (Platte auf dünnem Fuß) braucht Stützen unter der Platte, Würfel nicht")]
+    [Fact(DisplayName = "CORE-05: Stützen: Tisch-Form (Platte auf dünnem Fuß) braucht Stützen unter der Platte, Würfel nicht")]
     public void Supports()
     {
         var table = Box(0, 20, 0, 20, 10, 12, Box(8, 12, 8, 12, 0, 10));
@@ -58,7 +58,7 @@ public class SlicerTests
         Assert.True(Slicer.Estimate(table, new Slicer.Settings()).SupportGrams > 0);
     }
 
-    [Fact(DisplayName = "Skalieren, Anordnen in Reihen (mittig, mit Abstand), Kopien auf der Platte; zu viele Teile oder zu groß gibt eine klare Meldung")]
+    [Fact(DisplayName = "CORE-05: Skalieren, Anordnen in Reihen (mittig, mit Abstand), Kopien auf der Platte; zu viele Teile oder zu groß gibt eine klare Meldung")]
     public void Scale_arrange_copies()
     {
         var p = PrintPrep.BambuA1;

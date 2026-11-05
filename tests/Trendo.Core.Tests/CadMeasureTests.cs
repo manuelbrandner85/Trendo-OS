@@ -7,7 +7,7 @@ namespace Trendo.Core.Tests;
 /// <summary>Trendo CAD – Vorbild-Funktionen (Fusion 360, Onshape, FreeCAD; 04.11.2026): Eigenschaften, Querschnitt, Normbohrungen.</summary>
 public class CadMeasureTests
 {
-    [Fact(DisplayName = "Eigenschaften: Quader 40×30×10 mm – Volumen 12 cm³, Oberfläche 38 cm², Masse je Werkstoff, Schwerpunkt in der Mitte")]
+    [Fact(DisplayName = "CORE-05: Eigenschaften: Quader 40×30×10 mm – Volumen 12 cm³, Oberfläche 38 cm², Masse je Werkstoff, Schwerpunkt in der Mitte")]
     public void Properties()
     {
         var box = CadShapes.Box(new Vec3(0, 0, 0), 40, 30, 10);
@@ -22,7 +22,7 @@ public class CadMeasureTests
         Assert.InRange(two.Center.X, 20, 45);
     }
 
-    [Fact(DisplayName = "Querschnitt: Quader mit Bohrung – Fläche ohne das Loch; über dem Körper 0")]
+    [Fact(DisplayName = "CORE-05: Querschnitt: Quader mit Bohrung – Fläche ohne das Loch; über dem Körper 0")]
     public void Section()
     {
         var plate = CadShapes.Box(new Vec3(0, 0, 0), 40, 30, 10).Subtract(CadShapes.Cylinder(new Vec3(20, 15, -1), 5, 12, 64));
@@ -31,7 +31,7 @@ public class CadMeasureTests
         Assert.Equal(0, CadMeasure.SectionArea([plate], 50));
     }
 
-    [Fact(DisplayName = "Normbohrungen: M3 Durchgang 3,4 mm, M6 Kernloch 5 mm, M8 Senkschraube 9/16,4 mm; eigenes Maß zuerst")]
+    [Fact(DisplayName = "CORE-05: Normbohrungen: M3 Durchgang 3,4 mm, M6 Kernloch 5 mm, M8 Senkschraube 9/16,4 mm; eigenes Maß zuerst")]
     public void Holes()
     {
         Assert.Equal("frei", CadMeasure.Holes[0].Id);

@@ -22,10 +22,10 @@
 
 ### Sauberer Nachbau
 - ✓ Projekt-Arbeitsfläche mit Regeln und den drei Schritten Beschreibung → Umsetzung → Prüfung (Clean-Room)
-- ◐ Abgleich „nur Funktionen, keine fremden Texte“ – als Regel und Prüfschritt, nicht automatisch
+- ✓ Automatischer Ähnlichkeitsvergleich mit dem Original (Wortfolgen-Abgleich), Treffer über der Schwelle werden gemeldet; Tagebuch je Rolle
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Liste links, Detail rechts – wie VS Code; ein Hauptknopf je Eintrag.
 
 ## Nächste Schritte
-1. Automatischer Textvergleich im Nachbau (Ähnlichkeit zu fremden Texten melden)
+1. Ähnlichkeitsvergleich auch für Texte und Grafiken, nicht nur Code

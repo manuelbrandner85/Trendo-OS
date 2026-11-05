@@ -13,7 +13,7 @@ public class SalesStatsTests
         return (k, new Ledger(f.Core.DataRoot));
     }
 
-    [Fact(DisplayName = "Rabatt: 10 % oder 5 € auf den Bon, nie mehr als die Summe; bucht weniger Einnahme, kein Lagerposten; Storno bucht genau zurück; falsche Angaben werden abgelehnt")]
+    [Fact(DisplayName = "STUDIO-ONLINE-BUSINESS-01: Rabatt: 10 % oder 5 € auf den Bon, nie mehr als die Summe; bucht weniger Einnahme, kein Lagerposten; Storno bucht genau zurück; falsche Angaben werden abgelehnt")]
     public void Discount()
     {
         using var f = new Fixture(); var (k, l) = Setup(f);
@@ -31,7 +31,7 @@ public class SalesStatsTests
         Assert.DoesNotContain(k.Day(new DateOnly(2026, 11, 2)).ByProduct, x => x.Product.StartsWith("Rabatt"));
     }
 
-    [Fact(DisplayName = "Artikelnummer/EAN: Prüfziffer EAN-13 und EAN-8, falscher Strichcode abgelehnt, freie Nummern erlaubt; Scanner findet zuerst die Nummer, dann den Namen")]
+    [Fact(DisplayName = "STUDIO-ONLINE-BUSINESS-01: Artikelnummer/EAN: Prüfziffer EAN-13 und EAN-8, falscher Strichcode abgelehnt, freie Nummern erlaubt; Scanner findet zuerst die Nummer, dann den Namen")]
     public void Sku()
     {
         Assert.True(SalesStats.EanValid("4006381333931")); Assert.True(SalesStats.EanValid("96385074"));
@@ -44,7 +44,7 @@ public class SalesStatsTests
         Assert.Equal("Tee", SalesStats.Find(p, "tee")!.Name); Assert.Null(SalesStats.Find(p, "Kak")); Assert.Null(SalesStats.Find(p, " "));
     }
 
-    [Fact(DisplayName = "Auswertung: Umsatz, Bons, Durchschnittsbon, Rabatte, Bestseller, Wochentage, Stoßzeit; Stornos zählen nicht; Vergleich zum Zeitraum davor")]
+    [Fact(DisplayName = "STUDIO-ONLINE-BUSINESS-01: Auswertung: Umsatz, Bons, Durchschnittsbon, Rabatte, Bestseller, Wochentage, Stoßzeit; Stornos zählen nicht; Vergleich zum Zeitraum davor")]
     public void Report()
     {
         using var f = new Fixture(); var (k, l) = Setup(f);
