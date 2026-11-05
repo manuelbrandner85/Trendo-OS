@@ -88,6 +88,8 @@ data class TvState(
     val stats: DeviceStats,
     val online: Boolean,
     val version: String,
+    /** true = Trendo ist die Standard-Startseite des Fernsehers. */
+    val isHome: Boolean,
 )
 
 /** Alle Aktionen; Fremd-Apps werden ausschließlich gestartet oder deren Infoseite geöffnet. */
@@ -99,12 +101,17 @@ class TvActions(
     val uninstallSelf: () -> Unit,
     val openInput: (TvInput) -> Unit,
     val banner: (String) -> Drawable?,
+    val makeHome: () -> Unit,
+    val homeSettings: () -> Unit,
 )
 
 @Composable
-fun TrendoTvApp(state: TvState, actions: TvActions) {
+fun TrendoTvApp(state: TvState, actions: TvActions, homeTick: Int = 0) {
     var section by rememberSaveable { mutableStateOf(Section.START) }
-    BackHandler(enabled = section != Section.START) { section = Section.START }
+    // Home-Taste: immer zurück auf „Start".
+    LaunchedEffect(homeTick) { section = Section.START }
+    // Zurück-Taste: Unterseite → Start. Als Startseite schließt sich Trendo nicht selbst.
+    BackHandler(enabled = section != Section.START || state.isHome) { section = Section.START }
 
     Box(Modifier.fillMaxSize().background(TvColors.Ink)) {
         Image(painterResource(R.drawable.tv_hero), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())

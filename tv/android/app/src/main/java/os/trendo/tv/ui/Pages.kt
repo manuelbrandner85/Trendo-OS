@@ -185,8 +185,11 @@ private fun HdmiPage(state: TvState, actions: TvActions) {
 @Composable
 private fun SettingsPage(state: TvState, actions: TvActions) {
     ActionList(
-        "TRENDO OS TV ${state.version}. Die Original-Oberfläche bleibt immer erhalten.",
+        "TRENDO OS TV ${state.version} – " + (if (state.isHome) "ist die Startseite dieses Fernsehers." else "ist noch nicht die Startseite.") +
+            " Die Original-Oberfläche bleibt immer erhalten.",
         listOf(
+            (if (state.isHome) "Standard-Startseite ändern (zurück zu Google)" else "Trendo als Startseite festlegen") to
+                (if (state.isHome) actions.homeSettings else actions.makeHome),
             "TV-Einstellungen" to { actions.settings(Settings.ACTION_SETTINGS) },
             "Bild" to { actions.settings(Settings.ACTION_DISPLAY_SETTINGS) },
             "Ton" to { actions.settings(Settings.ACTION_SOUND_SETTINGS) },

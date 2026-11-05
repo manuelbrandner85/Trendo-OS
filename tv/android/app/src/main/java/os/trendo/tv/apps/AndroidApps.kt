@@ -1,7 +1,10 @@
 package os.trendo.tv.apps
 
 import android.app.ActivityManager
+import android.app.role.RoleManager
 import android.content.ActivityNotFoundException
+import android.content.ComponentName
+import android.os.Build
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
@@ -72,9 +75,52 @@ class AndroidApps(private val context: Context) {
 
     fun openTvSettings(): Boolean = openSettings()
 
-    /** Öffnet das Original-TV-Menü. Solange Trendo nicht Standard-Home ist, ist das immer das System-Home. */
-    fun openOriginalHome(): Boolean =
-        start(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    /**
+     * Öffnet die Original-Startseite des Herstellers – ausdrücklich die fremde Home-App,
+     * damit sie auch dann erreichbar bleibt, wenn Trendo die Standard-Startseite ist.
+     */
+    fun openOriginalHome(): Boolean {
+        val home = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+        val other = pm.queryIntentActivities(home, 0).map { it.activityInfo }
+            .firstOrNull { it.packageName != own && it.packageName != "android" }
+            ?: return start(home.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        return start(home.setComponent(ComponentName(other.packageName, other.name)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    }
+
+    // ---- Startseiten-Modus (nur eigenes Paket, Bestätigung durch den Nutzer am TV) ----
+
+    private val homeAlias get() = ComponentName(own, "$own.HomeAlias")
+
+    /** Ist Trendo gerade die Standard-Startseite? */
+    fun isDefaultHome(): Boolean = runCatching {
+        pm.resolveActivity(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), PackageManager.MATCH_DEFAULT_ONLY)
+            ?.activityInfo?.packageName == own
+    }.getOrDefault(false)
+
+    /** Schaltet den eigenen Startseiten-Eintrag ein oder aus. Betrifft ausschließlich Trendo. */
+    fun setHomeEntry(enabled: Boolean) {
+        pm.setComponentEnabledSetting(
+            homeAlias,
+            if (enabled) PackageManager.COMPONENT_ENABLED_STATE_ENABLED else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+            PackageManager.DONT_KILL_APP,
+        )
+    }
+
+    /**
+     * Offizieller Android-Weg: Dialog „Standard-Startseite" (RoleManager, ab Android 10).
+     * Gibt den Intent zurück, den die Activity starten muss, oder null, wenn das Gerät ihn nicht anbietet.
+     */
+    fun homeRoleRequest(): Intent? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return null
+        val rm = context.getSystemService(RoleManager::class.java) ?: return null
+        if (!rm.isRoleAvailable(RoleManager.ROLE_HOME) || rm.isRoleHeld(RoleManager.ROLE_HOME)) return null
+        return rm.createRequestRoleIntent(RoleManager.ROLE_HOME)
+    }
+
+    /** Ausweg: Android-Seite zur Wahl der Standard-Startseite (falls vorhanden). */
+    fun openHomeSettings(): Boolean =
+        start(Intent(Settings.ACTION_HOME_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) ||
+            start(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 
     /**
      * „Alles rückgängig": öffnet den Android-Dialog zum Entfernen von Trendo SELBST.

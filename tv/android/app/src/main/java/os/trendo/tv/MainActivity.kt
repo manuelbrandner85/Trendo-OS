@@ -1,9 +1,11 @@
 package os.trendo.tv
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.produceState
@@ -23,13 +25,23 @@ class MainActivity : ComponentActivity() {
     private lateinit var apps: AndroidApps
     private lateinit var store: FavoritesStore
     private var refresh by mutableIntStateOf(0)
+    /** Zählt Home-Tastendrücke; die Oberfläche springt dann auf „Start". */
+    private var homeTick by mutableIntStateOf(0)
+
+    private val roleRequest = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        refresh++
+        if (!apps.isDefaultHome()) {
+            // Gerät hat abgelehnt oder Nutzer hat abgebrochen: Android-Auswahlseite als Ausweg.
+            if (!apps.openHomeSettings()) hint("Bitte die Home-Taste drücken und „TRENDO OS“ als Startseite wählen.")
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         apps = AndroidApps(this)
         store = FavoritesStore(this)
         val version = runCatching { packageManager.getPackageInfo(packageName, 0).versionName }.getOrNull() ?: "?"
-        val empty = TvState(emptyList(), emptyList(), emptyList(), null, null, emptyList(), DeviceStats(null, null, null, null, null), false, version)
+        val empty = TvState(emptyList(), emptyList(), emptyList(), null, null, emptyList(), DeviceStats(null, null, null, null, null), false, version, false)
 
         val actions = TvActions(
             launch = { pkg -> if (apps.launch(pkg)) store.lastLaunched = pkg else fail() },
@@ -39,6 +51,8 @@ class MainActivity : ComponentActivity() {
             uninstallSelf = { if (!apps.uninstallSelf()) fail() },
             openInput = { input -> if (!apps.openInput(input)) fail() },
             banner = apps::banner,
+            makeHome = ::requestHome,
+            homeSettings = { if (!apps.openHomeSettings()) hint("Einstellungen → Apps → Standard-Apps → Startseite") },
         )
 
         setContent {
@@ -57,11 +71,28 @@ class MainActivity : ComponentActivity() {
                         stats = apps.stats(),
                         online = apps.online(),
                         version = version,
+                        isHome = apps.isDefaultHome(),
                     )
                 }
             }
-            TrendoTvApp(state, actions)
+            TrendoTvApp(state, actions, homeTick)
         }
+        if (intent?.getBooleanExtra(EXTRA_REQUEST_HOME, false) == true) requestHome()
+    }
+
+    /** Trendo als Startseite anbieten – entscheiden tut immer der Nutzer im Android-Dialog. */
+    private fun requestHome() {
+        apps.setHomeEntry(true)
+        val req = apps.homeRoleRequest()
+        if (req != null) runCatching { roleRequest.launch(req) }.onFailure { apps.openHomeSettings() }
+        else if (apps.isDefaultHome()) hint("Trendo ist bereits die Startseite.")
+        else if (!apps.openHomeSettings()) hint("Bitte die Home-Taste drücken und „TRENDO OS“ als Startseite wählen.")
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (intent.hasCategory(Intent.CATEGORY_HOME)) homeTick++
+        if (intent.getBooleanExtra(EXTRA_REQUEST_HOME, false)) requestHome()
     }
 
     /** Beim Zurückkehren neu einlesen (neu installierte Apps, zuletzt geöffnet); kein Hintergrund-Polling. */
@@ -70,7 +101,13 @@ class MainActivity : ComponentActivity() {
         refresh++
     }
 
-    private fun fail() {
-        Toast.makeText(this, "Konnte nicht geöffnet werden.", Toast.LENGTH_SHORT).show()
+    private fun fail() = hint("Konnte nicht geöffnet werden.")
+
+    private fun hint(text: String) {
+        Toast.makeText(this, text, Toast.LENGTH_LONG).show()
+    }
+
+    companion object {
+        const val EXTRA_REQUEST_HOME = "os.trendo.tv.REQUEST_HOME"
     }
 }

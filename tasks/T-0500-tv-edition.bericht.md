@@ -45,3 +45,10 @@ Android SDK unter `C:\Users\<user>\TrendoEntwicklung\android-sdk`: cmdline-tools
 - 0.2.1 APK: 2291645 Byte, SHA-256 `cfa43bd313a11a8b82a4f0b1116d2ceedfeaf1260db11f50d3d2e0681512f526`. Screenshots `reports/tv/T-0500-chiq-v020-start.png`, `reports/tv/T-0500-chiq-v021-start.png`.
 - NICHT geprüft: Fernbedienungs-Durchlauf (dumpsys am CHiQ gesperrt → Vordergrund nicht feststellbar), Unterseiten am TV, HDMI-Umschaltung, Suche mit Bildschirmtastatur.
 - Kaltstart 3,4 s ist langsamer als 0.1.0 (1,4 s) – Bilder und Symbole; Optimierung offen.
+
+## Nachtrag 05.11.2026 – Startseiten-Modus 0.3.0 (Wunsch: Trendo als Startseite, nicht als App)
+- Offizieller Weg: eigener Eintrag `HomeAlias` wird erst bei „Trendo als Startseite festlegen" eingeschaltet (nur eigenes Paket), dann Android-Dialog `RoleManager.ROLE_HOME`; Ausweg `Settings.ACTION_HOME_SETTINGS`.
+- Original-Startseite bleibt erreichbar: Kachel startet die fremde Home-App ausdrücklich (nicht über HOME-Intent, der sonst auf Trendo zeigen würde).
+- Home-Taste springt auf „Start"; Zurück-Taste schließt Trendo als Startseite nicht.
+- Rückweg: Einstellungen → „Standard-Startseite ändern (zurück zu Google)" oder „Alles rückgängig" (Trendo entfernen → Android nimmt automatisch wieder die Google-Startseite).
+- 0.3.0 aufgespielt, Paketliste unverändert. Dialog „TRENDO OS als standardmäßige Start-App festlegen?" erscheint am CHiQ (Screenshot geprüft). Bestätigung durch den Nutzer am TV: AUSSTEHEND (nach 3 min weiterhin `com.google.android.tvlauncher`).
