@@ -115,35 +115,42 @@ class MainActivity : ComponentActivity() {
         )
 
         setContent {
+            // Schneller Start: zuerst nur Apps (lokal, schnell) – Medien, Wetter & Co. kommen danach dazu.
             val state by produceState(empty, refresh) {
-                value = withContext(Dispatchers.IO) {
+                val base = withContext(Dispatchers.IO) {
                     val list = apps.load()
                     val favPkgs = store.load() ?: AppCatalog.suggestedFavorites(list).also { if (list.isNotEmpty()) store.save(it) }
                     val favs = AppCatalog.favorites(list, favPkgs)
-                    val allowed = media.hasPermission()
-                    TvState(
+                    (value.takeIf { it.apps.isNotEmpty() } ?: empty).copy(
                         apps = list,
                         favorites = favs,
                         myApps = AppFilters.myApps(list, favs),
                         lastLaunched = list.firstOrNull { it.packageName == store.lastLaunched },
                         liveTv = list.firstOrNull { it.label.lowercase().contains("tivimate") },
-                        inputs = apps.hdmiInputs(),
-                        stats = apps.stats(),
-                        online = apps.online(),
                         version = version,
                         // Nicht isDefaultHome(): manche TVs speichern die Wahl, die Home-Taste ignoriert sie aber.
                         isHome = apps.isHomeGuardEnabled(),
-                        videos = if (allowed) media.load(MediaKind.VIDEO) else emptyList(),
-                        audio = if (allowed) media.load(MediaKind.AUDIO) else emptyList(),
-                        images = if (allowed) media.load(MediaKind.IMAGE) else emptyList(),
                         resume = resume.recent(),
-                        mediaAllowed = allowed,
-                        weather = runCatching { weather.current() }.getOrNull(),
                         place = weather.place,
                         timerMinutes = SleepTimer.remainingMinutes(this@MainActivity),
                         voiceAvailable = voiceOk,
                     )
                 }
+                value = base
+                value = withContext(Dispatchers.IO) {
+                    val allowed = media.hasPermission()
+                    base.copy(
+                        inputs = apps.hdmiInputs(),
+                        stats = apps.stats(),
+                        online = apps.online(),
+                        videos = if (allowed) media.load(MediaKind.VIDEO) else emptyList(),
+                        audio = if (allowed) media.load(MediaKind.AUDIO) else emptyList(),
+                        images = if (allowed) media.load(MediaKind.IMAGE) else emptyList(),
+                        mediaAllowed = allowed,
+                    )
+                }
+                // Wetter zuletzt – darf nie den Start aufhalten (Netz).
+                value = value.copy(weather = withContext(Dispatchers.IO) { runCatching { weather.current() }.getOrNull() })
             }
             lastState = state
             Box(Modifier.fillMaxSize()) {

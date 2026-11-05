@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.TrendoTV" parent="android:Theme.Material.NoActionBar">
-        <item name="android:windowBackground">@color/ink</item>
+        <item name="android:windowBackground">@drawable/splash</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowFullscreen">true</item>
+    </style>
+    <!-- Player: schwarzer Hintergrund statt Startbild. -->
+    <style name="Theme.TrendoTV.Player">
+        <item name="android:windowBackground">@android:color/black</item>
     </style>
     <color name="ink">#FF050A14</color>
 </resources>

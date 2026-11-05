@@ -23,8 +23,8 @@ android {
         // minSdk 28 bleibt, damit auch ältere Android-TV-Geräte laufen.
         minSdk = 28
         targetSdk = 35
-        versionCode = 14
-        versionName = "0.5.1"
+        versionCode = 16
+        versionName = "0.5.3"
     }
 
     signingConfigs {

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Startbild: erscheint sofort beim Öffnen (vor dem ersten Bild von Compose). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/ink" />
+    <item><bitmap android:src="@drawable/tv_hero" android:gravity="fill" /></item>
+    <item><color android:color="#99050A14" /></item>
+    <item android:width="110dp" android:height="110dp" android:gravity="center" android:drawable="@drawable/ic_trendo_mark" />
+</layer-list>
