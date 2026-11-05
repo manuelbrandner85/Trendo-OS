@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
 
     private val roleRequest = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         refresh++
-        if (!apps.isDefaultHome()) {
+        if (!apps.isHomeGuardEnabled()) {
             // Gerät hat abgelehnt oder Nutzer hat abgebrochen: Android-Auswahlseite als Ausweg.
             if (!apps.openHomeSettings()) hint("Bitte die Home-Taste drücken und „TRENDO OS“ als Startseite wählen.")
         }
@@ -47,12 +47,15 @@ class MainActivity : ComponentActivity() {
             launch = { pkg -> if (apps.launch(pkg)) store.lastLaunched = pkg else fail() },
             appInfo = { pkg -> if (!apps.openSystemInfo(pkg)) fail() },
             settings = { action -> if (!apps.openSettings(action)) fail() },
-            originalHome = { if (!apps.openOriginalHome()) fail() },
+            originalHome = { store.originalHomeAllowed = true; if (!apps.openOriginalHome()) { store.originalHomeAllowed = false; fail() } },
             uninstallSelf = { if (!apps.uninstallSelf()) fail() },
             openInput = { input -> if (!apps.openInput(input)) fail() },
             banner = apps::banner,
             makeHome = ::requestHome,
-            homeSettings = { if (!apps.openHomeSettings()) hint("Einstellungen → Apps → Standard-Apps → Startseite") },
+            homeSettings = {
+                if (apps.isHomeGuardEnabled()) { hint("„TRENDO OS Startseite“ ausschalten – dann gilt wieder die Original-Startseite."); apps.openAccessibilitySettings() }
+                else if (!apps.openHomeSettings()) hint("Einstellungen → Apps → Standard-Apps → Startseite")
+            },
         )
 
         setContent {
@@ -71,7 +74,8 @@ class MainActivity : ComponentActivity() {
                         stats = apps.stats(),
                         online = apps.online(),
                         version = version,
-                        isHome = apps.isDefaultHome(),
+                        // Nicht isDefaultHome(): manche TVs speichern die Wahl, die Home-Taste ignoriert sie aber.
+                        isHome = apps.isHomeGuardEnabled(),
                     )
                 }
             }
@@ -83,10 +87,18 @@ class MainActivity : ComponentActivity() {
     /** Trendo als Startseite anbieten – entscheiden tut immer der Nutzer im Android-Dialog. */
     private fun requestHome() {
         apps.setHomeEntry(true)
-        val req = apps.homeRoleRequest()
-        if (req != null) runCatching { roleRequest.launch(req) }.onFailure { apps.openHomeSettings() }
-        else if (apps.isDefaultHome()) hint("Trendo ist bereits die Startseite.")
-        else if (!apps.openHomeSettings()) hint("Bitte die Home-Taste drücken und „TRENDO OS“ als Startseite wählen.")
+        when {
+            apps.isHomeGuardEnabled() -> hint("Trendo ist bereits die Startseite.")
+            // Viele Android-TV-Geräte übernehmen eine andere Standard-Startseite nicht – dann der Wächter.
+            else -> {
+                hint("In den Bedienungshilfen „TRENDO OS Startseite“ wählen und einschalten.")
+                if (!apps.openAccessibilitySettings()) {
+                    hint("Einstellungen → Geräteeinstellungen → Bedienungshilfen → „TRENDO OS Startseite“ einschalten.")
+                    val req = apps.homeRoleRequest()
+                    if (req != null) runCatching { roleRequest.launch(req) } else apps.openHomeSettings()
+                }
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -98,6 +110,8 @@ class MainActivity : ComponentActivity() {
     /** Beim Zurückkehren neu einlesen (neu installierte Apps, zuletzt geöffnet); kein Hintergrund-Polling. */
     override fun onResume() {
         super.onResume()
+        // Trendo ist wieder vorne: der Wächter darf die Original-Startseite wieder abfangen.
+        store.originalHomeAllowed = false
         refresh++
     }
 

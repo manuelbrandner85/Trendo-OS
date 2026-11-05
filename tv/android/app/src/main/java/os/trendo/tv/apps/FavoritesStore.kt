@@ -14,7 +14,13 @@ class FavoritesStore(context: Context) {
         get() = prefs.getString(LAST, null)
         set(v) { prefs.edit().putString(LAST, v).apply() }
 
+    /** true = Nutzer hat bewusst die Original-Startseite gewählt; der Wächter hält sich zurück, bis Trendo wieder geöffnet wird. */
+    var originalHomeAllowed: Boolean
+        get() = prefs.getBoolean(ORIGINAL, false)
+        set(v) { prefs.edit().putBoolean(ORIGINAL, v).commit() }
+
     private companion object {
+        const val ORIGINAL = "original_home_allowed_v1"
         const val KEY = "favorites_v1"
         const val LAST = "last_launched_v1"
     }

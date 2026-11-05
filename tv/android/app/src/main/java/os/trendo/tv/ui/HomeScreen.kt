@@ -163,8 +163,9 @@ private fun TopBar(state: TvState, onSearch: () -> Unit, onSettings: () -> Unit)
         Spacer(Modifier.weight(1f))
         Clock()
         Spacer(Modifier.width(14.dp))
-        Icon(if (state.online) Icons.Outlined.Wifi else Icons.Outlined.WifiOff, contentDescription = if (state.online) "Online" else "Offline",
-            tint = TvColors.Text, modifier = Modifier.size(17.dp))
+        // Erst anzeigen, wenn echte Werte geladen sind (sonst stünde kurz „offline" da).
+        if (state.apps.isNotEmpty()) Icon(if (state.online) Icons.Outlined.Wifi else Icons.Outlined.WifiOff,
+            contentDescription = if (state.online) "Online" else "Offline", tint = TvColors.Text, modifier = Modifier.size(17.dp))
         Spacer(Modifier.width(8.dp))
         FocusSurface(onSettings, Modifier.size(30.dp), shape = RoundedCornerShape(50), container = Color.Transparent) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -239,7 +240,8 @@ private fun StartPage(state: TvState, actions: TvActions, go: (Section) -> Unit)
                 AppBannerTile(app, actions, Modifier.weight(1f).height(43.dp))
             }
             run {
-                FocusSurface({ go(Section.APPS) }, Modifier.weight(1f).height(43.dp)) {
+                val plus = if (state.myApps.isEmpty()) Modifier.width(76.dp) else Modifier.weight(1f)
+                FocusSurface({ go(Section.APPS) }, plus.height(43.dp)) {
                     Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
                         Icon(Icons.Outlined.Add, null, tint = TvColors.Cyan, modifier = Modifier.size(14.dp))
                         Text("Apps", fontSize = 9.sp, color = TvColors.Text)

@@ -117,6 +117,33 @@ class AndroidApps(private val context: Context) {
         return rm.createRequestRoleIntent(RoleManager.ROLE_HOME)
     }
 
+    /** Paketnamen der Original-Startseite(n); ohne Trendo und ohne die Notfall-Startseite der Einstellungen. */
+    fun originalHomePackages(): Set<String> =
+        pm.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME), 0)
+            .filter { it.priority >= 0 && it.activityInfo.packageName != own && it.activityInfo.packageName != "android" }
+            .map { it.activityInfo.packageName }.toSet()
+
+    /** Ist der Startseiten-Wächter in den Bedienungshilfen eingeschaltet? */
+    fun isHomeGuardEnabled(): Boolean = runCatching {
+        val list = Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES) ?: ""
+        list.split(':').any { it.equals("$own/$own.HomeGuardService", true) || it.equals("$own/.HomeGuardService", true) }
+    }.getOrDefault(false)
+
+    /**
+     * Bedienungshilfen öffnen. Manche Hersteller ersetzen den Android-Eintrag durch einen leeren Platzhalter
+     * (frameworkpackagestubs) und bieten eine eigene Seite an – die wird zuerst versucht.
+     */
+    fun openAccessibilitySettings(): Boolean {
+        val candidates = listOf("android.settings.ACCESSIBILITY_TV_OEM_LINK", Settings.ACTION_ACCESSIBILITY_SETTINGS)
+        for (action in candidates) {
+            val intent = Intent(action)
+            val target = pm.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo?.packageName ?: continue
+            if (target.contains("frameworkpackagestubs")) continue
+            if (start(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))) return true
+        }
+        return false
+    }
+
     /** Ausweg: Android-Seite zur Wahl der Standard-Startseite (falls vorhanden). */
     fun openHomeSettings(): Boolean =
         start(Intent(Settings.ACTION_HOME_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) ||

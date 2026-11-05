@@ -52,3 +52,10 @@ Android SDK unter `C:\Users\<user>\TrendoEntwicklung\android-sdk`: cmdline-tools
 - Home-Taste springt auf „Start"; Zurück-Taste schließt Trendo als Startseite nicht.
 - Rückweg: Einstellungen → „Standard-Startseite ändern (zurück zu Google)" oder „Alles rückgängig" (Trendo entfernen → Android nimmt automatisch wieder die Google-Startseite).
 - 0.3.0 aufgespielt, Paketliste unverändert. Dialog „TRENDO OS als standardmäßige Start-App festlegen?" erscheint am CHiQ (Screenshot geprüft). Bestätigung durch den Nutzer am TV: AUSSTEHEND (nach 3 min weiterhin `com.google.android.tvlauncher`).
+
+## Nachtrag 05.11.2026 – Startseite auf dem CHiQ (0.3.1–0.3.3)
+- Befund: Android-Dialog „Standard-Start-App" erscheint und die Wahl wird gespeichert (Trendo löst intern als Standard auf), die Home-Taste startet trotzdem `com.google.android.tvlauncher` (HOME-Filter Priorität 2, Trendo 0). Die Google-Startseite wird NICHT abgeschaltet (Übergabe: Default-Launcher geschützt).
+- Lösung: `HomeGuardService` (Bedienungshilfe, vom Nutzer einzuschalten). Empfängt nur `TYPE_WINDOW_STATE_CHANGED` der Original-Startseite(n) (`packageNames` zur Laufzeit gesetzt), `canRetrieveWindowContent=false`, holt dann Trendo nach vorne. Schleifenschutz max. 3 Sprünge/10 s. „Original-Startseite" in Trendo pausiert den Wächter bis zum nächsten Öffnen von Trendo.
+- CHiQ: `ACTION_ACCESSIBILITY_SETTINGS` zeigt auf einen leeren Platzhalter (`frameworkpackagestubs`); eigener Eintrag `android.settings.ACCESSIBILITY_TV_OEM_LINK` wird zuerst genutzt.
+- Unit-Tests 10/10 grün (AppCatalog 4, AppGuard 3, HomeGuardRules 3). 0.3.3 aufgespielt, Paketliste unverändert. Dienst am TV angeboten (`query-services` zeigt `os.trendo.tv/.HomeGuardService`), eingeschaltet: NEIN (wartet auf Nutzer).
+- NICHT geprüft: Wächter-Verhalten nach Home-Taste und nach Neustart.

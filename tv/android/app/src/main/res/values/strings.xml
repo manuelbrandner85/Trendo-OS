@@ -4,4 +4,6 @@
     <!-- Marken-Credit der TV-Edition, keine Benutzerkennung. -->
     <string name="edition">PREMIUM TV EDITION</string>
     <string name="credit">by Manuel</string>
+    <string name="home_guard_label">TRENDO OS Startseite</string>
+    <string name="home_guard_description">Macht TRENDO OS zur Startseite: Sobald die Original-Startseite erscheint (Home-Taste, Einschalten), wird TRENDO OS angezeigt. Liest keine Bildschirminhalte und keine anderen Apps. Ausschalten jederzeit hier.</string>
 </resources>
