@@ -126,6 +126,101 @@ public static class ImageOps
         return mask;
     }
 
+    /// <summary>Auswahl/Maske (rect, ellipse, poly, bitmap – siehe <see cref="ImageDoc.SetMask"/>) als Pixelfeld der Leinwand w × h; „umkehren“ wird beachtet, die weiche Kante nicht.</summary>
+    public static bool[] SelectionMask(JsonObject mk, int w, int h)
+    {
+        var bits = new bool[w * h];
+        double mx = ImageDoc.N(mk["x"]), my = ImageDoc.N(mk["y"]), mw = ImageDoc.N(mk["w"]), mh = ImageDoc.N(mk["h"]);
+        var shape = ImageDoc.S(mk["shape"]);
+        if (shape == "bitmap")
+        {
+            var src = ImageDoc.MaskBits(mk); int bw = (int)mw, bh = (int)mh, ox = (int)Math.Round(mx), oy = (int)Math.Round(my);
+            for (var y = 0; y < bh; y++) for (var x = 0; x < bw; x++)
+                if (src[y * bw + x] && x + ox >= 0 && y + oy >= 0 && x + ox < w && y + oy < h) bits[(y + oy) * w + x + ox] = true;
+        }
+        else if (shape == "poly")
+        {
+            var pts = ImageDoc.MaskPoints(mk);
+            for (var y = 0; y < h; y++)
+            {
+                var cy = y + 0.5; var xs = new List<double>();
+                for (int i = 0, j = pts.Count - 1; i < pts.Count; j = i++)
+                {
+                    var (x1, y1) = pts[i]; var (x2, y2) = pts[j];
+                    if ((y1 <= cy) != (y2 <= cy)) xs.Add(x1 + (cy - y1) / (y2 - y1) * (x2 - x1));
+                }
+                xs.Sort();
+                for (var k = 0; k + 1 < xs.Count; k += 2)
+                    for (var x = Math.Max(0, (int)Math.Ceiling(xs[k] - 0.5)); x < w && x + 0.5 <= xs[k + 1]; x++) bits[y * w + x] = true;
+            }
+        }
+        else
+        {
+            double cx = mx + mw / 2, cy = my + mh / 2;
+            for (var y = Math.Max(0, (int)my); y < Math.Min(h, (int)Math.Ceiling(my + mh)); y++)
+                for (var x = Math.Max(0, (int)mx); x < Math.Min(w, (int)Math.Ceiling(mx + mw)); x++)
+                {
+                    double px = x + 0.5, py = y + 0.5;
+                    if (px < mx || py < my || px > mx + mw || py > my + mh) continue;
+                    if (shape == "ellipse") { var dx = (px - cx) / (mw / 2); var dy = (py - cy) / (mh / 2); if (dx * dx + dy * dy > 1) continue; }
+                    bits[y * w + x] = true;
+                }
+        }
+        if (mk["invert"]?.GetValue<bool>() == true) for (var i = 0; i < bits.Length; i++) bits[i] = !bits[i];
+        return bits;
+    }
+
+    /// <summary>Inhaltsbasiert füllen: Grundfarbe glatt vom Rand (wie <see cref="Heal"/>), darauf die Feinstruktur der Nachbarstelle,
+    /// deren Rand am besten passt (geprüft werden Versätze links, rechts, oben, unten und schräg). So bleiben Rasen, Sand oder Wand körnig statt verschmiert.</summary>
+    public static void ContentFill(byte[] rgba, int w, int h, bool[] mask)
+    {
+        int x0 = w, y0 = h, x1 = -1, y1 = -1;
+        for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) if (mask[y * w + x]) { x0 = Math.Min(x0, x); x1 = Math.Max(x1, x); y0 = Math.Min(y0, y); y1 = Math.Max(y1, y); }
+        if (x1 < 0) return;
+        var orig = (byte[])rgba.Clone();
+        int bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+        // Rand: nicht ausgewählte Pixel bis 3 px um die Auswahl
+        var ring = new List<int>();
+        for (var y = Math.Max(0, y0 - 3); y <= Math.Min(h - 1, y1 + 3); y++) for (var x = Math.Max(0, x0 - 3); x <= Math.Min(w - 1, x1 + 3); x++)
+        {
+            if (mask[y * w + x]) continue; var near = false;
+            for (var dy = -3; dy <= 3 && !near; dy++) for (var dx = -3; dx <= 3 && !near; dx++) { int nx = x + dx, ny = y + dy; if (nx >= 0 && ny >= 0 && nx < w && ny < h && mask[ny * w + nx]) near = true; }
+            if (near) ring.Add(y * w + x);
+        }
+        (int Dx, int Dy)? best = null; var bestScore = double.MaxValue;
+        foreach (var f in new[] { 1, 2 })
+            foreach (var (sx, sy) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, 1), (1, -1), (-1, -1) })
+            {
+                int dx = sx * (bw + 4) * f, dy = sy * (bh + 4) * f;
+                if (x0 - 3 + dx < 0 || y0 - 3 + dy < 0 || x1 + 3 + dx >= w || y1 + 3 + dy >= h) continue;
+                var ok = true; double score = 0;
+                for (var y = y0; y <= y1 && ok; y++) for (var x = x0; x <= x1; x++) if (mask[y * w + x] && mask[(y + dy) * w + x + dx]) { ok = false; break; }
+                if (!ok) continue;
+                foreach (var p in ring)
+                {
+                    var q = p + dy * w + dx; if (mask[q]) { score += 3 * 255 * 255; continue; }
+                    for (var c = 0; c < 3; c++) { double d0 = orig[p * 4 + c] - orig[q * 4 + c]; score += d0 * d0; }
+                }
+                score /= Math.Max(1, ring.Count);
+                if (score < bestScore) { bestScore = score; best = (dx, dy); }
+            }
+        Heal(rgba, w, h, mask);
+        if (best is not { } o) return;
+        // Feinstruktur = Quelle minus ihr örtlicher Mittelwert (Kasten 5 × 5)
+        for (var y = y0; y <= y1; y++) for (var x = x0; x <= x1; x++)
+        {
+            var p = y * w + x; if (!mask[p]) continue;
+            int qx = x + o.Dx, qy = y + o.Dy;
+            for (var c = 0; c < 3; c++)
+            {
+                double s = 0; var k = 0;
+                for (var yy = Math.Max(0, qy - 2); yy <= Math.Min(h - 1, qy + 2); yy++) for (var xx = Math.Max(0, qx - 2); xx <= Math.Min(w - 1, qx + 2); xx++) { s += orig[(yy * w + xx) * 4 + c]; k++; }
+                var detail = orig[(qy * w + qx) * 4 + c] - s / k;
+                rgba[p * 4 + c] = (byte)Math.Round(Math.Clamp(rgba[p * 4 + c] + detail, 0, 255));
+            }
+        }
+    }
+
     /// <summary>Reparieren (Bereichsreparatur): maskierte Pixel aus dem Rand nach innen glatt auffüllen (Laplace-Ausgleich) –
     /// Fleck, Kratzer oder Staub verschwinden, Farbverläufe der Umgebung laufen durch.</summary>
     public static void Heal(byte[] rgba, int w, int h, bool[] mask)

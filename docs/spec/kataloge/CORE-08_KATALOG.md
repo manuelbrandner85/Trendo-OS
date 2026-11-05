@@ -34,7 +34,7 @@ Funktionen nach den Vorbildern (Audacity, Adobe Audition, iZotope RX; GIMP, Krit
 | BI-08 | Klonen (Kopierstempel) | Photoshop, GIMP | umgesetzt | ImageOpsTests |
 | BI-09 | Verlauf linear/kreisförmig | Photoshop, GIMP | umgesetzt | Bildbearbeitung_Ui |
 | BI-10 | Auswahl und Ebenenmaske (eckig/rund, weiche Kante, umkehren) | Photoshop, Krita | umgesetzt | Bildbearbeitung_Ui |
-| BI-11 | Lasso und Zauberstab | Photoshop, GIMP | offen | – |
+| BI-11 | Lasso und Zauberstab, inhaltsbasiert füllen, frei ziehbare Kurvenpunkte | Photoshop, GIMP | umgesetzt | Bildbearbeitung_Ui, ImageOpsTests |
 
 ## Videoschnitt
 

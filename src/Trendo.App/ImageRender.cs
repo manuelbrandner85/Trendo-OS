@@ -124,11 +124,33 @@ public static class ImageRender
     static void ApplyMask(SKCanvas c, JsonObject mk)
     {
         var r = new SKRect((float)ImageDoc.N(mk["x"]), (float)ImageDoc.N(mk["y"]), (float)(ImageDoc.N(mk["x"]) + ImageDoc.N(mk["w"])), (float)(ImageDoc.N(mk["y"]) + ImageDoc.N(mk["h"])));
-        using var path = new SKPath(); if (ImageDoc.S(mk["shape"]) == "ellipse") path.AddOval(r); else path.AddRect(r);
-        if (mk["invert"]?.GetValue<bool>() != true) path.FillType = SKPathFillType.InverseWinding;
-        var fe = (float)ImageDoc.N(mk["feather"]);
+        var shape = ImageDoc.S(mk["shape"]); var inv = mk["invert"]?.GetValue<bool>() == true; var fe = (float)ImageDoc.N(mk["feather"]);
+        if (shape == "bitmap") { BitmapMask(c, mk, r, inv, fe); return; }
+        using var path = new SKPath();
+        if (shape == "ellipse") path.AddOval(r);
+        else if (shape == "poly" && ImageDoc.MaskPoints(mk) is { Count: >= 3 } pts) path.AddPoly([.. pts.Select(q => new SKPoint((float)q.X, (float)q.Y))], true);
+        else path.AddRect(r);
+        if (!inv) path.FillType = SKPathFillType.InverseWinding;
         using var p = new SKPaint { BlendMode = SKBlendMode.DstOut, IsAntialias = true, Color = SKColors.Black, MaskFilter = fe > 0 ? SKMaskFilter.CreateBlur(SKBlurStyle.Normal, fe / 2) : null };
         c.DrawPath(path, p);
+    }
+
+    /// <summary>Zauberstab-Maske: Pixel außerhalb der Auswahl (umgekehrt: innerhalb) werden ausgestanzt, weiche Kante per Unschärfe.</summary>
+    static void BitmapMask(SKCanvas c, JsonObject mk, SKRect r, bool inv, float fe)
+    {
+        var bits = ImageDoc.MaskBits(mk); int w = (int)ImageDoc.N(mk["w"]), h = (int)ImageDoc.N(mk["h"]); if (w < 1 || h < 1) return;
+        var pad = (int)Math.Ceiling(fe) + 1; int bw = w + 2 * pad, bh = h + 2 * pad;
+        using var a = new SKBitmap(new SKImageInfo(bw, bh, SKColorType.Alpha8, SKAlphaType.Premul));
+        var px = new byte[bw * bh]; if (!inv) Array.Fill(px, (byte)255);
+        for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) if (bits[y * w + x]) px[(y + pad) * bw + x + pad] = (byte)(inv ? 255 : 0);
+        System.Runtime.InteropServices.Marshal.Copy(px, 0, a.GetPixels(), px.Length);
+        using var p = new SKPaint { BlendMode = SKBlendMode.DstOut, Color = SKColors.Black, ImageFilter = fe > 0 ? SKImageFilter.CreateBlur(fe / 2, fe / 2) : null };
+        if (!inv) // alles außerhalb des Ausschnitts gehört nicht zur Auswahl
+        {
+            using var outside = new SKPath(); outside.AddRect(new SKRect(r.Left - pad, r.Top - pad, r.Left - pad + bw, r.Top - pad + bh)); outside.FillType = SKPathFillType.InverseWinding;
+            using var op = new SKPaint { BlendMode = SKBlendMode.DstOut, Color = SKColors.Black }; c.DrawPath(outside, op);
+        }
+        c.DrawBitmap(a, r.Left - pad, r.Top - pad, p);
     }
 
     static byte[] Bytes(SKBitmap b)
@@ -156,6 +178,7 @@ public static class ImageRender
                     for (var i = 0; i < mask.Length; i++) if (mask[i]) { px[i * 4] = r; px[i * 4 + 1] = g; px[i * 4 + 2] = b; px[i * 4 + 3] = a; }
                     break;
                 }
+                case "contentfill" when o["mask"] is JsonObject cm: mask = ImageOps.SelectionMask(cm, w, h); ImageOps.ContentFill(px, w, h, mask); break;
                 case "heal": mask = ImageOps.StrokeMask(w, h, pts, ImageDoc.N(o["size"], 20)); ImageOps.Heal(px, w, h, mask); break;
                 case "clone": mask = ImageOps.StrokeMask(w, h, pts, ImageDoc.N(o["size"], 20)); ImageOps.Clone(px, (byte[])px.Clone(), w, h, mask, (int)ImageDoc.N(o["dx"]), (int)ImageDoc.N(o["dy"])); break;
                 default: continue;
@@ -166,6 +189,28 @@ public static class ImageRender
         var outBmp = new SKBitmap(new SKImageInfo(w, h, SKColorType.Rgba8888, SKAlphaType.Unpremul));
         System.Runtime.InteropServices.Marshal.Copy(px, 0, outBmp.GetPixels(), px.Length);
         return outBmp;
+    }
+
+    /// <summary>Auswahl sichtbar machen: halbdurchsichtiges Blau auf ausgewählten Pixeln (Leinwandgröße).</summary>
+    public static byte[] SelectionPng(bool[] bits, int w, int h)
+    {
+        using var b = new SKBitmap(new SKImageInfo(w, h, SKColorType.Rgba8888, SKAlphaType.Unpremul));
+        var px = new byte[w * h * 4];
+        for (var i = 0; i < bits.Length && i < w * h; i++) if (bits[i]) { px[i * 4] = 47; px[i * 4 + 1] = 134; px[i * 4 + 2] = 246; px[i * 4 + 3] = 90; }
+        System.Runtime.InteropServices.Marshal.Copy(px, 0, b.GetPixels(), px.Length);
+        using var img = SKImage.FromBitmap(b); using var data = img.Encode(SKEncodedImageFormat.Png, 100); return data.ToArray();
+    }
+
+    /// <summary>Gesamtbild als RGBA-Bytes (für den Zauberstab, der auf das sichtbare Bild schaut wie in Photoshop „Alle Ebenen aufnehmen“).</summary>
+    public static byte[] CompositeRgba(JsonObject d) { using var b = Render(d); return Bytes(b); }
+
+    /// <summary>Helligkeits-Histogramm (256 Stufen) einer Bilddatei für den Kurven-Editor; null ohne Bild.</summary>
+    public static int[]? Histogram(string file)
+    {
+        if (Source(file) is not { } b) return null;
+        var px = Bytes(b); var hist = new int[256]; var step = Math.Max(1, px.Length / 4 / 250_000);
+        for (var i = 0; i < px.Length / 4; i += step) hist[(int)Math.Round(0.2126 * px[i * 4] + 0.7152 * px[i * 4 + 1] + 0.0722 * px[i * 4 + 2])]++;
+        return hist;
     }
 
     /// <summary>Auto-Tonwerte für eine Bilddatei (Schwarz- und Weißpunkt).</summary>

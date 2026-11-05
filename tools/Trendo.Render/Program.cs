@@ -396,6 +396,7 @@ else if (shot == "seite")
             Trendo.Core.Media.ImageDoc.AddStroke(pl, [.. Enumerable.Range(0, 40).Select(i => (bw * (0.1 + i * 0.02), bh * (0.12 + 0.03 * Math.Sin(i / 4.0))))], "#22C55E", bh / 90, false);
             x["selected"] = (string?)((System.Text.Json.Nodes.JsonObject)Trendo.Core.Media.ImageDoc.Layers(x)[0]!)["id"];
         });
+        if (Environment.GetEnvironmentVariable("TRENDO_BILD_SEL") == "wand") { win.ImgTool = "select"; win.ImgSelMode = "wand"; win.ImgWandAt(bd, bw * 0.5, bh * 0.83); }
         win.Show("bild");
     }
     if (Environment.GetEnvironmentVariable("TRENDO_DRUCK") is { Length: > 0 }) // 3D-Druck-Vorschau mit T-Stück (Überhang)

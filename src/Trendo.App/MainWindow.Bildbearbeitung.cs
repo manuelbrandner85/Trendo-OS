@@ -28,7 +28,7 @@ public partial class MainWindow
         ("eraser", "◌ Radierer", "Auf der Mal-Ebene radieren"), ("text", "T Text", "Klick setzt einen Text"), ("rect", "▭ Rechteck", "Ziehen zeichnet ein Rechteck"),
         ("ellipse", "◯ Ellipse", "Ziehen zeichnet eine Ellipse"), ("crop", "⛶ Zuschneiden", "Ziehen wählt den Ausschnitt der Leinwand"),
         ("vector", "〰 Vektorpinsel", "Zeichnen ergibt einen glatten Vektorpfad – später verschieb- und umfärbbar, als SVG speicherbar"),
-        ("select", "⬚ Auswahl", "Ziehen wählt einen Bereich – oben „Maske aus Auswahl“ blendet die Ebene außerhalb aus"),
+        ("select", "⬚ Auswahl", "Rechteck, Ellipse, Lasso oder Zauberstab (oben umschalten) – dann „Maske aus Auswahl“ oder „Inhaltsbasiert füllen“"),
         ("gradient", "◩ Verlauf", "Ziehen legt einen Verlauf von der gewählten Farbe zu durchsichtig"),
         ("fill", "▣ Füllen", "Klick füllt die zusammenhängende Fläche mit der gewählten Farbe (Toleranz rechts)"),
         ("heal", "✚ Reparieren", "Über Fleck, Kratzer oder Staub malen – wird aus der Umgebung aufgefüllt"),
@@ -36,11 +36,32 @@ public partial class MainWindow
     ];
     /// <summary>Auswahl-Rechteck (Leinwand-Pixel) – kein Bearbeitungsschritt, wie in GIMP.</summary>
     public Rect? ImgMarquee { get; set; }
+    /// <summary>Lasso-Auswahl (Leinwand-Pixel); schließt Rechteck und Zauberstab aus.</summary>
+    public List<(double X, double Y)>? ImgLasso { get; set; }
+    /// <summary>Zauberstab-Auswahl (Pixel der Leinwand zum Zeitpunkt des Klicks).</summary>
+    public (bool[] Bits, int W, int H)? ImgWand { get; set; }
+    /// <summary>Auswahl umkehren (Photoshop „Auswahl umkehren“) – gilt für Maske und Füllen.</summary>
+    public bool ImgSelInvert { get; set; }
+    /// <summary>Aktuelle Auswahl als Masken-Beschreibung (rect, ellipse, poly, bitmap) oder null.</summary>
+    public JsonObject? ImgSelectionSpec(double feather = 0)
+    {
+        var tmp = new JsonObject();
+        if (ImgWand is { } wd) ImageDoc.SetMaskBitmap(tmp, wd.Bits, wd.W, wd.H, feather, ImgSelInvert);
+        else if (ImgLasso is { Count: >= 3 } la) ImageDoc.SetMaskPoly(tmp, la, feather, ImgSelInvert);
+        else if (ImgMarquee is { } m) ImageDoc.SetMask(tmp, ImgMaskEllipse ? "ellipse" : "rect", m.X, m.Y, m.Width, m.Height, feather, ImgSelInvert);
+        else return null;
+        return (JsonObject)tmp["mask"]!;
+    }
+    void ImgClearSelection() { ImgMarquee = null; ImgLasso = null; ImgWand = null; }
     /// <summary>Quelle des Kopierstempels (Leinwand-Pixel).</summary>
     public Point? ImgCloneSrc { get; set; }
     /// <summary>Toleranz des Farbeimers (0–255).</summary>
     public double ImgFillTolerance { get; set; } = 32;
-    public bool ImgMaskEllipse { get; set; }
+    /// <summary>Art der Auswahl wie die Werkzeuggruppe in Photoshop: rect, ellipse, lasso, wand.</summary>
+    public string ImgSelMode { get; set; } = "rect";
+    public bool ImgMaskEllipse { get => ImgSelMode == "ellipse"; set => ImgSelMode = value ? "ellipse" : ImgSelMode == "ellipse" ? "rect" : ImgSelMode; }
+    /// <summary>Werkzeug, wie es die Leinwand sieht (Auswahl im Lasso-/Zauberstab-Modus).</summary>
+    string ImgEff => ImgTool == "select" && ImgSelMode is "lasso" or "wand" ? ImgSelMode : ImgTool;
     public bool ImgGradRadial { get; set; }
     static readonly string[] ImgColors = ["#000000", "#FFFFFF", "#E0475B", "#F59E0B", "#FACC15", "#22C55E", "#2F86F6", "#7C3AED", "#EC4899", "#8B5A2B"];
 
@@ -121,14 +142,23 @@ public partial class MainWindow
     private Control ImgWorkspace(ProgramDocument d)
     {
         var png = ImageRender.Png(d.Data);
-        var canvas = new ImageCanvas { Name = "img-canvas", DocW = (int)d.Number("width", 800), DocH = (int)d.Number("height", 600), Zoom = ImgZoom, Tool = ImgTool, BrushColor = Color.Parse(ImgColor), BrushSize = ImgBrush,
+        var canvas = new ImageCanvas { Name = "img-canvas", DocW = (int)d.Number("width", 800), DocH = (int)d.Number("height", 600), Zoom = ImgZoom, Tool = ImgEff, BrushColor = Color.Parse(ImgColor), BrushSize = ImgBrush,
             Image = new Bitmap(new MemoryStream(png)), MinHeight = 240 };
         ImgCanvasForTests = canvas; canvas.Marquee = ImgMarquee; canvas.CloneSource = ImgCloneSrc;
+        canvas.LassoPath = ImgLasso?.Select(q => new Point(q.X, q.Y)).ToList();
+        if (ImgWand is { } wand && wand.W == canvas.DocW && wand.H == canvas.DocH) canvas.SelectionOverlay = new Bitmap(new MemoryStream(ImageRender.SelectionPng(wand.Bits, wand.W, wand.H)));
+        canvas.Lassoed = pts => ProgramRun(BK, () =>
+        {
+            ImgClearSelection(); ImgLasso = pts;
+            double x0 = pts.Min(q => q.X), y0 = pts.Min(q => q.Y); ImgMarquee = new Rect(x0, y0, pts.Max(q => q.X) - x0, pts.Max(q => q.Y) - y0);
+            _progMsg[BK] = $"Lasso-Auswahl mit {pts.Count} Punkten – oben „Maske aus Auswahl“ oder „Inhaltsbasiert füllen“.";
+        });
         canvas.Line = (a, b) => ProgramRun(BK, () => d.Edit("Verlauf", x => ImageDoc.AddGradient(x, a.X, a.Y, b.X, b.Y, ImgColor, "#00" + ImgColor.TrimStart('#')[^6..], ImgGradRadial)));
         if (SelId(d) is { } sid && ImageDoc.Layer(d.Data, sid) is { } sl && ImageDoc.S(sl["kind"]) != "paint")
             canvas.Selection = new Rect(ImageDoc.N(sl["x"]), ImageDoc.N(sl["y"]), ImageDoc.N(sl["w"]), ImageDoc.N(sl["h"]));
         canvas.Clicked = p => ProgramRun(BK, () =>
         {
+            if (ImgEff == "wand") { ImgWandAt(d, p.X, p.Y); return; }
             if (ImgTool == "fill") { d.Edit("Füllen", x => ImageDoc.AddFill(ImageDoc.Retouch(x, SelId(d)), p.X, p.Y, ImgColor, ImgFillTolerance)); return; }
             if (ImgTool == "text") { d.Edit("Text", x => ImageDoc.AddText(x, "Dein Text", p.X, p.Y, Math.Max(24, d.Number("height") / 14), ImgColor)); _progMsg[BK] = "Text gesetzt – rechts ändern."; return; }
             var hit = ImageDoc.HitTest(d.Data, p.X, p.Y); d.Data["selected"] = hit ?? ""; // Auswahl ist kein Bearbeitungsschritt
@@ -171,8 +201,8 @@ public partial class MainWindow
             switch (ImgTool)
             {
                 case "rect" or "ellipse": d.Edit(ImgTool == "rect" ? "Rechteck" : "Ellipse", x => ImageDoc.AddShape(x, ImgTool, r.X, r.Y, r.Width, r.Height, ImgColor)); break;
-                case "select": ImgMarquee = r; _progMsg[BK] = $"Auswahl {r.Width:0} × {r.Height:0} px – oben „Maske aus Auswahl“."; break;
-                case "crop": d.Edit("Zuschneiden", x => ImageDoc.Crop(x, r.X, r.Y, r.Width, r.Height)); _progMsg[BK] = $"Zugeschnitten auf {(int)d.Number("width")} × {(int)d.Number("height")} px."; break;
+                case "select": ImgClearSelection(); ImgMarquee = r; _progMsg[BK] = $"Auswahl {r.Width:0} × {r.Height:0} px – oben „Maske aus Auswahl“."; break;
+                case "crop": ImgClearSelection(); d.Edit("Zuschneiden", x => ImageDoc.Crop(x, r.X, r.Y, r.Width, r.Height)); _progMsg[BK] = $"Zugeschnitten auf {(int)d.Number("width")} × {(int)d.Number("height")} px."; break;
             }
         });
         // Farbe und Pinselgröße direkt über der Fläche
@@ -202,7 +232,7 @@ public partial class MainWindow
         }
         var before = bar.Children.Count;
         // Einstellungen des gewählten Werkzeugs (wie die Optionsleiste in Photoshop)
-        if (ImgTool == "fill")
+        if (ImgTool == "fill" || ImgEff == "wand")
         {
             var tol = new Slider { Name = "img-fill-tol", Minimum = 0, Maximum = 160, Value = ImgFillTolerance, Width = 110, Margin = new Thickness(6, 0, 6, 0) };
             tol.PropertyChanged += (_, e) => { if (e.Property == Slider.ValueProperty) ImgFillTolerance = Math.Round(tol.Value); };
@@ -213,9 +243,26 @@ public partial class MainWindow
         Button Bb(string name, string label, Action a) { var b = new Button { Name = name, Content = label, FontSize = 12, Margin = new Thickness(8, 0, 0, 0) }; b.Click += (_, _) => ProgramRun(BK, a); return b; }
         if (ImgTool == "select")
         {
-            bar.Children.Add(Opt("img-mask-ellipse", "Maske rund", ImgMaskEllipse, v => ImgMaskEllipse = v));
-            bar.Children.Add(Bb("img-mask-sel", "Maske aus Auswahl", () => ImgSel(d, (x, id) => ImageDoc.SetMask(ImageDoc.Layer(x, id)!, ImgMaskEllipse ? "ellipse" : "rect", ImgMarquee?.X ?? 0, ImgMarquee?.Y ?? 0, ImgMarquee?.Width ?? 0, ImgMarquee?.Height ?? 0, Math.Round(ImgBrush / 2)), "Maske")));
-            if (ImgMarquee is not null) bar.Children.Add(Bb("img-sel-none", "Auswahl aufheben", () => ImgMarquee = null));
+            foreach (var (id, icon, mtip) in new[] { ("rect", "▭", "Rechteck aufziehen"), ("ellipse", "◯", "Ellipse aufziehen"), ("lasso", "➰", "Lasso: freihändig umfahren"), ("wand", "✨", "Zauberstab: Klick wählt ähnliche Farbe") })
+            {
+                var on = ImgSelMode == id; var mid = id;
+                var mb = new Button { Name = "img-sel-mode-" + id, Content = icon, Width = 30, Height = 28, Padding = new Thickness(0), FontSize = 14, Margin = new Thickness(id == "rect" ? 0 : 2, 0, 0, 0), HorizontalContentAlignment = HorizontalAlignment.Center,
+                    Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text, BorderBrush = Edge, BorderThickness = new Thickness(1) };
+                ToolTip.SetTip(mb, mtip); mb.Click += (_, _) => { ImgSelMode = mid; Show(BK); }; bar.Children.Add(mb);
+            }
+            bar.Children.Add(Opt("img-sel-invert", "Umkehren", ImgSelInvert, v => ImgSelInvert = v));
+            bar.Children.Add(Bb("img-mask-sel", "Maske aus Auswahl", () =>
+            {
+                var spec = ImgSelectionSpec(Math.Round(ImgBrush / 2)) ?? throw new InvalidOperationException("Erst einen Bereich auswählen – ziehen, umfahren oder mit dem Zauberstab klicken.");
+                ImgSel(d, (x, id) => ImageDoc.Layer(x, id)!["mask"] = spec.DeepClone(), "Maske");
+            }));
+            bar.Children.Add(Bb("img-content-fill", "Inhaltsbasiert füllen", () =>
+            {
+                var spec = ImgSelectionSpec() ?? throw new InvalidOperationException("Erst den störenden Bereich auswählen – z. B. mit dem Lasso umfahren.");
+                d.Edit("Inhaltsbasiert füllen", x => ImageDoc.AddContentFill(ImageDoc.Retouch(x, SelId(d)), spec));
+                _progMsg[BK] = "Bereich aus der Umgebung neu aufgebaut – Strg+Z nimmt es zurück.";
+            }));
+            if (ImgMarquee is not null || ImgWand is not null) bar.Children.Add(Bb("img-sel-none", "Auswahl aufheben", ImgClearSelection));
         }
         if (ImgTool == "clone" && ImgCloneSrc is not null) { var rs = new Button { Name = "img-clone-reset", Content = "Neue Quelle", FontSize = 12, Margin = new Thickness(8, 0, 0, 0) }; rs.Click += (_, _) => { ImgCloneSrc = null; Show(BK); }; bar.Children.Add(rs); }
         var tip = ImgTools.First(t => t.Id == ImgTool).Tip; ToolTip.SetTip(bar, tip);
@@ -307,8 +354,11 @@ public partial class MainWindow
                 var curNow = (f?["curve"] as JsonArray)?.Select(n => ImageDoc.N(n)).ToArray() ?? [];
                 var curve = new ComboBox { Name = "img-curve", ItemsSource = ImageOps.CurvePresets.Select(c => c.Label).ToList(), HorizontalAlignment = HorizontalAlignment.Stretch,
                     SelectedIndex = Math.Max(0, Array.FindIndex(ImageOps.CurvePresets, c => c.Points.SequenceEqual(curNow))) };
-                sp.Children.Add(new TextBlock { Text = "Kurve", Foreground = Muted, FontSize = 11.5 }); sp.Children.Add(curve);
-                apply.Add(x => ImageDoc.SetCurve(ImageDoc.Layer(x, sel)!, ImageOps.CurvePresets[Math.Max(0, curve.SelectedIndex)].Points));
+                sp.Children.Add(new TextBlock { Text = "Kurve – Punkte ziehen, Klick setzt einen Punkt, Rechtsklick entfernt ihn", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap }); sp.Children.Add(curve);
+                var ce = new CurveEditor { Name = "img-curve-editor", Points = curNow, Histogram = ImageRender.Histogram(file), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 4, 0, 4) };
+                curve.SelectionChanged += (_, _) => { if (curve.SelectedIndex >= 0) ce.Points = ImageOps.CurvePresets[curve.SelectedIndex].Points; };
+                sp.Children.Add(ce);
+                apply.Add(x => ImageDoc.SetCurve(ImageDoc.Layer(x, sel)!, ce.Points));
             }
             sp.Children.Add(B("img-apply", "Übernehmen", () => d.Edit("Ebene ändern", x => { foreach (var a in apply) a(x); }), true));
         }
@@ -316,4 +366,18 @@ public partial class MainWindow
         sp.Children.Add(P($"{(int)d.Number("width")} × {(int)d.Number("height")} px · Hintergrund {d.Text("background")}", Muted, 12));
         return sp;
     }
+
+    /// <summary>Zauberstab an (x, y): zusammenhängende Fläche ähnlicher Farbe im sichtbaren Gesamtbild auswählen.</summary>
+    public void ImgWandAt(ProgramDocument d, double x, double y)
+    {
+        int w = (int)d.Number("width", 800), h = (int)d.Number("height", 600);
+        var bits = ImageOps.FloodMask(ImageRender.CompositeRgba(d.Data), w, h, (int)x, (int)y, ImgFillTolerance);
+        var n = bits.Count(b => b); if (n == 0) throw new InvalidOperationException("Hier ist nichts auszuwählen – auf das Bild klicken.");
+        ImgClearSelection(); ImgWand = (bits, w, h);
+        int x0 = w, y0 = h, x1 = 0, y1 = 0;
+        for (var i = 0; i < bits.Length; i++) if (bits[i]) { int px = i % w, py = i / w; x0 = Math.Min(x0, px); y0 = Math.Min(y0, py); x1 = Math.Max(x1, px); y1 = Math.Max(y1, py); }
+        ImgMarquee = new Rect(x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+        _progMsg[BK] = $"Zauberstab: {n:N0} Pixel ausgewählt ({100.0 * n / (w * h):0.#} % des Bildes).";
+    }
+
 }

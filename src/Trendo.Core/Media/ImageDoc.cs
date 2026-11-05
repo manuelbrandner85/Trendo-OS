@@ -103,6 +103,7 @@ public static class ImageDoc
                 {
                     if (o["points"] is JsonArray p) for (var i = 0; i < p.Count; i++) p[i] = Math.Round(N(p[i]) - (i % 2 == 0 ? x : y), 1);
                     if (o["px"] is not null) { o["px"] = Math.Round(N(o["px"]) - x, 1); o["py"] = Math.Round(N(o["py"]) - y, 1); }
+                    if (o["mask"] is JsonObject om) { om["x"] = Math.Round(N(om["x"]) - x, 1); om["y"] = Math.Round(N(om["y"]) - y, 1); }
                 }
             if (S(l["kind"]) == "gradient") { l["x1"] = Math.Round(N(l["x1"]) - x, 1); l["y1"] = Math.Round(N(l["y1"]) - y, 1); l["x2"] = Math.Round(N(l["x2"]) - x, 1); l["y2"] = Math.Round(N(l["y2"]) - y, 1); }
             if (l["mask"] is JsonObject mk) { mk["x"] = Math.Round(N(mk["x"]) - x, 1); mk["y"] = Math.Round(N(mk["y"]) - y, 1); }
@@ -139,12 +140,63 @@ public static class ImageDoc
     public static void AddClone(JsonObject retouch, IReadOnlyList<(double X, double Y)> pts, double size, double dx, double dy) =>
         Op(retouch, new JsonObject { ["op"] = "clone", ["size"] = Math.Clamp(size, 1, 400), ["dx"] = Math.Round(dx), ["dy"] = Math.Round(dy), ["points"] = Pts(pts) });
 
+    /// <summary>Inhaltsbasiert füllen (Photoshop „Inhaltsbasierte Füllung“): die Auswahl wird aus der Umgebung neu aufgebaut – Farbverlauf vom Rand, Struktur aus der passendsten Nachbarstelle.
+    /// <paramref name="selection"/> hat denselben Aufbau wie eine Ebenenmaske (rect, ellipse, poly, bitmap).</summary>
+    public static void AddContentFill(JsonObject retouch, JsonObject selection)
+    {
+        if (N(selection["w"]) < 1 || N(selection["h"]) < 1) throw new InvalidOperationException("Erst eine Auswahl treffen – Rechteck, Lasso oder Zauberstab.");
+        var m = (JsonObject)selection.DeepClone(); m["invert"] = false; m["feather"] = 0;
+        Op(retouch, new JsonObject { ["op"] = "contentfill", ["mask"] = m });
+    }
+
     /// <summary>Ebenenmaske aus einer Auswahl: Rechteck oder Ellipse, weiche Kante, umkehrbar. Außerhalb der Maske wird die Ebene ausgeblendet.</summary>
     public static void SetMask(JsonObject layer, string shape, double x, double y, double w, double h, double feather = 0, bool invert = false)
     {
         if (w < 0) { x += w; w = -w; } if (h < 0) { y += h; h = -h; }
         if (w < 2 || h < 2) throw new InvalidOperationException("Erst mit dem Auswahl-Werkzeug einen Bereich aufziehen.");
         layer["mask"] = new JsonObject { ["shape"] = shape == "ellipse" ? "ellipse" : "rect", ["x"] = Math.Round(x, 1), ["y"] = Math.Round(y, 1), ["w"] = Math.Round(w, 1), ["h"] = Math.Round(h, 1), ["feather"] = Math.Clamp(feather, 0, 200), ["invert"] = invert };
+    }
+
+    /// <summary>Lasso (Photoshop „Lasso“, GIMP „Freie Auswahl“): freihändig umfahrene Fläche als Ebenenmaske. Punkte liegen relativ zur Ecke (x, y), damit Zuschneiden sie mitverschiebt.</summary>
+    public static void SetMaskPoly(JsonObject layer, IReadOnlyList<(double X, double Y)> pts, double feather = 0, bool invert = false)
+    {
+        if (pts.Count < 3) throw new InvalidOperationException("Mit dem Lasso einen Bereich umfahren – mindestens drei Punkte.");
+        double x0 = pts.Min(p => p.X), y0 = pts.Min(p => p.Y), x1 = pts.Max(p => p.X), y1 = pts.Max(p => p.Y);
+        if (x1 - x0 < 2 || y1 - y0 < 2) throw new InvalidOperationException("Die Lasso-Fläche ist zu klein.");
+        var a = new JsonArray(); foreach (var (x, y) in pts) { a.Add(Math.Round(x - x0, 1)); a.Add(Math.Round(y - y0, 1)); }
+        layer["mask"] = new JsonObject { ["shape"] = "poly", ["x"] = Math.Round(x0, 1), ["y"] = Math.Round(y0, 1), ["w"] = Math.Round(x1 - x0, 1), ["h"] = Math.Round(y1 - y0, 1), ["points"] = a, ["feather"] = Math.Clamp(feather, 0, 200), ["invert"] = invert };
+    }
+
+    /// <summary>Zauberstab (Photoshop/GIMP): ähnliche Farbfläche als Pixelmaske. Gespeichert wird nur der umschließende Ausschnitt, zeilenweise als Lauflängen (abwechselnd aus/an, beginnend mit „aus“).</summary>
+    public static void SetMaskBitmap(JsonObject layer, bool[] sel, int width, int height, double feather = 0, bool invert = false)
+    {
+        int x0 = width, y0 = height, x1 = -1, y1 = -1;
+        for (var y = 0; y < height; y++) for (var x = 0; x < width; x++) if (sel[y * width + x]) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+        if (x1 < 0) throw new InvalidOperationException("Der Zauberstab hat nichts gefunden – andere Stelle oder höhere Toleranz wählen.");
+        int w = x1 - x0 + 1, h = y1 - y0 + 1; var runs = new JsonArray(); var on = false; var n = 0;
+        for (var y = y0; y <= y1; y++) for (var x = x0; x <= x1; x++) { if (sel[y * width + x] != on) { runs.Add(n); n = 0; on = !on; } n++; }
+        runs.Add(n);
+        layer["mask"] = new JsonObject { ["shape"] = "bitmap", ["x"] = x0, ["y"] = y0, ["w"] = w, ["h"] = h, ["runs"] = runs, ["feather"] = Math.Clamp(feather, 0, 200), ["invert"] = invert };
+    }
+
+    /// <summary>Pixelmaske wieder auspacken (w × h, true = ausgewählt).</summary>
+    public static bool[] MaskBits(JsonObject mask)
+    {
+        int w = (int)N(mask["w"]), h = (int)N(mask["h"]); var bits = new bool[Math.Max(0, w * h)]; var i = 0; var on = false;
+        foreach (var r in (mask["runs"] as JsonArray ?? []))
+        {
+            var n = (int)N(r); if (on) for (var k = 0; k < n && i + k < bits.Length; k++) bits[i + k] = true;
+            i += n; on = !on;
+        }
+        return bits;
+    }
+
+    /// <summary>Lasso-Punkte in Leinwandkoordinaten.</summary>
+    public static List<(double X, double Y)> MaskPoints(JsonObject mask)
+    {
+        double x0 = N(mask["x"]), y0 = N(mask["y"]); var a = (mask["points"] as JsonArray ?? []).Select(n => N(n)).ToList(); var r = new List<(double, double)>();
+        for (var i = 0; i + 1 < a.Count; i += 2) r.Add((a[i] + x0, a[i + 1] + y0));
+        return r;
     }
 
     /// <summary>Kurve setzen (Punkte x,y 0–255); leer = keine Kurve.</summary>

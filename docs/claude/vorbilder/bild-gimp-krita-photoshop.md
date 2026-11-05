@@ -21,14 +21,14 @@
 - ✓ Retusche nicht-destruktiv auf einer eigenen Ebene, jeder Schritt einzeln rückgängig; Original bleibt unverändert
 - ✓ Export PNG/JPG/SVG, SVG öffnen
 - ✓ Freie KIs: Bilder verbessern, Bilder erzeugen
-- ◐ Auswahl: Lasso und Zauberstab fehlen noch (Zauberstab-Logik steckt schon im Farbeimer)
-- ◐ Kurven: frei ziehbare Kurvenpunkte fehlen (nur Vorlagen)
-- ✗ Inhaltsbasiertes Füllen per KI (Photoshop Generative Fill) – nur über die freie KI „Bilder verbessern“
+- ✓ Auswahl-Gruppe wie in Photoshop (05.11.2026): Rechteck, Ellipse, Lasso (freihändig) und Zauberstab (Farbfläche mit Toleranz, schaut auf das sichtbare Gesamtbild) – umkehrbar, weiche Kante, als Ebenenmaske oder zum Füllen
+- ✓ Inhaltsbasiert füllen: Auswahl wird aus der Umgebung neu aufgebaut – Farbverlauf vom Rand, Feinstruktur aus der am besten passenden Nachbarstelle (ohne KI, lokal, rückgängig machbar)
+- ✓ Kurven mit frei ziehbaren Punkten (Klick setzt, Rechts-/Doppelklick entfernt), Histogramm dahinter; Vorlagen bleiben als Startpunkt
+- ◐ Generative Füllung per KI (Photoshop Generative Fill) – nur über die freie KI „Bilder verbessern“
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Bauplan erfüllt (Werkzeuge links, Optionsleiste über der Fläche, Leinwand, Ebenen und Eigenschaften rechts).
 
 ## Nächste Schritte
-1. Zauberstab als Auswahl (aus der Füll-Maske)
-2. Lasso-Auswahl
-3. Kurve mit frei ziehbaren Punkten
+1. Auswahl hinzufügen/abziehen (Umschalt/Alt wie in Photoshop)
+2. Generative Füllung mit lokaler Bild-KI, sobald ein Modell installiert ist

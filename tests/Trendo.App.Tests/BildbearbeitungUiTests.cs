@@ -165,4 +165,51 @@ public class Bildbearbeitung_Ui
         }
         finally { w.Close(); }
     }
+
+    [AvaloniaFact(DisplayName = "Bildbearbeitung Profi (Profi 24): Zauberstab wählt die Farbfläche, Maske daraus, Lasso umfährt, inhaltsbasiert füllen entfernt Fleck, Kurvenpunkte frei ziehen")]
+    public void Wand_lasso_contentfill_curve()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        try
+        {
+            var src = Path.Combine(root, "foto.png");
+            using (var bmp = new SKBitmap(300, 150))
+            {
+                using (var c = new SKCanvas(bmp)) { c.Clear(new SKColor(120, 120, 120)); c.DrawRect(200, 0, 100, 150, new SKPaint { Color = SKColors.White }); c.DrawCircle(80, 75, 8, new SKPaint { Color = SKColors.Black }); }
+                using var img = SKImage.FromBitmap(bmp); using var data = img.Encode(SKEncodedImageFormat.Png, 100); File.WriteAllBytes(src, data.ToArray());
+            }
+            w.Show(BK); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer")); w.ImgAddImage(src); w.Show(BK); Settle();
+            // Zauberstab: Klick in die weiße Fläche wählt genau sie
+            Click(w, "prog-cmd-img-tool-select"); Click(w, "img-sel-mode-wand"); var wp = P(w, 250, 75); w.MouseDown(wp, MouseButton.Left); w.MouseUp(wp, MouseButton.Left); Settle();
+            Assert.NotNull(w.ImgWand); Assert.Contains("Zauberstab", w.ProgramMessage(BK));
+            Assert.Equal(new Rect(200, 0, 100, 150), w.ImgMarquee);
+            Assert.NotNull(w.ImgCanvasForTests!.SelectionOverlay);
+            // Maske aus der Zauberstab-Auswahl auf eine Mal-Ebene: Malen nur rechts sichtbar
+            w.ImgBrush = 0; w.Show(BK); Settle(); Click(w, "img-mask-sel"); Settle();
+            Assert.Equal("Maske", w.ProgramActive(BK)!.UndoLabel);
+            RealClick(w, V<Button>(w, "prog-undo")); Settle();
+            // Lasso um den schwarzen Fleck
+            Click(w, "img-sel-mode-lasso");
+            var ring = new[] { (60.0, 55.0), (100.0, 55.0), (100.0, 95.0), (60.0, 95.0) };
+            w.MouseDown(P(w, 60, 55), MouseButton.Left);
+            foreach (var (x, y) in ring.Skip(1).Append(ring[0])) { w.MouseMove(P(w, x, y)); Settle(); }
+            w.MouseUp(P(w, 60, 56), MouseButton.Left); Settle();
+            Assert.NotNull(w.ImgLasso); Assert.Null(w.ImgWand); Assert.Contains("Lasso", w.ProgramMessage(BK));
+            Assert.NotNull(w.ImgCanvasForTests!.LassoPath);
+            Click(w, "img-content-fill"); Settle();
+            Assert.Equal("Inhaltsbasiert füllen", w.ProgramActive(BK)!.UndoLabel);
+            var f = Px(w, 80, 75); Assert.True(Math.Abs(f.Red - 120) < 12, $"Fleck noch da: {f}");
+            RealClick(w, V<Button>(w, "prog-undo")); Settle(); Assert.True(Px(w, 80, 75).Red < 40);
+            // Kurvenpunkte: Mitte hochziehen hellt das Grau auf
+            Click(w, "img-layer-0"); Settle();
+            var ce = w.Find<CurveEditor>("img-curve-editor"); Assert.True(ce.IsIdentity);
+            var k = ce.AddPoint(120, 190); Assert.Equal(3, ce.Count); ce.MovePoint(k, 120, 200);
+            Click(w, "img-apply"); Settle();
+            Assert.True(Px(w, 150, 20).Red > 180, $"Kurve wirkt nicht: {Px(w, 150, 20)}");
+            Click(w, "img-layer-0"); Settle(); ce = w.Find<CurveEditor>("img-curve-editor");
+            Assert.Equal(3, ce.Count); ce.RemovePoint(1); Assert.True(ce.IsIdentity); // Endpunkte bleiben
+            ce.RemovePoint(0); Assert.Equal(2, ce.Count);
+        }
+        finally { w.Close(); }
+    }
 }

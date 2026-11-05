@@ -88,4 +88,43 @@ public class ImageOpsTests
         Assert.Equal(70, ImageDoc.N(((JsonArray)((JsonObject)ops[1]!)["points"]!)[0]));
         Assert.Equal((100.0, 50.0), (ImageDoc.N(g["w"]), ImageDoc.N(g["h"])));
     }
+
+    [Fact(DisplayName = "Auswahl wie Photoshop: Lasso-Dreieck, Zauberstab-Pixelmaske (Lauflängen hin und zurück), Ellipse und Umkehren ergeben die richtigen Pixel; Zuschneiden verschiebt sie mit")]
+    public void Selections()
+    {
+        var l = new JsonObject();
+        ImageDoc.SetMaskPoly(l, [(10, 10), (50, 10), (10, 50)]);
+        var m = ImageOps.SelectionMask((JsonObject)l["mask"]!, 60, 60);
+        Assert.True(m[15 * 60 + 15]); Assert.False(m[45 * 60 + 45]); Assert.False(m[5 * 60 + 5]);
+        Assert.Throws<InvalidOperationException>(() => ImageDoc.SetMaskPoly(l, [(1, 1), (2, 2)]));
+        var bits = new bool[20 * 10]; bits[3 * 20 + 4] = bits[3 * 20 + 5] = bits[4 * 20 + 5] = true;
+        ImageDoc.SetMaskBitmap(l, bits, 20, 10);
+        var mk = (JsonObject)l["mask"]!; Assert.Equal((4.0, 3.0, 2.0, 2.0), (ImageDoc.N(mk["x"]), ImageDoc.N(mk["y"]), ImageDoc.N(mk["w"]), ImageDoc.N(mk["h"])));
+        Assert.Equal(bits, ImageOps.SelectionMask(mk, 20, 10));
+        Assert.Throws<InvalidOperationException>(() => ImageDoc.SetMaskBitmap(l, new bool[4], 2, 2));
+        ImageDoc.SetMask(l, "ellipse", 0, 0, 20, 20, 0, invert: true);
+        var e = ImageOps.SelectionMask((JsonObject)l["mask"]!, 20, 20); Assert.False(e[10 * 20 + 10]); Assert.True(e[0]);
+        // Zuschneiden: Lasso-Punkte liegen relativ zur Ecke und wandern mit
+        var d = ImageDoc.New(100, 100); var lay = ImageDoc.AddPaint(d); ImageDoc.SetMaskPoly(lay, [(30, 30), (60, 30), (30, 60)]);
+        ImageDoc.Crop(d, 20, 20, 60, 60);
+        Assert.Equal((10.0, 10.0), ImageDoc.MaskPoints((JsonObject)ImageDoc.Layer(d, (string)lay["id"]!)!["mask"]!)[0]);
+    }
+
+    [Fact(DisplayName = "Inhaltsbasiert füllen: Fleck auf gestreiftem Grund verschwindet, die Streifen laufen durch (nicht nur verschmiert)")]
+    public void Content_fill()
+    {
+        int w = 120, h = 60; var px = new byte[w * h * 4];
+        for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) { var i = (y * w + x) * 4; var v = (byte)(x % 4 < 2 ? 60 : 200); px[i] = px[i + 1] = px[i + 2] = v; px[i + 3] = 255; }
+        for (var y = 25; y < 35; y++) for (var x = 55; x < 65; x++) { var i = (y * w + x) * 4; px[i] = 255; px[i + 1] = 0; px[i + 2] = 0; }
+        var l = new JsonObject(); ImageDoc.SetMask(l, "rect", 54, 24, 12, 12);
+        var mask = ImageOps.SelectionMask((JsonObject)l["mask"]!, w, h);
+        ImageOps.ContentFill(px, w, h, mask);
+        int R(int x, int y) => px[(y * w + x) * 4]; int G(int x, int y) => px[(y * w + x) * 4 + 1];
+        Assert.True(Math.Abs(R(60, 30) - G(60, 30)) < 30, $"Rot noch da: {R(60, 30)}/{G(60, 30)}");
+        // Streifen: helle und dunkle Spalten unterscheiden sich weiterhin deutlich
+        var dark = (G(56, 30) + G(57, 30) + G(60, 30) + G(61, 30)) / 4.0; var bright = (G(58, 30) + G(59, 30) + G(62, 30) + G(63, 30)) / 4.0;
+        Assert.True(bright - dark > 60, $"Struktur verloren: hell {bright}, dunkel {dark}");
+        var r = new JsonObject { ["ops"] = new JsonArray() }; ImageDoc.AddContentFill(r, (JsonObject)l["mask"]!);
+        Assert.Equal("contentfill", ImageDoc.S(((JsonObject)((JsonArray)r["ops"]!)[0]!)["op"]));
+    }
 }

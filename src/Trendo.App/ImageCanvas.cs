@@ -27,6 +27,12 @@ public sealed class ImageCanvas : Control
     public Action<Point, Point>? Line { get; set; }
     /// <summary>Aktive Auswahl (gestrichelt, Leinwand-Pixel).</summary>
     public Rect? Marquee { get; set; }
+    /// <summary>Lasso-Auswahl (Leinwand-Pixel), gestrichelt geschlossen gezeichnet.</summary>
+    public IReadOnlyList<Point>? LassoPath { get; set; }
+    /// <summary>Zauberstab-Auswahl als halbdurchsichtige Fläche über der ganzen Leinwand.</summary>
+    public Bitmap? SelectionOverlay { get; set; }
+    /// <summary>Freihändig umfahrene Fläche (Lasso).</summary>
+    public Action<List<(double X, double Y)>>? Lassoed { get; set; }
     /// <summary>Quelle des Kopierstempels.</summary>
     public Point? CloneSource { get; set; }
 
@@ -48,7 +54,7 @@ public sealed class ImageCanvas : Control
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e); if (_from is null) return;
-        _at = ToDoc(e.GetPosition(this)); if (Tool is "brush" or "eraser" or "vector" or "heal" or "clone") _pts.Add(_at); InvalidateVisual();
+        _at = ToDoc(e.GetPosition(this)); if (Tool is "brush" or "eraser" or "vector" or "heal" or "clone" or "lasso") _pts.Add(_at); InvalidateVisual();
     }
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
@@ -57,12 +63,20 @@ public sealed class ImageCanvas : Control
         switch (Tool)
         {
             case "brush" or "eraser" or "vector" or "heal" or "clone": Stroke?.Invoke(_pts.Select(p => (p.X, p.Y)).ToList(), Tool == "eraser"); break;
+            case "lasso" when _pts.Count >= 3: Lassoed?.Invoke(_pts.Select(p => (p.X, p.Y)).ToList()); break;
             case "rect" or "ellipse" or "crop" or "select" when moved: Dragged?.Invoke(new Rect(a, _at).Normalize()); break;
             case "gradient" when moved: Line?.Invoke(a, _at); break;
             case "move" when moved: Moved?.Invoke(a, _at - a); break;
             default: Clicked?.Invoke(a); break;
         }
         _pts.Clear(); InvalidateVisual();
+    }
+
+    void DrawPoly(DrawingContext ctx, IPen pen, IReadOnlyList<Point> pts, bool closed)
+    {
+        var g = new StreamGeometry();
+        using (var c = g.Open()) { c.BeginFigure(ToScreen(pts[0]), false); for (var i = 1; i < pts.Count; i++) c.LineTo(ToScreen(pts[i])); c.EndFigure(closed); }
+        ctx.DrawGeometry(null, new Pen(new SolidColorBrush(Color.Parse("#99000000")), 2), g); ctx.DrawGeometry(null, pen, g);
     }
 
     public override void Render(DrawingContext ctx)
@@ -85,7 +99,9 @@ public sealed class ImageCanvas : Control
             ctx.DrawRectangle(null, gold, new Rect(ToScreen(sr.TopLeft), ToScreen(sr.BottomRight)));
         }
         var ants = new Pen(Brushes.White, 1, new DashStyle([4, 4], 0));
-        if (Marquee is { } mq) ctx.DrawRectangle(null, ants, new Rect(ToScreen(mq.TopLeft), ToScreen(mq.BottomRight)));
+        if (SelectionOverlay is { } so) ctx.DrawImage(so, new Rect(0, 0, so.PixelSize.Width, so.PixelSize.Height), r);
+        if (LassoPath is { Count: >= 3 } lp) DrawPoly(ctx, ants, lp, true);
+        else if (Marquee is { } mq) ctx.DrawRectangle(null, ants, new Rect(ToScreen(mq.TopLeft), ToScreen(mq.BottomRight)));
         if (CloneSource is { } cs && Tool == "clone") { var sp = ToScreen(cs); ctx.DrawEllipse(null, new Pen(Brushes.White, 1.5), sp, 8, 8); ctx.DrawLine(new Pen(Brushes.White, 1), sp - new Vector(12, 0), sp + new Vector(12, 0)); ctx.DrawLine(new Pen(Brushes.White, 1), sp - new Vector(0, 12), sp + new Vector(0, 12)); }
         if (_from is not { } a) return;
         switch (Tool)
@@ -97,6 +113,8 @@ public sealed class ImageCanvas : Control
                 break;
             case "rect" or "crop":
                 ctx.DrawRectangle(Tool == "crop" ? new SolidColorBrush(Color.Parse("#22FFFFFF")) : new SolidColorBrush(BrushColor, 0.6), gold, new Rect(ToScreen(a), ToScreen(_at)).Normalize()); break;
+            case "lasso" when _pts.Count > 1:
+                DrawPoly(ctx, ants, _pts, false); break;
             case "select":
                 ctx.DrawRectangle(null, ants, new Rect(ToScreen(a), ToScreen(_at)).Normalize()); break;
             case "gradient":
