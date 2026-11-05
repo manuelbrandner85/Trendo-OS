@@ -79,4 +79,34 @@ public class Kasse_Ui
         }
         finally { w.Close(); }
     }
+    [AvaloniaFact(DisplayName = "Artikelformular: nach einer Fehlermeldung (falsche Prüfziffer, fehlender Preis) behalten alle Felder ihren Inhalt; nach erfolgreichem Anlegen sind sie leer")]
+    public void Ui_form_keeps_input()
+    {
+        var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1100;
+        try
+        {
+            void Click(string name) { var b = V<Control>(w, name); b.BringIntoView(); Settle(); RealClick(w, V<Control>(w, name)); Settle(); }
+            string Val(string name) => w.Find<TextBox>(name).Text ?? "";
+            w.Show("verkaufen"); Settle(); Click("sell-tab-online");
+            w.Find<TextBox>("sell-prod-name").Text = "Kakao"; w.Find<TextBox>("sell-prod-price").Text = "3,50"; w.Find<TextBox>("sell-prod-stock").Text = "12"; w.Find<TextBox>("sell-prod-sku").Text = "4006381333932";
+            Click("sell-prod-add");
+            Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Prüfziffer stimmt nicht"));
+            Assert.Equal(("Kakao", "3,50", "12", "4006381333932"), (Val("sell-prod-name"), Val("sell-prod-price"), Val("sell-prod-stock"), Val("sell-prod-sku")));
+            Assert.DoesNotContain(w.Kasse.Shop.Products.All(), p => p.Name == "Kakao");
+            // zweiter Fehler: Preis fehlt – die anderen Felder bleiben trotzdem
+            w.Find<TextBox>("sell-prod-price").Text = ""; w.Find<TextBox>("sell-prod-sku").Text = "4006381333931";
+            Click("sell-prod-add");
+            Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Preis"));
+            Assert.Equal(("Kakao", "", "12", "4006381333931"), (Val("sell-prod-name"), Val("sell-prod-price"), Val("sell-prod-stock"), Val("sell-prod-sku")));
+            // auch das Kundenformular behält seine Eingaben
+            w.Find<TextBox>("sell-cust-address").Text = "Hauptstraße 1, 10115 Berlin"; Click("sell-cust-add");
+            Assert.Equal("Hauptstraße 1, 10115 Berlin", Val("sell-cust-address"));
+            // richtig ausgefüllt: angelegt, Felder leer
+            w.Find<TextBox>("sell-prod-price").Text = "3,50"; Click("sell-prod-add");
+            var p = w.Kasse.Shop.Products.All().Single(x => x.Name == "Kakao");
+            Assert.Equal((3.5, 12, "4006381333931"), (p.Price, p.Stock, p.Sku));
+            Assert.Equal(("", "", "0", ""), (Val("sell-prod-name"), Val("sell-prod-price"), Val("sell-prod-stock"), Val("sell-prod-sku")));
+        }
+        finally { w.Close(); }
+    }
 }

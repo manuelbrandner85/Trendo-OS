@@ -23,5 +23,5 @@
 Reiter Kasse · Online & Artikel · Auswertung; Kasse mit Artikeln links und Warenkorb rechts, Tagesübersicht darunter.
 
 ## Nächste Schritte
-1. Eingaben bleiben nach einer Fehlermeldung im Artikelformular stehen
+1. (erledigt 05.11.2026: Eingaben bleiben nach einer Fehlermeldung stehen)
 2. Bestellungen aus Online-Shops nur lesen (mit Zustimmung)

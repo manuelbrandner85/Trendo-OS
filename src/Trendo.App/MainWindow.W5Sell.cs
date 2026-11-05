@@ -29,6 +29,17 @@ public partial class MainWindow
         };
     }
 
+    /// <summary>Eingaben der Verkaufen-Formulare bleiben nach einer Fehlermeldung stehen (vorher war nach jeder Meldung alles leer);
+    /// nach erfolgreichem Anlegen werden sie wie gewohnt geleert.</summary>
+    readonly Dictionary<string, string> _sellDrafts = [];
+    TextBox SellField(string name, string hint, double w = 340, string? text = null)
+    {
+        var t = Field(name, hint, w, _sellDrafts.TryGetValue(name, out var d) ? d : text);
+        t.TextChanged += (_, _) => _sellDrafts[name] = t.Text ?? "";
+        return t;
+    }
+    void SellTry(string view, Action a) => Try(view, () => { a(); if (_sellDrafts.Count > 0) { _sellDrafts.Clear(); Show(view); } }); // erst leeren, dann neu zeichnen (die Meldung bleibt)
+
     private Control SellView()
     {
         const string V = "verkaufen";
@@ -52,7 +63,7 @@ public partial class MainWindow
         var contacts = shop.Customers.All(); var products = shop.Products.All();
         var cust = new ComboBox { Name = "sell-order-customer", ItemsSource = contacts.Select(c => c.Name).ToList(), PlaceholderText = "Kunde", MinWidth = 180 };
         var prod = new ComboBox { Name = "sell-order-product", ItemsSource = products.Select(p => p.Name).ToList(), PlaceholderText = "Artikel", MinWidth = 180 };
-        var qty = Field("sell-order-qty", "Menge", 70, "1");
+        var qty = SellField("sell-order-qty", "Menge", 70, "1");
         var orders = new StackPanel { Name = "sell-orders", Spacing = 4 };
         var i = 0;
         foreach (var o in shop.Orders().Take(20))
@@ -64,8 +75,8 @@ public partial class MainWindow
                     Child = new TextBlock { Text = o.Status, Foreground = Text, FontSize = 11 } } } };
             var live = o.Status != "storniert";
             // 105 (Entscheidung 31.10.2026): Bestand sinkt erst bei „Geliefert“
-            if (live && o.StockOut == false) right.Children.Add(Act($"sell-deliver-{i}", "Geliefert", () => Try(V, () => { shop.Deliver(oid, today); _core.Audit.Append(Principal.LocalOwner.Name, "shop.deliver", oid); Say("Als geliefert eingetragen – der Bestand ist gesunken.", V); })));
-            if (live && o.InvoiceNumber.Length == 0) right.Children.Add(Act($"sell-invoice-{i}", "Rechnung", () => Try(V, () =>
+            if (live && o.StockOut == false) right.Children.Add(Act($"sell-deliver-{i}", "Geliefert", () => SellTry(V, () => { shop.Deliver(oid, today); _core.Audit.Append(Principal.LocalOwner.Name, "shop.deliver", oid); Say("Als geliefert eingetragen – der Bestand ist gesunken.", V); })));
+            if (live && o.InvoiceNumber.Length == 0) right.Children.Add(Act($"sell-invoice-{i}", "Rechnung", () => SellTry(V, () =>
             {
                 var (inv, file) = shop.Invoice(oid, Money, _settings.Name.Trim().Length > 0 ? _settings.Name + "\n" + _settings.SenderStreet + "\n" + _settings.SenderCity : "Dein Name und Adresse", _settings.SmallBusiness, _settings.InvoiceLogo);
                 _core.Audit.Append(Principal.LocalOwner.Name, "shop.invoice", inv.Number); Launch(file); Say($"Rechnung {inv.Number} erstellt. Die Einnahme wird gebucht, sobald du die Zahlung erfasst.", V);
@@ -76,10 +87,10 @@ public partial class MainWindow
             {
                 if (_sellPayFor == oid)
                 {
-                    var amt = Field("sell-pay-amount", "Betrag €", 90, o.Open.ToString("0.00", System.Globalization.CultureInfo.GetCultureInfo("de-DE")));
-                    var refBox = Field("sell-pay-ref", "Referenz (Kontoauszug)", 170, $"{o.InvoiceNumber}-{o.Payments.Count + 1}");
+                    var amt = SellField("sell-pay-amount", "Betrag €", 90, o.Open.ToString("0.00", System.Globalization.CultureInfo.GetCultureInfo("de-DE")));
+                    var refBox = SellField("sell-pay-ref", "Referenz (Kontoauszug)", 170, $"{o.InvoiceNumber}-{o.Payments.Count + 1}");
                     right.Children.Add(amt); right.Children.Add(refBox);
-                    right.Children.Add(Act($"sell-pay-book-{i}", "Buchen", () => Try(V, () =>
+                    right.Children.Add(Act($"sell-pay-book-{i}", "Buchen", () => SellTry(V, () =>
                     {
                         var after = shop.Pay(oid, Finance.ParseAmount(Need(amt, "den Betrag")), today, Need(refBox, "die Referenz"), Money, _settings.SmallBusiness);
                         _sellPayFor = null; _core.Audit.Append(Principal.LocalOwner.Name, "shop.payment", $"{o.InvoiceNumber} {after.Paid:0.00}");
@@ -93,10 +104,10 @@ public partial class MainWindow
             {
                 if (_sellRefundFor == oid)
                 {
-                    var amt = Field("sell-refund-amount", "Betrag €", 90, o.Paid.ToString("0.00", System.Globalization.CultureInfo.GetCultureInfo("de-DE")));
-                    var refBox = Field("sell-refund-ref", "Referenz", 150, $"{o.InvoiceNumber}-E{o.Payments.Count(p => p.Amount < 0) + 1}");
+                    var amt = SellField("sell-refund-amount", "Betrag €", 90, o.Paid.ToString("0.00", System.Globalization.CultureInfo.GetCultureInfo("de-DE")));
+                    var refBox = SellField("sell-refund-ref", "Referenz", 150, $"{o.InvoiceNumber}-E{o.Payments.Count(p => p.Amount < 0) + 1}");
                     right.Children.Add(amt); right.Children.Add(refBox);
-                    right.Children.Add(Act($"sell-refund-book-{i}", "Erstattung buchen", () => Try(V, () =>
+                    right.Children.Add(Act($"sell-refund-book-{i}", "Erstattung buchen", () => SellTry(V, () =>
                     {
                         var after = shop.Refund(oid, Finance.ParseAmount(Need(amt, "den Betrag")), today, Need(refBox, "die Referenz"), Money, _settings.SmallBusiness);
                         _sellRefundFor = null; _core.Audit.Append(Principal.LocalOwner.Name, "shop.refund", $"{o.InvoiceNumber} {after.Paid:0.00}");
@@ -106,14 +117,14 @@ public partial class MainWindow
                 else right.Children.Add(Act($"sell-refund-{i}", "Erstatten", () => { _sellRefundFor = oid; Show(V); }));
             }
             if (o.Payments is null && o.Status != "bezahlt") right.Children.Add(Act($"sell-paid-{i}", "Bezahlt", () => { shop.SetStatus(oid, "bezahlt"); Show(V); })); // Altdaten
-            if (live && o.Paid == 0 && o.Status != "bezahlt") right.Children.Add(Act($"sell-cancel-{i}", "Stornieren", () => Try(V, () => { shop.Cancel(oid, today); _core.Audit.Append(Principal.LocalOwner.Name, "shop.cancel", oid); Say("Bestellung storniert.", V); })));
+            if (live && o.Paid == 0 && o.Status != "bezahlt") right.Children.Add(Act($"sell-cancel-{i}", "Stornieren", () => SellTry(V, () => { shop.Cancel(oid, today); _core.Audit.Append(Principal.LocalOwner.Name, "shop.cancel", oid); Say("Bestellung storniert.", V); })));
             orders.Children.Add(Card(Row(new StackPanel { Children = { new TextBlock { Text = o.Customer, Foreground = Text, FontWeight = FontWeight.SemiBold },
                 P($"{o.Date:dd.MM.yyyy} · {string.Join(", ", o.Lines.Select(l => $"{l.Qty:0.##} × {l.Product}"))}", null, 11) } }, right)));
             i++;
         }
         if (i == 0) orders.Children.Add(P("Noch keine Bestellungen.", Text));
         sp.Children.Add(Card(Section("Bestellungen", "Bestellung eintragen (die Ware wird vorgemerkt), bei Versand „Geliefert“ (der Bestand sinkt), Rechnung schreiben und bei Eingang die Zahlung erfassen – erst dann zählt sie als Einnahme.",
-            Line(cust, prod, qty, Act("sell-order-add", "Bestellung eintragen", () => Try(V, () =>
+            Line(cust, prod, qty, Act("sell-order-add", "Bestellung eintragen", () => SellTry(V, () =>
             {
                 if (cust.SelectedItem is not string c) throw new ArgumentException("Bitte einen Kunden wählen (oder unten anlegen).");
                 if (prod.SelectedItem is not string p) throw new ArgumentException("Bitte einen Artikel wählen (oder unten anlegen).");
@@ -121,13 +132,13 @@ public partial class MainWindow
             }), true)), orders)));
 
         // Kunden und Artikel (gemeinsam mit „Betrieb“)
-        var cn = Field("sell-cust-name", "Name", 160); var ca = Field("sell-cust-address", "Straße, PLZ Ort", 220); var ce = Field("sell-cust-email", "E-Mail (optional)", 180);
+        var cn = SellField("sell-cust-name", "Name", 160); var ca = SellField("sell-cust-address", "Straße, PLZ Ort", 220); var ce = SellField("sell-cust-email", "E-Mail (optional)", 180);
         var custList = new WrapPanel();
         foreach (var c in contacts.Take(30)) custList.Children.Add(new Border { Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(10), Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1),
             Child = new StackPanel { Children = { new TextBlock { Text = c.Name, Foreground = Text, FontSize = 12.5 }, P($"{c.Stage}{(c.Address.Length > 0 ? " · " + c.Address : "")}", null, 10.5) } } });
-        var pn = Field("sell-prod-name", "Artikel", 180); var pp = Field("sell-prod-price", "Preis netto €", 110); var ps = Field("sell-prod-stock", "Bestand", 80, "0"); var psku = Field("sell-prod-sku", "Artikelnr./EAN", 150);
+        var pn = SellField("sell-prod-name", "Artikel", 180); var pp = SellField("sell-prod-price", "Preis netto €", 110); var ps = SellField("sell-prod-stock", "Bestand", 80, "0"); var psku = SellField("sell-prod-sku", "Artikelnr./EAN", 150);
         sp.Children.Add(Card(Section("Kunden", "Dieselbe Liste wie unter „Betrieb“.",
-            Line(cn, ca, ce, Act("sell-cust-add", "Kunde anlegen", () => Try(V, () =>
+            Line(cn, ca, ce, Act("sell-cust-add", "Kunde anlegen", () => SellTry(V, () =>
             {
                 var name = Need(cn, "den Namen"); if (contacts.Any(x => x.Name == name)) throw new ArgumentException("Diesen Kunden gibt es schon.");
                 shop.Customers.Add(new BizContact(name, "", ce.Text?.Trim() ?? "", "Kunde", null, 0, "", ca.Text?.Trim() ?? "")); Say($"Kunde „{name}“ angelegt.", V);
@@ -141,13 +152,13 @@ public partial class MainWindow
                     new TextBlock { Text = (p.Stock > 0 ? $"{p.Stock} vorrätig" : "nicht vorrätig") + (shop.Reserved(p.Name) is var rs && rs > 0 ? $" · {rs:0.##} vorgemerkt" : ""), Foreground = Brush.Parse(p.Stock > 0 ? "#167A45" : "#B2361F"), FontSize = 11 } } } });
         if (products.Count == 0) shopGrid.Children.Add(P("Noch keine Artikel.", Text));
         sp.Children.Add(Card(Section("Artikel und Webshop-Vorschau", "So sähe dein Shop aus. „Als Webseite speichern“ legt eine HTML-Seite an – ohne Bezahlfunktion und ohne fremde Dienste.",
-            Line(pn, pp, ps, psku, Act("sell-prod-add", "Artikel anlegen", () => Try(V, () =>
+            Line(pn, pp, ps, psku, Act("sell-prod-add", "Artikel anlegen", () => SellTry(V, () =>
             {
                 var name = Need(pn, "den Artikelnamen"); if (products.Any(x => x.Name == name)) throw new ArgumentException("Diesen Artikel gibt es schon.");
                 var price = (double)Finance.ParseAmount(Need(pp, "den Preis")); if (price < 0) throw new ArgumentException("Der Preis darf nicht negativ sein.");
                 var sku = SalesStats.CheckSku(psku.Text ?? ""); if (sku.Length > 0 && products.Any(x => string.Equals(x.Sku, sku, StringComparison.OrdinalIgnoreCase))) throw new ArgumentException($"Die Artikelnummer „{sku}“ hat schon ein anderer Artikel.");
                 shop.Products.Add(new Product(name, "", 0, price, int.TryParse(ps.Text, out var st) ? Math.Max(0, st) : 0, 0, 0, sku)); Say($"Artikel „{name}“ angelegt.", V);
-            })), Act("sell-shop-save", "Als Webseite speichern", () => Try(V, () =>
+            })), Act("sell-shop-save", "Als Webseite speichern", () => SellTry(V, () =>
             {
                 var f = Path.Combine(BusinessFolder, DevStudio.SafeName(BizIdea.Name) + "-Shop.html");
                 File.WriteAllText(f, Shop.ShopHtml(BizIdea.Name, shop.Products.All(), _settings.SmallBusiness)); Launch(f); Say("Gespeichert: " + f, V);
