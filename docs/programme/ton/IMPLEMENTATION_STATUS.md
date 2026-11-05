@@ -1,6 +1,6 @@
 # Audio bearbeiten – Umsetzungsstand
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.36 (Stand 6bd5d2b)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -44,4 +44,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | ME-01 | Bild zuschneiden, drehen, Helligkeit, Text, JPG/PNG | Implementiert | `MediaEditTests` |
 | ME-02 | Video Ausschnitt, Clips aneinanderhängen, Vorschaubilder | Implementiert | `MediaEditTests` |
 
-0 von 37 Funktionen getestet.
+0 von 37 Funktionen getestet (noch kein Testlauf eingelesen).

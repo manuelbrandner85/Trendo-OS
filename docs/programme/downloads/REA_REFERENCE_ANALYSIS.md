@@ -1,5 +1,7 @@
 # Downloads – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Surfen & Herunterladen (SYS-03) · Bereich: System & Sicherheit · Seite: `downloads` · Stand: 0.9.36 (Stand 6bd5d2b)
 
-Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.
+Analyse: [Vorbild-Analyse Netz, Teilen und Leistung: Windows Task-Manager, Free Download Manager, LocalSend, Windows-Freigaben (Clean-Room)](../../../docs/claude/vorbilder/netz-teilen-downloads-taskmanager.md)
+
+Kein fremder Code und keine fremden Grafiken übernommen – nur öffentlich beschriebener Funktionsumfang.

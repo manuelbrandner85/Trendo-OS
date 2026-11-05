@@ -116,6 +116,7 @@ public class OsStyles_Ui
         try
         {
             w = Switch(w0, "windows");
+            w.Show("dateien"); Pump(); Assert.True(Visible(w, "fb-root")); // Seite „Dateien“ öffnet als eigenes Fenster
             var home = w.Files.Home; var docs = w.Files.KnownFolders().First(k => k.Id == "dokumente").Path;
             var f = Path.Combine(home, "Brief.txt"); File.WriteAllText(f, "Hallo");
             w.FilesGo(home); Pump();

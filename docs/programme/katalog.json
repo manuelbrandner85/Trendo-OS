@@ -9,7 +9,117 @@
       "Briefseite nach DIN 5008",
       "Texteditor"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "BR-01",
+        "Name": "Brief nach DIN 5008 (Form A/B), Informationsblock, Folgeseiten „Seite n von N“",
+        "State": "umgesetzt",
+        "Test": "LetterDinTests"
+      },
+      {
+        "Nr": "BR-02",
+        "Name": "Kontakt einsetzen, Form wechseln, Vorschau",
+        "State": "umgesetzt",
+        "Test": "LetterDin_Ui"
+      },
+      {
+        "Nr": "BR-03",
+        "Name": "Assistent in drei Schritten, Alles leeren mit Rückgängig",
+        "State": "umgesetzt",
+        "Test": "LetterWizard_Ui"
+      },
+      {
+        "Nr": "BR-04",
+        "Name": "Vorlagen-Galerie mit Gruppen (Kündigung, Widerspruch, Widerruf …)",
+        "State": "umgesetzt",
+        "Test": "LetterProTests"
+      },
+      {
+        "Nr": "BR-05",
+        "Name": "20 Designs mit Vorschaubild, Farben, Kopf-Layouts, Schriften",
+        "State": "umgesetzt",
+        "Test": "LetterSendUiTests"
+      },
+      {
+        "Nr": "BR-06",
+        "Name": "PDF ohne Zusatzprogramm, Word-Datei",
+        "State": "umgesetzt",
+        "Test": "LetterDesignPdfTests"
+      },
+      {
+        "Nr": "BR-07",
+        "Name": "Exportieren mit Ort und Format",
+        "State": "umgesetzt",
+        "Test": "LetterSendUiTests"
+      },
+      {
+        "Nr": "BR-08",
+        "Name": "Senden per E-Mail mit PDF-Anhang (nur Entwurf), Drucken",
+        "State": "umgesetzt",
+        "Test": "LetterSendUiTests"
+      },
+      {
+        "Nr": "BR-09",
+        "Name": "Umschlag DIN lang zum Brief",
+        "State": "umgesetzt",
+        "Test": "LetterSendUiTests"
+      },
+      {
+        "Nr": "BR-10",
+        "Name": "Fristen berechnen, in den Kalender",
+        "State": "umgesetzt",
+        "Test": "LetterProTests"
+      },
+      {
+        "Nr": "BR-11",
+        "Name": "Serienbrief aus CSV und aus Adressbuch-Gruppe",
+        "State": "umgesetzt",
+        "Test": "LetterProUiTests"
+      },
+      {
+        "Nr": "BR-12",
+        "Name": "Unterschrift zeichnen oder als Bild",
+        "State": "umgesetzt",
+        "Test": "LetterF3Tests"
+      },
+      {
+        "Nr": "BR-13",
+        "Name": "Falz- und Lochmarken",
+        "State": "umgesetzt",
+        "Test": "LetterF3Tests"
+      },
+      {
+        "Nr": "BR-14",
+        "Name": "Rechtschreibung beim Tippen, eigenes Wörterbuch",
+        "State": "umgesetzt",
+        "Test": "LetterF3UiTests"
+      },
+      {
+        "Nr": "BR-15",
+        "Name": "Faktenwächter, Rückfragen je Kategorie",
+        "State": "umgesetzt",
+        "Test": "LetterQaTests"
+      },
+      {
+        "Nr": "BR-16",
+        "Name": "Papierkorb für Briefe, Akten, Briefköpfe",
+        "State": "umgesetzt",
+        "Test": "BriefePapierkorb"
+      },
+      {
+        "Nr": "BR-17",
+        "Name": "Kein Programmname auf dem Blatt",
+        "State": "umgesetzt",
+        "Test": "LetterNoBrandingUiTests"
+      },
+      {
+        "Nr": "BR-18",
+        "Name": "Papierschacht wählen",
+        "State": "teilweise (Druckdialog des Systems)",
+        "Test": "–"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/STUDIO-LETTER-01_KATALOG.md",
     "Engine": [],
     "Tools": [
       "Los",
@@ -119,9 +229,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 74,
+    "WarmMs": 94,
     "WindowsOnly": []
   },
   {
@@ -278,9 +388,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 38,
+    "WarmMs": 47,
     "WindowsOnly": []
   },
   {
@@ -430,7 +540,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
     "WarmMs": 40,
     "WindowsOnly": []
@@ -630,9 +740,9 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 54,
+    "WarmMs": 36,
     "WindowsOnly": []
   },
   {
@@ -792,9 +902,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 38,
+    "WarmMs": 29,
     "WindowsOnly": []
   },
   {
@@ -951,13 +1061,14 @@
       "SYS-09: Entwurf als .eml (Umlaute korrekt, X-Unsent) und mailto; Prüfung findet Fehler",
       "SYS-09: Kontakte speichern, vCard ein- und ausgeben, ungültige Adresse abgelehnt",
       "SYS-10 F1/U1/U2: Start mit Programmkacheln und Vorlagen; Dokumente als Kacheln mit Filter; Öffnen im passenden Programm",
+      "SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit ★ zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet",
       "X-11 F1/F2/U1/U2: Vorhaben mit Ring, Kanban verschieben, Zeitplan mit Meilenstein, Dateien des Vorhabens"
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -1195,9 +1306,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -1448,9 +1559,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -1689,9 +1800,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -1724,6 +1835,7 @@
       "Tafel",
       "Zeitplan",
       "Dateien",
+      "In den Kalender",
       "Zeitplan öffnen",
       "Alle"
     ],
@@ -1753,6 +1865,8 @@
       "LibreOffice (optional)",
       "mpv (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/vorhaben-notion-asana.md",
+    "ReaSummary": "Vorbild-Analyse Vorhaben: Notion-Projekte, Asana, Trello, MS Project (Clean-Room)",
     "Ui": [
       "Projektplaner (Übersicht, Liste, Tafel, Zeitplan, Dateien – wie Asana)"
     ],
@@ -1762,8 +1876,10 @@
     "Tests": [
       "SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen",
       "SYS-10 F1/U1/U2: Start mit Programmkacheln und Vorlagen; Dokumente als Kacheln mit Filter; Öffnen im passenden Programm",
+      "SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit ★ zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet",
       "T-0308: Gantt – Balken ziehen verschiebt um Tage, Kante ziehen verlängert, Punkt auf anderen Balken = Abhängigkeit mit Nachrücken, Rückgängig, Beginn/Ende/„kommt nach“ im Feld",
       "Vorhaben: „Beispiel ansehen“ legt ein Beispielprojekt an und öffnet den Planer mit Übersicht, Liste, Tafel, Zeitplan, Dateien",
+      "Vorhaben: „In den Kalender“ trägt die Fälligkeiten ein, zweites Mal ohne Doppelte, erledigter Schritt verschwindet wieder aus dem Kalender",
       "X-11 (UI): Vorhaben anlegen, Schritt abhaken, Fortschritt steigt",
       "X-11 F1/F2/U1/U2: Vorhaben mit Ring, Kanban verschieben, Zeitplan mit Meilenstein, Dateien des Vorhabens",
       "X-11 F1/U1: Vorhaben mit Startdatum – Fälligkeiten, Meilenstein, Kanban-Zustände, alte Listen lesbar",
@@ -1773,9 +1889,9 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -1982,6 +2098,8 @@
       "PDFsharp (MIT)",
       "Hunspell-Wörterbücher"
     ],
+    "Rea": "docs/claude/vorbilder/office-start-microsoft365.md",
+    "ReaSummary": "Vorbild-Analyse Office-Startseite: Microsoft 365, LibreOffice-Startcenter, Google Drive (Clean-Room)",
     "Ui": [
       "Office-Startseite (Programme, Vorlagen, Zuletzt benutzt – wie Microsoft 365)"
     ],
@@ -2000,6 +2118,7 @@
       "SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt",
       "SYS-10 (UI): Tabs; Aufgabe anlegen/erledigen; Tabelle anzeigen; Text zählen; Drucken nur nach Bestätigung",
       "SYS-10 F1/U1/U2: Start mit Programmkacheln und Vorlagen; Dokumente als Kacheln mit Filter; Öffnen im passenden Programm",
+      "SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit ★ zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet",
       "SYS-10-P01 (T-0244 getrennt): LibreOffice öffnet ein von Trendo erzeugtes DOCX",
       "SYS-10-P02/P11: Neues DOCX/XLSX; Tabelle ohne Office lesen (XLSX + CSV mit ; und Anführungszeichen)",
       "SYS-10-P04: Zuletzt verwendet – neueste zuerst",
@@ -2023,9 +2142,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -2225,6 +2344,7 @@
       "SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt",
       "SYS-10 (UI): Tabs; Aufgabe anlegen/erledigen; Tabelle anzeigen; Text zählen; Drucken nur nach Bestätigung",
       "SYS-10 F1/U1/U2: Start mit Programmkacheln und Vorlagen; Dokumente als Kacheln mit Filter; Öffnen im passenden Programm",
+      "SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit ★ zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet",
       "SYS-10-P01 (T-0244 getrennt): LibreOffice öffnet ein von Trendo erzeugtes DOCX",
       "SYS-10-P02/P11: Neues DOCX/XLSX; Tabelle ohne Office lesen (XLSX + CSV mit ; und Anführungszeichen)",
       "SYS-10-P04: Zuletzt verwendet – neueste zuerst",
@@ -2253,9 +2373,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 7,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -2485,6 +2605,7 @@
       "SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt",
       "SYS-10 (UI): Tabs; Aufgabe anlegen/erledigen; Tabelle anzeigen; Text zählen; Drucken nur nach Bestätigung",
       "SYS-10 F1/U1/U2: Start mit Programmkacheln und Vorlagen; Dokumente als Kacheln mit Filter; Öffnen im passenden Programm",
+      "SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit ★ zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet",
       "SYS-10-P01 (T-0244 getrennt): LibreOffice öffnet ein von Trendo erzeugtes DOCX",
       "SYS-10-P02/P11: Neues DOCX/XLSX; Tabelle ohne Office lesen (XLSX + CSV mit ; und Anführungszeichen)",
       "SYS-10-P04: Zuletzt verwendet – neueste zuerst",
@@ -2513,9 +2634,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -2755,6 +2876,7 @@
       "SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt",
       "SYS-10 (UI): Tabs; Aufgabe anlegen/erledigen; Tabelle anzeigen; Text zählen; Drucken nur nach Bestätigung",
       "SYS-10 F1/U1/U2: Start mit Programmkacheln und Vorlagen; Dokumente als Kacheln mit Filter; Öffnen im passenden Programm",
+      "SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit ★ zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet",
       "SYS-10-P01 (T-0244 getrennt): LibreOffice öffnet ein von Trendo erzeugtes DOCX",
       "SYS-10-P02/P11: Neues DOCX/XLSX; Tabelle ohne Office lesen (XLSX + CSV mit ; und Anführungszeichen)",
       "SYS-10-P04: Zuletzt verwendet – neueste zuerst",
@@ -2791,9 +2913,9 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -3050,6 +3172,7 @@
       "SYS-10 (T-0244 getrennt): Metadaten aus einem echten LibreOffice-PDF entfernt",
       "SYS-10 (UI): Tabs; Aufgabe anlegen/erledigen; Tabelle anzeigen; Text zählen; Drucken nur nach Bestätigung",
       "SYS-10 F1/U1/U2: Start mit Programmkacheln und Vorlagen; Dokumente als Kacheln mit Filter; Öffnen im passenden Programm",
+      "SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit ★ zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet",
       "SYS-10-P01 (T-0244 getrennt): LibreOffice öffnet ein von Trendo erzeugtes DOCX",
       "SYS-10-P02/P11: Neues DOCX/XLSX; Tabelle ohne Office lesen (XLSX + CSV mit ; und Anführungszeichen)",
       "SYS-10-P04: Zuletzt verwendet – neueste zuerst",
@@ -3086,9 +3209,9 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 25,
     "WindowsOnly": []
   },
   {
@@ -3164,9 +3287,9 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 34,
+    "WarmMs": 39,
     "WindowsOnly": []
   },
   {
@@ -3178,7 +3301,81 @@
     "Type": [
       "Kasse mit Warenkorb"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "VK-01",
+        "Name": "Kassieren bar mit Rückgeld oder Karte, fortlaufende Bon-Nummer, MwSt",
+        "State": "umgesetzt",
+        "Test": "CashRegisterTests"
+      },
+      {
+        "Nr": "VK-02",
+        "Name": "Kasse in der Oberfläche: Kacheln, Korb, Schnelltasten, Bon-PDF, Storno nach Ja",
+        "State": "umgesetzt",
+        "Test": "Kasse_Ui"
+      },
+      {
+        "Nr": "VK-03",
+        "Name": "Tagesabschluss als PDF",
+        "State": "umgesetzt",
+        "Test": "CashRegisterTests"
+      },
+      {
+        "Nr": "VK-04",
+        "Name": "Rabatt in Prozent oder Euro",
+        "State": "umgesetzt",
+        "Test": "SalesStatsTests"
+      },
+      {
+        "Nr": "VK-05",
+        "Name": "Artikelnummer/EAN mit Prüfziffer, Scanner-Eingabe",
+        "State": "umgesetzt",
+        "Test": "SalesStatsTests"
+      },
+      {
+        "Nr": "VK-06",
+        "Name": "Auswertung: Umsatz, Vergleich, Durchschnittsbon, Bestseller, Wochentage, Stoßzeit",
+        "State": "umgesetzt",
+        "Test": "SalesStatsTests"
+      },
+      {
+        "Nr": "VK-07",
+        "Name": "Scannen, Rabatt und Auswertung in der Oberfläche",
+        "State": "umgesetzt",
+        "Test": "Kasse_Ui"
+      },
+      {
+        "Nr": "VK-08",
+        "Name": "Kunden, Artikel, Bestellung, Rechnung, Umsatz",
+        "State": "umgesetzt",
+        "Test": "Teil4BusinessUiTests"
+      },
+      {
+        "Nr": "VK-09",
+        "Name": "Lager, Nachbestellpunkt",
+        "State": "umgesetzt",
+        "Test": "W5_Bus_Ops"
+      },
+      {
+        "Nr": "VK-10",
+        "Name": "Geschäftsidee bewerten und planen",
+        "State": "umgesetzt",
+        "Test": "W5_Business_Ui"
+      },
+      {
+        "Nr": "VK-11",
+        "Name": "Bestellungen aus fremden Online-Shops lesen",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "VK-12",
+        "Name": "Zertifizierte Kasse (TSE)",
+        "State": "bewusst nicht",
+        "Test": "–"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/STUDIO-ONLINE-BUSINESS-01_KATALOG.md",
     "Engine": [
       "BusinessStudio",
       "FoundingSteps"
@@ -3193,6 +3390,7 @@
       "Geschäftsidee",
       "\uD83E\uDDFE Kasse",
       "\uD83D\uDED2 Online & Artikel",
+      "\uD83D\uDCCA Auswertung",
       "Artikel anlegen →",
       "\uD83D\uDCB6 Bar",
       "\uD83D\uDCB3 Karte",
@@ -3212,7 +3410,7 @@
     ],
     "Dependencies": [],
     "Rea": "docs/claude/vorbilder/verkaufen-kasse-shop.md",
-    "ReaSummary": "Vorbild-Analyse Verkaufen: Kassensysteme, Online-Shop-Verwaltung (Clean-Room)",
+    "ReaSummary": "Vorbild-Analyse Verkaufen: SumUp, Square, Shopify POS, Loyverse (Clean-Room)",
     "Ui": [
       "Kasse mit Warenkorb"
     ],
@@ -3221,8 +3419,10 @@
       "Geschäftsidee"
     ],
     "Tests": [
+      "Artikelformular: nach einer Fehlermeldung (falsche Prüfziffer, fehlender Preis) behalten alle Felder ihren Inhalt; nach erfolgreichem Anlegen sind sie leer",
       "Geld: Übersicht mit Saldo und Diagramm, Budget-Warnung, Kategorie in der Tabelle ändern wird gelernt, Steuerberater-ZIP",
       "Geschäftsidee U2/U3: Score als Ring mit Ampel, Gründungsschritte abhaken",
+      "Kasse wie SumUp/Square: Strichcode scannen legt den Artikel in den Korb, Rabatt 10 % senkt die Summe, Auswertung zeigt Umsatz, Bestseller und Stoßzeit; Artikelnummer mit falscher Prüfziffer abgelehnt",
       "Online verkaufen: Startseite mit Kennzahlen; Kunde, Artikel, Bestellung, Rechnung – Umsatz und Geld stimmen",
       "T-0304: Kasse – Kacheln in den Korb, +/−, „passend“/Rückgeld, Kassieren bucht Geld und Bestand, Bon-PDF, Storno Nein/Ja, Tagesabschluss-PDF"
     ],
@@ -3230,9 +3430,9 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -3378,9 +3578,9 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -3445,9 +3645,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -3462,7 +3662,8 @@
     "Functions": [],
     "Engine": [
       "SourceApps",
-      "SkillLibrary"
+      "SkillLibrary",
+      "SkillFiles"
     ],
     "Tools": [
       "Los",
@@ -3483,6 +3684,8 @@
       "Vorlagen",
       "Skills",
       "＋ Eigener Skill",
+      "Datei wählen …",
+      "Aus Datei laden",
       "Ansehen",
       "Liste holen"
     ],
@@ -3498,6 +3701,8 @@
       "Node.js (optional)",
       "Docker (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/ki-team-crewai-gpts.md",
+    "ReaSummary": "Vorbild-Analyse KI-Team und Skills: Claude-Code-Agenten und -Skills, CrewAI, ChatGPT GPTs (Clean-Room)",
     "Ui": [
       "KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)"
     ],
@@ -3509,6 +3714,7 @@
       "CORE-12: Platzhalter mit Standardwert ausfüllen, fehlende werden genannt",
       "CORE-12: Qualitätsprüfung erkennt kurze Aufträge, Geheimnisse, offene Platzhalter; Masterprompt hat Regeln",
       "CORE-12: Versionen speichern und zurückholen, Mitgelieferte nicht löschbar",
+      "Skills-Seite: eigener Skill zeigt Tipps der Skill-Prüfung, „Als Datei“ sichert ihn, „Aus Datei laden“ übernimmt ihn als geladenen Skill",
       "T-0317: Skills-Seite – ansehen, eigenen Skill anlegen und ändern (Version 2), passende Fachregeln gehen an die KI",
       "T-0317: Vertraute Quelle – Liste nur der SKILL.md-Dateien, Übernehmen speichert Text mit Lizenz und Herkunft (nichts wird ausgeführt)",
       "T-0317: „In Claude Code öffnen“ legt die passenden Skills als .claude/skills/trendo-…/SKILL.md in den Ordner und nennt die Checklisten-Prüfung"
@@ -3517,9 +3723,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -3707,9 +3913,9 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": true,
-    "WarmMs": 7,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -3963,9 +4169,9 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 57,
+    "WarmMs": 61,
     "WindowsOnly": []
   },
   {
@@ -4199,9 +4405,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 23,
     "WindowsOnly": []
   },
   {
@@ -4262,9 +4468,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 6,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -4619,7 +4825,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -4953,9 +5159,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -5289,9 +5495,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 44,
+    "WarmMs": 40,
     "WindowsOnly": []
   },
   {
@@ -5620,9 +5826,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -5893,9 +6099,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 45,
+    "WarmMs": 57,
     "WindowsOnly": []
   },
   {
@@ -6118,9 +6324,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -6361,9 +6567,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 54,
+    "WarmMs": 63,
     "WindowsOnly": []
   },
   {
@@ -6569,9 +6775,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -6781,9 +6987,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": true,
-    "WarmMs": 7,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -6928,9 +7134,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -7108,9 +7314,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 33,
     "WindowsOnly": []
   },
   {
@@ -7293,9 +7499,9 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 57,
+    "WarmMs": 64,
     "WindowsOnly": []
   },
   {
@@ -7492,9 +7698,9 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 58,
+    "WarmMs": 85,
     "WindowsOnly": []
   },
   {
@@ -7683,9 +7889,9 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": true,
-    "WarmMs": 7,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -7891,9 +8097,9 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 40,
+    "WarmMs": 49,
     "WindowsOnly": []
   },
   {
@@ -8111,9 +8317,9 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 24,
+    "WarmMs": 54,
     "WindowsOnly": []
   },
   {
@@ -8307,9 +8513,9 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": true,
-    "WarmMs": 7,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -8489,9 +8695,9 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -8671,9 +8877,9 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -8862,9 +9068,9 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -9032,9 +9238,9 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 7,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -9233,9 +9439,9 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -9290,9 +9496,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -9354,9 +9560,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -9427,9 +9633,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -9501,9 +9707,9 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -9598,9 +9804,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -9682,9 +9888,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -9699,7 +9905,8 @@
     "Functions": [],
     "Engine": [
       "SourceApps",
-      "SkillLibrary"
+      "SkillLibrary",
+      "SkillFiles"
     ],
     "Tools": [
       "Los",
@@ -9736,6 +9943,8 @@
       "Node.js (optional)",
       "Docker (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/ki-verbindungen-zapier-raycast.md",
+    "ReaSummary": "Vorbild-Analyse KI-Verbindungen: Claude Desktop, Raycast, Zapier-Konten, Windows-Kontoverwaltung (Clean-Room)",
     "Ui": [
       "KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)"
     ],
@@ -9758,9 +9967,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -9802,6 +10011,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/ki-verbindungen-zapier-raycast.md",
+    "ReaSummary": "Vorbild-Analyse KI-Verbindungen: Claude Desktop, Raycast, Zapier-Konten, Windows-Kontoverwaltung (Clean-Room)",
     "Ui": [
       "KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)"
     ],
@@ -9853,9 +10064,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 38,
     "WindowsOnly": []
   },
   {
@@ -9938,6 +10149,8 @@
       "Python (optional)",
       "Node.js (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/ki-verbindungen-zapier-raycast.md",
+    "ReaSummary": "Vorbild-Analyse KI-Verbindungen: Claude Desktop, Raycast, Zapier-Konten, Windows-Kontoverwaltung (Clean-Room)",
     "Ui": [
       "KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)"
     ],
@@ -9962,9 +10175,9 @@
       "src/Trendo.App/MainWindow.Connections.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -10015,6 +10228,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/ki-team-crewai-gpts.md",
+    "ReaSummary": "Vorbild-Analyse KI-Team und Skills: Claude-Code-Agenten und -Skills, CrewAI, ChatGPT GPTs (Clean-Room)",
     "Ui": [
       "KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)"
     ],
@@ -10036,9 +10251,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 25,
     "WindowsOnly": []
   },
   {
@@ -10120,6 +10335,8 @@
       "whisper (Spracherkennung)",
       "Python (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/ki-bibliothek-ollama-lmstudio.md",
+    "ReaSummary": "Vorbild-Analyse Kostenlose KI finden: Ollama, LM Studio, Pinokio, Hugging Face, OpenRouter (Clean-Room)",
     "Ui": [
       "KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)"
     ],
@@ -10138,9 +10355,9 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -10194,6 +10411,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/ki-bibliothek-ollama-lmstudio.md",
+    "ReaSummary": "Vorbild-Analyse Kostenlose KI finden: Ollama, LM Studio, Pinokio, Hugging Face, OpenRouter (Clean-Room)",
     "Ui": [
       "KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)"
     ],
@@ -10237,9 +10456,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 32,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -10282,6 +10501,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/ki-bibliothek-ollama-lmstudio.md",
+    "ReaSummary": "Vorbild-Analyse Kostenlose KI finden: Ollama, LM Studio, Pinokio, Hugging Face, OpenRouter (Clean-Room)",
     "Ui": [
       "KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)"
     ],
@@ -10298,9 +10519,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -10392,9 +10613,9 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -10421,6 +10642,8 @@
       ".md"
     ],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/erweitern-vscode-github-desktop.md",
+    "ReaSummary": "Vorbild-Analyse Erweitern: VS Code Erweiterungen, GitHub Desktop, Pinokio, Obsidian-Plugins (Clean-Room)",
     "Ui": [
       "Nachbau-Projekt (Projekte, drei Schritte, Tagebuch)"
     ],
@@ -10440,9 +10663,9 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 7,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -10502,6 +10725,8 @@
       "Python (optional)",
       "Node.js (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/erweitern-vscode-github-desktop.md",
+    "ReaSummary": "Vorbild-Analyse Erweitern: VS Code Erweiterungen, GitHub Desktop, Pinokio, Obsidian-Plugins (Clean-Room)",
     "Ui": [
       "Programm-Store (Kategorien, Treffer, Eingerichtetes – wie Flathub)"
     ],
@@ -10539,9 +10764,9 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -10586,6 +10811,8 @@
       ".zip"
     ],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/erweitern-vscode-github-desktop.md",
+    "ReaSummary": "Vorbild-Analyse Erweitern: VS Code Erweiterungen, GitHub Desktop, Pinokio, Obsidian-Plugins (Clean-Room)",
     "Ui": [
       "Erweiterungen (Liste, Detailseite – wie VS Code)"
     ],
@@ -10605,9 +10832,9 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 7,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -10736,9 +10963,9 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 41,
+    "WarmMs": 36,
     "WindowsOnly": []
   },
   {
@@ -10787,6 +11014,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/netz-teilen-downloads-taskmanager.md",
+    "ReaSummary": "Vorbild-Analyse Netz, Teilen und Leistung: Windows Task-Manager, Free Download Manager, LocalSend, Windows-Freigaben (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -10812,9 +11041,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 24,
+    "WarmMs": 35,
     "WindowsOnly": []
   },
   {
@@ -10861,6 +11090,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/schutz-windows-sicherheit-timemachine.md",
+    "ReaSummary": "Vorbild-Analyse Schutz: Windows-Sicherheit, Dateiversionsverlauf/Time Machine, TCPView, Bitwarden-Bericht (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -10881,9 +11112,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -10933,6 +11164,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/schutz-windows-sicherheit-timemachine.md",
+    "ReaSummary": "Vorbild-Analyse Schutz: Windows-Sicherheit, Dateiversionsverlauf/Time Machine, TCPView, Bitwarden-Bericht (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -10958,7 +11191,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
     "WarmMs": 14,
     "WindowsOnly": []
@@ -11008,6 +11241,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/schutz-windows-sicherheit-timemachine.md",
+    "ReaSummary": "Vorbild-Analyse Schutz: Windows-Sicherheit, Dateiversionsverlauf/Time Machine, TCPView, Bitwarden-Bericht (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -11023,9 +11258,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -11037,7 +11272,99 @@
     "Type": [
       "Bildansicht"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "DA-01",
+        "Name": "Seitenleiste mit bekannten Ordnern und Laufwerken",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-02",
+        "Name": "„Dieser PC“ / „Orte“ / „Andere Orte“ mit Füllstand",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-03",
+        "Name": "Adresszeile, Zurück, Vor, Auf, Aktualisieren",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-04",
+        "Name": "Liste mit Spalten und Sortierung, Symbolansicht",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-05",
+        "Name": "Neuer Ordner, Umbenennen mit Systemnamen",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-06",
+        "Name": "Kopieren, Ausschneiden, Einfügen, Duplizieren mit Kopienamen je System",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-07",
+        "Name": "Löschen nur in den Papierkorb",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-08",
+        "Name": "Ziehen und Ablegen: verschieben/kopieren nach Systemregel",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-09",
+        "Name": "Mehrfachauswahl (Umschalt, Strg/⌘, Rahmen, Alles)",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-10",
+        "Name": "Registerkarten mit eigenem Verlauf",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-11",
+        "Name": "Vorschau mit der Leertaste",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-12",
+        "Name": "Suchen im Ordner, Tippen springt zum Element",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-13",
+        "Name": "Tastenkürzel je System",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-14",
+        "Name": "Mit Server verbinden (SMB, SFTP)",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "DA-15",
+        "Name": "Rückgängig für Dateiaktionen",
+        "State": "offen",
+        "Test": "–"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/CORE-01_KATALOG.md",
     "Engine": [],
     "Tools": [
       "✳ Claude",
@@ -11079,6 +11406,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/desktop-windows11-gnome-shell.md",
+    "ReaSummary": "Vorbild-Analyse Desktop: Windows 11, GNOME Shell, macOS Launchpad, VS Code Arbeitsbereiche (Clean-Room)",
     "Ui": [
       "Bildansicht"
     ],
@@ -11133,9 +11462,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 42,
+    "WarmMs": 58,
     "WindowsOnly": []
   },
   {
@@ -11144,12 +11473,104 @@
     "Studio": "CORE-01",
     "StudioName": "Desktop einrichten",
     "Area": "System & Sicherheit",
-    "Type": [],
-    "Functions": [],
+    "Type": [
+      "Dateimanager (Seitenleiste, Ordner, Laufwerke, Registerkarten – wie Explorer, Finder, Dateien)"
+    ],
+    "Functions": [
+      {
+        "Nr": "DA-01",
+        "Name": "Seitenleiste mit bekannten Ordnern und Laufwerken",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-02",
+        "Name": "„Dieser PC“ / „Orte“ / „Andere Orte“ mit Füllstand",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-03",
+        "Name": "Adresszeile, Zurück, Vor, Auf, Aktualisieren",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-04",
+        "Name": "Liste mit Spalten und Sortierung, Symbolansicht",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-05",
+        "Name": "Neuer Ordner, Umbenennen mit Systemnamen",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-06",
+        "Name": "Kopieren, Ausschneiden, Einfügen, Duplizieren mit Kopienamen je System",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-07",
+        "Name": "Löschen nur in den Papierkorb",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-08",
+        "Name": "Ziehen und Ablegen: verschieben/kopieren nach Systemregel",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-09",
+        "Name": "Mehrfachauswahl (Umschalt, Strg/⌘, Rahmen, Alles)",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-10",
+        "Name": "Registerkarten mit eigenem Verlauf",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-11",
+        "Name": "Vorschau mit der Leertaste",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-12",
+        "Name": "Suchen im Ordner, Tippen springt zum Element",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-13",
+        "Name": "Tastenkürzel je System",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-14",
+        "Name": "Mit Server verbinden (SMB, SFTP)",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "DA-15",
+        "Name": "Rückgängig für Dateiaktionen",
+        "State": "offen",
+        "Test": "–"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/CORE-01_KATALOG.md",
     "Engine": [],
     "Tools": [
-      "Los",
-      "✳ Claude",
       "Dieser PC",
       "Zurück",
       "Vor",
@@ -11175,20 +11596,34 @@
     ],
     "Formats": [],
     "Dependencies": [],
-    "Ui": [],
+    "Rea": "docs/claude/vorbilder/dateien-explorer-finder-nautilus.md",
+    "ReaSummary": "Vorbild-Analyse Dateien: Datei-Explorer, Finder, GNOME „Dateien“ (Clean-Room)",
+    "Ui": [
+      "Dateimanager (Seitenleiste, Ordner, Laufwerke, Registerkarten – wie Explorer, Finder, Dateien)"
+    ],
     "Tabs": [
       "Dateien"
     ],
     "Tests": [
       "CORE-01: Dateisuche begrenzt Tiefe und Anzahl",
       "CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte",
-      "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste"
+      "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste",
+      "Dateimanager-Verhalten je System: Ziehen verschiebt (Strg kopiert), Kopiename je System, Finder-Zeilenschalter benennt um, Entf/⌘⌫ legt in den Papierkorb, Leertaste zeigt Vorschau",
+      "Mehrfachauswahl wie im System: Umschalt-Klick Bereich, Strg-Klick dazu/weg, Rahmen mit der Maus aufziehen, Alles auswählen, mehrere kopieren/einfügen und in den Papierkorb, Klick ins Leere hebt auf",
+      "Programme im Stil des Systems: Windows-Menüzeile im Fenster, Mac-Menüs oben in der Menüleiste (Ablage …), GNOME-Kopfleiste mit „Speichern“ blau und Hauptmenü ☰ – Menüeinträge lösen dieselben Befehle aus",
+      "Registerkarten wie Explorer/Finder/Dateien: Strg/⌘+T neu, Mittelklick-Ordner in neuer Karte, Wechsel per Klick und Strg+Bild↓, eigener Verlauf je Karte, Strg/⌘+W schließt erst die Karte, dann das Fenster",
+      "Stil Trendo bleibt unverändert: Trendo-Kopf, Seitenspalten, Dock – keine Fremd-Leisten",
+      "Studio-Fenster wie im System: Mac und GNOME – KI-Zeile ist die Titelleiste (Ampel bzw. Schließen, Titel, Zurück), Windows behält die Titelleiste; Schließen in der Kopfleiste schließt das Fenster",
+      "Wie GNOME: schwarze Leiste mit Aktivitäten und Uhr in der Mitte, Übersicht mit Suche und Dash, nur Schließen-Knopf im Fenster, Dateien mit „Andere Orte“",
+      "Wie Windows 11: Taskleiste mit Start/Suche/Uhr, Startmenü mit Angeheftet und Suche (Trendo KI), Widgets mit allen Trendo-Karten, eckige Fensterknöpfe, Datei-Explorer mit „Dieser PC“",
+      "Wie im Original: eine Kopfleiste in GNOME-Dateien/Finder, Uhr öffnet Mitteilungen + Monatskalender, Schnelleinstellungen mit Kacheln, „Nicht stören“, GNOME-Suche per Lupe/Lostippen, „Andere Orte“, Explorer springt beim Tippen",
+      "Wie macOS: Menüleiste mit Menüs und Uhr, Dock mit Launchpad und Papierkorb, Spotlight, Ampel-Knöpfe, ⌘W schließt, Finder mit Seitenleiste und Symbolansicht"
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -11200,7 +11635,99 @@
     "Type": [
       "Bildansicht"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "DA-01",
+        "Name": "Seitenleiste mit bekannten Ordnern und Laufwerken",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-02",
+        "Name": "„Dieser PC“ / „Orte“ / „Andere Orte“ mit Füllstand",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-03",
+        "Name": "Adresszeile, Zurück, Vor, Auf, Aktualisieren",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-04",
+        "Name": "Liste mit Spalten und Sortierung, Symbolansicht",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-05",
+        "Name": "Neuer Ordner, Umbenennen mit Systemnamen",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-06",
+        "Name": "Kopieren, Ausschneiden, Einfügen, Duplizieren mit Kopienamen je System",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-07",
+        "Name": "Löschen nur in den Papierkorb",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-08",
+        "Name": "Ziehen und Ablegen: verschieben/kopieren nach Systemregel",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-09",
+        "Name": "Mehrfachauswahl (Umschalt, Strg/⌘, Rahmen, Alles)",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-10",
+        "Name": "Registerkarten mit eigenem Verlauf",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-11",
+        "Name": "Vorschau mit der Leertaste",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-12",
+        "Name": "Suchen im Ordner, Tippen springt zum Element",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-13",
+        "Name": "Tastenkürzel je System",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-14",
+        "Name": "Mit Server verbinden (SMB, SFTP)",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "DA-15",
+        "Name": "Rückgängig für Dateiaktionen",
+        "State": "offen",
+        "Test": "–"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/CORE-01_KATALOG.md",
     "Engine": [],
     "Tools": [
       "Los",
@@ -11266,6 +11793,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/desktop-windows11-gnome-shell.md",
+    "ReaSummary": "Vorbild-Analyse Desktop: Windows 11, GNOME Shell, macOS Launchpad, VS Code Arbeitsbereiche (Clean-Room)",
     "Ui": [
       "Bildansicht"
     ],
@@ -11280,9 +11809,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 39,
+    "WarmMs": 40,
     "WindowsOnly": []
   },
   {
@@ -11294,7 +11823,99 @@
     "Type": [
       "Einrichtungs-Assistent (Schritt für Schritt)"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "DA-01",
+        "Name": "Seitenleiste mit bekannten Ordnern und Laufwerken",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-02",
+        "Name": "„Dieser PC“ / „Orte“ / „Andere Orte“ mit Füllstand",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-03",
+        "Name": "Adresszeile, Zurück, Vor, Auf, Aktualisieren",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-04",
+        "Name": "Liste mit Spalten und Sortierung, Symbolansicht",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-05",
+        "Name": "Neuer Ordner, Umbenennen mit Systemnamen",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-06",
+        "Name": "Kopieren, Ausschneiden, Einfügen, Duplizieren mit Kopienamen je System",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-07",
+        "Name": "Löschen nur in den Papierkorb",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-08",
+        "Name": "Ziehen und Ablegen: verschieben/kopieren nach Systemregel",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-09",
+        "Name": "Mehrfachauswahl (Umschalt, Strg/⌘, Rahmen, Alles)",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-10",
+        "Name": "Registerkarten mit eigenem Verlauf",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-11",
+        "Name": "Vorschau mit der Leertaste",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-12",
+        "Name": "Suchen im Ordner, Tippen springt zum Element",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-13",
+        "Name": "Tastenkürzel je System",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-14",
+        "Name": "Mit Server verbinden (SMB, SFTP)",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "DA-15",
+        "Name": "Rückgängig für Dateiaktionen",
+        "State": "offen",
+        "Test": "–"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/CORE-01_KATALOG.md",
     "Engine": [],
     "Tools": [
       "Los",
@@ -11305,6 +11926,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/desktop-windows11-gnome-shell.md",
+    "ReaSummary": "Vorbild-Analyse Desktop: Windows 11, GNOME Shell, macOS Launchpad, VS Code Arbeitsbereiche (Clean-Room)",
     "Ui": [
       "Einrichtungs-Assistent (Schritt für Schritt)"
     ],
@@ -11327,9 +11950,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 7,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -11341,7 +11964,99 @@
     "Type": [
       "Projektmappe (Projekte, Dateien, Details – wie ein Datei-Explorer)"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "DA-01",
+        "Name": "Seitenleiste mit bekannten Ordnern und Laufwerken",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-02",
+        "Name": "„Dieser PC“ / „Orte“ / „Andere Orte“ mit Füllstand",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-03",
+        "Name": "Adresszeile, Zurück, Vor, Auf, Aktualisieren",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-04",
+        "Name": "Liste mit Spalten und Sortierung, Symbolansicht",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-05",
+        "Name": "Neuer Ordner, Umbenennen mit Systemnamen",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-06",
+        "Name": "Kopieren, Ausschneiden, Einfügen, Duplizieren mit Kopienamen je System",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-07",
+        "Name": "Löschen nur in den Papierkorb",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-08",
+        "Name": "Ziehen und Ablegen: verschieben/kopieren nach Systemregel",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-09",
+        "Name": "Mehrfachauswahl (Umschalt, Strg/⌘, Rahmen, Alles)",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-10",
+        "Name": "Registerkarten mit eigenem Verlauf",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-11",
+        "Name": "Vorschau mit der Leertaste",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-12",
+        "Name": "Suchen im Ordner, Tippen springt zum Element",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-13",
+        "Name": "Tastenkürzel je System",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-14",
+        "Name": "Mit Server verbinden (SMB, SFTP)",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "DA-15",
+        "Name": "Rückgängig für Dateiaktionen",
+        "State": "offen",
+        "Test": "–"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/CORE-01_KATALOG.md",
     "Engine": [],
     "Tools": [
       "Los",
@@ -11352,6 +12067,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/desktop-windows11-gnome-shell.md",
+    "ReaSummary": "Vorbild-Analyse Desktop: Windows 11, GNOME Shell, macOS Launchpad, VS Code Arbeitsbereiche (Clean-Room)",
     "Ui": [
       "Projektmappe (Projekte, Dateien, Details – wie ein Datei-Explorer)"
     ],
@@ -11400,9 +12117,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 7,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -11414,7 +12131,99 @@
     "Type": [
       "Desktop (Symbole, Widgets, Dock)"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "DA-01",
+        "Name": "Seitenleiste mit bekannten Ordnern und Laufwerken",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-02",
+        "Name": "„Dieser PC“ / „Orte“ / „Andere Orte“ mit Füllstand",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-03",
+        "Name": "Adresszeile, Zurück, Vor, Auf, Aktualisieren",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-04",
+        "Name": "Liste mit Spalten und Sortierung, Symbolansicht",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-05",
+        "Name": "Neuer Ordner, Umbenennen mit Systemnamen",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-06",
+        "Name": "Kopieren, Ausschneiden, Einfügen, Duplizieren mit Kopienamen je System",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-07",
+        "Name": "Löschen nur in den Papierkorb",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-08",
+        "Name": "Ziehen und Ablegen: verschieben/kopieren nach Systemregel",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-09",
+        "Name": "Mehrfachauswahl (Umschalt, Strg/⌘, Rahmen, Alles)",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-10",
+        "Name": "Registerkarten mit eigenem Verlauf",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-11",
+        "Name": "Vorschau mit der Leertaste",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-12",
+        "Name": "Suchen im Ordner, Tippen springt zum Element",
+        "State": "umgesetzt",
+        "Test": "OsStyles_Ui"
+      },
+      {
+        "Nr": "DA-13",
+        "Name": "Tastenkürzel je System",
+        "State": "umgesetzt",
+        "Test": "OsBehaviorTests"
+      },
+      {
+        "Nr": "DA-14",
+        "Name": "Mit Server verbinden (SMB, SFTP)",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "DA-15",
+        "Name": "Rückgängig für Dateiaktionen",
+        "State": "offen",
+        "Test": "–"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/CORE-01_KATALOG.md",
     "Engine": [],
     "Tools": [
       "Erstellen",
@@ -11431,6 +12240,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/desktop-windows11-gnome-shell.md",
+    "ReaSummary": "Vorbild-Analyse Desktop: Windows 11, GNOME Shell, macOS Launchpad, VS Code Arbeitsbereiche (Clean-Room)",
     "Ui": [
       "Desktop (Symbole, Widgets, Dock)"
     ],
@@ -11528,9 +12339,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 5,
+    "WarmMs": 6,
     "WindowsOnly": []
   },
   {
@@ -11578,6 +12389,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/schutz-windows-sicherheit-timemachine.md",
+    "ReaSummary": "Vorbild-Analyse Schutz: Windows-Sicherheit, Dateiversionsverlauf/Time Machine, TCPView, Bitwarden-Bericht (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -11603,9 +12416,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -11653,6 +12466,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/geraete-phonelink-kdeconnect.md",
+    "ReaSummary": "Vorbild-Analyse Geräte und Handy: Smartphone-Link, KDE Connect, Windows Geräte-Manager, Raspberry Pi Connect (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -11678,9 +12493,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -11738,6 +12553,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/geraete-phonelink-kdeconnect.md",
+    "ReaSummary": "Vorbild-Analyse Geräte und Handy: Smartphone-Link, KDE Connect, Windows Geräte-Manager, Raspberry Pi Connect (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -11773,9 +12590,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 40,
+    "WarmMs": 43,
     "WindowsOnly": []
   },
   {
@@ -11828,6 +12645,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/netz-teilen-downloads-taskmanager.md",
+    "ReaSummary": "Vorbild-Analyse Netz, Teilen und Leistung: Windows Task-Manager, Free Download Manager, LocalSend, Windows-Freigaben (Clean-Room)",
     "Ui": [
       "Diagramm/Zeichnung",
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
@@ -11871,9 +12690,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -11923,6 +12742,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/geraete-phonelink-kdeconnect.md",
+    "ReaSummary": "Vorbild-Analyse Geräte und Handy: Smartphone-Link, KDE Connect, Windows Geräte-Manager, Raspberry Pi Connect (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -11952,9 +12773,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -12003,6 +12824,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/programme-winget-appcenter.md",
+    "ReaSummary": "Vorbild-Analyse Programme: Microsoft Store, WinGet/UniGetUI, GNOME Software, Flathub (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -12028,9 +12851,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -12242,6 +13065,8 @@
       "mpv (optional)",
       "Python (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/programme-winget-appcenter.md",
+    "ReaSummary": "Vorbild-Analyse Programme: Microsoft Store, WinGet/UniGetUI, GNOME Software, Flathub (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -12295,7 +13120,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
     "WarmMs": 22,
     "WindowsOnly": []
@@ -12516,6 +13341,8 @@
       "mpv (optional)",
       "Python (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/programme-winget-appcenter.md",
+    "ReaSummary": "Vorbild-Analyse Programme: Microsoft Store, WinGet/UniGetUI, GNOME Software, Flathub (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -12540,9 +13367,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 22,
     "WindowsOnly": []
   },
   {
@@ -12761,6 +13588,8 @@
       "mpv (optional)",
       "Python (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/programme-winget-appcenter.md",
+    "ReaSummary": "Vorbild-Analyse Programme: Microsoft Store, WinGet/UniGetUI, GNOME Software, Flathub (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -12794,9 +13623,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -13014,6 +13843,8 @@
       "mpv (optional)",
       "Python (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/programme-winget-appcenter.md",
+    "ReaSummary": "Vorbild-Analyse Programme: Microsoft Store, WinGet/UniGetUI, GNOME Software, Flathub (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -13081,9 +13912,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 48,
+    "WarmMs": 56,
     "WindowsOnly": []
   },
   {
@@ -13264,6 +14095,8 @@
       ".txt"
     ],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/system-einstellungen-windows-gnome.md",
+    "ReaSummary": "Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -13289,9 +14122,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 29,
+    "WarmMs": 50,
     "WindowsOnly": []
   },
   {
@@ -13477,6 +14310,8 @@
       ".txt"
     ],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/system-einstellungen-windows-gnome.md",
+    "ReaSummary": "Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -13503,9 +14338,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -13686,6 +14521,8 @@
       ".txt"
     ],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/system-einstellungen-windows-gnome.md",
+    "ReaSummary": "Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -13724,9 +14561,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -13907,6 +14744,8 @@
       ".txt"
     ],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/system-einstellungen-windows-gnome.md",
+    "ReaSummary": "Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -13936,9 +14775,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -14146,6 +14985,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/system-einstellungen-windows-gnome.md",
+    "ReaSummary": "Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)",
     "Ui": [
       "Bildansicht",
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
@@ -14235,9 +15076,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 111,
+    "WarmMs": 110,
     "WindowsOnly": []
   },
   {
@@ -14416,6 +15257,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/system-einstellungen-windows-gnome.md",
+    "ReaSummary": "Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -14450,9 +15293,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -14643,6 +15486,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/system-einstellungen-windows-gnome.md",
+    "ReaSummary": "Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -14675,9 +15520,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -14858,6 +15703,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/system-einstellungen-windows-gnome.md",
+    "ReaSummary": "Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -14888,9 +15735,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -14938,6 +15785,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/system-einstellungen-windows-gnome.md",
+    "ReaSummary": "Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -14963,9 +15812,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -15181,6 +16030,8 @@
       "VLC (optional)",
       "mpv (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/netz-teilen-downloads-taskmanager.md",
+    "ReaSummary": "Vorbild-Analyse Netz, Teilen und Leistung: Windows Task-Manager, Free Download Manager, LocalSend, Windows-Freigaben (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -15240,9 +16091,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -15462,6 +16313,8 @@
       "VLC (optional)",
       "mpv (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/netz-teilen-downloads-taskmanager.md",
+    "ReaSummary": "Vorbild-Analyse Netz, Teilen und Leistung: Windows Task-Manager, Free Download Manager, LocalSend, Windows-Freigaben (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -15493,9 +16346,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 30,
+    "WarmMs": 25,
     "WindowsOnly": []
   },
   {
@@ -15545,6 +16398,8 @@
     ],
     "Formats": [],
     "Dependencies": [],
+    "Rea": "docs/claude/vorbilder/schutz-windows-sicherheit-timemachine.md",
+    "ReaSummary": "Vorbild-Analyse Schutz: Windows-Sicherheit, Dateiversionsverlauf/Time Machine, TCPView, Bitwarden-Bericht (Clean-Room)",
     "Ui": [
       "Einstellungen-App (Bereiche, Suche, Seite – wie Windows 11)"
     ],
@@ -15574,9 +16429,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 808cc8f)",
+    "Version": "0.9.36 (Stand 6bd5d2b)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 17,
     "WindowsOnly": []
   }
 ]

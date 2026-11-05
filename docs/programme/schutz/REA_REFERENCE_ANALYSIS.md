@@ -1,5 +1,7 @@
 # Schutz & Datenschutz – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 6bd5d2b)
 
-Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.
+Analyse: [Vorbild-Analyse Schutz: Windows-Sicherheit, Dateiversionsverlauf/Time Machine, TCPView, Bitwarden-Bericht (Clean-Room)](../../../docs/claude/vorbilder/schutz-windows-sicherheit-timemachine.md)
+
+Kein fremder Code und keine fremden Grafiken übernommen – nur öffentlich beschriebener Funktionsumfang.

@@ -1,6 +1,6 @@
 # Startbildschirm – Produktionspaket
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand 6bd5d2b)
 
 Arbeitsfläche: Desktop (Symbole, Widgets, Dock)  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test PC_VERIFIED  

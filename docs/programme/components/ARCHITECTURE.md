@@ -1,6 +1,6 @@
 # Zusatzprogramme – Architektur
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `components` · Stand: 0.9.36 (Stand 6bd5d2b)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Sys11.cs`

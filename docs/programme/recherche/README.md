@@ -1,6 +1,6 @@
 # Recherche im Lesemodus – Produktionspaket
 
-Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Sicher recherchieren (SYS-08) · Bereich: Wissen & Lernen · Seite: `recherche` · Stand: 0.9.36 (Stand 6bd5d2b)
 
 Arbeitsfläche: Lese-Browser (Quellen, Lesebereich, Zitate)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

@@ -1,6 +1,6 @@
 # Geräte überwachen – Einbindung in Trendo OS
 
-Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand 6bd5d2b)
 
 - Seite `zwilling` im Studio „Geräte überwachen“ (Technik & Fachgebiete) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

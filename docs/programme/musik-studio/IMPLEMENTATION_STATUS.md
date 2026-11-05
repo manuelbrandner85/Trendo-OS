@@ -1,6 +1,6 @@
 # Trendo Musik – Umsetzungsstand
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 6bd5d2b)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -27,4 +27,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | MU-19 | Begleitung zu eigenem Gesang | Geplant | `–` |
 | MU-20 | Instrument dazu erzeugen | Geplant | `–` |
 
-0 von 20 Funktionen getestet.
+0 von 20 Funktionen getestet (noch kein Testlauf eingelesen).

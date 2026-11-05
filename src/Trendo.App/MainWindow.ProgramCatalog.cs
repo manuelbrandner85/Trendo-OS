@@ -82,6 +82,7 @@ public partial class MainWindow
                 Avalonia.Controls.Primitives.UniformGrid { Name: "doku-apps" } => "Office-Startseite (Programme, Vorlagen, Zuletzt benutzt – wie Microsoft 365)", Avalonia.Controls.Primitives.UniformGrid { Name: "alltag-apps" } => "Programm-Startseite (Kacheln der kleinen Helfer)",
                 Button { Name: { } dn } when dn.StartsWith("desk-pin-", StringComparison.Ordinal) => "Desktop (Symbole, Widgets, Dock)", Button { Name: "btn-all-projects" } => "Desktop (Symbole, Widgets, Dock)",
                 Control { Name: { } wn } when wn.StartsWith("wiz-", StringComparison.Ordinal) => "Einrichtungs-Assistent (Schritt für Schritt)",
+                Border { Name: "fb-sidebar" } => "Dateimanager (Seitenleiste, Ordner, Laufwerke, Registerkarten – wie Explorer, Finder, Dateien)",
                 Grid { Name: "proj-workspace" } => "Projektmappe (Projekte, Dateien, Details – wie ein Datei-Explorer)",
                 Grid { Name: "oss-store" } => "Programm-Store (Kategorien, Treffer, Eingerichtetes – wie Flathub)",
                 WrapPanel { Name: "suite-modes" } => "Projektplaner (Übersicht, Liste, Tafel, Zeitplan, Dateien – wie Asana)",

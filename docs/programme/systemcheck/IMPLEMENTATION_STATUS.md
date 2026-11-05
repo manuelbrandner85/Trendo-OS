@@ -1,6 +1,6 @@
 # Systemcheck – Umsetzungsstand
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `systemcheck` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `systemcheck` · Stand: 0.9.36 (Stand 6bd5d2b)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -32,4 +32,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | SYS-13-P24 | PC-Testlauf | Implementiert | – |
 | SYS-13-P25 | Rückfall-Version | Implementiert | – |
 
-0 von 25 Funktionen getestet.
+0 von 25 Funktionen getestet (noch kein Testlauf eingelesen).

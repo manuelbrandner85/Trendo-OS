@@ -1,6 +1,6 @@
 # Start – Produktionspaket
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 6bd5d2b)
 
 Arbeitsfläche: Office-Startseite (Programme, Vorlagen, Zuletzt benutzt – wie Microsoft 365)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

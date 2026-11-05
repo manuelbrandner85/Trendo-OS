@@ -1,8 +1,29 @@
 # Briefe schreiben – Funktionsmatrix
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 6bd5d2b)
 
-Kein freigegebener Funktionskatalog für dieses Studio.
+Quelle: `docs/spec/kataloge/STUDIO-LETTER-01_KATALOG.md`
+
+| Nr | Funktion | Einordnung | Stand laut Katalog |
+|---|---|---|---|
+| BR-01 | Brief nach DIN 5008 (Form A/B), Informationsblock, Folgeseiten „Seite n von N“ | Vorhanden | umgesetzt |
+| BR-02 | Kontakt einsetzen, Form wechseln, Vorschau | Vorhanden | umgesetzt |
+| BR-03 | Assistent in drei Schritten, Alles leeren mit Rückgängig | Vorhanden | umgesetzt |
+| BR-04 | Vorlagen-Galerie mit Gruppen (Kündigung, Widerspruch, Widerruf …) | Vorhanden | umgesetzt |
+| BR-05 | 20 Designs mit Vorschaubild, Farben, Kopf-Layouts, Schriften | Vorhanden | umgesetzt |
+| BR-06 | PDF ohne Zusatzprogramm, Word-Datei | Vorhanden | umgesetzt |
+| BR-07 | Exportieren mit Ort und Format | Vorhanden | umgesetzt |
+| BR-08 | Senden per E-Mail mit PDF-Anhang (nur Entwurf), Drucken | Vorhanden | umgesetzt |
+| BR-09 | Umschlag DIN lang zum Brief | Vorhanden | umgesetzt |
+| BR-10 | Fristen berechnen, in den Kalender | Vorhanden | umgesetzt |
+| BR-11 | Serienbrief aus CSV und aus Adressbuch-Gruppe | Vorhanden | umgesetzt |
+| BR-12 | Unterschrift zeichnen oder als Bild | Vorhanden | umgesetzt |
+| BR-13 | Falz- und Lochmarken | Vorhanden | umgesetzt |
+| BR-14 | Rechtschreibung beim Tippen, eigenes Wörterbuch | Vorhanden | umgesetzt |
+| BR-15 | Faktenwächter, Rückfragen je Kategorie | Vorhanden | umgesetzt |
+| BR-16 | Papierkorb für Briefe, Akten, Briefköpfe | Vorhanden | umgesetzt |
+| BR-17 | Kein Programmname auf dem Blatt | Vorhanden | umgesetzt |
+| BR-18 | Papierschacht wählen | Teilweise vorhanden | teilweise (Druckdialog des Systems) |
 
 ## Werkzeuge der Oberfläche
 - Los

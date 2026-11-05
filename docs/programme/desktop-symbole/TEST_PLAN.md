@@ -1,6 +1,6 @@
 # Desktop-Symbole – Testplan
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `desktop-symbole` · Stand: 0.9.36 (Stand 6bd5d2b)
 
 4 Tests sprechen dieses Programm an.
 

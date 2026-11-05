@@ -1,5 +1,7 @@
 # Vorhaben – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.36 (Stand 6bd5d2b)
 
-Für dieses Programm ist noch keine Vorbild-Analyse dokumentiert.
+Analyse: [Vorbild-Analyse Vorhaben: Notion-Projekte, Asana, Trello, MS Project (Clean-Room)](../../../docs/claude/vorbilder/vorhaben-notion-asana.md)
+
+Kein fremder Code und keine fremden Grafiken übernommen – nur öffentlich beschriebener Funktionsumfang.

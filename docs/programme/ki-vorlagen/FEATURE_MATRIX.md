@@ -1,6 +1,6 @@
 # KI-Vorlagen – Funktionsmatrix
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.36 (Stand 6bd5d2b)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

@@ -1,6 +1,6 @@
 # Online-Dienste – Einbindung in Trendo OS
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.36 (Stand 6bd5d2b)
 
 - Seite `keys` im Studio „KI fragen“ (KI & Automatik) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

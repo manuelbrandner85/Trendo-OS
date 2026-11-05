@@ -1,6 +1,6 @@
 # Vorhaben – Funktionsmatrix
 
-Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Neues Projekt starten (X-11) · Bereich: Arbeiten & Büro · Seite: `vorhaben` · Stand: 0.9.36 (Stand 6bd5d2b)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -20,5 +20,6 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Tafel
 - Zeitplan
 - Dateien
+- In den Kalender
 - Zeitplan öffnen
 - Alle

@@ -1,6 +1,6 @@
 # Trendo CAD – Umsetzungsstand
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `cad` · Stand: 0.9.36 (Stand 6bd5d2b)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -28,4 +28,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | DR-07 | Drucker im Heimnetz, Druck nach Bestätigung | Implementiert | `N23N24_CadPrintUi` |
 | DR-08 | Mehrere verschiedene Modelle auf einer Platte | Geplant | `–` |
 
-0 von 21 Funktionen getestet.
+0 von 21 Funktionen getestet (noch kein Testlauf eingelesen).

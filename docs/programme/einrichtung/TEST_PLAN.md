@@ -1,6 +1,6 @@
 # Ersteinrichtung – Testplan
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `einrichtung` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `einrichtung` · Stand: 0.9.36 (Stand 6bd5d2b)
 
 12 Tests sprechen dieses Programm an.
 

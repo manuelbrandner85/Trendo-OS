@@ -1,6 +1,6 @@
 # Start – Umsetzungsstand
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 6bd5d2b)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -32,4 +32,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | SYS-10-P24 | Export-Paket | Implementiert | – |
 | SYS-10-P25 | Barrierefreie PDF-Hinweise | Implementiert | – |
 
-0 von 25 Funktionen getestet.
+0 von 25 Funktionen getestet (noch kein Testlauf eingelesen).

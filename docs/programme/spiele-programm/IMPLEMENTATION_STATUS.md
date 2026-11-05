@@ -1,6 +1,6 @@
 # Spiele bauen – Umsetzungsstand
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 808cc8f)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 6bd5d2b)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -20,4 +20,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | SP-12 | Mehrere Level hintereinander | Geplant | `–` |
 | SP-13 | Animationen je Zustand | Geplant | `–` |
 
-0 von 13 Funktionen getestet.
+0 von 13 Funktionen getestet (noch kein Testlauf eingelesen).
