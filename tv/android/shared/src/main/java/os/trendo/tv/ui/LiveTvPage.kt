@@ -75,7 +75,7 @@ import java.util.Date
 import java.util.Locale
 
 /** Reihenfolge wie gewünscht: Live TV, Filme, Serien, Programmführer – dann Suche und Einstellungen. */
-private enum class LiveTab(val label: String) { CHANNELS("Live TV"), MOVIES("Filme"), SERIES("Serien"), GUIDE("Programmführer"), TIPS("Heute"), STREAMING("Mediatheken & Streaming"), VIDEOS("YouTube & Videos"), SEARCH("Suche"), SOURCES("Quellen"), FILTER("Jugendschutz & Filter") }
+private enum class LiveTab(val label: String) { CHANNELS("Live TV"), MOVIES("Filme"), SERIES("Serien"), GUIDE("Programmführer"), TIPS("Heute"), STREAMING("Mediatheken & Streaming"), VIDEOS("YouTube & Videos"), RECORDINGS("Aufnahmen"), SEARCH("Suche"), SOURCES("Quellen"), FILTER("Jugendschutz & Filter") }
 
 /** Alles, was Live TV anzeigt – aus dem privaten Trendo-Speicher geladen. */
 private data class LiveData(
@@ -136,6 +136,8 @@ fun LiveTvPage(host: LiveHost, profile: String) {
     var status by remember { mutableStateOf("") }
     var openSeries by remember { mutableStateOf<Series?>(null) }
     var tipsFilter by remember { mutableStateOf("") }
+    // Zukünftige Sendung gewählt: „Erinnern" oder „Aufnehmen"?
+    var choice by remember { mutableStateOf<Pair<Channel, Programme>?>(null) }
     var langLive by remember(store) { mutableStateOf(store.language("live")) }
     var langVod by remember(store) { mutableStateOf(store.language("vod")) }
     var langSer by remember(store) { mutableStateOf(store.language("ser")) }
@@ -147,7 +149,11 @@ fun LiveTvPage(host: LiveHost, profile: String) {
     val scope = rememberCoroutineScope()
     val prof = remember(profile) { os.trendo.tv.livetv.ProfileStore(ctx).list().firstOrNull { it.id == profile } }
     LiveSession.profile = profile
-    val data by produceState(LiveData(), tick) { value = withContext(Dispatchers.IO) { store.dedupeSources(); load(store, prof) } }
+    val data by produceState(LiveData(), tick) {
+        value = withContext(Dispatchers.IO) { store.dedupeSources(); load(store, prof) }
+        // Aufnahme-Regeln auf den frischen Programmführer anwenden.
+        withContext(Dispatchers.IO) { os.trendo.tv.Recordings.applyRules(ctx, value.visible, value.epg, System.currentTimeMillis()) }
+    }
 
     fun refresh() {
         status = "Lade Sender, Programmführer, Filme und Serien …"
@@ -210,6 +216,22 @@ fun LiveTvPage(host: LiveHost, profile: String) {
                 }
             } }
         }
+        choice?.let { (c, p) ->
+            val focus = remember { FocusRequester() }
+            LaunchedEffect(p) { runCatching { focus.requestFocus() } }
+            Row(Modifier.fillMaxWidth().background(TvColors.GlassStrong, RoundedCornerShape(10.dp)).border(1.dp, TvColors.FocusRing, RoundedCornerShape(10.dp)).padding(8.dp),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("„${p.title}“ · ${c.name} · ${hm(p.start)}", color = TvColors.Text, fontSize = 12.sp, modifier = Modifier.weight(1f), maxLines = 1)
+                Box(Modifier.focusRequester(focus)) { PillButton("⏰ Erinnern", { toggleReminder(ctx, store, data, c, p); choice = null; tick++ }) }
+                PillButton("⏺ Aufnehmen (USB)", {
+                    status = if (os.trendo.tv.Recordings.usbDir(ctx) == null) "Kein USB-Stick gefunden – bitte einstecken."
+                        else if (os.trendo.tv.Recordings.schedule(ctx, c, p) != null) "Aufnahme geplant: ${p.title} um ${hm(p.start)}" else "Ist schon geplant."
+                    choice = null
+                })
+                PillButton("Abbrechen", { choice = null })
+            }
+            Spacer(Modifier.height(4.dp))
+        }
         if (status.isNotEmpty()) Text(status, color = TvColors.TextSecondary, fontSize = 10.sp, maxLines = 2, modifier = Modifier.padding(vertical = 4.dp))
         Spacer(Modifier.height(6.dp))
         if (data.loaded && data.sources.isEmpty() && tab != LiveTab.SOURCES) {
@@ -240,13 +262,14 @@ fun LiveTvPage(host: LiveHost, profile: String) {
             LiveTab.GUIDE -> {
                 val rows = data.visible.filter { it.epgId != null && data.epg[it.epgId]?.isNotEmpty() == true }.take(120)
                 if (rows.isEmpty()) Info("Kein Programmführer geladen. Unter „Quellen“ auf „Alles aktualisieren“ gehen (bei M3U eine EPG-Adresse eintragen).")
-                else GuideView(rows, data.epg, data.reminders.map { it.title to it.start }.toSet(), ::play, catchup = { c, start -> playAt(c, start) }) { c, p -> toggleReminder(ctx, store, data, c, p); tick++ }
+                else GuideView(rows, data.epg, data.reminders.map { it.title to it.start }.toSet(), ::play, catchup = { c, start -> playAt(c, start) }) { c, p -> choice = c to p }
             }
             LiveTab.TIPS -> TipsView(remember(data.epg, data.visible) { os.trendo.tv.livetv.Tips.rows(data.visible, data.epg, data.settings.favorites, System.currentTimeMillis(), data.settings.kidsMode) }, tipsFilter) { t ->
-                if (t.programme.isOn(System.currentTimeMillis())) playAt(t.channel, 0) else { toggleReminder(ctx, store, data, t.channel, t.programme); tick++ }
+                if (t.programme.isOn(System.currentTimeMillis())) playAt(t.channel, 0) else choice = t.channel to t.programme
             }
             LiveTab.STREAMING -> StreamingView(host.playVod)
             LiveTab.VIDEOS -> VideosView()
+            LiveTab.RECORDINGS -> RecordingsTab(ctx, host)
             LiveTab.SEARCH -> SearchTab(data, ::play) { c, p -> toggleReminder(ctx, store, data, c, p); tick++ }
             LiveTab.MOVIES -> Column {
                 LanguageBar(TvRules.languages(data.vod.map { it.category }.distinct()), langVod) { langVod = it; store.setLanguage("vod", it) }
@@ -263,6 +286,43 @@ fun LiveTvPage(host: LiveHost, profile: String) {
             LiveTab.FILTER -> Column {
                 ProfilesSection(ctx, store)
                 FilterTab(data, store) { tick++ }
+            }
+        }
+    }
+}
+
+/** Aufnahmen: Liste (abspielen, löschen, abbrechen), Aufnahme-Regeln, USB-Status. */
+@Composable
+private fun RecordingsTab(ctx: Context, host: LiveHost) {
+    var tick by remember { mutableIntStateOf(0) }
+    val list = remember(tick) { os.trendo.tv.Recordings.list(ctx).sortedByDescending { it.start } }
+    var rules by remember(tick) { mutableStateOf(os.trendo.tv.Recordings.rules(ctx)) }
+    var rule by remember { mutableStateOf("") }
+    val usb = remember(tick) { os.trendo.tv.Recordings.usbDir(ctx) }
+    LaunchedEffect(Unit) { while (true) { kotlinx.coroutines.delay(5000); tick++ } }
+    LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        item { Info(if (usb != null) "USB-Stick erkannt. Aufnahmen landen dort im Ordner von Trendo Live TV." else "Kein USB-Stick erkannt – zum Aufnehmen bitte einen USB-Stick einstecken. Hinweis: Viele Anbieter erlauben nur eine Verbindung gleichzeitig.") }
+        item { Text("Aufnahme-Regeln (plant passende Sendungen der nächsten 24 Stunden automatisch)", color = TvColors.Text, fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
+        item {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Field(rule, { rule = it }, "Stichwort, z. B. Tatort", width = 260)
+                PillButton("+ Regel", { if (rule.trim().length >= 2) { os.trendo.tv.Recordings.setRules(ctx, rules + rule.trim()); rule = ""; tick++ } })
+            }
+        }
+        items(rules) { r -> Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("• $r", color = TvColors.Text, fontSize = 11.sp, modifier = Modifier.width(260.dp)); PillButton("Entfernen", { os.trendo.tv.Recordings.setRules(ctx, rules - r); tick++ }) } }
+        item { Text("Aufnahmen", color = TvColors.Text, fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
+        if (list.isEmpty()) item { Text("Noch keine Aufnahmen. Im Programmführer eine kommende Sendung wählen → „Aufnehmen“.", color = TvColors.TextSecondary, fontSize = 11.sp) }
+        items(list, key = { it.id }) { r ->
+            Row(Modifier.fillMaxWidth().background(TvColors.GlassStrong, RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(Modifier.weight(1f)) {
+                    Text(r.title, color = TvColors.Text, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text("${r.channelName} · ${day(r.start)} · ${r.state}" + (if (r.bytes > 0) " · ${os.trendo.tv.media.ResumeRules.formatSize(r.bytes)}" else ""), color = TvColors.TextSecondary, fontSize = 9.sp)
+                }
+                if (r.state == "fertig" && r.file != null) PillButton("▶ Abspielen", { host.playVod(android.net.Uri.fromFile(java.io.File(r.file)).toString(), r.title) })
+                if (r.state == "geplant" || r.state == "läuft") PillButton(if (r.state == "läuft") "Stoppen" else "Absagen", { os.trendo.tv.Recordings.cancel(ctx, r.id); tick++ })
+                else PillButton("Löschen", { os.trendo.tv.Recordings.delete(ctx, r); tick++ })
             }
         }
     }

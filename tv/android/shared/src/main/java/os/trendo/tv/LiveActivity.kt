@@ -405,6 +405,14 @@ class LiveActivity : ComponentActivity() {
                     }
                 },
                 "Stream-Infos" to { page = "info" },
+                "⏺ Aufnehmen bis Sendungsende (USB)" to {
+                    showMenu = false
+                    c?.let { ch ->
+                        val (cur, _) = TvRules.nowNext(ch.epgId?.let { LiveSession.epg[it] }, System.currentTimeMillis())
+                        if (Recordings.usbDir(this@LiveActivity) == null) error = "Kein USB-Stick gefunden – bitte einstecken."
+                        else { Recordings.now(this@LiveActivity, ch, cur?.title ?: ch.name, cur?.stop ?: (System.currentTimeMillis() + 2 * 3_600_000L)); error = "⏺ Aufnahme gestartet: ${cur?.title ?: ch.name}" }
+                    }
+                },
                 "▦ Multi-View: 2 Sender" to { showMenu = false; startActivity(MultiViewActivity.intent(this@LiveActivity, index, 2)); finish() },
                 "▦ Multi-View: 4 Sender" to { showMenu = false; startActivity(MultiViewActivity.intent(this@LiveActivity, index, 4)); finish() },
                 (if (c != null && c.id in store.settings().favorites) "★ Aus Favoriten entfernen" else "☆ Zu Favoriten") to {
