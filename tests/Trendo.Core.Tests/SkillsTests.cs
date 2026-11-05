@@ -107,4 +107,35 @@ public class SkillsTests
         var md = SkillFiles.ToMarkdown("A", "B", ["X-04"], "Text", ["c1"], "MIT", "https://example.org");
         Assert.Equal(["c1"], SkillFiles.Parse(md, "geladen").Checklist); Assert.Contains("lizenz: MIT", md);
     }
+    [Fact(DisplayName = "Skill prüfen wie Claude Skills/GPTs: fehlende Beschreibung, zu kurze Regeln, zu wenig Prüfpunkte, zu langer Name; mitgelieferte Skills sind ohne Hinweis")]
+    public void Lint()
+    {
+        Assert.All(SkillLibrary.BuiltIn, b => Assert.Empty(SkillLibrary.Lint(b)));
+        var bad = new Skill("x", new string('N', 70), "", ["*"], "kurz", ["eins"], "eigen", "", "");
+        var h = SkillLibrary.Lint(bad);
+        Assert.Equal(4, h.Count); Assert.Contains(h, x => x.Contains("64 Zeichen")); Assert.Contains(h, x => x.Contains("Beschreibung fehlt")); Assert.Contains(h, x => x.Contains("sehr kurz")); Assert.Contains(h, x => x.Contains("drei Prüfpunkte"));
+        var good = bad with { Name = "Hausstil", Description = "Für Briefe an Kunden", Body = string.Join("\n", Enumerable.Repeat("- Immer freundlich und klar schreiben", 3)), Checklist = ["Du-Form", "Akzentfarbe", "Kurze Sätze"] };
+        Assert.Empty(SkillLibrary.Lint(good));
+        Assert.Contains(SkillLibrary.Lint(good with { Body = new string('x', SkillLibrary.MaxPromptChars + 1) }), x => x.Contains("nur den Anfang"));
+    }
+
+    [Fact(DisplayName = "Skill als Datei weitergeben: eigener Skill wird SKILL.md-Datei, eine andere Person lädt ihn mit Herkunft; falsche Datei und zu groß werden abgelehnt")]
+    public void File_share()
+    {
+        var (lib, _, root) = New(); var (other, _, root2) = New();
+        try
+        {
+            var mine = lib.SaveOwn(null, "Hausstil", "Für Briefe an Kunden", ["STUDIO-LETTER-01"], "- Immer Sie-Form\n- Kurze Sätze", ["Sie-Form", "Kurz"]);
+            var f = lib.ExportFile(mine.Id, Path.Combine(root, "weiter", "hausstil.md"));
+            Assert.StartsWith("---", File.ReadAllText(f).TrimStart());
+            var got = other.ImportFile(f);
+            Assert.Equal(("Hausstil", "geladen"), (got.Name, got.Origin)); Assert.Equal(["Sie-Form", "Kurz"], got.Checklist); Assert.Contains("hausstil.md", got.Source);
+            Assert.Contains(other.All(), x => x.Name == "Hausstil" && x.Origin == "geladen");
+            var exe = Path.Combine(root, "skill.exe"); File.WriteAllText(exe, "x"); Assert.Throws<InvalidDataException>(() => other.ImportFile(exe));
+            var big = Path.Combine(root, "gross.md"); File.WriteAllText(big, new string('a', SkillLibrary.MaxImportBytes + 10)); Assert.Throws<InvalidDataException>(() => other.ImportFile(big));
+            Assert.Throws<FileNotFoundException>(() => other.ImportFile(Path.Combine(root, "weg.md")));
+            Assert.Throws<InvalidOperationException>(() => lib.ExportFile("gibtsnicht", Path.Combine(root, "x.md")));
+        }
+        finally { foreach (var d in new[] { root, root2 }) if (Directory.Exists(d)) Directory.Delete(d, true); }
+    }
 }

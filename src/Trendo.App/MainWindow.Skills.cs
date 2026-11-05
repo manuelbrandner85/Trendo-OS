@@ -12,6 +12,8 @@ public partial class MainWindow
 {
     SkillLibrary? _skills;
     public SkillLibrary Skills => _skills ??= new SkillLibrary(_core.DataRoot, Prompts, _core.Audit);
+    /// <summary>Für Tests: zuletzt gesicherte Skill-Datei.</summary>
+    public string? SkillExported { get; private set; }
     /// <summary>Vertraute Quellen für Skills (GitHub-Projekt, Ordner). Nur Text (SKILL.md) wird übernommen.</summary>
     public static readonly (string Repo, string Name)[] SkillSources = [("anthropics/skills", "Offizielle Skill-Sammlung von Anthropic")];
 
@@ -35,7 +37,9 @@ public partial class MainWindow
         var all = Skills.All();
         var sp = new StackPanel { Spacing = 8 };
         sp.Children.Add(P("Skills sind Fachregeln, nach denen die KI arbeitet – passend zum Programm (z. B. Webdesign, Brief nach DIN 5008). Vor „fertig“ prüft sie gegen die Checkliste. Eigene Skills haben Vorrang.", Muted, 12));
-        var bar = new WrapPanel { Children = { Act("skill-new", "＋ Eigener Skill", () => { _skillSel = null; _skillEdit = true; Show("ki-skills"); }, true) } };
+        var file = new TextBox { Name = "skill-file", PlaceholderText = "Skill-Datei (.md) zum Laden", Width = 260, Margin = new Thickness(10, 0, 6, 0) };
+        var bar = new WrapPanel { Children = { Act("skill-new", "＋ Eigener Skill", () => { _skillSel = null; _skillEdit = true; Show("ki-skills"); }, true), file,
+            Act("skill-file-load", "Aus Datei laden", () => { try { var sk = Skills.ImportFile((file.Text ?? "").Trim().Trim('"')); _skillMsg = $"„{sk.Name}“ geladen – steht unter „Geladene Skills“."; } catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException) { _skillMsg = ex.Message; } Show("ki-skills"); }) } };
         sp.Children.Add(bar);
         if (_skillMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "skill-msg", Text = _skillMsg, Foreground = Text, TextWrapping = TextWrapping.Wrap });
 
@@ -51,6 +55,8 @@ public partial class MainWindow
                 var buttons = new WrapPanel { HorizontalAlignment = HorizontalAlignment.Right };
                 void Add(Control c) { c.Margin = new Thickness(0, 0, 6, 0); buttons.Children.Add(c); }
                 Add(Act($"skill-open-{i}", open ? "Zuklappen" : "Ansehen", () => { _skillSel = open ? null : sk.Id; _skillEdit = false; Show("ki-skills"); }));
+                if (s.Origin != "mitgeliefert")
+                    Add(Act($"skill-export-{i}", "Als Datei", () => { try { var f = Skills.ExportFile(sk.Id, Path.Combine(ProjectsRoot, "Skills", SkillFiles.Slug(sk.Name) + ".md")); SkillExported = f; NotifyFileResult("Gespeichert: " + f); _skillMsg = $"Gespeichert: {f} – zum Weitergeben."; } catch (Exception ex) when (ex is IOException or InvalidOperationException or UnauthorizedAccessException) { _skillMsg = ex.Message; } Show("ki-skills"); }));
                 if (s.Origin == "eigen")
                 {
                     Add(Act($"skill-edit-{i}", "Bearbeiten", () => { _skillSel = sk.Id; _skillEdit = true; Show("ki-skills"); }));
@@ -62,6 +68,9 @@ public partial class MainWindow
                 var card = new StackPanel { Spacing = 4, Children = {
                     Row(new StackPanel { Children = { new TextBlock { Text = s.Name, Foreground = Text, FontWeight = FontWeight.SemiBold }, P(s.Description, null, 11.5), P(info, Muted, 10.5) } }, buttons) } };
                 if (open) card.Children.Add(new SelectableTextBlock { Name = "skill-body", Text = s.Body, Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap });
+                // Skill-Prüfung wie bei Claude Skills/GPTs: Hinweise nur für eigene und geladene Skills
+                if (s.Origin != "mitgeliefert" && SkillLibrary.Lint(s) is { Count: > 0 } lint)
+                    card.Children.Add(new TextBlock { Name = $"skill-lint-{i}", Text = "Tipp: " + string.Join(" · ", lint), Foreground = Brush.Parse("#F5A524"), FontSize = 11, TextWrapping = TextWrapping.Wrap });
                 sp.Children.Add(Card(card));
                 i++;
             }

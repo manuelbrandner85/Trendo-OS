@@ -77,4 +77,24 @@ public class Skills_Ui
         }
         finally { MainWindow.ClaudeOpenOverride = null; MainWindow.ClaudeStatusOverride = null; }
     }
+    [AvaloniaFact(DisplayName = "Skills-Seite: eigener Skill zeigt Tipps der Skill-Prüfung, „Als Datei“ sichert ihn, „Aus Datei laden“ übernimmt ihn als geladenen Skill")]
+    public void Lint_and_file()
+    {
+        var (w, _, root) = Ui.Open();
+        try
+        {
+            w.Skills.SaveOwn(null, "Kurzer Skill", "", ["*"], "nur kurz", ["eins"]);
+            w.Show("ki-skills");
+            Assert.Contains(w.GetLogicalTexts(), t => t.StartsWith("Tipp:") && t.Contains("Beschreibung fehlt"));
+            w.Find<Button>("skill-export-0").Press();
+            Assert.True(File.Exists(w.SkillExported!)); Assert.Contains("Gespeichert", w.Find<TextBlock>("skill-msg").Text);
+            var copy = Path.Combine(root, "von-erika.md"); File.Copy(w.SkillExported!, copy);
+            w.Find<TextBox>("skill-file").Text = copy; w.Find<Button>("skill-file-load").Press();
+            Assert.Contains("geladen", w.Find<TextBlock>("skill-msg").Text);
+            Assert.Contains(w.Skills.All(), s => s.Origin == "geladen" && s.Name == "Kurzer Skill");
+            w.Find<TextBox>("skill-file").Text = Path.Combine(root, "gibtsnicht.md"); w.Find<Button>("skill-file-load").Press();
+            Assert.Contains("gibt es nicht", w.Find<TextBlock>("skill-msg").Text);
+        }
+        finally { w.Close(); }
+    }
 }

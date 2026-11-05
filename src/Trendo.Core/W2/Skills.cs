@@ -150,6 +150,39 @@ public sealed class SkillLibrary(string dataRoot, PromptLibrary prompts, AuditLo
         File.Delete(f); audit.Append(Principal.LocalOwner.Name, "skill.remove", id); return true;
     }
 
+    /// <summary>Skill prüfen wie die Regeln für Claude Skills und GPTs (Clean-Room, 05.11.2026): kurzer Name, Beschreibung sagt, wann der Skill gilt,
+    /// genug Fachregeln, mindestens drei Prüfpunkte, nicht zu lang für die KI. Leere Liste = alles gut.</summary>
+    public static List<string> Lint(Skill s)
+    {
+        var h = new List<string>();
+        if (s.Name.Trim().Length > 64) h.Add("Der Name ist länger als 64 Zeichen – kürzer ist leichter zu finden.");
+        if (s.Description.Trim().Length == 0) h.Add("Die Beschreibung fehlt: Sie sagt der KI, wann der Skill gilt (z. B. „Für Briefe an Behörden“).");
+        else if (s.Description.Length > 1024) h.Add("Die Beschreibung ist länger als 1024 Zeichen – bitte auf eine Zeile kürzen.");
+        if (s.Body.Trim().Length < 60) h.Add("Die Fachregeln sind sehr kurz – mindestens ein paar klare Stichpunkte helfen der KI.");
+        if (s.Body.Length > MaxPromptChars) h.Add($"Die Fachregeln sind länger als {MaxPromptChars} Zeichen – die KI bekommt nur den Anfang.");
+        if (s.Checklist.Count < 3) h.Add("Weniger als drei Prüfpunkte – mit einer Checkliste prüft die KI, ob das Ergebnis passt.");
+        return h;
+    }
+
+    /// <summary>Eigenen oder geladenen Skill als Datei sichern (SKILL.md-Format) – zum Weitergeben.</summary>
+    public string ExportFile(string id, string path)
+    {
+        var s = All().FirstOrDefault(x => x.Id == id) ?? throw new InvalidOperationException("Diesen Skill gibt es nicht.");
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
+        File.WriteAllText(path, SkillFiles.ToMarkdown(s.Name, s.Description, s.Studios, s.Body, s.Checklist, s.License.Length > 0 ? s.License : null, s.Source.Length > 0 ? s.Source : null));
+        audit.Append(Principal.LocalOwner.Name, "skill.export", Path.GetFileName(path));
+        return path;
+    }
+
+    /// <summary>Skill aus einer eigenen Datei laden (.md, höchstens 100 KB, nur Text) – erscheint unter „Geladene Skills“.</summary>
+    public Skill ImportFile(string path)
+    {
+        if (!File.Exists(path)) throw new FileNotFoundException("Die Datei gibt es nicht.");
+        if (Path.GetExtension(path).ToLowerInvariant() is not (".md" or ".txt")) throw new InvalidDataException("Bitte eine Skill-Datei (.md).");
+        if (new FileInfo(path).Length > MaxImportBytes) throw new InvalidDataException("Der Skill ist zu groß (höchstens 100 KB).");
+        return Import(File.ReadAllText(path), "Datei " + Path.GetFileName(path), "vom Absender");
+    }
+
     /// <summary>Passende Skills in einen Projektordner legen, damit Claude Code sie als eigene Skills nutzt (<c>.claude/skills/&lt;id&gt;/SKILL.md</c>). Liefert die Anzahl.</summary>
     public int ExportForClaude(string projectDir, string? key, string? studio)
     {
