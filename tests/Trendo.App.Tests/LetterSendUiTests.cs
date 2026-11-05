@@ -92,6 +92,13 @@ public class LetterSendUiTests
             w.Find<Button>("letter-send").Press(); await Pump();
             w.Find<Button>("letter-send-print").Press(); await Pump();
             Assert.Contains(w.LetterPdfFile!, l.Opened);
+            // Umschlag DIN lang für genau diesen Brief (wie „Umschläge“ in Word)
+            w.Find<Button>("letter-send").Press(); await Pump();
+            w.Find<Button>("letter-send-envelope").Press(); await Pump();
+            Assert.True(File.Exists(w.LetterEnvelopeFile!)); Assert.Contains(w.LetterEnvelopeFile!, l.Opened);
+            using (var env = PdfSharp.Pdf.IO.PdfReader.Open(w.LetterEnvelopeFile!, PdfSharp.Pdf.IO.PdfDocumentOpenMode.Import))
+            { Assert.Equal(1, env.PageCount); Assert.Equal(220, env.Pages[0].Width.Millimeter, 0); Assert.Equal(110, env.Pages[0].Height.Millimeter, 0); }
+            Assert.Contains(w.Core.Audit.ReadAll(), a => a.Action == "letter.envelope");
         }
         finally { MainWindow.MailDraftFolder = oldDrafts; w.Close(); }
     }

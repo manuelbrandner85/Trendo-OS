@@ -65,6 +65,9 @@ public partial class MainWindow
     /// <summary>Zuletzt erzeugtes PDF des Briefs (für Senden) und ob die Senden-Karte offen ist.</summary>
     private string? _letterPdf; private bool _letterSendOpen;
     public string? LetterPdfFile => _letterPdf;
+    /// <summary>Zuletzt erzeugter Umschlag (DIN lang) zum Brief.</summary>
+    private string? _letterEnvelope;
+    public string? LetterEnvelopeFile => _letterEnvelope;
 
     /// <summary>Exportieren: Ziel und Format wählen (PDF oder Word).</summary>
     private async Task<string?> PickLetterTarget(string stem)
@@ -96,11 +99,24 @@ public partial class MainWindow
         var print = new Button { Name = "letter-send-print", Content = "🖨 Drucken (per Post)", Padding = new Thickness(12, 6) };
         ToolTip.SetTip(print, "Öffnet das PDF – dort drucken, an den Marken falten und in einen Fensterumschlag stecken");
         print.Click += (_, _) => { Launch(pdf); _letterMsg = "PDF geöffnet – drucken, an den Falzmarken falten, in den Fensterumschlag."; _letterSendOpen = false; Show("brief"); };
+        // Umschlag für genau diesen Brief wie „Umschläge“ in Word: DIN lang, Absender klein oben links, Anschrift im Empfängerfeld
+        var envelope = new Button { Name = "letter-send-envelope", Content = "✉ Umschlag (DIN lang)", Padding = new Thickness(12, 6) };
+        ToolTip.SetTip(envelope, "Für Briefe ohne Fensterumschlag: Umschlag mit Absender und Anschrift als PDF zum Bedrucken");
+        envelope.Click += (_, _) =>
+        {
+            if (d.Recipient.Trim().Length == 0) { _letterMsg = "Für den Umschlag fehlt die Anschrift des Empfängers."; Show("brief"); return; }
+            var sender = string.Join("\n", new[] { d.SenderName, d.SenderStreet, d.SenderCity }.Select(x => x.Trim()).Where(x => x.Length > 0));
+            var f = Path.Combine(Path.GetDirectoryName(pdf)!, Path.GetFileNameWithoutExtension(pdf) + " – Umschlag.pdf");
+            Trendo.Core.Office.TextTools.Envelopes(sender, [d.Recipient.Trim()], f);
+            _letterEnvelope = f; Launch(f);
+            _core.Audit.Append(Principal.LocalOwner.Name, "letter.envelope", Path.GetFileName(f));
+            _letterMsg = $"✓ Umschlag gespeichert: {Path.GetFileName(f)} – im Drucker als Umschlag DIN lang einlegen."; Show("brief");
+        };
         var folder = new Button { Name = "letter-send-folder", Content = "Ordner öffnen", Padding = new Thickness(12, 6) };
         folder.Click += (_, _) => Launch(Path.GetDirectoryName(pdf)!);
         var close = new Button { Name = "letter-send-close", Content = "Schließen", Padding = new Thickness(12, 6) };
         close.Click += (_, _) => { _letterSendOpen = false; Show("brief"); };
-        var row = new WrapPanel { Children = { mail, Sp(print), Sp(folder), Sp(close) } };
+        var row = new WrapPanel { Children = { mail, Sp(print), Sp(envelope), Sp(folder), Sp(close) } };
         if (_case is not null) { var rel = new Button { Name = "letter-send-case", Content = "Zur Freigabe in der Akte", Padding = new Thickness(12, 6) }; rel.Click += (_, _) => Show("ausgabe"); row.Children.Add(Sp(rel)); }
         return new Border { Name = "letter-send-card", Background = TileBg, BorderBrush = Accent, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 10), Margin = new Thickness(0, 4, 0, 8),
             Child = new StackPanel { Spacing = 6, Children = {

@@ -12,6 +12,7 @@
 - ✓ Assistent in 3 Schritten, alles auf einer Seite wählbar
 - ✓ Briefköpfe speichern, 20 Design-Vorlagen mit Vorschaubild (wie Canva), 24 Farben + eigene, zweite Farbe, 8 Kopf-Layouts, 11 Schriften
 - ✓ Serienbrief mit Vorschau, alle als DOCX
+- ✓ Umschlag DIN lang zum Brief als PDF (Absender klein, Anschrift im Empfängerfeld) – wie „Umschläge“ in Word (05.11.2026)
 - ✓ Fristen erkennen und in den Kalender
 - ✓ Als PDF ohne Zusatzprogramm, Exportieren mit Ort und Format (PDF/Word), Senden per E-Mail mit PDF-Anhang (Mailprogramm) oder Drucken
 - ✓ Rechtschreibung beim Tippen: unbekannte Wörter in der Vorschau rot unterstrichen, Vorschlag per Klick, eigenes Wörterbuch (Stil weiter über KI)
