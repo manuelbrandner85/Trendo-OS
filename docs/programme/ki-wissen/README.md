@@ -1,6 +1,6 @@
 # Wissen für die KI – Produktionspaket
 
-Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: Wissen merken (CORE-10) · Bereich: Wissen & Lernen · Seite: `ki-wissen` · Stand: 0.9.36 (Stand 208ed9e)
 
 Arbeitsfläche: Texteditor  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

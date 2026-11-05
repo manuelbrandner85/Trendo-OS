@@ -1,12 +1,15 @@
 # Schutz & Datenschutz – Testplan
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 208ed9e)
 
-15 Tests sprechen dieses Programm an.
+18 Tests sprechen dieses Programm an.
 
 - CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen
 - CORE-11: Ordnerprüfung findet Passwort, Schlüssel, gültige IBAN, Kartennummer – maskiert
 - CORE-11: Schutz-Prüfung erkennt fehlende Sicherung und verändertes Protokoll
+- CORE-11: Sicherung enthält keine fremden Ordner – nur der Trendo-Datenordner, eine kaputte ZIP lässt die Daten unverändert
+- CORE-11: Sicherung fällig – ohne Sicherung sofort, sonst erst nach dem Abstand; 0 Stunden heißt nie automatisch
+- CORE-11: Sicherung – höchstens „keep“ Sicherungen, Vorschau zählt ersetzte und neue Dateien, Wiederherstellen holt den alten Stand zurück
 - SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht
 - SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen
 - SYS-06 Freigabe-Dialog: Fenster schließen (X) lehnt ab

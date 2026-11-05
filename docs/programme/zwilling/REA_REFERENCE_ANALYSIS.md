@@ -1,6 +1,6 @@
 # Geräte überwachen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand 208ed9e)
 
 Analyse: [Vorbild-Analyse Anlagen-Monitor: Grafana, Home Assistant, ThingsBoard (Clean-Room)](../../../docs/claude/vorbilder/monitor-grafana.md)
 

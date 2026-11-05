@@ -1,6 +1,6 @@
 # Geräteverbund (PC, Pi, Android) – Architektur
 
-Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: PC, Pi & Handy verbinden (CORE-04) · Bereich: System & Sicherheit · Seite: `verbund` · Stand: 0.9.36 (Stand 208ed9e)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

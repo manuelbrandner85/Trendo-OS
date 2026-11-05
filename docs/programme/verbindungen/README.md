@@ -1,6 +1,6 @@
 # Verbindungen – Produktionspaket
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `verbindungen` · Stand: 0.9.36 (Stand 208ed9e)
 
 Arbeitsfläche: KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

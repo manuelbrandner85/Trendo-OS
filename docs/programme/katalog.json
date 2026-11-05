@@ -229,7 +229,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
     "WarmMs": 94,
     "WindowsOnly": []
@@ -388,9 +388,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 47,
+    "WarmMs": 53,
     "WindowsOnly": []
   },
   {
@@ -540,9 +540,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 40,
+    "WarmMs": 55,
     "WindowsOnly": []
   },
   {
@@ -740,9 +740,9 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 36,
+    "WarmMs": 44,
     "WindowsOnly": []
   },
   {
@@ -902,9 +902,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 29,
+    "WarmMs": 26,
     "WindowsOnly": []
   },
   {
@@ -1066,9 +1066,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -1306,9 +1306,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -1507,6 +1507,8 @@
       "VLC (optional)",
       "mpv (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/system-einstellungen-windows-gnome.md",
+    "ReaSummary": "Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)",
     "Ui": [
       "Programm-Startseite (Kacheln der kleinen Helfer)"
     ],
@@ -1559,9 +1561,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -1756,6 +1758,8 @@
       "VLC (optional)",
       "mpv (optional)"
     ],
+    "Rea": "docs/claude/vorbilder/system-einstellungen-windows-gnome.md",
+    "ReaSummary": "Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)",
     "Ui": [
       "Helfer-Arbeitsfläche (Haftnotizen, Rechner mit Tastenfeld, Wecker)"
     ],
@@ -1800,9 +1804,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -1889,9 +1893,9 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -2142,9 +2146,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -2373,9 +2377,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -2634,9 +2638,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -2913,9 +2917,9 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -3209,9 +3213,9 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 25,
+    "WarmMs": 23,
     "WindowsOnly": []
   },
   {
@@ -3287,9 +3291,9 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 39,
+    "WarmMs": 54,
     "WindowsOnly": []
   },
   {
@@ -3424,15 +3428,18 @@
       "Geschäftsidee U2/U3: Score als Ring mit Ampel, Gründungsschritte abhaken",
       "Kasse wie SumUp/Square: Strichcode scannen legt den Artikel in den Korb, Rabatt 10 % senkt die Summe, Auswertung zeigt Umsatz, Bestseller und Stoßzeit; Artikelnummer mit falscher Prüfziffer abgelehnt",
       "Online verkaufen: Startseite mit Kennzahlen; Kunde, Artikel, Bestellung, Rechnung – Umsatz und Geld stimmen",
+      "STUDIO-ONLINE-BUSINESS-01: Artikelnummer/EAN: Prüfziffer EAN-13 und EAN-8, falscher Strichcode abgelehnt, freie Nummern erlaubt; Scanner findet zuerst die Nummer, dann den Namen",
+      "STUDIO-ONLINE-BUSINESS-01: Auswertung: Umsatz, Bons, Durchschnittsbon, Rabatte, Bestseller, Wochentage, Stoßzeit; Stornos zählen nicht; Vergleich zum Zeitraum davor",
+      "STUDIO-ONLINE-BUSINESS-01: Rabatt: 10 % oder 5 € auf den Bon, nie mehr als die Summe; bucht weniger Einnahme, kein Lagerposten; Storno bucht genau zurück; falsche Angaben werden abgelehnt",
       "T-0304: Kasse – Kacheln in den Korb, +/−, „passend“/Rückgeld, Kassieren bucht Geld und Bestand, Bon-PDF, Storno Nein/Ja, Tagesabschluss-PDF"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -3571,16 +3578,20 @@
       "Medienbrowser: Testmodus ohne nachgebildetes Netz sucht nicht im Internet",
       "X-07 (UI): Suche und Laden mit Lizenzdatei (Netz simuliert)",
       "X-07: Echter Download eines HDRI von Poly Haven mit Prüfsumme (übersprungen ohne Internet)",
+      "X-07: Mischen abwechselnd ohne doppelte Dateien; Ausrichtung quer/hoch/quadrat (±8 %) und Mindestbreite",
+      "X-07: Namensnennung als Text, HTML (maskiert, mit Links) und Markdown",
+      "X-07: Openverse: Lizenzname, Dauer in Sekunden, HTML-Zeichen, ohne „ND/NC“ und fremde Formate; Filter frei/Nennung; Suchadresse nur erlaubte Lizenzen",
       "X-07: Pfade aus dem Katalog können nicht aus dem Ordner ausbrechen, Prüfsumme wird geprüft",
-      "X-07: Poly-Haven-Katalog suchen (Umlaute/Groß egal), Download-Plan mit Texturen"
+      "X-07: Poly-Haven-Katalog suchen (Umlaute/Groß egal), Download-Plan mit Texturen",
+      "X-07: Schriften: nur offene Lizenzen und Latin, Art-Filter, Wortanfang zuerst, Datei-Adresse mit nächster Stärke"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -3645,9 +3656,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -3723,9 +3734,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 19,
     "WindowsOnly": []
   },
   {
@@ -3913,9 +3924,9 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -4169,9 +4180,9 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 61,
+    "WarmMs": 78,
     "WindowsOnly": []
   },
   {
@@ -4405,9 +4416,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 23,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -4468,9 +4479,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -4825,9 +4836,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -5159,7 +5170,7 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": true,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -5495,9 +5506,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 40,
+    "WarmMs": 60,
     "WindowsOnly": []
   },
   {
@@ -5826,9 +5837,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -6086,6 +6097,14 @@
       "Briefseite zeigt den echten Brieftext in der Vorschau",
       "Briefseite zeigt die Auftragsleiste und meldet ehrlich, wenn nichts eingebaut ist",
       "CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen",
+      "CORE-05: Eigenschaften: Quader 40×30×10 mm – Volumen 12 cm³, Oberfläche 38 cm², Masse je Werkstoff, Schwerpunkt in der Mitte",
+      "CORE-05: Füllung: 100 % deckt die Fläche (Länge ≈ Fläche / Linienbreite), läuft nicht in die Lücke zwischen zwei Körpern, Winkel wechselt",
+      "CORE-05: Normbohrungen: M3 Durchgang 3,4 mm, M6 Kernloch 5 mm, M8 Senkschraube 9/16,4 mm; eigenes Maß zuerst",
+      "CORE-05: Querschnitt: Quader mit Bohrung – Fläche ohne das Loch; über dem Körper 0",
+      "CORE-05: Schätzung aus Bahnen: massiver Würfel wiegt etwa Volumen × Dichte, 15 % Füllung deutlich weniger, PETG schwerer und teurer als PLA",
+      "CORE-05: Skalieren, Anordnen in Reihen (mittig, mit Abstand), Kopien auf der Platte; zu viele Teile oder zu groß gibt eine klare Meldung",
+      "CORE-05: Stützen: Tisch-Form (Platte auf dünnem Fuß) braucht Stützen unter der Platte, Würfel nicht",
+      "CORE-05: Umrisse: Würfelschnitt ergibt einen geschlossenen Umriss (Umfang 80 mm, Fläche 400 mm²); zwei Körper zwei Umrisse",
       "CORE-05: Unbekannte Formate und Formen werden abgewiesen",
       "Geräusche: MMAudio mit Hinweis „nur nicht-kommerziell“, Beschreibung + Länge → WAV zum Anhören; ohne Beschreibung kein Lauf",
       "Startbildschirm bekommt keine Auftragsleiste",
@@ -6099,9 +6118,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 57,
+    "WarmMs": 53,
     "WindowsOnly": []
   },
   {
@@ -6315,6 +6334,14 @@
     "Tests": [
       "CAD wie Fusion 360: Normbohrung M5 per Auswahl (ein Schritt, Rückgängig), Eigenschaften mit Masse je Werkstoff und Querschnitt",
       "CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen",
+      "CORE-05: Eigenschaften: Quader 40×30×10 mm – Volumen 12 cm³, Oberfläche 38 cm², Masse je Werkstoff, Schwerpunkt in der Mitte",
+      "CORE-05: Füllung: 100 % deckt die Fläche (Länge ≈ Fläche / Linienbreite), läuft nicht in die Lücke zwischen zwei Körpern, Winkel wechselt",
+      "CORE-05: Normbohrungen: M3 Durchgang 3,4 mm, M6 Kernloch 5 mm, M8 Senkschraube 9/16,4 mm; eigenes Maß zuerst",
+      "CORE-05: Querschnitt: Quader mit Bohrung – Fläche ohne das Loch; über dem Körper 0",
+      "CORE-05: Schätzung aus Bahnen: massiver Würfel wiegt etwa Volumen × Dichte, 15 % Füllung deutlich weniger, PETG schwerer und teurer als PLA",
+      "CORE-05: Skalieren, Anordnen in Reihen (mittig, mit Abstand), Kopien auf der Platte; zu viele Teile oder zu groß gibt eine klare Meldung",
+      "CORE-05: Stützen: Tisch-Form (Platte auf dünnem Fuß) braucht Stützen unter der Platte, Würfel nicht",
+      "CORE-05: Umrisse: Würfelschnitt ergibt einen geschlossenen Umriss (Umfang 80 mm, Fläche 400 mm²); zwei Körper zwei Umrisse",
       "CORE-05: Unbekannte Formate und Formen werden abgewiesen",
       "N23: Bauschritte über das Menüband, Maß als Formel ändern, Parameter ändern rechnet neu, Rückgängig, Export 3MF/STEP/Zeichnung",
       "N24: Drucker eintragen (Zugangscode geschützt), mit nachgebautem Drucker verbinden, Status sehen; Druck nur nach Bestätigung"
@@ -6324,9 +6351,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -6558,6 +6585,14 @@
     "Tests": [
       "CAD wie Fusion 360: Normbohrung M5 per Auswahl (ein Schritt, Rückgängig), Eigenschaften mit Masse je Werkstoff und Querschnitt",
       "CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen",
+      "CORE-05: Eigenschaften: Quader 40×30×10 mm – Volumen 12 cm³, Oberfläche 38 cm², Masse je Werkstoff, Schwerpunkt in der Mitte",
+      "CORE-05: Füllung: 100 % deckt die Fläche (Länge ≈ Fläche / Linienbreite), läuft nicht in die Lücke zwischen zwei Körpern, Winkel wechselt",
+      "CORE-05: Normbohrungen: M3 Durchgang 3,4 mm, M6 Kernloch 5 mm, M8 Senkschraube 9/16,4 mm; eigenes Maß zuerst",
+      "CORE-05: Querschnitt: Quader mit Bohrung – Fläche ohne das Loch; über dem Körper 0",
+      "CORE-05: Schätzung aus Bahnen: massiver Würfel wiegt etwa Volumen × Dichte, 15 % Füllung deutlich weniger, PETG schwerer und teurer als PLA",
+      "CORE-05: Skalieren, Anordnen in Reihen (mittig, mit Abstand), Kopien auf der Platte; zu viele Teile oder zu groß gibt eine klare Meldung",
+      "CORE-05: Stützen: Tisch-Form (Platte auf dünnem Fuß) braucht Stützen unter der Platte, Würfel nicht",
+      "CORE-05: Umrisse: Würfelschnitt ergibt einen geschlossenen Umriss (Umfang 80 mm, Fläche 400 mm²); zwei Körper zwei Umrisse",
       "CORE-05: Unbekannte Formate und Formen werden abgewiesen",
       "N23: Bauschritte über das Menüband, Maß als Formel ändern, Parameter ändern rechnet neu, Rückgängig, Export 3MF/STEP/Zeichnung",
       "N24: Drucker eintragen (Zugangscode geschützt), mit nachgebautem Drucker verbinden, Status sehen; Druck nur nach Bestätigung"
@@ -6567,9 +6602,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 63,
+    "WarmMs": 67,
     "WindowsOnly": []
   },
   {
@@ -6775,9 +6810,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -6987,9 +7022,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -7125,7 +7160,13 @@
     "Tests": [
       "CORE-06 (UI): Spiel anlegen öffnet es im Browser; ohne Unreal ehrlicher Hinweis, mit Unreal Projekt anlegen",
       "CORE-06: Alle Browser-Spiele werden angelegt, JavaScript ist gültig (node --check)",
+      "CORE-06: Gebautes Spiel: config.js trägt Zeitlimit und Regeln, neue Kacheln sind erlaubt, game.js ist gültiges JavaScript (Node)",
+      "CORE-06: Regeln: „Münzen ≥ 2 → +1 Leben“ feuert genau einmal, „Punkte ≥ 3 → Gewonnen“ beendet das Spiel",
+      "CORE-06: Schlüssel öffnet die Tür: mit Schlüssel geschafft, ohne Schlüssel bleibt die Tür zu; Regel „Sekunden ≥ 1 → Türen öffnen“ öffnet sie auch",
+      "CORE-06: Speicherpunkt: nach einem Treffer geht es dort weiter statt am Start",
+      "CORE-06: Sprungfeder schleudert viel höher als ein normaler Sprung",
       "CORE-06: Unreal-Engines aus Launcher-Liste erkannt, neueste zuerst; .uproject ist gültig",
+      "CORE-06: Zeitlimit: nach Ablauf verloren, Restzeit zählt herunter; ohne Limit −1",
       "Spiele: Retro-Vorlage, Level im Raster bearbeiten, Figur hinzufügen, prüfen, bauen und spielen",
       "Spiele: Umfang AAA+ wählen setzt AAA-Meilensteine; Bauen legt ein Unreal-Projekt mit Spielbibel an"
     ],
@@ -7134,9 +7175,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": true,
-    "WarmMs": 10,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -7283,7 +7324,13 @@
     "Tests": [
       "CORE-06 (UI): Spiel anlegen öffnet es im Browser; ohne Unreal ehrlicher Hinweis, mit Unreal Projekt anlegen",
       "CORE-06: Alle Browser-Spiele werden angelegt, JavaScript ist gültig (node --check)",
+      "CORE-06: Gebautes Spiel: config.js trägt Zeitlimit und Regeln, neue Kacheln sind erlaubt, game.js ist gültiges JavaScript (Node)",
+      "CORE-06: Regeln: „Münzen ≥ 2 → +1 Leben“ feuert genau einmal, „Punkte ≥ 3 → Gewonnen“ beendet das Spiel",
+      "CORE-06: Schlüssel öffnet die Tür: mit Schlüssel geschafft, ohne Schlüssel bleibt die Tür zu; Regel „Sekunden ≥ 1 → Türen öffnen“ öffnet sie auch",
+      "CORE-06: Speicherpunkt: nach einem Treffer geht es dort weiter statt am Start",
+      "CORE-06: Sprungfeder schleudert viel höher als ein normaler Sprung",
       "CORE-06: Unreal-Engines aus Launcher-Liste erkannt, neueste zuerst; .uproject ist gültig",
+      "CORE-06: Zeitlimit: nach Ablauf verloren, Restzeit zählt herunter; ohne Limit −1",
       "Claude im Studio: Auswahl in Trendo Tabelle geht als Zustand mit; Internet und Befehle bei Bedarf immer an, je Projekt auf „sicher“ stellbar; Vorgabe abschaltbar",
       "Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet",
       "Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort",
@@ -7314,9 +7361,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 33,
+    "WarmMs": 22,
     "WindowsOnly": []
   },
   {
@@ -7499,9 +7546,9 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 64,
+    "WarmMs": 42,
     "WindowsOnly": []
   },
   {
@@ -7698,9 +7745,9 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 85,
+    "WarmMs": 89,
     "WindowsOnly": []
   },
   {
@@ -7889,7 +7936,7 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -8097,9 +8144,9 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 49,
+    "WarmMs": 57,
     "WindowsOnly": []
   },
   {
@@ -8317,9 +8364,9 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 54,
+    "WarmMs": 64,
     "WindowsOnly": []
   },
   {
@@ -8513,9 +8560,9 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -8695,9 +8742,9 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": true,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -8877,9 +8924,9 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -9068,9 +9115,9 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": true,
-    "WarmMs": 13,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -9238,9 +9285,9 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -9439,9 +9486,9 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": true,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -9496,9 +9543,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -9560,9 +9607,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -9633,9 +9680,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -9707,7 +9754,7 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
     "WarmMs": 12,
     "WindowsOnly": []
@@ -9804,9 +9851,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -9888,9 +9935,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -9967,9 +10014,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -10064,9 +10111,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 38,
+    "WarmMs": 27,
     "WindowsOnly": []
   },
   {
@@ -10175,9 +10222,9 @@
       "src/Trendo.App/MainWindow.Connections.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -10251,9 +10298,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 25,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -10348,16 +10395,18 @@
       "KI-Bibliothek (UI): alle Arten als Auswahl, jede Art zeigt ihre Modelle mit Lizenz und Größe",
       "KI-Bibliothek: nur offizielle Server (GitHub, Hugging Face) über HTTPS",
       "X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette",
+      "X-05: Kostenlose Internet-KIs – nur Modelle ohne jeden Preis (auch Bild-Preis), „(free)“ aus dem Namen, Beschreibung gekürzt, größter Kontext zuerst; Liste speichern, nach 24 h veraltet",
       "X-05: Nur freie Quellen auf diesem Gerät, Modelle passend zur Hardware",
-      "X-05: Rückfallkette lässt sich sortieren, abschalten und bleibt gespeichert"
+      "X-05: Rückfallkette lässt sich sortieren, abschalten und bleibt gespeichert",
+      "X-05: Zähler „ins Internet“ – zählt nur den heutigen Tag, am nächsten Tag wieder bei 0, keine Inhalte gespeichert"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -10450,15 +10499,17 @@
       "T-0316: Studio – „✳ Claude“ immer in der Auftragsleiste; das Claude-Projekt des Studios trägt seine Rolle, kein Terminal",
       "T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Claude Code öffnen“ starten nie ein echtes Programm",
       "X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette",
+      "X-05: Kostenlose Internet-KIs – nur Modelle ohne jeden Preis (auch Bild-Preis), „(free)“ aus dem Namen, Beschreibung gekürzt, größter Kontext zuerst; Liste speichern, nach 24 h veraltet",
       "X-05: Nur freie Quellen auf diesem Gerät, Modelle passend zur Hardware",
       "X-05: Rückfallkette lässt sich sortieren, abschalten und bleibt gespeichert",
+      "X-05: Zähler „ins Internet“ – zählt nur den heutigen Tag, am nächsten Tag wieder bei 0, keine Inhalte gespeichert",
       "Zusatzprogramme: keine Ordnerwahl mehr – „von GitHub laden“; ohne Internet bleibt ein Merker zum Nachladen beim nächsten Start"
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 21,
+    "WarmMs": 41,
     "WindowsOnly": []
   },
   {
@@ -10514,12 +10565,14 @@
       "B: Einrichtung mit Profilbild, PIN und Wiederherstellungs-Code, Interessen → Desktop-Symbole, Personen; Sperrbildschirm mit PIN vergessen",
       "C: kostenlose Internet-KIs – Liste laden, Schlüssel geführt einrichten, in allen Bereichen einspringen, Hinweis und Tageszähler, Bild verstehen",
       "X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette",
+      "X-05: Kostenlose Internet-KIs – nur Modelle ohne jeden Preis (auch Bild-Preis), „(free)“ aus dem Namen, Beschreibung gekürzt, größter Kontext zuerst; Liste speichern, nach 24 h veraltet",
       "X-05: Nur freie Quellen auf diesem Gerät, Modelle passend zur Hardware",
-      "X-05: Rückfallkette lässt sich sortieren, abschalten und bleibt gespeichert"
+      "X-05: Rückfallkette lässt sich sortieren, abschalten und bleibt gespeichert",
+      "X-05: Zähler „ins Internet“ – zählt nur den heutigen Tag, am nächsten Tag wieder bei 0, keine Inhalte gespeichert"
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
     "WarmMs": 16,
     "WindowsOnly": []
@@ -10613,9 +10666,9 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -10657,15 +10710,16 @@
       "T-0201: jedes Pfad- oder Ordnerfeld hat „Datei wählen …“ bzw. „Ordner wählen …“",
       "X-10 (UI): Projekt anlegen, Tagebuch-Eintrag, Prüfung ohne Treffer schreibt Bericht",
       "X-10: Projekt mit Rollen-Ordnern, Tagebuch, Vergleich zweier Ordner und Prüfbericht",
+      "X-10: Sauberer Nachbau – gleicher Code hat Ähnlichkeit 1, eigener Code mit anderer Struktur niedrig; Vergleich meldet nur Dateien über der Schwelle",
       "X-10: Ähnlichkeit erkennt kopierten Code trotz Umbenennen, eigener Code bleibt unauffällig"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -10764,9 +10818,9 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -10826,15 +10880,16 @@
       "X-04 Katalog: lokaler Katalog mit Prüfsummen, Installation nur bei passender Prüfsumme",
       "X-04 Katalog: nur GitHub-https oder lokale ZIP, Prüfsumme Pflicht, Kennung muss passen",
       "X-04: Beispiel-Erweiterung installieren (Ordner und ZIP), ein/aus, Prüfsumme stabil, entfernen",
+      "X-04: Erweiterungs-Katalog – nur GitHub über https oder lokale ZIP, Prüfsumme mit 64 Hexzeichen Pflicht, unbekannte Art abgelehnt; Weiterleitungen nur zu GitHub auf 443",
       "X-04: Programmcode, falsche Rechte, kaputte Beschreibung und ZIP-Ausbruch werden abgewiesen"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -10963,9 +11018,9 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 36,
+    "WarmMs": 41,
     "WindowsOnly": []
   },
   {
@@ -11041,9 +11096,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 35,
+    "WarmMs": 32,
     "WindowsOnly": []
   },
   {
@@ -11102,6 +11157,9 @@
       "CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen",
       "CORE-11: Ordnerprüfung findet Passwort, Schlüssel, gültige IBAN, Kartennummer – maskiert",
       "CORE-11: Schutz-Prüfung erkennt fehlende Sicherung und verändertes Protokoll",
+      "CORE-11: Sicherung enthält keine fremden Ordner – nur der Trendo-Datenordner, eine kaputte ZIP lässt die Daten unverändert",
+      "CORE-11: Sicherung fällig – ohne Sicherung sofort, sonst erst nach dem Abstand; 0 Stunden heißt nie automatisch",
+      "CORE-11: Sicherung – höchstens „keep“ Sicherungen, Vorschau zählt ersetzte und neue Dateien, Wiederherstellen holt den alten Stand zurück",
       "SPEC-15 UI: FFmpeg wird erst nach Zustimmung installiert",
       "SPEC-15 UI: Fenster, Kamera und Mikrofon lassen sich wählen",
       "SPEC-15 UI: Live startet erst nach Freigabe, Schlüssel bleibt aus Dateien und Protokoll",
@@ -11112,9 +11170,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -11176,6 +11234,9 @@
       "CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen",
       "CORE-11: Ordnerprüfung findet Passwort, Schlüssel, gültige IBAN, Kartennummer – maskiert",
       "CORE-11: Schutz-Prüfung erkennt fehlende Sicherung und verändertes Protokoll",
+      "CORE-11: Sicherung enthält keine fremden Ordner – nur der Trendo-Datenordner, eine kaputte ZIP lässt die Daten unverändert",
+      "CORE-11: Sicherung fällig – ohne Sicherung sofort, sonst erst nach dem Abstand; 0 Stunden heißt nie automatisch",
+      "CORE-11: Sicherung – höchstens „keep“ Sicherungen, Vorschau zählt ersetzte und neue Dateien, Wiederherstellen holt den alten Stand zurück",
       "SPEC-12 UI: Prüfsumme vergleichen, Fall anlegen, Beweis sichern, Bericht",
       "SYS-04 UI: Suchen, installieren, Updates anzeigen und aktualisieren, entfernen",
       "SYS-06 Freigabe-Dialog: Fenster schließen (X) lehnt ab",
@@ -11191,9 +11252,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -11253,14 +11314,17 @@
       "CORE-11 UI: Schutz-Seite über System erreichbar, Sichern, Ordner prüfen",
       "CORE-11: Ordnerprüfung findet Passwort, Schlüssel, gültige IBAN, Kartennummer – maskiert",
       "CORE-11: Schutz-Prüfung erkennt fehlende Sicherung und verändertes Protokoll",
+      "CORE-11: Sicherung enthält keine fremden Ordner – nur der Trendo-Datenordner, eine kaputte ZIP lässt die Daten unverändert",
+      "CORE-11: Sicherung fällig – ohne Sicherung sofort, sonst erst nach dem Abstand; 0 Stunden heißt nie automatisch",
+      "CORE-11: Sicherung – höchstens „keep“ Sicherungen, Vorschau zählt ersetzte und neue Dateien, Wiederherstellen holt den alten Stand zurück",
       "T-0214: Jetzt sichern → Meldung; Wiederherstellen fragt nach und meldet Ergebnis",
       "T-0299: Zeitleiste zeigt Sicherungen, Vergleich mit heute, Vorschau, Einzeldatei nach Ja zurück (Nein ändert nichts)"
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -11362,6 +11426,102 @@
         "Name": "Rückgängig für Dateiaktionen",
         "State": "offen",
         "Test": "–"
+      },
+      {
+        "Nr": "SB-01",
+        "Name": "Startmenü: Startknopf, Esc und Klick daneben schließen, Windows-Taste schaltet um",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-02",
+        "Name": "Startmenü-Suche findet Studio und Seite, Klick öffnet",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-03",
+        "Name": "Anheften, Lösen, Zuletzt benutzt, alle Studios A–Z",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-04",
+        "Name": "Studios öffnen in eigenen Fenstern aus dem Startmenü",
+        "State": "umgesetzt",
+        "Test": "StartMenu_StudioFenster"
+      },
+      {
+        "Nr": "SB-05",
+        "Name": "Tastatur: Strg+1…5, Tab, Enter, zugängliche Namen",
+        "State": "umgesetzt",
+        "Test": "W0_SetupWizard"
+      },
+      {
+        "Nr": "ST-01",
+        "Name": "Bildkarten je Studio, jede Karte führt aus der Liste heraus",
+        "State": "umgesetzt",
+        "Test": "StudioClickTests"
+      },
+      {
+        "Nr": "ST-02",
+        "Name": "Jedes fertige Studio hat einen eigenen Bereich (keine Sackgasse)",
+        "State": "umgesetzt",
+        "Test": "StudioClickTests"
+      },
+      {
+        "Nr": "DS-01",
+        "Name": "Desktop anfangs aufgeräumt; Symbole über Startmenü, Seite und Studio Manager hinzufügen, Rechtsklick entfernt, bleibt gespeichert",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-02",
+        "Name": "Seite schaltet jedes Symbol hin und zurück, kein doppeltes Symbol",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-03",
+        "Name": "Unbekannte oder nicht installierte Einträge erscheinen nicht",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-04",
+        "Name": "Studio und Kernfunktion gleichzeitig, Reihenfolge bleibt, Klick öffnet",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "EE-01",
+        "Name": "Design-Wahl mit sofortiger Vorschau, Paket-Wahl in der Zusammenfassung",
+        "State": "umgesetzt",
+        "Test": "SetupFeedbackTests"
+      },
+      {
+        "Nr": "EE-02",
+        "Name": "Reparieren meldet das Ergebnis, Ordnerwahl im Assistenten",
+        "State": "umgesetzt",
+        "Test": "SetupFeedbackTests"
+      },
+      {
+        "Nr": "EE-03",
+        "Name": "Daten vom alten PC übernehmen (Umzugs-Assistent)",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "PR-01",
+        "Name": "Projekt mit lesbarem Namen, Dateien und Ordner hinzufügen, Notiz, Umbenennen",
+        "State": "umgesetzt",
+        "Test": "Projektmappe_Ui"
+      },
+      {
+        "Nr": "PR-02",
+        "Name": "Ordnername aus dem Namen (Umlaute, Nummer bei belegtem Namen), nichts außerhalb des Projekts",
+        "State": "umgesetzt",
+        "Test": "SystemPagesTests"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-01_KATALOG.md",
@@ -11419,6 +11579,10 @@
       "Alle Studios: Bereich und Suche filtern die Karten, Alle zeigt wieder alles",
       "Alle Studios: kurze deutsche Namen und ein Satz, nach Bereichen gruppiert, keine Kennungen oder Fachbegriffe sichtbar",
       "CORE-01: Dateisuche begrenzt Tiefe und Anzahl",
+      "CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an",
+      "CORE-01: Desktop-Symbole – Studio und Kernfunktion gleichzeitig, Reihenfolge wie hinzugefügt, Klick öffnet das Studio",
+      "CORE-01: Desktop-Symbole – unbekannte oder nicht installierte Einträge erscheinen nicht als Symbol, der Desktop bleibt aufgeräumt",
+      "CORE-01: Projekte – lesbarer Name wird Ordnername (Umlaute, belegte Namen mit Nummer), Dateien und Ordner anlegen, Notiz, Umbenennen behält den Ordner, nichts außerhalb des Projekts",
       "CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte",
       "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste",
       "Claude auch in der Studio-Übersicht, in der Suche und im Fokusmodus",
@@ -11462,9 +11626,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 58,
+    "WarmMs": 62,
     "WindowsOnly": []
   },
   {
@@ -11566,6 +11730,102 @@
         "Name": "Rückgängig für Dateiaktionen",
         "State": "offen",
         "Test": "–"
+      },
+      {
+        "Nr": "SB-01",
+        "Name": "Startmenü: Startknopf, Esc und Klick daneben schließen, Windows-Taste schaltet um",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-02",
+        "Name": "Startmenü-Suche findet Studio und Seite, Klick öffnet",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-03",
+        "Name": "Anheften, Lösen, Zuletzt benutzt, alle Studios A–Z",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-04",
+        "Name": "Studios öffnen in eigenen Fenstern aus dem Startmenü",
+        "State": "umgesetzt",
+        "Test": "StartMenu_StudioFenster"
+      },
+      {
+        "Nr": "SB-05",
+        "Name": "Tastatur: Strg+1…5, Tab, Enter, zugängliche Namen",
+        "State": "umgesetzt",
+        "Test": "W0_SetupWizard"
+      },
+      {
+        "Nr": "ST-01",
+        "Name": "Bildkarten je Studio, jede Karte führt aus der Liste heraus",
+        "State": "umgesetzt",
+        "Test": "StudioClickTests"
+      },
+      {
+        "Nr": "ST-02",
+        "Name": "Jedes fertige Studio hat einen eigenen Bereich (keine Sackgasse)",
+        "State": "umgesetzt",
+        "Test": "StudioClickTests"
+      },
+      {
+        "Nr": "DS-01",
+        "Name": "Desktop anfangs aufgeräumt; Symbole über Startmenü, Seite und Studio Manager hinzufügen, Rechtsklick entfernt, bleibt gespeichert",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-02",
+        "Name": "Seite schaltet jedes Symbol hin und zurück, kein doppeltes Symbol",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-03",
+        "Name": "Unbekannte oder nicht installierte Einträge erscheinen nicht",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-04",
+        "Name": "Studio und Kernfunktion gleichzeitig, Reihenfolge bleibt, Klick öffnet",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "EE-01",
+        "Name": "Design-Wahl mit sofortiger Vorschau, Paket-Wahl in der Zusammenfassung",
+        "State": "umgesetzt",
+        "Test": "SetupFeedbackTests"
+      },
+      {
+        "Nr": "EE-02",
+        "Name": "Reparieren meldet das Ergebnis, Ordnerwahl im Assistenten",
+        "State": "umgesetzt",
+        "Test": "SetupFeedbackTests"
+      },
+      {
+        "Nr": "EE-03",
+        "Name": "Daten vom alten PC übernehmen (Umzugs-Assistent)",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "PR-01",
+        "Name": "Projekt mit lesbarem Namen, Dateien und Ordner hinzufügen, Notiz, Umbenennen",
+        "State": "umgesetzt",
+        "Test": "Projektmappe_Ui"
+      },
+      {
+        "Nr": "PR-02",
+        "Name": "Ordnername aus dem Namen (Umlaute, Nummer bei belegtem Namen), nichts außerhalb des Projekts",
+        "State": "umgesetzt",
+        "Test": "SystemPagesTests"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-01_KATALOG.md",
@@ -11606,6 +11866,10 @@
     ],
     "Tests": [
       "CORE-01: Dateisuche begrenzt Tiefe und Anzahl",
+      "CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an",
+      "CORE-01: Desktop-Symbole – Studio und Kernfunktion gleichzeitig, Reihenfolge wie hinzugefügt, Klick öffnet das Studio",
+      "CORE-01: Desktop-Symbole – unbekannte oder nicht installierte Einträge erscheinen nicht als Symbol, der Desktop bleibt aufgeräumt",
+      "CORE-01: Projekte – lesbarer Name wird Ordnername (Umlaute, belegte Namen mit Nummer), Dateien und Ordner anlegen, Notiz, Umbenennen behält den Ordner, nichts außerhalb des Projekts",
       "CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte",
       "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste",
       "Dateimanager-Verhalten je System: Ziehen verschiebt (Strg kopiert), Kopiename je System, Finder-Zeilenschalter benennt um, Entf/⌘⌫ legt in den Papierkorb, Leertaste zeigt Vorschau",
@@ -11621,7 +11885,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -11725,6 +11989,102 @@
         "Name": "Rückgängig für Dateiaktionen",
         "State": "offen",
         "Test": "–"
+      },
+      {
+        "Nr": "SB-01",
+        "Name": "Startmenü: Startknopf, Esc und Klick daneben schließen, Windows-Taste schaltet um",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-02",
+        "Name": "Startmenü-Suche findet Studio und Seite, Klick öffnet",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-03",
+        "Name": "Anheften, Lösen, Zuletzt benutzt, alle Studios A–Z",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-04",
+        "Name": "Studios öffnen in eigenen Fenstern aus dem Startmenü",
+        "State": "umgesetzt",
+        "Test": "StartMenu_StudioFenster"
+      },
+      {
+        "Nr": "SB-05",
+        "Name": "Tastatur: Strg+1…5, Tab, Enter, zugängliche Namen",
+        "State": "umgesetzt",
+        "Test": "W0_SetupWizard"
+      },
+      {
+        "Nr": "ST-01",
+        "Name": "Bildkarten je Studio, jede Karte führt aus der Liste heraus",
+        "State": "umgesetzt",
+        "Test": "StudioClickTests"
+      },
+      {
+        "Nr": "ST-02",
+        "Name": "Jedes fertige Studio hat einen eigenen Bereich (keine Sackgasse)",
+        "State": "umgesetzt",
+        "Test": "StudioClickTests"
+      },
+      {
+        "Nr": "DS-01",
+        "Name": "Desktop anfangs aufgeräumt; Symbole über Startmenü, Seite und Studio Manager hinzufügen, Rechtsklick entfernt, bleibt gespeichert",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-02",
+        "Name": "Seite schaltet jedes Symbol hin und zurück, kein doppeltes Symbol",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-03",
+        "Name": "Unbekannte oder nicht installierte Einträge erscheinen nicht",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-04",
+        "Name": "Studio und Kernfunktion gleichzeitig, Reihenfolge bleibt, Klick öffnet",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "EE-01",
+        "Name": "Design-Wahl mit sofortiger Vorschau, Paket-Wahl in der Zusammenfassung",
+        "State": "umgesetzt",
+        "Test": "SetupFeedbackTests"
+      },
+      {
+        "Nr": "EE-02",
+        "Name": "Reparieren meldet das Ergebnis, Ordnerwahl im Assistenten",
+        "State": "umgesetzt",
+        "Test": "SetupFeedbackTests"
+      },
+      {
+        "Nr": "EE-03",
+        "Name": "Daten vom alten PC übernehmen (Umzugs-Assistent)",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "PR-01",
+        "Name": "Projekt mit lesbarem Namen, Dateien und Ordner hinzufügen, Notiz, Umbenennen",
+        "State": "umgesetzt",
+        "Test": "Projektmappe_Ui"
+      },
+      {
+        "Nr": "PR-02",
+        "Name": "Ordnername aus dem Namen (Umlaute, Nummer bei belegtem Namen), nichts außerhalb des Projekts",
+        "State": "umgesetzt",
+        "Test": "SystemPagesTests"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-01_KATALOG.md",
@@ -11803,15 +12163,19 @@
     ],
     "Tests": [
       "CORE-01: Dateisuche begrenzt Tiefe und Anzahl",
+      "CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an",
+      "CORE-01: Desktop-Symbole – Studio und Kernfunktion gleichzeitig, Reihenfolge wie hinzugefügt, Klick öffnet das Studio",
+      "CORE-01: Desktop-Symbole – unbekannte oder nicht installierte Einträge erscheinen nicht als Symbol, der Desktop bleibt aufgeräumt",
+      "CORE-01: Projekte – lesbarer Name wird Ordnername (Umlaute, belegte Namen mit Nummer), Dateien und Ordner anlegen, Notiz, Umbenennen behält den Ordner, nichts außerhalb des Projekts",
       "CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte",
       "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste",
       "Desktop: anfangs keine Symbole; über Startmenü, Seite „Desktop-Symbole“ und Studio Manager hinzufügen; Rechtsklick entfernt; bleibt gespeichert"
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 40,
+    "WarmMs": 45,
     "WindowsOnly": []
   },
   {
@@ -11913,6 +12277,102 @@
         "Name": "Rückgängig für Dateiaktionen",
         "State": "offen",
         "Test": "–"
+      },
+      {
+        "Nr": "SB-01",
+        "Name": "Startmenü: Startknopf, Esc und Klick daneben schließen, Windows-Taste schaltet um",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-02",
+        "Name": "Startmenü-Suche findet Studio und Seite, Klick öffnet",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-03",
+        "Name": "Anheften, Lösen, Zuletzt benutzt, alle Studios A–Z",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-04",
+        "Name": "Studios öffnen in eigenen Fenstern aus dem Startmenü",
+        "State": "umgesetzt",
+        "Test": "StartMenu_StudioFenster"
+      },
+      {
+        "Nr": "SB-05",
+        "Name": "Tastatur: Strg+1…5, Tab, Enter, zugängliche Namen",
+        "State": "umgesetzt",
+        "Test": "W0_SetupWizard"
+      },
+      {
+        "Nr": "ST-01",
+        "Name": "Bildkarten je Studio, jede Karte führt aus der Liste heraus",
+        "State": "umgesetzt",
+        "Test": "StudioClickTests"
+      },
+      {
+        "Nr": "ST-02",
+        "Name": "Jedes fertige Studio hat einen eigenen Bereich (keine Sackgasse)",
+        "State": "umgesetzt",
+        "Test": "StudioClickTests"
+      },
+      {
+        "Nr": "DS-01",
+        "Name": "Desktop anfangs aufgeräumt; Symbole über Startmenü, Seite und Studio Manager hinzufügen, Rechtsklick entfernt, bleibt gespeichert",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-02",
+        "Name": "Seite schaltet jedes Symbol hin und zurück, kein doppeltes Symbol",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-03",
+        "Name": "Unbekannte oder nicht installierte Einträge erscheinen nicht",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-04",
+        "Name": "Studio und Kernfunktion gleichzeitig, Reihenfolge bleibt, Klick öffnet",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "EE-01",
+        "Name": "Design-Wahl mit sofortiger Vorschau, Paket-Wahl in der Zusammenfassung",
+        "State": "umgesetzt",
+        "Test": "SetupFeedbackTests"
+      },
+      {
+        "Nr": "EE-02",
+        "Name": "Reparieren meldet das Ergebnis, Ordnerwahl im Assistenten",
+        "State": "umgesetzt",
+        "Test": "SetupFeedbackTests"
+      },
+      {
+        "Nr": "EE-03",
+        "Name": "Daten vom alten PC übernehmen (Umzugs-Assistent)",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "PR-01",
+        "Name": "Projekt mit lesbarem Namen, Dateien und Ordner hinzufügen, Notiz, Umbenennen",
+        "State": "umgesetzt",
+        "Test": "Projektmappe_Ui"
+      },
+      {
+        "Nr": "PR-02",
+        "Name": "Ordnername aus dem Namen (Umlaute, Nummer bei belegtem Namen), nichts außerhalb des Projekts",
+        "State": "umgesetzt",
+        "Test": "SystemPagesTests"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-01_KATALOG.md",
@@ -11939,6 +12399,10 @@
       "B: Einrichtung mit Profilbild, PIN und Wiederherstellungs-Code, Interessen → Desktop-Symbole, Personen; Sperrbildschirm mit PIN vergessen",
       "C: kostenlose Internet-KIs – Liste laden, Schlüssel geführt einrichten, in allen Bereichen einspringen, Hinweis und Tageszähler, Bild verstehen",
       "CORE-01: Dateisuche begrenzt Tiefe und Anzahl",
+      "CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an",
+      "CORE-01: Desktop-Symbole – Studio und Kernfunktion gleichzeitig, Reihenfolge wie hinzugefügt, Klick öffnet das Studio",
+      "CORE-01: Desktop-Symbole – unbekannte oder nicht installierte Einträge erscheinen nicht als Symbol, der Desktop bleibt aufgeräumt",
+      "CORE-01: Projekte – lesbarer Name wird Ordnername (Umlaute, belegte Namen mit Nummer), Dateien und Ordner anlegen, Notiz, Umbenennen behält den Ordner, nichts außerhalb des Projekts",
       "CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte",
       "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste",
       "Pfadfelder: Klick ins Feld öffnet die Ordnerauswahl, die Wahl landet im Feld",
@@ -11950,9 +12414,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -12054,6 +12518,102 @@
         "Name": "Rückgängig für Dateiaktionen",
         "State": "offen",
         "Test": "–"
+      },
+      {
+        "Nr": "SB-01",
+        "Name": "Startmenü: Startknopf, Esc und Klick daneben schließen, Windows-Taste schaltet um",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-02",
+        "Name": "Startmenü-Suche findet Studio und Seite, Klick öffnet",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-03",
+        "Name": "Anheften, Lösen, Zuletzt benutzt, alle Studios A–Z",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-04",
+        "Name": "Studios öffnen in eigenen Fenstern aus dem Startmenü",
+        "State": "umgesetzt",
+        "Test": "StartMenu_StudioFenster"
+      },
+      {
+        "Nr": "SB-05",
+        "Name": "Tastatur: Strg+1…5, Tab, Enter, zugängliche Namen",
+        "State": "umgesetzt",
+        "Test": "W0_SetupWizard"
+      },
+      {
+        "Nr": "ST-01",
+        "Name": "Bildkarten je Studio, jede Karte führt aus der Liste heraus",
+        "State": "umgesetzt",
+        "Test": "StudioClickTests"
+      },
+      {
+        "Nr": "ST-02",
+        "Name": "Jedes fertige Studio hat einen eigenen Bereich (keine Sackgasse)",
+        "State": "umgesetzt",
+        "Test": "StudioClickTests"
+      },
+      {
+        "Nr": "DS-01",
+        "Name": "Desktop anfangs aufgeräumt; Symbole über Startmenü, Seite und Studio Manager hinzufügen, Rechtsklick entfernt, bleibt gespeichert",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-02",
+        "Name": "Seite schaltet jedes Symbol hin und zurück, kein doppeltes Symbol",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-03",
+        "Name": "Unbekannte oder nicht installierte Einträge erscheinen nicht",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-04",
+        "Name": "Studio und Kernfunktion gleichzeitig, Reihenfolge bleibt, Klick öffnet",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "EE-01",
+        "Name": "Design-Wahl mit sofortiger Vorschau, Paket-Wahl in der Zusammenfassung",
+        "State": "umgesetzt",
+        "Test": "SetupFeedbackTests"
+      },
+      {
+        "Nr": "EE-02",
+        "Name": "Reparieren meldet das Ergebnis, Ordnerwahl im Assistenten",
+        "State": "umgesetzt",
+        "Test": "SetupFeedbackTests"
+      },
+      {
+        "Nr": "EE-03",
+        "Name": "Daten vom alten PC übernehmen (Umzugs-Assistent)",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "PR-01",
+        "Name": "Projekt mit lesbarem Namen, Dateien und Ordner hinzufügen, Notiz, Umbenennen",
+        "State": "umgesetzt",
+        "Test": "Projektmappe_Ui"
+      },
+      {
+        "Nr": "PR-02",
+        "Name": "Ordnername aus dem Namen (Umlaute, Nummer bei belegtem Namen), nichts außerhalb des Projekts",
+        "State": "umgesetzt",
+        "Test": "SystemPagesTests"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-01_KATALOG.md",
@@ -12082,6 +12642,10 @@
       "3D: Vorschau und Export sind bei üblichen Fenstergrößen ohne Scrollen sichtbar",
       "3D: ohne Blender einmal fragen, mit Blender das aktuelle Objekt öffnen",
       "CORE-01: Dateisuche begrenzt Tiefe und Anzahl",
+      "CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an",
+      "CORE-01: Desktop-Symbole – Studio und Kernfunktion gleichzeitig, Reihenfolge wie hinzugefügt, Klick öffnet das Studio",
+      "CORE-01: Desktop-Symbole – unbekannte oder nicht installierte Einträge erscheinen nicht als Symbol, der Desktop bleibt aufgeräumt",
+      "CORE-01: Projekte – lesbarer Name wird Ordnername (Umlaute, belegte Namen mit Nummer), Dateien und Ordner anlegen, Notiz, Umbenennen behält den Ordner, nichts außerhalb des Projekts",
       "CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte",
       "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste",
       "Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt",
@@ -12117,9 +12681,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -12221,6 +12785,102 @@
         "Name": "Rückgängig für Dateiaktionen",
         "State": "offen",
         "Test": "–"
+      },
+      {
+        "Nr": "SB-01",
+        "Name": "Startmenü: Startknopf, Esc und Klick daneben schließen, Windows-Taste schaltet um",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-02",
+        "Name": "Startmenü-Suche findet Studio und Seite, Klick öffnet",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-03",
+        "Name": "Anheften, Lösen, Zuletzt benutzt, alle Studios A–Z",
+        "State": "umgesetzt",
+        "Test": "StartMenu_Ui"
+      },
+      {
+        "Nr": "SB-04",
+        "Name": "Studios öffnen in eigenen Fenstern aus dem Startmenü",
+        "State": "umgesetzt",
+        "Test": "StartMenu_StudioFenster"
+      },
+      {
+        "Nr": "SB-05",
+        "Name": "Tastatur: Strg+1…5, Tab, Enter, zugängliche Namen",
+        "State": "umgesetzt",
+        "Test": "W0_SetupWizard"
+      },
+      {
+        "Nr": "ST-01",
+        "Name": "Bildkarten je Studio, jede Karte führt aus der Liste heraus",
+        "State": "umgesetzt",
+        "Test": "StudioClickTests"
+      },
+      {
+        "Nr": "ST-02",
+        "Name": "Jedes fertige Studio hat einen eigenen Bereich (keine Sackgasse)",
+        "State": "umgesetzt",
+        "Test": "StudioClickTests"
+      },
+      {
+        "Nr": "DS-01",
+        "Name": "Desktop anfangs aufgeräumt; Symbole über Startmenü, Seite und Studio Manager hinzufügen, Rechtsklick entfernt, bleibt gespeichert",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-02",
+        "Name": "Seite schaltet jedes Symbol hin und zurück, kein doppeltes Symbol",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-03",
+        "Name": "Unbekannte oder nicht installierte Einträge erscheinen nicht",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "DS-04",
+        "Name": "Studio und Kernfunktion gleichzeitig, Reihenfolge bleibt, Klick öffnet",
+        "State": "umgesetzt",
+        "Test": "DesktopIconsUiTests"
+      },
+      {
+        "Nr": "EE-01",
+        "Name": "Design-Wahl mit sofortiger Vorschau, Paket-Wahl in der Zusammenfassung",
+        "State": "umgesetzt",
+        "Test": "SetupFeedbackTests"
+      },
+      {
+        "Nr": "EE-02",
+        "Name": "Reparieren meldet das Ergebnis, Ordnerwahl im Assistenten",
+        "State": "umgesetzt",
+        "Test": "SetupFeedbackTests"
+      },
+      {
+        "Nr": "EE-03",
+        "Name": "Daten vom alten PC übernehmen (Umzugs-Assistent)",
+        "State": "offen",
+        "Test": "–"
+      },
+      {
+        "Nr": "PR-01",
+        "Name": "Projekt mit lesbarem Namen, Dateien und Ordner hinzufügen, Notiz, Umbenennen",
+        "State": "umgesetzt",
+        "Test": "Projektmappe_Ui"
+      },
+      {
+        "Nr": "PR-02",
+        "Name": "Ordnername aus dem Namen (Umlaute, Nummer bei belegtem Namen), nichts außerhalb des Projekts",
+        "State": "umgesetzt",
+        "Test": "SystemPagesTests"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-01_KATALOG.md",
@@ -12259,6 +12919,10 @@
       "Briefseite zeigt den echten Brieftext in der Vorschau",
       "Briefseite zeigt die Auftragsleiste und meldet ehrlich, wenn nichts eingebaut ist",
       "CORE-01: Dateisuche begrenzt Tiefe und Anzahl",
+      "CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an",
+      "CORE-01: Desktop-Symbole – Studio und Kernfunktion gleichzeitig, Reihenfolge wie hinzugefügt, Klick öffnet das Studio",
+      "CORE-01: Desktop-Symbole – unbekannte oder nicht installierte Einträge erscheinen nicht als Symbol, der Desktop bleibt aufgeräumt",
+      "CORE-01: Projekte – lesbarer Name wird Ordnername (Umlaute, belegte Namen mit Nummer), Dateien und Ordner anlegen, Notiz, Umbenennen behält den Ordner, nichts außerhalb des Projekts",
       "CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte",
       "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste",
       "Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
@@ -12339,9 +13003,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 6,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -12416,9 +13080,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -12493,9 +13157,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -12590,9 +13254,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 43,
+    "WarmMs": 50,
     "WindowsOnly": []
   },
   {
@@ -12690,9 +13354,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -12773,9 +13437,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -12851,9 +13515,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -13120,9 +13784,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 26,
     "WindowsOnly": []
   },
   {
@@ -13367,9 +14031,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 37,
     "WindowsOnly": []
   },
   {
@@ -13623,9 +14287,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -13912,7 +14576,7 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
     "WarmMs": 56,
     "WindowsOnly": []
@@ -14122,9 +14786,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 50,
+    "WarmMs": 43,
     "WindowsOnly": []
   },
   {
@@ -14338,7 +15002,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
     "WarmMs": 13,
     "WindowsOnly": []
@@ -14561,9 +15225,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -14775,9 +15439,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -15076,9 +15740,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 110,
+    "WarmMs": 155,
     "WindowsOnly": []
   },
   {
@@ -15293,9 +15957,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -15520,9 +16184,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -15735,9 +16399,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -15812,9 +16476,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -16091,9 +16755,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 25,
     "WindowsOnly": []
   },
   {
@@ -16346,9 +17010,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 25,
+    "WarmMs": 28,
     "WindowsOnly": []
   },
   {
@@ -16429,9 +17093,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 6bd5d2b)",
+    "Version": "0.9.36 (Stand 208ed9e)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 20,
     "WindowsOnly": []
   }
 ]

@@ -1,6 +1,6 @@
 # Skills – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-skills` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-skills` · Stand: 0.9.36 (Stand 208ed9e)
 
 Analyse: [Vorbild-Analyse KI-Team und Skills: Claude-Code-Agenten und -Skills, CrewAI, ChatGPT GPTs (Clean-Room)](../../../docs/claude/vorbilder/ki-team-crewai-gpts.md)
 

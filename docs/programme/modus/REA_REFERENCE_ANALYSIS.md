@@ -1,6 +1,6 @@
 # Betriebsmodus – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: Startmodus wählen (SYS-01) · Bereich: System & Sicherheit · Seite: `modus` · Stand: 0.9.36 (Stand 208ed9e)
 
 Analyse: [Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)](../../../docs/claude/vorbilder/system-einstellungen-windows-gnome.md)
 

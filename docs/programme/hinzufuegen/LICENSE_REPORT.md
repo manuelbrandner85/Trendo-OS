@@ -1,6 +1,6 @@
 # Hinzufügen – Lizenzen
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `hinzufuegen` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `hinzufuegen` · Stand: 0.9.36 (Stand 208ed9e)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

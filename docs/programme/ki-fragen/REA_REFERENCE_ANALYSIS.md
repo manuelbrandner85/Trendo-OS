@@ -1,6 +1,6 @@
 # KI fragen – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `ki-fragen` · Stand: 0.9.36 (Stand 208ed9e)
 
 Analyse: [Vorbild-Analyse KI fragen: Claude-App, ChatGPT, LM Studio (Clean-Room)](../../../docs/claude/vorbilder/ki-fragen-claude-app.md)
 

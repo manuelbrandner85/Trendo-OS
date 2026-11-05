@@ -1,6 +1,6 @@
 # Briefe schreiben – Funktionsmatrix
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 208ed9e)
 
 Quelle: `docs/spec/kataloge/STUDIO-LETTER-01_KATALOG.md`
 

@@ -1,8 +1,8 @@
 # KI-Quellen – Testplan
 
-Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-quellen` · Stand: 0.9.36 (Stand 208ed9e)
 
-33 Tests sprechen dieses Programm an.
+35 Tests sprechen dieses Programm an.
 
 - Beschreibung: README wird beim Aufklappen geladen; geholte Projekte lassen sich mit Rückfrage entfernen
 - CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet
@@ -34,6 +34,8 @@ Studio: Kostenlose KI finden (X-05) · Bereich: KI & Automatik · Seite: `ki-que
 - T-0316: Studio – „✳ Claude“ immer in der Auftragsleiste; das Claude-Projekt des Studios trägt seine Rolle, kein Terminal
 - T-0316: Testmodus – Knöpfe „Claude Code einrichten“, „Mit Claude verbinden“, „Claude Code öffnen“ starten nie ein echtes Programm
 - X-05 UI: Suche findet laufende Quelle, Fragen nutzt die Rückfallkette
+- X-05: Kostenlose Internet-KIs – nur Modelle ohne jeden Preis (auch Bild-Preis), „(free)“ aus dem Namen, Beschreibung gekürzt, größter Kontext zuerst; Liste speichern, nach 24 h veraltet
 - X-05: Nur freie Quellen auf diesem Gerät, Modelle passend zur Hardware
 - X-05: Rückfallkette lässt sich sortieren, abschalten und bleibt gespeichert
+- X-05: Zähler „ins Internet“ – zählt nur den heutigen Tag, am nächsten Tag wieder bei 0, keine Inhalte gespeichert
 - Zusatzprogramme: keine Ordnerwahl mehr – „von GitHub laden“; ohne Internet bleibt ein Merker zum Nachladen beim nächsten Start

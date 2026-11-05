@@ -1,6 +1,6 @@
 # Sauberer Nachbau – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Programme nachbauen (X-10) · Bereich: Entwickeln · Seite: `nachbau` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: Programme nachbauen (X-10) · Bereich: Entwickeln · Seite: `nachbau` · Stand: 0.9.36 (Stand 208ed9e)
 
 Analyse: [Vorbild-Analyse Erweitern: VS Code Erweiterungen, GitHub Desktop, Pinokio, Obsidian-Plugins (Clean-Room)](../../../docs/claude/vorbilder/erweitern-vscode-github-desktop.md)
 

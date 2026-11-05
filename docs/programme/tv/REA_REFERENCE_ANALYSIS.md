@@ -1,6 +1,6 @@
 # TV & Live – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand 208ed9e)
 
 Analyse: [Vorbild-Analyse TV & Live: Kodi, TiviMate, Streaming-Apps (Clean-Room)](../../../docs/claude/vorbilder/tv-kodi-tivimate.md)
 

@@ -1,6 +1,6 @@
 # Dateien – Leistung
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.36 (Stand 208ed9e)
 
 Kein eigener Leistungsmesslauf für dieses Programm. Zielhardware und Budgets sind noch nicht festgelegt – Messung offen.
 

@@ -1,6 +1,6 @@
 # Trendo Musik – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 208ed9e)
 
 Analyse: [Vorbild-Analyse Trendo Musik: Musik-KI-Dienste wie Suno und Udio (Clean-Room)](../../../docs/claude/vorbilder/musik-suno-udio.md)
 

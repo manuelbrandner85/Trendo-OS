@@ -1,6 +1,6 @@
 # Dateien – Architektur
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `dateien` · Stand: 0.9.36 (Stand 208ed9e)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

@@ -1,6 +1,6 @@
 # Selbstheilung – Einbindung in Trendo OS
 
-Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.36 (Stand 6bd5d2b)
+Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.36 (Stand 208ed9e)
 
 - Seite `heilung` im Studio „Einrichten & Reparieren“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein
