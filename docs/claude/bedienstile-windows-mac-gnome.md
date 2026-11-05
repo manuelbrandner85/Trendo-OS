@@ -60,7 +60,7 @@
 - ✓ Mehrfachauswahl wie im System: Umschalt-Klick Bereich, Strg-Klick (Mac ⌘) dazu/weg, Auswahlrahmen mit der Maus, Strg/⌘+A, Klick ins Leere hebt auf; Kopieren, Einfügen, Ziehen und Papierkorb wirken auf alle gewählten
 - ◐ Natürliches Scrollen und Systemgesten kommen vom echten Betriebssystem, nicht von Trendo
 - ✓ Registerkarten: Windows-Leiste immer sichtbar mit „+“, Finder- und GNOME-Tabs ab zwei, je Karte eigener Verlauf; Strg/⌘+T, Strg/⌘+W (erst Karte, dann Fenster), Strg+Bild↓/↑ bzw. ⌘⇧]/[, Mittelklick auf Ordner öffnet, auf Karte schließt, Kontextmenü „In neuer Registerkarte öffnen“
-- ◐ Windows-Registerkarten sitzen unter der Titelzeile statt in ihr; Strg+Tab wechselt weiter die Fenster (Strg+Bild↓ wechselt die Karte)
+- ✓ Windows-Explorer: Registerkarten sitzen in der Titelleiste (Fensterknöpfe rechts, ziehbar, Doppelklick maximiert); Strg+Tab wechselt im Dateimanager die Karte (sonst die Fenster); Dateimanager ohne Studio-KI-Zeile wie im Original
 
 ## Tests
 OsStyles_Ui (10), OsBehaviorTests (4), StyleAndBrand_Ui.
