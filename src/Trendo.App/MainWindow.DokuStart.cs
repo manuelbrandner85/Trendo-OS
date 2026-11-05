@@ -37,6 +37,9 @@ public partial class MainWindow
         _ => (Mdi.Folder, "#ECEFF1", "#90A4AE"),
     };
 
+    string _dsFind = "";
+    public Trendo.Core.Office.DocPins DocPins => new(_core.DataRoot);
+
     private Control DokuStartView()
     {
         const string V = "doku-start";
@@ -94,14 +97,17 @@ public partial class MainWindow
         var docs = UserFolder(Environment.SpecialFolder.MyDocuments);
         var since = _dsDays == 0 ? DateTime.MinValue : DateTime.Today.AddDays(1 - _dsDays);
         var files = FileShelf.Recent(_opt.Isolated ? [ProjectsRoot] : [ProjectsRoot, docs], FileShelf.Office, 200)
-            .Where(f => (_dsType == "Alle" || FileShelf.Kind(f.FullName) == _dsType) && f.LastWriteTime >= since).Take(40).ToList();
+            .Where(f => (_dsType == "Alle" || FileShelf.Kind(f.FullName) == _dsType) && f.LastWriteTime >= since && Trendo.Core.Office.DocPins.Matches(f.Name, _dsFind)).Take(40).ToList();
         var grid = new WrapPanel { Name = "doku-files" };
+        var pinGrid = new WrapPanel { Name = "doku-pinned" };
+        var pins = DocPins; var pinned = pins.All();
         var i = 0;
-        foreach (var f in files)
+        // Kachel mit ★ zum Anheften wie in Microsoft 365
+        Control Tile(FileInfo f, WrapPanel into, string prefix, int n)
         {
             var kind = FileShelf.Kind(f.FullName); var (icon, c1, c2) = KindLook(kind);
             var path = f.FullName;
-            var b = new Button { Name = $"doku-file-{i++}", Width = 172, Height = 132, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(0), CornerRadius = new CornerRadius(10), Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1),
+            var b = new Button { Name = $"{prefix}-{n}", Width = 172, Height = 132, Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(0), CornerRadius = new CornerRadius(10), Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1),
                 HorizontalContentAlignment = HorizontalAlignment.Stretch, VerticalContentAlignment = VerticalAlignment.Stretch,
                 Content = new Grid { RowDefinitions = new RowDefinitions("*,Auto"), Children = {
                     new Border { Background = new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(1, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse(c1), 0), new GradientStop(Color.Parse(c2), 1) } },
@@ -111,13 +117,25 @@ public partial class MainWindow
                         new TextBlock { Text = $"{kind} · {f.LastWriteTime:dd.MM.yyyy HH:mm}", Foreground = Muted, FontSize = 10 } } }) } } };
             ToolTip.SetTip(b, path);
             b.Click += (_, _) => Try(V, () => OpenOfficeDoc(path));
-            grid.Children.Add(b);
+            var on = pinned.Any(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase));
+            var star = new Button { Name = $"{prefix}-pin-{n}", Content = on ? "★" : "☆", FontSize = 13, Padding = new Thickness(6, 1), Margin = new Thickness(0, 4, 12, 0), CornerRadius = new CornerRadius(10),
+                Background = Brush.Parse("#66000000"), Foreground = on ? GoldText() : Brushes.White, BorderThickness = new Thickness(0), HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top };
+            ToolTip.SetTip(star, on ? "Lösen" : "Anheften – steht dann oben unter „Angeheftet“");
+            star.Click += (_, _) => Try(V, () => { pins.Toggle(path); Show(V); });
+            return new Panel { Children = { b, star } };
         }
-        if (i == 0) grid.Children.Add(P(_dsType == "Alle" && _dsDays == 0 ? "Noch keine Dokumente – leg oben eins an." : "Keine Dokumente für diesen Filter.", Text));
+        foreach (var f in files) { grid.Children.Add(Tile(f, grid, "doku-file", i)); i++; }
+        var pi = 0;
+        foreach (var p in pinned.Where(p => Trendo.Core.Office.DocPins.Matches(Path.GetFileName(p), _dsFind))) { pinGrid.Children.Add(Tile(new FileInfo(p), pinGrid, "doku-pinned", pi)); pi++; }
+        if (i == 0) grid.Children.Add(P(_dsFind.Length > 0 ? $"Nichts gefunden für „{_dsFind}“." : _dsType == "Alle" && _dsDays == 0 ? "Noch keine Dokumente – leg oben eins an." : "Keine Dokumente für diesen Filter.", Text));
+        var find = new TextBox { Name = "doku-find", Text = _dsFind, PlaceholderText = "🔎  Dokumente suchen …", Width = 320, HorizontalAlignment = HorizontalAlignment.Left };
+        find.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { _dsFind = (find.Text ?? "").Trim(); Show(V); } };
 
         return DokuPage("Texte & Tabellen", new StackPanel { Spacing = 10, Children = {
             apps,
             H("Vorlagen", 15), tpl,
+            find,
+            pinGrid.Children.Count > 0 ? H("Angeheftet", 15) : new Border(), pinGrid,
             H("Zuletzt benutzt", 15), filters, grid } });
 
         static Control Row1(Control c) { Grid.SetRow(c, 1); return c; }

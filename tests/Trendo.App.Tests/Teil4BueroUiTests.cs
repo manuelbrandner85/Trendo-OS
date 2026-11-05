@@ -1,3 +1,4 @@
+using Avalonia.LogicalTree;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -30,14 +31,50 @@ public class Teil4BueroUiTests
         File.WriteAllText(Path.Combine(docs, "notiz.txt"), "Hallo");
         w.Show("doku-start"); Pump();
         w.Find<Button>("doku-type-tabelle").Press(); Pump();
-        var tiles = w.Find<WrapPanel>("doku-files").Children.OfType<Button>().ToList();
+        var tiles = DocTiles(w, "doku-file");
         Assert.Single(tiles);
         tiles[0].Press(); Pump();
         Assert.Equal("tabelle", w.CurrentView);
         w.Show("doku-start"); Pump();
         w.Find<Button>("doku-type-alle").Press(); Pump();
-        Assert.Equal(2, w.Find<WrapPanel>("doku-files").Children.OfType<Button>().Count());
+        Assert.Equal(2, DocTiles(w, "doku-file").Count);
         w.Close();
+    }
+
+    static List<Button> DocTiles(Window w, string prefix) => w.GetLogicalDescendants().OfType<Button>().Where(b => b.Name is { } n && System.Text.RegularExpressions.Regex.IsMatch(n, "^" + prefix + @"-\d+$")).ToList();
+
+    [AvaloniaFact(DisplayName = "SYS-10 wie Microsoft 365: Dokumente suchen (alle Wörter im Namen), Anheften mit ★ zeigt sie oben unter „Angeheftet“, Lösen nimmt sie weg; gelöschte Datei verschwindet")]
+    public void Doku_search_and_pins()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            var docs = Path.Combine(w.ProjectsRootForTests, "Dokumente"); Directory.CreateDirectory(docs);
+            var a = Path.Combine(docs, "Angebot Muster GmbH.txt"); File.WriteAllText(a, "x");
+            File.WriteAllText(Path.Combine(docs, "Rechnung Muster.txt"), "x"); File.WriteAllText(Path.Combine(docs, "Einkauf.csv"), "A;B");
+            w.Show("doku-start"); Pump();
+            Assert.Equal(3, DocTiles(w, "doku-file").Count);
+            var find = w.Find<TextBox>("doku-find"); find.Text = "muster angebot";
+            find.RaiseEvent(new Avalonia.Input.KeyEventArgs { RoutedEvent = Avalonia.Input.InputElement.KeyDownEvent, Key = Avalonia.Input.Key.Enter }); Pump();
+            Assert.Single(DocTiles(w, "doku-file"));
+            find = w.Find<TextBox>("doku-find"); find.Text = "gibtsnicht";
+            find.RaiseEvent(new Avalonia.Input.KeyEventArgs { RoutedEvent = Avalonia.Input.InputElement.KeyDownEvent, Key = Avalonia.Input.Key.Enter }); Pump();
+            Assert.Contains(w.GetLogicalTexts(), t => t.Contains("Nichts gefunden für „gibtsnicht“"));
+            find = w.Find<TextBox>("doku-find"); find.Text = "";
+            find.RaiseEvent(new Avalonia.Input.KeyEventArgs { RoutedEvent = Avalonia.Input.InputElement.KeyDownEvent, Key = Avalonia.Input.Key.Enter }); Pump();
+            Assert.Empty(DocTiles(w, "doku-pinned"));
+            var idx = DocTiles(w, "doku-file").FindIndex(b => ToolTip.GetTip(b) as string == a);
+            w.Find<Button>($"doku-file-pin-{idx}").Press(); Pump();
+            Assert.Single(DocTiles(w, "doku-pinned")); Assert.True(w.DocPins.IsPinned(a));
+            Assert.Contains(w.GetLogicalTexts(), t => t == "Angeheftet");
+            w.Find<Button>("doku-pinned-pin-0").Press(); Pump();
+            Assert.Empty(DocTiles(w, "doku-pinned")); Assert.False(w.DocPins.IsPinned(a));
+            w.DocPins.Toggle(a); File.Delete(a); w.Show("doku-start"); Pump();
+            Assert.Empty(DocTiles(w, "doku-pinned")); // gelöschte Datei fällt heraus
+            Assert.Throws<FileNotFoundException>(() => w.DocPins.Toggle(Path.Combine(docs, "weg.txt")));
+            Assert.True(Trendo.Core.Office.DocPins.Matches("Angebot Muster GmbH.docx", "gmbh ANGEBOT")); Assert.False(Trendo.Core.Office.DocPins.Matches("Angebot.docx", "angebot rechnung"));
+        }
+        finally { w.Close(); }
     }
 
     [AvaloniaFact(DisplayName = "SYS-09 U1/F2: Ordner · Liste · Lesebereich; Termin aus der E-Mail erkennen und eintragen")]
