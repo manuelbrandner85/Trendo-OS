@@ -47,4 +47,36 @@ public class Kasse_Ui
         // Online-Bereich bleibt erreichbar
         Click("sell-tab-online"); Assert.NotNull(w.Find<WrapPanel>("sell-shop"));
     }
+    [AvaloniaFact(DisplayName = "Kasse wie SumUp/Square: Strichcode scannen legt den Artikel in den Korb, Rabatt 10 % senkt die Summe, Auswertung zeigt Umsatz, Bestseller und Stoßzeit; Artikelnummer mit falscher Prüfziffer abgelehnt")]
+    public void Ui_scan_discount_stats()
+    {
+        var (w, _, _) = Ui.Open(); w.Width = 1600; w.Height = 1100;
+        try
+        {
+            void Click(string name) { var b = V<Control>(w, name); b.BringIntoView(); Settle(); RealClick(w, V<Control>(w, name)); Settle(); }
+            void Enter(string name, string text) { var t = w.Find<TextBox>(name); t.Text = text; t.RaiseEvent(new Avalonia.Input.KeyEventArgs { RoutedEvent = Avalonia.Input.InputElement.KeyDownEvent, Key = Avalonia.Input.Key.Enter }); Settle(); }
+            var k = w.Kasse; k.Shop.Products.Add(new Product("Kaffee", "", 0, 10.0, 20, 0, 0, "4006381333931")); k.Shop.Products.Add(new Product("Tee", "", 0, 4.0, 20, 0, 0));
+            w.Show("verkaufen"); Settle();
+            Enter("kasse-find", "4006381333931"); Enter("kasse-find", "4006381333931");
+            Assert.Equal([("Kaffee", 2m)], w.KasseCart); Assert.Equal("", w.Find<TextBox>("kasse-find").Text);
+            Enter("kasse-discount", "10 %");
+            Assert.Equal("18,00 €", w.Find<TextBlock>("kasse-total").Text); Assert.Contains("2,00", w.Find<TextBlock>("kasse-discount-info").Text);
+            Enter("kasse-discount", "zehn"); Assert.Contains("Rabatt bitte", w.Find<TextBlock>("kasse-discount-info").Text);
+            Enter("kasse-discount", "10 %");
+            Click("kasse-pay-karte"); Click("kasse-checkout");
+            Assert.Equal(18m, w.KasseLast!.Gross);
+            // Auswertung
+            Click("sell-tab-auswertung");
+            Assert.Contains("18,00", string.Join("|", w.GetLogicalTexts()));
+            Assert.NotNull(w.TryFind<StackPanel>("stat-top")); Assert.Contains($"Stoßzeit: {DateTime.Now.Hour}–", w.Find<TextBlock>("stat-peak").Text);
+            Click("stat-days-7"); Assert.Equal(7, w.KasseStatDays); Assert.Equal(1, w.KasseReport().Bons); Assert.Equal(2m, w.KasseReport().Discounts);
+            // Artikelnummer beim Anlegen
+            Click("sell-tab-online");
+            w.Find<TextBox>("sell-prod-name").Text = "Kakao"; w.Find<TextBox>("sell-prod-price").Text = "3"; w.Find<TextBox>("sell-prod-sku").Text = "4006381333932";
+            Click("sell-prod-add"); Assert.DoesNotContain(k.Shop.Products.All(), p => p.Name == "Kakao");
+            w.Find<TextBox>("sell-prod-name").Text = "Kakao"; w.Find<TextBox>("sell-prod-price").Text = "3"; w.Find<TextBox>("sell-prod-sku").Text = "96385074"; Click("sell-prod-add");
+            Assert.Equal("96385074", k.Shop.Products.All().Single(p => p.Name == "Kakao").Sku);
+        }
+        finally { w.Close(); }
+    }
 }

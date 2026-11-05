@@ -7,7 +7,8 @@ namespace Trendo.Core;
 public sealed record Member(string Name, string Email, string Plan, string Team, string Role, DateOnly Since, bool Active = true);
 public sealed record PlanTier(string Name, double PriceMonth);
 public sealed record BizContact(string Name, string Company, string Email, string Stage, DateOnly? Next, double Value, string Notes = "", string Address = "");
-public sealed record Product(string Name, string Supplier, double Cost, double Price, int Stock, int LeadDays, double DailySales);
+/// <remarks><see cref="Sku"/>: Artikelnummer oder EAN-Strichcode (seit 04.11.2026, für Scanner an der Kasse).</remarks>
+public sealed record Product(string Name, string Supplier, double Cost, double Price, int Stock, int LeadDays, double DailySales, string Sku = "");
 public sealed record Ticket(string Title, string Customer, string Priority, DateTimeOffset Created, string State = "offen", string Answer = "");
 public sealed record DayStats(DateOnly Date, int Visits, int Signups, int Sales);
 

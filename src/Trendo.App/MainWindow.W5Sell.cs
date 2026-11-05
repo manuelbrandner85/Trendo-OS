@@ -33,6 +33,7 @@ public partial class MainWindow
     {
         const string V = "verkaufen";
         if (_sellTab == "kasse") return BusinessPage("Verkaufen", new StackPanel { Spacing = 10, Children = { IdeaHeader(V), SellTabs(), KasseView() } });
+        if (_sellTab == "auswertung") return BusinessPage("Verkaufen", new StackPanel { Spacing = 10, Children = { IdeaHeader(V), SellTabs(), SalesStatsView() } });
         var shop = BizShop; var today = DateOnly.FromDateTime(DateTime.Today);
         var (month, year, customers, open) = shop.Figures(today);
         var y = Finance.Year(Money.All(), today.Year);
@@ -124,7 +125,7 @@ public partial class MainWindow
         var custList = new WrapPanel();
         foreach (var c in contacts.Take(30)) custList.Children.Add(new Border { Margin = new Thickness(0, 0, 6, 6), Padding = new Thickness(10, 6), CornerRadius = new CornerRadius(10), Background = TileBg, BorderBrush = Edge, BorderThickness = new Thickness(1),
             Child = new StackPanel { Children = { new TextBlock { Text = c.Name, Foreground = Text, FontSize = 12.5 }, P($"{c.Stage}{(c.Address.Length > 0 ? " · " + c.Address : "")}", null, 10.5) } } });
-        var pn = Field("sell-prod-name", "Artikel", 180); var pp = Field("sell-prod-price", "Preis netto €", 110); var ps = Field("sell-prod-stock", "Bestand", 80, "0");
+        var pn = Field("sell-prod-name", "Artikel", 180); var pp = Field("sell-prod-price", "Preis netto €", 110); var ps = Field("sell-prod-stock", "Bestand", 80, "0"); var psku = Field("sell-prod-sku", "Artikelnr./EAN", 150);
         sp.Children.Add(Card(Section("Kunden", "Dieselbe Liste wie unter „Betrieb“.",
             Line(cn, ca, ce, Act("sell-cust-add", "Kunde anlegen", () => Try(V, () =>
             {
@@ -140,11 +141,12 @@ public partial class MainWindow
                     new TextBlock { Text = (p.Stock > 0 ? $"{p.Stock} vorrätig" : "nicht vorrätig") + (shop.Reserved(p.Name) is var rs && rs > 0 ? $" · {rs:0.##} vorgemerkt" : ""), Foreground = Brush.Parse(p.Stock > 0 ? "#167A45" : "#B2361F"), FontSize = 11 } } } });
         if (products.Count == 0) shopGrid.Children.Add(P("Noch keine Artikel.", Text));
         sp.Children.Add(Card(Section("Artikel und Webshop-Vorschau", "So sähe dein Shop aus. „Als Webseite speichern“ legt eine HTML-Seite an – ohne Bezahlfunktion und ohne fremde Dienste.",
-            Line(pn, pp, ps, Act("sell-prod-add", "Artikel anlegen", () => Try(V, () =>
+            Line(pn, pp, ps, psku, Act("sell-prod-add", "Artikel anlegen", () => Try(V, () =>
             {
                 var name = Need(pn, "den Artikelnamen"); if (products.Any(x => x.Name == name)) throw new ArgumentException("Diesen Artikel gibt es schon.");
                 var price = (double)Finance.ParseAmount(Need(pp, "den Preis")); if (price < 0) throw new ArgumentException("Der Preis darf nicht negativ sein.");
-                shop.Products.Add(new Product(name, "", 0, price, int.TryParse(ps.Text, out var st) ? Math.Max(0, st) : 0, 0, 0)); Say($"Artikel „{name}“ angelegt.", V);
+                var sku = SalesStats.CheckSku(psku.Text ?? ""); if (sku.Length > 0 && products.Any(x => string.Equals(x.Sku, sku, StringComparison.OrdinalIgnoreCase))) throw new ArgumentException($"Die Artikelnummer „{sku}“ hat schon ein anderer Artikel.");
+                shop.Products.Add(new Product(name, "", 0, price, int.TryParse(ps.Text, out var st) ? Math.Max(0, st) : 0, 0, 0, sku)); Say($"Artikel „{name}“ angelegt.", V);
             })), Act("sell-shop-save", "Als Webseite speichern", () => Try(V, () =>
             {
                 var f = Path.Combine(BusinessFolder, DevStudio.SafeName(BizIdea.Name) + "-Shop.html");

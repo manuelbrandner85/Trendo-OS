@@ -11,7 +11,17 @@ namespace Trendo.App;
 public partial class MainWindow
 {
     public CashRegister Kasse => new(_core.DataRoot, BizIdea.Id);
-    string _sellTab = "kasse", _kassePay = "bar", _kasseGiven = "", _kasseFind = ""; string? _kasseCancelAsk;
+    string _sellTab = "kasse", _kassePay = "bar", _kasseGiven = "", _kasseFind = "", _kasseDiscount = ""; string? _kasseCancelAsk;
+    int _statDays = 30;
+
+    /// <summary>Rabatt-Eingabe lesen: „10 %“ = Prozent, „5“ oder „5 €“ = Betrag.</summary>
+    public static (decimal Percent, decimal Euro) ParseDiscount(string text)
+    {
+        var t = text.Trim(); if (t.Length == 0) return (0, 0);
+        var pct = t.EndsWith('%'); var num = t.TrimEnd('%', '€', ' ').Trim();
+        if (!decimal.TryParse(num, System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.GetCultureInfo("de-DE"), out var v) || v < 0) throw new ArgumentException("Rabatt bitte als „10 %“ oder „5 €“.");
+        return pct ? (v, 0) : (0, v);
+    }
     readonly List<(string Product, decimal Qty)> _cart = [];
     CashSale? _kasseLast;
     public IReadOnlyList<(string Product, decimal Qty)> KasseCart => _cart;
@@ -22,7 +32,7 @@ public partial class MainWindow
     Control SellTabs()
     {
         var bar = new WrapPanel { Name = "sell-tabs" };
-        foreach (var (id, label) in new[] { ("kasse", "🧾 Kasse"), ("online", "🛒 Online & Artikel") })
+        foreach (var (id, label) in new[] { ("kasse", "🧾 Kasse"), ("online", "🛒 Online & Artikel"), ("auswertung", "📊 Auswertung") })
         { var b = Act("sell-tab-" + id, label, () => { _sellTab = id; Show("verkaufen"); }, _sellTab == id); b.Margin = new Thickness(0, 0, 6, 6); bar.Children.Add(b); }
         return bar;
     }
@@ -41,9 +51,10 @@ public partial class MainWindow
         var given = _kassePay == "bar" ? (decimal.TryParse(_kasseGiven.Replace("€", "").Trim(), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.GetCultureInfo("de-DE"), out var g) ? g : 0m) : 0m;
         try
         {
-            var s = Kasse.Checkout(_cart, _kassePay, given, DateTime.Now, Money, _settings.SmallBusiness);
+            var (dp, de) = ParseDiscount(_kasseDiscount);
+            var s = Kasse.Checkout(_cart, _kassePay, given, DateTime.Now, Money, _settings.SmallBusiness, dp, de);
             _core.Audit.Append(Principal.LocalOwner.Name, "kasse.verkauf", $"{s.No} {s.Gross:0.00}");
-            _cart.Clear(); _kasseGiven = ""; _kasseLast = s; BudgetWarn(); return s;
+            _cart.Clear(); _kasseGiven = ""; _kasseDiscount = ""; _kasseLast = s; BudgetWarn(); return s;
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or IOException) { Say(ex.Message, "verkaufen"); return null; }
     }
@@ -56,7 +67,9 @@ public partial class MainWindow
         var kasse = Kasse; var products = kasse.Shop.Products.All(); var small = _settings.SmallBusiness;
         // Links: Artikel
         var find = new TextBox { Name = "kasse-find", Text = _kasseFind, PlaceholderText = "🔎  Artikel suchen …", Width = 260, HorizontalAlignment = HorizontalAlignment.Left, CornerRadius = new CornerRadius(8) };
-        find.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { _kasseFind = find.Text ?? ""; Show(V); } };
+        // Scanner oder Artikelnummer: genauer Treffer landet sofort im Korb (wie an jeder Ladenkasse), sonst wird gefiltert
+        find.KeyDown += (_, e) => { if (e.Key != Avalonia.Input.Key.Enter) return; var hit = SalesStats.Find(products, find.Text ?? ""); if (hit is not null) { CartAdd(hit.Name, 1); _kasseFind = ""; } else _kasseFind = find.Text ?? ""; Show(V); };
+        find.PlaceholderText = "🔎  Artikel suchen oder Strichcode scannen …";
         var tiles = new WrapPanel { Name = "kasse-articles" };
         var shown = products.Where(p => _kasseFind.Length == 0 || p.Name.Contains(_kasseFind, StringComparison.CurrentCultureIgnoreCase)).ToList();
         for (var i = 0; i < shown.Count; i++)
@@ -92,7 +105,19 @@ public partial class MainWindow
                 Pos(Act($"kasse-del-{i}", "✕", () => { CartAdd(pn, -1000); Show(V); }), 5) } });
         }
         if (_cart.Count == 0) cart.Children.Add(P(_kasseLast is null ? "Artikel links antippen – sie landen hier." : "Bereit für den nächsten Verkauf.", Muted, 12.5));
+        // Rabatt wie bei SumUp/Square: Prozent oder Betrag auf den ganzen Bon
+        var discount = 0m; string? discountErr = null;
+        try { var (dp, de) = ParseDiscount(_kasseDiscount); discount = -(CashRegister.DiscountLine(total, dp, de)?.Sum ?? 0); }
+        catch (ArgumentException ex) { discountErr = ex.Message; }
+        total -= discount;
         var pay = new StackPanel { Spacing = 8 };
+        if (_cart.Count > 0)
+        {
+            var disc = new TextBox { Name = "kasse-discount", Text = _kasseDiscount, PlaceholderText = "Rabatt: 10 % oder 5 €", Width = 170 };
+            disc.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) { _kasseDiscount = disc.Text ?? ""; Show(V); } };
+            disc.LostFocus += (_, _) => { if ((disc.Text ?? "") != _kasseDiscount) { _kasseDiscount = disc.Text ?? ""; Show(V); } };
+            pay.Children.Add(new WrapPanel { Children = { disc, new TextBlock { Name = "kasse-discount-info", Text = discountErr ?? (discount > 0 ? $"  − {Eu(discount)} €" : ""), Foreground = discountErr is null ? GoldText() : Brush.Parse("#F87171"), FontSize = 13, VerticalAlignment = VerticalAlignment.Center } } });
+        }
         pay.Children.Add(new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = "Summe", Foreground = Text, FontSize = 18, VerticalAlignment = VerticalAlignment.Center },
             Pos(new TextBlock { Name = "kasse-total", Text = Eu(total) + " €", Foreground = GoldText(), FontSize = 30, FontWeight = FontWeight.Bold }, 1) } });
         if (!small && total > 0) pay.Children.Add(new TextBlock { Text = $"enthält {Eu(Math.Round(total - total / (1 + LegalRates.VatStandard / 100m), 2))} € MwSt ({LegalRates.VatStandard:0} %)", Foreground = Muted, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Right });

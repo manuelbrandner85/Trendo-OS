@@ -7,6 +7,8 @@ namespace Trendo.Core;
 /// <summary>Eine Bon-Zeile: Artikel, Menge, Preis brutto (zum Zeitpunkt des Verkaufs).</summary>
 public sealed record CashLine(string Product, decimal Qty, decimal PriceGross)
 {
+    /// <summary>Rabattzeile („Rabatt …“, negativer Betrag) – kein Artikel, kein Bestand.</summary>
+    public bool IsDiscount => Product.StartsWith("Rabatt", StringComparison.Ordinal) && PriceGross < 0;
     public decimal Sum => Math.Round(Qty * PriceGross, 2);
 }
 
@@ -32,7 +34,17 @@ public sealed class CashRegister(string dataRoot, string ideaId)
     public static decimal GrossPrice(Product p, bool smallBusiness) => smallBusiness ? (decimal)p.Price : Math.Round((decimal)p.Price * (1 + LegalRates.VatStandard / 100m), 2);
 
     /// <summary>Kassieren: prüft Bestand und (bei bar) den gegebenen Betrag, senkt den Bestand, bucht die Einnahme und legt den Bon an.</summary>
-    public CashSale Checkout(IReadOnlyList<(string Product, decimal Qty)> cart, string payment, decimal given, DateTime now, Ledger ledger, bool smallBusiness)
+    /// <summary>Rabatt wie bei SumUp/Square: Prozent auf den ganzen Bon oder fester Betrag (nicht beides, nie mehr als die Summe).</summary>
+    public static CashLine? DiscountLine(decimal gross, decimal percent, decimal euro)
+    {
+        if (percent < 0 || percent > 100) throw new ArgumentException("Rabatt bitte zwischen 0 und 100 %.");
+        if (euro < 0) throw new ArgumentException("Rabatt bitte als positiven Betrag.");
+        if (percent > 0 && euro > 0) throw new ArgumentException("Bitte entweder Prozent oder Euro als Rabatt.");
+        var d = percent > 0 ? Math.Round(gross * percent / 100m, 2) : Math.Min(euro, gross);
+        return d <= 0 ? null : new CashLine(percent > 0 ? $"Rabatt {percent:0.##} %" : "Rabatt", 1, -d);
+    }
+
+    public CashSale Checkout(IReadOnlyList<(string Product, decimal Qty)> cart, string payment, decimal given, DateTime now, Ledger ledger, bool smallBusiness, decimal discountPercent = 0, decimal discountEuro = 0)
     {
         if (cart.Count == 0 || cart.Any(c => c.Qty <= 0)) throw new ArgumentException("Der Warenkorb ist leer.");
         if (payment is not ("bar" or "karte")) throw new ArgumentException("Bitte bar oder Karte wählen.");
@@ -44,13 +56,14 @@ public sealed class CashRegister(string dataRoot, string ideaId)
             if (qty > free) throw new InvalidOperationException(free <= 0 ? $"„{p.Name}“ ist nicht mehr vorrätig." : $"Von „{p.Name}“ sind nur noch {free:0.##} vorrätig.");
             lines.Add(new(p.Name, qty, GrossPrice(p, smallBusiness)));
         }
+        if (DiscountLine(lines.Sum(l => l.Sum), discountPercent, discountEuro) is { } disc) lines.Add(disc);
         var gross = lines.Sum(l => l.Sum);
         if (payment == "bar" && given < gross) throw new ArgumentException($"Es fehlen noch {(gross - given).ToString("N2", De)} €.");
         var today = DateOnly.FromDateTime(now); var n = Sales.All().Count(s => DateOnly.FromDateTime(s.At) == today) + 1;
         var sale = new CashSale(Guid.NewGuid().ToString("N")[..8], $"BON-{now:yyyyMMdd}-{n:0000}", now, lines, payment, payment == "bar" ? given : gross, smallBusiness ? 0 : LegalRates.VatStandard);
         for (var i = 0; i < prods.Count; i++) if (lines.FirstOrDefault(l => l.Product == prods[i].Name) is { } l) prods[i] = prods[i] with { Stock = Math.Max(0, prods[i].Stock - (int)Math.Ceiling(l.Qty)) };
         Shop.Products.Save(prods);
-        foreach (var l in lines) Shop.Moves.Add(new(Guid.NewGuid().ToString("N")[..8], today, l.Product, -l.Qty, sale.Id, "Kasse"));
+        foreach (var l in lines.Where(x => !x.IsDiscount)) Shop.Moves.Add(new(Guid.NewGuid().ToString("N")[..8], today, l.Product, -l.Qty, sale.Id, "Kasse"));
         ledger.Add(new(today, $"Kasse {sale.No} ({(payment == "bar" ? "bar" : "Karte")})", gross, "Einnahmen", sale.VatRate));
         Sales.Add(sale);
         return sale;
@@ -65,7 +78,7 @@ public sealed class CashRegister(string dataRoot, string ideaId)
         var prods = Shop.Products.All();
         for (var k = 0; k < prods.Count; k++) if (s.Lines.FirstOrDefault(l => l.Product == prods[k].Name) is { } l) prods[k] = prods[k] with { Stock = prods[k].Stock + (int)Math.Ceiling(l.Qty) };
         Shop.Products.Save(prods);
-        foreach (var l in s.Lines) Shop.Moves.Add(new(Guid.NewGuid().ToString("N")[..8], DateOnly.FromDateTime(now), l.Product, l.Qty, s.Id, "Kassen-Storno"));
+        foreach (var l in s.Lines.Where(x => !x.IsDiscount)) Shop.Moves.Add(new(Guid.NewGuid().ToString("N")[..8], DateOnly.FromDateTime(now), l.Product, l.Qty, s.Id, "Kassen-Storno"));
         ledger.Add(new(DateOnly.FromDateTime(now), $"Storno Kasse {s.No}", -s.Gross, "Einnahmen", s.VatRate));
         all[i] = s with { Cancelled = true }; Sales.Save(all);
         return all[i];
@@ -76,7 +89,7 @@ public sealed class CashRegister(string dataRoot, string ideaId)
     public CashDay Day(DateOnly day)
     {
         var all = Of(day); var ok = all.Where(s => !s.Cancelled).ToList();
-        var by = ok.SelectMany(s => s.Lines).GroupBy(l => l.Product).Select(g => (g.Key, g.Sum(l => l.Qty), g.Sum(l => l.Sum))).OrderByDescending(x => x.Item3).ToList();
+        var by = ok.SelectMany(s => s.Lines).Where(l => !l.IsDiscount).GroupBy(l => l.Product).Select(g => (g.Key, g.Sum(l => l.Qty), g.Sum(l => l.Sum))).OrderByDescending(x => x.Item3).ToList();
         return new(day, ok.Count, ok.Sum(s => s.Gross), ok.Sum(s => s.Vat), ok.Where(s => s.Payment == "bar").Sum(s => s.Gross), ok.Where(s => s.Payment == "karte").Sum(s => s.Gross), all.Count(s => s.Cancelled), by);
     }
 
