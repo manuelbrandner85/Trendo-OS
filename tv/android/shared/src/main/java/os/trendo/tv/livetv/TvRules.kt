@@ -22,24 +22,50 @@ object TvRules {
     )
     val germanSpeaking = setOf("de", "at", "ch")
 
-    fun isCountry(text: String, code: String): Boolean {
-        val keys = countries[code] ?: return false
-        val t = text.lowercase()
-        return keys.any { k ->
-            if (k.length <= 3 && k.all { it in 'a'..'z' }) Regex("""(^|[^a-z])${Regex.escape(k)}([^a-z]|$)""").containsMatchIn(t) else t.contains(k)
-        }
+    /** Suchmuster einmal vorab bauen (nicht für jeden Sender neu – wichtig bei 10.000+ Sendern). */
+    private val countryPatterns: Map<String, List<Any>> = countries.mapValues { (_, keys) ->
+        keys.map { k -> if (k.length <= 3 && k.all { it in 'a'..'z' }) Regex("""(^|[^a-z])${Regex.escape(k)}([^a-z]|$)""") else k }
     }
+
+    fun isCountry(text: String, code: String): Boolean {
+        val pats = countryPatterns[code] ?: return false
+        val t = text.lowercase()
+        return pats.any { p -> if (p is Regex) p.containsMatchIn(t) else t.contains(p as String) }
+    }
+
+    /** Ergebnisse je Gruppenname merken (es gibt nur wenige hundert verschiedene). */
+    private val countryMemo = java.util.concurrent.ConcurrentHashMap<String, String>()
+    private const val NONE = "-"
+
+    /** Kapitälchen und andere Zierbuchstaben (z. B. „ᴅᴇ • SKY") in normale Buchstaben umwandeln. */
+    private val smallCaps = mapOf('ᴀ' to 'a', 'ʙ' to 'b', 'ᴄ' to 'c', 'ᴅ' to 'd', 'ᴇ' to 'e', 'ꜰ' to 'f', 'ɢ' to 'g', 'ʜ' to 'h', 'ɪ' to 'i', 'ᴊ' to 'j',
+        'ᴋ' to 'k', 'ʟ' to 'l', 'ᴍ' to 'm', 'ɴ' to 'n', 'ᴏ' to 'o', 'ᴘ' to 'p', 'ǫ' to 'q', 'ʀ' to 'r', 'ꜱ' to 's', 'ᴛ' to 't', 'ᴜ' to 'u', 'ᴠ' to 'v',
+        'ᴡ' to 'w', 'ʏ' to 'y', 'ᴢ' to 'z')
+
+    fun plain(s: String): String = buildString(s.length) { s.forEach { ch -> append(smallCaps[ch] ?: ch) } }
+
+    /** Länderkürzel, wie Anbieter sie nutzen → Sprachkennung. */
+    private val prefixMap = mapOf("ger" to "de", "deu" to "de", "gb" to "uk", "en" to "uk", "eng" to "uk", "usa" to "us", "tur" to "tr", "kktc" to "tr",
+        "ita" to "it", "fra" to "fr", "esp" to "es", "alb" to "al", "cro" to "exyu", "bih" to "exyu", "slo" to "exyu", "mk" to "exyu", "srb" to "exyu",
+        "crna" to "exyu", "gre" to "gr", "por" to "pt", "rom" to "ro", "bul" to "bg", "pol" to "pl", "ned" to "nl", "aze" to "az")
+    private val notCountry = setOf("xxx", "vod", "hd", "fhd", "uhd", "qhd", "4k", "the", "vip", "ppv", "golf", "raw", "hevc", "sd", "live", "new", "top", "best")
 
     fun countryOf(category: String): String? {
-        countryPrefix.find(category)?.let { m ->
-            var t = m.groupValues[1].lowercase()
-            t = when (t) { "ger", "deu" -> "de"; "gb", "en", "eng" -> "uk"; "usa" -> "us"; "tur" -> "tr"; "ita" -> "it"; "fra" -> "fr"; "esp" -> "es"; else -> t }
-            if (t !in setOf("xxx", "vod", "hd", "fhd", "uhd", "4k", "the")) return t
-        }
-        return countries.keys.firstOrNull { isCountry(category, it) }
+        countryMemo[category]?.let { return if (it == NONE) null else it }
+        return countryOfRaw(category).also { countryMemo[category] = it ?: NONE }
     }
 
-    fun isAdult(text: String?): Boolean = !text.isNullOrEmpty() && adultMark.containsMatchIn(text)
+    private fun countryOfRaw(category: String): String? {
+        val cat = plain(category)
+        countryPrefix.find(cat)?.let { m ->
+            val t = m.groupValues[1].lowercase().let { prefixMap[it] ?: it }
+            if (t !in notCountry) return t
+        }
+        return countries.keys.firstOrNull { isCountry(cat, it) }
+    }
+
+    private val adultMemo = java.util.concurrent.ConcurrentHashMap<String, Boolean>()
+    fun isAdult(text: String?): Boolean = !text.isNullOrEmpty() && adultMemo.getOrPut(text) { adultMark.containsMatchIn(text) }
 
     fun isKids(group: String, name: String?): Boolean {
         val t = (group + " " + (name ?: "")).lowercase()
@@ -57,10 +83,15 @@ object TvRules {
     private val qualityWords = listOf("uhd", "4k", "fhd", "hd", "sd", "hevc", "h265", "raw", "backup", "low", "50fps", "60fps")
 
     /** „DE: ZDF HD" und „ZDF FHD" → „zdf" (für das Zusammenführen doppelter Sender). */
+    private val basePrefix = Regex("""^\s*\|?\s*[a-z]{2,4}\s*[•|:\-–]\s*""")
+    private val baseSep = Regex("""[\[\]()|•:]""")
+    private val baseSpace = Regex("""\s+""")
+    private val baseRes = Regex("""\d{3,4}p""")
+
     fun baseName(name: String): String {
-        var t = name.lowercase().replace(Regex("""^\s*\|?\s*[a-z]{2,4}\s*[•|:\-–]\s*"""), "")
-        t = t.replace(Regex("""[\[\]()|•:]"""), " ")
-        val words = t.split(Regex("""\s+""")).filter { it.isNotBlank() && it !in qualityWords && !it.matches(Regex("""\d{3,4}p""")) }
+        var t = plain(name).lowercase().replace(basePrefix, "")
+        t = t.replace(baseSep, " ")
+        val words = t.split(baseSpace).filter { it.isNotBlank() && it !in qualityWords && !it.matches(baseRes) }
         return words.joinToString(" ").trim()
     }
 
@@ -113,7 +144,8 @@ object TvRules {
         "de" -> "Deutsch"; "uk" -> "Englisch"; "us" -> "USA"; "tr" -> "Türkisch"; "fr" -> "Französisch"; "it" -> "Italienisch"
         "es" -> "Spanisch"; "pl" -> "Polnisch"; "nl" -> "Niederländisch"; "ar" -> "Arabisch"; "eu" -> "Europa/Mehrsprachig"
         "exyu" -> "Ex-Jugoslawien"; "al" -> "Albanisch"; "ru" -> "Russisch"; "ro" -> "Rumänisch"; "gr" -> "Griechisch"
-        "pt" -> "Portugiesisch"; "kurd" -> "Kurdisch"; "at" -> "Österreich"; "ch" -> "Schweiz"; else -> code.uppercase()
+        "pt" -> "Portugiesisch"; "kurd" -> "Kurdisch"; "at" -> "Österreich"; "ch" -> "Schweiz"; "bg" -> "Bulgarisch"; "az" -> "Aserbaidschanisch"
+        "be" -> "Belgien"; "multi" -> "Mehrsprachig"; else -> code.uppercase()
     }
 
     /** Sprache eines Eintrags: DE/AT/CH zählen als „de"; ohne Kennung = null. */

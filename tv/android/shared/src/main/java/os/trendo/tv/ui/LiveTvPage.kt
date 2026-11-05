@@ -106,16 +106,28 @@ private fun logCategories(all: List<Channel>, vod: List<Vod>, series: List<Serie
     log("SERIEN", series.map { it.category }.distinct())
 }
 
-private fun load(store: LiveStore, prof: os.trendo.tv.livetv.Profile?): LiveData {
+/** Stufe 1: Sender + Einstellungen (schnell, sofort sichtbar). */
+private fun loadChannels(store: LiveStore, prof: os.trendo.tv.livetv.Profile?, old: LiveData): LiveData {
     // Alle Sprachen frei – gefiltert wird je Reiter über die Sprachleiste. Kinderprofil: nur Kinderinhalte.
     val s = os.trendo.tv.livetv.KidRules.effective(store.settings().copy(onlyGerman = false), prof)
     val all = store.channels()
     val vis = TvRules.visible(all, s).let { v -> v.filter { it.id in s.favorites } + v.filter { it.id !in s.favorites } }
-    val vodAll = store.vod().filter { TvRules.allowed(it.category, it.name, s.onlyGerman, s.showAdult) && (!s.kidsMode || TvRules.isKids(it.category, it.name)) }
-    val serAll = store.series().filter { TvRules.allowed(it.category, it.name, s.onlyGerman, s.showAdult) && (!s.kidsMode || TvRules.isKids(it.category, it.name)) }
-    logCategories(all, store.vod(), store.series())
-    return LiveData(store.sources(), all, vis, store.epg(), vodAll, serAll, s, store.reminders(), true)
+    return old.copy(sources = store.sources(), all = all, visible = vis, settings = s, reminders = store.reminders(), loaded = true)
 }
+
+/** Stufe 3: Filme & Serien (groß, kommen zuletzt). */
+private fun loadVod(store: LiveStore, d: LiveData): LiveData {
+    val s = d.settings
+    val vodRaw = store.vod(); val serRaw = store.series()
+    logCategories(d.all, vodRaw, serRaw)
+    return d.copy(
+        vod = vodRaw.filter { TvRules.allowed(it.category, it.name, s.onlyGerman, s.showAdult) && (!s.kidsMode || TvRules.isKids(it.category, it.name)) },
+        series = serRaw.filter { TvRules.allowed(it.category, it.name, s.onlyGerman, s.showAdult) && (!s.kidsMode || TvRules.isKids(it.category, it.name)) },
+    )
+}
+
+/** Solange die App im Speicher ist: zuletzt geladene Daten je Profil – kein erneutes Einlesen beim Zurückkehren. */
+private object LiveCache { val byProfile = HashMap<String, LiveData>(); var stamp = 0 }
 
 /** Gastgeber von Live TV: Trendo-Startseite oder die eigene App „Trendo Live TV". */
 class LiveHost(
@@ -149,10 +161,30 @@ fun LiveTvPage(host: LiveHost, profile: String) {
     val scope = rememberCoroutineScope()
     val prof = remember(profile) { os.trendo.tv.livetv.ProfileStore(ctx).list().firstOrNull { it.id == profile } }
     LiveSession.profile = profile
-    val data by produceState(LiveData(), tick) {
-        value = withContext(Dispatchers.IO) { store.dedupeSources(); load(store, prof) }
+    val data by produceState(LiveCache.byProfile[profile] ?: LiveData(), tick) {
+        val cached = LiveCache.byProfile[profile]
+        if (cached != null && tick == 0 && LiveCache.stamp == store.sourcesAt.toInt() + store.epgAt.toInt()) { value = cached; return@produceState }
+        // In Stufen laden: Sender sofort, dann Programmführer, dann Filme & Serien – vorhandene Anzeige bleibt dabei stehen.
+        val t0 = android.os.SystemClock.elapsedRealtime()
+        value = withContext(Dispatchers.IO) { store.dedupeSources(); loadChannels(store, prof, value) }
+        val t1 = android.os.SystemClock.elapsedRealtime()
+        value = value.copy(epg = withContext(Dispatchers.IO) { store.epg() })
+        val t2 = android.os.SystemClock.elapsedRealtime()
+        value = withContext(Dispatchers.IO) { loadVod(store, value) }
+        android.util.Log.i("TrendoLiveZeit", "Sender ${value.all.size} in ${t1 - t0} ms, Programmführer in ${t2 - t1} ms, Filme ${value.vod.size}/Serien ${value.series.size} in ${android.os.SystemClock.elapsedRealtime() - t2} ms")
+        LiveCache.byProfile[profile] = value; LiveCache.stamp = store.sourcesAt.toInt() + store.epgAt.toInt()
         // Aufnahme-Regeln auf den frischen Programmführer anwenden.
         withContext(Dispatchers.IO) { os.trendo.tv.Recordings.applyRules(ctx, value.visible, value.epg, System.currentTimeMillis()) }
+    }
+    // Still im Hintergrund aktualisieren: Senderliste höchstens 1× am Tag, Programmführer alle 12 Stunden.
+    LaunchedEffect(data.loaded) {
+        if (!data.loaded || data.sources.isEmpty()) return@LaunchedEffect
+        val now = System.currentTimeMillis()
+        if (now - store.sourcesAt > 24 * 3_600_000L || now - store.epgAt > 12 * 3_600_000L) {
+            val r = withContext(Dispatchers.IO) { repo.refresh() }
+            if (r.errors.isNotEmpty()) status = "Aktualisierung: " + r.errors.joinToString("; ")
+            tick++
+        }
     }
 
     fun refresh() {
@@ -166,6 +198,7 @@ fun LiveTvPage(host: LiveHost, profile: String) {
     }
 
     fun playAt(c: Channel, start: Long) {
+        PreviewHub.release()
         LiveSession.channels = data.visible; LiveSession.allChannels = data.all; LiveSession.epg = data.epg; LiveSession.locked = data.settings.lockedGroups; LiveSession.profile = profile
         LiveSession.favorites = data.settings.favorites
         ctx.startActivity(LiveActivity.intent(ctx, data.visible.indexOf(c).coerceAtLeast(0), start))
@@ -183,6 +216,7 @@ fun LiveTvPage(host: LiveHost, profile: String) {
     }
 
     fun play(c: Channel) {
+        PreviewHub.release()
         LiveSession.channels = data.visible; LiveSession.allChannels = data.all; LiveSession.epg = data.epg; LiveSession.locked = data.settings.lockedGroups; LiveSession.profile = profile
         ctx.startActivity(LiveActivity.intent(ctx, data.visible.indexOf(c).coerceAtLeast(0)))
     }
@@ -234,6 +268,7 @@ fun LiveTvPage(host: LiveHost, profile: String) {
         }
         if (status.isNotEmpty()) Text(status, color = TvColors.TextSecondary, fontSize = 10.sp, maxLines = 2, modifier = Modifier.padding(vertical = 4.dp))
         Spacer(Modifier.height(6.dp))
+        if (!data.loaded) { Text("Gespeicherte Sender werden geöffnet …", color = TvColors.TextSecondary, fontSize = 11.sp); return@Column }
         if (data.loaded && data.sources.isEmpty() && tab != LiveTab.SOURCES) {
             Info("Noch keine Senderquelle. Füge unter „Quellen“ deine eigene M3U-Liste oder deinen Xtream-Zugang hinzu – genau wie in Trendo OS für Windows. Nutze nur Quellen, die du rechtmäßig nutzen darfst.")
             Spacer(Modifier.height(8.dp)); PillButton("Quelle hinzufügen", { tab = LiveTab.SOURCES })

@@ -73,3 +73,25 @@ class KinderprofilTest {
         assertNull(KidRules.remaining(kid.copy(minutesPerDay = 0), 500))
     }
 }
+
+class EchteKategorienTest {
+    /** Kategorienamen, wie sie der Anbieter des Nutzers wirklich liefert (05.11.2026). */
+    @Test fun kapitaelchenUndKuerzel() {
+        assertEquals("de", TvRules.languageOf("ᴅᴇ • SKY CINEMA", null))
+        assertEquals("tr", TvRules.languageOf("ᴛʀ • ULUSAL", null))
+        assertEquals("tr", TvRules.languageOf("KKTC • KIBRIS", null))
+        assertEquals("al", TvRules.languageOf("ALB • NATIONAL", null))
+        assertEquals("exyu", TvRules.languageOf("CRO • CROATIA", null))
+        assertEquals("de", TvRules.languageOf("AT • AUSTRIA SPORT", null))
+        assertNull(TvRules.languageOf("VIP • SPORT EU/MIX", null))
+        assertNull(TvRules.languageOf("QHD", null))
+        assertEquals("Sky", Providers.of("ᴅᴇ • SKY BUNDESLIGA"))
+        assertEquals("DAZN", Providers.of("ᴅᴇ • DAZN FUSSBALL LIGA"))
+        assertEquals("Apple TV+", Providers.of("DE • APPLETV + SERIEN"))
+        assertEquals("Disney+", Providers.of("TR • DISNEY PLUS  DIZILER"))
+        assertEquals("HBO Max", Providers.of("DE • HBO MAX SERIEN"))
+        assertEquals("Exxen", Providers.of("TR • EXXEN DIZILER"))
+        assertEquals("beIN", Providers.of("ᴛʀ • b**N SPORTS"))
+        assertEquals("Viaplay", Providers.of("NL • VIAPLAY"))
+    }
+}

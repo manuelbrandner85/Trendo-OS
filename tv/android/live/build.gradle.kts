@@ -20,8 +20,8 @@ android {
         applicationId = "os.trendo.tv.live"
         minSdk = 28
         targetSdk = 35
-        versionCode = 9
-        versionName = "1.5.0"
+        versionCode = 16
+        versionName = "1.6.6"
     }
 
     signingConfigs {

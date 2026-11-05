@@ -56,15 +56,38 @@ import java.util.Locale
 
 private fun hhmm(ms: Long) = SimpleDateFormat("HH:mm", Locale.GERMANY).format(Date(ms))
 
+/**
+ * Gemeinsamer Zugriff auf die Vorschau: Viele Anbieter erlauben nur EINE Verbindung gleichzeitig –
+ * vor dem Vollbild (oder Multi-View/Aufnahme) muss die Vorschau ihre Verbindung freigeben.
+ */
+object PreviewHub {
+    @Volatile var player: ExoPlayer? = null
+    fun release() { player?.let { it.stop(); it.clearMediaItems() } }
+}
+
 /** Kleine Live-Vorschau des markierten Senders (startet erst, wenn die Markierung kurz ruht). */
 @Composable
 fun PreviewPlayer(url: String?, modifier: Modifier) {
     val ctx = LocalContext.current
     val player = remember { ExoPlayer.Builder(ctx).build().apply { volume = 0.6f } }
-    DisposableEffect(Unit) { onDispose { player.release() } }
-    LaunchedEffect(url) {
+    val owner = androidx.compose.ui.platform.LocalLifecycleOwner.current
+    var visible by remember { mutableStateOf(true) }
+    DisposableEffect(owner) {
+        PreviewHub.player = player
+        // Nicht sichtbar (Vollbild, andere App) → Verbindung sofort freigeben.
+        val obs = androidx.lifecycle.LifecycleEventObserver { _, e ->
+            when (e) {
+                androidx.lifecycle.Lifecycle.Event.ON_PAUSE -> { visible = false; PreviewHub.release() }
+                androidx.lifecycle.Lifecycle.Event.ON_RESUME -> visible = true
+                else -> Unit
+            }
+        }
+        owner.lifecycle.addObserver(obs)
+        onDispose { owner.lifecycle.removeObserver(obs); if (PreviewHub.player === player) PreviewHub.player = null; player.release() }
+    }
+    LaunchedEffect(url, visible) {
         player.stop()
-        if (url == null) return@LaunchedEffect
+        if (url == null || !visible) return@LaunchedEffect
         delay(900)
         player.setMediaItem(MediaItem.fromUri(Uri.parse(url))); player.prepare(); player.playWhenReady = true
     }

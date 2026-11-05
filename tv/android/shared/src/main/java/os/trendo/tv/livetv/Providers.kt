@@ -21,11 +21,22 @@ object Providers {
         "Crunchyroll" to listOf("crunchyroll"),
         "Discovery+" to listOf("discovery"),
         "ARD/ZDF" to listOf(" ard ", "zdf", "mediathek"),
+        "Viaplay" to listOf("viaplay"),
+        "Canal+" to listOf("canal+", "canal +"),
+        "TNT Sports" to listOf("tnt sport"),
+        "DYN" to listOf(" dyn "),
+        "YouTube" to listOf("youtube"),
+        "Exxen" to listOf("exxen"),
+        "BluTV" to listOf("blutv", "blu tv"),
+        "Gain" to listOf("gain tv", " gain "),
+        "Tabii" to listOf("tabii"),
+        "beIN" to listOf("bein", "b**n"),
+        "Turkcell TV+" to listOf("turkcell"),
     )
 
     /** Anbieter einer Kategorie (oder null). */
     fun of(category: String): String? {
-        val c = " " + category.lowercase().replace('•', ' ').replace('|', ' ').replace(':', ' ').replace('-', ' ') + " "
+        val c = " " + TvRules.plain(category).lowercase().replace('•', ' ').replace('|', ' ').replace(':', ' ').replace('-', ' ') + " "
         return list.firstOrNull { (_, keys) -> keys.any { c.contains(it) } }?.first
     }
 

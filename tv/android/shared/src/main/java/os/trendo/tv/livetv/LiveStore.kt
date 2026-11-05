@@ -59,7 +59,7 @@ class LiveStore(private val context: Context, private val profile: String = "sta
         // Dateien/Passwort nur für Kennungen löschen, die NICHT mehr gebraucht werden.
         val keepIds = keep.map { it.id }.toSet()
         all.map { it.id }.filter { it !in keepIds }.distinct().forEach { id ->
-            secrets.remove(id); listOf("ch_$id.json", "vod_$id.json", "ser_$id.json").forEach { File(dir, it).delete() }
+            secrets.remove(id); listOf("ch_$id.json", "vod_$id.json", "ser_$id.json", "ch_$id.tsv", "vod_$id.tsv", "ser_$id.tsv").forEach { File(dir, it).delete() }
         }
         return all.size - keep.size
     }
@@ -80,24 +80,39 @@ class LiveStore(private val context: Context, private val profile: String = "sta
 
     fun removeSource(id: String) {
         saveSources(sources().filter { it.id != id }); secrets.remove(id)
-        listOf("ch_$id.json", "vod_$id.json", "ser_$id.json").forEach { File(dir, it).delete() }
+        listOf("ch_$id.json", "vod_$id.json", "ser_$id.json", "ch_$id.tsv", "vod_$id.tsv", "ser_$id.tsv").forEach { File(dir, it).delete() }
     }
 
-    // ---- Sender ----
+    // ---- Sender (schnelles Zeilenformat, Tab-getrennt; alte JSON-Dateien werden einmalig umgewandelt) ----
+    private fun t(v: String?) = (v ?: "").replace('\t', ' ').replace('\n', ' ').replace('\r', ' ')
+
+    private fun writeTsv(name: String, rows: Sequence<String>) {
+        val tmp = File(dir, "$name.tmp")
+        tmp.bufferedWriter(Charsets.UTF_8, 1 shl 16).use { w -> rows.forEach { w.write(it); w.write("\n") } }
+        tmp.renameTo(File(dir, name)).also { if (!it) { File(dir, name).delete(); tmp.renameTo(File(dir, name)) } }
+    }
+
+    private fun <T> readTsv(name: String, min: Int, f: (List<String>) -> T?): List<T>? {
+        val file = File(dir, name); if (!file.exists()) return null
+        val out = ArrayList<T>()
+        file.bufferedReader(Charsets.UTF_8, 1 shl 16).useLines { lines -> lines.forEach { l -> val p = l.split('\t'); if (p.size >= min) f(p)?.let { out += it } } }
+        return out
+    }
+
     fun saveChannels(sourceId: String, list: List<Channel>) {
-        val a = JSONArray()
-        list.forEach { c -> a.put(JSONObject().put("i", c.id).put("n", c.name).put("u", c.url).put("g", c.group).put("l", c.logo ?: "").put("e", c.epgId ?: "").put("c", c.number).put("a", c.archiveDays).put("cu", c.catchup ?: "")) }
-        File(dir, "ch_$sourceId.json").writeText(a.toString())
+        writeTsv("ch_$sourceId.tsv", list.asSequence().map { c -> listOf(c.id, c.name, c.url, c.group, c.logo, c.epgId, c.number.toString(), c.archiveDays.toString(), c.catchup).joinToString("\t") { t(it) } })
+        File(dir, "ch_$sourceId.json").delete()
     }
 
     fun channels(): List<Channel> = sources().flatMap { s ->
-        runCatching {
-            val a = JSONArray(File(dir, "ch_${s.id}.json").readText())
-            (0 until a.length()).map { i -> a.getJSONObject(i).let {
-                Channel(it.getString("i"), it.getString("n"), it.getString("u"), it.getString("g"), it.optString("l").ifBlank { null },
-                    it.optString("e").ifBlank { null }, it.optInt("c"), s.id, it.optInt("a"), it.optString("cu").ifBlank { null })
-            } }
-        }.getOrDefault(emptyList())
+        readTsv("ch_${s.id}.tsv", 9) { f -> Channel(f[0], f[1], f[2], f[3], f[4].ifBlank { null }, f[5].ifBlank { null }, f[6].toIntOrNull() ?: 0, s.id, f[7].toIntOrNull() ?: 0, f[8].ifBlank { null }) }
+            ?: runCatching {
+                val a = JSONArray(File(dir, "ch_${s.id}.json").readText())
+                (0 until a.length()).map { i -> a.getJSONObject(i).let {
+                    Channel(it.getString("i"), it.getString("n"), it.getString("u"), it.getString("g"), it.optString("l").ifBlank { null },
+                        it.optString("e").ifBlank { null }, it.optInt("c"), s.id, it.optInt("a"), it.optString("cu").ifBlank { null })
+                } }.also { saveChannels(s.id, it) }
+            }.getOrDefault(emptyList())
     }
 
     // ---- Programmführer (kompakt: Tab-getrennt) ----
@@ -121,28 +136,36 @@ class LiveStore(private val context: Context, private val profile: String = "sta
 
     val epgAt get() = shared.getLong("epg_at", 0)
 
-    // ---- Filme & Serien ----
+    // ---- Filme & Serien (schnelles Zeilenformat) ----
     fun saveVod(sourceId: String, list: List<Vod>) {
-        val a = JSONArray(); list.forEach { v -> a.put(JSONObject().put("i", v.id).put("n", v.name).put("c", v.category).put("u", v.url).put("cv", v.cover ?: "").put("p", v.plot ?: "").put("y", v.year ?: "").put("r", v.rating ?: "")) }
-        File(dir, "vod_$sourceId.json").writeText(a.toString())
+        writeTsv("vod_$sourceId.tsv", list.asSequence().map { v -> listOf(v.id, v.name, v.category, v.url, v.cover, v.plot, v.year, v.rating).joinToString("\t") { t(it) } })
+        File(dir, "vod_$sourceId.json").delete()
     }
 
-    fun vod(): List<Vod> = sources().flatMap { s -> runCatching {
-        val a = JSONArray(File(dir, "vod_${s.id}.json").readText())
-        (0 until a.length()).map { i -> a.getJSONObject(i).let { Vod(it.getString("i"), it.getString("n"), it.getString("c"), it.getString("u"),
-            it.optString("cv").ifBlank { null }, it.optString("p").ifBlank { null }, it.optString("y").ifBlank { null }, it.optString("r").ifBlank { null }, s.id) } }
-    }.getOrDefault(emptyList()) }
+    fun vod(): List<Vod> = sources().flatMap { s ->
+        readTsv("vod_${s.id}.tsv", 8) { f -> Vod(f[0], f[1], f[2], f[3], f[4].ifBlank { null }, f[5].ifBlank { null }, f[6].ifBlank { null }, f[7].ifBlank { null }, s.id) }
+            ?: runCatching {
+                val a = JSONArray(File(dir, "vod_${s.id}.json").readText())
+                (0 until a.length()).map { i -> a.getJSONObject(i).let { Vod(it.getString("i"), it.getString("n"), it.getString("c"), it.getString("u"),
+                    it.optString("cv").ifBlank { null }, it.optString("p").ifBlank { null }, it.optString("y").ifBlank { null }, it.optString("r").ifBlank { null }, s.id) } }
+                    .also { saveVod(s.id, it) }
+            }.getOrDefault(emptyList())
+    }
 
     fun saveSeries(sourceId: String, list: List<Series>) {
-        val a = JSONArray(); list.forEach { v -> a.put(JSONObject().put("i", v.id).put("n", v.name).put("c", v.category).put("cv", v.cover ?: "").put("p", v.plot ?: "").put("y", v.year ?: "").put("r", v.rating ?: "")) }
-        File(dir, "ser_$sourceId.json").writeText(a.toString())
+        writeTsv("ser_$sourceId.tsv", list.asSequence().map { v -> listOf(v.id, v.name, v.category, v.cover, v.plot, v.year, v.rating).joinToString("\t") { t(it) } })
+        File(dir, "ser_$sourceId.json").delete()
     }
 
-    fun series(): List<Series> = sources().flatMap { s -> runCatching {
-        val a = JSONArray(File(dir, "ser_${s.id}.json").readText())
-        (0 until a.length()).map { i -> a.getJSONObject(i).let { Series(it.getString("i"), it.getString("n"), it.getString("c"),
-            it.optString("cv").ifBlank { null }, it.optString("p").ifBlank { null }, it.optString("y").ifBlank { null }, it.optString("r").ifBlank { null }, s.id) } }
-    }.getOrDefault(emptyList()) }
+    fun series(): List<Series> = sources().flatMap { s ->
+        readTsv("ser_${s.id}.tsv", 7) { f -> Series(f[0], f[1], f[2], f[3].ifBlank { null }, f[4].ifBlank { null }, f[5].ifBlank { null }, f[6].ifBlank { null }, s.id) }
+            ?: runCatching {
+                val a = JSONArray(File(dir, "ser_${s.id}.json").readText())
+                (0 until a.length()).map { i -> a.getJSONObject(i).let { Series(it.getString("i"), it.getString("n"), it.getString("c"),
+                    it.optString("cv").ifBlank { null }, it.optString("p").ifBlank { null }, it.optString("y").ifBlank { null }, it.optString("r").ifBlank { null }, s.id) } }
+                    .also { saveSeries(s.id, it) }
+            }.getOrDefault(emptyList())
+    }
 
     // ---- Einstellungen je Profil ----
     fun settings() = LiveSettings(

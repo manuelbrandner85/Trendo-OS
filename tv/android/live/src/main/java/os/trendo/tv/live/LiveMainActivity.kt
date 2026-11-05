@@ -59,16 +59,78 @@ class LiveMainActivity : ComponentActivity() {
     private lateinit var profiles: os.trendo.tv.livetv.ProfileStore
     private var profileId by mutableStateOf("standard")
     private var picking by mutableStateOf(false)
+    private var phoneQr by mutableStateOf<String?>(null)
+    private lateinit var remote: os.trendo.tv.phone.RemoteServer
+
+    /** Oberste sichtbare Trendo-Live-Seite (für Handy-Tasten) und Zähler offener Seiten. */
+    private object Top { var act: java.lang.ref.WeakReference<android.app.Activity>? = null; var started = 0 }
+
+    private fun channelsForPhone(): List<os.trendo.tv.livetv.Channel> {
+        if (os.trendo.tv.LiveSession.channels.isNotEmpty()) return os.trendo.tv.LiveSession.channels
+        val st = LiveStore(this, profiles.currentId)
+        return os.trendo.tv.livetv.TvRules.visible(st.channels(), os.trendo.tv.livetv.KidRules.effective(st.settings().copy(onlyGerman = false), profiles.current()))
+            .also { list -> os.trendo.tv.LiveSession.channels = list; os.trendo.tv.LiveSession.allChannels = list; os.trendo.tv.LiveSession.epg = st.epg(); os.trendo.tv.LiveSession.profile = profiles.currentId }
+    }
+
+    private val remoteHost = object : os.trendo.tv.phone.RemoteHost {
+        override fun channels(query: String) = channelsForPhone().let { list ->
+            val now = System.currentTimeMillis()
+            list.filter { query.isBlank() || it.name.contains(query, true) }.map { c ->
+                Triple(c.id, c.name, os.trendo.tv.livetv.TvRules.nowNext(c.epgId?.let { os.trendo.tv.LiveSession.epg[it] }, now).first?.title ?: "")
+            }
+        }
+        override fun play(id: String): Boolean {
+            val list = channelsForPhone(); val i = list.indexOfFirst { it.id == id }
+            if (i < 0) return false
+            val a = Top.act?.get() ?: this@LiveMainActivity
+            a.runOnUiThread { a.startActivity(os.trendo.tv.LiveActivity.intent(a, i)) }
+            return true
+        }
+        override fun key(name: String): Boolean {
+            val code = when (name) {
+                "up" -> android.view.KeyEvent.KEYCODE_DPAD_UP; "down" -> android.view.KeyEvent.KEYCODE_DPAD_DOWN
+                "left" -> android.view.KeyEvent.KEYCODE_DPAD_LEFT; "right" -> android.view.KeyEvent.KEYCODE_DPAD_RIGHT
+                "ok" -> android.view.KeyEvent.KEYCODE_DPAD_CENTER; "back" -> android.view.KeyEvent.KEYCODE_BACK
+                "chup" -> android.view.KeyEvent.KEYCODE_CHANNEL_UP; "chdown" -> android.view.KeyEvent.KEYCODE_CHANNEL_DOWN
+                "playpause" -> android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE; else -> return false
+            }
+            // Nur innerhalb von Trendo Live TV: Taste an das eigene Fenster geben (keine systemweite Eingabe).
+            val a = Top.act?.get() ?: return false
+            a.runOnUiThread {
+                a.dispatchKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, code))
+                a.dispatchKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_UP, code))
+            }
+            return true
+        }
+        override fun volume(up: Boolean?) {
+            val am = getSystemService(android.media.AudioManager::class.java)
+            am.adjustStreamVolume(android.media.AudioManager.STREAM_MUSIC, when (up) { true -> android.media.AudioManager.ADJUST_RAISE; false -> android.media.AudioManager.ADJUST_LOWER; null -> android.media.AudioManager.ADJUST_TOGGLE_MUTE }, android.media.AudioManager.FLAG_SHOW_UI)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         profiles = os.trendo.tv.livetv.ProfileStore(this)
+        remote = os.trendo.tv.phone.RemoteServer(applicationContext, remoteHost)
+        application.registerActivityLifecycleCallbacks(object : android.app.Application.ActivityLifecycleCallbacks {
+            override fun onActivityResumed(a: android.app.Activity) { Top.act = java.lang.ref.WeakReference(a) }
+            override fun onActivityStarted(a: android.app.Activity) { Top.started++; remote.start() }
+            override fun onActivityStopped(a: android.app.Activity) {
+                Top.started--
+                // Server nur, solange Trendo Live TV offen ist.
+                if (Top.started <= 0) android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({ if (Top.started <= 0) remote.stop() }, 20_000)
+            }
+            override fun onActivityCreated(a: android.app.Activity, b: Bundle?) = Unit
+            override fun onActivityPaused(a: android.app.Activity) = Unit
+            override fun onActivitySaveInstanceState(a: android.app.Activity, b: Bundle) = Unit
+            override fun onActivityDestroyed(a: android.app.Activity) = Unit
+        })
         profileId = profiles.currentId
         // Mehrere Profile: beim Start „Wer schaut?"
         picking = savedInstanceState == null && profiles.list().size > 1
         val store = LiveStore(this)
-        // Übernehmen, wenn noch nichts da ist oder ein Zugang sein Passwort verloren hat.
-        val needImport = store.sources().isEmpty() || store.sources().any { it.kind == SourceKind.XTREAM && store.secrets.get(it.id) == null }
+        // Nur übernehmen (und neu laden), wenn noch gar keine Quelle eingerichtet ist.
+        val needImport = store.sources().isEmpty()
         if (needImport) lifecycleScope.launch {
             val n = withContext(Dispatchers.IO) { importFromTrendo(store) }
             if (n > 0) {
@@ -95,13 +157,14 @@ class LiveMainActivity : ComponentActivity() {
             Box(Modifier.fillMaxSize().background(TvColors.Background)) {
                 Box(Modifier.fillMaxSize().border(2.dp, Brush.sweepGradient(listOf(TvColors.Cyan, TvColors.ElectricBlue, TvColors.Violet, TvColors.Magenta, TvColors.Cyan)), RoundedCornerShape(0.dp)))
                 Column(Modifier.fillMaxSize().padding(start = 28.dp, end = 28.dp, top = 14.dp, bottom = 10.dp)) {
-                    Header(profiles.list().firstOrNull { it.id == profileId }?.name ?: "Hauptprofil") { picking = true }
+                    Header(profiles.list().firstOrNull { it.id == profileId }?.name ?: "Hauptprofil", onPhone = { phoneQr = remote.pairingUrl() ?: "" }) { picking = true }
                     Spacer(Modifier.height(8.dp))
                     // version erzwingt Neuladen nach der Übernahme
                     androidx.compose.runtime.key(version) {
                         LiveTvPage(LiveHost(playVod = { u, t -> startActivity(PlayerActivity.intent(this@LiveMainActivity, u, t, MediaKind.VIDEO)) }), profileId)
                     }
                 }
+                phoneQr?.let { url -> PhonePairing(url, remote.paired.size, onForget = { remote.forgetAll(); phoneQr = remote.pairingUrl() ?: "" }) { phoneQr = null } }
                 if (picking) ProfilePicker(profiles, profileId, LiveStore(this@LiveMainActivity)) { id -> profileId = id; profiles.currentId = id; picking = false; version++ }
             }
         }
@@ -165,8 +228,33 @@ private fun ProfilePicker(ps: os.trendo.tv.livetv.ProfileStore, current: String,
     }
 }
 
+/** QR-Code zum Koppeln eines Handys. */
 @androidx.compose.runtime.Composable
-private fun Header(profileName: String, onProfile: () -> Unit) {
+private fun PhonePairing(url: String, pairedCount: Int, onForget: () -> Unit, close: () -> Unit) {
+    val focus = remember { androidx.compose.ui.focus.FocusRequester() }
+    LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
+    Box(Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Color(0xF2050A14)), contentAlignment = Alignment.Center) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (url.isNotEmpty()) os.trendo.tv.ui.QrCode(url, 220.dp)
+            Spacer(Modifier.width(24.dp))
+            Column {
+                Text("Handy als Fernbedienung & zweiter Bildschirm", color = TvColors.Text, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(6.dp))
+                Text(if (url.isEmpty()) "Kein Heimnetz gefunden." else "Mit dem Handy scannen (gleiches WLAN). Der Code gilt 5 Minuten und koppelt genau ein Handy.", color = TvColors.TextSecondary, fontSize = 11.sp)
+                Text("Gekoppelte Handys: $pairedCount", color = TvColors.Cyan, fontSize = 11.sp)
+                Spacer(Modifier.height(10.dp))
+                Row {
+                    Box(Modifier.focusRequester(focus)) { os.trendo.tv.ui.PillButton("Schließen", close) }
+                    Spacer(Modifier.width(8.dp))
+                    os.trendo.tv.ui.PillButton("Alle Handys entkoppeln", onForget)
+                }
+            }
+        }
+    }
+}
+
+@androidx.compose.runtime.Composable
+private fun Header(profileName: String, onPhone: () -> Unit, onProfile: () -> Unit) {
     var now by remember { mutableStateOf(Date()) }
     LaunchedEffect(Unit) { while (true) { now = Date(); delay(60_000L - System.currentTimeMillis() % 60_000L) } }
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -179,6 +267,8 @@ private fun Header(profileName: String, onProfile: () -> Unit) {
         Spacer(Modifier.width(10.dp))
         Text("by Manuel", color = TvColors.Text, fontSize = 19.sp, fontFamily = ScriptFont)
         Spacer(Modifier.weight(1f))
+        os.trendo.tv.ui.PillButton("📱 Handy", onPhone)
+        Spacer(Modifier.width(8.dp))
         os.trendo.tv.ui.PillButton("👤 $profileName", onProfile)
         Spacer(Modifier.width(14.dp))
         Column(horizontalAlignment = Alignment.End) {

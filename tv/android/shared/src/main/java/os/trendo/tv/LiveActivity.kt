@@ -147,9 +147,14 @@ class LiveActivity : ComponentActivity() {
             }
         }
         player = p
-        tune(index, ask = true)
-        // Aus dem Programmführer „Nachholen": direkt ab Sendungsbeginn aus dem Archiv.
-        intent.getLongExtra(EXTRA_START, 0L).takeIf { it > 0 }?.let { shiftTo(it) }
+        // Kurz warten, damit der Anbieter die Verbindung der Vorschau sicher geschlossen hat (oft nur 1 Verbindung erlaubt).
+        os.trendo.tv.ui.PreviewHub.release()
+        val catchupStart = intent.getLongExtra(EXTRA_START, 0L)
+        window.decorView.postDelayed({
+            tune(index, ask = true)
+            // Aus dem Programmführer „Nachholen": direkt ab Sendungsbeginn aus dem Archiv.
+            if (catchupStart > 0) shiftTo(catchupStart)
+        }, 600)
 
         setContent {
             Box(Modifier.fillMaxSize().background(Color.Black)) {
@@ -209,7 +214,7 @@ class LiveActivity : ComponentActivity() {
         val c = channels.getOrNull(index) ?: return
         if (retries < 4) {
             retries++
-            error = "Verbindung unterbrochen – neuer Versuch $retries/4 …"
+            error = if (retries == 1) null else "Verbindung unterbrochen – neuer Versuch $retries/4 …"
             window.decorView.postDelayed({ player?.apply { prepare(); playWhenReady = true } }, 1500L shl (retries - 1))
             return
         }

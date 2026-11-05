@@ -61,13 +61,15 @@ class LiveRepo(private val store: LiveStore) {
                         store.saveChannels(s.id, Xtream.parseLive(text(Xtream.api(s.url, u, pass, "get_live_streams")),
                             text(Xtream.api(s.url, u, pass, "get_live_categories")), s.url, u, pass, s.id))
                         runCatching {
-                            val v = Xtream.parseVod(text(Xtream.api(s.url, u, pass, "get_vod_streams")), text(Xtream.api(s.url, u, pass, "get_vod_categories")), s.url, u, pass, s.id)
+                            val cats = text(Xtream.api(s.url, u, pass, "get_vod_categories"))
+                            val v = open(Xtream.api(s.url, u, pass, "get_vod_streams"), 30_000).use { XtreamStream.vod(it, cats, s.url, u, pass, s.id) }
                             store.saveVod(s.id, v); vodN += v.size
-                        }
+                        }.onFailure { errors += "${s.name} Filme: ${safeMessage(it)}" }
                         runCatching {
-                            val v = Xtream.parseSeries(text(Xtream.api(s.url, u, pass, "get_series")), text(Xtream.api(s.url, u, pass, "get_series_categories")), s.id)
+                            val cats = text(Xtream.api(s.url, u, pass, "get_series_categories"))
+                            val v = open(Xtream.api(s.url, u, pass, "get_series"), 30_000).use { XtreamStream.series(it, cats, s.id) }
                             store.saveSeries(s.id, v); serN += v.size
-                        }
+                        }.onFailure { errors += "${s.name} Serien: ${safeMessage(it)}" }
                         epgUrls += Xtream.epgUrl(s.url, u, pass)
                     }
                 }
