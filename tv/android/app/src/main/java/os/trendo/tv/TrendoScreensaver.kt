@@ -55,16 +55,16 @@ class TrendoScreensaver : DreamService() {
             background = GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP, intArrayOf(0xCC050A14.toInt(), 0x00050A14))
         }, FrameLayout.LayoutParams(MATCH_PARENT, dp(220), Gravity.BOTTOM))
 
-        val script = ResourcesCompat.getFont(this, R.font.great_vibes)
+        val script = ResourcesCompat.getFont(this, os.trendo.tv.shared.R.font.great_vibes)
         val box = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL; setPadding(dp(48), 0, 0, dp(36)) }
         clock = TextView(this).apply { textSize = 64f; setTextColor(0xFFF3F8FF.toInt()); typeface = Typeface.create("sans-serif-light", Typeface.NORMAL) }
         date = TextView(this).apply { textSize = 16f; setTextColor(0xFFB5C6DE.toInt()) }
         weather = TextView(this).apply { textSize = 15f; setTextColor(0xFFB5C6DE.toInt()) }
         val brand = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL; gravity = Gravity.BOTTOM; setPadding(0, dp(12), 0, 0)
-            addView(ImageView(this@TrendoScreensaver).apply { setImageResource(R.drawable.ic_trendo_mark) }, LinearLayout.LayoutParams(dp(26), dp(26)))
+            addView(ImageView(this@TrendoScreensaver).apply { setImageResource(os.trendo.tv.shared.R.drawable.ic_trendo_mark) }, LinearLayout.LayoutParams(dp(26), dp(26)))
             addView(TextView(this@TrendoScreensaver).apply { text = "  TRENDO OS  "; textSize = 13f; letterSpacing = 0.15f; setTextColor(0xFFF3F8FF.toInt()) })
-            addView(TextView(this@TrendoScreensaver).apply { text = getString(R.string.credit); textSize = 16f; typeface = script; setTextColor(0xFFF3F8FF.toInt()) })
+            addView(TextView(this@TrendoScreensaver).apply { text = getString(os.trendo.tv.shared.R.string.credit); textSize = 16f; typeface = script; setTextColor(0xFFF3F8FF.toInt()) })
         }
         box.addView(clock); box.addView(date); box.addView(weather); box.addView(brand)
         root.addView(box, FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT, Gravity.BOTTOM or Gravity.START))

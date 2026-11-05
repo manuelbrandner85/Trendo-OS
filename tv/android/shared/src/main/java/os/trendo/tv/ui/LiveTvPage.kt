@@ -57,7 +57,6 @@ import os.trendo.tv.LiveActivity
 import os.trendo.tv.LiveSession
 import os.trendo.tv.PlayerActivity
 import os.trendo.tv.Reminders
-import os.trendo.tv.apps.AppEntry
 import os.trendo.tv.livetv.Channel
 import os.trendo.tv.livetv.LiveRepo
 import os.trendo.tv.livetv.LiveSettings
@@ -99,8 +98,17 @@ private fun load(store: LiveStore): LiveData {
     return LiveData(store.sources(), all, vis, store.epg(), vodAll, serAll, s, store.reminders(), true)
 }
 
+/** Gastgeber von Live TV: Trendo-Startseite oder die eigene App „Trendo Live TV". */
+class LiveHost(
+    /** Film oder Folge abspielen (mit Weitersehen). */
+    val playVod: (url: String, title: String) -> Unit,
+    /** Optional: Knopf für eine andere App, z. B. „TiviMate öffnen". */
+    val externalLabel: String? = null,
+    val onExternal: () -> Unit = {},
+)
+
 @Composable
-fun LiveTvPage(liveApp: AppEntry?, actions: TvActions, profile: String) {
+fun LiveTvPage(host: LiveHost, profile: String) {
     val ctx = LocalContext.current
     val store = remember(profile) { LiveStore(ctx, profile) }
     val repo = remember(store) { LiveRepo(store) }
@@ -108,7 +116,7 @@ fun LiveTvPage(liveApp: AppEntry?, actions: TvActions, profile: String) {
     var tab by remember { mutableStateOf(LiveTab.CHANNELS) }
     var status by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
-    val data by produceState(LiveData(), tick) { value = withContext(Dispatchers.IO) { load(store) } }
+    val data by produceState(LiveData(), tick) { value = withContext(Dispatchers.IO) { store.dedupeSources(); load(store) } }
 
     fun refresh() {
         status = "Lade Sender, Programmführer, Filme und Serien …"
@@ -133,11 +141,11 @@ fun LiveTvPage(liveApp: AppEntry?, actions: TvActions, profile: String) {
                     Box(Modifier.padding(horizontal = 14.dp).fillMaxHeight(), contentAlignment = Alignment.Center) { Text(t.label, fontSize = 11.sp, color = if (t == tab) TvColors.Cyan else TvColors.Text) }
                 }
             }
-            if (liveApp != null) item {
-                FocusSurface({ actions.launch(liveApp.packageName) }, Modifier.height(30.dp), shape = RoundedCornerShape(50), scale = 1.05f) {
-                    Box(Modifier.padding(horizontal = 14.dp).fillMaxHeight(), contentAlignment = Alignment.Center) { Text("${liveApp.label} öffnen", fontSize = 11.sp, color = TvColors.Text) }
+            host.externalLabel?.let { label -> item {
+                FocusSurface(host.onExternal, Modifier.height(30.dp), shape = RoundedCornerShape(50), scale = 1.05f) {
+                    Box(Modifier.padding(horizontal = 14.dp).fillMaxHeight(), contentAlignment = Alignment.Center) { Text(label, fontSize = 11.sp, color = TvColors.Text) }
                 }
-            }
+            } }
         }
         if (status.isNotEmpty()) Text(status, color = TvColors.TextSecondary, fontSize = 10.sp, maxLines = 2, modifier = Modifier.padding(vertical = 4.dp))
         Spacer(Modifier.height(6.dp))
@@ -150,8 +158,8 @@ fun LiveTvPage(liveApp: AppEntry?, actions: TvActions, profile: String) {
             LiveTab.CHANNELS -> ChannelsTab(data, ::play, onFav = { c -> store.save(data.settings.copy(favorites = data.settings.favorites.let { if (c.id in it) it - c.id else it + c.id })); tick++ })
             LiveTab.GUIDE -> GuideTab(data, ::play) { c, p -> toggleReminder(ctx, store, data, c, p); tick++ }
             LiveTab.SEARCH -> SearchTab(data, ::play) { c, p -> toggleReminder(ctx, store, data, c, p); tick++ }
-            LiveTab.MOVIES -> MoviesTab(data.vod, actions)
-            LiveTab.SERIES -> SeriesTab(data.series, repo, actions)
+            LiveTab.MOVIES -> MoviesTab(data.vod, host)
+            LiveTab.SERIES -> SeriesTab(data.series, repo, host)
             LiveTab.SOURCES -> SourcesTab(data, repo, store, onChanged = { tick++ }, onRefresh = ::refresh)
             LiveTab.FILTER -> FilterTab(data, store) { tick++ }
         }
@@ -303,7 +311,7 @@ private fun SearchTab(data: LiveData, play: (Channel) -> Unit, remind: (Channel?
 
 // ---------- Filme ----------
 @Composable
-private fun MoviesTab(list: List<Vod>, actions: TvActions) {
+private fun MoviesTab(list: List<Vod>, host: LiveHost) {
     if (list.isEmpty()) { Info("Keine Filme. Filme kommen über einen Xtream-Zugang (Quellen → Alles aktualisieren)."); return }
     val cats = remember(list) { listOf("Alle") + list.map { it.category }.distinct() }
     var cat by remember { mutableStateOf("Alle") }
@@ -317,7 +325,7 @@ private fun MoviesTab(list: List<Vod>, actions: TvActions) {
     Spacer(Modifier.height(8.dp))
     LazyVerticalGrid(GridCells.Fixed(7), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(4.dp)) {
         items(shown, key = { it.id }) { v ->
-            FocusSurface({ actions.play(v.url, v.name, MediaKind.VIDEO) }, Modifier.fillMaxWidth().height(150.dp), container = TvColors.Panel, scale = 1.08f) {
+            FocusSurface({ host.playVod(v.url, v.name) }, Modifier.fillMaxWidth().height(150.dp), container = TvColors.Panel, scale = 1.08f) {
                 Box(Modifier.fillMaxSize()) {
                     NetImage(v.cover, Modifier.fillMaxSize(), 200, 300)
                     Column(Modifier.align(Alignment.BottomStart).fillMaxWidth().background(Color(0xCC050A14)).padding(4.dp)) {
@@ -332,7 +340,7 @@ private fun MoviesTab(list: List<Vod>, actions: TvActions) {
 
 // ---------- Serien ----------
 @Composable
-private fun SeriesTab(list: List<Series>, repo: LiveRepo, actions: TvActions) {
+private fun SeriesTab(list: List<Series>, repo: LiveRepo, host: LiveHost) {
     var open by remember { mutableStateOf<Series?>(null) }
     var eps by remember { mutableStateOf<List<Episode>?>(null) }
     val scope = rememberCoroutineScope()
@@ -348,7 +356,7 @@ private fun SeriesTab(list: List<Series>, repo: LiveRepo, actions: TvActions) {
         if (e == null) Text("Lade Folgen …", color = TvColors.TextSecondary, fontSize = 11.sp)
         else LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             items(e, key = { it.url }) { ep ->
-                FocusSurface({ actions.play(ep.url, "${o.name} S${ep.season}E${ep.episode}", MediaKind.VIDEO) }, Modifier.fillMaxWidth().height(38.dp), scale = 1.02f) {
+                FocusSurface({ host.playVod(ep.url, "${o.name} S${ep.season}E${ep.episode}") }, Modifier.fillMaxWidth().height(38.dp), scale = 1.02f) {
                     Row(Modifier.fillMaxSize().padding(horizontal = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                         Text("S${ep.season} · F${ep.episode}", color = TvColors.Cyan, fontSize = 10.sp, modifier = Modifier.width(80.dp))
                         Text(ep.title, color = TvColors.Text, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -431,9 +439,10 @@ private fun SourcesTab(data: LiveData, repo: LiveRepo, store: LiveStore, onChang
             Text("Nur eigene, rechtmäßige Quellen. Passwörter werden verschlüsselt nur auf diesem Fernseher gespeichert und nie angezeigt.", color = TvColors.TextSecondary, fontSize = 10.sp)
         }
         items(data.sources, key = { it.id }) { s ->
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Info("${s.name} · ${if (s.kind == SourceKind.XTREAM) "Xtream" else "M3U"} · ${data.all.count { it.sourceId == s.id }} Sender")
-                Spacer(Modifier.width(8.dp))
+            Row(Modifier.fillMaxWidth().background(TvColors.GlassStrong, RoundedCornerShape(10.dp)).border(1.dp, TvColors.Line, RoundedCornerShape(10.dp)).padding(horizontal = 14.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically) {
+                Text("${s.name} · ${if (s.kind == SourceKind.XTREAM) "Xtream" else "M3U"} · ${data.all.count { it.sourceId == s.id }} Sender",
+                    color = TvColors.Text, fontSize = 12.sp, modifier = Modifier.weight(1f))
                 PillButton("Entfernen", { store.removeSource(s.id); onChanged() })
             }
         }

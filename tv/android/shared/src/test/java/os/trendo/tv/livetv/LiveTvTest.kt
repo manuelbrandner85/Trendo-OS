@@ -77,3 +77,26 @@ class LiveTvTest {
         assertEquals(64, h.length); assertFalse(h.contains("1234")); assertEquals(h, TvRules.pinHash("1234", "salz"))
     }
 }
+
+class LiveTvLastTest {
+    @Test fun vierzehnTausendSenderSchnell() {
+        val list = (0 until 14_000).map { i -> Channel("a:$i", "Sender ${i % 7000} ${if (i % 2 == 0) "HD" else "FHD"}", "http://s/$i.ts", "G${i % 40}") }
+        val t0 = System.nanoTime()
+        val v = TvRules.visible(list, LiveSettings(mergeDuplicates = true))
+        val ms = (System.nanoTime() - t0) / 1_000_000
+        assertTrue("dauerte $ms ms", ms < 1500)
+        assertTrue(v.size < list.size)
+    }
+}
+
+class DedupeRegelTest {
+    /** Regel aus LiveStore.dedupeSources: gleiche Kennung darf die behaltene Quelle nicht löschen. */
+    @Test fun gleicheKennungWirdNichtGeloescht() {
+        val a = Source("x1", "A", SourceKind.XTREAM, "http://h", "u"); val b = a.copy(name = "A2"); val c = Source("x2", "A3", SourceKind.XTREAM, "http://h", "u")
+        val all = listOf(a, b, c)
+        val keep = all.distinctBy { Triple(it.kind, it.url, it.user) }.distinctBy { it.id }
+        val keepIds = keep.map { it.id }.toSet()
+        val delete = all.map { it.id }.filter { it !in keepIds }.distinct()
+        assertEquals(listOf("x1"), keep.map { it.id }); assertEquals(listOf("x2"), delete)
+    }
+}

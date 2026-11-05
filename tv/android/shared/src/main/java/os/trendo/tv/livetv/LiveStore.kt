@@ -50,6 +50,20 @@ class LiveStore(private val context: Context, private val profile: String = "sta
     val secrets = SecretBox(context)
 
     // ---- Quellen (für alle Profile gleich) ----
+    /** Doppelte Quellen (gleiche Art, Adresse, Benutzer) zusammenfassen – die erste bleibt. */
+    fun dedupeSources(): Int {
+        val all = sources()
+        val keep = all.distinctBy { Triple(it.kind, it.url, it.user) }.distinctBy { it.id }
+        if (keep.size == all.size) return 0
+        saveSources(keep)
+        // Dateien/Passwort nur für Kennungen löschen, die NICHT mehr gebraucht werden.
+        val keepIds = keep.map { it.id }.toSet()
+        all.map { it.id }.filter { it !in keepIds }.distinct().forEach { id ->
+            secrets.remove(id); listOf("ch_$id.json", "vod_$id.json", "ser_$id.json").forEach { File(dir, it).delete() }
+        }
+        return all.size - keep.size
+    }
+
     fun sources(): List<Source> = runCatching {
         val a = JSONArray(shared.getString("sources", "[]"))
         (0 until a.length()).map { i -> a.getJSONObject(i).let {
@@ -152,6 +166,21 @@ class LiveStore(private val context: Context, private val profile: String = "sta
         val salt = java.util.UUID.randomUUID().toString()
         shared.edit().putString("pin_salt", salt).putString("pin", TvRules.pinHash(pin, salt)).apply()
     }
+    /** Für die geschützte Übergabe an „Trendo Live TV": PIN nur als Prüfsumme + Salz. */
+    fun pinRaw(): Pair<String, String>? = shared.getString("pin", null)?.let { it to (shared.getString("pin_salt", "") ?: "") }
+    fun importPin(hash: String, salt: String) { shared.edit().putString("pin", hash).putString("pin_salt", salt).apply() }
+
+    fun settingsJson(s: LiveSettings = settings()): String = JSONObject()
+        .put("fav", JSONArray(s.favorites.toList())).put("hidden", JSONArray(s.hiddenGroups.toList())).put("locked", JSONArray(s.lockedGroups.toList()))
+        .put("de", s.onlyGerman).put("adult", s.showAdult).put("kids", s.kidsMode).put("merge", s.mergeDuplicates).put("last", s.lastChannel ?: "").toString()
+
+    fun settingsFromJson(json: String): LiveSettings = runCatching {
+        val o = JSONObject(json)
+        fun set(k: String) = o.optJSONArray(k)?.let { a -> (0 until a.length()).map { a.getString(it) }.toSet() } ?: emptySet()
+        LiveSettings(set("fav"), set("hidden"), set("locked"), o.optBoolean("de"), o.optBoolean("adult"), o.optBoolean("kids"), o.optBoolean("merge", true),
+            o.optString("last").ifBlank { null })
+    }.getOrDefault(LiveSettings())
+
     fun checkPin(pin: String) = shared.getString("pin", null)?.let { it == TvRules.pinHash(pin, shared.getString("pin_salt", "")!!) } ?: true
 
     // ---- Erinnerungen ----

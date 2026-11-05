@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import os.trendo.tv.R
+import os.trendo.tv.shared.R
 
 /** Design-Tokens der TV-Edition (Übergabe 05_DESIGN + Vorlage vom 05.11.2026). Kein Gold. */
 object TvColors {

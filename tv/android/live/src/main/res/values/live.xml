@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="live_app_name">Trendo Live TV</string>
+    <style name="Theme.TrendoLive" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@drawable/live_splash</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+</resources>

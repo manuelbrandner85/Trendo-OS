@@ -28,11 +28,16 @@ class LiveRepo(private val store: LiveStore) {
 
     /** Neue Quelle anlegen (Passwort landet nur verschlüsselt im SecretBox). */
     fun addM3u(name: String, url: String, epg: String?): Source {
+        store.sources().firstOrNull { it.kind == SourceKind.M3U && it.url == url.trim() }?.let { return it }
         val s = Source("m" + System.currentTimeMillis().toString(36), name.ifBlank { "Meine Liste" }, SourceKind.M3U, url.trim(), null, epg?.trim()?.ifBlank { null })
         store.saveSources(store.sources() + s); return s
     }
 
     fun addXtream(name: String, server: String, user: String, pass: String): Source {
+        // Gleicher Server + Benutzer schon vorhanden? Dann nur das Passwort erneuern statt doppelt anlegen.
+        store.sources().firstOrNull { it.kind == SourceKind.XTREAM && it.url == Xtream.normalize(server) && it.user == user.trim() }?.let {
+            store.secrets.put(it.id, pass); return it
+        }
         val s = Source("x" + System.currentTimeMillis().toString(36), name.ifBlank { "Mein Anbieter" }, SourceKind.XTREAM, Xtream.normalize(server), user.trim(), null)
         store.saveSources(store.sources() + s); store.secrets.put(s.id, pass); return s
     }

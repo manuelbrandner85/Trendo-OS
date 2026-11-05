@@ -117,7 +117,16 @@ fun SectionPage(section: Section, state: TvState, actions: TvActions, go: (Secti
         Spacer(Modifier.height(12.dp))
         when (section) {
             Section.APPS -> AppGrid(state.apps, actions, "Alle Apps auf diesem Fernseher – unverändert, Start über die App selbst.")
-            Section.LIVE_TV -> LiveTvPage(state.liveTv, actions, state.profile)
+            Section.LIVE_TV -> if (state.apps.any { it.packageName == LIVE_APP }) {
+                // Live TV ist jetzt eine eigene App – nur noch dort, keine doppelten Einstellungen.
+                LaunchedEffect(Unit) { actions.launch(LIVE_APP) }
+                ActionList("Trendo Live TV ist eine eigene App mit allen Sendern, Programmführer, Filmen und Serien.",
+                    listOf("Trendo Live TV öffnen" to { actions.launch(LIVE_APP) }) + (state.liveTv?.let { listOf("${it.label} öffnen" to { actions.launch(it.packageName) }) } ?: emptyList()))
+            } else LiveTvPage(LiveHost(
+                playVod = { u, t -> actions.play(u, t, MediaKind.VIDEO) },
+                externalLabel = state.liveTv?.let { "${it.label} öffnen" },
+                onExternal = { state.liveTv?.let { actions.launch(it.packageName) } },
+            ), state.profile)
             Section.MOVIES -> MediaPage(state, actions, go, listOf(MediaKind.VIDEO), AppFilters.ofKind(state.apps, AppKind.VIDEO))
             Section.MUSIC -> MediaPage(state, actions, go, listOf(MediaKind.AUDIO), AppFilters.ofKind(state.apps, AppKind.AUDIO))
             Section.PHOTOS -> MediaPage(state, actions, go, listOf(MediaKind.IMAGE), AppFilters.ofKind(state.apps, AppKind.IMAGE))
@@ -155,6 +164,9 @@ fun SectionPage(section: Section, state: TvState, actions: TvActions, go: (Secti
         }
     }
 }
+
+/** Paket der eigenen App „Trendo Live TV". */
+const val LIVE_APP = "os.trendo.tv.live"
 
 @Composable
 private fun Hint(text: String) {

@@ -70,6 +70,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import os.trendo.tv.R
+import os.trendo.tv.shared.R as SR
 import os.trendo.tv.apps.AppEntry
 import os.trendo.tv.apps.DeviceStats
 import os.trendo.tv.apps.TvInput
@@ -176,14 +177,14 @@ private fun TopBar(state: TvState, onSearch: () -> Unit, onSettings: () -> Unit)
         Modifier.fillMaxWidth().height(64.dp).padding(start = 18.dp, end = 20.dp, top = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Image(painterResource(R.drawable.ic_trendo_mark), contentDescription = null, modifier = Modifier.size(50.dp))
+        Image(painterResource(SR.drawable.ic_trendo_mark), contentDescription = null, modifier = Modifier.size(50.dp))
         Spacer(Modifier.width(8.dp))
         Column {
             Text(stringResource(R.string.app_name), color = TvColors.Text, fontSize = 21.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
             Text(stringResource(R.string.edition), color = TvColors.Cyan, fontSize = 7.5.sp, letterSpacing = 2.5.sp)
         }
         Spacer(Modifier.width(10.dp))
-        Text(stringResource(R.string.credit), color = TvColors.Text, fontSize = 22.sp, fontFamily = ScriptFont)
+        Text(stringResource(SR.string.credit), color = TvColors.Text, fontSize = 22.sp, fontFamily = ScriptFont)
         Spacer(Modifier.weight(1f))
         FocusSurface(onSearch, Modifier.width(290.dp).height(30.dp), shape = RoundedCornerShape(50), container = Color(0x66050A14), scale = 1.03f) {
             Row(Modifier.fillMaxSize().padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -312,9 +313,10 @@ private fun StartPage(state: TvState, actions: TvActions, go: (Section) -> Unit)
         Spacer(Modifier.height(4.dp))
 
         Row(Modifier.fillMaxWidth().height(112.dp).padding(horizontal = 2.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            val trendoLive = state.apps.any { it.packageName == LIVE_APP }
             val live = state.liveTv
-            FeatureCard("Live-TV", if (live != null) "${live.label} · Sender" else "Sender · TV-Guide", "Jetzt schauen", R.drawable.tv_card_livetv,
-                Modifier.focusRequester(first)) { if (live != null) actions.launch(live.packageName) else go(Section.LIVE_TV) }
+            FeatureCard("Live-TV", if (trendoLive) "Trendo Live TV · Sender · TV-Guide" else if (live != null) "${live.label} · Sender" else "Sender · TV-Guide", "Jetzt schauen", R.drawable.tv_card_livetv,
+                Modifier.focusRequester(first)) { if (trendoLive) actions.launch(LIVE_APP) else if (live != null) actions.launch(live.packageName) else go(Section.LIVE_TV) }
             val res = state.resume.firstOrNull()
             val last = state.lastLaunched
             FeatureCard(

@@ -6,4 +6,5 @@ dependencyResolutionManagement {
     repositories { google(); mavenCentral() }
 }
 rootProject.name = "TrendoTV"
-include(":app")
+// app = TRENDO OS (Startseite), live = Trendo Live TV (eigene App), shared = gemeinsamer Code
+include(":app", ":live", ":shared")

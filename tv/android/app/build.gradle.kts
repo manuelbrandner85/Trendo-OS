@@ -23,8 +23,8 @@ android {
         // minSdk 28 bleibt, damit auch ältere Android-TV-Geräte laufen.
         minSdk = 28
         targetSdk = 35
-        versionCode = 16
-        versionName = "0.5.3"
+        versionCode = 19
+        versionName = "0.6.2"
     }
 
     signingConfigs {
@@ -55,18 +55,7 @@ android {
 }
 
 dependencies {
-    val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
-    implementation(composeBom)
-    implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.activity:activity-compose:1.9.3")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.foundation:foundation")
-    implementation("androidx.tv:tv-material:1.0.0")
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.media3:media3-exoplayer:1.4.1")
-    implementation("androidx.media3:media3-ui:1.4.1")
-    implementation("com.google.zxing:core:3.5.3")
+    implementation(project(":shared"))
 
     testImplementation("junit:junit:4.13.2")
     // org.json ist in lokalen Unit-Tests nur ein Android-Platzhalter – echte Umsetzung für die Tests.

@@ -77,9 +77,18 @@ object TvRules {
     }
 
     /** Doppelte Sender (gleicher Grundname, gleiche Gruppe) zu einem zusammenfassen – beste Qualität gewinnt. */
-    fun mergeDuplicates(channels: List<Channel>): List<Channel> =
-        channels.groupBy { it.group + "|" + baseName(it.name) }.values.map { g -> g.maxBy { qualityRank(it.name) } }
-            .sortedBy { channels.indexOf(it) }
+    fun mergeDuplicates(channels: List<Channel>): List<Channel> {
+        // Linear (wichtig bei 10.000+ Sendern): je Grundname den besten merken, Reihenfolge des ersten Auftretens behalten.
+        val best = LinkedHashMap<String, Channel>(channels.size)
+        for (c in channels) {
+            val key = c.group + "|" + baseName(c.name)
+            val cur = best[key]
+            if (cur == null || qualityRank(c.name) > qualityRank(cur.name)) best[key] = c
+        }
+        val firstIndex = HashMap<String, Int>(best.size)
+        channels.forEachIndexed { i, c -> firstIndex.putIfAbsent(c.group + "|" + baseName(c.name), i) }
+        return best.entries.sortedBy { firstIndex[it.key] ?: 0 }.map { it.value }
+    }
 
     /** Wendet alle Einstellungen an. Gesperrte Gruppen bleiben sichtbar (Schloss), solange sie nicht entsperrt sind. */
     fun visible(channels: List<Channel>, s: LiveSettings): List<Channel> {

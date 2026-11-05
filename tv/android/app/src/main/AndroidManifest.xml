@@ -17,6 +17,9 @@
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
+    <!-- Geschützte Übergabe der Live-TV-Quellen an „Trendo Live TV" (nur gleich signierte Apps). -->
+    <permission android:name="os.trendo.tv.permission.LIVE_EXPORT" android:protectionLevel="signature" />
+
     <!-- Keine QUERY_ALL_PACKAGES-Berechtigung: Trendo sieht nur Apps mit Startsymbol. -->
     <queries>
         <!-- Spracherkennung des Fernsehers (Trendo AI). -->
@@ -36,6 +39,8 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent>
+        <!-- „Trendo Live TV" starten. -->
+        <package android:name="os.trendo.tv.live" />
     </queries>
 
     <!-- usesCleartextTraffic: Senderlisten und Streams eigener Quellen laufen meist über http:// (wie TiviMate). -->
@@ -76,22 +81,14 @@
             </intent-filter>
         </activity-alias>
 
-        <activity
-            android:name=".PlayerActivity"
-            android:exported="false"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.TrendoTV.Player"
-            android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout|orientation" />
-
         <receiver android:name=".SleepTimerReceiver" android:exported="false" />
-        <receiver android:name=".ReminderReceiver" android:exported="false" />
 
-        <activity
-            android:name=".LiveActivity"
-            android:exported="false"
-            android:screenOrientation="landscape"
-            android:theme="@style/Theme.TrendoTV.Player"
-            android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout|orientation" />
+        <provider
+            android:name=".export.LiveExportProvider"
+            android:authorities="os.trendo.tv.liveexport"
+            android:exported="true"
+            android:readPermission="os.trendo.tv.permission.LIVE_EXPORT"
+            android:writePermission="os.trendo.tv.permission.LIVE_EXPORT" />
 
         <!-- TRENDO-OS-Bildschirmschoner (in den TV-Einstellungen wählbar). -->
         <service
