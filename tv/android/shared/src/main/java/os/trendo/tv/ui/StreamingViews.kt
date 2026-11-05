@@ -126,9 +126,9 @@ private fun BroadcasterTile(b: Broadcaster, modifier: Modifier, small: Boolean =
 }
 
 @Composable
-private fun ServiceTile(s: StreamService, apps: List<Pair<String, String>>, open: (String?) -> Unit) {
+private fun ServiceTile(s: StreamService, apps: List<Pair<String, String>>, pkgOverride: String? = null, open: (String?) -> Unit) {
     val ctx = LocalContext.current
-    val pkg = remember(apps) { StreamServices.match(s.keys, apps) }
+    val pkg = remember(apps, pkgOverride) { pkgOverride ?: StreamServices.match(s.keys, apps) }
     val banner by produceState<ImageBitmap?>(null, pkg) {
         value = pkg?.let { p -> withContext(Dispatchers.IO) { runCatching { (ctx.packageManager.getApplicationBanner(p) ?: ctx.packageManager.getApplicationIcon(p)).toBitmap(240, 135).asImageBitmap() }.getOrNull() } }
     }
@@ -163,6 +163,28 @@ private fun BroadcasterView(b: Broadcaster, playVod: (String, String) -> Unit, b
             }
         }
         for ((label, word) in Mediathek.categories) item(key = "${b.key}_$label") { MtRow(label, b.key, word, if (word == "film") 4200 else 900, playVod) }
+    }
+}
+
+/** Reiter „YouTube & Videos": offizielle Video-Apps als Kacheln. */
+@Composable
+fun VideosView() {
+    val ctx = LocalContext.current
+    val apps = installedApps()
+    // „YouTube" darf nicht „YouTube Kids" treffen: genauer Name zuerst.
+    fun pkgFor(s: StreamService) = apps.firstOrNull { it.second.equals(s.name, true) }?.first ?: StreamServices.match(s.keys, apps.filter { a -> s.name != "YouTube" || !a.second.contains("Kids", true) })
+    val first = remember { FocusRequester() }
+    LaunchedEffect(Unit) { runCatching { first.requestFocus() } }
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        SectionTitle("YouTube & Videoplattformen", "öffnet die offizielle App – Anmeldung und Abos dort")
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(4.dp)) {
+            items(StreamServices.videos) { s ->
+                Box(if (s == StreamServices.videos.first()) Modifier.focusRequester(first) else Modifier) {
+                    ServiceTile(s, apps, pkgOverride = pkgFor(s)) { pkg -> openService(ctx, pkg, s.name) }
+                }
+            }
+        }
+        Text("Hinweis: YouTube erlaubt nicht, Videos in fremden Playern abzuspielen – deshalb startet Trendo die offizielle App.", color = TvColors.TextSecondary, fontSize = 9.sp)
     }
 }
 

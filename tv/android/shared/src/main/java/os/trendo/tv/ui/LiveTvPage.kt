@@ -75,7 +75,7 @@ import java.util.Date
 import java.util.Locale
 
 /** Reihenfolge wie gewünscht: Live TV, Filme, Serien, Programmführer – dann Suche und Einstellungen. */
-private enum class LiveTab(val label: String) { CHANNELS("Live TV"), MOVIES("Filme"), SERIES("Serien"), GUIDE("Programmführer"), TIPS("Heute"), STREAMING("Mediatheken & Streaming"), SEARCH("Suche"), SOURCES("Quellen"), FILTER("Jugendschutz & Filter") }
+private enum class LiveTab(val label: String) { CHANNELS("Live TV"), MOVIES("Filme"), SERIES("Serien"), GUIDE("Programmführer"), TIPS("Heute"), STREAMING("Mediatheken & Streaming"), VIDEOS("YouTube & Videos"), SEARCH("Suche"), SOURCES("Quellen"), FILTER("Jugendschutz & Filter") }
 
 /** Alles, was Live TV anzeigt – aus dem privaten Trendo-Speicher geladen. */
 private data class LiveData(
@@ -106,9 +106,9 @@ private fun logCategories(all: List<Channel>, vod: List<Vod>, series: List<Serie
     log("SERIEN", series.map { it.category }.distinct())
 }
 
-private fun load(store: LiveStore): LiveData {
-    // Alle Sprachen frei – gefiltert wird je Reiter über die Sprachleiste.
-    val s = store.settings().copy(onlyGerman = false)
+private fun load(store: LiveStore, prof: os.trendo.tv.livetv.Profile?): LiveData {
+    // Alle Sprachen frei – gefiltert wird je Reiter über die Sprachleiste. Kinderprofil: nur Kinderinhalte.
+    val s = os.trendo.tv.livetv.KidRules.effective(store.settings().copy(onlyGerman = false), prof)
     val all = store.channels()
     val vis = TvRules.visible(all, s).let { v -> v.filter { it.id in s.favorites } + v.filter { it.id !in s.favorites } }
     val vodAll = store.vod().filter { TvRules.allowed(it.category, it.name, s.onlyGerman, s.showAdult) && (!s.kidsMode || TvRules.isKids(it.category, it.name)) }
@@ -145,7 +145,9 @@ fun LiveTvPage(host: LiveHost, profile: String) {
     }
     val voiceOk = remember { ctx.packageManager.queryIntentActivities(android.content.Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0).isNotEmpty() }
     val scope = rememberCoroutineScope()
-    val data by produceState(LiveData(), tick) { value = withContext(Dispatchers.IO) { store.dedupeSources(); load(store) } }
+    val prof = remember(profile) { os.trendo.tv.livetv.ProfileStore(ctx).list().firstOrNull { it.id == profile } }
+    LiveSession.profile = profile
+    val data by produceState(LiveData(), tick) { value = withContext(Dispatchers.IO) { store.dedupeSources(); load(store, prof) } }
 
     fun refresh() {
         status = "Lade Sender, Programmführer, Filme und Serien …"
@@ -159,6 +161,7 @@ fun LiveTvPage(host: LiveHost, profile: String) {
 
     fun playAt(c: Channel, start: Long) {
         LiveSession.channels = data.visible; LiveSession.allChannels = data.all; LiveSession.epg = data.epg; LiveSession.locked = data.settings.lockedGroups; LiveSession.profile = profile
+        LiveSession.favorites = data.settings.favorites
         ctx.startActivity(LiveActivity.intent(ctx, data.visible.indexOf(c).coerceAtLeast(0), start))
     }
 
@@ -180,7 +183,9 @@ fun LiveTvPage(host: LiveHost, profile: String) {
 
     Column(Modifier.fillMaxSize()) {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(vertical = 4.dp, horizontal = 2.dp)) {
-            items(LiveTab.entries.toList()) { t ->
+            // Kinderprofil: keine Quellen, keine Filter, keine Streaming-Dienste.
+            val tabs = if (prof?.kid == true) listOf(LiveTab.CHANNELS, LiveTab.MOVIES, LiveTab.SERIES, LiveTab.GUIDE, LiveTab.TIPS) else LiveTab.entries.toList()
+            items(tabs) { t ->
                 FocusSurface({ tab = t }, Modifier.height(34.dp).then(if (t == tab) Modifier.border(1.5.dp, TvColors.FocusRing, RoundedCornerShape(50)) else Modifier),
                     shape = RoundedCornerShape(50), container = if (t == tab) TvColors.Panel else TvColors.Glass, scale = 1.06f) {
                     Box(Modifier.padding(horizontal = 18.dp).fillMaxHeight(), contentAlignment = Alignment.Center) {
@@ -241,6 +246,7 @@ fun LiveTvPage(host: LiveHost, profile: String) {
                 if (t.programme.isOn(System.currentTimeMillis())) playAt(t.channel, 0) else { toggleReminder(ctx, store, data, t.channel, t.programme); tick++ }
             }
             LiveTab.STREAMING -> StreamingView(host.playVod)
+            LiveTab.VIDEOS -> VideosView()
             LiveTab.SEARCH -> SearchTab(data, ::play) { c, p -> toggleReminder(ctx, store, data, c, p); tick++ }
             LiveTab.MOVIES -> Column {
                 LanguageBar(TvRules.languages(data.vod.map { it.category }.distinct()), langVod) { langVod = it; store.setLanguage("vod", it) }
@@ -254,7 +260,40 @@ fun LiveTvPage(host: LiveHost, profile: String) {
                     "Keine Serien in dieser Sprache. Serien kommen über einen Xtream-Zugang (Quellen → Alles aktualisieren).", autofocus = true)
                 }
             LiveTab.SOURCES -> SourcesTab(data, repo, store, onChanged = { tick++ }, onRefresh = ::refresh)
-            LiveTab.FILTER -> FilterTab(data, store) { tick++ }
+            LiveTab.FILTER -> Column {
+                ProfilesSection(ctx, store)
+                FilterTab(data, store) { tick++ }
+            }
+        }
+    }
+}
+
+/** Profile verwalten: anlegen, Kinderprofil, Zeitlimit, löschen. */
+@Composable
+private fun ProfilesSection(ctx: Context, store: LiveStore) {
+    val ps = remember { os.trendo.tv.livetv.ProfileStore(ctx) }
+    var list by remember { mutableStateOf(ps.list()) }
+    var name by remember { mutableStateOf("") }
+    Column(Modifier.padding(bottom = 10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Text("Profile", color = TvColors.Text, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+        list.forEach { p ->
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text((if (p.kid) "🧒 " else "👤 ") + p.name + (if (p.kid) " · " + (if (p.minutesPerDay > 0) "${p.minutesPerDay} Min./Tag" else "ohne Zeitlimit") else ""),
+                    color = TvColors.Text, fontSize = 11.sp, modifier = Modifier.width(260.dp))
+                if (p.kid) PillButton("Zeitlimit ändern", {
+                    val next = listOf(30, 60, 90, 120, 180, 0).let { l -> l[(l.indexOf(p.minutesPerDay).coerceAtLeast(0) + 1) % l.size] }
+                    ps.update(p.copy(minutesPerDay = next)); list = ps.list()
+                })
+                if (p.id != os.trendo.tv.livetv.ProfileStore.DEFAULT.id) PillButton("Löschen", { ps.remove(p.id); list = ps.list() })
+            }
+        }
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Field(name, { name = it }, "Name für neues Profil", width = 240)
+            PillButton("+ Profil", { ps.add(name, kid = false); name = ""; list = ps.list() })
+            PillButton("+ Kinderprofil", {
+                if (!store.hasPin()) android.widget.Toast.makeText(ctx, "Bitte zuerst unten eine PIN festlegen – sie schützt das Kinderprofil.", android.widget.Toast.LENGTH_LONG).show()
+                else { ps.add(name, kid = true); name = ""; list = ps.list() }
+            })
         }
     }
 }

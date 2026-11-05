@@ -10,5 +10,8 @@
             android:theme="@style/Theme.TrendoTV.Player"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout|orientation" />
         <receiver android:name="os.trendo.tv.ReminderReceiver" android:exported="false" />
+        <activity android:name="os.trendo.tv.MultiViewActivity" android:exported="false" android:screenOrientation="landscape"
+            android:theme="@style/Theme.TrendoTV.Player"
+            android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout|orientation" />
     </application>
 </manifest>

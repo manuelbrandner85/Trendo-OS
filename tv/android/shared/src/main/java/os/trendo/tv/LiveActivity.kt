@@ -75,6 +75,7 @@ object LiveSession {
     var locked: Set<String> = emptySet()
     /** Alle Sender inkl. zusammengeführter Doppelter – für den Ruckelschutz (Ersatz-Stream). */
     var allChannels: List<Channel> = emptyList()
+    var favorites: Set<String> = emptySet()
     var unlocked = false
     var profile = "standard"
 }
@@ -118,6 +119,19 @@ class LiveActivity : ComponentActivity() {
             override fun onPlayerError(e: PlaybackException) = recover(e)
             override fun onPlaybackStateChanged(state: Int) { if (state == Player.STATE_READY) { error = null; retries = 0 } }
         })
+        // Kinderprofil: Zeitlimit pro Tag (jede volle Minute Wiedergabe zählt).
+        lifecycleScope.launch {
+            val ps = os.trendo.tv.livetv.ProfileStore(this@LiveActivity)
+            while (true) {
+                delay(60_000)
+                if (player?.isPlaying == true) ps.addMinute(LiveSession.profile)
+                val prof = ps.list().firstOrNull { it.id == LiveSession.profile }
+                if (os.trendo.tv.livetv.KidRules.limitReached(prof, ps.usedToday(LiveSession.profile))) {
+                    player?.pause(); error = "Die Fernsehzeit für heute ist aufgebraucht. Bis morgen!"
+                    delay(6000); finish(); break
+                }
+            }
+        }
         // Verbindungsqualität aus dem Puffer-Vorrat (alle 2 s, nur Anzeige).
         lifecycleScope.launch {
             while (true) {
@@ -391,6 +405,8 @@ class LiveActivity : ComponentActivity() {
                     }
                 },
                 "Stream-Infos" to { page = "info" },
+                "▦ Multi-View: 2 Sender" to { showMenu = false; startActivity(MultiViewActivity.intent(this@LiveActivity, index, 2)); finish() },
+                "▦ Multi-View: 4 Sender" to { showMenu = false; startActivity(MultiViewActivity.intent(this@LiveActivity, index, 4)); finish() },
                 (if (c != null && c.id in store.settings().favorites) "★ Aus Favoriten entfernen" else "☆ Zu Favoriten") to {
                     c?.let { ch -> val s = store.settings(); store.save(s.copy(favorites = if (ch.id in s.favorites) s.favorites - ch.id else s.favorites + ch.id)) }
                     showMenu = false

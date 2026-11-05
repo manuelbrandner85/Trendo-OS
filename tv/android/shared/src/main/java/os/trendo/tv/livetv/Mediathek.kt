@@ -78,6 +78,16 @@ object StreamServices {
         StreamService("MagentaTV", listOf("magenta"), false, "Abo"), StreamService("RTL+", listOf("rtl+", "rtl plus"), false, "Abo, teils kostenlos"),
         StreamService("Paramount+", listOf("paramount"), false, "Abo"),
     )
+    /** Videoplattformen (offizielle Apps – Inhalte laufen dort, nicht im Trendo-Player). */
+    val videos = listOf(
+        StreamService("YouTube", listOf("youtube"), true, "Videos, Musik, Live"),
+        StreamService("YouTube Kids", listOf("youtube kids"), true, "Für Kinder"),
+        StreamService("Twitch", listOf("twitch"), true, "Live-Streams, Gaming"),
+        StreamService("Dailymotion", listOf("dailymotion"), true, "Videos & Nachrichten"),
+        StreamService("Vimeo", listOf("vimeo"), true, "Kurzfilme & Kreatives"),
+        StreamService("TED", listOf("ted"), true, "Vorträge & Wissen"),
+    )
+
     /** Offizielle Mediathek-Apps (Erkennung am angezeigten Namen). */
     val mediathekApps = mapOf("ARD" to listOf("ard"), "ZDF" to listOf("zdf"), "arte" to listOf("arte"), "3sat" to listOf("3sat"),
         "phoenix" to listOf("phoenix"), "KiKA" to listOf("kika"))

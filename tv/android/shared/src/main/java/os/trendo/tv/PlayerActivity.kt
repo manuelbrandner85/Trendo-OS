@@ -63,6 +63,7 @@ class PlayerActivity : Activity() {
         p.prepare()
         view.player = p
         player = p
+        limitTick()
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
@@ -77,6 +78,20 @@ class PlayerActivity : Activity() {
         return super.dispatchKeyEvent(event)
     }
 
+    private val ticker = android.os.Handler(android.os.Looper.getMainLooper())
+
+    /** Kinderprofil: jede Minute Wiedergabe zählt aufs Tageslimit. */
+    private fun limitTick() {
+        ticker.postDelayed({
+            val ps = os.trendo.tv.livetv.ProfileStore(this)
+            val id = LiveSession.profile
+            if (player?.isPlaying == true) ps.addMinute(id)
+            if (os.trendo.tv.livetv.KidRules.limitReached(ps.list().firstOrNull { it.id == id }, ps.usedToday(id))) {
+                player?.pause(); Toast.makeText(this, "Die Fernsehzeit für heute ist aufgebraucht. Bis morgen!", Toast.LENGTH_LONG).show(); finish()
+            } else limitTick()
+        }, 60_000)
+    }
+
     private fun save() {
         val p = player ?: return
         resume.save(uri, title, kind, p.currentPosition, p.duration.coerceAtLeast(0))
@@ -86,6 +101,7 @@ class PlayerActivity : Activity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        ticker.removeCallbacksAndMessages(null)
         player?.release(); player = null
     }
 

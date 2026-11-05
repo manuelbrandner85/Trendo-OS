@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -55,9 +56,16 @@ import java.util.Locale
 /** „Trendo Live TV" – eigenständige Live-TV-App im Trendo-Stil. */
 class LiveMainActivity : ComponentActivity() {
     private var version by mutableStateOf(0)
+    private lateinit var profiles: os.trendo.tv.livetv.ProfileStore
+    private var profileId by mutableStateOf("standard")
+    private var picking by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        profiles = os.trendo.tv.livetv.ProfileStore(this)
+        profileId = profiles.currentId
+        // Mehrere Profile: beim Start „Wer schaut?"
+        picking = savedInstanceState == null && profiles.list().size > 1
         val store = LiveStore(this)
         // Übernehmen, wenn noch nichts da ist oder ein Zugang sein Passwort verloren hat.
         val needImport = store.sources().isEmpty() || store.sources().any { it.kind == SourceKind.XTREAM && store.secrets.get(it.id) == null }
@@ -87,13 +95,14 @@ class LiveMainActivity : ComponentActivity() {
             Box(Modifier.fillMaxSize().background(TvColors.Background)) {
                 Box(Modifier.fillMaxSize().border(2.dp, Brush.sweepGradient(listOf(TvColors.Cyan, TvColors.ElectricBlue, TvColors.Violet, TvColors.Magenta, TvColors.Cyan)), RoundedCornerShape(0.dp)))
                 Column(Modifier.fillMaxSize().padding(start = 28.dp, end = 28.dp, top = 14.dp, bottom = 10.dp)) {
-                    Header()
+                    Header(profiles.list().firstOrNull { it.id == profileId }?.name ?: "Hauptprofil") { picking = true }
                     Spacer(Modifier.height(8.dp))
                     // version erzwingt Neuladen nach der Übernahme
                     androidx.compose.runtime.key(version) {
-                        LiveTvPage(LiveHost(playVod = { u, t -> startActivity(PlayerActivity.intent(this@LiveMainActivity, u, t, MediaKind.VIDEO)) }), "standard")
+                        LiveTvPage(LiveHost(playVod = { u, t -> startActivity(PlayerActivity.intent(this@LiveMainActivity, u, t, MediaKind.VIDEO)) }), profileId)
                     }
                 }
+                if (picking) ProfilePicker(profiles, profileId, LiveStore(this@LiveMainActivity)) { id -> profileId = id; profiles.currentId = id; picking = false; version++ }
             }
         }
     }
@@ -122,8 +131,42 @@ class LiveMainActivity : ComponentActivity() {
     }.getOrDefault(0)
 }
 
+/** „Wer schaut?" – Kinderprofil verlassen geht nur mit PIN. */
 @androidx.compose.runtime.Composable
-private fun Header() {
+private fun ProfilePicker(ps: os.trendo.tv.livetv.ProfileStore, current: String, store: LiveStore, pick: (String) -> Unit) {
+    var pin by remember { mutableStateOf("") }
+    var wanted by remember { mutableStateOf<String?>(null) }
+    val fromKid = ps.list().firstOrNull { it.id == current }?.kid == true
+    val focus = remember { androidx.compose.ui.focus.FocusRequester() }
+    LaunchedEffect(wanted) { runCatching { focus.requestFocus() } }
+    Box(Modifier.fillMaxSize().background(androidx.compose.ui.graphics.Color(0xF2050A14)), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("Wer schaut?", color = TvColors.Text, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(18.dp))
+            if (wanted == null) Row(horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(14.dp)) {
+                ps.list().forEachIndexed { i, p ->
+                    os.trendo.tv.ui.FocusSurface({ if (fromKid && !p.kid && store.hasPin()) wanted = p.id else pick(p.id) },
+                        Modifier.width(150.dp).height(120.dp).then(if (i == 0) Modifier.focusRequester(focus) else Modifier), scale = 1.1f, container = TvColors.Panel) {
+                        Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = androidx.compose.foundation.layout.Arrangement.Center) {
+                            Text(if (p.kid) "🧒" else "👤", fontSize = 36.sp)
+                            Text(p.name, color = TvColors.Text, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                            if (p.kid) Text("Kinderprofil", color = TvColors.Cyan, fontSize = 9.sp)
+                        }
+                    }
+                }
+            } else Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("PIN eingeben, um das Kinderprofil zu verlassen", color = TvColors.TextSecondary, fontSize = 12.sp)
+                Spacer(Modifier.height(8.dp))
+                os.trendo.tv.ui.Field(pin, { pin = it.filter(Char::isDigit).take(8) }, "PIN", password = true, type = androidx.compose.ui.text.input.KeyboardType.NumberPassword, width = 220, autofocus = true)
+                Spacer(Modifier.height(8.dp))
+                os.trendo.tv.ui.PillButton("Weiter", { if (store.checkPin(pin)) pick(wanted!!) else pin = "" })
+            }
+        }
+    }
+}
+
+@androidx.compose.runtime.Composable
+private fun Header(profileName: String, onProfile: () -> Unit) {
     var now by remember { mutableStateOf(Date()) }
     LaunchedEffect(Unit) { while (true) { now = Date(); delay(60_000L - System.currentTimeMillis() % 60_000L) } }
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -136,6 +179,8 @@ private fun Header() {
         Spacer(Modifier.width(10.dp))
         Text("by Manuel", color = TvColors.Text, fontSize = 19.sp, fontFamily = ScriptFont)
         Spacer(Modifier.weight(1f))
+        os.trendo.tv.ui.PillButton("👤 $profileName", onProfile)
+        Spacer(Modifier.width(14.dp))
         Column(horizontalAlignment = Alignment.End) {
             Text(SimpleDateFormat("HH:mm", Locale.GERMANY).format(now), color = TvColors.Text, fontSize = 22.sp)
             Text(SimpleDateFormat("EE d. MMMM", Locale.GERMANY).format(now), color = TvColors.TextSecondary, fontSize = 8.5.sp)
