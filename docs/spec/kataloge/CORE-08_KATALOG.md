@@ -51,7 +51,10 @@ Funktionen nach den Vorbildern (Audacity, Adobe Audition, iZotope RX; GIMP, Krit
 | VI-09 | Tastatur J/K/L, I/O, Marken | Resolve, Premiere | umgesetzt | VideoSchnittPlus_Ui |
 | VI-10 | Fehlende Dateien neu verknüpfen | Resolve Relink | umgesetzt | VideoSchnittPlus_Ui |
 | VI-11 | Schnitte auf den Takt | Premiere Beat Edit | umgesetzt | BeatDetectTests |
-| VI-12 | Farbkorrektur je Stück | Resolve Color | offen | – |
+| VI-12 | Farbkorrektur je Stück | Resolve Color | umgesetzt | VideoProTests |
+| VI-13 | Tonpegel je Stück | Premiere, DaVinci | umgesetzt | VideoSchnittPro_Ui |
+| VI-14 | Übergangsarten und Titel mit Lage/Größe | Premiere, Kdenlive | umgesetzt | VideoProTests |
+| VI-15 | Zweite Bildspur (Bild im Bild, Logo, Einblendung) | DaVinci, Kdenlive | umgesetzt | VideoProTests |
 
 ## Medien bearbeiten
 

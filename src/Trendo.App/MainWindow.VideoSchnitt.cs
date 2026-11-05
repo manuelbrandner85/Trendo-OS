@@ -276,6 +276,8 @@ public partial class MainWindow
             var k = 0;
             foreach (var f in recent) { var fp = f.FullName; var b = B($"ve-recent-{k++}", (MediaStudio.IsImage(fp) ? "🖼 " : MediaStudio.IsAudio(fp) ? "♪ " : "🎬 ") + f.Name, () => EditAdd(fp, music: MediaStudio.IsAudio(fp))); b.HorizontalAlignment = HorizontalAlignment.Stretch; b.HorizontalContentAlignment = HorizontalAlignment.Left; ToolTip.SetTip(b, fp); sp.Children.Add(b); }
         }
+        sp.Children.Add(new WrapPanel { Children = { B("ve-add-overlay", "Auf die zweite Bildspur (Bild im Bild, Logo)", () => EditAddOverlay(d, Need())) } });
+        sp.Children.Add(EditOverlayPanel(d));
         sp.Children.Add(P("Tipp: Unten in der Zeitleiste ein Stück anklicken – seine Einstellungen stehen dann unter „Auswahl“.", Muted, 11.5));
         if (VideoEdit.Song(d.Data) is { } linked && Songs.Get(linked.Id) is { } ls)
         {
@@ -308,6 +310,7 @@ public partial class MainWindow
                     sp.Children.Add(new WrapPanel { Children = { new TextBlock { Text = "Überblenden ins nächste ", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center }, fade, new TextBlock { Text = " s", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center } } });
                     sp.Children.Add(title);
                     sp.Children.Add(B("ve-clip-apply", "Überblenden und Text übernehmen", () => d.Edit("Überblenden/Text", x => VideoEdit.SetClip(x, s.Index, Num(fade), title.Text ?? ""))));
+                    sp.Children.Add(EditClipPro(d, s.Index, c)); // Profi 23: Farbe, Ton, Übergang, Titellage
                 }
                 if (s.Track == "music")
                 {

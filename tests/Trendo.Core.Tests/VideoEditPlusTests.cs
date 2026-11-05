@@ -17,7 +17,7 @@ public class VideoEditPlusTests
             VideoEdit.SetClip(p, 0, 1, "Urlaub: 100% schön"); VideoEdit.SetClip(p, 2, 9, ""); // letzte Überblendung wirkt nicht
             Assert.Equal(11, VideoEdit.Duration(p), 3); Assert.Equal([0, 4, 8], VideoEdit.Starts(VideoEdit.Clips(p)));
             var s = string.Join(" ", VideoEdit.ExportArgs(p, Path.Combine(dir, "o.mp4")));
-            Assert.Contains("xfade=transition=fade:duration=1:offset=4", s); Assert.Contains("acrossfade=d=1", s); Assert.Contains("concat=n=2:v=1:a=1[vout][abase]", s);
+            Assert.Contains("xfade=transition=fade:duration=1:offset=4", s); Assert.Contains("acrossfade=d=1", s); Assert.Contains("concat=n=2:v=1:a=1[vbase][abase]", s); Assert.Contains("[vbase]null[vout]", s); // seit Profi 23: zweite Bildspur liegt zwischen vbase und vout
             if (VideoEdit.FontFile() is not null) Assert.Contains(@"text='Urlaub\: 100\% schön'", s);
             Assert.Contains("-t 11", s);
         }

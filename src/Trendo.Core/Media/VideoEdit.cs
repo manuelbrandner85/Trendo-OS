@@ -151,34 +151,36 @@ public static class VideoEdit
             if (c.IsImage) a.AddRange(["-loop", "1", "-framerate", fps.ToString(Inv), "-t", F(c.Length), "-i", c.File]);
             else a.AddRange(["-ss", F(c.In), "-t", F(c.Length), "-i", c.File]);
             var vi = input++;
+            var fx = VideoPro.Fx(p, c.Id); // Profi 23: Farbe, Titellage und -größe je Stück
             var title = c.Title.Length > 0 && FontFile() is { } font
-                ? $",drawtext=fontfile='{font.Replace("\\", "/").Replace(":", "\\:")}':text='{DrawText(c.Title)}':fontcolor=white:fontsize=h/14:borderw=3:bordercolor=black@0.6:x=(w-text_w)/2:y=h-text_h-h/10" : "";
-            f.Add($"[{vi}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={fps},format=yuv420p{title}[v{vi}]");
+                ? $",drawtext=fontfile='{font.Replace("\\", "/").Replace(":", "\\:")}':text='{DrawText(c.Title)}':fontcolor=white:fontsize=h/14*{F(fx.TitleSize)}:borderw=3:bordercolor=black@0.6:x=(w-text_w)/2:y={VideoPro.TitleY(fx.TitlePos)}" : "";
+            f.Add($"[{vi}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={fps},format=yuv420p{VideoPro.ColorFilter(fx)}{title}[v{vi}]");
             string ai;
             if (c.HasAudio && !c.IsImage) { ai = $"{vi}:a"; }
             else { a.AddRange(["-f", "lavfi", "-t", F(c.Length), "-i", "anullsrc=r=48000:cl=stereo"]); ai = $"{input++}:a"; }
-            f.Add($"[{ai}]aresample=48000,aformat=channel_layouts=stereo[a{vi}]");
+            f.Add($"[{ai}]aresample=48000,aformat=channel_layouts=stereo{(Math.Abs(c.Volume - 1) > 0.001 ? $",volume={F(c.Volume)}" : "")}[a{vi}]"); // Tonpegel je Stück
             concat += $"[v{vi}][a{vi}]"; ids.Add(vi);
         }
-        if (clips.Select((_, i) => FadeOf(clips, i)).All(x => x <= 0)) f.Add($"{concat}concat=n={clips.Count}:v=1:a=1[vout][abase]");
+        if (clips.Select((_, i) => FadeOf(clips, i)).All(x => x <= 0)) f.Add($"{concat}concat=n={clips.Count}:v=1:a=1[vbase][abase]");
         else
         {
             // Überblendungen: paarweise Kette, xfade (Bild) und acrossfade (Ton); ohne Überblendung wird einfach angehängt
             string cv = $"v{ids[0]}", ca = $"a{ids[0]}"; var len = clips[0].Length;
             for (var i = 1; i < clips.Count; i++)
             {
-                var fd = FadeOf(clips, i - 1); var nv = i == clips.Count - 1 ? "vout" : $"xv{i}"; var na = i == clips.Count - 1 ? "abase" : $"xa{i}";
+                var fd = FadeOf(clips, i - 1); var nv = i == clips.Count - 1 ? "vbase" : $"xv{i}"; var na = i == clips.Count - 1 ? "abase" : $"xa{i}";
                 if (fd > 0)
                 {
-                    f.Add($"[{cv}][v{ids[i]}]xfade=transition=fade:duration={F(fd)}:offset={F(len - fd)}[{nv}]");
+                    f.Add($"[{cv}][v{ids[i]}]xfade=transition={VideoPro.Fx(p, clips[i - 1].Id).Transition}:duration={F(fd)}:offset={F(len - fd)}[{nv}]"); // Übergangsart je Stück
                     f.Add($"[{ca}][a{ids[i]}]acrossfade=d={F(fd)}[{na}]");
                     len += clips[i].Length - fd;
                 }
                 else { f.Add($"[{cv}][{ca}][v{ids[i]}][a{ids[i]}]concat=n=2:v=1:a=1[{nv}][{na}]"); len += clips[i].Length; }
                 cv = nv; ca = na;
             }
-            if (clips.Count == 1) { f.Add($"[{cv}]null[vout]"); f.Add($"[{ca}]anull[abase]"); }
+            if (clips.Count == 1) { f.Add($"[{cv}]null[vbase]"); f.Add($"[{ca}]anull[abase]"); }
         }
+        a.AddRange(VideoPro.OverlayGraph(p, f, "vbase", "vout", ref input, w, h, fps)); // zweite Bildspur: Bild im Bild, Logos, Einblendungen
         var mix = "[abase]"; var n = 1;
         foreach (var m in music)
         {

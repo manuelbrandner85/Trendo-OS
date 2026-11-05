@@ -12,10 +12,10 @@
 - ✓ Stille finden
 - ✓ Export MP4
 - ✓ Deutsche Untertitel und Geräusche über freie KIs
-- ✗ Mehrere Spuren (Video/Ton getrennt)
-- ✗ Übergänge und Titel
-- ✗ Farbkorrektur
-- ✗ Tonpegel je Stück
+- ✓ Zweite Bildspur für Bild im Bild, Logos und Einblendungen (Lage, Größe, Deckkraft, Start, Dauer) – Ton liegt getrennt auf der Musikspur
+- ✓ Übergänge (Überblenden, über Schwarz, Auflösen, Wischen, Schieben, Kreis) und Titel mit Lage und Größe
+- ✓ Farbkorrektur je Stück: Looks (Warm, Kühl, Kontrastreich, Film-Look, Schwarzweiß) und Regler für Helligkeit, Kontrast, Sättigung, Wärme
+- ✓ Tonpegel je Stück (0–200 %)
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Zeitleiste unten, Vorschau oben – entspricht dem Bauplan.
