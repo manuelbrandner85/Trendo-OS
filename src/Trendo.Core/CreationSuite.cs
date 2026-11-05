@@ -104,5 +104,22 @@ public static partial class CreationSuite
         File.AppendAllText(Path.Combine(dir, ListFile), $"- [ ] {text.Trim().Replace('\n', ' ')}\n");
     }
 
+    /// <summary>Fälligkeiten wie in Asana/MS Project als Kalendertermine (05.11.2026): je offenem Schritt mit Fälligkeit ein ganztägiger Termin mit Erinnerung am Vortag.
+    /// Die Kennung ist je Vorhaben und Zeile fest – erneutes Eintragen ersetzt statt zu verdoppeln; erledigte Schritte liefern eine leere Kennungsliste zum Entfernen.</summary>
+    public static (List<Sys.CalEvent> Add, List<string> RemoveUids) CalendarEvents(string dir)
+    {
+        var name = Path.GetFileName(Path.TrimEndingDirectorySeparator(dir));
+        var key = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(Path.GetFullPath(dir).ToLowerInvariant())))[..10].ToLowerInvariant();
+        var add = new List<Sys.CalEvent>(); var remove = new List<string>();
+        foreach (var st in Steps(dir).Where(x => x.Due is not null))
+        {
+            var uid = $"vorhaben-{key}-{st.Line}";
+            if (st.Done) { remove.Add(uid); continue; }
+            var d = st.Due!.Value.Date;
+            add.Add(new(uid, d, d.AddDays(1), $"{(st.Milestone ? "◆" : "📌")} {name}: {st.Text}", Notes: "Fällig im Vorhaben „" + name + "“", AllDay: true, RemindMin: 24 * 60));
+        }
+        return (add, remove);
+    }
+
     public static int Percent(string dir) { var s = Steps(dir); return s.Count == 0 ? 0 : s.Count(x => x.Done) * 100 / s.Count; }
 }

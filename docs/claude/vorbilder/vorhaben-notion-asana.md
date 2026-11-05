@@ -14,10 +14,10 @@
 - ✓ Zeitplan als Gantt: Balken und Kanten ziehen, Abhängigkeiten, kritischer Pfad, Wochenenden, heute (MS Project)
 - ✓ Fortschritt als Ring mit Prozentzahl; alle Dateien des Vorhabens
 - ◐ Mehrere Personen mit Zuständigkeit – Rollen über „KI-Team“, keine Personen-Zuweisung je Aufgabe
-- ✗ Erinnerungen vor Fälligkeit je Aufgabe – Termine laufen über den Kalender
+- ✓ Fälligkeiten „In den Kalender“: offene Schritte als ganztägige Termine mit Erinnerung am Vortag, Meilensteine mit ◆, erneutes Eintragen ohne Doppelte, erledigte verschwinden (05.11.2026)
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Projektbaum links, Ansicht (Übersicht, Tafel, Zeitplan) in der Mitte – wie OpenProject.
 
 ## Nächste Schritte
-1. Fälligkeiten der Schritte in den Kalender
+1. Personen je Aufgabe zuweisen

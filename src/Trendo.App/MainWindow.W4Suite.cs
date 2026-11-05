@@ -31,6 +31,17 @@ public partial class MainWindow
 
     /// <summary>Neues Projekt als Projektmappe (Masterprompt 131, Runde 7): links alle Vorhaben und der Baum des offenen Vorhabens,
     /// rechts Übersicht (Kennzahlen, Aufgaben-Tafel, Zeitplan-Leiste, letzte Dateien) oder die vollen Ansichten Liste, Tafel, Zeitplan und Dateien – alles in einem Fenster.</summary>
+    /// <summary>Fälligkeiten des Vorhabens in den Kalender (offene Schritte rein, erledigte raus) – gibt die Zahl der Termine zurück.</summary>
+    public int SuiteToCalendar(string dir)
+    {
+        var (add, remove) = CreationSuite.CalendarEvents(dir); var cal = Cal;
+        foreach (var e in add) cal.Add(e);
+        if (remove.Count > 0) { var all = cal.All(); foreach (var u in remove) if (all.Any(x => x.Uid == u)) cal.Delete(u); }
+        _core.Audit.Append(Principal.LocalOwner.Name, "vorhaben.kalender", $"{Path.GetFileName(dir)} {add.Count}");
+        Say(add.Count == 0 ? "Kein offener Schritt hat eine Fälligkeit – im Zeitplan ein Datum setzen." : $"{add.Count} Fälligkeiten stehen im Kalender (Erinnerung am Vortag).", "vorhaben");
+        return add.Count;
+    }
+
     private Control SuiteView()
     {
         const string V = "vorhaben";
@@ -191,7 +202,7 @@ public partial class MainWindow
             plan = new StackPanel { Spacing = 4, Children = { new StackPanel { Orientation = Orientation.Horizontal, Children = { labels, canvas } },
                 P($"{from:dd.MM.} bis {to:dd.MM.yyyy} · goldene Linie: heute · rot: kritischer Pfad", Muted, 10.5) } };
         }
-        var planCard = new StackPanel { Spacing = 6, Children = { Row(H("Zeitplan", 13), Act("suite-mini-open", "Zeitplan öffnen", () => { SuiteMode = "zeitplan"; Show(V); })), plan } };
+        var planCard = new StackPanel { Spacing = 6, Children = { Row(H("Zeitplan", 13), new WrapPanel { Children = { Act("suite-to-cal", "In den Kalender", () => Try(V, () => SuiteToCalendar(open))), new Border { Width = 6 }, Act("suite-mini-open", "Zeitplan öffnen", () => { SuiteMode = "zeitplan"; Show(V); }) } }), plan } };
 
         var files = CreationSuite.Files(open).Take(6).ToList();
         var recent = new StackPanel { Spacing = 2, Children = { Row(H($"Letzte Dateien ({x.Files})", 13), Act("suite-files-open", "Alle", () => { SuiteMode = "dateien"; Show(V); })) } };

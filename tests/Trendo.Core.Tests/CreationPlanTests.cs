@@ -60,4 +60,20 @@ public class CreationPlanTests
         }
         finally { try { Directory.Delete(root, true); } catch (IOException) { } }
     }
+    [Fact(DisplayName = "Fälligkeiten in den Kalender: offene Schritte mit Datum werden ganztägige Termine mit Erinnerung am Vortag, Meilenstein mit ◆, feste Kennung; erledigte zum Entfernen")]
+    public void Calendar_events()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "trendo-plan-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var d = Make(root, "- [ ] Planen @2026-11-03\n- [ ] ◆ Abgabe @2026-11-12\n- [x] Material @2026-11-01\n- [ ] Ohne Datum\n");
+            var (add, remove) = CreationSuite.CalendarEvents(d);
+            Assert.Equal(2, add.Count); Assert.Single(remove);
+            Assert.Equal(("📌 Plan: Planen", D(11, 3), D(11, 4), true, 1440), (add[0].Title, add[0].Start, add[0].End, add[0].AllDay, add[0].RemindMin));
+            Assert.StartsWith("◆ Plan: Abgabe", add[1].Title);
+            Assert.Equal(add[0].Uid, CreationSuite.CalendarEvents(d).Add[0].Uid); // feste Kennung: kein doppelter Termin
+            Assert.NotEqual(add[0].Uid, add[1].Uid);
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
 }
