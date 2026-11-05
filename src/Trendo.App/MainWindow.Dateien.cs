@@ -260,7 +260,7 @@ public partial class MainWindow
     {
         _fbButtons.Clear();
         // GNOME/Finder: beim allerersten Aufbau gibt es das Fenster noch nicht – danach einmal neu zeichnen, damit die Fensterknöpfe in die Kopfleiste kommen
-        if (_style is "mac" or "linux" && Windows.Active is not { Page: FK }) _ui.Post(() => { if (Windows.Active is { Page: FK } fa && _titleBars.TryGetValue(fa.Id, out var tb) && !tb.IsVisible) Show(FK); }, Avalonia.Threading.DispatcherPriority.Background);
+        if (_style is "mac" or "linux" or "windows" && Windows.Active is not { Page: FK }) _ui.Post(() => { if (Windows.Active is { Page: FK } fa && _titleBars.TryGetValue(fa.Id, out var tb) && !tb.IsVisible) Show(FK); }, Avalonia.Threading.DispatcherPriority.Background);
         Files.Style = _style;
         var view = FilesView.Length > 0 ? FilesView : _style is "mac" or "linux" ? "symbole" : "liste";
         var light = _theme == "hell";
@@ -583,9 +583,15 @@ public partial class MainWindow
                 HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 0, 0), VerticalAlignment = VerticalAlignment.Center };
             ToolTip.SetTip(plus, _style == "mac" ? "Neuer Tab (⌘T)" : "Neue Registerkarte (Strg+T)"); plus.Click += (_, _) => FilesNewTab();
             bar.Children.Add(plus);
-            return new Border { Name = "fb-tabbar", IsVisible = win || titles.Count > 1, Padding = win ? new Thickness(8, 6, 8, 0) : new Thickness(6, 4),
+            Control tabContent = new ScrollViewer { HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled, Content = bar };
+            var inTitle = _style == "windows" && Windows.Active is { } tw && UnifiedTitle(tw);
+            if (inTitle) tabContent = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { tabContent, Pos(OsHeaderCaps(FK), 1) } }; // Karten links, Fensterknöpfe rechts – wie im Windows-11-Explorer
+            var tabBorder = new Border { Name = "fb-tabbar", IsVisible = win || titles.Count > 1, Padding = inTitle ? new Thickness(8, 6, 0, 0) : win ? new Thickness(8, 6, 8, 0) : new Thickness(6, 4),
                 Background = Brush.Parse(win ? (light ? "#FFE8E8E8" : "#FF1A1A1A") : _style == "mac" ? (light ? "#FFE2E2E4" : "#FF252527") : (light ? "#FFEBEBED" : "#FF2A2A2E")),
-                BorderBrush = Edge, BorderThickness = win ? default : new Thickness(0, 0, 0, 1), Child = new ScrollViewer { HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Auto, VerticalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled, Content = bar } };
+                BorderBrush = Edge, BorderThickness = win ? default : new Thickness(0, 0, 0, 1), Child = tabContent };
+            if (inTitle) OsHeaderDrag(tabBorder, FK); // ziehen verschiebt, Doppelklick maximiert
+            return tabBorder;
+
         }
         static Control DockTop(Control c) { DockPanel.SetDock(c, Avalonia.Controls.Dock.Top); return c; }
         static Control DockBottom(Control c) { DockPanel.SetDock(c, Avalonia.Controls.Dock.Bottom); return c; }

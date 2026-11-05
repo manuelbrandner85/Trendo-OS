@@ -350,7 +350,7 @@ public partial class MainWindow
 
     readonly Dictionary<string, Border> _titleBars = [];
     /// <summary>GNOME und Finder: die Kopfleiste des Programms ist zugleich die Titelleiste (eine Leiste statt zwei).</summary>
-    bool UnifiedTitle(DeskWindow w) => _style is "mac" or "linux" && (w.Page == "dateien" || _unifiedPages.Contains(w.Page));
+    bool UnifiedTitle(DeskWindow w) => (_style is "mac" or "linux" && (w.Page == "dateien" || _unifiedPages.Contains(w.Page))) || (_style == "windows" && w.Page == "dateien"); // Windows: Explorer-Registerkarten sitzen in der Titelleiste
     /// <summary>Seiten, deren eigene Kopfleiste (KI-Zeile des Studios) die Titelleiste ersetzt – Mac und GNOME.</summary>
     readonly HashSet<string> _unifiedPages = [];
 

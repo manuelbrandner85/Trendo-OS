@@ -89,8 +89,9 @@ public partial class MainWindow
         // start und studios haben eine eigene Eingabezeile (T-0218). 3d: die Seite füllt die Höhe; die Leiste sitzt dort im linken Rollbereich.
         // Claude auch hier (Wunsch 02.11.2026): Fokusmodus (statt der KI-Zeile nur ein schlanker Claude-Knopf), Studio-Übersicht und Suche (Claude allgemein)
         // 3d: Claude oben rechts statt nur unten in der schmalen rechten Spalte (dort war der Knopf ohne Scrollen nicht zu sehen)
+        if (key == "dateien") return view;
         if (key is "studios" or "suche" or "3d" || FocusMode && key is not "start") return ClaudeSlimRow(key, view);
-        if (key is "start" or "studios" or "3d") return view;
+        if (key is "start" or "studios" or "3d" or "dateien") return view; // Dateimanager wie Explorer/Finder/Dateien: ohne KI-Zeile (KI über Suche und Startmenü)
         var studio = ModuleOf(key);
         if (studio is null) return view;
         if (CapabilityCatalog.Find(studio) is null)

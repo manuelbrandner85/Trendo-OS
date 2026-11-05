@@ -45,7 +45,12 @@ public partial class MainWindow
             else if (e.Key == Key.Escape && StartMenuOpen) { CloseStartMenu(); e.Handled = true; }
             else if (e.Key == Key.Escape && (OsLauncherOpen || OsWidgetsOpen)) { CloseOsLauncher(); _osWidgets.IsVisible = false; e.Handled = true; }
             else if (e.Key == Key.Tab && e.KeyModifiers.HasFlag(KeyModifiers.Control) && !StartMenuOpen)
-            { CycleWindows(e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? -1 : 1); e.Handled = true; }
+            {
+                // Dateimanager mit mehreren Registerkarten: Strg+Tab wechselt die Karte (Explorer, Finder, Dateien) – sonst die Fenster
+                if (Windows.Active is { Page: "dateien" } && FilesTabCount > 1) FilesSelectTab((FilesTabIndex + (e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? FilesTabCount - 1 : 1)) % FilesTabCount);
+                else CycleWindows(e.KeyModifiers.HasFlag(KeyModifiers.Shift) ? -1 : 1);
+                e.Handled = true;
+            }
         }, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         // Klick daneben schließt das Menü
         AddHandler(PointerPressedEvent, (_, e) =>

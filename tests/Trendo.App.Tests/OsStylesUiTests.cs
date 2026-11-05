@@ -280,7 +280,12 @@ public class OsStyles_Ui
             w.Find<Button>("fb-close").Press(); Pump(); Assert.Null(w.Windows.Get(id)); // Schließen in der Kopfleiste
             // Windows: Uhr öffnet Benachrichtigungen + Kalender rechts, Tippen springt zum Element
             w = Switch(w, "windows"); w.FilesView = "liste"; w.FilesGo(docs); Pump();
-            Assert.True(Visible(w, "win-title-" + w.Windows.Active!.Id)); // Windows behält die Titelleiste
+            Assert.False(Visible(w, "win-title-" + w.Windows.Active!.Id)); // Windows-Explorer: Registerkarten sind die Titelleiste
+            Assert.True(Visible(w, "head-close")); Assert.True(Visible(w, "head-min")); Assert.Equal(46, w.GetVisualDescendants().OfType<Button>().First(b => b.Name == "head-close").Width);
+            w.FilesNewTab(); Pump(); Assert.Equal(2, w.FilesTabCount);
+            w.RaiseEvent(new Avalonia.Input.KeyEventArgs { RoutedEvent = Avalonia.Input.InputElement.KeyDownEvent, Key = Key.Tab, KeyModifiers = KeyModifiers.Control }); Pump();
+            Assert.Equal(0, w.FilesTabIndex); // Strg+Tab wechselt die Karte, nicht das Fenster
+            w.FilesCloseTab(1); Pump();
             Assert.True(w.FilesKey(Key.B, KeyModifiers.None)); Assert.Equal("Bericht.txt", Path.GetFileName(w.FilesSelected));
             w.Find<Button>("os-toggle-clock").Press(); Pump();
             Assert.True(Visible(w, "os-calendar-panel")); Assert.True(Visible(w, "os-cal-month"));

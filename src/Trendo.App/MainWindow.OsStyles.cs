@@ -273,6 +273,21 @@ public sealed partial class MainWindow
             if (mac) { b.PointerEntered += (_, _) => b.Content = glyph; b.PointerExited += (_, _) => b.Content = ""; }
             ToolTip.SetTip(b, tip); b.Click += (_, _) => { if (WindowOfPage(page) is { } w) a(w); }; return b;
         }
+        if (_style == "windows") // Windows 11: Minimieren, Maximieren, Schließen – 46 × 32, Schließen beim Darüberfahren rot
+        {
+            Button W(string name, string glyph, string tip, Action<DeskWindow> a)
+            {
+                var b = new Button { Name = name, Content = glyph, Width = 46, Height = 32, Padding = new Thickness(0), CornerRadius = new CornerRadius(0), BorderThickness = new Thickness(0), Background = Brushes.Transparent,
+                    Foreground = Text, FontSize = 11, HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center, VerticalAlignment = VerticalAlignment.Top };
+                var hover = name == "head-close" ? Brush.Parse("#C42B1C") : Brush.Parse(_theme == "hell" ? "#0F000000" : "#0FFFFFFF");
+                b.PointerEntered += (_, _) => { b.Background = hover; if (name == "head-close") b.Foreground = Brushes.White; };
+                b.PointerExited += (_, _) => { b.Background = Brushes.Transparent; b.Foreground = Text; };
+                ToolTip.SetTip(b, tip); b.Click += (_, _) => { if (WindowOfPage(page) is { } w) a(w); }; return b;
+            }
+            return new StackPanel { Name = "head-caps", Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top, Children = {
+                W("head-min", "—", "Minimieren", w => { Windows.Minimize(w.Id); AfterWindowChange(); }), W("head-max", "☐", "Maximieren", w => { Windows.ToggleMaximize(w.Id); AfterWindowChange(); }),
+                W("head-close", "✕", "Schließen", w => CloseWindow(w.Id)) } };
+        }
         if (_style == "mac")
             return new StackPanel { Name = "head-caps", Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0, 6, 0), Children = {
                 Cap("head-close", "Schließen", "✕", "#FF5F57", w => CloseWindow(w.Id)), Cap("head-min", "Im Dock ablegen", "—", "#FEBC2E", w => { Windows.Minimize(w.Id); AfterWindowChange(); }),
