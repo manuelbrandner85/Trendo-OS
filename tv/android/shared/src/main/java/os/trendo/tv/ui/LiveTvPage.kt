@@ -174,7 +174,7 @@ fun LiveTvPage(host: LiveHost, profile: String) {
     val scope = rememberCoroutineScope()
     val prof = remember(profile) { os.trendo.tv.livetv.ProfileStore(ctx).list().firstOrNull { it.id == profile } }
     LiveSession.profile = profile
-    val data by produceState(LiveCache.byProfile[profile] ?: LiveData(), tick) {
+    val produced by produceState(LiveCache.byProfile[profile] ?: LiveData(), tick) {
         val cached = LiveCache.byProfile[profile]
         if (cached != null && tick == 0 && LiveCache.stamp == store.sourcesAt.toInt() + store.epgAt.toInt()) { value = cached; return@produceState }
         // In Stufen laden: Sender sofort, dann Programmführer, dann Filme & Serien – vorhandene Anzeige bleibt dabei stehen.
@@ -188,6 +188,21 @@ fun LiveTvPage(host: LiveHost, profile: String) {
         LiveCache.byProfile[profile] = value; LiveCache.stamp = store.sourcesAt.toInt() + store.epgAt.toInt()
         // Aufnahme-Regeln auf den frischen Programmführer anwenden.
         withContext(Dispatchers.IO) { os.trendo.tv.Recordings.applyRules(ctx, value.visible, value.epg, System.currentTimeMillis()) }
+    }
+    // Einstellungen geändert (Favorit, ausblenden, sperren …): nur im Speicher neu filtern – sofort sichtbar, ohne alles neu einzulesen.
+    var override by remember { mutableStateOf<LiveData?>(null) }
+    LaunchedEffect(produced) { override = null }
+    val data = override ?: produced
+    fun settingsChanged() {
+        val base = data
+        scope.launch {
+            override = withContext(Dispatchers.Default) {
+                val st = os.trendo.tv.livetv.KidRules.effective(store.settings().copy(onlyGerman = false), prof)
+                val vis = TvRules.visible(base.all, st).let { v -> v.filter { it.id in st.favorites } + v.filter { it.id !in st.favorites } }
+                base.copy(settings = st, visible = vis, reminders = store.reminders())
+            }
+            LiveCache.byProfile[profile] = override!!
+        }
     }
     // Still im Hintergrund aktualisieren: Senderliste höchstens 1× am Tag, Programmführer alle 12 Stunden.
     LaunchedEffect(data.loaded) {
@@ -281,7 +296,7 @@ fun LiveTvPage(host: LiveHost, profile: String) {
                 }
             } }
         }
-        menuFor?.let { c -> ChannelMenu(c, data, store, ctx, close = { menuFor = null; tick++ }, playAt = { ch, st -> menuFor = null; playAt(ch, st) },
+        menuFor?.let { c -> ChannelMenu(c, data, store, ctx, close = { menuFor = null; settingsChanged() }, playAt = { ch, st -> menuFor = null; playAt(ch, st) },
             multi = { ch -> menuFor = null; PreviewHub.release(); LiveSession.channels = data.visible; LiveSession.favorites = data.settings.favorites
                 ctx.startActivity(os.trendo.tv.MultiViewActivity.intent(ctx, data.visible.indexOf(ch).coerceAtLeast(0), 2)) },
             status = { status = it }) }
@@ -326,7 +341,7 @@ fun LiveTvPage(host: LiveHost, profile: String) {
                                 else shownCh.filter { it.group == g }
                     } },
                     play = ::play,
-                    onFav = { c -> store.save(data.settings.copy(favorites = data.settings.favorites.let { if (c.id in it) it - c.id else it + c.id })); tick++ },
+                    onFav = { c -> store.save(data.settings.copy(favorites = data.settings.favorites.let { if (c.id in it) it - c.id else it + c.id })); settingsChanged() },
                     autofocus = data.loaded && menuFor == null, onMenu = { menuFor = it })
             }
             LiveTab.GUIDE -> {
@@ -355,7 +370,7 @@ fun LiveTvPage(host: LiveHost, profile: String) {
             LiveTab.SOURCES -> SourcesTab(data, repo, store, onChanged = { tick++ }, onRefresh = ::refresh)
             LiveTab.FILTER -> Column {
                 ProfilesSection(ctx, store)
-                FilterTab(data, store) { tick++ }
+                FilterTab(data, store) { settingsChanged() }
             }
         }
     }
@@ -831,10 +846,11 @@ private fun SourcesTab(data: LiveData, repo: LiveRepo, store: LiveStore, onChang
 // ---------- Filter & Jugendschutz ----------
 @Composable
 private fun FilterTab(data: LiveData, store: LiveStore, onChanged: () -> Unit) {
-    val s = data.settings
+    // Sofort anzeigen, was man gedrückt hat (nicht erst nach dem Neufiltern).
+    var s by remember(data.settings) { mutableStateOf(data.settings) }
     var pin by remember { mutableStateOf("") }
     var unlocked by remember { mutableStateOf(!store.hasPin()) }
-    fun set(n: LiveSettings) { store.save(n); onChanged() }
+    fun set(n: LiveSettings) { s = n; store.save(n); onChanged() }
     LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         if (!unlocked) {
             item { Info("Diese Einstellungen sind mit einer PIN geschützt.") }
@@ -861,10 +877,10 @@ private fun FilterTab(data: LiveData, store: LiveStore, onChanged: () -> Unit) {
         item { Text("Gruppen: ausblenden oder mit PIN sperren", color = TvColors.Text, fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
         items(TvRules.groups(data.all), key = { it }) { g ->
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(g, color = TvColors.Text, fontSize = 11.sp, modifier = Modifier.width(300.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                PillButton(if (g in s.hiddenGroups) "Einblenden" else "Ausblenden", { set(s.copy(hiddenGroups = if (g in s.hiddenGroups) s.hiddenGroups - g else s.hiddenGroups + g)) })
+                Text((if (g in s.lockedGroups) "🔒 " else "") + g, color = if (g in s.hiddenGroups) TvColors.TextSecondary.copy(alpha = 0.5f) else TvColors.Text, fontSize = 11.sp, modifier = Modifier.width(300.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                PillButton(if (g in s.hiddenGroups) "✓ ausgeblendet · Einblenden" else "Ausblenden", { set(s.copy(hiddenGroups = if (g in s.hiddenGroups) s.hiddenGroups - g else s.hiddenGroups + g)) })
                 Spacer(Modifier.width(6.dp))
-                PillButton(if (g in s.lockedGroups) "Entsperren" else "Sperren 🔒", { set(s.copy(lockedGroups = if (g in s.lockedGroups) s.lockedGroups - g else s.lockedGroups + g)) })
+                PillButton(if (g in s.lockedGroups) "🔒 gesperrt · Entsperren" else "Sperren", { set(s.copy(lockedGroups = if (g in s.lockedGroups) s.lockedGroups - g else s.lockedGroups + g)) })
             }
         }
     }
