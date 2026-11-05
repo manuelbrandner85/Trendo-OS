@@ -202,12 +202,14 @@ public partial class MainWindow
                 Background = on ? Brush.Parse("#33F5B83D") : Brushes.Transparent, BorderBrush = on ? Brush.Parse("#F5B83D") : Brushes.Transparent, BorderThickness = new Thickness(1),
                 Content = new StackPanel { Children = { new TextBlock { Text = $"{h.Title} – {h.Artist}", FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
                     new TextBlock { Text = string.Join(" · ", new[] { h.Year?.ToString(), h.Album, h.Seconds > 0 ? CoverStudio.Time(h.Seconds) : null }.Where(x => !string.IsNullOrEmpty(x))), Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap } } } };
-            b.Click += (_, _) => { MsCoverPick(ii); Show(MS); };
+            ToolTip.SetTip(b, "Anklicken übernimmt Titel, Länge, Stil, Tonart und Tempo in „Erstellen“");
+            b.Click += (_, _) => _ = MsCoverUse(ii); // Wunsch 05.11.2026: Klick übernimmt alle Einstellungen
             sp.Children.Add(b);
         }
         if (_cwHit is { } hit)
         {
-            var link = new Button { Name = "cw-page", Content = "Seite bei MusicBrainz öffnen", FontSize = 11.5, Padding = new Thickness(8, 2) };
+            if (MsCoverTaken.Count > 0) sp.Children.Add(new TextBlock { Name = "cw-taken", Text = "✓ Übernommen: " + string.Join(", ", MsCoverTaken), Foreground = Brush.Parse("#4ADE80"), FontSize = 11.5, TextWrapping = TextWrapping.Wrap });
+            var link = new Button { Name = "cw-page", Content = "Infos bei MusicBrainz ansehen", FontSize = 11.5, Padding = new Thickness(8, 2) };
             link.Click += (_, _) => Launch(hit.Page);
             sp.Children.Add(link);
         }
