@@ -93,6 +93,7 @@
         <!-- TRENDO-OS-Bildschirmschoner (in den TV-Einstellungen wählbar). -->
         <service
             android:name=".TrendoScreensaver"
+            android:process=":saver"
             android:exported="true"
             android:label="TRENDO OS"
             android:permission="android.permission.BIND_DREAM_SERVICE">

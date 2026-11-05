@@ -69,6 +69,20 @@ class LiveMainActivity : ComponentActivity() {
                 version++
             }
         }
+        // „Direkt ins Live-TV": letzten Sender sofort zeigen (Einstellung unter Jugendschutz & Filter).
+        if (savedInstanceState == null && store.autoplayLast) lifecycleScope.launch {
+            val (list, i) = withContext(Dispatchers.IO) {
+                val s = store.settings()
+                val vis = os.trendo.tv.livetv.TvRules.visible(store.channels(), s)
+                vis to vis.indexOfFirst { it.id == s.lastChannel }
+            }
+            if (i >= 0) {
+                os.trendo.tv.LiveSession.channels = list; os.trendo.tv.LiveSession.allChannels = list
+                os.trendo.tv.LiveSession.epg = withContext(Dispatchers.IO) { store.epg() }
+                os.trendo.tv.LiveSession.locked = store.settings().lockedGroups
+                startActivity(os.trendo.tv.LiveActivity.intent(this@LiveMainActivity, i))
+            }
+        }
         setContent {
             Box(Modifier.fillMaxSize().background(TvColors.Background)) {
                 Box(Modifier.fillMaxSize().border(2.dp, Brush.sweepGradient(listOf(TvColors.Cyan, TvColors.ElectricBlue, TvColors.Violet, TvColors.Magenta, TvColors.Cyan)), RoundedCornerShape(0.dp)))

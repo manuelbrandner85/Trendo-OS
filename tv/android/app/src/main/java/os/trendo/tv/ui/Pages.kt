@@ -460,8 +460,12 @@ private fun HdmiPage(state: TvState, actions: TvActions) {
     }
 }
 
+private fun saverLabel(h: Int) = if (h == 0) "ohne Ende" else "$h Std., dann Ruhezustand"
+
 @Composable
 private fun SettingsPage(state: TvState, actions: TvActions, go: (Section) -> Unit) {
+    val ctx = androidx.compose.ui.platform.LocalContext.current
+    var saverHours by remember { mutableStateOf(ctx.getSharedPreferences("trendo_tv_saver", android.content.Context.MODE_PRIVATE).getInt("max_hours", 4)) }
     LazyColumn {
         item {
             ActionList(
@@ -471,6 +475,10 @@ private fun SettingsPage(state: TvState, actions: TvActions, go: (Section) -> Un
                     (if (state.isHome) "Startseiten-Wächter ausschalten (zurück zu Google)" else "Trendo als Startseite festlegen") to
                         (if (state.isHome) actions.homeSettings else actions.makeHome),
                     "Bildschirmschoner: TRENDO OS wählen" to { actions.settings(Settings.ACTION_DREAM_SETTINGS) },
+                    "Bildschirmschoner-Dauer: ${saverLabel(saverHours)} (ändern)" to {
+                        saverHours = listOf(1, 2, 4, 8, 0).let { l -> l[(l.indexOf(saverHours) + 1) % l.size] }
+                        ctx.getSharedPreferences("trendo_tv_saver", android.content.Context.MODE_PRIVATE).edit().putInt("max_hours", saverHours).apply()
+                    },
                     "Wetter-Ort festlegen" to { go(Section.WEATHER) },
                     "Apps verwalten / entfernen" to { go(Section.APP_MANAGE) },
                     "Einschlaf-Timer" to { go(Section.TIMER) },

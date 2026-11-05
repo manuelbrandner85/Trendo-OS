@@ -42,7 +42,10 @@ class TrendoScreensaver : DreamService() {
         super.onAttachedToWindow()
         isInteractive = false
         isFullscreen = true
-        isScreenBright = false // dezent – der Fernseher bleibt im Bildschirmschoner gedimmt
+        // Manche Fernseher schalten bei gedimmtem Bildschirmschoner nach kurzer Zeit ab – deshalb normal hell
+        // und ausdrücklich wach halten, bis die gewählte Höchstdauer erreicht ist.
+        isScreenBright = true
+        window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         val root = FrameLayout(this).apply { setBackgroundColor(Color.BLACK) }
         back = ImageView(this).apply { scaleType = ImageView.ScaleType.CENTER_CROP; alpha = 0f }
@@ -79,6 +82,9 @@ class TrendoScreensaver : DreamService() {
     override fun onDreamingStarted() {
         super.onDreamingStarted()
         handler.postDelayed(::next, SLIDE_MS)
+        // Nach der Höchstdauer beenden: dann geht der Fernseher regulär in den Ruhezustand.
+        val hours = getSharedPreferences("trendo_tv_saver", MODE_PRIVATE).getInt("max_hours", 4)
+        if (hours > 0) handler.postDelayed({ window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON); finish() }, hours * 3_600_000L)
     }
 
     private fun next() {
