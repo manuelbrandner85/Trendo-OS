@@ -60,8 +60,12 @@ public class VideoPlatformsTests
         Assert.StartsWith("https://www.twitch.tv/search?term=", VideoPlatforms.SearchPage("twitch", "musik"));
         Assert.Equal("musik", VideoPlatforms.CategoryQuery("musik"));
         Assert.All(VideoPlatforms.All, p => Assert.StartsWith("https://", p.Home));
-        using var http = new HttpClient();
-        await Assert.ThrowsAsync<InvalidOperationException>(() => VideoPlatforms.SearchAsync(http, "youtube", "x"));
+        var asked = 0;
+        await Assert.ThrowsAsync<InvalidOperationException>(() => VideoPlatforms.SearchAsync((_, _) => { asked++; return Task.FromResult(""); }, "youtube", "x"));
+        Assert.Equal(0, asked); // YouTube wird nie abgefragt
+        var got = await VideoPlatforms.SearchAsync((u, _) => Task.FromResult(u.Contains("sepiasearch") ? PeerTube : ""), "peertube", "", "musik");
+        Assert.Single(got);
+        Assert.Equal("https://tube.example.org/v-720.mp4", await VideoPlatforms.PlayUrlAsync((u, _) => Task.FromResult("""{"files":[{"resolution":{"id":720},"fileUrl":"https://tube.example.org/v-720.mp4"}]}"""), got[0]));
         Assert.Throws<ArgumentException>(() => VideoPlatforms.Get("kinox"));
     }
 }

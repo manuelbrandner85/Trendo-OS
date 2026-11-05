@@ -95,15 +95,9 @@ public static class LegalSources
         return list;
     }
 
-    /// <summary>Suche ausführen (HTTP-Zugang von außen, damit Tests ohne Netz laufen).</summary>
-    public static async Task<List<Video>> SearchAsync(HttpClient http, string query, string category, string? channel, CancellationToken ct = default)
-    {
-        using var req = new HttpRequestMessage(HttpMethod.Post, MediathekApi) { Content = new StringContent(QueryJson(query, category, channel), Encoding.UTF8, "text/plain") };
-        req.Headers.UserAgent.ParseAdd("TrendoOS");
-        using var res = await http.SendAsync(req, ct);
-        if (!res.IsSuccessStatusCode) throw new InvalidOperationException($"Mediathek-Suche nicht erreichbar ({(int)res.StatusCode}).");
-        return Parse(await res.Content.ReadAsStringAsync(ct));
-    }
+    /// <summary>Suche ausführen. Der Netzzugang kommt von außen (<paramref name="post"/>: Adresse, Text → Antwort), damit der Kern ohne Netz-Bibliothek bleibt (QA-019) und Tests ohne Netz laufen.</summary>
+    public static async Task<List<Video>> SearchAsync(Func<string, string, Task<string>> post, string query, string category, string? channel) =>
+        Parse(await post(MediathekApi, QueryJson(query, category, channel)));
 
     public static string DurationText(TimeSpan d) => d.TotalHours >= 1 ? $"{(int)d.TotalHours} Std. {d.Minutes} Min." : $"{Math.Max(1, (int)Math.Round(d.TotalMinutes))} Min.";
 }

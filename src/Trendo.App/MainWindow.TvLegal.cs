@@ -32,7 +32,7 @@ public partial class MainWindow
         try
         {
             _tvLegalResults = TvLegalSearchOverride is { } o ? await o(query, category, channel) :
-                _core.Offline ? throw new InvalidOperationException("Trendo ist offline – die Mediathek-Suche braucht Internet.") : await LegalSources.SearchAsync(TvHttp, query, category, channel);
+                _core.Offline ? throw new InvalidOperationException("Trendo ist offline – die Mediathek-Suche braucht Internet.") : await LegalSources.SearchAsync(TvPostText, query, category, channel);
             _tvLegalStatus = _tvLegalResults.Count == 0 ? "Nichts gefunden – anderen Suchbegriff oder andere Kategorie probieren." : $"{_tvLegalResults.Count} Sendungen";
         }
         catch (Exception e) when (e is HttpRequestException or TaskCanceledException or InvalidOperationException) { _tvLegalResults = []; _tvLegalStatus = e is InvalidOperationException ? e.Message : "Die Mediathek-Suche ist gerade nicht erreichbar."; }

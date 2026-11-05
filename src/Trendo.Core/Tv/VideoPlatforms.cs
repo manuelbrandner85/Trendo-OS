@@ -169,33 +169,26 @@ public static class VideoPlatforms
     }
 
     // ---------- Suche ----------
-    static async Task<string> Get(HttpClient http, string url, string what, CancellationToken ct)
-    {
-        using var req = new HttpRequestMessage(HttpMethod.Get, url); req.Headers.UserAgent.ParseAdd("TrendoOS");
-        using var res = await http.SendAsync(req, ct);
-        if (!res.IsSuccessStatusCode) throw new InvalidOperationException($"{what} nicht erreichbar ({(int)res.StatusCode}).");
-        return await res.Content.ReadAsStringAsync(ct);
-    }
-
-    /// <summary>Suche auf einer Plattform mit Suche in Trendo; Kategorie ergänzt den Suchbegriff.</summary>
-    public static async Task<List<Video>> SearchAsync(HttpClient http, string platform, string query, string category = "alle", CancellationToken ct = default)
+    /// <summary>Suche auf einer Plattform mit Suche in Trendo; Kategorie ergänzt den Suchbegriff. Der Netzzugang kommt von außen
+    /// (<paramref name="get"/>: Adresse und Bezeichnung → Antwort), damit der Kern ohne Netz-Bibliothek bleibt (QA-019).</summary>
+    public static async Task<List<Video>> SearchAsync(Func<string, string, Task<string>> get, string platform, string query, string category = "alle")
     {
         var q = query.Trim().Length > 0 ? query.Trim() : CategoryQuery(category);
         return platform switch
         {
-            "peertube" => ParsePeerTube(await Get(http, PeerTubeSearchUrl(q), "Die PeerTube-Suche", ct)),
-            "dailymotion" => ParseDailymotion(await Get(http, DailymotionSearchUrl(q), "Die Dailymotion-Suche", ct)),
-            "archive" => ParseArchive(await Get(http, ArchiveSearchUrl(q), "Die Archiv-Suche", ct)),
+            "peertube" => ParsePeerTube(await get(PeerTubeSearchUrl(q), "Die PeerTube-Suche")),
+            "dailymotion" => ParseDailymotion(await get(DailymotionSearchUrl(q), "Die Dailymotion-Suche")),
+            "archive" => ParseArchive(await get(ArchiveSearchUrl(q), "Die Archiv-Suche")),
             _ => throw new InvalidOperationException($"{Get(platform).Name} wird auf der offiziellen Seite durchsucht."),
         };
     }
 
     /// <summary>Wiedergabe-Adresse für den Trendo-Player (PeerTube, Archiv); null = auf der Original-Seite ansehen.</summary>
-    public static async Task<string?> PlayUrlAsync(HttpClient http, Video v, CancellationToken ct = default)
+    public static async Task<string?> PlayUrlAsync(Func<string, string, Task<string>> get, Video v)
     {
         if (v.PlayUrl is not null) return v.PlayUrl;
         if (v.ResolveUrl is null) return null;
-        var json = await Get(http, v.ResolveUrl, "Das Video", ct);
+        var json = await get(v.ResolveUrl, "Das Video");
         return v.Platform switch { "peertube" => PeerTubePlayUrl(json), "archive" => ArchivePlayUrl(json), _ => null };
     }
 

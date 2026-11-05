@@ -24,6 +24,23 @@ public partial class MainWindow
     /// <summary>Für Tests: Wiedergabe-Adresse ohne Netz.</summary>
     public Func<VideoPlatforms.Video, Task<string?>>? TvVideoResolveOverride { get; set; }
 
+    /// <summary>Netzzugang für die TV-Quellen (der Kern bleibt ohne Netz-Bibliothek, QA-019): Text holen bzw. senden, Fehler als deutsche Meldung.</summary>
+    static async Task<string> TvGetText(string url, string what)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Get, url); req.Headers.UserAgent.ParseAdd("TrendoOS");
+        using var res = await TvHttp.SendAsync(req);
+        if (!res.IsSuccessStatusCode) throw new InvalidOperationException($"{what} nicht erreichbar ({(int)res.StatusCode}).");
+        return await res.Content.ReadAsStringAsync();
+    }
+    static async Task<string> TvPostText(string url, string body)
+    {
+        using var req = new HttpRequestMessage(HttpMethod.Post, url) { Content = new StringContent(body, System.Text.Encoding.UTF8, "text/plain") };
+        req.Headers.UserAgent.ParseAdd("TrendoOS");
+        using var res = await TvHttp.SendAsync(req);
+        if (!res.IsSuccessStatusCode) throw new InvalidOperationException($"Mediathek-Suche nicht erreichbar ({(int)res.StatusCode}).");
+        return await res.Content.ReadAsStringAsync();
+    }
+
     public void TvVideoSelect(string platform)
     {
         VideoPlatforms.Get(platform); _tvVidPlatform = platform; _tvVidResults = null; _tvVidStatus = ""; _tvTab = "videos";
@@ -45,7 +62,7 @@ public partial class MainWindow
         try
         {
             _tvVidResults = TvVideoSearchOverride is { } o ? await o(pf.Id, _tvVidQuery, category) :
-                _core.Offline ? throw new InvalidOperationException("Trendo ist offline – die Suche braucht Internet.") : await VideoPlatforms.SearchAsync(TvHttp, pf.Id, _tvVidQuery, category);
+                _core.Offline ? throw new InvalidOperationException("Trendo ist offline – die Suche braucht Internet.") : await VideoPlatforms.SearchAsync(TvGetText, pf.Id, _tvVidQuery, category);
             _tvVidStatus = _tvVidResults.Count == 0 ? "Nichts gefunden – anderen Suchbegriff oder andere Kategorie probieren." : $"{_tvVidResults.Count} Videos auf {pf.Name}";
         }
         catch (Exception e) when (e is HttpRequestException or TaskCanceledException or InvalidOperationException)
@@ -59,7 +76,7 @@ public partial class MainWindow
         if (VideoPlatforms.Get(v.Platform).Mode != VideoPlatforms.Mode.InTrendo) { TvLegalOpen(v.PageUrl); return; }
         _tvVidStatus = "Video wird geladen …"; Show("tv");
         string? url = null;
-        try { url = TvVideoResolveOverride is { } o ? await o(v) : await VideoPlatforms.PlayUrlAsync(TvHttp, v); }
+        try { url = TvVideoResolveOverride is { } o ? await o(v) : await VideoPlatforms.PlayUrlAsync(TvGetText, v); }
         catch (Exception e) when (e is HttpRequestException or TaskCanceledException or InvalidOperationException or System.Text.Json.JsonException) { _tvVidStatus = "Das Video ließ sich nicht laden – " + e.Message; }
         if (url is null) { _tvVidStatus = "Hier gibt es keine abspielbare Datei – „Seite“ öffnet das Original."; Show("tv"); return; }
         _tvVidStatus = "";
