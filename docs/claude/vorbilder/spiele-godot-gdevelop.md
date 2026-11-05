@@ -2,7 +2,7 @@
 
 - Programme: „Spiele bauen“, „Werkstatt“
 - Vorbilder: Godot Engine, GDevelop, Unreal Engine (frei bzw. kostenlos), Construct 3, GameMaker, RPG Maker (kostenpflichtig) – Funktionsumfang aus öffentlicher Doku
-- Werkzeug: Funktionsumfang aus öffentlicher Doku und Bedienkonzept; kein fremder Code, keine fremden Grafiken oder Texte. Trendo-Stand aus Code und Tests, Stand 04.11.2026.
+- Werkzeug: Funktionsumfang aus öffentlicher Doku und Bedienkonzept; kein fremder Code, keine fremden Grafiken oder Texte. Trendo-Stand aus Code und Tests, Stand 05.11.2026.
 
 ## Funktionen eines Profi-Programms – Stand in Trendo
 ✓ vorhanden · ◐ teilweise · ✗ fehlt
@@ -18,12 +18,13 @@
 - ✓ Unreal-Projekt anlegen (AAA+ mit Lumen und virtuellen Schatten)
 - ✓ Geräusche, Musik, 3D aus Bild über freie KIs
 - ◐ Szenenbaum: Objekte im Raster statt freier Szene
-- ✗ Animationen (Sprite-Bilder je Zustand)
-- ✗ Mehrere Level hintereinander
+- ✓ Mehrere Level hintereinander wie die Szenen in GDevelop: Level-Reiter über der Fläche, hinzufügen, umbenennen, früher schieben, löschen (Eigenschaften rücken mit); das Ziel lädt das nächste Level, erst das letzte gewinnt – im Probespiel und im gebauten Spiel
+- ✓ Ebenen wie die TileMap-Ebenen in Godot: Spiel-Ebene (fest, mit Wirkung) und Hintergrund-Ebene nur mit Deko (Wolke, Berg, Baum, Busch, Gras); die andere Ebene ist beim Malen blass zu sehen
+- ✓ Animationen je Zustand wie AnimatedSprite in Godot: stehen, laufen, springen, fallen je ein Bildstreifen mit Anzahl Bilder und Tempo, Figur dreht sich in Laufrichtung; das Bauen kopiert die Streifen ins Spiel
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Level in der Mitte, Kachel-Werkzeuge oben, rechts Spielregeln, Regeln und Objekt-Eigenschaften – Bauplan erfüllt.
 
 ## Nächste Schritte
-1. Mehrere Level hintereinander
-2. Animationen je Zustand
+1. Freie Szene statt Raster (Objekte pixelgenau setzen)
+2. Animationen auch für Gegner

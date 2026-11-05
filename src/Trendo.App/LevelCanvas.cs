@@ -17,6 +17,8 @@ public sealed class LevelCanvas : Control
     public Action<int, int>? Picked { get; set; }
     public (int X, int Y)? Selected { get; set; }
     public const char PickTool = '?';
+    /// <summary>Die andere Ebene blass anzeigen (Hintergrund beim Malen des Spiels, Spiel beim Malen des Hintergrunds).</summary>
+    public List<string>? Ghost { get; set; }
     char[][] _grid = [];
     bool _painting, _changed; char _brush;
 
@@ -61,6 +63,10 @@ public sealed class LevelCanvas : Control
         var rows = _painting ? _grid.Select(r => new string(r)).ToList() : Rows;
         var c = Cell; ctx.FillRectangle(Sky, new Rect(0, 0, Bounds.Width, Bounds.Height));
         var grid = new Pen(new SolidColorBrush(Color.Parse("#14FFFFFF")), 1);
+        if (Ghost is { } g)
+            using (ctx.PushOpacity(0.35))
+                for (var y = 0; y < g.Count; y++)
+                    for (var x = 0; x < g[y].Length; x++) DrawTile(ctx, g[y][x], new Rect(x * c, y * c, c, c), y == 0 || x >= g[y - 1].Length || g[y - 1][x] != '#');
         for (var y = 0; y < rows.Count; y++)
             for (var x = 0; x < rows[y].Length; x++)
             {
@@ -86,6 +92,12 @@ public sealed class LevelCanvas : Control
             case 'E': ctx.FillRectangle(Foe, r.Deflate(c * 0.12)); ctx.FillRectangle(White, new Rect(r.X + c * 0.55, r.Y + c * 0.3, c * 0.18, c * 0.18)); break;
             case '^': for (var i = 0; i < 3; i++) ctx.DrawGeometry(Spike, null, new PolylineGeometry([new Point(r.X + i * c / 3, r.Bottom), new Point(r.X + i * c / 3 + c / 6, r.Y + c * 0.35), new Point(r.X + (i + 1) * c / 3, r.Bottom)], true)); break;
             case 'S': ctx.DrawRectangle(Start, null, new RoundedRect(r.Deflate(c * 0.18), 4)); ctx.DrawText(new FormattedText("S", System.Globalization.CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Inter", FontStyle.Normal, FontWeight.Bold), c * 0.5, White), new Point(r.X + c * 0.33, r.Y + c * 0.18)); break;
+            // Hintergrund-Ebene (nur Deko)
+            case 'w': ctx.DrawEllipse(new SolidColorBrush(Color.Parse("#C8FFFFFF")), null, new Point(r.X + c * 0.35, r.Center.Y + c * 0.08), c * 0.28, c * 0.2); ctx.DrawEllipse(new SolidColorBrush(Color.Parse("#C8FFFFFF")), null, new Point(r.X + c * 0.62, r.Center.Y - c * 0.05), c * 0.3, c * 0.26); break;
+            case 'b': ctx.DrawEllipse(new SolidColorBrush(Color.Parse("#2E8B3E")), null, new Point(r.Center.X, r.Bottom - c * 0.3), c * 0.4, c * 0.3); break;
+            case 't': ctx.FillRectangle(new SolidColorBrush(Color.Parse("#6B4423")), new Rect(r.X + c * 0.42, r.Y + c * 0.45, c * 0.16, c * 0.55)); ctx.DrawEllipse(new SolidColorBrush(Color.Parse("#2F7D3A")), null, new Point(r.Center.X, r.Y + c * 0.35), c * 0.36, c * 0.32); break;
+            case 'm': ctx.DrawGeometry(new SolidColorBrush(Color.Parse("#99788AA0")), null, new PolylineGeometry([new Point(r.X, r.Bottom), new Point(r.Center.X, r.Y), new Point(r.Right, r.Bottom)], true)); break;
+            case 'g': for (var i = 0; i < 4; i++) ctx.FillRectangle(Grass, new Rect(r.X + c * (0.1 + i * 0.22), r.Bottom - c * 0.28, c * 0.09, c * 0.28)); break;
             case 'Z': ctx.FillRectangle(White, new Rect(r.X + c * 0.25, r.Y + c * 0.1, c * 0.1, c * 0.85)); ctx.DrawGeometry(Coin, null, new PolylineGeometry([new Point(r.X + c * 0.35, r.Y + c * 0.1), new Point(r.X + c * 0.9, r.Y + c * 0.3), new Point(r.X + c * 0.35, r.Y + c * 0.5)], true)); break;
         }
     }

@@ -107,4 +107,103 @@ public class SpielEditor_Ui
         }
         finally { w.Close(); }
     }
+    static void Paint(LevelCanvas c, int x, int y, char ch)
+    {
+        var l = c.Rows.ToList(); var r = l[y].ToCharArray(); r[x] = ch; l[y] = new string(r);
+        c.LevelChanged!(l); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+    }
+
+    [AvaloniaFact(DisplayName = "CORE-06: Spiel-Editor mit mehreren Leveln – Level hinzufügen, umbenennen, wechseln, früher schieben, löschen (Eigenschaften rücken nach); Probespiel läuft durch alle Level")]
+    public void Mehrere_level()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            w.Show(GK); w.Find<Button>("prog-tpl-retro-plattform").Press();
+            w.GameSection = "Level"; w.Show(GK);
+            var d = w.ProgramActive(GK)!;
+            Assert.NotNull(w.TryFind<Button>("game-lv-1")); Assert.Null(w.TryFind<Button>("game-lv-del")); // erstes Level bleibt
+            w.Find<Button>("game-lv-add").Press();
+            Assert.Equal(2, Trendo.App.MainWindow.GameLevelCount(d)); Assert.Equal(1, w.GameLevelIndex);
+            Enter(w.Find<TextBox>("game-lv-name"), "Höhle");
+            Assert.Equal("Höhle", w.Find<Button>("game-lv-2").Content);
+            // Objekt in Level 2: Münzwert landet unter „2:x,y:value“
+            w.Find<Button>("game-tile-auswahl").Press();
+            var rows = w.GameLevelForTests!.Rows; var cy = rows.FindIndex(r => r.Contains('o')); var cx = rows[cy].IndexOf('o');
+            w.GameLevelForTests!.Pick(cx, cy); Enter(w.Find<TextBox>("game-obj-value"), "9");
+            Assert.Equal(9, ProgramDocument.ToNumber(d.Data["objects"]![$"2:{cx},{cy}:value"]));
+            w.Find<Button>("game-lv-add").Press(); Assert.Equal(3, Trendo.App.MainWindow.GameLevelCount(d));
+            w.Find<Button>("game-lv-up").Press(); // Level 3 vor „Höhle“
+            Assert.Equal("Höhle", Trendo.App.MainWindow.GameLevelName(d, 2)); Assert.Equal(1, w.GameLevelIndex);
+            d.Undo(); Assert.Equal("Höhle", Trendo.App.MainWindow.GameLevelName(d, 1)); w.Show(GK);
+            // Probespiel kennt alle Level
+            w.Find<Button>("game-lv-1").Press(); w.Find<Button>("game-level-play").Press();
+            Assert.Equal(3, w.GamePlaytest!.LevelCount);
+            w.Find<Button>("game-play-stop").Press();
+            // Level 2 löschen: Eigenschaften von Level 2 verschwinden
+            w.Find<Button>("game-lv-2").Press(); w.Find<Button>("game-lv-del").Press();
+            Assert.Equal(2, Trendo.App.MainWindow.GameLevelCount(d)); Assert.Null(d.Data["objects"]?[$"2:{cx},{cy}:value"]);
+            Assert.DoesNotContain("Höhle", Trendo.App.MainWindow.GameLevelName(d, 1));
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "CORE-06: Spiel-Editor – Hintergrund-Ebene nur mit Deko (Wolke, Baum …), Spiel-Ebene bleibt unverändert, andere Ebene blass sichtbar; Bauen übernimmt den Hintergrund")]
+    public void Hintergrund_ebene()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            w.Show(GK); w.Find<Button>("prog-tpl-retro-plattform").Press();
+            w.GameSection = "Level"; w.Show(GK);
+            var d = w.ProgramActive(GK)!;
+            var before = string.Join("|", Trendo.App.MainWindow.GameLevelRows(d, 0));
+            Assert.NotNull(w.GameLevelForTests!.Ghost);
+            w.Find<Button>("game-layer-hintergrund").Press();
+            Assert.NotNull(w.TryFind<Button>("game-tile-wolke")); Assert.Null(w.TryFind<Button>("game-tile-gegner"));
+            Assert.Equal(before, string.Join("|", w.GameLevelForTests!.Ghost!)); // Spiel-Ebene blass darunter
+            w.Find<Button>("game-tile-baum").Press();
+            Paint(w.GameLevelForTests!, 2, 1, 't');
+            Assert.Equal('t', Trendo.App.MainWindow.GameDecorRows(d, 0)[1][2]);
+            Assert.Equal(before, string.Join("|", Trendo.App.MainWindow.GameLevelRows(d, 0)));
+            w.Find<Button>("game-layer-spiel").Press(); Assert.NotNull(w.TryFind<Button>("game-tile-gegner"));
+            var cfg = File.ReadAllText(Path.Combine(GameDesign.BuildBrowser(d.Data, Path.Combine(w.Core.DataRoot, "spiele-test")), "config.js"));
+            Assert.Contains("\"decor\":[[", cfg); Assert.Contains("..t", cfg);
+        }
+        finally { w.Close(); }
+    }
+
+    [AvaloniaFact(DisplayName = "CORE-06: Spiel-Editor – Animation je Zustand: Bildstreifen wählen, Bilder und Tempo setzen (begrenzt), Probespiel zeigt Laufen-Bilder nacheinander, Entfernen nimmt sie raus; Bauen kopiert den Streifen ins Spiel")]
+    public void Animationen()
+    {
+        var (w, _, root) = Ui.Open();
+        try
+        {
+            var strip = Path.Combine(root, "lauf.png");
+            using (var bmp = new Avalonia.Media.Imaging.RenderTargetBitmap(new PixelSize(96, 32))) bmp.Save(strip);
+            w.PickOverride = _ => Task.FromResult<string[]?>([strip]);
+            w.Show(GK); w.Find<Button>("prog-tpl-retro-plattform").Press();
+            w.GameSection = "Level"; w.Show(GK);
+            var d = w.ProgramActive(GK)!;
+            Assert.NotNull(w.TryFind<StackPanel>("game-anim-panel"));
+            w.Find<Button>("game-anim-pick-laufen").Press(); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            Assert.Equal(strip, d.Data["anims"]!["laufen"]!["file"]!.GetValue<string>());
+            Enter(w.Find<TextBox>("game-anim-frames-laufen"), "3");
+            Enter(w.Find<TextBox>("game-anim-fps-laufen"), "99");
+            Assert.Equal((3, 30), ((int)ProgramDocument.ToNumber(d.Data["anims"]!["laufen"]!["frames"]), (int)ProgramDocument.ToNumber(d.Data["anims"]!["laufen"]!["fps"])));
+            Assert.ThrowsAny<Exception>(() => w.GameSetAnim(d, "tanzen", strip, 1, 8));
+            // Probespiel: beim Laufen wechseln die Bilder
+            w.Find<Button>("game-level-play").Press();
+            var c = w.GamePlaytestCanvas!; Assert.Contains("laufen", c.Anims.Keys);
+            for (var i = 0; i < 30; i++) c.Tick();
+            var seen = new HashSet<int>();
+            for (var i = 0; i < 12; i++) { c.Tick(right: true); var f = c.CurrentFrame(); if (f.State == "laufen") seen.Add(f.Frame); }
+            Assert.True(seen.Count >= 2, "Laufen-Animation wechselt die Bilder: " + string.Join(",", seen));
+            w.Find<Button>("game-play-stop").Press();
+            Assert.True(File.Exists(Path.Combine(GameDesign.BuildBrowser(d.Data, Path.Combine(root, "spiele-test")), "figur-laufen.png")));
+            w.Find<Button>("game-anim-del-laufen").Press();
+            Assert.Null(d.Data["anims"]?["laufen"]);
+        }
+        finally { w.Close(); }
+    }
 }

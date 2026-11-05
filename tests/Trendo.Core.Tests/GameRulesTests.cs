@@ -78,4 +78,76 @@ public class GameRulesTests
         }
         finally { Directory.Delete(dir, true); }
     }
+
+    [Fact(DisplayName = "CORE-06: Mehrere Level – Ziel lädt das nächste Level (+10, Hinweis „Level 2 von 2“), Münzen und Eigenschaften je Level („2:x,y:value“), erst das letzte Ziel gewinnt; Nochmal beginnt bei Level 1")]
+    public void Multi_level()
+    {
+        string[] l1 = ["S..o..Z", "#######"], l2 = ["S.o...Z", "#######"];
+        var s = new PlatformSim(l1, props: new Dictionary<string, double> { ["3,0:value"] = 2, ["2:2,0:value"] = 7 }, moreLevels: [l2]);
+        Assert.Equal((0, 2), (s.LevelIndex, s.LevelCount));
+        Run(s, 600, right: true);
+        Assert.True(s.Won); Assert.Equal(1, s.LevelIndex);
+        Assert.Equal(2 + 10 + 7 + 10, s.Score);
+        var again = s.Restart(); Assert.Equal(0, again.LevelIndex); Assert.Equal(2, again.LevelCount); Assert.False(again.Won);
+        // Zwischenstand: nach dem ersten Ziel steht die Figur am Start von Level 2
+        var t = new PlatformSim(l1, moreLevels: [l2]);
+        for (var i = 0; i < 600 && t.LevelIndex == 0; i++) t.Step(false, true, false);
+        Assert.Equal(1, t.LevelIndex); Assert.False(t.Won); Assert.Equal("Level 2 von 2", t.Note); Assert.Equal(1, t.Coins.Count);
+    }
+
+    [Fact(DisplayName = "CORE-06: Zustände der Figur – stehen auf dem Boden, laufen mit Tempo, springen nach oben, fallen nach unten; Blickrichtung folgt der Laufrichtung")]
+    public void Player_states()
+    {
+        var s = new PlatformSim(["..........", "..........", "....S.....", "##########"]);
+        Run(s, 40); Assert.Equal("stehen", s.State);
+        s.Step(false, true, false); Assert.Equal("laufen", s.State); Assert.Equal(1, s.Player.Facing);
+        s.Step(true, false, false); s.Step(true, false, false); Assert.Equal(-1, s.Player.Facing);
+        Run(s, 5); s.Step(false, false, true); s.Step(false, false, false); Assert.Equal("springen", s.State);
+        for (var i = 0; i < 60 && s.Player.Vy <= 0; i++) s.Step(false, false, false);
+        Assert.Equal("fallen", s.State);
+        Assert.Equal(["stehen", "laufen", "springen", "fallen"], PlatformSim.States.Select(x => x.Id));
+    }
+
+    [Fact(DisplayName = "CORE-06: Prüfung – Hintergrund nur Deko-Zeichen (w, b, t, m, g), Level 2 ff. nur gültige Kacheln, höchstens 20 Level, Animation nur für bekannte Zustände, Bilder 1–32 und 1–30 je Sekunde")]
+    public void Validate_levels_and_anims()
+    {
+        Assert.Throws<ArgumentException>(() => GameStudio.Validate(new GameStudio.GameSettings { Decor = [["w#"]] }));
+        Assert.Throws<ArgumentException>(() => GameStudio.Validate(new GameStudio.GameSettings { MoreLevels = [["S..X"]] }));
+        Assert.Throws<ArgumentException>(() => GameStudio.Validate(new GameStudio.GameSettings { MoreLevels = [.. Enumerable.Repeat(new[] { "S.Z", "###" }, 20)] }));
+        Assert.Throws<ArgumentException>(() => GameStudio.Validate(new GameStudio.GameSettings { Anims = new() { ["tanzen"] = new("a.png") } }));
+        var ok = GameStudio.Validate(new GameStudio.GameSettings { Decor = [["wbtmg."]], Anims = new() { ["laufen"] = new("a.png", 99, 0) } });
+        Assert.Equal((32, 1), (ok.Anims["laufen"].Frames, ok.Anims["laufen"].Fps));
+    }
+
+    [Fact(DisplayName = "CORE-06: Gebautes Spiel mit 2 Leveln, Hintergrund und Lauf-Animation – config.js trägt alles, Bildstreifen liegt im Spielordner, game.js ist gültiges JavaScript (Node)")]
+    public void Built_game_levels()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "trendo-spiel-" + Guid.NewGuid().ToString("N")[..6]); Directory.CreateDirectory(dir);
+        try
+        {
+            var strip = Path.Combine(dir, "lauf.png"); File.WriteAllBytes(strip, Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="));
+            var d = new System.Text.Json.Nodes.JsonObject
+            {
+                ["browser"] = "plattform", ["title"] = "Zwei Welten", ["level"] = new System.Text.Json.Nodes.JsonArray("S....Z", "######"), ["decor"] = new System.Text.Json.Nodes.JsonArray("w..t.."),
+                ["levelName"] = "Wiese",
+                ["levels"] = new System.Text.Json.Nodes.JsonArray(new System.Text.Json.Nodes.JsonObject { ["name"] = "Höhle", ["rows"] = new System.Text.Json.Nodes.JsonArray("S.o..Z", "######"), ["decor"] = new System.Text.Json.Nodes.JsonArray("..m...") }),
+                ["anims"] = new System.Text.Json.Nodes.JsonObject { ["laufen"] = new System.Text.Json.Nodes.JsonObject { ["file"] = strip, ["frames"] = 4, ["fps"] = 10 } },
+            };
+            var game = GameDesign.BuildBrowser(d, dir);
+            var cfg = File.ReadAllText(Path.Combine(game, "config.js"));
+            Assert.Contains("\"more\":[[\"S.o..Z\",\"######\"]]", cfg);
+            Assert.Contains("\"decor\":[[\"w..t..\"],[\"..m...\"]]", cfg);
+            Assert.Contains("\"names\":[\"Wiese\",\"H", cfg);
+            Assert.Contains("\"laufen\":{\"img\":\"figur-laufen.png\",\"frames\":4,\"fps\":10}", cfg);
+            Assert.True(File.Exists(Path.Combine(game, "figur-laufen.png")));
+            var js = File.ReadAllText(Path.Combine(game, "game.js"));
+            Assert.Contains("function load(i)", js); Assert.Contains("CFG.anims", js); Assert.Contains("deco(", js);
+            if (Cli.Find("node") is { } node)
+            {
+                var r = Cli.Run(node, ["--check", Path.Combine(game, "game.js")], game, 30000);
+                Assert.True(r.Ok, r.Err);
+            }
+        }
+        finally { Directory.Delete(dir, true); }
+    }
 }

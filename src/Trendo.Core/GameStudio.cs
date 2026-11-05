@@ -17,6 +17,12 @@ public static class GameStudio
     /// <summary>Kacheln des Level-Editors: # Boden/Wand, o Münze, E Gegner (läuft hin und her), ^ Stacheln, S Start, Z Ziel-Flagge, . frei;
     /// seit 04.11.2026 wie in GDevelop/Construct auch F Sprungfeder, C Speicherpunkt, K Schlüssel, D Tür (öffnet, wenn alle Schlüssel gesammelt sind).</summary>
     public const string Tiles = "#.oE^SZFCKD";
+    /// <summary>Hintergrund-Ebene (05.11.2026, wie die Ebenen in Godot-TileMaps/GDevelop): nur Deko, ohne Wirkung aufs Spiel –
+    /// w Wolke, b Busch, t Baum, m Berg, g Gras, . frei.</summary>
+    public const string DecoTiles = "wbtmg.";
+
+    /// <summary>Animation eines Zustands (stehen, laufen, springen, fallen): Bildstreifen mit <see cref="Frames"/> gleich breiten Bildern, <see cref="Fps"/> Bilder je Sekunde.</summary>
+    public sealed record Anim(string Image, int Frames = 1, int Fps = 8);
 
     /// <summary>Ereignis-Regel wie die Ereignisblätter in GDevelop/Construct: Wenn <see cref="When"/> mindestens <see cref="N"/> erreicht, dann <see cref="Do"/> (einmal).</summary>
     public sealed record GameRule(string When, int N, string Do);
@@ -61,6 +67,14 @@ public static class GameStudio
         public int TimeLimit { get; init; }
         /// <summary>Ereignis-Regeln (höchstens 20).</summary>
         public List<GameRule> Rules { get; init; } = [];
+        /// <summary>Weitere Level nach dem ersten (Ziel → nächstes Level).</summary>
+        public List<string[]> MoreLevels { get; init; } = [];
+        /// <summary>Hintergrund-Ebene je Level (gleiche Reihenfolge wie Level, darf fehlen).</summary>
+        public List<string[]> Decor { get; init; } = [];
+        /// <summary>Namen der Level (für die Anzeige im Spiel).</summary>
+        public List<string> LevelNames { get; init; } = [];
+        /// <summary>Animationen je Zustand der Spielfigur (Dateiname im Spielordner).</summary>
+        public Dictionary<string, Anim> Anims { get; init; } = [];
     }
 
     public static readonly string[] DefaultBreakout = ["########", "########", "########", "########", "########"];
@@ -87,8 +101,18 @@ public static class GameStudio
         if (s.Rules.Count > 20) throw new ArgumentException("Höchstens 20 Regeln.");
         if (s.Rules.FirstOrDefault(r => !RuleWhens.Any(w => w.Id == r.When) || !RuleDos.Any(x => x.Id == r.Do)) is { } bad) throw new ArgumentException($"Unbekannte Regel „{bad.When} → {bad.Do}“.");
         if (s.Level.Length > 16 || s.Level.Any(r => r.Length > 200)) throw new ArgumentException("Level höchstens 16 Zeilen und 200 Spalten.");
+        if (s.MoreLevels.Count > 19) throw new ArgumentException("Höchstens 20 Level.");
+        for (var i = 0; i < s.MoreLevels.Count; i++)
+        {
+            var l = s.MoreLevels[i];
+            if (l.Any(r => r.Any(ch => !Tiles.Contains(ch)))) throw new ArgumentException($"Level {i + 2}: unbekanntes Zeichen.");
+            if (l.Length > 16 || l.Any(r => r.Length > 200)) throw new ArgumentException($"Level {i + 2}: höchstens 16 Zeilen und 200 Spalten.");
+        }
+        if (s.Decor.Any(l => l.Any(r => r.Any(ch => !DecoTiles.Contains(ch))))) throw new ArgumentException("Im Hintergrund nur w (Wolke), b (Busch), t (Baum), m (Berg), g (Gras) und . (frei).");
+        if (s.Anims.Keys.FirstOrDefault(k => !Programs.PlatformSim.States.Any(x => x.Id == k)) is { } badState) throw new ArgumentException($"Unbekannter Zustand „{badState}“.");
         return s with { Speed = Math.Clamp(s.Speed, 1, 10), Lives = Math.Clamp(s.Lives, 1, 9), WinScore = Math.Clamp(s.WinScore, 0, 9999), TimeLimit = Math.Clamp(s.TimeLimit, 0, 3600),
             Rules = [.. s.Rules.Select(r => r with { N = Math.Clamp(r.N, 0, 9999) })],
+            Anims = s.Anims.ToDictionary(kv => kv.Key, kv => kv.Value with { Frames = Math.Clamp(kv.Value.Frames, 1, 32), Fps = Math.Clamp(kv.Value.Fps, 1, 30) }),
             Props = s.Props.Where(kv => kv.Key.EndsWith(":speed") || kv.Key.EndsWith(":value")).ToDictionary(kv => kv.Key, kv => kv.Key.EndsWith(":speed") ? Math.Clamp(kv.Value, 0.25, 4) : Math.Clamp(Math.Round(kv.Value), 1, 100)) };
     }
 
@@ -96,7 +120,8 @@ public static class GameStudio
     {
         var o = new { speed = s.Speed, lives = s.Lives, win = s.WinScore, player = s.Player, accent = s.Accent, bg = s.Background, sound = s.Sound,
                       level = s.Level, playerImage = s.PlayerImage, bgImage = s.BackgroundImage, props = s.Props, timeLimit = s.TimeLimit,
-                      rules = s.Rules.Select(r => new { when = r.When, n = r.N, act = r.Do }) };
+                      rules = s.Rules.Select(r => new { when = r.When, n = r.N, act = r.Do }), more = s.MoreLevels, decor = s.Decor, names = s.LevelNames,
+                      anims = s.Anims.ToDictionary(kv => kv.Key, kv => new { img = kv.Value.Image, frames = kv.Value.Frames, fps = kv.Value.Fps }) };
         return "const CFG=" + JsonSerializer.Serialize(o) + ";\n";
     }
 
@@ -110,7 +135,7 @@ public static class GameStudio
     public static string TemplateOf(string dir) => File.Exists(Path.Combine(dir, "vorlage.txt")) ? File.ReadAllText(Path.Combine(dir, "vorlage.txt")).Trim() : "";
 
     /// <summary>Schreibt Regeln/Aussehen ins Spiel. Bilder werden in den Spielordner kopiert, damit das Spiel weitergegeben werden kann.</summary>
-    public static GameSettings Save(string dir, GameSettings s, string? playerImageFile = null, string? backgroundImageFile = null)
+    public static GameSettings Save(string dir, GameSettings s, string? playerImageFile = null, string? backgroundImageFile = null, IReadOnlyDictionary<string, string>? animFiles = null)
     {
         static string Copy(string dir, string src, string name)
         {
@@ -121,6 +146,14 @@ public static class GameStudio
         }
         if (!string.IsNullOrWhiteSpace(playerImageFile)) s = s with { PlayerImage = Copy(dir, playerImageFile, "spielfigur") };
         if (!string.IsNullOrWhiteSpace(backgroundImageFile)) s = s with { BackgroundImage = Copy(dir, backgroundImageFile, "hintergrund") };
+        // Animationsbilder in den Spielordner (figur-laufen.png …), damit das Spiel weitergegeben werden kann
+        if (animFiles is not null)
+        {
+            var anims = new Dictionary<string, Anim>(s.Anims);
+            foreach (var (state, file) in animFiles.Where(kv => !string.IsNullOrWhiteSpace(kv.Value)))
+                anims[state] = (anims.TryGetValue(state, out var a) ? a : new Anim("")) with { Image = Copy(dir, file, "figur-" + state) };
+            s = s with { Anims = anims };
+        }
         s = Validate(s);
         File.WriteAllText(Path.Combine(dir, "spiel.json"), JsonSerializer.Serialize(s, new JsonSerializerOptions { WriteIndented = true }), new UTF8Encoding(false));
         File.WriteAllText(Path.Combine(dir, "config.js"), ConfigJs(s), new UTF8Encoding(false));
@@ -179,34 +212,47 @@ bg();me(px,c.height-14,80,8);x.fillStyle=CFG.accent;x.beginPath();x.arc(b.x,b.y,
 step();
 """,
         ["plattform"] = """
-const T=32,L=(CFG.level&&CFG.level.length?CFG.level:['S.....Z','#######']),R=L.length,C=Math.max(...L.map(r=>r.length));
-let G=[],open=false,kg=0,KT=0,cg=0,fk=0,fr=0,boost=0,fired=[],note='',noteT=0,tu=false;
+const T=32,LV=[(CFG.level&&CFG.level.length?CFG.level:['S.....Z','#######']),...(CFG.more||[]).filter(l=>l&&l.length)];let li=0,L=LV[0],R=L.length,C=Math.max(...L.map(r=>r.length)),DC=(CFG.decor&&CFG.decor[0])||[];
+let G=[],open=false,kg=0,KT=0,cg=0,fk=0,fr=0,lf=0,boost=0,fired=[],note='',noteT=0,tu=false,face=1;
+const AI={};Object.keys(CFG.anims||{}).forEach(k=>{const a=CFG.anims[k];if(a&&a.img){const i=new Image();i.src=a.img;AI[k]={i:i,f:a.frames||1,fps:a.fps||8};}});
 const at=(cx,cy)=>cy<0||cx<0||cx>=C?'#':cy>=R?'.':(G[cy][cx]||'.');const solid=(cx,cy)=>{const ch=at(cx,cy);return ch==='#'||ch==='F'||(ch==='D'&&!open);};
-let S0x=0,S0y=0;L.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='S'){S0x=x;S0y=y;}}));let sx=S0x,sy=S0y;
+let S0x=0,S0y=0,sx=0,sy=0;
 let pl,coins,foes,p=0,k={},cam=0,flash=0;
-function reset(full){pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;if(full){p=0;sx=S0x;sy=S0y;pl.x=sx*T+4;pl.y=sy*T;G=L.map(r=>[...r]);open=false;kg=0;cg=0;fk=0;fr=0;boost=0;fired=[];tu=false;KT=L.join('').split('K').length-1;coins=[];foes=[];
-L.forEach((r,y)=>[...r].forEach((ch,x)=>{const pr=(k,d)=>(CFG.props&&CFG.props[x+','+y+':'+k])||d;if(ch==='o')coins.push({x:x*T+16,y:y*T+16,a:1,v:pr('value',1)});if(ch==='E')foes.push({x:x*T+4,y:y*T+6,d:1,a:1,s:pr('speed',1)});}));}}
+function pr(x,y,key,d){const pre=li===0?'':(li+1)+':';return (CFG.props&&CFG.props[pre+x+','+y+':'+key])||d;}
+function load(i){li=i;L=LV[i];R=L.length;C=Math.max(...L.map(r=>r.length));DC=(CFG.decor&&CFG.decor[i])||[];G=L.map(r=>[...r]);open=false;kg=0;lf=0;KT=L.join('').split('K').length-1;coins=[];foes=[];
+L.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='S'){S0x=x;S0y=y;}if(ch==='o')coins.push({x:x*T+16,y:y*T+16,a:1,v:pr(x,y,'value',1)});if(ch==='E')foes.push({x:x*T+4,y:y*T+6,d:1,a:1,s:pr(x,y,'speed',1)});}));sx=S0x;sy=S0y;
+pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;}
+function reset(full){if(full){p=0;cg=0;fk=0;fr=0;boost=0;fired=[];tu=false;load(0);return;}pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;}
 reset(true);
 addEventListener('keydown',e=>{k[e.code]=1;if(e.code==='Space'){e.preventDefault();if(over){lives=CFG.lives;over=false;reset(true);}else if(pl.on){pl.vy=-11.5;beep(660);}}});addEventListener('keyup',e=>k[e.code]=0);
 function hit(){lives--;beep(160);flash=20;if(lives<=0)over=true;else reset(false);}
 function say(t){note=t;noteT=120;}
+function goal(){p+=10;beep(990);if(li+1<LV.length){load(li+1);say((CFG.names&&CFG.names[li])||('Level '+(li+1)+' von '+LV.length));}else over=true;}
 function rules(){(CFG.rules||[]).forEach((r,i)=>{if(fired[i])return;const v=r.when==='muenzen'?cg:r.when==='punkte'?p:r.when==='gegner'?fk:r.when==='sekunden'?fr/60:0;if(v<r.n)return;fired[i]=1;
 if(r.act==='leben'){lives++;say('+1 Leben');}if(r.act==='tueren'){open=true;say('Türen offen');}if(r.act==='schneller'){boost=2;say('Schneller!');}if(r.act==='punkte'){p+=10;say('+10 Punkte');}if(r.act==='sieg'){over=true;say('Gewonnen!');}beep(990);});}
 function move(o,dx,dy){o.x+=dx;let l=Math.floor(o.x/T),r=Math.floor((o.x+o.w-1)/T),t=Math.floor(o.y/T),b=Math.floor((o.y+o.h-1)/T);
 for(let cy=t;cy<=b;cy++)for(let cx=l;cx<=r;cx++)if(solid(cx,cy)){if(dx>0)o.x=cx*T-o.w;if(dx<0)o.x=(cx+1)*T;}
 o.y+=dy;o.on=false;l=Math.floor(o.x/T);r=Math.floor((o.x+o.w-1)/T);t=Math.floor(o.y/T);b=Math.floor((o.y+o.h-1)/T);
 for(let cy=t;cy<=b;cy++)for(let cx=l;cx<=r;cx++)if(solid(cx,cy)){if(dy>0){o.y=cy*T-o.h;o.vy=0;o.on=true;}if(dy<0){o.y=(cy+1)*T;o.vy=0;}}}
-function step(){if(!over){fr++;const sp=2.2+CFG.speed*.35+boost;pl.vx=(k.ArrowRight?sp:0)-(k.ArrowLeft?sp:0);pl.vy=Math.min(14,pl.vy+.6);move(pl,pl.vx,0);move(pl,0,pl.vy);
+function state(){return !pl.on?(pl.vy<0?'springen':'fallen'):(Math.abs(pl.vx)>0.1?'laufen':'stehen');}
+function drawMe(){const a=AI[state()]||AI['stehen'];if(a&&a.i.complete&&a.i.naturalWidth){const fw=a.i.naturalWidth/a.f,n=Math.floor(fr*a.fps/60)%a.f;x.save();if(face<0){x.translate(pl.x+pl.w,pl.y);x.scale(-1,1);x.drawImage(a.i,n*fw,0,fw,a.i.naturalHeight,0,0,pl.w,pl.h);}else x.drawImage(a.i,n*fw,0,fw,a.i.naturalHeight,pl.x,pl.y,pl.w,pl.h);x.restore();}else me(pl.x,pl.y,pl.w,pl.h);}
+function deco(ch,px,py){if(ch==='w'){x.fillStyle='rgba(255,255,255,.75)';x.beginPath();x.arc(px+10,py+18,9,0,7);x.arc(px+20,py+13,11,0,7);x.arc(px+28,py+19,7,0,7);x.fill();}
+if(ch==='b'){x.fillStyle='#2E8B3E';x.beginPath();x.arc(px+16,py+24,11,0,7);x.arc(px+8,py+27,7,0,7);x.arc(px+24,py+27,7,0,7);x.fill();}
+if(ch==='t'){x.fillStyle='#6B4423';x.fillRect(px+13,py+14,6,18);x.fillStyle='#2F7D3A';x.beginPath();x.arc(px+16,py+11,12,0,7);x.fill();}
+if(ch==='m'){x.fillStyle='rgba(120,130,160,.6)';x.beginPath();x.moveTo(px,py+T);x.lineTo(px+16,py);x.lineTo(px+T,py+T);x.fill();}
+if(ch==='g'){x.fillStyle='#3FBF5A';for(let i=0;i<4;i++)x.fillRect(px+3+i*8,py+T-8,3,8);}}
+function step(){if(!over){fr++;lf++;const sp=2.2+CFG.speed*.35+boost;pl.vx=(k.ArrowRight?sp:0)-(k.ArrowLeft?sp:0);if(pl.vx>0)face=1;if(pl.vx<0)face=-1;pl.vy=Math.min(14,pl.vy+.6);move(pl,pl.vx,0);move(pl,0,pl.vy);
 if(pl.on&&at(Math.floor((pl.x+12)/T),Math.floor((pl.y+pl.h+1)/T))==='F'){pl.vy=-17;pl.on=false;beep(720);}
 if(pl.y>R*T+60)hit();const cx=Math.floor((pl.x+12)/T),cy=Math.floor((pl.y+15)/T),cb=Math.floor((pl.y+29)/T);
-if(at(cx,cb)==='^'||at(cx,cy)==='^')hit();if(at(cx,cy)==='Z'||at(cx,cb)==='Z'){p+=10;beep(990);over=true;}
+if(at(cx,cb)==='^'||at(cx,cy)==='^')hit();else if(at(cx,cy)==='Z'||at(cx,cb)==='Z')goal();else{
 [cy,cb].forEach(yy=>{if(at(cx,yy)==='K'){G[yy][cx]='.';kg++;beep(880);if(kg>=KT){open=true;say('Alle Schlüssel – Türen offen');}}if(at(cx,yy)==='C'&&(sx!==cx||sy!==yy)){sx=cx;sy=yy;say('Speicherpunkt');}});
 coins.forEach(q=>{if(q.a&&Math.abs(q.x-(pl.x+12))<18&&Math.abs(q.y-(pl.y+15))<20){q.a=0;cg++;p+=q.v||1;beep(880);if(won(p))over=true;}});
 foes.forEach(f=>{if(!f.a)return;const nx=f.x+f.d*1.2*(f.s||1),cxx=Math.floor((f.d>0?nx+24:nx)/T),cyy=Math.floor((f.y+20)/T);if(solid(cxx,cyy)||!solid(cxx,cyy+1))f.d*=-1;else f.x=nx;
 if(Math.abs(f.x-pl.x)<24&&Math.abs(f.y-pl.y)<26){if(pl.vy>1&&pl.y<f.y-8){f.a=0;fk++;pl.vy=-8;p+=2;beep(520);}else hit();}});
-if(CFG.timeLimit>0&&fr/60>CFG.timeLimit){lives=0;over=true;tu=true;say('Zeit abgelaufen');}
-rules();cam=Math.max(0,Math.min(C*T-c.width,pl.x-c.width/3));}
+if(CFG.timeLimit>0&&lf/60>CFG.timeLimit){lives=0;over=true;tu=true;say('Zeit abgelaufen');}
+rules();}cam=Math.max(0,Math.min(C*T-c.width,pl.x-c.width/3));}
 bg();x.save();x.translate(-cam,Math.min(0,c.height-R*T));
+for(let y=0;y<DC.length;y++)for(let xx=Math.floor(cam/T);xx<=Math.floor((cam+c.width)/T)&&xx<(DC[y]||'').length;xx++)deco(DC[y][xx],xx*T,y*T);
 for(let y=0;y<R;y++)for(let xx=Math.floor(cam/T);xx<=Math.floor((cam+c.width)/T)&&xx<C;xx++){const ch=at(xx,y);
 if(ch==='#'){x.fillStyle='#5B3A1E';x.fillRect(xx*T,y*T,T,T);if(at(xx,y-1)!=='#'){x.fillStyle='#3FBF5A';x.fillRect(xx*T,y*T,T,7);}}
 if(ch==='^'){x.fillStyle='#C9CED6';for(let i=0;i<4;i++){x.beginPath();x.moveTo(xx*T+i*8,y*T+T);x.lineTo(xx*T+i*8+4,y*T+T-14);x.lineTo(xx*T+i*8+8,y*T+T);x.fill();}}
@@ -217,9 +263,10 @@ if(ch==='K'){x.fillStyle=CFG.accent;x.beginPath();x.arc(xx*T+11,y*T+16,6,0,7);x.
 if(ch==='D'&&!open){x.fillStyle='#7C4A1E';x.fillRect(xx*T+2,y*T,T-4,T);x.fillStyle=CFG.accent;x.fillRect(xx*T+T-10,y*T+15,4,4);}}
 x.fillStyle=CFG.accent;coins.forEach(q=>{if(q.a){x.beginPath();x.arc(q.x,q.y,7,0,7);x.fill();}});
 x.fillStyle='#E0475B';foes.forEach(f=>{if(f.a){x.fillRect(f.x,f.y,24,26);x.fillStyle='#FFF';x.fillRect(f.x+(f.d>0?14:4),f.y+6,6,6);x.fillStyle='#E0475B';}});
-if(!(flash>0&&flash--%4<2))me(pl.x,pl.y,pl.w,pl.h);x.restore();
-if(CFG.timeLimit>0){x.fillStyle='#FFF';x.font='14px system-ui';x.fillText('Zeit '+Math.max(0,Math.ceil(CFG.timeLimit-fr/60))+' s',c.width-90,20);}
-if(KT>0){x.fillStyle=CFG.accent;x.font='14px system-ui';x.fillText('Schlüssel '+kg+'/'+KT,10,20);}
+if(!(flash>0&&flash--%4<2))drawMe();x.restore();
+x.font='14px system-ui';x.fillStyle='#FFF';if(LV.length>1)x.fillText('Level '+(li+1)+'/'+LV.length,10,c.height-10);
+if(CFG.timeLimit>0)x.fillText('Zeit '+Math.max(0,Math.ceil(CFG.timeLimit-lf/60))+' s',c.width-90,20);
+if(KT>0){x.fillStyle=CFG.accent;x.fillText('Schlüssel '+kg+'/'+KT,10,20);}
 if(noteT>0){noteT--;x.fillStyle='rgba(0,0,0,.6)';x.fillRect(c.width/2-110,40,220,28);x.fillStyle='#FFF';x.font='15px system-ui';x.textAlign='center';x.fillText(note,c.width/2,59);x.textAlign='left';}
 status(p);requestAnimationFrame(step);}
 step();

@@ -304,6 +304,139 @@ public partial class MainWindow
         var kind = d.Text("browser");
         return rows.Count > 0 ? rows : [.. kind == "plattform" ? GameStudio.DefaultPlatform : kind == "breakout" ? GameStudio.DefaultBreakout : GameStudio.DefaultJump];
     }
+
+    // ---------- Animationen je Zustand (05.11.2026, Vorbild: AnimatedSprite in Godot, Objekt-Animationen in GDevelop) ----------
+    public static readonly (string Id, string Label)[] GameAnimStates = [.. PlatformSim.States.Select(s => (s.Id, s.Label))];
+    /// <summary>Animation eines Zustands setzen: Bildstreifen (nebeneinander), Anzahl Bilder, Bilder je Sekunde. Leerer Pfad entfernt sie.</summary>
+    public void GameSetAnim(ProgramDocument d, string state, string? file, int frames, int fps)
+    {
+        if (!GameAnimStates.Any(s => s.Id == state)) throw new ArgumentException($"Unbekannter Zustand „{state}“.");
+        if (!string.IsNullOrWhiteSpace(file))
+        {
+            if (!File.Exists(file)) throw new FileNotFoundException("Bild nicht gefunden.", file);
+            if (Path.GetExtension(file).ToLowerInvariant() is not (".png" or ".jpg" or ".jpeg" or ".webp" or ".gif")) throw new ArgumentException("Bitte ein Bild (PNG, JPG, WebP oder GIF).");
+        }
+        frames = Math.Clamp(frames, 1, 32); fps = Math.Clamp(fps, 1, 30);
+        d.Edit("Animation " + state, x =>
+        {
+            var a = x["anims"] as JsonObject ?? [];
+            var old = a[state] as JsonObject;
+            var f = file ?? old?["file"].AsText() ?? "";
+            if (f.Length == 0 || file == "") a.Remove(state); else a[state] = new JsonObject { ["file"] = f, ["frames"] = frames, ["fps"] = fps };
+            x["anims"] = a;
+        });
+    }
+    static Dictionary<string, (Avalonia.Media.Imaging.Bitmap, int, int)> GameAnimBitmaps(ProgramDocument d)
+    {
+        var r = new Dictionary<string, (Avalonia.Media.Imaging.Bitmap, int, int)>();
+        foreach (var (k, v) in d.Data["anims"] as JsonObject ?? [])
+            if (v is JsonObject o && o["file"].AsText() is { Length: > 0 } f && File.Exists(f))
+                try { r[k] = (new Avalonia.Media.Imaging.Bitmap(f), (int)ProgramDocument.ToNumber(o["frames"]), (int)ProgramDocument.ToNumber(o["fps"])); } catch { /* kaputtes Bild: Figur bleibt ein Rechteck */ }
+        return r;
+    }
+
+    private Control GameAnimPanel(ProgramDocument d)
+    {
+        var sp = new StackPanel { Name = "game-anim-panel", Spacing = 4 };
+        sp.Children.Add(H("Figur: Animationen", 13));
+        sp.Children.Add(P("Je Zustand ein Bildstreifen (Bilder nebeneinander). Fehlt einer, zeigt das Spiel „stehen“.", Muted, 11));
+        var anims = d.Data["anims"] as JsonObject ?? [];
+        foreach (var (id, label) in GameAnimStates)
+        {
+            var o = anims[id] as JsonObject; var st = id;
+            var frames = new TextBox { Name = $"game-anim-frames-{id}", Text = ((int)(o is null ? 1 : ProgramDocument.ToNumber(o["frames"]))).ToString(), Width = 42 };
+            var fps = new TextBox { Name = $"game-anim-fps-{id}", Text = ((int)(o is null ? 8 : ProgramDocument.ToNumber(o["fps"]))).ToString(), Width = 42 };
+            void Commit()
+            {
+                if (o is null) return;
+                if (!int.TryParse(frames.Text, out var fr) || !int.TryParse(fps.Text, out var fp)) { _progMsg[GK] = "Bitte ganze Zahlen."; return; }
+                if (fr != (int)ProgramDocument.ToNumber(o["frames"]) || fp != (int)ProgramDocument.ToNumber(o["fps"])) ProgramRun(GK, () => GameSetAnim(d, st, null, fr, fp));
+            }
+            frames.LostFocus += (_, _) => Commit(); fps.LostFocus += (_, _) => Commit(); OnEnter(frames, Commit); OnEnter(fps, Commit);
+            var pick = Act($"game-anim-pick-{id}", o is null ? "Bild…" : "✓ " + Path.GetFileName(o["file"].AsText() ?? ""), async () =>
+            {
+                var got = PickOverride is { } fake ? await fake(new PickRequest($"game-anim-{st}", false, false, ["png", "jpg", "webp", "gif"]))
+                    : (await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions { Title = "Bildstreifen für „" + label + "“", FileTypeFilter = [new Avalonia.Platform.Storage.FilePickerFileType("Bilder") { Patterns = ["*.png", "*.jpg", "*.jpeg", "*.webp", "*.gif"] }] }))
+                        .Select(f => Avalonia.Platform.Storage.StorageProviderExtensions.TryGetLocalPath(f)).OfType<string>().ToArray();
+                if (got is { Length: > 0 }) ProgramRun(GK, () => GameSetAnim(d, st, got[0], int.TryParse(frames.Text, out var a) ? a : 1, int.TryParse(fps.Text, out var b) ? b : 8));
+            });
+            var row = new WrapPanel { Children = { new TextBlock { Text = label, Width = 64, Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, pick } };
+            if (o is not null)
+            {
+                row.Children.Add(new Border { Width = 4 }); row.Children.Add(frames); row.Children.Add(P(" Bilder ", Muted, 11)); row.Children.Add(fps); row.Children.Add(P(" /s ", Muted, 11));
+                row.Children.Add(Act($"game-anim-del-{id}", "✕", () => ProgramRun(GK, () => GameSetAnim(d, st, "", 1, 8))));
+            }
+            sp.Children.Add(row);
+        }
+        return sp;
+    }
+
+    // ---------- Mehrere Level und Ebenen (05.11.2026, Vorbild: Szenen-/Levelliste in GDevelop und Godot, TileMap-Ebenen) ----------
+    // Level 1 liegt wie bisher in „level“/„decor“, weitere Level in „levels“: [{name, rows, decor}].
+    int _gameLevelIdx;
+    /// <summary>Aktives Level im Editor (0 = erstes).</summary>
+    public int GameLevelIndex { get => _gameLevelIdx; set => _gameLevelIdx = Math.Max(0, value); }
+    /// <summary>Aktive Ebene: „spiel“ (Boden, Gegner …) oder „hintergrund“ (nur Deko).</summary>
+    public string GameLayer { get; set; } = "spiel";
+    static JsonArray GameMore(ProgramDocument d) => d.Data["levels"] as JsonArray ?? [];
+    public static int GameLevelCount(ProgramDocument d) => 1 + GameMore(d).Count;
+    static List<string> Lines(JsonNode? n) => (n as JsonArray ?? []).Select(x => x.AsText() ?? "").ToList();
+    public static List<string> GameLevelRows(ProgramDocument d, int i) => i == 0 ? GameRows(d) : Lines((GameMore(d).ElementAtOrDefault(i - 1) as JsonObject)?["rows"]) is { Count: > 0 } r ? r : ["S......Z", "########"];
+    public static List<string> GameDecorRows(ProgramDocument d, int i)
+    {
+        var rows = GameLevelRows(d, i); var cols = rows.Max(x => x.Length);
+        var dec = i == 0 ? Lines(d.Data["decor"]) : Lines((GameMore(d).ElementAtOrDefault(i - 1) as JsonObject)?["decor"]);
+        return [.. Enumerable.Range(0, rows.Count).Select(y => (y < dec.Count ? dec[y] : "").PadRight(cols, '.')[..cols])];
+    }
+    public static string GameLevelName(ProgramDocument d, int i) => (i == 0 ? d.Text("levelName") : (GameMore(d).ElementAtOrDefault(i - 1) as JsonObject)?["name"].AsText() ?? "") is { Length: > 0 } n ? n : $"Level {i + 1}";
+    static JsonArray Arr(IEnumerable<string> l) => new([.. l.Select(x => (JsonNode)x)]);
+    void GameSetRows(ProgramDocument d, int i, List<string> rows, string label, string key = "rows") => d.Edit(label, x =>
+    {
+        if (i == 0) { x[key == "rows" ? "level" : "decor"] = Arr(rows); return; }
+        if ((x["levels"] as JsonArray)?.ElementAtOrDefault(i - 1) is JsonObject o) o[key] = Arr(rows);
+    });
+    /// <summary>Schlüssel-Vorsatz für Objekt-Eigenschaften (Level 2 und später „2:x,y:…“).</summary>
+    static string GameKeyPrefix(int i) => i == 0 ? "" : $"{i + 1}:";
+    public void GameAddLevel(ProgramDocument d) => d.Edit("Level hinzufügen", x =>
+    {
+        var l = x["levels"] as JsonArray ?? [];
+        if (l.Count >= 19) throw new ArgumentException("Höchstens 20 Level.");
+        l.Add(new JsonObject { ["name"] = $"Level {l.Count + 2}", ["rows"] = Arr(["...........................Z", "S.........o.o......E.......#", "############################"]) });
+        x["levels"] = l; _gameLevelIdx = l.Count;
+    });
+    public void GameDeleteLevel(ProgramDocument d, int i)
+    {
+        if (i == 0) throw new ArgumentException("Das erste Level bleibt – lösche stattdessen ein späteres.");
+        d.Edit("Level löschen", x =>
+        {
+            (x["levels"] as JsonArray)?.RemoveAt(i - 1);
+            if (x["objects"] is JsonObject o) // Eigenschaften der späteren Level rücken nach
+            {
+                var all = o.Select(kv => (kv.Key, V: kv.Value?.DeepClone())).ToList(); o.Clear();
+                foreach (var (k, v) in all)
+                {
+                    var m = System.Text.RegularExpressions.Regex.Match(k, @"^(\d+):(\d+,\d+:.*)$");
+                    if (!m.Success) { o[k] = v; continue; }
+                    var n = int.Parse(m.Groups[1].Value); if (n == i + 1) continue;
+                    o[(n > i + 1 ? $"{n - 1}:" : $"{n}:") + m.Groups[2].Value] = v;
+                }
+            }
+        });
+        _gameLevelIdx = Math.Min(_gameLevelIdx, GameLevelCount(d) - 1);
+    }
+    /// <summary>Level mit dem davor tauschen (Reihenfolge im Spiel). Das erste Level bleibt vorn.</summary>
+    public void GameMoveLevelUp(ProgramDocument d, int i)
+    {
+        if (i < 2) throw new ArgumentException("Das erste Level bleibt vorn.");
+        d.Edit("Level verschieben", x => { if (x["levels"] is JsonArray l) { var a = l[i - 1]!.DeepClone(); var b = l[i - 2]!.DeepClone(); l[i - 2] = a; l[i - 1] = b; } });
+        _gameLevelIdx = i - 1;
+    }
+    public void GameRenameLevel(ProgramDocument d, int i, string name)
+    {
+        name = name.Trim(); if (name.Length == 0) throw new ArgumentException("Bitte einen Namen eingeben.");
+        if (name.Length > 40) name = name[..40];
+        d.Edit("Level umbenennen", x => { if (i == 0) x["levelName"] = name; else if ((x["levels"] as JsonArray)?.ElementAtOrDefault(i - 1) is JsonObject o) o["name"] = name; });
+    }
     static Dictionary<string, double> GameProps(ProgramDocument d) =>
         (d.Data["objects"] as JsonObject ?? []).Where(kv => kv.Value is JsonValue).ToDictionary(kv => kv.Key, kv => ProgramDocument.ToNumber(kv.Value));
     /// <summary>Probespiel starten (öffentlich für Tests und die KI).</summary>
@@ -311,22 +444,29 @@ public partial class MainWindow
     {
         var rows = GameRows(d);
         if (GameStudio.CheckPlatform(rows) is { Count: > 0 } w && w.Any(x => x.StartsWith("Kein"))) throw new InvalidOperationException(w.First(x => x.StartsWith("Kein")));
-        _gamePlay = new PlatformSim(rows, (int)d.Number("speed", 5), (int)d.Number("lives", 3), GameProps(d), (int)d.Number("timeLimit", 0), GameDesign.Rules(d.Data));
+        var more = Enumerable.Range(1, GameLevelCount(d) - 1).Select(i => (IReadOnlyList<string>)GameLevelRows(d, i)).ToList();
+        _gamePlay = new PlatformSim(rows, (int)d.Number("speed", 5), (int)d.Number("lives", 3), GameProps(d), (int)d.Number("timeLimit", 0), GameDesign.Rules(d.Data), more);
         _core.Audit.Append(Principal.LocalOwner.Name, "game.playtest", d.Text("title"));
     }
 
     private Control GameLevel(ProgramDocument d)
     {
-        var rows = GameRows(d);
         var kind = d.Text("browser");
         if (kind == "plattform" && _gamePlay is not null) return GamePlayView(d);
-        var tiles = kind == "plattform"
+        if (kind != "plattform") { _gameLevelIdx = 0; GameLayer = "spiel"; }
+        _gameLevelIdx = Math.Min(_gameLevelIdx, GameLevelCount(d) - 1);
+        var li = _gameLevelIdx; var deco = kind == "plattform" && GameLayer == "hintergrund";
+        var rows = GameLevelRows(d, li);
+        var tiles = deco
+            ? new (char Ch, string Id, string Label)[] { ('w', "wolke", "Wolke"), ('m', "berg", "Berg"), ('t', "baum", "Baum"), ('b', "busch", "Busch"), ('g', "gras", "Gras"), ('.', "radierer", "Radierer") }
+            : kind == "plattform"
             ? new (char Ch, string Id, string Label)[] { (LevelCanvas.PickTool, "auswahl", "⬚ Auswählen"), ('#', "boden", "Boden"), ('o', "muenze", "Münze"), ('E', "gegner", "Gegner"), ('^', "stacheln", "Stacheln"), ('S', "start", "Start"), ('F', "feder", "Sprungfeder"), ('C', "speicher", "Speicherpunkt"), ('K', "schluessel", "Schlüssel"), ('D', "tuer", "Tür"), ('Z', "ziel", "Ziel"), ('.', "radierer", "Radierer") }
             : [('#', "boden", kind == "breakout" ? "Stein" : "Hindernis"), ('.', "radierer", "Radierer")];
-        if (!tiles.Any(t => t.Ch == GameTile)) GameTile = '#';
-        var canvas = new LevelCanvas { Name = "game-level", Rows = rows, Tile = GameTile, Cell = kind == "jump" ? 18 : 22, Selected = GameObjSel };
+        if (!tiles.Any(t => t.Ch == GameTile)) GameTile = tiles[deco ? 0 : kind == "plattform" ? 1 : 0].Ch;
+        var canvas = new LevelCanvas { Name = "game-level", Rows = deco ? GameDecorRows(d, li) : rows, Tile = GameTile, Cell = kind == "jump" ? 18 : 22, Selected = deco ? null : GameObjSel,
+            Ghost = kind != "plattform" ? null : deco ? rows : GameDecorRows(d, li) };
         GameLevelForTests = canvas;
-        canvas.LevelChanged = l => ProgramRun(GK, () => d.Set("level", new JsonArray([.. l.Select(x => (JsonNode)x)]), "Level malen"));
+        canvas.LevelChanged = l => ProgramRun(GK, () => GameSetRows(d, li, l, deco ? "Hintergrund malen" : "Level malen", deco ? "decor" : "rows"));
         canvas.Picked = (x, y) => { GameObjSel = (x, y); Show(GK); };
         var palette = new WrapPanel { Name = "game-tiles" };
         foreach (var (ch, id, label) in tiles)
@@ -340,7 +480,7 @@ public partial class MainWindow
         void Resize(int by) => ProgramRun(GK, () =>
         {
             var cols = Math.Clamp(rows.Max(x => x.Length) + by, 8, 200);
-            d.Set("level", new JsonArray([.. rows.Select(x => (JsonNode)(x.Length >= cols ? x[..cols] : x.PadRight(cols, '.')))]), by > 0 ? "Level verlängern" : "Level kürzen");
+            GameSetRows(d, li, [.. rows.Select(x => x.Length >= cols ? x[..cols] : x.PadRight(cols, '.'))], by > 0 ? "Level verlängern" : "Level kürzen");
         });
         var more = new Button { Name = "game-level-wider", Content = "＋ 10 Spalten" }; more.Click += (_, _) => Resize(10);
         var less = new Button { Name = "game-level-narrower", Content = "－ 10 Spalten" }; less.Click += (_, _) => Resize(-10);
@@ -355,18 +495,53 @@ public partial class MainWindow
             tools.Children.Add(play);
         }
         tools.Children.Add(test);
+        Control? levelBar = kind == "plattform" ? GameLevelBar(d, li) : null;
         var hints = new StackPanel { Name = "game-level-hints", Spacing = 2 };
         foreach (var h in kind == "plattform" ? GameStudio.CheckPlatform(rows) : []) hints.Children.Add(P("⚠ " + h, Brush.Parse("#F5A524"), 12));
         if (hints.Children.Count == 0 && kind == "plattform") hints.Children.Add(P("✓ Start, Ziel und Boden sind da – „Im Fenster spielen“ startet sofort, „Im Browser testen“ baut das fertige Spiel.", Brush.Parse("#2FBF71"), 12));
         var stats = string.Concat(rows);
         var info = P(kind == "plattform" ? $"{rows.Max(x => x.Length)} × {rows.Count} Kacheln · {stats.Count(ch => ch == 'o')} Münzen · {stats.Count(ch => ch == 'E')} Gegner · {stats.Count(ch => ch == '^')} Stacheln" : $"{rows.Max(x => x.Length)} × {rows.Count} Kacheln", Muted, 11.5);
-        Control scene = new ScrollViewer { Content = canvas, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Disabled, MaxHeight = 16 * 22 + 20 };
+        Control scene = new ScrollViewer { Content = canvas, HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Disabled, MaxHeight = 16 * 22 + 20, VerticalAlignment = VerticalAlignment.Top };
         if (kind == "plattform")
             scene = new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,260"), Children = { scene, Pos(GameObjPanel(d, rows), 2) } };
-        return new StackPanel { Spacing = 8, Children = {
+        var outer = new StackPanel { Spacing = 8 };
+        if (levelBar is not null) outer.Children.Add(levelBar);
+        outer.Children.Add(new StackPanel { Spacing = 8, Children = {
             tools,
-            new TextBlock { Text = kind == "plattform" ? "Linke Maustaste malt (auch ziehen), rechte radiert · „Auswählen“ zeigt rechts die Eigenschaften eines Objekts" : "Linke Maustaste malt (auch ziehen), rechte radiert. Jeder Strich ist ein Schritt im Rückgängig.", Foreground = Muted, FontSize = 11.5 },
-            scene, info, hints } };
+            new TextBlock { Text = deco ? "Hintergrund: Wolken, Berge, Bäume, Büsche und Gras sind nur Deko – die Figur läuft hindurch. Die Spiel-Ebene ist blass zu sehen." : kind == "plattform" ? "Linke Maustaste malt (auch ziehen), rechte radiert · „Auswählen“ zeigt rechts die Eigenschaften eines Objekts" : "Linke Maustaste malt (auch ziehen), rechte radiert. Jeder Strich ist ein Schritt im Rückgängig.", Foreground = Muted, FontSize = 11.5 },
+            scene, info, hints } });
+        return outer;
+    }
+
+    /// <summary>Leiste über dem Level: Level-Reiter (wie die Szenenliste in GDevelop), Hinzufügen/Umbenennen/Verschieben/Löschen und Ebenen-Schalter.</summary>
+    private Control GameLevelBar(ProgramDocument d, int li)
+    {
+        var tabs = new WrapPanel { Name = "game-levels" };
+        for (var i = 0; i < GameLevelCount(d); i++)
+        {
+            var ii = i; var on = i == li;
+            var b = new Button { Name = $"game-lv-{i + 1}", Content = GameLevelName(d, i), FontSize = 12, Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 4, 4), CornerRadius = new CornerRadius(8),
+                Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text, BorderBrush = Edge, BorderThickness = new Thickness(on ? 0 : 1) };
+            b.Click += (_, _) => { _gameLevelIdx = ii; GameObjSel = null; Show(GK); };
+            tabs.Children.Add(b);
+        }
+        tabs.Children.Add(Act("game-lv-add", "＋ Level", () => ProgramRun(GK, () => GameAddLevel(d))));
+        var name = new TextBox { Name = "game-lv-name", Text = GameLevelName(d, li), Width = 150 };
+        void Rename() { if (name.Text?.Trim() is { Length: > 0 } t && t != GameLevelName(d, li)) ProgramRun(GK, () => GameRenameLevel(d, li, t)); }
+        name.LostFocus += (_, _) => Rename(); OnEnter(name, Rename);
+        TextBlock Lbl(string t) => new() { Text = t, Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center };
+        var manage = new WrapPanel { Children = { Lbl("Name"), new Border { Width = 6 }, name, new Border { Width = 6 } } };
+        if (li >= 2) manage.Children.Add(Act("game-lv-up", "◀ früher", () => ProgramRun(GK, () => GameMoveLevelUp(d, li))));
+        if (li >= 1) manage.Children.Add(Act("game-lv-del", "Level löschen", () => ProgramRun(GK, () => GameDeleteLevel(d, li))));
+        var layers = new WrapPanel { Name = "game-layers", VerticalAlignment = VerticalAlignment.Center, Children = { Lbl("Ebene"), new Border { Width = 6 } } };
+        foreach (var (id, label) in new[] { ("spiel", "Spiel (Boden, Gegner …)"), ("hintergrund", "Hintergrund (nur Deko)") })
+        {
+            var on = GameLayer == id; var ll = id;
+            var b = new Button { Name = "game-layer-" + id, Content = label, FontSize = 12, Padding = new Thickness(10, 4), Margin = new Thickness(0, 0, 4, 0), Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text };
+            b.Click += (_, _) => { GameLayer = ll; GameObjSel = null; Show(GK); };
+            layers.Children.Add(b);
+        }
+        return new StackPanel { Spacing = 4, Children = { tabs, new WrapPanel { Children = { manage, new Border { Width = 16 }, layers } } } };
     }
 
     /// <summary>Eigenschaften-Leiste: Spielregeln (Tempo, Leben) und das ausgewählte Objekt (Gegner-Tempo, Münzwert, Entfernen).</summary>
@@ -403,13 +578,14 @@ public partial class MainWindow
             var r = new JsonObject { ["when"] = GameStudio.RuleWhens[Math.Max(0, when.SelectedIndex)].Id, ["n"] = nn, ["do"] = GameStudio.RuleDos[Math.Max(0, act.SelectedIndex)].Id };
             d.Edit("Regel", x => { var a = x["rules"] as JsonArray ?? []; a.Add(r); x["rules"] = a; });
         })));
+        sp.Children.Add(GameAnimPanel(d));
         sp.Children.Add(H("Objekt", 13));
         if (GameObjSel is not { } sel || sel.Y >= rows.Count || sel.X >= rows[sel.Y].Length)
         {
             sp.Children.Add(P("Werkzeug „Auswählen“ nehmen und ein Objekt im Level antippen.", Muted, 11.5));
             return new Border { CornerRadius = new CornerRadius(12), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(10), VerticalAlignment = VerticalAlignment.Top, Child = sp };
         }
-        var ch = rows[sel.Y][sel.X]; var key = $"{sel.X},{sel.Y}";
+        var ch = rows[sel.Y][sel.X]; var key = GameKeyPrefix(_gameLevelIdx) + $"{sel.X},{sel.Y}"; var lvi = _gameLevelIdx;
         var (name, what) = ch switch
         {
             'E' => ("Gegner", "Läuft hin und her und kehrt an Wand oder Kante um. Draufspringen besiegt ihn."),
@@ -429,7 +605,8 @@ public partial class MainWindow
             var del = Act("game-obj-del", "Entfernen", () => ProgramRun(GK, () =>
             {
                 var l = rows.ToList(); var r = l[sel.Y].ToCharArray(); r[sel.X] = '.'; l[sel.Y] = new string(r);
-                d.Edit("Objekt entfernen", x => { x["level"] = new JsonArray([.. l.Select(y => (JsonNode)y)]); if (x["objects"] is JsonObject o) foreach (var k in o.Select(kv => kv.Key).Where(k => k.StartsWith(key + ":")).ToList()) o.Remove(k); });
+                GameSetRows(d, lvi, l, "Objekt entfernen");
+                d.Edit("Eigenschaften entfernen", x => { if (x["objects"] is JsonObject o) foreach (var k in o.Select(kv => kv.Key).Where(k => k.StartsWith(key + ":")).ToList()) o.Remove(k); });
             }));
             sp.Children.Add(del);
         }
@@ -445,7 +622,8 @@ public partial class MainWindow
             : $"Punkte {sim.Score} · Leben {sim.Lives} · {sim.Coins.Count(c => c.Taken)}/{sim.Coins.Count} Münzen" + (sim.KeysTotal > 0 ? $" · Schlüssel {sim.Keys}/{sim.KeysTotal}" : "")
               + (sim.SecondsLeft >= 0 ? $" · noch {Math.Ceiling(sim.SecondsLeft):0} s" : "") + (sim.Note.Length > 0 ? " · " + sim.Note : "");
         status.Text = Status();
-        var canvas = new PlaytestCanvas { Name = "game-playtest", Sim = sim, Height = 360, HorizontalAlignment = HorizontalAlignment.Stretch };
+        var canvas = new PlaytestCanvas { Name = "game-playtest", Sim = sim, Height = 360, HorizontalAlignment = HorizontalAlignment.Stretch,
+            Decor = [.. Enumerable.Range(0, GameLevelCount(d)).Select(i => (IReadOnlyList<string>)GameDecorRows(d, i))], Anims = GameAnimBitmaps(d) };
         GamePlaytestCanvas = canvas;
         canvas.Ticked = () => status.Text = Status();
         canvas.Stop = () => { _gamePlay = null; GamePlaytestCanvas = null; Show(GK); };

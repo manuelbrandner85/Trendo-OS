@@ -2,20 +2,25 @@ namespace Trendo.Core.Programs;
 
 /// <summary>Spiele bauen als Spiel-Editor (Masterprompt 131, Runde 7): Probespielen im Trendo-Fenster. Dieselben Regeln wie das gebaute Browser-Spiel
 /// (game.js „plattform“): Kachel 32 px, Figur 24 × 30, Schwerkraft 0,6 bis höchstens 14, Sprung 11,5, Gegner laufen hin und her und kehren an Wand oder Kante um,
-/// Draufspringen besiegt sie. Eigenschaften je Objekt: Gegner-Tempo („x,y:speed“) und Münzwert („x,y:value“).
-/// Seit 04.11.2026 wie GDevelop/Construct: Sprungfeder (F), Speicherpunkt (C), Schlüssel (K) und Tür (D), Zeitlimit und Ereignis-Regeln.</summary>
+/// Draufspringen besiegt sie. Eigenschaften je Objekt: Gegner-Tempo („x,y:speed“) und Münzwert („x,y:value“); ab Level 2 mit Vorsilbe („2:x,y:speed“).
+/// Seit 04.11.2026 wie GDevelop/Construct: Sprungfeder (F), Speicherpunkt (C), Schlüssel (K) und Tür (D), Zeitlimit und Ereignis-Regeln.
+/// Seit 05.11.2026: mehrere Level hintereinander (Ziel → nächstes Level, Punkte und Leben bleiben) und der Zustand der Figur für Animationen.</summary>
 public sealed class PlatformSim
 {
     public const int T = 32;
-    public sealed class Body { public double X, Y, Vx, Vy; public double W = 24, H = 30; public bool On; }
+    public sealed class Body { public double X, Y, Vx, Vy; public double W = 24, H = 30; public bool On; public int Facing = 1; }
     public sealed record Coin(int Col, int Row, double X, double Y, int Value) { public bool Taken { get; set; } }
     public sealed class Foe { public int Col, Row; public double X, Y, Dir = 1, Speed = 1; public bool Alive = true; }
 
-    readonly string[] _rows; readonly char[][] _grid; readonly IReadOnlyDictionary<string, double>? _props; readonly int _speed; readonly int _startLives;
+    /// <summary>Zustände der Spielfigur – je Zustand kann das Spiel eine eigene Animation zeigen (wie AnimatedSprite in Godot).</summary>
+    public static readonly (string Id, string Label)[] States = [("stehen", "Stehen"), ("laufen", "Laufen"), ("springen", "Springen"), ("fallen", "Fallen")];
+
+    readonly IReadOnlyList<string[]> _levels; readonly IReadOnlyDictionary<string, double>? _props; readonly int _speed; readonly int _startLives;
     readonly int _timeLimit; readonly IReadOnlyList<GameStudio.GameRule> _rules; readonly bool[] _fired;
+    string[] _rows = []; char[][] _grid = [];
     double _sx, _sy; double _boost;
     public int Rows => _rows.Length;
-    public int Cols { get; }
+    public int Cols { get; private set; }
     public Body Player { get; private set; } = new();
     public List<Coin> Coins { get; } = [];
     public List<Foe> Foes { get; } = [];
@@ -27,27 +32,45 @@ public sealed class PlatformSim
     public int Frames { get; private set; }
     /// <summary>Kurzes Blinken nach einem Treffer (Bilder).</summary>
     public int Flash { get; private set; }
-    public int KeysTotal { get; }
+    public int KeysTotal { get; private set; }
     public int Keys { get; private set; }
     public bool DoorsOpen { get; private set; }
     public int FoesDefeated { get; private set; }
     public bool TimeUp { get; private set; }
+    /// <summary>Aktuelles Level (0 = erstes) und Anzahl der Level.</summary>
+    public int LevelIndex { get; private set; }
+    public int LevelCount => _levels.Count;
     /// <summary>Aktueller Speicherpunkt (Spalte, Zeile).</summary>
     public (int X, int Y) Respawn => ((int)_sx, (int)_sy);
-    /// <summary>Letzte Meldung (Regel, Speicherpunkt, Türen) für die Anzeige.</summary>
+    /// <summary>Letzte Meldung (Regel, Speicherpunkt, Türen, nächstes Level) für die Anzeige.</summary>
     public string Note { get; private set; } = "";
-    /// <summary>Verbleibende Sekunden (−1 = ohne Zeitlimit).</summary>
-    public double SecondsLeft => _timeLimit > 0 ? Math.Max(0, _timeLimit - Frames / 60.0) : -1;
+    /// <summary>Verbleibende Sekunden (−1 = ohne Zeitlimit) – gilt je Level.</summary>
+    public double SecondsLeft => _timeLimit > 0 ? Math.Max(0, _timeLimit - _levelFrames / 60.0) : -1;
+    int _levelFrames;
 
-    public PlatformSim(IReadOnlyList<string> level, int speed = 5, int lives = 3, IReadOnlyDictionary<string, double>? props = null, int timeLimit = 0, IReadOnlyList<GameStudio.GameRule>? rules = null)
+    /// <summary>Zustand der Figur: stehen, laufen, springen (steigt) oder fallen.</summary>
+    public string State => !Player.On ? (Player.Vy < 0 ? "springen" : "fallen") : Math.Abs(Player.Vx) > 0.1 ? "laufen" : "stehen";
+
+    public PlatformSim(IReadOnlyList<string> level, int speed = 5, int lives = 3, IReadOnlyDictionary<string, double>? props = null, int timeLimit = 0,
+        IReadOnlyList<GameStudio.GameRule>? rules = null, IReadOnlyList<IReadOnlyList<string>>? moreLevels = null)
     {
-        _rows = level.Count > 0 ? [.. level] : ["S.....Z", "#######"]; _props = props; _timeLimit = Math.Clamp(timeLimit, 0, 3600);
+        var first = level.Count > 0 ? level.ToArray() : ["S.....Z", "#######"];
+        _levels = [first, .. (moreLevels ?? []).Where(l => l.Count > 0).Select(l => l.ToArray())];
+        _props = props; _timeLimit = Math.Clamp(timeLimit, 0, 3600);
         _rules = rules ?? []; _fired = new bool[_rules.Count];
-        _grid = [.. _rows.Select(r => r.ToCharArray())];
-        Cols = _rows.Max(r => r.Length); _speed = Math.Clamp(speed, 1, 10); _startLives = Math.Clamp(lives, 1, 9); Lives = _startLives;
+        _speed = Math.Clamp(speed, 1, 10); _startLives = Math.Clamp(lives, 1, 9); Lives = _startLives;
+        Load(0);
+    }
+
+    /// <summary>Level laden: Raster, Start, Münzen, Gegner, Schlüssel; Punkte, Leben und Regeln bleiben.</summary>
+    void Load(int index)
+    {
+        LevelIndex = index; _rows = _levels[index]; _grid = [.. _rows.Select(r => r.ToCharArray())];
+        Cols = _rows.Max(r => r.Length); Coins.Clear(); Foes.Clear(); Keys = 0; DoorsOpen = false; _levelFrames = 0;
         for (var y = 0; y < _rows.Length; y++) for (var x = 0; x < _rows[y].Length; x++) if (_rows[y][x] == 'S') { _sx = x; _sy = y; }
         KeysTotal = string.Concat(_rows).Count(c => c == 'K');
-        double P(int x, int y, string k, double def) => props is not null && props.TryGetValue($"{x},{y}:{k}", out var v) ? v : def;
+        var pre = index == 0 ? "" : $"{index + 1}:";
+        double P(int x, int y, string k, double def) => _props is not null && _props.TryGetValue($"{pre}{x},{y}:{k}", out var v) ? v : def;
         for (var y = 0; y < _rows.Length; y++)
             for (var x = 0; x < _rows[y].Length; x++)
             {
@@ -97,21 +120,30 @@ public sealed class PlatformSim
         }
     }
 
+    /// <summary>Ziel erreicht: nächstes Level laden oder gewonnen.</summary>
+    void Goal()
+    {
+        Score += 10;
+        if (LevelIndex + 1 < LevelCount) { Load(LevelIndex + 1); Note = $"Level {LevelIndex + 1} von {LevelCount}"; }
+        else Won = true;
+    }
+
     /// <summary>Ein Bild weiter (60 je Sekunde). <paramref name="jump"/> springt nur vom Boden aus.</summary>
     public void Step(bool left, bool right, bool jump)
     {
         if (Flash > 0) Flash--;
         if (Over) return;
-        Frames++;
+        Frames++; _levelFrames++;
         var pl = Player; var sp = 2.2 + _speed * .35 + _boost;
         if (jump && pl.On) pl.Vy = -11.5;
         pl.Vx = (right ? sp : 0) - (left ? sp : 0); pl.Vy = Math.Min(14, pl.Vy + .6);
+        if (pl.Vx > 0) pl.Facing = 1; else if (pl.Vx < 0) pl.Facing = -1;
         Move(pl, pl.Vx, 0); Move(pl, 0, pl.Vy);
         if (pl.On && At((int)Math.Floor((pl.X + 12) / T), (int)Math.Floor((pl.Y + pl.H + 1) / T)) == 'F') { pl.Vy = -17; pl.On = false; } // Sprungfeder
         if (pl.Y > Rows * T + 60) { Hit(); return; }
         int cx = (int)Math.Floor((pl.X + 12) / T), cy = (int)Math.Floor((pl.Y + 15) / T), cb = (int)Math.Floor((pl.Y + 29) / T);
         if (At(cx, cb) == '^' || At(cx, cy) == '^') { Hit(); return; }
-        if (At(cx, cy) == 'Z' || At(cx, cb) == 'Z') { Score += 10; Won = true; return; }
+        if (At(cx, cy) == 'Z' || At(cx, cb) == 'Z') { Goal(); return; }
         foreach (var yy in new[] { cy, cb })
         {
             if (At(cx, yy) == 'K') { _grid[yy][cx] = '.'; Keys++; if (Keys >= KeysTotal) { DoorsOpen = true; Note = "Alle Schlüssel – Türen offen"; } }
@@ -129,10 +161,10 @@ public sealed class PlatformSim
                 else { Hit(); return; }
             }
         }
-        if (_timeLimit > 0 && Frames / 60.0 > _timeLimit) { Lives = 0; TimeUp = true; Note = "Zeit abgelaufen"; return; }
+        if (_timeLimit > 0 && _levelFrames / 60.0 > _timeLimit) { Lives = 0; TimeUp = true; Note = "Zeit abgelaufen"; return; }
         Rules();
     }
 
-    /// <summary>Nochmal von vorn (alle Münzen, Gegner, Schlüssel und Türen zurück).</summary>
-    public PlatformSim Restart() => new(_rows, _speed, _startLives, _props, _timeLimit, _rules);
+    /// <summary>Nochmal von vorn (alle Level, Münzen, Gegner, Schlüssel und Türen zurück).</summary>
+    public PlatformSim Restart() => new(_levels[0], _speed, _startLives, _props, _timeLimit, _rules, [.. _levels.Skip(1)]);
 }

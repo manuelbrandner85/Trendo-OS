@@ -15,6 +15,16 @@ public sealed class PlaytestCanvas : Control
     public Action? Ticked { get; set; }
     public Action? Ended { get; set; }
     public Action? Stop { get; set; }
+    /// <summary>Hintergrund-Ebene je Level (nur Deko).</summary>
+    public IReadOnlyList<IReadOnlyList<string>> Decor { get; set; } = [];
+    /// <summary>Animation je Zustand: Bildstreifen, Anzahl Bilder, Bilder je Sekunde.</summary>
+    public Dictionary<string, (Avalonia.Media.Imaging.Bitmap Img, int Frames, int Fps)> Anims { get; set; } = [];
+    /// <summary>Bild der Figur im aktuellen Spielschritt: Zustand und Bildnummer im Streifen.</summary>
+    public (string State, int Frame) CurrentFrame()
+    {
+        var st = Sim.State;
+        return Anims.TryGetValue(st, out var a) || Anims.TryGetValue("stehen", out a) ? (st, (int)(Sim.Frames * a.Fps / 60) % Math.Max(1, a.Frames)) : (st, 0);
+    }
     readonly HashSet<Key> _down = [];
     DispatcherTimer? _timer; bool _wasOver;
 
@@ -60,6 +70,12 @@ public sealed class PlaytestCanvas : Control
         using (ctx.PushTransform(Matrix.CreateTranslation(-cam, oy)))
         {
             int x0 = (int)Math.Floor(cam / c), x1 = (int)Math.Ceiling((cam + Bounds.Width) / c);
+            if (s.LevelIndex < Decor.Count)
+            {
+                var dec = Decor[s.LevelIndex];
+                for (var y = 0; y < dec.Count; y++)
+                    for (var x = Math.Max(0, x0); x <= x1 && x < dec[y].Length; x++) LevelCanvas.DrawTile(ctx, dec[y][x], new Rect(x * c, y * c, c, c), false);
+            }
             for (var y = 0; y < s.Rows; y++)
                 for (var x = Math.Max(0, x0); x <= x1 && x < s.Cols; x++)
                 {
@@ -68,9 +84,23 @@ public sealed class PlaytestCanvas : Control
                 }
             foreach (var q in s.Coins.Where(q => !q.Taken)) LevelCanvas.DrawTile(ctx, 'o', new Rect(q.Col * c, q.Row * c, c, c), false);
             foreach (var f in s.Foes.Where(f => f.Alive)) LevelCanvas.DrawTile(ctx, 'E', new Rect(f.X * k - 4 * k, f.Y * k - 6 * k, c, c), false);
-            if (!(s.Flash > 0 && s.Flash % 4 < 2)) ctx.DrawRectangle(Hero, null, new RoundedRect(new Rect(s.Player.X * k, s.Player.Y * k, s.Player.W * k, s.Player.H * k), 4 * k));
+            if (!(s.Flash > 0 && s.Flash % 4 < 2))
+            {
+                var pr = new Rect(s.Player.X * k, s.Player.Y * k, s.Player.W * k, s.Player.H * k);
+                var st = s.State;
+                if (Anims.TryGetValue(st, out var a) || Anims.TryGetValue("stehen", out a))
+                {
+                    var n = CurrentFrame().Frame;
+                    var fw = a.Img.PixelSize.Width / (double)Math.Max(1, a.Frames);
+                    var src = new Rect(n * fw, 0, fw, a.Img.PixelSize.Height);
+                    if (s.Player.Facing < 0)
+                        using (ctx.PushTransform(Matrix.CreateScale(-1, 1) * Matrix.CreateTranslation(2 * pr.X + pr.Width, 0))) ctx.DrawImage(a.Img, src, pr);
+                    else ctx.DrawImage(a.Img, src, pr);
+                }
+                else ctx.DrawRectangle(Hero, null, new RoundedRect(pr, 4 * k));
+            }
         }
-        var hud = new FormattedText($"Punkte {s.Score}   Leben {Math.Max(0, s.Lives)}", System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Inter", FontStyle.Normal, FontWeight.Bold), 15, Brushes.White);
+        var hud = new FormattedText($"Punkte {s.Score}   Leben {Math.Max(0, s.Lives)}" + (s.LevelCount > 1 ? $"   Level {s.LevelIndex + 1}/{s.LevelCount}" : ""), System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Inter", FontStyle.Normal, FontWeight.Bold), 15, Brushes.White);
         ctx.FillRectangle(Shade, new Rect(8, 8, hud.Width + 16, hud.Height + 8)); ctx.DrawText(hud, new Point(16, 12));
         if (s.Over)
         {

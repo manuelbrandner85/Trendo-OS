@@ -157,6 +157,8 @@ public static class GameDesign
         [.. (d["rules"] as JsonArray ?? []).OfType<JsonObject>().Select(r => new GameStudio.GameRule(S(r["when"]), int.TryParse(r["n"]?.ToString(), out var n) ? n : 0, S(r["do"]))).Where(r => r.When.Length > 0 && r.Do.Length > 0)];
 
     /// <summary>Bauen: Retro/Indie 2D als spielbares Browser-Spiel (mit Level aus dem Projekt).</summary>
+    static string[] Lines(JsonNode? n) => (n as JsonArray ?? []).Select(S).Where(r => r.Length > 0).ToArray();
+
     public static string BuildBrowser(JsonObject d, string parent)
     {
         var t = S(d["browser"]); if (t.Length == 0) throw new InvalidOperationException("Bitte zuerst die Spielart wählen (Hüpfspiel, Mauerbrecher, Schlange oder Plattformer).");
@@ -164,10 +166,20 @@ public static class GameDesign
         var dir = Path.Combine(parent, DevStudio.SafeName(S(d["title"])));
         static double? N(JsonNode? n) => n is JsonValue && double.TryParse(n.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : null;
         var props = (d["objects"] as JsonObject ?? []).Where(kv => N(kv.Value) is not null).ToDictionary(kv => kv.Key, kv => N(kv.Value)!.Value);
+        var more = (d["levels"] as JsonArray ?? []).OfType<JsonObject>().Where(o => Lines(o["rows"]).Length > 0).ToList();
+        // Animationen je Zustand: „anims“: {laufen: {file, frames, fps}} – Bildstreifen aus dem Projekt
+        var anims = (d["anims"] as JsonObject ?? []).Where(kv => kv.Value is JsonObject o && S(o["file"]).Length > 0)
+            .ToDictionary(kv => kv.Key, kv => (File: S(kv.Value!["file"]), Frames: (int)(N(kv.Value!["frames"]) ?? 1), Fps: (int)(N(kv.Value!["fps"]) ?? 8)));
         var settings = GameStudio.Validate(new GameStudio.GameSettings { Level = level, Props = props, Speed = (int)(N(d["speed"]) ?? 5), Lives = (int)(N(d["lives"]) ?? 3),
-            TimeLimit = (int)(N(d["timeLimit"]) ?? 0), Rules = Rules(d) });
-        if (Directory.Exists(dir)) { GameStudio.Save(dir, settings); return dir; }
-        return GameStudio.CreateBrowserGame(parent, t, S(d["title"]), settings);
+            TimeLimit = (int)(N(d["timeLimit"]) ?? 0), Rules = Rules(d),
+            MoreLevels = [.. more.Select(o => Lines(o["rows"]))], Decor = [Lines(d["decor"]), .. more.Select(o => Lines(o["decor"]))],
+            LevelNames = [S(d["levelName"]) is { Length: > 0 } n0 ? n0 : "Level 1", .. more.Select((o, i) => S(o["name"]) is { Length: > 0 } n ? n : $"Level {i + 2}")],
+            Anims = anims.ToDictionary(kv => kv.Key, kv => new GameStudio.Anim("figur-" + kv.Key + Path.GetExtension(kv.Value.File), kv.Value.Frames, kv.Value.Fps)) });
+        var files = anims.Where(kv => File.Exists(kv.Value.File)).ToDictionary(kv => kv.Key, kv => kv.Value.File);
+        if (Directory.Exists(dir)) { GameStudio.Save(dir, settings, animFiles: files); return dir; }
+        var made = GameStudio.CreateBrowserGame(parent, t, S(d["title"]), settings);
+        if (files.Count > 0) GameStudio.Save(made, settings, animFiles: files);
+        return made;
     }
 
     /// <summary>Bauen: 3D/AA/AAA als Unreal-Projekt; Spielbibel liegt im Projekt; AAA+ bekommt Lumen, Nanite-taugliche Einstellungen und World Partition.</summary>
