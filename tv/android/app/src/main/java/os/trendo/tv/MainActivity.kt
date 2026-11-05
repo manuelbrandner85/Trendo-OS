@@ -7,16 +7,17 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import os.trendo.tv.apps.AndroidApps
 import os.trendo.tv.apps.AppCatalog
-import os.trendo.tv.apps.AppEntry
+import os.trendo.tv.apps.AppFilters
+import os.trendo.tv.apps.DeviceStats
 import os.trendo.tv.apps.FavoritesStore
-import os.trendo.tv.ui.HomeScreen
-import os.trendo.tv.ui.Tile
+import os.trendo.tv.ui.TrendoTvApp
+import os.trendo.tv.ui.TvActions
+import os.trendo.tv.ui.TvState
 
 class MainActivity : ComponentActivity() {
     private lateinit var apps: AndroidApps
@@ -27,34 +28,47 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         apps = AndroidApps(this)
         store = FavoritesStore(this)
+        val version = runCatching { packageManager.getPackageInfo(packageName, 0).versionName }.getOrNull() ?: "?"
+        val empty = TvState(emptyList(), emptyList(), emptyList(), null, null, emptyList(), DeviceStats(null, null, null, null, null), false, version)
+
+        val actions = TvActions(
+            launch = { pkg -> if (apps.launch(pkg)) store.lastLaunched = pkg else fail() },
+            appInfo = { pkg -> if (!apps.openSystemInfo(pkg)) fail() },
+            settings = { action -> if (!apps.openSettings(action)) fail() },
+            originalHome = { if (!apps.openOriginalHome()) fail() },
+            uninstallSelf = { if (!apps.uninstallSelf()) fail() },
+            openInput = { input -> if (!apps.openInput(input)) fail() },
+            banner = apps::banner,
+        )
+
         setContent {
-            val list by produceState(emptyList<AppEntry>(), refresh) {
-                value = withContext(Dispatchers.IO) { apps.load() }
+            val state by produceState(empty, refresh) {
+                value = withContext(Dispatchers.IO) {
+                    val list = apps.load()
+                    val favPkgs = store.load() ?: AppCatalog.suggestedFavorites(list).also { if (list.isNotEmpty()) store.save(it) }
+                    val favs = AppCatalog.favorites(list, favPkgs)
+                    TvState(
+                        apps = list,
+                        favorites = favs,
+                        myApps = AppFilters.myApps(list, favs),
+                        lastLaunched = list.firstOrNull { it.packageName == store.lastLaunched },
+                        liveTv = list.firstOrNull { it.label.lowercase().contains("tivimate") },
+                        inputs = apps.hdmiInputs(),
+                        stats = apps.stats(),
+                        online = apps.online(),
+                        version = version,
+                    )
+                }
             }
-            val favPackages = remember(list) {
-                store.load() ?: AppCatalog.suggestedFavorites(list).also { if (list.isNotEmpty()) store.save(it) }
-            }
-            HomeScreen(
-                favorites = AppCatalog.favorites(list, favPackages).map { it.tile("fav:") },
-                apps = list.map { it.tile("app:") },
-                system = listOf(
-                    Tile("sys:settings", "TV-Einstellungen", null) { if (!apps.openTvSettings()) fail() },
-                    Tile("sys:home", "Original-Startseite", null) { if (!apps.openOriginalHome()) fail() },
-                    Tile("sys:undo", "Alles rückgängig (Trendo entfernen)", null) { if (!apps.uninstallSelf()) fail() },
-                ),
-                loadBanner = apps::banner,
-            )
+            TrendoTvApp(state, actions)
         }
     }
 
-    /** Beim Zurückkehren neu einlesen (neu installierte Apps); kein Hintergrund-Polling. */
+    /** Beim Zurückkehren neu einlesen (neu installierte Apps, zuletzt geöffnet); kein Hintergrund-Polling. */
     override fun onResume() {
         super.onResume()
         refresh++
     }
-
-    private fun AppEntry.tile(prefix: String) =
-        Tile(prefix + packageName, label, this) { if (!apps.launch(packageName)) fail() }
 
     private fun fail() {
         Toast.makeText(this, "Konnte nicht geöffnet werden.", Toast.LENGTH_SHORT).show()

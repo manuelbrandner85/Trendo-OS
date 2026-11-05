@@ -7,6 +7,8 @@
 
     <!-- Nur für „Alles rückgängig": Android-Dialog zum Entfernen von Trendo selbst öffnen. -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
+    <!-- Nur zum Anzeigen „online/offline" in der Kopfzeile. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- Keine QUERY_ALL_PACKAGES-Berechtigung: Trendo sieht nur Apps mit Startsymbol. -->
     <queries>

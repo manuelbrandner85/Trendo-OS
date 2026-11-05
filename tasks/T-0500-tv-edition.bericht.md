@@ -35,3 +35,13 @@ Android SDK unter `C:\Users\<user>\TrendoEntwicklung\android-sdk`: cmdline-tools
 - `dumpsys` am CHiQ eingeschränkt („Service dumps disabled").
 - Kein Push, kein PR, kein Merge, kein Release.
 - Löschwunsch Disney+/Kodi/AI Pont/Google Play Spiele: nicht ausgeführt (Datenverlust, Übergabe verbietet Fremd-App-Deinstallation); Anleitung zum Selbstmachen an Manuel gegeben.
+
+## Nachtrag 05.11.2026 – Design-Umbau 0.2.x (nach Vorlage von Manuel)
+- Oberfläche neu: Seitenleiste (11 Bereiche), Kopfzeile mit prismatischem T, „by Manuel" in Schreibschrift (Great Vibes, SIL OFL 1.1, Lizenz in `tv/android/THIRD_PARTY_FONTS_OFL_GreatVibes.txt`), Suchfeld, Uhr + Datum, Online-Anzeige, Titelbild, „Meine Apps", 6 Themenkarten, 11 Werkzeuge, farbiger Randschein (statisch).
+- Bilder: 7 eigene Bilder lokal mit ComfyUI + FLUX.2 klein erzeugt (keine Fremdfotos, keine Filmcover), als WebP zusammen 133 KB.
+- Ehrlich weggelassen: Wetter, Profilbild (keine Datenquelle). Smart Home, Trendo AI, Timer: Seite „Geplant".
+- Echte Funktionen: App-Start, Kategorien (Video/Audio/Spiel/Bild laut App), Suche, HDMI-Eingänge über TvInputManager (CHiQ meldet Composite, HDMI 1–3; Umschalten NICHT getestet), Performance-Werte (RAM/Speicher), Android-Einstellungsseiten, Original-Startseite, „Alles rückgängig".
+- 0.2.0 und 0.2.1 jeweils als Update von `os.trendo.tv` aufgespielt; Paketliste vorher/nachher unverändert, Standard-Home unverändert. Start: Status ok, TotalTime 3728 ms (0.2.0) / 3424 ms (0.2.1); kein Crash-Eintrag.
+- 0.2.1 APK: 2291645 Byte, SHA-256 `cfa43bd313a11a8b82a4f0b1116d2ceedfeaf1260db11f50d3d2e0681512f526`. Screenshots `reports/tv/T-0500-chiq-v020-start.png`, `reports/tv/T-0500-chiq-v021-start.png`.
+- NICHT geprüft: Fernbedienungs-Durchlauf (dumpsys am CHiQ gesperrt → Vordergrund nicht feststellbar), Unterseiten am TV, HDMI-Umschaltung, Suche mit Bildschirmtastatur.
+- Kaltstart 3,4 s ist langsamer als 0.1.0 (1,4 s) – Bilder und Symbole; Optimierung offen.

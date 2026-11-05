@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Prismatisches T der TV-Edition ohne Hintergrund (Kopfzeile). Facetten wie geschliffenes Glas. Kein Gold. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="100dp" android:height="100dp"
+    android:viewportWidth="100" android:viewportHeight="100">
+    <!-- Grundkörper -->
+    <path android:pathData="M8,10 L92,10 L84,28 L60,28 L60,92 L40,92 L40,28 L16,28 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="8" android:startY="10" android:endX="70" android:endY="92">
+                <item android:offset="0.0" android:color="#FF1CD4F4" />
+                <item android:offset="0.35" android:color="#FF317DFF" />
+                <item android:offset="0.65" android:color="#FF854FFF" />
+                <item android:offset="1.0" android:color="#FFD74EDC" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- helle Facette oben (Lichtkante) -->
+    <path android:pathData="M8,10 L92,10 L89,17 L11,17 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="8" android:startY="10" android:endX="92" android:endY="10">
+                <item android:offset="0.0" android:color="#CCFFFFFF" />
+                <item android:offset="0.5" android:color="#66E8F6FF" />
+                <item android:offset="1.0" android:color="#AAFFD9FA" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- rechte Schliff-Facette am Stamm -->
+    <path android:fillColor="#40FFFFFF" android:pathData="M50,28 L60,28 L60,92 L50,92 Z" />
+    <!-- dunkle Facette links unter dem Querbalken -->
+    <path android:fillColor="#33050A14" android:pathData="M16,28 L40,28 L40,33 L18.5,33 Z" />
+    <!-- innerer Glanz -->
+    <path android:fillColor="#26FFFFFF" android:pathData="M42,30 L46,30 L46,88 L42,88 Z" />
+</vector>
