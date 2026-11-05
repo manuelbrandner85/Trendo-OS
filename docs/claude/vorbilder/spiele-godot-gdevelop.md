@@ -21,6 +21,7 @@
 - ✓ Mehrere Level hintereinander wie die Szenen in GDevelop: Level-Reiter über der Fläche, hinzufügen, umbenennen, früher schieben, löschen (Eigenschaften rücken mit); das Ziel lädt das nächste Level, erst das letzte gewinnt – im Probespiel und im gebauten Spiel
 - ✓ Ebenen wie die TileMap-Ebenen in Godot: Spiel-Ebene (fest, mit Wirkung) und Hintergrund-Ebene nur mit Deko (Wolke, Berg, Baum, Busch, Gras); die andere Ebene ist beim Malen blass zu sehen
 - ✓ Animationen je Zustand wie AnimatedSprite in Godot: stehen, laufen, springen, fallen je ein Bildstreifen mit Anzahl Bilder und Tempo, Figur dreht sich in Laufrichtung; das Bauen kopiert die Streifen ins Spiel
+- ✓ Claude baut Level im Editor (mit dem eigenen Claude-Abo): Claude sieht alle Level und Hintergründe als Zeilen, der Plan zeigt das vorgeschlagene Level als kleine Vorschau, erst „Ausführen“ ändert es; Behalten oder Verwerfen wie in allen Programmen
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Level in der Mitte, Kachel-Werkzeuge oben, rechts Spielregeln, Regeln und Objekt-Eigenschaften – Bauplan erfüllt.

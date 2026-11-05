@@ -62,6 +62,7 @@ public partial class MainWindow
                 case TextBlock t when t.Text is { Length: >= 3 and <= 160 } s && t.FindLogicalAncestorOfType<Button>() is null && texts.Count < 40 && !texts.Contains(s):
                     texts.Add(s); break;
             }
+        fields.AddRange(ClaudeExtraFields(page)); // Programm-eigene Inhalte, die keine Eingabefelder sind (z. B. Level in „Spiele bauen“)
         var program = Windows.Active?.Title is { Length: > 0 } wt ? wt : StudioCatalog.NameOf(ModuleOf(page) ?? "", page);
         var title = ClaudeFocus(page) ?? (Programs.ContainsKey(page) && ProgramActive(page) is { } doc ? "Dokument „" + doc.Title + "“" : "");
         var sel = ClaudeSelection(page) ?? (_lastTextSel is { } ls && ls.Page == page ? ls.Text : null);
@@ -117,6 +118,7 @@ public partial class MainWindow
             case "3d":
                 return $"3D-Szene „{_scene.Name}“ mit {_scene.Parts.Count} Teilen" + (_scene.Parts.Count > 0 ? ": " + string.Join(", ", _scene.Parts.Take(12).Select(p => p.Name)) : "") + (Selected is { } sp ? $"; ausgewählt: {sp.Name}" : "");
         }
+        if (page == GK && ClaudeGameFocus() is { } gf) return gf; // Level in voller Länge für Claude
         if (Programs.TryGetValue(page, out var spec) && ProgramActive(page) is { } d)
         {
             var parts = d.Data.Select(kv => kv.Value is System.Text.Json.Nodes.JsonArray a ? $"{kv.Key}: {a.Count}" : null).OfType<string>().Take(10).ToList();
@@ -146,7 +148,9 @@ public partial class MainWindow
         for (var i = 0; i < plan.Steps.Count; i++)
         {
             var s = plan.Steps[i]; var r = ClaudeActions.StepRisky(s, plan.State); risky |= r;
+            var pv = ClaudeExtraPreview(plan.Page, s);
             sp.Children.Add(new TextBlock { Name = $"claude-plan-step-{i}", Text = $"{i + 1}. {ClaudeActions.Describe(s, plan.State)}" + (r ? "  ⚠ wirkt nach außen" : ""), Foreground = r ? Brush.Parse("#FFF8B26A") : ClaudeFg, FontSize = 13, TextWrapping = TextWrapping.Wrap });
+            if (pv is not null) sp.Children.Add(pv);
         }
         if (risky) sp.Children.Add(new TextBlock { Text = "⚠ Darunter ist etwas, das nach außen wirkt oder sich nicht zurücknehmen lässt (z. B. senden, löschen, kaufen). Es passiert nur, wenn du „Ausführen“ klickst.", Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap });
         var run = new Button { Name = "claude-plan-run", Content = risky ? "▶ Ausführen – ich bin einverstanden" : "▶ Ausführen", FontSize = 12.5, Padding = new Thickness(12, 4), Margin = new Thickness(0, 4, 6, 0), Background = ClaudeAccent, Foreground = Brushes.White, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(0) };
@@ -181,7 +185,7 @@ public partial class MainWindow
                 case ("feld", TextBox tb) when tb.IsEffectivelyEnabled: tb.Text = s.Value; done.Add(text); break;
                 case ("wahl", ComboBox cb) when cb.IsEffectivelyEnabled && cb.Items.FirstOrDefault(i => ItemText(i).Equals(s.Value, StringComparison.OrdinalIgnoreCase)) is { } item: cb.SelectedItem = item; done.Add(text); break;
                 case ("klick", Button b) when b.IsEffectivelyEnabled: b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); done.Add(text); break;
-                default: failed.Add(text); break;
+                default: if (ClaudeApplyExtra(plan.Page, s)) done.Add(text); else failed.Add(text); break;
             }
             await _ui.InvokeAsync(() => { }, DispatcherPriority.Background); // Seite zeichnet sich nach jedem Schritt neu
         }
