@@ -8,7 +8,24 @@ data class AppEntry(
     val isTvApp: Boolean,
     /** Art laut App selbst (Android `ApplicationInfo.category`), z. B. Spiel, Video, Audio. */
     val kind: AppKind = AppKind.OTHER,
+    /** Vom Hersteller fest eingebaut (lässt sich nur deaktivieren, nicht deinstallieren). */
+    val isSystem: Boolean = false,
 )
+
+/** Apps, die für Fernsehen, HDMI, Updates oder den Play Store gebraucht werden – nie zum Entfernen vorschlagen. */
+object ProtectedApps {
+    private val prefixes = listOf(
+        "com.android.vending", "com.google.android.gms", "com.google.android.gsf", "com.google.android.tv", "com.android.tv",
+        "com.google.android.tvlauncher", "com.google.android.tvrecommendations", "com.mediatek", "com.mstar", "com.android.providers",
+        "ar.tvplayer.tv", "com.google.android.katniss", "com.google.android.backdrop",
+    )
+    private val words = listOf("setup", "tvapi", "update", "input", "tuner", "hdmi", "cec")
+
+    fun isProtected(a: AppEntry): Boolean =
+        prefixes.any { a.packageName == it || a.packageName.startsWith("$it.") } ||
+            words.any { a.packageName.lowercase().contains(it) || a.label.lowercase().replace(" ", "").contains(it) } ||
+            a.label.lowercase().let { it == "live tv" || it.contains("tivimate") }
+}
 
 enum class AppKind { GAME, VIDEO, AUDIO, IMAGE, OTHER }
 

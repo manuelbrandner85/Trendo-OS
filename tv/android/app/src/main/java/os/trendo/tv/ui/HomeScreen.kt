@@ -73,6 +73,20 @@ import os.trendo.tv.R
 import os.trendo.tv.apps.AppEntry
 import os.trendo.tv.apps.DeviceStats
 import os.trendo.tv.apps.TvInput
+import os.trendo.tv.media.MediaFile
+import os.trendo.tv.media.MediaKind
+import os.trendo.tv.media.ResumeStore
+import os.trendo.tv.weather.Place
+import os.trendo.tv.weather.Weather
+import os.trendo.tv.weather.WeatherRules
+import androidx.compose.material.icons.outlined.AcUnit
+import androidx.compose.material.icons.outlined.Cloud
+import androidx.compose.material.icons.outlined.Dehaze
+import androidx.compose.material.icons.outlined.NightsStay
+import androidx.compose.material.icons.outlined.Thunderstorm
+import androidx.compose.material.icons.outlined.Umbrella
+import androidx.compose.material.icons.outlined.WbCloudy
+import androidx.compose.material.icons.outlined.WbSunny
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -90,6 +104,16 @@ data class TvState(
     val version: String,
     /** true = Trendo ist die Standard-Startseite des Fernsehers. */
     val isHome: Boolean,
+    val videos: List<MediaFile> = emptyList(),
+    val audio: List<MediaFile> = emptyList(),
+    val images: List<MediaFile> = emptyList(),
+    val resume: List<ResumeStore.Entry> = emptyList(),
+    /** null = Medienzugriff noch nicht erlaubt. */
+    val mediaAllowed: Boolean = false,
+    val weather: Weather? = null,
+    val place: Place? = null,
+    val timerMinutes: Int? = null,
+    val voiceAvailable: Boolean = false,
 )
 
 /** Alle Aktionen; Fremd-Apps werden ausschließlich gestartet oder deren Infoseite geöffnet. */
@@ -103,15 +127,23 @@ class TvActions(
     val banner: (String) -> Drawable?,
     val makeHome: () -> Unit,
     val homeSettings: () -> Unit,
+    val play: (uri: String, title: String, kind: MediaKind) -> Unit = { _, _, _ -> },
+    val showPhoto: (Int) -> Unit = {},
+    val allowMedia: () -> Unit = {},
+    val setTimer: (Int) -> Unit = {},
+    val cancelTimer: () -> Unit = {},
+    val searchPlace: (String, (List<Place>) -> Unit) -> Unit = { _, _ -> },
+    val setPlace: (Place?) -> Unit = {},
+    val command: (String, (String) -> Unit) -> Unit = { _, _ -> },
+    val voice: ((String) -> Unit) -> Unit = {},
+    val discovery: (Boolean, (List<os.trendo.tv.smarthome.HomeDevice>) -> Unit) -> Unit = { _, _ -> },
 )
 
 @Composable
-fun TrendoTvApp(state: TvState, actions: TvActions, homeTick: Int = 0) {
-    var section by rememberSaveable { mutableStateOf(Section.START) }
-    // Home-Taste: immer zurück auf „Start".
-    LaunchedEffect(homeTick) { section = Section.START }
+fun TrendoTvApp(state: TvState, actions: TvActions, current: Section, onSection: (Section) -> Unit) {
+    val section = current
     // Zurück-Taste: Unterseite → Start. Als Startseite schließt sich Trendo nicht selbst.
-    BackHandler(enabled = section != Section.START || state.isHome) { section = Section.START }
+    BackHandler(enabled = section != Section.START || state.isHome) { onSection(Section.START) }
 
     Box(Modifier.fillMaxSize().background(TvColors.Ink)) {
         Image(painterResource(R.drawable.tv_hero), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
@@ -124,13 +156,13 @@ fun TrendoTvApp(state: TvState, actions: TvActions, homeTick: Int = 0) {
         Box(Modifier.fillMaxSize().border(2.dp, Brush.sweepGradient(listOf(TvColors.Cyan, TvColors.ElectricBlue, TvColors.Violet, TvColors.Magenta, TvColors.Cyan)).let { it }, RoundedCornerShape(0.dp)))
 
         Column(Modifier.fillMaxSize()) {
-            TopBar(state, onSearch = { section = Section.SEARCH }, onSettings = { section = Section.SETTINGS })
+            TopBar(state, onSearch = { onSection(Section.SEARCH) }, onSettings = { onSection(Section.SETTINGS) })
             Row(Modifier.fillMaxSize().padding(start = 14.dp, end = 20.dp, bottom = 14.dp)) {
-                Sidebar(section) { section = it }
+                Sidebar(section) { onSection(it) }
                 Spacer(Modifier.width(14.dp))
                 Box(Modifier.weight(1f).fillMaxHeight()) {
-                    if (section == Section.START) StartPage(state, actions) { section = it }
-                    else SectionPage(section, state, actions) { section = it }
+                    if (section == Section.START) StartPage(state, actions) { onSection(it) }
+                    else SectionPage(section, state, actions) { onSection(it) }
                 }
             }
         }
@@ -161,6 +193,7 @@ private fun TopBar(state: TvState, onSearch: () -> Unit, onSettings: () -> Unit)
             }
         }
         Spacer(Modifier.weight(1f))
+        WeatherBadge(state.weather)
         Clock()
         Spacer(Modifier.width(14.dp))
         // Erst anzeigen, wenn echte Werte geladen sind (sonst stünde kurz „offline" da).
@@ -173,6 +206,32 @@ private fun TopBar(state: TvState, onSearch: () -> Unit, onSettings: () -> Unit)
             }
         }
     }
+}
+
+@Composable
+private fun WeatherBadge(w: Weather?) {
+    if (w == null) return
+    val icon = when (WeatherRules.sky(w.code, w.isDay)) {
+        WeatherRules.Sky.SUN -> Icons.Outlined.WbSunny
+        WeatherRules.Sky.MOON -> Icons.Outlined.NightsStay
+        WeatherRules.Sky.PARTLY -> Icons.Outlined.WbCloudy
+        WeatherRules.Sky.CLOUD -> Icons.Outlined.Cloud
+        WeatherRules.Sky.FOG -> Icons.Outlined.Dehaze
+        WeatherRules.Sky.RAIN -> Icons.Outlined.Umbrella
+        WeatherRules.Sky.SNOW -> Icons.Outlined.AcUnit
+        WeatherRules.Sky.STORM -> Icons.Outlined.Thunderstorm
+    }
+    val tint = if (WeatherRules.sky(w.code, w.isDay) == WeatherRules.Sky.SUN) androidx.compose.ui.graphics.Color(0xFFFFC94D) else TvColors.Text
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, null, tint = tint, modifier = Modifier.size(24.dp))
+        Spacer(Modifier.width(6.dp))
+        Column {
+            Text("${w.tempC}°C", color = TvColors.Text, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+            Text(w.place, color = TvColors.TextSecondary, fontSize = 7.5.sp, maxLines = 1)
+            Text(w.text, color = TvColors.TextSecondary, fontSize = 7.5.sp, maxLines = 1)
+        }
+    }
+    Spacer(Modifier.width(16.dp))
 }
 
 @Composable
@@ -255,9 +314,14 @@ private fun StartPage(state: TvState, actions: TvActions, go: (Section) -> Unit)
             val live = state.liveTv
             FeatureCard("Live-TV", if (live != null) "${live.label} · Sender" else "Sender · TV-Guide", "Jetzt schauen", R.drawable.tv_card_livetv,
                 Modifier.focusRequester(first)) { if (live != null) actions.launch(live.packageName) else go(Section.LIVE_TV) }
+            val res = state.resume.firstOrNull()
             val last = state.lastLaunched
-            FeatureCard("Weitersehen", if (last != null) "Zuletzt: ${last.label}" else "Noch nichts geöffnet", "Fortsetzen", R.drawable.tv_card_weiter) {
-                if (last != null) actions.launch(last.packageName) else go(Section.APPS)
+            FeatureCard(
+                "Weitersehen",
+                when { res != null -> "${res.title} · ${os.trendo.tv.media.ResumeRules.formatTime(res.positionMs)}"; last != null -> "Zuletzt: ${last.label}"; else -> "Noch nichts geöffnet" },
+                "Fortsetzen", R.drawable.tv_card_weiter,
+            ) {
+                when { res != null -> actions.play(res.uri, res.title, res.kind); last != null -> actions.launch(last.packageName); else -> go(Section.MEDIATHEK) }
             }
             FeatureCard("Mediathek", "Filme · Serien · Musik · Fotos", "Öffnen", R.drawable.tv_card_mediathek) { go(Section.MEDIATHEK) }
             FeatureCard(

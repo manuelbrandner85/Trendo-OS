@@ -35,7 +35,8 @@ class AndroidApps(private val context: Context) {
         fun query(category: String, tv: Boolean): List<AppEntry> {
             val intent = Intent(Intent.ACTION_MAIN).addCategory(category)
             return pm.queryIntentActivities(intent, 0).map {
-                AppEntry(it.activityInfo.packageName, it.loadLabel(pm).toString(), tv, kindOf(it.activityInfo.applicationInfo))
+                val info = it.activityInfo.applicationInfo
+                AppEntry(it.activityInfo.packageName, it.loadLabel(pm).toString(), tv, kindOf(info), info.flags and ApplicationInfo.FLAG_SYSTEM != 0)
             }
         }
         return AppCatalog.merge(
@@ -69,9 +70,25 @@ class AndroidApps(private val context: Context) {
     }
 
     /** Öffnet eine Android-Einstellungsseite; fällt auf die allgemeinen Einstellungen zurück. */
-    fun openSettings(action: String = Settings.ACTION_SETTINGS): Boolean =
-        start(Intent(action).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) ||
-            (action != Settings.ACTION_SETTINGS && start(Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)))
+    fun openSettings(action: String = Settings.ACTION_SETTINGS): Boolean {
+        // Manche Hersteller ersetzen Android-Einträge durch leere Platzhalter oder lassen sie weg.
+        val intent = Intent(action)
+        val target = pm.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo?.packageName
+        if (target != null && !target.contains("frameworkpackagestubs") && start(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))) return true
+        if (action == Settings.ACTION_DREAM_SETTINGS && openScreensaverSettings()) return true
+        if (action == Settings.ACTION_ACCESSIBILITY_SETTINGS && openAccessibilitySettings()) return true
+        return action != Settings.ACTION_SETTINGS && start(Intent(Settings.ACTION_SETTINGS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    }
+
+    /** Bildschirmschoner-Auswahl; bei Android TV liegt sie in den TV-Einstellungen (Daydream). */
+    fun openScreensaverSettings(): Boolean = listOf(
+        ComponentName("com.android.tv.settings", "com.android.tv.settings.device.display.daydream.DaydreamActivity"),
+    ).any { c -> runCatching { pm.getActivityInfo(c, 0) }.isSuccess && start(Intent().setComponent(c).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
+
+    /** Ist der TRENDO-OS-Bildschirmschoner ausgewählt? */
+    fun isOwnScreensaver(): Boolean = runCatching {
+        (Settings.Secure.getString(context.contentResolver, "screensaver_components") ?: "").contains(own)
+    }.getOrDefault(false)
 
     fun openTvSettings(): Boolean = openSettings()
 

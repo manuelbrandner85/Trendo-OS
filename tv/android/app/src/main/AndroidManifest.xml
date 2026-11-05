@@ -9,9 +9,20 @@
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
     <!-- Nur zum Anzeigen „online/offline" in der Kopfzeile. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Wetter (Open-Meteo) und Gerätesuche im Heimnetz. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Eigene Medien (USB/TV-Speicher) – Android fragt den Nutzer. -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
     <!-- Keine QUERY_ALL_PACKAGES-Berechtigung: Trendo sieht nur Apps mit Startsymbol. -->
     <queries>
+        <!-- Spracherkennung des Fernsehers (Trendo AI). -->
+        <intent>
+            <action android:name="android.speech.action.RECOGNIZE_SPEECH" />
+        </intent>
         <!-- Original-Startseite erkennen (Wächter, Knopf „Original-Startseite"). -->
         <intent>
             <action android:name="android.intent.action.MAIN" />
@@ -62,6 +73,27 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity-alias>
+
+        <activity
+            android:name=".PlayerActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.TrendoTV"
+            android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout|orientation" />
+
+        <receiver android:name=".SleepTimerReceiver" android:exported="false" />
+
+        <!-- TRENDO-OS-Bildschirmschoner (in den TV-Einstellungen wählbar). -->
+        <service
+            android:name=".TrendoScreensaver"
+            android:exported="true"
+            android:label="TRENDO OS"
+            android:permission="android.permission.BIND_DREAM_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.dreams.DreamService" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
 
         <!-- Startseiten-Wächter (vom Nutzer in den Bedienungshilfen einzuschalten). -->
         <service
