@@ -108,6 +108,18 @@ object TvRules {
         return progs[i] to progs.getOrNull(i + 1)
     }
 
+    /** Kann für diesen Sender eine Sendung aus dem Archiv geholt werden? */
+    fun canCatchup(c: Channel, startMs: Long, now: Long): Boolean =
+        c.catchup != null && c.archiveDays > 0 && startMs < now && now - startMs <= c.archiveDays * 86_400_000L
+
+    /** Catch-up-Adresse ab [startMs] für [durMin] Minuten (Zeit in der Zeitzone des Fernsehers, wie bei Xtream üblich). */
+    fun catchupUrl(c: Channel, startMs: Long, durMin: Int, tz: java.util.TimeZone = java.util.TimeZone.getDefault()): String? {
+        val t = c.catchup ?: return null
+        val f = java.text.SimpleDateFormat("yyyy-MM-dd:HH-mm", java.util.Locale.US).apply { timeZone = tz }
+        return t.replace("{start}", f.format(java.util.Date(startMs))).replace("{dur}", durMin.coerceAtLeast(1).toString())
+            .replace("{utc}", (startMs / 1000).toString())
+    }
+
     /** PIN nie im Klartext speichern. */
     fun pinHash(pin: String, salt: String): String {
         val md = java.security.MessageDigest.getInstance("SHA-256")

@@ -172,8 +172,18 @@ fun PosterRowsView(items: List<PosterItem>, emptyText: String, autofocus: Boolea
         return
     }
     var q by remember { mutableStateOf("") }
-    val shown = remember(items, q) { if (q.isBlank()) items else items.filter { it.title.contains(q.trim(), true) } }
-    val rows = remember(shown) { shown.groupBy { it.category }.entries.take(30).map { it.key to it.value.take(40) } }
+    // Anbieter (Netflix, Disney+, Prime …) aus den Kategorienamen des eigenen Anbieters.
+    val providers = remember(items) { os.trendo.tv.livetv.Providers.present(items.map { it.category }.distinct()) }
+    var provider by remember { mutableStateOf<String?>(null) }
+    val shown = remember(items, q, provider) {
+        items.filter { (q.isBlank() || it.title.contains(q.trim(), true)) && (provider == null || os.trendo.tv.livetv.Providers.of(it.category) == provider) }
+    }
+    val rows = remember(shown) {
+        val order = os.trendo.tv.livetv.Providers.list.map { it.first }
+        shown.groupBy { it.category }.entries
+            .sortedBy { e -> os.trendo.tv.livetv.Providers.of(e.key)?.let { order.indexOf(it) } ?: order.size }
+            .take(40).map { it.key to it.value.take(40) }
+    }
     var focused by remember { mutableStateOf(items.first()) }
     val first = remember { FocusRequester() }
     LaunchedEffect(autofocus) { if (autofocus) runCatching { first.requestFocus() } }
@@ -192,6 +202,13 @@ fun PosterRowsView(items: List<PosterItem>, emptyText: String, autofocus: Boolea
                     Text(focused.plot ?: "", color = TvColors.TextSecondary, fontSize = 10.5.sp, maxLines = 4, overflow = TextOverflow.Ellipsis)
                 }
                 Field(q, { q = it }, "Titel suchen …", width = 220)
+            }
+        }
+        if (providers.isNotEmpty()) {
+            Spacer(Modifier.height(6.dp))
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp), contentPadding = PaddingValues(2.dp)) {
+                item { PillButton(if (provider == null) "● Alle Anbieter" else "Alle Anbieter", { provider = null }) }
+                items(providers) { p -> PillButton(if (provider == p) "● $p" else p, { provider = if (provider == p) null else p }) }
             }
         }
         Spacer(Modifier.height(8.dp))
@@ -219,10 +236,13 @@ fun PosterRowsView(items: List<PosterItem>, emptyText: String, autofocus: Boolea
 
 /** Programmführer: Zeitleiste mit „Jetzt"-Linie, Senderlogos links. */
 @Composable
-fun GuideView(rows: List<Channel>, epg: Map<String, List<Programme>>, reminders: Set<Pair<String, Long>>, play: (Channel) -> Unit, remind: (Channel, Programme) -> Unit) {
+fun GuideView(rows: List<Channel>, epg: Map<String, List<Programme>>, reminders: Set<Pair<String, Long>>, play: (Channel) -> Unit,
+              catchup: (Channel, Long) -> Unit = { _, _ -> }, remind: (Channel, Programme) -> Unit) {
     val now = System.currentTimeMillis()
-    val from = now - now % (30 * 60_000L)
-    val to = from + 3 * 3_600_000L
+    // Mit Archiv (Catch-up) zeigt der Programmführer auch die letzten 2 Stunden zum Nachholen.
+    val anyArchive = rows.any { it.archiveDays > 0 && it.catchup != null }
+    val from = now - now % (30 * 60_000L) - if (anyArchive) 2 * 3_600_000L else 0L
+    val to = now - now % (30 * 60_000L) + 3 * 3_600_000L
     val pxPerMin = 3.4f
     val first = remember { FocusRequester() }
     LaunchedEffect(Unit) { runCatching { first.requestFocus() } }
@@ -230,7 +250,7 @@ fun GuideView(rows: List<Channel>, epg: Map<String, List<Programme>>, reminders:
         Column {
             Row(Modifier.padding(bottom = 4.dp)) {
                 Spacer(Modifier.width(150.dp))
-                for (h in 0 until 6) Text(hhmm(from + h * 30 * 60_000L), color = TvColors.TextSecondary, fontSize = 9.sp, modifier = Modifier.width((30 * pxPerMin).dp))
+                for (h in 0 until ((to - from) / (30 * 60_000L)).toInt()) Text(hhmm(from + h * 30 * 60_000L), color = TvColors.TextSecondary, fontSize = 9.sp, modifier = Modifier.width((30 * pxPerMin).dp))
             }
             LazyColumn(verticalArrangement = Arrangement.spacedBy(3.dp)) {
                 items(rows, key = { it.id }) { c ->
@@ -249,11 +269,13 @@ fun GuideView(rows: List<Channel>, epg: Map<String, List<Programme>>, reminders:
                                 val mins = ((minOf(p.stop, to) - maxOf(p.start, from)) / 60_000L).coerceAtLeast(8)
                                 val on = p.isOn(now)
                                 val rem = (p.title to p.start) in reminders
-                                FocusSurface({ if (on) play(c) else remind(c, p) }, Modifier.width((mins * pxPerMin).dp).height(40.dp)
+                                val past = p.stop <= now
+                                val canCu = past && TvRules.canCatchup(c, p.start, now)
+                                FocusSurface({ if (on) play(c) else if (canCu) catchup(c, p.start) else if (!past) remind(c, p) }, Modifier.width((mins * pxPerMin).dp).height(40.dp)
                                     .then(if (c == rows.first() && p == progs.first()) Modifier.focusRequester(first) else Modifier),
                                     container = if (on) TvColors.Panel else TvColors.Glass, scale = 1.03f, shape = RoundedCornerShape(6.dp)) {
                                     Column(Modifier.fillMaxSize().padding(horizontal = 6.dp), verticalArrangement = Arrangement.Center) {
-                                        Text((if (rem) "⏰ " else "") + p.title, fontSize = 9.5.sp, color = if (on) TvColors.Cyan else TvColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        Text((if (rem) "⏰ " else "") + (if (canCu) "⏮ " else "") + p.title, fontSize = 9.5.sp, color = if (on) TvColors.Cyan else if (past) TvColors.TextSecondary else TvColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                         Text("${hhmm(p.start)}–${hhmm(p.stop)}" + (if (p.category.isNotBlank()) " · ${p.category}" else ""), fontSize = 7.5.sp, color = TvColors.TextSecondary, maxLines = 1)
                                     }
                                 }

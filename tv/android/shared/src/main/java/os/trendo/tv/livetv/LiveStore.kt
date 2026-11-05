@@ -86,7 +86,7 @@ class LiveStore(private val context: Context, private val profile: String = "sta
     // ---- Sender ----
     fun saveChannels(sourceId: String, list: List<Channel>) {
         val a = JSONArray()
-        list.forEach { c -> a.put(JSONObject().put("i", c.id).put("n", c.name).put("u", c.url).put("g", c.group).put("l", c.logo ?: "").put("e", c.epgId ?: "").put("c", c.number)) }
+        list.forEach { c -> a.put(JSONObject().put("i", c.id).put("n", c.name).put("u", c.url).put("g", c.group).put("l", c.logo ?: "").put("e", c.epgId ?: "").put("c", c.number).put("a", c.archiveDays).put("cu", c.catchup ?: "")) }
         File(dir, "ch_$sourceId.json").writeText(a.toString())
     }
 
@@ -95,7 +95,7 @@ class LiveStore(private val context: Context, private val profile: String = "sta
             val a = JSONArray(File(dir, "ch_${s.id}.json").readText())
             (0 until a.length()).map { i -> a.getJSONObject(i).let {
                 Channel(it.getString("i"), it.getString("n"), it.getString("u"), it.getString("g"), it.optString("l").ifBlank { null },
-                    it.optString("e").ifBlank { null }, it.optInt("c"), s.id)
+                    it.optString("e").ifBlank { null }, it.optInt("c"), s.id, it.optInt("a"), it.optString("cu").ifBlank { null })
             } }
         }.getOrDefault(emptyList())
     }

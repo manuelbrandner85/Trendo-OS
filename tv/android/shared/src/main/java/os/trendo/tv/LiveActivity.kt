@@ -97,6 +97,9 @@ class LiveActivity : ComponentActivity() {
     private var quality by mutableStateOf("")
     private var resize by mutableIntStateOf(androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT)
     private var retries = 0
+    /** Zeitversatz: Inhaltszeit (Wanduhr), ab der die aktuelle Archiv-Wiedergabe läuft; null = live. */
+    private var shiftStart by mutableStateOf<Long?>(null)
+    private var pausedAt: Long? = null
     private val tried = HashSet<String>()
     private lateinit var store: LiveStore
 
@@ -131,6 +134,8 @@ class LiveActivity : ComponentActivity() {
         }
         player = p
         tune(index, ask = true)
+        // Aus dem Programmführer „Nachholen": direkt ab Sendungsbeginn aus dem Archiv.
+        intent.getLongExtra(EXTRA_START, 0L).takeIf { it > 0 }?.let { shiftTo(it) }
 
         setContent {
             Box(Modifier.fillMaxSize().background(Color.Black)) {
@@ -154,7 +159,7 @@ class LiveActivity : ComponentActivity() {
     private fun tune(i: Int, ask: Boolean) {
         val c = channels.getOrNull(i) ?: return
         if (ask && isLocked(c)) { askPin = i; return }
-        index = i; banner++; error = null; retries = 0; tried.clear()
+        index = i; banner++; error = null; retries = 0; tried.clear(); shiftStart = null; pausedAt = null
         play(c.url)
         store.save(store.settings().copy(lastChannel = c.id))
         store.addHistory(c.id)
@@ -163,6 +168,26 @@ class LiveActivity : ComponentActivity() {
     private fun play(url: String) {
         tried += url
         player?.apply { setMediaItem(MediaItem.fromUri(Uri.parse(url))); prepare(); playWhenReady = true }
+    }
+
+    /** Aktuelle Inhaltszeit (bei Zeitversatz in der Vergangenheit). */
+    private fun contentNow(): Long = shiftStart?.let { it + (player?.currentPosition ?: 0) } ?: System.currentTimeMillis()
+
+    /** Zu einem Zeitpunkt springen: aus dem Archiv, oder zurück zu Live, wenn er fast jetzt ist. */
+    private fun shiftTo(t: Long) {
+        val c = channels.getOrNull(index) ?: return
+        val now = System.currentTimeMillis()
+        if (t >= now - 15_000) { goLive(); return }
+        if (!TvRules.canCatchup(c, t, now)) { error = "Dieser Sender hat kein Archiv – zurückspulen geht hier nicht."; return }
+        val url = TvRules.catchupUrl(c, t, ((now - t) / 60_000L).toInt() + 120) ?: return
+        shiftStart = t; error = null; banner++
+        play(url)
+    }
+
+    private fun goLive() {
+        val c = channels.getOrNull(index) ?: return
+        shiftStart = null; pausedAt = null; banner++
+        play(c.url)
     }
 
     /** Ruckelschutz: bis zu 4 Neuversuche mit wachsender Pause, danach ein gleicher Sender in anderer Qualität. */
@@ -194,6 +219,22 @@ class LiveActivity : ComponentActivity() {
         if (showList || showMenu || askPin != null) return super.dispatchKeyEvent(event)
         if (event.action != KeyEvent.ACTION_DOWN) return super.dispatchKeyEvent(event)
         when (event.keyCode) {
+            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, KeyEvent.KEYCODE_MEDIA_PAUSE, KeyEvent.KEYCODE_MEDIA_PLAY -> {
+                val p = player ?: return true
+                if (p.isPlaying && event.keyCode != KeyEvent.KEYCODE_MEDIA_PLAY) {
+                    pausedAt = contentNow(); p.pause(); banner++
+                    val c = channels.getOrNull(index)
+                    error = if (c != null && c.catchup != null && c.archiveDays > 0) "Angehalten – ▶ setzt genau hier fort." else "Angehalten – dieser Sender hat kein Archiv, ▶ geht live weiter."
+                } else {
+                    val at = pausedAt
+                    error = null
+                    if (at != null && shiftStart == null) shiftTo(at) else p.play()
+                    pausedAt = null
+                }
+                return true
+            }
+            KeyEvent.KEYCODE_MEDIA_REWIND -> { shiftTo(contentNow() - 60_000); return true }
+            KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> { shiftTo(contentNow() + 60_000); return true }
             KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_CHANNEL_UP -> { zap(+1); return true }
             KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_CHANNEL_DOWN -> { zap(-1); return true }
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> { showList = true; return true }
@@ -262,6 +303,10 @@ class LiveActivity : ComponentActivity() {
                     }
                 } else Text("Kein Programmführer für diesen Sender", color = TvColors.TextSecondary, fontSize = 12.sp)
                 next?.let { Text("Danach ${t(it.start)}  ${it.title}", color = TvColors.TextSecondary, fontSize = 12.sp, maxLines = 1) }
+                shiftStart?.let {
+                    val behind = ((System.currentTimeMillis() - contentNow()) / 60_000L).coerceAtLeast(0)
+                    Text("⏪ Zeitversetzt – ${behind} Min. hinter Live (◀◀ ▶▶ spulen, Optionen → Zurück zu Live)", color = TvColors.Violet, fontSize = 10.sp)
+                }
                 if (quality.isNotEmpty()) Text(quality, color = if (quality.contains("schwach")) TvColors.Magenta else TvColors.Cyan, fontSize = 9.sp)
                 Text("▲▼ Sender · OK Liste · ▶ Optionen · ◀ Bild-in-Bild · Ziffern Sendernummer", color = TvColors.TextSecondary.copy(alpha = 0.7f), fontSize = 9.sp)
             }
@@ -335,7 +380,7 @@ class LiveActivity : ComponentActivity() {
                 val buf = (p.bufferedPosition - p.currentPosition).coerceAtLeast(0) / 1000
                 listOf("Bild: $bild", "Ton: $ton", "Bitrate: $rate", "Puffer: $buf s · $quality").map { it to { page = "main" } }
             }
-            else -> listOf(
+            else -> timeItems() + listOf(
                 "Tonspur" to { page = "audio" },
                 "Untertitel" to { page = "text" },
                 ("Bildformat: " + when (resize) { androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM -> "Zoom"; androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FILL -> "Strecken"; else -> "Anpassen" }) to {
@@ -367,6 +412,18 @@ class LiveActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    /** Menüpunkte für Zeitversatz/Catch-up (nur wenn der Sender ein Archiv hat). */
+    private fun timeItems(): List<Pair<String, () -> Unit>> {
+        val c = channels.getOrNull(index) ?: return emptyList()
+        val now = System.currentTimeMillis()
+        val out = ArrayList<Pair<String, () -> Unit>>()
+        val (cur, _) = TvRules.nowNext(c.epgId?.let { LiveSession.epg[it] }, contentNow())
+        if (cur != null && TvRules.canCatchup(c, cur.start, now)) out += "⏮ Sendung von Anfang an" to { showMenu = false; shiftTo(cur.start) }
+        if (c.catchup != null && c.archiveDays > 0) out += "⏪ 5 Minuten zurück" to { showMenu = false; shiftTo(contentNow() - 5 * 60_000) }
+        if (shiftStart != null) out += "⏩ Zurück zu Live" to { showMenu = false; goLive() }
+        return out
     }
 
     @Composable
@@ -403,6 +460,8 @@ class LiveActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_INDEX = "index"
-        fun intent(ctx: Context, index: Int) = Intent(ctx, LiveActivity::class.java).putExtra(EXTRA_INDEX, index)
+        const val EXTRA_START = "start"
+        fun intent(ctx: Context, index: Int, catchupStart: Long = 0L) =
+            Intent(ctx, LiveActivity::class.java).putExtra(EXTRA_INDEX, index).putExtra(EXTRA_START, catchupStart)
     }
 }

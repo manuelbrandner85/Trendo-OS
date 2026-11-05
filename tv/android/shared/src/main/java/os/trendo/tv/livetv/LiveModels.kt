@@ -10,6 +10,10 @@ data class Channel(
     val epgId: String? = null,
     val number: Int = 0,
     val sourceId: String = "",
+    /** Tage im Archiv des Anbieters (0 = kein Catch-up). */
+    val archiveDays: Int = 0,
+    /** Vorlage für Catch-up: {start} = JJJJ-MM-TT:HH-MM, {dur} = Minuten. */
+    val catchup: String? = null,
 )
 
 data class Programme(val channel: String, val start: Long, val stop: Long, val title: String, val description: String = "", val category: String = "") {

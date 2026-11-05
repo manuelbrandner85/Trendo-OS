@@ -75,7 +75,7 @@ import java.util.Date
 import java.util.Locale
 
 /** Reihenfolge wie gewünscht: Live TV, Filme, Serien, Programmführer – dann Suche und Einstellungen. */
-private enum class LiveTab(val label: String) { CHANNELS("Live TV"), MOVIES("Filme"), SERIES("Serien"), GUIDE("Programmführer"), SEARCH("Suche"), SOURCES("Quellen"), FILTER("Jugendschutz & Filter") }
+private enum class LiveTab(val label: String) { CHANNELS("Live TV"), MOVIES("Filme"), SERIES("Serien"), GUIDE("Programmführer"), TIPS("Heute"), STREAMING("Mediatheken & Streaming"), SEARCH("Suche"), SOURCES("Quellen"), FILTER("Jugendschutz & Filter") }
 
 /** Alles, was Live TV anzeigt – aus dem privaten Trendo-Speicher geladen. */
 private data class LiveData(
@@ -90,12 +90,29 @@ private data class LiveData(
     val loaded: Boolean = false,
 )
 
+/**
+ * Schreibt nur die NAMEN der Kategorien ins Geräteprotokoll (keine Adressen, keine Zugangsdaten),
+ * damit die Anbieter-Zuordnung an die echte Liste angepasst werden kann.
+ */
+private var categoriesLogged = false
+private fun logCategories(all: List<Channel>, vod: List<Vod>, series: List<Series>) {
+    if (categoriesLogged || all.isEmpty()) return
+    categoriesLogged = true
+    fun log(kind: String, names: List<String>) = names.chunked(40).forEachIndexed { i, chunk ->
+        android.util.Log.i("TrendoLiveKat", "$kind[$i] " + chunk.joinToString(" | "))
+    }
+    log("LIVE", all.map { it.group }.distinct())
+    log("FILME", vod.map { it.category }.distinct())
+    log("SERIEN", series.map { it.category }.distinct())
+}
+
 private fun load(store: LiveStore): LiveData {
     val s = store.settings()
     val all = store.channels()
     val vis = TvRules.visible(all, s).let { v -> v.filter { it.id in s.favorites } + v.filter { it.id !in s.favorites } }
     val vodAll = store.vod().filter { TvRules.allowed(it.category, it.name, s.onlyGerman, s.showAdult) && (!s.kidsMode || TvRules.isKids(it.category, it.name)) }
     val serAll = store.series().filter { TvRules.allowed(it.category, it.name, s.onlyGerman, s.showAdult) && (!s.kidsMode || TvRules.isKids(it.category, it.name)) }
+    logCategories(all, store.vod(), store.series())
     return LiveData(store.sources(), all, vis, store.epg(), vodAll, serAll, s, store.reminders(), true)
 }
 
@@ -117,6 +134,12 @@ fun LiveTvPage(host: LiveHost, profile: String) {
     var tab by remember { mutableStateOf(LiveTab.CHANNELS) }
     var status by remember { mutableStateOf("") }
     var openSeries by remember { mutableStateOf<Series?>(null) }
+    var tipsFilter by remember { mutableStateOf("") }
+    var voiceHandler by remember { mutableStateOf<(String) -> Unit>({}) }
+    val voiceLauncher = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()) { r ->
+        r.data?.getStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()?.let { voiceHandler(it) }
+    }
+    val voiceOk = remember { ctx.packageManager.queryIntentActivities(android.content.Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0).isNotEmpty() }
     val scope = rememberCoroutineScope()
     val data by produceState(LiveData(), tick) { value = withContext(Dispatchers.IO) { store.dedupeSources(); load(store) } }
 
@@ -127,6 +150,22 @@ fun LiveTvPage(host: LiveHost, profile: String) {
             status = "Fertig: ${r.channels} Sender, ${r.programmes} Sendungen, ${r.vod} Filme, ${r.series} Serien." +
                 if (r.errors.isNotEmpty()) " Probleme: " + r.errors.joinToString("; ") else ""
             tick++
+        }
+    }
+
+    fun playAt(c: Channel, start: Long) {
+        LiveSession.channels = data.visible; LiveSession.allChannels = data.all; LiveSession.epg = data.epg; LiveSession.locked = data.settings.lockedGroups; LiveSession.profile = profile
+        ctx.startActivity(LiveActivity.intent(ctx, data.visible.indexOf(c).coerceAtLeast(0), start))
+    }
+
+    /** Sprachbefehl ausführen (lokal, feste Regeln). */
+    fun onVoice(text: String) {
+        when (val cmd = os.trendo.tv.livetv.LiveVoice.parse(text, data.visible, data.epg, System.currentTimeMillis())) {
+            is os.trendo.tv.livetv.LiveCommand.Play -> { status = "„$text“ → ${cmd.channel.name}"; playAt(cmd.channel, 0) }
+            is os.trendo.tv.livetv.LiveCommand.Remind -> { toggleReminder(ctx, store, data, cmd.tip.channel, cmd.tip.programme); status = "Erinnerung gesetzt: ${cmd.tip.programme.title}"; tick++ }
+            is os.trendo.tv.livetv.LiveCommand.Tab -> { tab = runCatching { LiveTab.valueOf(cmd.name) }.getOrDefault(LiveTab.TIPS); tipsFilter = cmd.filter; status = "„$text“" }
+            is os.trendo.tv.livetv.LiveCommand.Search -> { tab = LiveTab.SEARCH; status = "Suche: ${cmd.query} – bitte im Suchfeld eingeben." }
+            is os.trendo.tv.livetv.LiveCommand.Unknown -> status = "Nicht verstanden: „$text“. Beispiele: „Schalte auf ZDF“, „Was läuft heute Abend für Krimis?“, „Erinnere mich an Tatort“."
         }
     }
 
@@ -145,6 +184,17 @@ fun LiveTvPage(host: LiveHost, profile: String) {
                     }
                 }
             }
+            if (voiceOk) item {
+                FocusSurface({
+                    voiceHandler = { onVoice(it) }
+                    runCatching { voiceLauncher.launch(android.content.Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+                        .putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL, android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                        .putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE, "de-DE")
+                        .putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, "z. B. „Schalte auf ZDF“")) }
+                }, Modifier.height(34.dp), shape = RoundedCornerShape(50), scale = 1.06f) {
+                    Box(Modifier.padding(horizontal = 14.dp).fillMaxHeight(), contentAlignment = Alignment.Center) { Text("🎤 Sprechen", fontSize = 12.sp, color = TvColors.Text) }
+                }
+            }
             host.externalLabel?.let { label -> item {
                 FocusSurface(host.onExternal, Modifier.height(30.dp), shape = RoundedCornerShape(50), scale = 1.05f) {
                     Box(Modifier.padding(horizontal = 14.dp).fillMaxHeight(), contentAlignment = Alignment.Center) { Text(label, fontSize = 11.sp, color = TvColors.Text) }
@@ -161,13 +211,16 @@ fun LiveTvPage(host: LiveHost, profile: String) {
         when (tab) {
             LiveTab.CHANNELS -> {
                 val history = store.history()
-                val groups = listOf("★ Favoriten", "🕘 Zuletzt gesehen", "Alle") + TvRules.groups(data.visible)
+                val real = TvRules.groups(data.visible)
+                val providerGroups = os.trendo.tv.livetv.Providers.present(real).map { "▸ $it" }
+                val groups = listOf("★ Favoriten", "🕘 Zuletzt gesehen", "Alle") + providerGroups + real
                 LiveChannelsView(data.visible, groups, data.epg, data.settings.favorites, data.settings.lockedGroups,
                     groupFilter = { g -> when (g) {
                         "Alle" -> data.visible
                         "★ Favoriten" -> data.visible.filter { it.id in data.settings.favorites }
                         "🕘 Zuletzt gesehen" -> { val byId = data.visible.associateBy { it.id }; history.mapNotNull { byId[it] } }
-                        else -> data.visible.filter { it.group == g }
+                        else -> if (g.startsWith("▸ ")) data.visible.filter { os.trendo.tv.livetv.Providers.of(it.group) == g.removePrefix("▸ ") }
+                                else data.visible.filter { it.group == g }
                     } },
                     play = ::play,
                     onFav = { c -> store.save(data.settings.copy(favorites = data.settings.favorites.let { if (c.id in it) it - c.id else it + c.id })); tick++ },
@@ -176,8 +229,12 @@ fun LiveTvPage(host: LiveHost, profile: String) {
             LiveTab.GUIDE -> {
                 val rows = data.visible.filter { it.epgId != null && data.epg[it.epgId]?.isNotEmpty() == true }.take(120)
                 if (rows.isEmpty()) Info("Kein Programmführer geladen. Unter „Quellen“ auf „Alles aktualisieren“ gehen (bei M3U eine EPG-Adresse eintragen).")
-                else GuideView(rows, data.epg, data.reminders.map { it.title to it.start }.toSet(), ::play) { c, p -> toggleReminder(ctx, store, data, c, p); tick++ }
+                else GuideView(rows, data.epg, data.reminders.map { it.title to it.start }.toSet(), ::play, catchup = { c, start -> playAt(c, start) }) { c, p -> toggleReminder(ctx, store, data, c, p); tick++ }
             }
+            LiveTab.TIPS -> TipsView(remember(data.epg, data.visible) { os.trendo.tv.livetv.Tips.rows(data.visible, data.epg, data.settings.favorites, System.currentTimeMillis(), data.settings.kidsMode) }, tipsFilter) { t ->
+                if (t.programme.isOn(System.currentTimeMillis())) playAt(t.channel, 0) else { toggleReminder(ctx, store, data, t.channel, t.programme); tick++ }
+            }
+            LiveTab.STREAMING -> StreamingView(host.playVod)
             LiveTab.SEARCH -> SearchTab(data, ::play) { c, p -> toggleReminder(ctx, store, data, c, p); tick++ }
             LiveTab.MOVIES -> PosterRowsView(data.vod.map { v -> PosterItem(v.id, v.name, v.category, v.cover, v.year, v.rating, v.plot) { host.playVod(v.url, v.name) } },
                 "Keine Filme. Filme kommen über einen Xtream-Zugang (Quellen → Alles aktualisieren).", autofocus = true)

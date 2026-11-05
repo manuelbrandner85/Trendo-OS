@@ -43,9 +43,12 @@ object M3u {
                     val a = attrs ?: emptyMap()
                     val n = name?.ifBlank { null } ?: a["tvg-name"] ?: "Sender ${list.size + 1}"
                     list += Channel(
-                        id = "$sourceId:${list.size}", name = n, url = line, group = grp?.ifBlank { null } ?: "Sender",
+                        // Stabile Kennung aus der Adresse (Reihenfolge in der Liste darf sich ändern).
+                        id = "$sourceId:" + Integer.toHexString(line.hashCode()) + ":" + list.count { it.url == line }, name = n, url = line, group = grp?.ifBlank { null } ?: "Sender",
                         logo = a["tvg-logo"]?.ifBlank { null }, epgId = a["tvg-id"]?.ifBlank { null },
                         number = a["tvg-chno"]?.toIntOrNull() ?: (list.size + 1), sourceId = sourceId,
+                        archiveDays = (a["catchup-days"] ?: a["tvg-rec"])?.toIntOrNull() ?: 0,
+                        catchup = a["catchup-source"]?.ifBlank { null },
                     )
                     attrs = null; name = null; grp = null
                 }
@@ -100,8 +103,12 @@ object Xtream {
         for (i in 0 until arr.length()) {
             val v = arr.getJSONObject(i)
             val id = v.str("stream_id"); if (id.isEmpty()) continue
-            out += Channel("$sourceId:${out.size}", v.str("name"), "$s/live/$u/$p/$id.ts", c[v.str("category_id")] ?: "Sender",
-                v.ostr("stream_icon"), v.ostr("epg_channel_id"), v.str("num").toIntOrNull() ?: (out.size + 1), sourceId)
+            val archive = v.str("tv_archive") == "1"
+            val days = v.str("tv_archive_duration").toIntOrNull() ?: 0
+            // Stabile Kennung aus der Stream-Id: Favoriten/Verlauf bleiben bei jeder Aktualisierung erhalten.
+            out += Channel("$sourceId:x$id", v.str("name"), "$s/live/$u/$p/$id.ts", c[v.str("category_id")] ?: "Sender",
+                v.ostr("stream_icon"), v.ostr("epg_channel_id"), v.str("num").toIntOrNull() ?: (out.size + 1), sourceId,
+                if (archive) maxOf(1, days) else 0, if (archive) "$s/timeshift/$u/$p/{dur}/{start}/$id.ts" else null)
         }
         return out
     }
