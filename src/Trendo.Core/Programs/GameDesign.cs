@@ -176,9 +176,11 @@ public static class GameDesign
             LevelNames = [S(d["levelName"]) is { Length: > 0 } n0 ? n0 : "Level 1", .. more.Select((o, i) => S(o["name"]) is { Length: > 0 } n ? n : $"Level {i + 2}")],
             Anims = anims.ToDictionary(kv => kv.Key, kv => new GameStudio.Anim("figur-" + kv.Key + Path.GetExtension(kv.Value.File), kv.Value.Frames, kv.Value.Fps)) });
         var files = anims.Where(kv => File.Exists(kv.Value.File)).ToDictionary(kv => kv.Key, kv => kv.Value.File);
-        if (Directory.Exists(dir)) { GameStudio.Save(dir, settings, animFiles: files); return dir; }
+        var sounds = (d["sounds"] as JsonObject ?? []).Where(kv => S(kv.Value).Length > 0 && File.Exists(S(kv.Value))).ToDictionary(kv => kv.Key, kv => S(kv.Value));
+        settings = settings with { Sounds = sounds.ToDictionary(kv => kv.Key, kv => "ton-" + kv.Key + Path.GetExtension(kv.Value)) };
+        if (Directory.Exists(dir)) { GameStudio.Save(dir, settings, animFiles: files, soundFiles: sounds); return dir; }
         var made = GameStudio.CreateBrowserGame(parent, t, S(d["title"]), settings);
-        if (files.Count > 0) GameStudio.Save(made, settings, animFiles: files);
+        if (files.Count > 0 || sounds.Count > 0) GameStudio.Save(made, settings, animFiles: files, soundFiles: sounds);
         return made;
     }
 

@@ -22,6 +22,10 @@
 - ✓ Ebenen wie die TileMap-Ebenen in Godot: Spiel-Ebene (fest, mit Wirkung) und Hintergrund-Ebene nur mit Deko (Wolke, Berg, Baum, Busch, Gras); die andere Ebene ist beim Malen blass zu sehen
 - ✓ Animationen je Zustand wie AnimatedSprite in Godot: stehen, laufen, springen, fallen je ein Bildstreifen mit Anzahl Bilder und Tempo, Figur dreht sich in Laufrichtung; das Bauen kopiert die Streifen ins Spiel
 - ✓ Claude baut Level im Editor (mit dem eigenen Claude-Abo): Claude sieht alle Level und Hintergründe als Zeilen, der Plan zeigt das vorgeschlagene Level als kleine Vorschau, erst „Ausführen“ ändert es; Behalten oder Verwerfen wie in allen Programmen
+- ✓ Profi-Ablauf wie im Spielestudio: Phasen-Leiste Konzept → Prototyp → Vertical Slice → Alpha → Beta → Release mit Abnahme-Kriterien je Phase (nur der Reihe nach), Team und Rollen mit Arbeitsplatz je Rolle
+- ✓ Testmodus: Trendo spielt jedes Level mit den Sprungweiten des Spiels als Prüfer durch (fairster Weg, Kopf an der Decke, Sprungfedern, Schlüssel und Türen) und meldet unerreichbare Ziele, knappe Sprünge, Landungen neben Stacheln und Gegner am Start; Fehler und Spieler-Notizen aus dem Probespiel mit Stelle; Claude bekommt den Bericht
+- ✓ Ton-Spur: eigene Geräusche je Ereignis und Musik, sonst Piepton; Figur-Zustand „getroffen“ mit eigener Animation
+- ✓ Export für Browser und PC (Windows-ZIP mit „Spielen.cmd“ unter „Veröffentlichen“)
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Level in der Mitte, Kachel-Werkzeuge oben, rechts Spielregeln, Regeln und Objekt-Eigenschaften – Bauplan erfüllt.

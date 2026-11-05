@@ -75,7 +75,12 @@ public static class GameStudio
         public List<string> LevelNames { get; init; } = [];
         /// <summary>Animationen je Zustand der Spielfigur (Dateiname im Spielordner).</summary>
         public Dictionary<string, Anim> Anims { get; init; } = [];
+        /// <summary>Ton-Spur: Geräusch je Ereignis (springen, muenze, treffer, ziel) und Musik („musik“, läuft in Schleife) – Dateiname im Spielordner.</summary>
+        public Dictionary<string, string> Sounds { get; init; } = [];
     }
+
+    /// <summary>Ereignisse der Ton-Spur.</summary>
+    public static readonly (string Id, string Label)[] SoundEvents = [("springen", "Springen"), ("muenze", "Münze"), ("treffer", "Treffer"), ("ziel", "Ziel"), ("musik", "Musik (Schleife)")];
 
     public static readonly string[] DefaultBreakout = ["########", "########", "########", "########", "########"];
     public static readonly string[] DefaultJump = ["...#....#...##.....#..#...#.....##...."];
@@ -109,6 +114,7 @@ public static class GameStudio
             if (l.Length > 16 || l.Any(r => r.Length > 200)) throw new ArgumentException($"Level {i + 2}: höchstens 16 Zeilen und 200 Spalten.");
         }
         if (s.Decor.Any(l => l.Any(r => r.Any(ch => !DecoTiles.Contains(ch))))) throw new ArgumentException("Im Hintergrund nur w (Wolke), b (Busch), t (Baum), m (Berg), g (Gras) und . (frei).");
+        if (s.Sounds.Keys.FirstOrDefault(k => !SoundEvents.Any(e => e.Id == k)) is { } badSound) throw new ArgumentException($"Unbekanntes Ton-Ereignis „{badSound}“.");
         if (s.Anims.Keys.FirstOrDefault(k => !Programs.PlatformSim.States.Any(x => x.Id == k)) is { } badState) throw new ArgumentException($"Unbekannter Zustand „{badState}“.");
         return s with { Speed = Math.Clamp(s.Speed, 1, 10), Lives = Math.Clamp(s.Lives, 1, 9), WinScore = Math.Clamp(s.WinScore, 0, 9999), TimeLimit = Math.Clamp(s.TimeLimit, 0, 3600),
             Rules = [.. s.Rules.Select(r => r with { N = Math.Clamp(r.N, 0, 9999) })],
@@ -121,7 +127,7 @@ public static class GameStudio
         var o = new { speed = s.Speed, lives = s.Lives, win = s.WinScore, player = s.Player, accent = s.Accent, bg = s.Background, sound = s.Sound,
                       level = s.Level, playerImage = s.PlayerImage, bgImage = s.BackgroundImage, props = s.Props, timeLimit = s.TimeLimit,
                       rules = s.Rules.Select(r => new { when = r.When, n = r.N, act = r.Do }), more = s.MoreLevels, decor = s.Decor, names = s.LevelNames,
-                      anims = s.Anims.ToDictionary(kv => kv.Key, kv => new { img = kv.Value.Image, frames = kv.Value.Frames, fps = kv.Value.Fps }) };
+                      anims = s.Anims.ToDictionary(kv => kv.Key, kv => new { img = kv.Value.Image, frames = kv.Value.Frames, fps = kv.Value.Fps }), sounds = s.Sounds };
         return "const CFG=" + JsonSerializer.Serialize(o) + ";\n";
     }
 
@@ -135,13 +141,15 @@ public static class GameStudio
     public static string TemplateOf(string dir) => File.Exists(Path.Combine(dir, "vorlage.txt")) ? File.ReadAllText(Path.Combine(dir, "vorlage.txt")).Trim() : "";
 
     /// <summary>Schreibt Regeln/Aussehen ins Spiel. Bilder werden in den Spielordner kopiert, damit das Spiel weitergegeben werden kann.</summary>
-    public static GameSettings Save(string dir, GameSettings s, string? playerImageFile = null, string? backgroundImageFile = null, IReadOnlyDictionary<string, string>? animFiles = null)
+    public static GameSettings Save(string dir, GameSettings s, string? playerImageFile = null, string? backgroundImageFile = null, IReadOnlyDictionary<string, string>? animFiles = null, IReadOnlyDictionary<string, string>? soundFiles = null)
     {
         static string Copy(string dir, string src, string name)
         {
             var ext = Path.GetExtension(src).ToLowerInvariant();
-            if (ext is not (".png" or ".jpg" or ".jpeg" or ".gif" or ".webp")) throw new ArgumentException("Bitte ein Bild (PNG, JPG, GIF oder WebP).");
-            if (!File.Exists(src)) throw new FileNotFoundException("Bild nicht gefunden: " + Path.GetFileName(src));
+            var sound = name.StartsWith("ton-", StringComparison.Ordinal);
+            if (sound ? ext is not (".mp3" or ".ogg" or ".wav" or ".m4a") : ext is not (".png" or ".jpg" or ".jpeg" or ".gif" or ".webp"))
+                throw new ArgumentException(sound ? "Bitte eine Tondatei (MP3, OGG, WAV oder M4A)." : "Bitte ein Bild (PNG, JPG, GIF oder WebP).");
+            if (!File.Exists(src)) throw new FileNotFoundException((sound ? "Ton" : "Bild") + " nicht gefunden: " + Path.GetFileName(src));
             var dst = name + ext; File.Copy(src, Path.Combine(dir, dst), true); return dst;
         }
         if (!string.IsNullOrWhiteSpace(playerImageFile)) s = s with { PlayerImage = Copy(dir, playerImageFile, "spielfigur") };
@@ -153,6 +161,12 @@ public static class GameStudio
             foreach (var (state, file) in animFiles.Where(kv => !string.IsNullOrWhiteSpace(kv.Value)))
                 anims[state] = (anims.TryGetValue(state, out var a) ? a : new Anim("")) with { Image = Copy(dir, file, "figur-" + state) };
             s = s with { Anims = anims };
+        }
+        if (soundFiles is not null)
+        {
+            var snd = new Dictionary<string, string>(s.Sounds);
+            foreach (var (ev, file) in soundFiles.Where(kv => !string.IsNullOrWhiteSpace(kv.Value))) snd[ev] = Copy(dir, file, "ton-" + ev);
+            s = s with { Sounds = snd };
         }
         s = Validate(s);
         File.WriteAllText(Path.Combine(dir, "spiel.json"), JsonSerializer.Serialize(s, new JsonSerializerOptions { WriteIndented = true }), new UTF8Encoding(false));
@@ -214,7 +228,9 @@ step();
         ["plattform"] = """
 const T=32,LV=[(CFG.level&&CFG.level.length?CFG.level:['S.....Z','#######']),...(CFG.more||[]).filter(l=>l&&l.length)];let li=0,L=LV[0],R=L.length,C=Math.max(...L.map(r=>r.length)),DC=(CFG.decor&&CFG.decor[0])||[];
 let G=[],open=false,kg=0,KT=0,cg=0,fk=0,fr=0,lf=0,boost=0,fired=[],note='',noteT=0,tu=false,face=1;
-const AI={};Object.keys(CFG.anims||{}).forEach(k=>{const a=CFG.anims[k];if(a&&a.img){const i=new Image();i.src=a.img;AI[k]={i:i,f:a.frames||1,fps:a.fps||8};}});
+const SND={};Object.keys(CFG.sounds||{}).forEach(k=>{try{const a=new Audio(CFG.sounds[k]);if(k==='musik'){a.loop=true;a.volume=.5;}SND[k]=a;}catch(e){}});
+function snd(ev,f){const a=SND[ev];if(a){try{a.currentTime=0;a.play();}catch(e){}}else beep(f);}
+let music=false;const AI={};Object.keys(CFG.anims||{}).forEach(k=>{const a=CFG.anims[k];if(a&&a.img){const i=new Image();i.src=a.img;AI[k]={i:i,f:a.frames||1,fps:a.fps||8};}});
 const at=(cx,cy)=>cy<0||cx<0||cx>=C?'#':cy>=R?'.':(G[cy][cx]||'.');const solid=(cx,cy)=>{const ch=at(cx,cy);return ch==='#'||ch==='F'||(ch==='D'&&!open);};
 let S0x=0,S0y=0,sx=0,sy=0;
 let pl,coins,foes,p=0,k={},cam=0,flash=0;
@@ -224,17 +240,17 @@ L.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='S'){S0x=x;S0y=y;}if(ch==='o')c
 pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;}
 function reset(full){if(full){p=0;cg=0;fk=0;fr=0;boost=0;fired=[];tu=false;load(0);return;}pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;}
 reset(true);
-addEventListener('keydown',e=>{k[e.code]=1;if(e.code==='Space'){e.preventDefault();if(over){lives=CFG.lives;over=false;reset(true);}else if(pl.on){pl.vy=-11.5;beep(660);}}});addEventListener('keyup',e=>k[e.code]=0);
-function hit(){lives--;beep(160);flash=20;if(lives<=0)over=true;else reset(false);}
+addEventListener('keydown',e=>{k[e.code]=1;if(!music&&SND.musik){music=true;try{SND.musik.play();}catch(x){}}if(e.code==='Space'){e.preventDefault();if(over){lives=CFG.lives;over=false;reset(true);}else if(pl.on){pl.vy=-11.5;snd('springen',660);}}});addEventListener('keyup',e=>k[e.code]=0);
+function hit(){lives--;snd('treffer',160);flash=20;if(lives<=0)over=true;else reset(false);}
 function say(t){note=t;noteT=120;}
-function goal(){p+=10;beep(990);if(li+1<LV.length){load(li+1);say((CFG.names&&CFG.names[li])||('Level '+(li+1)+' von '+LV.length));}else over=true;}
+function goal(){p+=10;snd('ziel',990);if(li+1<LV.length){load(li+1);say((CFG.names&&CFG.names[li])||('Level '+(li+1)+' von '+LV.length));}else over=true;}
 function rules(){(CFG.rules||[]).forEach((r,i)=>{if(fired[i])return;const v=r.when==='muenzen'?cg:r.when==='punkte'?p:r.when==='gegner'?fk:r.when==='sekunden'?fr/60:0;if(v<r.n)return;fired[i]=1;
 if(r.act==='leben'){lives++;say('+1 Leben');}if(r.act==='tueren'){open=true;say('Türen offen');}if(r.act==='schneller'){boost=2;say('Schneller!');}if(r.act==='punkte'){p+=10;say('+10 Punkte');}if(r.act==='sieg'){over=true;say('Gewonnen!');}beep(990);});}
 function move(o,dx,dy){o.x+=dx;let l=Math.floor(o.x/T),r=Math.floor((o.x+o.w-1)/T),t=Math.floor(o.y/T),b=Math.floor((o.y+o.h-1)/T);
 for(let cy=t;cy<=b;cy++)for(let cx=l;cx<=r;cx++)if(solid(cx,cy)){if(dx>0)o.x=cx*T-o.w;if(dx<0)o.x=(cx+1)*T;}
 o.y+=dy;o.on=false;l=Math.floor(o.x/T);r=Math.floor((o.x+o.w-1)/T);t=Math.floor(o.y/T);b=Math.floor((o.y+o.h-1)/T);
 for(let cy=t;cy<=b;cy++)for(let cx=l;cx<=r;cx++)if(solid(cx,cy)){if(dy>0){o.y=cy*T-o.h;o.vy=0;o.on=true;}if(dy<0){o.y=(cy+1)*T;o.vy=0;}}}
-function state(){return !pl.on?(pl.vy<0?'springen':'fallen'):(Math.abs(pl.vx)>0.1?'laufen':'stehen');}
+function state(){return flash>0?'treffen':!pl.on?(pl.vy<0?'springen':'fallen'):(Math.abs(pl.vx)>0.1?'laufen':'stehen');}
 function drawMe(){const a=AI[state()]||AI['stehen'];if(a&&a.i.complete&&a.i.naturalWidth){const fw=a.i.naturalWidth/a.f,n=Math.floor(fr*a.fps/60)%a.f;x.save();if(face<0){x.translate(pl.x+pl.w,pl.y);x.scale(-1,1);x.drawImage(a.i,n*fw,0,fw,a.i.naturalHeight,0,0,pl.w,pl.h);}else x.drawImage(a.i,n*fw,0,fw,a.i.naturalHeight,pl.x,pl.y,pl.w,pl.h);x.restore();}else me(pl.x,pl.y,pl.w,pl.h);}
 function deco(ch,px,py){if(ch==='w'){x.fillStyle='rgba(255,255,255,.75)';x.beginPath();x.arc(px+10,py+18,9,0,7);x.arc(px+20,py+13,11,0,7);x.arc(px+28,py+19,7,0,7);x.fill();}
 if(ch==='b'){x.fillStyle='#2E8B3E';x.beginPath();x.arc(px+16,py+24,11,0,7);x.arc(px+8,py+27,7,0,7);x.arc(px+24,py+27,7,0,7);x.fill();}
@@ -246,7 +262,7 @@ if(pl.on&&at(Math.floor((pl.x+12)/T),Math.floor((pl.y+pl.h+1)/T))==='F'){pl.vy=-
 if(pl.y>R*T+60)hit();const cx=Math.floor((pl.x+12)/T),cy=Math.floor((pl.y+15)/T),cb=Math.floor((pl.y+29)/T);
 if(at(cx,cb)==='^'||at(cx,cy)==='^')hit();else if(at(cx,cy)==='Z'||at(cx,cb)==='Z')goal();else{
 [cy,cb].forEach(yy=>{if(at(cx,yy)==='K'){G[yy][cx]='.';kg++;beep(880);if(kg>=KT){open=true;say('Alle Schlüssel – Türen offen');}}if(at(cx,yy)==='C'&&(sx!==cx||sy!==yy)){sx=cx;sy=yy;say('Speicherpunkt');}});
-coins.forEach(q=>{if(q.a&&Math.abs(q.x-(pl.x+12))<18&&Math.abs(q.y-(pl.y+15))<20){q.a=0;cg++;p+=q.v||1;beep(880);if(won(p))over=true;}});
+coins.forEach(q=>{if(q.a&&Math.abs(q.x-(pl.x+12))<18&&Math.abs(q.y-(pl.y+15))<20){q.a=0;cg++;p+=q.v||1;snd('muenze',880);if(won(p))over=true;}});
 foes.forEach(f=>{if(!f.a)return;const nx=f.x+f.d*1.2*(f.s||1),cxx=Math.floor((f.d>0?nx+24:nx)/T),cyy=Math.floor((f.y+20)/T);if(solid(cxx,cyy)||!solid(cxx,cyy+1))f.d*=-1;else f.x=nx;
 if(Math.abs(f.x-pl.x)<24&&Math.abs(f.y-pl.y)<26){if(pl.vy>1&&pl.y<f.y-8){f.a=0;fk++;pl.vy=-8;p+=2;beep(520);}else hit();}});
 if(CFG.timeLimit>0&&lf/60>CFG.timeLimit){lives=0;over=true;tu=true;say('Zeit abgelaufen');}

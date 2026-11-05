@@ -13,7 +13,7 @@ public sealed class PlatformSim
     public sealed class Foe { public int Col, Row; public double X, Y, Dir = 1, Speed = 1; public bool Alive = true; }
 
     /// <summary>Zustände der Spielfigur – je Zustand kann das Spiel eine eigene Animation zeigen (wie AnimatedSprite in Godot).</summary>
-    public static readonly (string Id, string Label)[] States = [("stehen", "Stehen"), ("laufen", "Laufen"), ("springen", "Springen"), ("fallen", "Fallen")];
+    public static readonly (string Id, string Label)[] States = [("stehen", "Stehen"), ("laufen", "Laufen"), ("springen", "Springen"), ("fallen", "Fallen"), ("treffen", "Getroffen")];
 
     readonly IReadOnlyList<string[]> _levels; readonly IReadOnlyDictionary<string, double>? _props; readonly int _speed; readonly int _startLives;
     readonly int _timeLimit; readonly IReadOnlyList<GameStudio.GameRule> _rules; readonly bool[] _fired;
@@ -49,7 +49,7 @@ public sealed class PlatformSim
     int _levelFrames;
 
     /// <summary>Zustand der Figur: stehen, laufen, springen (steigt) oder fallen.</summary>
-    public string State => !Player.On ? (Player.Vy < 0 ? "springen" : "fallen") : Math.Abs(Player.Vx) > 0.1 ? "laufen" : "stehen";
+    public string State => Flash > 0 ? "treffen" : !Player.On ? (Player.Vy < 0 ? "springen" : "fallen") : Math.Abs(Player.Vx) > 0.1 ? "laufen" : "stehen";
 
     public PlatformSim(IReadOnlyList<string> level, int speed = 5, int lives = 3, IReadOnlyDictionary<string, double>? props = null, int timeLimit = 0,
         IReadOnlyList<GameStudio.GameRule>? rules = null, IReadOnlyList<IReadOnlyList<string>>? moreLevels = null)

@@ -105,7 +105,7 @@ public class GameRulesTests
         Run(s, 5); s.Step(false, false, true); s.Step(false, false, false); Assert.Equal("springen", s.State);
         for (var i = 0; i < 60 && s.Player.Vy <= 0; i++) s.Step(false, false, false);
         Assert.Equal("fallen", s.State);
-        Assert.Equal(["stehen", "laufen", "springen", "fallen"], PlatformSim.States.Select(x => x.Id));
+        Assert.Equal(["stehen", "laufen", "springen", "fallen", "treffen"], PlatformSim.States.Select(x => x.Id));
     }
 
     [Fact(DisplayName = "CORE-06: Prüfung – Hintergrund nur Deko-Zeichen (w, b, t, m, g), Level 2 ff. nur gültige Kacheln, höchstens 20 Level, Animation nur für bekannte Zustände, Bilder 1–32 und 1–30 je Sekunde")]

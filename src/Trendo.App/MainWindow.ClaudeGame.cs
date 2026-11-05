@@ -40,6 +40,8 @@ public partial class MainWindow
             sb.Append($"\nLevel {i + 1} „{GameLevelName(d, i)}“: {string.Join("/", GameLevelRows(d, i))}");
             if (plat && GameDecorRows(d, i).Any(r => r.Trim('.').Length > 0)) sb.Append($"\nHintergrund {i + 1}: {string.Join("/", GameDecorRows(d, i))}");
         }
+        sb.Append(GameTestSummary(d));
+        sb.Append("\nSpielst du ein Level als Prüfer durch, nutze die Prüfung oben: knappe Sprünge, Landungen neben Stacheln und unerreichbare Ziele meldest du dem Nutzer und schlägst eine fairere Fassung vor.");
         return sb.ToString();
     }
 

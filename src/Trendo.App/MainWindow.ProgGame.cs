@@ -80,7 +80,8 @@ public partial class MainWindow
     {
         var sections = new List<string> { "Übersicht", "Spielbibel", "Figuren", "Welt", "Missionen", "Produktion", "Bauen", "Veröffentlichen" };
         if (d.Text("browser") is "plattform" or "jump" or "breakout") sections.Insert(4, "Level");
-        if (_gameSection == "Level" && !sections.Contains("Level")) _gameSection = "Übersicht";
+        if (d.Text("browser") == "plattform") sections.Insert(5, "Test"); // Testmodus mit Spielbarkeits-Prüfung, Fehlern und Notizen
+        if ((_gameSection == "Level" || _gameSection == "Test") && !sections.Contains(_gameSection)) _gameSection = "Übersicht";
         var bar = new WrapPanel { Name = "game-sections" };
         foreach (var s in sections)
         {
@@ -98,6 +99,7 @@ public partial class MainWindow
             "Missionen" => GameList(d, "quests", "Missionen", [("title", "Titel", 170), ("kind", "Art", 0), ("goal", "Ziel", 240), ("needs", "braucht", 130), ("gives", "gibt", 130), ("giver", "Auftraggeber", 120)]),
             "Produktion" => GameProduction(d),
             "Level" => GameLevel(d),
+            "Test" => GameTestView(d),
             "Bauen" => GameBuildView(d),
             "Veröffentlichen" => GameReleaseView(d), // Ziele, Checkliste, Pakete, Hochladen mit eigenem Konto
             _ => GameOverview(d),
@@ -123,7 +125,7 @@ public partial class MainWindow
                 Kpi("game-kpi-scale", "Umfang", scale.Name, scale.Hint, "#7C4DFF", "#4B2BC2"),
                 Kpi("game-kpi-plan", "Geplant", GameDesign.Overall(d.Data) + " %", "über alle Bereiche", "#3D8BFF", "#1E4FD8"),
                 Kpi("game-kpi-ms", "Meilensteine", $"{done} / {ms.Count}", ms.FirstOrDefault(m => m["done"]?.GetValueKind() != System.Text.Json.JsonValueKind.True)?["name"].AsText() ?? "alles geschafft", "#2FBF71", "#167A45") } },
-            H("Bereiche", 14), rings, H("Prüfung", 14), w } };
+            H("Phase", 14), GamePhaseBar(d, false), H("Bereiche", 14), rings, H("Prüfung", 14), w } };
     }
 
     private Control GameBible(ProgramDocument d)
@@ -227,7 +229,7 @@ public partial class MainWindow
 
     private Control GameProduction(ProgramDocument d)
     {
-        var sp = new StackPanel { Spacing = 6, Children = { H("Meilensteine", 14), P("Wie in einem Spielestudio: Jeder Meilenstein ist ein Tor. Erst wenn er erreicht ist, geht es weiter.", null, 12) } };
+        var sp = new StackPanel { Spacing = 6, Children = { H("Phasen mit Abnahme", 14), GamePhaseBar(d, true), new Border { Height = 6 }, GameRolesPanel(d), H("Meilensteine", 14), P("Wie in einem Spielestudio: Jeder Meilenstein ist ein Tor. Erst wenn er erreicht ist, geht es weiter.", null, 12) } };
         var ms = d.List("milestones").OfType<JsonObject>().ToList();
         for (var i = 0; i < ms.Count; i++)
         {
@@ -401,7 +403,7 @@ public partial class MainWindow
     {
         var l = x["levels"] as JsonArray ?? [];
         if (l.Count >= 19) throw new ArgumentException("Höchstens 20 Level.");
-        l.Add(new JsonObject { ["name"] = $"Level {l.Count + 2}", ["rows"] = Arr(["...........................Z", "S.........o.o......E.......#", "############################"]) });
+        l.Add(new JsonObject { ["name"] = $"Level {l.Count + 2}", ["rows"] = Arr(["............................", "............................", "..........o.o...............", "S..................E.......Z", "############################"]) });
         x["levels"] = l; _gameLevelIdx = l.Count;
     });
     public void GameDeleteLevel(ProgramDocument d, int i)
@@ -579,6 +581,7 @@ public partial class MainWindow
             d.Edit("Regel", x => { var a = x["rules"] as JsonArray ?? []; a.Add(r); x["rules"] = a; });
         })));
         sp.Children.Add(GameAnimPanel(d));
+        sp.Children.Add(GameSoundPanel(d));
         sp.Children.Add(H("Objekt", 13));
         if (GameObjSel is not { } sel || sel.Y >= rows.Count || sel.X >= rows[sel.Y].Length)
         {
@@ -631,6 +634,7 @@ public partial class MainWindow
         var stop = Act("game-play-stop", "■ Zurück zum Editor", () => canvas.Stop());
         return new StackPanel { Spacing = 8, Children = {
             new WrapPanel { Children = { status, again, new Border { Width = 6 }, stop } },
+            GamePlayNoteBar(d),
             new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = canvas },
             P("← → oder A/D laufen · Leertaste, ↑ oder W springt · Esc zurück zum Editor · gleiche Regeln wie im gebauten Spiel", Muted, 11.5) } };
     }

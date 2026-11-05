@@ -206,4 +206,56 @@ public class SpielEditor_Ui
         }
         finally { w.Close(); }
     }
+    [AvaloniaFact(DisplayName = "CORE-06: Profi-Ablauf – Phasen-Leiste mit Abnahme (gesperrt, bis alles erfüllt ist), Rollen mit Arbeitsplatz, Test-Bereich prüft jedes Level und zeigt die Stelle, Notiz und Fehler aus dem Probespiel, Ton-Spur; Claude bekommt den Prüfbericht")]
+    public void Profi_ablauf()
+    {
+        var (w, _, root) = Ui.Open();
+        try
+        {
+            w.Show(GK); w.Find<Button>("prog-tpl-retro-plattform").Press();
+            var d = w.ProgramActive(GK)!;
+            // Phasen
+            w.GameSection = "Produktion"; w.Show(GK);
+            Assert.NotNull(w.TryFind<WrapPanel>("game-phases"));
+            d.Edit("Zielgruppe", x => x["audience"] = ""); w.Show(GK);
+            Assert.False(w.Find<Button>("game-phase-accept").IsEnabled);
+            Enter(w.Find<TextBox>("game-role-level"), "Erika Muster");
+            Assert.Equal("Erika Muster", d.Data["roles"]!["level"]!.GetValue<string>());
+            d.Edit("Zielgruppe", x => x["audience"] = "Kinder ab 8"); w.Show(GK);
+            Assert.True(w.Find<Button>("game-phase-accept").IsEnabled);
+            w.Find<Button>("game-phase-accept").Press();
+            Assert.True(GamePro.Accepted(d.Data, "konzept")); Assert.Equal("prototyp", GamePro.Current(d.Data).Id);
+            w.Find<Button>("game-phase-reopen").Press(); Assert.False(GamePro.Accepted(d.Data, "konzept"));
+            w.Find<Button>("game-role-open-level").Press(); Assert.Equal("Level", w.GameSection);
+            // Test-Bereich: Prüfung je Level, „Zeigen“ springt zur Stelle
+            d.Edit("Level", x => x["level"] = new System.Text.Json.Nodes.JsonArray("..........", "..........", "..........", "S....E...Z", "###.......###"[..10]));
+            w.GameSection = "Test"; w.Show(GK);
+            Assert.Contains("nicht erreichbar", w.Find<TextBlock>("game-fair-1").Text);
+            w.Find<Button>("game-fair-show-1-0").Press();
+            Assert.Equal("Level", w.GameSection); Assert.NotNull(w.GameObjSel);
+            // Notiz und Fehler aus dem Probespiel
+            d.Edit("Level", x => x["level"] = new System.Text.Json.Nodes.JsonArray([.. GameStudio.DefaultPlatform.Select(r => (System.Text.Json.Nodes.JsonNode)r)])); w.Show(GK);
+            w.Find<Button>("game-level-play").Press();
+            Enter(w.Find<TextBox>("game-play-note"), "Sprung hier zu weit");
+            w.Find<Button>("game-play-bug-add").Press();
+            var note = (System.Text.Json.Nodes.JsonObject)d.List("testnotes")[0]!;
+            Assert.Equal(("fehler", 1), (note["kind"]!.GetValue<string>(), (int)ProgramDocument.ToNumber(note["level"])));
+            w.Find<Button>("game-play-stop").Press();
+            w.GameSection = "Test"; w.Show(GK);
+            Assert.Contains("offene", string.Join("|", w.GetLogicalTexts()));
+            w.Find<CheckBox>("game-note-done-0").IsChecked = true; Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            Assert.True(d.List("testnotes")[0]!["done"]!.GetValue<bool>());
+            // Ton-Spur
+            var wav = Path.Combine(root, "sprung.wav"); File.WriteAllBytes(wav, [0x52, 0x49, 0x46, 0x46]);
+            w.PickOverride = _ => Task.FromResult<string[]?>([wav]);
+            w.GameSection = "Level"; w.Show(GK);
+            w.Find<Button>("game-sound-pick-springen").Press(); Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+            Assert.Equal(wav, d.Data["sounds"]!["springen"]!.GetValue<string>());
+            Assert.Throws<ArgumentException>(() => w.GameSetSound(d, "knall", wav));
+            w.Find<Button>("game-sound-del-springen").Press(); Assert.Null(d.Data["sounds"]?["springen"]);
+            // Claude sieht den Prüfbericht
+            Assert.Contains("Spielbarkeits-Prüfung", w.ClaudeFocus(GK));
+        }
+        finally { w.Close(); }
+    }
 }

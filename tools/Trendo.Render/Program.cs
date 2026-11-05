@@ -102,11 +102,11 @@ if (Environment.GetEnvironmentVariable("TRENDO_GAME_LEVELS") is { Length: > 0 })
     win.GameRenameLevel(gd, 0, "Wiese"); win.GameAddLevel(gd); win.GameRenameLevel(gd, 1, "Höhle"); win.GameLevelIndex = 0;
     gd.Edit("Hintergrund", x => x["decor"] = new System.Text.Json.Nodes.JsonArray("..w.......w.........w.....", "......m.........w.........", "..............t.......t...", ".....t....b.........b....."));
     win.GameLayer = Environment.GetEnvironmentVariable("TRENDO_GAME_LEVELS") == "hintergrund" ? "hintergrund" : "spiel";
+    if (Environment.GetEnvironmentVariable("TRENDO_GAME_LEVELS") is "produktion" or "test") { win.GameSection = Environment.GetEnvironmentVariable("TRENDO_GAME_LEVELS") == "test" ? "Test" : "Produktion"; gd.Edit("Notiz", x => Trendo.Core.Programs.GamePro.AddNote(x, 1, 18, 8, "Gegner kommt zu früh", true)); }
     win.Show("spiele-programm");
 }
 if (Environment.GetEnvironmentVariable("TRENDO_TV_TAB") is { Length: > 0 } tvTab) { win.TvTabForTests = tvTab; win.Show("tv"); }
 if (Environment.GetEnvironmentVariable("TRENDO_TV_LEGAL") is { } tvLegal) { win.TvTabForTests = "mediathek"; win.Show("tv"); var lt = win.TvLegalSearchAsync(tvLegal, tvLegal.Length == 0 ? "Filme" : "Alle", null); var lw = DateTime.UtcNow; while (!lt.IsCompleted && DateTime.UtcNow - lw < TimeSpan.FromSeconds(40)) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(30); } win.Show("tv"); } // Mediatheken mit echter Suche zeigen
-win.Show();
 if (Environment.GetEnvironmentVariable("TRENDO_TV_VIDEOS") is { } tvVid) // Video-Plattformen mit echter Suche (z. B. "peertube:musik")
 {
     var parts = tvVid.Split(':', 2); win.TvTabForTests = "videos"; win.TvVideoSelect(parts[0].Length > 0 ? parts[0] : "peertube");
@@ -114,6 +114,7 @@ if (Environment.GetEnvironmentVariable("TRENDO_TV_VIDEOS") is { } tvVid) // Vide
     while ((!vt.IsCompleted || win.TvVideoResults?.Any(v => v.Thumbnail is not null) == true && DateTime.UtcNow - vw < TimeSpan.FromSeconds(8)) && DateTime.UtcNow - vw < TimeSpan.FromSeconds(40)) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(30); }
     win.Show("tv");
 }
+win.Show();
 if (Environment.GetEnvironmentVariable("TRENDO_OS_OPEN") is { Length: > 0 } osOpen) // Bedienstil zeigen: Startmenü/Launchpad/Übersicht, Spotlight, Widgets, Dateimanager
 {
     var fh = win.Files.Home; var dk = win.Files.KnownFolders();
