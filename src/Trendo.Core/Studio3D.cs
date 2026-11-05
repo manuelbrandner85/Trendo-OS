@@ -143,12 +143,20 @@ def color_of(h):
     if len(h) < 6: h = "2F86F6"
     return tuple(int(h[i:i+2], 16) / 255 for i in (0, 2, 4)) + (1.0,)
 
-def paint(obj, h):
-    r, g, b, a = color_of(h)
+def paint(obj, h, part=None):
+    r, g, b, _ = color_of(h)
     mat = bpy.data.materials.new(obj.name[:50] or "Farbe")
     mat.use_nodes = True
     bsdf = mat.node_tree.nodes.get("Principled BSDF")
-    if bsdf: bsdf.inputs["Base Color"].default_value = (r, g, b, 1)
+    if bsdf:
+        bsdf.inputs["Base Color"].default_value = (r, g, b, 1)
+        if part is not None:  # PBR aus Trendo: Metall, Rauheit, Glas
+            for key, name in (("metallic", "Metallic"), ("roughness", "Roughness")):
+                if part.get(key) is not None and name in bsdf.inputs: bsdf.inputs[name].default_value = float(part.get(key))
+            t = float(part.get("transmission") or 0)
+            for name in ("Transmission Weight", "Transmission"):
+                if t > 0 and name in bsdf.inputs: bsdf.inputs[name].default_value = t; break
+            if t > 0 and "IOR" in bsdf.inputs: bsdf.inputs["IOR"].default_value = 1.45
     obj.data.materials.append(mat)
     obj.color = (r, g, b, 1)
 
@@ -204,7 +212,13 @@ for part in spec.get("parts", []):
             except Exception: pass
     if obj is None or obj.type != "MESH": continue
     obj.name = (part.get("name") or "Teil")[:60]
-    paint(obj, part.get("color"))
+    paint(obj, part.get("color"), part)
+    try:  # UV-Abwicklung für Texturen (Smart UV)
+        activate(obj); bpy.ops.object.mode_set(mode="EDIT"); bpy.ops.mesh.select_all(action="SELECT")
+        bpy.ops.uv.smart_project(angle_limit=1.15, island_margin=0.02); bpy.ops.object.mode_set(mode="OBJECT")
+    except Exception:
+        try: bpy.ops.object.mode_set(mode="OBJECT")
+        except Exception: pass
     for op in part.get("ops") or []:
         kind = op.get("kind")
         if kind == "bevel":
@@ -239,7 +253,49 @@ for part in spec.get("parts", []):
     obj.location = (float(part.get("x") or 0), float(part.get("y") or 0), float(part.get("z") or 0))
     obj.rotation_euler = tuple(math.radians(float(part.get(k) or 0)) for k in ("rx", "ry", "rz"))
 
-bpy.ops.object.light_add(type="SUN", location=(80, -120, 150))
+# Licht und Kamera wie in einem echten Aufbau (Maße in cm = Blender-Einheiten)
+meshes = [o for o in bpy.data.objects if o.type == "MESH" and not o.hide_render]
+from mathutils import Vector
+if meshes:
+    pts = [o.matrix_world @ Vector(c) for o in meshes for c in o.bound_box]
+    lo = Vector((min(p.x for p in pts), min(p.y for p in pts), min(p.z for p in pts))); hi = Vector((max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts)))
+else:
+    lo, hi = Vector((-10, -10, 0)), Vector((10, 10, 20))
+mid = (lo + hi) / 2; rad = max(5.0, (hi - lo).length / 2)
+bpy.ops.mesh.primitive_plane_add(size=rad * 12, location=(mid.x, mid.y, lo.z)); floor = bpy.context.object; floor.name = "Boden"
+paint(floor, "#B9B4AC", {"metallic": 0, "roughness": 0.8})
+light = spec.get("light") or "studio"
+def area(name, loc, power, size, color=(1, 1, 1)):
+    bpy.ops.object.light_add(type="AREA", location=loc); L = bpy.context.object; L.name = name
+    L.data.energy = power; L.data.size = size; L.data.color = color
+    c = L.constraints.new("TRACK_TO"); c.target = tgt; c.track_axis = "TRACK_NEGATIVE_Z"; c.up_axis = "UP_Y"
+bpy.ops.object.empty_add(location=mid); tgt = bpy.context.object; tgt.name = "Ziel"
+d = rad * 3.0; k = float(spec.get("lightPower") or 1.0)
+world = bpy.data.worlds.new("Welt"); sc.world = world; world.use_nodes = True; bg = world.node_tree.nodes.get("Background")
+if light == "studio":
+    area("Hauptlicht", mid + Vector((-d * 0.8, -d * 0.7, d * 0.9)), 40 * d * d * k, rad * 1.5)
+    area("Fülllicht", mid + Vector((d * 0.9, -d * 0.5, d * 0.4)), 12 * d * d * k, rad * 2.0)
+    area("Kantenlicht", mid + Vector((0, d, d * 0.8)), 25 * d * d * k, rad)
+    if bg: bg.inputs[0].default_value = (0.05, 0.05, 0.06, 1); bg.inputs[1].default_value = 0.4
+elif light in ("tag", "abend"):
+    bpy.ops.object.light_add(type="SUN", location=mid + Vector((0, 0, d))); sun = bpy.context.object; sun.name = "Sonne"
+    sun.data.energy = (4.0 if light == "tag" else 2.2) * k; sun.data.angle = math.radians(0.6)
+    sun.data.color = (1.0, 0.97, 0.92) if light == "tag" else (1.0, 0.72, 0.45)
+    sun.rotation_euler = (math.radians(35 if light == "tag" else 78), 0, math.radians(-40))
+    if bg: bg.inputs[0].default_value = (0.42, 0.58, 0.85, 1) if light == "tag" else (0.55, 0.42, 0.38, 1); bg.inputs[1].default_value = 0.9 if light == "tag" else 0.5
+else:
+    area("Deckenlicht", mid + Vector((0, 0, d)), 30 * d * d * k, rad * 2, (1.0, 0.86, 0.7))
+    area("Fensterlicht", mid + Vector((-d, -d * 0.3, d * 0.5)), 20 * d * d * k, rad * 2.5, (0.85, 0.92, 1.0))
+    if bg: bg.inputs[0].default_value = (0.12, 0.11, 0.10, 1); bg.inputs[1].default_value = 0.3
+lens = float(spec.get("cameraLens") or 50)
+bpy.ops.object.camera_add(); cam = bpy.context.object; cam.name = "Kamera"; cam.data.lens = lens; cam.data.sensor_width = 36
+fov = 2 * math.atan(18 / lens); dist = rad / math.tan(fov / 2) * 1.15
+az, pitch = math.radians(35), math.radians(18)  # vorn rechts, leicht von oben
+cam.location = mid + Vector((dist * math.cos(pitch) * math.sin(az), -dist * math.cos(pitch) * math.cos(az), dist * math.sin(pitch)))
+h = float(spec.get("cameraHeight") or 0)
+if h > 0: cam.location.z = lo.z + h
+c = cam.constraints.new("TRACK_TO"); c.target = tgt; c.track_axis = "TRACK_NEGATIVE_Z"; c.up_axis = "UP_Y"
+cam.data.clip_end = dist * 20; sc.camera = cam
 if len(a) > 2 and a[2].lower().endswith(".fbx"):
     bpy.ops.export_scene.fbx(filepath=a[2])
 bpy.ops.wm.save_as_mainfile(filepath=out_blend)

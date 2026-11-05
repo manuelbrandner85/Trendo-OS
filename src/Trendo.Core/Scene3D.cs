@@ -11,6 +11,12 @@ public sealed partial class Scene3D
     public string Name { get; set; } = "Mein Objekt";
     public string? ProjectId { get; set; }
     public List<Part3D> Parts { get; set; } = [];
+    /// <summary>Licht-Vorgabe (studio, tag, abend, innen) und Stärke (1 = normal).</summary>
+    public string? Light { get; set; }
+    public double LightPower { get; set; } = 1;
+    /// <summary>Kamera: Brennweite in mm (Vollformat; 0 = noch keine) und Blickhöhe in cm über dem Boden (0 = automatisch).</summary>
+    public double CameraLens { get; set; }
+    public double CameraHeight { get; set; }
 
     public static readonly (string Id, string Label)[] PartShapes =
     [
@@ -75,8 +81,9 @@ public sealed partial class Scene3D
     {
         Directory.CreateDirectory(dir);
         var parts = new List<object>();
-        foreach (var p in Parts)
+        foreach (var p in Parts.Where(p => !p.Hidden))
         {
+            var mat = string.IsNullOrEmpty(p.Material) ? null : Studio3DPro.MaterialOf(p.Material);
             string? file = null;
             if (p.Shape == "mesh" && p.Positions is { Length: >= 9 } && p.Indices is { Length: >= 3 })
             {
@@ -101,12 +108,16 @@ public sealed partial class Scene3D
                 baseX = p.BaseX,
                 baseY = p.BaseY,
                 baseZ = p.BaseZ,
+                material = p.Material,
+                metallic = mat?.Metallic,
+                roughness = mat?.Roughness,
+                transmission = mat?.Transmission,
                 file,
                 ops = p.Ops.Select(o => new { kind = o.Kind, amount = o.Amount, axis = o.Axis, diameter = o.Diameter, atX = o.AtX, atY = o.AtY, atZ = o.AtZ }),
             });
         }
         var path = Path.Combine(dir, "blender-szene.json");
-        File.WriteAllText(path, JsonSerializer.Serialize(new { name = Name, parts }));
+        File.WriteAllText(path, JsonSerializer.Serialize(new { name = Name, parts, light = Light, lightPower = LightPower, cameraLens = CameraLens > 0 ? CameraLens : 50, cameraHeight = CameraHeight }));
         return path;
     }
 
@@ -136,6 +147,10 @@ public sealed class Part3D
     public float[]? Positions { get; set; }
     public int[]? Indices { get; set; }
     public List<PartOp> Ops { get; set; } = [];
+    /// <summary>PBR-Material (Studio3DPro.Materials), Gruppe im Szenenbaum, ausgeblendet.</summary>
+    public string? Material { get; set; }
+    public string? Group { get; set; }
+    public bool Hidden { get; set; }
 
     public string Line()
     {

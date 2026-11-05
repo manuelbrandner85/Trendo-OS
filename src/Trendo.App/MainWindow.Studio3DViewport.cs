@@ -82,8 +82,12 @@ public partial class MainWindow
 
     private Control Viewport3D()
     {
-        var parts = _scene.Parts.Select(p => (p.Color, PartSolid(p), p.Id == _selId)).ToList();
-        var vp = new CadView { Name = "3d-viewport", Parts = parts, Yaw = _vpYaw, Pitch = _vpPitch, Zoom = _vpZoom, MinHeight = 320, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+        var visible = Visible3D; // ausgeblendete Teile (Szenenbaum) zeigt die Ansicht nicht
+        var inGroup = _selGroup is { } sg ? Studio3DPro.InGroup(_scene, sg).Select(p => p.Id).ToHashSet() : [];
+        var parts = visible.Select(p => (p.Color, PartSolid(p), p.Id == _selId || inGroup.Contains(p.Id))).ToList();
+        var vp = new CadView { Name = "3d-viewport", Parts = parts, Yaw = _vpYaw, Pitch = _vpPitch, Zoom = _vpZoom, MinHeight = 320, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch,
+            Looks = visible.Select(p => string.IsNullOrEmpty(p.Material) ? (0.0, 0.5, 0.0) : (Studio3DPro.MaterialOf(p.Material).Metallic, Studio3DPro.MaterialOf(p.Material).Roughness, Studio3DPro.MaterialOf(p.Material).Transmission)).ToList() };
+        if (Targets3D is { Count: > 0 } tg) { vp.GizmoMode = _gizmo3d; vp.GizmoAt = Center3D(tg); vp.GizmoDragged = (ax, mode, amount) => { SaveCam(vp); Studio3DGizmo(ax, mode, amount); }; }
         _viewport3d = vp;
         if (parts.Count > 0)
         {
@@ -91,8 +95,8 @@ public partial class MainWindow
             Vec3 lo = new(bs.Min(b => b.Min.X), bs.Min(b => b.Min.Y), Math.Min(0, bs.Min(b => b.Min.Z))), hi = new(bs.Max(b => b.Max.X), bs.Max(b => b.Max.Y), bs.Max(b => b.Max.Z));
             vp.Frame = ((lo + hi) * 0.5, Math.Max(25, (hi - lo).Len * 0.75));
         }
-        vp.PartClicked = i => { SaveCam(vp); _selId = i >= 0 ? _scene.Parts[i].Id : null; Show("3d"); };
-        vp.PartMoved = (i, by) => { SaveCam(vp); Studio3DMove(i, by); };
+        vp.PartClicked = i => { SaveCam(vp); _selGroup = null; _selId = i >= 0 ? visible[i].Id : null; Show("3d"); };
+        vp.PartMoved = (i, by) => { SaveCam(vp); if (_selGroup is null) Studio3DMove(_scene.Parts.IndexOf(visible[i]), by); else Studio3DMoveTargets(by); };
         vp.PointerWheelChanged += (_, _) => SaveCam(vp);
         vp.PointerReleased += (_, _) => SaveCam(vp);
         vp.KeyDown += (_, e) =>
@@ -103,7 +107,8 @@ public partial class MainWindow
             if (by is { } b && idx >= 0) { SaveCam(vp); Studio3DMove(idx, b); e.Handled = true; }
             else if (e.Key == Key.Delete && idx >= 0) { SaveCam(vp); Studio3DDeleteSelected(); e.Handled = true; }
             else if (e.Key == Key.D && e.KeyModifiers.HasFlag(KeyModifiers.Control) && idx >= 0) { SaveCam(vp); Studio3DDuplicate(); e.Handled = true; }
-            else if (e.Key == Key.Escape) { _selId = null; Show("3d"); e.Handled = true; }
+            else if (e.Key == Key.Escape) { _selId = null; _selGroup = null; Show("3d"); e.Handled = true; }
+            else if (e.Key is Key.G or Key.R or Key.S && e.KeyModifiers == KeyModifiers.None) { SaveCam(vp); _gizmo3d = e.Key == Key.G ? "move" : e.Key == Key.R ? "rotate" : "scale"; Show("3d"); e.Handled = true; } // wie in Blender
         };
 
         Button Tool(string name, string label, string tip, Action go)
@@ -114,6 +119,15 @@ public partial class MainWindow
         add.Children.Add(new TextBlock { Text = "Einsetzen", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 4) });
         foreach (var (id, label) in Scene3D.PartShapes) add.Children.Add(Tool("3d-new-" + id, label, $"{label} neben die vorhandenen Teile setzen", () => Studio3DAddShape(id)));
         var edit = new WrapPanel { Name = "3d-vp-tools" };
+        // Anfasser-Leiste schwebend in der Ansicht (oben rechts, wie die Werkzeuge in Blender) – kostet keine Höhe
+        var gizmoBar = new StackPanel { Name = "3d-gizmo-bar", Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 8, 8, 0) };
+        foreach (var (id, icon, label, key) in new[] { ("move", "↔", "Verschieben", "G"), ("rotate", "⟳", "Drehen", "R"), ("scale", "⤢", "Skalieren", "S") })
+        {
+            var b = Tool("3d-gizmo-" + id, icon, $"Anfasser {label}: an den farbigen Griffen ziehen (Taste {key} wie in Blender)", () => { _gizmo3d = id; Show("3d"); });
+            b.MinWidth = 30; b.Margin = new Thickness(0, 0, 3, 0); Avalonia.Automation.AutomationProperties.SetName(b, label);
+            b.Background = _gizmo3d == id ? Accent : Brush.Parse("#CC101826"); b.Foreground = Brushes.White;
+            gizmoBar.Children.Add(b);
+        }
         edit.Children.Add(Tool("3d-dup", "Verdoppeln", "Ausgewähltes Teil kopieren (Strg+D)", Studio3DDuplicate));
         edit.Children.Add(Tool("3d-drop-floor", "Auf den Boden", "Unterkante des ausgewählten Teils auf den Boden setzen", Studio3DDrop));
         edit.Children.Add(Tool("3d-remove", "Löschen", "Ausgewähltes Teil löschen (Entf)", Studio3DDeleteSelected));
@@ -129,7 +143,7 @@ public partial class MainWindow
         var info = new TextBlock { Name = "3d-vp-info", Foreground = Muted, FontSize = 11.5, TextWrapping = TextWrapping.Wrap,
             Text = sel is null ? (_scene.Parts.Count == 0 ? "Oben eine Form einsetzen. Klick wählt ein Teil, Ziehen am gewählten Teil verschiebt es, Ziehen daneben dreht die Ansicht, Mausrad zoomt." : "Teil anklicken zum Auswählen · Ziehen dreht die Ansicht · Mausrad zoomt · Doppelklick: Ansicht zurücksetzen")
                 : $"{sel.Name}: {Part3D.Num(sel.Sx)} × {Part3D.Num(sel.Sy)} × {Part3D.Num(sel.Sz)} cm bei X {Part3D.Num(sel.X)} · Y {Part3D.Num(sel.Y)} · Z {Part3D.Num(sel.Z)} – ziehen verschiebt (0,5-cm-Raster), Pfeiltasten 1 cm (Umschalt 10 cm), Bild↑/↓ Höhe, Entf löscht" };
-        var stage = new Border { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = vp };
+        var stage = new Border { CornerRadius = new CornerRadius(12), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = new Grid { Children = { vp, gizmoBar } } };
         var grid = new Grid { RowDefinitions = new RowDefinitions("Auto,Auto,*,Auto"), Children = { add, Pos2(edit, 1), Pos2(stage, 2), Pos2(info, 3) } };
         return grid;
         static Control Pos2(Control c, int row) { Grid.SetRow(c, row); if (row == 3) c.Margin = new Thickness(2, 6, 0, 0); return c; }

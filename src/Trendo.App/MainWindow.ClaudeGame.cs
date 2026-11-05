@@ -15,6 +15,7 @@ public partial class MainWindow
     /// <summary>Zusätzliche Felder für Claude: Level und Hintergründe des offenen Spiels, dazu ein leeres Feld für ein neues Level.</summary>
     IEnumerable<ClaudeActions.Field> ClaudeExtraFields(string page)
     {
+        if (page == "3d") { foreach (var f in Claude3DFields()) yield return f; yield break; } // 3D-Modelle erstellen (Claude-Ausbau 1)
         if (page != GK || ProgramActive(GK) is not { } d || d.Text("browser") is not ("plattform" or "jump" or "breakout")) yield break;
         var plat = d.Text("browser") == "plattform";
         var n = plat ? GameLevelCount(d) : 1;
@@ -61,6 +62,7 @@ public partial class MainWindow
     /// <summary>Einen Zusatz-Schritt ausführen (Level oder Hintergrund setzen, neues Level anlegen). false = kein Zusatzfeld oder ungültig.</summary>
     bool ClaudeApplyExtra(string page, ClaudeActions.Step s)
     {
+        if (page == "3d") return Claude3DApply(s);
         if (page != GK || s.Kind != "feld" || ProgramActive(GK) is not { } d) return false;
         var decor = s.Target.StartsWith(GameDecorField, StringComparison.Ordinal);
         if (!decor && !s.Target.StartsWith(GameLevelField, StringComparison.Ordinal)) return false;
@@ -79,6 +81,7 @@ public partial class MainWindow
     /// <summary>Vorschau in der Plan-Karte: das vorgeschlagene Level klein gezeichnet (vor dem Ausführen).</summary>
     Control? ClaudeExtraPreview(string page, ClaudeActions.Step s)
     {
+        if (page == "3d") return Claude3DPreview(s);
         if (page != GK || s.Kind != "feld" || s.Value is not { Length: > 0 } v || ProgramActive(GK) is not { } d) return null;
         var decor = s.Target.StartsWith(GameDecorField, StringComparison.Ordinal);
         if (!decor && !s.Target.StartsWith(GameLevelField, StringComparison.Ordinal)) return null;

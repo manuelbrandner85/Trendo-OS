@@ -26,6 +26,77 @@ public sealed class CadView : Control
     public double Snap { get; set; } = 0.5;
     /// <summary>Feste Bildmitte und Größe (sonst aus den Teilen) – beim Bearbeiten springt die Ansicht so nicht mit.</summary>
     public (Vec3 Center, double Size)? Frame { get; set; }
+
+    // ---------- Material-Vorschau und Anfasser (Profi-Ausbau 2, 05.11.2026) ----------
+    /// <summary>PBR je Teil (gleiche Reihenfolge wie <see cref="Parts"/>): Metall, Rauheit, Glas; null = einfache Schattierung.</summary>
+    public IReadOnlyList<(double Metallic, double Roughness, double Transmission)>? Looks { get; set; }
+    /// <summary>Anfasser wie in Blender: „move“ (Pfeile), „rotate“ (Ringe), „scale“ (Würfel-Enden) am Punkt <see cref="GizmoAt"/>; leer = keiner.</summary>
+    public string GizmoMode { get; set; } = "";
+    public Vec3? GizmoAt { get; set; }
+    /// <summary>Ziehen am Anfasser beendet: Achse (x, y, z), Art und Betrag (cm, Grad oder Faktor).</summary>
+    public Action<char, string, double>? GizmoDragged { get; set; }
+    /// <summary>Beim Ziehen am Anfasser: was gerade passiert (für die Anzeige und Tests).</summary>
+    public string GizmoLabel { get; private set; } = "";
+    readonly List<(char Axis, Point From, Point To, Point Dir, double PxPerUnit, Point[] Ring)> _handles = [];
+    (char Axis, Point Start)? _gizmo;
+    const double HandleLen = 72;
+    Point _gizmoOrigin;
+    /// <summary>Mittelpunkt des Anfassers auf dem Bildschirm (nach der letzten Darstellung).</summary>
+    public Point GizmoAtScreen() => _gizmoOrigin;
+
+    /// <summary>Anfasser unter einem Bildpunkt (nach der letzten Darstellung) oder null.</summary>
+    public char? HandleAt(Point p, bool tipOnly = false)
+    {
+        foreach (var h in _handles)
+        {
+            if (GizmoMode == "rotate") { if (h.Ring.Any(q => Math.Abs(q.X - p.X) + Math.Abs(q.Y - p.Y) < (tipOnly ? 5 : 9))) return h.Axis; continue; }
+            // äußeres Ende greift; liegt der Zeiger auf dem Teil selbst, nur die Spitze – sonst zieht man das Teil frei
+            if (DistToSeg(p, Lerp(h.From, h.To, tipOnly ? 0.85 : 0.55), Lerp(h.From, h.To, 1.18)) < (tipOnly ? 6 : 9)) return h.Axis;
+        }
+        return null;
+    }
+    /// <summary>Griffstelle des Anfassers einer Achse auf dem Bildschirm (für Tests und Hinweise).</summary>
+    public Point? HandleEnd(char axis)
+    {
+        foreach (var h in _handles) if (h.Axis == axis) return GizmoMode == "rotate" ? h.Ring[h.Ring.Length / 8] : h.To;
+        return null;
+    }
+    static Point Lerp(Point a, Point b, double t) => new(a.X + (b.X - a.X) * t, a.Y + (b.Y - a.Y) * t);
+    static double DistToSeg(Point p, Point a, Point b)
+    {
+        var dx = b.X - a.X; var dy = b.Y - a.Y; var l2 = dx * dx + dy * dy; if (l2 < 1e-9) return Math.Abs(p.X - a.X) + Math.Abs(p.Y - a.Y);
+        var t = Math.Clamp(((p.X - a.X) * dx + (p.Y - a.Y) * dy) / l2, 0, 1); var q = new Point(a.X + t * dx, a.Y + t * dy);
+        return Math.Sqrt((p.X - q.X) * (p.X - q.X) + (p.Y - q.Y) * (p.Y - q.Y));
+    }
+    /// <summary>Betrag aus einer Mausbewegung (Pixel) am Anfasser einer Achse: Verschieben in cm (0,5er Raster), Drehen in Grad (5er Raster), Skalieren als Faktor.</summary>
+    public double GizmoAmount(char axis, Point delta)
+    {
+        foreach (var h in _handles)
+        {
+            if (h.Axis != axis) continue;
+            var along = delta.X * h.Dir.X + delta.Y * h.Dir.Y;
+            return GizmoMode switch
+            {
+                "move" => Math.Round(along / Math.Max(1e-6, h.PxPerUnit) / 0.5) * 0.5,
+                "rotate" => Math.Round((delta.X - delta.Y) * 0.6 / 5) * 5,
+                "scale" => Math.Round(Math.Max(0.05, 1 + along / HandleLen) * 20) / 20,
+                _ => 0,
+            };
+        }
+        return GizmoMode == "scale" ? 1 : 0;
+    }
+    /// <summary>Ziehen am Anfasser nachspielen (Tests, Tastatur): ruft <see cref="GizmoDragged"/> wie beim Loslassen.</summary>
+    public void DragHandle(char axis, Point delta) { var a = GizmoAmount(axis, delta); if (Math.Abs(a - (GizmoMode == "scale" ? 1 : 0)) > 1e-9) GizmoDragged?.Invoke(axis, GizmoMode, a); }
+    string GizmoText(char axis, double a)
+    {
+        var de = System.Globalization.CultureInfo.GetCultureInfo("de-DE"); var ax = char.ToUpperInvariant(axis);
+        return GizmoMode switch
+        {
+            "move" => $"{ax} {(a >= 0 ? "+" : "")}{a.ToString("0.#", de)} cm",
+            "rotate" => $"Drehen um {ax}: {a:0}°",
+            _ => $"Skalieren {ax}: × {a.ToString("0.00", de)}",
+        };
+    }
     public Vec3 DragOffset { get; private set; }
     int _moving = -1; bool _dragged;
     readonly List<(int Part, double D, Point[] Pts)> _hit = [];
@@ -70,6 +141,8 @@ public sealed class CadView : Control
     {
         base.OnPointerPressed(e); Focus();
         var pos = e.GetPosition(this); _drag = pos; _dragged = false; _moving = -1; DragOffset = new(0, 0, 0);
+        var onSelected = PickAt(pos) is var under and >= 0 && Parts[under].Selected;
+        if (GizmoMode.Length > 0 && GizmoDragged is not null && HandleAt(pos, onSelected) is { } ax) { _gizmo = (ax, pos); e.Pointer.Capture(this); return; }
         if (e.ClickCount == 2 && PickAt(pos) < 0) { SetView("iso"); return; } // Doppelklick ins Leere: Ansicht zurück; auf einem Teil zählt er als neuer Griff
         // linke Taste auf dem ausgewählten Teil: verschieben; sonst drehen
         if (PartMoved is not null && !e.GetCurrentPoint(this).Properties.IsRightButtonPressed && PickAt(pos) is var hit and >= 0 && Parts[hit].Selected) _moving = hit;
@@ -79,6 +152,13 @@ public sealed class CadView : Control
     {
         base.OnPointerReleased(e); e.Pointer.Capture(null);
         var pos = e.GetPosition(this);
+        if (_gizmo is { } g)
+        {
+            _gizmo = null; GizmoLabel = ""; _drag = null;
+            if (_dragged) DragHandle(g.Axis, new Point(pos.X - g.Start.X, pos.Y - g.Start.Y));
+            else if (e.InitialPressMouseButton == MouseButton.Left) PartClicked?.Invoke(PickAt(pos)); // nur geklickt, nicht gezogen: normale Auswahl
+            InvalidateVisual(); return;
+        }
         if (_moving >= 0 && _dragged) { var off = Snapped(DragOffset); var i = _moving; _moving = -1; DragOffset = new(0, 0, 0); PartMoved?.Invoke(i, off); }
         else if (!_dragged && e.InitialPressMouseButton == MouseButton.Left) PartClicked?.Invoke(PickAt(pos));
         _moving = -1; _drag = null; DragOffset = new(0, 0, 0); InvalidateVisual();
@@ -90,6 +170,7 @@ public sealed class CadView : Control
         var p = e.GetPosition(this);
         if (!_dragged && Math.Abs(p.X - d.X) + Math.Abs(p.Y - d.Y) < 4) return;
         _dragged = true;
+        if (_gizmo is { } gz) { GizmoLabel = GizmoText(gz.Axis, GizmoAmount(gz.Axis, new Point(p.X - gz.Start.X, p.Y - gz.Start.Y))); InvalidateVisual(); return; }
         if (_moving >= 0) DragOffset += ScreenToWorld(p.X - d.X, p.Y - d.Y);
         else { Yaw += (p.X - d.X) * 0.5; Pitch = Math.Clamp(Pitch + (p.Y - d.Y) * 0.5, -89, 89); }
         _drag = p; InvalidateVisual();
@@ -166,7 +247,10 @@ public sealed class CadView : Control
                 var cross = (b.X - a.X) * (c.Y - a.Y) - (b.Y - a.Y) * (c.X - a.X);
                 if (cross > 0) continue; // Bildschirm-y zeigt nach unten: Vorderseite hat negatives Kreuzprodukt
                 var zMax = poly.Verts.Max(v => v.Z); var isGround = n.Z > 0.9 && zMax <= min.Z + groundTol * 8;
-                var col = Shading.Shade(baseCol, n, view, isGround ? 1 : Shading.GroundAo(poly.Verts.Average(v => v.Z) - min.Z, reach), solid.Smooth ? 0.35 : 0.2);
+                var ao = isGround ? 1 : Shading.GroundAo(poly.Verts.Average(v => v.Z) - min.Z, reach);
+                var look = Looks is { } lk && pi < lk.Count ? lk[pi] : ((double, double, double)?)null;
+                var col = look is { } lo ? Shading.ShadePbr(baseCol, n, view, ao, lo.Item1, lo.Item2) : Shading.Shade(baseCol, n, view, ao, solid.Smooth ? 0.35 : 0.2);
+                if (look is { Item3: > 0.5 }) col = Color.FromArgb(110, col.R, col.G, col.B); // Glas: halbdurchsichtig
                 if (sel && PartClicked is not null) col = Color.FromRgb((byte)(col.R * 0.72 + 250 * 0.28), (byte)(col.G * 0.72 + 204 * 0.28), (byte)(col.B * 0.72 + 21 * 0.28)); // Auswahl beim Bearbeiten sichtbar, auch an runden Teilen
                 var edges = new List<(Point, Point)>();
                 for (var i = 0; i < poly.Verts.Count; i++) if (sharp.Contains(EdgeKey(poly.Verts[i], poly.Verts[(i + 1) % poly.Verts.Count]))) edges.Add((new Point(pts[i].X, pts[i].Y), new Point(pts[(i + 1) % pts.Count].X, pts[(i + 1) % pts.Count].Y)));
@@ -197,8 +281,46 @@ public sealed class CadView : Control
         }
         foreach (var f in faces.OrderBy(f => f.D))
         {
-            ctx.DrawGeometry(f.Fill, new Pen(f.Fill, 0.8), new PolylineGeometry(f.Pts, true)); // Fläche ohne Fugen
+            var seeThrough = f.Fill is SolidColorBrush { Color.A: < 255 }; // Glas: ohne Fugenstrich, sonst doppelt deckende Ränder (Gitter)
+            ctx.DrawGeometry(f.Fill, seeThrough ? null : new Pen(f.Fill, 0.8), new PolylineGeometry(f.Pts, true)); // Fläche ohne Fugen
             foreach (var (a, b) in f.Edges) ctx.DrawLine(f.Sel ? selEdge : edge, a, b);
+        }
+        // Anfasser am ausgewählten Teil (oder der Gruppe)
+        _handles.Clear();
+        if (GizmoMode.Length > 0 && GizmoAt is { } ga)
+        {
+            var o0 = Proj(ga); var org = new Point(o0.X, o0.Y); _gizmoOrigin = org;
+            foreach (var (ax, v, colHex) in new[] { ('x', new Vec3(1, 0, 0), "#EF4444"), ('y', new Vec3(0, 1, 0), "#22C55E"), ('z', new Vec3(0, 0, 1), "#3B82F6") })
+            {
+                var p1 = Proj(ga + v); var dx = p1.X - o0.X; var dy = p1.Y - o0.Y; var len = Math.Sqrt(dx * dx + dy * dy);
+                var brush = new SolidColorBrush(Color.Parse(colHex)); var pen = new Pen(brush, 2.4);
+                if (GizmoMode == "rotate")
+                {
+                    var (u, w2) = ax switch { 'x' => (new Vec3(0, 1, 0), new Vec3(0, 0, 1)), 'y' => (new Vec3(1, 0, 0), new Vec3(0, 0, 1)), _ => (new Vec3(1, 0, 0), new Vec3(0, 1, 0)) };
+                    var rw = HandleLen * 0.8 / Math.Max(1e-6, k);
+                    var ring = Enumerable.Range(0, 48).Select(i => { var t = i * Math.PI * 2 / 48; var q = Proj(ga + u * (Math.Cos(t) * rw) + w2 * (Math.Sin(t) * rw)); return new Point(q.X, q.Y); }).ToArray();
+                    ctx.DrawGeometry(null, pen, new PolylineGeometry(ring, true));
+                    _handles.Add((ax, org, org, new Point(1, 0), 1, ring));
+                    continue;
+                }
+                if (len < 6) continue; // Achse zeigt genau auf den Betrachter
+                var dir = new Point(dx / len, dy / len); var end = new Point(org.X + dir.X * HandleLen, org.Y + dir.Y * HandleLen);
+                ctx.DrawLine(pen, org, end);
+                if (GizmoMode == "move")
+                {
+                    var nrm = new Point(-dir.Y, dir.X);
+                    ctx.DrawGeometry(brush, null, new PolylineGeometry([new Point(end.X + dir.X * 12, end.Y + dir.Y * 12), new Point(end.X + nrm.X * 6, end.Y + nrm.Y * 6), new Point(end.X - nrm.X * 6, end.Y - nrm.Y * 6)], true));
+                }
+                else ctx.FillRectangle(brush, new Rect(end.X - 6, end.Y - 6, 12, 12));
+                _handles.Add((ax, org, end, dir, len, []));
+            }
+            ctx.DrawEllipse(Brushes.White, null, org, 3.5, 3.5);
+            if (GizmoLabel.Length > 0)
+            {
+                var ft = new FormattedText(GizmoLabel, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Inter", FontStyle.Normal, FontWeight.SemiBold), 13, Brushes.White);
+                ctx.FillRectangle(new SolidColorBrush(Color.Parse("#B0000000")), new Rect(org.X + 14, org.Y - 34, ft.Width + 12, ft.Height + 6));
+                ctx.DrawText(ft, new Point(org.X + 20, org.Y - 31));
+            }
         }
         // Achsenkreuz unten links
         var o = new Point(40, h - 40);

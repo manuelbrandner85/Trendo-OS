@@ -1,6 +1,6 @@
 # CORE-05 – 3D-Modelle erstellen: Funktionskatalog
 
-Funktionen nach den Vorbildern (Blender, SketchUp, Tinkercad; FreeCAD, Fusion, Onshape; PrusaSlicer, Cura, Bambu Studio – nur Funktionen, Clean-Room), Stand 04.11.2026.
+Funktionen nach den Vorbildern (Blender, SketchUp, Tinkercad; FreeCAD, Fusion, Onshape; PrusaSlicer, Cura, Bambu Studio – nur Funktionen, Clean-Room), Stand 05.11.2026.
 „Stand“: umgesetzt = im Code mit Test; „Test“ nennt die Testklasse.
 
 ## 3D
@@ -10,6 +10,13 @@ Funktionen nach den Vorbildern (Blender, SketchUp, Tinkercad; FreeCAD, Fusion, O
 | D3-01 | 3D-Ansicht mit Drehen, Zoomen, Auswählen | Blender, SketchUp | umgesetzt | Studio3DViewport_Ui |
 | D3-02 | Formen, Szene, Export | Tinkercad | umgesetzt | W4_Core05_Ui |
 | D3-03 | Freie Modelle in die Bibliothek | Blender Asset Browser | umgesetzt | Library3D_Ui |
+| D3-04 | Arbeitsschritte Modellieren → UV → Material → Licht → Kamera → Render mit Stand je Schritt | Blender-Arbeitsablauf | umgesetzt | Studio3DProTests, Studio3DPro_Ui |
+| D3-05 | Anfasser in der Ansicht: Verschieben, Drehen, Skalieren je Achse (Raster, Tasten G/R/S) | Blender Gizmos | umgesetzt | Studio3DPro_Ui |
+| D3-06 | Szenenbaum mit Gruppen und Ausblenden; Gruppe gemeinsam bewegen und einfärben | Blender Outliner | umgesetzt | Studio3DPro_Ui |
+| D3-07 | PBR-Materialien (Metall, Rauheit, Glas) mit Vorschau in der Ansicht und im Blender-Render | Blender Principled BSDF | umgesetzt | Studio3DProTests, Studio3DPro_Ui |
+| D3-08 | Licht-Vorgaben (Studio, Tageslicht, Abendsonne, Innenraum) und Kamera mit Brennweite und Blickhöhe | Blender Licht/Kamera | umgesetzt | Studio3DProTests, Studio3DPro_Ui |
+| D3-09 | Fotorealistischer Render (Cycles, Entrauschen, AgX, UV automatisch) mit Verlauf und Vorher/Nachher-Regler | Blender Render | umgesetzt (Blender-Lauf nicht im Test) | Studio3DProTests, Studio3DPro_Ui |
+| D3-10 | Claude baut aus Satz oder Foto ein Modell mit echten Maßen, Materialien, Licht und Kamera – Plan mit 3D-Vorschau, danach Render zur Prüfung | Claude-Ausbau 1 | umgesetzt | Claude3D_Ui |
 
 ## Trendo CAD
 

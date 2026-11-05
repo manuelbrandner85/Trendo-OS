@@ -35,6 +35,31 @@ public static class Shading
         return Color.FromRgb(Srgb(C(baseSrgb.R, 1.00, 0.60, 0.30, 0.85)), Srgb(C(baseSrgb.G, 0.97, 0.66, 0.28, 0.92)), Srgb(C(baseSrgb.B, 0.91, 0.78, 0.25, 1.05)));
     }
 
+    /// <summary>PBR-Vorschau (05.11.2026): Metall spiegelt Himmel und Licht in seiner eigenen Farbe und hat keine Streufarbe, Rauheit macht den Glanzpunkt
+    /// breit und matt, glatte Flächen zeigen einen engen, hellen Glanz. Glas wird in der Ansicht halbdurchsichtig gezeichnet (Deckkraft dort).</summary>
+    public static Color ShadePbr(Color baseSrgb, Vec3 n, Vec3 view, double ao, double metallic, double roughness)
+    {
+        var r = Math.Clamp(roughness, 0.03, 1);
+        var k = Math.Max(0, Vec3.Dot(n, Key));
+        var hemi = 0.5 + 0.5 * n.Z;
+        var h = (Key + view).Norm();
+        var exp = 2 / (r * r * r + 0.002);                       // glatt = enger Glanz
+        var specK = Math.Pow(Math.Max(0, Vec3.Dot(n, h)), Math.Min(exp, 4000)) * (1.2 / (r * 2 + 0.25)) * (k > 0 ? 1 : 0);
+        var refl = (n * (2 * Vec3.Dot(n, view)) - view).Norm();  // Spiegelrichtung: oben Himmel, unten Boden
+        var env = 0.35 + 0.65 * Math.Clamp(0.5 + 0.5 * refl.Z, 0, 1);
+        var fres = 0.04 + 0.96 * Math.Pow(1 - Math.Max(0, Vec3.Dot(n, view)), 5);
+        double C(byte c, double sky, double ground)
+        {
+            var albedo = Lin(c);
+            var diffuse = (1 - metallic) * albedo * (k * 1.2 + (ground + (sky - ground) * hemi) * 0.6 * ao);
+            var f0 = metallic > 0.5 ? albedo : 0.04;
+            var specCol = f0 + (1 - f0) * fres * (1 - r);
+            var spec = specCol * (specK * 0.5 + env * (1 - r) * (metallic > 0.5 ? 0.9 : 0.25)) * ao;
+            return diffuse + spec;
+        }
+        return Color.FromRgb(Srgb(C(baseSrgb.R, 0.60, 0.30)), Srgb(C(baseSrgb.G, 0.66, 0.28)), Srgb(C(baseSrgb.B, 0.78, 0.25)));
+    }
+
     /// <summary>Kontaktverdunklung: nah am Boden dunkler (bis 60 %), ab <paramref name="reach"/> über dem Boden keine.</summary>
     public static double GroundAo(double heightAboveGround, double reach)
     {

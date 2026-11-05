@@ -75,10 +75,14 @@ public partial class MainWindow
             Card(new StackPanel { Spacing = 8, Children = {
                 H("Objekt", 14),
                 new WrapPanel { Children = { Labeled("Name", objName), Act("3d-save", "Speichern", () => SaveScene(objName)), Act("3d-new", "Neues Objekt", () => NewScene(objName)), Act("3d-undo", "Rückgängig", UndoScene) } },
-                H("Teile", 14), PartsList(objName) } }),
+                H("Szene", 14), SceneTree(objName) } }),
             Card(SavedBlock()));
+        var stepPanel = StepPanel3D();
+        var partCard = Card(new StackPanel { Spacing = 8, Children = { H(Selected is { } sp0 ? "Teil: " + sp0.Name : "Neues Teil", 14), PartForm(objName) } });
         var right = Side("3d-editor-scroll",
-            Card(new StackPanel { Spacing = 8, Children = { H(Selected is { } sp0 ? "Teil: " + sp0.Name : "Neues Teil", 14), PartForm(objName) } }),
+            Card(new StackPanel { Spacing = 4, Children = { H("Arbeitsschritte", 13), StepsBar3D() } }),
+            stepPanel is null ? partCard : Card(stepPanel),
+            stepPanel is null ? new Border() : partCard,
             BuildPromptBar("CORE-05"),
             Card(AiBlock(aiOn, objName)),
             Card(KreaturBlock())); // 0.9.47: Drache und andere komplexe Figuren über Blender

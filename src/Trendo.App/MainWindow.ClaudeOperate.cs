@@ -116,8 +116,7 @@ public partial class MainWindow
             case "kalender": return $"Kalender, {CalDay.ToString("dddd, dd.MM.yyyy", De)}, Ansicht {CalMode}" + (CalSelected is { } cs ? $", Termin ausgewählt ({cs})" : "");
             case "posteingang" when Inbox.Count > 0:
                 return $"Posteingang mit {Inbox.Count} Mails; neueste: " + string.Join(" · ", Inbox.OrderByDescending(m => m.Date).Take(5).Select(m => $"{Cut(m.From, 30)}: „{Cut(m.Subject, 60)}“" + (m.Seen ? "" : " (ungelesen)")));
-            case "3d":
-                return $"3D-Szene „{_scene.Name}“ mit {_scene.Parts.Count} Teilen" + (_scene.Parts.Count > 0 ? ": " + string.Join(", ", _scene.Parts.Take(12).Select(p => p.Name)) : "") + (Selected is { } sp ? $"; ausgewählt: {sp.Name}" : "");
+            case "3d": return Claude3DFocus(); // Szene mit Maßen, Materialien, Licht, Kamera und wie Claude sie ändert (MainWindow.Claude3D.cs)
         }
         if (page == GK && ClaudeGameFocus() is { } gf) return gf; // Level in voller Länge für Claude
         if (page == MS && ClaudeMusicFocus() is { } mf) return mf; // Trendo Musik: Lied samt Produzenten-Prüfung
