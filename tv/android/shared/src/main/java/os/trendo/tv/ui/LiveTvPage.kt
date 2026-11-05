@@ -74,7 +74,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private enum class LiveTab(val label: String) { CHANNELS("Sender"), GUIDE("Programmführer"), SEARCH("Sendung suchen"), MOVIES("Filme"), SERIES("Serien"), SOURCES("Quellen"), FILTER("Filter & Jugendschutz") }
+/** Reihenfolge wie gewünscht: Live TV, Filme, Serien, Programmführer – dann Suche und Einstellungen. */
+private enum class LiveTab(val label: String) { CHANNELS("Live TV"), MOVIES("Filme"), SERIES("Serien"), GUIDE("Programmführer"), SEARCH("Suche"), SOURCES("Quellen"), FILTER("Jugendschutz & Filter") }
 
 /** Alles, was Live TV anzeigt – aus dem privaten Trendo-Speicher geladen. */
 private data class LiveData(
@@ -115,6 +116,7 @@ fun LiveTvPage(host: LiveHost, profile: String) {
     var tick by remember { mutableIntStateOf(0) }
     var tab by remember { mutableStateOf(LiveTab.CHANNELS) }
     var status by remember { mutableStateOf("") }
+    var openSeries by remember { mutableStateOf<Series?>(null) }
     val scope = rememberCoroutineScope()
     val data by produceState(LiveData(), tick) { value = withContext(Dispatchers.IO) { store.dedupeSources(); load(store) } }
 
@@ -129,16 +131,18 @@ fun LiveTvPage(host: LiveHost, profile: String) {
     }
 
     fun play(c: Channel) {
-        LiveSession.channels = data.visible; LiveSession.epg = data.epg; LiveSession.locked = data.settings.lockedGroups; LiveSession.profile = profile
+        LiveSession.channels = data.visible; LiveSession.allChannels = data.all; LiveSession.epg = data.epg; LiveSession.locked = data.settings.lockedGroups; LiveSession.profile = profile
         ctx.startActivity(LiveActivity.intent(ctx, data.visible.indexOf(c).coerceAtLeast(0)))
     }
 
     Column(Modifier.fillMaxSize()) {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(vertical = 4.dp, horizontal = 2.dp)) {
             items(LiveTab.entries.toList()) { t ->
-                FocusSurface({ tab = t }, Modifier.height(30.dp), shape = RoundedCornerShape(50),
-                    container = if (t == tab) TvColors.Panel else TvColors.Glass, scale = 1.05f) {
-                    Box(Modifier.padding(horizontal = 14.dp).fillMaxHeight(), contentAlignment = Alignment.Center) { Text(t.label, fontSize = 11.sp, color = if (t == tab) TvColors.Cyan else TvColors.Text) }
+                FocusSurface({ tab = t }, Modifier.height(34.dp).then(if (t == tab) Modifier.border(1.5.dp, TvColors.FocusRing, RoundedCornerShape(50)) else Modifier),
+                    shape = RoundedCornerShape(50), container = if (t == tab) TvColors.Panel else TvColors.Glass, scale = 1.06f) {
+                    Box(Modifier.padding(horizontal = 18.dp).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                        Text(t.label, fontSize = 12.sp, fontWeight = if (t == tab) FontWeight.Bold else FontWeight.Normal, color = if (t == tab) TvColors.Cyan else TvColors.Text)
+                    }
                 }
             }
             host.externalLabel?.let { label -> item {
@@ -155,11 +159,31 @@ fun LiveTvPage(host: LiveHost, profile: String) {
             return@Column
         }
         when (tab) {
-            LiveTab.CHANNELS -> ChannelsTab(data, ::play, onFav = { c -> store.save(data.settings.copy(favorites = data.settings.favorites.let { if (c.id in it) it - c.id else it + c.id })); tick++ })
-            LiveTab.GUIDE -> GuideTab(data, ::play) { c, p -> toggleReminder(ctx, store, data, c, p); tick++ }
+            LiveTab.CHANNELS -> {
+                val history = store.history()
+                val groups = listOf("★ Favoriten", "🕘 Zuletzt gesehen", "Alle") + TvRules.groups(data.visible)
+                LiveChannelsView(data.visible, groups, data.epg, data.settings.favorites, data.settings.lockedGroups,
+                    groupFilter = { g -> when (g) {
+                        "Alle" -> data.visible
+                        "★ Favoriten" -> data.visible.filter { it.id in data.settings.favorites }
+                        "🕘 Zuletzt gesehen" -> { val byId = data.visible.associateBy { it.id }; history.mapNotNull { byId[it] } }
+                        else -> data.visible.filter { it.group == g }
+                    } },
+                    play = ::play,
+                    onFav = { c -> store.save(data.settings.copy(favorites = data.settings.favorites.let { if (c.id in it) it - c.id else it + c.id })); tick++ },
+                    autofocus = data.loaded)
+            }
+            LiveTab.GUIDE -> {
+                val rows = data.visible.filter { it.epgId != null && data.epg[it.epgId]?.isNotEmpty() == true }.take(120)
+                if (rows.isEmpty()) Info("Kein Programmführer geladen. Unter „Quellen“ auf „Alles aktualisieren“ gehen (bei M3U eine EPG-Adresse eintragen).")
+                else GuideView(rows, data.epg, data.reminders.map { it.title to it.start }.toSet(), ::play) { c, p -> toggleReminder(ctx, store, data, c, p); tick++ }
+            }
             LiveTab.SEARCH -> SearchTab(data, ::play) { c, p -> toggleReminder(ctx, store, data, c, p); tick++ }
-            LiveTab.MOVIES -> MoviesTab(data.vod, host)
-            LiveTab.SERIES -> SeriesTab(data.series, repo, host)
+            LiveTab.MOVIES -> PosterRowsView(data.vod.map { v -> PosterItem(v.id, v.name, v.category, v.cover, v.year, v.rating, v.plot) { host.playVod(v.url, v.name) } },
+                "Keine Filme. Filme kommen über einen Xtream-Zugang (Quellen → Alles aktualisieren).", autofocus = true)
+            LiveTab.SERIES -> if (openSeries != null) SeriesTab(listOf(openSeries!!), repo, host, initial = openSeries) { openSeries = null }
+                else PosterRowsView(data.series.map { s -> PosterItem(s.id, s.name, s.category, s.cover, s.year, s.rating, s.plot) { openSeries = s } },
+                    "Keine Serien. Serien kommen über einen Xtream-Zugang (Quellen → Alles aktualisieren).", autofocus = true)
             LiveTab.SOURCES -> SourcesTab(data, repo, store, onChanged = { tick++ }, onRefresh = ::refresh)
             LiveTab.FILTER -> FilterTab(data, store) { tick++ }
         }
@@ -189,13 +213,14 @@ private fun Info(text: String) {
 
 // ---------- Sender ----------
 @Composable
-private fun ChannelsTab(data: LiveData, play: (Channel) -> Unit, onFav: (Channel) -> Unit) {
-    val groups = remember(data.visible) { listOf("★ Favoriten", "Alle") + TvRules.groups(data.visible) }
+private fun ChannelsTab(data: LiveData, history: List<String>, play: (Channel) -> Unit, onFav: (Channel) -> Unit) {
+    val groups = remember(data.visible) { listOf("★ Favoriten", "🕘 Zuletzt gesehen", "Alle") + TvRules.groups(data.visible) }
     var group by remember { mutableStateOf("Alle") }
     val now = System.currentTimeMillis()
     val list = when (group) {
         "Alle" -> data.visible
         "★ Favoriten" -> data.visible.filter { it.id in data.settings.favorites }
+        "🕘 Zuletzt gesehen" -> { val byId = data.visible.associateBy { it.id }; history.mapNotNull { byId[it] } }
         else -> data.visible.filter { it.group == group }
     }
     val first = remember { FocusRequester() }
@@ -340,14 +365,14 @@ private fun MoviesTab(list: List<Vod>, host: LiveHost) {
 
 // ---------- Serien ----------
 @Composable
-private fun SeriesTab(list: List<Series>, repo: LiveRepo, host: LiveHost) {
-    var open by remember { mutableStateOf<Series?>(null) }
+private fun SeriesTab(list: List<Series>, repo: LiveRepo, host: LiveHost, initial: Series? = null, onBack: () -> Unit = {}) {
+    var open by remember { mutableStateOf(initial) }
     var eps by remember { mutableStateOf<List<Episode>?>(null) }
     val scope = rememberCoroutineScope()
     val o = open
     if (o != null) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            PillButton("‹ Zurück", { open = null; eps = null })
+            PillButton("‹ Zurück", { open = null; eps = null; onBack() })
             Spacer(Modifier.width(10.dp))
             Text(o.name, color = TvColors.Text, fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
@@ -498,6 +523,7 @@ private fun FilterTab(data: LiveData, store: LiveStore, onChanged: () -> Unit) {
         item { Toggle("Doppelte Sender zusammenführen (beste Qualität)", s.mergeDuplicates) { set(s.copy(mergeDuplicates = it)) } }
         item { Toggle("Kinder-Modus (nur Kindersender und -inhalte)", s.kidsMode) { set(s.copy(kidsMode = it)) } }
         item { Toggle("Inhalte für Erwachsene anzeigen", s.showAdult) { set(s.copy(showAdult = it)) } }
+        item { Toggle("Beim Öffnen sofort den letzten Sender zeigen", store.autoplayLast) { store.autoplayLast = it; onChanged() } }
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Field(pin, { pin = it.filter(Char::isDigit).take(8) }, if (store.hasPin()) "Neue PIN (4–8 Ziffern)" else "PIN festlegen (4–8 Ziffern)", password = true, type = KeyboardType.NumberPassword, width = 260)

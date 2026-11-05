@@ -160,6 +160,17 @@ class LiveStore(private val context: Context, private val profile: String = "sta
             .putString("last", s.lastChannel).apply()
     }
 
+    // ---- Verlauf (zuletzt gesehene Sender) ----
+    fun history(): List<String> = prefs.getString("hist", "")!!.split('\n').filter { it.isNotBlank() }
+    fun addHistory(id: String) { prefs.edit().putString("hist", (listOf(id) + history().filter { it != id }).take(20).joinToString("\n")).apply() }
+
+    // ---- Automatik ----
+    var autoplayLast: Boolean
+        get() = shared.getBoolean("autoplay", false)
+        set(v) { shared.edit().putBoolean("autoplay", v).apply() }
+    val sourcesAt get() = shared.getLong("src_at", 0)
+    fun markSourcesLoaded() { shared.edit().putLong("src_at", System.currentTimeMillis()).apply() }
+
     // ---- PIN (nur als Prüfsumme) ----
     fun hasPin() = shared.contains("pin")
     fun setPin(pin: String) {

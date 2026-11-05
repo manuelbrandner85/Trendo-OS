@@ -75,6 +75,7 @@ class LiveRepo(private val store: LiveStore) {
                 errors += "${s.name}: ${safeMessage(e)}"
             }
         }
+        store.markSourcesLoaded()
         val channels = store.channels()
         var progs = 0
         if (withEpg && epgUrls.isNotEmpty()) {
