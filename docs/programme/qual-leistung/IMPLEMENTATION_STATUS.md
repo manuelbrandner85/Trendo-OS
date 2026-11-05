@@ -32,4 +32,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | SYS-13-P24 | PC-Testlauf | Implementiert | – |
 | SYS-13-P25 | Rückfall-Version | Implementiert | – |
 
-0 von 25 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 25 Funktionen getestet.

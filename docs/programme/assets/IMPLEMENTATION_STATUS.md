@@ -20,4 +20,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | FM-12 | Ähnliche Bilder | Geplant | `–` |
 | FM-13 | Merklisten | Geplant | `–` |
 
-0 von 13 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 13 Funktionen getestet.

@@ -38,4 +38,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | PR-01 | Projekt mit lesbarem Namen, Dateien und Ordner hinzufügen, Notiz, Umbenennen | Implementiert | `Projektmappe_Ui` |
 | PR-02 | Ordnername aus dem Namen (Umlaute, Nummer bei belegtem Namen), nichts außerhalb des Projekts | Implementiert | `SystemPagesTests` |
 
-0 von 31 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 31 Funktionen getestet.

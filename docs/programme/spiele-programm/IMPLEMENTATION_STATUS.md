@@ -20,4 +20,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | SP-12 | Mehrere Level hintereinander | Geplant | `–` |
 | SP-13 | Animationen je Zustand | Geplant | `–` |
 
-0 von 13 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 13 Funktionen getestet.

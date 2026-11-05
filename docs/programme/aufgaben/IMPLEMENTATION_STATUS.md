@@ -23,4 +23,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | AU-01 | Aufgabentafel mit Spalten | Implementiert | `TodoBoard_Ui` |
 | AU-02 | Aufgaben verwalten | Implementiert | `TaskManagerTests` |
 
-0 von 16 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 16 Funktionen getestet.

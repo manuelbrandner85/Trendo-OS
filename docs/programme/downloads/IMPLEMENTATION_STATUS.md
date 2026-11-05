@@ -32,4 +32,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | SYS-03-P24 | Proxy-Info | Implementiert | – |
 | SYS-03-P25 | Verlauf löschen anleiten | Implementiert | – |
 
-0 von 25 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 25 Funktionen getestet.

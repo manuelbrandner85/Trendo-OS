@@ -19,4 +19,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | VK-11 | Bestellungen aus fremden Online-Shops lesen | Geplant | `–` |
 | VK-12 | Zertifizierte Kasse (TSE) | Geplant | `–` |
 
-0 von 12 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 12 Funktionen getestet.

@@ -25,4 +25,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | BR-17 | Kein Programmname auf dem Blatt | Implementiert | `LetterNoBrandingUiTests` |
 | BR-18 | Papierschacht wählen | In Arbeit | `–` |
 
-0 von 18 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 18 Funktionen getestet.

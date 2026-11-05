@@ -27,4 +27,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | MU-19 | Begleitung zu eigenem Gesang | Geplant | `–` |
 | MU-20 | Instrument dazu erzeugen | Geplant | `–` |
 
-0 von 20 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 20 Funktionen getestet.

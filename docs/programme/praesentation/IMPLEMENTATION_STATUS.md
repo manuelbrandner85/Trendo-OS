@@ -32,4 +32,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | SYS-10-P24 | Export-Paket | Implementiert | – |
 | SYS-10-P25 | Barrierefreie PDF-Hinweise | Implementiert | – |
 
-0 von 25 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 25 Funktionen getestet.

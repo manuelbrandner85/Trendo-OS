@@ -44,4 +44,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | ME-01 | Bild zuschneiden, drehen, Helligkeit, Text, JPG/PNG | Implementiert | `MediaEditTests` |
 | ME-02 | Video Ausschnitt, Clips aneinanderhängen, Vorschaubilder | Implementiert | `MediaEditTests` |
 
-0 von 37 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 37 Funktionen getestet.

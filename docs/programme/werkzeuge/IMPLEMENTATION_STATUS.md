@@ -32,4 +32,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | SYS-02-P24 | Widgets Start | Implementiert | – |
 | SYS-02-P25 | Ressourcen-Warnung | Implementiert | – |
 
-0 von 25 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 25 Funktionen getestet.

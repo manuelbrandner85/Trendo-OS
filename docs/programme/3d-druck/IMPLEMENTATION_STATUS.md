@@ -28,4 +28,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | DR-07 | Drucker im Heimnetz, Druck nach Bestätigung | Implementiert | `N23N24_CadPrintUi` |
 | DR-08 | Mehrere verschiedene Modelle auf einer Platte | Geplant | `–` |
 
-0 von 21 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 21 Funktionen getestet.

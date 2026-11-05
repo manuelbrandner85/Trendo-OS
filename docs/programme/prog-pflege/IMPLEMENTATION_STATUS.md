@@ -32,4 +32,4 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | SYS-11-P24 | Speicherbedarf | Implementiert | – |
 | SYS-11-P25 | Selbsttest | Implementiert | – |
 
-0 von 25 Funktionen getestet (noch kein Testlauf eingelesen).
+0 von 25 Funktionen getestet.
