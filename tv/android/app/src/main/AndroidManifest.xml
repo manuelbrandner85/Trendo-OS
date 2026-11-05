@@ -38,7 +38,9 @@
         </intent>
     </queries>
 
+    <!-- usesCleartextTraffic: Senderlisten und Streams eigener Quellen laufen meist über http:// (wie TiviMate). -->
     <application
+        android:usesCleartextTraffic="true"
         android:allowBackup="false"
         android:banner="@drawable/banner"
         android:icon="@drawable/ic_trendo_t"
@@ -82,6 +84,14 @@
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout|orientation" />
 
         <receiver android:name=".SleepTimerReceiver" android:exported="false" />
+        <receiver android:name=".ReminderReceiver" android:exported="false" />
+
+        <activity
+            android:name=".LiveActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.TrendoTV"
+            android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout|orientation" />
 
         <!-- TRENDO-OS-Bildschirmschoner (in den TV-Einstellungen wählbar). -->
         <service

@@ -117,10 +117,7 @@ fun SectionPage(section: Section, state: TvState, actions: TvActions, go: (Secti
         Spacer(Modifier.height(12.dp))
         when (section) {
             Section.APPS -> AppGrid(state.apps, actions, "Alle Apps auf diesem Fernseher – unverändert, Start über die App selbst.")
-            Section.LIVE_TV -> AppGrid(
-                listOfNotNull(state.liveTv) + AppFilters.ofKind(state.apps, AppKind.VIDEO).filter { it.packageName != state.liveTv?.packageName },
-                actions, "Live-TV läuft über deine vorhandenen Apps, z. B. TiviMate. Ein eigener Programmführer braucht eine eigene Senderliste.",
-            )
+            Section.LIVE_TV -> LiveTvPage(state.liveTv, actions, state.profile)
             Section.MOVIES -> MediaPage(state, actions, go, listOf(MediaKind.VIDEO), AppFilters.ofKind(state.apps, AppKind.VIDEO))
             Section.MUSIC -> MediaPage(state, actions, go, listOf(MediaKind.AUDIO), AppFilters.ofKind(state.apps, AppKind.AUDIO))
             Section.PHOTOS -> MediaPage(state, actions, go, listOf(MediaKind.IMAGE), AppFilters.ofKind(state.apps, AppKind.IMAGE))

@@ -23,8 +23,8 @@ android {
         // minSdk 28 bleibt, damit auch ältere Android-TV-Geräte laufen.
         minSdk = 28
         targetSdk = 35
-        versionCode = 12
-        versionName = "0.4.2"
+        versionCode = 14
+        versionName = "0.5.1"
     }
 
     signingConfigs {
@@ -66,8 +66,10 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.media3:media3-exoplayer:1.4.1")
     implementation("androidx.media3:media3-ui:1.4.1")
+    implementation("com.google.zxing:core:3.5.3")
 
     testImplementation("junit:junit:4.13.2")
     // org.json ist in lokalen Unit-Tests nur ein Android-Platzhalter – echte Umsetzung für die Tests.
     testImplementation("org.json:json:20240303")
+    testImplementation("net.sf.kxml:kxml2:2.3.0")
 }

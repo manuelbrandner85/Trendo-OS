@@ -114,6 +114,7 @@ data class TvState(
     val place: Place? = null,
     val timerMinutes: Int? = null,
     val voiceAvailable: Boolean = false,
+    val profile: String = "standard",
 )
 
 /** Alle Aktionen; Fremd-Apps werden ausschließlich gestartet oder deren Infoseite geöffnet. */
