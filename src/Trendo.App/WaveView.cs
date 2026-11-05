@@ -18,8 +18,20 @@ public sealed class WaveView : Control
     Avalonia.Media.Imaging.WriteableBitmap? _specBmp; float[,]? _specFor;
     /// <summary>Neue Auswahl (Sekunden). Ein einfacher Klick setzt nur die Marke (a == b).</summary>
     public Action<double, double>? Selected { get; set; }
+    /// <summary>Abtastrate der Spur (für die Frequenzachse des Spektrogramms).</summary>
+    public int Rate { get; set; } = 44100;
+    /// <summary>Gewählter Frequenzbereich im Spektrogramm (Hz); FreqHi ≤ FreqLo = keiner.</summary>
+    public double FreqLo { get; set; }
+    public double FreqHi { get; set; }
+    /// <summary>Rechteck im Spektrogramm aufgezogen: Zeit von–bis und Frequenz von–bis (wie RX „Zeit-Frequenz-Auswahl“).</summary>
+    public Action<double, double, double, double>? SelectedBox { get; set; }
 
-    double? _down; double _now;
+    double? _down; double _now, _downY, _nowY;
+    double FMax => Math.Min(16000, Rate / 2.0);
+    const double FMin = 40;
+    /// <summary>Höhe → Frequenz (logarithmisch, tief unten) – dieselbe Achse wie das Spektrogramm.</summary>
+    public double YToHz(double y) { var h = Bounds.Height - Ruler; var t = Math.Clamp(1 - (y - Ruler) / Math.Max(1, h), 0, 1); return FMin * Math.Pow(FMax / FMin, t); }
+    public double HzToY(double hz) { var h = Bounds.Height - Ruler; var t = Math.Log(Math.Clamp(hz, FMin, FMax) / FMin) / Math.Log(FMax / FMin); return Ruler + (1 - t) * h; }
     const double Ruler = 22;
 
     public WaveView() { ClipToBounds = true; Cursor = new Cursor(StandardCursorType.Ibeam); MinHeight = 200; }
@@ -29,18 +41,23 @@ public sealed class WaveView : Control
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        base.OnPointerPressed(e); _down = _now = ToTime(e.GetPosition(this).X); e.Pointer.Capture(this); e.Handled = true; InvalidateVisual();
+        base.OnPointerPressed(e); _down = _now = ToTime(e.GetPosition(this).X); _downY = _nowY = e.GetPosition(this).Y; e.Pointer.Capture(this); e.Handled = true; InvalidateVisual();
     }
 
     protected override void OnPointerMoved(PointerEventArgs e)
     {
-        base.OnPointerMoved(e); if (_down is null) return; _now = ToTime(e.GetPosition(this).X); InvalidateVisual();
+        base.OnPointerMoved(e); if (_down is null) return; _now = ToTime(e.GetPosition(this).X); _nowY = e.GetPosition(this).Y; InvalidateVisual();
     }
 
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e); if (_down is not { } a) return; _down = null; e.Pointer.Capture(null);
         var b = _now; if (Math.Abs(b - a) * Bounds.Width / Math.Max(Seconds, 1e-6) < 3) b = a; // kleine Bewegung = Klick
+        if (Spectro is not null && SelectedBox is not null && b != a && Math.Abs(_nowY - _downY) >= 6)
+        {
+            double f1 = YToHz(_downY), f2 = YToHz(_nowY);
+            SelectedBox(Math.Min(a, b), Math.Max(a, b), Math.Min(f1, f2), Math.Max(f1, f2)); return;
+        }
         Selected?.Invoke(Math.Min(a, b), Math.Max(a, b));
     }
 
@@ -90,7 +107,24 @@ public sealed class WaveView : Control
         {
             if (!ReferenceEquals(_specFor, sp)) { _specBmp = SpecBitmap(sp); _specFor = sp; }
             if (_specBmp is not null) g.DrawImage(_specBmp, new Rect(0, top - 6, w, h - top + 6));
-            if (b > a) g.FillRectangle(new SolidColorBrush(Color.Parse("#55FFFFFF")), new Rect(ToX(a), Ruler, Math.Max(1, ToX(b) - ToX(a)), h - Ruler)); // Auswahl auch über dem Spektrogramm
+            // Auswahl über dem Spektrogramm: ganze Höhe oder Zeit-Frequenz-Rechteck
+            double y1 = Ruler, y2 = h;
+            if (_down is not null && Math.Abs(_nowY - _downY) >= 6) { y1 = Math.Min(_downY, _nowY); y2 = Math.Max(_downY, _nowY); }
+            else if (_down is null && FreqHi > FreqLo) { y1 = HzToY(FreqHi); y2 = HzToY(FreqLo); }
+            if (b > a)
+            {
+                var box = new Rect(ToX(a), y1, Math.Max(1, ToX(b) - ToX(a)), Math.Max(1, y2 - y1));
+                g.FillRectangle(new SolidColorBrush(Color.Parse("#40FFFFFF")), box);
+                g.DrawRectangle(null, new Pen(Brushes.White, 1, new DashStyle([4, 3], 0)), box);
+            }
+            // Frequenzachse links
+            foreach (var hz in new[] { 100, 300, 1000, 3000, 10000 })
+            {
+                if (hz > FMax) continue; var y = HzToY(hz);
+                g.DrawLine(new Pen(new SolidColorBrush(Color.Parse("#30FFFFFF")), 1), new Point(0, y), new Point(w, y));
+                var ft = new FormattedText(hz >= 1000 ? $"{hz / 1000} kHz" : $"{hz} Hz", System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Typeface.Default, 10, new SolidColorBrush(Color.Parse("#CCFFFFFF")));
+                g.DrawText(ft, new Point(4, y - 13));
+            }
         }
         // Wellenform in Gold (Leitfarbe), innen heller
         else if (Peaks.Length > 0)

@@ -113,6 +113,8 @@ public static class AudioEdit
         // Vorbild-Funktionen (Audacity, Audition, iZotope RX – 04.11.2026)
         ("denoise", "Rauschen entfernen (Profil)", false), ("dehum", "Brummen entfernen", false), ("truncate", "Stille kürzen", false),
         ("loudness", "Lautheit angleichen (LUFS)", false), ("compress", "Kompressor", false),
+        // Profi 25 (05.11.2026): spektral retuschieren wie iZotope RX
+        ("spectral", "Spektral absenken", true),
     ];
 
     public static string Label(string op) => Ops.FirstOrDefault(o => o.Op == op).Label ?? op;
@@ -129,12 +131,21 @@ public static class AudioEdit
         return o;
     }
 
+    /// <summary>Spektral retuschieren (RX „Attenuate“): im Zeitbereich a–b nur die Frequenzen fLo–fHi um <paramref name="gainDb"/> absenken – z. B. Husten, Handyklingeln, Pfeifton.</summary>
+    public static JsonObject SpectralOp(double a, double b, double fLo, double fHi, double gainDb)
+    {
+        if (b <= a) throw new InvalidOperationException("Erst im Spektrogramm einen Bereich aufziehen (Zeit und Frequenz).");
+        if (fHi < fLo) (fLo, fHi) = (fHi, fLo);
+        if (fHi - fLo < 10) throw new InvalidOperationException("Der Frequenzbereich ist zu schmal – im Spektrogramm auch nach oben oder unten ziehen.");
+        var o = Op("spectral", a, b, Math.Clamp(gainDb, -80, 0)); o["fl"] = Math.Round(Math.Max(0, fLo)); o["fh"] = Math.Round(fHi); return o;
+    }
+
     /// <summary>Schritt anhängen. Ohne Auswahl (a == b) wirken Effekte auf die ganze Spur.</summary>
     public static void Add(JsonObject doc, JsonObject op) => ((doc["ops"] as JsonArray) ?? (JsonArray)(doc["ops"] = new JsonArray())).Add(op);
 
     static readonly Lock CacheLock = new(); static string? _key; static AudioBuf? _cached;
 
-    public static string Key(JsonObject doc) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(doc["source"]?.ToJsonString() + doc["length"]?.ToJsonString() + doc["ops"]?.ToJsonString())))[..16];
+    public static string Key(JsonObject doc) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(doc["source"]?.ToJsonString() + doc["length"]?.ToJsonString() + doc["tracks"]?.ToJsonString() + doc["ops"]?.ToJsonString())))[..16];
 
     /// <summary>Ergebnis berechnen: Quelle lesen, Schritte der Reihe nach anwenden (das letzte Ergebnis wird zwischengespeichert).</summary>
     public static AudioBuf Render(JsonObject doc)
@@ -142,7 +153,7 @@ public static class AudioEdit
         var key = Key(doc);
         lock (CacheLock) if (_key == key && _cached is not null) return Copy(_cached);
         var src = doc["source"]?.GetValue<string>() ?? "";
-        var a = src.Length > 0 ? AudioFile.Read(src) : AudioBuf.Silence(ProgramNum(doc["length"], 10));
+        var a = src.Length > 0 ? AudioFile.Read(src) : AudioMulti.IsMulti(doc) ? AudioMulti.Mix(doc) : AudioBuf.Silence(ProgramNum(doc["length"], 10));
         foreach (var o in (doc["ops"] as JsonArray ?? []).OfType<JsonObject>()) Apply(a, o);
         lock (CacheLock) { _key = key; _cached = Copy(a); }
         return a;
@@ -228,6 +239,7 @@ public static class AudioEdit
                 break;
             }
             case "compress": AudioDsp.Compress(x, s, e, v == 0 ? -20 : v); break;
+            case "spectral": foreach (var c in x.Data) AudioDsp.SpectralGain(c, x.Rate, s, e, ProgramNum(o["fl"], 0), ProgramNum(o["fh"], x.Rate / 2.0), v == 0 ? -30 : v); break;
             default: throw new InvalidOperationException("Unbekannter Schritt: " + op);
         }
     }

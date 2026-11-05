@@ -36,11 +36,12 @@ public partial class MainWindow
         FillHeight = true,
         Folder = "Medien",
         GroupLevels = new() { ["Filter"] = 2 },
-        CmdLevels = new() { ["au-echo"] = 2, ["au-rev"] = 2, ["au-compress"] = 2, ["au-loud-music"] = 1, ["au-dup"] = 1, ["au-silence"] = 1 }, // Profi zeigt alles – Erweitert bleibt übersichtlich
+        CmdLevels = new() { ["au-spectral"] = 1, ["au-mixdown-cmd"] = 1, ["au-echo"] = 2, ["au-rev"] = 2, ["au-compress"] = 2, ["au-loud-music"] = 1, ["au-dup"] = 1, ["au-silence"] = 1 }, // Profi zeigt alles – Erweitert bleibt übersichtlich
         Templates =
         [
             new("leer", "Tondatei öffnen", "WAV oder MP3 rechts wählen", () => AudioEdit.New(null, 0)),
             new("stille", "Leere Spur (30 s)", "Zum Zusammensetzen aus mehreren Dateien", () => AudioEdit.New(null, 30)),
+            new("mehrspur", "Mehrspur-Projekt", "Stimme, Musik und Geräusche auf eigenen Spuren mischen", AudioMulti.New),
         ],
         Ribbon =
         [
@@ -79,6 +80,7 @@ public partial class MainWindow
                 new ProgramCmd("au-loud-podcast", "Lautheit Sprache (−16 LUFS)", d => AuOp(d, "loudness", v: -16)),
                 new ProgramCmd("au-loud-music", "Lautheit Musik (−14 LUFS)", d => AuOp(d, "loudness", v: -14)),
                 new ProgramCmd("au-compress", "Kompressor", d => AuOp(d, "compress", v: -20), Tip: "Leise und laute Stellen näher zusammen"),
+                new ProgramCmd("au-spectral", "Spektral absenken", d => AuSpectral(d, -30), Tip: "Im Spektrogramm ein Rechteck um Husten, Pfeifton oder Klingeln ziehen – nur das wird leiser"),
             ]),
             ("Abspielen", [
                 new ProgramCmd("au-play", "▶ Abspielen", d => AuPlay(d), Primary: true, Tip: "Auswahl – oder ab der Marke"),
@@ -87,6 +89,7 @@ public partial class MainWindow
                 new ProgramCmd("au-none", "Auswahl aufheben", _ => AuSel = default),
                 new ProgramCmd("au-spectro", "Spektrogramm", _ => AuSpectro = !AuSpectro, Tip: "Frequenzen über die Zeit – Störgeräusche sieht man sofort"),
                 new ProgramCmd("au-record", "⏺ Aufnehmen (10 s)", d => _ = AuRecord(d, 10), Tip: "Mikrofon an der Marke einfügen"),
+                new ProgramCmd("au-mixdown-cmd", "⤓ Abmischen", d => AuMixdown(d), Tip: "Mehrspur-Projekt zu einer Datei abmischen"),
             ]),
         ],
         Exports =
@@ -138,7 +141,7 @@ public partial class MainWindow
 
     AudioBuf? AuRendered(ProgramDocument d)
     {
-        if (d.Text("source").Length == 0 && d.Number("length") <= 0 && d.List("ops").Count == 0) return null;
+        if (d.Text("source").Length == 0 && d.Number("length") <= 0 && d.List("ops").Count == 0 && (!AudioMulti.IsMulti(d.Data) || AudioMulti.Tracks(d.Data).Count == 0)) return null;
         try { return AudioEdit.Render(d.Data); } catch (Exception e) when (e is IOException or InvalidOperationException or UnauthorizedAccessException) { _progMsg[AUK] = e.Message; return null; }
     }
 
@@ -146,6 +149,7 @@ public partial class MainWindow
     public ProgramDocument AuOpen(string file)
     {
         file = file.Trim().Trim('"');
+        if (ProgramActive(AUK) is { } mp && AudioMulti.IsMulti(mp.Data)) { AuAddTrack(file); return mp; } // im Mehrspur-Projekt wird jede Datei eine Spur
         var probe = AudioFile.Read(file); // wirft mit deutscher Meldung bei falschem Format
         var d = ProgramActive(AUK) is { } cur && AuRendered(cur) is null ? cur : ProgramNew(AUK, "leer");
         d.Edit("Datei öffnen", x => { x["source"] = Path.GetFullPath(file); x["length"] = 0; x["ops"] = new JsonArray(); });
@@ -213,7 +217,9 @@ public partial class MainWindow
         _auPlayFrom = s; _mPos = 0; o.Load(f);
         _auTimer ??= new DispatcherTimer(TimeSpan.FromMilliseconds(80), DispatcherPriority.Background, (_, _) =>
         {
-            if (_auWave is null || CurrentView != AUK) return;
+            if (CurrentView != AUK) return;
+            foreach (var l in _auLanes) { l.Playhead = _auPlayFrom + _mPos; l.InvalidateVisual(); }
+            if (_auWave is null) return;
             _auWave.Playhead = _auPlayFrom + _mPos; _auWave.InvalidateVisual();
         });
         _auTimer.Start();
@@ -224,6 +230,7 @@ public partial class MainWindow
     {
         _audio?.Stop(); _auTimer?.Stop();
         if (_auWave is not null) { _auWave.Playhead = -1; _auWave.InvalidateVisual(); }
+        foreach (var l in _auLanes) { l.Playhead = -1; l.InvalidateVisual(); }
     }
 
     string AuFfmpeg(ProgramDocument d, string target, string[] codec)
@@ -240,9 +247,12 @@ public partial class MainWindow
 
     private Control AuWorkspace(ProgramDocument d)
     {
+        if (AudioMulti.IsMulti(d.Data) && !AuSpectro) return AuMultiWorkspace(d);
+        _auLanes.Clear();
         var a = AuRendered(d);
         var (s, e) = AuSel;
-        var wave = new WaveView { Name = "au-wave", Peaks = a is null ? [] : AudioEdit.Peaks(a, 1400), Seconds = a?.Seconds ?? 0, SelA = s, SelB = e };
+        var (flo, fhi) = AuFreq;
+        var wave = new WaveView { Name = "au-wave", Peaks = a is null ? [] : AudioEdit.Peaks(a, 1400), Seconds = a?.Seconds ?? 0, SelA = s, SelB = e, Rate = a?.Rate ?? 44100, FreqLo = flo, FreqHi = fhi };
         if (AuSpectro && a is not null)
         {
             var key = AudioEdit.Key(d.Data);
@@ -250,7 +260,8 @@ public partial class MainWindow
             wave.Spectro = _auSpecCache;
         }
         _auWave = wave;
-        wave.Selected = (x, y) => { AuSel = (x, y); Show(AUK); };
+        wave.Selected = (x, y) => { AuSel = (x, y); AuFreq = default; Show(AUK); };
+        wave.SelectedBox = (x, y, f1, f2) => { AuSel = (x, y); AuFreq = (f1, f2); _progMsg[AUK] = $"Bereich {AudioEdit.Time(x)}–{AudioEdit.Time(y)} · {AuHz(f1)}–{AuHz(f2)} – rechts „Bereich absenken“."; Show(AUK); };
         // Transportleiste wie im Videoschnitt: groß, mittig, mit Zeitanzeige
         Button T(string name, string label, string tip, Action act, bool primary = false)
         {
@@ -279,13 +290,16 @@ public partial class MainWindow
         var path = new TextBox { Name = "au-file", PlaceholderText = "Tondatei (WAV oder MP3)" };
         sp.Children.Add(H("Tondatei", 13)); sp.Children.Add(path);
         string Picked() => (path.Text ?? "").Trim().Trim('"') is { Length: > 0 } f ? f : throw new InvalidOperationException("Bitte eine Tondatei wählen.");
-        sp.Children.Add(new WrapPanel { Children = { B("au-open", "Öffnen", () => AuOpen(Picked()), true), B("au-insert", "An der Marke einfügen", () => AuInsertFile(Picked())) } });
+        if (AudioMulti.IsMulti(d.Data))
+            sp.Children.Add(new WrapPanel { Children = { B("au-add-track", "Als neue Spur (an der Marke)", () => AuAddTrack(Picked()), true) } });
+        else sp.Children.Add(new WrapPanel { Children = { B("au-open", "Öffnen", () => AuOpen(Picked()), true), B("au-insert", "An der Marke einfügen", () => AuInsertFile(Picked())) } });
+        if (AuSpectralPanel(d) is { } spec) sp.Children.Add(spec);
         var a = AuRendered(d);
         if (a is not null)
         {
             var src = d.Text("source");
             sp.Children.Add(H("Spur", 13));
-            sp.Children.Add(P((src.Length > 0 ? $"Quelle: {Path.GetFileName(src)}\n" : "Leere Spur\n") + $"Länge {AudioEdit.Time(a.Seconds)} · {a.Rate} Hz · {(a.Channels == 1 ? "Mono" : "Stereo")}\nLautester Punkt: {AuDb(AudioEdit.PeakDb(a))}", Muted, 12));
+            sp.Children.Add(P((src.Length > 0 ? $"Quelle: {Path.GetFileName(src)}\n" : AudioMulti.IsMulti(d.Data) ? $"Summe aus {AudioMulti.Tracks(d.Data).Count} Spuren\n" : "Leere Spur\n") + $"Länge {AudioEdit.Time(a.Seconds)} · {a.Rate} Hz · {(a.Channels == 1 ? "Mono" : "Stereo")}\nLautester Punkt: {AuDb(AudioEdit.PeakDb(a))}", Muted, 12));
             // Auswahl genau eintippen
             var (s, e) = AuSel;
             sp.Children.Add(H("Auswahl (Sekunden)", 13));

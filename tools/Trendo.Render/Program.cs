@@ -108,6 +108,29 @@ if (Environment.GetEnvironmentVariable("TRENDO_GAME_LEVELS") is { Length: > 0 })
 if (Environment.GetEnvironmentVariable("TRENDO_TV_TAB") is { Length: > 0 } tvTab) { win.TvTabForTests = tvTab; win.Show("tv"); }
 if (Environment.GetEnvironmentVariable("TRENDO_TV_LEGAL") is { } tvLegal) { win.TvTabForTests = "mediathek"; win.Show("tv"); var lt = win.TvLegalSearchAsync(tvLegal, tvLegal.Length == 0 ? "Filme" : "Alle", null); var lw = DateTime.UtcNow; while (!lt.IsCompleted && DateTime.UtcNow - lw < TimeSpan.FromSeconds(40)) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(30); } win.Show("tv"); } // Mediatheken mit echter Suche zeigen
 win.Show();
+if (Environment.GetEnvironmentVariable("TRENDO_AUDIO_PRO") is { Length: > 0 } auMode) // Audio: Mehrspur-Projekt oder Spektral-Retusche mit erzeugten Tönen
+{
+    var ad = Path.Combine(root, "audio-beispiel"); Directory.CreateDirectory(ad);
+    string Ton(string n, double sec, params (double Hz, float Amp, double From, double To)[] t)
+    {
+        var len = (int)(sec * 44100); var x = new float[len];
+        for (var i = 0; i < len; i++) { var tt = i / 44100.0; foreach (var (hz, amp, from, to) in t) if (tt >= from && tt < to) x[i] += amp * (float)(Math.Sin(2 * Math.PI * hz * tt) * (0.6 + 0.4 * Math.Sin(2 * Math.PI * 3 * tt))); }
+        var f = Path.Combine(ad, n); Trendo.Core.Media.AudioFile.WriteWav(new Trendo.Core.Media.AudioBuf(44100, [x, (float[])x.Clone()]), f); return f;
+    }
+    if (auMode == "multi")
+    {
+        win.ProgramNew("ton", "mehrspur"); var md = win.ProgramActive("ton")!;
+        md.Edit("Beispiel", x => { Trendo.Core.Media.AudioMulti.AddTrack(x, Ton("Sprecherin.wav", 8, (220, 0.4f, 0, 8)), 0.5); var m = Trendo.Core.Media.AudioMulti.AddTrack(x, Ton("Musikbett.wav", 10, (440, 0.25f, 0, 10), (660, 0.15f, 0, 10)), 0);
+            var g = Trendo.Core.Media.AudioMulti.AddTrack(x, Ton("Türklingel.wav", 1.5, (1200, 0.5f, 0, 1.5)), 4); Trendo.Core.Media.AudioMulti.SetTrack(x, m.Id, gainDb: -12, pan: -0.3); Trendo.Core.Media.AudioMulti.SetTrack(x, g.Id, pan: 0.6, solo: false); });
+        win.AuSel = (3, 3);
+    }
+    else
+    {
+        win.ProgramNew("ton", "leer"); win.AuOpen(Ton("Interview.wav", 6, (200, 0.3f, 0, 6), (400, 0.15f, 0, 6), (3000, 0.25f, 2, 3.2)));
+        win.AuSpectro = true; win.AuSel = (1.9, 3.3); win.AuFreq = (2400, 3800);
+    }
+    win.Show("ton");
+}
 if (Environment.GetEnvironmentVariable("TRENDO_TV_VIDEOS") is { } tvVid) // Video-Plattformen mit echter Suche (z. B. "peertube:musik")
 {
     var parts = tvVid.Split(':', 2); win.TvTabForTests = "videos"; win.TvVideoSelect(parts[0].Length > 0 ? parts[0] : "peertube");

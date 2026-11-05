@@ -18,7 +18,7 @@ Funktionen nach den Vorbildern (Audacity, Adobe Audition, iZotope RX; GIMP, Krit
 | AU-09 | Kompressor | Audition Dynamics | umgesetzt | AudioDspTests |
 | AU-10 | Spektrogramm-Ansicht | RX Spectral Editor | umgesetzt | AudioDspTests |
 | AU-11 | Reparieren in der Oberfläche, Aufnahme an der Marke | Audacity, RX | umgesetzt | AudioEditor_Ui |
-| AU-12 | Spektrales Retuschieren | RX | offen | – |
+| AU-12 | Spektrales Retuschieren, Mehrspur-Projekt | RX, Audition | umgesetzt | AudioPro_Ui, AudioMultiTests |
 
 ## Bildbearbeitung
 

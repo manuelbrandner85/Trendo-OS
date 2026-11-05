@@ -76,6 +76,45 @@ public static class AudioDsp
         for (var i = from; i < to; i++) { var p = i - from; if (norm[p] > 1e-6) x[i] = (float)(outp[p] / norm[p]); }
     }
 
+    /// <summary>Spektral retuschieren (iZotope RX „Spectral Repair – Attenuate“): im Zeitbereich nur die Frequenzen fLo–fHi absenken.
+    /// Weiche Kanten (je 2 Bins in der Frequenz, 30 ms in der Zeit), damit nichts klickt; außerhalb bleibt alles bitgenau gleich.</summary>
+    public static void SpectralGain(float[] x, int rate, int from, int to, double fLo, double fHi, double gainDb)
+    {
+        from = Math.Clamp(from, 0, x.Length); to = Math.Clamp(to, from, x.Length); if (to - from < 2) return;
+        var g = Math.Pow(10, Math.Min(0, gainDb) / 20);
+        int kLo = (int)Math.Floor(fLo * N / rate), kHi = (int)Math.Ceiling(fHi * N / rate);
+        double Fg(int k) // Verstärkung je Bin mit weicher Kante
+        {
+            if (k >= kLo && k <= kHi) return g;
+            var d = k < kLo ? kLo - k : k - kHi; return d > 2 ? 1 : g + (1 - g) * d / 3.0;
+        }
+        var bins = Enumerable.Range(0, N / 2 + 1).Select(Fg).ToArray();
+        var len = to - from; var outp = new double[len]; var norm = new double[len];
+        for (var s = from - N / 2; s < to; s += Hop)
+        {
+            var re = new double[N]; var im = new double[N];
+            for (var i = 0; i < N; i++) { var p = s + i; re[i] = p >= 0 && p < x.Length ? x[p] * Hann[i] : 0; }
+            Fft(re, im);
+            for (var k = 0; k <= N / 2; k++) { re[k] *= bins[k]; im[k] *= bins[k]; if (k > 0 && k < N / 2) { re[N - k] *= bins[k]; im[N - k] *= bins[k]; } }
+            Fft(re, im, inverse: true);
+            for (var i = 0; i < N; i++) { var p = s + i - from; if (p < 0 || p >= len) continue; outp[p] += re[i] * Hann[i]; norm[p] += Hann[i] * Hann[i]; }
+        }
+        var fade = Math.Min(len / 2, rate * 30 / 1000); // 30 ms Übergang an den Zeitkanten
+        for (var p = 0; p < len; p++)
+        {
+            if (norm[p] < 1e-6) continue;
+            var w = fade <= 0 ? 1.0 : Math.Min(1.0, Math.Min(p, len - 1 - p) / (double)fade);
+            x[from + p] = (float)(w * outp[p] / norm[p] + (1 - w) * x[from + p]);
+        }
+    }
+
+    /// <summary>Frequenz einer Spektrogramm-Zeile (0 = oben, rows−1 = unten) – dieselbe Achse wie <see cref="Spectrogram"/>.</summary>
+    public static double RowToHz(double row, int rows, int rate)
+    {
+        double fMin = 40, fMax = Math.Min(16000, rate / 2.0); var r = rows - 1 - Math.Clamp(row, 0, rows - 1);
+        return fMin * Math.Pow(fMax / fMin, r / Math.Max(1, rows - 1));
+    }
+
     /// <summary>Brummen entfernen: schmale Kerbfilter bei 50 Hz (oder 60 Hz) und den ersten Oberwellen.</summary>
     public static void Dehum(AudioBuf a, int from, int to, double baseHz = 50, int harmonics = 4)
     {

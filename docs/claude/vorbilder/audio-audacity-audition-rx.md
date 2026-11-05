@@ -20,13 +20,13 @@
 - ✓ Aufnahme vom Mikrofon an der Marke (Audacity Record)
 - ✓ Schritte-Liste mit Rückgängig, Original bleibt unverändert (nicht-destruktiv wie Audition)
 - ✓ Export WAV und MP3
-- ◐ Spektrales Malen/Retuschieren einzelner Frequenzbereiche (RX) – nur Anzeige, Bearbeitung auf die Zeitauswahl
-- ✗ Mehrspur-Ansicht (Audition Multitrack) – dafür gibt es den Videoschnitt mit Tonspuren
+- ✓ Spektral retuschieren (RX Spectral Repair „Attenuate“, 05.11.2026): im Spektrogramm ein Rechteck aus Zeit und Frequenz ziehen, nur dieser Bereich wird abgesenkt (3–60 dB, weiche Kanten); Frequenzachse mit Hz-Beschriftung
+- ✓ Mehrspur-Projekt (Audition Multitrack, 05.11.2026): bis 16 Spuren, Clips mit der Maus verschieben, je Spur Lautstärke, Panorama, Stumm und Solo, Abmischen zu einer Datei; Effekte des Editors wirken auf die Summe
 - ✗ Plugins (VST/LV2) – bewusst nicht, keine fremden Programme laden
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Menüband mit Gruppen (Bearbeiten, Effekte, Reparieren, Ansicht), Einstufen Einfach/Erweitert/Profi, Wellenform in der Mitte, Transportleiste darunter, Schritte rechts.
 
 ## Nächste Schritte
-1. Spektrales Retuschieren (Frequenzbereich in der Auswahl absenken)
-2. Klick- und Knackser-Entfernung (RX De-click)
+1. Klick- und Knackser-Entfernung (RX De-click)
+2. Mehrere Clips je Spur und Blenden zwischen Clips
