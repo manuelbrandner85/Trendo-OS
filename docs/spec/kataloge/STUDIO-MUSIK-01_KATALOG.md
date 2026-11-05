@@ -25,3 +25,6 @@ Funktionen nach den Vorbildern (Suno, Udio, ElevenLabs Music, Stable Audio, AIVA
 | MU-18 | Cover-Bild mit Titel | Suno | umgesetzt | MusikCoverUiTests |
 | MU-19 | Begleitung zu eigenem Gesang | Suno Add Instrumental | offen (braucht XL-Modell, 24 GB) | – |
 | MU-20 | Instrument dazu erzeugen | Suno Studio | offen (braucht XL-Modell, 24 GB) | – |
+| MU-21 | Mitlaufender Liedtext beim Abspielen | Spotify, Apple Music | umgesetzt | MusikProfi26_Ui, SongFollowTests |
+| MU-22 | Tonart- und Tempo-Raster mit Takten | Ableton, Logic | umgesetzt | MusikProfi26_Ui, SongFollowTests |
+| MU-23 | Fassungen nebeneinander, A/B an derselben Stelle | Mastering-A/B | umgesetzt | MusikProfi26_Ui, SongFollowTests |

@@ -76,9 +76,10 @@ public partial class MainWindow
 
     void MusicTick()
     {
-        if (_mSeek is null || _mSeeking) return;
+        if (_mSeek is null || _mSeeking) { MsFollowTick(); return; }
         _mSeek.Maximum = double.IsNaN(_mDur) || _mDur <= 0 ? 1 : _mDur; _mSeek.Value = Math.Min(_mSeek.Maximum, Math.Max(0, _mPos));
         if (_mTimeL is not null) _mTimeL.Text = MusicLibrary.Time(_mPos); if (_mTimeR is not null) _mTimeR.Text = MusicLibrary.Time(_mDur);
+        MsFollowTick(); // Trendo Musik: mitlaufender Liedtext und Taktraster
     }
 
     void CoverInto(Image img, string trackPath, int width)

@@ -471,6 +471,9 @@ public partial class MainWindow
         foreach (var t in tabs) sp.Children.Add(t.Body);
         var lied = tabs[0].Body; var edit = tabs[1].Body; var spuren = tabs[2].Body; var video = tabs[3].Body;
         tabs[4].Body.Children.Add(MsProPanel(s)); // Vorbild-Funktionen: Mastern (LANDR), Üben (Moises), MIDI (AIVA), Loop (Stable Audio), Kurzclip (Suno)
+        if (MsFollowPanel(s) is { } follow) lied.Children.Add(follow); // Profi 26: mitlaufender Liedtext
+        lied.Children.Add(MsGridPanel(s)); // Profi 26: Tonart- und Tempo-Raster
+        lied.Children.Add(MsComparePanel(s)); // Profi 26: Fassungen nebeneinander, A/B an derselben Stelle
         lied.Children.Add(MsCoverPanel(s)); // Wunsch 03.11.2026: Cover-Bild wie ein echtes Song-Cover
         lied.Children.Add(MsAnalysePanel(s)); // M5: Tonart, Tempo, Takt, Akkorde, Tonumfang
 

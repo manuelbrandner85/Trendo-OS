@@ -323,6 +323,13 @@ else if (shot == "seite")
             var s = lib.Add(new MusicSong { Title = t, Style = st, Lyrics = ly, Seconds = sec, Language = lang, File = f, Kind = sk, Favorite = fav });
             win.MusicStudioSelect(s.Id);
         }
+        if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") == "fassungen") // Profi 26: Liedtext läuft mit, Raster, Fassungen
+        {
+            var all = lib.All(); var o = all.First(x => x.Title == "Sommer, nimm uns mit"); var cv = all.First(x => x.Kind == "cover");
+            lib.Update(o.Id, x => { x.Bpm = 118; x.Key = "A minor"; x.TimeSignature = "4/4"; x.Mastered = true; });
+            lib.Update(cv.Id, x => { x.ParentId = o.Id; x.Bpm = 84; x.Key = "C major"; });
+            win.MusicStudioSelect(o.Id); win.MsPlayAt(lib.Get(o.Id)!, 0); win.MusicProgressForPreview(64, o.Seconds);
+        }
         if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") == "profi") win.MusicStudioProMode(true);
         if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") == "genre") win.MusicStudioPickGenres(true, "Jazz-Ballade", "Smooth Jazz");
         if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_TAB") is { Length: > 0 } mtab) win.MsDetailTab(mtab);

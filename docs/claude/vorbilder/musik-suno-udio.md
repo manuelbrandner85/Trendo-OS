@@ -42,7 +42,9 @@
 - ✓ Nahtlose Loops wie Stable Audio (Takte im Tempo, Überblendung ohne Knacken)
 - ✓ Kurzclip wie Suno Hooks: stärkster Abschnitt als Hochkant-Video 1080 × 1920 mit Titelbild und Wellenform
 - ✓ Cover-Werkstatt M1–M8: Lied suchen, eigenes Original untersuchen, Cover mit gleicher Melodie (gemessen 55 % auf der Gesangsspur), Ampel, erfundene Epochen-Stimmen, Klang wie damals, Karaoke, eigene Stimme (nur live, mit Zustimmung)
-- ✗ Mitlaufender Liedtext beim Abspielen
+- ✓ Mitlaufender Liedtext beim Abspielen (05.11.2026, wie Spotify/Apple Music): laufende Zeile gold, Zeile anklicken spielt ab dort; Zeiten aus „Lied verstehen“, sonst geschätzt
+- ✓ Tonart- und Tempo-Raster (05.11.2026, wie Ableton/Logic): Tonart, Tempo, Takt, Taktlänge, Tonleiter, Paralleltonart, Takte mit Abschnitten und Abspielmarke, Klick springt in den Takt
+- ✓ Fassungen nebeneinander vergleichen (05.11.2026, A/B wie beim Mastering): Original, Cover, Abschnitt neu, Verlängert, mit eigener Stimme; die andere Fassung spielt an derselben Stelle weiter
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Erstellen links, Bibliothek in der Mitte, gewähltes Lied rechts, Player unten – füllt das Fenster.
