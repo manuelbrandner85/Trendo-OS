@@ -129,7 +129,8 @@ class LiveStore(private val context: Context, private val profile: String = "sta
         val out = HashMap<String, MutableList<Programme>>()
         File(dir, "epg.tsv").forEachLine { line ->
             val f = line.split('\t'); if (f.size < 6) return@forEachLine
-            out.getOrPut(f[0]) { ArrayList() } += Programme(f[0], f[1].toLong(), f[2].toLong(), f[3], f[5], f[4])
+            // Beschreibung gekürzt im Speicher (Fernseher mit wenig RAM).
+            out.getOrPut(f[0]) { ArrayList() } += Programme(f[0], f[1].toLong(), f[2].toLong(), f[3], if (f[5].length > 240) f[5].take(240) + "…" else f[5], f[4])
         }
         out.mapValues { (_, v) -> v.sortedBy { it.start } }
     }.getOrDefault(emptyMap())

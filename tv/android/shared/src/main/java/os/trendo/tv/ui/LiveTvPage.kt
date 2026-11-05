@@ -134,8 +134,8 @@ private fun loadVod(store: LiveStore, d: LiveData): LiveData {
     val vodRaw = store.vod(); val serRaw = store.series()
     logCategories(d.all, vodRaw, serRaw)
     return d.copy(
-        vod = vodRaw.filter { TvRules.allowed(it.category, it.name, s.onlyGerman, s.showAdult) && (!s.kidsMode || TvRules.isKids(it.category, it.name)) },
-        series = serRaw.filter { TvRules.allowed(it.category, it.name, s.onlyGerman, s.showAdult) && (!s.kidsMode || TvRules.isKids(it.category, it.name)) },
+        vod = vodRaw.filter { TvRules.allowed(it.category, it.name, s.onlyGerman, s.showAdult) && (!s.kidsMode || TvRules.isKids(it.category, it.name)) }.map { if ((it.plot?.length ?: 0) > 220) it.copy(plot = it.plot!!.take(220) + "…") else it },
+        series = serRaw.filter { TvRules.allowed(it.category, it.name, s.onlyGerman, s.showAdult) && (!s.kidsMode || TvRules.isKids(it.category, it.name)) }.map { if ((it.plot?.length ?: 0) > 220) it.copy(plot = it.plot!!.take(220) + "…") else it },
     )
 }
 
@@ -326,19 +326,22 @@ fun LiveTvPage(host: LiveHost, profile: String) {
         }
         when (tab) {
             LiveTab.CHANNELS -> {
-                val history = store.history()
-                LanguageBar(TvRules.languages(TvRules.groups(data.visible)), langLive) { langLive = it; store.setLanguage("live", it) }
-                val shownCh = data.visible.filter { TvRules.matchesLanguage(it.group, it.name, langLive) }
-                val real = TvRules.groups(shownCh)
-                val providerGroups = os.trendo.tv.livetv.Providers.present(real).map { "▸ $it" }
-                val groups = listOf("★ Favoriten", "🕘 Zuletzt gesehen", "Alle") + providerGroups + real
+                val history = remember(data.visible) { store.history() }
+                val langs = remember(data.visible) { TvRules.languages(TvRules.groups(data.visible)) }
+                LanguageBar(langs, langLive) { langLive = it; store.setLanguage("live", it) }
+                val shownCh = remember(data.visible, langLive) { data.visible.filter { TvRules.matchesLanguage(it.group, it.name, langLive) } }
+                val groups = remember(shownCh) {
+                    val real = TvRules.groups(shownCh)
+                    listOf("★ Favoriten", "🕘 Zuletzt gesehen", "Alle") + os.trendo.tv.livetv.Providers.present(real).map { "▸ $it" } + real
+                }
+                val byGroup = remember(shownCh) { shownCh.groupBy { it.group } }
+                val byProvider = remember(shownCh) { shownCh.groupBy { os.trendo.tv.livetv.Providers.of(it.group) } }
                 LiveChannelsView(shownCh, groups, data.epg, data.settings.favorites, data.settings.lockedGroups,
                     groupFilter = { g -> when (g) {
                         "Alle" -> shownCh
                         "★ Favoriten" -> shownCh.filter { it.id in data.settings.favorites }
                         "🕘 Zuletzt gesehen" -> { val byId = shownCh.associateBy { it.id }; history.mapNotNull { byId[it] } }
-                        else -> if (g.startsWith("▸ ")) shownCh.filter { os.trendo.tv.livetv.Providers.of(it.group) == g.removePrefix("▸ ") }
-                                else shownCh.filter { it.group == g }
+                        else -> if (g.startsWith("▸ ")) byProvider[g.removePrefix("▸ ")].orEmpty() else byGroup[g].orEmpty()
                     } },
                     play = ::play,
                     onFav = { c -> store.save(data.settings.copy(favorites = data.settings.favorites.let { if (c.id in it) it - c.id else it + c.id })); settingsChanged() },
@@ -357,14 +360,26 @@ fun LiveTvPage(host: LiveHost, profile: String) {
             LiveTab.RECORDINGS -> RecordingsTab(ctx, host)
             LiveTab.SEARCH -> SearchTab(data, ::play) { c, p -> toggleReminder(ctx, store, data, c, p); tick++ }
             LiveTab.MOVIES -> Column {
-                LanguageBar(TvRules.languages(data.vod.map { it.category }.distinct()), langVod) { langVod = it; store.setLanguage("vod", it) }
-                PosterRowsView(data.vod.filter { TvRules.matchesLanguage(it.category, it.name, langVod) }.map { v -> PosterItem(v.id, v.name, v.category, v.cover, v.year, v.rating, v.plot) { host.playVod(v.url, v.name) } },
+                val hidden = data.settings.hiddenGroups
+                val langsV = remember(data.vod) { TvRules.languages(data.vod.map { it.category }.distinct()) }
+                LanguageBar(langsV, langVod) { langVod = it; store.setLanguage("vod", it) }
+                val itemsV = remember(data.vod, langVod, hidden) {
+                    data.vod.filter { it.category !in hidden && TvRules.matchesLanguage(it.category, it.name, langVod) }
+                        .map { v -> PosterItem(v.id, v.name, v.category, v.cover, v.year, v.rating, v.plot) { host.playVod(v.url, v.name) } }
+                }
+                PosterRowsView(itemsV,
                 "Keine Filme in dieser Sprache. Filme kommen über einen Xtream-Zugang (Quellen → Alles aktualisieren).", autofocus = true)
             }
             LiveTab.SERIES -> if (openSeries != null) SeriesTab(listOf(openSeries!!), repo, host, initial = openSeries) { openSeries = null }
                 else Column {
-                    LanguageBar(TvRules.languages(data.series.map { it.category }.distinct()), langSer) { langSer = it; store.setLanguage("ser", it) }
-                    PosterRowsView(data.series.filter { TvRules.matchesLanguage(it.category, it.name, langSer) }.map { s -> PosterItem(s.id, s.name, s.category, s.cover, s.year, s.rating, s.plot) { openSeries = s } },
+                    val hidden = data.settings.hiddenGroups
+                    val langsS = remember(data.series) { TvRules.languages(data.series.map { it.category }.distinct()) }
+                    LanguageBar(langsS, langSer) { langSer = it; store.setLanguage("ser", it) }
+                    val itemsS = remember(data.series, langSer, hidden) {
+                        data.series.filter { it.category !in hidden && TvRules.matchesLanguage(it.category, it.name, langSer) }
+                            .map { s -> PosterItem(s.id, s.name, s.category, s.cover, s.year, s.rating, s.plot) { openSeries = s } }
+                    }
+                    PosterRowsView(itemsS,
                     "Keine Serien in dieser Sprache. Serien kommen über einen Xtream-Zugang (Quellen → Alles aktualisieren).", autofocus = true)
                 }
             LiveTab.SOURCES -> SourcesTab(data, repo, store, onChanged = { tick++ }, onRefresh = ::refresh)
@@ -848,6 +863,12 @@ private fun SourcesTab(data: LiveData, repo: LiveRepo, store: LiveStore, onChang
 private fun FilterTab(data: LiveData, store: LiveStore, onChanged: () -> Unit) {
     // Sofort anzeigen, was man gedrückt hat (nicht erst nach dem Neufiltern).
     var s by remember(data.settings) { mutableStateOf(data.settings) }
+    var kind by remember { mutableStateOf("live") }
+    var groupQuery by remember { mutableStateOf("") }
+    val allGroups = remember(data.all, data.vod, data.series, kind) {
+        when (kind) { "vod" -> data.vod.map { it.category }.distinct(); "ser" -> data.series.map { it.category }.distinct(); else -> TvRules.groups(data.all) }
+    }
+    val groupList = remember(allGroups, groupQuery) { if (groupQuery.isBlank()) allGroups else allGroups.filter { TvRules.plain(it).contains(groupQuery.trim(), true) } }
     var pin by remember { mutableStateOf("") }
     var unlocked by remember { mutableStateOf(!store.hasPin()) }
     fun set(n: LiveSettings) { s = n; store.save(n); onChanged() }
@@ -874,8 +895,14 @@ private fun FilterTab(data: LiveData, store: LiveStore, onChanged: () -> Unit) {
                 PillButton("PIN speichern", { if (pin.length >= 4) { store.setPin(pin); pin = "" } })
             }
         }
-        item { Text("Gruppen: ausblenden oder mit PIN sperren", color = TvColors.Text, fontSize = 12.sp, fontWeight = FontWeight.SemiBold) }
-        items(TvRules.groups(data.all), key = { it }) { g ->
+        item {
+            Text("Gruppen & Kategorien: ausblenden oder mit PIN sperren", color = TvColors.Text, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 4.dp)) {
+                listOf("live" to "Live TV", "vod" to "Filme", "ser" to "Serien").forEach { (k, l) -> PillButton(if (kind == k) "● $l" else l, { kind = k }) }
+                Field(groupQuery, { groupQuery = it }, "Gruppe suchen …", width = 220)
+            }
+        }
+        items(groupList, key = { it }) { g ->
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text((if (g in s.lockedGroups) "🔒 " else "") + g, color = if (g in s.hiddenGroups) TvColors.TextSecondary.copy(alpha = 0.5f) else TvColors.Text, fontSize = 11.sp, modifier = Modifier.width(300.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 PillButton(if (g in s.hiddenGroups) "✓ ausgeblendet · Einblenden" else "Ausblenden", { set(s.copy(hiddenGroups = if (g in s.hiddenGroups) s.hiddenGroups - g else s.hiddenGroups + g)) })
