@@ -400,7 +400,8 @@ public sealed partial class MainWindow : Window
 
     private Control? BlurredWallpaper(Visual mask)
     {
-        if (_settings.Theme == "kontrast" || LowPower) return null;
+        // Nur im Stil Trendo: Windows-, Mac- und GNOME-Stil haben keine Glasflächen – sonst lag die verschwommene Kopie als milchiges Viereck über dem Hintergrund (05.11.2026)
+        if (_settings.Theme == "kontrast" || LowPower || OsStyle) return null;
         try
         {
             // Glas: Unschärfe wird einmal vorab berechnet (Start/Bildwechsel), nicht mehr live pro Bild.
