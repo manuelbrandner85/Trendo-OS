@@ -450,7 +450,7 @@ public partial class MainWindow
     }
 
     // ---------- Oberfläche ----------
-    static readonly (string Id, string Label)[] TvTabs = [("live", "📺 Live-TV"), ("film", "🎬 Filme"), ("serie", "🍿 Serien"), ("mediathek", "🎞 Mediatheken & Streaming"), ("guide", "🗓 Programmführer"), ("rec", "⏺ Aufnahmen"), ("multi", "▦ Mehrfachansicht"), ("quellen", "⚙ Quellen")];
+    static readonly (string Id, string Label)[] TvTabs = [("live", "📺 Live-TV"), ("film", "🎬 Filme"), ("serie", "🍿 Serien"), ("mediathek", "🎞 Mediatheken & Streaming"), ("videos", "▶ Video-Plattformen"), ("guide", "🗓 Programmführer"), ("rec", "⏺ Aufnahmen"), ("multi", "▦ Mehrfachansicht"), ("quellen", "⚙ Quellen")];
 
     Control TvView()
     {
@@ -503,17 +503,18 @@ public partial class MainWindow
             sp.Children.Add(new Border { Name = "tv-msg", Background = Brush.Parse(ok ? "#1A22C55E" : "#1AFACC15"), BorderBrush = Brush.Parse(ok ? "#664ADE80" : "#66FACC15"), BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8),
                 Child = new TextBlock { Text = _tvMsg, Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap } });
         }
-        if (Tv.Sources.Count == 0 && _tvTab is not ("quellen" or "mediathek"))
+        if (Tv.Sources.Count == 0 && _tvTab is not ("quellen" or "mediathek" or "videos"))
         {
             sp.Children.Add(Glass2(new StackPanel { Spacing = 10, Children = {
                 new TextBlock { Text = "📡", FontSize = 40 },
                 new TextBlock { Text = "Willkommen bei TV & Live", Foreground = GoldText(), FontSize = 20, FontWeight = FontWeight.Bold },
                 P("Füge deine Senderliste hinzu – eine M3U-Adresse (auch get.php von Xtream), eine M3U-Datei oder deinen Xtream-Zugang. Trendo bringt keine Sender mit; bitte nur legale Quellen nutzen.", Text, 13),
                 TvButton("tv-start-sources", "Senderliste hinzufügen", () => { _tvTab = "quellen"; Show("tv"); }, true),
-                TvButton("tv-start-mediathek", "🎞 Ohne Senderliste: Mediatheken & Streaming", () => { _tvTab = "mediathek"; Show("tv"); }) } }, 18));
+                TvButton("tv-start-mediathek", "🎞 Ohne Senderliste: Mediatheken & Streaming", () => { _tvTab = "mediathek"; Show("tv"); }),
+                TvButton("tv-start-videos", "▶ YouTube, PeerTube & Co.", () => { _tvTab = "videos"; Show("tv"); }) } }, 18));
             return Page("TV & Live", sp);
         }
-        sp.Children.Add(_tvTab switch { "film" => TvFilms(), "serie" => TvSeriesView(), "guide" => TvGuide(), "rec" => TvRecordings(), "multi" => TvMultiView(), "quellen" => TvSources(), "mediathek" => TvLegalView(), _ => TvLive() });
+        sp.Children.Add(_tvTab switch { "film" => TvFilms(), "serie" => TvSeriesView(), "guide" => TvGuide(), "rec" => TvRecordings(), "multi" => TvMultiView(), "quellen" => TvSources(), "mediathek" => TvLegalView(), "videos" => TvVideosView(), _ => TvLive() });
         return Page("TV & Live", sp);
     }
 

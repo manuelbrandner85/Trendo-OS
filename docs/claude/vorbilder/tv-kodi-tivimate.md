@@ -16,6 +16,7 @@
 - ✗ Katch-up/Zeitversetzt je Sender
 
 - ✓ Mediatheken & Streaming (05.11.2026): legale Quellen nach Art (Mediatheken, kostenlos mit Werbung, Abo-Dienste) und Kategorie (Filme, Serien, Dokus, Kinder, Nachrichten, Sport); Mediatheken von ARD, ZDF, arte, 3sat, phoenix, KiKA, ORF, SRF in Trendo suchen und abspielen (freie Suche von MediathekViewWeb), Abo- und Gratis-Dienste öffnen nur die offizielle Seite; keine Piraterie-Quellen
+- ✓ Video-Plattformen (05.11.2026): eigener Reiter wie YouTube – Plattform-Leiste, Kategorien (Musik, Gaming, Wissen, Nachrichten, Sport, Kinder, Filme, Comedy, Kochen, Technik), Kacheln mit Vorschaubild, Kanal, Aufrufen, Länge. PeerTube (werbefrei, Suche über alle Instanzen) und Internet Archive (gemeinfreie Filme) spielen im Trendo-Player; Dailymotion wird in Trendo durchsucht und auf der offiziellen Seite angesehen; YouTube, Vimeo, Twitch, TED öffnen Suche, Kategorie oder eingefügten Link auf der offiziellen Seite bzw. im offiziellen Einbett-Player (youtube-nocookie). Kein Herunterladen, keine Zwischen-Dienste
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Eigenes Medienprogramm wie im Vorbild.
