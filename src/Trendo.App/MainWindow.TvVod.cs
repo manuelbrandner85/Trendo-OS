@@ -183,7 +183,7 @@ public partial class MainWindow
     public bool TvPlayVideo(string url, string title)
     {
         _tvPlayingTitle = title; _tvVodPlaying = true; _tvChannel = null;
-        if (_tvTab is not ("film" or "serie")) _tvTab = "film";
+        if (_tvTab is not ("film" or "serie" or "mediathek")) _tvTab = "film";
         _core.Audit.Append(Principal.LocalOwner.Name, "tv.vod.play", title.Length > 60 ? title[..60] : title);
         Show("tv");
         var ok = TvPlayUrl(url, "main");

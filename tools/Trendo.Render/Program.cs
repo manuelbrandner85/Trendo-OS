@@ -97,6 +97,7 @@ if (Environment.GetEnvironmentVariable("TRENDO_TV_DEMO") is { Length: > 0 }) // 
 // Immer Testmodus: Katalog und Bilder landen im öffentlichen Repository – nie echte Ordner des Nutzers lesen (z. B. „Zuletzt benutzt“ aus Dokumente).
 var win = new MainWindow(core, new AppOptions(root, null, 0, Page: args.Length > 3 ? args[3] : null, Query: Environment.GetEnvironmentVariable("TRENDO_QUERY"), Isolated: true), new DefaultToolProbe()) { Width = w, Height = h, WindowState = Avalonia.Controls.WindowState.Normal };
 if (Environment.GetEnvironmentVariable("TRENDO_TV_TAB") is { Length: > 0 } tvTab) { win.TvTabForTests = tvTab; win.Show("tv"); }
+if (Environment.GetEnvironmentVariable("TRENDO_TV_LEGAL") is { } tvLegal) { win.TvTabForTests = "mediathek"; win.Show("tv"); var lt = win.TvLegalSearchAsync(tvLegal, tvLegal.Length == 0 ? "Filme" : "Alle", null); var lw = DateTime.UtcNow; while (!lt.IsCompleted && DateTime.UtcNow - lw < TimeSpan.FromSeconds(40)) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(30); } win.Show("tv"); } // Mediatheken mit echter Suche zeigen
 win.Show();
 if (Environment.GetEnvironmentVariable("TRENDO_OS_OPEN") is { Length: > 0 } osOpen) // Bedienstil zeigen: Startmenü/Launchpad/Übersicht, Spotlight, Widgets, Dateimanager
 {

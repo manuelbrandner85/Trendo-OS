@@ -15,6 +15,8 @@
 - ✗ Senderlogos aus der Quelle überall
 - ✗ Katch-up/Zeitversetzt je Sender
 
+- ✓ Mediatheken & Streaming (05.11.2026): legale Quellen nach Art (Mediatheken, kostenlos mit Werbung, Abo-Dienste) und Kategorie (Filme, Serien, Dokus, Kinder, Nachrichten, Sport); Mediatheken von ARD, ZDF, arte, 3sat, phoenix, KiKA, ORF, SRF in Trendo suchen und abspielen (freie Suche von MediathekViewWeb), Abo- und Gratis-Dienste öffnen nur die offizielle Seite; keine Piraterie-Quellen
+
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Eigenes Medienprogramm wie im Vorbild.
 
