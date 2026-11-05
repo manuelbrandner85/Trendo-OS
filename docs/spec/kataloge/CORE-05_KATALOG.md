@@ -45,3 +45,10 @@ Funktionen nach den Vorbildern (Blender, SketchUp, Tinkercad; FreeCAD, Fusion, O
 | DR-06 | Skalieren, Kopien anordnen | PrusaSlicer | umgesetzt | SlicerTests |
 | DR-07 | Drucker im Heimnetz, Druck nach Bestätigung | Bambu Studio | umgesetzt | N23N24_CadPrintUi |
 | DR-08 | Mehrere verschiedene Modelle auf einer Platte | PrusaSlicer | offen | – |
+| DR-09 | Bambu-Drucker im Netz finden und übernehmen, gleiches Netz prüfen | Bambu Studio Geräte-Suche | umgesetzt | BambuProTests, BambuPro_Ui |
+| DR-10 | Einrichtung: WLAN, Nur LAN, Entwicklermodus, Zugangscode; WLAN-Signal in Klartext | Bambu Handy/Studio | umgesetzt | BambuProTests, BambuPro_Ui |
+| DR-11 | Steuern: Licht, Tempo, Düse, Bett, Lüfter (mit Grenzen) | Bambu Studio Gerät | umgesetzt | BambuProTests, BambuPro_Ui |
+| DR-12 | AMS-Filamente, Druckermeldungen (HMS) mit Nachschlagen | Bambu Studio Gerät | umgesetzt | BambuProTests, BambuPro_Ui |
+| DR-13 | Live-Kamera, Fertig-Meldung, Zeitraffer aufnehmen und holen | Bambu Handy | umgesetzt (Kamera/FTPS nur am echten Drucker) | BambuProTests, BambuPro_Ui |
+| DR-14 | Direkt aus Trendo vorbereiten (Bambu Studio im Hintergrund) und drucken | Bambu Studio CLI | umgesetzt (echter Slicer-Lauf nicht im Test) | BambuProTests, BambuPro_Ui |
+| DR-15 | Mehrere Drucker mit Zustand, Auswählen, Entfernen | Bambu Farm Manager | umgesetzt | BambuProTests, BambuPro_Ui |

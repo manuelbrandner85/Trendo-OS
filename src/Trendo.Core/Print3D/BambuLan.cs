@@ -101,7 +101,11 @@ public sealed class BambuClient(BambuPrinter printer, string accessCode) : IAsyn
 {
     Stream? _s; CancellationTokenSource? _cts; Task? _loop; readonly SemaphoreSlim _send = new(1, 1);
     public BambuStatus Status { get; private set; } = new();
+    /// <summary>Weitere Werte: WLAN, Tempo, Licht, Lüfter, AMS, Fehlermeldungen.</summary>
+    public BambuDetails Details { get; private set; } = new();
     public event Action<BambuStatus>? Changed;
+    /// <summary>Druck fertig oder fehlgeschlagen (für die Meldung „Druck fertig“).</summary>
+    public event Action<BambuStatus, bool>? Finished;
     public bool Connected => _s is not null;
     int _seq;
 
@@ -138,12 +142,28 @@ public sealed class BambuClient(BambuPrinter printer, string accessCode) : IAsyn
                 if (p.Value.Type == 3)
                 {
                     var (topic, payload) = Mqtt.ParsePublish(p.Value.Body);
-                    if (topic == ReportTopic) { Status = Status.Merge(payload); Changed?.Invoke(Status); }
+                    if (topic == ReportTopic) { Feed(payload); }
                 }
             }
         }
         catch (Exception e) when (e is IOException or OperationCanceledException or ObjectDisposedException) { }
     }
+
+    /// <summary>Eine Statusmeldung verarbeiten (öffentlich für Tests).</summary>
+    public void Feed(string payload)
+    {
+        var before = Status; Status = Status.Merge(payload); Details = Details.Merge(payload);
+        if (BambuCommands.JustFinished(before, Status)) Finished?.Invoke(Status, true);
+        else if (BambuCommands.JustFailed(before, Status)) Finished?.Invoke(Status, false);
+        Changed?.Invoke(Status);
+    }
+
+    /// <summary>Steuerung (nur im Entwicklermodus wirksam): Licht, Tempo, Düse, Bett, Lüfter.</summary>
+    public Task Light(bool on, CancellationToken ct = default) => Send(Mqtt.Publish(RequestTopic, BambuCommands.Light(on, Seq())), ct);
+    public Task Speed(int level, CancellationToken ct = default) => Send(Mqtt.Publish(RequestTopic, BambuCommands.Speed(level, Seq())), ct);
+    public Task Nozzle(int c, CancellationToken ct = default) => Send(Mqtt.Publish(RequestTopic, BambuCommands.Nozzle(c, Seq())), ct);
+    public Task Bed(int c, CancellationToken ct = default) => Send(Mqtt.Publish(RequestTopic, BambuCommands.Bed(c, Seq())), ct);
+    public Task Fan(int percent, CancellationToken ct = default) => Send(Mqtt.Publish(RequestTopic, BambuCommands.Fan(percent, Seq())), ct);
 
     async Task Send(byte[] data, CancellationToken ct)
     {
@@ -161,9 +181,9 @@ public sealed class BambuClient(BambuPrinter printer, string accessCode) : IAsyn
 
     /// <summary>Druckauftrag für eine schon hochgeladene, in Bambu Studio vorbereitete Datei (.gcode.3mf) starten.
     /// Nur nach ausdrücklicher Bestätigung in der Oberfläche aufrufen – der Drucker heizt auf und bewegt sich.</summary>
-    public Task StartPrint(string remoteFile, int plate = 1, bool useAms = false, CancellationToken ct = default) => Send(Mqtt.Publish(RequestTopic, StartPayload(remoteFile, plate, useAms, Seq())), ct);
+    public Task StartPrint(string remoteFile, int plate = 1, bool useAms = false, CancellationToken ct = default, bool timelapse = false) => Send(Mqtt.Publish(RequestTopic, StartPayload(remoteFile, plate, useAms, Seq(), timelapse)), ct);
 
-    public static string StartPayload(string remoteFile, int plate, bool useAms, string seq)
+    public static string StartPayload(string remoteFile, int plate, bool useAms, string seq, bool timelapse = false)
     {
         var name = Path.GetFileName(remoteFile);
         var o = new JsonObject
@@ -172,7 +192,7 @@ public sealed class BambuClient(BambuPrinter printer, string accessCode) : IAsyn
             {
                 ["sequence_id"] = seq, ["command"] = "project_file", ["param"] = $"Metadata/plate_{plate}.gcode", ["project_id"] = "0", ["profile_id"] = "0", ["task_id"] = "0", ["subtask_id"] = "0",
                 ["subtask_name"] = name.Replace(".gcode.3mf", "", StringComparison.OrdinalIgnoreCase).Replace(".3mf", "", StringComparison.OrdinalIgnoreCase),
-                ["url"] = $"file:///sdcard/{name}", ["timelapse"] = false, ["bed_type"] = "auto", ["bed_levelling"] = true, ["flow_cali"] = false, ["vibration_cali"] = false, ["layer_inspect"] = false, ["use_ams"] = useAms,
+                ["url"] = $"file:///sdcard/{name}", ["timelapse"] = timelapse, ["bed_type"] = "auto", ["bed_levelling"] = true, ["flow_cali"] = false, ["vibration_cali"] = false, ["layer_inspect"] = false, ["use_ams"] = useAms,
             },
         };
         return o.ToJsonString();

@@ -47,6 +47,7 @@ public partial class MainWindow
         if (serial.Trim().Length < 8) throw new ArgumentException("Die Seriennummer steht am Drucker unter Einstellungen → Gerät.");
         Printer = new BambuPrinter(name.Trim().Length > 0 ? name.Trim() : "Bambu-Drucker", ip.Trim(), serial.Trim().ToUpperInvariant());
         File.WriteAllText(Path.Combine(PrintDir, "drucker.json"), JsonSerializer.Serialize(Printer));
+        BambuFleet.Upsert(PrintDir, Printer); // mehrere Drucker (B5)
         if (accessCode is { Length: > 0 }) _core.Secrets.Set(Printer.SecretKey, accessCode.Trim());
         _core.Audit.Append(Principal.LocalOwner.Name, "3ddruck.drucker", $"{Printer.Name} {Printer.Ip}");
     }
@@ -66,7 +67,7 @@ public partial class MainWindow
             var c = new BambuClient(p, code);
             c.Changed += _ => _ui.Post(() => { if (CurrentView == "3d-druck" && DateTime.UtcNow - _prLastDraw > TimeSpan.FromSeconds(1)) { _prLastDraw = DateTime.UtcNow; Show("3d-druck"); } });
             await c.ConnectAsync(stream);
-            _bambu = c; _prMsg = $"Verbunden mit „{p.Name}“.";
+            _bambu = c; AttachFleet(c, p); _prMsg = $"Verbunden mit „{p.Name}“.";
             _core.Audit.Append(Principal.LocalOwner.Name, "3ddruck.verbunden", p.Name);
             return true;
         }
@@ -77,7 +78,7 @@ public partial class MainWindow
         }
     }
 
-    public async Task DisconnectPrinter() { if (_bambu is { } c) { _bambu = null; await c.DisposeAsync(); } }
+    public async Task DisconnectPrinter() { if (_bambu is { } c) { _bambu = null; if (Printer is { } p) _fleet.Remove(p.Serial); PrinterLive(false); await c.DisposeAsync(); } }
 
     /// <summary>Datei hochladen und den Druck starten – nur über die Bestätigung <see cref="ConfirmPrint"/>.</summary>
     public void AskPrint()
@@ -96,7 +97,7 @@ public partial class MainWindow
             _prMsg = "Datei wird zum Drucker übertragen …"; Show("3d-druck");
             if (upload is not null) await upload(f);
             else await BambuFtp.UploadAsync(p.Ip, _core.Secrets.Get(p.SecretKey) ?? "", f, () => Thumb(p), t => RememberThumb(p, t));
-            await c.StartPrint(Path.GetFileName(f));
+            await c.StartPrint(Path.GetFileName(f), useAms: c.Details.Trays.Count > 0, timelapse: PrintTimelapse);
             _prMsg = $"Druck gestartet: {Path.GetFileName(f)}.";
             _core.Audit.Append(Principal.LocalOwner.Name, "3ddruck.start", $"{p.Name} {Path.GetFileName(f)}");
         }
@@ -176,9 +177,17 @@ public partial class MainWindow
             slicer.Children.Add(install);
             slicer.Children.Add(P("Installation nur nach deiner Zustimmung, aus der offiziellen GitHub-Seite von Bambu Lab.", null, 12));
         }
+        if (PrintFile is { } pf0 && !pf0.EndsWith(".gcode.3mf", StringComparison.OrdinalIgnoreCase))
+        {
+            var prep = new Button { Name = "print-prepare", Content = "▶ Für den Druck vorbereiten", Background = Accent, Foreground = Brushes.White };
+            prep.Click += (_, _) => _ = PrepareForPrint();
+            slicer.Children.Add(prep);
+            slicer.Children.Add(P("Trendo lässt Bambu Studio im Hintergrund aufstellen, anordnen und slicen – danach direkt „Hochladen und drucken“.", null, 12));
+        }
         sp.Children.Add(Card(slicer));
+        if (PrinterFleetCard() is { } fleet) sp.Children.Add(Card(fleet));
         // 3) Drucker im Heimnetz
-        var pr = new StackPanel { Spacing = 6, Children = { H("Drucker im Heimnetz", 14) } };
+        var pr = new StackPanel { Spacing = 6, Children = { H("Drucker im Heimnetz (WLAN oder Kabel)", 14), PrinterFindCard() } };
         var name = new TextBox { Name = "print-name", Text = Printer?.Name ?? "", PlaceholderText = "Name, z. B. Werkstatt", Width = 230 };
         var ip = new TextBox { Name = "print-ip", Text = Printer?.Ip ?? "", PlaceholderText = "IP, z. B. 192.168.1.40", Width = 230 };
         var serial = new TextBox { Name = "print-serial", Text = Printer?.Serial ?? "", PlaceholderText = "Seriennummer", Width = 230 };
@@ -205,6 +214,7 @@ public partial class MainWindow
             pr.Children.Add(row);
             var printBtn = new Button { Name = "print-start", Content = "Hochladen und drucken …", Background = Accent, IsEnabled = PrintFile?.EndsWith(".gcode.3mf", StringComparison.OrdinalIgnoreCase) == true }; printBtn.Click += (_, _) => { AskPrint(); Show("3d-druck"); };
             pr.Children.Add(printBtn);
+            if (PrinterControlCard() is { } ctl) pr.Children.Add(ctl);
         }
         if (PrintConfirmOpen && Printer is { } pp && PrintFile is { } pf)
         {
@@ -213,6 +223,7 @@ public partial class MainWindow
             pr.Children.Add(new Border { Name = "print-confirm", Background = Brush.Parse("#33F59E0B"), CornerRadius = new CornerRadius(8), Padding = new Thickness(12), Child = new StackPanel { Spacing = 6, Children = {
                 new TextBlock { Text = $"„{pp.Name}“ druckt „{Path.GetFileName(pf)}“.", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
                 P("Der Drucker heizt auf und bewegt sich. Ist die Druckplatte leer und sauber, und ist das richtige Filament eingelegt?", null, 13),
+                TimelapseBox(),
                 new WrapPanel { Children = { yes, new Border { Width = 6 }, no } } } } });
         }
         if (_prCamera is { } jpg) try { using var ms = new MemoryStream(jpg); pr.Children.Add(new Image { Name = "print-camera-image", Source = new Avalonia.Media.Imaging.Bitmap(ms), MaxWidth = 480, HorizontalAlignment = HorizontalAlignment.Left }); } catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or NotSupportedException) { }
@@ -225,4 +236,6 @@ public partial class MainWindow
         var page = new DockPanel { Children = { Dk(new StackPanel { Spacing = 6, Children = { PageHead("Trendo 3D-Druck"), Card(toolbar) } }, Avalonia.Controls.Dock.Top), work } };
         return new Border { Name = "print-page-root", Background = Brush.Parse(C("#F21A1A1A", "#F7F4F7FC")), CornerRadius = new CornerRadius(10), Padding = new Thickness(10), Child = page };
     }
+
+    CheckBox TimelapseBox() { var cb = new CheckBox { Name = "print-confirm-timelapse", Content = "Zeitraffer aufnehmen", IsChecked = PrintTimelapse }; cb.IsCheckedChanged += (_, _) => PrintTimelapse = cb.IsChecked == true; return cb; }
 }
