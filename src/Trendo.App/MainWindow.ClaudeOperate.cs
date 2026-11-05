@@ -63,6 +63,7 @@ public partial class MainWindow
                     texts.Add(s); break;
             }
         fields.AddRange(ClaudeExtraFields(page)); // Programm-eigene Inhalte, die keine Eingabefelder sind (z. B. Level in „Spiele bauen“)
+        fields.AddRange(ClaudeMusicFields(page)); // Trendo Musik: Claude als Produzent (Text, Stil, Mastering-Ziel)
         var program = Windows.Active?.Title is { Length: > 0 } wt ? wt : StudioCatalog.NameOf(ModuleOf(page) ?? "", page);
         var title = ClaudeFocus(page) ?? (Programs.ContainsKey(page) && ProgramActive(page) is { } doc ? "Dokument „" + doc.Title + "“" : "");
         var sel = ClaudeSelection(page) ?? (_lastTextSel is { } ls && ls.Page == page ? ls.Text : null);
@@ -119,6 +120,7 @@ public partial class MainWindow
                 return $"3D-Szene „{_scene.Name}“ mit {_scene.Parts.Count} Teilen" + (_scene.Parts.Count > 0 ? ": " + string.Join(", ", _scene.Parts.Take(12).Select(p => p.Name)) : "") + (Selected is { } sp ? $"; ausgewählt: {sp.Name}" : "");
         }
         if (page == GK && ClaudeGameFocus() is { } gf) return gf; // Level in voller Länge für Claude
+        if (page == MS && ClaudeMusicFocus() is { } mf) return mf; // Trendo Musik: Lied samt Produzenten-Prüfung
         if (Programs.TryGetValue(page, out var spec) && ProgramActive(page) is { } d)
         {
             var parts = d.Data.Select(kv => kv.Value is System.Text.Json.Nodes.JsonArray a ? $"{kv.Key}: {a.Count}" : null).OfType<string>().Take(10).ToList();
@@ -148,7 +150,7 @@ public partial class MainWindow
         for (var i = 0; i < plan.Steps.Count; i++)
         {
             var s = plan.Steps[i]; var r = ClaudeActions.StepRisky(s, plan.State); risky |= r;
-            var pv = ClaudeExtraPreview(plan.Page, s);
+            var pv = ClaudeExtraPreview(plan.Page, s) ?? ClaudeMusicPreview(plan.Page, s);
             sp.Children.Add(new TextBlock { Name = $"claude-plan-step-{i}", Text = $"{i + 1}. {ClaudeActions.Describe(s, plan.State)}" + (r ? "  ⚠ wirkt nach außen" : ""), Foreground = r ? Brush.Parse("#FFF8B26A") : ClaudeFg, FontSize = 13, TextWrapping = TextWrapping.Wrap });
             if (pv is not null) sp.Children.Add(pv);
         }
@@ -185,7 +187,7 @@ public partial class MainWindow
                 case ("feld", TextBox tb) when tb.IsEffectivelyEnabled: tb.Text = s.Value; done.Add(text); break;
                 case ("wahl", ComboBox cb) when cb.IsEffectivelyEnabled && cb.Items.FirstOrDefault(i => ItemText(i).Equals(s.Value, StringComparison.OrdinalIgnoreCase)) is { } item: cb.SelectedItem = item; done.Add(text); break;
                 case ("klick", Button b) when b.IsEffectivelyEnabled: b.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); done.Add(text); break;
-                default: if (ClaudeApplyExtra(plan.Page, s)) done.Add(text); else failed.Add(text); break;
+                default: if (ClaudeApplyExtra(plan.Page, s) || ClaudeMusicApply(plan.Page, s)) done.Add(text); else failed.Add(text); break;
             }
             await _ui.InvokeAsync(() => { }, DispatcherPriority.Background); // Seite zeichnet sich nach jedem Schritt neu
         }

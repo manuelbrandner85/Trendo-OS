@@ -28,3 +28,4 @@ Funktionen nach den Vorbildern (Suno, Udio, ElevenLabs Music, Stable Audio, AIVA
 | MU-21 | Mitlaufender Liedtext beim Abspielen | Spotify, Apple Music | umgesetzt | MusikProfi26_Ui, SongFollowTests |
 | MU-22 | Tonart- und Tempo-Raster mit Takten | Ableton, Logic | umgesetzt | MusikProfi26_Ui, SongFollowTests |
 | MU-23 | Fassungen nebeneinander, A/B an derselben Stelle | Mastering-A/B | umgesetzt | MusikProfi26_Ui, SongFollowTests |
+| MU-24 | Claude als Produzent: Aufbau, Text-Rhythmus, Stil, Mastering-Ziel | Produzent, LANDR | umgesetzt | ClaudeMusik_Ui, SongProducerTests |

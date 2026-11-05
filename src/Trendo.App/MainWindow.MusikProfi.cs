@@ -22,16 +22,17 @@ public partial class MainWindow
     Task<Cli.Result> MasterRun(string ffmpeg, string[] args) => MasterRunOverride is { } o ? o(args) : Task.Run(() => Cli.Run(ffmpeg, args, null, 600_000));
 
     /// <summary>Lied mastern (ersetzt die Datei, wenn beide Läufe klappen). Gibt false zurück, wenn FFmpeg fehlt oder ein Lauf scheitert.</summary>
-    public async Task<bool> MsMaster(string songId, bool quiet = false)
+    public async Task<bool> MsMaster(string songId, bool quiet = false, string? target = null)
     {
         var s = Songs.Get(songId);
+        var tg = SongProducer.TargetOf(target ?? s?.MasterTarget);
         if (s is null || !File.Exists(s.File)) return false;
         var ff = await MasterFfmpeg();
         if (ff is null) { if (!quiet) { _msMsg = "Zum Mastern braucht Trendo FFmpeg – unter „Programme“ einrichten."; Show(MS); } return false; }
-        var m = SongMaster.ParseMeasure((await MasterRun(ff, SongMaster.MeasureArgs(s.File))).Err);
+        var m = SongMaster.ParseMeasure((await MasterRun(ff, SongMaster.MeasureArgs(s.File, tg.Lufs, tg.TruePeak))).Err);
         if (m is null) { if (!quiet) { _msMsg = "Mastern ging nicht: die Lautheit ließ sich nicht messen."; Show(MS); } return false; }
         var tmp = Path.Combine(Path.GetDirectoryName(s.File)!, $".trendo-master-{Guid.NewGuid():N}{Path.GetExtension(s.File)}");
-        var r = await MasterRun(ff, SongMaster.ApplyArgs(s.File, tmp, m));
+        var r = await MasterRun(ff, SongMaster.ApplyArgs(s.File, tmp, m, tg.Lufs, tg.TruePeak));
         if (!r.Ok || !File.Exists(tmp) || new FileInfo(tmp).Length < 1000)
         {
             TryDelete(tmp);
@@ -39,9 +40,9 @@ public partial class MainWindow
             return false;
         }
         File.Move(tmp, s.File, overwrite: true);
-        Songs.Update(songId, x => x.Mastered = true);
+        Songs.Update(songId, x => { x.Mastered = true; x.MasterTarget = tg.Id; });
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.master", $"{Path.GetFileName(s.File)} von {m.I} LUFS");
-        if (!quiet) { _msMsg = $"✓ Gemastert: −14 LUFS, Spitzen höchstens −1 dBTP (vorher {m.I} LUFS)."; Show(MS); }
+        if (!quiet) { _msMsg = $"✓ Gemastert „{tg.Label}“: {tg.Lufs:0} LUFS, Spitzen höchstens {tg.TruePeak:0.0} dBTP (vorher {m.I} LUFS).".Replace("-", "−"); Show(MS); }
         return true;
     }
 

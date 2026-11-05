@@ -95,6 +95,6 @@ public static class SongFollow
 
     public static string KindLabel(string kind) => kind switch
     {
-        "neu" => "Original", "eigen" => "Eigene Datei", "cover" => "Cover", "abschnitt" => "Abschnitt neu", "laenger" => "Verlängert", "aufnahme" => "Mit meiner Stimme", _ => kind,
+        "neu" => "Original", "eigen" => "Eigene Datei", "cover" => "Cover", "abschnitt" => "Abschnitt neu", "laenger" => "Verlängert", "aufnahme" => "Mit meiner Stimme", "produzent" => "Produzenten-Fassung", _ => kind,
     };
 }

@@ -151,7 +151,7 @@ public partial class MainWindow
     /// (dann gilt die gewählte Länge genau); ohne Text-KI schreibt ACE-Step im eigenen Einfach-Modus Text und Gesang selbst – die Länge wählt es dann selbst.</summary>
     public async Task<List<MusicSong>> MsCreateWithVoice(AceStepClient.Job j, string title)
     {
-        if (_msPro || j.Lyrics.Trim().Length > 0 || j.Task != "text2music") return await MusicStudioCreate(j, title);
+        if (_msPro || j.Lyrics.Trim().Length > 0 || j.Task != "text2music") return MsLinkProducerDraft(await MusicStudioCreate(j, title)); // Claude 26: Produzenten-Fassung hängt am Ausgangslied
         var langName = AceStepClient.Languages.FirstOrDefault(x => x.Code == j.Language).Name ?? j.Language;
         var english = j.Language switch { "de" => "German", "en" => "English", _ => TryCulture(j.Language) };
         var prompt = $"Schreibe einen Liedtext auf {langName} für ein Lied von etwa {j.Seconds} Sekunden. Thema/Stil: {j.Prompt}. "
@@ -253,6 +253,7 @@ public partial class MainWindow
             modes.Children.Add(b);
         }
         sp.Children.Add(new DockPanel { Children = { Dk(modes, Avalonia.Controls.Dock.Right), H("Erstellen", 16) } });
+        if (MsProducerDraftBanner() is { } prod) sp.Children.Add(prod); // Claude 26: offener Produzenten-Entwurf
         var sync = new List<Action>(); // beim Klick die Felder direkt auslesen – nicht auf das Änderungs-Ereignis warten
         TextBox Box(string name, string watermark, string value, Action<string> set, double minH = 0, bool multi = false)
         {

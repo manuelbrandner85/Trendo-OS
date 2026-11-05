@@ -45,6 +45,7 @@
 - ✓ Mitlaufender Liedtext beim Abspielen (05.11.2026, wie Spotify/Apple Music): laufende Zeile gold, Zeile anklicken spielt ab dort; Zeiten aus „Lied verstehen“, sonst geschätzt
 - ✓ Tonart- und Tempo-Raster (05.11.2026, wie Ableton/Logic): Tonart, Tempo, Takt, Taktlänge, Tonleiter, Paralleltonart, Takte mit Abschnitten und Abspielmarke, Klick springt in den Takt
 - ✓ Fassungen nebeneinander vergleichen (05.11.2026, A/B wie beim Mastering): Original, Cover, Abschnitt neu, Verlängert, mit eigener Stimme; die andere Fassung spielt an derselben Stelle weiter
+- ✓ Claude als Produzent (Claude 26, 05.11.2026): Claude sieht Lied, Silben je Zeile, Reimschema und Aufbau-Hinweise, schlägt neuen Text, Stil oder Mastering-Ziel vor; die Plan-Karte zeigt den Rhythmus vorher/nachher, erst „Ausführen“ übernimmt – Text und Stil als Entwurf einer neuen Fassung (hängt nach „Erstellen“ am Original, A/B-Vergleich), Mastering-Ziele Streaming −14, Laut −9, Podcast −16, Dynamisch −18 LUFS
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Erstellen links, Bibliothek in der Mitte, gewähltes Lied rechts, Player unten – füllt das Fenster.
