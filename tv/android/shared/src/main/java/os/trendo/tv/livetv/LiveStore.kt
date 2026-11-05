@@ -164,6 +164,10 @@ class LiveStore(private val context: Context, private val profile: String = "sta
     fun history(): List<String> = prefs.getString("hist", "")!!.split('\n').filter { it.isNotBlank() }
     fun addHistory(id: String) { prefs.edit().putString("hist", (listOf(id) + history().filter { it != id }).take(20).joinToString("\n")).apply() }
 
+    // ---- Sprachfilter je Reiter (null = alle Sprachen) ----
+    fun language(tab: String): String? = prefs.getString("lang_$tab", null)?.ifBlank { null }
+    fun setLanguage(tab: String, code: String?) { prefs.edit().putString("lang_$tab", code ?: "").apply() }
+
     // ---- Automatik ----
     var autoplayLast: Boolean
         get() = shared.getBoolean("autoplay", false)

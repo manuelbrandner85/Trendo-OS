@@ -46,3 +46,30 @@ class ProvidersTest {
         assertEquals(listOf("Netflix", "Sky"), Providers.present(listOf("DE: SKY SPORT", "DE • NETFLIX FILME", "DE • DRAMA")))
     }
 }
+
+class SprachfilterTest {
+    @Test fun spracheJeEintrag() {
+        assertEquals("de", TvRules.languageOf("DE • NETFLIX FILME", null))
+        assertEquals("de", TvRules.languageOf("AT | ORF", null))
+        assertEquals("uk", TvRules.languageOf("EN • ACTION", null))
+        assertEquals("tr", TvRules.languageOf("TR: DIZI", null))
+        assertNull(TvRules.languageOf("Kinder", null))
+        assertTrue(TvRules.matchesLanguage("Kinder", null, "de"))
+        assertTrue(!TvRules.matchesLanguage("Kinder", null, "tr"))
+        assertTrue(TvRules.matchesLanguage("TR: DIZI", null, null))
+        assertEquals(listOf("de", "tr", "uk"), TvRules.languages(listOf("TR: A", "TR: B", "EN • C", "DE • D", "Sport")))
+        assertEquals("Türkisch", TvRules.languageLabel("tr"))
+    }
+}
+
+class KinderprofilTest {
+    @Test fun kinderprofilErzwingtKinderinhalte() {
+        val s = LiveSettings(showAdult = true, kidsMode = false)
+        val kid = Profile("k", "Kinder", kid = true, minutesPerDay = 60)
+        val e = KidRules.effective(s, kid)
+        assertTrue(e.kidsMode); assertTrue(!e.showAdult)
+        assertEquals(s, KidRules.effective(s, Profile("a", "Haupt")))
+        assertEquals(15, KidRules.remaining(kid, 45)); assertTrue(KidRules.limitReached(kid, 61)); assertNull(KidRules.remaining(Profile("a", "Haupt"), 500))
+        assertNull(KidRules.remaining(kid.copy(minutesPerDay = 0), 500))
+    }
+}

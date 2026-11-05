@@ -108,6 +108,33 @@ object TvRules {
         return progs[i] to progs.getOrNull(i + 1)
     }
 
+    /** Anzeigename einer Sprache/Landeskennung (wie `TvCommands.LanguageLabel`). */
+    fun languageLabel(code: String): String = when (code) {
+        "de" -> "Deutsch"; "uk" -> "Englisch"; "us" -> "USA"; "tr" -> "Türkisch"; "fr" -> "Französisch"; "it" -> "Italienisch"
+        "es" -> "Spanisch"; "pl" -> "Polnisch"; "nl" -> "Niederländisch"; "ar" -> "Arabisch"; "eu" -> "Europa/Mehrsprachig"
+        "exyu" -> "Ex-Jugoslawien"; "al" -> "Albanisch"; "ru" -> "Russisch"; "ro" -> "Rumänisch"; "gr" -> "Griechisch"
+        "pt" -> "Portugiesisch"; "kurd" -> "Kurdisch"; "at" -> "Österreich"; "ch" -> "Schweiz"; else -> code.uppercase()
+    }
+
+    /** Sprache eines Eintrags: DE/AT/CH zählen als „de"; ohne Kennung = null. */
+    fun languageOf(group: String, name: String?): String? {
+        val c = countryOf(group) ?: name?.let { countryOf(it) } ?: return null
+        return if (c in germanSpeaking) "de" else c
+    }
+
+    /** Passt ein Eintrag zur gewählten Sprache? null = alle. „de" schließt Einträge ohne Kennung ein (viele deutsche Listen haben keine). */
+    fun matchesLanguage(group: String, name: String?, lang: String?): Boolean {
+        if (lang == null) return true
+        val l = languageOf(group, name)
+        return l == lang || (lang == "de" && l == null)
+    }
+
+    /** Sprachen, die in den Kategorien vorkommen – häufigste zuerst, Deutsch immer vorn. */
+    fun languages(groups: List<String>): List<String> {
+        val counts = groups.mapNotNull { languageOf(it, null) }.groupingBy { it }.eachCount()
+        return counts.entries.sortedWith(compareBy({ if (it.key == "de") 0 else 1 }, { -it.value })).map { it.key }
+    }
+
     /** Kann für diesen Sender eine Sendung aus dem Archiv geholt werden? */
     fun canCatchup(c: Channel, startMs: Long, now: Long): Boolean =
         c.catchup != null && c.archiveDays > 0 && startMs < now && now - startMs <= c.archiveDays * 86_400_000L
