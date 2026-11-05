@@ -1,5 +1,18 @@
 package os.trendo.tv.ui
 
+import androidx.compose.material.icons.outlined.LiveTv
+import androidx.compose.material.icons.outlined.Movie
+import androidx.compose.material.icons.outlined.VideoLibrary
+import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.Subscriptions
+import androidx.compose.material.icons.outlined.SmartDisplay
+import androidx.compose.material.icons.outlined.FiberManualRecord
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.OpenInNew
+import androidx.compose.ui.focus.onFocusChanged
 import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -221,10 +234,28 @@ fun LiveTvPage(host: LiveHost, profile: String) {
         ctx.startActivity(LiveActivity.intent(ctx, data.visible.indexOf(c).coerceAtLeast(0)))
     }
 
-    Column(Modifier.fillMaxSize()) {
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(vertical = 4.dp, horizontal = 2.dp)) {
-            // Kinderprofil: keine Quellen, keine Filter, keine Streaming-Dienste.
-            val tabs = if (prof?.kid == true) listOf(LiveTab.CHANNELS, LiveTab.MOVIES, LiveTab.SERIES, LiveTab.GUIDE, LiveTab.TIPS) else LiveTab.entries.toList()
+    // Kinderprofil: keine Quellen, keine Filter, keine Streaming-Dienste.
+    val railTabs = if (prof?.kid == true) listOf(LiveTab.CHANNELS, LiveTab.MOVIES, LiveTab.SERIES, LiveTab.GUIDE, LiveTab.TIPS) else LiveTab.entries.filter { it != LiveTab.FILTER }
+    var menuFor by remember { mutableStateOf<Channel?>(null) }
+    Row(Modifier.fillMaxSize()) {
+    NavRail(railTabs, if (tab == LiveTab.FILTER) LiveTab.SOURCES else tab, { tab = it },
+        voice = if (voiceOk) ({
+            voiceHandler = { onVoice(it) }
+            runCatching { voiceLauncher.launch(android.content.Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+                .putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL, android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                .putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE, "de-DE")
+                .putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, "z. B. „Schalte auf ZDF“")) }
+        }) else null,
+        external = host.externalLabel?.let { it to host.onExternal })
+    Spacer(Modifier.width(12.dp))
+    Column(Modifier.weight(1f).fillMaxHeight()) {
+        // Einstellungen: Unterbereiche
+        if (tab == LiveTab.SOURCES || tab == LiveTab.FILTER) Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(bottom = 6.dp)) {
+            PillButton(if (tab == LiveTab.SOURCES) "● Quellen" else "Quellen", { tab = LiveTab.SOURCES })
+            PillButton(if (tab == LiveTab.FILTER) "● Profile, Jugendschutz & Sortierung" else "Profile, Jugendschutz & Sortierung", { tab = LiveTab.FILTER })
+        }
+        if (false) LazyRow {
+            val tabs = emptyList<LiveTab>()
             items(tabs) { t ->
                 FocusSurface({ tab = t }, Modifier.height(34.dp).then(if (t == tab) Modifier.border(1.5.dp, TvColors.FocusRing, RoundedCornerShape(50)) else Modifier),
                     shape = RoundedCornerShape(50), container = if (t == tab) TvColors.Panel else TvColors.Glass, scale = 1.06f) {
@@ -250,6 +281,10 @@ fun LiveTvPage(host: LiveHost, profile: String) {
                 }
             } }
         }
+        menuFor?.let { c -> ChannelMenu(c, data, store, ctx, close = { menuFor = null; tick++ }, playAt = { ch, st -> menuFor = null; playAt(ch, st) },
+            multi = { ch -> menuFor = null; PreviewHub.release(); LiveSession.channels = data.visible; LiveSession.favorites = data.settings.favorites
+                ctx.startActivity(os.trendo.tv.MultiViewActivity.intent(ctx, data.visible.indexOf(ch).coerceAtLeast(0), 2)) },
+            status = { status = it }) }
         choice?.let { (c, p) ->
             val focus = remember { FocusRequester() }
             LaunchedEffect(p) { runCatching { focus.requestFocus() } }
@@ -292,7 +327,7 @@ fun LiveTvPage(host: LiveHost, profile: String) {
                     } },
                     play = ::play,
                     onFav = { c -> store.save(data.settings.copy(favorites = data.settings.favorites.let { if (c.id in it) it - c.id else it + c.id })); tick++ },
-                    autofocus = data.loaded)
+                    autofocus = data.loaded && menuFor == null, onMenu = { menuFor = it })
             }
             LiveTab.GUIDE -> {
                 val rows = data.visible.filter { it.epgId != null && data.epg[it.epgId]?.isNotEmpty() == true }.take(120)
@@ -324,6 +359,80 @@ fun LiveTvPage(host: LiveHost, profile: String) {
             }
         }
     }
+    }
+}
+
+private fun railIcon(t: LiveTab): androidx.compose.ui.graphics.vector.ImageVector = when (t) {
+    LiveTab.CHANNELS -> androidx.compose.material.icons.Icons.Outlined.LiveTv
+    LiveTab.MOVIES -> androidx.compose.material.icons.Icons.Outlined.Movie
+    LiveTab.SERIES -> androidx.compose.material.icons.Icons.Outlined.VideoLibrary
+    LiveTab.GUIDE -> androidx.compose.material.icons.Icons.Outlined.DateRange
+    LiveTab.TIPS -> androidx.compose.material.icons.Icons.Outlined.Star
+    LiveTab.STREAMING -> androidx.compose.material.icons.Icons.Outlined.Subscriptions
+    LiveTab.VIDEOS -> androidx.compose.material.icons.Icons.Outlined.SmartDisplay
+    LiveTab.RECORDINGS -> androidx.compose.material.icons.Icons.Outlined.FiberManualRecord
+    LiveTab.SEARCH -> androidx.compose.material.icons.Icons.Outlined.Search
+    LiveTab.SOURCES, LiveTab.FILTER -> androidx.compose.material.icons.Icons.Outlined.Settings
+}
+
+private fun railLabel(t: LiveTab) = if (t == LiveTab.SOURCES) "Einstellungen" else t.label
+
+/** Menüleiste links: schmal mit Symbolen, klappt mit Beschriftung auf, sobald sie den Fokus hat. */
+@Composable
+private fun NavRail(tabs: List<LiveTab>, current: LiveTab, onSelect: (LiveTab) -> Unit, voice: (() -> Unit)?, external: Pair<String, () -> Unit>?) {
+    var open by remember { mutableStateOf(false) }
+    Column(Modifier.width(if (open) 210.dp else 58.dp).fillMaxHeight().background(TvColors.GlassStrong, RoundedCornerShape(14.dp))
+        .border(1.dp, TvColors.Line, RoundedCornerShape(14.dp)).padding(vertical = 8.dp, horizontal = 6.dp)
+        .onFocusChanged { open = it.hasFocus },
+        verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        @Composable fun item(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, selected: Boolean, onClick: () -> Unit) {
+            FocusSurface(onClick, Modifier.fillMaxWidth().height(36.dp).then(if (selected) Modifier.border(1.5.dp, TvColors.FocusRing, RoundedCornerShape(9.dp)) else Modifier),
+                shape = RoundedCornerShape(9.dp), container = if (selected) TvColors.Panel else Color.Transparent, scale = 1.04f, idleBorder = false) {
+                Row(Modifier.fillMaxSize().padding(horizontal = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    androidx.tv.material3.Icon(icon, label, tint = if (selected) TvColors.Cyan else TvColors.Text, modifier = Modifier.size(18.dp))
+                    if (open) { Spacer(Modifier.width(12.dp)); Text(label, color = if (selected) TvColors.Cyan else TvColors.Text, fontSize = 12.sp, maxLines = 1, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal) }
+                }
+            }
+        }
+        tabs.forEach { t -> item(railIcon(t), railLabel(t), t == current) { onSelect(t) } }
+        Spacer(Modifier.weight(1f))
+        voice?.let { item(androidx.compose.material.icons.Icons.Outlined.Mic, "Sprechen", false, it) }
+        external?.let { (label, act) -> item(androidx.compose.material.icons.Icons.Outlined.OpenInNew, label, false, act) }
+    }
+}
+
+/** Kontextmenü (langes Drücken auf OK): alles, was man mit einem Sender machen kann. */
+@Composable
+private fun ChannelMenu(c: Channel, data: LiveData, store: LiveStore, ctx: Context, close: () -> Unit, playAt: (Channel, Long) -> Unit,
+                        multi: (Channel) -> Unit, status: (String) -> Unit) {
+    val now = System.currentTimeMillis()
+    val (cur, next) = TvRules.nowNext(c.epgId?.let { data.epg[it] }, now)
+    val s = data.settings
+    val focus = remember { FocusRequester() }
+    LaunchedEffect(c) { runCatching { focus.requestFocus() } }
+    val items = buildList<Pair<String, () -> Unit>> {
+        add((if (c.id in s.favorites) "★ Aus Favoriten entfernen" else "☆ Zu Favoriten") to { store.save(s.copy(favorites = if (c.id in s.favorites) s.favorites - c.id else s.favorites + c.id)); close() })
+        if (cur != null && TvRules.canCatchup(c, cur.start, now)) add("⏮ „${cur.title}“ von Anfang an" to { playAt(c, cur.start) })
+        if (cur != null) add("⏺ „${cur.title}“ aufnehmen (USB)" to {
+            status(if (os.trendo.tv.Recordings.usbDir(ctx) == null) "Kein USB-Stick gefunden." else { os.trendo.tv.Recordings.now(ctx, c, cur.title, cur.stop); "Aufnahme gestartet: ${cur.title}" }); close()
+        })
+        if (next != null) add("⏰ An „${next.title}“ (${hm(next.start)}) erinnern" to { toggleReminder(ctx, store, data, c, next); close() })
+        if (next != null) add("⏺ „${next.title}“ aufnehmen planen" to {
+            status(if (os.trendo.tv.Recordings.usbDir(ctx) == null) "Kein USB-Stick gefunden." else if (os.trendo.tv.Recordings.schedule(ctx, c, next) != null) "Aufnahme geplant: ${next.title}" else "Ist schon geplant."); close()
+        })
+        add("▦ Multi-View mit diesem Sender" to { multi(c) })
+        add("🚫 Sender ausblenden" to { store.save(s.copy(hiddenChannels = s.hiddenChannels + c.id)); status("„${c.name}“ ausgeblendet – unter Einstellungen wieder einblenden."); close() })
+        add("🚫 Gruppe „${c.group}“ ausblenden" to { store.save(s.copy(hiddenGroups = s.hiddenGroups + c.group)); close() })
+        add("Schließen" to close)
+    }
+    Column(Modifier.fillMaxWidth().background(TvColors.GlassStrong, RoundedCornerShape(12.dp)).border(1.dp, TvColors.FocusRing, RoundedCornerShape(12.dp)).padding(10.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(c.name + (cur?.let { "  ·  jetzt: ${it.title}" } ?: ""), color = TvColors.Text, fontSize = 13.sp, fontWeight = FontWeight.Bold, maxLines = 1)
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp), contentPadding = PaddingValues(2.dp)) {
+            items(items.size) { i -> Box(if (i == 0) Modifier.focusRequester(focus) else Modifier) { PillButton(items[i].first, items[i].second) } }
+        }
+    }
+    Spacer(Modifier.height(6.dp))
 }
 
 /** Aufnahmen: Liste (abspielen, löschen, abbrechen), Aufnahme-Regeln, USB-Status. */
@@ -737,6 +846,11 @@ private fun FilterTab(data: LiveData, store: LiveStore, onChanged: () -> Unit) {
         item { Toggle("Kinder-Modus (nur Kindersender und -inhalte)", s.kidsMode) { set(s.copy(kidsMode = it)) } }
         item { Toggle("Inhalte für Erwachsene anzeigen", s.showAdult) { set(s.copy(showAdult = it)) } }
         item { Toggle("Beim Öffnen sofort den letzten Sender zeigen", store.autoplayLast) { store.autoplayLast = it; onChanged() } }
+        item {
+            val label = when (s.sortMode) { "number" -> "Sendernummer"; "name" -> "Name (A–Z)"; else -> "wie beim Anbieter" }
+            Toggle("Sender sortieren: $label (ändern)", true) { set(s.copy(sortMode = when (s.sortMode) { "default" -> "number"; "number" -> "name"; else -> "default" })) }
+        }
+        if (s.hiddenChannels.isNotEmpty()) item { Toggle("${s.hiddenChannels.size} ausgeblendete Sender – alle wieder einblenden", false) { set(s.copy(hiddenChannels = emptySet())) } }
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Field(pin, { pin = it.filter(Char::isDigit).take(8) }, if (store.hasPin()) "Neue PIN (4–8 Ziffern)" else "PIN festlegen (4–8 Ziffern)", password = true, type = KeyboardType.NumberPassword, width = 260)

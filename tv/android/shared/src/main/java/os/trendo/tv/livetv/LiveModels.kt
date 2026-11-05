@@ -49,4 +49,8 @@ data class LiveSettings(
     val kidsMode: Boolean = false,
     val mergeDuplicates: Boolean = true,
     val lastChannel: String? = null,
+    /** Einzeln ausgeblendete Sender. */
+    val hiddenChannels: Set<String> = emptySet(),
+    /** Sortierung: "default" (Anbieter), "number", "name". */
+    val sortMode: String = "default",
 )

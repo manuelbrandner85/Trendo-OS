@@ -175,12 +175,14 @@ class LiveStore(private val context: Context, private val profile: String = "sta
         onlyGerman = prefs.getBoolean("de", false), showAdult = prefs.getBoolean("adult", false),
         kidsMode = prefs.getBoolean("kids", false), mergeDuplicates = prefs.getBoolean("merge", true),
         lastChannel = prefs.getString("last", null),
+        hiddenChannels = prefs.getStringSet("hiddenCh", emptySet())!!.toSet(),
+        sortMode = prefs.getString("sort", "default") ?: "default",
     )
 
     fun save(s: LiveSettings) {
         prefs.edit().putStringSet("fav", s.favorites).putStringSet("hidden", s.hiddenGroups).putStringSet("locked", s.lockedGroups)
             .putBoolean("de", s.onlyGerman).putBoolean("adult", s.showAdult).putBoolean("kids", s.kidsMode).putBoolean("merge", s.mergeDuplicates)
-            .putString("last", s.lastChannel).apply()
+            .putString("last", s.lastChannel).putStringSet("hiddenCh", s.hiddenChannels).putString("sort", s.sortMode).apply()
     }
 
     // ---- Verlauf (zuletzt gesehene Sender) ----

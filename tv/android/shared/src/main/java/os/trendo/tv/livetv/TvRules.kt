@@ -123,10 +123,14 @@ object TvRules {
 
     /** Wendet alle Einstellungen an. Gesperrte Gruppen bleiben sichtbar (Schloss), solange sie nicht entsperrt sind. */
     fun visible(channels: List<Channel>, s: LiveSettings): List<Channel> {
-        var list = channels.filter { it.group !in s.hiddenGroups && allowed(it.group, it.name, s.onlyGerman, s.showAdult) }
+        var list = channels.filter { it.group !in s.hiddenGroups && it.id !in s.hiddenChannels && allowed(it.group, it.name, s.onlyGerman, s.showAdult) }
         if (s.kidsMode) list = list.filter { isKids(it.group, it.name) && !isAdult(it.group) && !isAdult(it.name) }
         if (s.mergeDuplicates) list = mergeDuplicates(list)
-        return list
+        return when (s.sortMode) {
+            "number" -> list.sortedBy { if (it.number > 0) it.number else Int.MAX_VALUE }
+            "name" -> list.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { plain(it.name) })
+            else -> list
+        }
     }
 
     fun groups(channels: List<Channel>): List<String> = channels.map { it.group }.distinct()

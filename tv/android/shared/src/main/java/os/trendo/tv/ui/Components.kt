@@ -35,10 +35,12 @@ fun FocusSurface(
     scale: Float = 1.06f,
     ring: Dp = 2.dp,
     idleBorder: Boolean = true,
+    onLongClick: (() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
     Surface(
         onClick = onClick,
+        onLongClick = onLongClick,
         modifier = modifier,
         shape = ClickableSurfaceDefaults.shape(shape),
         colors = ClickableSurfaceDefaults.colors(

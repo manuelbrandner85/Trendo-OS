@@ -98,6 +98,8 @@ class LiveActivity : ComponentActivity() {
     private var quality by mutableStateOf("")
     private var resize by mutableIntStateOf(androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT)
     private var retries = 0
+    /** Vorheriger Sender (◀ schaltet zurück, wie bei TV-Apps üblich). */
+    private var prevIndex = -1
     /** Zeitversatz: Inhaltszeit (Wanduhr), ab der die aktuelle Archiv-Wiedergabe läuft; null = live. */
     private var shiftStart by mutableStateOf<Long?>(null)
     private var pausedAt: Long? = null
@@ -178,6 +180,7 @@ class LiveActivity : ComponentActivity() {
     private fun tune(i: Int, ask: Boolean) {
         val c = channels.getOrNull(i) ?: return
         if (ask && isLocked(c)) { askPin = i; return }
+        if (i != index) prevIndex = index
         index = i; banner++; error = null; retries = 0; tried.clear(); shiftStart = null; pausedAt = null
         play(c.url)
         store.save(store.settings().copy(lastChannel = c.id))
@@ -259,7 +262,8 @@ class LiveActivity : ComponentActivity() {
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> { showList = true; return true }
             KeyEvent.KEYCODE_INFO -> { banner++; return true }
             KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_MENU -> { showMenu = true; return true }
-            KeyEvent.KEYCODE_PROG_RED, KeyEvent.KEYCODE_DPAD_LEFT -> { togglePip(); return true }
+            KeyEvent.KEYCODE_PROG_RED -> { togglePip(); return true }
+            KeyEvent.KEYCODE_DPAD_LEFT -> { if (prevIndex in channels.indices) tune(prevIndex, ask = true) else banner++; return true }
             KeyEvent.KEYCODE_LAST_CHANNEL -> { zap(-1); return true }
         }
         if (event.keyCode in KeyEvent.KEYCODE_0..KeyEvent.KEYCODE_9) {
@@ -327,25 +331,43 @@ class LiveActivity : ComponentActivity() {
                     Text("⏪ Zeitversetzt – ${behind} Min. hinter Live (◀◀ ▶▶ spulen, Optionen → Zurück zu Live)", color = TvColors.Violet, fontSize = 10.sp)
                 }
                 if (quality.isNotEmpty()) Text(quality, color = if (quality.contains("schwach")) TvColors.Magenta else TvColors.Cyan, fontSize = 9.sp)
-                Text("▲▼ Sender · OK Liste · ▶ Optionen · ◀ Bild-in-Bild · Ziffern Sendernummer", color = TvColors.TextSecondary.copy(alpha = 0.7f), fontSize = 9.sp)
+                Text("▲▼ Sender · OK Liste · ◀ letzter Sender · ▶ Optionen · Ziffern Sendernummer", color = TvColors.TextSecondary.copy(alpha = 0.7f), fontSize = 9.sp)
             }
         }
     }
 
     @Composable
     private fun ChannelList() {
-        val state = rememberLazyListState(initialFirstVisibleItemIndex = (index - 4).coerceAtLeast(0))
+        // Gruppen links (◀), Sender rechts – wie bei TV-Apps üblich.
+        val groups = remember { listOf("Alle", "★ Favoriten") + TvRules.groups(channels) }
+        var group by remember { mutableStateOf(channels.getOrNull(index)?.group ?: "Alle") }
+        val shown = remember(group) { when (group) { "Alle" -> channels; "★ Favoriten" -> channels.filter { it.id in LiveSession.favorites }; else -> channels.filter { it.group == group } } }
+        val pos = shown.indexOf(channels.getOrNull(index)).coerceAtLeast(0)
+        val state = rememberLazyListState(initialFirstVisibleItemIndex = (pos - 4).coerceAtLeast(0))
         val focus = remember { FocusRequester() }
         LaunchedEffect(Unit) { runCatching { focus.requestFocus() } }
         val now = System.currentTimeMillis()
         Row(Modifier.fillMaxSize().onKeyEvent { e ->
             if (e.type == KeyEventType.KeyDown && (e.key == Key.Back || e.key == Key.Escape)) { showList = false; true } else false
         }) {
-            Column(Modifier.width(520.dp).fillMaxHeight().background(Color(0xF2050A14)).padding(16.dp)) {
-                Text("Senderliste · ${channels.size}", color = TvColors.Text, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Column(Modifier.width(200.dp).fillMaxHeight().background(Color(0xF8040812)).padding(10.dp)) {
+                Text("Gruppen", color = TvColors.TextSecondary, fontSize = 11.sp)
+                Spacer(Modifier.height(6.dp))
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    items(groups.size) { gi -> val g = groups[gi]
+                        FocusSurface({ group = g }, Modifier.fillMaxWidth().height(32.dp), container = if (g == group) TvColors.Panel else Color.Transparent, scale = 1.02f, idleBorder = false) {
+                            Box(Modifier.fillMaxSize().padding(horizontal = 8.dp), contentAlignment = Alignment.CenterStart) {
+                                Text(g, color = if (g == group) TvColors.Cyan else TvColors.Text, fontSize = 11.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
+                        }
+                    }
+                }
+            }
+            Column(Modifier.width(480.dp).fillMaxHeight().background(Color(0xF2050A14)).padding(16.dp)) {
+                Text("$group · ${shown.size} Sender", color = TvColors.Text, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
                 LazyColumn(state = state, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    itemsIndexed(channels, key = { _, c -> c.id }) { i, c ->
+                    itemsIndexed(shown, key = { _, c -> c.id }) { si, c -> val i = channels.indexOf(c)
                         val (cur, _) = TvRules.nowNext(c.epgId?.let { LiveSession.epg[it] }, now)
                         FocusSurface({ showList = false; tune(i, ask = true) }, Modifier.fillMaxWidth().height(44.dp).then(if (i == index) Modifier.focusRequester(focus) else Modifier),
                             container = if (i == index) TvColors.Panel else Color.Transparent, scale = 1.02f, idleBorder = false) {
@@ -410,6 +432,7 @@ class LiveActivity : ComponentActivity() {
                     }
                 },
                 "Stream-Infos" to { page = "info" },
+                (if (pipIndex != null) "Bild-in-Bild aus" else "Bild-in-Bild an (nächster Sender klein)") to { showMenu = false; togglePip() },
                 "⏺ Aufnehmen bis Sendungsende (USB)" to {
                     showMenu = false
                     c?.let { ch ->

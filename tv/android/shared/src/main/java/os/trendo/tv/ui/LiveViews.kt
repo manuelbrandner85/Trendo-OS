@@ -101,6 +101,7 @@ fun PreviewPlayer(url: String?, modifier: Modifier) {
 fun LiveChannelsView(
     channels: List<Channel>, groups: List<String>, epg: Map<String, List<Programme>>, favorites: Set<String>, locked: Set<String>,
     groupFilter: (String) -> List<Channel>, play: (Channel) -> Unit, onFav: (Channel) -> Unit, autofocus: Boolean,
+    onMenu: (Channel) -> Unit = {},
 ) {
     var group by remember { mutableStateOf(groups.getOrElse(2) { "Alle" }) }
     var focused by remember { mutableStateOf<Channel?>(null) }
@@ -132,7 +133,7 @@ fun LiveChannelsView(
                 items(list, key = { it.id }) { c ->
                     val (cur, _) = TvRules.nowNext(c.epgId?.let { epg[it] }, now)
                     FocusSurface({ play(c) }, Modifier.fillMaxWidth().height(50.dp).onFocusChanged { if (it.isFocused) focused = c }
-                        .then(if (c == list.first()) Modifier.focusRequester(first) else Modifier), scale = 1.02f, container = TvColors.Glass) {
+                        .then(if (c == list.first()) Modifier.focusRequester(first) else Modifier), scale = 1.02f, container = TvColors.Glass, onLongClick = { onMenu(c) }) {
                         Row(Modifier.fillMaxSize().padding(horizontal = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                             Text("${c.number}", color = TvColors.Cyan, fontSize = 11.sp, modifier = Modifier.width(40.dp))
                             Box(Modifier.size(width = 58.dp, height = 34.dp).background(Color(0x33FFFFFF), RoundedCornerShape(6.dp)), contentAlignment = Alignment.Center) {
@@ -154,7 +155,14 @@ fun LiveChannelsView(
         // Vorschau + Infos
         val f = focused ?: list.firstOrNull()
         Column(Modifier.width(360.dp).fillMaxHeight()) {
-            PreviewPlayer(f?.url, Modifier.fillMaxWidth().aspectRatio(16f / 9f))
+            // Jugendschutz: gesperrte Gruppen nie in der Vorschau abspielen (erst nach PIN im Vollbild).
+            val lockedNow = f != null && f.group in locked && !os.trendo.tv.LiveSession.unlocked
+            Box(Modifier.fillMaxWidth().aspectRatio(16f / 9f)) {
+                PreviewPlayer(if (lockedNow) null else f?.url, Modifier.fillMaxSize())
+                if (lockedNow) Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                    Text("🔒", fontSize = 34.sp); Text("Gesperrte Gruppe – PIN beim Öffnen", color = TvColors.TextSecondary, fontSize = 10.sp)
+                }
+            }
             Spacer(Modifier.height(10.dp))
             if (f != null) {
                 val progs = f.epgId?.let { epg[it] }
