@@ -368,29 +368,29 @@ public partial class MainWindow
             {
                 // Gruppenname klein über den Befehlen (wie die Gruppen in Word), damit man sieht, was zusammengehört; gleicher Name direkt hintereinander nur einmal (Prüfung „Einfachheit“, 04.11.2026)
                 // als Legende auf dem oberen Rand: kostet kaum Höhe, die Arbeitsfläche bleibt groß
-                var grp = new Border { Margin = new Thickness(0, 7, 6, 3), Padding = new Thickness(6, 6, 6, 0), CornerRadius = new CornerRadius(10), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = row };
+                var grp = new Border { Margin = new Thickness(0, 7, 6, 3), Padding = new Thickness(6, 6, 6, 0), CornerRadius = new CornerRadius(10), Background = GroupBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), Child = row };
                 ToolTip.SetTip(grp, g);
                 Control cell = grp;
                 if (g != lastGroup)
-                    cell = new Panel { Children = { grp, new Border { Name = "prog-group-label", Background = TileBg, CornerRadius = new CornerRadius(4), Padding = new Thickness(4, 0), Margin = new Thickness(10, 0, 0, 0), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, IsHitTestVisible = false,
+                    cell = new Panel { Children = { grp, new Border { Name = "prog-group-label", Background = GroupBg, CornerRadius = new CornerRadius(4), Padding = new Thickness(4, 0), Margin = new Thickness(10, 0, 0, 0), HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top, IsHitTestVisible = false,
                         Child = new TextBlock { Text = g, Foreground = Muted, FontSize = 9.5, FontWeight = FontWeight.SemiBold } } } };
                 lastGroup = g;
                 ribbon.Children.Add(cell);
             }
             else
-            ribbon.Children.Add(new Border { Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(10, 6, 10, 4), CornerRadius = new CornerRadius(12), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1),
+            ribbon.Children.Add(new Border { Margin = new Thickness(0, 0, 8, 8), Padding = new Thickness(10, 6, 10, 4), CornerRadius = new CornerRadius(12), Background = GroupBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1),
                 Child = new StackPanel { Spacing = 2, Children = { row, new TextBlock { Text = g, Foreground = Muted, FontSize = 11, HorizontalAlignment = HorizontalAlignment.Center } } } });
         }
 
         // Arbeitsfläche und Eigenschaften
-        var work = new Border { Name = "prog-workspace", ClipToBounds = true, CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(spec.FillHeight ? 8 : 12), MinHeight = spec.FillHeight ? 220 : 420, Child = spec.FillHeight && spec.ScrollWorkspace ? new ScrollViewer { Name = "prog-workspace-scroll", Content = spec.Workspace(d), HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled } : spec.Workspace(d) };
+        var work = new Border { Name = "prog-workspace", ClipToBounds = true, CornerRadius = new CornerRadius(14), Background = PaneBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(spec.FillHeight ? 8 : 12), MinHeight = spec.FillHeight ? 220 : 420, Child = spec.FillHeight && spec.ScrollWorkspace ? new ScrollViewer { Name = "prog-workspace-scroll", Content = spec.Workspace(d), HorizontalScrollBarVisibility = Avalonia.Controls.Primitives.ScrollBarVisibility.Disabled } : spec.Workspace(d) };
         // Paket F (A1 Profi-Bauplan): Werkzeuge links · große Mitte · Eigenschaften rechts · Bereich unten – jeder Rand einklappbar
         bool Hidden(string part) => _settings.HiddenPanels.Contains(key + ":" + part);
         var showTools = spec.Tools.Count > 0 && !Hidden("werkzeuge"); var showProps = spec.Properties is not null && !Hidden("eigenschaften"); var showBottom = spec.Bottom is not null && !Hidden("unten");
         Control center = work;
         if (spec.Bottom is { } bottom && showBottom)
         {
-            var bp = new Border { Name = "prog-bottom", Height = bottom.Height, CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(10, 6),
+            var bp = new Border { Name = "prog-bottom", Height = bottom.Height, CornerRadius = new CornerRadius(14), Background = PaneBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(10, 6),
                 Child = new DockPanel { Children = { Dk(new TextBlock { Text = bottom.Title, Foreground = Muted, FontSize = 12, FontWeight = FontWeight.SemiBold, Margin = new Thickness(2, 0, 0, 4) }, Avalonia.Controls.Dock.Top), bottom.Build(d) } } };
             var g2 = new Grid { RowDefinitions = new RowDefinitions("*,10,Auto"), Children = { work } }; Grid.SetRow(bp, 2); g2.Children.Add(bp); center = g2;
         }
@@ -411,12 +411,12 @@ public partial class MainWindow
                 b.Click += (_, _) => ProgramRun(key, () => tt.Select(d));
                 rail.Children.Add(b);
             }
-            grid.Children.Add(new Border { Name = "prog-tools-panel", CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(6), Child = rail });
+            grid.Children.Add(new Border { Name = "prog-tools-panel", CornerRadius = new CornerRadius(14), Background = PaneBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(6), Child = rail });
             col = 2;
         }
         grid.Children.Add(Pos(center, col));
         if (spec.Properties is { } props && showProps)
-            grid.Children.Add(Pos(new Border { Name = "prog-properties", CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(12),
+            grid.Children.Add(Pos(new Border { Name = "prog-properties", CornerRadius = new CornerRadius(14), Background = PaneBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(12),
                 Child = spec.FillHeight ? new ScrollViewer { Content = new StackPanel { Spacing = 6, Margin = new Thickness(0, 0, 8, 0), Children = { H("Eigenschaften", 13), props(d) } } } : new StackPanel { Spacing = 6, Children = { H("Eigenschaften", 13), props(d) } } }, col + 2));
 
         // Ränder ein- und ausklappen (gemerkt je Programm)
@@ -433,18 +433,19 @@ public partial class MainWindow
         if (spec.Properties is not null) Toggle("eigenschaften", "◨", "Eigenschaften", showProps);
 
         // Statusleiste
-        var status = new Border { Name = "prog-status", CornerRadius = new CornerRadius(10), Background = Brush.Parse(C("#331A1A1A", "#14000000")), Padding = new Thickness(12, 5),
+        var status = new Border { Name = "prog-status", CornerRadius = new CornerRadius(10), Background = DawLook ? DawLcd : Brush.Parse(C("#331A1A1A", "#14000000")), BorderBrush = DawLook ? DawEdge : null, BorderThickness = new Thickness(DawLook ? 1 : 0), Padding = new Thickness(12, 5),
             Child = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto,Auto"), Children = {
-                new TextBlock { Name = "prog-status-text", Text = spec.Status?.Invoke(d) ?? "", Foreground = Muted, FontSize = 12 },
+                new TextBlock { Name = "prog-status-text", Text = spec.Status?.Invoke(d) ?? "", Foreground = DawLook ? DawDigits : Muted, FontSize = 12, FontFamily = DawLook ? new FontFamily("Consolas, monospace") : FontFamily.Default, VerticalAlignment = VerticalAlignment.Center },
                 Pos(new TextBlock { Text = (d.Path is null ? "Noch nicht gespeichert" : Path.GetFileName(d.Path)) + (d.Dirty ? " · geändert, wird automatisch gesichert" : "") + $" · {d.Changed:HH:mm}", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center }, 1),
                 Pos(toggles, 2) } } };
         if (osChrome is not null) return (new StackPanel { Spacing = 0, Children = { new Border(), new StackPanel { Spacing = 8, Children = { osChrome } } } }, grid, status);
-        return (new StackPanel { Spacing = 0, Children = { tabs, new StackPanel { Spacing = 8, Children = { ribbon } } } }, grid, status);
+        Control ribbonHost = DawLook ? new Border { Name = "prog-ribbon-strip", CornerRadius = new CornerRadius(12), Background = DawPanel, BorderBrush = DawEdge, BorderThickness = new Thickness(1), Padding = new Thickness(8, 2, 8, 0), Child = ribbon } : ribbon; // DAW-Werkzeugleiste
+        return (new StackPanel { Spacing = 0, Children = { tabs, new StackPanel { Spacing = 8, Children = { ribbonHost } } } }, grid, status);
 
         Button RBtn(string name, string label, Action go, bool primary = false, string? tip = null)
         {
             var b = new Button { Name = name, Content = label, FontSize = 12.5, Padding = new Thickness(12, 6), CornerRadius = new CornerRadius(8), Foreground = primary ? Brushes.White : Text,
-                Background = primary ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(primary ? 0 : 1) };
+                Background = primary ? Accent : DawLook ? DawButton : Brushes.Transparent, BorderBrush = DawLook ? DawEdge : Edge, BorderThickness = new Thickness(primary ? 0 : 1) };
             if (tip is not null) ToolTip.SetTip(b, tip);
             b.Click += (_, _) => go(); return b;
         }

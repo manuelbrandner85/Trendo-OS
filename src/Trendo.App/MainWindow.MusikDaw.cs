@@ -16,6 +16,13 @@ public partial class MainWindow
     static readonly IBrush DawPanel = Brush.Parse("#FF151A22"), DawEdge = Brush.Parse("#33FFFFFF"), DawLcd = Brush.Parse("#FF0C1220");
     static readonly IBrush DawDigits = Brush.Parse("#FF7FC8FF");
 
+    /// <summary>DAW-Look der Programm-Hülle (Wunsch 06.11.2026 „alle Programme im DAW-Stil“): nur im dunklen Trendo-Stil; hell, Kontrast und die OS-Stile behalten ihr Aussehen.</summary>
+    bool DawLook => !OsStyle && _theme is not ("hell" or "kontrast");
+    IBrush PaneBg => DawLook ? DawPanel : TileBg;
+    IBrush PaneEdge => DawLook ? DawEdge : EdgeLit;
+    IBrush GroupBg => DawLook ? DawGroup : TileBg;
+    static readonly IBrush DawGroup = Brush.Parse("#FF1C2330"), DawButton = Brush.Parse("#FF232B39");
+
     /// <summary>Position in Takten „Takt.Schlag“ beim Tempo und Takt des Lieds.</summary>
     static string BarsBeats(double sec, double bpm, string meter)
     {
