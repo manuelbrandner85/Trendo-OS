@@ -44,7 +44,7 @@ Vorbilder: Unity Hub (Editor-Erkennung), Unity Test Framework (EditMode/PlayMode
 - ✓ Inventar und sprechende Figuren mit Wunsch und Belohnung (S1-05, Teil 2)
 - ✓ Kampf mit Schwert oder Werfen, Bosse mit Trefferpunkten (S1-05, Teil 3)
 - ✓ Fahrzeuge Wagen und Ufo (S1-05, Teil 4)
-- ✗ Fähigkeiten, Aufgaben, Inventar, Kampf, Fahrzeuge im Unity-/Godot-Export
+- ✓ Fähigkeiten, Aufgaben, Inventar, Kampf, Fahrzeuge auch im Unity-/Godot-Export (mit Unity 6.6 und Godot 4.7.2 geprüft)
 
 ## Nächste Schritte
 1. Freie Szene statt Raster (Objekte pixelgenau setzen)

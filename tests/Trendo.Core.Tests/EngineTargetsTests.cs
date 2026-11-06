@@ -63,6 +63,8 @@ public class EngineTargetsTests
         Assert.Equal("7,1:speed", j["props"]![0]!["key"]!.GetValue<string>());
         Assert.Equal("leben", j["rules"]![0]!["act"]!.GetValue<string>());
         Assert.Equal(7, j["speed"]!.GetValue<int>());
+        var gp = JsonNode.Parse(EngineTargets.LevelJson("x", Game() with { Abilities = ["sprint"], Weapon = "schwert", Texts = new() { ["2,1:name"] = "Apfel" }, Rules = [new("muenzen", 1, "leben", "Sammler")] }))!;
+        Assert.Equal(("sprint", "schwert", "2,1:name", "Sammler"), (gp["abilities"]![0]!.GetValue<string>(), gp["weapon"]!.GetValue<string>(), gp["texts"]![0]!["key"]!.GetValue<string>(), gp["rules"]![0]!["title"]!.GetValue<string>()));
         Assert.Equal(GameStudio.DefaultPlatform.Length, JsonNode.Parse(EngineTargets.LevelJson("x", new()))!["levels"]![0]!["rows"]!.AsArray().Count); // leeres Spiel → Standardlevel
     }
 
@@ -74,7 +76,7 @@ public class EngineTargetsTests
         {
             var dir = EngineTargets.CreateUnityProject(root, "Mein Spiel!", Game(), "6000.0.23f1");
             Assert.Equal("Mein-Spiel-Unity", Path.GetFileName(dir));
-            foreach (var f in new[] { "Assets/Resources/trendo-level.json", "Assets/Scripts/TrendoLevel.cs", "Assets/Scripts/TrendoPlayer.cs", "Assets/Scripts/TrendoLevelData.cs", "Assets/Editor/TrendoBuild.cs", "Assets/Tests/EditMode/TrendoLevelTests.cs", "Assets/Tests/PlayMode/TrendoPlayTests.cs", "Packages/manifest.json", "ProjectSettings/ProjectVersion.txt" })
+            foreach (var f in new[] { "Assets/Resources/trendo-level.json", "Assets/Scripts/TrendoLevel.cs", "Assets/Scripts/TrendoPlayer.cs", "Assets/Scripts/TrendoLevelData.cs", "Assets/Editor/TrendoBuild.cs", "Assets/Tests/EditMode/TrendoLevelTests.cs", "Assets/Tests/PlayMode/TrendoPlayTests.cs", "Assets/Tests/PlayMode/TrendoGameplayTests.cs", "Packages/manifest.json", "ProjectSettings/ProjectVersion.txt" })
                 Assert.True(File.Exists(Path.Combine(dir, f)), f);
             foreach (var a in Directory.EnumerateFiles(dir, "*.asmdef", SearchOption.AllDirectories)) JsonDocument.Parse(File.ReadAllText(a)).Dispose(); // gültiges JSON
             Assert.Contains("com.unity.test-framework", File.ReadAllText(Path.Combine(dir, "Packages", "manifest.json")));
@@ -104,6 +106,9 @@ public class EngineTargetsTests
             Assert.Contains("res://trendo_level.gd", File.ReadAllText(Path.Combine(dir, "main.tscn")));
             Assert.Contains("TRENDO-OK", File.ReadAllText(Path.Combine(dir, "tests", "check_level.gd")));
             Assert.Contains("is_on_floor", File.ReadAllText(Path.Combine(dir, "tests", "play_check.gd")));
+            Assert.True(File.Exists(Path.Combine(dir, "trendo_shot.gd"))); Assert.Contains("TRENDO-OK Gameplay", File.ReadAllText(Path.Combine(dir, "tests", "gameplay_check.gd")));
+            Assert.Equal("res://tests/gameplay_check.gd", EngineTargets.GodotGameplayArgs(dir)[^1]);
+            Assert.Contains("remove_child(c)", File.ReadAllText(Path.Combine(dir, "trendo_level.gd"))); // Levelwechsel ohne Umbenennen
             Assert.Equal("res://tests/play_check.gd", EngineTargets.GodotPlayArgs(dir)[^1]);
             Assert.StartsWith("extends Node2D", File.ReadAllText(Path.Combine(dir, "trendo_level.gd")));
             Assert.DoesNotContain("\r", File.ReadAllText(Path.Combine(dir, "trendo_level.gd")));

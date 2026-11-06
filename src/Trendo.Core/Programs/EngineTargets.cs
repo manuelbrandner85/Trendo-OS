@@ -114,7 +114,9 @@ public static class EngineTargets
             name, speed = s.Speed, lives = s.Lives, winScore = s.WinScore, timeLimit = s.TimeLimit,
             player = s.Player, accent = s.Accent, background = s.Background, levels,
             props = s.Props.Select(kv => new { key = kv.Key, value = kv.Value }),
-            rules = s.Rules.Select(r => new { when = r.When, n = r.N, act = r.Do }),
+            rules = s.Rules.Select(r => new { when = r.When, n = r.N, act = r.Do, title = r.Title ?? "" }),
+            abilities = s.Abilities, weapon = s.Weapon,
+            texts = s.Texts.Select(kv => new { key = kv.Key, value = kv.Value }),
         };
         return JsonSerializer.Serialize(o, new JsonSerializerOptions { WriteIndented = true });
     }
@@ -145,6 +147,7 @@ public static class EngineTargets
         Put(dir, "Assets/Tests/EditMode/TrendoLevelTests.cs", UnityEditTests);
         Put(dir, "Assets/Tests/PlayMode/TrendoTests.PlayMode.asmdef", """{ "name": "TrendoTests.PlayMode", "references": ["TrendoGame", "UnityEngine.TestRunner"], "includePlatforms": [], "overrideReferences": true, "precompiledReferences": ["nunit.framework.dll"], "autoReferenced": false, "defineConstraints": ["UNITY_INCLUDE_TESTS"] }""");
         Put(dir, "Assets/Tests/PlayMode/TrendoPlayTests.cs", UnityPlayTests);
+        Put(dir, "Assets/Tests/PlayMode/TrendoGameplayTests.cs", UnityGameplayTests);
         Put(dir, "Packages/manifest.json", """{ "dependencies": { "com.unity.test-framework": "1.4.5", "com.unity.modules.physics2d": "1.0.0", "com.unity.modules.jsonserialize": "1.0.0", "com.unity.modules.audio": "1.0.0", "com.unity.modules.imgui": "1.0.0" }, "testables": [] }""");
         if (editorVersion is { Length: > 0 }) Put(dir, "ProjectSettings/ProjectVersion.txt", $"m_EditorVersion: {editorVersion}\n");
         Put(dir, ".gitignore", "Library/\nTemp/\nLogs/\nobj/\nBuild/\nUserSettings/\n");
@@ -164,6 +167,8 @@ public static class EngineTargets
         Put(dir, "tests/check_level.gd", GodotCheck);
         Put(dir, "tests/play_check.gd", GodotPlayCheck);
         Put(dir, "tests/save_check.gd", GodotSaveCheck);
+        Put(dir, "trendo_shot.gd", GodotShot);
+        Put(dir, "tests/gameplay_check.gd", GodotGameplayCheck);
         Put(dir, ".gitignore", ".godot/\nexport/\n");
         Put(dir, "LIESMICH.txt", $"{name} – von Trendo als Godot-4-Projekt angelegt.\nÖffnen: Godot → Importieren → project.godot. Start mit F5.\nPrüfen ohne Fenster: godot --headless --path . --script res://tests/check_level.gd\n");
         return dir;
@@ -172,6 +177,8 @@ public static class EngineTargets
     // ───────────── Kommandozeilen (offiziell) ─────────────
     /// <summary>Spielstand-Prüfung in Godot: speichern, fortsetzen, neuere Fassung und kaputte Datei ablehnen.</summary>
     public static List<string> GodotSaveArgs(string project) => ["--headless", "--path", project, "--script", "res://tests/save_check.gd"];
+    /// <summary>Gameplay-Prüfung in Godot: Inventar, Figur, Aufgabe, Schwert, Boss, Fahrzeug, Doppelsprung.</summary>
+    public static List<string> GodotGameplayArgs(string project) => ["--headless", "--path", project, "--script", "res://tests/gameplay_check.gd"];
     /// <summary>Unity-Tests: -runTests beendet den Editor selbst (deshalb ohne -quit).</summary>
     public static List<string> UnityTestArgs(string project, string platform, string results, string log) =>
         ["-batchmode", "-nographics", "-projectPath", project, "-runTests", "-testPlatform", platform == "PlayMode" ? "PlayMode" : "EditMode", "-testResults", results, "-logFile", log];
@@ -205,7 +212,8 @@ using UnityEngine;
 /// <summary>Trendo-Level wie es Trendo exportiert (JsonUtility-tauglich).</summary>
 [Serializable] public class TrendoLevelRow { public string name; public string[] rows; public string[] decor; }
 [Serializable] public class TrendoProp { public string key; public float value; }
-[Serializable] public class TrendoRule { public string when; public int n; public string act; }
+[Serializable] public class TrendoRule { public string when; public int n; public string act; public string title; }
+[Serializable] public class TrendoText { public string key; public string value; }
 
 /// <summary>Spielstand – gleiches Format wie in Trendo und im Browser-Spiel (Format 1).</summary>
 [Serializable] public class TrendoSave
@@ -227,6 +235,13 @@ using UnityEngine;
     public string name; public int speed = 5; public int lives = 3; public int winScore; public int timeLimit;
     public string player = "#4FB3FF"; public string accent = "#FACC15"; public string background = "#10203F";
     public TrendoLevelRow[] levels; public TrendoProp[] props; public TrendoRule[] rules;
+    public string[] abilities; public string weapon; public TrendoText[] texts;
+
+    static string Key(int level, int x, int y, string k) => (level == 0 ? "" : (level + 1) + ":") + x + "," + y + ":" + k;
+    /// <summary>Objekt-Text (Gegenstand, Figur, Fahrzeug) wie in Trendo, sonst Vorgabe.</summary>
+    public string Text(int level, int x, int y, string k, string def) { var key = Key(level, x, y, k); if (texts != null) foreach (var t in texts) if (t.key == key && !string.IsNullOrEmpty(t.value)) return t.value; return def; }
+    public float Prop(int level, int x, int y, string k, float def) { var key = Key(level, x, y, k); if (props != null) foreach (var p in props) if (p.key == key) return p.value; return def; }
+    public bool Has(string ability) => abilities != null && Array.IndexOf(abilities, ability) >= 0;
 
     public static TrendoLevelData Parse(string json) => JsonUtility.FromJson<TrendoLevelData>(json);
     public static TrendoLevelData Load() { var t = Resources.Load<TextAsset>("trendo-level"); return t == null ? null : Parse(t.text); }
@@ -247,12 +262,17 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>Baut das Trendo-Level als Spielszene: Boden mit Kollision, Münzen, Gegner, Stacheln, Sprungfedern, Schlüssel und Türen, Ziel.</summary>
+/// <summary>Baut das Trendo-Level als Spielszene: Boden, Münzen, Gegner (mit Trefferpunkten), Stacheln, Sprungfedern, Schlüssel und Türen,
+/// Gegenstände, sprechende Figuren, Fahrzeuge, Ziel – mit Regeln und Aufgaben wie im Trendo-Spiel.</summary>
 public class TrendoLevel : MonoBehaviour
 {
-    public TrendoLevelData Data; public int Index; public int Coins, Keys, Score, Lives; public TrendoPlayer Player;
+    public TrendoLevelData Data; public int Index; public int Coins, Keys, Score, Lives, Defeated, ItemsCollected; public TrendoPlayer Player;
+    public readonly List<string> Inventory = new List<string>();
+    public string Note = ""; public float Boost; public bool Won, Over;
     static Sprite _square;
     readonly List<GameObject> _doors = new List<GameObject>();
+    readonly HashSet<string> _given = new HashSet<string>();
+    bool[] _fired; float _time;
 
     /// <summary>Startet das Spiel in jeder Szene – auch in der leeren Standardszene.</summary>
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -266,7 +286,7 @@ public class TrendoLevel : MonoBehaviour
 
     public string SavePath;
     string FilePath => string.IsNullOrEmpty(SavePath) ? TrendoSave.DefaultPath : SavePath;
-    public TrendoSave Snapshot() => new TrendoSave { level = Index, score = Score, lives = Lives, coins = Coins, checkX = Player != null ? Mathf.RoundToInt(Player.Checkpoint.x) : -1, checkY = Player != null ? Mathf.RoundToInt(-Player.Checkpoint.y) : -1 };
+    public TrendoSave Snapshot() => new TrendoSave { level = Index, score = Score, lives = Lives, coins = Coins, defeated = Defeated, checkX = Player != null ? Mathf.RoundToInt(Player.Checkpoint.x) : -1, checkY = Player != null ? Mathf.RoundToInt(-Player.Checkpoint.y) : -1 };
     public void Save() => TrendoSave.Write(FilePath, Snapshot());
     public void Resume(TrendoLevelData d, TrendoSave s)
     {
@@ -286,7 +306,9 @@ public class TrendoLevel : MonoBehaviour
     public void Begin(TrendoLevelData d, int index)
     {
         Data = d; Index = index; Lives = Lives == 0 ? d.lives : Lives; Coins = 0; Keys = 0; _doors.Clear();
+        if (_fired == null) _fired = new bool[d.rules != null ? d.rules.Length : 0];
         foreach (Transform c in transform) Destroy(c.gameObject);
+        Player = null;
         var cam = Camera.main; if (cam == null) { cam = new GameObject("Kamera").AddComponent<Camera>(); cam.tag = "MainCamera"; }
         cam.orthographic = true; cam.orthographicSize = 7; cam.backgroundColor = TrendoLevelData.Hex(d.background, Color.black); cam.clearFlags = CameraClearFlags.SolidColor;
         var rows = d.levels[index].rows;
@@ -296,62 +318,208 @@ public class TrendoLevel : MonoBehaviour
                 var p = new Vector3(x, -y, 0);
                 switch (rows[y][x])
                 {
-                    case '#': Tile("Boden", p, new Color(0.35f, 0.4f, 0.5f), true, false); break;
-                    case 'o': Tile("Münze", p, TrendoLevelData.Hex(d.accent, Color.yellow), false, true, 0.5f); break;
-                    case '^': Tile("Stacheln", p, new Color(0.9f, 0.3f, 0.3f), false, true, 0.8f); break;
-                    case 'E': Tile("Gegner", p, new Color(0.8f, 0.2f, 0.6f), false, true, 0.9f).AddComponent<TrendoEnemy>(); break;
-                    case 'Z': Tile("Ziel", p, Color.green, false, true); break;
-                    case 'F': Tile("Sprungfeder", p, new Color(1f, 0.6f, 0.1f), false, true, 0.6f); break;
-                    case 'C': Tile("Speicherpunkt", p, Color.cyan, false, true, 0.6f); break;
-                    case 'K': Tile("Schlüssel", p, new Color(1f, 0.85f, 0.2f), false, true, 0.5f); break;
-                    case 'D': _doors.Add(Tile("Tür", p, new Color(0.55f, 0.35f, 0.2f), true, false)); break;
+                    case '#': Tile("Boden", p, new Color(0.35f, 0.4f, 0.5f), true, false, 1f, x, y); break;
+                    case 'o': Tile("Münze", p, TrendoLevelData.Hex(d.accent, Color.yellow), false, true, 0.5f, x, y); break;
+                    case '^': Tile("Stacheln", p, new Color(0.9f, 0.3f, 0.3f), false, true, 0.8f, x, y); break;
+                    case 'E':
+                        var e = Tile("Gegner", p, new Color(0.8f, 0.2f, 0.6f), false, true, 0.9f, x, y).AddComponent<TrendoEnemy>();
+                        e.MaxHp = e.Hp = Mathf.Clamp(Mathf.RoundToInt(d.Prop(index, x, y, "hp", 1)), 1, 9); break;
+                    case 'Z': Tile("Ziel", p, Color.green, false, true, 1f, x, y); break;
+                    case 'F': Tile("Sprungfeder", p, new Color(1f, 0.6f, 0.1f), false, true, 0.6f, x, y); break;
+                    case 'C': Tile("Speicherpunkt", p, Color.cyan, false, true, 0.6f, x, y); break;
+                    case 'K': Tile("Schlüssel", p, new Color(1f, 0.85f, 0.2f), false, true, 0.5f, x, y); break;
+                    case 'D': _doors.Add(Tile("Tür", p, new Color(0.55f, 0.35f, 0.2f), true, false, 1f, x, y)); break;
+                    case 'G': Tile("Gegenstand", p, new Color(0.66f, 0.33f, 0.97f), false, true, 0.5f, x, y); break;
+                    case 'N': Tile("Figur", p, new Color(0.08f, 0.72f, 0.65f), false, true, 0.9f, x, y); break;
+                    case 'V': Tile("Fahrzeug", p, new Color(0.98f, 0.45f, 0.09f), false, true, 0.9f, x, y).GetComponent<TrendoTile>().Kind = d.Text(index, x, y, "kind", "wagen"); break;
                     case 'S':
                         Player = new GameObject("Spielfigur").AddComponent<TrendoPlayer>(); Player.transform.SetParent(transform); Player.Setup(this, p, TrendoLevelData.Hex(d.player, Color.blue)); break;
                 }
             }
     }
 
-    GameObject Tile(string name, Vector3 p, Color c, bool solid, bool trigger, float size = 1f)
+    GameObject Tile(string name, Vector3 p, Color c, bool solid, bool trigger, float size, int x, int y)
     {
         var g = new GameObject(name); g.transform.SetParent(transform); g.transform.position = p; g.transform.localScale = Vector3.one * size;
         var r = g.AddComponent<SpriteRenderer>(); r.sprite = Square(); r.color = c;
         var col = g.AddComponent<BoxCollider2D>(); col.isTrigger = trigger && !solid;
+        var t = g.AddComponent<TrendoTile>(); t.X = x; t.Y = y;
         return g;
     }
 
+    /// <summary>Teil des Levels nach Name (für Tests und Werkzeuge).</summary>
+    public GameObject Find(string name) { foreach (Transform c in transform) if (c.name == name) return c.gameObject; return null; }
+
     public void Touch(GameObject g)
     {
+        var t = g.GetComponent<TrendoTile>();
         switch (g.name)
         {
             case "Münze": Coins++; Score += 10; Destroy(g); break;
-            case "Schlüssel": Keys++; Destroy(g); if (Keys >= Data.Count(Index, 'K')) foreach (var d in _doors) Destroy(d); break;
-            case "Stacheln": case "Gegner": Hit(); break;
-            case "Sprungfeder": Player.Bounce(); break;
+            case "Schlüssel": Keys++; Destroy(g); if (Keys >= Data.Count(Index, 'K')) OpenDoors(); break;
+            case "Stacheln": Hit(); break;
+            case "Gegner":
+                var e = g.GetComponent<TrendoEnemy>();
+                if (Player != null && Player.Falling && Player.transform.position.y > g.transform.position.y + 0.4f) { Damage(e); Player.Bounce(8f); } else Hit();
+                break;
+            case "Sprungfeder": Player.Bounce(16f); break;
             case "Speicherpunkt": if (Player.Checkpoint != g.transform.position) { Player.Checkpoint = g.transform.position; Save(); } break;
+            case "Gegenstand":
+                var n = Data.Text(Index, t.X, t.Y, "name", "Kristall"); Inventory.Add(n); ItemsCollected++; Note = n + " eingesammelt"; Destroy(g); break;
+            case "Figur":
+                var key = Index + ":" + t.X + "," + t.Y; var need = Data.Text(Index, t.X, t.Y, "need", "");
+                if (need.Length > 0 && !_given.Contains(key) && Inventory.Remove(need)) { _given.Add(key); Apply(Data.Text(Index, t.X, t.Y, "give", "punkte")); Note = Data.Text(Index, t.X, t.Y, "thanks", "Danke!"); }
+                else Note = _given.Contains(key) ? Data.Text(Index, t.X, t.Y, "thanks", "Danke!") : Data.Text(Index, t.X, t.Y, "say", "Hallo!");
+                break;
+            case "Fahrzeug":
+                if (Player != null && Player.Vehicle == null && Player.NoEnter <= 0)
+                {
+                    Player.Vehicle = t.Kind == "ufo" ? "ufo" : "wagen"; Player.Fuel = Player.Vehicle == "ufo" ? 10f : 0f; Destroy(g);
+                    Note = Player.Vehicle == "ufo" ? "Ufo: Leertaste halten – E steigt aus" : "Wagen: schnell, fängt einen Treffer ab – E steigt aus";
+                }
+                break;
             case "Ziel": Score += 10; if (Index + 1 < Data.levels.Length) { Begin(Data, Index + 1); Save(); } else { Won = true; Drop(); } break;
         }
     }
-    public bool Won, Over;
-    public void Hit() { Lives--; if (Lives <= 0) { Over = true; Drop(); } else Player.Respawn(); }
+
+    void OpenDoors() { foreach (var d in _doors) if (d != null) Destroy(d); _doors.Clear(); }
+
+    /// <summary>Belohnung bzw. Wirkung (Regel oder sprechende Figur).</summary>
+    public void Apply(string what)
+    {
+        switch (what)
+        {
+            case "leben": Lives++; break;
+            case "tueren": OpenDoors(); break;
+            case "schneller": Boost = 2; break;
+            case "punkte": Score += 10; break;
+            case "sieg": Won = true; break;
+        }
+    }
+
+    /// <summary>Treffer: im Fahrzeug geht das Fahrzeug kaputt (kurz unverwundbar), sonst ein Leben weniger. Absturz trifft immer.</summary>
+    public void Hit(bool fall = false)
+    {
+        if (Player != null && Player.Vehicle != null && !fall) { Player.Vehicle = null; Player.Safe = 0.75f; Note = "Fahrzeug kaputt – zu Fuß weiter"; return; }
+        if (Player != null && Player.Safe > 0 && !fall) return;
+        if (Player != null) Player.Vehicle = null;
+        Lives--; if (Lives <= 0) { Over = true; Drop(); } else if (Player != null) Player.Respawn();
+    }
+
+    /// <summary>Gegner trifft es: ein Trefferpunkt weniger; besiegt bringt 2 Punkte (Boss 10).</summary>
+    public void Damage(TrendoEnemy e)
+    {
+        if (e == null || e.Hp <= 0) return;
+        e.Hp--; if (e.Hp > 0) return;
+        Defeated++; Score += e.MaxHp > 1 ? 10 : 2; if (e.MaxHp > 1) Note = "Boss besiegt!";
+        Destroy(e.gameObject);
+    }
+
+    /// <summary>Angriff mit der Waffe aus Trendo: Schwert trifft vor der Figur, Werfen schickt ein Geschoss.</summary>
+    public void Attack()
+    {
+        if (Player == null || string.IsNullOrEmpty(Data.weapon)) return;
+        var pos = Player.transform.position;
+        if (Data.weapon == "schwert")
+        {
+            foreach (var e in GetComponentsInChildren<TrendoEnemy>())
+            {
+                var dx = e.transform.position.x - pos.x;
+                if ((Mathf.Sign(dx) == Player.Facing || Mathf.Abs(dx) < 0.2f) && Mathf.Abs(dx) < 1.4f && Mathf.Abs(e.transform.position.y - pos.y) < 0.9f) Damage(e);
+            }
+        }
+        else
+        {
+            var s = new GameObject("Geschoss"); s.transform.SetParent(transform); s.transform.position = pos + Vector3.right * Player.Facing * 0.5f; s.transform.localScale = Vector3.one * 0.25f;
+            s.AddComponent<SpriteRenderer>().sprite = Square(); s.GetComponent<SpriteRenderer>().color = TrendoLevelData.Hex(Data.accent, Color.yellow);
+            s.AddComponent<TrendoShot>().Setup(this, Player.Facing);
+        }
+    }
+
+    /// <summary>Aussteigen: das Fahrzeug bleibt an der Stelle stehen und lässt sich wieder nehmen.</summary>
+    public void Dismount()
+    {
+        if (Player == null || Player.Vehicle == null) return;
+        var p = Player.transform.position; var v = Tile("Fahrzeug", new Vector3(Mathf.Round(p.x), Mathf.Round(p.y), 0), new Color(0.98f, 0.45f, 0.09f), false, true, 0.9f, -1, -1);
+        v.GetComponent<TrendoTile>().Kind = Player.Vehicle; Player.Vehicle = null; Player.NoEnter = 0.5f; Note = "Ausgestiegen";
+    }
+
+    double RuleValue(TrendoRule r) => r.when == "muenzen" ? Coins : r.when == "punkte" ? Score : r.when == "gegner" ? Defeated : r.when == "sekunden" ? _time : r.when == "gegenstaende" ? ItemsCollected : 0;
+
+    /// <summary>Aufgaben (Regeln mit Titel) mit Fortschritt.</summary>
+    public string Quests()
+    {
+        var sb = new System.Text.StringBuilder();
+        if (Data == null || Data.rules == null) return "";
+        for (var i = 0; i < Data.rules.Length; i++)
+        {
+            var r = Data.rules[i]; if (string.IsNullOrEmpty(r.title)) continue;
+            sb.AppendLine(_fired[i] ? "✓ " + r.title : r.title + ": " + Mathf.Min((int)RuleValue(r), r.n) + "/" + r.n);
+        }
+        return sb.ToString();
+    }
+
+    void Update()
+    {
+        if (Data == null || Over || Won) return;
+        _time += Time.deltaTime;
+        if (Data.rules == null) return;
+        for (var i = 0; i < Data.rules.Length; i++)
+        {
+            if (_fired[i]) continue; var r = Data.rules[i];
+            if (RuleValue(r) < r.n) continue;
+            _fired[i] = true; Apply(r.act); if (!string.IsNullOrEmpty(r.title)) Note = "✓ " + r.title;
+        }
+    }
+
+    void OnGUI()
+    {
+        if (Data == null || Player == null) return;
+        var text = "Punkte " + Score + "   Leben " + Lives + (Data.levels.Length > 1 ? "   Level " + (Index + 1) + "/" + Data.levels.Length : "")
+            + (Player.Vehicle == "ufo" ? "   Treibstoff " + Mathf.CeilToInt(Player.Fuel) + " s" : "")
+            + (Inventory.Count > 0 ? "\nInventar: " + string.Join(", ", Inventory) : "") + "\n" + Quests() + Note;
+        GUI.Label(new Rect(10, 10, 600, 200), text);
+    }
+
     void Drop() { if (System.IO.File.Exists(FilePath)) System.IO.File.Delete(FilePath); }
 }
 
-/// <summary>Gegner läuft hin und her.</summary>
+/// <summary>Merkt sich die Kachel-Stelle (für Texte) und die Fahrzeug-Art.</summary>
+public class TrendoTile : MonoBehaviour { public int X, Y; public string Kind = "wagen"; }
+
+/// <summary>Gegner läuft hin und her; Trefferpunkte wie in Trendo.</summary>
 public class TrendoEnemy : MonoBehaviour
 {
+    public int Hp = 1, MaxHp = 1;
     Vector3 _start; float _t;
     void Start() => _start = transform.position;
     void Update() { _t += Time.deltaTime; transform.position = _start + Vector3.right * Mathf.Sin(_t * 1.5f) * 1.5f; }
+}
+
+/// <summary>Geschoss der Waffe „Werfen“: fliegt bis zur Wand oder zum Gegner.</summary>
+public class TrendoShot : MonoBehaviour
+{
+    TrendoLevel _level; float _dir; float _life = 1.5f;
+    public void Setup(TrendoLevel level, float dir) { _level = level; _dir = dir; var c = gameObject.AddComponent<BoxCollider2D>(); c.isTrigger = true; var rb = gameObject.AddComponent<Rigidbody2D>(); rb.bodyType = RigidbodyType2D.Kinematic; }
+    void Update() { transform.position += Vector3.right * _dir * 12f * Time.deltaTime; _life -= Time.deltaTime; if (_life <= 0) Destroy(gameObject); }
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        var e = other.GetComponent<TrendoEnemy>();
+        if (e != null) { _level.Damage(e); Destroy(gameObject); }
+        else if (other.name == "Boden" || other.name == "Tür") Destroy(gameObject);
+    }
 }
 """;
 
     const string UnityPlayer = """
 using UnityEngine;
 
-/// <summary>Spielfigur: Pfeiltasten/A-D laufen, Leertaste springt.</summary>
+/// <summary>Spielfigur: Pfeiltasten/A-D laufen, Leertaste springt (Doppelsprung, Ufo fliegen), Umschalt sprintet, X/J greift an, E steigt aus.</summary>
 public class TrendoPlayer : MonoBehaviour
 {
-    public Vector3 Checkpoint; TrendoLevel _level; Rigidbody2D _rb; float _speed;
+    public Vector3 Checkpoint; public float Facing = 1;
+    public string Vehicle; public float Fuel, Safe, NoEnter;
+    TrendoLevel _level; Rigidbody2D _rb; float _speed, _cool; int _air;
 
     public void Setup(TrendoLevel level, Vector3 at, Color color)
     {
@@ -362,16 +530,43 @@ public class TrendoPlayer : MonoBehaviour
         _speed = 2f + level.Data.speed;
     }
 
+    public bool Grounded => _rb != null && Mathf.Abs(_rb.linearVelocity.y) < 0.01f;
+    public bool Falling => _rb != null && _rb.linearVelocity.y < -0.5f;
     public void Respawn() { transform.position = Checkpoint; _rb.linearVelocity = Vector2.zero; }
-    public void Bounce() => _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, 16f);
+    public void Bounce(float v) => _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, v);
+
+    /// <summary>Sprung: am Boden normal, in der Luft einmal mit Fähigkeit „doppelsprung“. Gibt zurück, ob gesprungen wurde.</summary>
+    public bool Jump()
+    {
+        if (Grounded) { Bounce(11f); return true; }
+        if (_air > 0) { _air--; Bounce(10f); return true; }
+        return false;
+    }
+
+    /// <summary>Tempo mit Sprint (Fähigkeit, Umschalt) und Fahrzeug.</summary>
+    public float Speed(bool sprint) => (_speed + _level.Boost) * (sprint && _level.Data.Has("sprint") ? 1.6f : 1f) * (Vehicle == "wagen" ? 1.8f : Vehicle == "ufo" ? 1.3f : 1f);
+
+    /// <summary>Ufo-Antrieb für eine Zeitspanne (Leertaste gehalten).</summary>
+    public void Thrust(float dt)
+    {
+        if (Vehicle != "ufo" || Fuel <= 0) return;
+        _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, Mathf.Min(_rb.linearVelocity.y + 40f * dt, 6f));
+        Fuel -= dt; if (Fuel <= 0) { Vehicle = null; _level.Note = "Treibstoff leer"; }
+    }
 
     void Update()
     {
         if (_rb == null) return;
-        var h = Input.GetAxisRaw("Horizontal");
-        _rb.linearVelocity = new Vector2(h * _speed, _rb.linearVelocity.y);
-        if (Input.GetKeyDown(KeyCode.Space) && Mathf.Abs(_rb.linearVelocity.y) < 0.01f) _rb.linearVelocity = new Vector2(_rb.linearVelocity.x, 11f);
-        if (transform.position.y < -40) _level.Hit();
+        var dt = Time.deltaTime;
+        if (Safe > 0) Safe -= dt; if (NoEnter > 0) NoEnter -= dt; if (_cool > 0) _cool -= dt;
+        if (Grounded) _air = _level.Data.Has("doppelsprung") ? 1 : 0;
+        var h = Input.GetAxisRaw("Horizontal"); if (h != 0) Facing = Mathf.Sign(h);
+        _rb.linearVelocity = new Vector2(h * Speed(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)), _rb.linearVelocity.y);
+        if (Input.GetKeyDown(KeyCode.Space)) Jump();
+        if (Input.GetKey(KeyCode.Space)) Thrust(dt);
+        if ((Input.GetKeyDown(KeyCode.X) || Input.GetKeyDown(KeyCode.J)) && _cool <= 0) { _cool = 0.33f; _level.Attack(); }
+        if (Input.GetKeyDown(KeyCode.E)) _level.Dismount();
+        if (transform.position.y < -40) _level.Hit(true);
         var cam = Camera.main; if (cam != null) cam.transform.position = new Vector3(transform.position.x, transform.position.y, -10);
     }
 
@@ -426,6 +621,13 @@ public class TrendoLevelTests
         for (var i = 0; i < d.levels.Length; i++) { Assert.GreaterOrEqual(d.Start(i).x, 0, "Start fehlt in " + d.levels[i].name); Assert.Greater(d.Count(i, 'Z'), 0, "Ziel fehlt in " + d.levels[i].name); }
     }
     [Test] public void Kaputtes_Level_wird_erkannt() { Assert.Throws<System.ArgumentException>(() => TrendoLevelData.Parse("{kaputt")); }
+    [Test] public void Gameplay_Daten_werden_gelesen()
+    {
+        var d = TrendoLevelData.Parse("{\"levels\":[{\"rows\":[\"S.G\"]}],\"weapon\":\"werfen\",\"abilities\":[\"sprint\"],\"texts\":[{\"key\":\"2,0:name\",\"value\":\"Apfel\"},{\"key\":\"2:1,0:name\",\"value\":\"Birne\"}],\"props\":[{\"key\":\"1,0:hp\",\"value\":3}]}");
+        Assert.AreEqual("werfen", d.weapon); Assert.IsTrue(d.Has("sprint")); Assert.IsFalse(d.Has("doppelsprung"));
+        Assert.AreEqual("Apfel", d.Text(0, 2, 0, "name", "Kristall")); Assert.AreEqual("Birne", d.Text(1, 1, 0, "name", "Kristall")); Assert.AreEqual("Kristall", d.Text(0, 5, 0, "name", "Kristall"));
+        Assert.AreEqual(3f, d.Prop(0, 1, 0, "hp", 1));
+    }
     [Test] public void Spielstand_speichern_und_laden()
     {
         var f = System.IO.Path.Combine(Application.temporaryCachePath, "test-spielstand.json");
@@ -469,6 +671,72 @@ public class TrendoPlayTests
 }
 """;
 
+    const string UnityGameplayTests = """
+using System.Collections;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
+
+/// <summary>PlayMode-Tests: Gameplay aus Trendo – Gegenstand, sprechende Figur, Schwert, Boss, Fahrzeug, Aufgabe, Doppelsprung.</summary>
+public class TrendoGameplayTests
+{
+    const string Json = "{\"name\":\"Test\",\"speed\":5,\"lives\":3,\"weapon\":\"schwert\",\"abilities\":[\"doppelsprung\",\"sprint\"],"
+        + "\"levels\":[{\"name\":\"L\",\"rows\":[\"..........\",\"SGNE.V...Z\",\"##########\"],\"decor\":[]}],"
+        + "\"props\":[{\"key\":\"3,1:hp\",\"value\":2}],"
+        + "\"texts\":[{\"key\":\"1,1:name\",\"value\":\"Apfel\"},{\"key\":\"2,1:need\",\"value\":\"Apfel\"},{\"key\":\"2,1:thanks\",\"value\":\"Lecker!\"},{\"key\":\"2,1:give\",\"value\":\"leben\"},{\"key\":\"5,1:kind\",\"value\":\"wagen\"}],"
+        + "\"rules\":[{\"when\":\"gegenstaende\",\"n\":1,\"act\":\"punkte\",\"title\":\"Finder\"}]}";
+
+    TrendoLevel Make() { var level = new GameObject("Test-Gameplay").AddComponent<TrendoLevel>(); level.Begin(TrendoLevelData.Parse(Json), 0); return level; }
+
+    [UnityTest] public IEnumerator Gegenstand_Figur_und_Aufgabe()
+    {
+        var level = Make(); yield return null;
+        level.Touch(level.Find("Gegenstand")); yield return null;
+        CollectionAssert.AreEqual(new[] { "Apfel" }, level.Inventory); Assert.AreEqual(1, level.ItemsCollected);
+        StringAssert.Contains("✓ Finder", level.Quests());
+        level.Touch(level.Find("Figur"));
+        Assert.AreEqual(4, level.Lives); Assert.AreEqual("Lecker!", level.Note); Assert.IsEmpty(level.Inventory);
+        Object.Destroy(level.gameObject);
+    }
+
+    [UnityTest] public IEnumerator Schwert_und_Boss()
+    {
+        var level = Make(); yield return null;
+        var boss = level.Find("Gegner").GetComponent<TrendoEnemy>(); Assert.AreEqual(2, boss.MaxHp);
+        level.Player.transform.position = boss.transform.position + Vector3.left * 0.8f; level.Player.Facing = 1;
+        level.Attack(); Assert.AreEqual(1, boss.Hp);
+        level.Player.transform.position = boss.transform.position + Vector3.left * 0.8f;
+        level.Attack(); yield return null;
+        Assert.AreEqual(1, level.Defeated); Assert.AreEqual("Boss besiegt!", level.Note);
+        Object.Destroy(level.gameObject);
+    }
+
+    [UnityTest] public IEnumerator Wagen_faengt_Treffer_ab_und_Aussteigen()
+    {
+        var level = Make(); yield return null;
+        var foot = level.Player.Speed(false);
+        level.Touch(level.Find("Fahrzeug")); yield return null;
+        Assert.AreEqual("wagen", level.Player.Vehicle);
+        Assert.AreEqual(foot * 1.8f, level.Player.Speed(false), 0.001f);
+        level.Hit(); Assert.IsNull(level.Player.Vehicle); Assert.AreEqual(3, level.Lives);
+        level.Hit(); Assert.AreEqual(3, level.Lives, "kurz unverwundbar");
+        Object.Destroy(level.gameObject);
+    }
+
+    [UnityTest] public IEnumerator Doppelsprung_nur_einmal_in_der_Luft()
+    {
+        var level = Make();
+        for (var i = 0; i < 60 && !level.Player.Grounded; i++) yield return new WaitForFixedUpdate();
+        for (var i = 0; i < 5; i++) yield return new WaitForFixedUpdate();
+        Assert.IsTrue(level.Player.Jump(), "Sprung vom Boden");
+        yield return new WaitForFixedUpdate(); yield return new WaitForFixedUpdate();
+        Assert.IsTrue(level.Player.Jump(), "Doppelsprung");
+        Assert.IsFalse(level.Player.Jump(), "kein dritter Sprung");
+        Object.Destroy(level.gameObject);
+    }
+}
+""";
+
     // ───────────── Godot-Quelltexte (eigene, Clean-Room) ─────────────
     const string GodotLevel = """
 extends Node2D
@@ -483,6 +751,41 @@ var lives := 3
 var won := false
 var player: CharacterBody2D
 var doors: Array = []
+var defeated := 0
+var items := 0
+var inventory: Array = []
+var given := {}
+var note := ""
+var boost := 0.0
+var fired: Array = []
+var time := 0.0
+var hud: Label
+
+func key(x: int, y: int, k: String) -> String:
+	return ("" if index == 0 else str(index + 1) + ":") + str(x) + "," + str(y) + ":" + k
+
+## Objekt-Text (Gegenstand, Figur, Fahrzeug) wie in Trendo, sonst Vorgabe
+func text(x: int, y: int, k: String, d: String) -> String:
+	var want := key(x, y, k)
+	for t in data.get("texts", []):
+		if t.get("key", "") == want and String(t.get("value", "")) != "":
+			return String(t["value"])
+	return d
+
+func prop(x: int, y: int, k: String, d: float) -> float:
+	var want := key(x, y, k)
+	for p in data.get("props", []):
+		if p.get("key", "") == want:
+			return float(p["value"])
+	return d
+
+func has(ability: String) -> bool:
+	return ability in data.get("abilities", [])
+
+func tagged(a: Area2D, x: int, y: int) -> Area2D:
+	a.set_meta("x", x)
+	a.set_meta("y", y)
+	return a
 
 static func load_level(path: String) -> Dictionary:
 	var f := FileAccess.open(path, FileAccess.READ)
@@ -497,6 +800,13 @@ func _ready() -> void:
 		push_error("level.json fehlt oder ist kaputt")
 		return
 	lives = int(data.get("lives", 3))
+	fired.resize(data.get("rules", []).size())
+	fired.fill(false)
+	var layer := CanvasLayer.new()
+	hud = Label.new()
+	hud.position = Vector2(10, 10)
+	layer.add_child(hud)
+	add_sibling.call_deferred(layer)
 	RenderingServer.set_default_clear_color(Color(data.get("background", "#10203F")))
 	var s := read_save(SAVE, data["levels"].size())
 	if s.is_empty():
@@ -552,6 +862,7 @@ func build(i: int) -> void:
 	keys = 0
 	doors.clear()
 	for c in get_children():
+		remove_child(c) # sofort weg: sonst benennt Godot die neuen Kacheln um
 		c.queue_free()
 	var rows: Array = data["levels"][i]["rows"]
 	for y in rows.size():
@@ -563,7 +874,14 @@ func build(i: int) -> void:
 				"D": doors.append(solid("Tuer", p, Color(0.55, 0.35, 0.2)))
 				"o": area("Muenze", p, Color(data.get("accent", "#FACC15")))
 				"^": area("Stacheln", p, Color(0.9, 0.3, 0.3))
-				"E": area("Gegner", p, Color(0.8, 0.2, 0.6))
+				"E":
+					var e := tagged(area("Gegner", p, Color(0.8, 0.2, 0.6)), x, y)
+					var hp := clampi(int(round(prop(x, y, "hp", 1))), 1, 9)
+					e.set_meta("hp", hp)
+					e.set_meta("max", hp)
+				"G": tagged(area("Gegenstand", p, Color(0.66, 0.33, 0.97)), x, y)
+				"N": tagged(area("Figur", p, Color(0.08, 0.72, 0.65)), x, y)
+				"V": tagged(area("Fahrzeug", p, Color(0.98, 0.45, 0.09)), x, y).set_meta("kind", text(x, y, "kind", "wagen"))
 				"Z": area("Ziel", p, Color(0.2, 0.9, 0.3))
 				"F": area("Sprungfeder", p, Color(1, 0.6, 0.1))
 				"C": area("Speicherpunkt", p, Color(0.2, 0.9, 0.9))
@@ -628,10 +946,39 @@ func touch(a: Area2D) -> void:
 		keys += 1
 		a.queue_free()
 		if keys >= count("K"):
-			for d in doors:
-				d.queue_free()
-	elif n.begins_with("Stacheln") or n.begins_with("Gegner"):
+			open_doors()
+	elif n.begins_with("Stacheln"):
 		hit()
+	elif n.begins_with("Gegner"):
+		if player.velocity.y > 0 and player.position.y < a.position.y - 8:
+			damage(a)
+			player.velocity.y = -400.0
+		else:
+			hit()
+	elif n.begins_with("Gegenstand"):
+		var nm := text(a.get_meta("x"), a.get_meta("y"), "name", "Kristall")
+		inventory.append(nm)
+		items += 1
+		note = nm + " eingesammelt"
+		a.queue_free()
+	elif n.begins_with("Figur"):
+		var ax: int = a.get_meta("x")
+		var ay: int = a.get_meta("y")
+		var k := str(index) + ":" + str(ax) + "," + str(ay)
+		var need := text(ax, ay, "need", "")
+		if need != "" and not given.has(k) and need in inventory:
+			inventory.erase(need)
+			given[k] = true
+			apply(text(ax, ay, "give", "punkte"))
+			note = text(ax, ay, "thanks", "Danke!")
+		else:
+			note = text(ax, ay, "thanks", "Danke!") if given.has(k) else text(ax, ay, "say", "Hallo!")
+	elif n.begins_with("Fahrzeug"):
+		if player.vehicle == "" and player.no_enter <= 0:
+			player.vehicle = "ufo" if a.get_meta("kind", "wagen") == "ufo" else "wagen"
+			player.fuel = 10.0 if player.vehicle == "ufo" else 0.0
+			note = "Ufo: Leertaste halten – E steigt aus" if player.vehicle == "ufo" else "Wagen: schnell, fängt einen Treffer ab – E steigt aus"
+			a.queue_free()
 	elif n.begins_with("Sprungfeder"):
 		player.velocity.y = -720.0
 	elif n.begins_with("Speicherpunkt"):
@@ -647,7 +994,110 @@ func touch(a: Area2D) -> void:
 			won = true
 			drop_save()
 
-func hit() -> void:
+func open_doors() -> void:
+	for d in doors:
+		if is_instance_valid(d):
+			d.queue_free()
+	doors.clear()
+
+## Belohnung bzw. Wirkung (Regel oder sprechende Figur)
+func apply(what: String) -> void:
+	match what:
+		"leben": lives += 1
+		"tueren": open_doors()
+		"schneller": boost = 80.0
+		"punkte": score += 10
+		"sieg": won = true
+
+## Gegner trifft es: ein Trefferpunkt weniger; besiegt bringt 2 Punkte (Boss 10)
+func damage(a: Area2D) -> void:
+	var hp: int = a.get_meta("hp", 1) - 1
+	a.set_meta("hp", hp)
+	if hp > 0:
+		return
+	defeated += 1
+	var boss: bool = a.get_meta("max", 1) > 1
+	score += 10 if boss else 2
+	if boss:
+		note = "Boss besiegt!"
+	a.queue_free()
+
+func enemies() -> Array:
+	return get_children().filter(func(c): return c is Area2D and String(c.name).begins_with("Gegner") and not c.is_queued_for_deletion() and c.get_meta("hp", 1) > 0)
+
+## Angriff mit der Waffe aus Trendo: Schwert trifft vor der Figur, Werfen schickt ein Geschoss
+func attack() -> void:
+	var w: String = data.get("weapon", "")
+	if w == "" or player == null:
+		return
+	if w == "schwert":
+		for e in enemies():
+			var dx: float = e.position.x - player.position.x
+			if (signf(dx) == player.facing or absf(dx) < 6) and absf(dx) < 44 and absf(e.position.y - player.position.y) < 28:
+				damage(e)
+	else:
+		var s := preload("res://trendo_shot.gd").new()
+		s.setup(self, player.position + Vector2(16 + player.facing * 12, 12), player.facing)
+		add_child(s)
+
+## Aussteigen: das Fahrzeug bleibt an der Stelle stehen und lässt sich wieder nehmen
+func dismount() -> void:
+	if player == null or player.vehicle == "":
+		return
+	var v := tagged(area("Fahrzeug", Vector2(roundf(player.position.x / T) * T, roundf(player.position.y / T) * T), Color(0.98, 0.45, 0.09)), -1, -1)
+	v.set_meta("kind", player.vehicle)
+	player.vehicle = ""
+	player.no_enter = 0.5
+	note = "Ausgestiegen"
+
+func rule_value(r: Dictionary) -> float:
+	match String(r.get("when", "")):
+		"muenzen": return coins
+		"punkte": return score
+		"gegner": return defeated
+		"sekunden": return time
+		"gegenstaende": return items
+	return 0.0
+
+## Aufgaben (Regeln mit Titel) mit Fortschritt
+func quests() -> String:
+	var out := ""
+	var rules: Array = data.get("rules", [])
+	for i in rules.size():
+		var r: Dictionary = rules[i]
+		var t := String(r.get("title", ""))
+		if t == "":
+			continue
+		out += ("✓ " + t) if fired[i] else (t + ": " + str(mini(int(rule_value(r)), int(r["n"]))) + "/" + str(int(r["n"])))
+		out += "\n"
+	return out
+
+func _process(delta: float) -> void:
+	if data.is_empty() or won:
+		return
+	time += delta
+	var rules: Array = data.get("rules", [])
+	for i in rules.size():
+		if fired[i] or rule_value(rules[i]) < float(rules[i]["n"]):
+			continue
+		fired[i] = true
+		apply(String(rules[i]["act"]))
+		if String(rules[i].get("title", "")) != "":
+			note = "✓ " + String(rules[i]["title"])
+	if hud:
+		hud.text = "Punkte %d   Leben %d" % [score, lives] + ("   Treibstoff %d s" % ceili(player.fuel) if player and player.vehicle == "ufo" else "") + ("\nInventar: " + ", ".join(PackedStringArray(inventory)) if inventory.size() > 0 else "") + "\n" + quests() + note
+
+## Treffer: im Fahrzeug geht das Fahrzeug kaputt (kurz unverwundbar), sonst ein Leben weniger. Absturz trifft immer.
+func hit(fall := false) -> void:
+	if player and player.vehicle != "" and not fall:
+		player.vehicle = ""
+		player.safe = 0.75
+		note = "Fahrzeug kaputt – zu Fuß weiter"
+		return
+	if player and player.safe > 0 and not fall:
+		return
+	if player:
+		player.vehicle = ""
 	lives -= 1
 	if lives <= 0:
 		drop_save()
@@ -664,6 +1114,36 @@ var level
 var checkpoint := Vector2.ZERO
 var speed := 220.0
 const GRAVITY := 1400.0
+var facing := 1.0
+var vehicle := ""
+var fuel := 0.0
+var safe := 0.0
+var no_enter := 0.0
+var air := 0
+var cool := 0.0
+
+## Tempo mit Sprint (Fähigkeit, Umschalt) und Fahrzeug
+func cur_speed(sprint: bool) -> float:
+	return (speed + level.boost) * (1.6 if sprint and level.has("sprint") else 1.0) * (1.8 if vehicle == "wagen" else 1.3 if vehicle == "ufo" else 1.0)
+
+## Sprung: am Boden normal, in der Luft einmal mit Fähigkeit „doppelsprung“
+func jump() -> bool:
+	if is_on_floor():
+		velocity.y = -560.0
+		return true
+	if air > 0:
+		air -= 1
+		velocity.y = -520.0
+		return true
+	return false
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if (event.keycode == KEY_X or event.keycode == KEY_J) and cool <= 0:
+			cool = 0.33
+			level.attack()
+		elif event.keycode == KEY_E:
+			level.dismount()
 
 func setup(l, at: Vector2, color: Color, s: float) -> void:
 	level = l
@@ -689,13 +1169,27 @@ func respawn() -> void:
 	velocity = Vector2.ZERO
 
 func _physics_process(delta: float) -> void:
+	safe = maxf(0.0, safe - delta)
+	no_enter = maxf(0.0, no_enter - delta)
+	cool = maxf(0.0, cool - delta)
+	if is_on_floor():
+		air = 1 if level.has("doppelsprung") else 0
 	velocity.y += GRAVITY * delta
-	velocity.x = Input.get_axis("ui_left", "ui_right") * speed
-	if is_on_floor() and Input.is_action_just_pressed("ui_accept"):
-		velocity.y = -560.0
+	var h := Input.get_axis("ui_left", "ui_right")
+	if h != 0:
+		facing = signf(h)
+	velocity.x = h * cur_speed(Input.is_key_pressed(KEY_SHIFT))
+	if Input.is_action_just_pressed("ui_accept"):
+		jump()
+	if vehicle == "ufo" and Input.is_action_pressed("ui_accept") and fuel > 0:
+		velocity.y = maxf(velocity.y - 2400.0 * delta, -360.0)
+		fuel -= delta
+		if fuel <= 0:
+			vehicle = ""
+			level.note = "Treibstoff leer"
 	move_and_slide()
 	if position.y > 3000:
-		level.hit()
+		level.hit(true)
 """;
 
     const string GodotCheck = """
@@ -797,5 +1291,129 @@ func _process(_delta: float) -> bool:
 	print("TRENDO-OK Spielstand speichern, fortsetzen und prüfen")
 	quit(0)
 	return true
+""";
+
+    const string GodotShot = """
+extends Area2D
+## Von Trendo: Geschoss der Waffe „Werfen“ – fliegt bis zur Wand oder zum Gegner.
+
+var level
+var dir := 1.0
+var life := 1.5
+
+func setup(l, at: Vector2, d: float) -> void:
+	level = l
+	position = at
+	dir = d
+	var r := ColorRect.new()
+	r.size = Vector2(8, 8)
+	r.position = Vector2(-4, -4)
+	r.color = Color(1, 0.85, 0.2)
+	add_child(r)
+	var c := CollisionShape2D.new()
+	var sh := RectangleShape2D.new()
+	sh.size = Vector2(8, 8)
+	c.shape = sh
+	add_child(c)
+	area_entered.connect(_hit_area)
+	body_entered.connect(_hit_body)
+
+func _physics_process(delta: float) -> void:
+	position.x += dir * 420.0 * delta
+	life -= delta
+	if life <= 0:
+		queue_free()
+
+func _hit_area(a: Area2D) -> void:
+	if String(a.name).begins_with("Gegner") and not is_queued_for_deletion():
+		level.damage(a)
+		queue_free()
+
+func _hit_body(b: Node) -> void:
+	if b is StaticBody2D:
+		queue_free()
+""";
+
+    const string GodotGameplayCheck = """
+extends SceneTree
+## Von Trendo: Gameplay-Prüfung ohne Fenster – Gegenstand, Figur, Aufgabe, Schwert, Boss, Fahrzeug, Doppelsprung.
+
+var frames := 0
+var main: Node
+var jumped := false
+var at := 0
+const DATA := '{"name":"Test","speed":5,"lives":3,"weapon":"schwert","abilities":["doppelsprung"],"levels":[{"name":"L","rows":["..........","SGNE.V...Z","##########"],"decor":[]}],"props":[{"key":"3,1:hp","value":2}],"texts":[{"key":"1,1:name","value":"Apfel"},{"key":"2,1:need","value":"Apfel"},{"key":"2,1:thanks","value":"Lecker!"},{"key":"2,1:give","value":"leben"},{"key":"5,1:kind","value":"wagen"}],"rules":[{"when":"gegenstaende","n":1,"act":"punkte","title":"Finder"}]}'
+
+func _initialize() -> void:
+	main = load("res://main.tscn").instantiate()
+	root.add_child(main)
+
+func part(prefix: String) -> Node:
+	for c in main.get_children():
+		if String(c.name).begins_with(prefix) and not c.is_queued_for_deletion():
+			return c
+	return null
+
+func fail(t: String) -> bool:
+	print("TRENDO-FEHLER " + t)
+	quit(1)
+	return true
+
+func _process(_delta: float) -> bool:
+	frames += 1
+	if frames == 5:
+		main.data = JSON.parse_string(DATA)
+		main.lives = 3
+		main.score = 0
+		main.fired = [false]
+		main.build(0)
+		return false
+	if frames < 40:
+		return false
+	if frames == 40:
+		main.touch(part("Gegenstand"))
+		if main.inventory != ["Apfel"]:
+			return fail("Gegenstand nicht im Inventar")
+		main.touch(part("Figur"))
+		if main.lives != 4 or main.note != "Lecker!" or main.inventory.size() != 0:
+			return fail("Figur hat nicht belohnt")
+		var boss = part("Gegner")
+		if boss.get_meta("max") != 2:
+			return fail("Boss-Trefferpunkte fehlen")
+		main.player.position = boss.position - Vector2(30, 0)
+		main.player.facing = 1.0
+		main.attack()
+		if boss.get_meta("hp") != 1:
+			return fail("Schwert hat nicht getroffen")
+		main.attack()
+		if main.defeated != 1 or main.note != "Boss besiegt!":
+			return fail("Boss nicht besiegt")
+		var foot: float = main.player.cur_speed(false)
+		main.touch(part("Fahrzeug"))
+		if main.player.vehicle != "wagen" or absf(main.player.cur_speed(false) - foot * 1.8) > 0.01:
+			return fail("Wagen nicht genommen")
+		main.hit()
+		main.hit()
+		if main.player.vehicle != "" or main.lives != 4:
+			return fail("Wagen hat den Treffer nicht abgefangen")
+		return false
+	if frames == 41:
+		if not main.quests().contains("✓ Finder"):
+			return fail("Aufgabe nicht erfüllt: " + main.quests())
+		return false
+	if not jumped:
+		if main.player.is_on_floor() and main.player.air == 1:
+			jumped = main.player.jump()
+			at = frames
+		return false
+	if frames == at + 5:
+		if not main.player.jump() or main.player.jump():
+			return fail("Doppelsprung stimmt nicht")
+		print("TRENDO-OK Gameplay: Inventar, Figur, Aufgabe, Schwert, Boss, Fahrzeug, Doppelsprung")
+		quit(0)
+		return true
+	if frames > 400:
+		return fail("Figur kam nicht auf den Boden")
+	return false
 """;
 }

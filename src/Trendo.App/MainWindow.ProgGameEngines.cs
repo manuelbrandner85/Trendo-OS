@@ -88,7 +88,7 @@ public partial class MainWindow
         else
         {
             EngineRun(exe, EngineTargets.GodotImportArgs(dir), dir, 600_000);
-            foreach (var (label, args, file) in new[] { ("Level-Prüfung", EngineTargets.GodotCheckArgs(dir), "godot-level.txt"), ("Spiel-Prüfung", EngineTargets.GodotPlayArgs(dir), "godot-spiel.txt"), ("Spielstand-Prüfung", EngineTargets.GodotSaveArgs(dir), "godot-spielstand.txt") })
+            foreach (var (label, args, file) in new[] { ("Level-Prüfung", EngineTargets.GodotCheckArgs(dir), "godot-level.txt"), ("Spiel-Prüfung", EngineTargets.GodotPlayArgs(dir), "godot-spiel.txt"), ("Spielstand-Prüfung", EngineTargets.GodotSaveArgs(dir), "godot-spielstand.txt"), ("Gameplay-Prüfung", EngineTargets.GodotGameplayArgs(dir), "godot-gameplay.txt") })
             {
                 var (exit, output) = EngineRun(exe, args, dir, 300_000);
                 File.WriteAllText(Path.Combine(logs, file), output);
