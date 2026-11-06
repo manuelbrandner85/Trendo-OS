@@ -153,8 +153,11 @@ public static class GameDesign
     }
 
     /// <summary>Ereignis-Regeln aus dem Projekt („rules“: [{when, n, do}]).</summary>
+    /// <summary>Fähigkeiten der Spielfigur aus dem Dokument („abilities“).</summary>
+    public static List<string> Abilities(JsonObject d) => [.. (d["abilities"] as JsonArray ?? []).Select(S).Where(a => GameStudio.Abilities.Any(x => x.Id == a)).Distinct()];
+
     public static List<GameStudio.GameRule> Rules(JsonObject d) =>
-        [.. (d["rules"] as JsonArray ?? []).OfType<JsonObject>().Select(r => new GameStudio.GameRule(S(r["when"]), int.TryParse(r["n"]?.ToString(), out var n) ? n : 0, S(r["do"]))).Where(r => r.When.Length > 0 && r.Do.Length > 0)];
+        [.. (d["rules"] as JsonArray ?? []).OfType<JsonObject>().Select(r => new GameStudio.GameRule(S(r["when"]), int.TryParse(r["n"]?.ToString(), out var n) ? n : 0, S(r["do"]), S(r["title"]) is { Length: > 0 } t ? t : null)).Where(r => r.When.Length > 0 && r.Do.Length > 0)];
 
     /// <summary>Bauen: Retro/Indie 2D als spielbares Browser-Spiel (mit Level aus dem Projekt).</summary>
     static string[] Lines(JsonNode? n) => (n as JsonArray ?? []).Select(S).Where(r => r.Length > 0).ToArray();
@@ -171,7 +174,7 @@ public static class GameDesign
         var anims = (d["anims"] as JsonObject ?? []).Where(kv => kv.Value is JsonObject o && S(o["file"]).Length > 0)
             .ToDictionary(kv => kv.Key, kv => (File: S(kv.Value!["file"]), Frames: (int)(N(kv.Value!["frames"]) ?? 1), Fps: (int)(N(kv.Value!["fps"]) ?? 8)));
         var settings = GameStudio.Validate(new GameStudio.GameSettings { Level = level, Props = props, Speed = (int)(N(d["speed"]) ?? 5), Lives = (int)(N(d["lives"]) ?? 3),
-            TimeLimit = (int)(N(d["timeLimit"]) ?? 0), Rules = Rules(d), Saves = d["saves"]?.GetValueKind() != System.Text.Json.JsonValueKind.False,
+            TimeLimit = (int)(N(d["timeLimit"]) ?? 0), Rules = Rules(d), Saves = d["saves"]?.GetValueKind() != System.Text.Json.JsonValueKind.False, Abilities = Abilities(d),
             MoreLevels = [.. more.Select(o => Lines(o["rows"]))], Decor = [Lines(d["decor"]), .. more.Select(o => Lines(o["decor"]))],
             LevelNames = [S(d["levelName"]) is { Length: > 0 } n0 ? n0 : "Level 1", .. more.Select((o, i) => S(o["name"]) is { Length: > 0 } n ? n : $"Level {i + 2}")],
             Anims = anims.ToDictionary(kv => kv.Key, kv => new GameStudio.Anim("figur-" + kv.Key + Path.GetExtension(kv.Value.File), kv.Value.Frames, kv.Value.Fps)) });

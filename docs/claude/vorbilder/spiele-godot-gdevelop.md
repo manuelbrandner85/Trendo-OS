@@ -39,6 +39,9 @@ Vorbilder: Unity Hub (Editor-Erkennung), Unity Test Framework (EditMode/PlayMode
 - ✓ Plattformer als Godot-4-Projekt (GDScript, Level- und Spiel-Prüfung) – mit Godot 4.7.2 auf dem PC geprüft
 - ✗ Unreal-Spiel aus dem Level (bisher nur Projekt mit Spielbibel)
 - ✗ Engine-Projekt zurück nach Trendo übernehmen
+- ✓ Spielstände (S1-15): ein Format für Browser, Probespiel, Unity, Godot – Speichern, Fortsetzen, alte Stände heben
+- ✓ Fähigkeiten Doppelsprung/Sprint und Aufgaben mit Fortschritt (S1-05, erster Teil)
+- ✗ Inventar, Kampf mit Waffen, Fahrzeuge, sprechende Figuren (S1-05, nächste Teile); Fähigkeiten/Aufgaben im Unity-/Godot-Export
 
 ## Nächste Schritte
 1. Freie Szene statt Raster (Objekte pixelgenau setzen)

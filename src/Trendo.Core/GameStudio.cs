@@ -25,7 +25,11 @@ public static class GameStudio
     public sealed record Anim(string Image, int Frames = 1, int Fps = 8);
 
     /// <summary>Ereignis-Regel wie die Ereignisblätter in GDevelop/Construct: Wenn <see cref="When"/> mindestens <see cref="N"/> erreicht, dann <see cref="Do"/> (einmal).</summary>
-    public sealed record GameRule(string When, int N, string Do);
+    public sealed record GameRule(string When, int N, string Do, string? Title = null);
+    /// <summary>Fähigkeiten der Spielfigur (Paket 01 S1-05): Doppelsprung (in der Luft noch einmal springen) und Sprint (Umschalt-Taste, 1,6-fach schneller).</summary>
+    public static readonly (string Id, string Label)[] Abilities = [("doppelsprung", "Doppelsprung"), ("sprint", "Sprint (Umschalt)")];
+    /// <summary>Aufgabe mit Fortschritt, z. B. „Schatzsucher: Münzen 3/10“ bzw. „✓ Schatzsucher“.</summary>
+    public static string QuestText(GameRule r, double value, bool done) => done ? $"✓ {r.Title}" : $"{r.Title}: {RuleWhens.FirstOrDefault(w => w.Id == r.When).Label ?? r.When} {Math.Min((int)value, r.N)}/{r.N}";
     public static readonly (string Id, string Label)[] RuleWhens = [("muenzen", "Münzen gesammelt"), ("punkte", "Punkte"), ("gegner", "Gegner besiegt"), ("sekunden", "Sekunden gespielt")];
     public static readonly (string Id, string Label)[] RuleDos = [("leben", "+1 Leben"), ("tueren", "Türen öffnen"), ("schneller", "Figur schneller"), ("punkte", "+10 Punkte"), ("sieg", "Gewonnen")];
 
@@ -79,6 +83,8 @@ public static class GameStudio
         public Dictionary<string, string> Sounds { get; init; } = [];
         /// <summary>Spielstand automatisch speichern (Speicherpunkt, Level geschafft) und beim nächsten Start fortsetzen.</summary>
         public bool Saves { get; init; } = true;
+        /// <summary>Freigeschaltete Fähigkeiten (siehe <see cref="Abilities"/>).</summary>
+        public List<string> Abilities { get; init; } = [];
     }
 
     /// <summary>Ereignisse der Ton-Spur.</summary>
@@ -107,6 +113,7 @@ public static class GameStudio
         if (s.Level.Any(r => r.Any(ch => !Tiles.Contains(ch)))) throw new ArgumentException("Im Level nur # (Boden), . (frei), o (Münze), E (Gegner), ^ (Stacheln), S (Start), Z (Ziel), F (Sprungfeder), C (Speicherpunkt), K (Schlüssel) und D (Tür).");
         if (s.Rules.Count > 20) throw new ArgumentException("Höchstens 20 Regeln.");
         if (s.Rules.FirstOrDefault(r => !RuleWhens.Any(w => w.Id == r.When) || !RuleDos.Any(x => x.Id == r.Do)) is { } bad) throw new ArgumentException($"Unbekannte Regel „{bad.When} → {bad.Do}“.");
+        if (s.Abilities.FirstOrDefault(a => !Abilities.Any(x => x.Id == a)) is { } badAb) throw new ArgumentException($"Unbekannte Fähigkeit „{badAb}“.");
         if (s.Level.Length > 16 || s.Level.Any(r => r.Length > 200)) throw new ArgumentException("Level höchstens 16 Zeilen und 200 Spalten.");
         if (s.MoreLevels.Count > 19) throw new ArgumentException("Höchstens 20 Level.");
         for (var i = 0; i < s.MoreLevels.Count; i++)
@@ -119,7 +126,7 @@ public static class GameStudio
         if (s.Sounds.Keys.FirstOrDefault(k => !SoundEvents.Any(e => e.Id == k)) is { } badSound) throw new ArgumentException($"Unbekanntes Ton-Ereignis „{badSound}“.");
         if (s.Anims.Keys.FirstOrDefault(k => !Programs.PlatformSim.States.Any(x => x.Id == k)) is { } badState) throw new ArgumentException($"Unbekannter Zustand „{badState}“.");
         return s with { Speed = Math.Clamp(s.Speed, 1, 10), Lives = Math.Clamp(s.Lives, 1, 9), WinScore = Math.Clamp(s.WinScore, 0, 9999), TimeLimit = Math.Clamp(s.TimeLimit, 0, 3600),
-            Rules = [.. s.Rules.Select(r => r with { N = Math.Clamp(r.N, 0, 9999) })],
+            Rules = [.. s.Rules.Select(r => r with { N = Math.Clamp(r.N, 0, 9999), Title = string.IsNullOrWhiteSpace(r.Title) ? null : r.Title.Trim().Length > 40 ? r.Title.Trim()[..40] : r.Title.Trim() })], Abilities = [.. s.Abilities.Distinct()],
             Anims = s.Anims.ToDictionary(kv => kv.Key, kv => kv.Value with { Frames = Math.Clamp(kv.Value.Frames, 1, 32), Fps = Math.Clamp(kv.Value.Fps, 1, 30) }),
             Props = s.Props.Where(kv => kv.Key.EndsWith(":speed") || kv.Key.EndsWith(":value")).ToDictionary(kv => kv.Key, kv => kv.Key.EndsWith(":speed") ? Math.Clamp(kv.Value, 0.25, 4) : Math.Clamp(Math.Round(kv.Value), 1, 100)) };
     }
@@ -128,7 +135,7 @@ public static class GameStudio
     {
         var o = new { speed = s.Speed, lives = s.Lives, win = s.WinScore, player = s.Player, accent = s.Accent, bg = s.Background, sound = s.Sound,
                       level = s.Level, playerImage = s.PlayerImage, bgImage = s.BackgroundImage, props = s.Props, timeLimit = s.TimeLimit,
-                      rules = s.Rules.Select(r => new { when = r.When, n = r.N, act = r.Do }), more = s.MoreLevels, decor = s.Decor, names = s.LevelNames,
+                      rules = s.Rules.Select(r => r.Title is null ? (object)new { when = r.When, n = r.N, act = r.Do } : new { when = r.When, n = r.N, act = r.Do, title = r.Title }), abilities = s.Abilities, more = s.MoreLevels, decor = s.Decor, names = s.LevelNames,
                       anims = s.Anims.ToDictionary(kv => kv.Key, kv => new { img = kv.Value.Image, frames = kv.Value.Frames, fps = kv.Value.Fps }), sounds = s.Sounds, saves = s.Saves };
         return "const CFG=" + JsonSerializer.Serialize(o) + ";\n";
     }
@@ -229,7 +236,7 @@ step();
 """,
         ["plattform"] = """
 const T=32,LV=[(CFG.level&&CFG.level.length?CFG.level:['S.....Z','#######']),...(CFG.more||[]).filter(l=>l&&l.length)];let li=0,L=LV[0],R=L.length,C=Math.max(...L.map(r=>r.length)),DC=(CFG.decor&&CFG.decor[0])||[];
-let G=[],open=false,kg=0,KT=0,cg=0,fk=0,fr=0,lf=0,boost=0,fired=[],note='',noteT=0,tu=false,face=1;
+let G=[],open=false,kg=0,KT=0,cg=0,fk=0,fr=0,lf=0,boost=0,fired=[],note='',noteT=0,tu=false,face=1,air=0;const AB=CFG.abilities||[];
 const SND={};Object.keys(CFG.sounds||{}).forEach(k=>{try{const a=new Audio(CFG.sounds[k]);if(k==='musik'){a.loop=true;a.volume=.5;}SND[k]=a;}catch(e){}});
 function snd(ev,f){const a=SND[ev];if(a){try{a.currentTime=0;a.play();}catch(e){}}else beep(f);}
 let music=false;const AI={};Object.keys(CFG.anims||{}).forEach(k=>{const a=CFG.anims[k];if(a&&a.img){const i=new Image();i.src=a.img;AI[k]={i:i,f:a.frames||1,fps:a.fps||8};}});
@@ -243,7 +250,7 @@ pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;}
 function reset(full){if(full){p=0;cg=0;fk=0;fr=0;boost=0;fired=[];tu=false;load(0);return;}pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;}
 reset(true);
 /*SPIELSTAND*/const SV0=readSave();if(SV0)resume(SV0);
-addEventListener('keydown',e=>{k[e.code]=1;if(e.code==='KeyN'){dropSave();lives=CFG.lives;over=false;reset(true);say('Neues Spiel');}if(!music&&SND.musik){music=true;try{SND.musik.play();}catch(x){}}if(e.code==='Space'){e.preventDefault();if(over){lives=CFG.lives;over=false;reset(true);}else if(pl.on){pl.vy=-11.5;snd('springen',660);}}});addEventListener('keyup',e=>k[e.code]=0);
+addEventListener('keydown',e=>{k[e.code]=1;if(e.code==='KeyN'){dropSave();lives=CFG.lives;over=false;reset(true);say('Neues Spiel');}if(!music&&SND.musik){music=true;try{SND.musik.play();}catch(x){}}if(e.code==='Space'){e.preventDefault();if(over){lives=CFG.lives;over=false;reset(true);}else if(pl.on){pl.vy=-11.5;snd('springen',660);}else if(AB.includes('doppelsprung')&&air>0){air--;pl.vy=-10.5;snd('springen',760);}}});addEventListener('keyup',e=>k[e.code]=0);
 function hit(){lives--;snd('treffer',160);flash=20;if(lives<=0){over=true;dropSave();}else reset(false);}
 function say(t){note=t;noteT=120;}
 function goal(){p+=10;snd('ziel',990);if(li+1<LV.length){load(li+1);saveGame();say((CFG.names&&CFG.names[li])||('Level '+(li+1)+' von '+LV.length));}else{over=true;dropSave();}}
@@ -260,7 +267,7 @@ if(ch==='b'){x.fillStyle='#2E8B3E';x.beginPath();x.arc(px+16,py+24,11,0,7);x.arc
 if(ch==='t'){x.fillStyle='#6B4423';x.fillRect(px+13,py+14,6,18);x.fillStyle='#2F7D3A';x.beginPath();x.arc(px+16,py+11,12,0,7);x.fill();}
 if(ch==='m'){x.fillStyle='rgba(120,130,160,.6)';x.beginPath();x.moveTo(px,py+T);x.lineTo(px+16,py);x.lineTo(px+T,py+T);x.fill();}
 if(ch==='g'){x.fillStyle='#3FBF5A';for(let i=0;i<4;i++)x.fillRect(px+3+i*8,py+T-8,3,8);}}
-function step(){if(!over){fr++;lf++;const sp=2.2+CFG.speed*.35+boost;pl.vx=(k.ArrowRight?sp:0)-(k.ArrowLeft?sp:0);if(pl.vx>0)face=1;if(pl.vx<0)face=-1;pl.vy=Math.min(14,pl.vy+.6);move(pl,pl.vx,0);move(pl,0,pl.vy);
+function step(){if(!over){fr++;lf++;const sp=(2.2+CFG.speed*.35+boost)*(AB.includes('sprint')&&(k.ShiftLeft||k.ShiftRight)?1.6:1);pl.vx=(k.ArrowRight?sp:0)-(k.ArrowLeft?sp:0);if(pl.vx>0)face=1;if(pl.vx<0)face=-1;pl.vy=Math.min(14,pl.vy+.6);move(pl,pl.vx,0);move(pl,0,pl.vy);if(pl.on)air=AB.includes('doppelsprung')?1:0;
 if(pl.on&&at(Math.floor((pl.x+12)/T),Math.floor((pl.y+pl.h+1)/T))==='F'){pl.vy=-17;pl.on=false;beep(720);}
 if(pl.y>R*T+60)hit();const cx=Math.floor((pl.x+12)/T),cy=Math.floor((pl.y+15)/T),cb=Math.floor((pl.y+29)/T);
 if(at(cx,cb)==='^'||at(cx,cy)==='^')hit();else if(at(cx,cy)==='Z'||at(cx,cb)==='Z')goal();else{
@@ -286,6 +293,7 @@ if(!(flash>0&&flash--%4<2))drawMe();x.restore();
 x.font='14px system-ui';x.fillStyle='#FFF';if(LV.length>1)x.fillText('Level '+(li+1)+'/'+LV.length,10,c.height-10);
 if(CFG.timeLimit>0)x.fillText('Zeit '+Math.max(0,Math.ceil(CFG.timeLimit-lf/60))+' s',c.width-90,20);
 if(KT>0){x.fillStyle=CFG.accent;x.fillText('Schlüssel '+kg+'/'+KT,10,20);}
+(CFG.rules||[]).forEach((r,i)=>{if(!r.title)return;const v=r.when==='muenzen'?cg:r.when==='punkte'?p:r.when==='gegner'?fk:r.when==='sekunden'?fr/60:0;x.fillStyle=fired[i]?'#22C55E':'#FFF';x.fillText(fired[i]?'✓ '+r.title:r.title+': '+Math.min(Math.floor(v),r.n)+'/'+r.n,10,40+i*18);});
 if(noteT>0){noteT--;x.fillStyle='rgba(0,0,0,.6)';x.fillRect(c.width/2-110,40,220,28);x.fillStyle='#FFF';x.font='15px system-ui';x.textAlign='center';x.fillText(note,c.width/2,59);x.textAlign='left';}
 status(p);requestAnimationFrame(step);}
 step();

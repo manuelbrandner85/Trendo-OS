@@ -19,6 +19,10 @@ public sealed class PlatformSim
     readonly int _timeLimit; readonly IReadOnlyList<GameStudio.GameRule> _rules; readonly bool[] _fired;
     string[] _rows = []; char[][] _grid = [];
     double _sx, _sy; double _boost;
+    readonly IReadOnlyList<string> _abilities = []; bool _jumpPrev; int _airJumps;
+    public bool Has(string ability) => _abilities.Contains(ability);
+    /// <summary>Aufgaben (Regeln mit Titel) mit Fortschritt – wie das Aufgabenbuch in Spielen.</summary>
+    public IEnumerable<(GameStudio.GameRule Rule, double Value, bool Done)> Quests => _rules.Select((r, i) => (r, RuleValue(r), _fired[i])).Where(q => q.r.Title is not null);
     public int Rows => _rows.Length;
     public int Cols { get; private set; }
     public Body Player { get; private set; } = new();
@@ -52,8 +56,9 @@ public sealed class PlatformSim
     public string State => Flash > 0 ? "treffen" : !Player.On ? (Player.Vy < 0 ? "springen" : "fallen") : Math.Abs(Player.Vx) > 0.1 ? "laufen" : "stehen";
 
     public PlatformSim(IReadOnlyList<string> level, int speed = 5, int lives = 3, IReadOnlyDictionary<string, double>? props = null, int timeLimit = 0,
-        IReadOnlyList<GameStudio.GameRule>? rules = null, IReadOnlyList<IReadOnlyList<string>>? moreLevels = null)
+        IReadOnlyList<GameStudio.GameRule>? rules = null, IReadOnlyList<IReadOnlyList<string>>? moreLevels = null, IReadOnlyList<string>? abilities = null)
     {
+        _abilities = abilities ?? [];
         var first = level.Count > 0 ? level.ToArray() : ["S.....Z", "#######"];
         _levels = [first, .. (moreLevels ?? []).Where(l => l.Count > 0).Select(l => l.ToArray())];
         _props = props; _timeLimit = Math.Clamp(timeLimit, 0, 3600);
@@ -100,13 +105,15 @@ public sealed class PlatformSim
     void Hit() { Lives--; Flash = 20; if (!Lost) ResetPlayer(); }
 
     /// <summary>Ereignis-Regeln prüfen: jede feuert höchstens einmal.</summary>
+    double RuleValue(GameStudio.GameRule r) => r.When switch { "muenzen" => Coins.Count(c => c.Taken), "punkte" => Score, "gegner" => FoesDefeated, "sekunden" => Frames / 60.0, _ => 0 };
+
     void Rules()
     {
         for (var i = 0; i < _rules.Count; i++)
         {
             if (_fired[i]) continue;
             var r = _rules[i];
-            double v = r.When switch { "muenzen" => Coins.Count(c => c.Taken), "punkte" => Score, "gegner" => FoesDefeated, "sekunden" => Frames / 60.0, _ => 0 };
+            var v = RuleValue(r);
             if (v < r.N) continue;
             _fired[i] = true; Note = GameStudio.RuleText(r);
             switch (r.Do)
@@ -129,16 +136,19 @@ public sealed class PlatformSim
     }
 
     /// <summary>Ein Bild weiter (60 je Sekunde). <paramref name="jump"/> springt nur vom Boden aus.</summary>
-    public void Step(bool left, bool right, bool jump)
+    public void Step(bool left, bool right, bool jump, bool sprint = false)
     {
+        var press = jump && !_jumpPrev; _jumpPrev = jump;
         if (Flash > 0) Flash--;
         if (Over) return;
         Frames++; _levelFrames++;
-        var pl = Player; var sp = 2.2 + _speed * .35 + _boost;
+        var pl = Player; var sp = (2.2 + _speed * .35 + _boost) * (sprint && Has("sprint") ? 1.6 : 1);
         if (jump && pl.On) pl.Vy = -11.5;
+        else if (press && !pl.On && _airJumps > 0) { _airJumps--; pl.Vy = -10.5; } // Doppelsprung
         pl.Vx = (right ? sp : 0) - (left ? sp : 0); pl.Vy = Math.Min(14, pl.Vy + .6);
         if (pl.Vx > 0) pl.Facing = 1; else if (pl.Vx < 0) pl.Facing = -1;
         Move(pl, pl.Vx, 0); Move(pl, 0, pl.Vy);
+        if (pl.On) _airJumps = Has("doppelsprung") ? 1 : 0;
         if (pl.On && At((int)Math.Floor((pl.X + 12) / T), (int)Math.Floor((pl.Y + pl.H + 1) / T)) == 'F') { pl.Vy = -17; pl.On = false; } // Sprungfeder
         if (pl.Y > Rows * T + 60) { Hit(); return; }
         int cx = (int)Math.Floor((pl.X + 12) / T), cy = (int)Math.Floor((pl.Y + 15) / T), cb = (int)Math.Floor((pl.Y + 29) / T);
@@ -178,5 +188,5 @@ public sealed class PlatformSim
         Score = s.Score; Lives = Math.Max(1, s.Lives); FoesDefeated = s.Defeated; Won = false; Note = "Spielstand geladen";
     }
 
-    public PlatformSim Restart() => new(_levels[0], _speed, _startLives, _props, _timeLimit, _rules, [.. _levels.Skip(1)]);
+    public PlatformSim Restart() => new(_levels[0], _speed, _startLives, _props, _timeLimit, _rules, [.. _levels.Skip(1)], _abilities);
 }

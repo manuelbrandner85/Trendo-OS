@@ -43,16 +43,16 @@ public sealed class PlaytestCanvas : Control
     {
         base.OnKeyDown(e);
         if (e.Key == Key.Escape) { Stop?.Invoke(); e.Handled = true; return; }
-        if (e.Key is Key.Left or Key.Right or Key.Up or Key.Space or Key.A or Key.D or Key.W) { _down.Add(e.Key); e.Handled = true; }
+        if (e.Key is Key.Left or Key.Right or Key.Up or Key.Space or Key.A or Key.D or Key.W or Key.LeftShift or Key.RightShift) { _down.Add(e.Key); e.Handled = true; }
     }
     protected override void OnKeyUp(KeyEventArgs e) { base.OnKeyUp(e); _down.Remove(e.Key); }
     protected override void OnPointerPressed(PointerPressedEventArgs e) { base.OnPointerPressed(e); Focus(); }
 
     /// <summary>Ein Bild weiter mit den gehaltenen Tasten (öffentlich für Tests).</summary>
-    public void Tick(bool? left = null, bool? right = null, bool? jump = null)
+    public void Tick(bool? left = null, bool? right = null, bool? jump = null, bool? sprint = null)
     {
         Sim.Step(left ?? (_down.Contains(Key.Left) || _down.Contains(Key.A)), right ?? (_down.Contains(Key.Right) || _down.Contains(Key.D)),
-            jump ?? (_down.Contains(Key.Space) || _down.Contains(Key.Up) || _down.Contains(Key.W)));
+            jump ?? (_down.Contains(Key.Space) || _down.Contains(Key.Up) || _down.Contains(Key.W)), sprint ?? (_down.Contains(Key.LeftShift) || _down.Contains(Key.RightShift)));
         InvalidateVisual(); Ticked?.Invoke();
         if (Sim.Over && !_wasOver) { _wasOver = true; Ended?.Invoke(); }
         _wasOver = Sim.Over;

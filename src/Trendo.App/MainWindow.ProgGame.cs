@@ -450,7 +450,7 @@ public partial class MainWindow
         var rows = GameRows(d);
         if (GameStudio.CheckPlatform(rows) is { Count: > 0 } w && w.Any(x => x.StartsWith("Kein"))) throw new InvalidOperationException(w.First(x => x.StartsWith("Kein")));
         var more = Enumerable.Range(1, GameLevelCount(d) - 1).Select(i => (IReadOnlyList<string>)GameLevelRows(d, i)).ToList();
-        _gamePlay = new PlatformSim(rows, (int)d.Number("speed", 5), (int)d.Number("lives", 3), GameProps(d), (int)d.Number("timeLimit", 0), GameDesign.Rules(d.Data), more);
+        _gamePlay = new PlatformSim(rows, (int)d.Number("speed", 5), (int)d.Number("lives", 3), GameProps(d), (int)d.Number("timeLimit", 0), GameDesign.Rules(d.Data), more, GameDesign.Abilities(d.Data));
         _core.Audit.Append(Principal.LocalOwner.Name, "game.playtest", d.Text("title"));
     }
 
@@ -570,19 +570,35 @@ public partial class MainWindow
         for (var i = 0; i < rules.Count; i++)
         {
             var idx = i;
-            sp.Children.Add(new DockPanel { Children = { Act($"game-rule-del-{i}", "✕", () => ProgramRun(GK, () => d.Edit("Regel löschen", x => (x["rules"] as JsonArray)?.RemoveAt(idx)))), P(GameStudio.RuleText(rules[i]), Text, 11.5) } });
+            sp.Children.Add(new DockPanel { Children = { Act($"game-rule-del-{i}", "✕", () => ProgramRun(GK, () => d.Edit("Regel löschen", x => (x["rules"] as JsonArray)?.RemoveAt(idx)))), P((rules[i].Title is { } qt ? $"Aufgabe „{qt}“: " : "") + GameStudio.RuleText(rules[i]), Text, 11.5) } });
         }
         var when = new ComboBox { Name = "game-rule-when", ItemsSource = GameStudio.RuleWhens.Select(w => w.Label).ToList(), SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
         var n = new TextBox { Name = "game-rule-n", Text = "5", Width = 60 };
         var act = new ComboBox { Name = "game-rule-do", ItemsSource = GameStudio.RuleDos.Select(w => w.Label).ToList(), SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
-        sp.Children.Add(Row(P("Wenn", Muted, 11.5), when)); sp.Children.Add(Row(P("mindestens", Muted, 11.5), n)); sp.Children.Add(Row(P("dann", Muted, 11.5), act));
+        var title = new TextBox { Name = "game-rule-title", PlaceholderText = "optional: als Aufgabe anzeigen, z. B. „Schatzsucher“" };
+        sp.Children.Add(Row(P("Wenn", Muted, 11.5), when)); sp.Children.Add(Row(P("mindestens", Muted, 11.5), n)); sp.Children.Add(Row(P("dann", Muted, 11.5), act)); sp.Children.Add(Row(P("Aufgabe", Muted, 11.5), title));
         sp.Children.Add(Act("game-rule-add", "＋ Regel", () => ProgramRun(GK, () =>
         {
             if (!int.TryParse(n.Text, out var nn) || nn < 0) throw new ArgumentException("Bitte eine Zahl ab 0.");
             if (rules.Count >= 20) throw new ArgumentException("Höchstens 20 Regeln.");
             var r = new JsonObject { ["when"] = GameStudio.RuleWhens[Math.Max(0, when.SelectedIndex)].Id, ["n"] = nn, ["do"] = GameStudio.RuleDos[Math.Max(0, act.SelectedIndex)].Id };
-            d.Edit("Regel", x => { var a = x["rules"] as JsonArray ?? []; a.Add(r); x["rules"] = a; });
+            if (!string.IsNullOrWhiteSpace(title.Text)) r["title"] = title.Text.Trim().Length > 40 ? title.Text.Trim()[..40] : title.Text.Trim();
+            d.Edit(r.ContainsKey("title") ? "Aufgabe" : "Regel", x => { var a = x["rules"] as JsonArray ?? []; a.Add(r); x["rules"] = a; });
         })));
+        // Fähigkeiten der Spielfigur (Paket 01 S1-05)
+        sp.Children.Add(H("Fähigkeiten", 13));
+        var have = GameDesign.Abilities(d.Data);
+        foreach (var (abId, abLabel) in GameStudio.Abilities)
+        {
+            var id = abId;
+            var cb = new CheckBox { Name = "game-ability-" + abId, IsChecked = have.Contains(abId), Content = new TextBlock { Text = abLabel, Foreground = Text, FontSize = 12 } };
+            cb.IsCheckedChanged += (_, _) => ProgramRun(GK, () => d.Edit(cb.IsChecked == true ? "Fähigkeit an" : "Fähigkeit aus", x =>
+            {
+                var l = GameDesign.Abilities(x); l.Remove(id); if (cb.IsChecked == true) l.Add(id);
+                x["abilities"] = new JsonArray([.. l.Select(a => (JsonNode)a)]);
+            }));
+            sp.Children.Add(cb);
+        }
         sp.Children.Add(GameAnimPanel(d));
         sp.Children.Add(GameSoundPanel(d));
         sp.Children.Add(H("Objekt", 13));
@@ -646,7 +662,7 @@ public partial class MainWindow
         var status = new TextBlock { Name = "game-play-status", Foreground = GoldText(), FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) };
         string Status() => sim.Won ? $"Geschafft! {sim.Score} Punkte" : sim.Lost ? (sim.TimeUp ? $"Zeit abgelaufen – {sim.Score} Punkte" : $"Verloren – {sim.Score} Punkte")
             : $"Punkte {sim.Score} · Leben {sim.Lives} · {sim.Coins.Count(c => c.Taken)}/{sim.Coins.Count} Münzen" + (sim.KeysTotal > 0 ? $" · Schlüssel {sim.Keys}/{sim.KeysTotal}" : "")
-              + (sim.SecondsLeft >= 0 ? $" · noch {Math.Ceiling(sim.SecondsLeft):0} s" : "") + (sim.Note.Length > 0 ? " · " + sim.Note : "");
+              + (sim.SecondsLeft >= 0 ? $" · noch {Math.Ceiling(sim.SecondsLeft):0} s" : "") + string.Concat(sim.Quests.Select(q => " · " + GameStudio.QuestText(q.Rule, q.Value, q.Done))) + (sim.Note.Length > 0 ? " · " + sim.Note : "");
         status.Text = Status();
         var canvas = new PlaytestCanvas { Name = "game-playtest", Sim = sim, Height = 360, HorizontalAlignment = HorizontalAlignment.Stretch,
             Decor = [.. Enumerable.Range(0, GameLevelCount(d)).Select(i => (IReadOnlyList<string>)GameDecorRows(d, i))], Anims = GameAnimBitmaps(d) };
