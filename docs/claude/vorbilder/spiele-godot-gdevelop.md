@@ -43,7 +43,8 @@ Vorbilder: Unity Hub (Editor-Erkennung), Unity Test Framework (EditMode/PlayMode
 - ✓ Fähigkeiten Doppelsprung/Sprint und Aufgaben mit Fortschritt (S1-05, erster Teil)
 - ✓ Inventar und sprechende Figuren mit Wunsch und Belohnung (S1-05, Teil 2)
 - ✓ Kampf mit Schwert oder Werfen, Bosse mit Trefferpunkten (S1-05, Teil 3)
-- ✗ Fahrzeuge (S1-05); Fähigkeiten, Aufgaben, Inventar, Kampf im Unity-/Godot-Export
+- ✓ Fahrzeuge Wagen und Ufo (S1-05, Teil 4)
+- ✗ Fähigkeiten, Aufgaben, Inventar, Kampf, Fahrzeuge im Unity-/Godot-Export
 
 ## Nächste Schritte
 1. Freie Szene statt Raster (Objekte pixelgenau setzen)

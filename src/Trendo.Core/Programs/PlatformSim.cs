@@ -30,6 +30,10 @@ public sealed class PlatformSim
     public List<Shot> Shots { get; } = [];
     public int Swing { get; private set; }
     int _cool; bool _attackPrev;
+    /// <summary>Fahrzeug, in dem die Figur sitzt („wagen“, „ufo“ oder null), und Treibstoff des Ufos in Bildern (Paket 01 S1-05).</summary>
+    public string? Vehicle { get; private set; }
+    public int Fuel { get; private set; }
+    bool _usePrev; int _safe, _noEnter; readonly Dictionary<(int, int), string> _parked = [];
     public int ItemsCollected { get; private set; }
     string Text(int x, int y, string k, string def) => _texts.TryGetValue($"{(LevelIndex == 0 ? "" : $"{LevelIndex + 1}:")}{x},{y}:{k}", out var v) && v.Length > 0 ? v : def;
     public bool Has(string ability) => _abilities.Contains(ability);
@@ -83,7 +87,7 @@ public sealed class PlatformSim
     void Load(int index)
     {
         LevelIndex = index; _rows = _levels[index]; _grid = [.. _rows.Select(r => r.ToCharArray())];
-        Cols = _rows.Max(r => r.Length); Coins.Clear(); Foes.Clear(); Shots.Clear(); Keys = 0; DoorsOpen = false; _levelFrames = 0;
+        Cols = _rows.Max(r => r.Length); Coins.Clear(); Foes.Clear(); Shots.Clear(); Vehicle = null; _parked.Clear(); Keys = 0; DoorsOpen = false; _levelFrames = 0;
         for (var y = 0; y < _rows.Length; y++) for (var x = 0; x < _rows[y].Length; x++) if (_rows[y][x] == 'S') { _sx = x; _sy = y; }
         KeysTotal = string.Concat(_rows).Count(c => c == 'K');
         var pre = index == 0 ? "" : $"{index + 1}:";
@@ -114,9 +118,22 @@ public sealed class PlatformSim
         if (dy >= 0 && !o.On) { var fb = (int)Math.Floor((o.Y + o.H) / T); if (o.Y + o.H - fb * T < 1 && Enumerable.Range(l, r - l + 1).Any(cx => Solid(cx, fb))) o.On = true; }
     }
 
-    void Hit() { Lives--; Flash = 20; if (!Lost) ResetPlayer(); }
+    /// <summary>Treffer: im Fahrzeug geht das Fahrzeug kaputt (kurz unverwundbar), sonst ein Leben weniger. Absturz trifft immer.</summary>
+    void Hit(bool fall = false)
+    {
+        if (Vehicle is not null && !fall) { Vehicle = null; Flash = 20; _safe = 45; Player.Vy = -6; Note = "Fahrzeug kaputt – zu Fuß weiter"; return; }
+        if (_safe > 0 && !fall) return;
+        Vehicle = null; Lives--; Flash = 20; if (!Lost) ResetPlayer();
+    }
 
-    /// <summary>Ereignis-Regeln prüfen: jede feuert höchstens einmal.</summary>
+    /// <summary>Aussteigen: Fahrzeug bleibt an dieser Stelle stehen (wenn frei) und lässt sich wieder nehmen.</summary>
+    void Dismount()
+    {
+        int ux = (int)Math.Floor((Player.X + 12) / T), uy = (int)Math.Floor((Player.Y + 15) / T);
+        if (uy >= 0 && uy < Rows && ux >= 0 && ux < _grid[uy].Length && _grid[uy][ux] == '.') { _grid[uy][ux] = 'V'; _parked[(ux, uy)] = Vehicle!; }
+        Vehicle = null; _noEnter = 30; Note = "Ausgestiegen";
+    }
+
     /// <summary>Angriff (neuer Tastendruck, 20 Bilder Abklingzeit), Schwert vor der Figur, Geschosse fliegen bis zur Wand oder zum Gegner.</summary>
     void Combat(bool strike)
     {
@@ -157,6 +174,7 @@ public sealed class PlatformSim
 
     double RuleValue(GameStudio.GameRule r) => r.When switch { "muenzen" => Coins.Count(c => c.Taken), "punkte" => Score, "gegner" => FoesDefeated, "sekunden" => Frames / 60.0, "gegenstaende" => ItemsCollected, _ => 0 };
 
+    /// <summary>Ereignis-Regeln prüfen: jede feuert höchstens einmal.</summary>
     void Rules()
     {
         for (var i = 0; i < _rules.Count; i++)
@@ -192,29 +210,40 @@ public sealed class PlatformSim
     }
 
     /// <summary>Ein Bild weiter (60 je Sekunde). <paramref name="jump"/> springt nur vom Boden aus.</summary>
-    public void Step(bool left, bool right, bool jump, bool sprint = false, bool attack = false)
+    public void Step(bool left, bool right, bool jump, bool sprint = false, bool attack = false, bool use = false)
     {
         var strike = attack && !_attackPrev; _attackPrev = attack;
+        var exit = use && !_usePrev; _usePrev = use;
         var press = jump && !_jumpPrev; _jumpPrev = jump;
         if (Flash > 0) Flash--;
         if (Over) return;
         Frames++; _levelFrames++;
-        var pl = Player; var sp = (2.2 + _speed * .35 + _boost) * (sprint && Has("sprint") ? 1.6 : 1);
+        var pl = Player; var sp = (2.2 + _speed * .35 + _boost) * (sprint && Has("sprint") ? 1.6 : 1) * (Vehicle == "wagen" ? 1.8 : Vehicle == "ufo" ? 1.3 : 1);
         if (jump && pl.On) pl.Vy = -11.5;
         else if (press && !pl.On && _airJumps > 0) { _airJumps--; pl.Vy = -10.5; } // Doppelsprung
         pl.Vx = (right ? sp : 0) - (left ? sp : 0); pl.Vy = Math.Min(14, pl.Vy + .6);
+        if (Vehicle == "ufo" && jump && Fuel > 0) { pl.Vy = Math.Max(-6, pl.Vy - 1.8); if (--Fuel == 0) { Vehicle = null; Note = "Treibstoff leer"; } }
+        if (_safe > 0) _safe--; if (_noEnter > 0) _noEnter--;
+        if (exit && Vehicle is not null) Dismount();
         if (pl.Vx > 0) pl.Facing = 1; else if (pl.Vx < 0) pl.Facing = -1;
         Move(pl, pl.Vx, 0); Move(pl, 0, pl.Vy);
         if (pl.On) _airJumps = Has("doppelsprung") ? 1 : 0;
         Combat(strike);
         if (pl.On && At((int)Math.Floor((pl.X + 12) / T), (int)Math.Floor((pl.Y + pl.H + 1) / T)) == 'F') { pl.Vy = -17; pl.On = false; } // Sprungfeder
-        if (pl.Y > Rows * T + 60) { Hit(); return; }
+        if (pl.Y > Rows * T + 60) { Hit(true); return; }
         int cx = (int)Math.Floor((pl.X + 12) / T), cy = (int)Math.Floor((pl.Y + 15) / T), cb = (int)Math.Floor((pl.Y + 29) / T);
         if (At(cx, cb) == '^' || At(cx, cy) == '^') { Hit(); return; }
         if (At(cx, cy) == 'Z' || At(cx, cb) == 'Z') { Goal(); return; }
         foreach (var yy in new[] { cy, cb })
         {
             if (At(cx, yy) == 'K') { _grid[yy][cx] = '.'; Keys++; if (Keys >= KeysTotal) { DoorsOpen = true; Note = "Alle Schlüssel – Türen offen"; } }
+            if (At(cx, yy) == 'V' && Vehicle is null && _noEnter == 0)
+            {
+                _grid[yy][cx] = '.';
+                var kind = _parked.Remove((cx, yy), out var pk) ? pk : Text(cx, yy, "kind", "wagen");
+                Vehicle = kind == "ufo" ? "ufo" : "wagen"; Fuel = Vehicle == "ufo" ? 600 : 0;
+                Note = Vehicle == "ufo" ? "Ufo: Sprungtaste halten – E steigt aus" : "Wagen: schnell, fängt einen Treffer ab – E steigt aus";
+            }
             if (At(cx, yy) == 'G') { _grid[yy][cx] = '.'; var n = Text(cx, yy, "name", "Kristall"); Inventory.Add(n); ItemsCollected++; Note = n + " eingesammelt"; }
             if (At(cx, yy) == 'N')
             {

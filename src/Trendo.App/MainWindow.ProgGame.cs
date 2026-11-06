@@ -465,7 +465,7 @@ public partial class MainWindow
         var tiles = deco
             ? new (char Ch, string Id, string Label)[] { ('w', "wolke", "Wolke"), ('m', "berg", "Berg"), ('t', "baum", "Baum"), ('b', "busch", "Busch"), ('g', "gras", "Gras"), ('.', "radierer", "Radierer") }
             : kind == "plattform"
-            ? new (char Ch, string Id, string Label)[] { (LevelCanvas.PickTool, "auswahl", "⬚ Auswählen"), ('#', "boden", "Boden"), ('o', "muenze", "Münze"), ('E', "gegner", "Gegner"), ('^', "stacheln", "Stacheln"), ('S', "start", "Start"), ('F', "feder", "Sprungfeder"), ('C', "speicher", "Speicherpunkt"), ('K', "schluessel", "Schlüssel"), ('D', "tuer", "Tür"), ('G', "gegenstand", "Gegenstand"), ('N', "figur", "Sprechende Figur"), ('Z', "ziel", "Ziel"), ('.', "radierer", "Radierer") }
+            ? new (char Ch, string Id, string Label)[] { (LevelCanvas.PickTool, "auswahl", "⬚ Auswählen"), ('#', "boden", "Boden"), ('o', "muenze", "Münze"), ('E', "gegner", "Gegner"), ('^', "stacheln", "Stacheln"), ('S', "start", "Start"), ('F', "feder", "Sprungfeder"), ('C', "speicher", "Speicherpunkt"), ('K', "schluessel", "Schlüssel"), ('D', "tuer", "Tür"), ('G', "gegenstand", "Gegenstand"), ('N', "figur", "Sprechende Figur"), ('V', "fahrzeug", "Fahrzeug"), ('Z', "ziel", "Ziel"), ('.', "radierer", "Radierer") }
             : [('#', "boden", kind == "breakout" ? "Stein" : "Hindernis"), ('.', "radierer", "Radierer")];
         if (!tiles.Any(t => t.Ch == GameTile)) GameTile = tiles[deco ? 0 : kind == "plattform" ? 1 : 0].Ch;
         var canvas = new LevelCanvas { Name = "game-level", Rows = deco ? GameDecorRows(d, li) : rows, Tile = GameTile, Cell = kind == "jump" ? 18 : 22, Selected = deco ? null : GameObjSel,
@@ -621,7 +621,8 @@ public partial class MainWindow
             'F' => ("Sprungfeder", "Draufstehen schleudert die Figur hoch."), 'C' => ("Speicherpunkt", "Berühren: nach einem Treffer geht es hier weiter."),
             'K' => ("Schlüssel", "Alle Schlüssel gesammelt öffnen die Türen."), 'D' => ("Tür", "Fest, bis alle Schlüssel gesammelt sind (oder eine Regel sie öffnet)."),
             'G' => ("Gegenstand", "Kommt beim Berühren ins Inventar. Sprechende Figuren können ihn sich wünschen."),
-            'N' => ("Sprechende Figur", "Sagt ihren Text. Wünscht sie sich einen Gegenstand, gibt sie dafür eine Belohnung."), _ => ("Leer", "Hier ist nichts.")
+            'N' => ("Sprechende Figur", "Sagt ihren Text. Wünscht sie sich einen Gegenstand, gibt sie dafür eine Belohnung."),
+            'V' => ("Fahrzeug", "Berühren = einsteigen, E = aussteigen. Wagen: schnell und fängt einen Treffer ab. Ufo: Sprungtaste halten zum Fliegen (10 s Treibstoff)."), _ => ("Leer", "Hier ist nichts.")
         };
         sp.Children.Add(new TextBlock { Name = "game-obj-name", Text = $"{name} · Spalte {sel.X + 1}, Zeile {sel.Y + 1}", Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold });
         sp.Children.Add(P(what, Muted, 11.5));
@@ -631,6 +632,13 @@ public partial class MainWindow
         if (ch == 'E') Num("game-obj-hp", "Treffer bis besiegt (1–9, ab 2 Boss)", props.GetValueOrDefault(key + ":hp", 1), 1, 9, v => SetProp("hp", Math.Round(v), "Gegner-Trefferpunkte"));
         if (ch == 'o') Num("game-obj-value", "Wert (Punkte)", props.GetValueOrDefault(key + ":value", 1), 1, 100, v => SetProp("value", Math.Round(v), "Münzwert"));
         if (ch is 'G' or 'N') GameObjTexts(d, sp, ch, key);
+        if (ch == 'V')
+        {
+            var cur = GameDesign.Texts(d.Data).GetValueOrDefault(key + ":kind", "wagen");
+            var kind = new ComboBox { Name = "game-obj-vehicle", ItemsSource = GameStudio.Vehicles.Select(x => x.Label).ToList(), SelectedIndex = Math.Max(0, Array.FindIndex(GameStudio.Vehicles, x => x.Id == cur)), HorizontalAlignment = HorizontalAlignment.Stretch };
+            kind.SelectionChanged += (_, _) => { var v = GameStudio.Vehicles[Math.Max(0, kind.SelectedIndex)].Id; if (v != cur) ProgramRun(GK, () => d.Edit("Fahrzeug-Art", x => { var o = x["texts"] as JsonObject ?? []; o[key + ":kind"] = v; x["texts"] = o; })); };
+            sp.Children.Add(Row(P("Art", Muted, 11.5), kind));
+        }
         if (ch != '.')
         {
             var del = Act("game-obj-del", "Entfernen", () => ProgramRun(GK, () =>
@@ -698,7 +706,7 @@ public partial class MainWindow
         var status = new TextBlock { Name = "game-play-status", Foreground = GoldText(), FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 12, 0) };
         string Status() => sim.Won ? $"Geschafft! {sim.Score} Punkte" : sim.Lost ? (sim.TimeUp ? $"Zeit abgelaufen – {sim.Score} Punkte" : $"Verloren – {sim.Score} Punkte")
             : $"Punkte {sim.Score} · Leben {sim.Lives} · {sim.Coins.Count(c => c.Taken)}/{sim.Coins.Count} Münzen" + (sim.KeysTotal > 0 ? $" · Schlüssel {sim.Keys}/{sim.KeysTotal}" : "")
-              + (sim.SecondsLeft >= 0 ? $" · noch {Math.Ceiling(sim.SecondsLeft):0} s" : "") + (sim.Inventory.Count > 0 ? " · Inventar: " + string.Join(", ", sim.Inventory) : "") + string.Concat(sim.Quests.Select(q => " · " + GameStudio.QuestText(q.Rule, q.Value, q.Done))) + (sim.Note.Length > 0 ? " · " + sim.Note : "");
+              + (sim.SecondsLeft >= 0 ? $" · noch {Math.Ceiling(sim.SecondsLeft):0} s" : "") + (sim.Vehicle is { } veh ? $" · {(veh == "ufo" ? $"Ufo ({sim.Fuel / 60} s Treibstoff)" : "Wagen")}" : "") + (sim.Inventory.Count > 0 ? " · Inventar: " + string.Join(", ", sim.Inventory) : "") + string.Concat(sim.Quests.Select(q => " · " + GameStudio.QuestText(q.Rule, q.Value, q.Done))) + (sim.Note.Length > 0 ? " · " + sim.Note : "");
         status.Text = Status();
         var canvas = new PlaytestCanvas { Name = "game-playtest", Sim = sim, Height = 360, HorizontalAlignment = HorizontalAlignment.Stretch,
             Decor = [.. Enumerable.Range(0, GameLevelCount(d)).Select(i => (IReadOnlyList<string>)GameDecorRows(d, i))], Anims = GameAnimBitmaps(d) };
