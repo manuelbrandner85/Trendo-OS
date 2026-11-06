@@ -250,12 +250,18 @@ public partial class MainWindow
         var modes = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
         foreach (var (pro, label) in new[] { (false, "Einfach"), (true, "Profi") })
         {
-            var on = _msPro == pro; var p = pro;
+            var on = !_msBeat && _msPro == pro; var p = pro;
             var b = new Button { Name = "ms-mode-" + (pro ? "profi" : "einfach"), Content = label, Padding = new Thickness(16, 5), CornerRadius = new CornerRadius(14), Background = on ? Accent : Brush.Parse("#22FFFFFF"), Foreground = on ? Brushes.White : Text, BorderThickness = new Thickness(0) };
-            b.Click += (_, _) => { _msPro = p; Show(MS); };
+            b.Click += (_, _) => { _msPro = p; _msBeat = false; Show(MS); };
             modes.Children.Add(b);
         }
+        { // Paket 01 S4-13: Modus „Beat“ (Step-Sequencer)
+            var bb = new Button { Name = "ms-mode-beat", Content = "Beat", Padding = new Thickness(16, 5), CornerRadius = new CornerRadius(14), Background = _msBeat ? Accent : Brush.Parse("#22FFFFFF"), Foreground = _msBeat ? Brushes.White : Text, BorderThickness = new Thickness(0) };
+            bb.Click += (_, _) => { _msBeat = true; Show(MS); };
+            modes.Children.Add(bb);
+        }
         sp.Children.Add(new DockPanel { Children = { Dk(modes, Avalonia.Controls.Dock.Right), H("Erstellen", 16) } });
+        if (_msBeat) { if (_msMsg.Length > 0) sp.Children.Add(P(_msMsg, Muted, 11.5)); sp.Children.Add(MsBeatPanel()); return MsCard("ms-create-panel", new ScrollViewer { Content = sp }); }
         if (MsProducerDraftBanner() is { } prod) sp.Children.Add(prod); // Claude 26: offener Produzenten-Entwurf
         var sync = new List<Action>(); // beim Klick die Felder direkt auslesen – nicht auf das Änderungs-Ereignis warten
         TextBox Box(string name, string watermark, string value, Action<string> set, double minH = 0, bool multi = false)
