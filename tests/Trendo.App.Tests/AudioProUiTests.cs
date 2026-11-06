@@ -48,6 +48,16 @@ public class AudioPro_Ui
             Click(w, "au-track-mute-0"); Settle(); Click(w, "au-track-solo-1"); Settle();
             var ts = AudioMulti.Tracks(w.ProgramActive("ton")!.Data); Assert.False(ts[0].Mute); Assert.True(ts[1].Solo);
             Assert.False(AudioMulti.Audible(ts, ts[0]));
+            // Paket 01 S4-16: Solo-Spur 2 nach links hinten (−110°) und als 5.1 abmischen
+            w.ProgramActive("ton")!.Edit("Raum", x => SpatialAudio.SetAzimuth(x, ts[1].Id, -110)); w.Show("ton"); Settle();
+            Assert.Equal(-110, w.Find<Slider>("au-track-az-1").Value);
+            Click(w, "au-mix51"); Settle();
+            var dir51 = Directory.GetDirectories(root, "* 5.1 *", SearchOption.AllDirectories).Single();
+            var b51 = File.ReadAllBytes(Directory.GetFiles(dir51, "*(5.1).wav").Single());
+            Assert.Equal(SpatialAudio.Mask51Side, SpatialAudio.WavChannelMask(b51));
+            var a51 = AudioFile.ReadWav(b51); double R(float[] x) => Math.Sqrt(x.Sum(v => v * (double)v) / x.Length);
+            Assert.True(R(a51.Data[4]) > 0.05 && R(a51.Data[2]) < 1e-4, $"Ls {R(a51.Data[4])}, C {R(a51.Data[2])}");
+            Assert.True(File.Exists(Path.Combine(dir51, "Kanalplan.md"))); Assert.Single(Directory.GetFiles(dir51, "*Kopfhörer-Vorschau*"));
             // Abmischen: neue einzelne Spur mit der Summe
             Click(w, "au-mixdown"); Settle();
             var single = w.ProgramActive("ton")!;

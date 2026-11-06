@@ -3,6 +3,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Trendo.Core;
 using Trendo.Core.Media;
 using Trendo.Core.Programs;
 
@@ -54,6 +55,21 @@ public partial class MainWindow
         return f;
     }
 
+    /// <summary>Paket 01 S4-16: als 5.1 abmischen – Ordner mit 5.1-WAV, Kopfhörer-Vorschau (Stereo) und Kanalplan.</summary>
+    public string AuMix51(ProgramDocument d)
+    {
+        if (AudioMulti.Tracks(d.Data).Count == 0) throw new InvalidOperationException("Erst Spuren hinzufügen.");
+        var name = d.Title.Length > 0 ? string.Concat(d.Title.Split(Path.GetInvalidFileNameChars())) : "Abmischung";
+        var dir = Path.Combine(WorkFolder("Medien"), "Abmischungen", $"{name} 5.1 {DateTime.Now:yyyy-MM-dd HH-mm-ss}"); Directory.CreateDirectory(dir);
+        var a = SpatialAudio.Mix51(d.Data);
+        var f = Path.Combine(dir, name + " (5.1).wav"); SpatialAudio.WriteWav51(a, f);
+        AudioFile.WriteWav(SpatialAudio.Binaural(a), Path.Combine(dir, name + " (Kopfhörer-Vorschau).wav"), 24);
+        File.WriteAllText(Path.Combine(dir, "Kanalplan.md"), $"# Kanalplan „{d.Title}“\n\n5.1 (L R C LFE Ls Rs, Kanalmaske 5.1(side)), {a.Rate} Hz, 24 Bit, {a.Seconds:0.0} s\n\n" + SpatialAudio.ChannelPlan(a));
+        _core.Audit.Append(Principal.LocalOwner.Name, "audio.mix51", Path.GetFileName(dir));
+        _progMsg[AUK] = $"5.1 abgemischt: {dir} – mit Kopfhörer-Vorschau und Kanalplan.";
+        return dir;
+    }
+
     Control AuMultiWorkspace(ProgramDocument d)
     {
         var tracks = AudioMulti.Tracks(d.Data); _auLanes.Clear(); _auWave = null;
@@ -78,9 +94,16 @@ public partial class MainWindow
             }
             var vol = new Slider { Name = $"au-track-vol-{i}", Minimum = -30, Maximum = 6, Value = t.GainDb, Width = 92, Margin = new Thickness(0, -8, 0, -8) };
             var pan = new Slider { Name = $"au-track-pan-{i}", Minimum = -1, Maximum = 1, Value = t.Pan, Width = 64, Margin = new Thickness(0, -8, 0, -8) };
-            ToolTip.SetTip(vol, "Lautstärke der Spur"); ToolTip.SetTip(pan, "Panorama links ↔ rechts");
-            void Commit() => ProgramRun(AUK, () => d.Edit("Spur einstellen", x => AudioMulti.SetTrack(x, id, gainDb: Math.Round(vol.Value, 1), pan: Math.Round(pan.Value, 2))));
-            vol.PointerCaptureLost += (_, _) => Commit(); pan.PointerCaptureLost += (_, _) => Commit();
+            // Paket 01 S4-16: Raum-Winkel für 5.1 (−180° … 180°)
+            var tobj = (d.Data["tracks"] as JsonArray ?? []).OfType<JsonObject>().FirstOrDefault(x => (string?)x["id"] == id); var az0 = tobj is null ? 0 : SpatialAudio.AzimuthOf(tobj);
+            var az = new Slider { Name = $"au-track-az-{i}", Minimum = -180, Maximum = 180, Value = az0, Width = 56, Margin = new Thickness(0, -8, 0, -8) };
+            ToolTip.SetTip(vol, "Lautstärke der Spur"); ToolTip.SetTip(pan, "Panorama links ↔ rechts"); ToolTip.SetTip(az, "Raum (5.1): Winkel im Kreis – 0° vorn, ±110° hinten");
+            void Commit() => ProgramRun(AUK, () => d.Edit("Spur einstellen", x =>
+            {
+                AudioMulti.SetTrack(x, id, gainDb: Math.Round(vol.Value, 1), pan: Math.Round(pan.Value, 2));
+                if (Math.Abs(az.Value - az0) > 0.5) SpatialAudio.SetAzimuth(x, id, Math.Round(az.Value));
+            }));
+            vol.PointerCaptureLost += (_, _) => Commit(); pan.PointerCaptureLost += (_, _) => Commit(); az.PointerCaptureLost += (_, _) => Commit();
             var del = new Button { Name = $"au-track-del-{i}", Content = "✕", Width = 24, Height = 24, Padding = new Thickness(0), FontSize = 11, Background = Brushes.Transparent, Foreground = Muted, HorizontalContentAlignment = HorizontalAlignment.Center };
             ToolTip.SetTip(del, "Spur entfernen"); del.Click += (_, _) => ProgramRun(AUK, () => d.Edit("Spur entfernen", x => AudioMulti.RemoveTrack(x, id)));
             var color = Color.Parse(AuTrackColors[i % AuTrackColors.Length]);
@@ -91,8 +114,8 @@ public partial class MainWindow
                     new StackPanel { Orientation = Orientation.Horizontal, Children = {
                         Tog($"au-track-mute-{i}", "M", t.Mute, "Stumm", () => d.Edit("Spur stumm", x => AudioMulti.SetTrack(x, id, mute: !t.Mute))),
                         Tog($"au-track-solo-{i}", "S", t.Solo, "Solo – nur Solo-Spuren sind zu hören", () => d.Edit("Spur solo", x => AudioMulti.SetTrack(x, id, solo: !t.Solo))),
-                        vol, new Border { Width = 4 }, pan } },
-                    new TextBlock { Text = $"{t.GainDb:+0.0;−0.0;0} dB · {(Math.Abs(t.Pan) < 0.05 ? "Mitte" : t.Pan < 0 ? $"L {-t.Pan * 100:0}" : $"R {t.Pan * 100:0}")} · ab {AudioEdit.Time(t.Start)}", Foreground = Muted, FontSize = 10.5 } } } };
+                        vol, new Border { Width = 4 }, pan, new Border { Width = 4 }, az } },
+                    new TextBlock { Text = $"{t.GainDb:+0.0;−0.0;0} dB · {(Math.Abs(t.Pan) < 0.05 ? "Mitte" : t.Pan < 0 ? $"L {-t.Pan * 100:0}" : $"R {t.Pan * 100:0}")} · ab {AudioEdit.Time(t.Start)}{(tobj?["az"] is not null ? $" · Raum {az0:+0;-0;0}°" : "")}", Foreground = Muted, FontSize = 10.5 } } } };
             Grid.SetRow(header, row); rows.Children.Add(header);
             var lane = new ClipLane { Name = $"au-lane-{i}", Total = total, Start = t.Start, Length = a?.Seconds ?? 1, Peaks = a is null ? [] : AudioEdit.Peaks(a, 500), Label = a is null ? t.Name + " (Datei fehlt)" : t.Name,
                 Tint = color, Dimmed = !audible, Marker = marker, Margin = new Thickness(0, 2, 0, 2) };
@@ -118,6 +141,7 @@ public partial class MainWindow
         bar.Children.Add(T("au-tp-play", "▶", "Summe abspielen (ab der Marke)", () => AuPlay(d), true));
         bar.Children.Add(T("au-tp-stop", "■", "Stopp", AuStop));
         bar.Children.Add(T("au-mixdown", "⤓ Abmischen", "Alle Spuren zu einer Datei abmischen und als Spur öffnen", () => AuMixdown(d)));
+        bar.Children.Add(T("au-mix51", "5.1", "Als 5.1-Raumklang abmischen: WAV mit sechs Kanälen, Kanalplan und Kopfhörer-Vorschau", () => AuMix51(d)));
         bar.Children.Add(new TextBlock { Name = "au-time", Text = $"Marke {AudioEdit.Time(marker)}", Foreground = Text, FontSize = 15, FontFamily = new FontFamily("Consolas, monospace"), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0, 0, 0) });
         var dawHead = new Border { Name = "au-daw-bar", CornerRadius = new CornerRadius(10), Background = DawPanel, BorderBrush = DawEdge, BorderThickness = new Thickness(1), Padding = new Thickness(10, 6), Margin = new Thickness(0, 0, 0, 8), Child = bar };
         bar.HorizontalAlignment = HorizontalAlignment.Left; bar.Margin = default;
