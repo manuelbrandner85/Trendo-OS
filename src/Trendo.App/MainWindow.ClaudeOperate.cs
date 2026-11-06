@@ -119,7 +119,7 @@ public partial class MainWindow
             case "3d": return Claude3DFocus(); // Szene mit Maßen, Materialien, Licht, Kamera und wie Claude sie ändert (MainWindow.Claude3D.cs)
         }
         if (page == GK && ClaudeGameFocus() is { } gf) return gf; // Level in voller Länge für Claude
-        if (page == MS && ClaudeMusicFocus() is { } mf) return mf; // Trendo Musik: Lied samt Produzenten-Prüfung
+        if (ClaudeMusicFocus(page) is { } mf) return mf; // Trendo Musik (Produzent) und Live streamen (Regie)
         if (Programs.TryGetValue(page, out var spec) && ProgramActive(page) is { } d)
         {
             var parts = d.Data.Select(kv => kv.Value is System.Text.Json.Nodes.JsonArray a ? $"{kv.Key}: {a.Count}" : null).OfType<string>().Take(10).ToList();

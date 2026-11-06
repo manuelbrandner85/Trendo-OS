@@ -82,8 +82,10 @@ public partial class MainWindow
         {
             Os = ThisOs(), Video = _liveVideo, Fps = rates.Fps, Width = rates.W, Height = rates.H,
             VideoKbps = rates.VideoKbps, AudioKbps = rates.AudioKbps, Microphone = _liveMic,
-            Display = Environment.GetEnvironmentVariable("DISPLAY") is { Length: > 0 } d ? d : ":0"
+            Display = Environment.GetEnvironmentVariable("DISPLAY") is { Length: > 0 } d ? d : ":0",
+            Scene = LiveShowState.Current, Mix = LiveShowState.Mix, MeterDir = LiveMeterDir // Profi 27: Szene, Tonmischer, Pegel
         };
+        ResetMeters();
         if (_liveVideo == VideoKind.Window)
         {
             if (_liveWindows.Count == 0) throw new InvalidOperationException("Bitte zuerst auf „Fenster suchen“ tippen und ein Fenster wählen.");
@@ -317,6 +319,7 @@ public partial class MainWindow
         ReadLiveForm();
         if (_liveAsk == LiveAskState.Pending) _core.Approvals.Approve(_liveApprovalId, Principal.LocalOwner);
         var copy = _liveCopy ? NewRecording() : null;
+        if (Live.Mode == LiveMode.Broadcasting) Live.Stop(); // Szenenwechsel: alte Sendung endet erst nach dem Ja
         LiveBroadcast.Go(_core.Approvals, _liveApprovalId, Live, _frozenPlatform, _frozenCustom, _core.Secrets, ff, _frozen, PreviewPath, copy, _core.Offline);
         _liveApprovalId = null;
         _liveAsk = LiveAskState.None;
@@ -360,6 +363,13 @@ public partial class MainWindow
         Show("sendung");
     }
 
+    /// <summary>Hauptquelle der aktiven Szene setzen (Bildschirm, Fenster, Kamera).</summary>
+    void LiveSetMain(VideoKind k)
+    {
+        _liveVideo = k;
+        if (LiveShowState.Current is { } sc) { var i = LiveShowState.Scenes.IndexOf(sc); LiveShowState.Scenes[i] = sc with { Main = k }; LiveSave(); }
+    }
+
     private string StatusText()
     {
         if (_liveMsg.Length > 0) return _liveMsg;
@@ -373,6 +383,7 @@ public partial class MainWindow
         {
             if (_live is null) return;
             if (_live.Exited) _live.NoteExit();
+            LiveMeterTick();
             var img = LiveCtrl<Image>("live-preview");
             var hint = LiveCtrl<TextBlock>("live-preview-hint");
             var status = LiveCtrl<TextBlock>("live-status");
@@ -392,8 +403,10 @@ public partial class MainWindow
         catch { /* Datei gerade im Schreiben oder Seite schon zu */ }
     }
 
-    private Control LiveSection()
+    /// <summary>Live-Bereich: schmal in der Seitenspalte des Sendeablaufs, breit (wie OBS) im Modus „Studio“.</summary>
+    private Control LiveSection(bool wide = false)
     {
+        if (LiveShowState.Current is { } cur) _liveVideo = cur.Main; // die Hauptquelle gehört zur aktiven Szene
         var box = new StackPanel { Spacing = 8 };
         var status = new TextBlock { Name = "live-status", Text = StatusText(), Foreground = Text, FontSize = 14, TextWrapping = TextWrapping.Wrap };
         box.Children.Add(status);
@@ -414,9 +427,9 @@ public partial class MainWindow
             Orientation = Orientation.Horizontal, Spacing = 6,
             Children =
             {
-                LiveBtn("live-src-screen", "Bildschirm", () => { ReadLiveForm(); _liveVideo = VideoKind.Screen; Show("sendung"); return Task.CompletedTask; }, _liveVideo == VideoKind.Screen),
-                LiveBtn("live-src-window", "Fenster", () => { ReadLiveForm(); _liveVideo = VideoKind.Window; Show("sendung"); return Task.CompletedTask; }, _liveVideo == VideoKind.Window),
-                LiveBtn("live-src-camera", "Kamera", () => { ReadLiveForm(); _liveVideo = VideoKind.Camera; Show("sendung"); return Task.CompletedTask; }, _liveVideo == VideoKind.Camera)
+                LiveBtn("live-src-screen", "Bildschirm", () => { ReadLiveForm(); LiveSetMain(VideoKind.Screen); Show("sendung"); return Task.CompletedTask; }, _liveVideo == VideoKind.Screen),
+                LiveBtn("live-src-window", "Fenster", () => { ReadLiveForm(); LiveSetMain(VideoKind.Window); Show("sendung"); return Task.CompletedTask; }, _liveVideo == VideoKind.Window),
+                LiveBtn("live-src-camera", "Kamera", () => { ReadLiveForm(); LiveSetMain(VideoKind.Camera); Show("sendung"); return Task.CompletedTask; }, _liveVideo == VideoKind.Camera)
             }
         });
         if (_liveVideo == VideoKind.Window)
@@ -442,7 +455,8 @@ public partial class MainWindow
         sources.Children.Add(micRow);
         if (_liveMics.Count > 0)
             sources.Children.Add(new ComboBox { Name = "live-mic-list", ItemsSource = _liveMics, SelectedIndex = Math.Clamp(_liveMicIndex, 0, _liveMics.Count - 1), MinWidth = 280 });
-        box.Children.Add(WCard(sources));
+        sources.Children.Add(LiveOverlaysPanel()); // Profi 27: Einblendungen der Szene
+        var sourcesCard = WCard(sources);
 
         var picture = new StackPanel { Spacing = 6 };
         picture.Children.Add(H("Bild", 14));
@@ -451,7 +465,7 @@ public partial class MainWindow
         var quality = new ComboBox { Name = "live-quality", ItemsSource = qualities, SelectedItem = _liveQuality, MinWidth = 140 };
         picture.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { P("Qualität", null, 11), quality } });
         picture.Children.Add(new TextBlock { Name = "live-preview-hint", Text = "Noch kein Bild. Mit „Vorschau starten“ siehst du die Quelle hier.", Foreground = Muted, TextWrapping = TextWrapping.Wrap, IsVisible = _liveBmp is null || Live.Mode == LiveMode.Idle && !File.Exists(PreviewPath) });
-        picture.Children.Add(new Image { Name = "live-preview", Height = 220, Stretch = Stretch.Uniform });
+        picture.Children.Add(new Image { Name = "live-preview", Height = 340, Stretch = Stretch.Uniform });
         picture.Children.Add(new StackPanel
         {
             Orientation = Orientation.Horizontal, Spacing = 6,
@@ -463,7 +477,7 @@ public partial class MainWindow
                 LiveBtn("live-open-file", "Letzte Aufnahme öffnen", () => { OpenRecording(); return Task.CompletedTask; })
             }
         });
-        box.Children.Add(WCard(picture));
+        var pictureCard = WCard(picture);
 
         var live = new StackPanel { Spacing = 6 };
         live.Children.Add(H("Live senden", 14));
@@ -517,7 +531,7 @@ public partial class MainWindow
                 }
             });
         }
-        box.Children.Add(WCard(live));
+        var liveCard = WCard(live);
 
         var tools = new StackPanel { Spacing = 6 };
         tools.Children.Add(H("FFmpeg", 14));
@@ -537,7 +551,10 @@ public partial class MainWindow
                 }
             });
         }
-        box.Children.Add(WCard(tools));
+        if (wide) return LiveLayout(box, sourcesCard, pictureCard, liveCard, WCard(tools));
+        var open = new Button { Name = "live-open-studio", Content = "🎥 Studio öffnen – Szenen, Tonmischer, Probelauf", HorizontalAlignment = HorizontalAlignment.Stretch, Background = Accent, Foreground = Brushes.White };
+        open.Click += (_, _) => { BcMode = "studio"; Show("sendung"); };
+        box.Children.Add(open); box.Children.Add(sourcesCard); box.Children.Add(pictureCard); box.Children.Add(liveCard); box.Children.Add(WCard(tools));
         return box;
     }
 

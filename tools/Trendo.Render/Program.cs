@@ -135,6 +135,10 @@ if (Environment.GetEnvironmentVariable("TRENDO_AUDIO_PRO") is { Length: > 0 } au
     }
     win.Show("ton");
 }
+if (Environment.GetEnvironmentVariable("TRENDO_LIVE_STUDIO") is { Length: > 0 }) // Live streamen wie OBS: Studio mit Szenen, Tonmischer, Probelauf, Sendeplan
+{
+    win.BcMode = "studio"; win.LiveSetPlan("00:00 Gleich geht's los – Begrüßung / 02:00 Kamera – Thema vorstellen / 10:00 Bildschirm – Demo");
+}
 if (Environment.GetEnvironmentVariable("TRENDO_TV_VIDEOS") is { } tvVid) // Video-Plattformen mit echter Suche (z. B. "peertube:musik")
 {
     var parts = tvVid.Split(':', 2); win.TvTabForTests = "videos"; win.TvVideoSelect(parts[0].Length > 0 ? parts[0] : "peertube");

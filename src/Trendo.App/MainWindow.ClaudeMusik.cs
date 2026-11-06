@@ -22,17 +22,19 @@ public partial class MainWindow
     /// <summary>Felder für Claude: Liedtext und Stil der nächsten Fassung, Mastering-Ziel des gewählten Lieds.</summary>
     IEnumerable<ClaudeActions.Field> ClaudeMusicFields(string page)
     {
+        if (page == "sendung") { foreach (var f in ClaudeLiveFields()) yield return f; yield break; } // Live streamen: Claude als Regie
         if (page != MS || MsSelected is not { } s) yield break;
         yield return new(ProdLyrics, $"Liedtext für eine neue Fassung von „{s.Title}“", s.Lyrics.Replace("\r", "").Replace("\n", " / "));
         yield return new(ProdStyle, "Stil für eine neue Fassung", s.Style);
         yield return new(ProdMaster, "Mastering-Ziel (" + string.Join(", ", SongProducer.Targets.Select(t => t.Id)) + ")", s.MasterTarget ?? "");
     }
 
-    string? ClaudeMusicFocus() => CurrentView == MS && MsSelected is { } s ? SongProducer.Briefing(s, SongFollow.Versions(Songs.All(), s)) : null;
+    string? ClaudeMusicFocus(string page) => page == "sendung" ? ClaudeLiveFocus() : page == MS && MsSelected is { } s ? SongProducer.Briefing(s, SongFollow.Versions(Songs.All(), s)) : null;
 
     /// <summary>Vorschau in der Plan-Karte: Rhythmus-Prüfung vorher/nachher, Stil-Bausteine, Mastering-Ziel.</summary>
     Control? ClaudeMusicPreview(string page, ClaudeActions.Step s)
     {
+        if (page == "sendung" && s.Kind == "feld") return ClaudeLivePreview(s);
         if (page != MS || s.Kind != "feld" || s.Value is not { Length: > 0 } v || MsSelected is not { } song) return null;
         TextBlock Warn(string t) => new() { Name = "claude-plan-warn", Text = "⚠ So nicht möglich: " + t, Foreground = Brush.Parse("#FFF8B26A"), FontSize = 12, TextWrapping = TextWrapping.Wrap };
         var bpm = song.Analysis?.Bpm ?? song.Bpm ?? 0; var meter = song.Analysis?.Meter ?? song.TimeSignature;
@@ -74,6 +76,7 @@ public partial class MainWindow
     /// <summary>Claudes Vorschlag übernehmen: Text/Stil → Entwurf der neuen Fassung im Profi-Formular; Mastering-Ziel → Lied mastern.</summary>
     bool ClaudeMusicApply(string page, ClaudeActions.Step s)
     {
+        if (page == "sendung" && s.Kind == "feld") return ClaudeLiveApply(s);
         if (page != MS || s.Kind != "feld" || s.Value is not { Length: > 0 } v || MsSelected is not { } song) return false;
         void Draft()
         {

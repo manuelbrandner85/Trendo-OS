@@ -42,6 +42,12 @@ public sealed record CaptureChoice
     public int VideoKbps { get; init; } = 2500;
     public int AudioKbps { get; init; } = 160;
     public string Display { get; init; } = ":0";
+    /// <summary>Profi 27: Szene mit Einblendungen (null = nur die Hauptquelle wie bisher).</summary>
+    public LiveScene? Scene { get; init; }
+    /// <summary>Profi 27: Tonmischer (Mikrofon, Musik) – null = Ton wie bisher.</summary>
+    public LiveMix? Mix { get; init; }
+    /// <summary>Profi 27: Ordner für die Pegel-Dateien, relativ zum Arbeitsordner von FFmpeg (temporärer Ordner); null = keine Pegel.</summary>
+    public string? MeterDir { get; init; }
 }
 
 public sealed record CaptureRates(int W, int H, int Fps, int VideoKbps, int AudioKbps);
@@ -148,6 +154,7 @@ public static class LiveFfmpeg
         if (c.VideoKbps is < 100 or > 80000) throw new ArgumentException("Die Bitrate liegt außerhalb des sinnvollen Bereichs.");
         var a = new List<string> { "-y", "-hide_banner" };
         AddVideo(a, c);
+        if (c.Scene is not null || c.Mix is not null || c.MeterDir is not null) return ShowArgs(a, output, c, previewPath, mediaPath, rtmpUrl);
         int? audio = null;
         // Die Vorschau öffnet das Mikrofon nicht, sonst bleibt das Gerät belegt.
         if (output != LiveOutput.Preview && c.Microphone)
@@ -191,6 +198,48 @@ public static class LiveFfmpeg
             if (string.IsNullOrWhiteSpace(mediaPath)) throw new ArgumentException("Die Aufnahme braucht einen Dateipfad.");
             Encode(false);
             a.AddRange(["-f", "mp4", "-movflags", "frag_keyframe+empty_moov", mediaPath]);
+        }
+        return a;
+    }
+
+    /// <summary>Profi 27: Szene mit Einblendungen und Tonmischer mit Pegeln (wie OBS). Eingänge in fester Reihenfolge: Hauptbild, Mikrofon, Einblendungen, Musik, ggf. Stille.</summary>
+    private static List<string> ShowArgs(List<string> a, LiveOutput output, CaptureChoice c, string previewPath, string? mediaPath, string? rtmpUrl)
+    {
+        var next = 1; int? micIn = null;
+        if (output != LiveOutput.Preview && c.Microphone) { micIn = next++; AddMic(a, c); }
+        var font = c.Scene?.Overlays.Any(o => o.Kind == "text" && o.Visible) == true ? Media.VideoEdit.FontFile() : null;
+        var (vin, vg, n2) = LiveCompose.Video(c, c.Scene, next, font); a.AddRange(vin); next = n2;
+        List<string> ain = []; string? ag = null;
+        if (output != LiveOutput.Preview) { (ain, ag, next) = LiveCompose.Audio(c.Mix, micIn, next, c.MeterDir); a.AddRange(ain); }
+        int? silent = null;
+        if (output == LiveOutput.Broadcast && ag is null && micIn is null) { silent = next++; a.AddRange(["-f", "lavfi", "-i", "anullsrc=channel_layout=stereo:sample_rate=44100"]); }
+        if (output == LiveOutput.Preview)
+        {
+            a.AddRange(["-filter_complex", vg + ";[vmain]fps=2,scale=640:-2[prev]", "-map", "[prev]", "-an", "-q:v", "5", "-f", "image2", "-update", "1", previewPath]);
+            return a;
+        }
+        a.AddRange(["-filter_complex", vg + ";[vmain]split=2[vout][p];[p]fps=2,scale=640:-2[prev]" + (ag is null ? "" : ";" + ag)]);
+        a.AddRange(["-map", "[prev]", "-an", "-q:v", "5", "-f", "image2", "-update", "1", previewPath]);
+        var audioMap = ag is not null ? "[aout]" : micIn is int mi ? mi.ToString(CultureInfo.InvariantCulture) + ":a" : silent is int si ? si.ToString(CultureInfo.InvariantCulture) + ":a" : null;
+        void Encode(bool live)
+        {
+            a.AddRange(["-map", "[vout]"]);
+            if (audioMap is not null) a.AddRange(["-map", audioMap]);
+            a.AddRange(["-c:v", "libx264", "-preset", "veryfast"]);
+            if (live) a.AddRange(["-tune", "zerolatency"]);
+            a.AddRange(["-pix_fmt", "yuv420p", "-r", c.Fps.ToString(CultureInfo.InvariantCulture), "-b:v", c.VideoKbps.ToString(CultureInfo.InvariantCulture) + "k", "-maxrate", c.VideoKbps.ToString(CultureInfo.InvariantCulture) + "k", "-bufsize", (c.VideoKbps * 2).ToString(CultureInfo.InvariantCulture) + "k", "-g", (c.Fps * 2).ToString(CultureInfo.InvariantCulture)]);
+            if (audioMap is not null) a.AddRange(["-c:a", "aac", "-b:a", c.AudioKbps.ToString(CultureInfo.InvariantCulture) + "k", "-ar", "44100"]);
+        }
+        if (output == LiveOutput.Broadcast)
+        {
+            if (string.IsNullOrWhiteSpace(rtmpUrl) || !rtmpUrl.StartsWith("rtmp", StringComparison.OrdinalIgnoreCase)) throw new ArgumentException("Dem Stream fehlt die Zieladresse.");
+            Encode(true); a.AddRange(["-f", "flv", rtmpUrl]);
+            if (!string.IsNullOrWhiteSpace(mediaPath)) { Encode(false); a.AddRange(["-f", "mp4", "-movflags", "frag_keyframe+empty_moov", mediaPath]); }
+        }
+        else
+        {
+            if (string.IsNullOrWhiteSpace(mediaPath)) throw new ArgumentException("Die Aufnahme braucht einen Dateipfad.");
+            Encode(false); a.AddRange(["-f", "mp4", "-movflags", "frag_keyframe+empty_moov", mediaPath]);
         }
         return a;
     }

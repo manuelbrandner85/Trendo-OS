@@ -54,7 +54,7 @@ public partial class MainWindow
         Button Btn(string name, string label, Action go, bool accent = false) { var b = new Button { Name = name, Content = label, Padding = new Thickness(10, 4), Margin = new Thickness(0, 0, 4, 4) }; if (accent) { b.Background = Accent; b.Foreground = Brushes.White; } b.Click += (_, _) => go(); return b; }
         // Kopf: Modus und Sendung
         var bar = new WrapPanel { Name = "bc-bar" };
-        foreach (var (id, label) in new[] { ("ablauf", "Ablauf"), ("onair", "On-Air-Uhr") })
+        foreach (var (id, label) in new[] { ("ablauf", "Ablauf"), ("onair", "On-Air-Uhr"), ("studio", "🎥 Studio") })
         {
             var mid = id; var b = Btn("bc-mode-" + id, label, () => { BcMode = mid; Show("sendung"); }); if (BcMode == id) { b.Background = Accent; b.Foreground = Brushes.White; }
             bar.Children.Add(b);
@@ -70,7 +70,7 @@ public partial class MainWindow
         if (_bcMsg.Length == 0 && _w45Msg.Length > 0) bar.Children.Add(new TextBlock { Name = "bc-app-msg", Text = _w45Msg, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4), TextWrapping = TextWrapping.Wrap, MaxWidth = 520, FontSize = 12, Foreground = Brush.Parse(_w45Msg.StartsWith('⚠') ? "#F87171" : "#7FD3FF") }); // Meldungen von „In OBS öffnen“
         if (_bcMsg.Length > 0) bar.Children.Add(new TextBlock { Name = "bc-msg", Text = _bcMsg, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4), TextWrapping = TextWrapping.Wrap, MaxWidth = 520, FontSize = 12, Foreground = Brush.Parse(_bcMsg.StartsWith('⚠') ? "#F87171" : "#4ADE80") });
 
-        Control main = BcMode == "onair" ? BcOnAir() : BcRundown();
+        Control main = BcMode == "onair" ? BcOnAir() : BcMode == "studio" ? new ScrollViewer { Content = LiveSection(wide: true) } : BcRundown(); // Profi 27: Studio wie OBS
         var mid2 = new Border { Name = "bc-main", CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(14), Child = main };
         var right = new Border { Name = "bc-side", Width = 360, CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(12), Child = new ScrollViewer { Content = BcSide() } };
         var body = new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,Auto"), Children = { mid2, Pos(right, 2) } };
@@ -154,7 +154,7 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 6 };
         Button B(string name, string label, Action go) { var b = new Button { Name = name, Content = label, Padding = new Thickness(10, 4), Margin = new Thickness(0, 0, 4, 4) }; b.Click += (_, _) => BcRun(go); return b; }
-        sp.Children.Add(LiveSection());
+        if (BcMode != "studio") sp.Children.Add(LiveSection()); // im Studio steht alles in der Mitte
         sp.Children.Add(H("Weitergeben", 12));
         var d = Fach.StoreDir(_core.DataRoot, "sendung");
         sp.Children.Add(new WrapPanel { Children = {
