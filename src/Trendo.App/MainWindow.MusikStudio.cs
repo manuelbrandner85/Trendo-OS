@@ -205,11 +205,14 @@ public partial class MainWindow
     // ───────────── Oberfläche ─────────────
     Control MusikStudioView()
     {
-        var root = new Grid { ColumnDefinitions = new ColumnDefinitions("360,14,*,14,340"), RowDefinitions = new RowDefinitions("*,Auto") };
-        root.Children.Add(MsCreatePanel());
-        root.Children.Add(Pos(MsLibraryPanel(), 2));
-        root.Children.Add(Pos(MsDetailPanel(), 4));
-        var player = MsPlayerBar(); Grid.SetRow(player, 1); Grid.SetColumnSpan(player, 5); root.Children.Add(player);
+        // DAW-Stil (Wunsch 06.11.2026): Transportleiste oben, Browser links, Arrangement und Lieder in der Mitte, Inspektor rechts
+        var root = new Grid { ColumnDefinitions = new ColumnDefinitions("360,14,*,14,340"), RowDefinitions = new RowDefinitions("Auto,*") };
+        var player = MsTransportBar(); Grid.SetColumnSpan(player, 5); root.Children.Add(player);
+        Control Row1(Control c, int col) { Grid.SetRow(c, 1); Grid.SetColumn(c, col); return c; }
+        root.Children.Add(Row1(MsCreatePanel(), 0));
+        var center = MsArrangePanel() is { } arr ? (Control)new DockPanel { Children = { Dk(arr, Avalonia.Controls.Dock.Top), MsLibraryPanel() } } : MsLibraryPanel();
+        root.Children.Add(Row1(center, 2));
+        root.Children.Add(Row1(MsDetailPanel(), 4));
         root.VerticalAlignment = VerticalAlignment.Stretch;
         return FitPage("Trendo Musik", new Panel(), root); // füllt das Fenster wie ein echtes Programm
     }
