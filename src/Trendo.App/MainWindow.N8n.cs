@@ -213,12 +213,14 @@ public partial class MainWindow
     private Control N8nWorkspace()
     {
         Button B(string name, string label, Action go, bool accent = false) { var b = Act(name, label, go, accent); b.Margin = new Thickness(0, 0, 4, 4); return b; }
+        // Fach-Profi-Look (Agenten-Arbeitsplatz): dunkle Paneele im DAW-Ton, nur im dunklen Trendo-Stil (PaneBg/PaneEdge)
+        Border Pane(Control c) => new() { Child = c, Background = PaneBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 10), Margin = new Thickness(0, 0, 0, 8), BoxShadow = CardShadow };
         Control Dot(bool on) => new Border { Width = 9, Height = 9, CornerRadius = new CornerRadius(5), Background = on ? Brush.Parse("#2FBF71") : Brush.Parse("#6B7280"), Margin = new Thickness(0, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center };
         Control Card(string title, bool on, string sub, params Control[] body)
         {
             var sp = new StackPanel { Spacing = 4, Children = { new StackPanel { Orientation = Orientation.Horizontal, Children = { Dot(on), new TextBlock { Text = title, Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 13 } } }, P(sub, Muted, 11) } };
             foreach (var x in body) sp.Children.Add(x);
-            return WCard(sp);
+            return Pane(sp);
         }
         // links: Status
         var left = new StackPanel { Name = "n8n-status", Spacing = 8 };
@@ -245,7 +247,7 @@ public partial class MainWindow
         if (_n8nAsk.Length > 0)
         {
             var pkg = _n8nAsk == "node-red" ? "Node-RED" : "n8n";
-            center.Children.Add(WCard(new StackPanel { Name = "n8n-ask", Spacing = 6, Children = {
+            center.Children.Add(Pane(new StackPanel { Name = "n8n-ask", Spacing = 6, Children = {
                 new TextBlock { Text = $"{pkg} einrichten?", Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
                 P(pkg == "n8n" ? "Lädt n8n aus der offiziellen npm-Quelle (npmjs.com) in den Trendo-Werkzeugordner – ohne Admin-Rechte, nur für diesen PC (127.0.0.1). Lizenz: Sustainable Use License – für private und interne Nutzung kostenlos; Trendo liefert n8n deshalb nicht mit. Braucht Node.js und einige hundert MB."
                     : "Lädt Node-RED (Apache-2.0, frei) aus der offiziellen npm-Quelle in den Trendo-Werkzeugordner – nur für diesen PC (127.0.0.1).", null, 12),
@@ -259,7 +261,7 @@ public partial class MainWindow
             for (var i = 0; i < rv.Nodes.Count; i++)
             {
                 var (nm, tp) = rv.Nodes[i]; var ext = rv.External.Any(x => x.StartsWith($"„{nm}“"));
-                flow.Children.Add(new Border { CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 6), Margin = new Thickness(0, 0, 0, 6), BorderThickness = new Thickness(1.5), BorderBrush = ext ? Brush.Parse("#F5A524") : EdgeLit, Background = TileBg, BoxShadow = CardShadow,
+                flow.Children.Add(new Border { CornerRadius = new CornerRadius(10), Padding = new Thickness(10, 6), Margin = new Thickness(0, 0, 0, 6), BorderThickness = new Thickness(1.5), BorderBrush = ext ? Brush.Parse("#F5A524") : PaneEdge, Background = GroupBg, BoxShadow = CardShadow,
                     Child = new StackPanel { Children = { new TextBlock { Text = nm, Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 12.5 }, new TextBlock { Text = tp.Split('.').Last(), Foreground = Muted, FontSize = 10.5 } } } });
                 if (i < rv.Nodes.Count - 1) flow.Children.Add(new TextBlock { Text = "  →  ", Foreground = GoldText(), FontSize = 16, VerticalAlignment = VerticalAlignment.Center });
             }
@@ -267,13 +269,13 @@ public partial class MainWindow
             foreach (var x in rv.External) box.Children.Add(P("⚠ Wirkt nach außen: " + x, Brush.Parse("#F5A524"), 11.5));
             foreach (var x in rv.Problems) box.Children.Add(P("⚠ " + x, Brush.Parse("#F87171"), 11.5));
             box.Children.Add(new WrapPanel { Children = { B("n8n-import", rv.External.Count > 0 ? "Ja, anlegen (wirkt nach außen)" : "Ja, in n8n anlegen", () => _ = N8nImport(), true), B("n8n-import-no", "Nein", () => { _n8nPreview = null; Show("ablaeufe"); }) } });
-            center.Children.Add(WCard(box));
+            center.Children.Add(Pane(box));
         }
         if (_n8nList.Count > 0)
         {
             var list = new StackPanel { Name = "n8n-list", Spacing = 2, Children = { new TextBlock { Text = "Abläufe in n8n", Foreground = Text, FontWeight = FontWeight.SemiBold } } };
             foreach (var (id, name, active) in _n8nList) list.Children.Add(new StackPanel { Orientation = Orientation.Horizontal, Children = { Dot(active), new TextBlock { Text = name, Foreground = Text, FontSize = 12 } } });
-            center.Children.Add(WCard(list));
+            center.Children.Add(Pane(list));
         }
         if (_n8nPreview is null && _n8nAsk.Length == 0)
             center.Children.Add(P("Profi-Ebene: n8n für große Abläufe mit hunderten Bausteinen, eingebunden in Trendo. Vorlage oder Vorschlag rechts wählen – Trendo zeigt den Ablauf als Fluss, und erst dein „Ja“ legt ihn an. Verschickt wird nur, was du in n8n selbst einschaltest.", Muted, 12));
@@ -284,7 +286,7 @@ public partial class MainWindow
         foreach (var t in N8n.Templates)
         {
             var tt = t; var b = B("n8n-tpl-" + t.Id, $"{t.Studio}: {t.Name}" + (t.External ? " ↗" : ""), () => N8nPreview(tt.Build(AutoToken), "Vorlage"));
-            ToolTip.SetTip(b, t.Hint); b.HorizontalAlignment = HorizontalAlignment.Stretch; b.HorizontalContentAlignment = HorizontalAlignment.Left; right.Children.Add(b);
+            b.Content = new TextBlock { Text = (string)b.Content!, TextWrapping = TextWrapping.Wrap }; ToolTip.SetTip(b, t.Hint); b.HorizontalAlignment = HorizontalAlignment.Stretch; b.HorizontalContentAlignment = HorizontalAlignment.Left; right.Children.Add(b);
         }
         right.Children.Add(new TextBlock { Text = "Trendo-Abläufe nach n8n", Foreground = Text, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 6, 0, 0) });
         var k = 0;
@@ -294,8 +296,17 @@ public partial class MainWindow
         foreach (var f in files) { var ff = f; right.Children.Add(B($"n8n-claude-{ci++}", "✳ " + Path.GetFileName(f), () => { try { N8nPreview(JsonNode.Parse(File.ReadAllText(ff).Replace("TRENDO_SCHLUESSEL", AutoToken)) as JsonObject ?? [], "Claude: " + Path.GetFileName(ff)); } catch (System.Text.Json.JsonException e) { _n8nMsg = "⚠ Claudes Datei ist kein gültiger Ablauf: " + e.Message; Show("ablaeufe"); } })); }
         if (files.Count == 0) right.Children.Add(P("Sag Claude, welchen Ablauf du brauchst – er legt ihn als „….n8n.json“ ab und er erscheint hier zur Prüfung.", Muted, 11));
 
-        var grid = new Grid { Name = "n8n-workspace", ColumnDefinitions = new ColumnDefinitions("280,12,*,12,300") };
+        var grid = new Grid { Name = "n8n-workspace", ColumnDefinitions = new ColumnDefinitions("260,10,*,10,290") };
         grid.Children.Add(new ScrollViewer { Content = left }); grid.Children.Add(Pos(new ScrollViewer { Content = center }, 2)); grid.Children.Add(Pos(new ScrollViewer { Content = right }, 4));
-        return grid;
+        // Anzeigefeld oben wie bei Agenten-Werkstätten: Zustand auf einen Blick (LCD-Stil)
+        TextBlock Dig(string name, string t) => new() { Name = name, Text = t, Foreground = DawLook ? DawDigits : Text, FontFamily = new FontFamily("Consolas, monospace"), FontWeight = FontWeight.SemiBold, FontSize = 13, Margin = new Thickness(0, 0, 18, 0), VerticalAlignment = VerticalAlignment.Center };
+        var lcd = new Border { Name = "n8n-lcd", Background = DawLook ? DawLcd : TileBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(6), Padding = new Thickness(10, 6), Margin = new Thickness(0, 0, 16, 10),
+            Child = new WrapPanel { Children = {
+                Dig("n8n-lcd-n8n", "N8N " + (N8nRunning ? "● LÄUFT" : N8nInstalled ? "○ AUS" : "– FEHLT")),
+                Dig("n8n-lcd-red", "NODE-RED " + (_noderedProc is { HasExited: false } ? "● LÄUFT" : NodeRedInstalled ? "○ AUS" : "– FEHLT")),
+                Dig("n8n-lcd-ki", $"KI {_kiUp.Count}/{N8n.Backends.Length}"),
+                Dig("n8n-lcd-ev", $"EREIGNISSE {Hooks.List().Count}"),
+                Dig("n8n-lcd-wf", $"ABLÄUFE {_n8nList.Count}") } } };
+        return new DockPanel { Children = { Dk(lcd, Avalonia.Controls.Dock.Top), grid } };
     }
 }
