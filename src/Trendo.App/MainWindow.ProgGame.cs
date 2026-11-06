@@ -575,8 +575,9 @@ public partial class MainWindow
         var when = new ComboBox { Name = "game-rule-when", ItemsSource = GameStudio.RuleWhens.Select(w => w.Label).ToList(), SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
         var n = new TextBox { Name = "game-rule-n", Text = "5", Width = 60 };
         var act = new ComboBox { Name = "game-rule-do", ItemsSource = GameStudio.RuleDos.Select(w => w.Label).ToList(), SelectedIndex = 0, HorizontalAlignment = HorizontalAlignment.Stretch };
-        var title = new TextBox { Name = "game-rule-title", PlaceholderText = "optional: als Aufgabe anzeigen, z. B. „Schatzsucher“" };
-        sp.Children.Add(Row(P("Wenn", Muted, 11.5), when)); sp.Children.Add(Row(P("mindestens", Muted, 11.5), n)); sp.Children.Add(Row(P("dann", Muted, 11.5), act)); sp.Children.Add(Row(P("Aufgabe", Muted, 11.5), title));
+        var title = new TextBox { Name = "game-rule-title", PlaceholderText = "z. B. Sammler", Width = 140 };
+        ToolTip.SetTip(title, "Optional: Mit Titel erscheint die Regel als Aufgabe mit Fortschritt im Spiel.");
+        sp.Children.Add(Row(P("Wenn", Muted, 11.5), when)); sp.Children.Add(Row(P("mindestens", Muted, 11.5), n)); sp.Children.Add(Row(P("dann", Muted, 11.5), act)); sp.Children.Add(Row(P("als Aufgabe", Muted, 11.5), title));
         sp.Children.Add(Act("game-rule-add", "＋ Regel", () => ProgramRun(GK, () =>
         {
             if (!int.TryParse(n.Text, out var nn) || nn < 0) throw new ArgumentException("Bitte eine Zahl ab 0.");
