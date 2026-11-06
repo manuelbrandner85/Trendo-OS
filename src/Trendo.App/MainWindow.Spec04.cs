@@ -62,10 +62,11 @@ public partial class MainWindow
             center = new Border { Name = "xr-empty", Background = Brush.Parse("#212121"), CornerRadius = new CornerRadius(10), Child = new TextBlock { Text = err is null ? "Modell oben wählen oder hierher ziehen – oder das Beispielmodell laden." : "⚠ " + err, Foreground = err is null ? Muted : Brush.Parse("#F87171"), FontSize = 15, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(24), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } };
         else
         {
-            var view = new MeshView { Name = "xr-view", Model = mesh, Wire = _xrWire, Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.SizeAll) };
+            var view = new MeshView { Name = "xr-view", Model = mesh, Wire = _xrWire, EyeHeightCm = _xrEye ? XrPro.EyeCm : null, EyeDistanceCm = XrPro.ViewDistanceCm, Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.SizeAll) };
             var tools = new WrapPanel { Margin = new Thickness(0, 6, 0, 0) };
             foreach (var (id, label) in new[] { ("iso", "Schräg"), ("vorne", "Vorne"), ("seite", "Seite"), ("oben", "Oben") }) { var v = id; tools.Children.Add(Btn("xr-v-" + id, label, () => view.SetView(v))); }
             tools.Children.Add(Btn("xr-wire", _xrWire ? "Drahtgitter aus" : "Drahtgitter an", () => { _xrWire = !_xrWire; Show("xr"); }));
+            tools.Children.Add(Btn("xr-eye", _xrEye ? "👁 Augenhöhe aus" : "👁 Aus Augenhöhe", () => { _xrEye = !_xrEye; Show("xr"); }, _xrEye)); // wie mit der Brille: 1,60 m, 2 m Abstand
             var size = det is null ? "" : XrPlus.ScaleVerdict(det);
             tools.Children.Add(new TextBlock { Name = "xr-size", Text = size, Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4), TextWrapping = TextWrapping.Wrap, MaxWidth = 520 });
             var dp = new DockPanel(); DockPanel.SetDock(tools, Avalonia.Controls.Dock.Bottom); dp.Children.Add(tools); dp.Children.Add(new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Child = view });
@@ -96,6 +97,8 @@ public partial class MainWindow
             Meter("xr-m-draw", "Zeichenaufrufe", info.Primitives, b.MaxDrawCalls, $"{info.Primitives} / {b.MaxDrawCalls}");
             Meter("xr-m-tex", "Texturen", info.Textures, b.MaxTextures, $"{info.Textures} / {b.MaxTextures}");
             Meter("xr-m-size", "Dateigröße", info.Bytes, b.MaxBytes, $"{Fach.F(info.Bytes / 1048576.0, 2)} / {Fach.F(b.MaxBytes / 1048576.0, 0)} MB");
+            if (det is { Textures.Count: > 0 }) { var big = det.Textures.Max(t => Math.Max(t.Width, t.Height)); var lim = XrPro.MaxTextureSide(XrDevice); Meter("xr-m-texsize", "Größte Textur", big, lim, $"{big} / {lim} px"); }
+            sp.Children.Add(XrFixCard(info, det));
             sp.Children.Add(H("Alle Geräte", 12));
             foreach (var bb in XrInspector.Budgets)
             {

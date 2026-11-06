@@ -11,14 +11,14 @@
 - ✓ COLMAP/Meshroom einrichten, Modell rechnen, Stopp
 - ✓ Im 3D-Studio öffnen
 - ✓ 3D aus einem Bild (TripoSR)
-- ✗ Kamerapositionen anzeigen
-- ✗ Modell beschneiden und Maßstab setzen
-- ✗ Texturqualität wählen
+- ✓ Kamerapositionen im Ergebnis (COLMAP und Meshroom), umgerechnet in die Lage des Modells
+- ✓ Modell beschneiden, kleine Reste entfernen, Löcher schließen, echte Größe direkt oder über einen bekannten Gegenstand (Kreditkarte, A4, Münze, Dose), Rückgängig
+- ✓ Texturqualität 1K–8K (Meshroom)
+- ✓ Gute Fotos auswählen: wahrscheinlich unscharfe und doppelte aussortieren, nur gute als Kopie verwenden
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)
-Ablauf vorhanden, eigene 3D-Vorschau mit Kameras fehlt.
+Fotos links, Rechnung in der Mitte, Ergebnis rechts mit 3D-Vorschau, Kameras und Werkzeugen – Bauplan erfüllt.
 
 ## Nächste Schritte
-1. Kameras in der Vorschau
-2. Beschneiden/Maßstab
-3. Qualitätsstufen
+1. Punkte im Modell anklicken und messen (statt Länge eingeben)
+2. Textur in der Vorschau zeigen

@@ -16,6 +16,11 @@ public sealed class MeshView : Control
     public double Pitch { get; set; } = 22;
     public double Zoom { get; set; } = 1;
     public bool Wire { get; set; }
+    /// <summary>Vorschau aus Augenhöhe (cm über dem Boden, Modell in Zentimetern): Perspektive wie mit einer Brille, waagrechter Blick, Abstand <see cref="EyeDistanceCm"/>. null = normale Ansicht.</summary>
+    public double? EyeHeightCm { get; set; }
+    public double EyeDistanceCm { get; set; } = 200;
+    /// <summary>Zusätzliche Punkte (z. B. Kamerapositionen beim Scan), als kleine goldene Kameras gezeichnet.</summary>
+    public IReadOnlyList<Vec3>? Markers { get; set; }
     Point? _drag;
     Mesh? _shadowFor, _shadow;
 
@@ -32,6 +37,15 @@ public sealed class MeshView : Control
     // T-0281: Trendo-Netze haben Z oben (Zentimeter) – vorher wurde Y als oben gezeigt, Möbel lagen auf dem Rücken.
     (double X, double Y, double D) P(Vec3 p, (double cx, double cy, double cz, double r, double minZ) f)
     {
+        if (EyeHeightCm is { } eye)
+        {
+            // Kamera steht vor dem Objekt auf Augenhöhe und schaut waagrecht (Drehen per Maus umrundet das Objekt), Bildwinkel 90° senkrecht wie eine Brille
+            double ya0 = Yaw * Math.PI / 180, dist = Math.Max(EyeDistanceCm, f.r * 1.6);
+            var cam = new Vec3(f.cx - Math.Sin(ya0) * dist, f.cy - Math.Cos(ya0) * dist, f.minZ + eye);
+            var q0 = p - cam; double right = q0.X * Math.Cos(ya0) - q0.Y * Math.Sin(ya0), fwd = q0.X * Math.Sin(ya0) + q0.Y * Math.Cos(ya0);
+            var z = Math.Max(1, fwd); var focal = Bounds.Height / (2 * Math.Tan(45 * Math.PI / 180)) * Zoom;
+            return (Bounds.Width / 2 + right * focal / z, Bounds.Height / 2 - q0.Z * focal / z, -fwd);
+        }
         double qx = p.X - f.cx, qy = p.Y - f.cy, qz = p.Z - f.cz, ya = Yaw * Math.PI / 180, pa = Pitch * Math.PI / 180;
         double x1 = qx * Math.Cos(ya) - qy * Math.Sin(ya), y1 = qx * Math.Sin(ya) + qy * Math.Cos(ya);
         double y2 = qz * Math.Cos(pa) + y1 * Math.Sin(pa), d = -y1 * Math.Cos(pa) + qz * Math.Sin(pa);
@@ -43,7 +57,7 @@ public sealed class MeshView : Control
     internal Point Screen(Vec3 v) { var q = P(v, Frame()); return new Point(q.X, q.Y); }
 
     /// <summary>Richtung von der Szene zur Kamera (Welt).</summary>
-    Vec3 ViewDir() { double ya = Yaw * Math.PI / 180, pa = Pitch * Math.PI / 180; return new Vec3(-Math.Sin(ya) * Math.Cos(pa), -Math.Cos(ya) * Math.Cos(pa), Math.Sin(pa)).Norm(); }
+    Vec3 ViewDir() { double ya = Yaw * Math.PI / 180, pa = EyeHeightCm is null ? Pitch * Math.PI / 180 : 0; return new Vec3(-Math.Sin(ya) * Math.Cos(pa), -Math.Cos(ya) * Math.Cos(pa), Math.Sin(pa)).Norm(); }
 
     public override void Render(DrawingContext ctx)
     {
@@ -52,6 +66,9 @@ public sealed class MeshView : Control
         var f = Frame(); var view = ViewDir();
         Point S(Vec3 v) { var q = P(v, f); return new Point(q.X, q.Y); }
         // Studio-Boden: heller Kreis, der nach außen ausläuft, darüber ein feines Raster (1 m, 25 cm oder 2,5 cm)
+        if (EyeHeightCm is not null) // Augenhöhe: Boden bis zum Horizont (Bildmitte), weich ins Dunkle auslaufend
+            ctx.FillRectangle(new LinearGradientBrush { StartPoint = new RelativePoint(0, 0, RelativeUnit.Relative), EndPoint = new RelativePoint(0, 1, RelativeUnit.Relative), GradientStops = { new GradientStop(Color.Parse("#3A3F48"), 0), new GradientStop(Color.Parse("#6B7280"), 1) } }, new Rect(0, Bounds.Height / 2, Bounds.Width, Bounds.Height / 2));
+        else
         foreach (var (k, alpha) in new[] { (1.7, (byte)45), (1.25, (byte)60), (0.85, (byte)70) }) // drei Scheiben übereinander: hell in der Mitte, weich nach außen
         {
             var disc = new StreamGeometry();
@@ -59,7 +76,7 @@ public sealed class MeshView : Control
             ctx.DrawGeometry(new SolidColorBrush(Color.FromArgb(alpha, 150, 165, 188)), null, disc);
         }
         var step = f.r > 300 ? 100.0 : f.r > 30 ? 25 : 2.5; var gp = new Pen(new SolidColorBrush(Color.Parse("#16FFFFFF")), 1); var ge = Math.Ceiling(f.r * 1.2 / step) * step;
-        for (var g = -ge; g <= ge + 1e-9; g += step)
+        for (var g = -ge; g <= ge + 1e-9 && EyeHeightCm is null; g += step)
         {
             ctx.DrawLine(gp, S(new Vec3(f.cx + g, f.cy - ge, f.minZ)), S(new Vec3(f.cx + g, f.cy + ge, f.minZ)));
             ctx.DrawLine(gp, S(new Vec3(f.cx - ge, f.cy + g, f.minZ)), S(new Vec3(f.cx + ge, f.cy + g, f.minZ)));
@@ -102,6 +119,13 @@ public sealed class MeshView : Control
             var geo = new StreamGeometry(); using (var gc = geo.Open()) { gc.BeginFigure(S(a), true); gc.LineTo(S(b)); gc.LineTo(S(c)); gc.EndFigure(true); }
             ctx.DrawGeometry(Wire ? new SolidColorBrush(Color.FromArgb(150, col.R, col.G, col.B)) : fill, edge ?? new Pen(fill, 0.6), geo);
         }
+        if (Markers is { Count: > 0 } mk)
+        {
+            var gold = new SolidColorBrush(Color.Parse("#FACC15")); var dark = new Pen(new SolidColorBrush(Color.Parse("#AA000000")), 1);
+            foreach (var v in mk) { var c = S(v); ctx.DrawGeometry(gold, dark, new PolylineGeometry([new Point(c.X - 6, c.Y - 4), new Point(c.X + 6, c.Y - 4), new Point(c.X + 6, c.Y + 4), new Point(c.X - 6, c.Y + 4)], true)); ctx.DrawEllipse(Brushes.Black, null, c, 2, 2); }
+        }
+        if (EyeHeightCm is { } eh)
+            ctx.DrawText(new FormattedText($"Augenhöhe {eh / 100:0.00} m · Abstand {Math.Max(EyeDistanceCm, f.r * 1.6) / 100:0.0} m", System.Globalization.CultureInfo.GetCultureInfo("de-DE"), FlowDirection.LeftToRight, new Typeface("Inter"), 12, Brushes.White), new Point(10, 8));
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e) { base.OnPointerPressed(e); Focus(); _drag = e.GetPosition(this); if (e.ClickCount == 2) SetView("iso"); e.Pointer.Capture(this); }

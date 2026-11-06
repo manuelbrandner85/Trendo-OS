@@ -74,6 +74,7 @@ public partial class MainWindow
             }
             if (rep.Count > 24) thumbs.Children.Add(new TextBlock { Text = $"+ {rep.Count - 24}", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(4, 0) });
             photos.Children.Add(thumbs);
+            if (ScanRankingList() is { } rankList) photos.Children.Add(rankList); // gute Fotos auswählen (Claude 4)
         }
         else photos.Children.Add(P("Mindestens 3 Fotos aus verschiedenen Richtungen – besser 20 bis 80 mit viel Überlappung, gleichmäßiges Licht, ohne Spiegelungen.", Muted, 11.5));
 
@@ -88,6 +89,7 @@ public partial class MainWindow
         var calc = new StackPanel { Name = "scan-calc", Spacing = 6, Children = {
             H("2 · Rechnung", 14),
             new WrapPanel { Children = { MSp(Act("scan-use-colmap", "COLMAP", () => { _scanEngine = PhotoEngine.Colmap; Show("scan3d"); }, _scanEngine == PhotoEngine.Colmap)), MSp(Act("scan-use-meshroom", "Meshroom", () => { _scanEngine = PhotoEngine.Meshroom; Show("scan3d"); }, _scanEngine == PhotoEngine.Meshroom)), MSp(which), MSp(check) } },
+            ScanQualityRow(),
             new WrapPanel { Children = { MSp(run), MSp(Act("scan-stop", "Stopp", StopScan)) } },
             new ProgressBar { Name = "scan-progress", Maximum = Math.Max(1, _scanSteps.Count), Value = done, Height = 6 },
             new TextBlock { Name = "scan-elapsed", Text = _scanSteps.Count == 0 ? "Noch nicht gerechnet. Die Rechnung läuft auf deinem PC und kann je nach Fotos von Minuten bis Stunden dauern." : $"Schritt {Math.Min(_scanSteps.Count, Math.Max(1, _scanStepIdx + 1))} von {_scanSteps.Count}" + (_scanBusy ? $" · seit {(DateTime.Now - _scanStart):m\\:ss} min" : ""), Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap },
@@ -99,13 +101,15 @@ public partial class MainWindow
         if (_scanModel is not null && File.Exists(_scanModel)) try { mesh = Mesh3D.ReadMeshFile(_scanModel); } catch (Exception e) when (e is IOException or InvalidDataException or FormatException) { }
         if (mesh is not null)
         {
-            var view = new MeshView { Name = "scan-view", Model = mesh, Wire = _scanWire, Height = 260, Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.SizeAll) };
+            var view = new MeshView { Name = "scan-view", Model = mesh, Wire = _scanWire, Height = 260, Cursor = new Avalonia.Input.Cursor(Avalonia.Input.StandardCursorType.SizeAll),
+                Markers = _scanShowCams && _scanModel is not null ? ScanPro.LoadCameras(Path.GetDirectoryName(_scanModel)!).Select(c => c.Center).ToList() : null };
             result.Children.Add(new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, Background = Brush.Parse("#FF101826"), Child = view });
             result.Children.Add(new TextBlock { Name = "scan-facts", Text = $"{mesh.Triangles:N0} Dreiecke · Maus ziehen dreht, Rad zoomt", Foreground = Muted, FontSize = 11 });
             var views = new WrapPanel();
             foreach (var (v, l) in new[] { ("schraeg", "Schräg"), ("vorne", "Vorne"), ("oben", "Oben"), ("seite", "Seite") }) { var vv = v; views.Children.Add(MSp(Act("scan-view-" + v, l, () => view.SetView(vv)))); }
             views.Children.Add(MSp(Act("scan-wire", _scanWire ? "Fläche" : "Drahtgitter", () => { _scanWire = !_scanWire; Show("scan3d"); })));
             result.Children.Add(views);
+            result.Children.Add(ScanToolsCard(mesh));
             var exports = new WrapPanel();
             foreach (var (ext, label) in new[] { ("obj", "OBJ"), ("stl", "STL (3D-Druck)"), ("glb", "GLB (Web, AR)") }) { var e = ext; exports.Children.Add(MSp(Act("scan-export-" + ext, label, () => Try("scan3d", () => ScanExport(e))))); }
             result.Children.Add(P("Speichern als:", Muted, 11)); result.Children.Add(exports);
@@ -191,7 +195,7 @@ public partial class MainWindow
                 ffmpeg = await ReadyFfmpeg();
                 if (ffmpeg is null) return;
             }
-            var req = new PhotoRequest(Path.Combine(WorkFolder("Scan"), DateTime.Now.ToString("yyyy-MM-dd-HHmmss") + "-" + Guid.NewGuid().ToString("N")[..4]), photos, video, _scanEngine);
+            var req = new PhotoRequest(Path.Combine(WorkFolder("Scan"), DateTime.Now.ToString("yyyy-MM-dd-HHmmss") + "-" + Guid.NewGuid().ToString("N")[..4]), photos, video, _scanEngine, _scanTex);
             _scanBusy = true; _scanFailed = false; _scanModel = null; _scanStart = DateTime.Now;
             _scanSteps = [.. PhotoScan.Steps(req, tool, ffmpeg).Select(x => x.Title)]; _scanStepIdx = 0; Show("scan3d");
             _scanCts = new CancellationTokenSource();

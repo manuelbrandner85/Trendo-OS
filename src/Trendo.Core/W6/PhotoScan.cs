@@ -5,7 +5,7 @@ namespace Trendo.Core;
 
 public enum PhotoEngine { Colmap, Meshroom }
 
-public sealed record PhotoRequest(string WorkDir, string? Photos, string? Video, PhotoEngine Engine);
+public sealed record PhotoRequest(string WorkDir, string? Photos, string? Video, PhotoEngine Engine, int TextureSide = 4096);
 
 public sealed record PhotoStep(string Title, string File, string Args, string? WorkDir = null, bool NeedsModel = false, string? ImagesAfter = null);
 
@@ -61,7 +61,7 @@ public static class PhotoScan
         if (req.Engine == PhotoEngine.Meshroom)
         {
             var home = Path.GetDirectoryName(tool);
-            steps.Add(new("Modell mit Meshroom rechnen", tool, "-i " + Q(images) + " -o " + Q(Path.Combine(req.WorkDir, "meshroom")), string.IsNullOrEmpty(home) ? null : home));
+            steps.Add(new("Modell mit Meshroom rechnen", tool, "-i " + Q(images) + " -o " + Q(Path.Combine(req.WorkDir, "meshroom")) + $" --paramOverrides Texturing:textureSide={req.TextureSide}", string.IsNullOrEmpty(home) ? null : home));
             return steps;
         }
 
@@ -117,7 +117,8 @@ public static class PhotoScan
         }
 
         var found = FindToolMesh(req.WorkDir) ?? throw new InvalidOperationException("Das Werkzeug hat kein Modell geschrieben. Versuch mehr Fotos mit Überlappung.");
-        var (mesh, shell) = LoadSurface(found);
+        var (mesh, shell) = LoadSurface(found, out var fitCenter, out var fitScale);
+        try { ScanPro.SaveCameras(req.WorkDir, fitCenter, fitScale); } catch (Exception e) when (e is IOException or EndOfStreamException or System.Text.Json.JsonException or FormatException or InvalidOperationException or KeyNotFoundException) { } // Kameras sind ein Zusatz
         var obj = Path.Combine(req.WorkDir, "modell.obj");
         Mesh3D.WriteObj(mesh, obj);
         var note = shell
@@ -161,7 +162,10 @@ public static class PhotoScan
     }
 
     /// <summary>Netz aus der Werkzeugdatei. Ohne Flächen wird die äußere Hülle der Punkte gebaut. Längste Seite 20 (Zentimeter im 3D-Studio).</summary>
-    public static (Mesh Mesh, bool OuterShell) LoadSurface(string path)
+    public static (Mesh Mesh, bool OuterShell) LoadSurface(string path) => LoadSurface(path, out _, out _);
+
+    /// <summary>Wie <see cref="LoadSurface(string)"/>, dazu Mitte und Skalierung, mit denen das Modell auf 20 cm gebracht wurde (für die Kameras).</summary>
+    public static (Mesh Mesh, bool OuterShell) LoadSurface(string path, out Vec3 center, out double scale)
     {
         if (!File.Exists(path)) throw new IOException("Das Modellergebnis gibt es nicht.");
         var ext = Path.GetExtension(path).ToLowerInvariant();
@@ -169,10 +173,10 @@ public static class PhotoScan
         {
             var (mesh, faces) = ReadPly(path);
             var shell = !faces;
-            var fitted = Fit(shell ? Hull(mesh) : mesh);
+            var fitted = Fit(shell ? Hull(mesh) : mesh, out center, out scale);
             return (fitted, shell);
         }
-        return (Fit(Mesh3D.ReadMeshFile(path)), false);
+        return (Fit(Mesh3D.ReadMeshFile(path), out center, out scale), false);
     }
 
     static Task<(int Exit, string Output)> Exec(IProcessRunner run, string file, string args, string? cwd, Action<string>? line, CancellationToken ct)
@@ -185,7 +189,9 @@ public static class PhotoScan
         return t.Length == 0 ? null : t;
     }
 
-    public static Mesh Fit(Mesh mesh)
+    public static Mesh Fit(Mesh mesh) => Fit(mesh, out _, out _);
+
+    public static Mesh Fit(Mesh mesh, out Vec3 center, out double scale)
     {
         if (mesh.Triangles == 0) throw new InvalidOperationException("Das Modell hat keine Fläche.");
         mesh = Cluster(mesh, 150_000);
@@ -199,6 +205,7 @@ public static class PhotoScan
         if (longest < 1e-9) throw new InvalidOperationException("Das Modell hat keine Ausdehnung.");
         var s = 20.0 / longest;
         var c = new Vec3((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
+        center = c; scale = s;
         var o = new Mesh();
         for (var t = 0; t < mesh.Triangles; t++)
         {
