@@ -1,6 +1,6 @@
 # Schutz & Datenschutz – Arbeitsabläufe
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `schutz` · Stand: 0.9.36 (Stand 5b38700)
 
 Die Abläufe unten sind die Oberflächentests, die das Programm über den echten Eingabeweg bedienen (Klicks, Tastatur).
 

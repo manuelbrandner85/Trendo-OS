@@ -1,6 +1,6 @@
 # Übersicht – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.36 (Stand 5b38700)
 
 Analyse: [Vorbild-Analyse System: Windows-Einstellungen, GNOME-Einstellungen, macOS Systemeinstellungen, Windows-Kurzhelfer (Clean-Room)](../../../docs/claude/vorbilder/system-einstellungen-windows-gnome.md)
 

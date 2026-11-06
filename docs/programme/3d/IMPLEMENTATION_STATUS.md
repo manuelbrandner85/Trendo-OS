@@ -1,6 +1,6 @@
 # 3D – Umsetzungsstand
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 5b38700)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -9,6 +9,13 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | D3-01 | 3D-Ansicht mit Drehen, Zoomen, Auswählen | Implementiert | `Studio3DViewport_Ui` |
 | D3-02 | Formen, Szene, Export | Implementiert | `W4_Core05_Ui` |
 | D3-03 | Freie Modelle in die Bibliothek | Implementiert | `Library3D_Ui` |
+| D3-04 | Arbeitsschritte Modellieren → UV → Material → Licht → Kamera → Render mit Stand je Schritt | Implementiert | `Studio3DProTests, Studio3DPro_Ui` |
+| D3-05 | Anfasser in der Ansicht: Verschieben, Drehen, Skalieren je Achse (Raster, Tasten G/R/S) | Implementiert | `Studio3DPro_Ui` |
+| D3-06 | Szenenbaum mit Gruppen und Ausblenden; Gruppe gemeinsam bewegen und einfärben | Implementiert | `Studio3DPro_Ui` |
+| D3-07 | PBR-Materialien (Metall, Rauheit, Glas) mit Vorschau in der Ansicht und im Blender-Render | Implementiert | `Studio3DProTests, Studio3DPro_Ui` |
+| D3-08 | Licht-Vorgaben (Studio, Tageslicht, Abendsonne, Innenraum) und Kamera mit Brennweite und Blickhöhe | Implementiert | `Studio3DProTests, Studio3DPro_Ui` |
+| D3-09 | Fotorealistischer Render (Cycles, Entrauschen, AgX, UV automatisch) mit Verlauf und Vorher/Nachher-Regler | Implementiert | `Studio3DProTests, Studio3DPro_Ui` |
+| D3-10 | Claude baut aus Satz oder Foto ein Modell mit echten Maßen, Materialien, Licht und Kamera – Plan mit 3D-Vorschau, danach Render zur Prüfung | Implementiert | `Claude3D_Ui` |
 | CA-01 | Boolesche Operationen (Vereinigung, Abzug, Schnitt) | Implementiert | `CadTests` |
 | CA-02 | Parametrisch mit Formeln | Implementiert | `CadTests` |
 | CA-03 | Extrudieren, Tasche, Drehteil, Rundung, Fase, Muster, Spiegeln | Implementiert | `CadTests` |
@@ -27,5 +34,12 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | DR-06 | Skalieren, Kopien anordnen | Implementiert | `SlicerTests` |
 | DR-07 | Drucker im Heimnetz, Druck nach Bestätigung | Implementiert | `N23N24_CadPrintUi` |
 | DR-08 | Mehrere verschiedene Modelle auf einer Platte | Geplant | `–` |
+| DR-09 | Bambu-Drucker im Netz finden und übernehmen, gleiches Netz prüfen | Implementiert | `BambuProTests, BambuPro_Ui` |
+| DR-10 | Einrichtung: WLAN, Nur LAN, Entwicklermodus, Zugangscode; WLAN-Signal in Klartext | Implementiert | `BambuProTests, BambuPro_Ui` |
+| DR-11 | Steuern: Licht, Tempo, Düse, Bett, Lüfter (mit Grenzen) | Implementiert | `BambuProTests, BambuPro_Ui` |
+| DR-12 | AMS-Filamente, Druckermeldungen (HMS) mit Nachschlagen | Implementiert | `BambuProTests, BambuPro_Ui` |
+| DR-13 | Live-Kamera, Fertig-Meldung, Zeitraffer aufnehmen und holen | Implementiert | `BambuProTests, BambuPro_Ui` |
+| DR-14 | Direkt aus Trendo vorbereiten (Bambu Studio im Hintergrund) und drucken | Implementiert | `BambuProTests, BambuPro_Ui` |
+| DR-15 | Mehrere Drucker mit Zustand, Auswählen, Entfernen | Implementiert | `BambuProTests, BambuPro_Ui` |
 
-0 von 21 Funktionen getestet.
+0 von 35 Funktionen getestet.

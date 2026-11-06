@@ -1,6 +1,6 @@
 # Lernen mit Karteikarten – Architektur
 
-Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: Lernen mit Karteikarten (SPEC-06) · Bereich: Wissen & Lernen · Seite: `lernen` · Stand: 0.9.36 (Stand 5b38700)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Spec06.cs`

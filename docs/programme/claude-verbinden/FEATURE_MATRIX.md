@@ -1,6 +1,6 @@
 # Mit Claude verbinden – Funktionsmatrix
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `claude-verbinden` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `claude-verbinden` · Stand: 0.9.36 (Stand 5b38700)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

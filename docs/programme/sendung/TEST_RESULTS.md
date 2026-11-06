@@ -1,6 +1,6 @@
 # Live streamen – Testergebnisse
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand 5b38700)
 
 Lauf: `api.trx, app.trx, core.trx`
 

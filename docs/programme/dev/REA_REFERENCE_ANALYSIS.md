@@ -1,6 +1,6 @@
 # Software – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 5b38700)
 
 Analyse: [Vorbild-Analyse Webseite bauen: Visual Studio Code, Webflow, Framer (Clean-Room)](../../../docs/claude/vorbilder/web-vscode-webflow.md)
 

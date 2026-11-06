@@ -1,6 +1,6 @@
 # Trendo Musik – Umsetzungsstand
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 5b38700)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -26,5 +26,9 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | MU-18 | Cover-Bild mit Titel | Implementiert | `MusikCoverUiTests` |
 | MU-19 | Begleitung zu eigenem Gesang | Geplant | `–` |
 | MU-20 | Instrument dazu erzeugen | Geplant | `–` |
+| MU-21 | Mitlaufender Liedtext beim Abspielen | Implementiert | `MusikProfi26_Ui, SongFollowTests` |
+| MU-22 | Tonart- und Tempo-Raster mit Takten | Implementiert | `MusikProfi26_Ui, SongFollowTests` |
+| MU-23 | Fassungen nebeneinander, A/B an derselben Stelle | Implementiert | `MusikProfi26_Ui, SongFollowTests` |
+| MU-24 | Claude als Produzent: Aufbau, Text-Rhythmus, Stil, Mastering-Ziel | Implementiert | `ClaudeMusik_Ui, SongProducerTests` |
 
-0 von 20 Funktionen getestet.
+0 von 24 Funktionen getestet.

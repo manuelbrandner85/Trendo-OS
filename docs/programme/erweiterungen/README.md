@@ -1,6 +1,6 @@
 # Erweiterungen – Produktionspaket
 
-Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: Trendo erweitern (X-04) · Bereich: Entwickeln · Seite: `erweiterungen` · Stand: 0.9.36 (Stand 5b38700)
 
 Arbeitsfläche: Erweiterungen (Liste, Detailseite – wie VS Code)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

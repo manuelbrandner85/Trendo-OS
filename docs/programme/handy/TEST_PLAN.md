@@ -1,6 +1,6 @@
 # Handy verbinden – Testplan
 
-Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: Handy verbinden (X-08) · Bereich: System & Sicherheit · Seite: `handy` · Stand: 0.9.36 (Stand 5b38700)
 
 25 Tests sprechen dieses Programm an.
 

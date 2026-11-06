@@ -1,6 +1,6 @@
 # Trendo Musik – Funktionsmatrix
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 5b38700)
 
 Quelle: `docs/spec/kataloge/STUDIO-MUSIK-01_KATALOG.md`
 
@@ -26,6 +26,10 @@ Quelle: `docs/spec/kataloge/STUDIO-MUSIK-01_KATALOG.md`
 | MU-18 | Cover-Bild mit Titel | Vorhanden | umgesetzt |
 | MU-19 | Begleitung zu eigenem Gesang | Noch zu entwickeln | offen (braucht XL-Modell, 24 GB) |
 | MU-20 | Instrument dazu erzeugen | Noch zu entwickeln | offen (braucht XL-Modell, 24 GB) |
+| MU-21 | Mitlaufender Liedtext beim Abspielen | Vorhanden | umgesetzt |
+| MU-22 | Tonart- und Tempo-Raster mit Takten | Vorhanden | umgesetzt |
+| MU-23 | Fassungen nebeneinander, A/B an derselben Stelle | Vorhanden | umgesetzt |
+| MU-24 | Claude als Produzent: Aufbau, Text-Rhythmus, Stil, Mastering-Ziel | Vorhanden | umgesetzt |
 
 ## Werkzeuge der Oberfläche
 - Los

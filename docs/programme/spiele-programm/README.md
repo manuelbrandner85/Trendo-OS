@@ -1,6 +1,6 @@
 # Spiele bauen – Produktionspaket
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 5b38700)
 
 Arbeitsfläche: Spieleprojekt (Übersicht, Spielbibel, Figuren, Welt, Missionen, Level, Bauen)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

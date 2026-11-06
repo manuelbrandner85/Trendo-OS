@@ -1,8 +1,8 @@
 # Startbildschirm – Testplan
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand 5b38700)
 
-91 Tests sprechen dieses Programm an.
+93 Tests sprechen dieses Programm an.
 
 - 3D-Seite zeigt die Auftragsleiste, ohne die 3D-Arbeitsfläche zu verkleinern
 - Abdeckung und StudioCatalog nennen dieselben Kennungen, Titel und Bereiche
@@ -14,10 +14,12 @@ Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `
 - Briefseite zeigt den echten Brieftext in der Vorschau
 - Briefseite zeigt die Auftragsleiste und meldet ehrlich, wenn nichts eingebaut ist
 - CORE-01: Dateisuche begrenzt Tiefe und Anzahl
+- CORE-01: Desktop im Windows-, Mac- und GNOME-Stil ohne verschwommene Glasfläche über dem Hintergrund
 - CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an
 - CORE-01: Desktop-Symbole – Studio und Kernfunktion gleichzeitig, Reihenfolge wie hinzugefügt, Klick öffnet das Studio
 - CORE-01: Desktop-Symbole – unbekannte oder nicht installierte Einträge erscheinen nicht als Symbol, der Desktop bleibt aufgeräumt
 - CORE-01: Projekte – lesbarer Name wird Ordnername (Umlaute, belegte Namen mit Nummer), Dateien und Ordner anlegen, Notiz, Umbenennen behält den Ordner, nichts außerhalb des Projekts
+- CORE-01: Stil Trendo behält sein Milchglas hinter den Flächen
 - CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte
 - CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste
 - Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner

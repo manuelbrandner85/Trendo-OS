@@ -1,10 +1,10 @@
 # Trendo Musik – Testergebnisse
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 5b38700)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 41 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
+Bestanden 44 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 
 | Test | Ergebnis |
 |---|---|
@@ -43,10 +43,13 @@ Bestanden 41 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 | S1: zu wenig gesungen → ehrlicher Hinweis, kein Profil | ✓ bestanden |
 | S5: Mitsingen spielt die Begleitung, zeigt live Ziel/gesungener Ton und Treffer; S6: Mischen (Versatz, Hall) und Mastern ergeben „– mit meiner Stimme“ | ✓ bestanden |
 | S5: ohne getrennte Spuren ehrlicher Hinweis „zuerst Spuren trennen“, kein Start | ✓ bestanden |
+| STUDIO-MUSIK-01: Claude als Produzent – Briefing mit Silben und Reimen, Plan mit Rhythmus vorher/nachher, Ausführen füllt den Entwurf, Erstellen hängt die Fassung ans Original, Mastering-Ziel „laut“ | ✓ bestanden |
 | Spuren trennen ohne Demucs: „einrichten“ lädt Demucs 4.0.1 mit PyTorch in eine eigene Umgebung | ✓ bestanden |
 | Spuren trennen: Begleitung und Gesang werden eigene Lieder (mit Herkunft), alle Spuren im Ordner „– Spuren“ | ✓ bestanden |
+| Trendo Musik Profi: Liedtext läuft mit (laufende Zeile gold), Zeile anklicken springt dorthin; Raster mit Tonart, Tonleiter, Takten; Fassungen A/B an gleicher Stelle | ✓ bestanden |
 | Trendo Musik: Abschnitt neu und Cover laden das Lied hoch (kein Dateipfad), neue Fassung verweist aufs Original; Liedtext mit KI; Favorit, Export, Löschen in den Papierkorb | ✓ bestanden |
 | Trendo Musik: Aufträge an ACE-Step geprüft – Grenzen für Länge, Tempo, Varianten; Abschnitt mind. 1 s; über 8 Minuten ohne Sprachmodell; unbekannte Tonart/Takt/Aufgabe abgelehnt | ✓ bestanden |
 | Trendo Musik: Einfach – ein Satz → zwei Varianten in „Meine Lieder“; ohne Beschreibung nur Hinweis; Profi mit Tempo, Tonart, Takt, [Strophe]/[Refrain] und Spanisch | ✓ bestanden |
+| Trendo Musik: Treffer anklicken übernimmt Titel, Länge, Stil ohne Namen, Tonart und Tempo ins Profi-Formular; ohne Messung freundlicher Hinweis; MusicBrainz-Seite öffnet sich dabei nicht | ✓ bestanden |
 | Wie bei Suno: „Erstellen“ mit „Mehr Optionen“ (alle Einstellungen bleiben), „⋯“-Menü je Lied mit allen Aktionen | ✓ bestanden |
 | Y1: YouTube-Link → Titel/Interpret per oEmbed (kein Download), Stil aus dem Web, Titel vorgeschlagen, Profi-Modus; falscher Link = Hinweis | ✓ bestanden |

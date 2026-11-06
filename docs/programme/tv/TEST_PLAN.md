@@ -1,8 +1,8 @@
 # TV & Live – Testplan
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand 5b38700)
 
-19 Tests sprechen dieses Programm an.
+24 Tests sprechen dieses Programm an.
 
 - Anmeldung: „Beim Start nach PIN fragen“ lässt sich abschalten
 - Apps: WhatsApp installieren → Desktop und Startmenü, öffnet als App-Fenster mit eigenem Speicher, Entfernen löscht die Anmeldung
@@ -10,6 +10,11 @@ Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · 
 - Ersteinrichtung im Vollbild: Claude freiwillig zuerst; Stick/SSD zeigen echte Laufwerke mit GB, zu kleine gesperrt, Windows-Laufwerk nie; ehrlicher Hinweis solange das Abbild fehlt
 - Ersteinrichtung: nach Neustart geht es beim letzten Schritt weiter, eine schon festgelegte PIN wird nicht erneut abgefragt
 - Neuerungen im Vollbild: nicht wegklickbar (Esc, Klick daneben), läuft von selbst weiter, Pfeile blättern, „Los geht's“ erst auf der letzten Folie
+- STUDIO-TV-01 Legale Quellen: drei Arten, jede Kategorie hat Anbieter, nur https, keine doppelten Kennungen, keine Piraterie-Seiten
+- STUDIO-TV-01 Mediathek-Antwort lesen: Titel, Sender, Dauer, Datum, HD-Adresse; ohne https übergangen; Fehler verständlich
+- STUDIO-TV-01 Mediathek-Suche: Suchtext vor Kategorie, Filme ab 60 Minuten, Kinder nur KiKA, Sender als zweite Bedingung
+- STUDIO-TV-01 Mediatheken & Streaming: ohne Senderliste erreichbar, Arten und Kategorien, Mediathek suchen und in Trendo abspielen, Abo-Kachel öffnet nur die offizielle Seite
+- STUDIO-TV-01 Video-Plattformen: ohne Senderliste erreichbar, Kategorien wie bei YouTube, PeerTube in Trendo abspielen, Dailymotion auf der Original-Seite, YouTube-Suche und -Link öffnen den offiziellen Player
 - Stick-Schreiber schützt: Start-/Systemlaufwerk, Windows-Laufwerk, interne Platte als „Stick“ und zu kleine Laufwerke werden verweigert
 - Stick-Schreiber: Abbild im Release erkannt, Laufwerk wählen, Löschen erst nach Eintippen des Buchstabens, laden, prüfen, schreiben (virtuelle Festplatte), Boot-Tasten
 - T-0300: Raster mit Jetzt-Linie, Tage und 20:15, Sparten-Filter, Suche springt zur Sendung, Aufnahme meldet Überschneidung, Erinnerung zeigt Hinweis

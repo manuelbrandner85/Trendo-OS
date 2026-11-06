@@ -1,6 +1,6 @@
 # Adressbuch – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand 5b38700)
 
 Analyse: [Vorbild-Analyse Adressbuch: Google Kontakte, Outlook, Thunderbird (Clean-Room)](../../../docs/claude/vorbilder/adressbuch-contacts.md)
 

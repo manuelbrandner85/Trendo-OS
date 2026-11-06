@@ -1,8 +1,8 @@
 # Projekte – Testplan
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `projects` · Stand: 0.9.36 (Stand 5b38700)
 
-42 Tests sprechen dieses Programm an.
+44 Tests sprechen dieses Programm an.
 
 - 3D: OBJ, STL und GLB speichern, Datei öffnen, Projekt wieder öffnen
 - 3D: Satz wird zum Vorschlag und erst nach Übernehmen gebaut
@@ -10,10 +10,12 @@ Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `
 - 3D: Vorschau und Export sind bei üblichen Fenstergrößen ohne Scrollen sichtbar
 - 3D: ohne Blender einmal fragen, mit Blender das aktuelle Objekt öffnen
 - CORE-01: Dateisuche begrenzt Tiefe und Anzahl
+- CORE-01: Desktop im Windows-, Mac- und GNOME-Stil ohne verschwommene Glasfläche über dem Hintergrund
 - CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an
 - CORE-01: Desktop-Symbole – Studio und Kernfunktion gleichzeitig, Reihenfolge wie hinzugefügt, Klick öffnet das Studio
 - CORE-01: Desktop-Symbole – unbekannte oder nicht installierte Einträge erscheinen nicht als Symbol, der Desktop bleibt aufgeräumt
 - CORE-01: Projekte – lesbarer Name wird Ordnername (Umlaute, belegte Namen mit Nummer), Dateien und Ordner anlegen, Notiz, Umbenennen behält den Ordner, nichts außerhalb des Projekts
+- CORE-01: Stil Trendo behält sein Milchglas hinter den Flächen
 - CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte
 - CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste
 - Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt

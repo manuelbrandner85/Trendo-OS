@@ -163,7 +163,7 @@
       "Ohne Unterschrift",
       "Brief prüfen",
       "Text von der KI verbessern lassen",
-      "5. November 2026",
+      "6. November 2026",
       "Alle 20 Vorlagen zeigen …",
       "Fertig – Brief speichern",
       "Einsetzen",
@@ -229,9 +229,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 116,
+    "WarmMs": 79,
     "WindowsOnly": []
   },
   {
@@ -388,9 +388,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 42,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -540,9 +540,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 58,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -740,9 +740,9 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 75,
+    "WarmMs": 19,
     "WindowsOnly": []
   },
   {
@@ -902,9 +902,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 32,
+    "WarmMs": 22,
     "WindowsOnly": []
   },
   {
@@ -1066,9 +1066,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -1306,7 +1306,7 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
     "WarmMs": 12,
     "WindowsOnly": []
@@ -1561,9 +1561,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -1804,9 +1804,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 28,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -1893,9 +1893,9 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -2146,9 +2146,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 25,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -2377,9 +2377,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -2638,9 +2638,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -2917,9 +2917,9 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -3213,9 +3213,9 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 41,
+    "WarmMs": 28,
     "WindowsOnly": []
   },
   {
@@ -3291,9 +3291,9 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 49,
+    "WarmMs": 41,
     "WindowsOnly": []
   },
   {
@@ -3437,9 +3437,9 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -3589,9 +3589,9 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -3656,9 +3656,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -3734,9 +3734,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -3924,9 +3924,9 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -4180,9 +4180,9 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 51,
+    "WarmMs": 61,
     "WindowsOnly": []
   },
   {
@@ -4315,6 +4315,30 @@
         "Name": "Instrument dazu erzeugen",
         "State": "offen (braucht XL-Modell, 24 GB)",
         "Test": "–"
+      },
+      {
+        "Nr": "MU-21",
+        "Name": "Mitlaufender Liedtext beim Abspielen",
+        "State": "umgesetzt",
+        "Test": "MusikProfi26_Ui, SongFollowTests"
+      },
+      {
+        "Nr": "MU-22",
+        "Name": "Tonart- und Tempo-Raster mit Takten",
+        "State": "umgesetzt",
+        "Test": "MusikProfi26_Ui, SongFollowTests"
+      },
+      {
+        "Nr": "MU-23",
+        "Name": "Fassungen nebeneinander, A/B an derselben Stelle",
+        "State": "umgesetzt",
+        "Test": "MusikProfi26_Ui, SongFollowTests"
+      },
+      {
+        "Nr": "MU-24",
+        "Name": "Claude als Produzent: Aufbau, Text-Rhythmus, Stil, Mastering-Ziel",
+        "State": "umgesetzt",
+        "Test": "ClaudeMusik_Ui, SongProducerTests"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/STUDIO-MUSIK-01_KATALOG.md",
@@ -4406,19 +4430,22 @@
       "S1: zu wenig gesungen → ehrlicher Hinweis, kein Profil",
       "S5: Mitsingen spielt die Begleitung, zeigt live Ziel/gesungener Ton und Treffer; S6: Mischen (Versatz, Hall) und Mastern ergeben „– mit meiner Stimme“",
       "S5: ohne getrennte Spuren ehrlicher Hinweis „zuerst Spuren trennen“, kein Start",
+      "STUDIO-MUSIK-01: Claude als Produzent – Briefing mit Silben und Reimen, Plan mit Rhythmus vorher/nachher, Ausführen füllt den Entwurf, Erstellen hängt die Fassung ans Original, Mastering-Ziel „laut“",
       "Spuren trennen ohne Demucs: „einrichten“ lädt Demucs 4.0.1 mit PyTorch in eine eigene Umgebung",
       "Spuren trennen: Begleitung und Gesang werden eigene Lieder (mit Herkunft), alle Spuren im Ordner „– Spuren“",
+      "Trendo Musik Profi: Liedtext läuft mit (laufende Zeile gold), Zeile anklicken springt dorthin; Raster mit Tonart, Tonleiter, Takten; Fassungen A/B an gleicher Stelle",
       "Trendo Musik: Abschnitt neu und Cover laden das Lied hoch (kein Dateipfad), neue Fassung verweist aufs Original; Liedtext mit KI; Favorit, Export, Löschen in den Papierkorb",
       "Trendo Musik: Aufträge an ACE-Step geprüft – Grenzen für Länge, Tempo, Varianten; Abschnitt mind. 1 s; über 8 Minuten ohne Sprachmodell; unbekannte Tonart/Takt/Aufgabe abgelehnt",
       "Trendo Musik: Einfach – ein Satz → zwei Varianten in „Meine Lieder“; ohne Beschreibung nur Hinweis; Profi mit Tempo, Tonart, Takt, [Strophe]/[Refrain] und Spanisch",
+      "Trendo Musik: Treffer anklicken übernimmt Titel, Länge, Stil ohne Namen, Tonart und Tempo ins Profi-Formular; ohne Messung freundlicher Hinweis; MusicBrainz-Seite öffnet sich dabei nicht",
       "Wie bei Suno: „Erstellen“ mit „Mehr Optionen“ (alle Einstellungen bleiben), „⋯“-Menü je Lied mit allen Aktionen",
       "Y1: YouTube-Link → Titel/Interpret per oEmbed (kein Download), Stil aus dem Web, Titel vorgeschlagen, Profi-Modus; falscher Link = Hinweis"
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -4440,11 +4467,15 @@
       "\uD83D\uDCFA Live-TV",
       "\uD83C\uDFAC Filme",
       "\uD83C\uDF7F Serien",
+      "\uD83C\uDF9E Mediatheken & Streaming",
+      "▶ Video-Plattformen",
       "\uD83D\uDDD3 Programmführer",
       "⏺ Aufnahmen",
       "▦ Mehrfachansicht",
       "⚙ Quellen",
-      "Senderliste hinzufügen"
+      "Senderliste hinzufügen",
+      "\uD83C\uDF9E Ohne Senderliste: Mediatheken & Streaming",
+      "▶ YouTube, PeerTube & Co."
     ],
     "Formats": [],
     "Dependencies": [],
@@ -4463,6 +4494,11 @@
       "Ersteinrichtung im Vollbild: Claude freiwillig zuerst; Stick/SSD zeigen echte Laufwerke mit GB, zu kleine gesperrt, Windows-Laufwerk nie; ehrlicher Hinweis solange das Abbild fehlt",
       "Ersteinrichtung: nach Neustart geht es beim letzten Schritt weiter, eine schon festgelegte PIN wird nicht erneut abgefragt",
       "Neuerungen im Vollbild: nicht wegklickbar (Esc, Klick daneben), läuft von selbst weiter, Pfeile blättern, „Los geht's“ erst auf der letzten Folie",
+      "STUDIO-TV-01 Legale Quellen: drei Arten, jede Kategorie hat Anbieter, nur https, keine doppelten Kennungen, keine Piraterie-Seiten",
+      "STUDIO-TV-01 Mediathek-Antwort lesen: Titel, Sender, Dauer, Datum, HD-Adresse; ohne https übergangen; Fehler verständlich",
+      "STUDIO-TV-01 Mediathek-Suche: Suchtext vor Kategorie, Filme ab 60 Minuten, Kinder nur KiKA, Sender als zweite Bedingung",
+      "STUDIO-TV-01 Mediatheken & Streaming: ohne Senderliste erreichbar, Arten und Kategorien, Mediathek suchen und in Trendo abspielen, Abo-Kachel öffnet nur die offizielle Seite",
+      "STUDIO-TV-01 Video-Plattformen: ohne Senderliste erreichbar, Kategorien wie bei YouTube, PeerTube in Trendo abspielen, Dailymotion auf der Original-Seite, YouTube-Suche und -Link öffnen den offiziellen Player",
       "Stick-Schreiber schützt: Start-/Systemlaufwerk, Windows-Laufwerk, interne Platte als „Stick“ und zu kleine Laufwerke werden verweigert",
       "Stick-Schreiber: Abbild im Release erkannt, Laufwerk wählen, Löschen erst nach Eintippen des Buchstabens, laden, prüfen, schreiben (virtuelle Festplatte), Boot-Tasten",
       "T-0300: Raster mit Jetzt-Linie, Tage und 20:15, Sparten-Filter, Suche springt zur Sendung, Aufnahme meldet Überschneidung, Erinnerung zeigt Hinweis",
@@ -4479,9 +4515,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 6,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -4562,9 +4598,9 @@
       },
       {
         "Nr": "AU-12",
-        "Name": "Spektrales Retuschieren",
-        "State": "offen",
-        "Test": "–"
+        "Name": "Spektrales Retuschieren, Mehrspur-Projekt",
+        "State": "umgesetzt",
+        "Test": "AudioPro_Ui, AudioMultiTests"
       },
       {
         "Nr": "BI-01",
@@ -4628,9 +4664,9 @@
       },
       {
         "Nr": "BI-11",
-        "Name": "Lasso und Zauberstab",
-        "State": "offen",
-        "Test": "–"
+        "Name": "Lasso und Zauberstab, inhaltsbasiert füllen, frei ziehbare Kurvenpunkte",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui, ImageOpsTests"
       },
       {
         "Nr": "VI-01",
@@ -4701,8 +4737,26 @@
       {
         "Nr": "VI-12",
         "Name": "Farbkorrektur je Stück",
-        "State": "offen",
-        "Test": "–"
+        "State": "umgesetzt",
+        "Test": "VideoProTests"
+      },
+      {
+        "Nr": "VI-13",
+        "Name": "Tonpegel je Stück",
+        "State": "umgesetzt",
+        "Test": "VideoSchnittPro_Ui"
+      },
+      {
+        "Nr": "VI-14",
+        "Name": "Übergangsarten und Titel mit Lage/Größe",
+        "State": "umgesetzt",
+        "Test": "VideoProTests"
+      },
+      {
+        "Nr": "VI-15",
+        "Name": "Zweite Bildspur (Bild im Bild, Logo, Einblendung)",
+        "State": "umgesetzt",
+        "Test": "VideoProTests"
       },
       {
         "Nr": "ME-01",
@@ -4724,11 +4778,11 @@
       "AudioEdit",
       "MediaStudio",
       "AudioFile",
+      "AudioMulti",
       "ImageOps",
+      "Rect",
       "FileShelf",
-      "AudioDsp",
-      "Colors",
-      "EditMarker"
+      "AudioDsp"
     ],
     "Tools": [
       "✂ Ausschneiden (Bearbeiten)",
@@ -4759,12 +4813,14 @@
       "Lautheit Sprache (−16 LUFS) (Reparieren)",
       "Lautheit Musik (−14 LUFS) (Reparieren)",
       "Kompressor (Reparieren)",
+      "Spektral absenken (Reparieren)",
       "▶ Abspielen (Abspielen)",
       "■ Stopp (Abspielen)",
       "Alles wählen (Abspielen)",
       "Auswahl aufheben (Abspielen)",
       "Spektrogramm (Abspielen)",
       "⏺ Aufnehmen (10 s) (Abspielen)",
+      "⤓ Abmischen (Abspielen)",
       "WAV (16 Bit) (Exportieren)",
       "WAV (24 Bit, Studio) (Exportieren)",
       "MP3 (Exportieren)",
@@ -4802,7 +4858,6 @@
       "Krita (optional)",
       "Inkscape (optional)",
       "GIMP (optional)",
-      "VLC (optional)",
       "mpv (optional)"
     ],
     "Rea": "docs/claude/vorbilder/audio-audacity-audition-rx.md",
@@ -4818,9 +4873,14 @@
       "Audio bearbeiten"
     ],
     "Tests": [
+      "Audio Mehrspur: Projekt anlegen, zwei Spuren, Clip mit der Maus verschieben, Stumm und Solo per Knopf, Abmischen öffnet eine Spur",
+      "Audio spektral retuschieren: Spektrogramm an, Rechteck um den Pfeifton ziehen, Bereich absenken – Pfeifton weg, Stimme bleibt, rückgängig",
       "Audio-Editor Reparieren: ohne Profil freundlicher Hinweis, Rauschprofil merken, Rauschen entfernen, Brummen, Stille kürzen, Lautheit −16 LUFS, Spektrogramm, Aufnahme an der Marke",
       "Audio-Editor UI: WAV öffnen, Bereich mit der Maus ziehen, Löschen, Normalisieren, Einblenden, Kopieren/Einfügen, Abspielen, Rückgängig, Export WAV",
       "CORE-08 (UI): Datei wählen, Ton herausholen – echte Ausgabedatei",
+      "CORE-08 Videoschnitt Profi: Look Schwarzweiß, Ton 50 %, Übergang Wischen, Titel oben – als ein Schritt rückgängig; Logo auf die zweite Bildspur, Ecke unten links, entfernen",
+      "CORE-08 Videoschnitt echt mit FFmpeg: Schwarzweiß auf Stück 1 macht die Pixel grau, Stück 2 bleibt farbig, Logo auf der zweiten Spur erscheint, Länge stimmt",
+      "CORE-08 Videoschnitt: Farbe, Tonpegel, Übergang und Titellage je Stück landen im Export-Befehl; alte Projekte ohne Zusatzwerte bleiben gleich",
       "CORE-08: Alle Aufgaben laufen mit echtem FFmpeg, Original bleibt, nichts wird überschrieben",
       "CORE-08: Fehlende Datei gibt verständliche Meldung, Argumente ohne Shell",
       "Einfach zuerst: neue Nutzer öffnen Programme in der Stufe „Einfach“ (weniger Werkzeuge, alle Funktionen über „Erweitert“/„Professionell“ erreichbar)",
@@ -4836,9 +4896,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -4919,9 +4979,9 @@
       },
       {
         "Nr": "AU-12",
-        "Name": "Spektrales Retuschieren",
-        "State": "offen",
-        "Test": "–"
+        "Name": "Spektrales Retuschieren, Mehrspur-Projekt",
+        "State": "umgesetzt",
+        "Test": "AudioPro_Ui, AudioMultiTests"
       },
       {
         "Nr": "BI-01",
@@ -4985,9 +5045,9 @@
       },
       {
         "Nr": "BI-11",
-        "Name": "Lasso und Zauberstab",
-        "State": "offen",
-        "Test": "–"
+        "Name": "Lasso und Zauberstab, inhaltsbasiert füllen, frei ziehbare Kurvenpunkte",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui, ImageOpsTests"
       },
       {
         "Nr": "VI-01",
@@ -5058,8 +5118,26 @@
       {
         "Nr": "VI-12",
         "Name": "Farbkorrektur je Stück",
-        "State": "offen",
-        "Test": "–"
+        "State": "umgesetzt",
+        "Test": "VideoProTests"
+      },
+      {
+        "Nr": "VI-13",
+        "Name": "Tonpegel je Stück",
+        "State": "umgesetzt",
+        "Test": "VideoSchnittPro_Ui"
+      },
+      {
+        "Nr": "VI-14",
+        "Name": "Übergangsarten und Titel mit Lage/Größe",
+        "State": "umgesetzt",
+        "Test": "VideoProTests"
+      },
+      {
+        "Nr": "VI-15",
+        "Name": "Zweite Bildspur (Bild im Bild, Logo, Einblendung)",
+        "State": "umgesetzt",
+        "Test": "VideoProTests"
       },
       {
         "Nr": "ME-01",
@@ -5081,11 +5159,11 @@
       "AudioEdit",
       "MediaStudio",
       "AudioFile",
+      "AudioMulti",
       "ImageOps",
+      "Rect",
       "FileShelf",
-      "AudioDsp",
-      "Colors",
-      "EditMarker"
+      "AudioDsp"
     ],
     "Tools": [
       "＋ Mal-Ebene (Ebene)",
@@ -5128,7 +5206,6 @@
       "Krita (optional)",
       "Inkscape (optional)",
       "GIMP (optional)",
-      "VLC (optional)",
       "mpv (optional)"
     ],
     "Rea": "docs/claude/vorbilder/bild-gimp-krita-photoshop.md",
@@ -5145,10 +5222,14 @@
     ],
     "Tests": [
       "Bild-Dokument: Ebenen-Reihenfolge, Treffer oberste Ebene, Zuschnitt verschiebt Ebenen und Striche, Filter-Grenzen, Farbmatrix Invertieren",
+      "Bildbearbeitung Profi (Profi 24): Zauberstab wählt die Farbfläche, Maske daraus, Lasso umfährt, inhaltsbasiert füllen entfernt Fleck, Kurvenpunkte frei ziehen",
       "Bildbearbeitung UI: Bild als Ebene, Pinsel malt (Pixel), Rechteck aufziehen, Text setzen, Ebene verschieben, Filter Schwarzweiß, Zuschneiden, Rückgängig, Export PNG",
       "Bildbearbeitung wie Krita/Inkscape: Vektorpinsel ergibt glatten Pfad, Mischmodus je Ebene, Pinsel-Deckkraft, SVG speichern und wieder öffnen",
       "Bildbearbeitung wie Photoshop/GIMP: Füllen mit Toleranz, Reparieren entfernt Fleck, Klonen mit Quelle, Verlauf ziehen, Maske aus Auswahl, Tonwerte, Kurve, Auto-Tonwerte",
       "CORE-08 (UI): Datei wählen, Ton herausholen – echte Ausgabedatei",
+      "CORE-08 Videoschnitt Profi: Look Schwarzweiß, Ton 50 %, Übergang Wischen, Titel oben – als ein Schritt rückgängig; Logo auf die zweite Bildspur, Ecke unten links, entfernen",
+      "CORE-08 Videoschnitt echt mit FFmpeg: Schwarzweiß auf Stück 1 macht die Pixel grau, Stück 2 bleibt farbig, Logo auf der zweiten Spur erscheint, Länge stimmt",
+      "CORE-08 Videoschnitt: Farbe, Tonpegel, Übergang und Titellage je Stück landen im Export-Befehl; alte Projekte ohne Zusatzwerte bleiben gleich",
       "CORE-08: Alle Aufgaben laufen mit echtem FFmpeg, Original bleibt, nichts wird überschrieben",
       "CORE-08: Fehlende Datei gibt verständliche Meldung, Argumente ohne Shell",
       "Dateimanager-Verhalten je System: Ziehen verschiebt (Strg kopiert), Kopiename je System, Finder-Zeilenschalter benennt um, Entf/⌘⌫ legt in den Papierkorb, Leertaste zeigt Vorschau",
@@ -5170,9 +5251,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -5254,9 +5335,9 @@
       },
       {
         "Nr": "AU-12",
-        "Name": "Spektrales Retuschieren",
-        "State": "offen",
-        "Test": "–"
+        "Name": "Spektrales Retuschieren, Mehrspur-Projekt",
+        "State": "umgesetzt",
+        "Test": "AudioPro_Ui, AudioMultiTests"
       },
       {
         "Nr": "BI-01",
@@ -5320,9 +5401,9 @@
       },
       {
         "Nr": "BI-11",
-        "Name": "Lasso und Zauberstab",
-        "State": "offen",
-        "Test": "–"
+        "Name": "Lasso und Zauberstab, inhaltsbasiert füllen, frei ziehbare Kurvenpunkte",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui, ImageOpsTests"
       },
       {
         "Nr": "VI-01",
@@ -5393,8 +5474,26 @@
       {
         "Nr": "VI-12",
         "Name": "Farbkorrektur je Stück",
-        "State": "offen",
-        "Test": "–"
+        "State": "umgesetzt",
+        "Test": "VideoProTests"
+      },
+      {
+        "Nr": "VI-13",
+        "Name": "Tonpegel je Stück",
+        "State": "umgesetzt",
+        "Test": "VideoSchnittPro_Ui"
+      },
+      {
+        "Nr": "VI-14",
+        "Name": "Übergangsarten und Titel mit Lage/Größe",
+        "State": "umgesetzt",
+        "Test": "VideoProTests"
+      },
+      {
+        "Nr": "VI-15",
+        "Name": "Zweite Bildspur (Bild im Bild, Logo, Einblendung)",
+        "State": "umgesetzt",
+        "Test": "VideoProTests"
       },
       {
         "Nr": "ME-01",
@@ -5416,11 +5515,11 @@
       "AudioEdit",
       "MediaStudio",
       "AudioFile",
+      "AudioMulti",
       "ImageOps",
+      "Rect",
       "FileShelf",
-      "AudioDsp",
-      "Colors",
-      "EditMarker"
+      "AudioDsp"
     ],
     "Tools": [
       "Los",
@@ -5460,6 +5559,7 @@
       ".png",
       ".pptx",
       ".svg",
+      ".tdoc",
       ".txt",
       ".wav",
       ".webm",
@@ -5474,7 +5574,6 @@
       "Krita (optional)",
       "Inkscape (optional)",
       "GIMP (optional)",
-      "VLC (optional)",
       "mpv (optional)"
     ],
     "Rea": "docs/claude/vorbilder/bild-gimp-krita-photoshop.md",
@@ -5488,6 +5587,9 @@
     ],
     "Tests": [
       "CORE-08 (UI): Datei wählen, Ton herausholen – echte Ausgabedatei",
+      "CORE-08 Videoschnitt Profi: Look Schwarzweiß, Ton 50 %, Übergang Wischen, Titel oben – als ein Schritt rückgängig; Logo auf die zweite Bildspur, Ecke unten links, entfernen",
+      "CORE-08 Videoschnitt echt mit FFmpeg: Schwarzweiß auf Stück 1 macht die Pixel grau, Stück 2 bleibt farbig, Logo auf der zweiten Spur erscheint, Länge stimmt",
+      "CORE-08 Videoschnitt: Farbe, Tonpegel, Übergang und Titellage je Stück landen im Export-Befehl; alte Projekte ohne Zusatzwerte bleiben gleich",
       "CORE-08: Alle Aufgaben laufen mit echtem FFmpeg, Original bleibt, nichts wird überschrieben",
       "CORE-08: Fehlende Datei gibt verständliche Meldung, Argumente ohne Shell",
       "G3: Fachstudio zeigt keine Reiter fremder Studios; G10: keine Schrift unter 12 pt auf der Seite",
@@ -5506,9 +5608,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 34,
+    "WarmMs": 46,
     "WindowsOnly": []
   },
   {
@@ -5589,9 +5691,9 @@
       },
       {
         "Nr": "AU-12",
-        "Name": "Spektrales Retuschieren",
-        "State": "offen",
-        "Test": "–"
+        "Name": "Spektrales Retuschieren, Mehrspur-Projekt",
+        "State": "umgesetzt",
+        "Test": "AudioPro_Ui, AudioMultiTests"
       },
       {
         "Nr": "BI-01",
@@ -5655,9 +5757,9 @@
       },
       {
         "Nr": "BI-11",
-        "Name": "Lasso und Zauberstab",
-        "State": "offen",
-        "Test": "–"
+        "Name": "Lasso und Zauberstab, inhaltsbasiert füllen, frei ziehbare Kurvenpunkte",
+        "State": "umgesetzt",
+        "Test": "Bildbearbeitung_Ui, ImageOpsTests"
       },
       {
         "Nr": "VI-01",
@@ -5728,8 +5830,26 @@
       {
         "Nr": "VI-12",
         "Name": "Farbkorrektur je Stück",
-        "State": "offen",
-        "Test": "–"
+        "State": "umgesetzt",
+        "Test": "VideoProTests"
+      },
+      {
+        "Nr": "VI-13",
+        "Name": "Tonpegel je Stück",
+        "State": "umgesetzt",
+        "Test": "VideoSchnittPro_Ui"
+      },
+      {
+        "Nr": "VI-14",
+        "Name": "Übergangsarten und Titel mit Lage/Größe",
+        "State": "umgesetzt",
+        "Test": "VideoProTests"
+      },
+      {
+        "Nr": "VI-15",
+        "Name": "Zweite Bildspur (Bild im Bild, Logo, Einblendung)",
+        "State": "umgesetzt",
+        "Test": "VideoProTests"
       },
       {
         "Nr": "ME-01",
@@ -5751,11 +5871,11 @@
       "AudioEdit",
       "MediaStudio",
       "AudioFile",
+      "AudioMulti",
       "ImageOps",
+      "Rect",
       "FileShelf",
-      "AudioDsp",
-      "Colors",
-      "EditMarker"
+      "AudioDsp"
     ],
     "Tools": [
       "Teilen (S) (Schneiden)",
@@ -5800,7 +5920,6 @@
       "Krita (optional)",
       "Inkscape (optional)",
       "GIMP (optional)",
-      "VLC (optional)",
       "mpv (optional)"
     ],
     "Rea": "docs/claude/vorbilder/video-kdenlive-resolve.md",
@@ -5817,6 +5936,9 @@
     ],
     "Tests": [
       "CORE-08 (UI): Datei wählen, Ton herausholen – echte Ausgabedatei",
+      "CORE-08 Videoschnitt Profi: Look Schwarzweiß, Ton 50 %, Übergang Wischen, Titel oben – als ein Schritt rückgängig; Logo auf die zweite Bildspur, Ecke unten links, entfernen",
+      "CORE-08 Videoschnitt echt mit FFmpeg: Schwarzweiß auf Stück 1 macht die Pixel grau, Stück 2 bleibt farbig, Logo auf der zweiten Spur erscheint, Länge stimmt",
+      "CORE-08 Videoschnitt: Farbe, Tonpegel, Übergang und Titellage je Stück landen im Export-Befehl; alte Projekte ohne Zusatzwerte bleiben gleich",
       "CORE-08: Alle Aufgaben laufen mit echtem FFmpeg, Original bleibt, nichts wird überschrieben",
       "CORE-08: Fehlende Datei gibt verständliche Meldung, Argumente ohne Shell",
       "Videoschnitt Export X1/X11/X16: Vorlage Hochformat per Klick, Bereich und Lautheit gehen an den Export, Dateiname mit Vorlage, EDL und FCPXML werden geschrieben",
@@ -5837,9 +5959,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -5869,6 +5991,48 @@
         "Name": "Freie Modelle in die Bibliothek",
         "State": "umgesetzt",
         "Test": "Library3D_Ui"
+      },
+      {
+        "Nr": "D3-04",
+        "Name": "Arbeitsschritte Modellieren → UV → Material → Licht → Kamera → Render mit Stand je Schritt",
+        "State": "umgesetzt",
+        "Test": "Studio3DProTests, Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-05",
+        "Name": "Anfasser in der Ansicht: Verschieben, Drehen, Skalieren je Achse (Raster, Tasten G/R/S)",
+        "State": "umgesetzt",
+        "Test": "Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-06",
+        "Name": "Szenenbaum mit Gruppen und Ausblenden; Gruppe gemeinsam bewegen und einfärben",
+        "State": "umgesetzt",
+        "Test": "Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-07",
+        "Name": "PBR-Materialien (Metall, Rauheit, Glas) mit Vorschau in der Ansicht und im Blender-Render",
+        "State": "umgesetzt",
+        "Test": "Studio3DProTests, Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-08",
+        "Name": "Licht-Vorgaben (Studio, Tageslicht, Abendsonne, Innenraum) und Kamera mit Brennweite und Blickhöhe",
+        "State": "umgesetzt",
+        "Test": "Studio3DProTests, Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-09",
+        "Name": "Fotorealistischer Render (Cycles, Entrauschen, AgX, UV automatisch) mit Verlauf und Vorher/Nachher-Regler",
+        "State": "umgesetzt (Blender-Lauf nicht im Test)",
+        "Test": "Studio3DProTests, Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-10",
+        "Name": "Claude baut aus Satz oder Foto ein Modell mit echten Maßen, Materialien, Licht und Kamera – Plan mit 3D-Vorschau, danach Render zur Prüfung",
+        "State": "umgesetzt",
+        "Test": "Claude3D_Ui"
       },
       {
         "Nr": "CA-01",
@@ -5977,6 +6141,48 @@
         "Name": "Mehrere verschiedene Modelle auf einer Platte",
         "State": "offen",
         "Test": "–"
+      },
+      {
+        "Nr": "DR-09",
+        "Name": "Bambu-Drucker im Netz finden und übernehmen, gleiches Netz prüfen",
+        "State": "umgesetzt",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-10",
+        "Name": "Einrichtung: WLAN, Nur LAN, Entwicklermodus, Zugangscode; WLAN-Signal in Klartext",
+        "State": "umgesetzt",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-11",
+        "Name": "Steuern: Licht, Tempo, Düse, Bett, Lüfter (mit Grenzen)",
+        "State": "umgesetzt",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-12",
+        "Name": "AMS-Filamente, Druckermeldungen (HMS) mit Nachschlagen",
+        "State": "umgesetzt",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-13",
+        "Name": "Live-Kamera, Fertig-Meldung, Zeitraffer aufnehmen und holen",
+        "State": "umgesetzt (Kamera/FTPS nur am echten Drucker)",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-14",
+        "Name": "Direkt aus Trendo vorbereiten (Bambu Studio im Hintergrund) und drucken",
+        "State": "umgesetzt (echter Slicer-Lauf nicht im Test)",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-15",
+        "Name": "Mehrere Drucker mit Zustand, Auswählen, Entfernen",
+        "State": "umgesetzt",
+        "Test": "BambuProTests, BambuPro_Ui"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-05_KATALOG.md",
@@ -6024,6 +6230,12 @@
       "Rechts",
       "Hinten",
       "Links",
+      "1 Modellieren",
+      "2 UV",
+      "3 Material",
+      "4 Licht",
+      "5 Kamera",
+      "6 Render",
       "Hinzufügen",
       "Übernehmen",
       "Kanten abrunden",
@@ -6096,14 +6308,28 @@
       "Baukasten übernimmt die neue Seite ins Formular",
       "Briefseite zeigt den echten Brieftext in der Vorschau",
       "Briefseite zeigt die Auftragsleiste und meldet ehrlich, wenn nichts eingebaut ist",
+      "CORE-05 B1: Drucker im Netz finden – Bambu-Meldung ergibt IP, Seriennummer, Modell (P1S), Name, LAN-Modus; fremde Geräte und kaputte Meldungen fallen weg; gleiches Netz wie der PC",
+      "CORE-05 B1–B5: Drucker finden und übernehmen, Einrichtung mit WLAN-Schritten, verbinden, Licht/Tempo/Düse steuern, AMS und Meldungen sehen, Fertig-Meldung, mehrere Drucker, vorbereiten und mit Zeitraffer drucken",
+      "CORE-05 B2/WLAN: Einrichtung in vier Schritten – ins WLAN (2,4 GHz), Nur LAN, Entwicklermodus (sonst nur Zusehen), Zugangscode; Bedienweg passend zum Modell",
+      "CORE-05 B4: Fertig-Meldung – Wechsel von „Druckt“ zu „Fertig“ meldet einmal Erfolg, zu „Fehlgeschlagen“ einen Fehler; Leerlauf meldet nichts",
+      "CORE-05 B4: Statuswerte – WLAN-Signal in Klartext, Tempo-Stufe, Kammerlicht, Lüfter, AMS-Fächer mit Typ, Farbe, Rest und aktivem Fach, Fehlermeldungen mit Bereich und Link",
+      "CORE-05 B4: Steuerbefehle wie Bambu Studio – Licht, Tempo 1–4, Düse bis 300 °C, Bett bis 110 °C, Lüfter in Prozent; außerhalb der Grenzen abgelehnt; Zeitraffer beim Druckstart",
+      "CORE-05 B5/B3: Mehrere Drucker in einer Liste (gleiche Seriennummer ersetzt, ohne Zugangscode in der Datei); Bambu-Studio-Befehlszeile zum Slicen mit Profilen",
+      "CORE-05: Anfasser – Verschieben, Drehen, Skalieren entlang einer Achse (Raster), Tasten G/R/S wechseln die Art, ein Schritt im Rückgängig",
+      "CORE-05: Arbeitsschritte Modellieren → UV → Material → Licht → Kamera → Render – Stand aus der Szene, ausgeblendete Teile zählen nicht",
+      "CORE-05: Arbeitsschritte – Licht und Kamera wählen, Render (nachgebildet) landet im Verlauf, zwei Renders zeigen Vorher/Nachher mit Regler; alle Schritte erledigt",
+      "CORE-05: Claude baut ein 3D-Modell – sieht Szene, Formen und Materialien, Plan zeigt das Modell mit Gesamtmaß, erst „Ausführen“ baut Teile, Licht und Kamera; ungültiges Material fällt weg; Rückgängig stellt zurück",
       "CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen",
       "CORE-05: Eigenschaften: Quader 40×30×10 mm – Volumen 12 cm³, Oberfläche 38 cm², Masse je Werkstoff, Schwerpunkt in der Mitte",
       "CORE-05: Füllung: 100 % deckt die Fläche (Länge ≈ Fläche / Linienbreite), läuft nicht in die Lücke zwischen zwei Körpern, Winkel wechselt",
       "CORE-05: Normbohrungen: M3 Durchgang 3,4 mm, M6 Kernloch 5 mm, M8 Senkschraube 9/16,4 mm; eigenes Maß zuerst",
+      "CORE-05: PBR-Materialien (Metall binär, Rauheit 0–1, Glas mit Durchlässigkeit) und Gruppen; Blender-Szene trägt Material, Licht, Kamera – ausgeblendete Teile fehlen; JSON übersteht Speichern",
       "CORE-05: Querschnitt: Quader mit Bohrung – Fläche ohne das Loch; über dem Körper 0",
+      "CORE-05: Render-Verlauf – neue Bilder bekommen eindeutige Namen, neuestes zuerst; Blender-Skript (Bauen + Cycles-Render) ist gültiges Python",
       "CORE-05: Schätzung aus Bahnen: massiver Würfel wiegt etwa Volumen × Dichte, 15 % Füllung deutlich weniger, PETG schwerer und teurer als PLA",
       "CORE-05: Skalieren, Anordnen in Reihen (mittig, mit Abstand), Kopien auf der Platte; zu viele Teile oder zu groß gibt eine klare Meldung",
       "CORE-05: Stützen: Tisch-Form (Platte auf dünnem Fuß) braucht Stützen unter der Platte, Würfel nicht",
+      "CORE-05: Szenenbaum – Teile in Gruppen ordnen, Gruppe auswählen bewegt alle ihre Teile, Ausblenden nimmt Teile aus Ansicht und Render, Material für die ganze Gruppe",
       "CORE-05: Umrisse: Würfelschnitt ergibt einen geschlossenen Umriss (Umfang 80 mm, Fläche 400 mm²); zwei Körper zwei Umrisse",
       "CORE-05: Unbekannte Formate und Formen werden abgewiesen",
       "Geräusche: MMAudio mit Hinweis „nur nicht-kommerziell“, Beschreibung + Länge → WAV zum Anhören; ohne Beschreibung kein Lauf",
@@ -6118,9 +6344,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 36,
+    "WarmMs": 53,
     "WindowsOnly": []
   },
   {
@@ -6152,6 +6378,48 @@
         "Test": "Library3D_Ui"
       },
       {
+        "Nr": "D3-04",
+        "Name": "Arbeitsschritte Modellieren → UV → Material → Licht → Kamera → Render mit Stand je Schritt",
+        "State": "umgesetzt",
+        "Test": "Studio3DProTests, Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-05",
+        "Name": "Anfasser in der Ansicht: Verschieben, Drehen, Skalieren je Achse (Raster, Tasten G/R/S)",
+        "State": "umgesetzt",
+        "Test": "Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-06",
+        "Name": "Szenenbaum mit Gruppen und Ausblenden; Gruppe gemeinsam bewegen und einfärben",
+        "State": "umgesetzt",
+        "Test": "Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-07",
+        "Name": "PBR-Materialien (Metall, Rauheit, Glas) mit Vorschau in der Ansicht und im Blender-Render",
+        "State": "umgesetzt",
+        "Test": "Studio3DProTests, Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-08",
+        "Name": "Licht-Vorgaben (Studio, Tageslicht, Abendsonne, Innenraum) und Kamera mit Brennweite und Blickhöhe",
+        "State": "umgesetzt",
+        "Test": "Studio3DProTests, Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-09",
+        "Name": "Fotorealistischer Render (Cycles, Entrauschen, AgX, UV automatisch) mit Verlauf und Vorher/Nachher-Regler",
+        "State": "umgesetzt (Blender-Lauf nicht im Test)",
+        "Test": "Studio3DProTests, Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-10",
+        "Name": "Claude baut aus Satz oder Foto ein Modell mit echten Maßen, Materialien, Licht und Kamera – Plan mit 3D-Vorschau, danach Render zur Prüfung",
+        "State": "umgesetzt",
+        "Test": "Claude3D_Ui"
+      },
+      {
         "Nr": "CA-01",
         "Name": "Boolesche Operationen (Vereinigung, Abzug, Schnitt)",
         "State": "umgesetzt",
@@ -6258,6 +6526,48 @@
         "Name": "Mehrere verschiedene Modelle auf einer Platte",
         "State": "offen",
         "Test": "–"
+      },
+      {
+        "Nr": "DR-09",
+        "Name": "Bambu-Drucker im Netz finden und übernehmen, gleiches Netz prüfen",
+        "State": "umgesetzt",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-10",
+        "Name": "Einrichtung: WLAN, Nur LAN, Entwicklermodus, Zugangscode; WLAN-Signal in Klartext",
+        "State": "umgesetzt",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-11",
+        "Name": "Steuern: Licht, Tempo, Düse, Bett, Lüfter (mit Grenzen)",
+        "State": "umgesetzt",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-12",
+        "Name": "AMS-Filamente, Druckermeldungen (HMS) mit Nachschlagen",
+        "State": "umgesetzt",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-13",
+        "Name": "Live-Kamera, Fertig-Meldung, Zeitraffer aufnehmen und holen",
+        "State": "umgesetzt (Kamera/FTPS nur am echten Drucker)",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-14",
+        "Name": "Direkt aus Trendo vorbereiten (Bambu Studio im Hintergrund) und drucken",
+        "State": "umgesetzt (echter Slicer-Lauf nicht im Test)",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-15",
+        "Name": "Mehrere Drucker mit Zustand, Auswählen, Entfernen",
+        "State": "umgesetzt",
+        "Test": "BambuProTests, BambuPro_Ui"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-05_KATALOG.md",
@@ -6270,8 +6580,8 @@
       "ScenePlan",
       "BambuCamera",
       "BambuClient",
-      "BambuPrinter",
-      "DesktopPlatform"
+      "BambuFleet",
+      "BambuPrinter"
     ],
     "Tools": [
       "Los",
@@ -6283,27 +6593,22 @@
       "Datei wählen …",
       "Aus Trendo CAD",
       "Bambu Studio einrichten (kostenlos, AGPL)",
+      "\uD83D\uDD0D Drucker im Netz finden",
+      "Einrichtung (WLAN, Nur LAN, Entwicklermodus)",
       "Speichern",
       "Verbinden"
     ],
     "Formats": [
-      ".docx",
       ".fbx",
       ".gcode",
       ".glb",
       ".gltf",
-      ".html",
       ".jpg",
       ".json",
-      ".mp3",
-      ".mp4",
       ".obj",
-      ".odt",
-      ".pdf",
       ".png",
       ".stl",
       ".txt",
-      ".xlsx",
       ".zip"
     ],
     "Dependencies": [
@@ -6321,7 +6626,8 @@
       "Git",
       "OBS Studio (optional)",
       "mpv (optional)",
-      "Python (optional)"
+      "Python (optional)",
+      "Node.js (optional)"
     ],
     "Rea": "docs/claude/vorbilder/druck-prusaslicer-cura.md",
     "ReaSummary": "Vorbild-Analyse Trendo 3D-Druck: PrusaSlicer, Cura, Bambu Studio (Clean-Room)",
@@ -6333,14 +6639,28 @@
     ],
     "Tests": [
       "CAD wie Fusion 360: Normbohrung M5 per Auswahl (ein Schritt, Rückgängig), Eigenschaften mit Masse je Werkstoff und Querschnitt",
+      "CORE-05 B1: Drucker im Netz finden – Bambu-Meldung ergibt IP, Seriennummer, Modell (P1S), Name, LAN-Modus; fremde Geräte und kaputte Meldungen fallen weg; gleiches Netz wie der PC",
+      "CORE-05 B1–B5: Drucker finden und übernehmen, Einrichtung mit WLAN-Schritten, verbinden, Licht/Tempo/Düse steuern, AMS und Meldungen sehen, Fertig-Meldung, mehrere Drucker, vorbereiten und mit Zeitraffer drucken",
+      "CORE-05 B2/WLAN: Einrichtung in vier Schritten – ins WLAN (2,4 GHz), Nur LAN, Entwicklermodus (sonst nur Zusehen), Zugangscode; Bedienweg passend zum Modell",
+      "CORE-05 B4: Fertig-Meldung – Wechsel von „Druckt“ zu „Fertig“ meldet einmal Erfolg, zu „Fehlgeschlagen“ einen Fehler; Leerlauf meldet nichts",
+      "CORE-05 B4: Statuswerte – WLAN-Signal in Klartext, Tempo-Stufe, Kammerlicht, Lüfter, AMS-Fächer mit Typ, Farbe, Rest und aktivem Fach, Fehlermeldungen mit Bereich und Link",
+      "CORE-05 B4: Steuerbefehle wie Bambu Studio – Licht, Tempo 1–4, Düse bis 300 °C, Bett bis 110 °C, Lüfter in Prozent; außerhalb der Grenzen abgelehnt; Zeitraffer beim Druckstart",
+      "CORE-05 B5/B3: Mehrere Drucker in einer Liste (gleiche Seriennummer ersetzt, ohne Zugangscode in der Datei); Bambu-Studio-Befehlszeile zum Slicen mit Profilen",
+      "CORE-05: Anfasser – Verschieben, Drehen, Skalieren entlang einer Achse (Raster), Tasten G/R/S wechseln die Art, ein Schritt im Rückgängig",
+      "CORE-05: Arbeitsschritte Modellieren → UV → Material → Licht → Kamera → Render – Stand aus der Szene, ausgeblendete Teile zählen nicht",
+      "CORE-05: Arbeitsschritte – Licht und Kamera wählen, Render (nachgebildet) landet im Verlauf, zwei Renders zeigen Vorher/Nachher mit Regler; alle Schritte erledigt",
+      "CORE-05: Claude baut ein 3D-Modell – sieht Szene, Formen und Materialien, Plan zeigt das Modell mit Gesamtmaß, erst „Ausführen“ baut Teile, Licht und Kamera; ungültiges Material fällt weg; Rückgängig stellt zurück",
       "CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen",
       "CORE-05: Eigenschaften: Quader 40×30×10 mm – Volumen 12 cm³, Oberfläche 38 cm², Masse je Werkstoff, Schwerpunkt in der Mitte",
       "CORE-05: Füllung: 100 % deckt die Fläche (Länge ≈ Fläche / Linienbreite), läuft nicht in die Lücke zwischen zwei Körpern, Winkel wechselt",
       "CORE-05: Normbohrungen: M3 Durchgang 3,4 mm, M6 Kernloch 5 mm, M8 Senkschraube 9/16,4 mm; eigenes Maß zuerst",
+      "CORE-05: PBR-Materialien (Metall binär, Rauheit 0–1, Glas mit Durchlässigkeit) und Gruppen; Blender-Szene trägt Material, Licht, Kamera – ausgeblendete Teile fehlen; JSON übersteht Speichern",
       "CORE-05: Querschnitt: Quader mit Bohrung – Fläche ohne das Loch; über dem Körper 0",
+      "CORE-05: Render-Verlauf – neue Bilder bekommen eindeutige Namen, neuestes zuerst; Blender-Skript (Bauen + Cycles-Render) ist gültiges Python",
       "CORE-05: Schätzung aus Bahnen: massiver Würfel wiegt etwa Volumen × Dichte, 15 % Füllung deutlich weniger, PETG schwerer und teurer als PLA",
       "CORE-05: Skalieren, Anordnen in Reihen (mittig, mit Abstand), Kopien auf der Platte; zu viele Teile oder zu groß gibt eine klare Meldung",
       "CORE-05: Stützen: Tisch-Form (Platte auf dünnem Fuß) braucht Stützen unter der Platte, Würfel nicht",
+      "CORE-05: Szenenbaum – Teile in Gruppen ordnen, Gruppe auswählen bewegt alle ihre Teile, Ausblenden nimmt Teile aus Ansicht und Render, Material für die ganze Gruppe",
       "CORE-05: Umrisse: Würfelschnitt ergibt einen geschlossenen Umriss (Umfang 80 mm, Fläche 400 mm²); zwei Körper zwei Umrisse",
       "CORE-05: Unbekannte Formate und Formen werden abgewiesen",
       "N23: Bauschritte über das Menüband, Maß als Formel ändern, Parameter ändern rechnet neu, Rückgängig, Export 3MF/STEP/Zeichnung",
@@ -6351,9 +6671,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -6385,6 +6705,48 @@
         "Test": "Library3D_Ui"
       },
       {
+        "Nr": "D3-04",
+        "Name": "Arbeitsschritte Modellieren → UV → Material → Licht → Kamera → Render mit Stand je Schritt",
+        "State": "umgesetzt",
+        "Test": "Studio3DProTests, Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-05",
+        "Name": "Anfasser in der Ansicht: Verschieben, Drehen, Skalieren je Achse (Raster, Tasten G/R/S)",
+        "State": "umgesetzt",
+        "Test": "Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-06",
+        "Name": "Szenenbaum mit Gruppen und Ausblenden; Gruppe gemeinsam bewegen und einfärben",
+        "State": "umgesetzt",
+        "Test": "Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-07",
+        "Name": "PBR-Materialien (Metall, Rauheit, Glas) mit Vorschau in der Ansicht und im Blender-Render",
+        "State": "umgesetzt",
+        "Test": "Studio3DProTests, Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-08",
+        "Name": "Licht-Vorgaben (Studio, Tageslicht, Abendsonne, Innenraum) und Kamera mit Brennweite und Blickhöhe",
+        "State": "umgesetzt",
+        "Test": "Studio3DProTests, Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-09",
+        "Name": "Fotorealistischer Render (Cycles, Entrauschen, AgX, UV automatisch) mit Verlauf und Vorher/Nachher-Regler",
+        "State": "umgesetzt (Blender-Lauf nicht im Test)",
+        "Test": "Studio3DProTests, Studio3DPro_Ui"
+      },
+      {
+        "Nr": "D3-10",
+        "Name": "Claude baut aus Satz oder Foto ein Modell mit echten Maßen, Materialien, Licht und Kamera – Plan mit 3D-Vorschau, danach Render zur Prüfung",
+        "State": "umgesetzt",
+        "Test": "Claude3D_Ui"
+      },
+      {
         "Nr": "CA-01",
         "Name": "Boolesche Operationen (Vereinigung, Abzug, Schnitt)",
         "State": "umgesetzt",
@@ -6491,6 +6853,48 @@
         "Name": "Mehrere verschiedene Modelle auf einer Platte",
         "State": "offen",
         "Test": "–"
+      },
+      {
+        "Nr": "DR-09",
+        "Name": "Bambu-Drucker im Netz finden und übernehmen, gleiches Netz prüfen",
+        "State": "umgesetzt",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-10",
+        "Name": "Einrichtung: WLAN, Nur LAN, Entwicklermodus, Zugangscode; WLAN-Signal in Klartext",
+        "State": "umgesetzt",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-11",
+        "Name": "Steuern: Licht, Tempo, Düse, Bett, Lüfter (mit Grenzen)",
+        "State": "umgesetzt",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-12",
+        "Name": "AMS-Filamente, Druckermeldungen (HMS) mit Nachschlagen",
+        "State": "umgesetzt",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-13",
+        "Name": "Live-Kamera, Fertig-Meldung, Zeitraffer aufnehmen und holen",
+        "State": "umgesetzt (Kamera/FTPS nur am echten Drucker)",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-14",
+        "Name": "Direkt aus Trendo vorbereiten (Bambu Studio im Hintergrund) und drucken",
+        "State": "umgesetzt (echter Slicer-Lauf nicht im Test)",
+        "Test": "BambuProTests, BambuPro_Ui"
+      },
+      {
+        "Nr": "DR-15",
+        "Name": "Mehrere Drucker mit Zustand, Auswählen, Entfernen",
+        "State": "umgesetzt",
+        "Test": "BambuProTests, BambuPro_Ui"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-05_KATALOG.md",
@@ -6584,14 +6988,28 @@
     ],
     "Tests": [
       "CAD wie Fusion 360: Normbohrung M5 per Auswahl (ein Schritt, Rückgängig), Eigenschaften mit Masse je Werkstoff und Querschnitt",
+      "CORE-05 B1: Drucker im Netz finden – Bambu-Meldung ergibt IP, Seriennummer, Modell (P1S), Name, LAN-Modus; fremde Geräte und kaputte Meldungen fallen weg; gleiches Netz wie der PC",
+      "CORE-05 B1–B5: Drucker finden und übernehmen, Einrichtung mit WLAN-Schritten, verbinden, Licht/Tempo/Düse steuern, AMS und Meldungen sehen, Fertig-Meldung, mehrere Drucker, vorbereiten und mit Zeitraffer drucken",
+      "CORE-05 B2/WLAN: Einrichtung in vier Schritten – ins WLAN (2,4 GHz), Nur LAN, Entwicklermodus (sonst nur Zusehen), Zugangscode; Bedienweg passend zum Modell",
+      "CORE-05 B4: Fertig-Meldung – Wechsel von „Druckt“ zu „Fertig“ meldet einmal Erfolg, zu „Fehlgeschlagen“ einen Fehler; Leerlauf meldet nichts",
+      "CORE-05 B4: Statuswerte – WLAN-Signal in Klartext, Tempo-Stufe, Kammerlicht, Lüfter, AMS-Fächer mit Typ, Farbe, Rest und aktivem Fach, Fehlermeldungen mit Bereich und Link",
+      "CORE-05 B4: Steuerbefehle wie Bambu Studio – Licht, Tempo 1–4, Düse bis 300 °C, Bett bis 110 °C, Lüfter in Prozent; außerhalb der Grenzen abgelehnt; Zeitraffer beim Druckstart",
+      "CORE-05 B5/B3: Mehrere Drucker in einer Liste (gleiche Seriennummer ersetzt, ohne Zugangscode in der Datei); Bambu-Studio-Befehlszeile zum Slicen mit Profilen",
+      "CORE-05: Anfasser – Verschieben, Drehen, Skalieren entlang einer Achse (Raster), Tasten G/R/S wechseln die Art, ein Schritt im Rückgängig",
+      "CORE-05: Arbeitsschritte Modellieren → UV → Material → Licht → Kamera → Render – Stand aus der Szene, ausgeblendete Teile zählen nicht",
+      "CORE-05: Arbeitsschritte – Licht und Kamera wählen, Render (nachgebildet) landet im Verlauf, zwei Renders zeigen Vorher/Nachher mit Regler; alle Schritte erledigt",
+      "CORE-05: Claude baut ein 3D-Modell – sieht Szene, Formen und Materialien, Plan zeigt das Modell mit Gesamtmaß, erst „Ausführen“ baut Teile, Licht und Kamera; ungültiges Material fällt weg; Rückgängig stellt zurück",
       "CORE-05: Echtes Blender – Modell anlegen, Vorschau rendern, in glTF/OBJ/STL/FBX umwandeln, Inhalt prüfen",
       "CORE-05: Eigenschaften: Quader 40×30×10 mm – Volumen 12 cm³, Oberfläche 38 cm², Masse je Werkstoff, Schwerpunkt in der Mitte",
       "CORE-05: Füllung: 100 % deckt die Fläche (Länge ≈ Fläche / Linienbreite), läuft nicht in die Lücke zwischen zwei Körpern, Winkel wechselt",
       "CORE-05: Normbohrungen: M3 Durchgang 3,4 mm, M6 Kernloch 5 mm, M8 Senkschraube 9/16,4 mm; eigenes Maß zuerst",
+      "CORE-05: PBR-Materialien (Metall binär, Rauheit 0–1, Glas mit Durchlässigkeit) und Gruppen; Blender-Szene trägt Material, Licht, Kamera – ausgeblendete Teile fehlen; JSON übersteht Speichern",
       "CORE-05: Querschnitt: Quader mit Bohrung – Fläche ohne das Loch; über dem Körper 0",
+      "CORE-05: Render-Verlauf – neue Bilder bekommen eindeutige Namen, neuestes zuerst; Blender-Skript (Bauen + Cycles-Render) ist gültiges Python",
       "CORE-05: Schätzung aus Bahnen: massiver Würfel wiegt etwa Volumen × Dichte, 15 % Füllung deutlich weniger, PETG schwerer und teurer als PLA",
       "CORE-05: Skalieren, Anordnen in Reihen (mittig, mit Abstand), Kopien auf der Platte; zu viele Teile oder zu groß gibt eine klare Meldung",
       "CORE-05: Stützen: Tisch-Form (Platte auf dünnem Fuß) braucht Stützen unter der Platte, Würfel nicht",
+      "CORE-05: Szenenbaum – Teile in Gruppen ordnen, Gruppe auswählen bewegt alle ihre Teile, Ausblenden nimmt Teile aus Ansicht und Render, Material für die ganze Gruppe",
       "CORE-05: Umrisse: Würfelschnitt ergibt einen geschlossenen Umriss (Umfang 80 mm, Fläche 400 mm²); zwei Körper zwei Umrisse",
       "CORE-05: Unbekannte Formate und Formen werden abgewiesen",
       "N23: Bauschritte über das Menüband, Maß als Formel ändern, Parameter ändern rechnet neu, Rückgängig, Export 3MF/STEP/Zeichnung",
@@ -6602,9 +7020,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 56,
+    "WarmMs": 71,
     "WindowsOnly": []
   },
   {
@@ -6810,9 +7228,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -7022,9 +7440,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": true,
-    "WarmMs": 7,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -7105,15 +7523,57 @@
       },
       {
         "Nr": "SP-12",
-        "Name": "Mehrere Level hintereinander",
-        "State": "offen",
-        "Test": "–"
+        "Name": "Mehrere Level hintereinander: Level-Reiter, hinzufügen, umbenennen, früher schieben, löschen; Ziel lädt das nächste Level",
+        "State": "umgesetzt",
+        "Test": "GameRulesTests, SpielEditor_Ui"
       },
       {
         "Nr": "SP-13",
-        "Name": "Animationen je Zustand",
-        "State": "offen",
-        "Test": "–"
+        "Name": "Animationen je Zustand (stehen, laufen, springen, fallen, getroffen): Bildstreifen, Bilder, Tempo, Blickrichtung",
+        "State": "umgesetzt",
+        "Test": "GameRulesTests, SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-14",
+        "Name": "Ebenen im Level: Spiel-Ebene und Hintergrund-Ebene (Wolke, Berg, Baum, Busch, Gras), andere Ebene blass sichtbar",
+        "State": "umgesetzt",
+        "Test": "GameRulesTests, SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-15",
+        "Name": "Claude baut Level im Editor: sieht alle Level, Hintergründe und den Prüfbericht (unfaire Stellen), Plan mit Level-Vorschau, erst „Ausführen“ ändert, ungültige Vorschläge fallen mit Grund weg, „Verwerfen“ stellt zurück",
+        "State": "umgesetzt",
+        "Test": "ClaudeGame_Ui"
+      },
+      {
+        "Nr": "SP-16",
+        "Name": "Phasen mit Abnahme (Konzept → Prototyp → Vertical Slice → Alpha → Beta → Release): Kriterien je Phase, nur der Reihe nach, wieder öffnen",
+        "State": "umgesetzt",
+        "Test": "GameProTests, SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-17",
+        "Name": "Team und Rollen (Game Design, Level, Grafik & Animation, Programmierung, Ton & Musik, Test, Produktion) mit Arbeitsplatz je Rolle",
+        "State": "umgesetzt",
+        "Test": "SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-18",
+        "Name": "Testmodus: Spielbarkeits-Prüfung je Level (Ziel erreichbar, knappe Sprünge, Landung neben Stacheln, Gegner am Start, Münzen), „Zeigen“ springt zur Stelle",
+        "State": "umgesetzt",
+        "Test": "GameProTests, SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-19",
+        "Name": "Fehler und Spieler-Notizen aus dem Probespiel mit Level und Stelle, abhaken; offene Fehler sperren die Beta-Abnahme",
+        "State": "umgesetzt",
+        "Test": "GameProTests, SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-20",
+        "Name": "Ton-Spur: Geräusch je Ereignis (Springen, Münze, Treffer, Ziel) und Musik in Schleife, ins Spiel kopiert",
+        "State": "umgesetzt",
+        "Test": "GameProTests, SpielEditor_Ui"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-06_KATALOG.md",
@@ -7136,9 +7596,12 @@
       ".jpg",
       ".json",
       ".md",
+      ".mp3",
+      ".ogg",
       ".png",
       ".tdoc",
       ".txt",
+      ".wav",
       ".zip"
     ],
     "Dependencies": [
@@ -7160,13 +7623,26 @@
     "Tests": [
       "CORE-06 (UI): Spiel anlegen öffnet es im Browser; ohne Unreal ehrlicher Hinweis, mit Unreal Projekt anlegen",
       "CORE-06: Alle Browser-Spiele werden angelegt, JavaScript ist gültig (node --check)",
+      "CORE-06: Claude baut Level – sieht alle Level voll, Plan zeigt das neue Level als Vorschau, erst „Ausführen“ legt Level 2 und den Hintergrund an, falsches Zeichen fällt weg, „Verwerfen“ stellt alles zurück",
+      "CORE-06: Gebautes Spiel mit 2 Leveln, Hintergrund und Lauf-Animation – config.js trägt alles, Bildstreifen liegt im Spielordner, game.js ist gültiges JavaScript (Node)",
       "CORE-06: Gebautes Spiel: config.js trägt Zeitlimit und Regeln, neue Kacheln sind erlaubt, game.js ist gültiges JavaScript (Node)",
+      "CORE-06: Mehrere Level – Ziel lädt das nächste Level (+10, Hinweis „Level 2 von 2“), Münzen und Eigenschaften je Level („2:x,y:value“), erst das letzte Ziel gewinnt; Nochmal beginnt bei Level 1",
+      "CORE-06: Phasen mit Abnahme – nur der Reihe nach und nur mit erfüllten Kriterien; Zurücknehmen öffnet auch spätere Phasen; Beta braucht Test-Notizen ohne offene Fehler",
+      "CORE-06: Profi-Ablauf – Phasen-Leiste mit Abnahme (gesperrt, bis alles erfüllt ist), Rollen mit Arbeitsplatz, Test-Bereich prüft jedes Level und zeigt die Stelle, Notiz und Fehler aus dem Probespiel, Ton-Spur; Claude bekommt den Prüfbericht",
+      "CORE-06: Prüfung – Hintergrund nur Deko-Zeichen (w, b, t, m, g), Level 2 ff. nur gültige Kacheln, höchstens 20 Level, Animation nur für bekannte Zustände, Bilder 1–32 und 1–30 je Sekunde",
       "CORE-06: Regeln: „Münzen ≥ 2 → +1 Leben“ feuert genau einmal, „Punkte ≥ 3 → Gewonnen“ beendet das Spiel",
       "CORE-06: Schlüssel öffnet die Tür: mit Schlüssel geschafft, ohne Schlüssel bleibt die Tür zu; Regel „Sekunden ≥ 1 → Türen öffnen“ öffnet sie auch",
       "CORE-06: Speicherpunkt: nach einem Treffer geht es dort weiter statt am Start",
+      "CORE-06: Spiel-Editor mit mehreren Leveln – Level hinzufügen, umbenennen, wechseln, früher schieben, löschen (Eigenschaften rücken nach); Probespiel läuft durch alle Level",
+      "CORE-06: Spiel-Editor – Animation je Zustand: Bildstreifen wählen, Bilder und Tempo setzen (begrenzt), Probespiel zeigt Laufen-Bilder nacheinander, Entfernen nimmt sie raus; Bauen kopiert den Streifen ins Spiel",
+      "CORE-06: Spiel-Editor – Hintergrund-Ebene nur mit Deko (Wolke, Baum …), Spiel-Ebene bleibt unverändert, andere Ebene blass sichtbar; Bauen übernimmt den Hintergrund",
+      "CORE-06: Spielbarkeits-Prüfung meldet unfaire Stellen – Gegner am Start, Landung neben Stacheln, unerreichbare Münze, Schlüssel öffnen Türen; Sprungfeder hilft über hohe Wände",
+      "CORE-06: Spielbarkeits-Prüfung – Lücke von 3 schafft die Figur (wie im Probespiel), Lücke von 7 nicht; Ziel hinter zu hoher Wand nicht erreichbar",
       "CORE-06: Sprungfeder schleudert viel höher als ein normaler Sprung",
+      "CORE-06: Ton-Spur und Treffer-Animation – Geräusch je Ereignis und Musik landen im Spielordner, config.js nennt sie, game.js spielt sie (sonst Piepton); nach einem Treffer ist der Zustand „treffen“",
       "CORE-06: Unreal-Engines aus Launcher-Liste erkannt, neueste zuerst; .uproject ist gültig",
       "CORE-06: Zeitlimit: nach Ablauf verloren, Restzeit zählt herunter; ohne Limit −1",
+      "CORE-06: Zustände der Figur – stehen auf dem Boden, laufen mit Tempo, springen nach oben, fallen nach unten; Blickrichtung folgt der Laufrichtung",
       "Spiele: Retro-Vorlage, Level im Raster bearbeiten, Figur hinzufügen, prüfen, bauen und spielen",
       "Spiele: Umfang AAA+ wählen setzt AAA-Meilensteine; Bauen legt ein Unreal-Projekt mit Spielbibel an"
     ],
@@ -7175,9 +7651,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -7259,15 +7735,57 @@
       },
       {
         "Nr": "SP-12",
-        "Name": "Mehrere Level hintereinander",
-        "State": "offen",
-        "Test": "–"
+        "Name": "Mehrere Level hintereinander: Level-Reiter, hinzufügen, umbenennen, früher schieben, löschen; Ziel lädt das nächste Level",
+        "State": "umgesetzt",
+        "Test": "GameRulesTests, SpielEditor_Ui"
       },
       {
         "Nr": "SP-13",
-        "Name": "Animationen je Zustand",
-        "State": "offen",
-        "Test": "–"
+        "Name": "Animationen je Zustand (stehen, laufen, springen, fallen, getroffen): Bildstreifen, Bilder, Tempo, Blickrichtung",
+        "State": "umgesetzt",
+        "Test": "GameRulesTests, SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-14",
+        "Name": "Ebenen im Level: Spiel-Ebene und Hintergrund-Ebene (Wolke, Berg, Baum, Busch, Gras), andere Ebene blass sichtbar",
+        "State": "umgesetzt",
+        "Test": "GameRulesTests, SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-15",
+        "Name": "Claude baut Level im Editor: sieht alle Level, Hintergründe und den Prüfbericht (unfaire Stellen), Plan mit Level-Vorschau, erst „Ausführen“ ändert, ungültige Vorschläge fallen mit Grund weg, „Verwerfen“ stellt zurück",
+        "State": "umgesetzt",
+        "Test": "ClaudeGame_Ui"
+      },
+      {
+        "Nr": "SP-16",
+        "Name": "Phasen mit Abnahme (Konzept → Prototyp → Vertical Slice → Alpha → Beta → Release): Kriterien je Phase, nur der Reihe nach, wieder öffnen",
+        "State": "umgesetzt",
+        "Test": "GameProTests, SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-17",
+        "Name": "Team und Rollen (Game Design, Level, Grafik & Animation, Programmierung, Ton & Musik, Test, Produktion) mit Arbeitsplatz je Rolle",
+        "State": "umgesetzt",
+        "Test": "SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-18",
+        "Name": "Testmodus: Spielbarkeits-Prüfung je Level (Ziel erreichbar, knappe Sprünge, Landung neben Stacheln, Gegner am Start, Münzen), „Zeigen“ springt zur Stelle",
+        "State": "umgesetzt",
+        "Test": "GameProTests, SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-19",
+        "Name": "Fehler und Spieler-Notizen aus dem Probespiel mit Level und Stelle, abhaken; offene Fehler sperren die Beta-Abnahme",
+        "State": "umgesetzt",
+        "Test": "GameProTests, SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-20",
+        "Name": "Ton-Spur: Geräusch je Ereignis (Springen, Münze, Treffer, Ziel) und Musik in Schleife, ins Spiel kopiert",
+        "State": "umgesetzt",
+        "Test": "GameProTests, SpielEditor_Ui"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-06_KATALOG.md",
@@ -7304,8 +7822,11 @@
       ".jpg",
       ".json",
       ".md",
+      ".mp3",
+      ".ogg",
       ".png",
       ".txt",
+      ".wav",
       ".zip"
     ],
     "Dependencies": [
@@ -7324,13 +7845,26 @@
     "Tests": [
       "CORE-06 (UI): Spiel anlegen öffnet es im Browser; ohne Unreal ehrlicher Hinweis, mit Unreal Projekt anlegen",
       "CORE-06: Alle Browser-Spiele werden angelegt, JavaScript ist gültig (node --check)",
+      "CORE-06: Claude baut Level – sieht alle Level voll, Plan zeigt das neue Level als Vorschau, erst „Ausführen“ legt Level 2 und den Hintergrund an, falsches Zeichen fällt weg, „Verwerfen“ stellt alles zurück",
+      "CORE-06: Gebautes Spiel mit 2 Leveln, Hintergrund und Lauf-Animation – config.js trägt alles, Bildstreifen liegt im Spielordner, game.js ist gültiges JavaScript (Node)",
       "CORE-06: Gebautes Spiel: config.js trägt Zeitlimit und Regeln, neue Kacheln sind erlaubt, game.js ist gültiges JavaScript (Node)",
+      "CORE-06: Mehrere Level – Ziel lädt das nächste Level (+10, Hinweis „Level 2 von 2“), Münzen und Eigenschaften je Level („2:x,y:value“), erst das letzte Ziel gewinnt; Nochmal beginnt bei Level 1",
+      "CORE-06: Phasen mit Abnahme – nur der Reihe nach und nur mit erfüllten Kriterien; Zurücknehmen öffnet auch spätere Phasen; Beta braucht Test-Notizen ohne offene Fehler",
+      "CORE-06: Profi-Ablauf – Phasen-Leiste mit Abnahme (gesperrt, bis alles erfüllt ist), Rollen mit Arbeitsplatz, Test-Bereich prüft jedes Level und zeigt die Stelle, Notiz und Fehler aus dem Probespiel, Ton-Spur; Claude bekommt den Prüfbericht",
+      "CORE-06: Prüfung – Hintergrund nur Deko-Zeichen (w, b, t, m, g), Level 2 ff. nur gültige Kacheln, höchstens 20 Level, Animation nur für bekannte Zustände, Bilder 1–32 und 1–30 je Sekunde",
       "CORE-06: Regeln: „Münzen ≥ 2 → +1 Leben“ feuert genau einmal, „Punkte ≥ 3 → Gewonnen“ beendet das Spiel",
       "CORE-06: Schlüssel öffnet die Tür: mit Schlüssel geschafft, ohne Schlüssel bleibt die Tür zu; Regel „Sekunden ≥ 1 → Türen öffnen“ öffnet sie auch",
       "CORE-06: Speicherpunkt: nach einem Treffer geht es dort weiter statt am Start",
+      "CORE-06: Spiel-Editor mit mehreren Leveln – Level hinzufügen, umbenennen, wechseln, früher schieben, löschen (Eigenschaften rücken nach); Probespiel läuft durch alle Level",
+      "CORE-06: Spiel-Editor – Animation je Zustand: Bildstreifen wählen, Bilder und Tempo setzen (begrenzt), Probespiel zeigt Laufen-Bilder nacheinander, Entfernen nimmt sie raus; Bauen kopiert den Streifen ins Spiel",
+      "CORE-06: Spiel-Editor – Hintergrund-Ebene nur mit Deko (Wolke, Baum …), Spiel-Ebene bleibt unverändert, andere Ebene blass sichtbar; Bauen übernimmt den Hintergrund",
+      "CORE-06: Spielbarkeits-Prüfung meldet unfaire Stellen – Gegner am Start, Landung neben Stacheln, unerreichbare Münze, Schlüssel öffnen Türen; Sprungfeder hilft über hohe Wände",
+      "CORE-06: Spielbarkeits-Prüfung – Lücke von 3 schafft die Figur (wie im Probespiel), Lücke von 7 nicht; Ziel hinter zu hoher Wand nicht erreichbar",
       "CORE-06: Sprungfeder schleudert viel höher als ein normaler Sprung",
+      "CORE-06: Ton-Spur und Treffer-Animation – Geräusch je Ereignis und Musik landen im Spielordner, config.js nennt sie, game.js spielt sie (sonst Piepton); nach einem Treffer ist der Zustand „treffen“",
       "CORE-06: Unreal-Engines aus Launcher-Liste erkannt, neueste zuerst; .uproject ist gültig",
       "CORE-06: Zeitlimit: nach Ablauf verloren, Restzeit zählt herunter; ohne Limit −1",
+      "CORE-06: Zustände der Figur – stehen auf dem Boden, laufen mit Tempo, springen nach oben, fallen nach unten; Blickrichtung folgt der Laufrichtung",
       "Claude im Studio: Auswahl in Trendo Tabelle geht als Zustand mit; Internet und Befehle bei Bedarf immer an, je Projekt auf „sicher“ stellbar; Vorgabe abschaltbar",
       "Claude im Studio: Ergebnis erscheint links im passenden Programm – Webseite im Webseiten-Studio, Spiel im Spiele-Studio; Studio wird daneben eingeblendet",
       "Claude im Studio: Startideen, Rückfrage als Knöpfe, Anhang landet im Projekt, Abo-Verbrauch je Antwort",
@@ -7361,9 +7895,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 36,
     "WindowsOnly": []
   },
   {
@@ -7546,9 +8080,9 @@
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 34,
+    "WarmMs": 42,
     "WindowsOnly": []
   },
   {
@@ -7745,9 +8279,9 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 62,
+    "WarmMs": 91,
     "WindowsOnly": []
   },
   {
@@ -7936,9 +8470,9 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": true,
-    "WarmMs": 7,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -8144,9 +8678,9 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 38,
+    "WarmMs": 24,
     "WindowsOnly": []
   },
   {
@@ -8364,9 +8898,9 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 47,
+    "WarmMs": 62,
     "WindowsOnly": []
   },
   {
@@ -8560,7 +9094,7 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": true,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -8742,9 +9276,9 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -8924,9 +9458,9 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -9115,9 +9649,9 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -9285,9 +9819,9 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 7,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -9486,9 +10020,9 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": true,
-    "WarmMs": 7,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -9543,9 +10077,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -9607,7 +10141,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -9680,9 +10214,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -9754,9 +10288,9 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -9851,9 +10385,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -9935,9 +10469,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -10014,7 +10548,7 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -10111,9 +10645,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 30,
+    "WarmMs": 34,
     "WindowsOnly": []
   },
   {
@@ -10222,9 +10756,9 @@
       "src/Trendo.App/MainWindow.Connections.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -10298,9 +10832,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -10404,9 +10938,9 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -10507,9 +11041,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 34,
     "WindowsOnly": []
   },
   {
@@ -10572,9 +11106,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 19,
     "WindowsOnly": []
   },
   {
@@ -10666,7 +11200,7 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -10717,7 +11251,7 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -10818,9 +11352,9 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -10887,7 +11421,7 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -11018,9 +11552,9 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 43,
+    "WarmMs": 42,
     "WindowsOnly": []
   },
   {
@@ -11096,7 +11630,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
     "WarmMs": 23,
     "WindowsOnly": []
@@ -11170,9 +11704,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -11252,7 +11786,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
     "WarmMs": 12,
     "WindowsOnly": []
@@ -11322,9 +11856,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -11579,10 +12113,12 @@
       "Alle Studios: Bereich und Suche filtern die Karten, Alle zeigt wieder alles",
       "Alle Studios: kurze deutsche Namen und ein Satz, nach Bereichen gruppiert, keine Kennungen oder Fachbegriffe sichtbar",
       "CORE-01: Dateisuche begrenzt Tiefe und Anzahl",
+      "CORE-01: Desktop im Windows-, Mac- und GNOME-Stil ohne verschwommene Glasfläche über dem Hintergrund",
       "CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an",
       "CORE-01: Desktop-Symbole – Studio und Kernfunktion gleichzeitig, Reihenfolge wie hinzugefügt, Klick öffnet das Studio",
       "CORE-01: Desktop-Symbole – unbekannte oder nicht installierte Einträge erscheinen nicht als Symbol, der Desktop bleibt aufgeräumt",
       "CORE-01: Projekte – lesbarer Name wird Ordnername (Umlaute, belegte Namen mit Nummer), Dateien und Ordner anlegen, Notiz, Umbenennen behält den Ordner, nichts außerhalb des Projekts",
+      "CORE-01: Stil Trendo behält sein Milchglas hinter den Flächen",
       "CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte",
       "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste",
       "Claude auch in der Studio-Übersicht, in der Suche und im Fokusmodus",
@@ -11626,9 +12162,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 45,
+    "WarmMs": 47,
     "WindowsOnly": []
   },
   {
@@ -11866,10 +12402,12 @@
     ],
     "Tests": [
       "CORE-01: Dateisuche begrenzt Tiefe und Anzahl",
+      "CORE-01: Desktop im Windows-, Mac- und GNOME-Stil ohne verschwommene Glasfläche über dem Hintergrund",
       "CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an",
       "CORE-01: Desktop-Symbole – Studio und Kernfunktion gleichzeitig, Reihenfolge wie hinzugefügt, Klick öffnet das Studio",
       "CORE-01: Desktop-Symbole – unbekannte oder nicht installierte Einträge erscheinen nicht als Symbol, der Desktop bleibt aufgeräumt",
       "CORE-01: Projekte – lesbarer Name wird Ordnername (Umlaute, belegte Namen mit Nummer), Dateien und Ordner anlegen, Notiz, Umbenennen behält den Ordner, nichts außerhalb des Projekts",
+      "CORE-01: Stil Trendo behält sein Milchglas hinter den Flächen",
       "CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte",
       "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste",
       "Dateimanager-Verhalten je System: Ziehen verschiebt (Strg kopiert), Kopiename je System, Finder-Zeilenschalter benennt um, Entf/⌘⌫ legt in den Papierkorb, Leertaste zeigt Vorschau",
@@ -11885,9 +12423,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -12163,19 +12701,21 @@
     ],
     "Tests": [
       "CORE-01: Dateisuche begrenzt Tiefe und Anzahl",
+      "CORE-01: Desktop im Windows-, Mac- und GNOME-Stil ohne verschwommene Glasfläche über dem Hintergrund",
       "CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an",
       "CORE-01: Desktop-Symbole – Studio und Kernfunktion gleichzeitig, Reihenfolge wie hinzugefügt, Klick öffnet das Studio",
       "CORE-01: Desktop-Symbole – unbekannte oder nicht installierte Einträge erscheinen nicht als Symbol, der Desktop bleibt aufgeräumt",
       "CORE-01: Projekte – lesbarer Name wird Ordnername (Umlaute, belegte Namen mit Nummer), Dateien und Ordner anlegen, Notiz, Umbenennen behält den Ordner, nichts außerhalb des Projekts",
+      "CORE-01: Stil Trendo behält sein Milchglas hinter den Flächen",
       "CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte",
       "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste",
       "Desktop: anfangs keine Symbole; über Startmenü, Seite „Desktop-Symbole“ und Studio Manager hinzufügen; Rechtsklick entfernt; bleibt gespeichert"
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 36,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -12399,10 +12939,12 @@
       "B: Einrichtung mit Profilbild, PIN und Wiederherstellungs-Code, Interessen → Desktop-Symbole, Personen; Sperrbildschirm mit PIN vergessen",
       "C: kostenlose Internet-KIs – Liste laden, Schlüssel geführt einrichten, in allen Bereichen einspringen, Hinweis und Tageszähler, Bild verstehen",
       "CORE-01: Dateisuche begrenzt Tiefe und Anzahl",
+      "CORE-01: Desktop im Windows-, Mac- und GNOME-Stil ohne verschwommene Glasfläche über dem Hintergrund",
       "CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an",
       "CORE-01: Desktop-Symbole – Studio und Kernfunktion gleichzeitig, Reihenfolge wie hinzugefügt, Klick öffnet das Studio",
       "CORE-01: Desktop-Symbole – unbekannte oder nicht installierte Einträge erscheinen nicht als Symbol, der Desktop bleibt aufgeräumt",
       "CORE-01: Projekte – lesbarer Name wird Ordnername (Umlaute, belegte Namen mit Nummer), Dateien und Ordner anlegen, Notiz, Umbenennen behält den Ordner, nichts außerhalb des Projekts",
+      "CORE-01: Stil Trendo behält sein Milchglas hinter den Flächen",
       "CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte",
       "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste",
       "Pfadfelder: Klick ins Feld öffnet die Ordnerauswahl, die Wahl landet im Feld",
@@ -12414,9 +12956,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 7,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -12642,10 +13184,12 @@
       "3D: Vorschau und Export sind bei üblichen Fenstergrößen ohne Scrollen sichtbar",
       "3D: ohne Blender einmal fragen, mit Blender das aktuelle Objekt öffnen",
       "CORE-01: Dateisuche begrenzt Tiefe und Anzahl",
+      "CORE-01: Desktop im Windows-, Mac- und GNOME-Stil ohne verschwommene Glasfläche über dem Hintergrund",
       "CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an",
       "CORE-01: Desktop-Symbole – Studio und Kernfunktion gleichzeitig, Reihenfolge wie hinzugefügt, Klick öffnet das Studio",
       "CORE-01: Desktop-Symbole – unbekannte oder nicht installierte Einträge erscheinen nicht als Symbol, der Desktop bleibt aufgeräumt",
       "CORE-01: Projekte – lesbarer Name wird Ordnername (Umlaute, belegte Namen mit Nummer), Dateien und Ordner anlegen, Notiz, Umbenennen behält den Ordner, nichts außerhalb des Projekts",
+      "CORE-01: Stil Trendo behält sein Milchglas hinter den Flächen",
       "CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte",
       "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste",
       "Design: Aktuelle Projekte – Leerzustand ohne Demodaten, danach echtes Projekt",
@@ -12681,9 +13225,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 6,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -12919,10 +13463,12 @@
       "Briefseite zeigt den echten Brieftext in der Vorschau",
       "Briefseite zeigt die Auftragsleiste und meldet ehrlich, wenn nichts eingebaut ist",
       "CORE-01: Dateisuche begrenzt Tiefe und Anzahl",
+      "CORE-01: Desktop im Windows-, Mac- und GNOME-Stil ohne verschwommene Glasfläche über dem Hintergrund",
       "CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an",
       "CORE-01: Desktop-Symbole – Studio und Kernfunktion gleichzeitig, Reihenfolge wie hinzugefügt, Klick öffnet das Studio",
       "CORE-01: Desktop-Symbole – unbekannte oder nicht installierte Einträge erscheinen nicht als Symbol, der Desktop bleibt aufgeräumt",
       "CORE-01: Projekte – lesbarer Name wird Ordnername (Umlaute, belegte Namen mit Nummer), Dateien und Ordner anlegen, Notiz, Umbenennen behält den Ordner, nichts außerhalb des Projekts",
+      "CORE-01: Stil Trendo behält sein Milchglas hinter den Flächen",
       "CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte",
       "CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste",
       "Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner",
@@ -13003,7 +13549,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
     "WarmMs": 5,
     "WindowsOnly": []
@@ -13080,9 +13626,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -13157,9 +13703,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 19,
     "WindowsOnly": []
   },
   {
@@ -13254,9 +13800,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 38,
+    "WarmMs": 41,
     "WindowsOnly": []
   },
   {
@@ -13354,9 +13900,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -13437,9 +13983,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -13515,9 +14061,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -13784,9 +14330,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 31,
     "WindowsOnly": []
   },
   {
@@ -14031,9 +14577,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 16,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -14287,9 +14833,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -14576,9 +15122,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 48,
+    "WarmMs": 32,
     "WindowsOnly": []
   },
   {
@@ -14786,7 +15332,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
     "WarmMs": 42,
     "WindowsOnly": []
@@ -15002,7 +15548,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -15225,9 +15771,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -15439,7 +15985,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -15740,9 +16286,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 97,
+    "WarmMs": 104,
     "WindowsOnly": []
   },
   {
@@ -15957,9 +16503,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -16184,7 +16730,7 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
     "WarmMs": 12,
     "WindowsOnly": []
@@ -16399,9 +16945,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -16476,7 +17022,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -16755,9 +17301,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 20,
     "WindowsOnly": []
   },
   {
@@ -17010,9 +17556,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 31,
     "WindowsOnly": []
   },
   {
@@ -17093,9 +17639,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 208ed9e)",
+    "Version": "0.9.36 (Stand 5b38700)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 14,
     "WindowsOnly": []
   }
 ]

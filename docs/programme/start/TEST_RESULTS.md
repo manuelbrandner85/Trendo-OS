@@ -1,10 +1,10 @@
 # Startbildschirm – Testergebnisse
 
-Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: Desktop einrichten (CORE-01) · Bereich: System & Sicherheit · Seite: `start` · Stand: 0.9.36 (Stand 5b38700)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 90 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
+Bestanden 91 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 2
 
 | Test | Ergebnis |
 |---|---|
@@ -18,10 +18,12 @@ Bestanden 90 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 | Briefseite zeigt den echten Brieftext in der Vorschau | ✓ bestanden |
 | Briefseite zeigt die Auftragsleiste und meldet ehrlich, wenn nichts eingebaut ist | ✓ bestanden |
 | CORE-01: Dateisuche begrenzt Tiefe und Anzahl | ✓ bestanden |
+| CORE-01: Desktop im Windows-, Mac- und GNOME-Stil ohne verschwommene Glasfläche über dem Hintergrund | nicht im Lauf |
 | CORE-01: Desktop-Symbole – Seite schaltet jedes Symbol hin und zurück (Knopftext folgt), doppeltes Hinzufügen legt kein zweites Symbol an | ✓ bestanden |
 | CORE-01: Desktop-Symbole – Studio und Kernfunktion gleichzeitig, Reihenfolge wie hinzugefügt, Klick öffnet das Studio | ✓ bestanden |
 | CORE-01: Desktop-Symbole – unbekannte oder nicht installierte Einträge erscheinen nicht als Symbol, der Desktop bleibt aufgeräumt | ✓ bestanden |
 | CORE-01: Projekte – lesbarer Name wird Ordnername (Umlaute, belegte Namen mit Nummer), Dateien und Ordner anlegen, Notiz, Umbenennen behält den Ordner, nichts außerhalb des Projekts | ✓ bestanden |
+| CORE-01: Stil Trendo behält sein Milchglas hinter den Flächen | ✓ bestanden |
 | CORE-01: Suche findet mit Umlauten, Wortanfang und mehreren Wörtern; sortiert nach Treffergüte | ✓ bestanden |
 | CORE-01: Suchfeld + Enter zeigt Treffer, Klick öffnet die Seite; Strg+Umschalt+F fokussiert die Suche, Strg+K öffnet die Befehlsleiste | ✓ bestanden |
 | Claude-Regeln 01.11.2026: Claude Code aus Trendo erlaubt (eigene Anmeldung je Nutzer) – kein Sperr-Hinweis; „Claude Code öffnen“ startet das echte Claude Code im Projektordner | ✓ bestanden |

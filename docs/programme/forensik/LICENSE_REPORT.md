@@ -1,6 +1,6 @@
 # Sicherheits-Werkzeuge & Beweise – Lizenzen
 
-Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: System auf Gefahren prüfen (SPEC-12) · Bereich: System & Sicherheit · Seite: `forensik` · Stand: 0.9.36 (Stand 5b38700)
 
 Eigener Code (Trendo OS). Eingebundene Komponenten und Dienste, die der Code nennt:
 

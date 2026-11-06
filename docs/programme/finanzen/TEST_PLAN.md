@@ -1,6 +1,6 @@
 # Geld – Testplan
 
-Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand 208ed9e)
+Studio: Geld & Rechnungen (SPEC-11) · Bereich: Business & Geld · Seite: `finanzen` · Stand: 0.9.36 (Stand 5b38700)
 
 12 Tests sprechen dieses Programm an.
 
