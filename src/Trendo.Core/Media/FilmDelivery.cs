@@ -25,27 +25,8 @@ public static class FilmDelivery
 
     static int Fps(JsonObject p) => (int)Math.Max(1, D(p["fps"], 30));
 
-    /// <summary>Schnittliste im Format CMX 3600: je Stück ein Ereignis (V = Bild mit Ton, A2 = Musik), Quell- und Programm-Timecode.</summary>
-    public static string Edl(JsonObject p, string title)
-    {
-        var fps = Fps(p); var clips = VideoEdit.Clips(p); var starts = VideoEdit.Starts(clips);
-        var sb = new StringBuilder($"TITLE: {Regex.Replace(title, @"[^\p{L}\p{N} _\-]", "").Trim()}\nFCM: NON-DROP FRAME\n\n");
-        var ev = 1;
-        string Reel(string f) { var r = Regex.Replace(Path.GetFileNameWithoutExtension(f).ToUpperInvariant(), "[^A-Z0-9]", ""); return (r.Length == 0 ? "AX" : r.Length > 8 ? r[..8] : r).PadRight(8); }
-        for (var i = 0; i < clips.Count; i++)
-        {
-            var c = clips[i];
-            sb.Append($"{ev++:000}  {Reel(c.File)} {(c.HasAudio && !c.IsImage ? "AA/V " : "V    ")} C        {Timecode(c.In, fps)} {Timecode(c.Out, fps)} {Timecode(starts[i], fps)} {Timecode(starts[i] + c.Length, fps)}\n");
-            sb.Append($"* FROM CLIP NAME: {Path.GetFileName(c.File)}\n");
-            if (c.Title.Length > 0) sb.Append($"* COMMENT: TITEL {c.Title}\n");
-        }
-        foreach (var m in VideoEdit.Clips(p, "music"))
-        {
-            sb.Append($"{ev++:000}  {Reel(m.File)} A2    C        {Timecode(m.In, fps)} {Timecode(m.Out, fps)} {Timecode(m.Start, fps)} {Timecode(m.Start + m.Length, fps)}\n");
-            sb.Append($"* FROM CLIP NAME: {Path.GetFileName(m.File)}\n");
-        }
-        return sb.ToString();
-    }
+    /// <summary>Schnittliste im Format CMX 3600 (Bild, Überblendungen, Musik auf A2) – eine Umsetzung für Export und Auslieferung: <see cref="VideoExport.Edl"/>.</summary>
+    public static string Edl(JsonObject p, string title) => VideoExport.Edl(p, Regex.Replace(title, @"[^\p{L}\p{N} _\-]", "").Trim());
 
     /// <summary>OpenTimelineIO (JSON, Schema Timeline.1): Spur „Bild“ (mit Lücken-freier Folge), Spur „Musik“ (mit Gap bis zum Einsatz), Medien als ExternalReference.</summary>
     public static string Otio(JsonObject p, string title)

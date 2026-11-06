@@ -134,13 +134,9 @@ public static class VideoExport
 
     // ───────────── X16: Übergabe an andere Schnittprogramme ─────────────
 
-    static string Tc(double s, int fps)
-    {
-        var fr = (long)Math.Round(s * fps); var f = fr % fps; var t = fr / fps;
-        return $"{t / 3600:00}:{t / 60 % 60:00}:{t % 60:00}:{f:00}";
-    }
+    static string Tc(double s, int fps) => FilmDelivery.Timecode(s, fps);
 
-    /// <summary>EDL (CMX 3600) der Bildspur – lesen Resolve, Premiere, Avid. Überblendungen werden als Dissolve (D) geschrieben.</summary>
+    /// <summary>EDL (CMX 3600) der Bildspur und der Musik (Spur A2) – lesen Resolve, Premiere, Avid. Überblendungen werden als Dissolve (D) geschrieben.</summary>
     public static string Edl(JsonObject p, string title)
     {
         var clips = VideoEdit.Clips(p); var fps = (int)Math.Max(1, ProgramFps(p)); var starts = VideoEdit.Starts(clips);
@@ -156,10 +152,18 @@ public static class VideoExport
             if (c.Title.Length > 0) sb.AppendLine($"* COMMENT: Titel „{c.Title}“");
             sb.AppendLine();
         }
+        var ev = clips.Count + 1;
+        foreach (var m in VideoEdit.Clips(p, "music").OrderBy(m => m.Start)) // Paket 01 S3-15: Musik mit Einsatz-Timecode
+        {
+            sb.AppendLine($"{ev++:000}  {"AX",-8} A2    C         {Tc(m.In, fps)} {Tc(m.Out, fps)} {Tc(m.Start, fps)} {Tc(m.Start + m.Length, fps)}");
+            sb.AppendLine($"* FROM CLIP NAME: {Path.GetFileName(m.File)}");
+            sb.AppendLine($"* SOURCE FILE: {m.File}");
+            sb.AppendLine();
+        }
         return sb.ToString();
     }
 
-    static double ProgramFps(JsonObject p) => p["fps"] is JsonValue v && v.TryGetValue<double>(out var d) ? d : 30;
+    static double ProgramFps(JsonObject p) => Num(p["fps"], 30);
 
     static string R(double s, int fps) => $"{(long)Math.Round(s * fps) * 100}/{fps * 100}s";
 
@@ -199,5 +203,5 @@ public static class VideoExport
         return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE fcpxml>\n" + doc.Root!.ToString();
     }
 
-    static double Num(JsonNode? n, double f) => n is JsonValue v && v.TryGetValue<double>(out var d) ? d : f;
+    static double Num(JsonNode? n, double f) => n is JsonValue v && double.TryParse(v.GetValueKind() == System.Text.Json.JsonValueKind.String ? v.GetValue<string>() : v.ToJsonString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var d) ? d : f; // auch ganzzahlig gespeicherte Werte (fps = 25)
 }

@@ -27,9 +27,9 @@ public class FilmDeliveryTests
             Assert.Equal("00:00:02:12", FilmDelivery.Timecode(2.48, 25)); Assert.Equal("01:00:00:00", FilmDelivery.Timecode(3600, 25));
             var edl = FilmDelivery.Edl(p, "Unser Film");
             Assert.Contains("TITLE: Unser Film", edl); Assert.Contains("FCM: NON-DROP FRAME", edl);
-            Assert.Contains("001  SZENE1   AA/V  C        00:00:00:00 00:00:02:00 00:00:00:00 00:00:02:00", edl);
-            Assert.Contains("002  SZENE2   AA/V  C        00:00:00:00 00:00:02:00 00:00:02:00 00:00:04:00", edl);
-            Assert.Contains("003  THEMA    A2    C        00:00:00:00 00:00:03:00 00:00:00:13 00:00:03:13", edl);
+            Assert.Contains("001  AX       AA/V  C         00:00:00:00 00:00:02:00 00:00:00:00 00:00:02:00", edl);
+            Assert.Contains("002  AX       AA/V  C         00:00:00:00 00:00:02:00 00:00:02:00 00:00:04:00", edl);
+            Assert.Contains("003  AX       A2    C         00:00:00:00 00:00:03:00 00:00:00:13 00:00:03:13", edl);
             var otio = JsonNode.Parse(FilmDelivery.Otio(p, "Unser Film"))!;
             Assert.Equal("Timeline.1", (string)otio["OTIO_SCHEMA"]!);
             var tracks = otio["tracks"]!["children"]!.AsArray();
