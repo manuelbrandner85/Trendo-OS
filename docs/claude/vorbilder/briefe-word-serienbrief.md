@@ -19,6 +19,7 @@
 - ✓ Unterschrift mit Maus, Stift oder Finger zeichnen oder als Bild einsetzen
 - ✓ Falzmarken und Lochmarke im DOCX/PDF (DIN 5008), abschaltbar
 - ◐ Papierschacht und Drucker: im Druckdialog des Systems, nicht in Trendo
+- ✓ Wie im Kanzlei-Alltag (06.11.2026): Briefart erkennen mit Frist und Grundlage, Pflichtangaben nach DIN 5008, typische Anlagen; Frist erst nach „Ja“ in den Kalender; Wiedervorlage je Akte; „Steht an“ über alle Akten; Postausgangsbuch mit Versandweg, Nachweis und CSV
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Assistent außen, Blatt in der Mitte – entspricht dem Bauplan (A1–A3).

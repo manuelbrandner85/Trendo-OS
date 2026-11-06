@@ -181,7 +181,7 @@ public partial class MainWindow
                 _core.Audit.Append(Principal.LocalOwner.Name, "letter.serial", $"{list.Count} Briefe (Adressbuch)");
                 _letterSerial = null; _letterMsg = $"{list.Count} Briefe gespeichert in {dir}"; Show(V); NotifyFileResult(_letterMsg);
             }), true)));
-        return new StackPanel { Children = { book, form, dl, serial, serialBook } };
+        return new StackPanel { Children = { LetterKindCard(d), book, form, dl, serial, serialBook } }; // Briefart zuerst (Claude 5)
     }
 
     /// <summary>Gezeichnete Striche (Pixel im Zeichenfeld) – bleiben beim Neuzeichnen der Seite erhalten.</summary>

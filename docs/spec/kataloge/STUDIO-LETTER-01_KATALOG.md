@@ -23,3 +23,9 @@ Funktionen nach den Vorbildern (Microsoft Word mit Serienbrief und Umschlägen, 
 | BR-16 | Papierkorb für Briefe, Akten, Briefköpfe | – | umgesetzt | BriefePapierkorb |
 | BR-17 | Kein Programmname auf dem Blatt | – | umgesetzt | LetterNoBrandingUiTests |
 | BR-18 | Papierschacht wählen | Word Druckdialog | teilweise (Druckdialog des Systems) | – |
+| BR-19 | Briefart erkennen (Widerspruch, Widerruf, Kündigung, Mahnung, Reklamation, DSGVO-Auskunft, Antrag, Bewerbung) mit Frist und Grundlage (Claude-Ausbau 5) | Kanzleisoftware | umgesetzt | LetterOfficeTests, LetterOffice_Ui |
+| BR-20 | Pflichtangaben nach DIN 5008 und Briefart prüfen, typische Anlagen eintragen | DIN 5008 | umgesetzt | LetterOfficeTests, LetterOffice_Ui |
+| BR-21 | Frist erst nach „Ja“ in den Trendo-Kalender (Erinnerung zwei Tage vorher) | – | umgesetzt | LetterOffice_Ui |
+| BR-22 | Wiedervorlage je Akte (Datum, Notiz, „+ 2 Wochen“, erledigt) | Kanzlei-Wiedervorlage | umgesetzt | LetterOfficeTests, LetterOffice_Ui |
+| BR-23 | „Steht an“: Fristen und Wiedervorlagen aller Akten, überfällige zuerst | Kanzlei-Fristenbuch | umgesetzt | LetterOfficeTests, LetterOffice_Ui |
+| BR-24 | Postausgangsbuch (Datum, Empfänger, Betreff, Versandweg, Akte, Nachweis) mit CSV; Versand mit Nachweis setzt die Akte auf „versendet“ | Kanzlei-Postausgangsbuch | umgesetzt | LetterOfficeTests, LetterOffice_Ui |

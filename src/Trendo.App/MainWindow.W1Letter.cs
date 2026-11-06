@@ -85,6 +85,7 @@ public partial class MainWindow
         var sp = new StackPanel { Spacing = 6 };
         var title = Box("case-title", "Worum geht es? z. B. „Widerspruch Rentenbescheid“", w: 360);
         var cats = new ComboBox { Name = "case-category", ItemsSource = LetterKit.Categories.Select(c => c.Label).ToList(), SelectedIndex = 0, Width = 200 };
+        sp.Children.Add(LetterAgendaCard()); // Fristen, Wiedervorlagen, Postausgangsbuch (Profi 5)
         sp.Children.Add(H("Neue Akte", 14));
         sp.Children.Add(Row(title, cats, Btn("case-create", "Akte anlegen", () =>
         {
@@ -206,6 +207,7 @@ public partial class MainWindow
                     c.Sources.Add(new(ci, url.Text!.Trim(), DateTime.Today, c.Jurisdiction, true)); SaveCase("Quelle"); Show("akte");
                 })));
         }
+        sp.Children.Add(CaseOfficeCard(c)); // Wiedervorlage und Postausgang (Profi 5)
         sp.Children.Add(Row(Btn("case-compose", "Brief aus der Akte zusammensetzen", () => { LetterKit.Compose(c, Cases.Letterhead(c.LetterheadId, Principal.LocalOwner)); _letter = c.Draft; SaveCase("zusammengesetzt"); _caseMsg = "Brief aktualisiert – im Reiter „Schnell schreiben“ bearbeiten oder direkt prüfen."; Show("ausgabe"); }, true),
             Btn("case-edit", "Brief bearbeiten", () => { _letter = c.Draft; Show("brief"); })));
         return LetterPage("Akte", sp);

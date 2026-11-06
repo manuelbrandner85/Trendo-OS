@@ -47,6 +47,9 @@ public sealed class LetterCase
     public DeliveryState State { get; set; } = DeliveryState.Entwurf;
     public string? DeliveryProof { get; set; }               // Einlieferungsbeleg/Sendebericht – nur dann „Versendet“
     public List<string> Log { get; set; } = [];
+    /// <summary>Wiedervorlage wie in der Kanzlei: an diesem Tag die Akte wieder vorlegen (mit kurzer Notiz, z. B. „Antwort da?“).</summary>
+    public DateTime? ResubmitOn { get; set; }
+    public string ResubmitNote { get; set; } = "";
 }
 
 /// <summary>LETTER-002/011: Kategorien mit Layout, Rückfragen und Warnungen.</summary>
