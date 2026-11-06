@@ -21,7 +21,8 @@ public class ProfileAndOpenRouterTests
             Assert.Throws<ArgumentException>(() => l.Set(ProfileLock.Kind.Pin, "1111"));
             var code = l.Set(ProfileLock.Kind.Pin, "4711")!;
             Assert.Matches("^[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$", code);
-            Assert.DoesNotContain("4711", File.ReadAllText(Path.Combine(d, "profil", "anmeldung.json")));
+            // PIN nie im Klartext – lange Hex-Prüfwerte (Salt, Hash) ausblenden, sie können „4711“ zufällig enthalten (Volltest 0.9.77)
+            Assert.DoesNotContain("4711", System.Text.RegularExpressions.Regex.Replace(File.ReadAllText(Path.Combine(d, "profil", "anmeldung.json")), "[0-9a-fA-F]{16,}", "#"));
             Assert.True(new ProfileLock(d).Verify("4711"));
             Assert.True(new ProfileLock(d).VerifyRecovery(code.ToLowerInvariant().Replace("-", " ")));
             var t0 = new DateTime(2026, 10, 27, 12, 0, 0, DateTimeKind.Utc);
