@@ -10,7 +10,9 @@ public sealed class PlatformSim
     public const int T = 32;
     public sealed class Body { public double X, Y, Vx, Vy; public double W = 24, H = 30; public bool On; public int Facing = 1; }
     public sealed record Coin(int Col, int Row, double X, double Y, int Value) { public bool Taken { get; set; } }
-    public sealed class Foe { public int Col, Row; public double X, Y, Dir = 1, Speed = 1; public bool Alive = true; }
+    public sealed class Foe { public int Col, Row; public double X, Y, Dir = 1, Speed = 1; public bool Alive = true; public int Hp = 1, MaxHp = 1, Hurt; }
+    /// <summary>Geschoss (Waffe „werfen“).</summary>
+    public sealed class Shot { public double X, Y, Dir; public int Life = 60; }
 
     /// <summary>Zustände der Spielfigur – je Zustand kann das Spiel eine eigene Animation zeigen (wie AnimatedSprite in Godot).</summary>
     public static readonly (string Id, string Label)[] States = [("stehen", "Stehen"), ("laufen", "Laufen"), ("springen", "Springen"), ("fallen", "Fallen"), ("treffen", "Getroffen")];
@@ -23,6 +25,11 @@ public sealed class PlatformSim
     readonly IReadOnlyDictionary<string, string> _texts = new Dictionary<string, string>(); readonly HashSet<string> _given = [];
     /// <summary>Inventar: eingesammelte Gegenstände (Paket 01 S1-05).</summary>
     public List<string> Inventory { get; } = [];
+    /// <summary>Waffe (leer = keine), fliegende Geschosse und Schwertschlag (Bilder) – Paket 01 S1-05.</summary>
+    public string Weapon { get; } = "";
+    public List<Shot> Shots { get; } = [];
+    public int Swing { get; private set; }
+    int _cool; bool _attackPrev;
     public int ItemsCollected { get; private set; }
     string Text(int x, int y, string k, string def) => _texts.TryGetValue($"{(LevelIndex == 0 ? "" : $"{LevelIndex + 1}:")}{x},{y}:{k}", out var v) && v.Length > 0 ? v : def;
     public bool Has(string ability) => _abilities.Contains(ability);
@@ -61,9 +68,9 @@ public sealed class PlatformSim
     public string State => Flash > 0 ? "treffen" : !Player.On ? (Player.Vy < 0 ? "springen" : "fallen") : Math.Abs(Player.Vx) > 0.1 ? "laufen" : "stehen";
 
     public PlatformSim(IReadOnlyList<string> level, int speed = 5, int lives = 3, IReadOnlyDictionary<string, double>? props = null, int timeLimit = 0,
-        IReadOnlyList<GameStudio.GameRule>? rules = null, IReadOnlyList<IReadOnlyList<string>>? moreLevels = null, IReadOnlyList<string>? abilities = null, IReadOnlyDictionary<string, string>? texts = null)
+        IReadOnlyList<GameStudio.GameRule>? rules = null, IReadOnlyList<IReadOnlyList<string>>? moreLevels = null, IReadOnlyList<string>? abilities = null, IReadOnlyDictionary<string, string>? texts = null, string? weapon = null)
     {
-        _abilities = abilities ?? []; _texts = texts ?? new Dictionary<string, string>();
+        _abilities = abilities ?? []; _texts = texts ?? new Dictionary<string, string>(); Weapon = weapon ?? "";
         var first = level.Count > 0 ? level.ToArray() : ["S.....Z", "#######"];
         _levels = [first, .. (moreLevels ?? []).Where(l => l.Count > 0).Select(l => l.ToArray())];
         _props = props; _timeLimit = Math.Clamp(timeLimit, 0, 3600);
@@ -76,7 +83,7 @@ public sealed class PlatformSim
     void Load(int index)
     {
         LevelIndex = index; _rows = _levels[index]; _grid = [.. _rows.Select(r => r.ToCharArray())];
-        Cols = _rows.Max(r => r.Length); Coins.Clear(); Foes.Clear(); Keys = 0; DoorsOpen = false; _levelFrames = 0;
+        Cols = _rows.Max(r => r.Length); Coins.Clear(); Foes.Clear(); Shots.Clear(); Keys = 0; DoorsOpen = false; _levelFrames = 0;
         for (var y = 0; y < _rows.Length; y++) for (var x = 0; x < _rows[y].Length; x++) if (_rows[y][x] == 'S') { _sx = x; _sy = y; }
         KeysTotal = string.Concat(_rows).Count(c => c == 'K');
         var pre = index == 0 ? "" : $"{index + 1}:";
@@ -85,7 +92,7 @@ public sealed class PlatformSim
             for (var x = 0; x < _rows[y].Length; x++)
             {
                 if (_rows[y][x] == 'o') Coins.Add(new(x, y, x * T + 16, y * T + 16, (int)Math.Clamp(P(x, y, "value", 1), 1, 100)));
-                if (_rows[y][x] == 'E') Foes.Add(new Foe { Col = x, Row = y, X = x * T + 4, Y = y * T + 6, Speed = Math.Clamp(P(x, y, "speed", 1), 0.25, 4) });
+                if (_rows[y][x] == 'E') { var hp = (int)Math.Clamp(Math.Round(P(x, y, "hp", 1)), 1, 9); Foes.Add(new Foe { Col = x, Row = y, X = x * T + 4, Y = y * T + 6, Speed = Math.Clamp(P(x, y, "speed", 1), 0.25, 4), Hp = hp, MaxHp = hp }); }
             }
         ResetPlayer();
     }
@@ -110,6 +117,44 @@ public sealed class PlatformSim
     void Hit() { Lives--; Flash = 20; if (!Lost) ResetPlayer(); }
 
     /// <summary>Ereignis-Regeln prüfen: jede feuert höchstens einmal.</summary>
+    /// <summary>Angriff (neuer Tastendruck, 20 Bilder Abklingzeit), Schwert vor der Figur, Geschosse fliegen bis zur Wand oder zum Gegner.</summary>
+    void Combat(bool strike)
+    {
+        var pl = Player;
+        if (_cool > 0) _cool--; if (Swing > 0) Swing--;
+        foreach (var f in Foes) if (f.Hurt > 0) f.Hurt--;
+        if (strike && _cool == 0 && Weapon.Length > 0)
+        {
+            _cool = 20;
+            if (Weapon == "schwert")
+            {
+                Swing = 8;
+                foreach (var f in Foes.Where(f => f.Alive).ToList())
+                {
+                    var dx = f.X + 12 - (pl.X + 12);
+                    if ((Math.Sign(dx) == pl.Facing || Math.Abs(dx) < 6) && Math.Abs(dx) < 44 && Math.Abs(f.Y - pl.Y) < 28) Damage(f);
+                }
+            }
+            else Shots.Add(new Shot { X = pl.X + 12 + pl.Facing * 12, Y = pl.Y + 12, Dir = pl.Facing });
+        }
+        foreach (var s in Shots)
+        {
+            s.X += s.Dir * 7; s.Life--;
+            if (Solid((int)Math.Floor(s.X / T), (int)Math.Floor(s.Y / T))) s.Life = 0;
+            foreach (var f in Foes) if (f.Alive && s.Life > 0 && Math.Abs(f.X + 12 - s.X) < 16 && Math.Abs(f.Y + 13 - s.Y) < 18) { Damage(f); s.Life = 0; }
+        }
+        Shots.RemoveAll(s => s.Life <= 0);
+    }
+
+    /// <summary>Gegner trifft es: ein Trefferpunkt weniger; besiegt bringt 2 Punkte (Boss mit mehr Trefferpunkten 10).</summary>
+    void Damage(Foe f)
+    {
+        f.Hp--; f.Hurt = 10;
+        if (f.Hp > 0) return;
+        f.Alive = false; FoesDefeated++; Score += f.MaxHp > 1 ? 10 : 2;
+        if (f.MaxHp > 1) Note = "Boss besiegt!";
+    }
+
     double RuleValue(GameStudio.GameRule r) => r.When switch { "muenzen" => Coins.Count(c => c.Taken), "punkte" => Score, "gegner" => FoesDefeated, "sekunden" => Frames / 60.0, "gegenstaende" => ItemsCollected, _ => 0 };
 
     void Rules()
@@ -147,8 +192,9 @@ public sealed class PlatformSim
     }
 
     /// <summary>Ein Bild weiter (60 je Sekunde). <paramref name="jump"/> springt nur vom Boden aus.</summary>
-    public void Step(bool left, bool right, bool jump, bool sprint = false)
+    public void Step(bool left, bool right, bool jump, bool sprint = false, bool attack = false)
     {
+        var strike = attack && !_attackPrev; _attackPrev = attack;
         var press = jump && !_jumpPrev; _jumpPrev = jump;
         if (Flash > 0) Flash--;
         if (Over) return;
@@ -160,6 +206,7 @@ public sealed class PlatformSim
         if (pl.Vx > 0) pl.Facing = 1; else if (pl.Vx < 0) pl.Facing = -1;
         Move(pl, pl.Vx, 0); Move(pl, 0, pl.Vy);
         if (pl.On) _airJumps = Has("doppelsprung") ? 1 : 0;
+        Combat(strike);
         if (pl.On && At((int)Math.Floor((pl.X + 12) / T), (int)Math.Floor((pl.Y + pl.H + 1) / T)) == 'F') { pl.Vy = -17; pl.On = false; } // Sprungfeder
         if (pl.Y > Rows * T + 60) { Hit(); return; }
         int cx = (int)Math.Floor((pl.X + 12) / T), cy = (int)Math.Floor((pl.Y + 15) / T), cb = (int)Math.Floor((pl.Y + 29) / T);
@@ -185,7 +232,7 @@ public sealed class PlatformSim
             if (Solid(fx, fy) || !Solid(fx, fy + 1)) f.Dir *= -1; else f.X = nx;
             if (Math.Abs(f.X - pl.X) < 24 && Math.Abs(f.Y - pl.Y) < 26)
             {
-                if (pl.Vy > 1 && pl.Y < f.Y - 8) { f.Alive = false; FoesDefeated++; pl.Vy = -8; Score += 2; }
+                if (pl.Vy > 1 && pl.Y < f.Y - 8) { Damage(f); pl.Vy = -8; }
                 else { Hit(); return; }
             }
         }
@@ -207,5 +254,5 @@ public sealed class PlatformSim
         Inventory.Clear(); if (s.Flags.TryGetValue("inventar", out var inv)) Inventory.AddRange(inv.Split('|', StringSplitOptions.RemoveEmptyEntries));
     }
 
-    public PlatformSim Restart() => new(_levels[0], _speed, _startLives, _props, _timeLimit, _rules, [.. _levels.Skip(1)], _abilities, _texts);
+    public PlatformSim Restart() => new(_levels[0], _speed, _startLives, _props, _timeLimit, _rules, [.. _levels.Skip(1)], _abilities, _texts, Weapon);
 }

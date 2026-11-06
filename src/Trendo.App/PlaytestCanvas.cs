@@ -43,21 +43,22 @@ public sealed class PlaytestCanvas : Control
     {
         base.OnKeyDown(e);
         if (e.Key == Key.Escape) { Stop?.Invoke(); e.Handled = true; return; }
-        if (e.Key is Key.Left or Key.Right or Key.Up or Key.Space or Key.A or Key.D or Key.W or Key.LeftShift or Key.RightShift) { _down.Add(e.Key); e.Handled = true; }
+        if (e.Key is Key.Left or Key.Right or Key.Up or Key.Space or Key.A or Key.D or Key.W or Key.LeftShift or Key.RightShift or Key.X or Key.J) { _down.Add(e.Key); e.Handled = true; }
     }
     protected override void OnKeyUp(KeyEventArgs e) { base.OnKeyUp(e); _down.Remove(e.Key); }
     protected override void OnPointerPressed(PointerPressedEventArgs e) { base.OnPointerPressed(e); Focus(); }
 
     /// <summary>Ein Bild weiter mit den gehaltenen Tasten (öffentlich für Tests).</summary>
-    public void Tick(bool? left = null, bool? right = null, bool? jump = null, bool? sprint = null)
+    public void Tick(bool? left = null, bool? right = null, bool? jump = null, bool? sprint = null, bool? attack = null)
     {
         Sim.Step(left ?? (_down.Contains(Key.Left) || _down.Contains(Key.A)), right ?? (_down.Contains(Key.Right) || _down.Contains(Key.D)),
-            jump ?? (_down.Contains(Key.Space) || _down.Contains(Key.Up) || _down.Contains(Key.W)), sprint ?? (_down.Contains(Key.LeftShift) || _down.Contains(Key.RightShift)));
+            jump ?? (_down.Contains(Key.Space) || _down.Contains(Key.Up) || _down.Contains(Key.W)), sprint ?? (_down.Contains(Key.LeftShift) || _down.Contains(Key.RightShift)), attack ?? (_down.Contains(Key.X) || _down.Contains(Key.J)));
         InvalidateVisual(); Ticked?.Invoke();
         if (Sim.Over && !_wasOver) { _wasOver = true; Ended?.Invoke(); }
         _wasOver = Sim.Over;
     }
 
+    static readonly IBrush HpBar = new SolidColorBrush(Color.Parse("#FF22C55E"));
     static readonly IBrush Hero = new SolidColorBrush(Color.Parse("#FF4FB3FF")), Shade = new SolidColorBrush(Color.Parse("#AA000000"));
 
     public override void Render(DrawingContext ctx)
@@ -83,7 +84,13 @@ public sealed class PlaytestCanvas : Control
                     LevelCanvas.DrawTile(ctx, ch, new Rect(x * c, y * c, c, c), y == 0 || s.At(x, y - 1) != '#');
                 }
             foreach (var q in s.Coins.Where(q => !q.Taken)) LevelCanvas.DrawTile(ctx, 'o', new Rect(q.Col * c, q.Row * c, c, c), false);
-            foreach (var f in s.Foes.Where(f => f.Alive)) LevelCanvas.DrawTile(ctx, 'E', new Rect(f.X * k - 4 * k, f.Y * k - 6 * k, c, c), false);
+            foreach (var f in s.Foes.Where(f => f.Alive))
+            {
+                if (!(f.Hurt > 0 && f.Hurt % 4 < 2)) LevelCanvas.DrawTile(ctx, 'E', new Rect(f.X * k - 4 * k, f.Y * k - 6 * k, c, c), false);
+                if (f.MaxHp > 1) { ctx.FillRectangle(Brushes.Black, new Rect((f.X - 2) * k, (f.Y - 8) * k, 28 * k, 4 * k)); ctx.FillRectangle(HpBar, new Rect((f.X - 2) * k, (f.Y - 8) * k, 28 * k * f.Hp / f.MaxHp, 4 * k)); }
+            }
+            foreach (var sh in s.Shots) ctx.DrawEllipse(LevelCanvas.Coin, null, new Point(sh.X * k, sh.Y * k), 4 * k, 4 * k);
+            if (s.Swing > 0) ctx.DrawGeometry(null, new Pen(Brushes.WhiteSmoke, 3 * k), new PolylineGeometry([new Point((s.Player.X + 12 + s.Player.Facing * 8) * k, (s.Player.Y - 4) * k), new Point((s.Player.X + 12 + s.Player.Facing * 34) * k, (s.Player.Y + 14) * k), new Point((s.Player.X + 12 + s.Player.Facing * 8) * k, (s.Player.Y + 32) * k)], false));
             if (!(s.Flash > 0 && s.Flash % 4 < 2))
             {
                 var pr = new Rect(s.Player.X * k, s.Player.Y * k, s.Player.W * k, s.Player.H * k);

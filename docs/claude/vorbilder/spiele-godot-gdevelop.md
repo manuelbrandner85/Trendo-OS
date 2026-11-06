@@ -42,7 +42,8 @@ Vorbilder: Unity Hub (Editor-Erkennung), Unity Test Framework (EditMode/PlayMode
 - ✓ Spielstände (S1-15): ein Format für Browser, Probespiel, Unity, Godot – Speichern, Fortsetzen, alte Stände heben
 - ✓ Fähigkeiten Doppelsprung/Sprint und Aufgaben mit Fortschritt (S1-05, erster Teil)
 - ✓ Inventar und sprechende Figuren mit Wunsch und Belohnung (S1-05, Teil 2)
-- ✗ Kampf mit Waffen, Fahrzeuge (S1-05, nächste Teile); Fähigkeiten, Aufgaben, Inventar im Unity-/Godot-Export
+- ✓ Kampf mit Schwert oder Werfen, Bosse mit Trefferpunkten (S1-05, Teil 3)
+- ✗ Fahrzeuge (S1-05); Fähigkeiten, Aufgaben, Inventar, Kampf im Unity-/Godot-Export
 
 ## Nächste Schritte
 1. Freie Szene statt Raster (Objekte pixelgenau setzen)

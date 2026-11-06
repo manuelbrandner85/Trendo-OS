@@ -29,6 +29,8 @@ public static class GameStudio
     public sealed record GameRule(string When, int N, string Do, string? Title = null);
     /// <summary>Fähigkeiten der Spielfigur (Paket 01 S1-05): Doppelsprung (in der Luft noch einmal springen) und Sprint (Umschalt-Taste, 1,6-fach schneller).</summary>
     public static readonly (string Id, string Label)[] Abilities = [("doppelsprung", "Doppelsprung"), ("sprint", "Sprint (Umschalt)")];
+    /// <summary>Waffe der Spielfigur (Paket 01 S1-05): Angriff mit X oder J – Schwert trifft vor der Figur, Werfen schickt ein Geschoss.</summary>
+    public static readonly (string Id, string Label)[] Weapons = [("", "keine"), ("schwert", "Schwert (Nahkampf)"), ("werfen", "Werfen (Geschoss)")];
     /// <summary>Aufgabe mit Fortschritt, z. B. „Schatzsucher: Münzen 3/10“ bzw. „✓ Schatzsucher“.</summary>
     public static string QuestText(GameRule r, double value, bool done) => done ? $"✓ {r.Title}" : $"{r.Title}: {RuleWhens.FirstOrDefault(w => w.Id == r.When).Label ?? r.When} {Math.Min((int)value, r.N)}/{r.N}";
     public static readonly (string Id, string Label)[] RuleWhens = [("muenzen", "Münzen gesammelt"), ("punkte", "Punkte"), ("gegner", "Gegner besiegt"), ("sekunden", "Sekunden gespielt"), ("gegenstaende", "Gegenstände gesammelt")];
@@ -88,6 +90,8 @@ public static class GameStudio
         public List<string> Abilities { get; init; } = [];
         /// <summary>Texte je Objekt (Vorsilbe ab Level 2 wie bei Props): „x,y:name“ (Gegenstand), „x,y:say“, „x,y:need“, „x,y:thanks“, „x,y:give“ (sprechende Figur).</summary>
         public Dictionary<string, string> Texts { get; init; } = [];
+        /// <summary>Waffe (siehe <see cref="Weapons"/>), leer = keine.</summary>
+        public string Weapon { get; init; } = "";
     }
 
     /// <summary>Schlüssel der Objekt-Texte.</summary>
@@ -121,6 +125,7 @@ public static class GameStudio
         if (s.Rules.FirstOrDefault(r => !RuleWhens.Any(w => w.Id == r.When) || !RuleDos.Any(x => x.Id == r.Do)) is { } bad) throw new ArgumentException($"Unbekannte Regel „{bad.When} → {bad.Do}“.");
         if (s.Abilities.FirstOrDefault(a => !Abilities.Any(x => x.Id == a)) is { } badAb) throw new ArgumentException($"Unbekannte Fähigkeit „{badAb}“.");
         if (s.Texts.Count > 400) throw new ArgumentException("Höchstens 400 Objekt-Texte.");
+        if (!Weapons.Any(w => w.Id == s.Weapon)) throw new ArgumentException($"Unbekannte Waffe „{s.Weapon}“.");
         if (s.Texts.FirstOrDefault(kv => !TextKeys.Contains(kv.Key[(kv.Key.LastIndexOf(':') + 1)..])) is { Key: { } badKey }) throw new ArgumentException($"Unbekannter Objekt-Text „{badKey}“.");
         if (s.Level.Length > 16 || s.Level.Any(r => r.Length > 200)) throw new ArgumentException("Level höchstens 16 Zeilen und 200 Spalten.");
         if (s.MoreLevels.Count > 19) throw new ArgumentException("Höchstens 20 Level.");
@@ -136,14 +141,14 @@ public static class GameStudio
         return s with { Speed = Math.Clamp(s.Speed, 1, 10), Lives = Math.Clamp(s.Lives, 1, 9), WinScore = Math.Clamp(s.WinScore, 0, 9999), TimeLimit = Math.Clamp(s.TimeLimit, 0, 3600),
             Rules = [.. s.Rules.Select(r => r with { N = Math.Clamp(r.N, 0, 9999), Title = string.IsNullOrWhiteSpace(r.Title) ? null : r.Title.Trim().Length > 40 ? r.Title.Trim()[..40] : r.Title.Trim() })], Abilities = [.. s.Abilities.Distinct()], Texts = s.Texts.ToDictionary(kv => kv.Key, kv => kv.Value.Length > 200 ? kv.Value[..200] : kv.Value),
             Anims = s.Anims.ToDictionary(kv => kv.Key, kv => kv.Value with { Frames = Math.Clamp(kv.Value.Frames, 1, 32), Fps = Math.Clamp(kv.Value.Fps, 1, 30) }),
-            Props = s.Props.Where(kv => kv.Key.EndsWith(":speed") || kv.Key.EndsWith(":value")).ToDictionary(kv => kv.Key, kv => kv.Key.EndsWith(":speed") ? Math.Clamp(kv.Value, 0.25, 4) : Math.Clamp(Math.Round(kv.Value), 1, 100)) };
+            Props = s.Props.Where(kv => kv.Key.EndsWith(":speed") || kv.Key.EndsWith(":value") || kv.Key.EndsWith(":hp")).ToDictionary(kv => kv.Key, kv => kv.Key.EndsWith(":speed") ? Math.Clamp(kv.Value, 0.25, 4) : kv.Key.EndsWith(":hp") ? Math.Clamp(Math.Round(kv.Value), 1, 9) : Math.Clamp(Math.Round(kv.Value), 1, 100)) };
     }
 
     public static string ConfigJs(GameSettings s)
     {
         var o = new { speed = s.Speed, lives = s.Lives, win = s.WinScore, player = s.Player, accent = s.Accent, bg = s.Background, sound = s.Sound,
                       level = s.Level, playerImage = s.PlayerImage, bgImage = s.BackgroundImage, props = s.Props, timeLimit = s.TimeLimit,
-                      rules = s.Rules.Select(r => r.Title is null ? (object)new { when = r.When, n = r.N, act = r.Do } : new { when = r.When, n = r.N, act = r.Do, title = r.Title }), abilities = s.Abilities, texts = s.Texts, more = s.MoreLevels, decor = s.Decor, names = s.LevelNames,
+                      rules = s.Rules.Select(r => r.Title is null ? (object)new { when = r.When, n = r.N, act = r.Do } : new { when = r.When, n = r.N, act = r.Do, title = r.Title }), abilities = s.Abilities, texts = s.Texts, weapon = s.Weapon, more = s.MoreLevels, decor = s.Decor, names = s.LevelNames,
                       anims = s.Anims.ToDictionary(kv => kv.Key, kv => new { img = kv.Value.Image, frames = kv.Value.Frames, fps = kv.Value.Fps }), sounds = s.Sounds, saves = s.Saves };
         return "const CFG=" + JsonSerializer.Serialize(o) + ";\n";
     }
@@ -244,7 +249,9 @@ step();
 """,
         ["plattform"] = """
 const T=32,LV=[(CFG.level&&CFG.level.length?CFG.level:['S.....Z','#######']),...(CFG.more||[]).filter(l=>l&&l.length)];let li=0,L=LV[0],R=L.length,C=Math.max(...L.map(r=>r.length)),DC=(CFG.decor&&CFG.decor[0])||[];
-let G=[],open=false,kg=0,KT=0,cg=0,fk=0,fr=0,lf=0,boost=0,fired=[],note='',noteT=0,tu=false,face=1,air=0,inv=[],given={},gc=0;const AB=CFG.abilities||[];
+let G=[],open=false,kg=0,KT=0,cg=0,fk=0,fr=0,lf=0,boost=0,fired=[],note='',noteT=0,tu=false,face=1,air=0,inv=[],given={},gc=0,shots=[],cool=0,swing=0;
+function dmg(f){f.hp--;f.h=10;if(f.hp<=0){f.a=0;fk++;p+=f.mh>1?10:2;beep(520);if(f.mh>1)say('Boss besiegt!');}else beep(380);}
+function attack(){if(!CFG.weapon||cool>0||over)return;cool=20;if(CFG.weapon==='schwert'){swing=8;foes.forEach(f=>{if(!f.a)return;const dx=(f.x+12)-(pl.x+12);if((Math.sign(dx)===face||Math.abs(dx)<6)&&Math.abs(dx)<44&&Math.abs(f.y-pl.y)<28)dmg(f);});beep(300);}else{shots.push({x:pl.x+12+face*12,y:pl.y+12,d:face,l:60});beep(500);}}const AB=CFG.abilities||[];
 function tx(x,y,k,d){const pre=li===0?'':(li+1)+':';const v=CFG.texts&&CFG.texts[pre+x+','+y+':'+k];return v||d;}
 function doAct(a){if(a==='leben'){lives++;say('+1 Leben');}if(a==='tueren'){open=true;say('Türen offen');}if(a==='schneller'){boost=2;say('Schneller!');}if(a==='punkte'){p+=10;say('+10 Punkte');}if(a==='sieg'){over=true;say('Gewonnen!');}}
 function rv(r){return r.when==='muenzen'?cg:r.when==='punkte'?p:r.when==='gegner'?fk:r.when==='sekunden'?fr/60:r.when==='gegenstaende'?gc:0;}
@@ -256,12 +263,12 @@ let S0x=0,S0y=0,sx=0,sy=0;
 let pl,coins,foes,p=0,k={},cam=0,flash=0;
 function pr(x,y,key,d){const pre=li===0?'':(li+1)+':';return (CFG.props&&CFG.props[pre+x+','+y+':'+key])||d;}
 function load(i){li=i;L=LV[i];R=L.length;C=Math.max(...L.map(r=>r.length));DC=(CFG.decor&&CFG.decor[i])||[];G=L.map(r=>[...r]);open=false;kg=0;lf=0;KT=L.join('').split('K').length-1;coins=[];foes=[];
-L.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='S'){S0x=x;S0y=y;}if(ch==='o')coins.push({x:x*T+16,y:y*T+16,a:1,v:pr(x,y,'value',1)});if(ch==='E')foes.push({x:x*T+4,y:y*T+6,d:1,a:1,s:pr(x,y,'speed',1)});}));sx=S0x;sy=S0y;
+L.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='S'){S0x=x;S0y=y;}if(ch==='o')coins.push({x:x*T+16,y:y*T+16,a:1,v:pr(x,y,'value',1)});if(ch==='E'){const hp=Math.max(1,Math.min(9,pr(x,y,'hp',1)));foes.push({x:x*T+4,y:y*T+6,d:1,a:1,s:pr(x,y,'speed',1),hp:hp,mh:hp,h:0});}}));sx=S0x;sy=S0y;
 pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;}
-function reset(full){if(full){p=0;cg=0;fk=0;fr=0;boost=0;fired=[];tu=false;inv=[];given={};gc=0;load(0);return;}pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;}
+function reset(full){if(full){p=0;cg=0;fk=0;fr=0;boost=0;fired=[];tu=false;inv=[];given={};gc=0;shots=[];cool=0;swing=0;load(0);return;}pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;}
 reset(true);
 /*SPIELSTAND*/const SV0=readSave();if(SV0)resume(SV0);
-addEventListener('keydown',e=>{k[e.code]=1;if(e.code==='KeyN'){dropSave();lives=CFG.lives;over=false;reset(true);say('Neues Spiel');}if(!music&&SND.musik){music=true;try{SND.musik.play();}catch(x){}}if(e.code==='Space'){e.preventDefault();if(over){lives=CFG.lives;over=false;reset(true);}else if(pl.on){pl.vy=-11.5;snd('springen',660);}else if(AB.includes('doppelsprung')&&air>0){air--;pl.vy=-10.5;snd('springen',760);}}});addEventListener('keyup',e=>k[e.code]=0);
+addEventListener('keydown',e=>{k[e.code]=1;if((e.code==='KeyX'||e.code==='KeyJ')&&!e.repeat)attack();if(e.code==='KeyN'){dropSave();lives=CFG.lives;over=false;reset(true);say('Neues Spiel');}if(!music&&SND.musik){music=true;try{SND.musik.play();}catch(x){}}if(e.code==='Space'){e.preventDefault();if(over){lives=CFG.lives;over=false;reset(true);}else if(pl.on){pl.vy=-11.5;snd('springen',660);}else if(AB.includes('doppelsprung')&&air>0){air--;pl.vy=-10.5;snd('springen',760);}}});addEventListener('keyup',e=>k[e.code]=0);
 function hit(){lives--;snd('treffer',160);flash=20;if(lives<=0){over=true;dropSave();}else reset(false);}
 function say(t){note=t;noteT=120;}
 function goal(){p+=10;snd('ziel',990);if(li+1<LV.length){load(li+1);saveGame();say((CFG.names&&CFG.names[li])||('Level '+(li+1)+' von '+LV.length));}else{over=true;dropSave();}}
@@ -279,13 +286,14 @@ if(ch==='t'){x.fillStyle='#6B4423';x.fillRect(px+13,py+14,6,18);x.fillStyle='#2F
 if(ch==='m'){x.fillStyle='rgba(120,130,160,.6)';x.beginPath();x.moveTo(px,py+T);x.lineTo(px+16,py);x.lineTo(px+T,py+T);x.fill();}
 if(ch==='g'){x.fillStyle='#3FBF5A';for(let i=0;i<4;i++)x.fillRect(px+3+i*8,py+T-8,3,8);}}
 function step(){if(!over){fr++;lf++;const sp=(2.2+CFG.speed*.35+boost)*(AB.includes('sprint')&&(k.ShiftLeft||k.ShiftRight)?1.6:1);pl.vx=(k.ArrowRight?sp:0)-(k.ArrowLeft?sp:0);if(pl.vx>0)face=1;if(pl.vx<0)face=-1;pl.vy=Math.min(14,pl.vy+.6);move(pl,pl.vx,0);move(pl,0,pl.vy);if(pl.on)air=AB.includes('doppelsprung')?1:0;
+if(cool>0)cool--;if(swing>0)swing--;foes.forEach(f=>{if(f.h>0)f.h--;});shots.forEach(s=>{s.x+=s.d*7;s.l--;if(solid(Math.floor(s.x/T),Math.floor(s.y/T)))s.l=0;foes.forEach(f=>{if(f.a&&s.l>0&&Math.abs(f.x+12-s.x)<16&&Math.abs(f.y+13-s.y)<18){dmg(f);s.l=0;}});});shots=shots.filter(s=>s.l>0);
 if(pl.on&&at(Math.floor((pl.x+12)/T),Math.floor((pl.y+pl.h+1)/T))==='F'){pl.vy=-17;pl.on=false;beep(720);}
 if(pl.y>R*T+60)hit();const cx=Math.floor((pl.x+12)/T),cy=Math.floor((pl.y+15)/T),cb=Math.floor((pl.y+29)/T);
 if(at(cx,cb)==='^'||at(cx,cy)==='^')hit();else if(at(cx,cy)==='Z'||at(cx,cb)==='Z')goal();else{
 [cy,cb].forEach(yy=>{if(at(cx,yy)==='K'){G[yy][cx]='.';kg++;beep(880);if(kg>=KT){open=true;say('Alle Schlüssel – Türen offen');}}if(at(cx,yy)==='G'){G[yy][cx]='.';const n=tx(cx,yy,'name','Kristall');inv.push(n);gc++;beep(1040);say(n+' eingesammelt');}if(at(cx,yy)==='N'){const key=li+':'+cx+','+yy,need=tx(cx,yy,'need','');if(need&&!given[key]&&inv.includes(need)){inv.splice(inv.indexOf(need),1);given[key]=1;doAct(tx(cx,yy,'give','punkte'));say(tx(cx,yy,'thanks','Danke!'));}else if(noteT<30)say(given[key]?tx(cx,yy,'thanks','Danke!'):tx(cx,yy,'say','Hallo!'));}if(at(cx,yy)==='C'&&(sx!==cx||sy!==yy)){sx=cx;sy=yy;saveGame();say('Gespeichert');}});
 coins.forEach(q=>{if(q.a&&Math.abs(q.x-(pl.x+12))<18&&Math.abs(q.y-(pl.y+15))<20){q.a=0;cg++;p+=q.v||1;snd('muenze',880);if(won(p))over=true;}});
 foes.forEach(f=>{if(!f.a)return;const nx=f.x+f.d*1.2*(f.s||1),cxx=Math.floor((f.d>0?nx+24:nx)/T),cyy=Math.floor((f.y+20)/T);if(solid(cxx,cyy)||!solid(cxx,cyy+1))f.d*=-1;else f.x=nx;
-if(Math.abs(f.x-pl.x)<24&&Math.abs(f.y-pl.y)<26){if(pl.vy>1&&pl.y<f.y-8){f.a=0;fk++;pl.vy=-8;p+=2;beep(520);}else hit();}});
+if(Math.abs(f.x-pl.x)<24&&Math.abs(f.y-pl.y)<26){if(pl.vy>1&&pl.y<f.y-8){dmg(f);pl.vy=-8;}else hit();}});
 if(CFG.timeLimit>0&&lf/60>CFG.timeLimit){lives=0;over=true;tu=true;say('Zeit abgelaufen');}
 rules();}cam=Math.max(0,Math.min(C*T-c.width,pl.x-c.width/3));}
 bg();x.save();x.translate(-cam,Math.min(0,c.height-R*T));
@@ -299,7 +307,7 @@ if(ch==='C'){x.fillStyle=(sx===xx&&sy===y)?'#22C55E':'#94A3B8';x.fillRect(xx*T+1
 if(ch==='K'){x.fillStyle=CFG.accent;x.beginPath();x.arc(xx*T+11,y*T+16,6,0,7);x.fill();x.fillRect(xx*T+15,y*T+14,13,4);}
 if(ch==='G'){x.fillStyle='#A855F7';x.beginPath();x.moveTo(xx*T+16,y*T+6);x.lineTo(xx*T+26,y*T+16);x.lineTo(xx*T+16,y*T+28);x.lineTo(xx*T+6,y*T+16);x.fill();}if(ch==='N'){x.fillStyle='#14B8A6';x.fillRect(xx*T+9,y*T+14,14,18);x.beginPath();x.arc(xx*T+16,y*T+9,6,0,7);x.fill();}if(ch==='D'&&!open){x.fillStyle='#7C4A1E';x.fillRect(xx*T+2,y*T,T-4,T);x.fillStyle=CFG.accent;x.fillRect(xx*T+T-10,y*T+15,4,4);}}
 x.fillStyle=CFG.accent;coins.forEach(q=>{if(q.a){x.beginPath();x.arc(q.x,q.y,7,0,7);x.fill();}});
-x.fillStyle='#E0475B';foes.forEach(f=>{if(f.a){x.fillRect(f.x,f.y,24,26);x.fillStyle='#FFF';x.fillRect(f.x+(f.d>0?14:4),f.y+6,6,6);x.fillStyle='#E0475B';}});
+foes.forEach(f=>{if(f.a){x.fillStyle=f.h>0&&f.h%4<2?'#FFF':'#E0475B';x.fillRect(f.x,f.y,24,26);x.fillStyle='#FFF';x.fillRect(f.x+(f.d>0?14:4),f.y+6,6,6);if(f.mh>1){x.fillStyle='#000';x.fillRect(f.x-2,f.y-8,28,4);x.fillStyle='#22C55E';x.fillRect(f.x-2,f.y-8,28*f.hp/f.mh,4);}}});x.fillStyle=CFG.accent;shots.forEach(s=>{x.beginPath();x.arc(s.x,s.y,4,0,7);x.fill();});if(swing>0){x.strokeStyle='#E5E7EB';x.lineWidth=3;x.beginPath();if(face>0)x.arc(pl.x+12,pl.y+14,26,-1,1);else x.arc(pl.x+12,pl.y+14,26,Math.PI-1,Math.PI+1);x.stroke();}
 if(!(flash>0&&flash--%4<2))drawMe();x.restore();
 x.font='14px system-ui';x.fillStyle='#FFF';if(LV.length>1)x.fillText('Level '+(li+1)+'/'+LV.length,10,c.height-10);
 if(CFG.timeLimit>0)x.fillText('Zeit '+Math.max(0,Math.ceil(CFG.timeLimit-lf/60))+' s',c.width-90,20);

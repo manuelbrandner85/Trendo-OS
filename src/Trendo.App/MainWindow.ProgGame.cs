@@ -450,7 +450,7 @@ public partial class MainWindow
         var rows = GameRows(d);
         if (GameStudio.CheckPlatform(rows) is { Count: > 0 } w && w.Any(x => x.StartsWith("Kein"))) throw new InvalidOperationException(w.First(x => x.StartsWith("Kein")));
         var more = Enumerable.Range(1, GameLevelCount(d) - 1).Select(i => (IReadOnlyList<string>)GameLevelRows(d, i)).ToList();
-        _gamePlay = new PlatformSim(rows, (int)d.Number("speed", 5), (int)d.Number("lives", 3), GameProps(d), (int)d.Number("timeLimit", 0), GameDesign.Rules(d.Data), more, GameDesign.Abilities(d.Data), GameDesign.Texts(d.Data));
+        _gamePlay = new PlatformSim(rows, (int)d.Number("speed", 5), (int)d.Number("lives", 3), GameProps(d), (int)d.Number("timeLimit", 0), GameDesign.Rules(d.Data), more, GameDesign.Abilities(d.Data), GameDesign.Texts(d.Data), GameDesign.Weapon(d.Data));
         _core.Audit.Append(Principal.LocalOwner.Name, "game.playtest", d.Text("title"));
     }
 
@@ -600,6 +600,10 @@ public partial class MainWindow
             }));
             sp.Children.Add(cb);
         }
+        var weapon = new ComboBox { Name = "game-weapon", ItemsSource = GameStudio.Weapons.Select(x => x.Label).ToList(), SelectedIndex = Math.Max(0, Array.FindIndex(GameStudio.Weapons, x => x.Id == GameDesign.Weapon(d.Data))), HorizontalAlignment = HorizontalAlignment.Stretch };
+        ToolTip.SetTip(weapon, "Angriff mit X oder J. Gegner mit mehr Trefferpunkten (rechts beim Gegner) werden zum Boss.");
+        weapon.SelectionChanged += (_, _) => { var v = GameStudio.Weapons[Math.Max(0, weapon.SelectedIndex)].Id; if (v != GameDesign.Weapon(d.Data)) ProgramRun(GK, () => d.Set("weapon", v, "Waffe")); };
+        sp.Children.Add(Row(P("Waffe", Muted, 11.5), weapon));
         sp.Children.Add(GameAnimPanel(d));
         sp.Children.Add(GameSoundPanel(d));
         sp.Children.Add(H("Objekt", 13));
@@ -624,6 +628,7 @@ public partial class MainWindow
         var props = GameProps(d);
         void SetProp(string k, double v, string label) => d.Edit(label, x => { var o = x["objects"] as JsonObject ?? []; o[$"{key}:{k}"] = v; x["objects"] = o; });
         if (ch == 'E') Num("game-obj-speed", "Tempo (× 0,25–4)", props.GetValueOrDefault(key + ":speed", 1), 0.25, 4, v => SetProp("speed", Math.Round(v, 2), "Gegner-Tempo"));
+        if (ch == 'E') Num("game-obj-hp", "Treffer bis besiegt (1–9, ab 2 Boss)", props.GetValueOrDefault(key + ":hp", 1), 1, 9, v => SetProp("hp", Math.Round(v), "Gegner-Trefferpunkte"));
         if (ch == 'o') Num("game-obj-value", "Wert (Punkte)", props.GetValueOrDefault(key + ":value", 1), 1, 100, v => SetProp("value", Math.Round(v), "Münzwert"));
         if (ch is 'G' or 'N') GameObjTexts(d, sp, ch, key);
         if (ch != '.')
