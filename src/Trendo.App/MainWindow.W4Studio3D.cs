@@ -76,7 +76,8 @@ public partial class MainWindow
                 H("Objekt", 14),
                 new WrapPanel { Children = { Labeled("Name", objName), Act("3d-save", "Speichern", () => SaveScene(objName)), Act("3d-new", "Neues Objekt", () => NewScene(objName)), Act("3d-undo", "Rückgängig", UndoScene) } },
                 H("Szene", 14), SceneTree(objName) } }),
-            Card(SavedBlock()));
+            Card(SavedBlock()),
+            Card(EngineExportCard(objName))); // Paket 01 S2-17: in der Seitenleiste, damit die 3D-Fläche oben bleibt
         var stepPanel = StepPanel3D();
         var partCard = Card(new StackPanel { Spacing = 8, Children = { H(Selected is { } sp0 ? "Teil: " + sp0.Name : "Neues Teil", 14), PartForm(objName) } });
         var right = Side("3d-editor-scroll",
@@ -245,7 +246,6 @@ public partial class MainWindow
                 },
             },
         };
-        drop.Children.Add(EngineExportRow(objName)); // Paket 01 S2-17: für Unity, Unreal, Godot, Web mit Rundlauf-Prüfung
         if (_last3dFile is { } last && File.Exists(last))
             drop.Children.Add(new TextBlock { Name = "3d-marked", Text = "Zuletzt gespeichert: " + Path.GetFileName(last), Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
         var host = new Border { Name = "3d-drop", Child = drop, Background = Brushes.Transparent, MinHeight = 40 };

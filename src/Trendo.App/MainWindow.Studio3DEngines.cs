@@ -45,17 +45,24 @@ public partial class MainWindow
         catch (Exception ex) when (ex is IOException or InvalidOperationException or System.Text.Json.JsonException or KeyNotFoundException) { Say("Export nicht möglich: " + ex.Message, "3d"); }
     }
 
-    private Control EngineExportRow(TextBox objName)
+    /// <summary>Karte „Für Engine“ in der linken Seitenleiste: Unity, Unreal, Godot, Web.</summary>
+    private Control EngineExportCard(TextBox objName)
     {
-        var row = new WrapPanel { Name = "3d-engine-export" };
-        row.Children.Add(new TextBlock { Text = "FÜR ENGINE", Foreground = Muted, FontSize = 10.5, FontWeight = FontWeight.SemiBold, Margin = new Thickness(0, 6, 8, 0) });
+        var row = new WrapPanel(); foreach (var c in EngineExportButtons(objName).Skip(1)) { c.Margin = new Thickness(0, 0, 4, 4); row.Children.Add(c); }
+        return new StackPanel { Name = "3d-engine-export", Spacing = 6, Children = { H("Für Engine", 14), P("Export mit Prüfung: Blender liest die Datei wieder ein und vergleicht alles.", Muted, 11.5), row } };
+    }
+
+    /// <summary>Knöpfe „Für Engine“ (Unity, Unreal, Godot, Web).</summary>
+    private List<Control> EngineExportButtons(TextBox objName)
+    {
+        var list = new List<Control> { new TextBlock { Name = "3d-engine-export", Text = "FÜR ENGINE", Foreground = Muted, FontSize = 10.5, FontWeight = FontWeight.SemiBold, VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center, Margin = new Thickness(8, 0, 4, 0) } };
         foreach (var p in Studio3DEngines.Profiles)
         {
             var id = p.Id;
-            var b = Act("3d-engine-" + p.Id, $"{p.Label} ({p.Ext.TrimStart('.').ToUpperInvariant()})", () => _ = ExportForEngine(objName, id));
-            ToolTip.SetTip(b, p.Why + " Blender liest die Datei danach wieder ein und vergleicht Teile, Materialien, UV, Knochen, Animationen und Maße.");
-            b.Margin = new Thickness(0, 0, 4, 4); row.Children.Add(b);
+            var b = Act("3d-engine-" + p.Id, p.Label, () => _ = ExportForEngine(objName, id));
+            ToolTip.SetTip(b, $"{p.Ext.TrimStart('.').ToUpperInvariant()}: {p.Why} Blender liest die Datei danach wieder ein und vergleicht Teile, Materialien, UV, Knochen, Animationen und Maße.");
+            list.Add(b);
         }
-        return row;
+        return list;
     }
 }
