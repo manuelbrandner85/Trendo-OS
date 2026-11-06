@@ -269,17 +269,28 @@ public partial class MainWindow
             if (primary) { b.Background = Accent; b.Foreground = Brushes.White; }
             ToolTip.SetTip(b, tip); b.Click += (_, _) => ProgramRun(AUK, act); return b;
         }
-        var bar = new StackPanel { Name = "au-transport", Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8, 0, 0) };
+        // DAW-Stil (Wunsch 06.11.2026 „Design je Programm“): Transport oben mit Anzeigefeldern wie in Audition/Bitwig
+        var bar = new StackPanel { Name = "au-transport", Orientation = Orientation.Horizontal, Spacing = 6, VerticalAlignment = VerticalAlignment.Center };
         bar.Children.Add(T("au-tp-start", "⏮", "Marke an den Anfang", () => AuSel = default));
         bar.Children.Add(T("au-tp-play", "▶", "Abspielen (Auswahl oder ab Marke)", () => AuPlay(d), true));
         bar.Children.Add(T("au-tp-stop", "■", "Stopp", AuStop));
         bar.Children.Add(T("au-tp-end", "⏭", "Marke ans Ende", () => AuSel = (a?.Seconds ?? 0, a?.Seconds ?? 0)));
-        bar.Children.Add(new TextBlock { Name = "au-time", Text = a is null ? "–" : e > s ? $"{AudioEdit.Time(s)} – {AudioEdit.Time(e)}  ·  {e - s:0.00} s" : $"{AudioEdit.Time(s)} / {AudioEdit.Time(a.Seconds)}",
-            Foreground = Text, FontSize = 15, FontFamily = new FontFamily("Consolas, monospace"), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0, 0, 0) });
+        Border Lcd(string name, string label, string value, double w, TextBlock? tb = null) => new() { Name = name, MinWidth = w, Height = 40, CornerRadius = new CornerRadius(6), Background = DawLcd, BorderBrush = DawEdge, BorderThickness = new Thickness(1), Padding = new Thickness(8, 2),
+            Child = new StackPanel { VerticalAlignment = VerticalAlignment.Center, Children = { new TextBlock { Text = label, Foreground = Muted, FontSize = 9.5 },
+                tb ?? new TextBlock { Text = value, Foreground = DawDigits, FontSize = 14, FontFamily = new FontFamily("Consolas, monospace"), FontWeight = FontWeight.SemiBold } } } };
+        var time = new TextBlock { Name = "au-time", Text = a is null ? "–" : e > s ? $"{AudioEdit.Time(s)} – {AudioEdit.Time(e)}  ·  {e - s:0.00} s" : $"{AudioEdit.Time(s)} / {AudioEdit.Time(a.Seconds)}",
+            Foreground = DawDigits, FontSize = 14, FontFamily = new FontFamily("Consolas, monospace"), FontWeight = FontWeight.SemiBold };
+        var lcds = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = {
+            Lcd("au-lcd-pos", e > s ? "AUSWAHL" : "MARKE / LÄNGE", "", 230, time),
+            Lcd("au-lcd-format", "FORMAT", a is null ? "–" : $"{a.Rate / 1000.0:0.#} kHz · {(a.Channels == 1 ? "Mono" : "Stereo")}", 130),
+            Lcd("au-lcd-peak", "SPITZE", a is null ? "–" : AuDb(AudioEdit.PeakDb(a)), 90),
+            Lcd("au-lcd-steps", "SCHRITTE", d.List("ops").Count.ToString(), 70) } };
+        var head = new Border { Name = "au-daw-bar", CornerRadius = new CornerRadius(10), Background = DawPanel, BorderBrush = DawEdge, BorderThickness = new Thickness(1), Padding = new Thickness(10, 6), Margin = new Thickness(0, 0, 0, 8),
+            Child = new WrapPanel { Children = { bar, new Border { Width = 12 }, lcds } } };
         var frame = new Border { Child = wave, CornerRadius = new CornerRadius(10), ClipToBounds = true, BorderBrush = Brush.Parse("#33F5B83D"), BorderThickness = new Thickness(1),
             BoxShadow = BoxShadows.Parse("0 6 18 0 #66000000") };
-        var g = new Grid { RowDefinitions = new RowDefinitions("*,Auto") };
-        g.Children.Add(frame); Grid.SetRow(bar, 1); g.Children.Add(bar);
+        var g = new Grid { RowDefinitions = new RowDefinitions("Auto,*") };
+        g.Children.Add(head); Grid.SetRow(frame, 1); g.Children.Add(frame);
         return g;
     }
 

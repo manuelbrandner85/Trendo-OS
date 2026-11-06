@@ -119,8 +119,10 @@ public partial class MainWindow
         bar.Children.Add(T("au-tp-stop", "■", "Stopp", AuStop));
         bar.Children.Add(T("au-mixdown", "⤓ Abmischen", "Alle Spuren zu einer Datei abmischen und als Spur öffnen", () => AuMixdown(d)));
         bar.Children.Add(new TextBlock { Name = "au-time", Text = $"Marke {AudioEdit.Time(marker)}", Foreground = Text, FontSize = 15, FontFamily = new FontFamily("Consolas, monospace"), VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0, 0, 0) });
-        var g = new Grid { RowDefinitions = new RowDefinitions("*,Auto") };
-        g.Children.Add(frame); Grid.SetRow(bar, 1); g.Children.Add(bar);
+        var dawHead = new Border { Name = "au-daw-bar", CornerRadius = new CornerRadius(10), Background = DawPanel, BorderBrush = DawEdge, BorderThickness = new Thickness(1), Padding = new Thickness(10, 6), Margin = new Thickness(0, 0, 0, 8), Child = bar };
+        bar.HorizontalAlignment = HorizontalAlignment.Left; bar.Margin = default;
+        var g = new Grid { RowDefinitions = new RowDefinitions("Auto,*") }; // DAW-Stil: Transport oben
+        g.Children.Add(dawHead); Grid.SetRow(frame, 1); g.Children.Add(frame);
         return g;
         static Control Dock(Control c) { DockPanel.SetDock(c, Avalonia.Controls.Dock.Right); return c; }
     }
