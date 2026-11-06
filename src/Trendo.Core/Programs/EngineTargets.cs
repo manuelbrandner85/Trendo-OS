@@ -163,12 +163,15 @@ public static class EngineTargets
         Put(dir, "trendo_player.gd", GodotPlayer);
         Put(dir, "tests/check_level.gd", GodotCheck);
         Put(dir, "tests/play_check.gd", GodotPlayCheck);
+        Put(dir, "tests/save_check.gd", GodotSaveCheck);
         Put(dir, ".gitignore", ".godot/\nexport/\n");
         Put(dir, "LIESMICH.txt", $"{name} – von Trendo als Godot-4-Projekt angelegt.\nÖffnen: Godot → Importieren → project.godot. Start mit F5.\nPrüfen ohne Fenster: godot --headless --path . --script res://tests/check_level.gd\n");
         return dir;
     }
 
     // ───────────── Kommandozeilen (offiziell) ─────────────
+    /// <summary>Spielstand-Prüfung in Godot: speichern, fortsetzen, neuere Fassung und kaputte Datei ablehnen.</summary>
+    public static List<string> GodotSaveArgs(string project) => ["--headless", "--path", project, "--script", "res://tests/save_check.gd"];
     /// <summary>Unity-Tests: -runTests beendet den Editor selbst (deshalb ohne -quit).</summary>
     public static List<string> UnityTestArgs(string project, string platform, string results, string log) =>
         ["-batchmode", "-nographics", "-projectPath", project, "-runTests", "-testPlatform", platform == "PlayMode" ? "PlayMode" : "EditMode", "-testResults", results, "-logFile", log];
@@ -203,6 +206,22 @@ using UnityEngine;
 [Serializable] public class TrendoLevelRow { public string name; public string[] rows; public string[] decor; }
 [Serializable] public class TrendoProp { public string key; public float value; }
 [Serializable] public class TrendoRule { public string when; public int n; public string act; }
+
+/// <summary>Spielstand – gleiches Format wie in Trendo und im Browser-Spiel (Format 1).</summary>
+[Serializable] public class TrendoSave
+{
+    public int version = 1; public int level; public int score; public int lives = 3; public int checkX = -1; public int checkY = -1; public int coins; public int defeated; public int playSeconds; public string savedUtc;
+    public static string DefaultPath => System.IO.Path.Combine(Application.persistentDataPath, "trendo-spielstand.json");
+    public static void Write(string path, TrendoSave s) { s.version = 1; s.savedUtc = DateTime.UtcNow.ToString("o"); System.IO.File.WriteAllText(path, JsonUtility.ToJson(s, true)); }
+    /// <summary>Lesen und prüfen; null bei fehlender, kaputter, neuerer oder unpassender Datei.</summary>
+    public static TrendoSave Read(string path, int levelCount)
+    {
+        if (!System.IO.File.Exists(path)) return null;
+        TrendoSave s; try { s = JsonUtility.FromJson<TrendoSave>(System.IO.File.ReadAllText(path)); } catch (ArgumentException) { return null; }
+        if (s == null || s.version > 1 || s.level < 0 || s.level >= levelCount) return null;
+        s.lives = Mathf.Clamp(s.lives, 1, 99); s.score = Mathf.Max(0, s.score); return s;
+    }
+}
 [Serializable] public class TrendoLevelData
 {
     public string name; public int speed = 5; public int lives = 3; public int winScore; public int timeLimit;
@@ -237,7 +256,25 @@ public class TrendoLevel : MonoBehaviour
 
     /// <summary>Startet das Spiel in jeder Szene – auch in der leeren Standardszene.</summary>
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    static void Boot() { if (FindAnyObjectByType<TrendoLevel>() != null) return; var d = TrendoLevelData.Load(); if (d == null) return; new GameObject("Trendo-Spiel").AddComponent<TrendoLevel>().Begin(d, 0); }
+    static void Boot()
+    {
+        if (FindAnyObjectByType<TrendoLevel>() != null) return; var d = TrendoLevelData.Load(); if (d == null) return;
+        var game = new GameObject("Trendo-Spiel").AddComponent<TrendoLevel>();
+        var save = TrendoSave.Read(TrendoSave.DefaultPath, d.levels.Length);
+        if (save != null) game.Resume(d, save); else game.Begin(d, 0);
+    }
+
+    public string SavePath;
+    string FilePath => string.IsNullOrEmpty(SavePath) ? TrendoSave.DefaultPath : SavePath;
+    public TrendoSave Snapshot() => new TrendoSave { level = Index, score = Score, lives = Lives, coins = Coins, checkX = Player != null ? Mathf.RoundToInt(Player.Checkpoint.x) : -1, checkY = Player != null ? Mathf.RoundToInt(-Player.Checkpoint.y) : -1 };
+    public void Save() => TrendoSave.Write(FilePath, Snapshot());
+    public void Resume(TrendoLevelData d, TrendoSave s)
+    {
+        Lives = s.lives; Begin(d, s.level); Score = s.score;
+        var rows = d.levels[s.level].rows;
+        if (Player != null && s.checkY >= 0 && s.checkY < rows.Length && s.checkX >= 0 && s.checkX < rows[s.checkY].Length && "CS".IndexOf(rows[s.checkY][s.checkX]) >= 0)
+        { Player.Checkpoint = new Vector3(s.checkX, -s.checkY, 0); Player.Respawn(); }
+    }
 
     public static Sprite Square()
     {
@@ -290,12 +327,13 @@ public class TrendoLevel : MonoBehaviour
             case "Schlüssel": Keys++; Destroy(g); if (Keys >= Data.Count(Index, 'K')) foreach (var d in _doors) Destroy(d); break;
             case "Stacheln": case "Gegner": Hit(); break;
             case "Sprungfeder": Player.Bounce(); break;
-            case "Speicherpunkt": Player.Checkpoint = g.transform.position; break;
-            case "Ziel": if (Index + 1 < Data.levels.Length) Begin(Data, Index + 1); else Won = true; break;
+            case "Speicherpunkt": if (Player.Checkpoint != g.transform.position) { Player.Checkpoint = g.transform.position; Save(); } break;
+            case "Ziel": Score += 10; if (Index + 1 < Data.levels.Length) { Begin(Data, Index + 1); Save(); } else { Won = true; Drop(); } break;
         }
     }
     public bool Won, Over;
-    public void Hit() { Lives--; if (Lives <= 0) Over = true; else Player.Respawn(); }
+    public void Hit() { Lives--; if (Lives <= 0) { Over = true; Drop(); } else Player.Respawn(); }
+    void Drop() { if (System.IO.File.Exists(FilePath)) System.IO.File.Delete(FilePath); }
 }
 
 /// <summary>Gegner läuft hin und her.</summary>
@@ -388,6 +426,16 @@ public class TrendoLevelTests
         for (var i = 0; i < d.levels.Length; i++) { Assert.GreaterOrEqual(d.Start(i).x, 0, "Start fehlt in " + d.levels[i].name); Assert.Greater(d.Count(i, 'Z'), 0, "Ziel fehlt in " + d.levels[i].name); }
     }
     [Test] public void Kaputtes_Level_wird_erkannt() { Assert.Throws<System.ArgumentException>(() => TrendoLevelData.Parse("{kaputt")); }
+    [Test] public void Spielstand_speichern_und_laden()
+    {
+        var f = System.IO.Path.Combine(Application.temporaryCachePath, "test-spielstand.json");
+        TrendoSave.Write(f, new TrendoSave { level = 1, score = 77, lives = 2, checkX = 3, checkY = 0 });
+        var s = TrendoSave.Read(f, 2); Assert.IsNotNull(s); Assert.AreEqual(1, s.level); Assert.AreEqual(77, s.score); Assert.AreEqual(1, s.version);
+        Assert.IsNull(TrendoSave.Read(f, 1), "Level 2 gibt es nicht");
+        System.IO.File.WriteAllText(f, "{\"version\":9,\"level\":0}"); Assert.IsNull(TrendoSave.Read(f, 2), "neuere Fassung");
+        System.IO.File.WriteAllText(f, "{kaputt"); Assert.IsNull(TrendoSave.Read(f, 2), "kaputte Datei");
+        System.IO.File.Delete(f);
+    }
 }
 """;
 
@@ -405,6 +453,18 @@ public class TrendoPlayTests
         var level = new GameObject("Test-Spiel").AddComponent<TrendoLevel>(); level.Begin(TrendoLevelData.Load(), 0);
         for (var i = 0; i < 60; i++) yield return null;
         Assert.IsNotNull(level.Player); Assert.Greater(level.Player.transform.position.y, -20f); Assert.IsFalse(level.Over);
+        Object.Destroy(level.gameObject);
+    }
+
+    [UnityTest] public IEnumerator Spielstand_setzt_im_richtigen_Level_fort()
+    {
+        var d = TrendoLevelData.Load(); var last = d.levels.Length - 1;
+        var level = new GameObject("Test-Fortsetzen").AddComponent<TrendoLevel>(); level.SavePath = System.IO.Path.Combine(Application.temporaryCachePath, "play-spielstand.json");
+        level.Resume(d, new TrendoSave { level = last, score = 42, lives = 2 });
+        yield return null;
+        Assert.AreEqual(last, level.Index); Assert.AreEqual(42, level.Score); Assert.AreEqual(2, level.Lives);
+        level.Save(); Assert.AreEqual(last, TrendoSave.Read(level.SavePath, d.levels.Length).level);
+        System.IO.File.Delete(level.SavePath); Object.Destroy(level.gameObject);
     }
 }
 """;
@@ -438,7 +498,54 @@ func _ready() -> void:
 		return
 	lives = int(data.get("lives", 3))
 	RenderingServer.set_default_clear_color(Color(data.get("background", "#10203F")))
-	build(0)
+	var s := read_save(SAVE, data["levels"].size())
+	if s.is_empty():
+		build(0)
+	else:
+		resume(s)
+
+const SAVE := "user://trendo-spielstand.json"
+var score := 0
+
+## Spielstand im Trendo-Format 1 schreiben
+func save_game(path := SAVE) -> void:
+	var f := FileAccess.open(path, FileAccess.WRITE)
+	if f == null:
+		return
+	var cp: Vector2 = player.checkpoint if player else Vector2(-T, -T)
+	f.store_string(JSON.stringify({"version": 1, "level": index, "score": score, "lives": lives, "checkX": int(cp.x / T), "checkY": int(cp.y / T), "coins": coins, "savedUtc": Time.get_datetime_string_from_system(true)}))
+
+## Lesen und prüfen: leer bei fehlender, kaputter, neuerer oder unpassender Datei
+func read_save(path: String, level_count: int) -> Dictionary:
+	var f := FileAccess.open(path, FileAccess.READ)
+	if f == null:
+		return {}
+	var j := JSON.new()
+	if j.parse(f.get_as_text()) != OK or not (j.data is Dictionary):
+		return {}
+	var s: Dictionary = j.data
+	if int(s.get("version", 0)) > 1:
+		return {}
+	var lv := int(s.get("level", -1))
+	if lv < 0 or lv >= level_count:
+		return {}
+	s["lives"] = clampi(int(s.get("lives", 1)), 1, 99)
+	return s
+
+func resume(s: Dictionary) -> void:
+	lives = int(s["lives"])
+	score = int(s.get("score", 0))
+	build(int(s["level"]))
+	var rows: Array = data["levels"][index]["rows"]
+	var cx := int(s.get("checkX", -1))
+	var cy := int(s.get("checkY", -1))
+	if cy >= 0 and cy < rows.size() and cx >= 0 and cx < String(rows[cy]).length() and "CS".contains(String(rows[cy])[cx]):
+		player.checkpoint = Vector2(cx * T, cy * T)
+		player.respawn()
+
+func drop_save() -> void:
+	if FileAccess.file_exists(SAVE):
+		DirAccess.remove_absolute(SAVE)
 
 func build(i: int) -> void:
 	index = i
@@ -515,6 +622,7 @@ func touch(a: Area2D) -> void:
 	var n := String(a.name)
 	if n.begins_with("Muenze"):
 		coins += 1
+		score += 1
 		a.queue_free()
 	elif n.begins_with("Schluessel"):
 		keys += 1
@@ -527,16 +635,22 @@ func touch(a: Area2D) -> void:
 	elif n.begins_with("Sprungfeder"):
 		player.velocity.y = -720.0
 	elif n.begins_with("Speicherpunkt"):
-		player.checkpoint = a.position
+		if player.checkpoint != a.position:
+			player.checkpoint = a.position
+			save_game()
 	elif n.begins_with("Ziel"):
+		score += 10
 		if index + 1 < data["levels"].size():
 			build.call_deferred(index + 1)
+			save_game.call_deferred()
 		else:
 			won = true
+			drop_save()
 
 func hit() -> void:
 	lives -= 1
 	if lives <= 0:
+		drop_save()
 		get_tree().paused = true
 	else:
 		player.respawn()
@@ -634,6 +748,54 @@ func _process(_delta: float) -> bool:
 	else:
 		print("TRENDO-OK Spiel läuft, Figur steht")
 		quit(0)
+	return true
+""";
+
+    const string GodotSaveCheck = """
+extends SceneTree
+## Von Trendo: Spielstand-Prüfung ohne Fenster – speichern, im richtigen Level fortsetzen, Fremdes ablehnen.
+
+var frames := 0
+var main: Node
+const P := "user://trendo-test-spielstand.json"
+
+func _initialize() -> void:
+	main = load("res://main.tscn").instantiate()
+	root.add_child(main)
+
+func fail(t: String) -> void:
+	print("TRENDO-FEHLER " + t)
+	quit(1)
+
+func _process(_delta: float) -> bool:
+	frames += 1
+	if frames < 10:
+		return false
+	var n: int = main.data["levels"].size()
+	main.resume({"level": n - 1, "score": 42, "lives": 2, "checkX": -1, "checkY": -1})
+	main.save_game(P)
+	var s: Dictionary = main.read_save(P, n)
+	if s.is_empty() or int(s["level"]) != n - 1 or int(s["score"]) != 42 or int(s["version"]) != 1:
+		fail("Spielstand stimmt nach dem Speichern nicht")
+		return true
+	if n > 1 and not main.read_save(P, n - 1).is_empty():
+		fail("Spielstand mit fehlendem Level wurde angenommen")
+		return true
+	var f := FileAccess.open(P, FileAccess.WRITE)
+	f.store_string('{"version":9,"level":0}')
+	f.close()
+	if not main.read_save(P, n).is_empty():
+		fail("neuere Fassung wurde angenommen")
+		return true
+	f = FileAccess.open(P, FileAccess.WRITE)
+	f.store_string("{kaputt")
+	f.close()
+	if not main.read_save(P, n).is_empty():
+		fail("kaputte Datei wurde angenommen")
+		return true
+	DirAccess.remove_absolute(P)
+	print("TRENDO-OK Spielstand speichern, fortsetzen und prüfen")
+	quit(0)
 	return true
 """;
 }

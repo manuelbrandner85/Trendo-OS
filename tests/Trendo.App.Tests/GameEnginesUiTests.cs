@@ -45,7 +45,7 @@ public class GameEngines_Ui
         {
             runs.Add(exe + " " + string.Join(' ', args));
             if (args.Contains("-testResults")) File.WriteAllText(args[args.ToList().IndexOf("-testResults") + 1], "<test-run total=\"3\" passed=\"3\" failed=\"0\">");
-            return (0, args.Contains("res://tests/check_level.gd") ? "TRENDO-OK 1 Level" : args.Contains("res://tests/play_check.gd") ? "TRENDO-OK Spiel läuft, Figur steht" : "");
+            return (0, args.Contains("res://tests/check_level.gd") ? "TRENDO-OK 1 Level" : args.Contains("res://tests/play_check.gd") ? "TRENDO-OK Spiel läuft, Figur steht" : args.Contains("res://tests/save_check.gd") ? "TRENDO-OK Spielstand speichern, fortsetzen und prüfen" : "");
         };
         w.Show(GK); Pump();
         w.Find<Button>("game-unity-test").Press(); Pump();
@@ -58,6 +58,7 @@ public class GameEngines_Ui
         Assert.Contains(runs, r => r.StartsWith("G.exe") && r.Contains("--import"));
         Assert.Contains("Level-Prüfung: ✓ 1 Level", w.LastEngineReport);
         Assert.Contains("Spiel-Prüfung: ✓ Spiel läuft", w.LastEngineReport);
+        Assert.Contains("Spielstand-Prüfung: ✓ Spielstand", w.LastEngineReport);
         w.Close();
     }
 }

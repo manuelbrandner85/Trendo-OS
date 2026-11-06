@@ -619,6 +619,26 @@ public partial class MainWindow
         return new Border { CornerRadius = new CornerRadius(12), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(10), VerticalAlignment = VerticalAlignment.Top, Child = sp };
     }
 
+    /// <summary>Spielstand des Probespiels (Paket 01 S1-15): eine Datei je Spiel im Ordner „Spiele/Spielstände“, gleiches Format wie im gebauten Spiel.</summary>
+    public string GameSavePath(ProgramDocument d) => Path.Combine(WorkFolder("Spiele"), "Spielstände", DevStudio.SafeName(d.Text("title", "Spiel")) + ".json");
+    public void GameSaveHere(ProgramDocument d)
+    {
+        if (_gamePlay is not { } sim) throw new InvalidOperationException("Erst „Im Fenster spielen“.");
+        var f = GameSavePath(d); Directory.CreateDirectory(Path.GetDirectoryName(f)!);
+        var s = sim.Snapshot(); File.WriteAllText(f, GameSaves.ToJson(s));
+        _progMsg[GK] = "Gespeichert: " + GameSaves.Describe(s, sim.LevelCount);
+    }
+    public void GameLoadHere(ProgramDocument d)
+    {
+        var f = GameSavePath(d);
+        if (!File.Exists(f)) throw new InvalidOperationException("Für dieses Spiel gibt es noch keinen Spielstand.");
+        if (_gamePlay is null) GamePlayHere(d);
+        var sim = _gamePlay!;
+        var s = GameSaves.Parse(File.ReadAllText(f), sim.LevelCount); // wirft verständlich bei kaputt/neuer/unpassend
+        sim.Restore(s);
+        _progMsg[GK] = "Fortgesetzt: " + GameSaves.Describe(s, sim.LevelCount);
+    }
+
     /// <summary>Probespiel im Fenster: Figur steuern, Punkte und Leben oben, „Nochmal“ und „Zurück zum Editor“.</summary>
     private Control GamePlayView(ProgramDocument d)
     {
@@ -635,8 +655,11 @@ public partial class MainWindow
         canvas.Stop = () => { _gamePlay = null; GamePlaytestCanvas = null; Show(GK); };
         var again = Act("game-play-again", "↻ Nochmal", () => { _gamePlay = sim.Restart(); Show(GK); }, true);
         var stop = Act("game-play-stop", "■ Zurück zum Editor", () => canvas.Stop());
+        var save = Act("game-play-save", "💾 Speichern", () => ProgramRun(GK, () => GameSaveHere(d)));
+        var load = Act("game-play-load", "⤴ Fortsetzen", () => ProgramRun(GK, () => GameLoadHere(d)));
+        load.IsEnabled = File.Exists(GameSavePath(d));
         return new StackPanel { Spacing = 8, Children = {
-            new WrapPanel { Children = { status, again, new Border { Width = 6 }, stop } },
+            new WrapPanel { Children = { status, again, new Border { Width = 6 }, save, new Border { Width = 4 }, load, new Border { Width = 6 }, stop } },
             GamePlayNoteBar(d),
             new Border { CornerRadius = new CornerRadius(10), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = canvas },
             P("← → oder A/D laufen · Leertaste, ↑ oder W springt · Esc zurück zum Editor · gleiche Regeln wie im gebauten Spiel", Muted, 11.5) } };

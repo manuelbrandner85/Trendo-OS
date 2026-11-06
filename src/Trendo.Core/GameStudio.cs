@@ -77,6 +77,8 @@ public static class GameStudio
         public Dictionary<string, Anim> Anims { get; init; } = [];
         /// <summary>Ton-Spur: Geräusch je Ereignis (springen, muenze, treffer, ziel) und Musik („musik“, läuft in Schleife) – Dateiname im Spielordner.</summary>
         public Dictionary<string, string> Sounds { get; init; } = [];
+        /// <summary>Spielstand automatisch speichern (Speicherpunkt, Level geschafft) und beim nächsten Start fortsetzen.</summary>
+        public bool Saves { get; init; } = true;
     }
 
     /// <summary>Ereignisse der Ton-Spur.</summary>
@@ -127,7 +129,7 @@ public static class GameStudio
         var o = new { speed = s.Speed, lives = s.Lives, win = s.WinScore, player = s.Player, accent = s.Accent, bg = s.Background, sound = s.Sound,
                       level = s.Level, playerImage = s.PlayerImage, bgImage = s.BackgroundImage, props = s.Props, timeLimit = s.TimeLimit,
                       rules = s.Rules.Select(r => new { when = r.When, n = r.N, act = r.Do }), more = s.MoreLevels, decor = s.Decor, names = s.LevelNames,
-                      anims = s.Anims.ToDictionary(kv => kv.Key, kv => new { img = kv.Value.Image, frames = kv.Value.Frames, fps = kv.Value.Fps }), sounds = s.Sounds };
+                      anims = s.Anims.ToDictionary(kv => kv.Key, kv => new { img = kv.Value.Image, frames = kv.Value.Frames, fps = kv.Value.Fps }), sounds = s.Sounds, saves = s.Saves };
         return "const CFG=" + JsonSerializer.Serialize(o) + ";\n";
     }
 
@@ -240,10 +242,11 @@ L.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='S'){S0x=x;S0y=y;}if(ch==='o')c
 pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;}
 function reset(full){if(full){p=0;cg=0;fk=0;fr=0;boost=0;fired=[];tu=false;load(0);return;}pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;}
 reset(true);
-addEventListener('keydown',e=>{k[e.code]=1;if(!music&&SND.musik){music=true;try{SND.musik.play();}catch(x){}}if(e.code==='Space'){e.preventDefault();if(over){lives=CFG.lives;over=false;reset(true);}else if(pl.on){pl.vy=-11.5;snd('springen',660);}}});addEventListener('keyup',e=>k[e.code]=0);
-function hit(){lives--;snd('treffer',160);flash=20;if(lives<=0)over=true;else reset(false);}
+/*SPIELSTAND*/const SV0=readSave();if(SV0)resume(SV0);
+addEventListener('keydown',e=>{k[e.code]=1;if(e.code==='KeyN'){dropSave();lives=CFG.lives;over=false;reset(true);say('Neues Spiel');}if(!music&&SND.musik){music=true;try{SND.musik.play();}catch(x){}}if(e.code==='Space'){e.preventDefault();if(over){lives=CFG.lives;over=false;reset(true);}else if(pl.on){pl.vy=-11.5;snd('springen',660);}}});addEventListener('keyup',e=>k[e.code]=0);
+function hit(){lives--;snd('treffer',160);flash=20;if(lives<=0){over=true;dropSave();}else reset(false);}
 function say(t){note=t;noteT=120;}
-function goal(){p+=10;snd('ziel',990);if(li+1<LV.length){load(li+1);say((CFG.names&&CFG.names[li])||('Level '+(li+1)+' von '+LV.length));}else over=true;}
+function goal(){p+=10;snd('ziel',990);if(li+1<LV.length){load(li+1);saveGame();say((CFG.names&&CFG.names[li])||('Level '+(li+1)+' von '+LV.length));}else{over=true;dropSave();}}
 function rules(){(CFG.rules||[]).forEach((r,i)=>{if(fired[i])return;const v=r.when==='muenzen'?cg:r.when==='punkte'?p:r.when==='gegner'?fk:r.when==='sekunden'?fr/60:0;if(v<r.n)return;fired[i]=1;
 if(r.act==='leben'){lives++;say('+1 Leben');}if(r.act==='tueren'){open=true;say('Türen offen');}if(r.act==='schneller'){boost=2;say('Schneller!');}if(r.act==='punkte'){p+=10;say('+10 Punkte');}if(r.act==='sieg'){over=true;say('Gewonnen!');}beep(990);});}
 function move(o,dx,dy){o.x+=dx;let l=Math.floor(o.x/T),r=Math.floor((o.x+o.w-1)/T),t=Math.floor(o.y/T),b=Math.floor((o.y+o.h-1)/T);
@@ -261,7 +264,7 @@ function step(){if(!over){fr++;lf++;const sp=2.2+CFG.speed*.35+boost;pl.vx=(k.Ar
 if(pl.on&&at(Math.floor((pl.x+12)/T),Math.floor((pl.y+pl.h+1)/T))==='F'){pl.vy=-17;pl.on=false;beep(720);}
 if(pl.y>R*T+60)hit();const cx=Math.floor((pl.x+12)/T),cy=Math.floor((pl.y+15)/T),cb=Math.floor((pl.y+29)/T);
 if(at(cx,cb)==='^'||at(cx,cy)==='^')hit();else if(at(cx,cy)==='Z'||at(cx,cb)==='Z')goal();else{
-[cy,cb].forEach(yy=>{if(at(cx,yy)==='K'){G[yy][cx]='.';kg++;beep(880);if(kg>=KT){open=true;say('Alle Schlüssel – Türen offen');}}if(at(cx,yy)==='C'&&(sx!==cx||sy!==yy)){sx=cx;sy=yy;say('Speicherpunkt');}});
+[cy,cb].forEach(yy=>{if(at(cx,yy)==='K'){G[yy][cx]='.';kg++;beep(880);if(kg>=KT){open=true;say('Alle Schlüssel – Türen offen');}}if(at(cx,yy)==='C'&&(sx!==cx||sy!==yy)){sx=cx;sy=yy;saveGame();say('Gespeichert');}});
 coins.forEach(q=>{if(q.a&&Math.abs(q.x-(pl.x+12))<18&&Math.abs(q.y-(pl.y+15))<20){q.a=0;cg++;p+=q.v||1;snd('muenze',880);if(won(p))over=true;}});
 foes.forEach(f=>{if(!f.a)return;const nx=f.x+f.d*1.2*(f.s||1),cxx=Math.floor((f.d>0?nx+24:nx)/T),cyy=Math.floor((f.y+20)/T);if(solid(cxx,cyy)||!solid(cxx,cyy+1))f.d*=-1;else f.x=nx;
 if(Math.abs(f.x-pl.x)<24&&Math.abs(f.y-pl.y)<26){if(pl.vy>1&&pl.y<f.y-8){f.a=0;fk++;pl.vy=-8;p+=2;beep(520);}else hit();}});
@@ -297,6 +300,9 @@ step();
 """,
     };
 
+    /// <summary>Spiel-JavaScript einer Vorlage; der Plattformer bekommt den Spielstand (Paket 01 S1-15).</summary>
+    public static string GameJs(string template) => Common + Js[template].TrimStart().Replace("/*SPIELSTAND*/", Programs.GameSaves.Js);
+
     public static string CreateBrowserGame(string parent, string template, string name, GameSettings? settings = null)
     {
         var t = Templates.FirstOrDefault(x => x.Id == template);
@@ -306,7 +312,7 @@ step();
         Directory.CreateDirectory(dir);
         var enc = System.Net.WebUtility.HtmlEncode(name);
         File.WriteAllText(Path.Combine(dir, "index.html"), Shell.Replace("{{TITLE}}", enc).Replace("{{HELP}}", t.Help), new UTF8Encoding(false));
-        File.WriteAllText(Path.Combine(dir, "game.js"), Common + Js[t.Id].TrimStart(), new UTF8Encoding(false));
+        File.WriteAllText(Path.Combine(dir, "game.js"), GameJs(t.Id), new UTF8Encoding(false));
         File.WriteAllText(Path.Combine(dir, "vorlage.txt"), t.Id);
         Save(dir, settings ?? new GameSettings { Level = t.Id == "breakout" ? DefaultBreakout : t.Id == "jump" ? DefaultJump : t.Id == "plattform" ? DefaultPlatform : [] });
         File.WriteAllText(Path.Combine(dir, "README.md"), $"# {name}\n\nVorlage „{t.Label}“. Öffne index.html im Browser. Regeln, Farben und Level stehen in config.js (einstellbar im Spiele-Studio).\n");

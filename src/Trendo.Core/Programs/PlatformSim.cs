@@ -166,5 +166,17 @@ public sealed class PlatformSim
     }
 
     /// <summary>Nochmal von vorn (alle Level, Münzen, Gegner, Schlüssel und Türen zurück).</summary>
+    /// <summary>Spielstand des Probespiels (Paket 01 S1-15) – gleiches Format wie im gebauten Spiel.</summary>
+    public GameSave Snapshot() => new() { Level = LevelIndex, Score = Score, Lives = Lives, CheckX = (int)_sx, CheckY = (int)_sy, Defeated = FoesDefeated, Coins = Coins.Count(c => c.Taken), PlaySeconds = Frames / 60 };
+
+    /// <summary>Spielstand fortsetzen: Level laden, am gültigen Speicherpunkt beginnen, Punkte und Leben übernehmen.</summary>
+    public void Restore(GameSave s)
+    {
+        if (s.Level < 0 || s.Level >= _levels.Count) throw new InvalidDataException($"Level {s.Level + 1} gibt es in diesem Spiel nicht.");
+        Load(s.Level);
+        if (GameSaves.CheckpointValid(s, _levels[s.Level])) { _sx = s.CheckX; _sy = s.CheckY; ResetPlayer(); }
+        Score = s.Score; Lives = Math.Max(1, s.Lives); FoesDefeated = s.Defeated; Won = false; Note = "Spielstand geladen";
+    }
+
     public PlatformSim Restart() => new(_levels[0], _speed, _startLives, _props, _timeLimit, _rules, [.. _levels.Skip(1)]);
 }
