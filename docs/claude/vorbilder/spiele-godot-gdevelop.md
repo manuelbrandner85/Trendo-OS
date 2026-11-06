@@ -31,6 +31,15 @@
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Level in der Mitte, Kachel-Werkzeuge oben, rechts Spielregeln, Regeln und Objekt-Eigenschaften – Bauplan erfüllt.
 
+## Paket 01 – Universal Game Engine mit Unity (06.11.2026)
+Vorbilder: Unity Hub (Editor-Erkennung), Unity Test Framework (EditMode/PlayMode), Godot-Kommandozeile – nur offizielle Kommandozeilen, eigener Code.
+
+- ✓ Engines prüfen: Unreal, Unity, Godot, Blender mit Version; ehrlich „blockiert“/„nicht gefunden“
+- ✓ Plattformer als Unity-Projekt (C#, Build-Skript, EditMode-/PlayMode-Tests) – mit Unity 6.6 auf dem PC geprüft
+- ✓ Plattformer als Godot-4-Projekt (GDScript, Level- und Spiel-Prüfung) – mit Godot 4.7.2 auf dem PC geprüft
+- ✗ Unreal-Spiel aus dem Level (bisher nur Projekt mit Spielbibel)
+- ✗ Engine-Projekt zurück nach Trendo übernehmen
+
 ## Nächste Schritte
 1. Freie Szene statt Raster (Objekte pixelgenau setzen)
 2. Animationen auch für Gegner

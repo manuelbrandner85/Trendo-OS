@@ -25,6 +25,13 @@
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Arbeitsfläche Mitte, Teile links, Eigenschaften rechts – Bauplan erfüllt.
 
+## Paket 01 – Blender–Unreal–Web Fusion (06.11.2026)
+Vorbild: Exporter von Blender (FBX, glTF) mit Epics und Unitys Empfehlungen; Prüfung wie ein Asset-Validator.
+
+- ✓ „Für Engine“: Unity (FBX), Unreal (FBX), Godot (GLB), Web (GLB)
+- ✓ Rundlauf-Prüfung mit Bericht (Teile, Dreiecke, Materialien, UV, Knochen, Animationen, Formschlüssel, Maße) – mit Blender 5.2.3 geprüft
+- ✗ Import in Unity/Unreal/Godot selbst automatisch prüfen
+
 ## Nächste Schritte
 1. Spiele-Assets aus freien Quellen (G1–G3)
 2. Texturen (Bildtexturen auf den UVs) in der Ansicht

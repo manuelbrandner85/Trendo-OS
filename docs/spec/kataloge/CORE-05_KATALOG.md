@@ -56,3 +56,10 @@ Funktionen nach den Vorbildern (Blender, SketchUp, Tinkercad; FreeCAD, Fusion, O
 | DR-13 | Live-Kamera, Fertig-Meldung, Zeitraffer aufnehmen und holen | Bambu Handy | umgesetzt (Kamera/FTPS nur am echten Drucker) | BambuProTests, BambuPro_Ui |
 | DR-14 | Direkt aus Trendo vorbereiten (Bambu Studio im Hintergrund) und drucken | Bambu Studio CLI | umgesetzt (echter Slicer-Lauf nicht im Test) | BambuProTests, BambuPro_Ui |
 | DR-15 | Mehrere Drucker mit Zustand, Auswählen, Entfernen | Bambu Farm Manager | umgesetzt | BambuProTests, BambuPro_Ui |
+
+## Für Engine (Paket 01 S2-17)
+
+| Nr | Funktion | Vorbild | Stand | Test |
+|---|---|---|---|---|
+| D3-15 | Export für Unity (FBX), Unreal (FBX), Godot (GLB), Web (GLB) über Blender mit Engine-Einstellungen | Blender FBX/glTF-Exporter, Epic-Empfehlung | umgesetzt, PC-Lauf mit Blender 5.2.3 (reports/paket01) | Studio3DEnginesTests, Studio3DEngines_Ui |
+| D3-16 | Rundlauf-Prüfung: Export wieder einlesen und vergleichen (Teile, Dreiecke, Materialien, UV, Knochen, Animationen, Formschlüssel, Maße); Verlust = Fehler, gewollte Änderung = Hinweis; Bericht neben der Datei | – | umgesetzt | Studio3DEnginesTests, Studio3DEngines_Ui |

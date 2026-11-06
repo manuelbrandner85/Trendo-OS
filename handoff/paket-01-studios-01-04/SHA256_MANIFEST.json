@@ -1,0 +1,119 @@
+{
+  "package": "TRENDO-PAKET-01-4-STUDIOS",
+  "created": "2026-11-05",
+  "feature_count": 78,
+  "test_scenarios": 156,
+  "studio_count": 4,
+  "files": [
+    {
+      "path": "00_START_HIER.md",
+      "bytes": 2103,
+      "sha256": "5ce2d6c1937413eedceca65e7e268bd2e87889457eb5e9ac60d577a45c7fcff5"
+    },
+    {
+      "path": "01_CLAUDE_STARTAUFTRAG.md",
+      "bytes": 5361,
+      "sha256": "b4af22463182b69063f3402e74d767e1ef997a0419e5d855114cf9a62dc487c7"
+    },
+    {
+      "path": "02_REPO_ISTSTAND_SNAPSHOT.md",
+      "bytes": 2044,
+      "sha256": "a2b58b72ef5b4a345a0ac02bf8c86b18f4dbc70703a16839f7eae08ac76a176d"
+    },
+    {
+      "path": "03_GLOBALE_REGELN_REA_UNITY.md",
+      "bytes": 3361,
+      "sha256": "3b0aa8840c72f97cf1d8786fc390a690a9ac504713e3d59353f821d8e3bc6675"
+    },
+    {
+      "path": "04_GEMEINSAME_ARCHITEKTUR.md",
+      "bytes": 2714,
+      "sha256": "9b8e09613a7fbf29283dacd6d124659e10b20087c6a92bbbeb77986e29d765d0"
+    },
+    {
+      "path": "decisions/APPROVALS.csv",
+      "bytes": 19794,
+      "sha256": "54750e0ce59b148cb32aaeb5218a585ed7fbaf191c1d5597ffd45f36d8e5f4b8"
+    },
+    {
+      "path": "decisions/CROSS_PACKAGE_POLICY.json",
+      "bytes": 1040,
+      "sha256": "ddc3f5435118a50773f761c0b76ffa7c0f214e6af3f5a9097c73bae348cd11fd"
+    },
+    {
+      "path": "decisions/UNITY_EXTRA_APPROVAL.json",
+      "bytes": 363,
+      "sha256": "0328ca21a40f40bc62c7d61cb9375ccacd02cfd83dca2dc993a2ad6103eeb554"
+    },
+    {
+      "path": "handoff/SESSION_TEMPLATE.md",
+      "bytes": 821,
+      "sha256": "81f027cbd520cea5502653d5bd53bfe655bfc78f36e6fe0b03413dfe4554caa4"
+    },
+    {
+      "path": "planning/PAKET_SERIE_UND_FREIGABEN.md",
+      "bytes": 1470,
+      "sha256": "2ada198021f0a3b0de77bb0413617ca195a39b5fc0f57b5d8b914b1e6f8f052f"
+    },
+    {
+      "path": "planning/ROADMAP.md",
+      "bytes": 1418,
+      "sha256": "5168798bbd90d1b43162444886d081ce17847adcf4541d7df1153d6bca78bef9"
+    },
+    {
+      "path": "qa/TESTFAELLE.csv",
+      "bytes": 26704,
+      "sha256": "7641c473b506e412f5349e999216978129e12f56e0246817aa7a83e23685d7bc"
+    },
+    {
+      "path": "qa/TESTPLAN.md",
+      "bytes": 1752,
+      "sha256": "41b51f63dc604d5c9c6dcb12a1926f8cf4ca1867e05d05b7b75445d3d5a817c4"
+    },
+    {
+      "path": "sources/OFFIZIELLE_TECHNIK_REFERENZEN.md",
+      "bytes": 1376,
+      "sha256": "c6c254ccfb61768c74750425969fc95c3a2e377425a0a378f0df3820d025ab70"
+    },
+    {
+      "path": "studios/S1_Spieleentwicklung.md",
+      "bytes": 5500,
+      "sha256": "b8535e70c2eeea1db81411d3aec40e828b0b98917fe3de0557c8c4c53b62f586"
+    },
+    {
+      "path": "studios/S2_3D_Blender.md",
+      "bytes": 5417,
+      "sha256": "b94bfdad5a2a5721694b2b33560186eb1532070c0eace678f5d4dad9233bf36a"
+    },
+    {
+      "path": "studios/S3_Film_Video_VFX.md",
+      "bytes": 5711,
+      "sha256": "22fc66772d73bd6cd2122fbbb52c2c9915898448098e781b895d06bc6fb3227b"
+    },
+    {
+      "path": "studios/S4_Musik_Audio_Sound.md",
+      "bytes": 5882,
+      "sha256": "6e03761c6f2bdfb0f24d4d8f687f0531d60eb3fe00bce64b01dcc31de6c77d71"
+    },
+    {
+      "path": "tech/AGENTEN_UND_UMSETZUNG.md",
+      "bytes": 1694,
+      "sha256": "53d498414d0b354826235d8b7476002e60372ca70530086e73506c7b27ea6432"
+    },
+    {
+      "path": "tech/CROSS_STUDIO_PIPELINES.md",
+      "bytes": 1523,
+      "sha256": "326e80c8628d28e4156b77a8cc79205f1b6c959904e15432568604f809677f43"
+    },
+    {
+      "path": "tech/REA_NATIVE_CLEANROOM_POLICY.md",
+      "bytes": 1686,
+      "sha256": "36874b0b74b9d3d3cf16d881ac8d993d521f77c5565f13e9ea966d677325fbd5"
+    },
+    {
+      "path": "tech/UNITY_ENGINE_ADAPTER.md",
+      "bytes": 3296,
+      "sha256": "0ac9b9e94807ef98618ed05b1f8d95e298f00a22f314620a8af88b3bd12544fc"
+    }
+  ]
+}

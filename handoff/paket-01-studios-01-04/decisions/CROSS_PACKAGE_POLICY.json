@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "policy_id": "TRENDO_CROSS_PACKAGE_REA_UNITY_V1",
+  "approved_at": "2026-11-05",
+  "rules": {
+    "studio_group_size": 4,
+    "rea_first": "native_trendo_when_reasonable; clean_room_no_proprietary_copy; license_check",
+    "unity": "mandatory_consideration_in_every_pack; implement_only_where_relevant; never_unapproved_install",
+    "no_extra_required_apps": "prefer-native; no-unapproved-install",
+    "no_duplicate_core": true,
+    "claude_20_agents_existing": true,
+    "no_push_merge_release_without_authorization": true,
+    "status_truth": "APPROVED_SPEC != IMPLEMENTED != TESTED != ACCEPTED != RELEASED"
+  },
+  "package_01": {
+    "studios": [
+      "S1",
+      "S2",
+      "S3",
+      "S4"
+    ],
+    "features_approved": 78,
+    "unity_additional_approved": true
+  },
+  "package_02": {
+    "studios": [
+      "S5",
+      "S6",
+      "S7",
+      "S8"
+    ],
+    "approved": [
+      "S5:20 improvements"
+    ],
+    "unapproved": [
+      "S6",
+      "S7",
+      "S8"
+    ]
+  },
+  "web_22_approved": true
+}

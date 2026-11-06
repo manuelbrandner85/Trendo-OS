@@ -1,0 +1,157 @@
+﻿test_id,feature_id,kind,scenario,expected_result,status
+S1-01-P,S1-01,POSITIVE,Erzeuge in ausgewählter tatsächlich installierter Engine ein neues lokales Projekt mit Startszene.,"Projektvorlage, Engine-Capability, Prüfbericht; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S1-01-N,S1-01,NEGATIVE,Fehlende Engine verweigert Projektanlage ohne Download/gefälschten Editorstatus.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-02-P,S1-02,POSITIVE,Claude erzeugt priorisierten Plan mit Task-IDs aus einem Spielbriefing.,Versionierter Produktionsplan und Task-IDs; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S1-02-N,S1-02,NEGATIVE,Widersprüchliche Anforderungen werden als Decision-Delta gemeldet statt überschrieben.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-03-P,S1-03,POSITIVE,"Importiere Charakter mit Materialien, Rig und Laufanimation in Testszene.","Charakterprojekt, Rig, Material, Export; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S1-03-N,S1-03,NEGATIVE,Fehlender Rig-Bone/fehlende Textur ergibt klaren Validierungsfehler.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-04-P,S1-04,POSITIVE,Lade mehrere World-Zellen mit Tageszeitwechsel und persistenter Position.,"Szenen, Streamingdaten, Spawn-Logik; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S1-04-N,S1-04,NEGATIVE,Fehlende World-Zelle bricht nicht die gesamte Szene oder speichert ungültige Position.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-05-P,S1-05,POSITIVE,"Erstelle Quest mit Inventar, Interaktion und abschließender Belohnung.","Spielregeln, Zustände, Prüfszenario; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S1-05-N,S1-05,NEGATIVE,Quest darf ohne Schlüssel/Prerequisite nicht abschließen.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-06-P,S1-06,POSITIVE,"Spiele Cinematic mit getrackter Kamera, Dialog und Rückkehr ins Gameplay.",Abspielbare Sequenz mit Timeline; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S1-06-N,S1-06,NEGATIVE,Fehlender Dialogclip führt zu Bericht statt stiller Stille als „bestanden“.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-07-P,S1-07,POSITIVE,"NPC reagiert deterministisch auf Zustandswechsel, KI optional zuschaltbar.",Deterministische NPC-Baseline + optionale KI; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S1-07-N,S1-07,NEGATIVE,Offline/fehlendes Modell führt zu kontrolliertem NPC-Basismodus.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-08-P,S1-08,POSITIVE,"Retargete Laufclip auf kompatibles Ziel-Rig, Bewegungsfehler messen.","Rig- und Clip-Bibliothek, Retargetingbericht; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S1-08-N,S1-08,NEGATIVE,Nicht kompatibles Rig darf keinen falschen Animationserfolg melden.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-09-P,S1-09,POSITIVE,"Platziere Gebäude/Terrain per Editor, speichern und neu laden erhält Position.",Bearbeitbarer Szenengraph und Export; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S1-09-N,S1-09,NEGATIVE,Ungültige Seed-/Leveldatei führt zu Recovery ohne Datenverlust.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-10-P,S1-10,POSITIVE,"Musik ändert sich bei Kampfbeginn, Dialog pausiert Soundtrack.","Event-Audio-Zuordnung, Mix, Lizenzliste; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S1-10-N,S1-10,NEGATIVE,"Fehlendes Audioclip-Asset bewirkt lesbaren Fehler, kein Absturz.",Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-11-P,S1-11,POSITIVE,Erzeuge gültiges Unity-C#-Skript und Unreal-Blueprint/C++-Paar je Zielengine.,Engine-spezifische Skripte/Graphen plus Tests; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S1-11-N,S1-11,NEGATIVE,Unity-C# darf nicht als Unreal-Python-Gameplay ausgeführt werden.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-12-P,S1-12,POSITIVE,Wiederhole Physikszene mit definierter Startbedingung und prüfe Kollision.,Wiederholbarer Physik-Testlevel; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S1-12-N,S1-12,NEGATIVE,Ausreißende NaN-Physik stoppt Simulation mit Warnung.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-13-P,S1-13,POSITIVE,Zwei Testclients synchronisieren Spielposition in isoliertem Testnetz.,Autorisierte Testserver-Konfiguration und Testprotokoll; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S1-13-N,S1-13,NEGATIVE,Ungenehmigte öffentliche Serverbindung wird blockiert.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-14-P,S1-14,POSITIVE,"HUD reagiert auf Controller, Tastatur und Skalierungswechsel.",Echte Engine-UI und Navigationstests; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S1-14-N,S1-14,NEGATIVE,Nicht erreichbarer Menüfokus gilt als fehlgeschlagener Accessibility-Test.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-15-P,S1-15,POSITIVE,"Spielstand wird gespeichert, migriert und wiederhergestellt.",Versionierte Save-Datei und Migrationstest; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S1-15-N,S1-15,NEGATIVE,"Beschädigter Save löst Recovery aus, nicht Überschreiben des Originals.",Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-16-P,S1-16,POSITIVE,Test-Bot läuft durch Level und erzeugt nachvollziehbaren QA-Report.,Laufprotokolle und Spielbarkeitsbericht; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S1-16-N,S1-16,NEGATIVE,"Unspielbares Level wird als FAIL ausgewiesen, nicht kosmetisch als PASS.",Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-17-P,S1-17,POSITIVE,Drei Geräteprofile liefern gemessene Framezeiten und LOD-Eingriff.,Messwerte pro Zielplattform/Hardwareklasse; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S1-17-N,S1-17,NEGATIVE,Bei Framebudget-Überschreitung warnen und Quality-Fallback aktivieren.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S1-18-P,S1-18,POSITIVE,Erzeuge reproduzierbaren lokalen Testbuild mit Manifest und Hash.,"Reproduzierbarer Testbuild, Freigabe-Gate; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S1-18-N,S1-18,NEGATIVE,Ohne Approval darf keine Veröffentlichung oder Store-Upload erfolgen.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-01-P,S2-01,POSITIVE,Bearbeite Mesh/Subdivision und speichere editierbare Quelldatei.,Editierbares Mesh-Projekt und Export; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S2-01-N,S2-01,NEGATIVE,Nicht-manifold-Mesh wird markiert und beim Export validiert.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-02-P,S2-02,POSITIVE,Rekonstruiere Referenzobjekt mit Maßvergleich und Warnung bei Unsicherheit.,"Referenz, 3D-Ergebnis, Vergleich; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S2-02-N,S2-02,NEGATIVE,Eine einzelne ungeeignete Referenz darf nicht als maßgenau gelten.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-03-P,S2-03,POSITIVE,"Erstelle Figur mit Haut-/Haarmaterial, Rig und Vorschau.",Charakter mit Material- und Rig-Daten; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S2-03-N,S2-03,NEGATIVE,Unvollständige Texturen oder unlizenzierte Quellen blockieren Freigabe.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-04-P,S2-04,POSITIVE,Sculpt-Veränderung erscheint nach Speichern/Neuladen in Quelldatei.,Sculpt-Layer/Brush-Verlauf und Mesh; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S2-04-N,S2-04,NEGATIVE,Fehlende Editierdaten machen nicht-destruktives Versprechen unzulässig.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-05-P,S2-05,POSITIVE,High-Poly zu Low-Poly mit Zählung und normal map Qualität.,Quell- und Zielmesh mit Qualitätsmetriken; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S2-05-N,S2-05,NEGATIVE,Retopo mit kaputten UVs oder Lücken wird nicht freigegeben.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-06-P,S2-06,POSITIVE,UV-Atlas und Texturbake passen auf exportiertes Objekt.,"UV-Layout, Bake, Texturen; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S2-06-N,S2-06,NEGATIVE,Überlappende UVs außerhalb konfigurierter Toleranz melden.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-07-P,S2-07,POSITIVE,Metall/Roughness wird bei Engine-Import kontrolliert verglichen.,PBR-Materialgraph und Testszene; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S2-07-N,S2-07,NEGATIVE,Nicht unterstützter Shader wird umgemappt oder als Verlust gemeldet.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-08-P,S2-08,POSITIVE,Geometry-Nodes-Setup erzeugt mit Seed deterministisch wiederholbare Stadt.,Parametrische Node-Gruppe mit Seeds; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S2-08-N,S2-08,NEGATIVE,Ungültige Node-Parameter dürfen kein nichtreproduzierbares Asset behaupten.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-09-P,S2-09,POSITIVE,Rig mit IK/FK und Posevalidierung in Zielengine prüfen.,Rig mit Pose- und Deformationstests; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S2-09-N,S2-09,NEGATIVE,Bone-Namen/Weichteil-Deformation ohne Zielmapping als FAIL melden.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-10-P,S2-10,POSITIVE,Animation mit Keyframes/Shape Keys exportieren und im Viewer abspielen.,Clipbibliothek und Abspielnachweis; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S2-10-N,S2-10,NEGATIVE,Fehlende Action darf keine leere Animation als Erfolg exportieren.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-11-P,S2-11,POSITIVE,Stoffsimulation schreibt Cache und lässt sich wieder abspielen.,Reproduzierbarer Sim-Cache; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S2-11-N,S2-11,NEGATIVE,Unvollständiger Simcache führt zu Rebuild/Fehlermeldung.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-12-P,S2-12,POSITIVE,"Render mit gesetzter Kamera, Color Space und Lichter-Setup erzeugen.","Szenendatei, Bildsequenz, Renderlog; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S2-12-N,S2-12,NEGATIVE,Keine GPU darf nicht als erfolgreicher GPU-Render gekennzeichnet werden.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-13-P,S2-13,POSITIVE,"Architekturmodell hat korrekte Einheiten, Räume und wiederverwendbare Module.","Modulare Szene, Maßstab und Assetliste; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S2-13-N,S2-13,NEGATIVE,Maßstab x100 aus Import wird erkannt und nicht still übernommen.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-14-P,S2-14,POSITIVE,Fahrzeug-Bauteile schwenken an korrekten Pivots und bestehen Animation.,"Bauteilhierarchie, Pivot/Bewegungstest; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S2-14-N,S2-14,NEGATIVE,Gebrochene Gelenkhierarchie verhindert Freigabe.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-15-P,S2-15,POSITIVE,Punktwolke wird bereinigt und Mesh mit Qualitätsgrenzen erstellt.,"Pointcloud, Mesh, Unsicherheitsbericht; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S2-15-N,S2-15,NEGATIVE,Zu lückenhafter Scan führt zu Unsicherheitswarnung und manueller Option.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-16-P,S2-16,POSITIVE,"Assetbibliothek indexiert Vorschaubild, Lizenz und Originaldatei.","Index, Vorschau, Lizenz- und Provenienzdaten; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S2-16-N,S2-16,NEGATIVE,Asset ohne Nutzungsrecht darf nicht automatisch in Kundenrelease gelangen.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-17-P,S2-17,POSITIVE,GLB/FBX-Testimport in Unity und Unreal mit sichtbarem Vergleich.,Import-/Exportvergleich pro Engine; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S2-17-N,S2-17,NEGATIVE,"Nicht vorhandener Unity-Editor ergibt BLOCKED, kein PASS.",Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-18-P,S2-18,POSITIVE,"Claude-Auftrag erstellt .blend, Preview, Export und Laufprotokoll.","Laufprotokoll, .blend und Preview; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S2-18-N,S2-18,NEGATIVE,Fehlender Blender-Prozess verhindert Status „erfolgreich modelliert“.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-19-P,S2-19,POSITIVE,"LOD, Polygonzahl, UV, RAM und Materialzahl liegen im gewählten Budget.",Messbericht mit Grenzwerten; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S2-19-N,S2-19,NEGATIVE,Budgetüberschreitung führt zu Test-Fail und Korrekturvorschlag.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S2-20-P,S2-20,POSITIVE,Native Trendo-Viewport-Aktion ändert echte Scene-Daten mit Undo.,Nativ editierbares 3D-Dokument und Undo; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S2-20-N,S2-20,NEGATIVE,Mausaktion ohne Dateidiff gilt nicht als funktionierender Editor.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-01-P,S3-01,POSITIVE,Aus Drehbuch entsteht Shotliste mit Sequenzcodes und Szenenlogik.,"Szenenliste, Storyboard und Shot-Plan; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S3-01-N,S3-01,NEGATIVE,"Widersprüchliche Reihenfolge wird gemeldet, nicht still korrigiert.",Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-02-P,S3-02,POSITIVE,Schnitt-Timeline exportiert nach Reload identische Frames und Ton.,"Editierbare Sequenz, EDL/OTIO-Ausgabe; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S3-02-N,S3-02,NEGATIVE,Fehlendes Quellmedium wird markiert statt als schwarzer Clip verschleiert.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-03-P,S3-03,POSITIVE,Storyboard mit Kamera-/Shot-IDs lässt sich ins Filmprojekt übernehmen.,Storyboard mit Scene-/Shot-IDs; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S3-03-N,S3-03,NEGATIVE,Nicht erzeugbare Referenzbilder stoppen nicht ohne Fehlprotokoll.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-04-P,S3-04,POSITIVE,"Kamerafahrt mit Fokus, Brennweite und Timeline-Keyframes reproduzieren.","Keyframe-Track, reproduzierbare Kamera; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S3-04-N,S3-04,NEGATIVE,Unzulässiger Kamerawert wird validiert und nicht mit NaN gerendert.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-05-P,S3-05,POSITIVE,Green-Screen-Keying mit Maske und finalem Bild rendern.,"Nodegraph, Maske, Rendervergleich; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S3-05-N,S3-05,NEGATIVE,Maske außerhalb der Framegröße wird abgefangen.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-06-P,S3-06,POSITIVE,Partikel-/Rauchsimulation als reproduzierbares Sequenzasset exportieren.,Simulationsprojekt und Render-Preview; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S3-06-N,S3-06,NEGATIVE,Fehlender Cache führt nicht zu Behauptung einer fertig gerenderten Simulation.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-07-P,S3-07,POSITIVE,Virtuelles Set mit getesteter Kamera-/Frame-Synchronisation anzeigen.,Stage-Szene und Synchronisationscheck; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S3-07-N,S3-07,NEGATIVE,Fehlende Unity-/Unreal-Stageverbindung führt zu BLOCKED und Offline-Fallback.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-08-P,S3-08,POSITIVE,Digital Actor mit Lizenz-/Consent-Dokument und Rig abspielen.,"Charakterasset, Rig, Lizenzen/Einwilligung; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S3-08-N,S3-08,NEGATIVE,Nicht genehmigtes Gesicht/Stimme darf nicht als Produktionsasset freigegeben werden.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-09-P,S3-09,POSITIVE,Lip-Sync-Spur auf Transkript timen und Viseme-Video vergleichen.,Audio/Viseme-Spur mit Vergleichsvorschau; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S3-09-N,S3-09,NEGATIVE,Fehlende Sprachaufnahme oder schlechte Synchronität als FAIL melden.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-10-P,S3-10,POSITIVE,"Animierte Figur in Timeline bewegen, speichern und Render prüfen.",Editierbare Bewegungskurven; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S3-10-N,S3-10,NEGATIVE,Unpassende Rig-Version verhindert stilles Retargeting.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-11-P,S3-11,POSITIVE,Clips mit ACES/OCIO-Farbmanagement und Scopes vergleichen.,Farb-Pipeline und Scopes-Ausgabe; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S3-11-N,S3-11,NEGATIVE,Falsche LUT/ICC darf nicht als visuell äquivalent gelten.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-12-P,S3-12,POSITIVE,Restaurierung anhand vorher/nachher Clips mit messbaren Kriterien prüfen.,"Vorher/Nachher-Testclip, Qualitätswerte; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S3-12-N,S3-12,NEGATIVE,Upscale mit Artefakten darf nicht automatisch als Verbesserung gelten.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-13-P,S3-13,POSITIVE,Mit autorisiertem lokalem Modell ein Testclip mit Seeds erzeugen.,"Clip, Prompt/Seed/Provenienz; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S3-13-N,S3-13,NEGATIVE,Ohne installiertes Modell keine vorgetäuschten generativen Frames.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-14-P,S3-14,POSITIVE,Foley/Dialogs/Stems sind lip-sync und zeitcodiert im Mix.,Synchronisierter Filmmix mit Stems; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S3-14-N,S3-14,NEGATIVE,Verschobene Tonspur wird automatisch als Sync-Fehler erkannt.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-15-P,S3-15,POSITIVE,Filmmusik-Cues folgen festgelegtem Timecode und Szenenwechsel.,"Cue-Liste, Timing, Audiodateien; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S3-15-N,S3-15,NEGATIVE,Versetzter Cue-Start außerhalb Toleranz schlägt fehl.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-16-P,S3-16,POSITIVE,SRT/VTT-Spuren werden mit drei Sprachfassungen korrekt synchronisiert.,SRT/VTT und autorisierte Sprachspuren; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S3-16-N,S3-16,NEGATIVE,Nicht autorisierte Stimmenklonung muss gesperrt werden.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-17-P,S3-17,POSITIVE,Titel/Abspann haben editierbare Keyframes und gültigen Export.,Editierbare Titel-/Animationsvorlagen; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S3-17-N,S3-17,NEGATIVE,Nicht lizenzierte Font-Nutzung wird vor Freigabe markiert.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-18-P,S3-18,POSITIVE,EXR-Bildsequenz und H.264/H.265 wo verfügbar mit richtigen Metadaten.,"Container, Codecinfo, Log, Hash; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S3-18-N,S3-18,NEGATIVE,Fehlender/ungelizensierter Codec führt zu klarer Alternative.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-19-P,S3-19,POSITIVE,"Claude verknüpft Shots, DCC und Audio-Jobs mit wiederaufnehmbarer Queue.",Versionierter Workflow mit Freigabepunkten; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S3-19-N,S3-19,NEGATIVE,Agentenkonflikt an gleicher Datei wird blockiert.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S3-20-P,S3-20,POSITIVE,"QC prüft Schwarzbilder, Frames, fehlende Medien, Lautheit, Lizenz.",QC-Report und Review-Freigabe; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S3-20-N,S3-20,NEGATIVE,QC-Abweichung unterbindet Release und zeigt offene Punkte.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-01-P,S4-01,POSITIVE,"Nimm Audio in mehrspurige Session auf, schneide, Undo und exportiere.",Editierbare Session mit Audio-Assets; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S4-01-N,S4-01,NEGATIVE,Fehlendes Audiogerät ermöglicht nur Offlinebearbeitung ohne Fakeaufnahme.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-02-P,S4-02,POSITIVE,Claude erzeugt Arrangement mit Taktmarken und reproduzierbarem Mix.,"Arrangement-Plan, Marker, Versionsvergleich; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S4-02-N,S4-02,NEGATIVE,Fehlendes Tempo-/Taktmaß erzeugt Nachforderung statt geratenem Wert.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-03-P,S4-03,POSITIVE,Lokales Modell produziert Probeclip mit dokumentierter Seed-/Lizenzbasis.,"Audio, Prompts, Seeds, Modellangaben; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S4-03-N,S4-03,NEGATIVE,Ohne VRAM/Modell kein erfundener Song-Erfolg.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-04-P,S4-04,POSITIVE,"Pianoroll editieren, MIDI speichern und identisch wieder öffnen.",MIDI-Datei und editierbarer Pianoroll; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S4-04-N,S4-04,NEGATIVE,"Ungültige MIDI-Daten führen zu Importwarnung, nicht Sessionzerstörung.",Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-05-P,S4-05,POSITIVE,Synthesizer/Sampler spielt Preset und exportiert kurze Audiospur.,Instrumentenpreset und gerenderter Klang; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S4-05-N,S4-05,NEGATIVE,Nicht lizenziertes Sample wird nicht in Release gebündelt.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-06-P,S4-06,POSITIVE,"Plugin-Host lädt kompatibles Testplugin, verarbeitet Audio und schließt.","Plugin-Scan, Sandbox/Crash-Report; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S4-06-N,S4-06,NEGATIVE,Abstürzendes Plugin ist isoliert und beschädigt nicht die Session.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-07-P,S4-07,POSITIVE,Vocals mit lokaler Aufnahme und ausdrücklicher Zustimmung bearbeiten.,Aufnahmesession und Einwilligungsnachweis; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S4-07-N,S4-07,NEGATIVE,Nicht autorisierte fremde Stimme darf nicht geklont werden.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-08-P,S4-08,POSITIVE,Stem-Trennung erzeugt zeitlich gleich lange Stems mit Synchroncheck.,Synchronisierte Stem-Dateien; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S4-08-N,S4-08,NEGATIVE,Artefakte/fehlende Stems werden nicht als „perfekte Trennung“ behauptet.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-09-P,S4-09,POSITIVE,Sends/Busse/Sidechain führen zu nachweisbar veränderter Mixausgabe.,Mixsession und Routing-Test; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S4-09-N,S4-09,NEGATIVE,Routingzyklus wird erkannt und sicher abgewiesen.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-10-P,S4-10,POSITIVE,Export erreicht konfigurierten LUFS/TruePeak-Bereich nach Messung.,Masterdatei und Messbericht; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S4-10-N,S4-10,NEGATIVE,Zu hoher True Peak verhindert automatische Freigabe.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-11-P,S4-11,POSITIVE,Rauschminderung entfernt profilierte Störquelle bei hörbarem Vergleich.,"Spektrogramm, Original/Resultat; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S4-11-N,S4-11,NEGATIVE,Aggressive Rauschminderung mit Wortverlust wird markiert.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-12-P,S4-12,POSITIVE,TimeStretch/PitchShift bleiben im Toleranzbereich und phasenstabil.,"Referenz- und Ergebnisclip, Artefaktcheck; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S4-12-N,S4-12,NEGATIVE,Extremveränderung zeigt Artefakt- und Qualitätswarnung.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-13-P,S4-13,POSITIVE,EDM-Pattern mit StepSequencer/Arpeggiator abspielen/exportieren.,Sequencer-Pattern und Mixdown; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S4-13-N,S4-13,NEGATIVE,Ungültige Automation/Endlosschleife wird abgefangen.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-14-P,S4-14,POSITIVE,Leitmotiv zum Timecode eines Filmshots abspielen/exportieren.,"Cue-Sheet, Tempo-Map, Export; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S4-14-N,S4-14,NEGATIVE,Timecode-/Tempoabweichung erzeugt FAIL.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-15-P,S4-15,POSITIVE,"Spielkampf-Event schaltet Loop in Unity, Unreal oder Godot um.",Audio-Event-Map; Unity ebenfalls als Zieladapter; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S4-15-N,S4-15,NEGATIVE,"Fehlender Engine-Adapter führt zu exportierbarer Eventmap, nicht Fakeintegration.",Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-16-P,S4-16,POSITIVE,Binauraler/Mehrkanal-Testclip besitzt korrektes Routing und Metadaten.,"Kanalplan, Hörtetest, Engine-Test; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S4-16-N,S4-16,NEGATIVE,Unpassender Kanaltyp wird nicht still als Surround exportiert.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-17-P,S4-17,POSITIVE,Foley-Assetbibliothek liefert benannte Ereignisse und gültige Rechte.,Soundbibliothek und Event-Tags; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S4-17-N,S4-17,NEGATIVE,Unlizenziertes Sample wird aus Veröffentlichung ausgeschlossen.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-18-P,S4-18,POSITIVE,Synchronisierter mehrsprachiger Liedtext läuft korrekt zur Musik.,Synchronisierter Text und Sprachvarianten; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S4-18-N,S4-18,NEGATIVE,Liedtext ohne Rechte oder fehlerhaftes Timing wird gemeldet.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-19-P,S4-19,POSITIVE,Aus Melodie Audio-to-MIDI mit Konfidenzwerten und Texttranskript.,MIDI/Text plus Unsicherheitsbericht; echte Datei+Log+Exitcode+SHA256,NOT_RUN
+S4-19-N,S4-19,NEGATIVE,Polyphone unsichere Eingabe darf nicht als exakt transkribiert gelten.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN
+S4-20-P,S4-20,POSITIVE,Audio-QA erzeugt LUFS/Peak/Clipping/Format/Consent-Bericht.,"Messprotokoll, Stems, Audiodatei; echte Datei+Log+Exitcode+SHA256",NOT_RUN
+S4-20-N,S4-20,NEGATIVE,Bei Clipping/Rechteverstoß blockiert Release mit Grund.,Sicherer und erklärter Fehler; keine unautorisierte Änderung; Rohlog,NOT_RUN

@@ -245,6 +245,7 @@ public partial class MainWindow
                 },
             },
         };
+        drop.Children.Add(EngineExportRow(objName)); // Paket 01 S2-17: für Unity, Unreal, Godot, Web mit Rundlauf-Prüfung
         if (_last3dFile is { } last && File.Exists(last))
             drop.Children.Add(new TextBlock { Name = "3d-marked", Text = "Zuletzt gespeichert: " + Path.GetFileName(last), Foreground = Text, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
         var host = new Border { Name = "3d-drop", Child = drop, Background = Brushes.Transparent, MinHeight = 40 };
