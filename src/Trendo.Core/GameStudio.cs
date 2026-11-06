@@ -16,7 +16,8 @@ public static class GameStudio
 
     /// <summary>Kacheln des Level-Editors: # Boden/Wand, o Münze, E Gegner (läuft hin und her), ^ Stacheln, S Start, Z Ziel-Flagge, . frei;
     /// seit 04.11.2026 wie in GDevelop/Construct auch F Sprungfeder, C Speicherpunkt, K Schlüssel, D Tür (öffnet, wenn alle Schlüssel gesammelt sind).</summary>
-    public const string Tiles = "#.oE^SZFCKD";
+    /// <summary>Seit 06.11.2026 (Paket 01 S1-05): G Gegenstand (kommt ins Inventar), N sprechende Figur (Text, wünscht sich ggf. einen Gegenstand und belohnt).</summary>
+    public const string Tiles = "#.oE^SZFCKDGN";
     /// <summary>Hintergrund-Ebene (05.11.2026, wie die Ebenen in Godot-TileMaps/GDevelop): nur Deko, ohne Wirkung aufs Spiel –
     /// w Wolke, b Busch, t Baum, m Berg, g Gras, . frei.</summary>
     public const string DecoTiles = "wbtmg.";
@@ -30,7 +31,7 @@ public static class GameStudio
     public static readonly (string Id, string Label)[] Abilities = [("doppelsprung", "Doppelsprung"), ("sprint", "Sprint (Umschalt)")];
     /// <summary>Aufgabe mit Fortschritt, z. B. „Schatzsucher: Münzen 3/10“ bzw. „✓ Schatzsucher“.</summary>
     public static string QuestText(GameRule r, double value, bool done) => done ? $"✓ {r.Title}" : $"{r.Title}: {RuleWhens.FirstOrDefault(w => w.Id == r.When).Label ?? r.When} {Math.Min((int)value, r.N)}/{r.N}";
-    public static readonly (string Id, string Label)[] RuleWhens = [("muenzen", "Münzen gesammelt"), ("punkte", "Punkte"), ("gegner", "Gegner besiegt"), ("sekunden", "Sekunden gespielt")];
+    public static readonly (string Id, string Label)[] RuleWhens = [("muenzen", "Münzen gesammelt"), ("punkte", "Punkte"), ("gegner", "Gegner besiegt"), ("sekunden", "Sekunden gespielt"), ("gegenstaende", "Gegenstände gesammelt")];
     public static readonly (string Id, string Label)[] RuleDos = [("leben", "+1 Leben"), ("tueren", "Türen öffnen"), ("schneller", "Figur schneller"), ("punkte", "+10 Punkte"), ("sieg", "Gewonnen")];
 
     /// <summary>Regel als Satz, z. B. „Wenn Münzen gesammelt ≥ 5, dann +1 Leben“.</summary>
@@ -85,7 +86,12 @@ public static class GameStudio
         public bool Saves { get; init; } = true;
         /// <summary>Freigeschaltete Fähigkeiten (siehe <see cref="Abilities"/>).</summary>
         public List<string> Abilities { get; init; } = [];
+        /// <summary>Texte je Objekt (Vorsilbe ab Level 2 wie bei Props): „x,y:name“ (Gegenstand), „x,y:say“, „x,y:need“, „x,y:thanks“, „x,y:give“ (sprechende Figur).</summary>
+        public Dictionary<string, string> Texts { get; init; } = [];
     }
+
+    /// <summary>Schlüssel der Objekt-Texte.</summary>
+    public static readonly string[] TextKeys = ["name", "say", "need", "thanks", "give"];
 
     /// <summary>Ereignisse der Ton-Spur.</summary>
     public static readonly (string Id, string Label)[] SoundEvents = [("springen", "Springen"), ("muenze", "Münze"), ("treffer", "Treffer"), ("ziel", "Ziel"), ("musik", "Musik (Schleife)")];
@@ -110,10 +116,12 @@ public static class GameStudio
     public static GameSettings Validate(GameSettings s)
     {
         if (!Hex(s.Player) || !Hex(s.Accent) || !Hex(s.Background)) throw new ArgumentException("Farben bitte als # und sechs Zeichen, zum Beispiel #4FB3FF.");
-        if (s.Level.Any(r => r.Any(ch => !Tiles.Contains(ch)))) throw new ArgumentException("Im Level nur # (Boden), . (frei), o (Münze), E (Gegner), ^ (Stacheln), S (Start), Z (Ziel), F (Sprungfeder), C (Speicherpunkt), K (Schlüssel) und D (Tür).");
+        if (s.Level.Any(r => r.Any(ch => !Tiles.Contains(ch)))) throw new ArgumentException("Im Level nur # (Boden), . (frei), o (Münze), E (Gegner), ^ (Stacheln), S (Start), Z (Ziel), F (Sprungfeder), C (Speicherpunkt), K (Schlüssel), D (Tür), G (Gegenstand) und N (sprechende Figur).");
         if (s.Rules.Count > 20) throw new ArgumentException("Höchstens 20 Regeln.");
         if (s.Rules.FirstOrDefault(r => !RuleWhens.Any(w => w.Id == r.When) || !RuleDos.Any(x => x.Id == r.Do)) is { } bad) throw new ArgumentException($"Unbekannte Regel „{bad.When} → {bad.Do}“.");
         if (s.Abilities.FirstOrDefault(a => !Abilities.Any(x => x.Id == a)) is { } badAb) throw new ArgumentException($"Unbekannte Fähigkeit „{badAb}“.");
+        if (s.Texts.Count > 400) throw new ArgumentException("Höchstens 400 Objekt-Texte.");
+        if (s.Texts.FirstOrDefault(kv => !TextKeys.Contains(kv.Key[(kv.Key.LastIndexOf(':') + 1)..])) is { Key: { } badKey }) throw new ArgumentException($"Unbekannter Objekt-Text „{badKey}“.");
         if (s.Level.Length > 16 || s.Level.Any(r => r.Length > 200)) throw new ArgumentException("Level höchstens 16 Zeilen und 200 Spalten.");
         if (s.MoreLevels.Count > 19) throw new ArgumentException("Höchstens 20 Level.");
         for (var i = 0; i < s.MoreLevels.Count; i++)
@@ -126,7 +134,7 @@ public static class GameStudio
         if (s.Sounds.Keys.FirstOrDefault(k => !SoundEvents.Any(e => e.Id == k)) is { } badSound) throw new ArgumentException($"Unbekanntes Ton-Ereignis „{badSound}“.");
         if (s.Anims.Keys.FirstOrDefault(k => !Programs.PlatformSim.States.Any(x => x.Id == k)) is { } badState) throw new ArgumentException($"Unbekannter Zustand „{badState}“.");
         return s with { Speed = Math.Clamp(s.Speed, 1, 10), Lives = Math.Clamp(s.Lives, 1, 9), WinScore = Math.Clamp(s.WinScore, 0, 9999), TimeLimit = Math.Clamp(s.TimeLimit, 0, 3600),
-            Rules = [.. s.Rules.Select(r => r with { N = Math.Clamp(r.N, 0, 9999), Title = string.IsNullOrWhiteSpace(r.Title) ? null : r.Title.Trim().Length > 40 ? r.Title.Trim()[..40] : r.Title.Trim() })], Abilities = [.. s.Abilities.Distinct()],
+            Rules = [.. s.Rules.Select(r => r with { N = Math.Clamp(r.N, 0, 9999), Title = string.IsNullOrWhiteSpace(r.Title) ? null : r.Title.Trim().Length > 40 ? r.Title.Trim()[..40] : r.Title.Trim() })], Abilities = [.. s.Abilities.Distinct()], Texts = s.Texts.ToDictionary(kv => kv.Key, kv => kv.Value.Length > 200 ? kv.Value[..200] : kv.Value),
             Anims = s.Anims.ToDictionary(kv => kv.Key, kv => kv.Value with { Frames = Math.Clamp(kv.Value.Frames, 1, 32), Fps = Math.Clamp(kv.Value.Fps, 1, 30) }),
             Props = s.Props.Where(kv => kv.Key.EndsWith(":speed") || kv.Key.EndsWith(":value")).ToDictionary(kv => kv.Key, kv => kv.Key.EndsWith(":speed") ? Math.Clamp(kv.Value, 0.25, 4) : Math.Clamp(Math.Round(kv.Value), 1, 100)) };
     }
@@ -135,7 +143,7 @@ public static class GameStudio
     {
         var o = new { speed = s.Speed, lives = s.Lives, win = s.WinScore, player = s.Player, accent = s.Accent, bg = s.Background, sound = s.Sound,
                       level = s.Level, playerImage = s.PlayerImage, bgImage = s.BackgroundImage, props = s.Props, timeLimit = s.TimeLimit,
-                      rules = s.Rules.Select(r => r.Title is null ? (object)new { when = r.When, n = r.N, act = r.Do } : new { when = r.When, n = r.N, act = r.Do, title = r.Title }), abilities = s.Abilities, more = s.MoreLevels, decor = s.Decor, names = s.LevelNames,
+                      rules = s.Rules.Select(r => r.Title is null ? (object)new { when = r.When, n = r.N, act = r.Do } : new { when = r.When, n = r.N, act = r.Do, title = r.Title }), abilities = s.Abilities, texts = s.Texts, more = s.MoreLevels, decor = s.Decor, names = s.LevelNames,
                       anims = s.Anims.ToDictionary(kv => kv.Key, kv => new { img = kv.Value.Image, frames = kv.Value.Frames, fps = kv.Value.Fps }), sounds = s.Sounds, saves = s.Saves };
         return "const CFG=" + JsonSerializer.Serialize(o) + ";\n";
     }
@@ -236,7 +244,10 @@ step();
 """,
         ["plattform"] = """
 const T=32,LV=[(CFG.level&&CFG.level.length?CFG.level:['S.....Z','#######']),...(CFG.more||[]).filter(l=>l&&l.length)];let li=0,L=LV[0],R=L.length,C=Math.max(...L.map(r=>r.length)),DC=(CFG.decor&&CFG.decor[0])||[];
-let G=[],open=false,kg=0,KT=0,cg=0,fk=0,fr=0,lf=0,boost=0,fired=[],note='',noteT=0,tu=false,face=1,air=0;const AB=CFG.abilities||[];
+let G=[],open=false,kg=0,KT=0,cg=0,fk=0,fr=0,lf=0,boost=0,fired=[],note='',noteT=0,tu=false,face=1,air=0,inv=[],given={},gc=0;const AB=CFG.abilities||[];
+function tx(x,y,k,d){const pre=li===0?'':(li+1)+':';const v=CFG.texts&&CFG.texts[pre+x+','+y+':'+k];return v||d;}
+function doAct(a){if(a==='leben'){lives++;say('+1 Leben');}if(a==='tueren'){open=true;say('Türen offen');}if(a==='schneller'){boost=2;say('Schneller!');}if(a==='punkte'){p+=10;say('+10 Punkte');}if(a==='sieg'){over=true;say('Gewonnen!');}}
+function rv(r){return r.when==='muenzen'?cg:r.when==='punkte'?p:r.when==='gegner'?fk:r.when==='sekunden'?fr/60:r.when==='gegenstaende'?gc:0;}
 const SND={};Object.keys(CFG.sounds||{}).forEach(k=>{try{const a=new Audio(CFG.sounds[k]);if(k==='musik'){a.loop=true;a.volume=.5;}SND[k]=a;}catch(e){}});
 function snd(ev,f){const a=SND[ev];if(a){try{a.currentTime=0;a.play();}catch(e){}}else beep(f);}
 let music=false;const AI={};Object.keys(CFG.anims||{}).forEach(k=>{const a=CFG.anims[k];if(a&&a.img){const i=new Image();i.src=a.img;AI[k]={i:i,f:a.frames||1,fps:a.fps||8};}});
@@ -247,15 +258,15 @@ function pr(x,y,key,d){const pre=li===0?'':(li+1)+':';return (CFG.props&&CFG.pro
 function load(i){li=i;L=LV[i];R=L.length;C=Math.max(...L.map(r=>r.length));DC=(CFG.decor&&CFG.decor[i])||[];G=L.map(r=>[...r]);open=false;kg=0;lf=0;KT=L.join('').split('K').length-1;coins=[];foes=[];
 L.forEach((r,y)=>[...r].forEach((ch,x)=>{if(ch==='S'){S0x=x;S0y=y;}if(ch==='o')coins.push({x:x*T+16,y:y*T+16,a:1,v:pr(x,y,'value',1)});if(ch==='E')foes.push({x:x*T+4,y:y*T+6,d:1,a:1,s:pr(x,y,'speed',1)});}));sx=S0x;sy=S0y;
 pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;}
-function reset(full){if(full){p=0;cg=0;fk=0;fr=0;boost=0;fired=[];tu=false;load(0);return;}pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;}
+function reset(full){if(full){p=0;cg=0;fk=0;fr=0;boost=0;fired=[];tu=false;inv=[];given={};gc=0;load(0);return;}pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;}
 reset(true);
 /*SPIELSTAND*/const SV0=readSave();if(SV0)resume(SV0);
 addEventListener('keydown',e=>{k[e.code]=1;if(e.code==='KeyN'){dropSave();lives=CFG.lives;over=false;reset(true);say('Neues Spiel');}if(!music&&SND.musik){music=true;try{SND.musik.play();}catch(x){}}if(e.code==='Space'){e.preventDefault();if(over){lives=CFG.lives;over=false;reset(true);}else if(pl.on){pl.vy=-11.5;snd('springen',660);}else if(AB.includes('doppelsprung')&&air>0){air--;pl.vy=-10.5;snd('springen',760);}}});addEventListener('keyup',e=>k[e.code]=0);
 function hit(){lives--;snd('treffer',160);flash=20;if(lives<=0){over=true;dropSave();}else reset(false);}
 function say(t){note=t;noteT=120;}
 function goal(){p+=10;snd('ziel',990);if(li+1<LV.length){load(li+1);saveGame();say((CFG.names&&CFG.names[li])||('Level '+(li+1)+' von '+LV.length));}else{over=true;dropSave();}}
-function rules(){(CFG.rules||[]).forEach((r,i)=>{if(fired[i])return;const v=r.when==='muenzen'?cg:r.when==='punkte'?p:r.when==='gegner'?fk:r.when==='sekunden'?fr/60:0;if(v<r.n)return;fired[i]=1;
-if(r.act==='leben'){lives++;say('+1 Leben');}if(r.act==='tueren'){open=true;say('Türen offen');}if(r.act==='schneller'){boost=2;say('Schneller!');}if(r.act==='punkte'){p+=10;say('+10 Punkte');}if(r.act==='sieg'){over=true;say('Gewonnen!');}beep(990);});}
+function rules(){(CFG.rules||[]).forEach((r,i)=>{if(fired[i])return;const v=rv(r);if(v<r.n)return;fired[i]=1;
+doAct(r.act);beep(990);});}
 function move(o,dx,dy){o.x+=dx;let l=Math.floor(o.x/T),r=Math.floor((o.x+o.w-1)/T),t=Math.floor(o.y/T),b=Math.floor((o.y+o.h-1)/T);
 for(let cy=t;cy<=b;cy++)for(let cx=l;cx<=r;cx++)if(solid(cx,cy)){if(dx>0)o.x=cx*T-o.w;if(dx<0)o.x=(cx+1)*T;}
 o.y+=dy;o.on=false;l=Math.floor(o.x/T);r=Math.floor((o.x+o.w-1)/T);t=Math.floor(o.y/T);b=Math.floor((o.y+o.h-1)/T);
@@ -271,7 +282,7 @@ function step(){if(!over){fr++;lf++;const sp=(2.2+CFG.speed*.35+boost)*(AB.inclu
 if(pl.on&&at(Math.floor((pl.x+12)/T),Math.floor((pl.y+pl.h+1)/T))==='F'){pl.vy=-17;pl.on=false;beep(720);}
 if(pl.y>R*T+60)hit();const cx=Math.floor((pl.x+12)/T),cy=Math.floor((pl.y+15)/T),cb=Math.floor((pl.y+29)/T);
 if(at(cx,cb)==='^'||at(cx,cy)==='^')hit();else if(at(cx,cy)==='Z'||at(cx,cb)==='Z')goal();else{
-[cy,cb].forEach(yy=>{if(at(cx,yy)==='K'){G[yy][cx]='.';kg++;beep(880);if(kg>=KT){open=true;say('Alle Schlüssel – Türen offen');}}if(at(cx,yy)==='C'&&(sx!==cx||sy!==yy)){sx=cx;sy=yy;saveGame();say('Gespeichert');}});
+[cy,cb].forEach(yy=>{if(at(cx,yy)==='K'){G[yy][cx]='.';kg++;beep(880);if(kg>=KT){open=true;say('Alle Schlüssel – Türen offen');}}if(at(cx,yy)==='G'){G[yy][cx]='.';const n=tx(cx,yy,'name','Kristall');inv.push(n);gc++;beep(1040);say(n+' eingesammelt');}if(at(cx,yy)==='N'){const key=li+':'+cx+','+yy,need=tx(cx,yy,'need','');if(need&&!given[key]&&inv.includes(need)){inv.splice(inv.indexOf(need),1);given[key]=1;doAct(tx(cx,yy,'give','punkte'));say(tx(cx,yy,'thanks','Danke!'));}else if(noteT<30)say(given[key]?tx(cx,yy,'thanks','Danke!'):tx(cx,yy,'say','Hallo!'));}if(at(cx,yy)==='C'&&(sx!==cx||sy!==yy)){sx=cx;sy=yy;saveGame();say('Gespeichert');}});
 coins.forEach(q=>{if(q.a&&Math.abs(q.x-(pl.x+12))<18&&Math.abs(q.y-(pl.y+15))<20){q.a=0;cg++;p+=q.v||1;snd('muenze',880);if(won(p))over=true;}});
 foes.forEach(f=>{if(!f.a)return;const nx=f.x+f.d*1.2*(f.s||1),cxx=Math.floor((f.d>0?nx+24:nx)/T),cyy=Math.floor((f.y+20)/T);if(solid(cxx,cyy)||!solid(cxx,cyy+1))f.d*=-1;else f.x=nx;
 if(Math.abs(f.x-pl.x)<24&&Math.abs(f.y-pl.y)<26){if(pl.vy>1&&pl.y<f.y-8){f.a=0;fk++;pl.vy=-8;p+=2;beep(520);}else hit();}});
@@ -286,14 +297,14 @@ if(ch==='Z'){x.fillStyle='#EEE';x.fillRect(xx*T+6,y*T-T,4,2*T);x.fillStyle=CFG.a
 if(ch==='F'){x.fillStyle='#64748B';x.fillRect(xx*T,y*T+T-8,T,8);x.fillStyle='#22C55E';x.fillRect(xx*T+3,y*T+T-16,T-6,6);}
 if(ch==='C'){x.fillStyle=(sx===xx&&sy===y)?'#22C55E':'#94A3B8';x.fillRect(xx*T+13,y*T+4,4,T-4);x.fillRect(xx*T+17,y*T+4,11,8);}
 if(ch==='K'){x.fillStyle=CFG.accent;x.beginPath();x.arc(xx*T+11,y*T+16,6,0,7);x.fill();x.fillRect(xx*T+15,y*T+14,13,4);}
-if(ch==='D'&&!open){x.fillStyle='#7C4A1E';x.fillRect(xx*T+2,y*T,T-4,T);x.fillStyle=CFG.accent;x.fillRect(xx*T+T-10,y*T+15,4,4);}}
+if(ch==='G'){x.fillStyle='#A855F7';x.beginPath();x.moveTo(xx*T+16,y*T+6);x.lineTo(xx*T+26,y*T+16);x.lineTo(xx*T+16,y*T+28);x.lineTo(xx*T+6,y*T+16);x.fill();}if(ch==='N'){x.fillStyle='#14B8A6';x.fillRect(xx*T+9,y*T+14,14,18);x.beginPath();x.arc(xx*T+16,y*T+9,6,0,7);x.fill();}if(ch==='D'&&!open){x.fillStyle='#7C4A1E';x.fillRect(xx*T+2,y*T,T-4,T);x.fillStyle=CFG.accent;x.fillRect(xx*T+T-10,y*T+15,4,4);}}
 x.fillStyle=CFG.accent;coins.forEach(q=>{if(q.a){x.beginPath();x.arc(q.x,q.y,7,0,7);x.fill();}});
 x.fillStyle='#E0475B';foes.forEach(f=>{if(f.a){x.fillRect(f.x,f.y,24,26);x.fillStyle='#FFF';x.fillRect(f.x+(f.d>0?14:4),f.y+6,6,6);x.fillStyle='#E0475B';}});
 if(!(flash>0&&flash--%4<2))drawMe();x.restore();
 x.font='14px system-ui';x.fillStyle='#FFF';if(LV.length>1)x.fillText('Level '+(li+1)+'/'+LV.length,10,c.height-10);
 if(CFG.timeLimit>0)x.fillText('Zeit '+Math.max(0,Math.ceil(CFG.timeLimit-lf/60))+' s',c.width-90,20);
-if(KT>0){x.fillStyle=CFG.accent;x.fillText('Schlüssel '+kg+'/'+KT,10,20);}
-(CFG.rules||[]).forEach((r,i)=>{if(!r.title)return;const v=r.when==='muenzen'?cg:r.when==='punkte'?p:r.when==='gegner'?fk:r.when==='sekunden'?fr/60:0;x.fillStyle=fired[i]?'#22C55E':'#FFF';x.fillText(fired[i]?'✓ '+r.title:r.title+': '+Math.min(Math.floor(v),r.n)+'/'+r.n,10,40+i*18);});
+if(KT>0){x.fillStyle=CFG.accent;x.fillText('Schlüssel '+kg+'/'+KT,10,20);}if(inv.length){x.fillStyle='#E9D5FF';x.fillText('Inventar: '+inv.join(', '),10,c.height-28);}
+(CFG.rules||[]).forEach((r,i)=>{if(!r.title)return;const v=rv(r);x.fillStyle=fired[i]?'#22C55E':'#FFF';x.fillText(fired[i]?'✓ '+r.title:r.title+': '+Math.min(Math.floor(v),r.n)+'/'+r.n,10,40+i*18);});
 if(noteT>0){noteT--;x.fillStyle='rgba(0,0,0,.6)';x.fillRect(c.width/2-110,40,220,28);x.fillStyle='#FFF';x.font='15px system-ui';x.textAlign='center';x.fillText(note,c.width/2,59);x.textAlign='left';}
 status(p);requestAnimationFrame(step);}
 step();

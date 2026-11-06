@@ -130,7 +130,7 @@ public static class GameDesign
         var scale = ScaleOf(S(d["scale"]));
         if (scale.Engine == "browser" && S(d["browser"]).Length == 0) w.Add("Für ein Browser-Spiel bitte eine Spielart wählen (Hüpfspiel, Mauerbrecher, Schlange oder Plattformer) – oder Unreal-Umfang wählen.");
         if (scale.Id == "aaa" && Objs(d, "world").Count() < 3) w.Add("AAA+: Plane mindestens drei Regionen – die Welt trägt das Spiel.");
-        if (d["level"] is JsonArray lv && lv.Select(x => S(x)).Any(r => r.Any(ch => !GameStudio.Tiles.Contains(ch)))) w.Add("Im Level nur # . o E ^ S Z F C K D.");
+        if (d["level"] is JsonArray lv && lv.Select(x => S(x)).Any(r => r.Any(ch => !GameStudio.Tiles.Contains(ch)))) w.Add("Im Level nur # . o E ^ S Z F C K D G N.");
         if (S(d["browser"]) == "plattform") w.AddRange(GameStudio.CheckPlatform((d["level"] as JsonArray ?? []).Select(S).ToList()));
         return w;
     }
@@ -153,6 +153,9 @@ public static class GameDesign
     }
 
     /// <summary>Ereignis-Regeln aus dem Projekt („rules“: [{when, n, do}]).</summary>
+    /// <summary>Objekt-Texte (Gegenstand, sprechende Figur) aus dem Dokument („texts“).</summary>
+    public static Dictionary<string, string> Texts(JsonObject d) => (d["texts"] as JsonObject ?? []).Where(kv => S(kv.Value).Length > 0).ToDictionary(kv => kv.Key, kv => S(kv.Value));
+
     /// <summary>Fähigkeiten der Spielfigur aus dem Dokument („abilities“).</summary>
     public static List<string> Abilities(JsonObject d) => [.. (d["abilities"] as JsonArray ?? []).Select(S).Where(a => GameStudio.Abilities.Any(x => x.Id == a)).Distinct()];
 
@@ -174,7 +177,7 @@ public static class GameDesign
         var anims = (d["anims"] as JsonObject ?? []).Where(kv => kv.Value is JsonObject o && S(o["file"]).Length > 0)
             .ToDictionary(kv => kv.Key, kv => (File: S(kv.Value!["file"]), Frames: (int)(N(kv.Value!["frames"]) ?? 1), Fps: (int)(N(kv.Value!["fps"]) ?? 8)));
         var settings = GameStudio.Validate(new GameStudio.GameSettings { Level = level, Props = props, Speed = (int)(N(d["speed"]) ?? 5), Lives = (int)(N(d["lives"]) ?? 3),
-            TimeLimit = (int)(N(d["timeLimit"]) ?? 0), Rules = Rules(d), Saves = d["saves"]?.GetValueKind() != System.Text.Json.JsonValueKind.False, Abilities = Abilities(d),
+            TimeLimit = (int)(N(d["timeLimit"]) ?? 0), Rules = Rules(d), Saves = d["saves"]?.GetValueKind() != System.Text.Json.JsonValueKind.False, Abilities = Abilities(d), Texts = Texts(d),
             MoreLevels = [.. more.Select(o => Lines(o["rows"]))], Decor = [Lines(d["decor"]), .. more.Select(o => Lines(o["decor"]))],
             LevelNames = [S(d["levelName"]) is { Length: > 0 } n0 ? n0 : "Level 1", .. more.Select((o, i) => S(o["name"]) is { Length: > 0 } n ? n : $"Level {i + 2}")],
             Anims = anims.ToDictionary(kv => kv.Key, kv => new GameStudio.Anim("figur-" + kv.Key + Path.GetExtension(kv.Value.File), kv.Value.Frames, kv.Value.Fps)) });

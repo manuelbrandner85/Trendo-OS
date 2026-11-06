@@ -20,6 +20,11 @@ public sealed class PlatformSim
     string[] _rows = []; char[][] _grid = [];
     double _sx, _sy; double _boost;
     readonly IReadOnlyList<string> _abilities = []; bool _jumpPrev; int _airJumps;
+    readonly IReadOnlyDictionary<string, string> _texts = new Dictionary<string, string>(); readonly HashSet<string> _given = [];
+    /// <summary>Inventar: eingesammelte Gegenstände (Paket 01 S1-05).</summary>
+    public List<string> Inventory { get; } = [];
+    public int ItemsCollected { get; private set; }
+    string Text(int x, int y, string k, string def) => _texts.TryGetValue($"{(LevelIndex == 0 ? "" : $"{LevelIndex + 1}:")}{x},{y}:{k}", out var v) && v.Length > 0 ? v : def;
     public bool Has(string ability) => _abilities.Contains(ability);
     /// <summary>Aufgaben (Regeln mit Titel) mit Fortschritt – wie das Aufgabenbuch in Spielen.</summary>
     public IEnumerable<(GameStudio.GameRule Rule, double Value, bool Done)> Quests => _rules.Select((r, i) => (r, RuleValue(r), _fired[i])).Where(q => q.r.Title is not null);
@@ -56,9 +61,9 @@ public sealed class PlatformSim
     public string State => Flash > 0 ? "treffen" : !Player.On ? (Player.Vy < 0 ? "springen" : "fallen") : Math.Abs(Player.Vx) > 0.1 ? "laufen" : "stehen";
 
     public PlatformSim(IReadOnlyList<string> level, int speed = 5, int lives = 3, IReadOnlyDictionary<string, double>? props = null, int timeLimit = 0,
-        IReadOnlyList<GameStudio.GameRule>? rules = null, IReadOnlyList<IReadOnlyList<string>>? moreLevels = null, IReadOnlyList<string>? abilities = null)
+        IReadOnlyList<GameStudio.GameRule>? rules = null, IReadOnlyList<IReadOnlyList<string>>? moreLevels = null, IReadOnlyList<string>? abilities = null, IReadOnlyDictionary<string, string>? texts = null)
     {
-        _abilities = abilities ?? [];
+        _abilities = abilities ?? []; _texts = texts ?? new Dictionary<string, string>();
         var first = level.Count > 0 ? level.ToArray() : ["S.....Z", "#######"];
         _levels = [first, .. (moreLevels ?? []).Where(l => l.Count > 0).Select(l => l.ToArray())];
         _props = props; _timeLimit = Math.Clamp(timeLimit, 0, 3600);
@@ -105,7 +110,7 @@ public sealed class PlatformSim
     void Hit() { Lives--; Flash = 20; if (!Lost) ResetPlayer(); }
 
     /// <summary>Ereignis-Regeln prüfen: jede feuert höchstens einmal.</summary>
-    double RuleValue(GameStudio.GameRule r) => r.When switch { "muenzen" => Coins.Count(c => c.Taken), "punkte" => Score, "gegner" => FoesDefeated, "sekunden" => Frames / 60.0, _ => 0 };
+    double RuleValue(GameStudio.GameRule r) => r.When switch { "muenzen" => Coins.Count(c => c.Taken), "punkte" => Score, "gegner" => FoesDefeated, "sekunden" => Frames / 60.0, "gegenstaende" => ItemsCollected, _ => 0 };
 
     void Rules()
     {
@@ -116,14 +121,20 @@ public sealed class PlatformSim
             var v = RuleValue(r);
             if (v < r.N) continue;
             _fired[i] = true; Note = GameStudio.RuleText(r);
-            switch (r.Do)
-            {
-                case "leben": Lives++; break;
-                case "tueren": DoorsOpen = true; break;
-                case "schneller": _boost = 2; break;
-                case "punkte": Score += 10; break;
-                case "sieg": Won = true; break;
-            }
+            Apply(r.Do);
+        }
+    }
+
+    /// <summary>Belohnung bzw. Wirkung (Regel oder sprechende Figur).</summary>
+    void Apply(string what)
+    {
+        switch (what)
+        {
+            case "leben": Lives++; break;
+            case "tueren": DoorsOpen = true; break;
+            case "schneller": _boost = 2; break;
+            case "punkte": Score += 10; break;
+            case "sieg": Won = true; break;
         }
     }
 
@@ -157,6 +168,13 @@ public sealed class PlatformSim
         foreach (var yy in new[] { cy, cb })
         {
             if (At(cx, yy) == 'K') { _grid[yy][cx] = '.'; Keys++; if (Keys >= KeysTotal) { DoorsOpen = true; Note = "Alle Schlüssel – Türen offen"; } }
+            if (At(cx, yy) == 'G') { _grid[yy][cx] = '.'; var n = Text(cx, yy, "name", "Kristall"); Inventory.Add(n); ItemsCollected++; Note = n + " eingesammelt"; }
+            if (At(cx, yy) == 'N')
+            {
+                var key = $"{LevelIndex}:{cx},{yy}"; var need = Text(cx, yy, "need", "");
+                if (need.Length > 0 && !_given.Contains(key) && Inventory.Remove(need)) { _given.Add(key); Apply(Text(cx, yy, "give", "punkte")); Note = Text(cx, yy, "thanks", "Danke!"); }
+                else Note = _given.Contains(key) ? Text(cx, yy, "thanks", "Danke!") : Text(cx, yy, "say", "Hallo!");
+            }
             if (At(cx, yy) == 'C' && ((int)_sx != cx || (int)_sy != yy)) { _sx = cx; _sy = yy; Note = "Speicherpunkt"; }
         }
         foreach (var q in Coins) if (!q.Taken && Math.Abs(q.X - (pl.X + 12)) < 18 && Math.Abs(q.Y - (pl.Y + 15)) < 20) { q.Taken = true; Score += q.Value; }
@@ -177,7 +195,7 @@ public sealed class PlatformSim
 
     /// <summary>Nochmal von vorn (alle Level, Münzen, Gegner, Schlüssel und Türen zurück).</summary>
     /// <summary>Spielstand des Probespiels (Paket 01 S1-15) – gleiches Format wie im gebauten Spiel.</summary>
-    public GameSave Snapshot() => new() { Level = LevelIndex, Score = Score, Lives = Lives, CheckX = (int)_sx, CheckY = (int)_sy, Defeated = FoesDefeated, Coins = Coins.Count(c => c.Taken), PlaySeconds = Frames / 60 };
+    public GameSave Snapshot() => new() { Level = LevelIndex, Score = Score, Lives = Lives, CheckX = (int)_sx, CheckY = (int)_sy, Defeated = FoesDefeated, Coins = Coins.Count(c => c.Taken), PlaySeconds = Frames / 60, Flags = Inventory.Count > 0 ? new() { ["inventar"] = string.Join('|', Inventory) } : [] };
 
     /// <summary>Spielstand fortsetzen: Level laden, am gültigen Speicherpunkt beginnen, Punkte und Leben übernehmen.</summary>
     public void Restore(GameSave s)
@@ -186,7 +204,8 @@ public sealed class PlatformSim
         Load(s.Level);
         if (GameSaves.CheckpointValid(s, _levels[s.Level])) { _sx = s.CheckX; _sy = s.CheckY; ResetPlayer(); }
         Score = s.Score; Lives = Math.Max(1, s.Lives); FoesDefeated = s.Defeated; Won = false; Note = "Spielstand geladen";
+        Inventory.Clear(); if (s.Flags.TryGetValue("inventar", out var inv)) Inventory.AddRange(inv.Split('|', StringSplitOptions.RemoveEmptyEntries));
     }
 
-    public PlatformSim Restart() => new(_levels[0], _speed, _startLives, _props, _timeLimit, _rules, [.. _levels.Skip(1)], _abilities);
+    public PlatformSim Restart() => new(_levels[0], _speed, _startLives, _props, _timeLimit, _rules, [.. _levels.Skip(1)], _abilities, _texts);
 }

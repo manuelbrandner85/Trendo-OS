@@ -79,13 +79,13 @@ public static class GameSaves
     /// <summary>JavaScript fürs Browser-Spiel (gleiches Format, Speicherort localStorage je Spiel).</summary>
     public const string Js = """
 const SK='trendo-spielstand:'+document.title;
-function saveGame(){if(CFG.saves===false)return;try{localStorage.setItem(SK,JSON.stringify({version:1,level:li,score:p,lives:lives,checkX:sx,checkY:sy,coins:cg,defeated:fk,playSeconds:Math.round(fr/60),flags:{},savedUtc:new Date().toISOString()}));}catch(e){}}
+function saveGame(){if(CFG.saves===false)return;try{localStorage.setItem(SK,JSON.stringify({version:1,level:li,score:p,lives:lives,checkX:sx,checkY:sy,coins:cg,defeated:fk,playSeconds:Math.round(fr/60),flags:{inventar:inv.join('|')},savedUtc:new Date().toISOString()}));}catch(e){}}
 function dropSave(){try{localStorage.removeItem(SK);}catch(e){}}
 function readSave(){if(CFG.saves===false)return null;try{let s=JSON.parse(localStorage.getItem(SK)||'null');if(!s||typeof s!=='object')return null;const v=s.version!==undefined?s.version:(s.v||0);if(v>1)return null;
 if(v===0){s={level:s.level,score:s.score,lives:s.lives,checkX:s.cx,checkY:s.cy,coins:s.coins,defeated:s.defeated,playSeconds:s.time};}
-const n=x=>Number.isFinite(x)?Math.floor(x):0;s={level:n(s.level),score:Math.max(0,n(s.score)),lives:Math.max(1,Math.min(99,n(s.lives)||1)),checkX:Number.isFinite(s.checkX)?s.checkX:-1,checkY:Number.isFinite(s.checkY)?s.checkY:-1,coins:Math.max(0,n(s.coins)),defeated:Math.max(0,n(s.defeated)),playSeconds:Math.max(0,n(s.playSeconds))};
+const n=x=>Number.isFinite(x)?Math.floor(x):0;s={level:n(s.level),score:Math.max(0,n(s.score)),lives:Math.max(1,Math.min(99,n(s.lives)||1)),checkX:Number.isFinite(s.checkX)?s.checkX:-1,checkY:Number.isFinite(s.checkY)?s.checkY:-1,coins:Math.max(0,n(s.coins)),defeated:Math.max(0,n(s.defeated)),playSeconds:Math.max(0,n(s.playSeconds)),flags:(s.flags&&typeof s.flags==='object')?s.flags:{}};
 if(s.level<0||s.level>=LV.length)return null;return s;}catch(e){return null;}}
-function resume(s){load(s.level);const r=LV[s.level];if(s.checkY>=0&&s.checkY<r.length&&'CS'.includes((r[s.checkY]||'')[s.checkX]||'')){sx=s.checkX;sy=s.checkY;}reset(false);p=s.score;lives=s.lives;cg=s.coins;fk=s.defeated;fr=s.playSeconds*60;say('Spielstand geladen – N: neu beginnen');}
+function resume(s){load(s.level);const r=LV[s.level];if(s.checkY>=0&&s.checkY<r.length&&'CS'.includes((r[s.checkY]||'')[s.checkX]||'')){sx=s.checkX;sy=s.checkY;}reset(false);p=s.score;lives=s.lives;cg=s.coins;fk=s.defeated;fr=s.playSeconds*60;inv=String(s.flags.inventar||'').split('|').filter(Boolean);say('Spielstand geladen – N: neu beginnen');}
 
 """;
 }
