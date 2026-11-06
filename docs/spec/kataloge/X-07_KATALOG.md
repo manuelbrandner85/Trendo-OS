@@ -16,5 +16,7 @@ Funktionen nach den Vorbildern (Openverse, Wikimedia Commons, Unsplash, Pexels, 
 | FM-09 | Schriften suchen und laden (offene Lizenzen) | Google Fonts | umgesetzt | MediaLibraryPlusTests |
 | FM-10 | 3D-Modelle, Texturen, Himmel | Poly Haven, ambientCG | umgesetzt | AssetLibraryTests |
 | FM-11 | Themen-Kacheln als Startseite | Unsplash | umgesetzt | MediaBrowser_Ui |
-| FM-12 | Ähnliche Bilder | Openverse | offen | – |
-| FM-13 | Merklisten | Unsplash Collections | offen | – |
+| FM-12 | Ähnliche Bilder und Klänge (Openverse „related“, Commons über Stichworte) | Openverse | umgesetzt | MediaPro_Ui, MediaCollectionsTests |
+| FM-13 | Merklisten je Projekt mit Lizenzprüfung, Namensnennungen, alle laden | Unsplash Collections | umgesetzt | MediaPro_Ui, MediaCollectionsTests |
+| FM-14 | Schriftvorschau mit eigenem Text und Größe | Google Fonts | umgesetzt | MediaPro_Ui |
+| FM-15 | Claude als Rechercheur: sucht, prüft Lizenzen, merkt, Namensnennung automatisch | – | umgesetzt | MediaPro_Ui |

@@ -88,6 +88,7 @@ public partial class MainWindow
         _fontQuery = query;
         if (!MediaOnline) throw new InvalidOperationException("Offline – die Suche braucht Internet.");
         FontHits = await Fonts.Search(query, _fontCat);
+        _ = FontPreviewLoad(FontHits); // Profi 29: Vorschau mit eigenem Text
         return FontHits.Count == 0 ? "Keine Schrift gefunden – anderen Namen oder „Alle Arten“ versuchen." : $"{FontHits.Count} Schriften";
     });
 
@@ -114,14 +115,15 @@ public partial class MainWindow
         var cat = new ComboBox { Name = "mb-font-cat", ItemsSource = FreeFonts.Categories.Select(c => c.Label).ToList(), SelectedIndex = Math.Max(0, Array.FindIndex(FreeFonts.Categories, c => c.Id == _fontCat)), MinWidth = 190 };
         cat.SelectionChanged += (_, _) => _fontCat = FreeFonts.Categories[Math.Max(0, cat.SelectedIndex)].Id;
         var search = Act("mb-font-search", _mbBusy ? "Sucht …" : "Suchen", () => _ = FontSearch(q.Text ?? ""), true); search.IsEnabled = !_mbBusy;
-        var sp = new StackPanel { Name = "mb-fonts", Spacing = 6, Children = { new WrapPanel { Children = { q, new Border { Width = 6 }, cat, new Border { Width = 6 }, search } } } };
+        var sp = new StackPanel { Name = "mb-fonts", Spacing = 6, Children = { new WrapPanel { Children = { q, new Border { Width = 6 }, cat, new Border { Width = 6 }, search } }, FontSampleBar() } };
         if (FontHits.Count == 0) sp.Children.Add(P("Freie Schriften wie bei Google Fonts – alle mit offener Lizenz (SIL OFL, Apache), auch für Geld nutzbar. Geladen wird als TTF mit Lizenzdatei.", Muted, 12));
         var i = 0;
         foreach (var f in FontHits.Take(60))
         {
             var ff = f;
+            var idx = i;
             sp.Children.Add(Card(Row(new StackPanel { Children = { new TextBlock { Text = f.Family, Foreground = Text, FontSize = 14, FontWeight = FontWeight.SemiBold },
-                P($"{f.Kategorie} · {f.License} · {f.Weights.Length} Stärken{(f.Variable ? " · variabel" : "")}", null, 10.5) } }, Act($"mb-font-get-{i++}", "Laden", () => _ = FontGet(ff)))));
+                P($"{f.Kategorie} · {f.License} · {f.Weights.Length} Stärken{(f.Variable ? " · variabel" : "")}", null, 10.5), FontSample(f, idx) } }, Act($"mb-font-get-{i++}", "Laden", () => _ = FontGet(ff)))));
         }
         sp.Children.Add(Act("mb-font-folder", "Schriften-Ordner öffnen", () => { var d = Path.Combine(AssetFolder, "Medien", "Schriften"); Directory.CreateDirectory(d); Launch(d); }));
         return sp;
@@ -130,14 +132,14 @@ public partial class MainWindow
     private Control AssetView()
     {
         var tabs = new WrapPanel { Name = "mb-tabs" };
-        foreach (var (k, l) in new[] { ("bilder", "Bilder"), ("klaenge", "Klänge"), ("schriften", "Schriften"), ("3d", "3D & Texturen"), ("bibliothek", "Meine Bibliothek") })
+        foreach (var (k, l) in new[] { ("bilder", "Bilder"), ("klaenge", "Klänge"), ("schriften", "Schriften"), ("3d", "3D & Texturen"), ("merklisten", "☆ Merklisten"), ("bibliothek", "Meine Bibliothek") })
         {
             var b = new Button { Name = "mb-tab-" + k, Content = l, Padding = new Thickness(14, 5), Margin = new Thickness(0, 0, 6, 0), CornerRadius = new CornerRadius(14), Foreground = Text,
                 Background = MediaTab == k ? Accent : Brushes.Transparent, BorderBrush = Edge, BorderThickness = new Thickness(1) };
             b.Click += (_, _) => { if (MediaTab != k && k is "bilder" or "klaenge") { MediaHits = []; MediaSel = -1; _mbFormat = ""; } MediaTab = k; _mbMsg = ""; Show(MB); };
             tabs.Children.Add(b);
         }
-        Control body = MediaTab switch { "3d" => AssetPolyHaven(), "bibliothek" => MediaLibraryView(), "schriften" => FontsView(), _ => MediaBrowse() };
+        Control body = MediaTab switch { "3d" => AssetPolyHaven(), "bibliothek" => MediaLibraryView(), "merklisten" => MediaCollectionsView(), "schriften" => FontsView(), _ => MediaBrowse() };
         var sp = new StackPanel { Spacing = 8, Children = { P("Freie Bilder, Klänge, Modelle und Texturen. Alles hier darfst du kostenlos nutzen, auch für Geld – bei manchen musst du den Urheber nennen, das steht immer dabei."), tabs } };
         if (_mbMsg.Length > 0) sp.Children.Add(new TextBlock { Name = "mb-msg", Text = _mbMsg, Foreground = _mbMsg.StartsWith('⚠') ? Brush.Parse("#F97316") : GoldText(), FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap });
         sp.Children.Add(body);
@@ -234,6 +236,7 @@ public partial class MainWindow
             acts.Children.Add(get); acts.Children.Add(new Border { Width = 6 });
             acts.Children.Add(Act("mb-page", "Auf der Quelle ansehen", () => Launch(h.PageUrl)));
             right.Children.Add(acts);
+            right.Children.Add(MediaHitTools(h)); // Profi 29: ähnliche suchen, merken
             right.Children.Add(P("Quelle: " + h.Provider, Muted, 11));
             var cf = new ComboBox { Name = "mb-credit-fmt", ItemsSource = MediaLibrary.CreditFormats.Select(x => x.Label).ToList(), SelectedIndex = Math.Max(0, Array.FindIndex(MediaLibrary.CreditFormats, x => x.Id == _mbCreditFmt)), MinWidth = 140 };
             cf.SelectionChanged += (_, _) => { var id = MediaLibrary.CreditFormats[Math.Max(0, cf.SelectedIndex)].Id; if (id != _mbCreditFmt) { _mbCreditFmt = id; Show(MB); } };

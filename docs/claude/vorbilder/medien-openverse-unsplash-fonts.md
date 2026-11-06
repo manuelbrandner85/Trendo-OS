@@ -18,9 +18,10 @@
 - ✓ Geladenes Bild direkt in der Bildbearbeitung, Klang direkt im Audio-Editor öffnen (Adobe Stock in Photoshop)
 - ✓ Schriften wie Google Fonts: Suche nach Name und Art, nur offene Lizenzen (OFL, Apache), Laden als TTF normal und fett mit Lizenzdatei
 - ✓ 3D-Modelle, Texturen und Himmel von Poly Haven und ambientCG
-- ◐ Schriftvorschau mit eigenem Mustertext – Schrift wird erst nach dem Laden sichtbar
-- ✗ Ähnliche Bilder (Openverse „related“) – nächster Schritt
-- ✗ Sammlungen/Merklisten (Unsplash Collections)
+- ✓ Schriftvorschau mit eigenem Probetext und Größe (06.11.2026) – eine Stärke wird zur Vorschau zwischengespeichert, ohne Installation
+- ✓ Ähnliche Bilder und Klänge (06.11.2026): Openverse „related“, für Commons über die Stichworte des Titels
+- ✓ Merklisten wie Unsplash Collections (06.11.2026): je Projekt, Lizenz geprüft, Namensnennungen als Text/HTML/Markdown, alles auf einmal laden
+- ✓ Claude als Rechercheur (06.11.2026): sucht passend zum Projekt, prüft jede Lizenz, merkt Treffer und schreibt die Namensnennung automatisch
 - ✗ Unsplash, Pexels, Pixabay direkt – brauchen einen eigenen API-Schlüssel; Trendo setzt keinen voraus
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)
