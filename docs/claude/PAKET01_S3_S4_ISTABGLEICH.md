@@ -69,3 +69,22 @@ Keine Installation ohne Freigabe. Bereiche 3D/Blender/Unreal/Spiele gehören zu 
 
 Jeder Schritt: Positiv- und Negativtest aus `qa/TESTFAELLE.csv`, Beleg mit echtem FFmpeg unter `reports/paket01/`.
 Nicht in diesem Paketteil: S3-06/07/08/10, S3-04 (3D-Kamera), S4-15 (Spiele) – Sitzung B; S3-09/S3-13 brauchen Modelle (Freigabe).
+
+## Umgesetzt (Stand 07.11.2026)
+
+| Punkt | Was neu ist | Beleg | Status |
+|---|---|---|---|
+| S3-02, S3-14, S3-15, S3-18, S3-20 | „Film ausliefern“: Film, Stems Dialog/Musik (24 Bit), EDL (eine Umsetzung mit Musik auf A2), OTIO, Cue-Liste, Prüfbericht mit SHA-256; Bildrate 25 fps wurde vorher als 30 gelesen (behoben) | `reports/paket01/s3-film-auslieferung-lauf.md` | TESTED (positiv + negativ) |
+| S3-05 | Greenscreen (Grün/Blau) und Maske auf der zweiten Bildspur; Maske außerhalb des Bildes abgelehnt | `reports/paket01/s3-05-greenscreen-lauf.md` | TESTED; Rotoskopie/Tracking offen |
+| S3-11 | LUT (.cube) je Stück, Scopes (Bild · Waveform · Vektorskop), Farbvergleich, bildgenaue LUT-Prüfung (SSIM/PSNR) | `reports/paket01/s3-11-farbe-lut-scopes-lauf.md` | TESTED; OCIO/ACES offen (nicht installiert) |
+| S3-12 | Bild verbessern (stabilisieren, entrauschen, schärfen, 2×) mit Messung; Artefakte beim Hochskalieren verworfen | `reports/paket01/s3-12-bild-verbessern-lauf.md` | TESTED |
+| S3-18 | ProRes 422 HQ, EXR- und PNG-Sequenz mit WAV; fehlender Encoder → Alternative | `reports/paket01/s3-18-profi-export-lauf.md` | TESTED; Render-Warteschlange offen |
+| S4-04 | Piano-Roll (Modus „Noten“), Quantisieren, Transponieren, MIDI speichern/öffnen byte-gleich, kaputte MIDI → Warnung | `reports/paket01/s4-04-piano-roll-midi-lauf.md` | TESTED |
+| S4-06 | Plugin-Prüfung ohne Laden (VST3/CLAP, Architektur) | `reports/paket01/s4-06-plugin-pruefung-lauf.md` | Teil; Host BLOCKIERT (Sandbox + REA + Freigabe nötig) |
+| S4-13 | Step-Sequencer (Modus „Beat“) mit Drum-Synth, Arpeggiator, Automation; Endlosschleife abgefangen | `reports/paket01/s4-13-step-sequencer-lauf.md` | TESTED |
+| S4-16 | Raum-Winkel je Spur, 5.1-Abmischung (Kanalmaske 5.1(side)), Kanalplan, Kopfhörer-Vorschau | `reports/paket01/s4-16-raumklang-lauf.md` | TESTED; Hörtest durch Menschen offen |
+| S4-17 | Geräusch-Werkstatt (selbst erzeugt), Bibliothek mit Ereignis-Tags, Paket nur mit gültiger Lizenz | `reports/paket01/s4-17-geraeusch-werkstatt-lauf.md` | TESTED |
+| S4-20 | Audio prüfen und freigeben (BS.1770, 4×-True-Peak, Clipping, Format, Phase, Lizenz, Einwilligung) | `reports/paket01/s4-20-audio-pruefung-lauf.md` | TESTED (gegen FFmpeg ebur128 ±0,05) |
+
+Weiter offen in S3/S4 (eigene Bereiche): S3-01/03 Shot-Plan im Videoschnitt, S3-02 Proxy/Multicam, S3-16 VTT und Sprachfassungen, S3-17 Abspann-Vorlage, S3-18 Warteschlange, S4-01 Automation in der Mehrspur, S4-09 EQ/Kompressor je Spur, S4-12 Intonation, S4-14 Tempo-Map, S4-18 Karaoke (LRC), S4-19 Unsicherheitsbericht.
+Nicht in diesem Teil: S3-04/06/07/08/10, S4-15 (Sitzung B); S3-09, S3-13 brauchen Modelle (Freigabe).
