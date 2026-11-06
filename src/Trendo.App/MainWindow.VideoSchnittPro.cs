@@ -35,6 +35,8 @@ public partial class MainWindow
         sp.Children.Add(look);
         var bri = S("ve-color-b", "Helligkeit", -0.5, 0.5, fx.Brightness); var con = S("ve-color-c", "Kontrast", 0.3, 2, fx.Contrast);
         var sat = S("ve-color-s", "Sättigung", 0, 3, fx.Saturation); var warm = S("ve-color-w", "Wärme (kühl ↔ warm)", -1, 1, fx.Warmth);
+        sp.Children.Add(new TextBlock { Text = "LUT (.cube) – leer = keine", Foreground = Muted, FontSize = 11.5 });
+        var lut = new TextBox { Name = "ve-lut", Text = fx.Lut, PlaceholderText = "Pfad zur .cube-Datei" }; sp.Children.Add(lut); // Paket 01 S3-11
         look.SelectionChanged += (_, _) => { if (look.SelectedIndex < 0) return; var l = VideoPro.Looks[look.SelectedIndex].Fx; bri.Value = l.Brightness; con.Value = l.Contrast; sat.Value = l.Saturation; warm.Value = l.Warmth; };
         sp.Children.Add(H("Ton", 13));
         var vol = S("ve-clip-vol", $"Lautstärke dieses Stücks ({c.Volume * 100:0} %)", 0, 2, c.Volume);
@@ -51,12 +53,13 @@ public partial class MainWindow
         apply.Click += (_, _) => ProgramRun(VK, () => d.Edit("Stück einstellen", x =>
         {
             VideoPro.SetFx(x, c.Id, new VideoPro.ClipFx(Math.Round(bri.Value, 3), Math.Round(con.Value, 3), Math.Round(sat.Value, 3), Math.Round(warm.Value, 3),
-                VideoPro.Transitions[Math.Max(0, trans.SelectedIndex)].Id, pos.SelectedIndex switch { 1 => "mitte", 2 => "oben", _ => "unten" }, Math.Round(size.Value, 2)));
+                VideoPro.Transitions[Math.Max(0, trans.SelectedIndex)].Id, pos.SelectedIndex switch { 1 => "mitte", 2 => "oben", _ => "unten" }, Math.Round(size.Value, 2), (lut.Text ?? "").Trim().Trim('"')));
             VideoPro.SetClipVolume(x, index, vol.Value);
         }));
         var reset = new Button { Name = "ve-pro-reset", Content = "Farbe zurücksetzen", Margin = new Thickness(0, 4, 0, 0) };
         reset.Click += (_, _) => ProgramRun(VK, () => d.Edit("Farbe zurücksetzen", x => VideoPro.SetFx(x, c.Id, new VideoPro.ClipFx(Transition: fx.Transition, TitlePos: fx.TitlePos, TitleSize: fx.TitleSize))));
         sp.Children.Add(new WrapPanel { Children = { apply, new Border { Width = 6 }, reset } });
+        sp.Children.Add(EditClipScopes(d, c)); // Paket 01 S3-11: Scopes und Farbvergleich
         sp.Children.Add(EditClipEnhance(d, c)); // Paket 01 S3-12: Bild verbessern mit Messung
         return sp;
     }

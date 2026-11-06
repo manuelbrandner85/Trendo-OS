@@ -11,9 +11,10 @@ public static class VideoPro
     static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
     static string F(double v) => v.ToString("0.###", Inv);
 
-    public sealed record ClipFx(double Brightness = 0, double Contrast = 1, double Saturation = 1, double Warmth = 0, string Transition = "fade", string TitlePos = "unten", double TitleSize = 1)
+    /// <param name="Lut">3D-LUT (.cube) für dieses Stück, leer = keine (Paket 01 S3-11).</param>
+    public sealed record ClipFx(double Brightness = 0, double Contrast = 1, double Saturation = 1, double Warmth = 0, string Transition = "fade", string TitlePos = "unten", double TitleSize = 1, string Lut = "")
     {
-        public bool HasColor => Math.Abs(Brightness) > 0.001 || Math.Abs(Contrast - 1) > 0.001 || Math.Abs(Saturation - 1) > 0.001 || Math.Abs(Warmth) > 0.001;
+        public bool HasColor => Math.Abs(Brightness) > 0.001 || Math.Abs(Contrast - 1) > 0.001 || Math.Abs(Saturation - 1) > 0.001 || Math.Abs(Warmth) > 0.001 || Lut.Length > 0;
     }
 
     public static readonly (string Id, string Label)[] Transitions =
@@ -35,17 +36,19 @@ public static class VideoPro
         if ((p["fx"] as JsonObject)?[clipId] is not JsonObject o) return new ClipFx();
         double D(string k, double d) => o[k] is { } n && double.TryParse(n.ToJsonString(), NumberStyles.Float, Inv, out var v) ? v : d;
         string S(string k, string d) => o[k]?.GetValue<string>() is { Length: > 0 } s ? s : d;
-        return new ClipFx(D("b", 0), D("c", 1), D("s", 1), D("w", 0), S("t", "fade"), S("tp", "unten"), D("ts", 1));
+        return new ClipFx(D("b", 0), D("c", 1), D("s", 1), D("w", 0), S("t", "fade"), S("tp", "unten"), D("ts", 1), S("lut", ""));
     }
 
     public static void SetFx(JsonObject p, string clipId, ClipFx fx)
     {
         var all = p["fx"] as JsonObject ?? (JsonObject)(p["fx"] = new JsonObject());
         if (!Transitions.Any(t => t.Id == fx.Transition)) throw new ArgumentException("Unbekannter Übergang: " + fx.Transition);
+        if (fx.Lut.Length > 0) ColorScopes.ValidateCubeFile(fx.Lut); // beschädigte LUT nie still setzen
         all[clipId] = new JsonObject
         {
             ["b"] = Math.Round(Math.Clamp(fx.Brightness, -0.5, 0.5), 3), ["c"] = Math.Round(Math.Clamp(fx.Contrast, 0.3, 2), 3), ["s"] = Math.Round(Math.Clamp(fx.Saturation, 0, 3), 3),
             ["w"] = Math.Round(Math.Clamp(fx.Warmth, -1, 1), 3), ["t"] = fx.Transition, ["tp"] = fx.TitlePos is "oben" or "mitte" ? fx.TitlePos : "unten", ["ts"] = Math.Round(Math.Clamp(fx.TitleSize, 0.5, 3), 2),
+            ["lut"] = fx.Lut.Length > 0 ? fx.Lut : null,
         };
     }
 
@@ -60,7 +63,7 @@ public static class VideoPro
     public static string ColorFilter(ClipFx fx)
     {
         if (!fx.HasColor) return "";
-        var s = $",eq=brightness={F(fx.Brightness)}:contrast={F(fx.Contrast)}:saturation={F(fx.Saturation)}";
+        var s = ColorScopes.LutFilter(fx.Lut) + $",eq=brightness={F(fx.Brightness)}:contrast={F(fx.Contrast)}:saturation={F(fx.Saturation)}";
         if (Math.Abs(fx.Warmth) > 0.001) { var k = fx.Warmth * 0.25; s += $",colorbalance=rs={F(k)}:gs={F(k * 0.2)}:bs={F(-k)}:rm={F(k * 0.6)}:bm={F(-k * 0.6)}"; }
         return s;
     }
