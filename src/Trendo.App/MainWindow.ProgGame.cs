@@ -81,7 +81,8 @@ public partial class MainWindow
         var sections = new List<string> { "Übersicht", "Spielbibel", "Figuren", "Welt", "Missionen", "Produktion", "Bauen", "Veröffentlichen" };
         if (d.Text("browser") is "plattform" or "jump" or "breakout") sections.Insert(4, "Level");
         if (d.Text("browser") == "plattform") sections.Insert(5, "Test"); // Testmodus mit Spielbarkeits-Prüfung, Fehlern und Notizen
-        if ((_gameSection == "Level" || _gameSection == "Test") && !sections.Contains(_gameSection)) _gameSection = "Übersicht";
+        if (d.Text("browser") is "plattform" or "jump" or "breakout") sections.Insert(sections.IndexOf("Level") + 1, "Assets"); // freie Assets (G1–G3)
+        if ((_gameSection is "Level" or "Test" or "Assets") && !sections.Contains(_gameSection)) _gameSection = "Übersicht";
         var bar = new WrapPanel { Name = "game-sections" };
         foreach (var s in sections)
         {
@@ -100,6 +101,7 @@ public partial class MainWindow
             "Produktion" => GameProduction(d),
             "Level" => GameLevel(d),
             "Test" => GameTestView(d),
+            "Assets" => GameAssetsView(d),
             "Bauen" => GameBuildView(d),
             "Veröffentlichen" => GameReleaseView(d), // Ziele, Checkliste, Pakete, Hochladen mit eigenem Konto
             _ => GameOverview(d),

@@ -178,10 +178,18 @@ public static class GameDesign
         var files = anims.Where(kv => File.Exists(kv.Value.File)).ToDictionary(kv => kv.Key, kv => kv.Value.File);
         var sounds = (d["sounds"] as JsonObject ?? []).Where(kv => S(kv.Value).Length > 0 && File.Exists(S(kv.Value))).ToDictionary(kv => kv.Key, kv => S(kv.Value));
         settings = settings with { Sounds = sounds.ToDictionary(kv => kv.Key, kv => "ton-" + kv.Key + Path.GetExtension(kv.Value)) };
-        if (Directory.Exists(dir)) { GameStudio.Save(dir, settings, animFiles: files, soundFiles: sounds); return dir; }
-        var made = GameStudio.CreateBrowserGame(parent, t, S(d["title"]), settings);
-        if (files.Count > 0 || sounds.Count > 0) GameStudio.Save(made, settings, animFiles: files, soundFiles: sounds);
-        return made;
+        // Bilder aus der Asset-Liste (Figur, Hintergrund) und der Abspann mit allen Lizenzen
+        var player = S(d["playerImage"]) is { Length: > 0 } pi && File.Exists(pi) ? pi : null;
+        var back = S(d["backgroundImage"]) is { Length: > 0 } bi && File.Exists(bi) ? bi : null;
+        string Finish(string game)
+        {
+            if (files.Count > 0 || sounds.Count > 0 || player is not null || back is not null) GameStudio.Save(game, settings, player, back, files, sounds);
+            var credits = GameAssets.Credits(d);
+            if (credits.Length > 0) File.WriteAllText(Path.Combine(game, "CREDITS.txt"), credits);
+            return game;
+        }
+        if (Directory.Exists(dir)) { GameStudio.Save(dir, settings); return Finish(dir); }
+        return Finish(GameStudio.CreateBrowserGame(parent, t, S(d["title"]), settings));
     }
 
     /// <summary>Bauen: 3D/AA/AAA als Unreal-Projekt; Spielbibel liegt im Projekt; AAA+ bekommt Lumen, Nanite-taugliche Einstellungen und World Partition.</summary>

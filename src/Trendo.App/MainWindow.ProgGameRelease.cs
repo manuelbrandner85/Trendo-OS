@@ -49,6 +49,8 @@ public partial class MainWindow
         if (targets.Contains("itchio")) sp.Children.Add(F("itch", "itch", "itch.io: dein-name/dein-spiel"));
         if (targets.Contains("steam")) sp.Children.Add(new WrapPanel { Children = { F("steamApp", "steamApp", "Steam App-ID"), new Border { Width = 6 }, F("steamUser", "steamUser", "Steam-Anmeldename (für SteamCMD)") } });
 
+        // G3: Lizenzen der Assets prüfen, bevor es nach draußen geht
+        foreach (var w in GameAssets.Check(d.Data, commercial: true)) sp.Children.Add(P("⚠ " + w, Brush.Parse("#F5A524"), 12));
         // Checkliste wie in Spielestudios
         var items = GameRelease.ChecklistFor(targets);
         var done = items.Count(i => GameRelease.Done(d.Data, i.Id));
