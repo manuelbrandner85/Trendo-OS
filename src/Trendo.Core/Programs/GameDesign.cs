@@ -180,7 +180,7 @@ public static class GameDesign
         var anims = (d["anims"] as JsonObject ?? []).Where(kv => kv.Value is JsonObject o && S(o["file"]).Length > 0)
             .ToDictionary(kv => kv.Key, kv => (File: S(kv.Value!["file"]), Frames: (int)(N(kv.Value!["frames"]) ?? 1), Fps: (int)(N(kv.Value!["fps"]) ?? 8)));
         var settings = GameStudio.Validate(new GameStudio.GameSettings { Level = level, Props = props, Speed = (int)(N(d["speed"]) ?? 5), Lives = (int)(N(d["lives"]) ?? 3),
-            TimeLimit = (int)(N(d["timeLimit"]) ?? 0), Rules = Rules(d), Saves = d["saves"]?.GetValueKind() != System.Text.Json.JsonValueKind.False, Abilities = Abilities(d), Texts = Texts(d), Weapon = Weapon(d),
+            TimeLimit = (int)(N(d["timeLimit"]) ?? 0), Rules = Rules(d), Saves = d["saves"]?.GetValueKind() != System.Text.Json.JsonValueKind.False, Abilities = Abilities(d), Texts = Texts(d), Weapon = Weapon(d), Menu = d["menu"]?.GetValueKind() != System.Text.Json.JsonValueKind.False,
             MoreLevels = [.. more.Select(o => Lines(o["rows"]))], Decor = [Lines(d["decor"]), .. more.Select(o => Lines(o["decor"]))],
             LevelNames = [S(d["levelName"]) is { Length: > 0 } n0 ? n0 : "Level 1", .. more.Select((o, i) => S(o["name"]) is { Length: > 0 } n ? n : $"Level {i + 2}")],
             Anims = anims.ToDictionary(kv => kv.Key, kv => new GameStudio.Anim("figur-" + kv.Key + Path.GetExtension(kv.Value.File), kv.Value.Frames, kv.Value.Fps)) });

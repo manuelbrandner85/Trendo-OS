@@ -108,6 +108,6 @@ const canvas={width:480,height:360,getContext:()=>noop,addEventListener(){}};con
 const ctx={document:{title:'Test',getElementById:id=>id==='c'?canvas:status},localStorage:{getItem:k=>k in store?store[k]:null,setItem:(k,v)=>{store[k]=String(v);},removeItem:k=>{delete store[k];}},
 requestAnimationFrame(){},addEventListener(t,f){(H[t]=H[t]||[]).push(f);},Image:function(){},Audio:function(){},AudioContext:function(){},Math,JSON,Number,Object,Date,console,String,
 key:c=>(H.keydown||[]).forEach(f=>f({code:c,key:c,repeat:false,preventDefault(){}})),out:o=>console.log(JSON.stringify(o))};vm.createContext(ctx);
-vm.runInContext(fs.readFileSync(file,'utf8'),ctx);vm.runInContext(after,ctx);
+vm.runInContext(fs.readFileSync(file,'utf8'),ctx);vm.runInContext("if(typeof mode!=='undefined')mode='play';",ctx);vm.runInContext(after,ctx);
 """;
 }

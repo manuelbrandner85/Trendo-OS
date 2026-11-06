@@ -94,6 +94,8 @@ public static class GameStudio
         public Dictionary<string, string> Texts { get; init; } = [];
         /// <summary>Waffe (siehe <see cref="Weapons"/>), leer = keine.</summary>
         public string Weapon { get; init; } = "";
+        /// <summary>Startmenü, Pause, Einstellungen, Karte und Controller (Paket 01 S1-14); aus = sofort spielen wie früher.</summary>
+        public bool Menu { get; init; } = true;
     }
 
     /// <summary>Schlüssel der Objekt-Texte.</summary>
@@ -150,7 +152,7 @@ public static class GameStudio
     {
         var o = new { speed = s.Speed, lives = s.Lives, win = s.WinScore, player = s.Player, accent = s.Accent, bg = s.Background, sound = s.Sound,
                       level = s.Level, playerImage = s.PlayerImage, bgImage = s.BackgroundImage, props = s.Props, timeLimit = s.TimeLimit,
-                      rules = s.Rules.Select(r => r.Title is null ? (object)new { when = r.When, n = r.N, act = r.Do } : new { when = r.When, n = r.N, act = r.Do, title = r.Title }), abilities = s.Abilities, texts = s.Texts, weapon = s.Weapon, more = s.MoreLevels, decor = s.Decor, names = s.LevelNames,
+                      rules = s.Rules.Select(r => r.Title is null ? (object)new { when = r.When, n = r.N, act = r.Do } : new { when = r.When, n = r.N, act = r.Do, title = r.Title }), abilities = s.Abilities, texts = s.Texts, weapon = s.Weapon, menu = s.Menu, more = s.MoreLevels, decor = s.Decor, names = s.LevelNames,
                       anims = s.Anims.ToDictionary(kv => kv.Key, kv => new { img = kv.Value.Image, frames = kv.Value.Frames, fps = kv.Value.Fps }), sounds = s.Sounds, saves = s.Saves };
         return "const CFG=" + JsonSerializer.Serialize(o) + ";\n";
     }
@@ -210,7 +212,7 @@ public static class GameStudio
 
     const string Shell = """
 <!doctype html><html lang="de"><head><meta charset="utf-8"><title>{{TITLE}}</title>
-<style>html,body{margin:0;background:#0b1730;color:#eef;font-family:system-ui,sans-serif;text-align:center}canvas{border-radius:12px;margin-top:16px}</style></head>
+<style>html,body{margin:0;background:#0b1730;color:#eef;font-family:system-ui,sans-serif;text-align:center}canvas{border-radius:12px;margin-top:16px;max-width:100%;height:auto}</style></head>
 <body><h2>{{TITLE}}</h2><p>{{HELP}}</p><canvas id="c" width="480" height="360"></canvas><p id="s">Punkte: 0</p>
 <script src="config.js"></script><script src="game.js"></script></body></html>
 """;
@@ -219,7 +221,7 @@ public static class GameStudio
     const string Common = """
 const c=document.getElementById('c'),x=c.getContext('2d');const img=n=>{if(!n)return null;const i=new Image();i.src=n;return i;};
 const PI=img(CFG.playerImage),BI=img(CFG.bgImage);let A=null;
-function beep(f){if(!CFG.sound)return;try{A=A||new AudioContext();const o=A.createOscillator(),g=A.createGain();o.frequency.value=f;g.gain.value=.05;o.connect(g);g.connect(A.destination);o.start();o.stop(A.currentTime+.08);}catch(e){}}
+function beep(f){if(!CFG.sound)return;try{A=A||new AudioContext();const o=A.createOscillator(),g=A.createGain();o.frequency.value=f;g.gain.value=.05*(typeof S!=='undefined'?S.vol/100:1);o.connect(g);g.connect(A.destination);o.start();o.stop(A.currentTime+.08);}catch(e){}}
 function bg(){if(BI&&BI.complete&&BI.naturalWidth)x.drawImage(BI,0,0,c.width,c.height);else{x.fillStyle=CFG.bg;x.fillRect(0,0,c.width,c.height);}}
 function me(px,py,w,h){if(PI&&PI.complete&&PI.naturalWidth)x.drawImage(PI,px,py,w,h);else{x.fillStyle=CFG.player;x.fillRect(px,py,w,h);}}
 let lives=CFG.lives,over=false;function status(p){document.getElementById('s').textContent=over?(lives>0?'Gewonnen! Punkte: '+p:'Vorbei – Punkte: '+p+' (Leertaste: neu)'):'Punkte: '+p+' · Leben: '+lives+(CFG.win?' · Ziel: '+CFG.win:'');}
@@ -259,7 +261,7 @@ function tx(x,y,k,d){const pre=li===0?'':(li+1)+':';const v=CFG.texts&&CFG.texts
 function doAct(a){if(a==='leben'){lives++;say('+1 Leben');}if(a==='tueren'){open=true;say('Türen offen');}if(a==='schneller'){boost=2;say('Schneller!');}if(a==='punkte'){p+=10;say('+10 Punkte');}if(a==='sieg'){over=true;say('Gewonnen!');}}
 function rv(r){return r.when==='muenzen'?cg:r.when==='punkte'?p:r.when==='gegner'?fk:r.when==='sekunden'?fr/60:r.when==='gegenstaende'?gc:0;}
 const SND={};Object.keys(CFG.sounds||{}).forEach(k=>{try{const a=new Audio(CFG.sounds[k]);if(k==='musik'){a.loop=true;a.volume=.5;}SND[k]=a;}catch(e){}});
-function snd(ev,f){const a=SND[ev];if(a){try{a.currentTime=0;a.play();}catch(e){}}else beep(f);}
+function snd(ev,f){const a=SND[ev];if(a){try{a.volume=S.vol/100;a.currentTime=0;a.play();}catch(e){}}else beep(f);}
 let music=false;const AI={};Object.keys(CFG.anims||{}).forEach(k=>{const a=CFG.anims[k];if(a&&a.img){const i=new Image();i.src=a.img;AI[k]={i:i,f:a.frames||1,fps:a.fps||8};}});
 const at=(cx,cy)=>cy<0||cx<0||cx>=C?'#':cy>=R?'.':(G[cy][cx]||'.');const solid=(cx,cy)=>{const ch=at(cx,cy);return ch==='#'||ch==='F'||(ch==='D'&&!open);};
 let S0x=0,S0y=0,sx=0,sy=0;
@@ -271,7 +273,7 @@ pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;}
 function reset(full){if(full){p=0;cg=0;fk=0;fr=0;boost=0;fired=[];tu=false;inv=[];given={};gc=0;shots=[];cool=0;swing=0;load(0);return;}pl={x:sx*T+4,y:sy*T,w:24,h:30,vx:0,vy:0,on:false};cam=0;}
 reset(true);
 /*SPIELSTAND*/const SV0=readSave();if(SV0)resume(SV0);
-addEventListener('keydown',e=>{k[e.code]=1;if(e.code==='KeyE'&&!e.repeat)use();if((e.code==='KeyX'||e.code==='KeyJ')&&!e.repeat)attack();if(e.code==='KeyN'){dropSave();lives=CFG.lives;over=false;reset(true);say('Neues Spiel');}if(!music&&SND.musik){music=true;try{SND.musik.play();}catch(x){}}if(e.code==='Space'){e.preventDefault();if(over){lives=CFG.lives;over=false;reset(true);}else if(pl.on){pl.vy=-11.5;snd('springen',660);}else if(AB.includes('doppelsprung')&&air>0){air--;pl.vy=-10.5;snd('springen',760);}}});addEventListener('keyup',e=>k[e.code]=0);
+/*MENUS*/addEventListener('keydown',e=>{k[e.code]=1;if(e.code==='KeyE'&&!e.repeat)use();if((e.code==='KeyX'||e.code==='KeyJ')&&!e.repeat)attack();if(e.code==='KeyN'){dropSave();lives=CFG.lives;over=false;reset(true);say('Neues Spiel');}if(!music&&SND.musik){music=true;try{SND.musik.play();}catch(x){}}if(e.code==='Space'){e.preventDefault();if(over){lives=CFG.lives;over=false;reset(true);}else if(pl.on){pl.vy=-11.5;snd('springen',660);}else if(AB.includes('doppelsprung')&&air>0){air--;pl.vy=-10.5;snd('springen',760);}}});addEventListener('keyup',e=>k[e.code]=0);
 function hit(fall){if(veh&&!fall){veh=null;flash=20;safe=45;pl.vy=-6;say('Fahrzeug kaputt – zu Fuß weiter');return;}if(safe>0&&!fall)return;veh=null;lives--;snd('treffer',160);flash=20;if(lives<=0){over=true;dropSave();}else reset(false);}
 function say(t){note=t;noteT=120;}
 function goal(){p+=10;snd('ziel',990);if(li+1<LV.length){load(li+1);saveGame();say((CFG.names&&CFG.names[li])||('Level '+(li+1)+' von '+LV.length));}else{over=true;dropSave();}}
@@ -288,7 +290,7 @@ if(ch==='b'){x.fillStyle='#2E8B3E';x.beginPath();x.arc(px+16,py+24,11,0,7);x.arc
 if(ch==='t'){x.fillStyle='#6B4423';x.fillRect(px+13,py+14,6,18);x.fillStyle='#2F7D3A';x.beginPath();x.arc(px+16,py+11,12,0,7);x.fill();}
 if(ch==='m'){x.fillStyle='rgba(120,130,160,.6)';x.beginPath();x.moveTo(px,py+T);x.lineTo(px+16,py);x.lineTo(px+T,py+T);x.fill();}
 if(ch==='g'){x.fillStyle='#3FBF5A';for(let i=0;i<4;i++)x.fillRect(px+3+i*8,py+T-8,3,8);}}
-function step(){if(!over){fr++;lf++;const sp=(2.2+CFG.speed*.35+boost)*(AB.includes('sprint')&&(k.ShiftLeft||k.ShiftRight)?1.6:1)*(veh==='wagen'?1.8:veh==='ufo'?1.3:1);pl.vx=(k.ArrowRight?sp:0)-(k.ArrowLeft?sp:0);if(pl.vx>0)face=1;if(pl.vx<0)face=-1;pl.vy=Math.min(14,pl.vy+.6);if(veh==='ufo'&&(k.Space||k.ArrowUp||k.KeyW)&&fuel>0){pl.vy=Math.max(-6,pl.vy-1.8);fuel--;if(fuel<=0){veh=null;say('Treibstoff leer');}}if(safe>0)safe--;if(noEnter>0)noEnter--;move(pl,pl.vx,0);move(pl,0,pl.vy);if(pl.on)air=AB.includes('doppelsprung')?1:0;
+function step(){pollPad();if(!over&&mode==='play'){fr++;lf++;const sp=(2.2+CFG.speed*.35+boost)*(AB.includes('sprint')&&(k.ShiftLeft||k.ShiftRight)?1.6:1)*(veh==='wagen'?1.8:veh==='ufo'?1.3:1);pl.vx=(k.ArrowRight?sp:0)-(k.ArrowLeft?sp:0);if(pl.vx>0)face=1;if(pl.vx<0)face=-1;pl.vy=Math.min(14,pl.vy+.6);if(veh==='ufo'&&(k.Space||k.ArrowUp||k.KeyW)&&fuel>0){pl.vy=Math.max(-6,pl.vy-1.8);fuel--;if(fuel<=0){veh=null;say('Treibstoff leer');}}if(safe>0)safe--;if(noEnter>0)noEnter--;move(pl,pl.vx,0);move(pl,0,pl.vy);if(pl.on)air=AB.includes('doppelsprung')?1:0;
 if(cool>0)cool--;if(swing>0)swing--;foes.forEach(f=>{if(f.h>0)f.h--;});shots.forEach(s=>{s.x+=s.d*7;s.l--;if(solid(Math.floor(s.x/T),Math.floor(s.y/T)))s.l=0;foes.forEach(f=>{if(f.a&&s.l>0&&Math.abs(f.x+12-s.x)<16&&Math.abs(f.y+13-s.y)<18){dmg(f);s.l=0;}});});shots=shots.filter(s=>s.l>0);
 if(pl.on&&at(Math.floor((pl.x+12)/T),Math.floor((pl.y+pl.h+1)/T))==='F'){pl.vy=-17;pl.on=false;beep(720);}
 if(pl.y>R*T+60)hit(true);const cx=Math.floor((pl.x+12)/T),cy=Math.floor((pl.y+15)/T),cb=Math.floor((pl.y+29)/T);
@@ -299,7 +301,7 @@ foes.forEach(f=>{if(!f.a)return;const nx=f.x+f.d*1.2*(f.s||1),cxx=Math.floor((f.
 if(Math.abs(f.x-pl.x)<24&&Math.abs(f.y-pl.y)<26){if(pl.vy>1&&pl.y<f.y-8){dmg(f);pl.vy=-8;}else hit();}});
 if(CFG.timeLimit>0&&lf/60>CFG.timeLimit){lives=0;over=true;tu=true;say('Zeit abgelaufen');}
 rules();}cam=Math.max(0,Math.min(C*T-c.width,pl.x-c.width/3));}
-bg();x.save();x.translate(-cam,Math.min(0,c.height-R*T));
+bg();if(S.contrast){x.fillStyle='#000';x.fillRect(0,0,c.width,c.height);}x.save();x.translate(-cam,Math.min(0,c.height-R*T));
 for(let y=0;y<DC.length;y++)for(let xx=Math.floor(cam/T);xx<=Math.floor((cam+c.width)/T)&&xx<(DC[y]||'').length;xx++)deco(DC[y][xx],xx*T,y*T);
 for(let y=0;y<R;y++)for(let xx=Math.floor(cam/T);xx<=Math.floor((cam+c.width)/T)&&xx<C;xx++){const ch=at(xx,y);
 if(ch==='#'){x.fillStyle='#5B3A1E';x.fillRect(xx*T,y*T,T,T);if(at(xx,y-1)!=='#'){x.fillStyle='#3FBF5A';x.fillRect(xx*T,y*T,T,7);}}
@@ -311,13 +313,13 @@ if(ch==='K'){x.fillStyle=CFG.accent;x.beginPath();x.arc(xx*T+11,y*T+16,6,0,7);x.
 if(ch==='V'){x.fillStyle='#F97316';x.fillRect(xx*T+2,y*T+14,28,12);x.fillStyle='#111';x.beginPath();x.arc(xx*T+9,y*T+27,5,0,7);x.arc(xx*T+23,y*T+27,5,0,7);x.fill();}if(ch==='G'){x.fillStyle='#A855F7';x.beginPath();x.moveTo(xx*T+16,y*T+6);x.lineTo(xx*T+26,y*T+16);x.lineTo(xx*T+16,y*T+28);x.lineTo(xx*T+6,y*T+16);x.fill();}if(ch==='N'){x.fillStyle='#14B8A6';x.fillRect(xx*T+9,y*T+14,14,18);x.beginPath();x.arc(xx*T+16,y*T+9,6,0,7);x.fill();}if(ch==='D'&&!open){x.fillStyle='#7C4A1E';x.fillRect(xx*T+2,y*T,T-4,T);x.fillStyle=CFG.accent;x.fillRect(xx*T+T-10,y*T+15,4,4);}}
 x.fillStyle=CFG.accent;coins.forEach(q=>{if(q.a){x.beginPath();x.arc(q.x,q.y,7,0,7);x.fill();}});
 foes.forEach(f=>{if(f.a){x.fillStyle=f.h>0&&f.h%4<2?'#FFF':'#E0475B';x.fillRect(f.x,f.y,24,26);x.fillStyle='#FFF';x.fillRect(f.x+(f.d>0?14:4),f.y+6,6,6);if(f.mh>1){x.fillStyle='#000';x.fillRect(f.x-2,f.y-8,28,4);x.fillStyle='#22C55E';x.fillRect(f.x-2,f.y-8,28*f.hp/f.mh,4);}}});x.fillStyle=CFG.accent;shots.forEach(s=>{x.beginPath();x.arc(s.x,s.y,4,0,7);x.fill();});if(swing>0){x.strokeStyle='#E5E7EB';x.lineWidth=3;x.beginPath();if(face>0)x.arc(pl.x+12,pl.y+14,26,-1,1);else x.arc(pl.x+12,pl.y+14,26,Math.PI-1,Math.PI+1);x.stroke();}
-if(veh){if(veh==='ufo'){x.fillStyle='#94A3B8';x.beginPath();x.ellipse(pl.x+12,pl.y+28,20,7,0,0,7);x.fill();}else{x.fillStyle='#F97316';x.fillRect(pl.x-6,pl.y+18,36,12);x.fillStyle='#111';x.beginPath();x.arc(pl.x+2,pl.y+31,5,0,7);x.arc(pl.x+22,pl.y+31,5,0,7);x.fill();}}if(!(flash>0&&flash--%4<2))drawMe();x.restore();
-x.font='14px system-ui';x.fillStyle='#FFF';if(LV.length>1)x.fillText('Level '+(li+1)+'/'+LV.length,10,c.height-10);
+if(veh){if(veh==='ufo'){x.fillStyle='#94A3B8';x.beginPath();x.ellipse(pl.x+12,pl.y+28,20,7,0,0,7);x.fill();}else{x.fillStyle='#F97316';x.fillRect(pl.x-6,pl.y+18,36,12);x.fillStyle='#111';x.beginPath();x.arc(pl.x+2,pl.y+31,5,0,7);x.arc(pl.x+22,pl.y+31,5,0,7);x.fill();}}if(!(flash>0&&flash--%4<2&&!S.calm))drawMe();if(S.contrast){x.strokeStyle='#FFF';x.lineWidth=2;x.strokeRect(pl.x,pl.y,pl.w,pl.h);}x.restore();
+x.font=(S.big?'19px':'14px')+' system-ui';x.fillStyle='#FFF';if(LV.length>1)x.fillText('Level '+(li+1)+'/'+LV.length,10,c.height-10);
 if(CFG.timeLimit>0)x.fillText('Zeit '+Math.max(0,Math.ceil(CFG.timeLimit-lf/60))+' s',c.width-90,20);
 if(KT>0){x.fillStyle=CFG.accent;x.fillText('Schlüssel '+kg+'/'+KT,10,20);}if(veh==='ufo'){x.fillStyle='#FFF';x.fillText('Treibstoff '+Math.ceil(fuel/60)+' s',c.width-130,40);}if(inv.length){x.fillStyle='#E9D5FF';x.fillText('Inventar: '+inv.join(', '),10,c.height-28);}
 (CFG.rules||[]).forEach((r,i)=>{if(!r.title)return;const v=rv(r);x.fillStyle=fired[i]?'#22C55E':'#FFF';x.fillText(fired[i]?'✓ '+r.title:r.title+': '+Math.min(Math.floor(v),r.n)+'/'+r.n,10,40+i*18);});
 if(noteT>0){noteT--;x.fillStyle='rgba(0,0,0,.6)';x.fillRect(c.width/2-110,40,220,28);x.fillStyle='#FFF';x.font='15px system-ui';x.textAlign='center';x.fillText(note,c.width/2,59);x.textAlign='left';}
-status(p);requestAnimationFrame(step);}
+drawMenu();status(p);requestAnimationFrame(step);}
 step();
 """,
         ["jump"] = """
@@ -331,7 +333,7 @@ step();
     };
 
     /// <summary>Spiel-JavaScript einer Vorlage; der Plattformer bekommt den Spielstand (Paket 01 S1-15).</summary>
-    public static string GameJs(string template) => Common + Js[template].TrimStart().Replace("/*SPIELSTAND*/", Programs.GameSaves.Js);
+    public static string GameJs(string template) => Common + Js[template].TrimStart().Replace("/*SPIELSTAND*/", Programs.GameSaves.Js).Replace("/*MENUS*/", Programs.GameMenus.Js);
 
     public static string CreateBrowserGame(string parent, string template, string name, GameSettings? settings = null)
     {

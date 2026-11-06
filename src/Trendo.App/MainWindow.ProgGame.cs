@@ -564,6 +564,10 @@ public partial class MainWindow
         Num("game-set-speed", "Tempo (1–10)", d.Number("speed", 5), 1, 10, v => d.Set("speed", Math.Round(v), "Tempo"));
         Num("game-set-lives", "Leben (1–9)", d.Number("lives", 3), 1, 9, v => d.Set("lives", Math.Round(v), "Leben"));
         Num("game-set-time", "Zeitlimit s (0 = ohne)", d.Number("timeLimit", 0), 0, 3600, v => d.Set("timeLimit", Math.Round(v), "Zeitlimit"));
+        var menu = new CheckBox { Name = "game-set-menu", IsChecked = d.Data["menu"]?.GetValueKind() != System.Text.Json.JsonValueKind.False, Content = new TextBlock { Text = "Startmenü, Pause, Einstellungen und Karte", Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap } };
+        ToolTip.SetTip(menu, "Im gebauten Spiel: Startmenü (Spielen, Fortsetzen), Pause mit Esc, Einstellungen mit Lautstärke, hohem Kontrast, großer Schrift und ruhigen Effekten, Karte und Controller.");
+        menu.IsCheckedChanged += (_, _) => ProgramRun(GK, () => d.Set("menu", menu.IsChecked == true, menu.IsChecked == true ? "Spielmenü an" : "Spielmenü aus"));
+        sp.Children.Add(menu);
         // Ereignis-Regeln wie die Ereignisblätter in GDevelop/Construct: Wenn … dann …
         sp.Children.Add(H("Regeln (Wenn … dann …)", 13));
         var rules = GameDesign.Rules(d.Data);
