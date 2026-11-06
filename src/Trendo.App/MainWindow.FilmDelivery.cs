@@ -8,8 +8,8 @@ namespace Trendo.App;
 /// <summary>Paket 01 – Studio 3 (06.11.2026): „Film ausliefern“ im Videoschnitt – Film, Stems Dialog/Musik, EDL, OTIO, Cue-Liste und Prüfbericht mit SHA-256 in einem Ordner.</summary>
 public partial class MainWindow
 {
-    /// <summary>Für Tests: ersetzt den FFmpeg-Aufruf (Argumente → Ergebnis).</summary>
-    public Func<IReadOnlyList<string>, Cli.Result>? FilmRunOverride { get; set; }
+    /// <summary>Für Tests: ersetzt den FFmpeg-Aufruf (Argumente → Ergebnis) bei Auslieferung und Bild verbessern.</summary>
+    public Func<IReadOnlyList<string>, Cli.Result>? FfmpegRunOverride { get; set; }
 
     /// <summary>Letztes Ergebnis der Auslieferung (für Anzeige und Tests).</summary>
     public FilmDelivery.Result? FilmLastDelivery { get; private set; }
@@ -22,14 +22,7 @@ public partial class MainWindow
         var baseName = "Auslieferung – " + DevStudio.SafeName(d.Title);
         var folder = Path.Combine(WorkFolder(Programs[VK].Folder), baseName);
         for (var i = 2; Directory.Exists(folder); i++) folder = Path.Combine(WorkFolder(Programs[VK].Folder), $"{baseName} {i}");
-        Func<IReadOnlyList<string>, Cli.Result> run;
-        if (FilmRunOverride is { } fake) run = fake;
-        else
-        {
-            if (FfmpegPath is not { } ff) { _progMsg[VK] = "Für die Auslieferung fehlt FFmpeg – unter Zusatzprogramme einrichten."; Show(VK); return; }
-            if (_opt.Isolated) { _progMsg[VK] = "Im abgeschotteten Testmodus startet Trendo kein FFmpeg."; Show(VK); return; }
-            run = args => Cli.Run(ff, args, Path.GetDirectoryName(folder)!, 30 * 60_000);
-        }
+        if (FfmpegRunner(Path.GetDirectoryName(folder)!, out var why) is not { } run) { _progMsg[VK] = why!; Show(VK); return; }
         _progMsg[VK] = "Auslieferung läuft: Film, Stems, Schnittliste, Prüfbericht …"; Show(VK);
         try
         {

@@ -19,7 +19,7 @@ public class FilmDelivery_Ui
         {
             string F(string n) { var f = Path.Combine(root, n); File.WriteAllBytes(f, [1, 2, 3]); return f; }
             var calls = new List<IReadOnlyList<string>>();
-            w.FilmRunOverride = args =>
+            w.FfmpegRunOverride = args =>
             {
                 calls.Add(args); var o = args[^1];
                 if (o.EndsWith(".mp4") || o.EndsWith(".wav")) File.WriteAllBytes(o, new byte[64]); // FFmpeg-Ersatz schreibt die Zieldatei

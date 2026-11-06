@@ -57,6 +57,7 @@ public partial class MainWindow
         var reset = new Button { Name = "ve-pro-reset", Content = "Farbe zurücksetzen", Margin = new Thickness(0, 4, 0, 0) };
         reset.Click += (_, _) => ProgramRun(VK, () => d.Edit("Farbe zurücksetzen", x => VideoPro.SetFx(x, c.Id, new VideoPro.ClipFx(Transition: fx.Transition, TitlePos: fx.TitlePos, TitleSize: fx.TitleSize))));
         sp.Children.Add(new WrapPanel { Children = { apply, new Border { Width = 6 }, reset } });
+        sp.Children.Add(EditClipEnhance(d, c)); // Paket 01 S3-12: Bild verbessern mit Messung
         return sp;
     }
 
