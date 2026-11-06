@@ -1,6 +1,6 @@
 # Verkaufen – Testergebnisse
 
-Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.36 (Stand 5b38700)
+Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.36 (Stand df8e056)
 
 Lauf: `api.trx, app.trx, core.trx`
 

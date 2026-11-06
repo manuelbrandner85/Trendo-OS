@@ -117,6 +117,42 @@
         "Name": "Papierschacht wählen",
         "State": "teilweise (Druckdialog des Systems)",
         "Test": "–"
+      },
+      {
+        "Nr": "BR-19",
+        "Name": "Briefart erkennen (Widerspruch, Widerruf, Kündigung, Mahnung, Reklamation, DSGVO-Auskunft, Antrag, Bewerbung) mit Frist und Grundlage (Claude-Ausbau 5)",
+        "State": "umgesetzt",
+        "Test": "LetterOfficeTests, LetterOffice_Ui"
+      },
+      {
+        "Nr": "BR-20",
+        "Name": "Pflichtangaben nach DIN 5008 und Briefart prüfen, typische Anlagen eintragen",
+        "State": "umgesetzt",
+        "Test": "LetterOfficeTests, LetterOffice_Ui"
+      },
+      {
+        "Nr": "BR-21",
+        "Name": "Frist erst nach „Ja“ in den Trendo-Kalender (Erinnerung zwei Tage vorher)",
+        "State": "umgesetzt",
+        "Test": "LetterOffice_Ui"
+      },
+      {
+        "Nr": "BR-22",
+        "Name": "Wiedervorlage je Akte (Datum, Notiz, „+ 2 Wochen“, erledigt)",
+        "State": "umgesetzt",
+        "Test": "LetterOfficeTests, LetterOffice_Ui"
+      },
+      {
+        "Nr": "BR-23",
+        "Name": "„Steht an“: Fristen und Wiedervorlagen aller Akten, überfällige zuerst",
+        "State": "umgesetzt",
+        "Test": "LetterOfficeTests, LetterOffice_Ui"
+      },
+      {
+        "Nr": "BR-24",
+        "Name": "Postausgangsbuch (Datum, Empfänger, Betreff, Versandweg, Akte, Nachweis) mit CSV; Versand mit Nachweis setzt die Akte auf „versendet“",
+        "State": "umgesetzt",
+        "Test": "LetterOfficeTests, LetterOffice_Ui"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/STUDIO-LETTER-01_KATALOG.md",
@@ -166,6 +202,7 @@
       "6. November 2026",
       "Alle 20 Vorlagen zeigen …",
       "Fertig – Brief speichern",
+      "Als verschickt eintragen",
       "Einsetzen",
       "Jetzt Form B – zu Form A wechseln",
       "Falz- und Lochmarken mitdrucken",
@@ -216,7 +253,12 @@
       "Mehrfachauswahl wie im System: Umschalt-Klick Bereich, Strg-Klick dazu/weg, Rahmen mit der Maus aufziehen, Alles auswählen, mehrere kopieren/einfügen und in den Papierkorb, Klick ins Leere hebt auf",
       "Programme im Stil des Systems: Windows-Menüzeile im Fenster, Mac-Menüs oben in der Menüleiste (Ablage …), GNOME-Kopfleiste mit „Speichern“ blau und Hauptmenü ☰ – Menüeinträge lösen dieselben Befehle aus",
       "Registerkarten wie Explorer/Finder/Dateien: Strg/⌘+T neu, Mittelklick-Ordner in neuer Karte, Wechsel per Klick und Strg+Bild↓, eigener Verlauf je Karte, Strg/⌘+W schließt erst die Karte, dann das Fenster",
+      "STUDIO-LETTER-01: Akte – Wiedervorlage setzen und erledigen, Versand mit Nachweis macht die Akte „versendet“ und steht im Postausgangsbuch; Übersicht zeigt fällige Wiedervorlagen und öffnet die Akte",
+      "STUDIO-LETTER-01: Briefart erkennen – Widerspruch, Widerruf, Kündigung, Mahnung, Reklamation, DSGVO-Auskunft; Frist mit Wochenend-Verschiebung; ohne Treffer nichts",
+      "STUDIO-LETTER-01: Pflichtangaben nach DIN 5008 und Briefart – Absender, Anschrift, Betreff, Platzhalter, Aktenzeichen, Kündigungstermin und Bestätigung, Anlagen",
       "STUDIO-LETTER-01: Schnellzugriff „Neuer Brief“ → Kündigung → ausfüllen → prüfen → speichern; Absender gemerkt",
+      "STUDIO-LETTER-01: Widerspruch erkannt, Pflichtangaben und Anlagen, Frist erst nach „Ja“ im Kalender, „Nein“ trägt nichts ein; Brief ins Postausgangsbuch",
+      "STUDIO-LETTER-01: Wiedervorlage und Fristen über alle Akten – überfällige zuerst, verworfene Fristen fehlen; Postausgangsbuch mit Empfänger-Kurzform, Pflichtfeldern und CSV",
       "Startbildschirm bekommt keine Auftragsleiste",
       "Stil Trendo bleibt unverändert: Trendo-Kopf, Seitenspalten, Dock – keine Fremd-Leisten",
       "Studio-Fenster wie im System: Mac und GNOME – KI-Zeile ist die Titelleiste (Ampel bzw. Schließen, Titel, Zurück), Windows behält die Titelleiste; Schließen in der Kopfleiste schließt das Fenster",
@@ -229,7 +271,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
     "WarmMs": 79,
     "WindowsOnly": []
@@ -388,9 +430,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 21,
+    "WarmMs": 43,
     "WindowsOnly": []
   },
   {
@@ -540,9 +582,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 43,
     "WindowsOnly": []
   },
   {
@@ -740,9 +782,9 @@
       "src/Trendo.App/MainWindow.Pim.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 56,
     "WindowsOnly": []
   },
   {
@@ -902,9 +944,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 22,
+    "WarmMs": 28,
     "WindowsOnly": []
   },
   {
@@ -1066,9 +1108,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -1306,9 +1348,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -1561,9 +1603,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -1804,9 +1846,9 @@
       "src/Trendo.App/MainWindow.Sys02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -1893,9 +1935,9 @@
       "src/Trendo.App/MainWindow.W4Suite.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 21,
+    "WarmMs": 15,
     "WindowsOnly": []
   },
   {
@@ -2146,7 +2188,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
     "WarmMs": 13,
     "WindowsOnly": []
@@ -2377,7 +2419,7 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -2638,9 +2680,9 @@
       "src/Trendo.App/MainWindow.Sys10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -2917,9 +2959,9 @@
       "src/Trendo.App/MainWindow.Tabelle.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -3213,9 +3255,9 @@
       "src/Trendo.App/MainWindow.Text.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 28,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -3291,9 +3333,9 @@
       "src/Trendo.App/MainWindow.W5Finance.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 41,
+    "WarmMs": 43,
     "WindowsOnly": []
   },
   {
@@ -3437,9 +3479,9 @@
       "src/Trendo.App/MainWindow.W5Business.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -3520,15 +3562,27 @@
       },
       {
         "Nr": "FM-12",
-        "Name": "Ähnliche Bilder",
-        "State": "offen",
-        "Test": "–"
+        "Name": "Ähnliche Bilder und Klänge (Openverse „related“, Commons über Stichworte)",
+        "State": "umgesetzt",
+        "Test": "MediaPro_Ui, MediaCollectionsTests"
       },
       {
         "Nr": "FM-13",
-        "Name": "Merklisten",
-        "State": "offen",
-        "Test": "–"
+        "Name": "Merklisten je Projekt mit Lizenzprüfung, Namensnennungen, alle laden",
+        "State": "umgesetzt",
+        "Test": "MediaPro_Ui, MediaCollectionsTests"
+      },
+      {
+        "Nr": "FM-14",
+        "Name": "Schriftvorschau mit eigenem Text und Größe",
+        "State": "umgesetzt",
+        "Test": "MediaPro_Ui"
+      },
+      {
+        "Nr": "FM-15",
+        "Name": "Claude als Rechercheur: sucht, prüft Lizenzen, merkt, Namensnennung automatisch",
+        "State": "umgesetzt",
+        "Test": "MediaPro_Ui"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/X-07_KATALOG.md",
@@ -3546,6 +3600,7 @@
       "Klänge",
       "Schriften",
       "3D & Texturen",
+      "☆ Merklisten",
       "Meine Bibliothek",
       "Suchen",
       "Berge",
@@ -3573,6 +3628,7 @@
       "Freie Bilder & Klänge"
     ],
     "Tests": [
+      "Freie Bilder & Klänge Profi: ähnliche Bilder, Merken in neue Liste, Merklisten-Reiter mit Namensnennungen, Schriftvorschau mit eigenem Text; Claude sucht, prüft Lizenzen, merkt und schreibt die Namensnennung",
       "Medienbrowser wie Openverse/Unsplash/Google Fonts: beide Quellen gemischt, Ausrichtung filtern, Namensnennung als HTML, Bild in der Bildbearbeitung öffnen, Schriften suchen und laden",
       "Medienbrowser: Bilder suchen, Raster mit Vorschaubild, Vorschau mit Lizenz und Urheber, nur freie Lizenzen, Laden mit Herkunft, Namensnennung kopieren; Klänge vorhören; Bibliothek",
       "Medienbrowser: Testmodus ohne nachgebildetes Netz sucht nicht im Internet",
@@ -3589,9 +3645,9 @@
       "src/Trendo.App/MainWindow.W4Assets.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -3656,9 +3712,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -3734,9 +3790,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -3924,9 +3980,9 @@
       "src/Trendo.App/MainWindow.ProgMode.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -4075,13 +4131,17 @@
       "\uD83D\uDC65 Team",
       "Ablauf",
       "On-Air-Uhr",
+      "\uD83C\uDFA5 Studio",
       "Beginn = jetzt",
       "Stopp",
+      "\uD83C\uDFA5 Studio öffnen – Szenen, Tonmischer, Probelauf",
       "Bildschirm",
       "Fenster",
       "Kamera",
       "Mikrofon mit aufnehmen",
       "Mikrofone suchen",
+      "Datei wählen …",
+      "Einblenden",
       "Vorschau starten",
       "Aufnahme starten",
       "Aufnahmeordner öffnen",
@@ -4096,7 +4156,6 @@
       "Moderationskarten",
       "OBS Studio einrichten …",
       "Zwei Wochen planen",
-      "Datei wählen …",
       "Kopie verschieben"
     ],
     "Formats": [
@@ -4136,6 +4195,7 @@
       "Live streamen"
     ],
     "Tests": [
+      "Live streamen wie OBS: Szene wählen und anlegen, Bauchbinde einblenden (im FFmpeg-Graph), Tonmischer mit Lautstärke und Stumm, Pegel und Aussetzer-Warnung, Probelauf mit Ampel, Sendeplan",
       "SPEC-15 F12: Was läuft gerade",
       "SPEC-15 F13: Untertitel verschieben",
       "SPEC-15 F14: Sprechzeit",
@@ -4162,6 +4222,7 @@
       "SPEC-15 UI: Programmpunkte eintippen (Enter), Dauer und Titel in der Tabelle ändern, verschieben, entfernen; Sendeplatz zu kurz wird rot",
       "SPEC-15 UI: Vorschau, Aufnahme und Stopp tun etwas, ohne von allein zu senden",
       "SPEC-15 UI: offline kein Stream, Aufnahme bleibt",
+      "SPEC-15: Claude als Regie – Briefing mit Szenen, Ton und Ton-Wache, Plan zeigt neue Szenen, „Ausführen“ legt Szenen mit Bauchbinde an und setzt den Sendeplan; ungültige Quelle fällt weg",
       "SPEC-15: Sendeablauf mit Zeiten, Überziehung, Kapitelmarken, Bitrate, Speicher",
       "Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg",
       "T-0203: Abbrechen installiert nichts",
@@ -4180,9 +4241,9 @@
       "src/Trendo.App/MainWindow.Spec15.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 61,
+    "WarmMs": 66,
     "WindowsOnly": []
   },
   {
@@ -4433,6 +4494,7 @@
       "STUDIO-MUSIK-01: Claude als Produzent – Briefing mit Silben und Reimen, Plan mit Rhythmus vorher/nachher, Ausführen füllt den Entwurf, Erstellen hängt die Fassung ans Original, Mastering-Ziel „laut“",
       "Spuren trennen ohne Demucs: „einrichten“ lädt Demucs 4.0.1 mit PyTorch in eine eigene Umgebung",
       "Spuren trennen: Begleitung und Gesang werden eigene Lieder (mit Herkunft), alle Spuren im Ordner „– Spuren“",
+      "Trendo Musik DAW: Transportleiste zeigt Takt 1.1 und Tempo, Arrangement mit Abschnitten, Text und Gesang/Begleitung; Fortschritt bewegt Takt-Anzeige; Mischpult legt Mehrspur-Projekt mit den Spuren an",
       "Trendo Musik Profi: Liedtext läuft mit (laufende Zeile gold), Zeile anklicken springt dorthin; Raster mit Tonart, Tonleiter, Takten; Fassungen A/B an gleicher Stelle",
       "Trendo Musik: Abschnitt neu und Cover laden das Lied hoch (kein Dateipfad), neue Fassung verweist aufs Original; Liedtext mit KI; Favorit, Export, Löschen in den Papierkorb",
       "Trendo Musik: Aufträge an ACE-Step geprüft – Grenzen für Länge, Tempo, Varianten; Abschnitt mind. 1 s; über 8 Minuten ohne Sprachmodell; unbekannte Tonart/Takt/Aufgabe abgelehnt",
@@ -4443,9 +4505,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 17,
     "WindowsOnly": []
   },
   {
@@ -4515,7 +4577,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test NOT_RUN",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
     "WarmMs": 7,
     "WindowsOnly": []
@@ -4896,9 +4958,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": true,
-    "WarmMs": 11,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -5251,9 +5313,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -5608,9 +5670,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 46,
+    "WarmMs": 36,
     "WindowsOnly": []
   },
   {
@@ -5959,9 +6021,9 @@
       "src/Trendo.App/MainWindow.W4Media.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -6033,6 +6095,30 @@
         "Name": "Claude baut aus Satz oder Foto ein Modell mit echten Maßen, Materialien, Licht und Kamera – Plan mit 3D-Vorschau, danach Render zur Prüfung",
         "State": "umgesetzt",
         "Test": "Claude3D_Ui"
+      },
+      {
+        "Nr": "D3-11",
+        "Name": "Freie Modelle aus Thingiverse (offizielle Schnittstelle, eigener App-Schlüssel), Smithsonian (CC0, eigener Schlüssel), NASA (gemeinfrei), Sketchfab (Suche frei, Laden mit eigenem Schlüssel)",
+        "State": "umgesetzt (echte Schlüssel-Abrufe nicht im Test)",
+        "Test": "FreeModelsTests, Library3DPro_Ui"
+      },
+      {
+        "Nr": "D3-12",
+        "Name": "Seiten ohne Schnittstelle (Printables, MakerWorld, Cults3D, MyMiniFactory, Thangs): im Browser laden, Trendo übernimmt die Datei aus dem Download-Ordner – kein Abgreifen, kein Passwort",
+        "State": "umgesetzt",
+        "Test": "FreeModelsTests, Library3DPro_Ui"
+      },
+      {
+        "Nr": "D3-13",
+        "Name": "Lizenz je Modell sichtbar, Filter „nur kommerziell“, Lizenzdatei mit Namensnennung",
+        "State": "umgesetzt",
+        "Test": "FreeModelsTests, Library3DPro_Ui"
+      },
+      {
+        "Nr": "D3-14",
+        "Name": "Übernehmen ins 3D-Studio oder in den 3D-Druck (Maßeinheit erkennt der Import)",
+        "State": "umgesetzt",
+        "Test": "Library3DPro_Ui"
       },
       {
         "Nr": "CA-01",
@@ -6315,6 +6401,11 @@
       "CORE-05 B4: Statuswerte – WLAN-Signal in Klartext, Tempo-Stufe, Kammerlicht, Lüfter, AMS-Fächer mit Typ, Farbe, Rest und aktivem Fach, Fehlermeldungen mit Bereich und Link",
       "CORE-05 B4: Steuerbefehle wie Bambu Studio – Licht, Tempo 1–4, Düse bis 300 °C, Bett bis 110 °C, Lüfter in Prozent; außerhalb der Grenzen abgelehnt; Zeitraffer beim Druckstart",
       "CORE-05 B5/B3: Mehrere Drucker in einer Liste (gleiche Seriennummer ersetzt, ohne Zugangscode in der Datei); Bambu-Studio-Befehlszeile zum Slicen mit Profilen",
+      "CORE-05 Q1: Smithsonian (nur CC0 mit 3D-Datei, GLB bevorzugt), NASA über GitHub (Suche im Namen, LFS-Dateien über den Medien-Server), Sketchfab (Suche frei, Laden nur mit eigenem Schlüssel im Kopf der Anfrage)",
+      "CORE-05 Q1: Thingiverse über die offizielle Schnittstelle – ohne Schlüssel klare Meldung, Suche mit Schlüssel, Laden holt Lizenz und die STL, Lizenzdatei mit Namensnennung",
+      "CORE-05 Q1–Q4: Quellen-Leiste, Schlüssel geschützt speichern, NASA suchen und laden, in den 3D-Druck und ins 3D-Studio übernehmen, andere Seiten über den Download-Ordner, Filter „nur kommerziell“",
+      "CORE-05 Q2: Download-Übernahme – nur neue, fertig geladene Modelldateien; ZIP wird entpackt (ohne Pfad-Ausbruch), Lizenz und Seite kommen in die Bibliothek",
+      "CORE-05 Q3: Lizenzen – CC0, CC BY, CC BY-SA und NASA sind kommerziell nutzbar, NC nicht; Namensnennung bei allem außer CC0/gemeinfrei",
       "CORE-05: Anfasser – Verschieben, Drehen, Skalieren entlang einer Achse (Raster), Tasten G/R/S wechseln die Art, ein Schritt im Rückgängig",
       "CORE-05: Arbeitsschritte Modellieren → UV → Material → Licht → Kamera → Render – Stand aus der Szene, ausgeblendete Teile zählen nicht",
       "CORE-05: Arbeitsschritte – Licht und Kamera wählen, Render (nachgebildet) landet im Verlauf, zwei Renders zeigen Vorher/Nachher mit Regler; alle Schritte erledigt",
@@ -6344,9 +6435,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 53,
+    "WarmMs": 52,
     "WindowsOnly": []
   },
   {
@@ -6418,6 +6509,30 @@
         "Name": "Claude baut aus Satz oder Foto ein Modell mit echten Maßen, Materialien, Licht und Kamera – Plan mit 3D-Vorschau, danach Render zur Prüfung",
         "State": "umgesetzt",
         "Test": "Claude3D_Ui"
+      },
+      {
+        "Nr": "D3-11",
+        "Name": "Freie Modelle aus Thingiverse (offizielle Schnittstelle, eigener App-Schlüssel), Smithsonian (CC0, eigener Schlüssel), NASA (gemeinfrei), Sketchfab (Suche frei, Laden mit eigenem Schlüssel)",
+        "State": "umgesetzt (echte Schlüssel-Abrufe nicht im Test)",
+        "Test": "FreeModelsTests, Library3DPro_Ui"
+      },
+      {
+        "Nr": "D3-12",
+        "Name": "Seiten ohne Schnittstelle (Printables, MakerWorld, Cults3D, MyMiniFactory, Thangs): im Browser laden, Trendo übernimmt die Datei aus dem Download-Ordner – kein Abgreifen, kein Passwort",
+        "State": "umgesetzt",
+        "Test": "FreeModelsTests, Library3DPro_Ui"
+      },
+      {
+        "Nr": "D3-13",
+        "Name": "Lizenz je Modell sichtbar, Filter „nur kommerziell“, Lizenzdatei mit Namensnennung",
+        "State": "umgesetzt",
+        "Test": "FreeModelsTests, Library3DPro_Ui"
+      },
+      {
+        "Nr": "D3-14",
+        "Name": "Übernehmen ins 3D-Studio oder in den 3D-Druck (Maßeinheit erkennt der Import)",
+        "State": "umgesetzt",
+        "Test": "Library3DPro_Ui"
       },
       {
         "Nr": "CA-01",
@@ -6646,6 +6761,11 @@
       "CORE-05 B4: Statuswerte – WLAN-Signal in Klartext, Tempo-Stufe, Kammerlicht, Lüfter, AMS-Fächer mit Typ, Farbe, Rest und aktivem Fach, Fehlermeldungen mit Bereich und Link",
       "CORE-05 B4: Steuerbefehle wie Bambu Studio – Licht, Tempo 1–4, Düse bis 300 °C, Bett bis 110 °C, Lüfter in Prozent; außerhalb der Grenzen abgelehnt; Zeitraffer beim Druckstart",
       "CORE-05 B5/B3: Mehrere Drucker in einer Liste (gleiche Seriennummer ersetzt, ohne Zugangscode in der Datei); Bambu-Studio-Befehlszeile zum Slicen mit Profilen",
+      "CORE-05 Q1: Smithsonian (nur CC0 mit 3D-Datei, GLB bevorzugt), NASA über GitHub (Suche im Namen, LFS-Dateien über den Medien-Server), Sketchfab (Suche frei, Laden nur mit eigenem Schlüssel im Kopf der Anfrage)",
+      "CORE-05 Q1: Thingiverse über die offizielle Schnittstelle – ohne Schlüssel klare Meldung, Suche mit Schlüssel, Laden holt Lizenz und die STL, Lizenzdatei mit Namensnennung",
+      "CORE-05 Q1–Q4: Quellen-Leiste, Schlüssel geschützt speichern, NASA suchen und laden, in den 3D-Druck und ins 3D-Studio übernehmen, andere Seiten über den Download-Ordner, Filter „nur kommerziell“",
+      "CORE-05 Q2: Download-Übernahme – nur neue, fertig geladene Modelldateien; ZIP wird entpackt (ohne Pfad-Ausbruch), Lizenz und Seite kommen in die Bibliothek",
+      "CORE-05 Q3: Lizenzen – CC0, CC BY, CC BY-SA und NASA sind kommerziell nutzbar, NC nicht; Namensnennung bei allem außer CC0/gemeinfrei",
       "CORE-05: Anfasser – Verschieben, Drehen, Skalieren entlang einer Achse (Raster), Tasten G/R/S wechseln die Art, ein Schritt im Rückgängig",
       "CORE-05: Arbeitsschritte Modellieren → UV → Material → Licht → Kamera → Render – Stand aus der Szene, ausgeblendete Teile zählen nicht",
       "CORE-05: Arbeitsschritte – Licht und Kamera wählen, Render (nachgebildet) landet im Verlauf, zwei Renders zeigen Vorher/Nachher mit Regler; alle Schritte erledigt",
@@ -6671,9 +6791,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -6745,6 +6865,30 @@
         "Name": "Claude baut aus Satz oder Foto ein Modell mit echten Maßen, Materialien, Licht und Kamera – Plan mit 3D-Vorschau, danach Render zur Prüfung",
         "State": "umgesetzt",
         "Test": "Claude3D_Ui"
+      },
+      {
+        "Nr": "D3-11",
+        "Name": "Freie Modelle aus Thingiverse (offizielle Schnittstelle, eigener App-Schlüssel), Smithsonian (CC0, eigener Schlüssel), NASA (gemeinfrei), Sketchfab (Suche frei, Laden mit eigenem Schlüssel)",
+        "State": "umgesetzt (echte Schlüssel-Abrufe nicht im Test)",
+        "Test": "FreeModelsTests, Library3DPro_Ui"
+      },
+      {
+        "Nr": "D3-12",
+        "Name": "Seiten ohne Schnittstelle (Printables, MakerWorld, Cults3D, MyMiniFactory, Thangs): im Browser laden, Trendo übernimmt die Datei aus dem Download-Ordner – kein Abgreifen, kein Passwort",
+        "State": "umgesetzt",
+        "Test": "FreeModelsTests, Library3DPro_Ui"
+      },
+      {
+        "Nr": "D3-13",
+        "Name": "Lizenz je Modell sichtbar, Filter „nur kommerziell“, Lizenzdatei mit Namensnennung",
+        "State": "umgesetzt",
+        "Test": "FreeModelsTests, Library3DPro_Ui"
+      },
+      {
+        "Nr": "D3-14",
+        "Name": "Übernehmen ins 3D-Studio oder in den 3D-Druck (Maßeinheit erkennt der Import)",
+        "State": "umgesetzt",
+        "Test": "Library3DPro_Ui"
       },
       {
         "Nr": "CA-01",
@@ -6995,6 +7139,11 @@
       "CORE-05 B4: Statuswerte – WLAN-Signal in Klartext, Tempo-Stufe, Kammerlicht, Lüfter, AMS-Fächer mit Typ, Farbe, Rest und aktivem Fach, Fehlermeldungen mit Bereich und Link",
       "CORE-05 B4: Steuerbefehle wie Bambu Studio – Licht, Tempo 1–4, Düse bis 300 °C, Bett bis 110 °C, Lüfter in Prozent; außerhalb der Grenzen abgelehnt; Zeitraffer beim Druckstart",
       "CORE-05 B5/B3: Mehrere Drucker in einer Liste (gleiche Seriennummer ersetzt, ohne Zugangscode in der Datei); Bambu-Studio-Befehlszeile zum Slicen mit Profilen",
+      "CORE-05 Q1: Smithsonian (nur CC0 mit 3D-Datei, GLB bevorzugt), NASA über GitHub (Suche im Namen, LFS-Dateien über den Medien-Server), Sketchfab (Suche frei, Laden nur mit eigenem Schlüssel im Kopf der Anfrage)",
+      "CORE-05 Q1: Thingiverse über die offizielle Schnittstelle – ohne Schlüssel klare Meldung, Suche mit Schlüssel, Laden holt Lizenz und die STL, Lizenzdatei mit Namensnennung",
+      "CORE-05 Q1–Q4: Quellen-Leiste, Schlüssel geschützt speichern, NASA suchen und laden, in den 3D-Druck und ins 3D-Studio übernehmen, andere Seiten über den Download-Ordner, Filter „nur kommerziell“",
+      "CORE-05 Q2: Download-Übernahme – nur neue, fertig geladene Modelldateien; ZIP wird entpackt (ohne Pfad-Ausbruch), Lizenz und Seite kommen in die Bibliothek",
+      "CORE-05 Q3: Lizenzen – CC0, CC BY, CC BY-SA und NASA sind kommerziell nutzbar, NC nicht; Namensnennung bei allem außer CC0/gemeinfrei",
       "CORE-05: Anfasser – Verschieben, Drehen, Skalieren entlang einer Achse (Raster), Tasten G/R/S wechseln die Art, ein Schritt im Rückgängig",
       "CORE-05: Arbeitsschritte Modellieren → UV → Material → Licht → Kamera → Render – Stand aus der Szene, ausgeblendete Teile zählen nicht",
       "CORE-05: Arbeitsschritte – Licht und Kamera wählen, Render (nachgebildet) landet im Verlauf, zwei Renders zeigen Vorher/Nachher mit Regler; alle Schritte erledigt",
@@ -7020,9 +7169,9 @@
       "src/Trendo.App/MainWindow.W4Studio3D.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 71,
+    "WarmMs": 57,
     "WindowsOnly": []
   },
   {
@@ -7199,6 +7348,7 @@
       "Aus Fotos"
     ],
     "Tests": [
+      "SPEC-04 VR: Vorschau aus Augenhöhe schaltbar (1,60 m), Anzeige der größten Textur, Karte „Für die Brille reparieren“; passt das Modell, gibt es nichts zu reparieren",
       "SPEC-09 F10: Skalieren",
       "SPEC-09 F11: Zentrieren",
       "SPEC-09 F12: Zuschneiden",
@@ -7216,6 +7366,10 @@
       "SPEC-09 Foto: Meshroom bekommt Eingabe und Ausgabe, Arbeitsordner liegt beim Programm",
       "SPEC-09 Foto: Ordner listet Bilder, zu wenige Fotos werden abgelehnt",
       "SPEC-09 Katalog: COLMAP als geprüftes Windows-ZIP, Meshroom nur über die offizielle Seite",
+      "SPEC-09 Scan: Beschneiden (unten weg), kleine Reste entfernen (größtes Teil bleibt), Löcher schließen (offener Würfel wird dicht), echte Größe direkt und über einen bekannten Gegenstand",
+      "SPEC-09 Scan: Kameras als Marker, beschneiden, Reste entfernen, Löcher schließen, echte Größe direkt und über Kreditkarte, Rückgängig; gute Fotos auswählen und als Kopie verwenden; Texturqualität wählbar",
+      "SPEC-09 Scan: Kameras aus COLMAP (images.txt und images.bin) – Kameramitte C = −Rᵀt, in die Lage des Modells umgerechnet und gespeichert; Meshroom cameras.sfm",
+      "SPEC-09 Scan: gute Fotos auswählen – wahrscheinlich unscharfe (wenig Bilddetails) und doppelte werden aussortiert; Meshroom bekommt die gewählte Texturgröße",
       "SPEC-09 UI: Beispielraum – Maus dreht und zoomt, Störpunkte/Boden entfernen als Schritte, Schritt wieder entfernen, Rückgängig",
       "SPEC-09 UI: Messen – zwei Punkte anklicken zeigt den Abstand; eigene Datei laden, Einheit umrechnen, Analyse, Export PLY/XYZ/Bericht",
       "SPEC-09 UI: Rechnung zeigt den Fortschritt und öffnet das Modell im 3D-Studio",
@@ -7228,9 +7382,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -7429,6 +7583,10 @@
       "SPEC-09 Foto: Meshroom bekommt Eingabe und Ausgabe, Arbeitsordner liegt beim Programm",
       "SPEC-09 Foto: Ordner listet Bilder, zu wenige Fotos werden abgelehnt",
       "SPEC-09 Katalog: COLMAP als geprüftes Windows-ZIP, Meshroom nur über die offizielle Seite",
+      "SPEC-09 Scan: Beschneiden (unten weg), kleine Reste entfernen (größtes Teil bleibt), Löcher schließen (offener Würfel wird dicht), echte Größe direkt und über einen bekannten Gegenstand",
+      "SPEC-09 Scan: Kameras als Marker, beschneiden, Reste entfernen, Löcher schließen, echte Größe direkt und über Kreditkarte, Rückgängig; gute Fotos auswählen und als Kopie verwenden; Texturqualität wählbar",
+      "SPEC-09 Scan: Kameras aus COLMAP (images.txt und images.bin) – Kameramitte C = −Rᵀt, in die Lage des Modells umgerechnet und gespeichert; Meshroom cameras.sfm",
+      "SPEC-09 Scan: gute Fotos auswählen – wahrscheinlich unscharfe (wenig Bilddetails) und doppelte werden aussortiert; Meshroom bekommt die gewählte Texturgröße",
       "SPEC-09 UI: Beispielraum – Maus dreht und zoomt, Störpunkte/Boden entfernen als Schritte, Schritt wieder entfernen, Rückgängig",
       "SPEC-09 UI: Messen – zwei Punkte anklicken zeigt den Abstand; eigene Datei laden, Einheit umrechnen, Analyse, Export PLY/XYZ/Bericht",
       "SPEC-09 UI: Rechnung zeigt den Fortschritt und öffnet das Modell im 3D-Studio",
@@ -7440,9 +7598,9 @@
       "src/Trendo.App/MainWindow.Spec09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": true,
-    "WarmMs": 8,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -7574,6 +7732,24 @@
         "Name": "Ton-Spur: Geräusch je Ereignis (Springen, Münze, Treffer, Ziel) und Musik in Schleife, ins Spiel kopiert",
         "State": "umgesetzt",
         "Test": "GameProTests, SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-21",
+        "Name": "Freie Assets suchen: Godot Asset Library (offizielle Schnittstelle), Kenney, Quaternius, OpenGameArt, itch.io über Browser und Download-Ordner",
+        "State": "umgesetzt (echte Abrufe nicht im Test)",
+        "Test": "GameAssetsTests, GameAssets_Ui"
+      },
+      {
+        "Nr": "SP-22",
+        "Name": "Assets direkt verwenden: Figur-Bild, Animation je Zustand (Bilder aus dem Streifen), Hintergrund, Töne und Musik – ein Rückgängig-Schritt",
+        "State": "umgesetzt",
+        "Test": "GameAssetsTests, GameAssets_Ui"
+      },
+      {
+        "Nr": "SP-23",
+        "Name": "Asset-Liste mit Quelle, Lizenz, Urheber; Abspann als CREDITS.txt im gebauten Spiel; Lizenzprüfung vor dem Veröffentlichen",
+        "State": "umgesetzt",
+        "Test": "GameAssetsTests, GameAssets_Ui"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-06_KATALOG.md",
@@ -7622,6 +7798,10 @@
     ],
     "Tests": [
       "CORE-06 (UI): Spiel anlegen öffnet es im Browser; ohne Unreal ehrlicher Hinweis, mit Unreal Projekt anlegen",
+      "CORE-06 G1: Godot Asset Library – Suche mit Titel, Autor, Lizenz; Laden nur von GitHub/GitLab, ZIP sicher entpackt; fremde Download-Adresse abgelehnt",
+      "CORE-06 G1–G3: Assets – Godot-Suche, neue Downloads übernehmen, Bildstreifen als Lauf-Animation (4 Bilder), Ton als Sprung-Geräusch, Asset-Liste mit Abspann, NC-Lizenz warnt beim Veröffentlichen",
+      "CORE-06 G2/G3: Asset-Liste – Kopie im Projekt, Verwendung passt zur Datei, Bildstreifen-Bilder aus dem Seitenverhältnis, Abspann nach Quellen, Prüfung meldet NC-Lizenz, fehlenden Urheber und fehlende Lizenz",
+      "CORE-06 G2/G3: Gebautes Spiel bekommt Figur- und Hintergrundbild aus der Asset-Liste und den Abspann als CREDITS.txt",
       "CORE-06: Alle Browser-Spiele werden angelegt, JavaScript ist gültig (node --check)",
       "CORE-06: Claude baut Level – sieht alle Level voll, Plan zeigt das neue Level als Vorschau, erst „Ausführen“ legt Level 2 und den Hintergrund an, falsches Zeichen fällt weg, „Verwerfen“ stellt alles zurück",
       "CORE-06: Gebautes Spiel mit 2 Leveln, Hintergrund und Lauf-Animation – config.js trägt alles, Bildstreifen liegt im Spielordner, game.js ist gültiges JavaScript (Node)",
@@ -7651,9 +7831,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": true,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -7786,6 +7966,24 @@
         "Name": "Ton-Spur: Geräusch je Ereignis (Springen, Münze, Treffer, Ziel) und Musik in Schleife, ins Spiel kopiert",
         "State": "umgesetzt",
         "Test": "GameProTests, SpielEditor_Ui"
+      },
+      {
+        "Nr": "SP-21",
+        "Name": "Freie Assets suchen: Godot Asset Library (offizielle Schnittstelle), Kenney, Quaternius, OpenGameArt, itch.io über Browser und Download-Ordner",
+        "State": "umgesetzt (echte Abrufe nicht im Test)",
+        "Test": "GameAssetsTests, GameAssets_Ui"
+      },
+      {
+        "Nr": "SP-22",
+        "Name": "Assets direkt verwenden: Figur-Bild, Animation je Zustand (Bilder aus dem Streifen), Hintergrund, Töne und Musik – ein Rückgängig-Schritt",
+        "State": "umgesetzt",
+        "Test": "GameAssetsTests, GameAssets_Ui"
+      },
+      {
+        "Nr": "SP-23",
+        "Name": "Asset-Liste mit Quelle, Lizenz, Urheber; Abspann als CREDITS.txt im gebauten Spiel; Lizenzprüfung vor dem Veröffentlichen",
+        "State": "umgesetzt",
+        "Test": "GameAssetsTests, GameAssets_Ui"
       }
     ],
     "FunctionCatalog": "docs/spec/kataloge/CORE-06_KATALOG.md",
@@ -7844,6 +8042,10 @@
     ],
     "Tests": [
       "CORE-06 (UI): Spiel anlegen öffnet es im Browser; ohne Unreal ehrlicher Hinweis, mit Unreal Projekt anlegen",
+      "CORE-06 G1: Godot Asset Library – Suche mit Titel, Autor, Lizenz; Laden nur von GitHub/GitLab, ZIP sicher entpackt; fremde Download-Adresse abgelehnt",
+      "CORE-06 G1–G3: Assets – Godot-Suche, neue Downloads übernehmen, Bildstreifen als Lauf-Animation (4 Bilder), Ton als Sprung-Geräusch, Asset-Liste mit Abspann, NC-Lizenz warnt beim Veröffentlichen",
+      "CORE-06 G2/G3: Asset-Liste – Kopie im Projekt, Verwendung passt zur Datei, Bildstreifen-Bilder aus dem Seitenverhältnis, Abspann nach Quellen, Prüfung meldet NC-Lizenz, fehlenden Urheber und fehlende Lizenz",
+      "CORE-06 G2/G3: Gebautes Spiel bekommt Figur- und Hintergrundbild aus der Asset-Liste und den Abspann als CREDITS.txt",
       "CORE-06: Alle Browser-Spiele werden angelegt, JavaScript ist gültig (node --check)",
       "CORE-06: Claude baut Level – sieht alle Level voll, Plan zeigt das neue Level als Vorschau, erst „Ausführen“ legt Level 2 und den Hintergrund an, falsches Zeichen fällt weg, „Verwerfen“ stellt alles zurück",
       "CORE-06: Gebautes Spiel mit 2 Leveln, Hintergrund und Lauf-Animation – config.js trägt alles, Bildstreifen liegt im Spielordner, game.js ist gültiges JavaScript (Node)",
@@ -7895,9 +8097,9 @@
       "src/Trendo.App/MainWindow.W4Game.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 36,
+    "WarmMs": 35,
     "WindowsOnly": []
   },
   {
@@ -8012,6 +8214,9 @@
       "XrInspector",
       "XrPlus",
       "ModelConverter",
+      "AssetLibrary",
+      "XrPro",
+      "FreeModels",
       "Mesh3D",
       "XrModelInfo",
       "XrSample"
@@ -8034,19 +8239,28 @@
       "Seite",
       "Oben",
       "Drahtgitter an",
+      "\uD83D\uDC41 Aus Augenhöhe",
       "Prüfbericht speichern"
     ],
     "Formats": [
       ".fbx",
       ".glb",
       ".gltf",
+      ".json",
       ".md",
+      ".mp3",
       ".obj",
+      ".ogg",
       ".ply",
-      ".stl"
+      ".png",
+      ".stl",
+      ".txt",
+      ".wav",
+      ".zip"
     ],
     "Dependencies": [
       "Blender (optional, 3D-Fotos/Render)",
+      "Poly Haven (freie 3D-Modelle)",
       "ambientCG (freie Materialien)"
     ],
     "Rea": "docs/claude/vorbilder/modell-pruefer-gltf.md",
@@ -8073,16 +8287,19 @@
       "SPEC-04 F16: Erweiterungen",
       "SPEC-04 UI: Beispielmodell laden, mit der Maus drehen, Ansichten, Maßstab plausibel, alle Geräte grün, Bericht speichern",
       "SPEC-04 UI: zu feines Modell wird für Handy-AR gelb, Zielgerät färbt die Balken; Datei öffnen, fehlende Datei; Komfort-Rechner",
-      "SPEC-04: GLB lesen, Dreiecke zählen, Geräte-Grenzen und Bildzeit prüfen"
+      "SPEC-04 VR: Brillen-Reparatur – Dreiecke auf 90 % des Budgets, Texturen auf die Gerätegrenze, Zentimeter-Modell auf Meter; Blender-Skript mit Dezimieren, Bildverkleinern, GLB-Export; passendes Modell braucht nichts",
+      "SPEC-04 VR: Vorschau aus Augenhöhe schaltbar (1,60 m), Anzeige der größten Textur, Karte „Für die Brille reparieren“; passt das Modell, gibt es nichts zu reparieren",
+      "SPEC-04: GLB lesen, Dreiecke zählen, Geräte-Grenzen und Bildzeit prüfen",
+      "SPEC-09 Scan: Kameras als Marker, beschneiden, Reste entfernen, Löcher schließen, echte Größe direkt und über Kreditkarte, Rückgängig; gute Fotos auswählen und als Kopie verwenden; Texturqualität wählbar"
     ],
     "SourceFiles": [
       "src/Trendo.App/MainWindow.Library3D.cs",
       "src/Trendo.App/MainWindow.Spec04.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 42,
+    "WarmMs": 36,
     "WindowsOnly": []
   },
   {
@@ -8279,9 +8496,9 @@
       "src/Trendo.App/MainWindow.Spec16.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 91,
+    "WarmMs": 80,
     "WindowsOnly": []
   },
   {
@@ -8470,7 +8687,7 @@
       "src/Trendo.App/MainWindow.Spec14.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -8678,9 +8895,9 @@
       "src/Trendo.App/MainWindow.Spec10.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 24,
+    "WarmMs": 42,
     "WindowsOnly": []
   },
   {
@@ -8898,9 +9115,9 @@
       "src/Trendo.App/MainWindow.Core09.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 62,
+    "WarmMs": 44,
     "WindowsOnly": []
   },
   {
@@ -9094,9 +9311,9 @@
       "src/Trendo.App/MainWindow.Spec13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": true,
-    "WarmMs": 7,
+    "WarmMs": 8,
     "WindowsOnly": []
   },
   {
@@ -9276,7 +9493,7 @@
       "src/Trendo.App/MainWindow.Spec02.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -9458,9 +9675,9 @@
       "src/Trendo.App/MainWindow.Spec03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": true,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -9649,7 +9866,7 @@
       "src/Trendo.App/MainWindow.Spec01.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": true,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -9819,9 +10036,9 @@
       "src/Trendo.App/MainWindow.Spec06.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -10020,7 +10237,7 @@
       "src/Trendo.App/MainWindow.Spec05.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": true,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -10077,9 +10294,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -10141,9 +10358,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -10155,7 +10372,51 @@
     "Type": [
       "KI-Zentrale (Bereiche, Suche, Seite – wie LM Studio)"
     ],
-    "Functions": [],
+    "Functions": [
+      {
+        "Nr": "AL-N1",
+        "Name": "n8n als Programm",
+        "State": "umgesetzt, Box getestet",
+        "Test": "N8nTests.Setup_local_only, N8nWorkspace_Ui"
+      },
+      {
+        "Nr": "AL-N2",
+        "Name": "Trendo KI",
+        "State": "umgesetzt, Box getestet",
+        "Test": "AutomationApiTests, N8nTests.Ki_route"
+      },
+      {
+        "Nr": "AL-N3",
+        "Name": "Trendo-Aktionen und -Ereignisse",
+        "State": "umgesetzt, Box getestet",
+        "Test": "AutomationApiTests, N8nTests.Hooks_local, N8nWorkspace_Ui"
+      },
+      {
+        "Nr": "AL-N4",
+        "Name": "Vorlagen je Studio",
+        "State": "umgesetzt, Box getestet",
+        "Test": "N8nTests.Templates_valid"
+      },
+      {
+        "Nr": "AL-N5",
+        "Name": "Claude baut Abläufe",
+        "State": "umgesetzt, Box getestet",
+        "Test": "N8nTests.Check_review, N8nWorkspace_Ui"
+      },
+      {
+        "Nr": "AL-N6",
+        "Name": "Austausch Trendo ↔ n8n",
+        "State": "umgesetzt, Box getestet",
+        "Test": "N8nTests.From_trendo"
+      },
+      {
+        "Nr": "AL-N7",
+        "Name": "Node-RED als freie Alternative",
+        "State": "umgesetzt, Box getestet (Einrichtung); Mitliefern im Setup offen (Sitzung A)",
+        "Test": "N8nTests.Setup_local_only"
+      }
+    ],
+    "FunctionCatalog": "docs/spec/kataloge/SYS-05_KATALOG.md",
     "Engine": [],
     "Tools": [
       "Los",
@@ -10174,6 +10435,8 @@
       "Online-Dienste",
       "\uD83D\uDC65 Team",
       "Abläufe",
+      "Einfach: Trendo-Abläufe",
+      "Profi: n8n und Node-RED",
       "+ Downloads aufräumen: PDFs in einen Ordner",
       "+ Jeden Morgen eine Tagesnotiz",
       "+ Fotos mit Datum versehen",
@@ -10194,6 +10457,7 @@
     "Tests": [
       "Ablauf-Editor: Probelauf mit Anzeige – jeder Baustein leuchtet vorher auf, danach ✓ mit Anzahl bzw. ✕ bei Fehler, Ergebnis am Ende; nichts wird geändert",
       "Ablaufplan: Bausteine anhängen, Schritt per Maus nach oben ziehen, einstellen, Probelauf, Rückgängig; Änderung an freigegebenem Ablauf verlangt neue Freigabe",
+      "Abläufe Profi: n8n einrichten nur nach Ja, starten, Vorlage als Fluss mit Nach-außen-Hinweis, Nein verwirft, Ja speichert .n8n.json; Claude-Datei erscheint; Probe-Ereignis geht an den lokalen Webhook",
       "Abläufe: Fehler im Zeitplan wird angezeigt und protokolliert, der nächste fehlerfreie Lauf nimmt den Hinweis wieder weg",
       "CORE-02 UI: Studio verweist auf „KI fragen“, Frage wird beantwortet",
       "CORE-02: Nur Quellen auf diesem Gerät – Cloud-Adressen werden abgelehnt",
@@ -10214,7 +10478,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -10288,9 +10552,9 @@
       "src/Trendo.App/MainWindow.W5Fusion.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -10385,7 +10649,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -10469,7 +10733,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
     "WarmMs": 12,
     "WindowsOnly": []
@@ -10548,9 +10812,9 @@
       "src/Trendo.App/MainWindow.Skills.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -10645,9 +10909,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 34,
+    "WarmMs": 21,
     "WindowsOnly": []
   },
   {
@@ -10756,9 +11020,9 @@
       "src/Trendo.App/MainWindow.Connections.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 13,
     "WindowsOnly": []
   },
   {
@@ -10832,9 +11096,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -10938,9 +11202,9 @@
       "src/Trendo.App/MainWindow.KiLibrary.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 17,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -11041,9 +11305,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 34,
+    "WarmMs": 31,
     "WindowsOnly": []
   },
   {
@@ -11106,9 +11370,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -11200,9 +11464,9 @@
       "src/Trendo.App/MainWindow.W4Builder.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -11251,7 +11515,7 @@
       "src/Trendo.App/MainWindow.W5CleanRoom.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -11352,9 +11616,9 @@
       "src/Trendo.App/MainWindow.W4Oss.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -11421,7 +11685,7 @@
       "src/Trendo.App/MainWindow.W5Ext.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
     "WarmMs": 8,
     "WindowsOnly": []
@@ -11552,9 +11816,9 @@
       "src/Trendo.App/MainWindow.W4Dev.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 42,
+    "WarmMs": 32,
     "WindowsOnly": []
   },
   {
@@ -11630,9 +11894,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 23,
+    "WarmMs": 25,
     "WindowsOnly": []
   },
   {
@@ -11704,7 +11968,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
     "WarmMs": 10,
     "WindowsOnly": []
@@ -11786,9 +12050,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -11856,9 +12120,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -12162,9 +12426,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 47,
+    "WarmMs": 53,
     "WindowsOnly": []
   },
   {
@@ -12423,9 +12687,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 9,
     "WindowsOnly": []
   },
   {
@@ -12713,9 +12977,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 18,
+    "WarmMs": 19,
     "WindowsOnly": []
   },
   {
@@ -12956,9 +13220,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 8,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -13225,9 +13489,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 9,
+    "WarmMs": 7,
     "WindowsOnly": []
   },
   {
@@ -13549,7 +13813,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
     "WarmMs": 5,
     "WindowsOnly": []
@@ -13626,7 +13890,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -13703,9 +13967,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 19,
+    "WarmMs": 10,
     "WindowsOnly": []
   },
   {
@@ -13800,7 +14064,7 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
     "WarmMs": 41,
     "WindowsOnly": []
@@ -13900,9 +14164,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -13983,9 +14247,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 13,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -14061,7 +14325,7 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
     "WarmMs": 11,
     "WindowsOnly": []
@@ -14330,9 +14594,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 31,
+    "WarmMs": 32,
     "WindowsOnly": []
   },
   {
@@ -14577,9 +14841,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 18,
     "WindowsOnly": []
   },
   {
@@ -14833,9 +15097,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 15,
+    "WarmMs": 31,
     "WindowsOnly": []
   },
   {
@@ -15122,9 +15386,9 @@
       "src/Trendo.App/MainWindow.Sys11.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 32,
+    "WarmMs": 50,
     "WindowsOnly": []
   },
   {
@@ -15332,9 +15596,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 42,
+    "WarmMs": 32,
     "WindowsOnly": []
   },
   {
@@ -15548,9 +15812,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -15771,9 +16035,9 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -15985,7 +16249,7 @@
       "src/Trendo.App/MainWindow.Sys13.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
     "WarmMs": 9,
     "WindowsOnly": []
@@ -16286,9 +16550,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 104,
+    "WarmMs": 105,
     "WindowsOnly": []
   },
   {
@@ -16503,9 +16767,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -16730,9 +16994,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 12,
+    "WarmMs": 14,
     "WindowsOnly": []
   },
   {
@@ -16945,9 +17209,9 @@
       "src/Trendo.App/MainWindow.Sys12.cs"
     ],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 11,
+    "WarmMs": 12,
     "WindowsOnly": []
   },
   {
@@ -17022,9 +17286,9 @@
     ],
     "SourceFiles": [],
     "Status": "IN_PROGRESS / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 10,
+    "WarmMs": 11,
     "WindowsOnly": []
   },
   {
@@ -17301,9 +17565,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 20,
+    "WarmMs": 19,
     "WindowsOnly": []
   },
   {
@@ -17556,9 +17820,9 @@
       "src/Trendo.App/MainWindow.Sys03.cs"
     ],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 31,
+    "WarmMs": 16,
     "WindowsOnly": []
   },
   {
@@ -17639,9 +17903,9 @@
     ],
     "SourceFiles": [],
     "Status": "IMPLEMENTED / Test PC_VERIFIED",
-    "Version": "0.9.36 (Stand 5b38700)",
+    "Version": "0.9.36 (Stand df8e056)",
     "Shell": false,
-    "WarmMs": 14,
+    "WarmMs": 13,
     "WindowsOnly": []
   }
 ]

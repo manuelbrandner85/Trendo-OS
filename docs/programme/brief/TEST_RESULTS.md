@@ -1,10 +1,10 @@
 # Briefe schreiben – Testergebnisse
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 5b38700)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand df8e056)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 35 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 40 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -33,7 +33,12 @@ Bestanden 35 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | Mehrfachauswahl wie im System: Umschalt-Klick Bereich, Strg-Klick dazu/weg, Rahmen mit der Maus aufziehen, Alles auswählen, mehrere kopieren/einfügen und in den Papierkorb, Klick ins Leere hebt auf | ✓ bestanden |
 | Programme im Stil des Systems: Windows-Menüzeile im Fenster, Mac-Menüs oben in der Menüleiste (Ablage …), GNOME-Kopfleiste mit „Speichern“ blau und Hauptmenü ☰ – Menüeinträge lösen dieselben Befehle aus | ✓ bestanden |
 | Registerkarten wie Explorer/Finder/Dateien: Strg/⌘+T neu, Mittelklick-Ordner in neuer Karte, Wechsel per Klick und Strg+Bild↓, eigener Verlauf je Karte, Strg/⌘+W schließt erst die Karte, dann das Fenster | ✓ bestanden |
+| STUDIO-LETTER-01: Akte – Wiedervorlage setzen und erledigen, Versand mit Nachweis macht die Akte „versendet“ und steht im Postausgangsbuch; Übersicht zeigt fällige Wiedervorlagen und öffnet die Akte | ✓ bestanden |
+| STUDIO-LETTER-01: Briefart erkennen – Widerspruch, Widerruf, Kündigung, Mahnung, Reklamation, DSGVO-Auskunft; Frist mit Wochenend-Verschiebung; ohne Treffer nichts | ✓ bestanden |
+| STUDIO-LETTER-01: Pflichtangaben nach DIN 5008 und Briefart – Absender, Anschrift, Betreff, Platzhalter, Aktenzeichen, Kündigungstermin und Bestätigung, Anlagen | ✓ bestanden |
 | STUDIO-LETTER-01: Schnellzugriff „Neuer Brief“ → Kündigung → ausfüllen → prüfen → speichern; Absender gemerkt | ✓ bestanden |
+| STUDIO-LETTER-01: Widerspruch erkannt, Pflichtangaben und Anlagen, Frist erst nach „Ja“ im Kalender, „Nein“ trägt nichts ein; Brief ins Postausgangsbuch | ✓ bestanden |
+| STUDIO-LETTER-01: Wiedervorlage und Fristen über alle Akten – überfällige zuerst, verworfene Fristen fehlen; Postausgangsbuch mit Empfänger-Kurzform, Pflichtfeldern und CSV | ✓ bestanden |
 | Startbildschirm bekommt keine Auftragsleiste | ✓ bestanden |
 | Stil Trendo bleibt unverändert: Trendo-Kopf, Seitenspalten, Dock – keine Fremd-Leisten | ✓ bestanden |
 | Studio-Fenster wie im System: Mac und GNOME – KI-Zeile ist die Titelleiste (Ampel bzw. Schließen, Titel, Zurück), Windows behält die Titelleiste; Schließen in der Kopfleiste schließt das Fenster | ✓ bestanden |

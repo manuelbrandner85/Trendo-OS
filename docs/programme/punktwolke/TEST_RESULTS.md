@@ -1,10 +1,10 @@
 # Punktwolke – Testergebnisse
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.36 (Stand 5b38700)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `punktwolke` · Stand: 0.9.36 (Stand df8e056)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 23 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 27 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
@@ -25,6 +25,10 @@ Bestanden 23 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | SPEC-09 Foto: Meshroom bekommt Eingabe und Ausgabe, Arbeitsordner liegt beim Programm | ✓ bestanden |
 | SPEC-09 Foto: Ordner listet Bilder, zu wenige Fotos werden abgelehnt | ✓ bestanden |
 | SPEC-09 Katalog: COLMAP als geprüftes Windows-ZIP, Meshroom nur über die offizielle Seite | ✓ bestanden |
+| SPEC-09 Scan: Beschneiden (unten weg), kleine Reste entfernen (größtes Teil bleibt), Löcher schließen (offener Würfel wird dicht), echte Größe direkt und über einen bekannten Gegenstand | ✓ bestanden |
+| SPEC-09 Scan: Kameras als Marker, beschneiden, Reste entfernen, Löcher schließen, echte Größe direkt und über Kreditkarte, Rückgängig; gute Fotos auswählen und als Kopie verwenden; Texturqualität wählbar | ✓ bestanden |
+| SPEC-09 Scan: Kameras aus COLMAP (images.txt und images.bin) – Kameramitte C = −Rᵀt, in die Lage des Modells umgerechnet und gespeichert; Meshroom cameras.sfm | ✓ bestanden |
+| SPEC-09 Scan: gute Fotos auswählen – wahrscheinlich unscharfe (wenig Bilddetails) und doppelte werden aussortiert; Meshroom bekommt die gewählte Texturgröße | ✓ bestanden |
 | SPEC-09 UI: Beispielraum – Maus dreht und zoomt, Störpunkte/Boden entfernen als Schritte, Schritt wieder entfernen, Rückgängig | ✓ bestanden |
 | SPEC-09 UI: Messen – zwei Punkte anklicken zeigt den Abstand; eigene Datei laden, Einheit umrechnen, Analyse, Export PLY/XYZ/Bericht | ✓ bestanden |
 | SPEC-09 UI: Rechnung zeigt den Fortschritt und öffnet das Modell im 3D-Studio | ✓ bestanden |

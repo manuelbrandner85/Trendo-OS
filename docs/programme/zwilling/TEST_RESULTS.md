@@ -1,6 +1,6 @@
 # Geräte überwachen – Testergebnisse
 
-Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand 5b38700)
+Studio: Geräte überwachen (SPEC-10) · Bereich: Technik & Fachgebiete · Seite: `zwilling` · Stand: 0.9.36 (Stand df8e056)
 
 Lauf: `api.trx, app.trx, core.trx`
 

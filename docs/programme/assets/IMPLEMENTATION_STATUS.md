@@ -1,6 +1,6 @@
 # Freie Bilder & Klänge – Umsetzungsstand
 
-Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand 5b38700)
+Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand df8e056)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -17,7 +17,9 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | FM-09 | Schriften suchen und laden (offene Lizenzen) | Implementiert | `MediaLibraryPlusTests` |
 | FM-10 | 3D-Modelle, Texturen, Himmel | Implementiert | `AssetLibraryTests` |
 | FM-11 | Themen-Kacheln als Startseite | Implementiert | `MediaBrowser_Ui` |
-| FM-12 | Ähnliche Bilder | Geplant | `–` |
-| FM-13 | Merklisten | Geplant | `–` |
+| FM-12 | Ähnliche Bilder und Klänge (Openverse „related“, Commons über Stichworte) | Implementiert | `MediaPro_Ui, MediaCollectionsTests` |
+| FM-13 | Merklisten je Projekt mit Lizenzprüfung, Namensnennungen, alle laden | Implementiert | `MediaPro_Ui, MediaCollectionsTests` |
+| FM-14 | Schriftvorschau mit eigenem Text und Größe | Implementiert | `MediaPro_Ui` |
+| FM-15 | Claude als Rechercheur: sucht, prüft Lizenzen, merkt, Namensnennung automatisch | Implementiert | `MediaPro_Ui` |
 
-0 von 13 Funktionen getestet.
+0 von 15 Funktionen getestet.

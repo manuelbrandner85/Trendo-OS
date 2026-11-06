@@ -1,6 +1,6 @@
 # Freie Bilder & Klänge – Funktionsmatrix
 
-Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand 5b38700)
+Studio: Freie Bilder & Klänge finden (X-07) · Bereich: Kreativ & Medien · Seite: `assets` · Stand: 0.9.36 (Stand df8e056)
 
 Quelle: `docs/spec/kataloge/X-07_KATALOG.md`
 
@@ -17,8 +17,10 @@ Quelle: `docs/spec/kataloge/X-07_KATALOG.md`
 | FM-09 | Schriften suchen und laden (offene Lizenzen) | Vorhanden | umgesetzt |
 | FM-10 | 3D-Modelle, Texturen, Himmel | Vorhanden | umgesetzt |
 | FM-11 | Themen-Kacheln als Startseite | Vorhanden | umgesetzt |
-| FM-12 | Ähnliche Bilder | Noch zu entwickeln | offen |
-| FM-13 | Merklisten | Noch zu entwickeln | offen |
+| FM-12 | Ähnliche Bilder und Klänge (Openverse „related“, Commons über Stichworte) | Vorhanden | umgesetzt |
+| FM-13 | Merklisten je Projekt mit Lizenzprüfung, Namensnennungen, alle laden | Vorhanden | umgesetzt |
+| FM-14 | Schriftvorschau mit eigenem Text und Größe | Vorhanden | umgesetzt |
+| FM-15 | Claude als Rechercheur: sucht, prüft Lizenzen, merkt, Namensnennung automatisch | Vorhanden | umgesetzt |
 
 ## Werkzeuge der Oberfläche
 - Los
@@ -31,6 +33,7 @@ Quelle: `docs/spec/kataloge/X-07_KATALOG.md`
 - Klänge
 - Schriften
 - 3D & Texturen
+- ☆ Merklisten
 - Meine Bibliothek
 - Suchen
 - Berge

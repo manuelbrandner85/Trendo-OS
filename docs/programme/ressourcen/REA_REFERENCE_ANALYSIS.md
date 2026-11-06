@@ -1,6 +1,6 @@
 # Speicher & Leistung – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand 5b38700)
+Studio: Leistung anzeigen (X-09) · Bereich: System & Sicherheit · Seite: `ressourcen` · Stand: 0.9.36 (Stand df8e056)
 
 Analyse: [Vorbild-Analyse Netz, Teilen und Leistung: Windows Task-Manager, Free Download Manager, LocalSend, Windows-Freigaben (Clean-Room)](../../../docs/claude/vorbilder/netz-teilen-downloads-taskmanager.md)
 

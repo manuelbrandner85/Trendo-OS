@@ -1,9 +1,10 @@
 # Live streamen – Testplan
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand 5b38700)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand df8e056)
 
-39 Tests sprechen dieses Programm an.
+41 Tests sprechen dieses Programm an.
 
+- Live streamen wie OBS: Szene wählen und anlegen, Bauchbinde einblenden (im FFmpeg-Graph), Tonmischer mit Lautstärke und Stumm, Pegel und Aussetzer-Warnung, Probelauf mit Ampel, Sendeplan
 - SPEC-15 F12: Was läuft gerade
 - SPEC-15 F13: Untertitel verschieben
 - SPEC-15 F14: Sprechzeit
@@ -30,6 +31,7 @@ Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung`
 - SPEC-15 UI: Programmpunkte eintippen (Enter), Dauer und Titel in der Tabelle ändern, verschieben, entfernen; Sendeplatz zu kurz wird rot
 - SPEC-15 UI: Vorschau, Aufnahme und Stopp tun etwas, ohne von allein zu senden
 - SPEC-15 UI: offline kein Stream, Aufnahme bleibt
+- SPEC-15: Claude als Regie – Briefing mit Szenen, Ton und Ton-Wache, Plan zeigt neue Szenen, „Ausführen“ legt Szenen mit Bauchbinde an und setzt den Sendeplan; ungültige Quelle fällt weg
 - SPEC-15: Sendeablauf mit Zeiten, Überziehung, Kapitelmarken, Bitrate, Speicher
 - Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg
 - T-0203: Abbrechen installiert nichts

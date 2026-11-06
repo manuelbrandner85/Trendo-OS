@@ -1,6 +1,6 @@
 # Live streamen – Funktionsmatrix
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand 5b38700)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand df8e056)
 
 Quelle: `docs/w6-katalog/SPEC-15.md`
 
@@ -35,13 +35,17 @@ Quelle: `docs/w6-katalog/SPEC-15.md`
 - 👥 Team
 - Ablauf
 - On-Air-Uhr
+- 🎥 Studio
 - Beginn = jetzt
 - Stopp
+- 🎥 Studio öffnen – Szenen, Tonmischer, Probelauf
 - Bildschirm
 - Fenster
 - Kamera
 - Mikrofon mit aufnehmen
 - Mikrofone suchen
+- Datei wählen …
+- Einblenden
 - Vorschau starten
 - Aufnahme starten
 - Aufnahmeordner öffnen
@@ -56,5 +60,4 @@ Quelle: `docs/w6-katalog/SPEC-15.md`
 - Moderationskarten
 - OBS Studio einrichten …
 - Zwei Wochen planen
-- Datei wählen …
 - Kopie verschieben

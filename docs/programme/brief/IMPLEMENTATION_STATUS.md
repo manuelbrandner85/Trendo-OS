@@ -1,6 +1,6 @@
 # Briefe schreiben – Umsetzungsstand
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 5b38700)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand df8e056)
 
 Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getestet“ nur, wenn der zugehörige Test im letzten echten Lauf bestanden hat.
 
@@ -24,5 +24,11 @@ Stufen: Geplant · In Arbeit · Implementiert · Getestet · Blockiert. „Getes
 | BR-16 | Papierkorb für Briefe, Akten, Briefköpfe | Implementiert | `BriefePapierkorb` |
 | BR-17 | Kein Programmname auf dem Blatt | Implementiert | `LetterNoBrandingUiTests` |
 | BR-18 | Papierschacht wählen | In Arbeit | `–` |
+| BR-19 | Briefart erkennen (Widerspruch, Widerruf, Kündigung, Mahnung, Reklamation, DSGVO-Auskunft, Antrag, Bewerbung) mit Frist und Grundlage (Claude-Ausbau 5) | Implementiert | `LetterOfficeTests, LetterOffice_Ui` |
+| BR-20 | Pflichtangaben nach DIN 5008 und Briefart prüfen, typische Anlagen eintragen | Implementiert | `LetterOfficeTests, LetterOffice_Ui` |
+| BR-21 | Frist erst nach „Ja“ in den Trendo-Kalender (Erinnerung zwei Tage vorher) | Implementiert | `LetterOffice_Ui` |
+| BR-22 | Wiedervorlage je Akte (Datum, Notiz, „+ 2 Wochen“, erledigt) | Implementiert | `LetterOfficeTests, LetterOffice_Ui` |
+| BR-23 | „Steht an“: Fristen und Wiedervorlagen aller Akten, überfällige zuerst | Implementiert | `LetterOfficeTests, LetterOffice_Ui` |
+| BR-24 | Postausgangsbuch (Datum, Empfänger, Betreff, Versandweg, Akte, Nachweis) mit CSV; Versand mit Nachweis setzt die Akte auf „versendet“ | Implementiert | `LetterOfficeTests, LetterOffice_Ui` |
 
-0 von 18 Funktionen getestet.
+0 von 24 Funktionen getestet.

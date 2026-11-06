@@ -1,6 +1,6 @@
 # 3D – Funktionsmatrix
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 5b38700)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand df8e056)
 
 Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 
@@ -16,6 +16,10 @@ Quelle: `docs/spec/kataloge/CORE-05_KATALOG.md`
 | D3-08 | Licht-Vorgaben (Studio, Tageslicht, Abendsonne, Innenraum) und Kamera mit Brennweite und Blickhöhe | Vorhanden | umgesetzt |
 | D3-09 | Fotorealistischer Render (Cycles, Entrauschen, AgX, UV automatisch) mit Verlauf und Vorher/Nachher-Regler | Vorhanden | umgesetzt (Blender-Lauf nicht im Test) |
 | D3-10 | Claude baut aus Satz oder Foto ein Modell mit echten Maßen, Materialien, Licht und Kamera – Plan mit 3D-Vorschau, danach Render zur Prüfung | Vorhanden | umgesetzt |
+| D3-11 | Freie Modelle aus Thingiverse (offizielle Schnittstelle, eigener App-Schlüssel), Smithsonian (CC0, eigener Schlüssel), NASA (gemeinfrei), Sketchfab (Suche frei, Laden mit eigenem Schlüssel) | Vorhanden | umgesetzt (echte Schlüssel-Abrufe nicht im Test) |
+| D3-12 | Seiten ohne Schnittstelle (Printables, MakerWorld, Cults3D, MyMiniFactory, Thangs): im Browser laden, Trendo übernimmt die Datei aus dem Download-Ordner – kein Abgreifen, kein Passwort | Vorhanden | umgesetzt |
+| D3-13 | Lizenz je Modell sichtbar, Filter „nur kommerziell“, Lizenzdatei mit Namensnennung | Vorhanden | umgesetzt |
+| D3-14 | Übernehmen ins 3D-Studio oder in den 3D-Druck (Maßeinheit erkennt der Import) | Vorhanden | umgesetzt |
 | CA-01 | Boolesche Operationen (Vereinigung, Abzug, Schnitt) | Vorhanden | umgesetzt |
 | CA-02 | Parametrisch mit Formeln | Vorhanden | umgesetzt |
 | CA-03 | Extrudieren, Tasche, Drehteil, Rundung, Fase, Muster, Spiegeln | Vorhanden | umgesetzt |

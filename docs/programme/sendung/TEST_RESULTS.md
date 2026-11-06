@@ -1,13 +1,14 @@
 # Live streamen – Testergebnisse
 
-Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand 5b38700)
+Studio: Live streamen (SPEC-15) · Bereich: Kreativ & Medien · Seite: `sendung` · Stand: 0.9.36 (Stand df8e056)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 39 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
+Bestanden 41 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 
 | Test | Ergebnis |
 |---|---|
+| Live streamen wie OBS: Szene wählen und anlegen, Bauchbinde einblenden (im FFmpeg-Graph), Tonmischer mit Lautstärke und Stumm, Pegel und Aussetzer-Warnung, Probelauf mit Ampel, Sendeplan | ✓ bestanden |
 | SPEC-15 F12: Was läuft gerade | ✓ bestanden |
 | SPEC-15 F13: Untertitel verschieben | ✓ bestanden |
 | SPEC-15 F14: Sprechzeit | ✓ bestanden |
@@ -34,6 +35,7 @@ Bestanden 39 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 0
 | SPEC-15 UI: Programmpunkte eintippen (Enter), Dauer und Titel in der Tabelle ändern, verschieben, entfernen; Sendeplatz zu kurz wird rot | ✓ bestanden |
 | SPEC-15 UI: Vorschau, Aufnahme und Stopp tun etwas, ohne von allein zu senden | ✓ bestanden |
 | SPEC-15 UI: offline kein Stream, Aufnahme bleibt | ✓ bestanden |
+| SPEC-15: Claude als Regie – Briefing mit Szenen, Ton und Ton-Wache, Plan zeigt neue Szenen, „Ausführen“ legt Szenen mit Bauchbinde an und setzt den Sendeplan; ungültige Quelle fällt weg | ✓ bestanden |
 | SPEC-15: Sendeablauf mit Zeiten, Überziehung, Kapitelmarken, Bitrate, Speicher | ✓ bestanden |
 | Spiele: Unreal öffnen und die Herstellerseite bleiben der alte Weg | ✓ bestanden |
 | T-0203: Abbrechen installiert nichts | ✓ bestanden |

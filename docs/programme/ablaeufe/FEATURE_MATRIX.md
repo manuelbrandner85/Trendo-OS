@@ -1,8 +1,18 @@
 # Abläufe (Automatisch erledigen) – Funktionsmatrix
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand 5b38700)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand df8e056)
 
-Kein freigegebener Funktionskatalog für dieses Studio.
+Quelle: `docs/spec/kataloge/SYS-05_KATALOG.md`
+
+| Nr | Funktion | Einordnung | Stand laut Katalog |
+|---|---|---|---|
+| AL-N1 | n8n als Programm | Vorhanden | umgesetzt, Box getestet |
+| AL-N2 | Trendo KI | Vorhanden | umgesetzt, Box getestet |
+| AL-N3 | Trendo-Aktionen und -Ereignisse | Vorhanden | umgesetzt, Box getestet |
+| AL-N4 | Vorlagen je Studio | Vorhanden | umgesetzt, Box getestet |
+| AL-N5 | Claude baut Abläufe | Vorhanden | umgesetzt, Box getestet |
+| AL-N6 | Austausch Trendo ↔ n8n | Vorhanden | umgesetzt, Box getestet |
+| AL-N7 | Node-RED als freie Alternative | Vorhanden | umgesetzt, Box getestet (Einrichtung); Mitliefern im Setup offen (Sitzung A) |
 
 ## Werkzeuge der Oberfläche
 - Los
@@ -21,6 +31,8 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Online-Dienste
 - 👥 Team
 - Abläufe
+- Einfach: Trendo-Abläufe
+- Profi: n8n und Node-RED
 - + Downloads aufräumen: PDFs in einen Ordner
 - + Jeden Morgen eine Tagesnotiz
 - + Fotos mit Datum versehen

@@ -1,6 +1,6 @@
 # Briefe schreiben – Funktionsmatrix
 
-Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand 5b38700)
+Studio: Briefe schreiben (STUDIO-LETTER-01) · Bereich: Arbeiten & Büro · Seite: `brief` · Stand: 0.9.36 (Stand df8e056)
 
 Quelle: `docs/spec/kataloge/STUDIO-LETTER-01_KATALOG.md`
 
@@ -24,6 +24,12 @@ Quelle: `docs/spec/kataloge/STUDIO-LETTER-01_KATALOG.md`
 | BR-16 | Papierkorb für Briefe, Akten, Briefköpfe | Vorhanden | umgesetzt |
 | BR-17 | Kein Programmname auf dem Blatt | Vorhanden | umgesetzt |
 | BR-18 | Papierschacht wählen | Teilweise vorhanden | teilweise (Druckdialog des Systems) |
+| BR-19 | Briefart erkennen (Widerspruch, Widerruf, Kündigung, Mahnung, Reklamation, DSGVO-Auskunft, Antrag, Bewerbung) mit Frist und Grundlage (Claude-Ausbau 5) | Vorhanden | umgesetzt |
+| BR-20 | Pflichtangaben nach DIN 5008 und Briefart prüfen, typische Anlagen eintragen | Vorhanden | umgesetzt |
+| BR-21 | Frist erst nach „Ja“ in den Trendo-Kalender (Erinnerung zwei Tage vorher) | Vorhanden | umgesetzt |
+| BR-22 | Wiedervorlage je Akte (Datum, Notiz, „+ 2 Wochen“, erledigt) | Vorhanden | umgesetzt |
+| BR-23 | „Steht an“: Fristen und Wiedervorlagen aller Akten, überfällige zuerst | Vorhanden | umgesetzt |
+| BR-24 | Postausgangsbuch (Datum, Empfänger, Betreff, Versandweg, Akte, Nachweis) mit CSV; Versand mit Nachweis setzt die Akte auf „versendet“ | Vorhanden | umgesetzt |
 
 ## Werkzeuge der Oberfläche
 - Los
@@ -70,6 +76,7 @@ Quelle: `docs/spec/kataloge/STUDIO-LETTER-01_KATALOG.md`
 - 6. November 2026
 - Alle 20 Vorlagen zeigen …
 - Fertig – Brief speichern
+- Als verschickt eintragen
 - Einsetzen
 - Jetzt Form B – zu Form A wechseln
 - Falz- und Lochmarken mitdrucken

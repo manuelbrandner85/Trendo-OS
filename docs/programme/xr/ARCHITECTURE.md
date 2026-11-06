@@ -1,6 +1,6 @@
 # VR & AR gestalten – Architektur
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand 5b38700)
+Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand df8e056)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.Library3D.cs`
@@ -17,6 +17,9 @@ Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` �
 - `XrInspector`
 - `XrPlus`
 - `ModelConverter`
+- `AssetLibrary`
+- `XrPro`
+- `FreeModels`
 - `Mesh3D`
 - `XrModelInfo`
 - `XrSample`
@@ -25,13 +28,21 @@ Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` �
 - .fbx
 - .glb
 - .gltf
+- .json
 - .md
+- .mp3
 - .obj
+- .ogg
 - .ply
+- .png
 - .stl
+- .txt
+- .wav
+- .zip
 
 ## Externe Programme und Dienste
 - Blender (optional, 3D-Fotos/Render)
+- Poly Haven (freie 3D-Modelle)
 - ambientCG (freie Materialien)
 
 ## Bausteine (Masterprompt 131 / 5)

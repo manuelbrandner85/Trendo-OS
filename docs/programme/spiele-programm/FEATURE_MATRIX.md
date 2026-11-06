@@ -1,6 +1,6 @@
 # Spiele bauen – Funktionsmatrix
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand 5b38700)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele-programm` · Stand: 0.9.36 (Stand df8e056)
 
 Quelle: `docs/spec/kataloge/CORE-06_KATALOG.md`
 
@@ -26,6 +26,9 @@ Quelle: `docs/spec/kataloge/CORE-06_KATALOG.md`
 | SP-18 | Testmodus: Spielbarkeits-Prüfung je Level (Ziel erreichbar, knappe Sprünge, Landung neben Stacheln, Gegner am Start, Münzen), „Zeigen“ springt zur Stelle | Vorhanden | umgesetzt |
 | SP-19 | Fehler und Spieler-Notizen aus dem Probespiel mit Level und Stelle, abhaken; offene Fehler sperren die Beta-Abnahme | Vorhanden | umgesetzt |
 | SP-20 | Ton-Spur: Geräusch je Ereignis (Springen, Münze, Treffer, Ziel) und Musik in Schleife, ins Spiel kopiert | Vorhanden | umgesetzt |
+| SP-21 | Freie Assets suchen: Godot Asset Library (offizielle Schnittstelle), Kenney, Quaternius, OpenGameArt, itch.io über Browser und Download-Ordner | Vorhanden | umgesetzt (echte Abrufe nicht im Test) |
+| SP-22 | Assets direkt verwenden: Figur-Bild, Animation je Zustand (Bilder aus dem Streifen), Hintergrund, Töne und Musik – ein Rückgängig-Schritt | Vorhanden | umgesetzt |
+| SP-23 | Asset-Liste mit Quelle, Lizenz, Urheber; Abspann als CREDITS.txt im gebauten Spiel; Lizenzprüfung vor dem Veröffentlichen | Vorhanden | umgesetzt |
 
 ## Werkzeuge der Oberfläche
 - Spiel prüfen (Spiel)
