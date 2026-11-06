@@ -217,7 +217,7 @@ public partial class MainWindow
         return FitPage("Trendo Musik", new Panel(), root); // füllt das Fenster wie ein echtes Programm
     }
 
-    Border MsCard(string name, Control child) => new() { Name = name, CornerRadius = new CornerRadius(16), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(14), Child = child };
+    Border MsCard(string name, Control child) => new() { Name = name, CornerRadius = new CornerRadius(16), Background = PaneBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(14), Child = child };
 
     bool _msMoreOpen;
 
