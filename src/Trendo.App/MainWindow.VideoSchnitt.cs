@@ -49,6 +49,7 @@ public partial class MainWindow
             ]),
             ("Ausgabe", [
                 new ProgramCmd("ve-export-bg", "⬇ Video exportieren", d => _ = EditExportBackground(d), true, "Als MP4 im Hintergrund – mit Fortschritt und Abbrechen; du kannst weiterarbeiten"),
+                new ProgramCmd("ve-deliver", "📦 Film ausliefern", d => _ = FilmDeliver(d), false, "Wie im Profi-Schnitt: Film, Ton-Stems (Dialog, Musik), Schnittliste (EDL, OTIO), Cue-Liste und Prüfbericht mit Prüfsummen in einem Ordner"),
             ]),
             ("Ansicht", [
                 new ProgramCmd("ve-zoom-in", "＋ Zoom", _ => EditZoom = Math.Min(200, EditZoom * 1.5)),
