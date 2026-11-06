@@ -129,7 +129,21 @@ public partial class MainWindow
         var grid = new Grid { ColumnDefinitions = new ColumnDefinitions("300,12,*,12,320") };
         grid.Children.Add(left); grid.Children.Add(Pos(center, 2)); grid.Children.Add(Pos(right, 4));
         grid.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Z && e.KeyModifiers == Avalonia.Input.KeyModifiers.Control) { WfUndo(); Show("ablaeufe"); e.Handled = true; } };
-        return KiPage("Abläufe", grid);
+        return KiPage("Abläufe", new DockPanel { Children = { Dk(WfModeBar(), Avalonia.Controls.Dock.Top), WfPro ? N8nWorkspace() : grid } }); // Profi-Ebene n8n/Node-RED
+    }
+
+    /// <summary>Umschalter Einfach (Trendo-Abläufe) / Profi (n8n und Node-RED) – Freigabe 06.11.2026.</summary>
+    private Control WfModeBar()
+    {
+        var mode = new WrapPanel { Name = "wf-mode", Margin = new Thickness(0, 0, 0, 8) };
+        foreach (var (pro, label) in new[] { (false, "Einfach: Trendo-Abläufe"), (true, "Profi: n8n und Node-RED") })
+        {
+            var on = WfPro == pro; var pp = pro;
+            var mb = new Button { Name = pro ? "wf-mode-pro" : "wf-mode-simple", Content = label, Padding = new Thickness(12, 4), Margin = new Thickness(0, 0, 6, 0), CornerRadius = new CornerRadius(14), Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text };
+            mb.Click += (_, _) => { WfPro = pp; if (pp) _ = N8nRefresh(); Show("ablaeufe"); };
+            mode.Children.Add(mb);
+        }
+        return mode;
     }
 
     private Control WorkflowEditor()

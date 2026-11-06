@@ -35,6 +35,7 @@ public partial class MainWindow
         }
         if (dock.Studio == WebRules.Studio) { text += WebRules.Text; try { WebRules.Prepare(folder); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { } } // lokale Bibliotheken für hochwertige Seiten
         if (dock.Studio == Model3DRules.Studio) text += Model3DRules.Text;
+        if (dock.Studio == (ModuleOf("ablaeufe") ?? "CORE-02")) text += Trendo.Core.Automation.N8nRules.Text; // n8n-Abläufe als Datei zur Prüfung
         return text + CLearn.Prompt(studio);
     }
 

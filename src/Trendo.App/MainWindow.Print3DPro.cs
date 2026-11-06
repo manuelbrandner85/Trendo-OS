@@ -74,6 +74,7 @@ public partial class MainWindow
             var text = ok ? $"✓ „{p.Name}“: Druck fertig – {st.File}" : $"⚠ „{p.Name}“: Druck fehlgeschlagen – {st.File}";
             Toast(text); _core.Audit.Append(Principal.LocalOwner.Name, ok ? "3ddruck.fertig" : "3ddruck.fehler", p.Name);
             if (CurrentView == "3d-druck") { _prMsg = text; Show("3d-druck"); }
+            _ = RaiseEvent("druck-fertig", text); // n8n/Node-RED-Ereignis (N3), nur an Webhooks auf diesem PC
         });
     }
 

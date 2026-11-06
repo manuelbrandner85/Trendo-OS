@@ -22,7 +22,7 @@ public sealed class LocalApi : IAsyncDisposable
 
     private LocalApi(WebApplication app) => _app = app;
 
-    public static async Task<LocalApi> StartAsync(TrendoCore core, ApiTokens tokens, string requirementsPath, IToolProbe probe, int port = 0)
+    public static async Task<LocalApi> StartAsync(TrendoCore core, ApiTokens tokens, string requirementsPath, IToolProbe probe, int port = 0, AutomationHost? automation = null)
     {
         var b = WebApplication.CreateSlimBuilder();
         b.Logging.ClearProviders();
@@ -94,6 +94,8 @@ public sealed class LocalApi : IAsyncDisposable
             Rbac.Demand(P(c), Permission.ViewAudit, core.Audit);
             return Results.Ok(new { intact = core.Audit.Verify(), entries = core.Audit.ReadAll().TakeLast(100) });
         });
+
+        if (automation is not null) AutomationApi.Map(app, core, automation); // n8n/Node-RED: Trendo KI und Trendo-Aktionen
 
         await app.StartAsync();
         var api = new LocalApi(app);
