@@ -79,3 +79,23 @@ public partial class MainWindow
         return sp;
     }
 }
+
+/// <summary>Paket 01 – Studio 4, S4-06 (06.11.2026): „Plugins prüfen“ – VST3/CLAP finden und beschreiben, ohne sie zu laden.</summary>
+public partial class MainWindow
+{
+    /// <summary>Für Tests: Ordner statt der üblichen Plugin-Ordner.</summary>
+    public IReadOnlyList<string>? PluginRootsOverride { get; set; }
+    public List<PluginScan.Plugin>? AuPluginsLast { get; private set; }
+
+    public string AuPluginScan()
+    {
+        var roots = (PluginRootsOverride ?? PluginScan.DefaultRoots()).ToList();
+        var list = PluginScan.Scan(roots); AuPluginsLast = list;
+        var f = Path.Combine(WorkFolder(Programs[AUK].Folder), "Plugin-Prüfung.md");
+        File.WriteAllText(f, PluginScan.Report(list, roots));
+        var ok = list.Count(p => p.Status.StartsWith("ok"));
+        _progMsg[AUK] = list.Count == 0 ? "Keine VST3- oder CLAP-Plugins gefunden. Bericht: " + f
+            : $"{list.Count} Plugins gefunden ({ok} passend, {list.Count - ok} mit Hinweis) – Bericht: {f}. Laden in Trendo ist noch gesperrt (abgeschottete Laufumgebung fehlt).";
+        return f;
+    }
+}

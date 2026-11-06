@@ -51,3 +51,27 @@ public class AudioQa_Ui
         finally { w.Close(); }
     }
 }
+
+/// <summary>Paket 01 – Studio 4, S4-06 (06.11.2026): Plugins prüfen ohne Laden.</summary>
+public class AudioPlugins_Ui
+{
+    [AvaloniaFact(DisplayName = "S4-06 Audioeditor: „Plugins prüfen“ findet VST3 und schreibt einen Bericht – ohne Plugin zu laden; leerer Ordner: klare Meldung")]
+    public void Scan()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        try
+        {
+            var vst = Path.Combine(root, "VST3", "Hall.vst3", "Contents", "Resources"); Directory.CreateDirectory(vst);
+            File.WriteAllText(Path.Combine(vst, "moduleinfo.json"), """{ "Name": "Hall", "Version": "1.0", "Factory Info": { "Vendor": "Beispiel Audio" } }""");
+            Directory.CreateDirectory(Path.Combine(root, "VST3", "Hall.vst3", "Contents", "x86_64-win"));
+            w.PluginRootsOverride = [Path.Combine(root, "VST3")];
+            w.Show("ton"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer")); Settle();
+            var f = w.AuPluginScan(); Settle();
+            Assert.Single(w.AuPluginsLast!); Assert.Contains("gesperrt", w.ProgramMessage("ton"));
+            Assert.Contains("| VST3 | Hall | Beispiel Audio | 1.0 |", File.ReadAllText(f));
+            w.PluginRootsOverride = [Path.Combine(root, "leer")]; w.AuPluginScan();
+            Assert.Contains("Keine VST3", w.ProgramMessage("ton"));
+        }
+        finally { w.Close(); }
+    }
+}
