@@ -82,11 +82,24 @@ public partial class MainWindow
             card.Children.Add(new TextBlock { Text = "Größe", Foreground = Muted, FontSize = 11 }); card.Children.Add(width);
             card.Children.Add(new TextBlock { Text = "Deckkraft", Foreground = Muted, FontSize = 11 }); card.Children.Add(op);
             card.Children.Add(new WrapPanel { Children = { new TextBlock { Text = "ab ", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center }, start, new TextBlock { Text = " s · Dauer ", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center }, len, new TextBlock { Text = " s", Foreground = Muted, VerticalAlignment = VerticalAlignment.Center } } });
+            // Paket 01 S3-05: Greenscreen und Maske
+            var keyOn = new CheckBox { Name = "ve-overlay-key-" + i, Content = "Greenscreen (Farbe durchsichtig)", IsChecked = o.Key.Length > 0 };
+            var keyColors = new[] { ("#00FF00", "Grün"), ("#0000FF", "Blau") };
+            var keyColor = new ComboBox { Name = "ve-overlay-keycolor-" + i, ItemsSource = keyColors.Select(c => c.Item2).ToList(), SelectedIndex = o.Key == "#0000FF" ? 1 : 0, MinWidth = 90 };
+            var keySim = new Slider { Name = "ve-overlay-ksim-" + i, Minimum = 0.01, Maximum = 0.6, Value = o.KeySimilarity };
+            var masks = new (string Label, (double, double, double, double)? M)[] { ("Ganze Einblendung", null), ("Nur linke Hälfte", (0, 0, 0.5, 1)), ("Nur rechte Hälfte", (0.5, 0, 0.5, 1)), ("Nur Mitte", (0.2, 0.1, 0.6, 0.8)) };
+            var mask = new ComboBox { Name = "ve-overlay-mask-" + i, ItemsSource = masks.Select(m => m.Label).ToList(), HorizontalAlignment = HorizontalAlignment.Stretch,
+                SelectedIndex = Math.Max(0, Array.FindIndex(masks, m => Nullable.Equals(m.M, o.Mask))) };
+            card.Children.Add(new WrapPanel { Children = { keyOn, new Border { Width = 6 }, keyColor } });
+            card.Children.Add(new TextBlock { Text = "Toleranz", Foreground = Muted, FontSize = 11 }); card.Children.Add(keySim);
+            card.Children.Add(new TextBlock { Text = "Maske", Foreground = Muted, FontSize = 11 }); card.Children.Add(mask);
             var ok = new Button { Name = "ve-overlay-apply-" + i, Content = "Übernehmen" };
             ok.Click += (_, _) => ProgramRun(VK, () => d.Edit("Zweite Bildspur", x =>
             {
                 var (cx, cy) = corner.SelectedIndex >= 0 ? VideoPro.Corner(corners[corner.SelectedIndex].Item1, width.Value) : (o.X, o.Y);
                 VideoPro.SetOverlay(x, o.Id, N(start, o.Start), N(len, o.Length), cx, cy, width.Value, op.Value);
+                VideoPro.SetKey(x, o.Id, keyOn.IsChecked == true ? keyColors[Math.Max(0, keyColor.SelectedIndex)].Item1 : "", keySim.Value, o.KeyBlend);
+                VideoPro.SetMask(x, o.Id, masks[Math.Max(0, mask.SelectedIndex)].M);
             }));
             var del = new Button { Name = "ve-overlay-del-" + i, Content = "Entfernen" };
             del.Click += (_, _) => ProgramRun(VK, () => d.Edit("Zweite Bildspur entfernen", x => VideoPro.RemoveOverlay(x, o.Id)));

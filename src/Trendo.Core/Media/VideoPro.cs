@@ -69,18 +69,56 @@ public static class VideoPro
     public static string TitleY(string pos) => pos switch { "oben" => "h/10", "mitte" => "(h-text_h)/2", _ => "h-text_h-h/10" };
 
     // ---------- zweite Bildspur ----------
-    public sealed record Overlay(string Id, string File, double Start, double Length, double X, double Y, double Width, double Opacity);
+    /// <param name="Key">Farbe für Greenscreen als „#RRGGBB“, leer = aus (Paket 01 S3-05).</param>
+    /// <param name="Mask">Maske (Ausschnitt der Einblendung) in Anteilen 0…1: X, Y, Breite, Höhe – außerhalb bleibt durchsichtig.</param>
+    public sealed record Overlay(string Id, string File, double Start, double Length, double X, double Y, double Width, double Opacity,
+        string Key = "", double KeySimilarity = 0.15, double KeyBlend = 0.05, (double X, double Y, double W, double H)? Mask = null);
 
     public static List<Overlay> Overlays(JsonObject p) => (p["overlay"] as JsonArray ?? []).OfType<JsonObject>().Select(o =>
     {
         double D(string k, double d) => o[k] is { } n && double.TryParse(n.ToJsonString(), NumberStyles.Float, Inv, out var v) ? v : d;
-        return new Overlay((string?)o["id"] ?? "", (string?)o["file"] ?? "", D("start", 0), D("len", 5), D("x", 0.68), D("y", 0.05), D("w", 0.28), D("op", 1));
+        (double, double, double, double)? mask = o["mask"] is JsonArray m && m.Count == 4 && m.All(n => n is JsonValue)
+            ? (Num(m[0]), Num(m[1]), Num(m[2]), Num(m[3])) : null;
+        return new Overlay((string?)o["id"] ?? "", (string?)o["file"] ?? "", D("start", 0), D("len", 5), D("x", 0.68), D("y", 0.05), D("w", 0.28), D("op", 1),
+            (string?)o["key"] ?? "", D("ksim", 0.15), D("kblend", 0.05), mask);
+        static double Num(JsonNode? n) => n is not null && double.TryParse(n.ToJsonString(), NumberStyles.Float, Inv, out var v) ? v : 0;
     }).ToList();
 
     static void StoreOverlays(JsonObject p, IEnumerable<Overlay> l) => p["overlay"] = new JsonArray([.. l.Select(o => (JsonNode)new JsonObject
     {
         ["id"] = o.Id, ["file"] = o.File, ["start"] = Math.Round(o.Start, 3), ["len"] = Math.Round(o.Length, 3), ["x"] = Math.Round(o.X, 3), ["y"] = Math.Round(o.Y, 3), ["w"] = Math.Round(o.Width, 3), ["op"] = Math.Round(o.Opacity, 2),
+        ["key"] = o.Key, ["ksim"] = Math.Round(o.KeySimilarity, 3), ["kblend"] = Math.Round(o.KeyBlend, 3),
+        ["mask"] = o.Mask is { } m ? new JsonArray(Math.Round(m.X, 4), Math.Round(m.Y, 4), Math.Round(m.W, 4), Math.Round(m.H, 4)) : null,
     })]);
+
+    /// <summary>Greenscreen für eine Einblendung: Farbe „#RRGGBB“ (leer = aus), Ähnlichkeit 0,01–0,6, weiche Kante 0–0,5.</summary>
+    public static void SetKey(JsonObject p, string id, string color, double similarity = 0.15, double blend = 0.05)
+    {
+        color = (color ?? "").Trim();
+        if (color.Length > 0 && !System.Text.RegularExpressions.Regex.IsMatch(color, "^#[0-9A-Fa-f]{6}$")) throw new ArgumentException("Farbe als #RRGGBB angeben, z. B. #00FF00 für Grün.");
+        var l = Overlays(p); var i = l.FindIndex(o => o.Id == id); if (i < 0) return;
+        l[i] = l[i] with { Key = color.ToUpperInvariant(), KeySimilarity = Math.Clamp(similarity, 0.01, 0.6), KeyBlend = Math.Clamp(blend, 0, 0.5) };
+        StoreOverlays(p, l);
+    }
+
+    /// <summary>Maske setzen (null = ganze Einblendung). Eine Maske außerhalb des Bildes wird abgelehnt, nicht still beschnitten.</summary>
+    public static void SetMask(JsonObject p, string id, (double X, double Y, double W, double H)? mask)
+    {
+        if (mask is { } m && (m.X < 0 || m.Y < 0 || m.W < 0.02 || m.H < 0.02 || m.X + m.W > 1 + 1e-6 || m.Y + m.H > 1 + 1e-6 || double.IsNaN(m.X + m.Y + m.W + m.H)))
+            throw new ArgumentOutOfRangeException(nameof(mask), "Die Maske liegt außerhalb des Bildes – X+Breite und Y+Höhe dürfen höchstens 100 % sein.");
+        var l = Overlays(p); var i = l.FindIndex(o => o.Id == id); if (i < 0) return;
+        l[i] = l[i] with { Mask = mask }; StoreOverlays(p, l);
+    }
+
+    /// <summary>FFmpeg-Filter vor dem Skalieren: Greenscreen (chromakey) und Maske (Ausschnitt, Rest durchsichtig, Größe bleibt).</summary>
+    public static string KeyAndMask(Overlay o)
+    {
+        var f = new List<string>();
+        if (o.Key.Length == 7 || o.Mask is not null) f.Add("format=yuva444p");
+        if (o.Key.Length == 7) f.Add($"chromakey=0x{o.Key[1..]}:{F(o.KeySimilarity)}:{F(o.KeyBlend)}");
+        if (o.Mask is { } m) f.Add($"crop=iw*{F(m.W)}:ih*{F(m.H)}:iw*{F(m.X)}:ih*{F(m.Y)},pad=iw/{F(m.W)}:ih/{F(m.H)}:iw/{F(m.W)}*{F(m.X)}:ih/{F(m.H)}*{F(m.Y)}:color=black@0");
+        return f.Count == 0 ? "" : string.Join(",", f) + ",";
+    }
 
     /// <summary>Bild oder Video auf die zweite Spur legen – Standard: oben rechts, ein Viertel breit (Bild im Bild).</summary>
     public static Overlay AddOverlay(JsonObject p, string file, double start, double length)
@@ -118,7 +156,7 @@ public static class VideoPro
             if (IsImage(o.File)) args.AddRange(["-loop", "1", "-framerate", fps.ToString(Inv), "-t", F(o.Start + o.Length), "-i", o.File]);
             else args.AddRange(["-t", F(o.Length), "-i", o.File]);
             var idx = input++; var ow = Math.Max(16, (int)Math.Round(w * o.Width / 2) * 2);
-            graph.Add($"[{idx}:v]scale={ow}:-2,format=rgba,colorchannelmixer=aa={F(o.Opacity)},setpts=PTS-STARTPTS+{F(IsImage(o.File) ? 0 : o.Start)}/TB[ov{i}]");
+            graph.Add($"[{idx}:v]{KeyAndMask(o)}scale={ow}:-2,format=rgba,colorchannelmixer=aa={F(o.Opacity)},setpts=PTS-STARTPTS+{F(IsImage(o.File) ? 0 : o.Start)}/TB[ov{i}]");
             var next = i == ov.Count - 1 ? vout : $"ovc{i}";
             graph.Add($"[{cur}][ov{i}]overlay=x={F(o.X)}*W:y={F(o.Y)}*H:enable='between(t,{F(o.Start)},{F(o.Start + o.Length)})':eof_action=pass[{next}]");
             cur = next;

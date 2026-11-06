@@ -46,6 +46,12 @@ public class VideoSchnittPro_Ui
             w.Find<Button>("ve-overlay-apply-0").Press(); Settle();
             var o = VideoPro.Overlays(w.ProgramActive("schnitt")!.Data)[0];
             Assert.Equal(0.03, o.X, 2); Assert.True(o.Y > 0.5, $"nicht unten: {o.Y}"); Assert.Equal(0.2, o.Width, 2);
+            // Paket 01 S3-05: Greenscreen blau mit Maske rechts
+            w.Find<CheckBox>("ve-overlay-key-0").IsChecked = true; w.Find<ComboBox>("ve-overlay-keycolor-0").SelectedIndex = 1; w.Find<ComboBox>("ve-overlay-mask-0").SelectedIndex = 2;
+            w.Find<Button>("ve-overlay-apply-0").Press(); Settle();
+            o = VideoPro.Overlays(w.ProgramActive("schnitt")!.Data)[0];
+            Assert.Equal(("#0000FF", (0.5, 0.0, 0.5, 1.0)), (o.Key, o.Mask!.Value)); Assert.Equal(0.2, o.Width, 2);
+            Assert.True(w.Find<CheckBox>("ve-overlay-key-0").IsChecked); Assert.Equal(2, w.Find<ComboBox>("ve-overlay-mask-0").SelectedIndex); // Karte zeigt den Stand
             w.Find<Button>("ve-overlay-del-0").Press(); Settle();
             Assert.Empty(VideoPro.Overlays(w.ProgramActive("schnitt")!.Data));
             // Ton auf die zweite Bildspur geht nicht
