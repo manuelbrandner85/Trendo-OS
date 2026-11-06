@@ -39,17 +39,19 @@ public partial class MainWindow
     public Task BibSearch() => BibGuard("Suche läuft …", async () =>
     {
         if (!BibOnline) throw new InvalidOperationException("Offline – die Suche braucht eine Internetverbindung. Deine Bibliothek rechts bleibt nutzbar.");
-        var lib = Bib; BibHits = await lib.Search(BibQuery, BibKind);
+        var lib = Bib; var free = BibKind == "modell" && BibSource != AssetLibrary.PolyHaven ? BibFree : null;
+        BibHits = free is not null ? await free.Search(BibSource, BibQuery, BibKey(BibSource)) : await lib.Search(BibQuery, BibKind);
+        if (BibCommercialOnly) BibHits = [.. BibHits.Where(h => FreeModels.Commercial(h.License))];
         _bibMsg = BibHits.Count == 0 ? "Nichts gefunden – anderes Wort versuchen (Deutsch oder Englisch)." : $"{BibHits.Count} Treffer"; Show(BIB);
         foreach (var h in BibHits.Take(48).Where(h => !_bibThumbs.ContainsKey(h.Source + h.Id)))
-            try { _bibThumbs[h.Source + h.Id] = await lib.Thumb(h); } catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidDataException or IOException) { _bibThumbs[h.Source + h.Id] = null; }
+            try { _bibThumbs[h.Source + h.Id] = free is not null ? await free.Thumb(h) : await lib.Thumb(h); } catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or InvalidDataException or IOException) { _bibThumbs[h.Source + h.Id] = null; }
         return BibHits.Count == 0 ? _bibMsg : $"{BibHits.Count} Treffer";
     });
 
     public Task BibDownload(AssetHit hit) => BibGuard($"„{hit.Name}“ wird geladen …", async () =>
     {
         if (!BibOnline) throw new InvalidOperationException("Offline – Laden geht erst mit Internetverbindung.");
-        var item = await Bib.Download(hit);
+        var item = hit.Source is AssetLibrary.PolyHaven or AssetLibrary.AmbientCg ? await Bib.Download(hit) : await BibFree.Download(Bib, hit, BibKey(hit.Source));
         _core.Audit.Append(Trendo.Core.Principal.LocalOwner.Name, "bibliothek3d.download", $"{hit.Source}/{hit.Id} ({hit.License})");
         return $"✓ „{item.Name}“ liegt in deiner Bibliothek ({item.License}, {item.Source}).";
     });
@@ -89,7 +91,10 @@ public partial class MainWindow
         void Go() { BibQuery = q.Text ?? ""; _ = BibSearch(); }
         OnEnter(q, Go); bar.Children.Add(q);
         bar.Children.Add(Btn("bib-search", "Suchen", Go, true));
-        bar.Children.Add(new TextBlock { Text = BibKind == "material" ? "Quelle: ambientCG · CC0" : "Quelle: Poly Haven · CC0", Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4) });
+        bar.Children.Add(new TextBlock { Text = BibKind == "material" ? "Quelle: ambientCG · CC0" : BibKind == "himmel" ? "Quelle: Poly Haven · CC0" : "Quelle: " + BibSource, Foreground = Muted, FontSize = 11.5, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 4) });
+        var commercial = new CheckBox { Name = "bib-commercial", Content = "nur kommerziell nutzbar", IsChecked = BibCommercialOnly, Margin = new Thickness(8, 0, 0, 4), FontSize = 12 };
+        commercial.IsCheckedChanged += (_, _) => { BibCommercialOnly = commercial.IsChecked == true; if (BibHits.Count > 0) Go(); };
+        bar.Children.Add(commercial);
         if (_bibMsg.Length > 0) bar.Children.Add(new TextBlock { Name = "bib-msg", Text = _bibMsg, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(12, 0, 0, 4), FontSize = 12, TextWrapping = TextWrapping.Wrap, MaxWidth = 520, Foreground = Brush.Parse(_bibMsg.StartsWith('⚠') ? "#F87171" : _bibMsg.StartsWith('✓') ? "#4ADE80" : "#7FD3FF") });
 
         // Mitte: Treffer als Kacheln mit Vorschau
@@ -124,8 +129,12 @@ public partial class MainWindow
         }
         var mid = new Border { CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(12), Child = center };
         var right = new Border { Name = "bib-side", Width = 360, CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(12), Child = new ScrollViewer { Content = BibSide(mine, Btn) } };
-        var body = new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,Auto"), Children = { mid, Pos(right, 2) } };
-        var root = new DockPanel { Name = "bib-root" }; DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top); root.Children.Add(bar); root.Children.Add(body);
+        Control left = BibSource == BibOtherSites && BibKind == "modell"
+            ? new Border { CornerRadius = new CornerRadius(14), Background = TileBg, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Padding = new Thickness(12), Child = new ScrollViewer { Content = BibPickupView(Btn) } } : mid;
+        var body = new Grid { ColumnDefinitions = new ColumnDefinitions("*,12,Auto"), Children = { left, Pos(right, 2) } };
+        var root = new DockPanel { Name = "bib-root" }; DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top); root.Children.Add(bar);
+        if (BibKind == "modell") { var src = BibSourceBar(Btn); DockPanel.SetDock(src, Avalonia.Controls.Dock.Top); root.Children.Add(src); }
+        root.Children.Add(body);
         return FitPage("3D-Bibliothek", new Panel(), root);
     }
 
@@ -139,6 +148,8 @@ public partial class MainWindow
         {
             var item = it; var row = new WrapPanel();
             if (it.Kind == "modell") row.Children.Add(btn($"bib-open-{k}", "Ansehen", () => { XrFile = item.File; _xrMsg = $"„{item.Name}“ aus der 3D-Bibliothek."; Show("xr"); }, false));
+            if (it.Kind == "modell" && BibTo3D(item.File)) row.Children.Add(btn($"bib-to3d-{k}", "Ins 3D-Studio", () => BibUseIn3D(item), false));
+            if (it.Kind == "modell" && BibToPrint(item.File)) row.Children.Add(btn($"bib-toprint-{k}", "In den 3D-Druck", () => BibUseInPrint(item), false));
             row.Children.Add(btn($"bib-del-{k}", "Entfernen", () => { Bib.Remove(item); _bibMsg = $"„{item.Name}“ entfernt."; Show(BIB); }, false));
             sp.Children.Add(new Border { Name = $"bib-item-{k}", Background = Brush.Parse("#2C2C2C"), CornerRadius = new CornerRadius(8), Padding = new Thickness(8), Child = new StackPanel { Spacing = 2, Children = {
                 new TextBlock { Text = it.Name, Foreground = Text, FontSize = 12.5, FontWeight = FontWeight.SemiBold, TextTrimming = TextTrimming.CharacterEllipsis },

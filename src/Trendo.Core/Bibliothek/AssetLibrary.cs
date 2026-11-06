@@ -139,6 +139,17 @@ public sealed class AssetLibrary(IWebFetch http, string root)
         return item;
     }
 
+    /// <summary>Fremd geladenes Objekt (weitere Quellen, Download-Ordner) eintragen und Lizenz samt Namensnennung daneben legen.</summary>
+    public LibraryItem Register(LibraryItem item, string dir)
+    {
+        var items = Items(); items.RemoveAll(i => i.Source == item.Source && i.Id == item.Id); items.Add(item); Save(items);
+        Directory.CreateDirectory(dir);
+        var credit = FreeModels.NeedsCredit(item.License) ? $"Namensnennung (bitte bei Weitergabe angeben): „{item.Name}“ von {item.Author}, {item.Source}, {item.License}" : "Keine Namensnennung nötig.";
+        var commercial = FreeModels.Commercial(item.License) ? "Kommerzielle Nutzung: erlaubt." : "Kommerzielle Nutzung: nicht erlaubt oder unklar – nur privat nutzen.";
+        File.WriteAllLines(Path.Combine(dir, "LIZENZ.txt"), [item.Name, $"Quelle: {item.Source} – {item.PageUrl}", $"Lizenz: {item.License}", $"Urheber: {item.Author}", "", credit, commercial]);
+        return item;
+    }
+
     static readonly string[] Hosts = ["polyhaven.org", "polyhaven.com", "ambientcg.com", "struffelproductions.com"];
     static bool Allowed(Uri u) => u.Scheme == "https" && Hosts.Any(h => u.Host == h || u.Host.EndsWith("." + h));
 

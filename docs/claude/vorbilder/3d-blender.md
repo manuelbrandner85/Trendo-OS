@@ -20,10 +20,11 @@
 - ✓ Licht-Vorgaben mit echter Quelle (Drei-Punkt-Studio, Sonne + Himmel, Abendsonne, Innenraum) und Kamera mit Vollformat-Brennweite und Blickhöhe
 - ✓ Fotorealistischer Render in Blender (Cycles, GPU wenn vorhanden, Entrauschen, AgX, UV automatisch) mit Render-Verlauf und Vorher/Nachher-Regler
 - ✓ Claude baut aus einem Satz oder Foto ein Modell mit echten Maßen, Materialien, Licht und Kamera; Plan mit 3D-Vorschau und Gesamtmaß, Warnung bei schwebenden Teilen, danach Render zur Prüfung
+- ✓ Freie Modelle aus Thingiverse, Smithsonian, NASA und Sketchfab (eigene Schlüssel, nur kostenlose), andere Seiten über den Download-Ordner; Lizenz sichtbar, Filter „nur kommerziell“, Namensnennung als Datei; mit einem Klick ins 3D-Studio oder in den 3D-Druck
 
 ## Bedienkonzept (Profi-Bauplan A1–A3)
 Arbeitsfläche Mitte, Teile links, Eigenschaften rechts – Bauplan erfüllt.
 
 ## Nächste Schritte
-1. Freie Modelle aus Thingiverse, Smithsonian, NASA, Sketchfab (freigegeben 05.11.2026, Q1–Q4)
+1. Spiele-Assets aus freien Quellen (G1–G3)
 2. Texturen (Bildtexturen auf den UVs) in der Ansicht
