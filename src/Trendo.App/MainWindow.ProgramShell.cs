@@ -363,6 +363,17 @@ public partial class MainWindow
         string? lastGroup = null;
         foreach (var (g, items) in osChrome is null ? groups : [])
         {
+            if (DawLook)
+            {
+                // DAW-Stil (Wunsch 06.11.2026): Gruppe als Segment wie in Bitwig („FILE · PLAY · EDIT“) – Beschriftung links, Knöpfe dicht nebeneinander
+                var seg = new WrapPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center }; // bricht bei vielen Befehlen innerhalb der Gruppe um
+                if (g != lastGroup) seg.Children.Add(new TextBlock { Name = "prog-group-label", Text = g.ToUpperInvariant(), Foreground = Muted, FontSize = 9.5, FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(2, 0, 6, 0) });
+                foreach (var it in items) { it.Margin = new Thickness(0, 1, 2, 1); it.VerticalAlignment = VerticalAlignment.Center; seg.Children.Add(it); }
+                var box = new Border { Margin = new Thickness(0, 4, 6, 4), Padding = new Thickness(6, 3), CornerRadius = new CornerRadius(8), Background = GroupBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), Child = seg };
+                ToolTip.SetTip(box, g); lastGroup = g;
+                ribbon.Children.Add(box);
+                continue;
+            }
             var row = new WrapPanel(); foreach (var it in items) { it.Margin = new Thickness(0, 0, 4, 4); it.VerticalAlignment = VerticalAlignment.Center; row.Children.Add(it); }
             if (spec.FillHeight)
             {
@@ -394,8 +405,9 @@ public partial class MainWindow
                 Child = new DockPanel { Children = { Dk(new TextBlock { Text = bottom.Title, Foreground = Muted, FontSize = 12, FontWeight = FontWeight.SemiBold, Margin = new Thickness(2, 0, 0, 4) }, Avalonia.Controls.Dock.Top), bottom.Build(d) } } };
             var g2 = new Grid { RowDefinitions = new RowDefinitions("*,10,Auto"), Children = { work } }; Grid.SetRow(bp, 2); g2.Children.Add(bp); center = g2;
         }
-        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions((showTools ? "Auto,10," : "") + (showProps ? "*,12,300" : "*")) };
-        var col = 0;
+        var dawOrder = DawLook; // DAW-Stil: Inspektor links (wie Bitwig, Studio One), Werkzeuge als Leiste rechts
+        var grid = new Grid { ColumnDefinitions = new ColumnDefinitions(dawOrder ? (showProps ? "300,12," : "") + "*" + (showTools ? ",10,Auto" : "") : (showTools ? "Auto,10," : "") + (showProps ? "*,12,300" : "*")) };
+        var col = dawOrder && showProps ? 2 : 0;
         if (showTools)
         {
             // viele Werkzeuge: zwei Spalten wie in Photoshop/GIMP, damit nichts unten aus dem Bild läuft
@@ -404,20 +416,20 @@ public partial class MainWindow
             foreach (var t in spec.Tools)
             {
                 var on = t.Active(); var tt = t;
-                var b = new Button { Name = "prog-cmd-" + t.Name, Content = t.Icon, Width = 40, Height = 40, Padding = new Thickness(0), FontSize = 17, CornerRadius = new CornerRadius(10),
+                var b = new Button { Name = "prog-cmd-" + t.Name, Content = t.Icon, Width = DawLook ? 36 : 40, Height = DawLook ? 36 : 40, Padding = new Thickness(0), FontSize = DawLook ? 15 : 17, CornerRadius = new CornerRadius(DawLook ? 6 : 10),
                     HorizontalContentAlignment = HorizontalAlignment.Center, VerticalContentAlignment = VerticalAlignment.Center,
                     Background = on ? Accent : Brushes.Transparent, Foreground = on ? Brushes.White : Text, BorderBrush = on ? Brushes.Transparent : Edge, BorderThickness = new Thickness(1), Margin = two ? new Thickness(2) : default };
                 ToolTip.SetTip(b, $"{t.Label} – {t.Tip}"); Avalonia.Automation.AutomationProperties.SetName(b, t.Label);
                 b.Click += (_, _) => ProgramRun(key, () => tt.Select(d));
                 rail.Children.Add(b);
             }
-            grid.Children.Add(new Border { Name = "prog-tools-panel", CornerRadius = new CornerRadius(14), Background = PaneBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(6), Child = rail });
-            col = 2;
+            var toolsBorder = new Border { Name = "prog-tools-panel", CornerRadius = new CornerRadius(14), Background = PaneBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(6), Child = rail };
+            if (dawOrder) grid.Children.Add(Pos(toolsBorder, showProps ? 4 : 2)); else { grid.Children.Add(toolsBorder); col = 2; }
         }
         grid.Children.Add(Pos(center, col));
         if (spec.Properties is { } props && showProps)
             grid.Children.Add(Pos(new Border { Name = "prog-properties", CornerRadius = new CornerRadius(14), Background = PaneBg, BorderBrush = PaneEdge, BorderThickness = new Thickness(1), BoxShadow = CardShadow, Padding = new Thickness(12),
-                Child = spec.FillHeight ? new ScrollViewer { Content = new StackPanel { Spacing = 6, Margin = new Thickness(0, 0, 8, 0), Children = { H("Eigenschaften", 13), props(d) } } } : new StackPanel { Spacing = 6, Children = { H("Eigenschaften", 13), props(d) } } }, col + 2));
+                Child = spec.FillHeight ? new ScrollViewer { Content = new StackPanel { Spacing = 6, Margin = new Thickness(0, 0, 8, 0), Children = { (DawLook ? new TextBlock { Text = "INSPEKTOR", Foreground = Muted, FontSize = 10.5, FontWeight = FontWeight.Bold } : H("Eigenschaften", 13)), props(d) } } } : new StackPanel { Spacing = 6, Children = { (DawLook ? new TextBlock { Text = "INSPEKTOR", Foreground = Muted, FontSize = 10.5, FontWeight = FontWeight.Bold } : H("Eigenschaften", 13)), props(d) } } }, dawOrder ? 0 : col + 2));
 
         // Ränder ein- und ausklappen (gemerkt je Programm)
         var toggles = new StackPanel { Name = "prog-panel-toggles", Orientation = Orientation.Horizontal, Spacing = 4, Margin = new Thickness(10, 0, 0, 0) };
@@ -444,8 +456,8 @@ public partial class MainWindow
 
         Button RBtn(string name, string label, Action go, bool primary = false, string? tip = null)
         {
-            var b = new Button { Name = name, Content = label, FontSize = 12.5, Padding = new Thickness(12, 6), CornerRadius = new CornerRadius(8), Foreground = primary ? Brushes.White : Text,
-                Background = primary ? Accent : DawLook ? DawButton : Brushes.Transparent, BorderBrush = DawLook ? DawEdge : Edge, BorderThickness = new Thickness(primary ? 0 : 1) };
+            var b = new Button { Name = name, Content = label, FontSize = DawLook ? 12 : 12.5, Padding = DawLook ? new Thickness(9, 4) : new Thickness(12, 6), CornerRadius = new CornerRadius(DawLook ? 5 : 8), Foreground = primary ? Brushes.White : Text,
+                Background = primary ? Accent : DawLook ? DawButton : Brushes.Transparent, BorderBrush = DawLook ? DawEdge : Edge, BorderThickness = new Thickness(primary || DawLook ? 0 : 1) };
             if (tip is not null) ToolTip.SetTip(b, tip);
             b.Click += (_, _) => go(); return b;
         }
