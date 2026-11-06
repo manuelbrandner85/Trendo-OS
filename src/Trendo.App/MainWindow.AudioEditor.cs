@@ -91,6 +91,10 @@ public partial class MainWindow
                 new ProgramCmd("au-record", "⏺ Aufnehmen (10 s)", d => _ = AuRecord(d, 10), Tip: "Mikrofon an der Marke einfügen"),
                 new ProgramCmd("au-mixdown-cmd", "⤓ Abmischen", d => AuMixdown(d), Tip: "Mehrspur-Projekt zu einer Datei abmischen"),
             ]),
+            ("Prüfen", [ // Paket 01 S4-20
+                new ProgramCmd("au-qa-cmd", "✅ Prüfen", d => AuQa(d), Tip: "Lautheit, True Peak, Übersteuerung, Format, Phase, Herkunft – rechts das Ziel wählen"),
+                new ProgramCmd("au-release-cmd", "📦 Freigeben", d => AuRelease(d), Tip: "Nur ohne Rot: WAV 24 Bit und Prüfbericht mit Prüfsumme"),
+            ]),
         ],
         Exports =
         [
@@ -331,6 +335,7 @@ public partial class MainWindow
             var op = o["op"].AsText() ?? ""; double oa = ProgramDocument.ToNumber(o["a"]), ob = ProgramDocument.ToNumber(o["b"]);
             sp.Children.Add(new TextBlock { Text = "• " + AudioEdit.Label(op) + (ob > oa ? $"  {AudioEdit.Time(oa)}–{AudioEdit.Time(ob)}" : ""), Foreground = Text, FontSize = 12 });
         }
+        if (AuRendered(d) is not null) sp.Children.Add(AuQaPanel(d)); // Paket 01 S4-20: Prüfen und freigeben
         return sp;
     }
 }
