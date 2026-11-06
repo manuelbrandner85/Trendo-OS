@@ -115,7 +115,7 @@ public static class EngineTargets
             player = s.Player, accent = s.Accent, background = s.Background, levels,
             props = s.Props.Select(kv => new { key = kv.Key, value = kv.Value }),
             rules = s.Rules.Select(r => new { when = r.When, n = r.N, act = r.Do, title = r.Title ?? "" }),
-            abilities = s.Abilities, weapon = s.Weapon,
+            abilities = s.Abilities, weapon = s.Weapon, menu = s.Menu,
             texts = s.Texts.Select(kv => new { key = kv.Key, value = kv.Value }),
         };
         return JsonSerializer.Serialize(o, new JsonSerializerOptions { WriteIndented = true });
@@ -142,12 +142,14 @@ public static class EngineTargets
         Put(dir, "Assets/Scripts/TrendoLevelData.cs", UnityLevelData);
         Put(dir, "Assets/Scripts/TrendoLevel.cs", UnityLevel);
         Put(dir, "Assets/Scripts/TrendoPlayer.cs", UnityPlayer);
+        Put(dir, "Assets/Scripts/TrendoMenu.cs", UnityMenu);
         Put(dir, "Assets/Editor/TrendoBuild.cs", UnityBuild);
         Put(dir, "Assets/Tests/EditMode/TrendoTests.EditMode.asmdef", """{ "name": "TrendoTests.EditMode", "references": ["TrendoGame", "UnityEngine.TestRunner", "UnityEditor.TestRunner"], "includePlatforms": ["Editor"], "overrideReferences": true, "precompiledReferences": ["nunit.framework.dll"], "autoReferenced": false, "defineConstraints": ["UNITY_INCLUDE_TESTS"] }""");
         Put(dir, "Assets/Tests/EditMode/TrendoLevelTests.cs", UnityEditTests);
         Put(dir, "Assets/Tests/PlayMode/TrendoTests.PlayMode.asmdef", """{ "name": "TrendoTests.PlayMode", "references": ["TrendoGame", "UnityEngine.TestRunner"], "includePlatforms": [], "overrideReferences": true, "precompiledReferences": ["nunit.framework.dll"], "autoReferenced": false, "defineConstraints": ["UNITY_INCLUDE_TESTS"] }""");
         Put(dir, "Assets/Tests/PlayMode/TrendoPlayTests.cs", UnityPlayTests);
         Put(dir, "Assets/Tests/PlayMode/TrendoGameplayTests.cs", UnityGameplayTests);
+        Put(dir, "Assets/Tests/PlayMode/TrendoMenuTests.cs", UnityMenuTests);
         Put(dir, "Packages/manifest.json", """{ "dependencies": { "com.unity.test-framework": "1.4.5", "com.unity.modules.physics2d": "1.0.0", "com.unity.modules.jsonserialize": "1.0.0", "com.unity.modules.audio": "1.0.0", "com.unity.modules.imgui": "1.0.0" }, "testables": [] }""");
         if (editorVersion is { Length: > 0 }) Put(dir, "ProjectSettings/ProjectVersion.txt", $"m_EditorVersion: {editorVersion}\n");
         Put(dir, ".gitignore", "Library/\nTemp/\nLogs/\nobj/\nBuild/\nUserSettings/\n");
@@ -169,6 +171,7 @@ public static class EngineTargets
         Put(dir, "tests/save_check.gd", GodotSaveCheck);
         Put(dir, "trendo_shot.gd", GodotShot);
         Put(dir, "tests/gameplay_check.gd", GodotGameplayCheck);
+        Put(dir, "tests/menu_check.gd", GodotMenuCheck);
         Put(dir, ".gitignore", ".godot/\nexport/\n");
         Put(dir, "LIESMICH.txt", $"{name} – von Trendo als Godot-4-Projekt angelegt.\nÖffnen: Godot → Importieren → project.godot. Start mit F5.\nPrüfen ohne Fenster: godot --headless --path . --script res://tests/check_level.gd\n");
         return dir;
@@ -179,6 +182,8 @@ public static class EngineTargets
     public static List<string> GodotSaveArgs(string project) => ["--headless", "--path", project, "--script", "res://tests/save_check.gd"];
     /// <summary>Gameplay-Prüfung in Godot: Inventar, Figur, Aufgabe, Schwert, Boss, Fahrzeug, Doppelsprung.</summary>
     public static List<string> GodotGameplayArgs(string project) => ["--headless", "--path", project, "--script", "res://tests/gameplay_check.gd"];
+    /// <summary>Menü-Prüfung in Godot: Start im Menü, Einstellungen gespeichert, Pause, Weiter.</summary>
+    public static List<string> GodotMenuArgs(string project) => ["--headless", "--path", project, "--script", "res://tests/menu_check.gd"];
     /// <summary>Unity-Tests: -runTests beendet den Editor selbst (deshalb ohne -quit).</summary>
     public static List<string> UnityTestArgs(string project, string platform, string results, string log) =>
         ["-batchmode", "-nographics", "-projectPath", project, "-runTests", "-testPlatform", platform == "PlayMode" ? "PlayMode" : "EditMode", "-testResults", results, "-logFile", log];
@@ -235,7 +240,7 @@ using UnityEngine;
     public string name; public int speed = 5; public int lives = 3; public int winScore; public int timeLimit;
     public string player = "#4FB3FF"; public string accent = "#FACC15"; public string background = "#10203F";
     public TrendoLevelRow[] levels; public TrendoProp[] props; public TrendoRule[] rules;
-    public string[] abilities; public string weapon; public TrendoText[] texts;
+    public string[] abilities; public string weapon; public TrendoText[] texts; public bool menu = true;
 
     static string Key(int level, int x, int y, string k) => (level == 0 ? "" : (level + 1) + ":") + x + "," + y + ":" + k;
     /// <summary>Objekt-Text (Gegenstand, Figur, Fahrzeug) wie in Trendo, sonst Vorgabe.</summary>
@@ -282,6 +287,18 @@ public class TrendoLevel : MonoBehaviour
         var game = new GameObject("Trendo-Spiel").AddComponent<TrendoLevel>();
         var save = TrendoSave.Read(TrendoSave.DefaultPath, d.levels.Length);
         if (save != null) game.Resume(d, save); else game.Begin(d, 0);
+        game.Menu = game.gameObject.AddComponent<TrendoMenu>(); game.Menu.Setup(game, save != null);
+    }
+
+    /// <summary>Menü (nur im echten Spielstart); im Menü stehen Eingaben, Gegner und Regeln still.</summary>
+    public TrendoMenu Menu;
+    public bool Playing => Menu == null || Menu.Mode == "play";
+
+    /// <summary>Neues Spiel: Spielstand löschen, alles zurück auf Anfang.</summary>
+    public void NewGame()
+    {
+        Drop(); Lives = Data.lives; Score = 0; Defeated = 0; ItemsCollected = 0; Inventory.Clear(); _given.Clear(); _time = 0; Boost = 0; Won = false; Over = false; Note = "";
+        _fired = new bool[Data.rules != null ? Data.rules.Length : 0]; Begin(Data, 0);
     }
 
     public string SavePath;
@@ -461,7 +478,7 @@ public class TrendoLevel : MonoBehaviour
 
     void Update()
     {
-        if (Data == null || Over || Won) return;
+        if (Data == null || Over || Won || !Playing) return;
         _time += Time.deltaTime;
         if (Data.rules == null) return;
         for (var i = 0; i < Data.rules.Length; i++)
@@ -478,7 +495,8 @@ public class TrendoLevel : MonoBehaviour
         var text = "Punkte " + Score + "   Leben " + Lives + (Data.levels.Length > 1 ? "   Level " + (Index + 1) + "/" + Data.levels.Length : "")
             + (Player.Vehicle == "ufo" ? "   Treibstoff " + Mathf.CeilToInt(Player.Fuel) + " s" : "")
             + (Inventory.Count > 0 ? "\nInventar: " + string.Join(", ", Inventory) : "") + "\n" + Quests() + Note;
-        GUI.Label(new Rect(10, 10, 600, 200), text);
+        var hudStyle = new GUIStyle(GUI.skin.label) { fontSize = Menu != null && Menu.S.big ? 20 : 13 };
+        if (Playing) GUI.Label(new Rect(10, 10, 700, 260), text, hudStyle);
     }
 
     void Drop() { if (System.IO.File.Exists(FilePath)) System.IO.File.Delete(FilePath); }
@@ -491,9 +509,9 @@ public class TrendoTile : MonoBehaviour { public int X, Y; public string Kind = 
 public class TrendoEnemy : MonoBehaviour
 {
     public int Hp = 1, MaxHp = 1;
-    Vector3 _start; float _t;
-    void Start() => _start = transform.position;
-    void Update() { _t += Time.deltaTime; transform.position = _start + Vector3.right * Mathf.Sin(_t * 1.5f) * 1.5f; }
+    Vector3 _start; float _t; TrendoLevel _level;
+    void Start() { _start = transform.position; _level = GetComponentInParent<TrendoLevel>(); }
+    void Update() { if (_level != null && !_level.Playing) return; _t += Time.deltaTime; transform.position = _start + Vector3.right * Mathf.Sin(_t * 1.5f) * 1.5f; }
 }
 
 /// <summary>Geschoss der Waffe „Werfen“: fliegt bis zur Wand oder zum Gegner.</summary>
@@ -558,6 +576,8 @@ public class TrendoPlayer : MonoBehaviour
     {
         if (_rb == null) return;
         var dt = Time.deltaTime;
+        var cam0 = Camera.main; if (cam0 != null) cam0.transform.position = new Vector3(transform.position.x, transform.position.y, -10);
+        if (!_level.Playing) return; // im Menü keine Eingaben
         if (Safe > 0) Safe -= dt; if (NoEnter > 0) NoEnter -= dt; if (_cool > 0) _cool -= dt;
         if (Grounded) _air = _level.Data.Has("doppelsprung") ? 1 : 0;
         var h = Input.GetAxisRaw("Horizontal"); if (h != 0) Facing = Mathf.Sign(h);
@@ -737,6 +757,167 @@ public class TrendoGameplayTests
 }
 """;
 
+    const string UnityMenu = """
+using System;
+using UnityEngine;
+
+/// <summary>Einstellungen des Spiels (Barrierefreiheit), gespeichert in PlayerPrefs.</summary>
+[Serializable] public class TrendoSettings { public int vol = 100; public bool contrast; public bool big; public bool calm; public bool map = true; }
+
+/// <summary>Spielmenüs wie im Trendo-Browser-Spiel: Startmenü, Pause (Esc/P/Start), Einstellungen, Steuerung, Karte.
+/// Im Menü sind Eingaben und Gegner angehalten; Tastatur, Maus und Controller bedienen das Menü.</summary>
+public class TrendoMenu : MonoBehaviour
+{
+    public const string PrefsKey = "trendo-einstellungen";
+    public string Mode = "menu"; public int Sel; public TrendoSettings S = new TrendoSettings();
+    string _back = "menu"; TrendoLevel _level; bool _hasSave;
+
+    public void Setup(TrendoLevel level, bool hasSave)
+    {
+        _level = level; _hasSave = hasSave;
+        S = JsonUtility.FromJson<TrendoSettings>(PlayerPrefs.GetString(PrefsKey, "{}")) ?? new TrendoSettings();
+        Mode = level.Data.menu ? "menu" : "play"; Apply();
+    }
+
+    public void SaveSettings() { PlayerPrefs.SetString(PrefsKey, JsonUtility.ToJson(S)); PlayerPrefs.Save(); Apply(); }
+    void Apply()
+    {
+        AudioListener.volume = S.vol / 100f;
+        var cam = Camera.main; if (cam != null && _level != null && _level.Data != null) cam.backgroundColor = S.contrast ? Color.black : TrendoLevelData.Hex(_level.Data.background, Color.black);
+    }
+
+    public string[] Items()
+    {
+        switch (Mode)
+        {
+            case "menu": return _hasSave ? new[] { "Fortsetzen", "Spielen", "Einstellungen", "Steuerung" } : new[] { "Spielen", "Einstellungen", "Steuerung" };
+            case "pause": return new[] { "Weiter", "Neu beginnen", "Einstellungen", "Zum Menü" };
+            case "settings": return new[] { "Lautstärke: " + S.vol + " %", "Hoher Kontrast: " + (S.contrast ? "an" : "aus"), "Große Schrift: " + (S.big ? "an" : "aus"), "Ruhige Effekte: " + (S.calm ? "an" : "aus"), "Karte: " + (S.map ? "an" : "aus"), "Zurück" };
+            default: return new[] { "Zurück" };
+        }
+    }
+
+    public void Choose(string item)
+    {
+        var w = item.Split(':')[0];
+        switch (w)
+        {
+            case "Fortsetzen": case "Weiter": Mode = "play"; break;
+            case "Spielen": case "Neu beginnen": _level.NewGame(); _hasSave = false; Mode = "play"; break;
+            case "Einstellungen": _back = Mode; Mode = "settings"; Sel = 0; break;
+            case "Steuerung": _back = Mode; Mode = "help"; Sel = 0; break;
+            case "Zum Menü": Mode = "menu"; Sel = 0; break;
+            case "Lautstärke": S.vol = (S.vol + 25) % 125; SaveSettings(); break;
+            case "Hoher Kontrast": S.contrast = !S.contrast; SaveSettings(); break;
+            case "Große Schrift": S.big = !S.big; SaveSettings(); break;
+            case "Ruhige Effekte": S.calm = !S.calm; SaveSettings(); break;
+            case "Karte": S.map = !S.map; SaveSettings(); break;
+            case "Zurück": Mode = _back; Sel = 0; break;
+        }
+    }
+
+    /// <summary>Taste fürs Menü: up, down, enter, escape (Esc/P/Start).</summary>
+    public void Press(string key)
+    {
+        if (Mode == "play") { if (key == "escape") { Mode = "pause"; Sel = 0; } return; }
+        var it = Items();
+        if (key == "up") Sel = (Sel + it.Length - 1) % it.Length;
+        else if (key == "down") Sel = (Sel + 1) % it.Length;
+        else if (key == "enter") Choose(it[Mathf.Min(Sel, it.Length - 1)]);
+        else if (key == "escape") { if (Mode == "pause") Mode = "play"; else if (Mode == "settings" || Mode == "help") { Mode = _back; Sel = 0; } }
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.JoystickButton7)) Press("escape");
+        if (Mode == "play") return;
+        if (Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.W)) Press("up");
+        if (Input.GetKeyDown(KeyCode.DownArrow) || Input.GetKeyDown(KeyCode.S)) Press("down");
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.JoystickButton0)) Press("enter");
+    }
+
+    void OnGUI()
+    {
+        var big = S.big ? 1.4f : 1f;
+        if (Mode == "play")
+        {
+            if (!S.map || _level == null || _level.Player == null || _level.Data == null) return;
+            var rows = _level.Data.levels[_level.Index].rows; const float m = 3f;
+            var ox = Screen.width - 160f; var oy = Screen.height - rows.Length * m - 10f;
+            GUI.color = new Color(0, 0, 0, 0.55f); GUI.DrawTexture(new Rect(ox - 2, oy - 2, 154, rows.Length * m + 4), Texture2D.whiteTexture);
+            GUI.color = S.contrast ? Color.white : new Color(0.53f, 0.6f, 0.67f);
+            var px = Mathf.RoundToInt(_level.Player.transform.position.x); var off = Mathf.Max(0, px - 25);
+            for (var y = 0; y < rows.Length; y++) for (var x = 0; x < 50 && x + off < rows[y].Length; x++) if (rows[y][x + off] == '#') GUI.DrawTexture(new Rect(ox + x * m, oy + y * m, m, m), Texture2D.whiteTexture);
+            GUI.color = S.contrast ? Color.yellow : TrendoLevelData.Hex(_level.Data.accent, Color.yellow);
+            GUI.DrawTexture(new Rect(ox + (px - off) * m, oy + Mathf.RoundToInt(-_level.Player.transform.position.y) * m, m, m * 2), Texture2D.whiteTexture);
+            GUI.color = Color.white; return;
+        }
+        GUI.color = new Color(0, 0, 0, S.contrast ? 0.94f : 0.82f); GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), Texture2D.whiteTexture); GUI.color = Color.white;
+        var title = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(28 * big), alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+        GUI.Label(new Rect(0, 40, Screen.width, 50), Mode == "menu" ? (_level.Data.name ?? "Spiel") : Mode == "pause" ? "Pause" : Mode == "settings" ? "Einstellungen" : "Steuerung", title);
+        var text = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(16 * big), alignment = TextAnchor.MiddleCenter };
+        var y0 = 110f;
+        if (Mode == "help")
+            foreach (var line in new[] { "← → laufen · Leertaste springen · Umschalt sprinten", "X oder J angreifen · E aussteigen", "Esc oder P Pause", "Controller: Stick laufen · A springen · Start Pause" }) { GUI.Label(new Rect(0, y0, Screen.width, 26 * big), line, text); y0 += 26 * big; }
+        var it = Items();
+        for (var i = 0; i < it.Length; i++)
+        {
+            var r = new Rect(Screen.width / 2f - 150, y0 + 20 + i * 36 * big, 300, 30 * big);
+            if (i == Sel) { GUI.color = S.contrast ? Color.yellow : TrendoLevelData.Hex(_level.Data.accent, Color.yellow); GUI.DrawTexture(r, Texture2D.whiteTexture); GUI.color = Color.black; } else GUI.color = Color.white;
+            if (GUI.Button(r, it[i], text)) { Sel = i; Choose(it[i]); }
+            GUI.color = Color.white;
+        }
+    }
+}
+""";
+
+    const string UnityMenuTests = """
+using System.Collections;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.TestTools;
+
+/// <summary>PlayMode-Tests: Spielmenü wie im Trendo-Browser-Spiel – Start, Einstellungen (gespeichert), Pause, Gegner stehen im Menü still.</summary>
+public class TrendoMenuTests
+{
+    const string Json = "{\"name\":\"Test\",\"speed\":5,\"lives\":3,\"levels\":[{\"name\":\"L\",\"rows\":[\"..........\",\"S.....E..Z\",\"##########\"],\"decor\":[]}]}";
+
+    [UnityTest] public IEnumerator Startmenue_Einstellungen_Pause()
+    {
+        PlayerPrefs.DeleteKey(TrendoMenu.PrefsKey);
+        var level = new GameObject("Test-Menue").AddComponent<TrendoLevel>(); level.Begin(TrendoLevelData.Parse(Json), 0);
+        level.Menu = level.gameObject.AddComponent<TrendoMenu>(); level.Menu.Setup(level, false);
+        var m = level.Menu;
+        Assert.AreEqual("menu", m.Mode); Assert.IsFalse(level.Playing); CollectionAssert.AreEqual(new[] { "Spielen", "Einstellungen", "Steuerung" }, m.Items());
+        var foe = level.Find("Gegner").transform; var x0 = foe.position.x;
+        for (var i = 0; i < 20; i++) yield return null;
+        Assert.AreEqual(x0, foe.position.x, 0.0001f, "Gegner stehen im Menü still");
+        m.Press("down"); m.Press("enter"); Assert.AreEqual("settings", m.Mode);
+        m.Press("down"); m.Press("enter"); Assert.IsTrue(m.S.contrast);
+        StringAssert.Contains("\"contrast\":true", PlayerPrefs.GetString(TrendoMenu.PrefsKey));
+        m.Press("escape"); Assert.AreEqual("menu", m.Mode);
+        m.Press("enter"); Assert.AreEqual("play", m.Mode); Assert.IsTrue(level.Playing);
+        m.Press("escape"); Assert.AreEqual("pause", m.Mode); Assert.IsFalse(level.Playing);
+        m.Press("escape"); Assert.AreEqual("play", m.Mode);
+        PlayerPrefs.DeleteKey(TrendoMenu.PrefsKey); Object.Destroy(level.gameObject);
+    }
+
+    [UnityTest] public IEnumerator Ohne_Menue_sofort_spielen_und_Fortsetzen_mit_Spielstand()
+    {
+        var d = TrendoLevelData.Parse(Json.Replace("\"lives\":3", "\"lives\":3,\"menu\":false"));
+        Assert.IsFalse(d.menu); Assert.IsTrue(TrendoLevelData.Parse(Json).menu);
+        var level = new GameObject("Test-OhneMenue").AddComponent<TrendoLevel>(); level.Begin(d, 0);
+        level.Menu = level.gameObject.AddComponent<TrendoMenu>(); level.Menu.Setup(level, false);
+        Assert.AreEqual("play", level.Menu.Mode);
+        var withSave = new GameObject("Test-Fortsetzen-Menue").AddComponent<TrendoLevel>(); withSave.Begin(TrendoLevelData.Parse(Json), 0);
+        withSave.Menu = withSave.gameObject.AddComponent<TrendoMenu>(); withSave.Menu.Setup(withSave, true);
+        Assert.AreEqual("Fortsetzen", withSave.Menu.Items()[0]);
+        yield return null;
+        Object.Destroy(level.gameObject); Object.Destroy(withSave.gameObject);
+    }
+}
+""";
+
     // ───────────── Godot-Quelltexte (eigene, Clean-Room) ─────────────
     const string GodotLevel = """
 extends Node2D
@@ -760,6 +941,34 @@ var boost := 0.0
 var fired: Array = []
 var time := 0.0
 var hud: Label
+var menu_mode := "menu"
+var sel := 0
+var back := "menu"
+var has_save := false
+var S := {"vol": 100, "contrast": false, "big": false, "calm": false, "map": true}
+var overlay: ColorRect
+var menu_label: Label
+var minimap: MiniMap
+const SETTINGS := "user://trendo-einstellungen.json"
+
+## Karte rechts unten: Boden und Figur
+class MiniMap extends Control:
+	var level
+	func _draw() -> void:
+		if level == null or level.data.is_empty() or level.player == null:
+			return
+		var rows: Array = level.data["levels"][level.index]["rows"]
+		var m := 3.0
+		var px := int(level.player.position.x / 32.0)
+		var off := maxi(0, px - 25)
+		draw_rect(Rect2(-2, -2, 154, rows.size() * m + 4), Color(0, 0, 0, 0.55))
+		var c := Color.WHITE if level.S["contrast"] else Color(0.53, 0.6, 0.67)
+		for y in rows.size():
+			var row := String(rows[y])
+			for x in 50:
+				if x + off < row.length() and row[x + off] == "#":
+					draw_rect(Rect2(x * m, y * m, m, m), c)
+		draw_rect(Rect2((px - off) * m, int(level.player.position.y / 32.0) * m, m, m * 2), Color.YELLOW)
 
 func key(x: int, y: int, k: String) -> String:
 	return ("" if index == 0 else str(index + 1) + ":") + str(x) + "," + str(y) + ":" + k
@@ -806,6 +1015,17 @@ func _ready() -> void:
 	hud = Label.new()
 	hud.position = Vector2(10, 10)
 	layer.add_child(hud)
+	minimap = MiniMap.new()
+	minimap.level = self
+	layer.add_child(minimap)
+	overlay = ColorRect.new()
+	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	layer.add_child(overlay)
+	menu_label = Label.new()
+	menu_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	menu_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	menu_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	layer.add_child(menu_label)
 	add_sibling.call_deferred(layer)
 	RenderingServer.set_default_clear_color(Color(data.get("background", "#10203F")))
 	var s := read_save(SAVE, data["levels"].size())
@@ -813,6 +1033,9 @@ func _ready() -> void:
 		build(0)
 	else:
 		resume(s)
+	has_save = not s.is_empty()
+	menu_mode = "menu" if data.get("menu", true) else "play"
+	load_settings()
 
 const SAVE := "user://trendo-spielstand.json"
 var score := 0
@@ -1073,7 +1296,8 @@ func quests() -> String:
 	return out
 
 func _process(delta: float) -> void:
-	if data.is_empty() or won:
+	update_menu_view()
+	if data.is_empty() or won or not playing():
 		return
 	time += delta
 	var rules: Array = data.get("rules", [])
@@ -1086,6 +1310,162 @@ func _process(delta: float) -> void:
 			note = "✓ " + String(rules[i]["title"])
 	if hud:
 		hud.text = "Punkte %d   Leben %d" % [score, lives] + ("   Treibstoff %d s" % ceili(player.fuel) if player and player.vehicle == "ufo" else "") + ("\nInventar: " + ", ".join(PackedStringArray(inventory)) if inventory.size() > 0 else "") + "\n" + quests() + note
+
+func load_settings() -> void:
+	var f := FileAccess.open(SETTINGS, FileAccess.READ)
+	if f:
+		var j := JSON.new()
+		if j.parse(f.get_as_text()) == OK and j.data is Dictionary:
+			for k in j.data:
+				S[k] = j.data[k]
+	apply_settings()
+
+func save_settings() -> void:
+	var f := FileAccess.open(SETTINGS, FileAccess.WRITE)
+	if f:
+		f.store_string(JSON.stringify(S))
+		f.close()
+	apply_settings()
+
+func apply_settings() -> void:
+	AudioServer.set_bus_volume_db(0, linear_to_db(maxf(0.0001, float(S["vol"]) / 100.0)))
+	RenderingServer.set_default_clear_color(Color.BLACK if S["contrast"] else Color(data.get("background", "#10203F")))
+	if hud:
+		hud.add_theme_font_size_override("font_size", 22 if S["big"] else 15)
+
+func playing() -> bool:
+	return menu_mode == "play"
+
+func menu_items() -> Array:
+	match menu_mode:
+		"menu":
+			return (["Fortsetzen"] if has_save else []) + ["Spielen", "Einstellungen", "Steuerung"]
+		"pause":
+			return ["Weiter", "Neu beginnen", "Einstellungen", "Zum Menü"]
+		"settings":
+			return ["Lautstärke: %d %%" % int(S["vol"]), "Hoher Kontrast: " + ("an" if S["contrast"] else "aus"), "Große Schrift: " + ("an" if S["big"] else "aus"), "Ruhige Effekte: " + ("an" if S["calm"] else "aus"), "Karte: " + ("an" if S["map"] else "aus"), "Zurück"]
+	return ["Zurück"]
+
+func new_game() -> void:
+	drop_save()
+	lives = int(data.get("lives", 3))
+	score = 0
+	coins = 0
+	defeated = 0
+	items = 0
+	inventory.clear()
+	given.clear()
+	boost = 0.0
+	time = 0.0
+	won = false
+	note = ""
+	fired.fill(false)
+	has_save = false
+	build(0)
+
+func choose(t: String) -> void:
+	var w := t.split(":")[0]
+	match w:
+		"Fortsetzen", "Weiter":
+			menu_mode = "play"
+		"Spielen", "Neu beginnen":
+			new_game()
+			menu_mode = "play"
+		"Einstellungen", "Steuerung":
+			back = menu_mode
+			menu_mode = "settings" if w == "Einstellungen" else "help"
+			sel = 0
+		"Zum Menü":
+			menu_mode = "menu"
+			sel = 0
+		"Lautstärke":
+			S["vol"] = (int(S["vol"]) + 25) % 125
+			save_settings()
+		"Hoher Kontrast":
+			S["contrast"] = not S["contrast"]
+			save_settings()
+		"Große Schrift":
+			S["big"] = not S["big"]
+			save_settings()
+		"Ruhige Effekte":
+			S["calm"] = not S["calm"]
+			save_settings()
+		"Karte":
+			S["map"] = not S["map"]
+			save_settings()
+		"Zurück":
+			menu_mode = back
+			sel = 0
+
+## Taste fürs Menü: up, down, enter, escape (Esc/P/Start)
+func menu_key(k: String) -> void:
+	if menu_mode == "play":
+		if k == "escape":
+			menu_mode = "pause"
+			sel = 0
+		return
+	var it := menu_items()
+	if k == "up":
+		sel = (sel + it.size() - 1) % it.size()
+	elif k == "down":
+		sel = (sel + 1) % it.size()
+	elif k == "enter":
+		choose(it[mini(sel, it.size() - 1)])
+	elif k == "escape":
+		if menu_mode == "pause":
+			menu_mode = "play"
+		elif menu_mode == "settings" or menu_mode == "help":
+			menu_mode = back
+			sel = 0
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_ESCAPE or event.keycode == KEY_P:
+			menu_key("escape")
+			get_viewport().set_input_as_handled()
+		elif menu_mode != "play":
+			if event.keycode == KEY_UP or event.keycode == KEY_W:
+				menu_key("up")
+			elif event.keycode == KEY_DOWN or event.keycode == KEY_S:
+				menu_key("down")
+			elif event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER or event.keycode == KEY_SPACE:
+				menu_key("enter")
+			get_viewport().set_input_as_handled()
+	elif event is InputEventJoypadButton and event.pressed:
+		if event.button_index == JOY_BUTTON_START:
+			menu_key("escape")
+		elif menu_mode != "play":
+			if event.button_index == JOY_BUTTON_DPAD_UP:
+				menu_key("up")
+			elif event.button_index == JOY_BUTTON_DPAD_DOWN:
+				menu_key("down")
+			elif event.button_index == JOY_BUTTON_A:
+				menu_key("enter")
+
+func update_menu_view() -> void:
+	if overlay == null:
+		return
+	var p := playing()
+	overlay.visible = not p
+	menu_label.visible = not p
+	if hud:
+		hud.visible = p
+	if minimap:
+		minimap.visible = p and S["map"]
+		minimap.position = get_viewport_rect().size - Vector2(160, 70)
+		minimap.queue_redraw()
+	if p:
+		return
+	overlay.color = Color(0, 0, 0, 0.94 if S["contrast"] else 0.82)
+	var t: String = String(data.get("name", "Spiel")) if menu_mode == "menu" else {"pause": "Pause", "settings": "Einstellungen"}.get(menu_mode, "Steuerung")
+	t += "\n\n"
+	if menu_mode == "help":
+		t += "← → laufen · Leertaste springen · Umschalt sprinten\nX oder J angreifen · E aussteigen\nEsc oder P Pause\nController: Stick laufen · A springen · Start Pause\n\n"
+	var it := menu_items()
+	for i in it.size():
+		t += ("▶ " + it[i] + " ◀" if i == sel else it[i]) + "\n"
+	menu_label.text = t
+	menu_label.add_theme_font_size_override("font_size", 26 if S["big"] else 18)
 
 ## Treffer: im Fahrzeug geht das Fahrzeug kaputt (kurz unverwundbar), sonst ein Leben weniger. Absturz trifft immer.
 func hit(fall := false) -> void:
@@ -1138,6 +1518,8 @@ func jump() -> bool:
 	return false
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not level.playing():
+		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if (event.keycode == KEY_X or event.keycode == KEY_J) and cool <= 0:
 			cool = 0.33
@@ -1175,13 +1557,13 @@ func _physics_process(delta: float) -> void:
 	if is_on_floor():
 		air = 1 if level.has("doppelsprung") else 0
 	velocity.y += GRAVITY * delta
-	var h := Input.get_axis("ui_left", "ui_right")
+	var h := Input.get_axis("ui_left", "ui_right") if level.playing() else 0.0
 	if h != 0:
 		facing = signf(h)
 	velocity.x = h * cur_speed(Input.is_key_pressed(KEY_SHIFT))
-	if Input.is_action_just_pressed("ui_accept"):
+	if level.playing() and Input.is_action_just_pressed("ui_accept"):
 		jump()
-	if vehicle == "ufo" and Input.is_action_pressed("ui_accept") and fuel > 0:
+	if level.playing() and vehicle == "ufo" and Input.is_action_pressed("ui_accept") and fuel > 0:
 		velocity.y = maxf(velocity.y - 2400.0 * delta, -360.0)
 		fuel -= delta
 		if fuel <= 0:
@@ -1367,6 +1749,7 @@ func _process(_delta: float) -> bool:
 		main.score = 0
 		main.fired = [false]
 		main.build(0)
+		main.menu_mode = "play"
 		return false
 	if frames < 40:
 		return false
@@ -1415,5 +1798,56 @@ func _process(_delta: float) -> bool:
 	if frames > 400:
 		return fail("Figur kam nicht auf den Boden")
 	return false
+""";
+
+    const string GodotMenuCheck = """
+extends SceneTree
+## Von Trendo: Menü-Prüfung ohne Fenster – Start im Menü, Einstellungen gespeichert, Pause, Weiter.
+
+var frames := 0
+var main: Node
+
+func _initialize() -> void:
+	DirAccess.remove_absolute("user://trendo-einstellungen.json")
+	main = load("res://main.tscn").instantiate()
+	root.add_child(main)
+
+func fail(t: String) -> bool:
+	print("TRENDO-FEHLER " + t)
+	quit(1)
+	return true
+
+func _process(_delta: float) -> bool:
+	frames += 1
+	if frames < 20:
+		return false
+	main.has_save = false
+	if main.menu_mode != "menu" or main.playing():
+		return fail("startet nicht im Menü")
+	if main.menu_items() != ["Spielen", "Einstellungen", "Steuerung"]:
+		return fail("Menüpunkte falsch: " + str(main.menu_items()))
+	main.menu_key("down")
+	main.menu_key("enter")
+	if main.menu_mode != "settings":
+		return fail("Einstellungen öffnen nicht")
+	main.menu_key("down")
+	main.menu_key("enter")
+	var f := FileAccess.open("user://trendo-einstellungen.json", FileAccess.READ)
+	if not main.S["contrast"] or f == null or not f.get_as_text().contains("\"contrast\":true"):
+		return fail("Kontrast nicht gespeichert")
+	main.menu_key("escape")
+	main.menu_key("enter")
+	if not main.playing():
+		return fail("Spielen startet nicht")
+	main.menu_key("escape")
+	if main.menu_mode != "pause":
+		return fail("Pause fehlt")
+	main.menu_key("escape")
+	if not main.playing():
+		return fail("Weiter geht nicht")
+	DirAccess.remove_absolute("user://trendo-einstellungen.json")
+	print("TRENDO-OK Menü: Start, Einstellungen gespeichert, Pause, Weiter")
+	quit(0)
+	return true
 """;
 }

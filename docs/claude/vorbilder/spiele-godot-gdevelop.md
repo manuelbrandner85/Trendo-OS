@@ -46,7 +46,7 @@ Vorbilder: Unity Hub (Editor-Erkennung), Unity Test Framework (EditMode/PlayMode
 - ✓ Fahrzeuge Wagen und Ufo (S1-05, Teil 4)
 - ✓ Fähigkeiten, Aufgaben, Inventar, Kampf, Fahrzeuge auch im Unity-/Godot-Export (mit Unity 6.6 und Godot 4.7.2 geprüft)
 - ✓ Spielmenüs mit Pause, Einstellungen (Barrierefreiheit), Karte und Controller im Browser-Spiel (S1-14)
-- ✗ Spielmenüs im Unity-/Godot-Export
+- ✓ Spielmenüs auch im Unity-/Godot-Export (mit Unity 6.6 und Godot 4.7.2 geprüft)
 
 ## Nächste Schritte
 1. Freie Szene statt Raster (Objekte pixelgenau setzen)
