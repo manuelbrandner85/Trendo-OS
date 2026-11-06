@@ -122,6 +122,17 @@ public class VideoSchnittPlus_Ui
         Click(w, "ve-export-go");
         for (var i = 0; i < 100 && (target is null || w.EditExporting); i++) { await Task.Delay(10); Settle(); }
         Assert.EndsWith(".m4a", target);
+        // Paket 01 S3-18-N: ProRes fehlt im FFmpeg → kein Export, klare Alternative
+        w.EncodersOverride = new HashSet<string> { "libx264", "aac", "png", "exr" };
+        w.Show("schnitt"); Settle(); Click(w, "ve-preset-prores"); target = null;
+        Click(w, "ve-export-go");
+        for (var i = 0; i < 50 && !w.ProgramMessage("schnitt").Contains("prores_ks"); i++) { await Task.Delay(10); Settle(); }
+        Assert.Null(target); Assert.Contains("Alternative: „YouTube 1080p“", w.ProgramMessage("schnitt"));
+        // S3-18: EXR-Sequenz geht in einen Ordner (ohne Endung)
+        w.Show("schnitt"); Settle(); Click(w, "ve-preset-exr");
+        Click(w, "ve-export-go");
+        for (var i = 0; i < 100 && (target is null || w.EditExporting); i++) { await Task.Delay(10); Settle(); }
+        Assert.EndsWith("-exr", target);
         // Übergabe
         w.Show("schnitt"); Settle(); Click(w, "ve-edl"); Settle();
         var edl = Directory.GetFiles(root, "*.edl", SearchOption.AllDirectories).Single();

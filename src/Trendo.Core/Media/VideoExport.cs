@@ -13,7 +13,8 @@ public static class VideoExport
     static string F(double v) => v.ToString("0.###", Inv);
 
     /// <summary>W/H = 0: Größe des Projekts. MaxMb: Zielgröße (Bitrate wird daraus berechnet). AudioOnly: nur Ton (M4A).</summary>
-    public sealed record Preset(string Id, string Label, string Hint, int W, int H, string Codec, int Quality, string Ext = ".mp4", double MaxMb = 0, bool AudioOnly = false);
+    /// <param name="Sequence">Einzelbilder in einen Ordner (plus WAV) statt einer Filmdatei (Paket 01 S3-18).</param>
+    public sealed record Preset(string Id, string Label, string Hint, int W, int H, string Codec, int Quality, string Ext = ".mp4", double MaxMb = 0, bool AudioOnly = false, bool Sequence = false);
 
     public static readonly Preset[] Presets =
     [
@@ -25,7 +26,50 @@ public static class VideoExport
         new("whatsapp", "WhatsApp / klein", "1280 × 720, höchstens 15 MB", 1280, 720, "h264", 0, ".mp4", 15),
         new("av1", "AV1 (sehr klein)", "Projektgröße, moderner Codec", 0, 0, "av1", 30),
         new("ton", "Nur Ton", "M4A (AAC), z. B. für einen Podcast", 0, 0, "aac", 0, ".m4a", 0, true),
+        // Paket 01 S3-18: Profi-Ausgabe für Schnitt und VFX
+        new("prores", "ProRes 422 HQ", "Für Resolve, Premiere, Final Cut – .mov, 10 Bit, Ton unkomprimiert", 0, 0, "prores", 0, ".mov"),
+        new("png", "PNG-Bildsequenz", "Einzelbilder + WAV in einem Ordner, z. B. für VFX", 0, 0, "png", 0, ".png", 0, false, true),
+        new("exr", "EXR-Bildsequenz", "OpenEXR (Fließkomma, ZIP) + WAV für Compositing", 0, 0, "exr", 0, ".exr", 0, false, true),
     ];
+
+    /// <summary>Welche Encoder dieses FFmpeg enthält („ffmpeg -encoders“), zwischengespeichert.</summary>
+    public static IReadOnlySet<string> Encoders(string ffmpeg)
+    {
+        lock (EncCache) if (EncCache.TryGetValue(ffmpeg, out var c)) return c;
+        var set = ParseEncoders(Cli.Run(ffmpeg, ["-hide_banner", "-encoders"], null, 20000).Out);
+        lock (EncCache) EncCache[ffmpeg] = set;
+        return set;
+    }
+    static readonly Dictionary<string, IReadOnlySet<string>> EncCache = [];
+
+    public static IReadOnlySet<string> ParseEncoders(string list) =>
+        list.Split('\n').Select(l => System.Text.RegularExpressions.Regex.Match(l, @"^\s*[VAS][F.][S.][X.][B.][D.]\s+(\S+)")).Where(m => m.Success).Select(m => m.Groups[1].Value).ToHashSet();
+
+    /// <summary>Software-Encoder, den eine Vorlage braucht (ohne Grafikkarte).</summary>
+    public static string NeededEncoder(Preset p) => p.AudioOnly ? "aac" : Encoder(p, null, 60).Encoder;
+
+    /// <summary>Paket 01 S3-18-N: fehlt der Encoder (nicht enthalten oder nicht lizenziert), nennt Trendo eine klare Alternative statt still etwas anderes zu liefern.</summary>
+    public static (bool Ok, Preset? Alternative, string Text) Check(Preset p, IReadOnlySet<string> encoders)
+    {
+        var need = NeededEncoder(p);
+        if (encoders.Contains(need)) return (true, null, "");
+        Preset? alt = p.Codec switch { "exr" => Get("png"), "prores" => Get("yt1080"), "hevc" or "av1" => Get("projekt"), _ => null };
+        if (alt is not null && !encoders.Contains(NeededEncoder(alt))) alt = null;
+        var altText = alt is not null ? $" Alternative: „{alt.Label}“." : " Bitte ein FFmpeg mit diesem Encoder einrichten (Zusatzprogramme).";
+        return (false, alt, $"„{p.Label}“ geht mit diesem FFmpeg nicht – Encoder „{need}“ fehlt.{altText}");
+    }
+
+    /// <summary>Ausgabe bei Bildsequenzen: Ordner mit „Name_00001.ext“ und „Name.wav“.</summary>
+    public static (string Frames, string Wav) SequencePaths(string folder, Preset p)
+    {
+        var name = Path.GetFileName(Path.TrimEndingDirectorySeparator(folder)); if (name.Length == 0) name = "Film";
+        return (Path.Combine(folder, name + "_%05d" + p.Ext), Path.Combine(folder, name + ".wav"));
+    }
+
+    /// <summary>Ist eine echte Ausgabe entstanden? Film: Datei mit Inhalt; Sequenz: mindestens ein Bild.</summary>
+    public static bool Produced(string output, Preset p) => p.Sequence
+        ? Directory.Exists(output) && Directory.EnumerateFiles(output, "*" + p.Ext).Any(f => new FileInfo(f).Length > 0)
+        : File.Exists(output) && new FileInfo(output).Length > 0;
 
     public static Preset Get(string id) => Presets.FirstOrDefault(p => p.Id == id) ?? Presets[0];
 
@@ -50,6 +94,9 @@ public static class VideoExport
             ("hevc", false) => ("libx265", ["-c:v", "libx265", "-preset", "medium", "-crf", q, "-tag:v", "hvc1"]),
             ("av1", true) => (nv, ["-c:v", nv, "-preset", "p5", "-cq", q, "-b:v", "0"]),
             ("av1", false) => ("libsvtav1", ["-c:v", "libsvtav1", "-preset", "8", "-crf", q]),
+            ("prores", _) => ("prores_ks", ["-c:v", "prores_ks", "-profile:v", "3", "-vendor", "apl0", "-pix_fmt", "yuv422p10le"]),
+            ("png", _) => ("png", ["-c:v", "png", "-pix_fmt", "rgb24"]),
+            ("exr", _) => ("exr", ["-c:v", "exr", "-compression", "zip1", "-format", "half", "-pix_fmt", "gbrpf32le"]),
             (_, true) => (nv, ["-c:v", nv, "-preset", "p5", "-tune", "hq", "-rc", "vbr", "-cq", (p.Quality + 1).ToString(Inv), "-b:v", "0"]),
             _ => ("libx264", ["-c:v", "libx264", "-preset", "veryfast", "-crf", q]),
         };

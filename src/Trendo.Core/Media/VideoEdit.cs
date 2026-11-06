@@ -211,8 +211,19 @@ public static class VideoEdit
             return a;
         }
         var (_, enc) = VideoExport.Encoder(o.Preset, o.Gpu, outLen); // X2: NVENC, wenn die Grafikkarte es kann
-        a.AddRange(["-filter_complex", string.Join(";", f), "-map", $"[{vo}]", "-map", $"[{ao}]", "-t", F(outLen), .. enc,
-            "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", o.Preset.MaxMb > 0 ? "96k" : "192k", "-movflags", "+faststart", output]);
+        if (o.Preset.Sequence)
+        {
+            // Paket 01 S3-18: Einzelbilder und Ton getrennt in einen Ordner
+            var (frames, wav) = VideoExport.SequencePaths(output, o.Preset);
+            a.AddRange(["-filter_complex", string.Join(";", f), "-map", $"[{vo}]", "-t", F(outLen), .. enc, "-start_number", "1", frames,
+                "-map", $"[{ao}]", "-t", F(outLen), "-c:a", "pcm_s24le", wav]);
+            return a;
+        }
+        var pro = o.Preset.Codec == "prores";
+        a.AddRange(["-filter_complex", string.Join(";", f), "-map", $"[{vo}]", "-map", $"[{ao}]", "-t", F(outLen), .. enc]);
+        if (!pro) a.AddRange(["-pix_fmt", "yuv420p"]);
+        if (pro) a.AddRange(["-c:a", "pcm_s24le"]); else a.AddRange(["-c:a", "aac", "-b:a", o.Preset.MaxMb > 0 ? "96k" : "192k"]);
+        a.AddRange(["-movflags", "+faststart", output]);
         return a;
     }
 
@@ -238,8 +249,9 @@ public static class VideoEdit
     public static string Export(string ffmpeg, JsonObject p, string output, int timeoutMs = 1800000, VideoExport.Options? o = null)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
+        if (o?.Preset.Sequence == true) Directory.CreateDirectory(output);
         var r = Cli.Run(ffmpeg, ExportArgs(p, output, o), Path.GetDirectoryName(Path.GetFullPath(output)), timeoutMs);
-        if (!r.Ok || !System.IO.File.Exists(output) || new FileInfo(output).Length == 0)
+        if (!r.Ok || !VideoExport.Produced(output, o?.Preset ?? VideoExport.Presets[0]))
             throw new InvalidOperationException("Export hat nicht geklappt: " + (r.Err.Length > 0 ? r.Err.Trim().Split('\n')[^1] : $"FFmpeg-Code {r.Exit}"));
         return output;
     }
@@ -250,6 +262,7 @@ public static class VideoEdit
         var args = ExportArgs(p, output, o); args.InsertRange(4, ["-progress", "pipe:1", "-nostats"]);
         var total = Math.Max(0.1, o is null ? VideoLength(Clips(p)) : VideoExport.Length(VideoLength(Clips(p)), o));
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
+        if (o?.Preset.Sequence == true) Directory.CreateDirectory(output);
         var psi = new System.Diagnostics.ProcessStartInfo(ffmpeg) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
         foreach (var a in args) psi.ArgumentList.Add(a);
         using var proc = System.Diagnostics.Process.Start(psi) ?? throw new InvalidOperationException("FFmpeg ließ sich nicht starten.");
@@ -265,11 +278,11 @@ public static class VideoEdit
         {
             try { if (!proc.HasExited) proc.Kill(true); } catch (InvalidOperationException) { }
             await Task.Delay(200, CancellationToken.None);
-            try { if (System.IO.File.Exists(output)) System.IO.File.Delete(output); } catch (IOException) { }
+            try { if (System.IO.File.Exists(output)) System.IO.File.Delete(output); else if (o?.Preset.Sequence == true && Directory.Exists(output)) Directory.Delete(output, true); } catch (IOException) { }
             throw;
         }
         var e = await err;
-        if (proc.ExitCode != 0 || !System.IO.File.Exists(output) || new FileInfo(output).Length == 0)
+        if (proc.ExitCode != 0 || !VideoExport.Produced(output, o?.Preset ?? VideoExport.Presets[0]))
             throw new InvalidOperationException("Export hat nicht geklappt: " + (e.Trim().Length > 0 ? e.Trim().Split('\n')[^1] : $"FFmpeg-Code {proc.ExitCode}"));
         progress?.Report(1);
         return output;

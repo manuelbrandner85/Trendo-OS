@@ -457,12 +457,18 @@ public partial class MainWindow
     /// <summary>Für Tests: Ersatz für den Hintergrund-Export (Projekt, Ziel, Fortschritt, Abbruch).</summary>
     public Func<JsonObject, string, IProgress<double>, CancellationToken, Task<string>>? ExportAsyncOverride { get; set; }
 
+    /// <summary>Für Tests: Encoder-Liste des FFmpeg (sonst „ffmpeg -encoders“).</summary>
+    public IReadOnlySet<string>? EncodersOverride { get; set; }
+
     public async Task EditExportBackground(ProgramDocument d)
     {
         if (_veExport is not null) { _progMsg[VK] = "Ein Export läuft schon."; Show(VK); return; }
-        var opts = EditExportOptions(d); var ext = opts.Preset.Ext; var tag = opts.Preset.Id == "projekt" ? "" : "-" + opts.Preset.Id;
+        var opts = EditExportOptions(d); var ext = opts.Preset.Sequence ? "" : opts.Preset.Ext; var tag = opts.Preset.Id == "projekt" ? "" : "-" + opts.Preset.Id; // Sequenz: Ordner
         var file = Path.Combine(WorkFolder(Programs[VK].Folder), DevStudio.SafeName(d.Title) + tag + ext);
-        for (var i = 2; File.Exists(file); i++) file = Path.Combine(WorkFolder(Programs[VK].Folder), $"{DevStudio.SafeName(d.Title)}{tag}-{i}{ext}");
+        for (var i = 2; File.Exists(file) || Directory.Exists(file); i++) file = Path.Combine(WorkFolder(Programs[VK].Folder), $"{DevStudio.SafeName(d.Title)}{tag}-{i}{ext}");
+        // Paket 01 S3-18-N: fehlt der Encoder, nichts starten und eine Alternative nennen
+        var encs = EncodersOverride ?? (!_opt.Isolated && FfmpegPath is { } ffe ? await Task.Run(() => VideoExport.Encoders(ffe)) : null);
+        if (encs is not null && VideoExport.Check(opts.Preset, encs) is { Ok: false } chk) { _progMsg[VK] = chk.Text; Show(VK); return; }
         var data = (JsonObject)d.Data.DeepClone();
         _veExport = new CancellationTokenSource(); _veExportProgress = 0; EditTab = "export"; _progMsg[VK] = "Export läuft im Hintergrund – du kannst weiterarbeiten."; Show(VK);
         var progress = new Progress<double>(v => { _veExportProgress = v; if (_veExportBar is { } b) b.Value = v * 100; });
@@ -479,7 +485,7 @@ public partial class MainWindow
             }
             _core.Audit.Append(Principal.LocalOwner.Name, "video.export", Path.GetFileName(o));
             EditCopySubs(data, o); // X10: SRT neben das Video
-            if (VideoEdit.Song(data) is { } linked && Songs.Get(linked.Id) is { } ls) SongVideoAdd(ls, o); // E2: fertiges Video auch beim Lied
+            if (!opts.Preset.Sequence && VideoEdit.Song(data) is { } linked && Songs.Get(linked.Id) is { } ls) SongVideoAdd(ls, o); // E2: fertiges Video auch beim Lied
             _progMsg[VK] = "Exportiert: " + o; NotifyFileResult(_progMsg[VK]);
         }
         catch (OperationCanceledException) { _progMsg[VK] = "Export abgebrochen – die halbe Datei wurde gelöscht."; }
