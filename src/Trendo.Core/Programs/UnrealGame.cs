@@ -392,12 +392,23 @@ try:
     mel = unreal.MaterialEditingLibrary
     bm.set_editor_property("material_domain", unreal.MaterialDomain.MD_DEFERRED_DECAL)
     bm.set_editor_property("blend_mode", unreal.BlendMode.BLEND_TRANSLUCENT)
-    col = mel.create_material_expression(bm, unreal.MaterialExpressionConstant3Vector, -600, -200); col.set_editor_property("constant", unreal.LinearColor(0.045, 0.002, 0.0015, 1))
-    mel.connect_material_property(col, "", unreal.MaterialProperty.MP_BASE_COLOR)
-    rough = mel.create_material_expression(bm, unreal.MaterialExpressionConstant, -600, 0); rough.set_editor_property("r", 0.62)
-    mel.connect_material_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
-    spec = mel.create_material_expression(bm, unreal.MaterialExpressionConstant, -600, 100); spec.set_editor_property("r", 0.25)
-    mel.connect_material_property(spec, "", unreal.MaterialProperty.MP_SPECULAR)
+    # Alter des Flecks: (Spielzeit - Start) / 180 s, 0 = frisch, 1 = eingetrocknet (Start setzt das Spiel je Fleck)
+    tm = mel.create_material_expression(bm, unreal.MaterialExpressionTime, -1400, -300)
+    st = mel.create_material_expression(bm, unreal.MaterialExpressionScalarParameter, -1400, -200); st.set_editor_property("parameter_name", "Start"); st.set_editor_property("default_value", -10000.0)
+    dt = mel.create_material_expression(bm, unreal.MaterialExpressionSubtract, -1250, -250); mel.connect_material_expressions(tm, "", dt, "A"); mel.connect_material_expressions(st, "", dt, "B")
+    dv = mel.create_material_expression(bm, unreal.MaterialExpressionDivide, -1100, -250); dv.set_editor_property("const_b", 180.0); mel.connect_material_expressions(dt, "", dv, "A")
+    age = mel.create_material_expression(bm, unreal.MaterialExpressionSaturate, -950, -250); mel.connect_material_expressions(dv, "", age, "")
+    def mix(a, b, x, y, vec):
+        l = mel.create_material_expression(bm, unreal.MaterialExpressionLinearInterpolate, x, y)
+        for pin, v in (("A", a), ("B", b)):
+            if vec: c = mel.create_material_expression(bm, unreal.MaterialExpressionConstant3Vector, x - 200, y + (0 if pin == "A" else 60)); c.set_editor_property("constant", unreal.LinearColor(*v, 1))
+            else: c = mel.create_material_expression(bm, unreal.MaterialExpressionConstant, x - 200, y + (0 if pin == "A" else 60)); c.set_editor_property("r", v)
+            mel.connect_material_expressions(c, "", l, pin)
+        mel.connect_material_expressions(age, "", l, "Alpha"); return l
+    mel.connect_material_property(mix((0.06, 0.0025, 0.002), (0.024, 0.0075, 0.0045), -600, -200, True), "", unreal.MaterialProperty.MP_BASE_COLOR)   # frisch tiefrot → eingetrocknet rotbraun
+    mel.connect_material_property(mix(0.16, 0.8, -600, 0, False), "", unreal.MaterialProperty.MP_ROUGHNESS)   # nass glänzend → matt
+    mel.connect_material_property(mix(0.5, 0.2, -600, 150, False), "", unreal.MaterialProperty.MP_SPECULAR)
+    soak = mix(1.0, 0.72, -300, 450, False)   # zieht in den Boden: Deckkraft sinkt
     uv = mel.create_material_expression(bm, unreal.MaterialExpressionTextureCoordinate, -1200, 200)
     mid = mel.create_material_expression(bm, unreal.MaterialExpressionConstant2Vector, -1200, 320); mid.set_editor_property("r", 0.5); mid.set_editor_property("g", 0.5)
     dist = mel.create_material_expression(bm, unreal.MaterialExpressionDistance, -1000, 250)
@@ -409,7 +420,8 @@ try:
     sub_ = mel.create_material_expression(bm, unreal.MaterialExpressionSubtract, -600, 300); sub_.set_editor_property("const_b", 0.72); mel.connect_material_expressions(add, "", sub_, "A")
     mul = mel.create_material_expression(bm, unreal.MaterialExpressionMultiply, -500, 300); mul.set_editor_property("const_b", 6.0); mel.connect_material_expressions(sub_, "", mul, "A")
     sat = mel.create_material_expression(bm, unreal.MaterialExpressionSaturate, -400, 300); mel.connect_material_expressions(mul, "", sat, "")
-    mel.connect_material_property(sat, "", unreal.MaterialProperty.MP_OPACITY)
+    op = mel.create_material_expression(bm, unreal.MaterialExpressionMultiply, -250, 300); mel.connect_material_expressions(sat, "", op, "A"); mel.connect_material_expressions(soak, "", op, "B")
+    mel.connect_material_property(op, "", unreal.MaterialProperty.MP_OPACITY)
     mel.recompile_material(bm); eal.save_loaded_asset(bm)
     log.append("Blut-Decal: " + bm.get_path_name())
 except Exception as e:
@@ -491,6 +503,21 @@ def dress(ch, gender, items):
 # aus Körper und Kleidung heraus (Punkte nach ihrem stärksten Knochen), schließt die Schnittkante, legt den Drehpunkt ans Gelenk
 # und speichert jedes Stück als eigenes Modell mit Materialien und Physik-Kollision.
 LIMBS = ["lowerarm_l", "lowerarm_r", "calf_l", "calf_r"]
+# Eine Bewegungs-Mischung Stehen (0) → Gehen (231 cm/s) → Laufen (500 cm/s): das Spiel mischt nur noch über das Tempo,
+# kein harter Wechsel zwischen Steh- und Geh-Animation (der sah in der Ferne wie Flackern aus)
+def locomotion(dest):
+    src = f"{dest}/MH_BS_MM_WalkRun"; out = f"{dest}/MH_BS_MM_Bewegung"
+    if eal.does_asset_exist(out): eal.delete_asset(out)
+    bs = eal.duplicate_asset(src, out); idle = unreal.load_asset(f"{dest}/MH_MM_Idle")
+    if not bs or not idle: return "Bewegungs-Mischung: Quelle fehlt"
+    samples = list(bs.get_editor_property("sample_data"))
+    for s in samples:
+        a = s.get_editor_property("animation")
+        if a and "InPlace" in a.get_name(): s.set_editor_property("animation", idle)   # Gehen auf der Stelle → Stehen
+    bs.set_editor_property("sample_data", samples); eal.save_loaded_asset(bs)
+    got = [(s.get_editor_property("animation").get_name(), round(s.get_editor_property("sample_value").x)) for s in unreal.load_asset(out).get_editor_property("sample_data")]
+    return "Bewegungs-Mischung: %s" % got
+
 # Wundfläche am abgetrennten Glied: nasses, dunkles Fleischrot mit Variation (Rauheit niedrig = feucht glänzend)
 def wound_material():
     path = "/Game/Trendo/Mensch/M_TrendoWunde"
@@ -626,6 +653,8 @@ def build_one(sub, name, preset, gender, clothes):
     save_all()
     have = [a for a in ("MM_Idle", "MM_Jump", "MM_Fall_Loop", "BS_MM_WalkRun") if eal.does_asset_exist(f"{dest}/MH_{a}")]
     if len(have) < 4: return "Bewegungen nicht vollständig übertragen: " + ", ".join(have)
+    try: log(locomotion(dest))
+    except Exception: log("Hinweis Bewegungs-Mischung: " + traceback.format_exc().strip().splitlines()[-1][:200])
     if name == "Gegner":
         try: log("Glieder: %d abtrennbare Stücke" % cut_limbs(name))
         except Exception: log("Hinweis Glieder: " + traceback.format_exc().strip().splitlines()[-1][:200])
@@ -895,7 +924,7 @@ public:
 	float Alert = 0;
 private:
 	FVector Start; float T = 0; float Attack = 0; FVector LastSeen = FVector::ZeroVector;
-	float Stuck = 0, Detour = 0, DetourSign = 1;
+	float Stuck = 0, Detour = 0, DetourSign = 1; FVector PatrolGoal = FVector::ZeroVector; float PatrolWait = 0; // Streife: Wegpunkt, dann kurz stehen
 	/** In Richtung Goal gehen (Tempo in cm/s) – die Charakter-Bewegung sorgt für Boden, Stufen und Kollision. */
 	void WalkTo(const FVector& Goal, float Speed, float Dt);
 };
@@ -1035,10 +1064,28 @@ void TrendoAnimate(USkeletalMeshComponent* Figure, const FVector& Velocity, bool
 	if (!Figure || !Figure->GetSkeletalMeshAsset() || !Figure->IsVisible()) return;
 	UAnimSingleNodeInstance* I = Figure->GetSingleNodeInstance(); if (!I) return;
 	const float Speed = Velocity.Size2D(); const FString M = MetaDirOf(Figure);
-	UAnimationAsset* Want = bInAir ? Anim(Velocity.Z > 200.f ? TEXT("MM_Jump") : TEXT("MM_Fall_Loop"), M) : Speed < 15.f ? Anim(TEXT("MM_Idle"), M) : Anim(TEXT("BS_MM_WalkRun"), M);
+	// Ruhige Wechsel (gegen Flackern): Animationen werden ohne Überblendung getauscht, deshalb
+	// - Fallen erst nach 0,3 s echtem Fall (bergab meldet die Bewegung oft kurz „in der Luft“), Sprung sofort
+	// - Gehen ab 25 cm/s, Stehen erst unter 8 cm/s (kein Pendeln um eine Schwelle)
+	// - frühestens 0,35 s nach dem letzten Wechsel wieder wechseln
+	struct FRuhe { float Air = 0; double Since = -100; bool bWalk = false; float Pos = 0; };
+	static TMap<TWeakObjectPtr<USkeletalMeshComponent>, FRuhe> States;
+	FRuhe& R = States.FindOrAdd(Figure); const UWorld* W = Figure->GetWorld(); const double Now = W ? W->GetTimeSeconds() : 0.0; const float Dt = W ? W->GetDeltaSeconds() : 0.f;
+	R.Air = bInAir ? R.Air + Dt : 0.f;
+	const bool bJump = bInAir && Velocity.Z > 200.f, bFall = bInAir && R.Air > 0.3f;
+	R.bWalk = R.bWalk ? Speed > 8.f : Speed > 25.f;
+	// MetaHumans: eine Mischung Stehen→Gehen→Laufen allein über das Tempo (kein Wechsel am Boden); ältere Projekte ohne sie: Stehen/Gehen getrennt
+	UAnimationAsset* Loco = M.Len() ? Anim(TEXT("BS_MM_Bewegung"), M) : nullptr;
+	UAnimationAsset* Want = bJump ? Anim(TEXT("MM_Jump"), M) : bFall ? Anim(TEXT("MM_Fall_Loop"), M) : Loco ? Loco : R.bWalk ? Anim(TEXT("BS_MM_WalkRun"), M) : Anim(TEXT("MM_Idle"), M);
 	if (!Want) return;
-	if (I->GetCurrentAsset() != Want) I->SetAnimationAsset(Want, Want != Anim(TEXT("MM_Jump"), M), 1.f);
-	if (Want == Anim(TEXT("BS_MM_WalkRun"), M))
+	if (I->GetCurrentAsset() != Want && (bJump || Now - R.Since > 0.35)) { I->SetAnimationAsset(Want, Want != Anim(TEXT("MM_Jump"), M), 1.f); R.Since = Now; }
+	if (States.Num() > 256) for (auto It = States.CreateIterator(); It; ++It) if (!It.Key().IsValid()) It.RemoveCurrent();
+	if (Loco && I->GetCurrentAsset() == Loco)
+	{
+		R.Pos = FMath::FInterpTo(R.Pos, FMath::Min(Speed, 500.f), Dt, 7.f); // Tempo weich nachführen
+		I->SetBlendSpacePosition(FVector(R.Pos, 0, 0)); I->SetPlayRate(Speed > 500.f ? Speed / 500.f : 1.f);
+	}
+	else if (I->GetCurrentAsset() == Anim(TEXT("BS_MM_WalkRun"), M))
 	{
 		// Blendspace: 0–231 cm/s Gehen, bis 500 cm/s Laufen; schneller (Sprint, Wagen) läuft die Lauf-Animation schneller, damit die Füße nicht rutschen
 		I->SetBlendSpacePosition(FVector(FMath::Min(Speed, 500.f), 0, 0));
@@ -1153,14 +1200,15 @@ void ATrendoEnemy::Init(int32 InHp, float Ground)
 void ATrendoEnemy::WalkTo(const FVector& Goal, float Speed, float Dt)
 {
 	FVector Dir = Goal - GetActorLocation(); Dir.Z = 0;
-	if (Dir.Size() < 40.f || Speed <= 0.f) return;
+	const float Left = Dir.Size(); if (Left < 40.f || Speed <= 0.f) return;
 	Dir.Normalize();
+	const float Ease = FMath::Clamp(Left / 160.f, 0.35f, 1.f); // vor dem Ziel sanft langsamer statt abrupt stehen
 	// Hindernis (Baum, Fels, Kiste): kommt er trotz Gehen nicht voran, weicht er eine Weile seitlich aus
 	if (Detour > 0) { Detour -= Dt; Dir = Dir.RotateAngleAxis(65.f * DetourSign, FVector::UpVector); }
 	else if (GetVelocity().Size2D() < Speed * 0.25f) { if ((Stuck += Dt) > 0.6f) { Stuck = 0; Detour = 1.2f; DetourSign = FMath::RandBool() ? 1.f : -1.f; } }
 	else Stuck = 0;
 	GetCharacterMovement()->MaxWalkSpeed = Speed;
-	AddMovementInput(Dir, 1.f);
+	AddMovementInput(Dir, Ease);
 }
 
 void ATrendoEnemy::Tick(float DeltaSeconds)
@@ -1241,7 +1289,10 @@ void ATrendoEnemy::ThinkOpenWorld(float Dt, ATrendoGameMode* GM)
 	const FVector Me = GetActorLocation();
 	const float K = MaxHp > 1 ? 1.25f : 1.f;
 	if (Stun > 0) { Stun -= Dt; return; } // benommen nach einem Treffer
-	FVector Goal = Start + FVector(FMath::Sin(T * 0.35f) * 450.f, FMath::Sin(T * 0.23f + 1.3f) * 300.f, 0); float Speed = 150.f; // Streife, gemächlich
+	// Streife wie ein Wachposten: Wegpunkt um den Startpunkt angehen, dort 2–4 s stehen und umschauen, dann der nächste (kein Stop-and-go)
+	if (PatrolGoal.IsZero() || (PatrolWait <= 0.f && FVector::Dist2D(Me, PatrolGoal) < 90.f)) { if (!PatrolGoal.IsZero()) PatrolWait = FMath::FRandRange(2.f, 4.f); PatrolGoal = Start + FVector(FMath::FRandRange(-600.f, 600.f), FMath::FRandRange(-450.f, 450.f), 0); }
+	PatrolWait = FMath::Max(0.f, PatrolWait - Dt);
+	FVector Goal = PatrolGoal; float Speed = PatrolWait > 0.f ? 0.f : 150.f; // gemächlich
 	Attack = FMath::Max(0.f, Attack - Dt);
 	if (APawn* H = UGameplayStatics::GetPlayerPawn(this, 0); H && GM->Playing() && !H->IsHidden())
 	{
@@ -1788,6 +1839,8 @@ void ATrendoCharacter::NotifyActorBeginOverlap(AActor* Other)
 #include "TrendoTypes.h"
 #include "TrendoGameMode.generated.h"
 
+class UDecalComponent;
+
 class ATrendoThing; class ATrendoEnemy; class ATrendoCharacter; class UStaticMesh;
 
 /** Spielstand – gleiche Inhalte wie in Trendo (Format 1). */
@@ -1858,7 +1911,7 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 private:
-	TWeakObjectPtr<AActor> LimbPiece; float ProbeYaw = 0; float MaxRoll = 0; bool bLimbShot = false; bool bLimbPending = false; float CheckSeconds = -1; bool bShotTaken = false; bool bCloseShot = false; bool bCloseDone = false; bool bProbe = false; bool bProbeDone = false; float ProbeStart = 0; int32 ProbeLives = 0; bool bCarProbe = false; bool bCarDone = false; int32 BloodCount = 0; int32 Severed = 0; float FightShotDelay = 0; bool bFight = false; bool bFightDone = false; UPROPERTY() ATrendoEnemy* FightEnemy = nullptr; FVector CarStart = FVector::ZeroVector; float WheelTurn = 0; TMap<FString, FQuat> WheelLast;
+	TWeakObjectPtr<AActor> LimbPiece; float ProbeYaw = 0; TMap<const void*, FVector> FarHead; int32 FarFrames = 0; int32 FarStill = 0; float FarMaxJump = 0; int32 FarJumps = 0; TMap<const void*, FString> FarAnim; float FarDist = 0; TArray<TWeakObjectPtr<UDecalComponent>> BloodDecals; bool bAgedShot = false; bool bAgedPending = false; float MaxRoll = 0; bool bLimbShot = false; bool bLimbPending = false; float CheckSeconds = -1; bool bShotTaken = false; bool bCloseShot = false; bool bCloseDone = false; bool bProbe = false; bool bProbeDone = false; float ProbeStart = 0; int32 ProbeLives = 0; bool bCarProbe = false; bool bCarDone = false; int32 BloodCount = 0; int32 Severed = 0; float FightShotDelay = 0; bool bFight = false; bool bFightDone = false; UPROPERTY() ATrendoEnemy* FightEnemy = nullptr; FVector CarStart = FVector::ZeroVector; float WheelTurn = 0; TMap<FString, FQuat> WheelLast;
 	static float WheelAngle(AActor* Car, TMap<FString, FQuat>& Last);
 	static void VehicleAxis(AActor* Car, FName Input, float Value);
 	static void VehicleCall(AActor* Car, const TCHAR* Func, FName Input, int32 Value);
@@ -1884,6 +1937,7 @@ private:
 #include "Engine/Engine.h"
 #include "Engine/Font.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Animation/AnimSingleNodeInstance.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "EngineUtils.h"
@@ -1894,6 +1948,7 @@ private:
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Components/DecalComponent.h"
+#include "Materials/MaterialInstanceDynamic.h"
 #include "Engine/DecalActor.h"
 #include "Components/CapsuleComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -2194,6 +2249,27 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 	if (DrivenCar && bCarProbe && !bCarDone)
 		if (ATrendoCar* TC = Cast<ATrendoCar>(DrivenCar)) { { const float Off = FMath::FindDeltaAngleDegrees(TC->GetActorRotation().Yaw, ProbeYaw); // Vollgas, lenkt wie ein Spieler auf die freie Bahn
 			TC->Drive(FMath::Abs(Off) > 35.f ? 0.6f : 1.f, FMath::Clamp(Off / 30.f, -1.f, 1.f), 0.f); WheelTurn = TC->WheelSpin(); MaxRoll = FMath::Max(MaxRoll, FMath::Max(FMath::Abs(TC->GetActorRotation().Roll), FMath::Abs(TC->GetActorRotation().Pitch))); } }
+	// Flacker-Messung (Prüflauf, bis zur Gegner-Probe): laufende Gegner in über 25 m Entfernung – bekommt die Pose jedes Bild ein Update, springt sie?
+	if (CheckSeconds > 0 && !bProbe)
+		if (APlayerController* PC = GetWorld()->GetFirstPlayerController(); PC && PC->PlayerCameraManager)
+		{
+			const FVector Cam = PC->PlayerCameraManager->GetCameraLocation();
+			for (ATrendoEnemy* E : Enemies)
+			{
+				if (!IsValid(E) || !E->Body3D) continue;
+				const float Dist = FVector::Dist(Cam, E->GetActorLocation());
+				if (Dist < 2500.f || E->GetVelocity().Size2D() < 20.f) { FarHead.Remove(E); continue; } // nicht gemessen: alten Wert verwerfen, sonst Vergleich mit veralteter Pose
+				const FVector Head = E->Body3D->GetBoneLocation(TEXT("head"), EBoneSpaces::ComponentSpace);
+				if (FVector* Last = FarHead.Find(E))
+				{
+					FarFrames++; if (Head.Equals(*Last, 0.001f)) FarStill++;
+					FarMaxJump = FMath::Max(FarMaxJump, FVector::Dist(Head, *Last)); const FString AnimNow = E->Body3D->GetSingleNodeInstance() && E->Body3D->GetSingleNodeInstance()->GetCurrentAsset() ? E->Body3D->GetSingleNodeInstance()->GetCurrentAsset()->GetName() : TEXT("-");
+					if (FVector::Dist(Head, *Last) > 12.f && ++FarJumps <= 12) UE_LOG(LogTrendo, Display, TEXT("TRENDO-FLACKERN Sprung %.0f cm: %s Abstand %.0f m Tempo %.0f Animation %s (vorher %s) Boden=%s Zeit %.2f Kopf %s (vorher %s) Becken %s Körper-Drehung %s Pos %.1f"), FVector::Dist(Head, *Last), *E->GetName(), Dist / 100.f, E->GetVelocity().Size2D(), *AnimNow, *FarAnim.FindRef(E), E->GetCharacterMovement()->IsMovingOnGround() ? TEXT("ja") : TEXT("nein"), GetWorld()->GetTimeSeconds(), *Head.ToCompactString(), *Last->ToCompactString(), *E->Body3D->GetBoneLocation(TEXT("pelvis"), EBoneSpaces::ComponentSpace).ToCompactString(), *E->Body3D->GetComponentRotation().ToCompactString(), E->Body3D->GetSingleNodeInstance() ? E->Body3D->GetSingleNodeInstance()->GetCurrentTime() : -1.f);
+					FarAnim.Add(E, AnimNow); FarDist = FMath::Max(FarDist, Dist);
+				}
+				FarHead.Add(E, Head);
+			}
+		}
 	if (Playing() && !State.bWon && !State.bOver)
 	{
 		State.Seconds += DeltaSeconds; State.CheckRules(Data);
@@ -2243,6 +2319,8 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 			}
 			UE_LOG(LogTrendo, Display, TEXT("TRENDO-GEGNER alarmiert=%s Abstand vorher=%.0f nachher=%.0f Leben %d→%d %s"), Enemies[0]->Alert > 0 ? TEXT("ja") : TEXT("nein"), ProbeStart, Now, ProbeLives, State.Lives,
 				bHit ? TEXT("verfolgt und angegriffen") : Enemies[0]->Alert > 0 && Now < ProbeStart - 300.f ? TEXT("verfolgt") : TEXT("reagiert nicht"));
+			UE_LOG(LogTrendo, Display, TEXT("TRENDO-FLACKERN Gegner in der Ferne bis %.0f m: %d Bilder, ohne Posen-Update %d (%.0f%%), Sprünge über 12 cm %d, größter Sprung je Bild %.1f cm (%s)"), FarDist / 100.f, FarFrames, FarStill,
+				FarFrames ? 100.f * FarStill / FarFrames : 0.f, FarJumps, FarMaxJump, FarFrames == 0 ? TEXT("nicht gemessen") : FarStill * 20 < FarFrames && FarJumps * 200 < FarFrames ? TEXT("ruhig") : TEXT("flackert"));
 			FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-gegner.png"), false, false);
 		}
 		else if (bProbeDone && !bFight && Enemies.Num() > 0 && IsValid(Enemies[0]) && Hero())
@@ -2296,6 +2374,21 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 			}
 		}
 		else if (bLimbPending) { bLimbPending = false; CheckSeconds = 0.6f; FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-glied.png"), false, false); }
+		else if (bFightDone && !bAgedShot)
+		{
+			// Zeitraffer: alle Blutflecken 5 Minuten älter machen, Kampfort noch einmal aus derselben Sicht wie trendo-kampf.png
+			bAgedShot = true; CheckSeconds = 0.8f; int32 Aged = 0;
+			for (const TWeakObjectPtr<UDecalComponent>& Dc : BloodDecals) if (Dc.IsValid()) if (UMaterialInstanceDynamic* Mi = Cast<UMaterialInstanceDynamic>(Dc->GetDecalMaterial())) { Mi->SetScalarParameterValue(TEXT("Start"), GetWorld()->GetTimeSeconds() - 300.f); Aged++; }
+			if (Aged > 0 && IsValid(FightEnemy) && FightEnemy->Body3D && Hero())
+			{
+				const FVector Pel = FightEnemy->Body3D->GetBoneLocation(TEXT("pelvis")); bAgedPending = true; Hero()->Arm->TargetArmLength = 520.f;
+				Hero()->SetActorLocation(FVector(Pel.X + 260.f, Pel.Y - 330.f, Hero()->GetActorLocation().Z), false, nullptr, ETeleportType::TeleportPhysics);
+				const FRotator Look = (Pel - Hero()->GetActorLocation()).Rotation();
+				if (AController* Co = Hero()->GetController()) Co->SetControlRotation(FRotator(-32.f, Look.Yaw + 18.f, 0));
+			}
+			UE_LOG(LogTrendo, Display, TEXT("TRENDO-BLUT Zeitraffer +5 min: %d Flecken gealtert"), Aged);
+		}
+		else if (bAgedPending) { bAgedPending = false; CheckSeconds = 0.6f; FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-blut-alt.png"), false, false); }
 		else if (bFightDone && !bCarProbe)
 		{
 			// Wagen-Probe: einsteigen (der Wagen wird gesteuert), Bild aus der Fahrzeugkamera, danach aussteigen
@@ -2401,7 +2494,11 @@ void ATrendoGameMode::SpawnBlood(const FVector& Pos, float Size)
 	{
 		const float S = (i == 0 ? 60.f : 22.f) * Size * R.FRandRange(0.8f, 1.2f);
 		const FVector At = Hit.Location + (i == 0 ? FVector::ZeroVector : FVector(R.FRandRange(-90, 90), R.FRandRange(-90, 90), 0) * Size);
-		if (UGameplayStatics::SpawnDecalAtLocation(this, M, FVector(40, S, S), At, FRotator(-90, R.FRandRange(0, 360), 0), 120.f)) BloodCount++;
+		if (UDecalComponent* Dc = UGameplayStatics::SpawnDecalAtLocation(this, M, FVector(40, S, S), At, FRotator(-90, R.FRandRange(0, 360), 0), 600.f))
+		{   // Entstehungszeit an den Fleck: frisch nass und rot, nach etwa 3 min eingetrocknet, braun, matt und in den Boden gezogen
+			if (UMaterialInstanceDynamic* Mi = Dc->CreateDynamicMaterialInstance()) Mi->SetScalarParameterValue(TEXT("Start"), GetWorld()->GetTimeSeconds());
+			BloodDecals.Add(Dc); BloodCount++;
+		}
 	}
 }
 

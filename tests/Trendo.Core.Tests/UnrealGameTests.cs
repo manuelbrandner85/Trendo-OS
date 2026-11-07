@@ -60,6 +60,9 @@ public class UnrealGameTests
             Assert.Contains("TRENDO-BODEN", gm); Assert.Contains("TRENDO-KAMPF", gm); Assert.Contains("MM_Death_Front_03_ExtractedRM", actors);
             Assert.Contains("TRENDO-GLIED", actors); Assert.Contains("HideBoneByName", actors); Assert.Contains("SetReceivesDecals(false)", gm); // Glieder abtrennbar, Blut nur am Boden
             Assert.Contains("M_TrendoWunde", UnrealGame.MenschScript); Assert.Contains("weld_mesh_edges", UnrealGame.MenschScript); // Schnittfläche geschlossen, Wundmaterial statt Haut
+            Assert.Contains("SetScalarParameterValue(TEXT(\"Start\")", gm); Assert.Contains("MaterialExpressionTime", UnrealGame.WeltScript); // Blut trocknet mit der Zeit
+            Assert.Contains("TRENDO-FLACKERN", gm); // Messung: Gegner in der Ferne bekommen jedes Bild eine Pose
+            Assert.Contains("BS_MM_Bewegung", actors); Assert.Contains("def locomotion", UnrealGame.MenschScript); Assert.Contains("PatrolWait", actors); // Stehen→Gehen→Laufen ohne harten Wechsel, Streife ohne Stop-and-go
             Assert.Contains("trendo-glied.png", gm); Assert.Contains("freie Bahn", gm); // Nahaufnahme des Glieds; Testfahrt in freie Richtung
             Assert.Contains("bEnableUpdateRateOptimizations = false", actors); // kein Ruckeln/Flackern in der Ferne
             Assert.Equal("normal", lv["violence"]!.GetValue<string>()); // Gewalt-Stufe im Level (Standard normal)
