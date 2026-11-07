@@ -135,3 +135,47 @@ Bestand: Raumplanung mit Flächen, Möbeln (Assets/moebel) und 3D vorhanden (113
 | xeokit/xeokit-sdk | 9 | 6 | 8 | 2 | 9 | 8 | 6 | 6.95 | AUSGESCHLOSSEN | AGPL-3.0 – ausgeschlossen |
 | cvdlab/react-planner | 7 | 6 | 6 | 10 | 7 | 7 | 3 | 6.9 | KONZEPT | MIT, seit 2024 ruhend – nur Konzept |
 | furnishup/blueprint3d | 7 | 6 | 6 | 10 | 7 | 7 | 2 | 6.85 | KONZEPT | MIT, seit 2021 ruhend – nur Konzept (Wände ziehen, Raum in 3D) |
+
+## SPEC-02 – Schaltungen berechnen
+Bestand: Eigener Schaltplan mit transienter Simulation (MNA, Kondensator/Spule) und SPICE-Netzliste für ngspice/LTspice vorhanden (88 Tests).
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| SpiceSharp/SpiceSharp | 8 | 9 | 8 | 10 | 8 | 9 | 6 | 8.5 | AUSWAHL | .NET-Bibliothek (MIT): Halbleiter-Modelle (Diode, Transistor, MOSFET), AC- und DC-Analyse ergänzen die eigene Simulation – NuGet, Ergebnisse gegen eigene Simulation prüfen |
+| imr/ngspice | 10 | 6 | 7 | 8 | 9 | 7 | 8 | 7.95 | VORHANDEN | modifizierte BSD (+ einzelne LGPL-Teile): bleibt externes Prüfprogramm; Netzliste ist schon vorhanden |
+| KiCad/kicad-source-mirror | 10 | 4 | 8 | 5 | 8 | 8 | 10 | 7.35 | EXTERN | GPL-3.0 – externes Programm für Leiterplatten, Übergabe per Netzliste |
+| ra3xdh/qucs_s | 9 | 3 | 7 | 5 | 8 | 7 | 7 | 6.5 | VERWORFEN | GPL-2.0 – höchstens externes Programm, nicht eingebaut |
+| sharpie7/circuitjs1 | 8 | 3 | 6 | 5 | 7 | 7 | 4 | 5.85 | KONZEPT | GPL-2.0, seit 2024 ruhend – nur Konzept: sichtbar fließender Strom im Schaltplan |
+
+## SPEC-03 – Statik nachrechnen
+Bestand: Eigenes Weggrößenverfahren für ebene Rahmen mit Gelenken und Querschnitten vorhanden (90 Tests).
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| JWock82/Pynite | 9 | 5 | 8 | 10 | 7 | 8 | 7 | 7.8 | KONZEPT | MIT, Python: Vergleichsrechnung (Prüfreferenz) für die eigene Statik; Konzept 3D-Rahmen und P-Delta in eigenem Code |
+| FreeCAD/FreeCAD | 9 | 4 | 7 | 8 | 7 | 7 | 10 | 7.2 | EXTERN | LGPL-2.1 – externes Programm (FEM-Arbeitsbereich) mit Dateiübergabe |
+| KratosMultiphysics/Kratos | 9 | 2 | 8 | 9 | 9 | 7 | 7 | 7.15 | VERWORFEN | BSD, aber großes C++-Multiphysik-Paket – für einfache Statik zu schwer |
+| anastruct/anaStruct | 7 | 5 | 7 | 7 | 7 | 8 | 6 | 6.65 | KONZEPT | LGPL-3.0, Python, 2D – doppelt zur eigenen Statik; nur Konzept Einflusslinien |
+| OpenSees/OpenSees | 10 | 3 | 7 | 1 | 9 | 7 | 8 | 6.3 | AUSGESCHLOSSEN | kommerzielle Nutzung nur mit Vertrag – ausgeschlossen |
+
+## SPEC-05 – Messwerte auswerten
+Bestand: Eigene Messtabelle mit Diagramm, linearer/polynomischer/exponentieller Anpassung und Statistik vorhanden (87 Tests).
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| mathnet/mathnet-numerics | 9 | 9 | 8 | 10 | 9 | 9 | 8 | 8.95 | AUSWAHL | .NET-Bibliothek (MIT): nichtlineare Anpassung (Levenberg-Marquardt), FFT, Interpolation, Verteilungen |
+| ScottPlot/ScottPlot | 9 | 8 | 8 | 10 | 9 | 9 | 9 | 8.8 | OPTION | .NET (MIT) mit Avalonia-Steuerelement: Zoom/Verschieben – Option, wenn die eigenen Diagramme nicht reichen |
+| oxyplot/oxyplot | 8 | 7 | 7 | 10 | 8 | 9 | 6 | 7.95 | VERWORFEN | MIT, weniger aktiv als ScottPlot – nicht übernommen |
+| lmfit/lmfit-py | 9 | 4 | 8 | 10 | 8 | 8 | 8 | 7.75 | KONZEPT | BSD-3, Python – nur Konzept: Fit-Parameter mit Grenzen und Unsicherheiten |
+| veusz/veusz | 8 | 3 | 7 | 5 | 7 | 7 | 6 | 6.1 | VERWORFEN | GPL-2.0 – höchstens externes Programm |
+
+## SPEC-06 – Lernen mit Karteikarten
+Bestand: Eigene Karteikarten mit SM-2 (abgestufte Antworten) vorhanden (90 Tests).
+
+| Kandidat | Funktion | Integration | Code | Lizenz | Leistung | Sicherheit | Gemeinschaft | Punkte | Entscheidung | Integrationsweg |
+|---|---|---|---|---|---|---|---|---|---|---|
+| open-spaced-repetition/py-fsrs | 10 | 8 | 9 | 10 | 10 | 9 | 8 | 9.25 | AUSWAHL | MIT: FSRS-Planer als Vorlage für einen eigenen C#-Planer (genauere Abstände als SM-2), Vermerk in THIRD_PARTY.md |
+| open-spaced-repetition/fsrs-rs | 10 | 5 | 9 | 10 | 10 | 9 | 8 | 8.65 | OPTION | BSD-3, Rust: Optimierer (Gewichte aus eigener Lerngeschichte) – erst bei genug Daten, Planer selbst braucht kein Rust |
+| open-spaced-repetition/fsrs4anki | 8 | 4 | 8 | 10 | 8 | 8 | 8 | 7.5 | KONZEPT | MIT – Konzept: Zielbehaltensrate einstellbar |
+| ankitects/anki | 10 | 3 | 8 | 2 | 9 | 8 | 10 | 6.8 | AUSGESCHLOSSEN | AGPL-3.0 – Code ausgeschlossen; nur Konzept: .apkg-Import (SQLite-Format, eigener Leser) |
+| mnemosyne-proj/mnemosyne | 7 | 3 | 6 | 5 | 7 | 7 | 4 | 5.6 | VERWORFEN | gemischte Lizenz, wenig aktiv – nicht übernommen |

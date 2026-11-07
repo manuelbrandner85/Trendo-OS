@@ -126,5 +126,37 @@
 | IfcOpenShell/IfcOpenShell | LGPL-3.0 | 2026-11-06 | nein | 2939 | C++ |
 | xeokit/xeokit-sdk | AGPL-3.0 | 2026-11-02 | nein | 949 | HTML |
 | ThatOpen/engine_components | MIT | 2026-10-22 | nein | 732 | TypeScript |
+## SPEC-02
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| SpiceSharp/SpiceSharp | MIT | 2026-08-19 | nein | 322 | C# |
+| imr/ngspice | BSD-3-Clause (modifiziert) + einzelne LGPL-Teile (aus Lizenzdatei) | 2026-11-07 | nein | 240 | C |
+| ra3xdh/qucs_s | GPL-2.0 | 2026-11-05 | nein | 1449 | C++ |
+| sharpie7/circuitjs1 | GPL-2.0 | 2024-01-22 | nein | 2992 | Java |
+| KiCad/kicad-source-mirror | GPL-3.0 | 2026-11-07 | nein | 3118 | C++ |
+## SPEC-03
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| JWock82/Pynite | MIT | 2026-10-31 | nein | 780 | Python |
+| anastruct/anaStruct | LGPL-3.0 | 2026-11-06 | nein | 471 | Python |
+| OpenSees/OpenSees | eigene Lizenz, kommerziell nur mit Vertrag (aus Lizenzdatei) | 2026-11-06 | nein | 854 | C++ |
+| KratosMultiphysics/Kratos | BSD (kratos/license.txt) (aus Lizenzdatei) | – | nein | – | – |
+| FreeCAD/FreeCAD | LGPL-2.1 (aus Lizenzdatei) | – | nein | – | – |
+## SPEC-05
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| ScottPlot/ScottPlot | MIT (aus Lizenzdatei) | – | nein | – | – |
+| mathnet/mathnet-numerics | MIT (aus Lizenzdatei) | – | nein | – | – |
+| lmfit/lmfit-py | BSD-3-Clause (aus Lizenzdatei) | – | nein | – | – |
+| veusz/veusz | GPL-2.0 (aus Lizenzdatei) | – | nein | – | – |
+| oxyplot/oxyplot | MIT (aus Lizenzdatei) | – | nein | – | – |
+## SPEC-06
+| Repository | Lizenz | letzter Push | archiviert | Sterne | Sprache |
+|---|---|---|---|---|---|
+| open-spaced-repetition/fsrs-rs | BSD-3-Clause (aus Lizenzdatei) | – | nein | – | – |
+| open-spaced-repetition/py-fsrs | MIT (aus Lizenzdatei) | – | nein | – | – |
+| ankitects/anki | AGPL-3.0 (Teile BSD-3) (aus Lizenzdatei) | – | nein | – | – |
+| mnemosyne-proj/mnemosyne | gemischt (LGPL-3 + eigene) (aus Lizenzdatei) | – | nein | – | – |
+| open-spaced-repetition/fsrs4anki | MIT (aus Lizenzdatei) | – | nein | – | – |
 
 Korrigiert: PhotoDemon → tannerhelland/PhotoDemon (BSD-ähnlich), Shotcut → mltframework/shotcut (GPL-3.0).

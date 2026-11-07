@@ -1,2 +1,2 @@
 # REA-Bericht
-Noch keine Integration aus diesem Auftrag umgesetzt – daher keine Abnahme. Nichts als bestanden markiert.
+Umgesetzt und geprüft sind nur die in IMPLEMENTATION_STATUS.md mit Test-/Laufbeleg genannten Bausteine. Keine Gesamtabnahme; nichts darüber hinaus als bestanden markiert.

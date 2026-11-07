@@ -15,6 +15,10 @@ public sealed class Flashcard
     public DateTime Due { get; set; }
     /// <summary>Lernplan: Tag, an dem die Karte zum ersten Mal gelernt wurde (neue Karten je Tag zählen).</summary>
     public DateTime? FirstReviewed { get; set; }
+    /// <summary>FSRS (Runde 4): Stabilität in Tagen, Schwierigkeit 1–10, letzte Wiederholung. Leer, solange nur SM-2 geplant hat.</summary>
+    public double? Stability { get; set; }
+    public double? Difficulty { get; set; }
+    public DateTime? LastReview { get; set; }
 }
 
 public sealed class CardStore
@@ -24,6 +28,10 @@ public sealed class CardStore
     public List<StudyPlan> Plans { get; set; } = [];
     /// <summary>Wiederholungen je Tag („JJJJ-MM-TT“ → Anzahl) für Verlauf und Tagesziel.</summary>
     public Dictionary<string, int> ReviewLog { get; set; } = [];
+    /// <summary>Planer: „SM-2“ (Standard, wie bisher) oder „FSRS“.</summary>
+    public string Scheduler { get; set; } = "SM-2";
+    /// <summary>FSRS: gewünschte Behaltensrate (0,7–0,97), Standard 0,9.</summary>
+    public double Retention { get; set; } = 0.9;
 }
 
 /// <summary>SPEC-06: Lernen & Training – Karteikarten mit Wiederholung in wachsenden Abständen (SM-2).</summary>
@@ -61,7 +69,8 @@ public sealed partial class LearnBox(string dataRoot, Func<DateTime>? now = null
     public Flashcard Answer(string id, Grade g)
     {
         var c = Store.Cards.First(x => x.Id == id); var q = (int)g;
-        if (q < 3) { c.Reps = 0; c.IntervalDays = 1; c.Lapses++; }
+        if (UsesFsrs) { var (s, d, days) = FsrsStep(c, g); c.Stability = s; c.Difficulty = d; c.LastReview = _now(); if (q < 3) { c.Reps = 0; c.Lapses++; } else c.Reps++; c.IntervalDays = days; }
+        else if (q < 3) { c.Reps = 0; c.IntervalDays = 1; c.Lapses++; }
         else { c.IntervalDays = NextInterval(c, q); c.Reps++; }
         c.Ease = Math.Max(1.3, c.Ease + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)));
         c.Due = _now().Date.AddDays(c.IntervalDays); if (!Store.ReviewDays.Contains(_now().Date)) Store.ReviewDays.Add(_now().Date);
@@ -73,7 +82,26 @@ public sealed partial class LearnBox(string dataRoot, Func<DateTime>? now = null
     public int PreviewDays(string id, Grade g)
     {
         var c = Store.Cards.First(x => x.Id == id); var q = (int)g;
+        if (UsesFsrs) return FsrsStep(c, g).Days;
         return q < 3 ? 1 : NextInterval(c, q);
+    }
+
+    public bool UsesFsrs => Store.Scheduler == "FSRS";
+
+    /// <summary>Runde 4: Planer wählen („SM-2“ oder „FSRS“) und Behaltensrate für FSRS. Bisherige Karten werden beim ersten FSRS-Schritt übernommen.</summary>
+    public void SetScheduler(string scheduler, double retention = 0.9)
+    {
+        if (scheduler is not ("SM-2" or "FSRS")) throw new ArgumentException("Planer muss „SM-2“ oder „FSRS“ sein.");
+        if (retention is < 0.7 or > 0.97) throw new ArgumentException("Die Behaltensrate muss zwischen 70 und 97 % liegen.");
+        Store.Scheduler = scheduler; Store.Retention = retention; Save();
+    }
+
+    (double S, double D, int Days) FsrsStep(Flashcard c, Grade g)
+    {
+        double? s = c.Stability, d = c.Difficulty; var last = c.LastReview;
+        if (s is null && c.Reps + c.Lapses > 0) { var (s0, d0) = Fsrs.FromSm2(c.IntervalDays, c.Ease); s = s0; d = d0; last ??= c.Due.AddDays(-c.IntervalDays); }
+        var elapsed = last is { } l ? (_now() - l).TotalDays : 0;
+        return Fsrs.Step(s, d, elapsed, g, Store.Retention);
     }
 
     /// <summary>SM-2 mit abgestuften Antworten (wie bei verbreiteten Karteiprogrammen): „Schwer“ wächst langsam, „Leicht“ springt weiter; „Gut“ bleibt klassisches SM-2 (1, 6, Abstand × Leichtigkeit).</summary>

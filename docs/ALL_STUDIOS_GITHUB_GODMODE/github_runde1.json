@@ -822,5 +822,193 @@
    "sprache": "TypeScript",
    "beschreibung": ""
   }
+ ],
+ "SPEC-02": [
+  {
+   "repo": "SpiceSharp/SpiceSharp",
+   "lizenz": "MIT",
+   "sterne": 322,
+   "zuletzt": "2026-08-19",
+   "archiviert": false,
+   "sprache": "C#",
+   "beschreibung": "Spice# is a cross-platform electronic circuit simulator based on Berkeley Spice - the mother of commercial ind"
+  },
+  {
+   "repo": "imr/ngspice",
+   "lizenz": "BSD-3-Clause (modifiziert) + einzelne LGPL-Teile (aus Lizenzdatei)",
+   "sterne": 240,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C",
+   "beschreibung": "mirror of ngspice repo at git://git.code.sf.net/p/ngspice/ngspice ngspice-ngspice"
+  },
+  {
+   "repo": "ra3xdh/qucs_s",
+   "lizenz": "GPL-2.0",
+   "sterne": 1449,
+   "zuletzt": "2026-11-05",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "Qucs-S is a circuit simulation program with Qt-based GUI"
+  },
+  {
+   "repo": "sharpie7/circuitjs1",
+   "lizenz": "GPL-2.0",
+   "sterne": 2992,
+   "zuletzt": "2024-01-22",
+   "archiviert": false,
+   "sprache": "Java",
+   "beschreibung": "Electronic Circuit Simulator in the Browser"
+  },
+  {
+   "repo": "KiCad/kicad-source-mirror",
+   "lizenz": "GPL-3.0",
+   "sterne": 3118,
+   "zuletzt": "2026-11-07",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "This is an active mirror of the KiCad development branch, which is hosted at GitLab (updated every time someth"
+  }
+ ],
+ "SPEC-03": [
+  {
+   "repo": "JWock82/Pynite",
+   "lizenz": "MIT",
+   "sterne": 780,
+   "zuletzt": "2026-10-31",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "A 3D structural engineering finite element library for Python."
+  },
+  {
+   "repo": "anastruct/anaStruct",
+   "lizenz": "LGPL-3.0",
+   "sterne": 471,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "Python",
+   "beschreibung": "2D structural analysis in Python"
+  },
+  {
+   "repo": "OpenSees/OpenSees",
+   "lizenz": "eigene Lizenz, kommerziell nur mit Vertrag (aus Lizenzdatei)",
+   "sterne": 854,
+   "zuletzt": "2026-11-06",
+   "archiviert": false,
+   "sprache": "C++",
+   "beschreibung": "OpenSees Source Code Repository"
+  },
+  {
+   "repo": "KratosMultiphysics/Kratos",
+   "lizenz": "BSD (kratos/license.txt) (aus Lizenzdatei)",
+   "sterne": "–",
+   "zuletzt": "–",
+   "archiviert": false,
+   "sprache": "–",
+   "beschreibung": ""
+  },
+  {
+   "repo": "FreeCAD/FreeCAD",
+   "lizenz": "LGPL-2.1 (aus Lizenzdatei)",
+   "sterne": "–",
+   "zuletzt": "–",
+   "archiviert": false,
+   "sprache": "–",
+   "beschreibung": ""
+  }
+ ],
+ "SPEC-05": [
+  {
+   "repo": "ScottPlot/ScottPlot",
+   "lizenz": "MIT (aus Lizenzdatei)",
+   "sterne": "–",
+   "zuletzt": "–",
+   "archiviert": false,
+   "sprache": "–",
+   "beschreibung": ""
+  },
+  {
+   "repo": "mathnet/mathnet-numerics",
+   "lizenz": "MIT (aus Lizenzdatei)",
+   "sterne": "–",
+   "zuletzt": "–",
+   "archiviert": false,
+   "sprache": "–",
+   "beschreibung": ""
+  },
+  {
+   "repo": "lmfit/lmfit-py",
+   "lizenz": "BSD-3-Clause (aus Lizenzdatei)",
+   "sterne": "–",
+   "zuletzt": "–",
+   "archiviert": false,
+   "sprache": "–",
+   "beschreibung": ""
+  },
+  {
+   "repo": "veusz/veusz",
+   "lizenz": "GPL-2.0 (aus Lizenzdatei)",
+   "sterne": "–",
+   "zuletzt": "–",
+   "archiviert": false,
+   "sprache": "–",
+   "beschreibung": ""
+  },
+  {
+   "repo": "oxyplot/oxyplot",
+   "lizenz": "MIT (aus Lizenzdatei)",
+   "sterne": "–",
+   "zuletzt": "–",
+   "archiviert": false,
+   "sprache": "–",
+   "beschreibung": ""
+  }
+ ],
+ "SPEC-06": [
+  {
+   "repo": "open-spaced-repetition/fsrs-rs",
+   "lizenz": "BSD-3-Clause (aus Lizenzdatei)",
+   "sterne": "–",
+   "zuletzt": "–",
+   "archiviert": false,
+   "sprache": "–",
+   "beschreibung": ""
+  },
+  {
+   "repo": "open-spaced-repetition/py-fsrs",
+   "lizenz": "MIT (aus Lizenzdatei)",
+   "sterne": "–",
+   "zuletzt": "–",
+   "archiviert": false,
+   "sprache": "–",
+   "beschreibung": ""
+  },
+  {
+   "repo": "ankitects/anki",
+   "lizenz": "AGPL-3.0 (Teile BSD-3) (aus Lizenzdatei)",
+   "sterne": "–",
+   "zuletzt": "–",
+   "archiviert": false,
+   "sprache": "–",
+   "beschreibung": ""
+  },
+  {
+   "repo": "mnemosyne-proj/mnemosyne",
+   "lizenz": "gemischt (LGPL-3 + eigene) (aus Lizenzdatei)",
+   "sterne": "–",
+   "zuletzt": "–",
+   "archiviert": false,
+   "sprache": "–",
+   "beschreibung": ""
+  },
+  {
+   "repo": "open-spaced-repetition/fsrs4anki",
+   "lizenz": "MIT (aus Lizenzdatei)",
+   "sterne": "–",
+   "zuletzt": "–",
+   "archiviert": false,
+   "sprache": "–",
+   "beschreibung": ""
+  }
  ]
 }

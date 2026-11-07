@@ -286,6 +286,23 @@ public partial class MainWindow
             new TextBlock { Name = "learn-today-text", Text = todayText, Foreground = Text, FontSize = 15, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap },
             bar, P(goal > 0 ? $"{done} von {goal} geschafft" : "", Muted, 11.5), go } } });
 
+        // Runde 4: Wiederholungsplaner (SM-2 oder FSRS) und Behaltensrate
+        var rates = new[] { 0.8, 0.85, 0.9, 0.95 };
+        var sched = new ComboBox { Name = "learn-scheduler", Width = 230, ItemsSource = new[] { "SM-2 (klassisch)", "FSRS (genauer, lernt mit)" }, SelectedIndex = Learn.UsesFsrs ? 1 : 0 };
+        var rate = new ComboBox { Name = "learn-retention", Width = 110, ItemsSource = rates.Select(r => $"{r * 100:0} %").ToList(), SelectedIndex = Math.Max(0, Array.FindIndex(rates, r => Math.Abs(r - Learn.Store.Retention) < 0.001)), IsEnabled = Learn.UsesFsrs };
+        void ApplySched()
+        {
+            Learn.SetScheduler(sched.SelectedIndex == 1 ? "FSRS" : "SM-2", rates[Math.Max(0, rate.SelectedIndex)]);
+            _planMsg = Learn.UsesFsrs ? $"✓ FSRS aktiv – Abstände so, dass du dich zu {Learn.Store.Retention * 100:0} % erinnerst. Bisherige Karten werden beim nächsten Lernen übernommen." : "✓ Klassischer Planer SM-2 aktiv.";
+            Show("lernen");
+        }
+        sched.SelectionChanged += (_, _) => { if ((sched.SelectedIndex == 1) != Learn.UsesFsrs) ApplySched(); };
+        rate.SelectionChanged += (_, _) => { if (Learn.UsesFsrs && rate.SelectedIndex >= 0 && Math.Abs(rates[rate.SelectedIndex] - Learn.Store.Retention) > 0.001) ApplySched(); };
+        sp.Children.Add(Card(new StackPanel { Name = "learn-scheduler-box", Spacing = 4, Children = {
+            H("Wiederholungsplaner", 14),
+            new WrapPanel { Children = { sched, new Border { Width = 10 }, P("Erinnern zu", null, 12), new Border { Width = 6 }, rate } },
+            P("FSRS berechnet für jede Karte, wie stabil sie im Gedächtnis ist, und plant den nächsten Termin danach – meist weniger Wiederholungen bei gleichem Lernerfolg.", Muted, 11.5) } }));
+
         // Plan je Stapel
         sp.Children.Add(H("Plan je Stapel", 14));
         if (Learn.Decks.Count == 0) sp.Children.Add(P("Lege zuerst Karten an (Karten verwalten).", Muted, 12));
