@@ -19,7 +19,8 @@ public partial class MainWindow
     static string SongKindLabel(string kind) => kind switch
     {
         "neu" => "", "cover" => " · Cover", "abschnitt" => " · neuer Abschnitt", "laenger" => " · länger", "eigen" => " · eigene Aufnahme",
-        "begleitung" => " · Begleitung", "gesang" => " · Gesang", "aufnahme" => " · mit meiner Stimme", _ => "",
+        "begleitung" => " · Begleitung", "gesang" => " · Gesang", "aufnahme" => " · mit meiner Stimme", "remaster" => " · Remaster", "gekuerzt" => " · gekürzt",
+        "mashup" => " · Mashup", "sample" => " · aus Sample", "sound" => " · Sound", "sprache" => " · Sprache", _ => "",
     };
 
     /// <summary>Lied in Gesang, Schlagzeug, Bass und Rest trennen; Begleitung (alles ohne Gesang) und Gesang kommen als Lieder in die Bibliothek.</summary>

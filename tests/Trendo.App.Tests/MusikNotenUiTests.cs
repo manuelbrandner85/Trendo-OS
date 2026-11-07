@@ -21,7 +21,7 @@ public class MusikNoten_Ui
         try
         {
             w.Show("musik-studio"); Settle(); if (w.Windows.Active is { Maximized: false } pw) w.Windows.ToggleMaximize(pw.Id); Settle();
-            w.Find<Button>("ms-mode-noten").Press(); Settle();
+            w.MsPage("studio"); Settle(); w.Find<Button>("ms-mode-noten").Press(); Settle(); // Suno V1: Noten liegen im Studio
             PianoRollView View() => w.GetVisualDescendants().OfType<PianoRollView>().Single(v => v.IsEffectivelyVisible);
             var view = View(); Settle();
             Point At(int pitch, int tick) { Settle(); view = View(); return view.PointOf(pitch, tick).Transform(view.TransformToVisual(w) ?? throw new Xunit.Sdk.XunitException($"Piano-Roll nicht im Fenster ({w.MsRoll.Notes.Count} Noten)")); }

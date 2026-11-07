@@ -344,6 +344,9 @@ else if (shot == "seite")
         if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") == "profi") win.MusicStudioProMode(true);
         if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_DEMO") == "genre") win.MusicStudioPickGenres(true, "Jazz-Ballade", "Smooth Jazz");
         if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_TAB") is { Length: > 0 } mtab) win.MsDetailTab(mtab);
+        if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_PAGE") is { Length: > 0 } mpage) win.MsPage(mpage); // V1: Erstellen, Studio, Bibliothek, Stimmen
+        if (Environment.GetEnvironmentVariable("TRENDO_MUSIK_GRID") is { Length: > 0 }) win.MsLibraryView(grid: true);
+        win.Show("musik-studio");
         if (Environment.GetEnvironmentVariable("TRENDO_COVER_DEMO") is { Length: > 0 }) // Cover-Werkstatt mit erfundenem Lied und Bauplan
         {
             win.SongFactsFetchOverride = _ => Task.FromResult<string?>("{\"recordings\":[{\"id\":\"r1\",\"title\":\"Sommer, nimm uns mit\",\"length\":184000,\"first-release-date\":\"1961-05-02\",\"artist-credit\":[{\"name\":\"Erika Muster\"}],\"releases\":[{\"title\":\"Erste Platte\"}]}]}");

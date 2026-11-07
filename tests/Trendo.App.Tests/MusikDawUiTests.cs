@@ -31,7 +31,7 @@ public class MusikDaw_Ui
             var s = lib.Add(new MusicSong { Title = "Roadtrip", Seconds = 100, Bpm = 120, Key = "A minor", TimeSignature = "4/4", File = Wav("roadtrip.wav"), Lyrics = "[Strophe]\nDie Straße glänzt\n[Refrain]\nSommer nimm uns mit" });
             lib.Add(new MusicSong { Title = "Roadtrip – Gesang", Kind = "gesang", ParentId = s.Id, File = Wav("gesang.wav") });
             lib.Add(new MusicSong { Title = "Roadtrip – Begleitung", Kind = "begleitung", ParentId = s.Id, File = Wav("begleitung.wav") });
-            w.MusicStudioSelect(s.Id); w.Show("musik-studio"); Pump();
+            w.MusicStudioSelect(s.Id); w.Show("musik-studio"); w.MsPage("studio"); Pump(); // Suno V1: Arrangement im Studio
             Assert.Equal("120,00", w.Find<TextBlock>("ms-transport-bpm-v").Text.Replace('.', ','));
             Assert.Equal("A-Moll", w.Find<TextBlock>("ms-transport-key-v").Text);
             var arr = w.Find<ArrangeView>("ms-arrange");

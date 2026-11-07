@@ -135,24 +135,27 @@ public partial class MainWindow
     AceStepClient.Job MsJob()
     {
         var lang = AceStepClient.Languages[Math.Clamp(_msLang, 0, AceStepClient.Languages.Length - 1)].Code;
-        var secs = MusicLengths[Math.Clamp(_msLen, 0, MusicLengths.Length - 1)].Seconds;
+        var secs = _msOpt.Seconds ?? MusicLengths[Math.Clamp(_msLen, 0, MusicLengths.Length - 1)].Seconds; // V3: Dauer genau (Regler) vor der Auswahlliste
+        var extra = MusicSuno.AceFields(_msOpt with { Max = _msOpt.Max || MsModelFor().Max }, _msRefFile is not null);
         if (!_msPro)
         {
             if (string.IsNullOrWhiteSpace(_msDesc) && _msGenres.Count == 0) throw new ArgumentException("Beschreibe zuerst dein Lied – z. B. „fröhliches Sommerlied über einen Roadtrip“.");
-            return new(MsWithExtras(_msDesc), _msInstr ? "[Instrumental]" : "", secs, lang, _msVariants, ReferenceAudio: _msRefFile);
+            return new(MusicSuno.ApplyToStyle(MsWithExtras(_msDesc), _msOpt), _msInstr ? "[Instrumental]" : "", secs, lang, _msVariants, ReferenceAudio: _msRefFile, Extra: extra);
         }
         if (string.IsNullOrWhiteSpace(_msStyle) && _msGenres.Count == 0) throw new ArgumentException("Gib zuerst den Stil an – z. B. „Pop, Akustikgitarre, Frauenstimme“.");
         int? bpm = int.TryParse(_msBpm, out var b) ? b : null;
         if (_msBpm.Length > 0 && bpm is null or < 30 or > 300) throw new ArgumentException("Tempo bitte zwischen 30 und 300 BPM (oder leer für automatisch).");
-        return new(MsWithExtras(_msStyle), _msInstr ? "[Instrumental]" : SongLibrary.ToAceLyrics(_msLyrics), secs, lang, _msVariants, bpm,
-            _msKey.Length > 0 ? _msKey : null, _msTime.Length > 0 ? _msTime : null, ReferenceAudio: _msRefFile);
+        return new(MusicSuno.ApplyToStyle(MsWithExtras(_msStyle), _msOpt), _msInstr ? "[Instrumental]" : SongLibrary.ToAceLyrics(_msLyrics), secs, lang, _msVariants, bpm,
+            _msKey.Length > 0 ? _msKey : null, _msTime.Length > 0 ? _msTime : null, ReferenceAudio: _msRefFile, Extra: extra);
     }
 
     /// <summary>Wunsch 03.11.2026: Im Einfach-Modus mit Gesang (nicht nur instrumental). Zuerst schreibt die Text-KI von Trendo den Liedtext
     /// (dann gilt die gewählte Länge genau); ohne Text-KI schreibt ACE-Step im eigenen Einfach-Modus Text und Gesang selbst – die Länge wählt es dann selbst.</summary>
     public async Task<List<MusicSong>> MsCreateWithVoice(AceStepClient.Job j, string title)
     {
-        if (_msPro || j.Lyrics.Trim().Length > 0 || j.Task != "text2music") return MsLinkProducerDraft(await MusicStudioCreate(j, title)); // Claude 26: Produzenten-Fassung hängt am Ausgangslied
+        var model = MsModelFor().Model; // V2: Schnell / Gründlich / Max
+        if (model == AceStepClient.BaseModel && !AceBaseReady) { _msMsg = "„Gründlich“ und „Max“ brauchen das Grundmodell der Musik-KI – im Lied unter „Bearbeiten → Verlängern“ einmal laden, oder „Schnell“ wählen."; Show(MS); return []; }
+        if (_msPro || j.Lyrics.Trim().Length > 0 || j.Task != "text2music") return MsLinkProducerDraft(await MusicStudioCreate(j, title, model: model)); // Claude 26: Produzenten-Fassung hängt am Ausgangslied
         var langName = AceStepClient.Languages.FirstOrDefault(x => x.Code == j.Language).Name ?? j.Language;
         var english = j.Language switch { "de" => "German", "en" => "English", _ => TryCulture(j.Language) };
         var prompt = $"Schreibe einen Liedtext auf {langName} für ein Lied von etwa {j.Seconds} Sekunden. Thema/Stil: {j.Prompt}. "
@@ -171,11 +174,11 @@ public partial class MainWindow
         {
             (text, _) = await MsPolishLyrics(text); // KI-Floskeln gezielt ersetzen
             _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.einfach", "text-ki");
-            return await MusicStudioCreate(j with { Lyrics = SongLibrary.ToAceLyrics(text) }, title);
+            return await MusicStudioCreate(j with { Lyrics = SongLibrary.ToAceLyrics(text) }, title, model: model);
         }
         // ohne Text-KI: ACE-Step schreibt und singt selbst
         _core.Audit.Append(Principal.LocalOwner.Name, "musik.studio.einfach", "ace-sample");
-        var made = await MusicStudioCreate(j with { SampleQuery = $"{j.Prompt}, sung in {english}" }, title);
+        var made = await MusicStudioCreate(j with { SampleQuery = $"{j.Prompt}, sung in {english}" }, title, model: model);
         if (made.Count > 0) _msMsg += " Die Musik-KI hat Text und Gesang selbst geschrieben und die Länge selbst gewählt.";
         return made;
 
@@ -206,14 +209,11 @@ public partial class MainWindow
     // ───────────── Oberfläche ─────────────
     Control MusikStudioView()
     {
-        // DAW-Stil (Wunsch 06.11.2026): Transportleiste oben, Browser links, Arrangement und Lieder in der Mitte, Inspektor rechts
-        var root = new Grid { ColumnDefinitions = new ColumnDefinitions("360,14,*,14,340"), RowDefinitions = new RowDefinitions("Auto,*") };
-        var player = MsTransportBar(); Grid.SetColumnSpan(player, 5); root.Children.Add(player);
-        Control Row1(Control c, int col) { Grid.SetRow(c, 1); Grid.SetColumn(c, col); return c; }
-        root.Children.Add(Row1(MsCreatePanel(), 0));
-        var center = _msNoten ? MsNotenPanel() : MsArrangePanel() is { } arr ? (Control)new DockPanel { Children = { Dk(arr, Avalonia.Controls.Dock.Top), MsLibraryPanel() } } : MsLibraryPanel();
-        root.Children.Add(Row1(center, 2));
-        root.Children.Add(Row1(MsDetailPanel(), 4));
+        // V1 wie Suno (07.11.2026): Navigation links, Seite in drei Spalten, Abspielleiste unten über die ganze Breite (Transport, Takt, Tempo, Tonart bleiben darin)
+        var root = new Grid { ColumnDefinitions = new ColumnDefinitions("96,10,360,14,*,14,340"), RowDefinitions = new RowDefinitions("*,Auto") };
+        var nav = MsNav(); Grid.SetColumn(nav, 0); root.Children.Add(nav);
+        MsPageColumns(root);
+        var player = MsTransportBar(); Grid.SetRow(player, 1); Grid.SetColumnSpan(player, 7); player.Margin = new Thickness(0, 12, 0, 0); root.Children.Add(player);
         root.VerticalAlignment = VerticalAlignment.Stretch;
         return FitPage("Trendo Musik", new Panel(), root); // füllt das Fenster wie ein echtes Programm
     }
@@ -247,26 +247,16 @@ public partial class MainWindow
     {
         var sp = new StackPanel { Spacing = 8 };
         var more = new StackPanel { Name = "ms-more-body", Spacing = 10 };
-        // Einfach | Profi
+        // V2 wie Suno: Einfach | Erweitert (Beat und Noten sind ins Studio gewandert)
         var modes = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4 };
-        foreach (var (pro, label) in new[] { (false, "Einfach"), (true, "Profi") })
+        foreach (var (pro, label) in new[] { (false, "Einfach"), (true, "Erweitert") })
         {
-            var on = !_msBeat && !_msNoten && _msPro == pro; var p = pro;
+            var on = _msPro == pro; var p = pro;
             var b = new Button { Name = "ms-mode-" + (pro ? "profi" : "einfach"), Content = label, Padding = new Thickness(16, 5), CornerRadius = new CornerRadius(14), Background = on ? Accent : Brush.Parse("#22FFFFFF"), Foreground = on ? Brushes.White : Text, BorderThickness = new Thickness(0) };
-            b.Click += (_, _) => { _msPro = p; _msBeat = false; _msNoten = false; Show(MS); };
+            b.Click += (_, _) => { _msPro = p; Show(MS); };
             modes.Children.Add(b);
         }
-        { // Paket 01 S4-13: Modus „Beat“ (Step-Sequencer)
-            var bb = new Button { Name = "ms-mode-beat", Content = "Beat", Padding = new Thickness(16, 5), CornerRadius = new CornerRadius(14), Background = _msBeat ? Accent : Brush.Parse("#22FFFFFF"), Foreground = _msBeat ? Brushes.White : Text, BorderThickness = new Thickness(0) };
-            bb.Click += (_, _) => { _msBeat = true; _msNoten = false; Show(MS); };
-            modes.Children.Add(bb);
-            // Paket 01 S4-04: Modus „Noten“ (Piano-Roll in der Mitte)
-            var nb = new Button { Name = "ms-mode-noten", Content = "Noten", Padding = new Thickness(16, 5), CornerRadius = new CornerRadius(14), Background = _msNoten ? Accent : Brush.Parse("#22FFFFFF"), Foreground = _msNoten ? Brushes.White : Text, BorderThickness = new Thickness(0) };
-            nb.Click += (_, _) => { _msNoten = true; _msBeat = false; Show(MS); };
-            modes.Children.Add(nb);
-        }
-        sp.Children.Add(H("Erstellen", 16)); sp.Children.Add(modes); // vier Modi: eigene Zeile, damit nichts abgeschnitten wird
-        if (_msBeat) { if (_msMsg.Length > 0) sp.Children.Add(P(_msMsg, Muted, 11.5)); sp.Children.Add(MsBeatPanel()); return MsCard("ms-create-panel", new ScrollViewer { Content = sp }); }
+        sp.Children.Add(MsCreateHeader()); sp.Children.Add(modes);
         if (MsProducerDraftBanner() is { } prod) sp.Children.Add(prod); // Claude 26: offener Produzenten-Entwurf
         var sync = new List<Action>(); // beim Klick die Felder direkt auslesen – nicht auf das Änderungs-Ereignis warten
         TextBox Box(string name, string watermark, string value, Action<string> set, double minH = 0, bool multi = false)
@@ -313,7 +303,9 @@ public partial class MainWindow
             ts.SelectionChanged += (_, _) => _msTime = ts.SelectedIndex <= 0 ? "" : AceStepClient.TimeSignatures[ts.SelectedIndex - 1].Value;
             more.Children.Add(new StackPanel { Spacing = 4, Children = { H("Tempo, Tonart, Takt", 13), new WrapPanel { Children = { bpm, Spacer(key), Spacer(ts) } } } });
         }
-        more.Children.Insert(0, MsStylePanel(Sync)); // M1/M2/M6/M8: Genres, Stimme, Tonlage, Instrumente, „Im Stil von“
+        sp.Children.Add(MsReferenceRow(Sync)); // V2: + Audio, + Stimme, + Bild, Würfel
+        more.Children.Insert(0, MsAdvancedOptions(Sync)); // V3: wie Suno „More Options“ – nur gemessen wirksame Regler
+        more.Children.Insert(1, MsStylePanel(Sync)); // M1/M2/M6/M8: Genres, Stimme, Tonlage, Instrumente, „Im Stil von“
         more.Children.Add(MsRefPlanPanel(Sync)); // Vorbilder: Klang-Referenz/Persona (Suno), Ablaufplan (ElevenLabs)
         if (_msPro) more.Children.Add(MsVoicePanel(Sync)); // S1: eigene Stimme analysieren
         var instr = new CheckBox { Name = "ms-instrumental", Content = "Instrumental (ohne Gesang)", IsChecked = _msInstr, Foreground = Text };
@@ -381,7 +373,8 @@ public partial class MainWindow
         search.KeyDown += (_, e) => { if (e.Key == Avalonia.Input.Key.Enter) Show(MS); };
         var fav = new Avalonia.Controls.Primitives.ToggleButton { Name = "ms-fav-filter", Content = "★ Favoriten", IsChecked = _msFav };
         fav.IsCheckedChanged += (_, _) => { _msFav = fav.IsChecked == true; Show(MS); };
-        sp.Children.Add(new DockPanel { Children = { Dk(new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, Children = { import, search, fav } }, Avalonia.Controls.Dock.Right), H("Meine Lieder", 16) } });
+        sp.Children.Add(H("Meine Lieder", 16)); // Überschrift eigene Zeile – die Mittelspalte ist neben der Navigation schmaler
+        sp.Children.Add(MsLibraryToolbar(import, search, fav)); // V4: Arbeitsbereich, Filter, Sortierung, Ansicht
         foreach (var (title, started, _) in _msRunning)
         {
             var t = title;
@@ -393,11 +386,12 @@ public partial class MainWindow
             sp.Children.Add(new Border { CornerRadius = new CornerRadius(12), Background = Brush.Parse("#22C9A227"), Padding = new Thickness(12, 10),
                 Child = new DockPanel { Children = { Dk(stop, Avalonia.Controls.Dock.Right), new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { _msRunningBar, _msRunningText } } } } });
         }
-        var songs = Songs.Visible(_msFav, _msSearch);
+        var (songs, total, pages) = MsQuery(); // V4: Arbeitsbereich/Sammlung, Filter, Suche, Sortierung, Seite
         if (songs.Count == 0 && _msRunning.Count == 0)
             sp.Children.Add(new StackPanel { Spacing = 6, Margin = new Thickness(0, 40, 0, 0), HorizontalAlignment = HorizontalAlignment.Center, Children = {
                 new TextBlock { Text = "♪", FontSize = 46, Foreground = Accent, HorizontalAlignment = HorizontalAlignment.Center },
-                new TextBlock { Name = "ms-empty", Text = _msFav || _msSearch.Length > 0 ? "Nichts gefunden." : "Noch keine Lieder – links beschreiben und „Erstellen“.", Foreground = Muted, FontSize = 14, HorizontalAlignment = HorizontalAlignment.Center } } });
+                new TextBlock { Name = "ms-empty", Text = _msFav || _msSearch.Length > 0 || _msFilter != "alle" || _msColl is not null || _msWs is not null ? "Nichts gefunden." : "Noch keine Lieder – links beschreiben und „Erstellen“.", Foreground = Muted, FontSize = 14, HorizontalAlignment = HorizontalAlignment.Center } } });
+        if (_msGridView) { sp.Children.Add(MsSongGrid(songs)); sp.Children.Add(MsPager(total, pages)); return MsCard("ms-library", new ScrollViewer { Content = sp }); }
         var i = 0;
         foreach (var s in songs)
         {
@@ -420,14 +414,16 @@ public partial class MainWindow
                 mi.Click += (_, _) => r();
                 flyout.Items.Add(mi);
             }
+            foreach (var cm in MsCollectionMenu(song, n)) flyout.Items.Add(cm); // V4: Playlist, Album, Arbeitsbereich
             menu.Flyout = flyout;
-            var row = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto,Auto"), ColumnSpacing = 10, Children = { MsCover(s, 52), Pos(play, 1), Pos(info, 2), Pos(star, 3), Pos(menu, 4) } };
+            var row = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,Auto,*,Auto,Auto,Auto"), ColumnSpacing = 10, Children = { MsCover(s, 52), Pos(play, 1), Pos(info, 2), Pos(MsRemixButton(song, n), 3), Pos(star, 4), Pos(menu, 5) } }; // V5: Remix wie bei Suno
             play.VerticalAlignment = VerticalAlignment.Center; star.VerticalAlignment = VerticalAlignment.Center;
             var item = new Button { Name = $"ms-song-{n}", Content = row, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8),
                 CornerRadius = new CornerRadius(12), Background = sel ? Brush.Parse("#26C9A227") : Brushes.Transparent, BorderBrush = sel ? Accent : Brushes.Transparent, BorderThickness = new Thickness(1) };
             item.Click += (_, _) => { _msSel = song.Id; Show(MS); };
             sp.Children.Add(item);
         }
+        sp.Children.Add(MsPager(total, pages));
         return MsCard("ms-library", new ScrollViewer { Content = sp });
     }
 
@@ -449,7 +445,8 @@ public partial class MainWindow
     void MsPlay(MusicSong s)
     {
         if (_queue.Current is { } c && string.Equals(c, s.File, StringComparison.OrdinalIgnoreCase)) { MusicTogglePause(); return; }
-        var list = Songs.Visible(_msFav, _msSearch).Select(x => x.File).ToList();
+        var list = MsQuery().Page.Select(x => x.File).ToList(); // V4: Warteschlange = die sichtbare Liste (Playlist in ihrer Reihenfolge)
+        if (!list.Contains(s.File)) list = [s.File];
         MusicPlay(list, Math.Max(0, list.IndexOf(s.File)), MS);
     }
 
@@ -507,6 +504,7 @@ public partial class MainWindow
             repaint } });
 
         edit.Children.Add(MsExtendPanel(s)); // M10: Verlängern mit dem Grundmodell
+        edit.Children.Add(MsCropPanel(s)); // V5: Zuschneiden / Abschnitt entfernen
         spuren.Children.Add(MsStemsPanel(s)); // Spuren trennen mit Demucs
         spuren.Children.Add(MsSingPanel(s)); // S5/S6: Mitsingen, Aufnahme mischen
         video.Children.Add(MsUnderstandPanel(s)); // KI-Musikvideo A: Lied verstehen (wer singt wann, Zeilen, Thema)

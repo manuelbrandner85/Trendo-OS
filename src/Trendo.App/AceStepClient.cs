@@ -91,11 +91,15 @@ public sealed class AceStepClient(HttpClient http, int port = AceStepClient.Defa
     /// <summary>Studio „Trendo Musik“: Auftrag mit allen geprüften Möglichkeiten (03.11.2026 auf einer RTX 5070 echt erprobt:
     /// Varianten, Sprachen, Abschnitt neu erzeugen und Cover gehen; Verlängern, Spuren trennen und Begleitung liefern mit dem Turbo-Modell kein brauchbares Ergebnis).</summary>
     public sealed record Job(string Prompt, string Lyrics, int Seconds, string Language, int Variants = 1, int? Bpm = null, string? Key = null, string? TimeSignature = null,
-        string Task = "text2music", double RepaintStart = 0, double RepaintEnd = -1, double CoverStrength = 0.6, string Format = "mp3", string? SampleQuery = null, string? ReferenceAudio = null);
+        string Task = "text2music", double RepaintStart = 0, double RepaintEnd = -1, double CoverStrength = 0.6, string Format = "mp3", string? SampleQuery = null, string? ReferenceAudio = null,
+        IReadOnlyDictionary<string, string>? Extra = null); // Extra: V3 „Mehr Optionen“ (MusicSuno.AceFields) – Temperatur, Führung, top-p, Ausschluss, Schritte
     // SampleQuery: Einfach-Modus von ACE-Step (am 03.11.2026 echt erprobt) – die Sprach-KI schreibt Liedtext, Stil, Tempo und Tonart selbst und singt;
     // die Länge legt sie dabei selbst fest (gemessen: 100–120 s statt der gewünschten 60 s).
 
     public static readonly string[] Tasks = ["text2music", "repaint", "cover"];
+    /// <summary>V3: erlaubte Zusatzfelder (ACE-Step 1.5 API) und welche davon Zahlen sind.</summary>
+    public static readonly string[] ExtraKeys = ["lm_temperature", "lm_cfg_scale", "lm_top_p", "audio_cover_strength", "lm_negative_prompt", "inference_steps", "guidance_scale", "seed", "use_random_seed"];
+    static readonly string[] NumberKeys = ["audio_duration", "batch_size", "bpm", "inference_steps", "lm_temperature", "lm_cfg_scale", "lm_top_p", "audio_cover_strength", "guidance_scale", "seed"];
     public static readonly string[] Keys = [.. new[] { "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B" }.SelectMany(n => new[] { n + " major", n + " minor" })];
     public static readonly (string Label, string Value)[] TimeSignatures = [("4/4", "4"), ("3/4", "3"), ("6/8", "6"), ("2/4", "2")];
 
@@ -126,6 +130,8 @@ public sealed class AceStepClient(HttpClient http, int port = AceStepClient.Defa
             f["sample_query"] = q.Trim(); f.Remove("lyrics"); f["prompt"] = ""; f["thinking"] = "true"; // Text schreibt ACE-Step – nicht „[Instrumental]“ schicken
         }
         if (j.Task == "cover") f["audio_cover_strength"] = Math.Clamp(j.CoverStrength, 0.1, 1.0).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+        foreach (var (xk, xv) in j.Extra ?? new Dictionary<string, string>())
+            if (ExtraKeys.Contains(xk) && !(xk == "audio_cover_strength" && j.Task == "cover")) f[xk] = xv; // nur bekannte Felder; beim Cover gilt die eigene Stärke
         return f;
     }
 
@@ -134,7 +140,7 @@ public sealed class AceStepClient(HttpClient http, int port = AceStepClient.Defa
     {
         var fields = Fields(j);
         HttpResponseMessage r;
-        if (j.Task == "text2music" && j.ReferenceAudio is null) r = await http.PostAsJsonAsync(new Uri(Base, "release_task"), new JsonObject(fields.Select(kv => KeyValuePair.Create(kv.Key, (JsonNode?)(kv.Key is "thinking" ? JsonValue.Create(kv.Value == "true") : kv.Key is "audio_duration" or "batch_size" or "bpm" ? JsonValue.Create(int.Parse(kv.Value, System.Globalization.CultureInfo.InvariantCulture)) : JsonValue.Create(kv.Value))))), ct);
+        if (j.Task == "text2music" && j.ReferenceAudio is null) r = await http.PostAsJsonAsync(new Uri(Base, "release_task"), new JsonObject(fields.Select(kv => KeyValuePair.Create(kv.Key, (JsonNode?)(kv.Key is "thinking" ? JsonValue.Create(kv.Value == "true") : kv.Key is "use_random_seed" ? JsonValue.Create(kv.Value == "true") : NumberKeys.Contains(kv.Key) ? JsonValue.Create(double.Parse(kv.Value, System.Globalization.CultureInfo.InvariantCulture)) : JsonValue.Create(kv.Value))))), ct);
         else
         {
             if (j.Task != "text2music" && (sourceAudio is null || !File.Exists(sourceAudio))) throw new InvalidOperationException("Das Ausgangslied fehlt.");

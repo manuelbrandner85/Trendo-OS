@@ -16,7 +16,7 @@ public class MusikBeat_Ui
         var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
         try
         {
-            w.Show("musik-studio"); Settle();
+            w.Show("musik-studio"); w.MsPage("studio"); Settle(); // Suno V1: Beat liegt im Studio
             var mode = w.Find<Button>("ms-mode-beat"); mode.Press(); Settle();
             Assert.Equal("x...x...x...x...", w.MsBeatPattern.Tracks.Single(t => t.Id == "kick").Steps); // Vorlage EDM
             var cell = w.Find<Button>("ms-beat-kick-1"); cell.BringIntoView(); Settle(); cell.Press(); Settle();
