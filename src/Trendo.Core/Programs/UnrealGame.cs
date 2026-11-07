@@ -843,6 +843,7 @@ bool TrendoSetupFigure(USkeletalMeshComponent* Figure, float FootZ, const FLinea
 #include "TrendoActors.h"
 #include "TrendoGameMode.h"
 #include "TrendoCar.h"
+#include "Misc/CommandLine.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -1093,17 +1094,19 @@ bool ATrendoEnemy::Ragdoll(const FVector& Impulse)
 	if (!Body3D) return false;
 	bDead = true; GetCharacterMovement()->DisableMovement();
 	// Echte Sturz-Animation (auf das eigene Skelett übertragen): fällt glaubwürdig zu Boden und bleibt liegen
-	if (UAnimationAsset* Death = Anim(TEXT("MM_Death_Front_03_ExtractedRM"), MetaDirOf(Body3D)))
+	// Standard: echter Physik-Sturz (Ragdoll mit der Physik-Hülle des Engine-Mannequins); fehlt sie, fällt er mit echter Sturz-Animation
+	UPhysicsAsset* PA = LoadObject<UPhysicsAsset>(nullptr, TEXT("/MoverExamples/Characters/Mannequins/Rigs/PA_Mannequin.PA_Mannequin"));
+	if (UAnimationAsset* Death = PA && !FParse::Param(FCommandLine::Get(), TEXT("trendosturzanimation")) ? nullptr : Anim(TEXT("MM_Death_Front_03_ExtractedRM"), MetaDirOf(Body3D)))
 	{
 		SetActorRotation(FRotator(0, Impulse.Rotation().Yaw + 180.f, 0)); // fällt in Schlagrichtung nach vorn weg
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision); Shape->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		Body3D->PlayAnimation(Death, false); return true;
 	}
 	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision); Shape->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	if (AActor* Part = Body3D->GetOwner(); Part && Part != this) Part->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform); // MetaHuman fällt frei
+	if (AActor* Part = Body3D->GetOwner(); Part && Part != this) { Part->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform); Part->SetActorEnableCollision(true); } // MetaHuman fällt frei – Kollision des Teils wieder an (war für die Kapsel aus)
 	Body3D->Stop(); Body3D->SetAnimationMode(EAnimationMode::AnimationCustomMode);
 	// Physik-Hülle des Engine-Mannequins (gleiche Körperknochen wie MetaHuman, Kollision mit Gelände und Objekten erprobt)
-	if (UPhysicsAsset* PA = LoadObject<UPhysicsAsset>(nullptr, TEXT("/MoverExamples/Characters/Mannequins/Rigs/PA_Mannequin.PA_Mannequin"))) Body3D->SetPhysicsAsset(PA, true);
+	if (PA) Body3D->SetPhysicsAsset(PA, true); else if (!Body3D->GetPhysicsAsset()) return false;
 	Body3D->SetCollisionObjectType(ECC_PhysicsBody); Body3D->SetCollisionResponseToAllChannels(ECR_Block); Body3D->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore); Body3D->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 	Body3D->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	Body3D->SetAllUseCCD(true); // schnelle Körperteile rutschen nicht durchs Gelände
