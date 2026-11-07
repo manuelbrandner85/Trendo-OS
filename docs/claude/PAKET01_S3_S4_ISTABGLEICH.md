@@ -116,3 +116,11 @@ Offen aus S3/S4 nur noch: S4-06 Plugin-Host (gesperrt bis Sandbox, REA-Bewertung
 Dazu echt geprüft (bisher nur mit Testdaten): Stimmtrennung (Demucs, Gesang 14,5/16,1 dB SI-SDR) und Stimm-Lernen mit Singen (Applio, Melodie 0,84, Tonhöhe exakt, Klangfarbe 77 % näher) – `reports/musik-echt/BERICHT.md`.
 
 Offen aus S3/S4: S4-06 Plugin-Host (gesperrt bis Sandbox, REA-Bewertung und Freigabe), S3-04/06/07/08/10 und S4-15 (Sitzung B).
+
+### Nachtrag 07.11.2026 (S4-06, Freigabe „Ja, S4-06 angehen“ und „Ja, abgeschottet laden“)
+
+| Punkt | Was neu ist | Beleg | Status |
+|---|---|---|---|
+| S4-06 | Plugin-Host: statische Prüfung vor dem Laden, Freigabe je Datei (SHA-256), Abschottung (niedrige Integritätsstufe, Job-Objekt, Zeit-/Speichergrenze, keine Kindprozesse), Host Pedalboard (GPL-3.0) als eigenes Programm; Audioeditor „Plugins“; echtes VST3 (Airwindows) verarbeitet Ton, Parameter wirken; echtes abstürzendes Plugin isoliert mit Bericht | `reports/paket01/s4-06-plugin-host-lauf.md` | TESTED; CLAP-Laden, Echtzeit und Netzsperre offen |
+
+Offen aus S3/S4 nur noch: S3-04/06/07/08/10 und S4-15 (Sitzung B); bei S4-06 die oben genannten Grenzen.

@@ -1,0 +1,5 @@
+Schreiben: ok | Ausgabe: hallo
+verweigert: UnauthorizedAccessException | Fehler:  | außerhalb vorhanden: False
+Absturz: abgestürzt (Notabbruch der .NET-Laufzeit, Code 0x80131623) – nur der abgeschottete Prozess ist betroffen (Code -2146232797)
+Zeitgrenze: abgebrochen: Zeitgrenze von 3 s überschritten nach 3,0 s
+Kindprozess: beendet mit Fehlercode 1 | Ausgabe:  | Fehler: Nicht gen�gend Quoten verf�gbar, um diesen Befehl zu verarbeiten.

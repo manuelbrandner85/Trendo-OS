@@ -41,7 +41,7 @@ public class PluginScanTests
             Assert.Equal("x64", list.Single(p => p.Name == "Synth Beispiel").Arch);
             Assert.StartsWith("defekt", list.Single(p => p.Name == "Fake").Status);
             var rep = PluginScan.Report(list, [vst, clap]);
-            Assert.Contains("| VST3 | Hall Muster | Beispiel Audio | 1.2.0 |", rep); Assert.Contains("ohne Laden", rep); Assert.Contains("gesperrt", rep);
+            Assert.Contains("| VST3 | Hall Muster | Beispiel Audio | 1.2.0 |", rep); Assert.Contains("ohne Laden", rep); Assert.Contains("Freigabe je Plugin", rep);
             Assert.Contains("Keine VST3", PluginScan.Report([], [vst]));
         }
         finally { if (Directory.Exists(dir)) Directory.Delete(dir, true); }

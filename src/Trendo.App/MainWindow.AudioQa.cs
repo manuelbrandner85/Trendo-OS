@@ -95,7 +95,7 @@ public partial class MainWindow
         File.WriteAllText(f, PluginScan.Report(list, roots));
         var ok = list.Count(p => p.Status.StartsWith("ok"));
         _progMsg[AUK] = list.Count == 0 ? "Keine VST3- oder CLAP-Plugins gefunden. Bericht: " + f
-            : $"{list.Count} Plugins gefunden ({ok} passend, {list.Count - ok} mit Hinweis) – Bericht: {f}. Laden in Trendo ist noch gesperrt (abgeschottete Laufumgebung fehlt).";
+            : $"{list.Count} Plugins gefunden ({ok} passend, {list.Count - ok} mit Hinweis) – Bericht: {f}. Laden: unter „Plugins“ prüfen und freigeben – dann nur abgeschottet.";
         return f;
     }
 }

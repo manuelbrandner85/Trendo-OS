@@ -115,6 +115,8 @@ public static class AudioEdit
         ("loudness", "Lautheit angleichen (LUFS)", false), ("compress", "Kompressor", false),
         // Profi 25 (05.11.2026): spektral retuschieren wie iZotope RX
         ("spectral", "Spektral absenken", true),
+        // Paket 01 S4-06 (07.11.2026): Ergebnis eines Plugins (abgeschottet berechnet) ersetzt den Bereich
+        ("plugin", "Plugin angewendet", false),
     ];
 
     public static string Label(string op) => Ops.FirstOrDefault(o => o.Op == op).Label ?? op;
@@ -213,6 +215,13 @@ public static class AudioEdit
                 var f = o["file"]?.GetValue<string>() ?? throw new InvalidOperationException("Keine Datei zum Einfügen.");
                 var ins = Match(AudioFile.Read(f), x.Rate, x.Channels); var at = Math.Clamp((int)Math.Round(a * x.Rate), 0, x.Length);
                 x.Replace(x.Data.Select((c, k) => c[..at].Concat(ins.Data[k]).Concat(c[at..]).ToArray()).ToArray()); break;
+            }
+            case "plugin":
+            {
+                var f = o["file"]?.GetValue<string>() ?? throw new InvalidOperationException("Keine Plugin-Ausgabe.");
+                if (!File.Exists(f)) throw new InvalidOperationException("Die Plugin-Ausgabe fehlt: " + Path.GetFileName(f));
+                var res = Match(AudioFile.Read(f), x.Rate, x.Channels);
+                x.Replace(x.Data.Select((c, k) => c[..s].Concat(res.Data[k]).Concat(c[e..]).ToArray()).ToArray()); break;
             }
             case "insert-silence":
             {

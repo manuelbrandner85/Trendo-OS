@@ -1,0 +1,10 @@
+f29b17b2e0fbe2a89efba6bf738101d60785201496ed3e7b473716cd3cd4cd77 *./abschottung-lauf.txt
+b46c4d5a514b7021d9e251e29c6aabc8c041904f26889f00cda217f5354790a3 *./absturzbericht-plugin.md
+c43d36157f30fa9941590b0de830dde08fd7514ab3ac3483db5d866cdd91c69a *./absturzbericht.md
+30fd1b75582ab6b2bc0ddefd63d2e2c45fa54ada397c3fc6f1ed795c01c1a7be *./dotnet-test.log
+f0c951ed3bfcdae0d4324d828890321567956b1d1dfbb21dc45fa990e9e5cf6f *./host-lauf.txt
+bcc55aa39132f0b71ab00e887b77cc43ceb8445821fee7497a29c25f90f06d33 *./pruefung-clap.md
+79c9d661b0d0c044c9fe45fc82c4ef70142569d1919043ae2f039ea1b18d017a *./pruefung-vst3.md
+8179ebb7ada9b184bcc0b0bf82ecd637161d7ae65bd504b46a2790290d06f941 *./testdatei-absturz.c
+d73227a5d45316a3d47349f91ae749267f1e13d06ee268b839d315ecac8b647d *./ton-dry_wet-0.mp3
+bf91f2bf622adf25e4e8c2a50ee4d9e6fe991d487a47c65f71187e9022a045d1 *./ton-nach-plugin.mp3

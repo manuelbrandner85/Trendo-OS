@@ -4,7 +4,7 @@ namespace Trendo.Core;
 public enum KiKind { Chat, Denken, Code, BildVerstehen, Uebersetzen, Wissen, BildErzeugen, BildVerbessern, Video, SpracheZuText, TextZuSprache, Musik, Modell3D, Geraeusche }
 
 /// <summary>Womit Trendo ein Modell ausführt. Jede Laufzeit ist ein freies Programm, das Trendo selbst in „TrendoWerkzeuge“ einrichtet.</summary>
-public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse, Spuren, VideoPruefung, Stimme }
+public enum KiRuntime { Ollama, StableDiffusionCpp, WhisperCpp, Piper, RealEsrgan, Python, AceStep, Uv, TripoSR, MMAudio, MusikAnalyse, Spuren, VideoPruefung, Stimme, PluginHost }
 
 /// <summary>Eine Laufzeit: offizielles GitHub-Projekt mit fest gewählter Veröffentlichung (Tag, Datei, SHA-256, Größe), Hauptprogramm im ZIP.
 /// Ollama und Python kommen aus dem Vollpaket (<see cref="Tag"/> leer).</summary>
@@ -86,6 +86,9 @@ public static class KiLibrary
         // Trendo Musik M6 (04.11.2026): eigene Stimme lernen und Gesang darin singen lassen – Applio (RVC, MIT), fester Stand; nur mit Mikrofon-Aufnahmen der eigenen Stimme
         new(KiRuntime.Stimme, "Eigene Stimme (Applio/RVC)", "IAHispano/Applio", "MIT", "Lernt deine eigene Stimme aus Mikrofon-Aufnahmen und singt Gesang in deiner Stimme – lokal.",
             "140404bda545cbb3a7c438bf2c77209d11cee242", "", "", 0, "env/Scripts/python.exe"),
+        // Paket 01 S4-06 (07.11.2026): Plugin-Host – Pedalboard (Spotify, GPL-3.0) als eigenes Programm; lädt VST3 nur abgeschottet und nur freigegeben
+        new(KiRuntime.PluginHost, "Plugin-Host (Pedalboard)", "spotify/pedalboard", "GPL-3.0", "Lädt freigegebene VST3-Plugins abgeschottet und schickt Ton durch sie – lokal, offline.",
+            "pedalboard-0.9.26", "", "", 0, "env/Scripts/python.exe"),
     ];
 
     const string Hf = "https://huggingface.co/";
@@ -193,6 +196,10 @@ public static class KiLibrary
         new("musik-stimme", KiKind.Musik, KiRuntime.Stimme, "Eigene Stimme (lernen und singen lassen)", "", 6.0, 16, "MIT",
             "Deine Cover in deiner eigenen Stimme – nur deine Stimme, live mit dem Mikrofon aufgenommen",
             "In Trendo Musik → Cover-Werkstatt → „Meine Stimme“: einige Minuten singen oder vorlesen, dann lernt Trendo deine Stimme (mit NVIDIA-Grafikkarte etwa 30–40 Minuten). Fremde Stimmen lernt Trendo nicht.", []),
+        // Paket 01 S4-06 (07.11.2026): Plugin-Host – kein KI-Modell; GPL-3.0 (eigenes Programm, nicht in Trendo eingebaut)
+        new("plugin-host", KiKind.Musik, KiRuntime.PluginHost, "Plugin-Host für VST3 (abgeschottet)", "", 0.15, 4, "GPL-3.0",
+            "Effekt-Plugins (VST3) auf eine Tonaufnahme anwenden – jedes Plugin erst prüfen und freigeben",
+            "Im Audioeditor unter „Plugins“: Plugin prüfen, Herkunft angeben, freigeben, dann „Auf Ton anwenden“. Plugins laufen in einem abgeschotteten Prozess ohne Schreibrechte auf deine Dateien.", []),
     ];
 
     public static IEnumerable<KiLibraryModel> OfKind(KiKind k) => Models.Where(m => m.Kind == k);

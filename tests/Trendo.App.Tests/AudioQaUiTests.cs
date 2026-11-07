@@ -67,7 +67,7 @@ public class AudioPlugins_Ui
             w.PluginRootsOverride = [Path.Combine(root, "VST3")];
             w.Show("ton"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer")); Settle();
             var f = w.AuPluginScan(); Settle();
-            Assert.Single(w.AuPluginsLast!); Assert.Contains("gesperrt", w.ProgramMessage("ton"));
+            Assert.Single(w.AuPluginsLast!); Assert.Contains("prüfen und freigeben", w.ProgramMessage("ton"));
             Assert.Contains("| VST3 | Hall | Beispiel Audio | 1.0 |", File.ReadAllText(f));
             w.PluginRootsOverride = [Path.Combine(root, "leer")]; w.AuPluginScan();
             Assert.Contains("Keine VST3", w.ProgramMessage("ton"));

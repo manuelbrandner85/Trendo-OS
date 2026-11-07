@@ -33,6 +33,8 @@ public static class KiPyApps
             ["click==8.1.8", "numpy==2.4.6", "requests==2.34.2", "tqdm==4.68.4", "faiss-cpu==1.14.3", "librosa==0.11.0", "scipy==1.18.0", "soundfile==0.14.0", "stftpitchshift==2.0", "soxr==1.1.0",
              "torchcrepe==0.0.24", "torchfcpe==0.0.4", "einops==0.8.2", "transformers==5.13.1", "matplotlib==3.11.0", "tensorboard==2.21.0", "onnx==1.23.1", "onnxruntime-gpu==1.22.0",
              "beautifulsoup4==4.15.0", "psutil==7.2.2", "webrtcvad-wheels==2.0.14"], false, "trendo_stimme.py"),
+        // Paket 01 S4-06 (07.11.2026): Plugin-Host – Pedalboard 0.9.26 (GPL-3.0) von PyPI, ohne PyTorch; läuft nur in der abgeschotteten Laufumgebung
+        new(KiRuntime.PluginHost, "", "pedalboard-0.9.26", "3.12", [], ["pedalboard==0.9.26", "soundfile==0.14.0", "numpy==2.4.6"], false, "trendo_plugin.py"),
     ];
 
     public static KiPyApp? For(KiRuntime r) => All.FirstOrDefault(a => a.Id == r);

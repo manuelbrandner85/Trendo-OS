@@ -5,7 +5,7 @@ namespace Trendo.Core.Media;
 
 /// <summary>Paket 01 – Studio 4, S4-06 (06.11.2026): Plugin-Prüfung ohne Laden – VST3- und CLAP-Plugins in den üblichen Ordnern finden,
 /// Name, Hersteller, Version und Architektur aus den Beschreibungsdateien lesen (VST3 „moduleinfo.json“). Es wird kein Plugin-Code ausgeführt.
-/// Ein Plugin-Host (Laden und Ton durchschicken) braucht vorher eine abgeschottete Laufumgebung, eine REA-Prüfung und eine Freigabe.</summary>
+/// Laden und Ton durchschicken: <see cref="PluginHost"/> (nur freigegeben, nur abgeschottet).</summary>
 public static class PluginScan
 {
     public sealed record Plugin(string Format, string Name, string Vendor, string Version, string Category, string Path, string Arch, string Status);
@@ -87,7 +87,7 @@ public static class PluginScan
     public static string Report(IReadOnlyList<Plugin> list, IEnumerable<string> roots)
     {
         var sb = new StringBuilder($"# Plugin-Prüfung\n\nErstellt: {DateTime.Now:dd.MM.yyyy HH:mm} · Durchsuchte Ordner: {string.Join(", ", roots)}\n\n");
-        sb.Append("Geprüft wurde ohne Laden: Trendo liest nur Ordner und Beschreibungsdateien. Plugins in Trendo zu laden ist noch gesperrt, bis eine abgeschottete Laufumgebung geprüft und freigegeben ist.\n\n");
+        sb.Append("Geprüft wurde ohne Laden: Trendo liest nur Ordner und Beschreibungsdateien. Laden ist erst nach Prüfung und Freigabe je Plugin möglich (Audioeditor → „Plugins“), und nur abgeschottet.\n\n");
         if (list.Count == 0) { sb.Append("Keine VST3- oder CLAP-Plugins gefunden.\n"); return sb.ToString(); }
         sb.Append("| Format | Name | Hersteller | Version | Art | Architektur | Status |\n|---|---|---|---|---|---|---|\n");
         foreach (var p in list) sb.Append($"| {p.Format} | {p.Name} | {p.Vendor} | {p.Version} | {p.Category} | {p.Arch} | {p.Status} |\n");

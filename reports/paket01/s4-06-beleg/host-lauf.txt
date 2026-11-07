@@ -1,0 +1,7 @@
+Testdatei geprüft: ladbar=True, SHA-256 c815b0396c7cac5c4eab9ca2df8be3d318fb3287dfcaadf93afdedb257681a6a
+Ohne Freigabe: Noch nicht freigegeben – erst prüfen, Herkunft angeben und „Freigeben“.
+Absturz im Host (abgeschottet): abgestürzt (Zugriffsverletzung, Code 0xC0000005) – nur der abgeschottete Prozess ist betroffen (Code 0xC0000005, 0,1 s)
+Abstürzendes Plugin geladen (abgeschottet): abgestürzt (Zugriffsverletzung, Code 0xC0000005) – nur der abgeschottete Prozess ist betroffen (Code 0xC0000005, 0,3 s)
+Info: ok, Name Airwindows Consolidated, Effekt, 9 Parameter: replace=0.5, brightness=0.5, detune=0.5, bigness=1.0, dry_wet=1.0, bypass=False, input_level=0.0, output_level=0.0
+Ton: ok in 0,4 s, Spitze -10,46 → -8,69 dB, Veränderung 1,1724, Speicher 512 MB
+Ton mit dry_wet=0: ok in 0,5 s, Spitze -10,46 → -10,46 dB, Veränderung 0, Speicher 512 MB

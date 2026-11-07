@@ -339,6 +339,7 @@ public partial class MainWindow
             sp.Children.Add(new TextBlock { Text = "• " + AudioEdit.Label(op) + (ob > oa ? $"  {AudioEdit.Time(oa)}–{AudioEdit.Time(ob)}" : ""), Foreground = Text, FontSize = 12 });
         }
         if (AuRendered(d) is not null) sp.Children.Add(AuQaPanel(d)); // Paket 01 S4-20: Prüfen und freigeben
+        if (AuRendered(d) is not null) sp.Children.Add(AuPluginPanel(d)); // Paket 01 S4-06: Plugin-Host (abgeschottet, nur freigegeben)
         if (AudioMulti.IsMulti(d.Data)) { sp.Children.Add(AuAutomationPanel(d)); sp.Children.Add(AuBusPanel(d)); } // Paket 01 S4-01/S4-09: Automation, Busse, Sends, Sidechain
         sp.Children.Add(AuFoleyPanel(d)); // Paket 01 S4-17: Geräusch-Werkstatt
         return sp;
