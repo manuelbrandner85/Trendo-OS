@@ -111,3 +111,36 @@ public class AudioMidi_Ui
         finally { w.Close(); }
     }
 }
+
+/// <summary>Paket 01 – Studio 4, S4-09 (07.11.2026): Busse im Mehrspur-Mischpult.</summary>
+public class AudioBuses_Ui
+{
+    [AvaloniaFact(DisplayName = "S4-09 Mischpult: Bus anlegen, Spur darauf leiten, EQ übernehmen (rückgängig machbar); Routing-Kreis über die Auswahl wird abgewiesen")]
+    public void Buses()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        try
+        {
+            string Wav(string n, double hz) { var x = Enumerable.Range(0, 44100).Select(i => (float)(0.3 * Math.Sin(2 * Math.PI * hz * i / 44100))).ToArray(); var f = Path.Combine(root, n); AudioFile.WriteWav(new AudioBuf(44100, [x, (float[])x.Clone()]), f); return f; }
+            w.Show("ton"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-mehrspur")); Settle();
+            w.Find<TextBox>("au-file").Text = Wav("musik.wav", 110); w.Find<Button>("au-add-track").Press(); Settle();
+            w.Find<TextBox>("au-file").Text = Wav("stimme.wav", 800); w.Find<Button>("au-add-track").Press(); Settle();
+            w.Find<TextBox>("au-bus-name").Text = "Musik"; w.Find<Button>("au-bus-add").Press(); Settle();
+            w.Find<TextBox>("au-bus-name").Text = "Hall"; w.Find<Button>("au-bus-add").Press(); Settle();
+            var d = w.ProgramActive("ton")!; var buses = MixRouting.Buses(d.Data); Assert.Equal(["Musik", "Hall"], buses.Select(b => b.Name));
+            w.Find<ComboBox>("au-track-out-0").SelectedIndex = 1; Settle(); // Musik-Spur → Bus „Musik“
+            Assert.Equal(buses[0].Id, MixRouting.TrackOut(w.ProgramActive("ton")!.Data, AudioMulti.Tracks(d.Data)[0].Id));
+            w.Find<Slider>("au-bus-low-0").Value = -12; w.Find<Button>("au-bus-apply-0").Press(); Settle();
+            d = w.ProgramActive("ton")!;
+            Assert.Equal(-12, MixRouting.Buses(d.Data)[0].LowDb); Assert.Equal("Bus einstellen", d.UndoLabel);
+            // Bus „Musik“ → „Hall“, dann „Hall“ → „Musik“: Kreis
+            w.Find<ComboBox>("au-bus-out-0").SelectedIndex = 1; w.Find<Button>("au-bus-apply-0").Press(); Settle();
+            Assert.Equal(buses[1].Id, MixRouting.Buses(w.ProgramActive("ton")!.Data)[0].Out);
+            var before = w.ProgramActive("ton")!.Data.ToJsonString();
+            w.Find<ComboBox>("au-bus-out-1").SelectedIndex = 1; w.Find<Button>("au-bus-apply-1").Press(); Settle();
+            Assert.Contains("Routing-Kreis", w.ProgramMessage("ton"));
+            Assert.Equal(before, w.ProgramActive("ton")!.Data.ToJsonString());
+        }
+        finally { w.Close(); }
+    }
+}

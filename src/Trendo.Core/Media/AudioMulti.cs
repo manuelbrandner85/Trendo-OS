@@ -57,6 +57,7 @@ public static class AudioMulti
     /// <summary>Abmischen: Stereo 44,1 kHz, Panorama mit gleicher Leistung (−3 dB in der Mitte ausgeglichen), Spitzen über 0 dBFS werden weich begrenzt.</summary>
     public static AudioBuf Mix(JsonObject doc, int rate = 44100)
     {
+        if (MixRouting.HasRouting(doc)) return MixRouting.Mix(doc, rate); // Paket 01 S4-09: Busse, Sends, Sidechain
         var all = Tracks(doc);
         var parts = all.Select(t => (T: t, A: AudioEdit.Match(AudioFile.Read(t.File), rate, 2))).ToList();
         var len = parts.Count == 0 ? 0 : parts.Max(p => (int)Math.Round(p.T.Start * rate) + p.A.Length);
