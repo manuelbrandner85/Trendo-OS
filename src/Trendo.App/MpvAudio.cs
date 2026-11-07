@@ -28,12 +28,20 @@ public sealed class MpvAudio(string mpvPath) : IAudioOut
     public event Action<double, double>? Progress;
     public event Action? Ended;
 
+    /// <summary>Startargumente: unsichtbar, nur Ton, Steuerung über eine benannte Pipe.</summary>
+    public static string[] StartArgs(string pipe) =>
+        ["--force-window=no", "--vo=null", "--no-video", "--idle=yes", "--no-terminal", "--really-quiet", "--audio-display=no", $"--input-ipc-server=\\\\.\\pipe\\{pipe}"];
+
+    /// <summary>Prozess des Players (für Tests: hat er ein Fenster?).</summary>
+    public Process? ProcessForTests => _proc;
+
     void Ensure()
     {
         if (_proc is { HasExited: false } && _pipe is { IsConnected: true }) return;
         Close();
         var psi = new ProcessStartInfo(mpvPath) { UseShellExecute = false, CreateNoWindow = true };
-        foreach (var a in new[] { "--no-video", "--idle=yes", "--no-terminal", "--really-quiet", "--audio-display=no", $"--input-ipc-server=\\\\.\\pipe\\{_name}" }) psi.ArgumentList.Add(a);
+        // „--force-window=no“ und „--vo=null“: neuere mpv-Fassungen öffneten sonst trotz „--no-video“ ein eigenes Fenster (Fehler 07.11.2026 – Trendo Musik soll selbst abspielen)
+        foreach (var a in StartArgs(_name)) psi.ArgumentList.Add(a);
         _proc = Process.Start(psi) ?? throw new InvalidOperationException("Der Player ließ sich nicht starten.");
         var pipe = new NamedPipeClientStream(".", _name, PipeDirection.InOut, PipeOptions.Asynchronous);
         for (var i = 0; ; i++) { try { pipe.Connect(250); break; } catch (TimeoutException) when (i < 20) { } }
