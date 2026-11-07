@@ -1,6 +1,6 @@
 # Verkaufen – Produktionspaket
 
-Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.36 (Stand 8b5609f)
+Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.36 (Stand 5e46a94)
 
 Arbeitsfläche: Kasse mit Warenkorb  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

@@ -1,6 +1,6 @@
 # TV & Live – Produktionspaket
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand 8b5609f)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand 5e46a94)
 
 Arbeitsfläche: Streaming-Startseite  
 Modulstatus (requirements.yaml): IN_PROGRESS / Test NOT_RUN  

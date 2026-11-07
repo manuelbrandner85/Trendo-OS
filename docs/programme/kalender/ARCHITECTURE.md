@@ -1,6 +1,6 @@
 # Kalender – Architektur
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kalender` · Stand: 0.9.36 (Stand 8b5609f)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kalender` · Stand: 0.9.36 (Stand 5e46a94)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

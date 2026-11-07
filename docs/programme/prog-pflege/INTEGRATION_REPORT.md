@@ -1,6 +1,6 @@
 # Pflegen – Einbindung in Trendo OS
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `prog-pflege` · Stand: 0.9.36 (Stand 8b5609f)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `prog-pflege` · Stand: 0.9.36 (Stand 5e46a94)
 
 - Seite `prog-pflege` im Studio „Programme starten“ (System & Sicherheit) – erreichbar über Startmenü, Suche und Programmkatalog
 - Programm-Hülle: nein

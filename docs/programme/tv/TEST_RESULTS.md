@@ -1,6 +1,6 @@
 # TV & Live – Testergebnisse
 
-Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand 8b5609f)
+Studio: TV & Live (STUDIO-TV-01) · Bereich: Kreativ & Medien · Seite: `tv` · Stand: 0.9.36 (Stand 5e46a94)
 
 Lauf: `api.trx, app.trx, core.trx`
 

@@ -1,6 +1,6 @@
 # KI-Rollen und Teams – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.36 (Stand 8b5609f)
+Studio: KI-Team einsetzen (CORE-03) · Bereich: KI & Automatik · Seite: `ki-rollen` · Stand: 0.9.36 (Stand 5e46a94)
 
 Analyse: [Vorbild-Analyse KI-Team und Skills: Claude-Code-Agenten und -Skills, CrewAI, ChatGPT GPTs (Clean-Room)](../../../docs/claude/vorbilder/ki-team-crewai-gpts.md)
 

@@ -1,6 +1,6 @@
 # 3D – Testergebnisse
 
-Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 8b5609f)
+Studio: 3D-Modelle erstellen (CORE-05) · Bereich: 3D, Spiele & VR · Seite: `3d` · Stand: 0.9.36 (Stand 5e46a94)
 
 Lauf: `api.trx, app.trx, core.trx`
 

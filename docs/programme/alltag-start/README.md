@@ -1,6 +1,6 @@
 # Übersicht – Produktionspaket
 
-Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.36 (Stand 8b5609f)
+Studio: Kleine Helfer & Musik (SYS-02) · Bereich: Arbeiten & Büro · Seite: `alltag-start` · Stand: 0.9.36 (Stand 5e46a94)
 
 Arbeitsfläche: Programm-Startseite (Kacheln der kleinen Helfer)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

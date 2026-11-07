@@ -1,6 +1,6 @@
 # Software – Testergebnisse
 
-Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 8b5609f)
+Studio: Webseite bauen (CORE-07) · Bereich: Entwickeln · Seite: `dev` · Stand: 0.9.36 (Stand 5e46a94)
 
 Lauf: `api.trx, app.trx, core.trx`
 

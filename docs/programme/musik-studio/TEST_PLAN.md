@@ -1,8 +1,8 @@
 # Trendo Musik – Testplan
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 8b5609f)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 5e46a94)
 
-49 Tests sprechen dieses Programm an.
+52 Tests sprechen dieses Programm an.
 
 - Abbrechen: voller Grafikspeicher wird gemeldet, hängendes Lied zeigt „■ Abbrechen“, der Klick stoppt es, nichts landet in der Bibliothek, ehrlicher Hinweis
 - Cover-Werkstatt UI: Karaoke ohne Original meldet freundlich; mit Original trennt es die Spuren und startet das Mitsingen
@@ -51,5 +51,8 @@ Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `m
 - Trendo Musik: Aufträge an ACE-Step geprüft – Grenzen für Länge, Tempo, Varianten; Abschnitt mind. 1 s; über 8 Minuten ohne Sprachmodell; unbekannte Tonart/Takt/Aufgabe abgelehnt
 - Trendo Musik: Einfach – ein Satz → zwei Varianten in „Meine Lieder“; ohne Beschreibung nur Hinweis; Profi mit Tempo, Tonart, Takt, [Strophe]/[Refrain] und Spanisch
 - Trendo Musik: Treffer anklicken übernimmt Titel, Länge, Stil ohne Namen, Tonart und Tempo ins Profi-Formular; ohne Messung freundlicher Hinweis; MusicBrainz-Seite öffnet sich dabei nicht
+- V1/V2/V7 Trendo Musik: hochgeladenes Lied wird gleich getrennt, Qualität gemessen (sauber), Spuren-Mischer spielt in Trendo (Gesang stumm leiser), Mischung als Lied; Modellwahl „Genau“; ohne Auto-Trennen nichts getrennt
+- V3/V6: Stimme aus Gesang lernen nur mit Einwilligung (bekannte Person gesperrt, fremde Person braucht Erklärung), zu wenig Gesang abgelehnt, gelernte Stimme in der Bibliothek, Löschen entfernt alles
+- V4/V5: neues Lied in der gelernten Stimme (Umwandeln mit der Stimm-Id, neues Lied „(Stimme …)“); neuer eigener Text auf die Begleitung – ACE-Step bekommt Cover-Auftrag mit dem Text
 - Wie bei Suno: „Erstellen“ mit „Mehr Optionen“ (alle Einstellungen bleiben), „⋯“-Menü je Lied mit allen Aktionen
 - Y1: YouTube-Link → Titel/Interpret per oEmbed (kein Download), Stil aus dem Web, Titel vorgeschlagen, Profi-Modus; falscher Link = Hinweis

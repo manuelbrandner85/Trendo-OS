@@ -1,6 +1,6 @@
 # Grundriss & Wohnen – Funktionsmatrix
 
-Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.36 (Stand 8b5609f)
+Studio: Wohnung planen (SPEC-01) · Bereich: Technik & Fachgebiete · Seite: `architektur` · Stand: 0.9.36 (Stand 5e46a94)
 
 Quelle: `docs/w6-katalog/SPEC-01.md`
 

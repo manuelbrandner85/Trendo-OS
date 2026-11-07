@@ -1,6 +1,6 @@
 # Ordner im Heimnetz teilen – Architektur
 
-Studio: Dateien teilen (SYS-06) · Bereich: System & Sicherheit · Seite: `teilen` · Stand: 0.9.36 (Stand 8b5609f)
+Studio: Dateien teilen (SYS-06) · Bereich: System & Sicherheit · Seite: `teilen` · Stand: 0.9.36 (Stand 5e46a94)
 
 ## Präsentation (Trendo.App)
 – (nicht erfasst)

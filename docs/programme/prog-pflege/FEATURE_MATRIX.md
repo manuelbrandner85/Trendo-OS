@@ -1,6 +1,6 @@
 # Pflegen – Funktionsmatrix
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `prog-pflege` · Stand: 0.9.36 (Stand 8b5609f)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `prog-pflege` · Stand: 0.9.36 (Stand 5e46a94)
 
 Quelle: `docs/spec/kataloge/SYS-11_KATALOG.md`
 
