@@ -1,6 +1,6 @@
 # Trendo Musik – Funktionsmatrix
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 6da70dc)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 2963379)
 
 Quelle: `docs/spec/kataloge/STUDIO-MUSIK-01_KATALOG.md`
 
@@ -34,15 +34,39 @@ Quelle: `docs/spec/kataloge/STUDIO-MUSIK-01_KATALOG.md`
 ## Werkzeuge der Oberfläche
 - Los
 - ✳ Claude
+- Sommerlied über einen Roadtrip
+- Ruhige Klavierballade, instrumental
+- Rap über Montagmorgen
 - Musik
 - Geräusche & Effekte
 - 👥 Team
+- Erstellen
+- Studio
+- Bibliothek
+- Stimmen
 - ✨ Erstellen
+- Lieder
+- Sounds
+- Sprache
+- Übernehmen
+- So
+- Mo
+- Di
+- Mi
+- Do
+- Fr
+- Heute
+- Lied in meinem Geschmack
 - Einfach
-- Profi
-- Beat
-- Noten
+- Erweitert
+- + Audio
+- + Stimme
+- + Persona
+- + Bild
+- 🎲 Idee
 - Instrumental (ohne Gesang)
+- Dauer genau
+- Zurücksetzen
 - 🎼 Genre wählen (181)
 - Klavier
 - Akustikgitarre
@@ -68,7 +92,3 @@ Quelle: `docs/spec/kataloge/STUDIO-MUSIK-01_KATALOG.md`
 - Das ist meine eigene Stimme. Ich nehme sie hier selbst mit dem Mikrofon auf.
 - ⏺ Aufnahme 1 von 10
 - 🧠 Stimme lernen
-- 🎙 Cover erzeugen
-- 🎤 Karaoke aus dem Original
-- ＋ Eigene Aufnahme
-- ★ Favoriten

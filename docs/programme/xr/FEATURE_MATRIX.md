@@ -1,6 +1,6 @@
 # VR & AR gestalten – Funktionsmatrix
 
-Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand 6da70dc)
+Studio: VR & AR gestalten (SPEC-04) · Bereich: 3D, Spiele & VR · Seite: `xr` · Stand: 0.9.36 (Stand 2963379)
 
 Quelle: `docs/w6-katalog/SPEC-04.md`
 
@@ -42,4 +42,5 @@ Quelle: `docs/w6-katalog/SPEC-04.md`
 - Oben
 - Drahtgitter an
 - 👁 Aus Augenhöhe
+- 🥽 Brillen-Ansicht
 - Prüfbericht speichern

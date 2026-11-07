@@ -1,6 +1,6 @@
 # KI-Vorlagen – Funktionsmatrix
 
-Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.36 (Stand 6da70dc)
+Studio: KI-Anweisungen schreiben (CORE-12) · Bereich: Kreativ & Medien · Seite: `ki-vorlagen` · Stand: 0.9.36 (Stand 2963379)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -21,11 +21,9 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - Online-Dienste
 - 👥 Team
 - Vorlagen
-- Einfach erklären
-- Brief formulieren
-- Ideen sammeln
-- E-Mail freundlicher machen
-- Rechtschreibung prüfen
-- Text zusammenfassen
+- ALLTAG
+- BRIEFE
+- KREATIV
+- TEXTE
 - + Neue Vorlage
 - Masterprompt bauen

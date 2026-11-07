@@ -1,6 +1,6 @@
 # Programme verwalten – Funktionsmatrix
 
-Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.36 (Stand 6da70dc)
+Studio: Programme installieren (SYS-04) · Bereich: System & Sicherheit · Seite: `appcenter` · Stand: 0.9.36 (Stand 2963379)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 
@@ -36,3 +36,13 @@ Kein freigegebener Funktionskatalog für dieses Studio.
 - 👥 Team
 - Suchen
 - Installierte & Updates anzeigen
+- VLC
+- Audacity
+- OBS Studio
+- GIMP
+- Inkscape
+- Krita
+- LibreOffice
+- 7-Zip
+- Notepad++
+- KeePassXC

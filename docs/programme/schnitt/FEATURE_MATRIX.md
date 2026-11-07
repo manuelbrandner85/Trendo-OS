@@ -1,6 +1,6 @@
 # Videoschnitt – Funktionsmatrix
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand 6da70dc)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand 2963379)
 
 Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 

@@ -1,6 +1,6 @@
 # Werkstatt – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand 6da70dc)
+Studio: Spiele bauen (CORE-06) · Bereich: 3D, Spiele & VR · Seite: `spiele` · Stand: 0.9.36 (Stand 2963379)
 
 Analyse: [Vorbild-Analyse Spiele: Godot, GDevelop, Construct, Unreal Engine (Clean-Room)](../../../docs/claude/vorbilder/spiele-godot-gdevelop.md)
 

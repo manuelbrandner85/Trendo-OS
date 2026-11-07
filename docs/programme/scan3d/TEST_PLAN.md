@@ -1,9 +1,10 @@
 # Aus Fotos – Testplan
 
-Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand 6da70dc)
+Studio: Gegenstände einscannen (SPEC-09) · Bereich: 3D, Spiele & VR · Seite: `scan3d` · Stand: 0.9.36 (Stand 2963379)
 
-29 Tests sprechen dieses Programm an.
+30 Tests sprechen dieses Programm an.
 
+- S4 Scannen: Aufnahme-Assistent vor der Rechnung; nach der Rechnung Abdeckungsscheibe mit Prozent und Lücken aus den Kamerapositionen
 - SPEC-04 VR: Vorschau aus Augenhöhe schaltbar (1,60 m), Anzeige der größten Textur, Karte „Für die Brille reparieren“; passt das Modell, gibt es nichts zu reparieren
 - SPEC-09 F10: Skalieren
 - SPEC-09 F11: Zentrieren

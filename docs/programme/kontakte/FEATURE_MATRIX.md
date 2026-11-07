@@ -1,6 +1,6 @@
 # Adressbuch – Funktionsmatrix
 
-Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand 6da70dc)
+Studio: E-Mails & Termine (SYS-09) · Bereich: Arbeiten & Büro · Seite: `kontakte` · Stand: 0.9.36 (Stand 2963379)
 
 Quelle: `docs/spec/kataloge/SYS-09_KATALOG.md`
 
@@ -26,6 +26,9 @@ Quelle: `docs/spec/kataloge/SYS-09_KATALOG.md`
 ## Werkzeuge der Oberfläche
 - Los
 - ✳ Claude
+- Antwort auf die letzte E-Mail entwerfen
+- Termin nächste Woche Dienstag 10 Uhr
+- Ungelesene Mails zusammenfassen
 - Übersetzen
 - 👥 Team
 - E-Mail & Kontakte

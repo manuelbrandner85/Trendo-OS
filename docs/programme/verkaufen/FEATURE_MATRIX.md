@@ -1,6 +1,6 @@
 # Verkaufen – Funktionsmatrix
 
-Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.36 (Stand 6da70dc)
+Studio: Online verkaufen (STUDIO-ONLINE-BUSINESS-01) · Bereich: Business & Geld · Seite: `verkaufen` · Stand: 0.9.36 (Stand 2963379)
 
 Quelle: `docs/spec/kataloge/STUDIO-ONLINE-BUSINESS-01_KATALOG.md`
 
@@ -22,6 +22,9 @@ Quelle: `docs/spec/kataloge/STUDIO-ONLINE-BUSINESS-01_KATALOG.md`
 ## Werkzeuge der Oberfläche
 - Los
 - ✳ Claude
+- Produktbeschreibung für handgemachte Kerzen
+- Preise kalkulieren
+- Startplan für einen Online-Shop
 - Bilder erzeugen
 - Übersetzen
 - 👥 Team

@@ -1,6 +1,6 @@
 # Geräte & Laufwerke – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 6da70dc)
+Studio: Geräte erkennen (SYS-07) · Bereich: System & Sicherheit · Seite: `geraete` · Stand: 0.9.36 (Stand 2963379)
 
 Analyse: [Vorbild-Analyse Geräte und Handy: Smartphone-Link, KDE Connect, Windows Geräte-Manager, Raspberry Pi Connect (Clean-Room)](../../../docs/claude/vorbilder/geraete-phonelink-kdeconnect.md)
 

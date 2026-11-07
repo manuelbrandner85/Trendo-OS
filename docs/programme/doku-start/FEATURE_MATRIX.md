@@ -1,6 +1,6 @@
 # Start – Funktionsmatrix
 
-Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 6da70dc)
+Studio: Texte & Tabellen (SYS-10) · Bereich: Arbeiten & Büro · Seite: `doku-start` · Stand: 0.9.36 (Stand 2963379)
 
 Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 
@@ -36,6 +36,9 @@ Quelle: `docs/spec/kataloge/SYS-10_KATALOG.md`
 - Los
 - Hinzufügen …
 - ✳ Claude
+- Haushaltsplan als Tabelle
+- Präsentation über unser Projekt, 8 Folien
+- Lebenslauf modern gestalten
 - Vorlesen
 - Sprache zu Text
 - Übersetzen

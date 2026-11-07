@@ -1,6 +1,6 @@
 # Abläufe (Automatisch erledigen) – Funktionsmatrix
 
-Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand 6da70dc)
+Studio: Aufgaben automatisieren (SYS-05) · Bereich: KI & Automatik · Seite: `ablaeufe` · Stand: 0.9.36 (Stand 2963379)
 
 Quelle: `docs/spec/kataloge/SYS-05_KATALOG.md`
 
@@ -17,6 +17,8 @@ Quelle: `docs/spec/kataloge/SYS-05_KATALOG.md`
 ## Werkzeuge der Oberfläche
 - Los
 - ✳ Claude
+- Jeden Morgen Wetter und Termine zeigen
+- Downloads-Ordner wöchentlich aufräumen
 - KI fragen
 - Trendo KI (lokal)
 - Mit Claude verbinden
@@ -33,9 +35,9 @@ Quelle: `docs/spec/kataloge/SYS-05_KATALOG.md`
 - Abläufe
 - Einfach: Trendo-Abläufe
 - Profi: n8n und Node-RED
-- + Downloads aufräumen: PDFs in einen Ordner
-- + Jeden Morgen eine Tagesnotiz
-- + Fotos mit Datum versehen
-- + Ordner wöchentlich als ZIP sichern
+- Downloads aufräumen: PDFs in einen Ordner
+- Jeden Morgen eine Tagesnotiz
+- Fotos mit Datum versehen
+- Ordner wöchentlich als ZIP sichern
 - + Eigener Ablauf
 - ↶ Rückgängig
