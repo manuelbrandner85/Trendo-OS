@@ -37,7 +37,8 @@ Vorbilder: Unity Hub (Editor-Erkennung), Unity Test Framework (EditMode/PlayMode
 - ✓ Engines prüfen: Unreal, Unity, Godot, Blender mit Version; ehrlich „blockiert“/„nicht gefunden“
 - ✓ Plattformer als Unity-Projekt (C#, Build-Skript, EditMode-/PlayMode-Tests) – mit Unity 6.6 auf dem PC geprüft
 - ✓ Plattformer als Godot-4-Projekt (GDScript, Level- und Spiel-Prüfung) – mit Godot 4.7.2 auf dem PC geprüft
-- ✗ Unreal-Spiel aus dem Level (bisher nur Projekt mit Spielbibel)
+- ✓ Unreal-Spiel aus dem Level: C++-Spiel als 3D-Level oder Open World, kompilieren/testen/starten macht Trendo (UE 5.8 geprüft)
+- ✗ Fotorealer Look im Unreal-Spiel (Gelände-Material, Vegetation, Figur aus Blender), gepacktes Spiel (BuildCookRun)
 - ✗ Engine-Projekt zurück nach Trendo übernehmen
 - ✓ Spielstände (S1-15): ein Format für Browser, Probespiel, Unity, Godot – Speichern, Fortsetzen, alte Stände heben
 - ✓ Fähigkeiten Doppelsprung/Sprint und Aufgaben mit Fortschritt (S1-05, erster Teil)

@@ -202,11 +202,31 @@ public static class GameDesign
     }
 
     /// <summary>Bauen: 3D/AA/AAA als Unreal-Projekt; Spielbibel liegt im Projekt; AAA+ bekommt Lumen, Nanite-taugliche Einstellungen und World Partition.</summary>
+    /// <summary>Spieldaten aus dem Dokument (Level, Regeln, Fähigkeiten, Waffe, Texte, Menü) – für Unreal ohne Bilder und Töne.</summary>
+    public static GameStudio.GameSettings SettingsOf(JsonObject d)
+    {
+        static double? N(JsonNode? n) => n is JsonValue && double.TryParse(n.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : null;
+        var level = (d["level"] as JsonArray ?? []).Select(S).Where(r => r.Length > 0).ToArray();
+        var more = (d["levels"] as JsonArray ?? []).OfType<JsonObject>().Where(o => Lines(o["rows"]).Length > 0).ToList();
+        if (level.Any(r => r.Any(ch => !GameStudio.Tiles.Contains(ch)))) level = [];
+        return GameStudio.Validate(new GameStudio.GameSettings
+        {
+            Level = level, Props = (d["objects"] as JsonObject ?? []).Where(kv => N(kv.Value) is not null).ToDictionary(kv => kv.Key, kv => N(kv.Value)!.Value),
+            Speed = (int)(N(d["speed"]) ?? 5), Lives = (int)(N(d["lives"]) ?? 3), TimeLimit = (int)(N(d["timeLimit"]) ?? 0), Rules = Rules(d),
+            MoreLevels = [.. more.Select(o => Lines(o["rows"]))],
+            LevelNames = [S(d["levelName"]) is { Length: > 0 } n0 ? n0 : "Level 1", .. more.Select((o, i) => S(o["name"]) is { Length: > 0 } n ? n : $"Level {i + 2}")],
+            Abilities = Abilities(d), Texts = Texts(d), Weapon = Weapon(d), Menu = d["menu"]?.GetValueKind() != System.Text.Json.JsonValueKind.False,
+        });
+    }
+
     public static string BuildUnreal(JsonObject d, string parent, string engineVersion)
     {
         var dir = GameStudio.CreateUnrealProject(parent, S(d["title"]), engineVersion);
         Directory.CreateDirectory(Path.Combine(dir, "Design"));
         File.WriteAllText(Path.Combine(dir, "Design", "Spielbibel.md"), BibleMarkdown(d));
+        // Paket 01: spielbares C++-Spiel mit Welt aus Trendo (3D-Level oder Open World)
+        var world = UnrealGame.WorldOf(d);
+        UnrealGame.Write(dir, UnrealGame.LevelJson(S(d["title"]) is { Length: > 0 } t ? t : "Spiel", SettingsOf(d), world), world);
         if (S(d["scale"]) is "aa" or "aaa")
             File.AppendAllText(Path.Combine(dir, "Config", "DefaultEngine.ini"),
                 "\n[/Script/Engine.RendererSettings]\nr.DynamicGlobalIlluminationMethod=1\nr.ReflectionMethod=1\nr.Shadow.Virtual.Enable=1\nr.AllowStaticLighting=False\nr.GenerateMeshDistanceFields=True\n");

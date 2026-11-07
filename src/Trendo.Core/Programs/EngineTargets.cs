@@ -91,7 +91,7 @@ public static class EngineTargets
         var r = new List<EngineFound>();
         var ue = unreal.FirstOrDefault(e => exists(unrealExe(e.Path)));
         r.Add(ue.Path is null ? new("unreal", "Unreal Engine", null, null, false, "nicht installiert", "Kostenlos über den Epic Games Launcher (eigenes Konto)")
-            : new("unreal", "Unreal Engine", ue.Version, unrealExe(ue.Path), true, "bereit", "Projekte mit Spielbibel; Python nur zur Editor-Automatisierung"));
+            : new("unreal", "Unreal Engine", ue.Version, unrealExe(ue.Path), true, "bereit", "Spielbares C++-Spiel als 3D-Level oder Open World – kompilieren, testen und starten macht Trendo"));
         r.Add(unity.Count == 0 ? new("unity", "Unity", null, null, false, "blockiert: nicht installiert", "Unity Hub und Editor installierst du selbst (Anmeldung bei Unity). Trendo legt das Projekt trotzdem an.")
             : new("unity", "Unity", unity[0].Version, unity[0].Exe, true, "bereit", "C#-Spiel, Editor-Build, EditMode-/PlayMode-Tests über die Kommandozeile"));
         r.Add(godot.Count == 0 ? new("godot", "Godot Engine", null, null, false, "nicht gefunden", "Frei (MIT). Godot_v4…exe in den Werkzeugordner legen oder unter Programme einrichten.")

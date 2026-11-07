@@ -255,12 +255,13 @@ public partial class MainWindow
         {
             var engines = _opt.Isolated ? [] : GameStudio.FindEngines();
             sp.Children.Add(P(engines.Count > 0 ? $"Gefunden: Unreal Engine {string.Join(", ", engines.Select(e => e.Version))}." : "Unreal Engine 5 ist auf diesem PC nicht installiert. Sie ist kostenlos und kommt über den Epic Games Launcher.", engines.Count > 0 ? Text : Brush.Parse("#F5A524"), 12));
-            sp.Children.Add(P("„Bauen“ legt ein Unreal-Projekt mit deiner Spielbibel an (Ordner „Design“). " + (scale.Id is "aa" or "aaa" ? "Für AA und AAA+ sind Lumen (globale Beleuchtung), virtuelle Schatten und Distanzfelder eingeschaltet; Nanite-Modelle kommen aus dem 3D-Studio und Blender." : ""), null, 12));
+            sp.Children.Add(P("„Bauen“ legt ein spielbares Unreal-Spiel an: C++-Code mit deinen Leveln und Regeln plus Spielbibel (Ordner „Design“). " + (scale.Id is "aa" or "aaa" ? "Für AA und AAA+ sind Lumen (globale Beleuchtung), virtuelle Schatten und Distanzfelder eingeschaltet; Nanite-Modelle kommen aus dem 3D-Studio und Blender." : ""), null, 12));
             if (engines.Count == 0 && !_opt.Isolated) sp.Children.Add(Act("game-epic", "Epic Games Launcher (offizielle Seite)", () => Launch("https://www.unrealengine.com/de/download")));
         }
         var built = d.Text("built");
         sp.Children.Add(P(built.Length > 0 ? "Zuletzt gebaut: " + built : "Noch nicht gebaut.", Text, 12));
         sp.Children.Add(new WrapPanel { Children = { Act("game-build", "Bauen", () => ProgramRun(GK, () => GameBuild(d)), true), new Border { Width = 6 }, Act("game-play", scale.Engine == "browser" ? "Spielen" : "In Unreal öffnen", () => ProgramRun(GK, () => GamePlay(d))) } });
+        if (scale.Engine == "unreal") sp.Children.Add(GameUnrealView(d)); // 3D-Spiel in Unreal: kompilieren, prüfen, spielen
         sp.Children.Add(GameEnginesView(d)); // Paket 01 S1-01: Unreal, Unity, Godot, Blender
         return sp;
     }

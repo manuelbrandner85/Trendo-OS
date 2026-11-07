@@ -384,7 +384,9 @@ step();
     /// <summary>Legt ein leeres Unreal-Projekt (Blueprint, ohne C++) an, das der Editor öffnen kann.</summary>
     public static string CreateUnrealProject(string parent, string name, string engineVersion)
     {
-        var safe = new string(DevStudio.SafeName(name).Where(char.IsLetterOrDigit).ToArray());
+        // Unreal-Projekt- und C++-Modulname: nur ASCII-Buchstaben und Ziffern (ä → ae …)
+        var ascii = name.Replace("ä", "ae").Replace("ö", "oe").Replace("ü", "ue").Replace("Ä", "Ae").Replace("Ö", "Oe").Replace("Ü", "Ue").Replace("ß", "ss");
+        var safe = new string(DevStudio.SafeName(ascii).Where(c => c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or >= '0' and <= '9').ToArray());
         if (safe.Length == 0 || char.IsDigit(safe[0])) safe = "Spiel" + safe;
         var dir = System.IO.Path.Combine(parent, safe);
         if (Directory.Exists(dir)) throw new IOException($"Den Ordner „{safe}“ gibt es schon.");
