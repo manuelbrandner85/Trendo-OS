@@ -210,11 +210,25 @@ public class VideoSchnittPlus_Ui
         var d = w.ProgramActive("schnitt")!; Assert.Equal("Untertitel", d.UndoLabel);
         w.Find<CheckBox>("ve-burn").IsChecked = true; Settle();
         Assert.Equal(d.Text("subs"), w.EditExportOptions(d).Subtitles);
+        // Paket 01 S3-16: Sprachfassung – falsche Zeilenzahl abgelehnt, richtige übernommen (Zeiten wie im Original)
+        w.Show("schnitt"); Settle();
+        w.Find<ComboBox>("ve-subs-lang").SelectedIndex = 0; // Italienisch
+        w.Find<TextBox>("ve-subs-trans").Text = "Ciao mondo";
+        Click(w, "ve-subs-lang-save"); Settle();
+        Assert.Contains("nicht synchron", w.ProgramMessage("schnitt"));
+        w.Find<TextBox>("ve-subs-trans").Text = "Ciao mondo\nCiao";
+        Click(w, "ve-subs-lang-save"); Settle();
+        d = w.ProgramActive("schnitt")!;
+        var itFile = (string)d.Data["subsLang"]!["it"]!;
+        Assert.True(TimedText.InSync(TimedText.FromSrt(File.ReadAllText(d.Text("subs"))), TimedText.FromSrt(File.ReadAllText(itFile))));
         string? target = null;
         w.ExportAsyncOverride = (p, f, prog, ct) => { target = f; File.WriteAllText(f, "mp4"); return Task.FromResult(f); };
         Click(w, "ve-export-go");
         for (var i = 0; i < 100 && (target is null || w.EditExporting); i++) { await Task.Delay(10); Settle(); }
         Assert.True(File.Exists(Path.ChangeExtension(target!, ".srt")));
+        Assert.StartsWith("WEBVTT", File.ReadAllText(Path.ChangeExtension(target!, ".vtt")));
+        Assert.Contains("Ciao mondo", File.ReadAllText(Path.ChangeExtension(target!, ".it.vtt")));
+        Assert.True(File.Exists(Path.ChangeExtension(target!, ".it.srt")));
         w.Close();
     }
 }

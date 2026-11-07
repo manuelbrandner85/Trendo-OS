@@ -78,7 +78,35 @@ public partial class MainWindow
     void EditCopySubs(JsonObject data, string video)
     {
         if (data["subs"]?.GetValue<string>() is { Length: > 0 } s && File.Exists(s) && !video.EndsWith(".m4a", StringComparison.OrdinalIgnoreCase))
-            try { File.Copy(s, Path.ChangeExtension(video, ".srt"), true); } catch (IOException) { }
+            try
+            {
+                var srtOut = Path.ChangeExtension(video, ".srt");
+                if (!string.Equals(Path.GetFullPath(s), Path.GetFullPath(srtOut), StringComparison.OrdinalIgnoreCase)) File.Copy(s, srtOut, true); // gleicher Name im gleichen Ordner: liegt schon da
+                File.WriteAllText(Path.ChangeExtension(video, ".vtt"), TimedText.ToVtt(TimedText.FromSrt(File.ReadAllText(s)), "de")); // Paket 01 S3-16: auch WebVTT
+                foreach (var (lang, node) in data["subsLang"] as JsonObject ?? [])
+                    if (node?.GetValue<string>() is { } ls && File.Exists(ls))
+                    {
+                        var lsOut = Path.ChangeExtension(video, $".{lang}.srt");
+                        if (!string.Equals(Path.GetFullPath(ls), Path.GetFullPath(lsOut), StringComparison.OrdinalIgnoreCase)) File.Copy(ls, lsOut, true);
+                        File.WriteAllText(Path.ChangeExtension(video, $".{lang}.vtt"), TimedText.ToVtt(TimedText.FromSrt(File.ReadAllText(ls)), lang));
+                    }
+            }
+            catch (Exception e) when (e is IOException or ArgumentException) { }
+    }
+
+    /// <summary>Paket 01 S3-16: Sprachfassung der Untertitel – eine übersetzte Zeile je Untertitel, Zeiten exakt vom Original (sonst Fehler).</summary>
+    public string EditSubsLanguage(ProgramDocument d, string lang, string text)
+    {
+        var src = d.Text("subs"); if (src.Length == 0 || !File.Exists(src)) throw new InvalidOperationException("Erst Untertitel erzeugen.");
+        if (!TimedText.Languages.Any(l => l.Code == lang)) throw new ArgumentException("Sprache: de, it oder en.");
+        var orig = TimedText.FromSrt(File.ReadAllText(src));
+        var lines = text.Replace("\r\n", "\n").Split('\n').Select(l => l.Trim()).Where(l => l.Length > 0).ToList();
+        var tr = TimedText.Translate(orig, lines);
+        var f = Path.Combine(Path.GetDirectoryName(src)!, Path.GetFileNameWithoutExtension(src) + $".{lang}.srt");
+        File.WriteAllText(f, TimedText.ToSrt(tr));
+        d.Edit("Sprachfassung", x => { var o = x["subsLang"] as JsonObject ?? (JsonObject)(x["subsLang"] = new JsonObject()); o[lang] = f; });
+        _progMsg[VK] = $"Sprachfassung {TimedText.Languages.First(l => l.Code == lang).Label}: {tr.Count} Untertitel, Zeiten wie im Original – kommt als .{lang}.srt und .{lang}.vtt neben jedes Video.";
+        return f;
     }
 
     Control EditExportSettings(ProgramDocument d)
@@ -126,6 +154,15 @@ public partial class MainWindow
             var burn = new CheckBox { Name = "ve-burn", Content = "Untertitel ins Bild einbrennen", IsChecked = EditBurnSubs, FontSize = 12 };
             burn.IsCheckedChanged += (_, _) => EditBurnSubs = burn.IsChecked == true;
             sp.Children.Add(burn);
+            // Paket 01 S3-16: Sprachfassungen (Zeiten bleiben exakt gleich)
+            var langs = TimedText.Languages.Where(l => l.Code != "de").ToArray();
+            var lang = new ComboBox { Name = "ve-subs-lang", ItemsSource = langs.Select(l => l.Label).ToList(), SelectedIndex = 0, MinWidth = 120, FontSize = 12 };
+            var trans = new TextBox { Name = "ve-subs-trans", AcceptsReturn = true, TextWrapping = TextWrapping.Wrap, MinHeight = 60, FontSize = 12, Watermark = $"Übersetzung: {cues.Count} Zeilen, eine je Untertitel" };
+            var save = new Button { Name = "ve-subs-lang-save", Content = "Sprachfassung übernehmen", FontSize = 12 };
+            save.Click += (_, _) => ProgramRun(VK, () => EditSubsLanguage(d, langs[Math.Max(0, lang.SelectedIndex)].Code, trans.Text ?? ""));
+            var have = (d.Data["subsLang"] as JsonObject)?.Select(x => x.Key).ToList() ?? [];
+            sp.Children.Add(new WrapPanel { Children = { lang, new Border { Width = 6 }, save } }); sp.Children.Add(trans);
+            if (have.Count > 0) sp.Children.Add(P("Sprachfassungen: " + string.Join(", ", have.Select(h => TimedText.Languages.FirstOrDefault(l => l.Code == h).Label ?? h)) + " – plus WebVTT (.vtt) für Browser und YouTube.", Muted, 11));
         }
         // Grafikkarte: einmal messen, ehrlich anzeigen
         var gpuText = _veGpu is null ? "Grafikkarte: wird beim ersten Export geprüft." : _veGpu.Count == 0 ? "Grafikkarte: kein NVENC – Trendo kodiert mit dem Prozessor (gleiche Qualität, langsamer)."
