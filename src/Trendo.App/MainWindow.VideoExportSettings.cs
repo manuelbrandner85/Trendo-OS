@@ -164,6 +164,7 @@ public partial class MainWindow
             sp.Children.Add(new WrapPanel { Children = { lang, new Border { Width = 6 }, save } }); sp.Children.Add(trans);
             if (have.Count > 0) sp.Children.Add(P("Sprachfassungen: " + string.Join(", ", have.Select(h => TimedText.Languages.FirstOrDefault(l => l.Code == h).Label ?? h)) + " – plus WebVTT (.vtt) für Browser und YouTube.", Muted, 11));
         }
+        sp.Children.Add(EditCreditsPanel(d)); // Paket 01 S3-17: Abspann
         // Grafikkarte: einmal messen, ehrlich anzeigen
         var gpuText = _veGpu is null ? "Grafikkarte: wird beim ersten Export geprüft." : _veGpu.Count == 0 ? "Grafikkarte: kein NVENC – Trendo kodiert mit dem Prozessor (gleiche Qualität, langsamer)."
             : "Grafikkarte: " + string.Join(", ", _veGpu.Select(e => e.Replace("_nvenc", "").ToUpperInvariant().Replace("H264", "H.264").Replace("HEVC", "H.265"))) + " über NVENC – schnell.";

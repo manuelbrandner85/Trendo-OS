@@ -57,3 +57,41 @@ static class LogicalExt
     public static IEnumerable<T> GetLogicalDescendantsOfType<T>(this Avalonia.Controls.Window w) where T : Avalonia.LogicalTree.ILogical =>
         Avalonia.LogicalTree.LogicalExtensions.GetLogicalDescendants(w).OfType<T>();
 }
+
+/// <summary>Paket 01 – Studio 3, S3-17 (07.11.2026): Abspann im Videoschnitt.</summary>
+public class VideoCredits_Ui
+{
+    [AvaloniaFact(DisplayName = "S3-17 Videoschnitt: Abspann aus „Rolle: Name“ als Clip ans Ende (rückgängig machbar); Schrift mit Einbett-Verbot wird vor der Freigabe abgewiesen")]
+    public async Task Credits_to_timeline()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        try
+        {
+            string F(string n) { var f = Path.Combine(root, n); File.WriteAllBytes(f, [1, 2, 3]); return f; }
+            var runs = new List<IReadOnlyList<string>>();
+            w.FfmpegRunOverride = a => { runs.Add(a); File.WriteAllBytes(a[^1], new byte[128]); return new Cli.Result(0, "", ""); };
+            w.Show("schnitt"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer"));
+            w.EditAdd(F("a.mp4"), length: 4, audio: true);
+            w.EditTab = "export"; w.Show("schnitt"); Settle();
+            w.Find<TextBox>("ve-credits-text").Text = "Regie: Erika Muster\nMusik: Max Beispiel, Trendo";
+            w.Find<NumericUpDown>("ve-credits-len").Value = 8;
+            var b = w.Find<Button>("ve-credits-add"); b.BringIntoView(); Settle(); b.Press();
+            for (var i = 0; i < 100 && VideoEdit.Clips(w.ProgramActive("schnitt")!.Data).Count < 2; i++) { await Task.Delay(20); Settle(); }
+            var d = w.ProgramActive("schnitt")!; var clips = VideoEdit.Clips(d.Data);
+            Assert.Equal(2, clips.Count); Assert.Contains("-abspann-", clips[1].File); Assert.Equal(8, clips[1].Length, 1);
+            Assert.Equal("Abspann", d.UndoLabel); Assert.Contains("Regie: Erika Muster", d.Text("credits"));
+            Assert.Contains(runs, a => string.Join(" ", a).Contains("Erika Muster") && string.Join(" ", a).Contains("drawtext"));
+            d.Undo(); Assert.Single(VideoEdit.Clips(w.ProgramActive("schnitt")!.Data));
+            // Schrift mit Einbett-Verbot (fsType 2)
+            var bad = Path.Combine(root, "gesperrt.ttf");
+            var os2 = new byte[10]; os2[9] = 2;
+            byte[] head = [0, 1, 0, 0, 0, 1, 0, 16, 0, 0, 0, 0, (byte)'O', (byte)'S', (byte)'/', (byte)'2', 0, 0, 0, 0, 0, 0, 0, 28, 0, 0, 0, 10];
+            File.WriteAllBytes(bad, [.. head, .. os2]);
+            w.CreditsFontOverride = bad; runs.Clear();
+            await w.EditCreditsAdd(w.ProgramActive("schnitt")!, "Regie: Erika Muster", 6);
+            Assert.Empty(runs); Assert.Contains("verbietet", w.ProgramMessage("schnitt"));
+            Assert.Single(VideoEdit.Clips(w.ProgramActive("schnitt")!.Data));
+        }
+        finally { w.Close(); }
+    }
+}
