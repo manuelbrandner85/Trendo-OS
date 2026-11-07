@@ -86,7 +86,7 @@ public partial class MainWindow
             int got;
             if (NatureFetchOverride is { } f) got = f(cache);
             else if (_opt.Isolated) { lines.Add("• Fotomaterialien: im Testmodus nicht geladen"); skip(); return true; }
-            else { var (files, download) = UnrealNature.Http(); got = await Task.Run(() => UnrealNature.Fetch(cache, files, download, t => step(t))); }
+            else { var (files, download) = NatureHttp(); got = await Task.Run(() => UnrealNature.Fetch(cache, files, download, t => step(t))); }
             var copied = Directory.Exists(cache) ? UnrealNature.CopyTo(cache, built) : 0;
             _core.Audit.Append(Principal.LocalOwner.Name, "game.unreal.assets", $"polyhaven cc0 neu={got} kopiert={copied}");
             lines.Add($"✓ Fotomaterialien bereit (Poly Haven, CC0; {got} neu geladen, {copied} ins Projekt kopiert)");
@@ -102,6 +102,19 @@ public partial class MainWindow
         UnrealGame.UseWeltMap(built);
         lines.Add($"✓ Welt eingerichtet: {models} Pflanzen- und Felsmodelle, " + (info.Any(l => l.StartsWith("Bodenmaterial")) ? "fotorealer Boden" : "Boden") + ", Karte " + UnrealGame.WeltMap);
         return true;
+    }
+
+    /// <summary>Abruf über die offizielle Poly-Haven-API (Netzzugriff nur in der App; Ziele auf dl.polyhaven.org beschränkt).</summary>
+    static (Func<string, System.Text.Json.Nodes.JsonObject> Files, Action<string, string> Download) NatureHttp()
+    {
+        var http = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+        http.DefaultRequestHeaders.UserAgent.ParseAdd(UnrealNature.UserAgent);
+        return (id => System.Text.Json.Nodes.JsonNode.Parse(http.GetStringAsync(UnrealNature.FilesUrl(id)).GetAwaiter().GetResult())!.AsObject(),
+                (url, dest) =>
+                {
+                    if (!UnrealNature.AllowedDownload(url)) throw new InvalidOperationException("Unerwartete Download-Adresse: " + url);
+                    using var s = http.GetStreamAsync(url).GetAwaiter().GetResult(); using var o = File.Create(dest); s.CopyTo(o);
+                });
     }
 
     /// <summary>Spiel in Unreal starten (ohne Editor).</summary>

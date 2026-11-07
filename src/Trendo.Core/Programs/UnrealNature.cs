@@ -89,16 +89,7 @@ public static class UnrealNature
         return n;
     }
 
-    /// <summary>Standard-Abruf über die offizielle Poly-Haven-API.</summary>
-    public static (Func<string, JsonObject> Files, Action<string, string> Download) Http()
-    {
-        var http = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
-        http.DefaultRequestHeaders.UserAgent.ParseAdd(UserAgent);
-        return (id => JsonNode.Parse(http.GetStringAsync($"{Api}/files/{Uri.EscapeDataString(id)}").GetAwaiter().GetResult())!.AsObject(),
-                (url, dest) =>
-                {
-                    if (!url.StartsWith("https://dl.polyhaven.org/", StringComparison.Ordinal)) throw new InvalidOperationException("Unerwartete Download-Adresse: " + url);
-                    using var s = http.GetStreamAsync(url).GetAwaiter().GetResult(); using var o = File.Create(dest); s.CopyTo(o);
-                });
-    }
+    /// <summary>Nur Downloads von Poly Haven sind erlaubt (Netzzugriff selbst liegt in der App, der Core bleibt ohne Netz – QA-019).</summary>
+    public static bool AllowedDownload(string url) => url.StartsWith("https://dl.polyhaven.org/", StringComparison.Ordinal);
+    public static string FilesUrl(string id) => $"{Api}/files/{Uri.EscapeDataString(id)}";
 }
