@@ -1,6 +1,6 @@
 # Online-Dienste – Testplan
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.36 (Stand 66211cf)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.36 (Stand 8b5609f)
 
 41 Tests sprechen dieses Programm an.
 

@@ -1,6 +1,6 @@
 # Auto & Fahrten – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.36 (Stand 66211cf)
+Studio: Auto & Fahrten (SPEC-16) · Bereich: Technik & Fachgebiete · Seite: `fahrzeug` · Stand: 0.9.36 (Stand 8b5609f)
 
 Analyse: [Vorbild-Analyse Fahrzeugbuch: Spritmonitor, Fuelio, Drivvo (Clean-Room)](../../../docs/claude/vorbilder/fahrzeugbuch-spritmonitor.md)
 

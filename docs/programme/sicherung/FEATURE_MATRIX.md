@@ -1,6 +1,6 @@
 # Sicherung – Funktionsmatrix
 
-Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.36 (Stand 66211cf)
+Studio: Daten schützen (CORE-11) · Bereich: System & Sicherheit · Seite: `sicherung` · Stand: 0.9.36 (Stand 8b5609f)
 
 Kein freigegebener Funktionskatalog für dieses Studio.
 

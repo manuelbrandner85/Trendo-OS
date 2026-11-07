@@ -1,10 +1,10 @@
 # Trendo Musik – Testergebnisse
 
-Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 66211cf)
+Studio: Trendo Musik (STUDIO-MUSIK-01) · Bereich: Kreativ & Medien · Seite: `musik-studio` · Stand: 0.9.36 (Stand 8b5609f)
 
 Lauf: `api.trx, app.trx, core.trx`
 
-Bestanden 47 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
+Bestanden 48 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 
 | Test | Ergebnis |
 |---|---|
@@ -50,6 +50,7 @@ Bestanden 47 · Fehlgeschlagen 0 · Übersprungen 0 · nicht im Lauf 1
 | Spuren trennen: Begleitung und Gesang werden eigene Lieder (mit Herkunft), alle Spuren im Ordner „– Spuren“ | ✓ bestanden |
 | Trendo Musik DAW: Transportleiste zeigt Takt 1.1 und Tempo, Arrangement mit Abschnitten, Text und Gesang/Begleitung; Fortschritt bewegt Takt-Anzeige; Mischpult legt Mehrspur-Projekt mit den Spuren an | ✓ bestanden |
 | Trendo Musik Profi: Liedtext läuft mit (laufende Zeile gold), Zeile anklicken springt dorthin; Raster mit Tonart, Tonleiter, Takten; Fassungen A/B an gleicher Stelle | ✓ bestanden |
+| Trendo Musik „＋ Eigene Aufnahme“: Dialog bietet MP3, M4A, AAC, OPUS, WMA, MP4 … an; M4A und MP4 werden echt in WAV umgewandelt und landen in der Bibliothek; Datei ohne Ton wird gemeldet | ✓ bestanden |
 | Trendo Musik: Abschnitt neu und Cover laden das Lied hoch (kein Dateipfad), neue Fassung verweist aufs Original; Liedtext mit KI; Favorit, Export, Löschen in den Papierkorb | ✓ bestanden |
 | Trendo Musik: Aufträge an ACE-Step geprüft – Grenzen für Länge, Tempo, Varianten; Abschnitt mind. 1 s; über 8 Minuten ohne Sprachmodell; unbekannte Tonart/Takt/Aufgabe abgelehnt | ✓ bestanden |
 | Trendo Musik: Einfach – ein Satz → zwei Varianten in „Meine Lieder“; ohne Beschreibung nur Hinweis; Profi mit Tempo, Tonart, Takt, [Strophe]/[Refrain] und Spanisch | ✓ bestanden |

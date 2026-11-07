@@ -1,6 +1,6 @@
 # Fortschritt – Testplan
 
-Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `fortschritt` · Stand: 0.9.36 (Stand 66211cf)
+Studio: Qualität prüfen (SYS-13) · Bereich: System & Sicherheit · Seite: `fortschritt` · Stand: 0.9.36 (Stand 8b5609f)
 
 13 Tests sprechen dieses Programm an.
 

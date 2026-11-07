@@ -1,6 +1,6 @@
 # Apps – Testplan
 
-Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `apps` · Stand: 0.9.36 (Stand 66211cf)
+Studio: Programme starten (SYS-11) · Bereich: System & Sicherheit · Seite: `apps` · Stand: 0.9.36 (Stand 8b5609f)
 
 41 Tests sprechen dieses Programm an.
 

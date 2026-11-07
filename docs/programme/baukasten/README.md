@@ -1,6 +1,6 @@
 # Baukasten – Produktionspaket
 
-Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand 66211cf)
+Studio: Apps zusammenklicken (X-03) · Bereich: Entwickeln · Seite: `baukasten` · Stand: 0.9.36 (Stand 8b5609f)
 
 Arbeitsfläche: App-Designer (Bausteine, Vorschau, Eigenschaften)  
 Modulstatus (requirements.yaml): IMPLEMENTED / Test PC_VERIFIED  

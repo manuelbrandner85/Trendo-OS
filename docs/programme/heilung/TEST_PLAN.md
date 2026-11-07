@@ -1,6 +1,6 @@
 # Selbstheilung – Testplan
 
-Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.36 (Stand 66211cf)
+Studio: Einrichten & Reparieren (X-02) · Bereich: System & Sicherheit · Seite: `heilung` · Stand: 0.9.36 (Stand 8b5609f)
 
 15 Tests sprechen dieses Programm an.
 

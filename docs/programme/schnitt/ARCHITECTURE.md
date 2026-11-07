@@ -1,6 +1,6 @@
 # Videoschnitt – Architektur
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand 66211cf)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `schnitt` · Stand: 0.9.36 (Stand 8b5609f)
 
 ## Präsentation (Trendo.App)
 - `src/Trendo.App/MainWindow.AudioEditor.cs`
@@ -20,11 +20,11 @@ Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seit
 - `VideoEdit`
 - `AudioEdit`
 - `MediaStudio`
-- `AudioFile`
 - `AudioMulti`
+- `AudioFile`
 - `ImageOps`
-- `Rect`
 - `VideoExport`
+- `Rect`
 - `FileShelf`
 
 ## Dateiformate (im Code belegt)

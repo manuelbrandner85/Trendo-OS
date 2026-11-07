@@ -1,6 +1,6 @@
 # Online-Dienste – Vorbild-Analyse (REA, Clean-Room)
 
-Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.36 (Stand 66211cf)
+Studio: KI fragen (CORE-02) · Bereich: KI & Automatik · Seite: `keys` · Stand: 0.9.36 (Stand 8b5609f)
 
 Analyse: [Vorbild-Analyse KI-Verbindungen: Claude Desktop, Raycast, Zapier-Konten, Windows-Kontoverwaltung (Clean-Room)](../../../docs/claude/vorbilder/ki-verbindungen-zapier-raycast.md)
 

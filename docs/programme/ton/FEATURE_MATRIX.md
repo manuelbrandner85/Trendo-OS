@@ -1,6 +1,6 @@
 # Audio bearbeiten – Funktionsmatrix
 
-Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.36 (Stand 66211cf)
+Studio: Videos & Fotos bearbeiten (CORE-08) · Bereich: Kreativ & Medien · Seite: `ton` · Stand: 0.9.36 (Stand 8b5609f)
 
 Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 
@@ -86,6 +86,7 @@ Quelle: `docs/spec/kataloge/CORE-08_KATALOG.md`
 - ⤓ Abmischen (Abspielen)
 - ✅ Prüfen (Prüfen)
 - 📦 Freigeben (Prüfen)
+- 🎼 Melodie → Noten (Prüfen)
 - 🔌 Plugins prüfen (Prüfen)
 - WAV (16 Bit) (Exportieren)
 - WAV (24 Bit, Studio) (Exportieren)
