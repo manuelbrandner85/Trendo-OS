@@ -28,7 +28,9 @@ public partial class MainWindow
     public MusicSuno.Options MsOptions { get => _msOpt; set => _msOpt = value; }
     public string MsModelChoice { get => _msModel; set => _msModel = value; }
 
-    static readonly (string Id, string Icon, string Label)[] MsPages = [("erstellen", "✨", "Erstellen"), ("studio", "🎚", "Studio"), ("bibliothek", "📚", "Bibliothek"), ("stimmen", "🎤", "Stimmen")];
+    static readonly (string Id, string Icon, string Label)[] MsPages = [("erstellen", "erstellen", "Erstellen"), ("studio", "regler", "Studio"), ("bibliothek", "bibliothek", "Bibliothek"), ("stimmen", "mikrofon", "Stimmen")]; // G7: Linien-Symbole
+
+    static Control WithCenter(Control c) { c.HorizontalAlignment = HorizontalAlignment.Center; return c; }
 
     /// <summary>V1: schmale Navigation links (wie Suno: Symbole mit Namen untereinander).</summary>
     Control MsNav()
@@ -39,7 +41,7 @@ public partial class MainWindow
             var on = id == _msPage; var p = id;
             var b = new Button { Name = "ms-nav-" + id, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Center, Padding = new Thickness(4, 8),
                 CornerRadius = new CornerRadius(12), Background = on ? Brush.Parse("#33C9A227") : Brushes.Transparent, BorderBrush = on ? Accent : Brushes.Transparent, BorderThickness = new Thickness(1),
-                Content = new StackPanel { Spacing = 2, Children = { new TextBlock { Text = icon, FontSize = 19, HorizontalAlignment = HorizontalAlignment.Center },
+                Content = new StackPanel { Spacing = 3, Children = { WithCenter(TrendoIcons.Icon(icon, 22, on ? Accent : Text)),
                     new TextBlock { Text = label, FontSize = 10.5, Foreground = on ? Text : Muted, HorizontalAlignment = HorizontalAlignment.Center } } } };
             b.Click += (_, _) => MsPage(p);
             sp.Children.Add(b);

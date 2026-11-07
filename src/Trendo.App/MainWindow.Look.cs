@@ -116,7 +116,9 @@ public sealed partial class MainWindow
         OwnTimer(t);
         if (!Motionless)
         {
-            _center.Transitions = [new DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(220), Easing = new Avalonia.Animation.Easings.CubicEaseOut() }];
+            // G5 (07.11.2026): Seitenwechsel blendet ein und gleitet 10 px nach oben – ruhig, unter einer Viertelsekunde
+            _center.Transitions = [new DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(220), Easing = new Avalonia.Animation.Easings.CubicEaseOut() },
+                new TransformOperationsTransition { Property = RenderTransformProperty, Duration = TimeSpan.FromMilliseconds(240), Easing = new Avalonia.Animation.Easings.CubicEaseOut() }];
             // Ruhiger Startbildschirm: Logo blendet sanft aus
             if (opt.ScreenshotPath is null && !_reopening)
             {
@@ -135,7 +137,7 @@ public sealed partial class MainWindow
     /// <summary>Wird nach jedem Seitenwechsel aufgerufen: sanftes Einblenden und Hinweis beim ersten Öffnen.</summary>
     private void AfterShow(string key)
     {
-        if (!Motionless) { _center.Opacity = 0; _ui.Post(() => _center.Opacity = 1, DispatcherPriority.Background); }
+        if (!Motionless) { _center.Opacity = 0; _center.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Parse("translateY(10px)"); _ui.Post(() => { _center.Opacity = 1; _center.RenderTransform = Avalonia.Media.Transformation.TransformOperations.Identity; }, DispatcherPriority.Background); }
         ShowHelp(key, force: false);
         EnhancePathFields(ActivePageRoot, key);
         if (ActivePageRoot is { } c0) ApplyAccessibility(c0);

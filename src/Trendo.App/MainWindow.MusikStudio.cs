@@ -215,6 +215,7 @@ public partial class MainWindow
         var root = new Grid { ColumnDefinitions = new ColumnDefinitions("96,10,360,14,*,14,340"), RowDefinitions = new RowDefinitions("*,Auto") };
         var nav = MsNav(); Grid.SetColumn(nav, 0); root.Children.Add(nav);
         MsPageColumns(root);
+        PaneGrip(root, 3, 2, "musik/links", 260, 560); PaneGrip(root, 5, 6, "musik/rechts", 260, 560); // G9: ziehbare Spalten
         var player = MsTransportBar(); Grid.SetRow(player, 1); Grid.SetColumnSpan(player, 7); player.Margin = new Thickness(0, 12, 0, 0); root.Children.Add(player);
         root.VerticalAlignment = VerticalAlignment.Stretch;
         return FitPage("Trendo Musik", new Panel(), root); // füllt das Fenster wie ein echtes Programm
@@ -427,6 +428,7 @@ public partial class MainWindow
             var item = new Button { Name = $"ms-song-{n}", Content = row, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(8),
                 CornerRadius = new CornerRadius(12), Background = sel ? Brush.Parse("#26C9A227") : Brushes.Transparent, BorderBrush = sel ? Accent : Brushes.Transparent, BorderThickness = new Thickness(1) };
             item.Click += (_, _) => { _msSel = song.Id; Show(MS); };
+            item.ContextFlyout = ContextMenuOf($"ms-ctx-{n}", MsSongActions(song), MsRemixActions(song)); // G12: Rechtsklick wie „⋯“ und „Remix“
             sp.Children.Add(item);
         }
         sp.Children.Add(MsPager(total, pages));

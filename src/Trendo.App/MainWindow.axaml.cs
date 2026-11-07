@@ -374,8 +374,9 @@ public sealed partial class MainWindow : Window
         Background = Glass, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(14), Padding = new Thickness(pad), Child = c, Margin = new Thickness(0, 0, 0, 10),
         BoxShadow = BoxShadows.Parse("0 8 24 0 #66000814"),
     };
-    private static TextBlock H(string t, double size = 15) => new() { Text = t, Foreground = Text, FontSize = size, FontWeight = FontWeight.SemiBold };
-    private static TextBlock P(string t, IBrush? c = null, double size = 12) => new() { Text = t, Foreground = c ?? Muted, FontSize = size, TextWrapping = TextWrapping.Wrap };
+    // G8 (07.11.2026): klare Rangordnung – große Überschriften fett und enger gesetzt, Fließtext mit ruhigem Zeilenabstand
+    private static TextBlock H(string t, double size = 15) => new() { Text = t, Foreground = Text, FontSize = size, FontWeight = size >= 18 ? FontWeight.Bold : FontWeight.SemiBold, LetterSpacing = size >= 18 ? -0.4 : 0 };
+    private static TextBlock P(string t, IBrush? c = null, double size = 12) => new() { Text = t, Foreground = c ?? Muted, FontSize = size, TextWrapping = TextWrapping.Wrap, LineHeight = Math.Round(size * 1.45) };
     private static Button Flat(string name, Control content, string? automation = null)
     {
         var b = new Button { Name = name, Content = content, Background = Brushes.Transparent, BorderThickness = new Thickness(0), Padding = new Thickness(8, 5), IsTabStop = true, CornerRadius = new CornerRadius(8) };

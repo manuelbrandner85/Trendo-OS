@@ -73,6 +73,15 @@ public partial class MainWindow
     private void InitToasts(Grid root) { Grid.SetRowSpan(_toastHost, 2); root.Children.Add(_toastHost); }
 
     /// <summary>G12: kurze Benachrichtigung unten rechts (6 s), optional mit Aktionen wie „Rückgängig“ oder „Ordner öffnen“.</summary>
+    /// <summary>G11: Ton eines Hinweises – erledigt (✓, Gold), Problem (!, Bernstein) oder Info (i, neutral).</summary>
+    internal static (string Icon, IBrush Bg) ToastTone(string text)
+    {
+        var t = text.TrimStart();
+        if (t.StartsWith('✓')) return ("✓", Gold());
+        if (System.Text.RegularExpressions.Regex.IsMatch(t, @"ging nicht|fehlgeschlagen|Fehler|fehlt|nicht möglich|abgelehnt", System.Text.RegularExpressions.RegexOptions.IgnoreCase)) return ("!", Brush.Parse("#C77A12"));
+        return ("i", Brush.Parse("#3D3D3D"));
+    }
+
     public void Toast(string text, params (string Label, Action Run)[] actions)
     {
         _osNotes.Insert(0, (DateTime.Now, text)); if (_osNotes.Count > 30) _osNotes.RemoveAt(_osNotes.Count - 1); // Mitteilungen (Windows/Mac/GNOME)
@@ -82,8 +91,13 @@ public partial class MainWindow
         {
             Name = "toast", Background = GlassStrong, BorderBrush = Edge, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(14, 10),
             BoxShadow = BoxShadows.Parse("0 8 24 0 #66000000"),
-            Child = new StackPanel { Spacing = 6, Children = { new TextBlock { Text = text, Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap }, row } },
+            Child = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), ColumnSpacing = 10, Children = {
+                new Border { Name = "toast-icon", Width = 26, Height = 26, CornerRadius = new CornerRadius(13), VerticalAlignment = VerticalAlignment.Top, Background = ToastTone(text).Bg,
+                    Child = new TextBlock { Text = ToastTone(text).Icon, FontSize = 13, FontWeight = FontWeight.Bold, Foreground = Brushes.White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } },
+                Pos(new StackPanel { Spacing = 6, Children = { new TextBlock { Text = text, Foreground = Text, FontSize = 13, TextWrapping = TextWrapping.Wrap }, row } }, 1) } },
         };
+        // G11 (07.11.2026): sanft einblenden
+        if (!Motionless) { t.Opacity = 0; t.Transitions = [new Avalonia.Animation.DoubleTransition { Property = OpacityProperty, Duration = TimeSpan.FromMilliseconds(180) }]; _ui.Post(() => t.Opacity = 1, DispatcherPriority.Background); }
         foreach (var (label, run) in actions)
         {
             var b = new Button { Name = "toast-action", Content = label, Padding = new Thickness(10, 4) };
@@ -201,11 +215,19 @@ public partial class MainWindow
             var s = Math.Max(Score(title, q), words.Any(w => Score(w, q) > 0) && q.Length > 0 ? 2 : 0); if (s == 0) continue;
             hits.Add((title, "Seite öffnen", () => Show(key), s));
         }
+        // G2 (07.11.2026): zuletzt benutzte Befehle zuerst, wenn noch nichts getippt ist
+        var recent = PaletteRecent();
+        if (q.Length == 0)
+            for (var i = 0; i < hits.Count; i++)
+                if (recent.IndexOf(hits[i].Item1 + "|" + hits[i].Item2) is var r and >= 0) hits[i] = (hits[i].Item1, "Zuletzt benutzt", hits[i].Item3, 100 - r);
         var list = hits.GroupBy(h => h.Item1 + "|" + h.Item2).Select(g => g.First()).OrderByDescending(h => h.Item4).ThenBy(h => h.Item1, StringComparer.CurrentCultureIgnoreCase).Take(q.Length == 0 ? 12 : 30)
             .Select(h => (h.Item1, h.Item2, h.Item3)).ToList();
         if (q.Length > 0) { var ask = q; list.Add(($"„{q}“ – die Trendo KI fragen", "KI", () => { Show("ki-fragen"); _ = AskKi(ask); })); }
         _paletteHits = list; _paletteSel = 0; PaintPalette();
     }
+
+    /// <summary>Art eines „Zuletzt benutzt“-Treffers aus dem Verlauf zurückholen.</summary>
+    string PaletteOriginalKind(string label) => PaletteRecent().FirstOrDefault(k => k.StartsWith(label + "|"))?[(label.Length + 1)..] ?? "Auf dieser Seite";
 
     static string ButtonText(Button b) => b.Content switch
     {
@@ -215,17 +237,47 @@ public partial class MainWindow
         _ => "",
     };
 
+    /// <summary>G2: Symbol je Treffer-Art.</summary>
+    static string PaletteIcon(string kind) => kind switch
+    {
+        "Auf dieser Seite" => "▸", "Studio öffnen" => "▦", "Seite öffnen" => "▤", "KI" => "✦", "Zuletzt benutzt" => "↺", var k when k.StartsWith("Claude") => "✳", _ => "•",
+    };
+
+    string PaletteRecentFile => Path.Combine(_core.DataRoot, "befehle-zuletzt.json");
+
+    /// <summary>G2: zuletzt benutzte Befehle („Text|Art“), neueste zuerst, höchstens 8.</summary>
+    public List<string> PaletteRecent()
+    {
+        try { return File.Exists(PaletteRecentFile) ? System.Text.Json.JsonSerializer.Deserialize<List<string>>(File.ReadAllText(PaletteRecentFile)) ?? [] : []; }
+        catch (Exception e) when (e is IOException or System.Text.Json.JsonException or UnauthorizedAccessException) { return []; }
+    }
+
+    void RememberPalette(string label, string kind)
+    {
+        if (kind == "KI") return; // freie Fragen nicht merken
+        var key = label + "|" + kind; var l = PaletteRecent(); l.Remove(key); l.Insert(0, key); if (l.Count > 8) l.RemoveRange(8, l.Count - 8);
+        try { Directory.CreateDirectory(_core.DataRoot); File.WriteAllText(PaletteRecentFile, System.Text.Json.JsonSerializer.Serialize(l)); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
+    }
+
     void PaintPalette()
     {
         _paletteList.Children.Clear();
+        string? lastKind = null;
         for (var i = 0; i < _paletteHits.Count; i++)
         {
             var (label, kind, _) = _paletteHits[i]; var idx = i;
+            if (kind != lastKind) // G2: Gruppen-Überschrift
+            {
+                _paletteList.Children.Add(new TextBlock { Name = "command-group-" + i, Text = kind.ToUpperInvariant(), Foreground = Muted, FontSize = 10.5, FontWeight = FontWeight.Bold, LetterSpacing = 0.6, Margin = new Thickness(12, i == 0 ? 0 : 8, 0, 2) });
+                lastKind = kind;
+            }
             var row = new Button
             {
                 Name = "command-hit-" + i, HorizontalAlignment = HorizontalAlignment.Stretch, HorizontalContentAlignment = HorizontalAlignment.Stretch, Padding = new Thickness(12, 8),
                 Background = i == _paletteSel ? Accent : Brushes.Transparent, BorderThickness = new Thickness(0), CornerRadius = new CornerRadius(8),
-                Content = new Grid { ColumnDefinitions = new ColumnDefinitions("*,Auto"), Children = { new TextBlock { Text = label, Foreground = Text, FontSize = 14 }, Pos(new TextBlock { Text = kind, Foreground = Muted, FontSize = 12 }, 1) } },
+                Content = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*,Auto"), ColumnSpacing = 10, Children = {
+                    new TextBlock { Text = PaletteIcon(kind), Foreground = i == _paletteSel ? Brushes.White : Accent, FontSize = 14, Width = 16, TextAlignment = TextAlignment.Center },
+                    Pos(new TextBlock { Text = label, Foreground = Text, FontSize = 14, TextTrimming = TextTrimming.CharacterEllipsis }, 1), Pos(new TextBlock { Text = kind, Foreground = Muted, FontSize = 12 }, 2) } },
             };
             row.Click += (_, _) => RunPalette(idx);
             _paletteList.Children.Add(row);
@@ -236,6 +288,7 @@ public partial class MainWindow
     {
         if (i < 0 || i >= _paletteHits.Count) return;
         var run = _paletteHits[i].Run; ClosePalette();
+        RememberPalette(_paletteHits[i].Label, _paletteHits[i].Kind == "Zuletzt benutzt" ? PaletteOriginalKind(_paletteHits[i].Label) : _paletteHits[i].Kind);
         _core.Audit.Append(Principal.LocalOwner.Name, "palette.run", _paletteHits[i].Label);
         run();
     }
