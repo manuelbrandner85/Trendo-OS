@@ -18,13 +18,21 @@ public static class UnrealNature
         ("grass_medium_01", "gras"), ("fern_02", "farn"), ("shrub_02", "strauch"), ("shrub_04", "strauch"), ("pine_sapling_small", "baum"), ("tree_small_02", "baum"),
         ("tree_stump_01", "holz"), ("dead_tree_trunk", "holz"), ("rock_moss_set_01", "stein"), ("boulder_01", "stein"),
     ];
+    /// <summary>Spielobjekte als Fotomodelle in echter Größe (Rolle wie im Trendo-Raster): Fundstück o (Messingvase – eine Münze wäre im Gras
+    /// unsichtbar), Gegenstand G, Ziel Z (Schatztruhe), Schlüssel K, Speicherpunkt C, Hindernis D, Feder F (Reifen), Waffe (Säbel), Wurfwaffe (Beil).
+    /// Muss zu PROPS im Welt-Skript passen.</summary>
+    public static readonly (string Role, string Id)[] Props =
+    [
+        ("o", "brass_vase_02"), ("G", "food_apple_01"), ("Z", "treasure_chest"), ("K", "brass_diya_lantern"), ("C", "wooden_lantern_01"),
+        ("D", "wooden_crate_02"), ("F", "old_tyre"), ("waffe", "wooden_handle_saber"), ("wurf", "hatchet"),
+    ];
 
     static long Size(System.Text.Json.Nodes.JsonNode n) => long.Parse(n.ToString(), System.Globalization.CultureInfo.InvariantCulture);
 
     public static string CacheDir(string toolsRoot) => Path.Combine(toolsRoot, "assets", "polyhaven");
 
     /// <summary>Dateiliste aus den API-Antworten („/files/{id}“): (URL, Pfad relativ zum Asset-Ordner, Größe). 2k, Bodenkarten als JPG,
-    /// Modelle als glTF mit allen verlinkten Dateien und zusätzlich die Blatt-Alpha-Karten (im glTF nicht verlinkt).</summary>
+    /// Modelle (Natur und Spielobjekte) als glTF mit allen verlinkten Dateien und zusätzlich die Blatt-Alpha-Karten (im glTF nicht verlinkt).</summary>
     public static List<(string Asset, string Url, string Rel, long Size)> Plan(Func<string, JsonObject> files)
     {
         var list = new List<(string, string, string, long)>();
@@ -34,7 +42,7 @@ public static class UnrealNature
             foreach (var k in GroundMaps)
                 if (f[k]?["2k"]?["jpg"] is JsonObject e) list.Add((g, e["url"]!.ToString(), $"{g}_{k}_2k.jpg", Size(e["size"]!)));
         }
-        foreach (var (id, _) in Models)
+        foreach (var id in Models.Select(m => m.Id).Concat(Props.Select(p => p.Id)))
         {
             var f = files(id);
             if (f["gltf"]?["2k"]?["gltf"] is not JsonObject g) continue;
@@ -70,7 +78,7 @@ public static class UnrealNature
             if (new FileInfo(dest + ".part").Length != size) { File.Delete(dest + ".part"); throw new IOException($"Download unvollständig: {Path.GetFileName(rel)}"); }
             File.Move(dest + ".part", dest, true); n++;
         }
-        File.WriteAllText(Path.Combine(cacheDir, "LIZENZ.txt"), "Quelle: Poly Haven (polyhaven.com) – Lizenz CC0 1.0 (gemeinfrei, keine Namensnennung nötig).\nAssets: " + string.Join(", ", Grounds.Concat(Models.Select(m => m.Id))) + "\n");
+        File.WriteAllText(Path.Combine(cacheDir, "LIZENZ.txt"), "Quelle: Poly Haven (polyhaven.com) – Lizenz CC0 1.0 (gemeinfrei, keine Namensnennung nötig).\nAssets: " + string.Join(", ", Grounds.Concat(Models.Select(m => m.Id)).Concat(Props.Select(p => p.Id))) + "\n");
         return n;
     }
 

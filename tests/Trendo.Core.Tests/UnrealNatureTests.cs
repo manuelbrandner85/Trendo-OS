@@ -26,7 +26,8 @@ public class UnrealNatureTests
     public void Plan()
     {
         var p = UnrealNature.Plan(Files);
-        Assert.Equal(UnrealNature.Grounds.Length * 4 + UnrealNature.Models.Length * 3 + 1, p.Count);
+        Assert.Equal(UnrealNature.Grounds.Length * 4 + (UnrealNature.Models.Length + UnrealNature.Props.Length) * 3 + 1, p.Count);
+        Assert.Contains(p, x => x.Asset == "treasure_chest" && x.Rel == "treasure_chest_2k.gltf");
         Assert.Contains(p, x => x.Asset == "leafy_grass" && x.Rel == "leafy_grass_Diffuse_2k.jpg");
         Assert.DoesNotContain(p, x => x.Rel.Contains("Displacement"));
         Assert.Contains(p, x => x.Asset == "tree_small_02" && x.Rel == "textures/tree_small_02_leaves_alpha_2k.png" && x.Size == 6);
@@ -94,6 +95,9 @@ public class UnrealNatureTests
         Assert.Contains("_alpha_2k.png", s); Assert.Contains("PixelDepth", s); Assert.Contains("TRENDO-WELT-OK", s);
         foreach (var (id, kind) in UnrealNature.Models) Assert.Contains($"\"{id}\": \"{kind}\"", s);
         foreach (var g in UnrealNature.Grounds) Assert.Contains($"\"{g}\"", s);
+        // Spielobjekte: gleiche Rollen wie im Abruf, mehrteilige Modelle (Truhe mit Deckel) werden zu einem Modell zusammengefasst
+        foreach (var (role, id) in UnrealNature.Props) Assert.Contains($"\"{role}\": \"{id}\"", s);
+        Assert.Contains("InterchangeCombineStaticMeshesBehavior.ALL", s); Assert.Contains("\"objects\": objects", s);
         var a = UnrealGame.WeltArgs(@"C:\Spiele\Wald\Wald.uproject", @"C:\Spiele\Wald\Trendo-Pruefung\welt.txt");
         Assert.Contains("-nullrhi", a); Assert.Contains(a, x => x.StartsWith("-ExecutePythonScript=") && x.EndsWith("trendo_welt.py"));
     }

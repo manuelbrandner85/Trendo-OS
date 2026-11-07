@@ -62,8 +62,9 @@ public static class UnrealGame
         return o.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
     }
 
-    /// <summary>Plugins, die Trendo im Projekt einschaltet.</summary>
-    public static readonly string[] Plugins = ["PythonScriptPlugin", "EditorScriptingUtilities", "Interchange", "InterchangeEditor"];
+    /// <summary>Plugins, die Trendo im Projekt einschaltet: Python/Interchange zum Einrichten der Welt, dazu die Engine-Beispielinhalte
+    /// mit Menschfigur samt Geh-/Lauf-/Sprung-Animationen (MoverExamples) und Sportwagen (ChaosModularVehicleExamples) – Teil jeder Unreal-Installation.</summary>
+    public static readonly string[] Plugins = ["PythonScriptPlugin", "EditorScriptingUtilities", "Interchange", "InterchangeEditor", "MoverExamples", "ChaosModularVehicleExamples"];
     /// <summary>Eigene Karte, die das Welt-Skript aus der Open-World-Vorlage anlegt.</summary>
     public const string WeltMap = "/Game/Trendo/Welt";
     public const string WeltScriptRel = "Trendo/trendo_welt.py";
@@ -129,6 +130,10 @@ SRC = os.path.join(ROOT, "Trendo", "Quellen")
 DEST = "/Game/Trendo/Natur"
 KINDS = {"grass_medium_01": "gras", "fern_02": "farn", "shrub_02": "strauch", "shrub_04": "strauch", "pine_sapling_small": "baum", "tree_small_02": "baum",
          "tree_stump_01": "holz", "dead_tree_trunk": "holz", "rock_moss_set_01": "stein", "boulder_01": "stein"}
+# Spielobjekte (Rolle → Modell, echte Größe): Fundstück o (Messingvase statt Münze – im Wald sichtbar), Gegenstand G, Ziel Z, Schlüssel K, Speicherpunkt C, Tür/Hindernis D, Feder F, Waffe, Wurfwaffe
+PROPS = {"o": "brass_vase_02", "G": "food_apple_01", "Z": "treasure_chest", "K": "brass_diya_lantern", "C": "wooden_lantern_01", "D": "wooden_crate_02",
+         "F": "old_tyre", "waffe": "wooden_handle_saber", "wurf": "hatchet"}
+SOLID = {"D"}
 tools = unreal.AssetToolsHelpers.get_asset_tools()
 eal = unreal.EditorAssetLibrary
 log = []
@@ -213,8 +218,9 @@ if have:
 # 3) Eigene Hauptmaterialien (Projekt statt Engine-Plugin, mit Nutzung für Instanzen und Nanite):
 #    M_TrendoPBR für Rinde, Holz, Fels; M_TrendoBlatt maskiert, zweiseitig, Two-Sided-Foliage (Licht scheint durch Blätter)
 _masters = {}
-def master(leaf, col, nor, arm, alpha):
-    key = "M_TrendoBlatt" if leaf else "M_TrendoPBR"
+def master(leaf, col, nor, arm, alpha, ao=True):
+    # ao=False: Karte ist nur Metall/Rauheit (Rot leer) – dann ohne Umgebungsverdeckung, sonst würde das Objekt schwarz
+    key = "M_TrendoBlatt" if leaf else "M_TrendoPBR" if ao else "M_TrendoPBR_MR"
     if key in _masters: return _masters[key]
     if eal.does_asset_exist(DEST + "/" + key): eal.delete_asset(DEST + "/" + key)
     m = tools.create_asset(key, DEST, unreal.Material, unreal.MaterialFactoryNew())
@@ -240,7 +246,7 @@ def master(leaf, col, nor, arm, alpha):
     n = param("Normal", nor, 200, unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
     mel.connect_material_property(n, "RGB", unreal.MaterialProperty.MP_NORMAL)
     r = param("ARM", arm, 500, unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
-    mel.connect_material_property(r, "R", unreal.MaterialProperty.MP_AMBIENT_OCCLUSION)
+    if ao: mel.connect_material_property(r, "R", unreal.MaterialProperty.MP_AMBIENT_OCCLUSION)
     mel.connect_material_property(r, "G", unreal.MaterialProperty.MP_ROUGHNESS)
     mel.connect_material_property(r, "B", unreal.MaterialProperty.MP_METALLIC)
     mel.recompile_material(m); eal.save_loaded_asset(m); _masters[key] = m; return m
@@ -250,17 +256,29 @@ def imp(path, dest):
     return unreal.load_asset(p[0]) if p else None
 
 # 4) Modelle (glTF) importieren und auf die eigenen Materialien umstellen
-nature = []
-for asset, kind in KINDS.items():
+_combine = None
+def combined_pipeline():
+    # Standard-glTF-Einstellungen von Unreal, aber alle Teile zu einem Modell zusammengefasst (Truhe mit Deckel, Uhr mit Zeigern …)
+    global _combine
+    if _combine: return _combine
+    pp = "/Game/Trendo/Modelle/P_TrendoZusammen"
+    if eal.does_asset_exist(pp): eal.delete_asset(pp)
+    p = eal.duplicate_asset("/Interchange/Pipelines/DefaultGLTFAssetsPipeline", pp)
+    p.get_editor_property("mesh_pipeline").set_editor_property("combine_static_meshes_behavior", unreal.InterchangeCombineStaticMeshesBehavior.ALL)
+    eal.save_loaded_asset(p); _combine = pp; return pp
+
+def bring(asset, dest, kind, combine=False):
     folder = os.path.join(SRC, asset)
     gltf = [f for f in os.listdir(folder) if f.endswith(".gltf")] if os.path.isdir(folder) else []
-    if not gltf: continue
-    dest = f"{DEST}/{asset}"
-    t = task(os.path.join(folder, gltf[0]), dest)
-    tools.import_asset_tasks([t])
-    meshes = [p for p in eal.list_assets(dest, recursive=True, include_folder=False) if unreal.EditorAssetLibrary.find_asset_data(p).get_editor_property("asset_class_path").get_editor_property("asset_name") == "StaticMesh"]
-    for m in meshes:
-        nature.append({"mesh": m.split(".")[0] + "." + m.split("/")[-1].split(".")[0], "kind": kind, "asset": asset})
+    if not gltf: return []
+    if combine:
+        sd = unreal.InterchangeManager.create_source_data(os.path.join(folder, gltf[0]))
+        ip = unreal.ImportAssetParameters(); ip.is_automated = True; ip.replace_existing = True
+        for x in (combined_pipeline(), "/Interchange/Pipelines/DefaultGLTFPipeline"): ip.override_pipelines.append(unreal.SoftObjectPath(x))
+        unreal.InterchangeManager.get_interchange_manager_scripted().import_asset(dest, sd, ip)
+    else:
+        tools.import_asset_tasks([task(os.path.join(folder, gltf[0]), dest)])
+    meshes = [p for p in eal.list_assets(dest, recursive=True, include_folder=False) if eal.find_asset_data(p).get_editor_property("asset_class_path").get_editor_property("asset_name") == "StaticMesh"]
     tdir = os.path.join(folder, "textures")
     alphas = [f[:-len("alpha_2k.png")] for f in (sorted(os.listdir(tdir)) if os.path.isdir(tdir) else []) if f.endswith("_alpha_2k.png")]
     leaves = opaque = 0
@@ -286,7 +304,7 @@ for asset, kind in KINDS.items():
         # glTF-Normalen sind OpenGL-Normalen (Grün nach oben); Unreal erwartet DirectX
         if not nor.get_editor_property("flip_green_channel"):
             nor.set_editor_property("flip_green_channel", True); eal.save_loaded_asset(nor)
-        par = master(prefix is not None, col, nor, arm, alpha)
+        par = master(prefix is not None, col, nor, arm, alpha, "arm" in arm.get_name().lower())
         name = "MI_Trendo_" + old.get_name()
         if eal.does_asset_exist(f"{dest}/{name}"): eal.delete_asset(f"{dest}/{name}")
         mic = tools.create_asset(name, dest, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
@@ -308,8 +326,25 @@ for asset, kind in KINDS.items():
         ns.set_editor_property("enabled", True)
         if kind in ("gras", "farn", "strauch", "baum"):
             ns.set_editor_property("shape_preservation", unreal.NaniteShapePreservation.PRESERVE_AREA)
-        sm.set_editor_property("nanite_settings", ns); eal.save_loaded_asset(sm)
+        sm.set_editor_property("nanite_settings", ns)
+        if kind == "fest":
+            # Hindernis: einfache Kollisionsbox, damit die Figur nicht hindurchläuft
+            try: unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem).add_simple_collisions(sm, unreal.ScriptCollisionShapeType.BOX)
+            except Exception as e: log.append(f"{asset}: Kollision nicht gesetzt ({e})")
+        eal.save_loaded_asset(sm)
     log.append(f"{asset}: {len(meshes)} Modell(e), {leaves} Blatt- und {opaque} Oberflächen-Material(ien)")
+    return meshes
+
+def ref(m): return m.split(".")[0] + "." + m.split("/")[-1].split(".")[0]
+
+nature = []
+for asset, kind in KINDS.items():
+    for m in bring(asset, f"{DEST}/{asset}", kind):
+        nature.append({"mesh": ref(m), "kind": kind, "asset": asset})
+objects = {}
+for role, asset in PROPS.items():
+    ms = bring(asset, f"/Game/Trendo/Modelle/{asset}", "fest" if role in SOLID else "objekt", combine=True)
+    if ms: objects[role] = ref(ms[0])
 
 # 5) Eigene Open-World-Karte mit Bodenmaterial
 les = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
@@ -327,9 +362,9 @@ les.save_current_level()
 unreal.EditorLoadingAndSavingUtils.save_dirty_packages(True, True)
 log.append(f"Karte {world}: Bodenmaterial auf {count} Gelände-Teil(e)")
 
-json.dump({"map": world, "ground": mat.get_path_name() if mat else "", "nature": nature}, open(os.path.join(ROOT, "Trendo", "natur.json"), "w", encoding="utf-8"), indent=2)
+json.dump({"map": world, "ground": mat.get_path_name() if mat else "", "nature": nature, "objects": objects}, open(os.path.join(ROOT, "Trendo", "natur.json"), "w", encoding="utf-8"), indent=2)
 for l in log: unreal.log("TRENDO-WELT " + l)
-unreal.log("TRENDO-WELT-OK %d Pflanzen/Felsen-Modelle" % len(nature))
+unreal.log("TRENDO-WELT-OK %d Pflanzen/Felsen-Modelle, %d Spielobjekt-Modelle" % (len(nature), len(objects)))
 """;
 
     static readonly Dictionary<string, string> Sources = new()
@@ -497,14 +532,14 @@ void FTrendoState::TalkTo(const FTrendoData& D, int32 X, int32 Y)
 }
 """,
         ["TrendoActors.h"] = """
-// Von Trendo erzeugt: Spielobjekte (Kacheln, Gegner, Geschoss).
+// Von Trendo erzeugt: Spielobjekte (Kacheln, Gegner, Geschoss) – mit echten Modellen, sonst Grundformen.
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "TrendoActors.generated.h"
 
-class UStaticMeshComponent;
+class UStaticMeshComponent; class USkeletalMeshComponent; class USphereComponent; class UStaticMesh; class USkeletalMesh;
 
 /** Ein Objekt aus dem Trendo-Raster: Boden, Münze, Stacheln, Ziel, Feder, Speicherpunkt, Schlüssel, Tür, Gegenstand, Figur, Fahrzeug. */
 UCLASS()
@@ -518,11 +553,16 @@ public:
 	UPROPERTY(VisibleAnywhere) int32 TileX = 0;
 	UPROPERTY(VisibleAnywhere) int32 TileY = 0;
 	UPROPERTY(VisibleAnywhere) FString Kind;
+	/** Fangbereich (Berühren): Größe passt zum Objekt. */
+	UPROPERTY(VisibleAnywhere) USphereComponent* Catch;
 	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Mesh;
+	UPROPERTY(VisibleAnywhere) USkeletalMeshComponent* Figure;
 	void Setup(TCHAR InTile, int32 X, int32 Y, const FLinearColor& Color, float Size, bool bSolid);
+	/** true, wenn ein echtes Modell statt einer Grundform verwendet wird. */
+	bool bModel = false;
 };
 
-/** Gegner läuft hin und her; Trefferpunkte wie in Trendo, ab 2 ein Boss. */
+/** Gegner läuft hin und her; Trefferpunkte wie in Trendo, ab 2 ein Boss. Mit Menschmodell geht er mit echter Geh-Animation. */
 UCLASS()
 class ATrendoEnemy : public AActor
 {
@@ -530,17 +570,21 @@ class ATrendoEnemy : public AActor
 public:
 	ATrendoEnemy();
 	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Mesh;
+	UPROPERTY(VisibleAnywhere) USkeletalMeshComponent* Figure;
 	UPROPERTY(VisibleAnywhere) int32 Hp = 1;
 	UPROPERTY(VisibleAnywhere) int32 MaxHp = 1;
 	/** Im Menü still (von GameMode gesetzt). */
 	bool bFrozen = false;
+	bool bModel = false;
+	/** Trefferpunkte setzen und Aussehen wählen (Boss größer); Ground = Bodenhöhe unter dem Gegner. */
+	void Init(int32 InHp, float Ground);
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
 private:
 	FVector Start; float T = 0;
 };
 
-/** Geschoss der Waffe „Werfen“. */
+/** Geschoss der Waffe „Werfen“ (mit Modell: geworfenes Beil, das sich dreht). */
 UCLASS()
 class ATrendoShot : public AActor
 {
@@ -549,23 +593,92 @@ public:
 	ATrendoShot();
 	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Mesh;
 	FVector Dir = FVector::ForwardVector; float Life = 1.5f;
+	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 };
 
 /** Farbe für eine Form setzen (Engine-Grundmaterial mit Farbparameter). */
 void TrendoPaint(UStaticMeshComponent* Mesh, const FLinearColor& Color);
+/** Echtes Modell zu einer Rolle (o, G, Z, waffe, wurf …) aus Content/Trendo/natur.json, sonst nullptr. */
+UStaticMesh* TrendoModel(const UObject* Context, const FString& Role);
+/** Menschmodell mit Skelett (Epic-Mannequin aus dem Engine-Plugin MoverExamples), sonst nullptr. */
+USkeletalMesh* TrendoHuman();
+/** Sportwagen (Engine-Plugin ChaosModularVehicleExamples), sonst nullptr. */
+USkeletalMesh* TrendoCar();
+/** Menschfigur bewegen: Gehen/Laufen fließend nach Tempo (Blendspace), in der Luft Sprung bzw. Fallen, im Stand Atmen. */
+void TrendoAnimate(USkeletalMeshComponent* Figure, const FVector& Velocity, bool bInAir);
+/** Figur einrichten: Modell, Blickrichtung (Mannequin schaut entlang Y), Füße auf FootZ, matte Farbe (Tint) statt Chrom. */
+bool TrendoSetupFigure(USkeletalMeshComponent* Figure, float FootZ, const FLinearColor& Tint = FLinearColor(0.32f, 0.36f, 0.27f));
 """,
         ["TrendoActors.cpp"] = """
-// Von Trendo erzeugt: Spielobjekte.
+// Von Trendo erzeugt: Spielobjekte – echte Modelle (Poly Haven, CC0; Epic-Mannequin und Sportwagen aus Engine-Plugins), sonst Grundformen.
 #include "TrendoActors.h"
 #include "TrendoGameMode.h"
+#include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Animation/AnimSingleNodeInstance.h"
+#include "Animation/AnimationAsset.h"
 #include "Engine/StaticMesh.h"
+#include "Engine/SkeletalMesh.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Kismet/GameplayStatics.h"
-#include "UObject/ConstructorHelpers.h"
 
 static UStaticMesh* TrendoShape(const TCHAR* Path) { return LoadObject<UStaticMesh>(nullptr, Path); }
+static const TCHAR* HumanPath = TEXT("/MoverExamples/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple");
+static const TCHAR* AnimDir = TEXT("/MoverExamples/Characters/Mannequins/Animations/Manny/");
+static const TCHAR* CarPath = TEXT("/ChaosModularVehicleExamples/Models/SportsCar/SKM_SportsCar.SKM_SportsCar");
+
+template <class T> static T* Cached(const FString& Path)
+{
+	static TMap<FString, TWeakObjectPtr<UObject>> Cache; static TSet<FString> Missing;
+	if (Missing.Contains(Path)) return nullptr;
+	TWeakObjectPtr<UObject>& W = Cache.FindOrAdd(Path);
+	if (!W.IsValid()) { W = LoadObject<T>(nullptr, *Path); if (!W.IsValid()) { Missing.Add(Path); return nullptr; } }
+	return Cast<T>(W.Get());
+}
+static UAnimationAsset* Anim(const TCHAR* Name) { return Cached<UAnimationAsset>(FString::Printf(TEXT("%s%s.%s"), AnimDir, Name, Name)); }
+
+USkeletalMesh* TrendoHuman() { return Cached<USkeletalMesh>(HumanPath); }
+USkeletalMesh* TrendoCar() { return Cached<USkeletalMesh>(CarPath); }
+
+UStaticMesh* TrendoModel(const UObject* Context, const FString& Role)
+{
+	const ATrendoGameMode* GM = Context ? Cast<ATrendoGameMode>(UGameplayStatics::GetGameMode(Context)) : nullptr;
+	if (!GM) return nullptr;
+	UStaticMesh* const* M = GM->Models.Find(Role); return M ? *M : nullptr;
+}
+
+bool TrendoSetupFigure(USkeletalMeshComponent* Figure, float FootZ, const FLinearColor& Tint)
+{
+	USkeletalMesh* Human = TrendoHuman(); if (!Figure || !Human) return false;
+	Figure->SetSkeletalMesh(Human);
+	Figure->SetRelativeLocationAndRotation(FVector(0, 0, FootZ), FRotator(0, -90, 0)); // Mannequin schaut entlang Y
+	Figure->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Figure->SetAnimationMode(EAnimationMode::AnimationSingleNode);
+	Figure->SetVisibility(true); Figure->SetCastShadow(true);
+	for (int32 i = 0; i < Figure->GetNumMaterials(); i++)
+		if (UMaterialInstanceDynamic* M = Figure->CreateDynamicMaterialInstance(i)) { M->SetVectorParameterValue(TEXT("Tint"), Tint); M->SetScalarParameterValue(TEXT("Metal_Brightness"), 0.35f); }
+	if (UAnimationAsset* Idle = Anim(TEXT("MM_Idle"))) Figure->PlayAnimation(Idle, true);
+	return true;
+}
+
+void TrendoAnimate(USkeletalMeshComponent* Figure, const FVector& Velocity, bool bInAir)
+{
+	if (!Figure || !Figure->GetSkeletalMeshAsset() || !Figure->IsVisible()) return;
+	UAnimSingleNodeInstance* I = Figure->GetSingleNodeInstance(); if (!I) return;
+	const float Speed = Velocity.Size2D();
+	UAnimationAsset* Want = bInAir ? Anim(Velocity.Z > 200.f ? TEXT("MM_Jump") : TEXT("MM_Fall_Loop")) : Speed < 15.f ? Anim(TEXT("MM_Idle")) : Anim(TEXT("BS_MM_WalkRun"));
+	if (!Want) return;
+	if (I->GetCurrentAsset() != Want) I->SetAnimationAsset(Want, Want != Anim(TEXT("MM_Jump")), 1.f);
+	if (Want == Anim(TEXT("BS_MM_WalkRun")))
+	{
+		// Blendspace: 0–231 cm/s Gehen, bis 500 cm/s Laufen; schneller (Sprint, Wagen) läuft die Lauf-Animation schneller, damit die Füße nicht rutschen
+		I->SetBlendSpacePosition(FVector(FMath::Min(Speed, 500.f), 0, 0));
+		I->SetPlayRate(Speed > 500.f ? Speed / 500.f : 1.f);
+	}
+	else I->SetPlayRate(1.f);
+}
 
 void TrendoPaint(UStaticMeshComponent* Mesh, const FLinearColor& Color)
 {
@@ -580,13 +693,43 @@ void TrendoPaint(UStaticMeshComponent* Mesh, const FLinearColor& Color)
 
 ATrendoThing::ATrendoThing()
 {
+	Catch = CreateDefaultSubobject<USphereComponent>(TEXT("Fang"));
+	RootComponent = Catch; Catch->SetSphereRadius(50.f); Catch->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Form"));
-	RootComponent = Mesh;
+	Mesh->SetupAttachment(Catch);
+	Figure = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Figur"));
+	Figure->SetupAttachment(Catch); Figure->SetVisibility(false); Figure->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ATrendoThing::Setup(TCHAR InTile, int32 X, int32 Y, const FLinearColor& Color, float Size, bool bSolid)
 {
 	Tile = FString::Chr(InTile); TileX = X; TileY = Y;
+	const ATrendoGameMode* GM = Cast<ATrendoGameMode>(UGameplayStatics::GetGameMode(this));
+	const float Foot = GM && GM->Data.World == TEXT("openworld") ? -60.f : -50.f * Size; // Abstand Mitte → Boden
+	// 1) Figur (N) als Mensch, Fahrzeug (V „wagen“) als Sportwagen
+	if (InTile == 'N' && TrendoSetupFigure(Figure, Foot, FLinearColor(0.42f, 0.33f, 0.22f))) bModel = true;
+	if (InTile == 'V' && Kind != TEXT("ufo"))
+		if (USkeletalMesh* Car = TrendoCar()) { Figure->SetSkeletalMesh(Car); Figure->SetRelativeLocation(FVector(0, 0, Foot)); Figure->SetVisibility(true); Figure->SetCastShadow(true); bModel = true; }
+	// 2) Gegenstände, Ziel, Speicherpunkt, Kiste … als Fotomodell (echte Größe, zufällig gedreht)
+	if (!bModel)
+		if (UStaticMesh* M = TrendoModel(this, Tile))
+		{
+			Mesh->SetStaticMesh(M); Mesh->SetRelativeLocationAndRotation(FVector(0, 0, Foot), FRotator(0, (X * 47 + Y * 13) % 360, 0));
+			Mesh->SetCollisionProfileName(bSolid ? TEXT("BlockAll") : TEXT("NoCollision"));
+			bModel = true;
+		}
+	if (bModel)
+	{
+		if (!bSolid)
+		{
+			Catch->SetSphereRadius(InTile == 'V' ? 260.f : InTile == 'Z' ? 110.f : InTile == 'N' ? 90.f : 70.f);
+			Catch->SetCollisionProfileName(TEXT("OverlapAllDynamic")); Catch->SetGenerateOverlapEvents(true);
+		}
+		if (InTile != 'N' && InTile != 'V' && !Mesh->GetStaticMesh()) Mesh->SetVisibility(false);
+		if (InTile == 'N' || InTile == 'V') Mesh->SetVisibility(false);
+		return;
+	}
+	// 3) Ohne Modell: Grundform wie bisher
 	const bool Round = InTile == 'o' || InTile == 'G' || InTile == 'K';
 	Mesh->SetStaticMesh(TrendoShape(Round ? TEXT("/Engine/BasicShapes/Sphere.Sphere") : InTile == 'N' ? TEXT("/Engine/BasicShapes/Cylinder.Cylinder") : TEXT("/Engine/BasicShapes/Cube.Cube")));
 	Mesh->SetWorldScale3D(FVector(Size));
@@ -603,16 +746,41 @@ ATrendoEnemy::ATrendoEnemy()
 	Mesh->SetStaticMesh(TrendoShape(TEXT("/Engine/BasicShapes/Cube.Cube")));
 	Mesh->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	Mesh->SetGenerateOverlapEvents(true);
+	Figure = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Figur"));
+	Figure->SetupAttachment(Mesh); Figure->SetVisibility(false); Figure->SetUsingAbsoluteScale(true);
 }
 
-void ATrendoEnemy::BeginPlay() { Super::BeginPlay(); Start = GetActorLocation(); TrendoPaint(Mesh, MaxHp > 1 ? FLinearColor(0.6f, 0.05f, 0.3f) : FLinearColor(0.8f, 0.2f, 0.6f)); }
+void ATrendoEnemy::BeginPlay() { Super::BeginPlay(); Start = GetActorLocation(); }
+
+void ATrendoEnemy::Init(int32 InHp, float Ground)
+{
+	MaxHp = Hp = InHp;
+	const float K = MaxHp > 1 ? 1.25f : 1.f; // Boss größer
+	if (TrendoSetupFigure(Figure, -50.f, MaxHp > 1 ? FLinearColor(0.16f, 0.05f, 0.04f) : FLinearColor(0.38f, 0.14f, 0.1f)))
+	{
+		// Menschmodell: unsichtbarer Trefferkörper so groß wie die Figur, Füße auf dem Boden
+		bModel = true; Mesh->SetHiddenInGame(true); Mesh->SetCastShadow(false);
+		SetActorScale3D(FVector(0.8f * K, 0.8f * K, 1.8f * K)); Figure->SetWorldScale3D(FVector(K));
+		Start = FVector(GetActorLocation().X, GetActorLocation().Y, Ground + 90.f * K); SetActorLocation(Start);
+		return;
+	}
+	SetActorScale3D(FVector(MaxHp > 1 ? 1.4f : 0.9f));
+	TrendoPaint(Mesh, MaxHp > 1 ? FLinearColor(0.6f, 0.05f, 0.3f) : FLinearColor(0.8f, 0.2f, 0.6f));
+}
 
 void ATrendoEnemy::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if (bFrozen) return;
+	if (bFrozen) { TrendoAnimate(Figure, FVector::ZeroVector, false); return; }
 	T += DeltaSeconds;
+	// Hin und her gehen (Wendepunkte mit Abbremsen), Blick in Gehrichtung
+	const float Vx = FMath::Cos(T * 1.5f) * 225.f;
 	SetActorLocation(Start + FVector(FMath::Sin(T * 1.5f) * 150.f, 0, 0));
+	if (bModel)
+	{
+		if (FMath::Abs(Vx) > 20.f) SetActorRotation(FMath::RInterpTo(GetActorRotation(), FRotator(0, Vx > 0 ? 0.f : 180.f, 0), DeltaSeconds, 6.f));
+		TrendoAnimate(Figure, FVector(Vx, 0, 0), false);
+	}
 }
 
 ATrendoShot::ATrendoShot()
@@ -623,6 +791,12 @@ ATrendoShot::ATrendoShot()
 	Mesh->SetStaticMesh(TrendoShape(TEXT("/Engine/BasicShapes/Sphere.Sphere")));
 	Mesh->SetWorldScale3D(FVector(0.2f));
 	Mesh->SetCollisionProfileName(TEXT("NoCollision"));
+}
+
+void ATrendoShot::BeginPlay()
+{
+	Super::BeginPlay();
+	if (UStaticMesh* Axe = TrendoModel(this, TEXT("wurf"))) { Mesh->SetStaticMesh(Axe); Mesh->SetWorldScale3D(FVector(1.f)); Mesh->SetCastShadow(true); }
 }
 
 void ATrendoShot::Tick(float DeltaSeconds)
@@ -638,6 +812,7 @@ void ATrendoShot::Tick(float DeltaSeconds)
 			if (IsValid(E) && E->Hp > 0 && FMath::PointDistToSegment(E->GetActorLocation(), From, To) < 70.f) { GM->Damage(E); Destroy(); return; }
 	if (GetWorld()->LineTraceSingleByChannel(Hit, From, To, ECC_Visibility, Q) || Life <= 0) { Destroy(); return; }
 	SetActorLocation(To);
+	SetActorRotation(FRotator(-Life * 900.f, Dir.Rotation().Yaw, 0)); // geworfenes Beil überschlägt sich
 }
 """,
         ["TrendoCharacter.h"] = """
@@ -649,7 +824,7 @@ void ATrendoShot::Tick(float DeltaSeconds)
 #include "InputActionValue.h"
 #include "TrendoCharacter.generated.h"
 
-class USpringArmComponent; class UCameraComponent; class UStaticMeshComponent; class UInputAction; class UInputMappingContext;
+class USpringArmComponent; class UCameraComponent; class UStaticMeshComponent; class USkeletalMeshComponent; class UInputAction; class UInputMappingContext;
 
 /** Spielfigur: WASD/Pfeile laufen, Leertaste springt (Doppelsprung), Umschalt sprintet, X/J/linke Maustaste greift an, E steigt aus, Esc pausiert. Controller ebenso. */
 UCLASS()
@@ -662,6 +837,14 @@ public:
 	UPROPERTY(VisibleAnywhere) UCameraComponent* Camera;
 	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Body;
 	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* VehicleMesh;
+	/** Sportwagen (echtes Modell), wenn vorhanden; sonst die Form VehicleMesh. */
+	UPROPERTY(VisibleAnywhere) USkeletalMeshComponent* CarMesh;
+	/** Waffe in der rechten Hand (Säbel bzw. Beil). */
+	UPROPERTY(VisibleAnywhere) UStaticMeshComponent* Weapon;
+	/** true, wenn die Figur das Menschmodell mit Skelett und Animationen nutzt. */
+	bool bHuman = false;
+	/** Waffe einmalig in der Faust ausgerichtet (nach der ersten Ruhepose). */
+	bool bWeaponSet = false;
 	FVector Checkpoint; FString Vehicle; float Fuel = 0, Safe = 0, NoEnter = 0, Cool = 0; bool bSprint = false;
 
 	/** Tempo mit Sprint (Fähigkeit) und Fahrzeug, in cm/s. */
@@ -711,6 +894,8 @@ private:
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Engine/SkeletalMesh.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
@@ -741,13 +926,22 @@ ATrendoCharacter::ATrendoCharacter()
 	VehicleMesh->SetupAttachment(RootComponent); VehicleMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	VehicleMesh->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cube.Cube")));
 	VehicleMesh->SetRelativeLocation(FVector(0, 0, -70)); VehicleMesh->SetRelativeScale3D(FVector(1.6f, 1.0f, 0.4f)); VehicleMesh->SetVisibility(false);
+	CarMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Wagen"));
+	CarMesh->SetupAttachment(RootComponent); CarMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision); CarMesh->SetVisibility(false); CarMesh->SetRelativeLocation(FVector(0, 0, -90));
+	Weapon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Waffe"));
+	Weapon->SetupAttachment(GetMesh()); Weapon->SetCollisionEnabled(ECollisionEnabled::NoCollision); Weapon->SetVisibility(false);
 }
 
 void ATrendoCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	Checkpoint = GetActorLocation();
-	TrendoPaint(Body, FLinearColor(0.31f, 0.7f, 1.f));
+	// Echte Menschfigur (Skelett, Geh-/Lauf-/Sprung-Animationen), sonst Form
+	bHuman = TrendoSetupFigure(GetMesh(), -90.f);
+	if (bHuman) Body->SetVisibility(false); else TrendoPaint(Body, FLinearColor(0.31f, 0.7f, 1.f));
+	if (USkeletalMesh* Car = TrendoCar()) CarMesh->SetSkeletalMesh(Car);
+	if (const ATrendoGameMode* G = Cast<ATrendoGameMode>(UGameplayStatics::GetGameMode(this)); bHuman && G)
+		if (UStaticMesh* W = TrendoModel(this, G->Data.Weapon == TEXT("schwert") ? TEXT("waffe") : TEXT("wurf"))) { Weapon->SetStaticMesh(W); Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("hand_r")); Weapon->SetVisibility(true); }
 	TrendoPaint(VehicleMesh, FLinearColor(0.98f, 0.45f, 0.09f));
 	ApplyAbilities();
 	if (APlayerController* PC = Cast<APlayerController>(GetController()))
@@ -771,7 +965,11 @@ void ATrendoCharacter::ApplyAbilities()
 void ATrendoCharacter::SetVehicle(const FString& Kind)
 {
 	Vehicle = Kind; Fuel = Kind == TEXT("ufo") ? 10.f : 0.f;
-	VehicleMesh->SetVisibility(!Kind.IsEmpty());
+	const bool bCar = Kind == TEXT("wagen") && CarMesh->GetSkeletalMeshAsset();
+	CarMesh->SetVisibility(bCar); VehicleMesh->SetVisibility(!Kind.IsEmpty() && !bCar);
+	// Im Wagen sitzt die Figur unsichtbar am Steuer; der Wagen dreht träger als ein Mensch
+	if (bHuman) { GetMesh()->SetVisibility(Kind.IsEmpty()); Weapon->SetVisibility(Kind.IsEmpty() && Weapon->GetStaticMesh() != nullptr); }
+	GetCharacterMovement()->RotationRate = FRotator(0, bCar ? 160 : 720, 0);
 	ApplyAbilities();
 }
 
@@ -787,6 +985,15 @@ void ATrendoCharacter::Tick(float DeltaSeconds)
 		if (GetCharacterMovement()->IsMovingOnGround()) GetCharacterMovement()->SetMovementMode(MOVE_Falling);
 		Fuel -= DeltaSeconds;
 		if (Fuel <= 0) { SetVehicle(FString()); if (ATrendoGameMode* GM = Cast<ATrendoGameMode>(UGameplayStatics::GetGameMode(this))) GM->State.Note = TEXT("Treibstoff leer"); }
+	}
+	if (bHuman) TrendoAnimate(GetMesh(), GetVelocity(), GetCharacterMovement()->IsFalling());
+	if (bHuman && !bWeaponSet && Weapon->GetStaticMesh() && GetGameTimeSinceCreation() > 0.3f)
+	{
+		// Klinge (Modellachse Z) schräg nach vorn unten, Griff in der Faust; danach folgt sie der Hand bei jeder Bewegung
+		bWeaponSet = true;
+		const FTransform Hand = GetMesh()->GetSocketTransform(TEXT("hand_r"));
+		const FVector Dir = (GetActorForwardVector() * 0.8f - FVector::UpVector * 0.6f).GetSafeNormal();
+		Weapon->SetWorldLocationAndRotation(Hand.GetLocation() - FVector::UpVector * 8.f + GetActorForwardVector() * 2.f, FRotationMatrix::MakeFromZX(Dir, GetActorRightVector()).Rotator());
 	}
 	if (GetActorLocation().Z < -5000.f) if (ATrendoGameMode* GM = Cast<ATrendoGameMode>(UGameplayStatics::GetGameMode(this))) GM->Hit(true);
 }
@@ -895,7 +1102,7 @@ void ATrendoCharacter::NotifyActorBeginOverlap(AActor* Other)
 #include "TrendoTypes.h"
 #include "TrendoGameMode.generated.h"
 
-class ATrendoThing; class ATrendoEnemy; class ATrendoCharacter;
+class ATrendoThing; class ATrendoEnemy; class ATrendoCharacter; class UStaticMesh;
 
 /** Spielstand – gleiche Inhalte wie in Trendo (Format 1). */
 UCLASS()
@@ -928,6 +1135,8 @@ public:
 	FTrendoData Data; FTrendoState State;
 	UPROPERTY() TArray<ATrendoEnemy*> Enemies;
 	UPROPERTY() TArray<AActor*> Spawned;
+	/** Echte Modelle je Rolle (Kachel-Zeichen o, G, Z … sowie waffe, wurf) aus Content/Trendo/natur.json. */
+	UPROPERTY() TMap<FString, UStaticMesh*> Models;
 	/** Menü: menu, play, pause, settings, help. */
 	FString Mode = TEXT("menu"); int32 Sel = 0; FString Back = TEXT("menu"); bool bHasSave = false;
 	bool bContrast = false, bBig = false, bMap = true; int32 Volume = 100;
@@ -954,12 +1163,13 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 private:
-	float CheckSeconds = -1; bool bShotTaken = false;
+	float CheckSeconds = -1; bool bShotTaken = false; bool bCloseShot = false; bool bCloseDone = false;
 	FVector Origin = FVector::ZeroVector; FRotator StartRot = FRotator::ZeroRotator;
 	FVector Place(int32 X, int32 Y) const;
 	void Freeze();
 	void Report();
 	void SpawnNature();
+	void LoadModels();
 	int32 NatureCount = 0;
 };
 """,
@@ -980,6 +1190,9 @@ private:
 #include "Misc/CommandLine.h"
 #include "UnrealClient.h"
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
+#include "Engine/SkeletalMesh.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Engine/DirectionalLight.h"
 #include "Engine/ExponentialHeightFog.h"
 #include "Components/ExponentialHeightFogComponent.h"
@@ -1020,6 +1233,7 @@ void ATrendoGameMode::BeginPlay()
 		if (UTrendoSaveGame* S = Cast<UTrendoSaveGame>(UGameplayStatics::LoadGameFromSlot(TEXT("Trendo"), 0)); S && S->Version <= 1 && Data.Levels.IsValidIndex(S->Level))
 		{ State.Level = S->Level; State.Score = S->Score; State.Lives = FMath::Max(1, S->Lives); State.Inventory = S->Inventory; }
 	Mode = Data.bMenu ? TEXT("menu") : TEXT("play");
+	LoadModels();
 	if (Data.Levels.Num() > 0) BuildWorld(State.Level);
 	SpawnNature();
 	if (FParse::Param(FCommandLine::Get(), TEXT("trendocheck"))) { CheckSeconds = FParse::Param(FCommandLine::Get(), TEXT("trendoshot")) ? 12.f : 4.f; Mode = TEXT("play"); } // Bild erst, wenn Texturen geladen sind
@@ -1059,8 +1273,7 @@ void ATrendoGameMode::BuildWorld(int32 Level)
 			{
 				FActorSpawnParameters SP; SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				ATrendoEnemy* E = GetWorld()->SpawnActor<ATrendoEnemy>(P + FVector(0, 0, 10), FRotator::ZeroRotator, SP);
-				E->MaxHp = E->Hp = FMath::Clamp(FMath::RoundToInt(Data.Prop(Level, X, Y, TEXT("hp"), 1)), 1, 9);
-				E->SetActorScale3D(FVector(E->MaxHp > 1 ? 1.4f : 0.9f));
+				E->Init(FMath::Clamp(FMath::RoundToInt(Data.Prop(Level, X, Y, TEXT("hp"), 1)), 1, 9), P.Z - (bOpen ? 60.f : 50.f));
 				Enemies.Add(E); Spawned.Add(E); continue;
 			}
 			FActorSpawnParameters SP; SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -1081,8 +1294,8 @@ void ATrendoGameMode::BuildWorld(int32 Level)
 			case 'V': Col = FLinearColor(0.98f, 0.45f, 0.09f); Size = 0.9f; break;
 			default: break;
 			}
-			T->Setup(C, X, Y, Col, Size, bSolid);
 			if (C == 'V') T->Kind = Data.Text(Level, X, Y, TEXT("kind"), TEXT("wagen"));
+			T->Setup(C, X, Y, Col, Size, bSolid);
 			Spawned.Add(T);
 		}
 	if (ATrendoCharacter* H = Hero())
@@ -1156,7 +1369,7 @@ void ATrendoGameMode::Dismount()
 	ATrendoCharacter* H = Hero(); if (!H || H->Vehicle.IsEmpty()) return;
 	FActorSpawnParameters SP; SP.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	ATrendoThing* T = GetWorld()->SpawnActor<ATrendoThing>(H->GetActorLocation() - H->GetActorForwardVector() * 150.f, FRotator::ZeroRotator, SP);
-	T->Setup('V', -1, -1, FLinearColor(0.98f, 0.45f, 0.09f), 0.9f, false); T->Kind = H->Vehicle; Spawned.Add(T);
+	T->Kind = H->Vehicle; T->Setup('V', -1, -1, FLinearColor(0.98f, 0.45f, 0.09f), 0.9f, false); Spawned.Add(T);
 	H->SetVehicle(FString()); H->NoEnter = 0.5f; State.Note = TEXT("Ausgestiegen");
 }
 
@@ -1231,9 +1444,35 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 	if (CheckSeconds > 0 && (CheckSeconds -= DeltaSeconds) <= 0)
 	{
 		// Startlauf (-trendocheck): mit -trendoshot erst ein Bildschirmfoto nach Saved/Screenshots, dann Bericht und Ende
-		if (!bShotTaken && FParse::Param(FCommandLine::Get(), TEXT("trendoshot"))) { bShotTaken = true; FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-start.png"), false, false); CheckSeconds = 1.5f; }
+		const bool bShot = FParse::Param(FCommandLine::Get(), TEXT("trendoshot"));
+		if (!bShotTaken && bShot) { bShotTaken = true; FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-start.png"), false, false); CheckSeconds = 1.5f; }
+		else if (bShot && !bCloseShot && Data.World == TEXT("openworld"))
+		{
+			// Zweites Bild aus der Nähe: Figur seitlich vor die ersten Spielobjekte stellen (Modelle prüfen), Bericht folgt danach
+			bCloseShot = true; CheckSeconds = 4.f;
+			ATrendoThing* First = nullptr; for (AActor* A : Spawned) if (ATrendoThing* T = Cast<ATrendoThing>(A); IsValid(T) && T->bModel) { First = T; break; }
+			if (ATrendoCharacter* H = Hero(); H && First)
+			{
+				const FVector Fwd = StartRot.Vector(), Right = FRotationMatrix(StartRot).GetUnitAxis(EAxis::Y);
+				H->SetActorLocation(First->GetActorLocation() - Fwd * 260.f + Right * 120.f + FVector(0, 0, 60), false, nullptr, ETeleportType::TeleportPhysics);
+				H->SetActorRotation(StartRot); if (AController* C = H->GetController()) C->SetControlRotation(StartRot + FRotator(-14, -12, 0));
+			}
+		}
+		else if (bCloseShot && !bCloseDone) { bCloseDone = true; FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-objekte.png"), false, false); CheckSeconds = 1.5f; }
 		else Report();
 	}
+}
+
+/** Echte Modelle für Spielobjekte aus Content/Trendo/natur.json („objects“: Rolle → Modellpfad). */
+void ATrendoGameMode::LoadModels()
+{
+	Models.Empty();
+	FString Json; if (!FFileHelper::LoadFileToString(Json, *(FPaths::ProjectContentDir() / TEXT("Trendo/natur.json")))) return;
+	TSharedPtr<FJsonObject> O; if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), O) || !O.IsValid()) return;
+	const TSharedPtr<FJsonObject>* Obj; if (!O->TryGetObjectField(TEXT("objects"), Obj)) return;
+	for (const auto& KV : (*Obj)->Values)
+		if (UStaticMesh* M = LoadObject<UStaticMesh>(nullptr, *KV.Value->AsString())) Models.Add(FString(KV.Key), M);
+	UE_LOG(LogTrendo, Display, TEXT("TRENDO-MODELLE %d Spielobjekt-Modelle, Mensch=%s, Wagen=%s"), Models.Num(), TrendoHuman() ? TEXT("ja") : TEXT("nein"), TrendoCar() ? TEXT("ja") : TEXT("nein"));
 }
 
 /** Pflanzen, Bäume, Felsen und Holz aus Content/Trendo/natur.json (von Trendo eingerichtet) auf dem Gelände verteilen – feste Zufallsfolge, Spielweg bleibt frei. */
@@ -1290,6 +1529,8 @@ void ATrendoGameMode::Report()
 	const bool bGround = H && H->GetCharacterMovement()->IsMovingOnGround();
 	int32 Live = 0; for (AActor* A : Spawned) if (IsValid(A)) Live++;
 	UE_LOG(LogTrendo, Display, TEXT("TRENDO-SPIEL Welt=%s Level=%d Objekte=%d Gegner=%d Natur=%d Figur=%s Boden=%s Z=%.0f"), *Data.World, State.Level, Live, Enemies.Num(), NatureCount, H ? TEXT("ja") : TEXT("nein"), bGround ? TEXT("ja") : TEXT("nein"), H ? H->GetActorLocation().Z : 0.f);
+	for (AActor* A : Spawned) if (ATrendoThing* T = Cast<ATrendoThing>(A); IsValid(T))
+		UE_LOG(LogTrendo, Display, TEXT("TRENDO-OBJEKT %s Modell=%s %s"), *T->Tile, T->bModel ? TEXT("ja") : TEXT("nein"), T->Mesh->GetStaticMesh() ? *T->Mesh->GetStaticMesh()->GetName() : T->Figure->GetSkeletalMeshAsset() ? *T->Figure->GetSkeletalMeshAsset()->GetName() : TEXT("-"));
 	UE_LOG(LogTrendo, Display, TEXT("%s"), H && bGround && Live > 0 ? TEXT("TRENDO-OK Spiel läuft, Figur steht") : TEXT("TRENDO-FEHLER Spiel nicht spielbar"));
 	FGenericPlatformMisc::RequestExit(false);
 }

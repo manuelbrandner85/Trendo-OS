@@ -39,6 +39,12 @@ public class UnrealGameTests
             var lv = JsonNode.Parse(File.ReadAllText(Path.Combine(dir, "Content", "Trendo", "level.json")))!;
             Assert.Equal(("openworld", "schwert", "Sammler", "Waldläufer"), (lv["world"]!.GetValue<string>(), lv["weapon"]!.GetValue<string>(), lv["rules"]![0]!["title"]!.GetValue<string>(), lv["name"]!.GetValue<string>()));
             Assert.DoesNotContain("\r", File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoGameMode.cpp")));
+            // Echte Modelle statt Grundformen: Menschfigur mit Animationen, Sportwagen, Fotomodelle je Rolle – Grundform nur als Rückfall
+            var actors = File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoActors.cpp"));
+            Assert.Contains("SKM_Manny_Simple", actors); Assert.Contains("BS_MM_WalkRun", actors); Assert.Contains("SKM_SportsCar", actors);
+            Assert.Contains("SetBlendSpacePosition", actors); Assert.Contains("Ohne Modell: Grundform", actors);
+            Assert.Contains("TrendoSetupFigure(GetMesh()", File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoCharacter.cpp")));
+            Assert.Contains("\"objects\"", File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "TrendoGameMode.cpp")));
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
     }
