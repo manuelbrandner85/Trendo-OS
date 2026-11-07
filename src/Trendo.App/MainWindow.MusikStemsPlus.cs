@@ -98,9 +98,32 @@ public partial class MainWindow
         }
         var play = Act("ms-stem-play", "▶ Mischung anhören", () => MsStemPlay(s));
         var save = Act("ms-stem-save", "Als Lied speichern", () => MsStemSave(s));
-        sp.Children.Add(new WrapPanel { Children = { play, new Border { Width = 4 }, save } });
+        var karaoke = Act("ms-karaoke", "🎤 Karaoke (LRC)", () => _ = MsKaraoke(s)); // V8
+        sp.Children.Add(new WrapPanel { Children = { play, new Border { Width = 4 }, save, new Border { Width = 4 }, karaoke } });
         if (MsStemQuality is { } q) sp.Children.Add(P($"Letzte Trennung: {q.Reconstruction:0.0} dB Rekonstruktion, Übersprechen {q.Bleed:0.00}.", Muted, 10.5));
         return sp;
+    }
+
+    /// <summary>V8 Karaoke: Liedtext-Zeilen auf die Gesangsphrasen legen (aus der Gesangsspur), als LRC neben die Begleitung schreiben und die Begleitung abspielen.</summary>
+    public async Task<string?> MsKaraoke(MusicSong s, bool play = true)
+    {
+        var root = Songs.Get(MsStemRoot(s)) ?? s; var (acc, voc) = StemsOf(s);
+        if (acc is null || voc is null) { _msMsg = "Für Karaoke erst „Spuren trennen“ – dann gibt es Begleitung und Gesang."; Show(MS); return null; }
+        var lines = LyricTiming.Lines(root.Lyrics);
+        if (lines.Count == 0) { _msMsg = "Für Karaoke fehlt der Liedtext – unter „Lied“ deinen eigenen Text einfügen."; Show(MS); return null; }
+        var mel = await MelodyOf(voc);
+        if (mel is null) { _msMsg = "Die Gesangsmelodie ließ sich nicht bestimmen (Analyse einrichten)."; Show(MS); return null; }
+        var timed = LyricTiming.Align(lines, LyricTiming.Phrases(mel));
+        if (timed.Count == 0) { _msMsg = "Im Gesang wurden keine gesungenen Stellen gefunden."; Show(MS); return null; }
+        // Ende einer Zeile nie nach dem Beginn der nächsten (sonst überlappen die Zeilen im Player)
+        var cues = timed.Select((l, i) => new TimedText.Cue(l.Start, i + 1 < timed.Count ? Math.Min(l.End, timed[i + 1].Start) : l.End, l.Text)).Where(c => c.End > c.Start).ToList();
+        var lrc = Path.ChangeExtension(acc.File, ".lrc");
+        await File.WriteAllTextAsync(lrc, TimedText.ToLrc(cues, root.Title, root.Language.Length > 0 ? root.Language : "de", acc.Seconds));
+        _core.Audit.Append(Principal.LocalOwner.Name, "musik.karaoke", Path.GetFileName(lrc));
+        if (play) MusicPlay([acc.File], 0, MS);
+        _msMsg = $"🎤 Karaoke: {cues.Count} Zeilen mit Zeiten – „{Path.GetFileName(lrc)}“ liegt neben der Begleitung (für jeden Karaoke-Player)." + (play ? " Die Begleitung läuft." : "");
+        Show(MS);
+        return lrc;
     }
 
     Control MsStemModelBox()

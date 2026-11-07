@@ -50,6 +50,15 @@ public class MusikStems_Ui
             var noVocal = w.MsStemPlay(s!)!;
             Assert.True(Rms(noVocal) < Rms(full) * 0.85, $"{Rms(noVocal)} vs {Rms(full)}");
             var saved = w.MsStemSave(s!)!; Assert.Equal("mischung", saved.Kind); Assert.True(File.Exists(saved.File));
+            // V8 Karaoke: ohne Text freundlicher Hinweis; mit Text LRC mit vier Zeilen aus vier gesungenen Phrasen, Begleitung läuft
+            Assert.Null(await w.MsKaraoke(s!));
+            w.Songs.Update(s!.Id, x => x.Lyrics = "[Strophe]\nErste Zeile hier\nZweite Zeile dort\n\n[Refrain]\nDritte Zeile laut\nVierte Zeile leis");
+            w.MelodyOverride = _ => Task.FromResult<string?>("{\"hop\":0.05,\"midi\":[" + string.Join(",", Enumerable.Range(0, 400).Select(i => i % 100 < 70 ? "62.0" : "null")) + "]}");
+            var lrc = await w.MsKaraoke(w.Songs.Get(s.Id)!);
+            Assert.NotNull(lrc); var lines = TimedText.ReadLrc(File.ReadAllText(lrc!));
+            Assert.Equal(["Erste Zeile hier", "Zweite Zeile dort", "Dritte Zeile laut", "Vierte Zeile leis"], lines.Take(4).Select(x => x.Text));
+            Assert.Equal([0.0, 5.0, 10.0, 15.0], lines.Take(4).Select(x => x.Time));
+            Assert.EndsWith("begleitung.wav", fake.Loads[^1]);
             // V7: Modellwahl
             w.Show("musik-studio"); Settle();
             w.Find<ComboBox>("ms-stem-model").SelectedIndex = 1; Assert.Equal("htdemucs_ft", w.MsStemModel);
