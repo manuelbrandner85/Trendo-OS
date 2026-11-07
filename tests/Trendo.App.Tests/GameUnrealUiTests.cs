@@ -47,9 +47,12 @@ public class GameUnreal_Ui
                 return (0, args.Contains("-RenderOffscreen") ? "LogPython: TRENDO-MENSCH Kleidung: 0 Outfit(s) – Grundkleidung von Epic\nLogPython: TRENDO-MENSCH Waldlaeuferin (Ada) gebaut: 3 Körperteile, 3 Haar-Arten, Kleidung Grundkleidung von Epic, Bewegungen übertragen\nLogPython: TRENDO-MENSCH Gegner: nicht gebaut (Zusammenbau fehlgeschlagen) – bleibt Gliederpuppe\nLogPython: TRENDO-MENSCH-OK 1 Waldlaeuferin" : "ohne Grafik");
             if (args.Any(a => a.StartsWith("-ExecutePythonScript="))) return (0, "LogPython: TRENDO-WELT Bodenmaterial: /Game/Trendo/Natur/M_TrendoBoden\nLogPython: TRENDO-WELT-OK 39 Pflanzen/Felsen-Modelle");
             if (args.Any(a => a.Contains("Automation RunTests"))) return (0, string.Join("\n", new[] { "Daten", "Regeln", "Spielstand" }.Select(t => $"Test Completed. Result={{Success}} Name={{{t}}} Path={{Trendo.{t}}}")));
-            return (0, "TRENDO-SPIEL Welt=openworld Level=0 Objekte=7 Gegner=1 Figur=ja Boden=ja Z=92\nTRENDO-OK Spiel läuft, Figur steht");
+            return (0, "TRENDO-SPIEL Welt=openworld Level=0 Objekte=7 Gegner=1 Figur=ja Boden=ja Z=92\nTRENDO-GEGNER alarmiert=ja Abstand vorher=1100 nachher=221 Leben 3→3 verfolgt\nTRENDO-WAGEN gesteuert=ja Klasse=TrendoCar Tempo=1 km/h Strecke=2.6 m Raddrehung=336° (Reifen drehen sich) Gang=1\nTRENDO-OK Spiel läuft, Figur steht");
         };
         await w.GameUnrealCheck(d, screenshot: false); Pump();
+        Assert.Contains("Testspieler-Bot: 2 von 3 Prüfpunkten in Ordnung", w.LastUnrealReport); // Testspieler-Bot aus den Messzeilen
+        Assert.Contains("⚠ Fahrzeug: Wagen kommt nur 2,6 m weit", w.LastUnrealReport);
+        Assert.Contains(Trendo.Core.Programs.GameBoard.Tasks(d.Data), t => t["source"]!.GetValue<string>() == "Testspieler"); // Auffälliges landet als Aufgabe im Board
         Assert.Equal(["Build.bat", "UnrealEditor-Cmd.exe", "UnrealEditor-Cmd.exe", "UnrealEditor-Cmd.exe", "UnrealEditor.exe"], runs);
         Assert.Contains("Echte Menschen (MetaHuman): Waldlaeuferin (Ada)", w.LastUnrealReport);
         Assert.Contains("Gegner: nicht gebaut", w.LastUnrealReport); // fehlende Figur wird genannt, Spiel läuft weiter

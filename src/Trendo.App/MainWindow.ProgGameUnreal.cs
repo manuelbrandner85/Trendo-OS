@@ -69,6 +69,15 @@ public partial class MainWindow
                 var (_, glog) = await Task.Run(() => UnrealRun(UnrealGame.Editor(engine), UnrealGame.CheckArgs(uproject, Path.Combine(logs, "start.txt"), screenshot && !_opt.Isolated), Path.Combine(logs, "start.txt"), 900_000));
                 var (gok, gtext) = UnrealGame.ParseCheck(glog);
                 ok &= gok; lines.Add((gok ? "✓ Spiel läuft: " : "✗ Spiel: ") + gtext);
+                // Testspieler-Bot: der Startlauf hat das Spiel angespielt – Prüfpunkte mit Messwert; Auffälliges kommt als Aufgabe ins Board
+                var bot = Trendo.Core.Programs.GamePlaytest.Read(glog);
+                if (bot.Count > 0)
+                {
+                    lines.Add($"Testspieler-Bot: {bot.Count(b => b.Ok)} von {bot.Count} Prüfpunkten in Ordnung");
+                    lines.AddRange(bot.Select(b => $"  {(b.Ok ? "✓" : "⚠")} {b.Area}: {b.Text}"));
+                    var bad = bot.Where(b => !b.Ok).ToList();
+                    if (bad.Count > 0) _ui.Post(() => d.Edit("Testspieler", x => { foreach (var b in bad) GameBoard.Add(x, $"{b.Area}: {b.Text}", "Testspieler"); }));
+                }
             }
         }
         catch (Exception e) when (e is IOException or InvalidOperationException or System.ComponentModel.Win32Exception) { ok = false; lines.Add("✗ " + e.Message); }
@@ -173,6 +182,21 @@ public partial class MainWindow
         if (shot.Length > 0 && File.Exists(shot))
             try { sp.Children.Add(new Border { CornerRadius = new CornerRadius(8), ClipToBounds = true, MaxWidth = 560, HorizontalAlignment = HorizontalAlignment.Left, Child = new Image { Name = "game-ue-shot", Source = new Bitmap(shot), Stretch = Stretch.Uniform } }); }
             catch (Exception e) when (e is IOException or ArgumentException) { }
+        // Bilder des Testspieler-Bots in Spielreihenfolge (Gegner, Kampf, Nahaufnahme, Wagen …)
+        var shots = Trendo.Core.Programs.GamePlaytest.Shots(built).Where(s => !s.Path.EndsWith("trendo-start.png")).ToList();
+        if (shots.Count > 0)
+        {
+            var gal = new WrapPanel { Name = "game-ue-gallery" };
+            foreach (var (path, label) in shots)
+                try
+                {
+                    gal.Children.Add(new StackPanel { Margin = new Thickness(0, 0, 8, 8), Spacing = 3, Children = {
+                        new Border { CornerRadius = new CornerRadius(8), ClipToBounds = true, BorderBrush = EdgeLit, BorderThickness = new Thickness(1), Child = new Image { Source = new Bitmap(path), Width = 200, Height = 113, Stretch = Stretch.UniformToFill } },
+                        new TextBlock { Text = label, Foreground = Text, FontSize = 11.5 } } });
+                }
+                catch (Exception e) when (e is IOException or ArgumentException) { }
+            sp.Children.Add(H("Testspieler-Bot – Bilder aus dem Lauf", 12.5)); sp.Children.Add(gal);
+        }
         return sp;
     }
 }

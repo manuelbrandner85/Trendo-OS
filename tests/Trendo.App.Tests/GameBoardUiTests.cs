@@ -35,6 +35,6 @@ public class GameBoard_Ui
         Assert.Contains(GameBoard.Tasks(d.Data), t => t["source"]!.GetValue<string>() == "Meilenstein");
         var before = GameBoard.Tasks(d.Data).Count;
         w.Find<Button>("prog-undo").Press(); Pump();
-        Assert.Equal(1, GameBoard.Tasks(d.Data).Count); Assert.NotEqual(before, GameBoard.Tasks(d.Data).Count); // Übernahme rückgängig
+        Assert.Single(GameBoard.Tasks(d.Data)); Assert.NotEqual(before, GameBoard.Tasks(d.Data).Count); // Übernahme rückgängig
     }
 }
