@@ -75,3 +75,39 @@ public class AudioPlugins_Ui
         finally { w.Close(); }
     }
 }
+
+/// <summary>Paket 01 – Studio 4, S4-19 (07.11.2026): Melodie → Noten im Audioeditor.</summary>
+public class AudioMidi_Ui
+{
+    static string Wav(string dir, string name, int[] pitches, bool chord)
+    {
+        const int rate = 44100; var seg = (int)(0.4 * rate); var n = chord ? rate : pitches.Length * seg; var x = new float[n];
+        for (var i = 0; i < n; i++)
+        {
+            var t = i / (double)rate;
+            x[i] = chord ? (float)pitches.Sum(p => 0.25 * Math.Sin(2 * Math.PI * 440 * Math.Pow(2, (p - 69) / 12.0) * t))
+                : (float)(0.5 * Math.Sin(2 * Math.PI * 440 * Math.Pow(2, (pitches[Math.Min(pitches.Length - 1, i / seg)] - 69) / 12.0) * t) * Math.Min(1, (i % seg) / 400.0) * Math.Min(1, (seg - i % seg) / 400.0));
+        }
+        var f = Path.Combine(dir, name); AudioFile.WriteWav(new AudioBuf(rate, [x, (float[])x.Clone()]), f); return f;
+    }
+
+    [AvaloniaFact(DisplayName = "S4-19 Audioeditor: Melodie → Noten schreibt MIDI und Unsicherheitsbericht, legt die Noten in Trendo Musik; Akkord wird als NICHT exakt gemeldet")]
+    public void Melody_to_midi()
+    {
+        var (w, _, root) = Ui.Open(); Directory.CreateDirectory(root);
+        try
+        {
+            w.Show("ton"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer")); Settle();
+            w.AuOpen(Wav(root, "melodie.wav", [60, 62, 64, 65], false)); w.Show("ton"); Settle();
+            var mid = w.AuMelodyToMidi(w.ProgramActive("ton")!);
+            Assert.True(File.Exists(mid)); Assert.True(w.AuMidiLast!.Exact, w.AuMidiLast.Verdict);
+            Assert.Equal([60, 62, 64, 65], PianoRoll.FromMidi(File.ReadAllBytes(mid)).Song!.Notes.Select(n => n.Pitch));
+            Assert.Equal([60, 62, 64, 65], w.MsRoll.Notes.Select(n => n.Pitch)); // liegt zum Prüfen in Trendo Musik
+            Assert.True(File.Exists(Path.Combine(Path.GetDirectoryName(mid)!, "melodie – Unsicherheitsbericht.md")));
+            w.AuOpen(Wav(root, "akkord.wav", [57, 60, 64], true)); w.Show("ton"); Settle();
+            w.AuMelodyToMidi(w.ProgramActive("ton")!);
+            Assert.False(w.AuMidiLast!.Exact); Assert.Contains("NICHT exakt", w.ProgramMessage("ton"));
+        }
+        finally { w.Close(); }
+    }
+}

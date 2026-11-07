@@ -94,6 +94,7 @@ public partial class MainWindow
             ("Prüfen", [ // Paket 01 S4-20
                 new ProgramCmd("au-qa-cmd", "✅ Prüfen", d => AuQa(d), Tip: "Lautheit, True Peak, Übersteuerung, Format, Phase, Herkunft – rechts das Ziel wählen"),
                 new ProgramCmd("au-release-cmd", "📦 Freigeben", d => AuRelease(d), Tip: "Nur ohne Rot: WAV 24 Bit und Prüfbericht mit Prüfsumme"),
+                new ProgramCmd("au-midi-cmd", "🎼 Melodie → Noten", d => AuMelodyToMidi(d), Tip: "Einstimmige Melodie als MIDI mit Sicherheit je Note – Mehrstimmiges wird als unsicher gemeldet"),
                 new ProgramCmd("au-plugins-cmd", "🔌 Plugins prüfen", _ => AuPluginScan(), Tip: "VST3 und CLAP finden und beschreiben – ohne sie zu laden", Level: 1),
             ]),
         ],

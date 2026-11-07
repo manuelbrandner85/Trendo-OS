@@ -99,3 +99,26 @@ public partial class MainWindow
         return f;
     }
 }
+
+/// <summary>Paket 01 – Studio 4, S4-19 (07.11.2026): „Melodie → Noten“ im Audioeditor – MIDI und Unsicherheitsbericht; Ergebnis liegt zum Prüfen in Trendo Musik (Noten).</summary>
+public partial class MainWindow
+{
+    public AudioToMidi.Result? AuMidiLast { get; private set; }
+
+    public string AuMelodyToMidi(ProgramDocument d)
+    {
+        var a = AuRendered(d) ?? throw new InvalidOperationException("Erst eine Tondatei öffnen.");
+        var (s, e) = AuSel; if (e > s) a = a.Slice((int)(s * a.Rate), (int)(e * a.Rate)); // nur die Auswahl, falls vorhanden
+        var r = AudioToMidi.Transcribe(a); AuMidiLast = r;
+        var name = DevStudio.SafeName(d.Title.Length > 0 ? d.Title : "Melodie");
+        var dir = Path.Combine(WorkFolder(Programs[AUK].Folder), "Noten"); Directory.CreateDirectory(dir);
+        var mid = Path.Combine(dir, name + " (erkannt).mid");
+        var song = AudioToMidi.ToSong(r, 120, d.Title);
+        if (r.Notes.Count > 0) File.WriteAllBytes(mid, PianoRoll.ToMidi(song));
+        File.WriteAllText(Path.Combine(dir, name + " – Unsicherheitsbericht.md"), AudioToMidi.Report(d.Title, r));
+        if (r.Notes.Count > 0) MsRoll = song; // in Trendo Musik → Noten nachprüfen
+        _core.Audit.Append(Principal.LocalOwner.Name, "audio.midi", $"{r.Notes.Count} Noten, exakt={r.Exact}");
+        _progMsg[AUK] = $"{r.Notes.Count} Noten erkannt – {r.Verdict}" + (r.Notes.Count > 0 ? " Zum Nachprüfen in Trendo Musik → Noten." : "");
+        return mid;
+    }
+}
