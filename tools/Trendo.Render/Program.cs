@@ -112,6 +112,10 @@ if (Environment.GetEnvironmentVariable("TRENDO_XR_EYE") is { Length: > 0 }) { wi
 if (Environment.GetEnvironmentVariable("TRENDO_N8N_PRO") is { Length: > 0 }) { win.WfPro = true; win.Show("ablaeufe"); } // Abläufe Profi: n8n-Agenten-Arbeitsplatz
 if (Environment.GetEnvironmentVariable("TRENDO_GAME_ENGINES") is { Length: > 0 }) { win.EngineProbeOverride = win.EngineDetect; var ed = win.ProgramNew("spiele-programm", Environment.GetEnvironmentVariable("TRENDO_GAME_ENGINES") == "openworld" ? "openworld" : "retro-plattform"); win.GameSection = "Bauen"; win.Show("spiele-programm"); } // Spiele: Engines (Unreal, Unity, Godot, Blender) im Bereich Bauen
 if (Environment.GetEnvironmentVariable("TRENDO_3D_ENGINE") is { Length: > 0 }) { win.Show("3d"); } // 3D: Knöpfe „Für Engine“
+if (Environment.GetEnvironmentVariable("TRENDO_GAME_BOARD") is { Length: > 0 }) // S2: Spiele-Dashboard mit Vorschau und Aufgaben-Board
+{ var gb = win.ProgramNew("spiele-programm", Trendo.Core.Programs.GameDesign.Templates.First(t => t.Scale == "aa").Id);
+  gb.Edit("Aufgaben", x => { Trendo.Core.Programs.GameBoard.Add(x, "Boss-Arena bauen", "eigene"); Trendo.Core.Programs.GameBoard.Seed(x); Trendo.Core.Programs.GameBoard.Move(x, 0, 1); Trendo.Core.Programs.GameBoard.Move(x, 1, 2); });
+  win.GameSection = "Übersicht"; win.Show("spiele-programm"); }
 if (Environment.GetEnvironmentVariable("TRENDO_TV_TAB") is { Length: > 0 } tvTab) { win.TvTabForTests = tvTab; win.Show("tv"); }
 if (Environment.GetEnvironmentVariable("TRENDO_TV_LEGAL") is { } tvLegal) { win.TvTabForTests = "mediathek"; win.Show("tv"); var lt = win.TvLegalSearchAsync(tvLegal, tvLegal.Length == 0 ? "Filme" : "Alle", null); var lw = DateTime.UtcNow; while (!lt.IsCompleted && DateTime.UtcNow - lw < TimeSpan.FromSeconds(40)) { Avalonia.Threading.Dispatcher.UIThread.RunJobs(); Thread.Sleep(30); } win.Show("tv"); } // Mediatheken mit echter Suche zeigen
 win.Show();

@@ -128,6 +128,7 @@ public partial class MainWindow
                 Kpi("game-kpi-scale", "Umfang", scale.Name, scale.Hint, "#7C4DFF", "#4B2BC2"),
                 Kpi("game-kpi-plan", "Geplant", GameDesign.Overall(d.Data) + " %", "über alle Bereiche", "#3D8BFF", "#1E4FD8"),
                 Kpi("game-kpi-ms", "Meilensteine", $"{done} / {ms.Count}", ms.FirstOrDefault(m => m["done"]?.GetValueKind() != System.Text.Json.JsonValueKind.True)?["name"].AsText() ?? "alles geschafft", "#2FBF71", "#167A45") } },
+            GameDashboard(d), // S2: Spielvorschau und Aufgaben-Board
             H("Phase", 14), GamePhaseBar(d, false), H("Bereiche", 14), rings, H("Prüfung", 14), w } };
     }
 
