@@ -46,6 +46,11 @@ public class MusikNoten_Ui
             w.Find<Button>("ms-roll-clear").Press(); Settle(); Assert.Empty(w.MsRoll.Notes);
             w.Find<TextBox>("ms-roll-file").Text = mid; w.Find<Button>("ms-roll-open").Press(); Settle();
             Assert.Equal(saved.Notes, w.MsRoll.Notes); Assert.Equal("Dreiklang", w.MsRoll.Name);
+            // Paket 01 S4-14: Takt 9 auf den Schnitt bei 00:00:12:12 einpassen; ungültiger Timecode wird gemeldet
+            w.Find<TextBox>("ms-roll-hit-tc").Text = "00:00:12:40"; w.Find<Button>("ms-roll-fit").Press(); Settle();
+            Assert.Contains("nicht", w.MsRollMessage);
+            w.Find<TextBox>("ms-roll-hit-tc").Text = "00:00:12:12"; w.Find<NumericUpDown>("ms-roll-hit-bar").Value = 9; w.Find<Button>("ms-roll-fit").Press(); Settle();
+            Assert.Equal(153.846, w.MsRoll.Bpm, 3); Assert.Contains("trifft den Schnitt", w.MsRollMessage);
         }
         finally { w.Close(); }
     }

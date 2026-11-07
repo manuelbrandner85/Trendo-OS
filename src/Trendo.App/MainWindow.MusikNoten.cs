@@ -44,6 +44,17 @@ public partial class MainWindow
         return true;
     }
 
+    /// <summary>Paket 01 S4-14: Tempo so einpassen, dass Takt <paramref name="bar"/> genau am Schnitt-Timecode beginnt; prüft in Bildern (25 fps).</summary>
+    public ScoreSync.HitCheck MsRollFit(string timecode, int bar, int fps = 25)
+    {
+        var sec = ScoreSync.ParseTimecode(timecode, fps);
+        var bpm = ScoreSync.FitBpm([new ScoreSync.TempoChange(1, MsRoll.Bpm, MsRoll.Numerator)], 1, bar, sec, MsRoll.Numerator);
+        MsRollEdit(MsRoll with { Bpm = bpm });
+        var c = ScoreSync.CheckHits([new ScoreSync.TempoChange(1, MsRoll.Bpm, MsRoll.Numerator)], [new ScoreSync.Hit("Schnitt", sec, bar)], fps)[0];
+        MsRollMessage = $"Tempo {MsRoll.Bpm:0.###} BPM: Takt {bar} beginnt bei {FilmDelivery.Timecode(c.Actual, fps)} – {(c.Ok ? "trifft den Schnitt" : "verfehlt den Schnitt")} ({c.OffFrames:+0.00;-0.00;0} Bilder).";
+        return c;
+    }
+
     Control MsNotenPanel()
     {
         var sp = new DockPanel { Name = "ms-noten" };
@@ -69,6 +80,12 @@ public partial class MainWindow
         bar.Children.Add(B("ms-roll-save", "MIDI speichern", () => MsRollSave((name.Text ?? "").Trim()), true));
         bar.Children.Add(path);
         bar.Children.Add(B("ms-roll-open", "MIDI öffnen", () => MsRollOpen(path.Text ?? "")));
+        // Filmmusik: Takt auf einen Schnitt-Timecode legen
+        var tc = new TextBox { Name = "ms-roll-hit-tc", Watermark = "Schnitt bei TC 00:00:12:12", Width = 170 };
+        var hitBar = new NumericUpDown { Name = "ms-roll-hit-bar", Value = 9, Minimum = 2, Maximum = 999, Increment = 1, FormatString = "0", Width = 96, FontSize = 12 };
+        bar.Children.Add(new TextBlock { Text = "  FILM  Takt ", Foreground = Muted, FontSize = 10, FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center });
+        bar.Children.Add(hitBar); bar.Children.Add(tc);
+        bar.Children.Add(B("ms-roll-fit", "Auf Schnitt einpassen", () => MsRollFit(tc.Text ?? "", (int)(hitBar.Value ?? 9))));
         DockPanel.SetDock(bar, Avalonia.Controls.Dock.Top); sp.Children.Add(bar);
         if (MsRollMessage.Length > 0) { var m = P(MsRollMessage, Muted, 11.5); DockPanel.SetDock(m, Avalonia.Controls.Dock.Bottom); sp.Children.Add(m); }
         var view = new PianoRollView { Name = "ms-roll-view", Notes = MsRoll.Notes, Numerator = MsRoll.Numerator, Bars = Math.Max(4, (int)Math.Ceiling((MsRoll.Notes.Count == 0 ? 0 : MsRoll.Notes.Max(n => n.Start + n.Length)) / (double)(MsRoll.Numerator * PianoRoll.Ppq))), MinHeight = 420 };
