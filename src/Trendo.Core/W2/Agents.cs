@@ -162,6 +162,38 @@ public sealed class AgentCenter
         return done;
     }
 
+    /// <summary>Alle Studios, Runde 3 (Konzept Zwischenstand/Wiederaufnahme aus LangGraph, eigener Code): Lauf-Kennung „&lt;team&gt;-&lt;lauf&gt;“ der Aufgaben.</summary>
+    public IReadOnlyList<AgentTask> RunTasks(string runId) => _tasks.Where(t => t.TeamId == runId).OrderBy(t => t.Created).ToList();
+
+    /// <summary>Kann ein Team-Lauf fortgesetzt werden? Ja, wenn er Aufgaben hat, nicht schon fertig ist und keine Aufgabe gerade läuft.</summary>
+    public bool CanResume(string runId)
+    {
+        var tasks = RunTasks(runId); if (tasks.Count == 0 || tasks.Any(t => t.State == AgentTaskState.Laeuft)) return false;
+        var team = Team(runId[..Math.Max(0, runId.LastIndexOf('-'))]); if (team is null) return false;
+        var done = tasks.TakeWhile(t => t.State is AgentTaskState.Fertig or AgentTaskState.WartetAufFreigabe or AgentTaskState.Gespeichert).Count();
+        return done < team.Value.Roles.Length;
+    }
+
+    /// <summary>Setzt einen abgebrochenen oder fehlgeschlagenen Team-Lauf fort: fertige Rollen bleiben (ihr Ergebnis ist der Zwischenstand), die erste nicht fertige Rolle
+    /// läuft mit dem letzten fertigen Ergebnis als Eingabe neu, danach die übrigen Rollen. Bricht wie beim ersten Lauf beim ersten Fehler ab.</summary>
+    public async Task<IReadOnlyList<AgentTask>> ResumeTeamAsync(string runId, IntelligenceCore ki, string? model = null, CancellationToken ct = default)
+    {
+        if (!CanResume(runId)) throw new InvalidOperationException("Dieser Team-Lauf lässt sich nicht fortsetzen (fertig, läuft gerade oder unbekannt).");
+        var team = Team(runId[..runId.LastIndexOf('-')])!.Value; var tasks = RunTasks(runId).ToList();
+        var done = tasks.TakeWhile(t => t.State is AgentTaskState.Fertig or AgentTaskState.WartetAufFreigabe or AgentTaskState.Gespeichert).ToList();
+        string? prev = done.Count > 0 ? done[^1].Result : null; var goal = tasks[0].Goal; var project = tasks[0].ProjectId; var result = new List<AgentTask>(done);
+        _audit.Append(Principal.LocalOwner.Name, "agent.team.fortsetzen", $"{runId} ab Rolle {done.Count + 1}/{team.Roles.Length}");
+        for (var i = done.Count; i < team.Roles.Length; i++)
+        {
+            var t = i < tasks.Count && tasks[i].RoleId == team.Roles[i] ? tasks[i] : Create(team.Roles[i], goal, project, prev, runId);
+            t.Input = prev; t.Result = ""; t.Finished = null; t.State = AgentTaskState.Neu; Save();
+            await RunAsync(t, ki, model, ct); result.Add(t);
+            if (t.State != AgentTaskState.Fertig) break;
+            prev = t.Result;
+        }
+        return result;
+    }
+
     /// <summary>Speichern in eine Projektdatei: nur Rollen mit Schreibrecht, nur nach Freigabe, nur innerhalb des Projekts.</summary>
     public ApprovalRequest RequestSave(AgentTask t, string fileName)
     {

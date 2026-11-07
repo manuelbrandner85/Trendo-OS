@@ -131,6 +131,20 @@ public partial class MainWindow
                 gb.Click += (_, _) => { _agentMsg = $"Auftrag abgelegt: {Agents.ExportClaudeCodeJob(t)}. Im Claude-Chat des Studios kannst du Claude bitten, ihn abzuarbeiten."; Show("ki-rollen"); };
                 row.Children.Add(gb);
             }
+            if (t.State == AgentTaskState.Fehler && t.TeamId is { } runId && Agents.CanResume(runId))
+            {
+                // Alle Studios, Runde 3: abgebrochenen Team-Lauf ab der ersten nicht fertigen Rolle fortsetzen (fertige Ergebnisse bleiben)
+                var rb = new Button { Name = $"agent-resume-{n}", Content = "Team-Lauf fortsetzen", Padding = new Thickness(8, 2) };
+                ToolTip.SetTip(rb, "Fertige Rollen bleiben – weiter geht es mit dieser Rolle und dem letzten fertigen Ergebnis.");
+                rb.Click += async (_, _) =>
+                {
+                    _agentMsg = "Team-Lauf wird fortgesetzt …"; Show("ki-rollen");
+                    try { var r = await Agents.ResumeTeamAsync(runId, Intel, KiModelName); _agentMsg = r.All(x => x.State == AgentTaskState.Fertig) ? $"Team fertig: {r.Count} Rollen." : "Wieder nicht geklappt – die KI antwortet nicht. Später erneut fortsetzen."; }
+                    catch (InvalidOperationException e) { _agentMsg = e.Message; }
+                    Show("ki-rollen");
+                };
+                row.Children.Add(rb);
+            }
             var del = new Button { Name = $"agent-del-{n}", Content = "Entfernen", Padding = new Thickness(8, 2) };
             del.Click += (_, _) => { Agents.Remove(t.Id); Show("ki-rollen"); };
             row.Children.Add(del);
