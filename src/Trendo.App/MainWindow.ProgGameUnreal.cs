@@ -16,6 +16,8 @@ public partial class MainWindow
     public Func<string, IReadOnlyList<string>, (int Exit, string Log)>? UnrealRunOverride { get; set; }
     /// <summary>Für Tests: Unreal-Ordner statt Suche.</summary>
     public string? UnrealEngineOverride { get; set; }
+    /// <summary>Für Tests: Laden der Fotomaterialien (Zielordner → Anzahl neu geladener Dateien) statt Poly-Haven-Abruf.</summary>
+    public Func<string, int>? NatureFetchOverride { get; set; }
     public string LastUnrealReport { get; private set; } = "";
     public bool UnrealBusy { get; private set; }
 
@@ -42,20 +44,24 @@ public partial class MainWindow
         var logs = Path.Combine(built, "Trendo-Pruefung"); Directory.CreateDirectory(logs);
         var lines = new List<string>(); var ok = true;
         void Step(string t) { _progMsg[GK] = t; _ui.Post(() => { if (CurrentView == GK) Show(GK); }); }
+        var open = UnrealGame.WorldOf(d.Data) == "openworld";
+        var total = open ? 5 : 3; var n = 0;
+        string No() => $"{++n}/{total}";
         try
         {
-            Step("1/3 Unreal kompiliert das Spiel (C++) … beim ersten Mal einige Minuten.");
+            Step(No() + " Unreal kompiliert das Spiel (C++) … beim ersten Mal einige Minuten.");
             var (ce, clog) = await Task.Run(() => UnrealRun(UnrealGame.BuildBat(engine), UnrealGame.CompileArgs(uproject), Path.Combine(logs, "kompilieren.txt"), 1_800_000));
             if (!UnrealGame.CompileOk(clog)) { ok = false; lines.Add($"✗ Kompilieren fehlgeschlagen (Exitcode {ce}) – Protokoll kompilieren.txt"); }
             else
             {
                 lines.Add($"✓ Kompiliert (Exitcode {ce})");
-                Step("2/3 Unreal-Tests laufen (Daten, Regeln, Spielstand) …");
+                if (open) ok &= await GameUnrealWelt(built, uproject, engine, logs, lines, t => Step(No() + " " + t), () => n++);
+                Step(No() + " Unreal-Tests laufen (Daten, Regeln, Spielstand) …");
                 var (_, tlog) = await Task.Run(() => UnrealRun(UnrealGame.EditorCmd(engine), UnrealGame.TestArgs(uproject, Path.Combine(logs, "tests.txt")), Path.Combine(logs, "tests.txt"), 900_000));
                 var tests = UnrealGame.ParseTests(tlog);
                 ok &= tests.Count > 0 && tests.All(t => t.Ok);
                 lines.Add(tests.Count == 0 ? "✗ Keine Unreal-Tests gefunden – Protokoll tests.txt" : $"{(tests.All(t => t.Ok) ? "✓" : "✗")} Unreal-Tests: {tests.Count(t => t.Ok)} von {tests.Count} bestanden ({string.Join(", ", tests.Select(t => t.Test.Replace("Trendo.", "") + (t.Ok ? "" : " ✗")))})");
-                Step("3/3 Das Spiel startet zur Probe" + (screenshot ? " und macht ein Bild …" : " …"));
+                Step(No() + " Das Spiel startet zur Probe" + (screenshot ? " und macht ein Bild …" : " …"));
                 var (_, glog) = await Task.Run(() => UnrealRun(UnrealGame.Editor(engine), UnrealGame.CheckArgs(uproject, Path.Combine(logs, "start.txt"), screenshot && !_opt.Isolated), Path.Combine(logs, "start.txt"), 900_000));
                 var (gok, gtext) = UnrealGame.ParseCheck(glog);
                 ok &= gok; lines.Add((gok ? "✓ Spiel läuft: " : "✗ Spiel: ") + gtext);
@@ -67,6 +73,35 @@ public partial class MainWindow
         File.WriteAllText(Path.Combine(logs, "bericht.txt"), $"{DateTime.Now:yyyy-MM-dd HH:mm} {UnrealGame.WorldOf(d.Data)}\n{LastUnrealReport}\n");
         _core.Audit.Append(Principal.LocalOwner.Name, "game.unreal.check", (ok ? "ok" : "fehler") + " " + Path.GetFileName(built));
         _progMsg[GK] = LastUnrealReport; _ui.Post(() => { if (CurrentView == GK) Show(GK); });
+    }
+
+    /// <summary>Open World fotoreal einrichten: freie Fotomaterialien und Modelle (Poly Haven, CC0) laden bzw. aus dem Zwischenspeicher nehmen,
+    /// ins Projekt kopieren und Unreal die Welt einrichten lassen (Boden, Pflanzen, Felsen, eigene Karte). Gelingt es, startet das Spiel in dieser Welt.</summary>
+    async Task<bool> GameUnrealWelt(string built, string uproject, string engine, string logs, List<string> lines, Action<string> step, Action skip)
+    {
+        var cache = _opt.Isolated ? Path.Combine(_core.DataRoot, "polyhaven") : UnrealNature.CacheDir(_deps.ToolsRoot); // Tests schreiben nie in den echten Werkzeugordner
+        step("Trendo holt freie Fotomaterialien und Pflanzen (Poly Haven, CC0) … beim ersten Mal etwa 275 MB.");
+        try
+        {
+            int got;
+            if (NatureFetchOverride is { } f) got = f(cache);
+            else if (_opt.Isolated) { lines.Add("• Fotomaterialien: im Testmodus nicht geladen"); skip(); return true; }
+            else { var (files, download) = UnrealNature.Http(); got = await Task.Run(() => UnrealNature.Fetch(cache, files, download, t => step(t))); }
+            var copied = Directory.Exists(cache) ? UnrealNature.CopyTo(cache, built) : 0;
+            _core.Audit.Append(Principal.LocalOwner.Name, "game.unreal.assets", $"polyhaven cc0 neu={got} kopiert={copied}");
+            lines.Add($"✓ Fotomaterialien bereit (Poly Haven, CC0; {got} neu geladen, {copied} ins Projekt kopiert)");
+        }
+        catch (Exception e) when (e is HttpRequestException or IOException or TaskCanceledException or InvalidOperationException or System.Text.Json.JsonException)
+        {
+            lines.Add("✗ Fotomaterialien nicht geladen: " + e.Message + " – das Spiel bleibt in der einfachen Open World."); skip(); return false;
+        }
+        step("Unreal richtet die Welt ein (Boden, Pflanzen, Felsen, Licht) … einige Minuten.");
+        var (we, wlog) = await Task.Run(() => UnrealRun(UnrealGame.EditorCmd(engine), UnrealGame.WeltArgs(uproject, Path.Combine(logs, "welt.txt")), Path.Combine(logs, "welt.txt"), 1_800_000));
+        var (wok, models, info) = UnrealGame.ParseWelt(wlog);
+        if (!wok) { lines.Add($"✗ Welt nicht eingerichtet (Exitcode {we}) – Protokoll welt.txt" + (info.LastOrDefault(l => l.StartsWith("Fehler")) is { } er ? ": " + er : "")); return false; }
+        UnrealGame.UseWeltMap(built);
+        lines.Add($"✓ Welt eingerichtet: {models} Pflanzen- und Felsmodelle, " + (info.Any(l => l.StartsWith("Bodenmaterial")) ? "fotorealer Boden" : "Boden") + ", Karte " + UnrealGame.WeltMap);
+        return true;
     }
 
     /// <summary>Spiel in Unreal starten (ohne Editor).</summary>

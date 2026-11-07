@@ -28,6 +28,11 @@ public static class UnrealGame
         var up = Path.Combine(projectDir, name + ".uproject");
         var o = JsonNode.Parse(File.ReadAllText(up))!.AsObject();
         o["Modules"] = new JsonArray(new JsonObject { ["Name"] = name, ["Type"] = "Runtime", ["LoadingPhase"] = "Default" });
+        // Plugins für das Einrichten der Welt (Python im Editor, Import von glTF über Interchange)
+        var plugins = o["Plugins"]?.AsArray().DeepClone().AsArray() ?? [];
+        foreach (var pl in Plugins)
+            if (!plugins.Any(x => x?["Name"]?.ToString() == pl)) plugins.Add(new JsonObject { ["Name"] = pl, ["Enabled"] = true });
+        o["Plugins"] = plugins;
         File.WriteAllText(up, o.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
         void Put(string rel, string text) { var f = Path.Combine(projectDir, rel.Replace('/', Path.DirectorySeparatorChar)); Directory.CreateDirectory(Path.GetDirectoryName(f)!); File.WriteAllText(f, text.Replace("\r\n", "\n")); }
         string Target(string type, string suffix) => $"using UnrealBuildTool;\n\npublic class {name}{suffix}Target : TargetRules\n{{\n\tpublic {name}{suffix}Target(TargetInfo Target) : base(Target)\n\t{{\n\t\tType = TargetType.{type};\n\t\tDefaultBuildSettings = BuildSettingsVersion.Latest;\n\t\tIncludeOrderVersion = EngineIncludeOrderVersion.Latest;\n\t\tExtraModuleNames.Add(\"{name}\");\n\t}}\n}}\n";
@@ -46,6 +51,7 @@ public static class UnrealGame
         var g = File.Exists(game) ? File.ReadAllText(game) : "";
         if (!g.Contains("DirectoriesToAlwaysStageAsNonUFS")) File.WriteAllText(game, g.TrimEnd() + "\n\n[/Script/UnrealEd.ProjectPackagingSettings]\n+DirectoriesToAlwaysStageAsNonUFS=(Path=\"Trendo\")\n");
         Put("Content/Trendo/level.json", level);
+        Put(WeltScriptRel, WeltScript + "\n");
     }
 
     /// <summary>Level-Beschreibung für Unreal: gleiche Daten wie für Unity/Godot plus Welt-Art.</summary>
@@ -54,6 +60,32 @@ public static class UnrealGame
         var o = JsonNode.Parse(EngineTargets.LevelJson(name, s))!.AsObject();
         o["world"] = world;
         return o.ToJsonString(new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+    }
+
+    /// <summary>Plugins, die Trendo im Projekt einschaltet.</summary>
+    public static readonly string[] Plugins = ["PythonScriptPlugin", "EditorScriptingUtilities", "Interchange", "InterchangeEditor"];
+    /// <summary>Eigene Karte, die das Welt-Skript aus der Open-World-Vorlage anlegt.</summary>
+    public const string WeltMap = "/Game/Trendo/Welt";
+    public const string WeltScriptRel = "Trendo/trendo_welt.py";
+
+    /// <summary>Nach gelungenem Einrichten: Spiel und Editor starten in der eingerichteten Welt.</summary>
+    public static void UseWeltMap(string projectDir)
+    {
+        var ini = Path.Combine(projectDir, "Config", "DefaultEngine.ini");
+        var lines = File.ReadAllText(ini).Replace("\r\n", "\n").Split('\n')
+            .Select(l => l.StartsWith("GameDefaultMap=") ? "GameDefaultMap=" + WeltMap : l.StartsWith("EditorStartupMap=") ? "EditorStartupMap=" + WeltMap : l);
+        File.WriteAllText(ini, string.Join("\n", lines));
+    }
+
+    /// <summary>Welt einrichten: Ergebnis aus dem Protokoll („TRENDO-WELT-OK n“, Zeilen „TRENDO-WELT …“, letzter Python-Fehler).</summary>
+    public static (bool Ok, int Models, List<string> Lines) ParseWelt(string log)
+    {
+        var ls = log.Split('\n').Select(l => l.Trim()).ToList();
+        var m = System.Text.RegularExpressions.Regex.Match(ls.LastOrDefault(l => l.Contains("TRENDO-WELT-OK")) ?? "", @"TRENDO-WELT-OK (\d+)");
+        var info = ls.Where(l => l.Contains("TRENDO-WELT ")).Select(l => l[(l.IndexOf("TRENDO-WELT ") + 12)..]).ToList();
+        var err = ls.Where(l => l.Contains("LogPython: Error:")).Select(l => l[(l.IndexOf("LogPython: Error:") + 17)..].Trim()).LastOrDefault();
+        if (!m.Success && err is not null) info.Add("Fehler: " + err);
+        return (m.Success, m.Success ? int.Parse(m.Groups[1].Value) : 0, info);
     }
 
     // ───────────── Kommandozeilen (offiziell) ─────────────
@@ -65,6 +97,8 @@ public static class UnrealGame
     public static List<string> CheckArgs(string uproject, string log, bool screenshot) =>
         screenshot ? [uproject, "-game", "-trendocheck", "-trendoshot", "-windowed", "-ResX=1600", "-ResY=900", "-unattended", "-nosplash", "-log", "-abslog=" + log]
                    : [uproject, "-game", "-trendocheck", "-nullrhi", "-unattended", "-nosplash", "-nopause", "-log", "-abslog=" + log];
+    public static List<string> WeltArgs(string uproject, string log) =>
+        [uproject, "-ExecutePythonScript=" + Path.Combine(Path.GetDirectoryName(uproject)!, WeltScriptRel.Replace('/', Path.DirectorySeparatorChar)), "-unattended", "-nullrhi", "-nosplash", "-nopause", "-log", "-abslog=" + log];
     public static List<string> PlayArgs(string uproject) => [uproject, "-game", "-windowed", "-ResX=1600", "-ResY=900"];
 
     /// <summary>Ergebnis des Kompilierens aus dem Build-Protokoll.</summary>
@@ -82,6 +116,221 @@ public static class UnrealGame
         var details = info.Length > 0 ? info[(info.IndexOf("TRENDO-SPIEL") + 12)..].Trim() : "";
         return line.Contains("TRENDO-OK") ? (true, details) : (false, line.Length > 0 ? line[(line.IndexOf("TRENDO-FEHLER") + 13)..].Trim() : "Kein Startbericht – das Spiel lief nicht bis zum Ende.");
     }
+
+    /// <summary>Python-Skript für Unreal: Fotomaterialien und Modelle importieren, Boden-, Blatt- und Oberflächenmaterial bauen, Nanite einstellen, Karte anlegen.</summary>
+    public const string WeltScript = """
+# Von Trendo erzeugt: richtet die Welt in Unreal ein (läuft ohne Fenster über -ExecutePythonScript).
+# Importiert freie Fotomaterialien und Modelle (Poly Haven, CC0) aus Content/Trendo/Quellen, baut das Bodenmaterial,
+# legt die eigene Open-World-Karte /Game/Trendo/Welt aus der Engine-Vorlage an und schreibt Content/Trendo/natur.json.
+import json, os, unreal
+
+ROOT = unreal.Paths.project_content_dir()
+SRC = os.path.join(ROOT, "Trendo", "Quellen")
+DEST = "/Game/Trendo/Natur"
+KINDS = {"grass_medium_01": "gras", "fern_02": "farn", "shrub_02": "strauch", "shrub_04": "strauch", "pine_sapling_small": "baum", "tree_small_02": "baum",
+         "tree_stump_01": "holz", "dead_tree_trunk": "holz", "rock_moss_set_01": "stein", "boulder_01": "stein"}
+tools = unreal.AssetToolsHelpers.get_asset_tools()
+eal = unreal.EditorAssetLibrary
+log = []
+
+def task(path, dest):
+    t = unreal.AssetImportTask()
+    t.set_editor_property("filename", path); t.set_editor_property("destination_path", dest)
+    t.set_editor_property("automated", True); t.set_editor_property("save", True); t.set_editor_property("replace_existing", True)
+    return t
+
+# 1) Bodentexturen: Gras-Boden und Waldboden (je Farbe, Normalen, Rauheit, AO)
+GROUNDS = ["leafy_grass", "forest_ground_04"]
+ground = {}
+for g in GROUNDS:
+    gdir = os.path.join(SRC, g)
+    if not os.path.isdir(gdir): continue
+    ts = {k: task(os.path.join(gdir, f"{g}_{k}_2k.jpg"), DEST + "/Boden") for k in ["Diffuse", "nor_dx", "Rough", "AO"]}
+    tools.import_asset_tasks(list(ts.values()))
+    for k, t in ts.items():
+        paths = t.get_editor_property("imported_object_paths")
+        if not paths: continue
+        tex = unreal.load_asset(paths[0]); ground[(g, k)] = tex
+        if k != "Diffuse":
+            tex.set_editor_property("srgb", False)
+        if k == "nor_dx":
+            tex.set_editor_property("compression_settings", unreal.TextureCompressionSettings.TC_NORMALMAP)
+        eal.save_loaded_asset(tex)
+log.append("Boden-Texturen: %d" % len(ground))
+
+# 2) Bodenmaterial: Landschafts-Koordinaten (Kachel 4 m), zwei Böden großflächig über Rauschen gemischt (keine sichtbare Wiederholung)
+mat = None
+have = [g for g in GROUNDS if all((g, k) in ground for k in ["Diffuse", "nor_dx", "Rough", "AO"])]
+if have:
+    mpath = DEST + "/M_TrendoBoden"
+    if eal.does_asset_exist(mpath): eal.delete_asset(mpath)
+    mat = tools.create_asset("M_TrendoBoden", DEST, unreal.Material, unreal.MaterialFactoryNew())
+    mel = unreal.MaterialEditingLibrary
+    uv = mel.create_material_expression(mat, unreal.MaterialExpressionLandscapeLayerCoords, -1400, 0)
+    uv.set_editor_property("mapping_scale", 4.0)
+    # Ferne: dieselben Farbkarten zwölfmal größer, ab 25 m allmählich eingeblendet (keine Kachelflecken auf Hügeln)
+    uvfar = mel.create_material_expression(mat, unreal.MaterialExpressionLandscapeLayerCoords, -1400, -900)
+    uvfar.set_editor_property("mapping_scale", 48.0)
+    depth = mel.create_material_expression(mat, unreal.MaterialExpressionPixelDepth, -900, -1100)
+    dsub = mel.create_material_expression(mat, unreal.MaterialExpressionSubtract, -750, -1100); dsub.set_editor_property("const_b", 2500.0)
+    ddiv = mel.create_material_expression(mat, unreal.MaterialExpressionDivide, -650, -1100); ddiv.set_editor_property("const_b", 15000.0)
+    dsat = mel.create_material_expression(mat, unreal.MaterialExpressionSaturate, -550, -1100)
+    mel.connect_material_expressions(depth, "", dsub, "A"); mel.connect_material_expressions(dsub, "", ddiv, "A"); mel.connect_material_expressions(ddiv, "", dsat, "")
+    def sample(tex, x, y, sampler, coords=None):
+        s = mel.create_material_expression(mat, unreal.MaterialExpressionTextureSample, x, y)
+        s.set_editor_property("texture", tex); s.set_editor_property("sampler_type", sampler)
+        s.set_editor_property("sampler_source", unreal.SamplerSourceMode.SSM_WRAP_WORLD_GROUP_SETTINGS)
+        mel.connect_material_expressions(coords or uv, "", s, "UVs"); return s
+    kinds = [("Diffuse", unreal.MaterialSamplerType.SAMPLERTYPE_COLOR, "RGB", unreal.MaterialProperty.MP_BASE_COLOR),
+             ("nor_dx", unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL, "RGB", unreal.MaterialProperty.MP_NORMAL),
+             ("Rough", unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, "R", unreal.MaterialProperty.MP_ROUGHNESS),
+             ("AO", unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR, "R", unreal.MaterialProperty.MP_AMBIENT_OCCLUSION)]
+    noise = None
+    if len(have) > 1:
+        noise = mel.create_material_expression(mat, unreal.MaterialExpressionNoise, -700, -700)
+        noise.set_editor_property("scale", 0.0004); noise.set_editor_property("levels", 4)
+        noise.set_editor_property("output_min", -1.2); noise.set_editor_property("output_max", 1.4)
+        sat = mel.create_material_expression(mat, unreal.MaterialExpressionSaturate, -500, -700)
+        mel.connect_material_expressions(noise, "", sat, ""); noise = sat
+    for i, (k, sampler, out, prop) in enumerate(kinds):
+        a = sample(ground[(have[0], k)], -1000, i * 500, sampler)
+        if noise is None:
+            mel.connect_material_property(a, out, prop); continue
+        b = sample(ground[(have[1], k)], -1000, i * 500 + 250, sampler)
+        l = mel.create_material_expression(mat, unreal.MaterialExpressionLinearInterpolate, -300, i * 500)
+        mel.connect_material_expressions(a, out, l, "A"); mel.connect_material_expressions(b, out, l, "B"); mel.connect_material_expressions(noise, "", l, "Alpha")
+        if k == "Diffuse":
+            fa = sample(ground[(have[0], k)], -1000, -1500, sampler, uvfar); fb = sample(ground[(have[1], k)], -1000, -1250, sampler, uvfar)
+            fl = mel.create_material_expression(mat, unreal.MaterialExpressionLinearInterpolate, -300, -1300)
+            mel.connect_material_expressions(fa, out, fl, "A"); mel.connect_material_expressions(fb, out, fl, "B"); mel.connect_material_expressions(noise, "", fl, "Alpha")
+            mix = mel.create_material_expression(mat, unreal.MaterialExpressionLinearInterpolate, -150, -600)
+            mel.connect_material_expressions(l, "", mix, "A"); mel.connect_material_expressions(fl, "", mix, "B"); mel.connect_material_expressions(dsat, "", mix, "Alpha")
+            l = mix
+        mel.connect_material_property(l, "", prop)
+    mel.recompile_material(mat); eal.save_loaded_asset(mat)
+    log.append("Bodenmaterial: " + mat.get_path_name() + " aus " + ", ".join(have))
+
+# 3) Eigene Hauptmaterialien (Projekt statt Engine-Plugin, mit Nutzung für Instanzen und Nanite):
+#    M_TrendoPBR für Rinde, Holz, Fels; M_TrendoBlatt maskiert, zweiseitig, Two-Sided-Foliage (Licht scheint durch Blätter)
+_masters = {}
+def master(leaf, col, nor, arm, alpha):
+    key = "M_TrendoBlatt" if leaf else "M_TrendoPBR"
+    if key in _masters: return _masters[key]
+    if eal.does_asset_exist(DEST + "/" + key): eal.delete_asset(DEST + "/" + key)
+    m = tools.create_asset(key, DEST, unreal.Material, unreal.MaterialFactoryNew())
+    mel = unreal.MaterialEditingLibrary
+    if leaf:
+        m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_MASKED)
+        m.set_editor_property("two_sided", True)
+        m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_TWO_SIDED_FOLIAGE)
+        m.set_editor_property("opacity_mask_clip_value", 0.4)
+    for u in (unreal.MaterialUsage.MATUSAGE_INSTANCED_STATIC_MESHES, unreal.MaterialUsage.MATUSAGE_NANITE, unreal.MaterialUsage.MATUSAGE_STATIC_LIGHTING):
+        mel.set_material_usage(m, u)
+    def param(name, tex, y, sampler):
+        e = mel.create_material_expression(m, unreal.MaterialExpressionTextureSampleParameter2D, -800, y)
+        e.set_editor_property("parameter_name", name); e.set_editor_property("texture", tex); e.set_editor_property("sampler_type", sampler); return e
+    c = param("Farbe", col, -400, unreal.MaterialSamplerType.SAMPLERTYPE_COLOR)
+    mel.connect_material_property(c, "RGB", unreal.MaterialProperty.MP_BASE_COLOR)
+    if leaf:
+        a = param("Maske", alpha, -100, unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
+        mel.connect_material_property(a, "R", unreal.MaterialProperty.MP_OPACITY_MASK)
+        sss = mel.create_material_expression(m, unreal.MaterialExpressionMultiply, -300, -250)
+        mel.connect_material_expressions(c, "RGB", sss, "A"); sss.set_editor_property("const_b", 0.6)
+        mel.connect_material_property(sss, "", unreal.MaterialProperty.MP_SUBSURFACE_COLOR)
+    n = param("Normal", nor, 200, unreal.MaterialSamplerType.SAMPLERTYPE_NORMAL)
+    mel.connect_material_property(n, "RGB", unreal.MaterialProperty.MP_NORMAL)
+    r = param("ARM", arm, 500, unreal.MaterialSamplerType.SAMPLERTYPE_LINEAR_COLOR)
+    mel.connect_material_property(r, "R", unreal.MaterialProperty.MP_AMBIENT_OCCLUSION)
+    mel.connect_material_property(r, "G", unreal.MaterialProperty.MP_ROUGHNESS)
+    mel.connect_material_property(r, "B", unreal.MaterialProperty.MP_METALLIC)
+    mel.recompile_material(m); eal.save_loaded_asset(m); _masters[key] = m; return m
+
+def imp(path, dest):
+    t = task(path, dest); tools.import_asset_tasks([t]); p = t.get_editor_property("imported_object_paths")
+    return unreal.load_asset(p[0]) if p else None
+
+# 4) Modelle (glTF) importieren und auf die eigenen Materialien umstellen
+nature = []
+for asset, kind in KINDS.items():
+    folder = os.path.join(SRC, asset)
+    gltf = [f for f in os.listdir(folder) if f.endswith(".gltf")] if os.path.isdir(folder) else []
+    if not gltf: continue
+    dest = f"{DEST}/{asset}"
+    t = task(os.path.join(folder, gltf[0]), dest)
+    tools.import_asset_tasks([t])
+    meshes = [p for p in eal.list_assets(dest, recursive=True, include_folder=False) if unreal.EditorAssetLibrary.find_asset_data(p).get_editor_property("asset_class_path").get_editor_property("asset_name") == "StaticMesh"]
+    for m in meshes:
+        nature.append({"mesh": m.split(".")[0] + "." + m.split("/")[-1].split(".")[0], "kind": kind, "asset": asset})
+    tdir = os.path.join(folder, "textures")
+    alphas = [f[:-len("alpha_2k.png")] for f in (sorted(os.listdir(tdir)) if os.path.isdir(tdir) else []) if f.endswith("_alpha_2k.png")]
+    leaves = opaque = 0
+    for p in eal.list_assets(dest, recursive=True, include_folder=False):
+        old = unreal.load_asset(p)
+        if not isinstance(old, unreal.MaterialInstanceConstant) or old.get_name().startswith("MI_Trendo_"): continue
+        tex = {str(t.get_editor_property("parameter_info").get_editor_property("name")): t.get_editor_property("parameter_value") for t in old.get_editor_property("texture_parameter_values")}
+        col, nor, arm = tex.get("BaseColorTexture"), tex.get("NormalTexture"), tex.get("MetallicRoughnessTexture")
+        if not (col and nor and arm): continue
+        prefix = next((a for a in alphas if col.get_name().startswith(a + "diff")), None)
+        alpha = None
+        if prefix:
+            # Blatt: Alpha-Karte und Farbkarte selbst importieren (die vom glTF-Import zusammengesetzte Farbkarte ist ohne Alpha-Bild leer)
+            alpha = imp(os.path.join(tdir, prefix + "alpha_2k.png"), dest + "/Blatt")
+            if not alpha: continue
+            alpha.set_editor_property("srgb", False); eal.save_loaded_asset(alpha)
+            dfile = os.path.join(tdir, prefix + "diff_2k.jpg")
+            c2 = imp(dfile, dest + "/Blatt") if os.path.isfile(dfile) else None
+            if c2: col = c2
+            # Blatt-Texturen nie nachladen (sonst fehlen Blätter, solange nur grobe Stufen geladen sind: Maske < Schwelle)
+            for tx in (alpha, col):
+                tx.set_editor_property("never_stream", True); eal.save_loaded_asset(tx)
+        # glTF-Normalen sind OpenGL-Normalen (Grün nach oben); Unreal erwartet DirectX
+        if not nor.get_editor_property("flip_green_channel"):
+            nor.set_editor_property("flip_green_channel", True); eal.save_loaded_asset(nor)
+        par = master(prefix is not None, col, nor, arm, alpha)
+        name = "MI_Trendo_" + old.get_name()
+        if eal.does_asset_exist(f"{dest}/{name}"): eal.delete_asset(f"{dest}/{name}")
+        mic = tools.create_asset(name, dest, unreal.MaterialInstanceConstant, unreal.MaterialInstanceConstantFactoryNew())
+        mic.set_editor_property("parent", par)
+        mel = unreal.MaterialEditingLibrary
+        for k, v in (("Farbe", col), ("Normal", nor), ("ARM", arm), ("Maske", alpha)):
+            if v: mel.set_material_instance_texture_parameter_value(mic, k, v)
+        eal.save_loaded_asset(mic)
+        for m in meshes:
+            sm = unreal.load_asset(m); mats = sm.get_editor_property("static_materials"); hit = False
+            for idx, sl in enumerate(mats):
+                if sl.get_editor_property("material_interface") == old: sm.set_material(idx, mic); hit = True
+            if hit: eal.save_loaded_asset(sm)
+        if prefix: leaves += 1
+        else: opaque += 1
+    # Alle Modelle mit Nanite (zehntausende Instanzen ohne Detailverlust); Pflanzen mit Flächenerhalt, sonst verschwinden dünne Blätter
+    for m in meshes:
+        sm = unreal.load_asset(m); ns = sm.get_editor_property("nanite_settings")
+        ns.set_editor_property("enabled", True)
+        if kind in ("gras", "farn", "strauch", "baum"):
+            ns.set_editor_property("shape_preservation", unreal.NaniteShapePreservation.PRESERVE_AREA)
+        sm.set_editor_property("nanite_settings", ns); eal.save_loaded_asset(sm)
+    log.append(f"{asset}: {len(meshes)} Modell(e), {leaves} Blatt- und {opaque} Oberflächen-Material(ien)")
+
+# 5) Eigene Open-World-Karte mit Bodenmaterial
+les = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
+world = "/Game/Trendo/Welt"
+if not eal.does_asset_exist(world):
+    les.new_level_from_template(world, "/Engine/Maps/Templates/OpenWorld")
+else:
+    les.load_level(world)
+count = 0
+if mat:
+    for a in unreal.get_editor_subsystem(unreal.EditorActorSubsystem).get_all_level_actors():
+        if isinstance(a, unreal.LandscapeProxy):
+            a.set_editor_property("landscape_material", mat); count += 1
+les.save_current_level()
+unreal.EditorLoadingAndSavingUtils.save_dirty_packages(True, True)
+log.append(f"Karte {world}: Bodenmaterial auf {count} Gelände-Teil(e)")
+
+json.dump({"map": world, "ground": mat.get_path_name() if mat else "", "nature": nature}, open(os.path.join(ROOT, "Trendo", "natur.json"), "w", encoding="utf-8"), indent=2)
+for l in log: unreal.log("TRENDO-WELT " + l)
+unreal.log("TRENDO-WELT-OK %d Pflanzen/Felsen-Modelle" % len(nature))
+""";
 
     static readonly Dictionary<string, string> Sources = new()
     {
@@ -569,8 +818,10 @@ void ATrendoCharacter::BuildInput()
 	};
 	Map2D(EKeys::W, true, false); Map2D(EKeys::S, true, true); Map2D(EKeys::D, false, false); Map2D(EKeys::A, false, true);
 	Map2D(EKeys::Up, true, false); Map2D(EKeys::Down, true, true); Map2D(EKeys::Right, false, false); Map2D(EKeys::Left, false, true);
-	Mapping->MapKey(MoveAction, EKeys::Gamepad_Left2D);
-	Mapping->MapKey(LookAction, EKeys::Mouse2D); Mapping->MapKey(LookAction, EKeys::Gamepad_Right2D);
+	// Controller-Sticks mit Totzone: ein leicht driftender Stick bewegt weder Figur noch Kamera
+	auto DeadZone = [this]() { UInputModifierDeadZone* Z = NewObject<UInputModifierDeadZone>(Mapping); Z->Type = EDeadZoneType::Radial; Z->LowerThreshold = 0.25f; Z->UpperThreshold = 1.f; return Z; };
+	Mapping->MapKey(MoveAction, EKeys::Gamepad_Left2D).Modifiers.Add(DeadZone());
+	Mapping->MapKey(LookAction, EKeys::Mouse2D); Mapping->MapKey(LookAction, EKeys::Gamepad_Right2D).Modifiers.Add(DeadZone());
 	for (const FKey& K : { EKeys::SpaceBar, EKeys::Gamepad_FaceButton_Bottom }) Mapping->MapKey(JumpAction, K);
 	for (const FKey& K : { EKeys::LeftShift, EKeys::RightShift, EKeys::Gamepad_LeftShoulder }) Mapping->MapKey(SprintAction, K);
 	for (const FKey& K : { EKeys::X, EKeys::J, EKeys::LeftMouseButton, EKeys::Gamepad_FaceButton_Left }) Mapping->MapKey(AttackAction, K);
@@ -708,6 +959,8 @@ private:
 	FVector Place(int32 X, int32 Y) const;
 	void Freeze();
 	void Report();
+	void SpawnNature();
+	int32 NatureCount = 0;
 };
 """,
         ["TrendoGameMode.cpp"] = """
@@ -726,6 +979,13 @@ private:
 #include "Misc/Paths.h"
 #include "Misc/CommandLine.h"
 #include "UnrealClient.h"
+#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Engine/DirectionalLight.h"
+#include "Engine/ExponentialHeightFog.h"
+#include "Components/ExponentialHeightFogComponent.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogTrendo, Log, All);
 
@@ -761,7 +1021,8 @@ void ATrendoGameMode::BeginPlay()
 		{ State.Level = S->Level; State.Score = S->Score; State.Lives = FMath::Max(1, S->Lives); State.Inventory = S->Inventory; }
 	Mode = Data.bMenu ? TEXT("menu") : TEXT("play");
 	if (Data.Levels.Num() > 0) BuildWorld(State.Level);
-	if (FParse::Param(FCommandLine::Get(), TEXT("trendocheck"))) { CheckSeconds = 4.f; Mode = TEXT("play"); }
+	SpawnNature();
+	if (FParse::Param(FCommandLine::Get(), TEXT("trendocheck"))) { CheckSeconds = FParse::Param(FCommandLine::Get(), TEXT("trendoshot")) ? 12.f : 4.f; Mode = TEXT("play"); } // Bild erst, wenn Texturen geladen sind
 }
 
 FVector ATrendoGameMode::Place(int32 X, int32 Y) const
@@ -965,6 +1226,8 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 		State.Seconds += DeltaSeconds; State.CheckRules(Data);
 		if (State.bDoorsOpen) for (AActor* A : Spawned) if (ATrendoThing* T = Cast<ATrendoThing>(A); IsValid(T) && T->Tile == TEXT("D")) T->Destroy();
 	}
+	// Prüflauf: keine echten Eingaben (Maus, Tastatur, Controller des Nutzers) – Figur und Kamera bleiben am Start
+	if (CheckSeconds > 0) if (APlayerController* PC = GetWorld()->GetFirstPlayerController()) { PC->SetIgnoreMoveInput(true); PC->SetIgnoreLookInput(true); if (PC->GetPawn()) PC->GetPawn()->DisableInput(PC); }
 	if (CheckSeconds > 0 && (CheckSeconds -= DeltaSeconds) <= 0)
 	{
 		// Startlauf (-trendocheck): mit -trendoshot erst ein Bildschirmfoto nach Saved/Screenshots, dann Bericht und Ende
@@ -973,12 +1236,60 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 	}
 }
 
+/** Pflanzen, Bäume, Felsen und Holz aus Content/Trendo/natur.json (von Trendo eingerichtet) auf dem Gelände verteilen – feste Zufallsfolge, Spielweg bleibt frei. */
+void ATrendoGameMode::SpawnNature()
+{
+	FString Json; if (!FFileHelper::LoadFileToString(Json, *(FPaths::ProjectContentDir() / TEXT("Trendo/natur.json")))) return;
+	TSharedPtr<FJsonObject> O; if (!FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Json), O) || !O.IsValid()) return;
+	TMap<FString, TArray<UStaticMesh*>> Kinds;
+	const TArray<TSharedPtr<FJsonValue>>* Arr; if (!O->TryGetArrayField(TEXT("nature"), Arr)) return;
+	for (const auto& V : *Arr)
+		if (const TSharedPtr<FJsonObject>& E = V->AsObject(); E.IsValid())
+			if (UStaticMesh* M = LoadObject<UStaticMesh>(nullptr, *E->GetStringField(TEXT("mesh")))) Kinds.FindOrAdd(E->GetStringField(TEXT("kind"))).Add(M);
+	if (Kinds.Num() == 0) return;
+	AActor* Holder = GetWorld()->SpawnActor<AActor>(); Holder->SetRootComponent(NewObject<USceneComponent>(Holder, TEXT("Natur"))); Holder->GetRootComponent()->RegisterComponent();
+	TMap<UStaticMesh*, UHierarchicalInstancedStaticMeshComponent*> Comps;
+	FRandomStream R(4711); NatureCount = 0;
+	struct FKindRule { const TCHAR* Kind; int32 Count; float Radius; float MinScale, MaxScale; bool bSolid; float Clear; };
+	const FKindRule Rules[] = { { TEXT("gras"), 120000, 4500, 1.1f, 2.0f, false, 0 }, { TEXT("farn"), 2500, 6500, 0.8f, 1.5f, false, 0 }, { TEXT("strauch"), 1200, 9000, 0.9f, 1.8f, false, 250 },
+		{ TEXT("baum"), 2000, 25000, 1.0f, 2.2f, true, 450 }, { TEXT("stein"), 260, 10000, 0.6f, 2.2f, true, 350 }, { TEXT("holz"), 60, 9000, 0.8f, 1.3f, true, 350 } };
+	const FVector Fwd = StartRot.Vector(); const float PathLen = 400.f + (Data.Levels.Num() > 0 ? Data.Levels[0].Rows[0].Len() * 300.f : 3000.f);
+	FCollisionQueryParams Q; if (APawn* H = UGameplayStatics::GetPlayerPawn(this, 0)) Q.AddIgnoredActor(H);
+	for (const FKindRule& Rule : Rules)
+	{
+		const TArray<UStaticMesh*>* Meshes = Kinds.Find(Rule.Kind); if (!Meshes || Meshes->Num() == 0) continue;
+		for (int32 i = 0; i < Rule.Count; i++)
+		{
+			const float A = R.FRandRange(0, 2 * PI), D = Rule.Radius * FMath::Sqrt(R.FRand());
+			FVector P = Origin + FVector(FMath::Cos(A) * D, FMath::Sin(A) * D, 0);
+			const FVector Rel = P - Origin; const float Along = FVector::DotProduct(Rel, Fwd), Side = FVector::CrossProduct(Fwd, Rel).Size();
+			if (Rule.Clear > 0 && Along > -1200.f && Along < PathLen && Side < Rule.Clear + 300.f) continue; // Spielweg frei
+			FHitResult Hit; if (!GetWorld()->LineTraceSingleByChannel(Hit, P + FVector(0, 0, 30000), P - FVector(0, 0, 30000), ECC_WorldStatic, Q)) continue;
+			UStaticMesh* M = (*Meshes)[R.RandHelper(Meshes->Num())];
+			UHierarchicalInstancedStaticMeshComponent*& C = Comps.FindOrAdd(M);
+			if (!C)
+			{
+				C = NewObject<UHierarchicalInstancedStaticMeshComponent>(Holder); C->SetStaticMesh(M); C->SetupAttachment(Holder->GetRootComponent());
+				C->SetCollisionEnabled(Rule.bSolid ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
+				C->SetCastShadow(true); if (!Rule.bSolid) C->SetCullDistances(0, 9000); C->RegisterComponent();
+			}
+			const float S = R.FRandRange(Rule.MinScale, Rule.MaxScale);
+			C->AddInstance(FTransform(FRotator(0, R.FRandRange(0, 360), 0), Hit.Location - FVector(0, 0, 5), FVector(S)), true);
+			NatureCount++;
+		}
+	}
+	UE_LOG(LogTrendo, Display, TEXT("TRENDO-NATUR %d Pflanzen/Felsen in %d Arten"), NatureCount, Comps.Num());
+	// Licht wie draußen am Vormittag: Sonne schräg hinter der Kamera, leichter Dunst in der Ferne
+	for (TActorIterator<ADirectionalLight> L(GetWorld()); L; ++L) { L->GetRootComponent()->SetMobility(EComponentMobility::Movable); L->SetActorRotation(FRotator(-38.f, StartRot.Yaw + 35.f, 0)); }
+	for (TActorIterator<AExponentialHeightFog> F(GetWorld()); F; ++F) if (UExponentialHeightFogComponent* C = F->GetComponent()) { C->SetFogDensity(0.035f); C->SetFogHeightFalloff(0.15f); }
+}
+
 void ATrendoGameMode::Report()
 {
 	ATrendoCharacter* H = Hero();
 	const bool bGround = H && H->GetCharacterMovement()->IsMovingOnGround();
 	int32 Live = 0; for (AActor* A : Spawned) if (IsValid(A)) Live++;
-	UE_LOG(LogTrendo, Display, TEXT("TRENDO-SPIEL Welt=%s Level=%d Objekte=%d Gegner=%d Figur=%s Boden=%s Z=%.0f"), *Data.World, State.Level, Live, Enemies.Num(), H ? TEXT("ja") : TEXT("nein"), bGround ? TEXT("ja") : TEXT("nein"), H ? H->GetActorLocation().Z : 0.f);
+	UE_LOG(LogTrendo, Display, TEXT("TRENDO-SPIEL Welt=%s Level=%d Objekte=%d Gegner=%d Natur=%d Figur=%s Boden=%s Z=%.0f"), *Data.World, State.Level, Live, Enemies.Num(), NatureCount, H ? TEXT("ja") : TEXT("nein"), bGround ? TEXT("ja") : TEXT("nein"), H ? H->GetActorLocation().Z : 0.f);
 	UE_LOG(LogTrendo, Display, TEXT("%s"), H && bGround && Live > 0 ? TEXT("TRENDO-OK Spiel läuft, Figur steht") : TEXT("TRENDO-FEHLER Spiel nicht spielbar"));
 	FGenericPlatformMisc::RequestExit(false);
 }
