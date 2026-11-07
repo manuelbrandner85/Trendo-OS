@@ -43,13 +43,31 @@ public partial class MainWindow
         var checks = SecurityCenter.Checks(_core, Backups, DateTime.Now);
         var score = SecurityCenter.Score(checks);
         var sp = new StackPanel { Spacing = 6 };
-        sp.Children.Add(new TextBlock { Name = "sec-score", Text = $"Schutz: {score} von 100", FontSize = 20, FontWeight = FontWeight.SemiBold, Foreground = score >= 80 ? Brush.Parse("#4ADE80") : score >= 50 ? Brush.Parse("#FACC15") : Brush.Parse("#F87171") });
+        // Y3 (07.11.2026): Sicherheitszentrale – großer Schutz-Ring, daneben die Prüfungen als Ampel-Karten
+        var scoreCol = score >= 80 ? "#4ADE80" : score >= 50 ? "#FACC15" : "#F87171";
+        var ring = new DonutChart { Name = "sec-ring", Width = 170, Height = 170, Slices = [("Schutz", scoreCol, Math.Max(0.01, score)), ("offen", "#26FFFFFF", Math.Max(0.01, 100 - score))], Center = score.ToString(), CenterSub = "von 100", Foreground = Text, Muted = Muted, Cursor = Avalonia.Input.Cursor.Default };
+        var good = checks.Count(c => c.Level == CheckLevel.Gut); var warn = checks.Count(c => c.Level != CheckLevel.Gut && c.Level != CheckLevel.Hinweis);
+        var summary = new StackPanel { Spacing = 6, VerticalAlignment = VerticalAlignment.Center, Children = {
+            new TextBlock { Name = "sec-score", Text = $"Schutz: {score} von 100", FontSize = 24, FontWeight = FontWeight.Bold, Foreground = Brush.Parse(scoreCol) },
+            P(score >= 80 ? "Gut geschützt. Die Punkte unten zeigen, was noch besser geht." : score >= 50 ? "Brauchbar – ein paar Punkte unten solltest du ansehen." : "Hier ist Handlungsbedarf – fang mit den roten Karten an.", Text, 13),
+            P($"{good} von {checks.Count} Prüfungen in Ordnung{(warn > 0 ? $" · {warn} mit Warnung" : "")}", null, 12) } };
+        sp.Children.Add(WCard(new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*"), ColumnSpacing = 24, Children = { ring, Pos(summary, 1) } }));
+        var cards = new Avalonia.Controls.Primitives.UniformGrid { Name = "sec-checks", Columns = 3 };
         foreach (var c in checks)
         {
             Button? fix = null;
-            if (c.FixPage is { } fp && c.Level != CheckLevel.Gut) { fix = new Button { Name = "sec-fix-" + c.Id, Content = c.Id == "backup" ? "Jetzt sichern" : "Ansehen", Padding = new Thickness(8, 2) }; fix.Click += (_, _) => { if (c.Id == "backup") { Backups.Create(DateTime.Now); _secMsg = "Sicherung erstellt."; Show("schutz"); } else Show(fp); }; }
-            sp.Children.Add(Row2(new StackPanel { Children = { new TextBlock { Text = (c.Level == CheckLevel.Gut ? "✓ " : c.Level == CheckLevel.Hinweis ? "• " : "⚠ ") + c.Title, Foreground = Text, FontSize = 13 }, P(c.Detail, null, 11) } }, fix));
+            if (c.FixPage is { } fp && c.Level != CheckLevel.Gut) { fix = new Button { Name = "sec-fix-" + c.Id, Content = c.Id == "backup" ? "Jetzt sichern" : "Ansehen", Padding = new Thickness(10, 3), Margin = new Thickness(0, 6, 0, 0), HorizontalAlignment = HorizontalAlignment.Left }; fix.Click += (_, _) => { if (c.Id == "backup") { Backups.Create(DateTime.Now); _secMsg = "Sicherung erstellt."; Show("schutz"); } else Show(fp); }; }
+            var (dot, col) = c.Level == CheckLevel.Gut ? ("✓", "#4ADE80") : c.Level == CheckLevel.Hinweis ? ("•", "#FACC15") : ("!", "#F87171");
+            var body = new StackPanel { Spacing = 3, Children = {
+                new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = {
+                    new Border { Width = 22, Height = 22, CornerRadius = new CornerRadius(11), Background = Brush.Parse(col), Child = new TextBlock { Text = dot, Foreground = Brushes.Black, FontWeight = FontWeight.Bold, FontSize = 12, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } },
+                    new TextBlock { Text = c.Title, Foreground = Text, FontSize = 13, FontWeight = FontWeight.SemiBold, VerticalAlignment = VerticalAlignment.Center } } },
+                P(c.Detail, null, 11) } };
+            if (fix is not null) body.Children.Add(fix);
+            cards.Children.Add(new Border { Name = "sec-check-" + c.Id, Child = body, Padding = new Thickness(12, 10), Margin = new Thickness(0, 0, 8, 8), CornerRadius = new CornerRadius(12), Background = TileBg,
+                BorderBrush = Brush.Parse(c.Level == CheckLevel.Gut ? "#334ADE80" : col), BorderThickness = new Thickness(1) });
         }
+        sp.Children.Add(cards);
         sp.Children.Add(H("Liegen Passwörter offen herum?", 14));
         sp.Children.Add(P("Trendo liest Textdateien in einem Ordner und zeigt offen gespeicherte Passwörter, Schlüssel, IBANs und Kartennummern – nur maskiert. Nichts wird verändert oder verschickt."));
         var folder = new TextBox { Name = "sec-folder", Text = _scanFolder == "" ? (string.IsNullOrEmpty(_settings.ProjectsFolder) ? UserSettings.DefaultProjectsFolder() : _settings.ProjectsFolder) : _scanFolder, Width = 360 };

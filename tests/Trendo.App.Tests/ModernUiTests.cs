@@ -159,6 +159,27 @@ public class Modern_Ui
         finally { w.Close(); }
     }
 
+    [AvaloniaFact(DisplayName = "Y3/Y6: Sicherheitszentrale mit Schutz-Ring und Ampel-Karten je Prüfung; Programme verwalten mit App-Regal – Klick sucht, installiert nichts ohne „Installieren“")]
+    public async Task Security_and_store()
+    {
+        var (w, _, _) = Ui.Open();
+        try
+        {
+            w.Show("schutz"); Pump();
+            var ring = w.Find<DonutChart>("sec-ring");
+            Assert.StartsWith("Schutz: " + ring.Center + " von 100", w.Find<TextBlock>("sec-score").Text);
+            Assert.True(w.Find<Avalonia.Controls.Primitives.UniformGrid>("sec-checks").Children.Count >= 3);
+            var pkg = new FakePkg(); w.AppBackendOverride = pkg;
+            w.Show("appcenter"); Pump();
+            Assert.NotNull(w.TryFind<StackPanel>("appc-shelf"));
+            w.Find<Button>("appc-shelf-vlc").Press();
+            for (var i = 0; i < 50 && w.TryFind<Button>("appc-hit-install-0") is null; i++) { Pump(); await Task.Delay(20); }
+            Assert.NotNull(w.TryFind<Button>("appc-hit-install-0")); Assert.Null(w.TryFind<StackPanel>("appc-shelf"));
+            Assert.Empty(pkg.Done); // nichts installiert
+        }
+        finally { w.Close(); }
+    }
+
     [AvaloniaFact(DisplayName = "G10: KI-Aufträge der Grafikkarten-Warteschlange als Karten – läuft mit Laufzeit, wartet mit Platz; fertig = Karte weg")]
     public async Task Task_cards()
     {
