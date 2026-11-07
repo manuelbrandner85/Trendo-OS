@@ -62,6 +62,8 @@ public class UnrealGameTests
             Assert.Contains("M_TrendoWunde", UnrealGame.MenschScript); Assert.Contains("weld_mesh_edges", UnrealGame.MenschScript); // Schnittfläche geschlossen, Wundmaterial statt Haut
             Assert.Contains("SetScalarParameterValue(TEXT(\"Start\")", gm); Assert.Contains("MaterialExpressionTime", UnrealGame.WeltScript); // Blut trocknet mit der Zeit
             Assert.Contains("TRENDO-FLACKERN", gm); // Messung: Gegner in der Ferne bekommen jedes Bild eine Pose
+            Assert.Contains("FindPathToLocationSynchronously", actors); Assert.Contains("UNavigationInvokerComponent", actors); Assert.Contains("NavMeshBoundsVolume", UnrealGame.WeltScript); Assert.Contains("TRENDO-WEG Hindernis", gm); // Wegfindung um Hindernisse, Probe im Prüflauf
+            Assert.Contains("RuntimeGeneration=Dynamic", File.ReadAllText(Path.Combine(dir, "Config", "DefaultEngine.ini"))); Assert.Contains("NavigationSystem", File.ReadAllText(Path.Combine(dir, "Source", "Waldlaeufer", "Waldlaeufer.Build.cs")));
             Assert.Contains("BS_MM_Bewegung", actors); Assert.Contains("def locomotion", UnrealGame.MenschScript); Assert.Contains("PatrolWait", actors); // Stehen→Gehen→Laufen ohne harten Wechsel, Streife ohne Stop-and-go
             Assert.Contains("trendo-glied.png", gm); Assert.Contains("freie Bahn", gm); // Nahaufnahme des Glieds; Testfahrt in freie Richtung
             Assert.Contains("bEnableUpdateRateOptimizations = false", actors); // kein Ruckeln/Flackern in der Ferne

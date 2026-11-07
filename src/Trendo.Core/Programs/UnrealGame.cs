@@ -39,7 +39,7 @@ public static class UnrealGame
         string Target(string type, string suffix) => $"using UnrealBuildTool;\n\npublic class {name}{suffix}Target : TargetRules\n{{\n\tpublic {name}{suffix}Target(TargetInfo Target) : base(Target)\n\t{{\n\t\tType = TargetType.{type};\n\t\tDefaultBuildSettings = BuildSettingsVersion.Latest;\n\t\tIncludeOrderVersion = EngineIncludeOrderVersion.Latest;\n\t\tExtraModuleNames.Add(\"{name}\");\n\t}}\n}}\n";
         Put($"Source/{name}.Target.cs", Target("Game", ""));
         Put($"Source/{name}Editor.Target.cs", Target("Editor", "Editor"));
-        Put($"Source/{name}/{name}.Build.cs", $"using UnrealBuildTool;\n\npublic class {name} : ModuleRules\n{{\n\tpublic {name}(ReadOnlyTargetRules Target) : base(Target)\n\t{{\n\t\tPCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;\n\t\tPublicDependencyModuleNames.AddRange(new[] {{ \"Core\", \"CoreUObject\", \"Engine\", \"InputCore\", \"EnhancedInput\", \"Json\", \"AIModule\", \"ChaosVehicles\", \"PhysicsCore\" }});\n\t}}\n}}\n");
+        Put($"Source/{name}/{name}.Build.cs", $"using UnrealBuildTool;\n\npublic class {name} : ModuleRules\n{{\n\tpublic {name}(ReadOnlyTargetRules Target) : base(Target)\n\t{{\n\t\tPCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;\n\t\tPublicDependencyModuleNames.AddRange(new[] {{ \"Core\", \"CoreUObject\", \"Engine\", \"InputCore\", \"EnhancedInput\", \"Json\", \"AIModule\", \"NavigationSystem\", \"ChaosVehicles\", \"PhysicsCore\" }});\n\t}}\n}}\n");
         Put($"Source/{name}/{name}.cpp", $"// Von Trendo erzeugt.\n#include \"Modules/ModuleManager.h\"\n\nIMPLEMENT_PRIMARY_GAME_MODULE(FDefaultGameModuleImpl, {name}, \"{name}\");\n");
         foreach (var (file, text) in Sources) Put($"Source/{name}/{file}", text + "\n");
         var map = Worlds.FirstOrDefault(w => w.Id == world).Map ?? Worlds[0].Map;
@@ -53,7 +53,9 @@ public static class UnrealGame
         if (!g.Contains("DirectoriesToAlwaysStageAsNonUFS")) File.WriteAllText(game, g.TrimEnd() + "\n\n[/Script/UnrealEd.ProjectPackagingSettings]\n+DirectoriesToAlwaysStageAsNonUFS=(Path=\"Trendo\")\n");
         // Fahrzeuge (Chaos Modular Vehicle) brauchen die asynchrone Physik-Berechnung
         var eng = File.ReadAllText(ini);
-        if (!eng.Contains("bTickPhysicsAsync")) File.WriteAllText(ini, eng.TrimEnd() + "\n\n[/Script/Engine.PhysicsSettings]\nbTickPhysicsAsync=True\n");
+        if (!eng.Contains("bTickPhysicsAsync")) File.WriteAllText(ini, (eng = eng.TrimEnd() + "\n\n[/Script/Engine.PhysicsSettings]\nbTickPhysicsAsync=True\n"));
+        // Wegfindung: Wegnetz entsteht zur Laufzeit rund um die Gegner (große Welten bleiben schnell)
+        if (!eng.Contains("RuntimeGeneration")) File.WriteAllText(ini, eng.TrimEnd() + "\n\n[/Script/NavigationSystem.RecastNavMesh]\nRuntimeGeneration=Dynamic\n\n[/Script/NavigationSystem.NavigationSystemV1]\nbGenerateNavigationOnlyAroundNavigationInvokers=True\n");
         Put("Content/Trendo/level.json", level);
         Put(WeltScriptRel, WeltScript + "\n");
         Put(MenschScriptRel, MenschScript + "\n");
@@ -439,6 +441,13 @@ if mat:
     for a in unreal.get_editor_subsystem(unreal.EditorActorSubsystem).get_all_level_actors():
         if isinstance(a, unreal.LandscapeProxy):
             a.set_editor_property("landscape_material", mat); count += 1
+# Wegnetz-Grenzen: Gegner finden Wege um Hindernisse (das Netz selbst entsteht im Spiel rund um die Gegner)
+try:
+    eas = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
+    if not [a for a in eas.get_all_level_actors() if isinstance(a, unreal.NavMeshBoundsVolume)]:
+        nv = eas.spawn_actor_from_class(unreal.NavMeshBoundsVolume, unreal.Vector(0, 0, 0)); nv.set_actor_scale3d(unreal.Vector(500, 500, 100))
+    log.append("Wegnetz-Grenzen: 1 km × 1 km")
+except Exception as e: log.append("Wegnetz-Grenzen nicht angelegt: " + str(e)[:160])
 les.save_current_level()
 unreal.EditorLoadingAndSavingUtils.save_dirty_packages(True, True)
 log.append(f"Karte {world}: Bodenmaterial auf {count} Gelände-Teil(e)")
@@ -914,7 +923,7 @@ public:
 	/** Tod: Körper fällt als Ragdoll (Physik, Gewicht) mit Stoß; false, wenn kein Körper mit Physik da ist. */
 	bool Ragdoll(const FVector& Impulse);
 	/** Brutale Spiele: ein Glied (Unterarm/Unterschenkel) abtrennen – am Körper ausblenden, ausgeschnittenes Stück fliegt als Physikteil; false ohne Glieder. */
-	bool Sever(const FVector& Push);
+	bool Sever(const FVector& Push); int32 PathCount() const { return NavPaths; } int32 DetourCount() const { return NavDetours; }
 	/** Abgetrennter Knochen (für die Blutlache am Stumpf), sonst NAME_None. */
 	FName SeveredBone = NAME_None;
 	/** Das abgetrennte Stück (Physikteil), für die Prüf-Nahaufnahme. */
@@ -924,7 +933,7 @@ public:
 	float Alert = 0;
 private:
 	FVector Start; float T = 0; float Attack = 0; FVector LastSeen = FVector::ZeroVector;
-	float Stuck = 0, Detour = 0, DetourSign = 1; FVector PatrolGoal = FVector::ZeroVector; float PatrolWait = 0; // Streife: Wegpunkt, dann kurz stehen
+	float Stuck = 0, Detour = 0, DetourSign = 1; FVector PatrolGoal = FVector::ZeroVector; float PatrolWait = 0; TArray<FVector> NavPts; FVector NavGoal = FVector::ZeroVector; float NavAge = 0; int32 NavPaths = 0, NavDetours = 0; // Streife: Wegpunkt, dann kurz stehen
 	/** In Richtung Goal gehen (Tempo in cm/s) – die Charakter-Bewegung sorgt für Boden, Stufen und Kollision. */
 	void WalkTo(const FVector& Goal, float Speed, float Dt);
 };
@@ -980,6 +989,9 @@ bool TrendoSetupFigure(USkeletalMeshComponent* Figure, float FootZ, const FLinea
 #include "Components/DecalComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "NavigationSystem.h"
+#include "NavigationPath.h"
+#include "NavigationInvokerComponent.h"
 
 static UStaticMesh* TrendoShape(const TCHAR* Path) { return LoadObject<UStaticMesh>(nullptr, Path); }
 static const TCHAR* HumanPath = TEXT("/MoverExamples/Characters/Mannequins/Meshes/SKM_Manny_Simple.SKM_Manny_Simple");
@@ -1169,6 +1181,8 @@ ATrendoEnemy::ATrendoEnemy()
 	M->bOrientRotationToMovement = true; M->RotationRate = FRotator(0, 320, 0); M->MaxWalkSpeed = 380.f; M->MaxStepHeight = 45.f;
 	M->SetWalkableFloorAngle(50.f); M->bUseRVOAvoidance = true; M->AvoidanceConsiderationRadius = 300.f; M->BrakingDecelerationWalking = 900.f;
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned; AIControllerClass = AAIController::StaticClass();
+	// Wegnetz entsteht zur Laufzeit rund um jeden Gegner (30 m, abgebaut ab 50 m) – auch in großen offenen Welten günstig
+	UNavigationInvokerComponent* Inv = CreateDefaultSubobject<UNavigationInvokerComponent>(TEXT("Wegnetz")); Inv->SetGenerationRadii(3000.f, 5000.f);
 	// Grundform (Rückfall ohne Menschmodell) und Fühler: Berührt die Spielfigur den Gegner, merkt das Spiel es (Kapsel blockt, Fühler überlappt)
 	Shape = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Form"));
 	Shape->SetupAttachment(GetCapsuleComponent());
@@ -1201,6 +1215,19 @@ void ATrendoEnemy::WalkTo(const FVector& Goal, float Speed, float Dt)
 {
 	FVector Dir = Goal - GetActorLocation(); Dir.Z = 0;
 	const float Left = Dir.Size(); if (Left < 40.f || Speed <= 0.f) return;
+	// Wegfindung: Pfad im Wegnetz um Felsen, Bäume und Häuser herum (alle 0,4 s neu oder wenn das Ziel wandert), dann Punkt für Punkt
+	if (UNavigationSystemV1* Nav = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld()))
+	{
+		NavAge -= Dt;
+		if (NavAge <= 0.f || FVector::Dist2D(NavGoal, Goal) > 150.f)
+		{
+			NavAge = 0.4f; NavGoal = Goal; NavPts.Reset();
+			if (UNavigationPath* P = Nav->FindPathToLocationSynchronously(GetWorld(), GetActorLocation(), Goal, this); P && P->IsValid() && P->PathPoints.Num() > 1)
+			{ NavPts = P->PathPoints; NavPaths++; if (NavPts.Num() > 2) NavDetours++; }
+		}
+		while (NavPts.Num() > 1 && FVector::Dist2D(GetActorLocation(), NavPts[0]) < 70.f) NavPts.RemoveAt(0);
+		if (NavPts.Num() > 0) { FVector Next = NavPts[0] - GetActorLocation(); Next.Z = 0; if (Next.Size() > 1.f) Dir = Next; }
+	}
 	Dir.Normalize();
 	const float Ease = FMath::Clamp(Left / 160.f, 0.35f, 1.f); // vor dem Ziel sanft langsamer statt abrupt stehen
 	// Hindernis (Baum, Fels, Kiste): kommt er trotz Gehen nicht voran, weicht er eine Weile seitlich aus
@@ -1911,7 +1938,7 @@ public:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 private:
-	TWeakObjectPtr<AActor> LimbPiece; float ProbeYaw = 0; TMap<const void*, FVector> FarHead; int32 FarFrames = 0; int32 FarStill = 0; float FarMaxJump = 0; int32 FarJumps = 0; TMap<const void*, FString> FarAnim; float FarDist = 0; TArray<TWeakObjectPtr<UDecalComponent>> BloodDecals; bool bAgedShot = false; bool bAgedPending = false; float MaxRoll = 0; bool bLimbShot = false; bool bLimbPending = false; float CheckSeconds = -1; bool bShotTaken = false; bool bCloseShot = false; bool bCloseDone = false; bool bProbe = false; bool bProbeDone = false; float ProbeStart = 0; int32 ProbeLives = 0; bool bCarProbe = false; bool bCarDone = false; int32 BloodCount = 0; int32 Severed = 0; float FightShotDelay = 0; bool bFight = false; bool bFightDone = false; UPROPERTY() ATrendoEnemy* FightEnemy = nullptr; FVector CarStart = FVector::ZeroVector; float WheelTurn = 0; TMap<FString, FQuat> WheelLast;
+	TWeakObjectPtr<AActor> LimbPiece; float ProbeYaw = 0; TMap<const void*, FVector> FarHead; int32 FarFrames = 0; int32 FarStill = 0; float FarMaxJump = 0; int32 FarJumps = 0; int32 FarStartJumps = 0; TMap<const void*, FString> FarAnim; float FarDist = 0; TArray<TWeakObjectPtr<UDecalComponent>> BloodDecals; bool bAgedShot = false; bool bAgedPending = false; float MaxRoll = 0; bool bLimbShot = false; bool bLimbPending = false; float CheckSeconds = -1; bool bShotTaken = false; bool bCloseShot = false; bool bCloseDone = false; bool bProbe = false; bool bProbeDone = false; float ProbeStart = 0; int32 ProbeLives = 0; bool bCarProbe = false; bool bCarDone = false; int32 BloodCount = 0; int32 Severed = 0; float FightShotDelay = 0; bool bFight = false; bool bFightDone = false; UPROPERTY() ATrendoEnemy* FightEnemy = nullptr; FVector CarStart = FVector::ZeroVector; float WheelTurn = 0; TMap<FString, FQuat> WheelLast;
 	static float WheelAngle(AActor* Car, TMap<FString, FQuat>& Last);
 	static void VehicleAxis(AActor* Car, FName Input, float Value);
 	static void VehicleCall(AActor* Car, const TCHAR* Func, FName Input, int32 Value);
@@ -1938,6 +1965,9 @@ private:
 #include "Engine/Font.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Animation/AnimSingleNodeInstance.h"
+#include "NavigationSystem.h"
+#include "NavigationPath.h"
+#include "Engine/OverlapResult.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "EngineUtils.h"
@@ -2264,7 +2294,8 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 				{
 					FarFrames++; if (Head.Equals(*Last, 0.001f)) FarStill++;
 					FarMaxJump = FMath::Max(FarMaxJump, FVector::Dist(Head, *Last)); const FString AnimNow = E->Body3D->GetSingleNodeInstance() && E->Body3D->GetSingleNodeInstance()->GetCurrentAsset() ? E->Body3D->GetSingleNodeInstance()->GetCurrentAsset()->GetName() : TEXT("-");
-					if (FVector::Dist(Head, *Last) > 12.f && ++FarJumps <= 12) UE_LOG(LogTrendo, Display, TEXT("TRENDO-FLACKERN Sprung %.0f cm: %s Abstand %.0f m Tempo %.0f Animation %s (vorher %s) Boden=%s Zeit %.2f Kopf %s (vorher %s) Becken %s Körper-Drehung %s Pos %.1f"), FVector::Dist(Head, *Last), *E->GetName(), Dist / 100.f, E->GetVelocity().Size2D(), *AnimNow, *FarAnim.FindRef(E), E->GetCharacterMovement()->IsMovingOnGround() ? TEXT("ja") : TEXT("nein"), GetWorld()->GetTimeSeconds(), *Head.ToCompactString(), *Last->ToCompactString(), *E->Body3D->GetBoneLocation(TEXT("pelvis"), EBoneSpaces::ComponentSpace).ToCompactString(), *E->Body3D->GetComponentRotation().ToCompactString(), E->Body3D->GetSingleNodeInstance() ? E->Body3D->GetSingleNodeInstance()->GetCurrentTime() : -1.f);
+					if (FVector::Dist(Head, *Last) > 12.f && GetWorld()->GetTimeSeconds() < 1.5f) FarStartJumps++; // erste 1,5 s: Figur setzt nach dem Erscheinen auf (getrennt gezählt)
+					else if (FVector::Dist(Head, *Last) > 12.f && ++FarJumps <= 12) UE_LOG(LogTrendo, Display, TEXT("TRENDO-FLACKERN Sprung %.0f cm: %s Abstand %.0f m Tempo %.0f Animation %s (vorher %s) Boden=%s Zeit %.2f Kopf %s (vorher %s) Becken %s Körper-Drehung %s Pos %.1f"), FVector::Dist(Head, *Last), *E->GetName(), Dist / 100.f, E->GetVelocity().Size2D(), *AnimNow, *FarAnim.FindRef(E), E->GetCharacterMovement()->IsMovingOnGround() ? TEXT("ja") : TEXT("nein"), GetWorld()->GetTimeSeconds(), *Head.ToCompactString(), *Last->ToCompactString(), *E->Body3D->GetBoneLocation(TEXT("pelvis"), EBoneSpaces::ComponentSpace).ToCompactString(), *E->Body3D->GetComponentRotation().ToCompactString(), E->Body3D->GetSingleNodeInstance() ? E->Body3D->GetSingleNodeInstance()->GetCurrentTime() : -1.f);
 					FarAnim.Add(E, AnimNow); FarDist = FMath::Max(FarDist, Dist);
 				}
 				FarHead.Add(E, Head);
@@ -2315,12 +2346,38 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 				ATrendoEnemy* E = Enemies[0]; FHitResult G; FCollisionQueryParams Q(TEXT("TrendoProbe"), false, E); TArray<AActor*> Kids; E->GetAllChildActors(Kids); Q.AddIgnoredActors(Kids);
 				const float Bottom = E->GetActorLocation().Z - E->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 				const bool bG = GetWorld()->LineTraceSingleByChannel(G, E->GetActorLocation(), E->GetActorLocation() - FVector(0, 0, 2000), ECC_WorldStatic, Q);
+				{ UNavigationSystemV1* Nav = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+				  UE_LOG(LogTrendo, Display, TEXT("TRENDO-WEG Wegnetz=%s Pfade=%d davon mit Umweg=%d"), Nav && Nav->GetDefaultNavDataInstance() ? TEXT("ja") : TEXT("nein"), E->PathCount(), E->DetourCount()); }
+				// Wege-Probe: Fels/Baum zwischen Gegner und einem Punkt 4,5 m dahinter – führt der Pfad im Wegnetz drumherum?
+				if (UNavigationSystemV1* Nav = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld()))
+				{
+					TArray<FOverlapResult> Ov; FCollisionQueryParams QQ(TEXT("TrendoWegProbe"), false, E); const FVector Me = E->GetActorLocation(); bool bDone = false; int32 Tried = 0;
+					FCollisionObjectQueryParams Obj; Obj.AddObjectTypesToQuery(ECC_WorldStatic); Obj.AddObjectTypesToQuery(ECC_WorldDynamic); // Pflanzen/Felsen sind WorldDynamic
+					GetWorld()->OverlapMultiByObjectType(Ov, Me, FQuat::Identity, Obj, FCollisionShape::MakeSphere(2000.f), QQ);
+					for (const FOverlapResult& O : Ov)
+					{
+						UInstancedStaticMeshComponent* Ism = Cast<UInstancedStaticMeshComponent>(O.GetComponent()); if (!Ism || O.ItemIndex == INDEX_NONE || bDone) continue;
+						FTransform Tr; Ism->GetInstanceTransform(O.ItemIndex, Tr, true); const FVector Ob = Tr.GetLocation();
+						if (FVector::Dist2D(Ob, Me) < 400.f) continue;
+						const FVector Behind = Ob + (Ob - Me).GetSafeNormal2D() * 450.f; FHitResult Bl;
+						const bool bBlocked = GetWorld()->LineTraceSingleByChannel(Bl, Me - FVector(0, 0, 50), FVector(Behind.X, Behind.Y, Me.Z - 50), ECC_Pawn, QQ) && Bl.GetComponent() == Ism;
+						Tried++; if (!bBlocked) continue;
+						if (UNavigationPath* P = Nav->FindPathToLocationSynchronously(GetWorld(), Me, Behind, E); P && P->IsValid() && P->PathPoints.Num() > 1)
+						{
+							bool bThrough = false; for (int32 k = 1; k < P->PathPoints.Num(); k++) { FHitResult Hk; if (GetWorld()->LineTraceSingleByChannel(Hk, P->PathPoints[k - 1] + FVector(0, 0, 40), P->PathPoints[k] + FVector(0, 0, 40), ECC_Pawn, QQ) && Hk.GetComponent() == Ism) bThrough = true; }
+							UE_LOG(LogTrendo, Display, TEXT("TRENDO-WEG Hindernis %s: gerade versperrt, Pfad %.1f m statt %.1f m mit %d Punkten, %s"), *Ism->GetStaticMesh()->GetName(), P->GetPathLength() / 100.f, FVector::Dist2D(Me, Behind) / 100.f, P->PathPoints.Num(),
+								bThrough ? TEXT("führt durch das Hindernis") : TEXT("führt drumherum"));
+							bDone = true;
+						}
+					}
+					if (!bDone) UE_LOG(LogTrendo, Display, TEXT("TRENDO-WEG Hindernis-Probe: %d Hindernisse geprüft, keines versperrt den geraden Weg"), Tried);
+				}
 				UE_LOG(LogTrendo, Display, TEXT("TRENDO-BODEN Gegner geht=%s Abstand Füße–Boden=%.1f cm"), E->GetCharacterMovement()->IsMovingOnGround() ? TEXT("ja") : TEXT("nein"), bG ? Bottom - G.Location.Z : -1.f);
 			}
 			UE_LOG(LogTrendo, Display, TEXT("TRENDO-GEGNER alarmiert=%s Abstand vorher=%.0f nachher=%.0f Leben %d→%d %s"), Enemies[0]->Alert > 0 ? TEXT("ja") : TEXT("nein"), ProbeStart, Now, ProbeLives, State.Lives,
 				bHit ? TEXT("verfolgt und angegriffen") : Enemies[0]->Alert > 0 && Now < ProbeStart - 300.f ? TEXT("verfolgt") : TEXT("reagiert nicht"));
-			UE_LOG(LogTrendo, Display, TEXT("TRENDO-FLACKERN Gegner in der Ferne bis %.0f m: %d Bilder, ohne Posen-Update %d (%.0f%%), Sprünge über 12 cm %d, größter Sprung je Bild %.1f cm (%s)"), FarDist / 100.f, FarFrames, FarStill,
-				FarFrames ? 100.f * FarStill / FarFrames : 0.f, FarJumps, FarMaxJump, FarFrames == 0 ? TEXT("nicht gemessen") : FarStill * 20 < FarFrames && FarJumps * 200 < FarFrames ? TEXT("ruhig") : TEXT("flackert"));
+			UE_LOG(LogTrendo, Display, TEXT("TRENDO-FLACKERN Gegner in der Ferne bis %.0f m: %d Bilder, ohne Posen-Update %d (%.0f%%), Sprünge über 12 cm %d (dazu %d beim Erscheinen), größter Sprung je Bild %.1f cm (%s)"), FarDist / 100.f, FarFrames, FarStill,
+				FarFrames ? 100.f * FarStill / FarFrames : 0.f, FarJumps, FarStartJumps, FarMaxJump, FarFrames == 0 ? TEXT("nicht gemessen") : FarStill * 20 < FarFrames && FarJumps * 200 < FarFrames ? TEXT("ruhig") : TEXT("flackert"));
 			FScreenshotRequest::RequestScreenshot(FPaths::ProjectSavedDir() / TEXT("Screenshots/trendo-gegner.png"), false, false);
 		}
 		else if (bProbeDone && !bFight && Enemies.Num() > 0 && IsValid(Enemies[0]) && Hero())
@@ -2395,12 +2452,16 @@ void ATrendoGameMode::Tick(float DeltaSeconds)
 			bCarProbe = true; CheckSeconds = 5.f; if (Hero()) Hero()->Arm->TargetArmLength = 520.f; // Kamera nach der Nahaufnahme zurück
 			for (AActor* A : Spawned) if (ATrendoThing* T = Cast<ATrendoThing>(A); IsValid(T) && IsValid(T->Car)) { for (ATrendoEnemy* E : Enemies) if (IsValid(E)) E->bFrozen = true;
 				// Testfahrt in die freieste Richtung (16 Richtungen, Kugel in Wagenbreite, 60 m), damit die Messung nicht an einem Baum endet
-				{ APawn* Car = T->Car; FCollisionQueryParams Q(TEXT("TrendoFreieBahn"), false, Car); if (Hero()) Q.AddIgnoredActor(Hero());
+				{ APawn* Car = T->Car; int32 Moved = 0; // Prüf-Aufbau: eingefrorene Gegner direkt am Wagen wären eine unbewegliche Wand – 15 m zur Seite
+				  for (ATrendoEnemy* E : Enemies) if (IsValid(E) && FVector::Dist2D(E->GetActorLocation(), Car->GetActorLocation()) < 1000.f) { const FVector Away = (E->GetActorLocation() - Car->GetActorLocation()).GetSafeNormal2D(); E->SetActorLocation(E->GetActorLocation() + (Away.IsNearlyZero() ? FVector(1, 0, 0) : Away) * 1500.f + FVector(0, 0, 50), false, nullptr, ETeleportType::TeleportPhysics); Moved++; }
+				  if (Moved) UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN %d Gegner am Wagen für die Probe zur Seite gestellt"), Moved);
+				  FCollisionQueryParams Q(TEXT("TrendoFreieBahn"), false, Car); if (Hero()) Q.AddIgnoredActor(Hero());
 				  // zuerst geradeaus, dann abwechselnd links/rechts immer weiter weg; die erste Richtung mit 40 m freier Bahn gewinnt
 				  const FVector From = Car->GetActorLocation() + FVector(0, 0, 160); const float Yaw0 = Car->GetActorRotation().Yaw; float BestOff = 0.f, Best = -1.f;
 				  for (int32 i = 0; i < 16; i++) { const float Off = (i % 2 ? -1.f : 1.f) * FMath::CeilToFloat(i / 2.f) * 22.5f; const FVector To = From + FRotator(0, Yaw0 + Off, 0).Vector() * 6000.f; FHitResult H;
 				    const bool bHit = GetWorld()->SweepSingleByChannel(H, From, To, FQuat::Identity, ECC_Vehicle, FCollisionShape::MakeSphere(90.f), Q);
 				    const float Free = !bHit ? 6000.f : H.bStartPenetrating ? 0.f : H.Distance;
+				    if (bHit && H.bStartPenetrating && i == 0) UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN steckt in %s / %s (%s)"), H.GetActor() ? *H.GetActor()->GetName() : TEXT("-"), H.GetComponent() ? *H.GetComponent()->GetName() : TEXT("-"), H.GetComponent() ? *H.GetComponent()->GetCollisionProfileName().ToString() : TEXT("-"));
 				    if (Free > Best) { Best = Free; BestOff = Off; } if (Free >= 4000.f) break; }
 				  ProbeYaw = Yaw0 + BestOff; // nicht teleportieren (kippt einen laufenden Chaos-Wagen) – der Prüf-Fahrer lenkt dorthin
 				  UE_LOG(LogTrendo, Display, TEXT("TRENDO-WAGEN freie Bahn %.0f m, Lenkziel %.0f° zur Fahrtrichtung"), Best / 100.f, BestOff); }
