@@ -88,3 +88,14 @@ Nicht in diesem Paketteil: S3-06/07/08/10, S3-04 (3D-Kamera), S4-15 (Spiele) –
 
 Weiter offen in S3/S4 (eigene Bereiche): S3-01/03 Shot-Plan im Videoschnitt, S3-02 Proxy/Multicam, S3-16 VTT und Sprachfassungen, S3-17 Abspann-Vorlage, S3-18 Warteschlange, S4-01 Automation in der Mehrspur, S4-09 EQ/Kompressor je Spur, S4-12 Intonation, S4-14 Tempo-Map, S4-18 Karaoke (LRC), S4-19 Unsicherheitsbericht.
 Nicht in diesem Teil: S3-04/06/07/08/10, S4-15 (Sitzung B); S3-09, S3-13 brauchen Modelle (Freigabe).
+
+### Nachtrag 07.11.2026 (nach Release 0.9.77)
+
+| Punkt | Was neu ist | Beleg | Status |
+|---|---|---|---|
+| S3-16 | Untertitel auch als WebVTT, Sprachfassungen IT/EN mit exakt gleichen Zeiten (drei Spuren im Video von FFmpeg bestätigt) | `reports/paket01/s3-16-s4-18-untertitel-lrc-lauf.md` | TESTED |
+| S4-18 | Liedtext als LRC (Karaoke) mit Sprachfassungen, Timing-Prüfung | wie S3-16 | Kern TESTED; Knopf in Trendo Musik offen |
+| S4-14 | Tempo-Map, Leitmotiv am Schnitt-Timecode, Treffpunkte in Bildern (FAIL ab > 1 Bild), MIDI mit Tempowechseln | `reports/paket01/s4-14-filmmusik-tempo-map-lauf.md` | TESTED |
+| S4-19 | Melodie → Noten mit Sicherheit je Note, Mehrstimmiges nie exakt, Unsicherheitsbericht | `reports/paket01/s4-19-melodie-zu-midi-lauf.md` | TESTED |
+
+Weiter offen: S3-01/03 Shot-Plan, S3-02 Proxy/Multicam, S3-17 Abspann-Vorlage, S3-18 Warteschlange, S4-01 Automation in der Mehrspur, S4-09 EQ/Kompressor je Spur, S4-12 Intonation.
