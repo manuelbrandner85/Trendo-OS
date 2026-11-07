@@ -460,16 +460,40 @@ public partial class MainWindow
     /// <summary>Für Tests: Encoder-Liste des FFmpeg (sonst „ffmpeg -encoders“).</summary>
     public IReadOnlySet<string>? EncodersOverride { get; set; }
 
+    /// <summary>Paket 01 S3-18 (07.11.2026): Render-Warteschlange – weitere Fassungen warten und starten nacheinander von selbst.</summary>
+    public sealed record QueuedExport(string Title, JsonObject Data, VideoExport.Options Options);
+    readonly List<QueuedExport> _veQueue = [];
+    public IReadOnlyList<QueuedExport> EditQueue => _veQueue;
+    /// <summary>Ergebnisse der Warteschlange (Datei oder Fehlertext) in der Reihenfolge der Fertigstellung.</summary>
+    public List<string> EditQueueResults { get; } = [];
+
+    /// <summary>Aktuelle Einstellungen als weitere Fassung einreihen; läuft nichts, startet sie sofort.</summary>
+    public async Task EditQueueAdd(ProgramDocument d)
+    {
+        var job = new QueuedExport(d.Title, (JsonObject)d.Data.DeepClone(), EditExportOptions(d));
+        if (_veExport is null) { await EditExportRun(job); return; }
+        _veQueue.Add(job);
+        _progMsg[VK] = $"„{job.Options.Preset.Label}“ wartet in der Warteschlange (Platz {_veQueue.Count}).";
+        Show(VK);
+    }
+
+    public void EditQueueRemove(int index) { if (index >= 0 && index < _veQueue.Count) { _veQueue.RemoveAt(index); Show(VK); } }
+
     public async Task EditExportBackground(ProgramDocument d)
     {
-        if (_veExport is not null) { _progMsg[VK] = "Ein Export läuft schon."; Show(VK); return; }
-        var opts = EditExportOptions(d); var ext = opts.Preset.Sequence ? "" : opts.Preset.Ext; var tag = opts.Preset.Id == "projekt" ? "" : "-" + opts.Preset.Id; // Sequenz: Ordner
-        var file = Path.Combine(WorkFolder(Programs[VK].Folder), DevStudio.SafeName(d.Title) + tag + ext);
-        for (var i = 2; File.Exists(file) || Directory.Exists(file); i++) file = Path.Combine(WorkFolder(Programs[VK].Folder), $"{DevStudio.SafeName(d.Title)}{tag}-{i}{ext}");
+        if (_veExport is not null) { await EditQueueAdd(d); return; } // läuft schon: einreihen statt abweisen
+        await EditExportRun(new QueuedExport(d.Title, (JsonObject)d.Data.DeepClone(), EditExportOptions(d)));
+    }
+
+    async Task EditExportRun(QueuedExport job)
+    {
+        var opts = job.Options; var title = job.Title; var ext = opts.Preset.Sequence ? "" : opts.Preset.Ext; var tag = opts.Preset.Id == "projekt" ? "" : "-" + opts.Preset.Id; // Sequenz: Ordner
+        var file = Path.Combine(WorkFolder(Programs[VK].Folder), DevStudio.SafeName(title) + tag + ext);
+        for (var i = 2; File.Exists(file) || Directory.Exists(file); i++) file = Path.Combine(WorkFolder(Programs[VK].Folder), $"{DevStudio.SafeName(title)}{tag}-{i}{ext}");
         // Paket 01 S3-18-N: fehlt der Encoder, nichts starten und eine Alternative nennen
         var encs = EncodersOverride ?? (!_opt.Isolated && FfmpegPath is { } ffe ? await Task.Run(() => VideoExport.Encoders(ffe)) : null);
-        if (encs is not null && VideoExport.Check(opts.Preset, encs) is { Ok: false } chk) { _progMsg[VK] = chk.Text; Show(VK); return; }
-        var data = (JsonObject)d.Data.DeepClone();
+        if (encs is not null && VideoExport.Check(opts.Preset, encs) is { Ok: false } chk) { _progMsg[VK] = chk.Text; EditQueueResults.Add(chk.Text); Show(VK); await EditQueueNext(); return; }
+        var data = job.Data;
         _veExport = new CancellationTokenSource(); _veExportProgress = 0; EditTab = "export"; _progMsg[VK] = "Export läuft im Hintergrund – du kannst weiterarbeiten."; Show(VK);
         var progress = new Progress<double>(v => { _veExportProgress = v; if (_veExportBar is { } b) b.Value = v * 100; });
         try
@@ -486,11 +510,19 @@ public partial class MainWindow
             _core.Audit.Append(Principal.LocalOwner.Name, "video.export", Path.GetFileName(o));
             EditCopySubs(data, o); // X10: SRT neben das Video
             if (!opts.Preset.Sequence && VideoEdit.Song(data) is { } linked && Songs.Get(linked.Id) is { } ls) SongVideoAdd(ls, o); // E2: fertiges Video auch beim Lied
-            _progMsg[VK] = "Exportiert: " + o; NotifyFileResult(_progMsg[VK]);
+            _progMsg[VK] = "Exportiert: " + o; NotifyFileResult(_progMsg[VK]); EditQueueResults.Add(o);
         }
-        catch (OperationCanceledException) { _progMsg[VK] = "Export abgebrochen – die halbe Datei wurde gelöscht."; }
-        catch (Exception ex) when (ex is InvalidOperationException or FileNotFoundException or IOException or System.ComponentModel.Win32Exception) { _progMsg[VK] = ex.Message; }
+        catch (OperationCanceledException) { _progMsg[VK] = "Export abgebrochen – die halbe Datei wurde gelöscht."; EditQueueResults.Add("abgebrochen"); }
+        catch (Exception ex) when (ex is InvalidOperationException or FileNotFoundException or IOException or System.ComponentModel.Win32Exception) { _progMsg[VK] = ex.Message; EditQueueResults.Add(ex.Message); }
         finally { _veExport.Dispose(); _veExport = null; _veExportBar = null; }
         Show(VK);
+        await EditQueueNext();
+    }
+
+    async Task EditQueueNext()
+    {
+        if (_veExport is not null || _veQueue.Count == 0) return;
+        var next = _veQueue[0]; _veQueue.RemoveAt(0);
+        await EditExportRun(next);
     }
 }

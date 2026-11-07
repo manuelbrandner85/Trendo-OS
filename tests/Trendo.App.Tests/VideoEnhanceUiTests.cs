@@ -95,3 +95,39 @@ public class VideoCredits_Ui
         finally { w.Close(); }
     }
 }
+
+/// <summary>Paket 01 – Studio 3, S3-18 (07.11.2026): Render-Warteschlange im Videoschnitt.</summary>
+public class VideoQueue_Ui
+{
+    [AvaloniaFact(DisplayName = "S3-18 Videoschnitt: drei Fassungen in die Warteschlange (YouTube, Hochformat, ProRes) laufen nacheinander; entfernte Fassung läuft nicht; ein Fehler hält die Schlange nicht an")]
+    public async Task Queue()
+    {
+        var (w, _, root) = Ui.Open(); w.Width = 1600; w.Height = 1000; Directory.CreateDirectory(root);
+        try
+        {
+            string F(string n) { var f = Path.Combine(root, n); File.WriteAllBytes(f, [1, 2, 3]); return f; }
+            var gate = new TaskCompletionSource(); var order = new List<string>();
+            w.EncodersOverride = new HashSet<string> { "libx264", "aac", "png", "libx265" }; // ProRes fehlt → Fehler, Schlange läuft weiter
+            w.ExportAsyncOverride = async (p, f, prog, ct) => { order.Add(Path.GetFileName(f)); if (order.Count == 1) await gate.Task; File.WriteAllText(f, "mp4"); return f; };
+            w.Show("schnitt"); Settle(); RealClick(w, V<Button>(w, "prog-tpl-leer"));
+            w.EditAdd(F("a.mp4"), length: 4, audio: true);
+            var d = w.ProgramActive("schnitt")!;
+            w.EditPreset = "yt1080"; var first = w.EditQueueAdd(d); Settle(); // startet sofort, wartet am Tor
+            w.EditPreset = "hoch"; await w.EditQueueAdd(d);
+            w.EditPreset = "png"; await w.EditQueueAdd(d);
+            w.EditPreset = "prores"; await w.EditQueueAdd(d);
+            w.EditPreset = "av1"; await w.EditQueueAdd(d);
+            Assert.Equal(4, w.EditQueue.Count);
+            w.EditQueueRemove(3); // AV1 doch nicht
+            w.EditTab = "export"; w.Show("schnitt"); Settle();
+            Assert.NotNull(w.Find<StackPanel>("ve-queue"));
+            gate.SetResult();
+            await first;
+            for (var i = 0; i < 100 && (w.EditExporting || w.EditQueue.Count > 0); i++) { await Task.Delay(10); Settle(); }
+            Assert.Equal(["Unbenannt-yt1080.mp4", "Unbenannt-hoch.mp4", "Unbenannt-png"], order);
+            Assert.Equal(4, w.EditQueueResults.Count); Assert.Contains(w.EditQueueResults, r => r.Contains("prores_ks"));
+            Assert.DoesNotContain(order, o => o.Contains("av1"));
+        }
+        finally { w.Close(); }
+    }
+}

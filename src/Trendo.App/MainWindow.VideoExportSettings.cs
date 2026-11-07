@@ -173,7 +173,23 @@ public partial class MainWindow
         sp.Children.Add(P(gpuText + (pr.AudioOnly ? "" : $" Encoder für diese Vorlage: {enc}."), Muted, 11.5));
         var go = new Button { Name = "ve-export-go", Content = pr.AudioOnly ? "⬇ Ton exportieren" : "⬇ Exportieren", Background = Accent, Foreground = Brushes.White, FontSize = 13, Padding = new Thickness(16, 7), CornerRadius = new CornerRadius(8), IsEnabled = _veExport is null };
         go.Click += async (_, _) => await EditExportBackground(d);
-        sp.Children.Add(go);
+        // Paket 01 S3-18: weitere Fassungen in die Warteschlange (laufen nacheinander)
+        var queue = new Button { Name = "ve-queue-add", Content = "＋ In die Warteschlange", FontSize = 12, Margin = new Thickness(6, 0, 0, 0) };
+        ToolTip.SetTip(queue, "Diese Vorlage zusätzlich ausgeben – z. B. YouTube, Hochformat und ProRes nacheinander");
+        queue.Click += async (_, _) => await EditQueueAdd(d);
+        sp.Children.Add(new WrapPanel { Children = { go, queue } });
+        if (_veQueue.Count > 0)
+        {
+            var list = new StackPanel { Name = "ve-queue", Spacing = 2 };
+            list.Children.Add(new TextBlock { Text = $"WARTESCHLANGE ({_veQueue.Count})", Foreground = Muted, FontSize = 10, FontWeight = FontWeight.Bold });
+            for (var i = 0; i < _veQueue.Count; i++)
+            {
+                var k = i; var del = new Button { Name = $"ve-queue-del-{i}", Content = "✕", FontSize = 10, Padding = new Thickness(5, 0) };
+                del.Click += (_, _) => EditQueueRemove(k);
+                list.Children.Add(new WrapPanel { Children = { new TextBlock { Text = $"{i + 1}. {_veQueue[i].Options.Preset.Label}", Foreground = Text, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(0, 0, 6, 0) }, del } });
+            }
+            sp.Children.Add(list);
+        }
         // X16: Übergabe an andere Schnittprogramme
         sp.Children.Add(H("An anderes Schnittprogramm geben", 12.5));
         var edl = new Button { Name = "ve-edl", Content = "EDL (Resolve, Premiere, Avid)", FontSize = 12, Margin = new Thickness(0, 0, 6, 0) };
